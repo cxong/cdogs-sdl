@@ -117,6 +117,148 @@ static int facePicsFiring[][DIRECTION_COUNT] =
 	{ -1, -1, -1, -1, -1, -1, -1, -1 },
 	{ -1, -1, -1, -1, -1, -1, -1, -1 }
 };
+static Vec2i faceOffsets[FACE_COUNT][DIRECTION_COUNT] =
+{
+	{// Jones
+		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
+		{ 0, 0 }, { 0, 0 }, { 1, 0 }, { 1, 0 }
+	},
+	{// Ice
+		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
+		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }
+	},
+	{// Ogre
+		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
+		{ 0, 0 }, { 0, 0 }, { 1, 0 }, { 1, 0 }
+	},
+	{// Dragon
+		{ -1, 0 }, { 0, 0 }, { 0, 0 }, { -1, 0 },
+		{ -1, 0 }, { -1, 0 }, { 1, 0 }, { 0, 0 }
+	},
+	{// WarBaby
+		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { -1, 0 },
+		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
+	},
+	{// Bug-eye
+		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
+		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }
+	},
+	{// Smith
+		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { -1, 0 },
+		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
+	},
+	{// Ogre Boss
+		{ 0, -1 }, { -1, -1 }, { 0, -1 }, { 0, -1 },
+		{ 0, -1 }, { 0, -1 }, { 1, -1 }, { 0, -1 }
+	},
+	{// Grunt
+		{ -1, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
+		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
+	},
+	{// Professor
+		{ 0, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 },
+		{ 0, 0 }, { 0, 0 }, { 1, 0 }, { 1, 0 }
+	},
+	{// Snake
+		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { -1, 0 },
+		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
+	},
+	{// Wolf
+		{ -1, 0 }, { -1, 0 }, { 0, 1 }, { -1, 1 },
+		{ -1, 1 }, { -1, 1 }, { 0, 1 }, { 0, 1 }
+	},
+	{// Bob
+		{ -1, 0 }, { 0, 0 }, { 0, 1 }, { 0, 1 },
+		{ -1, 1 }, { -1, 1 }, { 0, 1 }, { 0, 0 }
+	},
+	{// Mad bug-eye
+		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
+		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }
+	},
+	{// Cyborg
+		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { -1, 0 },
+		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
+	},
+	{// Robot
+		{ 0, 1 }, { 0, 1 }, { 0, 1 }, { 0, 1 },
+		{ 0, 1 }, { 0, 1 }, { 0, 1 }, { 0, 1 }
+	},
+	{// Lady
+		{ 0, 0 }, { 0, 0 }, { -1, 0 }, { 0, 0 },
+		{ 0, 0 }, { 0, 0 }, { 1, 0 }, { 1, 0 }
+	}
+};
+static Vec2i faceOffsetsFiring[FACE_COUNT][DIRECTION_COUNT] =
+{
+	{// Jones
+		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { -1, 0 },
+		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 1, 0 }
+	},
+	{// Ice
+		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { -1, 0 },
+		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
+	},
+	{// Ogre
+		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
+		{ 0, 0 }, { 0, 0 }, { 1, 0 }, { 1, 0 }
+	},
+	{// Dragon
+		{ -1, 0 }, { 0, 0 }, { 0, 0 }, { -1, 0 },
+		{ -1, 0 }, { -1, 0 }, { 1, 0 }, { 0, 0 }
+	},
+	{// WarBaby
+		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { -1, 0 },
+		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
+	},
+	{// Bug-eye
+		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
+		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }
+	},
+	{// Smith
+		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { -1, 0 },
+		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
+	},
+	{// Ogre Boss
+		{ 0, -1 }, { -1, -1 }, { 0, -1 }, { 0, -1 },
+		{ 0, -1 }, { 0, -1 }, { 1, -1 }, { 0, -1 }
+	},
+	{// Grunt
+		{ -1, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
+		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
+	},
+	{// Professor
+		{ 0, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 },
+		{ 0, 0 }, { 0, 0 }, { 1, 0 }, { 1, 0 }
+	},
+	{// Snake
+		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { -1, 0 },
+		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
+	},
+	{// Wolf
+		{ -1, 0 }, { -1, 0 }, { 0, 1 }, { -1, 1 },
+		{ -1, 1 }, { -1, 1 }, { 0, 1 }, { 0, 1 }
+	},
+	{// Bob
+		{ -1, 0 }, { 0, 0 }, { 0, 1 }, { 0, 1 },
+		{ -1, 1 }, { -1, 1 }, { 0, 1 }, { 0, 0 }
+	},
+	{// Mad bug-eye
+		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
+		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }
+	},
+	{// Cyborg
+		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { -1, 0 },
+		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
+	},
+	{// Robot
+		{ 0, 1 }, { 0, 1 }, { 0, 1 }, { 0, 1 },
+		{ 0, 1 }, { 0, 1 }, { 0, 1 }, { 0, 1 }
+	},
+	{// Lady
+		{ 0, 0 }, { 0, 0 }, { -1, 0 }, { 0, 0 },
+		{ 0, 0 }, { 0, 0 }, { 1, 0 }, { 1, 0 }
+	}
+};
 
 
 static NamedPic *AddNamedPic(CArray *pics, const char *name, const Pic *p);
@@ -335,7 +477,8 @@ static void GenerateOldPics(PicManager *pm);
 static void LoadOldSprites(
 	PicManager *pm, const char *name, const TOffsetPic *pics, const int count);
 static void LoadOldFacePics(
-	PicManager *pm, const char *spritesName, int facePics[][DIRECTION_COUNT]);
+	PicManager *pm, const char *spritesName, int facePics[][DIRECTION_COUNT],
+	Vec2i offsets[FACE_COUNT][DIRECTION_COUNT]);
 void PicManagerLoadDir(PicManager *pm, const char *path)
 {
 	if (!IMG_Init(IMG_INIT_PNG))
@@ -360,8 +503,8 @@ void PicManagerLoadDir(PicManager *pm, const char *path)
 	LoadOldSprites(pm, "beam_bright", cBeamPics[1], DIRECTION_COUNT);
 	// Load old sprites, like the directional sprites
 	// Faces
-	LoadOldFacePics(pm, "idle", facePicsIdle);
-	LoadOldFacePics(pm, "firing", facePicsFiring);
+	LoadOldFacePics(pm, "idle", facePicsIdle, faceOffsets);
+	LoadOldFacePics(pm, "firing", facePicsFiring, faceOffsetsFiring);
 }
 static void LoadOldSprites(
 	PicManager *pm, const char *name, const TOffsetPic *pics, const int count)
@@ -381,79 +524,9 @@ static void LoadOldSprites(
 	}
 	CArrayPushBack(&pm->sprites, &ns);
 }
-static Vec2i faceOffsets[FACE_COUNT][DIRECTION_COUNT] =
-{
-	{// Jones
-		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
-		{ 0, 0 }, { 0, 0 }, { 1, 0 }, { 1, 0 }
-	},
-	{// Ice
-		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
-		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }
-	},
-	{// Ogre
-		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
-		{ 0, 0 }, { 0, 0 }, { 1, 0 }, { 1, 0 }
-	},
-	{// Dragon
-		{ -1, 0 }, { 0, 0 }, { 0, 0 }, { -1, 0 },
-		{ -1, 0 }, { -1, 0 }, { 1, 0 }, { 0, 0 }
-	},
-	{// WarBaby
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { -1, 0 },
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
-	},
-	{// Bug-eye
-		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
-		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }
-	},
-	{// Smith
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { -1, 0 },
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
-	},
-	{// Ogre Boss
-		{ 0, -1 }, { -1, -1 }, { 0, -1 }, { 0, -1 },
-		{ 0, -1 }, { 0, -1 }, { 1, -1 }, { 0, -1 }
-	},
-	{// Grunt
-		{ -1, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
-	},
-	{// Professor
-		{ 0, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 },
-		{ 0, 0 }, { 0, 0 }, { 1, 0 }, { 1, 0 }
-	},
-	{// Snake
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { -1, 0 },
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
-	},
-	{// Wolf
-		{ -1, 0 }, { -1, 0 }, { 0, 1 }, { -1, 1 },
-		{ -1, 1 }, { -1, 1 }, { 0, 1 }, { 0, 1 }
-	},
-	{// Bob
-		{ -1, 0 }, { 0, 0 }, { 0, 1 }, { 0, 1 },
-		{ -1, 1 }, { -1, 1 }, { 0, 1 }, { 0, 0 }
-	},
-	{// Mad bug-eye
-		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
-		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }
-	},
-	{// Cyborg
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { -1, 0 },
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
-	},
-	{// Robot
-		{ 0, 1 }, { 0, 1 }, { 0, 1 }, { 0, 1 },
-		{ 0, 1 }, { 0, 1 }, { 0, 1 }, { 0, 1 }
-	},
-	{// Lady
-		{ 0, 0 }, { 0, 0 }, { -1, 0 }, { 0, 0 },
-		{ 0, 0 }, { 0, 0 }, { 1, 0 }, { 1, 0 }
-	}
-};
 static void LoadOldFacePics(
-	PicManager *pm, const char *spritesName, int facePics[][DIRECTION_COUNT])
+	PicManager *pm, const char *spritesName, int facePics[][DIRECTION_COUNT],
+	Vec2i offsets[FACE_COUNT][DIRECTION_COUNT])
 {
 	for (int i = 0; i < FACE_COUNT; i++)
 	{
@@ -472,7 +545,7 @@ static void LoadOldFacePics(
 			// Add offset so we're drawing the head centered horizontally and
 			// taking into account the neck offset
 			p.offset = Vec2iAdd(
-				faceOffsets[i][d],
+				offsets[i][d],
 				Vec2iNew(-p.size.x / 2, NECK_OFFSET - p.size.y / 2));
 			CArrayPushBack(&ns.pics, &p);
 		}
