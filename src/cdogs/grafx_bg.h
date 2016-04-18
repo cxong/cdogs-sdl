@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2014, 2016 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,8 +25,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __GRAFX_BG
-#define __GRAFX_BG
+#pragma once
 
 #include "campaigns.h"
 #include "draw_buffer.h"
@@ -43,11 +42,9 @@ void GrafxDrawBackground(
 void GrafxMakeBackground(
 	GraphicsDevice *device, DrawBuffer *buffer,
 	CampaignOptions *co, struct MissionOptions *mo, Map *map, HSV tint,
-	int isEditor, int buildTables, Vec2i pos, GrafxDrawExtra *extra);
+	const bool isEditor, Vec2i pos, GrafxDrawExtra *extra);
 void GraphicsBlitBkg(GraphicsDevice *device);
 
 void GrafxMakeRandomBackground(
 	GraphicsDevice *device,
 	CampaignOptions *co, struct MissionOptions *mo, Map *map);
-
-#endif

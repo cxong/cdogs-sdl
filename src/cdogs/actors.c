@@ -90,14 +90,6 @@
 
 CArray gPlayerIds;
 
-TranslationTable tableFlamed;
-TranslationTable tableGreen;
-TranslationTable tablePoison;
-TranslationTable tableGray;
-TranslationTable tableBlack;
-TranslationTable tableDarker;
-TranslationTable tablePurple;
-
 
 CArray gActors;
 static unsigned int sActorUIDs = 0;
@@ -1222,65 +1214,6 @@ unsigned char BestMatch(const TPalette palette, int r, int g, int b)
 		}
 	}
 	return (unsigned char)best;
-}
-
-void BuildTranslationTables(const TPalette palette)
-{
-	int i;
-	unsigned char f;
-
-	for (i = 0; i < 256; i++)
-	{
-		f = (unsigned char)floor(
-			0.3 * palette[i].r +
-			0.59 * palette[i].g +
-			0.11 * palette[i].b);
-		tableFlamed[i] = BestMatch(palette, f, 0, 0);
-	}
-	for (i = 0; i < 256; i++)
-	{
-		f = (unsigned char)floor(
-			0.4 * palette[i].r +
-			0.49 * palette[i].g +
-			0.11 * palette[i].b);
-		tableGreen[i] = BestMatch(palette, 0, 2 * f / 3, 0);
-	}
-	for (i = 0; i < 256; i++)
-	{
-		tablePoison[i] = BestMatch(
-			palette,
-			palette[i].r + 5,
-			palette[i].g + 15,
-			palette[i].b + 5);
-	}
-	for (i = 0; i < 256; i++)
-	{
-		f = (unsigned char)floor(
-			0.4 * palette[i].r +
-			0.49 * palette[i].g +
-			0.11 * palette[i].b);
-		tableGray[i] = BestMatch(palette, f, f, f);
-	}
-	for (i = 0; i < 256; i++)
-	{
-		tableBlack[i] = BestMatch(palette, 0, 0, 0);
-	}
-	for (i = 0; i < 256; i++)
-	{
-		f = (unsigned char)floor(
-			0.4 * palette[i].r +
-			0.49 * palette[i].g +
-			0.11 * palette[i].b);
-		tablePurple[i] = BestMatch(palette, f, 0, f);
-	}
-	for (i = 0; i < 256; i++)
-	{
-		tableDarker[i] = BestMatch(
-			palette,
-			(200 * palette[i].r) / 256,
-			(200 * palette[i].g) / 256,
-			(200 * palette[i].b) / 256);
-	}
 }
 
 TActor *ActorGetByUID(const int uid)

@@ -162,14 +162,6 @@ typedef struct Actor
 // Therefore do not hold actor pointers and reuse.
 extern CArray gActors;	// of TActor
 
-extern TranslationTable tableFlamed;
-extern TranslationTable tableGreen;
-extern TranslationTable tablePoison;
-extern TranslationTable tableGray;
-extern TranslationTable tableBlack;
-extern TranslationTable tableDarker;
-extern TranslationTable tablePurple;
-
 void ActorSetState(TActor *actor, const ActorAnimation state);
 void UpdateActorState(TActor * actor, int ticks);
 bool TryMoveActor(TActor *actor, Vec2i pos);
@@ -177,7 +169,6 @@ void ActorMove(const NActorMove am);
 void CommandActor(TActor *actor, int cmd, int ticks);
 void SlideActor(TActor *actor, int cmd);
 void UpdateAllActors(int ticks);
-void BuildTranslationTables(const TPalette palette);
 void ActorHeal(TActor *actor, int health);
 void InjureActor(TActor * actor, int injury);
 

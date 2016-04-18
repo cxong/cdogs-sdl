@@ -529,12 +529,12 @@ static char *MissionGetObjectiveDescription(UIObject *o, void *data)
 		if (i == 0)
 		{
 			// first objective and mission has no objectives
-			o->u.Textbox.IsEditable = 0;
+			o->u.Textbox.IsEditable = false;
 			return "-- mission objectives --";
 		}
 		return NULL;
 	}
-	o->u.Textbox.IsEditable = 1;
+	o->u.Textbox.IsEditable = true;
 	return ((MissionObjective *)CArrayGet(&m->Objectives, i))->Description;
 }
 static void MissionCheckObjectiveDescription(UIObject *o, void *data)
@@ -1063,7 +1063,7 @@ static void MissionChangeType(void *data, int d)
 		MAPTYPE_STATIC);
 	Map map;
 	MissionOptionsTerminate(&gMission);
-	CampaignAndMissionSetup(1, co, &gMission);
+	CampaignAndMissionSetup(co, &gMission);
 	memset(&map, 0, sizeof map);
 	MapLoad(&map, &gMission, co);
 	MapLoadDynamic(&map, &gMission, &co->Setting.characters);

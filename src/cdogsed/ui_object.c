@@ -54,7 +54,7 @@ UIObject *UIObjectCreate(UIType type, int id, Vec2i pos, Vec2i size)
 	switch (type)
 	{
 	case UITYPE_TEXTBOX:
-		o->u.Textbox.IsEditable = 1;
+		o->u.Textbox.IsEditable = true;
 		o->ChangesData = 1;
 		break;
 	case UITYPE_TAB:
@@ -235,7 +235,8 @@ int UIObjectChange(UIObject *o, int d)
 // Disable all parent context menus once the child is clicked
 static void DisableContextMenuParents(UIObject *o)
 {
-	if (o->Parent)
+	// Don't disable if we are a textbox
+	if (o->Parent && o->Type != UITYPE_TEXTBOX)
 	{
 		if (o->Parent->Type == UITYPE_CONTEXT_MENU)
 		{

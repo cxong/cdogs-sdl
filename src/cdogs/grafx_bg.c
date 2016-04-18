@@ -54,7 +54,7 @@ void GrafxMakeRandomBackground(
 	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES), device);
 	co->MissionIndex = 0;
 	GrafxMakeBackground(
-		device, &buffer, co, mo, map, tint, 0, 1, Vec2iZero(), NULL);
+		device, &buffer, co, mo, map, tint, false, Vec2iZero(), NULL);
 	MissionEnd();
 	DrawBufferTerminate(&buffer);
 	MissionOptionsTerminate(mo);
@@ -85,9 +85,9 @@ void GrafxDrawBackground(
 void GrafxMakeBackground(
 	GraphicsDevice *device, DrawBuffer *buffer,
 	CampaignOptions *co, struct MissionOptions *mo, Map *map, HSV tint,
-	int isEditor, int buildTables, Vec2i pos, GrafxDrawExtra *extra)
+	const bool isEditor, Vec2i pos, GrafxDrawExtra *extra)
 {
-	CampaignAndMissionSetup(buildTables, co, mo);
+	CampaignAndMissionSetup(co, mo);
 	GameEventsInit(&gGameEvents);
 	MapLoad(map, mo, co);
 	MapLoadDynamic(map, mo, &co->Setting.characters);

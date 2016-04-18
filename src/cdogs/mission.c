@@ -284,8 +284,7 @@ static void SetupWeapons(CArray *to, CArray *from)
 	CArrayCopy(to, from);
 }
 
-void SetupMission(
-	int buildTables, Mission *m, struct MissionOptions *mo, int missionIndex)
+void SetupMission(Mission *m, struct MissionOptions *mo, int missionIndex)
 {
 	MissionOptionsInit(mo);
 	mo->index = missionIndex;
@@ -308,10 +307,6 @@ void SetupMission(
 	SetupObjectives(mo, m);
 	SetupBadguysForMission(m);
 	SetupWeapons(&mo->Weapons, &m->Weapons);
-	if (buildTables)
-	{
-		BuildTranslationTables(gPicManager.palette);
-	}
 }
 
 void MissionEnd(void)

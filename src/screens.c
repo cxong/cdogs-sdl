@@ -134,7 +134,7 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 	bool gameOver = true;
 	do
 	{
-		CampaignAndMissionSetup(1, co, &gMission);
+		CampaignAndMissionSetup(co, &gMission);
 
 		if (IsGameOptionsNeeded(co->Entry.Mode))
 		{

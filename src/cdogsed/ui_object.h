@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2013-2014, Cong Xu
+ Copyright (c) 2013-2014, 2016 Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,7 @@
  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef __UI_OBJECT
-#define __UI_OBJECT
+#pragma once
 
 #include <stdbool.h>
 
@@ -76,7 +75,7 @@ typedef struct _UIObject
 		{
 			char *(*TextLinkFunc)(struct _UIObject *, void *);
 			char **(*TextSourceFunc)(void *);
-			int IsEditable;
+			bool IsEditable;
 			char *Hint;
 		} Textbox;
 		// Tab
@@ -128,5 +127,3 @@ void UIObjectDraw(
 bool UITryGetObject(UIObject *o, Vec2i pos, UIObject **out);
 
 void UITooltipDraw(GraphicsDevice *device, Vec2i pos, const char *s);
-
-#endif

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -148,9 +148,9 @@ static int IsBrushPosValid(Vec2i pos, Mission *m)
 		pos.y >= 0 && pos.y < m->Size.y;
 }
 
-static void MakeBackground(GraphicsDevice *g, int buildTables)
+static void MakeBackground(GraphicsDevice *g, const bool changedMission)
 {
-	if (buildTables)
+	if (changedMission)
 	{
 		// Automatically pan camera to middle of screen
 		Mission *m = gMission.missionData;
@@ -176,7 +176,7 @@ static void MakeBackground(GraphicsDevice *g, int buildTables)
 	DrawBufferInit(&sDrawBuffer, Vec2iNew(X_TILES, Y_TILES), &gGraphicsDevice);
 	GrafxMakeBackground(
 		g, &sDrawBuffer, &gCampaign, &gMission, &gMap,
-		tintNone, 1, buildTables, camera, &extra);
+		tintNone, true, camera, &extra);
 }
 
 // Returns whether a redraw is required
@@ -201,7 +201,7 @@ static void Display(GraphicsDevice *g, int yc, HandleInputResult result)
 		// Re-make the background if the resolution has changed
 		if (gEventHandlers.HasResolutionChanged)
 		{
-			MakeBackground(g, 0);
+			MakeBackground(g, false);
 		}
 		if (result.RemakeBg || brush.IsGuideImageNew)
 		{
@@ -438,7 +438,7 @@ static void Autosave(void)
 	}
 }
 
-static void Setup(int buildTables)
+static void Setup(const bool changedMission)
 {
 	Mission *m = CampaignGetCurrentMission(&gCampaign);
 	if (!m)
@@ -448,8 +448,8 @@ static void Setup(int buildTables)
 	MissionCopy(&lastMission, &currentMission);
 	MissionCopy(&currentMission, m);
 	MissionOptionsTerminate(&gMission);
-	CampaignAndMissionSetup(buildTables, &gCampaign, &gMission);
-	MakeBackground(&gGraphicsDevice, buildTables);
+	CampaignAndMissionSetup(&gCampaign, &gMission);
+	MakeBackground(&gGraphicsDevice, changedMission);
 	sCursorTile = TileNone();
 
 	Autosave();
@@ -591,7 +591,7 @@ static bool TryOpen(const char *filename)
 	if (!MapNewLoad(buf, &gCampaign.Setting))
 	{
 		fileChanged = 0;
-		Setup(1);
+		Setup(true);
 		strcpy(lastFile, filename);
 		sAutosaveIndex = 0;
 		ReloadUI();
@@ -729,6 +729,7 @@ static void HelpScreen(void)
 static void Delete(int xc, int yc)
 {
 	Mission *mission = CampaignGetCurrentMission(&gCampaign);
+	bool changedMission = false;
 	switch (yc)
 	{
 	case YC_CHARACTERS:
@@ -772,12 +773,13 @@ static void Delete(int xc, int yc)
 				return;
 			}
 			DeleteMission(&gCampaign);
+			changedMission = true;
 		}
 		AdjustYC(&yc);
 		break;
 	}
 	fileChanged = 1;
-	Setup(0);
+	Setup(changedMission);
 }
 
 static void InputInsert(int *xc, const int yc, Mission *mission);
@@ -913,7 +915,7 @@ static HandleInputResult HandleInput(
 				}
 				if (r == EDITOR_RESULT_CHANGED_AND_RELOAD)
 				{
-					Setup(0);
+					Setup(false);
 				}
 			}
 		}
@@ -938,7 +940,7 @@ static HandleInputResult HandleInput(
 			}
 			if (r == EDITOR_RESULT_CHANGED_AND_RELOAD)
 			{
-				Setup(0);
+				Setup(false);
 			}
 		}
 	}
@@ -1014,7 +1016,7 @@ static HandleInputResult HandleInput(
 				MissionCopy(&lastMission, &currentMission);	// A,B,A -> A,B,B
 			}
 			fileChanged = 1;
-			Setup(0);	// A,B,B -> A,A,B
+			Setup(false);	// A,B,B -> A,A,B
 			break;
 
 		case 'x':
@@ -1038,7 +1040,7 @@ static HandleInputResult HandleInput(
 			{
 				InsertMission(&gCampaign, scrap, gCampaign.MissionIndex);
 				fileChanged = 1;
-				Setup(0);
+				Setup(false);
 			}
 			break;
 
@@ -1058,7 +1060,7 @@ static HandleInputResult HandleInput(
 			InsertMission(&gCampaign, NULL, gCampaign.Setting.Missions.size);
 			gCampaign.MissionIndex = gCampaign.Setting.Missions.size - 1;
 			fileChanged = 1;
-			Setup(0);
+			Setup(true);
 			break;
 
 		case 'o':
@@ -1079,7 +1081,7 @@ static HandleInputResult HandleInput(
 
 		case 'e':
 			EditCharacters(&gCampaign.Setting);
-			Setup(0);
+			Setup(false);
 			UIObjectUnhighlight(sObjs);
 			CArrayTerminate(&sDrawObjs);
 			break;
@@ -1102,7 +1104,7 @@ static HandleInputResult HandleInput(
 			{
 				gCampaign.MissionIndex--;
 			}
-			Setup(0);
+			Setup(true);
 			break;
 
 		case SDL_SCANCODE_END:
@@ -1110,7 +1112,7 @@ static HandleInputResult HandleInput(
 			{
 				gCampaign.MissionIndex++;
 			}
-			Setup(0);
+			Setup(true);
 			break;
 
 		case SDL_SCANCODE_INSERT:
@@ -1126,7 +1128,7 @@ static HandleInputResult HandleInput(
 			{
 				fileChanged = 1;
 			}
-			Setup(0);
+			Setup(false);
 			break;
 
 		case SDL_SCANCODE_PAGEDOWN:
@@ -1134,7 +1136,7 @@ static HandleInputResult HandleInput(
 			{
 				fileChanged = 1;
 			}
-			Setup(0);
+			Setup(false);
 			break;
 
 		case SDL_SCANCODE_ESCAPE:
@@ -1194,6 +1196,7 @@ static HandleInputResult HandleInput(
 }
 static void InputInsert(int *xc, const int yc, Mission *mission)
 {
+	bool changedMission = false;
 	switch (yc)
 	{
 	case YC_CHARACTERS:
@@ -1234,11 +1237,12 @@ static void InputInsert(int *xc, const int yc, Mission *mission)
 		else
 		{
 			InsertMission(&gCampaign, NULL, gCampaign.MissionIndex);
+			changedMission = true;
 		}
 		break;
 	}
 	fileChanged = 1;
-	Setup(0);
+	Setup(changedMission);
 }
 static void InputDelete(const int xc, const int yc)
 {
@@ -1257,7 +1261,7 @@ static void EditCampaign(void)
 	memset(&scrap, 0, sizeof scrap);
 
 	gCampaign.seed = 0;
-	Setup(1);
+	Setup(true);
 
 	Uint32 ticksNow = SDL_GetTicks();
 	sTicksElapsed = 0;
@@ -1334,7 +1338,6 @@ int main(int argc, char *argv[])
 		exit(0);
 	}
 	memcpy(origPalette, gPicManager.palette, sizeof origPalette);
-	BuildTranslationTables(gPicManager.palette);
 	// Hardcode config settings
 	ConfigGet(&gConfig, "Graphics.ScaleFactor")->u.Int.Value = 2;
 	ConfigGet(&gConfig, "Graphics.ResolutionWidth")->u.Int.Value = 400;

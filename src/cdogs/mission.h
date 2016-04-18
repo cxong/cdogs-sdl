@@ -229,8 +229,7 @@ void MissionInit(Mission *m);
 void MissionCopy(Mission *dst, const Mission *src);
 void MissionTerminate(Mission *m);
 
-void SetupMission(
-	int buildTables, Mission *m, struct MissionOptions *mo, int missionIndex);
+void SetupMission(Mission *m, struct MissionOptions *mo, int missionIndex);
 void MissionEnd(void);
 
 void MissionSetMessageIfComplete(struct MissionOptions *options);

@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -202,11 +202,9 @@ void CampaignSeedRandom(const CampaignOptions *campaign)
 }
 
 void CampaignAndMissionSetup(
-	int buildTables, CampaignOptions *campaign, struct MissionOptions *mo)
+	CampaignOptions *campaign, struct MissionOptions *mo)
 {
 	CampaignSeedRandom(campaign);
 	SetupMission(
-		buildTables,
-		CampaignGetCurrentMission(campaign), mo,
-		campaign->MissionIndex);
+		CampaignGetCurrentMission(campaign), mo, campaign->MissionIndex);
 }
