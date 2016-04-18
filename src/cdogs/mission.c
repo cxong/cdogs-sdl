@@ -273,8 +273,14 @@ static void SetupObjectives(struct MissionOptions *mo, Mission *mission)
 		CASSERT(_ca_index < OBJECTIVE_MAX_OLD, "too many objectives");
 		// Set objective colours based on type
 		o.color = ObjectiveTypeColor(mobj->Type);
-		o.blowupObject = IntMapObject(mobj->Index);
-		o.pickupClass = IntPickupClass(mobj->Index);
+		if (mobj->Type == OBJECTIVE_DESTROY)
+		{
+			o.blowupObject = IntMapObject(mobj->Index);
+		}
+		else if (mobj->Type == OBJECTIVE_COLLECT)
+		{
+			o.pickupClass = IntPickupClass(mobj->Index);
+		}
 		CArrayPushBack(&mo->Objectives, &o);
 	CA_FOREACH_END()
 }
