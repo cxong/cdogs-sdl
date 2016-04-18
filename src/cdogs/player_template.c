@@ -28,8 +28,6 @@
 */
 #include "player_template.h"
 
-#include <locale.h>
-
 #include <json/json.h>
 
 #include <cdogs/character.h>
@@ -83,8 +81,6 @@ void LoadPlayerTemplates(
 		printf("Error loading player templates '%s'\n", filename);
 		goto bail;
 	}
-
-	setlocale(LC_ALL, "");
 
 	if (json_stream_parse(f, &root) != JSON_OK)
 	{
@@ -142,8 +138,6 @@ void SavePlayerTemplates(const CArray *templates, const char *filename)
 	}
 
 	debug(D_NORMAL, "begin\n");
-
-	setlocale(LC_ALL, "");
 
 	json_insert_pair_into_object(
 		root, "Version", json_new_number(TOSTRING(VERSION)));

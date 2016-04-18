@@ -28,7 +28,6 @@
 */
 #include "config_json.h"
 
-#include <locale.h>
 #include <stdio.h>
 
 #include <json/json.h>
@@ -169,8 +168,6 @@ void ConfigSaveJSON(const Config *config, const char *filename)
 		printf("Error saving config '%s'\n", filename);
 		return;
 	}
-
-	setlocale(LC_ALL, "");
 
 	root = json_new_object();
 	json_insert_pair_into_object(

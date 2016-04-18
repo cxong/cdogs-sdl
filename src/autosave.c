@@ -29,7 +29,6 @@
 #include "autosave.h"
 
 #include <errno.h>
-#include <locale.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -176,8 +175,6 @@ void AutosaveSave(Autosave *autosave, const char *filename)
 		printf("Error saving autosave '%s'\n", filename);
 		return;
 	}
-	
-	setlocale(LC_ALL, "");
 	
 	root = json_new_object();
 	json_insert_pair_into_object(root, "Version", json_new_number("2"));

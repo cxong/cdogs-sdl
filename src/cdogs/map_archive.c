@@ -27,8 +27,6 @@
 */
 #include "map_archive.h"
 
-#include <locale.h>
-
 #include <SDL_image.h>
 #include <tinydir/tinydir.h>
 
@@ -73,7 +71,6 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 {
 	LOG(LM_MAP, LL_DEBUG, "Loading archive map %s", filename);
 	int err = 0;
-	setlocale(LC_ALL, "");
 	json_t *root = ReadArchiveJSON(filename, "campaign.json");
 	if (root == NULL)
 	{
@@ -386,7 +383,6 @@ int MapArchiveSave(const char *filename, CampaignSetting *c)
 	RealPath(relbuf, buf);
 	// Make dir but ignore error, as we may be saving over an existing dir
 	mkdir_deep(buf);
-	setlocale(LC_ALL, "");
 
 	// Campaign
 	root = json_new_object();
