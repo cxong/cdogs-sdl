@@ -194,7 +194,7 @@ static void AddObjective(
 				map,
 				*pos,
 				obj->blowupObject,
-				ObjectiveToTileItem(op->Index), 1);
+				ObjectiveToTileItem(op->Index), false);
 			break;
 		case OBJECTIVE_RESCUE:
 		{
