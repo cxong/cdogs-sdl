@@ -182,16 +182,17 @@ int UIObjectIsHighlighted(UIObject *o)
 	return o->Parent && o->Parent->Highlighted == o;
 }
 
-void UIObjectUnhighlight(UIObject *o)
+bool UIObjectUnhighlight(UIObject *o)
 {
+	bool changed = false;
 	if (o->Highlighted)
 	{
-		UIObjectUnhighlight(o->Highlighted);
+		changed = UIObjectUnhighlight(o->Highlighted) || changed;
 	}
 	o->Highlighted = NULL;
 	if (o->OnUnfocusFunc)
 	{
-		o->OnUnfocusFunc(o->Data);
+		changed = o->OnUnfocusFunc(o->Data) || changed;
 	}
 	// Disable any context menu children
 	if (o->Type == UITYPE_CONTEXT_MENU)
@@ -204,10 +205,21 @@ void UIObjectUnhighlight(UIObject *o)
 			(*obj)->IsVisible = false;
 			if ((*obj)->OnUnfocusFunc)
 			{
-				(*obj)->OnUnfocusFunc((*obj)->Data);
+				changed = (*obj)->OnUnfocusFunc((*obj)->Data) || changed;
 			}
 		}
 	CA_FOREACH_END()
+	// If immediate parent is context menu, also unhighlight it
+	if (o->Parent != NULL && o->Parent->Type == UITYPE_CONTEXT_MENU)
+	{
+		// Prevent infinite loop
+		if (o->Parent->Highlighted == o)
+		{
+			o->Parent->Highlighted = NULL;
+		}
+		changed = UIObjectUnhighlight(o->Parent) || changed;
+	}
+	return changed;
 }
 
 static void DisableContextMenuParents(UIObject *o);
@@ -278,10 +290,9 @@ bool UIObjectAddChar(UIObject *o, char c)
 	else
 	{
 		// Static char buf, simply append
-		// TODO: char buf limits?
 		char *s = o->u.Textbox.TextLinkFunc(o, o->Data);
 		size_t l = strlen(s);
-		if ((int)l >= 4096 - 1)
+		if ((int)l >= o->u.Textbox.MaxLen)
 		{
 			return false;
 		}

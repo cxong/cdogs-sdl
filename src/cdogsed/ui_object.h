@@ -74,6 +74,7 @@ typedef struct _UIObject
 		struct
 		{
 			char *(*TextLinkFunc)(struct _UIObject *, void *);
+			int MaxLen;	// Buffer should hold MaxLen + 1
 			char **(*TextSourceFunc)(void *);
 			bool IsEditable;
 			char *Hint;
@@ -99,7 +100,8 @@ typedef struct _UIObject
 	void (*ChangeFunc)(void *, int d);
 	bool ChangesData;
 	void (*OnFocusFunc)(struct _UIObject *, void *);
-	void (*OnUnfocusFunc)(void *);
+	// Returns whether mission changed
+	bool (*OnUnfocusFunc)(void *);
 	// Optional function to check whether this UI object should be visible
 	void (*CheckVisible)(struct _UIObject *, void *);
 } UIObject;
@@ -111,7 +113,8 @@ void UIObjectDestroy(UIObject *o);
 void UIObjectAddChild(UIObject *o, UIObject *c);
 void UITabAddChild(UIObject *o, UIObject *c, char *label);
 void UIObjectHighlight(UIObject *o);
-void UIObjectUnhighlight(UIObject *o);
+// Returns whether mission changed
+bool UIObjectUnhighlight(UIObject *o);
 int UIObjectIsHighlighted(UIObject *o);
 int UIObjectChange(UIObject *o, int d);
 

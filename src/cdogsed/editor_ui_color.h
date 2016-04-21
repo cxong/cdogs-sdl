@@ -32,8 +32,10 @@
 #include "ui_object.h"
 
 
+typedef color_t (*ColorPickerGetFunc)(void *data);
 typedef void (*ColorPickerChangeFunc)(const color_t c, void *data);
 UIObject *CreateColorPicker(
-	const Vec2i pos, void *data, ColorPickerChangeFunc changeFunc);
+	const Vec2i pos, void *data,
+	ColorPickerGetFunc getFunc, ColorPickerChangeFunc changeFunc);
 
 Vec2i CreateColorObjs(CampaignOptions *co, UIObject *c, Vec2i pos);

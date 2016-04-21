@@ -36,21 +36,54 @@
 typedef struct
 {
 	color_t Color;
+	char Text[7];
+	void *Data;
+	ColorPickerGetFunc GetFunc;
+	ColorPickerChangeFunc ChangeFunc;
+} ColorTextData;
+static char *ColorPickerText(UIObject *o, void *data);
+static bool ColorPickerSetFromText(void *data);
+typedef struct
+{
+	color_t Color;
 	Vec2i SwatchSize;
 	Vec2i SwatchPad;
 	void *Data;
 	ColorPickerChangeFunc ChangeFunc;
 } ColorPickerData;
+static void ColorPickerUpdateText(UIObject *o, void *data);
 static void ColorPickerChange(void *data, int d);
 static void ColorPickerDrawSwatch(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data);
 // Create a colour picker using the C-Dogs palette
 UIObject *CreateColorPicker(
-	const Vec2i pos, void *data, ColorPickerChangeFunc changeFunc)
+	const Vec2i pos, void *data,
+	ColorPickerGetFunc getFunc, ColorPickerChangeFunc changeFunc)
 {
 	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
 	c->IsDynamicData = true;
 	c->Data = data;
+
+	// Create a text input area for the colour hex code
+	UIObject *oText = UIObjectCreate(
+		UITYPE_TEXTBOX, 0, Vec2iZero(), FontStrSize("#abcdef"));
+	oText->u.Textbox.IsEditable = true;
+	oText->u.Textbox.TextLinkFunc = ColorPickerText;
+	oText->u.Textbox.MaxLen = sizeof ((ColorTextData *)0)->Text - 1;
+	CSTRDUP(oText->u.Textbox.Hint, "(enter color hex value)");
+	oText->IsDynamicData = true;
+	CMALLOC(oText->Data, sizeof(ColorTextData));
+	// Initialise colour and text
+	((ColorTextData *)oText->Data)->Color = getFunc(data);
+	ColorStr(((ColorTextData *)oText->Data)->Text, getFunc(data));
+	((ColorTextData *)oText->Data)->Data = data;
+	((ColorTextData *)oText->Data)->GetFunc = getFunc;
+	((ColorTextData *)oText->Data)->ChangeFunc = changeFunc;
+	oText->OnUnfocusFunc = ColorPickerSetFromText;
+	// Constantly check the current mission colour and update text accordingly
+	oText->CheckVisible = ColorPickerUpdateText;
+	UIObjectAddChild(c, oText);
+	const int yStart = oText->Size.y;
 
 	// Create colour squares from the palette
 	const Vec2i swatchSize = Vec2iNew(5, 5);
@@ -80,12 +113,34 @@ UIObject *CreateColorPicker(
 			((ColorPickerData *)o2->Data)->Data = data;
 			((ColorPickerData *)o2->Data)->ChangeFunc = changeFunc;
 			o2->Pos = Vec2iMult(v, o->Size);
+			o2->Pos.y += yStart;
 			UIObjectAddChild(c, o2);
 		}
 	}
 
 	UIObjectDestroy(o);
 	return c;
+}
+static void ColorPickerUpdateText(UIObject *o, void *data)
+{
+	// Only update text if the text box doesn't have focus
+	if (o->Parent->Highlighted == o) return;
+	ColorTextData *cData = data;
+	cData->Color = cData->GetFunc(cData->Data);
+	ColorStr(cData->Text, cData->Color);
+}
+static char *ColorPickerText(UIObject *o, void *data)
+{
+	UNUSED(o);
+	ColorTextData *cData = data;
+	return cData->Text;
+}
+static bool ColorPickerSetFromText(void *data)
+{
+	ColorTextData *cData = data;
+	const color_t colour = StrColor(cData->Text);
+	cData->ChangeFunc(colour, cData->Data);
+	return true;
 }
 static void ColorPickerChange(void *data, int d)
 {
@@ -122,6 +177,7 @@ typedef struct
 } MissionColorData;
 static const char *MissionGetColorStr(UIObject *o, void *data);
 static void MissionColorChange(const color_t c, void *data);
+static color_t CampaignGetMissionColor(void *data);
 Vec2i CreateColorObjs(CampaignOptions *co, UIObject *c, Vec2i pos)
 {
 	const int th = FontH();
@@ -144,8 +200,8 @@ Vec2i CreateColorObjs(CampaignOptions *co, UIObject *c, Vec2i pos)
 		CMALLOC(mcd, sizeof *mcd);
 		mcd->C = co;
 		mcd->Type = (MissionColorType)i;
-		UIObjectAddChild(
-			o2, CreateColorPicker(Vec2iZero(), mcd, MissionColorChange));
+		UIObjectAddChild(o2, CreateColorPicker(
+			Vec2iZero(), mcd, CampaignGetMissionColor, MissionColorChange));
 		UIObjectAddChild(c, o2);
 		pos.y += th;
 	}
@@ -157,24 +213,13 @@ static const char *MissionGetColorStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
-	const MissionColorData *mc = data;
-	const Mission *m = CampaignGetCurrentMission(mc->C);
-	if (m == NULL) return NULL;
+	MissionColorData *mc = data;
 	static const char *colourTypeNames[] =
 	{
 		"Walls", "Floors", "Rooms", "Extra"
 	};
 	char c[8];
-	switch (mc->Type)
-	{
-	case MISSION_COLOR_WALL: ColorStr(c, m->WallMask); break;
-	case MISSION_COLOR_FLOOR: ColorStr(c, m->FloorMask); break;
-	case MISSION_COLOR_ROOM: ColorStr(c, m->RoomMask); break;
-	case MISSION_COLOR_EXTRA: ColorStr(c, m->AltMask); break;
-	default:
-		CASSERT(false, "Unexpected mission colour");
-		break;
-	}
+	ColorStr(c, CampaignGetMissionColor(mc));
 	sprintf(s, "%s: #%s", colourTypeNames[(int)mc->Type], c);
 	return s;
 }
@@ -191,5 +236,21 @@ static void MissionColorChange(const color_t c, void *data)
 	default:
 		CASSERT(false, "Unexpected mission colour");
 		break;
+	}
+}
+static color_t CampaignGetMissionColor(void *data)
+{
+	MissionColorData *mcd = data;
+	const Mission *m = CampaignGetCurrentMission(mcd->C);
+	if (m == NULL) return colorWhite;
+	switch (mcd->Type)
+	{
+	case MISSION_COLOR_WALL: return m->WallMask;
+	case MISSION_COLOR_FLOOR: return m->FloorMask;
+	case MISSION_COLOR_ROOM: return m->RoomMask;
+	case MISSION_COLOR_EXTRA: return m->AltMask;
+	default:
+		CASSERT(false, "Unexpected mission colour");
+		return colorWhite;
 	}
 }

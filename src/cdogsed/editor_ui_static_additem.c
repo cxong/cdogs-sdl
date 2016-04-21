@@ -180,10 +180,11 @@ static void ActivateBrush(UIObject *o, void *data)
 	EditorBrush *b = data;
 	b->IsActive = 1;
 }
-static void DeactivateBrush(void *data)
+static bool DeactivateBrush(void *data)
 {
 	EditorBrush *b = data;
 	b->IsActive = 0;
+	return false;
 }
 static void ActivateIndexedEditorBrush(UIObject *o, void *data)
 {
@@ -191,10 +192,11 @@ static void ActivateIndexedEditorBrush(UIObject *o, void *data)
 	IndexedEditorBrush *b = data;
 	b->Brush->IsActive = true;
 }
-static void DeactivateIndexedEditorBrush(void *data)
+static bool DeactivateIndexedEditorBrush(void *data)
 {
 	IndexedEditorBrush *b = data;
 	b->Brush->IsActive = false;
+	return false;
 }
 static void ActivateEditorBrushAndCampaignBrush(UIObject *o, void *data)
 {
@@ -202,10 +204,11 @@ static void ActivateEditorBrushAndCampaignBrush(UIObject *o, void *data)
 	EditorBrushAndCampaign *b = data;
 	b->Brush.Brush->IsActive = true;
 }
-static void DeactivateEditorBrushAndCampaignBrush(void *data)
+static bool DeactivateEditorBrushAndCampaignBrush(void *data)
 {
 	EditorBrushAndCampaign *b = data;
 	b->Brush.Brush->IsActive = false;
+	return false;
 }
 
 

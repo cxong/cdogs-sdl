@@ -1679,6 +1679,7 @@ static UIObject *CreateMissionObjs(CampaignOptions *co)
 	o = UIObjectCreate(
 		UITYPE_TEXTBOX, YC_MISSIONTITLE, Vec2iNew(0, Y_ABS), Vec2iNew(319, th));
 	o->u.Textbox.TextLinkFunc = MissionGetSong;
+	o->u.Textbox.MaxLen = sizeof ((Mission *)0)->Song - 1;
 	o->Data = co;
 	CSTRDUP(o->u.Textbox.Hint, "(Mission song)");
 	o->Id2 = XC_MUSICFILE;

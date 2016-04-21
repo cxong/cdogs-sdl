@@ -40,6 +40,7 @@ typedef struct
 } CharColorData;
 static const char *CharGetColorStr(UIObject *o, void *data);
 static void CharColorChange(const color_t c, void *data);
+static color_t CharGetColor(void *data);
 UIObject *CreateCharEditorObjs(int *charIdx, CharacterStore *chars)
 {
 	const int th = FontH();
@@ -84,8 +85,8 @@ UIObject *CreateCharEditorObjs(int *charIdx, CharacterStore *chars)
 		cd->CharIdx = charIdx;
 		cd->Chars = chars;
 		cd->Type = (CharColorType)i;
-		UIObjectAddChild(
-			oc, CreateColorPicker(Vec2iZero(), cd, CharColorChange));
+		UIObjectAddChild(oc, CreateColorPicker(
+			Vec2iZero(), cd, CharGetColor, CharColorChange));
 		UIObjectAddChild(c, oc);
 		x += oColour->Size.x;
 	}
@@ -228,17 +229,13 @@ static const char *CharGetColorStr(UIObject *o, void *data)
 	static char s[32];
 	UNUSED(o);
 	CharColorData *cc = data;
-	if (*cc->CharIdx < 0 || *cc->CharIdx >= (int)cc->Chars->OtherChars.size)
-	{
-		return NULL;
-	}
-	Character *ch = CArrayGet(&cc->Chars->OtherChars, *cc->CharIdx);
+	char c[8];
+	const color_t colour = CharGetColor(cc);
+	ColorStr(c, colour);
 	static const char *colourTypeNames[] =
 	{
 		"Skin", "Arms", "Body", "Legs", "Hair"
 	};
-	char c[8];
-	ColorStr(c, *CharColorGetByType(&ch->Colors, cc->Type));
 	sprintf(s, "%s: #%s", colourTypeNames[(int)cc->Type], c);
 	return s;
 }
@@ -247,4 +244,14 @@ static void CharColorChange(const color_t c, void *data)
 	const CharColorData *cc = data;
 	Character *ch = CArrayGet(&cc->Chars->OtherChars, *cc->CharIdx);
 	*CharColorGetByType(&ch->Colors, cc->Type) = c;
+}
+static color_t CharGetColor(void *data)
+{
+	CharColorData *cd = data;
+	if (*cd->CharIdx < 0 || *cd->CharIdx >= (int)cd->Chars->OtherChars.size)
+	{
+		return colorWhite;
+	}
+	Character *ch = CArrayGet(&cd->Chars->OtherChars, *cd->CharIdx);
+	return *CharColorGetByType(&ch->Colors, cd->Type);
 }

@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -263,10 +263,11 @@ static void ActivateBrush(UIObject *o, void *data)
 	EditorBrush *b = data;
 	b->IsActive = 1;
 }
-static void DeactivateBrush(void *data)
+static bool DeactivateBrush(void *data)
 {
 	EditorBrush *b = data;
 	b->IsActive = 0;
+	return false;
 }
 static void ActivateIndexedEditorBrush(UIObject *o, void *data)
 {
@@ -274,10 +275,11 @@ static void ActivateIndexedEditorBrush(UIObject *o, void *data)
 	IndexedEditorBrush *b = data;
 	b->Brush->IsActive = true;
 }
-static void DeactivateIndexedEditorBrush(void *data)
+static bool DeactivateIndexedEditorBrush(void *data)
 {
 	IndexedEditorBrush *b = data;
 	b->Brush->IsActive = false;
+	return false;
 }
 
 
@@ -423,6 +425,7 @@ UIObject *CreateStaticMapObjs(
 	pos.y += th;
 	o2 = UIObjectCopy(o);
 	o2->u.Textbox.TextLinkFunc = BrushGetGuideImageStr;
+	o2->u.Textbox.MaxLen = sizeof((EditorBrush *)0)->GuideImage - 1;
 	o2->Data = brush;
 	o2->ChangesData = 0;
 	o2->ChangeFunc = BrushLoadGuideImage;

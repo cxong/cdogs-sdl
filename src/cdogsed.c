@@ -842,7 +842,10 @@ static HandleInputResult HandleInput(
 			{
 				if (sLastHighlightedObj)
 				{
-					UIObjectUnhighlight(sLastHighlightedObj);
+					if (UIObjectUnhighlight(sLastHighlightedObj))
+					{
+						Setup(false);
+					}
 				}
 				sLastHighlightedObj = o;
 				UIObjectHighlight(o);
