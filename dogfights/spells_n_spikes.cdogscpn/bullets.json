@@ -1,0 +1,125 @@
+{
+  "Version": 1,
+  
+  "Bullets": [
+    {
+      "Name": "cbolt",
+      "Pic": {
+        "Type": "Directional",
+        "Sprites": "boltcrossbow"
+      },
+      "Speed": 1024,
+      "Range": 70,
+      "Power": 50,
+      "HitSounds": {
+        "Object": "knife_hard",
+        "Flesh": "knife_flesh"
+      },
+      "ShadowSize": [7, 2]
+    },
+
+    {
+      "Name": "proxbarrel",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "barrel_wood",
+        "OldPic": 388
+      },
+      "Speed": 0,
+      "Range": 140,
+      "Persists": true,
+      "HitsObjects": false,
+      "OutOfRangeGuns": [
+        "activebarrel"
+      ]
+    },
+    {
+      "Name": "activebarrel",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "barrel_wood"
+      },
+      "Speed": 0,
+      "Range": -1,
+      "Persists": true,
+      "HitsObjects": false,
+      "ProximityGuns": [
+        "triggeredbarrel"
+      ]
+    },
+    {
+      "Name": "triggeredbarrel",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "barrel_wood"
+      },
+      "Speed": 0,
+      "Range": 5,
+      "Persists": true,
+      "HitsObjects": false,
+      "OutOfRangeGuns": [
+        "explosion_small",
+        "frag_explosionbarrel"
+      ]
+    },
+    {
+      "Name": "barrelfrag",
+      "Speed": 640,
+      "Range": 15,
+      "Power": 20,
+      "HurtAlways": true,
+      "Pic": {
+        "Type": "Directional",
+        "Sprites": "barrelstakes"
+      }
+    },
+
+    {
+      "Name": "ice_needle",
+      "Pic": {
+        "Type": "Directional",
+        "Sprites": "rapid"
+      },
+      "Speed": 1024,
+      "Range": 35,
+      "Power": 3
+    },
+
+    {
+      "Name": "random_fire",
+      "Pic": {
+        "Type": "AnimatedRandom",
+        "Sprites": "flame",
+        "TicksPerFrame": 4
+      },
+      "Speed": 768,
+      "Range": 25,
+      "Power": 4,
+      "Persists": true,
+      "Erratic": true,
+      "Special": "Flame",
+      "Spark": "",
+      "HitSounds": {
+        "Object": "hit_fire",
+        "Flesh": "hit_fire",
+        "Wall": "hit_fire"
+      },
+      "WallBounces": true
+    },
+
+    {
+      "Name": "mutilator",
+      "Speed": 300,
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "molotov",
+        "Tint": [-1.0, 1.0, 0.75],
+        "OldPic": 301
+      },
+      "Range": 350,
+      "Power": 4,
+      "SeekFactor": 90
+    }
+
+  ]
+}
