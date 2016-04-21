@@ -392,9 +392,9 @@ bool MissionStaticTryAddObjective(Mission *m, int idx, int idx2, Vec2i pos)
 			op = CArrayGet(
 				&m->u.Static.Objectives, (int)m->u.Static.Objectives.size - 1);
 		}
-		// If we've added too many, increase number of objectives
+		// Increase number of objectives
 		MissionObjective *mobj = CArrayGet(&m->Objectives, objectiveIndex);
-		mobj->Count = MAX(mobj->Count, (int)op->Positions.size);
+		mobj->Count++;
 		return true;
 	}
 	return false;
@@ -415,6 +415,10 @@ bool MissionStaticTryRemoveObjectiveAt(Mission *m, Vec2i pos)
 					CArrayTerminate(&op->Indices);
 					CArrayDelete(&m->u.Static.Objectives, _ca_index);
 				}
+				// Decrease number of objectives
+				MissionObjective *mobj = CArrayGet(&m->Objectives, _ca_index);
+				mobj->Count--;
+				CASSERT(mobj->Count >= 0, "removing unknown objective");
 				return true;
 			}
 		}
