@@ -430,6 +430,8 @@ static void InsertCharacter(CharacterStore *store, int idx, Character *data)
 	if (data && data->bot)
 	{
 		memcpy(c, data, sizeof *c);
+		CMALLOC(c->bot, sizeof *c->bot);
+		memcpy(c->bot, data->bot, sizeof *c->bot);
 	}
 	else
 	{
