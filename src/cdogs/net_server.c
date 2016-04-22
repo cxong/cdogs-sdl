@@ -329,6 +329,10 @@ static void OnReceive(NetServer *n, ENetEvent event)
 					}
 				}
 			}
+			if (gMission.HasBegun)
+			{
+				NetServerSendMsg(n, peerId, GAME_EVENT_GAME_BEGIN, NULL);
+			}
 
 			NetServerFlush(n);
 			break;

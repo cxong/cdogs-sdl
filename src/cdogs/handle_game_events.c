@@ -146,6 +146,10 @@ static void HandleGameEvent(
 		break;
 	case GAME_EVENT_GAME_START:
 		gMission.HasStarted = true;
+		gMission.HasBegun = false;
+		break;
+	case GAME_EVENT_GAME_BEGIN:
+		MissionBegin(&gMission);
 		break;
 	case GAME_EVENT_ACTOR_ADD:
 		ActorAdd(e.u.ActorAdd);

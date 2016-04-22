@@ -58,6 +58,7 @@
 #include "gamedata.h"
 #include "map.h"
 #include "map_new.h"
+#include "music.h"
 #include "net_util.h"
 #include "objs.h"
 #include "palette.h"
@@ -327,6 +328,7 @@ void MissionEnd(void)
 		p->ActorUID = -1;
 	CA_FOREACH_END()
 	gMission.HasStarted = false;
+	gMission.HasBegun = false;
 }
 
 void MissionSetMessageIfComplete(struct MissionOptions *options)
@@ -369,8 +371,44 @@ void UpdateMissionObjective(
 	}
 }
 
+bool MissionCanBegin(void)
+{
+	// Need at least two players to begin PVP
+	if (IsPVP(gCampaign.Entry.Mode))
+	{
+		return GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) > 1;
+	}
+	// Otherwise, just one player will do
+	return GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) > 0;
+}
+
+void MissionBegin(struct MissionOptions *m)
+{
+	m->HasBegun = true;
+	m->state = MISSION_STATE_PLAY;
+	MusicPlayGame(&gSoundDevice, gCampaign.Entry.Path, m->missionData->Song);
+	if (MusicGetStatus(&gSoundDevice) == MUSIC_NOLOAD)
+	{
+		// Display music error message for 2 seconds
+		GameEvent e = GameEventNew(GAME_EVENT_SET_MESSAGE);
+		strncat(
+			e.u.SetMessage.Message, MusicGetErrorMessage(&gSoundDevice),
+			sizeof e.u.SetMessage.Message - 1);
+		e.u.SetMessage.Ticks = FPS_FRAMELIMIT * 2;
+		GameEventsEnqueue(&gGameEvents, e);
+	}
+	m->time = 0;
+	m->pickupTime = 0;
+}
+
 bool CanCompleteMission(const struct MissionOptions *options)
 {
+	// Can't complete if not started yet
+	if (!options->HasBegun)
+	{
+		return false;
+	}
+
 	// Death is the only escape from PVP and quick play
 	if (IsPVP(gCampaign.Entry.Mode))
 	{

@@ -213,7 +213,6 @@ bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 			CreateEnemies();
 		}
 	}
-	MusicPlayGame(&gSoundDevice, co->Entry.Path, m->missionData->Song);
 
 	RunGameData data;
 	memset(&data, 0, sizeof data);
@@ -238,20 +237,7 @@ bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 		CArrayPushBack(&data.ammoSpawners, &ps);
 	}
 
-	if (MusicGetStatus(&gSoundDevice) == MUSIC_NOLOAD)
-	{
-		// Display music error message for 2 seconds
-		GameEvent e = GameEventNew(GAME_EVENT_SET_MESSAGE);
-		strncat(
-			e.u.SetMessage.Message, MusicGetErrorMessage(&gSoundDevice),
-			sizeof e.u.SetMessage.Message - 1);
-		e.u.SetMessage.Ticks = FPS_FRAMELIMIT * 2;
-		GameEventsEnqueue(&gGameEvents, e);
-	}
-
-	m->time = 0;
-	m->pickupTime = 0;
-	m->state = MISSION_STATE_PLAY;
+	m->state = MISSION_STATE_WAITING;
 	m->isDone = false;
 	Pic *crosshair = PicManagerGetPic(&gPicManager, "crosshair");
 	crosshair->offset.x = -crosshair->size.x / 2;
@@ -263,9 +249,6 @@ bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 	NetServerSendGameStartMessages(&gNetServer, NET_SERVER_BCAST);
 	GameEvent start = GameEventNew(GAME_EVENT_GAME_START);
 	GameEventsEnqueue(&gGameEvents, start);
-
-	// Set mission complete and display exit if it is complete
-	MissionSetMessageIfComplete(m);
 
 	data.loop = GameLoopDataNew(
 		&data, RunGameUpdate, &data, RunGameDraw);
@@ -416,6 +399,16 @@ static GameLoopResult RunGameUpdate(void *data)
 	if (rData->m->isDone)
 	{
 		return UPDATE_RESULT_EXIT;
+	}
+
+	// Check if game can begin
+	if (!rData->m->HasBegun && MissionCanBegin())
+	{
+		GameEvent begin = GameEventNew(GAME_EVENT_GAME_BEGIN);
+		GameEventsEnqueue(&gGameEvents, begin);
+
+		// Set mission complete and display exit if it is complete
+		MissionSetMessageIfComplete(rData->m);
 	}
 
 	// If we're not hosting a net game,

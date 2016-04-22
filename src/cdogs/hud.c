@@ -907,30 +907,39 @@ void HUDDraw(
 		DrawSharedRadar(hud->device, RADAR_SCALE, hud->showExit);
 	}
 
-	if (numPlayersAlive == 0)
+	switch (hud->mission->state)
 	{
-		if (AreAllPlayersDeadAndNoLives())
+		case MISSION_STATE_WAITING:
+			FontStrCenter("Waiting for players...");
+			break;
+		case MISSION_STATE_PLAY:
+			if (numPlayersAlive == 0)
+			{
+				if (AreAllPlayersDeadAndNoLives())
+				{
+					if (gPlayerDatas.size == 0)
+					{
+						FontStrCenter("Waiting for players...");
+					}
+					else if (!IsPVP(gCampaign.Entry.Mode))
+					{
+						FontStrCenter("Game Over!");
+					}
+					else
+					{
+						FontStrCenter("All Kill!");
+					}
+				}
+			}
+			break;
+		case MISSION_STATE_PICKUP:
 		{
-			if (gPlayerDatas.size == 0)
-			{
-				FontStrCenter("Waiting for players...");
-			}
-			else if (!IsPVP(gCampaign.Entry.Mode))
-			{
-				FontStrCenter("Game Over!");
-			}
-			else
-			{
-				FontStrCenter("All Kill!");
-			}
+			int timeLeft = gMission.pickupTime + PICKUP_LIMIT - gMission.time;
+			sprintf(s, "Pickup in %d seconds\n",
+				(timeLeft + (FPS_FRAMELIMIT - 1)) / FPS_FRAMELIMIT);
+			FontStrCenter(s);
 		}
-	}
-	else if (hud->mission->state == MISSION_STATE_PICKUP)
-	{
-		int timeLeft = gMission.pickupTime + PICKUP_LIMIT - gMission.time;
-		sprintf(s, "Pickup in %d seconds\n",
-			(timeLeft + (FPS_FRAMELIMIT - 1)) / FPS_FRAMELIMIT);
-		FontStrCenter(s);
+		break;
 	}
 
 	if (controllerUnplugged)

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -201,6 +201,7 @@ typedef struct
 
 typedef enum
 {
+	MISSION_STATE_WAITING,
 	MISSION_STATE_PLAY,
 	MISSION_STATE_PICKUP
 } MissionState;
@@ -217,7 +218,10 @@ struct MissionOptions
 	// Time when players first entered pickup area
 	int pickupTime;
 	MissionState state;
+	// Whether the mission has loaded
 	bool HasStarted;
+	// Whether the mission has begun (can complete objectives etc.)
+	bool HasBegun;
 	bool isDone;
 
 	int keyStyle;
@@ -237,6 +241,8 @@ void MissionSetMessageIfComplete(struct MissionOptions *options);
 void UpdateMissionObjective(
 	const struct MissionOptions *options,
 	const int flags, const ObjectiveType type);
+bool MissionCanBegin(void);
+void MissionBegin(struct MissionOptions *m);
 bool CanCompleteMission(const struct MissionOptions *options);
 bool IsMissionComplete(const struct MissionOptions *options);
 bool MissionHasRequiredObjectives(const struct MissionOptions *mo);

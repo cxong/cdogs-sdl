@@ -62,6 +62,7 @@ typedef enum
 	// Use to signal start of game; useless for single player,
 	// but for networked games it's used to set game ticks 0
 	GAME_EVENT_GAME_START,
+	GAME_EVENT_GAME_BEGIN,
 
 	GAME_EVENT_ACTOR_ADD,
 	GAME_EVENT_ACTOR_MOVE,

@@ -71,6 +71,7 @@ static GameEventEntry sGameEventEntries[] =
 	{ GAME_EVENT_SET_MESSAGE, false, false, true, true, NULL },
 
 	{ GAME_EVENT_GAME_START, true, false, true, true, NULL },
+	{ GAME_EVENT_GAME_BEGIN, true, false, true, true, NULL },
 
 	{ GAME_EVENT_ACTOR_ADD, true, false, true, true, NActorAdd_fields },
 	{ GAME_EVENT_ACTOR_MOVE, true, true, true, true, NActorMove_fields },
