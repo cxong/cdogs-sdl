@@ -27,7 +27,7 @@
       "Pic": "shells",
       "Sound": "shells_pickup",
       "Amount": 5,
-      "Max": 50
+      "Max": 40
     },
     {
       "Name": "Cells",
@@ -104,7 +104,14 @@
       "Pic": "bottle",
       "Sound": "package_pickup",
       "Amount": 20,
-      "Max": 100
+      "Max": 80
+    },
+    {
+      "Name": "Stars",
+      "Pic": "shurikenlogo",
+      "Sound": "knife_switch",
+      "Amount": 5,
+      "Max": 15
     }
   ]
 }

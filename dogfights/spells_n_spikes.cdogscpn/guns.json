@@ -70,7 +70,7 @@
       "Sound": "hit_petrify",
       "Ammo": "Mana",
       "SpreadCount": 4,
-      "SpreadWidth": 0.15,
+      "SpreadWidth": 0.1,
       "Recoil": 0.15
     },
 
@@ -83,7 +83,7 @@
       "Lock": 16,
       "Sound": "hit_petrify",
       "Ammo": "Mana",
-      "SpreadCount": 2,
+      "SpreadCount": 3,
       "SpreadWidth": 0.15,
       "Recoil": 0.2
     },
@@ -93,13 +93,28 @@
       "Name" : "Spell: Soul Mutilator",
       "Icon" : "paper",
       "Bullet": "mutilator",
-      "Cost": 2,
-      "Lock": 8,
+      "Cost": 3,
+      "Lock": 3,
       "Sound": "hit_petrify",
       "Ammo": "Mana",
       "SpreadCount": 8,
       "SpreadWidth": 0.79,
       "Recoil": 0.2
+    },
+
+    {
+      "Pic" : "",
+      "Name" : "Shuriken",
+      "Icon" : "shurikenlogo",
+      "Bullet": "star",
+      "Cost": 1,
+      "Lock": 20,
+      "Sound": "rocket_launch",
+      "SwitchSound": "knife_switch",
+      "Ammo": "Stars",
+      "SpreadCount": 2,
+      "SpreadWidth": 0.1,
+      "Recoil": 0.15
     }
   ],
   "PseudoGuns" : [

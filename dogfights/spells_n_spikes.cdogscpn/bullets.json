@@ -9,7 +9,7 @@
         "Sprites": "boltcrossbow"
       },
       "Speed": 1024,
-      "Range": 70,
+      "Range": 100,
       "Power": 50,
       "HitSounds": {
         "Object": "knife_hard",
@@ -81,8 +81,8 @@
         "Sprites": "rapid"
       },
       "Speed": 1024,
-      "Range": 35,
-      "Power": 3
+      "Range": 45,
+      "Power": 4
     },
 
     {
@@ -93,8 +93,8 @@
         "TicksPerFrame": 4
       },
       "Speed": 768,
-      "Range": 25,
-      "Power": 4,
+      "Range": 18,
+      "Power": 8,
       "Persists": true,
       "Erratic": true,
       "Special": "Flame",
@@ -117,8 +117,25 @@
         "OldPic": 301
       },
       "Range": 350,
-      "Power": 4,
-      "SeekFactor": 90
+      "Power": 2,
+      "SeekFactor": 75
+    },
+
+    {
+      "Name": "star",
+      "Speed": 800,
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "shuriken",
+        "TicksPerFrame": 5
+      },
+      "Range": 78,
+      "HitSounds": {
+        "Object": "knife_hard",
+        "Flesh": "knife_flesh"
+      },
+      "Power": 25,
+      "WallBounces": true
     }
 
   ]
