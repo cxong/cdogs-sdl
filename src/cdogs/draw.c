@@ -714,20 +714,22 @@ void DrawHead(
 }
 
 
-static void DrawEditorTiles(DrawBuffer *b, Vec2i offset);
+static void DrawEditorTiles(DrawBuffer *b, const Vec2i offset);
 static void DrawGuideImage(
 	DrawBuffer *b, SDL_Surface *guideImage, Uint8 alpha);
+static void DrawObjectNames(DrawBuffer *b, const Vec2i offset);
 static void DrawExtra(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra)
 {
-	DrawEditorTiles(b, offset);
 	// Draw guide image
 	if (extra->guideImage && extra->guideImageAlpha > 0)
 	{
 		DrawGuideImage(b, extra->guideImage, extra->guideImageAlpha);
 	}
+	DrawEditorTiles(b, offset);
+	DrawObjectNames(b, offset);
 }
 
-static void DrawEditorTiles(DrawBuffer *b, Vec2i offset)
+static void DrawEditorTiles(DrawBuffer *b, const Vec2i offset)
 {
 	Vec2i pos;
 	Tile *tile = &b->tiles[0][0];
@@ -780,4 +782,38 @@ static void DrawGuideImage(
 		}
 	}
 	SDL_UnlockSurface(guideImage);
+}
+
+// Draw names of objects (objectives, spawners etc.)
+static void DrawObjectiveName(
+	const TTileItem *ti, DrawBuffer *b, const Vec2i offset);
+static void DrawObjectNames(DrawBuffer *b, const Vec2i offset)
+{
+	const Tile *tile = &b->tiles[0][0];
+	for (int y = 0; y < Y_TILES; y++)
+	{
+		for (int x = 0; x < b->Size.x; x++, tile++)
+		{
+			CA_FOREACH(ThingId, tid, tile->things)
+				const TTileItem *ti = ThingIdGetTileItem(tid);
+				if (ti->flags & TILEITEM_OBJECTIVE)
+				{
+					DrawObjectiveName(ti, b, offset);
+				}
+			CA_FOREACH_END()
+		}
+		tile += X_TILES - b->Size.x;
+	}
+}
+static void DrawObjectiveName(
+	const TTileItem *ti, DrawBuffer *b, const Vec2i offset)
+{
+	const int objective = ObjectiveFromTileItem(ti->flags);
+	const MissionObjective *mo =
+		CArrayGet(&gMission.missionData->Objectives, objective);
+	const char *typeName = ObjectiveTypeStr(mo->Type);
+	const Vec2i textPos = Vec2iNew(
+		ti->x - b->xTop + offset.x - FontStrW(typeName) / 2,
+		ti->y - b->yTop + offset.y);
+	FontStr(typeName, textPos);
 }
