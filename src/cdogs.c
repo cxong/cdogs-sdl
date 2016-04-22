@@ -506,7 +506,6 @@ bail:
 	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 	AutosaveTerminate(&gAutosave);
 	ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
-	SavePlayerTemplates(&gPlayerTemplates, PLAYER_TEMPLATE_FILE);
 	CArrayTerminate(&gPlayerTemplates);
 	FreeSongs(&gMenuSongs);
 	FreeSongs(&gGameSongs);

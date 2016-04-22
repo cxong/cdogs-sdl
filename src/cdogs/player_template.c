@@ -33,17 +33,23 @@
 #include <cdogs/character.h>
 #include <cdogs/files.h>
 #include <cdogs/json_utils.h>
+#include <cdogs/log.h>
 
 #define VERSION 2
 
 
 static void LoadPlayerTemplate(
-	PlayerTemplate *t, json_t *node, const int version)
+	CArray *templates, json_t *node, const int version)
 {
-	strcpy(t->name, json_find_first_label(node, "Name")->child->text);
-	t->Class = StrCharacterClass(
+	PlayerTemplate t;
+	strcpy(t.name, json_find_first_label(node, "Name")->child->text);
+	t.Class = StrCharacterClass(
 		json_find_first_label(node, "Face")->child->text);
-	CASSERT(t->Class != NULL, "cannot find character class");
+	if (t.Class == NULL)
+	{
+		LOG(LM_MAIN, LL_ERROR, "cannot load player template %s", t.name);
+		return;
+	}
 	if (version == 1)
 	{
 		// Version 1 used integer palettes
@@ -53,16 +59,19 @@ static void LoadPlayerTemplate(
 		LoadInt(&body, node, "Body");
 		LoadInt(&legs, node, "Legs");
 		LoadInt(&hair, node, "Hair");
-		ConvertCharacterColors(skin, arms, body, legs, hair, &t->Colors);
+		ConvertCharacterColors(skin, arms, body, legs, hair, &t.Colors);
 	}
 	else
 	{
-		LoadColor(&t->Colors.Skin, node, "Skin");
-		LoadColor(&t->Colors.Arms, node, "Arms");
-		LoadColor(&t->Colors.Body, node, "Body");
-		LoadColor(&t->Colors.Legs, node, "Legs");
-		LoadColor(&t->Colors.Hair, node, "Hair");
+		LoadColor(&t.Colors.Skin, node, "Skin");
+		LoadColor(&t.Colors.Arms, node, "Arms");
+		LoadColor(&t.Colors.Body, node, "Body");
+		LoadColor(&t.Colors.Legs, node, "Legs");
+		LoadColor(&t.Colors.Hair, node, "Hair");
 	}
+	CArrayPushBack(templates, &t);
+	LOG(LM_MAIN, LL_DEBUG, "loaded player template %s (%s)",
+		t.name, t.Class->Name);
 }
 void LoadPlayerTemplates(
 	CArray *templates, const CharacterClasses *classes, const char *filename)
@@ -98,10 +107,8 @@ void LoadPlayerTemplates(
 	json_t *child = json_find_first_label(root, "PlayerTemplates")->child->child;
 	while (child != NULL)
 	{
-		PlayerTemplate t;
-		LoadPlayerTemplate(&t, child, version);
+		LoadPlayerTemplate(templates, child, version);
 		child = child->next;
-		CArrayPushBack(templates, &t);
 	}
 
 bail:

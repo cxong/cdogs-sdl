@@ -372,6 +372,7 @@ static void PostInputSaveTemplate(menu_t *menu, int cmd, void *data)
 	strncpy(t->name, p->name, sizeof t->name - 1);
 	t->Class = p->Char.Class;
 	t->Colors = p->Char.Colors;
+	SavePlayerTemplates(&gPlayerTemplates, PLAYER_TEMPLATE_FILE);
 }
 
 static void SaveTemplateDisplayTitle(
