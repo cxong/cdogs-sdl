@@ -787,6 +787,8 @@ static void DrawGuideImage(
 // Draw names of objects (objectives, spawners etc.)
 static void DrawObjectiveName(
 	const TTileItem *ti, DrawBuffer *b, const Vec2i offset);
+static void DrawSpawnerName(
+	const TObject *obj, DrawBuffer *b, const Vec2i offset);
 static void DrawObjectNames(DrawBuffer *b, const Vec2i offset)
 {
 	const Tile *tile = &b->tiles[0][0];
@@ -799,6 +801,14 @@ static void DrawObjectNames(DrawBuffer *b, const Vec2i offset)
 				if (ti->flags & TILEITEM_OBJECTIVE)
 				{
 					DrawObjectiveName(ti, b, offset);
+				}
+				else if (ti->kind == KIND_OBJECT)
+				{
+					const TObject *obj = CArrayGet(&gObjs, ti->id);
+					if (obj->Class->Type == MAP_OBJECT_TYPE_PICKUP_SPAWNER)
+					{
+						DrawSpawnerName(obj, b, offset);
+					}
 				}
 			CA_FOREACH_END()
 		}
@@ -816,4 +826,13 @@ static void DrawObjectiveName(
 		ti->x - b->xTop + offset.x - FontStrW(typeName) / 2,
 		ti->y - b->yTop + offset.y);
 	FontStr(typeName, textPos);
+}
+static void DrawSpawnerName(
+	const TObject *obj, DrawBuffer *b, const Vec2i offset)
+{
+	const char *name = obj->Class->u.PickupClass->Name;
+	const Vec2i textPos = Vec2iNew(
+		obj->tileItem.x - b->xTop + offset.x - FontStrW(name) / 2,
+		obj->tileItem.y - b->yTop + offset.y);
+	FontStr(name, textPos);
 }
