@@ -344,8 +344,12 @@ static void DrawWeaponStatus(
 	{
 		const Vec2i gaugePos = Vec2iAdd(pos, Vec2iNew(-1 + GUN_ICON_PAD, -1));
 		const Vec2i size = Vec2iNew(GAUGE_WIDTH - GUN_ICON_PAD, FontH() + 2);
-		const color_t barColor = { 0, 0, 255, 255 };
 		const int maxLock = weapon->Gun->Lock;
+		color_t barColor;
+		const double reloadProgressColorMod = 0.5 +
+			0.5 * (weapon->lock / (double) maxLock);
+		HSV hsv = { 0.0, 1.0, reloadProgressColorMod };
+		barColor = ColorTint(colorWhite, hsv);
 		int innerWidth;
 		color_t backColor = { 128, 128, 128, 255 };
 		if (maxLock == 0)
