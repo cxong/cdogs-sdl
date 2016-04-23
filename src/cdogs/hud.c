@@ -737,6 +737,7 @@ static void DrawObjectiveCompass(
 	}
 }
 
+#define COMP_SATURATE_DIST 350
 static void DrawCompassArrow(
 	GraphicsDevice *g, Rect2i r, Vec2i pos, Vec2i playerPos, color_t mask,
 	const char *label)
@@ -748,6 +749,14 @@ static void DrawCompassArrow(
 	{
 		return;
 	}
+	// Saturate according to dist from screen edge
+	int xDist = abs(pos.x - playerPos.x) - r.Size.x / 2;
+	int yDist = abs(pos.y - playerPos.y) - r.Size.y / 2;
+	int lDist;
+	xDist > yDist ? lDist = xDist: (lDist = yDist);
+	HSV hsv = { -1.0, 1.0,
+		2.0 - 1.5 * MIN(lDist, COMP_SATURATE_DIST) / COMP_SATURATE_DIST };
+	mask = ColorTint(mask, hsv);
 	Vec2i textPos = Vec2iZero();
 	// Find which edge of screen is the best
 	bool hasDrawn = false;
