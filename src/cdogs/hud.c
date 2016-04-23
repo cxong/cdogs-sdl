@@ -395,10 +395,13 @@ static void DrawHealth(
 	HSV hsv = { 0.0, 1.0, 1.0 };
 	color_t barColor;
 	int health = actor->health;
+	int lastHealth = actor->lastHealth;
 	const int maxHealth = ActorGetCharacter(actor)->maxHealth;
-	int innerWidth;
+	int innerWidthLastHealth;
+	int innerWidthCurrentHealth;
 	color_t backColor = { 50, 0, 0, 255 };
-	innerWidth = MAX(1, size.x * health / maxHealth);
+	innerWidthLastHealth = MAX(1, size.x * lastHealth / maxHealth);
+	innerWidthCurrentHealth = MAX(1, size.x * health / maxHealth);
 	if (actor->poisoned)
 	{
 		hsv.h = 120.0;
@@ -411,10 +414,26 @@ static void DrawHealth(
 		hsv.h =
 			((maxHealthHue - minHealthHue) * health / maxHealth + minHealthHue);
 	}
+	if (lastHealth > health)
+	{
+		barColor = colorRed;
+		DrawGauge(
+				device, gaugePos, size, innerWidthLastHealth, barColor, backColor,
+				hAlign, vAlign);
+		backColor.a = 0;
+	}
 	barColor = ColorTint(colorWhite, hsv);
 	DrawGauge(
-		device, gaugePos, size, innerWidth, barColor, backColor,
+		device, gaugePos, size, innerWidthCurrentHealth, barColor, backColor,
 		hAlign, vAlign);
+	if (lastHealth < health)
+	{
+		barColor = colorGreen;
+		barColor.a = 255 * lastHealth / (double) health;
+		DrawGauge(
+				device, gaugePos, size, innerWidthLastHealth, barColor, backColor,
+				hAlign, vAlign);
+	}
 	sprintf(s, "%d", health);
 
 	FontOpts opts = FontOptsNew();
