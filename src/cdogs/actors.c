@@ -1156,6 +1156,7 @@ TActor *ActorAdd(NActorAdd aa)
 	}
 	actor->gunIndex = 0;
 	actor->health = aa.Health;
+	actor->lastHealth = actor->health;
 	actor->action = ACTORACTION_MOVING;
 	actor->tileItem.x = actor->tileItem.y = -1;
 	actor->tileItem.kind = KIND_CHARACTER;
