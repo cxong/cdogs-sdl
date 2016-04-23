@@ -512,7 +512,6 @@ void ActorHeal(TActor *actor, int health)
 void InjureActor(TActor * actor, int injury)
 {
 	const int lastHealth = actor->health;
-	actor->lastHealth = actor->health;
 	actor->health -= injury;
 	if (lastHealth > 0 && actor->health <= 0)
 	{
