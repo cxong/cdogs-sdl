@@ -344,8 +344,12 @@ static void DrawWeaponStatus(
 	{
 		const Vec2i gaugePos = Vec2iAdd(pos, Vec2iNew(-1 + GUN_ICON_PAD, -1));
 		const Vec2i size = Vec2iNew(GAUGE_WIDTH - GUN_ICON_PAD, FontH() + 2);
-		const color_t barColor = { 0, 0, 255, 255 };
 		const int maxLock = weapon->Gun->Lock;
+		color_t barColor;
+		const double reloadProgressColorMod = 0.5 +
+			0.5 * (weapon->lock / (double) maxLock);
+		HSV hsv = { 0.0, 1.0, reloadProgressColorMod };
+		barColor = ColorTint(colorWhite, hsv);
 		int innerWidth;
 		color_t backColor = { 128, 128, 128, 255 };
 		if (maxLock == 0)
@@ -391,10 +395,14 @@ static void DrawHealth(
 	HSV hsv = { 0.0, 1.0, 1.0 };
 	color_t barColor;
 	int health = actor->health;
+	int lastHealth = actor->lastHealth;
 	const int maxHealth = ActorGetCharacter(actor)->maxHealth;
+	int innerWidthLastHealth;
+	int innerWidthCurrentHealth;
 	int innerWidth;
 	color_t backColor = { 50, 0, 0, 255 };
-	innerWidth = MAX(1, size.x * health / maxHealth);
+	innerWidthLastHealth = MAX(1, size.x * lastHealth / maxHealth);
+	innerWidthCurrentHealth = MAX(1, size.x * health / maxHealth);
 	if (actor->poisoned)
 	{
 		hsv.h = 120.0;
@@ -407,6 +415,24 @@ static void DrawHealth(
 		hsv.h =
 			((maxHealthHue - minHealthHue) * health / maxHealth + minHealthHue);
 	}
+	if (lastHealth > health)
+	{
+		barColor = colorRed;
+		DrawGauge(
+				device, gaugePos, size, innerWidthLastHealth, barColor,
+				backColor, hAlign, vAlign);
+		backColor.a = 0;
+	}
+	else if (lastHealth < health)
+	{
+		barColor = colorGreen;
+		DrawGauge(
+				device, gaugePos, size, innerWidthCurrentHealth, barColor,
+				backColor, hAlign, vAlign);
+		backColor.a = 0;
+	}
+	lastHealth < health ? innerWidth = innerWidthLastHealth:
+		(innerWidth = innerWidthCurrentHealth); 
 	barColor = ColorTint(colorWhite, hsv);
 	DrawGauge(
 		device, gaugePos, size, innerWidth, barColor, backColor,
@@ -711,6 +737,7 @@ static void DrawObjectiveCompass(
 	}
 }
 
+#define COMP_SATURATE_DIST 350
 static void DrawCompassArrow(
 	GraphicsDevice *g, Rect2i r, Vec2i pos, Vec2i playerPos, color_t mask,
 	const char *label)
@@ -722,6 +749,14 @@ static void DrawCompassArrow(
 	{
 		return;
 	}
+	// Saturate according to dist from screen edge
+	int xDist = abs(pos.x - playerPos.x) - r.Size.x / 2;
+	int yDist = abs(pos.y - playerPos.y) - r.Size.y / 2;
+	int lDist;
+	xDist > yDist ? lDist = xDist: (lDist = yDist);
+	HSV hsv = { -1.0, 1.0,
+		2.0 - 1.5 * MIN(lDist, COMP_SATURATE_DIST) / COMP_SATURATE_DIST };
+	mask = ColorTint(mask, hsv);
 	Vec2i textPos = Vec2iZero();
 	// Find which edge of screen is the best
 	bool hasDrawn = false;

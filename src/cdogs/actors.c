@@ -115,6 +115,11 @@ void UpdateActorState(TActor * actor, int ticks)
 
 	if (actor->health > 0)
 	{
+		if (actor->lastHealth != actor->health)
+		{
+			actor->lastHealth > actor->health ? -- actor->lastHealth:
+				++ actor->lastHealth;
+		}
 		actor->flamed = MAX(0, actor->flamed - ticks);
 		if (actor->poisoned)
 		{
@@ -499,6 +504,7 @@ static void CheckRescue(const TActor *a)
 
 void ActorHeal(TActor *actor, int health)
 {
+	actor->lastHealth = actor->health;
 	actor->health += health;
 	actor->health = MIN(actor->health, ActorGetCharacter(actor)->maxHealth);
 }
@@ -1149,6 +1155,7 @@ TActor *ActorAdd(NActorAdd aa)
 	}
 	actor->gunIndex = 0;
 	actor->health = aa.Health;
+	actor->lastHealth = actor->health;
 	actor->action = ACTORACTION_MOVING;
 	actor->tileItem.x = actor->tileItem.y = -1;
 	actor->tileItem.kind = KIND_CHARACTER;
