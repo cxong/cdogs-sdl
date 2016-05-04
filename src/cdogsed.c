@@ -1130,16 +1130,16 @@ static HandleInputResult HandleInput(
 			if (Change(o, *yc, 1))
 			{
 				fileChanged = 1;
+				Setup(false);
 			}
-			Setup(false);
 			break;
 
 		case SDL_SCANCODE_PAGEDOWN:
 			if (Change(o, *yc, -1))
 			{
 				fileChanged = 1;
+				Setup(false);
 			}
-			Setup(false);
 			break;
 
 		case SDL_SCANCODE_ESCAPE:
@@ -1345,6 +1345,8 @@ int main(int argc, char *argv[])
 	ConfigGet(&gConfig, "Graphics.ScaleFactor")->u.Int.Value = 2;
 	ConfigGet(&gConfig, "Graphics.ResolutionWidth")->u.Int.Value = 400;
 	ConfigGet(&gConfig, "Graphics.ResolutionHeight")->u.Int.Value = 300;
+	// Force enable ammo so that ammo spawners show up
+	ConfigGet(&gConfig, "Game.Ammo")->u.Bool.Value = true;
 	GraphicsInit(&gGraphicsDevice, &gConfig);
 	gGraphicsDevice.cachedConfig.IsEditor = true;
 	GraphicsInitialize(&gGraphicsDevice, false);
@@ -1365,7 +1367,8 @@ int main(int argc, char *argv[])
 		&gCharacterClasses, "data/character_classes.json");
 	PickupClassesInit(
 		&gPickupClasses, "data/pickups.json", &gAmmo, &gGunDescriptions);
-	MapObjectsInit(&gMapObjects, "data/map_objects.json");
+	MapObjectsInit(
+		&gMapObjects, "data/map_objects.json", &gAmmo, &gGunDescriptions);
 	CollisionSystemInit(&gCollisionSystem);
 	CampaignInit(&gCampaign);
 	MissionInit(&lastMission);

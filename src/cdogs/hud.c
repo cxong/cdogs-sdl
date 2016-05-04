@@ -940,6 +940,9 @@ void HUDDraw(
 			FontStrCenter(s);
 		}
 		break;
+		default:
+			CASSERT(false, "unknown mission state");
+			break;
 	}
 
 	if (controllerUnplugged)

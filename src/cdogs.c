@@ -446,7 +446,8 @@ int main(int argc, char *argv[])
 		&gPlayerTemplates, &gCharacterClasses, PLAYER_TEMPLATE_FILE);
 	PickupClassesInit(
 		&gPickupClasses, "data/pickups.json", &gAmmo, &gGunDescriptions);
-	MapObjectsInit(&gMapObjects, "data/map_objects.json");
+	MapObjectsInit(
+		&gMapObjects, "data/map_objects.json", &gAmmo, &gGunDescriptions);
 	CollisionSystemInit(&gCollisionSystem);
 	CampaignInit(&gCampaign);
 	LoadAllCampaigns(&campaigns);

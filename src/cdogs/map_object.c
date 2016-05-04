@@ -172,7 +172,9 @@ MapObject *RandomBloodMapObject(const MapObjects *mo)
 
 #define VERSION 1
 
-void MapObjectsInit(MapObjects *classes, const char *filename)
+void MapObjectsInit(
+	MapObjects *classes, const char *filename,
+	const AmmoClasses *ammo, const GunClasses *guns)
 {
 	CArrayInit(&classes->Classes, sizeof(MapObject));
 	CArrayInit(&classes->CustomClasses, sizeof(MapObject));
@@ -195,6 +197,9 @@ void MapObjectsInit(MapObjects *classes, const char *filename)
 		goto bail;
 	}
 	MapObjectsLoadJSON(&classes->Classes, root);
+
+	// Load initial ammo/weapon spawners
+	MapObjectsLoadAmmoAndGunSpawners(classes, ammo, guns);
 
 bail:
 	if (f != NULL)
@@ -325,6 +330,9 @@ static void LoadGunSpawners(MapObjects *classes, const CArray *guns);
 void MapObjectsLoadAmmoAndGunSpawners(
 	MapObjects *classes, const AmmoClasses *ammo, const GunClasses *guns)
 {
+	// Reset custom map objects
+	MapObjectsClear(&classes->CustomClasses);
+
 	LoadAmmoSpawners(classes, &ammo->Ammo);
 	LoadAmmoSpawners(classes, &ammo->CustomAmmo);
 	LoadGunSpawners(classes, &guns->Guns);
