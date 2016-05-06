@@ -145,7 +145,6 @@ void MapShowExitArea(Map *map, const Vec2i exitStart, const Vec2i exitEnd);
 Vec2i MapGetExitPos(const Map *m);
 
 void MapMarkAsVisited(Map *map, Vec2i pos);
-// Note: used by editor
 void MapMarkAllAsVisited(Map *map);
 int MapGetExploredPercentage(Map *map);
 

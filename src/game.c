@@ -188,6 +188,12 @@ bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 	{
 		MapLoadDynamic(map, m, &co->Setting.characters);
 
+		// For PVP modes, mark all map as explored
+		if (IsPVP(co->Entry.Mode))
+		{
+			MapMarkAllAsVisited(map);
+		}
+
 		// Reset players for the mission
 		CA_FOREACH(const PlayerData, p, gPlayerDatas)
 			// Only reset for local players; for remote ones wait for the
