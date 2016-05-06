@@ -552,18 +552,22 @@ static void HandleGameEvent(
 		PathCacheClear(&gPathCache);
 		break;
 	case GAME_EVENT_MISSION_COMPLETE:
-		if (camera != NULL)
+		if (camera != NULL && e.u.MissionComplete.ShowMsg)
 		{
-			if (e.u.MissionComplete.ShowMsg)
-			{
-				HUDDisplayMessage(&camera->HUD, "Mission complete", -1);
-			}
-			camera->HUD.showExit = true;
+			HUDDisplayMessage(&camera->HUD, "Mission complete", -1);
 		}
-		MapShowExitArea(
-			&gMap,
-			Net2Vec2i(e.u.MissionComplete.ExitStart),
-			Net2Vec2i(e.u.MissionComplete.ExitEnd));
+		// Don't show exit area or arrow if PVP
+		if (!IsPVP(gCampaign.Entry.Mode))
+		{
+			if (camera != NULL)
+			{
+				camera->HUD.showExit = true;
+			}
+			MapShowExitArea(
+				&gMap,
+				Net2Vec2i(e.u.MissionComplete.ExitStart),
+				Net2Vec2i(e.u.MissionComplete.ExitEnd));
+		}
 		break;
 	case GAME_EVENT_MISSION_INCOMPLETE:
 		gMission.state = MISSION_STATE_PLAY;
