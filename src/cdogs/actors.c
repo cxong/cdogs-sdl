@@ -553,7 +553,7 @@ static bool ActorHasGun(const TActor *a, const GunDescription *gun);
 void ActorReplaceGun(const NActorReplaceGun rg)
 {
 	TActor *a = ActorGetByUID(rg.UID);
-	if (!a->isInUse) return;
+	if (a == NULL || !a->isInUse) return;
 	const GunDescription *gun = StrGunDescription(rg.Gun);
 	CASSERT(gun != NULL, "cannot find gun");
 	// If player already has gun, don't do anything
@@ -1270,7 +1270,7 @@ bool ActorCanSwitchGun(const TActor *a)
 void ActorSwitchGun(const NActorSwitchGun sg)
 {
 	TActor *a = ActorGetByUID(sg.UID);
-	if (!a->isInUse) return;
+	if (a == NULL || !a->isInUse) return;
 	a->gunIndex = sg.GunIdx;
 	SoundPlayAt(
 		&gSoundDevice,
