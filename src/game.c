@@ -406,10 +406,10 @@ static GameLoopResult RunGameUpdate(void *data)
 	{
 		GameEvent begin = GameEventNew(GAME_EVENT_GAME_BEGIN);
 		GameEventsEnqueue(&gGameEvents, begin);
-
-		// Set mission complete and display exit if it is complete
-		MissionSetMessageIfComplete(rData->m);
 	}
+
+	// Set mission complete and display exit if it is complete
+	MissionSetMessageIfComplete(rData->m);
 
 	// If we're not hosting a net game,
 	// don't update if the game has paused or has automap shown

@@ -552,11 +552,14 @@ static void HandleGameEvent(
 		PathCacheClear(&gPathCache);
 		break;
 	case GAME_EVENT_MISSION_COMPLETE:
-		if (e.u.MissionComplete.ShowMsg)
+		if (camera != NULL)
 		{
-			HUDDisplayMessage(&camera->HUD, "Mission complete", -1);
+			if (e.u.MissionComplete.ShowMsg)
+			{
+				HUDDisplayMessage(&camera->HUD, "Mission complete", -1);
+			}
+			camera->HUD.showExit = true;
 		}
-		camera->HUD.showExit = true;
 		MapShowExitArea(
 			&gMap,
 			Net2Vec2i(e.u.MissionComplete.ExitStart),
