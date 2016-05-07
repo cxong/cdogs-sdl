@@ -66,6 +66,7 @@
 #include <cdogs/handle_game_events.h>
 #include <cdogs/joystick.h>
 #include <cdogs/keyboard.h>
+#include <cdogs/log.h>
 #include <cdogs/music.h>
 #include <cdogs/net_client.h>
 #include <cdogs/net_server.h>
@@ -499,10 +500,16 @@ bool GameOptions(const GameMode gm)
 	const bool ok = !ms.hasAbort;
 	if (ok)
 	{
-		ConfigApply(&gConfig);
-
-		// Save options for later
-		ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
+		if (!ConfigApply(&gConfig))
+		{
+			LOG(LM_MAIN, LL_ERROR, "Failed to apply config; reset to last used");
+			ConfigResetChanged(&gConfig);
+		}
+		else
+		{
+			// Save options for later
+			ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
+		}
 
 		// Set allowed weapons
 		// First check if the player has unwittingly disabled all weapons

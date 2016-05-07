@@ -112,6 +112,36 @@ static void HandleGameEvent(
 	case GAME_EVENT_MAP_OBJECT_REMOVE:
 		ObjRemove(e.u.MapObjectRemove);
 		break;
+	case GAME_EVENT_CONFIG:
+	{
+		// Temporarily set config
+		Config *c = ConfigGet(&gConfig, e.u.Config.Name);
+		switch (c->Type)
+		{
+		case CONFIG_TYPE_STRING:
+			CASSERT(false, "unimplemented");
+			break;
+		case CONFIG_TYPE_INT:
+			c->u.Int.Value = atoi(e.u.Config.Value);
+			break;
+		case CONFIG_TYPE_FLOAT:
+			c->u.Float.Value = atof(e.u.Config.Value);
+			break;
+		case CONFIG_TYPE_BOOL:
+			c->u.Bool.Value = strcmp(e.u.Config.Value, "true") == 0;
+			break;
+		case CONFIG_TYPE_ENUM:
+			c->u.Enum.Value = atoi(e.u.Config.Value);
+			break;
+		case CONFIG_TYPE_GROUP:
+			CASSERT(false, "Cannot send groups over net");
+			break;
+		default:
+			CASSERT(false, "Unknown config type");
+			break;
+		}
+	}
+	break;
 	case GAME_EVENT_SCORE:
 		// No score for dogfight
 		if (gCampaign.Entry.Mode != GAME_MODE_DOGFIGHT)

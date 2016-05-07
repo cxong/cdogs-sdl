@@ -58,6 +58,11 @@ message NPlayerRemove {
 	required uint32 UID = 1;
 }
 
+message NConfig {
+	required string Name = 1;
+	required string Value = 2;
+}
+
 message NTileSet {
 	required NVec2i Pos = 1;
 	required uint32 Flags = 2;

@@ -1,7 +1,7 @@
 NServerInfo.HostName		max_size:12
 NServerInfo.CampaignName	max_size:20
 
-NCampaignDef.Path		max_size:4096
+NCampaignDef.Path			max_size:4096
 
 NPlayerData.Name			max_size:20
 NPlayerData.CharacterClass	max_size:128
@@ -10,6 +10,9 @@ NPlayerData.Weapons			max_count:3
 
 NTileSet.PicName    max_size:128
 NTileSet.PicAltName max_size:128
+
+NConfig.Name				max_size:128
+NConfig.Value				max_size:128
 
 NMapObjectAdd.MapObjectClass max_size:128
 

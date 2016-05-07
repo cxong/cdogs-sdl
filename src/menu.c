@@ -57,12 +57,14 @@
 #include <cdogs/actors.h>
 #include <cdogs/blit.h>
 #include <cdogs/config.h>
+#include <cdogs/config_io.h>
 #include <cdogs/defs.h>
 #include <cdogs/events.h>
 #include <cdogs/files.h>
 #include <cdogs/font.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/grafx_bg.h>
+#include <cdogs/log.h>
 #include <cdogs/mission.h>
 #include <cdogs/music.h>
 #include <cdogs/pic_manager.h>
@@ -1343,8 +1345,13 @@ void PostInputConfigApply(menu_t *menu, int cmd, void *data)
 	UNUSED(cmd);
 	if (!ConfigApply(&gConfig))
 	{
-		printf("Error: cannot apply new config; using last config\n");
+		LOG(LM_MAIN, LL_ERROR, "Failed to apply config; reset to last used");
 		ConfigResetChanged(&gConfig);
+	}
+	else
+	{
+		// Save config immediately
+		ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
 	}
 
 	// Update menu system so that resolution changes don't

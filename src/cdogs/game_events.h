@@ -54,6 +54,7 @@ typedef enum
 	GAME_EVENT_CLIENT_READY,
 	GAME_EVENT_NET_GAME_START,
 
+	GAME_EVENT_CONFIG,
 	GAME_EVENT_SCORE,
 	GAME_EVENT_SOUND_AT,
 	GAME_EVENT_SCREEN_SHAKE,
@@ -135,6 +136,7 @@ typedef struct
 		NMapObjectAdd MapObjectAdd;
 		NMapObjectDamage MapObjectDamage;
 		NMapObjectRemove MapObjectRemove;
+		NConfig Config;
 		NScore Score;
 		NSound SoundAt;
 		int ShakeAmount;

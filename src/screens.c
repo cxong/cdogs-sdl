@@ -109,6 +109,8 @@ void ScreenStart(void)
 bail:
 	NetClientDisconnect(&gNetClient);
 	GameEventsTerminate(&gGameEvents);
+	// Reset config - could have been set to other values by server
+	ConfigResetChanged(&gConfig);
 }
 
 

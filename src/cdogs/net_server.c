@@ -401,6 +401,8 @@ void NetServerFlush(NetServer *n)
 	enet_host_flush(n->server);
 }
 
+static void SendConfig(
+	Config *config, const char *name, NetServer *n, const int peerId);
 void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 {
 	// Send details of all current players
@@ -410,6 +412,15 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 		LOG(LM_NET, LL_DEBUG, "send player data uid(%d) maxHealth(%d)",
 			(int)pd.UID, (int)pd.MaxHealth);
 	CA_FOREACH_END()
+
+	// Send all game-specific config values
+	SendConfig(&gConfig, "Game.FriendlyFire", n, peerId);
+	SendConfig(&gConfig, "Game.FPS", n, peerId);
+	SendConfig(&gConfig, "Game.Ammo", n, peerId);
+	SendConfig(&gConfig, "Game.Fog", n, peerId);
+	SendConfig(&gConfig, "Game.SightRange", n, peerId);
+	SendConfig(&gConfig, "Game.ShotsPushback", n, peerId);
+	SendConfig(&gConfig, "Game.AllyCollision", n, peerId);
 
 	NetServerSendMsg(n, peerId, GAME_EVENT_NET_GAME_START, NULL);
 
@@ -540,6 +551,38 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 		NMissionComplete mc = NMakeMissionComplete(&gMission, &gMap);
 		NetServerSendMsg(n, peerId, GAME_EVENT_MISSION_COMPLETE, &mc);
 	}
+}
+static void SendConfig(
+	Config *config, const char *name, NetServer *n, const int peerId)
+{
+	NConfig msg = NConfig_init_default;
+	const Config *c = ConfigGet(config, name);
+	strcpy(msg.Name, name);
+	switch (c->Type)
+	{
+	case CONFIG_TYPE_STRING:
+		CASSERT(false, "unimplemented");
+		break;
+	case CONFIG_TYPE_INT:
+		sprintf(msg.Value, "%d", c->u.Int.Value);
+		break;
+	case CONFIG_TYPE_FLOAT:
+		sprintf(msg.Value, "%f", c->u.Float.Value);
+		break;
+	case CONFIG_TYPE_BOOL:
+		strcpy(msg.Value, c->u.Bool.Value ? "true" : "false");
+		break;
+	case CONFIG_TYPE_ENUM:
+		sprintf(msg.Value, "%d", (int)c->u.Enum.Value);
+		break;
+	case CONFIG_TYPE_GROUP:
+		CASSERT(false, "Cannot send groups over net");
+		break;
+	default:
+		CASSERT(false, "Unknown config type");
+		break;
+	}
+	NetServerSendMsg(n, peerId, GAME_EVENT_CONFIG, &msg);
 }
 
 void NetServerSendMsg(

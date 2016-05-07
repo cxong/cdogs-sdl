@@ -506,7 +506,6 @@ bail:
 	FontTerminate(&gFont);
 	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 	AutosaveTerminate(&gAutosave);
-	ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
 	CArrayTerminate(&gPlayerTemplates);
 	FreeSongs(&gMenuSongs);
 	FreeSongs(&gGameSongs);
