@@ -35,6 +35,8 @@
 #include <cdogs/pic.h>
 #include <cdogs/vector.h>
 
+#include "editor_brush.h"
+
 typedef enum
 {
 	UITYPE_NONE,
@@ -98,7 +100,10 @@ typedef struct _UIObject
 	void *Data;
 	int IsDynamicData;
 	void (*ChangeFunc)(void *, int d);
+	// Whether calling the change func changes the file (i.e. requires save)
 	bool ChangesData;
+	// Whether calling the change func requires a reload
+	bool ReloadData;
 	void (*OnFocusFunc)(struct _UIObject *, void *);
 	// Returns whether mission changed
 	bool (*OnUnfocusFunc)(void *);
@@ -116,12 +121,12 @@ void UIObjectHighlight(UIObject *o);
 // Returns whether mission changed
 bool UIObjectUnhighlight(UIObject *o);
 int UIObjectIsHighlighted(UIObject *o);
-int UIObjectChange(UIObject *o, int d);
+EditorResult UIObjectChange(UIObject *o, int d);
 
 // Add and delete chars from the highlighted text box
 // Returns whether a change has been made
-bool UIObjectAddChar(UIObject *o, char c);
-bool UIObjectDelChar(UIObject *o);
+EditorResult UIObjectAddChar(UIObject *o, char c);
+EditorResult UIObjectDelChar(UIObject *o);
 
 void UIObjectDraw(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, Vec2i mouse, CArray *drawObjs);

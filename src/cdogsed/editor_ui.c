@@ -95,6 +95,28 @@ static const char *CampaignGetSeedStr(UIObject *o, void *data)
 	sprintf(s, "Seed: %u", co->seed);
 	return s;
 }
+static const char *CampaignGetMissionIndexStr(UIObject *o, void *data)
+{
+	static char s[128];
+	UNUSED(o);
+	CampaignOptions *co = data;
+	Mission *mission = CampaignGetCurrentMission(co);
+	if (mission == NULL)
+	{
+		if (co->Setting.Missions.size == 0)
+		{
+			return NULL;
+		}
+		sprintf(s, "End/%d", (int)co->Setting.Missions.size);
+	}
+	else
+	{
+		sprintf(
+			s, "Mission %d/%d",
+			co->MissionIndex + 1, (int)co->Setting.Missions.size);
+	}
+	return s;
+}
 static void CheckMission(UIObject *o, void *data)
 {
 	CampaignOptions *co = data;
@@ -873,6 +895,12 @@ static void CampaignChangeSeed(void *data, int d)
 		co->seed += d;
 	}
 }
+static void CampaignChangeMission(void *data, int d)
+{
+	CampaignOptions *co = data;
+	co->MissionIndex =
+		CLAMP(co->MissionIndex + d, 0, (int)co->Setting.Missions.size);
+}
 static void MissionInsertNew(void *data, int d)
 {
 	UNUSED(d);
@@ -1372,10 +1400,15 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	UIObjectAddChild(o, CreateCampaignObjs(co));
 	UIObjectAddChild(cc, o);
 
-	// Mission insert/delete/index
+	// Mission insert/delete/index, current mission
 	// Layout from right to left
 	o = UIObjectCreate(
-		UITYPE_NONE, YC_MISSIONINDEX, Vec2iNew(270, pos.y), Vec2iNew(49, th));
+		UITYPE_LABEL, 0,
+		Vec2iNew(270, pos.y), Vec2iNew(FontStrW("Mission 99/99"), th));
+	o->u.LabelFunc = CampaignGetMissionIndexStr;
+	o->ChangeFunc = CampaignChangeMission;
+	o->ReloadData = true;
+	o->Data = &gCampaign;
 	UIObjectAddChild(cc, o);
 	o = UIObjectCreate(
 		UITYPE_LABEL, 0, Vec2iNew(o->Pos.x, pos.y), Vec2iNew(0, th));

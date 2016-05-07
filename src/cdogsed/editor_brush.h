@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014, 2016 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,8 +25,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __EDITOR_BRUSH
-#define __EDITOR_BRUSH
+#pragma once
 
 #include <stdbool.h>
 
@@ -102,9 +101,12 @@ typedef enum
 {
 	EDITOR_RESULT_NONE,
 	EDITOR_RESULT_CHANGED,
+	EDITOR_RESULT_RELOAD,
+	// Note: deliberately set so that bit checking works, i.e.
+	// er & EDITOR_RESULT_CHANGED, er & EDITOR_RESULT_RELOAD
 	EDITOR_RESULT_CHANGED_AND_RELOAD
 } EditorResult;
+#define EDITOR_RESULT_NEW(_change, _reload)\
+	(EditorResult)(!!(_change) | (!!(_reload) << 1))
 EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain);
 EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m);
-
-#endif

@@ -95,6 +95,7 @@ UIObject *UIObjectCopy(const UIObject *o)
 	res->IsDynamicData = 0;
 	res->ChangeFunc = o->ChangeFunc;
 	res->ChangesData = o->ChangesData;
+	res->ReloadData = o->ReloadData;
 	res->OnFocusFunc = o->OnFocusFunc;
 	res->OnUnfocusFunc = o->OnUnfocusFunc;
 	memcpy(&res->u, &o->u, sizeof res->u);
@@ -223,7 +224,7 @@ bool UIObjectUnhighlight(UIObject *o)
 }
 
 static void DisableContextMenuParents(UIObject *o);
-int UIObjectChange(UIObject *o, int d)
+EditorResult UIObjectChange(UIObject *o, int d)
 {
 	switch (o->Type)
 	{
@@ -240,9 +241,9 @@ int UIObjectChange(UIObject *o, int d)
 	{
 		o->ChangeFunc(o->Data, d);
 		DisableContextMenuParents(o);
-		return o->ChangesData;
+		return EDITOR_RESULT_NEW(o->ChangesData, o->ReloadData);
 	}
-	return 0;
+	return EDITOR_RESULT_NONE;
 }
 // Disable all parent context menus once the child is clicked
 static void DisableContextMenuParents(UIObject *o)
@@ -258,21 +259,22 @@ static void DisableContextMenuParents(UIObject *o)
 	}
 }
 
-bool UIObjectAddChar(UIObject *o, char c)
+EditorResult UIObjectAddChar(UIObject *o, char c)
 {
 	if (!o)
 	{
-		return false;
+		return EDITOR_RESULT_NONE;
 	}
+	const EditorResult childResult = UIObjectAddChar(o->Highlighted, c);
 	if (o->Type != UITYPE_TEXTBOX)
 	{
-		return UIObjectAddChar(o->Highlighted, c);
+		return childResult;
 	}
-	else if (UIObjectAddChar(o->Highlighted, c))
+	else if (childResult != EDITOR_RESULT_NONE)
 	{
 		// See if there are highlighted textbox children;
 		// if so activate them instead
-		return true;
+		return childResult;
 	}
 	if (o->u.Textbox.TextSourceFunc)
 	{
@@ -280,7 +282,7 @@ bool UIObjectAddChar(UIObject *o, char c)
 		char **s = o->u.Textbox.TextSourceFunc(o->Data);
 		if (!s)
 		{
-			return false;
+			return EDITOR_RESULT_NONE;
 		}
 		size_t l = *s ? strlen(*s) : 0;
 		CREALLOC(*s, l + 2);
@@ -294,7 +296,7 @@ bool UIObjectAddChar(UIObject *o, char c)
 		size_t l = strlen(s);
 		if ((int)l >= o->u.Textbox.MaxLen)
 		{
-			return false;
+			return EDITOR_RESULT_NONE;
 		}
 		s[l + 1] = 0;
 		s[l] = c;
@@ -303,35 +305,36 @@ bool UIObjectAddChar(UIObject *o, char c)
 	{
 		o->ChangeFunc(o->Data, 1);
 	}
-	return o->ChangesData;
+	return EDITOR_RESULT_NEW(o->ChangesData, o->ReloadData);
 }
-bool UIObjectDelChar(UIObject *o)
+EditorResult UIObjectDelChar(UIObject *o)
 {
 	if (!o)
 	{
-		return false;
+		return EDITOR_RESULT_NONE;
 	}
+	const EditorResult childResult = UIObjectDelChar(o->Highlighted);
 	if (o->Type != UITYPE_TEXTBOX)
 	{
-		return UIObjectDelChar(o->Highlighted);
+		return childResult;
 	}
-	else if (UIObjectDelChar(o->Highlighted))
+	else if (childResult != EDITOR_RESULT_NONE)
 	{
 		// See if there are highlighted textbox children;
 		// if so activate them instead
-		return true;
+		return childResult;
 	}
 	char *s = o->u.Textbox.TextLinkFunc(o, o->Data);
 	if (!s || s[0] == '\0')
 	{
-		return false;
+		return EDITOR_RESULT_NONE;
 	}
 	s[strlen(s) - 1] = 0;
 	if (o->ChangeFunc)
 	{
 		o->ChangeFunc(o->Data, -1);
 	}
-	return o->ChangesData;
+	return EDITOR_RESULT_NEW(o->ChangesData, o->ReloadData);
 }
 
 static int IsInside(Vec2i pos, Vec2i rectPos, Vec2i rectSize);

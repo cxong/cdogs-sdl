@@ -188,7 +188,7 @@ typedef struct
 	bool Done;
 } HandleInputResult;
 
-static void Display(GraphicsDevice *g, int yc, HandleInputResult result)
+static void Display(GraphicsDevice *g, HandleInputResult result)
 {
 	char s[128];
 	int y = 5;
@@ -235,12 +235,6 @@ static void Display(GraphicsDevice *g, int yc, HandleInputResult result)
 			}
 		CA_FOREACH_END()
 
-		sprintf(
-			s, "Mission %d/%d",
-			gCampaign.MissionIndex + 1, (int)gCampaign.Setting.Missions.size);
-		FontStrMask(
-			s, Vec2iNew(270, y),
-			yc == YC_MISSIONINDEX ? colorRed : colorWhite);
 		if (brush.LastPos.x)
 		{
 			sprintf(s, "(%d, %d)", brush.Pos.x, brush.Pos.y);
@@ -250,13 +244,6 @@ static void Display(GraphicsDevice *g, int yc, HandleInputResult result)
 	else
 	{
 		ClearScreen(g);
-		if (gCampaign.Setting.Missions.size)
-		{
-			sprintf(s, "End/%d", (int)gCampaign.Setting.Missions.size);
-			FontStrMask(
-				s, Vec2iNew(270, y),
-				yc == YC_MISSIONINDEX ? colorRed : colorWhite);
-		}
 	}
 
 	if (fileChanged)
@@ -290,24 +277,23 @@ static void Display(GraphicsDevice *g, int yc, HandleInputResult result)
 	BlitFlip(g);
 }
 
-static int Change(UIObject *o, int yc, int d)
+static void Setup(const bool changedMission);
+
+static void Change(UIObject *o, const int d)
 {
-	int isChanged = 0;
-
-	if (yc == YC_MISSIONINDEX)
+	if (o == NULL)
 	{
-		gCampaign.MissionIndex = CLAMP(
-			gCampaign.MissionIndex + d,
-			0,
-			(int)gCampaign.Setting.Missions.size);
-		return 0;
+		return;
 	}
-
-	if (o)
+	const EditorResult r = UIObjectChange(o, d);
+	if (r & EDITOR_RESULT_CHANGED)
 	{
-		isChanged = UIObjectChange(o, d);
+		fileChanged = 1;
 	}
-	return isChanged;
+	if (r & EDITOR_RESULT_CHANGED_AND_RELOAD)
+	{
+		Setup(false);
+	}
 }
 
 static void AddObjective(Mission *m)
@@ -366,10 +352,6 @@ static void AdjustYC(int *yc)
 		{
 			*yc = CLAMP_OPPOSITE(*yc, 0, YC_OBJECTIVES);
 		}
-	}
-	else
-	{
-		*yc = CLAMP_OPPOSITE(*yc, 0, YC_MISSIONINDEX);
 	}
 }
 
@@ -904,19 +886,18 @@ static HandleInputResult HandleInput(
 			// Draw a tile
 			if (IsBrushPosValid(brush.Pos, mission))
 			{
-				int isMain =
+				const bool isMain =
 					MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_LEFT);
-				EditorResult r =
+				const EditorResult r =
 					EditorBrushStartPainting(&brush, mission, isMain);
-				if (r == EDITOR_RESULT_CHANGED ||
-					r == EDITOR_RESULT_CHANGED_AND_RELOAD)
+				if (r & EDITOR_RESULT_CHANGED)
 				{
 					fileChanged = 1;
 					Autosave();
 					result.RemakeBg = true;
 					sHasUnbakedChanges = true;
 				}
-				if (r == EDITOR_RESULT_CHANGED_AND_RELOAD)
+				if (r & EDITOR_RESULT_RELOAD)
 				{
 					Setup(false);
 				}
@@ -931,9 +912,8 @@ static HandleInputResult HandleInput(
 			brush.Pos = Vec2iClamp(
 				brush.Pos,
 				Vec2iZero(), Vec2iMinus(mission->Size, Vec2iUnit()));
-			EditorResult r = EditorBrushStopPainting(&brush, mission);
-			if (r == EDITOR_RESULT_CHANGED ||
-				r == EDITOR_RESULT_CHANGED_AND_RELOAD)
+			const EditorResult r = EditorBrushStopPainting(&brush, mission);
+			if (r & EDITOR_RESULT_CHANGED)
 			{
 				fileChanged = 1;
 				Autosave();
@@ -941,7 +921,7 @@ static HandleInputResult HandleInput(
 				result.RemakeBg = true;
 				sHasUnbakedChanges = true;
 			}
-			if (r == EDITOR_RESULT_CHANGED_AND_RELOAD)
+			if (r & EDITOR_RESULT_RELOAD)
 			{
 				Setup(false);
 			}
@@ -1127,19 +1107,11 @@ static HandleInputResult HandleInput(
 			break;
 
 		case SDL_SCANCODE_PAGEUP:
-			if (Change(o, *yc, 1))
-			{
-				fileChanged = 1;
-				Setup(false);
-			}
+			Change(o, 1);
 			break;
 
 		case SDL_SCANCODE_PAGEDOWN:
-			if (Change(o, *yc, -1))
-			{
-				fileChanged = 1;
-				Setup(false);
-			}
+			Change(o, -1);
 			break;
 
 		case SDL_SCANCODE_ESCAPE:
@@ -1297,8 +1269,8 @@ static void EditCampaign(void)
 		if (result.Redraw || result.RemakeBg || sJustLoaded)
 		{
 			sJustLoaded = false;
-			debug(D_MAX, "Drawing UI\n");
-			Display(&gGraphicsDevice, yc, result);
+			LOG(LM_EDIT, LL_TRACE, "Drawing UI");
+			Display(&gGraphicsDevice, result);
 			if (result.WillDisplayAutomap)
 			{
 				GetKey(&gEventHandlers);

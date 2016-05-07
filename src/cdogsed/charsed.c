@@ -333,7 +333,7 @@ static bool Change(
 
 	if (o)
 	{
-		return UIObjectChange(o, d);
+		return UIObjectChange(o, d) & EDITOR_RESULT_CHANGED;
 	}
 	return false;
 }

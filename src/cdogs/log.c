@@ -44,6 +44,7 @@ static LogModuleInfo sModuleInfo[] =
 	{ LL_INFO, "SOUND" },
 	{ LL_INFO, "GFX" },
 	{ LL_WARN, "MAP" },
+	{ LL_INFO, "EDIT" },
 };
 
 

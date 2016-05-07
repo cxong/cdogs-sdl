@@ -56,7 +56,6 @@
 
 
 #define YC_CAMPAIGNTITLE    0
-#define YC_MISSIONINDEX     1
 #define YC_MISSIONTITLE     2
 #define YC_MISSIONLOOKS     4
 #define YC_MISSIONDESC      5
