@@ -107,6 +107,6 @@ typedef enum
 	EDITOR_RESULT_CHANGED_AND_RELOAD
 } EditorResult;
 #define EDITOR_RESULT_NEW(_change, _reload)\
-	(EditorResult)(!!(_change) | (!!(_reload) << 1))
+	(EditorResult)((!!(_change)) | (!!(_reload) << 1))
 EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain);
 EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m);
