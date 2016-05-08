@@ -608,7 +608,7 @@ static void HandleGameEvent(
 		SoundPlay(&gSoundDevice, StrSound("whistle"));
 		break;
 	case GAME_EVENT_MISSION_END:
-		MissionDone(&gMission, e.u.MissionEnd.Delay);
+		MissionDone(&gMission, e.u.MissionEnd);
 		break;
 	default:
 		assert(0 && "unknown game event");

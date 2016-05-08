@@ -162,9 +162,6 @@ typedef struct
 	Map *map;
 	Camera Camera;
 	int frames;
-	// Add a delay before exiting the game during game overs
-	// Otherwise the game ends instantly after everyone has died
-	int QuitCounter;
 	// TODO: turn the following into a screen system?
 	input_device_e pausingDevice;	// INPUT_DEVICE_UNSET if not paused
 	bool controllerUnplugged;
@@ -281,9 +278,7 @@ bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 	CArrayTerminate(&data.ammoSpawners);
 	CameraTerminate(&data.Camera);
 
-	return
-		m->state == MISSION_STATE_PICKUP &&
-		m->pickupTime + PICKUP_LIMIT <= m->time;
+	return !m->IsQuit;
 }
 static void RunGameInput(void *data)
 {
@@ -292,7 +287,7 @@ static void RunGameInput(void *data)
 	if (gEventHandlers.HasQuit)
 	{
 		GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
-		e.u.MissionEnd.Delay = 0;
+		e.u.MissionEnd.IsQuit = true;
 		GameEventsEnqueue(&gGameEvents, e);
 		return;
 	}
@@ -389,7 +384,7 @@ static void RunGameInput(void *data)
 		{
 			// Already paused; exit
 			GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
-			e.u.MissionEnd.Delay = 0;
+			e.u.MissionEnd.IsQuit = true;
 			GameEventsEnqueue(&gGameEvents, e);
 			// Need to unpause to process the quit
 			rData->pausingDevice = INPUT_DEVICE_UNSET;
@@ -556,7 +551,8 @@ static GameLoopResult RunGameUpdate(void *data)
 	else if (!NetClientIsConnected(&gNetClient))
 	{
 		// Check if disconnected from server; end mission
-		MissionDone(&gMission, 0);
+		const NMissionEnd me = NMissionEnd_init_zero;
+		MissionDone(&gMission, me);
 	}
 
 	HandleGameEvents(
@@ -604,7 +600,6 @@ static void CheckMissionCompletion(const struct MissionOptions *mo)
 		mo->pickupTime + PICKUP_LIMIT <= mo->time)
 	{
 		GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
-		e.u.MissionEnd.Delay = 0;
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 
