@@ -233,6 +233,7 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 		MissionEnd();
 		MusicPlayMenu(&gSoundDevice);
 
+		bool playNext = !gameOver;
 		if (run && GetNumPlayers(PLAYER_ANY, false, true) > 0)
 		{
 			switch (co->Entry.Mode)
@@ -244,7 +245,8 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 				ScreenDeathmatchFinalScores();
 				break;
 			default:
-				ScreenMissionSummary(&gCampaign, &gMission);
+				playNext =
+					ScreenMissionSummary(&gCampaign, &gMission, !gameOver);
 				// Note: must use cached value because players get cleaned up
 				// in CleanupMission()
 				if (gameOver && survivingPlayers > 0)
@@ -290,10 +292,11 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 				DisplayTodaysHighScores(graphics);
 			}
 		}
-		if (!HasRounds(co->Entry.Mode))
+		if (!HasRounds(co->Entry.Mode) && !gameOver)
 		{
 			co->MissionIndex++;
 		}
+		gameOver = !playNext;
 
 	bail:
 		// Need to terminate the mission later as it is used in calculating scores

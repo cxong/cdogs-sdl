@@ -300,6 +300,9 @@ menu_t *MenuCreateOptionRangeGetSet(
 	menu_option_display_style_e style, void (*func)(void));
 menu_t *MenuCreateSeparator(const char *name);
 menu_t *MenuCreateBack(const char *name);
+// Create a menu entry that exits the menu while setting a return code
+// The return code can be retrieved from the menu system via
+// ms.current->u.returnCode
 menu_t *MenuCreateReturn(const char *name, int returnCode);
 menu_t *MenuCreateCustom(
 	const char *name,

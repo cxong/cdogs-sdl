@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2015, Cong Xu
+    Copyright (c) 2014-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -31,4 +31,7 @@
 
 bool ScreenCampaignIntro(CampaignSetting *c);
 bool ScreenMissionBriefing(const struct MissionOptions *m);
-void ScreenMissionSummary(CampaignOptions *c, struct MissionOptions *m);
+// Display a summary page at the end of a mission
+// Returns true if the game is to continue
+bool ScreenMissionSummary(
+	CampaignOptions *c, struct MissionOptions *m, const bool completed);

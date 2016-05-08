@@ -248,23 +248,29 @@ static bool AreAnySurvived(void);
 static int GetAccessBonus(const struct MissionOptions *m);
 static int GetTimeBonus(const struct MissionOptions *m, int *secondsOut);
 static void ApplyBonuses(PlayerData *p, const int bonus);
-static void MissionSummaryDraw(void *data);
-void ScreenMissionSummary(CampaignOptions *c, struct MissionOptions *m)
+static void MissionSummaryDraw(
+	const menu_t *menu, GraphicsDevice *g,
+	const Vec2i p, const Vec2i size, const void *data);
+bool ScreenMissionSummary(
+	CampaignOptions *c, struct MissionOptions *m, const bool completed)
 {
-	// Save password
-	MissionSave ms;
-	MissionSaveInit(&ms);
-	ms.Campaign = c->Entry;
-	// Don't make password for next level if there is none
-	int passwordIndex = m->index + 1;
-	if (passwordIndex == c->Entry.NumMissions)
+	if (completed)
 	{
-		passwordIndex--;
+		// Save password
+		MissionSave ms;
+		MissionSaveInit(&ms);
+		ms.Campaign = c->Entry;
+		// Don't make password for next level if there is none
+		int passwordIndex = m->index + 1;
+		if (passwordIndex == c->Entry.NumMissions)
+		{
+			passwordIndex--;
+		}
+		strcpy(ms.Password, MakePassword(passwordIndex, 0));
+		ms.MissionsCompleted = m->index + 1;
+		AutosaveAddMission(&gAutosave, &ms);
+		AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 	}
-	strcpy(ms.Password, MakePassword(passwordIndex, 0));
-	ms.MissionsCompleted = m->index + 1;
-	AutosaveAddMission(&gAutosave, &ms);
-	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 
 	// Calculate bonus scores
 	// Bonuses only apply if at least one player has lived
@@ -289,12 +295,28 @@ void ScreenMissionSummary(CampaignOptions *c, struct MissionOptions *m)
 			ApplyBonuses(p, bonus);
 		CA_FOREACH_END()
 	}
-	GameLoopWaitForAnyKeyOrButtonData wData;
-	GameLoopData gData = GameLoopDataNew(
-		&wData, GameLoopWaitForAnyKeyOrButtonFunc,
-		m, MissionSummaryDraw);
-	GameLoop(&gData);
-	SoundPlay(&gSoundDevice, StrSound("mg"));
+	MenuSystem ms;
+	const int h = FontH() * 10;
+	MenuSystemInit(
+		&ms, &gEventHandlers, &gGraphicsDevice,
+		Vec2iNew(0, gGraphicsDevice.cachedConfig.Res.y - h),
+		Vec2iNew(gGraphicsDevice.cachedConfig.Res.x, h));
+	ms.current = ms.root = MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
+	// Use return code 0 for whether to continue the game
+	if (completed)
+	{
+		MenuAddSubmenu(ms.root, MenuCreateReturn("Continue", 0));
+	}
+	else
+	{
+		MenuAddSubmenu(ms.root, MenuCreateReturn("Replay mission", 0));
+		MenuAddSubmenu(ms.root, MenuCreateReturn("Back to menu", 1));
+	}
+	ms.allowAborts = true;
+	MenuAddExitType(&ms, MENU_TYPE_RETURN);
+	MenuSystemAddCustomDisplay(&ms, MissionSummaryDraw, m);
+	MenuLoop(&ms);
+	return ms.current->u.returnCode == 0;
 }
 static bool AreAnySurvived(void)
 {
@@ -381,12 +403,15 @@ static int GetFriendlyBonus(const PlayerData *p)
 }
 static void DrawPlayerSummary(
 	const Vec2i pos, const Vec2i size, PlayerData *data);
-static void MissionSummaryDraw(void *data)
+static void MissionSummaryDraw(
+	const menu_t *menu, GraphicsDevice *g,
+	const Vec2i p, const Vec2i size, const void *data)
 {
-	// This will only draw once
+	UNUSED(menu);
+	UNUSED(p);
+	UNUSED(size);
 	const struct MissionOptions *m = data;
 
-	GraphicsBlitBkg(&gGraphicsDevice);
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
 
@@ -398,7 +423,7 @@ static void MissionSummaryDraw(void *data)
 		FontOpts opts = FontOptsNew();
 		opts.HAlign = ALIGN_CENTER;
 		opts.VAlign = ALIGN_END;
-		opts.Area = gGraphicsDevice.cachedConfig.Res;
+		opts.Area = g->cachedConfig.Res;
 		opts.Pad.y = opts.Area.y / 12;
 		FontStrOpt(s, Vec2iZero(), opts);
 	}
@@ -481,7 +506,6 @@ static void MissionSummaryDraw(void *data)
 	}
 
 	// Draw per-player summaries
-	Vec2i size;
 	PlayerData *pds[MAX_LOCAL_PLAYERS];
 	idx = 0;
 	CA_FOREACH(PlayerData, pd, gPlayerDatas)
@@ -493,28 +517,29 @@ static void MissionSummaryDraw(void *data)
 		pds[idx] = pd;
 		idx++;
 	CA_FOREACH_END()
+	Vec2i playerSize;
 	switch (idx)
 	{
 	case 1:
-		size = Vec2iNew(w, h / 2);
-		DrawPlayerSummary(Vec2iZero(), size, pds[0]);
+		playerSize = Vec2iNew(w, h / 2);
+		DrawPlayerSummary(Vec2iZero(), playerSize, pds[0]);
 		break;
 	case 2:
 		// side by side
-		size = Vec2iNew(w / 2, h / 2);
-		DrawPlayerSummary(Vec2iZero(), size, pds[0]);
-		DrawPlayerSummary(Vec2iNew(w / 2, 0), size, pds[1]);
+		playerSize = Vec2iNew(w / 2, h / 2);
+		DrawPlayerSummary(Vec2iZero(), playerSize, pds[0]);
+		DrawPlayerSummary(Vec2iNew(w / 2, 0), playerSize, pds[1]);
 		break;
 	case 3:	// fallthrough
 	case 4:
 		// 2x2
-		size = Vec2iNew(w / 2, h / 4);
-		DrawPlayerSummary(Vec2iZero(), size, pds[0]);
-		DrawPlayerSummary(Vec2iNew(w / 2, 0), size, pds[1]);
-		DrawPlayerSummary(Vec2iNew(0, h / 4), size, pds[2]);
+		playerSize = Vec2iNew(w / 2, h / 4);
+		DrawPlayerSummary(Vec2iZero(), playerSize, pds[0]);
+		DrawPlayerSummary(Vec2iNew(w / 2, 0), playerSize, pds[1]);
+		DrawPlayerSummary(Vec2iNew(0, h / 4), playerSize, pds[2]);
 		if (idx == 4)
 		{
-			DrawPlayerSummary(Vec2iNew(w / 2, h / 4), size, pds[3]);
+			DrawPlayerSummary(Vec2iNew(w / 2, h / 4), playerSize, pds[3]);
 		}
 		break;
 	default:
