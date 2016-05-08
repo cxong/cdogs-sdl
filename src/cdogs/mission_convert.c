@@ -409,16 +409,16 @@ bool MissionStaticTryRemoveObjectiveAt(Mission *m, Vec2i pos)
 			{
 				CArrayDelete(&op->Positions, j);
 				CArrayDelete(&op->Indices, j);
+				// Decrease number of objectives
+				MissionObjective *mobj = CArrayGet(&m->Objectives, op->Index);
+				mobj->Count--;
+				CASSERT(mobj->Count >= 0, "removing unknown objective");
 				if (op->Positions.size == 0)
 				{
 					CArrayTerminate(&op->Positions);
 					CArrayTerminate(&op->Indices);
 					CArrayDelete(&m->u.Static.Objectives, _ca_index);
 				}
-				// Decrease number of objectives
-				MissionObjective *mobj = CArrayGet(&m->Objectives, _ca_index);
-				mobj->Count--;
-				CASSERT(mobj->Count >= 0, "removing unknown objective");
 				return true;
 			}
 		}
