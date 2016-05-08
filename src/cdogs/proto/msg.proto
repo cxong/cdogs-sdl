@@ -303,3 +303,7 @@ message NMissionComplete {
 	required NVec2i ExitStart = 2;
 	required NVec2i ExitEnd = 3;
 }
+
+message NMissionEnd {
+	required int32 Delay = 1;
+}

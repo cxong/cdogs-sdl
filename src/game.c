@@ -82,6 +82,8 @@
 #include <cdogs/powerup.h>
 #include <cdogs/triggers.h>
 
+#define GAME_OVER_DELAY (FPS_FRAMELIMIT * 2)
+
 
 static void PlayerSpecialCommands(TActor *actor, const int cmd)
 {
@@ -160,6 +162,9 @@ typedef struct
 	Map *map;
 	Camera Camera;
 	int frames;
+	// Add a delay before exiting the game during game overs
+	// Otherwise the game ends instantly after everyone has died
+	int QuitCounter;
 	// TODO: turn the following into a screen system?
 	input_device_e pausingDevice;	// INPUT_DEVICE_UNSET if not paused
 	bool controllerUnplugged;
@@ -245,6 +250,7 @@ bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 
 	m->state = MISSION_STATE_WAITING;
 	m->isDone = false;
+	m->DoneCounter = 0;
 	Pic *crosshair = PicManagerGetPic(&gPicManager, "crosshair");
 	crosshair->offset.x = -crosshair->size.x / 2;
 	crosshair->offset.y = -crosshair->size.y / 2;
@@ -286,6 +292,7 @@ static void RunGameInput(void *data)
 	if (gEventHandlers.HasQuit)
 	{
 		GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
+		e.u.MissionEnd.Delay = 0;
 		GameEventsEnqueue(&gGameEvents, e);
 		return;
 	}
@@ -382,6 +389,7 @@ static void RunGameInput(void *data)
 		{
 			// Already paused; exit
 			GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
+			e.u.MissionEnd.Delay = 0;
 			GameEventsEnqueue(&gGameEvents, e);
 			// Need to unpause to process the quit
 			rData->pausingDevice = INPUT_DEVICE_UNSET;
@@ -404,7 +412,15 @@ static GameLoopResult RunGameUpdate(void *data)
 	// Detect exit
 	if (rData->m->isDone)
 	{
-		return UPDATE_RESULT_EXIT;
+		rData->m->DoneCounter--;
+		if (rData->m->DoneCounter <= 0)
+		{
+			return UPDATE_RESULT_EXIT;
+		}
+		else
+		{
+			return UPDATE_RESULT_DRAW;
+		}
 	}
 
 	// Check if game can begin
@@ -540,7 +556,7 @@ static GameLoopResult RunGameUpdate(void *data)
 	else if (!NetClientIsConnected(&gNetClient))
 	{
 		// Check if disconnected from server; end mission
-		rData->m->isDone = true;
+		MissionDone(&gMission, 0);
 	}
 
 	HandleGameEvents(
@@ -588,6 +604,7 @@ static void CheckMissionCompletion(const struct MissionOptions *mo)
 		mo->pickupTime + PICKUP_LIMIT <= mo->time)
 	{
 		GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
+		e.u.MissionEnd.Delay = 0;
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 
@@ -608,6 +625,7 @@ static void CheckMissionCompletion(const struct MissionOptions *mo)
 		if (allPlayersDestroyed && AreAllPlayersDeadAndNoLives())
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
+			e.u.MissionEnd.Delay = GAME_OVER_DELAY;
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 	}

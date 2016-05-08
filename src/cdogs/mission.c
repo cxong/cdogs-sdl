@@ -496,6 +496,12 @@ bool IsMissionComplete(const struct MissionOptions *options)
 	return 1;
 }
 
+void MissionDone(struct MissionOptions *mo, const int delay)
+{
+	mo->isDone = true;
+	mo->DoneCounter = delay;
+}
+
 int KeycardCount(int flags)
 {
 	int count = 0;

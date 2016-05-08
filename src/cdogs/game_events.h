@@ -181,6 +181,7 @@ typedef struct
 		NObjectiveUpdate ObjectiveUpdate;
 		NAddKeys AddKeys;
 		NMissionComplete MissionComplete;
+		NMissionEnd MissionEnd;
 	} u;
 } GameEvent;
 

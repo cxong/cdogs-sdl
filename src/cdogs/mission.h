@@ -223,6 +223,7 @@ struct MissionOptions
 	// Whether the mission has begun (can complete objectives etc.)
 	bool HasBegun;
 	bool isDone;
+	int DoneCounter;
 
 	int keyStyle;
 	NamedPic *exitPic;
@@ -246,6 +247,7 @@ void MissionBegin(struct MissionOptions *m);
 bool CanCompleteMission(const struct MissionOptions *options);
 bool IsMissionComplete(const struct MissionOptions *options);
 bool MissionHasRequiredObjectives(const struct MissionOptions *mo);
+void MissionDone(struct MissionOptions *mo, const int delay);
 
 // Count the number of keys in the flags
 int KeycardCount(int flags);
