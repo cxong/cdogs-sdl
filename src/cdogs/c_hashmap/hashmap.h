@@ -35,7 +35,7 @@ typedef struct hashmap_map *map_t;
 /*
  * Return an empty hashmap. Returns NULL if empty.
 */
-map_t hashmap_new();
+map_t hashmap_new(void);
 
 /*
  * Iteratively call f with argument (item, data) for

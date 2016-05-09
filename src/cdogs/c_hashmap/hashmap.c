@@ -29,7 +29,7 @@ struct hashmap_map{
 /*
  * Return an empty hashmap, or NULL on failure.
  */
-map_t hashmap_new() {
+map_t hashmap_new(void) {
 	map_t m = malloc(sizeof(struct hashmap_map));
 	if(!m) goto err;
 
@@ -167,7 +167,7 @@ unsigned long crc32(const unsigned char *s, unsigned int len)
  */
 unsigned int hashmap_hash_int(const map_t m, const char* keystring){
 
-    unsigned long key = crc32((unsigned char*)(keystring), strlen(keystring));
+    unsigned long key = crc32((const unsigned char*)keystring, strlen(keystring));
 
 	/* Robert Jenkins' 32 bit Mix Function */
 	key += (key << 12);
