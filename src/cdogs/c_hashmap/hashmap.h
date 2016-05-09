@@ -31,7 +31,7 @@ typedef int (*PFany)(any_t, any_t);
  * Clients of this package do not need to know how hashmaps are
  * represented.  They see and manipulate only map_t's.
  */
-typedef any_t map_t;
+typedef struct hashmap_map *map_t;
 
 /*
  * Return an empty hashmap. Returns NULL if empty.
