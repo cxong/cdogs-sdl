@@ -204,8 +204,8 @@ ADD_SUBDIRECTORY(enet)
 # proto
 include_directories(proto/nanopb)
 
+add_subdirectory(c_hashmap)
 add_subdirectory(SDL_JoystickButtonNames)
-
 add_subdirectory(yajl)
 
 add_library(cdogs STATIC
@@ -213,6 +213,7 @@ add_library(cdogs STATIC
 	${NANOPB_SOURCES} ${NANOPB_HEADERS})
 
 target_link_libraries(cdogs
+	c_hashmap
 	json
 	SDL_joystickbuttonnames
 	yajl_s

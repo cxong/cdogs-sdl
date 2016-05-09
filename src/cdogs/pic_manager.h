@@ -27,6 +27,7 @@
 */
 #pragma once
 
+#include "c_hashmap/hashmap.h"
 #include "cpic.h"
 #include "pics.h"
 
@@ -34,12 +35,12 @@ typedef struct
 {
 	PicPaletted *oldPics[PIC_MAX];
 	Pic picsFromOld[PIC_MAX];
-	CArray oldSprites;	// of NamedSprites
+	map_t oldSprites;	// of NamedSprites
 	TPalette palette;
-	CArray pics;	// of NamedPic
-	CArray sprites;	// of NamedSprites
-	CArray customPics;	// of NamedPic
-	CArray customSprites;	// of NamedSprites
+	map_t pics;	// of NamedPic
+	map_t sprites;	// of NamedSprites
+	map_t customPics;	// of NamedPic
+	map_t customSprites;	// of NamedSprites
 
 	CArray drainPics;	// of NamedPic *
 

@@ -33,6 +33,13 @@ target_link_libraries(autosave_test
 	${EXTRA_LIBRARIES})
 add_test(NAME autosave_test COMMAND autosave_test)
 
+add_executable(c_hashmap_test
+	c_hashmap_test.c
+	../cdogs/c_hashmap/hashmap.h
+	../cdogs/c_hashmap/hashmap.c)
+target_link_libraries(c_hashmap_test cbehave ${EXTRA_LIBRARIES})
+add_test(NAME c_hashmap_test COMMAND c_hashmap_test)
+
 add_executable(c_array_test
 	c_array_test.c
 	../cdogs/c_array.h
