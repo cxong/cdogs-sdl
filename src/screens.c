@@ -203,7 +203,7 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 		if (!IsPVP(co->Entry.Mode))
 		{
 			gameOver = survivingPlayers == 0 ||
-				co->MissionIndex == (int)gCampaign.Setting.Missions.size - 1;
+				co->MissionIndex == (int)co->Setting.Missions.size - 1;
 		}
 
 		CA_FOREACH(PlayerData, p, gPlayerDatas)
@@ -245,13 +245,14 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 				ScreenDeathmatchFinalScores();
 				break;
 			default:
-				playNext =
-					ScreenMissionSummary(&gCampaign, &gMission, !gameOver);
+				playNext = ScreenMissionSummary(
+					co, &gMission, survivingPlayers > 0);
 				// Note: must use cached value because players get cleaned up
 				// in CleanupMission()
 				if (gameOver && survivingPlayers > 0)
 				{
-					ScreenVictory(&gCampaign);
+					ScreenVictory(co);
+					playNext = false;
 				}
 				break;
 			}
