@@ -42,6 +42,7 @@
 #include "editor_ui_color.h"
 #include "editor_ui_common.h"
 #include "editor_ui_static.h"
+#include "editor_ui_weapons.h"
 
 
 #define Y_ABS 200
@@ -698,32 +699,6 @@ static void MissionDrawMapItem(
 		mod,
 		UIObjectIsHighlighted(o));
 }
-typedef struct
-{
-	CampaignOptions *co;
-	const GunDescription *Gun;
-} MissionGunData;
-static void MissionDrawWeaponStatus(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
-{
-	UNUSED(g);
-	const MissionGunData *data = vData;
-	const Mission *currentMission = CampaignGetCurrentMission(data->co);
-	if (currentMission == NULL) return;
-	bool hasWeapon = false;
-	CA_FOREACH(const GunDescription *, desc, currentMission->Weapons)
-		if (data->Gun == *desc)
-		{
-			hasWeapon = true;
-			break;
-		}
-	CA_FOREACH_END()
-	DisplayFlag(
-		Vec2iAdd(pos, o->Pos),
-		data->Gun->name,
-		hasWeapon,
-		UIObjectIsHighlighted(o));
-}
 static const char *MissionGetObjectiveStr(UIObject *o, void *vData)
 {
 	UNUSED(o);
@@ -1162,30 +1137,6 @@ static void MissionChangeSpecialChar(void *vData, int d)
 	*(int *)CArrayGet(
 		&data->co->Setting.characters.specialIds, data->index) = c;
 }
-static void MissionChangeWeapon(void *vData, int d)
-{
-	UNUSED(d);
-	MissionGunData *data = vData;
-	bool hasWeapon = false;
-	int weaponIndex = -1;
-	Mission *currentMission = CampaignGetCurrentMission(data->co);
-	CA_FOREACH(const GunDescription *, desc, currentMission->Weapons)
-		if (data->Gun == *desc)
-		{
-			hasWeapon = true;
-			weaponIndex = _ca_index;
-			break;
-		}
-	CA_FOREACH_END()
-	if (hasWeapon)
-	{
-		CArrayDelete(&currentMission->Weapons, weaponIndex);
-	}
-	else
-	{
-		CArrayPushBack(&currentMission->Weapons, &data->Gun);
-	}
-}
 static void MissionChangeMapItem(void *vData, int d)
 {
 	MissionIndexData *data = vData;
@@ -1279,7 +1230,6 @@ static void MissionChangeObjectiveFlags(void *vData, int d)
 static UIObject *CreateCampaignObjs(CampaignOptions *co);
 static UIObject *CreateMissionObjs(CampaignOptions *co);
 static UIObject *CreateClassicMapObjs(Vec2i pos, CampaignOptions *co);
-static UIObject *CreateWeaponObjs(CampaignOptions *co);
 static UIObject *CreateMapItemObjs(CampaignOptions *co, int dy);
 static UIObject *CreateCharacterObjs(CampaignOptions *co, int dy);
 static UIObject *CreateSpecialCharacterObjs(CampaignOptions *co, int dy);
@@ -1883,52 +1833,6 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, CampaignOptions *co)
 
 	UIObjectDestroy(o);
 	return c;
-}
-static void CreateWeaponToggleObjs(
-	CampaignOptions *co, UIObject *c, const UIObject *o,
-	int *idx, const int rows, CArray *guns);
-static UIObject *CreateWeaponObjs(CampaignOptions *co)
-{
-	const int th = FontH();
-	UIObject *c = UIObjectCreate(
-		UITYPE_CONTEXT_MENU, 0, Vec2iZero(), Vec2iZero());
-	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
-
-	UIObject *o = UIObjectCreate(
-		UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(80, th));
-	o->u.CustomDrawFunc = MissionDrawWeaponStatus;
-	o->ChangeFunc = MissionChangeWeapon;
-	o->Flags = UI_LEAVE_YC;
-	o->ChangesData = true;
-	const int rows = 10;
-	int idx = 0;
-	CreateWeaponToggleObjs(co, c, o, &idx, rows, &gGunDescriptions.Guns);
-	CreateWeaponToggleObjs(co, c, o, &idx, rows, &gGunDescriptions.CustomGuns);
-
-	UIObjectDestroy(o);
-	return c;
-}
-static void CreateWeaponToggleObjs(
-	CampaignOptions *co, UIObject *c, const UIObject *o,
-	int *idx, const int rows, CArray *guns)
-{
-	const int th = FontH();
-	for (int i = 0; i < (int)guns->size; i++)
-	{
-		const GunDescription *g = CArrayGet(guns, i);
-		if (!g->IsRealGun)
-		{
-			continue;
-		}
-		UIObject *o2 = UIObjectCopy(o);
-		CMALLOC(o2->Data, sizeof(MissionGunData));
-		o2->IsDynamicData = true;
-		((MissionGunData *)o2->Data)->co = co;
-		((MissionGunData *)o2->Data)->Gun = g;
-		o2->Pos = Vec2iNew(*idx / rows * 90, (*idx % rows) * th);
-		UIObjectAddChild(c, o2);
-		(*idx)++;
-	}
 }
 static UIObject *CreateMapItemObjs(CampaignOptions *co, int dy)
 {

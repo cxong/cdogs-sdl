@@ -96,7 +96,7 @@ typedef struct _UIObject
 		// Custom
 		void (*CustomDrawFunc)(struct _UIObject *, GraphicsDevice *g, Vec2i, void *);
 	} u;
-	char *Label;
+	const char *Label;
 	void *Data;
 	int IsDynamicData;
 	void (*ChangeFunc)(void *, int d);
