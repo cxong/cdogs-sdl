@@ -20,7 +20,8 @@
 		}],
 		"EnemyDensity": 0,
 		"Weapons": ["Silver Knife",
-		"Shuriken"],
+		"Blunderbuss",
+		"Crossbow"],
 		"Song": "",
 		"WallMask": "282828",
 		"FloorMask": "003c00",
@@ -140,16 +141,6 @@
 			30]]
 		},
 		{
-			"MapObject": "Blunderbuss spawner",
-			"Positions": [[21,
-			23]]
-		},
-		{
-			"MapObject": "Crossbow spawner",
-			"Positions": [[28,
-			40]]
-		},
-		{
 			"MapObject": "Rigged Barrel spawner",
 			"Positions": [[6,
 			12]]
@@ -168,6 +159,15 @@
 			"MapObject": "Spell: Soul Mutilator spawner",
 			"Positions": [[35,
 			8]]
+		},
+		{
+			"MapObject": "Shuriken spawner",
+			"Positions": [[21,
+			25],
+			[10,
+			46],
+			[38,
+			36]]
 		}],
 		"StaticWrecks": [],
 		"StaticCharacters": [],
