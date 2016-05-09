@@ -6,8 +6,7 @@
  * Modified by Pete Warden to fix a serious performance problem, support strings as keys
  * and removed thread synchronization - http://petewarden.typepad.com
  */
-#ifndef __HASHMAP_H__
-#define __HASHMAP_H__
+#pragma once
 
 #define MAP_MISSING -3  /* No such element */
 #define MAP_FULL -2 	/* Hashmap is full */
@@ -36,7 +35,7 @@ typedef struct hashmap_map *map_t;
 /*
  * Return an empty hashmap. Returns NULL if empty.
 */
-extern map_t hashmap_new();
+map_t hashmap_new();
 
 /*
  * Iteratively call f with argument (item, data) for
@@ -45,39 +44,39 @@ extern map_t hashmap_new();
  * than MAP_OK the traversal is terminated. f must
  * not reenter any hashmap functions, or deadlock may arise.
  */
-extern int hashmap_iterate(map_t in, PFany f, any_t item);
+int hashmap_iterate(map_t in, PFany f, any_t item);
 
 /*
  * Add an element to the hashmap. Return MAP_OK or MAP_OMEM.
  */
-extern int hashmap_put(map_t in, const char* key, any_t value);
+int hashmap_put(map_t in, const char* key, any_t value);
 
 /*
  * Get an element from the hashmap. Return MAP_OK or MAP_MISSING.
  */
-extern int hashmap_get(const map_t in, const char* key, any_t *arg);
+int hashmap_get(const map_t in, const char* key, any_t *arg);
 
 /*
  * Remove an element from the hashmap. Return MAP_OK or MAP_MISSING.
  */
-extern int hashmap_remove(map_t in, char* key);
+int hashmap_remove(map_t in, char* key);
 
 /*
  * Get any element. Return MAP_OK or MAP_MISSING.
  * remove - should the element be removed from the hashmap
  */
-extern int hashmap_get_one(map_t in, any_t *arg, int remove);
+int hashmap_get_one(map_t in, any_t *arg, int remove);
 
 /*
 * Remove all elements, with a custom callback to each element, so that they
 * may be deallocated by the callback
 */
-extern void hashmap_clear(map_t in, void(*callback)(any_t));
+void hashmap_clear(map_t in, void(*callback)(any_t));
 
 /*
  * Free the hashmap
  */
-extern void hashmap_free(map_t in);
+void hashmap_free(map_t in);
 
 /*
 * Free the hashmap, as well as a custom callback to each element, so that they
@@ -85,11 +84,9 @@ extern void hashmap_free(map_t in);
 * It is a shortcut to hashmap_iterate with a deallocation function followed by
 * hashmap_free.
 */
-extern void hashmap_destroy(map_t in, void (*callback)(any_t));
+void hashmap_destroy(map_t in, void (*callback)(any_t));
 
 /*
  * Get the current size of a hashmap
  */
-extern int hashmap_length(map_t in);
-
-#endif __HASHMAP_H__
+int hashmap_length(map_t in);
