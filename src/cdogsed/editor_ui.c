@@ -1840,6 +1840,7 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, CampaignOptions *co)
 	o2->u.CustomDrawFunc = MissionDrawDoorEnabled;
 	o2->Data = co;
 	o2->ChangeFunc = MissionChangeDoorEnabled;
+	o2->ChangesData = true;
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;
