@@ -261,18 +261,16 @@ static Vec2i faceOffsetsFiring[FACE_COUNT][DIRECTION_COUNT] =
 };
 
 
-static NamedPic *AddNamedPic(CArray *pics, const char *name, const Pic *p);
-
 static void SetupPalette(TPalette palette);
 bool PicManagerTryInit(
 	PicManager *pm, const char *oldGfxFile1, const char *oldGfxFile2)
 {
 	memset(pm, 0, sizeof *pm);
-	CArrayInit(&pm->oldSprites, sizeof(NamedSprites));
-	CArrayInit(&pm->pics, sizeof(NamedPic));
-	CArrayInit(&pm->sprites, sizeof(NamedSprites));
-	CArrayInit(&pm->customPics, sizeof(NamedPic));
-	CArrayInit(&pm->customSprites, sizeof(NamedSprites));
+	pm->oldSprites = hashmap_new();
+	pm->pics = hashmap_new();
+	pm->sprites = hashmap_new();
+	pm->customPics = hashmap_new();
+	pm->customSprites = hashmap_new();
 	CArrayInit(&pm->drainPics, sizeof(NamedPic *));
 	CArrayInit(&pm->doorStyleNames, sizeof(char *));
 
@@ -324,9 +322,11 @@ static void SetPaletteRange(
 	}
 }
 
+static NamedPic *AddNamedPic(map_t pics, const char *name, const Pic *p);
+static NamedSprites *AddNamedSprites(map_t sprites, const char *name);
 static void AfterAdd(PicManager *pm);
 void PicManagerAdd(
-	CArray *pics, CArray *sprites, const char *name, SDL_Surface *image)
+	map_t pics, map_t sprites, const char *name, SDL_Surface *image)
 {
 	if (image->format->BytesPerPixel != 4)
 	{
@@ -372,10 +372,7 @@ void PicManagerAdd(
 	NamedPic *np = NULL;
 	if (isSpritesheet)
 	{
-		NamedSprites ns;
-		NamedSpritesInit(&ns, buf);
-		CArrayPushBack(sprites, &ns);
-		nsp = CArrayGet(sprites, sprites->size - 1);
+		nsp = AddNamedSprites(sprites, buf);
 	}
 	else
 	{
@@ -450,7 +447,7 @@ static void PicManagerLoadDirImpl(
 					{
 						PathGetBasenameWithoutExtension(buf, file.name);
 					}
-					PicManagerAdd(&pm->pics, &pm->sprites, buf, data);
+					PicManagerAdd(pm->pics, pm->sprites, buf, data);
 				}
 			}
 			rwops->close(rwops);
@@ -514,15 +511,13 @@ static void LoadOldSprites(
 	{
 		return;
 	}
-	NamedSprites ns;
-	NamedSpritesInit(&ns, name);
+	NamedSprites *ns = AddNamedSprites(pm->sprites, name);
 	const TOffsetPic *pic = pics;
 	for (int i = 0; i < count; i++, pic++)
 	{
 		Pic p = PicCopy(PicManagerGetFromOld(pm, pic->picIndex));
-		CArrayPushBack(&ns.pics, &p);
+		CArrayPushBack(&ns->pics, &p);
 	}
-	CArrayPushBack(&pm->sprites, &ns);
 }
 static void LoadOldFacePics(
 	PicManager *pm, const char *spritesName, int facePics[][DIRECTION_COUNT],
@@ -532,8 +527,7 @@ static void LoadOldFacePics(
 	{
 		char buf[256];
 		sprintf(buf, "faces/%s_%s", faceNames[i], spritesName);
-		NamedSprites ns;
-		NamedSpritesInit(&ns, buf);
+		NamedSprites *ns = AddNamedSprites(pm->sprites, buf);
 		for (direction_e d = 0; d < DIRECTION_COUNT; d++)
 		{
 			const int facePic = facePics[i][d];
@@ -547,9 +541,8 @@ static void LoadOldFacePics(
 			p.offset = Vec2iAdd(
 				offsets[i][d],
 				Vec2iNew(-p.size.x / 2, NECK_OFFSET - p.size.y / 2));
-			CArrayPushBack(&ns.pics, &p);
+			CArrayPushBack(&ns->pics, &p);
 		}
-		CArrayPushBack(&pm->sprites, &ns);
 	}
 }
 static PicPaletted *PicManagerGetOldPic(PicManager *pm, int idx);
@@ -662,7 +655,7 @@ static void AddMaskBasePic(
 			p.Data[i] = COLOR2PIXEL(c);
 		}
 	}
-	AddNamedPic(&pm->pics, buf, &p);
+	AddNamedPic(pm->pics, buf, &p);
 
 	AfterAdd(pm);
 }
@@ -733,7 +726,7 @@ static void FindDrainPics(PicManager *pm)
 		CArrayPushBack(&pm->drainPics, &p);
 	}
 }
-static void MaybeAddDoorPicName(PicManager *pm, const char *picName);
+static int MaybeAddDoorPicName(any_t data, any_t item);
 static void FindDoorPics(PicManager *pm)
 {
 	// Scan all pics for door pics
@@ -741,20 +734,19 @@ static void FindDoorPics(PicManager *pm)
 		CFREE(*doorStyleName);
 	CA_FOREACH_END()
 	CArrayClear(&pm->doorStyleNames);
-	CA_FOREACH(NamedPic, p, pm->customPics)
-		MaybeAddDoorPicName(pm, p->name);
-	CA_FOREACH_END()
-	CA_FOREACH(NamedPic, p, pm->pics)
-		MaybeAddDoorPicName(pm, p->name);
-	CA_FOREACH_END()
+	hashmap_iterate(pm->customPics, MaybeAddDoorPicName, pm);
+	hashmap_iterate(pm->pics, MaybeAddDoorPicName, pm);
 }
-static void MaybeAddDoorPicName(PicManager *pm, const char *picName)
+static int MaybeAddDoorPicName(any_t data, any_t item)
 {
+	PicManager *pm = data;
+	const NamedPic *p = item;
+	const char *picName = p->name;
 	// Use the "wall" pic name
 	if (strncmp(picName, "door/", strlen("door/")) != 0 ||
 		strcmp(picName + strlen(picName) - strlen("_wall"), "_wall") != 0)
 	{
-		return;
+		return MAP_OK;
 	}
 	char buf[CDOGS_FILENAME_MAX];
 	const size_t len = strlen(picName) - strlen("door/") - strlen("_wall");
@@ -766,20 +758,26 @@ static void MaybeAddDoorPicName(PicManager *pm, const char *picName)
 	CA_FOREACH(char *, doorStyleName, pm->doorStyleNames)
 		if (strcmp(*doorStyleName, buf) == 0)
 		{
-			return;
+			return MAP_OK;
 		}
 	CA_FOREACH_END()
 
 	char *s;
 	CSTRDUP(s, buf);
 	CArrayPushBack(&pm->doorStyleNames, &s);
+	return MAP_OK;
 }
 
-static void PicManagerClear(CArray *pics, CArray *sprites);
+// Need to free the pics and the memory since hashmap stores on heap
+static void NamedPicDestroy(NamedPic *n);
+static void NamedSpritesDestroy(NamedSprites *n);
 void PicManagerClearCustom(PicManager *pm)
 {
-	PicManagerClear(&pm->customPics, &pm->customSprites);
-	FindDrainPics(pm);
+	hashmap_destroy(pm->customPics, NamedPicDestroy);
+	hashmap_destroy(pm->customSprites, NamedSpritesDestroy);
+	pm->customPics = hashmap_new();
+	pm->customSprites = hashmap_new();
+	AfterAdd(pm);
 }
 void PicManagerTerminate(PicManager *pm)
 {
@@ -791,16 +789,11 @@ void PicManagerTerminate(PicManager *pm)
 		}
 		PicFree(&pm->picsFromOld[i]);
 	}
-	CA_FOREACH(NamedSprites, ns, pm->oldSprites)
-		NamedSpritesFree(ns);
-	CA_FOREACH_END()
-	CArrayTerminate(&pm->oldSprites);
-	PicManagerClear(&pm->pics, &pm->sprites);
-	CArrayTerminate(&pm->pics);
-	CArrayTerminate(&pm->sprites);
-	PicManagerClearCustom(pm);
-	CArrayTerminate(&pm->customPics);
-	CArrayTerminate(&pm->customSprites);
+	hashmap_destroy(pm->oldSprites, NamedSpritesDestroy);
+	hashmap_destroy(pm->pics, NamedPicDestroy);
+	hashmap_destroy(pm->sprites, NamedSpritesDestroy);
+	hashmap_destroy(pm->customPics, NamedPicDestroy);
+	hashmap_destroy(pm->customSprites, NamedSpritesDestroy);
 	CArrayTerminate(&pm->drainPics);
 	CA_FOREACH(char *, doorStyleName, pm->doorStyleNames)
 		CFREE(*doorStyleName);
@@ -808,20 +801,15 @@ void PicManagerTerminate(PicManager *pm)
 	CArrayTerminate(&pm->doorStyleNames);
 	IMG_Quit();
 }
-static void PicManagerClear(CArray *pics, CArray *sprites)
+static void NamedPicDestroy(NamedPic *n)
 {
-	for (int i = 0; i < (int)pics->size; i++)
-	{
-		NamedPic *n = CArrayGet(pics, i);
-		PicFree(&n->pic);
-		CFREE(n->name);
-	}
-	CArrayClear(pics);
-	for (int i = 0; i < (int)sprites->size; i++)
-	{
-		NamedSpritesFree(CArrayGet(sprites, i));
-	}
-	CArrayClear(sprites);
+	NamedPicFree(n);
+	CFREE(n);
+}
+static void NamedSpritesDestroy(NamedSprites *n)
+{
+	NamedSpritesFree(n);
+	CFREE(n);
 }
 
 static PicPaletted *PicManagerGetOldPic(PicManager *pm, int idx)
@@ -842,18 +830,17 @@ Pic *PicManagerGetFromOld(PicManager *pm, int idx)
 }
 NamedPic *PicManagerGetNamedPic(const PicManager *pm, const char *name)
 {
-	CA_FOREACH(NamedPic, n, pm->customPics)
-		if (strcmp(n->name, name) == 0)
-		{
-			return n;
-		}
-	CA_FOREACH_END()
-	CA_FOREACH(NamedPic, n, pm->pics)
-		if (strcmp(n->name, name) == 0)
-		{
-			return n;
-		}
-	CA_FOREACH_END()
+	NamedPic *n;
+	int error = hashmap_get(pm->customPics, name, &n);
+	if (error == MAP_OK)
+	{
+		return n;
+	}
+	error = hashmap_get(pm->pics, name, &n);
+	if (error == MAP_OK)
+	{
+		return n;
+	}
 	return NULL;
 }
 Pic *PicManagerGetPic(const PicManager *pm, const char *name)
@@ -889,18 +876,17 @@ defaultPic:
 const NamedSprites *PicManagerGetSprites(
 	const PicManager *pm, const char *name)
 {
-	CA_FOREACH(const NamedSprites, n, pm->customSprites)
-		if (strcmp(n->name, name) == 0)
-		{
-			return n;
-		}
-	CA_FOREACH_END()
-	CA_FOREACH(const NamedSprites, n, pm->sprites)
-		if (strcmp(n->name, name) == 0)
-		{
-			return n;
-		}
-	CA_FOREACH_END()
+	NamedSprites *n;
+	int error = hashmap_get(pm->customSprites, name, &n);
+	if (error == MAP_OK)
+	{
+		return n;
+	}
+	error = hashmap_get(pm->sprites, name, &n);
+	if (error == MAP_OK)
+	{
+		return n;
+	}
 	return NULL;
 }
 
@@ -966,7 +952,7 @@ void PicManagerGenerateMaskedPic(
 		p.Data[i] = COLOR2PIXEL(c);
 		// TODO: more channels
 	}
-	AddNamedPic(&pm->customPics, maskedName, &p);
+	AddNamedPic(pm->customPics, maskedName, &p);
 
 	AfterAdd(pm);
 }
@@ -1016,13 +1002,35 @@ static void GetMaskedStyleName(
 	sprintf(buf, "%s/%s_%s", name, styleName, typeName);
 }
 
-static NamedPic *AddNamedPic(CArray *pics, const char *name, const Pic *p)
+static NamedPic *AddNamedPic(map_t pics, const char *name, const Pic *p)
 {
-	NamedPic n;
-	if (p != NULL) n.pic = *p;
-	CSTRDUP(n.name, name);
-	CArrayPushBack(pics, &n);
-	return CArrayGet(pics, pics->size - 1);
+	NamedPic *n;
+	CMALLOC(n, sizeof *n);
+	if (p != NULL) n->pic = *p;
+	CSTRDUP(n->name, name);
+	const int error = hashmap_put(pics, name, n);
+	if (error != MAP_OK)
+	{
+		LOG(LM_MAIN, LL_ERROR, "failed to add named pic %s: %d", name, error);
+		CFREE(n);
+		return NULL;
+	}
+	return n;
+}
+static NamedSprites *AddNamedSprites(map_t sprites, const char *name)
+{
+	NamedSprites *ns;
+	CMALLOC(ns, sizeof *ns);
+	NamedSpritesInit(ns, name);
+	const int error = hashmap_put(sprites, name, ns);
+	if (error != MAP_OK)
+	{
+		LOG(LM_MAIN, LL_ERROR, "failed to add named sprites %s: %d",
+			name, error);
+		CFREE(ns);
+		return NULL;
+	}
+	return ns;
 }
 
 NamedPic *PicManagerGetRandomDrain(PicManager *pm)

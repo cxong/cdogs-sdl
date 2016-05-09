@@ -55,7 +55,7 @@ bool PicManagerTryInit(
 	PicManager *pm, const char *oldGfxFile1, const char *oldGfxFile2);
 void PicManagerLoadDir(PicManager *pm, const char *path);
 void PicManagerAdd(
-	CArray *pics, CArray *sprites, const char *name, SDL_Surface *image);
+	map_t pics, map_t sprites, const char *name, SDL_Surface *image);
 void PicManagerClearCustom(PicManager *pm);
 void PicManagerTerminate(PicManager *pm);
 

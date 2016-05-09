@@ -50,12 +50,12 @@ extern int hashmap_iterate(map_t in, PFany f, any_t item);
 /*
  * Add an element to the hashmap. Return MAP_OK or MAP_OMEM.
  */
-extern int hashmap_put(map_t in, char* key, any_t value);
+extern int hashmap_put(map_t in, const char* key, any_t value);
 
 /*
  * Get an element from the hashmap. Return MAP_OK or MAP_MISSING.
  */
-extern int hashmap_get(map_t in, char* key, any_t *arg);
+extern int hashmap_get(const map_t in, const char* key, any_t *arg);
 
 /*
  * Remove an element from the hashmap. Return MAP_OK or MAP_MISSING.
@@ -67,6 +67,12 @@ extern int hashmap_remove(map_t in, char* key);
  * remove - should the element be removed from the hashmap
  */
 extern int hashmap_get_one(map_t in, any_t *arg, int remove);
+
+/*
+* Remove all elements, with a custom callback to each element, so that they
+* may be deallocated by the callback
+*/
+extern void hashmap_clear(map_t in, void(*callback)(any_t));
 
 /*
  * Free the hashmap

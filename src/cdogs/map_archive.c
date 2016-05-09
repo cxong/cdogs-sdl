@@ -291,7 +291,7 @@ static void LoadArchivePics(
 			{
 				char nameBuf[CDOGS_FILENAME_MAX];
 				PathGetBasenameWithoutExtension(nameBuf, file.path);
-				PicManagerAdd(&pm->customPics, &pm->customSprites, nameBuf, data);
+				PicManagerAdd(pm->customPics, pm->customSprites, nameBuf, data);
 			}
 		}
 		rwops->close(rwops);

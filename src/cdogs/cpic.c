@@ -63,6 +63,13 @@ void PicFromPicPaletted(Pic *pic, const PicPaletted *picP)
 }
 
 
+void NamedPicFree(NamedPic *n)
+{
+	PicFree(&n->pic);
+	CFREE(n->name);
+}
+
+
 void NamedSpritesInit(NamedSprites *ns, const char *name)
 {
 	CSTRDUP(ns->name, name);

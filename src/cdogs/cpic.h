@@ -86,6 +86,8 @@ typedef CPicDrawContext (*GetDrawContextFunc)(const int);
 
 void PicFromPicPaletted(Pic *pic, const PicPaletted *picP);
 
+void NamedPicFree(NamedPic *n);
+
 void NamedSpritesInit(NamedSprites *ns, const char *name);
 void NamedSpritesFree(NamedSprites *ns);
 
