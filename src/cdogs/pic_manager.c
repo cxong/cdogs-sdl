@@ -769,8 +769,8 @@ static int MaybeAddDoorPicName(any_t data, any_t item)
 }
 
 // Need to free the pics and the memory since hashmap stores on heap
-static void NamedPicDestroy(NamedPic *n);
-static void NamedSpritesDestroy(NamedSprites *n);
+static void NamedPicDestroy(any_t data);
+static void NamedSpritesDestroy(any_t data);
 void PicManagerClearCustom(PicManager *pm)
 {
 	hashmap_destroy(pm->customPics, NamedPicDestroy);
@@ -801,13 +801,15 @@ void PicManagerTerminate(PicManager *pm)
 	CArrayTerminate(&pm->doorStyleNames);
 	IMG_Quit();
 }
-static void NamedPicDestroy(NamedPic *n)
+static void NamedPicDestroy(any_t data)
 {
+	NamedPic *n = data;
 	NamedPicFree(n);
 	CFREE(n);
 }
-static void NamedSpritesDestroy(NamedSprites *n)
+static void NamedSpritesDestroy(any_t data)
 {
+	NamedSprites *n = data;
 	NamedSpritesFree(n);
 	CFREE(n);
 }
@@ -831,12 +833,12 @@ Pic *PicManagerGetFromOld(PicManager *pm, int idx)
 NamedPic *PicManagerGetNamedPic(const PicManager *pm, const char *name)
 {
 	NamedPic *n;
-	int error = hashmap_get(pm->customPics, name, &n);
+	int error = hashmap_get(pm->customPics, name, (any_t *)&n);
 	if (error == MAP_OK)
 	{
 		return n;
 	}
-	error = hashmap_get(pm->pics, name, &n);
+	error = hashmap_get(pm->pics, name, (any_t *)&n);
 	if (error == MAP_OK)
 	{
 		return n;
@@ -877,12 +879,12 @@ const NamedSprites *PicManagerGetSprites(
 	const PicManager *pm, const char *name)
 {
 	NamedSprites *n;
-	int error = hashmap_get(pm->customSprites, name, &n);
+	int error = hashmap_get(pm->customSprites, name, (any_t *)&n);
 	if (error == MAP_OK)
 	{
 		return n;
 	}
-	error = hashmap_get(pm->sprites, name, &n);
+	error = hashmap_get(pm->sprites, name, (any_t *)&n);
 	if (error == MAP_OK)
 	{
 		return n;
