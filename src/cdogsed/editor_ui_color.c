@@ -91,6 +91,10 @@ UIObject *CreateColorPicker(
 	UIObject *o = UIObjectCreate(
 		UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iAdd(swatchSize, swatchPad));
 	o->ChangeFunc = ColorPickerChange;
+	// Changing colour updates the masked pics for the mission, which requires
+	// a reload
+	o->ChangesData = true;
+	o->ReloadData = true;
 	o->u.CustomDrawFunc = ColorPickerDrawSwatch;
 	const Pic *palette = PicManagerGetPic(&gPicManager, "palette");
 	Vec2i v;
@@ -183,8 +187,9 @@ Vec2i CreateColorObjs(CampaignOptions *co, UIObject *c, Vec2i pos)
 	const int th = FontH();
 
 	UIObject *o = UIObjectCreate(
-		UITYPE_LABEL, YC_MISSIONLOOKS, Vec2iZero(), Vec2iNew(100, th));
+		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(100, th));
 	o->ChangesData = true;
+	o->ReloadData = true;
 	o->u.LabelFunc = MissionGetColorStr;
 
 	for (int i = 0; i < (int)MISSION_COLOR_COUNT; i++)

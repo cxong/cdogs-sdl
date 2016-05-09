@@ -854,11 +854,11 @@ static void DrawStyleArea(
 	int idx, int count,
 	int isHighlighted)
 {
-	char buf[16];
 	FontStrMask(name, pos, isHighlighted ? colorRed : colorWhite);
 	pos.y += FontH();
 	Blit(&gGraphicsDevice, pic, pos);
 	// Display style index and count, right aligned
+	char buf[16];
 	sprintf(buf, "%d/%d", idx + 1, count);
 	FontStrMask(
 		buf, Vec2iNew(pos.x + 28 - FontStrW(buf), pos.y + 17), colorGray);
