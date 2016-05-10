@@ -388,7 +388,9 @@ void hashmap_destroy(map_t in, void (*callback)(any_t)){
 static int hashmap_destroy_item_callback(any_t a, any_t b)
 {
 	void (**callback)(any_t) = a;
-	(*callback)(b);
+	if (callback != NULL) {
+		(*callback)(b);
+	}
 	return MAP_OK;
 }
 
