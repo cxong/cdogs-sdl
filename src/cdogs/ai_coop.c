@@ -142,6 +142,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 			v.y++)
 		{
 			const Tile *t = MapGetTile(&gMap, v);
+			if (t == NULL) continue;
 			CA_FOREACH(const ThingId, tid, t->things)
 				// Only look for bullets
 				if (tid->Kind != KIND_MOBILEOBJECT) continue;

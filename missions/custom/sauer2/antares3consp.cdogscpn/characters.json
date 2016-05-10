@@ -137,10 +137,10 @@
 		"speed": 512,
 		"Gun": "Sniper rifle",
 		"maxHealth": 40,
-		"flags": 67072,
-		"probabilityToMove": 50,
-		"probabilityToTrack": 40,
-		"probabilityToShoot": 100,
+		"flags": 8390144,
+		"probabilityToMove": 55,
+		"probabilityToTrack": 55,
+		"probabilityToShoot": 85,
 		"actionDelay": 15
 	},
 	{
@@ -311,7 +311,7 @@
 		"Legs": "363636",
 		"Hair": "58589c",
 		"speed": 384,
-		"Gun": "Grenades",
+		"Gun": "Heatseeker",
 		"maxHealth": 200,
 		"flags": 1536,
 		"probabilityToMove": 65,
