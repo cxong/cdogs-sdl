@@ -609,7 +609,7 @@ EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 							unsigned short *tileTo = CArrayGet(
 								&m->u.Static.Tiles, idx);
 							*tileTo = *tileFrom;
-							result = EDITOR_RESULT_CHANGED;
+							result = EDITOR_RESULT_CHANGED_AND_RELOAD;
 						}
 						i++;
 					}
