@@ -165,7 +165,7 @@ static unsigned long crc32(const unsigned char *s, unsigned int len)
 /*
  * Hashing function for a string
  */
-unsigned int hashmap_hash_int(const map_t m, const char* keystring){
+static unsigned int hashmap_hash_int(const map_t m, const char* keystring){
 
     unsigned long key = crc32((const unsigned char*)keystring, strlen(keystring));
 
@@ -189,7 +189,7 @@ unsigned int hashmap_hash_int(const map_t m, const char* keystring){
  * Return the integer of the location in data
  * to store the point to the item, or MAP_FULL.
  */
-int hashmap_hash(map_t m, const char* key){
+static int hashmap_hash(map_t m, const char* key){
 	int curr;
 	int i;
 
@@ -216,7 +216,7 @@ int hashmap_hash(map_t m, const char* key){
 /*
  * Doubles the size of the hashmap, and rehashes all the elements
  */
-int hashmap_rehash(map_t m){
+static int hashmap_rehash(map_t m){
 	int i;
 	int old_size;
 	hashmap_element* curr;
