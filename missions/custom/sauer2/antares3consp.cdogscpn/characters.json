@@ -72,11 +72,11 @@
 		"Hair": "d25106",
 		"speed": 384,
 		"Gun": "Machine gun",
-		"maxHealth": 100,
+		"maxHealth": 50,
 		"flags": 1536,
 		"probabilityToMove": 50,
 		"probabilityToTrack": 25,
-		"probabilityToShoot": 100,
+		"probabilityToShoot": 30,
 		"actionDelay": 15
 	},
 	{
@@ -88,11 +88,11 @@
 		"Hair": "000000",
 		"speed": 384,
 		"Gun": "Powergun",
-		"maxHealth": 100,
+		"maxHealth": 50,
 		"flags": 1536,
 		"probabilityToMove": 50,
 		"probabilityToTrack": 25,
-		"probabilityToShoot": 100,
+		"probabilityToShoot": 30,
 		"actionDelay": 15
 	},
 	{
@@ -104,11 +104,11 @@
 		"Hair": "000000",
 		"speed": 384,
 		"Gun": "Sniper rifle",
-		"maxHealth": 100,
+		"maxHealth": 50,
 		"flags": 1536,
 		"probabilityToMove": 50,
 		"probabilityToTrack": 85,
-		"probabilityToShoot": 100,
+		"probabilityToShoot": 30,
 		"actionDelay": 15
 	},
 	{
@@ -120,11 +120,11 @@
 		"Hair": "58589c",
 		"speed": 256,
 		"Gun": "Flamer",
-		"maxHealth": 100,
+		"maxHealth": 50,
 		"flags": 1536,
 		"probabilityToMove": 50,
 		"probabilityToTrack": 25,
-		"probabilityToShoot": 47,
+		"probabilityToShoot": 30,
 		"actionDelay": 15
 	},
 	{

@@ -24,7 +24,7 @@
 			"Type": "Destroy",
 			"Index": 1,
 			"Count": 37,
-			"Required": 16,
+			"Required": 26,
 			"Flags": 0
 		},
 		{
@@ -32,7 +32,7 @@
 			"Type": "Kill",
 			"Index": 2,
 			"Count": 7,
-			"Required": 5,
+			"Required": 7,
 			"Flags": 0
 		}],
 		"Enemies": [],
