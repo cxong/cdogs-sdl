@@ -49,6 +49,7 @@ typedef enum
 	BRUSHTYPE_BOX,
 	BRUSHTYPE_BOX_FILLED,
 	BRUSHTYPE_ROOM,
+	BRUSHTYPE_ROOM_PAINTER,
 	BRUSHTYPE_SELECT,
 	BRUSHTYPE_FILL,
 	BRUSHTYPE_SET_PLAYER_START,
@@ -60,8 +61,6 @@ typedef enum
 	BRUSHTYPE_SET_KEY,
 	BRUSHTYPE_SET_EXIT
 } BrushType;
-const char *BrushTypeStr(BrushType t);
-BrushType StrBrushType(const char *s);
 
 // Encapsulates the drawing brushes and draws tiles to a static mission
 // There are main and secondary types corresponding to mouse left and right

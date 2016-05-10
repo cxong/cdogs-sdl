@@ -172,6 +172,11 @@ static int BrushIsBrushTypeRoom(void *data)
 	EditorBrush *b = data;
 	return b->Type == BRUSHTYPE_ROOM;
 }
+static int BrushIsBrushTypeRoomPainter(void *data)
+{
+	EditorBrush *b = data;
+	return b->Type == BRUSHTYPE_ROOM_PAINTER;
+}
 static int BrushIsBrushTypeSelect(void *data)
 {
 	EditorBrush *b = data;
@@ -231,6 +236,12 @@ static void BrushSetBrushTypeRoom(void *data, int d)
 	UNUSED(d);
 	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_ROOM;
+}
+static void BrushSetBrushTypeRoomPainter(void *data, int d)
+{
+	UNUSED(d);
+	EditorBrush *b = data;
+	b->Type = BRUSHTYPE_ROOM_PAINTER;
 }
 static void BrushSetBrushTypeSelect(void *data, int d)
 {
@@ -337,6 +348,14 @@ UIObject *CreateStaticMapObjs(
 	o2->u.Button.IsDownFunc = BrushIsBrushTypeRoom;
 	o2->ChangeFunc = BrushSetBrushTypeRoom;
 	CSTRDUP(o2->Tooltip, "Room");
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "editor/room_painter"));
+	o2->u.Button.IsDownFunc = BrushIsBrushTypeRoomPainter;
+	o2->ChangeFunc = BrushSetBrushTypeRoomPainter;
+	CSTRDUP(o2->Tooltip, "Room painter");
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;

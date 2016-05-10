@@ -35,61 +35,6 @@
 #include <cdogs/mission_convert.h>
 
 
-const char *BrushTypeStr(BrushType t)
-{
-	switch (t)
-	{
-	case BRUSHTYPE_POINT:
-		return "Point";
-	case BRUSHTYPE_LINE:
-		return "Line";
-	case BRUSHTYPE_BOX:
-		return "Box";
-	case BRUSHTYPE_BOX_FILLED:
-		return "Box Filled";
-	case BRUSHTYPE_ROOM:
-		return "Room";
-	case BRUSHTYPE_SELECT:
-		return "Select";
-	default:
-		assert(0 && "unknown brush type");
-		return "";
-	}
-}
-BrushType StrBrushType(const char *s)
-{
-	if (strcmp(s, "Point") == 0)
-	{
-		return BRUSHTYPE_POINT;
-	}
-	else if (strcmp(s, "Line") == 0)
-	{
-		return BRUSHTYPE_LINE;
-	}
-	else if (strcmp(s, "Box") == 0)
-	{
-		return BRUSHTYPE_BOX;
-	}
-	else if (strcmp(s, "Box Filled") == 0)
-	{
-		return BRUSHTYPE_BOX_FILLED;
-	}
-	else if (strcmp(s, "Room") == 0)
-	{
-		return BRUSHTYPE_ROOM;
-	}
-	else if (strcmp(s, "Select") == 0)
-	{
-		return BRUSHTYPE_SELECT;
-	}
-	else
-	{
-		assert(0 && "unknown brush type");
-		return BRUSHTYPE_POINT;
-	}
-}
-
-
 void EditorBrushInit(EditorBrush *b)
 {
 	memset(b, 0, sizeof *b);
@@ -126,11 +71,12 @@ static void EditorBrushHighlightPoint(void *data, Vec2i p)
 }
 void EditorBrushSetHighlightedTiles(EditorBrush *b)
 {
-	int useSimpleHighlight = 1;
+	bool useSimpleHighlight = true;
 	switch (b->Type)
 	{
-	case BRUSHTYPE_POINT:
-		useSimpleHighlight = 1;
+	case BRUSHTYPE_POINT:	// fallthrough
+	case BRUSHTYPE_ROOM_PAINTER:
+		useSimpleHighlight = true;
 		break;
 	case BRUSHTYPE_LINE:
 		if (b->IsPainting)
@@ -298,6 +244,32 @@ static void EditorBrushPaintLine(EditorBrush *b, Mission *m)
 	b->IsPainting = 1;
 	b->LastPos = b->Pos;
 }
+// Paint all the edge tiles as a wall, unless they are room tiles already;
+// then paint the interior as room tiles
+static void EditorBrushPaintRoom(EditorBrush *b, Mission *m)
+{
+	Vec2i v;
+	for (v.y = 0; v.y < b->BrushSize; v.y++)
+	{
+		for (v.x = 0; v.x < b->BrushSize; v.x++)
+		{
+			unsigned short tile = MAP_ROOM;
+			if (v.x == 0 || v.x == b->BrushSize - 1 ||
+				v.y == 0 || v.y == b->BrushSize - 1)
+			{
+				tile = MAP_WALL;
+			}
+			const Vec2i pos = Vec2iAdd(b->Pos, v);
+			const unsigned short tileExisting = IMapGet(&gMap, pos);
+			if (tileExisting != MAP_ROOM)
+			{
+				SetTile(m, pos, tile);
+			}
+		}
+	}
+	b->IsPainting = true;
+	b->LastPos = b->Pos;
+}
 typedef struct
 {
 	Mission *m;
@@ -316,7 +288,7 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	switch (b->Type)
 	{
 	case BRUSHTYPE_POINT:
-		b->IsPainting = 1;
+		b->IsPainting = true;
 		EditorBrushPaintLine(b, m);
 		return EDITOR_RESULT_CHANGED;
 	case BRUSHTYPE_LINE:	// fallthrough
@@ -326,6 +298,9 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	case BRUSHTYPE_SET_EXIT:
 		// don't paint until the end
 		break;
+	case BRUSHTYPE_ROOM_PAINTER:
+		EditorBrushPaintRoom(b, m);
+		return EDITOR_RESULT_CHANGED;
 	case BRUSHTYPE_SELECT:
 		// Perform state changes if we've started painting
 		if (!b->IsPainting)
@@ -563,6 +538,10 @@ EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 		case BRUSHTYPE_ROOM:
 			EditorBrushPaintBox(b, m, MAP_WALL, MAP_ROOM);
 			result = EDITOR_RESULT_CHANGED;
+			break;
+		case BRUSHTYPE_ROOM_PAINTER:
+			// Reload map to update tiles
+			result = EDITOR_RESULT_RELOAD;
 			break;
 		case BRUSHTYPE_SELECT:
 			if (b->IsMoving)
