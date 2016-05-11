@@ -507,9 +507,8 @@ static void HandleGameEvent(
 						e.u.ActorHit.PlayerUID, -e.u.ActorHit.Power);
 				}
 
-				AddBloodSplatter(
-					a->Pos, e.u.ActorHit.Power,
-					Net2Vec2i(e.u.ActorHit.Vel));
+				ActorAddBloodSplatters(
+					a, e.u.ActorHit.Power, Net2Vec2i(e.u.ActorHit.Vel));
 
 				// Rumble if taking hit
 				if (a->PlayerUID >= 0)

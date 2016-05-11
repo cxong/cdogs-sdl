@@ -37,6 +37,7 @@ set(CDOGS_SOURCES
 	draw.c
 	draw_buffer.c
 	drawtools.c
+	emitter.c
 	events.c
 	files.c
 	font.c
@@ -125,6 +126,7 @@ set(CDOGS_HEADERS
 	draw.h
 	draw_buffer.h
 	drawtools.h
+	emitter.h
 	events.h
 	files.h
 	font.h

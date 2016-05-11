@@ -45,6 +45,10 @@ Vec2i Vec2iUnit(void)
 {
 	return Vec2iNew(1, 1);
 }
+Vec2i Vec2iFromPolar(const double r, const double th)
+{
+	return Vec2iNew((int)Round(cos(th) * r), (int)Round(sin(th) * r));
+}
 
 Vec2i Vec2iAdd(Vec2i a, Vec2i b)
 {

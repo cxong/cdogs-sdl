@@ -95,6 +95,3 @@ void ParticlesUpdate(CArray *particles, const int ticks);
 
 int ParticleAdd(CArray *particles, const AddParticle add);
 void ParticleDestroy(CArray *particles, const int id);
-
-void AddBloodSplatter(
-	const Vec2i fullPos, const int power, const Vec2i hitVector);

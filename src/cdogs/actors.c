@@ -86,6 +86,7 @@
 #define SOUND_LOCK_WEAPON_CLICK 20
 #define DROP_GUN_CHANCE 0.2
 #define DRAW_RADIAN_SPEED (PI/16)
+#define BLEED_PERCENTAGE 25	// start bleeding if below this % of health
 
 
 CArray gPlayerIds;
@@ -891,6 +892,18 @@ void UpdateAllActors(int ticks)
 				}
 			}
 		}
+		// If low on health, bleed
+		const int maxHealth = ActorGetCharacter(actor)->maxHealth;
+		const int healthPct = actor->health * 100 / maxHealth;
+		if (healthPct < BLEED_PERCENTAGE)
+		{
+			actor->bleedCounter--;
+			if (actor->bleedCounter <= 0)
+			{
+				ActorAddBloodSplatters(actor, 1, Vec2iZero());
+				actor->bleedCounter += healthPct;
+			}
+		}
 	CA_FOREACH_END()
 }
 static void CheckManualPickups(TActor *a);
@@ -1102,6 +1115,8 @@ int ActorsGetFreeIndex(void)
 	CA_FOREACH_END()
 	return (int)gActors.size;
 }
+
+static void GoreEmitterInit(Emitter *em, const char *particleClassName);
 TActor *ActorAdd(NActorAdd aa)
 {
 	// Don't add if UID exists
@@ -1180,6 +1195,11 @@ TActor *ActorAdd(NActorAdd aa)
 		actor->aiContext = AIContextNew();
 		ActorSetAIState(actor, AI_STATE_IDLE);
 	}
+
+	GoreEmitterInit(&actor->blood1, "blood1");
+	GoreEmitterInit(&actor->blood2, "blood2");
+	GoreEmitterInit(&actor->blood3, "blood3");
+
 	TryMoveActor(actor, Net2Vec2i(aa.FullPos));
 
 	// Spawn sound for player actors
@@ -1190,6 +1210,13 @@ TActor *ActorAdd(NActorAdd aa)
 	}
 	return actor;
 }
+static void GoreEmitterInit(Emitter *em, const char *particleClassName)
+{
+	EmitterInit(
+		em, StrParticleClass(&gParticleClasses, particleClassName),
+		Vec2iZero(), 0, 64, 6, 12, -0.1, 0.1);
+}
+
 void ActorDestroy(TActor *a)
 {
 	CASSERT(a->isInUse, "Destroying in-use actor");
@@ -1391,6 +1418,65 @@ bool ActorIsInvulnerable(
 	}
 
 	return 0;
+}
+
+void ActorAddBloodSplatters(TActor *a, const int power, const Vec2i hitVector)
+{
+	const GoreAmount ga = ConfigGetEnum(&gConfig, "Game.Gore");
+	if (ga == GORE_NONE) return;
+
+	// Emit blood based on power and gore setting
+	int bloodPower = power * 2;
+	// Randomly cycle through the blood types
+	int bloodSize = 1;
+	// Spray the blood back with the shot if pushback enabled
+	const bool shotsPushBack = ConfigGetBool(&gConfig, "Game.ShotsPushback");
+	while (bloodPower > 0)
+	{
+		Emitter *em = NULL;
+		switch (bloodSize)
+		{
+		case 1:
+			em = &a->blood1;
+			break;
+		case 2:
+			em = &a->blood2;
+			break;
+		default:
+			em = &a->blood3;
+			break;
+		}
+		bloodSize++;
+		if (bloodSize > 3)
+		{
+			bloodSize = 1;
+		}
+		Vec2i vel;
+		if (shotsPushBack)
+		{
+			vel = Vec2iScaleDiv(
+				Vec2iScale(hitVector, (rand() % 8 + 8) * power),
+				15 * SHOT_IMPULSE_DIVISOR);
+		}
+		else
+		{
+			vel = Vec2iScaleDiv(
+				Vec2iScale(hitVector, rand() % 8 + 8), 20);
+		}
+		EmitterStart(em, a->Pos, 10, vel);
+		switch (ga)
+		{
+		case GORE_LOW:
+			bloodPower /= 8;
+			break;
+		case GORE_MEDIUM:
+			bloodPower /= 2;
+			break;
+		default:
+			bloodPower = bloodPower * 7 / 8;
+			break;
+		}
+	}
 }
 
 bool ActorIsLocalPlayer(const int uid)

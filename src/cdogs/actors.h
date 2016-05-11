@@ -50,6 +50,7 @@
 
 #include "ai_context.h"
 #include "animation.h"
+#include "emitter.h"
 #include "grafx.h"
 #include "player.h"
 #include "weapon.h"
@@ -146,6 +147,12 @@ typedef struct Actor
 	char Chatter[256];
 	int ChatterCounter;
 
+	// Gore emitters
+	Emitter blood1;
+	Emitter blood2;
+	Emitter blood3;
+	int bleedCounter;
+
 	// Signals to other AIs what this actor is doing
 	ActorAction action;
 	AIContext *aiContext;
@@ -199,7 +206,8 @@ bool ActorIsImmune(const TActor *actor, const special_damage_e damage);
 // but deals no damage
 void ActorTakeHit(TActor *actor, const special_damage_e damage);
 bool ActorIsInvulnerable(
-	const TActor *actor, const int flags, const int playerUID,
+	const TActor *a, const int flags, const int playerUID,
 	const GameMode mode);
+void ActorAddBloodSplatters(TActor *a, const int power, const Vec2i hitVector);
 
 bool ActorIsLocalPlayer(const int uid);
