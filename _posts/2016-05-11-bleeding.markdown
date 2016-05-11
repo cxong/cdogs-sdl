@@ -1,0 +1,10 @@
+---
+layout: post
+title:  "Bleeding"
+date:   2016-05-11
+categories: progress
+---
+
+Added bleeding. The trail of blood is a friendly reminder that you need to find a health pack!
+
+![bleeding](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/bleeding.gif)
