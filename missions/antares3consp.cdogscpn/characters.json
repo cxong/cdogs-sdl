@@ -297,10 +297,10 @@
 		"speed": 384,
 		"Gun": "Machine gun",
 		"maxHealth": 40,
-		"flags": 25167360,
-		"probabilityToMove": 50,
-		"probabilityToTrack": 40,
-		"probabilityToShoot": 80,
+		"flags": 16778752,
+		"probabilityToMove": 75,
+		"probabilityToTrack": 50,
+		"probabilityToShoot": 50,
 		"actionDelay": 15
 	},
 	{
@@ -311,12 +311,12 @@
 		"Legs": "363636",
 		"Hair": "58589c",
 		"speed": 384,
-		"Gun": "Heatseeker",
+		"Gun": "Launcher",
 		"maxHealth": 200,
-		"flags": 1536,
-		"probabilityToMove": 65,
+		"flags": 58721792,
+		"probabilityToMove": 45,
 		"probabilityToTrack": 35,
-		"probabilityToShoot": 65,
+		"probabilityToShoot": 25,
 		"actionDelay": 25
 	}]
 }

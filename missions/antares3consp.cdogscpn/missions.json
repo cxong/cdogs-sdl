@@ -1295,7 +1295,7 @@
 		"Enemies": [18],
 		"SpecialChars": [19],
 		"MapObjectDensities": [],
-		"EnemyDensity": 4,
+		"EnemyDensity": 2,
 		"Weapons": ["Knife",
 		"Shotgun",
 		"Pistol"],
