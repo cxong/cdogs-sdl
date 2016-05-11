@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "C-Dogs Portable LAN"
+title:  "C-Dogs is now free"
 date:   2016-05-07
 categories: news
 ---
