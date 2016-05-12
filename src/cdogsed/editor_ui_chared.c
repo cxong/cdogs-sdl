@@ -66,7 +66,7 @@ UIObject *CreateCharEditorObjs(int *charIdx, CharacterStore *chars)
 
 	// Create colour pickers
 	UIObject *oColour = UIObjectCreate(
-		UITYPE_LABEL, YC_NONE, Vec2iZero(), Vec2iNew(60, th));
+		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(60, th));
 	oColour->ChangesData = true;
 	oColour->u.LabelFunc = CharGetColorStr;
 	oColour->Id2 = -1;
@@ -229,6 +229,10 @@ static const char *CharGetColorStr(UIObject *o, void *data)
 	static char s[32];
 	UNUSED(o);
 	CharColorData *cc = data;
+	if (*cc->CharIdx < 0 || *cc->CharIdx >= (int)cc->Chars->OtherChars.size)
+	{
+		return NULL;
+	}
 	char c[8];
 	const color_t colour = CharGetColor(cc);
 	ColorStr(c, colour);

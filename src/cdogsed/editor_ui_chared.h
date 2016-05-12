@@ -31,7 +31,6 @@
 
 #include "ui_object.h"
 
-#define YC_NONE       0
 #define YC_APPEARANCE 1
 #define YC_ATTRIBUTES 2
 #define YC_FLAGS      3

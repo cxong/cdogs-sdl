@@ -648,9 +648,20 @@ static void HandleInput(
 			*done = 1;
 			break;
 
+		case SDL_SCANCODE_BACKSPACE:
+			fileChanged |= UIObjectDelChar(sCharEditorObjs);
+			break;
+
 		default:
 			// do nothing
 			break;
+		}
+		// Get text input, ASCII only
+		char *c = gEventHandlers.keyboard.Typed;
+		while (c && *c >= ' ' && *c <= '~')
+		{
+			fileChanged |= UIObjectAddChar(sCharEditorObjs, *c);
+			c++;
 		}
 	}
 }

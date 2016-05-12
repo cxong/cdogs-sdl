@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2015, Cong Xu
+    Copyright (c) 2014-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -113,8 +113,11 @@ static int HasDoorOrientedAt(Mission *m, Vec2i pos,int isHorizontal)
 }
 bool MissionTrySetTile(Mission *m, Vec2i pos, unsigned short tile)
 {
-	int idx = pos.y * m->Size.x + pos.x;
-	assert(m->Type == MAPTYPE_STATIC && "cannot set tile for map type");
+	if (pos.x < 0 || pos.x >= m->Size.x || pos.y < 0 || pos.y >= m->Size.y)
+	{
+		return false;
+	}
+	CASSERT(m->Type == MAPTYPE_STATIC, "cannot set tile for map type");
 	switch (tile)
 	{
 	case MAP_WALL:
@@ -153,6 +156,7 @@ bool MissionTrySetTile(Mission *m, Vec2i pos, unsigned short tile)
 		}
 		break;
 	}
+	const int idx = pos.y * m->Size.x + pos.x;
 	*(unsigned short *)CArrayGet(&m->u.Static.Tiles, idx) = tile;
 	return true;
 }
