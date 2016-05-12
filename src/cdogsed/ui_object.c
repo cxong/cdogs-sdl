@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2013-2015, Cong Xu
+ Copyright (c) 2013-2016, Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -51,6 +51,7 @@ UIObject *UIObjectCreate(UIType type, int id, Vec2i pos, Vec2i size)
 	o->Pos = pos;
 	o->Size = size;
 	o->IsVisible = true;
+	o->ChangeDisablesContext = true;
 	switch (type)
 	{
 	case UITYPE_TEXTBOX:
@@ -90,14 +91,18 @@ UIObject *UIObjectCopy(const UIObject *o)
 	res->Flags = o->Flags;
 	res->Tooltip = o->Tooltip;
 	res->Parent = o->Parent;
+	res->DoNotHighlight = o->DoNotHighlight;
+	res->Label = o->Label;
 	res->Data = o->Data;
-	assert(!o->IsDynamicData && "Cannot copy unknown dynamic data size");
-	res->IsDynamicData = 0;
+	CASSERT(!o->IsDynamicData, "Cannot copy unknown dynamic data size");
+	res->IsDynamicData = false;
 	res->ChangeFunc = o->ChangeFunc;
+	res->ChangeDisablesContext = o->ChangeDisablesContext;
 	res->ChangesData = o->ChangesData;
 	res->ReloadData = o->ReloadData;
 	res->OnFocusFunc = o->OnFocusFunc;
 	res->OnUnfocusFunc = o->OnUnfocusFunc;
+	res->CheckVisible = o->CheckVisible;
 	memcpy(&res->u, &o->u, sizeof res->u);
 	return res;
 }
@@ -240,7 +245,10 @@ EditorResult UIObjectChange(UIObject *o, int d)
 	if (o->ChangeFunc)
 	{
 		o->ChangeFunc(o->Data, d);
-		DisableContextMenuParents(o);
+		if (o->ChangeDisablesContext)
+		{
+			DisableContextMenuParents(o);
+		}
 		return EDITOR_RESULT_NEW(o->ChangesData, o->ReloadData);
 	}
 	return EDITOR_RESULT_NONE;

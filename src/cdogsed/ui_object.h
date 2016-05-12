@@ -100,6 +100,8 @@ typedef struct _UIObject
 	void *Data;
 	int IsDynamicData;
 	void (*ChangeFunc)(void *, int d);
+	// Whether the change func disables parent context menus (default true)
+	bool ChangeDisablesContext;
 	// Whether calling the change func changes the file (i.e. requires save)
 	bool ChangesData;
 	// Whether calling the change func requires a reload

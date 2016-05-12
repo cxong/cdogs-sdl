@@ -120,3 +120,21 @@ void DisplayFlag(
 	p = FontChMask(':', p, labelMask);
 	FontStrMask(isOn ? "On" : "Off", p, isOn ? colorPurple : colorWhite);
 }
+
+static void CloseChange(void *data, int d);
+void CreateCloseLabel(UIObject *c, const Vec2i pos)
+{
+	const char *closeLabel = "Close";
+	const Vec2i closeSize = FontStrSize(closeLabel);
+	UIObject *oClose = UIObjectCreate(UITYPE_LABEL, 0, pos, closeSize);
+	oClose->Label = closeLabel;
+	oClose->ReloadData = true;
+	// Have a dummy change func so that the context menu is closed
+	oClose->ChangeFunc = CloseChange;
+	UIObjectAddChild(c, oClose);
+}
+static void CloseChange(void *data, int d)
+{
+	UNUSED(data);
+	UNUSED(d);
+}

@@ -57,3 +57,6 @@ void ClearScreen(GraphicsDevice *g);
 
 void DisplayFlag(
 	const Vec2i pos, const char *s, const bool isOn, const bool isHighlighted);
+
+// Create a dummy label that can be clicked to close the context menu
+void CreateCloseLabel(UIObject *c, const Vec2i pos);

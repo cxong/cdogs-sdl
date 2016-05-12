@@ -31,6 +31,7 @@
 #include <cdogs/font.h>
 
 #include "editor_ui.h"
+#include "editor_ui_common.h"
 
 
 typedef struct
@@ -52,7 +53,6 @@ typedef struct
 	ColorPickerChangeFunc ChangeFunc;
 } ColorPickerData;
 static void ColorPickerUpdateText(UIObject *o, void *data);
-static void CloseChange(void *data, int d);
 static void ColorPickerChange(void *data, int d);
 static void ColorPickerDrawSwatch(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data);
@@ -85,16 +85,7 @@ UIObject *CreateColorPicker(
 	oText->CheckVisible = ColorPickerUpdateText;
 	UIObjectAddChild(c, oText);
 
-	// Create a dummy label that can be clicked to close the dialog
-	UIObject *oClose = UIObjectCreate(
-		UITYPE_LABEL, 0, Vec2iNew(oText->Size.x + 10, 0), FontStrSize("Close"));
-	oClose->Label = "Close";
-	oClose->ReloadData = true;
-	// Have a dummy change func so that the context menu is closed
-	oClose->ChangeFunc = CloseChange;
-	UIObjectAddChild(c, oClose);
-
-	const int yStart = oText->Size.y;
+	const int yStart = oText->Size.y + 4;
 
 	// Create colour squares from the palette
 	const Vec2i swatchSize = Vec2iNew(5, 5);
@@ -132,8 +123,13 @@ UIObject *CreateColorPicker(
 			UIObjectAddChild(c, o2);
 		}
 	}
-
 	UIObjectDestroy(o);
+
+	// Create a dummy label that can be clicked to close the context menu
+	CreateCloseLabel(c, Vec2iNew(
+		palette->size.x * (swatchSize.x + swatchPad.x) - FontStrW("Close"),
+		0));
+
 	return c;
 }
 static void ColorPickerUpdateText(UIObject *o, void *data)
@@ -156,11 +152,6 @@ static bool ColorPickerSetFromText(void *data)
 	const color_t colour = StrColor(cData->Text);
 	cData->ChangeFunc(colour, cData->Data);
 	return true;
-}
-static void CloseChange(void *data, int d)
-{
-	UNUSED(data);
-	UNUSED(d);
 }
 static void ColorPickerChange(void *data, int d)
 {

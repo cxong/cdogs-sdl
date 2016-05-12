@@ -148,6 +148,7 @@ static bool HasWeapon(const Mission *m, const GunDescription *g)
 	return false;
 }
 
+#define HEADER_COLUMN_WIDTH 75
 #define COLUMN_WIDTH 90
 
 static void CreateWeaponSpecialToggleObj(
@@ -166,15 +167,19 @@ UIObject *CreateWeaponObjs(CampaignOptions *co)
 	// Add special toggle controls
 	CreateWeaponSpecialToggleObj(co, c, Vec2iZero(), SELECT_ALL, "Select All");
 	CreateWeaponSpecialToggleObj(
-		co, c, Vec2iNew(COLUMN_WIDTH, 0), SELECT_NONE, "Select None");
+		co, c, Vec2iNew(HEADER_COLUMN_WIDTH, 0), SELECT_NONE, "Select None");
 	CreateWeaponSpecialToggleObj(
-		co, c, Vec2iNew(COLUMN_WIDTH * 2, 0), SELECT_INVERSE, "Invert");
+		co, c, Vec2iNew(HEADER_COLUMN_WIDTH * 2, 0), SELECT_INVERSE, "Invert");
+
+	// Create a dummy label that can be clicked to close the context menu
+	CreateCloseLabel(c, Vec2iNew(HEADER_COLUMN_WIDTH * 3, 0));
 
 	// Add a toggle entry for each gun
 	UIObject *o = UIObjectCreate(
 		UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(80, th));
 	o->u.CustomDrawFunc = MissionDrawWeaponStatus;
 	o->ChangeFunc = MissionChangeWeapon;
+	o->ChangeDisablesContext = false;
 	o->Flags = UI_LEAVE_YC;
 	o->ChangesData = true;
 	const int rows = 10;
@@ -191,9 +196,10 @@ static void CreateWeaponSpecialToggleObj(
 {
 	const int th = FontH();
 	UIObject *o = UIObjectCreate(
-		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(80, th));
+		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(HEADER_COLUMN_WIDTH - 10, th));
 	o->Label = label;
 	o->ChangeFunc = MissionSelectWeapons;
+	o->ChangeDisablesContext = false;
 	o->ChangesData = true;
 	CMALLOC(o->Data, sizeof(MissionAllGunsData));
 	o->IsDynamicData = true;
