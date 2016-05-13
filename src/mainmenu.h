@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -35,4 +35,4 @@ void MainMenu(
 	GraphicsDevice *graphics,
 	credits_displayer_t *creditsDisplayer,
 	custom_campaigns_t *campaigns,
-	const GameMode lastGameMode);
+	const GameMode lastGameMode, const bool wasClient);

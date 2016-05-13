@@ -49,27 +49,34 @@ void MainMenu(
 	GraphicsDevice *graphics,
 	credits_displayer_t *creditsDisplayer,
 	custom_campaigns_t *campaigns,
-	const GameMode lastGameMode)
+	const GameMode lastGameMode, const bool wasClient)
 {
 	MenuSystem ms;
 	MenuCreateAll(&ms, campaigns, &gEventHandlers, graphics);
 	MenuSetCreditsDisplayer(&ms, creditsDisplayer);
 	// Auto-enter the submenu corresponding to the last game mode
 	menu_t *startMenu = FindSubmenuByName(ms.root, "Start");
-	switch (lastGameMode)
+	if (wasClient)
 	{
-	case GAME_MODE_NORMAL:
-		ms.current = FindSubmenuByName(startMenu, "Campaign");
-		break;
-	case GAME_MODE_DOGFIGHT:
-		ms.current = FindSubmenuByName(startMenu, "Dogfight");
-		break;
-	case GAME_MODE_DEATHMATCH:
-		ms.current = FindSubmenuByName(startMenu, "Deathmatch");
-		break;
-	default:
-		// Do nothing
-		break;
+		ms.current = startMenu;
+	}
+	else
+	{
+		switch (lastGameMode)
+		{
+		case GAME_MODE_NORMAL:
+			ms.current = FindSubmenuByName(startMenu, "Campaign");
+			break;
+		case GAME_MODE_DOGFIGHT:
+			ms.current = FindSubmenuByName(startMenu, "Dogfight");
+			break;
+		case GAME_MODE_DEATHMATCH:
+			ms.current = FindSubmenuByName(startMenu, "Deathmatch");
+			break;
+		default:
+			// Do nothing
+			break;
+		}
 	}
 	MenuLoop(&ms);
 

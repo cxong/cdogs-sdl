@@ -99,18 +99,21 @@
 void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaigns)
 {
 	GameMode lastGameMode = GAME_MODE_QUICK_PLAY;
+	bool wasClient = false;
 	for (;;)
 	{
 		if (!gCampaign.IsLoaded)
 		{
 			MainMenu(
-				&gGraphicsDevice, creditsDisplayer, campaigns, lastGameMode);
+				&gGraphicsDevice, creditsDisplayer, campaigns,
+				lastGameMode, wasClient);
 		}
 		if (!gCampaign.IsLoaded)
 		{
 			break;
 		}
 		lastGameMode = gCampaign.Entry.Mode;
+		wasClient = gCampaign.IsClient;
 		ScreenStart();
 	}
 	debug(D_NORMAL, ">> Leaving Main Game Loop\n");
