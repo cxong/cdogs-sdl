@@ -511,7 +511,6 @@ static void MissionSummaryDraw(
 	CA_FOREACH(PlayerData, pd, gPlayerDatas)
 		if (!pd->IsLocal)
 		{
-			idx--;
 			continue;
 		}
 		pds[idx] = pd;
