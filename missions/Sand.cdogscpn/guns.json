@@ -1,0 +1,15 @@
+{
+  "Version": 1,
+  "Guns": [
+    {
+      "Pic": "",
+      "Name": "Monster Bite",
+      "Bullet": "monster_bite",
+      "Cost": 0,
+      "Lock": 10,
+      "Sound": "",
+      "SoundLockLength": 20,
+      "CanShoot": false
+    }
+  ]
+}
