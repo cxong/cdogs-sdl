@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014, 2016 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -57,24 +57,26 @@ void DrawKey(UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 
 void InsertMission(CampaignOptions *co, Mission *mission, int idx)
 {
-	Mission defaultMission;
+	Mission m;
 	if (mission == NULL)
 	{
-		MissionInit(&defaultMission);
-		defaultMission.Size = Vec2iNew(48, 48);
+		MissionInit(&m);
+		m.Size = Vec2iNew(48, 48);
 		// Set some default values for the mission
-		defaultMission.u.Classic.CorridorWidth = 1;
-		defaultMission.u.Classic.Rooms.Min =
-			defaultMission.u.Classic.Rooms.Max = 5;
-		defaultMission.u.Classic.Rooms.WallLength = 1;
-		defaultMission.u.Classic.Rooms.WallPad = 1;
-		defaultMission.u.Classic.Doors.Min =
-			defaultMission.u.Classic.Doors.Max = 1;
-		defaultMission.u.Classic.Pillars.Min =
-			defaultMission.u.Classic.Pillars.Max = 1;
-		mission = &defaultMission;
+		m.u.Classic.CorridorWidth = 1;
+		m.u.Classic.Rooms.Min = m.u.Classic.Rooms.Max = 5;
+		m.u.Classic.Rooms.WallLength = 1;
+		m.u.Classic.Rooms.WallPad = 1;
+		m.u.Classic.Doors.Min = m.u.Classic.Doors.Max = 1;
+		m.u.Classic.Pillars.Min = m.u.Classic.Pillars.Max = 1;
+		mission = &m;
 	}
-	CArrayInsert(&co->Setting.Missions, idx, mission);
+	else
+	{
+		memset(&m, 0, sizeof m);
+		MissionCopy(&m, mission);
+	}
+	CArrayInsert(&co->Setting.Missions, idx, &m);
 }
 void DeleteMission(CampaignOptions *co)
 {
