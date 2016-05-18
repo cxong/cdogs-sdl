@@ -1181,11 +1181,25 @@ TActor *ActorAdd(NActorAdd aa)
 		TILEITEM_IMPASSABLE | TILEITEM_CAN_BE_SHOT | aa.TileItemFlags;
 	actor->tileItem.id = id;
 	actor->isInUse = true;
+
 	actor->flags = FLAGS_SLEEPING | c->flags;
+	// Flag corrections
 	if (actor->flags & FLAGS_AWAKEALWAYS)
 	{
 		actor->flags &= ~FLAGS_SLEEPING;
 	}
+	// Rescue objectives always have follower flag on
+	if (actor->tileItem.flags & TILEITEM_OBJECTIVE)
+	{
+		const MissionObjective *mobj = CArrayGet(
+			&gMission.missionData->Objectives,
+			ObjectiveFromTileItem(actor->tileItem.flags));
+		if (mobj->Type == OBJECTIVE_RESCUE)
+		{
+			actor->flags |= FLAGS_FOLLOWER;
+		}
+	}
+
 	actor->direction = aa.Direction;
 	actor->DrawRadians = (float)dir2radians[actor->direction];
 	actor->anim = AnimationGetActorAnimation(ACTORANIMATION_IDLE);
