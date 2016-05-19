@@ -567,9 +567,12 @@ static void HandleGameEvent(
 				&gMission.Objectives, e.u.ObjectiveUpdate.ObjectiveId);
 			o->done += e.u.ObjectiveUpdate.Count;
 			// Display a text update effect for the objective
-			HUDAddUpdate(
-				&camera->HUD, NUMBER_UPDATE_OBJECTIVE,
-				e.u.ObjectiveUpdate.ObjectiveId, e.u.ObjectiveUpdate.Count);
+			if (camera != NULL)
+			{
+				HUDAddUpdate(
+					&camera->HUD, NUMBER_UPDATE_OBJECTIVE,
+					e.u.ObjectiveUpdate.ObjectiveId, e.u.ObjectiveUpdate.Count);
+			}
 			MissionSetMessageIfComplete(&gMission);
 		}
 		break;

@@ -1197,6 +1197,15 @@ TActor *ActorAdd(NActorAdd aa)
 		if (mobj->Type == OBJECTIVE_RESCUE)
 		{
 			actor->flags |= FLAGS_FOLLOWER;
+			// If they don't have prisoner flag set, automatically rescue them
+			if (!(actor->flags & FLAGS_PRISONER) && !gCampaign.IsClient)
+			{
+				GameEvent e = GameEventNew(GAME_EVENT_RESCUE_CHARACTER);
+				e.u.Rescue.UID = aa.UID;
+				GameEventsEnqueue(&gGameEvents, e);
+				UpdateMissionObjective(
+					&gMission, actor->tileItem.flags, OBJECTIVE_RESCUE);
+			}
 		}
 	}
 
