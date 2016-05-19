@@ -199,10 +199,12 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 
 		const int survivingPlayers =
 			GetNumPlayers(PLAYER_ALIVE, false, false);
+		const bool survivedAndCompletedObjectives =
+			survivingPlayers > 0 && MissionAllObjectivesComplete(&gMission);
 		// In co-op (non-PVP) modes, at least one player must survive
 		if (!IsPVP(co->Entry.Mode))
 		{
-			gameOver = survivingPlayers == 0 ||
+			gameOver = !survivedAndCompletedObjectives ||
 				co->MissionIndex == (int)co->Setting.Missions.size - 1;
 		}
 
@@ -246,10 +248,10 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 				break;
 			default:
 				playNext = ScreenMissionSummary(
-					co, &gMission, survivingPlayers > 0);
+					co, &gMission, survivedAndCompletedObjectives);
 				// Note: must use cached value because players get cleaned up
 				// in CleanupMission()
-				if (gameOver && survivingPlayers > 0)
+				if (gameOver && survivedAndCompletedObjectives)
 				{
 					ScreenVictory(co);
 					playNext = false;

@@ -611,6 +611,10 @@ static void HandleGameEvent(
 		break;
 	case GAME_EVENT_MISSION_END:
 		MissionDone(&gMission, e.u.MissionEnd);
+		if (e.u.MissionEnd.Msg[0] != '\0')
+		{
+			HUDDisplayMessage(&camera->HUD, e.u.MissionEnd.Msg, -1);
+		}
 		break;
 	default:
 		assert(0 && "unknown game event");

@@ -331,15 +331,51 @@ void MissionEnd(void)
 	gMission.HasBegun = false;
 }
 
+static int ObjectiveActorsAlive(const int objective);
 void MissionSetMessageIfComplete(struct MissionOptions *options)
 {
-	if (!gCampaign.IsClient && CanCompleteMission(options))
+	if (!gCampaign.IsClient)
 	{
-		GameEvent msg = GameEventNew(GAME_EVENT_MISSION_COMPLETE);
-		msg.u.MissionComplete = NMakeMissionComplete(options, &gMap);
-		GameEventsEnqueue(&gGameEvents, msg);
+		if (CanCompleteMission(options))
+		{
+			GameEvent msg = GameEventNew(GAME_EVENT_MISSION_COMPLETE);
+			msg.u.MissionComplete = NMakeMissionComplete(options, &gMap);
+			GameEventsEnqueue(&gGameEvents, msg);
+		}
+		else if (options->HasBegun && gCampaign.Entry.Mode == GAME_MODE_NORMAL)
+		{
+			// Check if the game is impossible to end
+			// i.e. not enough rescue objectives left alive
+			CA_FOREACH(
+				const MissionObjective, mobj, options->missionData->Objectives)
+				if (mobj->Type == OBJECTIVE_RESCUE)
+				{
+					if (ObjectiveActorsAlive(_ca_index) < mobj->Required)
+					{
+						GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
+						e.u.MissionEnd.Delay = GAME_OVER_DELAY;
+						strcpy(e.u.MissionEnd.Msg, "Mission failed");
+						GameEventsEnqueue(&gGameEvents, e);
+					}
+				}
+			CA_FOREACH_END()
+		}
 	}
 }
+// Get the number of actors alive for an objective
+static int ObjectiveActorsAlive(const int objective)
+{
+	int count = 0;
+	CA_FOREACH(const TActor, a, gActors)
+		if (a->isInUse && a->health > 0 &&
+			ObjectiveFromTileItem(a->tileItem.flags) == objective)
+		{
+			count++;
+		}
+	CA_FOREACH_END()
+	return count;
+}
+
 bool MissionHasRequiredObjectives(const struct MissionOptions *mo)
 {
 	CA_FOREACH(const MissionObjective, o, mo->missionData->Objectives)
@@ -350,7 +386,7 @@ bool MissionHasRequiredObjectives(const struct MissionOptions *mo)
 
 void UpdateMissionObjective(
 	const struct MissionOptions *options,
-	const int flags, const ObjectiveType type)
+	const int flags, const ObjectiveType type, const int count)
 {
 	if (!(flags & TILEITEM_OBJECTIVE))
 	{
@@ -366,7 +402,7 @@ void UpdateMissionObjective(
 	{
 		GameEvent e = GameEventNew(GAME_EVENT_OBJECTIVE_UPDATE);
 		e.u.ObjectiveUpdate.ObjectiveId = idx;
-		e.u.ObjectiveUpdate.Count = 1;
+		e.u.ObjectiveUpdate.Count = count;
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 }
@@ -423,13 +459,17 @@ bool CanCompleteMission(const struct MissionOptions *options)
 		return GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) == 0;
 	}
 
+	return MissionAllObjectivesComplete(options);
+}
+
+bool MissionAllObjectivesComplete(const struct MissionOptions *mo)
+{
 	// Check all objective counts are enough
-	CA_FOREACH(const ObjectiveDef, o, options->Objectives)
+	CA_FOREACH(const ObjectiveDef, o, mo->Objectives)
 		const MissionObjective *mobj =
-			CArrayGet(&options->missionData->Objectives, _ca_index);
+			CArrayGet(&mo->missionData->Objectives, _ca_index);
 		if (o->done < mobj->Required) return false;
 	CA_FOREACH_END()
-
 	return true;
 }
 

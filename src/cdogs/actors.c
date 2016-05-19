@@ -498,7 +498,7 @@ static void CheckRescue(const TActor *a)
 			e.u.Rescue.UID = other->uid;
 			GameEventsEnqueue(&gGameEvents, e);
 			UpdateMissionObjective(
-				&gMission, other->tileItem.flags, OBJECTIVE_RESCUE);
+				&gMission, other->tileItem.flags, OBJECTIVE_RESCUE, 1);
 		}
 	}
 }
@@ -526,8 +526,18 @@ void InjureActor(TActor * actor, int injury)
 				StrSound("hahaha"),
 				pos);
 		}
-		UpdateMissionObjective(
-			&gMission, actor->tileItem.flags, OBJECTIVE_KILL);
+		if (actor->tileItem.flags & TILEITEM_OBJECTIVE)
+		{
+			UpdateMissionObjective(
+				&gMission, actor->tileItem.flags, OBJECTIVE_KILL, 1);
+			// If we've killed someone we have rescued, deduct from the
+			// rescue objective
+			if (!(actor->flags & FLAGS_PRISONER))
+			{
+				UpdateMissionObjective(
+					&gMission, actor->tileItem.flags, OBJECTIVE_RESCUE, -1);
+			}
+		}
 	}
 }
 
@@ -1204,7 +1214,7 @@ TActor *ActorAdd(NActorAdd aa)
 				e.u.Rescue.UID = aa.UID;
 				GameEventsEnqueue(&gGameEvents, e);
 				UpdateMissionObjective(
-					&gMission, actor->tileItem.flags, OBJECTIVE_RESCUE);
+					&gMission, actor->tileItem.flags, OBJECTIVE_RESCUE, 1);
 			}
 		}
 	}

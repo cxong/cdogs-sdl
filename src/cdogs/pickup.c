@@ -128,7 +128,7 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 			GameEventsEnqueue(&gGameEvents, e);
 			sound = "pickup";
 			UpdateMissionObjective(
-				&gMission, p->tileItem.flags, OBJECTIVE_COLLECT);
+				&gMission, p->tileItem.flags, OBJECTIVE_COLLECT, 1);
 		}
 		break;
 

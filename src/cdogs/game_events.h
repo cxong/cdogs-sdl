@@ -187,6 +187,8 @@ typedef struct
 
 extern CArray gGameEvents;	// of GameEvent
 
+#define GAME_OVER_DELAY (FPS_FRAMELIMIT * 2)
+
 void GameEventsInit(CArray *store);
 void GameEventsTerminate(CArray *store);
 void GameEventsEnqueue(CArray *store, GameEvent e);

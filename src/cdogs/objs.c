@@ -119,7 +119,8 @@ void ObjRemove(const NMapObjectRemove mor)
 	if (!gCampaign.IsClient)
 	{
 		// Update objective
-		UpdateMissionObjective(&gMission, o->tileItem.flags, OBJECTIVE_DESTROY);
+		UpdateMissionObjective(
+			&gMission, o->tileItem.flags, OBJECTIVE_DESTROY, 1);
 		// Extra score if objective
 		if ((o->tileItem.flags & TILEITEM_OBJECTIVE) && mor.PlayerUID >= 0)
 		{

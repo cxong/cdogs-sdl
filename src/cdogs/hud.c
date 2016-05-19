@@ -948,22 +948,19 @@ void HUDDraw(
 			FontStrCenter("Waiting for players...");
 			break;
 		case MISSION_STATE_PLAY:
-			if (numPlayersAlive == 0)
+			if (numPlayersAlive == 0 && AreAllPlayersDeadAndNoLives())
 			{
-				if (AreAllPlayersDeadAndNoLives())
+				if (gPlayerDatas.size == 0)
 				{
-					if (gPlayerDatas.size == 0)
-					{
-						FontStrCenter("Waiting for players...");
-					}
-					else if (!IsPVP(gCampaign.Entry.Mode))
-					{
-						FontStrCenter("Game Over!");
-					}
-					else
-					{
-						FontStrCenter("All Kill!");
-					}
+					FontStrCenter("Waiting for players...");
+				}
+				else if (!IsPVP(gCampaign.Entry.Mode))
+				{
+					FontStrCenter("Game Over!");
+				}
+				else
+				{
+					FontStrCenter("All Kill!");
 				}
 			}
 			break;

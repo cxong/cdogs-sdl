@@ -307,4 +307,5 @@ message NMissionComplete {
 message NMissionEnd {
 	required int32 Delay = 1;
 	required bool IsQuit = 2;
+	required string Msg = 3;
 }

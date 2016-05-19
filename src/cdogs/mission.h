@@ -242,10 +242,11 @@ void MissionSetMessageIfComplete(struct MissionOptions *options);
 // If object is a mission objective, send an update event
 void UpdateMissionObjective(
 	const struct MissionOptions *options,
-	const int flags, const ObjectiveType type);
+	const int flags, const ObjectiveType type, const int count);
 bool MissionCanBegin(void);
 void MissionBegin(struct MissionOptions *m);
 bool CanCompleteMission(const struct MissionOptions *options);
+bool MissionAllObjectivesComplete(const struct MissionOptions *mo);
 bool IsMissionComplete(const struct MissionOptions *options);
 bool MissionHasRequiredObjectives(const struct MissionOptions *mo);
 void MissionDone(struct MissionOptions *mo, const NMissionEnd end);

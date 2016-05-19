@@ -82,8 +82,6 @@
 #include <cdogs/powerup.h>
 #include <cdogs/triggers.h>
 
-#define GAME_OVER_DELAY (FPS_FRAMELIMIT * 2)
-
 
 static void PlayerSpecialCommands(TActor *actor, const int cmd)
 {
