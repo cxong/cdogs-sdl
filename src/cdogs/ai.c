@@ -287,6 +287,7 @@ static bool DidPlayerShoot(void)
 	return false;
 }
 
+static int Follow(TActor *a);
 void CommandBadGuys(int ticks)
 {
 	int count = 0;
@@ -373,27 +374,7 @@ void CommandBadGuys(int ticks)
 				const int roll = rand() % rollLimit;
 				if (actor->flags & FLAGS_FOLLOWER)
 				{
-					// If we are a rescue objective and we are in the exit
-					// area, stop following and stay in the rescue area
-					const Character *ch = ActorGetCharacter(actor);
-					const CharacterStore *store = &gCampaign.Setting.characters;
-					if (CharacterIsPrisoner(store, ch) &&
-						MapIsTileInExit(&gMap, &actor->tileItem))
-					{
-						actor->flags &= ~FLAGS_FOLLOWER;
-						actor->flags |= FLAGS_RESCUED;
-					}
-					else if (IsCloseToPlayer(actor->Pos, 32 << 8))
-					{
-						cmd = 0;
-						ActorSetAIState(actor, AI_STATE_IDLE);
-					}
-					else
-					{
-						cmd = AIGoto(
-							actor, AIGetClosestPlayerPos(actor->Pos), true);
-						ActorSetAIState(actor, AI_STATE_FOLLOW);
-					}
+					cmd = Follow(actor);
 				}
 				else if (!!(actor->flags & FLAGS_SNEAKY) &&
 					!!(actor->flags & FLAGS_VISIBLE) &&
@@ -415,9 +396,17 @@ void CommandBadGuys(int ticks)
 				}
 				else if (actor->flags & FLAGS_RESCUED)
 				{
-					// Run towards exit
-					const Vec2i exitPos = MapGetExitPos(&gMap);
-					cmd = AIGoto(actor, exitPos, false);
+					// If we haven't completed all objectives, act as follower
+					if (!CanCompleteMission(&gMission))
+					{
+						cmd = Follow(actor);
+					}
+					else
+					{
+						// Run towards exit
+						const Vec2i exitPos = MapGetExitPos(&gMap);
+						cmd = AIGoto(actor, exitPos, false);
+					}
 				}
 				else if (actor->aiContext->Delay > 0)
 				{
@@ -511,6 +500,30 @@ void CommandBadGuys(int ticks)
 		e.u.ActorAdd = aa;
 		GameEventsEnqueue(&gGameEvents, e);
 		gBaddieCount++;
+	}
+}
+static int Follow(TActor *a)
+{
+	// If we are a rescue objective and we are in the exit
+	// area, stop following and stay in the rescue area
+	const Character *ch = ActorGetCharacter(a);
+	const CharacterStore *store = &gCampaign.Setting.characters;
+	if (CharacterIsPrisoner(store, ch) && CanCompleteMission(&gMission) &&
+		MapIsTileInExit(&gMap, &a->tileItem))
+	{
+		a->flags &= ~FLAGS_FOLLOWER;
+		a->flags |= FLAGS_RESCUED;
+		return 0;
+	}
+	else if (IsCloseToPlayer(a->Pos, 32 << 8))
+	{
+		ActorSetAIState(a, AI_STATE_IDLE);
+		return 0;
+	}
+	else
+	{
+		ActorSetAIState(a, AI_STATE_FOLLOW);
+		return AIGoto(a, AIGetClosestPlayerPos(a->Pos), true);
 	}
 }
 

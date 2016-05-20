@@ -557,6 +557,12 @@ static void HandleGameEvent(
 			TActor *a = ActorGetByUID(e.u.Rescue.UID);
 			if (!a->isInUse) break;
 			a->flags &= ~FLAGS_PRISONER;
+			// If the actor isn't a follower, make them automatically run
+			// towards the exit
+			if (!(a->flags & FLAGS_FOLLOWER))
+			{
+				a->flags |= FLAGS_RESCUED;
+			}
 			SoundPlayAt(
 				&gSoundDevice, StrSound("rescue"), Vec2iFull2Real(a->Pos));
 		}

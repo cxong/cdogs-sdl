@@ -1206,7 +1206,6 @@ TActor *ActorAdd(NActorAdd aa)
 			ObjectiveFromTileItem(actor->tileItem.flags));
 		if (mobj->Type == OBJECTIVE_RESCUE)
 		{
-			actor->flags |= FLAGS_FOLLOWER;
 			// If they don't have prisoner flag set, automatically rescue them
 			if (!(actor->flags & FLAGS_PRISONER) && !gCampaign.IsClient)
 			{
