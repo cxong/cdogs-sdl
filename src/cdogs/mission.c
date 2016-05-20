@@ -473,13 +473,14 @@ bool MissionAllObjectivesComplete(const struct MissionOptions *mo)
 	return true;
 }
 
-bool IsMissionComplete(const struct MissionOptions *options)
-{
-	int rescuesRequired = 0;
+static bool AllSurvivingPlayersInExit(void);
+static bool MoreRescuesNeeded(const struct MissionOptions *mo);
 
-	if (!CanCompleteMission(options))
+bool IsMissionComplete(const struct MissionOptions *mo)
+{
+	if (!CanCompleteMission(mo))
 	{
-		return 0;
+		return false;
 	}
 
 	// Check if dogfight is complete
@@ -497,6 +498,29 @@ bool IsMissionComplete(const struct MissionOptions *options)
 		}
 	}
 
+	if (!AllSurvivingPlayersInExit())
+	{
+		return false;
+	}
+
+	if (MoreRescuesNeeded(mo))
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool MissionNeedsMoreRescuesInExit(const struct MissionOptions *mo)
+{
+	return
+		CanCompleteMission(mo) &&
+		AllSurvivingPlayersInExit() &&
+		MoreRescuesNeeded(mo);
+}
+
+static bool AllSurvivingPlayersInExit(void)
+{
 	// Check that all surviving players are in exit zone
 	// Note: players are still in the exit area if they are dying there;
 	// this is the basis for the "resurrection penalty"
@@ -505,10 +529,15 @@ bool IsMissionComplete(const struct MissionOptions *options)
 		const TActor *player = ActorGetByUID(p->ActorUID);
 		if (!MapIsTileInExit(&gMap, &player->tileItem)) return false;
 	CA_FOREACH_END()
+	return true;
+}
 
+static bool MoreRescuesNeeded(const struct MissionOptions *mo)
+{
+	int rescuesRequired = 0;
 	// Find number of rescues required
 	// TODO: support multiple rescue objectives
-	CA_FOREACH(const MissionObjective, mobj, options->missionData->Objectives)
+	CA_FOREACH(const MissionObjective, mobj, mo->missionData->Objectives)
 		if (mobj->Type == OBJECTIVE_RESCUE)
 		{
 			rescuesRequired = mobj->Required;
@@ -529,11 +558,10 @@ bool IsMissionComplete(const struct MissionOptions *options)
 		CA_FOREACH_END()
 		if (prisonersRescued < rescuesRequired)
 		{
-			return 0;
+			return true;
 		}
 	}
-
-	return 1;
+	return false;
 }
 
 void MissionDone(struct MissionOptions *mo, const NMissionEnd end)

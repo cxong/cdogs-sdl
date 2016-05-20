@@ -963,6 +963,10 @@ void HUDDraw(
 					FontStrCenter("All Kill!");
 				}
 			}
+			else if (MissionNeedsMoreRescuesInExit(&gMission))
+			{
+				FontStrCenter("More rescues needed");
+			}
 			break;
 		case MISSION_STATE_PICKUP:
 		{
