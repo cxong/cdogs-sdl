@@ -81,6 +81,7 @@
 #define FLAGS_SNEAKY          (1 << 23)	// Always shoot back when player shoots
 #define FLAGS_SLEEPALWAYS     (1 << 24)
 #define FLAGS_AWAKEALWAYS     (1 << 25)
+#define FLAGS_RESCUED         (1 << 26)	// Run towards exit
 
 
 typedef enum

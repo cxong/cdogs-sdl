@@ -373,7 +373,17 @@ void CommandBadGuys(int ticks)
 				const int roll = rand() % rollLimit;
 				if (actor->flags & FLAGS_FOLLOWER)
 				{
-					if (IsCloseToPlayer(actor->Pos, 32 << 8))
+					// If we are a rescue objective and we are in the exit
+					// area, stop following and stay in the rescue area
+					const Character *ch = ActorGetCharacter(actor);
+					const CharacterStore *store = &gCampaign.Setting.characters;
+					if (CharacterIsPrisoner(store, ch) &&
+						MapIsTileInExit(&gMap, &actor->tileItem))
+					{
+						actor->flags &= ~FLAGS_FOLLOWER;
+						actor->flags |= FLAGS_RESCUED;
+					}
+					else if (IsCloseToPlayer(actor->Pos, 32 << 8))
 					{
 						cmd = 0;
 						ActorSetAIState(actor, AI_STATE_IDLE);
@@ -402,6 +412,12 @@ void CommandBadGuys(int ticks)
 				{
 					cmd = BrightWalk(actor, roll);
 					ActorSetAIState(actor, AI_STATE_TRACK);
+				}
+				else if (actor->flags & FLAGS_RESCUED)
+				{
+					// Run towards exit
+					const Vec2i exitPos = MapGetExitPos(&gMap);
+					cmd = AIGoto(actor, exitPos, false);
 				}
 				else if (actor->aiContext->Delay > 0)
 				{
