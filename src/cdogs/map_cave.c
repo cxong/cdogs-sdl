@@ -99,14 +99,14 @@ void MapCaveLoad(Map *map, const struct MissionOptions *mo)
 	CArray areaStarts;
 	CArrayInit(&areaStarts, sizeof(int));
 	CArrayResize(&areaStarts, numAreas, &zero);
-	CA_FOREACH(int, idx, areaTiles)
-		const int tile = *(int *)CArrayGet(&fl, *idx) - 1;
+	CA_FOREACH(int, areaIdx, areaTiles)
+		const int tile = *(int *)CArrayGet(&fl, *areaIdx) - 1;
 		if (tile >= 0 && tile < numAreas)
 		{
 			int *areaStart = CArrayGet(&areaStarts, tile);
 			if (*areaStart == 0)
 			{
-				*areaStart = *idx;
+				*areaStart = *areaIdx;
 			}
 		}
 	CA_FOREACH_END()
@@ -189,7 +189,6 @@ static void MapFloodFill(
 	CArrayPushBack(&indices, &idx);
 	const int floodTile = *(int *)CArrayGet(fl, idx);
 	*(int *)CArrayGet(fl, idx) = elem;
-	for (int i = 0; i < (int)indices.size; i++)
 	CA_FOREACH(int, i, indices)
 		const int x = *i % size.x;
 		const int y = *i / size.x;
@@ -222,7 +221,7 @@ static void MapFloodFill(
 			CArrayPushBack(&indices, &next);
 			*(int *)CArrayGet(fl, next) = elem;
 		}
-	}
+	CA_FOREACH_END()
 	CArrayTerminate(&indices);
 }
 
