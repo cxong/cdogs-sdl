@@ -1300,7 +1300,6 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	UIObject *o;
 	UIObject *o2;
 	UIObject *oc;
-	int i;
 	Vec2i pos;
 	Vec2i objectivesPos;
 	UIObject *cc = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
@@ -1580,7 +1579,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	o = UIObjectCreate(UITYPE_TEXTBOX, 0, Vec2iZero(), Vec2iNew(300, th));
 	o->Flags = UI_SELECT_ONLY;
 
-	for (i = 0; i < OBJECTIVE_MAX_OLD; i++)
+	for (int i = 0; i < OBJECTIVE_MAX_OLD; i++)
 	{
 		pos.y += th;
 		o2 = UIObjectCopy(o);
