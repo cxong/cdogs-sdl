@@ -1021,21 +1021,23 @@ static void MissionChangeDensity(void *data, int d)
 	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->EnemyDensity = CLAMP(CampaignGetCurrentMission(co)->EnemyDensity + d, 0, 100);
 }
-// TODO: context menu and warning popup about irreversible change
+typedef struct
+{
+	CampaignOptions *C;
+	MapType Type;
+} MissionChangeTypeData;
+// TODO: warning popup about irreversible change
 static void MissionChangeType(void *data, int d)
 {
-	CampaignOptions *co = data;
-	MapType type = CLAMP_OPPOSITE(
-		(int)CampaignGetCurrentMission(co)->Type + d,
-		MAPTYPE_CLASSIC,
-		MAPTYPE_COUNT - 1);
+	UNUSED(d);
+	MissionChangeTypeData *mct = data;
 	Map map;
 	MissionOptionsTerminate(&gMission);
-	CampaignAndMissionSetup(co, &gMission);
+	CampaignAndMissionSetup(mct->C, &gMission);
 	memset(&map, 0, sizeof map);
-	MapLoad(&map, &gMission, co);
-	MapLoadDynamic(&map, &gMission, &co->Setting.characters);
-	MissionConvertToType(gMission.missionData, &map, type);
+	MapLoad(&map, &gMission, mct->C);
+	MapLoadDynamic(&map, &gMission, &mct->C->Setting.characters);
+	MissionConvertToType(gMission.missionData, &map, mct->Type);
 }
 static void MissionChangeWallStyle(void *data, int d)
 {
@@ -1397,14 +1399,35 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	CSTRDUP(o2->Tooltip, "Number of non-objective characters");
 	UIObjectAddChild(c, o2);
 
+	// Drop-down menu for map type
 	pos.x += 40;
 	o2 = UIObjectCopy(o);
 	o2->Size.x = 50;
 	o2->u.LabelFunc = MissionGetTypeStr;
 	o2->Data = co;
-	o2->ChangeFunc = MissionChangeType;
 	o2->Pos = pos;
-	UIObjectAddChild(c, o2);
+	UIObject *oMapType =
+		UIObjectCreate(UITYPE_CONTEXT_MENU, 0, Vec2iZero(), Vec2iZero());
+	oMapType->Data = co;
+	for (int i = 0; i < (int)MAPTYPE_COUNT; i++)
+	{
+		UIObject *oMapTypeChild = UIObjectCopy(o);
+		oMapTypeChild->Pos.y = i * th;
+		oMapTypeChild->Label = MapTypeStr((MapType)i);
+		oMapTypeChild->IsDynamicData = true;
+		CMALLOC(oMapTypeChild->Data, sizeof(MissionChangeTypeData));
+		((MissionChangeTypeData *)oMapTypeChild->Data)->C = co;
+		((MissionChangeTypeData *)oMapTypeChild->Data)->Type = (MapType)i;
+		oMapTypeChild->ChangeFunc = MissionChangeType;
+		UIObjectAddChild(oMapType, oMapTypeChild);
+	}
+	UIObjectAddChild(o2, oMapType);
+	// HACK: add another container UI object so that the BFS draw order doesn't
+	// draw the context menu below the type-specific objs
+	UIObject *hackContainer =
+		UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	UIObjectAddChild(hackContainer, o2);
+	UIObjectAddChild(c, hackContainer);
 	pos.x = 20;
 	pos.y += th;
 	UIObjectAddChild(c, CreateClassicMapObjs(pos, co));
