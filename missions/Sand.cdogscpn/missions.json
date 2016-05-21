@@ -2,7 +2,7 @@
 	"Missions": [{
 		"Title": "Training on Sancus Tertius",
 		"Description": "Your training on the harsh prison planet of Sancus Tertius is almost over. For your last trial, kill the fierce creatures living in the wasteland.",
-		"Type": "Classic",
+		"Type": "Cave",
 		"Width": 40,
 		"Height": 40,
 		"WallStyle": 6,
@@ -60,30 +60,10 @@
 		"FloorMask": "844400",
 		"RoomMask": "840000",
 		"AltMask": "840000",
-		"Walls": 86,
-		"WallLength": 27,
-		"CorridorWidth": 0,
-		"Rooms": {
-			"Count": 0,
-			"Min": 0,
-			"Max": 0,
-			"Edge": false,
-			"Overlap": false,
-			"Walls": 0,
-			"WallLength": 0,
-			"WallPad": 0
-		},
-		"Squares": 5,
-		"Doors": {
-			"Enabled": false,
-			"Min": 0,
-			"Max": 0
-		},
-		"Pillars": {
-			"Count": 9,
-			"Min": 1,
-			"Max": 5
-		}
+		"FillPercent": 40,
+		"Repeat": 4,
+		"R1": 6,
+		"R2": 0
 	},
 	{
 		"Title": "Sabotage of Clan Tantalus Armory",

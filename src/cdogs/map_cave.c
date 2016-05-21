@@ -145,7 +145,7 @@ static void CaveRep(Map *map, const int r1, const int r2)
 	{
 		for (v.x = 0; v.x < map->Size.x; v.x++)
 		{
-			const int idx = v.x + v.y * map->Size.y;
+			const int idx = v.x + v.y * map->Size.x;
 			unsigned short *tile = CArrayGet(&buf, idx);
 			if (CountTilesAround(map, v, 1, MAP_WALL) >= r1 ||
 				CountTilesAround(map, v, 2, MAP_WALL) <= r2)
