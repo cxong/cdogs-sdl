@@ -39,6 +39,25 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 	switch (type)
 	{
 	case MAPTYPE_CLASSIC:
+		// Setup default parameters
+		m->u.Classic.Walls = 10;
+		m->u.Classic.WallLength = 5;
+		m->u.Classic.CorridorWidth = 2;
+		m->u.Classic.Rooms.Count = 10;
+		m->u.Classic.Rooms.Min = 5;
+		m->u.Classic.Rooms.Max = 8;;
+		m->u.Classic.Rooms.Edge = true;
+		m->u.Classic.Rooms.Overlap = true;
+		m->u.Classic.Rooms.Walls = 1;
+		m->u.Classic.Rooms.WallLength = 1;
+		m->u.Classic.Rooms.WallPad = 1;
+		m->u.Classic.Squares = 1;
+		m->u.Classic.Doors.Enabled = true;
+		m->u.Classic.Doors.Min = 1;
+		m->u.Classic.Doors.Max = 2;
+		m->u.Classic.Pillars.Count = 1;
+		m->u.Classic.Pillars.Min = 2;
+		m->u.Classic.Pillars.Max = 3;
 		break;
 	case MAPTYPE_STATIC:
 		{
