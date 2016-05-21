@@ -1026,11 +1026,14 @@ typedef struct
 	CampaignOptions *C;
 	MapType Type;
 } MissionChangeTypeData;
-// TODO: warning popup about irreversible change
 static void MissionChangeType(void *data, int d)
 {
 	UNUSED(d);
 	MissionChangeTypeData *mct = data;
+	if (mct->Type == gMission.missionData->Type)
+	{
+		return;
+	}
 	Map map;
 	MissionOptionsTerminate(&gMission);
 	CampaignAndMissionSetup(mct->C, &gMission);
@@ -1406,6 +1409,8 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	o2->u.LabelFunc = MissionGetTypeStr;
 	o2->Data = co;
 	o2->Pos = pos;
+	CSTRDUP(o2->Tooltip,
+		"WARNING: changing map type will\nlose your previous map settings");
 	UIObject *oMapType =
 		UIObjectCreate(UITYPE_CONTEXT_MENU, 0, Vec2iZero(), Vec2iZero());
 	oMapType->Data = co;
