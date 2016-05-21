@@ -71,7 +71,9 @@ struct EditorInfo
 typedef enum
 {
 	MAPTYPE_CLASSIC,
-	MAPTYPE_STATIC
+	MAPTYPE_STATIC,
+	MAPTYPE_CAVE,
+	MAPTYPE_COUNT
 } MapType;
 const char *MapTypeStr(MapType t);
 MapType StrMapType(const char *s);
@@ -196,6 +198,14 @@ typedef struct
 				Vec2i End;
 			} Exit;
 		} Static;
+		// Cave
+		struct
+		{
+			int FillPercent;
+			int Repeat;
+			int R1;
+			int R2;
+		} Cave;
 	} u;
 } Mission;
 

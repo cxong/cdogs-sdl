@@ -151,9 +151,32 @@ void CArrayRemoveIf(CArray *a, bool (*removeIf)(const void *))
 	a->size = shrunkSize;
 }
 
+// Fill all entries with the same element
+void CArrayFill(CArray *a, const void *elem)
+{
+	CA_FOREACH(void, e, *a)
+		memcpy(e, elem, a->elemSize);
+	CA_FOREACH_END()
+}
+
 void CArrayFillZero(CArray *a)
 {
 	memset(a->data, 0, a->size * a->elemSize);
+}
+
+void CArrayShuffle(CArray *a)
+{
+	void *buf;
+	CMALLOC(buf, a->elemSize);
+	CA_FOREACH(void, e, *a)
+		const int j = rand() % (_ca_index + 1);
+		void *je = CArrayGet(a, j);
+		// Swap index and j elements
+		memcpy(buf, e, a->elemSize);
+		memcpy(e, je, a->elemSize);
+		memcpy(je, buf, a->elemSize);
+	CA_FOREACH_END()
+	CFREE(buf);
 }
 
 void CArrayTerminate(CArray *a)

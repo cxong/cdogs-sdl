@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, 2016 Cong Xu
+    Copyright (c) 2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -28,54 +28,8 @@
 #pragma once
 
 #include <cdogs/campaigns.h>
-#include <cdogs/map_object.h>
-#include <cdogs/vector.h>
 
 #include "editor_brush.h"
 #include "ui_object.h"
 
-typedef struct
-{
-	EditorBrush *Brush;
-	int ItemIndex;
-	int Index2;
-} IndexedEditorBrush;
-typedef struct
-{
-	IndexedEditorBrush Brush;
-	CampaignOptions *Campaign;
-} EditorBrushAndCampaign;
-
-void DisplayMapItem(const Vec2i pos, const MapObject *mo);
-void DrawKey(UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData);
-
-void InsertMission(CampaignOptions *co, Mission *mission, int idx);
-void DeleteMission(CampaignOptions *co);
-
-bool ConfirmScreen(const char *info, const char *msg);
-void ClearScreen(GraphicsDevice *g);
-
-void DisplayFlag(
-	const Vec2i pos, const char *s, const bool isOn, const bool isHighlighted);
-
-UIObject *CreateCampaignSeedObj(const Vec2i pos, CampaignOptions *co);
-
-// Create a dummy label that can be clicked to close the context menu
-void CreateCloseLabel(UIObject *c, const Vec2i pos);
-
-// Macro for creating the helper function to show/hide controls for specific
-// map types
-#define MISSION_CHECK_TYPE_FUNC(_type)\
-static void MissionCheckTypeFunc(UIObject *o, void *data)\
-{\
-	CampaignOptions *co = data;\
-	const Mission *m = CampaignGetCurrentMission(co);\
-	if (!m || m->Type != (_type))\
-	{\
-		o->IsVisible = false;\
-		/* Need to unhighlight to prevent children being drawn*/\
-		UIObjectUnhighlight(o);\
-		return;\
-	}\
-	o->IsVisible = true;\
-}
+UIObject *CreateCaveMapObjs(Vec2i pos, CampaignOptions *co);

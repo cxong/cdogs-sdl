@@ -559,6 +559,12 @@ static json_t *SaveMissions(CArray *a)
 				json_insert_pair_into_object(node, "Exit", exitNode);
 			}
 			break;
+		case MAPTYPE_CAVE:
+			AddIntPair(node, "FillPercent", mission->u.Cave.FillPercent);
+			AddIntPair(node, "Repeat", mission->u.Cave.Repeat);
+			AddIntPair(node, "R1", mission->u.Cave.R1);
+			AddIntPair(node, "R2", mission->u.Cave.R2);
+			break;
 		default:
 			assert(0 && "unknown map type");
 			break;

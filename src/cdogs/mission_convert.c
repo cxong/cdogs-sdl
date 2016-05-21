@@ -61,6 +61,16 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 			CArrayInit(&m->u.Static.Keys, sizeof(KeyPositions));
 		}
 		break;
+	case MAPTYPE_CAVE:
+		// Setup default parameters
+		m->u.Cave.FillPercent = 40;
+		m->u.Cave.Repeat = 4;
+		m->u.Cave.R1 = 5;
+		m->u.Cave.R2 = 2;
+		break;
+	default:
+		CASSERT(false, "unknown map type");
+		break;
 	}
 	m->Type = type;
 }

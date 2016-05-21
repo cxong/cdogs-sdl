@@ -40,19 +40,8 @@
 #include "editor_ui_static_additem.h"
 
 
-static void MissionCheckTypeStatic(UIObject *o, void *data)
-{
-	CampaignOptions *co = data;
-	Mission *m = CampaignGetCurrentMission(co);
-	if (!m || m->Type != MAPTYPE_STATIC)
-	{
-		o->IsVisible = false;
-		// Need to unhighlight to prevent children being drawn
-		UIObjectUnhighlight(o);
-		return;
-	}
-	o->IsVisible = true;
-}
+MISSION_CHECK_TYPE_FUNC(MAPTYPE_STATIC)
+
 
 static const char *BrushGetTypeStr(EditorBrush *brush, int isMain)
 {
@@ -303,7 +292,7 @@ UIObject *CreateStaticMapObjs(
 	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 	UIObject *o2;
 	// Check whether the map type matches, and set visibility
-	c->CheckVisible = MissionCheckTypeStatic;
+	c->CheckVisible = MissionCheckTypeFunc;
 	c->Data = co;
 
 	UIObject *o = UIObjectCreate(UITYPE_BUTTON, 0, Vec2iZero(), Vec2iZero());

@@ -299,6 +299,12 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 				continue;
 			}
 			break;
+		case MAPTYPE_CAVE:
+			LoadInt(&m.u.Cave.FillPercent, child, "FillPercent");
+			LoadInt(&m.u.Cave.Repeat, child, "Repeat");
+			LoadInt(&m.u.Cave.R1, child, "R1");
+			LoadInt(&m.u.Cave.R2, child, "R2");
+			break;
 		default:
 			assert(0 && "unknown map type");
 			continue;

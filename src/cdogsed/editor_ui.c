@@ -39,6 +39,7 @@
 #include <cdogs/mission_convert.h>
 #include <cdogs/pic_manager.h>
 
+#include "editor_ui_cave.h"
 #include "editor_ui_color.h"
 #include "editor_ui_common.h"
 #include "editor_ui_static.h"
@@ -87,15 +88,6 @@ static char **CampaignGetDescriptionSrc(void *data)
 	CampaignOptions *co = data;
 	return &co->Setting.Description;
 }
-static const char *CampaignGetSeedStr(UIObject *o, void *data)
-{
-	static char s[128];
-	UNUSED(o);
-	CampaignOptions *co = data;
-	if (!CampaignGetCurrentMission(co)) return NULL;
-	sprintf(s, "Seed: %u", co->seed);
-	return s;
-}
 static const char *CampaignGetMissionIndexStr(UIObject *o, void *data)
 {
 	static char s[128];
@@ -130,19 +122,7 @@ static void CheckMission(UIObject *o, void *data)
 	}
 	o->IsVisible = true;
 }
-static void MissionCheckTypeClassic(UIObject *o, void *data)
-{
-	CampaignOptions *co = data;
-	Mission *m = CampaignGetCurrentMission(co);
-	if (!m || m->Type != MAPTYPE_CLASSIC)
-	{
-		o->IsVisible = false;
-		// Need to unhighlight to prevent children being drawn
-		UIObjectUnhighlight(o);
-		return;
-	}
-	o->IsVisible = true;
-}
+MISSION_CHECK_TYPE_FUNC(MAPTYPE_CLASSIC)
 static char *MissionGetTitle(UIObject *o, void *data)
 {
 	UNUSED(o);
@@ -854,22 +834,6 @@ static void DisplayMapItemWithDensity(
 }
 
 
-static void CampaignChangeSeed(void *data, int d)
-{
-	if (gEventHandlers.keyboard.modState & KMOD_SHIFT)
-	{
-		d *= 10;
-	}
-	CampaignOptions *co = data;
-	if (d < 0 && co->seed < (unsigned)-d)
-	{
-		co->seed = 0;
-	}
-	else
-	{
-		co->seed += d;
-	}
-}
 static void CampaignChangeMission(void *data, int d)
 {
 	CampaignOptions *co = data;
@@ -1057,13 +1021,14 @@ static void MissionChangeDensity(void *data, int d)
 	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->EnemyDensity = CLAMP(CampaignGetCurrentMission(co)->EnemyDensity + d, 0, 100);
 }
+// TODO: context menu and warning popup about irreversible change
 static void MissionChangeType(void *data, int d)
 {
 	CampaignOptions *co = data;
 	MapType type = CLAMP_OPPOSITE(
 		(int)CampaignGetCurrentMission(co)->Type + d,
 		MAPTYPE_CLASSIC,
-		MAPTYPE_STATIC);
+		MAPTYPE_COUNT - 1);
 	Map map;
 	MissionOptionsTerminate(&gMission);
 	CampaignAndMissionSetup(co, &gMission);
@@ -1444,6 +1409,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	pos.y += th;
 	UIObjectAddChild(c, CreateClassicMapObjs(pos, co));
 	UIObjectAddChild(c, CreateStaticMapObjs(pos, co, brush));
+	UIObjectAddChild(c, CreateCaveMapObjs(pos, co));
 
 	// Mission looks
 	// wall/floor styles etc.
@@ -1678,20 +1644,15 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, CampaignOptions *co)
 	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 	UIObject *o = UIObjectCreate(
 		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(50, th));
-	int x = pos.x;
-	UIObject *o2;
-	o->ChangesData = 1;
+	const int x = pos.x;
+	o->ChangesData = true;
 	// Check whether the map type matches, and set visibility
-	c->CheckVisible = MissionCheckTypeClassic;
+	c->CheckVisible = MissionCheckTypeFunc;
 	c->Data = co;
 
-	o2 = UIObjectCopy(o);
-	o2->u.LabelFunc = CampaignGetSeedStr;
-	o2->Data = co;
-	o2->ChangeFunc = CampaignChangeSeed;
-	CSTRDUP(o2->Tooltip, "Preview with different random seed");
-	o2->Pos = pos;
+	UIObject *o2 = CreateCampaignSeedObj(pos, co);
 	UIObjectAddChild(c, o2);
+
 	pos.x += o2->Size.x;
 	o2 = UIObjectCopy(o);
 	o2->u.LabelFunc = MissionGetWallCountStr;

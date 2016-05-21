@@ -61,6 +61,7 @@
 #include "gamedata.h"
 #include "los.h"
 #include "map_build.h"
+#include "map_cave.h"
 #include "map_classic.h"
 #include "map_static.h"
 #include "net_util.h"
@@ -694,13 +695,20 @@ void MapLoad(
 		}
 	}
 
-	if (mission->Type == MAPTYPE_CLASSIC)
+	switch (mission->Type)
 	{
+	case MAPTYPE_CLASSIC:
 		MapClassicLoad(map, mission, co);
-	}
-	else
-	{
+		break;
+	case MAPTYPE_STATIC:
 		MapStaticLoad(map, mo);
+		break;
+	case MAPTYPE_CAVE:
+		MapCaveLoad(map, mo);
+		break;
+	default:
+		CASSERT(false, "unknown map type");
+		break;
 	}
 
 	MapSetupTilesAndWalls(map, mission);

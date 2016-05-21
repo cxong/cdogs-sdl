@@ -222,7 +222,15 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 		m->DoorStyle, DoorStyleStr(rand() % gPicManager.doorStyleNames.size));
 	m->Size = GenerateQuickPlayMapSize(
 		ConfigGetEnum(&gConfig, "QuickPlay.MapSize"));
-	m->Type = MAPTYPE_CLASSIC;	// TODO: generate different map types
+	for (;;)
+	{
+		m->Type = (MapType)(rand() % MAPTYPE_COUNT);
+		// Can't randomly generate static maps
+		if (m->Type != MAPTYPE_STATIC)
+		{
+			break;
+		}
+	}
 	switch (m->Type)
 	{
 	case MAPTYPE_CLASSIC:
@@ -248,6 +256,13 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 		m->u.Classic.Pillars.Count = rand() % 5;
 		m->u.Classic.Pillars.Min = rand() % 3 + 1;
 		m->u.Classic.Pillars.Max = rand() % 3 + m->u.Classic.Pillars.Min;
+		break;
+	case MAPTYPE_CAVE:
+		// TODO: quickplay configs for cave type
+		m->u.Cave.FillPercent = rand() % 30 + 40;
+		m->u.Cave.Repeat = rand() % 6;
+		m->u.Cave.R1 = rand() % 4 + 3;
+		m->u.Cave.R2 = rand() % 4;
 		break;
 	default:
 		assert(0 && "unknown map type");

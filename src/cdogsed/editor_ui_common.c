@@ -123,6 +123,47 @@ void DisplayFlag(
 	FontStrMask(isOn ? "On" : "Off", p, isOn ? colorPurple : colorWhite);
 }
 
+static const char *CampaignGetSeedStr(UIObject *o, void *data);
+static void CampaignChangeSeed(void *data, int d);
+UIObject *CreateCampaignSeedObj(const Vec2i pos, CampaignOptions *co)
+{
+	const int th = FontH();
+	UIObject *o = UIObjectCreate(
+		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(50, th));
+	o->ChangesData = true;
+	o->u.LabelFunc = CampaignGetSeedStr;
+	o->Data = co;
+	o->ChangeFunc = CampaignChangeSeed;
+	CSTRDUP(o->Tooltip, "Preview with different random seed");
+	o->Pos = pos;
+	return o;
+}
+static const char *CampaignGetSeedStr(UIObject *o, void *data)
+{
+	static char s[128];
+	UNUSED(o);
+	CampaignOptions *co = data;
+	if (!CampaignGetCurrentMission(co)) return NULL;
+	sprintf(s, "Seed: %u", co->seed);
+	return s;
+}
+static void CampaignChangeSeed(void *data, int d)
+{
+	if (gEventHandlers.keyboard.modState & KMOD_SHIFT)
+	{
+		d *= 10;
+	}
+	CampaignOptions *co = data;
+	if (d < 0 && co->seed < (unsigned)-d)
+	{
+		co->seed = 0;
+	}
+	else
+	{
+		co->seed += d;
+	}
+}
+
 static void CloseChange(void *data, int d);
 void CreateCloseLabel(UIObject *c, const Vec2i pos)
 {

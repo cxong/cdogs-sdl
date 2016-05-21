@@ -6,6 +6,7 @@ set(CDOGSED_SOURCES
 	charsed.c
 	editor_brush.c
 	editor_ui.c
+	editor_ui_cave.c
 	editor_ui_chared.c
 	editor_ui_color.c
 	editor_ui_common.c
@@ -17,6 +18,7 @@ set(CDOGSED_HEADERS
 	charsed.h
 	editor_brush.h
 	editor_ui.h
+	editor_ui_cave.h
 	editor_ui_chared.h
 	editor_ui_color.h
 	editor_ui_common.h

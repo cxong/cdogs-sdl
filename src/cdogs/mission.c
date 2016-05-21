@@ -83,24 +83,18 @@ const char *MapTypeStr(MapType t)
 {
 	switch (t)
 	{
-	case MAPTYPE_CLASSIC:
-		return "Classic";
-	case MAPTYPE_STATIC:
-		return "Static";
+		T2S(MAPTYPE_CLASSIC, "Classic");
+		T2S(MAPTYPE_STATIC, "Static");
+		T2S(MAPTYPE_CAVE, "Cave");
 	default:
 		return "";
 	}
 }
 MapType StrMapType(const char *s)
 {
-	if (strcmp(s, "Classic") == 0)
-	{
-		return MAPTYPE_CLASSIC;
-	}
-	else if (strcmp(s, "Static") == 0)
-	{
-		return MAPTYPE_STATIC;
-	}
+	S2T(MAPTYPE_CLASSIC, "Classic");
+	S2T(MAPTYPE_STATIC, "Static");
+	S2T(MAPTYPE_CAVE, "Cave");
 	return MAPTYPE_CLASSIC;
 }
 
@@ -212,6 +206,11 @@ void MissionTerminate(Mission *m)
 		CArrayTerminate(&m->u.Static.Characters);
 		CArrayTerminate(&m->u.Static.Objectives);
 		CArrayTerminate(&m->u.Static.Keys);
+		break;
+	case MAPTYPE_CAVE:
+		break;
+	default:
+		CASSERT(false, "unknown map type");
 		break;
 	}
 	memset(m, 0, sizeof *m);
