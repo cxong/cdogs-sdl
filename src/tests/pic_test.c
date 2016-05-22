@@ -52,10 +52,6 @@ bool ConfigIsOld(FILE *f)
 	UNUSED(f);
 	return false;
 }
-void hqxInit(void)
-{
-	return;
-}
 
 
 FEATURE(1, "Pic load")
