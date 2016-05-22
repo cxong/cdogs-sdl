@@ -124,12 +124,6 @@ void JoyPrePoll(CArray *joys)
 
 SDL_JoystickID JoyAdded(const Sint32 which)
 {
-	// Don't add the same controller twice
-	if (GetJoystick(which) != NULL)
-	{
-		return -1;
-	}
-
 	if (!SDL_IsGameController(which))
 	{
 		return -1;

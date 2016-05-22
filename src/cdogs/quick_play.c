@@ -259,9 +259,9 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 		break;
 	case MAPTYPE_CAVE:
 		// TODO: quickplay configs for cave type
-		m->u.Cave.FillPercent = rand() % 30 + 40;
+		m->u.Cave.FillPercent = rand() % 40 + 10;
 		m->u.Cave.Repeat = rand() % 6;
-		m->u.Cave.R1 = rand() % 4 + 3;
+		m->u.Cave.R1 = rand() % 2 + 4;
 		m->u.Cave.R2 = rand() % 4;
 		break;
 	default:
