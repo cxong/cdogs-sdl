@@ -36,7 +36,7 @@ typedef struct
 	// and also whether to early-terminate if the line is blocked
 	bool CheckBlockedAndEarlyTerminate;
 	bool (*IsBlocked)(void *, Vec2i);
-	void (*Draw)(void *, Vec2i);
+	void (*OnPoint)(void *, Vec2i);
 	void *data;
 } AlgoLineData;
 static bool BresenhamLine(Vec2i from, Vec2i to, AlgoLineData *data)
@@ -61,7 +61,7 @@ static bool BresenhamLine(Vec2i from, Vec2i to, AlgoLineData *data)
 		}
 		else
 		{
-			data->Draw(data->data, v);
+			data->OnPoint(data->data, v);
 		}
 		if (e2 > -d.y)
 		{
@@ -84,7 +84,7 @@ static bool BresenhamLine(Vec2i from, Vec2i to, AlgoLineData *data)
 	}
 	else
 	{
-		data->Draw(data->data, v);
+		data->OnPoint(data->data, v);
 	}
 	return true;
 }
@@ -235,8 +235,8 @@ static bool XiaolinWuDraw(
 	}
 	else
 	{
-		if (RFPART(aa) > AAFACTOR) data->Draw(data->data, a);
-		if (FPART(aa) > AAFACTOR && !isEnd) data->Draw(data->data, b);
+		if (RFPART(aa) > AAFACTOR) data->OnPoint(data->data, a);
+		if (FPART(aa) > AAFACTOR && !isEnd) data->OnPoint(data->data, b);
 	}
 	return true;
 }
@@ -263,7 +263,7 @@ void BresenhamLineDraw(Vec2i from, Vec2i to, AlgoLineDrawData *data)
 {
 	AlgoLineData bData;
 	bData.CheckBlockedAndEarlyTerminate = false;
-	bData.Draw = data->Draw;
+	bData.OnPoint = data->Draw;
 	bData.data = data->data;
 	BresenhamLine(from, to, &bData);
 }
@@ -271,7 +271,7 @@ void XiaolinWuLineDraw(Vec2i from, Vec2i to, AlgoLineDrawData *data)
 {
 	AlgoLineData bData;
 	bData.CheckBlockedAndEarlyTerminate = false;
-	bData.Draw = data->Draw;
+	bData.OnPoint = data->Draw;
 	bData.data = data->data;
 	XiaolinWuLine(from, to, &bData);
 }

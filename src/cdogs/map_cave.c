@@ -27,15 +27,7 @@
 */
 #include "map_cave.h"
 
-#include "actors.h"
-#include "campaigns.h"
-#include "events.h"
-#include "game_events.h"
-#include "gamedata.h"
-#include "handle_game_events.h"
-#include "log.h"
-#include "map_build.h"
-#include "net_util.h"
+#include "algorithms.h"
 
 
 static void CaveRep(Map *map, const int r1, const int r2);
@@ -304,16 +296,16 @@ static void AddCorridor(
 	IMapSet(map, end, tile);
 }
 
+static bool CheckCorridorsAroundTile(
+	const Map *map, const int corridorWidth, const Vec2i v);
 // Make sure corridors are wide enough
-static void FixValidWallTile(
-	Map *map, const int corridorWidth, unsigned short *tile,
-	const Vec2i v, const Vec2i d);
 static void FixCorridors(Map *map, const int corridorWidth)
 {
 	// Find all instances where a corridor is too narrow
-	// Do this by ensuring that each wall tile is, on all four sides, either
+	// Do this by drawing a line from each wall tile to its surrounding square
+	// area, and that this line of tiles that each wall tile is either
 	// - blocked by a neighbouring wall tile, or
-	// - is followed by at least corridorWidth floor tiles in that direction
+	// - only consists of floor tiles
 	// If not, then replace that wall with a floor tile
 	Vec2i v;
 	for (v.y = corridorWidth; v.y < map->Size.y - corridorWidth; v.y++)
@@ -327,32 +319,69 @@ static void FixCorridors(Map *map, const int corridorWidth)
 			{
 				continue;
 			}
-			// Top
-			FixValidWallTile(map, corridorWidth, tile, v, Vec2iNew(0, -1));
-			// Bottom
-			FixValidWallTile(map, corridorWidth, tile, v, Vec2iNew(0, 1));
-			// Left
-			FixValidWallTile(map, corridorWidth, tile, v, Vec2iNew(-1, 0));
-			// Right
-			FixValidWallTile(map, corridorWidth, tile, v, Vec2iNew(1, 0));
-		}
-	}
-}
-static void FixValidWallTile(
-	Map *map, const int corridorWidth, unsigned short *tile,
-	const Vec2i v, const Vec2i d)
-{
-	Vec2i v1 = Vec2iAdd(v, d);
-	if (IMapGet(map, v1) != MAP_WALL)
-	{
-		for (int i = 0; i < corridorWidth; i++, v1 = Vec2iAdd(v1, d))
-		{
-			if (IMapGet(map, v1) != MAP_FLOOR)
+			if (!CheckCorridorsAroundTile(map, corridorWidth, v))
 			{
-				// Not enough spaces; replace with floor
+				// Corridor checks failed; replace with a floor tile
 				*tile = MAP_FLOOR;
-				return;
 			}
 		}
 	}
+}
+typedef struct
+{
+	const Map *M;
+	int Counter;
+	bool IsFirstWall;
+	bool AreAllFloors;
+} FixCorridorOnTileData;
+static void FixCorridorOnTile(void *data, Vec2i v);
+static bool CheckCorridorsAroundTile(
+	const Map *map, const int corridorWidth, const Vec2i v)
+{
+	AlgoLineDrawData data;
+	data.Draw = FixCorridorOnTile;
+	FixCorridorOnTileData onTileData;
+	onTileData.M = map;
+	data.data = &onTileData;
+	Vec2i v1;
+	for (v1.y = v.y - corridorWidth; v1.y <= v.y + corridorWidth; v1.y++)
+	{
+		for (v1.x = v.x - corridorWidth; v1.x <= v.x + corridorWidth; v1.x++)
+		{
+			// only draw out to edges
+			if (v1.y != v.y - corridorWidth && v1.y != v.y + corridorWidth &&
+				v1.x != v.x - corridorWidth && v1.x != v.x + corridorWidth)
+			{
+				continue;
+			}
+			onTileData.Counter = 0;
+			onTileData.IsFirstWall = false;
+			onTileData.AreAllFloors = true;
+			BresenhamLineDraw(v, v1, &data);
+			if (!onTileData.IsFirstWall && !onTileData.AreAllFloors)
+			{
+				return false;
+			}
+		}
+	}
+	return true;
+}
+static void FixCorridorOnTile(void *data, Vec2i v)
+{
+	FixCorridorOnTileData *onTileData = data;
+	if (onTileData->Counter == 1)
+	{
+		// This is the first tile after the starting tile
+		// If this tile is a wall, result is good, and we don't care about
+		// the rest of the tiles anymore
+		onTileData->IsFirstWall = IMapGet(onTileData->M, v) == MAP_WALL;
+	}
+	if (onTileData->Counter > 0)
+	{
+		if (IMapGet(onTileData->M, v) != MAP_FLOOR)
+		{
+			onTileData->AreAllFloors = false;
+		}
+	}
+	onTileData->Counter++;
 }
