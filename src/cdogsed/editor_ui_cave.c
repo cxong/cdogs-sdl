@@ -160,5 +160,5 @@ static void MissionChangeR2(void *data, int d)
 {
 	CampaignOptions *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
-	m->u.Cave.R2 = CLAMP(m->u.Cave.R2 + d, 0, 25);
+	m->u.Cave.R2 = CLAMP(m->u.Cave.R2 + d, -1, 25);
 }

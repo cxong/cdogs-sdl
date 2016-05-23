@@ -427,7 +427,7 @@
 	{
 		"Title": "The Search",
 		"Description": "The Tantalus heir, Saul, is escaping into the deep desert! He must be found and eliminated. Be wary of the natives, who are rumored to be formidable fighters.",
-		"Type": "Classic",
+		"Type": "Cave",
 		"Width": 70,
 		"Height": 64,
 		"WallStyle": 6,
@@ -460,30 +460,10 @@
 		"FloorMask": "480048",
 		"RoomMask": "840000",
 		"AltMask": "840000",
-		"Walls": 27,
-		"WallLength": 22,
-		"CorridorWidth": 3,
-		"Rooms": {
-			"Count": 0,
-			"Min": 0,
-			"Max": 0,
-			"Edge": false,
-			"Overlap": false,
-			"Walls": 0,
-			"WallLength": 0,
-			"WallPad": 0
-		},
-		"Squares": 0,
-		"Doors": {
-			"Enabled": false,
-			"Min": 0,
-			"Max": 0
-		},
-		"Pillars": {
-			"Count": 10,
-			"Min": 4,
-			"Max": 7
-		}
+		"FillPercent": 44,
+		"Repeat": 10,
+		"R1": 5,
+		"R2": -1
 	},
 	{
 		"Title": "Miner Escort",
