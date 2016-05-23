@@ -39,11 +39,8 @@
 
 
 static void CaveRep(Map *map, const int r1, const int r2);
-static void MapFloodFill(
-	CArray *fl, const Vec2i size, const int idx, const int elem);
-static void AddCorridor(
-	Map *map, const Vec2i v1, const Vec2i v2, const Vec2i dInit,
-	const unsigned short tile);
+static void LinkDisconnectedAreas(Map *map);
+static void FixCorridors(Map *map, const int corridorWidth);
 void MapCaveLoad(Map *map, const struct MissionOptions *mo)
 {
 	const Mission *m = mo->missionData;
@@ -64,6 +61,72 @@ void MapCaveLoad(Map *map, const struct MissionOptions *mo)
 		CaveRep(map, m->u.Cave.R1, m->u.Cave.R2);
 	}
 
+	LinkDisconnectedAreas(map);
+
+	FixCorridors(map, m->u.Cave.CorridorWidth);
+}
+
+// Perform one generation of cellular automata
+// If the number of walls within 1 distance is at least R1, OR
+// if the number of walls within 2 distance is at most R2, then the tile
+// becomes a wall; otherwise it is a floor
+static int CountTilesAround(
+	const Map *map, const Vec2i pos, const int radius,
+	const unsigned short tile);
+static void CaveRep(Map *map, const int r1, const int r2)
+{
+	CArray buf;
+	CArrayInit(&buf, map->iMap.elemSize);
+	const unsigned short floor = MAP_FLOOR;
+	CArrayResize(&buf, map->iMap.size, &floor);
+	Vec2i v;
+	for (v.y = 0; v.y < map->Size.y; v.y++)
+	{
+		for (v.x = 0; v.x < map->Size.x; v.x++)
+		{
+			const int idx = v.x + v.y * map->Size.x;
+			unsigned short *tile = CArrayGet(&buf, idx);
+			if (CountTilesAround(map, v, 1, MAP_WALL) >= r1 ||
+				CountTilesAround(map, v, 2, MAP_WALL) <= r2)
+			{
+				*tile = MAP_WALL;
+			}
+			else
+			{
+				*tile = MAP_FLOOR;
+			}
+		}
+	}
+	CArrayCopy(&map->iMap, &buf);
+	CArrayTerminate(&buf);
+}
+static int CountTilesAround(
+	const Map *map, const Vec2i pos, const int radius,
+	const unsigned short tile)
+{
+	int c = 0;
+	for (int x = pos.x - radius; x <= pos.x + radius; x++)
+	{
+		for (int y = pos.y - radius; y <= pos.y + radius; y++)
+		{
+			// Also count edge of maps
+			if (x < 0 || x >= map->Size.x || y < 0 || y >= map->Size.y ||
+				IMapGet(map, Vec2iNew(x, y)) == tile)
+			{
+				c++;
+			}
+		}
+	}
+	return c;
+}
+
+static void MapFloodFill(
+	CArray *fl, const Vec2i size, const int idx, const int elem);
+static void AddCorridor(
+	Map *map, const Vec2i v1, const Vec2i v2, const Vec2i dInit,
+	const unsigned short tile);
+static void LinkDisconnectedAreas(Map *map)
+{
 	// Use flood fill to identify disconnected areas
 	CArray fl;
 	CArrayInit(&fl, sizeof(int));
@@ -125,60 +188,6 @@ void MapCaveLoad(Map *map, const struct MissionOptions *mo)
 		AddCorridor(map, v1, v2, Vec2iNew(dx, dy), MAP_FLOOR);
 	}
 	CArrayTerminate(&areaStarts);
-}
-
-// Perform one generation of cellular automata
-// If the number of walls within 1 distance is at least R1, OR
-// if the number of walls within 2 distance is at most R2, then the tile
-// becomes a wall; otherwise it is a floor
-static int CountTilesAround(
-	const Map *map, const Vec2i pos, const int radius,
-	const unsigned short tile);
-static void CaveRep(Map *map, const int r1, const int r2)
-{
-	CArray buf;
-	CArrayInit(&buf, map->iMap.elemSize);
-	const unsigned short floor = MAP_FLOOR;
-	CArrayResize(&buf, map->iMap.size, &floor);
-	Vec2i v;
-	for (v.y = 0; v.y < map->Size.y; v.y++)
-	{
-		for (v.x = 0; v.x < map->Size.x; v.x++)
-		{
-			const int idx = v.x + v.y * map->Size.x;
-			unsigned short *tile = CArrayGet(&buf, idx);
-			if (CountTilesAround(map, v, 1, MAP_WALL) >= r1 ||
-				CountTilesAround(map, v, 2, MAP_WALL) <= r2)
-			{
-				*tile = MAP_WALL;
-			}
-			else
-			{
-				*tile = MAP_FLOOR;
-			}
-		}
-	}
-	CArrayCopy(&map->iMap, &buf);
-	CArrayTerminate(&buf);
-}
-static int CountTilesAround(
-	const Map *map, const Vec2i pos, const int radius,
-	const unsigned short tile)
-{
-	int c = 0;
-	for (int x = pos.x - radius; x <= pos.x + radius; x++)
-	{
-		for (int y = pos.y - radius; y <= pos.y + radius; y++)
-		{
-			// Also count edge of maps
-			if (x < 0 || x >= map->Size.x || y < 0 || y >= map->Size.y ||
-				IMapGet(map, Vec2iNew(x, y)) == tile)
-			{
-				c++;
-			}
-		}
-	}
-	return c;
 }
 
 static void MapFloodFill(
@@ -293,4 +302,57 @@ static void AddCorridor(
 		IMapSet(map, v, tile);
 	}
 	IMapSet(map, end, tile);
+}
+
+// Make sure corridors are wide enough
+static void FixValidWallTile(
+	Map *map, const int corridorWidth, unsigned short *tile,
+	const Vec2i v, const Vec2i d);
+static void FixCorridors(Map *map, const int corridorWidth)
+{
+	// Find all instances where a corridor is too narrow
+	// Do this by ensuring that each wall tile is, on all four sides, either
+	// - blocked by a neighbouring wall tile, or
+	// - is followed by at least corridorWidth floor tiles in that direction
+	// If not, then replace that wall with a floor tile
+	Vec2i v;
+	for (v.y = corridorWidth; v.y < map->Size.y - corridorWidth; v.y++)
+	{
+		for (v.x = corridorWidth; v.x < map->Size.x - corridorWidth; v.x++)
+		{
+			const int idx = v.x + v.y * map->Size.x;
+			unsigned short *tile = CArrayGet(&map->iMap, idx);
+			// Make sure that the tile is a wall
+			if (*tile != MAP_WALL)
+			{
+				continue;
+			}
+			// Top
+			FixValidWallTile(map, corridorWidth, tile, v, Vec2iNew(0, -1));
+			// Bottom
+			FixValidWallTile(map, corridorWidth, tile, v, Vec2iNew(0, 1));
+			// Left
+			FixValidWallTile(map, corridorWidth, tile, v, Vec2iNew(-1, 0));
+			// Right
+			FixValidWallTile(map, corridorWidth, tile, v, Vec2iNew(1, 0));
+		}
+	}
+}
+static void FixValidWallTile(
+	Map *map, const int corridorWidth, unsigned short *tile,
+	const Vec2i v, const Vec2i d)
+{
+	Vec2i v1 = Vec2iAdd(v, d);
+	if (IMapGet(map, v1) != MAP_WALL)
+	{
+		for (int i = 0; i < corridorWidth; i++, v1 = Vec2iAdd(v1, d))
+		{
+			if (IMapGet(map, v1) != MAP_FLOOR)
+			{
+				// Not enough spaces; replace with floor
+				*tile = MAP_FLOOR;
+				return;
+			}
+		}
+	}
 }

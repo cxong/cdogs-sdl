@@ -263,6 +263,7 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 		m->u.Cave.Repeat = rand() % 6;
 		m->u.Cave.R1 = rand() % 2 + 4;
 		m->u.Cave.R2 = rand() % 5 - 1;
+		m->u.Cave.CorridorWidth = rand() % 3 + 1;
 		break;
 	default:
 		assert(0 && "unknown map type");

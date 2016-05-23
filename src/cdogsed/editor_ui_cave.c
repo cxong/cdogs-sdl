@@ -44,6 +44,8 @@ static const char *MissionGetR1Str(UIObject *o, void *data);
 static void MissionChangeR1(void *data, int d);
 static const char *MissionGetR2Str(UIObject *o, void *data);
 static void MissionChangeR2(void *data, int d);
+static const char *MissionGetCorridorWidthStr(UIObject *o, void *data);
+static void MissionChangeCorridorWidth(void *data, int d);
 UIObject *CreateCaveMapObjs(Vec2i pos, CampaignOptions *co)
 {
 	const int th = FontH();
@@ -89,6 +91,14 @@ UIObject *CreateCaveMapObjs(Vec2i pos, CampaignOptions *co)
 	o2->Data = co;
 	o2->ChangeFunc = MissionChangeR2;
 	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetCorridorWidthStr;
+	o2->Data = co;
+	o2->ChangeFunc = MissionChangeCorridorWidth;
+	o2->Pos = pos;
+	o2->Size.x = 60;
 	UIObjectAddChild(c, o2);
 
 	UIObjectDestroy(o);
@@ -161,4 +171,20 @@ static void MissionChangeR2(void *data, int d)
 	CampaignOptions *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
 	m->u.Cave.R2 = CLAMP(m->u.Cave.R2 + d, -1, 25);
+}
+static const char *MissionGetCorridorWidthStr(UIObject *o, void *data)
+{
+	UNUSED(o);
+	CampaignOptions *co = data;
+	const Mission *m = CampaignGetCurrentMission(co);
+	if (m == NULL) return NULL;
+	static char s[128];
+	sprintf(s, "CorridorWidth: %d", m->u.Cave.CorridorWidth);
+	return s;
+}
+static void MissionChangeCorridorWidth(void *data, int d)
+{
+	CampaignOptions *co = data;
+	Mission *m = CampaignGetCurrentMission(co);
+	m->u.Cave.CorridorWidth = CLAMP(m->u.Cave.CorridorWidth + d, 1, 5);
 }

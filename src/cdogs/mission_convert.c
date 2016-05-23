@@ -86,6 +86,7 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 		m->u.Cave.Repeat = 4;
 		m->u.Cave.R1 = 5;
 		m->u.Cave.R2 = 2;
+		m->u.Cave.CorridorWidth = 2;
 		break;
 	default:
 		CASSERT(false, "unknown map type");

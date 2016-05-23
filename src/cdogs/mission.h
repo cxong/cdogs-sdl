@@ -205,6 +205,7 @@ typedef struct
 			int Repeat;
 			int R1;
 			int R2;
+			int CorridorWidth;
 		} Cave;
 	} u;
 } Mission;
