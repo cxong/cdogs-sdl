@@ -1,0 +1,14 @@
+---
+layout: post
+title:  "C-Dogs 0.6.1 Released!"
+date:   2016-05-24
+categories: release
+---
+
+Introducing C-Dogs SDL 0.6.1, with a heap of new campaigns, editor improvements and bug fixes!
+
+Thanks to sauer2, there are **6 new campaigns** you can try out, many with unique levels and cool custom weapons!
+
+![New Campaigns](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/new_campaigns.png)
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.6.1>
