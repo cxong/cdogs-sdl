@@ -66,6 +66,7 @@
         "Type": "Directional",
         "Sprites": "beam"
       },
+      "Spark": "spark_red",
       "Speed": 1024,
       "Range": 90,
       "Power": 20,
@@ -77,6 +78,7 @@
         "Type": "Directional",
         "Sprites": "beam_bright"
       },
+      "Spark": "spark_blue",
       "Speed": 1024,
       "Range": 90,
       "Power": 50,
@@ -253,6 +255,7 @@
         "Type": "Directional",
         "Sprites": "pulse"
       },
+      "Spark": "spark_blue",
       "Speed": 1280,
       "Range": 25,
       "Power": 6
@@ -281,6 +284,7 @@
         "Type": "Directional",
         "Sprites": "rapid"
       },
+      "Spark": "spark_blue",
       "Speed": 768,
       "Range": 45,
       "Power": 15,
@@ -294,6 +298,7 @@
         "Tint": [-1.0, 1.0, 0.75],
         "OldPic": 301
       },
+      "Spark": "spark_blue",
       "Speed": 768,
       "Range": 45,
       "Size": [10, 10],

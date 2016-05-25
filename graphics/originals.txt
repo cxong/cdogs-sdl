@@ -1,0 +1,7 @@
+Original graphics copyright Ronny Wester
+Includes unmodified graphics and derived ones, licensed under CC-BY
+
+Full list:
+
+spark_blue.png
+spark_red.png

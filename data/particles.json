@@ -3,13 +3,19 @@
   "Particles": [
     {
       "Name": "spark",
-      "Pic": "spark",
-      "OldPic": 111
+      "Pic": "spark"
+    },
+    {
+      "Name": "spark_blue",
+      "Pic": "spark_blue"
+    },
+    {
+      "Name": "spark_red",
+      "Pic": "spark_red"
     },
     {
       "Name": "boom",
       "Sprites": "boom",
-      "OldPic": 111,
       "Range": 7,
       "TicksPerFrame": 1
     },
