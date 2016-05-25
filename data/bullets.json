@@ -3,8 +3,7 @@
   "DefaultBullet": {
     "Pic": {
       "Type": "Directional",
-      "Sprites": "bullet",
-      "OldPic": 42
+      "Sprites": "bullet"
     },
     "Spark": "spark",
     "HitSounds": {
@@ -36,6 +35,10 @@
     },
     {
       "Name": "shotgun",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "bullet_ball"
+      },
       "Speed": 640,
       "Range": 50,
       "Power": 15

@@ -3,5 +3,6 @@ Includes unmodified graphics and derived ones, licensed under CC-BY
 
 Full list:
 
+bullet_ball.png
 spark_blue.png
 spark_red.png
