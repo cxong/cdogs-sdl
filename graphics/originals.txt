@@ -9,3 +9,4 @@ bulletmarks.png
 scratch.png
 spark_blue.png
 spark_red.png
+wall_stuff.png
