@@ -450,7 +450,7 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 	NetServerSendMsg(n, peerId, GAME_EVENT_ADD_KEYS, &ak);
 
 	// Send objective counts
-	CA_FOREACH(const ObjectiveDef, o, gMission.Objectives)
+	CA_FOREACH(const Objective, o, gMission.missionData->Objectives)
 		NObjectiveUpdate ou = NObjectiveUpdate_init_default;
 		ou.ObjectiveId = _ca_index;
 		ou.Count = o->done;

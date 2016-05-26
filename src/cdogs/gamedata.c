@@ -122,12 +122,10 @@ void MissionOptionsInit(struct MissionOptions *mo)
 {
 	memset(mo, 0, sizeof *mo);
 	CArrayInit(&mo->Weapons, sizeof(GunDescription *));
-	CArrayInit(&mo->Objectives, sizeof(ObjectiveDef));
 }
 void MissionOptionsTerminate(struct MissionOptions *mo)
 {
 	CArrayTerminate(&mo->Weapons);
-	CArrayTerminate(&mo->Objectives);
 	memset(mo, 0, sizeof *mo);
 }
 

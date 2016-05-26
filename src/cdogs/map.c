@@ -460,10 +460,10 @@ bool MapPosIsInLockedRoom(const Map *map, const Vec2i pos)
 void MapPlaceCollectible(
 	const struct MissionOptions *mo, const int objective, const Vec2i realPos)
 {
-	const ObjectiveDef *o = CArrayGet(&mo->Objectives, objective);
+	const Objective *o = CArrayGet(&mo->missionData->Objectives, objective);
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
 	e.u.AddPickup.UID = PickupsGetNextUID();
-	strcpy(e.u.AddPickup.PickupClass, o->pickupClass->Name);
+	strcpy(e.u.AddPickup.PickupClass, o->u.Pickup->Name);
 	e.u.AddPickup.IsRandomSpawned = false;
 	e.u.AddPickup.SpawnerUID = -1;
 	e.u.AddPickup.TileItemFlags = ObjectiveToTileItem(objective);
@@ -474,10 +474,10 @@ static int MapTryPlaceCollectible(
 	Map *map, const Mission *mission, const struct MissionOptions *mo,
 	const int objective)
 {
-	const MissionObjective *mobj = CArrayGet(&mission->Objectives, objective);
+	const Objective *o = CArrayGet(&mission->Objectives, objective);
 	const bool hasLockedRooms =
-		(mobj->Flags & OBJECTIVE_HIACCESS) && MapHasLockedRooms(map);
-	int noaccess = mobj->Flags & OBJECTIVE_NOACCESS;
+		(o->Flags & OBJECTIVE_HIACCESS) && MapHasLockedRooms(map);
+	const bool noaccess = o->Flags & OBJECTIVE_NOACCESS;
 	int i = (noaccess || hasLockedRooms) ? 1000 : 100;
 
 	while (i)
@@ -512,13 +512,12 @@ Vec2i MapGenerateFreePosition(Map *map, Vec2i size)
 }
 
 static bool MapTryPlaceBlowup(
-	Map *map, const Mission *mission, const struct MissionOptions *mo,
-	const int objective)
+	Map *map, const Mission *mission, const int objective)
 {
-	const MissionObjective *mobj = CArrayGet(&mission->Objectives, objective);
+	const Objective *o = CArrayGet(&mission->Objectives, objective);
 	const bool hasLockedRooms =
-		(mobj->Flags & OBJECTIVE_HIACCESS) && MapHasLockedRooms(map);
-	int noaccess = mobj->Flags & OBJECTIVE_NOACCESS;
+		(o->Flags & OBJECTIVE_HIACCESS) && MapHasLockedRooms(map);
+	const bool noaccess = o->Flags & OBJECTIVE_NOACCESS;
 	int i = (noaccess || hasLockedRooms) ? 1000 : 100;
 
 	while (i > 0)
@@ -527,12 +526,11 @@ static bool MapTryPlaceBlowup(
 		if ((!hasLockedRooms || (IMapGet(map, v) >> 8)) &&
 			(!noaccess || (IMapGet(map, v) >> 8) == 0))
 		{
-			const ObjectiveDef *o = CArrayGet(&mo->Objectives, objective);
 			if (MapTryPlaceOneObject(
 					map,
 					v,
-					o->blowupObject,
-					ObjectiveToTileItem(objective), 1))
+					o->u.MapObject,
+					ObjectiveToTileItem(objective), true))
 			{
 				return 1;
 			}
@@ -778,40 +776,38 @@ static void AddObjectives(Map *map, const struct MissionOptions *mo)
 	// Try to add the objectives
 	// If we are unable to place them all, make sure to reduce the totals
 	// in case we create missions that are impossible to complete
-	for (int i = 0, j = 0; i < (int)mo->missionData->Objectives.size; i++)
-	{
-		MissionObjective *mobj = CArrayGet(&mo->missionData->Objectives, i);
-		if (mobj->Type != OBJECTIVE_COLLECT && mobj->Type != OBJECTIVE_DESTROY)
+	CA_FOREACH(Objective, o, mo->missionData->Objectives)
+		if (o->Type != OBJECTIVE_COLLECT && o->Type != OBJECTIVE_DESTROY)
 		{
 			continue;
 		}
-		ObjectiveDef *obj = CArrayGet(&mo->Objectives, i);
-		if (mobj->Type == OBJECTIVE_COLLECT)
+		if (o->Type == OBJECTIVE_COLLECT)
 		{
-			for (j = obj->placed; j < mobj->Count; j++)
+			for (int i = o->placed; i < o->Count; i++)
 			{
-				if (MapTryPlaceCollectible(map, mo->missionData, mo, i))
+				if (MapTryPlaceCollectible(
+					map, mo->missionData, mo, _ca_index))
 				{
-					obj->placed++;
+					o->placed++;
 				}
 			}
 		}
-		else if (mobj->Type == OBJECTIVE_DESTROY)
+		else if (o->Type == OBJECTIVE_DESTROY)
 		{
-			for (j = obj->placed; j < mobj->Count; j++)
+			for (int i = o->placed; i < o->Count; i++)
 			{
-				if (MapTryPlaceBlowup(map, mo->missionData, mo, i))
+				if (MapTryPlaceBlowup(map, mo->missionData, _ca_index))
 				{
-					obj->placed++;
+					o->placed++;
 				}
 			}
 		}
-		mobj->Count = obj->placed;
-		if (mobj->Count < mobj->Required)
+		o->Count = o->placed;
+		if (o->Count < o->Required)
 		{
-			mobj->Required = mobj->Count;
+			o->Required = o->Count;
 		}
-	}
+	CA_FOREACH_END()
 }
 static void AddKeys(Map *map)
 {

@@ -569,8 +569,9 @@ static void HandleGameEvent(
 		break;
 	case GAME_EVENT_OBJECTIVE_UPDATE:
 		{
-			ObjectiveDef *o = CArrayGet(
-				&gMission.Objectives, e.u.ObjectiveUpdate.ObjectiveId);
+			Objective *o = CArrayGet(
+				&gMission.missionData->Objectives,
+				e.u.ObjectiveUpdate.ObjectiveId);
 			o->done += e.u.ObjectiveUpdate.Count;
 			// Display a text update effect for the objective
 			if (camera != NULL)

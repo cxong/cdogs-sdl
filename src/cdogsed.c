@@ -301,9 +301,9 @@ static void AddObjective(Mission *m)
 	// TODO: support more objectives
 	if (m->Objectives.size < OBJECTIVE_MAX_OLD)
 	{
-		MissionObjective mo;
-		memset(&mo, 0, sizeof mo);
-		CArrayPushBack(&m->Objectives, &mo);
+		Objective o;
+		memset(&o, 0, sizeof o);
+		CArrayPushBack(&m->Objectives, &o);
 	}
 }
 

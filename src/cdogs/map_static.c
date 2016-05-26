@@ -161,14 +161,12 @@ static void AddObjective(
 			op->Index);
 		return;
 	}
-	const MissionObjective *mobj =
-		CArrayGet(&mo->missionData->Objectives, op->Index);
-	ObjectiveDef *obj = CArrayGet(&mo->Objectives, op->Index);
+	Objective *o = CArrayGet(&mo->missionData->Objectives, op->Index);
 	CA_FOREACH(const Vec2i, pos, op->Positions)
 		const int *idx = CArrayGet(&op->Indices, _ca_index);
 		const Vec2i realPos = Vec2iCenterOfTile(*pos);
 		const Vec2i fullPos = Vec2iReal2Full(realPos);
-		switch (mobj->Type)
+		switch (o->Type)
 		{
 		case OBJECTIVE_KILL:
 		{
@@ -193,7 +191,7 @@ static void AddObjective(
 			MapTryPlaceOneObject(
 				map,
 				*pos,
-				obj->blowupObject,
+				o->u.MapObject,
 				ObjectiveToTileItem(op->Index), false);
 			break;
 		case OBJECTIVE_RESCUE:
@@ -216,7 +214,7 @@ static void AddObjective(
 			// do nothing
 			break;
 		}
-		obj->placed++;
+		o->placed++;
 	CA_FOREACH_END()
 }
 static void AddKey(

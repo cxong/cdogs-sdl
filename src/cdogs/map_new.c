@@ -183,7 +183,8 @@ void MapNewLoadCampaignJSON(json_t *root, CampaignSetting *c)
 	c->Description = GetString(root, "Description");
 }
 
-static void LoadMissionObjectives(CArray *objectives, json_t *objectivesNode);
+static void LoadMissionObjectives(
+	CArray *objectives, json_t *objectivesNode, const int version);
 static void LoadIntArray(CArray *a, json_t *node, char *name);
 static void LoadWeapons(CArray *weapons, json_t *weaponsNode);
 static void LoadClassicRooms(Mission *m, json_t *roomsNode);
@@ -219,7 +220,10 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 			strcpy(m.DoorStyle, tmp);
 			CFREE(tmp);
 		}
-		LoadMissionObjectives(&m.Objectives, json_find_first_label(child, "Objectives")->child);
+		LoadMissionObjectives(
+			&m.Objectives,
+			json_find_first_label(child, "Objectives")->child,
+			version);
 		LoadIntArray(&m.Enemies, child, "Enemies");
 		LoadIntArray(&m.SpecialChars, child, "SpecialChars");
 		if (version <= 3)
@@ -412,20 +416,15 @@ void LoadCharacters(
 	}
 }
 
-static void LoadMissionObjectives(CArray *objectives, json_t *objectivesNode)
+static void LoadMissionObjectives(
+	CArray *objectives, json_t *objectivesNode, const int version)
 {
 	json_t *child;
 	for (child = objectivesNode->child; child; child = child->next)
 	{
-		MissionObjective mo;
-		memset(&mo, 0, sizeof mo);
-		mo.Description = GetString(child, "Description");
-		JSON_UTILS_LOAD_ENUM(mo.Type, child, "Type", StrObjectiveType);
-		LoadInt(&mo.Index, child, "Index");
-		LoadInt(&mo.Count, child, "Count");
-		LoadInt(&mo.Required, child, "Required");
-		LoadInt(&mo.Flags, child, "Flags");
-		CArrayPushBack(objectives, &mo);
+		Objective o;
+		ObjectiveLoadJSON(&o, child, version);
+		CArrayPushBack(objectives, &o);
 	}
 }
 static void LoadIntArray(CArray *a, json_t *node, char *name)

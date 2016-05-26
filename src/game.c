@@ -566,21 +566,17 @@ static GameLoopResult RunGameUpdate(void *data)
 static void CheckMissionCompletion(const struct MissionOptions *mo)
 {
 	// Check if we need to update explore objectives
-	for (int i = 0; i < (int)mo->missionData->Objectives.size; i++)
-	{
-		const MissionObjective *mobj =
-			CArrayGet(&mo->missionData->Objectives, i);
-		if (mobj->Type != OBJECTIVE_INVESTIGATE) continue;
-		const ObjectiveDef *o = CArrayGet(&mo->Objectives, i);
+	CA_FOREACH(const Objective, o, mo->missionData->Objectives)
+		if (o->Type != OBJECTIVE_INVESTIGATE) continue;
 		const int update = MapGetExploredPercentage(&gMap) - o->done;
 		if (update > 0 && !gCampaign.IsClient)
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_OBJECTIVE_UPDATE);
-			e.u.ObjectiveUpdate.ObjectiveId = i;
+			e.u.ObjectiveUpdate.ObjectiveId = _ca_index;
 			e.u.ObjectiveUpdate.Count = update;
 			GameEventsEnqueue(&gGameEvents, e);
 		}
-	}
+	CA_FOREACH_END()
 
 	const bool isMissionComplete =
 		GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) > 0 && IsMissionComplete(mo);

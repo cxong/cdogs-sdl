@@ -38,8 +38,7 @@
 #include "password.h"
 
 
-static void DrawObjectiveInfo(
-	const struct MissionOptions *mo, const int idx, const Vec2i pos);
+static void DrawObjectiveInfo(const Objective *o, const Vec2i pos);
 
 static void CampaignIntroDraw(void *data);
 bool ScreenCampaignIntro(CampaignSetting *c)
@@ -220,26 +219,20 @@ static void MissionBriefingDraw(void *data)
 	// Display description with typewriter effect
 	FontStr(mData->TypewriterBuf, mData->DescriptionPos);
 	// Display objectives
-	for (int i = 0;
-		i < (int)mData->MissionOptions->missionData->Objectives.size;
-		i++)
-	{
-		const MissionObjective *o =
-			CArrayGet(&mData->MissionOptions->missionData->Objectives, i);
+	CA_FOREACH(
+		const Objective, o, mData->MissionOptions->missionData->Objectives)
 		// Do not brief optional objectives
 		if (o->Required == 0)
 		{
 			continue;
 		}
-		Vec2i offset = Vec2iNew(0, i * mData->ObjectiveHeight);
+		Vec2i offset = Vec2iNew(0, _ca_index * mData->ObjectiveHeight);
 		FontStr(o->Description, Vec2iAdd(mData->ObjectiveDescPos, offset));
 		// Draw the icons slightly offset so that tall icons don't overlap each
 		// other
-		offset.x = -16 * (i & 1);
-		DrawObjectiveInfo(
-			mData->MissionOptions, i,
-			Vec2iAdd(mData->ObjectiveInfoPos, offset));
-	}
+		offset.x = -16 * (_ca_index & 1);
+		DrawObjectiveInfo(o, Vec2iAdd(mData->ObjectiveInfoPos, offset));
+	CA_FOREACH_END()
 }
 
 #define PERFECT_BONUS 500
@@ -278,16 +271,12 @@ bool ScreenMissionSummary(
 	{
 		int bonus = 0;
 		// Objective bonuses
-		for (int i = 0; i < (int)m->missionData->Objectives.size; i++)
-		{
-			const ObjectiveDef *o = CArrayGet(&m->Objectives, i);
-			const MissionObjective *mo = CArrayGet(&m->missionData->Objectives, i);
-			if (o->done == mo->Count && o->done > mo->Required)
+		CA_FOREACH(const Objective, o, m->missionData->Objectives)
+			if (ObjectiveIsPerfect(o))
 			{
-				// Perfect
 				bonus += PERFECT_BONUS;
 			}
-		}
+		CA_FOREACH_END()
 		bonus += GetAccessBonus(m);
 		bonus += GetTimeBonus(m, NULL);
 
@@ -431,28 +420,24 @@ static void MissionSummaryDraw(
 	// Display objectives and bonuses
 	Vec2i pos = Vec2iNew(w / 6, h / 2 + h / 10);
 	int idx = 1;
-	for (int i = 0; i < (int)m->missionData->Objectives.size; i++)
-	{
-		const ObjectiveDef *o = CArrayGet(&m->Objectives, i);
-		const MissionObjective *mo = CArrayGet(&m->missionData->Objectives, i);
-
+	CA_FOREACH(const Objective, o, m->missionData->Objectives)
 		// Do not mention optional objectives with none completed
-		if (o->done == 0 && mo->Required == 0)
+		if (o->done == 0 && !ObjectiveIsRequired(o))
 		{
 			continue;
 		}
 
 		// Objective icon
-		DrawObjectiveInfo(m, i, Vec2iAdd(pos, Vec2iNew(-26, FontH())));
+		DrawObjectiveInfo(o, Vec2iAdd(pos, Vec2iNew(-26, FontH())));
 
 		// Objective completion text
 		char s[100];
 		sprintf(s, "Objective %d: %d of %d, %d required",
-			idx, o->done, mo->Count, mo->Required);
+			idx, o->done, o->Count, o->Required);
 		FontOpts opts = FontOptsNew();
 		opts.Area = gGraphicsDevice.cachedConfig.Res;
 		opts.Pad = pos;
-		if (mo->Required == 0)
+		if (!ObjectiveIsRequired(o))
 		{
 			// Show optional objectives in purple
 			opts.Mask = colorPurple;
@@ -464,20 +449,19 @@ static void MissionSummaryDraw(
 		opts.HAlign = ALIGN_END;
 		opts.Area = gGraphicsDevice.cachedConfig.Res;
 		opts.Pad = pos;
-		if (o->done < mo->Required)
+		if (!ObjectiveIsComplete(o))
 		{
 			opts.Mask = colorRed;
 			FontStrOpt("Failed", Vec2iZero(), opts);
 		}
-		else if (
-			o->done == mo->Count && o->done > mo->Required && AreAnySurvived())
+		else if (ObjectiveIsPerfect(o) && AreAnySurvived())
 		{
 			opts.Mask = colorGreen;
 			char buf[16];
 			sprintf(buf, "Perfect: %d", PERFECT_BONUS);
 			FontStrOpt(buf, Vec2iZero(), opts);
 		}
-		else if (mo->Required > 0)
+		else if (ObjectiveIsRequired(o))
 		{
 			FontStrOpt("Done", Vec2iZero(), opts);
 		}
@@ -488,7 +472,7 @@ static void MissionSummaryDraw(
 
 		pos.y += 15;
 		idx++;
-	}
+	CA_FOREACH_END()
 
 	// Draw other bonuses
 	if (AreAnySurvived())
@@ -622,15 +606,11 @@ static void DrawPlayerSummary(
 	}
 }
 
-static void DrawObjectiveInfo(
-	const struct MissionOptions *mo, const int idx, const Vec2i pos)
+static void DrawObjectiveInfo(const Objective *o, const Vec2i pos)
 {
-	const MissionObjective *mobj =
-		CArrayGet(&mo->missionData->Objectives, idx);
-	const ObjectiveDef *o = CArrayGet(&mo->Objectives, idx);
 	const CharacterStore *store = &gCampaign.Setting.characters;
 
-	switch (mobj->Type)
+	switch (o->Type)
 	{
 	case OBJECTIVE_KILL:
 		{
@@ -648,7 +628,7 @@ static void DrawObjectiveInfo(
 		break;
 	case OBJECTIVE_COLLECT:
 		{
-			const Pic *p = o->pickupClass->Pic;
+			const Pic *p = o->u.Pickup->Pic;
 			Blit(&gGraphicsDevice, p,
 				Vec2iMinus(pos, Vec2iScaleDiv(p->size, 2)));
 		}
@@ -657,7 +637,7 @@ static void DrawObjectiveInfo(
 		{
 			Vec2i picOffset;
 			const Pic *p =
-				MapObjectGetPic(IntMapObject(mobj->Index), &picOffset, false);
+				MapObjectGetPic(o->u.MapObject, &picOffset, false);
 			Blit(&gGraphicsDevice, p, Vec2iAdd(pos, picOffset));
 		}
 		break;

@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2015, Cong Xu
+    Copyright (c) 2015-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -84,8 +84,11 @@ void PickupClassesLoadGuns(CArray *classes, const CArray *gunClasses);
 void PickupClassesClear(CArray *classes);
 void PickupClassesTerminate(PickupClasses *classes);
 
+int PickupClassesGetScoreIdx(const PickupClass *p);
 // Count the number of "Score" type pickups
 int PickupClassesGetScoreCount(const PickupClasses *classes);
+// Get the ith "Score" type pickup
+PickupClass *IntScorePickupClass(const int i);
 
 // Score for picking up an objective
 #define PICKUP_SCORE 10

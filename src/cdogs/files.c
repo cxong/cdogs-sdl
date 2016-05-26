@@ -332,15 +332,34 @@ void ConvertCharacter(Character *c, TBadGuy *b)
 	c->maxHealth = b->health;
 	c->flags = b->flags;
 }
-static void ConvertMissionObjective(
-	MissionObjective *dest, struct MissionObjectiveOld *src)
+static void ConvertObjective(
+	Objective *dest, struct MissionObjectiveOld *src)
 {
-	CFREE(dest->Description);
 	CSTRDUP(dest->Description, src->description);
 	dest->Type = src->type;
-	dest->Index = src->index;
+	// Set objective colours based on type
+	dest->color = ObjectiveTypeColor(dest->Type);
+	// Index numbers used for all objective classes; convert them
+	// to their class handles
+	dest->u.Index = src->index;
+	switch (dest->Type)
+	{
+	case OBJECTIVE_COLLECT:
+		dest->u.Pickup = IntPickupClass(dest->u.Index);
+		break;
+	case OBJECTIVE_DESTROY:
+		dest->u.MapObject = IntMapObject(dest->u.Index);
+		break;
+	default:
+		// do nothing
+		break;
+	}
 	dest->Count = src->count;
 	dest->Required = src->required;
+	if (dest->Required < 0)
+	{
+		dest->Required = 0;
+	}
 	dest->Flags = src->flags;
 }
 static void ConvertMission(
@@ -360,10 +379,9 @@ static void ConvertMission(
 	strcpy(dest->DoorStyle, DoorStyleStr(src->doorStyle));
 	for (int i = 0; i < src->objectiveCount; i++)
 	{
-		MissionObjective mo;
-		memset(&mo, 0, sizeof mo);
-		ConvertMissionObjective(&mo, &src->objectives[i]);
-		CArrayPushBack(&dest->Objectives, &mo);
+		Objective o;
+		ConvertObjective(&o, &src->objectives[i]);
+		CArrayPushBack(&dest->Objectives, &o);
 	}
 	// Note: modulo for compatibility with older, buggy missions
 	for (int i = 0; i < src->baddieCount; i++)

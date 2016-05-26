@@ -72,7 +72,6 @@
 #define DEATH_MAX       9
 #define BLOOD_MAX       3
 
-#define OFSPIC_BULLET                   0
 #define OFSPIC_DOOR                     1
 #define OFSPIC_SPARK                    2
 #define OFSPIC_BARREL                   3
@@ -198,7 +197,6 @@
 #define OFSPIC_HDOOR4                 131
 #define OFSPIC_WALL_SKULL             132
 #define OFSPIC_BONE_N_BLOOD           133
-#define OFSPIC_BULLET_MARKS           134
 #define OFSPIC_BLOOD                  135
 #define OFSPIC_SKULL                  136
 #define OFSPIC_SCRATCH                137

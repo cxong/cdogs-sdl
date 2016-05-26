@@ -75,7 +75,7 @@ typedef struct
 	bool IsDestructible;
 	union
 	{
-		const ObjectiveDef *Obj;
+		const Objective *Obj;
 		int UID;
 	} u;
 	int LastDone;

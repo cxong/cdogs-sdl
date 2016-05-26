@@ -755,19 +755,27 @@ static json_t *SaveStaticKeys(Mission *m)
 static json_t *SaveObjectives(CArray *a)
 {
 	json_t *objectivesNode = json_new_array();
-	int i;
-	for (i = 0; i < (int)a->size; i++)
-	{
+	CA_FOREACH(const Objective, o, *a)
 		json_t *objNode = json_new_object();
-		MissionObjective *mo = CArrayGet(a, i);
-		AddStringPair(objNode, "Description", mo->Description);
-		AddStringPair(objNode, "Type", ObjectiveTypeStr(mo->Type));
-		AddIntPair(objNode, "Index", mo->Index);
-		AddIntPair(objNode, "Count", mo->Count);
-		AddIntPair(objNode, "Required", mo->Required);
-		AddIntPair(objNode, "Flags", mo->Flags);
+		AddStringPair(objNode, "Description", o->Description);
+		AddStringPair(objNode, "Type", ObjectiveTypeStr(o->Type));
+		switch (o->Type)
+		{
+		case OBJECTIVE_COLLECT:
+			AddStringPair(objNode, "Pickup", o->u.Pickup->Name);
+			break;
+		case OBJECTIVE_DESTROY:
+			AddStringPair(objNode, "MapObject", o->u.MapObject->Name);
+			break;
+		default:
+			AddIntPair(objNode, "Index", o->u.Index);
+			break;
+		}
+		AddIntPair(objNode, "Count", o->Count);
+		AddIntPair(objNode, "Required", o->Required);
+		AddIntPair(objNode, "Flags", o->Flags);
 		json_insert_child(objectivesNode, objNode);
-	}
+	CA_FOREACH_END()
 	return objectivesNode;
 }
 

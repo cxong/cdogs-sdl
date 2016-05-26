@@ -133,10 +133,10 @@ static void DrawObjective(
 	UNUSED(g);
 	EditorBrushAndCampaign *data = vData;
 	Mission *m = CampaignGetCurrentMission(data->Campaign);
-	MissionObjective *mobj = CArrayGet(&m->Objectives, data->Brush.ItemIndex);
+	const Objective *obj = CArrayGet(&m->Objectives, data->Brush.ItemIndex);
 	CharacterStore *store = &data->Campaign->Setting.characters;
 	pos = Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
-	switch (mobj->Type)
+	switch (obj->Type)
 	{
 	case OBJECTIVE_KILL:
 		{
@@ -156,18 +156,13 @@ static void DrawObjective(
 		break;
 	case OBJECTIVE_COLLECT:
 		{
-			const ObjectiveDef *obj =
-				CArrayGet(&gMission.Objectives, data->Brush.ItemIndex);
-			const Pic *p = obj->pickupClass->Pic;
+			const Pic *p = obj->u.Pickup->Pic;
 			pos = Vec2iMinus(pos, Vec2iScaleDiv(p->size, 2));
 			Blit(&gGraphicsDevice, p, pos);
 		}
 		break;
 	case OBJECTIVE_DESTROY:
-		{
-			MapObject *mo = IndexMapObject(mobj->Index);
-			DisplayMapItem(pos, mo);
-		}
+		DisplayMapItem(pos, obj->u.MapObject);
 		break;
 	default:
 		assert(0 && "invalid objective type");
@@ -542,12 +537,10 @@ static void CreateAddObjectiveSubObjs(UIObject *c, void *vData)
 	// UI pointers.
 	bool needToRecreate = false;
 	int childIndex = 0;
-	for (int i = 0; i < (int)m->Objectives.size; i++)
-	{
-		MissionObjective *mobj = CArrayGet(&m->Objectives, i);
+	CA_FOREACH(const Objective, obj, m->Objectives)
 		int secondaryCount = 1;
-		CharacterStore *store = &data->Campaign->Setting.characters;
-		switch (mobj->Type)
+		const CharacterStore *store = &data->Campaign->Setting.characters;
+		switch (obj->Type)
 		{
 		case OBJECTIVE_KILL:
 			secondaryCount = (int)store->specialIds.size;
@@ -570,7 +563,7 @@ static void CreateAddObjectiveSubObjs(UIObject *c, void *vData)
 				break;
 			}
 			UIObject *o2 = *(UIObject **)CArrayGet(&c->Children, childIndex);
-			if (((EditorBrushAndCampaign *)o2->Data)->Brush.ItemIndex != i ||
+			if (((EditorBrushAndCampaign *)o2->Data)->Brush.ItemIndex != _ca_index ||
 				((EditorBrushAndCampaign *)o2->Data)->Brush.Index2 != j)
 			{
 				needToRecreate = true;
@@ -582,7 +575,7 @@ static void CreateAddObjectiveSubObjs(UIObject *c, void *vData)
 		{
 			break;
 		}
-	}
+	CA_FOREACH_END()
 	if (!needToRecreate)
 	{
 		return;
@@ -604,12 +597,10 @@ static void CreateAddObjectiveSubObjs(UIObject *c, void *vData)
 	o->OnFocusFunc = ActivateEditorBrushAndCampaignBrush;
 	o->OnUnfocusFunc = DeactivateEditorBrushAndCampaignBrush;
 	Vec2i pos = Vec2iZero();
-	for (int i = 0; i < (int)m->Objectives.size; i++)
-	{
-		MissionObjective *mobj = CArrayGet(&m->Objectives, i);
+	CA_FOREACH(const Objective, obj, m->Objectives)
 		int secondaryCount = 1;
-		CharacterStore *store = &data->Campaign->Setting.characters;
-		switch (mobj->Type)
+		const CharacterStore *store = &data->Campaign->Setting.characters;
+		switch (obj->Type)
 		{
 		case OBJECTIVE_KILL:
 			secondaryCount = (int)store->specialIds.size;
@@ -631,13 +622,13 @@ static void CreateAddObjectiveSubObjs(UIObject *c, void *vData)
 		for (int j = 0; j < (int)secondaryCount; j++)
 		{
 			UIObject *o2 = UIObjectCopy(o);
-			CSTRDUP(o2->Tooltip, ObjectiveTypeStr(mobj->Type));
-			o2->IsDynamicData = 1;
+			CSTRDUP(o2->Tooltip, ObjectiveTypeStr(obj->Type));
+			o2->IsDynamicData = true;
 			CMALLOC(o2->Data, sizeof(EditorBrushAndCampaign));
 			((EditorBrushAndCampaign *)o2->Data)->Brush.Brush =
 				data->Brush.Brush;
 			((EditorBrushAndCampaign *)o2->Data)->Campaign = data->Campaign;
-			((EditorBrushAndCampaign *)o2->Data)->Brush.ItemIndex = i;
+			((EditorBrushAndCampaign *)o2->Data)->Brush.ItemIndex = _ca_index;
 			((EditorBrushAndCampaign *)o2->Data)->Brush.Index2 = j;
 			o2->Pos = pos;
 			UIObjectAddChild(c, o2);
@@ -645,7 +636,7 @@ static void CreateAddObjectiveSubObjs(UIObject *c, void *vData)
 		}
 		pos.x = 0;
 		pos.y += o->Size.y;
-	}
+	CA_FOREACH_END()
 	UIObjectDestroy(o);
 }
 static UIObject *CreateAddKeyObjs(Vec2i pos, EditorBrush *brush)

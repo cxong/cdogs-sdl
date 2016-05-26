@@ -409,7 +409,7 @@ typedef struct
 	int Distance;
 	union
 	{
-		const ObjectiveDef *Objective;
+		const Objective *Objective;
 		int UID;
 	} u;
 	Vec2i Pos;
@@ -631,7 +631,7 @@ static void FindObjectivesSortedByDistance(
 		{
 			const int objective = ObjectiveFromTileItem(p->tileItem.flags);
 			co.u.Objective =
-				CArrayGet(&gMission.Objectives, objective);
+				CArrayGet(&gMission.missionData->Objectives, objective);
 		}
 		CArrayPushBack(objectives, &co);
 	CA_FOREACH_END()
@@ -657,7 +657,7 @@ static void FindObjectivesSortedByDistance(
 		{
 			const int objective = ObjectiveFromTileItem(o->tileItem.flags);
 			co.u.Objective =
-				CArrayGet(&gMission.Objectives, objective);
+				CArrayGet(&gMission.missionData->Objectives, objective);
 		}
 		CArrayPushBack(objectives, &co);
 	CA_FOREACH_END()
@@ -673,16 +673,15 @@ static void FindObjectivesSortedByDistance(
 		{
 			continue;
 		}
-		int objective = ObjectiveFromTileItem(ti->flags);
-		MissionObjective *mo =
+		const int objective = ObjectiveFromTileItem(ti->flags);
+		const Objective *o =
 			CArrayGet(&gMission.missionData->Objectives, objective);
-		if (mo->Type != OBJECTIVE_KILL &&
-			mo->Type != OBJECTIVE_RESCUE)
+		if (o->Type != OBJECTIVE_KILL && o->Type != OBJECTIVE_RESCUE)
 		{
 			continue;
 		}
 		// Only rescue those that need to be rescued
-		if (mo->Type == OBJECTIVE_RESCUE && !(a->flags & FLAGS_PRISONER))
+		if (o->Type == OBJECTIVE_RESCUE && !(a->flags & FLAGS_PRISONER))
 		{
 			continue;
 		}
@@ -692,20 +691,17 @@ static void FindObjectivesSortedByDistance(
 		co.IsDestructible = false;
 		co.Type = AI_OBJECTIVE_TYPE_NORMAL;
 		co.Distance = DistanceSquared(actorRealPos, co.Pos);
-		co.u.Objective = CArrayGet(&gMission.Objectives, objective);
+		co.u.Objective = o;
 		CArrayPushBack(objectives, &co);
 	CA_FOREACH_END()
 
 	// Look for explore objectives
-	for (int i = 0; i < (int)gMission.missionData->Objectives.size; i++)
-	{
-		MissionObjective *mo = CArrayGet(&gMission.missionData->Objectives, i);
-		if (mo->Type != OBJECTIVE_INVESTIGATE)
+	CA_FOREACH(const Objective, o, gMission.missionData->Objectives)
+		if (o->Type != OBJECTIVE_INVESTIGATE)
 		{
 			continue;
 		}
-		const ObjectiveDef *o = CArrayGet(&gMission.Objectives, i);
-		if (o->done >= mo->Required || MapGetExploredPercentage(&gMap) == 100)
+		if (ObjectiveIsComplete(o) || MapGetExploredPercentage(&gMap) == 100)
 		{
 			continue;
 		}
@@ -721,7 +717,7 @@ static void FindObjectivesSortedByDistance(
 		co.Distance = DistanceSquared(actorRealPos, co.Pos);
 		co.u.Objective = o;
 		CArrayPushBack(objectives, &co);
-	}
+	CA_FOREACH_END()
 
 	// Sort according to distance
 	qsort(

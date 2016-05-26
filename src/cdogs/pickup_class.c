@@ -283,6 +283,31 @@ void PickupClassesTerminate(PickupClasses *classes)
 	CArrayTerminate(&classes->CustomClasses);
 }
 
+int PickupClassesGetScoreIdx(const PickupClass *p)
+{
+	int idx = -1;
+	CA_FOREACH(const PickupClass, c, gPickupClasses.Classes)
+		if (c->Type == PICKUP_JEWEL)
+		{
+			idx++;
+			if (c == p)
+			{
+				return idx;
+			}
+		}
+	CA_FOREACH_END()
+	CA_FOREACH(PickupClass, c, gPickupClasses.CustomClasses)
+		if (c->Type == PICKUP_JEWEL)
+		{
+			idx++;
+			if (c == p)
+			{
+				return idx;
+			}
+		}
+	CA_FOREACH_END()
+	return 0;
+}
 int PickupClassesGetScoreCount(const PickupClasses *classes)
 {
 	int count = 0;
@@ -299,4 +324,29 @@ int PickupClassesGetScoreCount(const PickupClasses *classes)
 		}
 	CA_FOREACH_END()
 	return count;
+}
+PickupClass *IntScorePickupClass(const int i)
+{
+	int idx = -1;
+	CA_FOREACH(PickupClass, c, gPickupClasses.Classes)
+		if (c->Type == PICKUP_JEWEL)
+		{
+			idx++;
+			if (idx == i)
+			{
+				return c;
+			}
+		}
+	CA_FOREACH_END()
+	CA_FOREACH(PickupClass, c, gPickupClasses.CustomClasses)
+		if (c->Type == PICKUP_JEWEL)
+		{
+			idx++;
+			if (idx == i)
+			{
+				return c;
+			}
+		}
+	CA_FOREACH_END()
+	return NULL;
 }

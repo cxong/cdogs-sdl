@@ -147,7 +147,8 @@ void HUDInit(
 	FPSCounterInit(&hud->fpsCounter);
 	WallClockInit(&hud->clock);
 	CArrayInit(&hud->objectiveUpdates, sizeof(HUDNumUpdate));
-	CArrayResize(&hud->objectiveUpdates, mission->Objectives.size, NULL);
+	CArrayResize(
+		&hud->objectiveUpdates, mission->missionData->Objectives.size, NULL);
 	CArrayFillZero(&hud->objectiveUpdates);
 	hud->showExit = false;
 }
@@ -715,23 +716,19 @@ static void DrawObjectiveCompass(
 				{
 					continue;
 				}
-				int objective = ObjectiveFromTileItem(ti->flags);
-				MissionObjective *mo =
+				const int objective = ObjectiveFromTileItem(ti->flags);
+				const Objective *o =
 					CArrayGet(&gMission.missionData->Objectives, objective);
-				if (mo->Flags & OBJECTIVE_HIDDEN)
+				if (o->Flags & OBJECTIVE_HIDDEN)
 				{
 					continue;
 				}
-				if (!(mo->Flags & OBJECTIVE_POSKNOWN) &&
-					!tile->isVisited)
+				if (!(o->Flags & OBJECTIVE_POSKNOWN) && !tile->isVisited)
 				{
 					continue;
 				}
-				const ObjectiveDef *o =
-					CArrayGet(&gMission.Objectives, objective);
-				color_t color = o->color;
 				DrawCompassArrow(
-					g, r, Vec2iNew(ti->x, ti->y), playerPos, color, NULL);
+					g, r, Vec2iNew(ti->x, ti->y), playerPos, o->color, NULL);
 			CA_FOREACH_END()
 		}
 	}
@@ -1203,13 +1200,9 @@ static void DrawObjectiveCounts(HUD *hud)
 {
 	int x = 5 + GAUGE_WIDTH;
 	int y = hud->device->cachedConfig.Res.y - 5 - FontH();
-	for (int i = 0; i < (int)gMission.missionData->Objectives.size; i++)
-	{
-		MissionObjective *mo = CArrayGet(&gMission.missionData->Objectives, i);
-		const ObjectiveDef *o = CArrayGet(&gMission.Objectives, i);
-
+	CA_FOREACH(const Objective, o, gMission.missionData->Objectives)
 		// Don't draw anything for optional objectives
-		if (mo->Required == 0)
+		if (!ObjectiveIsRequired(o))
 		{
 			continue;
 		}
@@ -1219,16 +1212,16 @@ static void DrawObjectiveCounts(HUD *hud)
 
 		x += 5;
 		char s[32];
-		int itemsLeft = mo->Required - o->done;
+		const int itemsLeft = o->Required - o->done;
 		if (itemsLeft > 0)
 		{
-			if (!(mo->Flags & OBJECTIVE_UNKNOWNCOUNT))
+			if (!(o->Flags & OBJECTIVE_UNKNOWNCOUNT))
 			{
-				sprintf(s, "%s: %d", ObjectiveTypeStr(mo->Type), itemsLeft);
+				sprintf(s, "%s: %d", ObjectiveTypeStr(o->Type), itemsLeft);
 			}
 			else
 			{
-				sprintf(s, "%s: ?", ObjectiveTypeStr(mo->Type));
+				sprintf(s, "%s: ?", ObjectiveTypeStr(o->Type));
 			}
 		}
 		else
@@ -1238,9 +1231,9 @@ static void DrawObjectiveCounts(HUD *hud)
 		FontStr(s, Vec2iNew(x, y));
 
 		DrawNumUpdate(
-			CArrayGet(&hud->objectiveUpdates, i), "%d", o->done,
+			CArrayGet(&hud->objectiveUpdates, _ca_index), "%d", o->done,
 			Vec2iNew(x + FontStrW(s) - 8, y), 0);
 
 		x += 40;
-	}
+	CA_FOREACH_END()
 }

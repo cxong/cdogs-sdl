@@ -163,6 +163,18 @@ int MapObjectIndex(const MapObject *mo)
 	CASSERT(false, "cannot find map object");
 	return -1;
 }
+int DestructibleMapObjectIndex(const MapObject *mo)
+{
+	CA_FOREACH(const char *, name, gMapObjects.Destructibles)
+		const MapObject *d = StrMapObject(*name);
+		if (d == mo)
+		{
+			return _ca_index;
+		}
+	CA_FOREACH_END()
+	CASSERT(false, "cannot find destructible map object");
+	return -1;
+}
 MapObject *RandomBloodMapObject(const MapObjects *mo)
 {
 	const int idx = rand() % (int)mo->Bloods.size;

@@ -98,7 +98,8 @@ static void DisplayObjective(
 	TTileItem *t, int objectiveIndex, Vec2i pos, int scale, int flags)
 {
 	Vec2i objectivePos = Vec2iNew(t->x / TILE_WIDTH, t->y / TILE_HEIGHT);
-	const ObjectiveDef *o = CArrayGet(&gMission.Objectives, objectiveIndex);
+	const Objective *o =
+		CArrayGet(&gMission.missionData->Objectives, objectiveIndex);
 	color_t color = o->color;
 	pos = Vec2iAdd(pos, Vec2iScale(objectivePos, scale));
 	if (flags & AUTOMAP_FLAGS_MASK)
@@ -139,16 +140,12 @@ static void DisplayExit(Vec2i pos, int scale, int flags)
 
 static void DisplaySummary(void)
 {
-	int i;
 	char sScore[20];
 	Vec2i pos;
 	pos.y = gGraphicsDevice.cachedConfig.Res.y - 5 - FontH();
 
-	for (i = 0; i < (int)gMission.missionData->Objectives.size; i++)
-	{
-		const ObjectiveDef *o = CArrayGet(&gMission.Objectives, i);
-		MissionObjective *mo = CArrayGet(&gMission.missionData->Objectives, i);
-		if (mo->Required > 0 || o->done > 0)
+	CA_FOREACH(const Objective, o, gMission.missionData->Objectives)
+		if (ObjectiveIsRequired(o)|| o->done > 0)
 		{
 			color_t textColor = colorWhite;
 			pos.x = 5;
@@ -159,20 +156,20 @@ static void DisplaySummary(void)
 
 			sprintf(sScore, "(%d)", o->done);
 
-			if (mo->Required <= 0)
+			if (!ObjectiveIsRequired(o))
 			{
 				textColor = colorPurple;
 			}
-			else if (o->done >= mo->Required)
+			else if (ObjectiveIsComplete(o))
 			{
 				textColor = colorRed;
 			}
-			pos = FontStrMask(mo->Description, pos, textColor);
+			pos = FontStrMask(o->Description, pos, textColor);
 			pos.x += 5;
 			FontStrMask(sScore, pos, textColor);
 			pos.y -= (FontH() + 1);
 		}
-	}
+	CA_FOREACH_END()
 }
 
 color_t DoorColor(int x, int y)
@@ -282,14 +279,12 @@ static void DrawTileItem(
 {
 	if ((t->flags & TILEITEM_OBJECTIVE) != 0)
 	{
-		int obj = ObjectiveFromTileItem(t->flags);
-		MissionObjective *mobj =
+		const int obj = ObjectiveFromTileItem(t->flags);
+		const Objective *o =
 			CArrayGet(&gMission.missionData->Objectives, obj);
-		int objFlags = mobj->Flags;
-		if (!(objFlags & OBJECTIVE_HIDDEN) ||
-			(flags & AUTOMAP_FLAGS_SHOWALL))
+		if (!(o->Flags & OBJECTIVE_HIDDEN) || (flags & AUTOMAP_FLAGS_SHOWALL))
 		{
-			if ((objFlags & OBJECTIVE_POSKNOWN) ||
+			if ((o->Flags & OBJECTIVE_POSKNOWN) ||
 				tile->isVisited ||
 				(flags & AUTOMAP_FLAGS_SHOWALL))
 			{

@@ -538,7 +538,7 @@ static char *MissionGetObjectiveDescription(UIObject *o, void *data)
 		return NULL;
 	}
 	o->u.Textbox.IsEditable = true;
-	return ((MissionObjective *)CArrayGet(&m->Objectives, i))->Description;
+	return ((const Objective *)CArrayGet(&m->Objectives, i))->Description;
 }
 static void MissionCheckObjectiveDescription(UIObject *o, void *data)
 {
@@ -576,7 +576,7 @@ static char **MissionGetObjectiveDescriptionSrc(void *data)
 	{
 		return NULL;
 	}
-	return &((MissionObjective *)CArrayGet(&m->Objectives, i))->Description;
+	return &((Objective *)CArrayGet(&m->Objectives, i))->Description;
 }
 static const char *GetWeaponCountStr(UIObject *o, void *v)
 {
@@ -685,7 +685,7 @@ static const char *MissionGetObjectiveStr(UIObject *o, void *vData)
 	MissionIndexData *data = vData;
 	if (!CampaignGetCurrentMission(data->co)) return NULL;
 	if ((int)CampaignGetCurrentMission(data->co)->Objectives.size <= data->index) return NULL;
-	return ObjectiveTypeStr(((MissionObjective *)CArrayGet(
+	return ObjectiveTypeStr(((const Objective *)CArrayGet(
 		&CampaignGetCurrentMission(data->co)->Objectives, data->index))->Type);
 }
 static void MissionDrawObjective(
@@ -695,13 +695,13 @@ static void MissionDrawObjective(
 	CharacterStore *store = &data->co->Setting.characters;
 	const Character *c = NULL;
 	UNUSED(g);
-	if (!CampaignGetCurrentMission(data->co)) return;
-	if ((int)CampaignGetCurrentMission(data->co)->Objectives.size <= data->index) return;
+	const Mission *m = CampaignGetCurrentMission(data->co);
+	if (m == NULL) return;
+	if ((int)m->Objectives.size <= data->index) return;
 	// TODO: only one kill and rescue objective allowed
-	const ObjectiveDef *obj = CArrayGet(&gMission.Objectives, data->index);
+	const Objective *obj = CArrayGet(&m->Objectives, data->index);
 	const Pic *newPic = NULL;
-	switch (((MissionObjective *)CArrayGet(
-		&CampaignGetCurrentMission(data->co)->Objectives, data->index))->Type)
+	switch (obj->Type)
 	{
 	case OBJECTIVE_KILL:
 		if (store->specialIds.size > 0)
@@ -718,10 +718,10 @@ static void MissionDrawObjective(
 		}
 		break;
 	case OBJECTIVE_COLLECT:
-		newPic = obj->pickupClass->Pic;
+		newPic = obj->u.Pickup->Pic;
 		break;
 	case OBJECTIVE_DESTROY:
-		newPic = obj->blowupObject->Normal.Pic;
+		newPic = obj->u.MapObject->Normal.Pic;
 		break;
 	case OBJECTIVE_INVESTIGATE:
 		// no picture
@@ -741,7 +741,7 @@ static void MissionDrawObjective(
 		Blit(g, newPic, Vec2iMinus(drawPos, Vec2iScaleDiv(newPic->size, 2)));
 	}
 }
-static MissionObjective *GetMissionObjective(const Mission *m, const int idx)
+static Objective *GetMissionObjective(const Mission *m, const int idx)
 {
 	return CArrayGet(&m->Objectives, idx);
 }
@@ -1127,60 +1127,77 @@ static void MissionChangeObjectiveIndex(void *vData, int d);
 static void MissionChangeObjectiveType(void *vData, int d)
 {
 	MissionIndexData *data = vData;
-	MissionObjective *mobj = GetMissionObjective(
+	Objective *o = GetMissionObjective(
 		CampaignGetCurrentMission(data->co), data->index);
-	mobj->Type = CLAMP_OPPOSITE((int)mobj->Type + d, 0, OBJECTIVE_INVESTIGATE);
+	o->Type = CLAMP_OPPOSITE((int)o->Type + d, 0, OBJECTIVE_INVESTIGATE);
 	// Initialise the index of the objective
 	MissionChangeObjectiveIndex(data, 0);
 }
 static void MissionChangeObjectiveIndex(void *vData, int d)
 {
 	MissionIndexData *data = vData;
-	MissionObjective *mobj = GetMissionObjective(
+	Objective *o = GetMissionObjective(
 		CampaignGetCurrentMission(data->co), data->index);
+	int idx;
 	int limit;
-	switch (mobj->Type)
+	switch (o->Type)
 	{
 	case OBJECTIVE_COLLECT:
 		limit = PickupClassesGetScoreCount(&gPickupClasses) - 1;
+		idx = PickupClassesGetScoreIdx(o->u.Pickup);
 		break;
 	case OBJECTIVE_DESTROY:
 		limit = (int)gMapObjects.Destructibles.size - 1;
+		idx = DestructibleMapObjectIndex(o->u.MapObject);
 		break;
 	case OBJECTIVE_KILL:
 	case OBJECTIVE_INVESTIGATE:
 		limit = 0;
+		idx = 0;
 		break;
 	case OBJECTIVE_RESCUE:
 		limit = data->co->Setting.characters.OtherChars.size - 1;
+		idx = o->u.Index;
 		break;
 	default:
 		assert(0 && "Unknown objective type");
 		return;
 	}
-	mobj->Index = CLAMP_OPPOSITE(mobj->Index + d, 0, limit);
+	idx = CLAMP_OPPOSITE(idx + d, 0, limit);
+	switch (o->Type)
+	{
+	case OBJECTIVE_COLLECT:
+		o->u.Pickup = IntScorePickupClass(idx);
+		break;
+	case OBJECTIVE_DESTROY:
+		o->u.MapObject =
+			StrMapObject(CArrayGet(&gMapObjects.Destructibles, idx));
+		break;
+	default:
+		o->u.Index = idx;
+		break;
+	}
 }
 static void MissionChangeObjectiveRequired(void *vData, int d)
 {
 	MissionIndexData *data = vData;
-	MissionObjective *mobj = GetMissionObjective(
+	Objective *o = GetMissionObjective(
 		CampaignGetCurrentMission(data->co), data->index);
-	mobj->Required = CLAMP_OPPOSITE(
-		mobj->Required + d, 0, MIN(100, mobj->Count));
+	o->Required = CLAMP_OPPOSITE(o->Required + d, 0, MIN(100, o->Count));
 }
 static void MissionChangeObjectiveTotal(void *vData, int d)
 {
 	MissionIndexData *data = vData;
 	const Mission *m = CampaignGetCurrentMission(data->co);
-	MissionObjective *mobj = GetMissionObjective(m, data->index);
-	mobj->Count = CLAMP_OPPOSITE(mobj->Count + d, mobj->Required, 100);
+	Objective *o = GetMissionObjective(m, data->index);
+	o->Count = CLAMP_OPPOSITE(o->Count + d, o->Required, 100);
 	// Don't let the total reduce to less than static ones we've placed
 	if (m->Type == MAPTYPE_STATIC)
 	{
 		CA_FOREACH(const ObjectivePositions, op, m->u.Static.Objectives)
 			if (op->Index == data->index)
 			{
-				mobj->Count = MAX(mobj->Count, (int)op->Positions.size);
+				o->Count = MAX(o->Count, (int)op->Positions.size);
 				break;
 			}
 		CA_FOREACH_END()
@@ -1189,11 +1206,10 @@ static void MissionChangeObjectiveTotal(void *vData, int d)
 static void MissionChangeObjectiveFlags(void *vData, int d)
 {
 	MissionIndexData *data = vData;
-	MissionObjective *mobj = GetMissionObjective(
+	Objective *o = GetMissionObjective(
 		CampaignGetCurrentMission(data->co), data->index);
 	// Max is combination of all flags, i.e. largest flag doubled less one
-	mobj->Flags = CLAMP_OPPOSITE(
-		mobj->Flags + d, 0, OBJECTIVE_NOACCESS * 2 - 1);
+	o->Flags = CLAMP_OPPOSITE(o->Flags + d, 0, OBJECTIVE_NOACCESS * 2 - 1);
 }
 
 
@@ -1879,6 +1895,8 @@ static UIObject *CreateObjectiveObjs(Vec2i pos, CampaignOptions *co, int idx)
 	o2->Size = Vec2iNew(35, th);
 	UIObjectAddChild(c, o2);
 	pos.x += 40;
+	// Choose objective object/item
+	// TODO: context menu
 	o2 = UIObjectCopy(o);
 	o2->Id2 = XC_INDEX;
 	o2->Type = UITYPE_CUSTOM;

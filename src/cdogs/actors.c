@@ -1201,10 +1201,10 @@ TActor *ActorAdd(NActorAdd aa)
 	// Rescue objectives always have follower flag on
 	if (actor->tileItem.flags & TILEITEM_OBJECTIVE)
 	{
-		const MissionObjective *mobj = CArrayGet(
+		const Objective *o = CArrayGet(
 			&gMission.missionData->Objectives,
 			ObjectiveFromTileItem(actor->tileItem.flags));
-		if (mobj->Type == OBJECTIVE_RESCUE)
+		if (o->Type == OBJECTIVE_RESCUE)
 		{
 			// If they don't have prisoner flag set, automatically rescue them
 			if (!(actor->flags & FLAGS_PRISONER) && !gCampaign.IsClient)

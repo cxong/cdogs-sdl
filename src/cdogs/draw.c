@@ -583,21 +583,20 @@ static void DrawObjectiveHighlight(
 	{
 		return;
 	}
-	int objective = ObjectiveFromTileItem(ti->flags);
-	MissionObjective *mo =
+	const int objective = ObjectiveFromTileItem(ti->flags);
+	const Objective *o =
 		CArrayGet(&gMission.missionData->Objectives, objective);
-	if (mo->Flags & OBJECTIVE_HIDDEN)
+	if (o->Flags & OBJECTIVE_HIDDEN)
 	{
 		return;
 	}
-	if (!(mo->Flags & OBJECTIVE_POSKNOWN) &&
+	if (!(o->Flags & OBJECTIVE_POSKNOWN) &&
 		(tile->flags & MAPTILE_OUT_OF_SIGHT))
 	{
 		return;
 	}
-	Vec2i pos = Vec2iNew(
+	const Vec2i pos = Vec2iNew(
 		ti->x - b->xTop + offset.x, ti->y - b->yTop + offset.y);
-	const ObjectiveDef *o = CArrayGet(&gMission.Objectives, objective);
 	color_t color = o->color;
 	const int pulsePeriod = ConfigGetInt(&gConfig, "Game.FPS");
 	int alphaUnscaled =
@@ -819,9 +818,9 @@ static void DrawObjectiveName(
 	const TTileItem *ti, DrawBuffer *b, const Vec2i offset)
 {
 	const int objective = ObjectiveFromTileItem(ti->flags);
-	const MissionObjective *mo =
+	const Objective *o =
 		CArrayGet(&gMission.missionData->Objectives, objective);
-	const char *typeName = ObjectiveTypeStr(mo->Type);
+	const char *typeName = ObjectiveTypeStr(o->Type);
 	const Vec2i textPos = Vec2iNew(
 		ti->x - b->xTop + offset.x - FontStrW(typeName) / 2,
 		ti->y - b->yTop + offset.y);

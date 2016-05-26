@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -73,17 +73,26 @@ typedef struct
 {
 	char *Description;
 	ObjectiveType Type;
-	int Index;
+	union
+	{
+		int Index;
+		MapObject *MapObject;
+		const PickupClass *Pickup;
+	} u;
 	int Count;
 	int Required;
 	int Flags;
-} MissionObjective;
-
-typedef struct
-{
 	color_t color;
 	int placed;
 	int done;
-	MapObject *blowupObject;
-	const PickupClass *pickupClass;
-} ObjectiveDef;
+} Objective;
+
+void ObjectiveLoadJSON(Objective *o, json_t *node, const int version);
+// Setup the objective counters for mission initialisation
+void ObjectiveSetup(Objective *o);
+void ObjectiveCopy(Objective *dst, const Objective *src);
+void ObjectiveTerminate(Objective *o);
+
+bool ObjectiveIsRequired(const Objective *o);
+bool ObjectiveIsComplete(const Objective *o);
+bool ObjectiveIsPerfect(const Objective *o);

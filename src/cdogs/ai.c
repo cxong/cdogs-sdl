@@ -529,21 +529,17 @@ static int Follow(TActor *a)
 
 void InitializeBadGuys(void)
 {
-	for (int i = 0; i < (int)gMission.missionData->Objectives.size; i++)
-	{
-		MissionObjective *mobj =
-			CArrayGet(&gMission.missionData->Objectives, i);
-		ObjectiveDef *obj = CArrayGet(&gMission.Objectives, i);
-		if (mobj->Type == OBJECTIVE_KILL &&
+	CA_FOREACH(Objective, o, gMission.missionData->Objectives)
+		if (o->Type == OBJECTIVE_KILL &&
 			gMission.missionData->SpecialChars.size > 0)
 		{
-			for (; obj->placed < mobj->Count; obj->placed++)
+			for (; o->placed < o->Count; o->placed++)
 			{
 				NActorAdd aa = NActorAdd_init_default;
 				aa.UID = ActorsGetNextUID();
 				aa.CharId = CharacterStoreGetRandomSpecialId(
 					&gCampaign.Setting.characters);
-				aa.TileItemFlags = ObjectiveToTileItem(i);
+				aa.TileItemFlags = ObjectiveToTileItem(_ca_index);
 				aa.Direction = rand() % DIRECTION_COUNT;
 				const Character *c =
 					CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
@@ -557,15 +553,15 @@ void InitializeBadGuys(void)
 				HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
 			}
 		}
-		else if (mobj->Type == OBJECTIVE_RESCUE)
+		else if (o->Type == OBJECTIVE_RESCUE)
 		{
-			for (; obj->placed < mobj->Count; obj->placed++)
+			for (; o->placed < o->Count; o->placed++)
 			{
 				NActorAdd aa = NActorAdd_init_default;
 				aa.UID = ActorsGetNextUID();
 				aa.CharId = CharacterStoreGetPrisonerId(
 					&gCampaign.Setting.characters, 0);
-				aa.TileItemFlags = ObjectiveToTileItem(i);
+				aa.TileItemFlags = ObjectiveToTileItem(_ca_index);
 				aa.Direction = rand() % DIRECTION_COUNT;
 				const Character *c =
 					CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
@@ -586,7 +582,7 @@ void InitializeBadGuys(void)
 				HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
 			}
 		}
-	}
+	CA_FOREACH_END()
 
 	gBaddieCount = gMission.index * 4;
 	gAreGoodGuysPresent = 0;

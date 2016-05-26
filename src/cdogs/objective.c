@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014, 2016 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -48,6 +48,7 @@
 */
 #include "objective.h"
 
+#include "json_utils.h"
 #include "utils.h"
 
 
@@ -91,4 +92,85 @@ color_t ObjectiveTypeColor(const ObjectiveType t)
 		// Shouldn't get here but use a different colour in case
 		return colorYellow;
 	}
+}
+
+void ObjectiveLoadJSON(Objective *o, json_t *node, const int version)
+{
+	memset(o, 0, sizeof *o);
+	o->Description = GetString(node, "Description");
+	JSON_UTILS_LOAD_ENUM(o->Type, node, "Type", StrObjectiveType);
+	// Set objective colours based on type
+	o->color = ObjectiveTypeColor(o->Type);
+	if (version < 8)
+	{
+		// Index numbers used for all objective classes; convert them
+		// to their class handles
+		LoadInt(&o->u.Index, node, "Index");
+		switch (o->Type)
+		{
+		case OBJECTIVE_COLLECT:
+			o->u.Pickup = IntPickupClass(o->u.Index);
+			break;
+		case OBJECTIVE_DESTROY:
+			o->u.MapObject = IntMapObject(o->u.Index);
+			break;
+		default:
+			// do nothing
+			break;
+		}
+	}
+	else
+	{
+		char *tmp;
+		switch (o->Type)
+		{
+		case OBJECTIVE_COLLECT:
+			tmp = GetString(node, "Pickup");
+			o->u.Pickup = StrPickupClass(tmp);
+			CFREE(tmp);
+			break;
+		case OBJECTIVE_DESTROY:
+			tmp = GetString(node, "MapObject");
+			o->u.MapObject = StrMapObject(tmp);
+			CFREE(tmp);
+			break;
+		default:
+			LoadInt(&o->u.Index, node, "Index");
+			break;
+		}
+	}
+	LoadInt(&o->Count, node, "Count");
+	LoadInt(&o->Required, node, "Required");
+	LoadInt(&o->Flags, node, "Flags");
+}
+void ObjectiveSetup(Objective *o)
+{
+	o->placed = 0;
+	o->done = 0;
+}
+void ObjectiveCopy(Objective *dst, const Objective *src)
+{
+	memcpy(dst, src, sizeof *dst);
+	if (src->Description)
+	{
+		CSTRDUP(dst->Description, src->Description);
+	}
+}
+void ObjectiveTerminate(Objective *o)
+{
+	CFREE(o->Description);
+}
+
+bool ObjectiveIsRequired(const Objective *o)
+{
+	return o->Required > 0;
+}
+bool ObjectiveIsComplete(const Objective *o)
+{
+	return o->done >= o->Required;
+}
+bool ObjectiveIsPerfect(const Objective *o)
+{
+	// Don't count objectives that are fully required anyway
+	return o->done == o->Count && o->done > o->Required;
 }

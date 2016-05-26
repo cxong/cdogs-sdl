@@ -108,7 +108,7 @@ void MissionInit(Mission *m)
 	m->FloorMask = colorGravel;
 	m->RoomMask = colorDoveGray;
 	m->AltMask = colorOfficeGreen;
-	CArrayInit(&m->Objectives, sizeof(MissionObjective));
+	CArrayInit(&m->Objectives, sizeof(Objective));
 	CArrayInit(&m->Enemies, sizeof(int));
 	CArrayInit(&m->SpecialChars, sizeof(int));
 	CArrayInit(&m->MapObjectDensities, sizeof(MapObjectDensity));
@@ -140,16 +140,11 @@ void MissionCopy(Mission *dst, const Mission *src)
 	dst->KeyStyle = src->KeyStyle;
 	strcpy(dst->DoorStyle, src->DoorStyle);
 
-	CArrayCopy(&dst->Objectives, &src->Objectives);
-	for (int i = 0; i < (int)src->Objectives.size; i++)
-	{
-		MissionObjective *smo = CArrayGet(&src->Objectives, i);
-		MissionObjective *dmo = CArrayGet(&dst->Objectives, i);
-		if (smo->Description)
-		{
-			CSTRDUP(dmo->Description, smo->Description);
-		}
-	}
+	CA_FOREACH(const Objective, srco, src->Objectives)
+		Objective dsto;
+		ObjectiveCopy(&dsto, srco);
+		CArrayPushBack(&dst->Objectives, &dsto);
+	CA_FOREACH_END()
 	CArrayCopy(&dst->Enemies, &src->Enemies);
 	CArrayCopy(&dst->SpecialChars, &src->SpecialChars);
 	CArrayCopy(&dst->MapObjectDensities, &src->MapObjectDensities);
@@ -187,8 +182,8 @@ void MissionTerminate(Mission *m)
 	if (m == NULL) return;
 	CFREE(m->Title);
 	CFREE(m->Description);
-	CA_FOREACH(MissionObjective, mo, m->Objectives)
-		CFREE(mo->Description);
+	CA_FOREACH(Objective, o, m->Objectives)
+		ObjectiveTerminate(o);
 	CA_FOREACH_END()
 	CArrayTerminate(&m->Objectives);
 	CArrayTerminate(&m->Enemies);
@@ -248,10 +243,10 @@ static void SetupBadguysForMission(Mission *mission)
 		return;
 	}
 
-	CA_FOREACH(const MissionObjective, mobj, mission->Objectives)
-		if (mobj->Type == OBJECTIVE_RESCUE)
+	CA_FOREACH(const Objective, o, mission->Objectives)
+		if (o->Type == OBJECTIVE_RESCUE)
 		{
-			CharacterStoreAddPrisoner(s, mobj->Index);
+			CharacterStoreAddPrisoner(s, o->u.Index);
 			break;	// TODO: multiple prisoners
 		}
 	CA_FOREACH_END()
@@ -265,23 +260,11 @@ static void SetupBadguysForMission(Mission *mission)
 	CA_FOREACH_END()
 }
 
-static void SetupObjectives(struct MissionOptions *mo, Mission *mission)
+static void SetupObjectives(Mission *m)
 {
-	CA_FOREACH(const MissionObjective, mobj, mission->Objectives)
-		ObjectiveDef o;
-		memset(&o, 0, sizeof o);
+	CA_FOREACH(Objective, o, m->Objectives)
+		ObjectiveSetup(o);
 		CASSERT(_ca_index < OBJECTIVE_MAX_OLD, "too many objectives");
-		// Set objective colours based on type
-		o.color = ObjectiveTypeColor(mobj->Type);
-		if (mobj->Type == OBJECTIVE_DESTROY)
-		{
-			o.blowupObject = IntMapObject(mobj->Index);
-		}
-		else if (mobj->Type == OBJECTIVE_COLLECT)
-		{
-			o.pickupClass = IntPickupClass(mobj->Index);
-		}
-		CArrayPushBack(&mo->Objectives, &o);
 	CA_FOREACH_END()
 }
 
@@ -310,7 +293,7 @@ void SetupMission(Mission *m, struct MissionOptions *mo, int missionIndex)
 	PickupsInit();
 	ParticlesInit(&gParticles);
 	WatchesInit();
-	SetupObjectives(mo, m);
+	SetupObjectives(m);
 	SetupBadguysForMission(m);
 	SetupWeapons(&mo->Weapons, &m->Weapons);
 }
@@ -345,11 +328,10 @@ void MissionSetMessageIfComplete(struct MissionOptions *options)
 		{
 			// Check if the game is impossible to end
 			// i.e. not enough rescue objectives left alive
-			CA_FOREACH(
-				const MissionObjective, mobj, options->missionData->Objectives)
-				if (mobj->Type == OBJECTIVE_RESCUE)
+			CA_FOREACH(const Objective, o, options->missionData->Objectives)
+				if (o->Type == OBJECTIVE_RESCUE)
 				{
-					if (ObjectiveActorsAlive(_ca_index) < mobj->Required)
+					if (ObjectiveActorsAlive(_ca_index) < o->Required)
 					{
 						GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
 						e.u.MissionEnd.Delay = GAME_OVER_DELAY;
@@ -377,8 +359,8 @@ static int ObjectiveActorsAlive(const int objective)
 
 bool MissionHasRequiredObjectives(const struct MissionOptions *mo)
 {
-	CA_FOREACH(const MissionObjective, o, mo->missionData->Objectives)
-		if (o->Required > 0) return true;
+	CA_FOREACH(const Objective, o, mo->missionData->Objectives)
+		if (ObjectiveIsRequired(o)) return true;
 	CA_FOREACH_END()
 	return false;
 }
@@ -391,9 +373,9 @@ void UpdateMissionObjective(
 	{
 		return;
 	}
-	int idx = ObjectiveFromTileItem(flags);
-	MissionObjective *mobj = CArrayGet(&options->missionData->Objectives, idx);
-	if (mobj->Type != type)
+	const int idx = ObjectiveFromTileItem(flags);
+	const Objective *o = CArrayGet(&options->missionData->Objectives, idx);
+	if (o->Type != type)
 	{
 		return;
 	}
@@ -464,10 +446,8 @@ bool CanCompleteMission(const struct MissionOptions *options)
 bool MissionAllObjectivesComplete(const struct MissionOptions *mo)
 {
 	// Check all objective counts are enough
-	CA_FOREACH(const ObjectiveDef, o, mo->Objectives)
-		const MissionObjective *mobj =
-			CArrayGet(&mo->missionData->Objectives, _ca_index);
-		if (o->done < mobj->Required) return false;
+	CA_FOREACH(const Objective, o, mo->missionData->Objectives)
+		if (!ObjectiveIsComplete(o)) return false;
 	CA_FOREACH_END()
 	return true;
 }
@@ -536,10 +516,10 @@ static bool MoreRescuesNeeded(const struct MissionOptions *mo)
 	int rescuesRequired = 0;
 	// Find number of rescues required
 	// TODO: support multiple rescue objectives
-	CA_FOREACH(const MissionObjective, mobj, mo->missionData->Objectives)
-		if (mobj->Type == OBJECTIVE_RESCUE)
+	CA_FOREACH(const Objective, o, mo->missionData->Objectives)
+		if (o->Type == OBJECTIVE_RESCUE)
 		{
-			rescuesRequired = mobj->Required;
+			rescuesRequired = o->Required;
 			break;
 		}
 	CA_FOREACH_END()

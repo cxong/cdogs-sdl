@@ -133,7 +133,7 @@ typedef struct
 	int KeyStyle;
 	char DoorStyle[CDOGS_FILENAME_MAX];
 
-	CArray Objectives;			// of MissionObjective
+	CArray Objectives;			// of Objective
 	CArray Enemies;				// of int (character index)
 	CArray SpecialChars;		// of int
 	CArray MapObjectDensities;	// of MapObjectDensity
@@ -224,7 +224,6 @@ struct MissionOptions
 
 	Mission *missionData;
 	CArray Weapons;	// of GunDescription *
-	CArray Objectives;	// of ObjectiveDef
 	int time;
 	// Time when players first entered pickup area
 	int pickupTime;
