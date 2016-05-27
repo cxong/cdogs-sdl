@@ -1130,7 +1130,8 @@ static void MissionChangeObjectiveType(void *vData, int d)
 	Objective *o = GetMissionObjective(
 		CampaignGetCurrentMission(data->co), data->index);
 	o->Type = CLAMP_OPPOSITE((int)o->Type + d, 0, OBJECTIVE_INVESTIGATE);
-	// Initialise the index of the objective
+	// Initialise the index/handle of the objective
+	memset(&o->u, 0, sizeof o->u);
 	MissionChangeObjectiveIndex(data, 0);
 }
 static void MissionChangeObjectiveIndex(void *vData, int d)
@@ -1170,8 +1171,12 @@ static void MissionChangeObjectiveIndex(void *vData, int d)
 		o->u.Pickup = IntScorePickupClass(idx);
 		break;
 	case OBJECTIVE_DESTROY:
-		o->u.MapObject =
-			StrMapObject(CArrayGet(&gMapObjects.Destructibles, idx));
+		{
+			const char **destructibleName =
+				CArrayGet(&gMapObjects.Destructibles, idx);
+			o->u.MapObject = StrMapObject(*destructibleName);
+		}
+		CASSERT(o->u.MapObject != NULL, "cannot find map object");
 		break;
 	default:
 		o->u.Index = idx;

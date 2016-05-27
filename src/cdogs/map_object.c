@@ -165,6 +165,10 @@ int MapObjectIndex(const MapObject *mo)
 }
 int DestructibleMapObjectIndex(const MapObject *mo)
 {
+	if (mo == NULL)
+	{
+		return 0;
+	}
 	CA_FOREACH(const char *, name, gMapObjects.Destructibles)
 		const MapObject *d = StrMapObject(*name);
 		if (d == mo)

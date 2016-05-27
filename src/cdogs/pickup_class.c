@@ -285,6 +285,10 @@ void PickupClassesTerminate(PickupClasses *classes)
 
 int PickupClassesGetScoreIdx(const PickupClass *p)
 {
+	if (p == NULL)
+	{
+		return 0;
+	}
 	int idx = -1;
 	CA_FOREACH(const PickupClass, c, gPickupClasses.Classes)
 		if (c->Type == PICKUP_JEWEL)
