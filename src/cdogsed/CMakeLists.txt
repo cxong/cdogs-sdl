@@ -10,6 +10,7 @@ set(CDOGSED_SOURCES
 	editor_ui_chared.c
 	editor_ui_color.c
 	editor_ui_common.c
+	editor_ui_objectives.c
 	editor_ui_static.c
 	editor_ui_static_additem.c
 	editor_ui_weapons.c
@@ -22,6 +23,7 @@ set(CDOGSED_HEADERS
 	editor_ui_chared.h
 	editor_ui_color.h
 	editor_ui_common.h
+	editor_ui_objectives.h
 	editor_ui_static.h
 	editor_ui_static_additem.h
 	editor_ui_weapons.h

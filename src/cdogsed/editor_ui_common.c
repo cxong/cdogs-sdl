@@ -40,6 +40,19 @@ void DisplayMapItem(const Vec2i pos, const MapObject *mo)
 	Blit(&gGraphicsDevice, pic, Vec2iAdd(pos, offset));
 }
 
+void DisplayMapItemWithDensity(
+	const Vec2i pos, const MapObjectDensity *mod, const bool isHighlighted)
+{
+	DisplayMapItem(pos, mod->M);
+	if (isHighlighted)
+	{
+		FontCh('>', Vec2iAdd(pos, Vec2iNew(-8, -4)));
+	}
+	char s[10];
+	sprintf(s, "%d", mod->Density);
+	FontStr(s, Vec2iAdd(pos, Vec2iNew(-8, 5)));
+}
+
 void DrawKey(UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 {
 	EditorBrushAndCampaign *data = vData;

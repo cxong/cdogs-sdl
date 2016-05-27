@@ -47,6 +47,8 @@ typedef struct
 } EditorBrushAndCampaign;
 
 void DisplayMapItem(const Vec2i pos, const MapObject *mo);
+void DisplayMapItemWithDensity(
+	const Vec2i pos, const MapObjectDensity *mod, const bool isHighlighted);
 void DrawKey(UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData);
 
 void InsertMission(CampaignOptions *co, Mission *mission, int idx);
