@@ -298,21 +298,6 @@ void SetupMission(Mission *m, struct MissionOptions *mo, int missionIndex)
 	SetupWeapons(&mo->Weapons, &m->Weapons);
 }
 
-void MissionEnd(void)
-{
-	ActorsTerminate();
-	ObjsTerminate();
-	MobObjsTerminate();
-	PickupsTerminate();
-	ParticlesTerminate(&gParticles);
-	WatchesTerminate();
-	CA_FOREACH(PlayerData, p, gPlayerDatas)
-		p->ActorUID = -1;
-	CA_FOREACH_END()
-	gMission.HasStarted = false;
-	gMission.HasBegun = false;
-}
-
 static int ObjectiveActorsAlive(const int objective);
 void MissionSetMessageIfComplete(struct MissionOptions *options)
 {

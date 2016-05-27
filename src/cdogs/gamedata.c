@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -63,6 +63,8 @@
 #include "defs.h"
 #include "keyboard.h"
 #include "log.h"
+#include "objs.h"
+#include "pickup.h"
 #include "player_template.h"
 #include "quick_play.h"
 #include "sys_config.h"
@@ -125,7 +127,30 @@ void MissionOptionsInit(struct MissionOptions *mo)
 }
 void MissionOptionsTerminate(struct MissionOptions *mo)
 {
+	ActorsTerminate();
+	ObjsTerminate();
+	MobObjsTerminate();
+	PickupsTerminate();
+	ParticlesTerminate(&gParticles);
+	WatchesTerminate();
+	CA_FOREACH(PlayerData, p, gPlayerDatas)
+		p->ActorUID = -1;
+	CA_FOREACH_END()
+	gMission.HasStarted = false;
+	gMission.HasBegun = false;
 	CArrayTerminate(&mo->Weapons);
+
+	// Unload previous custom data
+	SoundClear(&gSoundDevice.customSounds);
+	PicManagerClearCustom(&gPicManager);
+	ParticleClassesClear(&gParticleClasses.CustomClasses);
+	AmmoClassesClear(&gAmmo.CustomAmmo);
+	CharacterClassesClear(&gCharacterClasses.CustomClasses);
+	BulletClassesClear(&gBulletClasses.CustomClasses);
+	WeaponClassesClear(&gGunDescriptions.CustomGuns);
+	PickupClassesClear(&gPickupClasses.CustomClasses);
+	MapObjectsClear(&gMapObjects.CustomClasses);
+
 	memset(mo, 0, sizeof *mo);
 }
 

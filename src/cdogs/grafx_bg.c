@@ -55,7 +55,6 @@ void GrafxMakeRandomBackground(
 	co->MissionIndex = 0;
 	GrafxMakeBackground(
 		device, &buffer, co, mo, map, tint, false, Vec2iZero(), NULL);
-	MissionEnd();
 	DrawBufferTerminate(&buffer);
 	MissionOptionsTerminate(mo);
 	CampaignSettingTerminate(&co->Setting);

@@ -87,18 +87,6 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	MapNewLoadCampaignJSON(root, c);
 	json_free_value(&root);
 
-
-	// Unload previous custom data
-	SoundClear(&gSoundDevice.customSounds);
-	PicManagerClearCustom(&gPicManager);
-	ParticleClassesClear(&gParticleClasses.CustomClasses);
-	AmmoClassesClear(&gAmmo.CustomAmmo);
-	CharacterClassesClear(&gCharacterClasses.CustomClasses);
-	BulletClassesClear(&gBulletClasses.CustomClasses);
-	WeaponClassesClear(&gGunDescriptions.CustomGuns);
-	PickupClassesClear(&gPickupClasses.CustomClasses);
-	MapObjectsClear(&gMapObjects.CustomClasses);
-
 	// Load any custom data
 	LoadArchiveSounds(&gSoundDevice, filename, "sounds");
 

@@ -454,6 +454,8 @@ bool GameOptions(const GameMode gm)
 	case GAME_MODE_DOGFIGHT:
 		I("Dogfight.PlayerHP");
 		I("Dogfight.FirstTo");
+		I("Game.HealthPickups");
+		I("Game.Ammo");
 		MenuAddSubmenu(ms.current,
 			MenuCreateAllowedWeapons("Weapons...", &awData));
 		MenuAddSubmenu(ms.current, MenuCreateSeparator(""));

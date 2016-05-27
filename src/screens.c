@@ -232,7 +232,6 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 				"score exceeds max rounds won");
 		}
 
-		MissionEnd();
 		MusicPlayMenu(&gSoundDevice);
 
 		bool playNext = !gameOver;
