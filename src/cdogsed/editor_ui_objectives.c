@@ -226,13 +226,24 @@ static const char *MissionGetObjectiveFlags(UIObject *o, void *vData)
 	return s;
 }
 
-static void MissionChangeObjectiveIndex(void *vData, int d);
-static void MissionChangeObjectiveType(void *vData, int d)
+typedef struct
 {
-	MissionIndexData *data = vData;
+	CampaignOptions *C;
+	int ObjectiveIdx;
+	ObjectiveType Type;
+} ObjectiveChangeTypeData;
+static void MissionChangeObjectiveIndex(void *vData, int d);
+static void ObjectiveChangeType(void *vData, int d)
+{
+	UNUSED(d);
+	ObjectiveChangeTypeData *data = vData;
 	Objective *o = GetMissionObjective(
-		CampaignGetCurrentMission(data->co), data->index);
-	o->Type = CLAMP_OPPOSITE((int)o->Type + d, 0, OBJECTIVE_INVESTIGATE);
+		CampaignGetCurrentMission(data->C), data->ObjectiveIdx);
+	if (o->Type == data->Type)
+	{
+		return;
+	}
+	o->Type = data->Type;
 	// Initialise the index/handle of the objective
 	memset(&o->u, 0, sizeof o->u);
 	MissionChangeObjectiveIndex(data, 0);
@@ -364,28 +375,45 @@ static UIObject *CreateObjectiveObjs(
 	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 
-	o = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	o = UIObjectCreate(UITYPE_LABEL, 0, Vec2iZero(), Vec2iZero());
 	o->Flags = UI_LEAVE_YC;
 	o->ChangesData = 1;
 
 	pos.y -= idx * th;
+	// Drop-down menu for objective type
 	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_TYPE;
-	o2->Type = UITYPE_LABEL;
+	o2->Size = Vec2iNew(35, th);
 	o2->u.LabelFunc = MissionGetObjectiveStr;
-	o2->ChangeFunc = MissionChangeObjectiveType;
 	CMALLOC(o2->Data, sizeof(MissionIndexData));
-	o2->IsDynamicData = 1;
+	o2->IsDynamicData = true;
 	((MissionIndexData *)o2->Data)->co = co;
 	((MissionIndexData *)o2->Data)->index = idx;
 	o2->Pos = pos;
-	o2->Size = Vec2iNew(35, th);
+	CSTRDUP(o2->Tooltip, "Objective type");
+	UIObject *oObjType =
+		UIObjectCreate(UITYPE_CONTEXT_MENU, 0, Vec2iZero(), Vec2iZero());
+	for (int i = 0; i < (int)OBJECTIVE_MAX; i++)
+	{
+		UIObject *oObjTypeChild =
+			UIObjectCreate(UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(50, th));
+		oObjTypeChild->ChangesData = true;
+		oObjTypeChild->Pos.y = i * th;
+		oObjTypeChild->Label = ObjectiveTypeStr((ObjectiveType)i);
+		oObjTypeChild->IsDynamicData = true;
+		CMALLOC(oObjTypeChild->Data, sizeof(ObjectiveChangeTypeData));
+		((ObjectiveChangeTypeData *)oObjTypeChild->Data)->C = co;
+		((ObjectiveChangeTypeData *)oObjTypeChild->Data)->ObjectiveIdx = idx;
+		((ObjectiveChangeTypeData *)oObjTypeChild->Data)->Type = (MapType)i;
+		oObjTypeChild->ChangeFunc = ObjectiveChangeType;
+		UIObjectAddChild(oObjType, oObjTypeChild);
+	}
+	UIObjectAddChild(o2, oObjType);
 	UIObjectAddChild(c, o2);
+
 	pos.x += 40;
 	// Choose objective object/item
 	// TODO: context menu
 	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_INDEX;
 	o2->Type = UITYPE_CUSTOM;
 	o2->u.CustomDrawFunc = MissionDrawObjective;
 	o2->ChangeFunc = MissionChangeObjectiveIndex;
@@ -398,8 +426,6 @@ static UIObject *CreateObjectiveObjs(
 	UIObjectAddChild(c, o2);
 	pos.x += 30;
 	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_REQUIRED;
-	o2->Type = UITYPE_LABEL;
 	o2->u.LabelFunc = MissionGetObjectiveRequired;
 	o2->ChangeFunc = MissionChangeObjectiveRequired;
 	CMALLOC(o2->Data, sizeof(MissionIndexData));
@@ -412,8 +438,6 @@ static UIObject *CreateObjectiveObjs(
 	UIObjectAddChild(c, o2);
 	pos.x += 20;
 	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_TOTAL;
-	o2->Type = UITYPE_LABEL;
 	o2->u.LabelFunc = MissionGetObjectiveTotal;
 	o2->ChangeFunc = MissionChangeObjectiveTotal;
 	CMALLOC(o2->Data, sizeof(MissionIndexData));
@@ -425,8 +449,6 @@ static UIObject *CreateObjectiveObjs(
 	UIObjectAddChild(c, o2);
 	pos.x += 45;
 	o2 = UIObjectCopy(o);
-	o2->Id2 = XC_FLAGS;
-	o2->Type = UITYPE_LABEL;
 	o2->u.LabelFunc = MissionGetObjectiveFlags;
 	o2->ChangeFunc = MissionChangeObjectiveFlags;
 	CMALLOC(o2->Data, sizeof(MissionIndexData));

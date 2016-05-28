@@ -395,10 +395,6 @@ static void AdjustXC(int yc, int *xc)
 		break;
 
 	default:
-		if (yc >= YC_OBJECTIVES)
-		{
-			*xc = CLAMP_OPPOSITE(*xc, 0, XC_FLAGS);
-		}
 		break;
 	}
 }

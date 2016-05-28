@@ -82,11 +82,5 @@
 #define XC_COLOR3           8
 #define XC_COLOR4           9
 
-#define XC_TYPE             0
-#define XC_INDEX            1
-#define XC_REQUIRED         2
-#define XC_TOTAL            3
-#define XC_FLAGS            4
-
 
 UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush, Vec2i size);

@@ -1133,7 +1133,6 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 		"WARNING: changing map type will\nlose your previous map settings");
 	UIObject *oMapType =
 		UIObjectCreate(UITYPE_CONTEXT_MENU, 0, Vec2iZero(), Vec2iZero());
-	oMapType->Data = co;
 	for (int i = 0; i < (int)MAPTYPE_COUNT; i++)
 	{
 		UIObject *oMapTypeChild = UIObjectCopy(o);
