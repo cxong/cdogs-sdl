@@ -191,8 +191,10 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 		gNetClient.Ready = false;
 
 		// Don't quit if all players died, that's normal for PVP modes
+		// But make sure we have players at all
 		if (IsPVP(co->Entry.Mode) &&
-			GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) == 0)
+			GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) == 0 &&
+			GetNumPlayers(PLAYER_ANY, false, false) > 0)
 		{
 			run = true;
 		}
