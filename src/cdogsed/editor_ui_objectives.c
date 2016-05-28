@@ -401,9 +401,10 @@ static UIObject *CreateObjectiveObjs(
 		oObjTypeChild->Label = ObjectiveTypeStr((ObjectiveType)i);
 		oObjTypeChild->IsDynamicData = true;
 		CMALLOC(oObjTypeChild->Data, sizeof(ObjectiveChangeTypeData));
-		((ObjectiveChangeTypeData *)oObjTypeChild->Data)->C = co;
-		((ObjectiveChangeTypeData *)oObjTypeChild->Data)->ObjectiveIdx = idx;
-		((ObjectiveChangeTypeData *)oObjTypeChild->Data)->Type = (MapType)i;
+		ObjectiveChangeTypeData *octd = oObjTypeChild->Data;
+		octd->C = co;
+		octd->ObjectiveIdx = idx;
+		octd->Type = (ObjectiveType)i;
 		oObjTypeChild->ChangeFunc = ObjectiveChangeType;
 		UIObjectAddChild(oObjType, oObjTypeChild);
 	}
