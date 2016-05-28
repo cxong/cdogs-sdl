@@ -128,7 +128,8 @@ void MapObjectsInit(
 	const AmmoClasses *ammo, const GunClasses *guns);
 void MapObjectsLoadJSON(CArray *classes, json_t *root);
 void MapObjectsLoadAmmoAndGunSpawners(
-	MapObjects *classes, const AmmoClasses *ammo, const GunClasses *guns);
+	MapObjects *classes, const AmmoClasses *ammo, const GunClasses *guns,
+	const bool isCustom);
 void MapObjectsClear(CArray *classes);
 void MapObjectsTerminate(MapObjects *classes);
 int MapObjectsCount(const MapObjects *classes);

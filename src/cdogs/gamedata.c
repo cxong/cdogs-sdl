@@ -140,17 +140,6 @@ void MissionOptionsTerminate(struct MissionOptions *mo)
 	gMission.HasBegun = false;
 	CArrayTerminate(&mo->Weapons);
 
-	// Unload previous custom data
-	SoundClear(&gSoundDevice.customSounds);
-	PicManagerClearCustom(&gPicManager);
-	ParticleClassesClear(&gParticleClasses.CustomClasses);
-	AmmoClassesClear(&gAmmo.CustomAmmo);
-	CharacterClassesClear(&gCharacterClasses.CustomClasses);
-	BulletClassesClear(&gBulletClasses.CustomClasses);
-	WeaponClassesClear(&gGunDescriptions.CustomGuns);
-	PickupClassesClear(&gPickupClasses.CustomClasses);
-	MapObjectsClear(&gMapObjects.CustomClasses);
-
 	memset(mo, 0, sizeof *mo);
 }
 

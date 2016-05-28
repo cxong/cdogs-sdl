@@ -67,6 +67,17 @@ void CampaignSettingTerminate(CampaignSetting *setting)
 	CArrayTerminate(&setting->Missions);
 	CharacterStoreTerminate(&setting->characters);
 	memset(setting, 0, sizeof *setting);
+
+	// Unload previous custom data
+	SoundClear(&gSoundDevice.customSounds);
+	PicManagerClearCustom(&gPicManager);
+	ParticleClassesClear(&gParticleClasses.CustomClasses);
+	AmmoClassesClear(&gAmmo.CustomAmmo);
+	CharacterClassesClear(&gCharacterClasses.CustomClasses);
+	BulletClassesClear(&gBulletClasses.CustomClasses);
+	WeaponClassesClear(&gGunDescriptions.CustomGuns);
+	PickupClassesClear(&gPickupClasses.CustomClasses);
+	MapObjectsClear(&gMapObjects.CustomClasses);
 }
 
 static void CampaignListInit(campaign_list_t *list);

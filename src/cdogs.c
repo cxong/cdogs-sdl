@@ -115,6 +115,7 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 		lastGameMode = gCampaign.Entry.Mode;
 		wasClient = gCampaign.IsClient;
 		ScreenStart();
+		CampaignSettingTerminate(&gCampaign.Setting);
 	}
 	debug(D_NORMAL, ">> Leaving Main Game Loop\n");
 
@@ -504,6 +505,7 @@ bail:
 	atexit(enet_deinitialize);
 	EventTerminate(&gEventHandlers);
 	GraphicsTerminate(&gGraphicsDevice);
+	CampaignTerminate(&gCampaign);
 
 	PicManagerTerminate(&gPicManager);
 	FontTerminate(&gFont);
@@ -515,7 +517,6 @@ bail:
 	SaveHighScores();
 	UnloadCredits(&creditsDisplayer);
 	UnloadAllCampaigns(&campaigns);
-	CampaignTerminate(&gCampaign);
 	SoundTerminate(&gSoundDevice, true);
 	ConfigDestroy(&gConfig);
 

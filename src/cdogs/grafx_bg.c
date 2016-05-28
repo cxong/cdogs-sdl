@@ -43,7 +43,6 @@ void GrafxMakeRandomBackground(
 	CampaignOptions *co, struct MissionOptions *mo, Map *map)
 {
 	HSV tint;
-	CampaignSettingTerminate(&co->Setting);
 	CampaignSettingInit(&co->Setting);
 	SetupQuickPlayCampaign(&co->Setting);
 	co->seed = rand();

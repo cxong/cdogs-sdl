@@ -215,7 +215,7 @@ void MapObjectsInit(
 	MapObjectsLoadJSON(&classes->Classes, root);
 
 	// Load initial ammo/weapon spawners
-	MapObjectsLoadAmmoAndGunSpawners(classes, ammo, guns);
+	MapObjectsLoadAmmoAndGunSpawners(classes, ammo, guns, false);
 
 bail:
 	if (f != NULL)
@@ -344,15 +344,23 @@ static void AddDestructibles(MapObjects *m, const CArray *classes)
 static void LoadAmmoSpawners(MapObjects *classes, const CArray *ammo);
 static void LoadGunSpawners(MapObjects *classes, const CArray *guns);
 void MapObjectsLoadAmmoAndGunSpawners(
-	MapObjects *classes, const AmmoClasses *ammo, const GunClasses *guns)
+	MapObjects *classes, const AmmoClasses *ammo, const GunClasses *guns,
+	const bool isCustom)
 {
-	// Reset custom map objects
-	MapObjectsClear(&classes->CustomClasses);
+	if (isCustom)
+	{
+		// Reset custom map objects
+		MapObjectsClear(&classes->CustomClasses);
 
-	LoadAmmoSpawners(classes, &ammo->Ammo);
-	LoadAmmoSpawners(classes, &ammo->CustomAmmo);
-	LoadGunSpawners(classes, &guns->Guns);
-	LoadGunSpawners(classes, &guns->CustomGuns);
+		LoadAmmoSpawners(classes, &ammo->CustomAmmo);
+		LoadGunSpawners(classes, &guns->CustomGuns);
+	}
+	else
+	{
+		// Load built-in classes
+		LoadAmmoSpawners(classes, &ammo->Ammo);
+		LoadGunSpawners(classes, &guns->Guns);
+	}
 }
 static void LoadAmmoSpawners(MapObjects *classes, const CArray *ammo)
 {

@@ -143,7 +143,8 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	{
 		MapObjectsLoadJSON(&gMapObjects.CustomClasses, root);
 	}
-	MapObjectsLoadAmmoAndGunSpawners(&gMapObjects, &gAmmo, &gGunDescriptions);
+	MapObjectsLoadAmmoAndGunSpawners(
+		&gMapObjects, &gAmmo, &gGunDescriptions, true);
 
 
 	root = ReadArchiveJSON(filename, "missions.json");
