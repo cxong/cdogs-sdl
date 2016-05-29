@@ -112,59 +112,6 @@ static const char *MissionGetObjectiveStr(UIObject *o, void *vData)
 	return ObjectiveTypeStr(((const Objective *)CArrayGet(
 		&CampaignGetCurrentMission(data->co)->Objectives, data->index))->Type);
 }
-static void MissionDrawObjective(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
-{
-	MissionIndexData *data = vData;
-	CharacterStore *store = &data->co->Setting.characters;
-	const Character *c = NULL;
-	UNUSED(g);
-	const Mission *m = CampaignGetCurrentMission(data->co);
-	if (m == NULL) return;
-	if ((int)m->Objectives.size <= data->index) return;
-	// TODO: only one kill and rescue objective allowed
-	const Objective *obj = CArrayGet(&m->Objectives, data->index);
-	const Pic *newPic = NULL;
-	switch (obj->Type)
-	{
-	case OBJECTIVE_KILL:
-		if (store->specialIds.size > 0)
-		{
-			c = CArrayGet(
-				&store->OtherChars, CharacterStoreGetSpecialId(store, 0));
-		}
-		break;
-	case OBJECTIVE_RESCUE:
-		if (store->prisonerIds.size > 0)
-		{
-			c = CArrayGet(
-				&store->OtherChars, CharacterStoreGetPrisonerId(store, 0));
-		}
-		break;
-	case OBJECTIVE_COLLECT:
-		newPic = obj->u.Pickup->Pic;
-		break;
-	case OBJECTIVE_DESTROY:
-		newPic = obj->u.MapObject->Normal.Pic;
-		break;
-	case OBJECTIVE_INVESTIGATE:
-		// no picture
-		break;
-	default:
-		assert(0 && "Unknown objective type");
-		return;
-	}
-	const Vec2i drawPos =
-		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
-	if (c != NULL)
-	{
-		DrawHead(c, DIRECTION_DOWN, STATE_IDLE, drawPos);
-	}
-	else if (newPic != NULL)
-	{
-		Blit(g, newPic, Vec2iMinus(drawPos, Vec2iScaleDiv(newPic->size, 2)));
-	}
-}
 static Objective *GetMissionObjective(const Mission *m, const int idx)
 {
 	return CArrayGet(&m->Objectives, idx);
@@ -232,7 +179,7 @@ typedef struct
 	int ObjectiveIdx;
 	ObjectiveType Type;
 } ObjectiveChangeTypeData;
-static void MissionChangeObjectiveIndex(void *vData, int d);
+static void MissionResetObjectiveIndex(Objective *o);
 static void ObjectiveChangeType(void *vData, int d)
 {
 	UNUSED(d);
@@ -244,56 +191,25 @@ static void ObjectiveChangeType(void *vData, int d)
 		return;
 	}
 	o->Type = data->Type;
-	// Initialise the index/handle of the objective
-	memset(&o->u, 0, sizeof o->u);
-	MissionChangeObjectiveIndex(data, 0);
+	MissionResetObjectiveIndex(o);
 }
-static void MissionChangeObjectiveIndex(void *vData, int d)
+static void MissionResetObjectiveIndex(Objective *o)
 {
-	MissionIndexData *data = vData;
-	Objective *o = GetMissionObjective(
-		CampaignGetCurrentMission(data->co), data->index);
-	int idx;
-	int limit;
 	switch (o->Type)
 	{
 	case OBJECTIVE_COLLECT:
-		limit = PickupClassesGetScoreCount(&gPickupClasses) - 1;
-		idx = PickupClassesGetScoreIdx(o->u.Pickup);
-		break;
-	case OBJECTIVE_DESTROY:
-		limit = (int)gMapObjects.Destructibles.size - 1;
-		idx = DestructibleMapObjectIndex(o->u.MapObject);
-		break;
-	case OBJECTIVE_KILL:
-	case OBJECTIVE_INVESTIGATE:
-		limit = 0;
-		idx = 0;
-		break;
-	case OBJECTIVE_RESCUE:
-		limit = data->co->Setting.characters.OtherChars.size - 1;
-		idx = o->u.Index;
-		break;
-	default:
-		assert(0 && "Unknown objective type");
-		return;
-	}
-	idx = CLAMP_OPPOSITE(idx + d, 0, limit);
-	switch (o->Type)
-	{
-	case OBJECTIVE_COLLECT:
-		o->u.Pickup = IntScorePickupClass(idx);
+		o->u.Pickup = IntScorePickupClass(0);
 		break;
 	case OBJECTIVE_DESTROY:
 		{
 			const char **destructibleName =
-				CArrayGet(&gMapObjects.Destructibles, idx);
+				CArrayGet(&gMapObjects.Destructibles, 0);
 			o->u.MapObject = StrMapObject(*destructibleName);
 		}
 		CASSERT(o->u.MapObject != NULL, "cannot find map object");
 		break;
 	default:
-		o->u.Index = idx;
+		o->u.Index = 0;
 		break;
 	}
 }
@@ -365,6 +281,8 @@ void CreateObjectivesObjs(CampaignOptions *co, UIObject *c, Vec2i pos)
 	}
 	UIObjectDestroy(o);
 }
+static void CreateObjectiveItemObjs(
+	UIObject *c, const Vec2i pos, CampaignOptions *co, const int idx);
 static UIObject *CreateObjectiveObjs(
 	Vec2i pos, CampaignOptions *co, const int idx)
 {
@@ -413,18 +331,8 @@ static UIObject *CreateObjectiveObjs(
 
 	pos.x += 40;
 	// Choose objective object/item
-	// TODO: context menu
-	o2 = UIObjectCopy(o);
-	o2->Type = UITYPE_CUSTOM;
-	o2->u.CustomDrawFunc = MissionDrawObjective;
-	o2->ChangeFunc = MissionChangeObjectiveIndex;
-	CMALLOC(o2->Data, sizeof(MissionIndexData));
-	o2->IsDynamicData = 1;
-	((MissionIndexData *)o2->Data)->co = co;
-	((MissionIndexData *)o2->Data)->index = idx;
-	o2->Pos = pos;
-	o2->Size = Vec2iNew(30, th);
-	UIObjectAddChild(c, o2);
+	CreateObjectiveItemObjs(c, pos, co, idx);
+
 	pos.x += 30;
 	o2 = UIObjectCopy(o);
 	o2->u.LabelFunc = MissionGetObjectiveRequired;
@@ -468,4 +376,212 @@ static UIObject *CreateObjectiveObjs(
 
 	UIObjectDestroy(o);
 	return c;
+}
+
+static void MissionDrawKillObjective(
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData);
+static void MissionDrawCollectObjective(
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData);
+static void MissionDrawDestroyObjective(
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData);
+static void MissionDrawRescueObjective(
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData);
+static void MissionChangeCollectObjectiveIndex(void *vData, int d);
+static void MissionChangeDestroyObjectiveIndex(void *vData, int d);
+static void MissionChangeRescueObjectiveIndex(void *vData, int d);
+static void MissionCheckObjectiveIsKill(UIObject *o, void *vData);
+static void MissionCheckObjectiveIsCollect(UIObject *o, void *vData);
+static void MissionCheckObjectiveIsDestroy(UIObject *o, void *vData);
+static void MissionCheckObjectiveIsRescue(UIObject *o, void *vData);
+static void CreateObjectiveItemObjs(
+	UIObject *c, const Vec2i pos, CampaignOptions *co, const int idx)
+{
+	// TODO: context menu
+	UIObject *o = UIObjectCreate(UITYPE_CUSTOM, 0, pos, Vec2iNew(30, 20));
+	o->Flags = UI_LEAVE_YC;
+	o->ChangesData = true;
+	UIObject *o2;
+
+	o2 = UIObjectCopy(o);
+	o2->u.CustomDrawFunc = MissionDrawKillObjective;
+	o2->IsDynamicData = true;
+	CMALLOC(o2->Data, sizeof(MissionIndexData));
+	((MissionIndexData *)o2->Data)->co = co;
+	((MissionIndexData *)o2->Data)->index = idx;
+	o2->CheckVisible = MissionCheckObjectiveIsKill;
+	CSTRDUP(o2->Tooltip, "Kill mission objective characters");
+	UIObjectAddChild(c, o2);
+
+	o2 = UIObjectCopy(o);
+	o2->u.CustomDrawFunc = MissionDrawCollectObjective;
+	o2->ChangeFunc = MissionChangeCollectObjectiveIndex;
+	o2->IsDynamicData = true;
+	CMALLOC(o2->Data, sizeof(MissionIndexData));
+	((MissionIndexData *)o2->Data)->co = co;
+	((MissionIndexData *)o2->Data)->index = idx;
+	o2->CheckVisible = MissionCheckObjectiveIsCollect;
+	CSTRDUP(o2->Tooltip, "Choose item to collect");
+	UIObjectAddChild(c, o2);
+
+	o2 = UIObjectCopy(o);
+	o2->u.CustomDrawFunc = MissionDrawDestroyObjective;
+	o2->ChangeFunc = MissionChangeDestroyObjectiveIndex;
+	o2->IsDynamicData = true;
+	CMALLOC(o2->Data, sizeof(MissionIndexData));
+	((MissionIndexData *)o2->Data)->co = co;
+	((MissionIndexData *)o2->Data)->index = idx;
+	o2->CheckVisible = MissionCheckObjectiveIsDestroy;
+	CSTRDUP(o2->Tooltip, "Choose object to destroy");
+	UIObjectAddChild(c, o2);
+
+	o2 = UIObjectCopy(o);
+	o2->u.CustomDrawFunc = MissionDrawRescueObjective;
+	o2->ChangeFunc = MissionChangeRescueObjectiveIndex;
+	o2->IsDynamicData = true;
+	CMALLOC(o2->Data, sizeof(MissionIndexData));
+	o2->IsDynamicData = true;
+	((MissionIndexData *)o2->Data)->co = co;
+	((MissionIndexData *)o2->Data)->index = idx;
+	o2->CheckVisible = MissionCheckObjectiveIsRescue;
+	UIObjectAddChild(c, o2);
+}
+
+static void MissionDrawKillObjective(
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
+{
+	MissionIndexData *data = vData;
+	UNUSED(g);
+	const Mission *m = CampaignGetCurrentMission(data->co);
+	if (m == NULL) return;
+	if ((int)m->Objectives.size <= data->index) return;
+	// TODO: only one kill and rescue objective allowed
+	CharacterStore *store = &data->co->Setting.characters;
+	if (store->specialIds.size > 0)
+	{
+		Character *c = CArrayGet(
+			&store->OtherChars, CharacterStoreGetSpecialId(store, 0));
+		const Vec2i drawPos =
+			Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
+		DrawCharacterSimple(c, drawPos, DIRECTION_DOWN, false, true);
+	}
+}
+static void MissionDrawCollectObjective(
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
+{
+	MissionIndexData *data = vData;
+	UNUSED(g);
+	const Mission *m = CampaignGetCurrentMission(data->co);
+	if (m == NULL) return;
+	if ((int)m->Objectives.size <= data->index) return;
+	// TODO: only one kill and rescue objective allowed
+	const Objective *obj = CArrayGet(&m->Objectives, data->index);
+	const Pic *newPic = obj->u.Pickup->Pic;
+	const Vec2i drawPos =
+		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
+	Blit(g, newPic, Vec2iMinus(drawPos, Vec2iScaleDiv(newPic->size, 2)));
+}
+static void MissionDrawDestroyObjective(
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
+{
+	MissionIndexData *data = vData;
+	UNUSED(g);
+	const Mission *m = CampaignGetCurrentMission(data->co);
+	if (m == NULL) return;
+	if ((int)m->Objectives.size <= data->index) return;
+	// TODO: only one kill and rescue objective allowed
+	const Objective *obj = CArrayGet(&m->Objectives, data->index);
+	const Pic *newPic = obj->u.MapObject->Normal.Pic;
+	const Vec2i drawPos =
+		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
+	Blit(g, newPic, Vec2iMinus(drawPos, Vec2iScaleDiv(newPic->size, 2)));
+}
+static void MissionDrawRescueObjective(
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
+{
+	MissionIndexData *data = vData;
+	UNUSED(g);
+	const Mission *m = CampaignGetCurrentMission(data->co);
+	if (m == NULL) return;
+	if ((int)m->Objectives.size <= data->index) return;
+	// TODO: only one kill and rescue objective allowed
+	CharacterStore *store = &data->co->Setting.characters;
+	if (store->prisonerIds.size > 0)
+	{
+		Character *c = CArrayGet(
+			&store->OtherChars, CharacterStoreGetPrisonerId(store, 0));
+		const Vec2i drawPos =
+			Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
+		DrawCharacterSimple(c, drawPos, DIRECTION_DOWN, false, true);
+	}
+}
+
+static void MissionChangeCollectObjectiveIndex(void *vData, int d)
+{
+	MissionIndexData *data = vData;
+	Objective *o = GetMissionObjective(
+		CampaignGetCurrentMission(data->co), data->index);
+	int idx = PickupClassesGetScoreIdx(o->u.Pickup);
+	const int limit = PickupClassesGetScoreCount(&gPickupClasses) - 1;
+	idx = CLAMP_OPPOSITE(idx + d, 0, limit);
+	o->u.Pickup = IntScorePickupClass(idx);
+}
+static void MissionChangeDestroyObjectiveIndex(void *vData, int d)
+{
+	MissionIndexData *data = vData;
+	Objective *o = GetMissionObjective(
+		CampaignGetCurrentMission(data->co), data->index);
+	int idx = DestructibleMapObjectIndex(o->u.MapObject);
+	const int limit = (int)gMapObjects.Destructibles.size - 1;
+	idx = CLAMP_OPPOSITE(idx + d, 0, limit);
+	const char **destructibleName =
+		CArrayGet(&gMapObjects.Destructibles, idx);
+	o->u.MapObject = StrMapObject(*destructibleName);
+	CASSERT(o->u.MapObject != NULL, "cannot find map object");
+}
+static void MissionChangeRescueObjectiveIndex(void *vData, int d)
+{
+	MissionIndexData *data = vData;
+	Objective *o = GetMissionObjective(
+		CampaignGetCurrentMission(data->co), data->index);
+	int idx = o->u.Index;
+	const int limit = data->co->Setting.characters.OtherChars.size - 1;
+	idx = CLAMP_OPPOSITE(idx + d, 0, limit);
+	o->u.Index = idx;
+}
+
+static void MissionCheckObjectiveIsKill(UIObject *o, void *vData)
+{
+	MissionIndexData *data = vData;
+	const Mission *m = CampaignGetCurrentMission(data->co);
+	if (m == NULL) return;
+	if ((int)m->Objectives.size <= data->index) return;
+	const Objective *obj = CArrayGet(&m->Objectives, data->index);
+	o->IsVisible = obj->Type == OBJECTIVE_KILL;
+}
+static void MissionCheckObjectiveIsCollect(UIObject *o, void *vData)
+{
+	MissionIndexData *data = vData;
+	const Mission *m = CampaignGetCurrentMission(data->co);
+	if (m == NULL) return;
+	if ((int)m->Objectives.size <= data->index) return;
+	const Objective *obj = CArrayGet(&m->Objectives, data->index);
+	o->IsVisible = obj->Type == OBJECTIVE_COLLECT;
+}
+static void MissionCheckObjectiveIsDestroy(UIObject *o, void *vData)
+{
+	MissionIndexData *data = vData;
+	const Mission *m = CampaignGetCurrentMission(data->co);
+	if (m == NULL) return;
+	if ((int)m->Objectives.size <= data->index) return;
+	const Objective *obj = CArrayGet(&m->Objectives, data->index);
+	o->IsVisible = obj->Type == OBJECTIVE_DESTROY;
+}
+static void MissionCheckObjectiveIsRescue(UIObject *o, void *vData)
+{
+	MissionIndexData *data = vData;
+	const Mission *m = CampaignGetCurrentMission(data->co);
+	if (m == NULL) return;
+	if ((int)m->Objectives.size <= data->index) return;
+	const Objective *obj = CArrayGet(&m->Objectives, data->index);
+	o->IsVisible = obj->Type == OBJECTIVE_RESCUE;
 }
