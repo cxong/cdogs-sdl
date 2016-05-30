@@ -341,8 +341,8 @@ static void AddDestructibles(MapObjects *m, const CArray *classes)
 	}
 }
 
-static void LoadAmmoSpawners(MapObjects *classes, const CArray *ammo);
-static void LoadGunSpawners(MapObjects *classes, const CArray *guns);
+static void LoadAmmoSpawners(CArray *classes, const CArray *ammo);
+static void LoadGunSpawners(CArray *classes, const CArray *guns);
 void MapObjectsLoadAmmoAndGunSpawners(
 	MapObjects *classes, const AmmoClasses *ammo, const GunClasses *guns,
 	const bool isCustom)
@@ -352,17 +352,17 @@ void MapObjectsLoadAmmoAndGunSpawners(
 		// Reset custom map objects
 		MapObjectsClear(&classes->CustomClasses);
 
-		LoadAmmoSpawners(classes, &ammo->CustomAmmo);
-		LoadGunSpawners(classes, &guns->CustomGuns);
+		LoadAmmoSpawners(&classes->CustomClasses, &ammo->CustomAmmo);
+		LoadGunSpawners(&classes->CustomClasses, &guns->CustomGuns);
 	}
 	else
 	{
 		// Load built-in classes
-		LoadAmmoSpawners(classes, &ammo->Ammo);
-		LoadGunSpawners(classes, &guns->Guns);
+		LoadAmmoSpawners(&classes->Classes, &ammo->Ammo);
+		LoadGunSpawners(&classes->Classes, &guns->Guns);
 	}
 }
-static void LoadAmmoSpawners(MapObjects *classes, const CArray *ammo)
+static void LoadAmmoSpawners(CArray *classes, const CArray *ammo)
 {
 	for (int i = 0; i < (int)ammo->size; i++)
 	{
@@ -382,10 +382,10 @@ static void LoadAmmoSpawners(MapObjects *classes, const CArray *ammo)
 		m.Type = MAP_OBJECT_TYPE_PICKUP_SPAWNER;
 		sprintf(buf, "ammo_%s", a->Name);
 		m.u.PickupClass = StrPickupClass(buf);
-		CArrayPushBack(&classes->CustomClasses, &m);
+		CArrayPushBack(classes, &m);
 	}
 }
-static void LoadGunSpawners(MapObjects *classes, const CArray *guns)
+static void LoadGunSpawners(CArray *classes, const CArray *guns)
 {
 	for (int i = 0; i < (int)guns->size; i++)
 	{
@@ -409,7 +409,7 @@ static void LoadGunSpawners(MapObjects *classes, const CArray *guns)
 		m.Type = MAP_OBJECT_TYPE_PICKUP_SPAWNER;
 		sprintf(buf, "gun_%s", g->name);
 		m.u.PickupClass = StrPickupClass(buf);
-		CArrayPushBack(&classes->CustomClasses, &m);
+		CArrayPushBack(classes, &m);
 	}
 }
 
