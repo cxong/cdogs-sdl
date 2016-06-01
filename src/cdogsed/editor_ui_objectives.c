@@ -31,6 +31,7 @@
 #include <cdogs/font.h>
 
 #include "editor_ui.h"
+#include "editor_ui_common.h"
 
 
 typedef struct
@@ -387,12 +388,12 @@ static void MissionDrawDestroyObjective(
 static void MissionDrawRescueObjective(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData);
 static void MissionChangeCollectObjectiveIndex(void *vData, int d);
-static void MissionChangeDestroyObjectiveIndex(void *vData, int d);
 static void MissionChangeRescueObjectiveIndex(void *vData, int d);
 static void MissionCheckObjectiveIsKill(UIObject *o, void *vData);
 static void MissionCheckObjectiveIsCollect(UIObject *o, void *vData);
 static void MissionCheckObjectiveIsDestroy(UIObject *o, void *vData);
 static void MissionCheckObjectiveIsRescue(UIObject *o, void *vData);
+static bool ObjectiveDestroyObjFunc(UIObject *o, MapObject *mo, void *data);
 static void CreateObjectiveItemObjs(
 	UIObject *c, const Vec2i pos, CampaignOptions *co, const int idx)
 {
@@ -425,13 +426,14 @@ static void CreateObjectiveItemObjs(
 
 	o2 = UIObjectCopy(o);
 	o2->u.CustomDrawFunc = MissionDrawDestroyObjective;
-	o2->ChangeFunc = MissionChangeDestroyObjectiveIndex;
 	o2->IsDynamicData = true;
 	CMALLOC(o2->Data, sizeof(MissionIndexData));
 	((MissionIndexData *)o2->Data)->co = co;
 	((MissionIndexData *)o2->Data)->index = idx;
 	o2->CheckVisible = MissionCheckObjectiveIsDestroy;
 	CSTRDUP(o2->Tooltip, "Choose object to destroy");
+	UIObjectAddChild(
+		o2, CreateAddMapItemObjs(o2->Size, ObjectiveDestroyObjFunc, o2->Data));
 	UIObjectAddChild(c, o2);
 
 	o2 = UIObjectCopy(o);
@@ -525,18 +527,19 @@ static void MissionChangeCollectObjectiveIndex(void *vData, int d)
 	idx = CLAMP_OPPOSITE(idx + d, 0, limit);
 	o->u.Pickup = IntScorePickupClass(idx);
 }
-static void MissionChangeDestroyObjectiveIndex(void *vData, int d)
+typedef struct
 {
-	MissionIndexData *data = vData;
+	CampaignOptions *C;
+	int ObjIdx;
+	MapObject *M;
+} DestroyObjectiveData;
+static void MissionSetDestroyObjective(void *vData, int d)
+{
+	UNUSED(d);
+	DestroyObjectiveData *data = vData;
 	Objective *o = GetMissionObjective(
-		CampaignGetCurrentMission(data->co), data->index);
-	int idx = DestructibleMapObjectIndex(o->u.MapObject);
-	const int limit = (int)gMapObjects.Destructibles.size - 1;
-	idx = CLAMP_OPPOSITE(idx + d, 0, limit);
-	const char **destructibleName =
-		CArrayGet(&gMapObjects.Destructibles, idx);
-	o->u.MapObject = StrMapObject(*destructibleName);
-	CASSERT(o->u.MapObject != NULL, "cannot find map object");
+		CampaignGetCurrentMission(data->C), data->ObjIdx);
+	o->u.MapObject = data->M;
 }
 static void MissionChangeRescueObjectiveIndex(void *vData, int d)
 {
@@ -584,4 +587,57 @@ static void MissionCheckObjectiveIsRescue(UIObject *o, void *vData)
 	if ((int)m->Objectives.size <= data->index) return;
 	const Objective *obj = CArrayGet(&m->Objectives, data->index);
 	o->IsVisible = obj->Type == OBJECTIVE_RESCUE;
+}
+static void DrawMapItem(
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData);
+static char *MakeMapObjectTooltip(const MapObject *mo);
+static bool ObjectiveDestroyObjFunc(UIObject *o, MapObject *mo, void *vData)
+{
+	if (mo->Type != MAP_OBJECT_TYPE_NORMAL)
+	{
+		return false;
+	}
+	o->ChangeFunc = MissionSetDestroyObjective;
+	o->u.CustomDrawFunc = DrawMapItem;
+	o->IsDynamicData = true;
+	CMALLOC(o->Data, sizeof(DestroyObjectiveData));
+	MissionIndexData *data = vData;
+	((DestroyObjectiveData *)o->Data)->C = data->co;
+	((DestroyObjectiveData *)o->Data)->ObjIdx = data->index;
+	((DestroyObjectiveData *)o->Data)->M = mo;
+	o->Tooltip = MakeMapObjectTooltip(mo);
+	return true;
+}
+static void DrawMapItem(
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
+{
+	UNUSED(g);
+	const DestroyObjectiveData *data = vData;
+	DisplayMapItem(
+		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)), data->M);
+}
+static char *MakeMapObjectTooltip(const MapObject *mo)
+{
+	// Add a descriptive tooltip for the map object
+	char buf[512];
+	// Construct text representing explosion guns
+	char exBuf[256];
+	strcpy(exBuf, "");
+	if (mo->DestroyGuns.size > 0)
+	{
+		sprintf(exBuf, "\nExplodes: ");
+		for (int i = 0; i < (int)mo->DestroyGuns.size; i++)
+		{
+			if (i > 0)
+			{
+				strcat(exBuf, ", ");
+			}
+			const GunDescription **g = CArrayGet(&mo->DestroyGuns, i);
+			strcat(exBuf, (*g)->name);
+		}
+	}
+	sprintf(buf, "%s\nHealth: %d%s", mo->Name, mo->Health, exBuf);
+	char *tmp;
+	CSTRDUP(tmp, buf);
+	return tmp;
 }

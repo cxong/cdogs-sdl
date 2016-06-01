@@ -37,7 +37,11 @@
 typedef struct
 {
 	EditorBrush *Brush;
-	int ItemIndex;
+	union
+	{
+		int ItemIndex;
+		MapObject *MapObject;
+	} u;
 	int Index2;
 } IndexedEditorBrush;
 typedef struct
@@ -61,6 +65,12 @@ void DisplayFlag(
 	const Vec2i pos, const char *s, const bool isOn, const bool isHighlighted);
 
 UIObject *CreateCampaignSeedObj(const Vec2i pos, CampaignOptions *co);
+UIObject *CreateAddMapItemObjs(
+	const Vec2i pos, bool (*objFunc)(UIObject *, MapObject *, void *),
+	void *data);
+UIObject *CreateAddPickupSpawnerObjs(
+	const Vec2i pos, bool (*objFunc)(UIObject *, MapObject *, void *),
+	void *data);
 
 // Create a dummy label that can be clicked to close the context menu
 void CreateCloseLabel(UIObject *c, const Vec2i pos);

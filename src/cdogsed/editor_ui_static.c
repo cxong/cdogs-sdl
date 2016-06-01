@@ -255,7 +255,7 @@ static void BrushSetBrushTypeSetKey(void *data, int d)
 	UNUSED(d);
 	IndexedEditorBrush *b = data;
 	b->Brush->Type = BRUSHTYPE_SET_KEY;
-	b->Brush->ItemIndex = b->ItemIndex;
+	b->Brush->u.ItemIndex = b->u.ItemIndex;
 }
 static void ActivateBrush(UIObject *o, void *data)
 {
@@ -475,7 +475,7 @@ static UIObject *CreateSetKeyObjs(Vec2i pos, EditorBrush *brush)
 		o2->IsDynamicData = 1;
 		CMALLOC(o2->Data, sizeof(IndexedEditorBrush));
 		((IndexedEditorBrush *)o2->Data)->Brush = brush;
-		((IndexedEditorBrush *)o2->Data)->ItemIndex = i;
+		((IndexedEditorBrush *)o2->Data)->u.ItemIndex = i;
 		o2->Pos = pos;
 		if (i == -1)
 		{

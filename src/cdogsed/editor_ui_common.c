@@ -56,13 +56,13 @@ void DisplayMapItemWithDensity(
 void DrawKey(UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 {
 	EditorBrushAndCampaign *data = vData;
-	if (data->Brush.ItemIndex == -1)
+	if (data->Brush.u.ItemIndex == -1)
 	{
 		// No key; don't draw
 		return;
 	}
 	const Pic *pic =
-		KeyPickupClass(gMission.keyStyle, data->Brush.ItemIndex)->Pic;
+		KeyPickupClass(gMission.keyStyle, data->Brush.u.ItemIndex)->Pic;
 	pos = Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
 	pos = Vec2iMinus(pos, Vec2iScaleDiv(pic->size, 2));
 	Blit(g, pic, pos);
@@ -175,6 +175,75 @@ static void CampaignChangeSeed(void *data, int d)
 	{
 		co->seed += d;
 	}
+}
+
+typedef struct
+{
+	bool (*ObjFunc)(UIObject *, MapObject *, void *);
+	void *Data;
+	Vec2i GridSize;
+	int GridCols;
+} CreateAddMapItemObjsImplData;
+static UIObject *CreateAddMapItemObjsImpl(
+	Vec2i pos, CreateAddMapItemObjsImplData data);
+UIObject *CreateAddMapItemObjs(
+	const Vec2i pos, bool (*objFunc)(UIObject *, MapObject *, void *),
+	void *data)
+{
+	CreateAddMapItemObjsImplData d;
+	d.ObjFunc = objFunc;
+	d.Data = data;
+	d.GridSize = Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT * 2 + 4);
+	d.GridCols = 8;
+	return CreateAddMapItemObjsImpl(pos, d);
+}
+UIObject *CreateAddPickupSpawnerObjs(
+	const Vec2i pos, bool (*objFunc)(UIObject *, MapObject *, void *),
+	void *data)
+{
+	CreateAddMapItemObjsImplData d;
+	d.ObjFunc = objFunc;
+	d.Data = data;
+	d.GridSize = Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT + 4);
+	d.GridCols = 4;
+	return CreateAddMapItemObjsImpl(pos, d);
+}
+static UIObject *CreateAddMapItemObjsImpl(
+	Vec2i pos, CreateAddMapItemObjsImplData data)
+{
+	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
+
+	UIObject *o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), data.GridSize);
+	pos = Vec2iZero();
+	int count = 0;
+	for (int i = 0; i < MapObjectsCount(&gMapObjects); i++)
+	{
+		// Only add normal map objects
+		MapObject *mo = IndexMapObject(i);
+		UIObject *o2 = UIObjectCopy(o);
+		if (!data.ObjFunc(o2, mo, data.Data))
+		{
+			UIObjectDestroy(o2);
+			continue;
+		}
+		o2->Pos = pos;
+		UIObjectAddChild(c, o2);
+		pos.x += o->Size.x;
+		if (((count + 1) % data.GridCols) == 0)
+		{
+			pos.x = 0;
+			pos.y += o->Size.y;
+		}
+		count++;
+	}
+
+	UIObjectDestroy(o);
+	if (count == 0)
+	{
+		UIObjectDestroy(c);
+		c = NULL;
+	}
+	return c;
 }
 
 static void CloseChange(void *data, int d);

@@ -70,7 +70,11 @@ typedef enum
 typedef struct
 {
 	BrushType Type;
-	int ItemIndex;
+	union
+	{
+		int ItemIndex;
+		MapObject *MapObject;
+	} u;
 	int Index2;
 	unsigned short MainType;
 	unsigned short SecondaryType;

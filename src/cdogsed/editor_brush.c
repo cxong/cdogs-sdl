@@ -353,8 +353,7 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	case BRUSHTYPE_ADD_ITEM:
 		if (isMain)
 		{
-			if (MissionStaticTryAddItem(
-				m, IndexMapObject(b->ItemIndex), b->Pos))
+			if (MissionStaticTryAddItem(m, b->u.MapObject, b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}
@@ -371,7 +370,7 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 		if (isMain)
 		{
 			const char **destructibleName =
-				CArrayGet(&gMapObjects.Destructibles, b->ItemIndex);
+				CArrayGet(&gMapObjects.Destructibles, b->u.ItemIndex);
 			if (MissionStaticTryAddWreck(
 				m, StrMapObject(*destructibleName), b->Pos))
 			{
@@ -389,7 +388,7 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	case BRUSHTYPE_ADD_CHARACTER:
 		if (isMain)
 		{
-			if (MissionStaticTryAddCharacter(m, b->ItemIndex, b->Pos))
+			if (MissionStaticTryAddCharacter(m, b->u.ItemIndex, b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}
@@ -406,7 +405,7 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 		if (isMain)
 		{
 			if (MissionStaticTryAddObjective(
-				m, b->ItemIndex, b->Index2, b->Pos))
+				m, b->u.ItemIndex, b->Index2, b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}
@@ -422,7 +421,7 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	case BRUSHTYPE_ADD_KEY:
 		if (isMain)
 		{
-			if (MissionStaticTryAddKey(m, b->ItemIndex, b->Pos))
+			if (MissionStaticTryAddKey(m, b->u.ItemIndex, b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}
@@ -436,9 +435,9 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 		}
 		break;
 	case BRUSHTYPE_SET_KEY:
-		if (isMain || b->ItemIndex > 0)
+		if (isMain || b->u.ItemIndex > 0)
 		{
-			if (MissionStaticTrySetKey(m, b->ItemIndex, b->Pos))
+			if (MissionStaticTrySetKey(m, b->u.ItemIndex, b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}

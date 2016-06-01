@@ -63,6 +63,7 @@ typedef struct _UIObject
 	Vec2i Pos;
 	Vec2i Size;
 	bool IsVisible;
+	// TODO: memory leak with dynamically allocated tooltips
 	char *Tooltip;
 	struct _UIObject *Parent;
 	CArray Children;	// of UIObject *
