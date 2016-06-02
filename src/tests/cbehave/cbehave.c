@@ -32,12 +32,6 @@ static cbehave_symbol_t* lookup_symbol(const char *symbol_name, int obj_type);
 static void add_value(cbehave_symbol_t *s, void *value, int count);
 static cbehave_value_t* get_value(cbehave_symbol_t *s);
 
-#ifdef __APPLE__
-#define DEFAULT_COLOR BLACK
-#else
-#define DEFAULT_COLOR GREY
-#endif
-
 void should_int_equal(int actual, int expected, 
                       void *state, const char *file, 
                       int line) {
@@ -50,7 +44,7 @@ void should_int_equal(int actual, int expected,
                 line,
                 expected,
                 actual);
-        setColor(DEFAULT_COLOR);
+        resetColor();
     }
 }
 
@@ -66,7 +60,7 @@ void should_int_gt(int val1, int val2,
                 line,
                 val1,
                 val2);
-        setColor(DEFAULT_COLOR);
+        resetColor();
     }
 }
 
@@ -82,7 +76,7 @@ void should_int_lt(int val1, int val2,
                 line,
                 val1,
                 val2);
-        setColor(DEFAULT_COLOR);
+        resetColor();
     }
 }
 
@@ -98,7 +92,7 @@ void should_int_ge(int val1, int val2,
                 line,
                 val1,
                 val2);
-        setColor(DEFAULT_COLOR);
+        resetColor();
     }
 }
 
@@ -114,7 +108,7 @@ void should_int_le(int val1, int val2,
                 line,
                 val1,
                 val2);
-        setColor(DEFAULT_COLOR);
+        resetColor();
     }
 }
 
@@ -139,7 +133,7 @@ void should_str_equal(const char *actual, const char *expected, void *state,
             file, line,
             expected ? expected : "NULL",
             actual ? actual : "NULL");
-    setColor(DEFAULT_COLOR);
+    resetColor();
 }
 
 void should_mem_equal(const void *actual, const void *expected, size_t size, void *state,
@@ -160,7 +154,7 @@ void should_mem_equal(const void *actual, const void *expected, size_t size, voi
     (*_scenario_state) = 1;
     setColor(RED);
     printf("\t\t\t%s:%d: Failed: memory does not equal.\n", file, line);
-    setColor(DEFAULT_COLOR);
+    resetColor();
 }
 
 void should_be_bool(bool actual, bool expected, void *state, const char *file, int line) {
@@ -173,7 +167,7 @@ void should_be_bool(bool actual, bool expected, void *state, const char *file, i
                 line,
                 actual,
                 expected ? "true" : "false");
-        setColor(DEFAULT_COLOR);
+        resetColor();
     }
 }
 
@@ -249,7 +243,7 @@ void cbehave_feature_return(const char *file, int line, int ret, void *state) {
             file,
             line,
             ret);
-    setColor(DEFAULT_COLOR);
+    resetColor();
 }
 
 
@@ -266,7 +260,7 @@ int _cbehave_runner(const char *description, const cbehave_feature *features, in
         setColor(RED);
         printf("\t%s:%d: Failed to alloc memory, error code: %d.\n", 
                 __FILE__, __LINE__, errno);
-        setColor(DEFAULT_COLOR);
+        resetColor();
         return -1;
     }
     memset(state, 0, sizeof(*state));
@@ -285,7 +279,7 @@ int _cbehave_runner(const char *description, const cbehave_feature *features, in
     }
     printf("\tfeatures: [%d/%d]\n",
            state->total_features - state->failed_features, state->total_features);
-    setColor(DEFAULT_COLOR);
+    resetColor();
 
     if (state->failed_scenarios) {
         setColor(RED);
@@ -293,7 +287,7 @@ int _cbehave_runner(const char *description, const cbehave_feature *features, in
         setColor(GREEN);
     }
     printf("\tscenarios: [%d/%d]\n", state->total_scenarios - state->failed_scenarios, state->total_scenarios);
-    setColor(DEFAULT_COLOR);
+    resetColor();
 
     ret = (state->failed_features == 0) ? 0 : 1;
 
