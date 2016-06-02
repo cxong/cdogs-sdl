@@ -493,7 +493,7 @@ RLUTIL_INLINE void setBackgroundColor(int c) {
 ///
 /// See <Color Codes>
 /// See <resetColor>
-RLUTIL_INLINE int saveDefaultColor() {
+RLUTIL_INLINE int saveDefaultColor(void) {
 #if defined(_WIN32) && !defined(RLUTIL_USE_ANSI)
 	static char initialized = 0; // bool
 	static WORD attributes;
@@ -517,7 +517,7 @@ RLUTIL_INLINE int saveDefaultColor() {
 /// See <Color Codes>
 /// See <setColor>
 /// See <saveDefaultColor>
-RLUTIL_INLINE void resetColor() {
+RLUTIL_INLINE void resetColor(void) {
 #if defined(_WIN32) && !defined(RLUTIL_USE_ANSI)
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (WORD)saveDefaultColor());
 #else
