@@ -142,5 +142,5 @@ void LogSetFuncColor(void)
 }
 void LogResetColor(void)
 {
-	setColor(GREY);
+	resetColor();
 }
