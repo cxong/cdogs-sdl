@@ -114,20 +114,56 @@ MapObject *StrMapObject(const char *s)
 }
 MapObject *IntMapObject(const int m)
 {
-	CA_FOREACH(MapObject, c, gMapObjects.CustomClasses)
-		if (c->Idx == m)
-		{
-			return c;
-		}
-	CA_FOREACH_END()
-	CA_FOREACH(MapObject, c, gMapObjects.Classes)
-		if (c->Idx == m)
-		{
-			return c;
-		}
-	CA_FOREACH_END()
-	LOG(LM_MAIN, LL_ERROR, "cannot find map object %d", m);
-	return NULL;
+	// Note: do not edit; legacy integer mapping
+	static const char *oldMapObjects[] =
+	{
+		"barrel_blue",
+		"box",
+		"box2",
+		"cabinet",
+		"plant",
+		"table",
+		"chair",
+		"rod",
+		"barrel_skull",
+		"barrel_wood",
+		"box_gray",
+		"box_green",
+		"statue_ogre",
+		"table_wood_candle",
+		"table_wood",
+		"tree_dead",
+		"bookshelf",
+		"box_wood",
+		"table_clothed",
+		"table_steel",
+		"tree_autumn",
+		"tree",
+		"box3",
+		"safe",
+		"box_red",
+		"table_lab",
+		"terminal",
+		"barrel",
+		"rocket",
+		"egg",
+		"bloodstain",
+		"wall_skull",
+		"bone_blood",
+		"bulletmarks",
+		"skull",
+		"blood0",
+		"scratch",
+		"wall_stuff",
+		"wall_goo",
+		"goo"
+	};
+	if (m < 0 || m > (int)(sizeof oldMapObjects / sizeof oldMapObjects[0]))
+	{
+		LOG(LM_MAIN, LL_ERROR, "cannot find map object %d", m);
+		return NULL;
+	}
+	return StrMapObject(oldMapObjects[m]);
 }
 MapObject *IndexMapObject(const int i)
 {
@@ -263,9 +299,7 @@ void MapObjectsLoadJSON(CArray *classes, json_t *root)
 static void LoadMapObject(MapObject *m, json_t *node)
 {
 	memset(m, 0, sizeof *m);
-	m->Idx = -1;
 
-	LoadInt(&m->Idx, node, "Index");
 	m->Name = GetString(node, "Name");
 	LoadPic(&m->Normal.Pic, node, "Pic", "OldPic");
 	LoadPic(&m->Wreck.Pic, node, "WreckPic", "OldWreckPic");
@@ -369,7 +403,6 @@ static void LoadAmmoSpawners(CArray *classes, const CArray *ammo)
 		const Ammo *a = CArrayGet(ammo, i);
 		MapObject m;
 		memset(&m, 0, sizeof m);
-		m.Idx = -1;
 		char buf[256];
 		sprintf(buf, "%s spawner", a->Name);
 		CSTRDUP(m.Name, buf);
@@ -396,7 +429,6 @@ static void LoadGunSpawners(CArray *classes, const CArray *guns)
 		}
 		MapObject m;
 		memset(&m, 0, sizeof m);
-		m.Idx = -1;
 		char buf[256];
 		sprintf(buf, "%s spawner", g->name);
 		CSTRDUP(m.Name, buf);

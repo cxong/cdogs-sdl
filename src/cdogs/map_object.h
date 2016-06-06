@@ -83,7 +83,6 @@ typedef enum
 // A static map object, taking up an entire tile
 typedef struct
 {
-	int Idx;
 	char *Name;
 	MapObjectPic Normal;
 	MapObjectPic Wreck;
