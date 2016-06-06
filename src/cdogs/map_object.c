@@ -122,9 +122,9 @@ MapObject *IntMapObject(const int m)
 		"box2",
 		"cabinet",
 		"plant",
-		"table",
+		"bench",
 		"chair",
-		"rod",
+		"column",
 		"barrel_skull",
 		"barrel_wood",
 		"box_gray",
@@ -139,7 +139,7 @@ MapObject *IntMapObject(const int m)
 		"table_steel",
 		"tree_autumn",
 		"tree",
-		"box3",
+		"box_metal_green",
 		"safe",
 		"box_red",
 		"table_lab",
@@ -301,7 +301,7 @@ static void LoadMapObject(MapObject *m, json_t *node)
 	memset(m, 0, sizeof *m);
 
 	m->Name = GetString(node, "Name");
-	LoadPic(&m->Normal.Pic, node, "Pic", "OldPic");
+	LoadPic(&m->Normal.Pic, node, "Pic", NULL);
 	LoadPic(&m->Wreck.Pic, node, "WreckPic", "OldWreckPic");
 	if (m->Normal.Pic)
 	{

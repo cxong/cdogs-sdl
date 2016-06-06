@@ -4,7 +4,14 @@
     {
       "Name": "barrel_blue",
       "Pic": "barrel_blue",
-      "OldPic": 194,
+      "WreckPic": "barrel_blue_wreck",
+      "OldWreckPic": 197,
+      "Health": 40,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "barrel_blue2",
+      "Pic": "barrel_blue2",
       "WreckPic": "barrel_blue_wreck",
       "OldWreckPic": 197,
       "Health": 40,
@@ -13,7 +20,6 @@
     {
       "Name": "box",
       "Pic": "box",
-      "OldPic": 190,
       "WreckPic": "box_wreck",
       "OldWreckPic": 192,
       "Health": 20,
@@ -22,7 +28,22 @@
     {
       "Name": "box2",
       "Pic": "box2",
-      "OldPic": 191,
+      "WreckPic": "box2_wreck",
+      "OldWreckPic": 192,
+      "Health": 20,
+      "Flags": ["Outside", "NoWalls"]
+    },
+    {
+      "Name": "crate",
+      "Pic": "crate",
+      "WreckPic": "box_wreck",
+      "OldWreckPic": 192,
+      "Health": 20,
+      "Flags": ["Outside", "NoWalls"]
+    },
+    {
+      "Name": "crate2",
+      "Pic": "crate2",
       "WreckPic": "box2_wreck",
       "OldWreckPic": 192,
       "Health": 20,
@@ -31,7 +52,14 @@
     {
       "Name": "cabinet",
       "Pic": "cabinet",
-      "OldPic": 291,
+      "WreckPic": "cabinet_wreck",
+      "OldWreckPic": 292,
+      "Health": 20,
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
+    },
+    {
+      "Name": "cabinet_server",
+      "Pic": "cabinet_server",
       "WreckPic": "cabinet_wreck",
       "OldWreckPic": 292,
       "Health": 20,
@@ -40,7 +68,6 @@
     {
       "Name": "plant",
       "Pic": "plant",
-      "OldPic": 297,
       "WreckPic": "plant_wreck",
       "OldWreckPic": 298,
       "Size": [8, 6],
@@ -48,9 +75,25 @@
       "Flags": ["Inside", "OneOrMoreWalls"]
     },
     {
+      "Name": "flower",
+      "Pic": "flower",
+      "WreckPic": "plant_wreck",
+      "OldWreckPic": 298,
+      "Size": [8, 6],
+      "Health": 20,
+      "Flags": ["Inside", "OneOrMoreWalls"]
+    },
+    {
+      "Name": "bench",
+      "Pic": "bench",
+      "WreckPic": "table_wreck",
+      "OldWreckPic": 300,
+      "Health": 20,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
       "Name": "table",
       "Pic": "table",
-      "OldPic": 299,
       "WreckPic": "table_wreck",
       "OldWreckPic": 300,
       "Health": 20,
@@ -59,7 +102,6 @@
     {
       "Name": "table_wood",
       "Pic": "table_wood",
-      "OldPic": 357,
       "WreckPic": "table_wood_wreck",
       "OldWreckPic": 339,
       "Health": 20,
@@ -68,7 +110,6 @@
     {
       "Name": "table_wood_candle",
       "Pic": "table_wood_candle",
-      "OldPic": 358,
       "WreckPic": "table_wood_wreck",
       "OldWreckPic": 300,
       "Health": 20,
@@ -77,16 +118,54 @@
     {
       "Name": "table_clothed",
       "Pic": "table_clothed",
-      "OldPic": 448,
       "WreckPic": "table_clothed_wreck",
       "OldWreckPic": 339,
       "Health": 20,
       "Flags": ["Inside", "NoWalls"]
     },
     {
+      "Name": "table_wood_round",
+      "Pic": "table_wood_round",
+      "WreckPic": "table_wood_wreck",
+      "OldWreckPic": 339,
+      "Health": 20,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "table_wood_round_candle",
+      "Pic": "table_wood_round_candle",
+      "WreckPic": "table_wood_wreck",
+      "OldWreckPic": 300,
+      "Health": 20,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "table_wood_round_clothed",
+      "Pic": "table_wood_round_clothed",
+      "WreckPic": "table_clothed_wreck",
+      "OldWreckPic": 339,
+      "Health": 20,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "table_wood_round_terminal",
+      "Pic": "table_wood_round_terminal",
+      "WreckPic": "terminal_wreck",
+      "OldWreckPic": 339,
+      "Health": 40,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
       "Name": "table_steel",
       "Pic": "table_steel",
-      "OldPic": 449,
+      "WreckPic": "table_steel_wreck",
+      "OldWreckPic": 294,
+      "Health": 30,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "table_plastic",
+      "Pic": "table_plastic",
       "WreckPic": "table_steel_wreck",
       "OldWreckPic": 294,
       "Health": 30,
@@ -95,7 +174,6 @@
     {
       "Name": "chair",
       "Pic": "chair",
-      "OldPic": 295,
       "WreckPic": "chair_wreck",
       "OldWreckPic": 296,
       "Size": [8, 6],
@@ -103,9 +181,26 @@
       "Flags": ["Inside", "NoWalls"]
     },
     {
+      "Name": "chair_task",
+      "Pic": "chair_task",
+      "WreckPic": "chair_wreck",
+      "OldWreckPic": 296,
+      "Size": [8, 6],
+      "Health": 20,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "column",
+      "Pic": "column",
+      "WreckPic": "rod_wreck",
+      "OldWreckPic": 296,
+      "Size": [8, 6],
+      "Health": 60,
+      "Flags": ["Outside", "NoWalls"]
+    },
+    {
       "Name": "rod",
       "Pic": "rod",
-      "OldPic": 377,
       "WreckPic": "rod_wreck",
       "OldWreckPic": 296,
       "Size": [8, 6],
@@ -115,7 +210,14 @@
     {
       "Name": "barrel_wood",
       "Pic": "barrel_wood",
-      "OldPic": 338,
+      "WreckPic": "barrel_wood_wreck",
+      "OldWreckPic": 193,
+      "Health": 40,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "barrel_wood2",
+      "Pic": "barrel_wood2",
       "WreckPic": "barrel_wood_wreck",
       "OldWreckPic": 193,
       "Health": 40,
@@ -124,7 +226,6 @@
     {
       "Name": "box_gray",
       "Pic": "box_gray",
-      "OldPic": 336,
       "WreckPic": "box_gray_wreck",
       "OldWreckPic": 339,
       "Health": 20,
@@ -133,7 +234,6 @@
     {
       "Name": "box_green",
       "Pic": "box_green",
-      "OldPic": 335,
       "WreckPic": "box_green_wreck",
       "OldWreckPic": 339,
       "Health": 20,
@@ -142,7 +242,30 @@
     {
       "Name": "box_wood",
       "Pic": "box_wood",
-      "OldPic": 446,
+      "WreckPic": "box_wood_wreck",
+      "OldWreckPic": 339,
+      "Health": 20,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "box3_gray",
+      "Pic": "box3_gray",
+      "WreckPic": "box_gray_wreck",
+      "OldWreckPic": 339,
+      "Health": 20,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "box3_green",
+      "Pic": "box3_green",
+      "WreckPic": "box_green_wreck",
+      "OldWreckPic": 339,
+      "Health": 20,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "box_wood",
+      "Pic": "box_wood",
       "WreckPic": "box_wood_wreck",
       "OldWreckPic": 339,
       "Health": 20,
@@ -151,7 +274,16 @@
     {
       "Name": "bookshelf",
       "Pic": "bookshelf",
-      "OldPic": 445,
+      "Offset": [-8, -15],
+      "WreckPic": "bookshelf_wreck",
+      "OldWreckPic": 339,
+      "Size": [16, 6],
+      "Health": 20,
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
+    },
+    {
+      "Name": "bookshelf2",
+      "Pic": "bookshelf2",
       "Offset": [-8, -15],
       "WreckPic": "bookshelf_wreck",
       "OldWreckPic": 339,
@@ -162,7 +294,6 @@
     {
       "Name": "terminal",
       "Pic": "terminal",
-      "OldPic": 361,
       "WreckPic": "terminal_wreck",
       "OldWreckPic": 339,
       "Health": 40,
@@ -171,7 +302,14 @@
     {
       "Name": "safe",
       "Pic": "safe",
-      "OldPic": 293,
+      "WreckPic": "safe_wreck",
+      "OldWreckPic": 294,
+      "Health": 100,
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
+    },
+    {
+      "Name": "safe2",
+      "Pic": "safe2",
       "WreckPic": "safe_wreck",
       "OldWreckPic": 294,
       "Health": 100,
@@ -180,7 +318,14 @@
     {
       "Name": "statue_ogre",
       "Pic": "statue_ogre",
-      "OldPic": 360,
+      "WreckPic": "safe_wreck",
+      "OldWreckPic": 294,
+      "Health": 80,
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
+    },
+    {
+      "Name": "statue_behemoth",
+      "Pic": "statue_behemoth",
       "WreckPic": "safe_wreck",
       "OldWreckPic": 294,
       "Health": 80,
@@ -189,7 +334,13 @@
     {
       "Name": "egg",
       "Pic": "egg",
-      "OldPic": 517,
+      "WreckPic": "egg_wreck",
+      "OldWreckPic": 518,
+      "Health": 30
+    },
+    {
+      "Name": "egg2",
+      "Pic": "egg2",
       "WreckPic": "egg_wreck",
       "OldWreckPic": 518,
       "Health": 30
@@ -197,7 +348,6 @@
     {
       "Name": "tree",
       "Pic": "tree",
-      "OldPic": 515,
       "WreckPic": "tree_wreck",
       "OldWreckPic": 516,
       "Size": [8, 6],
@@ -207,7 +357,6 @@
     {
       "Name": "tree_dead",
       "Pic": "tree_dead",
-      "OldPic": 386,
       "WreckPic": "tree_dead_wreck",
       "OldWreckPic": 519,
       "Size": [8, 6],
@@ -217,7 +366,6 @@
     {
       "Name": "tree_autumn",
       "Pic": "tree_autumn",
-      "OldPic": 513,
       "WreckPic": "tree_autumn_wreck",
       "OldWreckPic": 514,
       "Size": [8, 6],
@@ -227,7 +375,15 @@
     {
       "Name": "barrel",
       "Pic": "barrel",
-      "OldPic": 189,
+      "WreckPic": "barrel_wreck",
+      "OldWreckPic": 193,
+      "Health": 40,
+      "DestroyGuns": ["fire_explosion"],
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "barrel_flame",
+      "Pic": "barrel_flame",
       "WreckPic": "barrel_wreck",
       "OldWreckPic": 193,
       "Health": 40,
@@ -237,7 +393,6 @@
     {
       "Name": "barrel_skull",
       "Pic": "barrel_skull",
-      "OldPic": 337,
       "WreckPic": "barrel_wood_wreck",
       "OldWreckPic": 193,
       "Health": 40,
@@ -249,9 +404,35 @@
       "Flags": ["Outside", "OneWall"]
     },
     {
+      "Name": "barrel_skull2",
+      "Pic": "barrel_skull2",
+      "WreckPic": "barrel_wood_wreck",
+      "OldWreckPic": 193,
+      "Health": 40,
+      "DestroyGuns": [
+        "explosion1",
+        "explosion2",
+        "explosion3"
+      ],
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "box_metal_green",
+      "Pic": "box_metal_green",
+      "WreckPic": "box_gray_wreck",
+      "OldWreckPic": 196,
+      "Health": 40,
+      "DestroyGuns": [
+        "big_quake",
+        "explosion1",
+        "explosion2",
+        "explosion3"
+      ],
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
       "Name": "box3",
       "Pic": "box3",
-      "OldPic": 195,
       "WreckPic": "box_gray_wreck",
       "OldWreckPic": 196,
       "Health": 40,
@@ -266,7 +447,15 @@
     {
       "Name": "box_red",
       "Pic": "box_red",
-      "OldPic": 334,
+      "WreckPic": "box_red_wreck",
+      "OldWreckPic": 339,
+      "Health": 40,
+      "DestroyGuns": ["fire_explosion"],
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "box3_red",
+      "Pic": "box3_red",
       "WreckPic": "box_red_wreck",
       "OldWreckPic": 339,
       "Health": 40,
@@ -276,7 +465,15 @@
     {
       "Name": "table_lab",
       "Pic": "table_lab",
-      "OldPic": 359,
+      "WreckPic": "table_lab_wreck",
+      "OldWreckPic": 294,
+      "Health": 60,
+      "DestroyGuns": ["gas_poison_explosion"],
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
+    },
+    {
+      "Name": "table_plastic_lab",
+      "Pic": "table_plastic_lab",
       "WreckPic": "table_lab_wreck",
       "OldWreckPic": 294,
       "Health": 60,
@@ -286,7 +483,20 @@
     {
       "Name": "rocket",
       "Pic": "rocket",
-      "OldPic": 447,
+      "WreckPic": "rocket_wreck",
+      "OldWreckPic": 512,
+      "Health": 40,
+      "DestroyGuns": [
+        "big_quake",
+        "explosion1",
+        "explosion2",
+        "explosion3"
+      ],
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "rocket2",
+      "Pic": "rocket2",
       "WreckPic": "rocket_wreck",
       "OldWreckPic": 512,
       "Health": 40,
@@ -301,7 +511,13 @@
     {
       "Name": "bloodstain",
       "Pic": "bloodstain",
-      "OldPic": 163,
+      "Offset": [-6, -11],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "bloodstain2",
+      "Pic": "bloodstain2",
       "Offset": [-6, -11],
       "Health": 0,
       "Flags": ["OnWall"]
@@ -309,7 +525,13 @@
     {
       "Name": "wall_skull",
       "Pic": "wall_skull",
-      "OldPic": 529,
+      "Offset": [-4, -11],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "wall_skull2",
+      "Pic": "wall_skull2",
       "Offset": [-4, -11],
       "Health": 0,
       "Flags": ["OnWall"]
@@ -317,7 +539,6 @@
     {
       "Name": "bulletmarks",
       "Pic": "bulletmarks",
-      "OldPic": 531,
       "Offset": [-5, -10],
       "Health": 0,
       "Flags": ["OnWall"]
@@ -325,7 +546,6 @@
     {
       "Name": "scratch",
       "Pic": "scratch",
-      "OldPic": 563,
       "Offset": [-5, -10],
       "Health": 0,
       "Flags": ["OnWall"]
@@ -333,7 +553,6 @@
     {
       "Name": "wall_stuff",
       "Pic": "wall_stuff",
-      "OldPic": 564,
       "Offset": [-4, -14],
       "Health": 0,
       "Flags": ["OnWall"]
@@ -341,7 +560,13 @@
     {
       "Name": "wall_goo",
       "Pic": "wall_goo",
-      "OldPic": 565,
+      "Offset": [-5, -11],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "wall_goo2",
+      "Pic": "wall_goo2",
       "Offset": [-5, -11],
       "Health": 0,
       "Flags": ["OnWall"]
@@ -349,42 +574,60 @@
     {
       "Name": "bone_blood",
       "Pic": "bone_blood",
-      "OldPic": 530,
+      "Offset": [-6, -3],
+      "Health": 0
+    },
+    {
+      "Name": "gibs",
+      "Pic": "gibs",
       "Offset": [-6, -3],
       "Health": 0
     },
     {
       "Name": "skull",
       "Pic": "skull",
-      "OldPic": 562,
+      "Offset": [-6, -4],
+      "Health": 0
+    },
+    {
+      "Name": "skull2",
+      "Pic": "skull2",
       "Offset": [-6, -4],
       "Health": 0
     },
     {
       "Name": "blood0",
       "Pic": "blood0",
-      "OldPic": 3,
       "Offset": [-8, -3],
       "Health": 0
     },
     {
       "Name": "blood1",
       "Pic": "blood1",
-      "OldPic": 161,
       "Offset": [-8, -3],
       "Health": 0
     },
     {
       "Name": "blood2",
       "Pic": "blood2",
-      "OldPic": 162,
+      "Offset": [-8, -3],
+      "Health": 0
+    },
+    {
+      "Name": "blood3",
+      "Pic": "blood3",
+      "Offset": [-8, -3],
+      "Health": 0
+    },
+    {
+      "Name": "blood4",
+      "Pic": "blood4",
       "Offset": [-8, -3],
       "Health": 0
     },
     {
       "Name": "goo",
       "Pic": "goo",
-      "OldPic": 566,
       "Offset": [-8, -6],
       "Health": 0
     },

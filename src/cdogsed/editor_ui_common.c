@@ -194,7 +194,7 @@ UIObject *CreateAddMapItemObjs(
 	d.ObjFunc = objFunc;
 	d.Data = data;
 	d.GridSize = Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT * 2 + 4);
-	d.GridCols = 8;
+	d.GridCols = 10;
 	return CreateAddMapItemObjsImpl(pos, d);
 }
 UIObject *CreateAddPickupSpawnerObjs(
