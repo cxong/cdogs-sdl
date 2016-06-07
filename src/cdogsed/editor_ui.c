@@ -906,8 +906,12 @@ static void MissionChangeSpecialChar(void *vData, int d)
 static void MissionChangeMapItem(void *vData, int d)
 {
 	MissionIndexData *data = vData;
-	MapObjectDensity *mod = CArrayGet(
-		&CampaignGetCurrentMission(data->co)->MapObjectDensities, data->index);
+	Mission *m = CampaignGetCurrentMission(data->co);
+	if (data->index >= (int)m->MapObjectDensities.size)
+	{
+		return;
+	}
+	MapObjectDensity *mod = CArrayGet(&m->MapObjectDensities, data->index);
 	if (gEventHandlers.keyboard.modState & KMOD_SHIFT)
 	{
 		mod->Density = CLAMP(mod->Density + 5 * d, 0, 512);
