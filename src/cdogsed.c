@@ -1372,8 +1372,12 @@ int main(int argc, char *argv[])
 			{
 				loaded = 1;
 				ReloadUI();
+				LOG(LM_EDIT, LL_INFO, "Loaded map %s", lastFile);
 			}
-			debug(D_NORMAL, "Loaded map %s\n", argv[i]);
+			else
+			{
+				lastFile[0] = '\0';
+			}
 		}
 	}
 
