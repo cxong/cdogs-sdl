@@ -101,6 +101,8 @@ typedef struct _UIObject
 	void *Data;
 	int IsDynamicData;
 	void (*ChangeFunc)(void *, int d);
+	// Function that's called when the control is activated with shift key held
+	void (*ChangeFuncAlt)(void *, int d);
 	// Whether the change func disables parent context menus (default true)
 	bool ChangeDisablesContext;
 	// Whether calling the change func changes the file (i.e. requires save)
@@ -120,11 +122,11 @@ UIObject *UIObjectCopy(const UIObject *o);
 void UIObjectDestroy(UIObject *o);
 void UIObjectAddChild(UIObject *o, UIObject *c);
 void UITabAddChild(UIObject *o, UIObject *c, char *label);
-void UIObjectHighlight(UIObject *o);
+void UIObjectHighlight(UIObject *o, const bool shift);
 // Returns whether mission changed
 bool UIObjectUnhighlight(UIObject *o);
 int UIObjectIsHighlighted(UIObject *o);
-EditorResult UIObjectChange(UIObject *o, int d);
+EditorResult UIObjectChange(UIObject *o, const int d, const bool shift);
 
 // Add and delete chars from the highlighted text box
 // Returns whether a change has been made

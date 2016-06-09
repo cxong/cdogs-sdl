@@ -903,26 +903,6 @@ static void MissionChangeSpecialChar(void *vData, int d)
 	*(int *)CArrayGet(
 		&data->co->Setting.characters.specialIds, data->index) = c;
 }
-static void MissionChangeMapItem(void *vData, int d)
-{
-	MissionIndexData *data = vData;
-	Mission *m = CampaignGetCurrentMission(data->co);
-	if (data->index >= (int)m->MapObjectDensities.size)
-	{
-		return;
-	}
-	MapObjectDensity *mod = CArrayGet(&m->MapObjectDensities, data->index);
-	if (gEventHandlers.keyboard.modState & KMOD_SHIFT)
-	{
-		mod->Density = CLAMP(mod->Density + 5 * d, 0, 512);
-	}
-	else
-	{
-		const int i = CLAMP_OPPOSITE(
-			MapObjectIndex(mod->M) + d, 0, MapObjectsCount(&gMapObjects) - 1);
-		mod->M = IndexMapObject(i);
-	}
-}
 
 
 static UIObject *CreateCampaignObjs(CampaignOptions *co);
@@ -1524,36 +1504,114 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, CampaignOptions *co)
 	UIObjectDestroy(o);
 	return c;
 }
+
+static void MissionChangeMapItemDensity(void *vData, int d);
+static bool MapItemObjFunc(UIObject *o, MapObject *mo, void *vData);
 static UIObject *CreateMapItemObjs(CampaignOptions *co, int dy)
 {
-	UIObject *c;
-	UIObject *o;
-	UIObject *o2;
-	int i;
-	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
 	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 
-	o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(20, 40));
+	UIObject *o = UIObjectCreate(
+		UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(20, 40));
 	o->u.CustomDrawFunc = MissionDrawMapItem;
-	o->ChangeFunc = MissionChangeMapItem;
+	o->ChangeFuncAlt = MissionChangeMapItemDensity;
 	o->Flags = UI_LEAVE_YC;
 	o->ChangesData = 1;
-	for (i = 0; i < 32; i++)	// TODO: no limit to objects
+	for (int i = 0; i < 32; i++)	// TODO: no limit to objects
 	{
-		int x = 10 + i * 20;
-		o2 = UIObjectCopy(o);
+		const int x = 10 + i * 20;
+		// Drop-down menu for objective type
+		UIObject *o2 = UIObjectCopy(o);
 		o2->Id2 = i;
 		CMALLOC(o2->Data, sizeof(MissionIndexData));
 		o2->IsDynamicData = 1;
 		((MissionIndexData *)o2->Data)->co = co;
 		((MissionIndexData *)o2->Data)->index = i;
 		o2->Pos = Vec2iNew(x, Y_ABS - dy);
+		CSTRDUP(
+			o2->Tooltip,
+			"Click: change map object; Shift+Click: change density");
+		UIObjectAddChild(
+			o2, CreateAddMapItemObjs(o2->Size, MapItemObjFunc, o2->Data));
 		UIObjectAddChild(c, o2);
 	}
 
 	UIObjectDestroy(o);
 	return c;
 }
+static void MissionChangeMapItemDensity(void *vData, int d)
+{
+	MissionIndexData *data = vData;
+	Mission *m = CampaignGetCurrentMission(data->co);
+	if (data->index >= (int)m->MapObjectDensities.size)
+	{
+		return;
+	}
+	MapObjectDensity *mod = CArrayGet(&m->MapObjectDensities, data->index);
+	if (gEventHandlers.keyboard.modState & KMOD_SHIFT)
+	{
+		mod->Density = CLAMP(mod->Density + 5 * d, 0, 512);
+	}
+	else
+	{
+		const int i = CLAMP_OPPOSITE(
+			MapObjectIndex(mod->M) + d, 0, MapObjectsCount(&gMapObjects) - 1);
+		mod->M = IndexMapObject(i);
+	}
+}
+typedef struct
+{
+	CampaignOptions *C;
+	int Idx;
+	MapObject *M;
+} MapItemIndexData;
+static void MissionSetMapItem(void *vData, int d);
+static void DrawMapItem(
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData);
+static bool MapItemObjFunc(UIObject *o, MapObject *mo, void *vData)
+{
+	o->ChangeFunc = MissionSetMapItem;
+	o->u.CustomDrawFunc = DrawMapItem;
+	o->IsDynamicData = true;
+	CMALLOC(o->Data, sizeof(MapItemIndexData));
+	MissionIndexData *data = vData;
+	((MapItemIndexData *)o->Data)->C = data->co;
+	((MapItemIndexData *)o->Data)->Idx = data->index;
+	((MapItemIndexData *)o->Data)->M = mo;
+	o->Tooltip = MakePlacementFlagTooltip(mo);
+	return true;
+}
+static void MissionSetMapItem(void *vData, int d)
+{
+	MapItemIndexData *data = vData;
+	Mission *m = CampaignGetCurrentMission(data->C);
+	if (data->Idx >= (int)m->MapObjectDensities.size)
+	{
+		return;
+	}
+	MapObjectDensity *mod = CArrayGet(&m->MapObjectDensities, data->Idx);
+	const int i = CLAMP_OPPOSITE(
+		MapObjectIndex(mod->M) + d, 0, MapObjectsCount(&gMapObjects) - 1);
+	mod->M = IndexMapObject(i);
+}
+static void DrawMapItem(
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
+{
+	const MapItemIndexData *data = vData;
+	DisplayMapItem(
+		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)), data->M);
+	if (data->M->Type == MAP_OBJECT_TYPE_PICKUP_SPAWNER)
+	{
+		// Also draw the pickup object spawned by this spawner
+		const Pic *pic = data->M->u.PickupClass->Pic;
+		pos = Vec2iMinus(pos, Vec2iScaleDiv(pic->size, 2));
+		Blit(
+			g, pic,
+			Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)));
+	}
+}
+
 static UIObject *CreateCharacterObjs(CampaignOptions *co, int dy)
 {
 	UIObject *c;

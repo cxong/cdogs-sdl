@@ -590,7 +590,6 @@ static void MissionCheckObjectiveIsRescue(UIObject *o, void *vData)
 }
 static void DrawMapItem(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData);
-static char *MakeMapObjectTooltip(const MapObject *mo);
 static bool ObjectiveDestroyObjFunc(UIObject *o, MapObject *mo, void *vData)
 {
 	if (mo->Type != MAP_OBJECT_TYPE_NORMAL)
@@ -605,7 +604,7 @@ static bool ObjectiveDestroyObjFunc(UIObject *o, MapObject *mo, void *vData)
 	((DestroyObjectiveData *)o->Data)->C = data->co;
 	((DestroyObjectiveData *)o->Data)->ObjIdx = data->index;
 	((DestroyObjectiveData *)o->Data)->M = mo;
-	o->Tooltip = MakeMapObjectTooltip(mo);
+	o->Tooltip = MakePlacementFlagTooltip(mo);
 	return true;
 }
 static void DrawMapItem(
@@ -615,29 +614,4 @@ static void DrawMapItem(
 	const DestroyObjectiveData *data = vData;
 	DisplayMapItem(
 		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)), data->M);
-}
-static char *MakeMapObjectTooltip(const MapObject *mo)
-{
-	// Add a descriptive tooltip for the map object
-	char buf[512];
-	// Construct text representing explosion guns
-	char exBuf[256];
-	strcpy(exBuf, "");
-	if (mo->DestroyGuns.size > 0)
-	{
-		sprintf(exBuf, "\nExplodes: ");
-		for (int i = 0; i < (int)mo->DestroyGuns.size; i++)
-		{
-			if (i > 0)
-			{
-				strcat(exBuf, ", ");
-			}
-			const GunDescription **g = CArrayGet(&mo->DestroyGuns, i);
-			strcat(exBuf, (*g)->name);
-		}
-	}
-	sprintf(buf, "%s\nHealth: %d%s", mo->Name, mo->Health, exBuf);
-	char *tmp;
-	CSTRDUP(tmp, buf);
-	return tmp;
 }

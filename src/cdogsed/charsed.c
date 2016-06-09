@@ -221,7 +221,7 @@ static bool Change(
 	UIObject *o, CharacterStore *store,
 	int idx,
 	int yc, int xc,
-	int d)
+	const int d, const bool shift)
 {
 	if (idx < 0 || idx >= (int)store->OtherChars.size)
 	{
@@ -333,7 +333,7 @@ static bool Change(
 
 	if (o)
 	{
-		return UIObjectChange(o, d) & EDITOR_RESULT_CHANGED;
+		return UIObjectChange(o, d, shift) & EDITOR_RESULT_CHANGED;
 	}
 	return false;
 }
@@ -489,6 +489,7 @@ static void HandleInput(
 	UIObject *o = NULL;
 	SDL_Scancode sc = KeyGetPressed(&gEventHandlers.keyboard);
 	const int m = MouseGetPressed(&gEventHandlers.mouse);
+	const bool shift = gEventHandlers.keyboard.modState & KMOD_SHIFT;
 	if (m)
 	{
 		int charIdx;
@@ -504,7 +505,7 @@ static void HandleInput(
 					UIObjectUnhighlight(sLastHighlightedObj);
 				}
 				sLastHighlightedObj = o;
-				UIObjectHighlight(o);
+				UIObjectHighlight(o, shift);
 			}
 			CArrayTerminate(&sDrawObjs);
 			bool isSameSelection;
@@ -637,11 +638,11 @@ static void HandleInput(
 			break;
 
 		case SDL_SCANCODE_PAGEUP:
-			fileChanged = Change(o, store, *idx, *yc, *xc, 1);
+			fileChanged = Change(o, store, *idx, *yc, *xc, 1, shift);
 			break;
 
 		case SDL_SCANCODE_PAGEDOWN:
-			fileChanged = Change(o, store, *idx, *yc, *xc, -1);
+			fileChanged = Change(o, store, *idx, *yc, *xc, -1, shift);
 			break;
 
 		case SDL_SCANCODE_ESCAPE:

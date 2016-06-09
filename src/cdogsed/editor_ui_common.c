@@ -246,6 +246,55 @@ static UIObject *CreateAddMapItemObjsImpl(
 	return c;
 }
 
+char *MakePlacementFlagTooltip(const MapObject *mo)
+{
+	// Add a descriptive tooltip for the map object
+	char buf[512];
+	// Construct text representing the placement flags
+	char pfBuf[128];
+	if (mo->Flags == 0)
+	{
+		sprintf(pfBuf, "anywhere\n");
+	}
+	else
+	{
+		strcpy(pfBuf, "");
+		for (int i = 1; i < PLACEMENT_COUNT; i++)
+		{
+			if (mo->Flags & (1 << i))
+			{
+				if (strlen(pfBuf) > 0)
+				{
+					strcat(pfBuf, ", ");
+				}
+				strcat(pfBuf, PlacementFlagStr(i));
+			}
+		}
+	}
+	// Construct text representing explosion guns
+	char exBuf[256];
+	strcpy(exBuf, "");
+	if (mo->DestroyGuns.size > 0)
+	{
+		sprintf(exBuf, "\nExplodes: ");
+		for (int i = 0; i < (int)mo->DestroyGuns.size; i++)
+		{
+			if (i > 0)
+			{
+				strcat(exBuf, ", ");
+			}
+			const GunDescription **g = CArrayGet(&mo->DestroyGuns, i);
+			strcat(exBuf, (*g)->name);
+		}
+	}
+	sprintf(
+		buf, "%s\nHealth: %d\nPlacement: %s%s",
+		mo->Name, mo->Health, pfBuf, exBuf);
+	char *tmp;
+	CSTRDUP(tmp, buf);
+	return tmp;
+}
+
 static void CloseChange(void *data, int d);
 void CreateCloseLabel(UIObject *c, const Vec2i pos)
 {

@@ -271,9 +271,10 @@ UIObject *CreateAddItemObjs(
 	UIObjectDestroy(o);
 	return c;
 }
+
 static void DrawMapItem(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData);
-static char *MakePlacementFlagTooltip(const MapObject *mo);
+static char *MakeMapObjectTooltip(const MapObject *mo);
 static bool AddMapItemBrushObjFunc(UIObject *o, MapObject *mo, void *vData)
 {
 	if (mo->Type != MAP_OBJECT_TYPE_NORMAL)
@@ -288,7 +289,7 @@ static bool AddMapItemBrushObjFunc(UIObject *o, MapObject *mo, void *vData)
 	CMALLOC(o->Data, sizeof(IndexedEditorBrush));
 	((IndexedEditorBrush *)o->Data)->Brush = vData;
 	((IndexedEditorBrush *)o->Data)->u.MapObject = mo;
-	o->Tooltip = MakePlacementFlagTooltip(mo);
+	o->Tooltip = MakeMapObjectTooltip(mo);
 	return true;
 }
 static void DrawMapItem(
@@ -300,31 +301,10 @@ static void DrawMapItem(
 		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)),
 		brush->u.MapObject);
 }
-static char *MakePlacementFlagTooltip(const MapObject *mo)
+static char *MakeMapObjectTooltip(const MapObject *mo)
 {
 	// Add a descriptive tooltip for the map object
 	char buf[512];
-	// Construct text representing the placement flags
-	char pfBuf[128];
-	if (mo->Flags == 0)
-	{
-		sprintf(pfBuf, "anywhere\n");
-	}
-	else
-	{
-		strcpy(pfBuf, "");
-		for (int i = 1; i < PLACEMENT_COUNT; i++)
-		{
-			if (mo->Flags & (1 << i))
-			{
-				if (strlen(pfBuf) > 0)
-				{
-					strcat(pfBuf, ", ");
-				}
-				strcat(pfBuf, PlacementFlagStr(i));
-			}
-		}
-	}
 	// Construct text representing explosion guns
 	char exBuf[256];
 	strcpy(exBuf, "");
@@ -341,13 +321,12 @@ static char *MakePlacementFlagTooltip(const MapObject *mo)
 			strcat(exBuf, (*g)->name);
 		}
 	}
-	sprintf(
-		buf, "%s\nHealth: %d\nPlacement: %s%s",
-		mo->Name, mo->Health, pfBuf, exBuf);
+	sprintf(buf, "%s\nHealth: %d%s", mo->Name, mo->Health, exBuf);
 	char *tmp;
 	CSTRDUP(tmp, buf);
 	return tmp;
 }
+
 static UIObject *CreateAddWreckObjs(Vec2i pos, EditorBrush *brush)
 {
 	UIObject *o2;

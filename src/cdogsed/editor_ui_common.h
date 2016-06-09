@@ -72,6 +72,8 @@ UIObject *CreateAddPickupSpawnerObjs(
 	const Vec2i pos, bool (*objFunc)(UIObject *, MapObject *, void *),
 	void *data);
 
+char *MakePlacementFlagTooltip(const MapObject *mo);
+
 // Create a dummy label that can be clicked to close the context menu
 void CreateCloseLabel(UIObject *c, const Vec2i pos);
 

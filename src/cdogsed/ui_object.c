@@ -97,6 +97,7 @@ UIObject *UIObjectCopy(const UIObject *o)
 	CASSERT(!o->IsDynamicData, "Cannot copy unknown dynamic data size");
 	res->IsDynamicData = false;
 	res->ChangeFunc = o->ChangeFunc;
+	res->ChangeFuncAlt = o->ChangeFuncAlt;
 	res->ChangeDisablesContext = o->ChangeDisablesContext;
 	res->ChangesData = o->ChangesData;
 	res->ReloadData = o->ReloadData;
@@ -155,7 +156,7 @@ void UITabAddChild(UIObject *o, UIObject *c, char *label)
 	CArrayPushBack(&o->u.Tab.Labels, &label);
 }
 
-void UIObjectHighlight(UIObject *o)
+void UIObjectHighlight(UIObject *o, const bool shift)
 {
 	if (o->DoNotHighlight)
 	{
@@ -164,7 +165,7 @@ void UIObjectHighlight(UIObject *o)
 	if (o->Parent)
 	{
 		o->Parent->Highlighted = o;
-		UIObjectHighlight(o->Parent);
+		UIObjectHighlight(o->Parent, shift);
 	}
 	if (o->OnFocusFunc)
 	{
@@ -172,7 +173,7 @@ void UIObjectHighlight(UIObject *o)
 	}
 	// Show any context menu children
 	CA_FOREACH(UIObject *, obj, o->Children)
-		if ((*obj)->Type == UITYPE_CONTEXT_MENU)
+		if ((*obj)->Type == UITYPE_CONTEXT_MENU && !shift)
 		{
 			(*obj)->IsVisible = true;
 			if ((*obj)->OnFocusFunc)
@@ -229,7 +230,7 @@ bool UIObjectUnhighlight(UIObject *o)
 }
 
 static void DisableContextMenuParents(UIObject *o);
-EditorResult UIObjectChange(UIObject *o, int d)
+EditorResult UIObjectChange(UIObject *o, const int d, const bool shift)
 {
 	switch (o->Type)
 	{
@@ -242,9 +243,20 @@ EditorResult UIObjectChange(UIObject *o, int d)
 		// do nothing
 		break;
 	}
-	if (o->ChangeFunc)
+	// Activate change func if available
+	bool changed = false;
+	if (o->ChangeFuncAlt && shift)
+	{
+		o->ChangeFuncAlt(o->Data, d);
+		changed = true;
+	}
+	else if (o->ChangeFunc)
 	{
 		o->ChangeFunc(o->Data, d);
+		changed = true;
+	}
+	if (changed)
+	{
 		if (o->ChangeDisablesContext)
 		{
 			DisableContextMenuParents(o);

@@ -279,13 +279,13 @@ static void Display(GraphicsDevice *g, HandleInputResult result)
 
 static void Setup(const bool changedMission);
 
-static void Change(UIObject *o, const int d)
+static void Change(UIObject *o, const int d, const bool shift)
 {
 	if (o == NULL)
 	{
 		return;
 	}
-	const EditorResult r = UIObjectChange(o, d);
+	const EditorResult r = UIObjectChange(o, d, shift);
 	if (r & EDITOR_RESULT_CHANGED)
 	{
 		fileChanged = 1;
@@ -770,6 +770,7 @@ static HandleInputResult HandleInput(
 	Mission *mission = CampaignGetCurrentMission(&gCampaign);
 	UIObject *o = NULL;
 	brush.Pos = GetMouseTile(&gEventHandlers);
+	const bool shift = gEventHandlers.keyboard.modState & KMOD_SHIFT;
 
 	// Find whether the mouse has hovered over a tooltip
 	const bool hadTooltip = sTooltipObj != NULL;
@@ -826,7 +827,7 @@ static HandleInputResult HandleInput(
 					}
 				}
 				sLastHighlightedObj = o;
-				UIObjectHighlight(o);
+				UIObjectHighlight(o, shift);
 				sIgnoreMouse = true;
 			}
 			CArrayTerminate(&sDrawObjs);
@@ -1103,11 +1104,11 @@ static HandleInputResult HandleInput(
 			break;
 
 		case SDL_SCANCODE_PAGEUP:
-			Change(o, 1);
+			Change(o, 1, shift);
 			break;
 
 		case SDL_SCANCODE_PAGEDOWN:
-			Change(o, -1);
+			Change(o, -1, shift);
 			break;
 
 		case SDL_SCANCODE_ESCAPE:
