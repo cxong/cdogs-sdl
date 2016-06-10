@@ -80,7 +80,7 @@
 		"Objectives": [{
 			"Description": "Destroy the Clan shield consoles",
 			"Type": "Destroy",
-			"Index": 26,
+			"MapObject": "terminal",
 			"Count": 4,
 			"Required": 4,
 			"Flags": 0
@@ -88,7 +88,7 @@
 		{
 			"Description": "Destroy \"stranging\" modules",
 			"Type": "Destroy",
-			"Index": 23,
+			"MapObject": "safe",
 			"Count": 3,
 			"Required": 2,
 			"Flags": 4
@@ -118,7 +118,7 @@
 			"Density": 20
 		},
 		{
-			"MapObject": "table",
+			"MapObject": "bench",
 			"Density": 25
 		},
 		{
@@ -131,6 +131,10 @@
 		},
 		{
 			"MapObject": "table_steel",
+			"Density": 20
+		},
+		{
+			"MapObject": "crest",
 			"Density": 20
 		}],
 		"EnemyDensity": 11,
@@ -228,7 +232,11 @@
 			"Density": 40
 		},
 		{
-			"MapObject": "table",
+			"MapObject": "bench",
+			"Density": 40
+		},
+		{
+			"MapObject": "crest",
 			"Density": 40
 		}],
 		"EnemyDensity": 12,
@@ -385,6 +393,10 @@
 		{
 			"MapObject": "box_green",
 			"Density": 20
+		},
+		{
+			"MapObject": "crest",
+			"Density": 15
 		}],
 		"EnemyDensity": 0,
 		"Weapons": ["Knife",
@@ -488,7 +500,7 @@
 		{
 			"Description": "Recover lost cinnamon",
 			"Type": "Collect",
-			"Index": 6,
+			"Pickup": "bag",
 			"Count": 10,
 			"Required": 0,
 			"Flags": 0
@@ -565,7 +577,7 @@
 		{
 			"Description": "Destroy their stranging modules",
 			"Type": "Destroy",
-			"Index": 23,
+			"MapObject": "safe",
 			"Count": 4,
 			"Required": 0,
 			"Flags": 4
@@ -573,7 +585,7 @@
 		{
 			"Description": "Cinnamon tea!",
 			"Type": "Collect",
-			"Index": 8,
+			"Pickup": "bottle",
 			"Count": 1,
 			"Required": 0,
 			"Flags": 0
@@ -660,7 +672,7 @@
 		{
 			"Description": "Collect any intelligence",
 			"Type": "Collect",
-			"Index": 4,
+			"Pickup": "blueprint",
 			"Count": 3,
 			"Required": 0,
 			"Flags": 0
@@ -751,7 +763,7 @@
 		{
 			"Description": "Destroy the fusion devices",
 			"Type": "Destroy",
-			"Index": 28,
+			"MapObject": "rocket",
 			"Count": 7,
 			"Required": 5,
 			"Flags": 0
@@ -781,6 +793,10 @@
 		{
 			"MapObject": "rod",
 			"Density": 10
+		},
+		{
+			"MapObject": "crest",
+			"Density": 30
 		}],
 		"EnemyDensity": 9,
 		"Weapons": ["Knife",
