@@ -181,6 +181,8 @@ typedef struct
 {
 	bool (*ObjFunc)(UIObject *, MapObject *, void *);
 	void *Data;
+	// Data size required for map item change checking
+	size_t DataSize;
 	Vec2i GridSize;
 	int GridCols;
 } CreateAddMapItemObjsImplData;
@@ -188,40 +190,101 @@ static UIObject *CreateAddMapItemObjsImpl(
 	Vec2i pos, CreateAddMapItemObjsImplData data);
 UIObject *CreateAddMapItemObjs(
 	const Vec2i pos, bool (*objFunc)(UIObject *, MapObject *, void *),
-	void *data)
+	void *data, const size_t dataSize)
 {
 	CreateAddMapItemObjsImplData d;
 	d.ObjFunc = objFunc;
 	d.Data = data;
+	d.DataSize = dataSize;
 	d.GridSize = Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT * 2 + 4);
 	d.GridCols = 12;
 	return CreateAddMapItemObjsImpl(pos, d);
 }
 UIObject *CreateAddPickupSpawnerObjs(
 	const Vec2i pos, bool (*objFunc)(UIObject *, MapObject *, void *),
-	void *data)
+	void *data, const size_t dataSize)
 {
 	CreateAddMapItemObjsImplData d;
 	d.ObjFunc = objFunc;
 	d.Data = data;
+	d.DataSize = dataSize;
 	d.GridSize = Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT + 4);
 	d.GridCols = 4;
 	return CreateAddMapItemObjsImpl(pos, d);
 }
+static void CreateAddMapItemSubObjs(UIObject *c, void *vData);
 static UIObject *CreateAddMapItemObjsImpl(
 	Vec2i pos, CreateAddMapItemObjsImplData data)
 {
 	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
+	c->OnFocusFunc = CreateAddMapItemSubObjs;
+	c->IsDynamicData = true;
+	CMALLOC(c->Data, sizeof(CreateAddMapItemObjsImplData));
+	memcpy(c->Data, &data, sizeof data);
 
-	UIObject *o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), data.GridSize);
-	pos = Vec2iZero();
+	return c;
+}
+static void CreateAddMapItemSubObjs(UIObject *c, void *vData)
+{
+	const CreateAddMapItemObjsImplData *data = vData;
+	// Check if we need to recreate the objs
+	// TODO: this is a very heavyweight way to do it
 	int count = 0;
+	bool allChildrenSame = true;
+	for (int i = 0; i < MapObjectsCount(&gMapObjects); i++)
+	{
+		if (count >= (int)c->Children.size)
+		{
+			allChildrenSame = false;
+			break;
+		}
+		MapObject *mo = IndexMapObject(i);
+		UIObject *o2 =
+			UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), data->GridSize);
+		o2->IsDynamicData = true;
+		CMALLOC(o2->Data, data->DataSize);
+		if (!data->ObjFunc(o2, mo, data->Data))
+		{
+			UIObjectDestroy(o2);
+			continue;
+		}
+		const UIObject **oc = CArrayGet(&c->Children, count);
+		if (memcmp(o2->Data, (*oc)->Data, data->DataSize) != 0)
+		{
+			allChildrenSame = false;
+			UIObjectDestroy(o2);
+			break;
+		}
+		count++;
+		UIObjectDestroy(o2);
+	}
+	if (allChildrenSame && count == (int)c->Children.size)
+	{
+		return;
+	}
+
+	// Recreate the child UI objects
+	c->Highlighted = NULL;
+	UIObject **objs = c->Children.data;
+	for (int i = 0; i < (int)c->Children.size; i++, objs++)
+	{
+		UIObjectDestroy(*objs);
+	}
+	CArrayClear(&c->Children);
+
+	UIObject *o =
+		UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), data->GridSize);
+	o->ChangesData = true;
+	Vec2i pos = Vec2iZero();
+	count = 0;
 	for (int i = 0; i < MapObjectsCount(&gMapObjects); i++)
 	{
 		// Only add normal map objects
 		MapObject *mo = IndexMapObject(i);
 		UIObject *o2 = UIObjectCopy(o);
-		if (!data.ObjFunc(o2, mo, data.Data))
+		o2->IsDynamicData = true;
+		CMALLOC(o2->Data, data->DataSize);
+		if (!data->ObjFunc(o2, mo, data->Data))
 		{
 			UIObjectDestroy(o2);
 			continue;
@@ -229,7 +292,7 @@ static UIObject *CreateAddMapItemObjsImpl(
 		o2->Pos = pos;
 		UIObjectAddChild(c, o2);
 		pos.x += o->Size.x;
-		if (((count + 1) % data.GridCols) == 0)
+		if (((count + 1) % data->GridCols) == 0)
 		{
 			pos.x = 0;
 			pos.y += o->Size.y;
@@ -238,12 +301,6 @@ static UIObject *CreateAddMapItemObjsImpl(
 	}
 
 	UIObjectDestroy(o);
-	if (count == 0)
-	{
-		UIObjectDestroy(c);
-		c = NULL;
-	}
-	return c;
 }
 
 char *MakePlacementFlagTooltip(const MapObject *mo)

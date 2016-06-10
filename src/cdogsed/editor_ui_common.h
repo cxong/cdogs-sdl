@@ -67,10 +67,10 @@ void DisplayFlag(
 UIObject *CreateCampaignSeedObj(const Vec2i pos, CampaignOptions *co);
 UIObject *CreateAddMapItemObjs(
 	const Vec2i pos, bool (*objFunc)(UIObject *, MapObject *, void *),
-	void *data);
+	void *data, const size_t dataSize);
 UIObject *CreateAddPickupSpawnerObjs(
 	const Vec2i pos, bool (*objFunc)(UIObject *, MapObject *, void *),
-	void *data);
+	void *data, const size_t dataSize);
 
 char *MakePlacementFlagTooltip(const MapObject *mo);
 

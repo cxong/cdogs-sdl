@@ -233,8 +233,8 @@ UIObject *CreateAddItemObjs(
 	o2 = UIObjectCopy(o);
 	o2->Label = "Map item";
 	o2->Pos = pos;
-	UIObjectAddChild(
-		o2, CreateAddMapItemObjs(o2->Size, AddMapItemBrushObjFunc, brush));
+	UIObjectAddChild(o2, CreateAddMapItemObjs(
+		o2->Size, AddMapItemBrushObjFunc, brush, sizeof(IndexedEditorBrush)));
 	UIObjectAddChild(c, o2);
 	pos.y += th;
 	o2 = UIObjectCopy(o);
@@ -247,7 +247,8 @@ UIObject *CreateAddItemObjs(
 	o2->Label = "Pickup spawner";
 	o2->Pos = pos;
 	UIObjectAddChild(o2, CreateAddPickupSpawnerObjs(
-		o2->Size, AddPickupSpawnerBrushObjFunc, brush));
+		o2->Size, AddPickupSpawnerBrushObjFunc, brush,
+		sizeof(IndexedEditorBrush)));
 	UIObjectAddChild(c, o2);
 	pos.y += th;
 	o2 = UIObjectCopy(o);
@@ -285,8 +286,6 @@ static bool AddMapItemBrushObjFunc(UIObject *o, MapObject *mo, void *vData)
 	o->u.CustomDrawFunc = DrawMapItem;
 	o->OnFocusFunc = ActivateIndexedEditorBrush;
 	o->OnUnfocusFunc = DeactivateIndexedEditorBrush;
-	o->IsDynamicData = true;
-	CMALLOC(o->Data, sizeof(IndexedEditorBrush));
 	((IndexedEditorBrush *)o->Data)->Brush = vData;
 	((IndexedEditorBrush *)o->Data)->u.MapObject = mo;
 	o->Tooltip = MakeMapObjectTooltip(mo);
@@ -376,8 +375,6 @@ static bool AddPickupSpawnerBrushObjFunc(
 	o->u.CustomDrawFunc = DrawPickupSpawner;
 	o->OnFocusFunc = ActivateIndexedEditorBrush;
 	o->OnUnfocusFunc = DeactivateIndexedEditorBrush;
-	o->IsDynamicData = true;
-	CMALLOC(o->Data, sizeof(IndexedEditorBrush));
 	((IndexedEditorBrush *)o->Data)->Brush = vData;
 	((IndexedEditorBrush *)o->Data)->u.MapObject = mo;
 	o->Tooltip = MakePickupTooltip(mo);

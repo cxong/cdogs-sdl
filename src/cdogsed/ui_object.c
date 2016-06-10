@@ -162,7 +162,7 @@ void UIObjectHighlight(UIObject *o, const bool shift)
 	{
 		return;
 	}
-	if (o->Parent)
+	if (o->Parent && o->Parent->Highlighted != o)
 	{
 		o->Parent->Highlighted = o;
 		UIObjectHighlight(o->Parent, shift);

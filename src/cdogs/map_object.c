@@ -177,28 +177,6 @@ MapObject *IndexMapObject(const int i)
 	}
 	return CArrayGet(&gMapObjects.CustomClasses, i - gMapObjects.Classes.size);
 }
-int MapObjectIndex(const MapObject *mo)
-{
-	int idx = 0;
-	for (int i = 0; i < (int)gMapObjects.Classes.size; i++, idx++)
-	{
-		const MapObject *c = CArrayGet(&gMapObjects.Classes, i);
-		if (c == mo)
-		{
-			return idx;
-		}
-	}
-	for (int i = 0; i < (int)gMapObjects.CustomClasses.size; i++, idx++)
-	{
-		const MapObject *c = CArrayGet(&gMapObjects.CustomClasses, i);
-		if (c == mo)
-		{
-			return idx;
-		}
-	}
-	CASSERT(false, "cannot find map object");
-	return -1;
-}
 int DestructibleMapObjectIndex(const MapObject *mo)
 {
 	if (mo == NULL)
@@ -383,9 +361,6 @@ void MapObjectsLoadAmmoAndGunSpawners(
 {
 	if (isCustom)
 	{
-		// Reset custom map objects
-		MapObjectsClear(&classes->CustomClasses);
-
 		LoadAmmoSpawners(&classes->CustomClasses, &ammo->CustomAmmo);
 		LoadGunSpawners(&classes->CustomClasses, &guns->CustomGuns);
 	}

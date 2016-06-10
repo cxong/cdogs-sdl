@@ -1505,6 +1505,12 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, CampaignOptions *co)
 	return c;
 }
 
+typedef struct
+{
+	CampaignOptions *C;
+	int Idx;
+	MapObject *M;
+} MapItemIndexData;
 static void MissionChangeMapItemDensity(void *vData, int d);
 static bool MapItemObjFunc(UIObject *o, MapObject *mo, void *vData);
 static UIObject *CreateMapItemObjs(CampaignOptions *co, int dy)
@@ -1532,8 +1538,9 @@ static UIObject *CreateMapItemObjs(CampaignOptions *co, int dy)
 		CSTRDUP(
 			o2->Tooltip,
 			"Click: change map object; Shift+Click: change density");
-		UIObjectAddChild(
-			o2, CreateAddMapItemObjs(o2->Size, MapItemObjFunc, o2->Data));
+		UIObjectAddChild(o2, CreateAddMapItemObjs(
+			Vec2iNew(o2->Size.x, -Y_ABS + 10),
+			MapItemObjFunc, o2->Data, sizeof(MapItemIndexData)));
 		UIObjectAddChild(c, o2);
 	}
 
@@ -1549,23 +1556,8 @@ static void MissionChangeMapItemDensity(void *vData, int d)
 		return;
 	}
 	MapObjectDensity *mod = CArrayGet(&m->MapObjectDensities, data->index);
-	if (gEventHandlers.keyboard.modState & KMOD_SHIFT)
-	{
-		mod->Density = CLAMP(mod->Density + 5 * d, 0, 512);
-	}
-	else
-	{
-		const int i = CLAMP_OPPOSITE(
-			MapObjectIndex(mod->M) + d, 0, MapObjectsCount(&gMapObjects) - 1);
-		mod->M = IndexMapObject(i);
-	}
+	mod->Density = CLAMP(mod->Density + 5 * d, 0, 512);
 }
-typedef struct
-{
-	CampaignOptions *C;
-	int Idx;
-	MapObject *M;
-} MapItemIndexData;
 static void MissionSetMapItem(void *vData, int d);
 static void DrawMapItem(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData);
@@ -1573,8 +1565,6 @@ static bool MapItemObjFunc(UIObject *o, MapObject *mo, void *vData)
 {
 	o->ChangeFunc = MissionSetMapItem;
 	o->u.CustomDrawFunc = DrawMapItem;
-	o->IsDynamicData = true;
-	CMALLOC(o->Data, sizeof(MapItemIndexData));
 	MissionIndexData *data = vData;
 	((MapItemIndexData *)o->Data)->C = data->co;
 	((MapItemIndexData *)o->Data)->Idx = data->index;
@@ -1584,6 +1574,7 @@ static bool MapItemObjFunc(UIObject *o, MapObject *mo, void *vData)
 }
 static void MissionSetMapItem(void *vData, int d)
 {
+	UNUSED(d);
 	MapItemIndexData *data = vData;
 	Mission *m = CampaignGetCurrentMission(data->C);
 	if (data->Idx >= (int)m->MapObjectDensities.size)
@@ -1591,9 +1582,7 @@ static void MissionSetMapItem(void *vData, int d)
 		return;
 	}
 	MapObjectDensity *mod = CArrayGet(&m->MapObjectDensities, data->Idx);
-	const int i = CLAMP_OPPOSITE(
-		MapObjectIndex(mod->M) + d, 0, MapObjectsCount(&gMapObjects) - 1);
-	mod->M = IndexMapObject(i);
+	mod->M = data->M;
 }
 static void DrawMapItem(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)

@@ -379,6 +379,12 @@ static UIObject *CreateObjectiveObjs(
 	return c;
 }
 
+typedef struct
+{
+	CampaignOptions *C;
+	int ObjIdx;
+	MapObject *M;
+} DestroyObjectiveData;
 static void MissionDrawKillObjective(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData);
 static void MissionDrawCollectObjective(
@@ -432,8 +438,9 @@ static void CreateObjectiveItemObjs(
 	((MissionIndexData *)o2->Data)->index = idx;
 	o2->CheckVisible = MissionCheckObjectiveIsDestroy;
 	CSTRDUP(o2->Tooltip, "Choose object to destroy");
-	UIObjectAddChild(
-		o2, CreateAddMapItemObjs(o2->Size, ObjectiveDestroyObjFunc, o2->Data));
+	UIObjectAddChild(o2, CreateAddMapItemObjs(
+		o2->Size, ObjectiveDestroyObjFunc, o2->Data,
+		sizeof(DestroyObjectiveData)));
 	UIObjectAddChild(c, o2);
 
 	o2 = UIObjectCopy(o);
@@ -527,12 +534,6 @@ static void MissionChangeCollectObjectiveIndex(void *vData, int d)
 	idx = CLAMP_OPPOSITE(idx + d, 0, limit);
 	o->u.Pickup = IntScorePickupClass(idx);
 }
-typedef struct
-{
-	CampaignOptions *C;
-	int ObjIdx;
-	MapObject *M;
-} DestroyObjectiveData;
 static void MissionSetDestroyObjective(void *vData, int d)
 {
 	UNUSED(d);
@@ -598,8 +599,6 @@ static bool ObjectiveDestroyObjFunc(UIObject *o, MapObject *mo, void *vData)
 	}
 	o->ChangeFunc = MissionSetDestroyObjective;
 	o->u.CustomDrawFunc = DrawMapItem;
-	o->IsDynamicData = true;
-	CMALLOC(o->Data, sizeof(DestroyObjectiveData));
 	MissionIndexData *data = vData;
 	((DestroyObjectiveData *)o->Data)->C = data->co;
 	((DestroyObjectiveData *)o->Data)->ObjIdx = data->index;

@@ -116,8 +116,6 @@ MapObject *StrMapObject(const char *s);
 MapObject *IntMapObject(const int m);
 // Get map object by index; used by editor
 MapObject *IndexMapObject(const int i);
-// Get index of map object; used by editor
-int MapObjectIndex(const MapObject *mo);
 // Get index of destructible map object; used by editor
 int DestructibleMapObjectIndex(const MapObject *mo);
 MapObject *RandomBloodMapObject(const MapObjects *mo);
