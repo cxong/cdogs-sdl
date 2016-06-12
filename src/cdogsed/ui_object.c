@@ -555,10 +555,10 @@ bool UITryGetObject(UIObject *o, Vec2i pos, UIObject **out)
 	}
 	// Find the absolute coordinates of the UIObject, by recursing up to its
 	// parent
-	const UIObject *o2 = o;
-	while (o2->Parent != NULL)
+	const UIObject *o2 = o->Parent;
+	while (o2 != NULL)
 	{
-		pos = Vec2iAdd(pos, o2->Pos);
+		pos = Vec2iMinus(pos, o2->Pos);
 		o2 = o2->Parent;
 	}
 	return UITryGetObjectImpl(o, pos, out);
