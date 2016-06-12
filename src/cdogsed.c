@@ -776,8 +776,13 @@ static HandleInputResult HandleInput(
 	const bool hadTooltip = sTooltipObj != NULL;
 	bool isContextMenu = false;
 	sTooltipObj = NULL;
-	if (UITryGetObject(sObjs, gEventHandlers.mouse.currentPos, &sTooltipObj)
-		&& sTooltipObj)
+	const Vec2i mousePos = gEventHandlers.mouse.currentPos;
+	UITryGetObject(sLastHighlightedObj, mousePos, &sTooltipObj);
+	if (sTooltipObj == NULL)
+	{
+		UITryGetObject(sObjs, mousePos, &sTooltipObj);
+	}
+	if (sTooltipObj != NULL)
 	{
 		if (sTooltipObj->Parent &&
 			sTooltipObj->Parent->Type == UITYPE_CONTEXT_MENU)
@@ -815,7 +820,12 @@ static HandleInputResult HandleInput(
 		MouseWheel(&gEventHandlers.mouse).y != 0))
 	{
 		result.Redraw = true;
-		if (UITryGetObject(sObjs, gEventHandlers.mouse.currentPos, &o))
+		UITryGetObject(sLastHighlightedObj, mousePos, &o);
+		if (o == NULL)
+		{
+			UITryGetObject(sObjs, mousePos, &o);
+		}
+		if (o != NULL)
 		{
 			if (!o->DoNotHighlight)
 			{

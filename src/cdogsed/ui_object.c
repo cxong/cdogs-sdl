@@ -546,7 +546,24 @@ static int IsInside(Vec2i pos, Vec2i rectPos, Vec2i rectSize)
 		pos.y < rectPos.y + rectSize.y;
 }
 
+bool UITryGetObjectImpl(UIObject *o, const Vec2i pos, UIObject **out);
 bool UITryGetObject(UIObject *o, Vec2i pos, UIObject **out)
+{
+	if (o == NULL)
+	{
+		return false;
+	}
+	// Find the absolute coordinates of the UIObject, by recursing up to its
+	// parent
+	const UIObject *o2 = o;
+	while (o2->Parent != NULL)
+	{
+		pos = Vec2iAdd(pos, o2->Pos);
+		o2 = o2->Parent;
+	}
+	return UITryGetObjectImpl(o, pos, out);
+}
+bool UITryGetObjectImpl(UIObject *o, const Vec2i pos, UIObject **out)
 {
 	if (!o->IsVisible)
 	{
@@ -562,7 +579,7 @@ bool UITryGetObject(UIObject *o, Vec2i pos, UIObject **out)
 			if ((!((*objp)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
 				isHighlighted) &&
 				(*objp)->IsVisible &&
-				UITryGetObject(*objp, Vec2iMinus(pos, o->Pos), out))
+				UITryGetObjectImpl(*objp, Vec2iMinus(pos, o->Pos), out))
 			{
 				return true;
 			}
@@ -574,7 +591,7 @@ bool UITryGetObject(UIObject *o, Vec2i pos, UIObject **out)
 			if ((!((*obj)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
 				isHighlighted) &&
 				(*obj)->IsVisible &&
-				UITryGetObject(*obj, Vec2iMinus(pos, o->Pos), out))
+				UITryGetObjectImpl(*obj, Vec2iMinus(pos, o->Pos), out))
 			{
 				return true;
 			}
