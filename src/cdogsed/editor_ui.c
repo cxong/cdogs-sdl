@@ -118,7 +118,7 @@ static void CheckMission(UIObject *o, void *data)
 	{
 		o->IsVisible = false;
 		// Need to unhighlight to prevent children being drawn
-		UIObjectUnhighlight(o);
+		UIObjectUnhighlight(o, false);
 		return;
 	}
 	o->IsVisible = true;
@@ -1121,7 +1121,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	{
 		UIObject *oMapTypeChild = UIObjectCopy(o);
 		oMapTypeChild->Pos.y = i * th;
-		oMapTypeChild->Label = MapTypeStr((MapType)i);
+		UIObjectSetDynamicLabel(oMapTypeChild, MapTypeStr((MapType)i));
 		oMapTypeChild->IsDynamicData = true;
 		CMALLOC(oMapTypeChild->Data, sizeof(MissionChangeTypeData));
 		((MissionChangeTypeData *)oMapTypeChild->Data)->C = co;
@@ -1539,8 +1539,8 @@ static UIObject *CreateMapItemObjs(CampaignOptions *co, int dy)
 			o2->Tooltip,
 			"Click: change map object; Shift+Click: change density");
 		UIObjectAddChild(o2, CreateAddMapItemObjs(
-			Vec2iNew(o2->Size.x, -Y_ABS + 10),
-			MapItemObjFunc, o2->Data, sizeof(MapItemIndexData)));
+			Vec2iNew(o2->Size.x, o2->Size.y / 2),
+			MapItemObjFunc, o2->Data, sizeof(MapItemIndexData), false));
 		UIObjectAddChild(c, o2);
 	}
 

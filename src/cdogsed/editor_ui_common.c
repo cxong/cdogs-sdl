@@ -183,21 +183,31 @@ typedef struct
 	void *Data;
 	// Data size required for map item change checking
 	size_t DataSize;
+	Vec2i GridItemSize;
 	Vec2i GridSize;
-	int GridCols;
+	Vec2i PageOffset;
 } CreateAddMapItemObjsImplData;
 static UIObject *CreateAddMapItemObjsImpl(
 	Vec2i pos, CreateAddMapItemObjsImplData data);
 UIObject *CreateAddMapItemObjs(
 	const Vec2i pos, bool (*objFunc)(UIObject *, MapObject *, void *),
-	void *data, const size_t dataSize)
+	void *data, const size_t dataSize, const bool expandDown)
 {
 	CreateAddMapItemObjsImplData d;
 	d.ObjFunc = objFunc;
 	d.Data = data;
 	d.DataSize = dataSize;
-	d.GridSize = Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT * 2 + 4);
-	d.GridCols = 12;
+	d.GridItemSize = Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT * 2 + 4);
+	d.GridSize = Vec2iNew(8, 6);
+	if (expandDown)
+	{
+		d.PageOffset = Vec2iNew(-5, 5);
+	}
+	else
+	{
+		d.PageOffset =
+			Vec2iNew(-5, -d.GridItemSize.y * d.GridSize.y - FontH() - 5);
+	}
 	return CreateAddMapItemObjsImpl(pos, d);
 }
 UIObject *CreateAddPickupSpawnerObjs(
@@ -208,8 +218,9 @@ UIObject *CreateAddPickupSpawnerObjs(
 	d.ObjFunc = objFunc;
 	d.Data = data;
 	d.DataSize = dataSize;
-	d.GridSize = Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT + 4);
-	d.GridCols = 4;
+	d.GridItemSize = Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT + 4);
+	d.GridSize = Vec2iNew(5, 9);
+	d.PageOffset = Vec2iNew(-5, 5);
 	return CreateAddMapItemObjsImpl(pos, d);
 }
 static void CreateAddMapItemSubObjs(UIObject *c, void *vData);
@@ -224,31 +235,42 @@ static UIObject *CreateAddMapItemObjsImpl(
 
 	return c;
 }
+static int CountAddMapItemSubObjs(const UIObject *o);
 static void CreateAddMapItemSubObjs(UIObject *c, void *vData)
 {
 	const CreateAddMapItemObjsImplData *data = vData;
+	const int pageSize = data->GridSize.x * data->GridSize.y;
 	// Check if we need to recreate the objs
 	// TODO: this is a very heavyweight way to do it
 	int count = 0;
 	bool allChildrenSame = true;
 	for (int i = 0; i < MapObjectsCount(&gMapObjects); i++)
 	{
-		if (count >= (int)c->Children.size)
-		{
-			allChildrenSame = false;
-			break;
-		}
 		MapObject *mo = IndexMapObject(i);
 		UIObject *o2 =
-			UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), data->GridSize);
+			UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), data->GridItemSize);
 		o2->IsDynamicData = true;
-		CMALLOC(o2->Data, data->DataSize);
+		CCALLOC(o2->Data, data->DataSize);
 		if (!data->ObjFunc(o2, mo, data->Data))
 		{
 			UIObjectDestroy(o2);
 			continue;
 		}
-		const UIObject **oc = CArrayGet(&c->Children, count);
+		const int pageIdx = count / pageSize;
+		if (pageIdx >= (int)c->Children.size)
+		{
+			allChildrenSame = false;
+			break;
+		}
+		const UIObject **op = CArrayGet(&c->Children, pageIdx);
+		const UIObject **octx = CArrayGet(&(*op)->Children, 0);
+		const int idx = count % pageSize;
+		if (idx >= (int)(*octx)->Children.size)
+		{
+			allChildrenSame = false;
+			break;
+		}
+		const UIObject **oc = CArrayGet(&(*octx)->Children, idx);
 		if (memcmp(o2->Data, (*oc)->Data, data->DataSize) != 0)
 		{
 			allChildrenSame = false;
@@ -258,7 +280,8 @@ static void CreateAddMapItemSubObjs(UIObject *c, void *vData)
 		count++;
 		UIObjectDestroy(o2);
 	}
-	if (allChildrenSame && count == (int)c->Children.size)
+	int cCount = CountAddMapItemSubObjs(c);
+	if (cCount == count && allChildrenSame)
 	{
 		return;
 	}
@@ -272,9 +295,14 @@ static void CreateAddMapItemSubObjs(UIObject *c, void *vData)
 	}
 	CArrayClear(&c->Children);
 
+	// Create pagination
+	int pageNum = 1;
+	UIObject *pageLabel = NULL;
+	UIObject *page = NULL;
 	UIObject *o =
-		UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), data->GridSize);
+		UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), data->GridItemSize);
 	o->ChangesData = true;
+	const Vec2i gridStart = Vec2iZero();
 	Vec2i pos = Vec2iZero();
 	count = 0;
 	for (int i = 0; i < MapObjectsCount(&gMapObjects); i++)
@@ -283,24 +311,57 @@ static void CreateAddMapItemSubObjs(UIObject *c, void *vData)
 		MapObject *mo = IndexMapObject(i);
 		UIObject *o2 = UIObjectCopy(o);
 		o2->IsDynamicData = true;
-		CMALLOC(o2->Data, data->DataSize);
+		CCALLOC(o2->Data, data->DataSize);
 		if (!data->ObjFunc(o2, mo, data->Data))
 		{
 			UIObjectDestroy(o2);
 			continue;
 		}
 		o2->Pos = pos;
-		UIObjectAddChild(c, o2);
-		pos.x += o->Size.x;
-		if (((count + 1) % data->GridCols) == 0)
+		if (count == 0)
 		{
-			pos.x = 0;
+			pageLabel = UIObjectCreate(
+				UITYPE_LABEL, 0,
+				Vec2iNew((pageNum - 1) * 10, 0), Vec2iNew(10, FontH()));
+			char buf[32];
+			sprintf(buf, "%d", pageNum);
+			UIObjectSetDynamicLabel(pageLabel, buf);
+			page = UIObjectCreate(
+				UITYPE_CONTEXT_MENU, 0,
+				Vec2iAdd(data->PageOffset, pageLabel->Size), Vec2iZero());
+			UIObjectAddChild(pageLabel, page);
+			pageNum++;
+		}
+		UIObjectAddChild(page, o2);
+		pos.x += o->Size.x;
+		if (((count + 1) % data->GridSize.x) == 0)
+		{
+			pos.x = gridStart.x;
 			pos.y += o->Size.y;
 		}
 		count++;
+		if (count == pageSize)
+		{
+			count = 0;
+			pos = gridStart;
+			UIObjectAddChild(c, pageLabel);
+		}
+	}
+	if (pageLabel != NULL)
+	{
+		UIObjectAddChild(c, pageLabel);
 	}
 
 	UIObjectDestroy(o);
+}
+static int CountAddMapItemSubObjs(const UIObject *o)
+{
+	int count = 0;
+	CA_FOREACH(const UIObject *, page, o->Children)
+		const UIObject **ctx = CArrayGet(&(*page)->Children, 0);
+		count += (int)(*ctx)->Children.size;
+	CA_FOREACH_END()
+	return count;
 }
 
 char *MakePlacementFlagTooltip(const MapObject *mo)
@@ -355,7 +416,7 @@ char *MakePlacementFlagTooltip(const MapObject *mo)
 static void CloseChange(void *data, int d);
 void CreateCloseLabel(UIObject *c, const Vec2i pos)
 {
-	const char *closeLabel = "Close";
+	char *closeLabel = "Close";
 	const Vec2i closeSize = FontStrSize(closeLabel);
 	UIObject *oClose = UIObjectCreate(UITYPE_LABEL, 0, pos, closeSize);
 	oClose->Label = closeLabel;

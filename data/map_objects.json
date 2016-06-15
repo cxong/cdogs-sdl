@@ -251,7 +251,7 @@
       "Name": "bookshelf2",
       "Pic": "bookshelf2",
       "Offset": [-8, -15],
-      "WreckPic": "bookshelf_wreck",
+      "WreckPic": "bookshelf2_wreck",
       "Size": [16, 6],
       "Health": 20,
       "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]

@@ -831,7 +831,7 @@ static HandleInputResult HandleInput(
 			{
 				if (sLastHighlightedObj)
 				{
-					if (UIObjectUnhighlight(sLastHighlightedObj))
+					if (UIObjectUnhighlight(sLastHighlightedObj, true))
 					{
 						Setup(false);
 					}
@@ -876,7 +876,7 @@ static HandleInputResult HandleInput(
 		{
 			if (!(brush.IsActive && mission))
 			{
-				UIObjectUnhighlight(sObjs);
+				UIObjectUnhighlight(sObjs, true);
 				CArrayTerminate(&sDrawObjs);
 				sLastHighlightedObj = NULL;
 			}
@@ -1014,7 +1014,7 @@ static HandleInputResult HandleInput(
 			MissionCopy(scrap, mission);
 			Delete(*xc, *yc);
 			// Unhighlight everything (in case this is the last mission)
-			UIObjectUnhighlight(sObjs);
+			UIObjectUnhighlight(sObjs, true);
 			CArrayTerminate(&sDrawObjs);
 			sLastHighlightedObj = NULL;
 			break;
@@ -1072,7 +1072,7 @@ static HandleInputResult HandleInput(
 		case 'e':
 			EditCharacters(&gCampaign.Setting);
 			Setup(false);
-			UIObjectUnhighlight(sObjs);
+			UIObjectUnhighlight(sObjs, true);
 			CArrayTerminate(&sDrawObjs);
 			break;
 
@@ -1230,7 +1230,7 @@ static void InputDelete(const int xc, const int yc)
 {
 	Delete(xc, yc);
 	// Unhighlight everything (in case this is the last mission)
-	UIObjectUnhighlight(sObjs);
+	UIObjectUnhighlight(sObjs, true);
 	CArrayTerminate(&sDrawObjs);
 	sLastHighlightedObj = NULL;
 }

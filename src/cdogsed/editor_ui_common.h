@@ -67,7 +67,7 @@ void DisplayFlag(
 UIObject *CreateCampaignSeedObj(const Vec2i pos, CampaignOptions *co);
 UIObject *CreateAddMapItemObjs(
 	const Vec2i pos, bool (*objFunc)(UIObject *, MapObject *, void *),
-	void *data, const size_t dataSize);
+	void *data, const size_t dataSize, const bool expandDown);
 UIObject *CreateAddPickupSpawnerObjs(
 	const Vec2i pos, bool (*objFunc)(UIObject *, MapObject *, void *),
 	void *data, const size_t dataSize);
@@ -88,7 +88,7 @@ static void MissionCheckTypeFunc(UIObject *o, void *data)\
 	{\
 		o->IsVisible = false;\
 		/* Need to unhighlight to prevent children being drawn*/\
-		UIObjectUnhighlight(o);\
+		UIObjectUnhighlight(o, false);\
 		return;\
 	}\
 	o->IsVisible = true;\

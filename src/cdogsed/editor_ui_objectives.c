@@ -317,7 +317,8 @@ static UIObject *CreateObjectiveObjs(
 			UIObjectCreate(UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(50, th));
 		oObjTypeChild->ChangesData = true;
 		oObjTypeChild->Pos.y = i * th;
-		oObjTypeChild->Label = ObjectiveTypeStr((ObjectiveType)i);
+		UIObjectSetDynamicLabel(
+			oObjTypeChild, ObjectiveTypeStr((ObjectiveType)i));
 		oObjTypeChild->IsDynamicData = true;
 		CMALLOC(oObjTypeChild->Data, sizeof(ObjectiveChangeTypeData));
 		ObjectiveChangeTypeData *octd = oObjTypeChild->Data;
@@ -440,7 +441,7 @@ static void CreateObjectiveItemObjs(
 	CSTRDUP(o2->Tooltip, "Choose object to destroy");
 	UIObjectAddChild(o2, CreateAddMapItemObjs(
 		o2->Size, ObjectiveDestroyObjFunc, o2->Data,
-		sizeof(DestroyObjectiveData)));
+		sizeof(DestroyObjectiveData), true));
 	UIObjectAddChild(c, o2);
 
 	o2 = UIObjectCopy(o);

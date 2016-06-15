@@ -153,7 +153,7 @@ static bool HasWeapon(const Mission *m, const GunDescription *g)
 
 static void CreateWeaponSpecialToggleObj(
 	CampaignOptions *co, UIObject *c, const Vec2i pos,
-	const SelectMode mode, const char *label);
+	const SelectMode mode, char *label);
 static void CreateWeaponToggleObjs(
 	CampaignOptions *co, UIObject *c, const UIObject *o,
 	int *idx, const int rows, CArray *guns);
@@ -192,7 +192,7 @@ UIObject *CreateWeaponObjs(CampaignOptions *co)
 }
 static void CreateWeaponSpecialToggleObj(
 	CampaignOptions *co, UIObject *c, const Vec2i pos,
-	const SelectMode mode, const char *label)
+	const SelectMode mode, char *label)
 {
 	const int th = FontH();
 	UIObject *o = UIObjectCreate(

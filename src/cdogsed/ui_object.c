@@ -58,10 +58,6 @@ UIObject *UIObjectCreate(UIType type, int id, Vec2i pos, Vec2i size)
 		o->u.Textbox.IsEditable = true;
 		o->ChangesData = 1;
 		break;
-	case UITYPE_TAB:
-		CArrayInit(&o->u.Tab.Labels, sizeof(char *));
-		o->u.Tab.Index = 0;
-		break;
 	case UITYPE_CONTEXT_MENU:
 		// Context menu always starts as invisible
 		o->IsVisible = false;
@@ -73,6 +69,13 @@ UIObject *UIObjectCreate(UIType type, int id, Vec2i pos, Vec2i size)
 	CArrayInit(&o->Children, sizeof o);
 	return o;
 }
+
+void UIObjectSetDynamicLabel(UIObject *o, const char *label)
+{
+	CSTRDUP(o->Label, label);
+	o->IsDynamicLabel = true;
+}
+
 void UIButtonSetPic(UIObject *o, Pic *pic)
 {
 	assert(o->Type == UITYPE_BUTTON && "invalid UI type");
@@ -93,6 +96,11 @@ UIObject *UIObjectCopy(const UIObject *o)
 	res->Parent = o->Parent;
 	res->DoNotHighlight = o->DoNotHighlight;
 	res->Label = o->Label;
+	res->IsDynamicLabel = o->IsDynamicLabel;
+	if (o->IsDynamicLabel)
+	{
+		CSTRDUP(res->Label, o->Label);
+	}
 	res->Data = o->Data;
 	CASSERT(!o->IsDynamicData, "Cannot copy unknown dynamic data size");
 	res->IsDynamicData = false;
@@ -111,6 +119,10 @@ UIObject *UIObjectCopy(const UIObject *o)
 void UIObjectDestroy(UIObject *o)
 {
 	CFREE(o->Tooltip);
+	if (o->IsDynamicLabel)
+	{
+		CFREE(o->Label);
+	}
 	CA_FOREACH(UIObject *, obj, o->Children)
 		UIObjectDestroy(*obj);
 	CA_FOREACH_END()
@@ -123,9 +135,6 @@ void UIObjectDestroy(UIObject *o)
 	{
 	case UITYPE_TEXTBOX:
 		CFREE(o->u.Textbox.Hint);
-		break;
-	case UITYPE_TAB:
-		CArrayTerminate(&o->u.Tab.Labels);
 		break;
 	default:
 		// do nothing
@@ -142,18 +151,11 @@ void UIObjectAddChild(UIObject *o, UIObject *c)
 	}
 	CArrayPushBack(&o->Children, &c);
 	c->Parent = o;
-	assert(o->Type != UITYPE_TAB && "need special add child for TAB type");
 	if (o->Type == UITYPE_CONTEXT_MENU)
 	{
 		// Resize context menu based on children
 		o->Size = Vec2iMax(o->Size, Vec2iAdd(c->Pos, c->Size));
 	}
-}
-void UITabAddChild(UIObject *o, UIObject *c, char *label)
-{
-	CArrayPushBack(&o->Children, &c);
-	c->Parent = o;
-	CArrayPushBack(&o->u.Tab.Labels, &label);
 }
 
 void UIObjectHighlight(UIObject *o, const bool shift)
@@ -186,15 +188,16 @@ void UIObjectHighlight(UIObject *o, const bool shift)
 
 int UIObjectIsHighlighted(UIObject *o)
 {
-	return o->Parent && o->Parent->Highlighted == o;
+	return o->Parent == NULL || o->Parent->Highlighted == o;
 }
 
-bool UIObjectUnhighlight(UIObject *o)
+bool UIObjectUnhighlight(UIObject *o, const bool unhighlightParents)
 {
 	bool changed = false;
 	if (o->Highlighted)
 	{
-		changed = UIObjectUnhighlight(o->Highlighted) || changed;
+		changed =
+			UIObjectUnhighlight(o->Highlighted, unhighlightParents) || changed;
 	}
 	o->Highlighted = NULL;
 	if (o->OnUnfocusFunc)
@@ -216,15 +219,16 @@ bool UIObjectUnhighlight(UIObject *o)
 			}
 		}
 	CA_FOREACH_END()
-	// If immediate parent is context menu, also unhighlight it
-	if (o->Parent != NULL && o->Parent->Type == UITYPE_CONTEXT_MENU)
+	// Unhighlight all parents
+	if (unhighlightParents && o->Parent != NULL)
 	{
 		// Prevent infinite loop
 		if (o->Parent->Highlighted == o)
 		{
 			o->Parent->Highlighted = NULL;
 		}
-		changed = UIObjectUnhighlight(o->Parent) || changed;
+		changed =
+			UIObjectUnhighlight(o->Parent, unhighlightParents) || changed;
 	}
 	return changed;
 }
@@ -232,17 +236,6 @@ bool UIObjectUnhighlight(UIObject *o)
 static void DisableContextMenuParents(UIObject *o);
 EditorResult UIObjectChange(UIObject *o, const int d, const bool shift)
 {
-	switch (o->Type)
-	{
-	case UITYPE_TAB:
-		// switch child
-		o->u.Tab.Index = CLAMP_OPPOSITE(
-			o->u.Tab.Index + d, 0, (int)o->u.Tab.Labels.size - 1);
-		break;
-	default:
-		// do nothing
-		break;
-	}
 	// Activate change func if available
 	bool changed = false;
 	if (o->ChangeFuncAlt && shift)
@@ -437,21 +430,6 @@ static void UIObjectDrawAndAddChildren(
 			oPos.x = oPosX;
 		}
 		break;
-	case UITYPE_TAB:
-		if (o->Children.size > 0)
-		{
-			color_t textMask = isHighlighted ? colorRed : colorWhite;
-			char **labelp = CArrayGet(&o->u.Tab.Labels, o->u.Tab.Index);
-			UIObject **objp = CArrayGet(&o->Children, o->u.Tab.Index);
-			FontStrMaskWrap(
-				*labelp, Vec2iAdd(pos, o->Pos), textMask, o->Size.x);
-			if (!((*objp)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
-				isHighlighted)
-			{
-				UIObjectDrawAndAddChildren(*objp, g, oPos, mouse, objs);
-			}
-		}
-		break;
 	case UITYPE_BUTTON:
 		{
 			int isDown =
@@ -492,8 +470,7 @@ static void UIObjectDrawAndAddChildren(
 	}
 
 	// add children
-	// Note: tab type draws its own children (one)
-	if (o->Type != UITYPE_TAB && objs != NULL)
+	if (objs != NULL)
 	{
 		CA_FOREACH(UIObject *, obj, o->Children)
 			if (!((*obj)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
@@ -570,33 +547,15 @@ bool UITryGetObjectImpl(UIObject *o, const Vec2i pos, UIObject **out)
 		return false;
 	}
 	bool isHighlighted = UIObjectIsHighlighted(o);
-	if (o->Type == UITYPE_TAB)
-	{
-		// only recurse to the chosen child
-		if (o->Children.size > 0)
+	CA_FOREACH(UIObject *, obj, o->Children)
+		if ((!((*obj)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
+			isHighlighted) &&
+			(*obj)->IsVisible &&
+			UITryGetObjectImpl(*obj, Vec2iMinus(pos, o->Pos), out))
 		{
-			UIObject **objp = CArrayGet(&o->Children, o->u.Tab.Index);
-			if ((!((*objp)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
-				isHighlighted) &&
-				(*objp)->IsVisible &&
-				UITryGetObjectImpl(*objp, Vec2iMinus(pos, o->Pos), out))
-			{
-				return true;
-			}
+			return true;
 		}
-	}
-	else
-	{
-		CA_FOREACH(UIObject *, obj, o->Children)
-			if ((!((*obj)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
-				isHighlighted) &&
-				(*obj)->IsVisible &&
-				UITryGetObjectImpl(*obj, Vec2iMinus(pos, o->Pos), out))
-			{
-				return true;
-			}
-		CA_FOREACH_END()
-	}
+	CA_FOREACH_END()
 	if (IsInside(pos, o->Pos, o->Size) && o->Type != UITYPE_CONTEXT_MENU)
 	{
 		*out = o;

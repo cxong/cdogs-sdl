@@ -42,7 +42,6 @@ typedef enum
 	UITYPE_NONE,
 	UITYPE_LABEL,
 	UITYPE_TEXTBOX,
-	UITYPE_TAB,	// like label but when clicked displays a different child
 	UITYPE_BUTTON,	// click button with picture
 	UITYPE_CONTEXT_MENU,	// appear on mouse click
 	UITYPE_CUSTOM
@@ -82,12 +81,6 @@ typedef struct _UIObject
 			bool IsEditable;
 			char *Hint;
 		} Textbox;
-		// Tab
-		struct
-		{
-			CArray Labels;	// of char *, one per child
-			int Index;
-		} Tab;
 		// Button
 		struct
 		{
@@ -97,7 +90,8 @@ typedef struct _UIObject
 		// Custom
 		void (*CustomDrawFunc)(struct _UIObject *, GraphicsDevice *g, Vec2i, void *);
 	} u;
-	const char *Label;
+	char *Label;
+	bool IsDynamicLabel;
 	void *Data;
 	int IsDynamicData;
 	void (*ChangeFunc)(void *, int d);
@@ -117,6 +111,7 @@ typedef struct _UIObject
 } UIObject;
 
 UIObject *UIObjectCreate(UIType type, int id, Vec2i pos, Vec2i size);
+void UIObjectSetDynamicLabel(UIObject *o, const char *label);
 void UIButtonSetPic(UIObject *o, Pic *pic);
 UIObject *UIObjectCopy(const UIObject *o);
 void UIObjectDestroy(UIObject *o);
@@ -124,7 +119,7 @@ void UIObjectAddChild(UIObject *o, UIObject *c);
 void UITabAddChild(UIObject *o, UIObject *c, char *label);
 void UIObjectHighlight(UIObject *o, const bool shift);
 // Returns whether mission changed
-bool UIObjectUnhighlight(UIObject *o);
+bool UIObjectUnhighlight(UIObject *o, const bool unhighlightParents);
 int UIObjectIsHighlighted(UIObject *o);
 EditorResult UIObjectChange(UIObject *o, const int d, const bool shift);
 

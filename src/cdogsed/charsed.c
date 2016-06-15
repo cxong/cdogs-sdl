@@ -502,7 +502,7 @@ static void HandleInput(
 			{
 				if (sLastHighlightedObj)
 				{
-					UIObjectUnhighlight(sLastHighlightedObj);
+					UIObjectUnhighlight(sLastHighlightedObj, true);
 				}
 				sLastHighlightedObj = o;
 				UIObjectHighlight(o, shift);

@@ -216,7 +216,7 @@ UIObject *CreateAddItemObjs(
 	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
 
 	UIObject *o = UIObjectCreate(
-		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(60, th));
+		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(65, th));
 	o->Data = brush;
 
 	pos = Vec2iZero();
@@ -231,20 +231,21 @@ UIObject *CreateAddItemObjs(
 	UIObjectAddChild(c, o2);
 	pos.y += th;
 	o2 = UIObjectCopy(o);
-	o2->Label = "Map item";
+	o2->Label = "Map item >";
 	o2->Pos = pos;
 	UIObjectAddChild(o2, CreateAddMapItemObjs(
-		o2->Size, AddMapItemBrushObjFunc, brush, sizeof(IndexedEditorBrush)));
+		o2->Size, AddMapItemBrushObjFunc, brush, sizeof(IndexedEditorBrush),
+		true));
 	UIObjectAddChild(c, o2);
 	pos.y += th;
 	o2 = UIObjectCopy(o);
-	o2->Label = "Wreck";
+	o2->Label = "Wreck >";
 	o2->Pos = pos;
 	UIObjectAddChild(o2, CreateAddWreckObjs(o2->Size, brush));
 	UIObjectAddChild(c, o2);
 	pos.y += th;
 	o2 = UIObjectCopy(o);
-	o2->Label = "Pickup spawner";
+	o2->Label = "Pickup spawner >";
 	o2->Pos = pos;
 	UIObjectAddChild(o2, CreateAddPickupSpawnerObjs(
 		o2->Size, AddPickupSpawnerBrushObjFunc, brush,
@@ -252,19 +253,19 @@ UIObject *CreateAddItemObjs(
 	UIObjectAddChild(c, o2);
 	pos.y += th;
 	o2 = UIObjectCopy(o);
-	o2->Label = "Character";
+	o2->Label = "Character >";
 	o2->Pos = pos;
 	UIObjectAddChild(o2, CreateAddCharacterObjs(o2->Size, brush, co));
 	UIObjectAddChild(c, o2);
 	pos.y += th;
 	o2 = UIObjectCopy(o);
-	o2->Label = "Objective";
+	o2->Label = "Objective >";
 	o2->Pos = pos;
 	UIObjectAddChild(o2, CreateAddObjectiveObjs(o2->Size, brush, co));
 	UIObjectAddChild(c, o2);
 	pos.y += th;
 	o2 = UIObjectCopy(o);
-	o2->Label = "Key";
+	o2->Label = "Key >";
 	o2->Pos = pos;
 	UIObjectAddChild(o2, CreateAddKeyObjs(o2->Size, brush));
 	UIObjectAddChild(c, o2);
