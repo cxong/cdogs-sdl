@@ -78,11 +78,11 @@ PickupClass *IntPickupClass(const int i)
 		"disk3",
 		"blueprint",
 		"cd",
-		"bag",
+		"sack",
 		"holo",
 		"bottle",
 		"radio",
-		"circuit",
+		"pci_card",
 		"paper"
 	};
 #define PICKUPS_COUNT (sizeof(pickupItems)/sizeof(const char *))

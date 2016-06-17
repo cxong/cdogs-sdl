@@ -4,73 +4,121 @@
     {
       "Name": "folder",
       "Pic": "folder",
-      "OldPic": 218,
+      "Type": "Score"
+    },
+    {
+      "Name": "folder2",
+      "Pic": "folder2",
+      "Type": "Score"
+    },
+    {
+      "Name": "chip1",
+      "Pic": "chip1",
+      "Type": "Score"
+    },
+    {
+      "Name": "chip2",
+      "Pic": "chip2",
+      "Type": "Score"
+    },
+    {
+      "Name": "chip3",
+      "Pic": "chip3",
       "Type": "Score"
     },
     {
       "Name": "disk1",
       "Pic": "disk1",
-      "OldPic": 219,
       "Type": "Score"
     },
     {
       "Name": "disk2",
       "Pic": "disk2",
-      "OldPic": 220,
       "Type": "Score"
     },
     {
       "Name": "disk3",
       "Pic": "disk3",
-      "OldPic": 221,
       "Type": "Score"
     },
     {
       "Name": "blueprint",
       "Pic": "blueprint",
-      "OldPic": 504,
+      "Type": "Score"
+    },
+    {
+      "Name": "starmap",
+      "Pic": "starmap",
+      "Type": "Score"
+    },
+    {
+      "Name": "bd",
+      "Pic": "bd",
       "Type": "Score"
     },
     {
       "Name": "cd",
       "Pic": "cd",
-      "OldPic": 505,
       "Type": "Score"
     },
     {
       "Name": "bag",
       "Pic": "bag",
-      "OldPic": 506,
+      "Type": "Score"
+    },
+    {
+      "Name": "sack",
+      "Pic": "sack",
       "Type": "Score"
     },
     {
       "Name": "holo",
       "Pic": "holo",
-      "OldPic": 507,
+      "Type": "Score"
+    },
+    {
+      "Name": "plasma_globe",
+      "Pic": "plasma_globe",
       "Type": "Score"
     },
     {
       "Name": "bottle",
       "Pic": "bottle",
-      "OldPic": 508,
+      "Type": "Score"
+    },
+    {
+      "Name": "bottle2",
+      "Pic": "bottle2",
       "Type": "Score"
     },
     {
       "Name": "radio",
       "Pic": "radio",
-      "OldPic": 509,
+      "Type": "Score"
+    },
+    {
+      "Name": "radio2",
+      "Pic": "radio2",
       "Type": "Score"
     },
     {
       "Name": "circuit",
       "Pic": "circuit",
-      "OldPic": 510,
+      "Type": "Score"
+    },
+    {
+      "Name": "pci_card",
+      "Pic": "pci_card",
       "Type": "Score"
     },
     {
       "Name": "paper",
       "Pic": "paper",
-      "OldPic": 511,
+      "Type": "Score"
+    },
+    {
+      "Name": "paper2",
+      "Pic": "paper2",
       "Type": "Score"
     },
     {
