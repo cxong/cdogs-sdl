@@ -34,7 +34,7 @@
 			"Density": 10
 		},
 		{
-			"MapObject": "rod",
+			"MapObject": "column",
 			"Density": 5
 		},
 		{
@@ -342,7 +342,7 @@
 		12],
 		"SpecialChars": [],
 		"MapObjectDensities": [{
-			"MapObject": "rod",
+			"MapObject": "column",
 			"Density": 20
 		},
 		{
@@ -350,11 +350,11 @@
 			"Density": 5
 		},
 		{
-			"MapObject": "box3",
+			"MapObject": "box_metal_green",
 			"Density": 5
 		},
 		{
-			"MapObject": "table",
+			"MapObject": "bench",
 			"Density": 10
 		},
 		{
@@ -567,7 +567,7 @@
 			"Density": 5
 		},
 		{
-			"MapObject": "box3",
+			"MapObject": "box_metal_green",
 			"Density": 5
 		},
 		{
@@ -579,11 +579,11 @@
 			"Density": 5
 		},
 		{
-			"MapObject": "rod",
+			"MapObject": "column",
 			"Density": 20
 		},
 		{
-			"MapObject": "table",
+			"MapObject": "bench",
 			"Density": 10
 		}],
 		"EnemyDensity": 25,
@@ -698,7 +698,7 @@
 			"Density": 5
 		},
 		{
-			"MapObject": "box3",
+			"MapObject": "box_metal_green",
 			"Density": 5
 		},
 		{
@@ -710,11 +710,11 @@
 			"Density": 5
 		},
 		{
-			"MapObject": "rod",
+			"MapObject": "column",
 			"Density": 20
 		},
 		{
-			"MapObject": "table",
+			"MapObject": "bench",
 			"Density": 10
 		}],
 		"EnemyDensity": 30,
@@ -807,7 +807,7 @@
 			"Density": 5
 		},
 		{
-			"MapObject": "box3",
+			"MapObject": "box_metal_green",
 			"Density": 5
 		},
 		{
@@ -819,11 +819,11 @@
 			"Density": 5
 		},
 		{
-			"MapObject": "rod",
+			"MapObject": "column",
 			"Density": 20
 		},
 		{
-			"MapObject": "table",
+			"MapObject": "bench",
 			"Density": 10
 		}],
 		"EnemyDensity": 0,
@@ -903,7 +903,7 @@
 			"Density": 5
 		},
 		{
-			"MapObject": "box3",
+			"MapObject": "box_metal_green",
 			"Density": 5
 		},
 		{
@@ -915,7 +915,7 @@
 			"Density": 5
 		},
 		{
-			"MapObject": "rod",
+			"MapObject": "column",
 			"Density": 20
 		}],
 		"EnemyDensity": 0,
