@@ -92,6 +92,14 @@
 			"Count": 3,
 			"Required": 2,
 			"Flags": 4
+		},
+		{
+			"Description": "A discarded seeker-probe...",
+			"Type": "Collect",
+			"Pickup": "seeker_probe",
+			"Count": 1,
+			"Required": 0,
+			"Flags": 5
 		}],
 		"Enemies": [2,
 		3,
@@ -585,7 +593,7 @@
 		{
 			"Description": "Cinnamon tea!",
 			"Type": "Collect",
-			"Pickup": "bottle",
+			"Pickup": "bottle_orange",
 			"Count": 1,
 			"Required": 0,
 			"Flags": 0

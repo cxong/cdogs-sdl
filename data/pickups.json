@@ -87,6 +87,11 @@
       "Type": "Score"
     },
     {
+      "Name": "bottle_orange",
+      "Pic": "bottle_orange",
+      "Type": "Score"
+    },
+    {
       "Name": "bottle2",
       "Pic": "bottle2",
       "Type": "Score"

@@ -20,6 +20,7 @@ blueprint.png
 bone_blood.png
 bookshelf.png
 bottle.png
+bottle_orange.png
 box.png
 box_metal_green.png
 box_metal_green_wreck.png
