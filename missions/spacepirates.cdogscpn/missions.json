@@ -30,7 +30,7 @@
 		{
 			"Description": "Better grab the engine keychain...",
 			"Type": "Collect",
-			"Pickup": "disk1",
+			"Pickup": "chip3",
 			"Count": 1,
 			"Required": 0,
 			"Flags": 0
@@ -1525,7 +1525,7 @@
 		"Objectives": [{
 			"Description": "Find maps",
 			"Type": "Collect",
-			"Pickup": "blueprint",
+			"Pickup": "starmap",
 			"Count": 3,
 			"Required": 2,
 			"Flags": 4
@@ -1533,7 +1533,7 @@
 		{
 			"Description": "Find a geolocator",
 			"Type": "Collect",
-			"Pickup": "radio",
+			"Pickup": "radio2",
 			"Count": 2,
 			"Required": 1,
 			"Flags": 4
@@ -1541,7 +1541,7 @@
 		{
 			"Description": "Find navigational data",
 			"Type": "Collect",
-			"Pickup": "disk1",
+			"Pickup": "chip2",
 			"Count": 5,
 			"Required": 3,
 			"Flags": 4
@@ -1825,7 +1825,7 @@
 		"Objectives": [{
 			"Description": "Your last chance to collect points... err I mean stuff.",
 			"Type": "Collect",
-			"Pickup": "bottle",
+			"Pickup": "bottle_orange",
 			"Count": 11,
 			"Required": 0,
 			"Flags": 1
@@ -1833,7 +1833,7 @@
 		{
 			"Description": "Nice music.",
 			"Type": "Collect",
-			"Pickup": "cd",
+			"Pickup": "bd",
 			"Count": 4,
 			"Required": 0,
 			"Flags": 1

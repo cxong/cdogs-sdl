@@ -343,7 +343,7 @@
 		"Legs": "363636",
 		"Hair": "9c0000",
 		"speed": 512,
-		"Gun": "Shrapnel bombs",
+		"Gun": "Molotovs",
 		"maxHealth": 500,
 		"flags": 25232896,
 		"probabilityToMove": 55,

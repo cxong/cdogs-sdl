@@ -14,7 +14,7 @@
 		"Objectives": [{
 			"Description": "Interrupt their communication",
 			"Type": "Destroy",
-			"Index": 26,
+			"MapObject": "terminal",
 			"Count": 5,
 			"Required": 0,
 			"Flags": 1
@@ -22,7 +22,7 @@
 		{
 			"Description": "Check out these crates",
 			"Type": "Destroy",
-			"Index": 1,
+			"MapObject": "box",
 			"Count": 37,
 			"Required": 26,
 			"Flags": 0
@@ -428,7 +428,7 @@
 		{
 			"Description": "Collect data",
 			"Type": "Collect",
-			"Index": 2,
+			"Pickup": "chip1",
 			"Count": 2,
 			"Required": 2,
 			"Flags": 0
@@ -947,7 +947,7 @@
 		{
 			"Description": "RTFM for next time",
 			"Type": "Collect",
-			"Index": 11,
+			"Pickup": "paper2",
 			"Count": 1,
 			"Required": 0,
 			"Flags": 0
@@ -955,7 +955,7 @@
 		{
 			"Description": "Find a fiber lamp",
 			"Type": "Collect",
-			"Index": 7,
+			"Pickup": "holo",
 			"Count": 1,
 			"Required": 0,
 			"Flags": 0
@@ -1287,7 +1287,7 @@
 		{
 			"Description": "Blow up the explosives",
 			"Type": "Destroy",
-			"Index": 28,
+			"MapObject": "rocket",
 			"Count": 180,
 			"Required": 100,
 			"Flags": 0

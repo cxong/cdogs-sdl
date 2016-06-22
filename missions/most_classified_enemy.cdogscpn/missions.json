@@ -387,7 +387,7 @@
 		{
 			"Description": "This building plan might help...",
 			"Type": "Collect",
-			"Pickup": "blueprint",
+			"Pickup": "starmap",
 			"Count": 1,
 			"Required": 0,
 			"Flags": 1
@@ -1337,7 +1337,7 @@
 		{
 			"Description": "What a weird device...",
 			"Type": "Collect",
-			"Pickup": "holo",
+			"Pickup": "plasma_globe",
 			"Count": 1,
 			"Required": 0,
 			"Flags": 1
@@ -1361,7 +1361,7 @@
 		{
 			"Description": "Nice poster that looks like a map.",
 			"Type": "Collect",
-			"Pickup": "blueprint",
+			"Pickup": "starmap",
 			"Count": 1,
 			"Required": 0,
 			"Flags": 1
@@ -2400,7 +2400,7 @@
 		"Objectives": [{
 			"Description": "I wonder what this will get on CyberBay...",
 			"Type": "Collect",
-			"Pickup": "circuit",
+			"Pickup": "pci_card",
 			"Count": 3,
 			"Required": 0,
 			"Flags": 0
@@ -2408,7 +2408,7 @@
 		{
 			"Description": "What a fine brand of liqueur.",
 			"Type": "Collect",
-			"Pickup": "bottle",
+			"Pickup": "bottle2",
 			"Count": 1,
 			"Required": 0,
 			"Flags": 0
@@ -3266,7 +3266,7 @@
 		{
 			"Description": "I wonder who left this here...",
 			"Type": "Collect",
-			"Pickup": "disk1",
+			"Pickup": "disk2",
 			"Count": 6,
 			"Required": 0,
 			"Flags": 0
@@ -3691,7 +3691,7 @@
 		{
 			"Description": "That wasn't edible after all...",
 			"Type": "Collect",
-			"Pickup": "bottle",
+			"Pickup": "bottle_orange",
 			"Count": 1,
 			"Required": 0,
 			"Flags": 9
@@ -4113,7 +4113,7 @@
 		{
 			"Description": "Would be a dick move to take her stuff but let her to die...",
 			"Type": "Collect",
-			"Pickup": "holo",
+			"Pickup": "sack",
 			"Count": 1,
 			"Required": 0,
 			"Flags": 9

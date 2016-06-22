@@ -416,7 +416,7 @@
 		{
 			"Description": "Pick up some soda",
 			"Type": "Collect",
-			"Pickup": "bottle",
+			"Pickup": "bottle2",
 			"Count": 3,
 			"Required": 0,
 			"Flags": 5
@@ -590,7 +590,7 @@
 		{
 			"Description": "At least your gamer hardware is not damaged!",
 			"Type": "Collect",
-			"Pickup": "circuit",
+			"Pickup": "pci_card",
 			"Count": 1,
 			"Required": 0,
 			"Flags": 1

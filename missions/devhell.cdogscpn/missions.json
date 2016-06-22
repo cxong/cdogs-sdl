@@ -14,7 +14,7 @@
 		"Objectives": [{
 			"Description": "Collect the data drives",
 			"Type": "Collect",
-			"Index": 3,
+			"Pickup": "disk3",
 			"Count": 9,
 			"Required": 6,
 			"Flags": 0
@@ -22,7 +22,7 @@
 		{
 			"Description": "The Game.png",
 			"Type": "Collect",
-			"Index": 2,
+			"Pickup": "disk2",
 			"Count": 1,
 			"Required": 0,
 			"Flags": 1
@@ -30,7 +30,7 @@
 		{
 			"Description": "Can't hurt to have the bot blueprints...",
 			"Type": "Collect",
-			"Index": 0,
+			"Pickup": "folder2",
 			"Count": 1,
 			"Required": 0,
 			"Flags": 0
@@ -598,7 +598,7 @@
 		{
 			"Description": "What a weird device.",
 			"Type": "Collect",
-			"Index": 9,
+			"Pickup": "radio2",
 			"Count": 1,
 			"Required": 0,
 			"Flags": 1
@@ -1044,7 +1044,7 @@
 		"Objectives": [{
 			"Description": "Get the dimension linker!",
 			"Type": "Collect",
-			"Index": 9,
+			"Pickup": "radio2",
 			"Count": 1,
 			"Required": 1,
 			"Flags": 4
