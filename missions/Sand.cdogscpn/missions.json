@@ -9,7 +9,7 @@
 		"FloorStyle": 2,
 		"RoomStyle": 3,
 		"ExitStyle": 0,
-		"KeyStyle": 0,
+		"KeyStyle": "office",
 		"DoorStyle": "office",
 		"Objectives": [{
 			"Description": "Kill creatures",
@@ -75,7 +75,7 @@
 		"FloorStyle": 0,
 		"RoomStyle": 5,
 		"ExitStyle": 1,
-		"KeyStyle": 2,
+		"KeyStyle": "plain2",
 		"DoorStyle": "alien",
 		"Objectives": [{
 			"Description": "Destroy the Clan shield consoles",
@@ -192,7 +192,7 @@
 		"FloorStyle": 0,
 		"RoomStyle": 5,
 		"ExitStyle": 1,
-		"KeyStyle": 2,
+		"KeyStyle": "plain2",
 		"DoorStyle": "alien",
 		"Objectives": [{
 			"Description": "Purge the Tantalus",
@@ -293,7 +293,7 @@
 		"FloorStyle": 2,
 		"RoomStyle": 2,
 		"ExitStyle": 0,
-		"KeyStyle": 0,
+		"KeyStyle": "office",
 		"DoorStyle": "office",
 		"Objectives": [{
 			"Description": "Exterminate the remnants",
@@ -374,7 +374,7 @@
 		"FloorStyle": 8,
 		"RoomStyle": 0,
 		"ExitStyle": 1,
-		"KeyStyle": 0,
+		"KeyStyle": "office",
 		"DoorStyle": "office",
 		"Objectives": [{
 			"Description": "Defeat Denis Colorado",
@@ -454,7 +454,7 @@
 		"FloorStyle": 2,
 		"RoomStyle": 0,
 		"ExitStyle": 0,
-		"KeyStyle": 0,
+		"KeyStyle": "office",
 		"DoorStyle": "office",
 		"Objectives": [{
 			"Description": "Search the area",
@@ -495,7 +495,7 @@
 		"FloorStyle": 2,
 		"RoomStyle": 0,
 		"ExitStyle": 0,
-		"KeyStyle": 0,
+		"KeyStyle": "office",
 		"DoorStyle": "office",
 		"Objectives": [{
 			"Description": "Repel the natives",
@@ -572,7 +572,7 @@
 		"FloorStyle": 2,
 		"RoomStyle": 6,
 		"ExitStyle": 0,
-		"KeyStyle": 2,
+		"KeyStyle": "plain",
 		"DoorStyle": "dungeon",
 		"Objectives": [{
 			"Description": "Kill the natives",
@@ -667,7 +667,7 @@
 		"FloorStyle": 2,
 		"RoomStyle": 6,
 		"ExitStyle": 0,
-		"KeyStyle": 2,
+		"KeyStyle": "plain",
 		"DoorStyle": "dungeon",
 		"Objectives": [{
 			"Description": "Rescue your troop",
@@ -758,7 +758,7 @@
 		"FloorStyle": 3,
 		"RoomStyle": 5,
 		"ExitStyle": 1,
-		"KeyStyle": 3,
+		"KeyStyle": "cube",
 		"DoorStyle": "alien",
 		"Objectives": [{
 			"Description": "Kill general Trolley Hollyoak",
