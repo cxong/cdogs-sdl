@@ -9,12 +9,12 @@
 		"FloorStyle": 2,
 		"RoomStyle": 9,
 		"ExitStyle": 0,
-		"KeyStyle": 1,
+		"KeyStyle": "chip",
 		"DoorStyle": "alien",
 		"Objectives": [{
 			"Description": "Extras",
 			"Type": "Collect",
-			"Index": 8,
+			"Pickup": "bottle",
 			"Count": 13,
 			"Required": 0,
 			"Flags": 1
@@ -22,7 +22,7 @@
 		{
 			"Description": "Extras",
 			"Type": "Collect",
-			"Index": 2,
+			"Pickup": "disk2",
 			"Count": 18,
 			"Required": 0,
 			"Flags": 1
@@ -298,12 +298,12 @@
 		"FloorStyle": 1,
 		"RoomStyle": 2,
 		"ExitStyle": 0,
-		"KeyStyle": 3,
+		"KeyStyle": "chip",
 		"DoorStyle": "alien",
 		"Objectives": [{
 			"Description": "Bonus",
 			"Type": "Collect",
-			"Index": 1,
+			"Pickup": "disk1",
 			"Count": 42,
 			"Required": 0,
 			"Flags": 1
@@ -311,7 +311,7 @@
 		{
 			"Description": "Bonus",
 			"Type": "Collect",
-			"Index": 2,
+			"Pickup": "disk2",
 			"Count": 31,
 			"Required": 0,
 			"Flags": 1
@@ -319,7 +319,7 @@
 		{
 			"Description": "Bonus",
 			"Type": "Collect",
-			"Index": 0,
+			"Pickup": "folder",
 			"Count": 4,
 			"Required": 0,
 			"Flags": 1
@@ -327,7 +327,7 @@
 		{
 			"Description": "Bonus",
 			"Type": "Collect",
-			"Index": 3,
+			"Pickup": "disk3",
 			"Count": 17,
 			"Required": 0,
 			"Flags": 1
@@ -952,12 +952,12 @@
 		"FloorStyle": 2,
 		"RoomStyle": 6,
 		"ExitStyle": 0,
-		"KeyStyle": 3,
+		"KeyStyle": "chip",
 		"DoorStyle": "office",
 		"Objectives": [{
 			"Description": "bonus",
 			"Type": "Collect",
-			"Index": 0,
+			"Pickup": "folder",
 			"Count": 25,
 			"Required": 0,
 			"Flags": 1
@@ -965,7 +965,7 @@
 		{
 			"Description": "bonus",
 			"Type": "Collect",
-			"Index": 9,
+			"Pickup": "radio",
 			"Count": 6,
 			"Required": 0,
 			"Flags": 1
@@ -973,7 +973,7 @@
 		{
 			"Description": "bonus",
 			"Type": "Collect",
-			"Index": 1,
+			"Pickup": "disk1",
 			"Count": 80,
 			"Required": 0,
 			"Flags": 1
@@ -981,7 +981,7 @@
 		{
 			"Description": "bonus",
 			"Type": "Collect",
-			"Index": 2,
+			"Pickup": "disk2",
 			"Count": 32,
 			"Required": 0,
 			"Flags": 1
@@ -989,7 +989,7 @@
 		{
 			"Description": "bonus",
 			"Type": "Collect",
-			"Index": 4,
+			"Pickup": "blueprint",
 			"Count": 3,
 			"Required": 0,
 			"Flags": 1
@@ -1901,12 +1901,12 @@
 		"FloorStyle": 6,
 		"RoomStyle": 9,
 		"ExitStyle": 0,
-		"KeyStyle": 3,
+		"KeyStyle": "chip",
 		"DoorStyle": "office",
 		"Objectives": [{
 			"Description": "Extras",
 			"Type": "Collect",
-			"Index": 0,
+			"Pickup": "folder",
 			"Count": 16,
 			"Required": 0,
 			"Flags": 1
@@ -1914,7 +1914,7 @@
 		{
 			"Description": "Extras",
 			"Type": "Collect",
-			"Index": 1,
+			"Pickup": "disk1",
 			"Count": 52,
 			"Required": 0,
 			"Flags": 1
@@ -1922,7 +1922,7 @@
 		{
 			"Description": "Extras",
 			"Type": "Collect",
-			"Index": 2,
+			"Pickup": "disk2",
 			"Count": 16,
 			"Required": 0,
 			"Flags": 1
@@ -2555,12 +2555,12 @@
 		"FloorStyle": 6,
 		"RoomStyle": 1,
 		"ExitStyle": 0,
-		"KeyStyle": 0,
+		"KeyStyle": "chip",
 		"DoorStyle": "alien",
 		"Objectives": [{
 			"Description": "Extras",
 			"Type": "Collect",
-			"Index": 0,
+			"Pickup": "folder",
 			"Count": 27,
 			"Required": 0,
 			"Flags": 1
@@ -2568,7 +2568,7 @@
 		{
 			"Description": "Extras",
 			"Type": "Collect",
-			"Index": 10,
+			"Pickup": "pci_card",
 			"Count": 4,
 			"Required": 0,
 			"Flags": 1
@@ -2576,7 +2576,7 @@
 		{
 			"Description": "Extras",
 			"Type": "Collect",
-			"Index": 1,
+			"Pickup": "disk1",
 			"Count": 54,
 			"Required": 0,
 			"Flags": 1
@@ -2584,7 +2584,7 @@
 		{
 			"Description": "Extras",
 			"Type": "Collect",
-			"Index": 9,
+			"Pickup": "radio",
 			"Count": 7,
 			"Required": 0,
 			"Flags": 1
@@ -2592,7 +2592,7 @@
 		{
 			"Description": "Extras",
 			"Type": "Collect",
-			"Index": 2,
+			"Pickup": "disk2",
 			"Count": 16,
 			"Required": 0,
 			"Flags": 1
@@ -3346,12 +3346,12 @@
 		"FloorStyle": 7,
 		"RoomStyle": 2,
 		"ExitStyle": 0,
-		"KeyStyle": 3,
+		"KeyStyle": "chip",
 		"DoorStyle": "office",
 		"Objectives": [{
 			"Description": "Bonus",
 			"Type": "Collect",
-			"Index": 1,
+			"Pickup": "disk1",
 			"Count": 87,
 			"Required": 0,
 			"Flags": 1
@@ -3359,7 +3359,7 @@
 		{
 			"Description": "Bonus",
 			"Type": "Collect",
-			"Index": 0,
+			"Pickup": "folder",
 			"Count": 33,
 			"Required": 0,
 			"Flags": 1
@@ -3367,7 +3367,7 @@
 		{
 			"Description": "Bonus",
 			"Type": "Collect",
-			"Index": 2,
+			"Pickup": "disk2",
 			"Count": 57,
 			"Required": 0,
 			"Flags": 1
@@ -3375,7 +3375,7 @@
 		{
 			"Description": "Bonus",
 			"Type": "Collect",
-			"Index": 3,
+			"Pickup": "disk3",
 			"Count": 2,
 			"Required": 0,
 			"Flags": 1
@@ -3383,7 +3383,7 @@
 		{
 			"Description": "Bonus",
 			"Type": "Collect",
-			"Index": 9,
+			"Pickup": "radio",
 			"Count": 16,
 			"Required": 0,
 			"Flags": 1
@@ -4477,12 +4477,12 @@
 		"FloorStyle": 7,
 		"RoomStyle": 2,
 		"ExitStyle": 0,
-		"KeyStyle": 3,
+		"KeyStyle": "chip",
 		"DoorStyle": "alien",
 		"Objectives": [{
 			"Description": "Bonus",
 			"Type": "Collect",
-			"Index": 1,
+			"Pickup": "disk1",
 			"Count": 62,
 			"Required": 0,
 			"Flags": 1
@@ -4490,7 +4490,7 @@
 		{
 			"Description": "Bonus",
 			"Type": "Collect",
-			"Index": 3,
+			"Pickup": "disk3",
 			"Count": 11,
 			"Required": 0,
 			"Flags": 1
@@ -4498,7 +4498,7 @@
 		{
 			"Description": "Bonus",
 			"Type": "Collect",
-			"Index": 9,
+			"Pickup": "radio",
 			"Count": 7,
 			"Required": 0,
 			"Flags": 1
@@ -4506,7 +4506,7 @@
 		{
 			"Description": "Bonus",
 			"Type": "Collect",
-			"Index": 10,
+			"Pickup": "pci_card",
 			"Count": 5,
 			"Required": 0,
 			"Flags": 1
@@ -4514,7 +4514,7 @@
 		{
 			"Description": "Bonus",
 			"Type": "Collect",
-			"Index": 2,
+			"Pickup": "disk2",
 			"Count": 40,
 			"Required": 0,
 			"Flags": 1
@@ -5347,12 +5347,12 @@
 		"FloorStyle": 6,
 		"RoomStyle": 1,
 		"ExitStyle": 0,
-		"KeyStyle": 2,
+		"KeyStyle": "chip",
 		"DoorStyle": "dungeon",
 		"Objectives": [{
 			"Description": "Bonus",
 			"Type": "Collect",
-			"Index": 2,
+			"Pickup": "disk2",
 			"Count": 13,
 			"Required": 0,
 			"Flags": 1
@@ -5360,7 +5360,7 @@
 		{
 			"Description": "Bonus",
 			"Type": "Collect",
-			"Index": 1,
+			"Pickup": "disk1",
 			"Count": 18,
 			"Required": 0,
 			"Flags": 1
@@ -5368,7 +5368,7 @@
 		{
 			"Description": "Bonus",
 			"Type": "Collect",
-			"Index": 0,
+			"Pickup": "folder",
 			"Count": 3,
 			"Required": 0,
 			"Flags": 1
