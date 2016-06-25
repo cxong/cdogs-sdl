@@ -102,7 +102,8 @@ MapType StrMapType(const char *s)
 void MissionInit(Mission *m)
 {
 	memset(m, 0, sizeof *m);
-	// Give a default door style otherwise it causes editor crashes
+	// Give default styles otherwise it causes editor crashes
+	strcpy(m->KeyStyle, IntKeyStyle(0));
 	strcpy(m->DoorStyle, DoorStyleStr(0));
 	m->WallMask = colorBattleshipGrey;
 	m->FloorMask = colorGravel;
@@ -137,7 +138,7 @@ void MissionCopy(Mission *dst, const Mission *src)
 	dst->FloorStyle = src->FloorStyle;
 	dst->RoomStyle = src->RoomStyle;
 	dst->ExitStyle = src->ExitStyle;
-	dst->KeyStyle = src->KeyStyle;
+	strcpy(dst->KeyStyle, src->KeyStyle);
 	strcpy(dst->DoorStyle, src->DoorStyle);
 
 	CA_FOREACH(const Objective, srco, src->Objectives)
@@ -278,7 +279,6 @@ void SetupMission(Mission *m, struct MissionOptions *mo, int missionIndex)
 	MissionOptionsInit(mo);
 	mo->index = missionIndex;
 	mo->missionData = m;
-	mo->keyStyle = m->KeyStyle;
 
 	char exitPicBuf[256];
 	const int exitIdx = abs(m->ExitStyle) % EXIT_COUNT;
@@ -549,7 +549,6 @@ int KeycardCount(int flags)
 struct EditorInfo GetEditorInfo(void)
 {
 	struct EditorInfo ei;
-	ei.keyCount = KEYSTYLE_COUNT;
 	ei.exitCount = EXIT_COUNT;
 	return ei;
 }

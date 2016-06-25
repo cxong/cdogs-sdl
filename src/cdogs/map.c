@@ -549,7 +549,7 @@ void MapPlaceKey(
 	e.u.AddPickup.UID = PickupsGetNextUID();
 	strcpy(
 		e.u.AddPickup.PickupClass,
-		KeyPickupClass(mo->keyStyle, keyIndex)->Name);
+		KeyPickupClass(mo->missionData->KeyStyle, keyIndex)->Name);
 	e.u.AddPickup.IsRandomSpawned = false;
 	e.u.AddPickup.SpawnerUID = -1;
 	e.u.AddPickup.TileItemFlags = 0;

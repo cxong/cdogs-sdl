@@ -363,52 +363,6 @@ typedef struct
 	int OpenH;
 	int Wall;
 } DoorPics;
-
-// note that the H pic in the last pair is a TILE pic, not an offset pic!
-/*static DoorPics doorStyles[] =
-{
-	// Office doors
-	{
-		{OFSPIC_DOOR, OFSPIC_VDOOR},
-		{OFSPIC_HDOOR_YELLOW, OFSPIC_VDOOR_YELLOW},
-		{OFSPIC_HDOOR_GREEN, OFSPIC_VDOOR_GREEN},
-		{OFSPIC_HDOOR_BLUE, OFSPIC_VDOOR_BLUE},
-		{OFSPIC_HDOOR_RED, OFSPIC_VDOOR_RED},
-		109,
-		OFSPIC_VDOOR_OPEN
-	},
-	// Dungeon doors
-	{
-		{OFSPIC_DOOR2, OFSPIC_VDOOR2},
-		{OFSPIC_HDOOR2_YELLOW, OFSPIC_VDOOR2_YELLOW},
-		{OFSPIC_HDOOR2_GREEN, OFSPIC_VDOOR2_GREEN},
-		{OFSPIC_HDOOR2_BLUE, OFSPIC_VDOOR2_BLUE},
-		{OFSPIC_HDOOR2_RED, OFSPIC_VDOOR2_RED},
-		342,
-		OFSPIC_VDOOR2_OPEN
-	},
-	// "Blast" doors
-	{
-		{OFSPIC_HDOOR3, OFSPIC_VDOOR3},
-		{OFSPIC_HDOOR3_YELLOW, OFSPIC_VDOOR3_YELLOW},
-		{OFSPIC_HDOOR3_GREEN, OFSPIC_VDOOR3_GREEN},
-		{OFSPIC_HDOOR3_BLUE, OFSPIC_VDOOR3_BLUE},
-		{OFSPIC_HDOOR3_RED, OFSPIC_VDOOR3_RED},
-		P2 + 148,
-		OFSPIC_VDOOR2_OPEN
-	},
-	// Alien doors
-	{
-		{OFSPIC_HDOOR4, OFSPIC_VDOOR4},
-		{OFSPIC_HDOOR4_YELLOW, OFSPIC_VDOOR4_YELLOW},
-		{OFSPIC_HDOOR4_GREEN, OFSPIC_VDOOR4_GREEN},
-		{OFSPIC_HDOOR4_BLUE, OFSPIC_VDOOR4_BLUE},
-		{OFSPIC_HDOOR4_RED, OFSPIC_VDOOR4_RED},
-		P2 + 163,
-		OFSPIC_VDOOR2_OPEN
-	}
-};
-#define DOORSTYLE_COUNT (sizeof doorStyles / sizeof(DoorPics))*/
 #define DOORSTYLE_COUNT 4
 
 NamedPic *GetDoorPic(
@@ -421,38 +375,6 @@ NamedPic *GetDoorPic(
 	sprintf(
 		buf, "door/%s_%s%s", style, key,
 		strcmp(key, "wall") == 0 ? "" : (isHorizontal ? "_h" : "_v"));
-/*
-	// TODO: support using original pics
-	// Requires original pics accessible via name, i.e. using the NamedPic
-	// type
-
-	// Find the original pic index, if available
-	int oldIdx = -1;
-	// Door style
-	const DoorPics *dp = NULL;
-	if (strcmp(style, "office") == 0) dp = &doorStyles[0];
-	else if (strcmp(style, "dungeon") == 0) dp = &doorStyles[1];
-	else if (strcmp(style, "blast") == 0) dp = &doorStyles[2];
-	else if (strcmp(style, "alien") == 0) dp = &doorStyles[3];
-	if (dp != NULL)
-	{
-		// Door key
-		const DoorPic *d = NULL;
-		if (strcmp(key, "normal") == 0) d = &dp->Normal;
-		else if (strcmp(key, "yellow") == 0) d = &dp->Yellow;
-		else if (strcmp(key, "green") == 0) d = &dp->Green;
-		else if (strcmp(key, "blue") == 0) d = &dp->Blue;
-		else if (strcmp(key, "red") == 0) d = &dp->Red;
-		else if (strcmp(key, "wall") == 0) oldIdx = dp->Wall;
-		else if (strcmp(key, "open") == 0 && isHorizontal) oldIdx = dp->OpenH;
-		// Note that old pics don't contain the open V tile
-		if (d != NULL)
-		{
-			// Door orientation
-			oldIdx = cGeneralPics[isHorizontal ? d->H : d->V].picIndex;
-		}
-	}
-*/
 	return PicManagerGetNamedPic(pm, buf);
 }
 

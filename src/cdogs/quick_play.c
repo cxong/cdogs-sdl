@@ -217,7 +217,9 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 	m->FloorStyle = rand() % FLOOR_STYLE_COUNT;
 	m->RoomStyle = rand() % FLOOR_STYLE_COUNT;
 	m->ExitStyle = rand() % GetExitCount();
-	m->KeyStyle = rand() % KEYSTYLE_COUNT;
+	const CArray *keyStyles = &gPicManager.keyStyleNames;
+	const int keyIdx = rand() % keyStyles->size;
+	strcpy(m->KeyStyle, *(char **)CArrayGet(keyStyles, keyIdx));
 	strcpy(
 		m->DoorStyle, DoorStyleStr(rand() % gPicManager.doorStyleNames.size));
 	m->Size = GenerateQuickPlayMapSize(

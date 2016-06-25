@@ -137,6 +137,7 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	PickupClassesLoadAmmo(&gPickupClasses.CustomClasses, &gAmmo.CustomAmmo);
 	PickupClassesLoadGuns(
 		&gPickupClasses.CustomClasses, &gGunDescriptions.CustomGuns);
+	PickupClassesLoadKeys(&gPickupClasses.KeyClasses);
 
 	// Reset custom map objects
 	MapObjectsClear(&gMapObjects.CustomClasses);
@@ -475,7 +476,7 @@ static json_t *SaveMissions(CArray *a)
 		AddIntPair(node, "FloorStyle", mission->FloorStyle);
 		AddIntPair(node, "RoomStyle", mission->RoomStyle);
 		AddIntPair(node, "ExitStyle", mission->ExitStyle);
-		AddIntPair(node, "KeyStyle", mission->KeyStyle);
+		AddStringPair(node, "KeyStyle", mission->KeyStyle);
 		AddStringPair(node, "DoorStyle", mission->DoorStyle);
 
 		json_insert_pair_into_object(

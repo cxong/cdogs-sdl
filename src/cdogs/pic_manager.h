@@ -45,6 +45,7 @@ typedef struct
 	CArray drainPics;	// of NamedPic *
 
 	CArray doorStyleNames;	// of char *, for editor
+	CArray keyStyleNames;	// of char *
 } PicManager;
 
 extern PicManager gPicManager;
@@ -83,6 +84,7 @@ void PicManagerGenerateMaskedStylePic(
 
 NamedPic *PicManagerGetRandomDrain(PicManager *pm);
 int PicManagerGetDoorStyleIndex(PicManager *pm, const char *style);
+int PicManagerGetKeyStyleIndex(PicManager *pm, const char *style);
 
 // Conversion
 Pic PicFromTOffsetPic(PicManager *pm, TOffsetPic op);

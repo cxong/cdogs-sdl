@@ -375,7 +375,7 @@ static void ConvertMission(
 	dest->FloorStyle = src->floorStyle;
 	dest->RoomStyle = src->roomStyle;
 	dest->ExitStyle = src->exitStyle;
-	dest->KeyStyle = src->keyStyle;
+	strcpy(dest->KeyStyle, IntKeyStyle(src->keyStyle));
 	strcpy(dest->DoorStyle, DoorStyleStr(src->doorStyle));
 	for (int i = 0; i < src->objectiveCount; i++)
 	{

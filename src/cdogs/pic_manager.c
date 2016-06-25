@@ -273,6 +273,7 @@ bool PicManagerTryInit(
 	pm->customSprites = hashmap_new();
 	CArrayInit(&pm->drainPics, sizeof(NamedPic *));
 	CArrayInit(&pm->doorStyleNames, sizeof(char *));
+	CArrayInit(&pm->keyStyleNames, sizeof(char *));
 
 	// Load old pics
 	char buf[CDOGS_PATH_MAX];
@@ -708,10 +709,12 @@ static void ProcessMultichannelPic(PicManager *pm, const int picIdx)
 
 static void FindDrainPics(PicManager *pm);
 static void FindDoorPics(PicManager *pm);
+static void FindKeyPics(PicManager *pm);
 static void AfterAdd(PicManager *pm)
 {
 	FindDrainPics(pm);
 	FindDoorPics(pm);
+	FindKeyPics(pm);
 }
 static void FindDrainPics(PicManager *pm)
 {
@@ -767,6 +770,51 @@ static int MaybeAddDoorPicName(any_t data, any_t item)
 	CArrayPushBack(&pm->doorStyleNames, &s);
 	return MAP_OK;
 }
+static int MaybeAddKeyPicName(any_t data, any_t item);
+static void FindKeyPics(PicManager *pm)
+{
+	// Scan all pics for key pics
+	CA_FOREACH(char *, keyStyleName, pm->keyStyleNames)
+		CFREE(*keyStyleName);
+	CA_FOREACH_END()
+	CArrayClear(&pm->keyStyleNames);
+	hashmap_iterate(pm->customPics, MaybeAddKeyPicName, pm);
+	hashmap_iterate(pm->pics, MaybeAddKeyPicName, pm);
+}
+static int MaybeAddKeyPicName(any_t data, any_t item)
+{
+	// Key pics should be like:
+	// keys/style/colour
+	// where style is the style name to be stored, and
+	// colour is yellow/green/blue/red
+	// TODO: more colours
+	PicManager *pm = data;
+	const NamedPic *p = item;
+	const char *picName = p->name;
+	if (strncmp(picName, "keys/", strlen("keys/")) != 0)
+	{
+		return MAP_OK;
+	}
+	const char *lastSlash = strrchr(picName, '/');
+	char buf[CDOGS_FILENAME_MAX];
+	const size_t len = lastSlash - picName - strlen("keys/");
+	strncpy(buf, picName + strlen("keys/"), len);
+	buf[len] = '\0';
+	// Check if we already have the key style name
+	// This can happen if a custom key pic uses the same name as a built in
+	// one
+	CA_FOREACH(char *, keyStyleName, pm->keyStyleNames)
+		if (strcmp(*keyStyleName, buf) == 0)
+		{
+			return MAP_OK;
+		}
+	CA_FOREACH_END()
+
+	char *s;
+	CSTRDUP(s, buf);
+	CArrayPushBack(&pm->keyStyleNames, &s);
+	return MAP_OK;
+}
 
 // Need to free the pics and the memory since hashmap stores on heap
 static void NamedPicDestroy(any_t data);
@@ -799,6 +847,10 @@ void PicManagerTerminate(PicManager *pm)
 		CFREE(*doorStyleName);
 	CA_FOREACH_END()
 	CArrayTerminate(&pm->doorStyleNames);
+	CA_FOREACH(char *, keyStyleName, pm->keyStyleNames)
+		CFREE(*keyStyleName);
+	CA_FOREACH_END()
+	CArrayTerminate(&pm->keyStyleNames);
 	IMG_Quit();
 }
 static void NamedPicDestroy(any_t data)
@@ -1046,6 +1098,18 @@ int PicManagerGetDoorStyleIndex(PicManager *pm, const char *style)
 	int idx = 0;
 	CA_FOREACH(const char *, doorStyleName, pm->doorStyleNames)
 		if (strcmp(style, *doorStyleName) == 0)
+		{
+			break;
+		}
+		idx++;
+	CA_FOREACH_END()
+	return idx;
+}
+int PicManagerGetKeyStyleIndex(PicManager *pm, const char *style)
+{
+	int idx = 0;
+	CA_FOREACH(const char *, keyStyleName, pm->keyStyleNames)
+		if (strcmp(style, *keyStyleName) == 0)
 		{
 			break;
 		}

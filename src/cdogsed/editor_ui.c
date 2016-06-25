@@ -461,18 +461,18 @@ static void MissionDrawKeyStyle(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
 	UNUSED(g);
-	int count = GetEditorInfo().keyCount;
 	CampaignOptions *co = data;
-	if (!CampaignGetCurrentMission(co))
+	Mission *m = CampaignGetCurrentMission(co);
+	if (m == NULL)
 	{
 		return;
 	}
-	int idx = CampaignGetCurrentMission(co)->KeyStyle;
+	const int idx = PicManagerGetKeyStyleIndex(&gPicManager, m->KeyStyle);
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Keys",
-		KeyPickupClass(gMission.keyStyle, 0)->Pic,
-		idx, count,
+		KeyPickupClass(m->KeyStyle, 0)->Pic,
+		idx, (int)gPicManager.keyStyleNames.size,
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawExitStyle(
@@ -870,8 +870,12 @@ static void MissionChangeDoorStyle(void *data, int d)
 static void MissionChangeKeyStyle(void *data, int d)
 {
 	CampaignOptions *co = data;
-	CampaignGetCurrentMission(co)->KeyStyle = CLAMP_OPPOSITE(
-		CampaignGetCurrentMission(co)->KeyStyle + d, 0, GetEditorInfo().keyCount - 1);
+	Mission *m = CampaignGetCurrentMission(co);
+	const int idx = CLAMP_OPPOSITE(
+		PicManagerGetKeyStyleIndex(&gPicManager, m->KeyStyle) + d,
+		0,
+		(int)gPicManager.keyStyleNames.size - 1);
+	strcpy(m->KeyStyle, *(char **)CArrayGet(&gPicManager.keyStyleNames, idx));
 }
 static void MissionChangeExitStyle(void *data, int d)
 {

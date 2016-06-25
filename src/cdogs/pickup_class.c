@@ -66,7 +66,13 @@ PickupClass *StrPickupClass(const char *s)
 			return c;
 		}
 	CA_FOREACH_END()
-	CASSERT(false, "cannot parse bullet name");
+	CA_FOREACH(PickupClass, c, gPickupClasses.KeyClasses)
+		if (strcmp(s, c->Name) == 0)
+		{
+			return c;
+		}
+	CA_FOREACH_END()
+	CASSERT(false, "cannot parse pickup class");
 	return NULL;
 }
 PickupClass *IntPickupClass(const int i)
@@ -92,20 +98,44 @@ PickupClass *IntPickupClass(const int i)
 	}
 	return StrPickupClass(pickupItems[i]);
 }
-PickupClass *KeyPickupClass(const int style, const int i)
+#define KEYSTYLE_COUNT 4
+const char *IntKeyStyle(const int style)
 {
-	// Define the key styles and colours
-#define K(_s, _c) "key_" _s "_" _c
-#define KS(_s) { K(_s, "yellow"), K(_s, "green"), K(_s, "blue"), K(_s, "red") }
-	static const char *keys[][4] = {
-		KS("office"), KS("dungeon"), KS("plain"), KS("cube")
-	};
-	// TODO: support more styles and colours
-	if (style < 0 || style >= KEYSTYLE_COUNT || i < 0 || i >= KEY_COUNT)
+	static const char *keyStyles[] = { "office", "dungeon", "plain", "cube" };
+	if (style < 0 || style >= KEYSTYLE_COUNT)
 	{
 		return NULL;
 	}
-	return StrPickupClass(keys[style][i]);
+	return keyStyles[style];
+}
+PickupClass *IntKeyPickupClass(const int style, const int i)
+{
+	// Define the key styles and colours
+	if (style < 0 || style >= KEYSTYLE_COUNT)
+	{
+		return NULL;
+	}
+	return KeyPickupClass(IntKeyStyle(style), i);
+}
+// Define the key colours
+static const char *keyColors[] = { "yellow", "green", "blue", "red" };
+// TODO: support more colours
+PickupClass *KeyPickupClass(const char *style, const int i)
+{
+	if (i < 0 || i >= KEY_COUNT)
+	{
+		return NULL;
+	}
+	static char buf[256];
+	sprintf(buf, "keys/%s/%s", style, keyColors[i]);
+	CA_FOREACH(PickupClass, c, gPickupClasses.KeyClasses)
+		if (strcmp(buf, c->Name) == 0)
+		{
+			return c;
+		}
+	CA_FOREACH_END()
+	CASSERT(false, "cannot parse key class");
+	return NULL;
 }
 PickupClass *PickupClassGetById(PickupClasses *classes, const int id)
 {
@@ -149,6 +179,7 @@ void PickupClassesInit(
 {
 	CArrayInit(&classes->Classes, sizeof(PickupClass));
 	CArrayInit(&classes->CustomClasses, sizeof(PickupClass));
+	CArrayInit(&classes->KeyClasses, sizeof(PickupClass));
 
 	char buf[CDOGS_PATH_MAX];
 	GetDataFilePath(buf, filename);
@@ -168,6 +199,7 @@ void PickupClassesInit(
 	PickupClassesLoadJSON(&classes->Classes, root);
 	PickupClassesLoadAmmo(&classes->Classes, &ammo->Ammo);
 	PickupClassesLoadGuns(&classes->Classes, &guns->Guns);
+	PickupClassesLoadKeys(&classes->KeyClasses);
 
 bail:
 	if (f != NULL)
@@ -176,10 +208,10 @@ bail:
 	}
 	json_free_value(&root);
 }
-static void LoadPickupclass(PickupClass *c, json_t *node);
+static bool TryLoadPickupclass(PickupClass *c, json_t *node);
 void PickupClassesLoadJSON(CArray *classes, json_t *root)
 {
-	int version;
+	int version = -1;
 	LoadInt(&version, root, "Version");
 	if (version > VERSION || version <= 0)
 	{
@@ -191,17 +223,17 @@ void PickupClassesLoadJSON(CArray *classes, json_t *root)
 	for (json_t *child = pickupsNode->child; child; child = child->next)
 	{
 		PickupClass c;
-		LoadPickupclass(&c, child);
-		CArrayPushBack(classes, &c);
+		if (TryLoadPickupclass(&c, child))
+		{
+			CArrayPushBack(classes, &c);
+		}
 	}
 }
-static void LoadPickupclass(PickupClass *c, json_t *node)
+static bool TryLoadPickupclass(PickupClass *c, json_t *node)
 {
 	memset(c, 0, sizeof *c);
 	char *tmp;
 
-	c->Name = GetString(node, "Name");
-	LoadPic(&c->Pic, node, "Pic", "OldPic");
 	JSON_UTILS_LOAD_ENUM(c->Type, node, "Type", StrPickupType);
 	switch (c->Type)
 	{
@@ -222,8 +254,8 @@ static void LoadPickupclass(PickupClass *c, json_t *node)
 		LoadInt(&c->u.Ammo.Amount, node, "AmmoAmount");
 		break;
 	case PICKUP_KEYCARD:
-		JSON_UTILS_LOAD_ENUM(c->u.Keys, node, "Key", StrKeycard);
-		break;
+		// Do nothing; keys now loaded directly from graphics files
+		return false;
 	case PICKUP_GUN:
 		CASSERT(false, "unimplemented");
 		break;
@@ -231,6 +263,9 @@ static void LoadPickupclass(PickupClass *c, json_t *node)
 		CASSERT(false, "Unknown pickup type");
 		break;
 	}
+	c->Name = GetString(node, "Name");
+	LoadPic(&c->Pic, node, "Pic", "OldPic");
+	return true;
 }
 
 void PickupClassesLoadAmmo(CArray *classes, const CArray *ammoClasses)
@@ -266,13 +301,29 @@ void PickupClassesLoadGuns(CArray *classes, const CArray *gunClasses)
 	}
 }
 
+void PickupClassesLoadKeys(CArray *classes)
+{
+	CA_FOREACH(const char *, keyStyleName, gPicManager.keyStyleNames)
+		for (int i = 0; i < KEY_COUNT; i++)
+		{
+			PickupClass c;
+			memset(&c, 0, sizeof c);
+			char buf[CDOGS_FILENAME_MAX];
+			sprintf(buf, "keys/%s/%s", *keyStyleName, keyColors[i]);
+			CSTRDUP(c.Name, buf);
+			c.Pic = PicManagerGetPic(&gPicManager, c.Name);
+			c.Type = PICKUP_KEYCARD;
+			c.u.Keys = StrKeycard(keyColors[i]);
+			CArrayPushBack(classes, &c);
+		}
+	CA_FOREACH_END()
+}
+
 void PickupClassesClear(CArray *classes)
 {
-	for (int i = 0; i < (int)classes->size; i++)
-	{
-		PickupClass *c = CArrayGet(classes, i);
+	CA_FOREACH(PickupClass, c, *classes)
 		CFREE(c->Name);
-	}
+	CA_FOREACH_END()
 	CArrayClear(classes);
 }
 void PickupClassesTerminate(PickupClasses *classes)
@@ -281,6 +332,8 @@ void PickupClassesTerminate(PickupClasses *classes)
 	CArrayTerminate(&classes->Classes);
 	PickupClassesClear(&classes->CustomClasses);
 	CArrayTerminate(&classes->CustomClasses);
+	PickupClassesClear(&classes->KeyClasses);
+	CArrayTerminate(&classes->KeyClasses);
 }
 
 int PickupClassesGetScoreIdx(const PickupClass *p)

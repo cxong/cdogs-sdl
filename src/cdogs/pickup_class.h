@@ -61,8 +61,9 @@ typedef struct
 } PickupClass;
 typedef struct
 {
-	CArray Classes;	// of PickupClass
+	CArray Classes;			// of PickupClass
 	CArray CustomClasses;	// of PickupClass
+	CArray KeyClasses;		// of PickupClass
 } PickupClasses;
 extern PickupClasses gPickupClasses;
 
@@ -71,7 +72,10 @@ PickupClass *StrPickupClass(const char *s);
 // Legacy pickup classes, integer based
 PickupClass *IntPickupClass(const int i);
 // Legacy key classes, style+integer based
-PickupClass *KeyPickupClass(const int style, const int i);
+const char *IntKeyStyle(const int style);
+PickupClass *IntKeyPickupClass(const int style, const int i);
+// Semi-legacy key classes, style+integer colour
+PickupClass *KeyPickupClass(const char *style, const int i);
 PickupClass *PickupClassGetById(PickupClasses *classes, const int id);
 int StrPickupClassId(const char *s);
 
@@ -81,6 +85,7 @@ void PickupClassesInit(
 void PickupClassesLoadJSON(CArray *classes, json_t *root);
 void PickupClassesLoadAmmo(CArray *classes, const CArray *ammoClasses);
 void PickupClassesLoadGuns(CArray *classes, const CArray *gunClasses);
+void PickupClassesLoadKeys(CArray *classes);
 void PickupClassesClear(CArray *classes);
 void PickupClassesTerminate(PickupClasses *classes);
 
@@ -92,6 +97,3 @@ PickupClass *IntScorePickupClass(const int i);
 
 // Score for picking up an objective
 #define PICKUP_SCORE 10
-
-// TODO: more key styles
-#define KEYSTYLE_COUNT 4

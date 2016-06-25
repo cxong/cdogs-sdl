@@ -64,7 +64,6 @@ int GetColorrangeCount(void);
 
 struct EditorInfo
 {
-	int keyCount;
 	int exitCount;
 };
 
@@ -130,7 +129,7 @@ typedef struct
 	int FloorStyle;
 	int RoomStyle;
 	int ExitStyle;
-	int KeyStyle;
+	char KeyStyle[CDOGS_FILENAME_MAX];
 	char DoorStyle[CDOGS_FILENAME_MAX];
 
 	CArray Objectives;			// of Objective
@@ -236,7 +235,6 @@ struct MissionOptions
 	int DoneCounter;
 	bool IsQuit;
 
-	int keyStyle;
 	NamedPic *exitPic;
 	NamedPic *exitShadow;
 };

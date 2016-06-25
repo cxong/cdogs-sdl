@@ -207,7 +207,18 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 		LoadInt(&m.FloorStyle, child, "FloorStyle");
 		LoadInt(&m.RoomStyle, child, "RoomStyle");
 		LoadInt(&m.ExitStyle, child, "ExitStyle");
-		LoadInt(&m.KeyStyle, child, "KeyStyle");
+		if (version <= 8)
+		{
+			int keyStyle;
+			LoadInt(&keyStyle, child, "KeyStyle");
+			strcpy(m.KeyStyle, IntKeyStyle(keyStyle));
+		}
+		else
+		{
+			char *tmp = GetString(child, "KeyStyle");
+			strcpy(m.KeyStyle, tmp);
+			CFREE(tmp);
+		}
 		if (version <= 5)
 		{
 			int doorStyle;

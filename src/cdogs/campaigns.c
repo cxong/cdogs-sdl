@@ -55,6 +55,8 @@ void CampaignSettingInit(CampaignSetting *setting)
 	memset(setting, 0, sizeof *setting);
 	CArrayInit(&setting->Missions, sizeof(Mission));
 	CharacterStoreInit(&setting->characters);
+
+	PickupClassesLoadKeys(&gPickupClasses.KeyClasses);
 }
 void CampaignSettingTerminate(CampaignSetting *setting)
 {
@@ -77,6 +79,7 @@ void CampaignSettingTerminate(CampaignSetting *setting)
 	BulletClassesClear(&gBulletClasses.CustomClasses);
 	WeaponClassesClear(&gGunDescriptions.CustomGuns);
 	PickupClassesClear(&gPickupClasses.CustomClasses);
+	PickupClassesClear(&gPickupClasses.KeyClasses);
 	MapObjectsClear(&gMapObjects.CustomClasses);
 }
 
