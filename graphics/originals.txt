@@ -43,6 +43,8 @@ disk2.png
 disk3.png
 egg.png
 egg_wreck.png
+exits/hazard/
+exits/plate/
 folder.png
 goo.png
 holo.png
