@@ -144,15 +144,6 @@ void CPicLoadJSON(CPic *p, json_t *node)
 		tint = tint->next;
 		p->u1.Tint.v = atof(tint->text);
 	}
-	if ((json_find_first_label(node, "OldPic") &&
-		ConfigGetBool(&gConfig, "Graphics.OriginalPics")) ||
-		!picLoaded)
-	{
-		int oldPic = PIC_UZIBULLET;
-		LoadInt(&oldPic, node, "OldPic");
-		p->Type = PICTYPE_NORMAL;
-		p->u.Pic = PicManagerGetFromOld(&gPicManager, oldPic);
-	}
 }
 void CPicUpdate(CPic *p, const int ticks)
 {

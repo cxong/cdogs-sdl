@@ -279,8 +279,8 @@ static void LoadMapObject(MapObject *m, json_t *node)
 	memset(m, 0, sizeof *m);
 
 	m->Name = GetString(node, "Name");
-	LoadPic(&m->Normal.Pic, node, "Pic", NULL);
-	LoadPic(&m->Wreck.Pic, node, "WreckPic", NULL);
+	LoadPic(&m->Normal.Pic, node, "Pic");
+	LoadPic(&m->Wreck.Pic, node, "WreckPic");
 	if (m->Normal.Pic)
 	{
 		// Default offset: centered X, align bottom of tile and sprite

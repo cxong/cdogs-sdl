@@ -264,7 +264,7 @@ static bool TryLoadPickupclass(PickupClass *c, json_t *node)
 		break;
 	}
 	c->Name = GetString(node, "Name");
-	LoadPic(&c->Pic, node, "Pic", "OldPic");
+	LoadPic(&c->Pic, node, "Pic");
 	return true;
 }
 

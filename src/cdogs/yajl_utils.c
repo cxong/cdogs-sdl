@@ -178,21 +178,13 @@ void LoadSoundFromNode(Mix_Chunk **value, json_t *node, const char *name)
 	}
 	*value = StrSound(node->text);
 }
-void LoadPic(
-	const Pic **value, json_t *node, const char *name, const char *oldPicName)
+void LoadPic(const Pic **value, json_t *node, const char *name)
 {
 	if (json_find_first_label(node, name))
 	{
 		char *tmp = GetString(node, name);
 		*value = PicManagerGetPic(&gPicManager, tmp);
 		CFREE(tmp);
-	}
-	if ((*value == NULL || ConfigGetBool(&gConfig, "Graphics.OriginalPics")) &&
-		json_find_first_label(node, oldPicName))
-	{
-		int oldPic;
-		LoadInt(&oldPic, node, oldPicName);
-		*value = PicManagerGetFromOld(&gPicManager, oldPic);
 	}
 }
 void LoadBulletGuns(CArray *guns, json_t *node, const char *name)

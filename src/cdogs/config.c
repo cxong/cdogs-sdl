@@ -607,7 +607,6 @@ Config ConfigDefault(void)
 	ConfigGroupAdd(&gfx, ConfigNewEnum(
 		"ScaleMode", SCALE_MODE_NN, SCALE_MODE_NN, SCALE_MODE_BILINEAR,
 		StrScaleMode, ScaleModeStr));
-	ConfigGroupAdd(&gfx, ConfigNewBool("OriginalPics", false));
 	ConfigGroupAdd(&root, gfx);
 
 	Config input = ConfigNewGroup("Input");

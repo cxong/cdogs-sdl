@@ -226,7 +226,7 @@ static void LoadGunDescription(
 	}
 
 	const Pic *icon = NULL;
-	LoadPic(&icon, node, "Icon", NULL);
+	LoadPic(&icon, node, "Icon");
 	if (icon != NULL)
 	{
 		g->Icon = icon;

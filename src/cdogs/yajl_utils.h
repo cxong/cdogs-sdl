@@ -48,9 +48,8 @@ void LoadStr(char **value, json_t *node, const char *name);
 char *GetString(json_t *node, const char *name);
 
 void LoadSoundFromNode(Mix_Chunk **value, json_t *node, const char *name);
-// Load a const Pic * based on a name and old pic reference
-void LoadPic(
-	const Pic **value, json_t *node, const char *name, const char *oldPicName);
+// Load a const Pic * based on a name
+void LoadPic(const Pic **value, json_t *node, const char *name);
 // Load an array of const GunDescription *
 void LoadBulletGuns(CArray *guns, json_t *node, const char *name);
 void LoadColor(color_t *c, json_t *node, const char *name);
