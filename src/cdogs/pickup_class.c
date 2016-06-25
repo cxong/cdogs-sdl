@@ -98,23 +98,19 @@ PickupClass *IntPickupClass(const int i)
 	}
 	return StrPickupClass(pickupItems[i]);
 }
+const char *IntExitStyle(const int i)
+{
+	static const char *exitStyles[] = { "hazard", "plate" };
+	return exitStyles[abs(i) % 2];
+}
 #define KEYSTYLE_COUNT 4
 const char *IntKeyStyle(const int style)
 {
 	static const char *keyStyles[] = { "office", "dungeon", "plain", "cube" };
-	if (style < 0 || style >= KEYSTYLE_COUNT)
-	{
-		return NULL;
-	}
-	return keyStyles[style];
+	return keyStyles[abs(style) % KEYSTYLE_COUNT];
 }
 PickupClass *IntKeyPickupClass(const int style, const int i)
 {
-	// Define the key styles and colours
-	if (style < 0 || style >= KEYSTYLE_COUNT)
-	{
-		return NULL;
-	}
 	return KeyPickupClass(IntKeyStyle(style), i);
 }
 // Define the key colours
@@ -122,12 +118,8 @@ static const char *keyColors[] = { "yellow", "green", "blue", "red" };
 // TODO: support more colours
 PickupClass *KeyPickupClass(const char *style, const int i)
 {
-	if (i < 0 || i >= KEY_COUNT)
-	{
-		return NULL;
-	}
 	static char buf[256];
-	sprintf(buf, "keys/%s/%s", style, keyColors[i]);
+	sprintf(buf, "keys/%s/%s", style, keyColors[abs(i) % KEY_COUNT]);
 	CA_FOREACH(PickupClass, c, gPickupClasses.KeyClasses)
 		if (strcmp(buf, c->Name) == 0)
 		{

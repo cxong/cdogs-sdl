@@ -281,26 +281,31 @@ void MapShowExitArea(Map *map, const Vec2i exitStart, const Vec2i exitEnd)
 	const int top = exitStart.y;
 	const int bottom = exitEnd.y;
 
+	NamedPic *exitPic = PicManagerGetExitPic(
+		&gPicManager, gMission.missionData->ExitStyle, false);
+	NamedPic *exitShadowPic = PicManagerGetExitPic(
+		&gPicManager, gMission.missionData->ExitStyle, true);
+
 	Vec2i v;
 	v.y = top;
 	for (v.x = left; v.x <= right; v.x++)
 	{
-		MapChangeFloor(map, v, gMission.exitPic, gMission.exitShadow);
+		MapChangeFloor(map, v, exitPic, exitShadowPic);
 	}
 	v.y = bottom;
 	for (v.x = left; v.x <= right; v.x++)
 	{
-		MapChangeFloor(map, v, gMission.exitPic, gMission.exitShadow);
+		MapChangeFloor(map, v, exitPic, exitShadowPic);
 	}
 	v.x = left;
 	for (v.y = top + 1; v.y < bottom; v.y++)
 	{
-		MapChangeFloor(map, v, gMission.exitPic, gMission.exitShadow);
+		MapChangeFloor(map, v, exitPic, exitShadowPic);
 	}
 	v.x = right;
 	for (v.y = top + 1; v.y < bottom; v.y++)
 	{
-		MapChangeFloor(map, v, gMission.exitPic, gMission.exitShadow);
+		MapChangeFloor(map, v, exitPic, exitShadowPic);
 	}
 }
 

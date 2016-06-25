@@ -216,7 +216,9 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 	m->WallStyle = rand() % WALL_STYLE_COUNT;
 	m->FloorStyle = rand() % FLOOR_STYLE_COUNT;
 	m->RoomStyle = rand() % FLOOR_STYLE_COUNT;
-	m->ExitStyle = rand() % GetExitCount();
+	const CArray *exitStyles = &gPicManager.exitStyleNames;
+	const int exitIdx = rand() % exitStyles->size;
+	strcpy(m->ExitStyle, *(char **)CArrayGet(exitStyles, exitIdx));
 	const CArray *keyStyles = &gPicManager.keyStyleNames;
 	const int keyIdx = rand() % keyStyles->size;
 	strcpy(m->KeyStyle, *(char **)CArrayGet(keyStyles, keyIdx));

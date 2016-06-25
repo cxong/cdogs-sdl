@@ -272,6 +272,7 @@ bool PicManagerTryInit(
 	pm->customPics = hashmap_new();
 	pm->customSprites = hashmap_new();
 	CArrayInit(&pm->drainPics, sizeof(NamedPic *));
+	CArrayInit(&pm->exitStyleNames, sizeof(char *));
 	CArrayInit(&pm->doorStyleNames, sizeof(char *));
 	CArrayInit(&pm->keyStyleNames, sizeof(char *));
 
@@ -708,11 +709,13 @@ static void ProcessMultichannelPic(PicManager *pm, const int picIdx)
 
 
 static void FindDrainPics(PicManager *pm);
+static void FindExitPics(PicManager *pm);
 static void FindDoorPics(PicManager *pm);
 static void FindKeyPics(PicManager *pm);
 static void AfterAdd(PicManager *pm)
 {
 	FindDrainPics(pm);
+	FindExitPics(pm);
 	FindDoorPics(pm);
 	FindKeyPics(pm);
 }
@@ -728,6 +731,49 @@ static void FindDrainPics(PicManager *pm)
 		if (p == NULL) break;
 		CArrayPushBack(&pm->drainPics, &p);
 	}
+}
+static int MaybeAddExitPicName(any_t data, any_t item);
+static void FindExitPics(PicManager *pm)
+{
+	// Scan all pics for exit pics
+	CA_FOREACH(char *, exitStyleName, pm->exitStyleNames)
+		CFREE(*exitStyleName);
+	CA_FOREACH_END()
+	CArrayClear(&pm->exitStyleNames);
+	hashmap_iterate(pm->customPics, MaybeAddExitPicName, pm);
+	hashmap_iterate(pm->pics, MaybeAddExitPicName, pm);
+}
+static int MaybeAddExitPicName(any_t data, any_t item)
+{
+	// Exit pics should be like:
+	// exits/style/shadow
+	// where style is the style name to be stored, and
+	// shadow is normal/shadow
+	PicManager *pm = data;
+	const NamedPic *p = item;
+	const char *picName = p->name;
+	if (strncmp(picName, "exits/", strlen("exits/")) != 0)
+	{
+		return MAP_OK;
+	}
+	const char *lastSlash = strrchr(picName, '/');
+	char buf[CDOGS_FILENAME_MAX];
+	const size_t len = lastSlash - picName - strlen("exits/");
+	strncpy(buf, picName + strlen("exits/"), len);
+	buf[len] = '\0';
+	// Check if we already have the style name
+	// This can happen if a custom pic uses the same name as a built in one
+	CA_FOREACH(char *, styleName, pm->exitStyleNames)
+		if (strcmp(*styleName, buf) == 0)
+		{
+			return MAP_OK;
+		}
+	CA_FOREACH_END()
+
+	char *s;
+	CSTRDUP(s, buf);
+	CArrayPushBack(&pm->exitStyleNames, &s);
+	return MAP_OK;
 }
 static int MaybeAddDoorPicName(any_t data, any_t item);
 static void FindDoorPics(PicManager *pm)
@@ -843,6 +889,10 @@ void PicManagerTerminate(PicManager *pm)
 	hashmap_destroy(pm->customPics, NamedPicDestroy);
 	hashmap_destroy(pm->customSprites, NamedSpritesDestroy);
 	CArrayTerminate(&pm->drainPics);
+	CA_FOREACH(char *, styleName, pm->exitStyleNames)
+		CFREE(*styleName);
+	CA_FOREACH_END()
+	CArrayTerminate(&pm->exitStyleNames);
 	CA_FOREACH(char *, doorStyleName, pm->doorStyleNames)
 		CFREE(*doorStyleName);
 	CA_FOREACH_END()
@@ -1092,6 +1142,26 @@ NamedPic *PicManagerGetRandomDrain(PicManager *pm)
 	return *p;
 }
 
+NamedPic *PicManagerGetExitPic(
+	PicManager *pm, const char *style, const bool isShadow)
+{
+	char buf[CDOGS_PATH_MAX];
+	sprintf(buf, "exits/%s/%s", style, isShadow ? "shadow" : "normal");
+	return PicManagerGetNamedPic(pm, buf);
+}
+
+int PicManagerGetExitStyleIndex(PicManager *pm, const char *style)
+{
+	int idx = 0;
+	CA_FOREACH(const char *, styleName, pm->exitStyleNames)
+		if (strcmp(style, *styleName) == 0)
+		{
+			break;
+		}
+		idx++;
+	CA_FOREACH_END()
+	return idx;
+}
 int PicManagerGetDoorStyleIndex(PicManager *pm, const char *style)
 {
 	int idx = 0;

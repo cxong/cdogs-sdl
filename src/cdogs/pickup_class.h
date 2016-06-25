@@ -71,6 +71,8 @@ extern PickupClasses gPickupClasses;
 PickupClass *StrPickupClass(const char *s);
 // Legacy pickup classes, integer based
 PickupClass *IntPickupClass(const int i);
+// Legacy exit styles, integer based
+const char *IntExitStyle(const int i);
 // Legacy key classes, style+integer based
 const char *IntKeyStyle(const int style);
 PickupClass *IntKeyPickupClass(const int style, const int i);

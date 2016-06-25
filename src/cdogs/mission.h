@@ -59,14 +59,6 @@
 
 #define KEY_COUNT 4
 
-int GetExitCount(void);
-int GetColorrangeCount(void);
-
-struct EditorInfo
-{
-	int exitCount;
-};
-
 typedef enum
 {
 	MAPTYPE_CLASSIC,
@@ -128,7 +120,7 @@ typedef struct
 	int WallStyle;
 	int FloorStyle;
 	int RoomStyle;
-	int ExitStyle;
+	char ExitStyle[CDOGS_FILENAME_MAX];
 	char KeyStyle[CDOGS_FILENAME_MAX];
 	char DoorStyle[CDOGS_FILENAME_MAX];
 
@@ -234,9 +226,6 @@ struct MissionOptions
 	bool isDone;
 	int DoneCounter;
 	bool IsQuit;
-
-	NamedPic *exitPic;
-	NamedPic *exitShadow;
 };
 
 void MissionInit(Mission *m);
@@ -261,8 +250,3 @@ void MissionDone(struct MissionOptions *mo, const NMissionEnd end);
 
 // Count the number of keys in the flags
 int KeycardCount(int flags);
-
-
-// Intended for use with the editor only
-
-struct EditorInfo GetEditorInfo(void);

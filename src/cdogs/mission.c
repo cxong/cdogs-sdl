@@ -102,7 +102,8 @@ MapType StrMapType(const char *s)
 void MissionInit(Mission *m)
 {
 	memset(m, 0, sizeof *m);
-	// Give default styles otherwise it causes editor crashes
+	// Initialise with default styles
+	strcpy(m->ExitStyle, IntExitStyle(0));
 	strcpy(m->KeyStyle, IntKeyStyle(0));
 	strcpy(m->DoorStyle, DoorStyleStr(0));
 	m->WallMask = colorBattleshipGrey;
@@ -137,7 +138,7 @@ void MissionCopy(Mission *dst, const Mission *src)
 	dst->WallStyle = src->WallStyle;
 	dst->FloorStyle = src->FloorStyle;
 	dst->RoomStyle = src->RoomStyle;
-	dst->ExitStyle = src->ExitStyle;
+	strcpy(dst->ExitStyle, src->ExitStyle);
 	strcpy(dst->KeyStyle, src->KeyStyle);
 	strcpy(dst->DoorStyle, src->DoorStyle);
 
@@ -213,22 +214,6 @@ void MissionTerminate(Mission *m)
 }
 
 
-// +-------------+
-// |  Exit info  |
-// +-------------+
-
-// TODO: arbitrary exit tile names
-static const char *exitPicNames[] = {
-	"hazard",
-	"plate"
-};
-
-// Every exit has TWO pics, so actual # of exits == # pics / 2!
-//#define EXIT_COUNT (sizeof( exitPics)/sizeof( int)/2)
-#define EXIT_COUNT 2
-int GetExitCount(void) { return EXIT_COUNT; }
-
-
 // +-----------------------+
 // |  And now the code...  |
 // +-----------------------+
@@ -279,13 +264,6 @@ void SetupMission(Mission *m, struct MissionOptions *mo, int missionIndex)
 	MissionOptionsInit(mo);
 	mo->index = missionIndex;
 	mo->missionData = m;
-
-	char exitPicBuf[256];
-	const int exitIdx = abs(m->ExitStyle) % EXIT_COUNT;
-	sprintf(exitPicBuf, "exit_%s", exitPicNames[exitIdx]);
-	mo->exitPic = PicManagerGetNamedPic(&gPicManager, exitPicBuf);
-	sprintf(exitPicBuf, "exit_%s_shadow", exitPicNames[exitIdx]);
-	mo->exitShadow = PicManagerGetNamedPic(&gPicManager, exitPicBuf);
 
 	ActorsInit();
 	ObjsInit();
@@ -543,12 +521,4 @@ int KeycardCount(int flags)
 	if (flags & FLAGS_KEYCARD_GREEN) count++;
 	if (flags & FLAGS_KEYCARD_YELLOW) count++;
 	return count;
-}
-
-
-struct EditorInfo GetEditorInfo(void)
-{
-	struct EditorInfo ei;
-	ei.exitCount = EXIT_COUNT;
-	return ei;
 }

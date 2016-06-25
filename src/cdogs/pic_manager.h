@@ -44,6 +44,7 @@ typedef struct
 
 	CArray drainPics;	// of NamedPic *
 
+	CArray exitStyleNames;	// of char *
 	CArray doorStyleNames;	// of char *, for editor
 	CArray keyStyleNames;	// of char *
 } PicManager;
@@ -83,6 +84,9 @@ void PicManagerGenerateMaskedStylePic(
 	const color_t mask, const color_t maskAlt);
 
 NamedPic *PicManagerGetRandomDrain(PicManager *pm);
+NamedPic *PicManagerGetExitPic(
+	PicManager *pm, const char *style, const bool isShadow);
+int PicManagerGetExitStyleIndex(PicManager *pm, const char *style);
 int PicManagerGetDoorStyleIndex(PicManager *pm, const char *style);
 int PicManagerGetKeyStyleIndex(PicManager *pm, const char *style);
 

@@ -479,18 +479,18 @@ static void MissionDrawExitStyle(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
 	UNUSED(g);
-	int count = GetEditorInfo().exitCount;
 	CampaignOptions *co = data;
-	if (!CampaignGetCurrentMission(co))
+	Mission *m = CampaignGetCurrentMission(co);
+	if (m == NULL)
 	{
 		return;
 	}
-	int idx = CampaignGetCurrentMission(co)->ExitStyle;
+	const int idx = PicManagerGetExitStyleIndex(&gPicManager, m->ExitStyle);
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Exit",
-		&gMission.exitPic->pic,
-		idx, count,
+		&PicManagerGetExitPic(&gPicManager, m->ExitStyle, false)->pic,
+		idx, (int)gPicManager.exitStyleNames.size,
 		UIObjectIsHighlighted(o));
 }
 static const char *MissionGetCharacterCountStr(UIObject *o, void *data)
@@ -880,8 +880,13 @@ static void MissionChangeKeyStyle(void *data, int d)
 static void MissionChangeExitStyle(void *data, int d)
 {
 	CampaignOptions *co = data;
-	CampaignGetCurrentMission(co)->ExitStyle = CLAMP_OPPOSITE(
-		CampaignGetCurrentMission(co)->ExitStyle + d, 0, GetEditorInfo().exitCount - 1);
+	Mission *m = CampaignGetCurrentMission(co);
+	const int idx = CLAMP_OPPOSITE(
+		PicManagerGetExitStyleIndex(&gPicManager, m->ExitStyle) + d,
+		0,
+		(int)gPicManager.exitStyleNames.size - 1);
+	strcpy(
+		m->ExitStyle, *(char **)CArrayGet(&gPicManager.exitStyleNames, idx));
 }
 static void MissionChangeEnemy(void *vData, int d)
 {
