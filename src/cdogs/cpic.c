@@ -94,20 +94,17 @@ void CPicLoadJSON(CPic *p, json_t *node)
 	char *tmp = GetString(node, "Type");
 	p->Type = StrPicType(tmp);
 	CFREE(tmp);
-	bool picLoaded = false;
 	switch (p->Type)
 	{
 	case PICTYPE_NORMAL:
 		tmp = GetString(node, "Pic");
 		p->u.Pic = PicManagerGetPic(&gPicManager, tmp);
 		CFREE(tmp);
-		picLoaded = p->u.Pic != NULL;
 		break;
 	case PICTYPE_DIRECTIONAL:
 		tmp = GetString(node, "Sprites");
 		p->u.Sprites = &PicManagerGetSprites(&gPicManager, tmp)->pics;
 		CFREE(tmp);
-		picLoaded = p->u.Sprites != NULL;
 		break;
 	case PICTYPE_ANIMATED:	// fallthrough
 	case PICTYPE_ANIMATED_RANDOM:
@@ -120,7 +117,6 @@ void CPicLoadJSON(CPic *p, json_t *node)
 		// Set safe default ticks per frame 1;
 		// if 0 then this leads to infinite loop when animating
 		p->u.Animated.TicksPerFrame = MAX(p->u.Animated.TicksPerFrame, 1);
-		picLoaded = p->u.Animated.Sprites != NULL;
 		break;
 	default:
 		CASSERT(false, "unknown pic type");
