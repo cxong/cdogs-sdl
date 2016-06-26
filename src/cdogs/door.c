@@ -373,7 +373,7 @@ NamedPic *GetDoorPic(
 	// Construct filename
 	// If the key is "wall", it doesn't include orientation
 	sprintf(
-		buf, "door/%s_%s%s", style, key,
+		buf, "door/%s/%s%s", style, key,
 		strcmp(key, "wall") == 0 ? "" : (isHorizontal ? "_h" : "_v"));
 	return PicManagerGetNamedPic(pm, buf);
 }
