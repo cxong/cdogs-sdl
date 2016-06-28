@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -52,8 +52,7 @@
 
 
 void MapAddDoorGroup(
-	Map *map, const Mission *m,
-	const Vec2i v, const int floor, const int room, const int keyFlags);
+	Map *map, const Mission *m, const Vec2i v, const int keyFlags);
 
 // Get the picture of a door
 // style: office/dungeon/blast/alien, or custom

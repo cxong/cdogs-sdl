@@ -117,9 +117,9 @@ typedef struct
 	Vec2i Size;
 
 	// styles
-	int WallStyle;
-	int FloorStyle;
-	int RoomStyle;
+	char WallStyle[CDOGS_FILENAME_MAX];
+	char FloorStyle[CDOGS_FILENAME_MAX];
+	char RoomStyle[CDOGS_FILENAME_MAX];
 	char ExitStyle[CDOGS_FILENAME_MAX];
 	char KeyStyle[CDOGS_FILENAME_MAX];
 	char DoorStyle[CDOGS_FILENAME_MAX];

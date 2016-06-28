@@ -63,14 +63,12 @@ static NamedPic *GetDoorBasePic(
 static TWatch *CreateCloseDoorWatch(
 	Map *map, const Mission *m, const Vec2i v,
 	const bool isHorizontal, const int doorGroupCount,
-	const char *picAltName, const int floor, const int room);
+	const char *picAltName);
 static Trigger *CreateOpenDoorTrigger(
 	Map *map, const Mission *m, const Vec2i v,
-	const bool isHorizontal, const int doorGroupCount,
-	const int floor, const int room, const int keyFlags);
+	const bool isHorizontal, const int doorGroupCount, const int keyFlags);
 void MapAddDoorGroup(
-	Map *map, const Mission *m,
-	const Vec2i v, const int floor, const int room, const int keyFlags)
+	Map *map, const Mission *m, const Vec2i v, const int keyFlags)
 {
 	const unsigned short tileLeftType =
 		IMapGet(map, Vec2iNew(v.x - 1, v.y)) & MAP_MASKACCESS;
@@ -117,18 +115,17 @@ void MapAddDoorGroup(
 			const bool isFloor = IMapGet(map, vB) == MAP_FLOOR;
 			tileB->pic = PicManagerGetMaskedStylePic(
 				&gPicManager,
-				isFloor ? "floor" : "room",
-				isFloor ? floor : room,
-				isFloor ? FLOOR_SHADOW : ROOMFLOOR_SHADOW,
+				"tile",
+				isFloor ? m->FloorStyle : m->RoomStyle,
+				"shadow",
 				isFloor ? m->FloorMask : m->RoomMask, m->AltMask);
 		}
 	}
 
 	TWatch *w = CreateCloseDoorWatch(
-		map, m, v, isHorizontal, doorGroupCount, doorPic->name, floor, room);
+		map, m, v, isHorizontal, doorGroupCount, doorPic->name);
 	Trigger *t = CreateOpenDoorTrigger(
-		map, m, v, isHorizontal, doorGroupCount,
-		floor, room, keyFlags);
+		map, m, v, isHorizontal, doorGroupCount, keyFlags);
 	// Connect trigger and watch up
 	Action *a = TriggerAddAction(t);
 	a->Type = ACTION_ACTIVATEWATCH;
@@ -170,7 +167,7 @@ static int GetDoorCountInGroup(
 static TWatch *CreateCloseDoorWatch(
 	Map *map, const Mission *m, const Vec2i v,
 	const bool isHorizontal, const int doorGroupCount,
-	const char *picAltName, const int floor, const int room)
+	const char *picAltName)
 {
 	TWatch *w = WatchNew();
 	const Vec2i dv = Vec2iNew(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
@@ -236,9 +233,9 @@ static TWatch *CreateCloseDoorWatch(
 				a->a.Event.u.TileSet.PicName,
 				PicManagerGetMaskedStylePic(
 					&gPicManager,
-					isFloor ? "floor" : "room",
-					isFloor ? floor : room,
-					isFloor ? FLOOR_SHADOW : ROOMFLOOR_SHADOW,
+					"tile",
+					isFloor ? m->FloorStyle : m->RoomStyle,
+					"shadow",
 					isFloor ? m->FloorMask : m->RoomMask,
 					m->AltMask)->name);
 		}
@@ -249,8 +246,7 @@ static TWatch *CreateCloseDoorWatch(
 static void TileAddTrigger(Tile *t, Trigger *tr);
 static Trigger *CreateOpenDoorTrigger(
 	Map *map, const Mission *m, const Vec2i v,
-	const bool isHorizontal, const int doorGroupCount,
-	const int floor, const int room, const int keyFlags)
+	const bool isHorizontal, const int doorGroupCount, const int keyFlags)
 {
 	// All tiles on either side of the door group use the same trigger
 	const Vec2i dv = Vec2iNew(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
@@ -303,9 +299,9 @@ static Trigger *CreateOpenDoorTrigger(
 				a->a.Event.u.TileSet.PicName,
 				PicManagerGetMaskedStylePic(
 					&gPicManager,
-					isFloor ? "floor" : "room",
-					isFloor? floor : room,
-					isFloor ? FLOOR_NORMAL : ROOMFLOOR_NORMAL,
+					"tile",
+					isFloor? m->FloorStyle : m->RoomStyle,
+					"normal",
 					isFloor ? m->FloorMask : m->RoomMask,
 					m->AltMask)->name);
 		}

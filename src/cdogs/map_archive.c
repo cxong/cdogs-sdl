@@ -472,9 +472,9 @@ static json_t *SaveMissions(CArray *a)
 		AddIntPair(node, "Width", mission->Size.x);
 		AddIntPair(node, "Height", mission->Size.y);
 
-		AddIntPair(node, "WallStyle", mission->WallStyle);
-		AddIntPair(node, "FloorStyle", mission->FloorStyle);
-		AddIntPair(node, "RoomStyle", mission->RoomStyle);
+		AddStringPair(node, "WallStyle", mission->WallStyle);
+		AddStringPair(node, "FloorStyle", mission->FloorStyle);
+		AddStringPair(node, "RoomStyle", mission->RoomStyle);
 		AddStringPair(node, "ExitStyle", mission->ExitStyle);
 		AddStringPair(node, "KeyStyle", mission->KeyStyle);
 		AddStringPair(node, "DoorStyle", mission->DoorStyle);

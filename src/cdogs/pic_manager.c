@@ -272,6 +272,8 @@ bool PicManagerTryInit(
 	pm->customPics = hashmap_new();
 	pm->customSprites = hashmap_new();
 	CArrayInit(&pm->drainPics, sizeof(NamedPic *));
+	CArrayInit(&pm->wallStyleNames, sizeof(char *));
+	CArrayInit(&pm->tileStyleNames, sizeof(char *));
 	CArrayInit(&pm->exitStyleNames, sizeof(char *));
 	CArrayInit(&pm->doorStyleNames, sizeof(char *));
 	CArrayInit(&pm->keyStyleNames, sizeof(char *));
@@ -548,9 +550,6 @@ static void LoadOldFacePics(
 	}
 }
 static PicPaletted *PicManagerGetOldPic(PicManager *pm, int idx);
-static void AddMaskBasePic(
-	PicManager *pm, const char *name,
-	const char *styleName, const char *typeName, const int picIdx);
 static void ProcessMultichannelPic(PicManager *pm, const int picIdx);
 static void GenerateOldPics(PicManager *pm)
 {
@@ -566,34 +565,6 @@ static void GenerateOldPics(PicManager *pm)
 		else
 		{
 			PicFromPicPaletted(&pm->picsFromOld[i], oldPic);
-		}
-	}
-
-	// For the tile pics, generate named pics from them, since we will be
-	// using them with masks later
-	for (int i = 0; i < WALL_STYLE_COUNT; i++)
-	{
-		for (int j = 0; j < WALL_TYPES; j++)
-		{
-			AddMaskBasePic(
-				pm, "wall", WallStyleStr(i), WallTypeStr(j), cWallPics[i][j]);
-		}
-	}
-	for (int i = 0; i < FLOOR_STYLE_COUNT; i++)
-	{
-		for (int j = 0; j < FLOOR_TYPES; j++)
-		{
-			AddMaskBasePic(
-				pm, "floor", FloorStyleStr(i), FloorTypeStr(j),
-				cFloorPics[i][j]);
-		}
-	}
-	for (int i = 0; i < ROOM_STYLE_COUNT; i++)
-	{
-		for (int j = 0; j < ROOMFLOOR_TYPES; j++)
-		{
-			AddMaskBasePic(
-				pm, "room", RoomStyleStr(i), RoomTypeStr(j), cRoomPics[i][j]);
 		}
 	}
 
@@ -709,15 +680,21 @@ static void ProcessMultichannelPic(PicManager *pm, const int picIdx)
 
 
 static void FindDrainPics(PicManager *pm);
-static void FindExitPics(PicManager *pm);
-static void FindDoorPics(PicManager *pm);
-static void FindKeyPics(PicManager *pm);
+static void FindStylePics(
+	PicManager *pm, CArray *styleNames, PFany hashmapFunc);
+static int MaybeAddWallPicName(any_t data, any_t item);
+static int MaybeAddTilePicName(any_t data, any_t item);
+static int MaybeAddExitPicName(any_t data, any_t item);
+static int MaybeAddKeyPicName(any_t data, any_t item);
+static int MaybeAddDoorPicName(any_t data, any_t item);
 static void AfterAdd(PicManager *pm)
 {
 	FindDrainPics(pm);
-	FindExitPics(pm);
-	FindDoorPics(pm);
-	FindKeyPics(pm);
+	FindStylePics(pm, &pm->wallStyleNames, MaybeAddWallPicName);
+	FindStylePics(pm, &pm->tileStyleNames, MaybeAddTilePicName);
+	FindStylePics(pm, &pm->exitStyleNames, MaybeAddExitPicName);
+	FindStylePics(pm, &pm->doorStyleNames, MaybeAddDoorPicName);
+	FindStylePics(pm, &pm->keyStyleNames, MaybeAddKeyPicName);
 }
 static void FindDrainPics(PicManager *pm)
 {
@@ -732,100 +709,31 @@ static void FindDrainPics(PicManager *pm)
 		CArrayPushBack(&pm->drainPics, &p);
 	}
 }
-static int MaybeAddExitPicName(any_t data, any_t item);
-static void FindExitPics(PicManager *pm)
 {
-	// Scan all pics for exit pics
-	CA_FOREACH(char *, exitStyleName, pm->exitStyleNames)
-		CFREE(*exitStyleName);
 	CA_FOREACH_END()
-	CArrayClear(&pm->exitStyleNames);
-	hashmap_iterate(pm->customPics, MaybeAddExitPicName, pm);
-	hashmap_iterate(pm->pics, MaybeAddExitPicName, pm);
 }
-static int MaybeAddExitPicName(any_t data, any_t item)
 {
-	// Exit pics should be like:
-	// exits/style/shadow
-	// where style is the style name to be stored, and
-	// shadow is normal/shadow
-	PicManager *pm = data;
-	const NamedPic *p = item;
 	const char *picName = p->name;
-	if (strncmp(picName, "exits/", strlen("exits/")) != 0)
 	{
-		return MAP_OK;
 	}
-	const char *lastSlash = strrchr(picName, '/');
 	char buf[CDOGS_FILENAME_MAX];
-	const size_t len = lastSlash - picName - strlen("exits/");
-	strncpy(buf, picName + strlen("exits/"), len);
 	buf[len] = '\0';
 	// Check if we already have the style name
 	// This can happen if a custom pic uses the same name as a built in one
-	CA_FOREACH(char *, styleName, pm->exitStyleNames)
 		if (strcmp(*styleName, buf) == 0)
 		{
-			return MAP_OK;
 		}
 	CA_FOREACH_END()
 
 	char *s;
 	CSTRDUP(s, buf);
-	CArrayPushBack(&pm->exitStyleNames, &s);
-	return MAP_OK;
 }
-static int MaybeAddDoorPicName(any_t data, any_t item);
-static void FindDoorPics(PicManager *pm)
 {
-	// Scan all pics for door pics
-	CA_FOREACH(char *, doorStyleName, pm->doorStyleNames)
-		CFREE(*doorStyleName);
-	CA_FOREACH_END()
-	CArrayClear(&pm->doorStyleNames);
-	hashmap_iterate(pm->customPics, MaybeAddDoorPicName, pm);
-	hashmap_iterate(pm->pics, MaybeAddDoorPicName, pm);
 }
 static int MaybeAddDoorPicName(any_t data, any_t item)
 {
 	PicManager *pm = data;
-	const NamedPic *p = item;
-	const char *picName = p->name;
-	// Use the "wall" pic name
-	if (strncmp(picName, "door/", strlen("door/")) != 0 ||
-		strcmp(picName + strlen(picName) - strlen("_wall"), "_wall") != 0)
-	{
-		return MAP_OK;
-	}
-	char buf[CDOGS_FILENAME_MAX];
-	const size_t len = strlen(picName) - strlen("door/") - strlen("_wall");
-	strncpy(buf, picName + strlen("door/"), len);
-	buf[len] = '\0';
-	// Check if we already have the door pic name
-	// This can happen if a custom door pic uses the same name as a built in
-	// one
-	CA_FOREACH(char *, doorStyleName, pm->doorStyleNames)
-		if (strcmp(*doorStyleName, buf) == 0)
-		{
-			return MAP_OK;
-		}
-	CA_FOREACH_END()
-
-	char *s;
-	CSTRDUP(s, buf);
-	CArrayPushBack(&pm->doorStyleNames, &s);
 	return MAP_OK;
-}
-static int MaybeAddKeyPicName(any_t data, any_t item);
-static void FindKeyPics(PicManager *pm)
-{
-	// Scan all pics for key pics
-	CA_FOREACH(char *, keyStyleName, pm->keyStyleNames)
-		CFREE(*keyStyleName);
-	CA_FOREACH_END()
-	CArrayClear(&pm->keyStyleNames);
-	hashmap_iterate(pm->customPics, MaybeAddKeyPicName, pm);
-	hashmap_iterate(pm->pics, MaybeAddKeyPicName, pm);
 }
 static int MaybeAddKeyPicName(any_t data, any_t item)
 {
@@ -835,30 +743,6 @@ static int MaybeAddKeyPicName(any_t data, any_t item)
 	// colour is yellow/green/blue/red
 	// TODO: more colours
 	PicManager *pm = data;
-	const NamedPic *p = item;
-	const char *picName = p->name;
-	if (strncmp(picName, "keys/", strlen("keys/")) != 0)
-	{
-		return MAP_OK;
-	}
-	const char *lastSlash = strrchr(picName, '/');
-	char buf[CDOGS_FILENAME_MAX];
-	const size_t len = lastSlash - picName - strlen("keys/");
-	strncpy(buf, picName + strlen("keys/"), len);
-	buf[len] = '\0';
-	// Check if we already have the key style name
-	// This can happen if a custom key pic uses the same name as a built in
-	// one
-	CA_FOREACH(char *, keyStyleName, pm->keyStyleNames)
-		if (strcmp(*keyStyleName, buf) == 0)
-		{
-			return MAP_OK;
-		}
-	CA_FOREACH_END()
-
-	char *s;
-	CSTRDUP(s, buf);
-	CArrayPushBack(&pm->keyStyleNames, &s);
 	return MAP_OK;
 }
 
@@ -889,19 +773,8 @@ void PicManagerTerminate(PicManager *pm)
 	hashmap_destroy(pm->customPics, NamedPicDestroy);
 	hashmap_destroy(pm->customSprites, NamedSpritesDestroy);
 	CArrayTerminate(&pm->drainPics);
-	CA_FOREACH(char *, styleName, pm->exitStyleNames)
 		CFREE(*styleName);
 	CA_FOREACH_END()
-	CArrayTerminate(&pm->exitStyleNames);
-	CA_FOREACH(char *, doorStyleName, pm->doorStyleNames)
-		CFREE(*doorStyleName);
-	CA_FOREACH_END()
-	CArrayTerminate(&pm->doorStyleNames);
-	CA_FOREACH(char *, keyStyleName, pm->keyStyleNames)
-		CFREE(*keyStyleName);
-	CA_FOREACH_END()
-	CArrayTerminate(&pm->keyStyleNames);
-	IMG_Quit();
 }
 static void NamedPicDestroy(any_t data)
 {
@@ -995,8 +868,6 @@ const NamedSprites *PicManagerGetSprites(
 
 static void GetMaskedName(
 	char *buf, const char *name, const color_t mask, const color_t maskAlt);
-static void GetMaskedStyleName(
-	char *buf, const char *name, const int style, const int type);
 
 // Get a pic that is colour-masked.
 // The name of the pic will be <name>_<mask>_<maskAlt>
@@ -1010,11 +881,9 @@ static NamedPic *PicManagerGetMaskedPic(
 	return PicManagerGetNamedPic(pm, maskedName);
 }
 NamedPic *PicManagerGetMaskedStylePic(
-	const PicManager *pm, const char *name, const int style, const int type,
 	const color_t mask, const color_t maskAlt)
 {
 	char buf[256];
-	GetMaskedStyleName(buf, name, style, type);
 	return PicManagerGetMaskedPic(pm, buf, mask, maskAlt);
 }
 
@@ -1060,11 +929,9 @@ void PicManagerGenerateMaskedPic(
 	AfterAdd(pm);
 }
 void PicManagerGenerateMaskedStylePic(
-	PicManager *pm, const char *name, const int style, const int type,
 	const color_t mask, const color_t maskAlt)
 {
 	char buf[256];
-	GetMaskedStyleName(buf, name, style, type);
 	PicManagerGenerateMaskedPic(pm, buf, mask, maskAlt);
 }
 
@@ -1076,33 +943,6 @@ static void GetMaskedName(
 	char maskAltName[8];
 	ColorStr(maskAltName, maskAlt);
 	sprintf(buf, "%s/%s/%s", name, maskName, maskAltName);
-}
-static void GetMaskedStyleName(
-	char *buf, const char *name, const int style, const int type)
-{
-	const char *styleName;
-	const char *typeName;
-	if (strcmp(name, "wall") == 0)
-	{
-		styleName = WallStyleStr(style);
-		typeName = WallTypeStr(type);
-	}
-	else if (strcmp(name, "floor") == 0)
-	{
-		styleName = FloorStyleStr(style);
-		typeName = FloorTypeStr(type);
-	}
-	else if (strcmp(name, "room") == 0)
-	{
-		styleName = RoomStyleStr(style);
-		typeName = RoomTypeStr(type);
-	}
-	else
-	{
-		CASSERT(false, "Invalid masked style name");
-		return;
-	}
-	sprintf(buf, "%s/%s/%s", name, styleName, typeName);
 }
 
 static NamedPic *AddNamedPic(map_t pics, const char *name, const Pic *p)

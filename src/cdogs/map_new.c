@@ -203,9 +203,28 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 		JSON_UTILS_LOAD_ENUM(m.Type, child, "Type", StrMapType);
 		LoadInt(&m.Size.x, child, "Width");
 		LoadInt(&m.Size.y, child, "Height");
-		LoadInt(&m.WallStyle, child, "WallStyle");
-		LoadInt(&m.FloorStyle, child, "FloorStyle");
-		LoadInt(&m.RoomStyle, child, "RoomStyle");
+		if (version <= 10)
+		{
+			int style;
+			LoadInt(&style, child, "WallStyle");
+			strcpy(m.WallStyle, IntWallStyle(style));
+			LoadInt(&style, child, "FloorStyle");
+			strcpy(m.FloorStyle, IntFloorStyle(style));
+			LoadInt(&style, child, "RoomStyle");
+			strcpy(m.RoomStyle, IntRoomStyle(style));
+		}
+		else
+		{
+			char *tmp = GetString(child, "WallStyle");
+			strcpy(m.WallStyle, tmp);
+			CFREE(tmp);
+			tmp = GetString(child, "FloorStyle");
+			strcpy(m.FloorStyle, tmp);
+			CFREE(tmp);
+			tmp = GetString(child, "RoomStyle");
+			strcpy(m.RoomStyle, tmp);
+			CFREE(tmp);
+		}
 		if (version <= 9)
 		{
 			int style;

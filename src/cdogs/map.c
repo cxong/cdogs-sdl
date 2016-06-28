@@ -629,7 +629,7 @@ static int MapGetAccessFlags(Map *map, int x, int y)
 	return flags;
 }
 
-static void MapSetupDoors(Map *map, const Mission *m, int floor, int room)
+static void MapSetupDoors(Map *map, const Mission *m)
 {
 	Vec2i v;
 	for (v.x = 0; v.x < map->Size.x; v.x++)
@@ -642,9 +642,7 @@ static void MapSetupDoors(Map *map, const Mission *m, int floor, int room)
 				(IMapGet(map, Vec2iNew(v.x - 1, v.y)) & MAP_MASKACCESS) != MAP_DOOR &&
 				(IMapGet(map, Vec2iNew(v.x, v.y - 1)) & MAP_MASKACCESS) != MAP_DOOR)
 			{
-				MapAddDoorGroup(
-					map, m, v, floor, room,
-					MapGetAccessFlags(map, v.x, v.y));
+				MapAddDoorGroup(map, m, v, MapGetAccessFlags(map, v.x, v.y));
 			}
 		}
 	}
@@ -715,9 +713,7 @@ void MapLoad(
 	}
 
 	MapSetupTilesAndWalls(map, mission);
-	const int floor = mission->FloorStyle % FLOOR_STYLE_COUNT;
-	const int room = mission->RoomStyle % ROOM_STYLE_COUNT;
-	MapSetupDoors(map, mission, floor, room);
+	MapSetupDoors(map, mission);
 
 	// Set exit now since we have set up all the tiles
 	if (Vec2iIsZero(map->ExitStart) && Vec2iIsZero(map->ExitEnd))

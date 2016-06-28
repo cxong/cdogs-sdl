@@ -79,19 +79,22 @@ void MapSetupTilesAndWalls(Map *map, const Mission *m)
 	for (int i = 0; i < WALL_TYPES; i++)
 	{
 		PicManagerGenerateMaskedStylePic(
-			&gPicManager, "wall", m->WallStyle, i, m->WallMask, m->AltMask);
+			&gPicManager, "wall", m->WallStyle, WallTypeStr(i),
+			m->WallMask, m->AltMask);
 	}
 	// Floors
 	for (int i = 0; i < FLOOR_TYPES; i++)
 	{
 		PicManagerGenerateMaskedStylePic(
-			&gPicManager, "floor", m->FloorStyle, i, m->FloorMask, m->AltMask);
+			&gPicManager, "tile", m->FloorStyle, IntTileType(i),
+			m->FloorMask, m->AltMask);
 	}
 	// Rooms
 	for (int i = 0; i < ROOMFLOOR_TYPES; i++)
 	{
 		PicManagerGenerateMaskedStylePic(
-			&gPicManager, "room", m->RoomStyle, i, m->RoomMask, m->AltMask);
+			&gPicManager, "tile", m->RoomStyle, IntTileType(i),
+			m->RoomMask, m->AltMask);
 	}
 
 	Vec2i v;
@@ -117,7 +120,6 @@ void MapSetupTilesAndWalls(Map *map, const Mission *m)
 		}
 	}
 
-	int floor = m->FloorStyle % FLOOR_STYLE_COUNT;
 	// Randomly change normal floor tiles to alternative floor tiles
 	for (int i = 0; i < map->Size.x*map->Size.y / 22; i++)
 	{
@@ -126,7 +128,7 @@ void MapSetupTilesAndWalls(Map *map, const Mission *m)
 		if (TileIsNormalFloor(t))
 		{
 			TileSetAlternateFloor(t, PicManagerGetMaskedStylePic(
-				&gPicManager, "floor", floor, FLOOR_1,
+				&gPicManager, "tile", m->FloorStyle, "alt1",
 				m->FloorMask, m->AltMask));
 		}
 	}
@@ -137,18 +139,15 @@ void MapSetupTilesAndWalls(Map *map, const Mission *m)
 		if (TileIsNormalFloor(t))
 		{
 			TileSetAlternateFloor(t, PicManagerGetMaskedStylePic(
-				&gPicManager, "floor", floor, FLOOR_2,
+				&gPicManager, "tile", m->FloorStyle, "alt2",
 				m->FloorMask, m->AltMask));
 		}
 	}
 }
-static int MapGetWallPic(Map *m, Vec2i pos);
+static const char *MapGetWallPic(const Map *m, const Vec2i pos);
 // Set tile properties for a map tile, such as picture to use
 static void MapSetupTile(Map *map, const Vec2i pos, const Mission *m)
 {
-	const int floor = m->FloorStyle % FLOOR_STYLE_COUNT;
-	const int wall = m->WallStyle % WALL_STYLE_COUNT;
-	const int room = m->RoomStyle % ROOM_STYLE_COUNT;
 	Tile *tAbove = MapGetTile(map, Vec2iNew(pos.x, pos.y - 1));
 	bool canSeeTileAbove = !(tAbove != NULL && !TileCanSee(tAbove));
 	Tile *t = MapGetTile(map, pos);
@@ -161,8 +160,8 @@ static void MapSetupTile(Map *map, const Vec2i pos, const Mission *m)
 	case MAP_FLOOR:
 	case MAP_SQUARE:
 		t->pic = PicManagerGetMaskedStylePic(
-			&gPicManager, "floor", floor,
-			canSeeTileAbove ? FLOOR_NORMAL : FLOOR_SHADOW,
+			&gPicManager, "tile", m->FloorStyle,
+			canSeeTileAbove ? "normal" : "shadow",
 			m->FloorMask, m->AltMask);
 		if (canSeeTileAbove)
 		{
@@ -175,14 +174,14 @@ static void MapSetupTile(Map *map, const Vec2i pos, const Mission *m)
 	case MAP_ROOM:
 	case MAP_DOOR:
 		t->pic = PicManagerGetMaskedStylePic(
-			&gPicManager, "room", room,
-			canSeeTileAbove ? ROOMFLOOR_NORMAL : ROOMFLOOR_SHADOW,
+			&gPicManager, "tile", m->RoomStyle,
+			canSeeTileAbove ? "normal" : "shadow",
 			m->RoomMask, m->AltMask);
 		break;
 
 	case MAP_WALL:
 		t->pic = PicManagerGetMaskedStylePic(
-			&gPicManager, "wall", wall, MapGetWallPic(map, pos),
+			&gPicManager, "wall", m->WallStyle, MapGetWallPic(map, pos),
 			m->WallMask, m->AltMask);
 		t->flags =
 			MAPTILE_NO_WALK | MAPTILE_NO_SHOOT |
@@ -196,74 +195,74 @@ static void MapSetupTile(Map *map, const Vec2i pos, const Mission *m)
 		break;
 	}
 }
-static int W(Map *map, int x, int y);
-static int MapGetWallPic(Map *m, Vec2i pos)
+static int W(const Map *map, const int x, const int y);
+static const char *MapGetWallPic(const Map *m, const Vec2i pos)
 {
-	int x = pos.x;
-	int y = pos.y;
+	const int x = pos.x;
+	const int y = pos.y;
 	if (W(m, x - 1, y) && W(m, x + 1, y) && W(m, x, y + 1) && W(m, x, y - 1))
 	{
-		return WALL_CROSS;
+		return "x";
 	}
 	if (W(m, x - 1, y) && W(m, x + 1, y) && W(m, x, y + 1))
 	{
-		return WALL_TOP_T;
+		return "nt";
 	}
 	if (W(m, x - 1, y) && W(m, x + 1, y) && W(m, x, y - 1))
 	{
-		return WALL_BOTTOM_T;
+		return "st";
 	}
 	if (W(m, x - 1, y) && W(m, x, y + 1) && W(m, x, y - 1))
 	{
-		return WALL_RIGHT_T;
+		return "et";
 	}
 	if (W(m, x + 1, y) && W(m, x, y + 1) && W(m, x, y - 1))
 	{
-		return WALL_LEFT_T;
+		return "wt";
 	}
 	if (W(m, x + 1, y) && W(m, x, y + 1))
 	{
-		return WALL_TOPLEFT;
+		return "nw";
 	}
 	if (W(m, x + 1, y) && W(m, x, y - 1))
 	{
-		return WALL_BOTTOMLEFT;
+		return "sw";
 	}
 	if (W(m, x - 1, y) && W(m, x, y + 1))
 	{
-		return WALL_TOPRIGHT;
+		return "ne";
 	}
 	if (W(m, x - 1, y) && W(m, x, y - 1))
 	{
-		return WALL_BOTTOMRIGHT;
+		return "se";
 	}
 	if (W(m, x - 1, y) && W(m, x + 1, y))
 	{
-		return WALL_HORIZONTAL;
+		return "h";
 	}
 	if (W(m, x, y + 1) && W(m, x, y - 1))
 	{
-		return WALL_VERTICAL;
+		return "v";
 	}
 	if (W(m, x, y + 1))
 	{
-		return WALL_TOP;
+		return "n";
 	}
 	if (W(m, x, y - 1))
 	{
-		return WALL_BOTTOM;
+		return "s";
 	}
 	if (W(m, x + 1, y))
 	{
-		return WALL_LEFT;
+		return "w";
 	}
 	if (W(m, x - 1, y))
 	{
-		return WALL_RIGHT;
+		return "e";
 	}
-	return WALL_SINGLE;
+	return "o";
 }
-static int W(Map *map, int x, int y)
+static int W(const Map *map, const int x, const int y)
 {
 	return IMapGet(map, Vec2iNew(x, y)) == MAP_WALL;
 }

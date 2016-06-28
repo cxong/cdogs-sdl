@@ -44,8 +44,10 @@ typedef struct
 
 	CArray drainPics;	// of NamedPic *
 
+	CArray wallStyleNames;	// of char *
+	CArray tileStyleNames;	// of char *
 	CArray exitStyleNames;	// of char *
-	CArray doorStyleNames;	// of char *, for editor
+	CArray doorStyleNames;	// of char *
 	CArray keyStyleNames;	// of char *
 } PicManager;
 
@@ -73,19 +75,22 @@ const NamedSprites *PicManagerGetSprites(
 // Simply calls GetMaskedPic but the name contains the relevant
 // style/type names
 NamedPic *PicManagerGetMaskedStylePic(
-	const PicManager *pm, const char *name, const int style, const int type,
+	const PicManager *pm,
+	const char *name, const char *style, const char *type,
 	const color_t mask, const color_t maskAlt);
 // To support dynamic colours, generate pics on request.
 void PicManagerGenerateMaskedPic(
 	PicManager *pm, const char *name,
 	const color_t mask, const color_t maskAlt);
 void PicManagerGenerateMaskedStylePic(
-	PicManager *pm, const char *name, const int style, const int type,
+	PicManager *pm, const char *name, const char *style, const char *type,
 	const color_t mask, const color_t maskAlt);
 
 NamedPic *PicManagerGetRandomDrain(PicManager *pm);
 NamedPic *PicManagerGetExitPic(
 	PicManager *pm, const char *style, const bool isShadow);
+int PicManagerGetWallStyleIndex(PicManager *pm, const char *style);
+int PicManagerGetTileStyleIndex(PicManager *pm, const char *style);
 int PicManagerGetExitStyleIndex(PicManager *pm, const char *style);
 int PicManagerGetDoorStyleIndex(PicManager *pm, const char *style);
 int PicManagerGetKeyStyleIndex(PicManager *pm, const char *style);

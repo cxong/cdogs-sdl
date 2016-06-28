@@ -390,36 +390,34 @@ static void MissionDrawWallStyle(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
 	UNUSED(g);
-	int count = WALL_STYLE_COUNT;
 	CampaignOptions *co = data;
 	const Mission *m = CampaignGetCurrentMission(co);
 	if (!m) return;
-	int idx = m->WallStyle;
+	const int idx = PicManagerGetWallStyleIndex(&gPicManager, m->WallStyle);
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Wall",
 		&PicManagerGetMaskedStylePic(
-			&gPicManager, "wall", idx % count, WALL_SINGLE,
+			&gPicManager, "wall", m->WallStyle, "o",
 			m->WallMask, m->AltMask)->pic,
-		idx, count,
+		idx, (int)gPicManager.wallStyleNames.size,
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawFloorStyle(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
 {
 	UNUSED(g);
-	int count = FLOOR_STYLE_COUNT;
 	CampaignOptions *co = data;
 	const Mission *m = CampaignGetCurrentMission(co);
 	if (!m) return;
-	const int idx = m->FloorStyle;
+	const int idx = PicManagerGetTileStyleIndex(&gPicManager, m->FloorStyle);
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Floor",
 		&PicManagerGetMaskedStylePic(
-			&gPicManager, "floor", idx % count, FLOOR_NORMAL,
+			&gPicManager, "tile", m->FloorStyle, "normal",
 			m->FloorMask, m->AltMask)->pic,
-		idx, count,
+		idx, (int)gPicManager.tileStyleNames.size,
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawRoomStyle(
@@ -429,15 +427,14 @@ static void MissionDrawRoomStyle(
 	CampaignOptions *co = data;
 	const Mission *m = CampaignGetCurrentMission(co);
 	if (!m) return;
-	const int idx = m->RoomStyle;
-	const int count = ROOM_STYLE_COUNT;
+	const int idx = PicManagerGetTileStyleIndex(&gPicManager, m->RoomStyle);
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
 		"Rooms",
 		&PicManagerGetMaskedStylePic(
-			&gPicManager, "room", idx % count, ROOMFLOOR_NORMAL,
+			&gPicManager, "tile", m->RoomStyle, "normal",
 			m->RoomMask, m->AltMask)->pic,
-		idx, count,
+		idx, (int)gPicManager.tileStyleNames.size,
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawDoorStyle(
@@ -841,20 +838,35 @@ static void MissionChangeType(void *data, int d)
 static void MissionChangeWallStyle(void *data, int d)
 {
 	CampaignOptions *co = data;
-	CampaignGetCurrentMission(co)->WallStyle = CLAMP_OPPOSITE(
-		CampaignGetCurrentMission(co)->WallStyle + d, 0, WALL_STYLE_COUNT - 1);
+	Mission *m = CampaignGetCurrentMission(co);
+	const int idx = CLAMP_OPPOSITE(
+		PicManagerGetWallStyleIndex(&gPicManager, m->WallStyle) + d,
+		0,
+		(int)gPicManager.wallStyleNames.size - 1);
+	strcpy(
+		m->WallStyle, *(char **)CArrayGet(&gPicManager.wallStyleNames, idx));
 }
 static void MissionChangeFloorStyle(void *data, int d)
 {
 	CampaignOptions *co = data;
-	CampaignGetCurrentMission(co)->FloorStyle = CLAMP_OPPOSITE(
-		CampaignGetCurrentMission(co)->FloorStyle + d, 0, FLOOR_STYLE_COUNT - 1);
+	Mission *m = CampaignGetCurrentMission(co);
+	const int idx = CLAMP_OPPOSITE(
+		PicManagerGetTileStyleIndex(&gPicManager, m->FloorStyle) + d,
+		0,
+		(int)gPicManager.tileStyleNames.size - 1);
+	strcpy(
+		m->FloorStyle, *(char **)CArrayGet(&gPicManager.tileStyleNames, idx));
 }
 static void MissionChangeRoomStyle(void *data, int d)
 {
 	CampaignOptions *co = data;
-	CampaignGetCurrentMission(co)->RoomStyle = CLAMP_OPPOSITE(
-		CampaignGetCurrentMission(co)->RoomStyle + d, 0, ROOM_STYLE_COUNT - 1);
+	Mission *m = CampaignGetCurrentMission(co);
+	const int idx = CLAMP_OPPOSITE(
+		PicManagerGetTileStyleIndex(&gPicManager, m->RoomStyle) + d,
+		0,
+		(int)gPicManager.tileStyleNames.size - 1);
+	strcpy(
+		m->RoomStyle, *(char **)CArrayGet(&gPicManager.tileStyleNames, idx));
 }
 static void MissionChangeDoorStyle(void *data, int d)
 {

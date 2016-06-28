@@ -606,146 +606,36 @@ const char *WallTypeStr(const int w)
 		return "";
 	}
 }
-const char *WallStyleStr(const wall_style_e w)
+const char *IntWallStyle(const int i)
 {
-	switch (w)
-	{
-		T2S(WALL_STYLE_STEEL, "steel");
-		T2S(WALL_STYLE_BRICKS, "brick");
-		T2S(WALL_STYLE_RED, "carbon");
-		T2S(WALL_STYLE_STEEL_N_WOOD, "steelwood");
-		T2S(WALL_STYLE_STONE, "stone");
-		T2S(WALL_STYLE_PLASTEEL, "plasteel");
-		T2S(WALL_STYLE_GRANITE, "granite");
-	default:
-		return "";
-	}
+	static const char *wallStyles[] = {
+		"steel", "brick" "carbon", "steelwood", "stone", "plasteel", "granite"
+	};
+	return wallStyles[abs(i) % WALL_STYLE_COUNT];
 }
 
-const int cWallPics[WALL_STYLE_COUNT][WALL_TYPES] = {
-	{6, 108, 107, 95, 102, 97, 96, 104,	// "Steel"
-	 103, 101, 100, 98, 105, 99, 106, 94},
-
-	{157, 160, 159, 155, 157, 154, 156, 160,	// Stone/bricks
-	 159, 154, 156, 153, 158, 155, 158, 153},
-
-	{181, 188, 187, 174, 182, 176, 175, 184,	// Red ornamental
-	 183, 180, 179, 177, 185, 178, 186, 173},
-
-	{210, 217, 216, 203, 211, 205, 204, 213,	// Grey/wood ornamental
-	 212, 209, 208, 206, 214, 207, 215, 202},
-
-	{326, 333, 332, 319, 327, 321, 320, 329,	// Rough stone
-	 328, 325, 324, 322, 330, 323, 331, 318},
-
-	{P2 + 60, P2 + 67, P2 + 66, P2 + 53, P2 + 61, P2 + 55, P2 + 54,
-	 P2 + 63,
-	 P2 + 62, P2 + 59, P2 + 58, P2 + 56, P2 + 64, P2 + 57, P2 + 65,
-	 P2 + 52},	// Plasteel
-
-	{P2 + 76, P2 + 83, P2 + 82, P2 + 69, P2 + 77, P2 + 71, P2 + 70,
-	 P2 + 79,
-	 P2 + 78, P2 + 75, P2 + 74, P2 + 72, P2 + 80, P2 + 73, P2 + 81,
-	 P2 + 68}	// Granite
-};
-
-const char *FloorTypeStr(const int f)
+const char *IntTileType(const int i)
 {
-	switch (f)
-	{
-		T2S(FLOOR_SHADOW, "shadow");
-		T2S(FLOOR_NORMAL, "normal");
-		T2S(FLOOR_1, "alt1");
-		T2S(FLOOR_2, "alt2");
-	default:
-		return "";
-	}
+	static const char *tileTypes[] = { "shadow", "normal", "alt1", "alt2" };
+	return tileTypes[abs(i) % FLOOR_TYPES];
 }
-const char *FloorStyleStr(const floor_style_e f)
+const char *IntFloorStyle(const int i)
 {
-	switch (f)
-	{
-		T2S(FLOOR_STYLE_GREEN, "recessed");
-		T2S(FLOOR_STYLE_PURPLE, "tile");
-		T2S(FLOOR_STYLE_DIRT, "dirt");
-		T2S(FLOOR_STYLE_BLUE, "flat");
-		T2S(FLOOR_STYLE_STRIPES, "striped");
-		T2S(FLOOR_STYLE_SMALLSQUARES, "smallsquare");
-		T2S(FLOOR_STYLE_STONE, "stone");
-		T2S(FLOOR_STYLE_WOOD, "wood");
-		T2S(FLOOR_STYLE_WHITE, "biggrid");
-		T2S(FLOOR_STYLE_GRID, "grid");
-	default:
-		return "";
-	}
+	static const char *floorStyles[] = {
+		"recessed", "tile", "dirt", "flat", "striped", "smallsquare", "stone",
+		"wood", "biggrid", "grid"
+	};
+	return floorStyles[abs(i) % FLOOR_STYLE_COUNT];
 }
-
-const int cFloorPics[FLOOR_STYLE_COUNT][FLOOR_TYPES] = {
-	{2, 1, 165, 166},	// Green grid
-
-	{152, 151, 167, 168},	// Purple plates
-
-	{170, 169, 171, 172},	// Dirt
-
-	{199, 198, 200, 201},	// Plain blue
-
-	{253, 254, 255, 256},	// Brown stripes
-
-	{257, 258, 259, 260},	// Gray squares
-
-	{311, 310, 312, 313},	// Pebbles
-
-	{315, 314, 316, 317},	// Wood
-
-	{384, 383, 383, 383},	// White
-
-	{P2 + 46, P2 + 45, P2 + 45, P2 + 45}	// Grid
-};
-
-const char *RoomTypeStr(const int r)
+// Note: room styles subtly different from floor styles
+const char *IntRoomStyle(const int i)
 {
-	switch (r)
-	{
-		T2S(ROOMFLOOR_SHADOW, "shadow");
-		T2S(ROOMFLOOR_NORMAL, "normal");
-	default:
-		return "";
-	}
+	static const char *roomStyles[] = {
+		"recessed", "tile", "dirt", "flat", "striped", "smallsquare", "stone",
+		"wood", "grid", "biggrid", "checker"
+	};
+	return roomStyles[abs(i) % ROOM_STYLE_COUNT];
 }
-const char *RoomStyleStr(const RoomStyle r)
-{
-	switch (r)
-	{
-		T2S(ROOM_STYLE_RECESSED, "recessed");
-		T2S(ROOM_STYLE_TILE, "tile");
-		T2S(ROOM_STYLE_DIRT, "dirt");
-		T2S(ROOM_STYLE_FLAT, "flat");
-		T2S(ROOM_STYLE_STRIPED, "striped");
-		T2S(ROOM_STYLE_SMALLSQUARES, "smallsquare");
-		T2S(ROOM_STYLE_STONE, "stone");
-		T2S(ROOM_STYLE_WOOD, "wood");
-		T2S(ROOM_STYLE_GRID, "grid");
-		T2S(ROOM_STYLE_BIGGRID, "biggrid");
-		T2S(ROOM_STYLE_CHECKER, "checker");
-	default:
-		return "";
-	}
-}
-
-const int cRoomPics[ROOM_STYLE_COUNT][ROOMFLOOR_TYPES] =
-{
-	{P2 + 85, P2 + 84},
-	{P2 + 87, P2 + 86},
-	{P2 + 89, P2 + 88},
-	{P2 + 91, P2 + 90},
-	{P2 + 93, P2 + 92},
-	{P2 + 95, P2 + 94},
-	{P2 + 97, P2 + 96},
-	{P2 + 99, P2 + 98},
-	{P2 + 101, P2 + 100},
-	{P2 + 103, P2 + 102},
-	{P2 + 105, P2 + 104}
-};
 
 const struct Offset cWallOffset = { 0, -12 };
 

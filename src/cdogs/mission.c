@@ -103,6 +103,9 @@ void MissionInit(Mission *m)
 {
 	memset(m, 0, sizeof *m);
 	// Initialise with default styles
+	strcpy(m->WallStyle, IntWallStyle(0));
+	strcpy(m->FloorStyle, IntFloorStyle(0));
+	strcpy(m->RoomStyle, IntRoomStyle(0));
 	strcpy(m->ExitStyle, IntExitStyle(0));
 	strcpy(m->KeyStyle, IntKeyStyle(0));
 	strcpy(m->DoorStyle, DoorStyleStr(0));
@@ -135,9 +138,9 @@ void MissionCopy(Mission *dst, const Mission *src)
 	dst->Type = src->Type;
 	dst->Size = src->Size;
 
-	dst->WallStyle = src->WallStyle;
-	dst->FloorStyle = src->FloorStyle;
-	dst->RoomStyle = src->RoomStyle;
+	strcpy(dst->WallStyle, src->WallStyle);
+	strcpy(dst->FloorStyle, src->FloorStyle);
+	strcpy(dst->RoomStyle, src->RoomStyle);
 	strcpy(dst->ExitStyle, src->ExitStyle);
 	strcpy(dst->KeyStyle, src->KeyStyle);
 	strcpy(dst->DoorStyle, src->DoorStyle);
