@@ -92,3 +92,10 @@ tree_wreck.png
 wall_goo.png
 wall_skull.png
 wall_stuff.png
+wall/brick/
+wall/carbon/
+wall/granite/
+wall/plasteel/
+wall/steel/
+wall/steelwood/
+wall/stone/
