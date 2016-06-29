@@ -609,7 +609,8 @@ const char *WallTypeStr(const int w)
 const char *IntWallStyle(const int i)
 {
 	static const char *wallStyles[] = {
-		"steel", "brick" "carbon", "steelwood", "stone", "plasteel", "granite"
+		"steel", "brick", "carbon", "steelwood", "stone", "plasteel",
+		"granite"
 	};
 	return wallStyles[abs(i) % WALL_STYLE_COUNT];
 }
