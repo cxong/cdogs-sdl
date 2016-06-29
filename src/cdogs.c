@@ -438,7 +438,7 @@ int main(int argc, char *argv[])
 		goto bail;
 	}
 	FontLoadFromJSON(&gFont, "graphics/font.png", "graphics/font.json");
-	PicManagerLoadDir(&gPicManager, "graphics");
+	PicManagerLoad(&gPicManager, "graphics");
 
 	ParticleClassesInit(&gParticleClasses, "data/particles.json");
 	AmmoInitialize(&gAmmo, "data/ammo.json");

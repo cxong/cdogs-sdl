@@ -1337,7 +1337,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	FontLoadFromJSON(&gFont, "graphics/font.png", "graphics/font.json");
-	PicManagerLoadDir(&gPicManager, "graphics");
+	PicManagerLoad(&gPicManager, "graphics");
 
 	ParticleClassesInit(&gParticleClasses, "data/particles.json");
 	AmmoInitialize(&gAmmo, "data/ammo.json");

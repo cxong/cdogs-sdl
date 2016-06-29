@@ -252,56 +252,9 @@ bail:
 static void LoadArchivePics(
 	PicManager *pm, const char *archive, const char *dirname)
 {
-	char *buf = NULL;
-
 	char path[CDOGS_PATH_MAX];
 	sprintf(path, "%s/%s", archive, dirname);
-	tinydir_dir dir;
-	if (tinydir_open(&dir, path) != 0)
-	{
-		LOG(LM_MAP, LL_DEBUG, "no pic dir(%s): %s", path, strerror(errno));
-		goto bail;
-	}
-	while (dir.has_next)
-	{
-		tinydir_file file;
-		if (tinydir_readfile(&dir, &file) != 0)
-		{
-			LOG(LM_MAP, LL_WARN, "cannot read file: %s", strerror(errno));
-			break;
-		}
-		if (!file.is_reg) goto nextFile;
-		long len;
-		buf = ReadFileIntoBuf(file.path, "rb", &len);
-		if (buf == NULL) goto nextFile;
-		SDL_RWops *rwops = SDL_RWFromMem(buf, len);
-		bool isPng = IMG_isPNG(rwops);
-		if (isPng)
-		{
-			SDL_Surface *data = IMG_Load_RW(rwops, 0);
-			if (data != NULL)
-			{
-				char nameBuf[CDOGS_FILENAME_MAX];
-				PathGetBasenameWithoutExtension(nameBuf, file.path);
-				PicManagerAdd(pm->customPics, pm->customSprites, nameBuf, data);
-			}
-		}
-		rwops->close(rwops);
-	nextFile:
-		CFREE(buf);
-		buf = NULL;
-		if (tinydir_next(&dir) != 0)
-		{
-			printf(
-				"Could not go to next file in dir %s: %s\n",
-				path, strerror(errno));
-			goto bail;
-		}
-	}
-
-bail:
-	CFREE(buf);
-	tinydir_close(&dir);
+	PicManagerLoadDir(pm, path, NULL, pm->customPics, pm->customSprites);
 }
 
 static char *ReadFileIntoBuf(const char *path, const char *mode, long *len)

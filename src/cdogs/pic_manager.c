@@ -408,8 +408,9 @@ void PicManagerAdd(
 	AfterAdd(&gPicManager);
 }
 
-static void PicManagerLoadDirImpl(
-	PicManager *pm, const char *path, const char *prefix)
+void PicManagerLoadDir(
+	PicManager *pm, const char *path, const char *prefix,
+	map_t pics, map_t sprites)
 {
 	tinydir_dir dir;
 	if (tinydir_open(&dir, path) == -1)
@@ -451,7 +452,7 @@ static void PicManagerLoadDirImpl(
 					{
 						PathGetBasenameWithoutExtension(buf, file.name);
 					}
-					PicManagerAdd(pm->pics, pm->sprites, buf, data);
+					PicManagerAdd(pics, sprites, buf, data);
 				}
 			}
 			rwops->close(rwops);
@@ -462,11 +463,12 @@ static void PicManagerLoadDirImpl(
 			{
 				char buf[CDOGS_PATH_MAX];
 				sprintf(buf, "%s/%s", prefix, file.name);
-				PicManagerLoadDirImpl(pm, file.path, buf);
+				PicManagerLoadDir(pm, file.path, buf, pics, sprites);
 			}
 			else
 			{
-				PicManagerLoadDirImpl(pm, file.path, file.name);
+				PicManagerLoadDir(
+					pm, file.path, file.name, pics, sprites);
 			}
 		}
 	}
@@ -480,7 +482,7 @@ static void LoadOldSprites(
 static void LoadOldFacePics(
 	PicManager *pm, const char *spritesName, int facePics[][DIRECTION_COUNT],
 	Vec2i offsets[FACE_COUNT][DIRECTION_COUNT]);
-void PicManagerLoadDir(PicManager *pm, const char *path)
+void PicManagerLoad(PicManager *pm, const char *path)
 {
 	if (!IMG_Init(IMG_INIT_PNG))
 	{
@@ -489,7 +491,7 @@ void PicManagerLoadDir(PicManager *pm, const char *path)
 	}
 	char buf[CDOGS_PATH_MAX];
 	GetDataFilePath(buf, path);
-	PicManagerLoadDirImpl(pm, buf, NULL);
+	PicManagerLoadDir(pm, buf, NULL, pm->pics, pm->sprites);
 	GenerateOldPics(pm);
 
 	// Load old pics and sprites
