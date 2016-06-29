@@ -74,6 +74,15 @@ table_wood.png
 table_wood_candle.png
 table_wood_wreck.png
 terminal.png
+tile/biggrid/
+tile/checker/
+tile/dirt/
+tile/grid/
+tile/flat/
+tile/recessed/
+tile/smallsquare/
+tile/stone/
+tile/tile/
 tree.png
 tree_autumn.png
 tree_autumn_wreck.png
