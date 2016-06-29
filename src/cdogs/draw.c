@@ -207,15 +207,16 @@ static void DrawDebris(DrawBuffer *b, Vec2i offset)
 	}
 }
 
+#define WALL_OFFSET_Y (-12)
 static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 {
 	Vec2i pos;
 	Tile *tile = &b->tiles[0][0];
-	pos.y = b->dy + cWallOffset.dy + offset.y;
+	pos.y = b->dy + WALL_OFFSET_Y + offset.y;
 	for (int y = 0; y < Y_TILES; y++, pos.y += TILE_HEIGHT)
 	{
 		CArrayClear(&b->displaylist);
-		pos.x = b->dx + cWallOffset.dx + offset.x;
+		pos.x = b->dx + offset.x;
 		for (int x = 0; x < b->Size.x; x++, tile++, pos.x += TILE_WIDTH)
 		{
 			if (tile->flags & MAPTILE_IS_WALL)

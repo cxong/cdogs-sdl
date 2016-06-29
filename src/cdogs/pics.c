@@ -638,8 +638,6 @@ const char *IntRoomStyle(const int i)
 	return roomStyles[abs(i) % ROOM_STYLE_COUNT];
 }
 
-const struct Offset cWallOffset = { 0, -12 };
-
 const TOffsetPic cDeathPics[DEATH_MAX] = {
 	{-8, -18, 112},
 	{-8, -18, 113},

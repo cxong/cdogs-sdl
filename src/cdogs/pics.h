@@ -120,7 +120,6 @@ extern const TOffsetPic cFlamePics[4];
 extern const TOffsetPic cFireBallPics[FIREBALL_MAX];
 #define BEAM_PIC_COUNT 2
 extern const TOffsetPic cBeamPics[BEAM_PIC_COUNT][DIRECTION_COUNT];
-extern const struct Offset cWallOffset;
 extern const TOffsetPic cDeathPics[DEATH_MAX];
 
 #endif
