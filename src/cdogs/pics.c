@@ -556,32 +556,6 @@ const TOffsetPic cFireBallPics[FIREBALL_MAX] = {
 	{-10, -8, 62}
 };
 
-const TOffsetPic cBeamPics[BEAM_PIC_COUNT][DIRECTION_COUNT] =
-{
-	// Normal beam
-	{
-		{ -1, -3, 43 },
-		{ -2, -2, 46 },
-		{ -3, -1, 44 },
-		{ -2, -2, 45 },
-		{ -1, -3, 43 },
-		{ -2, -2, 46 },
-		{ -3, -1, 44 },
-		{ -2, -2, 45 }
-	},
-	// Bright beam
-	{
-		{ -1, -3, 362 },
-		{ -2, -2, 365 },
-		{ -3, -1, 363 },
-		{ -2, -2, 364 },
-		{ -1, -3, 362 },
-		{ -2, -2, 365 },
-		{ -3, -1, 363 },
-		{ -2, -2, 364 }
-	}
-};
-
 const char *WallTypeStr(const int w)
 {
 	switch (w)
