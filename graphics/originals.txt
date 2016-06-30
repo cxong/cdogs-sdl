@@ -41,6 +41,10 @@ column.png
 disk1.png
 disk2.png
 disk3.png
+door/alien/
+door/blast/
+door/dungeon/
+door/office/
 egg.png
 egg_wreck.png
 exits/hazard/

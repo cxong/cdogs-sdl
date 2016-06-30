@@ -76,10 +76,10 @@ void MapSetupTilesAndWalls(Map *map, const Mission *m)
 	// Pre-load the tile pics that this map will use
 	// TODO: multiple styles and colours
 	// Walls
-	for (int i = 0; i < WALL_TYPES; i++)
+	for (int i = 0; i < WALL_TYPE_COUNT; i++)
 	{
 		PicManagerGenerateMaskedStylePic(
-			&gPicManager, "wall", m->WallStyle, WallTypeStr(i),
+			&gPicManager, "wall", m->WallStyle, IntWallType(i),
 			m->WallMask, m->AltMask);
 	}
 	// Floors

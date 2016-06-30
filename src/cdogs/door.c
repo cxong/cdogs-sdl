@@ -359,7 +359,6 @@ typedef struct
 	int OpenH;
 	int Wall;
 } DoorPics;
-#define DOORSTYLE_COUNT 4
 
 NamedPic *GetDoorPic(
 	const PicManager *pm, const char *style, const char *key,
@@ -374,15 +373,12 @@ NamedPic *GetDoorPic(
 	return PicManagerGetNamedPic(pm, buf);
 }
 
-const char *DoorStyleStr(const int style)
+#define DOORSTYLE_COUNT 4
+const char *IntDoorStyle(const int i)
 {
+	static const char *doorStyles[] = {
+		"office", "dungeon", "blast", "alien"
+	};
 	// fix bugs with old campaigns
-	switch (abs(style) % DOORSTYLE_COUNT)
-	{
-		case 0: return "office";
-		case 1: return "dungeon";
-		case 2: return "blast";
-		case 3: return "alien";
-		default: return "office";
-	}
+	return doorStyles[abs(i) % DOORSTYLE_COUNT];
 }

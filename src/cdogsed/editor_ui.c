@@ -442,16 +442,14 @@ static void MissionDrawDoorStyle(
 {
 	UNUSED(g);
 	CampaignOptions *co = data;
-	if (!CampaignGetCurrentMission(co))
-	{
-		return;
-	}
-	const char *doorStyle = CampaignGetCurrentMission(co)->DoorStyle;
+	const Mission *m = CampaignGetCurrentMission(co);
+	if (!m) return;
+	const int idx = PicManagerGetDoorStyleIndex(&gPicManager, m->DoorStyle);
 	DrawStyleArea(
 		Vec2iAdd(pos, o->Pos),
-		"Doors", &GetDoorPic(&gPicManager, doorStyle, "normal", true)->pic,
-		PicManagerGetDoorStyleIndex(&gPicManager, doorStyle),
-		(int)gPicManager.doorStyleNames.size,
+		"Doors",
+		&GetDoorPic(&gPicManager, m->DoorStyle, "normal", true)->pic,
+		idx, (int)gPicManager.doorStyleNames.size,
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawKeyStyle(
@@ -871,13 +869,13 @@ static void MissionChangeRoomStyle(void *data, int d)
 static void MissionChangeDoorStyle(void *data, int d)
 {
 	CampaignOptions *co = data;
-	const char *doorStyle = CampaignGetCurrentMission(co)->DoorStyle;
-	const int newIdx = CLAMP_OPPOSITE(
-		PicManagerGetDoorStyleIndex(&gPicManager, doorStyle) + d,
-		0, (int)gPicManager.doorStyleNames.size - 1);
-	const char **newDoorStyle =
-		CArrayGet(&gPicManager.doorStyleNames, newIdx);
-	strcpy(CampaignGetCurrentMission(co)->DoorStyle, *newDoorStyle);
+	Mission *m = CampaignGetCurrentMission(co);
+	const int idx = CLAMP_OPPOSITE(
+		PicManagerGetDoorStyleIndex(&gPicManager, m->DoorStyle) + d,
+		0,
+		(int)gPicManager.doorStyleNames.size - 1);
+	strcpy(
+		m->DoorStyle, *(char **)CArrayGet(&gPicManager.doorStyleNames, idx));
 }
 static void MissionChangeKeyStyle(void *data, int d)
 {

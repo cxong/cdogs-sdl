@@ -61,4 +61,5 @@ NamedPic *GetDoorPic(
 	const PicManager *pm, const char *style, const char *key,
 	const bool isHorizontal);
 
-const char *DoorStyleStr(const int style);
+// Legacy door style int to str
+const char *IntDoorStyle(const int i);

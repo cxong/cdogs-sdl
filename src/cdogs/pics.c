@@ -556,29 +556,13 @@ const TOffsetPic cFireBallPics[FIREBALL_MAX] = {
 	{-10, -8, 62}
 };
 
-const char *WallTypeStr(const int w)
+const char *IntWallType(const int i)
 {
-	switch (w)
-	{
-		T2S(WALL_SINGLE, "o");
-		T2S(WALL_LEFT, "w");
-		T2S(WALL_RIGHT, "e");
-		T2S(WALL_TOP, "n");
-		T2S(WALL_BOTTOM, "s");
-		T2S(WALL_TOPLEFT, "nw");
-		T2S(WALL_TOPRIGHT, "ne");
-		T2S(WALL_BOTTOMLEFT, "sw");
-		T2S(WALL_BOTTOMRIGHT, "se");
-		T2S(WALL_LEFT_T, "wt");
-		T2S(WALL_RIGHT_T, "et");
-		T2S(WALL_TOP_T, "nt");
-		T2S(WALL_BOTTOM_T, "st");
-		T2S(WALL_VERTICAL, "v");
-		T2S(WALL_HORIZONTAL, "h");
-		T2S(WALL_CROSS, "x");
-	default:
-		return "";
-	}
+	static const char *wallTypes[] = {
+		"o", "w", "e", "n", "s", "nw", "ne", "sw", "se",
+		"wt", "et", "nt", "st", "v", "h", "x"
+	};
+	return wallTypes[i];
 }
 const char *IntWallStyle(const int i)
 {

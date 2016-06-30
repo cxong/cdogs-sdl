@@ -108,7 +108,7 @@ void MissionInit(Mission *m)
 	strcpy(m->RoomStyle, IntRoomStyle(0));
 	strcpy(m->ExitStyle, IntExitStyle(0));
 	strcpy(m->KeyStyle, IntKeyStyle(0));
-	strcpy(m->DoorStyle, DoorStyleStr(0));
+	strcpy(m->DoorStyle, IntDoorStyle(0));
 	m->WallMask = colorBattleshipGrey;
 	m->FloorMask = colorGravel;
 	m->RoomMask = colorDoveGray;

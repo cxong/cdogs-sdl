@@ -253,7 +253,7 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 		{
 			int doorStyle;
 			LoadInt(&doorStyle, child, "DoorStyle");
-			strcpy(m.DoorStyle, DoorStyleStr(doorStyle));
+			strcpy(m.DoorStyle, IntDoorStyle(doorStyle));
 		}
 		else
 		{

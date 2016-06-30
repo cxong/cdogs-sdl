@@ -219,8 +219,7 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 	RandomStyle(m->RoomStyle, &gPicManager.tileStyleNames);
 	RandomStyle(m->ExitStyle, &gPicManager.exitStyleNames);
 	RandomStyle(m->KeyStyle, &gPicManager.keyStyleNames);
-	strcpy(
-		m->DoorStyle, DoorStyleStr(rand() % gPicManager.doorStyleNames.size));
+	RandomStyle(m->DoorStyle, &gPicManager.doorStyleNames);
 	m->Size = GenerateQuickPlayMapSize(
 		ConfigGetEnum(&gConfig, "QuickPlay.MapSize"));
 	for (;;)

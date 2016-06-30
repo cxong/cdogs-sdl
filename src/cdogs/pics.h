@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014, 2016 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,9 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-
-#ifndef __PICS
-#define __PICS
+#pragma once
 
 #include "blit.h"
 #include "defs.h"
@@ -65,24 +63,8 @@
 #define FIREBALL_MAX    16
 #define DEATH_MAX       9
 
-#define WALL_SINGLE         0
-#define WALL_LEFT           1
-#define WALL_RIGHT          2
-#define WALL_TOP            3
-#define WALL_BOTTOM         4
-#define WALL_TOPLEFT        5
-#define WALL_TOPRIGHT       6
-#define WALL_BOTTOMLEFT     7
-#define WALL_BOTTOMRIGHT    8
-#define WALL_LEFT_T         9
-#define WALL_RIGHT_T       10
-#define WALL_TOP_T         11
-#define WALL_BOTTOM_T      12
-#define WALL_VERTICAL      13
-#define WALL_HORIZONTAL    14
-#define WALL_CROSS         15
-#define WALL_TYPES         16
-const char *WallTypeStr(const int w);
+#define WALL_TYPE_COUNT 16
+const char *IntWallType(const int i);
 
 #define WALL_STYLE_COUNT 7
 // Legacy wall type int to str
@@ -119,5 +101,3 @@ extern const TOffsetPic cGrenadePics[4];
 extern const TOffsetPic cFlamePics[4];
 extern const TOffsetPic cFireBallPics[FIREBALL_MAX];
 extern const TOffsetPic cDeathPics[DEATH_MAX];
-
-#endif
