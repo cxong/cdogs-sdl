@@ -10,7 +10,7 @@
 		"RoomStyle": "hex",
 		"ExitStyle": "hazard",
 		"KeyStyle": "chip",
-		"DoorStyle": "alien",
+		"DoorStyle": "doom",
 		"Objectives": [{
 			"Description": "Extras",
 			"Type": "Collect",
@@ -299,7 +299,7 @@
 		"RoomStyle": "dirt",
 		"ExitStyle": "hazard",
 		"KeyStyle": "chip",
-		"DoorStyle": "alien",
+		"DoorStyle": "doom",
 		"Objectives": [{
 			"Description": "Bonus",
 			"Type": "Collect",
@@ -953,7 +953,7 @@
 		"RoomStyle": "stone",
 		"ExitStyle": "hazard",
 		"KeyStyle": "chip",
-		"DoorStyle": "office",
+		"DoorStyle": "doom",
 		"Objectives": [{
 			"Description": "bonus",
 			"Type": "Collect",
@@ -1902,7 +1902,7 @@
 		"RoomStyle": "hex",
 		"ExitStyle": "hazard",
 		"KeyStyle": "chip",
-		"DoorStyle": "office",
+		"DoorStyle": "doom",
 		"Objectives": [{
 			"Description": "Extras",
 			"Type": "Collect",
@@ -2556,7 +2556,7 @@
 		"RoomStyle": "tile",
 		"ExitStyle": "hazard",
 		"KeyStyle": "chip",
-		"DoorStyle": "alien",
+		"DoorStyle": "doom",
 		"Objectives": [{
 			"Description": "Extras",
 			"Type": "Collect",
@@ -3347,7 +3347,7 @@
 		"RoomStyle": "dirt",
 		"ExitStyle": "hazard",
 		"KeyStyle": "chip",
-		"DoorStyle": "office",
+		"DoorStyle": "doom",
 		"Objectives": [{
 			"Description": "Bonus",
 			"Type": "Collect",
@@ -4478,7 +4478,7 @@
 		"RoomStyle": "dirt",
 		"ExitStyle": "hazard",
 		"KeyStyle": "chip",
-		"DoorStyle": "alien",
+		"DoorStyle": "doom",
 		"Objectives": [{
 			"Description": "Bonus",
 			"Type": "Collect",
@@ -5348,7 +5348,7 @@
 		"RoomStyle": "tile",
 		"ExitStyle": "hazard",
 		"KeyStyle": "chip",
-		"DoorStyle": "dungeon",
+		"DoorStyle": "doom",
 		"Objectives": [{
 			"Description": "Bonus",
 			"Type": "Collect",
