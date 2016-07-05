@@ -495,11 +495,6 @@ void PicManagerLoad(PicManager *pm, const char *path)
 	GenerateOldPics(pm);
 
 	// Load old pics and sprites
-	LoadOldSprites(
-		pm, "grenade", cGrenadePics,
-		sizeof cGrenadePics / sizeof *cGrenadePics);
-	LoadOldSprites(
-		pm, "flame", cFlamePics, sizeof cFlamePics / sizeof *cFlamePics);
 	LoadOldSprites(pm, "fireball", cFireBallPics, FIREBALL_MAX);
 	LoadOldSprites(pm, "gas_cloud", cFireBallPics + 8, 4);
 	// Load old sprites, like the directional sprites

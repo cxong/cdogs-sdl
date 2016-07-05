@@ -97,7 +97,5 @@ extern const OffsetTable cBodyOffset[BODY_COUNT];
 extern const OffsetTable cNeckOffset[BODY_COUNT];
 extern const OffsetTable cGunHandOffset[BODY_COUNT];
 extern const OffsetTable cHeadOffset[FACE_COUNT];
-extern const TOffsetPic cGrenadePics[4];
-extern const TOffsetPic cFlamePics[4];
 extern const TOffsetPic cFireBallPics[FIREBALL_MAX];
 extern const TOffsetPic cDeathPics[DEATH_MAX];

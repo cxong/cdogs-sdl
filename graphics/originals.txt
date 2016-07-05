@@ -49,13 +49,16 @@ egg.png
 egg_wreck.png
 exits/hazard/
 exits/plate/
+flame_14x15.png
 folder.png
 goo.png
+grenade_8x8.png
 holo.png
 keys/cube/
 keys/dungeon/
 keys/office/
 keys/plain/
+molotov.png
 paper.png
 pci_card.png
 plant.png

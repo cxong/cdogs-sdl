@@ -151,8 +151,7 @@
       "Name": "molotov",
       "Pic": {
         "Type": "Normal",
-        "Pic": "molotov",
-        "OldPic": 301
+        "Pic": "molotov"
       },
       "ShadowSize": [6, 4],
       "Speed": 384,
@@ -298,8 +297,7 @@
       "Pic": {
         "Type": "Normal",
         "Pic": "molotov",
-        "Tint": [-1.0, 1.0, 0.75],
-        "OldPic": 301
+        "Tint": [-1.0, 1.0, 0.75]
       },
       "Spark": "spark_blue",
       "Speed": 768,
@@ -316,8 +314,7 @@
       "Name": "proxmine",
       "Pic": {
         "Type": "Normal",
-        "Pic": "mine_inactive",
-        "OldPic": 388
+        "Pic": "mine_inactive"
       },
       "Speed": 0,
       "Range": 140,
@@ -332,8 +329,7 @@
       "Pic": {
         "Type": "Animated",
         "Sprites": "dynamite_active",
-        "TicksPerFrame": 15,
-        "OldPic": 389
+        "TicksPerFrame": 15
       },
       "Speed": 0,
       "Range": 210,
@@ -541,8 +537,7 @@
       "Name": "activemine",
       "Pic": {
         "Type": "Normal",
-        "Pic": "mine_active",
-        "OldPic": 388
+        "Pic": "mine_active"
       },
       "Speed": 0,
       "Range": -1,
@@ -556,8 +551,7 @@
       "Name": "triggeredmine",
       "Pic": {
         "Type": "Normal",
-        "Pic": "mine_active",
-        "OldPic": 388
+        "Pic": "mine_active"
       },
       "Speed": 0,
       "Range": 5,

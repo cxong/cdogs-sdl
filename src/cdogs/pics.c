@@ -523,20 +523,6 @@ const OffsetTable cHeadOffset[FACE_COUNT] = {
 	 }
 };
 
-const TOffsetPic cGrenadePics[4] = {
-	{-3, -3, 34},
-	{-3, -3, 35},
-	{-3, -3, 36},
-	{-3, -3, 37}
-};
-
-const TOffsetPic cFlamePics[4] = {
-	{-5, -8, 38},
-	{-7, -8, 39},
-	{-5, -8, 40},
-	{-6, -8, 41}
-};
-
 const TOffsetPic cFireBallPics[FIREBALL_MAX] = {
 	{-9, -9, 47},
 	{-9, -9, 48},
