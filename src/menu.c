@@ -626,7 +626,7 @@ static void MenuDisplayItems(const MenuSystem *ms)
 	}
 	if (d & MENU_DISPLAY_ITEMS_AUTHORS)
 	{
-		const Pic *logo = PicManagerGetFromOld(&gPicManager, PIC_LOGO);
+		const Pic *logo = PicManagerGetPic(&gPicManager, "logo");
 		const Vec2i pos = Vec2iNew(
 			MS_CENTER_X(*ms, logo->size.x), ms->pos.y + ms->size.y / 12);
 		Blit(&gGraphicsDevice, logo, pos);

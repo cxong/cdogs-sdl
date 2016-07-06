@@ -58,9 +58,7 @@
 #define PIC_COUNT2        182
 #define PIC_MAX           (PIC_COUNT1 + PIC_COUNT2)
 #define P2                PIC_COUNT1
-#define PIC_LOGO          (P2 + 122)
 
-#define FIREBALL_MAX    16
 #define DEATH_MAX       9
 
 #define WALL_TYPE_COUNT 16
@@ -97,5 +95,4 @@ extern const OffsetTable cBodyOffset[BODY_COUNT];
 extern const OffsetTable cNeckOffset[BODY_COUNT];
 extern const OffsetTable cGunHandOffset[BODY_COUNT];
 extern const OffsetTable cHeadOffset[FACE_COUNT];
-extern const TOffsetPic cFireBallPics[FIREBALL_MAX];
 extern const TOffsetPic cDeathPics[DEATH_MAX];

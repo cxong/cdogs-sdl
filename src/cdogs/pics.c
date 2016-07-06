@@ -523,25 +523,6 @@ const OffsetTable cHeadOffset[FACE_COUNT] = {
 	 }
 };
 
-const TOffsetPic cFireBallPics[FIREBALL_MAX] = {
-	{-9, -9, 47},
-	{-9, -9, 48},
-	{-9, -9, 49},
-	{-9, -9, 50},
-	{-9, -9, 51},
-	{-12, -10, 52},
-	{-12, -10, 53},
-	{-11, -10, 54},
-	{-12, -10, 55},
-	{-12, -10, 56},
-	{-12, -10, 57},
-	{-12, -10, 58},
-	{-12, -10, 59},
-	{-11, -9, 60},
-	{-10, -8, 61},
-	{-10, -8, 62}
-};
-
 const char *IntWallType(const int i)
 {
 	static const char *wallTypes[] = {

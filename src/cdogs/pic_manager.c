@@ -477,8 +477,6 @@ bail:
 	tinydir_close(&dir);
 }
 static void GenerateOldPics(PicManager *pm);
-static void LoadOldSprites(
-	PicManager *pm, const char *name, const TOffsetPic *pics, const int count);
 static void LoadOldFacePics(
 	PicManager *pm, const char *spritesName, int facePics[][DIRECTION_COUNT],
 	Vec2i offsets[FACE_COUNT][DIRECTION_COUNT]);
@@ -494,29 +492,10 @@ void PicManagerLoad(PicManager *pm, const char *path)
 	PicManagerLoadDir(pm, buf, NULL, pm->pics, pm->sprites);
 	GenerateOldPics(pm);
 
-	// Load old pics and sprites
-	LoadOldSprites(pm, "fireball", cFireBallPics, FIREBALL_MAX);
-	LoadOldSprites(pm, "gas_cloud", cFireBallPics + 8, 4);
 	// Load old sprites, like the directional sprites
 	// Faces
 	LoadOldFacePics(pm, "idle", facePicsIdle, faceOffsets);
 	LoadOldFacePics(pm, "firing", facePicsFiring, faceOffsetsFiring);
-}
-static void LoadOldSprites(
-	PicManager *pm, const char *name, const TOffsetPic *pics, const int count)
-{
-	// Don't use old sprites if new ones are available
-	if (PicManagerGetSprites(pm, name) != NULL)
-	{
-		return;
-	}
-	NamedSprites *ns = AddNamedSprites(pm->sprites, name);
-	const TOffsetPic *pic = pics;
-	for (int i = 0; i < count; i++, pic++)
-	{
-		Pic p = PicCopy(PicManagerGetFromOld(pm, pic->picIndex));
-		CArrayPushBack(&ns->pics, &p);
-	}
 }
 static void LoadOldFacePics(
 	PicManager *pm, const char *spritesName, int facePics[][DIRECTION_COUNT],

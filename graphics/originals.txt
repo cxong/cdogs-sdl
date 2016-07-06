@@ -49,8 +49,10 @@ egg.png
 egg_wreck.png
 exits/hazard/
 exits/plate/
+fireball_21x21.png
 flame_14x15.png
 folder.png
+gas_cloud_24x21.png
 goo.png
 grenade_8x8.png
 holo.png
@@ -58,6 +60,9 @@ keys/cube/
 keys/dungeon/
 keys/office/
 keys/plain/
+logo.png
+mine_active.png
+mine_inactive.png
 molotov.png
 paper.png
 pci_card.png
