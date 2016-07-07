@@ -329,16 +329,9 @@ static void SetPaletteRange(
 static NamedPic *AddNamedPic(map_t pics, const char *name, const Pic *p);
 static NamedSprites *AddNamedSprites(map_t sprites, const char *name);
 static void AfterAdd(PicManager *pm);
-void PicManagerAdd(
-	map_t pics, map_t sprites, const char *name, SDL_Surface *image)
+static void PicManagerAdd(
+	map_t pics, map_t sprites, const char *name, SDL_Surface *imageIn)
 {
-	if (image->format->BytesPerPixel != 4)
-	{
-		perror("Cannot load non-32-bit image");
-		fprintf(stderr, "Only 32-bit depth images supported (%s)\n", name);
-		SDL_FreeSurface(image);
-		return;
-	}
 	char buf[CDOGS_FILENAME_MAX];
 	const char *dot = strrchr(name, '.');
 	if (dot)
@@ -355,7 +348,7 @@ void PicManagerAdd(
 	// Special case: if the file name is in the form foobar_WxH.ext,
 	// this is a spritesheet where each sprite is W wide by H high
 	// Load multiple images from this single sheet
-	Vec2i size = Vec2iNew(image->w, image->h);
+	Vec2i size = Vec2iNew(imageIn->w, imageIn->h);
 	bool isSpritesheet = false;
 	char *underscore = strrchr(buf, '_');
 	const char *x = strrchr(buf, 'x');
@@ -364,7 +357,7 @@ void PicManagerAdd(
 	{
 		if (sscanf(underscore, "_%dx%d", &size.x, &size.y) != 2)
 		{
-			size = Vec2iNew(image->w, image->h);
+			size = Vec2iNew(imageIn->w, imageIn->h);
 		}
 		else
 		{
@@ -382,6 +375,10 @@ void PicManagerAdd(
 	{
 		np = AddNamedPic(pics, buf, NULL);
 	}
+	// Use 32-bit image
+	SDL_Surface *image = SDL_ConvertSurfaceFormat(
+		imageIn, SDL_PIXELFORMAT_RGBA8888, 0);
+	SDL_FreeSurface(imageIn);
 	SDL_LockSurface(image);
 	Vec2i offset;
 	for (offset.y = 0; offset.y < image->h; offset.y += size.y)

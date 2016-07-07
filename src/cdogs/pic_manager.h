@@ -61,8 +61,6 @@ void PicManagerLoad(PicManager *pm, const char *path);
 void PicManagerLoadDir(
 	PicManager *pm, const char *path, const char *prefix,
 	map_t pics, map_t sprites);
-void PicManagerAdd(
-	map_t pics, map_t sprites, const char *name, SDL_Surface *image);
 void PicManagerClearCustom(PicManager *pm);
 void PicManagerTerminate(PicManager *pm);
 
