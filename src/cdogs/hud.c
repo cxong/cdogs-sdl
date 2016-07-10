@@ -905,7 +905,8 @@ void HUDDraw(
 	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (!p->IsLocal)
+		if (!p->IsLocal ||
+			(p->inputDevice == INPUT_DEVICE_AI && IsPVP(gCampaign.Entry.Mode)))
 		{
 			idx--;
 			continue;
@@ -938,6 +939,54 @@ void HUDDraw(
 		IsAutoMapEnabled(gCampaign.Entry.Mode))
 	{
 		DrawSharedRadar(hud->device, RADAR_SCALE, hud->showExit);
+	}
+	// Only draw deathmatch scores if single screen and non-local players exist
+	if (gCampaign.Entry.Mode == GAME_MODE_DEATHMATCH &&
+		GetNumPlayers(PLAYER_ANY, true, true) == 1 &&
+		GetNumPlayers(PLAYER_ANY, false, false) > 1)
+	{
+		FontOpts opts = FontOptsNew();
+		opts.Area = hud->device->cachedConfig.Res;
+		opts.HAlign = ALIGN_END;
+		opts.Mask = colorPurple;
+		const int nameColumn = 45;
+		const int livesColumn = 25;
+		const int killsColumn = 5;
+		int y = 5;
+		opts.Pad.x = nameColumn;
+		FontStrOpt("Player", Vec2iNew(0, y), opts);
+		opts.Pad.x = livesColumn;
+		FontStrOpt("Lives", Vec2iNew(0, y), opts);
+		opts.Pad.x = killsColumn;
+		FontStrOpt("Kills", Vec2iNew(0, y), opts);
+		y += FontH();
+		// Find the player(s) with the most lives and kills
+		int maxLives = 0;
+		int maxKills = 0;
+		CA_FOREACH(const PlayerData, p, gPlayerDatas)
+			maxLives = MAX(maxLives, p->Lives);
+			maxKills = MAX(maxKills, p->Stats.Kills);
+		CA_FOREACH_END()
+		CA_FOREACH(const PlayerData, p, gPlayerDatas)
+			// Player name; red if dead
+			opts.Mask = p->Lives > 0 ? colorWhite : colorRed;
+			opts.Pad.x = nameColumn;
+			FontStrOpt(p->name, Vec2iNew(0, y), opts);
+
+			// lives; cyan if most lives
+			opts.Mask = p->Lives == maxLives ? colorCyan : colorWhite;
+			opts.Pad.x = livesColumn;
+			char buf[32];
+			sprintf(buf, "%d", p->Lives);
+			FontStrOpt(buf, Vec2iNew(0, y), opts);
+
+			// kills; cyan if most kills
+			opts.Mask = p->Stats.Kills == maxKills ? colorCyan : colorWhite;
+			opts.Pad.x = killsColumn;
+			sprintf(buf, "%d", p->Stats.Kills);
+			FontStrOpt(buf, Vec2iNew(0, y), opts);
+			y += FontH();
+		CA_FOREACH_END()
 	}
 
 	switch (hud->mission->state)
