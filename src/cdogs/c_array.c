@@ -37,7 +37,6 @@ void CArrayInit(CArray *a, size_t elemSize)
 	a->elemSize = elemSize;
 	a->size = 0;
 	a->capacity = 0;
-	CArrayReserve(a, 1);
 }
 void CArrayReserve(CArray *a, size_t capacity)
 {
@@ -50,6 +49,14 @@ void CArrayReserve(CArray *a, size_t capacity)
 	if (size)
 	{
 		CREALLOC(a->data, size);
+	}
+}
+static void GrowIfFull(CArray *a)
+{
+	if (a->size == a->capacity)
+	{
+		const int capacity = a->capacity == 0 ? 1 : a->capacity * 2;
+		CArrayReserve(a, capacity);
 	}
 }
 void CArrayCopy(CArray *dst, const CArray *src)
@@ -66,20 +73,14 @@ void CArrayCopy(CArray *dst, const CArray *src)
 void CArrayPushBack(CArray *a, const void *elem)
 {
 	CASSERT(a->elemSize > 0, "array has not been initialised");
-	if (a->size == a->capacity)
-	{
-		CArrayReserve(a, a->capacity * 2);
-	}
+	GrowIfFull(a);
 	a->size++;
 	memcpy(CArrayGet(a, a->size - 1), elem, a->elemSize);
 }
 void CArrayInsert(CArray *a, int idx, void *elem)
 {
 	CASSERT(a->elemSize > 0, "array has not been initialised");
-	if (a->size == a->capacity)
-	{
-		CArrayReserve(a, a->capacity * 2);
-	}
+	GrowIfFull(a);
 	a->size++;
 	if (idx < (int)a->size - 1)
 	{
