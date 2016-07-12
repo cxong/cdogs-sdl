@@ -188,11 +188,6 @@ bool MapTryMoveTileItem(Map *map, TTileItem *t, Vec2i pos)
 }
 static void AddItemToTile(TTileItem *t, Tile *tile)
 {
-	// Lazy initialisation
-	if (tile->things.elemSize == 0)
-	{
-		CArrayInit(&tile->things, sizeof(ThingId));
-	}
 	ThingId tid;
 	tid.Id = t->id;
 	tid.Kind = t->kind;

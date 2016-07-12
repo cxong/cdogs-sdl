@@ -65,21 +65,15 @@ Tile TileNone(void)
 void TileInit(Tile *t)
 {
 	memset(t, 0, sizeof *t);
-	// lazy initialise the arrays of triggers
-	// it's very slow to do 128x128 mallocs!
+	CArrayInit(&t->triggers, sizeof(Trigger *));
+	CArrayInit(&t->things, sizeof(ThingId));
 	t->pic = NULL;
 	t->picAlt = NULL;
 }
 void TileDestroy(Tile *t)
 {
-	if (t->triggers.elemSize > 0)
-	{
-		CArrayTerminate(&t->triggers);
-	}
-	if (t->things.elemSize > 0)
-	{
-		CArrayTerminate(&t->things);
-	}
+	CArrayTerminate(&t->triggers);
+	CArrayTerminate(&t->things);
 }
 
 bool IsTileItemInsideTile(TTileItem *i, Vec2i tilePos)

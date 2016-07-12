@@ -328,10 +328,6 @@ static Trigger *CreateOpenDoorTrigger(
 }
 static void TileAddTrigger(Tile *t, Trigger *tr)
 {
-	if (t->triggers.elemSize == 0)
-	{
-		CArrayInit(&t->triggers, sizeof(Trigger *));
-	}
 	CArrayPushBack(&t->triggers, &tr);
 }
 
