@@ -85,37 +85,42 @@ typedef struct
 // Unvisited: black
 // Out of sight: dark, or if fog disabled, black
 // In sight: full color
-static color_t GetTileLOSMask(Tile *tile)
+typedef enum
+{
+	TILE_LOS_NORMAL,
+	TILE_LOS_FOG,
+	TILE_LOS_NONE
+} TileLOS;
+static TileLOS GetTileLOS(const Tile *tile, const bool useFog)
 {
 	if (!tile->isVisited)
 	{
-		return colorBlack;
+		return TILE_LOS_NONE;
 	}
 	if (tile->flags & MAPTILE_OUT_OF_SIGHT)
 	{
-		if (ConfigGetBool(&gConfig, "Game.Fog"))
-		{
-			color_t mask = { 96, 96, 96, 255 };
-			return mask;
-		}
-		else
-		{
-			return colorBlack;
-		}
+		return useFog ? TILE_LOS_FOG : TILE_LOS_NONE;
 	}
-	return colorWhite;
+	return TILE_LOS_NORMAL;
 }
-
 void DrawWallColumn(int y, Vec2i pos, Tile *tile)
 {
+	const bool useFog = ConfigGetBool(&gConfig, "Game.Fog");
 	while (y >= 0 && (tile->flags & MAPTILE_IS_WALL))
 	{
-		BlitMasked(
-			&gGraphicsDevice,
-			&tile->pic->pic,
-			pos,
-			GetTileLOSMask(tile),
-			0);
+		switch (GetTileLOS(tile, useFog))
+		{
+		case TILE_LOS_NORMAL:
+			Blit(&gGraphicsDevice, &tile->pic->pic, pos);
+			break;
+		case TILE_LOS_FOG:
+			BlitMasked(&gGraphicsDevice, &tile->pic->pic, pos, colorFog, false);
+			break;
+		case TILE_LOS_NONE:
+		default:
+			// don't draw anything
+			break;
+		}
 		pos.y -= TILE_HEIGHT;
 		tile -= X_TILES;
 		y--;
@@ -153,7 +158,8 @@ static void DrawFloor(DrawBuffer *b, Vec2i offset)
 {
 	int x, y;
 	Vec2i pos;
-	Tile *tile = &b->tiles[0][0];
+	const Tile *tile = &b->tiles[0][0];
+	const bool useFog = ConfigGetBool(&gConfig, "Game.Fog");
 	for (y = 0, pos.y = b->dy + offset.y;
 		 y < Y_TILES;
 		 y++, pos.y += TILE_HEIGHT)
@@ -165,12 +171,24 @@ static void DrawFloor(DrawBuffer *b, Vec2i offset)
 			if (tile->pic != NULL && tile->pic->pic.Data != NULL &&
 				!(tile->flags & MAPTILE_IS_WALL))
 			{
-				BlitMasked(
-					&gGraphicsDevice,
-					&tile->pic->pic,
-					pos,
-					GetTileLOSMask(tile),
-					0);
+				switch (GetTileLOS(tile, useFog))
+				{
+				case TILE_LOS_NORMAL:
+					Blit(&gGraphicsDevice, &tile->pic->pic, pos);
+					break;
+				case TILE_LOS_FOG:
+					BlitMasked(
+						&gGraphicsDevice,
+						&tile->pic->pic,
+						pos,
+						colorFog,
+						false);
+					break;
+				case TILE_LOS_NONE:
+				default:
+					// don't draw
+					break;
+				}
 			}
 		}
 		tile += X_TILES - b->Size.x;
@@ -213,6 +231,7 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 	Vec2i pos;
 	Tile *tile = &b->tiles[0][0];
 	pos.y = b->dy + WALL_OFFSET_Y + offset.y;
+	const bool useFog = ConfigGetBool(&gConfig, "Game.Fog");
 	for (int y = 0; y < Y_TILES; y++, pos.y += TILE_HEIGHT)
 	{
 		CArrayClear(&b->displaylist);
@@ -238,12 +257,24 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 					doorPos.y +=
 						TILE_HEIGHT - (tile->picAlt->pic.size.y % TILE_HEIGHT);
 				}
-				BlitMasked(
-					&gGraphicsDevice,
-					&tile->picAlt->pic,
-					doorPos,
-					GetTileLOSMask(tile),
-					0);
+				switch (GetTileLOS(tile, useFog))
+				{
+				case TILE_LOS_NORMAL:
+					Blit(&gGraphicsDevice, &tile->picAlt->pic, doorPos);
+					break;
+				case TILE_LOS_FOG:
+					BlitMasked(
+						&gGraphicsDevice,
+						&tile->picAlt->pic,
+						doorPos,
+						colorFog,
+						false);
+					break;
+				case TILE_LOS_NONE:
+				default:
+					// don't draw anything
+					break;
+				}
 			}
 
 			// Draw the items that are in LOS

@@ -45,6 +45,7 @@ color_t colorGray = { 128, 128, 128, 255 };
 color_t colorYellow = { 255, 255, 128, 255 };
 color_t colorMagenta = { 255, 0, 255, 255 };
 color_t colorCyan = { 0, 255, 255, 255 };
+color_t colorFog = { 96, 96, 96, 255 };
 
 color_t colorMaroon = { 0x84, 0, 0, 255 };
 color_t colorLonestar = { 0x70, 0, 0, 255 };
