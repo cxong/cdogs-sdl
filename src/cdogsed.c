@@ -164,10 +164,7 @@ static void MakeBackground(GraphicsDevice *g, const bool changedMission)
 	}
 
 	// Clear background first
-	for (int i = 0; i < GraphicsGetScreenSize(&g->cachedConfig); i++)
-	{
-		g->buf[i] = COLOR2PIXEL(colorBlack);
-	}
+	memset(g->buf, 0, GraphicsGetMemSize(&g->cachedConfig));
 	GrafxDrawExtra extra;
 	extra.guideImage = brush.GuideImageSurface;
 	extra.guideImageAlpha = brush.GuideImageAlpha;
@@ -206,10 +203,7 @@ static void Display(GraphicsDevice *g, HandleInputResult result)
 		if (result.RemakeBg || brush.IsGuideImageNew)
 		{
 			// Clear background first
-			for (int i = 0; i < GraphicsGetScreenSize(&g->cachedConfig); i++)
-			{
-				g->buf[i] = COLOR2PIXEL(colorBlack);
-			}
+			memset(g->buf, 0, GraphicsGetMemSize(&g->cachedConfig));
 			brush.IsGuideImageNew = false;
 			GrafxDrawExtra extra;
 			extra.guideImage = brush.GuideImageSurface;
