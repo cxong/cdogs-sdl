@@ -111,7 +111,6 @@ static bool sIgnoreMouse = false;
 
 static char lastFile[CDOGS_PATH_MAX];
 static EditorBrush brush;
-static Tile sCursorTile;
 Vec2i camera = { 0, 0 };
 #define CAMERA_PAN_SPEED 8
 Mission currentMission;
@@ -422,7 +421,6 @@ static void Setup(const bool changedMission)
 	MissionOptionsTerminate(&gMission);
 	CampaignAndMissionSetup(&gCampaign, &gMission);
 	MakeBackground(&gGraphicsDevice, changedMission);
-	sCursorTile = TileNone();
 
 	Autosave();
 
