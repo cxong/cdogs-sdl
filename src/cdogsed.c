@@ -112,7 +112,7 @@ static bool sIgnoreMouse = false;
 static char lastFile[CDOGS_PATH_MAX];
 static EditorBrush brush;
 Vec2i camera = { 0, 0 };
-#define CAMERA_PAN_SPEED 8
+#define CAMERA_PAN_SPEED 3
 Mission currentMission;
 Mission lastMission;
 #define AUTOSAVE_INTERVAL_SECONDS 60

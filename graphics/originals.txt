@@ -92,6 +92,7 @@ tile/dirt/
 tile/grid/
 tile/flat/
 tile/recessed/
+tile/slab/
 tile/smallsquare/
 tile/stone/
 tile/tile/
