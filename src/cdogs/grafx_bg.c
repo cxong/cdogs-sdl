@@ -64,16 +64,18 @@ void GrafxDrawBackground(
 	GraphicsDevice *g, DrawBuffer *buffer,
 	HSV tint, Vec2i pos, GrafxDrawExtra *extra)
 {
-	Vec2i v;
-
 	DrawBufferSetFromMap(buffer, &gMap, pos, X_TILES);
 	DrawBufferDraw(buffer, Vec2iZero(), extra);
 
-	for (v.y = 0; v.y < g->cachedConfig.Res.y; v.y++)
+	if (!HSVEquals(tint, tintNone))
 	{
-		for (v.x = 0; v.x < g->cachedConfig.Res.x; v.x++)
+		Vec2i v;
+		for (v.y = 0; v.y < g->cachedConfig.Res.y; v.y++)
 		{
-			DrawPointTint(g, v, tint);
+			for (v.x = 0; v.x < g->cachedConfig.Res.x; v.x++)
+			{
+				DrawPointTint(g, v, tint);
+			}
 		}
 	}
 	memcpy(g->bkg, g->buf, GraphicsGetMemSize(&g->cachedConfig));

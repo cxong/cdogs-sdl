@@ -28,6 +28,7 @@
 */
 #include "color.h"
 
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -190,9 +191,15 @@ color_t ColorTint(color_t c, HSV hsv)
 	return out;
 }
 
-int ColorEquals(color_t a, color_t b)
+bool ColorEquals(const color_t a, const color_t b)
 {
 	return a.r == b.r && a.g == b.g && a.b == b.b;
+}
+bool HSVEquals(const HSV a, const HSV b)
+{
+	const double epsilon = 0.000001;
+	return fabs(a.h - b.h) < epsilon && fabs(a.h - b.h) < epsilon &&
+		fabs(a.h - b.h) < epsilon;
 }
 
 color_t StrColor(const char *s)

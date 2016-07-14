@@ -30,6 +30,7 @@
 
 #include "sys_specifics.h"
 
+#include <stdbool.h>
 #include <stdint.h>
 
 typedef struct
@@ -109,7 +110,8 @@ extern HSV tintDarker;
 // v: scale factor on the final components
 color_t ColorTint(color_t c, HSV hsv);
 
-int ColorEquals(color_t a, color_t b);
+bool ColorEquals(const color_t a, const color_t b);
+bool HSVEquals(const HSV a, const HSV b);
 
 // Convert hex string to color
 color_t StrColor(const char *s);
