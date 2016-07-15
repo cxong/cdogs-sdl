@@ -198,8 +198,8 @@ bool ColorEquals(const color_t a, const color_t b)
 bool HSVEquals(const HSV a, const HSV b)
 {
 	const double epsilon = 0.000001;
-	return fabs(a.h - b.h) < epsilon && fabs(a.h - b.h) < epsilon &&
-		fabs(a.h - b.h) < epsilon;
+	return fabs(a.h - b.h) < epsilon && fabs(a.s - b.s) < epsilon &&
+		fabs(a.v - b.v) < epsilon;
 }
 
 color_t StrColor(const char *s)
