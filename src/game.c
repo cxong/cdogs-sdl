@@ -64,8 +64,10 @@
 #include <cdogs/automap.h>
 #include <cdogs/camera.h>
 #include <cdogs/config.h>
+#include <cdogs/drawtools.h>
 #include <cdogs/events.h>
 #include <cdogs/game_events.h>
+#include <cdogs/grafx_bg.h>
 #include <cdogs/handle_game_events.h>
 #include <cdogs/joystick.h>
 #include <cdogs/log.h>
@@ -175,6 +177,14 @@ static GameLoopResult RunGameUpdate(void *data);
 static void RunGameDraw(void *data);
 bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 {
+	// Clear the background
+	DrawRectangle(
+		&gGraphicsDevice, Vec2iZero(), gGraphicsDevice.cachedConfig.Res,
+		colorBlack, 0);
+	SDL_UpdateTexture(
+		gGraphicsDevice.bkg, NULL, gGraphicsDevice.buf,
+		gGraphicsDevice.cachedConfig.Res.x * sizeof(Uint32));
+
 	MapLoad(map, m, co);
 
 	// Seed random if PVP mode (otherwise players will always spawn in same
@@ -275,6 +285,19 @@ bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 	CA_FOREACH_END()
 	CArrayTerminate(&data.ammoSpawners);
 	CameraTerminate(&data.Camera);
+
+	// Draw background
+	memset(
+		gGraphicsDevice.buf, 0,
+		GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
+	DrawBuffer buffer;
+		DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES), &gGraphicsDevice);
+	const HSV tint = {
+		rand() * 360.0 / RAND_MAX, rand() * 1.0 / RAND_MAX, 0.5
+	};
+	GrafxDrawBackground(
+		&gGraphicsDevice, &buffer, tint, data.Camera.lastPosition, NULL);
+	DrawBufferTerminate(&buffer);
 
 	return !m->IsQuit;
 }

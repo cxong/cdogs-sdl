@@ -59,7 +59,7 @@ static void CampaignIntroDraw(void *data)
 	// This will only draw once
 	const CampaignSetting *c = data;
 
-	GraphicsBlitBkg(&gGraphicsDevice);
+	GraphicsClear(&gGraphicsDevice);
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
 	const int y = h / 4;
@@ -210,7 +210,7 @@ static void MissionBriefingDraw(void *data)
 {
 	const MissionBriefingData *mData = data;
 
-	GraphicsBlitBkg(&gGraphicsDevice);
+	GraphicsClear(&gGraphicsDevice);
 
 	// Mission title
 	FontStrOpt(mData->Title, Vec2iZero(), mData->TitleOpts);

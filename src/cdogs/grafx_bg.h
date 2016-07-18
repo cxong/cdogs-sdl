@@ -43,7 +43,7 @@ void GrafxMakeBackground(
 	GraphicsDevice *device, DrawBuffer *buffer,
 	CampaignOptions *co, struct MissionOptions *mo, Map *map, HSV tint,
 	const bool isEditor, Vec2i pos, GrafxDrawExtra *extra);
-void GraphicsBlitBkg(GraphicsDevice *device);
+void GraphicsClear(GraphicsDevice *device);
 
 void GrafxMakeRandomBackground(
 	GraphicsDevice *device,

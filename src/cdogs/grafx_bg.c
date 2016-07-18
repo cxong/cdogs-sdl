@@ -42,13 +42,12 @@ void GrafxMakeRandomBackground(
 	GraphicsDevice *device,
 	CampaignOptions *co, struct MissionOptions *mo, Map *map)
 {
-	HSV tint;
 	CampaignSettingInit(&co->Setting);
 	SetupQuickPlayCampaign(&co->Setting);
 	co->seed = rand();
-	tint.h = rand() * 360.0 / RAND_MAX;
-	tint.s = rand() * 1.0 / RAND_MAX;
-	tint.v = 0.5;
+	const HSV tint = {
+		rand() * 360.0 / RAND_MAX, rand() * 1.0 / RAND_MAX, 0.5
+	};
 	DrawBuffer buffer;
 	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES), device);
 	co->MissionIndex = 0;
@@ -78,7 +77,9 @@ void GrafxDrawBackground(
 			}
 		}
 	}
-	memcpy(g->bkg, g->buf, GraphicsGetMemSize(&g->cachedConfig));
+	SDL_UpdateTexture(
+		g->bkg, NULL, g->buf, g->cachedConfig.Res.x * sizeof(Uint32));
+	GraphicsClear(g);
 	memset(g->buf, 0, GraphicsGetMemSize(&g->cachedConfig));
 }
 
@@ -108,7 +109,7 @@ void GrafxMakeBackground(
 	GameEventsTerminate(&gGameEvents);
 }
 
-void GraphicsBlitBkg(GraphicsDevice *device)
+void GraphicsClear(GraphicsDevice *device)
 {
-	memcpy(device->buf, device->bkg, GraphicsGetMemSize(&device->cachedConfig));
+	memset(device->buf, 0, GraphicsGetMemSize(&device->cachedConfig));
 }

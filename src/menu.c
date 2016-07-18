@@ -195,7 +195,7 @@ static GameLoopResult MenuUpdate(void *data)
 static void MenuDraw(void *data)
 {
 	const MenuSystem *ms = data;
-	GraphicsBlitBkg(ms->graphics);
+	GraphicsClear(ms->graphics);
 	ShowControls();
 	MenuDisplay(ms);
 }

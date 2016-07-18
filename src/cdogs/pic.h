@@ -43,9 +43,9 @@ color_t PixelToColor(
 Uint32 ColorToPixel(
 	const SDL_PixelFormat *f, const Uint8 aShift, const color_t color);
 #define PIXEL2COLOR(_p) \
-	PixelToColor(gGraphicsDevice.Format, gGraphicsDevice.Ashift, _p)
+	PixelToColor(gGraphicsDevice.Format, gGraphicsDevice.Format->Ashift, _p)
 #define COLOR2PIXEL(_c) \
-	ColorToPixel(gGraphicsDevice.Format, gGraphicsDevice.Ashift, _c)
+	ColorToPixel(gGraphicsDevice.Format, gGraphicsDevice.Format->Ashift, _c)
 
 void PicLoad(
 	Pic *p, const Vec2i size, const Vec2i offset, const SDL_Surface *image);

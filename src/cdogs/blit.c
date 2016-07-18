@@ -207,7 +207,7 @@ void Blit(GraphicsDevice *device, const Pic *pic, Vec2i pos)
 				current += pic->size.x - j;
 				break;
 			}
-			if ((*current & device->Amask) == 0)
+			if ((*current & device->Format->Amask) == 0)
 			{
 				current++;
 				continue;
@@ -265,13 +265,15 @@ void BlitMasked(
 				current += pic->size.x - j;
 				break;
 			}
-			if (isTransparent && *current == 0)
+			if (isTransparent &&
+				((*current & device->Format->Amask) >> device->Format->Ashift) < 3)
 			{
 				current++;
 				continue;
 			}
 			target = device->buf + yoff + xoff;
 			*target = PixelMult(*current, maskPixel);
+			*target |= device->Format->Amask;
 			current++;
 		}
 	}
@@ -392,48 +394,9 @@ void BlitBlend(
 	}
 }
 
-static void ApplyBrightness(Uint32 *screen, Vec2i screenSize, int brightness)
-{
-	if (brightness == 0)
-	{
-		return;
-	}
-	double f = pow(1.07177346254, brightness);	// 10th root of 2; i.e. n^10 = 2
-	int m = (int)(0xFF * f);
-	int y;
-	for (y = 0; y < screenSize.y; y++)
-	{
-		int x;
-		for (x = 0; x < screenSize.x; x++)
-		{
-			// Semi-optimised pixel multiplcation routine
-			// Multiply each 8-bit component with the gamma mask
-			// Detect overflows by checking if there are bits above 255
-			// If so, turning into boolean (!!) and negation will create
-			// a -1 (i.e. FFFFFFFF) mask which fills all the bits with 1
-			// i.e. saturated multiply
-			int idx = x + y * screenSize.x;
-			Uint32 p = screen[idx];
-			Uint32 pp;
-			screen[idx] = 0;
-			pp = ((p & 0xFF) * m / 0xFF);
-			screen[idx] |= (pp | -!!(pp >> 8)) & 0xFF;
-			pp = (((p >> 8) & 0xFF) * m / 0xFF);
-			screen[idx] |= ((pp | -!!(pp >> 8)) & 0xFF) << 8;
-			pp = (((p >> 16) & 0xFF) * m / 0xFF);
-			screen[idx] |= ((pp | -!!(pp >> 8)) & 0xFF) << 16;
-			pp = (((p >> 24) & 0xFF) * m / 0xFF);
-			screen[idx] |= ((pp | -!!(pp >> 8)) & 0xFF) << 24;
-		}
-	}
-}
-
+static void RenderTexture(SDL_Renderer *r, SDL_Texture *t);
 void BlitFlip(GraphicsDevice *g)
 {
-	ApplyBrightness(
-		g->buf, g->cachedConfig.Res,
-		ConfigGetInt(&gConfig, "Graphics.Brightness"));
-
 	SDL_UpdateTexture(
 		g->screen, NULL, g->buf, g->cachedConfig.Res.x * sizeof(Uint32));
 	if (SDL_RenderClear(g->renderer) != 0)
@@ -442,10 +405,17 @@ void BlitFlip(GraphicsDevice *g)
 			SDL_GetError());
 		return;
 	}
-	if (SDL_RenderCopy(g->renderer, g->screen, NULL, NULL) != 0)
-	{
-		LOG(LM_MAIN, LL_ERROR, "Failed to blit surface: %s\n", SDL_GetError());
-		return;
-	}
+	RenderTexture(g->renderer, g->bkg);
+	RenderTexture(g->renderer, g->screen);
+	// Apply brightness as an overlay texture
+	RenderTexture(g->renderer, g->brightnessOverlay);
+
 	SDL_RenderPresent(g->renderer);
+}
+static void RenderTexture(SDL_Renderer *r, SDL_Texture *t)
+{
+	if (SDL_RenderCopy(r, t, NULL, NULL) != 0)
+	{
+		LOG(LM_MAIN, LL_ERROR, "Failed to render texture: %s", SDL_GetError());
+	}
 }

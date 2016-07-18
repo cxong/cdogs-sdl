@@ -196,7 +196,7 @@ void DisplayAllTimeHighScores(GraphicsDevice *graphics)
 	idx = 0;
 	while (idx < MAX_ENTRY && allTimeHigh[idx].score > 0)
 	{
-		GraphicsBlitBkg(graphics);
+		GraphicsClear(graphics);
 		idx = DisplayPage(
 			"All time high scores:", idx, allTimeHigh, highlights);
 		GameLoopData gData = GameLoopDataNew(
@@ -221,7 +221,7 @@ void DisplayTodaysHighScores(GraphicsDevice *graphics)
 	idx = 0;
 	while (idx < MAX_ENTRY && todaysHigh[idx].score > 0)
 	{
-		GraphicsBlitBkg(graphics);
+		GraphicsClear(graphics);
 		idx = DisplayPage(
 			"Today's highest score:", idx, todaysHigh, highlights);
 		GameLoopData gData = GameLoopDataNew(

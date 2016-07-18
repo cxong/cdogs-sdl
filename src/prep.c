@@ -362,7 +362,7 @@ static void PlayerSelectionDraw(void *data)
 {
 	const PlayerSelectionData *pData = data;
 
-	GraphicsBlitBkg(&gGraphicsDevice);
+	GraphicsClear(&gGraphicsDevice);
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
 	int idx = 0;
@@ -731,7 +731,7 @@ static GameLoopResult PlayerEquipUpdate(void *data)
 static void PlayerEquipDraw(void *data)
 {
 	const PlayerEquipData *pData = data;
-	GraphicsBlitBkg(&gGraphicsDevice);
+	GraphicsClear(&gGraphicsDevice);
 	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
 	{
 		MenuDisplay(&pData->menus[i].ms);

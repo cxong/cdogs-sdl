@@ -102,6 +102,8 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 	bool wasClient = false;
 	for (;;)
 	{
+		GrafxMakeRandomBackground(
+			&gGraphicsDevice, &gCampaign, &gMission, &gMap);
 		if (!gCampaign.IsLoaded)
 		{
 			MainMenu(
@@ -456,9 +458,6 @@ int main(int argc, char *argv[])
 	CampaignInit(&gCampaign);
 	LoadAllCampaigns(&campaigns);
 	PlayerDataInit(&gPlayerDatas);
-
-	GrafxMakeRandomBackground(
-		&gGraphicsDevice, &gCampaign, &gMission, &gMap);
 
 	debug(D_NORMAL, ">> Entering main loop\n");
 	// Attempt to pre-load campaign if requested

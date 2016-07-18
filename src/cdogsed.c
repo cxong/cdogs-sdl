@@ -209,7 +209,7 @@ static void Display(GraphicsDevice *g, HandleInputResult result)
 			extra.guideImageAlpha = brush.GuideImageAlpha;
 			GrafxDrawBackground(g, &sDrawBuffer, tintNone, camera, &extra);
 		}
-		GraphicsBlitBkg(g);
+		GraphicsClear(g);
 
 		// Draw brush highlight tiles
 		if (brush.IsActive && IsBrushPosValid(brush.Pos, mission))

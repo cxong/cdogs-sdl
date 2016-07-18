@@ -60,6 +60,7 @@
 #include "blit.h"
 #include "config.h"
 #include "defs.h"
+#include "drawtools.h"
 #include "grafx_bg.h"
 #include "log.h"
 #include "palette.h"
@@ -134,24 +135,12 @@ static void AddGraphicsMode(GraphicsDevice *device, const int w, const int h)
 
 void GraphicsInit(GraphicsDevice *device, Config *c)
 {
-	device->IsInitialized = 0;
-	device->IsWindowInitialized = 0;
-	device->screen = NULL;
-	device->renderer = NULL;
-	device->window = NULL;
-	memset(&device->cachedConfig, 0, sizeof device->cachedConfig);
+	memset(device, 0, sizeof *device);
 	CArrayInit(&device->validModes, sizeof(Vec2i));
-	device->modeIndex = 0;
-	device->clipping.left = 0;
-	device->clipping.top = 0;
-	device->clipping.right = 0;
-	device->clipping.bottom = 0;
 	// Add default modes
 	AddGraphicsMode(device, 320, 240);
 	AddGraphicsMode(device, 400, 300);
 	AddGraphicsMode(device, 640, 480);
-	device->buf = NULL;
-	device->bkg = NULL;
 	GraphicsConfigSetFromConfig(&device->cachedConfig, c);
 }
 
@@ -184,6 +173,9 @@ static void AddSupportedGraphicsModes(GraphicsDevice *device)
 // Initialises the video subsystem.
 // To prevent needless screen flickering, config is compared with cache
 // to see if anything changed. If not, don't recreate the screen.
+static SDL_Texture *CreateTexture(
+	SDL_Renderer *renderer, const SDL_TextureAccess access, const Vec2i res,
+	const SDL_BlendMode blend, const Uint8 alpha);
 void GraphicsInitialize(GraphicsDevice *g, const bool force)
 {
 	if (g->IsInitialized && !g->cachedConfig.needRestart)
@@ -233,6 +225,8 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 	}
 	LOG(LM_GFX, LL_DEBUG, "destroying previous renderer");
 	SDL_DestroyTexture(g->screen);
+	SDL_DestroyTexture(g->bkg);
+	SDL_DestroyTexture(g->brightnessOverlay);
 	SDL_DestroyRenderer(g->renderer);
 	SDL_FreeFormat(g->Format);
 	SDL_DestroyWindow(g->window);
@@ -283,38 +277,72 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 			SDL_GetError());
 		return;
 	}
-	g->screen = SDL_CreateTexture(
-		g->renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
-		w, h);
+	g->screen = CreateTexture(
+		g->renderer, SDL_TEXTUREACCESS_STREAMING, Vec2iNew(w, h),
+		SDL_BLENDMODE_BLEND, 255);
 	if (g->screen == NULL)
 	{
-		LOG(LM_GFX, LL_ERROR, "cannot create screen texture: %s",
-			SDL_GetError());
 		return;
 	}
-	// The display pixel format doesn't have A, but we need it to convert from
-	// colours to pixel values, so replace them here
-	g->Amask =
-		0xffffffff & ~(g->Format->Rmask | g->Format->Gmask | g->Format->Bmask);
-	g->Ashift = 48 - g->Format->Rshift - g->Format->Gshift - g->Format->Bshift;
-	LOG(LM_GFX, LL_INFO, "Amask(%08x) Ashift(%d)", g->Amask, g->Ashift);
-
-	CFREE(g->buf);
-	CCALLOC(g->buf, GraphicsGetMemSize(&g->cachedConfig));
-	CFREE(g->bkg);
-	CCALLOC(g->bkg, GraphicsGetMemSize(&g->cachedConfig));
-
-	debug(D_NORMAL, "Changed video mode...\n");
 
 	GraphicsSetBlitClip(
 		g, 0, 0, g->cachedConfig.Res.x - 1, g->cachedConfig.Res.y - 1);
-	debug(D_NORMAL, "Internal dimensions:\t%dx%d\n",
-		g->cachedConfig.Res.x, g->cachedConfig.Res.y);
+
+	CFREE(g->buf);
+	CCALLOC(g->buf, GraphicsGetMemSize(&g->cachedConfig));
+	g->bkg = CreateTexture(
+		g->renderer, SDL_TEXTUREACCESS_STATIC, Vec2iNew(w, h),
+		SDL_BLENDMODE_NONE, 255);
+	if (g->bkg == NULL)
+	{
+		return;
+	}
+
+	const int brightness = ConfigGetInt(&gConfig, "Graphics.Brightness");
+	// Alpha is approximately 50% max
+	const Uint8 alpha = (brightness > 0 ? brightness : -brightness) * 13;
+	g->brightnessOverlay = CreateTexture(
+		g->renderer, SDL_TEXTUREACCESS_STATIC, Vec2iNew(w, h),
+		SDL_BLENDMODE_BLEND, alpha);
+	if (g->brightnessOverlay == NULL)
+	{
+		return;
+	}
+	const color_t overlayColour = brightness > 0 ? colorWhite : colorBlack;
+	DrawRectangle(g, Vec2iZero(), g->cachedConfig.Res, overlayColour, 0);
+	SDL_UpdateTexture(
+		g->brightnessOverlay, NULL, g->buf,
+		g->cachedConfig.Res.x * sizeof(Uint32));
+	memset(g->buf, 0, GraphicsGetMemSize(&g->cachedConfig));
 
 	g->IsInitialized = true;
 	g->cachedConfig.Res.x = w;
 	g->cachedConfig.Res.y = h;
+	g->cachedConfig.Brightness = brightness;
 	g->cachedConfig.needRestart = false;
+}
+static SDL_Texture *CreateTexture(
+	SDL_Renderer *renderer, const SDL_TextureAccess access, const Vec2i res,
+	const SDL_BlendMode blend, const Uint8 alpha)
+{
+	SDL_Texture *t = SDL_CreateTexture(
+		renderer, SDL_PIXELFORMAT_ARGB8888, access, res.x, res.y);
+	if (t == NULL)
+	{
+		LOG(LM_GFX, LL_ERROR, "cannot create texture: %s", SDL_GetError());
+		return NULL;
+	}
+	if (SDL_SetTextureBlendMode(t, blend) != 0)
+	{
+		LOG(LM_GFX, LL_ERROR, "cannot set blend mode: %s", SDL_GetError());
+		return NULL;
+	}
+	if (SDL_SetTextureAlphaMod(t, alpha) != 0)
+	{
+		LOG(LM_GFX, LL_ERROR, "cannot set texture alpha: %s", SDL_GetError());
+		return NULL;
+	}
+	return t;
 }
 
 void GraphicsTerminate(GraphicsDevice *g)
@@ -323,12 +351,13 @@ void GraphicsTerminate(GraphicsDevice *g)
 	CArrayTerminate(&g->validModes);
 	SDL_FreeSurface(g->icon);
 	SDL_DestroyTexture(g->screen);
+	SDL_DestroyTexture(g->bkg);
+	SDL_DestroyTexture(g->brightnessOverlay);
 	SDL_DestroyRenderer(g->renderer);
 	SDL_FreeFormat(g->Format);
 	SDL_DestroyWindow(g->window);
 	SDL_VideoQuit();
 	CFREE(g->buf);
-	CFREE(g->bkg);
 }
 
 int GraphicsGetScreenSize(GraphicsConfig *config)
@@ -344,7 +373,7 @@ int GraphicsGetMemSize(GraphicsConfig *config)
 void GraphicsConfigSet(
 	GraphicsConfig *c,
 	const Vec2i res, const bool fullscreen,
-	const int scaleFactor, const ScaleMode scaleMode)
+	const int scaleFactor, const ScaleMode scaleMode, const int brightness)
 {
 	if (!Vec2iEqual(res, c->Res))
 	{
@@ -360,6 +389,7 @@ void GraphicsConfigSet(
 	SET(c->Fullscreen, fullscreen);
 	SET(c->ScaleFactor, scaleFactor);
 	SET(c->ScaleMode, scaleMode);
+	SET(c->Brightness, brightness);
 }
 
 void GraphicsConfigSetFromConfig(GraphicsConfig *gc, Config *c)
@@ -371,7 +401,8 @@ void GraphicsConfigSetFromConfig(GraphicsConfig *gc, Config *c)
 			ConfigGetInt(c, "Graphics.ResolutionHeight")),
 		ConfigGetBool(c, "Graphics.Fullscreen"),
 		ConfigGetInt(c, "Graphics.ScaleFactor"),
-		(ScaleMode)ConfigGetEnum(c, "Graphics.ScaleMode"));
+		(ScaleMode)ConfigGetEnum(c, "Graphics.ScaleMode"),
+		ConfigGetInt(c, "Graphics.Brightness"));
 }
 
 char *GrafxGetModeStr(void)

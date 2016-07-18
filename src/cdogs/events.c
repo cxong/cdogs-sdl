@@ -179,10 +179,12 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 					const int scale = ConfigGetInt(&gConfig, "Graphics.ScaleFactor");
 					GraphicsConfigSet(
 						&gGraphicsDevice.cachedConfig,
-						Vec2iNew(e.window.data1 / scale, e.window.data2 / scale),
+						Vec2iScaleDiv(
+							Vec2iNew(e.window.data1, e.window.data2), scale),
 						false,
 						scale,
-						gGraphicsDevice.cachedConfig.ScaleMode);
+						gGraphicsDevice.cachedConfig.ScaleMode,
+						gGraphicsDevice.cachedConfig.Brightness);
 					GraphicsInitialize(&gGraphicsDevice, false);
 				}
 				break;

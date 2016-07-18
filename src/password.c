@@ -275,7 +275,7 @@ static void EnterCodeScreenDraw(void *data)
 {
 	const EnterCodeScreenData *eData = data;
 
-	GraphicsBlitBkg(&gGraphicsDevice);
+	GraphicsClear(&gGraphicsDevice);
 
 	// Password display
 	Vec2i pos = Vec2iNew(
