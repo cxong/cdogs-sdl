@@ -300,7 +300,7 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 
 	const int brightness = ConfigGetInt(&gConfig, "Graphics.Brightness");
 	// Alpha is approximately 50% max
-	const Uint8 alpha = (brightness > 0 ? brightness : -brightness) * 13;
+	const Uint8 alpha = (Uint8)(brightness > 0 ? brightness : -brightness) * 13;
 	g->brightnessOverlay = CreateTexture(
 		g->renderer, SDL_TEXTUREACCESS_STATIC, Vec2iNew(w, h),
 		SDL_BLENDMODE_BLEND, alpha);

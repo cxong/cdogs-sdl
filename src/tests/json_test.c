@@ -30,7 +30,7 @@ Config gConfig;
 int gPicManager;
 
 
-FEATURE(1, "String format")
+FEATURE(json_format_string, "String format")
 	SCENARIO("Quote handling")
 		GIVEN("a JSON structure containing escaped quotes")
 			json_t *root = json_new_object();
@@ -55,12 +55,4 @@ FEATURE(1, "String format")
 	SCENARIO_END
 FEATURE_END
 
-int main(void)
-{
-	cbehave_feature features[] =
-	{
-		{feature_idx(1)}
-	};
-	
-	return cbehave_runner("JSON features are:", features);
-}
+CBEHAVE_RUN("JSON features are:", TEST_FEATURE(json_format_string))

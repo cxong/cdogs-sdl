@@ -18,15 +18,13 @@
  * @file cbehave.h
  *
  */
+#pragma once
 
-#ifndef _CBEHAVE_H
-#define _CBEHAVE_H
-
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifndef _cplusplus
+#ifndef __cplusplus
 #include <stdbool.h>
 #endif
 
@@ -55,6 +53,7 @@ typedef enum {
 } cbehave_scope_e;
 extern cbehave_scope_e cbehave_scope;
 
+// Main BDD keywords, GIVEN-WHEN-THEN
 #define END_SCOPE \
     if (cbehave_scope == CBEHAVE_SCOPE_GIVEN) { \
         cbehave_given_exit(_state); \
@@ -84,14 +83,18 @@ extern cbehave_scope_e cbehave_scope;
 #define THEN(x) THEN_IMPL(x, "Then")
 #define THEN_END
 
-#define AND(x) \
+// AND and friends
+#define AND_IMPL(x, _prompt) \
     if (cbehave_scope == CBEHAVE_SCOPE_GIVEN) { \
-        GIVEN_IMPL(x, "And") \
+        GIVEN_IMPL(x, _prompt) \
     } else if (cbehave_scope == CBEHAVE_SCOPE_WHEN) { \
-        WHEN_IMPL(x, "And") \
+        WHEN_IMPL(x, _prompt) \
     } else if (cbehave_scope == CBEHAVE_SCOPE_THEN) { \
-        THEN_IMPL(x, "And") \
+        THEN_IMPL(x, _prompt) \
     }
+
+#define AND(x) AND_IMPL(x, "And")
+#define BUT(x) AND_IMPL(x, "But")
 
 #define SCENARIO(x) { \
     int _scenario_state = 0; \
@@ -118,7 +121,7 @@ if (!(cond)) {\
     goto _feature_over; \
 }\
     
-#define feature_idx(idx) _cbehave_feature_##idx
+#define TEST_FEATURE(name) {_cbehave_feature_##name}
 
 #define SHOULD_INT_EQUAL(actual, expected) do { \
     should_int_equal((actual), (expected), &_scenario_state, __FILE__, __LINE__); \
@@ -155,6 +158,12 @@ if (!(cond)) {\
 #define SHOULD_BE_FALSE(actual) do { \
     should_be_bool((actual), false, &_scenario_state, __FILE__, __LINE__); \
 } while(0)
+
+#define CBEHAVE_RUN(_description, ...)\
+int main(void) {\
+	cbehave_feature _cfeatures[] = {__VA_ARGS__};\
+	return cbehave_runner(_description, _cfeatures);\
+}
 
 #define cbehave_runner(str, features) \
     _cbehave_runner(str, features, sizeof(features)/sizeof(features[0]))
@@ -257,8 +266,6 @@ void cbehave_mock_obj_return(const char *symbol_name, void *value, const char *f
 } while(0);
 
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
-
-#endif /* _CBEHAVE_H */

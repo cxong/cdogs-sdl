@@ -79,7 +79,7 @@ const CharacterClass *StrCharacterClass(const char *s)
 }
 
 
-FEATURE(1, "Assign unused input device")
+FEATURE(assign_unused, "Assign unused input device")
 	// This feature is used to assign input devices to players, before the game
 	// begins. All input devices can emit the "fire" command, at which point
 	// those input devices are assigned to the next unassigned player. This
@@ -115,7 +115,7 @@ FEATURE(1, "Assign unused input device")
 			bool res = PlayerTrySetUnusedInputDevice(p, INPUT_DEVICE_MOUSE, 0);
 		THEN("the assignment should fail")
 			SHOULD_BE_FALSE(res);
-		AND("the player's input device should be unchanged");
+		AND("the player's input device should be unchanged")
 			SHOULD_INT_EQUAL((int)p->inputDevice, (int)d);
 			SHOULD_INT_EQUAL(p->deviceIndex, idx);
 	SCENARIO_END
@@ -132,18 +132,10 @@ FEATURE(1, "Assign unused input device")
 				p, p2->inputDevice, p2->deviceIndex);
 		THEN("the assignment should fail")
 			SHOULD_BE_FALSE(res);
-		AND("the player's input device should be unset");
+		AND("the player's input device should be unset")
 			SHOULD_INT_EQUAL((int)p->inputDevice, (int)INPUT_DEVICE_UNSET);
 	SCENARIO_END
 	PlayerDataTerminate(&gPlayerDatas);
 FEATURE_END
 
-int main(void)
-{
-	cbehave_feature features[] =
-	{
-		{feature_idx(1)}
-	};
-	
-	return cbehave_runner("Player features are:", features);
-}
+CBEHAVE_RUN("Player features are:", TEST_FEATURE(assign_unused))

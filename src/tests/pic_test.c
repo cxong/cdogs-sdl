@@ -52,54 +52,51 @@ bool ConfigIsOld(FILE *f)
 	UNUSED(f);
 	return false;
 }
+void DrawRectangle(
+	GraphicsDevice *device, Vec2i pos, Vec2i size, color_t color, int flags)
+{
+	UNUSED(device);
+	UNUSED(pos);
+	UNUSED(size);
+	UNUSED(color);
+	UNUSED(flags);
+}
 
 
-FEATURE(1, "Pic load")
+FEATURE(PicLoad, "Pic load")
 	SCENARIO("Load png")
-		if (SDL_Init(SDL_INIT_VIDEO) != 0)
-		{
-			printf("Failed to init SDL: %s\n", SDL_GetError());
-			ASSERT(false, 1);
-		}
-		gConfig = ConfigDefault();
-		ConfigResetDefault(ConfigGet(&gConfig, "Graphics"));
-		GraphicsInit(&gGraphicsDevice, &gConfig);
-		GraphicsInitialize(&gGraphicsDevice, false);
-		ASSERT(gGraphicsDevice.IsInitialized, 1);
-		GIVEN("a single pixel PNG")
+		GIVEN("a graphics context")
+			if (SDL_Init(SDL_INIT_VIDEO) != 0)
+			{
+				printf("Failed to init SDL: %s\n", SDL_GetError());
+				ASSERT(false, 1);
+			}
+			gConfig = ConfigDefault();
+			ConfigResetDefault(ConfigGet(&gConfig, "Graphics"));
+			GraphicsInit(&gGraphicsDevice, &gConfig);
+			GraphicsInitialize(&gGraphicsDevice, false);
+			ASSERT(gGraphicsDevice.IsInitialized, 1);
+		AND("a single pixel PNG")
 			SDL_RWops *rwops = SDL_RWFromFile("r64g128b192.png", "rb");
 			ASSERT(IMG_isPNG(rwops), 1);
 			SDL_Surface *image = IMG_Load_RW(rwops, 0);
 			SDL_LockSurface(image);
-		GIVEN_END
 
 		WHEN("I load the pic")
 			Pic p;
 			p.size = Vec2iNew(1, 1);
 			p.offset = Vec2iZero();
 			PicLoad(&p, p.size, Vec2iZero(), image);
-		WHEN_END
 
 		THEN("the loaded pic should have values that match");
 			const color_t c = PIXEL2COLOR(p.Data[0]);
 			SHOULD_INT_EQUAL(c.r, 64);
 			SHOULD_INT_EQUAL(c.g, 128);
 			SHOULD_INT_EQUAL(c.b, 192);
-		THEN_END
 		SDL_UnlockSurface(image);
 		SDL_FreeSurface(image);
 		rwops->close(rwops);
 	SCENARIO_END
 FEATURE_END
 
-int main(int argc, char *argv[])
-{
-	(void)argc;
-	(void)argv;
-	cbehave_feature features[] =
-	{
-		{feature_idx(1)}
-	};
-	
-	return cbehave_runner("Pic features are:", features);
-}
+CBEHAVE_RUN("Pic features are:", TEST_FEATURE(PicLoad))

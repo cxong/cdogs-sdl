@@ -39,7 +39,7 @@ const char *JoyName(const int deviceIndex)
 PicManager gPicManager;
 
 
-FEATURE(1, "Load default config")
+FEATURE(load_default, "Load default config")
 	SCENARIO("Load a default config")
 		GIVEN("two configs")
 			Config config1, config2;
@@ -59,7 +59,7 @@ FEATURE(1, "Load default config")
 	SCENARIO_END
 FEATURE_END
 
-FEATURE(2, "Save and load")
+FEATURE(save_and_load, "Save and load")
 	SCENARIO("Save and load a JSON config file")
 		GIVEN("a config file with some values, and I save the config to a JSON file")
 			Config config1 = ConfigLoad(NULL);
@@ -80,18 +80,20 @@ FEATURE(2, "Save and load")
 	SCENARIO_END
 FEATURE_END
 
-FEATURE(3, "Detect config version")
+FEATURE(detect_version, "Detect config version")
 	SCENARIO("Detect JSON config version")
-		GIVEN("a config file with some values, and I save the config to file in the JSON format")
+		GIVEN("a config file with some values")
 			Config config1 = ConfigLoad(NULL);
 			ConfigGet(&config1, "Game.FriendlyFire")->u.Bool.Value = true;
 			ConfigGet(&config1, "Graphics.Brightness")->u.Int.Value = 5;
+		AND("I save the config to file in the JSON format")
 			ConfigSave(&config1, "tmp");
 
-		WHEN("I detect the version, and load a second config from that file")
+		WHEN("I detect the version")
 			FILE *file = fopen("tmp", "r");
 			int version = ConfigGetVersion(file);
 			fclose(file);
+		AND("load a second config from that file")
 			Config config2 = ConfigLoad("tmp");
 
 		THEN("the version should be " TOSTRING(CONFIG_VERSION))
@@ -106,38 +108,29 @@ FEATURE(3, "Detect config version")
 	SCENARIO_END
 FEATURE_END
 
-FEATURE(4, "Save config as latest format by default")
+FEATURE(save_as_latest, "Save config as latest format by default")
 	SCENARIO("Save as JSON by default")
-	{
-		Config config;
-		int version;
-		FILE *file;
-		GIVEN("a config file with some values, and I save the config to file")
-			config = ConfigLoad(NULL);
+		GIVEN("a config file with some values")
+			Config config = ConfigLoad(NULL);
 			ConfigGet(&config, "Game.FriendlyFire")->u.Bool.Value = true;
 			ConfigGet(&config, "Graphics.Brightness")->u.Int.Value = 5;
+		AND("I save the config to file")
 			ConfigSave(&config, "tmp");
 
 		WHEN("I detect the version")
-			file = fopen("tmp", "r");
-			version = ConfigGetVersion(file);
+			FILE *file = fopen("tmp", "r");
+			int version = ConfigGetVersion(file);
 			fclose(file);
 
 		THEN("the version should be " TOSTRING(CONFIG_VERSION))
 			SHOULD_INT_EQUAL(version, CONFIG_VERSION);
-	}
 	SCENARIO_END
 FEATURE_END
 
-int main(void)
-{
-	cbehave_feature features[] =
-	{
-		{feature_idx(1)},
-		{feature_idx(2)},
-		{feature_idx(3)},
-		{feature_idx(4)}
-	};
-
-	return cbehave_runner("Config features are:", features);
-}
+CBEHAVE_RUN(
+	"Config features are:",
+	TEST_FEATURE(load_default),
+	TEST_FEATURE(save_and_load),
+	TEST_FEATURE(detect_version),
+	TEST_FEATURE(save_as_latest)
+)
