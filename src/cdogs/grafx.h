@@ -59,6 +59,10 @@
 #include "vector.h"
 #include "sys_specifics.h"
 
+#define RESTART_RESOLUTION 1
+#define RESTART_SCALE_MODE 2
+#define RESTART_BRIGHTNESS 4
+#define RESTART_ALL -1
 typedef struct
 {
 	Vec2i Res;
@@ -68,7 +72,7 @@ typedef struct
 	int Brightness;
 	bool IsEditor;
 
-	bool needRestart;
+	int RestartFlags;
 } GraphicsConfig;
 
 typedef struct

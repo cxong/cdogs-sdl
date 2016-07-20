@@ -178,7 +178,7 @@ static SDL_Texture *CreateTexture(
 	const SDL_BlendMode blend, const Uint8 alpha);
 void GraphicsInitialize(GraphicsDevice *g, const bool force)
 {
-	if (g->IsInitialized && !g->cachedConfig.needRestart)
+	if (g->IsInitialized && !g->cachedConfig.RestartFlags)
 	{
 		return;
 	}
@@ -194,132 +194,163 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 
 	g->IsInitialized = false;
 
-	Uint32 sdlFlags = SDL_WINDOW_RESIZABLE;
-	if (g->cachedConfig.Fullscreen)
-	{
-		sdlFlags |= SDL_WINDOW_FULLSCREEN;
-	}
-
 	const int w = g->cachedConfig.Res.x;
 	const int h = g->cachedConfig.Res.y;
 
-	if (!force && !g->cachedConfig.IsEditor)
+	const bool initRenderer =
+		!!(g->cachedConfig.RestartFlags & RESTART_RESOLUTION);
+	const bool initTextures =
+		!!(g->cachedConfig.RestartFlags &
+		(RESTART_RESOLUTION | RESTART_SCALE_MODE));
+	const bool initBrightness =
+		!!(g->cachedConfig.RestartFlags &
+		(RESTART_RESOLUTION | RESTART_SCALE_MODE | RESTART_BRIGHTNESS));
+
+	if (initRenderer)
 	{
-		g->modeIndex = FindValidMode(g, w, h);
-		if (g->modeIndex == -1)
+		Uint32 sdlFlags = SDL_WINDOW_RESIZABLE;
+		if (g->cachedConfig.Fullscreen)
 		{
-			g->modeIndex = 0;
-			LOG(LM_GFX, LL_ERROR, "invalid Video Mode %dx%d", w, h);
+			sdlFlags |= SDL_WINDOW_FULLSCREEN;
+		}
+
+		if (!force && !g->cachedConfig.IsEditor)
+		{
+			g->modeIndex = FindValidMode(g, w, h);
+			if (g->modeIndex == -1)
+			{
+				g->modeIndex = 0;
+				LOG(LM_GFX, LL_ERROR, "invalid Video Mode %dx%d", w, h);
+				return;
+			}
+		}
+
+		LOG(LM_GFX, LL_INFO, "graphics mode(%dx%d %dx)",
+			w, h, g->cachedConfig.ScaleFactor);
+		// Get the previous window's size and recreate it
+		Vec2i windowSize = Vec2iNew(
+			w * g->cachedConfig.ScaleFactor, h * g->cachedConfig.ScaleFactor);
+		if (g->window)
+		{
+			SDL_GetWindowSize(g->window, &windowSize.x, &windowSize.y);
+		}
+		LOG(LM_GFX, LL_DEBUG, "destroying previous renderer");
+		SDL_DestroyTexture(g->screen);
+		SDL_DestroyTexture(g->bkg);
+		SDL_DestroyTexture(g->brightnessOverlay);
+		SDL_DestroyRenderer(g->renderer);
+		SDL_FreeFormat(g->Format);
+		SDL_DestroyWindow(g->window);
+		LOG(LM_GFX, LL_DEBUG, "creating window %dx%d flags(%X)",
+			windowSize.x, windowSize.y, sdlFlags);
+		if (SDL_CreateWindowAndRenderer(
+				windowSize.x, windowSize.y, sdlFlags,
+				&g->window, &g->renderer) == -1 ||
+			g->window == NULL || g->renderer == NULL)
+		{
+			LOG(LM_GFX, LL_ERROR, "cannot create window or renderer: %s",
+				SDL_GetError());
+			return;
+		}
+		char title[32];
+		sprintf(title, "C-Dogs SDL %s%s",
+			g->cachedConfig.IsEditor ? "Editor " : "",
+			CDOGS_SDL_VERSION);
+		LOG(LM_GFX, LL_DEBUG, "setting title(%s) and icon", title);
+		SDL_SetWindowTitle(g->window, title);
+		SDL_SetWindowIcon(g->window, g->icon);
+		g->Format = SDL_AllocFormat(SDL_PIXELFORMAT_ARGB8888);
+
+		if (SDL_RenderSetLogicalSize(g->renderer, w, h) != 0)
+		{
+			LOG(LM_GFX, LL_ERROR, "cannot set renderer logical size: %s",
+				SDL_GetError());
+			return;
+		}
+
+		GraphicsSetBlitClip(
+			g, 0, 0, g->cachedConfig.Res.x - 1, g->cachedConfig.Res.y - 1);
+	}
+
+	if (initTextures)
+	{
+		if (!initRenderer)
+		{
+			SDL_DestroyTexture(g->screen);
+			SDL_DestroyTexture(g->bkg);
+			SDL_DestroyTexture(g->brightnessOverlay);
+		}
+
+		// Set render scale mode
+		const char *renderScaleQuality = "nearest";
+		switch ((ScaleMode)ConfigGetEnum(&gConfig, "Graphics.ScaleMode"))
+		{
+		case SCALE_MODE_NN:
+			renderScaleQuality = "nearest";
+			break;
+		case SCALE_MODE_BILINEAR:
+			renderScaleQuality = "linear";
+			break;
+		default:
+			CASSERT(false, "unknown scale mode");
+			break;
+		}
+		LOG(LM_GFX, LL_DEBUG, "setting scale quality %s", renderScaleQuality);
+		if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, renderScaleQuality))
+		{
+			LOG(LM_GFX, LL_WARN, "cannot set render quality hint: %s",
+				SDL_GetError());
+		}
+
+		g->screen = CreateTexture(
+			g->renderer, SDL_TEXTUREACCESS_STREAMING, Vec2iNew(w, h),
+			SDL_BLENDMODE_BLEND, 255);
+		if (g->screen == NULL)
+		{
+			return;
+		}
+
+		CFREE(g->buf);
+		CCALLOC(g->buf, GraphicsGetMemSize(&g->cachedConfig));
+		g->bkg = CreateTexture(
+			g->renderer, SDL_TEXTUREACCESS_STATIC, Vec2iNew(w, h),
+			SDL_BLENDMODE_NONE, 255);
+		if (g->bkg == NULL)
+		{
 			return;
 		}
 	}
 
-	LOG(LM_GFX, LL_INFO, "graphics mode(%dx%d %dx)",
-		w, h, g->cachedConfig.ScaleFactor);
-	// Get the previous window's size and recreate it
-	Vec2i windowSize = Vec2iNew(
-		w * g->cachedConfig.ScaleFactor, h * g->cachedConfig.ScaleFactor);
-	if (g->window)
+	if (initBrightness)
 	{
-		SDL_GetWindowSize(g->window, &windowSize.x, &windowSize.y);
-	}
-	LOG(LM_GFX, LL_DEBUG, "destroying previous renderer");
-	SDL_DestroyTexture(g->screen);
-	SDL_DestroyTexture(g->bkg);
-	SDL_DestroyTexture(g->brightnessOverlay);
-	SDL_DestroyRenderer(g->renderer);
-	SDL_FreeFormat(g->Format);
-	SDL_DestroyWindow(g->window);
-	LOG(LM_GFX, LL_DEBUG, "creating window %dx%d flags(%X)",
-		windowSize.x, windowSize.y, sdlFlags);
-	if (SDL_CreateWindowAndRenderer(
-			windowSize.x, windowSize.y, sdlFlags,
-			&g->window, &g->renderer) == -1 ||
-		g->window == NULL || g->renderer == NULL)
-	{
-		LOG(LM_GFX, LL_ERROR, "cannot create window or renderer: %s",
-			SDL_GetError());
-		return;
-	}
-	char title[32];
-	sprintf(title, "C-Dogs SDL %s%s",
-		g->cachedConfig.IsEditor ? "Editor " : "",
-		CDOGS_SDL_VERSION);
-	LOG(LM_GFX, LL_DEBUG, "setting title(%s) and icon", title);
-	SDL_SetWindowTitle(g->window, title);
-	SDL_SetWindowIcon(g->window, g->icon);
-	g->Format = SDL_AllocFormat(SDL_PIXELFORMAT_ARGB8888);
+		if (!initRenderer && !initTextures)
+		{
+			SDL_DestroyTexture(g->brightnessOverlay);
+		}
 
-	// Set render scale mode
-	const char *renderScaleQuality = "nearest";
-	switch ((ScaleMode)ConfigGetEnum(&gConfig, "Graphics.ScaleMode"))
-	{
-	case SCALE_MODE_NN:
-		renderScaleQuality = "nearest";
-		break;
-	case SCALE_MODE_BILINEAR:
-		renderScaleQuality = "linear";
-		break;
-	default:
-		CASSERT(false, "unknown scale mode");
-		break;
+		const int brightness = ConfigGetInt(&gConfig, "Graphics.Brightness");
+		// Alpha is approximately 50% max
+		const Uint8 alpha = (Uint8)(brightness > 0 ? brightness : -brightness) * 13;
+		g->brightnessOverlay = CreateTexture(
+			g->renderer, SDL_TEXTUREACCESS_STATIC, Vec2iNew(w, h),
+			SDL_BLENDMODE_BLEND, alpha);
+		if (g->brightnessOverlay == NULL)
+		{
+			return;
+		}
+		const color_t overlayColour = brightness > 0 ? colorWhite : colorBlack;
+		DrawRectangle(g, Vec2iZero(), g->cachedConfig.Res, overlayColour, 0);
+		SDL_UpdateTexture(
+			g->brightnessOverlay, NULL, g->buf,
+			g->cachedConfig.Res.x * sizeof(Uint32));
+		memset(g->buf, 0, GraphicsGetMemSize(&g->cachedConfig));
+		g->cachedConfig.Brightness = brightness;
 	}
-	LOG(LM_GFX, LL_DEBUG, "setting scale quality %s", renderScaleQuality);
-	if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, renderScaleQuality))
-	{
-		LOG(LM_GFX, LL_WARN, "cannot set render quality hint: %s",
-			SDL_GetError());
-	}
-
-	if (SDL_RenderSetLogicalSize(g->renderer, w, h) != 0)
-	{
-		LOG(LM_GFX, LL_ERROR, "cannot set renderer logical size: %s",
-			SDL_GetError());
-		return;
-	}
-	g->screen = CreateTexture(
-		g->renderer, SDL_TEXTUREACCESS_STREAMING, Vec2iNew(w, h),
-		SDL_BLENDMODE_BLEND, 255);
-	if (g->screen == NULL)
-	{
-		return;
-	}
-
-	GraphicsSetBlitClip(
-		g, 0, 0, g->cachedConfig.Res.x - 1, g->cachedConfig.Res.y - 1);
-
-	CFREE(g->buf);
-	CCALLOC(g->buf, GraphicsGetMemSize(&g->cachedConfig));
-	g->bkg = CreateTexture(
-		g->renderer, SDL_TEXTUREACCESS_STATIC, Vec2iNew(w, h),
-		SDL_BLENDMODE_NONE, 255);
-	if (g->bkg == NULL)
-	{
-		return;
-	}
-
-	const int brightness = ConfigGetInt(&gConfig, "Graphics.Brightness");
-	// Alpha is approximately 50% max
-	const Uint8 alpha = (Uint8)(brightness > 0 ? brightness : -brightness) * 13;
-	g->brightnessOverlay = CreateTexture(
-		g->renderer, SDL_TEXTUREACCESS_STATIC, Vec2iNew(w, h),
-		SDL_BLENDMODE_BLEND, alpha);
-	if (g->brightnessOverlay == NULL)
-	{
-		return;
-	}
-	const color_t overlayColour = brightness > 0 ? colorWhite : colorBlack;
-	DrawRectangle(g, Vec2iZero(), g->cachedConfig.Res, overlayColour, 0);
-	SDL_UpdateTexture(
-		g->brightnessOverlay, NULL, g->buf,
-		g->cachedConfig.Res.x * sizeof(Uint32));
-	memset(g->buf, 0, GraphicsGetMemSize(&g->cachedConfig));
 
 	g->IsInitialized = true;
 	g->cachedConfig.Res.x = w;
 	g->cachedConfig.Res.y = h;
-	g->cachedConfig.Brightness = brightness;
-	g->cachedConfig.needRestart = false;
+	g->cachedConfig.RestartFlags = 0;
 }
 static SDL_Texture *CreateTexture(
 	SDL_Renderer *renderer, const SDL_TextureAccess access, const Vec2i res,
@@ -378,18 +409,18 @@ void GraphicsConfigSet(
 	if (!Vec2iEqual(res, c->Res))
 	{
 		c->Res = res;
-		c->needRestart = true;
+		c->RestartFlags |= RESTART_RESOLUTION;
 	}
-#define SET(_lhs, _rhs) \
+#define SET(_lhs, _rhs, _flag) \
 	if ((_lhs) != (_rhs)) \
 	{ \
 		(_lhs) = (_rhs); \
-		c->needRestart = true; \
+		c->RestartFlags |= (_flag); \
 	}
-	SET(c->Fullscreen, fullscreen);
-	SET(c->ScaleFactor, scaleFactor);
-	SET(c->ScaleMode, scaleMode);
-	SET(c->Brightness, brightness);
+	SET(c->Fullscreen, fullscreen, RESTART_RESOLUTION);
+	SET(c->ScaleFactor, scaleFactor, RESTART_RESOLUTION);
+	SET(c->ScaleMode, scaleMode, RESTART_SCALE_MODE);
+	SET(c->Brightness, brightness, RESTART_BRIGHTNESS);
 }
 
 void GraphicsConfigSetFromConfig(GraphicsConfig *gc, Config *c)
