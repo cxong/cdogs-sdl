@@ -4,8 +4,8 @@
     {
       "Name": "sshotgun",
       "Pic": {
-        "Type": "Normal",
-        "Pic": "bullet"
+        "Type": "Directional",
+        "Sprites": "bullet"
       },
       "Speed": 1280,
       "Range": 30,

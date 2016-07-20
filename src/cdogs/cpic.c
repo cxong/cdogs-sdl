@@ -29,6 +29,7 @@
 
 #include "blit.h"
 #include "json_utils.h"
+#include "log.h"
 #include "palette.h"
 #include "pic_manager.h"
 #include "utils.h"
@@ -94,21 +95,37 @@ void CPicLoadJSON(CPic *p, json_t *node)
 	char *tmp = GetString(node, "Type");
 	p->Type = StrPicType(tmp);
 	CFREE(tmp);
+	tmp = NULL;
 	switch (p->Type)
 	{
 	case PICTYPE_NORMAL:
-		tmp = GetString(node, "Pic");
+		LoadStr(&tmp, node, "Pic");
+		if (tmp == NULL)
+		{
+			LOG(LM_GFX, LL_ERROR, "cannot load pic");
+			goto bail;
+		}
 		p->u.Pic = PicManagerGetPic(&gPicManager, tmp);
 		CFREE(tmp);
 		break;
 	case PICTYPE_DIRECTIONAL:
-		tmp = GetString(node, "Sprites");
+		LoadStr(&tmp, node, "Sprites");
+		if (tmp == NULL)
+		{
+			LOG(LM_GFX, LL_ERROR, "cannot load sprites");
+			goto bail;
+		}
 		p->u.Sprites = &PicManagerGetSprites(&gPicManager, tmp)->pics;
 		CFREE(tmp);
 		break;
 	case PICTYPE_ANIMATED:	// fallthrough
 	case PICTYPE_ANIMATED_RANDOM:
-		tmp = GetString(node, "Sprites");
+		LoadStr(&tmp, node, "Sprites");
+		if (tmp == NULL)
+		{
+			LOG(LM_GFX, LL_ERROR, "cannot load sprites");
+			goto bail;
+		}
 		p->u.Animated.Sprites =
 			&PicManagerGetSprites(&gPicManager, tmp)->pics;
 		CFREE(tmp);
@@ -140,6 +157,9 @@ void CPicLoadJSON(CPic *p, json_t *node)
 		tint = tint->next;
 		p->u1.Tint.v = atof(tint->text);
 	}
+bail:
+	// TODO: return error
+	return;
 }
 void CPicUpdate(CPic *p, const int ticks)
 {
