@@ -83,6 +83,18 @@ void GrafxDrawBackground(
 	memset(g->buf, 0, GraphicsGetMemSize(&g->cachedConfig));
 }
 
+void GrafxRedrawBackground(GraphicsDevice *g, const Vec2i pos)
+{
+	memset(g->buf, 0, GraphicsGetMemSize(&g->cachedConfig));
+	DrawBuffer buffer;
+	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES), g);
+	const HSV tint = {
+		rand() * 360.0 / RAND_MAX, rand() * 1.0 / RAND_MAX, 0.5
+	};
+	GrafxDrawBackground(g, &buffer, tint, pos, NULL);
+	DrawBufferTerminate(&buffer);
+}
+
 void GrafxMakeBackground(
 	GraphicsDevice *device, DrawBuffer *buffer,
 	CampaignOptions *co, struct MissionOptions *mo, Map *map, HSV tint,

@@ -287,17 +287,7 @@ bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 	CameraTerminate(&data.Camera);
 
 	// Draw background
-	memset(
-		gGraphicsDevice.buf, 0,
-		GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
-	DrawBuffer buffer;
-		DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES), &gGraphicsDevice);
-	const HSV tint = {
-		rand() * 360.0 / RAND_MAX, rand() * 1.0 / RAND_MAX, 0.5
-	};
-	GrafxDrawBackground(
-		&gGraphicsDevice, &buffer, tint, data.Camera.lastPosition, NULL);
-	DrawBufferTerminate(&buffer);
+	GrafxRedrawBackground(&gGraphicsDevice, data.Camera.lastPosition);
 
 	return !m->IsQuit;
 }

@@ -39,6 +39,7 @@ typedef struct
 void GrafxDrawBackground(
 	GraphicsDevice *g, DrawBuffer *buffer,
 	HSV tint, Vec2i pos, GrafxDrawExtra *extra);
+void GrafxRedrawBackground(GraphicsDevice *g, const Vec2i pos);
 void GrafxMakeBackground(
 	GraphicsDevice *device, DrawBuffer *buffer,
 	CampaignOptions *co, struct MissionOptions *mo, Map *map, HSV tint,

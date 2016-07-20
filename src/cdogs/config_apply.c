@@ -46,9 +46,15 @@ bool ConfigApply(Config *config)
 	if (ConfigChanged(ConfigGet(config, "Graphics")))
 	{
 		GraphicsConfigSetFromConfig(&gGraphicsDevice.cachedConfig, config);
+		const bool makeBackground =
+			gGraphicsDevice.cachedConfig.RestartFlags &
+			(RESTART_RESOLUTION | RESTART_SCALE_MODE);
 		GraphicsInitialize(&gGraphicsDevice, false);
-		GrafxMakeRandomBackground(
-			&gGraphicsDevice, &gCampaign, &gMission, &gMap);
+		if (makeBackground)
+		{
+			GrafxMakeRandomBackground(
+				&gGraphicsDevice, &gCampaign, &gMission, &gMap);
+		}
 	}
 	ConfigSetChanged(config);
 	return gGraphicsDevice.IsInitialized;
