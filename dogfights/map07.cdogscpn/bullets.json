@@ -5,7 +5,7 @@
       "Name": "sshotgun",
       "Pic": {
         "Type": "Normal",
-        "Sprites": "bullet_ball"
+        "Pic": "bullet_ball"
       },
       "Speed": 1280,
       "Range": 30,

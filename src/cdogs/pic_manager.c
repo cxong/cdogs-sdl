@@ -694,7 +694,7 @@ static void MaybeAddStyleName(
 		return;
 	}
 	const char *nextSlash = strchr(picName + strlen(prefix), '/');
-	char buf[CDOGS_FILENAME_MAX];
+	char buf[CDOGS_PATH_MAX];
 	const size_t len = nextSlash - picName - strlen(prefix);
 	strncpy(buf, picName + strlen(prefix), len);
 	buf[len] = '\0';

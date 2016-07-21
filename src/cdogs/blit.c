@@ -235,6 +235,11 @@ void BlitMasked(
 	int isTransparent)
 {
 	Uint32 *current = pic->Data;
+	if (current == NULL)
+	{
+		CASSERT(false, "unexpected NULL pic data");
+		return;
+	}
 	const Uint32 maskPixel = COLOR2PIXEL(mask);
 	int i;
 	pos = Vec2iAdd(pos, pic->offset);
