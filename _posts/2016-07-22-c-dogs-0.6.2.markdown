@@ -1,0 +1,27 @@
+---
+layout: post
+title:  "C-Dogs 0.6.2 Released!"
+date:   2016-07-22
+categories: release
+---
+
+C-Dogs SDL 0.6.2 released; this version has optimized graphics performance and original tileset and sprites restored, alongside new ones.
+
+Check out these benchmarks:
+
+    Version    | 0.6.1 | 0.6.1 | 0.6.2
+    Brightness | yes   | no    | yes
+    -----------+-------+-------+------
+    640x480    | 71    | 71    | 71
+    720x480    | 71    | 71    | 71
+    800x600    | 65    | 71    | 71
+    1024x768   | 45    | 63    | 71
+    1280x768   | 38    | 54    | 71
+    1680x1050  | 22    | 33    | 71
+    1920x1080  | 19    | 29    | 71
+
+For the level designers, this release also allows custom tiles, map objects and pickups.
+
+Happy gaming!
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.6.2-2>
