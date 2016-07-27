@@ -2,8 +2,8 @@
   - First row: normal
   - Second row: when shooting
 - Colors are:
-  - Red (no G or B): skin
-  - Green (no R or B): hair
-  - Any other shade: as is (recommend at least 5 R, G, and B)
+  - Red (0 hue): skin
+  - Green (120 hue): hair
+  - Any other shade: as is (recommend R, G, and B between 5 and 250)
 - Head will be rendered centered, but the base of the head when looking up
   should appear 3 pixels below the center

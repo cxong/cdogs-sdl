@@ -57,208 +57,6 @@ PicManager gPicManager;
 #define HAIR_END   135
 
 static uint8_t cWhiteValues[] = { 64, 56, 46, 36, 30, 24, 20, 16 };
-static const char *faceNames[] =
-{
-	"jones",
-	"ice",
-	"ogre",
-	"dragon",
-	"warbaby",
-	"bugeye",
-	"smith",
-	"ogreboss",
-	"grunt",
-	"professor",
-	"snake",
-	"wolf",
-	"bob",
-	"madbugeye",
-	"cyborg",
-	"robot",
-	"lady"
-};
-static int facePicsIdle[][DIRECTION_COUNT] =
-{
-	{ 26, 27, 28, 29, 30, 31, 32, 33 },
-	{ 129, 130, 131, 132, 133, 134, 135, 136 },
-	{ 121, 122, 123, 124, 125, 126, 127, 128 },
-	{ 228, 227, 226, 225, 224, 223, 222, 229 },
-	{ 236, 235, 234, 233, 232, 231, 230, 237 },
-	{ 249, 248, 247, 246, 245, 244, 243, 250 },
-	{ 272, 271, 270, 269, 268, 267, 266, 273 },
-	{ 308, 307, 306, 305, 304, 303, 302, 309 },
-	{ 372, 371, 370, 369, 368, 367, 366, 373 },
-	{ 396, 395, 394, 393, 392, 391, 390, 397 },
-	{ 404, 403, 402, 401, 400, 399, 398, 405 },
-	{ 412, 411, 410, 409, 408, 407, 406, 413 },
-	{ 420, 419, 418, 417, 416, 415, 414, 421 },
-	{ 428, 427, 426, 425, 424, 423, 422, 429 },
-	{ 436, 435, 434, 433, 432, 431, 430, 437 },
-	{ 527, 526, 525, 524, 523, 522, 521, 528 },
-	{ 573, 572, 571, 570, 569, 568, 567, 574 }
-};
-static int facePicsFiring[][DIRECTION_COUNT] =
-{
-	{ 26, 27, 137, 138, 139, 140, 141, 33 },
-	{ 129, 130, 146, 147, 148, 149, 150, 136 },
-	{ -1, -1, -1, -1, -1, -1, -1, -1 },
-	{ 228, 227, 265, 264, 263, 262, 261, 229 },
-	{ 236, 235, 242, 241, 240, 239, 238, 237 },
-	{ -1, -1, -1, -1, -1, -1, -1, -1 },
-	{ 272, 271, 278, 277, 276, 275, 274, 273 },
-	{ -1, -1, -1, -1, -1, -1, -1, -1 },
-	{ -1, -1, -1, -1, -1, -1, -1, -1 },
-	{ -1, -1, -1, -1, -1, -1, -1, -1 },
-	{ -1, -1, -1, -1, -1, -1, -1, -1 },
-	{ -1, -1, -1, -1, -1, -1, -1, -1 },
-	{ -1, -1, -1, -1, -1, -1, -1, -1 },
-	{ -1, -1, -1, -1, -1, -1, -1, -1 },
-	{ -1, -1, -1, -1, -1, -1, -1, -1 },
-	{ -1, -1, -1, -1, -1, -1, -1, -1 },
-	{ -1, -1, -1, -1, -1, -1, -1, -1 }
-};
-static Vec2i faceOffsets[FACE_COUNT][DIRECTION_COUNT] =
-{
-	{// Jones
-		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
-		{ 0, 0 }, { 0, 0 }, { 1, 0 }, { 1, 0 }
-	},
-	{// Ice
-		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
-		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }
-	},
-	{// Ogre
-		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
-		{ 0, 0 }, { 0, 0 }, { 1, 0 }, { 1, 0 }
-	},
-	{// Dragon
-		{ -1, 0 }, { 0, 0 }, { 0, 0 }, { -1, 0 },
-		{ -1, 0 }, { -1, 0 }, { 1, 0 }, { 0, 0 }
-	},
-	{// WarBaby
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { -1, 0 },
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
-	},
-	{// Bug-eye
-		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
-		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }
-	},
-	{// Smith
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { -1, 0 },
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
-	},
-	{// Ogre Boss
-		{ 0, -1 }, { -1, -1 }, { 0, -1 }, { 0, -1 },
-		{ 0, -1 }, { 0, -1 }, { 1, -1 }, { 0, -1 }
-	},
-	{// Grunt
-		{ -1, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
-	},
-	{// Professor
-		{ 0, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 },
-		{ 0, 0 }, { 0, 0 }, { 1, 0 }, { 1, 0 }
-	},
-	{// Snake
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { -1, 0 },
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
-	},
-	{// Wolf
-		{ -1, 0 }, { -1, 0 }, { 0, 1 }, { -1, 1 },
-		{ -1, 1 }, { -1, 1 }, { 0, 1 }, { 0, 1 }
-	},
-	{// Bob
-		{ -1, 0 }, { 0, 0 }, { 0, 1 }, { 0, 1 },
-		{ -1, 1 }, { -1, 1 }, { 0, 1 }, { 0, 0 }
-	},
-	{// Mad bug-eye
-		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
-		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }
-	},
-	{// Cyborg
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { -1, 0 },
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
-	},
-	{// Robot
-		{ 0, 1 }, { 0, 1 }, { 0, 1 }, { 0, 1 },
-		{ 0, 1 }, { 0, 1 }, { 0, 1 }, { 0, 1 }
-	},
-	{// Lady
-		{ 0, 0 }, { 0, 0 }, { -1, 0 }, { 0, 0 },
-		{ 0, 0 }, { 0, 0 }, { 1, 0 }, { 1, 0 }
-	}
-};
-static Vec2i faceOffsetsFiring[FACE_COUNT][DIRECTION_COUNT] =
-{
-	{// Jones
-		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { -1, 0 },
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 1, 0 }
-	},
-	{// Ice
-		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { -1, 0 },
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
-	},
-	{// Ogre
-		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
-		{ 0, 0 }, { 0, 0 }, { 1, 0 }, { 1, 0 }
-	},
-	{// Dragon
-		{ -1, 0 }, { 0, 0 }, { 0, 0 }, { -1, 0 },
-		{ -1, 0 }, { -1, 0 }, { 1, 0 }, { 0, 0 }
-	},
-	{// WarBaby
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { -1, 0 },
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
-	},
-	{// Bug-eye
-		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
-		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }
-	},
-	{// Smith
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { -1, 0 },
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
-	},
-	{// Ogre Boss
-		{ 0, -1 }, { -1, -1 }, { 0, -1 }, { 0, -1 },
-		{ 0, -1 }, { 0, -1 }, { 1, -1 }, { 0, -1 }
-	},
-	{// Grunt
-		{ -1, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
-	},
-	{// Professor
-		{ 0, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 },
-		{ 0, 0 }, { 0, 0 }, { 1, 0 }, { 1, 0 }
-	},
-	{// Snake
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { -1, 0 },
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
-	},
-	{// Wolf
-		{ -1, 0 }, { -1, 0 }, { 0, 1 }, { -1, 1 },
-		{ -1, 1 }, { -1, 1 }, { 0, 1 }, { 0, 1 }
-	},
-	{// Bob
-		{ -1, 0 }, { 0, 0 }, { 0, 1 }, { 0, 1 },
-		{ -1, 1 }, { -1, 1 }, { 0, 1 }, { 0, 0 }
-	},
-	{// Mad bug-eye
-		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 },
-		{ 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }
-	},
-	{// Cyborg
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { -1, 0 },
-		{ -1, 0 }, { -1, 0 }, { 0, 0 }, { 0, 0 }
-	},
-	{// Robot
-		{ 0, 1 }, { 0, 1 }, { 0, 1 }, { 0, 1 },
-		{ 0, 1 }, { 0, 1 }, { 0, 1 }, { 0, 1 }
-	},
-	{// Lady
-		{ 0, 0 }, { 0, 0 }, { -1, 0 }, { 0, 0 },
-		{ 0, 0 }, { 0, 0 }, { 1, 0 }, { 1, 0 }
-	}
-};
 
 
 static void SetupPalette(TPalette palette);
@@ -397,6 +195,41 @@ static void PicManagerAdd(
 				pic = &np->pic;
 			}
 			PicLoad(pic, size, offset, image);
+
+			if (strncmp("chars/heads/", buf, strlen("chars/heads/")) == 0)
+			{
+				// Convert head pics to multichannel version
+				for (int i = 0; i < pic->size.x * pic->size.y; i++)
+				{
+					color_t c = PIXEL2COLOR(pic->Data[i]);
+					// Don't bother if the alpha has already been modified; it means
+					// we have already processed this pixel
+					if (c.a != 255)
+					{
+						continue;
+					}
+					const uint8_t value = MAX(MAX(c.r, c.g), c.b);
+					if (abs((int)c.r - c.g) < 5 && abs((int)c.g - c.b) < 5)
+					{
+						// don't convert greyscale colours
+					}
+					else if ((c.g < 5 && c.b < 5) ||
+						(abs((int)c.g - c.b) < 5 && c.r > 250))
+					{
+						// Skin
+						c.r = c.g = c.b = value;
+						c.a = 254;
+					}
+					else if ((c.r < 5 && c.b < 5) ||
+						(abs((int)c.r - c.b) < 5 && c.g > 250))
+					{
+						// Hair
+						c.r = c.g = c.b = value;
+						c.a = 250;
+					}
+					pic->Data[i] = COLOR2PIXEL(c);
+				}
+			}
 		}
 	}
 	SDL_UnlockSurface(image);
@@ -474,9 +307,6 @@ bail:
 	tinydir_close(&dir);
 }
 static void GenerateOldPics(PicManager *pm);
-static void LoadOldFacePics(
-	PicManager *pm, const char *spritesName, int facePics[][DIRECTION_COUNT],
-	Vec2i offsets[FACE_COUNT][DIRECTION_COUNT]);
 void PicManagerLoad(PicManager *pm, const char *path)
 {
 	if (!IMG_Init(IMG_INIT_PNG))
@@ -488,37 +318,6 @@ void PicManagerLoad(PicManager *pm, const char *path)
 	GetDataFilePath(buf, path);
 	PicManagerLoadDir(pm, buf, NULL, pm->pics, pm->sprites);
 	GenerateOldPics(pm);
-
-	// Load old sprites, like the directional sprites
-	// Faces
-	LoadOldFacePics(pm, "idle", facePicsIdle, faceOffsets);
-	LoadOldFacePics(pm, "firing", facePicsFiring, faceOffsetsFiring);
-}
-static void LoadOldFacePics(
-	PicManager *pm, const char *spritesName, int facePics[][DIRECTION_COUNT],
-	Vec2i offsets[FACE_COUNT][DIRECTION_COUNT])
-{
-	for (int i = 0; i < FACE_COUNT; i++)
-	{
-		char buf[256];
-		sprintf(buf, "faces/%s_%s", faceNames[i], spritesName);
-		NamedSprites *ns = AddNamedSprites(pm->sprites, buf);
-		for (direction_e d = 0; d < DIRECTION_COUNT; d++)
-		{
-			const int facePic = facePics[i][d];
-			if (facePic < 0)
-			{
-				continue;
-			}
-			Pic p = PicCopy(PicManagerGetFromOld(pm, facePic));
-			// Add offset so we're drawing the head centered horizontally and
-			// taking into account the neck offset
-			p.offset = Vec2iAdd(
-				offsets[i][d],
-				Vec2iNew(-p.size.x / 2, NECK_OFFSET - p.size.y / 2));
-			CArrayPushBack(&ns->pics, &p);
-		}
-	}
 }
 static PicPaletted *PicManagerGetOldPic(PicManager *pm, int idx);
 static void ProcessMultichannelPic(PicManager *pm, const int picIdx);
@@ -544,18 +343,6 @@ static void GenerateOldPics(PicManager *pm)
 	// For each channel, use a different alpha value
 	// When drawing, we'll use the alpha value (starting from 255 and counting
 	// down) to determine which custom colour mask to use
-
-	// Head/hair: detect the skin/hair pixels and put them on a different channel
-	for (int f = 0; f < FACE_COUNT; f++)
-	{
-		for (direction_e d = 0; d < DIRECTION_COUNT; d++)
-		{
-			for (int s = 0; s < STATE_COUNT + 2; s++)
-			{
-				ProcessMultichannelPic(pm, cHeadPic[f][d][s]);
-			}
-		}
-	}
 
 	// Body: detect arms, body, legs and skin
 	for (int b = 0; b < BODY_COUNT; b++)

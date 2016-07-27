@@ -507,11 +507,14 @@ static void DrawActorPics(const ActorPics *pics, const Vec2i picPos)
 		{
 			Pic pic;
 			const Pic *picp = &pic;
+			Vec2i drawPos = picPos;
 			switch (pics->DrawOrder[i])
 			{
 			case 0:
 				// head
 				picp = pics->Head;
+				drawPos = Vec2iMinus(drawPos, Vec2iNew(
+					picp->size.x / 2, picp->size.y / 2 - 1 - NECK_OFFSET));
 				break;
 			case 1:
 				// body
@@ -529,16 +532,16 @@ static void DrawActorPics(const ActorPics *pics, const Vec2i picPos)
 			if (pics->IsTransparent)
 			{
 				BlitBackground(
-					&gGraphicsDevice, picp, picPos, pics->Tint, true);
+					&gGraphicsDevice, picp, drawPos, pics->Tint, true);
 			}
 			else if (pics->Mask != NULL)
 			{
-				BlitMasked(&gGraphicsDevice, picp, picPos, *pics->Mask, true);
+				BlitMasked(&gGraphicsDevice, picp, drawPos, *pics->Mask, true);
 			}
 			else
 			{
 				BlitCharMultichannel(
-					&gGraphicsDevice, picp, picPos, pics->Colors);
+					&gGraphicsDevice, picp, drawPos, pics->Colors);
 			}
 		}
 	}
@@ -708,12 +711,8 @@ static void DrawChatter(
 static const Pic *GetHeadPic(
 	const CharacterClass *c, const direction_e dir, const int state)
 {
-	const CPic *p = &c->IdlePics;
-	if (state >= STATE_COUNT && c->FiringPics != NULL)
-	{
-		p = c->FiringPics;
-	}
-	return CPicGetPic(p, dir);
+	const int idx = (int)dir + (state >= STATE_COUNT ? DIRECTION_COUNT : 0);
+	return CPicGetPic(&c->HeadPics, idx);
 }
 
 void DrawCharacterSimple(

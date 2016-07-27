@@ -36,8 +36,7 @@
 typedef struct
 {
 	char *Name;
-	CPic IdlePics;
-	CPic *FiringPics;
+	CPic HeadPics;
 } CharacterClass;
 typedef struct
 {

@@ -32,7 +32,7 @@
 #include "log.h"
 
 
-#define VERSION 1
+#define VERSION 2
 
 CharacterClasses gCharacterClasses;
 
@@ -134,14 +134,7 @@ static void LoadCharacterClass(CharacterClass *c, json_t *node)
 {
 	memset(c, 0, sizeof *c);
 	c->Name = GetString(node, "Name");
-	json_t *facePics = json_find_first_label(node, "FacePics")->child;
-	CPicLoadJSON(&c->IdlePics, json_find_first_label(facePics, "Idle")->child);
-	if (json_find_first_label(facePics, "Firing"))
-	{
-		CMALLOC(c->FiringPics, sizeof *c->FiringPics);
-		CPicLoadJSON(
-			c->FiringPics, json_find_first_label(facePics, "Firing")->child);
-	}
+	CPicLoadJSON(&c->HeadPics, json_find_first_label(node, "HeadPics")->child);
 }
 static void CharacterClassFree(CharacterClass *c);
 void CharacterClassesClear(CArray *classes)
@@ -155,7 +148,6 @@ void CharacterClassesClear(CArray *classes)
 static void CharacterClassFree(CharacterClass *c)
 {
 	CFREE(c->Name);
-	CFREE(c->FiringPics);
 }
 void CharacterClassesTerminate(CharacterClasses *c)
 {

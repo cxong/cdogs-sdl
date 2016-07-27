@@ -193,14 +193,14 @@ void CPicUpdate(CPic *p, const int ticks)
 		break;
 	}
 }
-const Pic *CPicGetPic(const CPic *p, direction_e d)
+const Pic *CPicGetPic(const CPic *p, const int idx)
 {
 	switch (p->Type)
 	{
 	case PICTYPE_NORMAL:
 		return p->u.Pic;
 	case PICTYPE_DIRECTIONAL:
-		return CArrayGet(p->u.Sprites, d);
+		return CArrayGet(p->u.Sprites, idx);
 	case PICTYPE_ANIMATED:
 	case PICTYPE_ANIMATED_RANDOM:
 		if (p->u.Animated.Frame < 0 ||

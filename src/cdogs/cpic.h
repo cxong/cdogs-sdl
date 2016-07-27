@@ -93,7 +93,7 @@ void NamedSpritesFree(NamedSprites *ns);
 
 void CPicLoadJSON(CPic *p, json_t *node);
 void CPicUpdate(CPic *p, const int ticks);
-const Pic *CPicGetPic(const CPic *p, direction_e d);
+const Pic *CPicGetPic(const CPic *p, const int idx);
 void CPicDraw(
 	GraphicsDevice *g, const CPic *p,
 	const Vec2i pos, const CPicDrawContext *context);

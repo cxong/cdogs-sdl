@@ -1,177 +1,158 @@
 {
-  "Version": 1,
+  "Version": 2,
   "Characters": [
     {
       "Name": "Jones",
-      "FacePics": {
-        "Idle": {
-          "Type": "Directional",
-          "Sprites": "faces/jones_idle"
-        },
-        "Firing": {
-          "Type": "Directional",
-          "Sprites": "faces/jones_firing"
-        }
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
       }
     },
     {
       "Name": "Ice",
-      "FacePics": {
-        "Idle": {
-          "Type": "Directional",
-          "Sprites": "faces/ice_idle"
-        },
-        "Firing": {
-          "Type": "Directional",
-          "Sprites": "faces/ice_firing"
-        }
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/ice"
       }
     },
     {
       "Name": "Ogre",
-      "FacePics": {
-        "Idle": {
-          "Type": "Directional",
-          "Sprites": "faces/ogre_idle"
-        }
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/ogre"
       }
     },
     {
       "Name": "Dragon",
-      "FacePics": {
-        "Idle": {
-          "Type": "Directional",
-          "Sprites": "faces/dragon_idle"
-        },
-        "Firing": {
-          "Type": "Directional",
-          "Sprites": "faces/dragon_firing"
-        }
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/dragon"
       }
     },
     {
       "Name": "WarBaby",
-      "FacePics": {
-        "Idle": {
-          "Type": "Directional",
-          "Sprites": "faces/warbaby_idle"
-        },
-        "Firing": {
-          "Type": "Directional",
-          "Sprites": "faces/warbaby_firing"
-        }
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/warbaby"
       }
     },
     {
       "Name": "Bug-eye",
-      "FacePics": {
-        "Idle": {
-          "Type": "Directional",
-          "Sprites": "faces/bugeye_idle"
-        }
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/bugeye"
       }
     },
     {
       "Name": "Smith",
-      "FacePics": {
-        "Idle": {
-          "Type": "Directional",
-          "Sprites": "faces/smith_idle"
-        },
-        "Firing": {
-          "Type": "Directional",
-          "Sprites": "faces/smith_firing"
-        }
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/smith"
       }
     },
     {
       "Name": "Ogre Boss",
-      "FacePics": {
-        "Idle": {
-          "Type": "Directional",
-          "Sprites": "faces/ogreboss_idle"
-        }
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/ogreboss"
       }
     },
     {
       "Name": "Grunt",
-      "FacePics": {
-        "Idle": {
-          "Type": "Directional",
-          "Sprites": "faces/grunt_idle"
-        }
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/grunt"
       }
     },
     {
       "Name": "Professor",
-      "FacePics": {
-        "Idle": {
-          "Type": "Directional",
-          "Sprites": "faces/professor_idle"
-        }
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/professor"
       }
     },
     {
       "Name": "Snake",
-      "FacePics": {
-        "Idle": {
-          "Type": "Directional",
-          "Sprites": "faces/snake_idle"
-        }
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/snake"
       }
     },
     {
       "Name": "Wolf",
-      "FacePics": {
-        "Idle": {
-          "Type": "Directional",
-          "Sprites": "faces/wolf_idle"
-        }
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/wolf"
       }
     },
     {
       "Name": "Bob",
-      "FacePics": {
-        "Idle": {
-          "Type": "Directional",
-          "Sprites": "faces/bob_idle"
-        }
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/bob"
       }
     },
     {
       "Name": "Mad bug-eye",
-      "FacePics": {
-        "Idle": {
-          "Type": "Directional",
-          "Sprites": "faces/madbugeye_idle"
-        }
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/madbugeye"
       }
     },
     {
       "Name": "Cyborg",
-      "FacePics": {
-        "Idle": {
-          "Type": "Directional",
-          "Sprites": "faces/cyborg_idle"
-        }
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/cyborg"
       }
     },
     {
       "Name": "Robot",
-      "FacePics": {
-        "Idle": {
-          "Type": "Directional",
-          "Sprites": "faces/robot_idle"
-        }
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/robot"
       }
     },
     {
       "Name": "Lady",
-      "FacePics": {
-        "Idle": {
-          "Type": "Directional",
-          "Sprites": "faces/lady_idle"
-        }
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/lady"
+      }
+    },
+    {
+      "Name": "Cyber Jones",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/cyberjones"
+      }
+    },
+    {
+      "Name": "Cyber Smith",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/cybersmith"
+      }
+    },
+    {
+      "Name": "Cyber WarBaby",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/cyberwar"
+      }
+    },
+    {
+      "Name": "Freeze",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/freeze"
+      }
+    },
+    {
+      "Name": "Goggles",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/goggles"
       }
     }
   ]
