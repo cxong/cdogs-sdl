@@ -94,6 +94,8 @@ add_executable(json_test
 	../cdogs/color.c
 	../cdogs/json_utils.c
 	../cdogs/json_utils.h
+	../cdogs/log.c
+	../cdogs/log.h
 	../cdogs/utils.c
 	../cdogs/utils.h)
 target_link_libraries(json_test
