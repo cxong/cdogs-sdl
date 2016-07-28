@@ -738,8 +738,8 @@ void DrawHead(
 	const int state, const Vec2i pos)
 {
 	const Pic *head = GetHeadPic(c->Class, dir, state);
-	// Note: undo neck offset as we are only drawing the head
-	const Vec2i drawPos = Vec2iNew(pos.x, pos.y - NECK_OFFSET);
+	const Vec2i drawPos = Vec2iMinus(pos, Vec2iNew(
+		head->size.x / 2, head->size.y / 2));
 	BlitCharMultichannel(&gGraphicsDevice, head, drawPos, &c->Colors);
 }
 
