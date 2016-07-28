@@ -31,6 +31,10 @@
 #include <assert.h>
 
 #include "actors.h"
+#include "files.h"
+#include "json_utils.h"
+
+#define CHARACTER_VERSION 12
 
 
 void CharacterStoreInit(CharacterStore *store)
@@ -59,6 +63,127 @@ void CharacterStoreResetOthers(CharacterStore *store)
 	CArrayClear(&store->prisonerIds);
 	CArrayClear(&store->baddieIds);
 	CArrayClear(&store->specialIds);
+}
+
+void CharacterLoadJSON(CharacterStore *c, json_t *root, int version)
+{
+	LoadInt(&version, root, "Version");
+	json_t *child = json_find_first_label(root, "Characters")->child->child;
+	CharacterStoreTerminate(c);
+	CharacterStoreInit(c);
+	while (child)
+	{
+		Character *ch = CharacterStoreAddOther(c);
+		char *tmp;
+		if (version < 7)
+		{
+			// Old version stored character looks as palette indices
+			int face;
+			LoadInt(&face, child, "face");
+			ch->Class = IntCharacterClass(face);
+			int skin, arm, body, leg, hair;
+			LoadInt(&skin, child, "skin");
+			LoadInt(&arm, child, "arm");
+			LoadInt(&body, child, "body");
+			LoadInt(&leg, child, "leg");
+			LoadInt(&hair, child, "hair");
+			ConvertCharacterColors(skin, arm, body, leg, hair, &ch->Colors);
+		}
+		else
+		{
+			tmp = GetString(child, "Class");
+			ch->Class = StrCharacterClass(tmp);
+			CFREE(tmp);
+			LoadColor(&ch->Colors.Skin, child, "Skin");
+			LoadColor(&ch->Colors.Arms, child, "Arms");
+			LoadColor(&ch->Colors.Body, child, "Body");
+			LoadColor(&ch->Colors.Legs, child, "Legs");
+			LoadColor(&ch->Colors.Hair, child, "Hair");
+		}
+		// Hair colour correction; some characters had no hair but now with
+		// specific parts of the head colourised using the hair colour; set
+		// default "hair" colour based on the head type
+		if (version < 12)
+		{
+			const color_t darkRed = {0xC0, 0, 0, 0xFF};
+			if (strcmp(ch->Class->Name, "Cyborg") == 0)
+			{
+				// eye
+				ch->Colors.Hair = colorRed;
+			}
+			else if (strcmp(ch->Class->Name, "Ice") == 0)
+			{
+				// shades
+				ch->Colors.Hair = colorBlack;
+			}
+			else if (strcmp(ch->Class->Name, "Ogre") == 0)
+			{
+				// eyes
+				ch->Colors.Hair = darkRed;
+			}
+			else if (strcmp(ch->Class->Name, "Snake") == 0)
+			{
+				// eyepatch
+				ch->Colors.Hair = colorBlack;
+			}
+			else if (strcmp(ch->Class->Name, "WarBaby") == 0)
+			{
+				// beret
+				ch->Colors.Hair = colorRed;
+			}
+		}
+		LoadInt(&ch->speed, child, "speed");
+		tmp = GetString(child, "Gun");
+		ch->Gun = StrGunDescription(tmp);
+		CFREE(tmp);
+		LoadInt(&ch->maxHealth, child, "maxHealth");
+		LoadInt(&ch->flags, child, "flags");
+		LoadInt(&ch->bot->probabilityToMove, child, "probabilityToMove");
+		LoadInt(&ch->bot->probabilityToTrack, child, "probabilityToTrack");
+		LoadInt(&ch->bot->probabilityToShoot, child, "probabilityToShoot");
+		LoadInt(&ch->bot->actionDelay, child, "actionDelay");
+		child = child->next;
+	}
+}
+
+bool CharacterSave(CharacterStore *s, const char *path)
+{
+	json_t *root = json_new_object();
+	AddIntPair(root, "Version", CHARACTER_VERSION);
+	bool res = true;
+	
+	json_t *charNode = json_new_array();
+	CA_FOREACH(Character, c, s->OtherChars)
+		json_t *node = json_new_object();
+		AddStringPair(node, "Class", c->Class->Name);
+		AddColorPair(node, "Skin", c->Colors.Skin);
+		AddColorPair(node, "Arms", c->Colors.Arms);
+		AddColorPair(node, "Body", c->Colors.Body);
+		AddColorPair(node, "Legs", c->Colors.Legs);
+		AddColorPair(node, "Hair", c->Colors.Hair);
+		AddIntPair(node, "speed", c->speed);
+		json_insert_pair_into_object(
+			node, "Gun", json_new_string(c->Gun->name));
+		AddIntPair(node, "maxHealth", c->maxHealth);
+		AddIntPair(node, "flags", c->flags);
+		AddIntPair(node, "probabilityToMove", c->bot->probabilityToMove);
+		AddIntPair(node, "probabilityToTrack", c->bot->probabilityToTrack);
+		AddIntPair(node, "probabilityToShoot", c->bot->probabilityToShoot);
+		AddIntPair(node, "actionDelay", c->bot->actionDelay);
+		json_insert_child(charNode, node);
+	CA_FOREACH_END()
+	json_insert_pair_into_object(root, "Characters", charNode);
+	char buf[CDOGS_PATH_MAX];
+	sprintf(buf, "%s/characters.json", path);
+	if (!TrySaveJSONFile(root, buf))
+	{
+		res = false;
+		goto bail;
+	}
+
+bail:
+	json_free_value(&root);
+	return res;
 }
 
 Character *CharacterStoreAddOther(CharacterStore *store)

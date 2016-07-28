@@ -160,9 +160,7 @@ int MapNewLoad(const char *filename, CampaignSetting *c)
 	}
 	MapNewLoadCampaignJSON(root, c);
 	LoadMissions(&c->Missions, json_find_first_label(root, "Missions")->child, version);
-	LoadCharacters(
-		&c->characters, json_find_first_label(root, "Characters")->child,
-		version);
+	CharacterLoadJSON(&c->characters, root, version);
 
 bail:
 	json_free_value(&root);
@@ -407,54 +405,6 @@ static bool TryLoadStaticMap(Mission *m, json_t *node, int version)
 	LoadStaticExit(m, node, "Exit");
 
 	return true;
-}
-void LoadCharacters(
-	CharacterStore *c, json_t *charactersNode, const int version)
-{
-	json_t *child = charactersNode->child;
-	CharacterStoreTerminate(c);
-	CharacterStoreInit(c);
-	while (child)
-	{
-		Character *ch = CharacterStoreAddOther(c);
-		char *tmp;
-		if (version < 7)
-		{
-			// Old version stored character looks as palette indices
-			int face;
-			LoadInt(&face, child, "face");
-			ch->Class = IntCharacterClass(face);
-			int skin, arm, body, leg, hair;
-			LoadInt(&skin, child, "skin");
-			LoadInt(&arm, child, "arm");
-			LoadInt(&body, child, "body");
-			LoadInt(&leg, child, "leg");
-			LoadInt(&hair, child, "hair");
-			ConvertCharacterColors(skin, arm, body, leg, hair, &ch->Colors);
-		}
-		else
-		{
-			tmp = GetString(child, "Class");
-			ch->Class = StrCharacterClass(tmp);
-			CFREE(tmp);
-			LoadColor(&ch->Colors.Skin, child, "Skin");
-			LoadColor(&ch->Colors.Arms, child, "Arms");
-			LoadColor(&ch->Colors.Body, child, "Body");
-			LoadColor(&ch->Colors.Legs, child, "Legs");
-			LoadColor(&ch->Colors.Hair, child, "Hair");
-		}
-		LoadInt(&ch->speed, child, "speed");
-		tmp = GetString(child, "Gun");
-		ch->Gun = StrGunDescription(tmp);
-		CFREE(tmp);
-		LoadInt(&ch->maxHealth, child, "maxHealth");
-		LoadInt(&ch->flags, child, "flags");
-		LoadInt(&ch->bot->probabilityToMove, child, "probabilityToMove");
-		LoadInt(&ch->bot->probabilityToTrack, child, "probabilityToTrack");
-		LoadInt(&ch->bot->probabilityToShoot, child, "probabilityToShoot");
-		LoadInt(&ch->bot->actionDelay, child, "actionDelay");
-		child = child->next;
-	}
 }
 
 static void LoadMissionObjectives(

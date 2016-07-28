@@ -164,9 +164,7 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	root = ReadArchiveJSON(filename, "characters.json");
 	if (root != NULL)
 	{
-		LoadCharacters(
-			&c->characters, json_find_first_label(root, "Characters")->child,
-			version);
+		CharacterLoadJSON(&c->characters, root, version);
 	}
 
 bail:
@@ -307,8 +305,6 @@ end:
 
 
 static json_t *SaveMissions(CArray *a);
-static json_t *SaveCharacters(CharacterStore *s);
-bool TrySaveJSONFile(json_t *node, const char *filename);
 int MapArchiveSave(const char *filename, CampaignSetting *c)
 {
 	int res = 1;
@@ -354,12 +350,7 @@ int MapArchiveSave(const char *filename, CampaignSetting *c)
 		goto bail;
 	}
 
-	json_free_value(&root);
-	root = json_new_object();
-	json_insert_pair_into_object(
-		root, "Characters", SaveCharacters(&c->characters));
-	sprintf(buf2, "%s/characters.json", buf);
-	if (!TrySaveJSONFile(root, buf2))
+	if (!CharacterSave(&c->characters, buf))
 	{
 		res = 0;
 		goto bail;
@@ -367,35 +358,6 @@ int MapArchiveSave(const char *filename, CampaignSetting *c)
 
 bail:
 	json_free_value(&root);
-	return res;
-}
-bool TrySaveJSONFile(json_t *node, const char *filename)
-{
-	bool res = true;
-	char *text;
-	json_tree_to_string(node, &text);
-	char *ftext = json_format_string(text);
-	FILE *f = fopen(filename, "w");
-	if (f == NULL)
-	{
-		printf("failed to open. Reason: [%s].\n", strerror(errno));
-		res = false;
-		goto bail;
-	}
-	size_t writeLen = strlen(ftext);
-	const size_t rc = fwrite(ftext, 1, writeLen, f);
-	if (rc != writeLen)
-	{
-		printf("Wrote (%d) of (%d) bytes. Reason: [%s].\n",
-			(int)rc, (int)writeLen, strerror(errno));
-		res = false;
-		goto bail;
-	}
-
-bail:
-	CFREE(text);
-	CFREE(ftext);
-	if (f != NULL) fclose(f);
 	return res;
 }
 
@@ -518,30 +480,6 @@ static json_t *SaveMissions(CArray *a)
 		json_insert_child(missionsNode, node);
 	}
 	return missionsNode;
-}
-static json_t *SaveCharacters(CharacterStore *s)
-{
-	json_t *charNode = json_new_array();
-	CA_FOREACH(Character, c, s->OtherChars)
-		json_t *node = json_new_object();
-		AddStringPair(node, "Class", c->Class->Name);
-		AddColorPair(node, "Skin", c->Colors.Skin);
-		AddColorPair(node, "Arms", c->Colors.Arms);
-		AddColorPair(node, "Body", c->Colors.Body);
-		AddColorPair(node, "Legs", c->Colors.Legs);
-		AddColorPair(node, "Hair", c->Colors.Hair);
-		AddIntPair(node, "speed", c->speed);
-		json_insert_pair_into_object(
-			node, "Gun", json_new_string(c->Gun->name));
-		AddIntPair(node, "maxHealth", c->maxHealth);
-		AddIntPair(node, "flags", c->flags);
-		AddIntPair(node, "probabilityToMove", c->bot->probabilityToMove);
-		AddIntPair(node, "probabilityToTrack", c->bot->probabilityToTrack);
-		AddIntPair(node, "probabilityToShoot", c->bot->probabilityToShoot);
-		AddIntPair(node, "actionDelay", c->bot->actionDelay);
-		json_insert_child(charNode, node);
-	CA_FOREACH_END()
-	return charNode;
 }
 static json_t *SaveClassicRooms(Mission *m)
 {

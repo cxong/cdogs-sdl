@@ -28,9 +28,11 @@
  */
 #include "json_utils.h"
 
+#include <errno.h>
 #include <stdlib.h>
 
 #include "config.h"
+#include "log.h"
 #include "weapon.h"
 #include "pic_manager.h"
 #include "sys_config.h"
@@ -200,4 +202,35 @@ json_t *JSONFindNode(json_t *node, const char *path)
 bail:
 	CFREE(pathCopy);
 	return node;
+}
+
+bool TrySaveJSONFile(json_t *node, const char *filename)
+{
+	bool res = true;
+	char *text;
+	json_tree_to_string(node, &text);
+	char *ftext = json_format_string(text);
+	FILE *f = fopen(filename, "w");
+	if (f == NULL)
+	{
+		LOG(LM_MAIN, LL_ERROR, "failed to open file(%s) for saving: %s",
+			filename, strerror(errno));
+		res = false;
+		goto bail;
+	}
+	size_t writeLen = strlen(ftext);
+	const size_t rc = fwrite(ftext, 1, writeLen, f);
+	if (rc != writeLen)
+	{
+		LOG(LM_MAIN, LL_ERROR, "Wrote (%d) of (%d) bytes: %s",
+			(int)rc, (int)writeLen, strerror(errno));
+		res = false;
+		goto bail;
+	}
+
+bail:
+	CFREE(text);
+	CFREE(ftext);
+	if (f != NULL) fclose(f);
+	return res;
 }

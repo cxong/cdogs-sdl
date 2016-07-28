@@ -73,3 +73,5 @@ int TryLoadValue(json_t **node, const char *name);
 			(value) = func(_node->text);\
 		}\
 	}
+
+bool TrySaveJSONFile(json_t *node, const char *filename);
