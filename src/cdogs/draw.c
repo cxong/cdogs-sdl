@@ -64,12 +64,15 @@
 #include "blit.h"
 #include "pic_manager.h"
 
+#define NECK_OFFSET 13
+#define FOOT_OFFSET 3
+
 
 // For actor drawing
 typedef struct
 {
 	const Pic *Head;
-	TOffsetPic Body;
+	const Pic *Body;
 	TOffsetPic Gun;
 	int DrawOrder[3];
 	const CharColors *Colors;
@@ -379,6 +382,9 @@ static void GetCharacterPicsFromActor(ActorPics *pics, TActor *a)
 }
 static const Pic *GetHeadPic(
 	const CharacterClass *c, const direction_e dir, const int state);
+static const Pic *GetBodyPic(
+	PicManager *pm, const direction_e dir, const int state, const bool isArmed);
+static const Pic *GetDeathPic(PicManager *pm, const int frame);
 static void GetCharacterPics(
 	ActorPics *pics, Character *c, const direction_e dir, const int frame,
 	const int g, const gunstate_e gunState,
@@ -396,12 +402,11 @@ static void GetCharacterPics(
 		if (deadPic < DEATH_MAX)
 		{
 			pics->IsDying = true;
-			pics->Body = cDeathPics[deadPic - 1];
+			pics->Body = GetDeathPic(&gPicManager, deadPic - 1);
 			pics->DrawOrder[0] = 1;
 		}
 		return;
 	}
-
 
 	pics->IsTransparent = isTransparent;
 	if (pics->IsTransparent)
@@ -429,15 +434,14 @@ static void GetCharacterPics(
 	pics->Head = GetHeadPic(c->Class, headDir, headFrame);
 
 	// Body
-	const int b = g < 0 ? BODY_UNARMED : BODY_ARMED;
-	pics->Body.dx = cBodyOffset[b][dir].dx;
-	pics->Body.dy = cBodyOffset[b][dir].dy;
-	pics->Body.picIndex = cBodyPic[b][dir][frame];
+	const bool isArmed = g >= 0;
+	pics->Body = GetBodyPic(&gPicManager, dir, frame, isArmed);
 
 	// Gun
 	pics->Gun.picIndex = -1;
-	if (g >= 0)
+	if (isArmed)
 	{
+		const int b = g < 0 ? BODY_UNARMED : BODY_ARMED;
 		pics->Gun.dx =
 			cGunHandOffset[b][dir].dx +
 			cGunPics[g][dir][gunState].dx;
@@ -486,14 +490,14 @@ static Character *ActorGetCharacterMutable(TActor *a)
 	}
 	return CArrayGet(&gCampaign.Setting.characters.OtherChars, a->charId);
 }
+static void DrawBody(GraphicsDevice *g, const ActorPics *pics, const Vec2i pos);
 static void DrawActorPics(const ActorPics *pics, const Vec2i picPos)
 {
 	if (pics->IsDead)
 	{
 		if (pics->IsDying)
 		{
-			const Pic pic = PicFromTOffsetPic(&gPicManager, pics->Body);
-			BlitBackground(&gGraphicsDevice, &pic, picPos, pics->Tint, true);
+			DrawBody(&gGraphicsDevice, pics, picPos);
 		}
 	}
 	else
@@ -514,11 +518,13 @@ static void DrawActorPics(const ActorPics *pics, const Vec2i picPos)
 				// head
 				picp = pics->Head;
 				drawPos = Vec2iMinus(drawPos, Vec2iNew(
-					picp->size.x / 2, picp->size.y / 2 - 1 - NECK_OFFSET));
+					picp->size.x / 2, picp->size.y / 2 + NECK_OFFSET));
 				break;
 			case 1:
 				// body
-				pic = PicFromTOffsetPic(&gPicManager, pics->Body);
+				picp = pics->Body;
+				drawPos = Vec2iMinus(drawPos, Vec2iNew(
+					picp->size.x / 2, picp->size.y / 2 + FOOT_OFFSET));
 				break;
 			case 2:
 				// gun
@@ -657,10 +663,9 @@ static void DrawObjectiveHighlight(
 		if (!pics.IsDead && !pics.IsTransparent)
 		{
 			BlitPicHighlight(&gGraphicsDevice, pics.Head, pos, color);
-			if (pics.Body.picIndex >= 0)
+			if (pics.Body != NULL)
 			{
-				Pic pic = PicFromTOffsetPic(&gPicManager, pics.Body);
-				BlitPicHighlight(&gGraphicsDevice, &pic, pos, color);
+				BlitPicHighlight(&gGraphicsDevice, pics.Body, pos, color);
 			}
 			if (pics.Gun.picIndex >= 0)
 			{
@@ -714,6 +719,19 @@ static const Pic *GetHeadPic(
 	const int idx = (int)dir + (state >= STATE_COUNT ? DIRECTION_COUNT : 0);
 	return CPicGetPic(&c->HeadPics, idx);
 }
+static const Pic *GetBodyPic(
+	PicManager *pm, const direction_e dir, const int state, const bool isArmed)
+{
+	const bool isIdle = state <= STATE_IDLERIGHT;
+	const int row = (isArmed ? 5 : 0) + (isIdle ? 0 : state - STATE_IDLERIGHT);
+	const int idx = row * DIRECTION_COUNT + dir;
+	return CArrayGet(
+		&PicManagerGetSprites(pm, "chars/body_arms_legs")->pics, idx);
+}
+static const Pic *GetDeathPic(PicManager *pm, const int frame)
+{
+	return CArrayGet(&PicManagerGetSprites(pm, "chars/death")->pics, frame);
+}
 
 void DrawCharacterSimple(
 	Character *c, const Vec2i pos, const direction_e d,
@@ -742,7 +760,14 @@ void DrawHead(
 		head->size.x / 2, head->size.y / 2));
 	BlitCharMultichannel(&gGraphicsDevice, head, drawPos, &c->Colors);
 }
-
+static void DrawBody(GraphicsDevice *g, const ActorPics *pics, const Vec2i pos)
+{
+	const Pic *body = pics->Body;
+	const Vec2i drawPos = Vec2iMinus(pos, Vec2iNew(
+		body->size.x / 2, body->size.y / 2 + FOOT_OFFSET));
+	const color_t mask = pics->Mask != NULL ? *pics->Mask : colorWhite;
+	BlitMasked(g, pics->Body, drawPos, mask, true);
+}
 
 static void DrawEditorTiles(DrawBuffer *b, const Vec2i offset);
 static void DrawGuideImage(

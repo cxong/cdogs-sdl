@@ -196,14 +196,14 @@ static void PicManagerAdd(
 			}
 			PicLoad(pic, size, offset, image);
 
-			if (strncmp("chars/heads/", buf, strlen("chars/heads/")) == 0)
+			if (strncmp("chars/", buf, strlen("chars/")) == 0)
 			{
-				// Convert head pics to multichannel version
+				// Convert char pics to multichannel version
 				for (int i = 0; i < pic->size.x * pic->size.y; i++)
 				{
 					color_t c = PIXEL2COLOR(pic->Data[i]);
-					// Don't bother if the alpha has already been modified; it means
-					// we have already processed this pixel
+					// Don't bother if the alpha has already been modified; it
+					// means we have already processed this pixel
 					if (c.a != 255)
 					{
 						continue;
@@ -226,6 +226,25 @@ static void PicManagerAdd(
 						// Hair
 						c.r = c.g = c.b = value;
 						c.a = 250;
+					}
+					else if ((c.r < 5 && c.g < 5) ||
+						(abs((int)c.r - c.g) < 5 && c.b > 250))
+					{
+						// Arms
+						c.r = c.g = c.b = value;
+						c.a = 253;
+					}
+					else if (c.b < 5 || (c.r > 250 && c.g > 250))
+					{
+						// Body
+						c.r = c.g = c.b = value;
+						c.a = 252;
+					}
+					else if (c.r < 5 || (c.g > 250 && c.b > 250))
+					{
+						// Legs
+						c.r = c.g = c.b = value;
+						c.a = 251;
 					}
 					pic->Data[i] = COLOR2PIXEL(c);
 				}
@@ -343,18 +362,6 @@ static void GenerateOldPics(PicManager *pm)
 	// For each channel, use a different alpha value
 	// When drawing, we'll use the alpha value (starting from 255 and counting
 	// down) to determine which custom colour mask to use
-
-	// Body: detect arms, body, legs and skin
-	for (int b = 0; b < BODY_COUNT; b++)
-	{
-		for (direction_e d = 0; d < DIRECTION_COUNT; d++)
-		{
-			for (int s = 0; s < STATE_COUNT; s++)
-			{
-				ProcessMultichannelPic(pm, cBodyPic[b][d][s]);
-			}
-		}
-	}
 
 	// Gun: detect skin
 	for (gunpic_e g = 0; g < GUNPIC_COUNT; g++)
