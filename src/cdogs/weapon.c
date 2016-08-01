@@ -462,9 +462,20 @@ void WeaponUpdate(
 	if (w->stateCounter >= 0)
 	{
 		w->stateCounter = MAX(0, w->stateCounter - ticks);
-		if (w->stateCounter == 0 && w->state == GUNSTATE_FIRING)
+		if (w->stateCounter == 0)
 		{
-			WeaponSetState(w, GUNSTATE_RECOIL);
+			switch (w->state)
+			{
+			case GUNSTATE_FIRING:
+				WeaponSetState(w, GUNSTATE_RECOIL);
+				break;
+			case GUNSTATE_RECOIL:
+				WeaponSetState(w, GUNSTATE_FIRING);
+				break;
+			default:
+				// do nothing
+				break;
+			}
 		}
 	}
 }
@@ -574,12 +585,12 @@ void WeaponSetState(Weapon *w, const gunstate_e state)
 	switch (state)
 	{
 	case GUNSTATE_FIRING:
-		w->stateCounter = 8;
+		w->stateCounter = 4;
 		break;
 	case GUNSTATE_RECOIL:
 		// This is to make sure the gun stays recoiled as long as the gun is
 		// "locked", i.e. cannot fire
-		w->stateCounter = w->lock;
+		w->stateCounter = MAX(1, w->lock - 3);
 		break;
 	default:
 		w->stateCounter = -1;
