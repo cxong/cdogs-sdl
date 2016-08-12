@@ -52,7 +52,6 @@
 
 #include "grafx.h"
 #include "pic.h"
-#include "pic_file.h"
 #include "vector.h"
 
 typedef struct

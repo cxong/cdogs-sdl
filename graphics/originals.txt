@@ -38,6 +38,9 @@ cd.png
 chair.png
 chair_wreck.png
 chars/body_arms_legs_16x16.png
+chars/death_16x22.png
+chars/guns/blaster_20x20.png
+chars/guns/knife_16x20.png
 chars/heads/bob_10x10.png
 chars/heads/bugeye_10x10.png
 chars/heads/cyberjones_10x10.png

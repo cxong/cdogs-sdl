@@ -26,8 +26,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __credits
-#define __credits
+#pragma once
 
 #ifdef __MINGW32__
 // MinGW time bug
@@ -37,7 +36,7 @@
 #include <time.h>
 
 #include <cdogs/c_array.h>
-#include <cdogs/pic_file.h>
+#include <cdogs/color.h>
 
 
 /*
@@ -75,5 +74,3 @@ void LoadCredits(
 	credits_displayer_t *displayer, color_t nameColor, color_t textColor);
 void UnloadCredits(credits_displayer_t *displayer);
 void ShowCredits(credits_displayer_t *displayer);
-
-#endif

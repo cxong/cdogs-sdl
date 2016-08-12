@@ -50,7 +50,6 @@
 
 #include "blit.h"
 #include "defs.h"
-#include "pic_file.h"
 
 
 #define PIC_UZIBULLET      42
@@ -79,20 +78,6 @@ const char *IntFloorStyle(const int i);
 #define ROOM_STYLE_COUNT 11
 const char *IntRoomStyle(const int i);
 
+typedef Vec2i OffsetTable[DIRECTION_COUNT];
 
-struct Offset {
-	int dx, dy;
-};
-
-typedef struct Offset OffsetTable[DIRECTION_COUNT];
-
-
-extern TPalette origPalette;
-
-extern const int cBodyPic[BODY_COUNT][DIRECTION_COUNT][STATE_COUNT];
-extern const int cHeadPic[FACE_COUNT][DIRECTION_COUNT][STATE_COUNT+2];
-extern const OffsetTable cBodyOffset[BODY_COUNT];
-extern const OffsetTable cNeckOffset[BODY_COUNT];
-extern const OffsetTable cGunHandOffset[BODY_COUNT];
-extern const OffsetTable cHeadOffset[FACE_COUNT];
-extern const TOffsetPic cDeathPics[DEATH_MAX];
+extern const OffsetTable cGunHandOffset;

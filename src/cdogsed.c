@@ -242,7 +242,7 @@ static void Display(GraphicsDevice *g, HandleInputResult result)
 	if (fileChanged)
 	{
 		// Display a disk icon to show the game needs saving
-		const Pic *pic = PicManagerGetFromOld(&gPicManager, 221);
+		const Pic *pic = PicManagerGetPic(&gPicManager, "disk1");
 		Blit(&gGraphicsDevice, pic, Vec2iNew(10, y));
 	}
 
@@ -1306,12 +1306,7 @@ int main(int argc, char *argv[])
 	strcpy(lastFile, "");
 
 	gConfig = ConfigLoad(GetConfigFilePath(CONFIG_FILE));
-	if (!PicManagerTryInit(
-		&gPicManager, "graphics/cdogs.px", "graphics/cdogs2.px"))
-	{
-		exit(0);
-	}
-	memcpy(origPalette, gPicManager.palette, sizeof origPalette);
+	PicManagerInit(&gPicManager);
 	// Hardcode config settings
 	ConfigGet(&gConfig, "Graphics.ScaleFactor")->u.Int.Value = 2;
 	ConfigGet(&gConfig, "Graphics.ScaleMode")->u.Enum.Value = SCALE_MODE_NN;

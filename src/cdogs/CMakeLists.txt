@@ -77,7 +77,6 @@ set(CDOGS_SOURCES
 	particle.c
 	path_cache.c
 	pic.c
-	pic_file.c
 	pic_manager.c
 	pickup.c
 	pickup_class.c
@@ -167,7 +166,6 @@ set(CDOGS_HEADERS
 	particle.h
 	path_cache.h
 	pic.h
-	pic_file.h
 	pic_manager.h
 	pickup.h
 	pickup_class.h

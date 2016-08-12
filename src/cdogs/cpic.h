@@ -31,7 +31,6 @@
 
 #include "defs.h"
 #include "grafx.h"
-#include "pic_file.h"
 #include "pic.h"
 
 typedef struct
@@ -83,8 +82,6 @@ typedef struct
 	Vec2i Offset;
 } CPicDrawContext;
 typedef CPicDrawContext (*GetDrawContextFunc)(const int);
-
-void PicFromPicPaletted(Pic *pic, const PicPaletted *picP);
 
 void NamedPicFree(NamedPic *n);
 

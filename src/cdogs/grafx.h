@@ -55,7 +55,6 @@
 #include "c_array.h"
 #include "color.h"
 #include "config.h"
-#include "pic_file.h"
 #include "vector.h"
 #include "sys_specifics.h"
 

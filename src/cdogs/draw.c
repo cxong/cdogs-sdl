@@ -66,6 +66,7 @@
 
 #define NECK_OFFSET 13
 #define FOOT_OFFSET 3
+#define WRIST_OFFSET -6
 
 
 // For actor drawing
@@ -73,7 +74,7 @@ typedef struct
 {
 	const Pic *Head;
 	const Pic *Body;
-	TOffsetPic Gun;
+	const Pic *Gun;
 	int DrawOrder[3];
 	const CharColors *Colors;
 	bool IsDead;
@@ -303,7 +304,8 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 	}
 }
 static void GetCharacterPicsFromActor(ActorPics *pics, TActor *a);
-static void DrawActorPics(const ActorPics *pics, const Vec2i picPos);
+static void DrawActorPics(
+	const ActorPics *pics, const Vec2i picPos, const direction_e d);
 static void DrawLaserSight(
 	const ActorPics *pics, const TActor *a, const Vec2i picPos);
 static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset)
@@ -332,7 +334,7 @@ static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset)
 		TActor *a = CArrayGet(&gActors, t->id);
 		ActorPics pics;
 		GetCharacterPicsFromActor(&pics, a);
-		DrawActorPics(&pics, picPos);
+		DrawActorPics(&pics, picPos, RadiansToDirection(a->DrawRadians));
 		// Draw weapon indicators
 		DrawLaserSight(&pics, a, picPos);
 	}
@@ -344,7 +346,7 @@ static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset)
 static Character *ActorGetCharacterMutable(TActor *a);
 static void GetCharacterPics(
 	ActorPics *pics, Character *c, const direction_e dir, const int frame,
-	const int g, const gunstate_e gunState,
+	const NamedSprites *gunPics, const gunstate_e gunState,
 	const bool isTransparent, HSV *tint, color_t *mask,
 	const int deadPic);
 static void GetCharacterPicsFromActor(ActorPics *pics, TActor *a)
@@ -375,7 +377,7 @@ static void GetCharacterPicsFromActor(ActorPics *pics, TActor *a)
 	GetCharacterPics(
 		pics, ActorGetCharacterMutable(a),
 		RadiansToDirection(a->DrawRadians), AnimationGetFrame(&a->anim),
-		gun->Gun->pic, gun->state,
+		gun->Gun->Pic, gun->state,
 		!!(a->flags & FLAGS_SEETHROUGH),
 		tint, mask,
 		a->dead);
@@ -384,10 +386,12 @@ static const Pic *GetHeadPic(
 	const CharacterClass *c, const direction_e dir, const int state);
 static const Pic *GetBodyPic(
 	PicManager *pm, const direction_e dir, const int state, const bool isArmed);
+static const Pic *GetGunPic(
+	const NamedSprites *gunPics, const direction_e dir, const int gunState);
 static const Pic *GetDeathPic(PicManager *pm, const int frame);
 static void GetCharacterPics(
 	ActorPics *pics, Character *c, const direction_e dir, const int frame,
-	const int g, const gunstate_e gunState,
+	const NamedSprites *gunPics, const gunstate_e gunState,
 	const bool isTransparent, HSV *tint, color_t *mask,
 	const int deadPic)
 {
@@ -434,21 +438,14 @@ static void GetCharacterPics(
 	pics->Head = GetHeadPic(c->Class, headDir, headFrame);
 
 	// Body
-	const bool isArmed = g >= 0;
+	const bool isArmed = gunPics != NULL;
 	pics->Body = GetBodyPic(&gPicManager, dir, frame, isArmed);
 
 	// Gun
-	pics->Gun.picIndex = -1;
+	pics->Gun = NULL;
 	if (isArmed)
 	{
-		const int b = g < 0 ? BODY_UNARMED : BODY_ARMED;
-		pics->Gun.dx =
-			cGunHandOffset[b][dir].dx +
-			cGunPics[g][dir][gunState].dx;
-		pics->Gun.dy =
-			cGunHandOffset[b][dir].dy +
-			cGunPics[g][dir][gunState].dy;
-		pics->Gun.picIndex = cGunPics[g][dir][gunState].picIndex;
+		pics->Gun = GetGunPic(gunPics, dir, gunState);
 	}
 
 	// Determine draw order based on the direction the player is facing
@@ -491,7 +488,8 @@ static Character *ActorGetCharacterMutable(TActor *a)
 	return CArrayGet(&gCampaign.Setting.characters.OtherChars, a->charId);
 }
 static void DrawBody(GraphicsDevice *g, const ActorPics *pics, const Vec2i pos);
-static void DrawActorPics(const ActorPics *pics, const Vec2i picPos)
+static void DrawActorPics(
+	const ActorPics *pics, const Vec2i picPos, const direction_e d)
 {
 	if (pics->IsDead)
 	{
@@ -509,32 +507,33 @@ static void DrawActorPics(const ActorPics *pics, const Vec2i picPos)
 		}
 		for (int i = 0; i < 3; i++)
 		{
-			Pic pic;
-			const Pic *picp = &pic;
-			Vec2i drawPos = picPos;
+			const Pic *picp = NULL;
+			Vec2i offset = Vec2iZero();
 			switch (pics->DrawOrder[i])
 			{
 			case 0:
 				// head
 				picp = pics->Head;
-				drawPos = Vec2iMinus(drawPos, Vec2iNew(
-					picp->size.x / 2, picp->size.y / 2 + NECK_OFFSET));
+				offset.y = -NECK_OFFSET;
 				break;
 			case 1:
 				// body
 				picp = pics->Body;
-				drawPos = Vec2iMinus(drawPos, Vec2iNew(
-					picp->size.x / 2, picp->size.y / 2 + FOOT_OFFSET));
+				offset.y = -FOOT_OFFSET;
 				break;
 			case 2:
 				// gun
-				pic = PicFromTOffsetPic(&gPicManager, pics->Gun);
+				picp = pics->Gun;
+				offset = cGunHandOffset[d];
+				offset.y += WRIST_OFFSET;
 				break;
 			}
-			if (PicIsNone(picp))
+			if (picp == NULL)
 			{
 				continue;
 			}
+			const Vec2i drawPos = Vec2iAdd(
+				Vec2iMinus(picPos, Vec2iScaleDiv(picp->size, 2)), offset);
 			if (pics->IsTransparent)
 			{
 				BlitBackground(
@@ -667,10 +666,9 @@ static void DrawObjectiveHighlight(
 			{
 				BlitPicHighlight(&gGraphicsDevice, pics.Body, pos, color);
 			}
-			if (pics.Gun.picIndex >= 0)
+			if (pics.Gun != NULL)
 			{
-				Pic pic = PicFromTOffsetPic(&gPicManager, pics.Gun);
-				BlitPicHighlight(&gGraphicsDevice, &pic, pos, color);
+				BlitPicHighlight(&gGraphicsDevice, pics.Gun, pos, color);
 			}
 		}
 	}
@@ -728,6 +726,12 @@ static const Pic *GetBodyPic(
 	return CArrayGet(
 		&PicManagerGetSprites(pm, "chars/body_arms_legs")->pics, idx);
 }
+static const Pic *GetGunPic(
+	const NamedSprites *gunPics, const direction_e dir, const int gunState)
+{
+	const int idx = (gunState == GUNSTATE_READY ? 8 : 0) + dir;
+	return CArrayGet(&gunPics->pics, idx);
+}
 static const Pic *GetDeathPic(PicManager *pm, const int frame)
 {
 	return CArrayGet(&PicManagerGetSprites(pm, "chars/death")->pics, frame);
@@ -739,8 +743,8 @@ void DrawCharacterSimple(
 {
 	ActorPics pics;
 	GetCharacterPics(
-		&pics, c, d, STATE_IDLE, -1, GUNSTATE_READY, false, NULL, NULL, 0);
-	DrawActorPics(&pics, pos);
+		&pics, c, d, STATE_IDLE, NULL, GUNSTATE_READY, false, NULL, NULL, 0);
+	DrawActorPics(&pics, pos, d);
 	if (hilite)
 	{
 		FontCh('>', Vec2iAdd(pos, Vec2iNew(-8, -16)));

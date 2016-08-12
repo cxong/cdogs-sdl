@@ -25,12 +25,6 @@ bool ConfigGetBool(Config *c, const char *name)
 {
 	UNUSED(c); UNUSED(name); return false;
 }
-Pic *PicManagerGetFromOld(PicManager *pm, int idx)
-{
-	UNUSED(pm);
-	UNUSED(idx);
-	return NULL;
-}
 Pic *PicManagerGetPic(const PicManager *pm, const char *name)
 {
 	UNUSED(pm);

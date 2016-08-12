@@ -36,35 +36,10 @@
 
 PicManager gPicManager;
 
-// +--------------------+
-// |  Color range info  |
-// +--------------------+
-#define WALL_COLORS       208
-#define FLOOR_COLORS      216
-#define ROOM_COLORS       232
-#define ALT_COLORS        224
 
-// Color range defines
-#define SKIN_START 2
-#define SKIN_END   9
-#define BODY_START 52
-#define BODY_END   61
-#define ARMS_START 68
-#define ARMS_END   77
-#define LEGS_START 84
-#define LEGS_END   93
-#define HAIR_START 132
-#define HAIR_END   135
-
-static uint8_t cWhiteValues[] = { 64, 56, 46, 36, 30, 24, 20, 16 };
-
-
-static void SetupPalette(TPalette palette);
-bool PicManagerTryInit(
-	PicManager *pm, const char *oldGfxFile1, const char *oldGfxFile2)
+void PicManagerInit(PicManager *pm)
 {
 	memset(pm, 0, sizeof *pm);
-	pm->oldSprites = hashmap_new();
 	pm->pics = hashmap_new();
 	pm->sprites = hashmap_new();
 	pm->customPics = hashmap_new();
@@ -75,53 +50,6 @@ bool PicManagerTryInit(
 	CArrayInit(&pm->exitStyleNames, sizeof(char *));
 	CArrayInit(&pm->doorStyleNames, sizeof(char *));
 	CArrayInit(&pm->keyStyleNames, sizeof(char *));
-
-	// Load old pics
-	char buf[CDOGS_PATH_MAX];
-	GetDataFilePath(buf, oldGfxFile1);
-	int i = ReadPics(buf, pm->oldPics, PIC_COUNT1, pm->palette);
-	if (!i)
-	{
-		printf("Unable to read %s\n", buf);
-		return false;
-	}
-	GetDataFilePath(buf, oldGfxFile2);
-	if (!AppendPics(buf, pm->oldPics, PIC_COUNT1, PIC_MAX))
-	{
-		printf("Unable to read %s\n", buf);
-		return false;
-	}
-	SetupPalette(pm->palette);
-	return true;
-}
-static void SetPaletteRange(
-	TPalette palette, const int start, const color_t mask);
-static void SetupPalette(TPalette palette)
-{
-	palette[0].r = palette[0].g = palette[0].b = 0;
-
-	// Set the coloured palette ranges
-	// Note: alpha used as "channel"
-	// These pics will be recoloured on demand by the PicManager based on
-	// mission-specific colours requested during map load. Some pics will
-	// have an "alt" colour in the same pic, so to differentiate and mask
-	// each colour individually, those converted pics will use a different
-	// colour mask, to signify different recolouring channels.
-	SetPaletteRange(palette, WALL_COLORS, colorWhite);
-	SetPaletteRange(palette, FLOOR_COLORS, colorWhite);
-	SetPaletteRange(palette, ROOM_COLORS, colorWhite);
-	SetPaletteRange(palette, ALT_COLORS, colorRed);
-}
-static void SetPaletteRange(
-	TPalette palette, const int start, const color_t mask)
-{
-	for (int i = 0; i < 8; i++)
-	{
-		color_t c;
-		c.r = c.g = c.b = cWhiteValues[i];
-		c.a = 255;
-		palette[start + i] = ColorMult(c, mask);
-	}
 }
 
 static NamedPic *AddNamedPic(map_t pics, const char *name, const Pic *p);
@@ -325,7 +253,6 @@ void PicManagerLoadDir(
 bail:
 	tinydir_close(&dir);
 }
-static void GenerateOldPics(PicManager *pm);
 void PicManagerLoad(PicManager *pm, const char *path)
 {
 	if (!IMG_Init(IMG_INIT_PNG))
@@ -336,89 +263,6 @@ void PicManagerLoad(PicManager *pm, const char *path)
 	char buf[CDOGS_PATH_MAX];
 	GetDataFilePath(buf, path);
 	PicManagerLoadDir(pm, buf, NULL, pm->pics, pm->sprites);
-	GenerateOldPics(pm);
-}
-static PicPaletted *PicManagerGetOldPic(PicManager *pm, int idx);
-static void ProcessMultichannelPic(PicManager *pm, const int picIdx);
-static void GenerateOldPics(PicManager *pm)
-{
-	// Convert old pics into new format ones
-	for (int i = 0; i < PIC_MAX; i++)
-	{
-		PicPaletted *oldPic = PicManagerGetOldPic(pm, i);
-		PicFree(&pm->picsFromOld[i]);
-		if (oldPic == NULL)
-		{
-			memcpy(&pm->picsFromOld[i], &picNone, sizeof picNone);
-		}
-		else
-		{
-			PicFromPicPaletted(&pm->picsFromOld[i], oldPic);
-		}
-	}
-
-	// For actor pics, convert them to greyscale since we'll be masking them with
-	// colours later
-	// For each channel, use a different alpha value
-	// When drawing, we'll use the alpha value (starting from 255 and counting
-	// down) to determine which custom colour mask to use
-
-	// Gun: detect skin
-	for (gunpic_e g = 0; g < GUNPIC_COUNT; g++)
-	{
-		for (direction_e d = 0; d < DIRECTION_COUNT; d++)
-		{
-			for (gunstate_e s = 0; s < GUNSTATE_COUNT; s++)
-			{
-				ProcessMultichannelPic(pm, cGunPics[g][d][s].picIndex);
-			}
-		}
-	}
-}
-static void ProcessMultichannelPic(PicManager *pm, const int picIdx)
-{
-	const PicPaletted *old = PicManagerGetOldPic(pm, picIdx);
-	Pic *pic = PicManagerGetFromOld(pm, picIdx);
-	for (int i = 0; i < pic->size.x * pic->size.y; i++)
-	{
-		color_t c = PIXEL2COLOR(pic->Data[i]);
-		// Don't bother if the alpha has already been modified; it means
-		// we have already processed this pixel
-		if (c.a != 255)
-		{
-			continue;
-		}
-		// Note: the shades for arms, body, legs are slightly less bright than
-		// the other parts, so increase their shade to compensate
-		const uint8_t value = MAX(MAX(c.r, c.g), c.b);
-		const uint8_t value2 = (uint8_t)CLAMP(value * 1.7, 0, 255);
-		if (old->data[i] >= SKIN_START && old->data[i] <= SKIN_END)
-		{
-			c.r = c.g = c.b = value;
-			c.a = 254;
-		}
-		else if (old->data[i] >= ARMS_START && old->data[i] <= ARMS_END)
-		{
-			c.r = c.g = c.b = value2;
-			c.a = 253;
-		}
-		else if (old->data[i] >= BODY_START && old->data[i] <= BODY_END)
-		{
-			c.r = c.g = c.b = value2;
-			c.a = 252;
-		}
-		else if (old->data[i] >= LEGS_START && old->data[i] <= LEGS_END)
-		{
-			c.r = c.g = c.b = value2;
-			c.a = 251;
-		}
-		else if (old->data[i] >= HAIR_START && old->data[i] <= HAIR_END)
-		{
-			c.r = c.g = c.b = value;
-			c.a = 250;
-		}
-		pic->Data[i] = COLOR2PIXEL(c);
-	}
 }
 
 
@@ -569,15 +413,6 @@ void PicManagerClearCustom(PicManager *pm)
 static void StylesTerminate(CArray *styles);
 void PicManagerTerminate(PicManager *pm)
 {
-	for (int i = 0; i < PIC_MAX; i++)
-	{
-		if (pm->oldPics[i] != NULL)
-		{
-			CFREE(pm->oldPics[i]);
-		}
-		PicFree(&pm->picsFromOld[i]);
-	}
-	hashmap_destroy(pm->oldSprites, NamedSpritesDestroy);
 	hashmap_destroy(pm->pics, NamedPicDestroy);
 	hashmap_destroy(pm->sprites, NamedSpritesDestroy);
 	hashmap_destroy(pm->customPics, NamedPicDestroy);
@@ -610,22 +445,6 @@ static void NamedSpritesDestroy(any_t data)
 	CFREE(n);
 }
 
-static PicPaletted *PicManagerGetOldPic(PicManager *pm, int idx)
-{
-	if (idx < 0)
-	{
-		return NULL;
-	}
-	return pm->oldPics[idx];
-}
-Pic *PicManagerGetFromOld(PicManager *pm, int idx)
-{
-	if (idx < 0)
-	{
-		return NULL;
-	}
-	return &pm->picsFromOld[idx];
-}
 NamedPic *PicManagerGetNamedPic(const PicManager *pm, const char *name)
 {
 	NamedPic *n;
@@ -646,29 +465,6 @@ Pic *PicManagerGetPic(const PicManager *pm, const char *name)
 	NamedPic *n = PicManagerGetNamedPic(pm, name);
 	if (n != NULL) return &n->pic;
 	return NULL;
-}
-Pic *PicManagerGet(PicManager *pm, const char *name, const int oldIdx)
-{
-	Pic *pic;
-	if (!name || name[0] == '\0')
-	{
-		goto defaultPic;
-	}
-	pic = PicManagerGetPic(pm, name);
-	if (!pic)
-	{
-		goto defaultPic;
-	}
-	return pic;
-
-defaultPic:
-	pic = PicManagerGetFromOld(pm, oldIdx);
-	CASSERT(pic != NULL, "Cannot find pic");
-	if (pic == NULL)
-	{
-		pic = PicManagerGetFromOld(pm, PIC_UZIBULLET);
-	}
-	return pic;
 }
 const NamedSprites *PicManagerGetSprites(
 	const PicManager *pm, const char *name)
@@ -864,18 +660,4 @@ int PicManagerGetKeyStyleIndex(PicManager *pm, const char *style)
 		}
 	CA_FOREACH_END()
 	return 0;
-}
-
-Pic PicFromTOffsetPic(PicManager *pm, TOffsetPic op)
-{
-	Pic *opPic = PicManagerGetFromOld(pm, op.picIndex);
-	Pic pic;
-	if (opPic == NULL)
-	{
-		return picNone;
-	}
-	pic.size = opPic->size;
-	pic.offset = Vec2iNew(op.dx, op.dy);
-	pic.Data = opPic->Data;
-	return pic;
 }

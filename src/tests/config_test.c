@@ -14,12 +14,6 @@ Mix_Chunk *StrSound(const char *s)
 	UNUSED(s);
 	return NULL;
 }
-Pic *PicManagerGetFromOld(PicManager *pm, int idx)
-{
-	UNUSED(pm);
-	UNUSED(idx);
-	return NULL;
-}
 Pic *PicManagerGetPic(const PicManager *pm, const char *name)
 {
 	UNUSED(pm);

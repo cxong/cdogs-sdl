@@ -46,24 +46,6 @@ PicType StrPicType(const char *s)
 }
 
 
-void PicFromPicPaletted(Pic *pic, const PicPaletted *picP)
-{
-	pic->size = Vec2iNew(picP->w, picP->h);
-	pic->offset = Vec2iZero();
-	CMALLOC(pic->Data, pic->size.x * pic->size.y * sizeof *pic->Data);
-	for (int i = 0; i < pic->size.x * pic->size.y; i++)
-	{
-		unsigned char palette = *(picP->data + i);
-		pic->Data[i] = COLOR2PIXEL(PaletteToColor(palette));
-		// Special case: if the palette colour is 0, it's transparent
-		if (palette == 0)
-		{
-			pic->Data[i] = 0;
-		}
-	}
-}
-
-
 void NamedPicFree(NamedPic *n)
 {
 	PicFree(&n->pic);

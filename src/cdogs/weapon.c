@@ -64,31 +64,7 @@
 
 GunClasses gGunDescriptions;
 
-const TOffsetPic cGunPics[GUNPIC_COUNT][DIRECTION_COUNT][GUNSTATE_COUNT] = {
-	{
-	 {{-2, -10, 86}, {-3, -8, 78}, {-3, -7, 78}},
-	 {{-2, -10, 87}, {-2, -9, 79}, {-3, -8, 79}},
-	 {{0, -12, 88}, {0, -5, 80}, {-1, -5, 80}},
-	 {{-2, -9, 90}, {0, -2, 81}, {-1, -3, 81}},
-	 {{-2, -9, 90}, {-1, -2, 82}, {-1, -3, 82}},
-	 {{-6, -10, 91}, {-7, -4, 83}, {-6, -5, 83}},
-	 {{-8, -11, 92}, {-12, -6, 84}, {-11, -6, 84}},
-	 {{-6, -14, 93}, {-8, -12, 85}, {-7, -11, 85}}
-	 },
-	{
-	 {{-1, -7, 142}, {-1, -7, 142}, {-1, -7, 142}},
-	 {{-1, -7, 142}, {-1, -7, 142}, {-1, -7, 142}},
-	 {{-2, -8, 143}, {-2, -8, 143}, {-2, -8, 143}},
-	 {{-3, -5, 144}, {-3, -5, 144}, {-3, -5, 144}},
-	 {{-3, -5, 144}, {-3, -5, 144}, {-3, -5, 144}},
-	 {{-3, -5, 144}, {-3, -5, 144}, {-3, -5, 144}},
-	 {{-8, -10, 145}, {-8, -10, 145}, {-8, -10, 145}},
-	 {{-8, -10, 145}, {-8, -10, 145}, {-8, -10, 145}}
-	 }
-};
-
-const OffsetTable cMuzzleOffset[GUNPIC_COUNT] = {
-	{
+const OffsetTable cMuzzleOffset = {
 	 {2, 0},
 	 {7, 2},
 	 {13, 2},
@@ -97,7 +73,6 @@ const OffsetTable cMuzzleOffset[GUNPIC_COUNT] = {
 	 {2, 6},
 	 {0, 2},
 	 {2, 2}
-	 }
 };
 
 // Initialise all the static weapon data
@@ -208,20 +183,12 @@ static void LoadGunDescription(
 
 	tmp = NULL;
 	LoadStr(&tmp, node, "Pic");
+	g->Pic = NULL;
 	if (tmp != NULL)
 	{
-		if (strcmp(tmp, "blaster") == 0)
-		{
-			g->pic = GUNPIC_BLASTER;
-		}
-		else if (strcmp(tmp, "knife") == 0)
-		{
-			g->pic = GUNPIC_KNIFE;
-		}
-		else
-		{
-			g->pic = -1;
-		}
+		char buf[CDOGS_PATH_MAX];
+		sprintf(buf, "chars/guns/%s", tmp);
+		g->Pic = PicManagerGetSprites(&gPicManager, buf);
 		CFREE(tmp);
 	}
 
@@ -566,16 +533,10 @@ Vec2i GunGetMuzzleOffset(const GunDescription *desc, const direction_e dir)
 	{
 		return Vec2iZero();
 	}
-	gunpic_e g = desc->pic;
-	CASSERT(g >= 0, "Gun has no pic");
-	int body = (int)g < 0 ? BODY_UNARMED : BODY_ARMED;
-	Vec2i position = Vec2iNew(
-		cGunHandOffset[body][dir].dx +
-		cGunPics[g][dir][GUNSTATE_FIRING].dx +
-		cMuzzleOffset[g][dir].dx,
-		cGunHandOffset[body][dir].dy +
-		cGunPics[g][dir][GUNSTATE_FIRING].dy +
-		cMuzzleOffset[g][dir].dy + BULLET_Z);
+	CASSERT(desc->Pic != NULL, "Gun has no pic");
+	const Vec2i position = Vec2iAdd(
+		Vec2iAdd(cGunHandOffset[dir], cMuzzleOffset[dir]),
+		Vec2iNew(0, BULLET_Z));
 	return Vec2iReal2Full(position);
 }
 
@@ -600,7 +561,7 @@ void WeaponSetState(Weapon *w, const gunstate_e state)
 
 bool GunHasMuzzle(const GunDescription *g)
 {
-	return g->pic == GUNPIC_BLASTER;
+	return g->Pic != NULL && g->CanShoot;
 }
 bool IsHighDPS(const GunDescription *g)
 {

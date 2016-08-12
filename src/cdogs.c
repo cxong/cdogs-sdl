@@ -416,14 +416,7 @@ int main(int argc, char *argv[])
 		printf("Press the enter key to continue...\n");
 		getchar();
 	}
-	if (!PicManagerTryInit(
-		&gPicManager, "graphics/cdogs.px", "graphics/cdogs2.px"))
-	{
-		LOG(LM_MAIN, LL_ERROR, "Failed to initialize graphics");
-		err = EXIT_FAILURE;
-		goto bail;
-	}
-	memcpy(origPalette, gPicManager.palette, sizeof(origPalette));
+	PicManagerInit(&gPicManager);
 	GraphicsInit(&gGraphicsDevice, &gConfig);
 	GraphicsInitialize(&gGraphicsDevice, forceResolution);
 	if (!gGraphicsDevice.IsInitialized)

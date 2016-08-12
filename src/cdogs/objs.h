@@ -112,9 +112,6 @@ void Damage(
 void ObjsInit(void);
 void ObjsTerminate(void);
 int ObjsGetNextUID(void);
-void AddObjectOld(
-	const Vec2i pos, const Vec2i size,
-	const TOffsetPic *pic, const int tileFlags);
 void ObjAdd(const NMapObjectAdd amo);
 void ObjRemove(const NMapObjectRemove mor);
 void ObjDestroy(TObject *o);

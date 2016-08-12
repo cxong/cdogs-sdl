@@ -33,10 +33,6 @@
 
 typedef struct
 {
-	PicPaletted *oldPics[PIC_MAX];
-	Pic picsFromOld[PIC_MAX];
-	map_t oldSprites;	// of NamedSprites
-	TPalette palette;
 	map_t pics;	// of NamedPic
 	map_t sprites;	// of NamedSprites
 	map_t customPics;	// of NamedPic
@@ -53,8 +49,7 @@ typedef struct
 
 extern PicManager gPicManager;
 
-bool PicManagerTryInit(
-	PicManager *pm, const char *oldGfxFile1, const char *oldGfxFile2);
+void PicManagerInit(PicManager *pm);
 void PicManagerLoad(PicManager *pm, const char *path);
 void PicManagerLoadDir(
 	PicManager *pm, const char *path, const char *prefix,
@@ -62,11 +57,9 @@ void PicManagerLoadDir(
 void PicManagerClearCustom(PicManager *pm);
 void PicManagerTerminate(PicManager *pm);
 
-Pic *PicManagerGetFromOld(PicManager *pm, int idx);
 // Note: return ptr to NamedPic so we can store that instead of the name
 NamedPic *PicManagerGetNamedPic(const PicManager *pm, const char *name);
 Pic *PicManagerGetPic(const PicManager *pm, const char *name);
-Pic *PicManagerGet(PicManager *pm, const char *name, const int oldIdx);
 const NamedSprites *PicManagerGetSprites(
 	const PicManager *pm, const char *name);
 
@@ -93,6 +86,3 @@ int PicManagerGetTileStyleIndex(PicManager *pm, const char *style);
 int PicManagerGetExitStyleIndex(PicManager *pm, const char *style);
 int PicManagerGetDoorStyleIndex(PicManager *pm, const char *style);
 int PicManagerGetKeyStyleIndex(PicManager *pm, const char *style);
-
-// Conversion
-Pic PicFromTOffsetPic(PicManager *pm, TOffsetPic op);

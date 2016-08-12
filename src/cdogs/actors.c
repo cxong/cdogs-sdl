@@ -1262,26 +1262,6 @@ void ActorDestroy(TActor *a)
 	a->isInUse = false;
 }
 
-unsigned char BestMatch(const TPalette palette, int r, int g, int b)
-{
-	int d, dMin = 0;
-	int i;
-	int best = -1;
-
-	for (i = 0; i < 256; i++)
-	{
-		d = (r - palette[i].r) * (r - palette[i].r) +
-			(g - palette[i].g) * (g - palette[i].g) +
-			(b - palette[i].b) * (b - palette[i].b);
-		if (best < 0 || d < dMin)
-		{
-			best = i;
-			dMin = d;
-		}
-	}
-	return (unsigned char)best;
-}
-
 TActor *ActorGetByUID(const int uid)
 {
 	CA_FOREACH(TActor, a, gActors)

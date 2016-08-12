@@ -79,14 +79,6 @@ typedef enum
 	GUN_COUNT
 } gun_e;
 
-// picture of player holding a gun
-typedef enum
-{
-	GUNPIC_BLASTER,
-	GUNPIC_KNIFE,
-	GUNPIC_COUNT
-} gunpic_e;
-
 // Gun states
 typedef enum
 {
@@ -98,7 +90,7 @@ typedef enum
 
 typedef struct
 {
-	gunpic_e pic;
+	const NamedSprites *Pic;
 	const Pic *Icon;
 	char *name;
 	char *Description;
@@ -146,8 +138,8 @@ typedef struct
 } Weapon;
 
 extern GunClasses gGunDescriptions;
-extern const TOffsetPic cGunPics[GUNPIC_COUNT][DIRECTION_COUNT][GUNSTATE_COUNT];
-extern const OffsetTable cMuzzleOffset[GUNPIC_COUNT];
+// TODO: gun-specific muzzle offsets
+extern const OffsetTable cMuzzleOffset;
 
 void WeaponInitialize(GunClasses *g);
 void WeaponLoadJSON(GunClasses *g, CArray *classes, json_t *root);
