@@ -183,7 +183,6 @@ static void LoadGunDescription(
 
 	tmp = NULL;
 	LoadStr(&tmp, node, "Pic");
-	g->Pic = NULL;
 	if (tmp != NULL)
 	{
 		char buf[CDOGS_PATH_MAX];
