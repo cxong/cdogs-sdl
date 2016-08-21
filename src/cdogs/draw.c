@@ -66,7 +66,37 @@
 
 #define NECK_OFFSET 13
 #define FOOT_OFFSET 3
-#define WRIST_OFFSET -6
+#define WRIST_OFFSET 6
+
+
+typedef enum
+{
+	BODY_PART_HEAD,
+	BODY_PART_BODY,
+	BODY_PART_GUN
+} BodyPart;
+static Vec2i GetActorDrawOffset(
+	const Vec2i pos, const Pic *pic, const BodyPart part, const direction_e d)
+{
+	Vec2i outPos = Vec2iMinus(pos, Vec2iScaleDiv(pic->size, 2));
+	switch (part)
+	{
+	case BODY_PART_HEAD:
+		outPos.y -= NECK_OFFSET;
+		break;
+	case BODY_PART_BODY:
+		outPos.y -= FOOT_OFFSET;
+		break;
+	case BODY_PART_GUN:
+		outPos = Vec2iAdd(outPos, cGunHandOffset[d]);
+		outPos.y -= WRIST_OFFSET;
+		break;
+	default:
+		CASSERT(false, "unknown body part");
+		break;
+	}
+	return outPos;
+}
 
 
 // For actor drawing
@@ -75,7 +105,7 @@ typedef struct
 	const Pic *Head;
 	const Pic *Body;
 	const Pic *Gun;
-	int DrawOrder[3];
+	BodyPart DrawOrder[3];
 	const CharColors *Colors;
 	bool IsDead;
 	bool IsDying;
@@ -407,7 +437,7 @@ static void GetCharacterPics(
 		{
 			pics->IsDying = true;
 			pics->Body = GetDeathPic(&gPicManager, deadPic - 1);
-			pics->DrawOrder[0] = 1;
+			pics->DrawOrder[0] = BODY_PART_BODY;
 		}
 		return;
 	}
@@ -454,25 +484,25 @@ static void GetCharacterPics(
 	{
 	case DIRECTION_UP:
 	case DIRECTION_UPRIGHT:
-		pics->DrawOrder[0] = 2;
-		pics->DrawOrder[1] = 0;
-		pics->DrawOrder[2] = 1;
+		pics->DrawOrder[0] = BODY_PART_GUN;
+		pics->DrawOrder[1] = BODY_PART_HEAD;
+		pics->DrawOrder[2] = BODY_PART_BODY;
 		break;
 
 	case DIRECTION_RIGHT:
 	case DIRECTION_DOWNRIGHT:
 	case DIRECTION_DOWN:
 	case DIRECTION_DOWNLEFT:
-		pics->DrawOrder[0] = 1;
-		pics->DrawOrder[1] = 0;
-		pics->DrawOrder[2] = 2;
+		pics->DrawOrder[0] = BODY_PART_BODY;
+		pics->DrawOrder[1] = BODY_PART_HEAD;
+		pics->DrawOrder[2] = BODY_PART_GUN;
 		break;
 
 	case DIRECTION_LEFT:
 	case DIRECTION_UPLEFT:
-		pics->DrawOrder[0] = 2;
-		pics->DrawOrder[1] = 1;
-		pics->DrawOrder[2] = 0;
+		pics->DrawOrder[0] = BODY_PART_GUN;
+		pics->DrawOrder[1] = BODY_PART_BODY;
+		pics->DrawOrder[2] = BODY_PART_HEAD;
 		break;
 	default:
 		CASSERT(false, "invalid direction");
@@ -487,6 +517,7 @@ static Character *ActorGetCharacterMutable(TActor *a)
 	}
 	return CArrayGet(&gCampaign.Setting.characters.OtherChars, a->charId);
 }
+
 static void DrawBody(GraphicsDevice *g, const ActorPics *pics, const Vec2i pos);
 static void DrawActorPics(
 	const ActorPics *pics, const Vec2i picPos, const direction_e d)
@@ -508,32 +539,24 @@ static void DrawActorPics(
 		for (int i = 0; i < 3; i++)
 		{
 			const Pic *picp = NULL;
-			Vec2i offset = Vec2iZero();
 			switch (pics->DrawOrder[i])
 			{
-			case 0:
-				// head
+			case BODY_PART_HEAD:
 				picp = pics->Head;
-				offset.y = -NECK_OFFSET;
 				break;
-			case 1:
-				// body
+			case BODY_PART_BODY:
 				picp = pics->Body;
-				offset.y = -FOOT_OFFSET;
 				break;
-			case 2:
-				// gun
+			case BODY_PART_GUN:
 				picp = pics->Gun;
-				offset = cGunHandOffset[d];
-				offset.y += WRIST_OFFSET;
 				break;
 			}
 			if (picp == NULL)
 			{
 				continue;
 			}
-			const Vec2i drawPos = Vec2iAdd(
-				Vec2iMinus(picPos, Vec2iScaleDiv(picp->size, 2)), offset);
+			const Vec2i drawPos = GetActorDrawOffset(
+				picPos, picp, pics->DrawOrder[i], d);
 			if (pics->IsTransparent)
 			{
 				BlitBackground(
@@ -616,6 +639,9 @@ static void DrawObjectiveHighlights(DrawBuffer *b, Vec2i offset)
 		tile += X_TILES - b->Size.x;
 	}
 }
+static void DrawActorHighlight(
+	const ActorPics *pics, const Vec2i pos, const color_t color,
+	const direction_e d);
 static void DrawObjectiveHighlight(
 	TTileItem *ti, Tile *tile, DrawBuffer *b, Vec2i offset)
 {
@@ -658,19 +684,32 @@ static void DrawObjectiveHighlight(
 		TActor *a = CArrayGet(&gActors, ti->id);
 		ActorPics pics;
 		GetCharacterPicsFromActor(&pics, a);
-		// Do not highlight dead, dying or transparent characters
-		if (!pics.IsDead && !pics.IsTransparent)
-		{
-			BlitPicHighlight(&gGraphicsDevice, pics.Head, pos, color);
-			if (pics.Body != NULL)
-			{
-				BlitPicHighlight(&gGraphicsDevice, pics.Body, pos, color);
-			}
-			if (pics.Gun != NULL)
-			{
-				BlitPicHighlight(&gGraphicsDevice, pics.Gun, pos, color);
-			}
-		}
+		DrawActorHighlight(&pics, pos, color, a->direction);
+	}
+}
+static void DrawActorHighlight(
+	const ActorPics *pics, const Vec2i pos, const color_t color,
+	const direction_e d)
+{
+	// Do not highlight dead, dying or transparent characters
+	if (pics->IsDead || pics->IsTransparent)
+	{
+		return;
+	}
+	const Vec2i headPos = GetActorDrawOffset(
+		pos, pics->Head, BODY_PART_HEAD, d);
+	BlitPicHighlight(&gGraphicsDevice, pics->Head, headPos, color);
+	if (pics->Body != NULL)
+	{
+		const Vec2i bodyPos = GetActorDrawOffset(
+			pos, pics->Body, BODY_PART_BODY, d);
+		BlitPicHighlight(&gGraphicsDevice, pics->Body, bodyPos, color);
+	}
+	if (pics->Gun != NULL)
+	{
+		const Vec2i gunPos = GetActorDrawOffset(
+			pos, pics->Gun, BODY_PART_GUN, d);
+		BlitPicHighlight(&gGraphicsDevice, pics->Gun, gunPos, color);
 	}
 }
 
