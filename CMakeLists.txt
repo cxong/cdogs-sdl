@@ -177,7 +177,7 @@ if(APPLE)
 		USE_SOURCE_PERMISSIONS)
 else()
 	install(
-		PROGRAMS src/cdogs-sdl${EXE_EXTENSION} src/cdogs-sdl-editor${EXE_EXTENSION}
+		PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/src/cdogs-sdl${EXE_EXTENSION} ${CMAKE_CURRENT_BINARY_DIR}/src/cdogs-sdl-editor${EXE_EXTENSION}
 		DESTINATION ${INSTALL_PREFIX}/bin)
 endif()
 
