@@ -197,7 +197,10 @@ INSTALL(FILES
 IF(UNIX AND NOT APPLE AND NOT BEOS AND NOT HAIKU)
 	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-sdl.desktop DESTINATION ${CMAKE_INSTALL_PREFIX}/share/applications)
 	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-sdl.appdata.xml DESTINATION ${CMAKE_INSTALL_PREFIX}/share/appdata)
-	INSTALL(FILES ${CMAKE_SOURCE_DIR}/cdogs-sdl.png DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons)
+	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-icon.16.png DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/16x16/apps/cdogs-sdl.png)
+	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-icon.22.png DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/22x22/apps/cdogs-sdl.png)
+	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-icon.32.png DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/32x32/apps/cdogs-sdl.png)
+	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-icon.48.png DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/48x48/apps/cdogs-sdl.png)
 elseif(WIN32)
 	# Package for Windows
 	FILE(GLOB DLLS "${CMAKE_SOURCE_DIR}/src/*.dll")
