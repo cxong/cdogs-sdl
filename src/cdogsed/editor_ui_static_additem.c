@@ -32,6 +32,7 @@
 #include <SDL_image.h>
 
 #include <cdogs/draw.h>
+#include <cdogs/draw_actor.h>
 #include <cdogs/events.h>
 #include <cdogs/font.h>
 #include <cdogs/map.h>

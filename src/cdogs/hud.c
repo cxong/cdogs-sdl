@@ -56,6 +56,7 @@
 #include "ammo.h"
 #include "automap.h"
 #include "draw.h"
+#include "draw_actor.h"
 #include "drawtools.h"
 #include "events.h"
 #include "font.h"

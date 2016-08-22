@@ -54,6 +54,7 @@
 #include "actors.h"
 #include "config.h"
 #include "draw.h"
+#include "draw_actor.h"
 #include "drawtools.h"
 #include "font.h"
 #include "gamedata.h"

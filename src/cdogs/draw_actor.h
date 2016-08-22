@@ -48,8 +48,46 @@
 */
 #pragma once
 
+#include "actors.h"
 #include "draw_buffer.h"
 #include "gamedata.h"
 #include "grafx_bg.h"
 
-void DrawBufferDraw(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra);
+typedef enum
+{
+	BODY_PART_HEAD,
+	BODY_PART_BODY,
+	BODY_PART_GUN
+} BodyPart;
+
+typedef struct
+{
+	const Pic *Head;
+	const Pic *Body;
+	const Pic *Gun;
+	BodyPart DrawOrder[3];
+	const CharColors *Colors;
+	bool IsDead;
+	bool IsDying;
+	bool IsTransparent;
+	HSV *Tint;
+	color_t *Mask;
+} ActorPics;
+
+void DrawCharacterSimple(
+	Character *c, const Vec2i pos, const direction_e d,
+	const bool hilite, const bool showGun);
+void DrawHead(
+	const Character *c, const direction_e dir,
+	const int state, const Vec2i pos);
+
+void DrawChatters(DrawBuffer *b, const Vec2i offset);
+
+void GetCharacterPicsFromActor(ActorPics *pics, TActor *a);
+void DrawActorPics(
+	const ActorPics *pics, const Vec2i picPos, const direction_e d);
+void DrawLaserSight(
+	const ActorPics *pics, const TActor *a, const Vec2i picPos);
+void DrawActorHighlight(
+	const ActorPics *pics, const Vec2i pos, const color_t color,
+	const direction_e d);

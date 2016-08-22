@@ -35,6 +35,7 @@ set(CDOGS_SOURCES
 	defs.c
 	door.c
 	draw.c
+	draw_actor.c
 	draw_buffer.c
 	drawtools.c
 	emitter.c
@@ -124,6 +125,7 @@ set(CDOGS_HEADERS
 	defs.h
 	door.h
 	draw.h
+	draw_actor.h
 	draw_buffer.h
 	drawtools.h
 	emitter.h
