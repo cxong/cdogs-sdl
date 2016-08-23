@@ -138,8 +138,6 @@ typedef struct
 } Weapon;
 
 extern GunClasses gGunDescriptions;
-// TODO: gun-specific muzzle offsets
-extern const OffsetTable cMuzzleOffset;
 
 void WeaponInitialize(GunClasses *g);
 void WeaponLoadJSON(GunClasses *g, CArray *classes, json_t *root);

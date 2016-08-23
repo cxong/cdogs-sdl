@@ -39,6 +39,7 @@ Vec2i Vec2iNew(int x, int y);
 Vec2i Vec2iZero(void);
 Vec2i Vec2iUnit(void);	// (1, 1)
 // r radius, theta radians; result will be rounded
+// Note: 0 radians is north, continuing clockwise
 Vec2i Vec2iFromPolar(const double r, const double th);
 Vec2i Vec2iAdd(Vec2i a, Vec2i b);
 Vec2i Vec2iMinus(Vec2i a, Vec2i b);

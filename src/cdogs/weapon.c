@@ -64,17 +64,6 @@
 
 GunClasses gGunDescriptions;
 
-const OffsetTable cMuzzleOffset = {
-	 {2, 0},
-	 {7, 2},
-	 {13, 2},
-	 {7, 6},
-	 {2, 6},
-	 {2, 6},
-	 {0, 2},
-	 {2, 2}
-};
-
 // Initialise all the static weapon data
 #define VERSION 1
 void WeaponInitialize(GunClasses *g)
@@ -526,6 +515,7 @@ void GunAddBrass(
 	GameEventsEnqueue(&gGameEvents, e);
 }
 
+static Vec2i GetMuzzleOffset(const direction_e d);
 Vec2i GunGetMuzzleOffset(const GunDescription *desc, const direction_e dir)
 {
 	if (!GunHasMuzzle(desc))
@@ -533,10 +523,16 @@ Vec2i GunGetMuzzleOffset(const GunDescription *desc, const direction_e dir)
 		return Vec2iZero();
 	}
 	CASSERT(desc->Pic != NULL, "Gun has no pic");
-	const Vec2i position = Vec2iAdd(
-		Vec2iAdd(cGunHandOffset[dir], cMuzzleOffset[dir]),
-		Vec2iNew(0, BULLET_Z));
+	const Vec2i position = Vec2iAdd(cGunHandOffset[dir], GetMuzzleOffset(dir));
 	return Vec2iReal2Full(position);
+}
+static Vec2i GetMuzzleOffset(const direction_e d)
+{
+	// TODO: gun-specific muzzle offsets
+	#define BARREL_LENGTH 10
+	Vec2i v = Vec2iFromPolar(BARREL_LENGTH, dir2radians[d]);
+	v.y = v.y * 3 / 4;
+	return v;
 }
 
 void WeaponSetState(Weapon *w, const gunstate_e state)
