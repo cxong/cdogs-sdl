@@ -185,7 +185,7 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 						scale,
 						gGraphicsDevice.cachedConfig.ScaleMode,
 						gGraphicsDevice.cachedConfig.Brightness);
-					GraphicsInitialize(&gGraphicsDevice, false);
+					GraphicsInitialize(&gGraphicsDevice);
 				}
 				break;
 			default:

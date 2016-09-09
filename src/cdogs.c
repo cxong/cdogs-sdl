@@ -142,7 +142,6 @@ static void PrintHelp(void)
 		"    --scale=n        Scale the window resolution up by a factor of n\n"
 		"                       Factors: 2, 3, 4\n"
 		"    --screen=WxH     Set virtual screen width to W x H\n"
-		"    --forcemode      Don't check video mode sanity\n"
 	);
 
 	printf("%s\n",
@@ -206,7 +205,6 @@ int main(int argc, char *argv[])
 	memset(&creditsDisplayer, 0, sizeof creditsDisplayer);
 	custom_campaigns_t campaigns;
 	memset(&campaigns, 0, sizeof campaigns);
-	int forceResolution = 0;
 	int err = 0;
 	const char *loadCampaign = NULL;
 	ENetAddress connectAddr;
@@ -264,7 +262,6 @@ int main(int argc, char *argv[])
 			{"fullscreen",	no_argument,		NULL,	'f'},
 			{"scale",		required_argument,	NULL,	's'},
 			{"screen",		required_argument,	NULL,	'c'},
-			{"forcemode",	no_argument,		NULL,	'o'},
 			{"nosound",		no_argument,		NULL,	'n'},
 			{"nojoystick",	no_argument,		NULL,	'j'},
 			{"wait",		no_argument,		NULL,	'w'},
@@ -294,9 +291,6 @@ int main(int argc, char *argv[])
 				LOG(LM_MAIN, LL_DEBUG, "Video mode %dx%d set...",
 					ConfigGetInt(&gConfig, "Graphics.ResolutionWidth"),
 					ConfigGetInt(&gConfig, "Graphics.ResolutionHeight"));
-				break;
-			case 'o':
-				forceResolution = 1;
 				break;
 			case 'n':
 				LOG(LM_MAIN, LL_INFO, "Sound to 0 volume");
@@ -418,13 +412,13 @@ int main(int argc, char *argv[])
 	}
 	PicManagerInit(&gPicManager);
 	GraphicsInit(&gGraphicsDevice, &gConfig);
-	GraphicsInitialize(&gGraphicsDevice, forceResolution);
+	GraphicsInitialize(&gGraphicsDevice);
 	if (!gGraphicsDevice.IsInitialized)
 	{
 		LOG(LM_MAIN, LL_WARN, "Cannot initialise video; trying default config");
 		ConfigResetDefault(ConfigGet(&gConfig, "Graphics"));
 		GraphicsInit(&gGraphicsDevice, &gConfig);
-		GraphicsInitialize(&gGraphicsDevice, forceResolution);
+		GraphicsInitialize(&gGraphicsDevice);
 	}
 	if (!gGraphicsDevice.IsInitialized)
 	{

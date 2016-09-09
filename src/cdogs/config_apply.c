@@ -49,7 +49,7 @@ bool ConfigApply(Config *config)
 		const bool makeBackground =
 			gGraphicsDevice.cachedConfig.RestartFlags &
 			(RESTART_RESOLUTION | RESTART_SCALE_MODE);
-		GraphicsInitialize(&gGraphicsDevice, false);
+		GraphicsInitialize(&gGraphicsDevice);
 		if (makeBackground)
 		{
 			GrafxMakeRandomBackground(

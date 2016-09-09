@@ -1317,7 +1317,7 @@ int main(int argc, char *argv[])
 	ConfigSetChanged(&gConfig);
 	GraphicsInit(&gGraphicsDevice, &gConfig);
 	gGraphicsDevice.cachedConfig.IsEditor = true;
-	GraphicsInitialize(&gGraphicsDevice, false);
+	GraphicsInitialize(&gGraphicsDevice);
 	if (!gGraphicsDevice.IsInitialized)
 	{
 		printf("Video didn't init!\n");

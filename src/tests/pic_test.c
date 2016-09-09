@@ -74,7 +74,7 @@ FEATURE(PicLoad, "Pic load")
 			gConfig = ConfigDefault();
 			ConfigResetDefault(ConfigGet(&gConfig, "Graphics"));
 			GraphicsInit(&gGraphicsDevice, &gConfig);
-			GraphicsInitialize(&gGraphicsDevice, false);
+			GraphicsInitialize(&gGraphicsDevice);
 			ASSERT(gGraphicsDevice.IsInitialized, 1);
 		AND("a single pixel PNG")
 			SDL_RWops *rwops = SDL_RWFromFile("r64g128b192.png", "rb");

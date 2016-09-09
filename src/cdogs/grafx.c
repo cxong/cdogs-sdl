@@ -176,7 +176,7 @@ static void AddSupportedGraphicsModes(GraphicsDevice *device)
 static SDL_Texture *CreateTexture(
 	SDL_Renderer *renderer, const SDL_TextureAccess access, const Vec2i res,
 	const SDL_BlendMode blend, const Uint8 alpha);
-void GraphicsInitialize(GraphicsDevice *g, const bool force)
+void GraphicsInitialize(GraphicsDevice *g)
 {
 	if (g->IsInitialized && !g->cachedConfig.RestartFlags)
 	{
@@ -212,17 +212,6 @@ void GraphicsInitialize(GraphicsDevice *g, const bool force)
 		if (g->cachedConfig.Fullscreen)
 		{
 			sdlFlags |= SDL_WINDOW_FULLSCREEN;
-		}
-
-		if (!force && !g->cachedConfig.IsEditor)
-		{
-			g->modeIndex = FindValidMode(g, w, h);
-			if (g->modeIndex == -1)
-			{
-				g->modeIndex = 0;
-				LOG(LM_GFX, LL_ERROR, "invalid Video Mode %dx%d", w, h);
-				return;
-			}
 		}
 
 		LOG(LM_GFX, LL_INFO, "graphics mode(%dx%d %dx)",
