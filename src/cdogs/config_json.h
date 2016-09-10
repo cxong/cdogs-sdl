@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#define CONFIG_VERSION 7
+#define CONFIG_VERSION 8
 
 void ConfigLoadJSON(Config *config, const char *filename);
 void ConfigSaveJSON(const Config *config, const char *filename);

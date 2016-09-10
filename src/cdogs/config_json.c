@@ -60,6 +60,18 @@ void ConfigLoadJSON(Config *config, const char *filename)
 	ConfigLoadVisit(config, root);
 
 	// Old config version stuff
+	if (version < 8)
+	{
+		json_t *node = JSONFindNode(root, "Game");
+		if (node != NULL)
+		{
+			Config *c = ConfigGet(config, "Graphics.Shadows");
+			LoadBool(&c->u.Bool.Value, node, c->Name);
+			c = ConfigGet(config, "Graphics.Gore");
+			JSON_UTILS_LOAD_ENUM(
+				c->u.Enum.Value, node, c->Name, c->u.Enum.StrToEnum);
+		}
+	}
 	if (version < 5)
 	{
 		json_t *node = JSONFindNode(root, "Game");
