@@ -550,7 +550,6 @@ Config ConfigDefault(void)
 	ConfigGroupAdd(&game, ConfigNewBool("Fog", true));
 	ConfigGroupAdd(&game,
 		ConfigNewInt("SightRange", 15, 8, 40, 1, NULL, NULL));
-	ConfigGroupAdd(&game, ConfigNewBool("Shadows", true));
 	ConfigGroupAdd(&game, ConfigNewEnum(
 		"FireMoveStyle", FIREMOVE_STOP, FIREMOVE_STOP, FIREMOVE_STRAFE,
 		StrFireMoveStyle, FireMoveStyleStr));
@@ -563,8 +562,6 @@ Config ConfigDefault(void)
 		"AllyCollision", ALLYCOLLISION_REPEL,
 		ALLYCOLLISION_NORMAL, ALLYCOLLISION_NONE,
 		StrAllyCollision, AllyCollisionStr));
-	ConfigGroupAdd(&game, ConfigNewEnum(
-		"Gore", GORE_LOW, GORE_NONE, GORE_HIGH, StrGoreAmount, GoreAmountStr));
 	ConfigGroupAdd(&game, ConfigNewEnum(
 		"LaserSight", LASER_SIGHT_NONE, LASER_SIGHT_NONE, LASER_SIGHT_ALL,
 		StrLaserSight, LaserSightStr));
@@ -607,6 +604,10 @@ Config ConfigDefault(void)
 	ConfigGroupAdd(&gfx, ConfigNewEnum(
 		"ScaleMode", SCALE_MODE_NN, SCALE_MODE_NN, SCALE_MODE_BILINEAR,
 		StrScaleMode, ScaleModeStr));
+	ConfigGroupAdd(&gfx, ConfigNewBool("Shadows", true));
+	ConfigGroupAdd(&gfx, ConfigNewEnum(
+		"Gore", GORE_LOW, GORE_NONE, GORE_HIGH, StrGoreAmount, GoreAmountStr));
+	ConfigGroupAdd(&gfx, ConfigNewBool("Brass", true));
 	ConfigGroupAdd(&root, gfx);
 
 	Config input = ConfigNewGroup("Input");

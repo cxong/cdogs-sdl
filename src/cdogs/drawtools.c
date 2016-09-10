@@ -263,12 +263,11 @@ void DrawCross(GraphicsDevice *device, int x, int y, color_t color)
 
 void DrawShadow(GraphicsDevice *device, Vec2i pos, Vec2i size)
 {
-	Vec2i drawPos;
-	HSV tint = { -1.0, 1.0, 0.0 };
-	if (!ConfigGetBool(&gConfig, "Game.Shadows"))
+	if (!ConfigGetBool(&gConfig, "Graphics.Shadows"))
 	{
 		return;
 	}
+	Vec2i drawPos;
 	for (drawPos.y = pos.y - size.y; drawPos.y < pos.y + size.y; drawPos.y++)
 	{
 		if (drawPos.y >= device->clipping.bottom)
@@ -296,7 +295,10 @@ void DrawShadow(GraphicsDevice *device, Vec2i pos, Vec2i size)
 			scaledPos.y = (drawPos.y - pos.y) * size.x / size.y + pos.y;
 			distance2 = DistanceSquared(scaledPos, pos);
 			// Maximum distance is x, so scale distance squared by x squared
-			tint.v = CLAMP(distance2 * 1.0 / (size.x*size.x), 0.0, 1.0);
+			const HSV tint =
+			{
+				-1.0, 1.0, CLAMP(distance2 * 1.0 / (size.x*size.x), 0.0, 1.0)
+			};
 			DrawPointTint(device, drawPos, tint);
 		}
 	}

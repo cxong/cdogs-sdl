@@ -452,6 +452,9 @@ menu_t *MenuCreateOptionsGraphics(const char *name, MenuSystem *ms)
 			GrafxGetModeStr));
 	MenuAddConfigOptionsItem(menu, ConfigGet(&gConfig, "Graphics.ScaleMode"));
 #endif	// GCWZERO
+	MenuAddConfigOptionsItem(menu, ConfigGet(&gConfig, "Graphics.Shadows"));
+	MenuAddConfigOptionsItem(menu, ConfigGet(&gConfig, "Graphics.Gore"));
+	MenuAddConfigOptionsItem(menu, ConfigGet(&gConfig, "Graphics.Brass"));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	MenuSetPostInputFunc(menu, PostInputConfigApply, ms);

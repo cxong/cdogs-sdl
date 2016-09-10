@@ -493,6 +493,11 @@ void GunFire(
 void GunAddBrass(
 	const GunDescription *g, const direction_e d, const Vec2i pos)
 {
+	// Check configuration
+	if (!ConfigGetBool(&gConfig, "Graphics.Brass"))
+	{
+		return;
+	}
 	CASSERT(g->Brass, "Cannot create brass for no-brass weapon");
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 	e.u.AddParticle.Class = g->Brass;

@@ -1434,7 +1434,7 @@ bool ActorIsInvulnerable(
 
 void ActorAddBloodSplatters(TActor *a, const int power, const Vec2i hitVector)
 {
-	const GoreAmount ga = ConfigGetEnum(&gConfig, "Game.Gore");
+	const GoreAmount ga = ConfigGetEnum(&gConfig, "Graphics.Gore");
 	if (ga == GORE_NONE) return;
 
 	// Emit blood based on power and gore setting
