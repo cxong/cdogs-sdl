@@ -53,18 +53,8 @@ Config ConfigLoad(const char *filename)
 	{
 	case 0:
 		printf("Classic config is no longer supported\n");
-		break;
-	case 1:
-	case 2:
-	case 3:
-	case 4:
-	case 5:
-	case 6:
-	case 7:
-		ConfigLoadJSON(&c, filename);
-		break;
 	default:
-		LOG(LM_MAIN, LL_ERROR, "Unknown config version");
+		ConfigLoadJSON(&c, filename);
 		break;
 	}
 	ConfigSetChanged(&c);
