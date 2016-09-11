@@ -53,6 +53,7 @@ Config ConfigLoad(const char *filename)
 	{
 	case 0:
 		printf("Classic config is no longer supported\n");
+		break;
 	default:
 		ConfigLoadJSON(&c, filename);
 		break;
