@@ -463,3 +463,21 @@ void CamelToTitle(char *buf, const char *src)
 	}
 	*buf = '\0';
 }
+// From answer by plinth
+// http://stackoverflow.com/a/744822/2038264
+// License: http://creativecommons.org/licenses/by-sa/3.0/
+// Author profile: http://stackoverflow.com/users/20481/plinth
+bool StrEndsWith(const char *str, const char *suffix)
+{
+	if (str == NULL || suffix == NULL)
+	{
+		return false;
+	}
+	const size_t lenStr = strlen(str);
+	const size_t lenSuffix = strlen(suffix);
+	if (lenSuffix > lenStr)
+	{
+		return false;
+	}
+	return strncmp(str + lenStr - lenSuffix, suffix, lenSuffix) == 0;
+}

@@ -156,7 +156,7 @@ NPlayerData PlayerDataDefault(const int idx)
 			pd.Colors.Arms = Color2Net(colorRed);
 			pd.Colors.Body = Color2Net(colorRed);
 			pd.Colors.Legs = Color2Net(colorRed);
-			pd.Colors.Hair = Color2Net(colorRed);
+			pd.Colors.Hair = Color2Net(colorBlack);
 			break;
 		case 2:
 			strcpy(pd.Name, "Warbaby");
@@ -165,7 +165,7 @@ NPlayerData PlayerDataDefault(const int idx)
 			pd.Colors.Arms = Color2Net(colorGreen);
 			pd.Colors.Body = Color2Net(colorGreen);
 			pd.Colors.Legs = Color2Net(colorGreen);
-			pd.Colors.Hair = Color2Net(colorGreen);
+			pd.Colors.Hair = Color2Net(colorRed);
 			break;
 		case 3:
 			strcpy(pd.Name, "Han");

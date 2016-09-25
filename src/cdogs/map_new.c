@@ -34,6 +34,7 @@
 #include "door.h"
 #include "files.h"
 #include "json_utils.h"
+#include "log.h"
 #include "map_archive.h"
 
 
@@ -516,6 +517,10 @@ static void LoadStaticItems(
 	{
 		MapObjectPositions mop;
 		mop.M = LoadMapObjectRef(items, version);
+		if (mop.M == NULL)
+		{
+			continue;
+		}
 		CArrayInit(&mop.Positions, sizeof(Vec2i));
 		json_t *positions = json_find_first_label(items, "Positions");
 		if (!positions || !positions->child)
@@ -583,8 +588,24 @@ static const MapObject *LoadMapObjectRef(json_t *itemNode, const int version)
 	}
 	else
 	{
-		return StrMapObject(
-			json_find_first_label(itemNode, "MapObject")->child->text);
+		const char *moName =
+			json_find_first_label(itemNode, "MapObject")->child->text;
+		const MapObject *mo = StrMapObject(moName);
+		if (mo == NULL && version <= 11 && StrEndsWith(moName, " spawner"))
+		{
+			char buf[256];
+			// Old version had same name for ammo and gun spawner
+			char itemName[256];
+			strncpy(itemName, moName, strlen(moName) - strlen(" spawner"));
+			itemName[strlen(moName) - strlen(" spawner")] = '\0';
+			snprintf(buf, 256, "%s ammo spawner", itemName);
+			mo = StrMapObject(buf);
+		}
+		if (mo == NULL)
+		{
+			LOG(LM_MAP, LL_ERROR, "Failed to load map object (%s)", moName);
+		}
+		return mo;
 	}
 }
 static void LoadStaticCharacters(Mission *m, json_t *node, char *name)

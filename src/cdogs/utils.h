@@ -196,6 +196,7 @@ char *IntStr(int i);
 char *PercentStr(int p);
 char *Div8Str(int i);
 void CamelToTitle(char *buf, const char *src);
+bool StrEndsWith(const char *str, const char *suffix);
 
 // Helper macros for defining type/str conversion funcs
 #define T2S(_type, _str) case _type: return _str;

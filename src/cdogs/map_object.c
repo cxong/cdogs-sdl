@@ -379,7 +379,7 @@ static void LoadAmmoSpawners(CArray *classes, const CArray *ammo)
 		MapObject m;
 		memset(&m, 0, sizeof m);
 		char buf[256];
-		sprintf(buf, "%s spawner", a->Name);
+		sprintf(buf, "%s ammo spawner", a->Name);
 		CSTRDUP(m.Name, buf);
 		m.Normal.Pic = PicManagerGetPic(&gPicManager, "spawn_pad");
 		m.Normal.Offset = Vec2iNew(
