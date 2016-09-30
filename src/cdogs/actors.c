@@ -1441,8 +1441,6 @@ void ActorAddBloodSplatters(TActor *a, const int power, const Vec2i hitVector)
 	int bloodPower = power * 2;
 	// Randomly cycle through the blood types
 	int bloodSize = 1;
-	// Spray the blood back with the shot if pushback enabled
-	const bool shotsPushBack = ConfigGetBool(&gConfig, "Game.ShotsPushback");
 	while (bloodPower > 0)
 	{
 		Emitter *em = NULL;
@@ -1463,18 +1461,9 @@ void ActorAddBloodSplatters(TActor *a, const int power, const Vec2i hitVector)
 		{
 			bloodSize = 1;
 		}
-		Vec2i vel;
-		if (shotsPushBack)
-		{
-			vel = Vec2iScaleDiv(
-				Vec2iScale(hitVector, (rand() % 8 + 8) * power),
-				15 * SHOT_IMPULSE_DIVISOR);
-		}
-		else
-		{
-			vel = Vec2iScaleDiv(
-				Vec2iScale(hitVector, rand() % 8 + 8), 20);
-		}
+		const Vec2i vel = Vec2iScaleDiv(
+			Vec2iScale(hitVector, (rand() % 8 + 8) * power),
+			15 * SHOT_IMPULSE_DIVISOR);
 		EmitterStart(em, a->Pos, 10, vel);
 		switch (ga)
 		{

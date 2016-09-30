@@ -557,7 +557,6 @@ Config ConfigDefault(void)
 		"SwitchMoveStyle", SWITCHMOVE_SLIDE,
 		SWITCHMOVE_SLIDE, SWITCHMOVE_NONE,
 		StrSwitchMoveStyle, SwitchMoveStyleStr));
-	ConfigGroupAdd(&game, ConfigNewBool("ShotsPushback", true));
 	ConfigGroupAdd(&game, ConfigNewEnum(
 		"AllyCollision", ALLYCOLLISION_REPEL,
 		ALLYCOLLISION_NORMAL, ALLYCOLLISION_NONE,

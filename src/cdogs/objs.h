@@ -105,6 +105,7 @@ bool HasHitSound(
 void Damage(
 	const Vec2i hitVector,
 	const int power,
+	const double mass,
 	const int flags, const int playerUID, const int uid,
 	const TileItemKind targetKind, const int targetUID,
 	const special_damage_e special);

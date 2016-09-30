@@ -419,7 +419,6 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 	SendConfig(&gConfig, "Game.Ammo", n, peerId);
 	SendConfig(&gConfig, "Game.Fog", n, peerId);
 	SendConfig(&gConfig, "Game.SightRange", n, peerId);
-	SendConfig(&gConfig, "Game.ShotsPushback", n, peerId);
 	SendConfig(&gConfig, "Game.AllyCollision", n, peerId);
 
 	NetServerSendMsg(n, peerId, GAME_EVENT_NET_GAME_START, NULL);

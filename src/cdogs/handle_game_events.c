@@ -338,9 +338,10 @@ static void HandleGameEvent(
 			}
 			if (!gCampaign.IsClient)
 			{
+				// TODO: melee hitback (vel)?
 				Damage(
 					Vec2iZero(),
-					b->Power,
+					b->Power, b->Mass,
 					a->flags, a->PlayerUID, a->uid,
 					(TileItemKind)e.u.Melee.TargetKind, e.u.Melee.TargetUID,
 					SPECIAL_NONE);

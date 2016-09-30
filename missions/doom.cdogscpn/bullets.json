@@ -1,5 +1,5 @@
 {
-  "Version": 1,
+  "Version": 2,
   "Bullets": [
     {
       "Name": "10mm",
@@ -9,7 +9,8 @@
       },
       "Speed": 1100,
       "Range": 50,
-      "Power": 10
+      "Power": 10,
+      "Mass": 5.0
     },
     {
       "Name": "fireball",
@@ -21,6 +22,7 @@
       "Speed": 350,
       "Range": 200,
       "Power": 18,
+      "Mass": 18.0,
       "Size": [3, 3],
       "Special": "Flame",
       "Spark": "fireball_hit",
@@ -40,6 +42,7 @@
       "Speed": 550,
       "Range": 300,
       "Power": 40,
+      "Mass": 40.0,
       "Size": [3, 3],
       "Special": "Flame",
       "Spark": "fireball_green_hit",

@@ -70,8 +70,6 @@ typedef enum
 	GAME_EVENT_ACTOR_STATE,
 	GAME_EVENT_ACTOR_DIR,
 	GAME_EVENT_ACTOR_SLIDE,
-	// TODO: event only used by actor hit and screen boundaries
-	// If the latter is removed, it can be incorporated into actor hit
 	GAME_EVENT_ACTOR_IMPULSE,
 	GAME_EVENT_ACTOR_SWITCH_GUN,
 	GAME_EVENT_ACTOR_PICKUP_ALL,

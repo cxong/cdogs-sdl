@@ -407,7 +407,8 @@ static bool HitItemFunc(TTileItem *ti, void *data)
 	int targetUID = -1;
 	hData->HitType = GetHitType(ti, hData->Obj, &targetUID);
 	Damage(
-		hData->Obj->vel, hData->Obj->bulletClass->Power,
+		hData->Obj->vel,
+		hData->Obj->bulletClass->Power, hData->Obj->bulletClass->Mass,
 		hData->Obj->flags, hData->Obj->PlayerUID, hData->Obj->ActorUID,
 		ti->kind, targetUID,
 		hData->Obj->bulletClass->Special);
@@ -459,9 +460,10 @@ static HitType GetHitType(
 
 
 
-#define VERSION 1
+#define VERSION 2
 static void LoadBullet(
-	BulletClass *b, json_t *node, const BulletClass *defaultBullet);
+	BulletClass *b, json_t *node, const BulletClass *defaultBullet,
+	const int version);
 void BulletInitialize(BulletClasses *bullets)
 {
 	memset(bullets, 0, sizeof *bullets);
@@ -486,21 +488,22 @@ void BulletLoadJSON(
 	if (defaultNode != NULL)
 	{
 		BulletClassFree(&bullets->Default);
-		LoadBullet(&bullets->Default, defaultNode->child, NULL);
+		LoadBullet(&bullets->Default, defaultNode->child, NULL, version);
 	}
 
 	json_t *bulletsNode = json_find_first_label(bulletNode, "Bullets")->child;
 	for (json_t *child = bulletsNode->child; child; child = child->next)
 	{
 		BulletClass b;
-		LoadBullet(&b, child, &bullets->Default);
+		LoadBullet(&b, child, &bullets->Default, version);
 		CArrayPushBack(classes, &b);
 	}
 
 	bullets->root = bulletNode;
 }
 static void LoadBullet(
-	BulletClass *b, json_t *node, const BulletClass *defaultBullet)
+	BulletClass *b, json_t *node, const BulletClass *defaultBullet,
+	const int version)
 {
 	memset(b, 0, sizeof *b);
 	if (defaultBullet != NULL)
@@ -565,6 +568,17 @@ static void LoadBullet(
 	b->RangeLow = MIN(b->RangeLow, b->RangeHigh);
 	b->RangeHigh = MAX(b->RangeLow, b->RangeHigh);
 	LoadInt(&b->Power, node, "Power");
+
+	if (version < 2)
+	{
+		// Old version default mass = power
+		b->Mass = b->Power;
+	}
+	else
+	{
+		LoadDouble(&b->Mass, node, "Mass");
+	}
+
 	LoadVec2i(&b->Size, node, "Size");
 	tmp = NULL;
 	LoadStr(&tmp, node, "Special");

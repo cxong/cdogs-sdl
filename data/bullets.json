@@ -1,5 +1,5 @@
 {
-  "Version": 1,
+  "Version": 2,
   "DefaultBullet": {
     "Pic": {
       "Type": "Directional",
@@ -31,7 +31,8 @@
       "Name": "mg",
       "Speed": 768,
       "Range": 60,
-      "Power": 10
+      "Power": 10,
+      "Mass": 10.0
     },
     {
       "Name": "shotgun",
@@ -41,7 +42,8 @@
       },
       "Speed": 640,
       "Range": 50,
-      "Power": 15
+      "Power": 15,
+      "Mass": 15.0
     },
     {
       "Name": "flame",
@@ -53,6 +55,7 @@
       "Speed": 384,
       "Range": 30,
       "Power": 12,
+      "Mass": 1.0,
       "Size": [10, 10],
       "Special": "Flame",
       "Spark": "",
@@ -73,6 +76,7 @@
       "Speed": 1024,
       "Range": 90,
       "Power": 20,
+      "Mass": 20.0,
       "Size": [4, 4]
     },
     {
@@ -85,6 +89,7 @@
       "Speed": 1024,
       "Range": 90,
       "Power": 50,
+      "Mass": 50.0,
       "Size": [4, 4]
     },
     {
@@ -92,6 +97,7 @@
       "Speed": 640,
       "Range": 50,
       "Power": 40,
+      "Mass": 40.0,
       "HurtAlways": true
     },
     {
@@ -260,7 +266,8 @@
       "Spark": "spark_blue",
       "Speed": 1280,
       "Range": 25,
-      "Power": 6
+      "Power": 6,
+      "Mass": 1.0
     },
     {
       "Name": "heatseeker",
@@ -271,6 +278,7 @@
       "Speed": 512,
       "Range": 60,
       "Power": 20,
+      "Mass": 40.0,
       "Size": [6, 6],
       "Spark": "boom",
       "HitSounds": {
@@ -290,6 +298,7 @@
       "Speed": 768,
       "Range": 45,
       "Power": 15,
+      "Mass": 15.0,
       "Erratic": true
     },
     {
@@ -350,6 +359,7 @@
       "Speed": 700,
       "Range": 70,
       "Power": 12,
+      "Mass": 15.0,
       "Size": [4, 4],
       "Spark": "boom",
       "HitSounds": {
@@ -389,6 +399,7 @@
       "Speed": 256,
       "Range": 53,
       "Power": 5,
+      "Mass": 5.0,
       "Size": [14, 10],
       "HurtAlways": true,
       "Persists": true,
@@ -415,6 +426,7 @@
       "Speed": 192,
       "Range": 71,
       "Power": 5,
+      "Mass": 5.0,
       "Size": [14, 10],
       "HurtAlways": true,
       "Persists": true,
@@ -441,6 +453,7 @@
       "Speed": 128,
       "Range": 79,
       "Power": 5,
+      "Mass": 5.0,
       "Size": [14, 10],
       "HurtAlways": true,
       "Persists": true,
@@ -573,6 +586,7 @@
       "Speed": 0,
       "Range": 27,
       "Power": 3,
+      "Mass": 10.0,
       "Size": [64, 64],
       "Persists": true,
       "Spark": "",
@@ -615,7 +629,8 @@
       },
       "Speed": 1100,
       "Range": 27,
-      "Power": 12
+      "Power": 12,
+      "Mass": 5.0
     }
   ]
 }

@@ -211,6 +211,7 @@ bool HasHitSound(
 static void DoDamageCharacter(
 	const Vec2i hitVector,
 	const int power,
+	const double mass,
 	const int flags,
 	const int playerUID,
 	const int uid,
@@ -219,6 +220,7 @@ static void DoDamageCharacter(
 void Damage(
 	const Vec2i hitVector,
 	const int power,
+	const double mass,
 	const int flags,
 	const int playerUID,
 	const int uid,
@@ -230,7 +232,7 @@ void Damage(
 	case KIND_CHARACTER:
 		DoDamageCharacter(
 			hitVector,
-			power, flags, playerUID, uid,
+			power, mass, flags, playerUID, uid,
 			ActorGetByUID(targetUID), special);
 		break;
 	case KIND_OBJECT:
@@ -252,6 +254,7 @@ void Damage(
 static void DoDamageCharacter(
 	const Vec2i hitVector,
 	const int power,
+	const double mass,
 	const int flags,
 	const int playerUID,
 	const int uid,
@@ -262,12 +265,16 @@ static void DoDamageCharacter(
 	CASSERT(actor->isInUse, "Cannot damage nonexistent player");
 	CASSERT(CanHitCharacter(flags, uid, actor), "damaging undamageable actor");
 
-	if (ConfigGetBool(&gConfig, "Game.ShotsPushback"))
+	// Shot pushback, based on mass and velocity
+	const double impulseFactor = mass / SHOT_IMPULSE_DIVISOR;
+	const Vec2i vel = Vec2iNew(
+		(int)Round(hitVector.x * impulseFactor),
+		(int)Round(hitVector.y * impulseFactor));
+	if (!Vec2iIsZero(vel))
 	{
 		GameEvent ei = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
 		ei.u.ActorImpulse.UID = actor->uid;
-		ei.u.ActorImpulse.Vel = Vec2i2Net(Vec2iScaleDiv(
-			Vec2iScale(hitVector, power), SHOT_IMPULSE_DIVISOR));
+		ei.u.ActorImpulse.Vel = Vec2i2Net(vel);
 		ei.u.ActorImpulse.Pos = Vec2i2Net(actor->Pos);
 		GameEventsEnqueue(&gGameEvents, ei);
 	}
