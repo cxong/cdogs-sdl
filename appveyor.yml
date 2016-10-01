@@ -4,27 +4,20 @@ branches:
 
 environment:
   CTEST_OUTPUT_ON_FAILURE: 1
-  matrix:
-  - MINGW_DIR: mingw64
-    MINGW_URL: https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/4.9.2/threads-win32/seh/x86_64-4.9.2-release-win32-seh-rt_v4-rev4.7z/download
-    MINGW_ARCHIVE: x86_64-4.9.2-release-win32-seh-rt_v4-rev4.7z
-  - MINGW_DIR: mingw32
-    MINGW_URL: https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/4.9.2/threads-win32/dwarf/i686-4.9.2-release-win32-dwarf-rt_v4-rev4.7z/download
-    MINGW_ARCHIVE: i686-4.9.2-release-win32-dwarf-rt_v4-rev4.7z
+
+platform:
+  - x86
 
 install:
-- if not exist "%MINGW_ARCHIVE%" appveyor DownloadFile "%MINGW_URL%" -FileName "%MINGW_ARCHIVE%"
-- 7z x -y "%MINGW_ARCHIVE%" > nul
-# CMake refuses to generate MinGW Makefiles if sh.exe is in the Path
-- ps: Get-Command sh.exe -All | Remove-Item
+  # CMake refuses to generate MinGW Makefiles if sh.exe is in the Path
+  - ps: Get-Command sh.exe -All | Remove-Item
 
 before_build:
-- set Path=%CD%\%MINGW_DIR%\bin;%Path%
-- g++ --version
-- mingw32-make --version
-- cmake --version
-- if "%APPVEYOR_REPO_TAG%"=="true" (set CMAKE_BUILD_TYPE=Release) else (set CMAKE_BUILD_TYPE=Debug)
-- cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE% -D CMAKE_C_COMPILER=mingw32-gcc.exe -D CMAKE_MAKE_PROGRAM=mingw32-make.exe .
+  - g++ --version
+  - mingw32-make --version
+  - cmake --version
+  - if "%APPVEYOR_REPO_TAG%"=="true" (set CMAKE_BUILD_TYPE=Release) else (set CMAKE_BUILD_TYPE=Debug)
+  - cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE% -D CMAKE_C_COMPILER=mingw32-gcc.exe -D CMAKE_MAKE_PROGRAM=mingw32-make.exe .
 
 build_script:
   - mingw32-make
