@@ -14,6 +14,7 @@ install:
 
 before_build:
   - set Path=%MINGWBASEDIR%\bin;%Path%
+  - echo %PATH%
   - g++ --version
   - mingw32-make --version
   - cmake --version
