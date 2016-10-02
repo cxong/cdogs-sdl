@@ -4,6 +4,9 @@ branches:
 
 environment:
   CTEST_OUTPUT_ON_FAILURE: 1
+  SDL2_VERSION: 2.0.4
+  MINGW_PATH: C:\MinGW
+  SDLDIR: C:\MinGW
 
 platform:
   - x86
@@ -11,9 +14,20 @@ platform:
 install:
   # CMake refuses to generate MinGW Makefiles if sh.exe is in the Path
   - ps: Get-Command sh.exe -All | Remove-Item
+  - appveyor DownloadFile http://libsdl.org/release/SDL2-devel-%SDL2_VERSION%-mingw.tar.gz
+  - 7z x SDL2-devel-%SDL2_VERSION%-mingw.tar.gz -oC:\
+  - xcopy C:\SDL2-%SDL2_VERSION%\include\* %MINGW_PATH%\include\ /S /T
+  - xcopy C:\SDL2-%SDL2_VERSION%\bin\* %MINGW_PATH%\bin\ /S /T
+  - xcopy C:\SDL2-%SDL2_VERSION%\i686-w64-mingw32\bin\* %MINGW_PATH%\bin\ /S /T
+  - xcopy C:\SDL2-%SDL2_VERSION%\lib\* %MINGW_PATH%\lib\ /S /T
+  - appveyor DownloadFile https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-devel-2.0.1-mingw.tar.gz
+  - 7z x SDL2_mixer-devel-2.0.1-mingw.tar.gz -oC:\
+  - xcopy C:\SDL2_mixer-2.0.1\i686-w64-mingw32\* %MINGW_PATH% /S /T
+  - appveyor DownloadFile https://www.libsdl.org/projects/SDL_image/release/SDL2_image-devel-2.0.1-mingw.tar.gz
+  - xcopy C:\SDL2_image-2.0.1\i686-w64-mingw32\* %MINGW_PATH% /S /T
 
 before_build:
-  - set Path=C:\MinGW\bin;%Path%
+  - set Path=%MINGW_PATH%\bin;%Path%
   - echo %PATH%
   - g++ --version
   - mingw32-make --version
