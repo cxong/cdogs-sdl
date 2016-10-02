@@ -13,7 +13,7 @@ install:
   - ps: Get-Command sh.exe -All | Remove-Item
 
 before_build:
-  - set Path=%MINGWBASEDIR%\bin;%Path%
+  - set Path=C:\MinGW\bin;%Path%
   - echo %PATH%
   - g++ --version
   - mingw32-make --version
