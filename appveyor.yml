@@ -16,15 +16,15 @@ install:
   - ps: Get-Command sh.exe -All | Remove-Item
   - appveyor DownloadFile http://libsdl.org/release/SDL2-devel-%SDL2_VERSION%-mingw.tar.gz
   - 7z x SDL2-devel-%SDL2_VERSION%-mingw.tar.gz -so | 7z x -si -ttar -oC:\
-  - echo f | xcopy C:\SDL2-%SDL2_VERSION%\include\* %MINGW_PATH%\include\ /S /T
-  - echo f | xcopy C:\SDL2-%SDL2_VERSION%\i686-w64-mingw32\* %MINGW_PATH%\ /S /T
-  - echo f | xcopy C:\SDL2-%SDL2_VERSION%\lib\* %MINGW_PATH%\lib\ /S /T
+  - echo y | xcopy C:\SDL2-%SDL2_VERSION%\include\* %MINGW_PATH%\include\ /S /T
+  - echo y | xcopy C:\SDL2-%SDL2_VERSION%\i686-w64-mingw32\* %MINGW_PATH%\ /S /T
+  - echo y | xcopy C:\SDL2-%SDL2_VERSION%\lib\* %MINGW_PATH%\lib\ /S /T
   - appveyor DownloadFile https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-devel-2.0.1-mingw.tar.gz
   - 7z x SDL2_mixer-devel-2.0.1-mingw.tar.gz -so | 7z x -si -ttar -oC:\
-  - echo f | xcopy C:\SDL2_mixer-2.0.1\i686-w64-mingw32\* %MINGW_PATH%\ /S /T
+  - echo y | xcopy C:\SDL2_mixer-2.0.1\i686-w64-mingw32\* %MINGW_PATH%\ /S /T
   - appveyor DownloadFile https://www.libsdl.org/projects/SDL_image/release/SDL2_image-devel-2.0.1-mingw.tar.gz
   - 7z x SDL2_image-devel-2.0.1-mingw.tar.gz -so | 7z x -si -ttar -oC:\
-  - echo f | xcopy C:\SDL2_image-2.0.1\i686-w64-mingw32\* %MINGW_PATH%\ /S /T
+  - echo y | xcopy C:\SDL2_image-2.0.1\i686-w64-mingw32\* %MINGW_PATH%\ /S /T
 
 before_build:
   - set Path=%MINGW_PATH%\bin;%Path%
