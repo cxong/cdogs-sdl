@@ -51,7 +51,10 @@ set(CDOGS_SOURCES
 	grafx_bg.c
 	handle_game_events.c
 	hiscores.c
-	hud.c
+	hud/fps.c
+	hud/hud.c
+	hud/hud_num_popup.c
+	hud/wall_clock.c
 	joystick.c
 	json_utils.c
 	keyboard.c
@@ -141,7 +144,11 @@ set(CDOGS_HEADERS
 	grafx_bg.h
 	handle_game_events.h
 	hiscores.h
-	hud.h
+	hud/fps.h
+	hud/hud.h
+	hud/hud_defs.h
+	hud/hud_num_popup.h
+	hud/wall_clock.h
 	joystick.h
 	json_utils.h
 	keyboard.h

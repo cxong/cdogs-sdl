@@ -600,6 +600,7 @@ Config ConfigDefault(void)
 		, 1, 4, 1, NULL, NULL));
 	ConfigGroupAdd(&gfx,
 		ConfigNewInt("ShakeMultiplier", 1, 0, 10, 1, NULL, NULL));
+	ConfigGroupAdd(&gfx, ConfigNewBool("ShowHUD", true));
 	ConfigGroupAdd(&gfx, ConfigNewEnum(
 		"ScaleMode", SCALE_MODE_NN, SCALE_MODE_NN, SCALE_MODE_BILINEAR,
 		StrScaleMode, ScaleModeStr));

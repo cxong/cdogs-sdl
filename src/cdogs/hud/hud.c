@@ -50,7 +50,6 @@
 
 #include <assert.h>
 #include <math.h>
-#include <time.h>
 
 #include "actors.h"
 #include "ammo.h"
@@ -61,79 +60,10 @@
 #include "events.h"
 #include "font.h"
 #include "game_events.h"
+#include "hud_defs.h"
 #include "mission.h"
 #include "pic_manager.h"
 
-
-// Total number of milliseconds that the numeric update lasts for
-#define NUM_UPDATE_TIMER_MS 500
-
-#define NUM_UPDATE_TIMER_OBJECTIVE_MS 1500
-
-
-void FPSCounterInit(FPSCounter *counter)
-{
-	counter->elapsed = 0;
-	counter->framesDrawn = 0;
-	counter->fps = 0;
-}
-void FPSCounterUpdate(FPSCounter *counter, int ms)
-{
-	counter->elapsed += ms;
-	if (counter->elapsed > 1000)
-	{
-		counter->fps = counter->framesDrawn;
-		counter->framesDrawn = 0;
-		counter->elapsed -= 1000;
-	}
-}
-void FPSCounterDraw(FPSCounter *counter)
-{
-	char s[50];
-	counter->framesDrawn++;
-	sprintf(s, "FPS: %d", counter->fps);
-
-	FontOpts opts = FontOptsNew();
-	opts.HAlign = ALIGN_END;
-	opts.VAlign = ALIGN_END;
-	opts.Area = gGraphicsDevice.cachedConfig.Res;
-	opts.Pad = Vec2iNew(10, 5 + FontH());
-	FontStrOpt(s, Vec2iZero(), opts);
-}
-
-void WallClockSetTime(WallClock *wc)
-{
-	time_t t = time(NULL);
-	struct tm *tp = localtime(&t);
-	wc->hours = tp->tm_hour;
-	wc->minutes = tp->tm_min;
-}
-void WallClockInit(WallClock *wc)
-{
-	wc->elapsed = 0;
-	WallClockSetTime(wc);
-}
-void WallClockUpdate(WallClock *wc, int ms)
-{
-	wc->elapsed += ms;
-	int minuteMs = 60 * 1000;
-	if (wc->elapsed > minuteMs)	// update every minute
-	{
-		WallClockSetTime(wc);
-		wc->elapsed -= minuteMs;
-	}
-}
-void WallClockDraw(WallClock *wc)
-{
-	char s[50];
-	sprintf(s, "%02d:%02d", wc->hours, wc->minutes);
-
-	FontOpts opts = FontOptsNew();
-	opts.VAlign = ALIGN_END;
-	opts.Area = gGraphicsDevice.cachedConfig.Res;
-	opts.Pad = Vec2iNew(10, 5 + FontH());
-	FontStrOpt(s, Vec2iZero(), opts);
-}
 
 void HUDInit(
 	HUD *hud,
@@ -147,15 +77,12 @@ void HUDInit(
 	hud->device = device;
 	FPSCounterInit(&hud->fpsCounter);
 	WallClockInit(&hud->clock);
-	CArrayInit(&hud->objectiveUpdates, sizeof(HUDNumUpdate));
-	CArrayResize(
-		&hud->objectiveUpdates, mission->missionData->Objectives.size, NULL);
-	CArrayFillZero(&hud->objectiveUpdates);
+	HUDNumPopupsInit(&hud->numPopups, mission);
 	hud->showExit = false;
 }
 void HUDTerminate(HUD *hud)
 {
-	CArrayTerminate(&hud->objectiveUpdates);
+	HUDNumPopupsTerminate(&hud->numPopups);
 }
 
 void HUDDisplayMessage(HUD *hud, const char *msg, int ticks)
@@ -164,108 +91,6 @@ void HUDDisplayMessage(HUD *hud, const char *msg, int ticks)
 	hud->messageTicks = ticks;
 }
 
-static int FindLocalPlayerIndex(const int playerUID)
-{
-	const PlayerData *p = PlayerDataGetByUID(playerUID);
-	if (p == NULL || !p->IsLocal)
-	{
-		// This update was for a non-local player; abort
-		return -1;
-	}
-	// Note: player UIDs divided by MAX_LOCAL_PLAYERS per client
-	return playerUID % MAX_LOCAL_PLAYERS;
-}
-
-static void MergeUpdates(HUDNumUpdate *dst, const HUDNumUpdate src);
-void HUDAddUpdate(
-	HUD *hud, const HUDNumUpdateType type,
-	const int idxOrUID, const int amount)
-{
-	HUDNumUpdate s;
-	memset(&s, 0, sizeof s);
-
-	// Index
-	int localPlayerIdx = -1;
-	switch (type)
-	{
-	case NUMBER_UPDATE_SCORE:
-	case NUMBER_UPDATE_HEALTH:	// fallthrough
-	case NUMBER_UPDATE_AMMO:	// fallthrough
-		localPlayerIdx = FindLocalPlayerIndex(idxOrUID);
-		if (localPlayerIdx)
-		{
-			// This update was for a non-local player; abort
-			return;
-		}
-		s.u.PlayerUID = idxOrUID;
-		break;
-	case NUMBER_UPDATE_OBJECTIVE:
-		s.u.ObjectiveIndex = idxOrUID;
-		break;
-	default:
-		CASSERT(false, "unknown HUD update type");
-		break;
-	}
-
-	s.Amount = amount;
-
-	// Timers
-	switch (type)
-	{
-	case NUMBER_UPDATE_SCORE:
-	case NUMBER_UPDATE_HEALTH:	// fallthrough
-	case NUMBER_UPDATE_AMMO:	// fallthrough
-		s.Timer = NUM_UPDATE_TIMER_MS;
-		s.TimerMax = NUM_UPDATE_TIMER_MS;
-		break;
-	case NUMBER_UPDATE_OBJECTIVE:
-		s.Timer = NUM_UPDATE_TIMER_OBJECTIVE_MS;
-		s.TimerMax = NUM_UPDATE_TIMER_OBJECTIVE_MS;
-		break;
-	default:
-		CASSERT(false, "unknown HUD update type");
-		break;
-	}
-
-	// Merge with existing updates
-	switch (type)
-	{
-	case NUMBER_UPDATE_SCORE:
-		MergeUpdates(&hud->scoreUpdates[localPlayerIdx], s);
-		break;
-	case NUMBER_UPDATE_HEALTH:
-		MergeUpdates(&hud->healthUpdates[localPlayerIdx], s);
-		break;
-	case NUMBER_UPDATE_AMMO:
-		MergeUpdates(&hud->ammoUpdates[localPlayerIdx], s);
-		break;
-	case NUMBER_UPDATE_OBJECTIVE:
-		MergeUpdates(CArrayGet(&hud->objectiveUpdates, s.u.ObjectiveIndex), s);
-		break;
-	default:
-		CASSERT(false, "unknown HUD update type");
-		break;
-	}
-}
-static void MergeUpdates(HUDNumUpdate *dst, const HUDNumUpdate src)
-{
-	// Combine update amounts
-	if (dst->Timer <= 0)
-	{
-		// Old update finished; simply replace with new
-		dst->Amount = src.Amount;
-	}
-	else
-	{
-		// Add the updates
-		dst->Amount += src.Amount;
-	}
-	dst->Timer = src.Timer;
-	dst->TimerMax = src.TimerMax;
-	dst->u.PlayerUID = src.u.PlayerUID;
-}
-
-static void NumUpdate(HUDNumUpdate *update, const int ms);
 void HUDUpdate(HUD *hud, int ms)
 {
 	if (hud->messageTicks >= 0)
@@ -278,22 +103,7 @@ void HUDUpdate(HUD *hud, int ms)
 	}
 	FPSCounterUpdate(&hud->fpsCounter, ms);
 	WallClockUpdate(&hud->clock, ms);
-	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
-	{
-		NumUpdate(&hud->scoreUpdates[i], ms);
-		NumUpdate(&hud->healthUpdates[i], ms);
-		NumUpdate(&hud->ammoUpdates[i], ms);
-	}
-	CA_FOREACH(HUDNumUpdate, hnu, hud->objectiveUpdates)
-		NumUpdate(hnu, ms);
-	CA_FOREACH_END()
-}
-static void NumUpdate(HUDNumUpdate *update, const int ms)
-{
-	if (update->Timer > 0)
-	{
-		update->Timer -= ms;
-	}
+	HUDPopupsUpdate(&hud->numPopups, ms);
 }
 
 
@@ -327,7 +137,6 @@ static void DrawGauge(
 }
 
 #define GAUGE_WIDTH 60
-#define GUN_ICON_PAD 10
 static void DrawWeaponStatus(
 	HUD *hud, const TActor *actor, Vec2i pos,
 	const FontAlign hAlign, const FontAlign vAlign)
@@ -473,12 +282,6 @@ static void DrawLives(
 	}
 }
 
-#define HUDFLAGS_PLACE_RIGHT	0x01
-#define HUDFLAGS_PLACE_BOTTOM	0x02
-#define HUDFLAGS_HALF_SCREEN	0x04
-#define HUDFLAGS_QUARTER_SCREEN	0x08
-#define HUDFLAGS_SHARE_SCREEN	0x10
-
 #define AUTOMAP_PADDING	5
 #define AUTOMAP_SIZE	45
 static void DrawRadar(
@@ -603,11 +406,6 @@ static void DrawSharedRadar(GraphicsDevice *device, int scale, bool showExit)
 }
 
 #define RADAR_SCALE 1
-// A bit of padding for drawing HUD elements at bottm,
-// so that it doesn't overlap the objective information, clocks etc.
-#define BOTTOM_PADDING 16
-
-#define LIVES_ROW_EXTRA_Y 6
 
 static void DrawObjectiveCompass(
 	GraphicsDevice *g, Vec2i playerPos, Rect2i r, bool showExit);
@@ -829,46 +627,46 @@ static void DrawCompassArrow(
 	}
 }
 
-void DrawKeycards(HUD *hud)
-{
-	int keyFlags[] =
-	{
-		FLAGS_KEYCARD_YELLOW,
-		FLAGS_KEYCARD_GREEN,
-		FLAGS_KEYCARD_BLUE,
-		FLAGS_KEYCARD_RED
-	};
-	int i;
-	int xOffset = -30;
-	int xOffsetIncr = 20;
-	int yOffset = 20;
-	for (i = 0; i < 4; i++)
-	{
-		if (hud->mission->KeyFlags & keyFlags[i])
-		{
-			const Pic *pic = KeyPickupClass(
-				hud->mission->missionData->KeyStyle, i)->Pic;
-			Blit(
-				&gGraphicsDevice,
-				pic,
-				Vec2iNew(CenterX(pic->size.x) - xOffset, yOffset));
-		}
-		xOffset += xOffsetIncr;
-	}
-}
-
-static void DrawScoreUpdate(const HUDNumUpdate *u, const int flags);
-static void DrawHealthUpdate(const HUDNumUpdate *u, const int flags);
-static void DrawAmmoUpdate(const HUDNumUpdate *u, const int flags);
+static void DrawPlayerAreas(HUD *hud);
+static void DrawDeathmatchScores(HUD *hud);
+static void DrawStateMessage(
+	HUD *hud, const input_device_e pausingDevice,
+	const bool controllerUnplugged);
+static void DrawHUDMessage(HUD *hud);
+static void DrawKeycards(HUD *hud);
+static void DrawMissionTime(HUD *hud);
 static void DrawObjectiveCounts(HUD *hud);
 void HUDDraw(
 	HUD *hud, const input_device_e pausingDevice,
 	const bool controllerUnplugged)
 {
-	char s[50];
+	if (ConfigGetBool(&gConfig, "Graphics.ShowHUD"))
+	{
+		DrawPlayerAreas(hud);
+		DrawDeathmatchScores(hud);
+		DrawHUDMessage(hud);
+		if (ConfigGetBool(&gConfig, "Interface.ShowFPS"))
+		{
+			FPSCounterDraw(&hud->fpsCounter);
+		}
+		if (ConfigGetBool(&gConfig, "Interface.ShowTime"))
+		{
+			WallClockDraw(&hud->clock);
+		}
+		DrawKeycards(hud);
+		DrawMissionTime(hud);
+		if (HasObjectives(gCampaign.Entry.Mode))
+		{
+			DrawObjectiveCounts(hud);
+		}
+	}
+
+	DrawStateMessage(hud, pausingDevice, controllerUnplugged);
+}
+
+static void DrawPlayerAreas(HUD *hud)
+{
 	int flags = 0;
-	const int numPlayersAlive =
-		GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false);
 	const int numLocalPlayers = GetNumPlayers(PLAYER_ANY, false, true);
 	const int numLocalPlayersAlive =
 		GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, true);
@@ -930,10 +728,9 @@ void HUDDraw(
 			player = ActorGetByUID(p->ActorUID);
 		}
 		DrawPlayerStatus(hud, p, player, drawFlags, r);
-		DrawScoreUpdate(&hud->scoreUpdates[idx], drawFlags);
-		DrawHealthUpdate(&hud->healthUpdates[idx], drawFlags);
-		DrawAmmoUpdate(&hud->ammoUpdates[idx], drawFlags);
+		HUDNumPopupsDrawPlayer(&hud->numPopups, idx, drawFlags);
 	}
+
 	// Only draw radar once if shared
 	if (ConfigGetBool(&gConfig, "Interface.ShowHUDMap") &&
 		(flags & HUDFLAGS_SHARE_SCREEN) &&
@@ -941,94 +738,66 @@ void HUDDraw(
 	{
 		DrawSharedRadar(hud->device, RADAR_SCALE, hud->showExit);
 	}
+}
+
+static void DrawDeathmatchScores(HUD *hud)
+{
 	// Only draw deathmatch scores if single screen and non-local players exist
-	if (gCampaign.Entry.Mode == GAME_MODE_DEATHMATCH &&
-		GetNumPlayers(PLAYER_ANY, true, true) == 1 &&
-		GetNumPlayers(PLAYER_ANY, false, false) > 1)
+	if (gCampaign.Entry.Mode != GAME_MODE_DEATHMATCH ||
+		GetNumPlayers(PLAYER_ANY, true, true) != 1 ||
+		GetNumPlayers(PLAYER_ANY, false, false) <= 1)
 	{
-		FontOpts opts = FontOptsNew();
-		opts.Area = hud->device->cachedConfig.Res;
-		opts.HAlign = ALIGN_END;
-		opts.Mask = colorPurple;
-		const int nameColumn = 45;
-		const int livesColumn = 25;
-		const int killsColumn = 5;
-		int y = 5;
+		return;
+	}
+	FontOpts opts = FontOptsNew();
+	opts.Area = hud->device->cachedConfig.Res;
+	opts.HAlign = ALIGN_END;
+	opts.Mask = colorPurple;
+	const int nameColumn = 45;
+	const int livesColumn = 25;
+	const int killsColumn = 5;
+	int y = 5;
+	opts.Pad.x = nameColumn;
+	FontStrOpt("Player", Vec2iNew(0, y), opts);
+	opts.Pad.x = livesColumn;
+	FontStrOpt("Lives", Vec2iNew(0, y), opts);
+	opts.Pad.x = killsColumn;
+	FontStrOpt("Kills", Vec2iNew(0, y), opts);
+	y += FontH();
+	// Find the player(s) with the most lives and kills
+	int maxLives = 0;
+	int maxKills = 0;
+	CA_FOREACH(const PlayerData, p, gPlayerDatas)
+		maxLives = MAX(maxLives, p->Lives);
+		maxKills = MAX(maxKills, p->Stats.Kills);
+	CA_FOREACH_END()
+	CA_FOREACH(const PlayerData, p, gPlayerDatas)
+		// Player name; red if dead
+		opts.Mask = p->Lives > 0 ? colorWhite : colorRed;
 		opts.Pad.x = nameColumn;
-		FontStrOpt("Player", Vec2iNew(0, y), opts);
+		FontStrOpt(p->name, Vec2iNew(0, y), opts);
+
+		// lives; cyan if most lives
+		opts.Mask = p->Lives == maxLives ? colorCyan : colorWhite;
 		opts.Pad.x = livesColumn;
-		FontStrOpt("Lives", Vec2iNew(0, y), opts);
+		char buf[32];
+		sprintf(buf, "%d", p->Lives);
+		FontStrOpt(buf, Vec2iNew(0, y), opts);
+
+		// kills; cyan if most kills
+		opts.Mask = p->Stats.Kills == maxKills ? colorCyan : colorWhite;
 		opts.Pad.x = killsColumn;
-		FontStrOpt("Kills", Vec2iNew(0, y), opts);
+		sprintf(buf, "%d", p->Stats.Kills);
+		FontStrOpt(buf, Vec2iNew(0, y), opts);
 		y += FontH();
-		// Find the player(s) with the most lives and kills
-		int maxLives = 0;
-		int maxKills = 0;
-		CA_FOREACH(const PlayerData, p, gPlayerDatas)
-			maxLives = MAX(maxLives, p->Lives);
-			maxKills = MAX(maxKills, p->Stats.Kills);
-		CA_FOREACH_END()
-		CA_FOREACH(const PlayerData, p, gPlayerDatas)
-			// Player name; red if dead
-			opts.Mask = p->Lives > 0 ? colorWhite : colorRed;
-			opts.Pad.x = nameColumn;
-			FontStrOpt(p->name, Vec2iNew(0, y), opts);
+	CA_FOREACH_END()
+}
 
-			// lives; cyan if most lives
-			opts.Mask = p->Lives == maxLives ? colorCyan : colorWhite;
-			opts.Pad.x = livesColumn;
-			char buf[32];
-			sprintf(buf, "%d", p->Lives);
-			FontStrOpt(buf, Vec2iNew(0, y), opts);
-
-			// kills; cyan if most kills
-			opts.Mask = p->Stats.Kills == maxKills ? colorCyan : colorWhite;
-			opts.Pad.x = killsColumn;
-			sprintf(buf, "%d", p->Stats.Kills);
-			FontStrOpt(buf, Vec2iNew(0, y), opts);
-			y += FontH();
-		CA_FOREACH_END()
-	}
-
-	switch (hud->mission->state)
-	{
-		case MISSION_STATE_WAITING:
-			FontStrCenter("Waiting for players...");
-			break;
-		case MISSION_STATE_PLAY:
-			if (numPlayersAlive == 0 && AreAllPlayersDeadAndNoLives())
-			{
-				if (gPlayerDatas.size == 0)
-				{
-					FontStrCenter("Waiting for players...");
-				}
-				else if (!IsPVP(gCampaign.Entry.Mode))
-				{
-					FontStrCenter("Game Over!");
-				}
-				else
-				{
-					FontStrCenter("All Kill!");
-				}
-			}
-			else if (MissionNeedsMoreRescuesInExit(&gMission))
-			{
-				FontStrCenter("More rescues needed");
-			}
-			break;
-		case MISSION_STATE_PICKUP:
-		{
-			int timeLeft = gMission.pickupTime + PICKUP_LIMIT - gMission.time;
-			sprintf(s, "Pickup in %d seconds\n",
-				(timeLeft + (FPS_FRAMELIMIT - 1)) / FPS_FRAMELIMIT);
-			FontStrCenter(s);
-		}
-		break;
-		default:
-			CASSERT(false, "unknown mission state");
-			break;
-	}
-
+static void DrawMissionState(HUD *hud);
+static void DrawStateMessage(
+	HUD *hud, const input_device_e pausingDevice,
+	const bool controllerUnplugged)
+{
 	if (controllerUnplugged)
 	{
 		Vec2i pos = Vec2iScaleDiv(Vec2iMinus(
@@ -1077,28 +846,101 @@ void HUDDraw(
 		pos = FontStrMask(buf, pos, c);
 		FontStr(" to unpause", pos);
 	}
+	else
+	{
+		DrawMissionState(hud);
+	}
+}
+static void DrawMissionState(HUD *hud)
+{
+	char s[50];
+	const int numPlayersAlive =
+		GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false);
 
+	switch (hud->mission->state)
+	{
+	case MISSION_STATE_WAITING:
+		FontStrCenter("Waiting for players...");
+		break;
+	case MISSION_STATE_PLAY:
+		if (numPlayersAlive == 0 && AreAllPlayersDeadAndNoLives())
+		{
+			if (gPlayerDatas.size == 0)
+			{
+				FontStrCenter("Waiting for players...");
+			}
+			else if (!IsPVP(gCampaign.Entry.Mode))
+			{
+				FontStrCenter("Game Over!");
+			}
+			else
+			{
+				FontStrCenter("All Kill!");
+			}
+		}
+		else if (MissionNeedsMoreRescuesInExit(&gMission))
+		{
+			FontStrCenter("More rescues needed");
+		}
+		break;
+	case MISSION_STATE_PICKUP:
+	{
+		int timeLeft = gMission.pickupTime + PICKUP_LIMIT - gMission.time;
+		sprintf(s, "Pickup in %d seconds\n",
+			(timeLeft + (FPS_FRAMELIMIT - 1)) / FPS_FRAMELIMIT);
+		FontStrCenter(s);
+	}
+	break;
+	default:
+		CASSERT(false, "unknown mission state");
+		break;
+	}
+}
+
+static void DrawHUDMessage(HUD *hud)
+{
 	if (hud->messageTicks > 0 || hud->messageTicks == -1)
 	{
 		// Draw the message centered, and just below the automap
 		Vec2i pos = Vec2iNew(
 			(hud->device->cachedConfig.Res.x -
-			FontStrW(hud->message)) / 2,
+				FontStrW(hud->message)) / 2,
 			AUTOMAP_SIZE + AUTOMAP_PADDING + AUTOMAP_PADDING);
 		FontStrMask(hud->message, pos, colorCyan);
 	}
+}
 
-	if (ConfigGetBool(&gConfig, "Interface.ShowFPS"))
+static void DrawKeycards(HUD *hud)
+{
+	int keyFlags[] =
 	{
-		FPSCounterDraw(&hud->fpsCounter);
-	}
-	if (ConfigGetBool(&gConfig, "Interface.ShowTime"))
+		FLAGS_KEYCARD_YELLOW,
+		FLAGS_KEYCARD_GREEN,
+		FLAGS_KEYCARD_BLUE,
+		FLAGS_KEYCARD_RED
+	};
+	int i;
+	int xOffset = -30;
+	int xOffsetIncr = 20;
+	int yOffset = 20;
+	for (i = 0; i < 4; i++)
 	{
-		WallClockDraw(&hud->clock);
+		if (hud->mission->KeyFlags & keyFlags[i])
+		{
+			const Pic *pic = KeyPickupClass(
+				hud->mission->missionData->KeyStyle, i)->Pic;
+			Blit(
+				&gGraphicsDevice,
+				pic,
+				Vec2iNew(CenterX(pic->size.x) - xOffset, yOffset));
+		}
+		xOffset += xOffsetIncr;
 	}
+}
 
-	DrawKeycards(hud);
-
+static void DrawMissionTime(HUD *hud)
+{
+	char s[50];
 	// Draw elapsed mission time as MM:SS
 	int missionTimeSeconds = gMission.time / FPS_FRAMELIMIT;
 	sprintf(s, "%d:%02d",
@@ -1109,149 +951,13 @@ void HUDDraw(
 	opts.Area = hud->device->cachedConfig.Res;
 	opts.Pad.y = 5;
 	FontStrOpt(s, Vec2iZero(), opts);
-
-	if (HasObjectives(gCampaign.Entry.Mode))
-	{
-		DrawObjectiveCounts(hud);
-	}
-}
-
-static void DrawNumUpdate(
-	const HUDNumUpdate *update,
-	const char *formatText, int currentValue, Vec2i pos, int flags);
-static void DrawScoreUpdate(const HUDNumUpdate *u, const int flags)
-{
-	if (!IsScoreNeeded(gCampaign.Entry.Mode))
-	{
-		return;
-	}
-	if (u->Amount == 0)
-	{
-		return;
-	}
-	const PlayerData *p = PlayerDataGetByUID(u->u.PlayerUID);
-	if (!IsPlayerAlive(p)) return;
-	const int rowHeight = 1 + FontH();
-	const int y = 5 + rowHeight;
-	DrawNumUpdate(u, "Score: %d", p->Stats.Score, Vec2iNew(5, y), flags);
-}
-static void DrawHealthUpdate(const HUDNumUpdate *u, const int flags)
-{
-	if (u->Amount == 0)
-	{
-		return;
-	}
-	const PlayerData *p = PlayerDataGetByUID(u->u.PlayerUID);
-	if (!IsPlayerAlive(p)) return;
-	const int rowHeight = 1 + FontH();
-	const int y = 5 + rowHeight * 2;
-	const TActor *a = ActorGetByUID(p->ActorUID);
-	DrawNumUpdate(u, "%d", a->health, Vec2iNew(5, y), flags);
-}
-static void DrawAmmoUpdate(const HUDNumUpdate *u, const int flags)
-{
-	if (u->Amount == 0)
-	{
-		return;
-	}
-	const PlayerData *p = PlayerDataGetByUID(u->u.PlayerUID);
-	if (!IsPlayerAlive(p)) return;
-	const int rowHeight = 1 + FontH();
-	const int y = 5 + rowHeight * 4 + LIVES_ROW_EXTRA_Y;
-	const TActor *a = ActorGetByUID(p->ActorUID);
-	const Weapon *w = ActorGetGun(a);
-	char gunNameBuf[256];
-	sprintf(gunNameBuf, "%s %%d", w->Gun->name);
-	const int ammo = ActorGunGetAmmo(a, w);
-	DrawNumUpdate(u, gunNameBuf, ammo, Vec2iNew(5 + GUN_ICON_PAD, y), flags);
-}
-// Parameters that define how the numeric update is animated
-// The update animates in the following phases:
-// 1. Pop up from text position to slightly above
-// 2. Fall down from slightly above back to text position
-// 3. Persist over text position
-#define NUM_UPDATE_POP_UP_DURATION_MS 100
-#define NUM_UPDATE_FALL_DOWN_DURATION_MS 100
-#define NUM_UPDATE_POP_UP_HEIGHT 5
-static void DrawNumUpdate(
-	const HUDNumUpdate *update,
-	const char *formatText, int currentValue, Vec2i pos, int flags)
-{
-	if (update->Timer <= 0 || update->Amount == 0)
-	{
-		return;
-	}
-	color_t color = update->Amount > 0 ? colorGreen : colorRed;
-
-	char s[50];
-	if (!(flags & HUDFLAGS_PLACE_RIGHT))
-	{
-		// Find the right position to draw the update
-		// Make sure the update is displayed lined up with the lowest digits
-		// Find the position of where the normal text is displayed,
-		// and move to its right
-		sprintf(s, formatText, currentValue);
-		pos.x += FontStrW(s);
-		// Then find the size of the update, and move left
-		sprintf(s, "%s%d", update->Amount > 0 ? "+" : "", update->Amount);
-		pos.x -= FontStrW(s);
-		// The final position should ensure the score update's lowest digit
-		// lines up with the normal score's lowest digit
-	}
-	else
-	{
-		sprintf(s, "%s%d", update->Amount > 0 ? "+" : "", update->Amount);
-	}
-
-	// Now animate the score update based on its stage
-	int timer = update->TimerMax - update->Timer;
-	if (timer < NUM_UPDATE_POP_UP_DURATION_MS)
-	{
-		// update is still popping up
-		// calculate height
-		int popupHeight =
-			timer * NUM_UPDATE_POP_UP_HEIGHT / NUM_UPDATE_POP_UP_DURATION_MS;
-		pos.y -= popupHeight;
-	}
-	else if (timer <
-		NUM_UPDATE_POP_UP_DURATION_MS + NUM_UPDATE_FALL_DOWN_DURATION_MS)
-	{
-		// update is falling down
-		// calculate height
-		timer -= NUM_UPDATE_POP_UP_DURATION_MS;
-		timer = NUM_UPDATE_FALL_DOWN_DURATION_MS - timer;
-		int popupHeight =
-			timer * NUM_UPDATE_POP_UP_HEIGHT / NUM_UPDATE_FALL_DOWN_DURATION_MS;
-		pos.y -= popupHeight;
-	}
-	else
-	{
-		// Change alpha so that the update fades away
-		color.a = (Uint8)(update->Timer * 255 / update->TimerMax);
-	}
-
-	FontOpts opts = FontOptsNew();
-	if (flags & HUDFLAGS_PLACE_RIGHT)
-	{
-		opts.HAlign = ALIGN_END;
-	}
-	if (flags & HUDFLAGS_PLACE_BOTTOM)
-	{
-		opts.VAlign = ALIGN_END;
-		pos.y += BOTTOM_PADDING;
-	}
-	opts.Area = gGraphicsDevice.cachedConfig.Res;
-	opts.Pad = pos;
-	opts.Mask = color;
-	opts.Blend = true;
-	FontStrOpt(s, Vec2iZero(), opts);
 }
 
 static void DrawObjectiveCounts(HUD *hud)
 {
 	int x = 5 + GAUGE_WIDTH;
 	int y = hud->device->cachedConfig.Res.y - 5 - FontH();
-	CA_FOREACH(const Objective, o, gMission.missionData->Objectives)
+	CA_FOREACH(const Objective, o, hud->mission->missionData->Objectives)
 		// Don't draw anything for optional objectives
 		if (!ObjectiveIsRequired(o))
 		{
@@ -1281,9 +987,8 @@ static void DrawObjectiveCounts(HUD *hud)
 		}
 		FontStr(s, Vec2iNew(x, y));
 
-		DrawNumUpdate(
-			CArrayGet(&hud->objectiveUpdates, _ca_index), "%d", o->done,
-			Vec2iNew(x + FontStrW(s) - 8, y), 0);
+		HUDNumPopupsDrawObjective(
+			&hud->numPopups, _ca_index, Vec2iNew(x + FontStrW(s) - 8, y));
 
 		x += 40;
 	CA_FOREACH_END()

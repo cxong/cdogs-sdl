@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -29,45 +29,12 @@
 #pragma once
 
 #include "config.h"
+#include "fps.h"
 #include "gamedata.h"
+#include "hud_num_popup.h"
 #include "player.h"
+#include "wall_clock.h"
 
-typedef struct
-{
-	int elapsed;
-	int framesDrawn;
-	int fps;
-} FPSCounter;
-
-void FPSCounterInit(FPSCounter *counter);
-void FPSCounterUpdate(FPSCounter *counter, int ms);
-void FPSCounterDraw(FPSCounter *counter);
-
-typedef struct
-{
-	int elapsed;
-	int hours;
-	int minutes;
-} WallClock;
-
-void WallClockInit(WallClock *clock);
-void WallClockUpdate(WallClock *clock, int ms);
-void WallClockDraw(WallClock *clock);
-
-// Numeric update for health and score
-// Displays as a small pop-up coloured text overlay
-typedef struct
-{
-	union
-	{
-		int PlayerUID;
-		int ObjectiveIndex;
-	} u;
-	int Amount;
-	// Number of milliseconds that this update will last
-	int TimerMax;
-	int Timer;
-} HUDNumUpdate;
 
 typedef struct
 {
@@ -77,10 +44,7 @@ typedef struct
 	GraphicsDevice *device;
 	FPSCounter fpsCounter;
 	WallClock clock;
-	HUDNumUpdate scoreUpdates[MAX_LOCAL_PLAYERS];
-	HUDNumUpdate healthUpdates[MAX_LOCAL_PLAYERS];
-	HUDNumUpdate ammoUpdates[MAX_LOCAL_PLAYERS];
-	CArray objectiveUpdates; // of HUDNumUpdate, one per objective
+	HUDNumPopups numPopups;
 	bool showExit;
 } HUD;
 
@@ -92,18 +56,6 @@ void HUDTerminate(HUD *hud);
 
 // Set ticks to -1 to display a message indefinitely
 void HUDDisplayMessage(HUD *hud, const char *msg, int ticks);
-
-typedef enum
-{
-	NUMBER_UPDATE_SCORE,
-	NUMBER_UPDATE_HEALTH,
-	NUMBER_UPDATE_AMMO,
-	NUMBER_UPDATE_OBJECTIVE
-} HUDNumUpdateType;
-// idx is either player UID or objective index
-void HUDAddUpdate(
-	HUD *hud, const HUDNumUpdateType type,
-	const int idxOrUID, const int amount);
 
 void HUDUpdate(HUD *hud, int ms);
 // INPUT_DEVICE_UNSET if not paused

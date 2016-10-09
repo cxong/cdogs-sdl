@@ -148,9 +148,9 @@ static void HandleGameEvent(
 		{
 			PlayerData *p = PlayerDataGetByUID(e.u.Score.PlayerUID);
 			PlayerScore(p, e.u.Score.Score);
-			HUDAddUpdate(
-				&camera->HUD,
-				NUMBER_UPDATE_SCORE, e.u.Score.PlayerUID, e.u.Score.Score);
+			HUDNumPopupsAdd(
+				&camera->HUD.numPopups,
+				NUMBER_POPUP_SCORE, e.u.Score.PlayerUID, e.u.Score.Score);
 		}
 		break;
 	case GAME_EVENT_SOUND_AT:
@@ -259,8 +259,8 @@ static void HandleGameEvent(
 			}
 			if (e.u.Heal.PlayerUID >= 0)
 			{
-				HUDAddUpdate(
-					&camera->HUD, NUMBER_UPDATE_HEALTH,
+				HUDNumPopupsAdd(
+					&camera->HUD.numPopups, NUMBER_POPUP_HEALTH,
 					e.u.Heal.PlayerUID, e.u.Heal.Amount);
 			}
 		}
@@ -279,8 +279,8 @@ static void HandleGameEvent(
 			}
 			if (e.u.AddAmmo.PlayerUID >= 0)
 			{
-				HUDAddUpdate(
-					&camera->HUD, NUMBER_UPDATE_AMMO,
+				HUDNumPopupsAdd(
+					&camera->HUD.numPopups, NUMBER_POPUP_AMMO,
 					e.u.AddAmmo.PlayerUID, e.u.AddAmmo.Amount);
 			}
 		}
@@ -292,8 +292,8 @@ static void HandleGameEvent(
 			ActorAddAmmo(a, e.u.UseAmmo.AmmoId, -(int)e.u.UseAmmo.Amount);
 			if (e.u.UseAmmo.PlayerUID >= 0)
 			{
-				HUDAddUpdate(
-					&camera->HUD, NUMBER_UPDATE_AMMO,
+				HUDNumPopupsAdd(
+					&camera->HUD.numPopups, NUMBER_POPUP_AMMO,
 					e.u.UseAmmo.PlayerUID, -(int)e.u.UseAmmo.Amount);
 			}
 		}
@@ -503,8 +503,8 @@ static void HandleGameEvent(
 					a, e.u.ActorHit.Power, e.u.ActorHit.HitterPlayerUID);
 				if (e.u.ActorHit.PlayerUID >= 0)
 				{
-					HUDAddUpdate(
-						&camera->HUD, NUMBER_UPDATE_HEALTH,
+					HUDNumPopupsAdd(
+						&camera->HUD.numPopups, NUMBER_POPUP_HEALTH,
 						e.u.ActorHit.PlayerUID, -e.u.ActorHit.Power);
 				}
 
@@ -577,9 +577,10 @@ static void HandleGameEvent(
 			// Display a text update effect for the objective
 			if (camera != NULL)
 			{
-				HUDAddUpdate(
-					&camera->HUD, NUMBER_UPDATE_OBJECTIVE,
-					e.u.ObjectiveUpdate.ObjectiveId, e.u.ObjectiveUpdate.Count);
+				HUDNumPopupsAdd(
+					&camera->HUD.numPopups, NUMBER_POPUP_OBJECTIVE,
+					e.u.ObjectiveUpdate.ObjectiveId,
+					e.u.ObjectiveUpdate.Count);
 			}
 			MissionSetMessageIfComplete(&gMission);
 		}

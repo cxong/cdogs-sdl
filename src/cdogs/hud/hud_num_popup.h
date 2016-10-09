@@ -1,7 +1,9 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2015-2016, Cong Xu
+
+    Copyright (c) 2013-2016, Cong Xu
+    All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
@@ -26,41 +28,53 @@
 */
 #pragma once
 
-#include "draw_buffer.h"
-#include "hud/hud.h"
-#include "screen_shake.h"
+#include "c_array.h"
+#include "mission.h"
+#include "player.h"
 
-#define CAMERA_SPLIT_PADDING 40
 
-typedef enum
+// Numeric popup for health and score
+// Displays as a small pop-up coloured text overlay
+typedef struct
 {
-	SPECTATE_NONE,
-	SPECTATE_FOLLOW,
-	SPECTATE_FREE
-} SpectateMode;
+	union
+	{
+		int PlayerUID;
+		int ObjectiveIndex;
+	} u;
+	int Amount;
+	// Number of milliseconds that this update will last
+	int TimerMax;
+	int Timer;
+} HUDNumPopup;
 
 typedef struct
 {
-	DrawBuffer Buffer;
-	Vec2i lastPosition;
-	HUD HUD;
-	ScreenShake shake;
-	SpectateMode spectateMode;
-	// UID of player to follow; only used if camera is in follow mode
-	int FollowPlayerUID;
-	// Immediately enter follow mode on the next player that joins the game
-	// This is used for when the game has no players; all spectators should
-	// immediately follow the next player to join
-	bool FollowNextPlayer;
-} Camera;
+	HUDNumPopup score[MAX_LOCAL_PLAYERS];
+	HUDNumPopup health[MAX_LOCAL_PLAYERS];
+	HUDNumPopup ammo[MAX_LOCAL_PLAYERS];
+	CArray objective; // of HUDNumPopup, one per objective
+} HUDNumPopups;
 
-void CameraInit(Camera *camera);
-void CameraTerminate(Camera *camera);
+void HUDNumPopupsInit(
+	HUDNumPopups *popups, const struct MissionOptions *mission);
+void HUDNumPopupsTerminate(HUDNumPopups *popups);
 
-void CameraInput(Camera *camera, const int cmd, const int lastCmd);
-void CameraUpdate(Camera *camera, const int ticks, const int ms);
-void CameraDraw(
-	Camera *camera, const input_device_e pausingDevice,
-	const bool controllerUnplugged);
+typedef enum
+{
+	NUMBER_POPUP_SCORE,
+	NUMBER_POPUP_HEALTH,
+	NUMBER_POPUP_AMMO,
+	NUMBER_POPUP_OBJECTIVE
+} HUDNumPopupType;
+// idx is either player UID or objective index
+void HUDNumPopupsAdd(
+	HUDNumPopups *popups, const HUDNumPopupType type,
+	const int idxOrUID, const int amount);
 
-bool CameraIsSingleScreen(void);
+void HUDPopupsUpdate(HUDNumPopups *popups, const int ms);
+
+void HUDNumPopupsDrawPlayer(
+	const HUDNumPopups *popups, const int idx, const int drawFlags);
+void HUDNumPopupsDrawObjective(
+	const HUDNumPopups *popups, const int idx, const Vec2i pos);

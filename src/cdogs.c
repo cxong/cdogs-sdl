@@ -142,6 +142,7 @@ static void PrintHelp(void)
 		"    --scale=n        Scale the window resolution up by a factor of n\n"
 		"                       Factors: 2, 3, 4\n"
 		"    --screen=WxH     Set virtual screen width to W x H\n"
+		"    --nohud          Disable in-game HUD; useful for recording\n"
 	);
 
 	printf("%s\n",
@@ -227,6 +228,10 @@ int main(int argc, char *argv[])
 
 	SetupConfigDir();
 	gConfig = ConfigLoad(GetConfigFilePath(CONFIG_FILE));
+	// Set config options that are only set via command line
+	ConfigGet(&gConfig, "Graphics.ShowHUD")->u.Bool.Value = true;
+	ConfigGet(&gConfig, "Graphics.ShakeMultiplier")->u.Int.Value = 1;
+
 	LoadCredits(&creditsDisplayer, colorPurple, colorDarker);
 	AutosaveInit(&gAutosave);
 	AutosaveLoad(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
@@ -259,18 +264,19 @@ int main(int argc, char *argv[])
 	{
 		struct option longopts[] =
 		{
-			{"fullscreen",	no_argument,		NULL,	'f'},
-			{"scale",		required_argument,	NULL,	's'},
-			{"screen",		required_argument,	NULL,	'c'},
-			{"nosound",		no_argument,		NULL,	'n'},
-			{"nojoystick",	no_argument,		NULL,	'j'},
-			{"wait",		no_argument,		NULL,	'w'},
-			{"shakemult",	required_argument,	NULL,	'm'},
-			{"connect",		required_argument,	NULL,	'x'},
-			{"debug",		required_argument,	NULL,	'd'},
-			{"log",			required_argument,	NULL,	1000},
-			{"help",		no_argument,		NULL,	'h'},
-			{0,				0,					NULL,	0}
+			{ "fullscreen",	no_argument,		NULL,	'f' },
+			{ "scale",		required_argument,	NULL,	's' },
+			{ "screen",		required_argument,	NULL,	'c' },
+			{ "nohud",		no_argument,		NULL,	1001 },
+			{ "nosound",	no_argument,		NULL,	'n' },
+			{ "nojoystick",	no_argument,		NULL,	'j' },
+			{ "wait",		no_argument,		NULL,	'w' },
+			{ "shakemult",	required_argument,	NULL,	'm' },
+			{ "connect",	required_argument,	NULL,	'x' },
+			{ "debug",		required_argument,	NULL,	'd' },
+			{ "log",		required_argument,	NULL,	1000 },
+			{ "help",		no_argument,		NULL,	'h' },
+			{ 0,			0,					NULL,	0 }
 		};
 		int opt = 0;
 		int idx = 0;
@@ -291,6 +297,9 @@ int main(int argc, char *argv[])
 				LOG(LM_MAIN, LL_DEBUG, "Video mode %dx%d set...",
 					ConfigGetInt(&gConfig, "Graphics.ResolutionWidth"),
 					ConfigGetInt(&gConfig, "Graphics.ResolutionHeight"));
+				break;
+			case 1001:
+				ConfigGet(&gConfig, "Graphics.ShowHUD")->u.Bool.Value = false;
 				break;
 			case 'n':
 				LOG(LM_MAIN, LL_INFO, "Sound to 0 volume");

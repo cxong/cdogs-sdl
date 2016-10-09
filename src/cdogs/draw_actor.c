@@ -393,6 +393,11 @@ void DrawChatters(DrawBuffer *b, const Vec2i offset)
 static void DrawChatter(
 	const TTileItem *ti, DrawBuffer *b, const Vec2i offset)
 {
+	if (!ConfigGetBool(&gConfig, "Graphics.ShowHUD"))
+	{
+		return;
+	}
+
 	const TActor *a = CArrayGet(&gActors, ti->id);
 	// Draw character text
 	if (strlen(a->Chatter) > 0)

@@ -1,7 +1,9 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2015-2016, Cong Xu
+
+    Copyright (c) 2013-2016, Cong Xu
+    All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
@@ -24,43 +26,44 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#pragma once
+#include "wall_clock.h"
 
-#include "draw_buffer.h"
-#include "hud/hud.h"
-#include "screen_shake.h"
+#include <time.h>
 
-#define CAMERA_SPLIT_PADDING 40
+#include "font.h"
+#include "grafx.h"
 
-typedef enum
+
+void WallClockSetTime(WallClock *wc)
 {
-	SPECTATE_NONE,
-	SPECTATE_FOLLOW,
-	SPECTATE_FREE
-} SpectateMode;
-
-typedef struct
+	time_t t = time(NULL);
+	struct tm *tp = localtime(&t);
+	wc->hours = tp->tm_hour;
+	wc->minutes = tp->tm_min;
+}
+void WallClockInit(WallClock *wc)
 {
-	DrawBuffer Buffer;
-	Vec2i lastPosition;
-	HUD HUD;
-	ScreenShake shake;
-	SpectateMode spectateMode;
-	// UID of player to follow; only used if camera is in follow mode
-	int FollowPlayerUID;
-	// Immediately enter follow mode on the next player that joins the game
-	// This is used for when the game has no players; all spectators should
-	// immediately follow the next player to join
-	bool FollowNextPlayer;
-} Camera;
+	wc->elapsed = 0;
+	WallClockSetTime(wc);
+}
+void WallClockUpdate(WallClock *wc, int ms)
+{
+	wc->elapsed += ms;
+	int minuteMs = 60 * 1000;
+	if (wc->elapsed > minuteMs)	// update every minute
+	{
+		WallClockSetTime(wc);
+		wc->elapsed -= minuteMs;
+	}
+}
+void WallClockDraw(WallClock *wc)
+{
+	char s[50];
+	sprintf(s, "%02d:%02d", wc->hours, wc->minutes);
 
-void CameraInit(Camera *camera);
-void CameraTerminate(Camera *camera);
-
-void CameraInput(Camera *camera, const int cmd, const int lastCmd);
-void CameraUpdate(Camera *camera, const int ticks, const int ms);
-void CameraDraw(
-	Camera *camera, const input_device_e pausingDevice,
-	const bool controllerUnplugged);
-
-bool CameraIsSingleScreen(void);
+	FontOpts opts = FontOptsNew();
+	opts.VAlign = ALIGN_END;
+	opts.Area = gGraphicsDevice.cachedConfig.Res;
+	opts.Pad = Vec2iNew(10, 5 + FontH());
+	FontStrOpt(s, Vec2iZero(), opts);
+}
