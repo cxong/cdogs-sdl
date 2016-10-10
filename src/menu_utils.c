@@ -30,8 +30,8 @@
 
 #include <assert.h>
 
-#include <cdogs/draw.h>
-#include <cdogs/draw_actor.h>
+#include <cdogs/draw/draw.h>
+#include <cdogs/draw/draw_actor.h>
 #include <cdogs/font.h>
 
 

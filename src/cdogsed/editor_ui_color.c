@@ -27,7 +27,7 @@
 */
 #include "editor_ui_color.h"
 
-#include <cdogs/drawtools.h>
+#include <cdogs/draw/drawtools.h>
 #include <cdogs/font.h>
 
 #include "editor_ui.h"

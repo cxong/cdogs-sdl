@@ -60,7 +60,7 @@
 #include "character.h"
 #include "collision.h"
 #include "config.h"
-#include "drawtools.h"
+#include "draw/drawtools.h"
 #include "events.h"
 #include "game_events.h"
 #include "log.h"

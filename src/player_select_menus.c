@@ -32,8 +32,8 @@
 #include <stddef.h>
 
 #include <cdogs/character_class.h>
-#include <cdogs/draw.h>
-#include <cdogs/drawtools.h>
+#include <cdogs/draw/draw.h>
+#include <cdogs/draw/drawtools.h>
 #include <cdogs/font.h>
 #include <cdogs/player_template.h>
 

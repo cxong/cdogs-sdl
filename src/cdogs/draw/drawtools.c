@@ -49,7 +49,7 @@
 
 #include "algorithms.h"
 #include "config.h"
-#include "drawtools.h"
+#include "draw/drawtools.h"
 #include "palette.h"
 #include "utils.h"
 #include "blit.h"

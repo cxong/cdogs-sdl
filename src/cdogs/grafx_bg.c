@@ -29,8 +29,8 @@
 
 #include "actors.h"
 #include "ai.h"
-#include "draw.h"
-#include "drawtools.h"
+#include "draw/draw.h"
+#include "draw/drawtools.h"
 #include "game_events.h"
 #include "handle_game_events.h"
 #include "objs.h"

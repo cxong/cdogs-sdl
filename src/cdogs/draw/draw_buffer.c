@@ -46,7 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#include "draw_buffer.h"
+#include "draw/draw_buffer.h"
 
 #include <assert.h>
 

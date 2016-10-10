@@ -27,8 +27,8 @@
 #include "camera.h"
 
 #include "actors.h"
-#include "draw.h"
-#include "drawtools.h"
+#include "draw/draw.h"
+#include "draw/drawtools.h"
 #include "events.h"
 #include "font.h"
 #include "los.h"

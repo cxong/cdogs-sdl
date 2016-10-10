@@ -34,10 +34,11 @@ set(CDOGS_SOURCES
 	damage.c
 	defs.c
 	door.c
-	draw.c
-	draw_actor.c
-	draw_buffer.c
-	drawtools.c
+	draw/draw.c
+	draw/draw_actor.c
+	draw/draw_buffer.c
+	draw/draw_highlight.c
+	draw/drawtools.c
 	emitter.c
 	events.c
 	files.c
@@ -127,10 +128,11 @@ set(CDOGS_HEADERS
 	damage.h
 	defs.h
 	door.h
-	draw.h
-	draw_actor.h
-	draw_buffer.h
-	drawtools.h
+	draw/draw.h
+	draw/draw_actor.h
+	draw/draw_buffer.h
+	draw/draw_highlight.h
+	draw/drawtools.h
 	emitter.h
 	events.h
 	files.h

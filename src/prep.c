@@ -59,7 +59,7 @@
 #include <cdogs/actors.h>
 #include <cdogs/blit.h>
 #include <cdogs/config_io.h>
-#include <cdogs/draw.h>
+#include <cdogs/draw/draw.h>
 #include <cdogs/files.h>
 #include <cdogs/font.h>
 #include <cdogs/grafx.h>

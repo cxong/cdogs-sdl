@@ -60,7 +60,7 @@
 #include "blit.h"
 #include "config.h"
 #include "defs.h"
-#include "drawtools.h"
+#include "draw/drawtools.h"
 #include "grafx_bg.h"
 #include "log.h"
 #include "palette.h"

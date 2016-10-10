@@ -28,7 +28,7 @@
 #pragma once
 
 #include "campaigns.h"
-#include "draw_buffer.h"
+#include "draw/draw_buffer.h"
 #include "grafx.h"
 
 typedef struct

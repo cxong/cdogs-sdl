@@ -52,7 +52,7 @@
 
 #include "ai_utils.h"
 #include "collision.h"
-#include "drawtools.h"
+#include "draw/drawtools.h"
 #include "game_events.h"
 #include "json_utils.h"
 #include "log.h"

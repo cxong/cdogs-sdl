@@ -46,7 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#include "draw_actor.h"
+#include "draw/draw_actor.h"
 
 #include <assert.h>
 #include <math.h>
@@ -56,13 +56,13 @@
 #include "actors.h"
 #include "algorithms.h"
 #include "config.h"
-#include "drawtools.h"
+#include "draw/drawtools.h"
 #include "font.h"
 #include "game_events.h"
 #include "net_util.h"
 #include "objs.h"
 #include "pics.h"
-#include "draw.h"
+#include "draw/draw.h"
 #include "blit.h"
 #include "pic_manager.h"
 

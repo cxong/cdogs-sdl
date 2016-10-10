@@ -64,7 +64,7 @@
 #include <cdogs/automap.h>
 #include <cdogs/camera.h>
 #include <cdogs/config.h>
-#include <cdogs/drawtools.h>
+#include <cdogs/draw/drawtools.h>
 #include <cdogs/events.h>
 #include <cdogs/game_events.h>
 #include <cdogs/grafx_bg.h>

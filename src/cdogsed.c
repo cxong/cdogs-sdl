@@ -64,8 +64,8 @@
 #include <cdogs/character_class.h>
 #include <cdogs/collision.h>
 #include <cdogs/config_io.h>
-#include <cdogs/draw.h>
-#include <cdogs/drawtools.h>
+#include <cdogs/draw/draw.h>
+#include <cdogs/draw/drawtools.h>
 #include <cdogs/events.h>
 #include <cdogs/files.h>
 #include <cdogs/font_utils.h>

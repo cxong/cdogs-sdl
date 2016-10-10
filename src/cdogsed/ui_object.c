@@ -33,7 +33,7 @@
 
 #include <cdogs/blit.h>
 #include <cdogs/font.h>
-#include <cdogs/drawtools.h>
+#include <cdogs/draw/drawtools.h>
 
 
 color_t bgColor = { 32, 32, 64, 255 };

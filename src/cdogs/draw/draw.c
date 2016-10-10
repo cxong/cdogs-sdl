@@ -54,15 +54,16 @@
 #include "actors.h"
 #include "algorithms.h"
 #include "config.h"
-#include "draw_actor.h"
-#include "drawtools.h"
+#include "draw/draw_actor.h"
+#include "draw_highlight.h"
+#include "draw/drawtools.h"
 #include "font.h"
 #include "game_events.h"
 #include "net_util.h"
 #include "objs.h"
 #include "pickup.h"
 #include "pics.h"
-#include "draw.h"
+#include "draw/draw.h"
 #include "blit.h"
 #include "pic_manager.h"
 
@@ -117,7 +118,6 @@ void DrawWallColumn(int y, Vec2i pos, Tile *tile)
 static void DrawFloor(DrawBuffer *b, Vec2i offset);
 static void DrawDebris(DrawBuffer *b, Vec2i offset);
 static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset);
-static void DrawObjectiveHighlights(DrawBuffer *b, const Vec2i offset);
 static void DrawExtra(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra);
 
 void DrawBufferDraw(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra)
@@ -317,86 +317,6 @@ static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset)
 	else
 	{
 		(*(t->drawFunc))(picPos, &t->drawData);
-	}
-}
-
-static void DrawObjectiveHighlight(
-	TTileItem *ti, Tile *tile, DrawBuffer *b, Vec2i offset);
-static void DrawObjectiveHighlights(DrawBuffer *b, const Vec2i offset)
-{
-	Tile *tile = &b->tiles[0][0];
-	for (int y = 0; y < Y_TILES; y++)
-	{
-		for (int x = 0; x < b->Size.x; x++, tile++)
-		{
-			// Draw the items that are in LOS
-			CA_FOREACH(ThingId, tid, tile->things)
-				TTileItem *ti = ThingIdGetTileItem(tid);
-				DrawObjectiveHighlight(ti, tile, b, offset);
-			CA_FOREACH_END()
-		}
-		tile += X_TILES - b->Size.x;
-	}
-}
-static void DrawObjectiveHighlight(
-	TTileItem *ti, Tile *tile, DrawBuffer *b, Vec2i offset)
-{
-	color_t color;
-	if (ti->flags & TILEITEM_OBJECTIVE)
-	{
-		// Objective
-		const int objective = ObjectiveFromTileItem(ti->flags);
-		const Objective *o =
-			CArrayGet(&gMission.missionData->Objectives, objective);
-		if (o->Flags & OBJECTIVE_HIDDEN)
-		{
-			return;
-		}
-		if (!(o->Flags & OBJECTIVE_POSKNOWN) &&
-			(tile->flags & MAPTILE_OUT_OF_SIGHT))
-		{
-			return;
-		}
-		color = o->color;
-	}
-	else if (ti->kind == KIND_PICKUP)
-	{
-		// Gun pickup
-		const Pickup *p = CArrayGet(&gPickups, ti->id);
-		if (!PickupIsManual(p))
-		{
-			return;
-		}
-		color = colorDarker;
-	}
-	else
-	{
-		return;
-	}
-	
-	const Vec2i pos = Vec2iNew(
-		ti->x - b->xTop + offset.x, ti->y - b->yTop + offset.y);
-	const int pulsePeriod = ConfigGetInt(&gConfig, "Game.FPS");
-	int alphaUnscaled =
-		(gMission.time % pulsePeriod) * 255 / (pulsePeriod / 2);
-	if (alphaUnscaled > 255)
-	{
-		alphaUnscaled = 255 * 2 - alphaUnscaled;
-	}
-	color.a = (Uint8)alphaUnscaled;
-	if (ti->getPicFunc != NULL)
-	{
-		Vec2i picOffset;
-		const Pic *pic = ti->getPicFunc(ti->id, &picOffset);
-		BlitPicHighlight(
-			&gGraphicsDevice, pic, Vec2iAdd(pos, picOffset), color);
-	}
-	else if (ti->kind == KIND_CHARACTER)
-	{
-		TActor *a = CArrayGet(&gActors, ti->id);
-		ActorPics pics;
-		GetCharacterPicsFromActor(&pics, a);
-		DrawActorHighlight(&pics, pos, color, a->direction);
 	}
 }
 

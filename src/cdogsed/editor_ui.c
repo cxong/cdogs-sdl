@@ -30,9 +30,9 @@
 #include <assert.h>
 
 #include <cdogs/door.h>
-#include <cdogs/draw.h>
-#include <cdogs/draw_actor.h>
-#include <cdogs/drawtools.h>
+#include <cdogs/draw/draw.h>
+#include <cdogs/draw/draw_actor.h>
+#include <cdogs/draw/drawtools.h>
 #include <cdogs/events.h>
 #include <cdogs/files.h>
 #include <cdogs/font.h>
