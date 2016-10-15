@@ -473,15 +473,23 @@ static void Open(void)
 				tinydir_readfile_n(&dir, &file, i);
 				if (strncmp(file.name, basename, strlen(basename)) == 0)
 				{
-					// Ignore files that aren't campaigns
+					// Ignore files that aren't campaigns or interesting folders
 					if (file.name[0] == '.') continue;
-					if (!file.is_dir &&
-						strcmp(file.extension, "cdogscpn") != 0 &&
-						strcmp(file.extension, "CDOGSCPN") != 0 &&
-						strcmp(file.extension, "cpn") != 0 &&
-						strcmp(file.extension, "CPN") != 0)
+					const bool canOpen =
+						strcmp(file.extension, "cdogscpn") == 0 ||
+						strcmp(file.extension, "CDOGSCPN") == 0 ||
+						strcmp(file.extension, "cpn") == 0 ||
+						strcmp(file.extension, "CPN") == 0;
+					if (!canOpen && !file.is_dir)
+					{
 						continue;
-					pos = FontStrMask(file.path, pos, colorGray);
+					}
+					const color_t c = canOpen ? colorCyan : colorGray;
+					pos = FontStrMask(file.path, pos, c);
+					if (!canOpen)
+					{
+						FontStrMask("/", pos, c);
+					}
 					pos.x = x;
 					pos.y += FontH();
 				}
