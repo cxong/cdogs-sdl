@@ -462,8 +462,10 @@ static void Open(void)
 		tinydir_dir dir;
 		char buf[CDOGS_PATH_MAX];
 		PathGetDirname(buf, filename);
+		char tabCompleteCandidate[CDOGS_PATH_MAX];
 		if (!tinydir_open_sorted(&dir, buf))
 		{
+			int numCandidates = 0;
 			const char *basename = PathGetBasename(filename);
 			pos.x = x;
 			pos.y += FontH() * 2;
@@ -484,17 +486,26 @@ static void Open(void)
 					{
 						continue;
 					}
+					numCandidates++;
+					strcpy(tabCompleteCandidate, file.path);
 					const color_t c = canOpen ? colorCyan : colorGray;
 					pos = FontStrMask(file.path, pos, c);
 					if (!canOpen)
 					{
 						FontStrMask("/", pos, c);
+						strcat(tabCompleteCandidate, "/");
 					}
 					pos.x = x;
 					pos.y += FontH();
 				}
 			}
 			tinydir_close(&dir);
+
+			// See if there is only one candidate for tab-completion
+			if (numCandidates > 1)
+			{
+				tabCompleteCandidate[0] = '\0';
+			}
 		}
 
 		BlitFlip(&gGraphicsDevice);
@@ -519,6 +530,14 @@ static void Open(void)
 		case SDL_SCANCODE_BACKSPACE:
 			if (filename[0])
 				filename[strlen(filename) - 1] = 0;
+			break;
+
+		case SDL_SCANCODE_TAB:
+			// tab completion - replace filename buffer with it
+			if (tabCompleteCandidate[0])
+			{
+				strcpy(filename, tabCompleteCandidate);
+			}
 			break;
 
 		default:
