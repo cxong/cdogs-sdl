@@ -55,14 +55,14 @@ void DisplayMapItemWithDensity(
 
 void DrawKey(UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 {
-	EditorBrushAndCampaign *data = vData;
-	if (data->Brush.u.ItemIndex == -1)
+	const IndexedEditorBrush *data = vData;
+	if (data->u.ItemIndex == -1)
 	{
 		// No key; don't draw
 		return;
 	}
 	const Mission *m = CampaignGetCurrentMission(&gCampaign);
-	const Pic *pic = KeyPickupClass(m->KeyStyle, data->Brush.u.ItemIndex)->Pic;
+	const Pic *pic = KeyPickupClass(m->KeyStyle, data->u.ItemIndex)->Pic;
 	pos = Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
 	pos = Vec2iMinus(pos, Vec2iScaleDiv(pic->size, 2));
 	Blit(g, pic, pos);
