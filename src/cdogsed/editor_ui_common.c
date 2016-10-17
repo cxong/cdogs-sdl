@@ -61,7 +61,7 @@ void DrawKey(UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 		// No key; don't draw
 		return;
 	}
-	const Mission *m = CampaignGetCurrentMission(data->Campaign);
+	const Mission *m = CampaignGetCurrentMission(&gCampaign);
 	const Pic *pic = KeyPickupClass(m->KeyStyle, data->Brush.u.ItemIndex)->Pic;
 	pos = Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
 	pos = Vec2iMinus(pos, Vec2iScaleDiv(pic->size, 2));
