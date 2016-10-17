@@ -21,3 +21,5 @@ command="$command +append -channel A -threshold 60% $OUTFILE"
 eval $command
 
 chmod 644 $OUTFILE
+
+echo "Created $OUTFILE"

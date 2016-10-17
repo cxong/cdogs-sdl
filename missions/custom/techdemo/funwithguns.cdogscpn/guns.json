@@ -62,6 +62,13 @@
       "Recoil": 0.4,
       "Elevation": 20,
       "MuzzleFlashParticle": "muzzle_flash_thin"
+    },
+    {
+      "Name": "Scorpion Spear",
+      "Bullet": "spearhead",
+      "Cost": 15,
+      "Lock": 100,
+      "Sound": "swoosh_echo"
     }
   ],
   "PseudoGuns" : [

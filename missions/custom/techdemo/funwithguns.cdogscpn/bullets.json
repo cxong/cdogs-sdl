@@ -1,5 +1,5 @@
 {
-  "Version": 1,
+  "Version": 2,
   "Bullets": [
 	{
       "Name": "spreadgun_bullet",
@@ -10,6 +10,7 @@
       "Speed": 1000,
       "Range": 50,
       "Power": 5,
+      "Mass": 5,
       "Spark": "",
       "HitSounds": {
         "Object": "spreadgun_hit_hard",
@@ -26,6 +27,7 @@
       "Speed": 1000,
       "Range": 50,
       "Power": 3,
+      "Mass": 3,
       "Spark": "",
       "HitSounds": {
         "Object": "vulcan_hit",
@@ -42,6 +44,7 @@
       "Speed": 1200,
       "Range": 60,
       "Power": 3,
+      "Mass": 3,
       "HitSounds": {
         "Object": "",
         "Flesh": "",
@@ -322,6 +325,22 @@
       "ProximityGuns": [
         "fire_explosion"
       ]
+    },
+    {
+      "Name": "spearhead",
+      "Pic": {
+        "Type": "Directional",
+        "Sprites": "spearhead"
+      },
+      "Speed": 700,
+      "Range": 60,
+      "Power": 10,
+      "Mass": -60.0,
+      "Size": [3, 3],
+      "Special": "Petrify",
+      "HitSounds": {
+        "Flesh": "get_over_here"
+      }
     }
   ]
 }

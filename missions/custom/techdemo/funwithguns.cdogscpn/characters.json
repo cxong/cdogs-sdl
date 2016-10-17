@@ -1,11 +1,12 @@
 {
+	"Version": 12,
 	"Characters": [{
-		"face": 6,
-		"skin": 10,
-		"arm": 6,
-		"body": 6,
-		"leg": 9,
-		"hair": 6,
+		"Class": "Smith",
+		"Skin": "ff8136",
+		"Arms": "9c0000",
+		"Body": "9c0000",
+		"Legs": "363636",
+		"Hair": "9c0000",
 		"speed": 128,
 		"Gun": "Dynamite",
 		"maxHealth": 40,
