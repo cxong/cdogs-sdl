@@ -169,22 +169,17 @@ void Draw_Line(
 	return;
 }
 
-void DrawPointMask(GraphicsDevice *device, Vec2i pos, color_t mask)
+void DrawPointMask(GraphicsDevice *g, Vec2i pos, color_t mask)
 {
-	Uint32 *screen = device->buf;
-	int idx = PixelIndex(
-		pos.x, pos.y,
-		device->cachedConfig.Res.x,
-		device->cachedConfig.Res.y);
-	color_t c;
-	if (pos.x < gGraphicsDevice.clipping.left ||
-		pos.x > gGraphicsDevice.clipping.right ||
-		pos.y < gGraphicsDevice.clipping.top ||
-		pos.y > gGraphicsDevice.clipping.bottom)
+	if (pos.x < g->clipping.left || pos.x > g->clipping.right ||
+		pos.y < g->clipping.top || pos.y > g->clipping.bottom)
 	{
 		return;
 	}
-	c = PIXEL2COLOR(screen[idx]);
+	const int idx = PixelIndex(
+		pos.x, pos.y, g->cachedConfig.Res.x, g->cachedConfig.Res.y);
+	Uint32 *screen = g->buf;
+	color_t c = PIXEL2COLOR(screen[idx]);
 	c = ColorMult(c, mask);
 	screen[idx] = COLOR2PIXEL(c);
 }
