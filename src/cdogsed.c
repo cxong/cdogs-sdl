@@ -788,6 +788,7 @@ static HandleInputResult HandleInput(
 	HandleInputResult result = { false, false, false, false };
 	Mission *mission = CampaignGetCurrentMission(&gCampaign);
 	UIObject *o = NULL;
+	const Vec2i brushLastDrawPos = brush.Pos;
 	brush.Pos = GetMouseTile(&gEventHandlers);
 	const bool shift = gEventHandlers.keyboard.modState & KMOD_SHIFT;
 
@@ -829,7 +830,7 @@ static HandleInputResult HandleInput(
 	}
 
 	// Also need to redraw if the brush is active to update the highlight
-	if (brush.IsActive)
+	if (brush.IsActive && !Vec2iEqual(brushLastDrawPos, brush.Pos))
 	{
 		result.Redraw = true;
 	}
