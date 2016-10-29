@@ -923,6 +923,12 @@ static void MissionChangeSpecialChar(void *vData, int d)
 	*(int *)CArrayGet(
 		&data->co->Setting.characters.specialIds, data->index) = c;
 }
+static void DeactivateBrush(UIObject *o, void *data)
+{
+	UNUSED(o);
+	EditorBrush *b = data;
+	b->IsActive = false;
+}
 
 
 static UIObject *CreateCampaignObjs(CampaignOptions *co);
@@ -979,9 +985,10 @@ UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush, Vec2i size)
 
 	// Background
 	o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), size);
-	o->DoNotHighlight = true;
+	o->IsBackground = true;
 	o->u.CustomDrawFunc = DrawBackground;
-	o->Data = cData;
+	o->OnFocusFunc = DeactivateBrush;
+	o->Data = brush;
 	UIObjectAddChild(cc, o);
 	cData->background = o;
 
@@ -1013,7 +1020,7 @@ static void DrawBackground(
 {
 	UNUSED(data);
 	// Only draw background over completely transparent pixels
-	const color_t c = { 32, 32, 64, 128 };
+	const color_t c = { 32, 32, 64, 196 };
 	const Uint32 p = COLOR2PIXEL(c);
 	Vec2i v;
 	for (v.y = 0; v.y < o->Size.y; v.y++)

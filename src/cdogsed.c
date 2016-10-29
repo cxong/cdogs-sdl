@@ -840,7 +840,10 @@ static HandleInputResult HandleInput(
 		MouseWheel(&gEventHandlers.mouse).y != 0))
 	{
 		result.Redraw = true;
-		UITryGetObject(sLastHighlightedObj, mousePos, &o);
+		if (sLastHighlightedObj && !sLastHighlightedObj->IsBackground)
+		{
+			UITryGetObject(sLastHighlightedObj, mousePos, &o);
+		}
 		if (o == NULL)
 		{
 			UITryGetObject(sObjs, mousePos, &o);

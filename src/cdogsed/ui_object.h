@@ -68,6 +68,7 @@ typedef struct _UIObject
 	CArray Children;	// of UIObject *
 	struct _UIObject *Highlighted;
 	bool DoNotHighlight;
+	bool IsBackground;
 	union
 	{
 		// Labels
