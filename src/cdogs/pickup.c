@@ -203,7 +203,7 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_REPLACE_GUN);
 			e.u.ActorReplaceGun.UID = a->uid;
 			e.u.ActorReplaceGun.GunIdx =
-				a->guns.size == MAX_WEAPONS ? a->gunIndex : a->guns.size;
+				a->guns.size == MAX_WEAPONS ? a->gunIndex : (int)a->guns.size;
 			CASSERT(e.u.ActorReplaceGun.GunIdx <= a->guns.size,
 				"invalid replace gun index");
 			strcpy(e.u.ActorReplaceGun.Gun, gun->name);
