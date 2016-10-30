@@ -572,6 +572,8 @@ void ActorReplaceGun(const NActorReplaceGun rg)
 	{
 		return;
 	}
+	LOG(LM_ACTOR, LL_DEBUG, "actor uid(%d) replacing gun(%s) idx(%d) size(%d)",
+		(int)rg.UID, rg.Gun, rg.GunIdx, (int)a->guns.size);
 	Weapon w = WeaponCreate(gun);
 	if (a->guns.size <= rg.GunIdx)
 	{
@@ -1310,6 +1312,7 @@ void ActorSwitchGun(const NActorSwitchGun sg)
 {
 	TActor *a = ActorGetByUID(sg.UID);
 	if (a == NULL || !a->isInUse) return;
+	CASSERT(sg.GunIdx < a->guns.size, "can't switch to unavailable gun");
 	a->gunIndex = sg.GunIdx;
 	SoundPlayAt(
 		&gSoundDevice,
