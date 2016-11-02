@@ -1,50 +1,42 @@
 language: c
-
+os:
+- linux
+- osx
+dist: trusty
+sudo: required
 compiler:
-  - gcc
-  - clang
-
+- gcc
+- clang
 addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
     packages:
-    - gcc-4.8
     - gcc-multilib
-    - libstdc++6:i386
-    - libc6:i386
     - rpm
-
-before_install:
-  - bash build/travis-ci/install-sdl2.sh
+    - libsdl2-dev
+    - libsdl2-image-dev
+    - libsdl2-mixer-dev
 cache:
-  directories:
-  - /opt/gcw0-toolchain
+  directories: 
 before_script:
-    # force newer gcc version
-  - if [ "$CC" = "gcc" ]; then export CC="gcc-4.8"; fi
-    # show which tests failed
-  - export CTEST_OUTPUT_ON_FAILURE=1
-
+- export CTEST_OUTPUT_ON_FAILURE=1
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update --quieter ; fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gcc48 sdl2 sdl2_mixer sdl2_image
+  ; fi
 script:
-  - cmake .
-  - make -j2
-  - make test
+- cmake .
+- make -j2
+- 
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make test ; fi
 before_deploy:
-  - sudo make package
-  - "sudo chown $USER $TRAVIS_BUILD_DIR/C-Dogs*SDL-*-Linux.*"
-  # GCW-Zero
-  - bash build/travis-ci/install-gcw0-toolchain.sh
-  - sh make_gcw0.sh
+- sudo make package
+- ls $TRAVIS_BUILD_DIR
+- sudo chown $USER $TRAVIS_BUILD_DIR/C-Dogs*SDL-*-Linux.*
 deploy:
   provider: releases
   api_key:
-    secure: Rus8lTl0EnVqM6PXwleQ8cffjMTMY1gHGwVdbGsu8cWaDgAWQ86TFgGBbV+x12z9floDPzI7Z1K/entktkiSWQyRPIa9jQfJBIomNABhIykUvpRsL026Cs8TysI4L4hrTvFev10QI28RFyZvUDBT8yytowFsuU5Pfb4n7kDIisQ=
-  file_glob: true
-  file:
-    - "$TRAVIS_BUILD_DIR/C-Dogs*SDL-*-Linux.tar.gz"
-    - "$TRAVIS_BUILD_DIR/gcw0build/cdogs-sdl.opk"
-  skip_cleanup: true
+    secure: T23Hn6je1Kx3JhQC6w2SxKNVJHXLgLQDg1WzGcWFTmyFTIbBtDuH5mx0AQR2Gl15mTmkzaDu7Zrowb3xBE1kk3hHV5XqmP8Wmb4YWIMjcuHXuQ+dhQDZo/tgiRMjGqFAr9u7NUhauBij0XXnS4rC8LPGjgnIUAfPGDgPCIXVSRcv2BYPA/vLF7DW9bIIq9Oz7bwaVXeVzkD5q/a/k5hBRURuCPHB+xA8F30Vde7YjZTa9NkyaWlA3M5k14q9HpwBgHSsj2te8Vsv9fcH3QuRuyGKAIle0NvoxvzfMhFmJI9yc6tRn+kHqkAvfg0WYsJygQ0oUmvCvbk76JyuvTca6OlFwEJM0sHiO98iOgXyy+zrKK7dCUbZmsgFqubm3r/qqyN5RpxYTz8qFdOHeLwMhA4KtpWFdRpVAPpRBKoeMRfXB0mgBh/763KBk8owyepvOI045e7PoFtwxYSylnp5u6dU22fCrjEyPd3jdJ1wWJk19PfqkQzcG64wcyBC0gZtx4nAsXgyomFoJh0yJoVFUkFDRV1WxrlS3Zu5Rj9Iz5t0pKsLuyTVH576s9eWfYPcW5lVUKBM5JotICKzsRheV3FOdn380KlnfCZ2Y+QhT31Ppe1nejCuhonJFh1GrUqbq3Srn5GMJAOcQKTej+Hi8k47gRzxM3ln/q2XL2vHmsg=
+  file: "$TRAVIS_BUILD_DIR/C-Dogs*SDL-*-Linux.{tar.gz,rpm,deb}"
   on:
-    tags: true
-    condition: $CC = gcc-4.8
+    repo: neverscaired/cdogs-sdl
