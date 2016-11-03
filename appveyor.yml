@@ -36,8 +36,23 @@ build_script:
 
 after_build:
   - mingw32-make test
+  - mingw32-make package
+  - dir
 
 cache:
 - SDL2-devel-2.0.4-mingw.tar.gz
 - SDL2_mixer-devel-2.0.1-mingw.tar.gz
 - SDL2_image-devel-2.0.1-mingw.tar.gz
+
+artifacts:
+  - path: /.\C-Dogs*.exe/
+
+deploy:
+  provider: GitHub
+  description: $(appveyor_build_version)
+  auth_token:
+    secure: czG+/wj3tLPZrWhAOymrn7GQTUpJRIJcpyhTVf8VuFAyUvU63dtrZFVWmx2G9m41
+  prerelease: false
+  force_update: true 	#to be in piece with Travis CI
+  on:
+    appveyor_repo_tag: true
