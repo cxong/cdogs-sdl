@@ -22,8 +22,8 @@ cache:
 before_script:
 - export CTEST_OUTPUT_ON_FAILURE=1
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update --quieter ; fi
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gcc48 sdl2 sdl2_mixer sdl2_image
-  ; fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gcc48 sdl2 sdl2_mixer sdl2_image  ;
+  fi
 script:
 - cmake .
 - make -j2
@@ -36,7 +36,7 @@ before_deploy:
 deploy:
   provider: releases
   api_key:
-    secure: T23Hn6je1Kx3JhQC6w2SxKNVJHXLgLQDg1WzGcWFTmyFTIbBtDuH5mx0AQR2Gl15mTmkzaDu7Zrowb3xBE1kk3hHV5XqmP8Wmb4YWIMjcuHXuQ+dhQDZo/tgiRMjGqFAr9u7NUhauBij0XXnS4rC8LPGjgnIUAfPGDgPCIXVSRcv2BYPA/vLF7DW9bIIq9Oz7bwaVXeVzkD5q/a/k5hBRURuCPHB+xA8F30Vde7YjZTa9NkyaWlA3M5k14q9HpwBgHSsj2te8Vsv9fcH3QuRuyGKAIle0NvoxvzfMhFmJI9yc6tRn+kHqkAvfg0WYsJygQ0oUmvCvbk76JyuvTca6OlFwEJM0sHiO98iOgXyy+zrKK7dCUbZmsgFqubm3r/qqyN5RpxYTz8qFdOHeLwMhA4KtpWFdRpVAPpRBKoeMRfXB0mgBh/763KBk8owyepvOI045e7PoFtwxYSylnp5u6dU22fCrjEyPd3jdJ1wWJk19PfqkQzcG64wcyBC0gZtx4nAsXgyomFoJh0yJoVFUkFDRV1WxrlS3Zu5Rj9Iz5t0pKsLuyTVH576s9eWfYPcW5lVUKBM5JotICKzsRheV3FOdn380KlnfCZ2Y+QhT31Ppe1nejCuhonJFh1GrUqbq3Srn5GMJAOcQKTej+Hi8k47gRzxM3ln/q2XL2vHmsg=
+    secure: dqMASSgQxkNNuDtP7ipk2PonizZEYAufuN3trzu51l+j0JsFW5rk3yjMYeZUUvFcCokTFBtMf97F+1k7evw5M7EBm8E84BHuGzlMmz4eU8gBa0RaCdOYNeA0VMUNfgAMIiNqmRNG6qG+1othmh/IgdV1UYyAIT3Z1n00ALbeNZlI+KLZvlNWO/x6B39KWAoB3PXPAk2/vwsOJ6vf4Re8jOUcvvJYnrXRvpL48+xf76ZmVxdyQ9OVPwV6Pr5ahnd8u1ym6J/0qlxyK08SYvXumVuYGO7BnNH1i46gIimJMdkpswWTHYrlp46qPFgU0UpQZgdcXNUG0NyeNKTMbrZVwIEV3WPnQdz5v3+svV5OPJGDcm9TqAqET/CGXkTNgII3qVe6wqu6ZVH0P9bBgynJTHPS37IBE0KrsuCC3ZadaWOL4uEcrXsoPPnmk3ojdoZC6+cyRusW1oDUxeME8THokUJjEJEuXOlqQOQreOG+gyzFlzJWm8MTtVQtgBsKvI2ptGY0Qqobi+1Cnv7F29QD7p649F1T7uC12uPVNlkZUdGk9RNJacs4F9MLa5wDQ7yyBsO1v+iSjaFURWw+b4VUnWdE8g0vJQh2IoyGMCc3Cqy/rBYP4R3p7vl3NyJkf30z0ocS9InjAtKyh/wFZ3Oa/h8KiBGL7PiFZBTB+P/5xtM=
   file: "$TRAVIS_BUILD_DIR/C-Dogs*SDL-*-Linux.{tar.gz,rpm,deb}"
   on:
     repo: neverscaired/cdogs-sdl
