@@ -43,8 +43,7 @@ before_deploy:
   - sudo chown $USER $TRAVIS_BUILD_DIR/C-Dogs*SDL-*-Linux.*
 
   # GCW-Zero deployment
-  - bash build/travis-ci/install-gcw0-toolchain.sh
-  - sh make_gcw0.sh
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; bash build/travis-ci/install-gcw0-toolchain.sh && sh make_gcw0.sh ; fi
 
 deploy:
   provider: releases
