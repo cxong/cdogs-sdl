@@ -1,12 +1,5 @@
 language: c
 
-os:
-  - linux
-  - osx
-
-dist: trusty
-sudo: required
-
 compiler:
   - gcc
   - clang
@@ -16,42 +9,42 @@ addons:
     sources:
     - ubuntu-toolchain-r-test
     packages:
+    - gcc-4.8
     - gcc-multilib
+    - libstdc++6:i386
+    - libc6:i386
     - rpm
-    - libsdl2-dev
-    - libsdl2-image-dev
-    - libsdl2-mixer-dev
-#cache:
-#  directories:
-#  - "/opt/gcw0-toolchain"
 
+before_install:
+  - bash build/travis-ci/install-sdl2.sh
+cache:
+  directories:
+  - /opt/gcw0-toolchain
 before_script:
+    # force newer gcc version
+  - if [ "$CC" = "gcc" ]; then export CC="gcc-4.8"; fi
+    # show which tests failed
   - export CTEST_OUTPUT_ON_FAILURE=1
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update --quieter ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gcc48 sdl2 sdl2_mixer sdl2_image ; fi
 
 script:
-  - cmake . -Wno-dev
+  - cmake .
   - make -j2
-  #TODO: For some reasons tests fail on osx. Hope it will be fixed some day
-#  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make test ; fi
-  - make test 
+  - make test
 before_deploy:
   - sudo make package
-#Debug message for osx
-  - ls $TRAVIS_BUILD_DIR 
-  - sudo chown $USER $TRAVIS_BUILD_DIR/C-Dogs*SDL-*-Linux.*
+  - "sudo chown $USER $TRAVIS_BUILD_DIR/C-Dogs*SDL-*-Linux.*"
+  # GCW-Zero
   - bash build/travis-ci/install-gcw0-toolchain.sh
   - sh make_gcw0.sh
-
 deploy:
   provider: releases
   api_key:
     secure: dqMASSgQxkNNuDtP7ipk2PonizZEYAufuN3trzu51l+j0JsFW5rk3yjMYeZUUvFcCokTFBtMf97F+1k7evw5M7EBm8E84BHuGzlMmz4eU8gBa0RaCdOYNeA0VMUNfgAMIiNqmRNG6qG+1othmh/IgdV1UYyAIT3Z1n00ALbeNZlI+KLZvlNWO/x6B39KWAoB3PXPAk2/vwsOJ6vf4Re8jOUcvvJYnrXRvpL48+xf76ZmVxdyQ9OVPwV6Pr5ahnd8u1ym6J/0qlxyK08SYvXumVuYGO7BnNH1i46gIimJMdkpswWTHYrlp46qPFgU0UpQZgdcXNUG0NyeNKTMbrZVwIEV3WPnQdz5v3+svV5OPJGDcm9TqAqET/CGXkTNgII3qVe6wqu6ZVH0P9bBgynJTHPS37IBE0KrsuCC3ZadaWOL4uEcrXsoPPnmk3ojdoZC6+cyRusW1oDUxeME8THokUJjEJEuXOlqQOQreOG+gyzFlzJWm8MTtVQtgBsKvI2ptGY0Qqobi+1Cnv7F29QD7p649F1T7uC12uPVNlkZUdGk9RNJacs4F9MLa5wDQ7yyBsO1v+iSjaFURWw+b4VUnWdE8g0vJQh2IoyGMCc3Cqy/rBYP4R3p7vl3NyJkf30z0ocS9InjAtKyh/wFZ3Oa/h8KiBGL7PiFZBTB+P/5xtM=
   file_glob: true
-  file: 
-    - "$TRAVIS_BUILD_DIR/C-Dogs*SDL-*-Linux.{tar.gz,rpm,deb}"
+  file:
+    - "$TRAVIS_BUILD_DIR/C-Dogs*SDL-*-Linux.tar.gz"
     - "$TRAVIS_BUILD_DIR/gcw0build/cdogs-sdl.opk"
+  skip_cleanup: true
   on:
     tags: true
-    condition: $CC = gcc
+    condition: $CC = gcc-4.8
