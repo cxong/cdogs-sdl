@@ -41,3 +41,4 @@ deploy:
   file: "$TRAVIS_BUILD_DIR/C-Dogs*SDL-*-Linux.{tar.gz,rpm,deb}"
   on:
     repo: neverscaired/cdogs-sdl
+    condition: $CC = gcc
