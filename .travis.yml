@@ -21,9 +21,9 @@ addons:
     - libsdl2-dev
     - libsdl2-image-dev
     - libsdl2-mixer-dev
-cache:
-  directories:
-  - "/opt/gcw0-toolchain"
+#cache:
+#  directories:
+#  - "/opt/gcw0-toolchain"
 
 before_script:
   - export CTEST_OUTPUT_ON_FAILURE=1
