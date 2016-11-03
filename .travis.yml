@@ -25,7 +25,7 @@ before_script:
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gcc48 sdl2 sdl2_mixer sdl2_image  ;
   fi
 script:
-- cmake .
+- cmake . -Wno-dev
 - make -j2
 - 
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make test ; fi
