@@ -84,6 +84,7 @@ else()
 	add_definitions(
 		-fsigned-char
 		-Wall -W
+		-Wno-deprecated-declarations # TODO: this avoids error on deprecated readdir_r() call. Proper way to fix this bug is change readdir_r() to readdir()
 		-Wstrict-prototypes -Wpointer-arith -Wcast-qual)
 	if(DEBUG)
 		ADD_DEFINITIONS(-g)
@@ -114,7 +115,7 @@ endif()
 set(CMAKE_MACOSX_RPATH 1)
 
 if(NOT DEFINED CDOGS_DATA_DIR)
-	if(GCW0)
+	if(NOT GCW0)
 		set(CDOGS_DATA_DIR "./")
 	else()
 		set(CDOGS_DATA_DIR "../")
@@ -195,12 +196,12 @@ INSTALL(FILES
 	${CMAKE_SOURCE_DIR}/README.md
 	DESTINATION ${CDOGS_DATA_DIR})
 IF(UNIX AND NOT APPLE AND NOT BEOS AND NOT HAIKU)
-	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-sdl.desktop DESTINATION ${CMAKE_INSTALL_PREFIX}/share/applications)
-	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-sdl.appdata.xml DESTINATION ${CMAKE_INSTALL_PREFIX}/share/appdata)
-	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-icon.16.png DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/16x16/apps/cdogs-sdl.png)
-	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-icon.22.png DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/22x22/apps/cdogs-sdl.png)
-	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-icon.32.png DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/32x32/apps/cdogs-sdl.png)
-	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-icon.48.png DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/48x48/apps/cdogs-sdl.png)
+	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-sdl.desktop DESTINATION ${INSTALL_PREFIX}/share/applications)
+	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-sdl.appdata.xml DESTINATION ${INSTALL_PREFIX}/share/appdata)
+	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-icon.16.png DESTINATION ${INSTALL_PREFIX}/share/icons/hicolor/16x16/apps/cdogs-sdl.png)
+	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-icon.22.png DESTINATION ${INSTALL_PREFIX}/share/icons/hicolor/22x22/apps/cdogs-sdl.png)
+	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-icon.32.png DESTINATION ${INSTALL_PREFIX}/share/icons/hicolor/32x32/apps/cdogs-sdl.png)
+	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-icon.48.png DESTINATION ${INSTALL_PREFIX}/share/icons/hicolor/48x48/apps/cdogs-sdl.png)
 elseif(WIN32)
 	# Package for Windows
 	FILE(GLOB DLLS "${CMAKE_SOURCE_DIR}/src/*.dll")
@@ -261,7 +262,9 @@ elseif(BEOS OR HAIKU)
 		PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 else()
 	# probably linux
-	set(CPACK_GENERATOR TGZ;DEB)
+
+	# Pack only tar.gz since deb and rpm packages may differ in distros
+	set(CPACK_GENERATOR TGZ)
 
 	# debian specific
 	set(CPACK_DEBIAN_PACKAGE_MAINTAINER "C-Dogs SDL Team")
