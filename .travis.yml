@@ -1,3 +1,4 @@
+
 language: c
 
 os:
@@ -27,7 +28,7 @@ addons:
 cache:
   directories:
   - /opt/gcw0-toolchain
-  - /Library/Frameworks/SDL2.framework/
+  - "/Library/Frameworks/SDL2.framework/"
   
 before_script:
   - export CTEST_OUTPUT_ON_FAILURE=1
