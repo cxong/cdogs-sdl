@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-OSX_LIB_PATH="/System/Library/Frameworks"
+OSX_LIB_PATH="/Library/Frameworks"
 
 OSX_SDL2_PATH_FULL="$OSX_LIB_PATH/SDL2.framework"
 OSX_SDL2_IMAGE_FULLPATH="$OSX_LIB_PATH/SDL2_image.framework"
@@ -16,7 +16,7 @@ function getSdl2 {
   7z x -y SDL2-2.0.5.dmg
   cd SDL2
   chmod -R 0755 SDL2.framework/
-  sudo cp -r SDL2.framework/ $OSX_LIB_PATH/
+  sudo cp -rv SDL2.framework/ $OSX_LIB_PATH/
   cd ..
 }
 
