@@ -15,8 +15,8 @@ function getSdl2 {
   mkdir -p $OSX_LIB_PATH
   7z x -y SDL2-2.0.5.dmg
   cd SDL2
-  chmod -R 0755 SDL2.framework/
-  sudo cp -rv SDL2.framework/ $OSX_LIB_PATH/
+  chmod -R 0755 SDL2.framework
+  sudo cp -rv SDL2.framework $OSX_LIB_PATH/
   cd ..
 }
 
