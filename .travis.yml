@@ -52,7 +52,7 @@ before_deploy:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]];then bash build/travis-ci/install-gcw0-toolchain.sh && sh make_gcw0.sh ; fi
 
   #debug
-  -ls $TRAVIS_BUILD_DIR 
+  - ls $TRAVIS_BUILD_DIR 
 deploy:
   provider: releases
   api_key:
