@@ -33,7 +33,7 @@ cache:
 before_script:
   - export CTEST_OUTPUT_ON_FAILURE=1
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update --quieter ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gcc48 7z sdl2 sdl2_mixer sdl2_image ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gcc48 p7zip sdl2 sdl2_mixer sdl2_image ; fi
 
 script:
   - cmake -Wno-dev .
