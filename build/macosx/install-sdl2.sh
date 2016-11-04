@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-OSX_LIB_PATH="/Library/Frameworks"
+OSX_LIB_PATH="/System/Library/Frameworks"
 
 OSX_SDL2_PATH_FULL="$OSX_LIB_PATH/SDL2.framework"
 OSX_SDL2_IMAGE_FULLPATH="$OSX_LIB_PATH/SDL2_image.framework"
