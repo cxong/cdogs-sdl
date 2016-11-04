@@ -176,6 +176,7 @@ if(APPLE)
 		DIRECTORY src/cdogs-sdl.app src/cdogs-sdl-editor.app
 		DESTINATION ${INSTALL_PREFIX}/bin
 		USE_SOURCE_PERMISSIONS)
+	set(CDOGS_DATA_DIR ${INSTALL_PREFIX}) #dirty fix
 else()
 	install(
 		PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/src/cdogs-sdl${EXE_EXTENSION} ${CMAKE_CURRENT_BINARY_DIR}/src/cdogs-sdl-editor${EXE_EXTENSION}
