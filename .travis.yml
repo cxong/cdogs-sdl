@@ -44,9 +44,7 @@ before_deploy:
   # osx deploy dependency for CPack
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then sh build/macosx/install-sdl2.sh ; fi
 
-  - sudo make package
-  - sudo chown $USER $TRAVIS_BUILD_DIR/C-Dogs*SDL-*.*
-
+  - make package
 
   # GCW-Zero deployment
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]];then bash build/travis-ci/install-gcw0-toolchain.sh && sh make_gcw0.sh ; fi
