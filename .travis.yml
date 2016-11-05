@@ -32,7 +32,7 @@ cache:
 before_script:
   - export CTEST_OUTPUT_ON_FAILURE=1
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update --quieter ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gcc48 p7zip ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install  p7zip ; fi
 
 script:
   # osx deploy dependencies        
