@@ -36,7 +36,7 @@ build_script:
 
 after_build:
   - mingw32-make test
-  - build\windows\get-sdl2-dlls.bat dll
+  - .\build\windows\get-sdl2-dlls.bat dll
   - mingw32-make package
   - dir
 
