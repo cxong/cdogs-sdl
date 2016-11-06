@@ -38,8 +38,10 @@ script:
   # osx deploy dependencies        
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then sh build/macosx/install-sdl2.sh ; fi
 
-  - cmake -Wno-dev .
-  - make -j2
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]];then export GENERATOR="Xcode" ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]];then export GENERATOR="Unix Makefiles" ; fi 
+
+  - cmake -Wno-dev -G $GENERATOR . &&  make -j2
   # Tests are broken on osx. Hope this will be fixed some day
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make test ; fi
 
