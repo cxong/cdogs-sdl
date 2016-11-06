@@ -41,7 +41,7 @@ script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]];then export GENERATOR="Xcode" ; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]];then export GENERATOR="Unix Makefiles" ; fi 
 
-  - cmake -Wno-dev -G $GENERATOR . &&  make -j2
+  - cmake -Wno-dev -G "$GENERATOR" . &&  make -j2
   # Tests are broken on osx. Hope this will be fixed some day
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make test ; fi
 
