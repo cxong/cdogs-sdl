@@ -97,4 +97,5 @@ else
 fi
 
 sudo ln -s /Library/Frameworks/SDL2.framework/Versions/A/Headers /usr/local/include/SDL2
-sudo ln -s /Library/Frameworks/SDL2_image.framework/Versions/A/Headers/SDL_image.h /usr/local/include/SDL2/
+sudo ln -s /Library/Frameworks/SDL2_image.framework/Versions/A/Headers/* /usr/local/include/SDL2/
+sudo ln -s /Library/Frameworks/SDL2_mixer.framework/Versions/A/Headers/* /usr/local/include/SDL2/
