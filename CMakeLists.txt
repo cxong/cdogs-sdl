@@ -204,7 +204,7 @@ IF(UNIX AND NOT APPLE AND NOT BEOS AND NOT HAIKU)
 	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-icon.48.png DESTINATION ${INSTALL_PREFIX}/share/icons/hicolor/48x48/apps/cdogs-sdl.png)
 elseif(WIN32)
 	# Package for Windows
-	FILE(GLOB DLLS "${CMAKE_SOURCE_DIR}/src/*.dll")
+	FILE(GLOB DLLS "${CMAKE_SOURCE_DIR}/dll/*.dll")
 	FOREACH(DLL ${DLLS})
 		INSTALL(FILES "${DLL}" DESTINATION ${INSTALL_PREFIX}/bin)
 	ENDFOREACH()
