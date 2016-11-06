@@ -4,8 +4,8 @@ set -e
 OSX_LIB_PATH="/Library/Frameworks"
 
 OSX_SDL2_PATH_FULL="$OSX_LIB_PATH/SDL2.framework"
-OSX_SDL2_IMAGE_FULLPATH="$OSX_LIB_PATH/SDL2_image.framework"
-OSX_SDL2_MIXER_FULLPATH="$OSX_LIB_PATH/SDL2_mixer.framework"
+OSX_SDL2_IMAGE_PATH_FULL="$OSX_LIB_PATH/SDL2_image.framework"
+OSX_SDL2_MIXER_PATH_FULL="$OSX_LIB_PATH/SDL2_mixer.framework"
 
 function getSdl2 {
   echo "Starting downloading sdl2..."
@@ -95,3 +95,6 @@ else
    echo "SDL2_mixer dir missing..."
    getSdl2_mixer
 fi
+
+sudo ln -s /Library/Frameworks/SDL2.framework/Versions/A/Headers /usr/local/include/SDL2
+sudo ln -s /Library/Frameworks/SDL2_image.framework/Versions/A/Headers/SDL_image.h /usr/local/include/SDL2/
