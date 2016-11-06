@@ -44,7 +44,6 @@ cache:
 - SDL2-devel-2.0.4-mingw.tar.gz
 - SDL2_mixer-devel-2.0.1-mingw.tar.gz
 - SDL2_image-devel-2.0.1-mingw.tar.gz
-- /.\dll\*.zip/
 
 artifacts:
   - path: /.\C-Dogs*.exe/
