@@ -83,6 +83,9 @@ typedef enum
 } PlayerAliveOptions;
 int GetNumPlayers(
 	const PlayerAliveOptions alive, const bool human, const bool local);
+// Get number of players that should be shown on screen, for splitscreen modes
+// Optionally gets the first matching player
+int GetNumPlayersScreen(const PlayerData **p);
 bool AreAllPlayersDeadAndNoLives(void);
 const PlayerData *GetFirstPlayer(
 	const bool alive, const bool human, const bool local);
@@ -90,6 +93,7 @@ bool IsPlayerAlive(const PlayerData *player);
 bool IsPlayerHuman(const PlayerData *player);
 bool IsPlayerHumanAndAlive(const PlayerData *player);
 bool IsPlayerAliveOrDying(const PlayerData *player);
+bool IsPlayerScreen(const PlayerData *p);
 Vec2i PlayersGetMidpoint(void);
 void PlayersGetBoundingRectangle(Vec2i *min, Vec2i *max);
 int PlayersNumUseAmmo(const int ammoId);

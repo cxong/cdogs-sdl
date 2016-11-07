@@ -280,6 +280,19 @@ int GetNumPlayers(
 	return numPlayers;
 }
 
+int GetNumPlayersScreen(const PlayerData **p)
+{
+	const bool humanOnly =
+		IsPVP(gCampaign.Entry.Mode) ||
+		!ConfigGetBool(&gConfig, "Interface.SplitscreenAI");
+	const int n = GetNumPlayers(PLAYER_ALIVE_OR_DYING, humanOnly, true);
+	if (n > 0 && p != NULL)
+	{
+		*p = GetFirstPlayer(true, humanOnly, true);
+	}
+	return n;
+}
+
 bool AreAllPlayersDeadAndNoLives(void)
 {
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
@@ -330,6 +343,14 @@ bool IsPlayerAliveOrDying(const PlayerData *player)
 	}
 	const TActor *p = ActorGetByUID(player->ActorUID);
 	return p->dead <= DEATH_MAX;
+}
+bool IsPlayerScreen(const PlayerData *p)
+{
+	const bool humanOnly =
+		IsPVP(gCampaign.Entry.Mode) ||
+		!ConfigGetBool(&gConfig, "Interface.SplitscreenAI");
+	const bool humanOrScreen = !humanOnly || p->inputDevice != INPUT_DEVICE_AI;
+	return p->IsLocal && humanOrScreen && IsPlayerAliveOrDying(p);
 }
 
 Vec2i PlayersGetMidpoint(void)

@@ -667,15 +667,13 @@ void HUDDraw(
 static void DrawPlayerAreas(HUD *hud)
 {
 	int flags = 0;
-	const int numLocalPlayers = GetNumPlayers(PLAYER_ANY, false, true);
-	const int numLocalPlayersAlive =
-		GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, true);
+	const int numPlayersCreen = GetNumPlayersScreen(NULL);
 
 	Rect2i r;
 	r.Size = Vec2iNew(
 		hud->device->cachedConfig.Res.x,
 		hud->device->cachedConfig.Res.y);
-	if (numLocalPlayersAlive <= 1)
+	if (numPlayersCreen <= 1)
 	{
 		flags = 0;
 	}
@@ -684,12 +682,12 @@ static void DrawPlayerAreas(HUD *hud)
 	{
 		flags |= HUDFLAGS_SHARE_SCREEN;
 	}
-	else if (numLocalPlayers == 2)
+	else if (numPlayersCreen == 2)
 	{
 		r.Size.x /= 2;
 		flags |= HUDFLAGS_HALF_SCREEN;
 	}
-	else if (numLocalPlayers == 3 || numLocalPlayers == 4)
+	else if (numPlayersCreen == 3 || numPlayersCreen == 4)
 	{
 		r.Size.x /= 2;
 		r.Size.y /= 2;
@@ -704,8 +702,7 @@ static void DrawPlayerAreas(HUD *hud)
 	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (!p->IsLocal ||
-			(p->inputDevice == INPUT_DEVICE_AI && IsPVP(gCampaign.Entry.Mode)))
+		if (!IsPlayerScreen(p))
 		{
 			idx--;
 			continue;
@@ -744,7 +741,7 @@ static void DrawDeathmatchScores(HUD *hud)
 {
 	// Only draw deathmatch scores if single screen and non-local players exist
 	if (gCampaign.Entry.Mode != GAME_MODE_DEATHMATCH ||
-		GetNumPlayers(PLAYER_ANY, true, true) != 1 ||
+		GetNumPlayersScreen(NULL) != 1 ||
 		GetNumPlayers(PLAYER_ANY, false, false) <= 1)
 	{
 		return;

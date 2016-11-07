@@ -647,6 +647,7 @@ Config ConfigDefault(void)
 		"Splitscreen", SPLITSCREEN_NEVER,
 		SPLITSCREEN_NORMAL, SPLITSCREEN_NEVER,
 		StrSplitscreenStyle, SplitscreenStyleStr));
+	ConfigGroupAdd(&itf, ConfigNewBool("SplitscreenAI", false));
 	ConfigGroupAdd(&root, itf);
 
 	Config snd = ConfigNewGroup("Sound");

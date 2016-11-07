@@ -122,9 +122,8 @@ void CameraDraw(
 	const bool controllerUnplugged)
 {
 	Vec2i centerOffset = Vec2iZero();
-	const int numLocalPlayersAlive =
-		GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, true);
-	const int numLocalPlayers = GetNumPlayers(PLAYER_ANY, false, true);
+	const PlayerData *firstPlayer = NULL;
+	const int numPlayersScreen = GetNumPlayersScreen(&firstPlayer);
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
 
@@ -136,10 +135,9 @@ void CameraDraw(
 	const Vec2i noise = ScreenShakeGetDelta(camera->shake);
 
 	GraphicsResetBlitClip(&gGraphicsDevice);
-	if (numLocalPlayersAlive == 0)
+	if (numPlayersScreen == 0)
 	{
-		// Count the number of local players with lives left
-		// If there are none, then try to spectate if there are remote players
+		// Try to spectate if there are remote players
 		int firstRemotePlayerUID = -1;
 		bool hasLocalPlayerLives = false;
 		CA_FOREACH(const PlayerData, p, gPlayerDatas)
@@ -156,28 +154,20 @@ void CameraDraw(
 				}
 			}
 		CA_FOREACH_END()
-		if (!hasLocalPlayerLives)
+		if (camera->spectateMode == SPECTATE_NONE)
 		{
-			if (camera->spectateMode == SPECTATE_NONE)
+			// Enter spectator mode
+			// If there are remote players, follow them
+			if (firstRemotePlayerUID != -1)
 			{
-				// Enter spectator mode
-				// If there are remote players, follow them
-				if (firstRemotePlayerUID != -1)
-				{
-					camera->spectateMode = SPECTATE_FOLLOW;
-					camera->FollowPlayerUID = firstRemotePlayerUID;
-				}
-				else
-				{
-					// Free-look mode
-					camera->spectateMode = SPECTATE_FREE;
-				}
+				camera->spectateMode = SPECTATE_FOLLOW;
+				camera->FollowPlayerUID = firstRemotePlayerUID;
 			}
-		}
-		else
-		{
-			// Don't spectate
-			camera->spectateMode = SPECTATE_NONE;
+			else
+			{
+				// Free-look mode
+				camera->spectateMode = SPECTATE_FREE;
+			}
 		}
 		if (camera->spectateMode == SPECTATE_FOLLOW)
 		{
@@ -193,25 +183,19 @@ void CameraDraw(
 	{
 		// Don't spectate
 		camera->spectateMode = SPECTATE_NONE;
-		const int numLocalHumanPlayersAlive =
-			GetNumPlayers(PLAYER_ALIVE_OR_DYING, true, true);
 		// Redo LOS if PVP, so that each split screen has its own LOS
-		if (IsPVP(gCampaign.Entry.Mode) && numLocalHumanPlayersAlive > 0)
+		if (IsPVP(gCampaign.Entry.Mode) && numPlayersScreen > 0)
 		{
 			LOSReset(&gMap.LOS);
 		}
-		const bool onePlayer =
-			numLocalHumanPlayersAlive == 1 || numLocalPlayersAlive == 1;
+		const bool onePlayer = numPlayersScreen == 1;
 		const bool singleScreen = CameraIsSingleScreen();
 		if (onePlayer || singleScreen)
 		{
 			// Single camera screen
 			if (onePlayer)
 			{
-				const TActor *p = ActorGetByUID(
-					(numLocalHumanPlayersAlive == 1 ?
-					GetFirstPlayer(true, true, true) :
-					GetFirstPlayer(true, false, true))->ActorUID);
+				const TActor *p = ActorGetByUID(firstPlayer->ActorUID);
 				camera->lastPosition = Vec2iNew(p->tileItem.x, p->tileItem.y);
 			}
 			else if (singleScreen)
@@ -257,17 +241,14 @@ void CameraDraw(
 				X_TILES, noise, centerOffset);
 			SoundSetEars(earPos);
 		}
-		else if (numLocalPlayers == 2)
+		else if (numPlayersScreen == 2)
 		{
-			CASSERT(
-				numLocalPlayersAlive == 2,
-				"Unexpected number of local players");
 			// side-by-side split
 			int idx = 0;
 			for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 			{
 				const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-				if (!p->IsLocal)
+				if (!IsPlayerScreen(p))
 				{
 					idx--;
 					continue;
@@ -294,7 +275,7 @@ void CameraDraw(
 			Draw_Line(w / 2 - 1, 0, w / 2 - 1, h - 1, colorBlack);
 			Draw_Line(w / 2, 0, w / 2, h - 1, colorBlack);
 		}
-		else if (numLocalPlayers >= 3 && numLocalPlayers <= 4)
+		else if (numPlayersScreen >= 3 && numPlayersScreen <= 4)
 		{
 			// 4 player split screen
 			int idx = 0;
@@ -303,7 +284,7 @@ void CameraDraw(
 			for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 			{
 				const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-				if (!p->IsLocal)
+				if (!IsPlayerScreen(p))
 				{
 					idx--;
 					continue;
