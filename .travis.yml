@@ -32,18 +32,18 @@ cache:
 before_script:
   - export CTEST_OUTPUT_ON_FAILURE=1
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update --quieter ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install  p7zip ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gcc48 p7zip sdl2 sdl2_mixer sdl2_image ; fi
 
 script:
-  # osx deploy dependencies        
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then sh build/macosx/install-sdl2.sh ; fi
-
   - cmake -Wno-dev .
-  -  make -j2
+  - make -j2
   # Tests are broken on osx. Hope this will be fixed some day
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make test ; fi
 
 before_deploy:
+  # osx deploy dependency for CPack
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then sh build/macosx/install-sdl2.sh ; fi
+
   - make package
 
   # GCW-Zero deployment
