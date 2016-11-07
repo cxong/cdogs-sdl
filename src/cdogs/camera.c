@@ -138,36 +138,20 @@ void CameraDraw(
 	if (numPlayersScreen == 0)
 	{
 		// Try to spectate if there are remote players
-		int firstRemotePlayerUID = -1;
-		bool hasLocalPlayerLives = false;
-		CA_FOREACH(const PlayerData, p, gPlayerDatas)
-			if (p->Lives > 0)
-			{
-				if (p->IsLocal)
-				{
-					hasLocalPlayerLives = true;
-					break;
-				}
-				else
-				{
-					firstRemotePlayerUID = p->UID;
-				}
-			}
-		CA_FOREACH_END()
 		if (camera->spectateMode == SPECTATE_NONE)
 		{
 			// Enter spectator mode
+			// Free-look mode
+			camera->spectateMode = SPECTATE_FREE;
 			// If there are remote players, follow them
-			if (firstRemotePlayerUID != -1)
-			{
-				camera->spectateMode = SPECTATE_FOLLOW;
-				camera->FollowPlayerUID = firstRemotePlayerUID;
-			}
-			else
-			{
-				// Free-look mode
-				camera->spectateMode = SPECTATE_FREE;
-			}
+			CA_FOREACH(const PlayerData, p, gPlayerDatas)
+				if (p->Lives > 0 && !p->IsLocal)
+				{
+					camera->spectateMode = SPECTATE_FOLLOW;
+					camera->FollowPlayerUID = p->UID;
+					break;
+				}
+			CA_FOREACH_END()
 		}
 		if (camera->spectateMode == SPECTATE_FOLLOW)
 		{
