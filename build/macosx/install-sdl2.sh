@@ -7,45 +7,40 @@ OSX_SDL2_PATH_FULL="$OSX_LIB_PATH/SDL2.framework"
 OSX_SDL2_IMAGE_PATH_FULL="$OSX_LIB_PATH/SDL2_image.framework"
 OSX_SDL2_MIXER_PATH_FULL="$OSX_LIB_PATH/SDL2_mixer.framework"
 
-function getSdl2 {
-  echo "Starting downloading sdl2..."
-  if [ ! -f "SDL2-2.0.5.dmg" ]; then
-    curl -O https://www.libsdl.org/release/SDL2-2.0.5.dmg
+SDL2_URL=https://www.libsdl.org/release/SDL2-2.0.5.dmg
+SDL2_IMAGE_URL=https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.1.dmg
+SDL2_MIXER_URL=https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.0.1.dmg
+
+function installDMG {
+  URL=$1
+
+  ORIGINAL_PATH=`pwd`
+  DMGFILE=$(basename $URL)
+
+  echo "Starting downloading "$DMGFILE" ..."
+  if [ ! -f "$DMGFILE" ]; then
+    curl -O $URL
   fi
-  mkdir -p $OSX_LIB_PATH
-  7z x -y SDL2-2.0.5.dmg
-  cd SDL2
-  chmod -R 0755 SDL2.framework
-  sudo cp -rv SDL2.framework $OSX_LIB_PATH/
-  cd ..
+
+  DMGDISK=$(hdiutil attach $DMGFILE|awk '{print $1}'|grep -E '/dev/disk\ds\d')
+
+  cd /Volumes/${DMGFILE%-*}
+  sudo cp -rv ${DMGFILE%-*}.framework $OSX_LIB_PATH/
+  cd $ORIGINAL_PATH
+  hdiutil detach $DMGDISK
+}
+
+function getSdl2 {
+  installDMG $SDL2_URL
 }
 
 function getSdl2_image {
-  echo "Starting downloading sdl2_image..."
-  if [ ! -f "SDL2_image-2.0.1.dmg" ]; then
-    curl -O https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.1.dmg
-  fi
-  mkdir -p $OSX_LIB_PATH
-  7z x -y SDL2_image-2.0.1.dmg
-  cd SDL2_image
-  chmod -R 0755 SDL2_image.framework
-  sudo cp -r SDL2_image.framework $OSX_LIB_PATH/
-  cd ..
+  installDMG $SDL2_IMAGE_URL
 }
 
 function getSdl2_mixer {
-  echo "Starting downloading sdl2_mixer..."
-  if [ ! -f "SDL2_mixer-2.0.1.dmg" ]; then
-    curl -O https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.0.1.dmg
-  fi
-  mkdir -p $OSX_LIB_PATH
-  7z x -y SDL2_mixer-2.0.1.dmg
-  cd SDL2_mixer
-  chmod -R 0755 SDL2_mixer.framework
-  sudo cp -r SDL2_mixer.framework $OSX_LIB_PATH/
-  cd ..
+  installDMG $SDL2_MIXER_URL
 }
-
 
 if [[ "$1" == "--force" ]]
 then
