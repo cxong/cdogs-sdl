@@ -14,6 +14,7 @@
 CampaignOptions gCampaign;
 NetClient gNetClient;
 CArray gPlayerTemplates;
+Config gConfig;
 TActor *ActorGetByUID(const int uid)
 {
 	UNUSED(uid);
@@ -76,6 +77,14 @@ const CharacterClass *StrCharacterClass(const char *s)
 {
 	UNUSED(s);
 	return NULL;
+}
+bool ConfigGetBool(Config *c, const char *name)
+{
+	UNUSED(c); UNUSED(name); return false;
+}
+bool IsPVP(const GameMode mode)
+{
+	UNUSED(mode); return false;
 }
 
 
