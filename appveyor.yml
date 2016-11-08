@@ -27,6 +27,7 @@ install:
   - echo y | xcopy C:\SDL2_image-2.0.1\i686-w64-mingw32\* %MINGW_PATH%\ /S
 
 before_build:
+  - .\build\windows\get-sdl2-dlls.bat dll "appveyor DownloadFile"
   - set Path=%MINGW_PATH%\bin;%Path%
   - if "%APPVEYOR_REPO_TAG%"=="true" (set CMAKE_BUILD_TYPE=Release) else (set CMAKE_BUILD_TYPE=Debug)
   - cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE% -D CMAKE_C_COMPILER=mingw32-gcc.exe -D CMAKE_MAKE_PROGRAM=mingw32-make.exe .
@@ -36,7 +37,6 @@ build_script:
 
 after_build:
   - mingw32-make test
-  - .\build\windows\get-sdl2-dlls.bat dll "appveyor DownloadFile"
   - mingw32-make package
   - dir
 
