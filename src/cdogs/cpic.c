@@ -72,6 +72,9 @@ void NamedSpritesFree(NamedSprites *ns)
 	CArrayTerminate(&ns->pics);
 }
 
+static void LoadNormal(CPic *p, json_t *node);
+static void LoadMaskTint(CPic *p, json_t *node);
+
 void CPicLoadJSON(CPic *p, json_t *node)
 {
 	char *tmp = GetString(node, "Type");
@@ -81,14 +84,7 @@ void CPicLoadJSON(CPic *p, json_t *node)
 	switch (p->Type)
 	{
 	case PICTYPE_NORMAL:
-		LoadStr(&tmp, node, "Pic");
-		if (tmp == NULL)
-		{
-			LOG(LM_GFX, LL_ERROR, "cannot load pic");
-			goto bail;
-		}
-		p->u.Pic = PicManagerGetPic(&gPicManager, tmp);
-		CFREE(tmp);
+		LoadNormal(p, json_find_first_label(node, "Pic")->child);
 		break;
 	case PICTYPE_DIRECTIONAL:
 		LoadStr(&tmp, node, "Sprites");
@@ -121,11 +117,34 @@ void CPicLoadJSON(CPic *p, json_t *node)
 		CASSERT(false, "unknown pic type");
 		break;
 	}
+	LoadMaskTint(p, node);
+bail:
+	// TODO: return error
+	return;
+}
+
+void CPicLoadNormal(CPic *p, json_t *node)
+{
+	p->Type = PICTYPE_NORMAL;
+	LoadNormal(p, node);
+	p->UseMask = true;
+	p->u1.Mask = colorWhite;
+}
+
+static void LoadNormal(CPic *p, json_t *node)
+{
+	char *tmp = json_unescape(node->text);
+	p->u.Pic = PicManagerGetPic(&gPicManager, tmp);
+	CFREE(tmp);
+}
+
+static void LoadMaskTint(CPic *p, json_t *node)
+{
 	p->UseMask = true;
 	p->u1.Mask = colorWhite;
 	if (json_find_first_label(node, "Mask"))
 	{
-		tmp = GetString(node, "Mask");
+		char *tmp = GetString(node, "Mask");
 		p->u1.Mask = StrColor(tmp);
 		CFREE(tmp);
 	}
@@ -139,10 +158,59 @@ void CPicLoadJSON(CPic *p, json_t *node)
 		tint = tint->next;
 		p->u1.Tint.v = atof(tint->text);
 	}
-bail:
-	// TODO: return error
-	return;
 }
+
+bool CPicIsLoaded(const CPic *p)
+{
+	switch (p->Type)
+	{
+	case PICTYPE_NORMAL:
+		return p->u.Pic != NULL;
+	case PICTYPE_DIRECTIONAL:
+		return p->u.Sprites != NULL;
+	case PICTYPE_ANIMATED:
+	case PICTYPE_ANIMATED_RANDOM:
+		return p->u.Animated.Sprites != NULL;
+	default:
+		CASSERT(false, "unknown pic type");
+		return false;
+	}
+}
+
+Vec2i CPicGetSize(const CPic *p)
+{
+	const Pic *pic = CPicGetPic(p, 0);
+	if (pic == NULL)
+	{
+		return Vec2iZero();
+	}
+	return pic->size;
+}
+
+void CPicCopyPic(CPic *dest, const CPic *src)
+{
+	dest->Type = src->Type;
+	switch (src->Type)
+	{
+	case PICTYPE_NORMAL:
+		dest->u.Pic = src->u.Pic;
+		break;
+	case PICTYPE_DIRECTIONAL:
+		dest->u.Sprites = src->u.Sprites;
+		break;
+	case PICTYPE_ANIMATED:
+	case PICTYPE_ANIMATED_RANDOM:
+		dest->u.Animated.Sprites = src->u.Sprites;
+		dest->u.Animated.TicksPerFrame = src->u.Animated.TicksPerFrame;
+		break;
+	default:
+		CASSERT(false, "unknown pic type");
+		break;
+	}
+	dest->UseMask = src->UseMask;
+	dest->u1 = src->u1;
+}
+
 void CPicUpdate(CPic *p, const int ticks)
 {
 	switch (p->Type)

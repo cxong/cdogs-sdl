@@ -200,7 +200,7 @@ MapObject *RandomBloodMapObject(const MapObjects *mo)
 	return StrMapObject(*name);
 }
 
-#define VERSION 1
+#define VERSION 2
 
 void MapObjectsInit(
 	MapObjects *classes, const char *filename,
@@ -238,7 +238,7 @@ bail:
 	}
 	json_free_value(&root);
 }
-static void LoadMapObject(MapObject *m, json_t *node);
+static bool TryLoadMapObject(MapObject *m, json_t *node, const int version);
 static void ReloadDestructibles(MapObjects *mo);
 void MapObjectsLoadJSON(CArray *classes, json_t *root)
 {
@@ -254,8 +254,10 @@ void MapObjectsLoadJSON(CArray *classes, json_t *root)
 	for (json_t *child = pickupsNode->child; child; child = child->next)
 	{
 		MapObject m;
-		LoadMapObject(&m, child);
-		CArrayPushBack(classes, &m);
+		if (TryLoadMapObject(&m, child, version))
+		{
+			CArrayPushBack(classes, &m);
+		}
 	}
 
 	ReloadDestructibles(&gMapObjects);
@@ -274,24 +276,53 @@ void MapObjectsLoadJSON(CArray *classes, json_t *root)
 		CArrayPushBack(&gMapObjects.Bloods, &tmp);
 	}
 }
-static void LoadMapObject(MapObject *m, json_t *node)
+static bool TryLoadMapObject(MapObject *m, json_t *node, const int version)
 {
 	memset(m, 0, sizeof *m);
 
 	m->Name = GetString(node, "Name");
-	LoadPic(&m->Normal.Pic, node, "Pic");
-	LoadPic(&m->Wreck.Pic, node, "WreckPic");
-	if (m->Normal.Pic)
+	json_t *normalNode = json_find_first_label(node, "Pic");
+	if (normalNode != NULL && normalNode->child != NULL)
+	{
+		if (version < 2)
+		{
+			CPicLoadNormal(&m->Normal.Pic, normalNode->child);
+		}
+		else
+		{
+			CPicLoadJSON(&m->Normal.Pic, normalNode->child);
+		}
+		// Pic required for map object
+		if (!CPicIsLoaded(&m->Normal.Pic))
+		{
+			LOG(LM_MAIN, LL_ERROR, "pic not found for map object(%s)",
+				m->Name);
+			goto bail;
+		}
+	}
+	json_t *wreckNode = json_find_first_label(node, "WreckPic");
+	if (wreckNode != NULL && wreckNode->child != NULL)
+	{
+		if (version < 2)
+		{
+			CPicLoadNormal(&m->Wreck.Pic, wreckNode->child);
+		}
+		else
+		{
+			CPicLoadJSON(&m->Wreck.Pic, wreckNode->child);
+		}
+	}
+	if (CPicIsLoaded(&m->Normal.Pic))
 	{
 		// Default offset: centered X, align bottom of tile and sprite
-		m->Normal.Offset = Vec2iNew(
-			-m->Normal.Pic->size.x / 2,
-			TILE_HEIGHT / 2 - m->Normal.Pic->size.y);
+		const Vec2i size = CPicGetSize(&m->Normal.Pic);
+		m->Normal.Offset = Vec2iNew(-size.x / 2, TILE_HEIGHT / 2 - size.y);
 		LoadVec2i(&m->Normal.Offset, node, "Offset");
 	}
-	if (m->Wreck.Pic)
+	if (CPicIsLoaded(&m->Wreck.Pic))
 	{
-		m->Wreck.Offset = Vec2iScaleDiv(m->Wreck.Pic->size, -2);
+		const Vec2i size = CPicGetSize(&m->Wreck.Pic);
+		m->Wreck.Offset = Vec2iNew(-size.x / 2, TILE_HEIGHT / 2 - size.y);
 		LoadVec2i(&m->Wreck.Offset, node, "WreckOffset");
 	}
 	// Default tile size
@@ -328,6 +359,11 @@ static void LoadMapObject(MapObject *m, json_t *node)
 		CASSERT(false, "unknown error");
 		break;
 	}
+
+	return true;
+
+bail:
+	return false;
 }
 static void AddDestructibles(MapObjects *mo, const CArray *classes);
 static void ReloadDestructibles(MapObjects *mo)
@@ -371,25 +407,21 @@ void MapObjectsLoadAmmoAndGunSpawners(
 		LoadGunSpawners(&classes->Classes, &guns->Guns);
 	}
 }
+
+static void SetupSpawner(
+	MapObject *m, const char *spawnerName, const char *pickupClassName);
+
 static void LoadAmmoSpawners(CArray *classes, const CArray *ammo)
 {
 	for (int i = 0; i < (int)ammo->size; i++)
 	{
 		const Ammo *a = CArrayGet(ammo, i);
 		MapObject m;
-		memset(&m, 0, sizeof m);
-		char buf[256];
-		sprintf(buf, "%s ammo spawner", a->Name);
-		CSTRDUP(m.Name, buf);
-		m.Normal.Pic = PicManagerGetPic(&gPicManager, "spawn_pad");
-		m.Normal.Offset = Vec2iNew(
-			-m.Normal.Pic->size.x / 2,
-			TILE_HEIGHT / 2 - m.Normal.Pic->size.y);
-		m.Size = Vec2iNew(TILE_WIDTH, TILE_HEIGHT);
-		m.Health = 0;
-		m.Type = MAP_OBJECT_TYPE_PICKUP_SPAWNER;
-		sprintf(buf, "ammo_%s", a->Name);
-		m.u.PickupClass = StrPickupClass(buf);
+		char spawnerName[256];
+		char pickupClassName[256];
+		sprintf(spawnerName, "%s ammo spawner", a->Name);
+		sprintf(pickupClassName, "ammo_%s", a->Name);
+		SetupSpawner(&m, spawnerName, pickupClassName);
 		CArrayPushBack(classes, &m);
 	}
 }
@@ -403,21 +435,30 @@ static void LoadGunSpawners(CArray *classes, const CArray *guns)
 			continue;
 		}
 		MapObject m;
-		memset(&m, 0, sizeof m);
-		char buf[256];
-		sprintf(buf, "%s spawner", g->name);
-		CSTRDUP(m.Name, buf);
-		m.Normal.Pic = PicManagerGetPic(&gPicManager, "spawn_pad");
-		m.Normal.Offset = Vec2iNew(
-			-m.Normal.Pic->size.x / 2,
-			TILE_HEIGHT / 2 - m.Normal.Pic->size.y);
-		m.Size = Vec2iNew(TILE_WIDTH, TILE_HEIGHT);
-		m.Health = 0;
-		m.Type = MAP_OBJECT_TYPE_PICKUP_SPAWNER;
-		sprintf(buf, "gun_%s", g->name);
-		m.u.PickupClass = StrPickupClass(buf);
+		char spawnerName[256];
+		char pickupClassName[256];
+		sprintf(spawnerName, "%s spawner", g->name);
+		sprintf(pickupClassName, "gun_%s", g->name);
+		SetupSpawner(&m, spawnerName, pickupClassName);
 		CArrayPushBack(classes, &m);
 	}
+}
+
+static void SetupSpawner(
+	MapObject *m, const char *spawnerName, const char *pickupClassName)
+{
+	memset(m, 0, sizeof *m);
+	CSTRDUP(m->Name, spawnerName);
+	m->Normal.Pic.Type = PICTYPE_NORMAL;
+	m->Normal.Pic.u.Pic = PicManagerGetPic(&gPicManager, "spawn_pad");
+	m->Normal.Pic.UseMask = true;
+	m->Normal.Pic.u1.Mask = colorWhite;
+	const Vec2i size = CPicGetSize(&m->Normal.Pic);
+	m->Normal.Offset = Vec2iNew(-size.x / 2, TILE_HEIGHT / 2 - size.y);
+	m->Size = Vec2iNew(TILE_WIDTH, TILE_HEIGHT);
+	m->Health = 0;
+	m->Type = MAP_OBJECT_TYPE_PICKUP_SPAWNER;
+	m->u.PickupClass = StrPickupClass(pickupClassName);
 }
 
 void MapObjectsClear(CArray *classes)
@@ -455,9 +496,15 @@ int MapObjectsCount(const MapObjects *classes)
 const Pic *MapObjectGetPic(
 	const MapObject *mo, Vec2i *offset, const bool isWreck)
 {
-	const bool useWreck = isWreck && mo->Wreck.Pic;
+	return CPicGetPic(MapObjectGetCPic(mo, offset, isWreck), 0);
+}
+
+const CPic *MapObjectGetCPic(
+	const MapObject *mo, Vec2i *offset, const bool isWreck)
+{
+	const bool useWreck = isWreck && CPicIsLoaded(&mo->Wreck.Pic);
 	*offset = useWreck ? mo->Wreck.Offset : mo->Normal.Offset;
-	return useWreck ? mo->Wreck.Pic : mo->Normal.Pic;
+	return useWreck ? &mo->Wreck.Pic : &mo->Normal.Pic;
 }
 
 // Make sure the map objects get added with the right wreck flags

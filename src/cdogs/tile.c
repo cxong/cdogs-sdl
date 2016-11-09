@@ -128,6 +128,7 @@ void TileSetAlternateFloor(Tile *t, NamedPic *p)
 void TileItemUpdate(TTileItem *t, const int ticks)
 {
 	t->SoundLock = MAX(0, t->SoundLock - ticks);
+	CPicUpdate(&t->CPic, ticks);
 }
 
 

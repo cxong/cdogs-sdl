@@ -79,10 +79,15 @@ static unsigned int sMobObjUIDs = 0;
 
 // Draw functions
 
-static const Pic *GetObjectPic(const int id, Vec2i *offset)
+static CPicDrawContext GetMapObjectDrawContext(const int id)
 {
-	const TObject *obj = CArrayGet(&gObjs, id);
-	return MapObjectGetPic(obj->Class, offset, obj->Health == 0);
+	TObject *obj = CArrayGet(&gObjs, id);
+	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
+	CPicDrawContext c;
+	c.Dir = DIRECTION_UP;
+	const CPic *mp = MapObjectGetCPic(obj->Class, &c.Offset, obj->Health <= 0);
+	CPicCopyPic(&obj->tileItem.CPic, mp);
+	return c;
 }
 
 
@@ -156,7 +161,7 @@ void ObjRemove(const NMapObjectRemove mor)
 	SoundPlayAt(&gSoundDevice, gSoundDevice.wreckSound, realPos);
 
 	// Turn the object into a wreck, if available
-	if (o->Class->Wreck.Pic)
+	if (CPicIsLoaded(&o->Class->Wreck.Pic))
 	{
 		o->tileItem.flags = TILEITEM_IS_WRECK;
 	}
@@ -393,7 +398,9 @@ void ObjAdd(const NMapObjectAdd amo)
 	o->tileItem.x = o->tileItem.y = -1;
 	o->tileItem.flags = amo.TileItemFlags;
 	o->tileItem.kind = KIND_OBJECT;
-	o->tileItem.getPicFunc = GetObjectPic;
+	o->tileItem.getPicFunc = NULL;
+	o->tileItem.CPic = o->Class->Normal.Pic;
+	o->tileItem.CPicFunc = GetMapObjectDrawContext;
 	o->tileItem.size = o->Class->Size;
 	o->tileItem.id = i;
 	MapTryMoveTileItem(&gMap, &o->tileItem, Net2Vec2i(amo.Pos));

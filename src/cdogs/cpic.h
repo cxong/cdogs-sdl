@@ -89,6 +89,11 @@ void NamedSpritesInit(NamedSprites *ns, const char *name);
 void NamedSpritesFree(NamedSprites *ns);
 
 void CPicLoadJSON(CPic *p, json_t *node);
+void CPicLoadNormal(CPic *p, json_t *node);
+bool CPicIsLoaded(const CPic *p);
+Vec2i CPicGetSize(const CPic *p);
+// Copy everything except frame
+void CPicCopyPic(CPic *dest, const CPic *src);
 void CPicUpdate(CPic *p, const int ticks);
 const Pic *CPicGetPic(const CPic *p, const int idx);
 void CPicDraw(

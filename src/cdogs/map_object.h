@@ -70,7 +70,7 @@ const char *PlacementFlagStr(const int i);
 
 typedef struct
 {
-	const Pic *Pic;
+	CPic Pic;
 	Vec2i Offset;
 } MapObjectPic;
 
@@ -132,6 +132,8 @@ void MapObjectsTerminate(MapObjects *classes);
 int MapObjectsCount(const MapObjects *classes);
 
 const Pic *MapObjectGetPic(
+	const MapObject *mo, Vec2i *offset, const bool isWreck);
+const CPic *MapObjectGetCPic(
 	const MapObject *mo, Vec2i *offset, const bool isWreck);
 bool MapObjectIsWreck(const MapObject *mo);
 
