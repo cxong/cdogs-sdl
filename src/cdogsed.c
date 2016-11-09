@@ -567,7 +567,7 @@ static void Open(void)
 			}
 			// Try adding .cpn
 			sprintf(buf, "%s.cpn", filename);
-			if (TryOpen(filename))
+			if (TryOpen(buf))
 			{
 				done = true;
 				break;
