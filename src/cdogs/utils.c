@@ -159,6 +159,7 @@ void RealPath(const char *src, char *dest)
 
 		// Then, add on the CWD if the path is not absolute
 		char resolveBuf[CDOGS_PATH_MAX];
+		resolveBuf[0] = '\0';
 		if (!IsAbsolutePath(srcBuf))
 		{
 			CDogsGetCWD(resolveBuf);
