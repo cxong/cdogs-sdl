@@ -156,12 +156,22 @@ void RealPath(const char *src, char *dest)
 				*c = '/';
 			}
 		}
-		// Then, copy the path one level at a time, ignoring '//'s, '.'s and
-		// resolving '..'s to the parent level
+
+		// Then, add on the CWD if the path is not absolute
 		char resolveBuf[CDOGS_PATH_MAX];
-		char *cOut = resolveBuf;
+		if (!IsAbsolutePath(srcBuf))
+		{
+			CDogsGetCWD(resolveBuf);
+			strcat(resolveBuf, "/");
+		}
+		// Add the path
+		strcat(resolveBuf, srcBuf);
+
+		// Finally, resolve the path one level at a time, ignoring '//'s, '.'s
+		// and resolving '..'s to the parent level
+		char *cOut = dest;
 		char cLast = '\0';
-		for (const char *c = srcBuf; *c != '\0'; c++)
+		for (const char *c = resolveBuf; *c != '\0'; c++)
 		{
 			if (*c == '.' && (cLast == '.' || cLast == '/'))
 			{
@@ -169,11 +179,11 @@ void RealPath(const char *src, char *dest)
 				{
 					// '..' parent dir
 					// Rewind the out ptr to the last path separator
-					if (cOut > resolveBuf + 1)
+					if (cOut > dest + 1)
 					{
 						// Skip past the last slash
 						cOut -= 2;
-						while (*cOut != '/' && cOut > resolveBuf)
+						while (*cOut != '/' && cOut > dest)
 						{
 							cOut--;
 						}
@@ -202,18 +212,6 @@ void RealPath(const char *src, char *dest)
 		}
 		// Write terminating char
 		*cOut = '\0';
-
-		// Finally, add on the CWD if the path is not absolute
-		if (IsAbsolutePath(resolveBuf))
-		{
-			strcpy(dest, resolveBuf);
-		}
-		else
-		{
-			CDogsGetCWD(dest);
-			strcat(dest, "/");
-			strcat(dest, resolveBuf);
-		}
 		res = dest;
 	}
 	else
