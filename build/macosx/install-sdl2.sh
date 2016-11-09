@@ -25,7 +25,7 @@ function installDMG {
   DMGDISK=$(hdiutil attach $DMGFILE|awk '{print $1}'|grep -E '/dev/disk\ds\d')
 
   cd /Volumes/${DMGFILE%-*}
-  sudo cp -rv ${DMGFILE%-*}.framework $OSX_LIB_PATH/
+  sudo cp --preserve=links -rv ${DMGFILE%-*}.framework $OSX_LIB_PATH/
   cd $ORIGINAL_PATH
   hdiutil detach $DMGDISK
 }
