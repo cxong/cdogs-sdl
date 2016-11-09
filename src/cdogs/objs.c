@@ -336,7 +336,6 @@ void UpdateMobileObjects(int ticks)
 			GameEventsEnqueue(&gGameEvents, e);
 			continue;
 		}
-		CPicUpdate(&obj->tileItem.CPic, ticks);
 	CA_FOREACH_END()
 }
 
