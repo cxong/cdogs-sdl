@@ -55,7 +55,7 @@ deploy:
   provider: GitHub
   description: $(appveyor_build_version)
   auth_token:
-    secure: czG+/wj3tLPZrWhAOymrn7GQTUpJRIJcpyhTVf8VuFAyUvU63dtrZFVWmx2G9m41
+    secure: ed41207bf4eb981f5965eee0c692e00b22d657f7
   prerelease: false
   force_update: true 	#to be in piece with Travis CI
   on:
