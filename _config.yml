@@ -4,3 +4,5 @@ url: http://cxong.github.io/cdogs-sdl
 baseurl: /cdogs-sdl
 paginate: 5
 paginate_path: "page:num"
+gems:
+  - jekyll-feed
