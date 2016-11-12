@@ -4,7 +4,7 @@ branches:
 
 environment:
   CTEST_OUTPUT_ON_FAILURE: 1
-  SDL2_VERSION: 2.0.4
+  SDL2_VERSION: 2.0.5
   MINGW_PATH: C:\MinGW
   SDLDIR: C:\MinGW
 
@@ -14,7 +14,7 @@ platform:
 install:
   # CMake refuses to generate MinGW Makefiles if sh.exe is in the Path
   - ps: Get-Command sh.exe -All | Remove-Item
-  - IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\SDL2-devel-2.0.4-mingw.tar.gz appveyor DownloadFile http://libsdl.org/release/SDL2-devel-2.0.4-mingw.tar.gz
+  - IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\SDL2-devel-%SDL2_VERSION%-mingw.tar.gz appveyor DownloadFile http://libsdl.org/release/SDL2-devel-%SDL2_VERSION%-mingw.tar.gz
   - 7z x SDL2-devel-%SDL2_VERSION%-mingw.tar.gz -so | 7z x -si -ttar -oC:\
   - echo y | xcopy C:\SDL2-%SDL2_VERSION%\include\* %MINGW_PATH%\include\ /S
   - echo y | xcopy C:\SDL2-%SDL2_VERSION%\lib\* %MINGW_PATH%\lib\ /S
@@ -41,10 +41,10 @@ after_build:
   - dir
 
 cache:
-- SDL2-devel-2.0.4-mingw.tar.gz
+- SDL2-devel-%SDL2_VERSION%-mingw.tar.gz
 - SDL2_mixer-devel-2.0.1-mingw.tar.gz
 - SDL2_image-devel-2.0.1-mingw.tar.gz
-- dir\SDL2-2.0.5-win32-x86.zip
+- dir\SDL2-%SDL2_VERSION%-win32-x86.zip
 - dir\SDL2_image-2.0.1-win32-x86.zip
 - dir\SDL2_mixer-2.0.1-win32-x86.zip
 
