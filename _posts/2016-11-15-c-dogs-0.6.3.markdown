@@ -1,0 +1,16 @@
+---
+layout: post
+title:  "C-Dogs 0.6.3 Released!"
+date:   2016-11-15
+categories: release
+---
+
+C-Dogs SDL 0.6.3 released; this version has some extra character faces, colors, and a cool new dogfight map by sauer2, *Temple of Carnage*:
+
+![](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/temple_of_carnage.jpg)
+
+And special thanks to *Vadim Barkov* for setting up automatic Windows and macOS deployment, which saves a ton of time on making releases.
+
+The next version will probably contain more enhancements to the character sprites, all enabled thanks to *Ronny Wester's* generous release of C-Dogs assets as CC-BY. Stay tuned for more updates on that!
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.6.3>
