@@ -44,7 +44,6 @@ void PicManagerInit(PicManager *pm)
 	pm->sprites = hashmap_new();
 	pm->customPics = hashmap_new();
 	pm->customSprites = hashmap_new();
-	CArrayInit(&pm->drainPics, sizeof(NamedPic *));
 	CArrayInit(&pm->wallStyleNames, sizeof(char *));
 	CArrayInit(&pm->tileStyleNames, sizeof(char *));
 	CArrayInit(&pm->exitStyleNames, sizeof(char *));
@@ -266,7 +265,6 @@ void PicManagerLoad(PicManager *pm, const char *path)
 }
 
 
-static void FindDrainPics(PicManager *pm);
 static void FindStylePics(
 	PicManager *pm, CArray *styleNames, PFany hashmapFunc);
 static int MaybeAddWallPicName(any_t data, any_t item);
@@ -276,25 +274,11 @@ static int MaybeAddKeyPicName(any_t data, any_t item);
 static int MaybeAddDoorPicName(any_t data, any_t item);
 static void AfterAdd(PicManager *pm)
 {
-	FindDrainPics(pm);
 	FindStylePics(pm, &pm->wallStyleNames, MaybeAddWallPicName);
 	FindStylePics(pm, &pm->tileStyleNames, MaybeAddTilePicName);
 	FindStylePics(pm, &pm->exitStyleNames, MaybeAddExitPicName);
 	FindStylePics(pm, &pm->doorStyleNames, MaybeAddDoorPicName);
 	FindStylePics(pm, &pm->keyStyleNames, MaybeAddKeyPicName);
-}
-static void FindDrainPics(PicManager *pm)
-{
-	// Scan all pics for drainage pics
-	CArrayClear(&pm->drainPics);
-	for (int i = 0;; i++)
-	{
-		char buf[CDOGS_FILENAME_MAX];
-		sprintf(buf, "drains/%d", i);
-		NamedPic *p = PicManagerGetNamedPic(pm, buf);
-		if (p == NULL) break;
-		CArrayPushBack(&pm->drainPics, &p);
-	}
 }
 static int CompareStyleNames(const void *v1, const void *v2);
 static void FindStylePics(
@@ -417,7 +401,6 @@ void PicManagerTerminate(PicManager *pm)
 	hashmap_destroy(pm->sprites, NamedSpritesDestroy);
 	hashmap_destroy(pm->customPics, NamedPicDestroy);
 	hashmap_destroy(pm->customSprites, NamedSpritesDestroy);
-	CArrayTerminate(&pm->drainPics);
 	StylesTerminate(&pm->wallStyleNames);
 	StylesTerminate(&pm->tileStyleNames);
 	StylesTerminate(&pm->exitStyleNames);
@@ -595,12 +578,6 @@ static NamedSprites *AddNamedSprites(map_t sprites, const char *name)
 		return NULL;
 	}
 	return ns;
-}
-
-NamedPic *PicManagerGetRandomDrain(PicManager *pm)
-{
-	NamedPic **p = CArrayGet(&pm->drainPics, rand() % pm->drainPics.size);
-	return *p;
 }
 
 NamedPic *PicManagerGetExitPic(

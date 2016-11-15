@@ -92,15 +92,14 @@ bool TileCanWalk(const Tile *t)
 {
 	return !(t->flags & MAPTILE_NO_WALK);
 }
-bool TileIsNormalFloor(Tile *t)
+bool TileIsNormalFloor(const Tile *t)
 {
 	return t->flags & MAPTILE_IS_NORMAL_FLOOR;
 }
 bool TileIsClear(Tile *t)
 {
 	// Check if tile is normal floor
-	const int normalFloorFlags =
-		MAPTILE_IS_NORMAL_FLOOR | MAPTILE_IS_DRAINAGE | MAPTILE_OFFSET_PIC;
+	const int normalFloorFlags = MAPTILE_IS_NORMAL_FLOOR | MAPTILE_OFFSET_PIC;
 	if (t->flags & ~normalFloorFlags) return false;
 	// Check if tile has no things on it, excluding particles
 	CA_FOREACH(const ThingId, tid, t->things)

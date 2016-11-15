@@ -38,8 +38,6 @@ typedef struct
 	map_t customPics;	// of NamedPic
 	map_t customSprites;	// of NamedSprites
 
-	CArray drainPics;	// of NamedPic *
-
 	CArray wallStyleNames;	// of char *
 	CArray tileStyleNames;	// of char *
 	CArray exitStyleNames;	// of char *
@@ -78,7 +76,6 @@ void PicManagerGenerateMaskedStylePic(
 	PicManager *pm, const char *name, const char *style, const char *type,
 	const color_t mask, const color_t maskAlt);
 
-NamedPic *PicManagerGetRandomDrain(PicManager *pm);
 NamedPic *PicManagerGetExitPic(
 	PicManager *pm, const char *style, const bool isShadow);
 int PicManagerGetWallStyleIndex(PicManager *pm, const char *style);

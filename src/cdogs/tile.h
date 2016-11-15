@@ -75,11 +75,10 @@ typedef enum
 	MAPTILE_IS_WALL			= 0x0008,
 	MAPTILE_IS_NOTHING		= 0x0010,
 	MAPTILE_IS_NORMAL_FLOOR	= 0x0020,
-	MAPTILE_IS_DRAINAGE		= 0x0040,
-	MAPTILE_OFFSET_PIC		= 0x0080,
+	MAPTILE_OFFSET_PIC		= 0x0040,
 // These constants are used internally in draw, it is never set in the map
-	MAPTILE_DELAY_DRAW		= 0x0100,
-	MAPTILE_OUT_OF_SIGHT	= 0x0200
+	MAPTILE_DELAY_DRAW		= 0x0080,
+	MAPTILE_OUT_OF_SIGHT	= 0x0100
 } MapTileFlags;
 
 typedef enum
@@ -155,7 +154,7 @@ void TileDestroy(Tile *t);
 bool IsTileItemInsideTile(TTileItem *i, Vec2i tilePos);
 bool TileCanSee(Tile *t);
 bool TileCanWalk(const Tile *t);
-bool TileIsNormalFloor(Tile *t);
+bool TileIsNormalFloor(const Tile *t);
 bool TileIsClear(Tile *t);
 bool TileHasCharacter(Tile *t);
 void TileSetAlternateFloor(Tile *t, NamedPic *p);

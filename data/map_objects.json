@@ -974,6 +974,33 @@
       "Health": 0
     },
     {
+      "Name": "drain0",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "drain0"
+      },
+      "Offset": [-8, -6],
+      "Health": 0
+    },
+    {
+      "Name": "drain1",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "drain1"
+      },
+      "Offset": [-8, -6],
+      "Health": 0
+    },
+    {
+      "Name": "drain2",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "drain2"
+      },
+      "Offset": [-8, -6],
+      "Health": 0
+    },
+    {
       "Name": "health spawner",
       "Pic": {
         "Type": "Normal",

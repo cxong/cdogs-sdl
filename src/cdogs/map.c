@@ -245,10 +245,6 @@ void MapChangeFloor(
 	Tile *tAbove = MapGetTile(map, Vec2iNew(pos.x, pos.y - 1));
 	int canSeeTileAbove = !(pos.y > 0 && !TileCanSee(tAbove));
 	Tile *t = MapGetTile(map, pos);
-	if (t->flags & MAPTILE_IS_DRAINAGE)
-	{
-		return;
-	}
 	switch (IMapGet(map, pos) & MAP_MASKACCESS)
 	{
 	case MAP_FLOOR:
@@ -709,6 +705,25 @@ void MapLoad(
 
 	MapSetupTilesAndWalls(map, mission);
 	MapSetupDoors(map, mission);
+
+	if (mission->Type == MAPTYPE_CLASSIC)
+	{
+		// Randomly add drainage tiles for classic map type;
+		// For other map types drains are regular map objects
+		const MapObject *drain = StrMapObject("drain0");
+		for (int i = 0; i < map->Size.x*map->Size.y / 45; i++)
+		{
+			// Make sure drain tiles aren't next to each other
+			v = Vec2iNew(
+				(rand() % map->Size.x) & 0xFFFFFE,
+				(rand() % map->Size.y) & 0xFFFFFE);
+			const Tile *t = MapGetTile(map, v);
+			if (TileIsNormalFloor(t))
+			{
+				MapTryPlaceOneObject(map, v, drain, 0, false);
+			}
+		}
+	}
 
 	// Set exit now since we have set up all the tiles
 	if (Vec2iIsZero(map->ExitStart) && Vec2iIsZero(map->ExitEnd))
