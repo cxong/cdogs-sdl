@@ -799,7 +799,7 @@
 			"Description": "Subdue the terrorists",
 			"Type": "Kill",
 			"Index": 0,
-			"Count": 16,
+			"Count": 23,
 			"Required": 12,
 			"Flags": 0
 		},
@@ -814,7 +814,7 @@
 		{
 			"Description": "Destroy AI engine copies",
 			"Type": "Destroy",
-			"MapObject": "cabinet_server",
+			"MapObject": "server_blink",
 			"Count": 3,
 			"Required": 3,
 			"Flags": 0
@@ -934,9 +934,9 @@
 		},
 		{
 			"Index": 2,
-			"Positions": [[20,
+			"Positions": [[19,
 			35],
-			[19,
+			[20,
 			35],
 			[21,
 			35]],
@@ -1357,22 +1357,30 @@
 		},
 		{
 			"MapObject": "crate2",
-			"Density": 5
-		},
-		{
-			"MapObject": "box3_gray",
-			"Density": 20
-		},
-		{
-			"MapObject": "barrel",
 			"Density": 10
 		},
 		{
-			"MapObject": "barrel_skull",
-			"Density": 15
+			"MapObject": "box3_blink",
+			"Density": 35
 		},
 		{
-			"MapObject": "box3_red",
+			"MapObject": "crate",
+			"Density": 10
+		},
+		{
+			"MapObject": "box2",
+			"Density": 10
+		},
+		{
+			"MapObject": "box",
+			"Density": 10
+		},
+		{
+			"MapObject": "barrel_blue2",
+			"Density": 5
+		},
+		{
+			"MapObject": "barrel_flame",
 			"Density": 5
 		}],
 		"EnemyDensity": 0,

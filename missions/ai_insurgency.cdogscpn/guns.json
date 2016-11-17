@@ -50,6 +50,14 @@
 	    "Bullet": "grenade_fireball3",
 	    "ElevationLow": 30,
 	    "ElevationHigh": 30
+	  },
+	  {
+	    "Pic": "",
+	    "Name": "server_burn",
+	    "Bullet": "molotov_flame",
+	    "Recoil": 2,
+	    "ElevationHigh": 30,
+	    "SpreadCount": 2
 	  }
 	]
 }
