@@ -170,6 +170,7 @@ elseif(APPLE)
 else()
 	set(EXE_EXTENSION "")
 	set(LIB_EXTENSION ".so")
+	set(INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 endif()
 if(APPLE)
 	install(
