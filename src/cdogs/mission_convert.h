@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014, 2016 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -37,8 +37,6 @@ unsigned short MissionGetTile(Mission *m, Vec2i pos);
 void MissionStaticLayout(Mission *m, Vec2i oldSize);
 bool MissionStaticTryAddItem(Mission *m, const MapObject *mo, const Vec2i pos);
 bool MissionStaticTryRemoveItemAt(Mission *m, const Vec2i pos);
-bool MissionStaticTryAddWreck(Mission *m, const MapObject *mo, const Vec2i pos);
-bool MissionStaticTryRemoveWreckAt(Mission *m, const Vec2i pos);
 bool MissionStaticTryAddCharacter(Mission *m, int ch, Vec2i pos);
 bool MissionStaticTryRemoveCharacterAt(Mission *m, Vec2i pos);
 bool MissionStaticTryAddObjective(Mission *m, int idx, int idx2, Vec2i pos);

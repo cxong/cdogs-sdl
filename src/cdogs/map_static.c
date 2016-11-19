@@ -88,15 +88,6 @@ void MapStaticLoadDynamic(
 		}
 	CA_FOREACH_END()
 
-	// Wrecks
-	CA_FOREACH(const MapObjectPositions, mop, m->u.Static.Wrecks)
-		for (int j = 0; j < (int)mop->Positions.size; j++)
-		{
-			const Vec2i *pos = CArrayGet(&mop->Positions, j);
-			MapPlaceWreck(map, *pos, mop->M);
-		}
-	CA_FOREACH_END()
-
 	if (ModeHasNPCs(gCampaign.Entry.Mode))
 	{
 		AddCharacters(&m->u.Static.Characters);

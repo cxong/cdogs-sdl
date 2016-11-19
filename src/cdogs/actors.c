@@ -1010,12 +1010,11 @@ static void ActorDie(TActor *actor)
 	// Add a blood pool
 	GameEvent e = GameEventNew(GAME_EVENT_MAP_OBJECT_ADD);
 	e.u.MapObjectAdd.UID = ObjsGetNextUID();
-	strcpy(
-		e.u.MapObjectAdd.MapObjectClass,
-		RandomBloodMapObject(&gMapObjects)->Name);
+	const MapObject *mo = RandomBloodMapObject(&gMapObjects);
+	strcpy(e.u.MapObjectAdd.MapObjectClass, mo->Name);
 	e.u.MapObjectAdd.Pos = Vec2i2Net(Vec2iFull2Real(actor->Pos));
-	e.u.MapObjectAdd.TileItemFlags = TILEITEM_IS_WRECK;
-	e.u.MapObjectAdd.Health = 0;
+	e.u.MapObjectAdd.TileItemFlags = MapObjectGetFlags(mo);
+	e.u.MapObjectAdd.Health = mo->Health;
 	GameEventsEnqueue(&gGameEvents, e);
 
 	e = GameEventNew(GAME_EVENT_ACTOR_DIE);

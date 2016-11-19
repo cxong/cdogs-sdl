@@ -238,8 +238,8 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 			{
 				p->Vel = Vec2iZero();
 				p->Spin = 0;
-				// Set as wreck so that it gets drawn last
-				p->tileItem.flags |= TILEITEM_IS_WRECK;
+				// Fell to ground, draw last
+				p->tileItem.flags |= TILEITEM_DRAW_LAST;
 			}
 		}
 	}

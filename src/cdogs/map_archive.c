@@ -370,7 +370,6 @@ static json_t *SaveClassicDoors(Mission *m);
 static json_t *SaveClassicPillars(Mission *m);
 static json_t *SaveStaticTiles(Mission *m);
 static json_t *SaveStaticItems(Mission *m);
-static json_t *SaveStaticWrecks(Mission *m);
 static json_t *SaveStaticCharacters(Mission *m);
 static json_t *SaveStaticObjectives(Mission *m);
 static json_t *SaveStaticKeys(Mission *m);
@@ -445,8 +444,6 @@ static json_t *SaveMissions(CArray *a)
 					node, "Tiles", SaveStaticTiles(mission));
 				json_insert_pair_into_object(
 					node, "StaticItems", SaveStaticItems(mission));
-				json_insert_pair_into_object(
-					node, "StaticWrecks", SaveStaticWrecks(mission));
 				json_insert_pair_into_object(
 					node, "StaticCharacters", SaveStaticCharacters(mission));
 				json_insert_pair_into_object(
@@ -559,24 +556,6 @@ static json_t *SaveStaticItems(Mission *m)
 		json_insert_child(items, itemNode);
 	CA_FOREACH_END()
 	return items;
-}
-static json_t *SaveStaticWrecks(Mission *m)
-{
-	json_t *wrecks = json_new_array();
-	CA_FOREACH(MapObjectPositions, mop, m->u.Static.Wrecks)
-		json_t *wreckNode = json_new_object();
-		AddStringPair(wreckNode, "MapObject", mop->M->Name);
-		json_t *positions = json_new_array();
-		for (int j = 0; j < (int)mop->Positions.size; j++)
-		{
-			Vec2i *pos = CArrayGet(&mop->Positions, j);
-			json_insert_child(positions, SaveVec2i(*pos));
-		}
-		json_insert_pair_into_object(
-			wreckNode, "Positions", positions);
-		json_insert_child(wrecks, wreckNode);
-	CA_FOREACH_END()
-	return wrecks;
 }
 static json_t *SaveStaticCharacters(Mission *m)
 {

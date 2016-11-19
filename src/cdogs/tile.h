@@ -93,7 +93,7 @@ typedef enum
 #define TILEITEM_IMPASSABLE     1
 #define TILEITEM_CAN_BE_SHOT    2
 #define TILEITEM_OBJECTIVE      (8 + 16 + 32 + 64 + 128)
-#define TILEITEM_IS_WRECK		256
+#define TILEITEM_DRAW_LAST		256
 #define OBJECTIVE_SHIFT         3
 
 
@@ -155,11 +155,11 @@ bool IsTileItemInsideTile(TTileItem *i, Vec2i tilePos);
 bool TileCanSee(Tile *t);
 bool TileCanWalk(const Tile *t);
 bool TileIsNormalFloor(const Tile *t);
-bool TileIsClear(Tile *t);
+bool TileIsClear(const Tile *t);
 bool TileHasCharacter(Tile *t);
 void TileSetAlternateFloor(Tile *t, NamedPic *p);
 
 void TileItemUpdate(TTileItem *t, const int ticks);
 
 TTileItem *ThingIdGetTileItem(ThingId *tid);
-bool TileItemIsDebris(const TTileItem *t);
+bool TileItemDrawLast(const TTileItem *t);

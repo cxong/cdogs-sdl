@@ -260,9 +260,9 @@ bool IsTileWalkableAroundObjects(Map *map, const Vec2i pos)
 	CA_FOREACH(ThingId, tid, t->things)
 		if (tid->Kind == KIND_OBJECT)
 		{
-			// Check that the object is not debris
+			// Check that the object has hitbox - i.e. health > 0
 			const TObject *o = CArrayGet(&gObjs, tid->Id);
-			if (!TileItemIsDebris(&o->tileItem))
+			if (o->Health > 0)
 			{
 				return false;
 			}

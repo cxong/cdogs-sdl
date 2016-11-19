@@ -85,8 +85,8 @@ static CPicDrawContext GetMapObjectDrawContext(const int id)
 	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
 	CPicDrawContext c;
 	c.Dir = DIRECTION_UP;
-	const CPic *mp = MapObjectGetCPic(obj->Class, &c.Offset, obj->Health <= 0);
-	CPicCopyPic(&obj->tileItem.CPic, mp);
+	c.Offset = obj->Class->Offset;
+	CPicCopyPic(&obj->tileItem.CPic, &obj->Class->Pic);
 	return c;
 }
 
@@ -160,15 +160,21 @@ void ObjRemove(const NMapObjectRemove mor)
 
 	SoundPlayAt(&gSoundDevice, gSoundDevice.wreckSound, realPos);
 
-	// Turn the object into a wreck, if available
-	if (CPicIsLoaded(&o->Class->Wreck.Pic))
+	// If wreck is available spawn it in the exact same position
+	if (o->Class->Wreck[0] != '\0')
 	{
-		o->tileItem.flags = TILEITEM_IS_WRECK;
+		GameEvent e = GameEventNew(GAME_EVENT_MAP_OBJECT_ADD);
+		e.u.MapObjectAdd.UID = ObjsGetNextUID();
+		const MapObject *mo = StrMapObject(o->Class->Wreck);
+		strcpy(e.u.MapObjectAdd.MapObjectClass, mo->Name);
+		e.u.MapObjectAdd.Pos =
+			Vec2i2Net(Vec2iNew(o->tileItem.x, o->tileItem.y));
+		e.u.MapObjectAdd.TileItemFlags = MapObjectGetFlags(mo);
+		e.u.MapObjectAdd.Health = mo->Health;
+		GameEventsEnqueue(&gGameEvents, e);
 	}
-	else
-	{
-		ObjDestroy(o);
-	}
+
+	ObjDestroy(o);
 
 	// Update pathfinding cache since this object could have blocked a path
 	// before
@@ -398,7 +404,7 @@ void ObjAdd(const NMapObjectAdd amo)
 	o->tileItem.flags = amo.TileItemFlags;
 	o->tileItem.kind = KIND_OBJECT;
 	o->tileItem.getPicFunc = NULL;
-	o->tileItem.CPic = o->Class->Normal.Pic;
+	o->tileItem.CPic = o->Class->Pic;
 	o->tileItem.CPicFunc = GetMapObjectDrawContext;
 	o->tileItem.size = o->Class->Size;
 	o->tileItem.id = i;
@@ -407,6 +413,9 @@ void ObjAdd(const NMapObjectAdd amo)
 	LOG(LM_MAIN, LL_DEBUG,
 		"added object uid(%d) class(%s) health(%d) pos(%d, %d)",
 		(int)amo.UID, amo.MapObjectClass, amo.Health, amo.Pos.x, amo.Pos.y);
+
+	// Update pathfinding cache since this object could block a path
+	PathCacheClear(&gPathCache);
 }
 void ObjDestroy(TObject *o)
 {

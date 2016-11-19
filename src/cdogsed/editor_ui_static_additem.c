@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -54,13 +54,6 @@ static void BrushSetBrushTypeAddMapItem(void *data, int d)
 	b->Brush->Type = BRUSHTYPE_ADD_ITEM;
 	b->Brush->u.MapObject = b->u.MapObject;
 }
-static void BrushSetBrushTypeAddWreck(void *data, int d)
-{
-	UNUSED(d);
-	IndexedEditorBrush *b = data;
-	b->Brush->Type = BRUSHTYPE_ADD_WRECK;
-	b->Brush->u.ItemIndex = b->u.ItemIndex;
-}
 static void BrushSetBrushTypeAddCharacter(void *data, int d)
 {
 	UNUSED(d);
@@ -85,18 +78,6 @@ static void BrushSetBrushTypeAddKey(void *data, int d)
 }
 
 
-static void DrawWreck(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
-{
-	const IndexedEditorBrush *data = vData;
-	const char **name =
-		CArrayGet(&gMapObjects.Destructibles, data->u.ItemIndex);
-	const MapObject *mo = StrMapObject(*name);
-	pos = Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
-	Vec2i offset;
-	const Pic *pic = MapObjectGetPic(mo, &offset, true);
-	Blit(g, pic, Vec2iAdd(pos, offset));
-}
 static void DrawPickupSpawner(
 	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 {
@@ -201,7 +182,6 @@ static bool DeactivateEditorBrushAndCampaignBrush(void *data)
 
 
 static bool AddMapItemBrushObjFunc(UIObject *o, MapObject *mo, void *vData);
-static UIObject *CreateAddWreckObjs(Vec2i pos, EditorBrush *brush);
 static bool AddPickupSpawnerBrushObjFunc(
 	UIObject *o, MapObject *mo, void *vData);
 static UIObject *CreateAddCharacterObjs(
@@ -237,12 +217,6 @@ UIObject *CreateAddItemObjs(
 	UIObjectAddChild(o2, CreateAddMapItemObjs(
 		o2->Size, AddMapItemBrushObjFunc, brush, sizeof(IndexedEditorBrush),
 		true));
-	UIObjectAddChild(c, o2);
-	pos.y += th;
-	o2 = UIObjectCopy(o);
-	o2->Label = "Wreck >";
-	o2->Pos = pos;
-	UIObjectAddChild(o2, CreateAddWreckObjs(o2->Size, brush));
 	UIObjectAddChild(c, o2);
 	pos.y += th;
 	o2 = UIObjectCopy(o);
@@ -328,43 +302,6 @@ static char *MakeMapObjectTooltip(const MapObject *mo)
 	return tmp;
 }
 
-static UIObject *CreateAddWreckObjs(Vec2i pos, EditorBrush *brush)
-{
-	UIObject *o2;
-	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
-
-	UIObject *o = UIObjectCreate(
-		UITYPE_CUSTOM, 0,
-		Vec2iZero(), Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT + 4));
-	o->ChangeFunc = BrushSetBrushTypeAddWreck;
-	o->u.CustomDrawFunc = DrawWreck;
-	o->OnFocusFunc = ActivateIndexedEditorBrush;
-	o->OnUnfocusFunc = DeactivateIndexedEditorBrush;
-	pos = Vec2iZero();
-	const int width = 8;
-	for (int i = 0; i < (int)gMapObjects.Destructibles.size; i++)
-	{
-		o2 = UIObjectCopy(o);
-		o2->IsDynamicData = 1;
-		CMALLOC(o2->Data, sizeof(IndexedEditorBrush));
-		((IndexedEditorBrush *)o2->Data)->Brush = brush;
-		((IndexedEditorBrush *)o2->Data)->u.ItemIndex = i;
-		o2->Pos = pos;
-		UIObjectAddChild(c, o2);
-		pos.x += o->Size.x;
-		if (((i + 1) % width) == 0)
-		{
-			pos.x = 0;
-			pos.y += o->Size.y;
-		}
-		const char **name = CArrayGet(&gMapObjects.Destructibles, i);
-		const MapObject *mo = StrMapObject(*name);
-		CSTRDUP(o2->Tooltip, mo->Name);
-	}
-
-	UIObjectDestroy(o);
-	return c;
-}
 static char *MakePickupTooltip(const MapObject *mo);
 static bool AddPickupSpawnerBrushObjFunc(
 	UIObject *o, MapObject *mo, void *vData)

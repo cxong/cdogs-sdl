@@ -358,8 +358,6 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 }
 static void LoadStaticItems(
 	Mission *m, json_t *node, const char *name, const int version);
-static void LoadStaticWrecks(
-	Mission *m, json_t *node, const char *name, const int version);
 static void LoadStaticCharacters(Mission *m, json_t *node, char *name);
 static void LoadStaticObjectives(Mission *m, json_t *node, char *name);
 static void LoadStaticKeys(Mission *m, json_t *node, char *name);
@@ -396,8 +394,12 @@ static bool TryLoadStaticMap(Mission *m, json_t *node, int version)
 		CFREE(tileCSV);
 	}
 
+	CArrayInit(&m->u.Static.Items, sizeof(MapObjectPositions));
 	LoadStaticItems(m, node, "StaticItems", version);
-	LoadStaticWrecks(m, node, "StaticWrecks", version);
+	if (version < 13)
+	{
+		LoadStaticItems(m, node, "StaticWrecks", version);
+	}
 	LoadStaticCharacters(m, node, "StaticCharacters");
 	LoadStaticObjectives(m, node, "StaticObjectives");
 	LoadStaticKeys(m, node, "StaticKeys");
@@ -505,8 +507,6 @@ static const MapObject *LoadMapObjectRef(json_t *node, const int version);
 static void LoadStaticItems(
 	Mission *m, json_t *node, const char *name, const int version)
 {
-	CArrayInit(&m->u.Static.Items, sizeof(MapObjectPositions));
-
 	json_t *items = json_find_first_label(node, name);
 	if (!items || !items->child)
 	{
@@ -540,42 +540,6 @@ static void LoadStaticItems(
 			CArrayPushBack(&mop.Positions, &pos);
 		}
 		CArrayPushBack(&m->u.Static.Items, &mop);
-	}
-}
-static void LoadStaticWrecks(
-	Mission *m, json_t *node, const char *name, const int version)
-{
-	CArrayInit(&m->u.Static.Wrecks, sizeof(MapObjectPositions));
-	
-	json_t *wrecks = json_find_first_label(node, name);
-	if (!wrecks || !wrecks->child)
-	{
-		return;
-	}
-	wrecks = wrecks->child;
-	for (wrecks = wrecks->child; wrecks; wrecks = wrecks->next)
-	{
-		MapObjectPositions mop;
-		mop.M = LoadMapObjectRef(wrecks, version);
-		CArrayInit(&mop.Positions, sizeof(Vec2i));
-		json_t *positions = json_find_first_label(wrecks, "Positions");
-		if (!positions || !positions->child)
-		{
-			continue;
-		}
-		positions = positions->child;
-		for (positions = positions->child;
-			 positions;
-			 positions = positions->next)
-		{
-			Vec2i pos;
-			json_t *position = positions->child;
-			pos.x = atoi(position->text);
-			position = position->next;
-			pos.y = atoi(position->text);
-			CArrayPushBack(&mop.Positions, &pos);
-		}
-		CArrayPushBack(&m->u.Static.Wrecks, &mop);
 	}
 }
 static const MapObject *LoadMapObjectRef(json_t *itemNode, const int version)

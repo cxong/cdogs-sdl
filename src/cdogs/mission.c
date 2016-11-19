@@ -169,7 +169,6 @@ void MissionCopy(Mission *dst, const Mission *src)
 	case MAPTYPE_STATIC:
 		CArrayCopy(&dst->u.Static.Tiles, &src->u.Static.Tiles);
 		CArrayCopy(&dst->u.Static.Items, &src->u.Static.Items);
-		CArrayCopy(&dst->u.Static.Wrecks, &src->u.Static.Wrecks);
 		CArrayCopy(&dst->u.Static.Characters, &src->u.Static.Characters);
 		CArrayCopy(&dst->u.Static.Objectives, &src->u.Static.Objectives);
 		CArrayCopy(&dst->u.Static.Keys, &src->u.Static.Keys);
@@ -202,7 +201,6 @@ void MissionTerminate(Mission *m)
 	case MAPTYPE_STATIC:
 		CArrayTerminate(&m->u.Static.Tiles);
 		CArrayTerminate(&m->u.Static.Items);
-		CArrayTerminate(&m->u.Static.Wrecks);
 		CArrayTerminate(&m->u.Static.Characters);
 		CArrayTerminate(&m->u.Static.Objectives);
 		CArrayTerminate(&m->u.Static.Keys);

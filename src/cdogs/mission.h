@@ -176,12 +176,11 @@ typedef struct
 		// Static
 		struct
 		{
-			CArray Tiles;	// of unsigned short (map tile)
-			CArray Items;	// of MapObjectPositions
-			CArray Wrecks;	// of MapObjectPositions
+			CArray Tiles;		// of unsigned short (map tile)
+			CArray Items;		// of MapObjectPositions
 			CArray Characters;	// of CharacterPositions
 			CArray Objectives;	// of ObjectivePositions
-			CArray Keys;	// of KeyPositions
+			CArray Keys;		// of KeyPositions
 			Vec2i Start;
 			struct
 			{

@@ -371,8 +371,7 @@ bool MapTryPlaceOneObject(
 		return false;
 	}
 	Vec2i realPos = Vec2iCenterOfTile(v);
-	int tileFlags = 0;
-	Tile *t = MapGetTile(map, v);
+	const Tile *t = MapGetTile(map, v);
 	unsigned short iMap = IMapGet(map, v);
 
 	const bool isEmpty = TileIsClear(t);
@@ -403,43 +402,14 @@ bool MapTryPlaceOneObject(
 		realPos.y -= TILE_HEIGHT / 2 + 1;
 	}
 
-	if (MapObjectIsWreck(mo))
-	{
-		tileFlags |= TILEITEM_IS_WRECK;
-	}
-	else if (!(mo->Flags & (1 << PLACEMENT_ON_WALL)))
-	{
-		tileFlags |= TILEITEM_IMPASSABLE;
-		tileFlags |= TILEITEM_CAN_BE_SHOT;
-	}
-
 	NMapObjectAdd amo = NMapObjectAdd_init_default;
 	amo.UID = ObjsGetNextUID();
 	strcpy(amo.MapObjectClass, mo->Name);
 	amo.Pos = Vec2i2Net(realPos);
-	amo.TileItemFlags = tileFlags | extraFlags;
+	amo.TileItemFlags = MapObjectGetFlags(mo) | extraFlags;
 	amo.Health = mo->Health;
 	ObjAdd(amo);
 	return true;
-}
-
-void MapPlaceWreck(Map *map, const Vec2i v, const MapObject *mo)
-{
-	Tile *t = MapGetTile(map, v);
-	unsigned short iMap = IMapGet(map, v);
-	if (!MapObjectIsTileOK(
-		mo, iMap, TileIsClear(t), IMapGet(map, Vec2iNew(v.x, v.y - 1))))
-	{
-		return;
-	}
-	NMapObjectAdd amo = NMapObjectAdd_init_default;
-	amo.UID = ObjsGetNextUID();
-	strcpy(amo.MapObjectClass, mo->Name);
-	amo.Pos = Vec2i2Net(Vec2iCenterOfTile(v));
-	amo.TileItemFlags = TILEITEM_IS_WRECK;
-	// Set health to 0 to force into a wreck
-	amo.Health = 0;
-	ObjAdd(amo);
 }
 
 int MapHasLockedRooms(Map *map)

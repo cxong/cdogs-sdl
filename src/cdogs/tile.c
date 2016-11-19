@@ -96,7 +96,7 @@ bool TileIsNormalFloor(const Tile *t)
 {
 	return t->flags & MAPTILE_IS_NORMAL_FLOOR;
 }
-bool TileIsClear(Tile *t)
+bool TileIsClear(const Tile *t)
 {
 	// Check if tile is normal floor
 	const int normalFloorFlags = MAPTILE_IS_NORMAL_FLOOR | MAPTILE_OFFSET_PIC;
@@ -159,7 +159,7 @@ TTileItem *ThingIdGetTileItem(ThingId *tid)
 	return ti;
 }
 
-bool TileItemIsDebris(const TTileItem *t)
+bool TileItemDrawLast(const TTileItem *t)
 {
-	return t->flags & TILEITEM_IS_WRECK;
+	return t->flags & TILEITEM_DRAW_LAST;
 }

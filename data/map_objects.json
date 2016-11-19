@@ -1,5 +1,5 @@
 {
-  "Version": 2,
+  "Version": 3,
   "MapObjects": [
     {
       "Name": "barrel_blue",
@@ -7,11 +7,18 @@
         "Type": "Normal",
         "Pic": "barrel_blue"
       },
-      "WreckPic": {
+      "Wreck": "barrel_blue_wreck",
+      "Health": 40,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "barrel_blue_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "barrel_blue_wreck"
       },
-      "Health": 40,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Outside", "OneWall"]
     },
     {
@@ -20,11 +27,18 @@
         "Type": "Normal",
         "Pic": "barrel_blue2"
       },
-      "WreckPic": {
+      "Wreck": "barrel_blue2_wreck",
+      "Health": 40,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "barrel_blue2_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "barrel_blue2_wreck"
       },
-      "Health": 40,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Outside", "OneWall"]
     },
     {
@@ -33,10 +47,7 @@
         "Type": "Normal",
         "Pic": "box"
       },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "box_wreck"
-      },
+      "Wreck": "box_wreck",
       "Health": 20,
       "Flags": ["Outside", "NoWalls"]
     },
@@ -46,11 +57,18 @@
         "Type": "Normal",
         "Pic": "box2"
       },
-      "WreckPic": {
+      "Wreck": "box_wreck",
+      "Health": 20,
+      "Flags": ["Outside", "NoWalls"]
+    },
+    {
+      "Name": "box_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "box_wreck"
       },
-      "Health": 20,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Outside", "NoWalls"]
     },
     {
@@ -59,11 +77,18 @@
         "Type": "Normal",
         "Pic": "crate"
       },
-      "WreckPic": {
+      "Wreck": "crate_wreck",
+      "Health": 20,
+      "Flags": ["Outside", "NoWalls"]
+    },
+    {
+      "Name": "crate_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "crate_wreck"
       },
-      "Health": 20,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Outside", "NoWalls"]
     },
     {
@@ -72,11 +97,18 @@
         "Type": "Normal",
         "Pic": "crate2"
       },
-      "WreckPic": {
+      "Wreck": "crate2_wreck",
+      "Health": 20,
+      "Flags": ["Outside", "NoWalls"]
+    },
+    {
+      "Name": "crate2_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "crate2_wreck"
       },
-      "Health": 20,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Outside", "NoWalls"]
     },
     {
@@ -85,11 +117,18 @@
         "Type": "Normal",
         "Pic": "cabinet"
       },
-      "WreckPic": {
+      "Wreck": "cabinet_wreck",
+      "Health": 20,
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
+    },
+    {
+      "Name": "cabinet_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "cabinet_wreck"
       },
-      "Health": 20,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
     },
     {
@@ -98,11 +137,18 @@
         "Type": "Normal",
         "Pic": "cabinet_server"
       },
-      "WreckPic": {
+      "Wreck": "cabinet_server_wreck",
+      "Health": 20,
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
+    },
+    {
+      "Name": "cabinet_server_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "cabinet_server_wreck"
       },
-      "Health": 20,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
     },
     {
@@ -111,12 +157,19 @@
         "Type": "Normal",
         "Pic": "plant"
       },
-      "WreckPic": {
+      "Wreck": "plant_wreck",
+      "Size": [8, 6],
+      "Health": 20,
+      "Flags": ["Inside", "OneOrMoreWalls"]
+    },
+    {
+      "Name": "plant_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "plant_wreck"
       },
-      "Size": [8, 6],
-      "Health": 20,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Inside", "OneOrMoreWalls"]
     },
     {
@@ -125,12 +178,19 @@
         "Type": "Normal",
         "Pic": "flower"
       },
-      "WreckPic": {
+      "Wreck": "flower_wreck",
+      "Size": [8, 6],
+      "Health": 20,
+      "Flags": ["Inside", "OneOrMoreWalls"]
+    },
+    {
+      "Name": "flower_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "flower_wreck"
       },
-      "Size": [8, 6],
-      "Health": 20,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Inside", "OneOrMoreWalls"]
     },
     {
@@ -139,11 +199,18 @@
         "Type": "Normal",
         "Pic": "bench"
       },
-      "WreckPic": {
+      "Wreck": "bench_wreck",
+      "Health": 20,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "bench_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "bench_wreck"
       },
-      "Health": 20,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Inside", "NoWalls"]
     },
     {
@@ -152,11 +219,18 @@
         "Type": "Normal",
         "Pic": "table"
       },
-      "WreckPic": {
+      "Wreck": "table_wreck",
+      "Health": 20,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "table_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "table_wreck"
       },
-      "Health": 20,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Inside", "NoWalls"]
     },
     {
@@ -165,10 +239,7 @@
         "Type": "Normal",
         "Pic": "table_wood"
       },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "table_wood_wreck"
-      },
+      "Wreck": "table_wood_wreck",
       "Health": 20,
       "Flags": ["Inside", "NoWalls"]
     },
@@ -178,10 +249,7 @@
         "Type": "Normal",
         "Pic": "table_wood_candle"
       },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "table_wood_wreck"
-      },
+      "Wreck": "table_wood_wreck",
       "Health": 20,
       "Flags": ["Inside", "NoWalls"]
     },
@@ -191,10 +259,7 @@
         "Type": "Normal",
         "Pic": "table_clothed"
       },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "table_wood_wreck"
-      },
+      "Wreck": "table_wood_wreck",
       "Health": 20,
       "Flags": ["Inside", "NoWalls"]
     },
@@ -204,10 +269,7 @@
         "Type": "Normal",
         "Pic": "table_wood_round"
       },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "table_wood_round_wreck"
-      },
+      "Wreck": "table_wood_round_wreck",
       "Health": 20,
       "Flags": ["Inside", "NoWalls"]
     },
@@ -217,11 +279,18 @@
         "Type": "Normal",
         "Pic": "table_wood_round_candle"
       },
-      "WreckPic": {
+      "Wreck": "table_wood_round_wreck",
+      "Health": 20,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "table_wood_round_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "table_wood_round_wreck"
       },
-      "Health": 20,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Inside", "NoWalls"]
     },
     {
@@ -230,11 +299,18 @@
         "Type": "Normal",
         "Pic": "table_wood_round_clothed"
       },
-      "WreckPic": {
+      "Wreck": "table_wood_round_clothed_wreck",
+      "Health": 20,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "table_wood_round_clothed_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "table_wood_round_clothed_wreck"
       },
-      "Health": 20,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Inside", "NoWalls"]
     },
     {
@@ -243,11 +319,18 @@
         "Type": "Normal",
         "Pic": "table_wood_round_terminal"
       },
-      "WreckPic": {
+      "Wreck": "table_wood_round_terminal_wreck",
+      "Health": 40,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "table_wood_round_terminal_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "table_wood_round_terminal_wreck"
       },
-      "Health": 40,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Inside", "NoWalls"]
     },
     {
@@ -256,10 +339,7 @@
         "Type": "Normal",
         "Pic": "table_steel"
       },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "safe_wreck"
-      },
+      "Wreck": "safe_wreck",
       "Health": 30,
       "Flags": ["Inside", "NoWalls"]
     },
@@ -269,11 +349,18 @@
         "Type": "Normal",
         "Pic": "table_plastic"
       },
-      "WreckPic": {
+      "Wreck": "table_plastic_wreck",
+      "Health": 30,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "table_plastic_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "table_plastic_wreck"
       },
-      "Health": 30,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Inside", "NoWalls"]
     },
     {
@@ -282,12 +369,19 @@
         "Type": "Normal",
         "Pic": "chair"
       },
-      "WreckPic": {
+      "Wreck": "chair_wreck",
+      "Size": [8, 6],
+      "Health": 20,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "chair_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "chair_wreck"
       },
-      "Size": [8, 6],
-      "Health": 20,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Inside", "NoWalls"]
     },
     {
@@ -296,12 +390,19 @@
         "Type": "Normal",
         "Pic": "chair_task"
       },
-      "WreckPic": {
+      "Wreck": "chair_task_wreck",
+      "Size": [8, 6],
+      "Health": 20,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "chair_task_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "chair_task_wreck"
       },
-      "Size": [8, 6],
-      "Health": 20,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Inside", "NoWalls"]
     },
     {
@@ -310,13 +411,20 @@
         "Type": "Normal",
         "Pic": "column"
       },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "cabinet_wreck"
-      },
+      "Wreck": "cabinet_wreck",
       "Size": [8, 6],
       "Health": 60,
       "Flags": ["Outside", "NoWalls"]
+    },
+    {
+      "Name": "cabinet_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "cabinet_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["NoWalls"]
     },
     {
       "Name": "rod",
@@ -324,12 +432,19 @@
         "Type": "Normal",
         "Pic": "rod"
       },
-      "WreckPic": {
+      "Wreck": "rod_wreck",
+      "Size": [8, 6],
+      "Health": 60,
+      "Flags": ["Outside", "NoWalls"]
+    },
+    {
+      "Name": "rod_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "rod_wreck"
       },
-      "Size": [8, 6],
-      "Health": 60,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Outside", "NoWalls"]
     },
     {
@@ -338,10 +453,7 @@
         "Type": "Normal",
         "Pic": "barrel_wood"
       },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "barrel_wood_wreck"
-      },
+      "Wreck": "barrel_wood_wreck",
       "Health": 40,
       "Flags": ["Outside", "OneWall"]
     },
@@ -351,11 +463,18 @@
         "Type": "Normal",
         "Pic": "barrel_wood2"
       },
-      "WreckPic": {
+      "Wreck": "barrel_wood2_wreck",
+      "Health": 40,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "barrel_wood2_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "barrel_wood2_wreck"
       },
-      "Health": 40,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Outside", "OneWall"]
     },
     {
@@ -364,10 +483,7 @@
         "Type": "Normal",
         "Pic": "box_gray"
       },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "table_wood_wreck"
-      },
+      "Wreck": "table_wood_wreck",
       "Health": 20,
       "Flags": ["Outside", "OneWall"]
     },
@@ -377,10 +493,7 @@
         "Type": "Normal",
         "Pic": "box_green"
       },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "table_wood_wreck"
-      },
+      "Wreck": "table_wood_wreck",
       "Health": 20,
       "Flags": ["Outside", "OneWall"]
     },
@@ -390,10 +503,7 @@
         "Type": "Normal",
         "Pic": "box_wood"
       },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "table_wood_wreck"
-      },
+      "Wreck": "table_wood_wreck",
       "Health": 20,
       "Flags": ["Outside", "OneWall"]
     },
@@ -403,11 +513,18 @@
         "Type": "Normal",
         "Pic": "box3_gray"
       },
-      "WreckPic": {
+      "Wreck": "box3_gray_wreck",
+      "Health": 20,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "box3_gray_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "box3_gray_wreck"
       },
-      "Health": 20,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Outside", "OneWall"]
     },
     {
@@ -416,11 +533,18 @@
         "Type": "Normal",
         "Pic": "box3_green"
       },
-      "WreckPic": {
+      "Wreck": "box3_green_wreck",
+      "Health": 20,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "box3_green_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "box3_green_wreck"
       },
-      "Health": 20,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Outside", "OneWall"]
     },
     {
@@ -429,11 +553,18 @@
         "Type": "Normal",
         "Pic": "floor_console"
       },
-      "WreckPic": {
+      "Wreck": "floor_console_wreck",
+      "Health": 20,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "floor_console_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "floor_console_wreck"
       },
-      "Health": 20,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Outside", "OneWall"]
     },
     {
@@ -443,10 +574,7 @@
         "Pic": "bookshelf"
       },
       "Offset": [-8, -15],
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "table_wood_wreck"
-      },
+      "Wreck": "table_wood_wreck",
       "Size": [16, 6],
       "Health": 20,
       "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
@@ -458,12 +586,19 @@
         "Pic": "bookshelf2"
       },
       "Offset": [-8, -15],
-      "WreckPic": {
+      "Wreck": "bookshelf2_wreck",
+      "Size": [16, 6],
+      "Health": 20,
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
+    },
+    {
+      "Name": "bookshelf2_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "bookshelf2_wreck"
       },
-      "Size": [16, 6],
-      "Health": 20,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
     },
     {
@@ -472,10 +607,7 @@
         "Type": "Normal",
         "Pic": "terminal"
       },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "table_wood_wreck"
-      },
+      "Wreck": "table_wood_wreck",
       "Health": 40,
       "Flags": ["Inside", "NoWalls"]
     },
@@ -485,10 +617,7 @@
         "Type": "Normal",
         "Pic": "safe"
       },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "safe_wreck"
-      },
+      "Wreck": "safe_wreck",
       "Health": 100,
       "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
     },
@@ -498,11 +627,18 @@
         "Type": "Normal",
         "Pic": "safe2"
       },
-      "WreckPic": {
+      "Wreck": "safe2_wreck",
+      "Health": 100,
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
+    },
+    {
+      "Name": "safe2_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "safe2_wreck"
       },
-      "Health": 100,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
     },
     {
@@ -511,10 +647,7 @@
         "Type": "Normal",
         "Pic": "statue_ogre"
       },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "safe_wreck"
-      },
+      "Wreck": "safe_wreck",
       "Health": 80,
       "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
     },
@@ -524,10 +657,7 @@
         "Type": "Normal",
         "Pic": "statue_behemoth"
       },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "safe_wreck"
-      },
+      "Wreck": "safe_wreck",
       "Health": 80,
       "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
     },
@@ -537,11 +667,17 @@
         "Type": "Normal",
         "Pic": "egg"
       },
-      "WreckPic": {
+      "Wreck": "egg_wreck",
+      "Health": 30
+    },
+    {
+      "Name": "egg_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "egg_wreck"
       },
-      "Health": 30
+      "Health": 0,
+      "DrawLast": true
     },
     {
       "Name": "egg2",
@@ -549,11 +685,17 @@
         "Type": "Normal",
         "Pic": "egg2"
       },
-      "WreckPic": {
+      "Wreck": "egg2_wreck",
+      "Health": 30
+    },
+    {
+      "Name": "egg2_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "egg2_wreck"
       },
-      "Health": 30
+      "Health": 0,
+      "DrawLast": true
     },
     {
       "Name": "tree",
@@ -561,12 +703,19 @@
         "Type": "Normal",
         "Pic": "tree"
       },
-      "WreckPic": {
+      "Wreck": "tree_wreck",
+      "Size": [8, 6],
+      "Health": 40,
+      "Flags": ["Outside", "NoWalls"]
+    },
+    {
+      "Name": "tree_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "tree_wreck"
       },
-      "Size": [8, 6],
-      "Health": 40,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Outside", "NoWalls"]
     },
     {
@@ -575,12 +724,19 @@
         "Type": "Normal",
         "Pic": "tree_dead"
       },
-      "WreckPic": {
+      "Wreck": "tree_dead_wreck",
+      "Size": [8, 6],
+      "Health": 40,
+      "Flags": ["Outside", "NoWalls"]
+    },
+    {
+      "Name": "tree_dead_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "tree_dead_wreck"
       },
-      "Size": [8, 6],
-      "Health": 40,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Outside", "NoWalls"]
     },
     {
@@ -589,12 +745,19 @@
         "Type": "Normal",
         "Pic": "tree_autumn"
       },
-      "WreckPic": {
+      "Wreck": "tree_autumn_wreck",
+      "Size": [8, 6],
+      "Health": 40,
+      "Flags": ["Outside", "NoWalls"]
+    },
+    {
+      "Name": "tree_autumn_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "tree_autumn_wreck"
       },
-      "Size": [8, 6],
-      "Health": 40,
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Outside", "NoWalls"]
     },
     {
@@ -603,10 +766,7 @@
         "Type": "Normal",
         "Pic": "barrel"
       },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "barrel_wood_wreck"
-      },
+      "Wreck": "barrel_wood_wreck",
       "Health": 40,
       "DestroyGuns": ["fire_explosion"],
       "Flags": ["Outside", "OneWall"]
@@ -617,12 +777,19 @@
         "Type": "Normal",
         "Pic": "barrel_flame"
       },
-      "WreckPic": {
+      "Wreck": "barrel_flame_wreck",
+      "Health": 40,
+      "DestroyGuns": ["fire_explosion"],
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "barrel_flame_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "barrel_flame_wreck"
       },
-      "Health": 40,
-      "DestroyGuns": ["fire_explosion"],
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Outside", "OneWall"]
     },
     {
@@ -631,16 +798,23 @@
         "Type": "Normal",
         "Pic": "barrel_skull"
       },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "barrel_wood_wreck"
-      },
+      "Wreck": "barrel_wood_wreck",
       "Health": 40,
       "DestroyGuns": [
         "explosion1",
         "explosion2",
         "explosion3"
       ],
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "barrel_wood_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "barrel_wood_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Outside", "OneWall"]
     },
     {
@@ -649,16 +823,23 @@
         "Type": "Normal",
         "Pic": "barrel_skull2"
       },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "barrel_wood2_wreck"
-      },
+      "Wreck": "barrel_wood2_wreck",
       "Health": 40,
       "DestroyGuns": [
         "explosion1",
         "explosion2",
         "explosion3"
       ],
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "barrel_wood2_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "barrel_wood2_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Outside", "OneWall"]
     },
     {
@@ -667,10 +848,7 @@
         "Type": "Normal",
         "Pic": "box_metal_green"
       },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "box_metal_green_wreck"
-      },
+      "Wreck": "box_metal_green_wreck",
       "Health": 40,
       "DestroyGuns": [
         "big_quake",
@@ -678,6 +856,16 @@
         "explosion2",
         "explosion3"
       ],
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "box_metal_green_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "box_metal_green_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Outside", "OneWall"]
     },
     {
@@ -686,10 +874,7 @@
         "Type": "Normal",
         "Pic": "box3"
       },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "box3_gray_wreck"
-      },
+      "Wreck": "box3_gray_wreck",
       "Health": 40,
       "DestroyGuns": [
         "big_quake",
@@ -700,18 +885,34 @@
       "Flags": ["Outside", "OneWall"]
     },
     {
+      "Name": "box3_gray_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "box3_gray_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
       "Name": "box_red",
       "Pic": {
         "Type": "Normal",
         "Pic": "box_red"
       },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "table_wood_wreck"
-      },
+      "Wreck": "table_wood_wreck",
       "Health": 40,
       "DestroyGuns": ["fire_explosion"],
       "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "table_wood_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "table_wood_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true
     },
     {
       "Name": "box3_red",
@@ -719,10 +920,18 @@
         "Type": "Normal",
         "Pic": "box3_red"
       },
-      "WreckPic": {
+      "Wreck": "box3_red_wreck",
+      "Health": 40,
+      "DestroyGuns": ["fire_explosion"],
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "box3_red_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "box3_red_wreck"
       },
+      "Wreck": "table_wood_wreck",
       "Health": 40,
       "DestroyGuns": ["fire_explosion"],
       "Flags": ["Outside", "OneWall"]
@@ -733,13 +942,20 @@
         "Type": "Normal",
         "Pic": "table_lab"
       },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "safe_wreck"
-      },
+      "Wreck": "safe_wreck",
       "Health": 60,
       "DestroyGuns": ["gas_poison_explosion"],
       "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
+    },
+    {
+      "Name": "safe_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "safe_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Inside"]
     },
     {
       "Name": "table_plastic_lab",
@@ -747,12 +963,19 @@
         "Type": "Normal",
         "Pic": "table_plastic_lab"
       },
-      "WreckPic": {
+      "Wreck": "table_plastic_lab_wreck",
+      "Health": 60,
+      "DestroyGuns": ["gas_poison_explosion"],
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
+    },
+    {
+      "Name": "table_plastic_lab_wreck",
+      "Pic": {
         "Type": "Normal",
         "Pic": "table_plastic_lab_wreck"
       },
-      "Health": 60,
-      "DestroyGuns": ["gas_poison_explosion"],
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
     },
     {
@@ -761,10 +984,7 @@
         "Type": "Normal",
         "Pic": "rocket"
       },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "rocket_wreck"
-      },
+      "Wreck": "rocket_wreck",
       "Health": 40,
       "DestroyGuns": [
         "big_quake",
@@ -780,10 +1000,7 @@
         "Type": "Normal",
         "Pic": "rocket2"
       },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "rocket_wreck"
-      },
+      "Wreck": "rocket_wreck",
       "Health": 40,
       "DestroyGuns": [
         "big_quake",
@@ -791,6 +1008,16 @@
         "explosion2",
         "explosion3"
       ],
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "rocket_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "rocket_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
       "Flags": ["Outside", "OneWall"]
     },
     {
@@ -890,7 +1117,8 @@
         "Pic": "bone_blood"
       },
       "Offset": [-6, -3],
-      "Health": 0
+      "Health": 0,
+      "DrawLast": true
     },
     {
       "Name": "gibs",
@@ -899,7 +1127,8 @@
         "Pic": "gibs"
       },
       "Offset": [-6, -3],
-      "Health": 0
+      "Health": 0,
+      "DrawLast": true
     },
     {
       "Name": "skull",
@@ -908,7 +1137,8 @@
         "Pic": "skull"
       },
       "Offset": [-6, -4],
-      "Health": 0
+      "Health": 0,
+      "DrawLast": true
     },
     {
       "Name": "skull2",
@@ -917,7 +1147,8 @@
         "Pic": "skull2"
       },
       "Offset": [-6, -4],
-      "Health": 0
+      "Health": 0,
+      "DrawLast": true
     },
     {
       "Name": "blood0",
@@ -926,7 +1157,8 @@
         "Pic": "blood0"
       },
       "Offset": [-8, -3],
-      "Health": 0
+      "Health": 0,
+      "DrawLast": true
     },
     {
       "Name": "blood1",
@@ -935,7 +1167,8 @@
         "Pic": "blood1"
       },
       "Offset": [-8, -3],
-      "Health": 0
+      "Health": 0,
+      "DrawLast": true
     },
     {
       "Name": "blood2",
@@ -944,7 +1177,8 @@
         "Pic": "blood2"
       },
       "Offset": [-8, -3],
-      "Health": 0
+      "Health": 0,
+      "DrawLast": true
     },
     {
       "Name": "blood3",
@@ -953,7 +1187,8 @@
         "Pic": "blood3"
       },
       "Offset": [-8, -3],
-      "Health": 0
+      "Health": 0,
+      "DrawLast": true
     },
     {
       "Name": "blood4",
@@ -962,7 +1197,8 @@
         "Pic": "blood4"
       },
       "Offset": [-8, -3],
-      "Health": 0
+      "Health": 0,
+      "DrawLast": true
     },
     {
       "Name": "goo",
@@ -971,7 +1207,8 @@
         "Pic": "goo"
       },
       "Offset": [-8, -6],
-      "Health": 0
+      "Health": 0,
+      "DrawLast": true
     },
     {
       "Name": "drain0",
@@ -980,7 +1217,8 @@
         "Pic": "drain0"
       },
       "Offset": [-8, -6],
-      "Health": 0
+      "Health": 0,
+      "DrawLast": true
     },
     {
       "Name": "drain1",
@@ -989,7 +1227,8 @@
         "Pic": "drain1"
       },
       "Offset": [-8, -6],
-      "Health": 0
+      "Health": 0,
+      "DrawLast": true
     },
     {
       "Name": "drain2",
@@ -998,7 +1237,8 @@
         "Pic": "drain2"
       },
       "Offset": [-8, -6],
-      "Health": 0
+      "Health": 0,
+      "DrawLast": true
     },
     {
       "Name": "health spawner",
@@ -1008,6 +1248,7 @@
       },
       "Offset": [-8, -6],
       "Health": 0,
+      "DrawLast": true,
       "Type": "PickupSpawner",
       "Pickup": "health"
     },
@@ -1019,7 +1260,8 @@
         "TicksPerFrame": 4
       },
       "Offset": [-8, -6],
-      "Health": 0
+      "Health": 0,
+      "DrawLast": true
     }
   ]
 }

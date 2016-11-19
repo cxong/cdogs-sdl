@@ -68,12 +68,6 @@ typedef enum
 } PlacementFlags;
 const char *PlacementFlagStr(const int i);
 
-typedef struct
-{
-	CPic Pic;
-	Vec2i Offset;
-} MapObjectPic;
-
 typedef enum
 {
 	MAP_OBJECT_TYPE_NORMAL,
@@ -84,8 +78,9 @@ typedef enum
 typedef struct
 {
 	char *Name;
-	MapObjectPic Normal;
-	MapObjectPic Wreck;
+	CPic Pic;
+	Vec2i Offset;
+	char *Wreck;
 	Vec2i Size;
 	int Health;
 	// Guns that are fired when this map object is destroyed
@@ -93,6 +88,7 @@ typedef struct
 	CArray DestroyGuns;	// of const GunDescription *
 	// Bit field composed of bits shifted by PlacementFlags
 	int Flags;
+	bool DrawLast;
 	MapObjectType Type;
 	union
 	{
@@ -119,6 +115,7 @@ MapObject *IndexMapObject(const int i);
 // Get index of destructible map object; used by editor
 int DestructibleMapObjectIndex(const MapObject *mo);
 MapObject *RandomBloodMapObject(const MapObjects *mo);
+int MapObjectGetFlags(const MapObject *mo);
 
 void MapObjectsInit(
 	MapObjects *classes, const char *filename,
@@ -131,11 +128,7 @@ void MapObjectsClear(CArray *classes);
 void MapObjectsTerminate(MapObjects *classes);
 int MapObjectsCount(const MapObjects *classes);
 
-const Pic *MapObjectGetPic(
-	const MapObject *mo, Vec2i *offset, const bool isWreck);
-const CPic *MapObjectGetCPic(
-	const MapObject *mo, Vec2i *offset, const bool isWreck);
-bool MapObjectIsWreck(const MapObject *mo);
+const Pic *MapObjectGetPic(const MapObject *mo, Vec2i *offset);
 
 bool MapObjectIsTileOK(
 	const MapObject *obj, unsigned short tile, const bool isEmpty,

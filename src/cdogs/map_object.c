@@ -199,8 +199,22 @@ MapObject *RandomBloodMapObject(const MapObjects *mo)
 	const char **name = CArrayGet(&mo->Bloods, idx);
 	return StrMapObject(*name);
 }
+int MapObjectGetFlags(const MapObject *mo)
+{
+	int flags = 0;
+	if (mo->DrawLast)
+	{
+		flags |= TILEITEM_DRAW_LAST;
+	}
+	if (mo->Health > 0 && !(mo->Flags & (1 << PLACEMENT_ON_WALL)))
+	{
+		flags |= TILEITEM_IMPASSABLE;
+		flags |= TILEITEM_CAN_BE_SHOT;
+	}
+	return flags;
+}
 
-#define VERSION 2
+#define VERSION 3
 
 void MapObjectsInit(
 	MapObjects *classes, const char *filename,
@@ -281,55 +295,63 @@ static bool TryLoadMapObject(MapObject *m, json_t *node, const int version)
 	memset(m, 0, sizeof *m);
 
 	m->Name = GetString(node, "Name");
+
+	// Pic
 	json_t *normalNode = json_find_first_label(node, "Pic");
 	if (normalNode != NULL && normalNode->child != NULL)
 	{
 		if (version < 2)
 		{
-			CPicLoadNormal(&m->Normal.Pic, normalNode->child);
+			CPicLoadNormal(&m->Pic, normalNode->child);
 		}
 		else
 		{
-			CPicLoadJSON(&m->Normal.Pic, normalNode->child);
+			CPicLoadJSON(&m->Pic, normalNode->child);
 		}
 		// Pic required for map object
-		if (!CPicIsLoaded(&m->Normal.Pic))
+		if (!CPicIsLoaded(&m->Pic))
 		{
-			LOG(LM_MAIN, LL_ERROR, "pic not found for map object(%s)",
-				m->Name);
+			LOG(LM_MAIN, LL_ERROR, "pic not found for map object(%s)", m->Name);
 			goto bail;
 		}
 	}
-	json_t *wreckNode = json_find_first_label(node, "WreckPic");
-	if (wreckNode != NULL && wreckNode->child != NULL)
-	{
-		if (version < 2)
-		{
-			CPicLoadNormal(&m->Wreck.Pic, wreckNode->child);
-		}
-		else
-		{
-			CPicLoadJSON(&m->Wreck.Pic, wreckNode->child);
-		}
-	}
-	if (CPicIsLoaded(&m->Normal.Pic))
+	if (CPicIsLoaded(&m->Pic))
 	{
 		// Default offset: centered X, align bottom of tile and sprite
-		const Vec2i size = CPicGetSize(&m->Normal.Pic);
-		m->Normal.Offset = Vec2iNew(-size.x / 2, TILE_HEIGHT / 2 - size.y);
-		LoadVec2i(&m->Normal.Offset, node, "Offset");
+		const Vec2i size = CPicGetSize(&m->Pic);
+		m->Offset = Vec2iNew(-size.x / 2, TILE_HEIGHT / 2 - size.y);
+		LoadVec2i(&m->Offset, node, "Offset");
 	}
-	if (CPicIsLoaded(&m->Wreck.Pic))
+
+	// Wreck
+	if (version < 3)
 	{
-		const Vec2i size = CPicGetSize(&m->Wreck.Pic);
-		m->Wreck.Offset = Vec2iNew(-size.x / 2, TILE_HEIGHT / 2 - size.y);
-		LoadVec2i(&m->Wreck.Offset, node, "WreckOffset");
+		// Assume old wreck pic is wreck
+		json_t *wreckNode = json_find_first_label(node, "WreckPic");
+		if (wreckNode != NULL && wreckNode->child != NULL)
+		{
+			if (version < 2)
+			{
+				LoadStr(&m->Wreck, node, "WreckPic");
+			}
+			else
+			{
+				LoadStr(&m->Wreck, wreckNode, "Pic");
+			}
+		}
 	}
+	else
+	{
+		LoadStr(&m->Wreck, node, "Wreck");
+	}
+
 	// Default tile size
 	m->Size = Vec2iNew(TILE_WIDTH, TILE_HEIGHT);
 	LoadVec2i(&m->Size, node, "Size");
 	LoadInt(&m->Health, node, "Health");
 	LoadBulletGuns(&m->DestroyGuns, node, "DestroyGuns");
+
+	// Flags
 	json_t *flagsNode = json_find_first_label(node, "Flags");
 	if (flagsNode != NULL && flagsNode->child != NULL)
 	{
@@ -340,6 +362,8 @@ static bool TryLoadMapObject(MapObject *m, json_t *node, const int version)
 			m->Flags |= 1 << StrPlacementFlag(flagNode->text);
 		}
 	}
+
+	LoadBool(&m->DrawLast, node, "DrawLast");
 
 	// Special types
 	JSON_UTILS_LOAD_ENUM(m->Type, node, "Type", StrMapObjectType);
@@ -449,14 +473,15 @@ static void SetupSpawner(
 {
 	memset(m, 0, sizeof *m);
 	CSTRDUP(m->Name, spawnerName);
-	m->Normal.Pic.Type = PICTYPE_NORMAL;
-	m->Normal.Pic.u.Pic = PicManagerGetPic(&gPicManager, "spawn_pad");
-	m->Normal.Pic.UseMask = true;
-	m->Normal.Pic.u1.Mask = colorWhite;
-	const Vec2i size = CPicGetSize(&m->Normal.Pic);
-	m->Normal.Offset = Vec2iNew(-size.x / 2, TILE_HEIGHT / 2 - size.y);
+	m->Pic.Type = PICTYPE_NORMAL;
+	m->Pic.u.Pic = PicManagerGetPic(&gPicManager, "spawn_pad");
+	m->Pic.UseMask = true;
+	m->Pic.u1.Mask = colorWhite;
+	const Vec2i size = CPicGetSize(&m->Pic);
+	m->Offset = Vec2iNew(-size.x / 2, TILE_HEIGHT / 2 - size.y);
 	m->Size = Vec2iNew(TILE_WIDTH, TILE_HEIGHT);
 	m->Health = 0;
+	m->DrawLast = true;
 	m->Type = MAP_OBJECT_TYPE_PICKUP_SPAWNER;
 	m->u.PickupClass = StrPickupClass(pickupClassName);
 }
@@ -493,26 +518,10 @@ int MapObjectsCount(const MapObjects *classes)
 }
 
 
-const Pic *MapObjectGetPic(
-	const MapObject *mo, Vec2i *offset, const bool isWreck)
+const Pic *MapObjectGetPic(const MapObject *mo, Vec2i *offset)
 {
-	return CPicGetPic(MapObjectGetCPic(mo, offset, isWreck), 0);
-}
-
-const CPic *MapObjectGetCPic(
-	const MapObject *mo, Vec2i *offset, const bool isWreck)
-{
-	const bool useWreck = isWreck && CPicIsLoaded(&mo->Wreck.Pic);
-	*offset = useWreck ? mo->Wreck.Offset : mo->Normal.Offset;
-	return useWreck ? &mo->Wreck.Pic : &mo->Normal.Pic;
-}
-
-// Make sure the map objects get added with the right wreck flags
-// Wrecks are considered debris and drawn last; this is useful for objects that
-// are on the ground.
-bool MapObjectIsWreck(const MapObject *mo)
-{
-	return !(mo->Flags & (1 << PLACEMENT_ON_WALL)) && mo->Health == 0;
+	*offset = mo->Offset;
+	return CPicGetPic(&mo->Pic, 0);
 }
 
 

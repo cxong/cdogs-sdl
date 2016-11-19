@@ -366,25 +366,6 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 			}
 		}
 		break;
-	case BRUSHTYPE_ADD_WRECK:
-		if (isMain)
-		{
-			const char **destructibleName =
-				CArrayGet(&gMapObjects.Destructibles, b->u.ItemIndex);
-			if (MissionStaticTryAddWreck(
-				m, StrMapObject(*destructibleName), b->Pos))
-			{
-				return EDITOR_RESULT_CHANGED_AND_RELOAD;
-			}
-		}
-		else
-		{
-			if (MissionStaticTryRemoveWreckAt(m, b->Pos))
-			{
-				return EDITOR_RESULT_CHANGED_AND_RELOAD;
-			}
-		}
-		break;
 	case BRUSHTYPE_ADD_CHARACTER:
 		if (isMain)
 		{

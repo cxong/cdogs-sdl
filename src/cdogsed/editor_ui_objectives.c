@@ -502,7 +502,7 @@ static void MissionDrawDestroyObjective(
 	// TODO: only one kill and rescue objective allowed
 	const Objective *obj = CArrayGet(&m->Objectives, data->index);
 	Vec2i offset;
-	const Pic *newPic = MapObjectGetPic(obj->u.MapObject, &offset, false);
+	const Pic *newPic = MapObjectGetPic(obj->u.MapObject, &offset);
 	const Vec2i drawPos =
 		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
 	Blit(g, newPic, Vec2iAdd(drawPos, offset));

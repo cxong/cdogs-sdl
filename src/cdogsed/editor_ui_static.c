@@ -182,7 +182,6 @@ static int BrushIsBrushTypeAddItem(void *data)
 	return
 		b->Type == BRUSHTYPE_SET_PLAYER_START ||
 		b->Type == BRUSHTYPE_ADD_ITEM ||
-		b->Type == BRUSHTYPE_ADD_WRECK ||
 		b->Type == BRUSHTYPE_ADD_CHARACTER ||
 		b->Type == BRUSHTYPE_ADD_KEY;
 }

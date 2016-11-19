@@ -74,7 +74,6 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 				}
 			}
 			CArrayInit(&m->u.Static.Items, sizeof(MapObjectPositions));
-			CArrayInit(&m->u.Static.Wrecks, sizeof(MapObjectPositions));
 			CArrayInit(&m->u.Static.Characters, sizeof(CharacterPositions));
 			CArrayInit(&m->u.Static.Objectives, sizeof(ObjectivePositions));
 			CArrayInit(&m->u.Static.Keys, sizeof(KeyPositions));
@@ -260,14 +259,6 @@ bool MissionStaticTryAddItem(Mission *m, const MapObject *mo, const Vec2i pos)
 bool MissionStaticTryRemoveItemAt(Mission *m, const Vec2i pos)
 {
 	return TryRemoveMapObjectAt(pos, &m->u.Static.Items);
-}
-bool MissionStaticTryAddWreck(Mission *m, const MapObject *mo, const Vec2i pos)
-{
-	return TryAddMapObject(m, mo, pos, &m->u.Static.Wrecks);
-}
-bool MissionStaticTryRemoveWreckAt(Mission *m, const Vec2i pos)
-{
-	return TryRemoveMapObjectAt(pos, &m->u.Static.Wrecks);
 }
 static bool TryAddMapObject(
 	Mission *m, const MapObject *mo, const Vec2i pos, CArray *objs)

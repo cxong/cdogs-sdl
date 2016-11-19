@@ -637,8 +637,7 @@ static void DrawObjectiveInfo(const Objective *o, const Vec2i pos)
 	case OBJECTIVE_DESTROY:
 		{
 			Vec2i picOffset;
-			const Pic *p =
-				MapObjectGetPic(o->u.MapObject, &picOffset, false);
+			const Pic *p = MapObjectGetPic(o->u.MapObject, &picOffset);
 			Blit(&gGraphicsDevice, p, Vec2iAdd(pos, picOffset));
 		}
 		break;

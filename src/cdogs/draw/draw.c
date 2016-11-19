@@ -196,7 +196,7 @@ static void DrawDebris(DrawBuffer *b, Vec2i offset)
 			}
 			CA_FOREACH(ThingId, tid, tile->things)
 				const TTileItem *ti = ThingIdGetTileItem(tid);
-				if (TileItemIsDebris(ti))
+				if (TileItemDrawLast(ti))
 				{
 					CArrayPushBack(&b->displaylist, &ti);
 				}
@@ -269,8 +269,8 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 			}
 			CA_FOREACH(ThingId, tid, tile->things)
 				const TTileItem *ti = ThingIdGetTileItem(tid);
-				// Don't draw debris, they are drawn later
-				if (TileItemIsDebris(ti))
+				// Drawn later
+				if (TileItemDrawLast(ti))
 				{
 					continue;
 				}
