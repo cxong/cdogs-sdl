@@ -1,4 +1,3 @@
-
 language: c
 
 os:
@@ -35,7 +34,7 @@ before_script:
 script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then sh build/macosx/install-sdl2.sh ; fi
 
-  - cmake -DCDOGS_DATA_DIR=. -Wno-dev .
+  - cmake -DCMAKE_INSTALL_PREFIX=. -Wno-dev .
   - make -j2
 
   # Tests are broken on osx. Hope this will be fixed some day
