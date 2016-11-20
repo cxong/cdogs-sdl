@@ -34,7 +34,7 @@ before_script:
 script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then sh build/macosx/install-sdl2.sh ; fi
   # Match install prefix with data dir so that package contains everything required
-  - cmake -DCMAKE_INSTALL_PREFIX=.. -Wno-dev .
+  - cmake -DCMAKE_INSTALL_PREFIX=. -DDATA_INSTALL_DIR=. -Wno-dev .
   - make -j2
 
   # Tests are broken on osx. Hope this will be fixed some day
