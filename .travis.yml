@@ -35,14 +35,14 @@ before_script:
 script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then sh build/macosx/install-sdl2.sh ; fi
 
-  - cmake -Wno-dev .
+  - cmake -DCDOGS_DATA_DIR=. -Wno-dev .
   - make -j2
 
   # Tests are broken on osx. Hope this will be fixed some day
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make test ; fi
 
 before_deploy:
-  - sudo make package
+  - make package
 
   # GCW-Zero deployment
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]];then bash build/travis-ci/install-gcw0-toolchain.sh && sh make_gcw0.sh ; fi
