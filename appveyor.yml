@@ -1,6 +1,14 @@
+version: 0.6.3
+
 branches:
   except:
     - gh-pages
+
+# Only build if file changes here
+only_commits:
+  files:
+    - build/
+    - src/
 
 environment:
   CTEST_OUTPUT_ON_FAILURE: 1
