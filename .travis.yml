@@ -42,7 +42,7 @@ script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make test ; fi
 
 before_deploy:
-  - make package
+  - sudo make package
 
   # GCW-Zero deployment
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]];then bash build/travis-ci/install-gcw0-toolchain.sh && sh make_gcw0.sh ; fi
