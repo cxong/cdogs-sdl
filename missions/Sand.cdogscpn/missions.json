@@ -232,7 +232,7 @@
 			"Density": 15
 		},
 		{
-			"MapObject": "box3",
+			"MapObject": "box3_gas",
 			"Density": 10
 		},
 		{
@@ -787,7 +787,7 @@
 			"Density": 20
 		},
 		{
-			"MapObject": "box3",
+			"MapObject": "box3_gas",
 			"Density": 15
 		},
 		{

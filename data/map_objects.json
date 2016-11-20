@@ -869,6 +869,20 @@
       "Flags": ["Outside", "OneWall"]
     },
     {
+      "Name": "box3_gas",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "box3_gas",
+        "TicksPerFrame": 16
+      },
+      "Wreck": "box3",
+      "Health": 20,
+      "DestroyGuns": [
+        "gas_poison_explosion"
+      ],
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
       "Name": "box3",
       "Pic": {
         "Type": "Normal",

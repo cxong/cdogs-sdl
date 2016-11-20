@@ -1566,7 +1566,7 @@
 			"Density": 10
 		},
 		{
-			"MapObject": "box3",
+			"MapObject": "box_metal_green",
 			"Density": 5
 		},
 		{
@@ -1684,7 +1684,7 @@
 			"Density": 10
 		},
 		{
-			"MapObject": "box3",
+			"MapObject": "box_metal_green",
 			"Density": 5
 		},
 		{
