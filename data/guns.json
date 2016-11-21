@@ -339,14 +339,16 @@
       "Name": "gas_poison_explosion",
       "Bullet": "gas_cloud_poison",
       "Recoil": 6.28,
-      "SpreadCount": 8
+      "SpreadCount": 8,
+      "Sound": "gas_leak"
     },
     {
       "Pic": "",
       "Name": "gas_confuse_explosion",
       "Bullet": "gas_cloud_confuse",
       "Recoil": 6.28,
-      "SpreadCount": 8
+      "SpreadCount": 8,
+      "Sound": "gas_leak"
     },
     {
       "Pic": "",
