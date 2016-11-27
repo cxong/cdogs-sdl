@@ -369,11 +369,14 @@ int hashmap_remove(map_t m, char* key){
 /* Deallocate the hashmap */
 void hashmap_free(map_t m){
 	// Deallocate keys
-	for (int i = 0; i< m->table_size; i++)
-		if (m->data[i].in_use) {
-			free(m->data[i].key);
-		}
-	free(m->data);
+	if (m != NULL)
+	{
+		for (int i = 0; i< m->table_size; i++)
+			if (m->data[i].in_use) {
+				free(m->data[i].key);
+			}
+		free(m->data);
+	}
 	free(m);
 }
 

@@ -227,6 +227,9 @@ CArray *ConfigGetGroup(Config *c, const char *name);
 // Set config value
 // Min/max range is also checked and enforced
 void ConfigSetInt(Config *c, const char *name, const int value);
+void ConfigSetFloat(Config *c, const char *name, const double value);
+// Try to set config value from a string; return success
+bool ConfigTrySetFromString(Config *c, const char *name, const char *value);
 
 bool ConfigApply(Config *config);
 int ConfigGetVersion(FILE *f);

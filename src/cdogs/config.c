@@ -517,12 +517,45 @@ void ConfigSetInt(Config *c, const char *name, const int value)
 {
 	c = ConfigGet(c, name);
 	CASSERT(c->Type == CONFIG_TYPE_INT, "wrong config type");
-	c->u.Int.Value = value;
-	if (c->u.Int.Min > 0)
-		c->u.Int.Value = MAX(c->u.Int.Value, c->u.Int.Min);
-	if (c->u.Int.Max > 0)
-		c->u.Int.Value = MIN(c->u.Int.Value, c->u.Int.Max);
+	c->u.Int.Value = CLAMP(value, c->u.Int.Min, c->u.Int.Max);
 }
+
+void ConfigSetFloat(Config *c, const char *name, const double value)
+{
+	c = ConfigGet(c, name);
+	CASSERT(c->Type == CONFIG_TYPE_FLOAT, "wrong config type");
+	c->u.Float.Value = CLAMP(value, c->u.Float.Min, c->u.Float.Max);
+}
+
+bool ConfigTrySetFromString(Config *c, const char *name, const char *value)
+{
+	Config *child = ConfigGet(c, name);
+	switch (child->Type)
+	{
+	case CONFIG_TYPE_STRING:
+		CASSERT(false, "unimplemented");
+		return false;
+	case CONFIG_TYPE_INT:
+		ConfigSetInt(c, name, atoi(value));
+		return true;
+	case CONFIG_TYPE_FLOAT:
+		ConfigSetFloat(c, name, atof(value));
+		return true;
+	case CONFIG_TYPE_BOOL:
+		child->u.Bool.Value = strcmp(value, "true") == 0;
+		return false;
+	case CONFIG_TYPE_ENUM:
+		CASSERT(false, "unimplemented");
+		return false;
+	case CONFIG_TYPE_GROUP:
+		CASSERT(false, "Cannot set group config");
+		return false;
+	default:
+		CASSERT(false, "Unknown config type");
+		return false;
+	}
+}
+
 
 Config ConfigDefault(void)
 {

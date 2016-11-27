@@ -13,6 +13,7 @@ set(CDOGS_SDL_SOURCES
 	autosave.c
 	briefing_screens.c
 	cdogs.c
+	command_line.c
 	credits.c
 	game.c
 	mainmenu.c
@@ -29,6 +30,7 @@ set(CDOGS_SDL_SOURCES
 set(CDOGS_SDL_HEADERS
 	autosave.h
 	briefing_screens.h
+	command_line.h
 	credits.h
 	game.h
 	mainmenu.h
@@ -46,11 +48,6 @@ set(CDOGS_SDL_EXTRA)
 if(WIN32)
 	set(CDOGS_SDL_EXTRA ../build/windows/cdogs.rc)
 elseif(APPLE)
-	set(CDOGS_SDL_EXTRA ../build/macosx/cdogs-icon.icns)
-	set_source_files_properties(../build/macosx/cdogs-icon.icns
-		PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
-	set(MACOSX_BUNDLE_ICON_FILE cdogs-icon.icns)
-	set(MACOSX_BUNDLE_SHORT_VERSION_STRING "${VERSION}")
 	set(EXTRA_LIBRARIES "${EXTRA_LIBRARIES} -framework Carbon -framework IOKit")
 endif()
 add_executable(cdogs-sdl
