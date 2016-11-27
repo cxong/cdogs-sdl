@@ -94,7 +94,6 @@
 #include "player_select_menus.h"
 #include "prep.h"
 #include "screens.h"
-#include "XGetopt.h"
 
 
 void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaigns)

@@ -33,7 +33,8 @@
 #include <cdogs/log.h>
 #include <cdogs/sys_config.h>
 #include <cdogs/utils.h>
-#include <XGetOpt.h>
+
+#include "XGetopt.h"
 
 
 void PrintTitle(void)
