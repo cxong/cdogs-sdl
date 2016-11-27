@@ -164,27 +164,23 @@ set_target_properties(cdogs-sdl-editor PROPERTIES
 
 # Executables
 set(INSTALL_PREFIX ".")
+set(EXE_EXTENSION "")
 if(WIN32)
 	set(EXE_EXTENSION ".exe")
 	set(LIB_EXTENSION ".dll")
 elseif(APPLE)
 	set(LIB_EXTENSION ".dylib")
+  set(DATA_INSTALL_DIR "cdogs-sdl")
 	set(INSTALL_PREFIX "cdogs-sdl")
 else()
-	set(EXE_EXTENSION "")
 	set(LIB_EXTENSION ".so")
 	set(INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 endif()
-if(APPLE)
-	install(
-		DIRECTORY src/cdogs-sdl.app src/cdogs-sdl-editor.app
-		DESTINATION ${INSTALL_PREFIX}/bin
-		USE_SOURCE_PERMISSIONS)
-else()
-	install(
-		PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/src/cdogs-sdl${EXE_EXTENSION} ${CMAKE_CURRENT_BINARY_DIR}/src/cdogs-sdl-editor${EXE_EXTENSION}
-		DESTINATION ${INSTALL_PREFIX}/bin)
-endif()
+install(
+  PROGRAMS
+    ${CMAKE_CURRENT_BINARY_DIR}/src/cdogs-sdl${EXE_EXTENSION}
+    ${CMAKE_CURRENT_BINARY_DIR}/src/cdogs-sdl-editor${EXE_EXTENSION}
+  DESTINATION ${INSTALL_PREFIX}/bin)
 
 INSTALL(DIRECTORY
 	${CMAKE_SOURCE_DIR}/doc
@@ -249,13 +245,13 @@ elseif(APPLE)
 	set(CPACK_DMG_DS_STORE
 		"${CMAKE_CURRENT_BINARY_DIR}/build/macosx/DS_Store")
 
-	# copy SDL frameworks into app bundle for Mac OS X
+	# copy SDL frameworks
 	set(APPS cdogs-sdl cdogs-sdl-editor)
 	set(LIBS SDL2 SDL2_image SDL2_mixer)
 	foreach(APP ${APPS})
 		foreach(LIB ${LIBS})
 			install(DIRECTORY /Library/Frameworks/${LIB}.framework
-				DESTINATION ${INSTALL_PREFIX}/bin/${APP}.app/Contents/Frameworks)
+				DESTINATION ${INSTALL_PREFIX}/Frameworks)
 		endforeach()
 	endforeach()
 elseif(BEOS OR HAIKU)

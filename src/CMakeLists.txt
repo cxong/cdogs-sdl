@@ -53,7 +53,7 @@ elseif(APPLE)
 	set(MACOSX_BUNDLE_SHORT_VERSION_STRING "${VERSION}")
 	set(EXTRA_LIBRARIES "${EXTRA_LIBRARIES} -framework Carbon -framework IOKit")
 endif()
-add_executable(cdogs-sdl MACOSX_BUNDLE
+add_executable(cdogs-sdl
 	${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS} ${CDOGS_SDL_EXTRA})
 if(APPLE)
 	set_target_properties(cdogs-sdl PROPERTIES
@@ -72,7 +72,7 @@ if(GCW0)
 	)
 endif()
 
-add_executable(cdogs-sdl-editor MACOSX_BUNDLE cdogsed.c ${CDOGS_SDL_EXTRA})
+add_executable(cdogs-sdl-editor cdogsed.c ${CDOGS_SDL_EXTRA})
 if(APPLE)
 	set_target_properties(cdogs-sdl-editor PROPERTIES
 		MACOSX_RPATH 1

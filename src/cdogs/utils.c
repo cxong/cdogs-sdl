@@ -313,13 +313,13 @@ static void TrimSlashes(char *s)
 char *CDogsGetCWD(char *buf)
 {
 #ifdef __APPLE__
-	char cwd[CDOGS_PATH_MAX];
-	uint32_t size = sizeof cwd;
-	_NSGetExecutablePath(cwd, &size);
+	uint32_t size = CDOGS_PATH_MAX;
+	if (_NSGetExecutablePath(buf, &size))
+	{
+		return NULL;
+	}
 	// This gives us the executable path; find the dirname
-	*strrchr(cwd, '/') = '\0';
-	// The executable is under *.app/Content/MacOS, so cd up thrice
-	sprintf(buf, "%s/../../..", cwd);
+	*strrchr(buf, '/') = '\0';
 	return buf;
 #else
 	return getcwd(buf, CDOGS_PATH_MAX);
