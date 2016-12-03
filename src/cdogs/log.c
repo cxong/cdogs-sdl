@@ -25,6 +25,8 @@
 */
 #include "log.h"
 
+#include <errno.h>
+
 #include "rlutil/rlutil.h"
 #include "utils.h"
 
