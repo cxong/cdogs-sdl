@@ -1434,6 +1434,7 @@ int main(int argc, char *argv[])
 	EditorBrushTerminate(&brush);
 
 	ConfigDestroy(&gConfig);
+	LogTerminate();
 
 	SDL_Quit();
 

@@ -36,7 +36,7 @@ void PrintTitle(void);
 
 void PrintHelp(void);
 
-void GetCommandLine(char *buf, const int argc, char *argv[]);
+void ProcessCommandLine(char *buf, const int argc, char *argv[]);
 
 // Parse command-line arguments and set config. Returns whether to run the game
 bool ParseArgs(

@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014, Cong Xu
+	Copyright (c) 2014, 2016 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -28,8 +28,10 @@
 #include "path_cache.h"
 
 #include <math.h>
+#include <time.h>
 
 #include "ai_utils.h"
+#include "log.h"
 
 #define PATH_CACHE_MAX 128
 
@@ -102,19 +104,19 @@ CachedPath PathCacheCreate(
 	PathCache *pc, Vec2i from, Vec2i to,
 	const bool ignoreObjects, const bool cache)
 {
-	debug(D_NORMAL, "Pathfind from (%d, %d) to (%d, %d)...",
-		from.x, from.y, to.x, to.y);
-
 	// Search through existing cache for path
 	CA_FOREACH(CachedPath, c, pc->paths)
 		if (CachedPathMatches(c, from, to))
 		{
-			debug(D_NORMAL, "returning cached path\n");
+			LOG(LM_PATH, LL_TRACE, "cached path (%d, %d) to (%d, %d)...",
+				from.x, from.y, to.x, to.y);
 			return CachedPathCopy(c);
 		}
 	CA_FOREACH_END()
 
-	debug(D_NORMAL, "pathfinding\n");
+	LOG(LM_PATH, LL_TRACE, "find path (%d, %d) to (%d, %d)...",
+		from.x, from.y, to.x, to.y);
+	const clock_t start = clock();
 
 	// Cached path not found; find the path now
 	CachedPath cp;
@@ -148,8 +150,11 @@ CachedPath PathCacheCreate(
 				pc->head = 0;
 			}
 		}
-		debug(D_NORMAL, "Cached pathfind (%d paths)\n", (int)pc->paths.size);
+		LOG(LM_PATH, LL_TRACE, "Cached %d paths", (int)pc->paths.size);
 	}
+	const clock_t diff = clock() - start;
+	const int ms = diff * 1000 / CLOCKS_PER_SEC;
+	LOG(LM_PATH, LL_DEBUG, "Pathfind time %dms", ms);
 	return cp;
 }
 

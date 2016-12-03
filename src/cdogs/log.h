@@ -26,6 +26,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "sys_specifics.h"
@@ -41,6 +42,7 @@ typedef enum
 	LM_GFX,
 	LM_MAP,
 	LM_EDIT,
+	LM_PATH,
 	LM_COUNT
 } LogModule;
 const char *LogModuleName(const LogModule m);
@@ -59,12 +61,10 @@ void LogModuleSetLevel(const LogModule m, const LogLevel l);
 const char *LogLevelName(const LogLevel l);
 LogLevel StrLogLevel(const char *s);
 
+FILE *gLogFile;
 void LogInit(void);
-void LogSetLevelColor(const LogLevel l);
-void LogSetModuleColor(void);
-void LogSetFileColor(void);
-void LogSetFuncColor(void);
-void LogResetColor(void);
+void LogOpenFile(const char *filename);
+void LogTerminate(void);
 
 // Only log the file base name
 #ifdef _WIN32
@@ -72,30 +72,20 @@ void LogResetColor(void);
 #else
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #endif
-#define LOG(_module, _level, ...)\
+#define LOG(_module, _level, _fmt, ...)\
 	do\
 	{\
 		if (_level >= LogModuleGetLevel(_module))\
 		{\
-			LogSetLevelColor(_level);\
-			fprintf(stderr, "%-5s ", LogLevelName(_level));\
-			LogResetColor();\
-			fprintf(stderr, "[");\
-			LogSetModuleColor();\
-			fprintf(stderr, "%-5s", LogModuleName(_module));\
-			LogResetColor();\
-			fprintf(stderr, "] [");\
-			LogSetFileColor();\
-			fprintf(stderr, "%s:%d", __FILENAME__, __LINE__);\
-			LogResetColor();\
-			fprintf(stderr, "] ");\
-			LogSetFuncColor();\
-			fprintf(stderr, "%s()", __FUNCTION__);\
-			LogResetColor();\
-			fprintf(stderr, ": ");\
-			LogSetLevelColor(_level);\
-			fprintf(stderr, __VA_ARGS__);\
-			LogResetColor();\
-			fprintf(stderr, "\n");\
+			LogLine(\
+				stderr, _module, _level, __FILENAME__, __LINE__,\
+				__FUNCTION__, _fmt, __VA_ARGS__);\
+			LogLine(\
+				gLogFile, _module, _level, __FILENAME__, __LINE__,\
+				__FUNCTION__, _fmt, __VA_ARGS__);\
 		}\
 	} while ((void)0, 0)
+
+void LogLine(
+	FILE *stream, const LogModule m, const LogLevel l, const char *filename,
+	const int line, const char *function, const char *fmt, ...);

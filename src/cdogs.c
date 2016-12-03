@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
 
 	// Print command line
 	char buf[CDOGS_PATH_MAX];
-	GetCommandLine(buf, argc, argv);
+	ProcessCommandLine(buf, argc, argv);
 	LOG(LM_MAIN, LL_INFO, "Command line (%d args):%s", argc, buf);
 	if (!ParseArgs(argc, argv, &connectAddr, &loadCampaign))
 	{
@@ -311,6 +311,7 @@ bail:
 	UnloadAllCampaigns(&campaigns);
 	SoundTerminate(&gSoundDevice, true);
 	ConfigDestroy(&gConfig);
+	LogTerminate();
 
 	SDLJBN_Quit();
 	SDL_Quit();

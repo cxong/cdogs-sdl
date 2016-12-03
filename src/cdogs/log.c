@@ -45,6 +45,7 @@ static LogModuleInfo sModuleInfo[] =
 	{ LL_INFO, "GFX" },
 	{ LL_WARN, "MAP" },
 	{ LL_INFO, "EDIT" },
+	{ LL_INFO, "PATH" },
 };
 
 
@@ -115,8 +116,25 @@ void LogInit(void)
 		NULL, NULL, ASL_LEVEL_NOTICE, STDERR_FILENO, ASL_LOG_DESCRIPTOR_WRITE);
 #endif
 }
+void LogOpenFile(const char *filename)
+{
+	// Optionally log to file
+	gLogFile = fopen(filename, "a+");
+	if (gLogFile == NULL)
+	{
+		LOG(LM_MAIN, LL_ERROR, "Error opening log filename (%s): %s",
+			filename, strerror(errno));
+	}
+}
+void LogTerminate(void)
+{
+	if (gLogFile != NULL)
+	{
+		fclose(gLogFile);
+	}
+}
 
-void LogSetLevelColor(const LogLevel l)
+static void LogSetLevelColor(const LogLevel l)
 {
 	switch (l)
 	{
@@ -128,19 +146,56 @@ void LogSetLevelColor(const LogLevel l)
 	default: CASSERT(false, "Unknown log level"); break;
 	}
 }
-void LogSetModuleColor(void)
+static void LogSetModuleColor(void)
 {
 	setColor(LIGHTBLUE);
 }
-void LogSetFileColor(void)
+static void LogSetFileColor(void)
 {
 	setColor(BROWN);
 }
-void LogSetFuncColor(void)
+static void LogSetFuncColor(void)
 {
 	setColor(CYAN);
 }
-void LogResetColor(void)
+static void LogResetColor(void)
 {
 	resetColor();
+}
+
+void LogLine(
+	FILE *stream, const LogModule m, const LogLevel l, const char *filename,
+	const int line, const char *function, const char *fmt, ...)
+{
+	if (stream == NULL)
+	{
+		return;
+	}
+	LogSetLevelColor(l);
+	fprintf(stream, "%-5s ", LogLevelName(l));
+	LogResetColor();
+	fprintf(stream, "[");
+	LogSetModuleColor();
+	fprintf(stream, "%-5s", LogModuleName(m));
+	LogResetColor();
+	fprintf(stream, "] [");
+	LogSetFileColor();
+	fprintf(stream, "%s:%d", filename, line);
+	LogResetColor();
+	fprintf(stream, "] ");
+	LogSetFuncColor();
+	fprintf(stream, "%s()", function);
+	LogResetColor();
+	fprintf(stream, ": ");
+	LogSetLevelColor(l);
+	va_list args;
+	va_start(args, fmt);
+	vfprintf(stream, fmt, args);
+	va_end(args);
+	LogResetColor();
+	fprintf(stream, "\n");
+	if (l >= LL_WARN)
+	{
+		fflush(stream);
+	}
 }

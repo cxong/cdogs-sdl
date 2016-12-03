@@ -86,6 +86,9 @@ void PrintHelp(void)
 	printf(
 		"    --log=L          Enable logging for all modules at level L.\n\n"
 	);
+	printf(
+		"    --logfile=F      Log to file by filename\n\n"
+	);
 
 	printf("%s\n",
 		"Other:\n"
@@ -100,7 +103,7 @@ void PrintHelp(void)
 		);
 }
 
-void GetCommandLine(char *buf, const int argc, char *argv[])
+void ProcessCommandLine(char *buf, const int argc, char *argv[])
 {
 	buf[0] = '\0';
 	for (int i = 0; i < argc; i++)
@@ -132,12 +135,13 @@ bool ParseArgs(
 		{ "debug",		required_argument,	NULL,	'd' },
 		{ "config",		optional_argument,	NULL,	'C' },
 		{ "log",		required_argument,	NULL,	1000 },
+		{ "logfile",	required_argument,	NULL,	1001 },
 		{ "help",		no_argument,		NULL,	'h' },
 		{ 0,			0,					NULL,	0 }
 	};
 	int opt = 0;
 	int idx = 0;
-	while ((opt = getopt_long(argc, argv, "fs:c:x:d:C::\0:h", longopts, &idx)) != -1)
+	while ((opt = getopt_long(argc, argv, "fs:c:x:d:C::\0:\0:h", longopts, &idx)) != -1)
 	{
 		switch (opt)
 		{
@@ -194,6 +198,9 @@ bool ParseArgs(
 					printf("Logging everything at %s\n", LogLevelName(ll));
 				}
 			}
+			break;
+		case 1001:
+			LogOpenFile(optarg);
 			break;
 		case 'x':
 			if (enet_address_set_host(connectAddr, optarg) != 0)
