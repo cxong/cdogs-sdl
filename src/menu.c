@@ -883,7 +883,7 @@ void MenuPlaySound(MenuSound s)
 		SoundPlay(&gSoundDevice, StrSound("hahaha"));
 		break;
 	case MENU_SOUND_ERROR:
-		SoundPlay(&gSoundDevice, SoundGetRandomScream(&gSoundDevice));
+		SoundPlay(&gSoundDevice, StrSound("aargh"));
 		break;
 	default:
 		break;

@@ -211,8 +211,7 @@ static void HandleGameEvent(
 			if (ConfigGetBool(&gConfig, "Sound.Footsteps"))
 			{
 				SoundPlayAt(
-					&gSoundDevice,
-					gSoundDevice.slideSound,
+					&gSoundDevice, StrSound("slide"),
 					Vec2iNew(a->tileItem.x, a->tileItem.y));
 			}
 		}
@@ -249,8 +248,7 @@ static void HandleGameEvent(
 			ActorHeal(a, e.u.Heal.Amount);
 			// Sound of healing
 			SoundPlayAt(
-				&gSoundDevice,
-				gSoundDevice.healthSound, Vec2iFull2Real(a->Pos));
+				&gSoundDevice, StrSound("health"), Vec2iFull2Real(a->Pos));
 			// Tell the spawner that we took a health so we can
 			// spawn more (but only if we're the server)
 			if (e.u.Heal.IsRandomSpawned && !gCampaign.IsClient)
@@ -587,8 +585,7 @@ static void HandleGameEvent(
 		break;
 	case GAME_EVENT_ADD_KEYS:
 		gMission.KeyFlags |= e.u.AddKeys.KeyFlags;
-		SoundPlayAt(
-			&gSoundDevice, gSoundDevice.keySound, Net2Vec2i(e.u.AddKeys.Pos));
+		SoundPlayAt(&gSoundDevice, StrSound("key"), Net2Vec2i(e.u.AddKeys.Pos));
 		// Clear cache since we may now have new paths
 		PathCacheClear(&gPathCache);
 		break;

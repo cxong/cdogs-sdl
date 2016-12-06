@@ -198,54 +198,9 @@ bail:
 static void LoadArchiveSounds(
 	SoundDevice *device, const char *archive, const char *dirname)
 {
-	char *buf = NULL;
-
 	char path[CDOGS_PATH_MAX];
 	sprintf(path, "%s/%s", archive, dirname);
-	tinydir_dir dir;
-	if (tinydir_open(&dir, path) != 0)
-	{
-		LOG(LM_MAP, LL_DEBUG, "no sound dir(%s): %s", path, strerror(errno));
-		goto bail;
-	}
-	while (dir.has_next)
-	{
-		tinydir_file file;
-		tinydir_readfile(&dir, &file);
-		if (!file.is_reg) goto nextFile;
-		long len;
-		buf = ReadFileIntoBuf(file.path, "rb", &len);
-		if (buf == NULL) goto nextFile;
-		SDL_RWops *rwops = SDL_RWFromMem(buf, len);
-		Mix_Chunk *data = Mix_LoadWAV_RW(rwops, 0);
-		if (data != NULL)
-		{
-			char nameBuf[CDOGS_FILENAME_MAX];
-			strcpy(nameBuf, file.name);
-			// Remove extension
-			char *dot = strrchr(nameBuf, '.');
-			if (dot != NULL)
-			{
-				*dot = '\0';
-			}
-			SoundAdd(&device->customSounds, nameBuf, data);
-		}
-		rwops->close(rwops);
-	nextFile:
-		CFREE(buf);
-		buf = NULL;
-		if (tinydir_next(&dir) != 0)
-		{
-			printf(
-				"Could not go to next file in dir %s: %s\n",
-				path, strerror(errno));
-			goto bail;
-		}
-	}
-
-bail:
-	CFREE(buf);
-	tinydir_close(&dir);
+	SoundLoadDir(device->customSounds, path, NULL);
 }
 static void LoadArchivePics(
 	PicManager *pm, const char *archive, const char *dirname)

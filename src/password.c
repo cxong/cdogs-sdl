@@ -185,8 +185,7 @@ static GameLoopResult EnterCodeScreenUpdate(void *data)
 	if (eData->Mission == 0)
 	{
 		// Password doesn't work; play a bad sound
-		SoundPlay(
-			&gSoundDevice, SoundGetRandomScream(&gSoundDevice));
+		SoundPlay(&gSoundDevice, StrSound("aargh"));
 		return UPDATE_RESULT_OK;
 	}
 
@@ -218,7 +217,7 @@ static bool PasswordEntry(EnterCodeScreenData *data, const int cmd)
 		else
 		{
 			// Too many letters entered
-			SoundPlay(&gSoundDevice, SoundGetRandomScream(&gSoundDevice));
+			SoundPlay(&gSoundDevice, StrSound("aargh"));
 		}
 	}
 	else if (cmd & CMD_BUTTON2)
@@ -232,7 +231,7 @@ static bool PasswordEntry(EnterCodeScreenData *data, const int cmd)
 		else
 		{
 			// No letters to delete
-			SoundPlay(&gSoundDevice, SoundGetRandomScream(&gSoundDevice));
+			SoundPlay(&gSoundDevice, StrSound("aargh"));
 		}
 	}
 	else if (cmd & CMD_LEFT)

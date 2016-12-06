@@ -71,7 +71,7 @@ void CampaignSettingTerminate(CampaignSetting *setting)
 	memset(setting, 0, sizeof *setting);
 
 	// Unload previous custom data
-	SoundClear(&gSoundDevice.customSounds);
+	SoundClear(gSoundDevice.customSounds);
 	PicManagerClearCustom(&gPicManager);
 	ParticleClassesClear(&gParticleClasses.CustomClasses);
 	AmmoClassesClear(&gAmmo.CustomAmmo);

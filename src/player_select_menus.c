@@ -535,6 +535,6 @@ static void PostInputRotatePlayer(menu_t *menu, int cmd, void *data)
 	{
 		d->Dir = (direction_e)CLAMP_OPPOSITE(
 			(int)d->Dir + dx, DIRECTION_UP, DIRECTION_UPLEFT);
-		SoundPlay(&gSoundDevice, SoundGetRandomFootstep(&gSoundDevice));
+		SoundPlay(&gSoundDevice, StrSound("footsteps"));
 	}
 }

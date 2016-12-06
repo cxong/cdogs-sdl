@@ -180,8 +180,7 @@ void UpdateActorState(TActor * actor, int ticks)
 		actor->anim.newFrame)
 	{
 		SoundPlayAtPlusDistance(
-			&gSoundDevice,
-			SoundGetRandomFootstep(&gSoundDevice),
+			&gSoundDevice, StrSound("footsteps"),
 			Vec2iNew(actor->tileItem.x, actor->tileItem.y),
 			FOOTSTEP_DISTANCE_PLUS);
 	}
@@ -518,7 +517,7 @@ void InjureActor(TActor * actor, int injury)
 	{
 		actor->stateCounter = 0;
 		const Vec2i pos = Vec2iNew(actor->tileItem.x, actor->tileItem.y);
-		SoundPlayAt(&gSoundDevice, SoundGetRandomScream(&gSoundDevice), pos);
+		SoundPlayAt(&gSoundDevice, StrSound("aargh"), pos);
 		if (actor->PlayerUID >= 0)
 		{
 			SoundPlayAt(
@@ -626,7 +625,7 @@ void Shoot(TActor *actor)
 			{
 				SoundPlayAt(
 					&gSoundDevice,
-					gSoundDevice.clickSound, Vec2iFull2Real(actor->Pos));
+					StrSound("click"), Vec2iFull2Real(actor->Pos));
 				gun->clickLock = SOUND_LOCK_WEAPON_CLICK;
 			}
 		}

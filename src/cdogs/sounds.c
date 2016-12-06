@@ -92,27 +92,91 @@ int OpenAudio(int frequency, Uint16 format, int channels, int chunkSize)
 	return 0;
 }
 
-static void LoadSound(SoundDevice *device, const char *name, const char *path)
+static Mix_Chunk *LoadSound(const char *path);
+static void AddSound(map_t sounds, const char *name, SoundData *sound);
+static void SoundLoad(map_t sounds, const char *name, const char *path)
+{
+	// If the sound basename is a number, it is part of a group of random sounds
+	char basename[CDOGS_FILENAME_MAX];
+	PathGetBasenameWithoutExtension(basename, name);
+	char nameNoExt[CDOGS_PATH_MAX];
+	PathGetWithoutExtension(nameNoExt, name);
+	bool isNumber = true;
+	for (const char *c = basename; *c != '\0'; c++)
+	{
+		if (!isdigit(*c))
+		{
+			isNumber = false;
+			break;
+		}
+	}
+	if (isNumber)
+	{
+		// Sound is random
+		// Only add the 0 number
+		const int n = atoi(basename);
+		if (n != 0)
+		{
+			return;
+		}
+		SoundData *sound;
+		CCALLOC(sound, sizeof *sound);
+		sound->Type = SOUND_RANDOM;
+		CArrayInit(&sound->u.random.sounds, sizeof(Mix_Chunk *));
+		// Remove "0.<ext>" from path
+		const char *ext = StrGetFileExt(path);
+		const int len = ext - path - 2;
+		char fmt[CDOGS_FILENAME_MAX];
+		strncpy(fmt, path, len);
+		// Create format string path/to/sound/%d.<ext>
+		sprintf(fmt + len, "%%d.%s", ext);
+		for (int i = 0;; i++)
+		{
+			char buf[CDOGS_PATH_MAX];
+			sprintf(buf, fmt, i);
+			Mix_Chunk *data = LoadSound(buf);
+			if (data == NULL) break;
+			CArrayPushBack(&sound->u.random.sounds, &data);
+		}
+		// Remove "/0" from name and add
+		*strrchr(nameNoExt, '/') = '\0';
+		AddSound(sounds, nameNoExt, sound);
+	}
+	else
+	{
+		Mix_Chunk *data = LoadSound(path);
+		if (data != NULL)
+		{
+			SoundData *sound;
+			CMALLOC(sound, sizeof *sound);
+			sound->Type = SOUND_NORMAL;
+			sound->u.normal = data;
+			AddSound(sounds, nameNoExt, sound);
+		}
+	}
+}
+static Mix_Chunk *LoadSound(const char *path)
 {
 	Mix_Chunk *data = Mix_LoadWAV(path);
 	if (data == NULL)
 	{
-		return;
+		LOG(LM_MAIN, LL_ERROR, "Cannot load sound '%s': %s",
+			path, SDL_GetError());
 	}
-	char buf[CDOGS_FILENAME_MAX];
-	PathGetWithoutExtension(buf, name);
-	SoundAdd(&device->sounds, buf, data);
+	return data;
 }
-void SoundAdd(CArray *sounds, const char *name, Mix_Chunk *data)
+static void SoundDataTerminate(any_t data);
+static void AddSound(map_t sounds, const char *name, SoundData *sound)
 {
-	SoundData sound;
-	sound.data = data;
-	strcpy(sound.Name, name);
-	CArrayPushBack(sounds, &sound);
+	const int error = hashmap_put(sounds, name, sound);
+	if (error != MAP_OK)
+	{
+		LOG(LM_MAIN, LL_ERROR, "failed to add sound %s: %d", name, error);
+		SoundDataTerminate((any_t)sound);
+		CFREE(sound);
+	}
 }
 
-static void SoundLoadDirImpl(
-	SoundDevice *s, const char *path, const char *prefix);
 void SoundInitialize(SoundDevice *device, const char *path)
 {
 	memset(device, 0, sizeof *device);
@@ -124,40 +188,13 @@ void SoundInitialize(SoundDevice *device, const char *path)
 	device->channels = 64;
 	SoundReconfigure(device);
 
-	CArrayInit(&device->sounds, sizeof(SoundData));
-	CArrayInit(&device->customSounds, sizeof(SoundData));
+	device->sounds = hashmap_new();
+	device->customSounds = hashmap_new();
 	char buf[CDOGS_PATH_MAX];
 	GetDataFilePath(buf, path);
-	SoundLoadDirImpl(device, buf, NULL);
-
-	// Look for commonly used sounds to set our pointers
-	CArrayInit(&device->footstepSounds, sizeof(Mix_Chunk *));
-	for (int i = 0;; i++)
-	{
-		sprintf(buf, "footsteps/%d", i);
-		Mix_Chunk *s = StrSound(buf);
-		if (s == NULL) break;
-		CArrayPushBack(&device->footstepSounds, &s);
-	}
-	device->slideSound = StrSound("slide");
-	device->healthSound = StrSound("health");
-	device->clickSound = StrSound("click");
-	device->keySound = StrSound("key");
-	device->wreckSound = StrSound("bang");
-	CArrayInit(&device->screamSounds, sizeof(Mix_Chunk *));
-	for (int i = 0;; i++)
-	{
-		sprintf(buf, "aargh%d", i);
-		Mix_Chunk *scream = StrSound(buf);
-		if (scream == NULL)
-		{
-			break;
-		}
-		CArrayPushBack(&device->screamSounds, &scream);
-	}
+	SoundLoadDir(device->sounds, buf, NULL);
 }
-static void SoundLoadDirImpl(
-	SoundDevice *s, const char *path, const char *prefix)
+void SoundLoadDir(map_t sounds, const char *path, const char *prefix)
 {
 	tinydir_dir dir;
 	if (tinydir_open(&dir, path) == -1)
@@ -173,6 +210,10 @@ static void SoundLoadDirImpl(
 			LOG(LM_MAIN, LL_ERROR, "Cannot read sound file '%s'", file.path);
 			continue;
 		}
+		if (file.name[0] == '.')
+		{
+			continue;
+		}
 		char buf[CDOGS_PATH_MAX];
 		if (prefix != NULL)
 		{
@@ -184,11 +225,11 @@ static void SoundLoadDirImpl(
 		}
 		if (file.is_reg)
 		{
-			LoadSound(s, buf, file.path);
+			SoundLoad(sounds, buf, file.path);
 		}
-		else if (file.is_dir && file.name[0] != '.')
+		else if (file.is_dir)
 		{
-			SoundLoadDirImpl(s, file.path, buf);
+			SoundLoadDir(sounds, file.path, buf);
 		}
 	}
 
@@ -220,14 +261,9 @@ void SoundReconfigure(SoundDevice *s)
 	s->isInitialised = true;
 }
 
-void SoundClear(CArray *sounds)
+void SoundClear(map_t sounds)
 {
-	for (int i = 0; i < (int)sounds->size; i++)
-	{
-		SoundData *sound = CArrayGet(sounds, i);
-		Mix_FreeChunk(sound->data);
-	}
-	CArrayClear(sounds);
+	hashmap_clear(sounds, SoundDataTerminate);
 }
 void SoundTerminate(SoundDevice *device, const bool waitForSoundsComplete)
 {
@@ -250,10 +286,28 @@ void SoundTerminate(SoundDevice *device, const bool waitForSoundsComplete)
 	}
 	Mix_CloseAudio();
 
-	SoundClear(&device->sounds);
-	CArrayTerminate(&device->sounds);
-	SoundClear(&device->customSounds);
-	CArrayTerminate(&device->customSounds);
+	hashmap_destroy(device->sounds, SoundDataTerminate);
+	hashmap_destroy(device->customSounds, SoundDataTerminate);
+}
+static void SoundDataTerminate(any_t data)
+{
+	SoundData *s = data;
+	switch (s->Type)
+	{
+		case SOUND_NORMAL:
+			Mix_FreeChunk(s->u.normal);
+			break;
+		case SOUND_RANDOM:
+			CA_FOREACH(Mix_Chunk *, data, s->u.random.sounds)
+				Mix_FreeChunk(*data);
+			CA_FOREACH_END()
+			CArrayTerminate(&s->u.random.sounds);
+			break;
+		default:
+			CASSERT(false, "Unknown sound data type");
+			break;
+	}
+	CFREE(s);
 }
 
 #define OUT_OF_SIGHT_DISTANCE_PLUS 200
@@ -434,43 +488,47 @@ void SoundPlayAtPlusDistance(
 		&gSoundDevice, data, distance + plusDistance, bearing, isMuffled);
 }
 
+static Mix_Chunk *SoundDataGet(SoundData *s);
 Mix_Chunk *StrSound(const char *s)
 {
 	if (s == NULL || strlen(s) == 0)
 	{
 		return NULL;
 	}
-	CA_FOREACH(SoundData, sound, gSoundDevice.customSounds)
-		if (strcmp(sound->Name, s) == 0)
-		{
-			return sound->data;
-		}
-	CA_FOREACH_END()
-	CA_FOREACH(SoundData, sound, gSoundDevice.sounds)
-		if (strcmp(sound->Name, s) == 0)
-		{
-			return sound->data;
-		}
-	CA_FOREACH_END()
+	SoundData *sound;
+	int error = hashmap_get(gSoundDevice.customSounds, s, (any_t *)&sound);
+	if (error == MAP_OK)
+	{
+		return SoundDataGet(sound);
+	}
+	error = hashmap_get(gSoundDevice.sounds, s, (any_t *)&sound);
+	if (error == MAP_OK)
+	{
+		return SoundDataGet(sound);
+	}
 	return NULL;
 }
-
-Mix_Chunk *SoundGetRandomFootstep(SoundDevice *device)
+static Mix_Chunk *SoundDataGet(SoundData *s)
 {
-	Mix_Chunk **sound = CArrayGet(
-		&device->footstepSounds, rand() % device->footstepSounds.size);
-	return *sound;
-}
-
-Mix_Chunk *SoundGetRandomScream(SoundDevice *device)
-{
-	// Don't get the last scream used
-	int idx = device->lastScream;
-	while ((int)device->screamSounds.size > 1 && idx == device->lastScream)
+	switch (s->Type)
 	{
-		idx = rand() % device->screamSounds.size;
+		case SOUND_NORMAL:
+			return s->u.normal;
+		case SOUND_RANDOM:
+			{
+				// Don't get the last sound used
+				int idx = s->u.random.lastPlayed;
+				while ((int)s->u.random.sounds.size > 1 &&
+					idx == s->u.random.lastPlayed)
+				{
+					idx = rand() % s->u.random.sounds.size;
+				}
+				Mix_Chunk **sound = CArrayGet(&s->u.random.sounds, idx);
+				s->u.random.lastPlayed = idx;
+				return *sound;
+			}
+		default:
+			CASSERT(false, "Unknown sound data type");
+			return NULL;
 	}
-	Mix_Chunk **sound = CArrayGet(&device->screamSounds, idx);
-	device->lastScream = idx;
-	return *sound;
 }

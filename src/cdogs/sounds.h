@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2016, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -53,15 +53,30 @@
 #include <SDL_mixer.h>
 
 #include "c_array.h"
+#include "c_hashmap/hashmap.h"
 #include "defs.h"
 #include "sys_config.h"
 #include "utils.h"
 #include "vector.h"
 
+typedef enum
+{
+	SOUND_NORMAL,
+	SOUND_RANDOM
+} SoundType;
+
 typedef struct
 {
-	char Name[CDOGS_FILENAME_MAX];
-	Mix_Chunk *data;
+	SoundType Type;
+	union
+	{
+		Mix_Chunk *normal;
+		struct
+		{
+			CArray sounds;	// of Mix_Chunk *
+			int lastPlayed;
+		} random;
+	} u;
 } SoundData;
 
 typedef enum
@@ -86,18 +101,8 @@ typedef struct
 	Vec2i earRight1;
 	Vec2i earRight2;
 
-	CArray sounds;	// of SoundData
-	CArray customSounds;	// of SoundData
-
-	// Some commonly-used sounds, store them here for quick access
-	CArray footstepSounds;	// of Mix_Chunk *
-	Mix_Chunk *slideSound;
-	Mix_Chunk *healthSound;
-	Mix_Chunk *clickSound;
-	Mix_Chunk *keySound;
-	Mix_Chunk *wreckSound;
-	CArray screamSounds;	// of Mix_Chunk *
-	int lastScream;
+	map_t sounds;		// of SoundData
+	map_t customSounds;	// of SoundData
 } SoundDevice;
 
 extern SoundDevice gSoundDevice;
@@ -121,9 +126,9 @@ typedef struct
 } HitSounds;
 
 void SoundInitialize(SoundDevice *device, const char *path);
-void SoundAdd(CArray *sounds, const char *name, Mix_Chunk *data);
+void SoundLoadDir(map_t sounds, const char *path, const char *prefix);
 void SoundReconfigure(SoundDevice *s);
-void SoundClear(CArray *sounds);
+void SoundClear(map_t sounds);
 void SoundTerminate(SoundDevice *device, const bool waitForSoundsComplete);
 void SoundPlay(SoundDevice *device, Mix_Chunk *data);
 void SoundSetEarsSide(const bool isLeft, const Vec2i pos);
@@ -138,5 +143,3 @@ void SoundPlayAtPlusDistance(
 	const Vec2i pos, const int plusDistance);
 
 Mix_Chunk *StrSound(const char *s);
-Mix_Chunk *SoundGetRandomFootstep(SoundDevice *device);
-Mix_Chunk *SoundGetRandomScream(SoundDevice *device);

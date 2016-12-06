@@ -158,7 +158,7 @@ void ObjRemove(const NMapObjectRemove mor)
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 
-	SoundPlayAt(&gSoundDevice, gSoundDevice.wreckSound, realPos);
+	SoundPlayAt(&gSoundDevice, StrSound("bang"), realPos);
 
 	// If wreck is available spawn it in the exact same position
 	if (o->Class->Wreck[0] != '\0')

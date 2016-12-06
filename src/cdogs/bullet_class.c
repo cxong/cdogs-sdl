@@ -460,7 +460,7 @@ static HitType GetHitType(
 
 
 
-#define VERSION 2
+#define VERSION 3
 static void LoadBullet(
 	BulletClass *b, json_t *node, const BulletClass *defaultBullet,
 	const int version);
@@ -501,6 +501,8 @@ void BulletLoadJSON(
 
 	bullets->root = bulletNode;
 }
+static void LoadHitsound(
+	char **hitsound, json_t *node, const char *name, const int version);
 static void LoadBullet(
 	BulletClass *b, json_t *node, const BulletClass *defaultBullet,
 	const int version)
@@ -599,15 +601,9 @@ static void LoadBullet(
 	if (json_find_first_label(node, "HitSounds"))
 	{
 		json_t *hitSounds = json_find_first_label(node, "HitSounds")->child;
-		CFREE(b->HitSound.Object);
-		b->HitSound.Object = NULL;
-		LoadStr(&b->HitSound.Object, hitSounds, "Object");
-		CFREE(b->HitSound.Flesh);
-		b->HitSound.Flesh = NULL;
-		LoadStr(&b->HitSound.Flesh, hitSounds, "Flesh");
-		CFREE(b->HitSound.Wall);
-		b->HitSound.Wall = NULL;
-		LoadStr(&b->HitSound.Wall, hitSounds, "Wall");
+		LoadHitsound(&b->HitSound.Object, hitSounds, "Object", version);
+		LoadHitsound(&b->HitSound.Flesh, hitSounds, "Flesh", version);
+		LoadHitsound(&b->HitSound.Wall, hitSounds, "Wall", version);
 	}
 	LoadBool(&b->WallBounces, node, "WallBounces");
 	LoadBool(&b->HitsObjects, node, "HitsObjects");
@@ -657,6 +653,31 @@ static void LoadBullet(
 		(int)b->OutOfRangeGuns.size,
 		(int)b->HitGuns.size,
 		(int)b->ProximityGuns.size);
+}
+static void LoadHitsound(
+	char **hitsound, json_t *node, const char *name, const int version)
+{
+	CFREE(*hitsound);
+	*hitsound = NULL;
+	LoadStr(hitsound, node, name);
+	if (version < 3)
+	{
+		// Moved hit_XXX sounds to hits folder
+		if (*hitsound != NULL)
+		{
+			char buf[CDOGS_FILENAME_MAX];
+			if (strncmp(*hitsound, "hit_", strlen("hit_")) == 0)
+			{
+				strcpy(buf, *hitsound + strlen("hit_"));
+				sprintf(*hitsound, "hits/%s", buf);
+			}
+			else if (strncmp(*hitsound, "knife_", strlen("knife_")) == 0)
+			{
+				strcpy(buf, *hitsound + strlen("knife_"));
+				sprintf(*hitsound, "hits/knife_%s", buf);
+			}
+		}
+	}
 }
 static void BulletClassesLoadWeapons(CArray *classes);
 void BulletLoadWeapons(BulletClasses *bullets)

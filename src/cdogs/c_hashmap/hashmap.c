@@ -366,6 +366,22 @@ int hashmap_remove(map_t m, char* key){
 	return MAP_MISSING;
 }
 
+static int hashmap_destroy_item_callback(any_t a, any_t b);
+
+void hashmap_clear(map_t m, void(*callback)(any_t)){
+	hashmap_iterate(m, hashmap_destroy_item_callback, &callback);
+	// Deallocate keys
+	if (m != NULL)
+	{
+		for (int i = 0; i< m->table_size; i++)
+			if (m->data[i].in_use) {
+				m->data[i].in_use = 0;
+				free(m->data[i].key);
+			}
+		m->size = 0;
+	}
+}
+
 /* Deallocate the hashmap */
 void hashmap_free(map_t m){
 	// Deallocate keys
@@ -380,7 +396,6 @@ void hashmap_free(map_t m){
 	free(m);
 }
 
-static int hashmap_destroy_item_callback(any_t a, any_t b);
 void hashmap_destroy(map_t in, void (*callback)(any_t)){
 	// Pass the callback into the first argument
 	// Note: pass pointer to function-pointer because standard C does not
@@ -388,6 +403,7 @@ void hashmap_destroy(map_t in, void (*callback)(any_t)){
 	hashmap_iterate(in, hashmap_destroy_item_callback, &callback);
 	hashmap_free(in);
 }
+
 static int hashmap_destroy_item_callback(any_t a, any_t b)
 {
 	void (**callback)(any_t) = a;
