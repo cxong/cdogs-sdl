@@ -48,6 +48,7 @@
 */
 #include "sounds.h"
 
+#include <ctype.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -298,8 +299,8 @@ static void SoundDataTerminate(any_t data)
 			Mix_FreeChunk(s->u.normal);
 			break;
 		case SOUND_RANDOM:
-			CA_FOREACH(Mix_Chunk *, data, s->u.random.sounds)
-				Mix_FreeChunk(*data);
+			CA_FOREACH(Mix_Chunk *, chunk, s->u.random.sounds)
+				Mix_FreeChunk(*chunk);
 			CA_FOREACH_END()
 			CArrayTerminate(&s->u.random.sounds);
 			break;
