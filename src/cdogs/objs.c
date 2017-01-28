@@ -70,6 +70,10 @@
 #include "mission.h"
 #include "game.h"
 #include "utils.h"
+#include "weapon.h"
+
+#define DROP_GUN_CHANCE 0.04
+#define DROP_HEALTH_CHANCE 0.08
 
 CArray gObjs;
 CArray gMobObjs;
@@ -417,8 +421,52 @@ void ObjAdd(const NMapObjectAdd amo)
 	// Update pathfinding cache since this object could block a path
 	PathCacheClear(&gPathCache);
 }
+
+void ObjectAddHealthPickup(TObject *o) {
+    Vec2i pos;
+    pos.x = o->tileItem.x;
+    pos.y = o->tileItem.y;
+    GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
+    e.u.AddPickup.UID = PickupsGetNextUID();
+    e.u.AddPickup.Pos = Vec2i2Net(pos);
+    strcpy(e.u.AddPickup.PickupClass, "health");
+    e.u.AddPickup.IsRandomSpawned = true;
+    e.u.AddPickup.SpawnerUID = -1;
+    e.u.AddPickup.TileItemFlags = 0;
+    GameEventsEnqueue(&gGameEvents, e);
+}
+
+void ObjectAddGunPickup(TObject *o) {
+    Vec2i pos;
+    pos.x = o->tileItem.x;
+    pos.y = o->tileItem.y;
+    GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
+    e.u.AddPickup.UID = PickupsGetNextUID();
+    GunDescription *gun;
+    gun = CArrayGet(
+                &gGunDescriptions.Guns,
+                rand() % (int)gGunDescriptions.Guns.size);
+    if (gun->IsRealGun) {
+        sprintf(e.u.AddPickup.PickupClass, "gun_%s", gun->name);
+        e.u.AddPickup.IsRandomSpawned = false;
+        e.u.AddPickup.SpawnerUID = -1;
+        e.u.AddPickup.TileItemFlags = 0;
+        e.u.AddPickup.Pos = Vec2i2Net(pos);
+        GameEventsEnqueue(&gGameEvents, e);
+    }
+}
+
 void ObjDestroy(TObject *o)
 {
+    // Random chance to add health pickup or gun pickup
+    if (((float) rand() / RAND_MAX < DROP_HEALTH_CHANCE) && ConfigGetBool(&gConfig, "Game.HealthPickups"))
+    {
+        ObjectAddHealthPickup(o);
+    } else if ((float)rand() / RAND_MAX < DROP_GUN_CHANCE)
+    {
+        ObjectAddGunPickup(o);
+    }
+
 	CASSERT(o->isInUse, "Destroying in-use object");
 	MapRemoveTileItem(&gMap, &o->tileItem);
 	o->isInUse = false;
