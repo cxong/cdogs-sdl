@@ -209,7 +209,7 @@ void ObjRemove(const NMapObjectRemove mor)
 	SoundPlayAt(&gSoundDevice, StrSound("bang"), realPos);
 
 	// If wreck is available spawn it in the exact same position
-	if (o->Class->Wreck && o->Class->Wreck[0] != '\0')
+	if (o->Class->Wreck)
 	{
 		GameEvent e = GameEventNew(GAME_EVENT_MAP_OBJECT_ADD);
 		e.u.MapObjectAdd.UID = ObjsGetNextUID();
