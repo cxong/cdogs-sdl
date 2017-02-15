@@ -11,7 +11,7 @@ fi
 BLENDER=/Applications/blender.app/Contents/MacOS/blender
 INFILE=$1
 # Render separate body parts (in layers)
-parts=(legs char)
+parts=(legs upper)
 len=${#parts[*]}
 for (( i=0; i<len; i++ ))
 do

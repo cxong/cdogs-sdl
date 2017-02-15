@@ -14,7 +14,7 @@ argv = sys.argv[sys.argv.index("--") + 1:]
 layer = argv[0]
 name = argv[1]
 
-RESOLUTION = 32
+RESOLUTION = 24
 FRAME_SKIP = 10
 
 angle = -45
