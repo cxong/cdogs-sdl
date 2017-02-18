@@ -4,6 +4,8 @@ adapted from http://clintbellanger.net/articles/isometric_tiles/
 
 Args:
 - layer
+- action
+- frames
 - name
 """
 import bpy
@@ -12,7 +14,9 @@ from math import radians
 
 argv = sys.argv[sys.argv.index("--") + 1:]
 layer = argv[0]
-name = argv[1]
+action = argv[1]
+frames = int(argv[2])
+name = '{}_{}'.format(argv[3], action)
 
 RESOLUTION = 24
 FRAME_SKIP = 10
@@ -21,6 +25,8 @@ angle = -45
 axis = 2 # z-axis
 platform = bpy.data.objects["armature"]
 scene = bpy.data.scenes[0]
+scene.objects.active = platform
+platform.animation_data.action = bpy.data.actions[action]
 for i in range(len(scene.layers)):
     if i < 3:
         scene.layers[i] = True
@@ -33,7 +39,7 @@ render.alpha_mode = 'TRANSPARENT'
 render.resolution_x = RESOLUTION
 render.resolution_y = RESOLUTION
 render.frame_map_new = 100 / FRAME_SKIP
-scene.frame_end = 79 / FRAME_SKIP
+scene.frame_end = (frames - 1) / FRAME_SKIP
 original_path = 'out/{}##'.format(name)
 path = 'out/{}_{}_##'
 for i in range(0, 8):
