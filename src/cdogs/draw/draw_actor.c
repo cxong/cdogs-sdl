@@ -423,7 +423,8 @@ static const Pic *GetBodyPic(
 	const int row = (isArmed ? 5 : 0) + (isIdle ? 0 : state - STATE_IDLERIGHT);
 	const int idx = row * DIRECTION_COUNT + dir;
 	return CArrayGet(
-		&PicManagerGetSprites(pm, "chars/body_arms_legs")->pics, idx);
+		&PicManagerGetSprites(pm, "chars/bodies/base/body_arms_legs")->pics,
+		idx);
 }
 static const Pic *GetGunPic(
 	const NamedSprites *gunPics, const direction_e dir, const int gunState)
