@@ -617,14 +617,14 @@ static void DrawObjectiveInfo(const Objective *o, const Vec2i pos)
 		{
 			const Character *cd = CArrayGet(
 				&store->OtherChars, CharacterStoreGetSpecialId(store, 0));
-			DrawHead(cd, DIRECTION_DOWN, STATE_IDLE, pos);
+			DrawHead(cd, DIRECTION_DOWN, pos);
 		}
 		break;
 	case OBJECTIVE_RESCUE:
 		{
 			const Character *cd = CArrayGet(
 				&store->OtherChars, CharacterStoreGetPrisonerId(store, 0));
-			DrawHead(cd, DIRECTION_DOWN, STATE_IDLE, pos);
+			DrawHead(cd, DIRECTION_DOWN, pos);
 		}
 		break;
 	case OBJECTIVE_COLLECT:

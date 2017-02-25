@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -29,14 +29,23 @@
 
 #include <stdbool.h>
 
+// TODO: run + walk
 typedef enum
 {
 	ACTORANIMATION_IDLE,
 	ACTORANIMATION_WALKING
 } ActorAnimation;
 
+// Frames representing head idle animation (look left, look right)
+typedef enum
+{
+	IDLEHEAD_NORMAL,
+	IDLEHEAD_LEFT,
+	IDLEHEAD_RIGHT
+} IdleHead;
+
 // TODO: data-driven custom per-character animations
-#define ANIMATION_MAX_FRAMES 4
+#define ANIMATION_MAX_FRAMES 8
 typedef struct
 {
 	ActorAnimation Type;

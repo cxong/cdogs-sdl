@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -34,8 +34,8 @@ static Animation animIdling =
 {
 	ACTORANIMATION_IDLE,
 	0,
-	{ STATE_IDLE, STATE_IDLELEFT, STATE_IDLERIGHT, -1 },
-	{ 90, 60, 60, -1 },
+	{ IDLEHEAD_NORMAL, IDLEHEAD_LEFT, IDLEHEAD_RIGHT },
+	{ 90, 60, 60 },
 	0,
 	true,
 	true
@@ -44,8 +44,8 @@ static Animation animWalking =
 {
 	ACTORANIMATION_WALKING,
 	0,
-	{ STATE_WALKING_1, STATE_WALKING_2, STATE_WALKING_3, STATE_WALKING_4 },
-	{ 4, 4, 4, 4 },
+	{ 0, 1, 2, 3, 4, 5, 6, 7 },
+	{ 4, 4, 4, 4, 4, 4, 4, 4 },
 	0,
 	false,
 	true
@@ -58,7 +58,7 @@ Animation AnimationGetActorAnimation(const ActorAnimation aa)
 	{
 	case ACTORANIMATION_IDLE: return animIdling;
 	case ACTORANIMATION_WALKING: return animWalking;
-	default: CASSERT(false, "Unknown actor state"); return animIdling;
+	default: CASSERT(false, "Unknown actor animation"); return animIdling;
 	}
 }
 

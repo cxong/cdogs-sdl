@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, 2016 Cong Xu
+    Copyright (c) 2013-2014, 2016-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -57,15 +57,18 @@ typedef enum
 {
 	BODY_PART_HEAD,
 	BODY_PART_BODY,
-	BODY_PART_GUN
+	BODY_PART_LEGS,
+	BODY_PART_GUN,
+	BODY_PART_COUNT
 } BodyPart;
 
 typedef struct
 {
 	const Pic *Head;
 	const Pic *Body;
+	const Pic *Legs;
 	const Pic *Gun;
-	BodyPart DrawOrder[3];
+	BodyPart DrawOrder[BODY_PART_COUNT];
 	const CharColors *Colors;
 	bool IsDead;
 	bool IsDying;
@@ -77,9 +80,7 @@ typedef struct
 void DrawCharacterSimple(
 	Character *c, const Vec2i pos, const direction_e d,
 	const bool hilite, const bool showGun);
-void DrawHead(
-	const Character *c, const direction_e dir,
-	const int state, const Vec2i pos);
+void DrawHead(const Character *c, const direction_e dir, const Vec2i pos);
 
 void DrawChatters(DrawBuffer *b, const Vec2i offset);
 

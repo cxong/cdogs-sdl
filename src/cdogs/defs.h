@@ -103,16 +103,6 @@ typedef enum
 } special_damage_e;
 special_damage_e StrSpecialDamage(const char *s);
 
-// States
-#define STATE_IDLE          0
-#define STATE_IDLELEFT      1
-#define STATE_IDLERIGHT     2
-#define STATE_WALKING_1     3
-#define STATE_WALKING_2     4
-#define STATE_WALKING_3     5
-#define STATE_WALKING_4     6
-#define STATE_COUNT         7
-
 #define Z_FACTOR 16	// the number of increments used for Z
 
 

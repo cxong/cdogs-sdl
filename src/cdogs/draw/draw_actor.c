@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -68,6 +68,7 @@
 
 #define NECK_OFFSET 13
 #define FOOT_OFFSET 3
+#define LEGS_OFFSET 6
 #define WRIST_OFFSET 6
 
 
@@ -83,6 +84,9 @@ static Vec2i GetActorDrawOffset(
 	case BODY_PART_BODY:
 		outPos.y -= FOOT_OFFSET;
 		break;
+	case BODY_PART_LEGS:
+		outPos.y -= LEGS_OFFSET;
+		break;
 	case BODY_PART_GUN:
 		outPos = Vec2iAdd(outPos, cGunHandOffset[d]);
 		outPos.y -= WRIST_OFFSET;
@@ -96,7 +100,8 @@ static Vec2i GetActorDrawOffset(
 
 static Character *ActorGetCharacterMutable(TActor *a);
 static void GetCharacterPics(
-	ActorPics *pics, Character *c, const direction_e dir, const int frame,
+	ActorPics *pics, Character *c, const direction_e dir,
+	const ActorAnimation anim, const int frame,
 	const NamedSprites *gunPics, const gunstate_e gunState,
 	const bool isTransparent, HSV *tint, color_t *mask,
 	const int deadPic);
@@ -127,21 +132,27 @@ void GetCharacterPicsFromActor(ActorPics *pics, TActor *a)
 	}
 	GetCharacterPics(
 		pics, ActorGetCharacterMutable(a),
-		RadiansToDirection(a->DrawRadians), AnimationGetFrame(&a->anim),
+		RadiansToDirection(a->DrawRadians), a->anim.Type,
+		AnimationGetFrame(&a->anim),
 		gun->Gun->Pic, gun->state,
 		!!(a->flags & FLAGS_SEETHROUGH),
 		tint, mask,
 		a->dead);
 }
 static const Pic *GetHeadPic(
-	const CharacterClass *c, const direction_e dir, const int state);
+	const CharacterClass *c, const direction_e dir, const gunstate_e gunState);
 static const Pic *GetBodyPic(
-	PicManager *pm, const direction_e dir, const int state, const bool isArmed);
+	PicManager *pm, const direction_e dir, const ActorAnimation anim,
+	const int frame, const bool isArmed);
+static const Pic *GetLegsPic(
+	PicManager *pm, const direction_e dir, const ActorAnimation anim,
+	const int frame);
 static const Pic *GetGunPic(
 	const NamedSprites *gunPics, const direction_e dir, const int gunState);
 static const Pic *GetDeathPic(PicManager *pm, const int frame);
 static void GetCharacterPics(
-	ActorPics *pics, Character *c, const direction_e dir, const int frame,
+	ActorPics *pics, Character *c, const direction_e dir,
+	const ActorAnimation anim, const int frame,
 	const NamedSprites *gunPics, const gunstate_e gunState,
 	const bool isTransparent, HSV *tint, color_t *mask,
 	const int deadPic)
@@ -176,21 +187,20 @@ static void GetCharacterPics(
 
 	// Head
 	direction_e headDir = dir;
-	int headFrame = frame;
-	// If firing, draw the firing head pic
-	if (gunState == GUNSTATE_FIRING || gunState == GUNSTATE_RECOIL)
-	{
-		headFrame = STATE_COUNT + gunState - GUNSTATE_FIRING;
-	}
 	// If idle, turn head left/right on occasion
-	if (headFrame == STATE_IDLELEFT) headDir = (dir + 7) % 8;
-	else if (headFrame == STATE_IDLERIGHT) headDir = (dir + 1) % 8;
-
-	pics->Head = GetHeadPic(c->Class, headDir, headFrame);
+	if (anim == ACTORANIMATION_IDLE)
+	{
+		if (frame == IDLEHEAD_LEFT) headDir = (dir + 7) % 8;
+		else if (frame == IDLEHEAD_RIGHT) headDir = (dir + 1) % 8;
+	}
+	pics->Head = GetHeadPic(c->Class, headDir, gunState);
 
 	// Body
 	const bool isArmed = gunPics != NULL;
-	pics->Body = GetBodyPic(&gPicManager, dir, frame, isArmed);
+	pics->Body = GetBodyPic(&gPicManager, dir, anim, frame, isArmed);
+
+	// Legs
+	pics->Legs = GetLegsPic(&gPicManager, dir, anim, frame);
 
 	// Gun
 	pics->Gun = NULL;
@@ -205,25 +215,28 @@ static void GetCharacterPics(
 	{
 	case DIRECTION_UP:
 	case DIRECTION_UPRIGHT:
-		pics->DrawOrder[0] = BODY_PART_GUN;
-		pics->DrawOrder[1] = BODY_PART_HEAD;
-		pics->DrawOrder[2] = BODY_PART_BODY;
+		pics->DrawOrder[0] = BODY_PART_LEGS;
+		pics->DrawOrder[1] = BODY_PART_GUN;
+		pics->DrawOrder[2] = BODY_PART_HEAD;
+		pics->DrawOrder[3] = BODY_PART_BODY;
 		break;
 
 	case DIRECTION_RIGHT:
 	case DIRECTION_DOWNRIGHT:
 	case DIRECTION_DOWN:
 	case DIRECTION_DOWNLEFT:
-		pics->DrawOrder[0] = BODY_PART_BODY;
-		pics->DrawOrder[1] = BODY_PART_HEAD;
-		pics->DrawOrder[2] = BODY_PART_GUN;
+		pics->DrawOrder[0] = BODY_PART_LEGS;
+		pics->DrawOrder[1] = BODY_PART_BODY;
+		pics->DrawOrder[2] = BODY_PART_HEAD;
+		pics->DrawOrder[3] = BODY_PART_GUN;
 		break;
 
 	case DIRECTION_LEFT:
 	case DIRECTION_UPLEFT:
-		pics->DrawOrder[0] = BODY_PART_GUN;
-		pics->DrawOrder[1] = BODY_PART_BODY;
-		pics->DrawOrder[2] = BODY_PART_HEAD;
+		pics->DrawOrder[0] = BODY_PART_LEGS;
+		pics->DrawOrder[1] = BODY_PART_GUN;
+		pics->DrawOrder[2] = BODY_PART_BODY;
+		pics->DrawOrder[3] = BODY_PART_HEAD;
 		break;
 	default:
 		CASSERT(false, "invalid direction");
@@ -257,7 +270,7 @@ void DrawActorPics(
 		{
 			DrawShadow(&gGraphicsDevice, picPos, Vec2iNew(8, 6));
 		}
-		for (int i = 0; i < 3; i++)
+		for (int i = 0; i < BODY_PART_COUNT; i++)
 		{
 			const Pic *picp = NULL;
 			switch (pics->DrawOrder[i])
@@ -268,8 +281,13 @@ void DrawActorPics(
 			case BODY_PART_BODY:
 				picp = pics->Body;
 				break;
+			case BODY_PART_LEGS:
+				picp = pics->Legs;
+				break;
 			case BODY_PART_GUN:
 				picp = pics->Gun;
+				break;
+			default:
 				break;
 			}
 			if (picp == NULL)
@@ -360,6 +378,12 @@ void DrawActorHighlight(
 			pos, pics->Body, BODY_PART_BODY, d);
 		BlitPicHighlight(&gGraphicsDevice, pics->Body, bodyPos, color);
 	}
+	if (pics->Legs != NULL)
+	{
+		const Vec2i legsPos = GetActorDrawOffset(
+			pos, pics->Legs, BODY_PART_LEGS, d);
+		BlitPicHighlight(&gGraphicsDevice, pics->Legs, legsPos, color);
+	}
 	if (pics->Gun != NULL)
 	{
 		const Vec2i gunPos = GetActorDrawOffset(
@@ -411,20 +435,37 @@ static void DrawChatter(
 }
 
 static const Pic *GetHeadPic(
-	const CharacterClass *c, const direction_e dir, const int state)
+	const CharacterClass *c, const direction_e dir, const gunstate_e gunState)
 {
-	const int idx = (int)dir + (state >= STATE_COUNT ? DIRECTION_COUNT : 0);
+	// If firing, draw the firing head pic
+	const int row =
+		(gunState == GUNSTATE_FIRING || gunState == GUNSTATE_RECOIL) ? 1 : 0;
+	const int idx = (int)dir + row * 8;
 	return CPicGetPic(&c->HeadPics, idx);
 }
 static const Pic *GetBodyPic(
-	PicManager *pm, const direction_e dir, const int state, const bool isArmed)
+	PicManager *pm, const direction_e dir, const ActorAnimation anim,
+	const int frame, const bool isArmed)
 {
-	const bool isIdle = state <= STATE_IDLERIGHT;
-	const int row = (isArmed ? 5 : 0) + (isIdle ? 0 : state - STATE_IDLERIGHT);
+	const bool isIdle = anim == ACTORANIMATION_IDLE;
+	const int row = (isArmed ? 5 : 0) + (isIdle ? 0 : (frame % 4) + 1);
 	const int idx = row * DIRECTION_COUNT + dir;
 	return CArrayGet(
-		&PicManagerGetSprites(pm, "chars/bodies/base/body_arms_legs")->pics,
-		idx);
+		&PicManagerGetSprites(pm, "chars/bodies/base/upper")->pics, idx);
+}
+static const Pic *GetLegsPic(
+	PicManager *pm, const direction_e dir, const ActorAnimation anim,
+	const int frame)
+{
+	const int stride = anim == ACTORANIMATION_IDLE ? 1 : 8;
+	const int col = frame % stride;
+	const int row = (int)dir;
+	const int idx = col + row * stride;
+	char buf[CDOGS_PATH_MAX];
+	sprintf(
+		buf, "chars/bodies/base/legs_%s",
+		anim == ACTORANIMATION_IDLE ? "idle" : "run");
+	return CArrayGet(&PicManagerGetSprites(pm, buf)->pics, idx);
 }
 static const Pic *GetGunPic(
 	const NamedSprites *gunPics, const direction_e dir, const int gunState)
@@ -443,7 +484,8 @@ void DrawCharacterSimple(
 {
 	ActorPics pics;
 	GetCharacterPics(
-		&pics, c, d, STATE_IDLE, NULL, GUNSTATE_READY, false, NULL, NULL, 0);
+		&pics, c, d, ACTORANIMATION_IDLE, 0, NULL, GUNSTATE_READY,
+		false, NULL, NULL, 0);
 	DrawActorPics(&pics, pos, d);
 	if (hilite)
 	{
@@ -456,10 +498,9 @@ void DrawCharacterSimple(
 }
 
 void DrawHead(
-	const Character *c, const direction_e dir,
-	const int state, const Vec2i pos)
+	const Character *c, const direction_e dir, const Vec2i pos)
 {
-	const Pic *head = GetHeadPic(c->Class, dir, state);
+	const Pic *head = GetHeadPic(c->Class, dir, GUNSTATE_READY);
 	const Vec2i drawPos = Vec2iMinus(pos, Vec2iNew(
 		head->size.x / 2, head->size.y / 2));
 	BlitCharMultichannel(&gGraphicsDevice, head, drawPos, &c->Colors);
