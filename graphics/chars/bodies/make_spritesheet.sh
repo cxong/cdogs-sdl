@@ -13,17 +13,28 @@ INFILE=$1/src.blend
 # Render separate body parts (in layers)
 parts=(legs upper)
 # Render separate actions
-actions=(idle run)
-action_frames=(1 80)
+actions_legs=(idle run)
+actions_upper=(idle idle_handgun run run_handgun)
+idle_frames=1
+run_frames=80
 len_i=${#parts[*]}
 for (( i=0; i<len_i; i++ ))
 do
     part=${parts[$i]}
-    len_j=${#actions[*]}
-    for (( j=0; j<len_j; j++ ))
+    if [[ $part == *"legs"* ]]
+    then
+      actions=${actions_legs[@]}
+    else
+      actions=${actions_upper[@]}
+    fi
+    for action in $actions
     do
-      action=${actions[$j]}
-      frames=${action_frames[$j]}
+      if [[ $action == *"run"* ]]
+      then
+        frames=$run_frames
+      else
+        frames=$idle_frames
+      fi
       $BLENDER -b $INFILE -P render.py -- $i $action $frames $part
 
       DIMENSIONS=`identify -format "%wx%h" out/${part}_${action}_0_00.png`
