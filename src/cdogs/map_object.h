@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -74,6 +74,13 @@ typedef enum
 	MAP_OBJECT_TYPE_PICKUP_SPAWNER
 } MapObjectType;
 
+// Pickups to spawn when map objects are destroyed
+typedef struct
+{
+	PickupType Type;
+	double SpawnChance;
+} MapObjectDestroySpawn;
+
 // A static map object, taking up an entire tile
 typedef struct
 {
@@ -94,6 +101,7 @@ typedef struct
 	{
 		const PickupClass *PickupClass;
 	} u;
+	CArray DestroySpawn;	// of MapObjectDestroySpawn
 } MapObject;
 typedef struct
 {

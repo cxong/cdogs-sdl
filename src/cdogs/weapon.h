@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -143,6 +143,7 @@ void WeaponInitialize(GunClasses *g);
 void WeaponLoadJSON(GunClasses *g, CArray *classes, json_t *root);
 void WeaponClassesClear(CArray *classes);
 void WeaponTerminate(GunClasses *g);
+int GunGetNumClasses(const GunClasses *g);
 Weapon WeaponCreate(const GunDescription *gun);
 const GunDescription *StrGunDescription(const char *s);
 GunDescription *IdGunDescription(const int i);

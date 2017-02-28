@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -118,38 +118,54 @@ void DamageObject(const NMapObjectDamage mod)
 	}
 }
 
-void ObjectAddHealthPickup(TObject *o) {
-	Vec2i pos;
-	pos.x = o->tileItem.x;
-	pos.y = o->tileItem.y;
+static void AddPickupAtObject(const TObject *o, const PickupType type)
+{
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
+	switch (type)
+	{
+	case PICKUP_JEWEL: CASSERT(false, "unexpected pickup type"); break;
+	case PICKUP_HEALTH:
+		if (!ConfigGetBool(&gConfig, "Game.HealthPickups"))
+		{
+			return;
+		}
+		strcpy(e.u.AddPickup.PickupClass, "health");
+		break;
+	case PICKUP_AMMO:
+		if (!ConfigGetBool(&gConfig, "Game.Ammo"))
+		{
+			return;
+		}
+		// Pick a random ammo type and spawn it
+		{
+			const int ammoId = rand() % AmmoGetNumClasses(&gAmmo);
+			const Ammo *a = AmmoGetById(&gAmmo, ammoId);
+			sprintf(e.u.AddPickup.PickupClass, "ammo_%s", a->Name);
+		}
+		break;
+	case PICKUP_KEYCARD: CASSERT(false, "unexpected pickup type"); break;
+	case PICKUP_GUN:
+		// Pick a random gun type and spawn it
+		for (;;)
+		{
+			const int gunId = rand() % GunGetNumClasses(&gGunDescriptions);
+			const GunDescription *gun = IdGunDescription(gunId);
+			if (!gun->IsRealGun)
+			{
+				continue;
+			}
+			sprintf(e.u.AddPickup.PickupClass, "gun_%s", gun->name);
+			break;
+		}
+		break;
+	default: CASSERT(false, "unexpected pickup type"); break;
+	}
 	e.u.AddPickup.UID = PickupsGetNextUID();
-	e.u.AddPickup.Pos = Vec2i2Net(pos);
-	strcpy(e.u.AddPickup.PickupClass, "health");
+	e.u.AddPickup.Pos = Vec2i2Net(Vec2iNew(o->tileItem.x, o->tileItem.y));
 	e.u.AddPickup.IsRandomSpawned = true;
 	e.u.AddPickup.SpawnerUID = -1;
 	e.u.AddPickup.TileItemFlags = 0;
 	GameEventsEnqueue(&gGameEvents, e);
-}
-
-void ObjectAddGunPickup(TObject *o) {
-	Vec2i pos;
-	pos.x = o->tileItem.x;
-	pos.y = o->tileItem.y;
-	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
-	e.u.AddPickup.UID = PickupsGetNextUID();
-	GunDescription *gun;
-	gun = CArrayGet(
-			&gGunDescriptions.Guns,
-			rand() % (int)gGunDescriptions.Guns.size);
-	if (gun->IsRealGun) {
-		sprintf(e.u.AddPickup.PickupClass, "gun_%s", gun->name);
-		e.u.AddPickup.IsRandomSpawned = false;
-		e.u.AddPickup.SpawnerUID = -1;
-		e.u.AddPickup.TileItemFlags = 0;
-		e.u.AddPickup.Pos = Vec2i2Net(pos);
-		GameEventsEnqueue(&gGameEvents, e);
-	}
 }
 
 void ObjRemove(const NMapObjectRemove mor)
@@ -181,15 +197,14 @@ void ObjRemove(const NMapObjectRemove mor)
 				true, false);
 		CA_FOREACH_END()
 
-		// Random chance to add health pickup or gun pickup
-		if (((float) rand() / RAND_MAX < DROP_HEALTH_CHANCE) && ConfigGetBool(&gConfig, "Game.HealthPickups"))
-		{
-			ObjectAddHealthPickup(o);
-		}
-		else if ((float)rand() / RAND_MAX < DROP_GUN_CHANCE)
-		{
-			ObjectAddGunPickup(o);
-		}
+		// Random chance to add pickups
+		CA_FOREACH(const MapObjectDestroySpawn, mods, o->Class->DestroySpawn)
+			const double chance = (double)rand() / RAND_MAX;
+			if (chance < mods->SpawnChance)
+			{
+				AddPickupAtObject(o, mods->Type);
+			}
+		CA_FOREACH_END()
 
 		// A wreck left after the destruction of this object
 		// TODO: doesn't need to be network event

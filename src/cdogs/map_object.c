@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2014, 2016 Cong Xu
+    Copyright (c) 2014, 2016-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -384,6 +384,23 @@ static bool TryLoadMapObject(MapObject *m, json_t *node, const int version)
 		break;
 	}
 
+	// DestroySpawn - pickups to spawn on destruction
+	json_t *destroySpawnNode = json_find_first_label(node, "DestroySpawn");
+	if (destroySpawnNode != NULL && destroySpawnNode->child != NULL)
+	{
+		CArrayInit(&m->DestroySpawn, sizeof(MapObjectDestroySpawn));
+		for (json_t *dsNode = destroySpawnNode->child->child;
+			dsNode;
+			dsNode = dsNode->next)
+		{
+			MapObjectDestroySpawn mods;
+			memset(&mods, 0, sizeof mods);
+			JSON_UTILS_LOAD_ENUM(mods.Type, dsNode, "Type", StrPickupType);
+			LoadDouble(&mods.SpawnChance, dsNode, "SpawnChance");
+			CArrayPushBack(&m->DestroySpawn, &mods);
+		}
+	}
+
 	return true;
 
 bail:
@@ -493,6 +510,7 @@ void MapObjectsClear(CArray *classes)
 		MapObject *c = CArrayGet(classes, i);
 		CFREE(c->Name);
 		CArrayTerminate(&c->DestroyGuns);
+		CArrayTerminate(&c->DestroySpawn);
 	}
 	CArrayClear(classes);
 }
