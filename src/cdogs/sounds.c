@@ -158,13 +158,7 @@ static void SoundLoad(map_t sounds, const char *name, const char *path)
 }
 static Mix_Chunk *LoadSound(const char *path)
 {
-	Mix_Chunk *data = Mix_LoadWAV(path);
-	if (data == NULL)
-	{
-		LOG(LM_MAIN, LL_ERROR, "Cannot load sound '%s': %s",
-			path, SDL_GetError());
-	}
-	return data;
+	return Mix_LoadWAV(path);
 }
 static void SoundDataTerminate(any_t data);
 static void AddSound(map_t sounds, const char *name, SoundData *sound)

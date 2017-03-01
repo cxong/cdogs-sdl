@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -666,16 +666,18 @@ static void LoadHitsound(
 		if (*hitsound != NULL)
 		{
 			char buf[CDOGS_FILENAME_MAX];
+			strcpy(buf, "hits/");
 			if (strncmp(*hitsound, "hit_", strlen("hit_")) == 0)
 			{
-				strcpy(buf, *hitsound + strlen("hit_"));
-				sprintf(*hitsound, "hits/%s", buf);
+				strcat(buf, *hitsound + strlen("hit_"));
 			}
 			else if (strncmp(*hitsound, "knife_", strlen("knife_")) == 0)
 			{
-				strcpy(buf, *hitsound + strlen("knife_"));
-				sprintf(*hitsound, "hits/knife_%s", buf);
+				strcpy(buf, "hits/knife_");
+				strcat(buf, *hitsound + strlen("knife_"));
 			}
+			CFREE(*hitsound);
+			CSTRDUP(*hitsound, buf);
 		}
 	}
 }

@@ -34,6 +34,7 @@ set(CDOGS_SOURCES
 	damage.c
 	defs.c
 	door.c
+	draw/char_sprites.c
 	draw/draw.c
 	draw/draw_actor.c
 	draw/draw_buffer.c
@@ -128,6 +129,7 @@ set(CDOGS_HEADERS
 	damage.h
 	defs.h
 	door.h
+	draw/char_sprites.h
 	draw/draw.h
 	draw/draw_actor.h
 	draw/draw_buffer.h

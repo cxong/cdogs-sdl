@@ -75,6 +75,7 @@ typedef struct
 	bool IsTransparent;
 	HSV *Tint;
 	color_t *Mask;
+	const CharSprites *Sprites;
 } ActorPics;
 
 void DrawCharacterSimple(

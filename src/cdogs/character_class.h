@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2016 Cong Xu
+	Copyright (c) 2016-2017 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@
 
 #include "cpic.h"
 #include "defs.h"
+#include "draw/char_sprites.h"
 #include "json/json.h"
 
 
@@ -37,6 +38,7 @@ typedef struct
 {
 	char *Name;
 	CPic HeadPics;
+	const CharSprites *Sprites;
 } CharacterClass;
 typedef struct
 {

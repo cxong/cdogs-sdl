@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2016 Cong Xu
+	Copyright (c) 2016-2017 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -135,6 +135,8 @@ static void LoadCharacterClass(CharacterClass *c, json_t *node)
 	memset(c, 0, sizeof *c);
 	c->Name = GetString(node, "Name");
 	CPicLoadJSON(&c->HeadPics, json_find_first_label(node, "HeadPics")->child);
+	// TODO: custom character sprites
+	c->Sprites = StrCharSpriteClass("base");
 }
 static void CharacterClassFree(CharacterClass *c);
 void CharacterClassesClear(CArray *classes)

@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2016, Cong Xu
+    Copyright (c) 2014-2017, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -65,8 +65,7 @@ bail:
 
 static void LoadArchiveSounds(
 	SoundDevice *device, const char *archive, const char *dirname);
-static void LoadArchivePics(
-	PicManager *pm, const char *archive, const char *dirname);
+static void LoadArchivePics(PicManager *pm, map_t cc, const char *archive);
 int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 {
 	LOG(LM_MAP, LL_DEBUG, "Loading archive map %s", filename);
@@ -90,7 +89,7 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	// Load any custom data
 	LoadArchiveSounds(&gSoundDevice, filename, "sounds");
 
-	LoadArchivePics(&gPicManager, filename, "graphics");
+	LoadArchivePics(&gPicManager, gCharSpriteClasses.customClasses, filename);
 
 	root = ReadArchiveJSON(filename, "particles.json");
 	if (root != NULL)
@@ -202,12 +201,12 @@ static void LoadArchiveSounds(
 	sprintf(path, "%s/%s", archive, dirname);
 	SoundLoadDir(device->customSounds, path, NULL);
 }
-static void LoadArchivePics(
-	PicManager *pm, const char *archive, const char *dirname)
+static void LoadArchivePics(PicManager *pm, map_t cc, const char *archive)
 {
 	char path[CDOGS_PATH_MAX];
-	sprintf(path, "%s/%s", archive, dirname);
+	sprintf(path, "%s/graphics", archive);
 	PicManagerLoadDir(pm, path, NULL, pm->customPics, pm->customSprites);
+	CharSpriteClassesLoadDir(cc, archive);
 }
 
 static char *ReadFileIntoBuf(const char *path, const char *mode, long *len)

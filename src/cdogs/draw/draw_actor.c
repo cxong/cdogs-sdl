@@ -66,30 +66,26 @@
 #include "blit.h"
 #include "pic_manager.h"
 
-#define NECK_OFFSET 13
-#define FOOT_OFFSET 3
-#define LEGS_OFFSET 6
-#define WRIST_OFFSET 6
-
 
 static Vec2i GetActorDrawOffset(
-	const Vec2i pos, const Pic *pic, const BodyPart part, const direction_e d)
+	const Vec2i pos, const Pic *pic, const BodyPart part, const CharSprites *cs,
+	const direction_e d)
 {
 	Vec2i outPos = Vec2iMinus(pos, Vec2iScaleDiv(pic->size, 2));
 	switch (part)
 	{
 	case BODY_PART_HEAD:
-		outPos.y -= NECK_OFFSET;
+		outPos.y -= cs->NeckOffset;
 		break;
 	case BODY_PART_BODY:
-		outPos.y -= FOOT_OFFSET;
+		outPos.y -= cs->FootOffset;
 		break;
 	case BODY_PART_LEGS:
-		outPos.y -= LEGS_OFFSET;
+		outPos.y -= cs->LegsOffset;
 		break;
 	case BODY_PART_GUN:
 		outPos = Vec2iAdd(outPos, cGunHandOffset[d]);
-		outPos.y -= WRIST_OFFSET;
+		outPos.y -= cs->WristOffset;
 		break;
 	default:
 		CASSERT(false, "unknown body part");
@@ -242,6 +238,8 @@ static void GetCharacterPics(
 		CASSERT(false, "invalid direction");
 		return;
 	}
+
+	pics->Sprites = c->Class->Sprites;
 }
 static Character *ActorGetCharacterMutable(TActor *a)
 {
@@ -252,15 +250,16 @@ static Character *ActorGetCharacterMutable(TActor *a)
 	return CArrayGet(&gCampaign.Setting.characters.OtherChars, a->charId);
 }
 
-static void DrawBody(GraphicsDevice *g, const ActorPics *pics, const Vec2i pos);
+static void DrawDyingBody(
+	GraphicsDevice *g, const ActorPics *pics, const Vec2i pos);
 void DrawActorPics(
-	const ActorPics *pics, const Vec2i picPos, const direction_e d)
+	const ActorPics * pics, const Vec2i picPos, const direction_e d)
 {
 	if (pics->IsDead)
 	{
 		if (pics->IsDying)
 		{
-			DrawBody(&gGraphicsDevice, pics, picPos);
+			DrawDyingBody(&gGraphicsDevice, pics, picPos);
 		}
 	}
 	else
@@ -295,7 +294,7 @@ void DrawActorPics(
 				continue;
 			}
 			const Vec2i drawPos = GetActorDrawOffset(
-				picPos, picp, pics->DrawOrder[i], d);
+				picPos, picp, pics->DrawOrder[i], pics->Sprites, d);
 			if (pics->IsTransparent)
 			{
 				BlitBackground(
@@ -370,24 +369,24 @@ void DrawActorHighlight(
 		return;
 	}
 	const Vec2i headPos = GetActorDrawOffset(
-		pos, pics->Head, BODY_PART_HEAD, d);
+		pos, pics->Head, BODY_PART_HEAD, pics->Sprites, d);
 	BlitPicHighlight(&gGraphicsDevice, pics->Head, headPos, color);
 	if (pics->Body != NULL)
 	{
 		const Vec2i bodyPos = GetActorDrawOffset(
-			pos, pics->Body, BODY_PART_BODY, d);
+			pos, pics->Body, BODY_PART_BODY, pics->Sprites, d);
 		BlitPicHighlight(&gGraphicsDevice, pics->Body, bodyPos, color);
 	}
 	if (pics->Legs != NULL)
 	{
 		const Vec2i legsPos = GetActorDrawOffset(
-			pos, pics->Legs, BODY_PART_LEGS, d);
+			pos, pics->Legs, BODY_PART_LEGS, pics->Sprites, d);
 		BlitPicHighlight(&gGraphicsDevice, pics->Legs, legsPos, color);
 	}
 	if (pics->Gun != NULL)
 	{
 		const Vec2i gunPos = GetActorDrawOffset(
-			pos, pics->Gun, BODY_PART_GUN, d);
+			pos, pics->Gun, BODY_PART_GUN, pics->Sprites, d);
 		BlitPicHighlight(&gGraphicsDevice, pics->Gun, gunPos, color);
 	}
 }
@@ -505,11 +504,13 @@ void DrawHead(
 		head->size.x / 2, head->size.y / 2));
 	BlitCharMultichannel(&gGraphicsDevice, head, drawPos, &c->Colors);
 }
-static void DrawBody(GraphicsDevice *g, const ActorPics *pics, const Vec2i pos)
+#define DYING_BODY_OFFSET 3
+static void DrawDyingBody(
+	GraphicsDevice *g, const ActorPics *pics, const Vec2i pos)
 {
 	const Pic *body = pics->Body;
 	const Vec2i drawPos = Vec2iMinus(pos, Vec2iNew(
-		body->size.x / 2, body->size.y / 2 + FOOT_OFFSET));
+		body->size.x / 2, body->size.y / 2 + DYING_BODY_OFFSET));
 	const color_t mask = pics->Mask != NULL ? *pics->Mask : colorWhite;
 	BlitMasked(g, pics->Body, drawPos, mask, true);
 }

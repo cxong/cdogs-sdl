@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -191,7 +191,8 @@ void PicManagerLoadDir(
 	tinydir_dir dir;
 	if (tinydir_open(&dir, path) == -1)
 	{
-		perror("Cannot open image dir");
+		LOG(LM_MAIN, LL_ERROR, "Error opening image dir '%s': %s",
+			path, strerror(errno));
 		goto bail;
 	}
 
@@ -200,7 +201,8 @@ void PicManagerLoadDir(
 		tinydir_file file;
 		if (tinydir_readfile(&dir, &file) == -1)
 		{
-			perror("Cannot read image file");
+			LOG(LM_MAIN, LL_ERROR, "Cannot read file '%s': %s",
+				file.path, strerror(errno));
 			goto bail;
 		}
 		if (file.is_reg)
@@ -212,8 +214,8 @@ void PicManagerLoadDir(
 				SDL_Surface *data = IMG_Load_RW(rwops, 0);
 				if (!data)
 				{
-					LOG(LM_MAIN, LL_ERROR, "Cannot load image");
-					LOG(LM_MAIN, LL_ERROR, "IMG_Load: %s", IMG_GetError());
+					LOG(LM_MAIN, LL_ERROR, "Cannot load image IMG_Load: %s",
+						IMG_GetError());
 				}
 				else
 				{
