@@ -32,10 +32,10 @@
 typedef struct
 {
 	char *Name;
-	int NeckOffset;
-	int BodyOffset;
-	int LegsOffset;
-	int WristOffset;
+	map_t HeadYOffsets;	// of CArray of int
+	int BodyYOffset;
+	int LegsYOffset;
+	map_t GunYOffsets;	// of CArray of int
 } CharSprites;
 typedef struct
 {
@@ -50,3 +50,6 @@ void CharSpriteClassesInit(CharSpriteClasses *c);
 void CharSpriteClassesLoadDir(map_t classes, const char *path);
 void CharSpriteClassesClear(map_t classes);
 void CharSpriteClassesTerminate(CharSpriteClasses *c);
+
+int CharSpritesGetOffset(
+	const map_t offsets, const char *anim, const int frame);

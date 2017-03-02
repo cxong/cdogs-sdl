@@ -58,6 +58,19 @@ typedef enum {
 /** A pointer to a node in the parse tree */
 typedef struct yajl_val_s * yajl_val;
 
+/** Inner JSON types */
+typedef struct
+{
+	char **keys; /*< Array of keys */
+	yajl_val *values; /*< Array of values. */
+	size_t len; /*< Number of key-value-pairs. */
+} yajl_object_s, *yajl_object;
+typedef struct
+{
+	yajl_val *values; /*< Array of elements. */
+	size_t len; /*< Number of elements. */
+} yajl_array_s, *yajl_array;
+
 /**
  * A JSON value representation capable of holding one of the seven
  * types above. For "string", "number", "object", and "array"
@@ -84,15 +97,8 @@ struct yajl_val_s
              * \c YAJL_NUMBER_DOUBLE_VALID. */
             unsigned int flags;
         } number;
-        struct {
-			char **keys; /*< Array of keys */
-            yajl_val *values; /*< Array of values. */
-            size_t len; /*< Number of key-value-pairs. */
-        } object;
-        struct {
-            yajl_val *values; /*< Array of elements. */
-            size_t len; /*< Number of elements. */
-        } array;
+        yajl_object_s object;
+        yajl_array_s array;
     } u;
 };
 

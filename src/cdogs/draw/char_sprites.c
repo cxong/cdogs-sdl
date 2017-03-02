@@ -29,6 +29,7 @@
 
 #include <tinydir/tinydir.h>
 
+#include "c_array.h"
 #include "log.h"
 #include "sys_config.h"
 #include "yajl_utils.h"
@@ -100,6 +101,7 @@ void CharSpriteClassesLoadDir(map_t classes, const char *path)
 bail:
 	tinydir_close(&dir);
 }
+static map_t LoadYOffsets(yajl_val node, const char *path);
 static CharSprites *CharSpritesLoadJSON(const char *name, const char *path)
 {
 	CharSprites *c = NULL;
@@ -121,14 +123,40 @@ static CharSprites *CharSpritesLoadJSON(const char *name, const char *path)
 
 	CCALLOC(c, sizeof *c);
 	CSTRDUP(c->Name, name);
-	YAJLInt(&c->NeckOffset, node, "NeckOffset");
-	YAJLInt(&c->BodyOffset, node, "BodyOffset");
-	YAJLInt(&c->LegsOffset, node, "LegsOffset");
-	YAJLInt(&c->WristOffset, node, "WristOffset");
+	c->HeadYOffsets = LoadYOffsets(node, "HeadYOffsets");
+	YAJLInt(&c->BodyYOffset, node, "BodyYOffset");
+	YAJLInt(&c->LegsYOffset, node, "LegsYOffset");
+	c->GunYOffsets = LoadYOffsets(node, "GunYOffsets");
 
 bail:
 	yajl_tree_free(node);
 	return c;
+}
+static map_t LoadYOffsets(yajl_val node, const char *path)
+{
+	map_t offsets = hashmap_new();
+	const yajl_object obj = YAJL_GET_OBJECT(YAJLFindNode(node, path));
+	for (int i = 0; i < (int)obj->len; i++)
+	{
+		const char *key = obj->keys[i];
+		CArray *offsetVals;
+		CMALLOC(offsetVals, sizeof *offsetVals);
+		CArrayInit(offsetVals, sizeof(int));
+		const yajl_array offsetsArray = YAJL_GET_ARRAY(obj->values[i]);
+		for (int j = 0; j < (int)offsetsArray->len; j++)
+		{
+			const int offset = (int)YAJL_GET_INTEGER(offsetsArray->values[j]);
+			CArrayPushBack(offsetVals, &offset);
+		}
+		const int error = hashmap_put(offsets, key, offsetVals);
+		if (error != MAP_OK)
+		{
+			LOG(LM_MAIN, LL_ERROR, "Failed to add animation offsets: %d",
+				error);
+			CASSERT(false, "Failed to add animation offsets");
+		}
+	}
+	return offsets;
 }
 
 static void CharSpritesDestroy(any_t data);
@@ -146,4 +174,22 @@ void CharSpriteClassesTerminate(CharSpriteClasses *c)
 {
 	CharSpriteClassesClear(c->classes);
 	CharSpriteClassesClear(c->customClasses);
+}
+
+int CharSpritesGetOffset(
+	const map_t offsets, const char *anim, const int frame)
+{
+	CArray *animOffsets;
+	int error = hashmap_get(offsets, anim, (any_t *)&animOffsets);
+	if (error == MAP_MISSING)
+	{
+		// Use idle animation by default
+		error = hashmap_get(offsets, "idle", (any_t *)&animOffsets);
+	}
+	if (error != MAP_OK)
+	{
+		CASSERT(false, "animation not found");
+		return 0;
+	}
+	return *(int *)CArrayGet(animOffsets, frame % animOffsets->size);
 }

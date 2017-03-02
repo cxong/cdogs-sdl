@@ -1,7 +1,13 @@
 {
   "Version": 1,
-  "NeckOffset": 13,
-  "BodyOffset": 6,
-  "LegsOffset": 6,
-  "WristOffset": 6
+  "HeadYOffsets": {
+    "idle": [13],
+    "run": [14, 13, 12, 13, 14, 13, 12, 13]
+  },
+  "BodyYOffset": 6,
+  "LegsYOffset": 6,
+  "GunYOffsets": {
+    "idle": [6],
+    "run": [7, 6, 5, 6, 7, 6, 5, 6]
+  }
 }

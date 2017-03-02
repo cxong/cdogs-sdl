@@ -132,8 +132,7 @@ static void DrawObjectiveHighlight(
 	else if (ti->kind == KIND_CHARACTER)
 	{
 		TActor *a = CArrayGet(&gActors, ti->id);
-		ActorPics pics;
-		GetCharacterPicsFromActor(&pics, a);
-		DrawActorHighlight(&pics, pos, color, a->direction);
+		ActorPics pics = GetCharacterPicsFromActor(a);
+		DrawActorHighlight(&pics, pos, color);
 	}
 }

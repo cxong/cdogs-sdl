@@ -308,9 +308,8 @@ static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset)
 	else if (t->kind == KIND_CHARACTER)
 	{
 		TActor *a = CArrayGet(&gActors, t->id);
-		ActorPics pics;
-		GetCharacterPicsFromActor(&pics, a);
-		DrawActorPics(&pics, picPos, RadiansToDirection(a->DrawRadians));
+		ActorPics pics = GetCharacterPicsFromActor(a);
+		DrawActorPics(&pics, picPos);
 		// Draw weapon indicators
 		DrawLaserSight(&pics, a, picPos);
 	}

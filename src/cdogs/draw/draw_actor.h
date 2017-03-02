@@ -65,9 +65,13 @@ typedef enum
 typedef struct
 {
 	const Pic *Head;
+	Vec2i HeadOffset;
 	const Pic *Body;
+	Vec2i BodyOffset;
 	const Pic *Legs;
+	Vec2i LegsOffset;
 	const Pic *Gun;
+	Vec2i GunOffset;
 	BodyPart DrawOrder[BODY_PART_COUNT];
 	const CharColors *Colors;
 	bool IsDead;
@@ -85,11 +89,9 @@ void DrawHead(const Character *c, const direction_e dir, const Vec2i pos);
 
 void DrawChatters(DrawBuffer *b, const Vec2i offset);
 
-void GetCharacterPicsFromActor(ActorPics *pics, TActor *a);
-void DrawActorPics(
-	const ActorPics *pics, const Vec2i picPos, const direction_e d);
+ActorPics GetCharacterPicsFromActor(TActor *a);
+void DrawActorPics(const ActorPics *pics, const Vec2i pos);
 void DrawLaserSight(
 	const ActorPics *pics, const TActor *a, const Vec2i picPos);
 void DrawActorHighlight(
-	const ActorPics *pics, const Vec2i pos, const color_t color,
-	const direction_e d);
+	const ActorPics *pics, const Vec2i pos, const color_t color);
