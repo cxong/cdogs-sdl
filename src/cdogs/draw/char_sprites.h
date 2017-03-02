@@ -31,8 +31,9 @@
 
 typedef struct
 {
+	char *Name;
 	int NeckOffset;
-	int FootOffset;
+	int BodyOffset;
 	int LegsOffset;
 	int WristOffset;
 } CharSprites;

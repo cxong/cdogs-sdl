@@ -59,7 +59,7 @@ void CharSpriteClassesInit(CharSpriteClasses *c)
 	CharSpriteClassesLoadDir(c->classes, buf);
 }
 
-static CharSprites *CharSpritesLoadJSON(const char *path);
+static CharSprites *CharSpritesLoadJSON(const char *name, const char *path);
 void CharSpriteClassesLoadDir(map_t classes, const char *path)
 {
 	char buf[CDOGS_PATH_MAX];
@@ -83,7 +83,7 @@ void CharSpriteClassesLoadDir(map_t classes, const char *path)
 		{
 			continue;
 		}
-		CharSprites *c = CharSpritesLoadJSON(file.path);
+		CharSprites *c = CharSpritesLoadJSON(file.name, file.path);
 		if (c == NULL)
 		{
 			continue;
@@ -100,7 +100,7 @@ void CharSpriteClassesLoadDir(map_t classes, const char *path)
 bail:
 	tinydir_close(&dir);
 }
-static CharSprites *CharSpritesLoadJSON(const char *path)
+static CharSprites *CharSpritesLoadJSON(const char *name, const char *path)
 {
 	CharSprites *c = NULL;
 	// Try to find a data.json in this dir
@@ -120,8 +120,9 @@ static CharSprites *CharSpritesLoadJSON(const char *path)
 	}
 
 	CCALLOC(c, sizeof *c);
+	CSTRDUP(c->Name, name);
 	YAJLInt(&c->NeckOffset, node, "NeckOffset");
-	YAJLInt(&c->FootOffset, node, "FootOffset");
+	YAJLInt(&c->BodyOffset, node, "BodyOffset");
 	YAJLInt(&c->LegsOffset, node, "LegsOffset");
 	YAJLInt(&c->WristOffset, node, "WristOffset");
 
@@ -138,6 +139,7 @@ void CharSpriteClassesClear(map_t classes)
 static void CharSpritesDestroy(any_t data)
 {
 	CharSprites *c = data;
+	CFREE(c->Name);
 	CFREE(c);
 }
 void CharSpriteClassesTerminate(CharSpriteClasses *c)

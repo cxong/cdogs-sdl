@@ -78,7 +78,7 @@ static Vec2i GetActorDrawOffset(
 		outPos.y -= cs->NeckOffset;
 		break;
 	case BODY_PART_BODY:
-		outPos.y -= cs->FootOffset;
+		outPos.y -= cs->BodyOffset;
 		break;
 	case BODY_PART_LEGS:
 		outPos.y -= cs->LegsOffset;
@@ -138,11 +138,11 @@ void GetCharacterPicsFromActor(ActorPics *pics, TActor *a)
 static const Pic *GetHeadPic(
 	const CharacterClass *c, const direction_e dir, const gunstate_e gunState);
 static const Pic *GetBodyPic(
-	PicManager *pm, const direction_e dir, const ActorAnimation anim,
-	const int frame, const bool isArmed);
+	PicManager *pm, const CharSprites *cs, const direction_e dir,
+	const ActorAnimation anim, const int frame, const bool isArmed);
 static const Pic *GetLegsPic(
-	PicManager *pm, const direction_e dir, const ActorAnimation anim,
-	const int frame);
+	PicManager *pm, const CharSprites *cs, const direction_e dir,
+	const ActorAnimation anim, const int frame);
 static const Pic *GetGunPic(
 	const NamedSprites *gunPics, const direction_e dir, const int gunState);
 static const Pic *GetDeathPic(PicManager *pm, const int frame);
@@ -193,10 +193,12 @@ static void GetCharacterPics(
 
 	// Body
 	const bool isArmed = gunPics != NULL;
-	pics->Body = GetBodyPic(&gPicManager, dir, anim, frame, isArmed);
+	pics->Body = GetBodyPic(
+		&gPicManager, c->Class->Sprites, dir, anim, frame, isArmed);
 
 	// Legs
-	pics->Legs = GetLegsPic(&gPicManager, dir, anim, frame);
+	pics->Legs = GetLegsPic(
+		&gPicManager, c->Class->Sprites, dir, anim, frame);
 
 	// Gun
 	pics->Gun = NULL;
@@ -443,18 +445,8 @@ static const Pic *GetHeadPic(
 	return CPicGetPic(&c->HeadPics, idx);
 }
 static const Pic *GetBodyPic(
-	PicManager *pm, const direction_e dir, const ActorAnimation anim,
-	const int frame, const bool isArmed)
-{
-	const bool isIdle = anim == ACTORANIMATION_IDLE;
-	const int row = (isArmed ? 5 : 0) + (isIdle ? 0 : (frame % 4) + 1);
-	const int idx = row * DIRECTION_COUNT + dir;
-	return CArrayGet(
-		&PicManagerGetSprites(pm, "chars/bodies/base/upper")->pics, idx);
-}
-static const Pic *GetLegsPic(
-	PicManager *pm, const direction_e dir, const ActorAnimation anim,
-	const int frame)
+	PicManager *pm, const CharSprites *cs, const direction_e dir,
+	const ActorAnimation anim, const int frame, const bool isArmed)
 {
 	const int stride = anim == ACTORANIMATION_IDLE ? 1 : 8;
 	const int col = frame % stride;
@@ -462,8 +454,24 @@ static const Pic *GetLegsPic(
 	const int idx = col + row * stride;
 	char buf[CDOGS_PATH_MAX];
 	sprintf(
-		buf, "chars/bodies/base/legs_%s",
-		anim == ACTORANIMATION_IDLE ? "idle" : "run");
+		buf, "chars/bodies/%s/upper_%s%s",
+		cs->Name,
+		anim == ACTORANIMATION_IDLE ? "idle" : "run",
+		isArmed ? "_handgun" : "");	// TODO: other gun holding poses
+	return CArrayGet(&PicManagerGetSprites(pm, buf)->pics, idx);
+}
+static const Pic *GetLegsPic(
+	PicManager *pm, const CharSprites *cs, const direction_e dir,
+	const ActorAnimation anim, const int frame)
+{
+	const int stride = anim == ACTORANIMATION_IDLE ? 1 : 8;
+	const int col = frame % stride;
+	const int row = (int)dir;
+	const int idx = col + row * stride;
+	char buf[CDOGS_PATH_MAX];
+	sprintf(
+		buf, "chars/bodies/%s/legs_%s",
+		cs->Name, anim == ACTORANIMATION_IDLE ? "idle" : "run");
 	return CArrayGet(&PicManagerGetSprites(pm, buf)->pics, idx);
 }
 static const Pic *GetGunPic(

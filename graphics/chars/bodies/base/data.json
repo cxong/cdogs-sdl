@@ -1,7 +1,7 @@
 {
   "Version": 1,
   "NeckOffset": 13,
-  "FootOffset": 3,
+  "BodyOffset": 6,
   "LegsOffset": 6,
   "WristOffset": 6
 }
