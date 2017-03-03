@@ -23,18 +23,6 @@
 #include "pics.h"
 
 
-const OffsetTable cGunHandOffset =
-{
-	{6, 0},
-	{6, 0},
-	{4, 1},
-	{-6, 1},
-	{-6, 1},
-	{-6, 0},
-	{-4, -1},
-	{-3, -2}
-};
-
 const char *IntWallType(const int i)
 {
 	static const char *wallTypes[] = {

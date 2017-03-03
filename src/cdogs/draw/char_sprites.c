@@ -101,7 +101,8 @@ void CharSpriteClassesLoadDir(map_t classes, const char *path)
 bail:
 	tinydir_close(&dir);
 }
-static map_t LoadOffsets(yajl_val node, const char *path);
+static map_t LoadFrameOffsets(yajl_val node, const char *path);
+static void LoadDirOffsets(Vec2i *offsets, yajl_val node, const char *path);
 static CharSprites *CharSpritesLoadJSON(const char *name, const char *path)
 {
 	CharSprites *c = NULL;
@@ -133,16 +134,24 @@ static CharSprites *CharSpritesLoadJSON(const char *name, const char *path)
 				YAJL_GET_STRING(orderDir->values[bp]));
 		}
 	}
-	c->Offsets[BODY_PART_HEAD] = LoadOffsets(node, "Offsets/Head");
-	c->Offsets[BODY_PART_BODY] = LoadOffsets(node, "Offsets/Body");
-	c->Offsets[BODY_PART_LEGS] = LoadOffsets(node, "Offsets/Legs");
-	c->Offsets[BODY_PART_GUN] = LoadOffsets(node, "Offsets/Gun");
+	c->Offsets.Frame[BODY_PART_HEAD] = LoadFrameOffsets(
+		node, "Offsets/Frame/Head");
+	c->Offsets.Frame[BODY_PART_BODY] = LoadFrameOffsets(
+		node, "Offsets/Frame/Body");
+	c->Offsets.Frame[BODY_PART_LEGS] = LoadFrameOffsets(
+		node, "Offsets/Frame/Legs");
+	c->Offsets.Frame[BODY_PART_GUN] = LoadFrameOffsets(
+		node, "Offsets/Frame/Gun");
+	LoadDirOffsets(c->Offsets.Dir[BODY_PART_HEAD], node, "Offsets/Dir/Head");
+	LoadDirOffsets(c->Offsets.Dir[BODY_PART_BODY], node, "Offsets/Dir/Body");
+	LoadDirOffsets(c->Offsets.Dir[BODY_PART_LEGS], node, "Offsets/Dir/Legs");
+	LoadDirOffsets(c->Offsets.Dir[BODY_PART_GUN], node, "Offsets/Dir/Gun");
 
 bail:
 	yajl_tree_free(node);
 	return c;
 }
-static map_t LoadOffsets(yajl_val node, const char *path)
+static map_t LoadFrameOffsets(yajl_val node, const char *path)
 {
 	map_t offsets = hashmap_new();
 	const yajl_object obj = YAJL_GET_OBJECT(YAJLFindNode(node, path));
@@ -167,6 +176,18 @@ static map_t LoadOffsets(yajl_val node, const char *path)
 		}
 	}
 	return offsets;
+}
+static void LoadDirOffsets(Vec2i *offsets, yajl_val node, const char *path)
+{
+	const yajl_array offsetsArray = YAJL_GET_ARRAY(YAJLFindNode(node, path));
+	if (offsetsArray == NULL)
+	{
+		return;
+	}
+	for (direction_e d = DIRECTION_UP; d < DIRECTION_COUNT; d++)
+	{
+		offsets[d] = YAJL_GET_VEC2I(offsetsArray->values[d]);
+	}
 }
 
 static void CharSpritesDestroy(any_t data);

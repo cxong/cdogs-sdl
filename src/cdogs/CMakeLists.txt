@@ -4,6 +4,7 @@ include_directories(
 	${SDL2_MIXER_INCLUDE_DIRS})
 add_definitions(-DSTATIC)
 set(CDOGS_SOURCES
+	actor_fire.c
 	actor_placement.c
 	actors.c
 	ai.c
@@ -100,6 +101,7 @@ set(CDOGS_SOURCES
 	weapon.c
 	yajl_utils.c)
 set(CDOGS_HEADERS
+	actor_fire.h
 	actor_placement.h
 	actors.h
 	ai.h

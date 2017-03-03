@@ -386,24 +386,8 @@ int GunDescriptionId(const GunDescription *g)
 	return -1;
 }
 
-void WeaponUpdate(
-	Weapon *w, const int ticks, const Vec2i fullPos, const direction_e d,
-	const int playerUID)
+void WeaponUpdate(Weapon *w, const int ticks)
 {
-	// Reload sound
-	if (ConfigGetBool(&gConfig, "Sound.Reloads") &&
-		w->lock > w->Gun->ReloadLead &&
-		w->lock - ticks <= w->Gun->ReloadLead &&
-		w->lock > 0 &&
-		w->Gun->ReloadSound != NULL)
-	{
-		GameEvent e = GameEventNew(GAME_EVENT_GUN_RELOAD);
-		e.u.GunReload.PlayerUID = playerUID;
-		strcpy(e.u.GunReload.Gun, w->Gun->name);
-		e.u.GunReload.FullPos = Vec2i2Net(fullPos);
-		e.u.GunReload.Direction = (int)d;
-		GameEventsEnqueue(&gGameEvents, e);
-	}
 	w->lock -= ticks;
 	if (w->lock < 0)
 	{
@@ -445,37 +429,6 @@ bool WeaponIsLocked(const Weapon *w)
 	return w->lock > 0;
 }
 
-void WeaponFire(
-	Weapon *w, const direction_e d, const Vec2i pos,
-	const int flags, const int playerUID, const int uid)
-{
-	if (w->state != GUNSTATE_FIRING && w->state != GUNSTATE_RECOIL)
-	{
-		GameEvent e = GameEventNew(GAME_EVENT_GUN_STATE);
-		e.u.GunState.ActorUID = uid;
-		e.u.GunState.State = GUNSTATE_FIRING;
-		GameEventsEnqueue(&gGameEvents, e);
-	}
-	if (!w->Gun->CanShoot)
-	{
-		return;
-	}
-
-	const double radians = dir2radians[d];
-	const Vec2i muzzleOffset = GunGetMuzzleOffset(w->Gun, d);
-	const Vec2i muzzlePosition = Vec2iAdd(pos, muzzleOffset);
-	const bool playSound = w->soundLock <= 0;
-	GunFire(
-		w->Gun, muzzlePosition, w->Gun->MuzzleHeight, radians,
-		flags, playerUID, uid, playSound, true);
-	if (playSound)
-	{
-		w->soundLock = w->Gun->SoundLockLength;
-	}
-
-	w->lock = w->Gun->Lock;
-}
-
 void GunFire(
 	const GunDescription *g, const Vec2i fullPos, const int z,
 	const double radians,
@@ -511,9 +464,7 @@ void GunAddBrass(
 	GetVectorsForRadians(radians, &x, &y);
 	const Vec2i ejectionPortOffset = Vec2iReal2Full(Vec2iScale(Vec2iNew(
 		(int)round(x), (int)round(y)), 7));
-	const Vec2i muzzleOffset = GunGetMuzzleOffset(g, d);
-	const Vec2i muzzlePosition = Vec2iAdd(pos, muzzleOffset);
-	e.u.AddParticle.FullPos = Vec2iMinus(muzzlePosition, ejectionPortOffset);
+	e.u.AddParticle.FullPos = Vec2iMinus(pos, ejectionPortOffset);
 	e.u.AddParticle.Z = g->MuzzleHeight;
 	e.u.AddParticle.Vel = Vec2iScaleDiv(
 		GetFullVectorsForRadians(radians + PI / 2), 3);
@@ -526,14 +477,16 @@ void GunAddBrass(
 }
 
 static Vec2i GetMuzzleOffset(const direction_e d);
-Vec2i GunGetMuzzleOffset(const GunDescription *desc, const direction_e dir)
+Vec2i GunGetMuzzleOffset(
+	const GunDescription *desc, const CharSprites *cs, const direction_e dir)
 {
 	if (!GunHasMuzzle(desc))
 	{
 		return Vec2iZero();
 	}
 	CASSERT(desc->Pic != NULL, "Gun has no pic");
-	const Vec2i position = Vec2iAdd(cGunHandOffset[dir], GetMuzzleOffset(dir));
+	const Vec2i gunOffset = cs->Offsets.Dir[BODY_PART_GUN][dir];
+	const Vec2i position = Vec2iAdd(gunOffset, GetMuzzleOffset(dir));
 	return Vec2iReal2Full(position);
 }
 static Vec2i GetMuzzleOffset(const direction_e d)

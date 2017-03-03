@@ -577,9 +577,7 @@ int AIGoto(TActor *actor, Vec2i p, bool ignoreObjects)
 // Those in slice A will move down-left and those in slice B will move left.
 int AIHunt(TActor *actor, Vec2i targetPos)
 {
-	Vec2i fullPos = Vec2iAdd(
-		actor->Pos,
-		GunGetMuzzleOffset(ActorGetGun(actor)->Gun, actor->direction));
+	const Vec2i fullPos = Vec2iAdd(actor->Pos, ActorGetGunMuzzleOffset(actor));
 	const int dx = abs(targetPos.x - fullPos.x);
 	const int dy = abs(targetPos.y - fullPos.y);
 
@@ -641,9 +639,7 @@ int AIRetreatFrom(TActor *actor, const Vec2i from)
 // Those in slice A will move left and those in slice B will move down-left.
 int AITrack(TActor *actor, const Vec2i targetPos)
 {
-	const Vec2i fullPos = Vec2iAdd(
-		actor->Pos,
-		GunGetMuzzleOffset(ActorGetGun(actor)->Gun, actor->direction));
+	const Vec2i fullPos = Vec2iAdd(actor->Pos, ActorGetGunMuzzleOffset(actor));
 	const int dx = abs(targetPos.x - fullPos.x);
 	const int dy = abs(targetPos.y - fullPos.y);
 

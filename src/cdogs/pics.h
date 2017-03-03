@@ -77,7 +77,3 @@ const char *IntFloorStyle(const int i);
 
 #define ROOM_STYLE_COUNT 11
 const char *IntRoomStyle(const int i);
-
-typedef Vec2i OffsetTable[DIRECTION_COUNT];
-
-extern const OffsetTable cGunHandOffset;

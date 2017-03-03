@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2017 Cong Xu
+    Copyright (c) 2017, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -27,36 +27,9 @@
 */
 #pragma once
 
-#include "c_hashmap/hashmap.h"
-#include "defs.h"
-#include "utils.h"
+#include "actors.h"
+#include "weapon.h"
 
-typedef struct
-{
-	char *Name;
-	BodyPart Order[DIRECTION_COUNT][BODY_PART_COUNT];
-	struct
-	{
-		// Offsets by animation frame
-		// of CArray of Vec2i, mapped by animation and indexed by frame
-		map_t Frame[BODY_PART_COUNT];
-		// Offsets by direction
-		Vec2i Dir[BODY_PART_COUNT][DIRECTION_COUNT];
-	} Offsets;
-} CharSprites;
-typedef struct
-{
-	map_t classes;
-	map_t customClasses;
-} CharSpriteClasses;
-extern CharSpriteClasses gCharSpriteClasses;
 
-const CharSprites *StrCharSpriteClass(const char *s);
-
-void CharSpriteClassesInit(CharSpriteClasses *c);
-void CharSpriteClassesLoadDir(map_t classes, const char *path);
-void CharSpriteClassesClear(map_t classes);
-void CharSpriteClassesTerminate(CharSpriteClasses *c);
-
-Vec2i CharSpritesGetOffset(
-	const map_t offsets, const char *anim, const int frame);
+void ActorFire(Weapon *w, const TActor *a);
+void ActorFireUpdate(Weapon *w, const TActor *a, const int ticks);

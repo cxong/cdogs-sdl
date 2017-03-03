@@ -73,14 +73,10 @@ static Vec2i GetActorDrawOffset(
 {
 	Vec2i offset = Vec2iScaleDiv(pic->size, -2);
 	offset = Vec2iMinus(offset, CharSpritesGetOffset(
-		cs->Offsets[part],
+		cs->Offsets.Frame[part],
 		anim == ACTORANIMATION_WALKING ? "run" : "idle",
 		frame));
-	if (part == BODY_PART_GUN)
-	{
-		// TODO: custom gun hand offset
-		offset = Vec2iAdd(offset, cGunHandOffset[d]);
-	}
+	offset = Vec2iAdd(offset, cs->Offsets.Dir[part][d]);
 	return offset;
 }
 
@@ -310,7 +306,7 @@ void DrawLaserSight(
 	// Draw weapon indicators
 	const GunDescription *g = ActorGetGun(a)->Gun;
 	Vec2i muzzlePos = Vec2iAdd(
-		picPos, Vec2iFull2Real(GunGetMuzzleOffset(g, a->direction)));
+		picPos, Vec2iFull2Real(ActorGetGunMuzzleOffset(a)));
 	muzzlePos.y -= g->MuzzleHeight / Z_FACTOR;
 	const double radians = dir2radians[a->direction] + g->AngleOffset;
 	const int range = GunGetRange(g);

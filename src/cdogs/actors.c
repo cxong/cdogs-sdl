@@ -53,6 +53,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "actor_fire.h"
 #include "actor_placement.h"
 #include "ai_coop.h"
 #include "ai_utils.h"
@@ -105,8 +106,8 @@ static void CheckPickups(TActor *actor);
 void UpdateActorState(TActor * actor, int ticks)
 {
 	Weapon *gun = ActorGetGun(actor);
-	WeaponUpdate(
-		gun, ticks, actor->Pos, actor->direction, actor->PlayerUID);
+	WeaponUpdate(gun, ticks);
+	ActorFireUpdate(gun, actor, ticks);
 
 	// If we're ready to pick up, always check the pickups
 	if (actor->PickupAll && !gCampaign.IsClient)
@@ -632,13 +633,7 @@ void Shoot(TActor *actor)
 		}
 		return;
 	}
-	WeaponFire(
-		gun,
-		actor->direction,
-		actor->Pos,
-		actor->flags,
-		actor->PlayerUID,
-		actor->uid);
+	ActorFire(gun, actor);
 	if (actor->PlayerUID >= 0)
 	{
 		if (ConfigGetBool(&gConfig, "Game.Ammo") && gun->Gun->AmmoId >= 0)
@@ -1286,6 +1281,12 @@ const Character *ActorGetCharacter(const TActor *a)
 Weapon *ActorGetGun(const TActor *a)
 {
 	return CArrayGet(&a->guns, a->gunIndex);
+}
+Vec2i ActorGetGunMuzzleOffset(const TActor *a)
+{
+	const GunDescription *gun = ActorGetGun(a)->Gun;
+	const CharSprites *cs = ActorGetCharacter(a)->Class->Sprites;
+	return GunGetMuzzleOffset(gun, cs, a->direction);
 }
 int ActorGunGetAmmo(const TActor *a, const Weapon *w)
 {

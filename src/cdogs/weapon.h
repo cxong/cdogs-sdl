@@ -50,6 +50,7 @@
 
 #include "bullet_class.h"
 #include "defs.h"
+#include "draw/char_sprites.h"
 #include "pic.h"
 #include "pics.h"
 #include "sounds.h"
@@ -148,14 +149,10 @@ Weapon WeaponCreate(const GunDescription *gun);
 const GunDescription *StrGunDescription(const char *s);
 GunDescription *IdGunDescription(const int i);
 int GunDescriptionId(const GunDescription *g);
-Vec2i GunGetMuzzleOffset(const GunDescription *desc, const direction_e dir);
-void WeaponUpdate(
-	Weapon *w, const int ticks, const Vec2i fullPos, const direction_e d,
-	const int playerUID);
+Vec2i GunGetMuzzleOffset(
+	const GunDescription *desc, const CharSprites *cs, const direction_e dir);
+void WeaponUpdate(Weapon *w, const int ticks);
 bool WeaponIsLocked(const Weapon *w);
-void WeaponFire(
-	Weapon *w, const direction_e d, const Vec2i pos,
-	const int flags, const int playerUID, const int uid);
 void WeaponSetState(Weapon *w, const gunstate_e state);
 void GunFire(
 	const GunDescription *g, const Vec2i fullPos, const int z,

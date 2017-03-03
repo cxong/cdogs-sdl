@@ -456,8 +456,7 @@ static void HandleGameEvent(
 			if (g->Brass && g->ReloadLead == 0)
 			{
 				const direction_e d = RadiansToDirection(e.u.GunFire.Angle);
-				const Vec2i muzzleOffset = GunGetMuzzleOffset(g, d);
-				GunAddBrass(g, d, Vec2iMinus(fullPos, muzzleOffset));
+				GunAddBrass(g, d, fullPos);
 			}
 		}
 		break;
