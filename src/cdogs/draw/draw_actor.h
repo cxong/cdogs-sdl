@@ -53,15 +53,6 @@
 #include "gamedata.h"
 #include "grafx_bg.h"
 
-typedef enum
-{
-	BODY_PART_HEAD,
-	BODY_PART_BODY,
-	BODY_PART_LEGS,
-	BODY_PART_GUN,
-	BODY_PART_COUNT
-} BodyPart;
-
 typedef struct
 {
 	const Pic *Head;

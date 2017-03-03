@@ -1,13 +1,29 @@
 {
   "Version": 1,
-  "HeadYOffsets": {
-    "idle": [13],
-    "run": [14, 13, 12, 13, 14, 13, 12, 13]
-  },
-  "BodyYOffset": 6,
-  "LegsYOffset": 6,
-  "GunYOffsets": {
-    "idle": [6],
-    "run": [7, 6, 5, 6, 7, 6, 5, 6]
+  "Order": [
+    ["gun", "legs", "head", "body"],
+    ["gun", "legs", "body", "head"],
+    ["legs", "body", "head", "gun"],
+    ["legs", "body", "head", "gun"],
+    ["legs", "body", "head", "gun"],
+    ["legs", "body", "head", "gun"],
+    ["legs", "gun", "body", "head"],
+    ["gun", "legs", "body", "head"]
+  ],
+  "YOffsets": {
+    "Head": {
+      "idle": [13],
+      "run": [14, 13, 12, 13, 14, 13, 12, 13]
+    },
+    "Body": {
+      "idle": [6]
+    },
+    "Legs": {
+      "idle": [6]
+    },
+    "Gun": {
+      "idle": [6],
+      "run": [7, 6, 5, 6, 7, 6, 5, 6]
+    }
   }
 }

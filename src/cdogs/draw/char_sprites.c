@@ -123,10 +123,20 @@ static CharSprites *CharSpritesLoadJSON(const char *name, const char *path)
 
 	CCALLOC(c, sizeof *c);
 	CSTRDUP(c->Name, name);
-	c->HeadYOffsets = LoadYOffsets(node, "HeadYOffsets");
-	YAJLInt(&c->BodyYOffset, node, "BodyYOffset");
-	YAJLInt(&c->LegsYOffset, node, "LegsYOffset");
-	c->GunYOffsets = LoadYOffsets(node, "GunYOffsets");
+	const yajl_array order = YAJL_GET_ARRAY(YAJLFindNode(node, "Order"));
+	for (direction_e d = DIRECTION_UP; d < DIRECTION_COUNT; d++)
+	{
+		const yajl_array orderDir = YAJL_GET_ARRAY(order->values[d]);
+		for (BodyPart bp = BODY_PART_HEAD; bp < BODY_PART_COUNT; bp++)
+		{
+			c->Order[d][bp] = StrBodyPart(
+				YAJL_GET_STRING(orderDir->values[bp]));
+		}
+	}
+	c->YOffsets[BODY_PART_HEAD] = LoadYOffsets(node, "YOffsets/Head");
+	c->YOffsets[BODY_PART_BODY] = LoadYOffsets(node, "YOffsets/Body");
+	c->YOffsets[BODY_PART_LEGS] = LoadYOffsets(node, "YOffsets/Legs");
+	c->YOffsets[BODY_PART_GUN] = LoadYOffsets(node, "YOffsets/Gun");
 
 bail:
 	yajl_tree_free(node);

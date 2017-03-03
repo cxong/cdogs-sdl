@@ -72,32 +72,14 @@ static Vec2i GetActorDrawOffset(
 	const ActorAnimation anim, const int frame, const direction_e d)
 {
 	Vec2i offset = Vec2iScaleDiv(pic->size, -2);
-	switch (part)
+	offset.y -= CharSpritesGetOffset(
+		cs->YOffsets[part],
+		anim == ACTORANIMATION_WALKING ? "run" : "idle",
+		frame);
+	if (part == BODY_PART_GUN)
 	{
-	case BODY_PART_HEAD:
-		// TODO: walk animation
-		offset.y -= CharSpritesGetOffset(
-			cs->HeadYOffsets,
-			anim == ACTORANIMATION_WALKING ? "run" : "idle",
-			frame);
-		break;
-	case BODY_PART_BODY:
-		offset.y -= cs->BodyYOffset;
-		break;
-	case BODY_PART_LEGS:
-		offset.y -= cs->LegsYOffset;
-		break;
-	case BODY_PART_GUN:
 		// TODO: custom gun hand offset
 		offset = Vec2iAdd(offset, cGunHandOffset[d]);
-		offset.y -= CharSpritesGetOffset(
-			cs->GunYOffsets,
-			anim == ACTORANIMATION_WALKING ? "run" : "idle",
-			frame);
-		break;
-	default:
-		CASSERT(false, "unknown body part");
-		break;
 	}
 	return offset;
 }
@@ -228,38 +210,9 @@ static ActorPics GetCharacterPics(
 	}
 
 	// Determine draw order based on the direction the player is facing
-	// Order is: 0: head, 1: body, 2: gun
-	// TODO: custom draw order based on body type
-	switch (dir)
+	for (BodyPart bp = BODY_PART_HEAD; bp < BODY_PART_COUNT; bp++)
 	{
-	case DIRECTION_UP:
-	case DIRECTION_UPRIGHT:
-		pics.DrawOrder[0] = BODY_PART_LEGS;
-		pics.DrawOrder[1] = BODY_PART_GUN;
-		pics.DrawOrder[2] = BODY_PART_HEAD;
-		pics.DrawOrder[3] = BODY_PART_BODY;
-		break;
-
-	case DIRECTION_RIGHT:
-	case DIRECTION_DOWNRIGHT:
-	case DIRECTION_DOWN:
-	case DIRECTION_DOWNLEFT:
-		pics.DrawOrder[0] = BODY_PART_LEGS;
-		pics.DrawOrder[1] = BODY_PART_BODY;
-		pics.DrawOrder[2] = BODY_PART_HEAD;
-		pics.DrawOrder[3] = BODY_PART_GUN;
-		break;
-
-	case DIRECTION_LEFT:
-	case DIRECTION_UPLEFT:
-		pics.DrawOrder[0] = BODY_PART_LEGS;
-		pics.DrawOrder[1] = BODY_PART_GUN;
-		pics.DrawOrder[2] = BODY_PART_BODY;
-		pics.DrawOrder[3] = BODY_PART_HEAD;
-		break;
-	default:
-		CASSERT(false, "invalid direction");
-		return pics;
+		pics.DrawOrder[bp] = c->Class->Sprites->Order[dir][bp];
 	}
 
 	pics.Sprites = c->Class->Sprites;

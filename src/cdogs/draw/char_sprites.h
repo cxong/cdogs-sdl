@@ -28,14 +28,15 @@
 #pragma once
 
 #include "c_hashmap/hashmap.h"
+#include "defs.h"
+#include "utils.h"
 
 typedef struct
 {
 	char *Name;
-	map_t HeadYOffsets;	// of CArray of int
-	int BodyYOffset;
-	int LegsYOffset;
-	map_t GunYOffsets;	// of CArray of int
+	BodyPart Order[DIRECTION_COUNT][BODY_PART_COUNT];
+	// of CArray of int, mapped by animation and indexed by frame
+	map_t YOffsets[BODY_PART_COUNT];
 } CharSprites;
 typedef struct
 {
