@@ -150,8 +150,7 @@ void YAJLVec2i(Vec2i *value, yajl_val node, const char *name)
 	{
 		return;
 	}
-	value->x = (int)YAJL_GET_INTEGER(YAJL_GET_ARRAY(node)->values[0]);
-	value->y = (int)YAJL_GET_INTEGER(YAJL_GET_ARRAY(node)->values[1]);
+	*value = YAJL_GET_VEC2I(node);
 }
 /*
 void LoadStr(char **value, json_t *node, const char *name)

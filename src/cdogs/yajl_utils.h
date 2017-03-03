@@ -42,6 +42,9 @@ void YAJLBool(bool *value, yajl_val node, const char *name);
 void YAJLInt(int *value, yajl_val node, const char *name);
 void YAJLDouble(double *value, yajl_val node, const char *name);
 void YAJLVec2i(Vec2i *value, yajl_val node, const char *name);
+#define YAJL_GET_VEC2I(v) Vec2iNew(\
+	(int)YAJL_GET_INTEGER(YAJL_GET_ARRAY(v)->values[0]),\
+	(int)YAJL_GET_INTEGER(YAJL_GET_ARRAY(v)->values[1]))
 /*
 // remember to free
 void LoadStr(char **value, json_t *node, const char *name);

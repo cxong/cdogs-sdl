@@ -101,7 +101,7 @@ void CharSpriteClassesLoadDir(map_t classes, const char *path)
 bail:
 	tinydir_close(&dir);
 }
-static map_t LoadYOffsets(yajl_val node, const char *path);
+static map_t LoadOffsets(yajl_val node, const char *path);
 static CharSprites *CharSpritesLoadJSON(const char *name, const char *path)
 {
 	CharSprites *c = NULL;
@@ -133,16 +133,16 @@ static CharSprites *CharSpritesLoadJSON(const char *name, const char *path)
 				YAJL_GET_STRING(orderDir->values[bp]));
 		}
 	}
-	c->YOffsets[BODY_PART_HEAD] = LoadYOffsets(node, "YOffsets/Head");
-	c->YOffsets[BODY_PART_BODY] = LoadYOffsets(node, "YOffsets/Body");
-	c->YOffsets[BODY_PART_LEGS] = LoadYOffsets(node, "YOffsets/Legs");
-	c->YOffsets[BODY_PART_GUN] = LoadYOffsets(node, "YOffsets/Gun");
+	c->Offsets[BODY_PART_HEAD] = LoadOffsets(node, "Offsets/Head");
+	c->Offsets[BODY_PART_BODY] = LoadOffsets(node, "Offsets/Body");
+	c->Offsets[BODY_PART_LEGS] = LoadOffsets(node, "Offsets/Legs");
+	c->Offsets[BODY_PART_GUN] = LoadOffsets(node, "Offsets/Gun");
 
 bail:
 	yajl_tree_free(node);
 	return c;
 }
-static map_t LoadYOffsets(yajl_val node, const char *path)
+static map_t LoadOffsets(yajl_val node, const char *path)
 {
 	map_t offsets = hashmap_new();
 	const yajl_object obj = YAJL_GET_OBJECT(YAJLFindNode(node, path));
@@ -151,11 +151,11 @@ static map_t LoadYOffsets(yajl_val node, const char *path)
 		const char *key = obj->keys[i];
 		CArray *offsetVals;
 		CMALLOC(offsetVals, sizeof *offsetVals);
-		CArrayInit(offsetVals, sizeof(int));
+		CArrayInit(offsetVals, sizeof(Vec2i));
 		const yajl_array offsetsArray = YAJL_GET_ARRAY(obj->values[i]);
 		for (int j = 0; j < (int)offsetsArray->len; j++)
 		{
-			const int offset = (int)YAJL_GET_INTEGER(offsetsArray->values[j]);
+			const Vec2i offset = YAJL_GET_VEC2I(offsetsArray->values[j]);
 			CArrayPushBack(offsetVals, &offset);
 		}
 		const int error = hashmap_put(offsets, key, offsetVals);
@@ -186,7 +186,7 @@ void CharSpriteClassesTerminate(CharSpriteClasses *c)
 	CharSpriteClassesClear(c->customClasses);
 }
 
-int CharSpritesGetOffset(
+Vec2i CharSpritesGetOffset(
 	const map_t offsets, const char *anim, const int frame)
 {
 	CArray *animOffsets;
@@ -199,7 +199,7 @@ int CharSpritesGetOffset(
 	if (error != MAP_OK)
 	{
 		CASSERT(false, "animation not found");
-		return 0;
+		return Vec2iZero();
 	}
-	return *(int *)CArrayGet(animOffsets, frame % animOffsets->size);
+	return *(Vec2i *)CArrayGet(animOffsets, frame % animOffsets->size);
 }

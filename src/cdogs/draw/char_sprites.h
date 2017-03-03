@@ -35,8 +35,8 @@ typedef struct
 {
 	char *Name;
 	BodyPart Order[DIRECTION_COUNT][BODY_PART_COUNT];
-	// of CArray of int, mapped by animation and indexed by frame
-	map_t YOffsets[BODY_PART_COUNT];
+	// of CArray of Vec2i, mapped by animation and indexed by frame
+	map_t Offsets[BODY_PART_COUNT];
 } CharSprites;
 typedef struct
 {
@@ -52,5 +52,5 @@ void CharSpriteClassesLoadDir(map_t classes, const char *path);
 void CharSpriteClassesClear(map_t classes);
 void CharSpriteClassesTerminate(CharSpriteClasses *c);
 
-int CharSpritesGetOffset(
+Vec2i CharSpritesGetOffset(
 	const map_t offsets, const char *anim, const int frame);

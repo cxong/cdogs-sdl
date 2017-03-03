@@ -72,10 +72,10 @@ static Vec2i GetActorDrawOffset(
 	const ActorAnimation anim, const int frame, const direction_e d)
 {
 	Vec2i offset = Vec2iScaleDiv(pic->size, -2);
-	offset.y -= CharSpritesGetOffset(
-		cs->YOffsets[part],
+	offset = Vec2iMinus(offset, CharSpritesGetOffset(
+		cs->Offsets[part],
 		anim == ACTORANIMATION_WALKING ? "run" : "idle",
-		frame);
+		frame));
 	if (part == BODY_PART_GUN)
 	{
 		// TODO: custom gun hand offset
