@@ -13,7 +13,7 @@ import sys
 from math import radians
 
 argv = sys.argv[sys.argv.index("--") + 1:]
-layer = argv[0]
+layers = [int(layer) + 3 for layer in argv[0].split(',')]
 action = argv[1]
 frames = int(argv[2])
 name = '{}_{}'.format(argv[3], action)
@@ -31,7 +31,7 @@ for i in range(len(scene.layers)):
     if i < 3:
         scene.layers[i] = True
         continue
-    scene.layers[i] = i == (int(layer) + 3)
+    scene.layers[i] = i in layers
 render = scene.render
 render.image_settings.file_format = 'PNG'
 render.image_settings.color_mode ='RGBA'

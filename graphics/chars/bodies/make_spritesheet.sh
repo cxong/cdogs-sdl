@@ -35,7 +35,14 @@ do
       else
         frames=$idle_frames
       fi
-      $BLENDER -b $INFILE -P render.py -- $i $action $frames $part
+      # Include right hand layer if the part is "upper" and action doesn't have
+      # "handgun"
+      layers=$i
+      if [[ $part == *"upper"* ]] && [[ $action != *"handgun"* ]]
+      then
+        layers=$i,2
+      fi
+      $BLENDER -b $INFILE -P render.py -- $layers $action $frames $part
 
       DIMENSIONS=`identify -format "%wx%h" out/${part}_${action}_0_00.png`
       OUTFILE=$1/${part}_${action}_${DIMENSIONS}.png
