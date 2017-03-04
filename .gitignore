@@ -39,8 +39,8 @@ install_manifest.txt
 build/windows/cdogs.rc
 
 # Linux
-/bin
-/share
+bin/
+share/
 
 # Visual Studio
 Debug/
@@ -80,6 +80,9 @@ gcw0-toolchain/
 # Ninja
 .ninja*
 *.ninja
+
+# Appveyor
+dll/
 
 # Other
 *.lnk

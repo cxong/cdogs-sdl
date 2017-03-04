@@ -168,6 +168,7 @@ set(EXE_EXTENSION "")
 if(WIN32)
 	set(EXE_EXTENSION ".exe")
 	set(LIB_EXTENSION ".dll")
+  set(DATA_INSTALL_DIR ".")
 elseif(APPLE)
 	set(LIB_EXTENSION ".dylib")
   set(DATA_INSTALL_DIR "cdogs-sdl")
@@ -175,7 +176,6 @@ elseif(APPLE)
 else()
 	set(LIB_EXTENSION ".so")
 endif()
-message(${CMAKE_INSTALL_PREFIX}, ${INSTALL_PREFIX}, ${DATA_INSTALL_DIR})
 install(
   PROGRAMS
     ${CMAKE_CURRENT_BINARY_DIR}/src/cdogs-sdl${EXE_EXTENSION}

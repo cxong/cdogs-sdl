@@ -1,4 +1,4 @@
-version: 0.6.3.{build}
+version: 0.6.4.{build}
 
 branches:
   except:
@@ -59,7 +59,7 @@ artifacts:
 
 deploy:
   provider: GitHub
-  description: $(appveyor_build_version)
+  description: ''
   auth_token:
     secure: Ap9XXGG/1cyV9hpat7EaYxZHBt/VWdH82Bx+nIugdJ1Dh3I9e8OP4L/IXkadUjdR
   prerelease: false
