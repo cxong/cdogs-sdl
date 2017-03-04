@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -72,7 +72,7 @@ static GameEventEntry sGameEventEntries[] =
 	{ GAME_EVENT_SET_MESSAGE, false, false, true, true, NULL },
 
 	{ GAME_EVENT_GAME_START, true, false, true, true, NULL },
-	{ GAME_EVENT_GAME_BEGIN, true, false, true, true, NULL },
+	{ GAME_EVENT_GAME_BEGIN, true, false, true, true, NGameBegin_fields },
 
 	{ GAME_EVENT_ACTOR_ADD, true, false, true, true, NActorAdd_fields },
 	{ GAME_EVENT_ACTOR_MOVE, true, true, true, true, NActorMove_fields },

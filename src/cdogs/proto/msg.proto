@@ -110,6 +110,10 @@ message NVec2i {
 	required int32 y = 2;
 }
 
+message NGameBegin {
+	required int32 MissionTime = 1;
+}
+
 message NActorAdd {
 	required uint32 UID = 1;
 	required uint32 CharId = 2;

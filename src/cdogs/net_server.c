@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014-2016, Cong Xu
+    Copyright (c) 2014-2017, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -331,7 +331,9 @@ static void OnReceive(NetServer *n, ENetEvent event)
 			}
 			if (gMission.HasBegun)
 			{
-				NetServerSendMsg(n, peerId, GAME_EVENT_GAME_BEGIN, NULL);
+				NGameBegin gb = NGameBegin_init_default;
+				gb.MissionTime = gMission.time;
+				NetServerSendMsg(n, peerId, GAME_EVENT_GAME_BEGIN, &gb);
 			}
 
 			NetServerFlush(n);

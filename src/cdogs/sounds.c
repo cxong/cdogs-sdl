@@ -194,7 +194,11 @@ void SoundLoadDir(map_t sounds, const char *path, const char *prefix)
 	tinydir_dir dir;
 	if (tinydir_open(&dir, path) == -1)
 	{
-		LOG(LM_MAIN, LL_ERROR, "Cannot open sound dir '%s'", path);
+		if (errno != ENOENT)
+		{
+			LOG(LM_MAIN, LL_ERROR, "Cannot open sound dir '%s': %s",
+				path, strerror(errno));
+		}
 		goto bail;
 	}
 	for (; dir.has_next; tinydir_next(&dir))

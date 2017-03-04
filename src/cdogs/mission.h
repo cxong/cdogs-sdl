@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -52,6 +52,7 @@
 
 #include "config.h"
 #include "objective.h"
+#include "proto/msg.pb.h"
 #include "sys_config.h"
 
 #define ObjectiveFromTileItem(f) ((((f) & TILEITEM_OBJECTIVE) >> OBJECTIVE_SHIFT)-1)
@@ -239,7 +240,7 @@ void UpdateMissionObjective(
 	const struct MissionOptions *options,
 	const int flags, const ObjectiveType type, const int count);
 bool MissionCanBegin(void);
-void MissionBegin(struct MissionOptions *m);
+void MissionBegin(struct MissionOptions *m, const NGameBegin gb);
 bool CanCompleteMission(const struct MissionOptions *options);
 bool MissionAllObjectivesComplete(const struct MissionOptions *mo);
 bool IsMissionComplete(const struct MissionOptions *options);

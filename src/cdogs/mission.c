@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -363,7 +363,7 @@ bool MissionCanBegin(void)
 	return GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) > 0;
 }
 
-void MissionBegin(struct MissionOptions *m)
+void MissionBegin(struct MissionOptions *m, const NGameBegin gb)
 {
 	m->HasBegun = true;
 	m->state = MISSION_STATE_PLAY;
@@ -378,7 +378,7 @@ void MissionBegin(struct MissionOptions *m)
 		e.u.SetMessage.Ticks = FPS_FRAMELIMIT * 2;
 		GameEventsEnqueue(&gGameEvents, e);
 	}
-	m->time = 0;
+	m->time = gb.MissionTime;
 	m->pickupTime = 0;
 }
 

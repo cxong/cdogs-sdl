@@ -191,8 +191,11 @@ void PicManagerLoadDir(
 	tinydir_dir dir;
 	if (tinydir_open(&dir, path) == -1)
 	{
-		LOG(LM_MAIN, LL_ERROR, "Error opening image dir '%s': %s",
-			path, strerror(errno));
+		if (errno != ENOENT)
+		{
+			LOG(LM_MAIN, LL_ERROR, "Error opening image dir '%s': %s",
+				path, strerror(errno));
+		}
 		goto bail;
 	}
 

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -441,6 +441,7 @@ static GameLoopResult RunGameUpdate(void *data)
 	if (!rData->m->HasBegun && MissionCanBegin())
 	{
 		GameEvent begin = GameEventNew(GAME_EVENT_GAME_BEGIN);
+		begin.u.GameBegin.MissionTime = gMission.time;
 		GameEventsEnqueue(&gGameEvents, begin);
 	}
 
