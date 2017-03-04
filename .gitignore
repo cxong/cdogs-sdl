@@ -6,6 +6,7 @@ cdogs-sdl.opk
 # tests
 src/tests/autosave_test
 src/tests/c_array_test
+src/tests/c_hashmap_test
 src/tests/color_test
 src/tests/config_test
 src/tests/json_test
@@ -36,6 +37,10 @@ build/linux/cdogs-sdl
 cdogs-sdl_*/
 install_manifest.txt
 build/windows/cdogs.rc
+
+# Linux
+/bin
+/share
 
 # Visual Studio
 Debug/

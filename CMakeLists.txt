@@ -174,8 +174,8 @@ elseif(APPLE)
 	set(INSTALL_PREFIX "cdogs-sdl")
 else()
 	set(LIB_EXTENSION ".so")
-	set(INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 endif()
+message(${CMAKE_INSTALL_PREFIX}, ${INSTALL_PREFIX}, ${DATA_INSTALL_DIR})
 install(
   PROGRAMS
     ${CMAKE_CURRENT_BINARY_DIR}/src/cdogs-sdl${EXE_EXTENSION}
