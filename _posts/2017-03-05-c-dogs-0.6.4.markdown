@@ -9,6 +9,8 @@ C-Dogs SDL 0.6.4 released, and as promised, features a new walk animation!
 
 ![](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/walk_cycles.gif)
 
+If you're curious about the content pipeline for the spritesheet, there's a writeup [here](http://cxong.github.io/2017/03/3d-rendered-pixel-sprites).
+
 There's a few other improvements too, like pickups randomly appearing after destroying map objects, with help from [*Christian Murphy*](https://blog.christiancod.es) a.k.a. *grimpunch*.
 
 Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.6.4>
