@@ -53,7 +53,6 @@
 #include <stdlib.h>
 
 #include "bullet_class.h"
-#include "collision.h"
 #include "config.h"
 #include "damage.h"
 #include "game_events.h"

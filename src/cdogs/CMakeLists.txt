@@ -24,7 +24,8 @@ set(CDOGS_SOURCES
 	campaigns.c
 	character.c
 	character_class.c
-	collision.c
+	collision/collision.c
+	collision/minkowski_hex.c
 	color.c
 	config.c
 	config_apply.c
@@ -121,7 +122,8 @@ set(CDOGS_HEADERS
 	campaigns.h
 	character.h
 	character_class.h
-	collision.h
+	collision/collision.h
+	collision/minkowski_hex.h
 	color.h
 	config.h
 	config_io.h

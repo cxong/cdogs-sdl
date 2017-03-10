@@ -27,7 +27,7 @@
 */
 #include "particle.h"
 
-#include "collision.h"
+#include "collision/collision.h"
 #include "game_events.h"
 #include "json_utils.h"
 #include "log.h"

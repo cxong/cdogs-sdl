@@ -59,7 +59,7 @@
 #include "ai_utils.h"
 #include "ammo.h"
 #include "character.h"
-#include "collision.h"
+#include "collision/collision.h"
 #include "config.h"
 #include "draw/drawtools.h"
 #include "events.h"

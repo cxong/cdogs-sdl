@@ -54,7 +54,7 @@
 
 #include "algorithms.h"
 #include "ammo.h"
-#include "collision.h"
+#include "collision/collision.h"
 #include "config.h"
 #include "door.h"
 #include "game_events.h"

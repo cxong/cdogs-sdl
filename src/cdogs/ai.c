@@ -53,7 +53,7 @@
 
 #include "actor_placement.h"
 #include "ai_utils.h"
-#include "collision.h"
+#include "collision/collision.h"
 #include "config.h"
 #include "defs.h"
 #include "actors.h"

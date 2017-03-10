@@ -60,7 +60,7 @@
 #include <cdogs/ammo.h>
 #include <cdogs/campaigns.h>
 #include <cdogs/character_class.h>
-#include <cdogs/collision.h>
+#include <cdogs/collision/collision.h>
 #include <cdogs/config_io.h>
 #include <cdogs/draw/char_sprites.h>
 #include <cdogs/draw/draw.h>

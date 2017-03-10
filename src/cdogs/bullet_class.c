@@ -51,7 +51,7 @@
 #include <math.h>
 
 #include "ai_utils.h"
-#include "collision.h"
+#include "collision/collision.h"
 #include "draw/drawtools.h"
 #include "game_events.h"
 #include "json_utils.h"

@@ -51,7 +51,7 @@
 #include <assert.h>
 
 #include "algorithms.h"
-#include "collision.h"
+#include "collision/collision.h"
 #include "gamedata.h"
 #include "map.h"
 #include "objs.h"

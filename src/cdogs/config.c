@@ -32,7 +32,6 @@
 #include <stdio.h>
 
 #include "blit.h"
-#include "collision.h"
 #include "config_json.h"
 #include "config_old.h"
 #include "keyboard.h"

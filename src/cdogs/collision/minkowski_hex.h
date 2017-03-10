@@ -1,8 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2017, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -26,36 +25,15 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#include "config.h"
+#pragma once
 
-#include "blit.h"
-#include "collision/collision.h"
-#include "gamedata.h"
-#include "grafx_bg.h"
-#include "pic_manager.h"
+#include "vector.h"
 
-
-bool ConfigApply(Config *config)
-{
-	gCampaign.seed = ConfigGetInt(config, "Game.RandomSeed");
-	CollisionSystemInit(&gCollisionSystem);
-	if (ConfigChanged(ConfigGet(config, "Sound")))
-	{
-		SoundReconfigure(&gSoundDevice);
-	}
-	if (ConfigChanged(ConfigGet(config, "Graphics")))
-	{
-		GraphicsConfigSetFromConfig(&gGraphicsDevice.cachedConfig, config);
-		const bool makeBackground =
-			gGraphicsDevice.cachedConfig.RestartFlags &
-			(RESTART_RESOLUTION | RESTART_SCALE_MODE);
-		GraphicsInitialize(&gGraphicsDevice);
-		if (makeBackground)
-		{
-			GrafxMakeRandomBackground(
-				&gGraphicsDevice, &gCampaign, &gMission, &gMap);
-		}
-	}
-	ConfigSetChanged(config);
-	return gGraphicsDevice.IsInitialized;
-}
+// Perform collision detection using the Minkowski-Hexagon techinque, from
+// http://gamedev.stackexchange.com/a/55991/26250 by Sam Hocevar
+// Checks whether two moving rectangles will collide, and at what points the
+// two rectangles will collide
+bool MinkowskiHexCollide(
+	const Vec2i posA, const Vec2i velA, const Vec2i sizeA,
+	const Vec2i posB, const Vec2i velB, const Vec2i sizeB,
+	Vec2i *collideA, Vec2i *collideB);
