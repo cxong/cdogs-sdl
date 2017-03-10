@@ -45,7 +45,7 @@ bool MinkowskiHexCollide(
 
 	// Find the point of intersection between velBA and the rectangle C
 	// centered on posA
-	Vec2i intersect;
+	Vec2i intersect = Vec2iZero();
 	if (!RectangleLineIntersect(
 		posA, sizeC, posB, Vec2iAdd(posB, velBA), &intersect))
 	{
