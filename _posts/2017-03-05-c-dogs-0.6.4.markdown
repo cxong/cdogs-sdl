@@ -11,6 +11,6 @@ C-Dogs SDL 0.6.4 released, and as promised, features a new walk animation!
 
 If you're curious about the content pipeline for the spritesheet, there's a writeup [here](http://cxong.github.io/2017/03/3d-rendered-pixel-sprites).
 
-There's a few other improvements too, like pickups randomly appearing after destroying map objects, with help from [*Christian Murphy*](https://blog.christiancod.es) a.k.a. *grimpunch*.
+There's a few other improvements too, like adding a small feature where pickups could randomly spawn after destroying map objects, with help from [*Christian Murphy*](https://blog.christiancod.es) a.k.a. *grimpunch*. Go destroy those crates - maybe there's a health pack inside!
 
 Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.6.4>
