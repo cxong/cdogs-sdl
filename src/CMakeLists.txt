@@ -2,7 +2,8 @@ include_directories(
 	.
 	${SDL2_INCLUDE_DIRS}
 	${SDL2_IMAGE_INCLUDE_DIRS}
-	${SDL2_MIXER_INCLUDE_DIRS})
+	${SDL2_MIXER_INCLUDE_DIRS}
+	${OPENGL_INCLUDE_DIRS})
 
 add_subdirectory(cdogs)
 add_subdirectory(cdogsed)
@@ -76,4 +77,4 @@ if(APPLE)
 		BUILD_WITH_INSTALL_RPATH 1
 		INSTALL_RPATH "@loader_path/../Frameworks")
 endif()
-target_link_libraries(cdogs-sdl-editor cdogsedlib cdogs ${EXTRA_LIBRARIES})
+target_link_libraries(cdogs-sdl-editor cdogsedlib cdogs ${OPENGL_LIBRARIES} ${EXTRA_LIBRARIES})

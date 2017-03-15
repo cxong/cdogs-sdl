@@ -75,7 +75,6 @@
 
 
 int fileChanged = 0;
-extern void *myScreen;
 
 
 static UIObject *sCharEditorObjs;

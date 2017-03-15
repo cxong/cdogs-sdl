@@ -3,6 +3,7 @@ include_directories(
 	${SDL2_IMAGE_INCLUDE_DIRS}
 	${SDL2_MIXER_INCLUDE_DIRS})
 set(CDOGSED_SOURCES
+	char_editor.c
 	charsed.c
 	editor_brush.c
 	editor_ui.c
@@ -16,6 +17,7 @@ set(CDOGSED_SOURCES
 	editor_ui_weapons.c
 	ui_object.c)
 set(CDOGSED_HEADERS
+	char_editor.h
 	charsed.h
 	editor_brush.h
 	editor_ui.h
