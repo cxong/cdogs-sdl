@@ -490,7 +490,7 @@ void SoundPlayAtPlusDistance(
 static Mix_Chunk *SoundDataGet(SoundData *s);
 Mix_Chunk *StrSound(const char *s)
 {
-	if (s == NULL || strlen(s) == 0)
+	if (s == NULL || strlen(s) == 0 || !gSoundDevice.isInitialised)
 	{
 		return NULL;
 	}
