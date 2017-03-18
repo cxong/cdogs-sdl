@@ -27,6 +27,8 @@
 */
 #pragma once
 
+#include <cdogs/events.h>
 #include <cdogs/gamedata.h>
 
-void CharEditor(CampaignSetting *setting, int *fileChanged);
+void CharEditor(
+	CampaignSetting *setting, EventHandlers *handlers, int *fileChanged);
