@@ -29,4 +29,5 @@
 
 #include <cdogs/gamedata.h>
 
-void CharEditor(CampaignSetting *setting, int *fileChanged);
+void CharEditor(
+	SDL_Window *parentWin, CampaignSetting *setting, int *fileChanged);

@@ -1095,7 +1095,8 @@ static HandleInputResult HandleInput(
 
 		case 'e':
 			EditCharacters(&gCampaign.Setting);
-			//CharEditor(&gCampaign.Setting, &fileChanged);
+			//CharEditor(
+			//	gGraphicsDevice.window, &gCampaign.Setting, &fileChanged);
 			Setup(false);
 			UIObjectUnhighlight(sObjs, true);
 			CArrayTerminate(&sDrawObjs);

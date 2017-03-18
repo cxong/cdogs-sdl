@@ -40,12 +40,14 @@
 #define NK_SDL_GL2_IMPLEMENTATION
 #include <nuklear/nuklear.h>
 #include <nuklear/nuklear_sdl_gl2.h>
+#include <cdogs/log.h>
 
 #define MAX_VERTEX_MEMORY 512 * 1024
 #define MAX_ELEMENT_MEMORY 128 * 1024
 
 
-void CharEditor(CampaignSetting *setting, int *fileChanged)
+void CharEditor(
+	SDL_Window *parentWin, CampaignSetting *setting, int *fileChanged)
 {
 	UNUSED(setting);
 	UNUSED(fileChanged);
@@ -62,7 +64,13 @@ void CharEditor(CampaignSetting *setting, int *fileChanged)
 
 	SDL_Window *win = SDL_CreateWindow("Character Editor",
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-		400, 300, SDL_WINDOW_OPENGL|SDL_WINDOW_SHOWN);
+		600, 400,
+		SDL_WINDOW_OPENGL|SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE|
+		SDL_WINDOW_SKIP_TASKBAR);
+	if (SDL_SetWindowModalFor(win, parentWin) < 0)
+	{
+		LOG(LM_EDIT, LL_WARN, "Cannot set window modal: %s", SDL_GetError());
+	}
 
 	SDL_GLContext glContext = SDL_GL_CreateContext(win);
 	glEnable(GL_TEXTURE_2D);
@@ -76,19 +84,43 @@ void CharEditor(CampaignSetting *setting, int *fileChanged)
 	nk_sdl_font_stash_end();
 
 	struct nk_color background = nk_rgb(42, 25, 25);
+	Uint32 ticksNow = SDL_GetTicks();
+	Uint32 ticksElapsed = 0;
 	for (;;)
 	{
+		Uint32 ticksThen = ticksNow;
+		ticksNow = SDL_GetTicks();
+		ticksElapsed += ticksNow - ticksThen;
+		if (ticksElapsed < 1000 / FPS_FRAMELIMIT * 2)
+		{
+			SDL_Delay(1);
+			continue;
+		}
+
 		SDL_Event evt;
 		nk_input_begin(ctx);
 		while (SDL_PollEvent(&evt))
 		{
-			// TODO: detect close event
-			if (evt.type == SDL_QUIT) goto bail;
+			switch (evt.type)
+			{
+				case SDL_QUIT: goto bail;
+				case SDL_WINDOWEVENT:
+					switch (evt.window.event)
+					{
+						case SDL_WINDOWEVENT_CLOSE:
+							goto bail;
+						default:
+							break;
+					}
+					break;
+				default:
+					break;
+			}
 			nk_sdl_handle_event(&evt);
 		}
 		nk_input_end(ctx);
 
-		if (nk_begin(ctx, "Character Editor", nk_rect(50, 50, 210, 250),
+		if (nk_begin(ctx, "Character Editor", nk_rect(10, 10, 250, 300),
 			NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
 			NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE))
 		{
@@ -146,6 +178,7 @@ void CharEditor(CampaignSetting *setting, int *fileChanged)
 
 		// Display
 		SDL_GL_SwapWindow(win);}
+		ticksElapsed -= 1000 / (FPS_FRAMELIMIT * 2);
 	}
 
 bail:
