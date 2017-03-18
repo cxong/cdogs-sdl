@@ -46,8 +46,7 @@
 #define MAX_ELEMENT_MEMORY 128 * 1024
 
 
-void CharEditor(
-	SDL_Window *parentWin, CampaignSetting *setting, int *fileChanged)
+void CharEditor(CampaignSetting *setting, int *fileChanged)
 {
 	UNUSED(setting);
 	UNUSED(fileChanged);
@@ -65,12 +64,7 @@ void CharEditor(
 	SDL_Window *win = SDL_CreateWindow("Character Editor",
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 		600, 400,
-		SDL_WINDOW_OPENGL|SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE|
-		SDL_WINDOW_SKIP_TASKBAR);
-	if (SDL_SetWindowModalFor(win, parentWin) < 0)
-	{
-		LOG(LM_EDIT, LL_WARN, "Cannot set window modal: %s", SDL_GetError());
-	}
+		SDL_WINDOW_OPENGL|SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE);
 
 	SDL_GLContext glContext = SDL_GL_CreateContext(win);
 	glEnable(GL_TEXTURE_2D);
