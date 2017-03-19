@@ -1317,6 +1317,9 @@ static void EditCampaign(void)
 
 int main(int argc, char *argv[])
 {
+#if defined(_MSC_VER) && !defined(NDEBUG)
+	FreeConsole();
+#endif
 	int i;
 	int loaded = 0;
 

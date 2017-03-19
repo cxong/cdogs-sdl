@@ -128,6 +128,9 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 
 int main(int argc, char *argv[])
 {
+#if defined(_MSC_VER) && !defined(NDEBUG)
+	FreeConsole();
+#endif
 	credits_displayer_t creditsDisplayer;
 	memset(&creditsDisplayer, 0, sizeof creditsDisplayer);
 	custom_campaigns_t campaigns;
