@@ -169,7 +169,18 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 	if (nk_begin(ec->ctx, "Character Store", nk_rect(10, 10, 240, 580),
 		NK_WINDOW_BORDER|NK_WINDOW_TITLE))
 	{
-		// TODO: show existing characters
+		// Show existing characters
+		CA_FOREACH(Character, c, ec->Setting->characters.OtherChars)
+			nk_layout_row_dynamic(ec->ctx, 25, 1);
+			const int selected = ec->Char == c;
+			char buf[256];
+			sprintf(buf, "%s (%s)", c->Class->Name, c->Gun->name);
+			// TODO: show character icon, use nk_select_image_label
+			if (nk_select_label(ec->ctx, buf, NK_TEXT_LEFT, selected))
+			{
+				ec->Char = c;
+			}
+		CA_FOREACH_END()
 
 		nk_layout_row_static(ec->ctx, 30, 80, 1);
 		if (nk_button_label(ec->ctx, "Add +"))
@@ -194,6 +205,7 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 
 			*ec->FileChanged = true;
 		}
+		// TODO: delete button
 	}
 	nk_end(ec->ctx);
 
