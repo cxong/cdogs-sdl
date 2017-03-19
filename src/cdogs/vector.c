@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2014, 2016 Cong Xu
+    Copyright (c) 2013-2014, 2016-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -73,6 +73,11 @@ Vec2i Vec2iScale(Vec2i v, int scalar)
 	v.x *= scalar;
 	v.y *= scalar;
 	return v;
+}
+
+Vec2i Vec2iScaleD(const Vec2i v, const double scalar)
+{
+	return Vec2iNew((int)(v.x * scalar), (int)(v.y * scalar));
 }
 
 Vec2i Vec2iScaleDiv(Vec2i v, int scaleDiv)

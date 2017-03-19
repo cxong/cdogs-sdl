@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2014, 2016 Cong Xu
+    Copyright (c) 2013-2014, 2016-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,6 +46,7 @@ Vec2i Vec2iMinus(Vec2i a, Vec2i b);
 // Multiply the components of two Vec2is together
 Vec2i Vec2iMult(const Vec2i a, const Vec2i b);
 Vec2i Vec2iScale(Vec2i v, int scalar);
+Vec2i Vec2iScaleD(const Vec2i v, const double scalar);
 Vec2i Vec2iScaleDiv(Vec2i v, int scaleDiv);
 // TODO: due to rounding, this will always return unit component vectors
 Vec2i Vec2iNorm(Vec2i v);

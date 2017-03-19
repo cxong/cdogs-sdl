@@ -31,7 +31,7 @@
 static bool RectangleLineIntersect(
 	const Vec2i rectPos, const Vec2i rectSize,
 	const Vec2i lineStart, const Vec2i lineEnd,
-	Vec2i *intersectionPoint);
+	float *s);
 bool MinkowskiHexCollide(
 	const Vec2i posA, const Vec2i velA, const Vec2i sizeA,
 	const Vec2i posB, const Vec2i velB, const Vec2i sizeB,
@@ -43,32 +43,36 @@ bool MinkowskiHexCollide(
 	// Subtract velA from vB
 	const Vec2i velBA = Vec2iMinus(velB, velA);
 
-	// Find the point of intersection between velBA and the rectangle C
-	// centered on posA
-	Vec2i intersect = Vec2iZero();
-	if (!RectangleLineIntersect(
-		posA, sizeC, posB, Vec2iAdd(posB, velBA), &intersect))
+	// Find the intersection between velBA and the rectangle C centered on posA
+	float s;
+	if (!RectangleLineIntersect(posA, sizeC, posB, Vec2iAdd(posB, velBA), &s))
 	{
 		return false;
 	}
 
-	// We've found the intersection point but it's not the real one;
-	// use its proportion to velBA and apply to velA and velB
-	*collideA = Vec2iAdd(
-		posA, Vec2iScaleDiv(Vec2iScale(velA, intersect.x), velBA.x));
-	*collideB = Vec2iAdd(
-		posB, Vec2iScaleDiv(Vec2iScale(velB, intersect.x), velBA.x));
+	// If intersection is at the start, it means we were overlapping already
+	if (s == 0)
+	{
+		*collideA = posA;
+		*collideB = posB;
+	}
+	else
+	{
+		// Find the actual intersection points based on the result
+		*collideA = Vec2iAdd(posA, Vec2iScaleD(velA, s));
+		*collideB = Vec2iAdd(posB, Vec2iScaleD(velB, s));
+	}
 
 	return true;
 }
 static bool LinesIntersect(
 	const Vec2i p1Start, const Vec2i p1End,
 	const Vec2i p2Start, const Vec2i p2End,
-	Vec2i *collisionPoint);
+	float *s);
 static bool RectangleLineIntersect(
 	const Vec2i rectPos, const Vec2i rectSize,
 	const Vec2i lineStart, const Vec2i lineEnd,
-	Vec2i *intersectionPoint)
+	float *s)
 {
 	// Find the closest point at which a line intersects a rectangle
 	// Do this by finding intersections between the line and all four sides of
@@ -82,54 +86,36 @@ static bool RectangleLineIntersect(
 	const Vec2i bottomRight = Vec2iNew(right, bottom);
 	const Vec2i bottomLeft = Vec2iNew(left, bottom);
 
-	// Find four intersections
-	Vec2i leftIntersect;
-	const bool isLeft = LinesIntersect(
-		topLeft, bottomLeft, lineStart, lineEnd, &leftIntersect);
-	Vec2i rightIntersect;
-	const bool isRight = LinesIntersect(
-		topRight, bottomRight, lineStart, lineEnd, &rightIntersect);
-	Vec2i topIntersect;
-	const bool isTop = LinesIntersect(
-		topLeft, topRight, lineStart, lineEnd, &topIntersect);
-	Vec2i bottomIntersect;
-	const bool isBottom = LinesIntersect(
-		bottomLeft, bottomRight, lineStart, lineEnd, &bottomIntersect);
-
-	// Find closest intersection
-	int minDistanceSquared = -1;
-#define _CHECK_MIN_DISTANCE(_isDir, _intersect) \
-	if (_isDir)\
-	{\
-		const int distance = DistanceSquared(_intersect, lineStart);\
-		if (minDistanceSquared < 0 || distance < minDistanceSquared)\
-		{\
-			minDistanceSquared = distance;\
-			*intersectionPoint = _intersect;\
-		}\
-	}
-	_CHECK_MIN_DISTANCE(isLeft, leftIntersect);
-	_CHECK_MIN_DISTANCE(isRight, rightIntersect);
-	_CHECK_MIN_DISTANCE(isTop, topIntersect);
-	_CHECK_MIN_DISTANCE(isBottom, bottomIntersect);
-
-	// Special case if line is entirely within rectangle
-	if (minDistanceSquared < 0 &&
-		left <= lineStart.x && lineStart.x <= right &&
-		top <= lineStart.y && lineStart.y <= bottom)
+	// Border case: check if line start is entirely within rectangle
+	if (lineStart.x >= left && lineStart.x <= right &&
+		lineStart.y >= top && lineStart.y <= bottom)
 	{
-		*intersectionPoint = lineStart;
+		*s = 0;
 		return true;
 	}
 
-	return minDistanceSquared >= 0;
+	// Find closest of four intersections
+	*s = -1;
+	float sPart;
+#define _CHECK_MIN_DISTANCE(_p1, _p2) \
+	if (LinesIntersect(_p1, _p2, lineStart, lineEnd, &sPart) &&\
+		(*s < 0 || sPart < *s))\
+	{\
+		*s = sPart;\
+	}
+	_CHECK_MIN_DISTANCE(topLeft, bottomLeft);
+	_CHECK_MIN_DISTANCE(topRight, bottomRight);
+	_CHECK_MIN_DISTANCE(topLeft, topRight);
+	_CHECK_MIN_DISTANCE(bottomLeft, bottomRight);
+
+	return *s >= 0;
 }
 static bool LinesIntersect(
 	const Vec2i p1Start, const Vec2i p1End,
 	const Vec2i p2Start, const Vec2i p2End,
-	Vec2i *collisionPoint)
+	float *s)
 {
-	// Return whether two line segments intersect, and where
+	// Return whether two line segments intersect, and at which fraction
 	// http://stackoverflow.com/a/1968345/2038264
 	const Vec2i v1 = Vec2iMinus(p1End, p1Start);
 	const Vec2i v2 = Vec2iMinus(p2End, p2Start);
@@ -141,16 +127,8 @@ static bool LinesIntersect(
 		return false;
 	}
 	const Vec2i p12Start = Vec2iMinus(p1Start, p2Start);
-	const float s = (float)(-v1.y * p12Start.x + v1.x * p12Start.y) / divisor;
+	*s = (float)(-v1.y * p12Start.x + v1.x * p12Start.y) / divisor;
 	const float t = (float)(v2.x * p12Start.y - v2.y * p12Start.x) / divisor;
 
-	if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
-	{
-		// Collision detected
-		*collisionPoint = Vec2iNew(
-			(int)(p1Start.x + (t * v1.x)), (int)(p1End.y + (t * v1.y)));
-		return true;
-	}
-
-	return false; // No collision
+	return *s >= 0 && *s <= 1 && t >= 0 && t <= 1;
 }
