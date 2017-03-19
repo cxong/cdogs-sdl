@@ -46,7 +46,7 @@ typedef struct
 	int speed;
 	const GunDescription *Gun;
 	int maxHealth;
-	int flags;
+	unsigned int flags;
 	CharColors Colors;
 	CharBot *bot;
 } Character;

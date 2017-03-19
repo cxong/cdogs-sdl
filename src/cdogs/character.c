@@ -137,7 +137,9 @@ void CharacterLoadJSON(CharacterStore *c, json_t *root, int version)
 		ch->Gun = StrGunDescription(tmp);
 		CFREE(tmp);
 		LoadInt(&ch->maxHealth, child, "maxHealth");
-		LoadInt(&ch->flags, child, "flags");
+		int flags;
+		LoadInt(&flags, child, "flags");
+		ch->flags = flags;
 		LoadInt(&ch->bot->probabilityToMove, child, "probabilityToMove");
 		LoadInt(&ch->bot->probabilityToTrack, child, "probabilityToTrack");
 		LoadInt(&ch->bot->probabilityToShoot, child, "probabilityToShoot");

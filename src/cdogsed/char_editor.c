@@ -41,21 +41,29 @@
 #include <nuklear/nuklear.h>
 #include <nuklear/nuklear_sdl_gl2.h>
 #include <cdogs/actors.h>
+#include <cdogs/character.h>
 #include <cdogs/log.h>
 
 #define MAX_VERTEX_MEMORY 512 * 1024
 #define MAX_ELEMENT_MEMORY 128 * 1024
 
+typedef struct
+{
+	struct nk_context *ctx;
+	Character *Char;
+	CampaignSetting *Setting;
+	EventHandlers *Handlers;
+	int *FileChanged;
+} EditorContext;
 
-static bool HandleEvents(struct nk_context *ctx, EventHandlers *handlers);
+const float bg[4] = { 0.16f, 0.1f, 0.1f, 1.f };
+
+
+static bool HandleEvents(EditorContext *ec);
+static void Draw(SDL_Window *win, EditorContext *ec);
 void CharEditor(
 	CampaignSetting *setting, EventHandlers *handlers, int *fileChanged)
 {
-	UNUSED(setting);
-	UNUSED(fileChanged);
-
-	// TODO: reset SDL; SDL_Renderer messes with nuklear
-
 	SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "1");
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -66,7 +74,7 @@ void CharEditor(
 
 	SDL_Window *win = SDL_CreateWindow("Character Editor",
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-		600, 600,
+		800, 600,
 		SDL_WINDOW_OPENGL|SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE);
 
 	SDL_GLContext glContext = SDL_GL_CreateContext(win);
@@ -74,20 +82,18 @@ void CharEditor(
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	struct nk_context *ctx = nk_sdl_init(win);
+	EditorContext ec;
+	ec.ctx = nk_sdl_init(win);
+	ec.Char = NULL;
+	ec.Setting = setting;
+	ec.Handlers = handlers;
+	ec.FileChanged = fileChanged;
 
 	// Initialise fonts
 	struct nk_font_atlas *atlas;
 	nk_sdl_font_stash_begin(&atlas);
 	nk_sdl_font_stash_end();
 
-	// Properties
-	int selected = 0;
-	const int len = 3;
-	int speed = 256;
-	unsigned int flags = 0;
-
-	struct nk_color background = nk_rgb(42, 25, 25);
 	Uint32 ticksNow = SDL_GetTicks();
 	Uint32 ticksElapsed = 0;
 	for (;;)
@@ -101,113 +107,12 @@ void CharEditor(
 			continue;
 		}
 
-		if (!HandleEvents(ctx, handlers))
+		if (!HandleEvents(&ec))
 		{
 			goto bail;
 		}
+		Draw(win, &ec);
 
-		if (nk_begin(ctx, "Character", nk_rect(10, 10, 250, 500),
-			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
-		{
-			nk_layout_row_dynamic(ctx, 20, 1);
-			nk_label(ctx, "Class", NK_TEXT_LEFT);
-			nk_layout_row_dynamic(ctx, 25, 1);
-			nk_combobox_string(
-				ctx, "WarBaby\0Ice\0Ogre", &selected, len, 25,
-				nk_vec2(nk_widget_width(ctx), len * 25));
-
-			nk_layout_row_dynamic(ctx, 20, 1);
-			nk_label(ctx, "Skin", NK_TEXT_LEFT);
-			nk_layout_row_dynamic(ctx, 25, 1);
-			if (nk_combo_begin_color(ctx, background, nk_vec2(nk_widget_width(ctx),400))) {
-				nk_layout_row_dynamic(ctx, 120, 1);
-				background = nk_color_picker(ctx, background, NK_RGBA);
-				nk_layout_row_dynamic(ctx, 25, 1);
-				background.r = (nk_byte)nk_propertyi(ctx, "#R:", 0, background.r, 255, 1,1);
-				background.g = (nk_byte)nk_propertyi(ctx, "#G:", 0, background.g, 255, 1,1);
-				background.b = (nk_byte)nk_propertyi(ctx, "#B:", 0, background.b, 255, 1,1);
-				background.a = (nk_byte)nk_propertyi(ctx, "#A:", 0, background.a, 255, 1,1);
-				nk_combo_end(ctx);
-			}
-			// TODO: Arms, Body, Legs, Hair
-
-			// Speed (256 = 100%)
-			nk_layout_row_dynamic(ctx, 25, 1);
-			nk_property_int(ctx, "Speed (%):", 0, &speed, 400, 10, 1);
-
-			nk_layout_row_dynamic(ctx, 20, 1);
-			nk_label(ctx, "Gun", NK_TEXT_LEFT);
-			nk_layout_row_dynamic(ctx, 25, 1);
-			nk_combobox_string(
-				ctx, "Machine Gun\0Shotgun\0Powergun", &selected, len, 25,
-				nk_vec2(nk_widget_width(ctx), len * 25));
-
-			nk_layout_row_dynamic(ctx, 25, 1);
-			nk_property_int(ctx, "Max Health:", 10, &speed, 1000, 10, 1);
-
-			struct nk_rect bounds = nk_widget_bounds(ctx);
-			nk_checkbox_flags_label(ctx, "Asbestos", &flags, FLAGS_ASBESTOS);
-			if (nk_input_is_mouse_hovering_rect(&ctx->input, bounds))
-			{
-				nk_tooltip(ctx, "This is a tooltip");
-			}
-			nk_checkbox_flags_label(ctx, "Immunity", &flags, FLAGS_IMMUNITY);
-			nk_checkbox_flags_label(
-				ctx, "See-through", &flags, FLAGS_SEETHROUGH);
-			// TODO: run-away, sneaky, good guy, asleep, prisoner, invulnerable,
-			// follower, penalty, victim, awake
-			
-			enum {EASY, HARD};
-			static int op = EASY;
-
-			nk_layout_row_static(ctx, 30, 80, 1);
-			if (nk_button_label(ctx, "button"))
-			{
-				fprintf(stdout, "button pressed\n");
-			}
-			nk_layout_row_dynamic(ctx, 30, 2);
-			if (nk_option_label(ctx, "easy", op == EASY)) op = EASY;
-			if (nk_option_label(ctx, "hard", op == HARD)) op = HARD;
-
-			/*nk_layout_row_dynamic(ctx, 20, 1);
-			nk_label(ctx, "Image:", NK_TEXT_LEFT);
-			nk_layout_row_static(
-				ctx,
-				tex_h, tex_w,
-				1);
-			nk_image(ctx, tex);*/
-		}
-		nk_end(ctx);
-
-		if (nk_begin(ctx, "AI", nk_rect(270, 10, 250, 180),
-			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
-		{
-			nk_layout_row_dynamic(ctx, 25, 1);
-			nk_property_int(ctx, "Move (%):", 0, &speed, 100, 5, 1);
-			nk_layout_row_dynamic(ctx, 25, 1);
-			nk_property_int(ctx, "Track (%):", 0, &speed, 100, 5, 1);
-			nk_layout_row_dynamic(ctx, 25, 1);
-			nk_property_int(ctx, "Shoot (%):", 0, &speed, 100, 5, 1);
-			nk_layout_row_dynamic(ctx, 25, 1);
-			nk_property_int(ctx, "Action delay:", 0, &speed, 50, 5, 1);
-		}
-		nk_end(ctx);
-
-		/* Draw */
-		{float bg[4];
-		nk_color_fv(bg, background);
-		int winWidth, winHeight;
-		SDL_GetWindowSize(win, &winWidth, &winHeight);
-		glViewport(0, 0, winWidth, winHeight);
-		glClear(GL_COLOR_BUFFER_BIT);
-		glClearColor(bg[0], bg[1], bg[2], bg[3]);
-
-		// Blit the texture to screen
-		//draw_tex(tex.handle.id, -0.5f, -0.5f, 1.f, 1.f);
-		nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
-
-		// Display
-		SDL_GL_SwapWindow(win);}
 		ticksElapsed -= 1000 / (FPS_FRAMELIMIT * 2);
 	}
 
@@ -218,10 +123,10 @@ bail:
 	SDL_DestroyWindow(win);
 }
 
-static bool HandleEvents(struct nk_context *ctx, EventHandlers *handlers)
+static bool HandleEvents(EditorContext *ec)
 {
 	SDL_Event e;
-	nk_input_begin(ctx);
+	nk_input_begin(ec->ctx);
 	bool run = true;
 	while (SDL_PollEvent(&e))
 	{
@@ -232,10 +137,10 @@ static bool HandleEvents(struct nk_context *ctx, EventHandlers *handlers)
 				{
 					break;
 				}
-				KeyOnKeyDown(&handlers->keyboard, e.key.keysym);
+				KeyOnKeyDown(&ec->Handlers->keyboard, e.key.keysym);
 				break;
 			case SDL_KEYUP:
-				KeyOnKeyUp(&handlers->keyboard, e.key.keysym);
+				KeyOnKeyUp(&ec->Handlers->keyboard, e.key.keysym);
 				break;
 			case SDL_QUIT:
 				run = false;
@@ -255,6 +160,170 @@ static bool HandleEvents(struct nk_context *ctx, EventHandlers *handlers)
 		}
 		nk_sdl_handle_event(&e);
 	}
-	nk_input_end(ctx);
+	nk_input_end(ec->ctx);
 	return run;
+}
+
+static void Draw(SDL_Window *win, EditorContext *ec)
+{
+	if (nk_begin(ec->ctx, "Character Store", nk_rect(10, 10, 240, 580),
+		NK_WINDOW_BORDER|NK_WINDOW_TITLE))
+	{
+		// TODO: show existing characters
+
+		nk_layout_row_static(ec->ctx, 30, 80, 1);
+		if (nk_button_label(ec->ctx, "Add +"))
+		{
+			ec->Char = CharacterStoreAddOther(&ec->Setting->characters);
+			// set up character template
+			ec->Char->Class = StrCharacterClass("Ogre");
+			ec->Char->Colors.Skin = colorGreen;
+			const color_t darkGray = {64, 64, 64, 255};
+			ec->Char->Colors.Arms = darkGray;
+			ec->Char->Colors.Body = darkGray;
+			ec->Char->Colors.Legs = darkGray;
+			ec->Char->Colors.Hair = colorBlack;
+			ec->Char->speed = 256;
+			ec->Char->Gun = StrGunDescription("Machine gun");
+			ec->Char->maxHealth = 40;
+			ec->Char->flags = FLAGS_IMMUNITY;
+			ec->Char->bot->probabilityToMove = 50;
+			ec->Char->bot->probabilityToTrack = 25;
+			ec->Char->bot->probabilityToShoot = 2;
+			ec->Char->bot->actionDelay = 15;
+
+			*ec->FileChanged = true;
+		}
+	}
+	nk_end(ec->ctx);
+
+	if (ec->Char != NULL)
+	{
+		int selected = 0;	// TODO: remove
+		int len = 3;
+		struct nk_color skin =
+		{
+			ec->Char->Colors.Skin.r,
+			ec->Char->Colors.Skin.g,
+			ec->Char->Colors.Skin.b,
+			255
+		};
+		if (nk_begin(ec->ctx, "Character", nk_rect(260, 10, 240, 580),
+			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
+		{
+			nk_layout_row_dynamic(ec->ctx, 20, 1);
+			nk_label(ec->ctx, "Class", NK_TEXT_LEFT);
+			nk_layout_row_dynamic(ec->ctx, 25, 1);
+			// TODO: get class
+			nk_combobox_string(
+				ec->ctx, "WarBaby\0Ice\0Ogre", &selected, len, 25,
+				nk_vec2(nk_widget_width(ec->ctx), len * 25));
+
+			nk_layout_row_dynamic(ec->ctx, 20, 1);
+			nk_label(ec->ctx, "Skin", NK_TEXT_LEFT);
+			nk_layout_row_dynamic(ec->ctx, 25, 1);
+			if (nk_combo_begin_color(
+				ec->ctx, skin, nk_vec2(nk_widget_width(ec->ctx),400))) {
+				nk_layout_row_dynamic(ec->ctx, 120, 1);
+				skin = nk_color_picker(ec->ctx, skin, NK_RGB);
+				nk_layout_row_dynamic(ec->ctx, 25, 1);
+				skin.r = (nk_byte)nk_propertyi(
+					ec->ctx, "#R:", 0, skin.r, 255, 1,1);
+				skin.g = (nk_byte)nk_propertyi(
+					ec->ctx, "#G:", 0, skin.g, 255, 1,1);
+				skin.b = (nk_byte)nk_propertyi(
+					ec->ctx, "#B:", 0, skin.b, 255, 1,1);
+				nk_combo_end(ec->ctx);
+			}
+			// TODO: Arms, Body, Legs, Hair
+
+			// Speed (256 = 100%)
+			nk_layout_row_dynamic(ec->ctx, 25, 1);
+			int speedPct = ec->Char->speed * 100 / 256;
+			nk_property_int(ec->ctx, "Speed (%):", 0, &speedPct, 400, 10, 1);
+			ec->Char->speed = speedPct * 256 / 100;
+
+			nk_layout_row_dynamic(ec->ctx, 20, 1);
+			nk_label(ec->ctx, "Gun", NK_TEXT_LEFT);
+			nk_layout_row_dynamic(ec->ctx, 25, 1);
+			// TODO: get gun
+			nk_combobox_string(
+				ec->ctx, "Machine Gun\0Shotgun\0Powergun", &selected, len, 25,
+				nk_vec2(nk_widget_width(ec->ctx), len * 25));
+
+			nk_layout_row_dynamic(ec->ctx, 25, 1);
+			nk_property_int(
+				ec->ctx, "Max Health:", 10, &ec->Char->maxHealth, 1000, 10, 1);
+
+			struct nk_rect bounds = nk_widget_bounds(ec->ctx);
+			nk_checkbox_flags_label(
+				ec->ctx, "Asbestos", &ec->Char->flags, FLAGS_ASBESTOS);
+			if (nk_input_is_mouse_hovering_rect(&ec->ctx->input, bounds))
+			{
+				// TODO: flag tooltips
+				nk_tooltip(ec->ctx, "This is a tooltip");
+			}
+			//nk_checkbox_flags_label(ctx, "Immunity", &flags, FLAGS_IMMUNITY);
+			//nk_checkbox_flags_label(ctx, "See-through", &flags, FLAGS_SEETHROUGH);
+			// TODO: run-away, sneaky, good guy, asleep, prisoner, invulnerable,
+			// follower, penalty, victim, awake
+			
+			//enum {EASY, HARD};
+			//static int op = EASY;
+
+			/*nk_layout_row_static(ctx, 30, 80, 1);
+			if (nk_button_label(ctx, "button"))
+			{
+				fprintf(stdout, "button pressed\n");
+			}
+			nk_layout_row_dynamic(ctx, 30, 2);
+			if (nk_option_label(ctx, "easy", op == EASY)) op = EASY;
+			if (nk_option_label(ctx, "hard", op == HARD)) op = HARD;*/
+
+			/*nk_layout_row_dynamic(ctx, 20, 1);
+			nk_label(ctx, "Image:", NK_TEXT_LEFT);
+			nk_layout_row_static(
+				ctx,
+				tex_h, tex_w,
+				1);
+			nk_image(ctx, tex);*/
+		}
+		nk_end(ec->ctx);
+
+		if (nk_begin(ec->ctx, "AI", nk_rect(510, 10, 250, 180),
+			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
+		{
+			nk_layout_row_dynamic(ec->ctx, 25, 1);
+			nk_property_int(
+				ec->ctx, "Move (%):", 0, &ec->Char->bot->probabilityToMove,
+				100, 5, 1);
+			nk_layout_row_dynamic(ec->ctx, 25, 1);
+			nk_property_int(
+				ec->ctx, "Track (%):", 0, &ec->Char->bot->probabilityToTrack,
+				100, 5, 1);
+			nk_layout_row_dynamic(ec->ctx, 25, 1);
+			nk_property_int(
+				ec->ctx, "Shoot (%):", 0, &ec->Char->bot->probabilityToShoot,
+				100, 5, 1);
+			nk_layout_row_dynamic(ec->ctx, 25, 1);
+			nk_property_int(
+				ec->ctx, "Action delay:", 0, &ec->Char->bot->actionDelay,
+				50, 5, 1);
+		}
+		nk_end(ec->ctx);
+	}
+
+	/* Draw */
+	int winWidth, winHeight;
+	SDL_GetWindowSize(win, &winWidth, &winHeight);
+	glViewport(0, 0, winWidth, winHeight);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glClearColor(bg[0], bg[1], bg[2], bg[3]);
+
+	// Blit the texture to screen
+	//draw_tex(tex.handle.id, -0.5f, -0.5f, 1.f, 1.f);
+	nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
+
+	// Display
+	SDL_GL_SwapWindow(win);
 }
