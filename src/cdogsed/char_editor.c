@@ -47,6 +47,9 @@
 #define MAX_VERTEX_MEMORY 512 * 1024
 #define MAX_ELEMENT_MEMORY 128 * 1024
 
+#define ROW_HEIGHT 25
+const float colRatios[] = { 0.3f, 0.7f };
+
 typedef struct
 {
 	struct nk_context *ctx;
@@ -188,6 +191,7 @@ static bool HandleEvents(EditorContext *ec)
 	return run;
 }
 
+static void DrawCharColor(EditorContext *ec, const char *label, color_t *c);
 static void Draw(SDL_Window *win, EditorContext *ec)
 {
 	if (nk_begin(ec->ctx, "Character Store", nk_rect(10, 10, 240, 580),
@@ -195,7 +199,7 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 	{
 		// Show existing characters
 		CA_FOREACH(Character, c, ec->Setting->characters.OtherChars)
-			nk_layout_row_dynamic(ec->ctx, 25, 1);
+			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
 			const int selected = ec->Char == c;
 			char buf[256];
 			sprintf(buf, "%s (%s)", c->Class->Name, c->Gun->name);
@@ -237,20 +241,13 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 	{
 		int selected = 0;	// TODO: remove
 		int len = 3;
-		struct nk_color skin =
-		{
-			ec->Char->Colors.Skin.r,
-			ec->Char->Colors.Skin.g,
-			ec->Char->Colors.Skin.b,
-			255
-		};
 		if (nk_begin(ec->ctx, "Character", nk_rect(260, 10, 240, 580),
 			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
 		{
-			nk_layout_row_dynamic(ec->ctx, 20, 1);
-			nk_label(ec->ctx, "Class", NK_TEXT_LEFT);
-			nk_layout_row_dynamic(ec->ctx, 25, 1);
+			nk_layout_row(ec->ctx, NK_DYNAMIC, ROW_HEIGHT, 2, colRatios);
+			nk_label(ec->ctx, "Class:", NK_TEXT_LEFT);
 			int selectedClass = CharacterClassIndex(ec->Char->Class);
+			const int selectedClassOriginal = selectedClass;
 			const int numClasses =
 				gCharacterClasses.Classes.size +
 				gCharacterClasses.CustomClasses.size;
@@ -258,42 +255,36 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 			// nk_combo_item_image_label
 			nk_combobox_string(
 				ec->ctx, ec->CharacterClassNames, &selectedClass, numClasses,
-				25, nk_vec2(nk_widget_width(ec->ctx), numClasses * 25));
+				ROW_HEIGHT,
+				nk_vec2(nk_widget_width(ec->ctx), numClasses * ROW_HEIGHT));
 			ec->Char->Class = IndexCharacterClass(selectedClass);
-
-			nk_layout_row_dynamic(ec->ctx, 20, 1);
-			nk_label(ec->ctx, "Skin", NK_TEXT_LEFT);
-			nk_layout_row_dynamic(ec->ctx, 25, 1);
-			if (nk_combo_begin_color(
-				ec->ctx, skin, nk_vec2(nk_widget_width(ec->ctx),400))) {
-				nk_layout_row_dynamic(ec->ctx, 120, 1);
-				skin = nk_color_picker(ec->ctx, skin, NK_RGB);
-				nk_layout_row_dynamic(ec->ctx, 25, 1);
-				skin.r = (nk_byte)nk_propertyi(
-					ec->ctx, "#R:", 0, skin.r, 255, 1,1);
-				skin.g = (nk_byte)nk_propertyi(
-					ec->ctx, "#G:", 0, skin.g, 255, 1,1);
-				skin.b = (nk_byte)nk_propertyi(
-					ec->ctx, "#B:", 0, skin.b, 255, 1,1);
-				nk_combo_end(ec->ctx);
+			if (selectedClass != selectedClassOriginal)
+			{
+				*ec->FileChanged = true;
 			}
-			// TODO: Arms, Body, Legs, Hair
+
+			nk_layout_row(ec->ctx, NK_DYNAMIC, ROW_HEIGHT, 2, colRatios);
+			DrawCharColor(ec, "Skin:", &ec->Char->Colors.Skin);
+			DrawCharColor(ec, "Hair:", &ec->Char->Colors.Hair);
+			DrawCharColor(ec, "Arms:", &ec->Char->Colors.Arms);
+			DrawCharColor(ec, "Body:", &ec->Char->Colors.Body);
+			DrawCharColor(ec, "Legs:", &ec->Char->Colors.Legs);
 
 			// Speed (256 = 100%)
-			nk_layout_row_dynamic(ec->ctx, 25, 1);
+			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
 			int speedPct = ec->Char->speed * 100 / 256;
 			nk_property_int(ec->ctx, "Speed (%):", 0, &speedPct, 400, 10, 1);
 			ec->Char->speed = speedPct * 256 / 100;
 
-			nk_layout_row_dynamic(ec->ctx, 20, 1);
-			nk_label(ec->ctx, "Gun", NK_TEXT_LEFT);
-			nk_layout_row_dynamic(ec->ctx, 25, 1);
+			nk_layout_row(ec->ctx, NK_DYNAMIC, ROW_HEIGHT, 2, colRatios);
+			nk_label(ec->ctx, "Gun:", NK_TEXT_LEFT);
 			// TODO: get gun
 			nk_combobox_string(
-				ec->ctx, "Machine Gun\0Shotgun\0Powergun", &selected, len, 25,
-				nk_vec2(nk_widget_width(ec->ctx), len * 25));
+				ec->ctx, "Machine Gun\0Shotgun\0Powergun", &selected, len,
+				ROW_HEIGHT,
+				nk_vec2(nk_widget_width(ec->ctx), len * ROW_HEIGHT));
 
-			nk_layout_row_dynamic(ec->ctx, 25, 1);
+			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
 			nk_property_int(
 				ec->ctx, "Max Health:", 10, &ec->Char->maxHealth, 1000, 10, 1);
 
@@ -335,19 +326,16 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 		if (nk_begin(ec->ctx, "AI", nk_rect(510, 10, 250, 180),
 			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
 		{
-			nk_layout_row_dynamic(ec->ctx, 25, 1);
+			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
 			nk_property_int(
 				ec->ctx, "Move (%):", 0, &ec->Char->bot->probabilityToMove,
 				100, 5, 1);
-			nk_layout_row_dynamic(ec->ctx, 25, 1);
 			nk_property_int(
 				ec->ctx, "Track (%):", 0, &ec->Char->bot->probabilityToTrack,
 				100, 5, 1);
-			nk_layout_row_dynamic(ec->ctx, 25, 1);
 			nk_property_int(
 				ec->ctx, "Shoot (%):", 0, &ec->Char->bot->probabilityToShoot,
 				100, 5, 1);
-			nk_layout_row_dynamic(ec->ctx, 25, 1);
 			nk_property_int(
 				ec->ctx, "Action delay:", 0, &ec->Char->bot->actionDelay,
 				50, 5, 1);
@@ -368,4 +356,28 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 
 	// Display
 	SDL_GL_SwapWindow(win);
+}
+static void DrawCharColor(EditorContext *ec, const char *label, color_t *c)
+{
+	nk_label(ec->ctx, label, NK_TEXT_LEFT);
+	struct nk_color color = { c->r, c->g, c->b, 255 };
+	const struct nk_color colorOriginal = color;
+	if (nk_combo_begin_color(
+		ec->ctx, color, nk_vec2(nk_widget_width(ec->ctx), 400)))
+	{
+		nk_layout_row_dynamic(ec->ctx, 100, 1);
+		color = nk_color_picker(ec->ctx, color, NK_RGB);
+		nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
+		color.r = (nk_byte)nk_propertyi(ec->ctx, "#R:", 0, color.r, 255, 1, 1);
+		color.g = (nk_byte)nk_propertyi(ec->ctx, "#G:", 0, color.g, 255, 1, 1);
+		color.b = (nk_byte)nk_propertyi(ec->ctx, "#B:", 0, color.b, 255, 1, 1);
+		nk_combo_end(ec->ctx);
+		c->r = color.r;
+		c->g = color.g;
+		c->b = color.b;
+		if (memcmp(&color, &colorOriginal, sizeof color))
+		{
+			*ec->FileChanged = true;
+		}
+	}
 }
