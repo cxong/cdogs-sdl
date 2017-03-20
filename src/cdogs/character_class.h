@@ -50,6 +50,8 @@ extern CharacterClasses gCharacterClasses;
 const CharacterClass *StrCharacterClass(const char *s);
 // Legacy character class from "face" index
 const CharacterClass *IntCharacterClass(const int face);
+const CharacterClass *IndexCharacterClass(const int i);
+int CharacterClassIndex(const CharacterClass *c);
 
 void CharacterClassesInitialize(CharacterClasses *c, const char *filename);
 void CharacterClassesLoadJSON(CArray *classes, json_t *root);

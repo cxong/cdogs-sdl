@@ -79,6 +79,41 @@ const CharacterClass *IntCharacterClass(const int face)
 {
 	return StrCharacterClass(faceNames[face]);
 }
+const CharacterClass *IndexCharacterClass(const int i)
+{
+	CASSERT(
+		i >= 0 &&
+		i < (int)gCharacterClasses.Classes.size +
+			(int)gCharacterClasses.CustomClasses.size,
+		"Character class index out of bounds");
+	if (i < (int)gCharacterClasses.Classes.size)
+	{
+		return CArrayGet(&gCharacterClasses.Classes, i);
+	}
+	return CArrayGet(
+		&gCharacterClasses.CustomClasses, i - gCharacterClasses.Classes.size);
+}
+int CharacterClassIndex(const CharacterClass *c)
+{
+	if (c == NULL)
+	{
+		return 0;
+	}
+	CA_FOREACH(const CharacterClass, cc, gCharacterClasses.Classes)
+		if (cc == c)
+		{
+			return _ca_index;
+		}
+	CA_FOREACH_END()
+	CA_FOREACH(const CharacterClass, cc, gCharacterClasses.CustomClasses)
+		if (cc == c)
+		{
+			return _ca_index + gCharacterClasses.Classes.size;
+		}
+	CA_FOREACH_END()
+	CASSERT(false, "cannot find character class");
+	return -1;
+}
 
 void CharacterClassesInitialize(CharacterClasses *c, const char *filename)
 {

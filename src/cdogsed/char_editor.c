@@ -54,6 +54,7 @@ typedef struct
 	CampaignSetting *Setting;
 	EventHandlers *Handlers;
 	int *FileChanged;
+	char *CharacterClassNames;
 } EditorContext;
 
 const float bg[4] = { 0.16f, 0.1f, 0.1f, 1.f };
@@ -82,12 +83,34 @@ void CharEditor(
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	// Initialise editor context
 	EditorContext ec;
 	ec.ctx = nk_sdl_init(win);
 	ec.Char = NULL;
 	ec.Setting = setting;
 	ec.Handlers = handlers;
 	ec.FileChanged = fileChanged;
+	// Find character class names
+	int characterClassLen = 0;
+	for (int i = 0;
+		i < (int)gCharacterClasses.Classes.size +
+			(int)gCharacterClasses.CustomClasses.size;
+		i++)
+	{
+		const CharacterClass *c = IndexCharacterClass(i);
+		characterClassLen += strlen(c->Name) + 1;
+	}
+	CMALLOC(ec.CharacterClassNames, characterClassLen);
+	char *cp = ec.CharacterClassNames;
+	for (int i = 0;
+		i < (int)gCharacterClasses.Classes.size +
+			(int)gCharacterClasses.CustomClasses.size;
+		i++)
+	{
+		const CharacterClass *c = IndexCharacterClass(i);
+		strcpy(cp, c->Name);
+		cp += strlen(c->Name) + 1;
+	}
 
 	// Initialise fonts
 	struct nk_font_atlas *atlas;
@@ -118,6 +141,7 @@ void CharEditor(
 
 bail:
 	nk_sdl_shutdown();
+	CFREE(ec.CharacterClassNames);
 	//glDeleteTextures(1, (const GLuint *)&tex.handle.id);
 	SDL_GL_DeleteContext(glContext);
 	SDL_DestroyWindow(win);
@@ -226,10 +250,16 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 			nk_layout_row_dynamic(ec->ctx, 20, 1);
 			nk_label(ec->ctx, "Class", NK_TEXT_LEFT);
 			nk_layout_row_dynamic(ec->ctx, 25, 1);
-			// TODO: get class
+			int selectedClass = CharacterClassIndex(ec->Char->Class);
+			const int numClasses =
+				gCharacterClasses.Classes.size +
+				gCharacterClasses.CustomClasses.size;
+			// TODO: draw heads as well, use nk_combo_begin_image_label /
+			// nk_combo_item_image_label
 			nk_combobox_string(
-				ec->ctx, "WarBaby\0Ice\0Ogre", &selected, len, 25,
-				nk_vec2(nk_widget_width(ec->ctx), len * 25));
+				ec->ctx, ec->CharacterClassNames, &selectedClass, numClasses,
+				25, nk_vec2(nk_widget_width(ec->ctx), numClasses * 25));
+			ec->Char->Class = IndexCharacterClass(selectedClass);
 
 			nk_layout_row_dynamic(ec->ctx, 20, 1);
 			nk_label(ec->ctx, "Skin", NK_TEXT_LEFT);
