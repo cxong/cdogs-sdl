@@ -58,11 +58,18 @@ typedef struct
 	EventHandlers *Handlers;
 	int *FileChanged;
 	char *CharacterClassNames;
+	char *GunNames;
 } EditorContext;
 
 const float bg[4] = { 0.16f, 0.1f, 0.1f, 1.f };
 
 
+static char *GetClassNames(const int len, const char *(*indexNameFunc)(int));
+static const char *IndexCharacterClassName(const int i);
+static int NumCharacterClasses(void);
+static const char *IndexGunName(const int i);
+static int NumGuns(void);
+static int GunIndex(const GunDescription *g);
 static bool HandleEvents(EditorContext *ec);
 static void Draw(SDL_Window *win, EditorContext *ec);
 void CharEditor(
@@ -93,27 +100,9 @@ void CharEditor(
 	ec.Setting = setting;
 	ec.Handlers = handlers;
 	ec.FileChanged = fileChanged;
-	// Find character class names
-	int characterClassLen = 0;
-	for (int i = 0;
-		i < (int)gCharacterClasses.Classes.size +
-			(int)gCharacterClasses.CustomClasses.size;
-		i++)
-	{
-		const CharacterClass *c = IndexCharacterClass(i);
-		characterClassLen += strlen(c->Name) + 1;
-	}
-	CMALLOC(ec.CharacterClassNames, characterClassLen);
-	char *cp = ec.CharacterClassNames;
-	for (int i = 0;
-		i < (int)gCharacterClasses.Classes.size +
-			(int)gCharacterClasses.CustomClasses.size;
-		i++)
-	{
-		const CharacterClass *c = IndexCharacterClass(i);
-		strcpy(cp, c->Name);
-		cp += strlen(c->Name) + 1;
-	}
+	ec.CharacterClassNames = GetClassNames(
+		NumCharacterClasses(), IndexCharacterClassName);
+	ec.GunNames = GetClassNames(NumGuns(), IndexGunName);
 
 	// Initialise fonts
 	struct nk_font_atlas *atlas;
@@ -145,9 +134,114 @@ void CharEditor(
 bail:
 	nk_sdl_shutdown();
 	CFREE(ec.CharacterClassNames);
+	CFREE(ec.GunNames);
 	//glDeleteTextures(1, (const GLuint *)&tex.handle.id);
 	SDL_GL_DeleteContext(glContext);
 	SDL_DestroyWindow(win);
+}
+
+static char *GetClassNames(const int len, const char *(*indexNameFunc)(int))
+{
+	int classLen = 0;
+	for (int i = 0; i < (int)len; i++)
+	{
+		const char *name = indexNameFunc(i);
+		classLen += strlen(name) + 1;
+	}
+	char *names;
+	CMALLOC(names, classLen);
+	char *cp = names;
+	for (int i = 0; i < (int)len; i++)
+	{
+		const char *name = indexNameFunc(i);
+		strcpy(cp, name);
+		cp += strlen(name) + 1;
+	}
+	return names;
+}
+
+static const char *IndexCharacterClassName(const int i)
+{
+	const CharacterClass *c = IndexCharacterClass(i);
+	return c->Name;
+}
+static int NumCharacterClasses(void)
+{
+	return
+		gCharacterClasses.Classes.size + gCharacterClasses.CustomClasses.size;
+}
+static const char *IndexGunName(const int i)
+{
+	int j = 0;
+	CA_FOREACH(const GunDescription, g, gGunDescriptions.Guns)
+		if (!g->IsRealGun)
+		{
+			continue;
+		}
+		if (j == i)
+		{
+			return g->name;
+		}
+		j++;
+	CA_FOREACH_END()
+	CA_FOREACH(const GunDescription, g, gGunDescriptions.CustomGuns)
+		if (!g->IsRealGun)
+		{
+			continue;
+		}
+		if (j == i)
+		{
+			return g->name;
+		}
+		j++;
+	CA_FOREACH_END()
+	CASSERT(false, "cannot find gun");
+	return "";
+}
+static int NumGuns(void)
+{
+	int totalWeapons = 0;
+	CA_FOREACH(const GunDescription, g, gGunDescriptions.Guns)
+		if (g->IsRealGun)
+		{
+			totalWeapons++;
+		}
+	CA_FOREACH_END()
+	CA_FOREACH(const GunDescription, g, gGunDescriptions.CustomGuns)
+		if (g->IsRealGun)
+		{
+			totalWeapons++;
+		}
+	CA_FOREACH_END()
+	return totalWeapons;
+}
+static int GunIndex(const GunDescription *g)
+{
+	int j = 0;
+	CA_FOREACH(const GunDescription, gg, gGunDescriptions.Guns)
+		if (!gg->IsRealGun)
+		{
+			continue;
+		}
+		if (g == gg)
+		{
+			return j;
+		}
+		j++;
+	CA_FOREACH_END()
+	CA_FOREACH(const GunDescription, gg, gGunDescriptions.CustomGuns)
+		if (!g->IsRealGun)
+		{
+			continue;
+		}
+		if (g == gg)
+		{
+			return j;
+		}
+		j++;
+	CA_FOREACH_END()
+	CASSERT(false, "cannot find gun");
+	return -1;
 }
 
 static bool HandleEvents(EditorContext *ec)
@@ -191,6 +285,9 @@ static bool HandleEvents(EditorContext *ec)
 	return run;
 }
 
+static int DrawClassSelection(
+	EditorContext *ec, const char *label, const char *items, const int selected,
+	const size_t len);
 static void DrawCharColor(EditorContext *ec, const char *label, color_t *c);
 static void Draw(SDL_Window *win, EditorContext *ec)
 {
@@ -239,30 +336,18 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 
 	if (ec->Char != NULL)
 	{
-		int selected = 0;	// TODO: remove
-		int len = 3;
 		if (nk_begin(ec->ctx, "Character", nk_rect(260, 10, 240, 580),
 			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
 		{
 			nk_layout_row(ec->ctx, NK_DYNAMIC, ROW_HEIGHT, 2, colRatios);
-			nk_label(ec->ctx, "Class:", NK_TEXT_LEFT);
-			int selectedClass = CharacterClassIndex(ec->Char->Class);
-			const int selectedClassOriginal = selectedClass;
-			const int numClasses =
-				gCharacterClasses.Classes.size +
-				gCharacterClasses.CustomClasses.size;
+			const int selectedClass = DrawClassSelection(
+				ec, "Class:", ec->CharacterClassNames,
+				CharacterClassIndex(ec->Char->Class), NumCharacterClasses());
 			// TODO: draw heads as well, use nk_combo_begin_image_label /
 			// nk_combo_item_image_label
-			nk_combobox_string(
-				ec->ctx, ec->CharacterClassNames, &selectedClass, numClasses,
-				ROW_HEIGHT,
-				nk_vec2(nk_widget_width(ec->ctx), numClasses * ROW_HEIGHT));
 			ec->Char->Class = IndexCharacterClass(selectedClass);
-			if (selectedClass != selectedClassOriginal)
-			{
-				*ec->FileChanged = true;
-			}
 
+			// Character colours
 			nk_layout_row(ec->ctx, NK_DYNAMIC, ROW_HEIGHT, 2, colRatios);
 			DrawCharColor(ec, "Skin:", &ec->Char->Colors.Skin);
 			DrawCharColor(ec, "Hair:", &ec->Char->Colors.Hair);
@@ -277,12 +362,12 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 			ec->Char->speed = speedPct * 256 / 100;
 
 			nk_layout_row(ec->ctx, NK_DYNAMIC, ROW_HEIGHT, 2, colRatios);
-			nk_label(ec->ctx, "Gun:", NK_TEXT_LEFT);
-			// TODO: get gun
-			nk_combobox_string(
-				ec->ctx, "Machine Gun\0Shotgun\0Powergun", &selected, len,
-				ROW_HEIGHT,
-				nk_vec2(nk_widget_width(ec->ctx), len * ROW_HEIGHT));
+			const int selectedGun = DrawClassSelection(
+				ec, "Gun:", ec->GunNames, GunIndex(ec->Char->Gun),
+				NumGuns());
+			// TODO: draw gun icons as well, use nk_combo_begin_image_label /
+			// nk_combo_item_image_label
+			ec->Char->Gun = IdGunDescription(selectedGun);
 
 			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
 			nk_property_int(
@@ -357,6 +442,25 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 	// Display
 	SDL_GL_SwapWindow(win);
 }
+
+static int DrawClassSelection(
+	EditorContext *ec, const char *label, const char *items, const int selected,
+	const size_t len)
+{
+	nk_label(ec->ctx, label, NK_TEXT_LEFT);
+	int selectedNew = selected;
+	// TODO: draw heads as well, use nk_combo_begin_image_label /
+	// nk_combo_item_image_label
+	nk_combobox_string(
+		ec->ctx, items, &selectedNew, len,
+		ROW_HEIGHT, nk_vec2(nk_widget_width(ec->ctx), 10 * ROW_HEIGHT));
+	if (selectedNew != selected)
+	{
+		*ec->FileChanged = true;
+	}
+	return selectedNew;
+}
+
 static void DrawCharColor(EditorContext *ec, const char *label, color_t *c)
 {
 	nk_label(ec->ctx, label, NK_TEXT_LEFT);
