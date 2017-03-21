@@ -224,10 +224,13 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 		ActorIsLocalPlayer(actor->uid))
 	{
 		Vec2i realPos = Vec2iFull2Real(pos);
+		const CollisionParams params =
+		{
+			TILEITEM_IMPASSABLE, CalcCollisionTeam(true, actor),
+			IsPVP(gCampaign.Entry.Mode)
+		};
 		TTileItem *target = CollideGetFirstItem(
-			&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
-			CalcCollisionTeam(1, actor),
-			IsPVP(gCampaign.Entry.Mode));
+			&actor->tileItem, realPos, params);
 		if (target)
 		{
 			Weapon *gun = ActorGetGun(actor);
@@ -273,18 +276,12 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 			}
 
 			Vec2i realYPos = Vec2iFull2Real(Vec2iNew(actor->Pos.x, pos.y));
-			if (CollideGetFirstItem(
-				&actor->tileItem, realYPos, TILEITEM_IMPASSABLE,
-				CalcCollisionTeam(1, actor),
-				IsPVP(gCampaign.Entry.Mode)))
+			if (CollideGetFirstItem(&actor->tileItem, realYPos, params))
 			{
 				pos.y = actor->Pos.y;
 			}
 			Vec2i realXPos = Vec2iFull2Real(Vec2iNew(pos.x, actor->Pos.y));
-			if (CollideGetFirstItem(
-				&actor->tileItem, realXPos, TILEITEM_IMPASSABLE,
-				CalcCollisionTeam(1, actor),
-				IsPVP(gCampaign.Entry.Mode)))
+			if (CollideGetFirstItem(&actor->tileItem, realXPos, params))
 			{
 				pos.x = actor->Pos.x;
 			}
@@ -461,10 +458,13 @@ static void CheckPickups(TActor *actor)
 	{
 		return;
 	}
+	const CollisionParams params =
+	{
+		0, CalcCollisionTeam(true, actor), IsPVP(gCampaign.Entry.Mode)
+	};
 	CollideTileItems(
-		&actor->tileItem, Vec2iFull2Real(actor->Pos), 0,
-		CalcCollisionTeam(true, actor),
-		IsPVP(gCampaign.Entry.Mode), CheckPickupFunc, actor);
+		&actor->tileItem, Vec2iFull2Real(actor->Pos), params,
+		CheckPickupFunc, actor);
 }
 static bool CheckPickupFunc(TTileItem *ti, void *data)
 {
@@ -482,12 +482,15 @@ static void CheckRescue(const TActor *a)
 	// Check an area slightly bigger than the actor's size for rescue
 	// objectives
 #define RESCUE_CHECK_PAD 2
+	const CollisionParams params =
+	{
+		TILEITEM_IMPASSABLE, CalcCollisionTeam(true, a),
+		IsPVP(gCampaign.Entry.Mode)
+	};
 	const TTileItem *target = OverlapGetFirstItem(
 		&a->tileItem, Vec2iFull2Real(a->Pos),
 		Vec2iAdd(a->tileItem.size, Vec2iNew(RESCUE_CHECK_PAD, RESCUE_CHECK_PAD)),
-		TILEITEM_IMPASSABLE,
-		CalcCollisionTeam(true, a),
-		IsPVP(gCampaign.Entry.Mode));
+		params);
 	if (target != NULL && target->kind == KIND_CHARACTER)
 	{
 		TActor *other = CArrayGet(&gActors, target->id);
@@ -870,10 +873,13 @@ void UpdateAllActors(int ticks)
 			gCollisionSystem.allyCollision == ALLYCOLLISION_REPEL)
 		{
 			Vec2i realPos = Vec2iFull2Real(actor->Pos);
-			TTileItem *collidingItem = CollideGetFirstItem(
-				&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
-				COLLISIONTEAM_NONE,
-				IsPVP(gCampaign.Entry.Mode));
+			const CollisionParams params =
+			{
+				TILEITEM_IMPASSABLE, COLLISIONTEAM_NONE,
+				IsPVP(gCampaign.Entry.Mode)
+			};
+			const TTileItem *collidingItem = CollideGetFirstItem(
+				&actor->tileItem, realPos, params);
 			if (collidingItem && collidingItem->kind == KIND_CHARACTER)
 			{
 				TActor *collidingActor = CArrayGet(
@@ -955,10 +961,13 @@ static void CheckManualPickups(TActor *a)
 {
 	// NPCs can't pickup
 	if (a->PlayerUID < 0) return;
+	const CollisionParams params =
+	{
+		0, CalcCollisionTeam(true, a), IsPVP(gCampaign.Entry.Mode)
+	};
 	CollideTileItems(
-		&a->tileItem, Vec2iFull2Real(a->Pos), 0,
-		CalcCollisionTeam(true, a),
-		IsPVP(gCampaign.Entry.Mode), CheckManualPickupFunc, a);
+		&a->tileItem, Vec2iFull2Real(a->Pos), params,
+		CheckManualPickupFunc, a);
 }
 static bool CheckManualPickupFunc(TTileItem *ti, void *data)
 {

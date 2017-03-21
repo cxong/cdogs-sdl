@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2015, 2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -56,7 +56,16 @@ CollisionSystem gCollisionSystem;
 
 void CollisionSystemInit(CollisionSystem *cs)
 {
+	CollisionSystemReset(cs);
+	CArrayInit(&cs->tileCache, sizeof(Vec2i));
+}
+void CollisionSystemReset(CollisionSystem *cs)
+{
 	cs->allyCollision = ConfigGetEnum(&gConfig, "Game.AllyCollision");
+}
+void CollisionSystemTerminate(CollisionSystem *cs)
+{
+	CArrayTerminate(&cs->tileCache);
 }
 
 CollisionTeam CalcCollisionTeam(const bool isActor, const TActor *actor)
@@ -203,7 +212,7 @@ bool AreasCollide(
 	return d.x < r.x && d.y < r.y;
 }
 
-bool CollisionIsOnSameTeam(
+static bool CollisionIsOnSameTeam(
 	const TTileItem *i, const CollisionTeam team, const bool isPVP)
 {
 	if (gCollisionSystem.allyCollision == ALLYCOLLISION_NORMAL)
@@ -223,9 +232,11 @@ bool CollisionIsOnSameTeam(
 		!isPVP;
 }
 
+static bool CheckParams(
+	const CollisionParams params, const TTileItem *a, const TTileItem *b);
+
 void CollideTileItems(
-	const TTileItem *item, const Vec2i pos,
-	const int mask, const CollisionTeam team, const bool isPVP,
+	const TTileItem *item, const Vec2i pos, const CollisionParams params,
 	CollideItemFunc func, void *data)
 {
 	const Vec2i tv = Vec2iToTile(pos);
@@ -244,11 +255,10 @@ void CollideTileItems(
 			for (int i = 0; i < (int)tileThings->size; i++)
 			{
 				TTileItem *ti = ThingIdGetTileItem(CArrayGet(tileThings, i));
-				// Don't collide if items are on the same team
-				if (CollisionIsOnSameTeam(ti, team, isPVP)) continue;
-				// No same-item collision
-				if (item == ti) continue;
-				if (mask != 0 && !(ti->flags & mask)) continue;
+				if (!CheckParams(params, item, ti))
+				{
+					continue;
+				}
 				if (!ItemsCollide(item, ti, pos)) continue;
 				// Collision callback and check continue
 				if (!func(ti, data))
@@ -261,12 +271,11 @@ void CollideTileItems(
 }
 static bool CollideGetFirstItemCallback(TTileItem *ti, void *data);
 TTileItem *CollideGetFirstItem(
-	const TTileItem *item, const Vec2i pos,
-	const int mask, const CollisionTeam team, const bool isPVP)
+	const TTileItem *item, const Vec2i pos, const CollisionParams params)
 {
 	TTileItem *firstItem = NULL;
 	CollideTileItems(
-		item, pos, mask, team, isPVP, CollideGetFirstItemCallback, &firstItem);
+		item, pos, params, CollideGetFirstItemCallback, &firstItem);
 	return firstItem;
 }
 static bool CollideGetFirstItemCallback(TTileItem *ti, void *data)
@@ -280,7 +289,7 @@ static bool CollideGetFirstItemCallback(TTileItem *ti, void *data)
 // TODO: refactor with Collide functions
 TTileItem *OverlapGetFirstItem(
 	const TTileItem *item, const Vec2i pos, const Vec2i size,
-	const int mask, const CollisionTeam team, const bool isPVP)
+	const CollisionParams params)
 {
 	const Vec2i tv = Vec2iToTile(pos);
 	Vec2i dv;
@@ -298,11 +307,10 @@ TTileItem *OverlapGetFirstItem(
 			for (int i = 0; i < (int)tileThings->size; i++)
 			{
 				TTileItem *ti = ThingIdGetTileItem(CArrayGet(tileThings, i));
-				// Don't collide if items are on the same team
-				if (CollisionIsOnSameTeam(ti, team, isPVP)) continue;
-				// No same-item collision
-				if (item == ti) continue;
-				if (mask != 0 && !(ti->flags & mask)) continue;
+				if (!CheckParams(params, item, ti))
+				{
+					continue;
+				}
 				if (!AreasCollide(pos, Vec2iNew(ti->x, ti->y), size, ti->size))
 				{
 					continue;
@@ -313,6 +321,24 @@ TTileItem *OverlapGetFirstItem(
 		}
 	}
 	return NULL;
+}
+
+static bool CheckParams(
+	const CollisionParams params, const TTileItem *a, const TTileItem *b)
+{
+	// Don't collide if items are on the same team
+	if (CollisionIsOnSameTeam(b, params.Team, params.IsPVP))
+	{
+		return false;
+	}
+	// No same-item collision
+	if (a == b) return false;
+	if (params.TileItemMask != 0 && !(b->flags & params.TileItemMask))
+	{
+		return false;
+	}
+
+	return true;
 }
 
 Vec2i GetWallBounceFullPos(

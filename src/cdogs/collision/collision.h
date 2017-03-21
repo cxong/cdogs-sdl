@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2015, 2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -54,11 +54,15 @@
 typedef struct
 {
 	AllyCollision allyCollision;
+	// Cache of tiles to check for potential collisions, of tile coords
+	CArray tileCache;	// of Vec2i
 } CollisionSystem;
 
 extern CollisionSystem gCollisionSystem;
 
 void CollisionSystemInit(CollisionSystem *cs);
+void CollisionSystemReset(CollisionSystem *cs);
+void CollisionSystemTerminate(CollisionSystem *cs);
 
 #define HitWall(x, y) (MapGetTile(&gMap, Vec2iNew((x)/TILE_WIDTH, (y)/TILE_HEIGHT))->flags & MAPTILE_NO_WALK)
 #define ShootWall(x, y) (MapGetTile(&gMap, Vec2iNew((x)/TILE_WIDTH, (y)/TILE_HEIGHT))->flags & MAPTILE_NO_SHOOT)
@@ -74,28 +78,33 @@ typedef enum
 
 CollisionTeam CalcCollisionTeam(const bool isActor, const TActor *actor);
 
+// Parameters that determine whether two objects can collide
+// TODO: replace with single layer mask
+typedef struct
+{
+	int TileItemMask;
+	CollisionTeam Team;
+	bool IsPVP;
+} CollisionParams;
+
 bool IsCollisionWithWall(const Vec2i pos, const Vec2i fullSize);
 // Check collision of an object with a diamond shape
 bool IsCollisionDiamond(const Map *map, const Vec2i pos, const Vec2i fullSize);
-bool CollisionIsOnSameTeam(
-	const TTileItem *i, const CollisionTeam team, const bool isPVP);
 
 // Get all TTileItem that collide with a target TTileItem, with callback.
 // The callback returns bool continue, as multiple callbacks can result.
 typedef bool (*CollideItemFunc)(TTileItem *, void *);
 void CollideTileItems(
-	const TTileItem *item, const Vec2i pos,
-	const int mask, const CollisionTeam team, const bool isPVP,
+	const TTileItem *item, const Vec2i pos, const CollisionParams params,
 	CollideItemFunc func, void *data);
 // Get the first TTileItem in collision
 TTileItem *CollideGetFirstItem(
-	const TTileItem *item, const Vec2i pos,
-	const int mask, const CollisionTeam team, const bool isPVP);
+	const TTileItem *item, const Vec2i pos, const CollisionParams params);
 // Get the first TTileItem that overlaps an area
 // This disregards original position
 TTileItem *OverlapGetFirstItem(
 	const TTileItem *item, const Vec2i pos, const Vec2i size,
-	const int mask, const CollisionTeam team, const bool isPVP);
+	const CollisionParams params);
 
 bool AreasCollide(
 	const Vec2i pos1, const Vec2i pos2, const Vec2i size1, const Vec2i size2);

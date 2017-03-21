@@ -388,11 +388,12 @@ static HitType HitItem(
 	data.HitType = HIT_NONE;
 	data.MultipleHits = multipleHits;
 	data.Obj = obj;
+	const CollisionParams params =
+	{
+		TILEITEM_CAN_BE_SHOT, COLLISIONTEAM_NONE, IsPVP(gCampaign.Entry.Mode)
+	};
 	CollideTileItems(
-		&obj->tileItem, Vec2iFull2Real(pos),
-		TILEITEM_CAN_BE_SHOT, COLLISIONTEAM_NONE,
-		IsPVP(gCampaign.Entry.Mode),
-		HitItemFunc, &data);
+		&obj->tileItem, Vec2iFull2Real(pos), params, HitItemFunc, &data);
 	return data.HitType;
 }
 static HitType GetHitType(

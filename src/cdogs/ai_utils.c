@@ -380,12 +380,12 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd)
 	{
 		frontPos.y++;
 	}
-	item = CollideGetFirstItem(
-		&a->tileItem,
-		frontPos,
-		TILEITEM_IMPASSABLE,
-		CalcCollisionTeam(1, a),
-		IsPVP(gCampaign.Entry.Mode));
+	const CollisionParams params =
+	{
+		TILEITEM_IMPASSABLE, CalcCollisionTeam(true, a),
+		IsPVP(gCampaign.Entry.Mode)
+	};
+	item = CollideGetFirstItem(&a->tileItem, frontPos, params);
 	if (!item || item->kind != KIND_OBJECT)
 	{
 		return NULL;

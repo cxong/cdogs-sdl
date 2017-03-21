@@ -38,7 +38,7 @@
 bool ConfigApply(Config *config)
 {
 	gCampaign.seed = ConfigGetInt(config, "Game.RandomSeed");
-	CollisionSystemInit(&gCollisionSystem);
+	CollisionSystemReset(&gCollisionSystem);
 	if (ConfigChanged(ConfigGet(config, "Sound")))
 	{
 		SoundReconfigure(&gSoundDevice);

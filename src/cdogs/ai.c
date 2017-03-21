@@ -135,10 +135,12 @@ static bool IsPosOK(TActor *actor, Vec2i pos)
 	{
 		return false;
 	}
-	if (CollideGetFirstItem(
-		&actor->tileItem, realPos, TILEITEM_IMPASSABLE,
-		CalcCollisionTeam(1, actor),
-		IsPVP(gCampaign.Entry.Mode)))
+	const CollisionParams params =
+	{
+		TILEITEM_IMPASSABLE, CalcCollisionTeam(true, actor),
+		IsPVP(gCampaign.Entry.Mode)
+	};
+	if (CollideGetFirstItem(&actor->tileItem, realPos, params))
 	{
 		return false;
 	}

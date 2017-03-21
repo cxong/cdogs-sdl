@@ -303,6 +303,7 @@ bail:
 	EventTerminate(&gEventHandlers);
 	GraphicsTerminate(&gGraphicsDevice);
 	CampaignTerminate(&gCampaign);
+	CollisionSystemTerminate(&gCollisionSystem);
 
 	CharSpriteClassesTerminate(&gCharSpriteClasses);
 	PicManagerTerminate(&gPicManager);

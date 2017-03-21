@@ -1429,6 +1429,7 @@ int main(int argc, char *argv[])
 	CampaignTerminate(&gCampaign);
 	MissionTerminate(&lastMission);
 	MissionTerminate(&currentMission);
+	CollisionSystemTerminate(&gCollisionSystem);
 
 	DrawBufferTerminate(&sDrawBuffer);
 	GraphicsTerminate(&gGraphicsDevice);
