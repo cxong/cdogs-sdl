@@ -42,6 +42,7 @@
 #include <nuklear/nuklear_sdl_gl2.h>
 #include <cdogs/actors.h>
 #include <cdogs/character.h>
+#include <cdogs/draw/draw_actor.h>
 #include <cdogs/log.h>
 
 #define MAX_VERTEX_MEMORY 512 * 1024
@@ -49,6 +50,7 @@
 
 #define ROW_HEIGHT 25
 const float colRatios[] = { 0.3f, 0.7f };
+#define PIC_SCALE 2
 
 typedef struct
 {
@@ -59,6 +61,7 @@ typedef struct
 	int *FileChanged;
 	char *CharacterClassNames;
 	char *GunNames;
+	GLuint texidsPreview[BODY_PART_COUNT];
 } EditorContext;
 
 const float bg[4] = { 0.16f, 0.1f, 0.1f, 1.f };
@@ -104,6 +107,8 @@ void CharEditor(
 		NumCharacterClasses(), IndexCharacterClassName);
 	ec.GunNames = GetClassNames(NumGuns(), IndexGunName);
 
+	glGenTextures(BODY_PART_COUNT, ec.texidsPreview);
+
 	// Initialise fonts
 	struct nk_font_atlas *atlas;
 	nk_sdl_font_stash_begin(&atlas);
@@ -135,7 +140,7 @@ bail:
 	nk_sdl_shutdown();
 	CFREE(ec.CharacterClassNames);
 	CFREE(ec.GunNames);
-	//glDeleteTextures(1, (const GLuint *)&tex.handle.id);
+	glDeleteTextures(BODY_PART_COUNT, ec.texidsPreview);
 	SDL_GL_DeleteContext(glContext);
 	SDL_DestroyWindow(win);
 }
@@ -293,7 +298,7 @@ static void DrawFlag(
 	EditorContext *ec, const char *label, const int flag, const char *tooltip);
 static void Draw(SDL_Window *win, EditorContext *ec)
 {
-	if (nk_begin(ec->ctx, "Character Store", nk_rect(10, 10, 240, 580),
+	if (nk_begin(ec->ctx, "Character Store", nk_rect(10, 10, 240, 520),
 		NK_WINDOW_BORDER|NK_WINDOW_TITLE))
 	{
 		// Show existing characters
@@ -338,7 +343,7 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 
 	if (ec->Char != NULL)
 	{
-		if (nk_begin(ec->ctx, "Character", nk_rect(260, 10, 240, 580),
+		if (nk_begin(ec->ctx, "Character", nk_rect(260, 10, 240, 520),
 			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
 		{
 			nk_layout_row(ec->ctx, NK_DYNAMIC, ROW_HEIGHT, 2, colRatios);
@@ -396,18 +401,6 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 				ec, "Awake", FLAGS_AWAKEALWAYS,
 				"Don't go to sleep after players leave");
 
-			//enum {EASY, HARD};
-			//static int op = EASY;
-
-			/*nk_layout_row_static(ctx, 30, 80, 1);
-			if (nk_button_label(ctx, "button"))
-			{
-				fprintf(stdout, "button pressed\n");
-			}
-			nk_layout_row_dynamic(ctx, 30, 2);
-			if (nk_option_label(ctx, "easy", op == EASY)) op = EASY;
-			if (nk_option_label(ctx, "hard", op == HARD)) op = HARD;*/
-
 			/*nk_layout_row_dynamic(ctx, 20, 1);
 			nk_label(ctx, "Image:", NK_TEXT_LEFT);
 			nk_layout_row_static(
@@ -418,7 +411,7 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 		}
 		nk_end(ec->ctx);
 
-		if (nk_begin(ec->ctx, "AI", nk_rect(510, 10, 250, 180),
+		if (nk_begin(ec->ctx, "AI", nk_rect(510, 10, 250, 170),
 			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
 		{
 			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
@@ -436,17 +429,53 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 				50, 5, 1);
 		}
 		nk_end(ec->ctx);
+
+		if (nk_begin(ec->ctx, "Preview", nk_rect(510, 190, 250, 180),
+			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
+		{
+			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
+			// TODO: animation
+			// TODO: UI controls for animation
+			// TODO: gun pics
+			ActorPics pics = GetCharacterPics(
+				ec->Char, DIRECTION_DOWN, ACTORANIMATION_IDLE, 0,
+				NULL, GUNSTATE_READY, false, NULL, NULL, 0);
+			//const Vec2i pos = Vec2iZero();
+			for (int i = 0; i < BODY_PART_COUNT; i++)
+			{
+				const Pic *pic = pics.OrderedPics[i];
+				if (pic == NULL)
+				{
+					continue;
+				}
+				//const Vec2i drawPos = Vec2iAdd(pos, pics.OrderedOffsets[i]);
+				//BlitCharMultichannel(&gGraphicsDevice, pic, drawPos, pic->Colors);
+				// TODO: coloured drawing
+				glBindTexture(GL_TEXTURE_2D, ec->texidsPreview[i]);
+				glTexImage2D(
+					GL_TEXTURE_2D, 0, GL_RGBA, pic->size.x, pic->size.y, 0,
+					GL_RGBA, GL_UNSIGNED_BYTE, pic->Data);
+				glTexParameteri(
+					GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexParameteri(
+					GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				struct nk_image tex = nk_image_id((int)ec->texidsPreview[i]);
+				// TODO: draw offset
+				nk_layout_row_static(
+					ec->ctx, pic->size.y * PIC_SCALE, pic->size.x * PIC_SCALE,
+					1);
+				nk_image(ec->ctx, tex);
+			}
+		}
+		nk_end(ec->ctx);
 	}
 
-	/* Draw */
 	int winWidth, winHeight;
 	SDL_GetWindowSize(win, &winWidth, &winHeight);
 	glViewport(0, 0, winWidth, winHeight);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glClearColor(bg[0], bg[1], bg[2], bg[3]);
 
-	// Blit the texture to screen
-	//draw_tex(tex.handle.id, -0.5f, -0.5f, 1.f, 1.f);
 	nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
 
 	// Display

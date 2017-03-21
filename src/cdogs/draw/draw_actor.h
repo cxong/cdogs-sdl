@@ -63,7 +63,9 @@ typedef struct
 	Vec2i LegsOffset;
 	const Pic *Gun;
 	Vec2i GunOffset;
-	BodyPart DrawOrder[BODY_PART_COUNT];
+	// In draw order
+	const Pic *OrderedPics[BODY_PART_COUNT];
+	Vec2i OrderedOffsets[BODY_PART_COUNT];
 	const CharColors *Colors;
 	bool IsDead;
 	bool IsDying;
@@ -80,6 +82,12 @@ void DrawHead(const Character *c, const direction_e dir, const Vec2i pos);
 
 void DrawChatters(DrawBuffer *b, const Vec2i offset);
 
+ActorPics GetCharacterPics(
+	Character *c, const direction_e dir,
+	const ActorAnimation anim, const int frame,
+	const NamedSprites *gunPics, const gunstate_e gunState,
+	const bool isTransparent, HSV *tint, color_t *mask,
+	const int deadPic);
 ActorPics GetCharacterPicsFromActor(TActor *a);
 void DrawActorPics(const ActorPics *pics, const Vec2i pos);
 void DrawLaserSight(

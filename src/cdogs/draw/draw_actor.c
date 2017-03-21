@@ -81,12 +81,6 @@ static Vec2i GetActorDrawOffset(
 }
 
 static Character *ActorGetCharacterMutable(TActor *a);
-static ActorPics GetCharacterPics(
-	Character *c, const direction_e dir,
-	const ActorAnimation anim, const int frame,
-	const NamedSprites *gunPics, const gunstate_e gunState,
-	const bool isTransparent, HSV *tint, color_t *mask,
-	const int deadPic);
 ActorPics GetCharacterPicsFromActor(TActor *a)
 {
 	const Weapon *gun = ActorGetGun(a);
@@ -132,7 +126,7 @@ static const Pic *GetLegsPic(
 static const Pic *GetGunPic(
 	const NamedSprites *gunPics, const direction_e dir, const int gunState);
 static const Pic *GetDeathPic(PicManager *pm, const int frame);
-static ActorPics GetCharacterPics(
+ActorPics GetCharacterPics(
 	Character *c, const direction_e dir,
 	const ActorAnimation anim, const int frame,
 	const NamedSprites *gunPics, const gunstate_e gunState,
@@ -141,10 +135,6 @@ static ActorPics GetCharacterPics(
 {
 	ActorPics pics;
 	memset(&pics, 0, sizeof pics);
-	for (int i = 0; i < BODY_PART_COUNT; i++)
-	{
-		pics.DrawOrder[i] = -1;
-	}
 	pics.Colors = &c->Colors;
 
 	// If the actor is dead, simply draw a dying animation
@@ -155,7 +145,7 @@ static ActorPics GetCharacterPics(
 		{
 			pics.IsDying = true;
 			pics.Body = GetDeathPic(&gPicManager, deadPic - 1);
-			pics.DrawOrder[0] = BODY_PART_BODY;
+			pics.OrderedPics[0] = pics.Body;
 		}
 		return pics;
 	}
@@ -208,7 +198,28 @@ static ActorPics GetCharacterPics(
 	// Determine draw order based on the direction the player is facing
 	for (BodyPart bp = BODY_PART_HEAD; bp < BODY_PART_COUNT; bp++)
 	{
-		pics.DrawOrder[bp] = c->Class->Sprites->Order[dir][bp];
+		const BodyPart drawOrder = c->Class->Sprites->Order[dir][bp];
+		switch (drawOrder)
+		{
+		case BODY_PART_HEAD:
+			pics.OrderedPics[bp] = pics.Head;
+			pics.OrderedOffsets[bp] = pics.HeadOffset;
+			break;
+		case BODY_PART_BODY:
+			pics.OrderedPics[bp] = pics.Body;
+			pics.OrderedOffsets[bp] = pics.BodyOffset;
+			break;
+		case BODY_PART_LEGS:
+			pics.OrderedPics[bp] = pics.Legs;
+			pics.OrderedOffsets[bp] = pics.LegsOffset;
+			break;
+		case BODY_PART_GUN:
+			pics.OrderedPics[bp] = pics.Gun;
+			pics.OrderedOffsets[bp] = pics.GunOffset;
+			break;
+		default:
+			break;
+		}
 	}
 
 	pics.Sprites = c->Class->Sprites;
@@ -244,46 +255,25 @@ void DrawActorPics(const ActorPics *pics, const Vec2i pos)
 		}
 		for (int i = 0; i < BODY_PART_COUNT; i++)
 		{
-			const Pic *picp = NULL;
-			Vec2i drawPos = pos;
-			switch (pics->DrawOrder[i])
-			{
-			case BODY_PART_HEAD:
-				picp = pics->Head;
-				drawPos = Vec2iAdd(pos, pics->HeadOffset);
-				break;
-			case BODY_PART_BODY:
-				picp = pics->Body;
-				drawPos = Vec2iAdd(pos, pics->BodyOffset);
-				break;
-			case BODY_PART_LEGS:
-				picp = pics->Legs;
-				drawPos = Vec2iAdd(pos, pics->LegsOffset);
-				break;
-			case BODY_PART_GUN:
-				picp = pics->Gun;
-				drawPos = Vec2iAdd(pos, pics->GunOffset);
-				break;
-			default:
-				break;
-			}
-			if (picp == NULL)
+			const Pic *pic = pics->OrderedPics[i];
+			if (pic == NULL)
 			{
 				continue;
 			}
+			const Vec2i drawPos = Vec2iAdd(pos, pics->OrderedOffsets[i]);
 			if (pics->IsTransparent)
 			{
 				BlitBackground(
-					&gGraphicsDevice, picp, drawPos, pics->Tint, true);
+					&gGraphicsDevice, pic, drawPos, pics->Tint, true);
 			}
 			else if (pics->Mask != NULL)
 			{
-				BlitMasked(&gGraphicsDevice, picp, drawPos, *pics->Mask, true);
+				BlitMasked(&gGraphicsDevice, pic, drawPos, *pics->Mask, true);
 			}
 			else
 			{
 				BlitCharMultichannel(
-					&gGraphicsDevice, picp, drawPos, pics->Colors);
+					&gGraphicsDevice, pic, drawPos, pics->Colors);
 			}
 		}
 	}
