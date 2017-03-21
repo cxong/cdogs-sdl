@@ -289,6 +289,8 @@ static int DrawClassSelection(
 	EditorContext *ec, const char *label, const char *items, const int selected,
 	const size_t len);
 static void DrawCharColor(EditorContext *ec, const char *label, color_t *c);
+static void DrawFlag(
+	EditorContext *ec, const char *label, const int flag, const char *tooltip);
 static void Draw(SDL_Window *win, EditorContext *ec)
 {
 	if (nk_begin(ec->ctx, "Character Store", nk_rect(10, 10, 240, 580),
@@ -373,19 +375,27 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 			nk_property_int(
 				ec->ctx, "Max Health:", 10, &ec->Char->maxHealth, 1000, 10, 1);
 
-			struct nk_rect bounds = nk_widget_bounds(ec->ctx);
-			nk_checkbox_flags_label(
-				ec->ctx, "Asbestos", &ec->Char->flags, FLAGS_ASBESTOS);
-			if (nk_input_is_mouse_hovering_rect(&ec->ctx->input, bounds))
-			{
-				// TODO: flag tooltips
-				nk_tooltip(ec->ctx, "This is a tooltip");
-			}
-			//nk_checkbox_flags_label(ctx, "Immunity", &flags, FLAGS_IMMUNITY);
-			//nk_checkbox_flags_label(ctx, "See-through", &flags, FLAGS_SEETHROUGH);
-			// TODO: run-away, sneaky, good guy, asleep, prisoner, invulnerable,
-			// follower, penalty, victim, awake
-			
+			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 2);
+			DrawFlag(ec, "Asbestos", FLAGS_ASBESTOS, "Immune to fire");
+			DrawFlag(ec, "Immunity", FLAGS_IMMUNITY, "Immune to poison");
+			DrawFlag(ec, "See-through", FLAGS_SEETHROUGH, NULL);
+			DrawFlag(ec, "Runs away", FLAGS_RUNS_AWAY, "Runs away from player");
+			DrawFlag(
+				ec, "Sneaky", FLAGS_SNEAKY, "Shoots back when player shoots");
+			DrawFlag(ec, "Good guy", FLAGS_GOOD_GUY, "Same team as players");
+			DrawFlag(
+				ec, "Sleeping", FLAGS_SLEEPING, "Doesn't move unless seen");
+			DrawFlag(
+				ec, "Prisoner", FLAGS_PRISONER, "Doesn't move until touched");
+			DrawFlag(ec, "Invulnerable", FLAGS_INVULNERABLE, NULL);
+			DrawFlag(ec, "Follower", FLAGS_FOLLOWER, "Follows players");
+			DrawFlag(
+				ec, "Penalty", FLAGS_PENALTY, "Large score penalty when shot");
+			DrawFlag(ec, "Victim", FLAGS_VICTIM, "Takes damage from everyone");
+			DrawFlag(
+				ec, "Awake", FLAGS_AWAKEALWAYS,
+				"Don't go to sleep after players leave");
+
 			//enum {EASY, HARD};
 			//static int op = EASY;
 
@@ -483,5 +493,16 @@ static void DrawCharColor(EditorContext *ec, const char *label, color_t *c)
 		{
 			*ec->FileChanged = true;
 		}
+	}
+}
+
+static void DrawFlag(
+	EditorContext *ec, const char *label, const int flag, const char *tooltip)
+{
+	struct nk_rect bounds = nk_widget_bounds(ec->ctx);
+	nk_checkbox_flags_label(ec->ctx, label, &ec->Char->flags, flag);
+	if (tooltip && nk_input_is_mouse_hovering_rect(&ec->ctx->input, bounds))
+	{
+		nk_tooltip(ec->ctx, tooltip);
 	}
 }
