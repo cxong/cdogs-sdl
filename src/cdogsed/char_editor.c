@@ -69,6 +69,7 @@ const float bg[4] = { 0.16f, 0.1f, 0.1f, 1.f };
 
 // Util functions
 static void LoadTexFromPic(const GLuint texid, const Pic *pic);
+static void BeforeDrawTex(const GLuint texid);
 
 
 static char *GetClassNames(const int len, const char *(*indexNameFunc)(int));
@@ -330,9 +331,7 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 			const GLuint *texid = CArrayGet(
 				&ec->texIdsCharClasses, CharacterClassIndex(c->Class));
 			struct nk_image tex = nk_image_id((int)*texid);
-			glBindTexture(GL_TEXTURE_2D, *texid);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			BeforeDrawTex(*texid);
 			if (nk_select_image_label(
 				ec->ctx, tex, buf, NK_TEXT_LEFT, selected))
 			{
@@ -376,8 +375,6 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 			const int selectedClass = DrawClassSelection(
 				ec, "Class:", ec->CharacterClassNames,
 				CharacterClassIndex(ec->Char->Class), NumCharacterClasses());
-			// TODO: draw heads as well, use nk_combo_begin_image_label /
-			// nk_combo_item_image_label
 			ec->Char->Class = IndexCharacterClass(selectedClass);
 
 			// Character colours
@@ -520,22 +517,79 @@ static void AddCharacter(EditorContext *ec)
 	*ec->FileChanged = true;
 }
 
+static int nk_combo_separator_image(struct nk_context *ctx,
+	const GLuint *img_ids, const char *items_separated_by_separator,
+    int separator, int selected, int count, int item_height,
+	struct nk_vec2 size);
 static int DrawClassSelection(
 	EditorContext *ec, const char *label, const char *items, const int selected,
 	const size_t len)
 {
 	nk_label(ec->ctx, label, NK_TEXT_LEFT);
-	int selectedNew = selected;
 	// TODO: draw heads as well, use nk_combo_begin_image_label /
 	// nk_combo_item_image_label
-	nk_combobox_string(
-		ec->ctx, items, &selectedNew, len,
+	const int selectedNew = nk_combo_separator_image(
+		ec->ctx, ec->texIdsCharClasses.data, items, '\0', selected, len,
 		ROW_HEIGHT, nk_vec2(nk_widget_width(ec->ctx), 10 * ROW_HEIGHT));
 	if (selectedNew != selected)
 	{
 		*ec->FileChanged = true;
 	}
 	return selectedNew;
+}
+static int nk_combo_separator_image(struct nk_context *ctx,
+	const GLuint *img_ids, const char *items_separated_by_separator,
+    int separator, int selected, int count, int item_height,
+	struct nk_vec2 size)
+{
+    int i;
+    int max_height;
+    struct nk_vec2 item_spacing;
+    struct nk_vec2 window_padding;
+    const char *current_item;
+    const char *iter;
+    int length = 0;
+
+    NK_ASSERT(ctx);
+    NK_ASSERT(items_separated_by_separator);
+    if (!ctx || !items_separated_by_separator)
+        return selected;
+
+    /* calculate popup window */
+    item_spacing = ctx->style.window.spacing;
+    window_padding = nk_panel_get_padding(&ctx->style, ctx->current->layout->type);
+    max_height = count * item_height + count * (int)item_spacing.y;
+    max_height += (int)item_spacing.y * 2 + (int)window_padding.y * 2;
+    size.y = NK_MIN(size.y, (float)max_height);
+
+    /* find selected item */
+    current_item = items_separated_by_separator;
+    for (i = 0; i < count; ++i) {
+        iter = current_item;
+        while (*iter && *iter != separator) iter++;
+        length = (int)(iter - current_item);
+        if (i == selected) break;
+        current_item = iter + 1;
+    }
+
+	// TODO: also draw image here
+    if (nk_combo_begin_text(ctx, current_item, length, size)) {
+        current_item = items_separated_by_separator;
+        nk_layout_row_dynamic(ctx, (float)item_height, 1);
+        for (i = 0; i < count; ++i) {
+			const struct nk_image img = nk_image_id(img_ids[i]);
+			// TODO: image size
+			BeforeDrawTex(img_ids[i]);
+            iter = current_item;
+            while (*iter && *iter != separator) iter++;
+            length = (int)(iter - current_item);
+            if (nk_contextual_item_image_text(ctx, img, current_item, length, NK_TEXT_LEFT))
+                selected = i;
+            current_item = current_item + length + 1;
+        }
+        nk_combo_end(ctx);
+    }
+    return selected;
 }
 
 static void DrawCharColor(EditorContext *ec, const char *label, color_t *c)
@@ -581,4 +635,11 @@ static void LoadTexFromPic(const GLuint texid, const Pic *pic)
 	glTexImage2D(
 		GL_TEXTURE_2D, 0, GL_RGBA, pic->size.x, pic->size.y, 0, GL_RGBA,
 		GL_UNSIGNED_BYTE, pic->Data);
+}
+
+static void BeforeDrawTex(const GLuint texid)
+{
+	glBindTexture(GL_TEXTURE_2D, texid);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
