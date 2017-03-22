@@ -62,9 +62,13 @@ typedef struct
 	char *CharacterClassNames;
 	char *GunNames;
 	GLuint texidsPreview[BODY_PART_COUNT];
+	CArray texIdsCharClasses;	// of GLuint
 } EditorContext;
 
 const float bg[4] = { 0.16f, 0.1f, 0.1f, 1.f };
+
+// Util functions
+static void LoadTexFromPic(const GLuint texid, const Pic *pic);
 
 
 static char *GetClassNames(const int len, const char *(*indexNameFunc)(int));
@@ -99,6 +103,8 @@ void CharEditor(
 	// Initialise editor context
 	EditorContext ec;
 	ec.ctx = nk_sdl_init(win);
+	// Allow rapid clicks
+	ec.ctx->button_behavior = NK_BUTTON_REPEATER;
 	ec.Char = NULL;
 	ec.Setting = setting;
 	ec.Handlers = handlers;
@@ -108,6 +114,15 @@ void CharEditor(
 	ec.GunNames = GetClassNames(NumGuns(), IndexGunName);
 
 	glGenTextures(BODY_PART_COUNT, ec.texidsPreview);
+	CArrayInit(&ec.texIdsCharClasses, sizeof(GLuint));
+	CArrayResize(&ec.texIdsCharClasses, NumCharacterClasses(), NULL);
+	glGenTextures(NumCharacterClasses(), (GLuint *)ec.texIdsCharClasses.data);
+	for (int i = 0; i < NumCharacterClasses(); i++)
+	{
+		const GLuint *texid = CArrayGet(&ec.texIdsCharClasses, i);
+		const CharacterClass *c = IndexCharacterClass(i);
+		LoadTexFromPic(*texid, GetHeadPic(c, DIRECTION_DOWN, GUNSTATE_READY));
+	}
 
 	// Initialise fonts
 	struct nk_font_atlas *atlas;
@@ -141,6 +156,8 @@ bail:
 	CFREE(ec.CharacterClassNames);
 	CFREE(ec.GunNames);
 	glDeleteTextures(BODY_PART_COUNT, ec.texidsPreview);
+	glDeleteTextures(
+		ec.texIdsCharClasses.size, (const GLuint *)ec.texIdsCharClasses.data);
 	SDL_GL_DeleteContext(glContext);
 	SDL_DestroyWindow(win);
 }
@@ -290,6 +307,7 @@ static bool HandleEvents(EditorContext *ec)
 	return run;
 }
 
+static void AddCharacter(EditorContext *ec);
 static int DrawClassSelection(
 	EditorContext *ec, const char *label, const char *items, const int selected,
 	const size_t len);
@@ -307,8 +325,15 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 			const int selected = ec->Char == c;
 			char buf[256];
 			sprintf(buf, "%s (%s)", c->Class->Name, c->Gun->name);
-			// TODO: show character icon, use nk_select_image_label
-			if (nk_select_label(ec->ctx, buf, NK_TEXT_LEFT, selected))
+			// TODO: show both label and full character
+			const GLuint *texid = CArrayGet(
+				&ec->texIdsCharClasses, CharacterClassIndex(c->Class));
+			struct nk_image tex = nk_image_id((int)*texid);
+			glBindTexture(GL_TEXTURE_2D, *texid);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			if (nk_select_image_label(
+				ec->ctx, tex, buf, NK_TEXT_LEFT, selected))
 			{
 				ec->Char = c;
 			}
@@ -317,25 +342,7 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 		nk_layout_row_static(ec->ctx, 30, 80, 1);
 		if (nk_button_label(ec->ctx, "Add +"))
 		{
-			ec->Char = CharacterStoreAddOther(&ec->Setting->characters);
-			// set up character template
-			ec->Char->Class = StrCharacterClass("Ogre");
-			ec->Char->Colors.Skin = colorGreen;
-			const color_t darkGray = {64, 64, 64, 255};
-			ec->Char->Colors.Arms = darkGray;
-			ec->Char->Colors.Body = darkGray;
-			ec->Char->Colors.Legs = darkGray;
-			ec->Char->Colors.Hair = colorBlack;
-			ec->Char->speed = 256;
-			ec->Char->Gun = StrGunDescription("Machine gun");
-			ec->Char->maxHealth = 40;
-			ec->Char->flags = FLAGS_IMMUNITY;
-			ec->Char->bot->probabilityToMove = 50;
-			ec->Char->bot->probabilityToTrack = 25;
-			ec->Char->bot->probabilityToShoot = 2;
-			ec->Char->bot->actionDelay = 15;
-
-			*ec->FileChanged = true;
+			AddCharacter(ec);
 		}
 		// TODO: delete button
 	}
@@ -400,14 +407,6 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 			DrawFlag(
 				ec, "Awake", FLAGS_AWAKEALWAYS,
 				"Don't go to sleep after players leave");
-
-			/*nk_layout_row_dynamic(ctx, 20, 1);
-			nk_label(ctx, "Image:", NK_TEXT_LEFT);
-			nk_layout_row_static(
-				ctx,
-				tex_h, tex_w,
-				1);
-			nk_image(ctx, tex);*/
 		}
 		nk_end(ec->ctx);
 
@@ -451,19 +450,16 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 				//const Vec2i drawPos = Vec2iAdd(pos, pics.OrderedOffsets[i]);
 				//BlitCharMultichannel(&gGraphicsDevice, pic, drawPos, pic->Colors);
 				// TODO: coloured drawing
-				glBindTexture(GL_TEXTURE_2D, ec->texidsPreview[i]);
-				glTexImage2D(
-					GL_TEXTURE_2D, 0, GL_RGBA, pic->size.x, pic->size.y, 0,
-					GL_RGBA, GL_UNSIGNED_BYTE, pic->Data);
-				glTexParameteri(
-					GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-				glTexParameteri(
-					GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				LoadTexFromPic(ec->texidsPreview[i], pic);
 				struct nk_image tex = nk_image_id((int)ec->texidsPreview[i]);
 				// TODO: draw offset
 				nk_layout_row_static(
 					ec->ctx, pic->size.y * PIC_SCALE, pic->size.x * PIC_SCALE,
 					1);
+				glTexParameteri(
+					GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexParameteri(
+					GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 				nk_image(ec->ctx, tex);
 			}
 		}
@@ -480,6 +476,29 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 
 	// Display
 	SDL_GL_SwapWindow(win);
+}
+
+static void AddCharacter(EditorContext *ec)
+{
+	ec->Char = CharacterStoreAddOther(&ec->Setting->characters);
+	// set up character template
+	ec->Char->Class = StrCharacterClass("Ogre");
+	ec->Char->Colors.Skin = colorGreen;
+	const color_t darkGray = {64, 64, 64, 255};
+	ec->Char->Colors.Arms = darkGray;
+	ec->Char->Colors.Body = darkGray;
+	ec->Char->Colors.Legs = darkGray;
+	ec->Char->Colors.Hair = colorBlack;
+	ec->Char->speed = 256;
+	ec->Char->Gun = StrGunDescription("Machine gun");
+	ec->Char->maxHealth = 40;
+	ec->Char->flags = FLAGS_IMMUNITY;
+	ec->Char->bot->probabilityToMove = 50;
+	ec->Char->bot->probabilityToTrack = 25;
+	ec->Char->bot->probabilityToShoot = 2;
+	ec->Char->bot->actionDelay = 15;
+
+	*ec->FileChanged = true;
 }
 
 static int DrawClassSelection(
@@ -534,4 +553,13 @@ static void DrawFlag(
 	{
 		nk_tooltip(ec->ctx, tooltip);
 	}
+}
+
+
+static void LoadTexFromPic(const GLuint texid, const Pic *pic)
+{
+	glBindTexture(GL_TEXTURE_2D, texid);
+	glTexImage2D(
+		GL_TEXTURE_2D, 0, GL_RGBA, pic->size.x, pic->size.y, 0, GL_RGBA,
+		GL_UNSIGNED_BYTE, pic->Data);
 }

@@ -115,8 +115,6 @@ ActorPics GetCharacterPicsFromActor(TActor *a)
 		tint, mask,
 		a->dead);
 }
-static const Pic *GetHeadPic(
-	const CharacterClass *c, const direction_e dir, const gunstate_e gunState);
 static const Pic *GetBodyPic(
 	PicManager *pm, const CharSprites *cs, const direction_e dir,
 	const ActorAnimation anim, const int frame, const bool isArmed);
@@ -396,7 +394,7 @@ static void DrawChatter(
 	}
 }
 
-static const Pic *GetHeadPic(
+const Pic *GetHeadPic(
 	const CharacterClass *c, const direction_e dir, const gunstate_e gunState)
 {
 	// If firing, draw the firing head pic

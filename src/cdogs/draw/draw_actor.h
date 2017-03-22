@@ -82,6 +82,8 @@ void DrawHead(const Character *c, const direction_e dir, const Vec2i pos);
 
 void DrawChatters(DrawBuffer *b, const Vec2i offset);
 
+const Pic *GetHeadPic(
+	const CharacterClass *c, const direction_e dir, const gunstate_e gunState);
 ActorPics GetCharacterPics(
 	Character *c, const direction_e dir,
 	const ActorAnimation anim, const int frame,
