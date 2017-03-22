@@ -320,6 +320,7 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 		NK_WINDOW_BORDER|NK_WINDOW_TITLE))
 	{
 		// Show existing characters
+		int selectedIndex = -1;
 		CA_FOREACH(Character, c, ec->Setting->characters.OtherChars)
 			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
 			const int selected = ec->Char == c;
@@ -336,15 +337,33 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 				ec->ctx, tex, buf, NK_TEXT_LEFT, selected))
 			{
 				ec->Char = c;
+				selectedIndex = _ca_index;
 			}
 		CA_FOREACH_END()
 
-		nk_layout_row_static(ec->ctx, 30, 80, 1);
-		if (nk_button_label(ec->ctx, "Add +"))
+		nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 2);
+		if (nk_button_label(ec->ctx, "Add"))
 		{
 			AddCharacter(ec);
 		}
-		// TODO: delete button
+		if (selectedIndex >= 0 && nk_button_label(ec->ctx, "Remove"))
+		{
+			CharacterStoreDeleteOther(&ec->Setting->characters, selectedIndex);
+			selectedIndex = MIN(
+				selectedIndex,
+				(int)ec->Setting->characters.OtherChars.size - 1);
+			if (selectedIndex >= 0)
+			{
+				ec->Char = CArrayGet(
+					&ec->Setting->characters.OtherChars, selectedIndex);
+			}
+			else
+			{
+				ec->Char = NULL;
+			}
+			*ec->FileChanged = true;
+		}
+		// TODO: move up/down, clone buttons
 	}
 	nk_end(ec->ctx);
 
