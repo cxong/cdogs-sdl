@@ -63,6 +63,7 @@ typedef struct
 	char *GunNames;
 	GLuint texidsPreview[BODY_PART_COUNT];
 	CArray texIdsCharClasses;	// of GLuint
+	CArray texIdsGuns;	// of GLuint
 } EditorContext;
 
 const float bg[4] = { 0.16f, 0.1f, 0.1f, 1.f };
@@ -106,6 +107,7 @@ void CharEditor(
 	ec.ctx = nk_sdl_init(win);
 	// Allow rapid clicks
 	ec.ctx->button_behavior = NK_BUTTON_REPEATER;
+	// TODO: fix unresponsive clicks
 	ec.Char = NULL;
 	ec.Setting = setting;
 	ec.Handlers = handlers;
@@ -123,6 +125,15 @@ void CharEditor(
 		const GLuint *texid = CArrayGet(&ec.texIdsCharClasses, i);
 		const CharacterClass *c = IndexCharacterClass(i);
 		LoadTexFromPic(*texid, GetHeadPic(c, DIRECTION_DOWN, GUNSTATE_READY));
+	}
+	CArrayInit(&ec.texIdsGuns, sizeof(GLuint));
+	CArrayResize(&ec.texIdsGuns, NumGuns(), NULL);
+	glGenTextures(NumGuns(), (GLuint *)ec.texIdsGuns.data);
+	for (int i = 0; i < NumGuns(); i++)
+	{
+		const GLuint *texid = CArrayGet(&ec.texIdsGuns, i);
+		const GunDescription *g = IndexGunDescriptionReal(i);
+		LoadTexFromPic(*texid, g->Icon);
 	}
 
 	// Initialise fonts
@@ -159,6 +170,7 @@ bail:
 	glDeleteTextures(BODY_PART_COUNT, ec.texidsPreview);
 	glDeleteTextures(
 		ec.texIdsCharClasses.size, (const GLuint *)ec.texIdsCharClasses.data);
+	glDeleteTextures(ec.texIdsGuns.size, (const GLuint *)ec.texIdsGuns.data);
 	SDL_GL_DeleteContext(glContext);
 	SDL_DestroyWindow(win);
 }
@@ -195,31 +207,8 @@ static int NumCharacterClasses(void)
 }
 static const char *IndexGunName(const int i)
 {
-	int j = 0;
-	CA_FOREACH(const GunDescription, g, gGunDescriptions.Guns)
-		if (!g->IsRealGun)
-		{
-			continue;
-		}
-		if (j == i)
-		{
-			return g->name;
-		}
-		j++;
-	CA_FOREACH_END()
-	CA_FOREACH(const GunDescription, g, gGunDescriptions.CustomGuns)
-		if (!g->IsRealGun)
-		{
-			continue;
-		}
-		if (j == i)
-		{
-			return g->name;
-		}
-		j++;
-	CA_FOREACH_END()
-	CASSERT(false, "cannot find gun");
-	return "";
+	const GunDescription *g = IndexGunDescriptionReal(i);
+	return g ? g->name : NULL;
 }
 static int NumGuns(void)
 {
@@ -310,8 +299,8 @@ static bool HandleEvents(EditorContext *ec)
 
 static void AddCharacter(EditorContext *ec);
 static int DrawClassSelection(
-	EditorContext *ec, const char *label, const char *items, const int selected,
-	const size_t len);
+	EditorContext *ec, const char *label, const GLuint *texids,
+	const char *items, const int selected, const size_t len);
 static void DrawCharColor(EditorContext *ec, const char *label, color_t *c);
 static void DrawFlag(
 	EditorContext *ec, const char *label, const int flag, const char *tooltip);
@@ -373,7 +362,8 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 		{
 			nk_layout_row(ec->ctx, NK_DYNAMIC, ROW_HEIGHT, 2, colRatios);
 			const int selectedClass = DrawClassSelection(
-				ec, "Class:", ec->CharacterClassNames,
+				ec, "Class:", ec->texIdsCharClasses.data,
+				ec->CharacterClassNames,
 				CharacterClassIndex(ec->Char->Class), NumCharacterClasses());
 			ec->Char->Class = IndexCharacterClass(selectedClass);
 
@@ -393,10 +383,8 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 
 			nk_layout_row(ec->ctx, NK_DYNAMIC, ROW_HEIGHT, 2, colRatios);
 			const int selectedGun = DrawClassSelection(
-				ec, "Gun:", ec->GunNames, GunIndex(ec->Char->Gun),
-				NumGuns());
-			// TODO: draw gun icons as well, use nk_combo_begin_image_label /
-			// nk_combo_item_image_label
+				ec, "Gun:", ec->texIdsGuns.data, ec->GunNames,
+				GunIndex(ec->Char->Gun), NumGuns());
 			ec->Char->Gun = IdGunDescription(selectedGun);
 
 			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
@@ -522,14 +510,14 @@ static int nk_combo_separator_image(struct nk_context *ctx,
     int separator, int selected, int count, int item_height,
 	struct nk_vec2 size);
 static int DrawClassSelection(
-	EditorContext *ec, const char *label, const char *items, const int selected,
-	const size_t len)
+	EditorContext *ec, const char *label, const GLuint *texids,
+	const char *items, const int selected, const size_t len)
 {
 	nk_label(ec->ctx, label, NK_TEXT_LEFT);
 	// TODO: draw heads as well, use nk_combo_begin_image_label /
 	// nk_combo_item_image_label
 	const int selectedNew = nk_combo_separator_image(
-		ec->ctx, ec->texIdsCharClasses.data, items, '\0', selected, len,
+		ec->ctx, texids, items, '\0', selected, len,
 		ROW_HEIGHT, nk_vec2(nk_widget_width(ec->ctx), 10 * ROW_HEIGHT));
 	if (selectedNew != selected)
 	{
@@ -633,7 +621,7 @@ static void LoadTexFromPic(const GLuint texid, const Pic *pic)
 {
 	glBindTexture(GL_TEXTURE_2D, texid);
 	glTexImage2D(
-		GL_TEXTURE_2D, 0, GL_RGBA, pic->size.x, pic->size.y, 0, GL_RGBA,
+		GL_TEXTURE_2D, 0, GL_RGBA, pic->size.x, pic->size.y, 0, GL_BGRA,
 		GL_UNSIGNED_BYTE, pic->Data);
 }
 

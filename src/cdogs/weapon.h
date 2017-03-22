@@ -149,6 +149,7 @@ Weapon WeaponCreate(const GunDescription *gun);
 const GunDescription *StrGunDescription(const char *s);
 GunDescription *IdGunDescription(const int i);
 int GunDescriptionId(const GunDescription *g);
+GunDescription *IndexGunDescriptionReal(const int i);
 Vec2i GunGetMuzzleOffset(
 	const GunDescription *desc, const CharSprites *cs, const direction_e dir);
 void WeaponUpdate(Weapon *w, const int ticks);

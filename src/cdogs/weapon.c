@@ -385,6 +385,34 @@ int GunDescriptionId(const GunDescription *g)
 	CASSERT(false, "cannot find gun");
 	return -1;
 }
+GunDescription *IndexGunDescriptionReal(const int i)
+{
+	int j = 0;
+	CA_FOREACH(GunDescription, g, gGunDescriptions.Guns)
+		if (!g->IsRealGun)
+		{
+			continue;
+		}
+		if (j == i)
+		{
+			return g;
+		}
+		j++;
+	CA_FOREACH_END()
+	CA_FOREACH(GunDescription, g, gGunDescriptions.CustomGuns)
+		if (!g->IsRealGun)
+		{
+			continue;
+		}
+		if (j == i)
+		{
+			return g;
+		}
+		j++;
+	CA_FOREACH_END()
+	CASSERT(false, "cannot find gun");
+	return NULL;
+}
 
 void WeaponUpdate(Weapon *w, const int ticks)
 {
