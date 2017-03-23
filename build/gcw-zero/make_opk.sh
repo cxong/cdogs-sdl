@@ -23,7 +23,6 @@ cdogsdata="${cdogsdata} ${datadir}/graphics"
 cdogsdata="${cdogsdata} ${datadir}/missions"
 cdogsdata="${cdogsdata} ${datadir}/music"
 cdogsdata="${cdogsdata} ${datadir}/sounds"
-cdogsdata="${cdogsdata} ${datadir}/cdogs_icon.bmp"
 
 gcwzdata="${mydir}/default.gcw0.desktop"
 gcwzdata="${gcwzdata} ${mydir}/readme_gcw.txt"

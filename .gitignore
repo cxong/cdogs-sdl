@@ -60,6 +60,7 @@ Win32/
 *.ilk
 *.pdb
 *.VC.*
+.vs/
 
 # MinGW
 stdout.txt

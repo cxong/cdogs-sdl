@@ -58,6 +58,8 @@ if(APPLE)
 		MACOSX_RPATH 1
 		BUILD_WITH_INSTALL_RPATH 1
 		INSTALL_RPATH "@loader_path/../Frameworks")
+elseif(MSVC)
+	set_target_properties(cdogs-sdl PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/src")
 endif()
 target_link_libraries(cdogs-sdl cdogs ${EXTRA_LIBRARIES})
 
@@ -76,5 +78,7 @@ if(APPLE)
 		MACOSX_RPATH 1
 		BUILD_WITH_INSTALL_RPATH 1
 		INSTALL_RPATH "@loader_path/../Frameworks")
+elseif(MSVC)
+	set_target_properties(cdogs-sdl-editor PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/src")
 endif()
 target_link_libraries(cdogs-sdl-editor cdogsedlib cdogs ${OPENGL_LIBRARIES} ${EXTRA_LIBRARIES})

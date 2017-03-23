@@ -196,7 +196,6 @@ INSTALL(DIRECTORY
 	${CMAKE_SOURCE_DIR}/sounds
 	DESTINATION ${DATA_INSTALL_DIR})
 INSTALL(FILES
-	${CMAKE_SOURCE_DIR}/cdogs_icon.bmp
 	${CMAKE_SOURCE_DIR}/README.md
 	DESTINATION ${DATA_INSTALL_DIR})
 IF(UNIX AND NOT APPLE AND NOT BEOS AND NOT HAIKU)
@@ -229,9 +228,9 @@ SET(CPACK_PACKAGE_EXECUTABLES "cdogs-sdl;C-Dogs SDL;cdogs-sdl-editor;Campaign Ed
 if(WIN32)
 	SET(CPACK_GENERATOR NSIS)
 	SET(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
-	SET(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_BINARY_DIR}/doc/COPYING.GPL)
+	SET(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_SOURCE_DIR}/doc/COPYING.GPL)
 	set(CPACK_PACKAGE_INSTALL_DIRECTORY "C-Dogs SDL")
-	SET(CPACK_NSIS_MUI_ICON ${CMAKE_CURRENT_BINARY_DIR}/cdogs-icon.ico)
+	SET(CPACK_NSIS_MUI_ICON ${CMAKE_SOURCE_DIR}/build/windows/cdogs-icon.ico)
 	set(CPACK_NSIS_CREATE_ICONS "SetOutPath '\$INSTDIR\\\\bin'
 	CreateShortCut '\$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\C-Dogs SDL.lnk' '\$INSTDIR\\\\bin\\\\cdogs-sdl.exe'
 	CreateShortCut '\$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\Campaign Editor.lnk' '\$INSTDIR\\\\bin\\\\cdogs-sdl-editor.exe'")
@@ -243,11 +242,11 @@ elseif(APPLE)
 	set(CPACK_DMG_VOLUME_NAME "C-Dogs SDL")
 	set(CPACK_SYSTEM_NAME "OSX")
 	set(CPACK_PACKAGE_ICON
-		"${CMAKE_CURRENT_BINARY_DIR}/build/macosx/cdogs-icon.icns")
+		"${CMAKE_SOURCE_DIR}/build/macosx/cdogs-icon.icns")
 	set(CPACK_DMG_BACKGROUND_IMAGE
-		"${CMAKE_CURRENT_BINARY_DIR}/build/macosx/dmg_bg.png")
+		"${CMAKE_SOURCE_DIR}/build/macosx/dmg_bg.png")
 	set(CPACK_DMG_DS_STORE
-		"${CMAKE_CURRENT_BINARY_DIR}/build/macosx/DS_Store")
+		"${CMAKE_SOURCE_DIR}/build/macosx/DS_Store")
 
 	# copy SDL frameworks
 	set(APPS cdogs-sdl cdogs-sdl-editor)

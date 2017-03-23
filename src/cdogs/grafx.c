@@ -186,7 +186,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 	if (!g->IsWindowInitialized)
 	{
 		char buf[CDOGS_PATH_MAX];
-		GetDataFilePath(buf, "cdogs_icon.bmp");
+		GetDataFilePath(buf, "graphics/cdogs_icon.bmp");
 		g->icon = IMG_Load(buf);
 		AddSupportedGraphicsModes(g);
 		g->IsWindowInitialized = true;
