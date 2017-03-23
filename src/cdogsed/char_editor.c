@@ -442,13 +442,13 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 		{
 			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
 			// TODO: UI controls for animation
-			// TODO: gun pics
 			AnimationUpdate(&ec->anim, 1);
 			const int frame = AnimationGetFrame(&ec->anim);
 			ActorPics pics = GetCharacterPics(
 				ec->Char, DIRECTION_DOWN, ACTORANIMATION_WALKING, frame,
-				NULL, GUNSTATE_READY, false, NULL, NULL, 0);
-			//const Vec2i pos = Vec2iZero();
+				ec->Char->Gun->Pic, GUNSTATE_READY, false, NULL, NULL, 0);
+			nk_layout_row_dynamic(ec->ctx, 32 * PIC_SCALE, 1);
+			const Vec2i pos = Vec2iZero();
 			for (int i = 0; i < BODY_PART_COUNT; i++)
 			{
 				const Pic *pic = pics.OrderedPics[i];
@@ -456,20 +456,24 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 				{
 					continue;
 				}
-				//const Vec2i drawPos = Vec2iAdd(pos, pics.OrderedOffsets[i]);
+				const Vec2i drawPos = Vec2iAdd(pos, pics.OrderedOffsets[i]);
 				//BlitCharMultichannel(&gGraphicsDevice, pic, drawPos, pic->Colors);
 				// TODO: coloured drawing
 				LoadTexFromPic(ec->texidsPreview[i], pic);
 				struct nk_image tex = nk_image_id((int)ec->texidsPreview[i]);
-				// TODO: draw offset
-				nk_layout_row_static(
-					ec->ctx, pic->size.y * PIC_SCALE, pic->size.x * PIC_SCALE,
-					1);
 				glTexParameteri(
 					GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 				glTexParameteri(
 					GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-				nk_image(ec->ctx, tex);
+				struct nk_rect bounds;
+				nk_layout_widget_space(
+					&bounds, ec->ctx, ec->ctx->current, nk_true);
+				bounds.x += drawPos.x * PIC_SCALE + 32;
+				bounds.y += drawPos.y * PIC_SCALE + 32;
+				bounds.w = pic->size.x * PIC_SCALE;
+				bounds.h = pic->size.y * PIC_SCALE;
+				nk_draw_image(
+					&ec->ctx->current->buffer, bounds, &tex, nk_white);
 			}
 		}
 		nk_end(ec->ctx);
