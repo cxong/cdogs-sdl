@@ -64,6 +64,7 @@ typedef struct
 	GLuint texidsPreview[BODY_PART_COUNT];
 	CArray texIdsCharClasses;	// of GLuint
 	CArray texIdsGuns;	// of GLuint
+	Animation anim;
 } EditorContext;
 
 const float bg[4] = { 0.16f, 0.1f, 0.1f, 1.f };
@@ -135,6 +136,9 @@ void CharEditor(
 		const GunDescription *g = IndexGunDescriptionReal(i);
 		LoadTexFromPic(*texid, g->Icon);
 	}
+
+	// TODO: choose between idle and walking
+	ec.anim = AnimationGetActorAnimation(ACTORANIMATION_WALKING);
 
 	// Initialise fonts
 	struct nk_font_atlas *atlas;
@@ -437,11 +441,12 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
 		{
 			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
-			// TODO: animation
 			// TODO: UI controls for animation
 			// TODO: gun pics
+			AnimationUpdate(&ec->anim, 1);
+			const int frame = AnimationGetFrame(&ec->anim);
 			ActorPics pics = GetCharacterPics(
-				ec->Char, DIRECTION_DOWN, ACTORANIMATION_IDLE, 0,
+				ec->Char, DIRECTION_DOWN, ACTORANIMATION_WALKING, frame,
 				NULL, GUNSTATE_READY, false, NULL, NULL, 0);
 			//const Vec2i pos = Vec2iZero();
 			for (int i = 0; i < BODY_PART_COUNT; i++)
