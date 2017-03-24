@@ -49,6 +49,7 @@
 #include "collision.h"
 
 #include "actors.h"
+#include "algorithms.h"
 #include "config.h"
 
 #define TILE_CACHE_TILE 1
@@ -76,6 +77,10 @@ static void TileCacheAdd(CArray *tc, const Vec2i v)
 static void TileCacheAddImpl(
 	CArray *tc, const Vec2i v, const bool addAdjacents)
 {
+	if (!MapIsTileIn(&gMap, v))
+	{
+		return;
+	}
 	// Add tile in y/x order
 	CA_FOREACH(const Vec2i, t, *tc)
 		if (t->y > v.y || (t->y == v.y && t->x > v.x))
@@ -280,21 +285,24 @@ static bool CollisionIsOnSameTeam(
 static bool CheckParams(
 	const CollisionParams params, const TTileItem *a, const TTileItem *b);
 
+static void AddPosToTileCache(void *data, Vec2i pos);
 static bool CheckOverlaps(
 	const TTileItem *item, const Vec2i pos, const Vec2i size,
 	const CollisionParams params, CollideItemFunc func, void *data,
 	const CArray *tileThings);
 void OverlapTileItems(
-	const TTileItem *item, const Vec2i pos, const Vec2i size,
+	const TTileItem *item, const Vec2i pos, const Vec2i vel, const Vec2i size,
 	const CollisionParams params, CollideItemFunc func, void *data)
 {
-	// Add tiles to check collisions from to the tile cache
-	// TODO: CCD
 	TileCacheReset(&gCollisionSystem.tileCache);
-	const Vec2i tv = Vec2iToTile(pos);
-	TileCacheAdd(&gCollisionSystem.tileCache, tv);
+	// Add all the tiles along the motion path
+	AlgoLineDrawData drawData;
+	drawData.Draw = AddPosToTileCache;
+	drawData.data = &gCollisionSystem.tileCache;
+	BresenhamLineDraw(pos, Vec2iAdd(pos, vel), &drawData);
 
 	// Check collisions with all tiles in the cache
+	// TODO: use Minkowski-Hex for CCD
 	CA_FOREACH(const Vec2i, dtv, gCollisionSystem.tileCache)
 		const CArray *tileThings = &MapGetTile(&gMap, *dtv)->things;
 		if (!CheckOverlaps(item, pos, size, params, func, data, tileThings))
@@ -302,6 +310,12 @@ void OverlapTileItems(
 			return;
 		}
 	CA_FOREACH_END()
+}
+static void AddPosToTileCache(void *data, Vec2i pos)
+{
+	CArray *tileCache = data;
+	const Vec2i tv = Vec2iToTile(pos);
+	TileCacheAdd(tileCache, tv);
 }
 static bool CheckOverlaps(
 	const TTileItem *item, const Vec2i pos, const Vec2i size,
@@ -329,12 +343,12 @@ static bool CheckOverlaps(
 
 static bool OverlapGetFirstItemCallback(TTileItem *ti, void *data);
 TTileItem *OverlapGetFirstItem(
-	const TTileItem *item, const Vec2i pos, const Vec2i size,
+	const TTileItem *item, const Vec2i pos, const Vec2i vel, const Vec2i size,
 	const CollisionParams params)
 {
 	TTileItem *firstItem = NULL;
 	OverlapTileItems(
-		item, pos, size, params, OverlapGetFirstItemCallback, &firstItem);
+		item, pos, vel, size, params, OverlapGetFirstItemCallback, &firstItem);
 	return firstItem;
 }
 static bool OverlapGetFirstItemCallback(TTileItem *ti, void *data)

@@ -386,7 +386,8 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd)
 		IsPVP(gCampaign.Entry.Mode)
 	};
 	item = OverlapGetFirstItem(
-		&a->tileItem, frontPos, a->tileItem.size, params);
+		&a->tileItem, frontPos, Vec2iFull2Real(a->Vel), a->tileItem.size,
+		params);
 	if (!item || item->kind != KIND_OBJECT)
 	{
 		return NULL;

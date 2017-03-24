@@ -141,7 +141,8 @@ static bool IsPosOK(TActor *actor, Vec2i pos)
 		IsPVP(gCampaign.Entry.Mode)
 	};
 	if (OverlapGetFirstItem(
-		&actor->tileItem, realPos, actor->tileItem.size, params))
+		&actor->tileItem, realPos, Vec2iFull2Real(actor->Vel),
+		actor->tileItem.size, params))
 	{
 		return false;
 	}
@@ -498,7 +499,7 @@ void CommandBadGuys(int ticks)
 		const Character *c =
 			CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
 		aa.Health = CharacterGetStartingHealth(c, true);
-		aa.FullPos = PlaceAwayFromPlayers(&gMap);
+		aa.FullPos = PlaceAwayFromPlayers(&gMap, true);
 		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 		e.u.ActorAdd = aa;
 		GameEventsEnqueue(&gGameEvents, e);
@@ -547,7 +548,7 @@ void InitializeBadGuys(void)
 				const Character *c =
 					CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
 				aa.Health = CharacterGetStartingHealth(c, true);
-				aa.FullPos = PlaceAwayFromPlayers(&gMap);
+				aa.FullPos = PlaceAwayFromPlayers(&gMap, false);
 				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 				e.u.ActorAdd = aa;
 				GameEventsEnqueue(&gGameEvents, e);
@@ -575,7 +576,7 @@ void InitializeBadGuys(void)
 				}
 				else
 				{
-					aa.FullPos = PlaceAwayFromPlayers(&gMap);
+					aa.FullPos = PlaceAwayFromPlayers(&gMap, false);
 				}
 				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 				e.u.ActorAdd = aa;
@@ -607,7 +608,7 @@ void CreateEnemies(void)
 		aa.UID = ActorsGetNextUID();
 		aa.CharId = CharacterStoreGetRandomBaddieId(
 			&gCampaign.Setting.characters);
-		aa.FullPos = PlaceAwayFromPlayers(&gMap);
+		aa.FullPos = PlaceAwayFromPlayers(&gMap, true);
 		aa.Direction = rand() % DIRECTION_COUNT;
 		const Character *c =
 			CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);

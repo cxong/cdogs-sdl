@@ -393,8 +393,8 @@ static HitType HitItem(
 		TILEITEM_CAN_BE_SHOT, COLLISIONTEAM_NONE, IsPVP(gCampaign.Entry.Mode)
 	};
 	OverlapTileItems(
-		&obj->tileItem, Vec2iFull2Real(pos), obj->tileItem.size, params,
-		HitItemFunc, &data);
+		&obj->tileItem, Vec2iFull2Real(pos), Vec2iFull2Real(obj->vel),
+		obj->tileItem.size, params, HitItemFunc, &data);
 	return data.HitType;
 }
 static HitType GetHitType(

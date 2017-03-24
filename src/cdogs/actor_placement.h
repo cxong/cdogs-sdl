@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2014-2015, Cong Xu
+ Copyright (c) 2014-2015, 2017 Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@
 #include "net_util.h"
 
 
-NVec2i PlaceAwayFromPlayers(Map *map);
+NVec2i PlaceAwayFromPlayers(Map *map, const bool giveUp);
 NVec2i PlacePrisoner(Map *map);
 
 Vec2i PlacePlayer(

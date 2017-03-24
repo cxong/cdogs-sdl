@@ -95,11 +95,11 @@ bool IsCollisionDiamond(const Map *map, const Vec2i pos, const Vec2i fullSize);
 // The callback returns bool continue, as multiple callbacks can result.
 typedef bool (*CollideItemFunc)(TTileItem *, void *);
 void OverlapTileItems(
-	const TTileItem *item, const Vec2i pos, const Vec2i size,
+	const TTileItem *item, const Vec2i pos, const Vec2i vel, const Vec2i size,
 	const CollisionParams params, CollideItemFunc func, void *data);
 // Get the first TTileItem that overlaps
 TTileItem *OverlapGetFirstItem(
-	const TTileItem *item, const Vec2i pos, const Vec2i size,
+	const TTileItem *item, const Vec2i pos, const Vec2i vel, const Vec2i size,
 	const CollisionParams params);
 
 bool AABBOverlap(

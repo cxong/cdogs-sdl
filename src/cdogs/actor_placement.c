@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2014-2016, Cong Xu
+ Copyright (c) 2014-2017 Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -119,7 +119,7 @@ static NVec2i PlaceActorNear(
 	}
 }
 
-NVec2i PlaceAwayFromPlayers(Map *map)
+NVec2i PlaceAwayFromPlayers(Map *map, const bool giveUp)
 {
 	// Don't try forever trying to place
 	for (int i = 0; i < 100; i++)
@@ -139,7 +139,7 @@ NVec2i PlaceAwayFromPlayers(Map *map)
 	}
 	// Keep trying, but this time try spawning anywhere,
 	// even close to player
-	for (;;)
+	for (int i = 0; i < 10000 || !giveUp; i++)
 	{
 		const Vec2i pos = Vec2iReal2Full(Vec2iNew(
 			rand() % (map->Size.x * TILE_WIDTH),
@@ -149,6 +149,8 @@ NVec2i PlaceAwayFromPlayers(Map *map)
 			return Vec2i2Net(pos);
 		}
 	}
+	// Uh oh
+	return Vec2i2Net(Vec2iZero());
 }
 
 NVec2i PlacePrisoner(Map *map)
@@ -176,7 +178,7 @@ Vec2i PlacePlayer(
 	if (IsPVP(gCampaign.Entry.Mode))
 	{
 		// In a PVP mode, always place players apart
-		aa.FullPos = PlaceAwayFromPlayers(&gMap);
+		aa.FullPos = PlaceAwayFromPlayers(&gMap, false);
 	}
 	else if (
 		ConfigGetEnum(&gConfig, "Interface.Splitscreen") == SPLITSCREEN_NEVER &&
