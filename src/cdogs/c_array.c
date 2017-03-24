@@ -77,7 +77,7 @@ void CArrayPushBack(CArray *a, const void *elem)
 	a->size++;
 	memcpy(CArrayGet(a, a->size - 1), elem, a->elemSize);
 }
-void CArrayInsert(CArray *a, int idx, void *elem)
+void CArrayInsert(CArray *a, int idx, const void *elem)
 {
 	CASSERT(a->elemSize > 0, "array has not been initialised");
 	GrowIfFull(a);

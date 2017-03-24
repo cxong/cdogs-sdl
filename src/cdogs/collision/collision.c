@@ -51,13 +51,71 @@
 #include "actors.h"
 #include "config.h"
 
+#define TILE_CACHE_TILE 1
+#define TILE_CACHE_ADJACENT 2
+
+
+static void TileCacheInit(CArray *tc)
+{
+	CArrayInit(tc, sizeof(Vec2i));
+}
+static void TileCacheReset(CArray *tc)
+{
+	CArrayClear(tc);
+}
+static void TileCacheTerminate(CArray *tc)
+{
+	CArrayTerminate(tc);
+}
+static void TileCacheAddImpl(
+	CArray *tc, const Vec2i v, const bool addAdjacents);
+static void TileCacheAdd(CArray *tc, const Vec2i v)
+{
+	TileCacheAddImpl(tc, v, true);
+}
+static void TileCacheAddImpl(
+	CArray *tc, const Vec2i v, const bool addAdjacents)
+{
+	// Add tile in y/x order
+	CA_FOREACH(const Vec2i, t, *tc)
+		if (t->y > v.y || (t->y == v.y && t->x > v.x))
+		{
+			CArrayInsert(tc, _ca_index, &v);
+			return;
+		}
+	CA_FOREACH_END()
+	CArrayPushBack(tc, &v);
+
+	// Also add the adjacencies for the tile
+	if (addAdjacents)
+	{
+		Vec2i dv;
+		for (dv.y = -1; dv.y <= 1; dv.y++)
+		{
+			for (dv.x = -1; dv.x <= 1; dv.x++)
+			{
+				if (Vec2iIsZero(dv))
+				{
+					continue;
+				}
+				const Vec2i dtv = Vec2iAdd(v, dv);
+				if (!MapIsTileIn(&gMap, dtv))
+				{
+					continue;
+				}
+				TileCacheAddImpl(tc, dtv, false);
+			}
+		}
+	}
+}
+
 
 CollisionSystem gCollisionSystem;
 
 void CollisionSystemInit(CollisionSystem *cs)
 {
 	CollisionSystemReset(cs);
-	CArrayInit(&cs->tileCache, sizeof(Vec2i));
+	TileCacheInit(&cs->tileCache);
 }
 void CollisionSystemReset(CollisionSystem *cs)
 {
@@ -65,7 +123,7 @@ void CollisionSystemReset(CollisionSystem *cs)
 }
 void CollisionSystemTerminate(CollisionSystem *cs)
 {
-	CArrayTerminate(&cs->tileCache);
+	TileCacheTerminate(&cs->tileCache);
 }
 
 CollisionTeam CalcCollisionTeam(const bool isActor, const TActor *actor)
@@ -185,28 +243,10 @@ bool IsCollisionDiamond(const Map *map, const Vec2i pos, const Vec2i fullSize)
 	return false;
 }
 
-static bool ItemsCollide(
-	const TTileItem *item1, const TTileItem *item2, const Vec2i pos)
-{
-	int dx = abs(pos.x - item2->x);
-	int dy = abs(pos.y - item2->y);
-	const Vec2i r = Vec2iScaleDiv(Vec2iAdd(item1->size, item2->size), 2);
-
-	if (dx < r.x && dy < r.y)
-	{
-		int odx = abs(item1->x - item2->x);
-		int ody = abs(item1->y - item2->y);
-
-		if (dx <= odx || dy <= ody)
-		{
-			return 1;
-		}
-	}
-	return 0;
-}
-bool AreasCollide(
+bool AABBOverlap(
 	const Vec2i pos1, const Vec2i pos2, const Vec2i size1, const Vec2i size2)
 {
+	// Use Minkowski addition to check overlap of two rects
 	const Vec2i d = Vec2iNew(abs(pos1.x - pos2.x), abs(pos1.y - pos2.y));
 	const Vec2i r = Vec2iScaleDiv(Vec2iAdd(size1, size2), 2);
 	return d.x < r.x && d.y < r.y;
@@ -235,92 +275,69 @@ static bool CollisionIsOnSameTeam(
 static bool CheckParams(
 	const CollisionParams params, const TTileItem *a, const TTileItem *b);
 
-void CollideTileItems(
-	const TTileItem *item, const Vec2i pos, const CollisionParams params,
-	CollideItemFunc func, void *data)
+static bool CheckOverlaps(
+	const TTileItem *item, const Vec2i pos, const Vec2i size,
+	const CollisionParams params, CollideItemFunc func, void *data,
+	const CArray *tileThings);
+void OverlapTileItems(
+	const TTileItem *item, const Vec2i pos, const Vec2i size,
+	const CollisionParams params, CollideItemFunc func, void *data)
 {
+	// Add tiles to check collisions from to the tile cache
+	// TODO: CCD
+	TileCacheReset(&gCollisionSystem.tileCache);
 	const Vec2i tv = Vec2iToTile(pos);
-	Vec2i dv;
-	// Check collisions with all other items on this tile, in all 8 directions
-	for (dv.y = -1; dv.y <= 1; dv.y++)
-	{
-		for (dv.x = -1; dv.x <= 1; dv.x++)
+	TileCacheAdd(&gCollisionSystem.tileCache, tv);
+
+	// Check collisions with all tiles in the cache
+	CA_FOREACH(const Vec2i, dtv, gCollisionSystem.tileCache)
+		const CArray *tileThings = &MapGetTile(&gMap, *dtv)->things;
+		if (!CheckOverlaps(item, pos, size, params, func, data, tileThings))
 		{
-			const Vec2i dtv = Vec2iAdd(tv, dv);
-			if (!MapIsTileIn(&gMap, dtv))
-			{
-				continue;
-			}
-			CArray *tileThings = &MapGetTile(&gMap, dtv)->things;
-			for (int i = 0; i < (int)tileThings->size; i++)
-			{
-				TTileItem *ti = ThingIdGetTileItem(CArrayGet(tileThings, i));
-				if (!CheckParams(params, item, ti))
-				{
-					continue;
-				}
-				if (!ItemsCollide(item, ti, pos)) continue;
-				// Collision callback and check continue
-				if (!func(ti, data))
-				{
-					return;
-				}
-			}
+			return;
 		}
-	}
+	CA_FOREACH_END()
 }
-static bool CollideGetFirstItemCallback(TTileItem *ti, void *data);
-TTileItem *CollideGetFirstItem(
-	const TTileItem *item, const Vec2i pos, const CollisionParams params)
+static bool CheckOverlaps(
+	const TTileItem *item, const Vec2i pos, const Vec2i size,
+	const CollisionParams params, CollideItemFunc func, void *data,
+	const CArray *tileThings)
+{
+	CA_FOREACH(const ThingId, tid, *tileThings)
+		TTileItem *ti = ThingIdGetTileItem(tid);
+		if (!CheckParams(params, item, ti))
+		{
+			continue;
+		}
+		if (!AABBOverlap(pos, Vec2iNew(ti->x, ti->y), size, ti->size))
+		{
+			continue;
+		}
+		// Collision callback and check continue
+		if (!func(ti, data))
+		{
+			return false;
+		}
+	CA_FOREACH_END()
+	return true;
+}
+
+static bool OverlapGetFirstItemCallback(TTileItem *ti, void *data);
+TTileItem *OverlapGetFirstItem(
+	const TTileItem *item, const Vec2i pos, const Vec2i size,
+	const CollisionParams params)
 {
 	TTileItem *firstItem = NULL;
-	CollideTileItems(
-		item, pos, params, CollideGetFirstItemCallback, &firstItem);
+	OverlapTileItems(
+		item, pos, size, params, OverlapGetFirstItemCallback, &firstItem);
 	return firstItem;
 }
-static bool CollideGetFirstItemCallback(TTileItem *ti, void *data)
+static bool OverlapGetFirstItemCallback(TTileItem *ti, void *data)
 {
 	TTileItem **pFirstItem = data;
 	// Store the first item in custom data and return
 	*pFirstItem = ti;
 	return false;
-}
-
-// TODO: refactor with Collide functions
-TTileItem *OverlapGetFirstItem(
-	const TTileItem *item, const Vec2i pos, const Vec2i size,
-	const CollisionParams params)
-{
-	const Vec2i tv = Vec2iToTile(pos);
-	Vec2i dv;
-	// Check collisions with all other items on this tile, in all 8 directions
-	for (dv.y = -1; dv.y <= 1; dv.y++)
-	{
-		for (dv.x = -1; dv.x <= 1; dv.x++)
-		{
-			const Vec2i dtv = Vec2iAdd(tv, dv);
-			if (!MapIsTileIn(&gMap, dtv))
-			{
-				continue;
-			}
-			CArray *tileThings = &MapGetTile(&gMap, dtv)->things;
-			for (int i = 0; i < (int)tileThings->size; i++)
-			{
-				TTileItem *ti = ThingIdGetTileItem(CArrayGet(tileThings, i));
-				if (!CheckParams(params, item, ti))
-				{
-					continue;
-				}
-				if (!AreasCollide(pos, Vec2iNew(ti->x, ti->y), size, ti->size))
-				{
-					continue;
-				}
-				// Overlaps
-				return ti;
-			}
-		}
-	}
-	return NULL;
 }
 
 static bool CheckParams(

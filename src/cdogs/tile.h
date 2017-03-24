@@ -161,5 +161,5 @@ void TileSetAlternateFloor(Tile *t, NamedPic *p);
 
 void TileItemUpdate(TTileItem *t, const int ticks);
 
-TTileItem *ThingIdGetTileItem(ThingId *tid);
+TTileItem *ThingIdGetTileItem(const ThingId *tid);
 bool TileItemDrawLast(const TTileItem *t);

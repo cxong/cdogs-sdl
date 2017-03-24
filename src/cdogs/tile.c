@@ -131,7 +131,7 @@ void TileItemUpdate(TTileItem *t, const int ticks)
 }
 
 
-TTileItem *ThingIdGetTileItem(ThingId *tid)
+TTileItem *ThingIdGetTileItem(const ThingId *tid)
 {
 	TTileItem *ti = NULL;
 	switch (tid->Kind)

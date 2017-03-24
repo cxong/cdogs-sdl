@@ -229,8 +229,8 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 			TILEITEM_IMPASSABLE, CalcCollisionTeam(true, actor),
 			IsPVP(gCampaign.Entry.Mode)
 		};
-		TTileItem *target = CollideGetFirstItem(
-			&actor->tileItem, realPos, params);
+		TTileItem *target = OverlapGetFirstItem(
+			&actor->tileItem, realPos, actor->tileItem.size, params);
 		if (target)
 		{
 			Weapon *gun = ActorGetGun(actor);
@@ -276,12 +276,14 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 			}
 
 			Vec2i realYPos = Vec2iFull2Real(Vec2iNew(actor->Pos.x, pos.y));
-			if (CollideGetFirstItem(&actor->tileItem, realYPos, params))
+			if (OverlapGetFirstItem(
+				&actor->tileItem, realYPos, actor->tileItem.size, params))
 			{
 				pos.y = actor->Pos.y;
 			}
 			Vec2i realXPos = Vec2iFull2Real(Vec2iNew(pos.x, actor->Pos.y));
-			if (CollideGetFirstItem(&actor->tileItem, realXPos, params))
+			if (OverlapGetFirstItem(
+				&actor->tileItem, realXPos, actor->tileItem.size, params))
 			{
 				pos.x = actor->Pos.x;
 			}
@@ -462,9 +464,9 @@ static void CheckPickups(TActor *actor)
 	{
 		0, CalcCollisionTeam(true, actor), IsPVP(gCampaign.Entry.Mode)
 	};
-	CollideTileItems(
-		&actor->tileItem, Vec2iFull2Real(actor->Pos), params,
-		CheckPickupFunc, actor);
+	OverlapTileItems(
+		&actor->tileItem, Vec2iFull2Real(actor->Pos), actor->tileItem.size,
+		params, CheckPickupFunc, actor);
 }
 static bool CheckPickupFunc(TTileItem *ti, void *data)
 {
@@ -878,8 +880,8 @@ void UpdateAllActors(int ticks)
 				TILEITEM_IMPASSABLE, COLLISIONTEAM_NONE,
 				IsPVP(gCampaign.Entry.Mode)
 			};
-			const TTileItem *collidingItem = CollideGetFirstItem(
-				&actor->tileItem, realPos, params);
+			const TTileItem *collidingItem = OverlapGetFirstItem(
+				&actor->tileItem, realPos, actor->tileItem.size, params);
 			if (collidingItem && collidingItem->kind == KIND_CHARACTER)
 			{
 				TActor *collidingActor = CArrayGet(
@@ -965,8 +967,8 @@ static void CheckManualPickups(TActor *a)
 	{
 		0, CalcCollisionTeam(true, a), IsPVP(gCampaign.Entry.Mode)
 	};
-	CollideTileItems(
-		&a->tileItem, Vec2iFull2Real(a->Pos), params,
+	OverlapTileItems(
+		&a->tileItem, Vec2iFull2Real(a->Pos), a->tileItem.size, params,
 		CheckManualPickupFunc, a);
 }
 static bool CheckManualPickupFunc(TTileItem *ti, void *data)

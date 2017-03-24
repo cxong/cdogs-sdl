@@ -140,7 +140,8 @@ static bool IsPosOK(TActor *actor, Vec2i pos)
 		TILEITEM_IMPASSABLE, CalcCollisionTeam(true, actor),
 		IsPVP(gCampaign.Entry.Mode)
 	};
-	if (CollideGetFirstItem(&actor->tileItem, realPos, params))
+	if (OverlapGetFirstItem(
+		&actor->tileItem, realPos, actor->tileItem.size, params))
 	{
 		return false;
 	}

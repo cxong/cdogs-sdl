@@ -41,7 +41,7 @@ void CArrayInit(CArray *a, size_t elemSize);
 void CArrayReserve(CArray *a, size_t capacity);
 void CArrayCopy(CArray *dst, const CArray *src);
 void CArrayPushBack(CArray *a, const void *elem);	// insert address
-void CArrayInsert(CArray *a, int index, void *elem);
+void CArrayInsert(CArray *a, int index, const void *elem);
 void CArrayDelete(CArray *a, int index);
 void CArrayResize(CArray *a, const size_t size, const void *value);
 void *CArrayGet(const CArray *a, int index);	// gets address
