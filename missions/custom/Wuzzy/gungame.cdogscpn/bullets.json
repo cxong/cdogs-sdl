@@ -65,60 +65,36 @@
 
     {
       "Name": "mag_bullet",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "bullet"
-      },
       "Speed": 1000,
       "Range": 300,
       "Power": 10
     },
     {
       "Name": "md5_bullet",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "bullet"
-      },
       "Speed": 1000,
       "Range": 300,
       "Power": 12
     },
     {
       "Name": "milit_bullet",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "bullet"
-      },
       "Speed": 1000,
       "Range": 300,
       "Power": 12
     },
     {
       "Name": "m500_bullet",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "bullet"
-      },
       "Speed": 1000,
       "Range": 300,
       "Power": 12
     },
     {
       "Name": "x90_bullet",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "bullet"
-      },
       "Speed": 1000,
       "Range": 300,
       "Power": 12
     },
     {
       "Name": "angry_rabbit_bullet",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "bullet"
-      },
       "Speed": 1000,
       "Range": 300,
       "Power": 12
@@ -127,20 +103,12 @@
 
     {
       "Name": "sg1_bullet",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "bullet"
-      },
       "Speed": 1000,
       "Range": 50,
       "Power": 15
     },
     {
       "Name": "sg2_bullet",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "bullet"
-      },
       "Speed": 1000,
       "Range": 50,
       "Power": 17
@@ -149,60 +117,36 @@
 
     {
       "Name": "poshlinov_bullet",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "bullet"
-      },
       "Speed": 1000,
       "Range": 300,
       "Power": 23
     },
     {
       "Name": "gs49_bullet",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "bullet"
-      },
       "Speed": 1000,
       "Range": 300,
       "Power": 15
     },
     {
       "Name": "storm_bullet",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "bullet"
-      },
       "Speed": 1000,
       "Range": 300,
       "Power": 14
     },
     {
       "Name": "gh55b_bullet",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "bullet"
-      },
       "Speed": 1000,
       "Range": 300,
       "Power": 17
     },
     {
       "Name": "pow9_bullet",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "bullet"
-      },
       "Speed": 1000,
       "Range": 300,
       "Power": 21
     },
     {
       "Name": "raging_pitbull_bullet",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "bullet"
-      },
       "Speed": 1000,
       "Range": 300,
       "Power": 22
@@ -211,30 +155,18 @@
 
     {
       "Name": "hitpro_bullet",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "bullet"
-      },
       "Speed": 2000,
       "Range": 500,
       "Power": 100
     },
     {
       "Name": "snp6plus_bullet",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "bullet"
-      },
       "Speed": 2000,
       "Range": 500,
       "Power": 140
     },
     {
       "Name": "1s1k_bullet",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "bullet"
-      },
       "Speed": 2000,
       "Range": 500,
       "Power": 200
@@ -243,20 +175,12 @@
 
     {
       "Name": "mg5000_bullet",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "bullet"
-      },
       "Speed": 900,
       "Range": 300,
       "Power": 5
     },
     {
       "Name": "mg6000_bullet",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "bullet"
-      },
       "Speed": 1000,
       "Range": 300,
       "Power": 6

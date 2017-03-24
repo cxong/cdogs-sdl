@@ -81,6 +81,11 @@ static void TileCacheAddImpl(
 		if (t->y > v.y || (t->y == v.y && t->x > v.x))
 		{
 			CArrayInsert(tc, _ca_index, &v);
+			break;
+		}
+		else if (Vec2iEqual(*t, v))
+		{
+			// Don't add the same tile twice
 			return;
 		}
 	CA_FOREACH_END()
