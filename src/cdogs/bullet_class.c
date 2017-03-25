@@ -157,7 +157,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 		return false;
 	}
 
-	const Vec2i objPos = Vec2iNew(obj->x, obj->y);
+	const Vec2i posStart = Vec2iNew(obj->x, obj->y);
 
 	if (obj->bulletClass->SeekFactor > 0)
 	{
@@ -167,25 +167,26 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 		{
 			return false;
 		}
-		const TActor *target = AIGetClosestEnemy(objPos, owner, obj->flags);
+		const TActor *target = AIGetClosestEnemy(posStart, owner, obj->flags);
 		if (target && !target->dead)
 		{
 			for (int i = 0; i < ticks; i++)
 			{
 				obj->tileItem.VelFull = SeekTowards(
-					objPos, obj->tileItem.VelFull,
+					posStart, obj->tileItem.VelFull,
 					obj->bulletClass->SpeedLow, target->Pos,
 					obj->bulletClass->SeekFactor);
 			}
 		}
 	}
 
-	Vec2i pos = Vec2iScale(Vec2iAdd(objPos, obj->tileItem.VelFull), ticks);
 	HitType hitItem = HIT_NONE;
 	if (!gCampaign.IsClient)
 	{
-		hitItem = HitItem(obj, pos, obj->bulletClass->Persists);
+		hitItem = HitItem(obj, posStart, obj->bulletClass->Persists);
 	}
+	const Vec2i pos =
+		Vec2iScale(Vec2iAdd(posStart, obj->tileItem.VelFull), ticks);
 	const Vec2i realPos = Vec2iFull2Real(pos);
 
 	// Falling (grenades)
@@ -296,8 +297,9 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 		{
 			// Bouncing
 			Vec2i bounceVel = obj->tileItem.VelFull;
-			pos = GetWallBounceFullPos(objPos, pos, &bounceVel);
-			b.u.BulletBounce.BouncePos = Vec2i2Net(pos);
+			const Vec2i bouncePos =
+				GetWallBounceFullPos(posStart, pos, &bounceVel);
+			b.u.BulletBounce.BouncePos = Vec2i2Net(bouncePos);
 			b.u.BulletBounce.BounceVel = Vec2i2Net(bounceVel);
 			obj->tileItem.VelFull = bounceVel;
 		}
@@ -377,14 +379,6 @@ static bool HitItemFunc(TTileItem *ti, void *data);
 static HitType HitItem(
 	TMobileObject *obj, const Vec2i pos, const bool multipleHits)
 {
-	// Don't hit if no damage dealt
-	// This covers non-damaging debris explosions
-	if (obj->bulletClass->Power <= 0 &&
-		(obj->specialLock > 0 || obj->bulletClass->Special == SPECIAL_NONE))
-	{
-		return HIT_NONE;
-	}
-
 	// Get all items that collide
 	HitItemData data;
 	data.HitType = HIT_NONE;
