@@ -93,7 +93,7 @@ bool IsCollisionDiamond(const Map *map, const Vec2i pos, const Vec2i fullSize);
 
 // Get all TTileItem that overlap with a target TTileItem, with callback.
 // The callback returns bool continue, as multiple callbacks can result.
-typedef bool (*CollideItemFunc)(TTileItem *, void *);
+typedef bool (*CollideItemFunc)(TTileItem *, void *, const Vec2i, const Vec2i);
 void OverlapTileItems(
 	const TTileItem *item, const Vec2i pos, const Vec2i size,
 	const CollisionParams params, CollideItemFunc func, void *data);

@@ -330,15 +330,15 @@ static bool CheckOverlaps(
 		{
 			continue;
 		}
-		// TODO: use collision points
+		Vec2i collideA, collideB;
 		if (!MinkowskiHexCollide(
 			pos, vel, size, Vec2iNew(ti->x, ti->y), ti->VelFull, ti->size,
-			NULL, NULL))
+			&collideA, &collideB))
 		{
 			continue;
 		}
 		// Collision callback and check continue
-		if (!func(ti, data))
+		if (!func(ti, data, collideA, collideB))
 		{
 			return false;
 		}
@@ -346,7 +346,8 @@ static bool CheckOverlaps(
 	return true;
 }
 
-static bool OverlapGetFirstItemCallback(TTileItem *ti, void *data);
+static bool OverlapGetFirstItemCallback(
+	TTileItem *ti, void *data, const Vec2i collideA, const Vec2i collideB);
 TTileItem *OverlapGetFirstItem(
 	const TTileItem *item, const Vec2i pos, const Vec2i size,
 	const CollisionParams params)
@@ -356,8 +357,11 @@ TTileItem *OverlapGetFirstItem(
 		item, pos, size, params, OverlapGetFirstItemCallback, &firstItem);
 	return firstItem;
 }
-static bool OverlapGetFirstItemCallback(TTileItem *ti, void *data)
+static bool OverlapGetFirstItemCallback(
+	TTileItem *ti, void *data, const Vec2i collideA, const Vec2i collideB)
 {
+	UNUSED(collideA);
+	UNUSED(collideB);
 	TTileItem **pFirstItem = data;
 	// Store the first item in custom data and return
 	*pFirstItem = ti;

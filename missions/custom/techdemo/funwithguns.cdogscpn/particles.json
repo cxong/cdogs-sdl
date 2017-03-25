@@ -16,6 +16,11 @@
       "Sprites": "muzzle_flash_thin",
       "Mask": "ccccff",
       "Range": 5
+    },
+    {
+      "Name": "laser_point",
+      "Sprites": "laser_dot",
+      "Range": 1
     }
   ]
 }

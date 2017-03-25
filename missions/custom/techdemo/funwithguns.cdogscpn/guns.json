@@ -69,6 +69,14 @@
       "Cost": 15,
       "Lock": 100,
       "Sound": "swoosh_echo"
+    },
+    {
+      "Name": "Laser Pointer",
+      "Bullet": "laser_point",
+      "Cost": 0,
+      "Lock": 1,
+      "Sound": "",
+      "MuzzleFlashParticle": ""
     }
   ],
   "PseudoGuns" : [

@@ -136,7 +136,12 @@ static Vec2i SeekTowards(
 
 
 static void FireGuns(const TMobileObject *obj, const CArray *guns);
-static HitType HitItem(
+typedef struct
+{
+	HitType Type;
+	Vec2i Pos;
+} HitResult;
+static HitResult HitItem(
 	TMobileObject *obj, const Vec2i pos, const bool multipleHits);
 bool UpdateBullet(TMobileObject *obj, const int ticks)
 {
@@ -180,10 +185,10 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 		}
 	}
 
-	HitType hitItem = HIT_NONE;
+	HitResult hit = { HIT_NONE, Vec2iZero() };
 	if (!gCampaign.IsClient)
 	{
-		hitItem = HitItem(obj, posStart, obj->bulletClass->Persists);
+		hit = HitItem(obj, posStart, obj->bulletClass->Persists);
 	}
 	const Vec2i pos =
 		Vec2iScale(Vec2iAdd(posStart, obj->tileItem.VelFull), ticks);
@@ -262,12 +267,12 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 	}
 
 	bool hitWall = false;
-	if (!gCampaign.IsClient && hitItem == HIT_NONE)
+	if (!gCampaign.IsClient && hit.Type == HIT_NONE)
 	{
 		hitWall =
 			MapIsRealPosIn(&gMap, realPos) && ShootWall(realPos.x, realPos.y);
 	}
-	if (hitWall || hitItem != HIT_NONE)
+	if (hitWall || hit.Type != HIT_NONE)
 	{
 		GameEvent b = GameEventNew(GAME_EVENT_BULLET_BOUNCE);
 		b.u.BulletBounce.UID = obj->UID;
@@ -277,11 +282,11 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 		}
 		else
 		{
-			b.u.BulletBounce.HitType = (int)hitItem;
+			b.u.BulletBounce.HitType = (int)hit.Type;
 		}
 		bool alive = true;
 		if ((hitWall && !obj->bulletClass->WallBounces) ||
-			((hitItem != HIT_NONE) && obj->bulletClass->HitsObjects))
+			((hit.Type != HIT_NONE) && obj->bulletClass->HitsObjects))
 		{
 			b.u.BulletBounce.Spark = true;
 			CASSERT(!gCampaign.IsClient, "Cannot process bounces as client");
@@ -291,15 +296,17 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 				alive = false;
 			}
 		}
-		b.u.BulletBounce.BouncePos = Vec2i2Net(pos);
+		const Vec2i bouncePos =
+			hit.Type != HIT_NONE ? Vec2iReal2Full(hit.Pos) : pos;
+		b.u.BulletBounce.BouncePos = Vec2i2Net(bouncePos);
 		b.u.BulletBounce.BounceVel = Vec2i2Net(obj->tileItem.VelFull);
 		if (hitWall && !Vec2iIsZero(obj->tileItem.VelFull))
 		{
 			// Bouncing
 			Vec2i bounceVel = obj->tileItem.VelFull;
-			const Vec2i bouncePos =
-				GetWallBounceFullPos(posStart, pos, &bounceVel);
-			b.u.BulletBounce.BouncePos = Vec2i2Net(bouncePos);
+			const Vec2i bouncePosFixed =
+				GetWallBounceFullPos(posStart, bouncePos, &bounceVel);
+			b.u.BulletBounce.BouncePos = Vec2i2Net(bouncePosFixed);
 			b.u.BulletBounce.BounceVel = Vec2i2Net(bounceVel);
 			obj->tileItem.VelFull = bounceVel;
 		}
@@ -374,9 +381,11 @@ typedef struct
 	HitType HitType;
 	bool MultipleHits;
 	TMobileObject *Obj;
+	Vec2i CollisionPos;
 } HitItemData;
-static bool HitItemFunc(TTileItem *ti, void *data);
-static HitType HitItem(
+static bool HitItemFunc(
+	TTileItem *ti, void *data, const Vec2i collideA, const Vec2i collideB);
+static HitResult HitItem(
 	TMobileObject *obj, const Vec2i pos, const bool multipleHits)
 {
 	// Get all items that collide
@@ -391,12 +400,15 @@ static HitType HitItem(
 	OverlapTileItems(
 		&obj->tileItem, Vec2iFull2Real(pos),
 		obj->tileItem.size, params, HitItemFunc, &data);
-	return data.HitType;
+	HitResult hit = { data.HitType, data.CollisionPos };
+	return hit;
 }
 static HitType GetHitType(
 	const TTileItem *ti, const TMobileObject *bullet, int *targetUID);
-static bool HitItemFunc(TTileItem *ti, void *data)
+static bool HitItemFunc(
+	TTileItem *ti, void *data, const Vec2i collideA, const Vec2i collideB)
 {
+	UNUSED(collideB);
 	HitItemData *hData = data;
 	if (!CanHit(hData->Obj->flags, hData->Obj->ActorUID, ti))
 	{
@@ -422,6 +434,8 @@ static bool HitItemFunc(TTileItem *ti, void *data)
 	{
 		hData->Obj->specialLock += SPECIAL_LOCK;
 	}
+	// TODO: choose the best collision point (i.e. closest to origin)
+	hData->CollisionPos = collideA;
 
 bail:
 	// Whether to produce multiple hits from the same TMobileObject

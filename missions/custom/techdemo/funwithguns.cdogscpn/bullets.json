@@ -341,6 +341,25 @@
       "HitSounds": {
         "Flesh": "get_over_here"
       }
+    },
+    {
+      "Name": "laser_point",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": ""
+      },
+      "Speed": 40960,
+      "Range": 1,
+      "Power": 0,
+      "Mass": 0.0,
+      "Size": [1, 1],
+      "Special": "Flame",
+      "Spark": "laser_point",
+      "HitSounds": {
+        "Object": "",
+        "Flesh": "",
+        "Wall": ""
+      }
     }
   ]
 }

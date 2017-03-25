@@ -53,14 +53,14 @@ bool MinkowskiHexCollide(
 	// If intersection is at the start, it means we were overlapping already
 	if (s == 0)
 	{
-		if (collideA != NULL) *collideA = posA;
-		if (collideB != NULL) *collideB = posB;
+		*collideA = posA;
+		*collideB = posB;
 	}
 	else
 	{
 		// Find the actual intersection points based on the result
-		if (collideA != NULL) *collideA = Vec2iAdd(posA, Vec2iScaleD(velA, s));
-		if (collideB != NULL) *collideB = Vec2iAdd(posB, Vec2iScaleD(velB, s));
+		*collideA = Vec2iAdd(posA, Vec2iScaleD(velA, s));
+		*collideB = Vec2iAdd(posB, Vec2iScaleD(velB, s));
 	}
 
 	return true;
