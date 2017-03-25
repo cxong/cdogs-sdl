@@ -81,7 +81,6 @@ typedef struct MobileObject
 					// (prevent self collision)
 	const BulletClass *bulletClass;
 	int x, y, z;
-	Vec2i vel;
 	int dz;
 	int count;
 	int range;

@@ -141,8 +141,7 @@ static bool IsPosOK(TActor *actor, Vec2i pos)
 		IsPVP(gCampaign.Entry.Mode)
 	};
 	if (OverlapGetFirstItem(
-		&actor->tileItem, realPos, Vec2iFull2Real(actor->Vel),
-		actor->tileItem.size, params))
+		&actor->tileItem, realPos, actor->tileItem.size, params))
 	{
 		return false;
 	}

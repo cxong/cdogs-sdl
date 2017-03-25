@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, 2016 Cong Xu
+    Copyright (c) 2013-2014, 2016-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without

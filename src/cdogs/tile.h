@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -116,6 +116,8 @@ typedef void (*TileItemDrawFunc)(const Vec2i, const TileItemDrawFuncData *);
 typedef struct TileItem
 {
 	int x, y;
+	// Velocity in full coordinates
+	Vec2i VelFull;
 	Vec2i size;
 	TileItemKind kind;
 	int id;	// Id of item (actor, mobobj or obj)

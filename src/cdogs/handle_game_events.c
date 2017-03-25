@@ -206,7 +206,7 @@ static void HandleGameEvent(
 		{
 			TActor *a = ActorGetByUID(e.u.ActorSlide.UID);
 			if (!a->isInUse) break;
-			a->Vel = Net2Vec2i(e.u.ActorSlide.Vel);
+			a->tileItem.VelFull = Net2Vec2i(e.u.ActorSlide.Vel);
 			// Slide sound
 			if (ConfigGetBool(&gConfig, "Sound.Footsteps"))
 			{
@@ -220,7 +220,8 @@ static void HandleGameEvent(
 		{
 			TActor *a = ActorGetByUID(e.u.ActorImpulse.UID);
 			if (!a->isInUse) break;
-			a->Vel = Vec2iAdd(a->Vel, Net2Vec2i(e.u.ActorImpulse.Vel));
+			a->tileItem.VelFull =
+				Vec2iAdd(a->tileItem.VelFull, Net2Vec2i(e.u.ActorImpulse.Vel));
 			const Vec2i pos = Net2Vec2i(e.u.ActorImpulse.Pos);
 			if (!Vec2iIsZero(pos))
 			{
@@ -379,7 +380,7 @@ static void HandleGameEvent(
 			}
 			o->x = pos.x;
 			o->y = pos.y;
-			o->vel = Net2Vec2i(e.u.BulletBounce.BounceVel);
+			o->tileItem.VelFull = Net2Vec2i(e.u.BulletBounce.BounceVel);
 		}
 		break;
 	case GAME_EVENT_REMOVE_BULLET:

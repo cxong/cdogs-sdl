@@ -521,19 +521,21 @@ static GameLoopResult RunGameUpdate(void *data)
 			const TActor *p = ActorGetByUID(pd->ActorUID);
 			const int pad = CAMERA_SPLIT_PADDING;
 			Vec2i vel = Vec2iZero();
-			if (screen.x + pad > p->tileItem.x && p->Vel.x < 256)
+			if (screen.x + pad > p->tileItem.x && p->tileItem.VelFull.x < 256)
 			{
 				vel.x = screen.x + pad - p->tileItem.x;
 			}
-			else if (screen.x + w - pad < p->tileItem.x && p->Vel.x > -256)
+			else if (screen.x + w - pad < p->tileItem.x &&
+				p->tileItem.VelFull.x > -256)
 			{
 				vel.x = screen.x + w - pad - p->tileItem.x;
 			}
-			if (screen.y + pad > p->tileItem.y && p->Vel.y < 256)
+			if (screen.y + pad > p->tileItem.y && p->tileItem.VelFull.y < 256)
 			{
 				vel.y = screen.y + pad - p->tileItem.y; 
 			}
-			else if (screen.y + h - pad < p->tileItem.y && p->Vel.y > -256)
+			else if (screen.y + h - pad < p->tileItem.y
+				&& p->tileItem.VelFull.y > -256)
 			{
 				vel.y = screen.y + h - pad - p->tileItem.y;
 			}

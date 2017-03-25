@@ -95,7 +95,6 @@ typedef struct Actor
 	Vec2i Pos;		// These are the full coordinates, including fractions
 	// Vector that the player is attempting to move in, based on input
 	Vec2i MoveVel;
-	Vec2i Vel;
 	direction_e direction;
 	// Rotation used to draw the actor, which will lag behind the actual
 	// rotation in order to show smooth rotation

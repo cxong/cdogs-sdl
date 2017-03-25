@@ -95,7 +95,8 @@ static CPicDrawContext GetBulletDrawContext(const int id)
 	const TMobileObject *obj = CArrayGet(&gMobObjs, id);
 	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
 	// Calculate direction based on velocity
-	const direction_e dir = RadiansToDirection(Vec2iToRadians(obj->vel));
+	const direction_e dir =
+		RadiansToDirection(Vec2iToRadians(obj->tileItem.VelFull));
 	const Pic *pic = CPicGetPic(&obj->tileItem.CPic, dir);
 	CPicDrawContext c;
 	c.Dir = dir;
@@ -171,15 +172,15 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 		{
 			for (int i = 0; i < ticks; i++)
 			{
-				obj->vel = SeekTowards(
-					objPos, obj->vel,
+				obj->tileItem.VelFull = SeekTowards(
+					objPos, obj->tileItem.VelFull,
 					obj->bulletClass->SpeedLow, target->Pos,
 					obj->bulletClass->SeekFactor);
 			}
 		}
 	}
 
-	Vec2i pos = Vec2iScale(Vec2iAdd(objPos, obj->vel), ticks);
+	Vec2i pos = Vec2iScale(Vec2iAdd(objPos, obj->tileItem.VelFull), ticks);
 	HitType hitItem = HIT_NONE;
 	if (!gCampaign.IsClient)
 	{
@@ -233,28 +234,29 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 	}
 	
 	// Friction
-	const bool isDiagonal = obj->vel.x != 0 && obj->vel.y != 0;
-	int frictionComponent = isDiagonal ?
+	const bool isDiagonal =
+		obj->tileItem.VelFull.x != 0 && obj->tileItem.VelFull.y != 0;
+	const int frictionComponent = isDiagonal ?
 		(int)round(obj->bulletClass->Friction / sqrt(2)) :
 		obj->bulletClass->Friction;
 	for (int i = 0; i < ticks; i++)
 	{
-		if (obj->vel.x > 0)
+		if (obj->tileItem.VelFull.x > 0)
 		{
-			obj->vel.x -= frictionComponent;
+			obj->tileItem.VelFull.x -= frictionComponent;
 		}
-		else if (obj->vel.x < 0)
+		else if (obj->tileItem.VelFull.x < 0)
 		{
-			obj->vel.x += frictionComponent;
+			obj->tileItem.VelFull.x += frictionComponent;
 		}
 
-		if (obj->vel.y > 0)
+		if (obj->tileItem.VelFull.y > 0)
 		{
-			obj->vel.y -= frictionComponent;
+			obj->tileItem.VelFull.y -= frictionComponent;
 		}
-		else if (obj->vel.y < 0)
+		else if (obj->tileItem.VelFull.y < 0)
 		{
-			obj->vel.y += frictionComponent;
+			obj->tileItem.VelFull.y += frictionComponent;
 		}
 	}
 
@@ -268,7 +270,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 	{
 		GameEvent b = GameEventNew(GAME_EVENT_BULLET_BOUNCE);
 		b.u.BulletBounce.UID = obj->UID;
-		if (hitWall && !Vec2iIsZero(obj->vel))
+		if (hitWall && !Vec2iIsZero(obj->tileItem.VelFull))
 		{
 			b.u.BulletBounce.HitType = (int)HIT_WALL;
 		}
@@ -289,15 +291,15 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 			}
 		}
 		b.u.BulletBounce.BouncePos = Vec2i2Net(pos);
-		b.u.BulletBounce.BounceVel = Vec2i2Net(obj->vel);
-		if (hitWall && !Vec2iIsZero(obj->vel))
+		b.u.BulletBounce.BounceVel = Vec2i2Net(obj->tileItem.VelFull);
+		if (hitWall && !Vec2iIsZero(obj->tileItem.VelFull))
 		{
 			// Bouncing
-			Vec2i bounceVel = obj->vel;
+			Vec2i bounceVel = obj->tileItem.VelFull;
 			pos = GetWallBounceFullPos(objPos, pos, &bounceVel);
 			b.u.BulletBounce.BouncePos = Vec2i2Net(pos);
 			b.u.BulletBounce.BounceVel = Vec2i2Net(bounceVel);
-			obj->vel = bounceVel;
+			obj->tileItem.VelFull = bounceVel;
 		}
 		GameEventsEnqueue(&gGameEvents, b);
 		if (!alive)
@@ -317,8 +319,8 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 	{
 		for (int i = 0; i < ticks; i++)
 		{
-			obj->vel.x += ((rand() % 3) - 1) * 128;
-			obj->vel.y += ((rand() % 3) - 1) * 128;
+			obj->tileItem.VelFull.x += ((rand() % 3) - 1) * 128;
+			obj->tileItem.VelFull.y += ((rand() % 3) - 1) * 128;
 		}
 	}
 
@@ -356,7 +358,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 static void FireGuns(const TMobileObject *obj, const CArray *guns)
 {
 	const Vec2i fullPos = Vec2iNew(obj->x, obj->y);
-	const double angle = Vec2iToRadians(obj->vel);
+	const double angle = Vec2iToRadians(obj->tileItem.VelFull);
 	for (int i = 0; i < (int)guns->size; i++)
 	{
 		const GunDescription **g = CArrayGet(guns, i);
@@ -393,7 +395,7 @@ static HitType HitItem(
 		TILEITEM_CAN_BE_SHOT, COLLISIONTEAM_NONE, IsPVP(gCampaign.Entry.Mode)
 	};
 	OverlapTileItems(
-		&obj->tileItem, Vec2iFull2Real(pos), Vec2iFull2Real(obj->vel),
+		&obj->tileItem, Vec2iFull2Real(pos),
 		obj->tileItem.size, params, HitItemFunc, &data);
 	return data.HitType;
 }
@@ -409,7 +411,7 @@ static bool HitItemFunc(TTileItem *ti, void *data)
 	int targetUID = -1;
 	hData->HitType = GetHitType(ti, hData->Obj, &targetUID);
 	Damage(
-		hData->Obj->vel,
+		hData->Obj->tileItem.VelFull,
 		hData->Obj->bulletClass->Power, hData->Obj->bulletClass->Mass,
 		hData->Obj->flags, hData->Obj->PlayerUID, hData->Obj->ActorUID,
 		ti->kind, targetUID,
@@ -774,12 +776,13 @@ void BulletAdd(const NAddBullet add)
 	obj->z = add.MuzzleHeight;
 	obj->dz = add.Elevation;
 
-	obj->vel = Vec2iFull2Real(Vec2iScale(
+	obj->tileItem.VelFull = Vec2iFull2Real(Vec2iScale(
 		GetFullVectorsForRadians(add.Angle),
 		RAND_INT(obj->bulletClass->SpeedLow, obj->bulletClass->SpeedHigh)));
 	if (obj->bulletClass->SpeedScale)
 	{
-		obj->vel.y = obj->vel.y * TILE_WIDTH / TILE_HEIGHT;
+		obj->tileItem.VelFull.y =
+			obj->tileItem.VelFull.y * TILE_WIDTH / TILE_HEIGHT;
 	}
 
 	obj->PlayerUID = add.PlayerUID;
