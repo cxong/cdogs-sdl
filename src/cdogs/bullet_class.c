@@ -674,14 +674,16 @@ static void LoadHitsound(
 			if (strncmp(*hitsound, "hit_", strlen("hit_")) == 0)
 			{
 				strcat(buf, *hitsound + strlen("hit_"));
+				CFREE(*hitsound);
+				CSTRDUP(*hitsound, buf);
 			}
 			else if (strncmp(*hitsound, "knife_", strlen("knife_")) == 0)
 			{
 				strcpy(buf, "hits/knife_");
 				strcat(buf, *hitsound + strlen("knife_"));
+				CFREE(*hitsound);
+				CSTRDUP(*hitsound, buf);
 			}
-			CFREE(*hitsound);
-			CSTRDUP(*hitsound, buf);
 		}
 	}
 }

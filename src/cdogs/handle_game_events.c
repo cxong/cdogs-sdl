@@ -431,7 +431,7 @@ static void HandleGameEvent(
 			}
 
 			// Add muzzle flash
-			if (GunHasMuzzle(g))
+			if (GunHasMuzzle(g) && g->MuzzleFlash != NULL)
 			{
 				GameEvent ap = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 				ap.u.AddParticle.Class = g->MuzzleFlash;
