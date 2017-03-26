@@ -381,10 +381,13 @@ typedef struct
 	HitType HitType;
 	bool MultipleHits;
 	TMobileObject *Obj;
+	TTileItem *Target;
 	Vec2i CollisionPos;
+	int CollisionPosDistSquared;
 } HitItemData;
 static bool HitItemFunc(
 	TTileItem *ti, void *data, const Vec2i collideA, const Vec2i collideB);
+static void OnHit(HitItemData *data, TTileItem *target);
 static HitResult HitItem(
 	TMobileObject *obj, const Vec2i pos, const bool multipleHits)
 {
@@ -393,6 +396,9 @@ static HitResult HitItem(
 	data.HitType = HIT_NONE;
 	data.MultipleHits = multipleHits;
 	data.Obj = obj;
+	data.Target = NULL;
+	data.CollisionPos = Vec2iZero();
+	data.CollisionPosDistSquared = -1;
 	const CollisionParams params =
 	{
 		TILEITEM_CAN_BE_SHOT, COLLISIONTEAM_NONE, IsPVP(gCampaign.Entry.Mode)
@@ -400,6 +406,10 @@ static HitResult HitItem(
 	OverlapTileItems(
 		&obj->tileItem, Vec2iFull2Real(pos),
 		obj->tileItem.size, params, HitItemFunc, &data);
+	if (!multipleHits && data.Target != NULL)
+	{
+		OnHit(&data, data.Target);
+	}
 	HitResult hit = { data.HitType, data.CollisionPos };
 	return hit;
 }
@@ -414,32 +424,30 @@ static bool HitItemFunc(
 	{
 		goto bail;
 	}
-	int targetUID = -1;
-	hData->HitType = GetHitType(ti, hData->Obj, &targetUID);
-	Damage(
-		hData->Obj->tileItem.VelFull,
-		hData->Obj->bulletClass->Power, hData->Obj->bulletClass->Mass,
-		hData->Obj->flags, hData->Obj->PlayerUID, hData->Obj->ActorUID,
-		ti->kind, targetUID,
-		hData->Obj->bulletClass->Special);
-	if (hData->Obj->tileItem.SoundLock <= 0)
+
+	// If we can hit multiple targets, just process those hits immediately
+	// Otherwise, find the closest target and only process the hit for that one
+	// at the end.
+	if (hData->MultipleHits)
 	{
-		hData->Obj->tileItem.SoundLock += SOUND_LOCK_TILE_OBJECT;
+		OnHit(hData, ti);
 	}
-	if (ti->SoundLock <= 0)
+	else
 	{
-		ti->SoundLock += SOUND_LOCK_TILE_OBJECT;
+		// Choose the best collision point (i.e. closest to origin)
+		const int d2 = DistanceSquared(
+			collideA, Vec2iFull2Real(Vec2iNew(hData->Obj->x, hData->Obj->y)));
+		if (hData->CollisionPosDistSquared < 0 ||
+			d2 < hData->CollisionPosDistSquared)
+		{
+			hData->CollisionPos = collideA;
+			hData->CollisionPosDistSquared = d2;
+			hData->Target = ti;
+		}
 	}
-	if (hData->Obj->specialLock <= 0)
-	{
-		hData->Obj->specialLock += SPECIAL_LOCK;
-	}
-	// TODO: choose the best collision point (i.e. closest to origin)
-	hData->CollisionPos = collideA;
 
 bail:
-	// Whether to produce multiple hits from the same TMobileObject
-	return hData->MultipleHits;
+	return true;
 }
 static HitType GetHitType(
 	const TTileItem *ti, const TMobileObject *bullet, int *targetUID)
@@ -462,14 +470,36 @@ static HitType GetHitType(
 	}
 	if (bullet->tileItem.SoundLock > 0 ||
 		!HasHitSound(
-		bullet->bulletClass->Power, bullet->flags, bullet->PlayerUID,
-		ti->kind, *targetUID, bullet->bulletClass->Special, true))
+			bullet->flags, bullet->PlayerUID, ti->kind, *targetUID,
+			bullet->bulletClass->Special, true))
 	{
 		ht = HIT_NONE;
 	}
 	return ht;
 }
-
+static void OnHit(HitItemData *data, TTileItem *target)
+{
+	int targetUID = -1;
+	data->HitType = GetHitType(target, data->Obj, &targetUID);
+	Damage(
+		data->Obj->tileItem.VelFull,
+		data->Obj->bulletClass->Power, data->Obj->bulletClass->Mass,
+		data->Obj->flags, data->Obj->PlayerUID, data->Obj->ActorUID,
+		target->kind, targetUID,
+		data->Obj->bulletClass->Special);
+	if (data->Obj->tileItem.SoundLock <= 0)
+	{
+		data->Obj->tileItem.SoundLock += SOUND_LOCK_TILE_OBJECT;
+	}
+	if (target->SoundLock <= 0)
+	{
+		target->SoundLock += SOUND_LOCK_TILE_OBJECT;
+	}
+	if (data->Obj->specialLock <= 0)
+	{
+		data->Obj->specialLock += SPECIAL_LOCK;
+	}
+}
 
 
 #define VERSION 3

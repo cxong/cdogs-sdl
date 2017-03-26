@@ -332,7 +332,8 @@ static bool CheckOverlaps(
 		}
 		Vec2i collideA, collideB;
 		if (!MinkowskiHexCollide(
-			pos, vel, size, Vec2iNew(ti->x, ti->y), ti->VelFull, ti->size,
+			pos, vel, size,
+			Vec2iNew(ti->x, ti->y), Vec2iFull2Real(ti->VelFull), ti->size,
 			&collideA, &collideB))
 		{
 			continue;

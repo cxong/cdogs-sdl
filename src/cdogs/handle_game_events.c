@@ -327,7 +327,7 @@ static void HandleGameEvent(
 			if (!a->isInUse) break;
 			const BulletClass *b = StrBulletClass(e.u.Melee.BulletClass);
 			if ((HitType)e.u.Melee.HitType != HIT_NONE &&
-				HasHitSound(b->Power, a->flags, a->PlayerUID,
+				HasHitSound(a->flags, a->PlayerUID,
 				(TileItemKind)e.u.Melee.TargetKind, e.u.Melee.TargetUID,
 				SPECIAL_NONE, false))
 			{

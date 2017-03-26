@@ -98,7 +98,7 @@ extern CArray gObjs;	// of TObject
 
 bool CanHit(const int flags, const int uid, const TTileItem *target);
 bool HasHitSound(
-	const int power, const int flags, const int playerUID,
+	const int flags, const int playerUID,
 	const TileItemKind targetKind, const int targetUID,
 	const special_damage_e special, const bool allowFriendlyHitSound);
 void Damage(
