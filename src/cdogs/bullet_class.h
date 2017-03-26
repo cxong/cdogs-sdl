@@ -78,6 +78,7 @@ typedef struct
 	bool HurtAlways;
 	bool Persists;	// remains even after hitting walls/items
 	const ParticleClass *Spark;
+	const ParticleClass *OutOfRangeSpark;
 	HitSounds HitSound;
 	bool WallBounces;
 	bool HitsObjects;

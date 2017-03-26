@@ -159,6 +159,14 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 		{
 			FireGuns(obj, &obj->bulletClass->OutOfRangeGuns);
 		}
+		if (obj->bulletClass->OutOfRangeSpark != NULL)
+		{
+			GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+			s.u.AddParticle.Class = obj->bulletClass->OutOfRangeSpark;
+			s.u.AddParticle.FullPos = Vec2iNew(obj->x, obj->y);
+			s.u.AddParticle.Z = obj->z;
+			GameEventsEnqueue(&gGameEvents, s);
+		}
 		return false;
 	}
 
@@ -691,6 +699,13 @@ static void LoadBullet(
 		b->Spark = StrParticleClass(&gParticleClasses, tmp);
 		CFREE(tmp);
 	}
+	tmp = NULL;
+	LoadStr(&tmp, node, "OutOfRangeSpark");
+	if (tmp != NULL)
+	{
+		b->OutOfRangeSpark = StrParticleClass(&gParticleClasses, tmp);
+		CFREE(tmp);
+	}
 	if (json_find_first_label(node, "HitSounds"))
 	{
 		json_t *hitSounds = json_find_first_label(node, "HitSounds")->child;
@@ -722,10 +737,11 @@ static void LoadBullet(
 		b->SpeedScale ? "true" : "false", b->Friction,
 		b->RangeLow, b->RangeHigh, b->Power);
 	LOG(LM_MAP, LL_DEBUG,
-		"...size(%d, %d) hurtAlways(%s) persists(%s) spark(%s)...",
+		"...size(%d, %d) hurtAlways(%s) persists(%s) spark(%s, %s)...",
 		b->Size.x, b->Size.y, b->HurtAlways ? "true" : "false",
 		b->Persists ? "true" : "false",
-		b->Spark != NULL ? b->Spark->Name : "");
+		b->Spark != NULL ? b->Spark->Name : "",
+		b->OutOfRangeSpark != NULL ? b->OutOfRangeSpark->Name : "");
 	LOG(LM_MAP, LL_DEBUG,
 		"...hitSounds(object(%s), flesh(%s), wall(%s)) wallBounces(%s)...",
 		b->HitSound.Object != NULL ? b->HitSound.Object : "",

@@ -32,7 +32,7 @@
 		"MapObjectDensities": [],
 		"EnemyDensity": 0,
 		"Weapons": ["Knife",
-		"Shotgun",
+		"Marine Shotgun",
 		"Machine gun",
 		"Launcher",
 		"Marine Pistol"],
@@ -113,7 +113,6 @@
 			[82,
 			82]]
 		}],
-		"StaticWrecks": [],
 		"StaticCharacters": [{
 			"Index": 0,
 			"Positions": [[23,
@@ -338,9 +337,9 @@
 		"EnemyDensity": 0,
 		"Weapons": ["Knife",
 		"Machine gun",
-		"Shotgun",
 		"Launcher",
-		"Marine Pistol"],
+		"Marine Pistol",
+		"Marine Shotgun"],
 		"Song": "",
 		"WallMask": "806040",
 		"FloorMask": "404040",
@@ -456,7 +455,6 @@
 			[12,
 			47]]
 		}],
-		"StaticWrecks": [],
 		"StaticCharacters": [{
 			"Index": 1,
 			"Positions": [[55,
@@ -1001,7 +999,7 @@
 		"Weapons": ["Knife",
 		"Machine gun",
 		"Launcher",
-		"Shotgun",
+		"Marine Shotgun",
 		"Marine Pistol"],
 		"Song": "",
 		"WallMask": "404040",
@@ -1141,7 +1139,6 @@
 			[65,
 			43]]
 		}],
-		"StaticWrecks": [],
 		"StaticCharacters": [{
 			"Index": 2,
 			"Positions": [[42,
@@ -1933,7 +1930,7 @@
 		"EnemyDensity": 0,
 		"Weapons": ["Knife",
 		"Machine gun",
-		"Shotgun",
+		"Marine Shotgun",
 		"Launcher",
 		"Marine Pistol"],
 		"Song": "",
@@ -2068,7 +2065,6 @@
 			"Positions": [[94,
 			71]]
 		}],
-		"StaticWrecks": [],
 		"StaticCharacters": [{
 			"Index": 2,
 			"Positions": [[106,
@@ -2603,7 +2599,7 @@
 		"EnemyDensity": 0,
 		"Weapons": ["Knife",
 		"Machine gun",
-		"Shotgun",
+		"Marine Shotgun",
 		"Launcher",
 		"Marine Pistol"],
 		"Song": "",
@@ -2673,8 +2669,8 @@
 			49],
 			[65,
 			53]]
-		}],
-		"StaticWrecks": [{
+		},
+		{
 			"MapObject": "tree_autumn",
 			"Positions": [[30,
 			29],
@@ -3394,7 +3390,7 @@
 		"EnemyDensity": 0,
 		"Weapons": ["Knife",
 		"Machine gun",
-		"Shotgun",
+		"Marine Shotgun",
 		"Launcher",
 		"Marine Pistol"],
 		"Song": "",
@@ -3476,7 +3472,6 @@
 			[11,
 			24]]
 		}],
-		"StaticWrecks": [],
 		"StaticCharacters": [{
 			"Index": 0,
 			"Positions": [[14,
@@ -4525,7 +4520,7 @@
 		"EnemyDensity": 0,
 		"Weapons": ["Knife",
 		"Machine gun",
-		"Shotgun",
+		"Marine Shotgun",
 		"Launcher",
 		"Marine Pistol"],
 		"Song": "",
@@ -4616,7 +4611,6 @@
 			"Positions": [[57,
 			51]]
 		}],
-		"StaticWrecks": [],
 		"StaticCharacters": [{
 			"Index": 0,
 			"Positions": [[37,
@@ -5379,7 +5373,7 @@
 		"EnemyDensity": 0,
 		"Weapons": ["Knife",
 		"Machine gun",
-		"Shotgun",
+		"Marine Shotgun",
 		"Launcher",
 		"Marine Pistol"],
 		"Song": "",
@@ -5462,7 +5456,6 @@
 			[82,
 			146]]
 		}],
-		"StaticWrecks": [],
 		"StaticCharacters": [{
 			"Index": 4,
 			"Positions": [[64,

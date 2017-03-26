@@ -14,6 +14,22 @@
       "Ammo": "Bullets"
     },
     {
+      "Name": "Marine Shotgun",
+      "Icon": "shotgun",
+      "Bullet": "pellet",
+      "Cost": 5,
+      "Lock": 70,
+      "ReloadLead": 10,
+      "Sound": "marine_shotgun",
+      "ReloadSound": "shotgun_r",
+      "SwitchSound": "shotgun_r",
+      "SpreadCount": 7,
+      "SpreadWidth": 0.1,
+      "MuzzleFlashParticle": "muzzle_flash_shotgun",
+      "Brass": "shotshell",
+      "Ammo": "Shells"
+    },
+    {
       "Name": "Imp Fireball",
       "Pic": "",
       "Bullet": "fireball",

@@ -13,6 +13,18 @@
       "Mass": 5.0
     },
     {
+      "Name": "pellet",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": ""
+      },
+      "OutOfRangeSpark": "spark",
+      "Speed": 30000,
+      "Range": 1,
+      "Power": 10,
+      "Mass": 0.2
+    },
+    {
       "Name": "fireball",
       "Pic": {
         "Type": "Animated",

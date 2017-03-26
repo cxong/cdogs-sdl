@@ -1,4 +1,5 @@
 {
+	"Version": 12,
 	"Characters": [{
 		"Class": "Smith",
 		"Skin": "b79536",
@@ -7,7 +8,7 @@
 		"Legs": "9c9c9c",
 		"Hair": "9c5858",
 		"speed": 128,
-		"Gun": "Shotgun",
+		"Gun": "Marine Shotgun",
 		"maxHealth": 20,
 		"flags": 1024,
 		"probabilityToMove": 50,
@@ -37,7 +38,7 @@
 		"Arms": "d25106",
 		"Body": "d25106",
 		"Legs": "d25106",
-		"Hair": "9c5858",
+		"Hair": "c00000",
 		"speed": 192,
 		"Gun": "Imp Fireball",
 		"maxHealth": 40,

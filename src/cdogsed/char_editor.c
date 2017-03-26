@@ -39,7 +39,10 @@
 #define NK_BUTTON_TRIGGER_ON_RELEASE
 #define NK_IMPLEMENTATION
 #define NK_SDL_GL2_IMPLEMENTATION
+#pragma warning(push)
+#pragma warning(disable: 4127)
 #include <nuklear/nuklear.h>
+#pragma warning(pop)
 #include <nuklear/nuklear_sdl_gl2.h>
 #include <cdogs/actors.h>
 #include <cdogs/character.h>
@@ -471,8 +474,8 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 					&bounds, ec->ctx, ec->ctx->current, nk_true);
 				bounds.x += drawPos.x * PIC_SCALE + 32;
 				bounds.y += drawPos.y * PIC_SCALE + 32;
-				bounds.w = pic->size.x * PIC_SCALE;
-				bounds.h = pic->size.y * PIC_SCALE;
+				bounds.w = (float)pic->size.x * PIC_SCALE;
+				bounds.h = (float)pic->size.y * PIC_SCALE;
 				nk_draw_image(
 					&ec->ctx->current->buffer, bounds, &tex, nk_white);
 			}
