@@ -467,7 +467,7 @@ static void CheckPickups(TActor *actor)
 	};
 	OverlapTileItems(
 		&actor->tileItem, Vec2iFull2Real(actor->Pos), actor->tileItem.size,
-		params, CheckPickupFunc, actor);
+		params, CheckPickupFunc, actor, NULL, NULL);
 }
 static bool CheckPickupFunc(
 	TTileItem *ti, void *data, const Vec2i collideA, const Vec2i collideB)
@@ -978,7 +978,7 @@ static void CheckManualPickups(TActor *a)
 	};
 	OverlapTileItems(
 		&a->tileItem, Vec2iFull2Real(a->Pos),
-		a->tileItem.size, params, CheckManualPickupFunc, a);
+		a->tileItem.size, params, CheckManualPickupFunc, a, NULL, NULL);
 }
 static bool CheckManualPickupFunc(
 	TTileItem *ti, void *data, const Vec2i collideA, const Vec2i collideB)

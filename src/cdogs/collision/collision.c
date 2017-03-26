@@ -290,10 +290,11 @@ static void AddPosToTileCache(void *data, Vec2i pos);
 static bool CheckOverlaps(
 	const TTileItem *item, const Vec2i pos, const Vec2i vel, const Vec2i size,
 	const CollisionParams params, CollideItemFunc func, void *data,
-	const CArray *tileThings);
+	CollideWallFunc wallFunc, void *wallData, const Vec2i tilePos);
 void OverlapTileItems(
 	const TTileItem *item, const Vec2i pos, const Vec2i size,
-	const CollisionParams params, CollideItemFunc func, void *data)
+	const CollisionParams params, CollideItemFunc func, void *data,
+	CollideWallFunc wallFunc, void *wallData)
 {
 	TileCacheReset(&gCollisionSystem.tileCache);
 	// Add all the tiles along the motion path
@@ -305,9 +306,9 @@ void OverlapTileItems(
 
 	// Check collisions with all tiles in the cache
 	CA_FOREACH(const Vec2i, dtv, gCollisionSystem.tileCache)
-		const CArray *tileThings = &MapGetTile(&gMap, *dtv)->things;
 		if (!CheckOverlaps(
-			item, pos, vel, size, params, func, data, tileThings))
+			item, pos, vel, size, params, func, data, wallFunc, wallData,
+			*dtv))
 		{
 			return;
 		}
@@ -322,15 +323,17 @@ static void AddPosToTileCache(void *data, Vec2i pos)
 static bool CheckOverlaps(
 	const TTileItem *item, const Vec2i pos, const Vec2i vel, const Vec2i size,
 	const CollisionParams params, CollideItemFunc func, void *data,
-	const CArray *tileThings)
+	CollideWallFunc wallFunc, void *wallData, const Vec2i tilePos)
 {
+	Vec2i collideA, collideB;
+	// Check item collisions
+	const CArray *tileThings = &MapGetTile(&gMap, tilePos)->things;
 	CA_FOREACH(const ThingId, tid, *tileThings)
 		TTileItem *ti = ThingIdGetTileItem(tid);
 		if (!CheckParams(params, item, ti))
 		{
 			continue;
 		}
-		Vec2i collideA, collideB;
 		if (!MinkowskiHexCollide(
 			pos, vel, size,
 			Vec2iNew(ti->x, ti->y), Vec2iFull2Real(ti->VelFull), ti->size,
@@ -344,6 +347,15 @@ static bool CheckOverlaps(
 			return false;
 		}
 	CA_FOREACH_END()
+	// Check wall collisions
+	if (wallFunc != NULL &&
+		MinkowskiHexCollide(
+			pos, vel, size, Vec2iCenterOfTile(tilePos), Vec2iZero(), TILE_SIZE,
+			&collideA, &collideB) &&
+		!wallFunc(tilePos, wallData, collideA))
+	{
+		return false;
+	}
 	return true;
 }
 
@@ -355,7 +367,8 @@ TTileItem *OverlapGetFirstItem(
 {
 	TTileItem *firstItem = NULL;
 	OverlapTileItems(
-		item, pos, size, params, OverlapGetFirstItemCallback, &firstItem);
+		item, pos, size, params, OverlapGetFirstItemCallback, &firstItem,
+		NULL, NULL);
 	return firstItem;
 }
 static bool OverlapGetFirstItemCallback(

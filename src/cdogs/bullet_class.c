@@ -266,32 +266,19 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 		}
 	}
 
-	bool hitWall = false;
-	if (!gCampaign.IsClient && hit.Type == HIT_NONE)
-	{
-		hitWall =
-			MapIsRealPosIn(&gMap, realPos) && ShootWall(realPos.x, realPos.y);
-	}
-	if (hitWall || hit.Type != HIT_NONE)
+	if (hit.Type != HIT_NONE)
 	{
 		GameEvent b = GameEventNew(GAME_EVENT_BULLET_BOUNCE);
 		b.u.BulletBounce.UID = obj->UID;
-		if (hitWall && !Vec2iIsZero(obj->tileItem.VelFull))
-		{
-			b.u.BulletBounce.HitType = (int)HIT_WALL;
-		}
-		else
-		{
-			b.u.BulletBounce.HitType = (int)hit.Type;
-		}
+		b.u.BulletBounce.HitType = (int)hit.Type;
 		bool alive = true;
-		if ((hitWall && !obj->bulletClass->WallBounces) ||
+		if ((hit.Type == HIT_WALL && !obj->bulletClass->WallBounces) ||
 			((hit.Type != HIT_NONE) && obj->bulletClass->HitsObjects))
 		{
 			b.u.BulletBounce.Spark = true;
 			CASSERT(!gCampaign.IsClient, "Cannot process bounces as client");
 			FireGuns(obj, &obj->bulletClass->HitGuns);
-			if (hitWall || !obj->bulletClass->Persists)
+			if (hit.Type == HIT_WALL || !obj->bulletClass->Persists)
 			{
 				alive = false;
 			}
@@ -300,7 +287,7 @@ bool UpdateBullet(TMobileObject *obj, const int ticks)
 			hit.Type != HIT_NONE ? Vec2iReal2Full(hit.Pos) : pos;
 		b.u.BulletBounce.BouncePos = Vec2i2Net(bouncePos);
 		b.u.BulletBounce.BounceVel = Vec2i2Net(obj->tileItem.VelFull);
-		if (hitWall && !Vec2iIsZero(obj->tileItem.VelFull))
+		if (hit.Type == HIT_WALL && !Vec2iIsZero(obj->tileItem.VelFull))
 		{
 			// Bouncing
 			Vec2i bounceVel = obj->tileItem.VelFull;
@@ -381,13 +368,19 @@ typedef struct
 	HitType HitType;
 	bool MultipleHits;
 	TMobileObject *Obj;
-	TTileItem *Target;
+	union
+	{
+		TTileItem *Target;
+		Vec2i TilePos;
+	} u;
 	Vec2i CollisionPos;
 	int CollisionPosDistSquared;
 } HitItemData;
 static bool HitItemFunc(
 	TTileItem *ti, void *data, const Vec2i collideA, const Vec2i collideB);
+static bool HitWallFunc(const Vec2i tilePos, void *data, const Vec2i collide);
 static void OnHit(HitItemData *data, TTileItem *target);
+static void OnHitWall(HitItemData *data, const Vec2i tilePos);
 static HitResult HitItem(
 	TMobileObject *obj, const Vec2i pos, const bool multipleHits)
 {
@@ -396,7 +389,6 @@ static HitResult HitItem(
 	data.HitType = HIT_NONE;
 	data.MultipleHits = multipleHits;
 	data.Obj = obj;
-	data.Target = NULL;
 	data.CollisionPos = Vec2iZero();
 	data.CollisionPosDistSquared = -1;
 	const CollisionParams params =
@@ -405,16 +397,26 @@ static HitResult HitItem(
 	};
 	OverlapTileItems(
 		&obj->tileItem, Vec2iFull2Real(pos),
-		obj->tileItem.size, params, HitItemFunc, &data);
-	if (!multipleHits && data.Target != NULL)
+		obj->tileItem.size, params, HitItemFunc, &data, HitWallFunc, &data);
+	if (!multipleHits && data.CollisionPosDistSquared >= 0)
 	{
-		OnHit(&data, data.Target);
+		if (data.HitType == HIT_WALL)
+		{
+			OnHitWall(&data, data.u.TilePos);
+		}
+		else
+		{
+			OnHit(&data, data.u.Target);
+		}
 	}
 	HitResult hit = { data.HitType, data.CollisionPos };
 	return hit;
 }
 static HitType GetHitType(
 	const TTileItem *ti, const TMobileObject *bullet, int *targetUID);
+static void SetClosestCollision(
+	HitItemData *data, const Vec2i collide, HitType ht,
+	TTileItem *target, const Vec2i tilePos);
 static bool HitItemFunc(
 	TTileItem *ti, void *data, const Vec2i collideA, const Vec2i collideB)
 {
@@ -434,16 +436,9 @@ static bool HitItemFunc(
 	}
 	else
 	{
-		// Choose the best collision point (i.e. closest to origin)
-		const int d2 = DistanceSquared(
-			collideA, Vec2iFull2Real(Vec2iNew(hData->Obj->x, hData->Obj->y)));
-		if (hData->CollisionPosDistSquared < 0 ||
-			d2 < hData->CollisionPosDistSquared)
-		{
-			hData->CollisionPos = collideA;
-			hData->CollisionPosDistSquared = d2;
-			hData->Target = ti;
-		}
+		SetClosestCollision(
+			hData, collideA, GetHitType(ti, hData->Obj, NULL),
+			ti, Vec2iZero());
 	}
 
 bail:
@@ -452,17 +447,17 @@ bail:
 static HitType GetHitType(
 	const TTileItem *ti, const TMobileObject *bullet, int *targetUID)
 {
-	*targetUID = -1;
+	int tUID = -1;
 	HitType ht = HIT_NONE;
 	switch (ti->kind)
 	{
 	case KIND_CHARACTER:
 		ht = HIT_FLESH;
-		*targetUID = ((const TActor *)CArrayGet(&gActors, ti->id))->uid;
+		tUID = ((const TActor *)CArrayGet(&gActors, ti->id))->uid;
 		break;
 	case KIND_OBJECT:
 		ht = HIT_OBJECT;
-		*targetUID = ((const TObject *)CArrayGet(&gObjs, ti->id))->uid;
+		tUID = ((const TObject *)CArrayGet(&gObjs, ti->id))->uid;
 		break;
 	default:
 		CASSERT(false, "cannot damage target kind");
@@ -470,12 +465,62 @@ static HitType GetHitType(
 	}
 	if (bullet->tileItem.SoundLock > 0 ||
 		!HasHitSound(
-			bullet->flags, bullet->PlayerUID, ti->kind, *targetUID,
+			bullet->flags, bullet->PlayerUID, ti->kind, tUID,
 			bullet->bulletClass->Special, true))
 	{
 		ht = HIT_NONE;
 	}
+	if (targetUID != NULL)
+	{
+		*targetUID = tUID;
+	}
 	return ht;
+}
+static bool HitWallFunc(const Vec2i tilePos, void *data, const Vec2i collide)
+{
+	HitItemData *hData = data;
+	if (!(MapGetTile(&gMap, tilePos)->flags & MAPTILE_NO_SHOOT))
+	{
+		goto bail;
+	}
+
+	// If we can hit multiple targets, just process those hits immediately
+	// Otherwise, find the closest target and only process the hit for that one
+	// at the end.
+	if (hData->MultipleHits)
+	{
+		OnHitWall(hData, tilePos);
+	}
+	else
+	{
+		SetClosestCollision(hData, collide, HIT_WALL, NULL, tilePos);
+	}
+
+bail:
+	return true;
+}
+static void SetClosestCollision(
+	HitItemData *data, const Vec2i collide, HitType ht,
+	TTileItem *target, const Vec2i tilePos)
+{
+	// Choose the best collision point (i.e. closest to origin)
+	const int d2 = DistanceSquared(
+		collide, Vec2iFull2Real(Vec2iNew(data->Obj->x, data->Obj->y)));
+	if (data->CollisionPosDistSquared < 0 ||
+		d2 < data->CollisionPosDistSquared)
+	{
+		data->CollisionPos = collide;
+		data->CollisionPosDistSquared = d2;
+		data->HitType = ht;
+		if (ht == HIT_WALL)
+		{
+			data->u.TilePos = tilePos;
+		}
+		else
+		{
+			data->u.Target = target;
+		}
+	}
 }
 static void OnHit(HitItemData *data, TTileItem *target)
 {
@@ -499,6 +544,12 @@ static void OnHit(HitItemData *data, TTileItem *target)
 	{
 		data->Obj->specialLock += SPECIAL_LOCK;
 	}
+}
+static void OnHitWall(HitItemData *data, const Vec2i tilePos)
+{
+	UNUSED(data);
+	UNUSED(tilePos);
+	// TODO: wall hit effects
 }
 
 

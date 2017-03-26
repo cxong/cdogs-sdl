@@ -346,7 +346,7 @@ static bool TryLoadMapObject(MapObject *m, json_t *node, const int version)
 	}
 
 	// Default tile size
-	m->Size = Vec2iNew(TILE_WIDTH, TILE_HEIGHT);
+	m->Size = TILE_SIZE;
 	LoadVec2i(&m->Size, node, "Size");
 	LoadInt(&m->Health, node, "Health");
 	LoadBulletGuns(&m->DestroyGuns, node, "DestroyGuns");
@@ -496,7 +496,7 @@ static void SetupSpawner(
 	m->Pic.u1.Mask = colorWhite;
 	const Vec2i size = CPicGetSize(&m->Pic);
 	m->Offset = Vec2iNew(-size.x / 2, TILE_HEIGHT / 2 - size.y);
-	m->Size = Vec2iNew(TILE_WIDTH, TILE_HEIGHT);
+	m->Size = TILE_SIZE;
 	m->Health = 0;
 	m->DrawLast = true;
 	m->Type = MAP_OBJECT_TYPE_PICKUP_SPAWNER;

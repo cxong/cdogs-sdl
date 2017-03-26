@@ -223,9 +223,7 @@ static void Display(GraphicsDevice *g, HandleInputResult result)
 				screenPos.y >= 0 && screenPos.y < h)
 			{
 				DrawRectangle(
-					g,
-					screenPos, Vec2iNew(TILE_WIDTH, TILE_HEIGHT),
-					colorWhite, DRAW_FLAG_LINE);
+					g, screenPos, TILE_SIZE, colorWhite, DRAW_FLAG_LINE);
 			}
 		CA_FOREACH_END()
 

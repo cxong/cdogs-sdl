@@ -58,6 +58,7 @@
 
 #define TILE_WIDTH      16
 #define TILE_HEIGHT     12
+#define TILE_SIZE		Vec2iNew(TILE_WIDTH, TILE_HEIGHT)
 
 #define X_TILES			((gGraphicsDevice.cachedConfig.Res.x + TILE_WIDTH - 1) / TILE_WIDTH + 1)
 
