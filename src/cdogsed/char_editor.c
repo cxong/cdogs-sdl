@@ -39,10 +39,15 @@
 #define NK_BUTTON_TRIGGER_ON_RELEASE
 #define NK_IMPLEMENTATION
 #define NK_SDL_GL2_IMPLEMENTATION
+#ifdef _MSC_VER
+// Guard against compile time constant in nk_memset
 #pragma warning(push)
 #pragma warning(disable: 4127)
+#endif
 #include <nuklear/nuklear.h>
+#ifdef _MSC_VER
 #pragma warning(pop)
+#endif
 #include <nuklear/nuklear_sdl_gl2.h>
 #include <cdogs/actors.h>
 #include <cdogs/character.h>
