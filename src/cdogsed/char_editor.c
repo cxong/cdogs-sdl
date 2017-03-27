@@ -322,6 +322,8 @@ static bool HandleEvents(EditorContext *ec)
 }
 
 static void AddCharacter(EditorContext *ec);
+static int MoveCharacter(
+	EditorContext *ec, const int selectedIndex, const int d);
 static void DeleteCharacter(EditorContext *ec, const int selectedIndex);
 static int DrawClassSelection(
 	EditorContext *ec, const char *label, const GLuint *texids,
@@ -337,8 +339,44 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 	if (nk_begin(ec->ctx, "Character Store", nk_rect(10, 10, 240, 520),
 		NK_WINDOW_BORDER|NK_WINDOW_TITLE))
 	{
-		// Show existing characters
 		int selectedIndex = -1;
+		CA_FOREACH(Character, c, ec->Setting->characters.OtherChars)
+			if (ec->Char == c)
+			{
+				selectedIndex = _ca_index;
+			}
+		CA_FOREACH_END()
+
+		nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 4);
+		if (nk_button_label(ec->ctx, "Add"))
+		{
+			AddCharacter(ec);
+		}
+		if (nk_button_label(ec->ctx, "Move Up"))
+		{
+			selectedIndex = MoveCharacter(ec, selectedIndex, -1);
+		}
+		if (nk_button_label(ec->ctx, "Move Down"))
+		{
+			selectedIndex = MoveCharacter(ec, selectedIndex, 1);
+		}
+		if (selectedIndex >= 0 && nk_button_label(ec->ctx, "Remove"))
+		{
+			DeleteCharacter(ec, selectedIndex);
+		}
+		// TODO: clone button
+		// TODO: icons for labels
+		if (selectedIndex >= 0)
+		{
+			ec->Char = CArrayGet(
+				&ec->Setting->characters.OtherChars, selectedIndex);
+		}
+		else
+		{
+			ec->Char = NULL;
+		}
+
+		// Show existing characters
 		nk_layout_row_dynamic(ec->ctx, 32 * PIC_SCALE, 3);
 		CA_FOREACH(Character, c, ec->Setting->characters.OtherChars)
 			const int selected = ec->Char == c;
@@ -353,17 +391,6 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 				ec, c, CArrayGet(&ec->texidsChars, _ca_index),
 				Vec2iNew(-34, 5), &ec->animSelection);
 		CA_FOREACH_END()
-
-		nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 2);
-		if (nk_button_label(ec->ctx, "Add"))
-		{
-			AddCharacter(ec);
-		}
-		if (selectedIndex >= 0 && nk_button_label(ec->ctx, "Remove"))
-		{
-			DeleteCharacter(ec, selectedIndex);
-		}
-		// TODO: move up/down, clone buttons
 	}
 	nk_end(ec->ctx);
 
@@ -500,6 +527,25 @@ static void AddCharacterTextures(EditorContext *ec)
 	GLuint texids[BODY_PART_COUNT];
 	glGenTextures(BODY_PART_COUNT, texids);
 	CArrayPushBack(&ec->texidsChars, &texids);
+}
+
+static int MoveCharacter(
+	EditorContext *ec, const int selectedIndex, const int d)
+{
+	const int moveIndex = selectedIndex + d;
+	CArray *chars = &ec->Setting->characters.OtherChars;
+	if (moveIndex < 0 || moveIndex >= (int)chars->size)
+	{
+		return selectedIndex;
+	}
+
+	Character tmp;
+	Character *selected = CArrayGet(chars, selectedIndex);
+	Character *move = CArrayGet(chars, moveIndex);
+	memcpy(&tmp, selected, chars->elemSize);
+	memcpy(selected, move, chars->elemSize);
+	memcpy(move, &tmp, chars->elemSize);
+	return moveIndex;
 }
 
 static void DeleteCharacter(EditorContext *ec, const int selectedIndex)
