@@ -70,10 +70,12 @@ typedef struct
 	int *FileChanged;
 	char *CharacterClassNames;
 	char *GunNames;
+	CArray texidsChars;	// of GLuint[BODY_PART_COUNT]
 	GLuint texidsPreview[BODY_PART_COUNT];
 	CArray texIdsCharClasses;	// of GLuint
 	CArray texIdsGuns;	// of GLuint
 	Animation anim;
+	Animation animSelection;
 } EditorContext;
 
 const float bg[4] = { 0.16f, 0.1f, 0.1f, 1.f };
@@ -89,6 +91,7 @@ static int NumCharacterClasses(void);
 static const char *IndexGunName(const int i);
 static int NumGuns(void);
 static int GunIndex(const GunDescription *g);
+static void AddCharacterTextures(EditorContext *ec);
 static bool HandleEvents(EditorContext *ec);
 static void Draw(SDL_Window *win, EditorContext *ec);
 void CharEditor(
@@ -115,9 +118,6 @@ void CharEditor(
 	// Initialise editor context
 	EditorContext ec;
 	ec.ctx = nk_sdl_init(win);
-	// Allow rapid clicks
-	ec.ctx->button_behavior = NK_BUTTON_REPEATER;
-	// TODO: fix unresponsive clicks
 	ec.Char = NULL;
 	ec.Setting = setting;
 	ec.Handlers = handlers;
@@ -126,6 +126,11 @@ void CharEditor(
 		NumCharacterClasses(), IndexCharacterClassName);
 	ec.GunNames = GetClassNames(NumGuns(), IndexGunName);
 
+	CArrayInit(&ec.texidsChars, sizeof(GLuint) * BODY_PART_COUNT);
+	for (int i = 0; i < (int)setting->characters.OtherChars.size; i++)
+	{
+		AddCharacterTextures(&ec);
+	}
 	glGenTextures(BODY_PART_COUNT, ec.texidsPreview);
 	CArrayInit(&ec.texIdsCharClasses, sizeof(GLuint));
 	CArrayResize(&ec.texIdsCharClasses, NumCharacterClasses(), NULL);
@@ -148,6 +153,7 @@ void CharEditor(
 
 	// TODO: choose between idle and walking
 	ec.anim = AnimationGetActorAnimation(ACTORANIMATION_WALKING);
+	ec.animSelection = AnimationGetActorAnimation(ACTORANIMATION_IDLE);
 
 	// Initialise fonts
 	struct nk_font_atlas *atlas;
@@ -180,10 +186,15 @@ bail:
 	nk_sdl_shutdown();
 	CFREE(ec.CharacterClassNames);
 	CFREE(ec.GunNames);
+	glDeleteTextures(
+		BODY_PART_COUNT * ec.texidsChars.size, ec.texidsChars.data);
+	CArrayTerminate(&ec.texidsChars);
 	glDeleteTextures(BODY_PART_COUNT, ec.texidsPreview);
 	glDeleteTextures(
 		ec.texIdsCharClasses.size, (const GLuint *)ec.texIdsCharClasses.data);
+	CArrayTerminate(&ec.texIdsCharClasses);
 	glDeleteTextures(ec.texIdsGuns.size, (const GLuint *)ec.texIdsGuns.data);
+	CArrayTerminate(&ec.texIdsGuns);
 	SDL_GL_DeleteContext(glContext);
 	SDL_DestroyWindow(win);
 }
@@ -311,12 +322,16 @@ static bool HandleEvents(EditorContext *ec)
 }
 
 static void AddCharacter(EditorContext *ec);
+static void DeleteCharacter(EditorContext *ec, const int selectedIndex);
 static int DrawClassSelection(
 	EditorContext *ec, const char *label, const GLuint *texids,
 	const char *items, const int selected, const size_t len);
 static void DrawCharColor(EditorContext *ec, const char *label, color_t *c);
 static void DrawFlag(
 	EditorContext *ec, const char *label, const int flag, const char *tooltip);
+static void DrawCharacter(
+	EditorContext *ec, Character *c, GLuint *texids, const Vec2i pos,
+	const Animation *anim);
 static void Draw(SDL_Window *win, EditorContext *ec)
 {
 	if (nk_begin(ec->ctx, "Character Store", nk_rect(10, 10, 240, 520),
@@ -324,22 +339,19 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 	{
 		// Show existing characters
 		int selectedIndex = -1;
+		nk_layout_row_dynamic(ec->ctx, 32 * PIC_SCALE, 3);
 		CA_FOREACH(Character, c, ec->Setting->characters.OtherChars)
-			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
 			const int selected = ec->Char == c;
-			char buf[256];
-			sprintf(buf, "%s (%s)", c->Class->Name, c->Gun->name);
-			// TODO: show both label and full character
-			const GLuint *texid = CArrayGet(
-				&ec->texIdsCharClasses, CharacterClassIndex(c->Class));
-			struct nk_image tex = nk_image_id((int)*texid);
-			BeforeDrawTex(*texid);
-			if (nk_select_image_label(
-				ec->ctx, tex, buf, NK_TEXT_LEFT, selected))
+			// show both label and full character
+			if (nk_select_label(ec->ctx, c->Gun->name,
+				NK_TEXT_ALIGN_BOTTOM|NK_TEXT_ALIGN_CENTERED, selected))
 			{
 				ec->Char = c;
 				selectedIndex = _ca_index;
 			}
+			DrawCharacter(
+				ec, c, CArrayGet(&ec->texidsChars, _ca_index),
+				Vec2iNew(-34, 5), &ec->animSelection);
 		CA_FOREACH_END()
 
 		nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 2);
@@ -349,20 +361,7 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 		}
 		if (selectedIndex >= 0 && nk_button_label(ec->ctx, "Remove"))
 		{
-			CharacterStoreDeleteOther(&ec->Setting->characters, selectedIndex);
-			selectedIndex = MIN(
-				selectedIndex,
-				(int)ec->Setting->characters.OtherChars.size - 1);
-			if (selectedIndex >= 0)
-			{
-				ec->Char = CArrayGet(
-					&ec->Setting->characters.OtherChars, selectedIndex);
-			}
-			else
-			{
-				ec->Char = NULL;
-			}
-			*ec->FileChanged = true;
+			DeleteCharacter(ec, selectedIndex);
 		}
 		// TODO: move up/down, clone buttons
 	}
@@ -451,42 +450,15 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 		{
 			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
 			// TODO: UI controls for animation
-			AnimationUpdate(&ec->anim, 1);
-			const int frame = AnimationGetFrame(&ec->anim);
-			ActorPics pics = GetCharacterPics(
-				ec->Char, DIRECTION_DOWN, ACTORANIMATION_WALKING, frame,
-				ec->Char->Gun->Pic, GUNSTATE_READY, false, NULL, NULL, 0);
 			nk_layout_row_dynamic(ec->ctx, 32 * PIC_SCALE, 1);
-			const Vec2i pos = Vec2iZero();
-			for (int i = 0; i < BODY_PART_COUNT; i++)
-			{
-				const Pic *pic = pics.OrderedPics[i];
-				if (pic == NULL)
-				{
-					continue;
-				}
-				const Vec2i drawPos = Vec2iAdd(pos, pics.OrderedOffsets[i]);
-				//BlitCharMultichannel(&gGraphicsDevice, pic, drawPos, pic->Colors);
-				// TODO: coloured drawing
-				LoadTexFromPic(ec->texidsPreview[i], pic);
-				struct nk_image tex = nk_image_id((int)ec->texidsPreview[i]);
-				glTexParameteri(
-					GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-				glTexParameteri(
-					GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-				struct nk_rect bounds;
-				nk_layout_widget_space(
-					&bounds, ec->ctx, ec->ctx->current, nk_true);
-				bounds.x += drawPos.x * PIC_SCALE + 32;
-				bounds.y += drawPos.y * PIC_SCALE + 32;
-				bounds.w = (float)pic->size.x * PIC_SCALE;
-				bounds.h = (float)pic->size.y * PIC_SCALE;
-				nk_draw_image(
-					&ec->ctx->current->buffer, bounds, &tex, nk_white);
-			}
+			DrawCharacter(
+				ec, ec->Char, ec->texidsPreview, Vec2iZero(), &ec->anim);
 		}
 		nk_end(ec->ctx);
 	}
+
+	AnimationUpdate(&ec->anim, 1);
+	AnimationUpdate(&ec->animSelection, 1);
 
 	int winWidth, winHeight;
 	SDL_GetWindowSize(win, &winWidth, &winHeight);
@@ -495,8 +467,6 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 	glClearColor(bg[0], bg[1], bg[2], bg[3]);
 
 	nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
-
-	// Display
 	SDL_GL_SwapWindow(win);
 }
 
@@ -520,6 +490,39 @@ static void AddCharacter(EditorContext *ec)
 	ec->Char->bot->probabilityToShoot = 2;
 	ec->Char->bot->actionDelay = 15;
 
+	AddCharacterTextures(ec);
+
+	*ec->FileChanged = true;
+}
+
+static void AddCharacterTextures(EditorContext *ec)
+{
+	GLuint texids[BODY_PART_COUNT];
+	glGenTextures(BODY_PART_COUNT, texids);
+	CArrayPushBack(&ec->texidsChars, &texids);
+}
+
+static void DeleteCharacter(EditorContext *ec, const int selectedIndex)
+{
+	CharacterStoreDeleteOther(&ec->Setting->characters, selectedIndex);
+	const int indexClamped = MIN(
+		selectedIndex,
+		(int)ec->Setting->characters.OtherChars.size - 1);
+	if (indexClamped >= 0)
+	{
+		ec->Char = CArrayGet(
+			&ec->Setting->characters.OtherChars, indexClamped);
+	}
+	else
+	{
+		ec->Char = NULL;
+	}
+
+	// Delete character textures
+	GLuint **texids = CArrayGet(&ec->texidsChars, selectedIndex);
+	glDeleteTextures(BODY_PART_COUNT, *texids);
+	CArrayDelete(&ec->texidsChars, selectedIndex);
+
 	*ec->FileChanged = true;
 }
 
@@ -532,8 +535,6 @@ static int DrawClassSelection(
 	const char *items, const int selected, const size_t len)
 {
 	nk_label(ec->ctx, label, NK_TEXT_LEFT);
-	// TODO: draw heads as well, use nk_combo_begin_image_label /
-	// nk_combo_item_image_label
 	const int selectedNew = nk_combo_separator_image(
 		ec->ctx, texids, items, '\0', selected, len,
 		ROW_HEIGHT, nk_vec2(nk_widget_width(ec->ctx), 10 * ROW_HEIGHT));
@@ -648,4 +649,40 @@ static void BeforeDrawTex(const GLuint texid)
 	glBindTexture(GL_TEXTURE_2D, texid);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+}
+
+static void DrawCharacter(
+	EditorContext *ec, Character *c, GLuint *texids, const Vec2i pos,
+	const Animation *anim)
+{
+	const int frame = AnimationGetFrame(anim);
+	ActorPics pics = GetCharacterPics(
+		c, DIRECTION_DOWN, anim->Type, frame,
+		c->Gun->Pic, GUNSTATE_READY, false, NULL, NULL, 0);
+	for (int i = 0; i < BODY_PART_COUNT; i++)
+	{
+		const Pic *pic = pics.OrderedPics[i];
+		if (pic == NULL)
+		{
+			continue;
+		}
+		const Vec2i drawPos = Vec2iAdd(pos, pics.OrderedOffsets[i]);
+		//BlitCharMultichannel(&gGraphicsDevice, pic, drawPos, pic->Colors);
+		// TODO: coloured drawing
+		LoadTexFromPic(texids[i], pic);
+		struct nk_image tex = nk_image_id((int)texids[i]);
+		glTexParameteri(
+			GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(
+			GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		struct nk_rect bounds;
+		nk_layout_widget_space(
+			&bounds, ec->ctx, ec->ctx->current, nk_true);
+		bounds.x += drawPos.x * PIC_SCALE + 32;
+		bounds.y += drawPos.y * PIC_SCALE + 32;
+		bounds.w = (float)pic->size.x * PIC_SCALE;
+		bounds.h = (float)pic->size.y * PIC_SCALE;
+		nk_draw_image(
+			&ec->ctx->current->buffer, bounds, &tex, nk_white);
+	}
 }
