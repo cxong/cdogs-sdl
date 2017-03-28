@@ -58,7 +58,7 @@
 #define MAX_ELEMENT_MEMORY 128 * 1024
 
 #define ROW_HEIGHT 25
-const float colRatios[] = { 0.3f, 0.7f };
+const float colRatios[] = { 0.25f, 0.75f };
 #define PIC_SCALE 2
 
 typedef struct
@@ -336,7 +336,7 @@ static void DrawCharacter(
 	const Animation *anim);
 static void Draw(SDL_Window *win, EditorContext *ec)
 {
-	if (nk_begin(ec->ctx, "Character Store", nk_rect(10, 10, 240, 520),
+	if (nk_begin(ec->ctx, "Character Store", nk_rect(10, 10, 690, 280),
 		NK_WINDOW_BORDER|NK_WINDOW_TITLE))
 	{
 		int selectedIndex = -1;
@@ -351,6 +351,7 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 		if (nk_button_label(ec->ctx, "Add"))
 		{
 			AddCharacter(ec);
+			selectedIndex = MAX(selectedIndex, 0);
 		}
 		if (nk_button_label(ec->ctx, "Move Up"))
 		{
@@ -363,9 +364,11 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 		if (selectedIndex >= 0 && nk_button_label(ec->ctx, "Remove"))
 		{
 			DeleteCharacter(ec, selectedIndex);
+			selectedIndex = MIN(
+				selectedIndex,
+				(int)ec->Setting->characters.OtherChars.size - 1);
 		}
 		// TODO: clone button
-		// TODO: icons for labels
 		if (selectedIndex >= 0)
 		{
 			ec->Char = CArrayGet(
@@ -377,7 +380,7 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 		}
 
 		// Show existing characters
-		nk_layout_row_dynamic(ec->ctx, 32 * PIC_SCALE, 3);
+		nk_layout_row_dynamic(ec->ctx, 32 * PIC_SCALE, 9);
 		CA_FOREACH(Character, c, ec->Setting->characters.OtherChars)
 			const int selected = ec->Char == c;
 			// show both label and full character
@@ -396,7 +399,18 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 
 	if (ec->Char != NULL)
 	{
-		if (nk_begin(ec->ctx, "Character", nk_rect(260, 10, 240, 520),
+		if (nk_begin(ec->ctx, "Preview", nk_rect(710, 10, 80, 280),
+			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
+		{
+			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
+			// TODO: UI controls for animation
+			nk_layout_row_dynamic(ec->ctx, 32 * PIC_SCALE, 1);
+			DrawCharacter(
+				ec, ec->Char, ec->texidsPreview, Vec2iZero(), &ec->anim);
+		}
+		nk_end(ec->ctx);
+
+		if (nk_begin(ec->ctx, "Appearance", nk_rect(10, 300, 260, 225),
 			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
 		{
 			nk_layout_row(ec->ctx, NK_DYNAMIC, ROW_HEIGHT, 2, colRatios);
@@ -413,7 +427,12 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 			DrawCharColor(ec, "Arms:", &ec->Char->Colors.Arms);
 			DrawCharColor(ec, "Body:", &ec->Char->Colors.Body);
 			DrawCharColor(ec, "Legs:", &ec->Char->Colors.Legs);
+		}
+		nk_end(ec->ctx);
 
+		if (nk_begin(ec->ctx, "Attributes", nk_rect(280, 300, 250, 225),
+			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
+		{
 			// Speed (256 = 100%)
 			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
 			int speedPct = ec->Char->speed * 100 / 256;
@@ -434,26 +453,14 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 			DrawFlag(ec, "Asbestos", FLAGS_ASBESTOS, "Immune to fire");
 			DrawFlag(ec, "Immunity", FLAGS_IMMUNITY, "Immune to poison");
 			DrawFlag(ec, "See-through", FLAGS_SEETHROUGH, NULL);
-			DrawFlag(ec, "Runs away", FLAGS_RUNS_AWAY, "Runs away from player");
-			DrawFlag(
-				ec, "Sneaky", FLAGS_SNEAKY, "Shoots back when player shoots");
-			DrawFlag(ec, "Good guy", FLAGS_GOOD_GUY, "Same team as players");
-			DrawFlag(
-				ec, "Sleeping", FLAGS_SLEEPING, "Doesn't move unless seen");
-			DrawFlag(
-				ec, "Prisoner", FLAGS_PRISONER, "Doesn't move until touched");
 			DrawFlag(ec, "Invulnerable", FLAGS_INVULNERABLE, NULL);
-			DrawFlag(ec, "Follower", FLAGS_FOLLOWER, "Follows players");
 			DrawFlag(
 				ec, "Penalty", FLAGS_PENALTY, "Large score penalty when shot");
 			DrawFlag(ec, "Victim", FLAGS_VICTIM, "Takes damage from everyone");
-			DrawFlag(
-				ec, "Awake", FLAGS_AWAKEALWAYS,
-				"Don't go to sleep after players leave");
 		}
 		nk_end(ec->ctx);
 
-		if (nk_begin(ec->ctx, "AI", nk_rect(510, 10, 250, 170),
+		if (nk_begin(ec->ctx, "AI", nk_rect(540, 300, 250, 280),
 			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
 		{
 			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
@@ -469,17 +476,20 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 			nk_property_int(
 				ec->ctx, "Action delay:", 0, &ec->Char->bot->actionDelay,
 				50, 5, 1);
-		}
-		nk_end(ec->ctx);
 
-		if (nk_begin(ec->ctx, "Preview", nk_rect(510, 190, 250, 180),
-			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
-		{
-			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
-			// TODO: UI controls for animation
-			nk_layout_row_dynamic(ec->ctx, 32 * PIC_SCALE, 1);
-			DrawCharacter(
-				ec, ec->Char, ec->texidsPreview, Vec2iZero(), &ec->anim);
+			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 2);
+			DrawFlag(ec, "Runs away", FLAGS_RUNS_AWAY, "Runs away from player");
+			DrawFlag(
+				ec, "Sneaky", FLAGS_SNEAKY, "Shoots back when player shoots");
+			DrawFlag(ec, "Good guy", FLAGS_GOOD_GUY, "Same team as players");
+			DrawFlag(
+				ec, "Sleeping", FLAGS_SLEEPING, "Doesn't move unless seen");
+			DrawFlag(
+				ec, "Prisoner", FLAGS_PRISONER, "Doesn't move until touched");
+			DrawFlag(ec, "Follower", FLAGS_FOLLOWER, "Follows players");
+			DrawFlag(
+				ec, "Awake", FLAGS_AWAKEALWAYS,
+				"Don't go to sleep after players leave");
 		}
 		nk_end(ec->ctx);
 	}
@@ -565,8 +575,8 @@ static void DeleteCharacter(EditorContext *ec, const int selectedIndex)
 	}
 
 	// Delete character textures
-	GLuint **texids = CArrayGet(&ec->texidsChars, selectedIndex);
-	glDeleteTextures(BODY_PART_COUNT, *texids);
+	GLuint *texids = CArrayGet(&ec->texidsChars, selectedIndex);
+	glDeleteTextures(BODY_PART_COUNT, texids);
 	CArrayDelete(&ec->texidsChars, selectedIndex);
 
 	*ec->FileChanged = true;
@@ -653,7 +663,7 @@ static void DrawCharColor(EditorContext *ec, const char *label, color_t *c)
 	if (nk_combo_begin_color(
 		ec->ctx, color, nk_vec2(nk_widget_width(ec->ctx), 400)))
 	{
-		nk_layout_row_dynamic(ec->ctx, 100, 1);
+		nk_layout_row_dynamic(ec->ctx, 110, 1);
 		color = nk_color_picker(ec->ctx, color, NK_RGB);
 		nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
 		color.r = (nk_byte)nk_propertyi(ec->ctx, "#R:", 0, color.r, 255, 1, 1);
