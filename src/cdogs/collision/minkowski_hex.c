@@ -31,11 +31,11 @@
 static bool RectangleLineIntersect(
 	const Vec2i rectPos, const Vec2i rectSize,
 	const Vec2i lineStart, const Vec2i lineEnd,
-	float *s);
+	float *s, Vec2i *normal);
 bool MinkowskiHexCollide(
 	const Vec2i posA, const Vec2i velA, const Vec2i sizeA,
 	const Vec2i posB, const Vec2i velB, const Vec2i sizeB,
-	Vec2i *collideA, Vec2i *collideB)
+	Vec2i *colA, Vec2i *colB, Vec2i *normal)
 {
 	// Find rectangle C by combining A and B
 	const Vec2i sizeC = Vec2iAdd(sizeA, sizeB);
@@ -45,7 +45,8 @@ bool MinkowskiHexCollide(
 
 	// Find the intersection between velBA and the rectangle C centered on posA
 	float s;
-	if (!RectangleLineIntersect(posA, sizeC, posB, Vec2iAdd(posB, velBA), &s))
+	if (!RectangleLineIntersect(
+		posA, sizeC, posB, Vec2iAdd(posB, velBA), &s, normal))
 	{
 		return false;
 	}
@@ -53,14 +54,14 @@ bool MinkowskiHexCollide(
 	// If intersection is at the start, it means we were overlapping already
 	if (s == 0)
 	{
-		*collideA = posA;
-		*collideB = posB;
+		*colA = posA;
+		*colB = posB;
 	}
 	else
 	{
 		// Find the actual intersection points based on the result
-		*collideA = Vec2iAdd(posA, Vec2iScaleD(velA, s));
-		*collideB = Vec2iAdd(posB, Vec2iScaleD(velB, s));
+		*colA = Vec2iAdd(posA, Vec2iScaleD(velA, s));
+		*colB = Vec2iAdd(posB, Vec2iScaleD(velB, s));
 	}
 
 	return true;
@@ -72,7 +73,7 @@ static bool LinesIntersect(
 static bool RectangleLineIntersect(
 	const Vec2i rectPos, const Vec2i rectSize,
 	const Vec2i lineStart, const Vec2i lineEnd,
-	float *s)
+	float *s, Vec2i *normal)
 {
 	// Find the closest point at which a line intersects a rectangle
 	// Do this by finding intersections between the line and all four sides of
@@ -91,22 +92,33 @@ static bool RectangleLineIntersect(
 		lineStart.y >= top && lineStart.y <= bottom)
 	{
 		*s = 0;
+		// Normal away from line position
+		Vec2i lineAway = Vec2iMinus(rectPos, lineStart);
+		if (Vec2iIsZero(lineAway))
+		{
+			lineAway = Vec2iMinus(lineStart, lineEnd);
+		}
+		// Convert to unit vector
+		*normal =
+			abs(lineAway.x) >= abs(lineAway.y) ?
+			Vec2iNew(SIGN(lineAway.x), 0) : Vec2iNew(0, SIGN(lineAway.y));
 		return true;
 	}
 
 	// Find closest of four intersections
 	*s = -1;
 	float sPart;
-#define _CHECK_MIN_DISTANCE(_p1, _p2) \
+#define _CHECK_MIN_DISTANCE(_p1, _p2, _n) \
 	if (LinesIntersect(_p1, _p2, lineStart, lineEnd, &sPart) &&\
 		(*s < 0 || sPart < *s))\
 	{\
 		*s = sPart;\
+		*normal = _n;\
 	}
-	_CHECK_MIN_DISTANCE(topLeft, bottomLeft);
-	_CHECK_MIN_DISTANCE(topRight, bottomRight);
-	_CHECK_MIN_DISTANCE(topLeft, topRight);
-	_CHECK_MIN_DISTANCE(bottomLeft, bottomRight);
+	_CHECK_MIN_DISTANCE(topLeft, bottomLeft, Vec2iNew(1, 0));
+	_CHECK_MIN_DISTANCE(topRight, bottomRight, Vec2iNew(-1, 0));
+	_CHECK_MIN_DISTANCE(topLeft, topRight, Vec2iNew(0, 1));
+	_CHECK_MIN_DISTANCE(bottomLeft, bottomRight, Vec2iNew(0, -1));
 
 	return *s >= 0;
 }

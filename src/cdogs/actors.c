@@ -453,7 +453,8 @@ static void CheckTrigger(const Vec2i tilePos)
 }
 // Check if the player can pickup any item
 static bool CheckPickupFunc(
-	TTileItem *ti, void *data, const Vec2i collideA, const Vec2i collideB);
+	TTileItem *ti, void *data, const Vec2i colA, const Vec2i colB,
+	const Vec2i normal);
 static void CheckPickups(TActor *actor)
 {
 	// NPCs can't pickup
@@ -470,10 +471,12 @@ static void CheckPickups(TActor *actor)
 		params, CheckPickupFunc, actor, NULL, NULL);
 }
 static bool CheckPickupFunc(
-	TTileItem *ti, void *data, const Vec2i collideA, const Vec2i collideB)
+	TTileItem *ti, void *data, const Vec2i colA, const Vec2i colB,
+	const Vec2i normal)
 {
-	UNUSED(collideA);
-	UNUSED(collideB);
+	UNUSED(colA);
+	UNUSED(colB);
+	UNUSED(normal);
 	// Always return true, as we can pickup multiple items in one go
 	if (ti->kind != KIND_PICKUP) return true;
 	TActor *a = data;
@@ -967,7 +970,8 @@ static void ActorUpdatePosition(TActor *actor, int ticks)
 }
 // Check if the actor is over any manual pickups
 static bool CheckManualPickupFunc(
-	TTileItem *ti, void *data, const Vec2i collideA, const Vec2i collideB);
+	TTileItem *ti, void *data, const Vec2i colA, const Vec2i colB,
+	const Vec2i normal);
 static void CheckManualPickups(TActor *a)
 {
 	// NPCs can't pickup
@@ -981,10 +985,12 @@ static void CheckManualPickups(TActor *a)
 		a->tileItem.size, params, CheckManualPickupFunc, a, NULL, NULL);
 }
 static bool CheckManualPickupFunc(
-	TTileItem *ti, void *data, const Vec2i collideA, const Vec2i collideB)
+	TTileItem *ti, void *data, const Vec2i colA, const Vec2i colB,
+	const Vec2i normal)
 {
-	UNUSED(collideA);
-	UNUSED(collideB);
+	UNUSED(colA);
+	UNUSED(colB);
+	UNUSED(normal);
 	TActor *a = data;
 	if (ti->kind != KIND_PICKUP) return true;
 	const Pickup *p = CArrayGet(&gPickups, ti->id);

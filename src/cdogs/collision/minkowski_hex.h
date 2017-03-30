@@ -36,4 +36,4 @@
 bool MinkowskiHexCollide(
 	const Vec2i posA, const Vec2i velA, const Vec2i sizeA,
 	const Vec2i posB, const Vec2i velB, const Vec2i sizeB,
-	Vec2i *collideA, Vec2i *collideB);
+	Vec2i *colA, Vec2i *colB, Vec2i *normal);

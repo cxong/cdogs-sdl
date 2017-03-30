@@ -325,7 +325,7 @@ static bool CheckOverlaps(
 	const CollisionParams params, CollideItemFunc func, void *data,
 	CollideWallFunc wallFunc, void *wallData, const Vec2i tilePos)
 {
-	Vec2i collideA, collideB;
+	Vec2i colA, colB, normal;
 	// Check item collisions
 	const CArray *tileThings = &MapGetTile(&gMap, tilePos)->things;
 	CA_FOREACH(const ThingId, tid, *tileThings)
@@ -337,12 +337,12 @@ static bool CheckOverlaps(
 		if (!MinkowskiHexCollide(
 			pos, vel, size,
 			Vec2iNew(ti->x, ti->y), Vec2iFull2Real(ti->VelFull), ti->size,
-			&collideA, &collideB))
+			&colA, &colB, &normal))
 		{
 			continue;
 		}
 		// Collision callback and check continue
-		if (!func(ti, data, collideA, collideB))
+		if (func != NULL && !func(ti, data, colA, colB, normal))
 		{
 			return false;
 		}
@@ -351,8 +351,8 @@ static bool CheckOverlaps(
 	if (wallFunc != NULL &&
 		MinkowskiHexCollide(
 			pos, vel, size, Vec2iCenterOfTile(tilePos), Vec2iZero(), TILE_SIZE,
-			&collideA, &collideB) &&
-		!wallFunc(tilePos, wallData, collideA))
+			&colA, &colB, &normal) &&
+		!wallFunc(tilePos, wallData, colA, normal))
 	{
 		return false;
 	}
@@ -360,7 +360,8 @@ static bool CheckOverlaps(
 }
 
 static bool OverlapGetFirstItemCallback(
-	TTileItem *ti, void *data, const Vec2i collideA, const Vec2i collideB);
+	TTileItem *ti, void *data, const Vec2i colA, const Vec2i colB,
+	const Vec2i normal);
 TTileItem *OverlapGetFirstItem(
 	const TTileItem *item, const Vec2i pos, const Vec2i size,
 	const CollisionParams params)
@@ -372,10 +373,12 @@ TTileItem *OverlapGetFirstItem(
 	return firstItem;
 }
 static bool OverlapGetFirstItemCallback(
-	TTileItem *ti, void *data, const Vec2i collideA, const Vec2i collideB)
+	TTileItem *ti, void *data, const Vec2i colA, const Vec2i colB,
+	const Vec2i normal)
 {
-	UNUSED(collideA);
-	UNUSED(collideB);
+	UNUSED(colA);
+	UNUSED(colB);
+	UNUSED(normal);
 	TTileItem **pFirstItem = data;
 	// Store the first item in custom data and return
 	*pFirstItem = ti;
@@ -400,56 +403,23 @@ static bool CheckParams(
 	return true;
 }
 
-Vec2i GetWallBounceFullPos(
-	const Vec2i startFull, const Vec2i newFull, Vec2i *velFull)
+void GetWallBouncePosVelFull(
+	const Vec2i posFull, const Vec2i velFull, const Vec2i colPosReal,
+	const Vec2i colNormal, Vec2i *outPosFull, Vec2i *outVelFull)
 {
-	CASSERT(velFull != NULL, "need velocity for wall bouncing");
-	Vec2i newReal = Vec2iFull2Real(newFull);
-	if (!ShootWall(newReal.x, newReal.y))
-	{
-		return newFull;
-	}
-	Vec2i startRealPos = Vec2iFull2Real(startFull);
-	Vec2i bounceFull = startFull;
-	if (!ShootWall(startRealPos.x, newReal.y))
-	{
-		bounceFull.y = newFull.y;
-		velFull->x *= -1;
-	}
-	else if (!ShootWall(newReal.x, startRealPos.y))
-	{
-		bounceFull.x = newFull.x;
-		velFull->y *= -1;
-	}
-	else
-	{
-		*velFull = Vec2iScale(*velFull, -1);
-		// Keep bouncing back if it's inside a wall
-		// However, do not bounce more than half a tile's size
-		if (!Vec2iIsZero(*velFull))
-		{
-			Vec2i bounceReal = newReal;
-			const int maxBounces = MAX(
-				velFull->x / 256 / TILE_WIDTH,
-				velFull->y / 256 / TILE_HEIGHT);
-			for (int i = 0;
-				i < maxBounces &&
-				MapIsRealPosIn(&gMap, bounceReal) &&
-				ShootWall(bounceReal.x, bounceReal.y);
-				i++)
-			{
-				bounceFull = Vec2iAdd(bounceFull, *velFull);
-				bounceReal = Vec2iFull2Real(bounceFull);
-			}
-			// If still colliding wall or outside map,
-			// can't recover from this point; zero velocity and return
-			if (!MapIsRealPosIn(&gMap, bounceReal) ||
-				ShootWall(bounceReal.x, bounceReal.y))
-			{
-				*velFull = Vec2iZero();
-				return startFull;
-			}
-		}
-	}
-	return bounceFull;
+	// Reflect the out position by the collision normal about the collision pos
+	const Vec2i colPosFull = Vec2iReal2Full(colPosReal);
+	const Vec2i velBeforeColFull = Vec2iMinus(colPosFull, posFull);
+	const Vec2i velAfterColFull = Vec2iMinus(velFull, velBeforeColFull);
+	const Vec2i velReflectedFull = Vec2iNew(
+		colNormal.x == 0 ?
+		velAfterColFull.x : colNormal.x * abs(velAfterColFull.x),
+		colNormal.y == 0 ?
+		velAfterColFull.y : colNormal.y * abs(velAfterColFull.y));
+	*outPosFull = Vec2iAdd(colPosFull, velReflectedFull);
+
+	// Out velocity follows the collision normal
+	*outVelFull = Vec2iNew(
+		colNormal.x == 0 ? velFull.x : colNormal.x * abs(velFull.x),
+		colNormal.y == 0 ? velFull.y : colNormal.y * abs(velFull.y));
 }

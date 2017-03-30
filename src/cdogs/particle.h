@@ -61,7 +61,6 @@ typedef struct
 	Vec2i Pos;
 	int Z;
 	double Angle;
-	Vec2i Vel;
 	int DZ;
 	double Spin;
 	int Count;

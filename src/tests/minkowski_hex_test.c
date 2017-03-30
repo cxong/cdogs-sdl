@@ -21,11 +21,11 @@ FEATURE(minkowski_hex, "Minkowski Hex")
 			const Vec2i rectVel2 = Vec2iNew(7, -8);
 
 		WHEN("I check for their collision")
-			Vec2i collide1, collide2;
+			Vec2i collide1, collide2, normal;
 			const bool result = MinkowskiHexCollide(
 				rectPos1, rectVel1, rectSize1,
 				rectPos2, rectVel2, rectSize2,
-				&collide1, &collide2);
+				&collide1, &collide2, &normal);
 
 		THEN("the result should be true");
 			SHOULD_BE_TRUE(result);
@@ -34,6 +34,9 @@ FEATURE(minkowski_hex, "Minkowski Hex")
 			SHOULD_INT_EQUAL(collide1.y, rectPos1.y);
 			SHOULD_INT_EQUAL(collide2.x, rectPos2.x);
 			SHOULD_INT_EQUAL(collide2.y, rectPos2.y);
+		AND("the normal should be (0, 1)")
+			SHOULD_INT_EQUAL(normal.x, 0);
+			SHOULD_INT_EQUAL(normal.y, 1);
 	SCENARIO_END
 
 	SCENARIO("No overlap, no movement")
@@ -46,11 +49,11 @@ FEATURE(minkowski_hex, "Minkowski Hex")
 			const Vec2i rectVel2 = Vec2iZero();
 
 		WHEN("I check for their collision")
-			Vec2i collide1, collide2;
+			Vec2i collide1, collide2, normal;
 			const bool result = MinkowskiHexCollide(
 				rectPos1, rectVel1, rectSize1,
 				rectPos2, rectVel2, rectSize2,
-				&collide1, &collide2);
+				&collide1, &collide2, &normal);
 
 		THEN("the result should be false");
 			SHOULD_BE_FALSE(result);
@@ -66,11 +69,11 @@ FEATURE(minkowski_hex, "Minkowski Hex")
 			const Vec2i rectVel2 = Vec2iZero();
 
 		WHEN("I check for their collision")
-			Vec2i collide1, collide2;
+			Vec2i collide1, collide2, normal;
 			const bool result = MinkowskiHexCollide(
 				rectPos1, rectVel1, rectSize1,
 				rectPos2, rectVel2, rectSize2,
-				&collide1, &collide2);
+				&collide1, &collide2, &normal);
 
 		THEN("the result should be true");
 			SHOULD_BE_TRUE(result);
@@ -82,6 +85,9 @@ FEATURE(minkowski_hex, "Minkowski Hex")
 			"same as its position")
 			SHOULD_INT_EQUAL(collide2.x, rectPos2.x);
 			SHOULD_INT_EQUAL(collide2.y, rectPos2.y);
+		AND("the normal should be (-1, 0)")
+			SHOULD_INT_EQUAL(normal.x, -1);
+			SHOULD_INT_EQUAL(normal.y, 0);
 	SCENARIO_END
 FEATURE_END
 
