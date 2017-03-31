@@ -75,6 +75,7 @@ typedef struct
 	CArray texIdsCharClasses;	// of GLuint
 	CArray texIdsGuns;	// of GLuint
 	Animation anim;
+	direction_e previewDir;
 	Animation animSelection;
 } EditorContext;
 
@@ -151,8 +152,8 @@ void CharEditor(
 		LoadTexFromPic(*texid, g->Icon);
 	}
 
-	// TODO: choose between idle and walking
 	ec.anim = AnimationGetActorAnimation(ACTORANIMATION_WALKING);
+	ec.previewDir = DIRECTION_DOWN;
 	ec.animSelection = AnimationGetActorAnimation(ACTORANIMATION_IDLE);
 
 	// Initialise fonts
@@ -333,7 +334,7 @@ static void DrawFlag(
 	EditorContext *ec, const char *label, const int flag, const char *tooltip);
 static void DrawCharacter(
 	EditorContext *ec, Character *c, GLuint *texids, const Vec2i pos,
-	const Animation *anim);
+	const Animation *anim, const direction_e d);
 static void Draw(SDL_Window *win, EditorContext *ec)
 {
 	if (nk_begin(ec->ctx, "Character Store", nk_rect(10, 10, 690, 280),
@@ -392,7 +393,7 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 			}
 			DrawCharacter(
 				ec, c, CArrayGet(&ec->texidsChars, _ca_index),
-				Vec2iNew(-34, 5), &ec->animSelection);
+				Vec2iNew(-34, 5), &ec->animSelection, DIRECTION_DOWN);
 		CA_FOREACH_END()
 	}
 	nk_end(ec->ctx);
@@ -402,11 +403,38 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 		if (nk_begin(ec->ctx, "Preview", nk_rect(710, 10, 80, 280),
 			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
 		{
-			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
-			// TODO: UI controls for animation
+			// Preview direction
+			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 2);
+			if (nk_button_label(ec->ctx, "<"))
+			{
+				ec->previewDir = (direction_e)CLAMP_OPPOSITE(
+					(int)ec->previewDir + 1, 0, DIRECTION_UPLEFT);
+			}
+			if (nk_button_label(ec->ctx, ">"))
+			{
+				ec->previewDir = (direction_e)CLAMP_OPPOSITE(
+					(int)ec->previewDir - 1, 0, DIRECTION_UPLEFT);
+			}
+			// Preview
 			nk_layout_row_dynamic(ec->ctx, 32 * PIC_SCALE, 1);
 			DrawCharacter(
-				ec, ec->Char, ec->texidsPreview, Vec2iZero(), &ec->anim);
+				ec, ec->Char, ec->texidsPreview, Vec2iNew(0, 5), &ec->anim,
+				ec->previewDir);
+			// Animation
+			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
+			const int isWalking = ec->anim.Type == ACTORANIMATION_WALKING;
+			if (nk_select_label(
+				ec->ctx, "Run", NK_TEXT_ALIGN_LEFT, isWalking) &&
+				!isWalking)
+			{
+				ec->anim = AnimationGetActorAnimation(ACTORANIMATION_WALKING);
+			}
+			const int isIdle = ec->anim.Type == ACTORANIMATION_IDLE;
+			if (nk_select_label(ec->ctx, "Idle", NK_TEXT_ALIGN_LEFT, isIdle) &&
+				!isIdle)
+			{
+				ec->anim = AnimationGetActorAnimation(ACTORANIMATION_IDLE);
+			}
 		}
 		nk_end(ec->ctx);
 
@@ -709,11 +737,11 @@ static void BeforeDrawTex(const GLuint texid)
 
 static void DrawCharacter(
 	EditorContext *ec, Character *c, GLuint *texids, const Vec2i pos,
-	const Animation *anim)
+	const Animation *anim, const direction_e d)
 {
 	const int frame = AnimationGetFrame(anim);
 	ActorPics pics = GetCharacterPics(
-		c, DIRECTION_DOWN, anim->Type, frame,
+		c, d, anim->Type, frame,
 		c->Gun->Pic, GUNSTATE_READY, false, NULL, NULL, 0);
 	for (int i = 0; i < BODY_PART_COUNT; i++)
 	{
