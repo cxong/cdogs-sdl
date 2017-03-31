@@ -95,5 +95,8 @@ void BlitPicHighlight(
 
 void BlitFlip(GraphicsDevice *g);
 
+Uint32 PixelMult(const Uint32 p, const Uint32 m);
+color_t CharColorsGetChannelMask(const CharColors *c, const uint8_t alpha);
+
 #define BLIT_BRIGHTNESS_MIN (-10)
 #define BLIT_BRIGHTNESS_MAX 10

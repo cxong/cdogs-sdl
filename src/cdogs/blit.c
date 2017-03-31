@@ -219,7 +219,7 @@ void Blit(GraphicsDevice *device, const Pic *pic, Vec2i pos)
 	}
 }
 
-static Uint32 PixelMult(Uint32 p, Uint32 m)
+Uint32 PixelMult(const Uint32 p, const Uint32 m)
 {
 	return
 		((p & 0xFF) * (m & 0xFF) / 0xFF) |
@@ -283,8 +283,6 @@ void BlitMasked(
 		}
 	}
 }
-static color_t CharColorsGetChannelMask(
-	const CharColors *c, const uint8_t alpha);
 void BlitCharMultichannel(
 	GraphicsDevice *device,
 	const Pic *pic,
@@ -334,7 +332,7 @@ void BlitCharMultichannel(
 		}
 	}
 }
-static color_t CharColorsGetChannelMask(
+color_t CharColorsGetChannelMask(
 	const CharColors *c, const uint8_t alpha)
 {
 	switch (alpha)

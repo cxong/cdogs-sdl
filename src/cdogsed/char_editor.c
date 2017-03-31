@@ -50,6 +50,7 @@
 #endif
 #include <nuklear/nuklear_sdl_gl2.h>
 #include <cdogs/actors.h>
+#include <cdogs/blit.h>
 #include <cdogs/character.h>
 #include <cdogs/draw/draw_actor.h>
 #include <cdogs/log.h>
@@ -83,6 +84,8 @@ const float bg[4] = { 0.16f, 0.1f, 0.1f, 1.f };
 
 // Util functions
 static void LoadTexFromPic(const GLuint texid, const Pic *pic);
+static void LoadMultiChannelTexFromPic(
+	const GLuint texid, const Pic *pic, const CharColors *colors);
 static void BeforeDrawTex(const GLuint texid);
 
 
@@ -136,11 +139,15 @@ void CharEditor(
 	CArrayInit(&ec.texIdsCharClasses, sizeof(GLuint));
 	CArrayResize(&ec.texIdsCharClasses, NumCharacterClasses(), NULL);
 	glGenTextures(NumCharacterClasses(), (GLuint *)ec.texIdsCharClasses.data);
+	CharColors cc;
+	cc.Skin = colorSkin;
+	cc.Hair = colorRed;
 	for (int i = 0; i < NumCharacterClasses(); i++)
 	{
 		const GLuint *texid = CArrayGet(&ec.texIdsCharClasses, i);
 		const CharacterClass *c = IndexCharacterClass(i);
-		LoadTexFromPic(*texid, GetHeadPic(c, DIRECTION_DOWN, GUNSTATE_READY));
+		LoadMultiChannelTexFromPic(
+			*texid, GetHeadPic(c, DIRECTION_DOWN, GUNSTATE_READY), &cc);
 	}
 	CArrayInit(&ec.texIdsGuns, sizeof(GLuint));
 	CArrayResize(&ec.texIdsGuns, NumGuns(), NULL);
@@ -667,8 +674,8 @@ static int nk_combo_separator_image(struct nk_context *ctx,
 	// Get widget bounds for drawing currently selected item image later
 	struct nk_rect bounds;
 	nk_layout_widget_space(&bounds, ctx, ctx->current, nk_false);
-	bounds.x += size.x - 64;
-	bounds.y += 0;
+	bounds.x += size.x - 56;
+	bounds.y += 2;
 	bounds.w = (float)12 * PIC_SCALE;
 	bounds.h = (float)12 * PIC_SCALE;
 
@@ -690,7 +697,7 @@ static int nk_combo_separator_image(struct nk_context *ctx,
     }
 
 	// Also draw currently selected image
-	const struct nk_image comboImg = nk_image_id(img_ids[i]);
+	const struct nk_image comboImg = nk_image_id(img_ids[selected]);
 	BeforeDrawTex(img_ids[selected]);
 	nk_draw_image(&ctx->current->buffer, bounds, &comboImg, nk_white);
 
@@ -741,6 +748,31 @@ static void LoadTexFromPic(const GLuint texid, const Pic *pic)
 		GL_TEXTURE_2D, 0, GL_RGBA, pic->size.x, pic->size.y, 0, GL_BGRA,
 		GL_UNSIGNED_BYTE, pic->Data);
 }
+static void LoadMultiChannelTexFromPic(
+	const GLuint texid, const Pic *pic, const CharColors *colors)
+{
+	glBindTexture(GL_TEXTURE_2D, texid);
+	Uint32 *data;
+	CMALLOC(data, pic->size.x * pic->size.y * sizeof *data);
+	for (int i = 0; i < pic->size.x * pic->size.y; i++)
+	{
+		const Uint32 pixel = pic->Data[i];
+		const color_t color = PIXEL2COLOR(pixel);
+		if (pixel == 0)
+		{
+			data[i] = 0;
+		}
+		else
+		{
+			data[i] = PixelMult(
+				pixel, COLOR2PIXEL(CharColorsGetChannelMask(colors, color.a)));
+		}
+	}
+	glTexImage2D(
+		GL_TEXTURE_2D, 0, GL_RGBA, pic->size.x, pic->size.y, 0, GL_BGRA,
+		GL_UNSIGNED_BYTE, data);
+	CFREE(data);
+}
 
 static void BeforeDrawTex(const GLuint texid)
 {
@@ -765,9 +797,7 @@ static void DrawCharacter(
 			continue;
 		}
 		const Vec2i drawPos = Vec2iAdd(pos, pics.OrderedOffsets[i]);
-		//BlitCharMultichannel(&gGraphicsDevice, pic, drawPos, pic->Colors);
-		// TODO: coloured drawing
-		LoadTexFromPic(texids[i], pic);
+		LoadMultiChannelTexFromPic(texids[i], pic, pics.Colors);
 		struct nk_image tex = nk_image_id((int)texids[i]);
 		glTexParameteri(
 			GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
