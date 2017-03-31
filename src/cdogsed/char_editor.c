@@ -329,7 +329,7 @@ static bool HandleEvents(EditorContext *ec)
 	return run;
 }
 
-static void AddCharacter(EditorContext *ec);
+static void AddCharacter(EditorContext *ec, const Character *clone);
 static int MoveCharacter(
 	EditorContext *ec, const int selectedIndex, const int d);
 static void DeleteCharacter(EditorContext *ec, const int selectedIndex);
@@ -359,8 +359,9 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 		nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 4);
 		if (nk_button_label(ec->ctx, "Add"))
 		{
-			AddCharacter(ec);
-			selectedIndex = MAX(selectedIndex, 0);
+			AddCharacter(ec, NULL);
+			selectedIndex = MAX(
+				(int)ec->Setting->characters.OtherChars.size - 1, 0);
 		}
 		if (nk_button_label(ec->ctx, "Move Up"))
 		{
@@ -370,6 +371,14 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 		{
 			selectedIndex = MoveCharacter(ec, selectedIndex, 1);
 		}
+		if (selectedIndex >= 0 && nk_button_label(ec->ctx, "Duplicate"))
+		{
+			AddCharacter(
+				ec,
+				CArrayGet(&ec->Setting->characters.OtherChars, selectedIndex));
+			selectedIndex = MAX(
+				(int)ec->Setting->characters.OtherChars.size - 1, 0);
+		}
 		if (selectedIndex >= 0 && nk_button_label(ec->ctx, "Remove"))
 		{
 			DeleteCharacter(ec, selectedIndex);
@@ -377,7 +386,6 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 				selectedIndex,
 				(int)ec->Setting->characters.OtherChars.size - 1);
 		}
-		// TODO: clone button
 		if (selectedIndex >= 0)
 		{
 			ec->Char = CArrayGet(
@@ -543,25 +551,34 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 	SDL_GL_SwapWindow(win);
 }
 
-static void AddCharacter(EditorContext *ec)
+static void AddCharacter(EditorContext *ec, const Character *clone)
 {
 	ec->Char = CharacterStoreAddOther(&ec->Setting->characters);
-	// set up character template
-	ec->Char->Class = StrCharacterClass("Ogre");
-	ec->Char->Colors.Skin = colorGreen;
-	const color_t darkGray = {64, 64, 64, 255};
-	ec->Char->Colors.Arms = darkGray;
-	ec->Char->Colors.Body = darkGray;
-	ec->Char->Colors.Legs = darkGray;
-	ec->Char->Colors.Hair = colorBlack;
-	ec->Char->speed = 256;
-	ec->Char->Gun = StrGunDescription("Machine gun");
-	ec->Char->maxHealth = 40;
-	ec->Char->flags = FLAGS_IMMUNITY;
-	ec->Char->bot->probabilityToMove = 50;
-	ec->Char->bot->probabilityToTrack = 25;
-	ec->Char->bot->probabilityToShoot = 2;
-	ec->Char->bot->actionDelay = 15;
+	if (clone != NULL)
+	{
+		memcpy(ec->Char, clone, sizeof *ec->Char);
+		CMALLOC(ec->Char->bot, sizeof *ec->Char->bot);
+		memcpy(ec->Char->bot, clone->bot, sizeof *ec->Char->bot);
+	}
+	else
+	{
+		// set up character template
+		ec->Char->Class = StrCharacterClass("Ogre");
+		ec->Char->Colors.Skin = colorGreen;
+		const color_t darkGray = {64, 64, 64, 255};
+		ec->Char->Colors.Arms = darkGray;
+		ec->Char->Colors.Body = darkGray;
+		ec->Char->Colors.Legs = darkGray;
+		ec->Char->Colors.Hair = colorBlack;
+		ec->Char->speed = 256;
+		ec->Char->Gun = StrGunDescription("Machine gun");
+		ec->Char->maxHealth = 40;
+		ec->Char->flags = FLAGS_IMMUNITY;
+		ec->Char->bot->probabilityToMove = 50;
+		ec->Char->bot->probabilityToTrack = 25;
+		ec->Char->bot->probabilityToShoot = 2;
+		ec->Char->bot->actionDelay = 15;
+	}
 
 	AddCharacterTextures(ec);
 
