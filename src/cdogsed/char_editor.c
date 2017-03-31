@@ -348,6 +348,7 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 			}
 		CA_FOREACH_END()
 
+		// TODO: keep buttons from scrolling off
 		nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 4);
 		if (nk_button_label(ec->ctx, "Add"))
 		{
@@ -663,7 +664,14 @@ static int nk_combo_separator_image(struct nk_context *ctx,
         current_item = iter + 1;
     }
 
-	// TODO: also draw image here
+	// Get widget bounds for drawing currently selected item image later
+	struct nk_rect bounds;
+	nk_layout_widget_space(&bounds, ctx, ctx->current, nk_false);
+	bounds.x += size.x - 64;
+	bounds.y += 0;
+	bounds.w = (float)12 * PIC_SCALE;
+	bounds.h = (float)12 * PIC_SCALE;
+
     if (nk_combo_begin_text(ctx, current_item, length, size)) {
         current_item = items_separated_by_separator;
         nk_layout_row_dynamic(ctx, (float)item_height, 1);
@@ -680,6 +688,12 @@ static int nk_combo_separator_image(struct nk_context *ctx,
         }
         nk_combo_end(ctx);
     }
+
+	// Also draw currently selected image
+	const struct nk_image comboImg = nk_image_id(img_ids[i]);
+	BeforeDrawTex(img_ids[selected]);
+	nk_draw_image(&ctx->current->buffer, bounds, &comboImg, nk_white);
+
     return selected;
 }
 
