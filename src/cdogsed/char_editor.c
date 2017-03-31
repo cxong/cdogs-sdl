@@ -326,6 +326,14 @@ static bool HandleEvents(EditorContext *ec)
 		nk_sdl_handle_event(&e);
 	}
 	nk_input_end(ec->ctx);
+
+	EventPoll(ec->Handlers, 1);
+	const SDL_Scancode sc = KeyGetPressed(&gEventHandlers.keyboard);
+	if (sc == SDL_SCANCODE_ESCAPE)
+	{
+		run = false;
+	}
+
 	return run;
 }
 
@@ -356,7 +364,7 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 		CA_FOREACH_END()
 
 		// TODO: keep buttons from scrolling off
-		nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 4);
+		nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 5);
 		if (nk_button_label(ec->ctx, "Add"))
 		{
 			AddCharacter(ec, NULL);
