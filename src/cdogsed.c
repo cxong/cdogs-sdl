@@ -87,7 +87,6 @@
 #include <tinydir/tinydir.h>
 
 #include <cdogsed/char_editor.h>
-#include <cdogsed/charsed.h>
 #include <cdogsed/editor_ui.h>
 #include <cdogsed/editor_ui_common.h>
 #include <cdogsed/ui_object.h>
@@ -119,6 +118,7 @@ Mission lastMission;
 #define AUTOSAVE_INTERVAL_SECONDS 60
 Uint32 ticksAutosave;
 Uint32 sTicksElapsed;
+bool fileChanged = false;
 
 
 static Vec2i GetMouseTile(EventHandlers *e)
@@ -280,7 +280,7 @@ static void Change(UIObject *o, const int d, const bool shift)
 	const EditorResult r = UIObjectChange(o, d, shift);
 	if (r & EDITOR_RESULT_CHANGED)
 	{
-		fileChanged = 1;
+		fileChanged = true;
 	}
 	if (r & EDITOR_RESULT_CHANGED_AND_RELOAD)
 	{
@@ -586,7 +586,7 @@ static bool TryOpen(const char *filename)
 	RealPath(filename, buf);
 	if (!MapNewLoad(buf, &gCampaign.Setting))
 	{
-		fileChanged = 0;
+		fileChanged = false;
 		Setup(true);
 		strcpy(lastFile, filename);
 		sAutosaveIndex = 0;
@@ -656,7 +656,7 @@ static void Save(void)
 
 		BlitFlip(&gGraphicsDevice);
 		MapArchiveSave(filename, &gCampaign.Setting);
-		fileChanged = 0;
+		fileChanged = false;
 		strcpy(lastFile, filename);
 		sAutosaveIndex = 0;
 		char msgBuf[CDOGS_PATH_MAX];
@@ -774,7 +774,7 @@ static void Delete(int xc, int yc)
 		AdjustYC(&yc);
 		break;
 	}
-	fileChanged = 1;
+	fileChanged = true;
 	Setup(changedMission);
 }
 
@@ -921,7 +921,7 @@ static HandleInputResult HandleInput(
 					EditorBrushStartPainting(&brush, mission, isMain);
 				if (r & EDITOR_RESULT_CHANGED)
 				{
-					fileChanged = 1;
+					fileChanged = true;
 					Autosave();
 					result.RemakeBg = true;
 					sHasUnbakedChanges = true;
@@ -944,7 +944,7 @@ static HandleInputResult HandleInput(
 			const EditorResult r = EditorBrushStopPainting(&brush, mission);
 			if (r & EDITOR_RESULT_CHANGED)
 			{
-				fileChanged = 1;
+				fileChanged = true;
 				Autosave();
 				result.Redraw = true;
 				result.RemakeBg = true;
@@ -1027,7 +1027,7 @@ static HandleInputResult HandleInput(
 				MissionCopy(mission, &lastMission);	// B,B,A -> A,B,A
 				MissionCopy(&lastMission, &currentMission);	// A,B,A -> A,B,B
 			}
-			fileChanged = 1;
+			fileChanged = true;
 			Setup(false);	// A,B,B -> A,A,B
 			break;
 
@@ -1051,7 +1051,7 @@ static HandleInputResult HandleInput(
 			if (!Vec2iIsZero(scrap->Size))
 			{
 				InsertMission(&gCampaign, scrap, gCampaign.MissionIndex);
-				fileChanged = 1;
+				fileChanged = true;
 				Setup(false);
 			}
 			break;
@@ -1071,7 +1071,7 @@ static HandleInputResult HandleInput(
 		case 'n':
 			InsertMission(&gCampaign, NULL, gCampaign.Setting.Missions.size);
 			gCampaign.MissionIndex = gCampaign.Setting.Missions.size - 1;
-			fileChanged = 1;
+			fileChanged = true;
 			Setup(true);
 			break;
 
@@ -1092,8 +1092,7 @@ static HandleInputResult HandleInput(
 			break;
 
 		case 'e':
-			EditCharacters(&gCampaign.Setting);
-			//CharEditor(&gCampaign.Setting, &gEventHandlers, &fileChanged);
+			CharEditor(&gCampaign.Setting, &gEventHandlers, &fileChanged);
 			Setup(false);
 			UIObjectUnhighlight(sObjs, true);
 			CArrayTerminate(&sDrawObjs);
@@ -1149,7 +1148,7 @@ static HandleInputResult HandleInput(
 			break;
 
 		case SDL_SCANCODE_BACKSPACE:
-			fileChanged |= UIObjectDelChar(sObjs);
+			fileChanged = fileChanged || UIObjectDelChar(sObjs);
 			break;
 
 		default:
@@ -1160,7 +1159,7 @@ static HandleInputResult HandleInput(
 		char *c = gEventHandlers.keyboard.Typed;
 		while (c && *c >= ' ' && *c <= '~')
 		{
-			fileChanged |= UIObjectAddChar(sObjs, *c);
+			fileChanged = fileChanged || UIObjectAddChar(sObjs, *c);
 			c++;
 		}
 	}
@@ -1246,7 +1245,7 @@ static void InputInsert(int *xc, const int yc, Mission *mission)
 		}
 		break;
 	}
-	fileChanged = 1;
+	fileChanged = true;
 	Setup(changedMission);
 }
 static void InputDelete(const int xc, const int yc)

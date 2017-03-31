@@ -68,7 +68,7 @@ typedef struct
 	Character *Char;
 	CampaignSetting *Setting;
 	EventHandlers *Handlers;
-	int *FileChanged;
+	bool *FileChanged;
 	char *CharacterClassNames;
 	char *GunNames;
 	CArray texidsChars;	// of GLuint[BODY_PART_COUNT]
@@ -99,7 +99,7 @@ static void AddCharacterTextures(EditorContext *ec);
 static bool HandleEvents(EditorContext *ec);
 static void Draw(SDL_Window *win, EditorContext *ec);
 void CharEditor(
-	CampaignSetting *setting, EventHandlers *handlers, int *fileChanged)
+	CampaignSetting *setting, EventHandlers *handlers, bool *fileChanged)
 {
 	SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "1");
 	SDL_Init(SDL_INIT_VIDEO);

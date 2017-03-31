@@ -31,4 +31,4 @@
 #include <cdogs/gamedata.h>
 
 void CharEditor(
-	CampaignSetting *setting, EventHandlers *handlers, int *fileChanged);
+	CampaignSetting *setting, EventHandlers *handlers, bool *fileChanged);

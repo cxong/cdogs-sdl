@@ -4,11 +4,9 @@ include_directories(
 	${SDL2_MIXER_INCLUDE_DIRS})
 set(CDOGSED_SOURCES
 	char_editor.c
-	charsed.c
 	editor_brush.c
 	editor_ui.c
 	editor_ui_cave.c
-	editor_ui_chared.c
 	editor_ui_color.c
 	editor_ui_common.c
 	editor_ui_objectives.c
@@ -18,11 +16,9 @@ set(CDOGSED_SOURCES
 	ui_object.c)
 set(CDOGSED_HEADERS
 	char_editor.h
-	charsed.h
 	editor_brush.h
 	editor_ui.h
 	editor_ui_cave.h
-	editor_ui_chared.h
 	editor_ui_color.h
 	editor_ui_common.h
 	editor_ui_objectives.h
