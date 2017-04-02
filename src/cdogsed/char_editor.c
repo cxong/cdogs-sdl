@@ -122,6 +122,10 @@ void CharEditor(
 	// Initialise editor context
 	EditorContext ec;
 	ec.ctx = nk_sdl_init(win);
+	ec.ctx->style.checkbox.hover.data.color = nk_rgb(96, 96, 96);
+	ec.ctx->style.checkbox.normal.data.color = nk_rgb(64, 64, 64);
+	ec.ctx->style.checkbox.cursor_hover.data.color = nk_rgb(255, 255, 255);
+	ec.ctx->style.checkbox.cursor_normal.data.color = nk_rgb(200, 200, 200);
 	ec.Char = NULL;
 	ec.Setting = setting;
 	ec.Handlers = handlers;
