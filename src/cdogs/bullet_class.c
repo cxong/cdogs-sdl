@@ -403,7 +403,7 @@ static HitResult HitItem(
 	data.HitType = HIT_NONE;
 	data.MultipleHits = multipleHits;
 	data.Obj = obj;
-	data.ColPos = Vec2iZero();
+	data.ColPos = pos;
 	data.ColNormal = Vec2iZero();
 	data.ColPosDistRealSquared = -1;
 	const CollisionParams params =
