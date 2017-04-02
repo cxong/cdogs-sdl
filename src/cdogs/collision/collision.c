@@ -52,6 +52,7 @@
 #include "algorithms.h"
 #include "config.h"
 #include "minkowski_hex.h"
+#include "objs.h"
 
 #define TILE_CACHE_TILE 1
 #define TILE_CACHE_ADJACENT 2
@@ -290,24 +291,27 @@ static void AddPosToTileCache(void *data, Vec2i pos);
 static bool CheckOverlaps(
 	const TTileItem *item, const Vec2i pos, const Vec2i vel, const Vec2i size,
 	const CollisionParams params, CollideItemFunc func, void *data,
-	CollideWallFunc wallFunc, void *wallData, const Vec2i tilePos);
+	CheckWallFunc checkWallFunc, CollideWallFunc wallFunc, void *wallData,
+	const Vec2i tilePos);
 void OverlapTileItems(
 	const TTileItem *item, const Vec2i pos, const Vec2i size,
 	const CollisionParams params, CollideItemFunc func, void *data,
-	CollideWallFunc wallFunc, void *wallData)
+	CheckWallFunc checkWallFunc, CollideWallFunc wallFunc, void *wallData)
 {
 	TileCacheReset(&gCollisionSystem.tileCache);
 	// Add all the tiles along the motion path
 	AlgoLineDrawData drawData;
 	drawData.Draw = AddPosToTileCache;
 	drawData.data = &gCollisionSystem.tileCache;
+	const Vec2i posReal = Vec2iFull2Real(pos);
 	const Vec2i vel = Vec2iFull2Real(item->VelFull);
-	BresenhamLineDraw(pos, Vec2iAdd(pos, vel), &drawData);
+	BresenhamLineDraw(posReal, Vec2iAdd(posReal, vel), &drawData);
 
 	// Check collisions with all tiles in the cache
 	CA_FOREACH(const Vec2i, dtv, gCollisionSystem.tileCache)
 		if (!CheckOverlaps(
-			item, pos, vel, size, params, func, data, wallFunc, wallData,
+			item, pos, item->VelFull, size, params, func, data,
+			checkWallFunc, wallFunc, wallData,
 			*dtv))
 		{
 			return;
@@ -323,7 +327,8 @@ static void AddPosToTileCache(void *data, Vec2i pos)
 static bool CheckOverlaps(
 	const TTileItem *item, const Vec2i pos, const Vec2i vel, const Vec2i size,
 	const CollisionParams params, CollideItemFunc func, void *data,
-	CollideWallFunc wallFunc, void *wallData, const Vec2i tilePos)
+	CheckWallFunc checkWallFunc, CollideWallFunc wallFunc, void *wallData,
+	const Vec2i tilePos)
 {
 	Vec2i colA, colB, normal;
 	// Check item collisions
@@ -335,9 +340,9 @@ static bool CheckOverlaps(
 			continue;
 		}
 		if (!MinkowskiHexCollide(
-			pos, vel, size,
-			Vec2iNew(ti->x, ti->y), Vec2iFull2Real(ti->VelFull), ti->size,
-			&colA, &colB, &normal))
+			pos, vel, Vec2iReal2Full(size),
+			Vec2iReal2Full(Vec2iNew(ti->x, ti->y)), ti->VelFull,
+			Vec2iReal2Full(ti->size), &colA, &colB, &normal))
 		{
 			continue;
 		}
@@ -348,13 +353,16 @@ static bool CheckOverlaps(
 		}
 	CA_FOREACH_END()
 	// Check wall collisions
-	if (wallFunc != NULL &&
-		MinkowskiHexCollide(
-			pos, vel, size, Vec2iCenterOfTile(tilePos), Vec2iZero(), TILE_SIZE,
-			&colA, &colB, &normal) &&
-		!wallFunc(tilePos, wallData, colA, normal))
+	if (checkWallFunc != NULL && wallFunc != NULL && checkWallFunc(tilePos))
 	{
-		return false;
+		if (MinkowskiHexCollide(
+			pos, vel, Vec2iReal2Full(size),
+			Vec2iReal2Full(Vec2iCenterOfTile(tilePos)), Vec2iZero(),
+			Vec2iReal2Full(TILE_SIZE), &colA, &colB, &normal) &&
+			!wallFunc(tilePos, wallData, colA, normal))
+		{
+			return false;
+		}
 	}
 	return true;
 }
@@ -369,7 +377,7 @@ TTileItem *OverlapGetFirstItem(
 	TTileItem *firstItem = NULL;
 	OverlapTileItems(
 		item, pos, size, params, OverlapGetFirstItemCallback, &firstItem,
-		NULL, NULL);
+		NULL, NULL, NULL);
 	return firstItem;
 }
 static bool OverlapGetFirstItemCallback(
@@ -399,27 +407,43 @@ static bool CheckParams(
 	{
 		return false;
 	}
+	// Check bullet-to-other collisions
+	if (a->kind == KIND_MOBILEOBJECT)
+	{
+		const TMobileObject *mobj = CArrayGet(&gMobObjs, a->id);
+		if (!CanHit(mobj->flags, mobj->ActorUID, b))
+		{
+			return false;
+		}
+	}
 
 	return true;
 }
 
 void GetWallBouncePosVelFull(
-	const Vec2i posFull, const Vec2i velFull, const Vec2i colPosReal,
-	const Vec2i colNormal, Vec2i *outPosFull, Vec2i *outVelFull)
+	const Vec2i pos, const Vec2i vel, const Vec2i colPos,
+	const Vec2i colNormal, Vec2i *outPos, Vec2i *outVel)
 {
+	const Vec2i velBeforeCol = Vec2iMinus(colPos, pos);
+	const Vec2i velAfterCol = Vec2iMinus(vel, velBeforeCol);
+
+	// If normal is zero, this means we were in collision from the start
+	if (Vec2iIsZero(colNormal))
+	{
+		// Reverse the vector
+		*outPos = Vec2iMinus(pos, vel);
+		*outVel = Vec2iScale(vel, -1);
+		return;
+	}
+
 	// Reflect the out position by the collision normal about the collision pos
-	const Vec2i colPosFull = Vec2iReal2Full(colPosReal);
-	const Vec2i velBeforeColFull = Vec2iMinus(colPosFull, posFull);
-	const Vec2i velAfterColFull = Vec2iMinus(velFull, velBeforeColFull);
-	const Vec2i velReflectedFull = Vec2iNew(
-		colNormal.x == 0 ?
-		velAfterColFull.x : colNormal.x * abs(velAfterColFull.x),
-		colNormal.y == 0 ?
-		velAfterColFull.y : colNormal.y * abs(velAfterColFull.y));
-	*outPosFull = Vec2iAdd(colPosFull, velReflectedFull);
+	const Vec2i velReflected = Vec2iNew(
+		colNormal.x == 0 ? velAfterCol.x : colNormal.x * abs(velAfterCol.x),
+		colNormal.y == 0 ? velAfterCol.y : colNormal.y * abs(velAfterCol.y));
+	*outPos = Vec2iAdd(colPos, velReflected);
 
 	// Out velocity follows the collision normal
-	*outVelFull = Vec2iNew(
-		colNormal.x == 0 ? velFull.x : colNormal.x * abs(velFull.x),
-		colNormal.y == 0 ? velFull.y : colNormal.y * abs(velFull.y));
+	*outVel = Vec2iNew(
+		colNormal.x == 0 ? vel.x : colNormal.x * abs(vel.x),
+		colNormal.y == 0 ? vel.y : colNormal.y * abs(vel.y));
 }

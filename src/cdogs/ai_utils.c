@@ -385,8 +385,8 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd)
 		TILEITEM_IMPASSABLE, CalcCollisionTeam(true, a),
 		IsPVP(gCampaign.Entry.Mode)
 	};
-	item =
-		OverlapGetFirstItem(&a->tileItem, frontPos, a->tileItem.size, params);
+	item = OverlapGetFirstItem(
+		&a->tileItem, Vec2iReal2Full(frontPos), a->tileItem.size, params);
 	if (!item || item->kind != KIND_OBJECT)
 	{
 		return NULL;

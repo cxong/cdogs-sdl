@@ -30,8 +30,7 @@
 
 static bool RectangleLineIntersect(
 	const Vec2i rectPos, const Vec2i rectSize,
-	const Vec2i lineStart, const Vec2i lineEnd,
-	float *s, Vec2i *normal);
+	const Vec2i lineStart, const Vec2i lineEnd, float *s, Vec2i *normal);
 bool MinkowskiHexCollide(
 	const Vec2i posA, const Vec2i velA, const Vec2i sizeA,
 	const Vec2i posB, const Vec2i velB, const Vec2i sizeB,
@@ -72,8 +71,7 @@ static bool LinesIntersect(
 	float *s);
 static bool RectangleLineIntersect(
 	const Vec2i rectPos, const Vec2i rectSize,
-	const Vec2i lineStart, const Vec2i lineEnd,
-	float *s, Vec2i *normal)
+	const Vec2i lineStart, const Vec2i lineEnd, float *s, Vec2i *normal)
 {
 	// Find the closest point at which a line intersects a rectangle
 	// Do this by finding intersections between the line and all four sides of
@@ -88,20 +86,11 @@ static bool RectangleLineIntersect(
 	const Vec2i bottomLeft = Vec2iNew(left, bottom);
 
 	// Border case: check if line start is entirely within rectangle
-	if (lineStart.x >= left && lineStart.x <= right &&
-		lineStart.y >= top && lineStart.y <= bottom)
+	if (lineStart.x > left && lineStart.x < right &&
+		lineStart.y > top && lineStart.y < bottom)
 	{
 		*s = 0;
-		// Normal away from line position
-		Vec2i lineAway = Vec2iMinus(rectPos, lineStart);
-		if (Vec2iIsZero(lineAway))
-		{
-			lineAway = Vec2iMinus(lineStart, lineEnd);
-		}
-		// Convert to unit vector
-		*normal =
-			abs(lineAway.x) >= abs(lineAway.y) ?
-			Vec2iNew(SIGN(lineAway.x), 0) : Vec2iNew(0, SIGN(lineAway.y));
+		*normal = Vec2iZero();
 		return true;
 	}
 
@@ -115,10 +104,10 @@ static bool RectangleLineIntersect(
 		*s = sPart;\
 		*normal = _n;\
 	}
-	_CHECK_MIN_DISTANCE(topLeft, bottomLeft, Vec2iNew(1, 0));
-	_CHECK_MIN_DISTANCE(topRight, bottomRight, Vec2iNew(-1, 0));
 	_CHECK_MIN_DISTANCE(topLeft, topRight, Vec2iNew(0, 1));
+	_CHECK_MIN_DISTANCE(topRight, bottomRight, Vec2iNew(-1, 0));
 	_CHECK_MIN_DISTANCE(bottomLeft, bottomRight, Vec2iNew(0, -1));
+	_CHECK_MIN_DISTANCE(topLeft, bottomLeft, Vec2iNew(1, 0));
 
 	return *s >= 0;
 }

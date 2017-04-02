@@ -215,6 +215,7 @@ typedef struct
 	Vec2i ColNormal;
 	int ColPosDistSquared;
 } HitWallData;
+static bool CheckWall(const Vec2i tilePos);
 static bool HitWallFunc(
 	const Vec2i tilePos, void *data, const Vec2i col, const Vec2i normal);
 static bool ParticleUpdate(Particle *p, const int ticks)
@@ -261,8 +262,9 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 		};
 		HitWallData data = { &p->tileItem, Vec2iZero(), Vec2iZero(), -1 };
 		OverlapTileItems(
-			&p->tileItem, Vec2iFull2Real(startPos),
-			p->tileItem.size, params, NULL, NULL, HitWallFunc, &data);
+			&p->tileItem, startPos,
+			p->tileItem.size, params, NULL, NULL,
+			CheckWall, HitWallFunc, &data);
 		if (data.ColPosDistSquared >= 0)
 		{
 			if (p->Class->WallBounces)
@@ -299,18 +301,17 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 }
 static void SetClosestCollision(
 	HitWallData *data, const Vec2i col, const Vec2i normal);
+static bool CheckWall(const Vec2i tilePos)
+{
+	const Tile *t = MapGetTile(&gMap, tilePos);
+	return t == NULL || t->flags & MAPTILE_NO_SHOOT;
+}
 static bool HitWallFunc(
 	const Vec2i tilePos, void *data, const Vec2i col, const Vec2i normal)
 {
-	if (!(MapGetTile(&gMap, tilePos)->flags & MAPTILE_NO_SHOOT))
-	{
-		goto bail;
-	}
-
+	UNUSED(tilePos);
 	HitWallData *hData = data;
 	SetClosestCollision(hData, col, normal);
-
-bail:
 	return true;
 }
 static void SetClosestCollision(
@@ -318,7 +319,7 @@ static void SetClosestCollision(
 {
 	// Choose the best collision point (i.e. closest to origin)
 	const int d2 = DistanceSquared(
-		col, Vec2iFull2Real(Vec2iNew(data->Obj->x, data->Obj->y)));
+		col, Vec2iReal2Full(Vec2iNew(data->Obj->x, data->Obj->y)));
 	if (data->ColPosDistSquared < 0 || d2 < data->ColPosDistSquared)
 	{
 		data->ColPos = col;

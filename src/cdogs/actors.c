@@ -223,14 +223,13 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 	if ((!gCampaign.IsClient && actor->PlayerUID < 0) ||
 		ActorIsLocalPlayer(actor->uid))
 	{
-		Vec2i realPos = Vec2iFull2Real(pos);
 		const CollisionParams params =
 		{
 			TILEITEM_IMPASSABLE, CalcCollisionTeam(true, actor),
 			IsPVP(gCampaign.Entry.Mode)
 		};
 		TTileItem *target = OverlapGetFirstItem(
-			&actor->tileItem, realPos, actor->tileItem.size, params);
+			&actor->tileItem, pos, actor->tileItem.size, params);
 		if (target)
 		{
 			Weapon *gun = ActorGetGun(actor);
@@ -275,15 +274,15 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 				return false;
 			}
 
-			Vec2i realYPos = Vec2iFull2Real(Vec2iNew(actor->Pos.x, pos.y));
+			const Vec2i yPos = Vec2iNew(actor->Pos.x, pos.y);
 			if (OverlapGetFirstItem(
-				&actor->tileItem, realYPos, actor->tileItem.size, params))
+				&actor->tileItem, yPos, actor->tileItem.size, params))
 			{
 				pos.y = actor->Pos.y;
 			}
-			Vec2i realXPos = Vec2iFull2Real(Vec2iNew(pos.x, actor->Pos.y));
+			const Vec2i xPos = Vec2iNew(pos.x, actor->Pos.y);
 			if (OverlapGetFirstItem(
-				&actor->tileItem, realXPos, actor->tileItem.size, params))
+				&actor->tileItem, xPos, actor->tileItem.size, params))
 			{
 				pos.x = actor->Pos.x;
 			}
@@ -294,9 +293,8 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 				// Arbitrarily choose x-only movement
 				pos.y = actor->Pos.y;
 			}
-			realPos = Vec2iFull2Real(pos);
 			if ((pos.x == actor->Pos.x && pos.y == actor->Pos.y) ||
-				IsCollisionWithWall(realPos, actor->tileItem.size))
+				IsCollisionWithWall(Vec2iFull2Real(pos), actor->tileItem.size))
 			{
 				return false;
 			}
@@ -467,8 +465,8 @@ static void CheckPickups(TActor *actor)
 		0, CalcCollisionTeam(true, actor), IsPVP(gCampaign.Entry.Mode)
 	};
 	OverlapTileItems(
-		&actor->tileItem, Vec2iFull2Real(actor->Pos), actor->tileItem.size,
-		params, CheckPickupFunc, actor, NULL, NULL);
+		&actor->tileItem, actor->Pos, actor->tileItem.size,
+		params, CheckPickupFunc, actor, NULL, NULL, NULL);
 }
 static bool CheckPickupFunc(
 	TTileItem *ti, void *data, const Vec2i colA, const Vec2i colB,
@@ -497,7 +495,7 @@ static void CheckRescue(const TActor *a)
 		IsPVP(gCampaign.Entry.Mode)
 	};
 	const TTileItem *target = OverlapGetFirstItem(
-		&a->tileItem, Vec2iFull2Real(a->Pos),
+		&a->tileItem, a->Pos,
 		Vec2iAdd(a->tileItem.size, Vec2iNew(RESCUE_CHECK_PAD, RESCUE_CHECK_PAD)),
 		params);
 	if (target != NULL && target->kind == KIND_CHARACTER)
@@ -881,14 +879,13 @@ void UpdateAllActors(int ticks)
 		if (!gCampaign.IsClient &&
 			gCollisionSystem.allyCollision == ALLYCOLLISION_REPEL)
 		{
-			Vec2i realPos = Vec2iFull2Real(actor->Pos);
 			const CollisionParams params =
 			{
 				TILEITEM_IMPASSABLE, COLLISIONTEAM_NONE,
 				IsPVP(gCampaign.Entry.Mode)
 			};
 			const TTileItem *collidingItem = OverlapGetFirstItem(
-				&actor->tileItem, realPos, actor->tileItem.size, params);
+				&actor->tileItem, actor->Pos, actor->tileItem.size, params);
 			if (collidingItem && collidingItem->kind == KIND_CHARACTER)
 			{
 				TActor *collidingActor = CArrayGet(
@@ -981,8 +978,8 @@ static void CheckManualPickups(TActor *a)
 		0, CalcCollisionTeam(true, a), IsPVP(gCampaign.Entry.Mode)
 	};
 	OverlapTileItems(
-		&a->tileItem, Vec2iFull2Real(a->Pos),
-		a->tileItem.size, params, CheckManualPickupFunc, a, NULL, NULL);
+		&a->tileItem, a->Pos,
+		a->tileItem.size, params, CheckManualPickupFunc, a, NULL, NULL, NULL);
 }
 static bool CheckManualPickupFunc(
 	TTileItem *ti, void *data, const Vec2i colA, const Vec2i colB,

@@ -219,8 +219,7 @@ bool UpdateBullet(struct MobileObject *obj, const int ticks)
 				alive = false;
 			}
 		}
-		const Vec2i hitPos =
-			hit.Type != HIT_NONE ? Vec2iReal2Full(hit.Pos) : pos;
+		const Vec2i hitPos = hit.Type != HIT_NONE ? hit.Pos : pos;
 		b.u.BulletBounce.BouncePos = Vec2i2Net(hitPos);
 		b.u.BulletBounce.BounceVel = Vec2i2Net(obj->tileItem.VelFull);
 		if (hit.Type == HIT_WALL && !Vec2iIsZero(obj->tileItem.VelFull))
@@ -390,6 +389,7 @@ typedef struct
 static bool HitItemFunc(
 	TTileItem *ti, void *data, const Vec2i colA, const Vec2i colB,
 	const Vec2i normal);
+static bool CheckWall(const Vec2i tilePos);
 static bool HitWallFunc(
 	const Vec2i tilePos, void *data, const Vec2i col, const Vec2i normal);
 static void OnHit(HitItemData *data, TTileItem *target);
@@ -410,8 +410,9 @@ static HitResult HitItem(
 		TILEITEM_CAN_BE_SHOT, COLLISIONTEAM_NONE, IsPVP(gCampaign.Entry.Mode)
 	};
 	OverlapTileItems(
-		&obj->tileItem, Vec2iFull2Real(pos),
-		obj->tileItem.size, params, HitItemFunc, &data, HitWallFunc, &data);
+		&obj->tileItem, pos,
+		obj->tileItem.size, params, HitItemFunc, &data,
+		CheckWall, HitWallFunc, &data);
 	if (!multipleHits && data.ColPosDistSquared >= 0)
 	{
 		if (data.HitType == HIT_WALL)
@@ -437,10 +438,6 @@ static bool HitItemFunc(
 {
 	UNUSED(colB);
 	HitItemData *hData = data;
-	if (!CanHit(hData->Obj->flags, hData->Obj->ActorUID, ti))
-	{
-		goto bail;
-	}
 
 	// If we can hit multiple targets, just process those hits immediately
 	// Otherwise, find the closest target and only process the hit for that one
@@ -456,7 +453,6 @@ static bool HitItemFunc(
 			ti, Vec2iZero());
 	}
 
-bail:
 	return true;
 }
 static HitType GetHitType(
@@ -491,14 +487,14 @@ static HitType GetHitType(
 	}
 	return ht;
 }
+static bool CheckWall(const Vec2i tilePos)
+{
+	const Tile *t = MapGetTile(&gMap, tilePos);
+	return t == NULL || t->flags & MAPTILE_NO_SHOOT;
+}
 static bool HitWallFunc(
 	const Vec2i tilePos, void *data, const Vec2i col, const Vec2i normal)
 {
-	if (!(MapGetTile(&gMap, tilePos)->flags & MAPTILE_NO_SHOOT))
-	{
-		goto bail;
-	}
-
 	HitItemData *hData = data;
 
 	// If we can hit multiple targets, just process those hits immediately
@@ -513,7 +509,6 @@ static bool HitWallFunc(
 		SetClosestCollision(hData, col, normal, HIT_WALL, NULL, tilePos);
 	}
 
-bail:
 	return true;
 }
 static void SetClosestCollision(
