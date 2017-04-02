@@ -440,6 +440,12 @@ static bool HitItemFunc(
 	UNUSED(colB);
 	HitItemData *hData = data;
 
+	// Check bullet-to-other collisions
+	if (!CanHit(hData->Obj->flags, hData->Obj->ActorUID, ti))
+	{
+		goto bail;
+	}
+
 	// If we can hit multiple targets, just process those hits immediately
 	// Otherwise, find the closest target and only process the hit for that one
 	// at the end.
@@ -454,6 +460,7 @@ static bool HitItemFunc(
 			ti, Vec2iZero());
 	}
 
+bail:
 	return true;
 }
 static HitType GetHitType(

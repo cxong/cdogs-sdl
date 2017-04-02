@@ -407,15 +407,6 @@ static bool CheckParams(
 	{
 		return false;
 	}
-	// Check bullet-to-other collisions
-	if (a->kind == KIND_MOBILEOBJECT)
-	{
-		const TMobileObject *mobj = CArrayGet(&gMobObjs, a->id);
-		if (!CanHit(mobj->flags, mobj->ActorUID, b))
-		{
-			return false;
-		}
-	}
 
 	return true;
 }
