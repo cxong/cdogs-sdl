@@ -34,9 +34,9 @@ FEATURE(minkowski_hex, "Minkowski Hex")
 			SHOULD_INT_EQUAL(collide1.y, rectPos1.y);
 			SHOULD_INT_EQUAL(collide2.x, rectPos2.x);
 			SHOULD_INT_EQUAL(collide2.y, rectPos2.y);
-		AND("the normal should be (0, 1)")
+		AND("the normal should be (0, 0)")
 			SHOULD_INT_EQUAL(normal.x, 0);
-			SHOULD_INT_EQUAL(normal.y, 1);
+			SHOULD_INT_EQUAL(normal.y, 0);
 	SCENARIO_END
 
 	SCENARIO("No overlap, no movement")
