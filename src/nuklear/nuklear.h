@@ -1,7 +1,7 @@
 /*
- Nuklear - 1.33.0 - public domain
+ Nuklear - 1.34.3 - public domain
  no warrenty implied; use at your own risk.
- authored from 2015-2016 by Micha Mettke
+ authored from 2015-2017 by Micha Mettke
 
 ABOUT:
     This is a minimal state graphical user interface single header toolkit
@@ -1003,7 +1003,7 @@ NK_API void                     nk_input_begin(struct nk_context*);
 NK_API void                     nk_input_motion(struct nk_context*, int x, int y);
 NK_API void                     nk_input_key(struct nk_context*, enum nk_keys, int down);
 NK_API void                     nk_input_button(struct nk_context*, enum nk_buttons, int x, int y, int down);
-NK_API void                     nk_input_scroll(struct nk_context*, float y);
+NK_API void                     nk_input_scroll(struct nk_context*, struct nk_vec2 val);
 NK_API void                     nk_input_char(struct nk_context*, char);
 NK_API void                     nk_input_glyph(struct nk_context*, const nk_glyph);
 NK_API void                     nk_input_unicode(struct nk_context*, nk_rune);
@@ -1137,6 +1137,7 @@ NK_API int                      nk_stricmp(const char *s1, const char *s2);
 NK_API int                      nk_stricmpn(const char *s1, const char *s2, int n);
 NK_API int                      nk_strtoi(const char *str, const char **endptr);
 NK_API float                    nk_strtof(const char *str, const char **endptr);
+NK_API double                   nk_strtod(const char *str, const char **endptr);
 NK_API int                      nk_strfilter(const char *text, const char *regexp);
 NK_API int                      nk_strmatch_fuzzy_string(char const *str, char const *pattern, int *out_score);
 NK_API int                      nk_strmatch_fuzzy_text(const char *txt, int txt_len, const char *pattern, int *out_score);
@@ -2009,7 +2010,7 @@ struct nk_mouse {
     struct nk_vec2 pos;
     struct nk_vec2 prev;
     struct nk_vec2 delta;
-    float scroll_delta;
+    struct nk_vec2 scroll_delta;
     unsigned char grab;
     unsigned char grabbed;
     unsigned char ungrab;
@@ -2731,7 +2732,6 @@ struct nk_panel {
     struct nk_menu_state menu;
     struct nk_row_layout row;
     struct nk_chart chart;
-    struct nk_popup_buffer popup_buffer;
     struct nk_command_buffer *buffer;
     struct nk_panel *parent;
 };
@@ -2763,6 +2763,7 @@ enum nk_window_flags {
 struct nk_popup_state {
     struct nk_window *win;
     enum nk_panel_type type;
+    struct nk_popup_buffer buf;
     nk_hash name;
     int active;
     unsigned combo_count;
@@ -2844,7 +2845,7 @@ struct nk_window {
  *      nk_style_pop_style_item(ctx);
  *      nk_style_pop_vec2(ctx);
  *
- * Nuklear has a stack for style_items, float properties, vector properties, 
+ * Nuklear has a stack for style_items, float properties, vector properties,
  * flags, colors, fonts and for button_behavior. Each has it's own fixed size stack
  * which can be changed at compile time.
  */
@@ -4090,7 +4091,7 @@ nk_vsnprintf(char *buf, int buf_size, const char *fmt, va_list args)
         /* width argument */
         width = NK_DEFAULT;
         if (*iter >= '1' && *iter <= '9') {
-            char *end;
+            const char *end;
             width = nk_strtoi(iter, &end);
             if (end == iter)
                 width = -1;
@@ -4108,7 +4109,7 @@ nk_vsnprintf(char *buf, int buf_size, const char *fmt, va_list args)
                 precision = va_arg(args, int);
                 iter++;
             } else {
-                char *end;
+                const char *end;
                 precision = nk_strtoi(iter, &end);
                 if (end == iter)
                     precision = -1;
@@ -10157,8 +10158,8 @@ nk_font_bake_pack(struct nk_font_baker *baker,
         int rect_n = 0;
         int char_n = 0;
 
-        /* pack custom user data first so it will be in the upper left corner*/
         if (custom) {
+            /* pack custom user data first so it will be in the upper left corner*/
             struct nk_rp_rect custom_space;
             nk_zero(&custom_space, sizeof(custom_space));
             custom_space.w = (nk_rp_coord)((custom->w * 2) + 1);
@@ -11318,7 +11319,7 @@ nk_input_begin(struct nk_context *ctx)
         in->mouse.buttons[i].clicked = 0;
 
     in->keyboard.text_len = 0;
-    in->mouse.scroll_delta = 0;
+    in->mouse.scroll_delta = nk_vec2(0,0);
     in->mouse.prev.x = in->mouse.pos.x;
     in->mouse.prev.y = in->mouse.pos.y;
     in->mouse.delta.x = 0;
@@ -11385,11 +11386,12 @@ nk_input_button(struct nk_context *ctx, enum nk_buttons id, int x, int y, int do
 }
 
 NK_API void
-nk_input_scroll(struct nk_context *ctx, float y)
+nk_input_scroll(struct nk_context *ctx, struct nk_vec2 val)
 {
     NK_ASSERT(ctx);
     if (!ctx) return;
-    ctx->input.mouse.scroll_delta += y;
+    ctx->input.mouse.scroll_delta.x += val.x;
+    ctx->input.mouse.scroll_delta.y += val.y;
 }
 
 NK_API void
@@ -13453,14 +13455,11 @@ nk_do_selectable_image(nk_flags *state, struct nk_command_buffer *out,
 NK_INTERN float
 nk_slider_behavior(nk_flags *state, struct nk_rect *logical_cursor,
     struct nk_rect *visual_cursor, struct nk_input *in,
-    const struct nk_style_slider *style, struct nk_rect bounds,
-    float slider_min, float slider_max, float slider_value,
+    struct nk_rect bounds, float slider_min, float slider_max, float slider_value,
     float slider_step, float slider_steps)
 {
     int left_mouse_down;
     int left_mouse_click_in_cursor;
-
-	NK_UNUSED(style);
 
     /* check if visual cursor is being dragged */
     nk_widget_state_reset(state);
@@ -13638,7 +13637,7 @@ nk_do_slider(nk_flags *state,
     visual_cursor.x = logical_cursor.x - visual_cursor.w*0.5f;
 
     slider_value = nk_slider_behavior(state, &logical_cursor, &visual_cursor,
-        in, style, bounds, slider_min, slider_max, slider_value, step, slider_steps);
+        in, bounds, slider_min, slider_max, slider_value, step, slider_steps);
     visual_cursor.x = logical_cursor.x - visual_cursor.w*0.5f;
 
     /* draw slider */
@@ -13764,6 +13763,7 @@ nk_scrollbar_behavior(nk_flags *state, struct nk_input *in,
     nk_flags ws;
     int left_mouse_down;
     int left_mouse_click_in_cursor;
+    float scroll_delta;
 
     nk_widget_state_reset(state);
     if (!in) return scroll_offset;
@@ -13774,6 +13774,7 @@ nk_scrollbar_behavior(nk_flags *state, struct nk_input *in,
     if (nk_input_is_mouse_hovering_rect(in, *scroll))
         *state = NK_WIDGET_STATE_HOVERED;
 
+    scroll_delta = (o == NK_VERTICAL) ? in->mouse.scroll_delta.y: in->mouse.scroll_delta.x;
     if (left_mouse_down && left_mouse_click_in_cursor) {
         /* update cursor by mouse dragging */
         float pixel, delta;
@@ -13806,9 +13807,9 @@ nk_scrollbar_behavior(nk_flags *state, struct nk_input *in,
             scroll_offset = NK_MIN(scroll_offset + scroll->h, target - scroll->h);
         else scroll_offset = NK_MIN(scroll_offset + scroll->w, target - scroll->w);
     } else if (has_scrolling) {
-        if ((in->mouse.scroll_delta<0 || (in->mouse.scroll_delta>0))) {
+        if ((scroll_delta < 0 || (scroll_delta > 0))) {
             /* update cursor by mouse scrolling */
-            scroll_offset = scroll_offset + scroll_step * (-in->mouse.scroll_delta);
+            scroll_offset = scroll_offset + scroll_step * (-scroll_delta);
             if (o == NK_VERTICAL)
                 scroll_offset = NK_CLAMP(0, scroll_offset, target - scroll->h);
             else scroll_offset = NK_CLAMP(0, scroll_offset, target - scroll->w);
@@ -14582,7 +14583,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
             const char *begin = nk_str_get_const(&edit->string);
             int l = nk_str_len_char(&edit->string);
             nk_edit_draw_text(out, style, area.x - edit->scrollbar.x,
-                area.y - edit->scrollbar.y, 0, begin, l, row_height, font, 
+                area.y - edit->scrollbar.y, 0, begin, l, row_height, font,
                 background_color, text_color, nk_false);
         } else {
             /* edit has selection so draw 1-3 text chunks */
@@ -15922,7 +15923,7 @@ nk_style_load_all_cursors(struct nk_context *ctx, struct nk_cursor *cursors)
  * ===============================================================*/
 NK_INTERN void
 nk_pool_init(struct nk_pool *pool, struct nk_allocator *alloc,
-            unsigned int capacity)
+    unsigned int capacity)
 {
     nk_zero(pool, sizeof(*pool));
     pool->alloc = *alloc;
@@ -15934,12 +15935,11 @@ nk_pool_init(struct nk_pool *pool, struct nk_allocator *alloc,
 NK_INTERN void
 nk_pool_free(struct nk_pool *pool)
 {
-    struct nk_page *next;
     struct nk_page *iter = pool->pages;
     if (!pool) return;
     if (pool->type == NK_BUFFER_FIXED) return;
     while (iter) {
-        next = iter->next;
+        struct nk_page *next = iter->next;
         pool->alloc.free(pool->alloc.userdata, iter);
         iter = next;
     }
@@ -16199,18 +16199,12 @@ NK_INTERN void
 nk_start_popup(struct nk_context *ctx, struct nk_window *win)
 {
     struct nk_popup_buffer *buf;
-    struct nk_panel *iter;
     NK_ASSERT(ctx);
     NK_ASSERT(win);
     if (!ctx || !win) return;
 
-    /* make sure to use the correct popup buffer*/
-    iter = win->layout;
-    while (iter->parent)
-        iter = iter->parent;
-
     /* save buffer fill state for popup */
-    buf = &iter->popup_buffer;
+    buf = &win->popup.buf;
     buf->begin = win->buffer.end;
     buf->end = win->buffer.end;
     buf->parent = win->buffer.last;
@@ -16222,17 +16216,11 @@ NK_INTERN void
 nk_finish_popup(struct nk_context *ctx, struct nk_window *win)
 {
     struct nk_popup_buffer *buf;
-    struct nk_panel *iter;
     NK_ASSERT(ctx);
     NK_ASSERT(win);
     if (!ctx || !win) return;
 
-    /* make sure to use the correct popup buffer*/
-    iter = win->layout;
-    while (iter->parent)
-        iter = iter->parent;
-
-    buf = &iter->popup_buffer;
+    buf = &win->popup.buf;
     buf->last = win->buffer.last;
     buf->end = win->buffer.end;
 }
@@ -16251,41 +16239,26 @@ nk_finish(struct nk_context *ctx, struct nk_window *win)
 {
     struct nk_popup_buffer *buf;
     struct nk_command *parent_last;
-    struct nk_command *sublast;
-    struct nk_command *last;
     void *memory;
 
     NK_ASSERT(ctx);
     NK_ASSERT(win);
     if (!ctx || !win) return;
     nk_finish_buffer(ctx, &win->buffer);
-    if (!win->layout->popup_buffer.active) return;
+    if (!win->popup.buf.active) return;
 
-    /* from here on is for popup window buffer handling */
-    /*--------------------------------------------------*/
-    buf = &win->layout->popup_buffer;
+    buf = &win->popup.buf;
     memory = ctx->memory.memory.ptr;
-
-    /* redirect the sub-window buffer to the end of the window command buffer */
     parent_last = nk_ptr_add(struct nk_command, memory, buf->parent);
-    sublast = nk_ptr_add(struct nk_command, memory, buf->last);
-    last = nk_ptr_add(struct nk_command, memory, win->buffer.last);
-
     parent_last->next = buf->end;
-    sublast->next = last->next;
-    last->next = buf->begin;
-    win->buffer.last = buf->last;
-    win->buffer.end = buf->end;
-    buf->active = nk_false;
 }
 
 NK_INTERN void
 nk_build(struct nk_context *ctx)
 {
-    struct nk_window *iter;
-    struct nk_window *next;
-    struct nk_command *cmd;
-    nk_byte *buffer;
+    struct nk_window *iter = 0;
+    struct nk_command *cmd = 0;
+    nk_byte *buffer = 0;
 
     /* draw cursor overlay */
     if (!ctx->style.cursor_active)
@@ -16304,29 +16277,41 @@ nk_build(struct nk_context *ctx)
         nk_draw_image(&ctx->overlay, mouse_bounds, &cursor->img, nk_white);
         nk_finish_buffer(ctx, &ctx->overlay);
     }
-
-    /* build one big draw command list out of all buffers */
+    /* build one big draw command list out of all window buffers */
     iter = ctx->begin;
     buffer = (nk_byte*)ctx->memory.memory.ptr;
     while (iter != 0) {
-        next = iter->next;
-        if (iter->buffer.last == iter->buffer.begin || (iter->flags & NK_WINDOW_HIDDEN)) {
-            iter = next;
-            continue;
-        }
+        struct nk_window *next = iter->next;
+        if (iter->buffer.last == iter->buffer.begin || (iter->flags & NK_WINDOW_HIDDEN))
+            goto cont;
+
         cmd = nk_ptr_add(struct nk_command, buffer, iter->buffer.last);
         while (next && ((next->buffer.last == next->buffer.begin) ||
             (next->flags & NK_WINDOW_HIDDEN)))
             next = next->next; /* skip empty command buffers */
 
-        if (next) {
-            cmd->next = next->buffer.begin;
-        } else {
-            if (ctx->overlay.end != ctx->overlay.begin)
-                cmd->next = ctx->overlay.begin;
-            else cmd->next = ctx->memory.allocated;
-        }
-        iter = next;
+        if (next) cmd->next = next->buffer.begin;
+        cont: iter = next;
+    }
+    /* append all popup draw commands into lists */
+    iter = ctx->begin;
+    while (iter != 0) {
+        struct nk_window *next = iter->next;
+        struct nk_popup_buffer *buf;
+        if (!iter->popup.buf.active)
+            goto skip;
+
+        buf = &iter->popup.buf;
+        cmd->next = buf->begin;
+        cmd = nk_ptr_add(struct nk_command, buffer, buf->last);
+        buf->active = nk_false;
+        skip: iter = next;
+    }
+    /* append overlay commands */
+    if (cmd) {
+        if (ctx->overlay.end != ctx->overlay.begin)
+            cmd->next = ctx->overlay.begin;
+        else cmd->next = ctx->memory.allocated;
     }
 }
 
@@ -16373,7 +16358,6 @@ nk__next(struct nk_context *ctx, const struct nk_command *cmd)
 static int
 nk_panel_has_header(nk_flags flags, const char *title)
 {
-    /* window header state */
     int active = 0;
     active = (flags & (NK_WINDOW_CLOSABLE|NK_WINDOW_MINIMIZABLE));
     active = active || (flags & NK_WINDOW_TITLE);
@@ -16458,7 +16442,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
     NK_ASSERT(ctx->current->layout);
     if (!ctx || !ctx->current || !ctx->current->layout) return 0;
     nk_zero(ctx->current->layout, sizeof(*ctx->current->layout));
-    if (ctx->current->flags & NK_WINDOW_HIDDEN)
+    if (ctx->current->flags & NK_WINDOW_HIDDEN || ctx->current->flags & NK_WINDOW_CLOSED)
         return 0;
 
     /* pull state into local stack */
@@ -16597,7 +16581,6 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
                 &style->window.header.close_button, in, style->font) && !(win->flags & NK_WINDOW_ROM))
             {
                 layout->flags |= NK_WINDOW_HIDDEN;
-                layout->flags |= NK_WINDOW_CLOSED;
                 layout->flags &= (nk_flags)~NK_WINDOW_MINIMIZED;
             }
         }
@@ -16635,6 +16618,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
         label.y = header.y + style->window.header.label_padding.y;
         label.h = font->height + 2 * style->window.header.label_padding.y;
         label.w = t + 2 * style->window.header.spacing.x;
+        label.w = NK_CLAMP(0, label.w, header.x + header.w - label.x);
         nk_widget_text(out, label,(const char*)title, text_len, &text, NK_TEXT_LEFT, font);}
     }
 
@@ -16745,6 +16729,44 @@ nk_panel_end(struct nk_context *ctx)
         float scroll_offset;
         float scroll_step;
         float scroll_inc;
+
+        /* mouse wheel scrolling */
+        if (nk_panel_is_sub(layout->type))
+        {
+            /* sub-window mouse wheel scrolling */
+            struct nk_window *root_window = window;
+            struct nk_panel *root_panel = window->layout;
+            while (root_panel->parent)
+                root_panel = root_panel->parent;
+            while (root_window->parent)
+                root_window = root_window->parent;
+
+            /* only allow scrolling if parent window is active */
+            scroll_has_scrolling = 0;
+            if ((root_window == ctx->active) && layout->has_scrolling) {
+                /* and panel is being hovered and inside clip rect*/
+                if (nk_input_is_mouse_hovering_rect(in, layout->bounds) &&
+                    NK_INTERSECT(layout->bounds.x, layout->bounds.y, layout->bounds.w, layout->bounds.h,
+                        root_panel->clip.x, root_panel->clip.y, root_panel->clip.w, root_panel->clip.h))
+                {
+                    /* deactivate all parent scrolling */
+                    root_panel = window->layout;
+                    while (root_panel->parent) {
+                        root_panel->has_scrolling = nk_false;
+                        root_panel = root_panel->parent;
+                    }
+                    root_panel->has_scrolling = nk_false;
+                    scroll_has_scrolling = nk_true;
+                }
+            }
+        } else if (!nk_panel_is_sub(layout->type)) {
+            /* window mouse wheel scrolling */
+            scroll_has_scrolling = (window == ctx->active) && layout->has_scrolling;
+            if (in && (in->mouse.scroll_delta.y > 0 || in->mouse.scroll_delta.x > 0) && scroll_has_scrolling)
+                window->scrolled = nk_true;
+            else window->scrolled = nk_false;
+        } else scroll_has_scrolling = nk_false;
+
         {
             /* vertical scrollbar */
             nk_flags state = 0;
@@ -16757,51 +16779,12 @@ nk_panel_end(struct nk_context *ctx)
             scroll_step = scroll.h * 0.10f;
             scroll_inc = scroll.h * 0.01f;
             scroll_target = (float)(int)(layout->at_y - scroll.y);
-
-            /* scrolling by mouse wheel */
-            if (nk_panel_is_sub(layout->type))
-            {
-                /* sub-window scrollbar wheel scrolling */
-                struct nk_window *root_window = window;
-                struct nk_panel *root_panel = window->layout;
-                while (root_panel->parent)
-                    root_panel = root_panel->parent;
-                while (root_window->parent)
-                    root_window = root_window->parent;
-
-                /* only allow scrolling if parent window is active */
-                scroll_has_scrolling = 0;
-                if ((root_window == ctx->active) && layout->has_scrolling) {
-                    /* and panel is being hovered and inside clip rect*/
-                    if (nk_input_is_mouse_hovering_rect(in, layout->bounds) &&
-                        NK_INTERSECT(layout->bounds.x, layout->bounds.y, layout->bounds.w, layout->bounds.h,
-                            root_panel->clip.x, root_panel->clip.y, root_panel->clip.w, root_panel->clip.h))
-                    {
-                        /* deactivate all parent scrolling */
-                        root_panel = window->layout;
-                        while (root_panel->parent) {
-                            root_panel->has_scrolling = nk_false;
-                            root_panel = root_panel->parent;
-                        }
-                        root_panel->has_scrolling = nk_false;
-                        scroll_has_scrolling = nk_true;
-                    }
-                }
-            } else if (!nk_panel_is_sub(layout->type)) {
-                /* window scrollbar wheel scrolling */
-                scroll_has_scrolling = (window == ctx->active) && layout->has_scrolling;
-                if (in && in->mouse.scroll_delta > 0 && scroll_has_scrolling)
-                    window->scrolled = nk_true;
-                else window->scrolled = nk_false;
-            } else scroll_has_scrolling = nk_false;
-
-            /* execute scrollbar */
             scroll_offset = nk_do_scrollbarv(&state, out, scroll, scroll_has_scrolling,
-                                scroll_offset, scroll_target, scroll_step, scroll_inc,
-                                &ctx->style.scrollv, in, style->font);
+                scroll_offset, scroll_target, scroll_step, scroll_inc,
+                &ctx->style.scrollv, in, style->font);
             *layout->offset_y = (nk_uint)scroll_offset;
             if (in && scroll_has_scrolling)
-                in->mouse.scroll_delta = 0;
+                in->mouse.scroll_delta.y = 0;
         }
         {
             /* horizontal scrollbar */
@@ -16815,17 +16798,16 @@ nk_panel_end(struct nk_context *ctx)
             scroll_target = (float)(int)(layout->max_x - scroll.x);
             scroll_step = layout->max_x * 0.05f;
             scroll_inc = layout->max_x * 0.005f;
-            scroll_has_scrolling = nk_false;
             scroll_offset = nk_do_scrollbarh(&state, out, scroll, scroll_has_scrolling,
-                                scroll_offset, scroll_target, scroll_step, scroll_inc,
-                                &ctx->style.scrollh, in, style->font);
+                scroll_offset, scroll_target, scroll_step, scroll_inc,
+                &ctx->style.scrollh, in, style->font);
             *layout->offset_x = (nk_uint)scroll_offset;
         }
     }
 
     /* hide scroll if no user input */
     if (window->flags & NK_WINDOW_SCROLL_AUTO_HIDE) {
-        int has_input = ctx->input.mouse.delta.x != 0 || ctx->input.mouse.delta.y != 0 || ctx->input.mouse.scroll_delta != 0;
+        int has_input = ctx->input.mouse.delta.x != 0 || ctx->input.mouse.delta.y != 0 || ctx->input.mouse.scroll_delta.y != 0;
         int is_window_hovered = nk_window_is_hovered(ctx);
         int any_item_active = (ctx->last_widget_state & NK_WIDGET_STATE_MODIFIED);
         if ((!has_input && is_window_hovered) || (!is_window_hovered && !any_item_active))
@@ -16916,7 +16898,6 @@ nk_panel_end(struct nk_context *ctx)
             }
         }
     }
-
     if (!nk_panel_is_sub(layout->type)) {
         /* window is hidden so clear command buffer  */
         if (layout->flags & NK_WINDOW_HIDDEN)
@@ -16941,7 +16922,6 @@ nk_panel_end(struct nk_context *ctx)
         window->property.prev = window->property.active;
         window->property.seq = 0;
     }
-
     /* edit garbage collector */
     if (window->edit.active && window->edit.old != window->edit.seq &&
        window->edit.active == window->edit.prev) {
@@ -16951,7 +16931,6 @@ nk_panel_end(struct nk_context *ctx)
         window->edit.prev = window->edit.active;
         window->edit.seq = 0;
     }
-
     /* contextual garbage collector */
     if (window->popup.active_con && window->popup.con_old != window->popup.con_count) {
         window->popup.con_count = 0;
@@ -16963,7 +16942,7 @@ nk_panel_end(struct nk_context *ctx)
     }
     window->popup.combo_count = 0;
 
-    /* helper to make sure you have a 'nk_tree_push' * for every 'nk_tree_pop' */
+    /* helper to make sure you have a 'nk_tree_push' for every 'nk_tree_pop' */
     NK_ASSERT(!layout->row.tree_depth);
 }
 
@@ -16986,7 +16965,7 @@ nk_create_page_element(struct nk_context *ctx)
         NK_ASSERT(elem);
         if (!elem) return 0;
     } else {
-        /* allocate new page element from the back of the fixed size memory buffer */
+        /* allocate new page element from back of fixed size memory buffer */
         NK_STORAGE const nk_size size = sizeof(struct nk_page_element);
         NK_STORAGE const nk_size align = NK_ALIGNOF(struct nk_page_element);
         elem = (struct nk_page_element*)nk_buffer_alloc(&ctx->memory, NK_BUFFER_BACK, size, align);
@@ -17020,7 +16999,6 @@ nk_free_page_element(struct nk_context *ctx, struct nk_page_element *elem)
         nk_link_page_element_into_freelist(ctx, elem);
         return;
     }
-
     /* if possible remove last element from back of fixed memory buffer */
     {void *elem_end = (void*)(elem + 1);
     void *buffer_end = (nk_byte*)ctx->memory.memory.ptr + ctx->memory.size;
@@ -17164,7 +17142,7 @@ NK_INTERN void
 nk_free_window(struct nk_context *ctx, struct nk_window *win)
 {
     /* unlink windows from list */
-    struct nk_table *n, *it = win->tables;
+    struct nk_table *it = win->tables;
     if (win->popup.win) {
         nk_free_window(ctx, win->popup.win);
         win->popup.win = 0;
@@ -17174,7 +17152,7 @@ nk_free_window(struct nk_context *ctx, struct nk_window *win)
 
     while (it) {
         /*free window state tables */
-        n = it->next;
+        struct nk_table *n = it->next;
         nk_remove_table(win, it);
         nk_free_table(ctx, it);
         if (it == win->tables)
@@ -20894,7 +20872,7 @@ nk_popup_begin(struct nk_context *ctx, enum nk_popup_type type,
             root->flags |= NK_WINDOW_REMOVE_ROM;
             root = root->parent;
         }
-        win->layout->popup_buffer.active = 0;
+        win->popup.buf.active = 0;
         win->popup.active = 0;
         ctx->memory.allocated = allocated;
         ctx->current = win;
@@ -20924,7 +20902,7 @@ nk_nonblock_begin(struct nk_context *ctx,
     win = ctx->current;
     panel = win->layout;
     NK_ASSERT(!(panel->type & NK_PANEL_SET_POPUP));
-    (void)panel; 
+    (void)panel;
     popup = win->popup.win;
     if (!popup) {
         /* create window for nonblocking popup */
@@ -20946,8 +20924,7 @@ nk_nonblock_begin(struct nk_context *ctx,
 
     if (!is_active) {
         /* remove read only mode from all parent panels */
-        struct nk_panel *root;
-        root = win->layout;
+        struct nk_panel *root = win->layout;
         while (root) {
             root->flags |= NK_WINDOW_REMOVE_ROM;
             root = root->parent;

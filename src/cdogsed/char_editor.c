@@ -181,11 +181,14 @@ void CharEditor(
 			continue;
 		}
 
+		// Note: drawing contains input processing too
+		nk_input_begin(ec.ctx);
 		if (!HandleEvents(&ec))
 		{
 			goto bail;
 		}
 		Draw(win, &ec);
+		nk_input_end(ec.ctx);
 
 		ticksElapsed -= 1000 / (FPS_FRAMELIMIT * 2);
 	}
@@ -291,7 +294,6 @@ static int GunIndex(const GunDescription *g)
 static bool HandleEvents(EditorContext *ec)
 {
 	SDL_Event e;
-	nk_input_begin(ec->ctx);
 	bool run = true;
 	while (SDL_PollEvent(&e))
 	{
@@ -325,7 +327,6 @@ static bool HandleEvents(EditorContext *ec)
 		}
 		nk_sdl_handle_event(&e);
 	}
-	nk_input_end(ec->ctx);
 
 	EventPoll(ec->Handlers, 1);
 	const SDL_Scancode sc = KeyGetPressed(&gEventHandlers.keyboard);
@@ -555,7 +556,7 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 	glClear(GL_COLOR_BUFFER_BIT);
 	glClearColor(bg[0], bg[1], bg[2], bg[3]);
 
-	nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
+	nk_sdl_render(NK_ANTI_ALIASING_ON);
 	SDL_GL_SwapWindow(win);
 }
 
