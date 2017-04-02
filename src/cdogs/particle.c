@@ -213,7 +213,7 @@ typedef struct
 	const TTileItem *Obj;
 	Vec2i ColPos;
 	Vec2i ColNormal;
-	int ColPosDistSquared;
+	int ColPosDistRealSquared;
 } HitWallData;
 static bool CheckWall(const Vec2i tilePos);
 static bool HitWallFunc(
@@ -265,7 +265,7 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 			&p->tileItem, startPos,
 			p->tileItem.size, params, NULL, NULL,
 			CheckWall, HitWallFunc, &data);
-		if (data.ColPosDistSquared >= 0)
+		if (data.ColPosDistRealSquared >= 0)
 		{
 			if (p->Class->WallBounces)
 			{
@@ -319,11 +319,11 @@ static void SetClosestCollision(
 {
 	// Choose the best collision point (i.e. closest to origin)
 	const int d2 = DistanceSquared(
-		col, Vec2iReal2Full(Vec2iNew(data->Obj->x, data->Obj->y)));
-	if (data->ColPosDistSquared < 0 || d2 < data->ColPosDistSquared)
+		Vec2iFull2Real(col), Vec2iNew(data->Obj->x, data->Obj->y));
+	if (data->ColPosDistRealSquared < 0 || d2 < data->ColPosDistRealSquared)
 	{
 		data->ColPos = col;
-		data->ColPosDistSquared = d2;
+		data->ColPosDistRealSquared = d2;
 		data->ColNormal = normal;
 	}
 }

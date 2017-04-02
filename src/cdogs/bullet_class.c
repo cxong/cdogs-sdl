@@ -209,7 +209,8 @@ bool UpdateBullet(struct MobileObject *obj, const int ticks)
 		b.u.BulletBounce.HitType = (int)hit.Type;
 		bool alive = true;
 		if ((hit.Type == HIT_WALL && !obj->bulletClass->WallBounces) ||
-			((hit.Type == HIT_OBJECT) && obj->bulletClass->HitsObjects))
+			((hit.Type == HIT_OBJECT || hit.Type == HIT_FLESH) &&
+				obj->bulletClass->HitsObjects))
 		{
 			b.u.BulletBounce.Spark = true;
 			CASSERT(!gCampaign.IsClient, "Cannot process bounces as client");
@@ -384,7 +385,7 @@ typedef struct
 	} u;
 	Vec2i ColPos;
 	Vec2i ColNormal;
-	int ColPosDistSquared;
+	int ColPosDistRealSquared;
 } HitItemData;
 static bool HitItemFunc(
 	TTileItem *ti, void *data, const Vec2i colA, const Vec2i colB,
@@ -404,7 +405,7 @@ static HitResult HitItem(
 	data.Obj = obj;
 	data.ColPos = Vec2iZero();
 	data.ColNormal = Vec2iZero();
-	data.ColPosDistSquared = -1;
+	data.ColPosDistRealSquared = -1;
 	const CollisionParams params =
 	{
 		TILEITEM_CAN_BE_SHOT, COLLISIONTEAM_NONE, IsPVP(gCampaign.Entry.Mode)
@@ -413,7 +414,7 @@ static HitResult HitItem(
 		&obj->tileItem, pos,
 		obj->tileItem.size, params, HitItemFunc, &data,
 		CheckWall, HitWallFunc, &data);
-	if (!multipleHits && data.ColPosDistSquared >= 0)
+	if (!multipleHits && data.ColPosDistRealSquared >= 0)
 	{
 		if (data.HitType == HIT_WALL)
 		{
@@ -517,11 +518,12 @@ static void SetClosestCollision(
 {
 	// Choose the best collision point (i.e. closest to origin)
 	const int d2 = DistanceSquared(
-		col, Vec2iFull2Real(Vec2iNew(data->Obj->x, data->Obj->y)));
-	if (data->ColPosDistSquared < 0 || d2 < data->ColPosDistSquared)
+		Vec2iFull2Real(col),
+		Vec2iFull2Real(Vec2iNew(data->Obj->x, data->Obj->y)));
+	if (data->ColPosDistRealSquared < 0 || d2 < data->ColPosDistRealSquared)
 	{
 		data->ColPos = col;
-		data->ColPosDistSquared = d2;
+		data->ColPosDistRealSquared = d2;
 		data->ColNormal = normal;
 		data->HitType = ht;
 		if (ht == HIT_WALL)
