@@ -109,7 +109,7 @@ static bool RectangleLineIntersect(
 	_CHECK_MIN_DISTANCE(bottomLeft, bottomRight, Vec2iNew(0, -1));
 	_CHECK_MIN_DISTANCE(topLeft, bottomLeft, Vec2iNew(1, 0));
 
-	return *s >= 0;
+	return *s >= 0 && *s <= 1;
 }
 static bool LinesIntersect(
 	const Vec2i p1Start, const Vec2i p1End,

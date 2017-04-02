@@ -355,8 +355,12 @@ static bool CheckOverlaps(
 	// Check wall collisions
 	if (checkWallFunc != NULL && wallFunc != NULL && checkWallFunc(tilePos))
 	{
+		// Hack: bullets always considered 0x0 when colliding with walls
+		// TODO: bullet size for walls
+		const Vec2i sizeForWall =
+			item->kind == KIND_MOBILEOBJECT ? Vec2iZero() : size;
 		if (MinkowskiHexCollide(
-			pos, vel, Vec2iReal2Full(size),
+			pos, vel, Vec2iReal2Full(sizeForWall),
 			Vec2iReal2Full(Vec2iCenterOfTile(tilePos)), Vec2iZero(),
 			Vec2iReal2Full(TILE_SIZE), &colA, &colB, &normal) &&
 			!wallFunc(tilePos, wallData, colA, normal))
