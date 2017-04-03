@@ -222,16 +222,16 @@ bool UpdateBullet(struct MobileObject *obj, const int ticks)
 		}
 		const Vec2i hitPos = hit.Type != HIT_NONE ? hit.Pos : pos;
 		b.u.BulletBounce.BouncePos = Vec2i2Net(hitPos);
-		b.u.BulletBounce.BounceVel = Vec2i2Net(obj->tileItem.VelFull);
+		b.u.BulletBounce.Pos = Vec2i2Net(pos);
+		b.u.BulletBounce.Vel = Vec2i2Net(obj->tileItem.VelFull);
 		if (hit.Type == HIT_WALL && !Vec2iIsZero(obj->tileItem.VelFull))
 		{
 			// Bouncing
-			// TODO: bounce vel should be different from continued movement
 			GetWallBouncePosVelFull(
 				posStart, obj->tileItem.VelFull, hit.Pos, hit.Normal,
 				&pos, &obj->tileItem.VelFull);
-			b.u.BulletBounce.BouncePos = Vec2i2Net(pos);
-			b.u.BulletBounce.BounceVel = Vec2i2Net(obj->tileItem.VelFull);
+			b.u.BulletBounce.Pos = Vec2i2Net(pos);
+			b.u.BulletBounce.Vel = Vec2i2Net(obj->tileItem.VelFull);
 		}
 		GameEventsEnqueue(&gGameEvents, b);
 		if (!alive)

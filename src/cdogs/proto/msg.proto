@@ -230,7 +230,8 @@ message NBulletBounce {
 	required int32 HitType = 2;
 	required bool Spark = 3;
 	required NVec2i BouncePos = 4;
-	required NVec2i BounceVel = 5;
+	required NVec2i Pos = 5;
+	required NVec2i Vel = 6;
 }
 
 message NRemoveBullet {

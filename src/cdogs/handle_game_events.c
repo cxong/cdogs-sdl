@@ -366,21 +366,22 @@ static void HandleGameEvent(
 		{
 			TMobileObject *o = MobObjGetByUID(e.u.BulletBounce.UID);
 			if (o == NULL || !o->isInUse) break;
-			const Vec2i pos = Net2Vec2i(e.u.BulletBounce.BouncePos);
+			const Vec2i bouncePos = Net2Vec2i(e.u.BulletBounce.BouncePos);
 			PlayHitSound(
 				&o->bulletClass->HitSound, (HitType)e.u.BulletBounce.HitType,
-				Vec2iFull2Real(pos));
+				Vec2iFull2Real(bouncePos));
 			if (e.u.BulletBounce.Spark && o->bulletClass->Spark != NULL)
 			{
 				GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 				s.u.AddParticle.Class = o->bulletClass->Spark;
-				s.u.AddParticle.FullPos = pos;
+				s.u.AddParticle.FullPos = bouncePos;
 				s.u.AddParticle.Z = o->z;
 				GameEventsEnqueue(&gGameEvents, s);
 			}
+			const Vec2i pos = Net2Vec2i(e.u.BulletBounce.Pos);
 			o->x = pos.x;
 			o->y = pos.y;
-			o->tileItem.VelFull = Net2Vec2i(e.u.BulletBounce.BounceVel);
+			o->tileItem.VelFull = Net2Vec2i(e.u.BulletBounce.Vel);
 		}
 		break;
 	case GAME_EVENT_REMOVE_BULLET:
