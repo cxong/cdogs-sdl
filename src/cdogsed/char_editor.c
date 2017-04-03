@@ -492,9 +492,8 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 		{
 			// Speed (256 = 100%)
 			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
-			int speedPct = ec->Char->speed * 100 / 256;
-			nk_property_int(ec->ctx, "Speed (%):", 0, &speedPct, 400, 10, 1);
-			ec->Char->speed = speedPct * 256 / 100;
+			nk_property_int(
+				ec->ctx, "Speed:", 0, &ec->Char->speed, 1024, 16, 1);
 
 			nk_layout_row(ec->ctx, NK_DYNAMIC, ROW_HEIGHT, 2, colRatios);
 			const int selectedGun = DrawClassSelection(
