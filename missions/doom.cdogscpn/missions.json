@@ -32,9 +32,6 @@
 		"MapObjectDensities": [],
 		"EnemyDensity": 0,
 		"Weapons": ["Knife",
-		"Marine Shotgun",
-		"Chaingun",
-		"Launcher",
 		"Marine Pistol"],
 		"Song": "",
 		"WallMask": "838383",
@@ -112,6 +109,21 @@
 			82],
 			[82,
 			82]]
+		},
+		{
+			"MapObject": "Launcher spawner",
+			"Positions": [[54,
+			41]]
+		},
+		{
+			"MapObject": "Marine Shotgun spawner",
+			"Positions": [[88,
+			61]]
+		},
+		{
+			"MapObject": "Chaingun spawner",
+			"Positions": [[85,
+			70]]
 		}],
 		"StaticCharacters": [{
 			"Index": 0,
@@ -303,7 +315,7 @@
 			"Description": "Bonus",
 			"Type": "Collect",
 			"Pickup": "disk1",
-			"Count": 42,
+			"Count": 41,
 			"Required": 0,
 			"Flags": 1
 		},
@@ -319,7 +331,7 @@
 			"Description": "Bonus",
 			"Type": "Collect",
 			"Pickup": "folder",
-			"Count": 4,
+			"Count": 2,
 			"Required": 0,
 			"Flags": 1
 		},
@@ -454,6 +466,21 @@
 			47],
 			[12,
 			47]]
+		},
+		{
+			"MapObject": "Marine Shotgun spawner",
+			"Positions": [[41,
+			50]]
+		},
+		{
+			"MapObject": "Chaingun spawner",
+			"Positions": [[60,
+			68]]
+		},
+		{
+			"MapObject": "Launcher spawner",
+			"Positions": [[55,
+			81]]
 		}],
 		"StaticCharacters": [{
 			"Index": 1,
@@ -626,8 +653,6 @@
 			"Index": 0,
 			"Positions": [[36,
 			63],
-			[41,
-			50],
 			[49,
 			53],
 			[50,
@@ -709,7 +734,6 @@
 			[36,
 			6]],
 			"Indices": [0,
-			0,
 			0,
 			0,
 			0,
@@ -851,15 +875,9 @@
 			"Index": 2,
 			"Positions": [[41,
 			51],
-			[60,
-			68],
-			[55,
-			81],
 			[11,
 			41]],
 			"Indices": [0,
-			0,
-			0,
 			0]
 		},
 		{
@@ -964,7 +982,7 @@
 			"Description": "bonus",
 			"Type": "Collect",
 			"Pickup": "radio",
-			"Count": 6,
+			"Count": 2,
 			"Required": 0,
 			"Flags": 1
 		},
@@ -1138,6 +1156,23 @@
 			36],
 			[65,
 			43]]
+		},
+		{
+			"MapObject": "Marine Shotgun spawner",
+			"Positions": [[41,
+			91],
+			[28,
+			38]]
+		},
+		{
+			"MapObject": "Chaingun spawner",
+			"Positions": [[28,
+			32]]
+		},
+		{
+			"MapObject": "Launcher spawner",
+			"Positions": [[7,
+			17]]
 		}],
 		"StaticCharacters": [{
 			"Index": 2,
@@ -1486,23 +1521,11 @@
 		},
 		{
 			"Index": 1,
-			"Positions": [[41,
-			91],
-			[30,
+			"Positions": [[30,
 			65],
-			[28,
-			38],
-			[7,
-			17],
-			[28,
-			32],
 			[72,
 			66]],
 			"Indices": [0,
-			0,
-			0,
-			0,
-			0,
 			0]
 		},
 		{
@@ -1904,7 +1927,7 @@
 			"Description": "Extras",
 			"Type": "Collect",
 			"Pickup": "folder",
-			"Count": 16,
+			"Count": 14,
 			"Required": 0,
 			"Flags": 1
 		},
@@ -2064,6 +2087,21 @@
 			"MapObject": "wall_goo",
 			"Positions": [[94,
 			71]]
+		},
+		{
+			"MapObject": "Chaingun spawner",
+			"Positions": [[53,
+			68]]
+		},
+		{
+			"MapObject": "Marine Shotgun spawner",
+			"Positions": [[92,
+			58]]
+		},
+		{
+			"MapObject": "Launcher spawner",
+			"Positions": [[98,
+			88]]
 		}],
 		"StaticCharacters": [{
 			"Index": 2,
@@ -2251,8 +2289,6 @@
 			49],
 			[112,
 			49],
-			[53,
-			68],
 			[33,
 			93],
 			[17,
@@ -2271,8 +2307,6 @@
 			91],
 			[104,
 			88],
-			[98,
-			88],
 			[96,
 			88],
 			[96,
@@ -2280,8 +2314,6 @@
 			[96,
 			84]],
 			"Indices": [0,
-			0,
-			0,
 			0,
 			0,
 			0,
@@ -2581,7 +2613,7 @@
 			"Description": "Extras",
 			"Type": "Collect",
 			"Pickup": "radio",
-			"Count": 7,
+			"Count": 2,
 			"Required": 0,
 			"Flags": 1
 		},
@@ -2692,6 +2724,25 @@
 			30],
 			[33,
 			31]]
+		},
+		{
+			"MapObject": "Marine Shotgun spawner",
+			"Positions": [[43,
+			74],
+			[55,
+			64],
+			[68,
+			66]]
+		},
+		{
+			"MapObject": "Launcher spawner",
+			"Positions": [[78,
+			73]]
+		},
+		{
+			"MapObject": "Chaingun spawner",
+			"Positions": [[86,
+			56]]
 		}],
 		"StaticCharacters": [{
 			"Index": 0,
@@ -3230,26 +3281,11 @@
 		},
 		{
 			"Index": 3,
-			"Positions": [[43,
-			74],
-			[68,
-			66],
-			[78,
-			73],
-			[55,
-			64],
-			[86,
-			56],
-			[40,
+			"Positions": [[40,
 			31],
 			[27,
 			29]],
 			"Indices": [0,
-			0,
-			0,
-			0,
-			0,
-			0,
 			0]
 		},
 		{
@@ -3380,7 +3416,7 @@
 			"Description": "Bonus",
 			"Type": "Collect",
 			"Pickup": "radio",
-			"Count": 16,
+			"Count": 13,
 			"Required": 0,
 			"Flags": 1
 		}],
@@ -3471,6 +3507,21 @@
 			25],
 			[11,
 			24]]
+		},
+		{
+			"MapObject": "Marine Shotgun spawner",
+			"Positions": [[29,
+			83]]
+		},
+		{
+			"MapObject": "Launcher spawner",
+			"Positions": [[56,
+			74]]
+		},
+		{
+			"MapObject": "Chaingun spawner",
+			"Positions": [[60,
+			88]]
 		}],
 		"StaticCharacters": [{
 			"Index": 0,
@@ -4273,12 +4324,8 @@
 			"Index": 4,
 			"Positions": [[29,
 			84],
-			[29,
-			83],
 			[12,
 			83],
-			[60,
-			88],
 			[63,
 			79],
 			[26,
@@ -4291,8 +4338,6 @@
 			71],
 			[54,
 			74],
-			[56,
-			74],
 			[44,
 			30],
 			[49,
@@ -4304,9 +4349,6 @@
 			[97,
 			87]],
 			"Indices": [0,
-			0,
-			0,
-			0,
 			0,
 			0,
 			0,
@@ -4494,7 +4536,7 @@
 			"Description": "Bonus",
 			"Type": "Collect",
 			"Pickup": "radio",
-			"Count": 7,
+			"Count": 3,
 			"Required": 0,
 			"Flags": 1
 		},
@@ -4610,6 +4652,23 @@
 			"MapObject": "tree_dead",
 			"Positions": [[57,
 			51]]
+		},
+		{
+			"MapObject": "Marine Shotgun spawner",
+			"Positions": [[41,
+			5],
+			[48,
+			70]]
+		},
+		{
+			"MapObject": "Launcher spawner",
+			"Positions": [[51,
+			45]]
+		},
+		{
+			"MapObject": "Chaingun spawner",
+			"Positions": [[34,
+			81]]
 		}],
 		"StaticCharacters": [{
 			"Index": 0,
@@ -5139,25 +5198,13 @@
 		},
 		{
 			"Index": 2,
-			"Positions": [[41,
-			5],
-			[51,
-			45],
-			[37,
+			"Positions": [[37,
 			63],
 			[25,
 			19],
 			[10,
-			92],
-			[48,
-			70],
-			[34,
-			81]],
+			92]],
 			"Indices": [0,
-			0,
-			0,
-			0,
-			0,
 			0,
 			0]
 		},
@@ -5363,7 +5410,7 @@
 			"Description": "Bonus",
 			"Type": "Collect",
 			"Pickup": "folder",
-			"Count": 3,
+			"Count": 2,
 			"Required": 0,
 			"Flags": 1
 		}],
@@ -5455,6 +5502,11 @@
 			146],
 			[82,
 			146]]
+		},
+		{
+			"MapObject": "Marine Shotgun spawner",
+			"Positions": [[93,
+			126]]
 		}],
 		"StaticCharacters": [{
 			"Index": 4,
@@ -5619,11 +5671,8 @@
 			"Positions": [[65,
 			161],
 			[92,
-			161],
-			[93,
-			126]],
+			161]],
 			"Indices": [0,
-			0,
 			0]
 		}],
 		"StaticKeys": [{

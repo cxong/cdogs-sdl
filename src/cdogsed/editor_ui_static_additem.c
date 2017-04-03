@@ -108,6 +108,10 @@ static void DrawObjective(
 	EditorBrushAndCampaign *data = vData;
 	Mission *m = CampaignGetCurrentMission(data->Campaign);
 	const Objective *obj = CArrayGet(&m->Objectives, data->Brush.u.ItemIndex);
+	if (obj == NULL)
+	{
+		return;
+	}
 	CharacterStore *store = &data->Campaign->Setting.characters;
 	pos = Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
 	switch (obj->Type)
