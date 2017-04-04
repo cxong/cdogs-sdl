@@ -74,6 +74,10 @@ CMakeScripts/
 *.dylib
 *.app/
 
+# CLion
+.idea/
+*.cbp
+
 # GCW-Zero
 gcw0build/
 gcw0-toolchain/
