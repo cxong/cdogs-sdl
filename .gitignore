@@ -40,13 +40,12 @@ build/windows/cdogs.rc
 
 # Linux
 bin/
-share/
+/share/
 
 # Visual Studio
 Debug/
 Release/
 Win32/
-*.dir/
 *.opensdf
 *.sdf
 *.suo
@@ -71,7 +70,6 @@ CMakeScripts/
 *.xcodeproj/
 .DS_Store
 *.dmg
-*.dylib
 *.app/
 
 # CLion
