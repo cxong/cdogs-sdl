@@ -2,6 +2,14 @@
   "Version": 2,
   "Bullets": [
     {
+      "Name": "chainsaw",
+      "Power": 3,
+      "HitSounds": {
+        "Object": "chainsaw",
+        "Flesh": "chainsaw"
+      }
+    },
+    {
       "Name": "10mm",
       "Pic": {
         "Type": "Directional",
