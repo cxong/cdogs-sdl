@@ -170,7 +170,12 @@ void LogLine(
 	FILE *stream, const LogModule m, const LogLevel l, const char *filename,
 	const int line, const char *function, const char *fmt, ...)
 {
-	if (stream == NULL)
+	if (stream == NULL
+#if defined(__APPLE__) && !defined(NDEBUG)
+		// Prevent SIGPIPE when writing to stderr
+		|| stream == stderr
+#endif
+		)
 	{
 		return;
 	}
