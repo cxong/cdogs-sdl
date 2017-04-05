@@ -1,9 +1,3 @@
-Derived from
-
-Radio - OK I'm Opening the Gate by ERR0
-http://freesound.org/people/ERR0/sounds/208899/
-http://creativecommons.org/publicdomain/zero/1.0/
-
-picking_up_DVDs.wav by daboy291
-https://www.freesound.org/people/daboy291/sounds/138078/
+hint.wav
+https://www.freesound.org/people/dland/sounds/320181/
 http://creativecommons.org/publicdomain/zero/1.0/
