@@ -49,17 +49,8 @@
 #include "menu.h"
 
 #include <assert.h>
-#include <stdarg.h>
-#include <string.h>
 
-#include <SDL.h>
-
-#include <cdogs/actors.h>
-#include <cdogs/blit.h>
-#include <cdogs/config.h>
 #include <cdogs/config_io.h>
-#include <cdogs/defs.h>
-#include <cdogs/events.h>
 #include <cdogs/files.h>
 #include <cdogs/font.h>
 #include <cdogs/gamedata.h>
@@ -70,8 +61,6 @@
 #include <cdogs/pic_manager.h>
 #include <cdogs/sounds.h>
 #include <cdogs/utils.h>
-
-#include "autosave.h"
 
 
 #define MS_CENTER_X(ms, w) CENTER_X((ms).pos, (ms).size, w)
@@ -883,7 +872,7 @@ void MenuPlaySound(MenuSound s)
 		SoundPlay(&gSoundDevice, StrSound("hahaha"));
 		break;
 	case MENU_SOUND_ERROR:
-		SoundPlay(&gSoundDevice, StrSound("aargh"));
+		SoundPlay(&gSoundDevice, StrSound("aargh/man"));
 		break;
 	default:
 		break;

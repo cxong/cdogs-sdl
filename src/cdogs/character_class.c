@@ -172,6 +172,23 @@ static void LoadCharacterClass(CharacterClass *c, json_t *node)
 	CPicLoadJSON(&c->HeadPics, json_find_first_label(node, "HeadPics")->child);
 	// TODO: custom character sprites
 	c->Sprites = StrCharSpriteClass("base");
+
+	// Default man sounds
+	CSTRDUP(c->Sounds.Aargh, "aargh/man");
+	json_t *sounds = json_find_first_label(node, "Sounds");
+	if (sounds != NULL && sounds->child != NULL)
+	{
+		char *tmp = NULL;
+		LoadStr(&tmp, sounds->child, "Aargh");
+		if (tmp != NULL)
+		{
+			c->Sounds.Aargh = tmp;
+		}
+		else
+		{
+			CFREE(tmp);
+		}
+	}
 }
 static void CharacterClassFree(CharacterClass *c);
 void CharacterClassesClear(CArray *classes)
@@ -185,6 +202,7 @@ void CharacterClassesClear(CArray *classes)
 static void CharacterClassFree(CharacterClass *c)
 {
 	CFREE(c->Name);
+	CFREE(c->Sounds.Aargh);
 }
 void CharacterClassesTerminate(CharacterClasses *c)
 {

@@ -39,6 +39,10 @@ typedef struct
 	char *Name;
 	CPic HeadPics;
 	const CharSprites *Sprites;
+	struct
+	{
+		char *Aargh;
+	} Sounds;
 } CharacterClass;
 typedef struct
 {

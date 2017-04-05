@@ -118,6 +118,9 @@
       "HeadPics": {
         "Type": "Directional",
         "Sprites": "chars/heads/lady"
+      },
+      "Sounds": {
+        "Aargh": "aargh/woman"
       }
     },
     {

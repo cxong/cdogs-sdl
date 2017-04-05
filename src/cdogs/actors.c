@@ -529,7 +529,9 @@ void InjureActor(TActor * actor, int injury)
 	{
 		actor->stateCounter = 0;
 		const Vec2i pos = Vec2iNew(actor->tileItem.x, actor->tileItem.y);
-		SoundPlayAt(&gSoundDevice, StrSound("aargh"), pos);
+		SoundPlayAt(
+			&gSoundDevice,
+			StrSound(ActorGetCharacter(actor)->Class->Sounds.Aargh), pos);
 		if (actor->PlayerUID >= 0)
 		{
 			SoundPlayAt(
