@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2013-2016, Cong Xu
+ Copyright (c) 2013-2017 Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -45,11 +45,10 @@ void YAJLVec2i(Vec2i *value, yajl_val node, const char *name);
 #define YAJL_GET_VEC2I(v) Vec2iNew(\
 	(int)YAJL_GET_INTEGER(YAJL_GET_ARRAY(v)->values[0]),\
 	(int)YAJL_GET_INTEGER(YAJL_GET_ARRAY(v)->values[1]))
-/*
 // remember to free
-void LoadStr(char **value, json_t *node, const char *name);
-char *GetString(json_t *node, const char *name);
-
+void YAJLStr(char **value, yajl_val node, const char *name);
+char *YAJLGetStr(yajl_val node, const char *name);
+/*
 void LoadSoundFromNode(Mix_Chunk **value, json_t *node, const char *name);
 // Load a const Pic * based on a name
 void LoadPic(const Pic **value, json_t *node, const char *name);

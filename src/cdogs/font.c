@@ -50,22 +50,6 @@ FontOpts FontOptsNew(void)
 	return opts;
 }
 
-FontAlign FontAlignOpposite(const FontAlign align)
-{
-	switch (align)
-	{
-	case ALIGN_START:
-		return ALIGN_END;
-	case ALIGN_CENTER:
-		return ALIGN_CENTER;
-	case ALIGN_END:
-		return ALIGN_END;
-	default:
-		CASSERT(false, "Unknown font alignment");
-		return ALIGN_START;
-	}
-}
-
 void FontLoad(Font *f, const char *imgPath, const bool isProportional)
 {
 	char buf[CDOGS_PATH_MAX];

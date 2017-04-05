@@ -25,9 +25,6 @@
 */
 #include "font_utils.h"
 
-#include <stdio.h>
-#include <string.h>
-
 #include "log.h"
 #include "sys_config.h"
 #include "yajl_utils.h"

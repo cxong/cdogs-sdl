@@ -67,8 +67,6 @@ extern Font gFont;
 
 FontOpts FontOptsNew(void);
 
-FontAlign FontAlignOpposite(const FontAlign align);
-
 void FontLoad(Font *f, const char *imgPath, const bool isProportional);
 void FontTerminate(Font *f);
 

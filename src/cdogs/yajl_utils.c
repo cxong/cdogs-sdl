@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2013-2016, Cong Xu
+ Copyright (c) 2013-2017 Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -152,19 +152,22 @@ void YAJLVec2i(Vec2i *value, yajl_val node, const char *name)
 	}
 	*value = YAJL_GET_VEC2I(node);
 }
-/*
-void LoadStr(char **value, json_t *node, const char *name)
+void YAJLStr(char **value, yajl_val node, const char *name)
 {
-	if (!TryLoadValue(&node, name))
+	if (!YAJLTryLoadValue(&node, name) || !YAJL_IS_STRING(node))
 	{
 		return;
 	}
-	*value = json_unescape(node->text);
+	*value = YAJLGetStr(node, name);
 }
-char *GetString(json_t *node, const char *name)
+char *YAJLGetStr(yajl_val node, const char *name)
 {
-	return json_unescape(json_find_first_label(node, name)->child->text);
+	char *in = YAJL_GET_STRING(node);
+	char *out;
+	CSTRDUP(out, in);
+	return out;
 }
+/*
 void LoadSoundFromNode(Mix_Chunk **value, json_t *node, const char *name)
 {
 	if (json_find_first_label(node, name) == NULL)
