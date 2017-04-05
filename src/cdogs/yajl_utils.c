@@ -162,7 +162,7 @@ void YAJLStr(char **value, yajl_val node, const char *name)
 }
 char *YAJLGetStr(yajl_val node, const char *name)
 {
-	char *in = YAJL_GET_STRING(node);
+	char *in = YAJL_GET_STRING(YAJLFindNode(node, name));
 	char *out;
 	CSTRDUP(out, in);
 	return out;
