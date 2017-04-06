@@ -332,26 +332,29 @@ static bool CheckOverlaps(
 {
 	Vec2i colA, colB, normal;
 	// Check item collisions
-	const CArray *tileThings = &MapGetTile(&gMap, tilePos)->things;
-	CA_FOREACH(const ThingId, tid, *tileThings)
-		TTileItem *ti = ThingIdGetTileItem(tid);
-		if (!CheckParams(params, item, ti))
-		{
-			continue;
-		}
-		if (!MinkowskiHexCollide(
-			pos, vel, Vec2iReal2Full(size),
-			Vec2iReal2Full(Vec2iNew(ti->x, ti->y)), ti->VelFull,
-			Vec2iReal2Full(ti->size), &colA, &colB, &normal))
-		{
-			continue;
-		}
-		// Collision callback and check continue
-		if (func != NULL && !func(ti, data, colA, colB, normal))
-		{
-			return false;
-		}
-	CA_FOREACH_END()
+	if (func != NULL)
+	{
+		const CArray *tileThings = &MapGetTile(&gMap, tilePos)->things;
+		CA_FOREACH(const ThingId, tid, *tileThings)
+			TTileItem *ti = ThingIdGetTileItem(tid);
+			if (!CheckParams(params, item, ti))
+			{
+				continue;
+			}
+			if (!MinkowskiHexCollide(
+				pos, vel, Vec2iReal2Full(size),
+				Vec2iReal2Full(Vec2iNew(ti->x, ti->y)), ti->VelFull,
+				Vec2iReal2Full(ti->size), &colA, &colB, &normal))
+			{
+				continue;
+			}
+			// Collision callback and check continue
+			if (!func(ti, data, colA, colB, normal))
+			{
+				return false;
+			}
+		CA_FOREACH_END()
+	}
 	// Check wall collisions
 	if (checkWallFunc != NULL && wallFunc != NULL && checkWallFunc(tilePos))
 	{
