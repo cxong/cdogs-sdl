@@ -49,40 +49,22 @@
 #include "game.h"
 
 #include <assert.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
-
-#include <SDL.h>
 
 #include <cdogs/actor_placement.h>
 #include <cdogs/actors.h>
 #include <cdogs/ai.h>
 #include <cdogs/ai_coop.h>
-#include <cdogs/ammo.h>
 #include <cdogs/automap.h>
 #include <cdogs/camera.h>
-#include <cdogs/config.h>
 #include <cdogs/draw/drawtools.h>
 #include <cdogs/events.h>
-#include <cdogs/game_events.h>
 #include <cdogs/grafx_bg.h>
 #include <cdogs/handle_game_events.h>
-#include <cdogs/joystick.h>
 #include <cdogs/log.h>
 #include <cdogs/los.h>
-#include <cdogs/mission.h>
-#include <cdogs/music.h>
 #include <cdogs/net_client.h>
 #include <cdogs/net_server.h>
 #include <cdogs/objs.h>
-#include <cdogs/palette.h>
-#include <cdogs/particle.h>
-#include <cdogs/pic_manager.h>
-#include <cdogs/pics.h>
-#include <cdogs/powerup.h>
-#include <cdogs/triggers.h>
 
 
 static void PlayerSpecialCommands(TActor *actor, const int cmd)
@@ -413,6 +395,9 @@ static void RunGameInput(void *data)
 			((cmdAll & CMD_MAP) && !(lastCmdAll & CMD_MAP))))
 		{
 			rData->isMap = !rData->isMap;
+			SoundPlay(
+				&gSoundDevice,
+				StrSound(rData->isMap ? "map_open" : "map_close"));
 		}
 	}
 
@@ -506,7 +491,7 @@ static GameLoopResult RunGameUpdate(void *data)
 	// If split screen never and players are too close to the
 	// edge of the screen, forcefully pull them towards the center
 	if (ConfigGetEnum(&gConfig, "Interface.Splitscreen") == SPLITSCREEN_NEVER &&
-		GetNumPlayers(true, true, true) > 1 &&
+		GetNumPlayers(PLAYER_ALIVE_OR_DYING, true, true) > 1 &&
 		!IsPVP(gCampaign.Entry.Mode))
 	{
 		const int w = gGraphicsDevice.cachedConfig.Res.x;
