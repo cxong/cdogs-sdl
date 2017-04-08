@@ -460,6 +460,13 @@
 			"MapObject": "blood1",
 			"Positions": [[5,
 			20]]
+		},
+		{
+			"MapObject": "fan",
+			"Positions": [[31,
+			18],
+			[27,
+			18]]
 		}],
 		"StaticWrecks": [{
 			"MapObject": "barrel_blue",
@@ -928,6 +935,22 @@
 			"MapObject": "barrel_wood",
 			"Positions": [[30,
 			14]]
+		},
+		{
+			"MapObject": "wscreen1",
+			"Positions": [[18,
+			8],
+			[11,
+			8]]
+		},
+		{
+			"MapObject": "wscreen2",
+			"Positions": [[17,
+			8],
+			[12,
+			8],
+			[15,
+			8]]
 		}],
 		"StaticWrecks": [{
 			"MapObject": "barrel_blue",
@@ -1763,6 +1786,11 @@
 			"MapObject": "skull",
 			"Positions": [[22,
 			6]]
+		},
+		{
+			"MapObject": "wscreen2",
+			"Positions": [[23,
+			6]]
 		}],
 		"StaticWrecks": [],
 		"StaticCharacters": [{
@@ -2243,6 +2271,13 @@
 			"MapObject": "blood1",
 			"Positions": [[5,
 			20]]
+		},
+		{
+			"MapObject": "fan",
+			"Positions": [[27,
+			18],
+			[31,
+			18]]
 		}],
 		"StaticWrecks": [{
 			"MapObject": "barrel_blue",

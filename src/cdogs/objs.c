@@ -167,6 +167,7 @@ static void AddPickupAtObject(const TObject *o, const PickupType type)
 	GameEventsEnqueue(&gGameEvents, e);
 }
 
+static void PlaceWreck(const char *wreckClass, const TTileItem *ti);
 void ObjRemove(const NMapObjectRemove mor)
 {
 	TObject *o = ObjGetByUID(mor.UID);
@@ -223,24 +224,34 @@ void ObjRemove(const NMapObjectRemove mor)
 	SoundPlayAt(&gSoundDevice, StrSound("bang"), realPos);
 
 	// If wreck is available spawn it in the exact same position
-	if (o->Class->Wreck)
-	{
-		GameEvent e = GameEventNew(GAME_EVENT_MAP_OBJECT_ADD);
-		e.u.MapObjectAdd.UID = ObjsGetNextUID();
-		const MapObject *mo = StrMapObject(o->Class->Wreck);
-		strcpy(e.u.MapObjectAdd.MapObjectClass, mo->Name);
-		e.u.MapObjectAdd.Pos =
-			Vec2i2Net(Vec2iNew(o->tileItem.x, o->tileItem.y));
-		e.u.MapObjectAdd.TileItemFlags = MapObjectGetFlags(mo);
-		e.u.MapObjectAdd.Health = mo->Health;
-		GameEventsEnqueue(&gGameEvents, e);
-	}
+	PlaceWreck(o->Class->Wreck, &o->tileItem);
 
 	ObjDestroy(o);
 
 	// Update pathfinding cache since this object could have blocked a path
 	// before
 	PathCacheClear(&gPathCache);
+}
+static void PlaceWreck(const char *wreckClass, const TTileItem *ti)
+{
+	if (wreckClass == NULL)
+	{
+		return;
+	}
+	GameEvent e = GameEventNew(GAME_EVENT_MAP_OBJECT_ADD);
+	e.u.MapObjectAdd.UID = ObjsGetNextUID();
+	const MapObject *mo = StrMapObject(wreckClass);
+	CASSERT(mo != NULL, "cannot find wreck");
+	if (mo == NULL)
+	{
+		LOG(LM_MAIN, LL_ERROR, "wreck (%s) not found", wreckClass);
+		return;
+	}
+	strcpy(e.u.MapObjectAdd.MapObjectClass, mo->Name);
+	e.u.MapObjectAdd.Pos = Vec2i2Net(Vec2iNew(ti->x, ti->y));
+	e.u.MapObjectAdd.TileItemFlags = MapObjectGetFlags(mo);
+	e.u.MapObjectAdd.Health = mo->Health;
+	GameEventsEnqueue(&gGameEvents, e);
 }
 
 bool CanHit(const int flags, const int uid, const TTileItem *target)

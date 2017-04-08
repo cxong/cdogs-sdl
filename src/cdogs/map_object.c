@@ -348,6 +348,7 @@ static bool TryLoadMapObject(MapObject *m, json_t *node, const int version)
 	// Default tile size
 	m->Size = TILE_SIZE;
 	LoadVec2i(&m->Size, node, "Size");
+	LoadVec2i(&m->PosOffset, node, "PosOffset");
 	LoadInt(&m->Health, node, "Health");
 	LoadBulletGuns(&m->DestroyGuns, node, "DestroyGuns");
 
@@ -607,4 +608,16 @@ bool MapObjectIsTileOKStrict(
 	}
 
 	return true;
+}
+Vec2i MapObjectGetPlacementPos(const MapObject *mo, const Vec2i tilePos)
+{
+	Vec2i pos = Vec2iCenterOfTile(tilePos);
+	pos = Vec2iAdd(pos, mo->PosOffset);
+	// For on-wall objects, set their position to the top of the tile
+	// This guarantees that they are drawn last
+	if (mo->Flags & (1 << PLACEMENT_ON_WALL))
+	{
+		pos.y -= TILE_HEIGHT / 2 + 1;
+	}
+	return pos;
 }

@@ -67,6 +67,8 @@
 #include "blit.h"
 #include "pic_manager.h"
 
+//#define DEBUG_DRAW_HITBOXES
+
 
 // Three types of tile drawing, based on line of sight:
 // Unvisited: black
@@ -317,6 +319,21 @@ static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset)
 	{
 		(*(t->drawFunc))(picPos, &t->drawData);
 	}
+
+#ifdef DEBUG_DRAW_HITBOXES
+	const int pulsePeriod = ConfigGetInt(&gConfig, "Game.FPS");
+	int alphaUnscaled =
+		(gMission.time % pulsePeriod) * 255 / (pulsePeriod / 2);
+	if (alphaUnscaled > 255)
+	{
+		alphaUnscaled = 255 * 2 - alphaUnscaled;
+	}
+	color_t color = colorPurple;
+	color.a = (Uint8)alphaUnscaled;
+	DrawRectangle(
+		&gGraphicsDevice, Vec2iMinus(picPos, Vec2iScaleDiv(t->size, 2)),
+		t->size, color, DRAW_FLAG_LINE);
+#endif
 }
 
 static void DrawEditorTiles(DrawBuffer *b, const Vec2i offset);

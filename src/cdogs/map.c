@@ -370,7 +370,6 @@ bool MapTryPlaceOneObject(
 	{
 		return false;
 	}
-	Vec2i realPos = Vec2iCenterOfTile(v);
 	const Tile *t = MapGetTile(map, v);
 	unsigned short iMap = IMapGet(map, v);
 
@@ -395,17 +394,10 @@ bool MapTryPlaceOneObject(
 		IMapSet(map, Vec2iNew(v.x, v.y + 1), IMapGet(map, Vec2iNew(v.x, v.y + 1)) | MAP_LEAVEFREE);
 	}
 
-	// For on-wall objects, set their position to the top of the tile
-	// This guarantees that they are drawn last
-	if (mo->Flags & (1 << PLACEMENT_ON_WALL))
-	{
-		realPos.y -= TILE_HEIGHT / 2 + 1;
-	}
-
 	NMapObjectAdd amo = NMapObjectAdd_init_default;
 	amo.UID = ObjsGetNextUID();
 	strcpy(amo.MapObjectClass, mo->Name);
-	amo.Pos = Vec2i2Net(realPos);
+	amo.Pos = Vec2i2Net(MapObjectGetPlacementPos(mo, v));
 	amo.TileItemFlags = MapObjectGetFlags(mo) | extraFlags;
 	amo.Health = mo->Health;
 	ObjAdd(amo);

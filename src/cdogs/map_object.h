@@ -89,6 +89,7 @@ typedef struct
 	Vec2i Offset;
 	char *Wreck;
 	Vec2i Size;
+	Vec2i PosOffset;
 	int Health;
 	// Guns that are fired when this map object is destroyed
 	// i.e. explosion on destruction
@@ -145,3 +146,4 @@ bool MapObjectIsTileOKStrict(
 	const MapObject *obj, const unsigned short tile, const bool isEmpty,
 	const unsigned short tileAbove, const unsigned short tileBelow,
 	const int numWallsAdjacent, const int numWallsAround);
+Vec2i MapObjectGetPlacementPos(const MapObject *mo, const Vec2i tilePos);
