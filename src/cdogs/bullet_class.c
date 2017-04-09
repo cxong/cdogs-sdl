@@ -394,7 +394,6 @@ static bool CheckWall(const Vec2i tilePos);
 static bool HitWallFunc(
 	const Vec2i tilePos, void *data, const Vec2i col, const Vec2i normal);
 static void OnHit(HitItemData *data, TTileItem *target);
-static void OnHitWall(HitItemData *data, const Vec2i tilePos);
 static HitResult HitItem(
 	TMobileObject *obj, const Vec2i pos, const bool multipleHits)
 {
@@ -416,11 +415,7 @@ static HitResult HitItem(
 		CheckWall, HitWallFunc, &data);
 	if (!multipleHits && data.ColPosDistRealSquared >= 0)
 	{
-		if (data.HitType == HIT_WALL)
-		{
-			OnHitWall(&data, data.u.TilePos);
-		}
-		else
+		if (data.HitType == HIT_OBJECT || data.HitType == HIT_FLESH)
 		{
 			OnHit(&data, data.u.Target);
 		}
@@ -505,17 +500,7 @@ static bool HitWallFunc(
 {
 	HitItemData *hData = data;
 
-	// If we can hit multiple targets, just process those hits immediately
-	// Otherwise, find the closest target and only process the hit for that one
-	// at the end.
-	if (hData->MultipleHits)
-	{
-		OnHitWall(hData, tilePos);
-	}
-	else
-	{
-		SetClosestCollision(hData, col, normal, HIT_WALL, NULL, tilePos);
-	}
+	SetClosestCollision(hData, col, normal, HIT_WALL, NULL, tilePos);
 
 	return true;
 }
@@ -565,12 +550,6 @@ static void OnHit(HitItemData *data, TTileItem *target)
 	{
 		data->Obj->specialLock += SPECIAL_LOCK;
 	}
-}
-static void OnHitWall(HitItemData *data, const Vec2i tilePos)
-{
-	UNUSED(data);
-	UNUSED(tilePos);
-	// TODO: wall hit effects
 }
 
 

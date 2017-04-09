@@ -403,6 +403,7 @@
       "Size": [14, 10],
       "HurtAlways": true,
       "Persists": true,
+      "WallBounces": true,
       "Spark": "",
       "HitSounds": {
         "Object": "hit_gas",
@@ -430,6 +431,7 @@
       "Size": [14, 10],
       "HurtAlways": true,
       "Persists": true,
+      "WallBounces": true,
       "Spark": "",
       "HitSounds": {
         "Object": "hit_gas",
@@ -457,6 +459,7 @@
       "Size": [14, 10],
       "HurtAlways": true,
       "Persists": true,
+      "WallBounces": true,
       "Spark": "",
       "HitSounds": {
         "Object": "hit_gas",
@@ -486,6 +489,7 @@
       "Special": "Flame",
       "HurtAlways": true,
       "Persists": true,
+      "WallBounces": true,
       "Spark": "",
       "HitSounds": {
         "Object": "hit_fire",
@@ -514,6 +518,7 @@
       "Special": "Poison",
       "HurtAlways": true,
       "Persists": true,
+      "WallBounces": true,
       "Spark": "",
       "HitSounds": {
         "Object": "hit_gas",
@@ -538,6 +543,7 @@
       "Size": [20, 20],
       "Special": "Confuse",
       "Persists": true,
+      "WallBounces": true,
       "Spark": "",
       "HitSounds": {
         "Object": "hit_gas",
