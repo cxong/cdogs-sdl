@@ -197,14 +197,18 @@ void ObjRemove(const NMapObjectRemove mor)
 				true, false);
 		CA_FOREACH_END()
 
-		// Random chance to add pickups
-		CA_FOREACH(const MapObjectDestroySpawn, mods, o->Class->DestroySpawn)
-			const double chance = (double)rand() / RAND_MAX;
-			if (chance < mods->SpawnChance)
-			{
-				AddPickupAtObject(o, mods->Type);
-			}
-		CA_FOREACH_END()
+		// Random chance to add pickups in single player modes
+		if (!IsPVP(gCampaign.Entry.Mode))
+		{
+			CA_FOREACH(
+				const MapObjectDestroySpawn, mods,  o->Class->DestroySpawn)
+				const double chance = (double) rand() / RAND_MAX;
+				if (chance < mods->SpawnChance)
+				{
+					AddPickupAtObject(o, mods->Type);
+				}
+			CA_FOREACH_END()
+		}
 
 		// A wreck left after the destruction of this object
 		// TODO: doesn't need to be network event
