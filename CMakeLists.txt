@@ -11,8 +11,9 @@ project(cdogs-sdl C)
 
 SET(VERSION_MAJOR "0")
 SET(VERSION_MINOR "6")
-SET(VERSION_PATCH "4")
+SET(VERSION_PATCH "5")
 SET(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/appveyor.yml.cmake ${CMAKE_SOURCE_DIR}/appveyor.yml)
 # this must be 4 numbers
 SET(VERSION_RC "${VERSION_MAJOR},${VERSION_MINOR},${VERSION_PATCH},0")
 SET(WEBSITE "http://cxong.github.io/cdogs-sdl/")
