@@ -49,30 +49,12 @@
 #include "objs.h"
 
 #include <assert.h>
-#include <string.h>
-#include <stdlib.h>
 
-#include "bullet_class.h"
-#include "config.h"
 #include "damage.h"
-#include "game_events.h"
 #include "log.h"
-#include "map.h"
 #include "net_util.h"
-#include "screen_shake.h"
-#include "blit.h"
-#include "pic_manager.h"
 #include "pickup.h"
-#include "defs.h"
-#include "actors.h"
 #include "gamedata.h"
-#include "mission.h"
-#include "game.h"
-#include "utils.h"
-#include "weapon.h"
-
-#define DROP_GUN_CHANCE 0.04
-#define DROP_HEALTH_CHANCE 0.08
 
 CArray gObjs;
 CArray gMobObjs;
@@ -144,17 +126,11 @@ static void AddPickupAtObject(const TObject *o, const PickupType type)
 		break;
 	case PICKUP_KEYCARD: CASSERT(false, "unexpected pickup type"); break;
 	case PICKUP_GUN:
-		// Pick a random gun type and spawn it
-		for (;;)
+		// Pick a random mission gun type and spawn it
 		{
-			const int gunId = rand() % GunGetNumClasses(&gGunDescriptions);
-			const GunDescription *gun = IdGunDescription(gunId);
-			if (!gun->IsRealGun)
-			{
-				continue;
-			}
-			sprintf(e.u.AddPickup.PickupClass, "gun_%s", gun->name);
-			break;
+			const int gunId = (int)(rand() % gMission.Weapons.size);
+			const GunDescription **gun = CArrayGet(&gMission.Weapons, gunId);
+			sprintf(e.u.AddPickup.PickupClass, "gun_%s", (*gun)->name);
 		}
 		break;
 	default: CASSERT(false, "unexpected pickup type"); break;
