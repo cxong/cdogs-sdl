@@ -1148,7 +1148,7 @@ static HandleInputResult HandleInput(
 			break;
 
 		case SDL_SCANCODE_BACKSPACE:
-			fileChanged = fileChanged || UIObjectDelChar(sObjs);
+			fileChanged = UIObjectDelChar(sObjs) || fileChanged;
 			break;
 
 		default:
@@ -1159,7 +1159,7 @@ static HandleInputResult HandleInput(
 		char *c = gEventHandlers.keyboard.Typed;
 		while (c && *c >= ' ' && *c <= '~')
 		{
-			fileChanged = fileChanged || UIObjectAddChar(sObjs, *c);
+			fileChanged = UIObjectAddChar(sObjs, *c) || fileChanged;
 			c++;
 		}
 	}
