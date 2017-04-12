@@ -492,7 +492,7 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 			const int selectedGun = DrawClassSelection(
 				ec, "Gun:", ec->texIdsGuns.data, ec->GunNames,
 				GunIndex(ec->Char->Gun), NumGuns());
-			ec->Char->Gun = IdGunDescription(selectedGun);
+			ec->Char->Gun = IndexGunDescriptionReal(selectedGun);
 
 			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
 			nk_property_int(
