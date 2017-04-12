@@ -27,8 +27,6 @@
 */
 #include "char_editor.h"
 
-#include <SDL.h>
-#include <SDL_image.h>
 #include <SDL_opengl.h>
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
@@ -50,10 +48,7 @@
 #endif
 #include <nuklear/nuklear_sdl_gl2.h>
 #include <cdogs/actors.h>
-#include <cdogs/blit.h>
-#include <cdogs/character.h>
 #include <cdogs/draw/draw_actor.h>
-#include <cdogs/log.h>
 
 #define MAX_VERTEX_MEMORY 512 * 1024
 #define MAX_ELEMENT_MEMORY 128 * 1024
@@ -342,7 +337,7 @@ static bool HandleEvents(EditorContext *ec)
 	return run;
 }
 
-static void AddCharacter(EditorContext *ec, const Character *clone);
+static void AddCharacter(EditorContext *ec, const int cloneIdx);
 static int MoveCharacter(
 	EditorContext *ec, const int selectedIndex, const int d);
 static void DeleteCharacter(EditorContext *ec, const int selectedIndex);
@@ -372,7 +367,7 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 		nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 5);
 		if (nk_button_label(ec->ctx, "Add"))
 		{
-			AddCharacter(ec, NULL);
+			AddCharacter(ec, -1);
 			selectedIndex = MAX(
 				(int)ec->Setting->characters.OtherChars.size - 1, 0);
 		}
@@ -386,9 +381,7 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 		}
 		if (selectedIndex >= 0 && nk_button_label(ec->ctx, "Duplicate"))
 		{
-			AddCharacter(
-				ec,
-				CArrayGet(&ec->Setting->characters.OtherChars, selectedIndex));
+			AddCharacter(ec, selectedIndex);
 			selectedIndex = MAX(
 				(int)ec->Setting->characters.OtherChars.size - 1, 0);
 		}
@@ -563,11 +556,14 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 	SDL_GL_SwapWindow(win);
 }
 
-static void AddCharacter(EditorContext *ec, const Character *clone)
+static void AddCharacter(EditorContext *ec, const int cloneIdx)
 {
 	ec->Char = CharacterStoreAddOther(&ec->Setting->characters);
-	if (clone != NULL)
+	if (cloneIdx >= 0)
 	{
+		const Character *clone =
+			CArrayGet(&ec->Setting->characters.OtherChars, cloneIdx);
+		CFREE(ec->Char->bot);
 		memcpy(ec->Char, clone, sizeof *ec->Char);
 		CMALLOC(ec->Char->bot, sizeof *ec->Char->bot);
 		memcpy(ec->Char->bot, clone->bot, sizeof *ec->Char->bot);

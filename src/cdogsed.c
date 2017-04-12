@@ -46,11 +46,9 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <ctype.h>
 
 #include <SDL.h>
 #ifdef __MINGW32__
@@ -59,9 +57,7 @@
 #endif
 
 #include <cdogs/actors.h>
-#include <cdogs/ammo.h>
 #include <cdogs/automap.h>
-#include <cdogs/character_class.h>
 #include <cdogs/collision/collision.h>
 #include <cdogs/config_io.h>
 #include <cdogs/draw/draw.h>
@@ -69,27 +65,13 @@
 #include <cdogs/events.h>
 #include <cdogs/files.h>
 #include <cdogs/font_utils.h>
-#include <cdogs/grafx.h>
-#include <cdogs/keyboard.h>
-#include <cdogs/map_archive.h>
-#include <cdogs/mission.h>
-#include <cdogs/mission_convert.h>
 #include <cdogs/log.h>
-#include <cdogs/objs.h>
-#include <cdogs/palette.h>
-#include <cdogs/particle.h>
-#include <cdogs/pic_manager.h>
-#include <cdogs/pickup.h>
-#include <cdogs/player_template.h>
-#include <cdogs/triggers.h>
-#include <cdogs/utils.h>
 
 #include <tinydir/tinydir.h>
 
 #include <cdogsed/char_editor.h>
 #include <cdogsed/editor_ui.h>
 #include <cdogsed/editor_ui_common.h>
-#include <cdogsed/ui_object.h>
 
 
 // Mouse click areas:
@@ -401,9 +383,7 @@ static void Autosave(void)
 		char buf[CDOGS_PATH_MAX];
 		sprintf(
 			buf, "%s~%d%s", dirname, sAutosaveIndex, PathGetBasename(lastFile));
-		fprintf(stderr, "Autosaving...");
 		MapArchiveSave(buf, &gCampaign.Setting);
-		fprintf(stderr, "done\n");
 		sAutosaveIndex++;
 	}
 }
@@ -1279,16 +1259,13 @@ static void EditCampaign(void)
 		if (sTicksElapsed < 1000 / FPS_FRAMELIMIT * 2)
 		{
 			SDL_Delay(1);
-			debug(D_VERBOSE, "Delaying 1 ticksNow %u elapsed %u\n", ticksNow, sTicksElapsed);
 			continue;
 		}
 
-		debug(D_MAX, "Polling for input\n");
 		EventPoll(&gEventHandlers, SDL_GetTicks());
 		const SDL_Scancode sc = KeyGetPressed(&gEventHandlers.keyboard);
 		const int m = MouseGetPressed(&gEventHandlers.mouse);
 
-		debug(D_MAX, "Handling input\n");
 		HandleInputResult result = HandleInput(
 			sc, m, &xc, &yc, &xcOld, &ycOld, &scrap);
 		if (result.Done)
@@ -1305,7 +1282,6 @@ static void EditCampaign(void)
 				GetKey(&gEventHandlers);
 			}
 		}
-		debug(D_MAX, "End loop\n");
 		sTicksElapsed -= 1000 / (FPS_FRAMELIMIT * 2);
 	}
 	SDL_StopTextInput();
@@ -1323,7 +1299,6 @@ int main(int argc, char *argv[])
 	LogInit();
 	printf("C-Dogs SDL Editor\n");
 
-	debug(D_NORMAL, "Initialising SDL...\n");
 	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO) != 0)
 	{
 		printf("Failed to start SDL!\n");
@@ -1392,7 +1367,6 @@ int main(int argc, char *argv[])
 	{
 		if (!loaded)
 		{
-			debug(D_NORMAL, "Loading map %s\n", argv[i]);
 			RealPath(argv[i], lastFile);
 			if (strchr(lastFile, '.') == NULL &&
 				sizeof lastFile - strlen(lastFile) > 3)
@@ -1412,7 +1386,6 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	debug(D_NORMAL, "Starting editor\n");
 	EditCampaign();
 
 	MapTerminate(&gMap);
