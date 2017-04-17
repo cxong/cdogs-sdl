@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Particles": [
+
+    {
+      "Name": "laser_point",
+      "Sprites": "laser_dot",
+      "Range": 1
+    }
+  ]
+}
