@@ -1072,7 +1072,9 @@ static HandleInputResult HandleInput(
 			break;
 
 		case 'e':
-			CharEditor(&gCampaign.Setting, &gEventHandlers, &fileChanged);
+			CharEditor(
+				&gGraphicsDevice, &gCampaign.Setting, &gEventHandlers,
+				&fileChanged);
 			Setup(false);
 			UIObjectUnhighlight(sObjs, true);
 			CArrayTerminate(&sDrawObjs);

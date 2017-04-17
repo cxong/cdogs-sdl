@@ -95,7 +95,8 @@ static void AddCharacterTextures(EditorContext *ec);
 static bool HandleEvents(EditorContext *ec);
 static void Draw(SDL_Window *win, EditorContext *ec);
 void CharEditor(
-	CampaignSetting *setting, EventHandlers *handlers, bool *fileChanged)
+	GraphicsDevice *g, CampaignSetting *setting, EventHandlers *handlers,
+	bool *fileChanged)
 {
 	SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "1");
 	SDL_Init(SDL_INIT_VIDEO);
@@ -110,6 +111,7 @@ void CharEditor(
 		800, 600,
 		SDL_WINDOW_OPENGL|SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE);
 	SDL_SetWindowMinimumSize(win, 800, 500);
+	SDL_SetWindowIcon(win, g->icon);
 
 	SDL_GLContext glContext = SDL_GL_CreateContext(win);
 	glEnable(GL_TEXTURE_2D);
@@ -156,8 +158,8 @@ void CharEditor(
 	for (int i = 0; i < NumGuns(); i++)
 	{
 		const GLuint *texid = CArrayGet(&ec.texIdsGuns, i);
-		const GunDescription *g = IndexGunDescriptionReal(i);
-		LoadTexFromPic(*texid, g->Icon);
+		const GunDescription *gd = IndexGunDescriptionReal(i);
+		LoadTexFromPic(*texid, gd->Icon);
 	}
 
 	ec.anim = AnimationGetActorAnimation(ACTORANIMATION_WALKING);
