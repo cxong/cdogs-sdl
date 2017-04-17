@@ -251,7 +251,7 @@
       "Persists": true,
       "Spark": "",
       "HitSounds": {
-        "Object": "hit_gas",
+        "Object": "",
         "Flesh": "hit_gas",
         "Wall": "hit_gas"
       },
@@ -521,9 +521,9 @@
       "WallBounces": true,
       "Spark": "",
       "HitSounds": {
-        "Object": "hit_gas",
+        "Object": "",
         "Flesh": "hit_gas",
-        "Wall": "hit_gas"
+        "Wall": ""
       },
       "WallBounces": true
     },
@@ -546,9 +546,9 @@
       "WallBounces": true,
       "Spark": "",
       "HitSounds": {
-        "Object": "hit_gas",
+        "Object": "",
         "Flesh": "hit_gas",
-        "Wall": "hit_gas"
+        "Wall": ""
       },
       "WallBounces": true
     },
