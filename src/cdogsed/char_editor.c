@@ -174,7 +174,7 @@ void CharEditor(
 		Uint32 ticksThen = ticksNow;
 		ticksNow = SDL_GetTicks();
 		ticksElapsed += ticksNow - ticksThen;
-		if (ticksElapsed < 1000 / FPS_FRAMELIMIT * 2)
+		if (ticksElapsed < 1000 / FPS_FRAMELIMIT)
 		{
 			SDL_Delay(1);
 			continue;
@@ -189,7 +189,7 @@ void CharEditor(
 		Draw(win, &ec);
 		nk_input_end(ec.ctx);
 
-		ticksElapsed -= 1000 / (FPS_FRAMELIMIT * 2);
+		ticksElapsed = 0;
 	}
 
 bail:
