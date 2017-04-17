@@ -60,6 +60,7 @@ const float colRatios[] = { 0.25f, 0.75f };
 typedef struct
 {
 	struct nk_context *ctx;
+	Vec2i WindowSize;
 	Character *Char;
 	CampaignSetting *Setting;
 	EventHandlers *Handlers;
@@ -108,6 +109,7 @@ void CharEditor(
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 		800, 600,
 		SDL_WINDOW_OPENGL|SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE);
+	SDL_SetWindowMinimumSize(win, 800, 500);
 
 	SDL_GLContext glContext = SDL_GL_CreateContext(win);
 	glEnable(GL_TEXTURE_2D);
@@ -352,7 +354,14 @@ static void DrawCharacter(
 	const Animation *anim, const direction_e d);
 static void Draw(SDL_Window *win, EditorContext *ec)
 {
-	if (nk_begin(ec->ctx, "Character Store", nk_rect(10, 10, 690, 280),
+	// Stretch char store with window
+	SDL_GetWindowSize(win, &ec->WindowSize.x, &ec->WindowSize.y);
+	const Vec2i charStoreSize = Vec2iNew(
+		MAX(400, ec->WindowSize.x - 100),
+		MAX(200, ec->WindowSize.y - 300));
+	const float pad = 10;
+	if (nk_begin(ec->ctx, "Character Store",
+		nk_rect(pad, pad, (float)charStoreSize.x - pad, (float)charStoreSize.y - pad),
 		NK_WINDOW_BORDER|NK_WINDOW_TITLE))
 	{
 		int selectedIndex = -1;
@@ -403,7 +412,8 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 		}
 
 		// Show existing characters
-		nk_layout_row_dynamic(ec->ctx, 32 * PIC_SCALE, 9);
+		nk_layout_row_dynamic(
+			ec->ctx, 32 * PIC_SCALE, (int)charStoreSize.x / 75);
 		CA_FOREACH(Character, c, ec->Setting->characters.OtherChars)
 			const int selected = ec->Char == c;
 			// show both label and full character
@@ -422,7 +432,10 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 
 	if (ec->Char != NULL)
 	{
-		if (nk_begin(ec->ctx, "Preview", nk_rect(710, 10, 80, 280),
+		const float previewWidth = 80;
+		if (nk_begin(ec->ctx, "Preview",
+			nk_rect(charStoreSize.x + pad, pad,
+				previewWidth, charStoreSize.y - pad),
 			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
 		{
 			// Preview direction
@@ -460,7 +473,8 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 		}
 		nk_end(ec->ctx);
 
-		if (nk_begin(ec->ctx, "Appearance", nk_rect(10, 300, 260, 225),
+		if (nk_begin(ec->ctx, "Appearance",
+			nk_rect(pad, (float)charStoreSize.y + pad, 260, 225),
 			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
 		{
 			nk_layout_row(ec->ctx, NK_DYNAMIC, ROW_HEIGHT, 2, colRatios);
@@ -480,7 +494,8 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 		}
 		nk_end(ec->ctx);
 
-		if (nk_begin(ec->ctx, "Attributes", nk_rect(280, 300, 250, 225),
+		if (nk_begin(ec->ctx, "Attributes",
+			nk_rect(280, (float)charStoreSize.y + pad, 250, 225),
 			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
 		{
 			// Speed (256 = 100%)
@@ -509,7 +524,8 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 		}
 		nk_end(ec->ctx);
 
-		if (nk_begin(ec->ctx, "AI", nk_rect(540, 300, 250, 280),
+		if (nk_begin(ec->ctx, "AI",
+			nk_rect(540, (float)charStoreSize.y + pad, 250, 280),
 			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
 		{
 			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
