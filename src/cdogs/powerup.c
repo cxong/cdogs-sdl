@@ -126,8 +126,7 @@ static bool TryPlacePickup(PowerupSpawner *p)
 
 void PowerupSpawnerRemoveOne(PowerupSpawner *p)
 {
-	CASSERT(p->numPickups > 0, "unexpectedly removing powerup");
-	p->numPickups--;
+	p->numPickups = MAX(0, p->numPickups - 1);
 }
 
 
