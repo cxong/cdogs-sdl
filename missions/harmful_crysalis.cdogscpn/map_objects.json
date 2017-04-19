@@ -1587,7 +1587,9 @@
         "Type": "Normal",
         "Pic": "box3_gray_wreck"
       },
-      "DestroyGuns": ["explosion3"],
+      "DestroyGuns": [        "explosion1",
+        "explosion2",
+        "explosion3"],
       "Health": 20,
       "Flags": ["Outside", "OneWall"]
     },

@@ -16,8 +16,8 @@
       "Special": "Flame",
       "Spark": "laser_point",
       "HitSounds": {
-        "Object": "",
-        "Flesh": "",
+        "Object": "laser_burn",
+        "Flesh": "laser_burn",
         "Wall": ""
       }
     },

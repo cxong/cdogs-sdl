@@ -8,9 +8,10 @@
       "Icon": "browny_gun",
       "Cost": 0,
       "Lock": 1,
-      "Sound": "",
       "MuzzleFlashParticle": "",
       "SwitchSound": "mini_cells_pickup",
+      "Sound": "mining_laser",
+      "SoundLockLength": 8,
       "Description": "A laser that is strong enough to melt rocks."
     },
     {
@@ -74,7 +75,7 @@
       "Name": "Monster gas",
       "Pic": "",
       "Bullet": "monster_gas",
-      "Cost": 1,
+      "Cost": 0,
       "Lock": 40,
       "Sound": "gas_leak",
       "SoundLockLength": 36,
@@ -107,7 +108,6 @@
     },
     {
       "Name": "Monster psybeam",
-      "Icon": "powergun",
       "Pic":"",
       "Bullet": "psywave",
       "Cost": 0,
@@ -116,8 +116,7 @@
       "Recoil": 1.6,
       "SpreadCount": 6,
       "AngleOffset" : 0.2,
-      "SpreadWidth": 0.8,
-      "Ammo": "Mini cells"
+      "SpreadWidth": 0.8
     }
   ], "PseudoGuns" : [
     {
