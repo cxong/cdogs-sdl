@@ -69,7 +69,9 @@ endif()
 if(NOT "${SDL2_MIXER_FOUND}")
 	find_package(SDL2_mixer REQUIRED)
 endif()
-find_package(OpenGL REQUIRED)
+if(NOT "${GCW0}")
+	find_package(OpenGL REQUIRED)
+endif()
 link_directories(${SDL2_LIBRARY_DIRS} ${SDL2_IMAGE_LIBRARY_DIRS} ${SDL2_MIXER_LIBRARY_DIRS})
 
 SET(ENet_LIBRARY enet)
@@ -158,10 +160,12 @@ set_target_properties(cdogs-sdl PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_BINARY_DIR}/src
 	RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_BINARY_DIR}/src
 )
-set_target_properties(cdogs-sdl-editor PROPERTIES
-	RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_BINARY_DIR}/src
-	RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_BINARY_DIR}/src
-)
+if(NOT "${GCW0}")
+	set_target_properties(cdogs-sdl-editor PROPERTIES
+		RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_BINARY_DIR}/src
+		RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_BINARY_DIR}/src
+	)
+endif()
 
 ################
 # Installation #
@@ -184,8 +188,13 @@ endif()
 install(
   PROGRAMS
     ${CMAKE_CURRENT_BINARY_DIR}/src/cdogs-sdl${EXE_EXTENSION}
-    ${CMAKE_CURRENT_BINARY_DIR}/src/cdogs-sdl-editor${EXE_EXTENSION}
   DESTINATION ${INSTALL_PREFIX}/bin)
+if(NOT "${GCW0}")
+	install(
+	  PROGRAMS
+	    ${CMAKE_CURRENT_BINARY_DIR}/src/cdogs-sdl-editor${EXE_EXTENSION}
+	  DESTINATION ${INSTALL_PREFIX}/bin)
+endif()
 
 INSTALL(DIRECTORY
 	${CMAKE_SOURCE_DIR}/doc
