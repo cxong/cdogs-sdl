@@ -1246,7 +1246,6 @@ static void EditCampaign(void)
 	Mission scrap;
 	memset(&scrap, 0, sizeof scrap);
 
-	gCampaign.seed = 0;
 	Setup(true);
 
 	Uint32 ticksNow = SDL_GetTicks();

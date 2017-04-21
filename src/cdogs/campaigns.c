@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,6 @@ void CampaignInit(CampaignOptions *campaign)
 {
 	memset(campaign, 0, sizeof *campaign);
 	CampaignSettingInit(&campaign->Setting);
-	campaign->seed = ConfigGetInt(&gConfig, "Game.RandomSeed");
 }
 void CampaignTerminate(CampaignOptions *campaign)
 {
@@ -210,9 +209,10 @@ Mission *CampaignGetCurrentMission(CampaignOptions *campaign)
 
 void CampaignSeedRandom(const CampaignOptions *campaign)
 {
-	const unsigned int seed = 10 * campaign->MissionIndex + campaign->seed;
-	debug(D_NORMAL, "Seeding with %u\n", seed);
-	srand(seed);
+	const int seed =
+		10 * campaign->MissionIndex + ConfigGetInt(&gConfig, "Game.RandomSeed");
+	LOG(LM_MAIN, LL_INFO, "Seeding with %d", seed);
+	srand((unsigned int)seed);
 }
 
 void CampaignAndMissionSetup(

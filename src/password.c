@@ -90,7 +90,8 @@ const char *MakePassword(int mission, int isTwoPlayers)
 		sum2 ^= gCampaign.Setting.Title[i];
 	}
 
-	x = ((sum2 << 23) | (mission << 16) | sum1) ^ gCampaign.seed;
+	const int seed = ConfigGetInt(&gConfig, "Game.RandomSeed");
+	x = ((sum2 << 23) | (mission << 16) | sum1) ^ (size_t)seed;
 	count = 0;
 	while (x > 0 && count < PASSWORD_MAX) {
 		i = x % base;

@@ -563,7 +563,7 @@ Config ConfigDefault(void)
 	Config game = ConfigNewGroup("Game");
 	ConfigGroupAdd(&game, ConfigNewBool("FriendlyFire", false));
 	ConfigGroupAdd(&game,
-		ConfigNewInt("RandomSeed", 0, 0, UINT_MAX, 1, NULL, NULL));
+		ConfigNewInt("RandomSeed", 0, 0, INT_MAX, 1, NULL, NULL));
 	ConfigGroupAdd(&game, ConfigNewEnum(
 		"Difficulty", DIFFICULTY_NORMAL,
 		DIFFICULTY_VERYEASY, DIFFICULTY_VERYHARD,

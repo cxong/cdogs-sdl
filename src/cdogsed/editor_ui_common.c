@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, 2016 Cong Xu
+    Copyright (c) 2014, 2016-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -157,24 +157,19 @@ static const char *CampaignGetSeedStr(UIObject *o, void *data)
 	UNUSED(o);
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
-	sprintf(s, "Seed: %u", co->seed);
+	sprintf(s, "Seed: %d", ConfigGetInt(&gConfig, "Game.RandomSeed"));
 	return s;
 }
 static void CampaignChangeSeed(void *data, int d)
 {
+	UNUSED(data);
 	if (gEventHandlers.keyboard.modState & KMOD_SHIFT)
 	{
 		d *= 10;
 	}
-	CampaignOptions *co = data;
-	if (d < 0 && co->seed < (unsigned)-d)
-	{
-		co->seed = 0;
-	}
-	else
-	{
-		co->seed += d;
-	}
+	ConfigSetInt(
+		&gConfig, "Game.RandomSeed",
+		ConfigGetInt(&gConfig, "Game.RandomSeed") + d);
 }
 
 typedef struct

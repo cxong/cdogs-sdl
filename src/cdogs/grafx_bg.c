@@ -44,7 +44,6 @@ void GrafxMakeRandomBackground(
 {
 	CampaignSettingInit(&co->Setting);
 	SetupQuickPlayCampaign(&co->Setting);
-	co->seed = rand();
 	const HSV tint = {
 		rand() * 360.0 / RAND_MAX, rand() * 1.0 / RAND_MAX, 0.5
 	};
@@ -56,7 +55,6 @@ void GrafxMakeRandomBackground(
 	DrawBufferTerminate(&buffer);
 	MissionOptionsTerminate(mo);
 	CampaignSettingTerminate(&co->Setting);
-	co->seed = ConfigGetInt(&gConfig, "Game.RandomSeed");
 }
 
 void GrafxDrawBackground(

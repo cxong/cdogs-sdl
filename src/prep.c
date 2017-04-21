@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -448,6 +448,7 @@ bool GameOptions(const GameMode gm)
 		I("Game.Lives");
 		I("Game.HealthPickups");
 		I("Game.Ammo");
+		I("Game.RandomSeed");
 		MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
 		I("StartServer");
 		break;
@@ -456,6 +457,7 @@ bool GameOptions(const GameMode gm)
 		I("Dogfight.FirstTo");
 		I("Game.HealthPickups");
 		I("Game.Ammo");
+		I("Game.RandomSeed");
 		MenuAddSubmenu(ms.current,
 			MenuCreateAllowedWeapons("Weapons...", &awData));
 		MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
@@ -466,6 +468,7 @@ bool GameOptions(const GameMode gm)
 		I("Deathmatch.Lives");
 		I("Game.HealthPickups");
 		I("Game.Ammo");
+		I("Game.RandomSeed");
 		MenuAddSubmenu(ms.current,
 			MenuCreateAllowedWeapons("Weapons...", &awData));
 		MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
