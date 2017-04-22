@@ -69,7 +69,8 @@
       "Lock": 10,
       "Sound": "",
       "SoundLockLength": 20,
-      "CanShoot": false
+      "CanShoot": false,
+      "CanDrop": false
     },
     {
       "Name": "Monster gas",
@@ -80,7 +81,8 @@
       "Sound": "gas_leak",
       "SoundLockLength": 36,
       "MuzzleFlashParticle": "muzzle_flash_gasgun",
-      "CanShoot": true
+      "CanShoot": true,
+      "CanDrop": false
     },
     {
       "Name": "Cryo gun",
@@ -116,7 +118,8 @@
       "Recoil": 1.6,
       "SpreadCount": 6,
       "AngleOffset" : 0.2,
-      "SpreadWidth": 0.8
+      "SpreadWidth": 0.8,
+      "CanDrop": false
     }
   ], "PseudoGuns" : [
     {
