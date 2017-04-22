@@ -21,9 +21,9 @@ Try to use the limited palette that original C-Dogs uses. Not all current sprite
 
 ![](https://github.com/cxong/cdogs-sdl/blob/master/graphics/palette.png)
 
-If you use GIMP, you can also import [`graphics/palette.txt`](https://github.com/cxong/cdogs-sdl/blob/master/graphics/palette.txt) using
+If you use GIMP, you can also import this palette using
 - Windows > Palettes
-- Right click the list > Import Palette... > find palette.txt
+- Right click the list > Import Palette... > find palette.png
 - Open an image you want to palettise
 - Image > Mode > Indexed... > Use custom palette > select the imported C-Dogs palette
 
