@@ -1,9 +1,9 @@
 ---
 layout: post
 title:  "C-Dogs 0.6.5 Released!"
-date:   2017-04-24
+date:   2017-04-23
 categories: release
-published: false
+published: true
 ---
 
 C-Dogs SDL 0.6.5 released, with a new campaign, new character editor, and some hitscan weapons!
