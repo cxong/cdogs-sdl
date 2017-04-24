@@ -4,12 +4,6 @@ branches:
   except:
     - gh-pages
 
-# Only build if file changes here
-only_commits:
-  files:
-    - build/
-    - src/
-
 environment:
   CTEST_OUTPUT_ON_FAILURE: 1
   SDL2_VERSION: 2.0.5
