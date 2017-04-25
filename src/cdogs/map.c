@@ -213,11 +213,6 @@ void MapRemoveTileItem(Map *map, TTileItem *t)
 	CASSERT(false, "Did not find element to delete");
 }
 
-static Vec2i GuessCoords(Map *map)
-{
-	return Vec2iNew(rand() % map->Size.x, rand() % map->Size.y);
-}
-
 static Vec2i GuessPixelCoords(Map *map)
 {
 	return Vec2iNew(
@@ -480,7 +475,7 @@ static bool MapTryPlaceBlowup(
 
 	while (i > 0)
 	{
-		Vec2i v = GuessCoords(map);
+		const Vec2i v = MapGetRandomTile(map);
 		if ((!hasLockedRooms || (IMapGet(map, v) >> 8)) &&
 			(!noaccess || (IMapGet(map, v) >> 8) == 0))
 		{
@@ -519,7 +514,7 @@ static void MapPlaceCard(Map *map, int keyIndex, int map_access)
 {
 	for (;;)
 	{
-		Vec2i v = GuessCoords(map);
+		const Vec2i v = MapGetRandomTile(map);
 		Tile *t;
 		Tile *tBelow;
 		unsigned short iMap;
@@ -658,7 +653,7 @@ void MapLoad(
 		MapStaticLoad(map, mo);
 		break;
 	case MAPTYPE_CAVE:
-		MapCaveLoad(map, mo);
+		MapCaveLoad(map, mo, co);
 		break;
 	default:
 		CASSERT(false, "unknown map type");

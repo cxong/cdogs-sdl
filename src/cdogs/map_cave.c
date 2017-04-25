@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2016, Cong Xu
+    Copyright (c) 2016-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -28,13 +28,19 @@
 #include "map_cave.h"
 
 #include "algorithms.h"
+#include "map_build.h"
 
 
 static void CaveRep(Map *map, const int r1, const int r2);
 static void LinkDisconnectedAreas(Map *map);
 static void FixCorridors(Map *map, const int corridorWidth);
-void MapCaveLoad(Map *map, const struct MissionOptions *mo)
+static void PlaceSquares(Map *map, const int squares);
+void MapCaveLoad(
+	Map *map, const struct MissionOptions *mo, const CampaignOptions* co)
 {
+	// Re-seed RNG so results are consistent
+	CampaignSeedRandom(co);
+
 	const Mission *m = mo->missionData;
 
 	// Randomly set a percentage of the tiles as walls
@@ -56,6 +62,8 @@ void MapCaveLoad(Map *map, const struct MissionOptions *mo)
 	LinkDisconnectedAreas(map);
 
 	FixCorridors(map, m->u.Cave.CorridorWidth);
+
+	PlaceSquares(map, m->u.Cave.Squares);
 }
 
 // Perform one generation of cellular automata
@@ -384,4 +392,56 @@ static void FixCorridorOnTile(void *data, Vec2i v)
 		}
 	}
 	onTileData->Counter++;
+}
+
+static bool MapIsAreaClearForCaveSquare(
+	const Map *map, const Vec2i pos, const Vec2i size);
+static void PlaceSquares(Map *map, const int squares)
+{
+	// Place empty square areas on the map
+	// This can only be done if at least one tile in the square is a floor type
+	int count = 0;
+	for (int i = 0; i < 1000 && count < squares; i++)
+	{
+		const Vec2i v = MapGetRandomTile(map);
+		const Vec2i size = Vec2iNew(rand() % 9 + 8, rand() % 9 + 8);
+		if (!MapIsAreaClearForCaveSquare(map, v, size))
+		{
+			continue;
+		}
+		MapMakeSquare(map, v, size);
+		count++;
+	}
+}
+static bool MapIsAreaClearForCaveSquare(
+	const Map *map, const Vec2i pos, const Vec2i size)
+{
+	if (!MapIsAreaInside(map, pos, size))
+	{
+		return false;
+	}
+
+	// For area to be clear, it must have:
+	// - At least one floor tile
+	// - No square tiles
+	Vec2i v;
+	bool hasFloor = false;
+	for (v.y = pos.y; v.y < pos.y + size.y; v.y++)
+	{
+		for (v.x = pos.x; v.x < pos.x + size.x; v.x++)
+		{
+			switch (IMapGet(map, v))
+			{
+				case MAP_FLOOR:
+					hasFloor = true;
+					break;
+				case MAP_WALL:
+					break;
+				default:
+					// Any other tile type is disallowed
+					return false;
+			}
+		}
+	}
+	return hasFloor;
 }

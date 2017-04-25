@@ -197,6 +197,7 @@ typedef struct
 			int R1;
 			int R2;
 			int CorridorWidth;
+			int Squares;
 		} Cave;
 	} u;
 } Mission;

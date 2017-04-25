@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2016, Cong Xu
+    Copyright (c) 2016-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,6 +46,8 @@ static const char *MissionGetR2Str(UIObject *o, void *data);
 static void MissionChangeR2(void *data, int d);
 static const char *MissionGetCorridorWidthStr(UIObject *o, void *data);
 static void MissionChangeCorridorWidth(void *data, int d);
+static const char *MissionGetSquareCountStr(UIObject *o, void *data);
+static void MissionChangeSquareCount(void *data, int d);
 UIObject *CreateCaveMapObjs(Vec2i pos, CampaignOptions *co)
 {
 	const int th = FontH();
@@ -99,6 +101,15 @@ UIObject *CreateCaveMapObjs(Vec2i pos, CampaignOptions *co)
 	o2->ChangeFunc = MissionChangeCorridorWidth;
 	o2->Pos = pos;
 	o2->Size.x = 60;
+	UIObjectAddChild(c, o2);
+
+	pos.x = x;
+	pos.y += th;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetSquareCountStr;
+	o2->Data = co;
+	o2->ChangeFunc = MissionChangeSquareCount;
+	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 
 	UIObjectDestroy(o);
@@ -187,4 +198,19 @@ static void MissionChangeCorridorWidth(void *data, int d)
 	CampaignOptions *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
 	m->u.Cave.CorridorWidth = CLAMP(m->u.Cave.CorridorWidth + d, 1, 5);
+}
+static const char *MissionGetSquareCountStr(UIObject *o, void *data)
+{
+	static char s[128];
+	UNUSED(o);
+	CampaignOptions *co = data;
+	if (!CampaignGetCurrentMission(co)) return NULL;
+	sprintf(s, "Sqr: %d", CampaignGetCurrentMission(co)->u.Cave.Squares);
+	return s;
+}
+static void MissionChangeSquareCount(void *data, int d)
+{
+	CampaignOptions *co = data;
+	CampaignGetCurrentMission(co)->u.Cave.Squares =
+		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Squares + d, 0, 100);
 }

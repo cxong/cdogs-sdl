@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2015, 2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,7 @@
 
 #include "map.h"
 
+bool MapIsAreaInside(const Map *map, const Vec2i pos, const Vec2i size);
 int MapIsAreaClear(Map *map, Vec2i pos, Vec2i size);
 int MapIsAreaClearOrRoom(Map *map, Vec2i pos, Vec2i size);
 int MapIsAreaClearOrWall(Map *map, Vec2i pos, Vec2i size);
@@ -58,6 +59,7 @@ int MapGetRoomOverlapSize(
 int MapIsLessThanTwoWallOverlaps(Map *map, Vec2i pos, Vec2i size);
 int MapIsValidStartForWall(
 	Map *map, int x, int y, unsigned short tileType, int pad);
+Vec2i MapGetRandomTile(const Map *map);
 void MapMakeSquare(Map *map, Vec2i pos, Vec2i size);
 void MapMakeRoom(Map *map, int xOrigin, int yOrigin, int width, int height);
 void MapPlaceDoors(

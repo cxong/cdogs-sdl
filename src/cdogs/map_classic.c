@@ -85,9 +85,10 @@ void MapClassicLoad(Map *map, const Mission *m, const CampaignOptions* co)
 	CampaignSeedRandom(co);
 
 	MapSetupPerimeter(map);
-	
+
+	const int pad = MAX(m->u.Classic.CorridorWidth, 1);
+
 	// place squares
-	int pad = MAX(m->u.Classic.CorridorWidth, 1);
 	int count = 0;
 	int i = 0;
 	while (i < 1000 && count < m->u.Classic.Squares)
@@ -157,11 +158,9 @@ static void MapSetupPerimeter(Map *map)
 	}
 }
 
-static Vec2i GuessCoords(Map *map);
-
 static int MapTryBuildSquare(Map *map)
 {
-	Vec2i v = GuessCoords(map);
+	const Vec2i v = MapGetRandomTile(map);
 	Vec2i size = Vec2iNew(rand() % 9 + 8, rand() % 9 + 8);
 	if (MapIsAreaClear(map, v, size))
 	{
@@ -182,7 +181,7 @@ static bool MapTryBuildRoom(
 	int roomMax = MAX(m->u.Classic.Rooms.Max, doorMin + 4);
 	int w = rand() % (roomMax - roomMin + 1) + roomMin;
 	int h = rand() % (roomMax - roomMin + 1) + roomMin;
-	Vec2i pos = GuessCoords(map);
+	const Vec2i pos = MapGetRandomTile(map);
 	Vec2i clearPos = Vec2iNew(pos.x - pad, pos.y - pad);
 	Vec2i clearSize = Vec2iNew(w + 2 * pad, h + 2 * pad);
 	int isClear = 0;
@@ -324,7 +323,7 @@ static bool MapTryBuildPillar(Map *map, const Mission *m, const int pad)
 	Vec2i size = Vec2iNew(
 		rand() % (pillarMax - pillarMin + 1) + pillarMin,
 		rand() % (pillarMax - pillarMin + 1) + pillarMin);
-	Vec2i pos = GuessCoords(map);
+	const Vec2i pos = MapGetRandomTile(map);
 	Vec2i clearPos = Vec2iNew(pos.x - pad, pos.y - pad);
 	Vec2i clearSize = Vec2iNew(size.x + 2 * pad, size.y + 2 * pad);
 	int isEdge = 0;
@@ -381,7 +380,7 @@ static void MapGrowWall(
 static int MapTryBuildWall(
 	Map *map, unsigned short tileType, int pad, int wallLength)
 {
-	Vec2i v = GuessCoords(map);
+	const Vec2i v = MapGetRandomTile(map);
 	if (MapIsValidStartForWall(map, v.x, v.y, tileType, pad))
 	{
 		MapMakeWall(map, v);
@@ -497,11 +496,6 @@ static void MapGrowWall(
 	}
 	// Keep growing wall in same direction
 	MapGrowWall(map, x, y, tileType, pad, d, length);
-}
-
-static Vec2i GuessCoords(Map *map)
-{
-	return Vec2iNew(rand() % map->Size.x, rand() % map->Size.y);
 }
 
 // Find the maximum door size for a wall

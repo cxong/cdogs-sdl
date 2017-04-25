@@ -62,8 +62,9 @@
 		"AltMask": "840000",
 		"FillPercent": 40,
 		"Repeat": 4,
-		"R1": 6,
-		"R2": 0
+		"R1": 5,
+		"R2": 0,
+		"Squares": 3
 	},
 	{
 		"Title": "Sabotage of Clan Tantalus Armory",
@@ -286,7 +287,7 @@
 	{
 		"Title": "Extermination",
 		"Description": "We have taken the Tantalus stronghold and are wiping out the remnants. Some have take refuge in the nearby caves; enter them and exterminate all that you find.",
-		"Type": "Classic",
+		"Type": "Cave",
 		"Width": 50,
 		"Height": 50,
 		"WallStyle": "rock",
@@ -339,30 +340,11 @@
 		"FloorMask": "8b4600",
 		"RoomMask": "844400",
 		"AltMask": "840000",
-		"Walls": 60,
-		"WallLength": 16,
-		"CorridorWidth": 0,
-		"Rooms": {
-			"Count": 17,
-			"Min": 6,
-			"Max": 6,
-			"Edge": true,
-			"Overlap": true,
-			"Walls": 1,
-			"WallLength": 1,
-			"WallPad": 2
-		},
-		"Squares": 0,
-		"Doors": {
-			"Enabled": false,
-			"Min": 1,
-			"Max": 2
-		},
-		"Pillars": {
-			"Count": 30,
-			"Min": 1,
-			"Max": 2
-		}
+		"FillPercent": 46,
+		"Repeat": 3,
+		"R1": 5,
+		"R2": 5,
+		"Squares": 3
 	},
 	{
 		"Title": "The Duel",
@@ -483,12 +465,13 @@
 		"FillPercent": 44,
 		"Repeat": 10,
 		"R1": 5,
-		"R2": -1
+		"R2": -1,
+		"Squares": 0
 	},
 	{
 		"Title": "Miner Escort",
 		"Description": "It has been a full year since the annihilation of Clan Tantalus. Saul Tantalus is presumed dead. Yet the natives have been growing restless and raiding cinnamon mining operations. You are tasked with protecting one of these missions.",
-		"Type": "Classic",
+		"Type": "Cave",
 		"Width": 63,
 		"Height": 53,
 		"WallStyle": "stone",
@@ -537,30 +520,11 @@
 		"FloorMask": "94802c",
 		"RoomMask": "840000",
 		"AltMask": "840000",
-		"Walls": 23,
-		"WallLength": 15,
-		"CorridorWidth": 2,
-		"Rooms": {
-			"Count": 0,
-			"Min": 0,
-			"Max": 0,
-			"Edge": false,
-			"Overlap": false,
-			"Walls": 0,
-			"WallLength": 0,
-			"WallPad": 0
-		},
-		"Squares": 0,
-		"Doors": {
-			"Enabled": false,
-			"Min": 0,
-			"Max": 0
-		},
-		"Pillars": {
-			"Count": 6,
-			"Min": 2,
-			"Max": 6
-		}
+		"FillPercent": 40,
+		"Repeat": 4,
+		"R1": 5,
+		"R2": 1,
+		"Squares": 3
 	},
 	{
 		"Title": "Deep Desert Raid",

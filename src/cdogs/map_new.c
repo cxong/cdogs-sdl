@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2016, Cong Xu
+    Copyright (c) 2014-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -348,6 +348,7 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 			LoadInt(&m.u.Cave.Repeat, child, "Repeat");
 			LoadInt(&m.u.Cave.R1, child, "R1");
 			LoadInt(&m.u.Cave.R2, child, "R2");
+			LoadInt(&m.u.Cave.Squares, child, "Squares");
 			break;
 		default:
 			assert(0 && "unknown map type");

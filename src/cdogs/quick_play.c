@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -264,6 +264,8 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 		m->u.Cave.R1 = rand() % 2 + 4;
 		m->u.Cave.R2 = rand() % 5 - 1;
 		m->u.Cave.CorridorWidth = rand() % 3 + 1;
+		m->u.Cave.Squares = GenerateQuickPlayParam(
+			ConfigGetEnum(&gConfig, "QuickPlay.SquareCount"), 0, 1, 3, 6);
 		break;
 	default:
 		assert(0 && "unknown map type");

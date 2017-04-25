@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2016, Cong Xu
+    Copyright (c) 2014-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@
 
 #include "algorithms.h"
 #include "map_object.h"
+#include "mission.h"
 
 
 void MissionConvertToType(Mission *m, Map *map, MapType type)
@@ -86,6 +87,7 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 		m->u.Cave.R1 = 5;
 		m->u.Cave.R2 = 2;
 		m->u.Cave.CorridorWidth = 2;
+		m->u.Cave.Squares = 1;
 		break;
 	default:
 		CASSERT(false, "unknown map type");
