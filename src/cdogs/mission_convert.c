@@ -30,8 +30,6 @@
 #include <assert.h>
 
 #include "algorithms.h"
-#include "map_object.h"
-#include "mission.h"
 
 
 void MissionConvertToType(Mission *m, Map *map, MapType type)
@@ -87,6 +85,14 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 		m->u.Cave.R1 = 5;
 		m->u.Cave.R2 = 2;
 		m->u.Cave.CorridorWidth = 2;
+		m->u.Cave.Rooms.Count = 10;
+		m->u.Cave.Rooms.Min = 5;
+		m->u.Cave.Rooms.Max = 8;;
+		m->u.Cave.Rooms.Edge = true;
+		m->u.Cave.Rooms.Overlap = true;
+		m->u.Cave.Rooms.Walls = 1;
+		m->u.Cave.Rooms.WallLength = 1;
+		m->u.Cave.Rooms.WallPad = 1;
 		m->u.Cave.Squares = 1;
 		break;
 	default:

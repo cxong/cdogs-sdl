@@ -36,6 +36,7 @@
 #include "json_utils.h"
 #include "log.h"
 #include "map_archive.h"
+#include "mission.h"
 
 
 int MapNewScan(const char *filename, char **title, int *numMissions)
@@ -186,7 +187,7 @@ static void LoadMissionObjectives(
 	CArray *objectives, json_t *objectivesNode, const int version);
 static void LoadIntArray(CArray *a, json_t *node, char *name);
 static void LoadWeapons(CArray *weapons, json_t *weaponsNode);
-static void LoadClassicRooms(Mission *m, json_t *roomsNode);
+static void LoadRooms(RoomParams *r, json_t *roomsNode);
 static void LoadClassicDoors(Mission *m, json_t *node, char *name);
 static void LoadClassicPillars(Mission *m, json_t *node, char *name);
 static bool TryLoadStaticMap(Mission *m, json_t *node, int version);
@@ -331,8 +332,9 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 			LoadInt(&m.u.Classic.Walls, child, "Walls");
 			LoadInt(&m.u.Classic.WallLength, child, "WallLength");
 			LoadInt(&m.u.Classic.CorridorWidth, child, "CorridorWidth");
-			LoadClassicRooms(
-				&m, json_find_first_label(child, "Rooms")->child);
+			LoadRooms(
+				&m.u.Classic.Rooms,
+				json_find_first_label(child, "Rooms")->child);
 			LoadInt(&m.u.Classic.Squares, child, "Squares");
 			LoadClassicDoors(&m, child, "Doors");
 			LoadClassicPillars(&m, child, "Pillars");
@@ -344,11 +346,18 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 			}
 			break;
 		case MAPTYPE_CAVE:
-			LoadInt(&m.u.Cave.FillPercent, child, "FillPercent");
-			LoadInt(&m.u.Cave.Repeat, child, "Repeat");
-			LoadInt(&m.u.Cave.R1, child, "R1");
-			LoadInt(&m.u.Cave.R2, child, "R2");
-			LoadInt(&m.u.Cave.Squares, child, "Squares");
+			{
+				LoadInt(&m.u.Cave.FillPercent, child, "FillPercent");
+				LoadInt(&m.u.Cave.Repeat, child, "Repeat");
+				LoadInt(&m.u.Cave.R1, child, "R1");
+				LoadInt(&m.u.Cave.R2, child, "R2");
+				json_t *roomsNode = json_find_first_label(child, "Rooms");
+				if (roomsNode != NULL && roomsNode->child != NULL)
+				{
+					LoadRooms(&m.u.Cave.Rooms, roomsNode->child);
+				}
+				LoadInt(&m.u.Cave.Squares, child, "Squares");
+			}
 			break;
 		default:
 			assert(0 && "unknown map type");
@@ -469,16 +478,16 @@ static void AddWeapon(CArray *weapons, const CArray *guns)
 		}
 	}
 }
-static void LoadClassicRooms(Mission *m, json_t *roomsNode)
+static void LoadRooms(RoomParams *r, json_t *roomsNode)
 {
-	LoadInt(&m->u.Classic.Rooms.Count, roomsNode, "Count");
-	LoadInt(&m->u.Classic.Rooms.Min, roomsNode, "Min");
-	LoadInt(&m->u.Classic.Rooms.Max, roomsNode, "Max");
-	LoadBool(&m->u.Classic.Rooms.Edge, roomsNode, "Edge");
-	LoadBool(&m->u.Classic.Rooms.Overlap, roomsNode, "Overlap");
-	LoadInt(&m->u.Classic.Rooms.Walls, roomsNode, "Walls");
-	LoadInt(&m->u.Classic.Rooms.WallLength, roomsNode, "WallLength");
-	LoadInt(&m->u.Classic.Rooms.WallPad, roomsNode, "WallPad");
+	LoadInt(&r->Count, roomsNode, "Count");
+	LoadInt(&r->Min, roomsNode, "Min");
+	LoadInt(&r->Max, roomsNode, "Max");
+	LoadBool(&r->Edge, roomsNode, "Edge");
+	LoadBool(&r->Overlap, roomsNode, "Overlap");
+	LoadInt(&r->Walls, roomsNode, "Walls");
+	LoadInt(&r->WallLength, roomsNode, "WallLength");
+	LoadInt(&r->WallPad, roomsNode, "WallPad");
 }
 static void LoadClassicPillars(Mission *m, json_t *node, char *name)
 {

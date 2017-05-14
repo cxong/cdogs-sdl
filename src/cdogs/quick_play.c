@@ -207,6 +207,7 @@ static void SetupQuickPlayEnemies(
 	}
 }
 
+static RoomParams RandomRoomParams(void);
 static void RandomStyle(char *style, const CArray *styleNames);
 static color_t RandomBGColor(void);
 void SetupQuickPlayCampaign(CampaignSetting *setting)
@@ -239,15 +240,7 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 		m->u.Classic.WallLength = GenerateQuickPlayParam(
 			ConfigGetEnum(&gConfig, "QuickPlay.WallLength"), 1, 3, 6, 12);
 		m->u.Classic.CorridorWidth = rand() % 3 + 1;
-		m->u.Classic.Rooms.Count = GenerateQuickPlayParam(
-			ConfigGetEnum(&gConfig, "QuickPlay.RoomCount"), 0, 2, 5, 12);
-		m->u.Classic.Rooms.Min = rand() % 10 + 5;
-		m->u.Classic.Rooms.Max = rand() % 10 + m->u.Classic.Rooms.Min;
-		m->u.Classic.Rooms.Edge = 1;
-		m->u.Classic.Rooms.Overlap = 1;
-		m->u.Classic.Rooms.Walls = rand() % 5;
-		m->u.Classic.Rooms.WallLength = rand() % 6 + 1;
-		m->u.Classic.Rooms.WallPad = rand() % 4 + 1;
+		m->u.Classic.Rooms = RandomRoomParams();
 		m->u.Classic.Squares = GenerateQuickPlayParam(
 			ConfigGetEnum(&gConfig, "QuickPlay.SquareCount"), 0, 1, 3, 6);
 		m->u.Classic.Doors.Enabled = rand() % 2;
@@ -264,6 +257,7 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 		m->u.Cave.R1 = rand() % 2 + 4;
 		m->u.Cave.R2 = rand() % 5 - 1;
 		m->u.Cave.CorridorWidth = rand() % 3 + 1;
+		m->u.Cave.Rooms = RandomRoomParams();
 		m->u.Cave.Squares = GenerateQuickPlayParam(
 			ConfigGetEnum(&gConfig, "QuickPlay.SquareCount"), 0, 1, 3, 6);
 		break;
@@ -307,6 +301,20 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 	CSTRDUP(setting->Description, "");
 	CArrayPushBack(&setting->Missions, m);
 	CFREE(m);
+}
+static RoomParams RandomRoomParams(void)
+{
+	RoomParams r;
+	r.Count = GenerateQuickPlayParam(
+		ConfigGetEnum(&gConfig, "QuickPlay.RoomCount"), 0, 2, 5, 12);
+	r.Min = rand() % 10 + 5;
+	r.Max = rand() % 10 + r.Min;
+	r.Edge = 1;
+	r.Overlap = 1;
+	r.Walls = rand() % 5;
+	r.WallLength = rand() % 6 + 1;
+	r.WallPad = rand() % 4 + 1;
+	return r;
 }
 static void RandomStyle(char *style, const CArray *styleNames)
 {

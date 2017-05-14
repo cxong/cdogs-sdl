@@ -112,6 +112,17 @@ typedef struct
 } KeyPositions;
 typedef struct
 {
+	int Count;
+	int Min;
+	int Max;
+	bool Edge;
+	bool Overlap;
+	int Walls;
+	int WallLength;
+	int WallPad;
+} RoomParams;
+typedef struct
+{
 	char *Title;
 	char *Description;
 	MapType Type;
@@ -149,17 +160,7 @@ typedef struct
 			int Walls;
 			int WallLength;
 			int CorridorWidth;
-			struct
-			{
-				int Count;
-				int Min;
-				int Max;
-				bool Edge;
-				bool Overlap;
-				int Walls;
-				int WallLength;
-				int WallPad;
-			} Rooms;
+			RoomParams Rooms;
 			int Squares;
 			struct
 			{
@@ -197,6 +198,7 @@ typedef struct
 			int R1;
 			int R2;
 			int CorridorWidth;
+			RoomParams Rooms;
 			int Squares;
 		} Cave;
 	} u;

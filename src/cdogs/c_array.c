@@ -55,7 +55,7 @@ static void GrowIfFull(CArray *a)
 {
 	if (a->size == a->capacity)
 	{
-		const int capacity = a->capacity == 0 ? 1 : a->capacity * 2;
+		const size_t capacity = a->capacity == 0 ? 1 : a->capacity * 2;
 		CArrayReserve(a, capacity);
 	}
 }
@@ -75,7 +75,7 @@ void CArrayPushBack(CArray *a, const void *elem)
 	CASSERT(a->elemSize > 0, "array has not been initialised");
 	GrowIfFull(a);
 	a->size++;
-	memcpy(CArrayGet(a, a->size - 1), elem, a->elemSize);
+	memcpy(CArrayGet(a, (int)a->size - 1), elem, a->elemSize);
 }
 void CArrayInsert(CArray *a, int idx, const void *elem)
 {

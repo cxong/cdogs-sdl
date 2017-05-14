@@ -46,6 +46,18 @@ static const char *MissionGetR2Str(UIObject *o, void *data);
 static void MissionChangeR2(void *data, int d);
 static const char *MissionGetCorridorWidthStr(UIObject *o, void *data);
 static void MissionChangeCorridorWidth(void *data, int d);
+static const char *MissionGetRoomCountStr(UIObject *o, void *data);
+static void MissionChangeRoomCount(void *data, int d);
+static const char *MissionGetRoomMinStr(UIObject *o, void *data);
+static void MissionChangeRoomMin(void *data, int d);
+static const char *MissionGetRoomMaxStr(UIObject *o, void *data);
+static void MissionChangeRoomMax(void *data, int d);
+static const char *MissionGetRoomWallCountStr(UIObject *o, void *data);
+static void MissionChangeRoomWallCount(void *data, int d);
+static const char *MissionGetRoomWallLenStr(UIObject *o, void *data);
+static void MissionChangeRoomWallLen(void *data, int d);
+static const char *MissionGetRoomWallPadStr(UIObject *o, void *data);
+static void MissionChangeRoomWallPad(void *data, int d);
 static const char *MissionGetSquareCountStr(UIObject *o, void *data);
 static void MissionChangeSquareCount(void *data, int d);
 UIObject *CreateCaveMapObjs(Vec2i pos, CampaignOptions *co)
@@ -99,6 +111,54 @@ UIObject *CreateCaveMapObjs(Vec2i pos, CampaignOptions *co)
 	o2->u.LabelFunc = MissionGetCorridorWidthStr;
 	o2->Data = co;
 	o2->ChangeFunc = MissionChangeCorridorWidth;
+	o2->Pos = pos;
+	o2->Size.x = 60;
+	UIObjectAddChild(c, o2);
+
+	pos.x = x;
+	pos.y += th;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetRoomCountStr;
+	o2->Data = co;
+	o2->ChangeFunc = MissionChangeRoomCount;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetRoomMinStr;
+	o2->Data = co;
+	o2->ChangeFunc = MissionChangeRoomMin;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetRoomMaxStr;
+	o2->Data = co;
+	o2->ChangeFunc = MissionChangeRoomMax;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+
+	pos.x = x;
+	pos.y += th;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetRoomWallCountStr;
+	o2->Data = co;
+	o2->ChangeFunc = MissionChangeRoomWallCount;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetRoomWallLenStr;
+	o2->Data = co;
+	o2->ChangeFunc = MissionChangeRoomWallLen;
+	o2->Pos = pos;
+	o2->Size.x = 60;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetRoomWallPadStr;
+	o2->Data = co;
+	o2->ChangeFunc = MissionChangeRoomWallPad;
 	o2->Pos = pos;
 	o2->Size.x = 60;
 	UIObjectAddChild(c, o2);
@@ -198,6 +258,103 @@ static void MissionChangeCorridorWidth(void *data, int d)
 	CampaignOptions *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
 	m->u.Cave.CorridorWidth = CLAMP(m->u.Cave.CorridorWidth + d, 1, 5);
+}
+static const char *MissionGetRoomCountStr(UIObject *o, void *data)
+{
+	static char s[128];
+	UNUSED(o);
+	CampaignOptions *co = data;
+	if (!CampaignGetCurrentMission(co)) return NULL;
+	sprintf(
+		s, "Rooms: %d", CampaignGetCurrentMission(co)->u.Cave.Rooms.Count);
+	return s;
+}
+static const char *MissionGetRoomMinStr(UIObject *o, void *data)
+{
+	static char s[128];
+	UNUSED(o);
+	CampaignOptions *co = data;
+	if (!CampaignGetCurrentMission(co)) return NULL;
+	sprintf(s, "RoomMin: %d", CampaignGetCurrentMission(co)->u.Cave.Rooms.Min);
+	return s;
+}
+static const char *MissionGetRoomMaxStr(UIObject *o, void *data)
+{
+	static char s[128];
+	UNUSED(o);
+	CampaignOptions *co = data;
+	if (!CampaignGetCurrentMission(co)) return NULL;
+	sprintf(s, "RoomMax: %d", CampaignGetCurrentMission(co)->u.Cave.Rooms.Max);
+	return s;
+}
+static void MissionChangeRoomCount(void *data, int d)
+{
+	CampaignOptions *co = data;
+	CampaignGetCurrentMission(co)->u.Cave.Rooms.Count =
+		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Rooms.Count + d, 0, 100);
+}
+static void MissionChangeRoomMin(void *data, int d)
+{
+	CampaignOptions *co = data;
+	CampaignGetCurrentMission(co)->u.Cave.Rooms.Min =
+		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Rooms.Min + d, 5, 50);
+	CampaignGetCurrentMission(co)->u.Cave.Rooms.Max = MAX(
+		CampaignGetCurrentMission(co)->u.Cave.Rooms.Min,
+		CampaignGetCurrentMission(co)->u.Cave.Rooms.Max);
+}
+static void MissionChangeRoomMax(void *data, int d)
+{
+	CampaignOptions *co = data;
+	CampaignGetCurrentMission(co)->u.Cave.Rooms.Max =
+		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Rooms.Max + d, 5, 50);
+	CampaignGetCurrentMission(co)->u.Cave.Rooms.Min = MIN(
+		CampaignGetCurrentMission(co)->u.Cave.Rooms.Min,
+		CampaignGetCurrentMission(co)->u.Cave.Rooms.Max);
+}
+static const char *MissionGetRoomWallCountStr(UIObject *o, void *data)
+{
+	static char s[128];
+	UNUSED(o);
+	CampaignOptions *co = data;
+	if (!CampaignGetCurrentMission(co)) return NULL;
+	sprintf(s, "RoomWalls: %d", CampaignGetCurrentMission(co)->u.Cave.Rooms.Walls);
+	return s;
+}
+static const char *MissionGetRoomWallLenStr(UIObject *o, void *data)
+{
+	static char s[128];
+	UNUSED(o);
+	CampaignOptions *co = data;
+	if (!CampaignGetCurrentMission(co)) return NULL;
+	sprintf(s, "RoomWallLen: %d", CampaignGetCurrentMission(co)->u.Cave.Rooms.WallLength);
+	return s;
+}
+static const char *MissionGetRoomWallPadStr(UIObject *o, void *data)
+{
+	static char s[128];
+	UNUSED(o);
+	CampaignOptions *co = data;
+	if (!CampaignGetCurrentMission(co)) return NULL;
+	sprintf(s, "RoomWallPad: %d", CampaignGetCurrentMission(co)->u.Cave.Rooms.WallPad);
+	return s;
+}
+static void MissionChangeRoomWallCount(void *data, int d)
+{
+	CampaignOptions *co = data;
+	CampaignGetCurrentMission(co)->u.Cave.Rooms.Walls =
+		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Rooms.Walls + d, 0, 50);
+}
+static void MissionChangeRoomWallLen(void *data, int d)
+{
+	CampaignOptions *co = data;
+	CampaignGetCurrentMission(co)->u.Cave.Rooms.WallLength =
+		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Rooms.WallLength + d, 1, 50);
+}
+static void MissionChangeRoomWallPad(void *data, int d)
+{
+	CampaignOptions *co = data;
+	CampaignGetCurrentMission(co)->u.Cave.Rooms.WallPad =
+		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Rooms.WallPad + d, 1, 10);
 }
 static const char *MissionGetSquareCountStr(UIObject *o, void *data)
 {

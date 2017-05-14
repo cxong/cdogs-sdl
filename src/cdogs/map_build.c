@@ -52,10 +52,6 @@
 #define EXIT_WIDTH  8
 #define EXIT_HEIGHT 8
 
-void MapMakeWall(Map *map, Vec2i pos)
-{
-	IMapSet(map, pos, MAP_WALL);
-}
 
 static void MapSetupTile(Map *map, const Vec2i pos, const Mission *m);
 
@@ -279,50 +275,200 @@ Vec2i MapGetRandomTile(const Map *map)
 	return Vec2iNew(rand() % map->Size.x, rand() % map->Size.y);
 }
 
-void MapMakeRoom(Map *map, int xOrigin, int yOrigin, int width, int height)
+Vec2i MapGetRoomSize(const RoomParams r, const int doorMin)
 {
-	int x, y;
+	// Work out dimensions of room
+	// make sure room is large enough to accommodate doors
+	const int roomMin = MAX(r.Min, doorMin + 4);
+	const int roomMax = MAX(r.Max, doorMin + 4);
+	return Vec2iNew(
+		rand() % (roomMax - roomMin + 1) + roomMin,
+		rand() % (roomMax - roomMin + 1) + roomMin);
+}
+
+void MapMakeRoom(Map *map, const Vec2i pos, const Vec2i size, const bool walls)
+{
+	Vec2i v;
 	// Set the perimeter walls and interior
 	// If the tile is a room interior already, do not turn it into a wall
 	// This is due to overlapping rooms
-	for (y = yOrigin; y < yOrigin + height; y++)
+	for (v.y = pos.y; v.y < pos.y + size.y; v.y++)
 	{
-		for (x = xOrigin; x < xOrigin + width; x++)
+		for (v.x = pos.x; v.x < pos.x + size.x; v.x++)
 		{
-			if (y == yOrigin || y == yOrigin + height - 1 ||
-				x == xOrigin || x == xOrigin + width - 1)
+			if (v.y == pos.y || v.y == pos.y + size.y - 1 ||
+				v.x == pos.x || v.x == pos.x + size.x - 1)
 			{
-				if (IMapGet(map, Vec2iNew(x, y)) == MAP_FLOOR)
+				if (walls && IMapGet(map, v) != MAP_ROOM)
 				{
-					IMapSet(map, Vec2iNew(x, y), MAP_WALL);
+					IMapSet(map, v, MAP_WALL);
 				}
 			}
 			else
 			{
-				IMapSet(map, Vec2iNew(x, y), MAP_ROOM);
+				IMapSet(map, v, MAP_ROOM);
 			}
 		}
 	}
 	// Check perimeter again; if there are walls where both sides contain
 	// rooms, remove the wall as the rooms have merged
-	for (y = yOrigin; y < yOrigin + height; y++)
+	for (v.y = pos.y; v.y < pos.y + size.y; v.y++)
 	{
-		for (x = xOrigin; x < xOrigin + width; x++)
+		for (v.x = pos.x; v.x < pos.x + size.x; v.x++)
 		{
-			if (y == yOrigin || y == yOrigin + height - 1 ||
-				x == xOrigin || x == xOrigin + width - 1)
+			if (v.y == pos.y || v.y == pos.y + size.y - 1 ||
+				v.x == pos.x || v.x == pos.x + size.x - 1)
 			{
-				if (((IMapGet(map, Vec2iNew(x + 1, y)) & MAP_MASKACCESS) == MAP_ROOM &&
-					(IMapGet(map, Vec2iNew(x - 1, y)) & MAP_MASKACCESS) == MAP_ROOM) ||
-					((IMapGet(map, Vec2iNew(x, y + 1)) & MAP_MASKACCESS) == MAP_ROOM &&
-					(IMapGet(map, Vec2iNew(x, y - 1)) & MAP_MASKACCESS) == MAP_ROOM))
+				if (((IMapGet(map, Vec2iNew(v.x + 1, v.y)) & MAP_MASKACCESS) == MAP_ROOM &&
+					(IMapGet(map, Vec2iNew(v.x - 1, v.y)) & MAP_MASKACCESS) == MAP_ROOM) ||
+					((IMapGet(map, Vec2iNew(v.x, v.y + 1)) & MAP_MASKACCESS) == MAP_ROOM &&
+					(IMapGet(map, Vec2iNew(v.x, v.y - 1)) & MAP_MASKACCESS) == MAP_ROOM))
 				{
-					IMapSet(map, Vec2iNew(x, y), MAP_ROOM);
+					IMapSet(map, v, MAP_ROOM);
 				}
 			}
 		}
 	}
 }
+
+void MapMakeRoomWalls(Map *map, const RoomParams r)
+{
+	int count = 0;
+	for (int i = 0; i < 100 && count < r.Walls; i++)
+	{
+		if (!MapTryBuildWall(map, MAP_ROOM, MAX(r.WallPad, 1), r.WallLength))
+		{
+			continue;
+		}
+		count++;
+	}
+}
+
+static void MapGrowWall(
+	Map *map, int x, int y,
+	unsigned short tileType, int pad, int d, int length);
+bool MapTryBuildWall(
+	Map *map, const unsigned short tileType, const int pad,
+	const int wallLength)
+{
+	const Vec2i v = MapGetRandomTile(map);
+	if (MapIsValidStartForWall(map, v.x, v.y, tileType, pad))
+	{
+		IMapSet(map, v, MAP_WALL);
+		MapGrowWall(map, v.x, v.y, tileType, pad, rand() & 3, wallLength);
+		return true;
+	}
+	return false;
+}
+static void MapGrowWall(
+	Map *map, int x, int y,
+	unsigned short tileType, int pad, int d, int length)
+{
+	int l;
+	Vec2i v;
+
+	if (length <= 0)
+		return;
+
+	switch (d) {
+		case 0:
+			if (y < 2 + pad)
+			{
+				return;
+			}
+			// Check tiles above
+			// xxxxx
+			//  xxx
+			//   o
+			for (v.y = y - 2; v.y > y - 2 - pad; v.y--)
+			{
+				int level = v.y - (y - 2);
+				for (v.x = x - 1 - level; v.x <= x + 1 + level; v.x++)
+				{
+					if (IMapGet(map, v) != tileType)
+					{
+						return;
+					}
+				}
+			}
+			y--;
+			break;
+		case 1:
+			// Check tiles to the right
+			//   x
+			//  xx
+			// oxx
+			//  xx
+			//   x
+			for (v.x = x + 2; v.x < x + 2 + pad; v.x++)
+			{
+				int level = v.x - (x + 2);
+				for (v.y = y - 1 - level; v.y <= y + 1 + level; v.y++)
+				{
+					if (IMapGet(map, v) != tileType)
+					{
+						return;
+					}
+				}
+			}
+			x++;
+			break;
+		case 2:
+			// Check tiles below
+			//   o
+			//  xxx
+			// xxxxx
+			for (v.y = y + 2; v.y < y + 2 + pad; v.y++)
+			{
+				int level = v.y - (y + 2);
+				for (v.x = x - 1 - level; v.x <= x + 1 + level; v.x++)
+				{
+					if (IMapGet(map, v) != tileType)
+					{
+						return;
+					}
+				}
+			}
+			y++;
+			break;
+		case 4:
+			if (x < 2 + pad)
+			{
+				return;
+			}
+			// Check tiles to the left
+			// x
+			// xx
+			// xxo
+			// xx
+			// x
+			for (v.x = x - 2; v.x > x - 2 - pad; v.x--)
+			{
+				int level = v.x - (x - 2);
+				for (v.y = y - 1 - level; v.y <= y + 1 + level; v.y++)
+				{
+					if (IMapGet(map, v) != tileType)
+					{
+						return;
+					}
+				}
+			}
+			x--;
+			break;
+	}
+	IMapSet(map, Vec2iNew(x, y), MAP_WALL);
+	length--;
+	if (length > 0 && (rand() & 3) == 0)
+	{
+		// Randomly try to grow the wall in a different direction
+		l = rand() % length;
+		MapGrowWall(map, x, y, tileType, pad, rand() & 3, l);
+		length -= l;
+	}
+	// Keep growing wall in same direction
+	MapGrowWall(map, x, y, tileType, pad, d, length);
+}
+
 static bool TryPlaceDoorTile(
 	Map *map, const Vec2i v, const Vec2i d, const unsigned short t);
 void MapPlaceDoors(
@@ -424,7 +570,7 @@ bool MapIsAreaInside(const Map *map, const Vec2i pos, const Vec2i size)
 		pos.x + size.x < map->Size.x && pos.y + size.y < map->Size.y;
 }
 
-int MapIsAreaClear(Map *map, Vec2i pos, Vec2i size)
+bool MapIsAreaClear(const Map *map, const Vec2i pos, const Vec2i size)
 {
 	if (!MapIsAreaInside(map, pos, size))
 	{
@@ -444,7 +590,7 @@ int MapIsAreaClear(Map *map, Vec2i pos, Vec2i size)
 
 	return 1;
 }
-static int MapTileIsPartOfRoom(Map *map, Vec2i pos)
+static bool MapTileIsPartOfRoom(const Map *map, const Vec2i pos)
 {
 	Vec2i v2;
 	int isRoom = 0;
@@ -468,7 +614,7 @@ static int MapTileIsPartOfRoom(Map *map, Vec2i pos)
 	}
 	return isRoom && isFloor;
 }
-int MapIsAreaClearOrRoom(Map *map, Vec2i pos, Vec2i size)
+bool MapIsAreaClearOrRoom(const Map *map, const Vec2i pos, const Vec2i size)
 {
 	Vec2i v;
 
@@ -558,8 +704,11 @@ int MapIsAreaClearOrWall(Map *map, Vec2i pos, Vec2i size)
 // perimeter tiles. The size of the passage is given by the largest difference
 // in the x or y coordinates between the first and last intersection tiles,
 // minus 1
-int MapGetRoomOverlapSize(
-	Map *map, Vec2i pos, Vec2i size, unsigned short *overlapAccess)
+bool MapGetRoomOverlapSize(
+	const Map *map,
+	const Vec2i pos,
+	const Vec2i size,
+	unsigned short *overlapAccess)
 {
 	Vec2i v;
 	int numOverlaps = 0;

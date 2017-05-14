@@ -319,7 +319,7 @@ static json_t *SaveObjectives(CArray *a);
 static json_t *SaveIntArray(CArray *a);
 static json_t *SaveVec2i(Vec2i v);
 static json_t *SaveWeapons(const CArray *weapons);
-static json_t *SaveClassicRooms(Mission *m);
+static json_t *SaveRooms(const RoomParams r);
 static json_t *SaveClassicDoors(Mission *m);
 static json_t *SaveClassicPillars(Mission *m);
 static json_t *SaveStaticTiles(Mission *m);
@@ -385,7 +385,7 @@ static json_t *SaveMissions(CArray *a)
 			AddIntPair(
 				node, "CorridorWidth", mission->u.Classic.CorridorWidth);
 			json_insert_pair_into_object(
-				node, "Rooms", SaveClassicRooms(mission));
+				node, "Rooms", SaveRooms(mission->u.Classic.Rooms));
 			AddIntPair(node, "Squares", mission->u.Classic.Squares);
 			json_insert_pair_into_object(
 				node, "Doors", SaveClassicDoors(mission));
@@ -422,6 +422,8 @@ static json_t *SaveMissions(CArray *a)
 			AddIntPair(node, "Repeat", mission->u.Cave.Repeat);
 			AddIntPair(node, "R1", mission->u.Cave.R1);
 			AddIntPair(node, "R2", mission->u.Cave.R2);
+				json_insert_pair_into_object(
+					node, "Rooms", SaveRooms(mission->u.Cave.Rooms));
 			AddIntPair(node, "Squares", mission->u.Cave.Squares);
 			break;
 		default:
@@ -433,17 +435,17 @@ static json_t *SaveMissions(CArray *a)
 	}
 	return missionsNode;
 }
-static json_t *SaveClassicRooms(Mission *m)
+static json_t *SaveRooms(const RoomParams r)
 {
 	json_t *node = json_new_object();
-	AddIntPair(node, "Count", m->u.Classic.Rooms.Count);
-	AddIntPair(node, "Min", m->u.Classic.Rooms.Min);
-	AddIntPair(node, "Max", m->u.Classic.Rooms.Max);
-	AddBoolPair(node, "Edge", m->u.Classic.Rooms.Edge);
-	AddBoolPair(node, "Overlap", m->u.Classic.Rooms.Overlap);
-	AddIntPair(node, "Walls", m->u.Classic.Rooms.Walls);
-	AddIntPair(node, "WallLength", m->u.Classic.Rooms.WallLength);
-	AddIntPair(node, "WallPad", m->u.Classic.Rooms.WallPad);
+	AddIntPair(node, "Count", r.Count);
+	AddIntPair(node, "Min", r.Min);
+	AddIntPair(node, "Max", r.Max);
+	AddBoolPair(node, "Edge", r.Edge);
+	AddBoolPair(node, "Overlap", r.Overlap);
+	AddIntPair(node, "Walls", r.Walls);
+	AddIntPair(node, "WallLength", r.WallLength);
+	AddIntPair(node, "WallPad", r.WallPad);
 	return node;
 }
 static json_t *SaveClassicPillars(Mission *m)

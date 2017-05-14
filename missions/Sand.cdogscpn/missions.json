@@ -64,6 +64,16 @@
 		"Repeat": 4,
 		"R1": 5,
 		"R2": 0,
+		"Rooms": {
+			"Count": 0,
+			"Min": 0,
+			"Max": 0,
+			"Edge": false,
+			"Overlap": false,
+			"Walls": 0,
+			"WallLength": 0,
+			"WallPad": 0
+		},
 		"Squares": 3
 	},
 	{
@@ -344,7 +354,17 @@
 		"Repeat": 3,
 		"R1": 5,
 		"R2": 5,
-		"Squares": 3
+		"Rooms": {
+			"Count": 5,
+			"Min": 5,
+			"Max": 7,
+			"Edge": false,
+			"Overlap": false,
+			"Walls": 3,
+			"WallLength": 2,
+			"WallPad": 1
+		},
+		"Squares": 1
 	},
 	{
 		"Title": "The Duel",
@@ -466,6 +486,16 @@
 		"Repeat": 10,
 		"R1": 5,
 		"R2": -1,
+		"Rooms": {
+			"Count": 0,
+			"Min": 0,
+			"Max": 0,
+			"Edge": false,
+			"Overlap": false,
+			"Walls": 0,
+			"WallLength": 0,
+			"WallPad": 0
+		},
 		"Squares": 0
 	},
 	{
@@ -524,6 +554,16 @@
 		"Repeat": 4,
 		"R1": 5,
 		"R2": 1,
+		"Rooms": {
+			"Count": 0,
+			"Min": 0,
+			"Max": 0,
+			"Edge": false,
+			"Overlap": false,
+			"Walls": 0,
+			"WallLength": 0,
+			"WallPad": 0
+		},
 		"Squares": 3
 	},
 	{

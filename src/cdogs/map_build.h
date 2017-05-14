@@ -51,17 +51,25 @@
 #include "map.h"
 
 bool MapIsAreaInside(const Map *map, const Vec2i pos, const Vec2i size);
-int MapIsAreaClear(Map *map, Vec2i pos, Vec2i size);
-int MapIsAreaClearOrRoom(Map *map, Vec2i pos, Vec2i size);
+bool MapIsAreaClear(const Map *map, const Vec2i pos, const Vec2i size);
+bool MapIsAreaClearOrRoom(const Map *map, const Vec2i pos, const Vec2i size);
 int MapIsAreaClearOrWall(Map *map, Vec2i pos, Vec2i size);
-int MapGetRoomOverlapSize(
-	Map *map, Vec2i pos, Vec2i size, unsigned short *overlapAccess);
+bool MapGetRoomOverlapSize(
+	const Map *map,
+	const Vec2i pos,
+	const Vec2i size,
+	unsigned short *overlapAccess);
 int MapIsLessThanTwoWallOverlaps(Map *map, Vec2i pos, Vec2i size);
 int MapIsValidStartForWall(
 	Map *map, int x, int y, unsigned short tileType, int pad);
 Vec2i MapGetRandomTile(const Map *map);
 void MapMakeSquare(Map *map, Vec2i pos, Vec2i size);
-void MapMakeRoom(Map *map, int xOrigin, int yOrigin, int width, int height);
+Vec2i MapGetRoomSize(const RoomParams r, const int doorMin);
+void MapMakeRoom(Map *map, const Vec2i pos, const Vec2i size, const bool walls);
+void MapMakeRoomWalls(Map *map, const RoomParams r);
+bool MapTryBuildWall(
+	Map *map, const unsigned short tileType, const int pad,
+	const int wallLength);
 void MapPlaceDoors(
 	Map *map, Vec2i pos, Vec2i size,
 	int hasDoors, int doors[4], int doorMin, int doorMax,
