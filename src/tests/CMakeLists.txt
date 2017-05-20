@@ -117,6 +117,7 @@ add_executable(minkowski_hex_test
 	../cdogs/vector.h)
 target_link_libraries(minkowski_hex_test
 	cbehave
+	${SDL2_LIBRARY}
 	${EXTRA_LIBRARIES})
 add_test(NAME minkowski_hex_test COMMAND minkowski_hex_test)
 

@@ -27,7 +27,8 @@
 
 #include <math.h>
 
-#include "map.h"
+#include "tile.h"
+
 
 Vec2i Vec2iNew(int x, int y)
 {
