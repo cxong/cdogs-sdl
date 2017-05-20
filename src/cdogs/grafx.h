@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -88,6 +88,7 @@ typedef struct
 	int IsWindowInitialized;
 	SDL_Surface *icon;
 	SDL_Texture *screen;
+	SDL_Texture *hud;
 	SDL_Renderer *renderer;
 	SDL_Window *window;
 	SDL_PixelFormat *Format;

@@ -60,7 +60,7 @@ static void CampaignIntroDraw(void *data)
 	// This will only draw once
 	const CampaignSetting *c = data;
 
-	GraphicsClear(&gGraphicsDevice);
+	BlitClearBuf(&gGraphicsDevice);
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
 	const int y = h / 4;
@@ -86,6 +86,8 @@ static void CampaignIntroDraw(void *data)
 		FontStr(buf, Vec2iNew(w / 12, y));
 		CFREE(buf);
 	}
+
+	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 }
 
 typedef struct
@@ -211,7 +213,7 @@ static void MissionBriefingDraw(void *data)
 {
 	const MissionBriefingData *mData = data;
 
-	GraphicsClear(&gGraphicsDevice);
+	BlitClearBuf(&gGraphicsDevice);
 
 	// Mission title
 	FontStrOpt(mData->Title, Vec2iZero(), mData->TitleOpts);
@@ -234,6 +236,8 @@ static void MissionBriefingDraw(void *data)
 		offset.x = -16 * (_ca_index & 1);
 		DrawObjectiveInfo(o, Vec2iAdd(mData->ObjectiveInfoPos, offset));
 	CA_FOREACH_END()
+
+	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 }
 
 #define PERFECT_BONUS 500

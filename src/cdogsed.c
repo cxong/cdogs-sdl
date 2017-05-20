@@ -192,7 +192,7 @@ static void Display(GraphicsDevice *g, HandleInputResult result)
 			extra.guideImageAlpha = brush.GuideImageAlpha;
 			GrafxDrawBackground(g, &sDrawBuffer, tintNone, camera, &extra);
 		}
-		GraphicsClear(g);
+		BlitClearBuf(g);
 
 		// Draw brush highlight tiles
 		if (brush.IsActive && IsBrushPosValid(brush.Pos, mission))
@@ -248,6 +248,7 @@ static void Display(GraphicsDevice *g, HandleInputResult result)
 		}
 		MouseDraw(&gEventHandlers.mouse);
 	}
+	BlitUpdateFromBuf(g, g->screen);
 	BlitFlip(g);
 }
 
@@ -487,6 +488,7 @@ static void Open(void)
 			}
 		}
 
+		BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 		BlitFlip(&gGraphicsDevice);
 
 		bool doOpen = false;
@@ -530,6 +532,7 @@ static void Open(void)
 
 			FontStrCenter("Loading...");
 
+			BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 			BlitFlip(&gGraphicsDevice);
 			// Try original filename
 			if (TryOpen(filename))
@@ -598,6 +601,7 @@ static void Save(void)
 		pos = FontCh('>', pos);
 		pos = FontStr(filename, pos);
 		pos = FontCh('<', pos);
+		BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 		BlitFlip(&gGraphicsDevice);
 
 		const SDL_Scancode sc = EventWaitKeyOrText(&gEventHandlers);
@@ -634,6 +638,7 @@ static void Save(void)
 
 		FontStrCenter("Saving...");
 
+		BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 		BlitFlip(&gGraphicsDevice);
 		MapArchiveSave(filename, &gCampaign.Setting);
 		fileChanged = false;
@@ -698,6 +703,7 @@ static void HelpScreen(void)
 		"F1:                             This screen\n";
 	ClearScreen(&gGraphicsDevice);
 	FontStr(helpText, pos);
+	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 	BlitFlip(&gGraphicsDevice);
 	GetKey(&gEventHandlers);
 }

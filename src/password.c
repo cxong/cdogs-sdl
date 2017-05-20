@@ -275,7 +275,7 @@ static void EnterCodeScreenDraw(void *data)
 {
 	const EnterCodeScreenData *eData = data;
 
-	GraphicsClear(&gGraphicsDevice);
+	BlitClearBuf(&gGraphicsDevice);
 
 	// Password display
 	Vec2i pos = Vec2iNew(
@@ -315,6 +315,8 @@ static void EnterCodeScreenDraw(void *data)
 	}
 
 	ShowControls();
+
+	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 }
 
 typedef enum

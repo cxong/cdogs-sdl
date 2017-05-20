@@ -163,9 +163,7 @@ bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 	DrawRectangle(
 		&gGraphicsDevice, Vec2iZero(), gGraphicsDevice.cachedConfig.Res,
 		colorBlack, 0);
-	SDL_UpdateTexture(
-		gGraphicsDevice.bkg, NULL, gGraphicsDevice.buf,
-		gGraphicsDevice.cachedConfig.Res.x * sizeof(Uint32));
+	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.bkg);
 
 	MapLoad(map, m, co);
 
@@ -270,6 +268,9 @@ bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 
 	// Draw background
 	GrafxRedrawBackground(&gGraphicsDevice, data.Camera.lastPosition);
+	// Clear other texures
+	BlitClearBuf(&gGraphicsDevice);
+	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.hud);
 
 	return !m->IsQuit;
 }
@@ -632,18 +633,24 @@ static void RunGameDraw(void *data)
 {
 	RunGameData *rData = data;
 
+	// clear screen
+	BlitClearBuf(&gGraphicsDevice);
 	// Draw everything
-	CameraDraw(
-		&rData->Camera, rData->pausingDevice, rData->controllerUnplugged);
+	CameraDraw(&rData->Camera);
+	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 
+	BlitClearBuf(&gGraphicsDevice);
+	CameraDrawMode(&rData->Camera);
+	HUDDraw(
+		&rData->Camera.HUD, rData->pausingDevice, rData->controllerUnplugged);
 	if (GameIsMouseUsed())
 	{
 		MouseDraw(&gEventHandlers.mouse);
 	}
-
 	// Draw automap if enabled
 	if (rData->isMap)
 	{
 		AutomapDraw(0, rData->Camera.HUD.showExit);
 	}
+	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.hud);
 }

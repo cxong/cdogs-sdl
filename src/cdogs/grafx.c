@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -173,6 +173,7 @@ static void AddSupportedGraphicsModes(GraphicsDevice *device)
 // Initialises the video subsystem.
 // To prevent needless screen flickering, config is compared with cache
 // to see if anything changed. If not, don't recreate the screen.
+static void DestroyTextures(GraphicsDevice *g);
 static SDL_Texture *CreateTexture(
 	SDL_Renderer *renderer, const SDL_TextureAccess access, const Vec2i res,
 	const SDL_BlendMode blend, const Uint8 alpha);
@@ -224,9 +225,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 			SDL_GetWindowSize(g->window, &windowSize.x, &windowSize.y);
 		}
 		LOG(LM_GFX, LL_DEBUG, "destroying previous renderer");
-		SDL_DestroyTexture(g->screen);
-		SDL_DestroyTexture(g->bkg);
-		SDL_DestroyTexture(g->brightnessOverlay);
+		DestroyTextures(g);
 		SDL_DestroyRenderer(g->renderer);
 		SDL_FreeFormat(g->Format);
 		SDL_DestroyWindow(g->window);
@@ -265,9 +264,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 	{
 		if (!initRenderer)
 		{
-			SDL_DestroyTexture(g->screen);
-			SDL_DestroyTexture(g->bkg);
-			SDL_DestroyTexture(g->brightnessOverlay);
+			DestroyTextures(g);
 		}
 
 		// Set render scale mode
@@ -308,6 +305,13 @@ void GraphicsInitialize(GraphicsDevice *g)
 		{
 			return;
 		}
+		g->hud = CreateTexture(
+			g->renderer, SDL_TEXTUREACCESS_STREAMING, Vec2iNew(w, h),
+			SDL_BLENDMODE_BLEND, 255);
+		if (g->hud == NULL)
+		{
+			return;
+		}
 	}
 
 	if (initBrightness)
@@ -341,6 +345,13 @@ void GraphicsInitialize(GraphicsDevice *g)
 	g->cachedConfig.Res.y = h;
 	g->cachedConfig.RestartFlags = 0;
 }
+static void DestroyTextures(GraphicsDevice *g)
+{
+	SDL_DestroyTexture(g->screen);
+	SDL_DestroyTexture(g->bkg);
+	SDL_DestroyTexture(g->hud);
+	SDL_DestroyTexture(g->brightnessOverlay);
+}
 static SDL_Texture *CreateTexture(
 	SDL_Renderer *renderer, const SDL_TextureAccess access, const Vec2i res,
 	const SDL_BlendMode blend, const Uint8 alpha)
@@ -367,11 +378,9 @@ static SDL_Texture *CreateTexture(
 
 void GraphicsTerminate(GraphicsDevice *g)
 {
-	debug(D_NORMAL, "Shutting down video...\n");
 	CArrayTerminate(&g->validModes);
 	SDL_FreeSurface(g->icon);
-	SDL_DestroyTexture(g->screen);
-	SDL_DestroyTexture(g->bkg);
+	DestroyTextures(g);
 	SDL_DestroyTexture(g->brightnessOverlay);
 	SDL_DestroyRenderer(g->renderer);
 	SDL_FreeFormat(g->Format);

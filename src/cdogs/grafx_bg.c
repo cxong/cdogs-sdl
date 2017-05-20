@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2014, 2016 Cong Xu
+    Copyright (c) 2013-2014, 2016-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -75,10 +75,8 @@ void GrafxDrawBackground(
 			}
 		}
 	}
-	SDL_UpdateTexture(
-		g->bkg, NULL, g->buf, g->cachedConfig.Res.x * sizeof(Uint32));
-	GraphicsClear(g);
-	memset(g->buf, 0, GraphicsGetMemSize(&g->cachedConfig));
+	BlitUpdateFromBuf(g, g->bkg);
+	BlitClearBuf(g);
 }
 
 void GrafxRedrawBackground(GraphicsDevice *g, const Vec2i pos)
@@ -117,9 +115,4 @@ void GrafxMakeBackground(
 	HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
 	GrafxDrawBackground(device, buffer, tint, pos, extra);
 	GameEventsTerminate(&gGameEvents);
-}
-
-void GraphicsClear(GraphicsDevice *device)
-{
-	memset(device->buf, 0, GraphicsGetMemSize(&device->cachedConfig));
 }

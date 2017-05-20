@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2014, 2016 Cong Xu
+    Copyright (c) 2013-2014, 2016-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -44,7 +44,6 @@ void GrafxMakeBackground(
 	GraphicsDevice *device, DrawBuffer *buffer,
 	CampaignOptions *co, struct MissionOptions *mo, Map *map, HSV tint,
 	const bool isEditor, Vec2i pos, GrafxDrawExtra *extra);
-void GraphicsClear(GraphicsDevice *device);
 
 void GrafxMakeRandomBackground(
 	GraphicsDevice *device,

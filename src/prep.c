@@ -362,7 +362,7 @@ static void PlayerSelectionDraw(void *data)
 {
 	const PlayerSelectionData *pData = data;
 
-	GraphicsClear(&gGraphicsDevice);
+	BlitClearBuf(&gGraphicsDevice);
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
 	int idx = 0;
@@ -406,6 +406,8 @@ static void PlayerSelectionDraw(void *data)
 			FontStr(prompt, Vec2iAdd(center, offset));
 		}
 	}
+
+	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 }
 
 typedef struct
@@ -734,11 +736,12 @@ static GameLoopResult PlayerEquipUpdate(void *data)
 static void PlayerEquipDraw(void *data)
 {
 	const PlayerEquipData *pData = data;
-	GraphicsClear(&gGraphicsDevice);
+	BlitClearBuf(&gGraphicsDevice);
 	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
 	{
 		MenuDisplay(&pData->menus[i].ms);
 	}
+	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 }
 
 static void CheckGameStart(menu_t *menu, void *data);

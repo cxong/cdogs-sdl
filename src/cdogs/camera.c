@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017 Cong Xu
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
@@ -117,20 +117,13 @@ void CameraUpdate(Camera *camera, const int ticks, const int ms)
 static void FollowPlayer(Vec2i *pos, const int playerUID);
 static void DoBuffer(
 	DrawBuffer *b, Vec2i center, int w, Vec2i noise, Vec2i offset);
-void CameraDraw(
-	Camera *camera, const input_device_e pausingDevice,
-	const bool controllerUnplugged)
+void CameraDraw(Camera *camera)
 {
 	Vec2i centerOffset = Vec2iZero();
 	const PlayerData *firstPlayer = NULL;
 	const int numPlayersScreen = GetNumPlayersScreen(&firstPlayer);
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
-
-	// clear screen
-	memset(
-		gGraphicsDevice.buf, 0,
-		GraphicsGetMemSize(&gGraphicsDevice.cachedConfig));
 
 	const Vec2i noise = ScreenShakeGetDelta(camera->shake);
 
@@ -338,9 +331,29 @@ void CameraDraw(
 		}
 	}
 	GraphicsResetBlitClip(&gGraphicsDevice);
+}
+// Try to follow a player
+static void FollowPlayer(Vec2i *pos, const int playerUID)
+{
+	const PlayerData *p = PlayerDataGetByUID(playerUID);
+	if (p == NULL) return;
+	const TActor *a = ActorGetByUID(p->ActorUID);
+	if (a == NULL) return;
+	*pos = Vec2iFull2Real(a->Pos);
+}
+static void DoBuffer(
+	DrawBuffer *b, Vec2i center, int w, Vec2i noise, Vec2i offset)
+{
+	DrawBufferSetFromMap(b, &gMap, Vec2iAdd(center, noise), w);
+	if (gPlayerDatas.size > 0)
+	{
+		DrawBufferFix(b);
+	}
+	DrawBufferDraw(b, offset, NULL);
+}
 
-	HUDDraw(&camera->HUD, pausingDevice, controllerUnplugged);
-
+void CameraDrawMode(const Camera *camera)
+{
 	// Draw camera mode
 	char cameraNameBuf[256];
 	bool drawCameraMode = false;
@@ -365,61 +378,47 @@ void CameraDraw(
 		CASSERT(false, "Unknown spectate mode");
 		break;
 	}
-	if (drawCameraMode)
+	if (!drawCameraMode)
 	{
-		// Draw the message centered at the bottom
-		FontStrMask(
-			cameraNameBuf,
-			Vec2iNew((w - FontStrW(cameraNameBuf)) / 2, h - FontH() * 2),
-			colorYellow);
+		return;
+	}
 
-		// Show camera controls
-		const PlayerData *p = GetFirstPlayer(false, true, true);
-		// Use default keyboard controls
-		input_device_e inputDevice = INPUT_DEVICE_KEYBOARD;
-		int deviceIndex = 0;
-		if (p != NULL)
-		{
-			inputDevice = p->inputDevice;
-			deviceIndex = p->deviceIndex;
-		}
-		Vec2i pos = Vec2iNew(
-			(w - FontStrW("foo/bar to follow player, baz to free-look")) / 2,
-			h - FontH());
-		char buf[256];
-		color_t c = colorYellow;
-		InputGetButtonNameColor(
-			inputDevice, deviceIndex, CMD_BUTTON1, buf, &c);
-		pos = FontStrMask(buf, pos, c);
-		pos = FontStrMask("/", pos, colorYellow);
-		c = colorYellow;
-		InputGetButtonNameColor(
-			inputDevice, deviceIndex, CMD_BUTTON2, buf, &c);
-		pos = FontStrMask(buf, pos, c);
-		pos = FontStrMask(" to follow player, ", pos, colorYellow);
-		InputGetDirectionNames(buf, inputDevice, deviceIndex);
-		pos = FontStrMask(buf, pos, colorYellow);
-		FontStrMask(" to free-look", pos, colorYellow);
-	}
-}
-// Try to follow a player
-static void FollowPlayer(Vec2i *pos, const int playerUID)
-{
-	const PlayerData *p = PlayerDataGetByUID(playerUID);
-	if (p == NULL) return;
-	const TActor *a = ActorGetByUID(p->ActorUID);
-	if (a == NULL) return;
-	*pos = Vec2iFull2Real(a->Pos);
-}
-static void DoBuffer(
-	DrawBuffer *b, Vec2i center, int w, Vec2i noise, Vec2i offset)
-{
-	DrawBufferSetFromMap(b, &gMap, Vec2iAdd(center, noise), w);
-	if (gPlayerDatas.size > 0)
+	const int w = gGraphicsDevice.cachedConfig.Res.x;
+	const int h = gGraphicsDevice.cachedConfig.Res.y;
+
+	// Draw the message centered at the bottom
+	FontStrMask(
+		cameraNameBuf,
+		Vec2iNew((w - FontStrW(cameraNameBuf)) / 2, h - FontH() * 2),
+		colorYellow);
+
+	// Show camera controls
+	const PlayerData *p = GetFirstPlayer(false, true, true);
+	// Use default keyboard controls
+	input_device_e inputDevice = INPUT_DEVICE_KEYBOARD;
+	int deviceIndex = 0;
+	if (p != NULL)
 	{
-		DrawBufferFix(b);
+		inputDevice = p->inputDevice;
+		deviceIndex = p->deviceIndex;
 	}
-	DrawBufferDraw(b, offset, NULL);
+	Vec2i pos = Vec2iNew(
+		(w - FontStrW("foo/bar to follow player, baz to free-look")) / 2,
+		h - FontH());
+	char buf[256];
+	color_t c = colorYellow;
+	InputGetButtonNameColor(
+		inputDevice, deviceIndex, CMD_BUTTON1, buf, &c);
+	pos = FontStrMask(buf, pos, c);
+	pos = FontStrMask("/", pos, colorYellow);
+	c = colorYellow;
+	InputGetButtonNameColor(
+		inputDevice, deviceIndex, CMD_BUTTON2, buf, &c);
+	pos = FontStrMask(buf, pos, c);
+	pos = FontStrMask(" to follow player, ", pos, colorYellow);
+	InputGetDirectionNames(buf, inputDevice, deviceIndex);
+	pos = FontStrMask(buf, pos, colorYellow);
+	FontStrMask(" to free-look", pos, colorYellow);
 }
 
 bool CameraIsSingleScreen(void)

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -397,19 +397,26 @@ void BlitBlend(
 	}
 }
 
+void BlitClearBuf(GraphicsDevice *g)
+{
+	memset(g->buf, 0, GraphicsGetMemSize(&g->cachedConfig));
+}
+void BlitUpdateFromBuf(GraphicsDevice *g, SDL_Texture *t)
+{
+	SDL_UpdateTexture(t, NULL, g->buf, g->cachedConfig.Res.x * sizeof(Uint32));
+}
+
 static void RenderTexture(SDL_Renderer *r, SDL_Texture *t);
 void BlitFlip(GraphicsDevice *g)
 {
-	SDL_UpdateTexture(
-		g->screen, NULL, g->buf, g->cachedConfig.Res.x * sizeof(Uint32));
 	if (SDL_RenderClear(g->renderer) != 0)
 	{
-		LOG(LM_MAIN, LL_ERROR, "Failed to clear renderer: %s\n",
-			SDL_GetError());
+		LOG(LM_MAIN, LL_ERROR, "Failed to clear renderer: %s", SDL_GetError());
 		return;
 	}
 	RenderTexture(g->renderer, g->bkg);
 	RenderTexture(g->renderer, g->screen);
+	RenderTexture(g->renderer, g->hud);
 	// Apply brightness as an overlay texture
 	RenderTexture(g->renderer, g->brightnessOverlay);
 
