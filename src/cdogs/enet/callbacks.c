@@ -5,11 +5,7 @@
 #define ENET_BUILDING_LIB 1
 #include "enet/enet.h"
 
-static void *glue_malloc(size_t s) { return malloc(s); }
-static void glue_free(void *p) { free(p); }
-static void glue_abort(void) { abort(); }
-
-static ENetCallbacks callbacks = { glue_malloc, glue_free, glue_abort };
+static ENetCallbacks callbacks = { malloc, free, abort };
 
 int
 enet_initialize_with_callbacks (ENetVersion version, const ENetCallbacks * inits)

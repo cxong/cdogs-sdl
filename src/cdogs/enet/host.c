@@ -330,8 +330,8 @@ enet_host_bandwidth_throttle (ENetHost * host)
     enet_uint32 timeCurrent = enet_time_get (),
            elapsedTime = timeCurrent - host -> bandwidthThrottleEpoch,
            peersRemaining = (enet_uint32) host -> connectedPeers,
-		   dataTotal = (enet_uint32)~0,
-		   bandwidth = (enet_uint32)~0,
+           dataTotal = ~0,
+           bandwidth = ~0,
            throttle = 0,
            bandwidthLimit = 0;
     int needsAdjustment = host -> bandwidthLimitedPeers > 0 ? 1 : 0;
