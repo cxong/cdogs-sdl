@@ -123,6 +123,8 @@ add_test(NAME minkowski_hex_test COMMAND minkowski_hex_test)
 
 add_executable(pic_test
 	pic_test.c
+	../cdogs/blit.c
+	../cdogs/blit.h
 	../cdogs/c_array.c
 	../cdogs/c_array.h
 	../cdogs/color.c

@@ -9,29 +9,6 @@
 
 
 // Stubs
-void BlitBackground(
-	GraphicsDevice *device,
-	const Pic *pic, Vec2i pos, const HSV *tint, const bool isTransparent)
-{
-	UNUSED(device);
-	UNUSED(pic);
-	UNUSED(pos);
-	UNUSED(tint);
-	UNUSED(isTransparent);
-}
-void BlitMasked(
-	GraphicsDevice *device,
-	const Pic *pic,
-	Vec2i pos,
-	color_t mask,
-	int isTransparent)
-{
-	UNUSED(device);
-	UNUSED(pic);
-	UNUSED(pos);
-	UNUSED(mask);
-	UNUSED(isTransparent);
-}
 const char *JoyName(const int deviceIndex)
 {
 	UNUSED(deviceIndex);
