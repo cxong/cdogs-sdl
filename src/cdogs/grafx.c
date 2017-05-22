@@ -312,6 +312,8 @@ void GraphicsInitialize(GraphicsDevice *g)
 		{
 			return;
 		}
+		BlitClearBuf(g);
+		BlitUpdateFromBuf(g, g->hud);
 	}
 
 	if (initBrightness)
