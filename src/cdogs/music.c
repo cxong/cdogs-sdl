@@ -133,7 +133,11 @@ void MusicPause(SoundDevice *device)
 {
 	if (device->musicStatus == MUSIC_PLAYING)
 	{
-		Mix_PauseMusic();
+		// fade out music to finish 1 second from now
+		while(!Mix_FadeOutMusic(1000) && Mix_PlayingMusic()) {
+			// wait for any fades to complete
+			SDL_Delay(100);
+		}
 		device->musicStatus = MUSIC_PAUSED;
 	}
 }
@@ -142,8 +146,9 @@ void MusicResume(SoundDevice *device)
 {
 	if (device->musicStatus == MUSIC_PAUSED)
 	{
-		Mix_ResumeMusic();
-		device->musicStatus = MUSIC_PLAYING;
+		if(Mix_FadeInMusic(device->music, -1, 1000)==-1) {
+			device->musicStatus = MUSIC_PLAYING;
+		}
 	}
 }
 
