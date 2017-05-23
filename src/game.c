@@ -150,6 +150,8 @@ typedef struct
 	bool isMap;
 	int cmds[MAX_LOCAL_PLAYERS];
 	int lastCmds[MAX_LOCAL_PLAYERS];
+	// Only update AI every 4 ticks
+	int aiUpdateCounter;
 	PowerupSpawner healthSpawner;
 	CArray ammoSpawners;	// of PowerupSpawner
 	GameLoopData loop;
@@ -486,7 +488,17 @@ static GameLoopResult RunGameUpdate(void *data)
 
 	if (!gCampaign.IsClient)
 	{
-		CommandBadGuys(ticksPerFrame);
+		rData->aiUpdateCounter -= ticksPerFrame;
+		if (rData->aiUpdateCounter <= 0)
+		{
+			const int enemies = AICommand(ticksPerFrame);
+			AIAddRandomEnemies(enemies, rData->m->missionData);
+			rData->aiUpdateCounter = 4;
+		}
+		else
+		{
+			AICommandLast(ticksPerFrame);
+		}
 	}
 
 	// If split screen never and players are too close to the

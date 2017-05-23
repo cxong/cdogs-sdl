@@ -90,6 +90,7 @@ typedef struct
 } AIGotoContext;
 typedef struct
 {
+	int LastCmd;
 	// Delay in executing consecutive actions;
 	// Used to let the AI perform one action for a set amount of time
 	int Delay;

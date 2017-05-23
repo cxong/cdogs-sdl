@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, 2016 Cong Xu
+    Copyright (c) 2013-2014, 2016-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -291,7 +291,8 @@ static bool DidPlayerShoot(void)
 }
 
 static int Follow(TActor *a);
-void CommandBadGuys(int ticks)
+static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit);
+int AICommand(const int ticks)
 {
 	int count = 0;
 	int delayModifier;
@@ -322,188 +323,177 @@ void CommandBadGuys(int ticks)
 	}
 
 	CA_FOREACH(TActor, actor, gActors)
-		if (!actor->isInUse)
+		if (!actor->isInUse || actor->PlayerUID >= 0 || actor->dead ||
+			(actor->flags & FLAGS_PRISONER))
 		{
 			continue;
 		}
-		const CharBot *bot = ActorGetCharacter(actor)->bot;
-		if (!(actor->PlayerUID >= 0 || (actor->flags & FLAGS_PRISONER)))
-		{
-			if ((actor->flags & (FLAGS_VICTIM | FLAGS_GOOD_GUY)) != 0)
-			{
-				gAreGoodGuysPresent = 1;
-			}
-
-			count++;
-			int cmd = 0;
-
-			// Wake up if it can see a player
-			if ((actor->flags & FLAGS_SLEEPING) &&
-				actor->aiContext->Delay == 0)
-			{
-				if (CanSeeAPlayer(actor))
-				{
-					actor->flags &= ~FLAGS_SLEEPING;
-					ActorSetAIState(actor, AI_STATE_NONE);
-				}
-				actor->aiContext->Delay = bot->actionDelay * delayModifier;
-				// Randomly change direction
-				int newDir = (int)actor->direction + ((rand() % 2) * 2 - 1);
-				if (newDir < (int)DIRECTION_UP)
-				{
-					newDir = (int)DIRECTION_UPLEFT;
-				}
-				if (newDir == (int)DIRECTION_COUNT)
-				{
-					newDir = (int)DIRECTION_UP;
-				}
-				cmd = DirectionToCmd((int)newDir);
-			}
-			// Go to sleep if the player's too far away
-			if (!(actor->flags & FLAGS_SLEEPING) &&
-				actor->aiContext->Delay == 0 &&
-				!(actor->flags & FLAGS_AWAKEALWAYS))
-			{
-				if (!IsCloseToPlayer(actor->Pos, (40 * 16) << 8))
-				{
-					actor->flags |= FLAGS_SLEEPING;
-					ActorSetAIState(actor, AI_STATE_IDLE);
-				}
-			}
-
-			if (!actor->dead && !(actor->flags & FLAGS_SLEEPING))
-			{
-				bool bypass = false;
-				const int roll = rand() % rollLimit;
-				if (actor->flags & FLAGS_FOLLOWER)
-				{
-					cmd = Follow(actor);
-				}
-				else if (!!(actor->flags & FLAGS_SNEAKY) &&
-					!!(actor->flags & FLAGS_VISIBLE) &&
-					DidPlayerShoot())
-				{
-					cmd = AIHuntClosest(actor) | CMD_BUTTON1;
-					if (actor->flags & FLAGS_RUNS_AWAY)
-					{
-						// Turn back and shoot for running away characters
-						cmd = AIReverseDirection(cmd);
-					}
-					bypass = true;
-					ActorSetAIState(actor, AI_STATE_HUNT);
-				}
-				else if (actor->flags & FLAGS_DETOURING)
-				{
-					cmd = BrightWalk(actor, roll);
-					ActorSetAIState(actor, AI_STATE_TRACK);
-				}
-				else if (actor->flags & FLAGS_RESCUED)
-				{
-					// If we haven't completed all objectives, act as follower
-					if (!CanCompleteMission(&gMission))
-					{
-						cmd = Follow(actor);
-					}
-					else
-					{
-						// Run towards exit
-						const Vec2i exitPos = MapGetExitPos(&gMap);
-						cmd = AIGoto(actor, exitPos, false);
-					}
-				}
-				else if (actor->aiContext->Delay > 0)
-				{
-					cmd = actor->lastCmd & ~CMD_BUTTON1;
-				}
-				else
-				{
-					if (roll < bot->probabilityToTrack)
-					{
-						cmd = AIHuntClosest(actor);
-						ActorSetAIState(actor, AI_STATE_HUNT);
-					}
-					else if (roll < bot->probabilityToMove)
-					{
-						cmd = DirectionToCmd(rand() & 7);
-						ActorSetAIState(actor, AI_STATE_TRACK);
-					}
-					else
-					{
-						cmd = 0;
-					}
-					actor->aiContext->Delay = bot->actionDelay * delayModifier;
-				}
-				if (!bypass)
-				{
-					if (WillFire(actor, roll))
-					{
-						cmd |= CMD_BUTTON1;
-						if (!!(actor->flags & FLAGS_FOLLOWER) &&
-							(actor->flags & FLAGS_GOOD_GUY))
-						{
-							// Shoot in a random direction away
-							for (int j = 0; j < 10; j++)
-							{
-								direction_e d =
-									(direction_e)(rand() % DIRECTION_COUNT);
-								if (!IsFacingPlayer(actor, d))
-								{
-									cmd = DirectionToCmd(d) | CMD_BUTTON1;
-									break;
-								}
-							}
-						}
-						if (actor->flags & FLAGS_RUNS_AWAY)
-						{
-							// Turn back and shoot for running away characters
-							cmd |= AIReverseDirection(AIHuntClosest(actor));
-						}
-						ActorSetAIState(actor, AI_STATE_HUNT);
-					}
-					else
-					{
-						if ((actor->flags & FLAGS_VISIBLE) == 0)
-						{
-							// I think this is some hack to make sure invisible enemies don't fire so much
-							ActorGetGun(actor)->lock = 40;
-						}
-						if (cmd && !IsDirectionOK(actor, CmdToDirection(cmd)) &&
-							(actor->flags & FLAGS_DETOURING) == 0)
-						{
-							Detour(actor);
-							cmd = 0;
-							ActorSetAIState(actor, AI_STATE_TRACK);
-						}
-					}
-				}
-			}
-			actor->aiContext->Delay =
-				MAX(0, actor->aiContext->Delay - ticks);
-			CommandActor(actor, cmd, ticks);
-		}
-		else if ((actor->flags & FLAGS_PRISONER) != 0)
-		{
-			CommandActor(actor, 0, ticks);
-		}
+		const int cmd = GetCmd(actor, delayModifier, rollLimit);
+		actor->aiContext->Delay = MAX(0, actor->aiContext->Delay - ticks);
+		CommandActor(actor, cmd, ticks);
+		actor->aiContext->LastCmd = cmd;
+		count++;
 	CA_FOREACH_END()
-	if (gMission.missionData->Enemies.size > 0 &&
-		gMission.missionData->EnemyDensity > 0 &&
-		count < MAX(1, (gMission.missionData->EnemyDensity * ConfigGetInt(&gConfig, "Game.EnemyDensity")) / 100))
+	return count;
+}
+static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
+{
+	const CharBot *bot = ActorGetCharacter(actor)->bot;
+	if ((actor->flags & (FLAGS_VICTIM | FLAGS_GOOD_GUY)) != 0)
 	{
-		NActorAdd aa = NActorAdd_init_default;
-		aa.UID = ActorsGetNextUID();
-		aa.CharId = CharacterStoreGetRandomBaddieId(
-			&gCampaign.Setting.characters);
-		aa.Direction = rand() % DIRECTION_COUNT;
-		const Character *c =
-			CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
-		aa.Health = CharacterGetStartingHealth(c, true);
-		aa.FullPos = PlaceAwayFromPlayers(&gMap, true);
-		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-		e.u.ActorAdd = aa;
-		GameEventsEnqueue(&gGameEvents, e);
-		gBaddieCount++;
+		gAreGoodGuysPresent = 1;
 	}
+
+	if (actor->flags & FLAGS_PRISONER)
+	{
+		return 0;
+	}
+
+	int cmd = 0;
+
+	// Wake up if it can see a player
+	if ((actor->flags & FLAGS_SLEEPING) &&
+		actor->aiContext->Delay == 0)
+	{
+		if (CanSeeAPlayer(actor))
+		{
+			actor->flags &= ~FLAGS_SLEEPING;
+			ActorSetAIState(actor, AI_STATE_NONE);
+		}
+		actor->aiContext->Delay = bot->actionDelay * delayModifier;
+		// Randomly change direction
+		int newDir = (int)actor->direction + ((rand() % 2) * 2 - 1);
+		if (newDir < (int)DIRECTION_UP)
+		{
+			newDir = (int)DIRECTION_UPLEFT;
+		}
+		if (newDir == (int)DIRECTION_COUNT)
+		{
+			newDir = (int)DIRECTION_UP;
+		}
+		cmd = DirectionToCmd((int)newDir);
+	}
+	// Go to sleep if the player's too far away
+	if (!(actor->flags & FLAGS_SLEEPING) &&
+		actor->aiContext->Delay == 0 &&
+		!(actor->flags & FLAGS_AWAKEALWAYS))
+	{
+		if (!IsCloseToPlayer(actor->Pos, (40 * 16) << 8))
+		{
+			actor->flags |= FLAGS_SLEEPING;
+			ActorSetAIState(actor, AI_STATE_IDLE);
+		}
+	}
+
+	if (actor->flags & FLAGS_SLEEPING)
+	{
+		return 0;
+	}
+
+	bool bypass = false;
+	const int roll = rand() % rollLimit;
+	if (actor->flags & FLAGS_FOLLOWER)
+	{
+		cmd = Follow(actor);
+	}
+	else if (!!(actor->flags & FLAGS_SNEAKY) &&
+		!!(actor->flags & FLAGS_VISIBLE) &&
+		DidPlayerShoot())
+	{
+		cmd = AIHuntClosest(actor) | CMD_BUTTON1;
+		if (actor->flags & FLAGS_RUNS_AWAY)
+		{
+			// Turn back and shoot for running away characters
+			cmd = AIReverseDirection(cmd);
+		}
+		bypass = true;
+		ActorSetAIState(actor, AI_STATE_HUNT);
+	}
+	else if (actor->flags & FLAGS_DETOURING)
+	{
+		cmd = BrightWalk(actor, roll);
+		ActorSetAIState(actor, AI_STATE_TRACK);
+	}
+	else if (actor->flags & FLAGS_RESCUED)
+	{
+		// If we haven't completed all objectives, act as follower
+		if (!CanCompleteMission(&gMission))
+		{
+			cmd = Follow(actor);
+		}
+		else
+		{
+			// Run towards exit
+			const Vec2i exitPos = MapGetExitPos(&gMap);
+			cmd = AIGoto(actor, exitPos, false);
+		}
+	}
+	else if (actor->aiContext->Delay > 0)
+	{
+		cmd = actor->lastCmd & ~CMD_BUTTON1;
+	}
+	else
+	{
+		if (roll < bot->probabilityToTrack)
+		{
+			cmd = AIHuntClosest(actor);
+			ActorSetAIState(actor, AI_STATE_HUNT);
+		}
+		else if (roll < bot->probabilityToMove)
+		{
+			cmd = DirectionToCmd(rand() & 7);
+			ActorSetAIState(actor, AI_STATE_TRACK);
+		}
+		else
+		{
+			cmd = 0;
+		}
+		actor->aiContext->Delay = bot->actionDelay * delayModifier;
+	}
+	if (!bypass)
+	{
+		if (WillFire(actor, roll))
+		{
+			cmd |= CMD_BUTTON1;
+			if (!!(actor->flags & FLAGS_FOLLOWER) &&
+				(actor->flags & FLAGS_GOOD_GUY))
+			{
+				// Shoot in a random direction away
+				for (int j = 0; j < 10; j++)
+				{
+					direction_e d =
+						(direction_e)(rand() % DIRECTION_COUNT);
+					if (!IsFacingPlayer(actor, d))
+					{
+						cmd = DirectionToCmd(d) | CMD_BUTTON1;
+						break;
+					}
+				}
+			}
+			if (actor->flags & FLAGS_RUNS_AWAY)
+			{
+				// Turn back and shoot for running away characters
+				cmd |= AIReverseDirection(AIHuntClosest(actor));
+			}
+			ActorSetAIState(actor, AI_STATE_HUNT);
+		}
+		else
+		{
+			if ((actor->flags & FLAGS_VISIBLE) == 0)
+			{
+				// I think this is some hack to make sure invisible enemies don't fire so much
+				ActorGetGun(actor)->lock = 40;
+			}
+			if (cmd && !IsDirectionOK(actor, CmdToDirection(cmd)) &&
+				(actor->flags & FLAGS_DETOURING) == 0)
+			{
+				Detour(actor);
+				cmd = 0;
+				ActorSetAIState(actor, AI_STATE_TRACK);
+			}
+		}
+	}
+	return cmd;
 }
 static int Follow(TActor *a)
 {
@@ -527,6 +517,41 @@ static int Follow(TActor *a)
 	{
 		ActorSetAIState(a, AI_STATE_FOLLOW);
 		return AIGoto(a, AIGetClosestPlayerPos(a->Pos), true);
+	}
+}
+
+void AICommandLast(const int ticks)
+{
+	CA_FOREACH(TActor, actor, gActors)
+		if (!actor->isInUse || actor->PlayerUID >= 0 || actor->dead ||
+			(actor->flags & FLAGS_PRISONER))
+		{
+			continue;
+		}
+		const int cmd = actor->aiContext->LastCmd;
+		actor->aiContext->Delay = MAX(0, actor->aiContext->Delay - ticks);
+		CommandActor(actor, cmd, ticks);
+	CA_FOREACH_END()
+}
+
+void AIAddRandomEnemies(const int enemies, const Mission *m)
+{
+	if (m->Enemies.size > 0 && m->EnemyDensity > 0 &&
+		enemies < MAX(1, (m->EnemyDensity * ConfigGetInt(&gConfig, "Game.EnemyDensity")) / 100))
+	{
+		NActorAdd aa = NActorAdd_init_default;
+		aa.UID = ActorsGetNextUID();
+		aa.CharId = CharacterStoreGetRandomBaddieId(
+			&gCampaign.Setting.characters);
+		aa.Direction = rand() % DIRECTION_COUNT;
+		const Character *c =
+			CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
+		aa.Health = CharacterGetStartingHealth(c, true);
+		aa.FullPos = PlaceAwayFromPlayers(&gMap, true);
+		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
+		e.u.ActorAdd = aa;
+		GameEventsEnqueue(&gGameEvents, e);
+		gBaddieCount++;
 	}
 }
 

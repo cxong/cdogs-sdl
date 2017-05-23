@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013, 2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,13 +46,13 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __AI
-#define __AI
+#pragma once
 
 #include "actors.h"
 
 void InitializeBadGuys(void);
 void CreateEnemies(void);
-void CommandBadGuys(int ticks);
-
-#endif
+// Returns number of random enemies
+int AICommand(const int ticks);
+void AICommandLast(const int ticks);
+void AIAddRandomEnemies(const int enemies, const Mission *m);
