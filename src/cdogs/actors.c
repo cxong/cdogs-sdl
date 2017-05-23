@@ -918,7 +918,7 @@ void UpdateAllActors(int ticks)
 		const int healthPct = actor->health * 100 / maxHealth;
 		if (healthPct < BLEED_PERCENTAGE)
 		{
-			actor->bleedCounter--;
+			actor->bleedCounter -= ticks;
 			if (actor->bleedCounter <= 0)
 			{
 				ActorAddBloodSplatters(actor, 1, Vec2iZero());

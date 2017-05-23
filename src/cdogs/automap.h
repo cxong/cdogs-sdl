@@ -25,8 +25,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __AUTOMAP
-#define __AUTOMAP
+#pragma once
 
 #include "actors.h"
 #include "grafx.h"
@@ -38,7 +37,4 @@
 void AutomapDraw(int flags, bool showExit);
 void AutomapDrawRegion(
 	Map *map,
-	Vec2i pos, Vec2i size, Vec2i mapCenter,
-	int scale, int flags, bool showExit);
-
-#endif
+	Vec2i pos, Vec2i size, Vec2i mapCenter, int flags, bool showExit);

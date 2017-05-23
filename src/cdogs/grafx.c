@@ -335,10 +335,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 		}
 		const color_t overlayColour = brightness > 0 ? colorWhite : colorBlack;
 		DrawRectangle(g, Vec2iZero(), g->cachedConfig.Res, overlayColour, 0);
-		SDL_UpdateTexture(
-			g->brightnessOverlay, NULL, g->buf,
-			g->cachedConfig.Res.x * sizeof(Uint32));
-		memset(g->buf, 0, GraphicsGetMemSize(&g->cachedConfig));
+		BlitUpdateFromBuf(g, g->brightnessOverlay);
 		g->cachedConfig.Brightness = brightness;
 	}
 

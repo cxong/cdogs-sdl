@@ -360,9 +360,9 @@ void AutomapDraw(int flags, bool showExit)
 
 void AutomapDrawRegion(
 	Map *map,
-	Vec2i pos, Vec2i size, Vec2i mapCenter,
-	int scale, int flags, bool showExit)
+	Vec2i pos, Vec2i size, Vec2i mapCenter, int flags, bool showExit)
 {
+	const int scale = 1;
 	const BlitClipping oldClip = gGraphicsDevice.clipping;
 	GraphicsSetBlitClip(
 		&gGraphicsDevice,

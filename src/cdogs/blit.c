@@ -403,7 +403,32 @@ void BlitClearBuf(GraphicsDevice *g)
 }
 void BlitUpdateFromBuf(GraphicsDevice *g, SDL_Texture *t)
 {
-	SDL_UpdateTexture(t, NULL, g->buf, g->cachedConfig.Res.x * sizeof(Uint32));
+	int textureAccess;
+	if (SDL_QueryTexture(t, NULL, &textureAccess, NULL, NULL) != 0)
+	{
+		LOG(LM_GFX, LL_ERROR, "Failed to query texture: %s", SDL_GetError());
+		return;
+	}
+	if (textureAccess == SDL_TEXTUREACCESS_STATIC)
+	{
+		SDL_UpdateTexture(
+			t, NULL, g->buf, g->cachedConfig.Res.x * sizeof(Uint32));
+	}
+	else
+	{
+		CASSERT(
+			textureAccess == SDL_TEXTUREACCESS_STREAMING,
+			"invalid texture access");
+		void *pixels;
+		int pitch;
+		if (SDL_LockTexture(t, NULL, &pixels, &pitch) != 0)
+		{
+			LOG(LM_GFX, LL_ERROR, "Failed to lock texture: %s", SDL_GetError());
+			return;
+		}
+		memcpy(pixels, g->buf, GraphicsGetMemSize(&g->cachedConfig));
+		SDL_UnlockTexture(t);
+	}
 }
 
 static void RenderTexture(SDL_Renderer *r, SDL_Texture *t);

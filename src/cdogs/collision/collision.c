@@ -54,9 +54,6 @@
 #include "minkowski_hex.h"
 #include "objs.h"
 
-#define TILE_CACHE_TILE 1
-#define TILE_CACHE_ADJACENT 2
-
 
 static void TileCacheInit(CArray *tc)
 {

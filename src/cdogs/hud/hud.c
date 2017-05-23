@@ -286,7 +286,7 @@ static void DrawLives(
 #define AUTOMAP_SIZE	45
 static void DrawRadar(
 	GraphicsDevice *device, const TActor *p,
-	const int scale, const int flags, const bool showExit)
+	const int flags, const bool showExit)
 {
 	Vec2i pos = Vec2iZero();
 	int w = device->cachedConfig.Res.x;
@@ -382,13 +382,12 @@ static void DrawRadar(
 			pos,
 			Vec2iNew(AUTOMAP_SIZE, AUTOMAP_SIZE),
 			playerPos,
-			scale,
 			AUTOMAP_FLAGS_MASK,
 			showExit);
 	}
 }
 
-static void DrawSharedRadar(GraphicsDevice *device, int scale, bool showExit)
+static void DrawSharedRadar(GraphicsDevice *device, bool showExit)
 {
 	int w = device->cachedConfig.Res.x;
 	Vec2i pos = Vec2iNew(w / 2 - AUTOMAP_SIZE / 2, AUTOMAP_PADDING);
@@ -400,12 +399,9 @@ static void DrawSharedRadar(GraphicsDevice *device, int scale, bool showExit)
 		pos,
 		Vec2iNew(AUTOMAP_SIZE, AUTOMAP_SIZE),
 		playerMidpoint,
-		scale,
 		AUTOMAP_FLAGS_MASK,
 		showExit);
 }
-
-#define RADAR_SCALE 1
 
 static void DrawObjectiveCompass(
 	GraphicsDevice *g, Vec2i playerPos, Rect2i r, bool showExit);
@@ -483,7 +479,7 @@ static void DrawPlayerStatus(
 		!(flags & HUDFLAGS_SHARE_SCREEN) &&
 		IsAutoMapEnabled(gCampaign.Entry.Mode))
 	{
-		DrawRadar(hud->device, p, RADAR_SCALE, flags, hud->showExit);
+		DrawRadar(hud->device, p, flags, hud->showExit);
 	}
 }
 
@@ -733,7 +729,7 @@ static void DrawPlayerAreas(HUD *hud)
 		(flags & HUDFLAGS_SHARE_SCREEN) &&
 		IsAutoMapEnabled(gCampaign.Entry.Mode))
 	{
-		DrawSharedRadar(hud->device, RADAR_SCALE, hud->showExit);
+		DrawSharedRadar(hud->device, hud->showExit);
 	}
 }
 
