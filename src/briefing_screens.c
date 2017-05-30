@@ -184,7 +184,7 @@ bool ScreenMissionBriefing(const struct MissionOptions *m)
 
 	GameLoopData gData = GameLoopDataNew(
 		&mData, NULL, MissionBriefingOnExit,
-		NULL, MissionBriefingUpdate, MissionBriefingDraw);
+		MissionBriefingInput, MissionBriefingUpdate, MissionBriefingDraw);
 	GameLoop(&gData);
 	return mData.waitResult == EVENT_WAIT_OK;
 }
