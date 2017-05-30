@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2014, 2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -127,7 +127,9 @@ static void DisplayAt(int x, int y, const char *s, int hilite)
 	FontStrMask(s, Vec2iNew(x, y), mask);
 }
 
-static int DisplayEntry(int x, int y, int idx, struct Entry *e, int hilite)
+static int DisplayEntry(
+	const int x, const int y, const int idx, const struct Entry *e,
+	const bool hilite)
 {
 	char s[10];
 
@@ -151,13 +153,14 @@ static int DisplayEntry(int x, int y, int idx, struct Entry *e, int hilite)
 }
 
 static int DisplayPage(
-	const char *title, int idx, struct Entry *e,
-	int highlights[MAX_LOCAL_PLAYERS])
+	const char *title, const int idxStart, const struct Entry *e,
+	const int highlights[MAX_LOCAL_PLAYERS])
 {
 	int x = 80;
 	int y = 5 + FontH();
 
 	FontStr(title, Vec2iNew(5, 5));
+	int idx = idxStart;
 	while (idx < MAX_ENTRY && e[idx].score > 0 && x < 300)
 	{
 		bool isHighlighted = false;
@@ -179,9 +182,20 @@ static int DisplayPage(
 	}
 	return idx;
 }
+typedef struct
+{
+	GraphicsDevice *g;
+	const char *title;
+	const struct Entry *scores;
+	int highlights[MAX_LOCAL_PLAYERS];
+	int scoreIdx;
+} HighScoresData;
+static void HighScoreOnEnter(void *data);
+static GameLoopResult HighScoreUpdate(void *data);
 void DisplayAllTimeHighScores(GraphicsDevice *graphics)
 {
-	int highlights[MAX_LOCAL_PLAYERS];
+	HighScoresData data;
+	data.g = graphics;
 	int idx = 0;
 	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
@@ -191,23 +205,22 @@ void DisplayAllTimeHighScores(GraphicsDevice *graphics)
 			idx--;
 			continue;
 		}
-		highlights[idx] = p->allTime;
+		data.highlights[idx] = p->allTime;
 	}
-	idx = 0;
-	while (idx < MAX_ENTRY && allTimeHigh[idx].score > 0)
+	data.scoreIdx = 0;
+	data.title = "All time high scores:";
+	data.scores = allTimeHigh;
+	while (data.scoreIdx < MAX_ENTRY && data.scores[data.scoreIdx].score > 0)
 	{
-		BlitClearBuf(graphics);
-		idx = DisplayPage(
-			"All time high scores:", idx, allTimeHigh, highlights);
-		BlitUpdateFromBuf(graphics, graphics->screen);
 		GameLoopData gData = GameLoopDataNew(
-			NULL, GameLoopWaitForAnyKeyOrButtonFunc, NULL, NULL);
+			&data, HighScoreOnEnter, NULL, NULL, HighScoreUpdate, NULL);
 		GameLoop(&gData);
 	}
 }
 void DisplayTodaysHighScores(GraphicsDevice *graphics)
 {
-	int highlights[MAX_LOCAL_PLAYERS];
+	HighScoresData data;
+	data.g = graphics;
 	int idx = 0;
 	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
@@ -217,19 +230,33 @@ void DisplayTodaysHighScores(GraphicsDevice *graphics)
 			idx--;
 			continue;
 		}
-		highlights[idx] = p->today;
+		data.highlights[idx] = p->today;
 	}
-	idx = 0;
-	while (idx < MAX_ENTRY && todaysHigh[idx].score > 0)
+	data.scoreIdx = 0;
+	data.title = "Today's highest score:";
+	data.scores = todaysHigh;
+	while (data.scoreIdx < MAX_ENTRY && data.scores[data.scoreIdx].score > 0)
 	{
-		BlitClearBuf(graphics);
-		idx = DisplayPage(
-			"Today's highest score:", idx, todaysHigh, highlights);
-		BlitUpdateFromBuf(graphics, graphics->screen);
 		GameLoopData gData = GameLoopDataNew(
-			NULL, GameLoopWaitForAnyKeyOrButtonFunc, NULL, NULL);
+			&data, HighScoreOnEnter, NULL, NULL, HighScoreUpdate, NULL);
 		GameLoop(&gData);
 	}
+}
+static void HighScoreOnEnter(void *data)
+{
+	HighScoresData *hData = data;
+
+	BlitClearBuf(hData->g);
+	hData->scoreIdx = DisplayPage(
+		hData->title, hData->scoreIdx, hData->scores, hData->highlights);
+	BlitUpdateFromBuf(hData->g, hData->g->screen);
+}
+static GameLoopResult HighScoreUpdate(void *data)
+{
+	UNUSED(data);
+	const EventWaitResult result = EventWaitForAnyKeyOrButton();
+	return
+		result == EVENT_WAIT_CONTINUE ? UPDATE_RESULT_OK : UPDATE_RESULT_EXIT;
 }
 
 

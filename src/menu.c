@@ -53,6 +53,7 @@
 #include <cdogs/config_io.h>
 #include <cdogs/files.h>
 #include <cdogs/font.h>
+#include <cdogs/game_loop.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/grafx_bg.h>
 #include <cdogs/log.h>
@@ -139,7 +140,7 @@ void MenuLoop(MenuSystem *menu)
 {
 	CASSERT(menu->exitTypes.size > 0, "menu has no exit types");
 	GameLoopData gData = GameLoopDataNew(
-		menu, MenuUpdate, menu, MenuDraw);
+		menu, NULL, NULL, NULL, MenuUpdate, MenuDraw);
 	GameLoop(&gData);
 }
 static GameLoopResult MenuUpdate(void *data)

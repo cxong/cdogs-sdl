@@ -58,6 +58,7 @@
 #include <cdogs/camera.h>
 #include <cdogs/draw/drawtools.h>
 #include <cdogs/events.h>
+#include <cdogs/game_loop.h>
 #include <cdogs/grafx_bg.h>
 #include <cdogs/handle_game_events.h>
 #include <cdogs/log.h>
@@ -140,6 +141,7 @@ Vec2i GetPlayerCenter(
 
 typedef struct
 {
+	const CampaignOptions *co;
 	struct MissionOptions *m;
 	Map *map;
 	Camera Camera;
@@ -156,34 +158,54 @@ typedef struct
 	CArray ammoSpawners;	// of PowerupSpawner
 	GameLoopData loop;
 } RunGameData;
+static void RunGameOnEnter(void *data);
+static void RunGameOnExit(void *data);
 static void RunGameInput(void *data);
 static GameLoopResult RunGameUpdate(void *data);
 static void RunGameDraw(void *data);
 bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 {
+	RunGameData data;
+	memset(&data, 0, sizeof data);
+	data.co = co;
+	data.m = m;
+	data.map = map;
+	data.loop = GameLoopDataNew(
+		&data, RunGameOnEnter, RunGameOnExit,
+		RunGameInput, RunGameUpdate, RunGameDraw);
+	data.loop.FPS = ConfigGetInt(&gConfig, "Game.FPS");
+	data.loop.InputEverySecondFrame = true;
+	GameLoop(&data.loop);
+
+	return !m->IsQuit;
+}
+static void RunGameOnEnter(void *data)
+{
+	RunGameData *rData = data;
+
 	// Clear the background
 	DrawRectangle(
 		&gGraphicsDevice, Vec2iZero(), gGraphicsDevice.cachedConfig.Res,
 		colorBlack, 0);
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.bkg);
 
-	MapLoad(map, m, co);
+	MapLoad(rData->map, rData->m, rData->co);
 
 	// Seed random if PVP mode (otherwise players will always spawn in same
 	// position)
-	if (IsPVP(co->Entry.Mode))
+	if (IsPVP(rData->co->Entry.Mode))
 	{
 		srand((unsigned int)time(NULL));
 	}
 
-	if (!co->IsClient)
+	if (!rData->co->IsClient)
 	{
-		MapLoadDynamic(map, m, &co->Setting.characters);
+		MapLoadDynamic(rData->map, rData->m, &rData->co->Setting.characters);
 
 		// For PVP modes, mark all map as explored
-		if (IsPVP(co->Entry.Mode))
+		if (IsPVP(rData->co->Entry.Mode))
 		{
-			MapMarkAllAsVisited(map);
+			MapMarkAllAsVisited(rData->map);
 		}
 
 		// Reset players for the mission
@@ -205,39 +227,34 @@ bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 			if (!p->Ready) continue;
 			firstPos = PlacePlayer(&gMap, p, firstPos, true);
 		CA_FOREACH_END()
-		if (!IsPVP(co->Entry.Mode))
+		if (!IsPVP(rData->co->Entry.Mode))
 		{
 			InitializeBadGuys();
 			CreateEnemies();
 		}
 	}
 
-	RunGameData data;
-	memset(&data, 0, sizeof data);
-	data.m = m;
-	data.map = map;
-
-	CameraInit(&data.Camera);
+	CameraInit(&rData->Camera);
 	// If there are no players, show the full map before starting
 	if (GetNumPlayers(PLAYER_ANY, false, true) == 0)
 	{
-		LOSSetAllVisible(&map->LOS);
-		data.Camera.lastPosition =
-			Vec2iCenterOfTile(Vec2iScaleDiv(map->Size, 2));
-		data.Camera.FollowNextPlayer = true;
+		LOSSetAllVisible(&rData->map->LOS);
+		rData->Camera.lastPosition =
+			Vec2iCenterOfTile(Vec2iScaleDiv(rData->map->Size, 2));
+		rData->Camera.FollowNextPlayer = true;
 	}
-	HealthSpawnerInit(&data.healthSpawner, map);
-	CArrayInit(&data.ammoSpawners, sizeof(PowerupSpawner));
+	HealthSpawnerInit(&rData->healthSpawner, rData->map);
+	CArrayInit(&rData->ammoSpawners, sizeof(PowerupSpawner));
 	for (int i = 0; i < AmmoGetNumClasses(&gAmmo); i++)
 	{
 		PowerupSpawner ps;
-		AmmoSpawnerInit(&ps, map, i);
-		CArrayPushBack(&data.ammoSpawners, &ps);
+		AmmoSpawnerInit(&ps, rData->map, i);
+		CArrayPushBack(&rData->ammoSpawners, &ps);
 	}
 
-	m->state = MISSION_STATE_WAITING;
-	m->isDone = false;
-	m->DoneCounter = 0;
+	rData->m->state = MISSION_STATE_WAITING;
+	rData->m->isDone = false;
+	rData->m->DoneCounter = 0;
 	Pic *crosshair = PicManagerGetPic(&gPicManager, "crosshair");
 	crosshair->offset.x = -crosshair->size.x / 2;
 	crosshair->offset.y = -crosshair->size.y / 2;
@@ -248,33 +265,28 @@ bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 	NetServerSendGameStartMessages(&gNetServer, NET_SERVER_BCAST);
 	GameEvent start = GameEventNew(GAME_EVENT_GAME_START);
 	GameEventsEnqueue(&gGameEvents, start);
+}
+static void RunGameOnExit(void *data)
+{
+	RunGameData *rData = data;
 
-	data.loop = GameLoopDataNew(
-		&data, RunGameUpdate, &data, RunGameDraw);
-	data.loop.InputData = &data;
-	data.loop.InputFunc = RunGameInput;
-	data.loop.FPS = ConfigGetInt(&gConfig, "Game.FPS");
-	data.loop.InputEverySecondFrame = true;
-	GameLoop(&data.loop);
 	LOG(LM_MAIN, LL_INFO, "Game finished");
 
 	// Flush events
 	HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
 
-	PowerupSpawnerTerminate(&data.healthSpawner);
-	CA_FOREACH(PowerupSpawner, a, data.ammoSpawners)
+	PowerupSpawnerTerminate(&rData->healthSpawner);
+	CA_FOREACH(PowerupSpawner, a, rData->ammoSpawners)
 		PowerupSpawnerTerminate(a);
 	CA_FOREACH_END()
-	CArrayTerminate(&data.ammoSpawners);
-	CameraTerminate(&data.Camera);
+	CArrayTerminate(&rData->ammoSpawners);
+	CameraTerminate(&rData->Camera);
 
 	// Draw background
-	GrafxRedrawBackground(&gGraphicsDevice, data.Camera.lastPosition);
+	GrafxRedrawBackground(&gGraphicsDevice, rData->Camera.lastPosition);
 	// Clear other texures
 	BlitClearBuf(&gGraphicsDevice);
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.hud);
-
-	return !m->IsQuit;
 }
 static void RunGameInput(void *data)
 {

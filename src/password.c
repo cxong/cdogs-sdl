@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2014, 2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -60,6 +60,7 @@
 #include <cdogs/config.h>
 #include <cdogs/defs.h>
 #include <cdogs/font.h>
+#include <cdogs/game_loop.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/grafx.h>
 #include <cdogs/grafx_bg.h>
@@ -127,6 +128,7 @@ typedef struct
 	int Mission;
 	int Selection;
 } EnterCodeScreenData;
+static void EnterCodeScreenOnExit(void *data);
 static GameLoopResult EnterCodeScreenUpdate(void *data);
 static void EnterCodeScreenDraw(void *data);
 static int EnterCodeScreen(const char *password)
@@ -137,8 +139,8 @@ static int EnterCodeScreen(const char *password)
 	strcpy(data.Buffer, password);
 
 	GameLoopData gData = GameLoopDataNew(
-		&data, EnterCodeScreenUpdate,
-		&data, EnterCodeScreenDraw);
+		&data, NULL, EnterCodeScreenOnExit,
+		NULL, EnterCodeScreenUpdate, EnterCodeScreenDraw);
 	GameLoop(&gData);
 	if (data.Mission > 0)
 	{
@@ -150,6 +152,18 @@ static int EnterCodeScreen(const char *password)
 	}
 
 	return data.Mission;
+}
+static void EnterCodeScreenOnExit(void *data)
+{
+	const EnterCodeScreenData *eData = data;
+	if (eData->Mission > 0)
+	{
+		SoundPlay(&gSoundDevice, StrSound("mg"));
+	}
+	else
+	{
+		SoundPlay(&gSoundDevice, StrSound("switch"));
+	}
 }
 #define PASSWORD_ENTRY_COLS	10
 #define PASSWORD_LETTERS "abcdefghijklmnopqrstuvwxyz0123456789"

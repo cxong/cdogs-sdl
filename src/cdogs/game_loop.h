@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014, 2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __GAME_LOOP
-#define __GAME_LOOP
+#pragma once
 
 #include <stdbool.h>
 
@@ -43,11 +42,11 @@ typedef enum
 // Generic game loop manager, with callbacks for update/draw
 typedef struct
 {
-	void *InputData;
+	void *Data;
+	void (*OnEnter)(void *);
+	void (*OnExit)(void *);
 	void (*InputFunc)(void *);
-	void *UpdateData;
 	GameLoopResult (*UpdateFunc)(void *);
-	void *DrawData;
 	void (*DrawFunc)(void *);
 	int FPS;
 	bool InputEverySecondFrame;
@@ -56,8 +55,8 @@ typedef struct
 } GameLoopData;
 
 GameLoopData GameLoopDataNew(
-	void *updateData, GameLoopResult (*updateFunc)(void *),
-	void *drawData, void (*drawFunc)(void *));
+	void *data,
+	void (*onEnter)(void *), void (*onExit)(void *),
+	void (*inputFunc)(void *),
+	GameLoopResult (*updateFunc)(void *), void (*drawFunc)(void *));
 void GameLoop(GameLoopData *data);
-
-#endif

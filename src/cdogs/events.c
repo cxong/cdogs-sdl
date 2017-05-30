@@ -512,11 +512,9 @@ SDL_Scancode EventWaitKeyOrText(EventHandlers *handlers)
 	return k;
 }
 
-static GameLoopResult WaitResult(
-	GameLoopWaitForAnyKeyOrButtonData *data, const bool result);
-GameLoopResult GameLoopWaitForAnyKeyOrButtonFunc(void *data)
+static EventWaitResult WaitResult(const bool result);
+EventWaitResult EventWaitForAnyKeyOrButton(void)
 {
-	GameLoopWaitForAnyKeyOrButtonData *wData = data;
 	int cmds[MAX_LOCAL_PLAYERS];
 	memset(cmds, 0, sizeof cmds);
 	GetPlayerCmds(&gEventHandlers, &cmds);
@@ -525,7 +523,7 @@ GameLoopResult GameLoopWaitForAnyKeyOrButtonFunc(void *data)
 		if (cmds[i] & (CMD_BUTTON1 | CMD_BUTTON2))
 		{
 			// Interpret anything other than CMD_BUTTON1 as cancel
-			return WaitResult(wData, cmds[i] & CMD_BUTTON1);
+			return WaitResult(cmds[i] & CMD_BUTTON1);
 		}
 	}
 
@@ -534,25 +532,20 @@ GameLoopResult GameLoopWaitForAnyKeyOrButtonFunc(void *data)
 	if (menuCmd & (CMD_BUTTON1 | CMD_BUTTON2))
 	{
 		// Interpret anything other than CMD_BUTTON1 as cancel
-		return WaitResult(wData, menuCmd & CMD_BUTTON1);
+		return WaitResult(menuCmd & CMD_BUTTON1);
 	}
 
 	// Check if anyone pressed escape
 	if (EventIsEscape(&gEventHandlers, cmds, menuCmd))
 	{
-		return WaitResult(wData, false);
+		return WaitResult(false);
 	}
 
-	return UPDATE_RESULT_OK;
+	return EVENT_WAIT_CONTINUE;
 }
-static GameLoopResult WaitResult(
-	GameLoopWaitForAnyKeyOrButtonData *data, const bool result)
+static EventWaitResult WaitResult(const bool result)
 {
-	if (data)
-	{
-		data->IsOK = result;
-	}
-	return UPDATE_RESULT_EXIT;
+	return result ? EVENT_WAIT_OK : EVENT_WAIT_CANCEL;
 }
 
 bool EventIsEscape(

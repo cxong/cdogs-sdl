@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -41,24 +41,29 @@
 
 static void DrawObjectiveInfo(const Objective *o, const Vec2i pos);
 
-static void CampaignIntroDraw(void *data);
+typedef struct
+{
+	EventWaitResult waitResult;
+	const CampaignSetting *c;
+} ScreenCampaignIntroData;
+static void CampaignIntroOnEnter(void *data);
+static void CampaignIntroOnExit(void *data);
+static void CampaignIntroInput(void *data);
+static GameLoopResult CampaignIntroUpdate(void *data);
 bool ScreenCampaignIntro(CampaignSetting *c)
 {
-	GameLoopWaitForAnyKeyOrButtonData wData;
+	ScreenCampaignIntroData data;
+	data.c = c;
 	GameLoopData gData = GameLoopDataNew(
-		&wData, GameLoopWaitForAnyKeyOrButtonFunc,
-		c, CampaignIntroDraw);
+		&data, CampaignIntroOnEnter, CampaignIntroOnExit,
+		CampaignIntroInput, CampaignIntroUpdate, NULL);
 	GameLoop(&gData);
-	if (wData.IsOK)
-	{
-		SoundPlay(&gSoundDevice, StrSound("mg"));
-	}
-	return wData.IsOK;
+	return data.waitResult == EVENT_WAIT_OK;
 }
-static void CampaignIntroDraw(void *data)
+static void CampaignIntroOnEnter(void *data)
 {
-	// This will only draw once
-	const CampaignSetting *c = data;
+	// Draw the campaign intro once
+	const ScreenCampaignIntroData *sData = data;
 
 	BlitClearBuf(&gGraphicsDevice);
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
@@ -67,8 +72,8 @@ static void CampaignIntroDraw(void *data)
 
 	// Display title + author
 	char *buf;
-	CMALLOC(buf, strlen(c->Title) + strlen(c->Author) + 16);
-	sprintf(buf, "%s by %s", c->Title, c->Author);
+	CMALLOC(buf, strlen(sData->c->Title) + strlen(sData->c->Author) + 16);
+	sprintf(buf, "%s by %s", sData->c->Title, sData->c->Author);
 	FontOpts opts = FontOptsNew();
 	opts.HAlign = ALIGN_CENTER;
 	opts.Area = gGraphicsDevice.cachedConfig.Res;
@@ -78,17 +83,38 @@ static void CampaignIntroDraw(void *data)
 
 	// Display campaign description
 	// allow some slack for newlines
-	if (strlen(c->Description) > 0)
+	if (strlen(sData->c->Description) > 0)
 	{
-		CMALLOC(buf, strlen(c->Description) * 2);
+		CMALLOC(buf, strlen(sData->c->Description) * 2);
 		// Pad about 1/6th of the screen width total (1/12th left and right)
-		FontSplitLines(c->Description, buf, w * 5 / 6);
+		FontSplitLines(sData->c->Description, buf, w * 5 / 6);
 		FontStr(buf, Vec2iNew(w / 12, y));
 		CFREE(buf);
 	}
 
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 }
+static void CampaignIntroOnExit(void *data)
+{
+	const ScreenCampaignIntroData *sData = data;
+	if (sData->waitResult == EVENT_WAIT_OK)
+	{
+		SoundPlay(&gSoundDevice, StrSound("mg"));
+	}
+}
+static void CampaignIntroInput(void *data)
+{
+	ScreenCampaignIntroData *sData = data;
+	sData->waitResult = EventWaitForAnyKeyOrButton();
+}
+static GameLoopResult CampaignIntroUpdate(void *data)
+{
+	const ScreenCampaignIntroData *sData = data;
+	return
+		sData->waitResult == EVENT_WAIT_CONTINUE ?
+		UPDATE_RESULT_OK : UPDATE_RESULT_EXIT;
+}
+
 
 typedef struct
 {
@@ -104,8 +130,10 @@ typedef struct
 	Vec2i ObjectiveInfoPos;
 	int ObjectiveHeight;
 	const struct MissionOptions *MissionOptions;
-	bool IsOK;
+	EventWaitResult waitResult;
 } MissionBriefingData;
+static void MissionBriefingOnExit(void *data);
+static void MissionBriefingInput(void *data);
 static GameLoopResult MissionBriefingUpdate(void *data);
 static void MissionBriefingDraw(void *data);
 bool ScreenMissionBriefing(const struct MissionOptions *m)
@@ -115,7 +143,7 @@ bool ScreenMissionBriefing(const struct MissionOptions *m)
 	const int y = h / 4;
 	MissionBriefingData mData;
 	memset(&mData, 0, sizeof mData);
-	mData.IsOK = true;
+	mData.waitResult = EVENT_WAIT_CONTINUE;
 
 	// Title
 	CMALLOC(mData.Title, strlen(m->missionData->Title) + 32);
@@ -155,20 +183,24 @@ bool ScreenMissionBriefing(const struct MissionOptions *m)
 	mData.MissionOptions = m;
 
 	GameLoopData gData = GameLoopDataNew(
-		&mData, MissionBriefingUpdate,
-		&mData, MissionBriefingDraw);
+		&mData, NULL, MissionBriefingOnExit,
+		NULL, MissionBriefingUpdate, MissionBriefingDraw);
 	GameLoop(&gData);
-	if (mData.IsOK)
+	return mData.waitResult == EVENT_WAIT_OK;
+}
+static void MissionBriefingOnExit(void *data)
+{
+	const MissionBriefingData *mData = data;
+	if (mData->waitResult == EVENT_WAIT_OK)
 	{
 		SoundPlay(&gSoundDevice, StrSound("mg"));
 	}
 
-	CFREE(mData.Title);
-	CFREE(mData.Description);
-	CFREE(mData.TypewriterBuf);
-	return mData.IsOK;
+	CFREE(mData->Title);
+	CFREE(mData->Description);
+	CFREE(mData->TypewriterBuf);
 }
-static GameLoopResult MissionBriefingUpdate(void *data)
+static void MissionBriefingInput(void *data)
 {
 	MissionBriefingData *mData = data;
 
@@ -185,16 +217,25 @@ static GameLoopResult MissionBriefingUpdate(void *data)
 			{
 				strcpy(mData->TypewriterBuf, mData->Description);
 				mData->TypewriterCount = strlen(mData->Description);
-				return UPDATE_RESULT_DRAW;
+				return;
 			}
 			// Otherwise, exit out of loop
-			return UPDATE_RESULT_EXIT;
+			mData->waitResult = EVENT_WAIT_OK;
 		}
 	}
 	// Check if anyone pressed escape
 	if (EventIsEscape(&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers)))
 	{
-		mData->IsOK = false;
+		mData->waitResult = EVENT_WAIT_CANCEL;
+	}
+}
+static GameLoopResult MissionBriefingUpdate(void *data)
+{
+	MissionBriefingData *mData = data;
+
+	// Check exit conditions from input
+	if (mData->waitResult != EVENT_WAIT_CONTINUE)
+	{
 		return UPDATE_RESULT_EXIT;
 	}
 

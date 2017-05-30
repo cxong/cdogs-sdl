@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014, 2016, Cong Xu
+    Copyright (c) 2014, 2016-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -38,14 +38,18 @@
 
 
 GameLoopData GameLoopDataNew(
-	void *updateData, GameLoopResult (*updateFunc)(void *),
-	void *drawData, void (*drawFunc)(void *))
+	void *data,
+	void (*onEnter)(void *), void (*onExit)(void *),
+	void (*inputFunc)(void *),
+	GameLoopResult (*updateFunc)(void *), void (*drawFunc)(void *))
 {
 	GameLoopData g;
 	memset(&g, 0, sizeof g);
-	g.UpdateData = updateData;
+	g.Data = data;
+	g.OnEnter = onEnter;
+	g.OnExit = onExit;
+	g.InputFunc = inputFunc;
 	g.UpdateFunc = updateFunc;
-	g.DrawData = drawData;
 	g.DrawFunc = drawFunc;
 	g.FPS = 30;
 	return g;
@@ -53,6 +57,11 @@ GameLoopData GameLoopDataNew(
 
 void GameLoop(GameLoopData *data)
 {
+	if (data->OnEnter)
+	{
+		data->OnEnter(data->Data);
+	}
+	// TODO: refactor into OnEnter
 	EventReset(
 		&gEventHandlers,
 		gEventHandlers.mouse.cursor, gEventHandlers.mouse.trail);
@@ -79,7 +88,7 @@ void GameLoop(GameLoopData *data)
 			EventPoll(&gEventHandlers, ticksNow);
 			if (data->InputFunc)
 			{
-				data->InputFunc(data->InputData);
+				data->InputFunc(data->Data);
 			}
 		}
 
@@ -87,7 +96,7 @@ void GameLoop(GameLoopData *data)
 		NetServerPoll(&gNetServer);
 
 		// Update
-		result = data->UpdateFunc(data->UpdateData);
+		result = data->UpdateFunc(data->Data);
 		NetServerFlush(&gNetServer);
 		NetClientFlush(&gNetClient);
 		bool draw = !data->HasDrawnFirst;
@@ -129,10 +138,14 @@ void GameLoop(GameLoopData *data)
 		{
 			if (data->DrawFunc)
 			{
-				data->DrawFunc(data->DrawData);
+				data->DrawFunc(data->Data);
 			}
 			BlitFlip(&gGraphicsDevice);
 			data->HasDrawnFirst = true;
 		}
+	}
+	if (data->OnExit)
+	{
+		data->OnExit(data->Data);
 	}
 }

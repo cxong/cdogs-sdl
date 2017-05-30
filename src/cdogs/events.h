@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -27,7 +27,6 @@
 */
 #pragma once
 
-#include "game_loop.h"
 #include "joystick.h"
 #include "keyboard.h"
 #include "mouse.h"
@@ -67,11 +66,13 @@ int GetKeyboardCmd(
 SDL_Scancode GetKey(EventHandlers *handlers);
 // Wait until there is a key press or text input
 SDL_Scancode EventWaitKeyOrText(EventHandlers *handlers);
-typedef struct
+typedef enum
 {
-	bool IsOK;
-} GameLoopWaitForAnyKeyOrButtonData;
-GameLoopResult GameLoopWaitForAnyKeyOrButtonFunc(void *data);
+	EVENT_WAIT_CONTINUE,
+	EVENT_WAIT_OK,
+	EVENT_WAIT_CANCEL
+} EventWaitResult;
+EventWaitResult EventWaitForAnyKeyOrButton(void);
 void GetPlayerCmds(EventHandlers *handlers, int (*cmds)[MAX_LOCAL_PLAYERS]);
 int GetMenuCmd(EventHandlers *handlers);
 void InputGetButtonNameColor(

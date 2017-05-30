@@ -62,6 +62,7 @@
 #include <cdogs/draw/draw.h>
 #include <cdogs/files.h>
 #include <cdogs/font.h>
+#include <cdogs/game_loop.h>
 #include <cdogs/grafx.h>
 #include <cdogs/handle_game_events.h>
 #include <cdogs/joystick.h>
@@ -234,8 +235,9 @@ typedef struct
 	char prefixes[CDOGS_PATH_MAX];
 	char suffixes[CDOGS_PATH_MAX];
 	char suffixnames[CDOGS_PATH_MAX];
-	bool IsOK;
+	EventWaitResult waitResult;
 } PlayerSelectionData;
+static void PlayerSelectionOnExit(void *data);
 static GameLoopResult PlayerSelectionUpdate(void *data);
 static void PlayerSelectionDraw(void *data);
 bool PlayerSelection(void)
@@ -243,7 +245,7 @@ bool PlayerSelection(void)
 	CASSERT(gPlayerDatas.size > 0, "no players for game");
 	PlayerSelectionData data;
 	memset(&data, 0, sizeof data);
-	data.IsOK = true;
+	data.waitResult = EVENT_WAIT_CONTINUE;
 	GetDataFilePath(data.prefixes, "data/prefixes.txt");
 	GetDataFilePath(data.suffixes, "data/suffixes.txt");
 	GetDataFilePath(data.suffixnames, "data/suffixnames.txt");
@@ -265,11 +267,15 @@ bool PlayerSelection(void)
 	}
 
 	GameLoopData gData = GameLoopDataNew(
-		&data, PlayerSelectionUpdate,
-		&data, PlayerSelectionDraw);
+		&data, NULL, PlayerSelectionOnExit,
+		NULL, PlayerSelectionUpdate, PlayerSelectionDraw);
 	GameLoop(&gData);
-
-	if (data.IsOK)
+	return data.waitResult == EVENT_WAIT_OK;
+}
+static void PlayerSelectionOnExit(void *data)
+{
+	PlayerSelectionData *pData = data;
+	if (pData->waitResult == EVENT_WAIT_OK)
 	{
 		for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
 		{
@@ -290,10 +296,9 @@ bool PlayerSelection(void)
 
 	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
 	{
-		MenuSystemTerminate(&data.menus[i].ms);
+		MenuSystemTerminate(&pData->menus[i].ms);
 	}
-	NameGenTerminate(&data.g);
-	return data.IsOK;
+	NameGenTerminate(&pData->g);
 }
 static GameLoopResult PlayerSelectionUpdate(void *data)
 {
@@ -305,7 +310,7 @@ static GameLoopResult PlayerSelectionUpdate(void *data)
 	GetPlayerCmds(&gEventHandlers, &cmds);
 	if (EventIsEscape(&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers)))
 	{
-		pData->IsOK = false;
+		pData->waitResult = EVENT_WAIT_CANCEL;
 		return UPDATE_RESULT_EXIT;
 	}
 
@@ -351,6 +356,7 @@ static GameLoopResult PlayerSelectionUpdate(void *data)
 	}
 	if (isDone && hasAtLeastOneInput)
 	{
+		pData->waitResult = EVENT_WAIT_OK;
 		return UPDATE_RESULT_EXIT;
 	}
 
@@ -586,15 +592,16 @@ static void RemoveUnavailableWeapons(PlayerData *data, const CArray *weapons);
 typedef struct
 {
 	WeaponMenu menus[MAX_LOCAL_PLAYERS];
-	bool IsOK;
+	EventWaitResult waitResult;
 } PlayerEquipData;
+static void PlayerEquipOnExit(void *data);
 static GameLoopResult PlayerEquipUpdate(void *data);
 static void PlayerEquipDraw(void *data);
 bool PlayerEquip(void)
 {
 	PlayerEquipData data;
 	memset(&data, 0, sizeof data);
-	data.IsOK = true;
+	data.waitResult = EVENT_WAIT_CONTINUE;
 	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
 		PlayerData *p = CArrayGet(&gPlayerDatas, i);
@@ -623,36 +630,10 @@ bool PlayerEquip(void)
 	}
 
 	GameLoopData gData = GameLoopDataNew(
-		&data, PlayerEquipUpdate, &data, PlayerEquipDraw);
+		&data, NULL, PlayerEquipOnExit,
+		NULL, PlayerEquipUpdate, PlayerEquipDraw);
 	GameLoop(&gData);
-
-	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (!p->IsLocal)
-		{
-			idx--;
-			continue;
-		}
-		NPlayerData pd = NMakePlayerData(p);
-		// Update player definitions
-		if (gCampaign.IsClient)
-		{
-			NetClientSendMsg(&gNetClient, GAME_EVENT_PLAYER_DATA, &pd);
-		}
-		else
-		{
-			NetServerSendMsg(
-				&gNetServer, NET_SERVER_BCAST, GAME_EVENT_PLAYER_DATA, &pd);
-		}
-	}
-
-	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
-	{
-		MenuSystemTerminate(&data.menus[i].ms);
-	}
-
-	return data.IsOK;
+	return data.waitResult == EVENT_WAIT_OK;
 }
 static bool HasWeapon(const CArray *weapons, const GunDescription *w);
 static void RemoveUnavailableWeapons(PlayerData *data, const CArray *weapons)
@@ -681,6 +662,36 @@ static bool HasWeapon(const CArray *weapons, const GunDescription *w)
 	}
 	return false;
 }
+static void PlayerEquipOnExit(void *data)
+{
+	PlayerEquipData *pData = data;
+
+	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
+	{
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!p->IsLocal)
+		{
+			idx--;
+			continue;
+		}
+		NPlayerData pd = NMakePlayerData(p);
+		// Update player definitions
+		if (gCampaign.IsClient)
+		{
+			NetClientSendMsg(&gNetClient, GAME_EVENT_PLAYER_DATA, &pd);
+		}
+		else
+		{
+			NetServerSendMsg(
+				&gNetServer, NET_SERVER_BCAST, GAME_EVENT_PLAYER_DATA, &pd);
+		}
+	}
+
+	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
+	{
+		MenuSystemTerminate(&pData->menus[i].ms);
+	}
+}
 static GameLoopResult PlayerEquipUpdate(void *data)
 {
 	PlayerEquipData *pData = data;
@@ -691,7 +702,7 @@ static GameLoopResult PlayerEquipUpdate(void *data)
 	GetPlayerCmds(&gEventHandlers, &cmds);
 	if (EventIsEscape(&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers)))
 	{
-		pData->IsOK = false;
+		pData->waitResult = EVENT_WAIT_CANCEL;
 		return UPDATE_RESULT_EXIT;
 	}
 
@@ -727,7 +738,7 @@ static GameLoopResult PlayerEquipUpdate(void *data)
 	}
 	if (isDone)
 	{
-		pData->IsOK = true;
+		pData->waitResult = EVENT_WAIT_OK;
 		return UPDATE_RESULT_EXIT;
 	}
 
