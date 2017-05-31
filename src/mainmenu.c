@@ -78,7 +78,8 @@ void MainMenu(
 			break;
 		}
 	}
-	MenuLoop(&ms);
+	GameLoopData g = MenuLoop(&ms);
+	GameLoop(&g);
 
 	MenuSystemTerminate(&ms);
 }

@@ -46,10 +46,10 @@ typedef struct
 	EventWaitResult waitResult;
 	const CampaignSetting *c;
 } ScreenCampaignIntroData;
-static void CampaignIntroOnEnter(void *data);
-static void CampaignIntroOnExit(void *data);
-static void CampaignIntroInput(void *data);
-static GameLoopResult CampaignIntroUpdate(void *data);
+static void CampaignIntroOnEnter(GameLoopData *data);
+static void CampaignIntroOnExit(GameLoopData *data);
+static void CampaignIntroInput(GameLoopData *data);
+static GameLoopResult CampaignIntroUpdate(GameLoopData *data);
 bool ScreenCampaignIntro(CampaignSetting *c)
 {
 	ScreenCampaignIntroData data;
@@ -60,10 +60,10 @@ bool ScreenCampaignIntro(CampaignSetting *c)
 	GameLoop(&gData);
 	return data.waitResult == EVENT_WAIT_OK;
 }
-static void CampaignIntroOnEnter(void *data)
+static void CampaignIntroOnEnter(GameLoopData *data)
 {
 	// Draw the campaign intro once
-	const ScreenCampaignIntroData *sData = data;
+	const ScreenCampaignIntroData *sData = data->Data;
 
 	BlitClearBuf(&gGraphicsDevice);
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
@@ -94,22 +94,22 @@ static void CampaignIntroOnEnter(void *data)
 
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 }
-static void CampaignIntroOnExit(void *data)
+static void CampaignIntroOnExit(GameLoopData *data)
 {
-	const ScreenCampaignIntroData *sData = data;
+	const ScreenCampaignIntroData *sData = data->Data;
 	if (sData->waitResult == EVENT_WAIT_OK)
 	{
 		SoundPlay(&gSoundDevice, StrSound("mg"));
 	}
 }
-static void CampaignIntroInput(void *data)
+static void CampaignIntroInput(GameLoopData *data)
 {
-	ScreenCampaignIntroData *sData = data;
+	ScreenCampaignIntroData *sData = data->Data;
 	sData->waitResult = EventWaitForAnyKeyOrButton();
 }
-static GameLoopResult CampaignIntroUpdate(void *data)
+static GameLoopResult CampaignIntroUpdate(GameLoopData *data)
 {
-	const ScreenCampaignIntroData *sData = data;
+	const ScreenCampaignIntroData *sData = data->Data;
 	return
 		sData->waitResult == EVENT_WAIT_CONTINUE ?
 		UPDATE_RESULT_OK : UPDATE_RESULT_EXIT;
@@ -132,10 +132,10 @@ typedef struct
 	const struct MissionOptions *MissionOptions;
 	EventWaitResult waitResult;
 } MissionBriefingData;
-static void MissionBriefingOnExit(void *data);
-static void MissionBriefingInput(void *data);
-static GameLoopResult MissionBriefingUpdate(void *data);
-static void MissionBriefingDraw(void *data);
+static void MissionBriefingOnExit(GameLoopData *data);
+static void MissionBriefingInput(GameLoopData *data);
+static GameLoopResult MissionBriefingUpdate(GameLoopData *data);
+static void MissionBriefingDraw(GameLoopData *data);
 bool ScreenMissionBriefing(const struct MissionOptions *m)
 {
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
@@ -188,9 +188,9 @@ bool ScreenMissionBriefing(const struct MissionOptions *m)
 	GameLoop(&gData);
 	return mData.waitResult == EVENT_WAIT_OK;
 }
-static void MissionBriefingOnExit(void *data)
+static void MissionBriefingOnExit(GameLoopData *data)
 {
-	const MissionBriefingData *mData = data;
+	const MissionBriefingData *mData = data->Data;
 	if (mData->waitResult == EVENT_WAIT_OK)
 	{
 		SoundPlay(&gSoundDevice, StrSound("mg"));
@@ -200,9 +200,9 @@ static void MissionBriefingOnExit(void *data)
 	CFREE(mData->Description);
 	CFREE(mData->TypewriterBuf);
 }
-static void MissionBriefingInput(void *data)
+static void MissionBriefingInput(GameLoopData *data)
 {
-	MissionBriefingData *mData = data;
+	MissionBriefingData *mData = data->Data;
 
 	// Check for player input; if any then skip to the end of the briefing
 	int cmds[MAX_LOCAL_PLAYERS];
@@ -229,9 +229,9 @@ static void MissionBriefingInput(void *data)
 		mData->waitResult = EVENT_WAIT_CANCEL;
 	}
 }
-static GameLoopResult MissionBriefingUpdate(void *data)
+static GameLoopResult MissionBriefingUpdate(GameLoopData *data)
 {
-	MissionBriefingData *mData = data;
+	MissionBriefingData *mData = data->Data;
 
 	// Check exit conditions from input
 	if (mData->waitResult != EVENT_WAIT_CONTINUE)
@@ -250,9 +250,9 @@ static GameLoopResult MissionBriefingUpdate(void *data)
 
 	return UPDATE_RESULT_OK;
 }
-static void MissionBriefingDraw(void *data)
+static void MissionBriefingDraw(GameLoopData *data)
 {
-	const MissionBriefingData *mData = data;
+	const MissionBriefingData *mData = data->Data;
 
 	BlitClearBuf(&gGraphicsDevice);
 
@@ -350,7 +350,8 @@ bool ScreenMissionSummary(
 	ms.allowAborts = true;
 	MenuAddExitType(&ms, MENU_TYPE_RETURN);
 	MenuSystemAddCustomDisplay(&ms, MissionSummaryDraw, m);
-	MenuLoop(&ms);
+	GameLoopData g = MenuLoop(&ms);
+	GameLoop(&g);
 	return ms.current->u.returnCode == 0;
 }
 static bool AreAnySurvived(void)

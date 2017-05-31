@@ -158,11 +158,11 @@ typedef struct
 	CArray ammoSpawners;	// of PowerupSpawner
 	GameLoopData loop;
 } RunGameData;
-static void RunGameOnEnter(void *data);
-static void RunGameOnExit(void *data);
-static void RunGameInput(void *data);
-static GameLoopResult RunGameUpdate(void *data);
-static void RunGameDraw(void *data);
+static void RunGameOnEnter(GameLoopData *data);
+static void RunGameOnExit(GameLoopData *data);
+static void RunGameInput(GameLoopData *data);
+static GameLoopResult RunGameUpdate(GameLoopData *data);
+static void RunGameDraw(GameLoopData *data);
 bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 {
 	RunGameData data;
@@ -179,9 +179,9 @@ bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 
 	return !m->IsQuit;
 }
-static void RunGameOnEnter(void *data)
+static void RunGameOnEnter(GameLoopData *data)
 {
-	RunGameData *rData = data;
+	RunGameData *rData = data->Data;
 
 	// Clear the background
 	DrawRectangle(
@@ -266,9 +266,9 @@ static void RunGameOnEnter(void *data)
 	GameEvent start = GameEventNew(GAME_EVENT_GAME_START);
 	GameEventsEnqueue(&gGameEvents, start);
 }
-static void RunGameOnExit(void *data)
+static void RunGameOnExit(GameLoopData *data)
 {
-	RunGameData *rData = data;
+	RunGameData *rData = data->Data;
 
 	LOG(LM_MAIN, LL_INFO, "Game finished");
 
@@ -288,9 +288,9 @@ static void RunGameOnExit(void *data)
 	BlitClearBuf(&gGraphicsDevice);
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.hud);
 }
-static void RunGameInput(void *data)
+static void RunGameInput(GameLoopData *data)
 {
-	RunGameData *rData = data;
+	RunGameData *rData = data->Data;
 
 	if (gEventHandlers.HasQuit)
 	{
@@ -419,9 +419,9 @@ static void RunGameInput(void *data)
 	CameraInput(&rData->Camera, rData->cmds[0], rData->lastCmds[0]);
 }
 static void CheckMissionCompletion(const struct MissionOptions *mo);
-static GameLoopResult RunGameUpdate(void *data)
+static GameLoopResult RunGameUpdate(GameLoopData *data)
 {
-	RunGameData *rData = data;
+	RunGameData *rData = data->Data;
 
 	// Detect exit
 	if (rData->m->isDone)
@@ -653,16 +653,16 @@ static void CheckMissionCompletion(const struct MissionOptions *mo)
 		}
 	}
 }
-static void RunGameDraw(void *data)
+static void RunGameDraw(GameLoopData *data)
 {
-	RunGameData *rData = data;
+	RunGameData *rData = data->Data;
 
-	// clear screen
+	// Draw game layer
 	BlitClearBuf(&gGraphicsDevice);
-	// Draw everything
 	CameraDraw(&rData->Camera);
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 
+	// Draw HUD layer
 	BlitClearBuf(&gGraphicsDevice);
 	CameraDrawMode(&rData->Camera);
 	HUDDraw(

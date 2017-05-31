@@ -128,9 +128,9 @@ typedef struct
 	int Mission;
 	int Selection;
 } EnterCodeScreenData;
-static void EnterCodeScreenOnExit(void *data);
-static GameLoopResult EnterCodeScreenUpdate(void *data);
-static void EnterCodeScreenDraw(void *data);
+static void EnterCodeScreenOnExit(GameLoopData *data);
+static GameLoopResult EnterCodeScreenUpdate(GameLoopData *data);
+static void EnterCodeScreenDraw(GameLoopData *data);
 static int EnterCodeScreen(const char *password)
 {
 	EnterCodeScreenData data;
@@ -153,9 +153,9 @@ static int EnterCodeScreen(const char *password)
 
 	return data.Mission;
 }
-static void EnterCodeScreenOnExit(void *data)
+static void EnterCodeScreenOnExit(GameLoopData *data)
 {
-	const EnterCodeScreenData *eData = data;
+	const EnterCodeScreenData *eData = data->Data;
 	if (eData->Mission > 0)
 	{
 		SoundPlay(&gSoundDevice, StrSound("mg"));
@@ -168,9 +168,9 @@ static void EnterCodeScreenOnExit(void *data)
 #define PASSWORD_ENTRY_COLS	10
 #define PASSWORD_LETTERS "abcdefghijklmnopqrstuvwxyz0123456789"
 static bool PasswordEntry(EnterCodeScreenData *data, const int cmd);
-static GameLoopResult EnterCodeScreenUpdate(void *data)
+static GameLoopResult EnterCodeScreenUpdate(GameLoopData *data)
 {
-	EnterCodeScreenData *eData = data;
+	EnterCodeScreenData *eData = data->Data;
 
 	// Check if anyone pressed escape
 	int cmds[MAX_LOCAL_PLAYERS];
@@ -285,9 +285,9 @@ static bool PasswordEntry(EnterCodeScreenData *data, const int cmd)
 
 	return true;
 }
-static void EnterCodeScreenDraw(void *data)
+static void EnterCodeScreenDraw(GameLoopData *data)
 {
-	const EnterCodeScreenData *eData = data;
+	const EnterCodeScreenData *eData = data->Data;
 
 	BlitClearBuf(&gGraphicsDevice);
 
@@ -355,10 +355,10 @@ int EnterPassword(GraphicsDevice *graphics, const MissionSave *save)
 	MenuCreateStart(&startMenu, mission, save);
 	for (;;)
 	{
-		int returnCode;
-		MenuLoop(&startMenu);
+		GameLoopData g = MenuLoop(&startMenu);
+		GameLoop(&g);
 		assert(startMenu.current->type == MENU_TYPE_RETURN);
-		returnCode = startMenu.current->u.returnCode;
+		const int returnCode = startMenu.current->u.returnCode;
 		switch (returnCode)
 		{
 		case RETURN_CODE_CONTINUE:

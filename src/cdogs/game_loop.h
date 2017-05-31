@@ -40,14 +40,14 @@ typedef enum
 } GameLoopResult;
 
 // Generic game loop manager, with callbacks for update/draw
-typedef struct
+typedef struct sGameLoopData
 {
 	void *Data;
-	void (*OnEnter)(void *);
-	void (*OnExit)(void *);
-	void (*InputFunc)(void *);
-	GameLoopResult (*UpdateFunc)(void *);
-	void (*DrawFunc)(void *);
+	void (*OnEnter)(struct sGameLoopData *);
+	void (*OnExit)(struct sGameLoopData *);
+	void (*InputFunc)(struct sGameLoopData *);
+	GameLoopResult (*UpdateFunc)(struct sGameLoopData *);
+	void (*DrawFunc)(struct sGameLoopData *);
 	int FPS;
 	bool InputEverySecondFrame;
 	int Frames;		// total frames looped
@@ -56,7 +56,8 @@ typedef struct
 
 GameLoopData GameLoopDataNew(
 	void *data,
-	void (*onEnter)(void *), void (*onExit)(void *),
-	void (*inputFunc)(void *),
-	GameLoopResult (*updateFunc)(void *), void (*drawFunc)(void *));
+	void (*onEnter)(GameLoopData *), void (*onExit)(GameLoopData *),
+	void (*inputFunc)(GameLoopData *),
+	GameLoopResult (*updateFunc)(GameLoopData *),
+	void (*drawFunc)(GameLoopData *));
 void GameLoop(GameLoopData *data);

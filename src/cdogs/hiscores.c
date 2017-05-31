@@ -190,8 +190,8 @@ typedef struct
 	int highlights[MAX_LOCAL_PLAYERS];
 	int scoreIdx;
 } HighScoresData;
-static void HighScoreOnEnter(void *data);
-static GameLoopResult HighScoreUpdate(void *data);
+static void HighScoreOnEnter(GameLoopData *data);
+static GameLoopResult HighScoreUpdate(GameLoopData *data);
 void DisplayAllTimeHighScores(GraphicsDevice *graphics)
 {
 	HighScoresData data;
@@ -242,16 +242,16 @@ void DisplayTodaysHighScores(GraphicsDevice *graphics)
 		GameLoop(&gData);
 	}
 }
-static void HighScoreOnEnter(void *data)
+static void HighScoreOnEnter(GameLoopData *data)
 {
-	HighScoresData *hData = data;
+	HighScoresData *hData = data->Data;
 
 	BlitClearBuf(hData->g);
 	hData->scoreIdx = DisplayPage(
 		hData->title, hData->scoreIdx, hData->scores, hData->highlights);
 	BlitUpdateFromBuf(hData->g, hData->g->screen);
 }
-static GameLoopResult HighScoreUpdate(void *data)
+static GameLoopResult HighScoreUpdate(GameLoopData *data)
 {
 	UNUSED(data);
 	const EventWaitResult result = EventWaitForAnyKeyOrButton();

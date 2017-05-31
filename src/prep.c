@@ -102,7 +102,8 @@ static bool ScreenWait(
 	swData->data = data;
 	MenuSetPostUpdateFunc(ms.root, checkFunc, swData, true);
 
-	MenuLoop(&ms);
+	GameLoopData g = MenuLoop(&ms);
+	GameLoop(&g);
 	const bool ok = !ms.hasAbort;
 	MenuSystemTerminate(&ms);
 	return ok;
@@ -162,7 +163,8 @@ bool NumPlayersSelection(GraphicsDevice *graphics, EventHandlers *handlers)
 	// Select 1 player default
 	ms.current->u.normal.index = 1;
 
-	MenuLoop(&ms);
+	GameLoopData g = MenuLoop(&ms);
+	GameLoop(&g);
 	const bool ok = !ms.hasAbort;
 	if (ok)
 	{
@@ -237,9 +239,9 @@ typedef struct
 	char suffixnames[CDOGS_PATH_MAX];
 	EventWaitResult waitResult;
 } PlayerSelectionData;
-static void PlayerSelectionOnExit(void *data);
-static GameLoopResult PlayerSelectionUpdate(void *data);
-static void PlayerSelectionDraw(void *data);
+static void PlayerSelectionOnExit(GameLoopData *data);
+static GameLoopResult PlayerSelectionUpdate(GameLoopData *data);
+static void PlayerSelectionDraw(GameLoopData *data);
 bool PlayerSelection(void)
 {
 	CASSERT(gPlayerDatas.size > 0, "no players for game");
@@ -272,9 +274,9 @@ bool PlayerSelection(void)
 	GameLoop(&gData);
 	return data.waitResult == EVENT_WAIT_OK;
 }
-static void PlayerSelectionOnExit(void *data)
+static void PlayerSelectionOnExit(GameLoopData *data)
 {
-	PlayerSelectionData *pData = data;
+	PlayerSelectionData *pData = data->Data;
 	if (pData->waitResult == EVENT_WAIT_OK)
 	{
 		for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
@@ -300,9 +302,9 @@ static void PlayerSelectionOnExit(void *data)
 	}
 	NameGenTerminate(&pData->g);
 }
-static GameLoopResult PlayerSelectionUpdate(void *data)
+static GameLoopResult PlayerSelectionUpdate(GameLoopData *data)
 {
-	PlayerSelectionData *pData = data;
+	PlayerSelectionData *pData = data->Data;
 
 	// Check if anyone pressed escape
 	int cmds[MAX_LOCAL_PLAYERS];
@@ -364,9 +366,9 @@ static GameLoopResult PlayerSelectionUpdate(void *data)
 
 	return UPDATE_RESULT_DRAW;
 }
-static void PlayerSelectionDraw(void *data)
+static void PlayerSelectionDraw(GameLoopData *data)
 {
-	const PlayerSelectionData *pData = data;
+	const PlayerSelectionData *pData = data->Data;
 
 	BlitClearBuf(&gGraphicsDevice);
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
@@ -508,7 +510,8 @@ bool GameOptions(const GameMode gm)
 	// Select "Done"
 	ms.root->u.normal.index = (int)ms.root->u.normal.subMenus.size - 1;
 
-	MenuLoop(&ms);
+	GameLoopData g = MenuLoop(&ms);
+	GameLoop(&g);
 
 	const bool ok = !ms.hasAbort;
 	if (ok)
@@ -594,9 +597,9 @@ typedef struct
 	WeaponMenu menus[MAX_LOCAL_PLAYERS];
 	EventWaitResult waitResult;
 } PlayerEquipData;
-static void PlayerEquipOnExit(void *data);
-static GameLoopResult PlayerEquipUpdate(void *data);
-static void PlayerEquipDraw(void *data);
+static void PlayerEquipOnExit(GameLoopData *data);
+static GameLoopResult PlayerEquipUpdate(GameLoopData *data);
+static void PlayerEquipDraw(GameLoopData *data);
 bool PlayerEquip(void)
 {
 	PlayerEquipData data;
@@ -662,9 +665,9 @@ static bool HasWeapon(const CArray *weapons, const GunDescription *w)
 	}
 	return false;
 }
-static void PlayerEquipOnExit(void *data)
+static void PlayerEquipOnExit(GameLoopData *data)
 {
-	PlayerEquipData *pData = data;
+	PlayerEquipData *pData = data->Data;
 
 	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
@@ -692,9 +695,9 @@ static void PlayerEquipOnExit(void *data)
 		MenuSystemTerminate(&pData->menus[i].ms);
 	}
 }
-static GameLoopResult PlayerEquipUpdate(void *data)
+static GameLoopResult PlayerEquipUpdate(GameLoopData *data)
 {
-	PlayerEquipData *pData = data;
+	PlayerEquipData *pData = data->Data;
 
 	// Check if anyone pressed escape
 	int cmds[MAX_LOCAL_PLAYERS];
@@ -744,9 +747,9 @@ static GameLoopResult PlayerEquipUpdate(void *data)
 
 	return UPDATE_RESULT_DRAW;
 }
-static void PlayerEquipDraw(void *data)
+static void PlayerEquipDraw(GameLoopData *data)
 {
-	const PlayerEquipData *pData = data;
+	const PlayerEquipData *pData = data->Data;
 	BlitClearBuf(&gGraphicsDevice);
 	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
 	{

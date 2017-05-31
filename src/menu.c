@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, 2016, Cong Xu
+    Copyright (c) 2013-2014, 2016-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -53,7 +53,6 @@
 #include <cdogs/config_io.h>
 #include <cdogs/files.h>
 #include <cdogs/font.h>
-#include <cdogs/game_loop.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/grafx_bg.h>
 #include <cdogs/log.h>
@@ -134,18 +133,16 @@ int MenuIsExit(MenuSystem *ms)
 
 void MenuProcessChangeKey(menu_t *menu);
 
-static GameLoopResult MenuUpdate(void *data);
-static void MenuDraw(void *data);
-void MenuLoop(MenuSystem *menu)
+static GameLoopResult MenuUpdate(GameLoopData *data);
+static void MenuDraw(GameLoopData *data);
+GameLoopData MenuLoop(MenuSystem *menu)
 {
 	CASSERT(menu->exitTypes.size > 0, "menu has no exit types");
-	GameLoopData gData = GameLoopDataNew(
-		menu, NULL, NULL, NULL, MenuUpdate, MenuDraw);
-	GameLoop(&gData);
+	return GameLoopDataNew(menu, NULL, NULL, NULL, MenuUpdate, MenuDraw);
 }
-static GameLoopResult MenuUpdate(void *data)
+static GameLoopResult MenuUpdate(GameLoopData *data)
 {
-	MenuSystem *ms = data;
+	MenuSystem *ms = data->Data;
 	if (ms->current->type == MENU_TYPE_KEYS &&
 		ms->current->u.normal.changeKeyMenu != NULL)
 	{
@@ -182,9 +179,9 @@ static GameLoopResult MenuUpdate(void *data)
 	}
 	return UPDATE_RESULT_DRAW;
 }
-static void MenuDraw(void *data)
+static void MenuDraw(GameLoopData *data)
 {
-	const MenuSystem *ms = data;
+	const MenuSystem *ms = data->Data;
 	BlitClearBuf(ms->graphics);
 	ShowControls();
 	MenuDisplay(ms);

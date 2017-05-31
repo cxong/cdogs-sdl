@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -51,6 +51,7 @@
 #include <cdogs/c_array.h>
 #include <cdogs/campaigns.h>
 #include <cdogs/events.h>
+#include <cdogs/game_loop.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/grafx.h>
 
@@ -248,7 +249,7 @@ void MenuAddExitType(MenuSystem *menu, menu_type_e exitType);
 void MenuSystemAddCustomDisplay(
 	MenuSystem *ms, MenuDisplayFunc func, void *data);
 int MenuIsExit(MenuSystem *ms);
-void MenuLoop(MenuSystem *menu);
+GameLoopData MenuLoop(MenuSystem *menu);
 void MenuDisplay(const MenuSystem *ms);
 void MenuProcessCmd(MenuSystem *ms, int cmd);
 void MenuReset(MenuSystem *menu);

@@ -133,7 +133,8 @@ static void PlayerListLoop(PlayerList *pl)
 	}
 	ms.allowAborts = true;
 	MenuAddExitType(&ms, MENU_TYPE_RETURN);
-	MenuLoop(&ms);
+	GameLoopData g = MenuLoop(&ms);
+	GameLoop(&g);
 	// Free ourselves at the end
 	CArrayTerminate(&pl->playerUIDs);
 }

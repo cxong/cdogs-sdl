@@ -39,9 +39,10 @@
 
 GameLoopData GameLoopDataNew(
 	void *data,
-	void (*onEnter)(void *), void (*onExit)(void *),
-	void (*inputFunc)(void *),
-	GameLoopResult (*updateFunc)(void *), void (*drawFunc)(void *))
+	void (*onEnter)(GameLoopData *), void (*onExit)(GameLoopData *),
+	void (*inputFunc)(GameLoopData *),
+	GameLoopResult (*updateFunc)(GameLoopData *),
+	void (*drawFunc)(GameLoopData *))
 {
 	GameLoopData g;
 	memset(&g, 0, sizeof g);
@@ -59,7 +60,7 @@ void GameLoop(GameLoopData *data)
 {
 	if (data->OnEnter)
 	{
-		data->OnEnter(data->Data);
+		data->OnEnter(data);
 	}
 	// TODO: refactor into OnEnter
 	EventReset(
@@ -88,7 +89,7 @@ void GameLoop(GameLoopData *data)
 			EventPoll(&gEventHandlers, ticksNow);
 			if (data->InputFunc)
 			{
-				data->InputFunc(data->Data);
+				data->InputFunc(data);
 			}
 		}
 
@@ -96,7 +97,7 @@ void GameLoop(GameLoopData *data)
 		NetServerPoll(&gNetServer);
 
 		// Update
-		result = data->UpdateFunc(data->Data);
+		result = data->UpdateFunc(data);
 		NetServerFlush(&gNetServer);
 		NetClientFlush(&gNetClient);
 		bool draw = !data->HasDrawnFirst;
@@ -138,14 +139,14 @@ void GameLoop(GameLoopData *data)
 		{
 			if (data->DrawFunc)
 			{
-				data->DrawFunc(data->Data);
+				data->DrawFunc(data);
+				BlitFlip(&gGraphicsDevice);
 			}
-			BlitFlip(&gGraphicsDevice);
 			data->HasDrawnFirst = true;
 		}
 	}
 	if (data->OnExit)
 	{
-		data->OnExit(data->Data);
+		data->OnExit(data);
 	}
 }
