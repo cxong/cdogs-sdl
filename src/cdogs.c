@@ -99,24 +99,20 @@
 
 void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaigns)
 {
-	GameMode lastGameMode = GAME_MODE_QUICK_PLAY;
-	bool wasClient = false;
+	GameLoopData g = MainMenu(
+		&gGraphicsDevice, creditsDisplayer, campaigns);
 	for (;;)
 	{
 		GrafxMakeRandomBackground(
 			&gGraphicsDevice, &gCampaign, &gMission, &gMap);
 		if (!gCampaign.IsLoaded)
 		{
-			MainMenu(
-				&gGraphicsDevice, creditsDisplayer, campaigns,
-				lastGameMode, wasClient);
+			GameLoop(&g);
 		}
 		if (!gCampaign.IsLoaded)
 		{
 			break;
 		}
-		lastGameMode = gCampaign.Entry.Mode;
-		wasClient = gCampaign.IsClient;
 		ScreenStart();
 		CampaignSettingTerminate(&gCampaign.Setting);
 	}

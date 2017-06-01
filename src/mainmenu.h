@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -26,13 +26,13 @@
 #pragma once
 
 #include <cdogs/campaigns.h>
+#include <cdogs/game_loop.h>
 #include <cdogs/grafx.h>
 
 #include "credits.h"
 
 // Run main menu loop
-void MainMenu(
+GameLoopData MainMenu(
 	GraphicsDevice *graphics,
 	credits_displayer_t *creditsDisplayer,
-	custom_campaigns_t *campaigns,
-	const GameMode lastGameMode, const bool wasClient);
+	custom_campaigns_t *campaigns);

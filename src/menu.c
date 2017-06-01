@@ -133,16 +133,23 @@ int MenuIsExit(MenuSystem *ms)
 
 void MenuProcessChangeKey(menu_t *menu);
 
-static GameLoopResult MenuUpdate(GameLoopData *data);
-static void MenuDraw(GameLoopData *data);
+static GameLoopResult DefaultMenuUpdate(GameLoopData *data);
+static void DefaultMenuDraw(GameLoopData *data);
 GameLoopData MenuLoop(MenuSystem *menu)
 {
-	CASSERT(menu->exitTypes.size > 0, "menu has no exit types");
-	return GameLoopDataNew(menu, NULL, NULL, NULL, MenuUpdate, MenuDraw);
+	return GameLoopDataNew(
+		menu, NULL, NULL, NULL, DefaultMenuUpdate, DefaultMenuDraw);
 }
-static GameLoopResult MenuUpdate(GameLoopData *data)
+static GameLoopResult DefaultMenuUpdate(GameLoopData *data)
 {
-	MenuSystem *ms = data->Data;
+	return MenuUpdate(data->Data);
+}
+static void DefaultMenuDraw(GameLoopData *data)
+{
+	MenuDraw(data->Data);
+}
+GameLoopResult MenuUpdate(MenuSystem *ms)
+{
 	if (ms->current->type == MENU_TYPE_KEYS &&
 		ms->current->u.normal.changeKeyMenu != NULL)
 	{
@@ -179,9 +186,8 @@ static GameLoopResult MenuUpdate(GameLoopData *data)
 	}
 	return UPDATE_RESULT_DRAW;
 }
-static void MenuDraw(GameLoopData *data)
+void MenuDraw(const MenuSystem *ms)
 {
-	const MenuSystem *ms = data->Data;
 	BlitClearBuf(ms->graphics);
 	ShowControls();
 	MenuDisplay(ms);

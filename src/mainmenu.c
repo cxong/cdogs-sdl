@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -38,50 +38,73 @@
 #include "prep.h"
 
 
-void MenuCreateAll(
+typedef struct
+{
+	MenuSystem ms;
+	GraphicsDevice *graphics;
+	credits_displayer_t *creditsDisplayer;
+	custom_campaigns_t *campaigns;
+	GameMode lastGameMode;
+	bool wasClient;
+} MainMenuData;
+static void MenuCreateAll(
 	MenuSystem *ms,
 	custom_campaigns_t *campaigns,
 	EventHandlers *handlers,
 	GraphicsDevice *graphics);
-
-static menu_t *FindSubmenuByName(menu_t *menu, const char *name);
-void MainMenu(
+static void MainMenuOnEnter(GameLoopData *data);
+static void MainMenuOnExit(GameLoopData *data);
+static GameLoopResult MainMenuUpdate(GameLoopData *data);
+static void MainMenuDraw(GameLoopData *data);
+GameLoopData MainMenu(
 	GraphicsDevice *graphics,
 	credits_displayer_t *creditsDisplayer,
-	custom_campaigns_t *campaigns,
-	const GameMode lastGameMode, const bool wasClient)
+	custom_campaigns_t *campaigns)
 {
-	MenuSystem ms;
-	MenuCreateAll(&ms, campaigns, &gEventHandlers, graphics);
-	MenuSetCreditsDisplayer(&ms, creditsDisplayer);
+	MainMenuData *data;
+	CMALLOC(data, sizeof *data);
+	data->graphics = graphics;
+	data->creditsDisplayer = creditsDisplayer;
+	data->campaigns = campaigns;
+	data->lastGameMode = GAME_MODE_QUICK_PLAY;
+	data->wasClient = false;
+	return GameLoopDataNew(
+		data, MainMenuOnEnter, MainMenuOnExit,
+		NULL, MainMenuUpdate, MainMenuDraw);
+}
+static menu_t *FindSubmenuByName(menu_t *menu, const char *name);
+static void MainMenuOnEnter(GameLoopData *data)
+{
+	MainMenuData *mData = data->Data;
+
+	MenuCreateAll(
+		&mData->ms, mData->campaigns, &gEventHandlers, mData->graphics);
+	MenuSetCreditsDisplayer(&mData->ms, mData->creditsDisplayer);
+
 	// Auto-enter the submenu corresponding to the last game mode
-	menu_t *startMenu = FindSubmenuByName(ms.root, "Start");
-	if (wasClient)
+	menu_t *startMenu = FindSubmenuByName(mData->ms.root, "Start");
+	if (mData->wasClient)
 	{
-		ms.current = startMenu;
+		mData->ms.current = startMenu;
 	}
 	else
 	{
-		switch (lastGameMode)
+		switch (mData->lastGameMode)
 		{
 		case GAME_MODE_NORMAL:
-			ms.current = FindSubmenuByName(startMenu, "Campaign");
+			mData->ms.current = FindSubmenuByName(startMenu, "Campaign");
 			break;
 		case GAME_MODE_DOGFIGHT:
-			ms.current = FindSubmenuByName(startMenu, "Dogfight");
+			mData->ms.current = FindSubmenuByName(startMenu, "Dogfight");
 			break;
 		case GAME_MODE_DEATHMATCH:
-			ms.current = FindSubmenuByName(startMenu, "Deathmatch");
+			mData->ms.current = FindSubmenuByName(startMenu, "Deathmatch");
 			break;
 		default:
 			// Do nothing
 			break;
 		}
 	}
-	GameLoopData g = MenuLoop(&ms);
-	GameLoop(&g);
-
-	MenuSystemTerminate(&ms);
 }
 static menu_t *FindSubmenuByName(menu_t *menu, const char *name)
 {
@@ -91,13 +114,30 @@ static menu_t *FindSubmenuByName(menu_t *menu, const char *name)
 	CA_FOREACH_END()
 	return menu;
 }
+static void MainMenuOnExit(GameLoopData *data)
+{
+	MainMenuData *mData = data->Data;
+	MenuSystemTerminate(&mData->ms);
+	mData->lastGameMode = gCampaign.Entry.Mode;
+	mData->wasClient = gCampaign.IsClient;
+}
+static GameLoopResult MainMenuUpdate(GameLoopData *data)
+{
+	MainMenuData *mData = data->Data;
+	return MenuUpdate(&mData->ms);
+}
+static void MainMenuDraw(GameLoopData *data)
+{
+	MainMenuData *mData = data->Data;
+	MenuDraw(&mData->ms);
+}
 
 static menu_t *MenuCreateStart(
 	const char *name, MenuSystem *ms, custom_campaigns_t *campaigns);
 static menu_t *MenuCreateOptions(const char *name, MenuSystem *ms);
 menu_t *MenuCreateQuit(const char *name);
 
-void MenuCreateAll(
+static void MenuCreateAll(
 	MenuSystem *ms,
 	custom_campaigns_t *campaigns,
 	EventHandlers *handlers,

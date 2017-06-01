@@ -250,6 +250,8 @@ void MenuSystemAddCustomDisplay(
 	MenuSystem *ms, MenuDisplayFunc func, void *data);
 int MenuIsExit(MenuSystem *ms);
 GameLoopData MenuLoop(MenuSystem *menu);
+GameLoopResult MenuUpdate(MenuSystem *ms);
+void MenuDraw(const MenuSystem *ms);
 void MenuDisplay(const MenuSystem *ms);
 void MenuProcessCmd(MenuSystem *ms, int cmd);
 void MenuReset(MenuSystem *menu);
