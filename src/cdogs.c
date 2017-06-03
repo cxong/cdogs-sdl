@@ -97,10 +97,9 @@
 #include "screens.h"
 
 
-void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaigns)
+static void MainLoop(void)
 {
-	GameLoopData g = MainMenu(
-		&gGraphicsDevice, creditsDisplayer, campaigns);
+	GameLoopData g = MainMenu(&gGraphicsDevice);
 	for (;;)
 	{
 		GrafxMakeRandomBackground(
@@ -116,7 +115,7 @@ void MainLoop(credits_displayer_t *creditsDisplayer, custom_campaigns_t *campaig
 		ScreenStart();
 		CampaignSettingTerminate(&gCampaign.Setting);
 	}
-	debug(D_NORMAL, ">> Leaving Main Game Loop\n");
+	GameLoopTerminate(&g);
 
 	// Close net connection
 	NetServerTerminate(&gNetServer);
@@ -127,10 +126,6 @@ int main(int argc, char *argv[])
 #if defined(_MSC_VER) && !defined(NDEBUG)
 	FreeConsole();
 #endif
-	credits_displayer_t creditsDisplayer;
-	memset(&creditsDisplayer, 0, sizeof creditsDisplayer);
-	custom_campaigns_t campaigns;
-	memset(&campaigns, 0, sizeof campaigns);
 	int err = 0;
 	const char *loadCampaign = NULL;
 	ENetAddress connectAddr;
@@ -157,7 +152,6 @@ int main(int argc, char *argv[])
 	ConfigGet(&gConfig, "Graphics.ShowHUD")->u.Bool.Value = true;
 	ConfigGet(&gConfig, "Graphics.ShakeMultiplier")->u.Int.Value = 1;
 
-	LoadCredits(&creditsDisplayer, colorPurple, colorDarker);
 	AutosaveInit(&gAutosave);
 	AutosaveLoad(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 
@@ -250,7 +244,6 @@ int main(int argc, char *argv[])
 		&gMapObjects, "data/map_objects.json", &gAmmo, &gGunDescriptions);
 	CollisionSystemInit(&gCollisionSystem);
 	CampaignInit(&gCampaign);
-	LoadAllCampaigns(&campaigns);
 	PlayerDataInit(&gPlayerDatas);
 
 	debug(D_NORMAL, ">> Entering main loop\n");
@@ -280,7 +273,7 @@ int main(int argc, char *argv[])
 		}
 	}
 	LOG(LM_MAIN, LL_INFO, "Starting game");
-	MainLoop(&creditsDisplayer, &campaigns);
+	MainLoop();
 
 bail:
 	debug(D_NORMAL, ">> Shutting down...\n");
@@ -310,8 +303,6 @@ bail:
 	FreeSongs(&gMenuSongs);
 	FreeSongs(&gGameSongs);
 	SaveHighScores();
-	UnloadCredits(&creditsDisplayer);
-	UnloadAllCampaigns(&campaigns);
 	SoundTerminate(&gSoundDevice, true);
 	ConfigDestroy(&gConfig);
 	LogTerminate();

@@ -138,7 +138,7 @@ static void DefaultMenuDraw(GameLoopData *data);
 GameLoopData MenuLoop(MenuSystem *menu)
 {
 	return GameLoopDataNew(
-		menu, NULL, NULL, NULL, DefaultMenuUpdate, DefaultMenuDraw);
+		menu, NULL, NULL, NULL, NULL, DefaultMenuUpdate, DefaultMenuDraw);
 }
 static GameLoopResult DefaultMenuUpdate(GameLoopData *data)
 {

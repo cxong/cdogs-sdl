@@ -269,7 +269,7 @@ bool PlayerSelection(void)
 	}
 
 	GameLoopData gData = GameLoopDataNew(
-		&data, NULL, PlayerSelectionOnExit,
+		&data, NULL, NULL, PlayerSelectionOnExit,
 		NULL, PlayerSelectionUpdate, PlayerSelectionDraw);
 	GameLoop(&gData);
 	return data.waitResult == EVENT_WAIT_OK;
@@ -633,7 +633,7 @@ bool PlayerEquip(void)
 	}
 
 	GameLoopData gData = GameLoopDataNew(
-		&data, NULL, PlayerEquipOnExit,
+		&data, NULL, NULL, PlayerEquipOnExit,
 		NULL, PlayerEquipUpdate, PlayerEquipDraw);
 	GameLoop(&gData);
 	return data.waitResult == EVENT_WAIT_OK;

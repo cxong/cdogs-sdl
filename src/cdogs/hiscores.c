@@ -213,7 +213,7 @@ void DisplayAllTimeHighScores(GraphicsDevice *graphics)
 	while (data.scoreIdx < MAX_ENTRY && data.scores[data.scoreIdx].score > 0)
 	{
 		GameLoopData gData = GameLoopDataNew(
-			&data, HighScoreOnEnter, NULL, NULL, HighScoreUpdate, NULL);
+			&data, NULL, HighScoreOnEnter, NULL, NULL, HighScoreUpdate, NULL);
 		GameLoop(&gData);
 	}
 }
@@ -238,7 +238,7 @@ void DisplayTodaysHighScores(GraphicsDevice *graphics)
 	while (data.scoreIdx < MAX_ENTRY && data.scores[data.scoreIdx].score > 0)
 	{
 		GameLoopData gData = GameLoopDataNew(
-			&data, HighScoreOnEnter, NULL, NULL, HighScoreUpdate, NULL);
+			&data, NULL, HighScoreOnEnter, NULL, NULL, HighScoreUpdate, NULL);
 		GameLoop(&gData);
 	}
 }

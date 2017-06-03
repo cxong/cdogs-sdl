@@ -139,17 +139,9 @@ static int EnterCodeScreen(const char *password)
 	strcpy(data.Buffer, password);
 
 	GameLoopData gData = GameLoopDataNew(
-		&data, NULL, EnterCodeScreenOnExit,
+		&data, NULL, NULL, EnterCodeScreenOnExit,
 		NULL, EnterCodeScreenUpdate, EnterCodeScreenDraw);
 	GameLoop(&gData);
-	if (data.Mission > 0)
-	{
-		SoundPlay(&gSoundDevice, StrSound("mg"));
-	}
-	else
-	{
-		SoundPlay(&gSoundDevice, StrSound("switch"));
-	}
 
 	return data.Mission;
 }

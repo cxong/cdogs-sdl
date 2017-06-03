@@ -32,7 +32,4 @@
 #include "credits.h"
 
 // Run main menu loop
-GameLoopData MainMenu(
-	GraphicsDevice *graphics,
-	credits_displayer_t *creditsDisplayer,
-	custom_campaigns_t *campaigns);
+GameLoopData MainMenu(GraphicsDevice *graphics);

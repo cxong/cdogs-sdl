@@ -55,7 +55,7 @@ bool ScreenCampaignIntro(CampaignSetting *c)
 	ScreenCampaignIntroData data;
 	data.c = c;
 	GameLoopData gData = GameLoopDataNew(
-		&data, CampaignIntroOnEnter, CampaignIntroOnExit,
+		&data, NULL, CampaignIntroOnEnter, CampaignIntroOnExit,
 		CampaignIntroInput, CampaignIntroUpdate, NULL);
 	GameLoop(&gData);
 	return data.waitResult == EVENT_WAIT_OK;
@@ -183,7 +183,7 @@ bool ScreenMissionBriefing(const struct MissionOptions *m)
 	mData.MissionOptions = m;
 
 	GameLoopData gData = GameLoopDataNew(
-		&mData, NULL, MissionBriefingOnExit,
+		&mData, NULL, NULL, MissionBriefingOnExit,
 		MissionBriefingInput, MissionBriefingUpdate, MissionBriefingDraw);
 	GameLoop(&gData);
 	return mData.waitResult == EVENT_WAIT_OK;

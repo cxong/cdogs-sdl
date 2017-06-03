@@ -39,6 +39,7 @@
 
 GameLoopData GameLoopDataNew(
 	void *data,
+	void (*onTerminate)(GameLoopData *),
 	void (*onEnter)(GameLoopData *), void (*onExit)(GameLoopData *),
 	void (*inputFunc)(GameLoopData *),
 	GameLoopResult (*updateFunc)(GameLoopData *),
@@ -47,6 +48,7 @@ GameLoopData GameLoopDataNew(
 	GameLoopData g;
 	memset(&g, 0, sizeof g);
 	g.Data = data;
+	g.OnTerminate = onTerminate;
 	g.OnEnter = onEnter;
 	g.OnExit = onExit;
 	g.InputFunc = inputFunc;
@@ -148,5 +150,13 @@ void GameLoop(GameLoopData *data)
 	if (data->OnExit)
 	{
 		data->OnExit(data);
+	}
+}
+
+void GameLoopTerminate(GameLoopData *data)
+{
+	if (data->OnTerminate)
+	{
+		data->OnTerminate(data);
 	}
 }

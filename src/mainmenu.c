@@ -42,8 +42,8 @@ typedef struct
 {
 	MenuSystem ms;
 	GraphicsDevice *graphics;
-	credits_displayer_t *creditsDisplayer;
-	custom_campaigns_t *campaigns;
+	credits_displayer_t creditsDisplayer;
+	custom_campaigns_t campaigns;
 	GameMode lastGameMode;
 	bool wasClient;
 } MainMenuData;
@@ -52,25 +52,32 @@ static void MenuCreateAll(
 	custom_campaigns_t *campaigns,
 	EventHandlers *handlers,
 	GraphicsDevice *graphics);
+static void MainMenuTerminate(GameLoopData *data);
 static void MainMenuOnEnter(GameLoopData *data);
 static void MainMenuOnExit(GameLoopData *data);
 static GameLoopResult MainMenuUpdate(GameLoopData *data);
 static void MainMenuDraw(GameLoopData *data);
-GameLoopData MainMenu(
-	GraphicsDevice *graphics,
-	credits_displayer_t *creditsDisplayer,
-	custom_campaigns_t *campaigns)
+GameLoopData MainMenu(GraphicsDevice *graphics)
 {
 	MainMenuData *data;
 	CMALLOC(data, sizeof *data);
 	data->graphics = graphics;
-	data->creditsDisplayer = creditsDisplayer;
-	data->campaigns = campaigns;
+	memset(&data->creditsDisplayer, 0, sizeof data->creditsDisplayer);
+	LoadCredits(&data->creditsDisplayer, colorPurple, colorDarker);
+	memset(&data->campaigns, 0, sizeof data->campaigns);
+	LoadAllCampaigns(&data->campaigns);
 	data->lastGameMode = GAME_MODE_QUICK_PLAY;
 	data->wasClient = false;
 	return GameLoopDataNew(
-		data, MainMenuOnEnter, MainMenuOnExit,
+		data, MainMenuTerminate, MainMenuOnEnter, MainMenuOnExit,
 		NULL, MainMenuUpdate, MainMenuDraw);
+}
+static void MainMenuTerminate(GameLoopData *data)
+{
+	MainMenuData *mData = data->Data;
+
+	UnloadCredits(&mData->creditsDisplayer);
+	UnloadAllCampaigns(&mData->campaigns);
 }
 static menu_t *FindSubmenuByName(menu_t *menu, const char *name);
 static void MainMenuOnEnter(GameLoopData *data)
@@ -78,8 +85,8 @@ static void MainMenuOnEnter(GameLoopData *data)
 	MainMenuData *mData = data->Data;
 
 	MenuCreateAll(
-		&mData->ms, mData->campaigns, &gEventHandlers, mData->graphics);
-	MenuSetCreditsDisplayer(&mData->ms, mData->creditsDisplayer);
+		&mData->ms, &mData->campaigns, &gEventHandlers, mData->graphics);
+	MenuSetCreditsDisplayer(&mData->ms, &mData->creditsDisplayer);
 
 	// Auto-enter the submenu corresponding to the last game mode
 	menu_t *startMenu = FindSubmenuByName(mData->ms.root, "Start");

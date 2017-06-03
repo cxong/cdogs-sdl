@@ -43,6 +43,7 @@ typedef enum
 typedef struct sGameLoopData
 {
 	void *Data;
+	void (*OnTerminate)(struct sGameLoopData *);
 	void (*OnEnter)(struct sGameLoopData *);
 	void (*OnExit)(struct sGameLoopData *);
 	void (*InputFunc)(struct sGameLoopData *);
@@ -56,8 +57,10 @@ typedef struct sGameLoopData
 
 GameLoopData GameLoopDataNew(
 	void *data,
+	void (*onTerminate)(GameLoopData *),
 	void (*onEnter)(GameLoopData *), void (*onExit)(GameLoopData *),
 	void (*inputFunc)(GameLoopData *),
 	GameLoopResult (*updateFunc)(GameLoopData *),
 	void (*drawFunc)(GameLoopData *));
 void GameLoop(GameLoopData *data);
+void GameLoopTerminate(GameLoopData *data);
