@@ -51,7 +51,7 @@
 			"Density": 20
 		}],
 		"EnemyDensity": 26,
-		"Weapons": ["Knife",
+		"Weapons": ["Kindjal",
 		"Machine gun",
 		"Flamer",
 		"Sniper rifle"],
@@ -157,7 +157,7 @@
 			"Density": 20
 		}],
 		"EnemyDensity": 11,
-		"Weapons": ["Knife",
+		"Weapons": ["Kindjal",
 		"Machine gun",
 		"Flamer",
 		"Shotgun",
@@ -259,7 +259,7 @@
 			"Density": 40
 		}],
 		"EnemyDensity": 12,
-		"Weapons": ["Knife",
+		"Weapons": ["Kindjal",
 		"Machine gun",
 		"Flamer",
 		"Shotgun",
@@ -338,7 +338,7 @@
 			"Density": 25
 		}],
 		"EnemyDensity": 4,
-		"Weapons": ["Knife",
+		"Weapons": ["Kindjal",
 		"Machine gun",
 		"Grenades",
 		"Flamer",
@@ -409,7 +409,7 @@
 			"Density": 15
 		}],
 		"EnemyDensity": 0,
-		"Weapons": ["Knife",
+		"Weapons": ["Kindjal",
 		"Machine gun",
 		"Grenades",
 		"Flamer",
@@ -470,7 +470,7 @@
 		"SpecialChars": [],
 		"MapObjectDensities": [],
 		"EnemyDensity": 14,
-		"Weapons": ["Knife",
+		"Weapons": ["Kindjal",
 		"Machine gun",
 		"Grenades",
 		"Flamer",
@@ -538,7 +538,7 @@
 			"Density": 10
 		}],
 		"EnemyDensity": 12,
-		"Weapons": ["Knife",
+		"Weapons": ["Kindjal",
 		"Machine gun",
 		"Grenades",
 		"Flamer",
@@ -623,7 +623,7 @@
 			"Density": 20
 		}],
 		"EnemyDensity": 9,
-		"Weapons": ["Knife",
+		"Weapons": ["Kindjal",
 		"Machine gun",
 		"Grenades",
 		"Flamer",
@@ -718,7 +718,7 @@
 			"Density": 10
 		}],
 		"EnemyDensity": 13,
-		"Weapons": ["Knife",
+		"Weapons": ["Kindjal",
 		"Machine gun",
 		"Powergun",
 		"Sniper rifle"],
@@ -811,7 +811,7 @@
 			"Density": 30
 		}],
 		"EnemyDensity": 9,
-		"Weapons": ["Knife",
+		"Weapons": ["Kindjal",
 		"Machine gun",
 		"Grenades",
 		"Flamer",
