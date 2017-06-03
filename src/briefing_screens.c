@@ -46,23 +46,42 @@ typedef struct
 	EventWaitResult waitResult;
 	const CampaignSetting *c;
 } ScreenCampaignIntroData;
-static void CampaignIntroOnEnter(GameLoopData *data);
 static void CampaignIntroOnExit(GameLoopData *data);
 static void CampaignIntroInput(GameLoopData *data);
 static GameLoopResult CampaignIntroUpdate(GameLoopData *data);
+static void CampaignIntroDraw(GameLoopData *data);
 bool ScreenCampaignIntro(CampaignSetting *c)
 {
 	ScreenCampaignIntroData data;
 	data.c = c;
 	GameLoopData gData = GameLoopDataNew(
-		&data, NULL, CampaignIntroOnEnter, CampaignIntroOnExit,
-		CampaignIntroInput, CampaignIntroUpdate, NULL);
+		&data, NULL, NULL, CampaignIntroOnExit,
+		CampaignIntroInput, CampaignIntroUpdate, CampaignIntroDraw);
 	GameLoop(&gData);
 	return data.waitResult == EVENT_WAIT_OK;
 }
-static void CampaignIntroOnEnter(GameLoopData *data)
+static void CampaignIntroOnExit(GameLoopData *data)
 {
-	// Draw the campaign intro once
+	const ScreenCampaignIntroData *sData = data->Data;
+	if (sData->waitResult == EVENT_WAIT_OK)
+	{
+		SoundPlay(&gSoundDevice, StrSound("mg"));
+	}
+}
+static void CampaignIntroInput(GameLoopData *data)
+{
+	ScreenCampaignIntroData *sData = data->Data;
+	sData->waitResult = EventWaitForAnyKeyOrButton();
+}
+static GameLoopResult CampaignIntroUpdate(GameLoopData *data)
+{
+	const ScreenCampaignIntroData *sData = data->Data;
+	return
+		sData->waitResult == EVENT_WAIT_CONTINUE ?
+		UPDATE_RESULT_OK : UPDATE_RESULT_EXIT;
+}
+static void CampaignIntroDraw(GameLoopData *data)
+{
 	const ScreenCampaignIntroData *sData = data->Data;
 
 	BlitClearBuf(&gGraphicsDevice);
@@ -93,26 +112,6 @@ static void CampaignIntroOnEnter(GameLoopData *data)
 	}
 
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
-}
-static void CampaignIntroOnExit(GameLoopData *data)
-{
-	const ScreenCampaignIntroData *sData = data->Data;
-	if (sData->waitResult == EVENT_WAIT_OK)
-	{
-		SoundPlay(&gSoundDevice, StrSound("mg"));
-	}
-}
-static void CampaignIntroInput(GameLoopData *data)
-{
-	ScreenCampaignIntroData *sData = data->Data;
-	sData->waitResult = EventWaitForAnyKeyOrButton();
-}
-static GameLoopResult CampaignIntroUpdate(GameLoopData *data)
-{
-	const ScreenCampaignIntroData *sData = data->Data;
-	return
-		sData->waitResult == EVENT_WAIT_CONTINUE ?
-		UPDATE_RESULT_OK : UPDATE_RESULT_EXIT;
 }
 
 
