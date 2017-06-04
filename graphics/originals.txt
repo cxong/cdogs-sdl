@@ -102,8 +102,7 @@ safe.png
 safe_wreck.png
 scratch.png
 skull.png
-spark_blue.png
-spark_red.png
+spark_classic.png
 statue_ogre.png
 table_clothed.png
 table_lab.png

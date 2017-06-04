@@ -686,7 +686,7 @@ static void LoadBullet(
 	LoadBool(&b->Persists, node, "Persists");
 	tmp = NULL;
 	LoadStr(&tmp, node, "Spark");
-	if (tmp != NULL)
+	if (tmp != NULL && strlen(tmp) > 0)
 	{
 		b->Spark = StrParticleClass(&gParticleClasses, tmp);
 		CFREE(tmp);
