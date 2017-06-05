@@ -20,6 +20,7 @@ SET(WEBSITE "http://cxong.github.io/cdogs-sdl/")
 
 option(DEBUG "Enable debug build" OFF)
 option(DEBUG_PROFILE "Enable debug profile build" OFF)
+option(USE_SHARED_ENET "Use system installed copy of enet" OFF)
 
 # check for crosscompiling (defined when using a toolchain file)
 if(CMAKE_CROSSCOMPILING)
@@ -81,7 +82,10 @@ IF(WIN32)
 ELSE()
     SET(ENet_LIBRARIES ${ENet_LIBRARY})
 ENDIF()
-INCLUDE_DIRECTORIES(src/cdogs/enet/include)
+
+IF(NOT USE_SHARED_ENET)
+    INCLUDE_DIRECTORIES(src/cdogs/enet/include)
+ENDIF()
 
 add_definitions(-DPB_FIELD_16BIT)	# Allow larger field numbers in nanopb
 include_directories(src/cdogs/proto/nanopb)

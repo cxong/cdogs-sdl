@@ -217,8 +217,9 @@ set(NANOPB_HEADERS
     proto/nanopb/pb_encode.h
 )
 
-# enet
-ADD_SUBDIRECTORY(enet)
+IF(NOT USE_SHARED_ENET)
+    ADD_SUBDIRECTORY(enet)
+ENDIF()
 
 # proto
 include_directories(proto/nanopb)
