@@ -10,6 +10,30 @@
       "Sound": "",
       "SoundLockLength": 20,
       "CanShoot": false
+    },
+    {
+      "Index": 0,
+      "Pic": "knife",
+      "Icon": "knife",
+      "Name": "Kindjal",
+      "Bullet": "knife",
+      "Cost": 0,
+      "Lock": 10,
+      "Sound": "",
+      "SwitchSound": "knife_switch",
+      "SoundLockLength": 10,
+      "CanShoot": false
+    },
+    {
+      "Name": "Inkvine",
+      "Icon": "biogun",
+      "Bullet": "inkvine",
+      "Cost": 5,
+      "Lock": 50,
+      "Sound": "inkvine",
+      "SwitchSound": "inkvine_r",
+      "MuzzleFlashParticle": "muzzle_flash_inkvine",
+      "Ammo": "Gas tank"
     }
   ]
 }

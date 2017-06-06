@@ -672,7 +672,7 @@ static int DrawClassSelection(
 	nk_label(ec->ctx, label, NK_TEXT_LEFT);
 	const int selectedNew = nk_combo_separator_image(
 		ec->ctx, texids, items, '\0', selected, len,
-		ROW_HEIGHT, nk_vec2(nk_widget_width(ec->ctx), 10 * ROW_HEIGHT));
+		ROW_HEIGHT, nk_vec2(nk_widget_width(ec->ctx), 8 * ROW_HEIGHT));
 	if (selectedNew != selected)
 	{
 		*ec->FileChanged = true;

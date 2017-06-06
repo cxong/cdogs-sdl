@@ -8,6 +8,26 @@
         "Object": "knife_hard",
         "Flesh": "monster-2"
       }
+    },
+    {
+      "Name": "inkvine",
+      "Pic": {
+        "Type": "Directional",
+        "Sprites": "wave",
+        "Mask": "00ff00"
+      },
+      "Speed": 640,
+      "Range": 50,
+      "Power": 40,
+      "Mass": 0.1,
+      "Size": [8, 8],
+      "Special": "Poison",
+      "Spark": "spark_inkvine",
+      "HitSounds": {
+        "Object": "splat",
+        "Flesh": "splat",
+        "Wall": "splat"
+      }
     }
   ]
 }

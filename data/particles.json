@@ -7,11 +7,21 @@
     },
     {
       "Name": "spark_blue",
-      "Pic": "spark_blue"
+      "Pic": "spark_classic",
+      "Mask": "00ffff",
+      "Range": 2
     },
     {
       "Name": "spark_red",
-      "Pic": "spark_red"
+      "Pic": "spark_classic",
+      "Mask": "ff0000",
+      "Range": 2
+    },
+    {
+      "Name": "spark_green",
+      "Pic": "spark_classic",
+      "Mask": "00ff00",
+      "Range": 2
     },
     {
       "Name": "boom",
