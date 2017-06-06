@@ -104,6 +104,7 @@ static bool ScreenWait(
 
 	GameLoopData g = MenuLoop(&ms);
 	GameLoop(&g);
+	GameLoopTerminate(&g);
 	const bool ok = !ms.hasAbort;
 	MenuSystemTerminate(&ms);
 	return ok;
@@ -139,53 +140,80 @@ static void CheckCampaignDefComplete(menu_t *menu, void *data)
 }
 
 
-bool NumPlayersSelection(GraphicsDevice *graphics, EventHandlers *handlers)
+static void NumPlayersTerminate(GameLoopData *data);
+static void NumPlayersOnExit(GameLoopData *data);
+static GameLoopResult NumPlayersUpdate(GameLoopData *data);
+static void NumPlayersDraw(GameLoopData *data);
+GameLoopData NumPlayersSelection(
+	GraphicsDevice *graphics, EventHandlers *handlers)
 {
-	MenuSystem ms;
+	MenuSystem *ms;
+	CMALLOC(ms, sizeof *ms);
 	MenuSystemInit(
-		&ms, handlers, graphics,
+		ms, handlers, graphics,
 		Vec2iZero(),
 		graphics->cachedConfig.Res);
-	ms.allowAborts = true;
-	ms.root = ms.current = MenuCreateNormal(
+	ms->allowAborts = true;
+	ms->root = ms->current = MenuCreateNormal(
 		"",
 		"Select number of players",
 		MENU_TYPE_NORMAL,
 		0);
-	MenuAddSubmenu(ms.current, MenuCreateReturn("(No local players)", 0));
+	MenuAddSubmenu(ms->current, MenuCreateReturn("(No local players)", 0));
 	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 	{
 		char buf[2];
 		sprintf(buf, "%d", i + 1);
-		MenuAddSubmenu(ms.current, MenuCreateReturn(buf, i + 1));
+		MenuAddSubmenu(ms->current, MenuCreateReturn(buf, i + 1));
 	}
-	MenuAddExitType(&ms, MENU_TYPE_RETURN);
+	MenuAddExitType(ms, MENU_TYPE_RETURN);
 	// Select 1 player default
-	ms.current->u.normal.index = 1;
+	ms->current->u.normal.index = 1;
 
-	GameLoopData g = MenuLoop(&ms);
-	GameLoop(&g);
-	const bool ok = !ms.hasAbort;
-	if (ok)
+	return GameLoopDataNew(
+		ms, NumPlayersTerminate, NULL, NumPlayersOnExit,
+		NULL, NumPlayersUpdate, NumPlayersDraw);
+}
+static void NumPlayersTerminate(GameLoopData *data)
+{
+	CFREE(data->Data);
+}
+static void NumPlayersOnExit(GameLoopData *data)
+{
+	MenuSystem *ms = data->Data;
+	if (!ms->hasAbort)
 	{
-		const int numPlayers = ms.current->u.returnCode;
+		const int numPlayers = ms->current->u.returnCode;
 		CA_FOREACH(const PlayerData, p, gPlayerDatas)
 			CASSERT(!p->IsLocal, "unexpected local player");
 		CA_FOREACH_END()
-		// Add the players
-		for (int i = 0; i < numPlayers; i++)
-		{
-			GameEvent e = GameEventNew(GAME_EVENT_PLAYER_DATA);
-			e.u.PlayerData = PlayerDataDefault(i);
-			e.u.PlayerData.UID = gNetClient.FirstPlayerUID + i;
-			GameEventsEnqueue(&gGameEvents, e);
-		}
+			// Add the players
+			for (int i = 0; i < numPlayers; i++)
+			{
+				GameEvent e = GameEventNew(GAME_EVENT_PLAYER_DATA);
+				e.u.PlayerData = PlayerDataDefault(i);
+				e.u.PlayerData.UID = gNetClient.FirstPlayerUID + i;
+				GameEventsEnqueue(&gGameEvents, e);
+			}
 		// Process the events to force add the players
 		HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
 		// This also causes the client to send player data to the server
+		// TODO: transition to next menu
 	}
-	MenuSystemTerminate(&ms);
-	return ok;
+	else
+	{
+		// TODO: pop menu
+		gCampaign.IsLoaded = false;
+	}
+	MenuSystemTerminate(ms);
+}
+static GameLoopResult NumPlayersUpdate(GameLoopData *data)
+{
+	return MenuUpdate(data->Data);
+}
+static void NumPlayersDraw(GameLoopData *data)
+{
+	MenuDraw(data->Data);
 }
 
 
@@ -272,6 +300,7 @@ bool PlayerSelection(void)
 		&data, NULL, NULL, PlayerSelectionOnExit,
 		NULL, PlayerSelectionUpdate, PlayerSelectionDraw);
 	GameLoop(&gData);
+	GameLoopTerminate(&gData);
 	return data.waitResult == EVENT_WAIT_OK;
 }
 static void PlayerSelectionOnExit(GameLoopData *data)
@@ -512,6 +541,7 @@ bool GameOptions(const GameMode gm)
 
 	GameLoopData g = MenuLoop(&ms);
 	GameLoop(&g);
+	GameLoopTerminate(&g);
 
 	const bool ok = !ms.hasAbort;
 	if (ok)
@@ -636,6 +666,7 @@ bool PlayerEquip(void)
 		&data, NULL, NULL, PlayerEquipOnExit,
 		NULL, PlayerEquipUpdate, PlayerEquipDraw);
 	GameLoop(&gData);
+	GameLoopTerminate(&gData);
 	return data.waitResult == EVENT_WAIT_OK;
 }
 static bool HasWeapon(const CArray *weapons, const GunDescription *w);

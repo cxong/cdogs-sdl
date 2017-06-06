@@ -142,6 +142,7 @@ static int EnterCodeScreen(const char *password)
 		&data, NULL, NULL, EnterCodeScreenOnExit,
 		NULL, EnterCodeScreenUpdate, EnterCodeScreenDraw);
 	GameLoop(&gData);
+	GameLoopTerminate(&gData);
 
 	return data.Mission;
 }
@@ -349,6 +350,7 @@ int EnterPassword(GraphicsDevice *graphics, const MissionSave *save)
 	{
 		GameLoopData g = MenuLoop(&startMenu);
 		GameLoop(&g);
+		GameLoopTerminate(&g);
 		assert(startMenu.current->type == MENU_TYPE_RETURN);
 		const int returnCode = startMenu.current->u.returnCode;
 		switch (returnCode)

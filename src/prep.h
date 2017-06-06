@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2015, 2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -50,13 +50,15 @@
 
 #include <cdogs/campaigns.h>
 #include <cdogs/events.h>
+#include <cdogs/game_loop.h>
 #include <cdogs/grafx.h>
 
 // Wait for the server to send us the current campaign
 bool ScreenWaitForCampaignDef(void);
 
 // Screen to select the number of (local) players
-bool NumPlayersSelection(GraphicsDevice *graphics, EventHandlers *handlers);
+GameLoopData NumPlayersSelection(
+	GraphicsDevice *graphics, EventHandlers *handlers);
 
 // Allow input devices to take control players,
 // and select player name and appearance

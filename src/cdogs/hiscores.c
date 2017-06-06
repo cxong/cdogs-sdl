@@ -215,6 +215,7 @@ void DisplayAllTimeHighScores(GraphicsDevice *graphics)
 		GameLoopData gData = GameLoopDataNew(
 			&data, NULL, NULL, NULL, NULL, HighScoreUpdate, HighScoreDraw);
 		GameLoop(&gData);
+		GameLoopTerminate(&gData);
 	}
 }
 void DisplayTodaysHighScores(GraphicsDevice *graphics)
@@ -240,6 +241,7 @@ void DisplayTodaysHighScores(GraphicsDevice *graphics)
 		GameLoopData gData = GameLoopDataNew(
 			&data, NULL, NULL, NULL, NULL, HighScoreUpdate, HighScoreDraw);
 		GameLoop(&gData);
+		GameLoopTerminate(&gData);
 	}
 }
 static void HighScoreDraw(GameLoopData *data)

@@ -135,6 +135,7 @@ static void PlayerListLoop(PlayerList *pl)
 	MenuAddExitType(&ms, MENU_TYPE_RETURN);
 	GameLoopData g = MenuLoop(&ms);
 	GameLoop(&g);
+	GameLoopTerminate(&g);
 	// Free ourselves at the end
 	CArrayTerminate(&pl->playerUIDs);
 }

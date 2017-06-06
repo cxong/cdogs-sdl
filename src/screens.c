@@ -75,6 +75,7 @@ void ScreenStart(void)
 	{
 		GameLoopData g = ScreenCampaignIntro(&gCampaign.Setting);
 		GameLoop(&g);
+		GameLoopTerminate(&g);
 		if (!gCampaign.IsLoaded)
 		{
 			goto bail;
@@ -87,8 +88,10 @@ void ScreenStart(void)
 	// Initialise game events; we need this for init as well as the game
 	GameEventsInit(&gGameEvents);
 
-	debug(D_NORMAL, ">> Select number of players\n");
-	if (!NumPlayersSelection(&gGraphicsDevice, &gEventHandlers))
+	GameLoopData g = NumPlayersSelection(&gGraphicsDevice, &gEventHandlers);
+	GameLoop(&g);
+	GameLoopTerminate(&g);
+	if (!gCampaign.IsLoaded)
 	{
 		gCampaign.IsLoaded = false;
 		goto bail;

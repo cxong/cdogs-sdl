@@ -195,6 +195,7 @@ bool ScreenMissionBriefing(const struct MissionOptions *m)
 		&mData, NULL, NULL, MissionBriefingOnExit,
 		MissionBriefingInput, MissionBriefingUpdate, MissionBriefingDraw);
 	GameLoop(&gData);
+	GameLoopTerminate(&gData);
 	return mData.waitResult == EVENT_WAIT_OK;
 }
 static void MissionBriefingOnExit(GameLoopData *data)
@@ -361,6 +362,7 @@ bool ScreenMissionSummary(
 	MenuSystemAddCustomDisplay(&ms, MissionSummaryDraw, m);
 	GameLoopData g = MenuLoop(&ms);
 	GameLoop(&g);
+	GameLoopTerminate(&g);
 	return ms.current->u.returnCode == 0;
 }
 static bool AreAnySurvived(void)

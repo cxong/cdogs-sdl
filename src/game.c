@@ -176,6 +176,7 @@ bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
 	data.loop.FPS = ConfigGetInt(&gConfig, "Game.FPS");
 	data.loop.InputEverySecondFrame = true;
 	GameLoop(&data.loop);
+	GameLoopTerminate(&data.loop);
 
 	return !m->IsQuit;
 }
