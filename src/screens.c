@@ -71,22 +71,21 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co);
 
 void ScreenStart(void)
 {
-	// Reset player datas
-	PlayerDataTerminate(&gPlayerDatas);
-	PlayerDataInit(&gPlayerDatas);
-
-	// Initialise game events; we need this for init as well as the game
-	GameEventsInit(&gGameEvents);
-
-	debug(D_NORMAL, ">> Entering campaign\n");
 	if (IsIntroNeeded(gCampaign.Entry.Mode))
 	{
-		if (!ScreenCampaignIntro(&gCampaign.Setting))
+		GameLoopData g = ScreenCampaignIntro(&gCampaign.Setting);
+		GameLoop(&g);
+		if (!gCampaign.IsLoaded)
 		{
-			gCampaign.IsLoaded = false;
 			goto bail;
 		}
 	}
+
+	// Reset player datas
+	PlayerDataTerminate(&gPlayerDatas);
+	PlayerDataInit(&gPlayerDatas);
+	// Initialise game events; we need this for init as well as the game
+	GameEventsInit(&gGameEvents);
 
 	debug(D_NORMAL, ">> Select number of players\n");
 	if (!NumPlayersSelection(&gGraphicsDevice, &gEventHandlers))
@@ -111,6 +110,7 @@ bail:
 	GameEventsTerminate(&gGameEvents);
 	// Reset config - could have been set to other values by server
 	ConfigResetChanged(&gConfig);
+	CampaignSettingTerminate(&gCampaign.Setting);
 }
 
 

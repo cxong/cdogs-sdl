@@ -113,7 +113,6 @@ static void MainLoop(void)
 			break;
 		}
 		ScreenStart();
-		CampaignSettingTerminate(&gCampaign.Setting);
 	}
 	GameLoopTerminate(&g);
 

@@ -78,6 +78,7 @@ static void MainMenuTerminate(GameLoopData *data)
 
 	UnloadCredits(&mData->creditsDisplayer);
 	UnloadAllCampaigns(&mData->campaigns);
+	CFREE(mData);
 }
 static menu_t *FindSubmenuByName(menu_t *menu, const char *name);
 static void MainMenuOnEnter(GameLoopData *data)

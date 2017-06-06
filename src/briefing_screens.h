@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2016, Cong Xu
+    Copyright (c) 2014-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -26,10 +26,10 @@
 #pragma once
 
 #include <cdogs/campaigns.h>
+#include <cdogs/game_loop.h>
 
-// Return values mean whether the user wanted to proceed
 
-bool ScreenCampaignIntro(CampaignSetting *c);
+GameLoopData ScreenCampaignIntro(CampaignSetting *c);
 bool ScreenMissionBriefing(const struct MissionOptions *m);
 // Display a summary page at the end of a mission
 // Returns true if the game is to continue

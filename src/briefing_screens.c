@@ -46,19 +46,24 @@ typedef struct
 	EventWaitResult waitResult;
 	const CampaignSetting *c;
 } ScreenCampaignIntroData;
+static void CampaignIntroTerminate(GameLoopData *data);
 static void CampaignIntroOnEnter(GameLoopData *data);
 static void CampaignIntroOnExit(GameLoopData *data);
 static void CampaignIntroInput(GameLoopData *data);
 static GameLoopResult CampaignIntroUpdate(GameLoopData *data);
-bool ScreenCampaignIntro(CampaignSetting *c)
+GameLoopData ScreenCampaignIntro(CampaignSetting *c)
 {
-	ScreenCampaignIntroData data;
-	data.c = c;
-	GameLoopData gData = GameLoopDataNew(
-		&data, NULL, CampaignIntroOnEnter, CampaignIntroOnExit,
+	ScreenCampaignIntroData *data;
+	CMALLOC(data, sizeof *data);
+	data->c = c;
+	return GameLoopDataNew(
+		data, NULL, CampaignIntroOnEnter, CampaignIntroOnExit,
 		CampaignIntroInput, CampaignIntroUpdate, NULL);
-	GameLoop(&gData);
-	return data.waitResult == EVENT_WAIT_OK;
+}
+static void CampaignIntroTerminate(GameLoopData *data)
+{
+	ScreenCampaignIntroData *mData = data->Data;
+	CFREE(mData);
 }
 static void CampaignIntroOnEnter(GameLoopData *data)
 {
@@ -100,6 +105,11 @@ static void CampaignIntroOnExit(GameLoopData *data)
 	if (sData->waitResult == EVENT_WAIT_OK)
 	{
 		SoundPlay(&gSoundDevice, StrSound("mg"));
+		// TODO: switch to next state
+	}
+	else
+	{
+		gCampaign.IsLoaded = false;
 	}
 }
 static void CampaignIntroInput(GameLoopData *data)
