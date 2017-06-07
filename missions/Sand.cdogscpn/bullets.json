@@ -18,15 +18,75 @@
       },
       "Speed": 640,
       "Range": 50,
-      "Power": 40,
-      "Mass": 0.1,
+      "Power": 35,
+      "Mass": 0.01,
       "Size": [8, 8],
       "Special": "Poison",
       "Spark": "spark_inkvine",
       "HitSounds": {
-        "Object": "splat",
-        "Flesh": "splat",
-        "Wall": "splat"
+        "Object": "",
+        "Flesh": "",
+        "Wall": ""
+      },
+      "HitGuns": [
+        "inkvine_splash"
+      ],
+      "Falling": {
+        "GravityFactor": 1,
+        "DestroyOnDrop": true,
+        "DropGuns": [
+          "inkvine_splash"
+        ]
+      }
+    },
+    {
+      "Name": "inkvine_splash",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "grenade",
+        "Mask": "ccffcc"
+      },
+      "SpeedLow": 256,
+      "SpeedHigh": 512,
+      "SpeedScale": true,
+      "Range": 100,
+      "Persists": true,
+      "WallBounces": true,
+      "Spark": "",
+      "HitSounds": {
+        "Object": "",
+        "Flesh": "",
+        "Wall": ""
+      },
+      "HitsObjects": false,
+      "Falling": {
+        "GravityFactor": 4,
+        "DestroyOnDrop": true,
+        "DropGuns": [
+          "inkvine_puddle"
+        ]
+      },
+      "HitGuns": [
+        "inkvine_puddle"
+      ]
+    },
+    {
+      "Name": "inkvine_puddle",
+      "Pic": {
+        "Type": "AnimatedRandom",
+        "Sprites": "inkvine_puddle",
+        "TicksPerFrame": 0
+      },
+      "RangeLow": 200,
+      "RangeHigh": 300,
+      "Size": [8, 6],
+      "Special": "Poison",
+      "Persists": true,
+      "Spark": "",
+      "HitSounds": {
+        "Object": "",
+        "Flesh": "hit_gas",
+        "Wall": ""
       }
     }
   ]

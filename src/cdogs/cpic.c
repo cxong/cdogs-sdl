@@ -109,9 +109,7 @@ void CPicLoadJSON(CPic *p, json_t *node)
 		CFREE(tmp);
 		LoadInt(&p->u.Animated.Count, node, "Count");
 		LoadInt(&p->u.Animated.TicksPerFrame, node, "TicksPerFrame");
-		// Set safe default ticks per frame 1;
-		// if 0 then this leads to infinite loop when animating
-		p->u.Animated.TicksPerFrame = MAX(p->u.Animated.TicksPerFrame, 1);
+		p->u.Animated.TicksPerFrame = MAX(p->u.Animated.TicksPerFrame, 0);
 		break;
 	default:
 		CASSERT(false, "unknown pic type");
@@ -218,21 +216,29 @@ void CPicUpdate(CPic *p, const int ticks)
 	case PICTYPE_ANIMATED:
 		{
 			p->u.Animated.Count += ticks;
-			CASSERT(p->u.Animated.TicksPerFrame > 0, "0 ticks per frame");
-			while (p->u.Animated.Count >= p->u.Animated.TicksPerFrame)
+			if (p->u.Animated.TicksPerFrame > 0)
 			{
-				p->u.Animated.Frame++;
-				p->u.Animated.Count -= p->u.Animated.TicksPerFrame;
-			}
-			while (p->u.Animated.Frame >= (int)p->u.Animated.Sprites->size)
-			{
-				p->u.Animated.Frame -= (int)p->u.Animated.Sprites->size;
+				while (p->u.Animated.Count >= p->u.Animated.TicksPerFrame)
+				{
+					p->u.Animated.Frame++;
+					p->u.Animated.Count -= p->u.Animated.TicksPerFrame;
+				}
+				while (p->u.Animated.Frame >= (int)p->u.Animated.Sprites->size)
+				{
+					p->u.Animated.Frame -= (int)p->u.Animated.Sprites->size;
+				}
 			}
 		}
 		break;
 	case PICTYPE_ANIMATED_RANDOM:
+		if (p->u.Animated.Count == 0)
+		{
+			// Initial frame
+			p->u.Animated.Frame = rand() % (int)p->u.Animated.Sprites->size;
+		}
 		p->u.Animated.Count += ticks;
-		if (p->u.Animated.Count >= p->u.Animated.TicksPerFrame)
+		if (p->u.Animated.TicksPerFrame > 0 &&
+			p->u.Animated.Count >= p->u.Animated.TicksPerFrame)
 		{
 			p->u.Animated.Frame = rand() % (int)p->u.Animated.Sprites->size;
 			p->u.Animated.Count = 0;

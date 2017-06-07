@@ -33,7 +33,24 @@
       "Sound": "inkvine",
       "SwitchSound": "inkvine_r",
       "MuzzleFlashParticle": "muzzle_flash_inkvine",
-      "Ammo": "Gas tank"
+      "Elevation": 20,
+      "Ammo": "Cells"
+    }
+  ],
+  "PseudoGuns": [
+    {
+      "Name": "inkvine_splash",
+      "Bullet": "inkvine_splash",
+      "Recoil": 2,
+      "SpreadCount": 6,
+      "ElevationLow": 22,
+      "ElevationHigh": 30,
+      "Sound": "splat"
+    },
+    {
+      "Name": "inkvine_puddle",
+      "Bullet": "inkvine_puddle",
+      "Sound": ""
     }
   ]
 }
