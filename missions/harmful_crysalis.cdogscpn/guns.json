@@ -21,7 +21,6 @@
       "Description": "A chainsaw specialized to crack rocks.",
       "Bullet": "chainsaw",
       "Cost": 0,
-      "Lock": 5,
       "Sound": "",
       "SoundLockLength": 50,
       "CanShoot": false
@@ -66,7 +65,6 @@
       "Name": "Monster Bite",
       "Bullet": "monster_bite",
       "Cost": 0,
-      "Lock": 10,
       "Sound": "",
       "SoundLockLength": 20,
       "CanShoot": false,
@@ -81,7 +79,6 @@
       "Sound": "gas_leak",
       "SoundLockLength": 36,
       "MuzzleFlashParticle": "muzzle_flash_gasgun",
-      "CanShoot": true,
       "CanDrop": false
     },
     {

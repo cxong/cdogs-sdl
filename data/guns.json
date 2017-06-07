@@ -30,7 +30,6 @@
       "Description": "A melee weapon. This weapon is used automatically. Simply walk into and an enemy to slash and cause damage. You will also damage objects when you walk into them, unless they are explosives. Using the attack key just makes you hold your position.\n\nDamage: 2\nAttack rate: 420 slashes/minute\nCost: 0",
       "Bullet": "knife",
       "Cost": 0,
-      "Lock": 10,
       "Sound": "",
       "SwitchSound": "knife_switch",
       "SoundLockLength": 10,

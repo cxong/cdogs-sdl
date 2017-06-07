@@ -1,27 +1,35 @@
 {
-  "Version": 1,
+  "Version": 2,
   "Guns": [
     {
       "Pic": "",
       "Name": "Monster Bite",
       "Bullet": "monster_bite",
       "Cost": 0,
-      "Lock": 10,
+      "Lock": 20,
       "Sound": "",
-      "SoundLockLength": 20,
       "CanShoot": false
     },
     {
-      "Index": 0,
       "Pic": "knife",
       "Icon": "knife",
       "Name": "Kindjal",
-      "Bullet": "knife",
+      "Bullet": "kindjal",
       "Cost": 0,
-      "Lock": 10,
+      "Lock": 30,
       "Sound": "",
       "SwitchSound": "knife_switch",
-      "SoundLockLength": 10,
+      "CanShoot": false
+    },
+    {
+      "Pic": "knife",
+      "Icon": "knife",
+      "Name": "Crysknife",
+      "Bullet": "crysknife",
+      "Cost": 0,
+      "Lock": 15,
+      "Sound": "",
+      "SwitchSound": "knife_switch",
       "CanShoot": false
     },
     {

@@ -2,8 +2,24 @@
   "Version": 1,
   "Bullets": [
     {
+      "Name": "kindjal",
+      "Power": 20,
+      "HitSounds": {
+        "Object": "knife_hard",
+        "Flesh": "knife_flesh"
+      }
+    },
+    {
+      "Name": "crysknife",
+      "Power": 15,
+      "HitSounds": {
+        "Object": "knife_hard",
+        "Flesh": "knife_flesh"
+      }
+    },
+    {
       "Name": "monster_bite",
-      "Power": 1,
+      "Power": 10,
       "HitSounds": {
         "Object": "knife_hard",
         "Flesh": "monster-2"

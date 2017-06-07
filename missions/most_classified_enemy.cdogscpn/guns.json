@@ -81,7 +81,6 @@
       "Name": "Steel Teeth",
       "Bullet": "knife",
       "Cost": 0,
-      "Lock": 10,
       "Sound": "",
       "SwitchSound": "knife_switch",
       "SoundLockLength": 10,

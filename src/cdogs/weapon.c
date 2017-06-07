@@ -65,7 +65,7 @@
 GunClasses gGunDescriptions;
 
 // Initialise all the static weapon data
-#define VERSION 1
+#define VERSION 2
 void WeaponInitialize(GunClasses *g)
 {
 	memset(g, 0, sizeof *g);
@@ -73,7 +73,8 @@ void WeaponInitialize(GunClasses *g)
 	CArrayInit(&g->CustomGuns, sizeof(GunDescription));
 }
 static void LoadGunDescription(
-	GunDescription *g, json_t *node, const GunDescription *defaultGun);
+	GunDescription *g, json_t *node, const GunDescription *defaultGun,
+	const int version);
 static void GunDescriptionTerminate(GunDescription *g);
 void WeaponLoadJSON(GunClasses *g, CArray *classes, json_t *root)
 {
@@ -93,7 +94,7 @@ void WeaponLoadJSON(GunClasses *g, CArray *classes, json_t *root)
 		json_t *defaultNode = json_find_first_label(root, "DefaultGun");
 		if (defaultNode != NULL)
 		{
-			LoadGunDescription(defaultDesc, defaultNode->child, NULL);
+			LoadGunDescription(defaultDesc, defaultNode->child, NULL, version);
 		}
 		else
 		{
@@ -105,7 +106,7 @@ void WeaponLoadJSON(GunClasses *g, CArray *classes, json_t *root)
 			GunDescription gd;
 			if (defaultNode != NULL)
 			{
-				LoadGunDescription(&gd, defaultNode->child, NULL);
+				LoadGunDescription(&gd, defaultNode->child, NULL, version);
 			}
 			else
 			{
@@ -118,7 +119,7 @@ void WeaponLoadJSON(GunClasses *g, CArray *classes, json_t *root)
 	for (json_t *child = gunsNode->child; child; child = child->next)
 	{
 		GunDescription gd;
-		LoadGunDescription(&gd, child, defaultDesc);
+		LoadGunDescription(&gd, child, defaultDesc, version);
 		int idx = -1;
 		// Only allow index for non-custom guns
 		if (classes == &g->Guns)
@@ -144,14 +145,15 @@ void WeaponLoadJSON(GunClasses *g, CArray *classes, json_t *root)
 			child = child->next)
 		{
 			GunDescription gd;
-			LoadGunDescription(&gd, child, defaultDesc);
+			LoadGunDescription(&gd, child, defaultDesc, version);
 			gd.IsRealGun = false;
 			CArrayPushBack(classes, &gd);
 		}
 	}
 }
 static void LoadGunDescription(
-	GunDescription *g, json_t *node, const GunDescription *defaultGun)
+	GunDescription *g, json_t *node, const GunDescription *defaultGun,
+	const int version)
 {
 	memset(g, 0, sizeof *g);
 	g->AmmoId = -1;
@@ -271,6 +273,14 @@ static void LoadGunDescription(
 	LoadInt(&g->ShakeAmount, node, "ShakeAmount");
 
 	g->IsRealGun = true;
+
+	if (version < 2)
+	{
+		if (!g->CanShoot)
+		{
+			g->Lock = 0;
+		}
+	}
 
 	LOG(LM_MAP, LL_DEBUG,
 		"loaded gun name(%s) bullet(%s) ammo(%d) cost(%d) lock(%d)...",

@@ -235,7 +235,8 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 			Weapon *gun = ActorGetGun(actor);
 			const TObject *object = target->kind == KIND_OBJECT ?
 				CArrayGet(&gObjs, target->id) : NULL;
-			if (!gun->Gun->CanShoot && actor->health > 0 &&
+			if (ActorCanFire(actor) && !gun->Gun->CanShoot &&
+				actor->health > 0 &&
 				(!object || !ObjIsDangerous(object)))
 			{
 				if (CanHit(actor->flags, actor->uid, target))
@@ -261,6 +262,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 						CASSERT(false, "cannot damage target kind");
 						break;
 					}
+					gun->lock = gun->Gun->Lock;
 					if (gun->soundLock <= 0)
 					{
 						gun->soundLock += gun->Gun->SoundLockLength;
