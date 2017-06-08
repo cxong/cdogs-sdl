@@ -10,11 +10,11 @@
       }
     },
     {
-      "Name": "crysknife",
+      "Name": "wurmtooth",
       "Power": 15,
       "HitSounds": {
         "Object": "knife_hard",
-        "Flesh": "crysknife_flesh"
+        "Flesh": "wurmtooth_flesh"
       }
     },
     {

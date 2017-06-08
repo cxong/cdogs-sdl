@@ -23,9 +23,9 @@
     },
     {
       "Pic": "knife",
-      "Icon": "knife",
-      "Name": "Crysknife",
-      "Bullet": "crysknife",
+      "Icon": "wurmtooth",
+      "Name": "Wurmtooth",
+      "Bullet": "wurmtooth",
       "Cost": 0,
       "Lock": 15,
       "Sound": "",
