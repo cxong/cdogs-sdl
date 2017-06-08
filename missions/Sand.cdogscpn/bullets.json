@@ -14,7 +14,7 @@
       "Power": 15,
       "HitSounds": {
         "Object": "knife_hard",
-        "Flesh": "knife_flesh"
+        "Flesh": "crysknife_flesh"
       }
     },
     {
