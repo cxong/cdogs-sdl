@@ -1,0 +1,41 @@
+{
+  "Version": 3,
+  "MapObjects": [
+    {
+      "Name": "wscreen1",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "wscreen1",
+        "TicksPerFrame": 10
+      },
+      "Size": [14, 1],
+      "PosOffset": [0, -5],
+      "Offset": [-7, -11],
+      "Wreck": "wscreen1_wreck",
+      "Health": 10
+    },
+    {
+      "Name": "wscreen2",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "wscreen2",
+        "TicksPerFrame": 10
+      },
+      "Size": [14, 1],
+      "PosOffset": [0, -5],
+      "Offset": [-7, -11],
+      "Wreck": "wscreen1_wreck",
+      "Health": 10
+    },
+    {
+      "Name": "wscreen1_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "wscreen1_broken"
+      },
+      "Offset": [-7, -11],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    }
+  ]
+}

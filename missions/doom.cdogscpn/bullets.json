@@ -1,0 +1,77 @@
+{
+  "Version": 2,
+  "Bullets": [
+    {
+      "Name": "chainsaw",
+      "Power": 3,
+      "HitSounds": {
+        "Object": "chainsaw",
+        "Flesh": "chainsaw"
+      }
+    },
+    {
+      "Name": "10mm",
+      "Pic": {
+        "Type": "Directional",
+        "Sprites": "9mm"
+      },
+      "OutOfRangeSpark": "spark",
+      "Speed": 35000,
+      "Range": 1,
+      "Power": 10,
+      "Mass": 0.2
+    },
+    {
+      "Name": "pellet",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": ""
+      },
+      "OutOfRangeSpark": "spark",
+      "Speed": 25000,
+      "Range": 1,
+      "Power": 10,
+      "Mass": 0.2
+    },
+    {
+      "Name": "fireball",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "fireball",
+        "TicksPerFrame": 4
+      },
+      "Speed": 350,
+      "Range": 200,
+      "Power": 18,
+      "Mass": 18.0,
+      "Size": [3, 3],
+      "Special": "Flame",
+      "Spark": "fireball_hit",
+      "HitSounds": {
+        "Object": "hit_fire",
+        "Flesh": "hit_fire",
+        "Wall": "hit_fire"
+      }
+    },
+    {
+      "Name": "fireball_green",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "fireball_green",
+        "TicksPerFrame": 4
+      },
+      "Speed": 550,
+      "Range": 300,
+      "Power": 40,
+      "Mass": 40.0,
+      "Size": [3, 3],
+      "Special": "Flame",
+      "Spark": "fireball_green_hit",
+      "HitSounds": {
+        "Object": "hit_fire",
+        "Flesh": "hit_fire",
+        "Wall": "hit_fire"
+      }
+    }
+  ]
+}

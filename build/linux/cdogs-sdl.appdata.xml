@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component type="desktop">
+  <id>cdogs-sdl.desktop</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0+</project_license>
+  <name>C-Dogs</name>
+  <summary>Classic overhead run-and-gun game</summary>
+  <description>
+    <p>
+      C-Dogs is an arcade shoot-em-up which lets players work alone and
+      cooperatively during missions or fight against each other in the
+      “dogfight” deathmatch mode.
+    </p>
+    <p>
+      Customize your player, choose from many weapons, and blast, slide and
+      slash your way through over 100 user-created campaigns.
+    </p>
+  </description>
+  <url type="homepage">http://cxong.github.io/cdogs-sdl/</url>
+  <url type="help">https://github.com/cxong/cdogs-sdl/wiki/Walkthrough</url>
+  <screenshots>
+    <screenshot
+    type="default">https://raw.githubusercontent.com/cxong/cdogs-sdl/master/wiki/images/game_screen.png</screenshot>
+    <screenshot>https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/hqx_new.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/cxong/cdogs-sdl/master/wiki/images/screenshots/quick_play.png</screenshot>
+  </screenshots>
+</component>

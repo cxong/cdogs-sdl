@@ -1,0 +1,1607 @@
+{
+  "Version": 3,
+  "MapObjects": [
+    {
+      "Name": "barrel_blue",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "barrel_blue"
+      },
+      "Wreck": "barrel_blue_wreck",
+      "Health": 40,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "barrel_blue_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "barrel_blue_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "barrel_blue2",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "barrel_blue2"
+      },
+      "Wreck": "barrel_blue2_wreck",
+      "Health": 40,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "barrel_blue2_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "barrel_blue2_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "box",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "box"
+      },
+      "Wreck": "box_wreck",
+      "Health": 20,
+      "Flags": ["Outside", "NoWalls"],
+      "DestroySpawn": [
+        {
+          "Type": "Ammo",
+          "SpawnChance": 0.1
+        },
+        {
+          "Type": "Health",
+          "SpawnChance": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "box2",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "box2"
+      },
+      "Wreck": "box_wreck",
+      "Health": 20,
+      "Flags": ["Outside", "NoWalls"],
+      "DestroySpawn": [
+        {
+          "Type": "Ammo",
+          "SpawnChance": 0.1
+        },
+        {
+          "Type": "Health",
+          "SpawnChance": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "box_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "box_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Outside", "NoWalls"]
+    },
+    {
+      "Name": "crate",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "crate"
+      },
+      "Wreck": "crate_wreck",
+      "Health": 20,
+      "Flags": ["Outside", "NoWalls"],
+      "DestroySpawn": [
+        {
+          "Type": "Ammo",
+          "SpawnChance": 0.1
+        },
+        {
+          "Type": "Gun",
+          "SpawnChance": 0.05
+        }
+      ]
+    },
+    {
+      "Name": "crate_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "crate_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Outside", "NoWalls"]
+    },
+    {
+      "Name": "crate2",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "crate2"
+      },
+      "Wreck": "crate2_wreck",
+      "Health": 20,
+      "Flags": ["Outside", "NoWalls"],
+      "DestroySpawn": [
+        {
+          "Type": "Ammo",
+          "SpawnChance": 0.1
+        },
+        {
+          "Type": "Gun",
+          "SpawnChance": 0.05
+        }
+      ]
+    },
+    {
+      "Name": "crate2_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "crate2_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Outside", "NoWalls"]
+    },
+    {
+      "Name": "cabinet",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "cabinet"
+      },
+      "Wreck": "cabinet_wreck",
+      "Health": 20,
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"],
+      "DestroySpawn": [
+        {
+          "Type": "Gun",
+          "SpawnChance": 0.05
+        }
+      ]
+    },
+    {
+      "Name": "cabinet_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "cabinet_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
+    },
+    {
+      "Name": "cabinet_server",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "cabinet_server"
+      },
+      "Wreck": "cabinet_server_wreck",
+      "Health": 20,
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"],
+      "DestroySpawn": [
+        {
+          "Type": "Gun",
+          "SpawnChance": 0.05
+        }
+      ]
+    },
+    {
+      "Name": "cabinet_server_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "cabinet_server_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
+    },
+    {
+      "Name": "plant",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "plant"
+      },
+      "Wreck": "plant_wreck",
+      "Size": [8, 6],
+      "Health": 20,
+      "Flags": ["Inside", "OneOrMoreWalls"]
+    },
+    {
+      "Name": "plant_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "plant_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Inside", "OneOrMoreWalls"],
+      "DestroySpawn": [
+        {
+          "Type": "Health",
+          "SpawnChance": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "flower",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "flower"
+      },
+      "Wreck": "flower_wreck",
+      "Size": [8, 6],
+      "Health": 20,
+      "Flags": ["Inside", "OneOrMoreWalls"],
+      "DestroySpawn": [
+        {
+          "Type": "Health",
+          "SpawnChance": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "flower_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "flower_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Inside", "OneOrMoreWalls"]
+    },
+    {
+      "Name": "bench",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "bench"
+      },
+      "Wreck": "bench_wreck",
+      "Health": 20,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "bench_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "bench_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "table",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "table"
+      },
+      "Wreck": "table_wreck",
+      "Health": 20,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "table_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "table_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "table_wood",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "table_wood"
+      },
+      "Wreck": "table_wood_wreck",
+      "Health": 20,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "table_wood_candle",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "table_wood_candle"
+      },
+      "Wreck": "table_wood_wreck",
+      "Health": 20,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "table_clothed",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "table_clothed"
+      },
+      "Wreck": "table_wood_wreck",
+      "Health": 20,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "table_wood_round",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "table_wood_round"
+      },
+      "Wreck": "table_wood_round_wreck",
+      "Health": 20,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "table_wood_round_candle",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "table_wood_round_candle"
+      },
+      "Wreck": "table_wood_round_wreck",
+      "Health": 20,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "table_wood_round_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "table_wood_round_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "table_wood_round_clothed",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "table_wood_round_clothed"
+      },
+      "Wreck": "table_wood_round_clothed_wreck",
+      "Health": 20,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "table_wood_round_clothed_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "table_wood_round_clothed_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "table_wood_round_terminal",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "table_wood_round_terminal"
+      },
+      "Wreck": "table_wood_round_terminal_wreck",
+      "Health": 40,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "table_wood_round_terminal_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "table_wood_round_terminal_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "table_steel",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "table_steel"
+      },
+      "Wreck": "safe_wreck",
+      "Health": 30,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "table_plastic",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "table_plastic"
+      },
+      "Wreck": "table_plastic_wreck",
+      "Health": 30,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "table_plastic_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "table_plastic_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "chair",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "chair"
+      },
+      "Wreck": "chair_wreck",
+      "Size": [8, 6],
+      "Health": 20,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "chair_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "chair_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "chair_task",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "chair_task"
+      },
+      "Wreck": "chair_task_wreck",
+      "Size": [8, 6],
+      "Health": 20,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "chair_task_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "chair_task_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "column",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "column"
+      },
+      "Wreck": "cabinet_wreck",
+      "Size": [8, 6],
+      "Health": 60,
+      "Flags": ["Outside", "NoWalls"],
+      "DestroySpawn": [
+        {
+          "Type": "Ammo",
+          "SpawnChance": 0.1
+        },
+        {
+          "Type": "Health",
+          "SpawnChance": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "cabinet_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "cabinet_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["NoWalls"]
+    },
+    {
+      "Name": "rod",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "rod"
+      },
+      "Wreck": "rod_wreck",
+      "Size": [8, 6],
+      "Health": 60,
+      "Flags": ["Outside", "NoWalls"],
+      "DestroySpawn": [
+        {
+          "Type": "Ammo",
+          "SpawnChance": 0.1
+        },
+        {
+          "Type": "Health",
+          "SpawnChance": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "rod_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "rod_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Outside", "NoWalls"]
+    },
+    {
+      "Name": "barrel_wood",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "barrel_wood"
+      },
+      "Wreck": "barrel_wood_wreck",
+      "Health": 40,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "barrel_wood2",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "barrel_wood2"
+      },
+      "Wreck": "barrel_wood2_wreck",
+      "Health": 40,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "barrel_wood2_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "barrel_wood2_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "box_gray",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "box_gray"
+      },
+      "Wreck": "table_wood_wreck",
+      "Health": 20,
+      "Flags": ["Outside", "OneWall"],
+      "DestroySpawn": [
+        {
+          "Type": "Ammo",
+          "SpawnChance": 0.1
+        },
+        {
+          "Type": "Health",
+          "SpawnChance": 0.2
+        },
+        {
+          "Type": "Gun",
+          "SpawnChance": 0.05
+        }
+      ]
+    },
+    {
+      "Name": "box_green",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "box_green"
+      },
+      "Wreck": "table_wood_wreck",
+      "Health": 20,
+      "Flags": ["Outside", "OneWall"],
+      "DestroySpawn": [
+        {
+          "Type": "Ammo",
+          "SpawnChance": 0.1
+        },
+        {
+          "Type": "Health",
+          "SpawnChance": 0.2
+        },
+        {
+          "Type": "Gun",
+          "SpawnChance": 0.05
+        }
+      ]
+    },
+    {
+      "Name": "box_wood",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "box_wood"
+      },
+      "Wreck": "table_wood_wreck",
+      "Health": 20,
+      "Flags": ["Outside", "OneWall"],
+      "DestroySpawn": [
+        {
+          "Type": "Ammo",
+          "SpawnChance": 0.1
+        },
+        {
+          "Type": "Health",
+          "SpawnChance": 0.2
+        },
+        {
+          "Type": "Gun",
+          "SpawnChance": 0.05
+        }
+      ]
+    },
+    {
+      "Name": "box3_gray",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "box3_gray"
+      },
+      "Wreck": "box3_gray_wreck",
+      "Health": 20,
+      "Flags": ["Outside", "OneWall"],
+      "DestroySpawn": [
+        {
+          "Type": "Ammo",
+          "SpawnChance": 0.1
+        },
+        {
+          "Type": "Health",
+          "SpawnChance": 0.2
+        },
+        {
+          "Type": "Gun",
+          "SpawnChance": 0.05
+        }
+      ]
+    },
+    {
+      "Name": "box3_gray_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "box3_gray_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "box3_green",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "box3_green"
+      },
+      "Wreck": "box3_green_wreck",
+      "Health": 20,
+      "Flags": ["Outside", "OneWall"],
+      "DestroySpawn": [
+        {
+          "Type": "Ammo",
+          "SpawnChance": 0.1
+        },
+        {
+          "Type": "Health",
+          "SpawnChance": 0.2
+        },
+        {
+          "Type": "Gun",
+          "SpawnChance": 0.05
+        }
+      ]
+    },
+    {
+      "Name": "box3_green_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "box3_green_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "floor_console",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "floor_console"
+      },
+      "Wreck": "floor_console_wreck",
+      "Health": 20,
+      "Flags": ["Outside", "OneWall"],
+      "DestroySpawn": [
+        {
+          "Type": "Ammo",
+          "SpawnChance": 0.1
+        },
+        {
+          "Type": "Gun",
+          "SpawnChance": 0.05
+        }
+      ]
+    },
+    {
+      "Name": "floor_console_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "floor_console_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "bookshelf",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "bookshelf"
+      },
+      "Offset": [-8, -15],
+      "Wreck": "table_wood_wreck",
+      "Size": [16, 6],
+      "Health": 20,
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"],
+      "DestroySpawn": [
+        {
+          "Type": "Ammo",
+          "SpawnChance": 0.1
+        }
+      ]
+    },
+    {
+      "Name": "bookshelf2",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "bookshelf2"
+      },
+      "Offset": [-8, -15],
+      "Wreck": "bookshelf2_wreck",
+      "Size": [16, 6],
+      "Health": 20,
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"],
+      "DestroySpawn": [
+        {
+          "Type": "Ammo",
+          "SpawnChance": 0.1
+        }
+      ]
+    },
+    {
+      "Name": "bookshelf2_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "bookshelf2_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
+    },
+    {
+      "Name": "terminal",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "terminal"
+      },
+      "Wreck": "table_wood_wreck",
+      "Health": 40,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "safe",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "safe"
+      },
+      "Wreck": "safe_wreck",
+      "Health": 100,
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"],
+      "DestroySpawn": [
+        {
+          "Type": "Ammo",
+          "SpawnChance": 0.5
+        },
+        {
+          "Type": "Health",
+          "SpawnChance": 0.5
+        },
+        {
+          "Type": "Gun",
+          "SpawnChance": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "safe2",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "safe2"
+      },
+      "Wreck": "safe2_wreck",
+      "Health": 100,
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"],
+      "DestroySpawn": [
+        {
+          "Type": "Ammo",
+          "SpawnChance": 0.5
+        },
+        {
+          "Type": "Health",
+          "SpawnChance": 0.5
+        },
+        {
+          "Type": "Gun",
+          "SpawnChance": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "safe2_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "safe2_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
+    },
+    {
+      "Name": "statue_ogre",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "statue_ogre"
+      },
+      "Wreck": "safe_wreck",
+      "Health": 80,
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"],
+      "DestroySpawn": [
+        {
+          "Type": "Gun",
+          "SpawnChance": 0.8
+        }
+      ]
+    },
+    {
+      "Name": "statue_behemoth",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "statue_behemoth"
+      },
+      "Wreck": "safe_wreck",
+      "Health": 80,
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"],
+      "DestroySpawn": [
+        {
+          "Type": "Gun",
+          "SpawnChance": 0.8
+        }
+      ]
+    },
+    {
+      "Name": "egg",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "egg"
+      },
+      "Wreck": "egg_wreck",
+      "Health": 30,
+      "DestroySpawn": [
+        {
+          "Type": "Health",
+          "SpawnChance": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "egg_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "egg_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true
+    },
+    {
+      "Name": "egg2",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "egg2"
+      },
+      "Wreck": "egg2_wreck",
+      "Health": 30,
+      "DestroySpawn": [
+        {
+          "Type": "Health",
+          "SpawnChance": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "egg2_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "egg2_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true
+    },
+    {
+      "Name": "tree",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "tree"
+      },
+      "Wreck": "tree_wreck",
+      "Size": [8, 6],
+      "Health": 40,
+      "Flags": ["Outside", "NoWalls"]
+    },
+    {
+      "Name": "tree_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "tree_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Outside", "NoWalls"]
+    },
+    {
+      "Name": "tree_dead",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "tree_dead"
+      },
+      "Wreck": "tree_dead_wreck",
+      "Size": [8, 6],
+      "Health": 40,
+      "Flags": ["Outside", "NoWalls"]
+    },
+    {
+      "Name": "tree_dead_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "tree_dead_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Outside", "NoWalls"]
+    },
+    {
+      "Name": "tree_autumn",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "tree_autumn"
+      },
+      "Wreck": "tree_autumn_wreck",
+      "Size": [8, 6],
+      "Health": 40,
+      "Flags": ["Outside", "NoWalls"]
+    },
+    {
+      "Name": "tree_autumn_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "tree_autumn_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Outside", "NoWalls"]
+    },
+    {
+      "Name": "barrel",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "barrel"
+      },
+      "Wreck": "barrel_wood_wreck",
+      "Health": 40,
+      "DestroyGuns": ["fire_explosion"],
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "barrel_flame",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "barrel_flame"
+      },
+      "Wreck": "barrel_flame_wreck",
+      "Health": 40,
+      "DestroyGuns": ["fire_explosion"],
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "barrel_flame_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "barrel_flame_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "barrel_skull",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "barrel_skull"
+      },
+      "Wreck": "barrel_wood_wreck",
+      "Health": 40,
+      "DestroyGuns": [
+        "explosion1",
+        "explosion2",
+        "explosion3"
+      ],
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "barrel_wood_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "barrel_wood_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "barrel_skull2",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "barrel_skull2"
+      },
+      "Wreck": "barrel_wood2_wreck",
+      "Health": 40,
+      "DestroyGuns": [
+        "explosion1",
+        "explosion2",
+        "explosion3"
+      ],
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "barrel_wood2_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "barrel_wood2_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "box_metal_green",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "box_metal_green"
+      },
+      "Wreck": "box_metal_green_wreck",
+      "Health": 40,
+      "DestroyGuns": [
+        "big_quake",
+        "explosion1",
+        "explosion2",
+        "explosion3"
+      ],
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "box_metal_green_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "box_metal_green_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "box3_gas",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "box3_gas",
+        "TicksPerFrame": 16
+      },
+      "Wreck": "box3",
+      "Health": 20,
+      "DestroyGuns": [
+        "gas_poison_explosion"
+      ],
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "box3",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "box3"
+      },
+      "Wreck": "box3_gray_wreck",
+      "Health": 40,
+      "DestroyGuns": [
+        "big_quake",
+        "explosion1",
+        "explosion2",
+        "explosion3"
+      ],
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "box3_gray_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "box3_gray_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "box_red",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "box_red"
+      },
+      "Wreck": "table_wood_wreck",
+      "Health": 40,
+      "DestroyGuns": ["fire_explosion"],
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "table_wood_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "table_wood_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true
+    },
+    {
+      "Name": "box3_red",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "box3_red"
+      },
+      "Wreck": "box3_red_wreck",
+      "Health": 40,
+      "DestroyGuns": ["fire_explosion"],
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "box3_red_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "box3_red_wreck"
+      },
+      "Wreck": "table_wood_wreck",
+      "Health": 40,
+      "DestroyGuns": ["fire_explosion"],
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "table_lab",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "table_lab"
+      },
+      "Wreck": "safe_wreck",
+      "Health": 60,
+      "DestroyGuns": ["gas_poison_explosion"],
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"],
+      "DestroySpawn": [
+        {
+          "Type": "Health",
+          "SpawnChance": 0.5
+        }
+      ]
+    },
+    {
+      "Name": "safe_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "safe_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Inside"]
+    },
+    {
+      "Name": "table_plastic_lab",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "table_plastic_lab"
+      },
+      "Wreck": "table_plastic_lab_wreck",
+      "Health": 60,
+      "DestroyGuns": ["gas_poison_explosion"],
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"],
+      "DestroySpawn": [
+        {
+          "Type": "Health",
+          "SpawnChance": 0.5
+        }
+      ]
+    },
+    {
+      "Name": "table_plastic_lab_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "table_plastic_lab_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
+    },
+    {
+      "Name": "rocket",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "rocket"
+      },
+      "Wreck": "rocket_wreck",
+      "Health": 40,
+      "DestroyGuns": [
+        "big_quake",
+        "explosion1",
+        "explosion2",
+        "explosion3"
+      ],
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "rocket2",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "rocket2"
+      },
+      "Wreck": "rocket_wreck",
+      "Health": 40,
+      "DestroyGuns": [
+        "big_quake",
+        "explosion1",
+        "explosion2",
+        "explosion3"
+      ],
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "rocket_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "rocket_wreck"
+      },
+      "Health": 0,
+      "DrawLast": true,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "bloodstain",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "bloodstain"
+      },
+      "Offset": [-6, -11],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "bloodstain2",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "bloodstain2"
+      },
+      "Offset": [-6, -11],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "wall_skull",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "wall_skull"
+      },
+      "Offset": [-4, -11],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "wall_skull2",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "wall_skull2"
+      },
+      "Offset": [-4, -11],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "bulletmarks",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "bulletmarks"
+      },
+      "Offset": [-5, -10],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "scratch",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "scratch"
+      },
+      "Offset": [-5, -10],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "wall_stuff",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "wall_stuff"
+      },
+      "Offset": [-4, -14],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "wall_goo",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "wall_goo"
+      },
+      "Offset": [-5, -11],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "wall_goo2",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "wall_goo2"
+      },
+      "Offset": [-5, -11],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "bone_blood",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "bone_blood"
+      },
+      "Offset": [-6, -3],
+      "Health": 0,
+      "DrawLast": true
+    },
+    {
+      "Name": "gibs",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "gibs"
+      },
+      "Offset": [-6, -3],
+      "Health": 0,
+      "DrawLast": true
+    },
+    {
+      "Name": "skull",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "skull"
+      },
+      "Offset": [-6, -4],
+      "Health": 0,
+      "DrawLast": true
+    },
+    {
+      "Name": "skull2",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "skull2"
+      },
+      "Offset": [-6, -4],
+      "Health": 0,
+      "DrawLast": true
+    },
+    {
+      "Name": "blood0",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "blood0"
+      },
+      "Offset": [-8, -3],
+      "Health": 0,
+      "DrawLast": true
+    },
+    {
+      "Name": "blood1",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "blood1"
+      },
+      "Offset": [-8, -3],
+      "Health": 0,
+      "DrawLast": true
+    },
+    {
+      "Name": "blood2",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "blood2"
+      },
+      "Offset": [-8, -3],
+      "Health": 0,
+      "DrawLast": true
+    },
+    {
+      "Name": "blood3",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "blood3"
+      },
+      "Offset": [-8, -3],
+      "Health": 0,
+      "DrawLast": true
+    },
+    {
+      "Name": "blood4",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "blood4"
+      },
+      "Offset": [-8, -3],
+      "Health": 0,
+      "DrawLast": true
+    },
+    {
+      "Name": "goo",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "goo"
+      },
+      "Offset": [-8, -6],
+      "Health": 0,
+      "DrawLast": true
+    },
+    {
+      "Name": "drain0",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "drain0"
+      },
+      "Offset": [-8, -6],
+      "Health": 0,
+      "DrawLast": true
+    },
+    {
+      "Name": "drain1",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "drain1"
+      },
+      "Offset": [-8, -6],
+      "Health": 0,
+      "DrawLast": true
+    },
+    {
+      "Name": "drain2",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "drain2"
+      },
+      "Offset": [-8, -6],
+      "Health": 0,
+      "DrawLast": true
+    },
+    {
+      "Name": "health spawner",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "spawn_pad"
+      },
+      "Offset": [-8, -6],
+      "Health": 0,
+      "DrawLast": true,
+      "Type": "PickupSpawner",
+      "Pickup": "health"
+    },
+    {
+      "Name": "fan",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "fan",
+        "TicksPerFrame": 4
+      },
+      "Offset": [-8, -6],
+      "Health": 0,
+      "DrawLast": true
+    },
+    {
+      "Name": "phleboltinum",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "phleboltinum"
+      },
+      "Wreck": "safe_wreck",
+      "Health": 50
+    },
+    {
+      "Name": "wscreen1",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "wscreen1",
+        "TicksPerFrame": 10
+      },
+      "Size": [14, 1],
+      "PosOffset": [0, -5],
+      "Offset": [-7, -11],
+      "Wreck": "wscreen1_wreck",
+      "Health": 10
+    },
+    {
+      "Name": "wscreen2",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "wscreen2",
+        "TicksPerFrame": 10
+      },
+      "Size": [14, 1],
+      "PosOffset": [0, -5],
+      "Offset": [-7, -11],
+      "Wreck": "wscreen1_wreck",
+      "Health": 10
+    },
+    {
+      "Name": "wscreen1_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "wscreen1_broken"
+      },
+      "Offset": [-7, -11],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "server_blink",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "server_blink",
+        "TicksPerFrame": 40
+      },
+      "WreckPic": {
+        "Type": "Normal",
+        "Pic": "safe2_wreck"
+      },
+      "Health": 30,
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
+    },
+    {
+      "Name": "box3_blink",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "box3_blink",
+        "TicksPerFrame": 40
+      },
+      "WreckPic": {
+        "Type": "Normal",
+        "Pic": "box3_gray_wreck"
+      },
+      "DestroyGuns": [        "explosion1",
+        "explosion2",
+        "explosion3"],
+      "Health": 20,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "table_plastic_computer",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "table_plastic_computer"
+      },
+      "Wreck": "table_plastic_wreck",
+      "Health": 40,
+      "Flags": ["Inside", "NoWalls"]
+    }
+  ]
+}

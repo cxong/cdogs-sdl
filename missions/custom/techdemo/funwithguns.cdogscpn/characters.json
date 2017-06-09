@@ -1,0 +1,19 @@
+{
+	"Version": 12,
+	"Characters": [{
+		"Class": "Smith",
+		"Skin": "ff8136",
+		"Arms": "9c0000",
+		"Body": "9c0000",
+		"Legs": "363636",
+		"Hair": "9c0000",
+		"speed": 128,
+		"Gun": "Dynamite",
+		"maxHealth": 40,
+		"flags": 0,
+		"probabilityToMove": 40,
+		"probabilityToTrack": 15,
+		"probabilityToShoot": 0,
+		"actionDelay": 30
+	}]
+}

@@ -1,0 +1,35 @@
+NServerInfo.HostName		max_size:12
+NServerInfo.CampaignName	max_size:20
+
+NCampaignDef.Path			max_size:4096
+
+NPlayerData.Name			max_size:20
+NPlayerData.CharacterClass	max_size:128
+NPlayerData.Weapons			max_size:128
+NPlayerData.Weapons			max_count:3
+
+NTileSet.PicName    max_size:128
+NTileSet.PicAltName max_size:128
+
+NConfig.Name				max_size:128
+NConfig.Value				max_size:128
+
+NMapObjectAdd.MapObjectClass max_size:128
+
+NSound.Sound max_size:128
+
+NActorReplaceGun.Gun max_size:128
+
+NActorMelee.BulletClass max_size:128
+
+NAddPickup.PickupClass max_size:128
+
+NAddBullet.BulletClass max_size:128
+
+NExploreTiles.Runs max_count:16
+
+NGunFire.Gun max_size:128
+
+NGunReload.Gun max_size:128
+
+NMissionEnd.Msg max_size:128

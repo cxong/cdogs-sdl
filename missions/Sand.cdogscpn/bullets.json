@@ -1,0 +1,13 @@
+{
+  "Version": 1,
+  "Bullets": [
+    {
+      "Name": "monster_bite",
+      "Power": 1,
+      "HitSounds": {
+        "Object": "knife_hard",
+        "Flesh": "monster-2"
+      }
+    }
+  ]
+}

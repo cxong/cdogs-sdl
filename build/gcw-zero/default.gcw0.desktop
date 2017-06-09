@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=C-Dogs SDL
+Comment=Classic overhead run-and-gun game
+Type=Application
+Exec=cdogs-sdl --screen=320x240 --scale=1
+Icon=cdogs-sdl
+Terminal=false
+Categories=games;
+X-OD-Manual=readme_gcw.txt

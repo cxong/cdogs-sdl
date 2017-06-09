@@ -1,0 +1,29 @@
+{
+  "Version": 1,
+  "MapObjects": [
+    {
+      "Name": "health bonus",
+      "Pic": "spawn_pad",
+      "Offset": [-8, -6],
+      "Health": 0,
+      "Type": "PickupSpawner",
+      "Pickup": "health_bonus"
+    },
+    {
+      "Name": "stimpack spawner",
+      "Pic": "spawn_pad",
+      "Offset": [-8, -6],
+      "Health": 0,
+      "Type": "PickupSpawner",
+      "Pickup": "stimpack"
+    },
+    {
+      "Name": "armor bonus",
+      "Pic": "spawn_pad",
+      "Offset": [-8, -6],
+      "Health": 0,
+      "Type": "PickupSpawner",
+      "Pickup": "armor_bonus"
+    }
+  ]
+}

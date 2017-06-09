@@ -1,0 +1,7 @@
+Derived from Tom Thumb by Robey Pointer <robeypointer@gmail.com>
+http://robey.lag.net/2010/01/23/tiny-monospace-font.html
+
+And Brian J. Swetland
+
+http://opengameart.org/content/tom-thumb-tiny-ascii-font-3x5
+https://creativecommons.org/publicdomain/zero/1.0/

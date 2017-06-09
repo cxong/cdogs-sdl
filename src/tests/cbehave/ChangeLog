@@ -1,0 +1,15 @@
+# 
+# ChangeLog for cbehave
+#
+
+2013-07-11 Tony Bai <bigwhite.cn@gmail.com>
+    * merge pull request from cxong/master
+
+2012-04-16 Tony Bai <bigwhite.cn@gmail.com>
+    * cbehave 0.2.0 released!
+    * fix the bug: when all cases run successfully, cbehave exit with 1.
+	* add CBEHAVE_ARG_RETURN_COUNT and CBEHAVE_RETV_RETURN_COUNT
+	* add a new example: mock_test.c
+
+2011-08-14 Tony Bai <bigwhite.cn@gmail.com>
+    * cbehave 0.1.0 released!

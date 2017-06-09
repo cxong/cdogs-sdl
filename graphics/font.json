@@ -1,0 +1,7 @@
+{
+	"Size": [5, 7],
+	"Stride": 32,
+	"Padding": [0, 0, 0, 0],
+	"Gap": [-1, 0],
+	"Proportional": true
+}

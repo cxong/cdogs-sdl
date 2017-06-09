@@ -1,0 +1,17 @@
+{
+  "Version": 1,
+  "Guns": [
+    {
+      "Name": "Marine Pistol",
+      "Icon": "pistol",
+      "Description": "Standard issue sidearm, low rate of fire and damage. Recommend engaging at a distance.",
+      "Bullet": "10mm",
+      "Cost": 0,
+      "Lock": 18,
+      "Sound": "pistol",
+      "Recoil": 0.05,
+      "Brass": "brass",
+      "Ammo": "Bullets"
+    }
+  ]
+}

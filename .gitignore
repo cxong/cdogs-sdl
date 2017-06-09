@@ -1,0 +1,107 @@
+# executables
+*.exe*
+src/cdogs-sdl
+src/cdogs-sdl-editor
+cdogs-sdl.opk
+# tests
+src/tests/autosave_test
+src/tests/c_array_test
+src/tests/c_hashmap_test
+src/tests/color_test
+src/tests/config_test
+src/tests/json_test
+src/tests/pic_test
+src/tests/player_test
+src/tests/utils_test
+src/cdogs/physfs/test_physfs
+
+# CMake stuff
+*CMakeCache.txt
+CMakeFiles/
+*cmake_install.cmake
+Makefile
+.metadata/
+RemoteSystemsTempFiles/
+*.dir/
+CPack*
+_CPack_Packages/
+CTestTestfile.cmake
+Testing/
+install_manifest_Runtime.txt
+*.deb
+*.rpm
+
+# Generated files
+src/cdogs/sys_config.h
+build/linux/cdogs-sdl
+cdogs-sdl_*/
+install_manifest.txt
+build/windows/cdogs.rc
+
+# Linux
+bin/
+/share/
+
+# Visual Studio
+Debug/
+Release/
+Win32/
+*.opensdf
+*.sdf
+*.suo
+*.vcxproj.user
+*.dll
+*.psess
+*.vcxproj
+*.vcxproj.filters
+*.vspx
+*.sln
+*.ilk
+*.pdb
+*.VC.*
+.vs/
+
+# MinGW
+stdout.txt
+stderr.txt
+
+# XCode
+CMakeScripts/
+*.xcodeproj/
+.DS_Store
+*.dmg
+*.app/
+
+# CLion
+.idea/
+*.cbp
+
+# GCW-Zero
+gcw0build/
+gcw0-toolchain/
+
+# Ninja
+.ninja*
+*.ninja
+
+# Appveyor
+dll/
+
+# Other
+*.lnk
+*.o
+*.a
+*.so
+*.so.*
+*.swp
+Makefile.*
+*.tar.gz
+tmp
+.cdogs/
+*~*.cpn
+*~*.cdogscpn
+Thumbs.db
+.config/
+src/cdogs/include/
+src/cdogs/share/
+*.blend1

@@ -1,0 +1,189 @@
+{
+  "Version": 2,
+  "Characters": [
+    {
+      "Name": "Jones",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      }
+    },
+    {
+      "Name": "Ice",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/ice"
+      }
+    },
+    {
+      "Name": "Ogre",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/ogre"
+      },
+      "Sounds": {
+        "Aargh": "aargh/ogre"
+      }
+    },
+    {
+      "Name": "Dragon",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/dragon"
+      }
+    },
+    {
+      "Name": "WarBaby",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/warbaby"
+      }
+    },
+    {
+      "Name": "Bug-eye",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/bugeye"
+      },
+      "Sounds": {
+        "Aargh": "aargh/alien"
+      }
+    },
+    {
+      "Name": "Smith",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/smith"
+      }
+    },
+    {
+      "Name": "Ogre Boss",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/ogreboss"
+      },
+      "Sounds": {
+        "Aargh": "aargh/ogre"
+      }
+    },
+    {
+      "Name": "Grunt",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/grunt"
+      }
+    },
+    {
+      "Name": "Professor",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/professor"
+      }
+    },
+    {
+      "Name": "Snake",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/snake"
+      }
+    },
+    {
+      "Name": "Wolf",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/wolf"
+      }
+    },
+    {
+      "Name": "Bob",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/bob"
+      }
+    },
+    {
+      "Name": "Mad bug-eye",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/madbugeye"
+      },
+      "Sounds": {
+        "Aargh": "aargh/alien"
+      }
+    },
+    {
+      "Name": "Cyborg",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/cyborg"
+      },
+      "Sounds": {
+        "Aargh": "aargh/zombie"
+      }
+    },
+    {
+      "Name": "Robot",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/robot"
+      },
+      "Sounds": {
+        "Aargh": "aargh/alien"
+      }
+    },
+    {
+      "Name": "Lady",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/lady"
+      },
+      "Sounds": {
+        "Aargh": "aargh/woman"
+      }
+    },
+    {
+      "Name": "Cyber Jones",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/cyberjones"
+      },
+      "Sounds": {
+        "Aargh": "aargh/zombie"
+      }
+    },
+    {
+      "Name": "Cyber Smith",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/cybersmith"
+      },
+      "Sounds": {
+        "Aargh": "aargh/zombie"
+      }
+    },
+    {
+      "Name": "Cyber WarBaby",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/cyberwar"
+      },
+      "Sounds": {
+        "Aargh": "aargh/zombie"
+      }
+    },
+    {
+      "Name": "Freeze",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/freeze"
+      }
+    },
+    {
+      "Name": "Goggles",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/goggles"
+      }
+    }
+  ]
+}

@@ -1,0 +1,136 @@
+{
+  "Version": 1,
+  "Guns": [
+
+    {
+      "Name": "Mining laser",
+      "Bullet": "laser_point",
+      "Icon": "browny_gun",
+      "Cost": 0,
+      "Lock": 1,
+      "MuzzleFlashParticle": "",
+      "SwitchSound": "mini_cells_pickup",
+      "Sound": "mining_laser",
+      "SoundLockLength": 8,
+      "Description": "A laser that is strong enough to melt rocks."
+    },
+    {
+      "Pic": "knife",
+      "Icon": "chainsaw",
+      "Name": "Rocksaw",
+      "Description": "A chainsaw specialized to crack rocks.",
+      "Bullet": "chainsaw",
+      "Cost": 0,
+      "Lock": 5,
+      "Sound": "",
+      "SoundLockLength": 50,
+      "CanShoot": false
+    },
+    {
+      "Name": "AArms Needler",
+      "Icon": "petrifier",
+      "Bullet": "yellow_needle",
+      "Cost": 1,
+      "Lock": 3,
+      "Sound": "pulse",
+      "Recoil": 0.3,
+      "SpreadCount": 2,
+      "SpreadWidth": 0.1,
+      "AngleOffset": 0.1,
+      "Ammo": "Mini cells"
+    },
+    {
+      "Name": "Laser Pistol",
+      "Icon": "pistol",
+      "Bullet": "red_laser",
+      "Cost": 0,
+      "Lock": 18,
+      "Sound": "pulse",
+      "SwitchSound": "pistol_switch",
+      "Recoil": 0.1
+    },
+    {
+      "Pic": "",
+      "Icon": "grenades",
+      "Name": "Bioreactive Grenades",
+      "Bullet": "bio_grenade",
+      "Cost": 10,
+      "Lock": 30,
+      "Sound": "launch",
+      "SwitchSound": "grenade_pickup",
+      "Elevation": 24,
+      "Ammo": "Grenades"
+    },
+    {
+      "Pic": "",
+      "Name": "Monster Bite",
+      "Bullet": "monster_bite",
+      "Cost": 0,
+      "Lock": 10,
+      "Sound": "",
+      "SoundLockLength": 20,
+      "CanShoot": false,
+      "CanDrop": false
+    },
+    {
+      "Name": "Monster gas",
+      "Pic": "",
+      "Bullet": "monster_gas",
+      "Cost": 0,
+      "Lock": 40,
+      "Sound": "gas_leak",
+      "SoundLockLength": 36,
+      "MuzzleFlashParticle": "muzzle_flash_gasgun",
+      "CanShoot": true,
+      "CanDrop": false
+    },
+    {
+      "Name": "Cryo gun",
+      "Icon": "cryo_gun",
+      "Pic": "blaster",
+      "Bullet": "cryo_gas",
+      "Cost": 1,
+      "Lock": 6,
+      "Sound": "flamer",
+      "SwitchSound": "flamer_switch",
+      "SoundLockLength": 36,
+      "MuzzleFlashParticle": "muzzle_flash_gasgun",
+      "Ammo": "N Bottle"
+    },
+    {
+      "Name": "Machine pistol",
+      "Icon": "pistol",
+      "Bullet": "9mm",
+      "Cost": 0,
+      "Lock": 8,
+      "Sound": "pistol",
+      "SwitchSound": "pistol_switch",
+      "Recoil": 0.1,
+      "Brass": "brass"
+    },
+    {
+      "Name": "Monster psybeam",
+      "Pic":"",
+      "Bullet": "psywave",
+      "Cost": 0,
+      "Lock": 10,
+      "Sound": "pulse",
+      "Recoil": 1.6,
+      "SpreadCount": 6,
+      "AngleOffset" : 0.2,
+      "SpreadWidth": 0.8,
+      "CanDrop": false
+    }
+  ], "PseudoGuns" : [
+    {
+      "Pic": "",
+      "Name": "particle_explosion",
+      "Bullet": "yellow_particle",
+      "Sound": "hit_petrify",
+      "SpreadCount": 60,
+      "SpreadWidth": 0.1,
+      "AngleOffset": 0.05,
+      "ShakeAmount": 2
+    }
+  ]
+}

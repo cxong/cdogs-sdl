@@ -1,0 +1,89 @@
+{
+  "Version": 1,
+  "Ammo": [
+    {
+      "Name": "Bullets",
+      "Pic": "bullet_pickup",
+      "Sound": "bullet_pickup",
+      "Amount": 30,
+      "Max": 300
+    },
+    {
+      "Name": "Grenades",
+      "Pic": "grenade_pickup",
+      "Sound": "grenade_pickup",
+      "Amount": 2,
+      "Max": 10
+    },
+    {
+      "Name": "Gas tank",
+      "Pic": "gas_tank",
+      "Sound": "gas_tank_pickup",
+      "Amount": 50,
+      "Max": 500
+    },
+    {
+      "Name": "Shells",
+      "Pic": "shells",
+      "Sound": "shells_pickup",
+      "Amount": 5,
+      "Max": 50
+    },
+    {
+      "Name": "Cells",
+      "Pic": "cells",
+      "Sound": "cells_pickup",
+      "Amount": 10,
+      "Max": 200
+    },
+    {
+      "Name": "Frag grenades",
+      "Pic": "frag_grenade_pickup",
+      "Sound": "grenade_pickup",
+      "Amount": 2,
+      "Max": 10
+    },
+    {
+      "Name": "Molotovs",
+      "Pic": "molotov_pickup",
+      "Sound": "molotov_pickup",
+      "Amount": 3,
+      "Max": 15
+    },
+    {
+      "Name": "Mines",
+      "Pic": "mine_pickup",
+      "Sound": "package_pickup",
+      "Amount": 2,
+      "Max": 10
+    },
+    {
+      "Name": "Dynamite",
+      "Pic": "dynamite_pickup",
+      "Sound": "package_pickup",
+      "Amount": 3,
+      "Max": 15
+    },
+    {
+      "Name": "Gas bombs",
+      "Pic": "gas_grenade_pickup",
+      "Sound": "grenade_pickup",
+      "Amount": 5,
+      "Max": 30
+    },
+    {
+      "Name": "Mini cells",
+      "Pic": "mini_cells",
+      "Sound": "mini_cells_pickup",
+      "Amount": 40,
+      "Max": 500
+    },
+    {
+      "Name": "Rockets",
+      "Pic": "rockets",
+      "Sound": "grenade_pickup",
+      "Amount": 5,
+      "Max": 40
+    }
+  ]
+}

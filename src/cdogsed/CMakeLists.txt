@@ -1,0 +1,31 @@
+include_directories(
+	${SDL2_INCLUDE_DIRS}
+	${SDL2_IMAGE_INCLUDE_DIRS}
+	${SDL2_MIXER_INCLUDE_DIRS})
+set(CDOGSED_SOURCES
+	char_editor.c
+	editor_brush.c
+	editor_ui.c
+	editor_ui_cave.c
+	editor_ui_color.c
+	editor_ui_common.c
+	editor_ui_objectives.c
+	editor_ui_static.c
+	editor_ui_static_additem.c
+	editor_ui_weapons.c
+	ui_object.c)
+set(CDOGSED_HEADERS
+	char_editor.h
+	editor_brush.h
+	editor_ui.h
+	editor_ui_cave.h
+	editor_ui_color.h
+	editor_ui_common.h
+	editor_ui_objectives.h
+	editor_ui_static.h
+	editor_ui_static_additem.h
+	editor_ui_weapons.h
+	ui_object.h)
+add_library(cdogsedlib STATIC ${CDOGSED_SOURCES} ${CDOGSED_HEADERS})
+target_link_libraries(cdogsedlib
+	${SDL2_LIBRARY})

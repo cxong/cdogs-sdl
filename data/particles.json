@@ -1,0 +1,148 @@
+{
+  "Version": 1,
+  "Particles": [
+    {
+      "Name": "spark",
+      "Pic": "spark"
+    },
+    {
+      "Name": "spark_blue",
+      "Pic": "spark_blue"
+    },
+    {
+      "Name": "spark_red",
+      "Pic": "spark_red"
+    },
+    {
+      "Name": "boom",
+      "Sprites": "boom",
+      "Range": 7,
+      "TicksPerFrame": 1
+    },
+    {
+      "Name": "muzzle_flash_default",
+      "Sprites": "muzzle_flash",
+      "Mask": "ffff80",
+      "Range": 3
+    },
+    {
+      "Name": "muzzle_flash_mg",
+      "Sprites": "muzzle_flash",
+      "Mask": "ffff80",
+      "Range": 2
+    },
+    {
+      "Name": "muzzle_flash_flamer",
+      "Sprites": "muzzle_flash",
+      "Mask": "ff0000",
+      "Range": 3
+    },
+    {
+      "Name": "muzzle_flash_shotgun",
+      "Sprites": "muzzle_flash_big",
+      "Mask": "ffff80",
+      "Range": 7
+    },
+    {
+      "Name": "muzzle_flash_powergun",
+      "Sprites": "muzzle_flash",
+      "Mask": "ff0000",
+      "Range": 5
+    },
+    {
+      "Name": "muzzle_flash_petrifier",
+      "Sprites": "muzzle_flash_big",
+      "Range": 10
+    },
+    {
+      "Name": "muzzle_flash_browny",
+      "Sprites": "muzzle_flash",
+      "Mask": "00ffff",
+      "Range": 5
+    },
+    {
+      "Name": "muzzle_flash_gasgun",
+      "Sprites": "muzzle_flash",
+      "Mask": "00ff00",
+      "Range": 3
+    },
+    {
+      "Name": "muzzle_flash_pulse",
+      "Sprites": "muzzle_flash_big",
+      "Mask": "00ffff",
+      "Range": 2
+    },
+    {
+      "Name": "muzzle_flash_heatseeker",
+      "Sprites": "muzzle_flash_big",
+      "Mask": "ff0000",
+      "Range": 5
+    },
+    {
+      "Name": "brass",
+      "Sprites": "brass",
+      "RangeLow": 10000,
+      "RangeHigh": 11000,
+      "GravityFactor": 1,
+      "HitsWalls": true
+    },
+    {
+      "Name": "brass_big",
+      "Sprites": "brass_big",
+      "RangeLow": 10000,
+      "RangeHigh": 11000,
+      "GravityFactor": 1,
+      "HitsWalls": true
+    },
+    {
+      "Name": "shotshell",
+      "Sprites": "shotshell",
+      "RangeLow": 10000,
+      "RangeHigh": 11000,
+      "GravityFactor": 1,
+      "HitsWalls": true
+    },
+    {
+      "Name": "smoke",
+      "Sprites": "smoke",
+      "Range": 29,
+      "TicksPerFrame": 6
+    },
+    {
+      "Name": "explosion_small",
+      "Sprites": "explosion_small",
+      "Range": 7,
+      "TicksPerFrame": 4
+    },
+    {
+      "Name": "blood1",
+      "Sprites": "blood1",
+      "RangeLow": 10000,
+      "RangeHigh": 11000,
+      "GravityFactor": 1,
+      "HitsWalls": true,
+	  "Bounces": false,
+	  "WallBounces": false
+    },
+    {
+      "Name": "blood2",
+      "Sprites": "blood2",
+      "RangeLow": 10000,
+      "RangeHigh": 11000,
+      "GravityFactor": 1,
+      "HitsWalls": true,
+	  "Bounces": false,
+	  "WallBounces": false
+    },
+    {
+      "Name": "blood3",
+      "Sprites": "blood3",
+      "RangeLow": 10000,
+      "RangeHigh": 11000,
+      "GravityFactor": 1,
+      "HitsWalls": true,
+	  "Bounces": false,
+	  "WallBounces": false
+    }
+  ]
+}

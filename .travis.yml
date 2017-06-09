@@ -1,0 +1,62 @@
+language: c
+
+os:
+  - linux
+  - osx
+
+dist: trusty
+sudo: required
+
+compiler:
+  - gcc
+  - clang
+
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - gcc-multilib
+    - rpm
+    - libsdl2-dev
+    - libsdl2-image-dev
+    - libsdl2-mixer-dev
+    # For gcw0:
+    - libc6-i386
+    - lib32stdc++6
+cache:
+  directories:
+  - /opt/gcw0-toolchain
+
+before_script:
+  - export CTEST_OUTPUT_ON_FAILURE=1
+
+script:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then sh build/macosx/install-sdl2.sh ; fi
+  # Match install prefix with data dir so that package contains everything required
+  - cmake -DCMAKE_INSTALL_PREFIX=. -DDATA_INSTALL_DIR=. -Wno-dev .
+  - make -j2
+
+  # Tests are broken on osx. Hope this will be fixed some day
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make test ; fi
+
+before_deploy:
+  - make package
+
+  # GCW-Zero deployment
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]];then bash build/travis-ci/install-gcw0-toolchain.sh && sh make_gcw0.sh ; fi
+
+  #debug
+  - ls $TRAVIS_BUILD_DIR
+deploy:
+  provider: releases
+  api_key:
+    secure: Rus8lTl0EnVqM6PXwleQ8cffjMTMY1gHGwVdbGsu8cWaDgAWQ86TFgGBbV+x12z9floDPzI7Z1K/entktkiSWQyRPIa9jQfJBIomNABhIykUvpRsL026Cs8TysI4L4hrTvFev10QI28RFyZvUDBT8yytowFsuU5Pfb4n7kDIisQ=
+  file_glob: true
+  skip_cleanup: true
+  file:
+    - "$TRAVIS_BUILD_DIR/C-Dogs*SDL-*-{Linux,OSX}.{tar.gz,dmg}"
+    - "$TRAVIS_BUILD_DIR/gcw0build/cdogs-sdl.opk"
+  on:
+    tags: true
+    condition: $CC = gcc
