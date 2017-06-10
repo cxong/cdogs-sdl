@@ -51,7 +51,7 @@
 			"Density": 20
 		}],
 		"EnemyDensity": 26,
-		"Weapons": ["Kindjal",
+		"Weapons": ["Khanjali",
 		"Machine gun",
 		"Inkvine",
 		"Sniper rifle"],
@@ -157,7 +157,7 @@
 			"Density": 20
 		}],
 		"EnemyDensity": 11,
-		"Weapons": ["Kindjal",
+		"Weapons": ["Khanjali",
 		"Machine gun",
 		"Inkvine",
 		"Shotgun",
@@ -213,7 +213,7 @@
 			"Required": 25,
 			"Flags": 0
 		}],
-		"Enemies": [14,
+		"Enemies": [15,
 		6],
 		"SpecialChars": [2,
 		3,
@@ -259,7 +259,7 @@
 			"Density": 40
 		}],
 		"EnemyDensity": 12,
-		"Weapons": ["Kindjal",
+		"Weapons": ["Khanjali",
 		"Machine gun",
 		"Inkvine",
 		"Shotgun",
@@ -338,7 +338,7 @@
 			"Density": 25
 		}],
 		"EnemyDensity": 4,
-		"Weapons": ["Kindjal",
+		"Weapons": ["Khanjali",
 		"Machine gun",
 		"Grenades",
 		"Inkvine",
@@ -409,7 +409,7 @@
 			"Density": 15
 		}],
 		"EnemyDensity": 0,
-		"Weapons": ["Kindjal",
+		"Weapons": ["Khanjali",
 		"Machine gun",
 		"Grenades",
 		"Inkvine",
@@ -470,7 +470,7 @@
 		"SpecialChars": [],
 		"MapObjectDensities": [],
 		"EnemyDensity": 14,
-		"Weapons": ["Kindjal",
+		"Weapons": ["Khanjali",
 		"Machine gun",
 		"Grenades",
 		"Inkvine",
@@ -538,7 +538,7 @@
 			"Density": 10
 		}],
 		"EnemyDensity": 12,
-		"Weapons": ["Kindjal",
+		"Weapons": ["Khanjali",
 		"Machine gun",
 		"Grenades",
 		"Inkvine",
@@ -602,7 +602,8 @@
 			"Required": 0,
 			"Flags": 0
 		}],
-		"Enemies": [14],
+		"Enemies": [15,
+		6],
 		"SpecialChars": [8,
 		10,
 		11],
@@ -623,7 +624,7 @@
 			"Density": 20
 		}],
 		"EnemyDensity": 9,
-		"Weapons": ["Kindjal",
+		"Weapons": ["Khanjali",
 		"Machine gun",
 		"Grenades",
 		"Inkvine",
@@ -718,7 +719,7 @@
 			"Density": 10
 		}],
 		"EnemyDensity": 13,
-		"Weapons": ["Kindjal",
+		"Weapons": ["Khanjali",
 		"Machine gun",
 		"Powergun",
 		"Sniper rifle",
@@ -812,7 +813,7 @@
 			"Density": 30
 		}],
 		"EnemyDensity": 9,
-		"Weapons": ["Kindjal",
+		"Weapons": ["Khanjali",
 		"Machine gun",
 		"Grenades",
 		"Inkvine",

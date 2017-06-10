@@ -12,9 +12,9 @@
     },
     {
       "Pic": "knife",
-      "Icon": "knife",
-      "Name": "Kindjal",
-      "Bullet": "kindjal",
+      "Icon": "khanjali",
+      "Name": "Khanjali",
+      "Bullet": "khanjali",
       "Cost": 0,
       "Lock": 30,
       "Sound": "",
