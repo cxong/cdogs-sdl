@@ -43,6 +43,19 @@
       "MuzzleFlashParticle": "muzzle_flash_inkvine",
       "Elevation": 20,
       "Ammo": "Cells"
+    },
+    {
+      "Name": "Lasergun",
+      "Icon": "lasergun",
+      "Bullet": "lase",
+      "Cost": 3,
+      "Lock": 40,
+      "Sound": "powergun",
+      "SwitchSound": "powergun_r",
+      "MuzzleFlashSprite": "muzzle_flash_big",
+      "MuzzleFlashColor": "ffff00",
+      "MuzzleFlashDuration": 5,
+      "Ammo": "Cells"
     }
   ],
   "PseudoGuns": [

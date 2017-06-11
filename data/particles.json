@@ -24,6 +24,12 @@
       "Range": 2
     },
     {
+      "Name": "spark_yellow",
+      "Pic": "spark_classic",
+      "Mask": "ffff00",
+      "Range": 2
+    },
+    {
       "Name": "boom",
       "Sprites": "boom",
       "Range": 7,

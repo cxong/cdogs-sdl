@@ -10,6 +10,8 @@ barrel_blue_wreck.png
 barrel_skull.png
 barrel_wood.png
 barrel_wood_wreck.png
+beam_8x8.png
+beam_yellow_8x8.png
 bench.png
 bench_wreck.png
 blood0.png
