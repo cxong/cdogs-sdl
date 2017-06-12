@@ -1495,7 +1495,7 @@ void ActorAddBloodSplatters(TActor *a, const int power, const Vec2i hitVector)
 			bloodSize = 1;
 		}
 		const Vec2i vel = Vec2iScaleDiv(
-			Vec2iScale(hitVector, (rand() % 8 + 8) * power),
+			Vec2iScale(hitVector, (rand() % 8 + 8) * mass),
 			15 * SHOT_IMPULSE_DIVISOR);
 		EmitterStart(em, a->Pos, 10, vel);
 		switch (ga)
