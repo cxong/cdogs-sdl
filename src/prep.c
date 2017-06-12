@@ -298,7 +298,7 @@ GameLoopData PlayerSelection(void)
 	}
 
 	return GameLoopDataNew(
-		data, NULL, NULL, PlayerSelectionOnExit,
+		data, PlayerSelectionTerminate, NULL, PlayerSelectionOnExit,
 		NULL, PlayerSelectionUpdate, PlayerSelectionDraw);
 }
 static void PlayerSelectionTerminate(GameLoopData *data)
