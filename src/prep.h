@@ -62,7 +62,7 @@ GameLoopData NumPlayersSelection(
 
 // Allow input devices to take control players,
 // and select player name and appearance
-bool PlayerSelection(void);
+GameLoopData PlayerSelection(void);
 
 // Choose game-mode-specific options
 bool GameOptions(const GameMode gm);

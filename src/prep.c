@@ -267,19 +267,20 @@ typedef struct
 	char suffixnames[CDOGS_PATH_MAX];
 	EventWaitResult waitResult;
 } PlayerSelectionData;
+static void PlayerSelectionTerminate(GameLoopData *data);
 static void PlayerSelectionOnExit(GameLoopData *data);
 static GameLoopResult PlayerSelectionUpdate(GameLoopData *data);
 static void PlayerSelectionDraw(GameLoopData *data);
-bool PlayerSelection(void)
+GameLoopData PlayerSelection(void)
 {
 	CASSERT(gPlayerDatas.size > 0, "no players for game");
-	PlayerSelectionData data;
-	memset(&data, 0, sizeof data);
-	data.waitResult = EVENT_WAIT_CONTINUE;
-	GetDataFilePath(data.prefixes, "data/prefixes.txt");
-	GetDataFilePath(data.suffixes, "data/suffixes.txt");
-	GetDataFilePath(data.suffixnames, "data/suffixnames.txt");
-	NameGenInit(&data.g, data.prefixes, data.suffixes, data.suffixnames);
+	PlayerSelectionData *data;
+	CCALLOC(data, sizeof *data);
+	data->waitResult = EVENT_WAIT_CONTINUE;
+	GetDataFilePath(data->prefixes, "data/prefixes.txt");
+	GetDataFilePath(data->suffixes, "data/suffixes.txt");
+	GetDataFilePath(data->suffixnames, "data/suffixnames.txt");
+	NameGenInit(&data->g, data->prefixes, data->suffixes, data->suffixnames);
 
 	// Create selection menus for each local player
 	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
@@ -291,17 +292,25 @@ bool PlayerSelection(void)
 			continue;
 		}
 		PlayerSelectMenusCreate(
-			&data.menus[idx], GetNumPlayers(PLAYER_ANY, false, true),
+			&data->menus[idx], GetNumPlayers(PLAYER_ANY, false, true),
 			idx, p->UID,
-			&gEventHandlers, &gGraphicsDevice, &data.g);
+			&gEventHandlers, &gGraphicsDevice, &data->g);
 	}
 
-	GameLoopData gData = GameLoopDataNew(
-		&data, NULL, NULL, PlayerSelectionOnExit,
+	return GameLoopDataNew(
+		data, NULL, NULL, PlayerSelectionOnExit,
 		NULL, PlayerSelectionUpdate, PlayerSelectionDraw);
-	GameLoop(&gData);
-	GameLoopTerminate(&gData);
-	return data.waitResult == EVENT_WAIT_OK;
+}
+static void PlayerSelectionTerminate(GameLoopData *data)
+{
+	PlayerSelectionData *pData = data->Data;
+
+	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
+	{
+		MenuSystemTerminate(&pData->menus[i].ms);
+	}
+	NameGenTerminate(&pData->g);
+	CFREE(pData);
 }
 static void PlayerSelectionOnExit(GameLoopData *data)
 {
@@ -324,12 +333,10 @@ static void PlayerSelectionOnExit(GameLoopData *data)
 			}
 		}
 	}
-
-	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
+	else
 	{
-		MenuSystemTerminate(&pData->menus[i].ms);
+		gCampaign.IsLoaded = false;
 	}
-	NameGenTerminate(&pData->g);
 }
 static GameLoopResult PlayerSelectionUpdate(GameLoopData *data)
 {

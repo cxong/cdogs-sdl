@@ -68,6 +68,9 @@ GameLoopData MainMenu(GraphicsDevice *graphics)
 	LoadAllCampaigns(&data->campaigns);
 	data->lastGameMode = GAME_MODE_QUICK_PLAY;
 	data->wasClient = false;
+	MenuCreateAll(
+		&data->ms, &data->campaigns, &gEventHandlers, data->graphics);
+	MenuSetCreditsDisplayer(&data->ms, &data->creditsDisplayer);
 	return GameLoopDataNew(
 		data, MainMenuTerminate, MainMenuOnEnter, MainMenuOnExit,
 		NULL, MainMenuUpdate, MainMenuDraw);
@@ -76,6 +79,7 @@ static void MainMenuTerminate(GameLoopData *data)
 {
 	MainMenuData *mData = data->Data;
 
+	MenuSystemTerminate(&mData->ms);
 	UnloadCredits(&mData->creditsDisplayer);
 	UnloadAllCampaigns(&mData->campaigns);
 	CFREE(mData);
@@ -84,10 +88,6 @@ static menu_t *FindSubmenuByName(menu_t *menu, const char *name);
 static void MainMenuOnEnter(GameLoopData *data)
 {
 	MainMenuData *mData = data->Data;
-
-	MenuCreateAll(
-		&mData->ms, &mData->campaigns, &gEventHandlers, mData->graphics);
-	MenuSetCreditsDisplayer(&mData->ms, &mData->creditsDisplayer);
 
 	// Auto-enter the submenu corresponding to the last game mode
 	menu_t *startMenu = FindSubmenuByName(mData->ms.root, "Start");
@@ -109,7 +109,7 @@ static void MainMenuOnEnter(GameLoopData *data)
 			mData->ms.current = FindSubmenuByName(startMenu, "Deathmatch");
 			break;
 		default:
-			// Do nothing
+			mData->ms.current = mData->ms.root;
 			break;
 		}
 	}
@@ -118,14 +118,13 @@ static menu_t *FindSubmenuByName(menu_t *menu, const char *name)
 {
 	CASSERT(menu->type == MENU_TYPE_NORMAL, "invalid menu type");
 	CA_FOREACH(menu_t, submenu, menu->u.normal.subMenus)
-	if (strcmp(submenu->name, name) == 0) return submenu;
+		if (strcmp(submenu->name, name) == 0) return submenu;
 	CA_FOREACH_END()
 	return menu;
 }
 static void MainMenuOnExit(GameLoopData *data)
 {
 	MainMenuData *mData = data->Data;
-	MenuSystemTerminate(&mData->ms);
 	mData->lastGameMode = gCampaign.Entry.Mode;
 	mData->wasClient = gCampaign.IsClient;
 }

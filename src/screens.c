@@ -97,11 +97,15 @@ void ScreenStart(void)
 		goto bail;
 	}
 
-	debug(D_NORMAL, ">> Entering selection\n");
-	if (GetNumPlayers(PLAYER_ANY, false, true) > 0 && !PlayerSelection())
+	if (GetNumPlayers(PLAYER_ANY, false, true) > 0)
 	{
-		gCampaign.IsLoaded = false;
-		goto bail;
+		g = PlayerSelection();
+		GameLoop(&g);
+		GameLoopTerminate(&g);
+		if (!gCampaign.IsLoaded)
+		{
+			goto bail;
+		}
 	}
 
 	debug(D_NORMAL, ">> Starting campaign\n");

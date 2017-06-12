@@ -115,9 +115,6 @@ static void MainLoop(void)
 		ScreenStart();
 	}
 	GameLoopTerminate(&g);
-
-	// Close net connection
-	NetServerTerminate(&gNetServer);
 }
 
 int main(int argc, char *argv[])
@@ -275,7 +272,7 @@ int main(int argc, char *argv[])
 	MainLoop();
 
 bail:
-	debug(D_NORMAL, ">> Shutting down...\n");
+	NetServerTerminate(&gNetServer);
 	MapTerminate(&gMap);
 	PlayerDataTerminate(&gPlayerDatas);
 	MapObjectsTerminate(&gMapObjects);
