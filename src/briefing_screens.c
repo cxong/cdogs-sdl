@@ -69,7 +69,7 @@ static void CampaignIntroTerminate(GameLoopData *data)
 static void CampaignIntroOnExit(GameLoopData *data)
 {
 	const ScreenCampaignIntroData *sData = data->Data;
-	if (sData->waitResult == EVENT_WAIT_OK)
+	if (sData->waitResult != EVENT_WAIT_CANCEL)
 	{
 		SoundPlay(&gSoundDevice, StrSound("mg"));
 	}
@@ -99,7 +99,7 @@ static GameLoopResult CampaignIntroUpdate(GameLoopData *data)
 	{
 		return UPDATE_RESULT_OK;
 	}
-	return EVENT_WAIT_CANCEL;
+	return UPDATE_RESULT_EXIT;
 }
 static void CampaignIntroDraw(GameLoopData *data)
 {
