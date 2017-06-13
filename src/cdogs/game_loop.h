@@ -64,3 +64,5 @@ GameLoopData GameLoopDataNew(
 	void (*drawFunc)(GameLoopData *));
 void GameLoop(GameLoopData *data);
 void GameLoopTerminate(GameLoopData *data);
+
+void GameLoopChange(GameLoopData *data, GameLoopData newData);

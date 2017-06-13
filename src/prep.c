@@ -147,6 +147,12 @@ static void NumPlayersDraw(GameLoopData *data);
 GameLoopData NumPlayersSelection(
 	GraphicsDevice *graphics, EventHandlers *handlers)
 {
+	// Reset player datas
+	PlayerDataTerminate(&gPlayerDatas);
+	PlayerDataInit(&gPlayerDatas);
+	// Initialise game events; we need this for init as well as the game
+	GameEventsInit(&gGameEvents);
+
 	MenuSystem *ms;
 	CMALLOC(ms, sizeof *ms);
 	MenuSystemInit(
@@ -181,7 +187,18 @@ static void NumPlayersTerminate(GameLoopData *data)
 static void NumPlayersOnExit(GameLoopData *data)
 {
 	MenuSystem *ms = data->Data;
-	if (!ms->hasAbort)
+	if (ms->hasAbort)
+	{
+		// TODO: pop menu
+		gCampaign.IsLoaded = false;
+	}
+	MenuSystemTerminate(ms);
+}
+static GameLoopResult NumPlayersUpdate(GameLoopData *data)
+{
+	MenuSystem *ms = data->Data;
+	const GameLoopResult result = MenuUpdate(ms);
+	if (result == UPDATE_RESULT_EXIT && !ms->hasAbort)
 	{
 		const int numPlayers = ms->current->u.returnCode;
 		CA_FOREACH(const PlayerData, p, gPlayerDatas)
@@ -198,18 +215,12 @@ static void NumPlayersOnExit(GameLoopData *data)
 		// Process the events to force add the players
 		HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
 		// This also causes the client to send player data to the server
-		// TODO: transition to next menu
+
+		// Switch to player selection
+		GameLoopChange(data, PlayerSelection());
+		return UPDATE_RESULT_OK;
 	}
-	else
-	{
-		// TODO: pop menu
-		gCampaign.IsLoaded = false;
-	}
-	MenuSystemTerminate(ms);
-}
-static GameLoopResult NumPlayersUpdate(GameLoopData *data)
-{
-	return MenuUpdate(data->Data);
+	return result;
 }
 static void NumPlayersDraw(GameLoopData *data)
 {
@@ -273,7 +284,6 @@ static GameLoopResult PlayerSelectionUpdate(GameLoopData *data);
 static void PlayerSelectionDraw(GameLoopData *data);
 GameLoopData PlayerSelection(void)
 {
-	CASSERT(gPlayerDatas.size > 0, "no players for game");
 	PlayerSelectionData *data;
 	CCALLOC(data, sizeof *data);
 	data->waitResult = EVENT_WAIT_CONTINUE;
@@ -341,6 +351,12 @@ static void PlayerSelectionOnExit(GameLoopData *data)
 static GameLoopResult PlayerSelectionUpdate(GameLoopData *data)
 {
 	PlayerSelectionData *pData = data->Data;
+
+	if (GetNumPlayers(PLAYER_ANY, false, true) == 0)
+	{
+		pData->waitResult = EVENT_WAIT_OK;
+		return UPDATE_RESULT_EXIT;
+	}
 
 	// Check if anyone pressed escape
 	int cmds[MAX_LOCAL_PLAYERS];

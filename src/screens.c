@@ -71,44 +71,14 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co);
 
 void ScreenStart(void)
 {
-	if (IsIntroNeeded(gCampaign.Entry.Mode))
-	{
-		GameLoopData g = ScreenCampaignIntro(&gCampaign.Setting);
-		GameLoop(&g);
-		GameLoopTerminate(&g);
-		if (!gCampaign.IsLoaded)
-		{
-			goto bail;
-		}
-	}
-
-	// Reset player datas
-	PlayerDataTerminate(&gPlayerDatas);
-	PlayerDataInit(&gPlayerDatas);
-	// Initialise game events; we need this for init as well as the game
-	GameEventsInit(&gGameEvents);
-
-	GameLoopData g = NumPlayersSelection(&gGraphicsDevice, &gEventHandlers);
+	GameLoopData g = ScreenCampaignIntro(&gCampaign.Setting);
 	GameLoop(&g);
 	GameLoopTerminate(&g);
 	if (!gCampaign.IsLoaded)
 	{
-		gCampaign.IsLoaded = false;
 		goto bail;
 	}
 
-	if (GetNumPlayers(PLAYER_ANY, false, true) > 0)
-	{
-		g = PlayerSelection();
-		GameLoop(&g);
-		GameLoopTerminate(&g);
-		if (!gCampaign.IsLoaded)
-		{
-			goto bail;
-		}
-	}
-
-	debug(D_NORMAL, ">> Starting campaign\n");
 	Campaign(&gGraphicsDevice, &gCampaign);
 	CampaignUnload(&gCampaign);
 	

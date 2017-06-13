@@ -58,16 +58,11 @@ GameLoopData GameLoopDataNew(
 	return g;
 }
 
+static void GameLoopOnEnter(GameLoopData *data);
+
 void GameLoop(GameLoopData *data)
 {
-	if (data->OnEnter)
-	{
-		data->OnEnter(data);
-	}
-	// TODO: refactor into OnEnter
-	EventReset(
-		&gEventHandlers,
-		gEventHandlers.mouse.cursor, gEventHandlers.mouse.trail);
+	GameLoopOnEnter(data);
 	GameLoopResult result = UPDATE_RESULT_OK;
 	Uint32 ticksNow = SDL_GetTicks();
 	Uint32 ticksElapsed = 0;
@@ -159,4 +154,26 @@ void GameLoopTerminate(GameLoopData *data)
 	{
 		data->OnTerminate(data);
 	}
+}
+
+void GameLoopChange(GameLoopData *data, GameLoopData newData)
+{
+	if (data->OnExit)
+	{
+		data->OnExit(data);
+	}
+	GameLoopTerminate(data);
+	memcpy(data, &newData, sizeof *data);
+	GameLoopOnEnter(data);
+}
+
+static void GameLoopOnEnter(GameLoopData *data)
+{
+	if (data->OnEnter)
+	{
+		data->OnEnter(data);
+	}
+	EventReset(
+		&gEventHandlers,
+		gEventHandlers.mouse.cursor, gEventHandlers.mouse.trail);
 }

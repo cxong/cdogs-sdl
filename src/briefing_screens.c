@@ -37,6 +37,7 @@
 #include "autosave.h"
 #include "menu_utils.h"
 #include "password.h"
+#include "prep.h"
 
 
 static void DrawObjectiveInfo(const Objective *o, const Vec2i pos);
@@ -71,7 +72,6 @@ static void CampaignIntroOnExit(GameLoopData *data)
 	if (sData->waitResult == EVENT_WAIT_OK)
 	{
 		SoundPlay(&gSoundDevice, StrSound("mg"));
-		// TODO: switch to next state
 	}
 	else
 	{
@@ -86,9 +86,20 @@ static void CampaignIntroInput(GameLoopData *data)
 static GameLoopResult CampaignIntroUpdate(GameLoopData *data)
 {
 	const ScreenCampaignIntroData *sData = data->Data;
-	return
-		sData->waitResult == EVENT_WAIT_CONTINUE ?
-		UPDATE_RESULT_OK : UPDATE_RESULT_EXIT;
+
+	if (!IsIntroNeeded(gCampaign.Entry.Mode) ||
+		sData->waitResult == EVENT_WAIT_OK)
+	{
+		// Switch to num players selection
+		GameLoopChange(
+			data, NumPlayersSelection(&gGraphicsDevice, &gEventHandlers));
+		return UPDATE_RESULT_OK;
+	}
+	else if (sData->waitResult == EVENT_WAIT_CONTINUE)
+	{
+		return UPDATE_RESULT_OK;
+	}
+	return EVENT_WAIT_CANCEL;
 }
 static void CampaignIntroDraw(GameLoopData *data)
 {
