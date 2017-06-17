@@ -59,54 +59,20 @@
 #include <cdogs/net_client.h>
 #include <cdogs/net_server.h>
 
-#include "autosave.h"
 #include "briefing_screens.h"
 #include "game.h"
-#include "password.h"
 #include "prep.h"
 #include "screens_end.h"
 
 
-static void Campaign(GraphicsDevice *graphics, CampaignOptions *co);
-
-void ScreenStart(void)
+void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 {
-	GameLoopData g = ScreenCampaignIntro(&gCampaign.Setting);
+	GameLoopData g = ScreenCampaignIntro(&co->Setting);
 	GameLoop(&g);
 	GameLoopTerminate(&g);
 	if (!gCampaign.IsLoaded)
 	{
-		goto bail;
-	}
-
-	Campaign(&gGraphicsDevice, &gCampaign);
-	CampaignUnload(&gCampaign);
-	
-bail:
-	NetClientDisconnect(&gNetClient);
-	GameEventsTerminate(&gGameEvents);
-	// Reset config - could have been set to other values by server
-	ConfigResetChanged(&gConfig);
-	CampaignSettingTerminate(&gCampaign.Setting);
-}
-
-
-static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
-{
-	if (co->IsClient)
-	{
-		// If connecting to a server, we've already received the mission index
-		// Do nothing
-	}
-	else if (IsPasswordAllowed(co->Entry.Mode))
-	{
-		MissionSave m;
-		AutosaveLoadMission(&gAutosave, &m, co->Entry.Path);
-		co->MissionIndex = EnterPassword(graphics, &m);
-	}
-	else
-	{
-		co->MissionIndex = 0;
+		return;
 	}
 
 	bool run = false;
@@ -298,5 +264,5 @@ static void Campaign(GraphicsDevice *graphics, CampaignOptions *co)
 		}
 	}
 
-	NetServerClose(&gNetServer);
+	CampaignUnload(&gCampaign);
 }

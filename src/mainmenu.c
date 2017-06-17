@@ -30,8 +30,10 @@
 
 #include <cdogs/config.h>
 #include <cdogs/font.h>
+#include <cdogs/grafx_bg.h>
 #include <cdogs/log.h>
 #include <cdogs/net_client.h>
+#include <cdogs/net_server.h>
 
 #include "autosave.h"
 #include "menu.h"
@@ -89,6 +91,15 @@ static void MainMenuOnEnter(GameLoopData *data)
 {
 	MainMenuData *mData = data->Data;
 
+	GrafxMakeRandomBackground(
+		&gGraphicsDevice, &gCampaign, &gMission, &gMap);
+	NetClientDisconnect(&gNetClient);
+	NetServerClose(&gNetServer);
+	GameEventsTerminate(&gGameEvents);
+	// Reset config - could have been set to other values by server
+	ConfigResetChanged(&gConfig);
+	CampaignSettingTerminate(&gCampaign.Setting);
+
 	// Auto-enter the submenu corresponding to the last game mode
 	menu_t *startMenu = FindSubmenuByName(mData->ms.root, "Start");
 	if (mData->wasClient)
@@ -125,6 +136,13 @@ static menu_t *FindSubmenuByName(menu_t *menu, const char *name)
 static void MainMenuOnExit(GameLoopData *data)
 {
 	MainMenuData *mData = data->Data;
+
+	// Reset player datas
+	PlayerDataTerminate(&gPlayerDatas);
+	PlayerDataInit(&gPlayerDatas);
+	// Initialise game events; we need this for init as well as the game
+	GameEventsInit(&gGameEvents);
+
 	mData->lastGameMode = gCampaign.Entry.Mode;
 	mData->wasClient = gCampaign.IsClient;
 }

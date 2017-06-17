@@ -75,6 +75,8 @@
 #include <cdogs/sounds.h>
 #include <cdogs/utils.h>
 
+#include "autosave.h"
+#include "password.h"
 #include "player_select_menus.h"
 #include "namegen.h"
 #include "weapon_menu.h"
@@ -147,12 +149,6 @@ static void NumPlayersDraw(GameLoopData *data);
 GameLoopData NumPlayersSelection(
 	GraphicsDevice *graphics, EventHandlers *handlers)
 {
-	// Reset player datas
-	PlayerDataTerminate(&gPlayerDatas);
-	PlayerDataInit(&gPlayerDatas);
-	// Initialise game events; we need this for init as well as the game
-	GameEventsInit(&gGameEvents);
-
 	MenuSystem *ms;
 	CMALLOC(ms, sizeof *ms);
 	MenuSystemInit(
@@ -341,6 +337,22 @@ static void PlayerSelectionOnExit(GameLoopData *data)
 			{
 				PlayerTrySetInputDevice(p, INPUT_DEVICE_AI, 0);
 			}
+		}
+
+		if (gCampaign.IsClient)
+		{
+			// If connecting to a server, we've already received the mission index
+			// Do nothing
+		}
+		else if (IsPasswordAllowed(gCampaign.Entry.Mode))
+		{
+			MissionSave m;
+			AutosaveLoadMission(&gAutosave, &m, gCampaign.Entry.Path);
+			gCampaign.MissionIndex = EnterPassword(&gGraphicsDevice, &m);
+		}
+		else
+		{
+			gCampaign.MissionIndex = 0;
 		}
 	}
 	else

@@ -102,8 +102,6 @@ static void MainLoop(void)
 	GameLoopData g = MainMenu(&gGraphicsDevice);
 	for (;;)
 	{
-		GrafxMakeRandomBackground(
-			&gGraphicsDevice, &gCampaign, &gMission, &gMap);
 		if (!gCampaign.IsLoaded)
 		{
 			GameLoop(&g);
@@ -112,7 +110,7 @@ static void MainLoop(void)
 		{
 			break;
 		}
-		ScreenStart();
+		ScreenStart(&gGraphicsDevice, &gCampaign);
 	}
 	GameLoopTerminate(&g);
 }
