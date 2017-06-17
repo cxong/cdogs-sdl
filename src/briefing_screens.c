@@ -75,7 +75,7 @@ static void CampaignIntroOnExit(GameLoopData *data)
 	}
 	else
 	{
-		gCampaign.IsLoaded = false;
+		CampaignUnload(&gCampaign);
 	}
 }
 static void CampaignIntroInput(GameLoopData *data)

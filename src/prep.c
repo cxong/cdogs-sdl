@@ -186,7 +186,7 @@ static void NumPlayersOnExit(GameLoopData *data)
 	if (ms->hasAbort)
 	{
 		// TODO: pop menu
-		gCampaign.IsLoaded = false;
+		CampaignUnload(&gCampaign);
 	}
 	MenuSystemTerminate(ms);
 }
@@ -357,7 +357,7 @@ static void PlayerSelectionOnExit(GameLoopData *data)
 	}
 	else
 	{
-		gCampaign.IsLoaded = false;
+		CampaignUnload(&gCampaign);
 	}
 }
 static GameLoopResult PlayerSelectionUpdate(GameLoopData *data)
@@ -484,34 +484,43 @@ static void PlayerSelectionDraw(GameLoopData *data)
 
 typedef struct
 {
+	MenuSystem ms;
 	const CArray *weapons;
 	CArray allowed;	// of bool
-} AllowedWeaponsData;
-static void AllowedWeaponsDataInit(
-	AllowedWeaponsData *data, const CArray *weapons);
-static void AllowedWeaponsDataTerminate(AllowedWeaponsData *data);
+} GameOptionsData;
 static menu_t *MenuCreateAllowedWeapons(
-	const char *name, AllowedWeaponsData *data);
-bool GameOptions(const GameMode gm)
+	const char *name, GameOptionsData *data);
+static void GameOptionsTerminate(GameLoopData *data);
+static void GameOptionsOnEnter(GameLoopData *data);
+static void GameOptionsOnExit(GameLoopData *data);
+static GameLoopResult GameOptionsUpdate(GameLoopData *data);
+static void GameOptionsDraw(GameLoopData *data);
+GameLoopData GameOptions(const GameMode gm)
 {
 	// Create selection menus
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
-	MenuSystem ms;
+	GameOptionsData *data;
+	CMALLOC(data, sizeof *data);
+	MenuSystem *ms = &data->ms;
+	data->weapons = &gMission.Weapons;
+	CArrayInit(&data->allowed, sizeof(bool));
+	for (int i = 0; i < (int)data->weapons->size; i++)
+	{
+		const bool f = true;
+		CArrayPushBack(&data->allowed, &f);
+	}
 	MenuSystemInit(
-		&ms, &gEventHandlers, &gGraphicsDevice,
-		Vec2iZero(), Vec2iNew(w, h));
-	ms.align = MENU_ALIGN_CENTER;
-	ms.allowAborts = true;
-	AllowedWeaponsData awData;
-	AllowedWeaponsDataInit(&awData, &gMission.Weapons);
-	ms.root = ms.current = MenuCreateNormal(
+		ms, &gEventHandlers, &gGraphicsDevice, Vec2iZero(), Vec2iNew(w, h));
+	ms->align = MENU_ALIGN_CENTER;
+	ms->allowAborts = true;
+	ms->root = MenuCreateNormal(
 		"",
 		"",
 		MENU_TYPE_OPTIONS,
 		0);
 #define I(_config)\
-	MenuAddConfigOptionsItem(ms.current, ConfigGet(&gConfig, _config));
+	MenuAddConfigOptionsItem(ms->root, ConfigGet(&gConfig, _config));
 	switch (gm)
 	{
 	case GAME_MODE_NORMAL:
@@ -523,7 +532,7 @@ bool GameOptions(const GameMode gm)
 		I("Game.HealthPickups");
 		I("Game.Ammo");
 		I("Game.RandomSeed");
-		MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
+		MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
 		I("StartServer");
 		break;
 	case GAME_MODE_DOGFIGHT:
@@ -532,9 +541,9 @@ bool GameOptions(const GameMode gm)
 		I("Game.HealthPickups");
 		I("Game.Ammo");
 		I("Game.RandomSeed");
-		MenuAddSubmenu(ms.current,
-			MenuCreateAllowedWeapons("Weapons...", &awData));
-		MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
+		MenuAddSubmenu(ms->root,
+			MenuCreateAllowedWeapons("Weapons...", data));
+		MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
 		I("StartServer");
 		break;
 	case GAME_MODE_DEATHMATCH:
@@ -543,9 +552,9 @@ bool GameOptions(const GameMode gm)
 		I("Game.HealthPickups");
 		I("Game.Ammo");
 		I("Game.RandomSeed");
-		MenuAddSubmenu(ms.current,
-			MenuCreateAllowedWeapons("Weapons...", &awData));
-		MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
+		MenuAddSubmenu(ms->root,
+			MenuCreateAllowedWeapons("Weapons...", data));
+		MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
 		I("StartServer");
 		break;
 	case GAME_MODE_QUICK_PLAY:
@@ -568,18 +577,43 @@ bool GameOptions(const GameMode gm)
 		break;
 	}
 #undef I
-	MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
-	MenuAddSubmenu(ms.current, MenuCreateReturn("Done", 0));
-	MenuAddExitType(&ms, MENU_TYPE_RETURN);
+	MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
+	MenuAddSubmenu(ms->root, MenuCreateReturn("Done", 0));
+	MenuAddExitType(ms, MENU_TYPE_RETURN);
+
+	return GameLoopDataNew(
+		ms, GameOptionsTerminate, GameOptionsOnEnter, GameOptionsOnExit,
+		NULL, GameOptionsUpdate, GameOptionsDraw);
+}
+static void GameOptionsTerminate(GameLoopData *data)
+{
+	GameOptionsData *gData = data->Data;
+
+	MenuSystemTerminate(&gData->ms);
+	CArrayTerminate(&gData->allowed);
+	CFREE(gData);
+}
+static void GameOptionsOnEnter(GameLoopData *data)
+{
+	GameOptionsData *gData = data->Data;
+
+	CampaignAndMissionSetup(&gCampaign, &gMission);
+
+	gData->ms.current = gData->ms.root;
 	// Select "Done"
-	ms.root->u.normal.index = (int)ms.root->u.normal.subMenus.size - 1;
+	gData->ms.root->u.normal.index =
+		(int)gData->ms.root->u.normal.subMenus.size - 1;
+}
+static void GameOptionsOnExit(GameLoopData *data)
+{
+	GameOptionsData *gData = data->Data;
 
-	GameLoopData g = MenuLoop(&ms);
-	GameLoop(&g);
-	GameLoopTerminate(&g);
-
-	const bool ok = !ms.hasAbort;
-	if (ok)
+	const bool ok = !gData->ms.hasAbort;
+	if (!ok)
+	{
+		CampaignUnload(&gCampaign);
+	}
+	else
 	{
 		if (!ConfigApply(&gConfig))
 		{
@@ -596,9 +630,9 @@ bool GameOptions(const GameMode gm)
 		// First check if the player has unwittingly disabled all weapons
 		// if so, enable all weapons
 		bool allDisabled = true;
-		for (int i = 0, j = 0; i < (int)awData.allowed.size; i++, j++)
+		for (int i = 0, j = 0; i < (int)gData->allowed.size; i++, j++)
 		{
-			const bool *allowed = CArrayGet(&awData.allowed, i);
+			const bool *allowed = CArrayGet(&gData->allowed, i);
 			if (*allowed)
 			{
 				allDisabled = false;
@@ -607,9 +641,9 @@ bool GameOptions(const GameMode gm)
 		}
 		if (!allDisabled)
 		{
-			for (int i = 0, j = 0; i < (int)awData.allowed.size; i++, j++)
+			for (int i = 0, j = 0; i < (int)gData->allowed.size; i++, j++)
 			{
-				const bool *allowed = CArrayGet(&awData.allowed, i);
+				const bool *allowed = CArrayGet(&gData->allowed, i);
 				if (!*allowed)
 				{
 					CArrayDelete(&gMission.Weapons, j);
@@ -617,28 +651,34 @@ bool GameOptions(const GameMode gm)
 				}
 			}
 		}
+
+		gCampaign.OptionsSet = true;
+
+		// If enabled, start net server
+		if (!gCampaign.IsClient && ConfigGetBool(&gConfig, "StartServer"))
+		{
+			NetServerOpen(&gNetServer);
+		}
 	}
-	AllowedWeaponsDataTerminate(&awData);
-	MenuSystemTerminate(&ms);
-	return ok;
 }
-static void AllowedWeaponsDataInit(
-	AllowedWeaponsData *data, const CArray *weapons)
+static GameLoopResult GameOptionsUpdate(GameLoopData *data)
 {
-	data->weapons = weapons;
-	CArrayInit(&data->allowed, sizeof(bool));
-	for (int i = 0; i < (int)weapons->size; i++)
+	GameOptionsData *gData = data->Data;
+
+	if (!IsGameOptionsNeeded(gCampaign.Entry.Mode))
 	{
-		const bool f = true;
-		CArrayPushBack(&data->allowed, &f);
+		return UPDATE_RESULT_EXIT;
 	}
+	return MenuUpdate(&gData->ms);
 }
-static void AllowedWeaponsDataTerminate(AllowedWeaponsData *data)
+static void GameOptionsDraw(GameLoopData *data)
 {
-	CArrayTerminate(&data->allowed);
+	const GameOptionsData *gData = data->Data;
+
+	MenuDraw(&gData->ms);
 }
 static menu_t *MenuCreateAllowedWeapons(
-	const char *name, AllowedWeaponsData *data)
+	const char *name, GameOptionsData *data)
 {
 	// Create a menu to choose allowable weapons for this map
 	// The weapons will be chosen from the available weapons

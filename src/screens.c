@@ -70,7 +70,7 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 	GameLoopData g = ScreenCampaignIntro(&co->Setting);
 	GameLoop(&g);
 	GameLoopTerminate(&g);
-	if (!gCampaign.IsLoaded)
+	if (!co->IsLoaded)
 	{
 		return;
 	}
@@ -79,23 +79,13 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 	bool gameOver = true;
 	do
 	{
-		CampaignAndMissionSetup(co, &gMission);
-
-		if (IsGameOptionsNeeded(co->Entry.Mode))
+		g = GameOptions(co->Entry.Mode);
+		GameLoop(&g);
+		GameLoopTerminate(&g);
+		if (!co->IsLoaded)
 		{
-			debug(D_NORMAL, ">> Game options\n");
-			if (!GameOptions(co->Entry.Mode))
-			{
-				run = false;
-				goto bail;
-			}
-			co->OptionsSet = true;
-
-			// If enabled, start net server
-			if (!co->IsClient && ConfigGetBool(&gConfig, "StartServer"))
-			{
-				NetServerOpen(&gNetServer);
-			}
+			run = false;
+			goto bail;
 		}
 
 		// Mission briefing

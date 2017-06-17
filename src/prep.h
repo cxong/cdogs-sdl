@@ -65,7 +65,7 @@ GameLoopData NumPlayersSelection(
 GameLoopData PlayerSelection(void);
 
 // Choose game-mode-specific options
-bool GameOptions(const GameMode gm);
+GameLoopData GameOptions(const GameMode gm);
 
 bool PlayerEquip(void);
 

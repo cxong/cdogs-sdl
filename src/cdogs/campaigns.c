@@ -46,7 +46,7 @@ void CampaignInit(CampaignOptions *campaign)
 }
 void CampaignTerminate(CampaignOptions *campaign)
 {
-	campaign->IsLoaded = false;
+	CampaignUnload(&gCampaign);
 	CampaignSettingTerminate(&campaign->Setting);
 }
 void CampaignSettingInit(CampaignSetting *setting)
