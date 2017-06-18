@@ -89,14 +89,13 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 		}
 
 		// Mission briefing
-		if (GetNumPlayers(PLAYER_ANY, false, true) > 0 &&
-			IsMissionBriefingNeeded(co->Entry.Mode))
+		g = ScreenMissionBriefing(&gMission);
+		GameLoop(&g);
+		GameLoopTerminate(&g);
+		if (!co->IsLoaded)
 		{
-			if (!ScreenMissionBriefing(&gMission))
-			{
-				run = false;
-				goto bail;
-			}
+			run = false;
+			goto bail;
 		}
 
 		// Equip guns

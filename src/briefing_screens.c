@@ -152,74 +152,82 @@ typedef struct
 	const struct MissionOptions *MissionOptions;
 	EventWaitResult waitResult;
 } MissionBriefingData;
+static void MissionBriefingTerminate(GameLoopData *data);
 static void MissionBriefingOnExit(GameLoopData *data);
 static void MissionBriefingInput(GameLoopData *data);
 static GameLoopResult MissionBriefingUpdate(GameLoopData *data);
 static void MissionBriefingDraw(GameLoopData *data);
-bool ScreenMissionBriefing(const struct MissionOptions *m)
+GameLoopData ScreenMissionBriefing(const struct MissionOptions *m)
 {
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
 	const int y = h / 4;
-	MissionBriefingData mData;
-	memset(&mData, 0, sizeof mData);
-	mData.waitResult = EVENT_WAIT_CONTINUE;
+	MissionBriefingData *mData;
+	CCALLOC(mData, sizeof *mData);
+	mData->waitResult = EVENT_WAIT_CONTINUE;
 
 	// Title
-	CMALLOC(mData.Title, strlen(m->missionData->Title) + 32);
-	sprintf(mData.Title, "Mission %d: %s",
+	CMALLOC(mData->Title, strlen(m->missionData->Title) + 32);
+	sprintf(mData->Title, "Mission %d: %s",
 		m->index + 1, m->missionData->Title);
-	mData.TitleOpts = FontOptsNew();
-	mData.TitleOpts.HAlign = ALIGN_CENTER;
-	mData.TitleOpts.Area = gGraphicsDevice.cachedConfig.Res;
-	mData.TitleOpts.Pad.y = y - 25;
+	mData->TitleOpts = FontOptsNew();
+	mData->TitleOpts.HAlign = ALIGN_CENTER;
+	mData->TitleOpts.Area = gGraphicsDevice.cachedConfig.Res;
+	mData->TitleOpts.Pad.y = y - 25;
 
 	// Password
 	if (m->index > 0)
 	{
 		sprintf(
-			mData.Password, "Password: %s", gAutosave.LastMission.Password);
-		mData.PasswordOpts = FontOptsNew();
-		mData.PasswordOpts.HAlign = ALIGN_CENTER;
-		mData.PasswordOpts.Area = gGraphicsDevice.cachedConfig.Res;
-		mData.PasswordOpts.Pad.y = y - 15;
+			mData->Password, "Password: %s", gAutosave.LastMission.Password);
+		mData->PasswordOpts = FontOptsNew();
+		mData->PasswordOpts.HAlign = ALIGN_CENTER;
+		mData->PasswordOpts.Area = gGraphicsDevice.cachedConfig.Res;
+		mData->PasswordOpts.Pad.y = y - 15;
 	}
 
 	// Split the description, and prepare it for typewriter effect
-	mData.TypewriterCount = 0;
+	mData->TypewriterCount = 0;
 	// allow some slack for newlines
-	CMALLOC(mData.Description, strlen(m->missionData->Description) * 2 + 1);
-	CCALLOC(mData.TypewriterBuf, strlen(m->missionData->Description) * 2 + 1);
+	CMALLOC(mData->Description, strlen(m->missionData->Description) * 2 + 1);
+	CCALLOC(mData->TypewriterBuf, strlen(m->missionData->Description) * 2 + 1);
 	// Pad about 1/6th of the screen width total (1/12th left and right)
-	FontSplitLines(m->missionData->Description, mData.Description, w * 5 / 6);
-	mData.DescriptionPos = Vec2iNew(w / 12, y);
+	FontSplitLines(m->missionData->Description, mData->Description, w * 5 / 6);
+	mData->DescriptionPos = Vec2iNew(w / 12, y);
 
 	// Objectives
-	mData.ObjectiveDescPos =
-		Vec2iNew(w / 6, y + FontStrH(mData.Description) + h / 10);
-	mData.ObjectiveInfoPos =
-		Vec2iNew(w - (w / 6), mData.ObjectiveDescPos.y + FontH());
-	mData.ObjectiveHeight = h / 12;
-	mData.MissionOptions = m;
+	mData->ObjectiveDescPos =
+		Vec2iNew(w / 6, y + FontStrH(mData->Description) + h / 10);
+	mData->ObjectiveInfoPos =
+		Vec2iNew(w - (w / 6), mData->ObjectiveDescPos.y + FontH());
+	mData->ObjectiveHeight = h / 12;
+	mData->MissionOptions = m;
 
-	GameLoopData gData = GameLoopDataNew(
-		&mData, NULL, NULL, MissionBriefingOnExit,
+	return GameLoopDataNew(
+		mData, MissionBriefingTerminate, NULL, MissionBriefingOnExit,
 		MissionBriefingInput, MissionBriefingUpdate, MissionBriefingDraw);
-	GameLoop(&gData);
-	GameLoopTerminate(&gData);
-	return mData.waitResult == EVENT_WAIT_OK;
 }
-static void MissionBriefingOnExit(GameLoopData *data)
+static void MissionBriefingTerminate(GameLoopData *data)
 {
-	const MissionBriefingData *mData = data->Data;
-	if (mData->waitResult == EVENT_WAIT_OK)
-	{
-		SoundPlay(&gSoundDevice, StrSound("mg"));
-	}
+	MissionBriefingData *mData = data->Data;
 
 	CFREE(mData->Title);
 	CFREE(mData->Description);
 	CFREE(mData->TypewriterBuf);
+	CFREE(mData);
+}
+static void MissionBriefingOnExit(GameLoopData *data)
+{
+	const MissionBriefingData *mData = data->Data;
+
+	if (mData->waitResult == EVENT_WAIT_OK)
+	{
+		SoundPlay(&gSoundDevice, StrSound("mg"));
+	}
+	else
+	{
+		CampaignUnload(&gCampaign);
+	}
 }
 static void MissionBriefingInput(GameLoopData *data)
 {
@@ -253,6 +261,11 @@ static void MissionBriefingInput(GameLoopData *data)
 static GameLoopResult MissionBriefingUpdate(GameLoopData *data)
 {
 	MissionBriefingData *mData = data->Data;
+
+	if (!IsMissionBriefingNeeded(gCampaign.Entry.Mode))
+	{
+		return UPDATE_RESULT_OK;
+	}
 
 	// Check exit conditions from input
 	if (mData->waitResult != EVENT_WAIT_CONTINUE)
