@@ -259,7 +259,9 @@ int main(int argc, char *argv[])
 	{
 		if (NetClientTryScanAndConnect(&gNetClient, connectAddr.host))
 		{
-			ScreenWaitForCampaignDef();
+			GameLoopData g = ScreenWaitForCampaignDef();
+			GameLoop(&g);
+			GameLoopTerminate(&g);
 		}
 		else
 		{

@@ -84,36 +84,61 @@
 
 typedef struct
 {
-	MenuSystem *ms;
+	MenuSystem ms;
+	GameLoopResult (*checkFunc)(void *);
 	void *data;
 } ScreenWaitData;
-static bool ScreenWait(
-	const char *message, void (*checkFunc)(menu_t *, void *), void *data)
+static void ScreenWaitTerminate(GameLoopData *data);
+static GameLoopResult ScreenWaitUpdate(GameLoopData *data);
+static void ScreenWaitDraw(GameLoopData *data);
+static GameLoopData ScreenWait(
+	const char *message, GameLoopResult (*checkFunc)(void *), void *data)
 {
-	MenuSystem ms;
-	MenuSystemInit(
-		&ms, &gEventHandlers, &gGraphicsDevice,
-		Vec2iZero(),
-		gGraphicsDevice.cachedConfig.Res);
-	ms.allowAborts = true;
-	ms.root = ms.current = MenuCreateNormal("", message, MENU_TYPE_NORMAL, 0);
-	MenuAddExitType(&ms, MENU_TYPE_RETURN);
 	ScreenWaitData *swData;
 	CMALLOC(swData, sizeof *swData);
-	swData->ms = &ms;
+	MenuSystemInit(
+		&swData->ms, &gEventHandlers, &gGraphicsDevice,
+		Vec2iZero(),
+		gGraphicsDevice.cachedConfig.Res);
+	swData->ms.allowAborts = true;
+	swData->ms.root = swData->ms.current =
+		MenuCreateNormal("", message, MENU_TYPE_NORMAL, 0);
+	MenuAddExitType(&swData->ms, MENU_TYPE_RETURN);
+	swData->checkFunc = checkFunc;
 	swData->data = data;
-	MenuSetPostUpdateFunc(ms.root, checkFunc, swData, true);
 
-	GameLoopData g = MenuLoop(&ms);
-	GameLoop(&g);
-	GameLoopTerminate(&g);
-	const bool ok = !ms.hasAbort;
-	MenuSystemTerminate(&ms);
-	return ok;
+	return GameLoopDataNew(
+		swData, ScreenWaitTerminate, NULL, NULL,
+		NULL, ScreenWaitUpdate, ScreenWaitDraw);
+}
+static void ScreenWaitTerminate(GameLoopData *data)
+{
+	ScreenWaitData *swData = data->Data;
+
+	MenuSystemTerminate(&swData->ms);
+	CFREE(swData->data);
+	CFREE(swData);
+}
+static GameLoopResult ScreenWaitUpdate(GameLoopData *data)
+{
+	ScreenWaitData *swData = data->Data;
+
+	const GameLoopResult result = swData->checkFunc(swData->data);
+	if (result != UPDATE_RESULT_DRAW)
+	{
+		return result;
+	}
+	return MenuUpdate(&swData->ms);
+}
+static void ScreenWaitDraw(GameLoopData *data)
+{
+	const ScreenWaitData *swData = data->Data;
+
+	MenuDraw(&swData->ms);
 }
 
-static void CheckCampaignDefComplete(menu_t *menu, void *data);
-bool ScreenWaitForCampaignDef(void)
+static GameLoopResult CheckCampaignDefComplete(void *data);
+GameLoopData ScreenWaitForCampaignDef(void)
 {
 	char buf[256];
 	char ipbuf[256];
@@ -122,23 +147,23 @@ bool ScreenWaitForCampaignDef(void)
 		ipbuf, gNetClient.peer->address.port);
 	return ScreenWait(buf, CheckCampaignDefComplete, NULL);
 }
-static void CheckCampaignDefComplete(menu_t *menu, void *data)
+static GameLoopResult CheckCampaignDefComplete(void *data)
 {
+	UNUSED(data);
 	if (gCampaign.IsLoaded || gCampaign.IsError)
 	{
 		if (gCampaign.IsError)
 		{
-			// Failed to load campaign; signal that we want to abort
-			ScreenWaitData *swData = data;
-			swData->ms->hasAbort = true;
+			// Failed to load campaign
+			CampaignUnload(&gCampaign);
 		}
 		else
 		{
 			CASSERT(gCampaign.IsClient, "campaign is not client");
 		}
-		// Hack to force the menu to exit
-		menu->type = MENU_TYPE_RETURN;
+		return UPDATE_RESULT_EXIT;
 	}
+	return UPDATE_RESULT_DRAW;
 }
 
 
@@ -881,8 +906,8 @@ static void PlayerEquipDraw(GameLoopData *data)
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 }
 
-static void CheckGameStart(menu_t *menu, void *data);
-bool ScreenWaitForGameStart(void)
+static GameLoopResult CheckGameStart(void *data);
+GameLoopData ScreenWaitForGameStart(void)
 {
 	gNetClient.Ready = true;
 	if (!gMission.HasStarted)
@@ -892,18 +917,18 @@ bool ScreenWaitForGameStart(void)
 	}
 	return ScreenWait("Waiting for game start...", CheckGameStart, NULL);
 }
-static void CheckGameStart(menu_t *menu, void *data)
+static GameLoopResult CheckGameStart(void *data)
 {
-	if (gMission.HasStarted)
+	UNUSED(data);
+	if (!gCampaign.IsClient || gMission.HasStarted)
 	{
-		// Hack to force the menu to exit
-		menu->type = MENU_TYPE_RETURN;
+		return UPDATE_RESULT_EXIT;
 	}
 	// Check disconnections
 	if (!NetClientIsConnected(&gNetClient))
 	{
-		ScreenWaitData *swData = data;
-		swData->ms->hasAbort = true;
-		menu->type = MENU_TYPE_RETURN;
+		CampaignUnload(&gCampaign);
+		return UPDATE_RESULT_EXIT;
 	}
+	return UPDATE_RESULT_DRAW;
 }

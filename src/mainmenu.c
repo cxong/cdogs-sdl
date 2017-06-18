@@ -428,7 +428,9 @@ static void JoinLANGame(menu_t *menu, void *data)
 	LOG(LM_MAIN, LL_INFO, "joining LAN game...");
 	if (NetClientTryConnect(&gNetClient, sinfo->Addr))
 	{
-		ScreenWaitForCampaignDef();
+		GameLoopData g = ScreenWaitForCampaignDef();
+		GameLoop(&g);
+		GameLoopTerminate(&g);
 	}
 	else
 	{

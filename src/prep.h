@@ -54,7 +54,7 @@
 #include <cdogs/grafx.h>
 
 // Wait for the server to send us the current campaign
-bool ScreenWaitForCampaignDef(void);
+GameLoopData ScreenWaitForCampaignDef(void);
 
 // Screen to select the number of (local) players
 GameLoopData NumPlayersSelection(
@@ -70,4 +70,4 @@ GameLoopData GameOptions(const GameMode gm);
 GameLoopData PlayerEquip(void);
 
 // Wait for the game to start
-bool ScreenWaitForGameStart(void);
+GameLoopData ScreenWaitForGameStart(void);

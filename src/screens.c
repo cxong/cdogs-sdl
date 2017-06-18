@@ -108,13 +108,13 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 			goto bail;
 		}
 
-		if (co->IsClient)
+		g = ScreenWaitForGameStart();
+		GameLoop(&g);
+		GameLoopTerminate(&g);
+		if (!co->IsLoaded)
 		{
-			if (!ScreenWaitForGameStart())
-			{
-				run = false;
-				goto bail;
-			}
+			run = false;
+			goto bail;
 		}
 
 		run = RunGame(co, &gMission, &gMap);
