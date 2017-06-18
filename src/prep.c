@@ -702,14 +702,15 @@ typedef struct
 	WeaponMenu menus[MAX_LOCAL_PLAYERS];
 	EventWaitResult waitResult;
 } PlayerEquipData;
+static void PlayerEquipTerminate(GameLoopData *data);
 static void PlayerEquipOnExit(GameLoopData *data);
 static GameLoopResult PlayerEquipUpdate(GameLoopData *data);
 static void PlayerEquipDraw(GameLoopData *data);
-bool PlayerEquip(void)
+GameLoopData PlayerEquip(void)
 {
-	PlayerEquipData data;
-	memset(&data, 0, sizeof data);
-	data.waitResult = EVENT_WAIT_CONTINUE;
+	PlayerEquipData *data;
+	CCALLOC(data, sizeof *data);
+	data->waitResult = EVENT_WAIT_CONTINUE;
 	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
 		PlayerData *p = CArrayGet(&gPlayerDatas, i);
@@ -723,26 +724,23 @@ bool PlayerEquip(void)
 		RemoveUnavailableWeapons(p, &gMission.Weapons);
 
 		WeaponMenuCreate(
-			&data.menus[idx], GetNumPlayers(PLAYER_ANY, false, true),
+			&data->menus[idx], GetNumPlayers(PLAYER_ANY, false, true),
 			idx, p->UID,
 			&gEventHandlers, &gGraphicsDevice);
 		// For AI players, pre-pick their weapons and go straight to menu end
 		if (p->inputDevice == INPUT_DEVICE_AI)
 		{
 			const int lastMenuIndex =
-				(int)data.menus[idx].ms.root->u.normal.subMenus.size - 1;
-			data.menus[idx].ms.current = CArrayGet(
-				&data.menus[idx].ms.root->u.normal.subMenus, lastMenuIndex);
+				(int)data->menus[idx].ms.root->u.normal.subMenus.size - 1;
+			data->menus[idx].ms.current = CArrayGet(
+				&data->menus[idx].ms.root->u.normal.subMenus, lastMenuIndex);
 			AICoopSelectWeapons(p, idx, &gMission.Weapons);
 		}
 	}
 
-	GameLoopData gData = GameLoopDataNew(
-		&data, NULL, NULL, PlayerEquipOnExit,
+	return GameLoopDataNew(
+		data, PlayerEquipTerminate, NULL, PlayerEquipOnExit,
 		NULL, PlayerEquipUpdate, PlayerEquipDraw);
-	GameLoop(&gData);
-	GameLoopTerminate(&gData);
-	return data.waitResult == EVENT_WAIT_OK;
 }
 static bool HasWeapon(const CArray *weapons, const GunDescription *w);
 static void RemoveUnavailableWeapons(PlayerData *data, const CArray *weapons)
@@ -771,39 +769,58 @@ static bool HasWeapon(const CArray *weapons, const GunDescription *w)
 	}
 	return false;
 }
-static void PlayerEquipOnExit(GameLoopData *data)
+static void PlayerEquipTerminate(GameLoopData *data)
 {
 	PlayerEquipData *pData = data->Data;
-
-	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (!p->IsLocal)
-		{
-			idx--;
-			continue;
-		}
-		NPlayerData pd = NMakePlayerData(p);
-		// Update player definitions
-		if (gCampaign.IsClient)
-		{
-			NetClientSendMsg(&gNetClient, GAME_EVENT_PLAYER_DATA, &pd);
-		}
-		else
-		{
-			NetServerSendMsg(
-				&gNetServer, NET_SERVER_BCAST, GAME_EVENT_PLAYER_DATA, &pd);
-		}
-	}
 
 	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
 	{
 		MenuSystemTerminate(&pData->menus[i].ms);
 	}
+	CFREE(pData);
+}
+static void PlayerEquipOnExit(GameLoopData *data)
+{
+	PlayerEquipData *pData = data->Data;
+
+	if (pData->waitResult == EVENT_WAIT_OK)
+	{
+		for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
+		{
+			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+			if (!p->IsLocal)
+			{
+				idx--;
+				continue;
+			}
+			NPlayerData pd = NMakePlayerData(p);
+			// Update player definitions
+			if (gCampaign.IsClient)
+			{
+				NetClientSendMsg(&gNetClient, GAME_EVENT_PLAYER_DATA, &pd);
+			}
+			else
+			{
+				NetServerSendMsg(
+					&gNetServer, NET_SERVER_BCAST, GAME_EVENT_PLAYER_DATA, &pd);
+			}
+		}
+	}
+	else
+	{
+		CampaignUnload(&gCampaign);
+	}
 }
 static GameLoopResult PlayerEquipUpdate(GameLoopData *data)
 {
 	PlayerEquipData *pData = data->Data;
+
+	// If no human players, don't show equip screen
+	if (GetNumPlayers(PLAYER_ANY, false, true) == 0)
+	{
+		pData->waitResult = EVENT_WAIT_OK;
+		return UPDATE_RESULT_EXIT;
+	}
 
 	// Check if anyone pressed escape
 	int cmds[MAX_LOCAL_PLAYERS];

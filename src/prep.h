@@ -67,7 +67,7 @@ GameLoopData PlayerSelection(void);
 // Choose game-mode-specific options
 GameLoopData GameOptions(const GameMode gm);
 
-bool PlayerEquip(void);
+GameLoopData PlayerEquip(void);
 
 // Wait for the game to start
 bool ScreenWaitForGameStart(void);

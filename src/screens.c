@@ -99,7 +99,10 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 		}
 
 		// Equip guns
-		if (GetNumPlayers(PLAYER_ANY, false, true) > 0 && !PlayerEquip())
+		g = PlayerEquip();
+		GameLoop(&g);
+		GameLoopTerminate(&g);
+		if (!co->IsLoaded)
 		{
 			run = false;
 			goto bail;
