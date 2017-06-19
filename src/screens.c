@@ -177,10 +177,14 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 			switch (co->Entry.Mode)
 			{
 			case GAME_MODE_DOGFIGHT:
-				ScreenDogfightScores();
+				g = ScreenDogfightScores();
+				GameLoop(&g);
+				GameLoopTerminate(&g);
 				break;
 			case GAME_MODE_DEATHMATCH:
-				ScreenDeathmatchFinalScores();
+				g = ScreenDeathmatchFinalScores();
+				GameLoop(&g);
+				GameLoopTerminate(&g);
 				break;
 			default:
 				playNext = ScreenMissionSummary(
@@ -189,7 +193,9 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 				// in CleanupMission()
 				if (gameOver && survivedAndCompletedObjectives)
 				{
-					ScreenVictory(co);
+					g = ScreenVictory(co);
+					GameLoop(&g);
+					GameLoopTerminate(&g);
 					playNext = false;
 				}
 				break;
@@ -248,7 +254,9 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 		switch (co->Entry.Mode)
 		{
 		case GAME_MODE_DOGFIGHT:
-			ScreenDogfightFinalScores();
+			g = ScreenDogfightFinalScores();
+			GameLoop(&g);
+			GameLoopTerminate(&g);
 			break;
 		default:
 			// no end screen

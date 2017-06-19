@@ -40,6 +40,7 @@
 #define PLAYER_LIST_ROW_HEIGHT 16
 typedef struct
 {
+	MenuSystem ms;
 	Vec2i pos;
 	Vec2i size;
 	int scroll;
@@ -55,34 +56,35 @@ typedef struct
 	CArray playerUIDs;	// of int
 } PlayerList;
 static int ComparePlayerScores(const void *v1, const void *v2);
-static PlayerList PlayerListNew(
+static PlayerList *PlayerListNew(
 	void (*drawFunc)(void *), void *data,
 	const bool hasMenu, const bool showWinners)
 {
-	PlayerList pl;
-	pl.pos = Vec2iZero();
-	pl.size = gGraphicsDevice.cachedConfig.Res;
-	pl.scroll = 0;
-	pl.drawFunc = drawFunc;
-	pl.data = data;
-	pl.hasMenu = hasMenu;
-	pl.showWinners = showWinners;
-	CArrayInit(&pl.playerUIDs, sizeof(int));
+	PlayerList *pl;
+	CMALLOC(pl, sizeof *pl);
+	pl->pos = Vec2iZero();
+	pl->size = gGraphicsDevice.cachedConfig.Res;
+	pl->scroll = 0;
+	pl->drawFunc = drawFunc;
+	pl->data = data;
+	pl->hasMenu = hasMenu;
+	pl->showWinners = showWinners;
+	CArrayInit(&pl->playerUIDs, sizeof(int));
 	// Collect all players, then order by score descending
 	int playersAlive = 0;
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-		CArrayPushBack(&pl.playerUIDs, &p->UID);
+		CArrayPushBack(&pl->playerUIDs, &p->UID);
 		if (p->Lives > 0)
 		{
 			playersAlive++;
 		}
 	CA_FOREACH_END()
 	qsort(
-		pl.playerUIDs.data,
-		pl.playerUIDs.size,
-		pl.playerUIDs.elemSize,
+		pl->playerUIDs.data,
+		pl->playerUIDs.size,
+		pl->playerUIDs.elemSize,
 		ComparePlayerScores);
-	pl.showLastMan = playersAlive == 1;
+	pl->showLastMan = playersAlive == 1;
 	return pl;
 }
 static int GetModeScore(const PlayerData *p)
@@ -110,38 +112,71 @@ static int ComparePlayerScores(const void *v1, const void *v2)
 	}
 	return 0;
 }
-static void PlayerListDraw(
+static void PlayerListCustomDraw(
 	const menu_t *menu, GraphicsDevice *g, const Vec2i pos, const Vec2i size,
 	const void *data);
 static int PlayerListInput(int cmd, void *data);
-static void PlayerListLoop(PlayerList *pl)
+static void PlayerListTerminate(GameLoopData *data);
+static void PlayerListOnEnter(GameLoopData *data);
+static void PlayerListOnExit(GameLoopData *data);
+static GameLoopResult PlayerListUpdate(GameLoopData *data);
+static void PlayerListDraw(GameLoopData *data);
+static GameLoopData PlayerListLoop(PlayerList *pl)
 {
-	MenuSystem ms;
-	MenuSystemInit(&ms, &gEventHandlers, &gGraphicsDevice, pl->pos, pl->size);
+	MenuSystemInit(&pl->ms, &gEventHandlers, &gGraphicsDevice, pl->pos, pl->size);
 	menu_t *menuScores = MenuCreateCustom(
-		"View Scores", PlayerListDraw, PlayerListInput, pl);
+		"View Scores", PlayerListCustomDraw, PlayerListInput, pl);
 	if (pl->hasMenu)
 	{
-		ms.root = MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
-		MenuAddSubmenu(ms.root, menuScores);
-		MenuAddSubmenu(ms.root, MenuCreateReturn("Finish", 0));
-		ms.current = MenuGetSubmenuByName(ms.root, "View Scores");
+		pl->ms.root = MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
+		MenuAddSubmenu(pl->ms.root, menuScores);
+		MenuAddSubmenu(pl->ms.root, MenuCreateReturn("Finish", 0));
+		pl->ms.current = MenuGetSubmenuByName(pl->ms.root, "View Scores");
 	}
 	else
 	{
-		ms.root = ms.current = menuScores;
+		pl->ms.root = pl->ms.current = menuScores;
 	}
-	ms.allowAborts = true;
-	MenuAddExitType(&ms, MENU_TYPE_RETURN);
-	GameLoopData g = MenuLoop(&ms);
-	GameLoop(&g);
-	GameLoopTerminate(&g);
-	// Free ourselves at the end
+	pl->ms.allowAborts = true;
+	MenuAddExitType(&pl->ms, MENU_TYPE_RETURN);
+	return GameLoopDataNew(
+		pl, PlayerListTerminate, PlayerListOnEnter, PlayerListOnExit,
+		NULL, PlayerListUpdate, PlayerListDraw);
+}
+static void PlayerListTerminate(GameLoopData *data)
+{
+	PlayerList *pl = data->Data;
+
 	CArrayTerminate(&pl->playerUIDs);
+	MenuSystemTerminate(&pl->ms);
+	CFREE(pl);
+}
+static void PlayerListOnEnter(GameLoopData *data)
+{
+	PlayerList *pl = data->Data;
+
+	pl->ms.current = pl->ms.root;
+}
+static void PlayerListOnExit(GameLoopData *data)
+{
+	UNUSED(data);
+	SoundPlay(&gSoundDevice, StrSound("mg"));
+}
+static GameLoopResult PlayerListUpdate(GameLoopData *data)
+{
+	PlayerList *pl = data->Data;
+
+	return MenuUpdate(&pl->ms);
+}
+static void PlayerListDraw(GameLoopData *data)
+{
+	const PlayerList *pl = data->Data;
+
+	MenuDraw(&pl->ms);
 }
 static int PlayerListMaxScroll(const PlayerList *pl);
 static int PlayerListMaxRows(const PlayerList *pl);
-static void PlayerListDraw(
+static void PlayerListCustomDraw(
 	const menu_t *menu, GraphicsDevice *g, const Vec2i pos, const Vec2i size,
 	const void *data)
 {
@@ -284,7 +319,7 @@ typedef struct
 	const char *FinalWords;
 } VictoryData;
 static void VictoryDraw(void *data);
-void ScreenVictory(CampaignOptions *c)
+GameLoopData ScreenVictory(CampaignOptions *c)
 {
 	SoundPlay(&gSoundDevice, StrSound("victory"));
 	VictoryData data;
@@ -319,11 +354,10 @@ void ScreenVictory(CampaignOptions *c)
 		const int numWords = sizeof finalWordsMulti / sizeof(char *);
 		data.FinalWords = finalWordsMulti[rand() % numWords];
 	}
-	PlayerList pl = PlayerListNew(VictoryDraw, &data, true, false);
-	pl.pos.y = 75;
-	pl.size.y -= pl.pos.y;
-	PlayerListLoop(&pl);
-	SoundPlay(&gSoundDevice, StrSound("hahaha"));
+	PlayerList *pl = PlayerListNew(VictoryDraw, &data, true, false);
+	pl->pos.y = 75;
+	pl->size.y -= pl->pos.y;
+	return PlayerListLoop(pl);
 }
 static void VictoryDraw(void *data)
 {
@@ -350,31 +384,28 @@ static void VictoryDraw(void *data)
 	FontChMask('"', pos, colorDarker);
 }
 
-void ScreenDogfightScores(void)
+GameLoopData ScreenDogfightScores(void)
 {
-	PlayerList pl = PlayerListNew(NULL, NULL, false, false);
-	pl.pos.y = 24;
-	pl.size.y -= pl.pos.y;
-	PlayerListLoop(&pl);
-	SoundPlay(&gSoundDevice, StrSound("mg"));
+	PlayerList *pl = PlayerListNew(NULL, NULL, false, false);
+	pl->pos.y = 24;
+	pl->size.y -= pl->pos.y;
+	return PlayerListLoop(pl);
 }
 
-void ScreenDogfightFinalScores(void)
+GameLoopData ScreenDogfightFinalScores(void)
 {
 	SoundPlay(&gSoundDevice, StrSound("victory"));
-	PlayerList pl = PlayerListNew(NULL, NULL, true, true);
-	pl.pos.y = 24;
-	pl.size.y -= pl.pos.y;
-	PlayerListLoop(&pl);
-	SoundPlay(&gSoundDevice, StrSound("mg"));
+	PlayerList *pl = PlayerListNew(NULL, NULL, true, true);
+	pl->pos.y = 24;
+	pl->size.y -= pl->pos.y;
+	return PlayerListLoop(pl);
 }
 
-void ScreenDeathmatchFinalScores(void)
+GameLoopData ScreenDeathmatchFinalScores(void)
 {
 	SoundPlay(&gSoundDevice, StrSound("victory"));
-	PlayerList pl = PlayerListNew(NULL, NULL, true, true);
-	pl.pos.y = 24;
-	pl.size.y -= pl.pos.y;
-	PlayerListLoop(&pl);
-	SoundPlay(&gSoundDevice, StrSound("mg"));
+	PlayerList *pl = PlayerListNew(NULL, NULL, true, true);
+	pl->pos.y = 24;
+	pl->size.y -= pl->pos.y;
+	return PlayerListLoop(pl);
 }
