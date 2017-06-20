@@ -167,13 +167,16 @@ GameLoopData ScreenMissionBriefing(const struct MissionOptions *m)
 	mData->waitResult = EVENT_WAIT_CONTINUE;
 
 	// Title
-	CMALLOC(mData->Title, strlen(m->missionData->Title) + 32);
-	sprintf(mData->Title, "Mission %d: %s",
-		m->index + 1, m->missionData->Title);
-	mData->TitleOpts = FontOptsNew();
-	mData->TitleOpts.HAlign = ALIGN_CENTER;
-	mData->TitleOpts.Area = gGraphicsDevice.cachedConfig.Res;
-	mData->TitleOpts.Pad.y = y - 25;
+	if (m->missionData->Title)
+	{
+		CMALLOC(mData->Title, strlen(m->missionData->Title) + 32);
+		sprintf(mData->Title, "Mission %d: %s",
+			m->index + 1, m->missionData->Title);
+		mData->TitleOpts = FontOptsNew();
+		mData->TitleOpts.HAlign = ALIGN_CENTER;
+		mData->TitleOpts.Area = gGraphicsDevice.cachedConfig.Res;
+		mData->TitleOpts.Pad.y = y - 25;
+	}
 
 	// Password
 	if (m->index > 0)
@@ -186,21 +189,27 @@ GameLoopData ScreenMissionBriefing(const struct MissionOptions *m)
 		mData->PasswordOpts.Pad.y = y - 15;
 	}
 
-	// Split the description, and prepare it for typewriter effect
-	mData->TypewriterCount = 0;
-	// allow some slack for newlines
-	CMALLOC(mData->Description, strlen(m->missionData->Description) * 2 + 1);
-	CCALLOC(mData->TypewriterBuf, strlen(m->missionData->Description) * 2 + 1);
-	// Pad about 1/6th of the screen width total (1/12th left and right)
-	FontSplitLines(m->missionData->Description, mData->Description, w * 5 / 6);
-	mData->DescriptionPos = Vec2iNew(w / 12, y);
+	// Description
+	if (m->missionData->Description)
+	{
+		// Split the description, and prepare it for typewriter effect
+		// allow some slack for newlines
+		CMALLOC(
+			mData->Description, strlen(m->missionData->Description) * 2 + 1);
+		CCALLOC(
+			mData->TypewriterBuf, strlen(m->missionData->Description) * 2 + 1);
+		// Pad about 1/6th of the screen width total (1/12th left and right)
+		FontSplitLines(
+			m->missionData->Description, mData->Description, w * 5 / 6);
+		mData->DescriptionPos = Vec2iNew(w / 12, y);
 
-	// Objectives
-	mData->ObjectiveDescPos =
-		Vec2iNew(w / 6, y + FontStrH(mData->Description) + h / 10);
-	mData->ObjectiveInfoPos =
-		Vec2iNew(w - (w / 6), mData->ObjectiveDescPos.y + FontH());
-	mData->ObjectiveHeight = h / 12;
+		// Objectives
+		mData->ObjectiveDescPos =
+			Vec2iNew(w / 6, y + FontStrH(mData->Description) + h / 10);
+		mData->ObjectiveInfoPos =
+			Vec2iNew(w - (w / 6), mData->ObjectiveDescPos.y + FontH());
+		mData->ObjectiveHeight = h / 12;
+	}
 	mData->MissionOptions = m;
 
 	return GameLoopDataNew(
@@ -233,23 +242,26 @@ static void MissionBriefingInput(GameLoopData *data)
 {
 	MissionBriefingData *mData = data->Data;
 
-	// Check for player input; if any then skip to the end of the briefing
 	int cmds[MAX_LOCAL_PLAYERS];
 	memset(cmds, 0, sizeof cmds);
 	GetPlayerCmds(&gEventHandlers, &cmds);
-	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
+	if (mData->Description)
 	{
-		if (AnyButton(cmds[i]))
+		// Check for player input; if any then skip to the end of the briefing
+		for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 		{
-			// If the typewriter is still going, skip to end
-			if (mData->TypewriterCount <= (int)strlen(mData->Description))
+			if (AnyButton(cmds[i]))
 			{
-				strcpy(mData->TypewriterBuf, mData->Description);
-				mData->TypewriterCount = strlen(mData->Description);
-				return;
+				// If the typewriter is still going, skip to end
+				if (mData->TypewriterCount <= (int)strlen(mData->Description))
+				{
+					strcpy(mData->TypewriterBuf, mData->Description);
+					mData->TypewriterCount = strlen(mData->Description);
+					return;
+				}
+				// Otherwise, exit out of loop
+				mData->waitResult = EVENT_WAIT_OK;
 			}
-			// Otherwise, exit out of loop
-			mData->waitResult = EVENT_WAIT_OK;
 		}
 	}
 	// Check if anyone pressed escape
@@ -264,7 +276,8 @@ static GameLoopResult MissionBriefingUpdate(GameLoopData *data)
 
 	if (!IsMissionBriefingNeeded(gCampaign.Entry.Mode))
 	{
-		return UPDATE_RESULT_OK;
+		mData->waitResult = EVENT_WAIT_OK;
+		return UPDATE_RESULT_EXIT;
 	}
 
 	// Check exit conditions from input

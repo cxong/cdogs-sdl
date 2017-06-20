@@ -156,29 +156,33 @@ typedef struct
 	int aiUpdateCounter;
 	PowerupSpawner healthSpawner;
 	CArray ammoSpawners;	// of PowerupSpawner
-	GameLoopData loop;
 } RunGameData;
+static void RunGameTerminate(GameLoopData *data);
 static void RunGameOnEnter(GameLoopData *data);
 static void RunGameOnExit(GameLoopData *data);
 static void RunGameInput(GameLoopData *data);
 static GameLoopResult RunGameUpdate(GameLoopData *data);
 static void RunGameDraw(GameLoopData *data);
-bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
+GameLoopData RunGame(
+	const CampaignOptions *co, struct MissionOptions *m, Map *map)
 {
-	RunGameData data;
-	memset(&data, 0, sizeof data);
-	data.co = co;
-	data.m = m;
-	data.map = map;
-	data.loop = GameLoopDataNew(
-		&data, NULL, RunGameOnEnter, RunGameOnExit,
+	RunGameData *data;
+	CCALLOC(data, sizeof *data);
+	data->co = co;
+	data->m = m;
+	data->map = map;
+	GameLoopData g = GameLoopDataNew(
+		data, RunGameTerminate, RunGameOnEnter, RunGameOnExit,
 		RunGameInput, RunGameUpdate, RunGameDraw);
-	data.loop.FPS = ConfigGetInt(&gConfig, "Game.FPS");
-	data.loop.InputEverySecondFrame = true;
-	GameLoop(&data.loop);
-	GameLoopTerminate(&data.loop);
+	g.FPS = ConfigGetInt(&gConfig, "Game.FPS");
+	g.InputEverySecondFrame = true;
+	return g;
+}
+static void RunGameTerminate(GameLoopData *data)
+{
+	RunGameData *rData = data->Data;
 
-	return !m->IsQuit;
+	CFREE(rData);
 }
 static void RunGameOnEnter(GameLoopData *data)
 {
@@ -594,7 +598,7 @@ static GameLoopResult RunGameUpdate(GameLoopData *data)
 
 	rData->m->time += ticksPerFrame;
 
-	CameraUpdate(&rData->Camera, ticksPerFrame, 1000 / rData->loop.FPS);
+	CameraUpdate(&rData->Camera, ticksPerFrame, 1000 / data->FPS);
 
 	return UPDATE_RESULT_DRAW;
 }
