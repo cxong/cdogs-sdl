@@ -190,12 +190,14 @@ typedef struct
 	int highlights[MAX_LOCAL_PLAYERS];
 	int scoreIdx;
 } HighScoresData;
+static void HighScoreTerminate(GameLoopData *data);
 static GameLoopResult HighScoreUpdate(GameLoopData *data);
 static void HighScoreDraw(GameLoopData *data);
-void DisplayAllTimeHighScores(GraphicsDevice *graphics)
+GameLoopData DisplayAllTimeHighScores(GraphicsDevice *graphics)
 {
-	HighScoresData data;
-	data.g = graphics;
+	HighScoresData *data;
+	CMALLOC(data, sizeof *data);
+	data->g = graphics;
 	int idx = 0;
 	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
@@ -205,23 +207,20 @@ void DisplayAllTimeHighScores(GraphicsDevice *graphics)
 			idx--;
 			continue;
 		}
-		data.highlights[idx] = p->allTime;
+		data->highlights[idx] = p->allTime;
 	}
-	data.scoreIdx = 0;
-	data.title = "All time high scores:";
-	data.scores = allTimeHigh;
-	while (data.scoreIdx < MAX_ENTRY && data.scores[data.scoreIdx].score > 0)
-	{
-		GameLoopData gData = GameLoopDataNew(
-			&data, NULL, NULL, NULL, NULL, HighScoreUpdate, HighScoreDraw);
-		GameLoop(&gData);
-		GameLoopTerminate(&gData);
-	}
+	data->scoreIdx = 0;
+	data->title = "All time high scores:";
+	data->scores = allTimeHigh;
+	return GameLoopDataNew(
+		data, HighScoreTerminate, NULL, NULL,
+		NULL, HighScoreUpdate, HighScoreDraw);
 }
-void DisplayTodaysHighScores(GraphicsDevice *graphics)
+GameLoopData DisplayTodaysHighScores(GraphicsDevice *graphics)
 {
-	HighScoresData data;
-	data.g = graphics;
+	HighScoresData *data;
+	CMALLOC(data, sizeof *data);
+	data->g = graphics;
 	int idx = 0;
 	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
@@ -231,18 +230,20 @@ void DisplayTodaysHighScores(GraphicsDevice *graphics)
 			idx--;
 			continue;
 		}
-		data.highlights[idx] = p->today;
+		data->highlights[idx] = p->today;
 	}
-	data.scoreIdx = 0;
-	data.title = "Today's highest score:";
-	data.scores = todaysHigh;
-	while (data.scoreIdx < MAX_ENTRY && data.scores[data.scoreIdx].score > 0)
-	{
-		GameLoopData gData = GameLoopDataNew(
-			&data, NULL, NULL, NULL, NULL, HighScoreUpdate, HighScoreDraw);
-		GameLoop(&gData);
-		GameLoopTerminate(&gData);
-	}
+	data->scoreIdx = 0;
+	data->title = "Today's highest score:";
+	data->scores = todaysHigh;
+	return GameLoopDataNew(
+		data, HighScoreTerminate, NULL, NULL,
+		NULL, HighScoreUpdate, HighScoreDraw);
+}
+static void HighScoreTerminate(GameLoopData *data)
+{
+	HighScoresData *hData = data->Data;
+
+	CFREE(hData);
 }
 static void HighScoreDraw(GameLoopData *data)
 {

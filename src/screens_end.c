@@ -131,11 +131,10 @@ static GameLoopData PlayerListLoop(PlayerList *pl)
 		pl->ms.root = MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
 		MenuAddSubmenu(pl->ms.root, menuScores);
 		MenuAddSubmenu(pl->ms.root, MenuCreateReturn("Finish", 0));
-		pl->ms.current = MenuGetSubmenuByName(pl->ms.root, "View Scores");
 	}
 	else
 	{
-		pl->ms.root = pl->ms.current = menuScores;
+		pl->ms.root = menuScores;
 	}
 	pl->ms.allowAborts = true;
 	MenuAddExitType(&pl->ms, MENU_TYPE_RETURN);
@@ -149,13 +148,21 @@ static void PlayerListTerminate(GameLoopData *data)
 
 	CArrayTerminate(&pl->playerUIDs);
 	MenuSystemTerminate(&pl->ms);
+	CFREE(pl->data);
 	CFREE(pl);
 }
 static void PlayerListOnEnter(GameLoopData *data)
 {
 	PlayerList *pl = data->Data;
 
-	pl->ms.current = pl->ms.root;
+	if (pl->hasMenu)
+	{
+		pl->ms.current = MenuGetSubmenuByName(pl->ms.root, "View Scores");
+	}
+	else
+	{
+		pl->ms.current = pl->ms.root;
+	}
 }
 static void PlayerListOnExit(GameLoopData *data)
 {
@@ -322,8 +329,9 @@ static void VictoryDraw(void *data);
 GameLoopData ScreenVictory(CampaignOptions *c)
 {
 	SoundPlay(&gSoundDevice, StrSound("victory"));
-	VictoryData data;
-	data.Campaign = c;
+	VictoryData *data;
+	CMALLOC(data, sizeof *data);
+	data->Campaign = c;
 	const char *finalWordsSingle[] = {
 		"Ha, next time I'll use my good hand",
 		"Over already? I was just warming up...",
@@ -347,14 +355,14 @@ GameLoopData ScreenVictory(CampaignOptions *c)
 	if (GetNumPlayers(PLAYER_ANY, false, true) == 1)
 	{
 		const int numWords = sizeof finalWordsSingle / sizeof(char *);
-		data.FinalWords = finalWordsSingle[rand() % numWords];
+		data->FinalWords = finalWordsSingle[rand() % numWords];
 	}
 	else
 	{
 		const int numWords = sizeof finalWordsMulti / sizeof(char *);
-		data.FinalWords = finalWordsMulti[rand() % numWords];
+		data->FinalWords = finalWordsMulti[rand() % numWords];
 	}
-	PlayerList *pl = PlayerListNew(VictoryDraw, &data, true, false);
+	PlayerList *pl = PlayerListNew(VictoryDraw, data, true, false);
 	pl->pos.y = 75;
 	pl->size.y -= pl->pos.y;
 	return PlayerListLoop(pl);

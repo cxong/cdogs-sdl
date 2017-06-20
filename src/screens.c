@@ -230,11 +230,15 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 			CA_FOREACH_END()
 			if (allTime)
 			{
-				DisplayAllTimeHighScores(graphics);
+				g = DisplayAllTimeHighScores(graphics);
+				GameLoop(&g);
+				GameLoopTerminate(&g);
 			}
 			if (todays)
 			{
-				DisplayTodaysHighScores(graphics);
+				g = DisplayTodaysHighScores(graphics);
+				GameLoop(&g);
+				GameLoopTerminate(&g);
 			}
 		}
 		if (!HasRounds(co->Entry.Mode) && !gameOver)

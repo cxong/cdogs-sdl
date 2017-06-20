@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, Cong Xu
+    Copyright (c) 2013, 2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,16 +46,14 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __HISCORES
-#define __HISCORES
+#pragma once
 
-#include "player.h"
+#include "game_loop.h"
 #include "grafx.h"
+#include "player.h"
 
 void EnterHighScore(PlayerData *data);
-void DisplayAllTimeHighScores(GraphicsDevice *graphics);
-void DisplayTodaysHighScores(GraphicsDevice *graphics);
+GameLoopData DisplayAllTimeHighScores(GraphicsDevice *graphics);
+GameLoopData DisplayTodaysHighScores(GraphicsDevice *graphics);
 void SaveHighScores(void);
 void LoadHighScores(void);
-
-#endif
