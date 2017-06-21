@@ -55,7 +55,6 @@
 #include <cdogs/game_events.h>
 #include <cdogs/handle_game_events.h>
 #include <cdogs/hiscores.h>
-#include <cdogs/music.h>
 #include <cdogs/net_client.h>
 #include <cdogs/net_server.h>
 
@@ -122,21 +121,6 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 		GameLoopTerminate(&g);
 		run = !gMission.IsQuit;
 
-		// Unready all the players
-		CA_FOREACH(PlayerData, p, gPlayerDatas)
-			p->Ready = false;
-		CA_FOREACH_END()
-		gNetClient.Ready = false;
-
-		// Don't quit if all players died, that's normal for PVP modes
-		// But make sure we have players at all
-		if (IsPVP(co->Entry.Mode) &&
-			GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) == 0 &&
-			GetNumPlayers(PLAYER_ANY, false, false) > 0)
-		{
-			run = true;
-		}
-
 		const int survivingPlayers =
 			GetNumPlayers(PLAYER_ALIVE, false, false);
 		const bool survivedAndCompletedObjectives =
@@ -148,14 +132,6 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 				co->MissionIndex == (int)co->Setting.Missions.size - 1;
 		}
 
-		CA_FOREACH(PlayerData, p, gPlayerDatas)
-			p->survived = IsPlayerAlive(p);
-			if (IsPlayerAlive(p))
-			{
-				const TActor *player = ActorGetByUID(p->ActorUID);
-				p->hp = player->health;
-			}
-		CA_FOREACH_END()
 		if (co->Entry.Mode == GAME_MODE_DOGFIGHT)
 		{
 			// Calculate PVP rounds won
@@ -171,8 +147,6 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 			CASSERT(maxScore <= ModeMaxRoundsWon(co->Entry.Mode),
 				"score exceeds max rounds won");
 		}
-
-		MusicPlayMenu(&gSoundDevice);
 
 		bool playNext = !gameOver;
 		if (run && GetNumPlayers(PLAYER_ANY, false, true) > 0)

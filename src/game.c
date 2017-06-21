@@ -63,6 +63,7 @@
 #include <cdogs/handle_game_events.h>
 #include <cdogs/log.h>
 #include <cdogs/los.h>
+#include <cdogs/music.h>
 #include <cdogs/net_client.h>
 #include <cdogs/net_server.h>
 #include <cdogs/objs.h>
@@ -292,6 +293,24 @@ static void RunGameOnExit(GameLoopData *data)
 	// Clear other texures
 	BlitClearBuf(&gGraphicsDevice);
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.hud);
+
+	// Unready all the players
+	CA_FOREACH(PlayerData, p, gPlayerDatas)
+		p->Ready = false;
+	CA_FOREACH_END()
+	gNetClient.Ready = false;
+
+	// Calculate remaining health and survived
+	CA_FOREACH(PlayerData, p, gPlayerDatas)
+		p->survived = IsPlayerAlive(p);
+		if (IsPlayerAlive(p))
+		{
+			const TActor *player = ActorGetByUID(p->ActorUID);
+			p->hp = player->health;
+		}
+	CA_FOREACH_END()
+
+	MusicPlayMenu(&gSoundDevice);
 }
 static void RunGameInput(GameLoopData *data)
 {
@@ -672,7 +691,9 @@ static void RunGameDraw(GameLoopData *data)
 	CameraDrawMode(&rData->Camera);
 	HUDDraw(
 		&rData->Camera.HUD, rData->pausingDevice, rData->controllerUnplugged);
-	if (GameIsMouseUsed())
+	const bool isMouse = GameIsMouseUsed();
+	SDL_SetRelativeMouseMode(isMouse);
+	if (isMouse)
 	{
 		MouseDraw(&gEventHandlers.mouse);
 	}
