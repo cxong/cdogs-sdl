@@ -330,30 +330,86 @@ static void MissionBriefingDraw(GameLoopData *data)
 
 #define PERFECT_BONUS 500
 
+typedef struct
+{
+	MenuSystem ms;
+	CampaignOptions *c;
+	struct MissionOptions *m;
+	bool completed;
+} MissionSummaryData;
+static void MissionSummaryTerminate(GameLoopData *data);
+static void MissionSummaryOnEnter(GameLoopData *data);
+static void MissionSummaryOnExit(GameLoopData *data);
+static GameLoopResult MissionSummaryUpdate(GameLoopData *data);
+static void MissionSummaryDraw(GameLoopData *data);
+static void MissionSummaryMenuDraw(
+	const menu_t *menu, GraphicsDevice *g,
+	const Vec2i p, const Vec2i size, const void *data);
+GameLoopData ScreenMissionSummary(
+	CampaignOptions *c, struct MissionOptions *m, const bool completed)
+{
+	MissionSummaryData *mData;
+	CMALLOC(mData, sizeof *mData);
+
+	const int h = FontH() * 10;
+	MenuSystemInit(
+		&mData->ms, &gEventHandlers, &gGraphicsDevice,
+		Vec2iNew(0, gGraphicsDevice.cachedConfig.Res.y - h),
+		Vec2iNew(gGraphicsDevice.cachedConfig.Res.x, h));
+	mData->ms.current = mData->ms.root =
+		MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
+	// Use return code 0 for whether to continue the game
+	if (completed)
+	{
+		MenuAddSubmenu(mData->ms.root, MenuCreateReturn("Continue", 0));
+	}
+	else
+	{
+		MenuAddSubmenu(mData->ms.root, MenuCreateReturn("Replay mission", 0));
+		MenuAddSubmenu(mData->ms.root, MenuCreateReturn("Back to menu", 1));
+	}
+	mData->ms.allowAborts = true;
+	MenuAddExitType(&mData->ms, MENU_TYPE_RETURN);
+	MenuSystemAddCustomDisplay(&mData->ms, MissionSummaryMenuDraw, m);
+
+	mData->c = c;
+	mData->m = m;
+	mData->completed = completed;
+
+	return GameLoopDataNew(
+		mData, MissionSummaryTerminate,
+		MissionSummaryOnEnter, MissionSummaryOnExit,
+		NULL, MissionSummaryUpdate, MissionSummaryDraw);
+}
+static void MissionSummaryTerminate(GameLoopData *data)
+{
+	MissionSummaryData *mData = data->Data;
+
+	MenuSystemTerminate(&mData->ms);
+	CFREE(mData);
+}
 static bool AreAnySurvived(void);
 static int GetAccessBonus(const struct MissionOptions *m);
 static int GetTimeBonus(const struct MissionOptions *m, int *secondsOut);
 static void ApplyBonuses(PlayerData *p, const int bonus);
-static void MissionSummaryDraw(
-	const menu_t *menu, GraphicsDevice *g,
-	const Vec2i p, const Vec2i size, const void *data);
-bool ScreenMissionSummary(
-	CampaignOptions *c, struct MissionOptions *m, const bool completed)
+static void MissionSummaryOnEnter(GameLoopData *data)
 {
-	if (completed)
+	MissionSummaryData *mData = data->Data;
+
+	if (mData->completed)
 	{
 		// Save password
 		MissionSave ms;
 		MissionSaveInit(&ms);
-		ms.Campaign = c->Entry;
+		ms.Campaign = mData->c->Entry;
 		// Don't make password for next level if there is none
-		int passwordIndex = m->index + 1;
-		if (passwordIndex == c->Entry.NumMissions)
+		int passwordIndex = mData->m->index + 1;
+		if (passwordIndex == mData->c->Entry.NumMissions)
 		{
 			passwordIndex--;
 		}
 		strcpy(ms.Password, MakePassword(passwordIndex, 0));
-		ms.MissionsCompleted = m->index + 1;
+		ms.MissionsCompleted = mData->m->index + 1;
 		AutosaveAddMission(&gAutosave, &ms);
 		AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 	}
@@ -364,43 +420,37 @@ bool ScreenMissionSummary(
 	{
 		int bonus = 0;
 		// Objective bonuses
-		CA_FOREACH(const Objective, o, m->missionData->Objectives)
+		CA_FOREACH(const Objective, o, mData->m->missionData->Objectives)
 			if (ObjectiveIsPerfect(o))
 			{
 				bonus += PERFECT_BONUS;
 			}
 		CA_FOREACH_END()
-		bonus += GetAccessBonus(m);
-		bonus += GetTimeBonus(m, NULL);
+		bonus += GetAccessBonus(mData->m);
+		bonus += GetTimeBonus(mData->m, NULL);
 
 		CA_FOREACH(PlayerData, p, gPlayerDatas)
 			ApplyBonuses(p, bonus);
 		CA_FOREACH_END()
 	}
-	MenuSystem ms;
-	const int h = FontH() * 10;
-	MenuSystemInit(
-		&ms, &gEventHandlers, &gGraphicsDevice,
-		Vec2iNew(0, gGraphicsDevice.cachedConfig.Res.y - h),
-		Vec2iNew(gGraphicsDevice.cachedConfig.Res.x, h));
-	ms.current = ms.root = MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
-	// Use return code 0 for whether to continue the game
-	if (completed)
-	{
-		MenuAddSubmenu(ms.root, MenuCreateReturn("Continue", 0));
-	}
-	else
-	{
-		MenuAddSubmenu(ms.root, MenuCreateReturn("Replay mission", 0));
-		MenuAddSubmenu(ms.root, MenuCreateReturn("Back to menu", 1));
-	}
-	ms.allowAborts = true;
-	MenuAddExitType(&ms, MENU_TYPE_RETURN);
-	MenuSystemAddCustomDisplay(&ms, MissionSummaryDraw, m);
-	GameLoopData g = MenuLoop(&ms);
-	GameLoop(&g);
-	GameLoopTerminate(&g);
-	return ms.current->u.returnCode == 0;
+}
+static void MissionSummaryOnExit(GameLoopData *data)
+{
+	MissionSummaryData *mData = data->Data;
+
+	mData->m->IsQuit = mData->ms.current->u.returnCode == 0;
+}
+static GameLoopResult MissionSummaryUpdate(GameLoopData *data)
+{
+	MissionSummaryData *mData = data->Data;
+
+	return MenuUpdate(&mData->ms);
+}
+static void MissionSummaryDraw(GameLoopData *data)
+{
+	const MissionSummaryData *mData = data->Data;
+
+	MenuDraw(&mData->ms);
 }
 static bool AreAnySurvived(void)
 {
@@ -487,7 +537,7 @@ static int GetFriendlyBonus(const PlayerData *p)
 }
 static void DrawPlayerSummary(
 	const Vec2i pos, const Vec2i size, PlayerData *data);
-static void MissionSummaryDraw(
+static void MissionSummaryMenuDraw(
 	const menu_t *menu, GraphicsDevice *g,
 	const Vec2i p, const Vec2i size, const void *data)
 {

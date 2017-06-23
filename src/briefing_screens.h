@@ -33,5 +33,5 @@ GameLoopData ScreenCampaignIntro(CampaignSetting *c);
 GameLoopData ScreenMissionBriefing(const struct MissionOptions *m);
 // Display a summary page at the end of a mission
 // Returns true if the game is to continue
-bool ScreenMissionSummary(
+GameLoopData ScreenMissionSummary(
 	CampaignOptions *c, struct MissionOptions *m, const bool completed);

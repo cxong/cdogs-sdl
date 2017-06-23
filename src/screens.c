@@ -125,38 +125,34 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 			GetNumPlayers(PLAYER_ALIVE, false, false);
 		const bool survivedAndCompletedObjectives =
 			survivingPlayers > 0 && MissionAllObjectivesComplete(&gMission);
-		// In co-op (non-PVP) modes, at least one player must survive
-		if (!IsPVP(co->Entry.Mode))
-		{
-			gameOver = !survivedAndCompletedObjectives ||
-				co->MissionIndex == (int)co->Setting.Missions.size - 1;
-		}
-
-		if (co->Entry.Mode == GAME_MODE_DOGFIGHT)
-		{
-			// Calculate PVP rounds won
-			int maxScore = 0;
-			CA_FOREACH(PlayerData, p, gPlayerDatas)
-				if (IsPlayerAlive(p))
-				{
-					p->Totals.Score++;
-					maxScore = MAX(maxScore, p->Totals.Score);
-				}
-			CA_FOREACH_END()
-			gameOver = maxScore == ModeMaxRoundsWon(co->Entry.Mode);
-			CASSERT(maxScore <= ModeMaxRoundsWon(co->Entry.Mode),
-				"score exceeds max rounds won");
-		}
-
-		bool playNext = !gameOver;
 		if (run && GetNumPlayers(PLAYER_ANY, false, true) > 0)
 		{
 			switch (co->Entry.Mode)
 			{
 			case GAME_MODE_DOGFIGHT:
-				g = ScreenDogfightScores();
-				GameLoop(&g);
-				GameLoopTerminate(&g);
+				{
+					g = ScreenDogfightScores();
+					GameLoop(&g);
+					GameLoopTerminate(&g);
+					// Calculate PVP rounds won
+					int maxScore = 0;
+					CA_FOREACH(PlayerData, p, gPlayerDatas)
+						if (IsPlayerAlive(p))
+						{
+							p->Totals.Score++;
+							maxScore = MAX(maxScore, p->Totals.Score);
+						}
+					CA_FOREACH_END()
+					gameOver = maxScore == ModeMaxRoundsWon(co->Entry.Mode);
+					CASSERT(maxScore <= ModeMaxRoundsWon(co->Entry.Mode),
+						"score exceeds max rounds won");
+					if (gameOver)
+					{
+						g = ScreenDogfightFinalScores();
+						GameLoop(&g);
+						GameLoopTerminate(&g);
+					}
+				}
 				break;
 			case GAME_MODE_DEATHMATCH:
 				g = ScreenDeathmatchFinalScores();
@@ -164,8 +160,14 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 				GameLoopTerminate(&g);
 				break;
 			default:
-				playNext = ScreenMissionSummary(
+				// In co-op (non-PVP) modes, at least one player must survive
+				gameOver = !survivedAndCompletedObjectives ||
+					co->MissionIndex == (int)co->Setting.Missions.size - 1;
+				g = ScreenMissionSummary(
 					co, &gMission, survivedAndCompletedObjectives);
+				GameLoop(&g);
+				GameLoopTerminate(&g);
+				run = !gMission.IsQuit;
 				// Note: must use cached value because players get cleaned up
 				// in CleanupMission()
 				if (gameOver && survivedAndCompletedObjectives)
@@ -173,7 +175,6 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 					g = ScreenVictory(co);
 					GameLoop(&g);
 					GameLoopTerminate(&g);
-					playNext = false;
 				}
 				break;
 			}
@@ -222,28 +223,11 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 		{
 			co->MissionIndex++;
 		}
-		gameOver = !playNext;
 
 	bail:
 		// Need to terminate the mission later as it is used in calculating scores
 		MissionOptionsTerminate(&gMission);
 	} while (run && !gameOver);
-
-	// Final screen
-	if (run)
-	{
-		switch (co->Entry.Mode)
-		{
-		case GAME_MODE_DOGFIGHT:
-			g = ScreenDogfightFinalScores();
-			GameLoop(&g);
-			GameLoopTerminate(&g);
-			break;
-		default:
-			// no end screen
-			break;
-		}
-	}
 
 	CampaignUnload(&gCampaign);
 }
