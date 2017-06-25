@@ -126,29 +126,33 @@ typedef struct
 	int Mission;
 	int Selection;
 } EnterCodeScreenData;
+static void EnterCodeTerminate(GameLoopData *data);
 static void EnterCodeScreenOnExit(GameLoopData *data);
 static GameLoopResult EnterCodeScreenUpdate(GameLoopData *data);
 static void EnterCodeScreenDraw(GameLoopData *data);
-static int EnterCodeScreen(const char *password)
+static GameLoopData EnterCodeScreen(const char *password)
 {
-	EnterCodeScreenData data;
-	memset(&data, 0, sizeof data);
-	data.Selection = -1;
-	strcpy(data.Buffer, password);
+	EnterCodeScreenData *data;
+	CCALLOC(data, sizeof *data);
+	data->Selection = -1;
+	strcpy(data->Buffer, password);
 
-	GameLoopData gData = GameLoopDataNew(
-		&data, NULL, NULL, EnterCodeScreenOnExit,
+	return GameLoopDataNew(
+		data, EnterCodeTerminate, NULL, EnterCodeScreenOnExit,
 		NULL, EnterCodeScreenUpdate, EnterCodeScreenDraw);
-	GameLoop(&gData);
-	GameLoopTerminate(&gData);
+}
+static void EnterCodeTerminate(GameLoopData *data)
+{
+	EnterCodeScreenData *eData = data->Data;
 
-	return data.Mission;
+	CFREE(eData);
 }
 static void EnterCodeScreenOnExit(GameLoopData *data)
 {
 	const EnterCodeScreenData *eData = data->Data;
 	if (eData->Mission > 0)
 	{
+		gCampaign.MissionIndex = eData->Mission;
 		SoundPlay(&gSoundDevice, StrSound("mg"));
 	}
 	else
@@ -422,13 +426,10 @@ static GameLoopResult PasswordUpdate(GameLoopData *data)
 			break;
 		case RETURN_CODE_ENTER_CODE:
 			{
-				const int enteredMission =
-					EnterCodeScreen(pData->save->Password);
-				if (enteredMission > 0)
-				{
-					gCampaign.MissionIndex = enteredMission;
-				}
-				else
+				GameLoopData g = EnterCodeScreen(pData->save->Password);
+				GameLoop(&g);
+				GameLoopTerminate(&g);
+				if (gCampaign.MissionIndex == 0)
 				{
 					// Invalid password
 					MenuReset(&pData->ms);
