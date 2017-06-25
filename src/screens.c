@@ -54,12 +54,12 @@
 #include <cdogs/gamedata.h>
 #include <cdogs/game_events.h>
 #include <cdogs/handle_game_events.h>
-#include <cdogs/hiscores.h>
 #include <cdogs/net_client.h>
 #include <cdogs/net_server.h>
 
 #include "briefing_screens.h"
 #include "game.h"
+#include "hiscores.h"
 #include "prep.h"
 #include "screens_end.h"
 
@@ -184,6 +184,7 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 		if (!IsPVP(co->Entry.Mode) &&
 			GetNumPlayers(PLAYER_ANY, false, true) > 0)
 		{
+			LoadHighScores();
 			bool allTime = false;
 			bool todays = false;
 			CA_FOREACH(PlayerData, p, gPlayerDatas)
@@ -218,6 +219,7 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 				GameLoop(&g);
 				GameLoopTerminate(&g);
 			}
+			SaveHighScores();
 		}
 		if (!HasRounds(co->Entry.Mode) && !gameOver)
 		{

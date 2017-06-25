@@ -48,9 +48,10 @@
 */
 #pragma once
 
+#include <cdogs/grafx.h>
+#include <cdogs/player.h>
+
 #include "game_loop.h"
-#include "grafx.h"
-#include "player.h"
 
 void EnterHighScore(PlayerData *data);
 GameLoopData DisplayAllTimeHighScores(GraphicsDevice *graphics);

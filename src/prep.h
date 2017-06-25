@@ -50,8 +50,9 @@
 
 #include <cdogs/campaigns.h>
 #include <cdogs/events.h>
-#include <cdogs/game_loop.h>
 #include <cdogs/grafx.h>
+
+#include "game_loop.h"
 
 // Wait for the server to send us the current campaign
 GameLoopData ScreenWaitForCampaignDef(void);

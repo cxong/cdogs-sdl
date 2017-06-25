@@ -51,11 +51,11 @@
 #include <cdogs/c_array.h>
 #include <cdogs/campaigns.h>
 #include <cdogs/events.h>
-#include <cdogs/game_loop.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/grafx.h>
 
 #include "credits.h"
+#include "game_loop.h"
 
 typedef enum
 {

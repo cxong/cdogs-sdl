@@ -68,7 +68,6 @@
 #include <cdogs/font_utils.h>
 #include <cdogs/grafx.h>
 #include <cdogs/handle_game_events.h>
-#include <cdogs/hiscores.h>
 #include <cdogs/joystick.h>
 #include <cdogs/keyboard.h>
 #include <cdogs/log.h>
@@ -195,9 +194,6 @@ int main(int argc, char *argv[])
 		LOG(LM_MAIN, LL_ERROR, "Sound initialization failed!");
 	}
 
-	LoadHighScores();
-
-	debug(D_NORMAL, "Loading song lists...\n");
 	LoadSongs();
 
 	MusicPlayMenu(&gSoundDevice);
@@ -298,7 +294,6 @@ bail:
 	CArrayTerminate(&gPlayerTemplates);
 	FreeSongs(&gMenuSongs);
 	FreeSongs(&gGameSongs);
-	SaveHighScores();
 	SoundTerminate(&gSoundDevice, true);
 	ConfigDestroy(&gConfig);
 	LogTerminate();

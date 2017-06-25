@@ -21,6 +21,8 @@ set(CDOGS_SDL_SOURCES
 	command_line.c
 	credits.c
 	game.c
+	game_loop.c
+	hiscores.c
 	mainmenu.c
 	menu.c
 	menu_utils.c
@@ -38,6 +40,8 @@ set(CDOGS_SDL_HEADERS
 	command_line.h
 	credits.h
 	game.h
+	game_loop.h
+	hiscores.h
 	mainmenu.h
 	menu.h
 	menu_utils.h

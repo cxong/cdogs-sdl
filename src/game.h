@@ -50,9 +50,10 @@
 
 #include <stdbool.h>
 
-#include <cdogs/game_loop.h>
 #include <cdogs/map.h>
 #include <cdogs/mission.h>
+
+#include "game_loop.h"
 
 GameLoopData RunGame(
 	const CampaignOptions *co, struct MissionOptions *m, Map *map);

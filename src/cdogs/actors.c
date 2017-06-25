@@ -72,7 +72,6 @@
 #include "pickup.h"
 #include "gamedata.h"
 #include "triggers.h"
-#include "hiscores.h"
 #include "mission.h"
 #include "game.h"
 #include "utils.h"

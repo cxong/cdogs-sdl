@@ -26,10 +26,9 @@
 #pragma once
 
 #include <cdogs/campaigns.h>
-#include <cdogs/game_loop.h>
 #include <cdogs/grafx.h>
 
-#include "credits.h"
+#include "game_loop.h"
 
 // Run main menu loop
 GameLoopData MainMenu(GraphicsDevice *graphics);

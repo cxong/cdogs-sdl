@@ -27,7 +27,6 @@
 
 #include <cdogs/events.h>
 #include <cdogs/font.h>
-#include <cdogs/game_loop.h>
 #include <cdogs/grafx_bg.h>
 
 #include "menu_utils.h"

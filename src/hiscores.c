@@ -57,20 +57,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include "config.h"
-#include "font.h"
-#include "game_loop.h"
-#include "gamedata.h"
-#include "grafx.h"
-#include "grafx_bg.h"
-#include "blit.h"
-#include "actors.h"
-#include "events.h"
-#include "keyboard.h"
-#include "pics.h"
-#include "sounds.h"
-#include "files.h"
-#include "utils.h"
+#include <cdogs/events.h>
+#include <cdogs/files.h>
+#include <cdogs/font.h>
 
 
 // Warning: written as-is to file
@@ -272,8 +261,6 @@ void SaveHighScores(void)
 	FILE *f;
 	time_t t;
 	struct tm *tp;
-
-	debug(D_NORMAL, "begin\n");
 
 	f = fopen(GetConfigFilePath(SCORES_FILE), "wb");
 	if (f != NULL) {

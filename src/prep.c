@@ -53,7 +53,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <SDL_timer.h>
+#include <SDL_mouse.h>
 
 #include <cdogs/ai_coop.h>
 #include <cdogs/actors.h>
@@ -62,7 +62,6 @@
 #include <cdogs/draw/draw.h>
 #include <cdogs/files.h>
 #include <cdogs/font.h>
-#include <cdogs/game_loop.h>
 #include <cdogs/grafx.h>
 #include <cdogs/handle_game_events.h>
 #include <cdogs/joystick.h>

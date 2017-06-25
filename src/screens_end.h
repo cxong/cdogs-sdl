@@ -26,7 +26,8 @@
 #pragma once
 
 #include <cdogs/campaigns.h>
-#include <cdogs/game_loop.h>
+
+#include "game_loop.h"
 
 GameLoopData ScreenVictory(CampaignOptions *c);
 GameLoopData ScreenDogfightScores(void);

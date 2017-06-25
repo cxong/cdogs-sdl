@@ -53,14 +53,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <SDL_timer.h>
-
 #include <cdogs/actors.h>
 #include <cdogs/blit.h>
 #include <cdogs/config.h>
 #include <cdogs/defs.h>
 #include <cdogs/font.h>
-#include <cdogs/game_loop.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/grafx.h>
 #include <cdogs/grafx_bg.h>
@@ -69,6 +66,7 @@
 #include <cdogs/sounds.h>
 
 #include "autosave.h"
+#include "game_loop.h"
 #include "menu.h"
 
 #define DONE          "Done"

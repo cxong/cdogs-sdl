@@ -58,7 +58,6 @@
 #include <cdogs/camera.h>
 #include <cdogs/draw/drawtools.h>
 #include <cdogs/events.h>
-#include <cdogs/game_loop.h>
 #include <cdogs/grafx_bg.h>
 #include <cdogs/handle_game_events.h>
 #include <cdogs/log.h>
