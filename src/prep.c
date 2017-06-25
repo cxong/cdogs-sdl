@@ -372,7 +372,9 @@ static void PlayerSelectionOnExit(GameLoopData *data)
 		{
 			MissionSave m;
 			AutosaveLoadMission(&gAutosave, &m, gCampaign.Entry.Path);
-			gCampaign.MissionIndex = EnterPassword(&gGraphicsDevice, &m);
+			GameLoopData g = EnterPassword(&gGraphicsDevice, &m);
+			GameLoop(&g);
+			GameLoopTerminate(&g);
 		}
 		else
 		{

@@ -331,55 +331,31 @@ typedef enum
 	RETURN_CODE_ENTER_CODE = -3
 } ReturnCode;
 
+typedef struct
+{
+	MenuSystem ms;
+	const MissionSave *save;
+	int mission;
+} PasswordData;
+static void PasswordTerminate(GameLoopData *data);
+static void PasswordOnEnter(GameLoopData *data);
+static GameLoopResult PasswordUpdate(GameLoopData *data);
+static void PasswordDraw(GameLoopData *data);
 static void MenuCreateStart(
 	MenuSystem *ms, const int mission, const MissionSave *save);
-int EnterPassword(GraphicsDevice *graphics, const MissionSave *save)
+GameLoopData EnterPassword(GraphicsDevice *graphics, const MissionSave *save)
 {
-	MenuSystem startMenu;
-	const int mission = TestPassword(save->Password);
-	int res = 0;
+	PasswordData *data;
+	CMALLOC(data, sizeof *data);
 	MenuSystemInit(
-		&startMenu, &gEventHandlers, graphics, Vec2iZero(),
-		Vec2iNew(
-			graphics->cachedConfig.Res.x,
-			graphics->cachedConfig.Res.y));
-	MenuCreateStart(&startMenu, mission, save);
-	for (;;)
-	{
-		GameLoopData g = MenuLoop(&startMenu);
-		GameLoop(&g);
-		GameLoopTerminate(&g);
-		assert(startMenu.current->type == MENU_TYPE_RETURN);
-		const int returnCode = startMenu.current->u.returnCode;
-		switch (returnCode)
-		{
-		case RETURN_CODE_CONTINUE:
-			res = mission;
-			goto bail;
-		case RETURN_CODE_START:
-			goto bail;
-		case RETURN_CODE_ENTER_CODE:
-			{
-				int enteredMission = EnterCodeScreen(save->Password);
-				if (enteredMission > 0)
-				{
-					res = enteredMission;
-					goto bail;
-				}
-				MenuReset(&startMenu);
-			}
-			break;
-		default:
-			// Return code represents the mission to start on
-			CASSERT(returnCode >= 0, "Invalid return code for password menu");
-			res = returnCode;
-			goto bail;
-		}
-	}
-
-bail:
-	MenuSystemTerminate(&startMenu);
-	return res;
+		&data->ms, &gEventHandlers, graphics, Vec2iZero(),
+		graphics->cachedConfig.Res);
+	data->mission = TestPassword(save->Password);
+	MenuCreateStart(&data->ms, data->mission, save);
+	data->save = save;
+	return GameLoopDataNew(
+		data, PasswordTerminate, PasswordOnEnter, NULL,
+		NULL, PasswordUpdate, PasswordDraw);
 }
 static void MenuCreateStart(
 	MenuSystem *ms, const int mission, const MissionSave *save)
@@ -413,4 +389,65 @@ static void MenuCreateStart(
 	MenuAddSubmenu(ms->root, MenuCreateReturn("Enter code...", RETURN_CODE_ENTER_CODE));
 
 	MenuAddExitType(ms, MENU_TYPE_RETURN);
+}
+static void PasswordTerminate(GameLoopData *data)
+{
+	PasswordData *pData = data->Data;
+
+	MenuSystemTerminate(&pData->ms);
+	CFREE(data->Data);
+}
+static void PasswordOnEnter(GameLoopData *data)
+{
+	UNUSED(data);
+
+	// TODO: re-detect mission saves on enter
+	gCampaign.MissionIndex = 0;
+}
+static GameLoopResult PasswordUpdate(GameLoopData *data)
+{
+	PasswordData *pData = data->Data;
+
+	const GameLoopResult result = MenuUpdate(&pData->ms);
+	if (result == UPDATE_RESULT_EXIT && !pData->ms.hasAbort)
+	{
+		// Check valid password
+		const int returnCode = pData->ms.current->u.returnCode;
+		switch (returnCode)
+		{
+		case RETURN_CODE_CONTINUE:
+			gCampaign.MissionIndex = pData->mission;
+			break;
+		case RETURN_CODE_START:
+			break;
+		case RETURN_CODE_ENTER_CODE:
+			{
+				const int enteredMission =
+					EnterCodeScreen(pData->save->Password);
+				if (enteredMission > 0)
+				{
+					gCampaign.MissionIndex = enteredMission;
+				}
+				else
+				{
+					// Invalid password
+					MenuReset(&pData->ms);
+					return UPDATE_RESULT_DRAW;
+				}
+			}
+			break;
+		default:
+			// Return code represents the mission to start on
+			CASSERT(returnCode >= 0, "Invalid return code for password menu");
+			gCampaign.MissionIndex = returnCode;
+			break;
+		}
+	}
+	return result;
+}
+static void PasswordDraw(GameLoopData *data)
+{
+	const PasswordData *pData = data->Data;
+
+	MenuDraw(&pData->ms);
 }
