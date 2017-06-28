@@ -66,11 +66,11 @@
 
 void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 {
-	GameLoopData g = ScreenCampaignIntro(&co->Setting);
-	GameLoop(&g);
-	GameLoopTerminate(&g);
+	LoopRunner l = LoopRunnerNew(ScreenCampaignIntro(&co->Setting));
+	LoopRunnerRun(&l);
 	if (!co->IsLoaded)
 	{
+		LoopRunnerTerminate(&l);
 		return;
 	}
 
@@ -78,9 +78,8 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 	bool gameOver = true;
 	do
 	{
-		g = GameOptions(co->Entry.Mode);
-		GameLoop(&g);
-		GameLoopTerminate(&g);
+		LoopRunnerPush(&l, GameOptions(co->Entry.Mode));
+		LoopRunnerRun(&l);
 		if (!co->IsLoaded)
 		{
 			run = false;
@@ -88,9 +87,8 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 		}
 
 		// Mission briefing
-		g = ScreenMissionBriefing(&gMission);
-		GameLoop(&g);
-		GameLoopTerminate(&g);
+		LoopRunnerPush(&l, ScreenMissionBriefing(&gMission));
+		LoopRunnerRun(&l);
 		if (!co->IsLoaded)
 		{
 			run = false;
@@ -98,27 +96,24 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 		}
 
 		// Equip guns
-		g = PlayerEquip();
-		GameLoop(&g);
-		GameLoopTerminate(&g);
+		LoopRunnerPush(&l, PlayerEquip());
+		LoopRunnerRun(&l);
 		if (!co->IsLoaded)
 		{
 			run = false;
 			goto bail;
 		}
 
-		g = ScreenWaitForGameStart();
-		GameLoop(&g);
-		GameLoopTerminate(&g);
+		LoopRunnerPush(&l, ScreenWaitForGameStart());
+		LoopRunnerRun(&l);
 		if (!co->IsLoaded)
 		{
 			run = false;
 			goto bail;
 		}
 
-		g = RunGame(co, &gMission, &gMap);
-		GameLoop(&g);
-		GameLoopTerminate(&g);
+		LoopRunnerPush(&l, RunGame(co, &gMission, &gMap));
+		LoopRunnerRun(&l);
 		run = !gMission.IsQuit;
 
 		const int survivingPlayers =
@@ -131,9 +126,8 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 			{
 			case GAME_MODE_DOGFIGHT:
 				{
-					g = ScreenDogfightScores();
-					GameLoop(&g);
-					GameLoopTerminate(&g);
+					LoopRunnerPush(&l, ScreenDogfightScores());
+					LoopRunnerRun(&l);
 					// Calculate PVP rounds won
 					int maxScore = 0;
 					CA_FOREACH(PlayerData, p, gPlayerDatas)
@@ -148,33 +142,29 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 						"score exceeds max rounds won");
 					if (gameOver)
 					{
-						g = ScreenDogfightFinalScores();
-						GameLoop(&g);
-						GameLoopTerminate(&g);
+						LoopRunnerPush(&l, ScreenDogfightFinalScores());
+						LoopRunnerRun(&l);
 					}
 				}
 				break;
 			case GAME_MODE_DEATHMATCH:
-				g = ScreenDeathmatchFinalScores();
-				GameLoop(&g);
-				GameLoopTerminate(&g);
+				LoopRunnerPush(&l, ScreenDeathmatchFinalScores());
+				LoopRunnerRun(&l);
 				break;
 			default:
 				// In co-op (non-PVP) modes, at least one player must survive
 				gameOver = !survivedAndCompletedObjectives ||
 					co->MissionIndex == (int)co->Setting.Missions.size - 1;
-				g = ScreenMissionSummary(
-					co, &gMission, survivedAndCompletedObjectives);
-				GameLoop(&g);
-				GameLoopTerminate(&g);
+				LoopRunnerPush(&l, ScreenMissionSummary(
+					co, &gMission, survivedAndCompletedObjectives));
+				LoopRunnerRun(&l);
 				run = !gMission.IsQuit;
 				// Note: must use cached value because players get cleaned up
 				// in CleanupMission()
 				if (gameOver && survivedAndCompletedObjectives)
 				{
-					g = ScreenVictory(co);
-					GameLoop(&g);
-					GameLoopTerminate(&g);
+					LoopRunnerPush(&l, ScreenVictory(co));
+					LoopRunnerRun(&l);
 				}
 				break;
 			}
@@ -209,15 +199,13 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 			CA_FOREACH_END()
 			if (allTime)
 			{
-				g = DisplayAllTimeHighScores(graphics);
-				GameLoop(&g);
-				GameLoopTerminate(&g);
+				LoopRunnerPush(&l, DisplayAllTimeHighScores(graphics));
+				LoopRunnerRun(&l);
 			}
 			if (todays)
 			{
-				g = DisplayTodaysHighScores(graphics);
-				GameLoop(&g);
-				GameLoopTerminate(&g);
+				LoopRunnerPush(&l, DisplayTodaysHighScores(graphics));
+				LoopRunnerRun(&l);
 			}
 			SaveHighScores();
 		}
@@ -231,5 +219,6 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 		MissionOptionsTerminate(&gMission);
 	} while (run && !gameOver);
 
+	LoopRunnerTerminate(&l);
 	CampaignUnload(&gCampaign);
 }

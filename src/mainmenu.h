@@ -31,4 +31,4 @@
 #include "game_loop.h"
 
 // Run main menu loop
-GameLoopData MainMenu(GraphicsDevice *graphics);
+GameLoopData *MainMenu(GraphicsDevice *graphics);

@@ -54,7 +54,7 @@
 #include "game_loop.h"
 
 void EnterHighScore(PlayerData *data);
-GameLoopData DisplayAllTimeHighScores(GraphicsDevice *graphics);
-GameLoopData DisplayTodaysHighScores(GraphicsDevice *graphics);
+GameLoopData *DisplayAllTimeHighScores(GraphicsDevice *graphics);
+GameLoopData *DisplayTodaysHighScores(GraphicsDevice *graphics);
 void SaveHighScores(void);
 void LoadHighScores(void);

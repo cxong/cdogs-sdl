@@ -84,14 +84,15 @@
 typedef struct
 {
 	MenuSystem ms;
-	GameLoopResult (*checkFunc)(void *);
+	GameLoopResult (*checkFunc)(void *, LoopRunner *l);
 	void *data;
 } ScreenWaitData;
 static void ScreenWaitTerminate(GameLoopData *data);
-static GameLoopResult ScreenWaitUpdate(GameLoopData *data);
+static GameLoopResult ScreenWaitUpdate(GameLoopData *data, LoopRunner *l);
 static void ScreenWaitDraw(GameLoopData *data);
-static GameLoopData ScreenWait(
-	const char *message, GameLoopResult (*checkFunc)(void *), void *data)
+static GameLoopData *ScreenWait(
+	const char *message, GameLoopResult (*checkFunc)(void *, LoopRunner *l),
+	void *data)
 {
 	ScreenWaitData *swData;
 	CMALLOC(swData, sizeof *swData);
@@ -118,11 +119,11 @@ static void ScreenWaitTerminate(GameLoopData *data)
 	CFREE(swData->data);
 	CFREE(swData);
 }
-static GameLoopResult ScreenWaitUpdate(GameLoopData *data)
+static GameLoopResult ScreenWaitUpdate(GameLoopData *data, LoopRunner *l)
 {
 	ScreenWaitData *swData = data->Data;
 
-	const GameLoopResult result = swData->checkFunc(swData->data);
+	const GameLoopResult result = swData->checkFunc(swData->data, l);
 	if (result != UPDATE_RESULT_DRAW)
 	{
 		return result;
@@ -136,8 +137,8 @@ static void ScreenWaitDraw(GameLoopData *data)
 	MenuDraw(&swData->ms);
 }
 
-static GameLoopResult CheckCampaignDefComplete(void *data);
-GameLoopData ScreenWaitForCampaignDef(void)
+static GameLoopResult CheckCampaignDefComplete(void *data, LoopRunner *l);
+GameLoopData *ScreenWaitForCampaignDef(void)
 {
 	char buf[256];
 	char ipbuf[256];
@@ -146,7 +147,7 @@ GameLoopData ScreenWaitForCampaignDef(void)
 		ipbuf, gNetClient.peer->address.port);
 	return ScreenWait(buf, CheckCampaignDefComplete, NULL);
 }
-static GameLoopResult CheckCampaignDefComplete(void *data)
+static GameLoopResult CheckCampaignDefComplete(void *data, LoopRunner *l)
 {
 	UNUSED(data);
 	if (gCampaign.IsLoaded || gCampaign.IsError)
@@ -160,7 +161,8 @@ static GameLoopResult CheckCampaignDefComplete(void *data)
 		{
 			CASSERT(gCampaign.IsClient, "campaign is not client");
 		}
-		return UPDATE_RESULT_EXIT;
+		LoopRunnerPop(l);
+		return UPDATE_RESULT_OK;
 	}
 	return UPDATE_RESULT_DRAW;
 }
@@ -168,9 +170,9 @@ static GameLoopResult CheckCampaignDefComplete(void *data)
 
 static void NumPlayersTerminate(GameLoopData *data);
 static void NumPlayersOnExit(GameLoopData *data);
-static GameLoopResult NumPlayersUpdate(GameLoopData *data);
+static GameLoopResult NumPlayersUpdate(GameLoopData *data, LoopRunner *l);
 static void NumPlayersDraw(GameLoopData *data);
-GameLoopData NumPlayersSelection(
+GameLoopData *NumPlayersSelection(
 	GraphicsDevice *graphics, EventHandlers *handlers)
 {
 	MenuSystem *ms;
@@ -209,21 +211,26 @@ static void NumPlayersOnExit(GameLoopData *data)
 	MenuSystem *ms = data->Data;
 	if (ms->hasAbort)
 	{
-		// TODO: pop menu
 		CampaignUnload(&gCampaign);
 	}
 	MenuSystemTerminate(ms);
 }
-static GameLoopResult NumPlayersUpdate(GameLoopData *data)
+static GameLoopResult NumPlayersUpdate(GameLoopData *data, LoopRunner *l)
 {
 	MenuSystem *ms = data->Data;
 	const GameLoopResult result = MenuUpdate(ms);
-	if (result == UPDATE_RESULT_EXIT && !ms->hasAbort)
+	if (result == UPDATE_RESULT_OK)
 	{
-		const int numPlayers = ms->current->u.returnCode;
-		CA_FOREACH(const PlayerData, p, gPlayerDatas)
-			CASSERT(!p->IsLocal, "unexpected local player");
-		CA_FOREACH_END()
+		if (ms->hasAbort)
+		{
+			LoopRunnerPop(l);
+		}
+		else
+		{
+			const int numPlayers = ms->current->u.returnCode;
+			CA_FOREACH(const PlayerData, p, gPlayerDatas)
+				CASSERT(!p->IsLocal, "unexpected local player");
+			CA_FOREACH_END()
 			// Add the players
 			for (int i = 0; i < numPlayers; i++)
 			{
@@ -232,13 +239,13 @@ static GameLoopResult NumPlayersUpdate(GameLoopData *data)
 				e.u.PlayerData.UID = gNetClient.FirstPlayerUID + i;
 				GameEventsEnqueue(&gGameEvents, e);
 			}
-		// Process the events to force add the players
-		HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
-		// This also causes the client to send player data to the server
+			// Process the events to force add the players
+			HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
+			// This also causes the client to send player data to the server
 
-		// Switch to player selection
-		GameLoopChange(data, PlayerSelection());
-		return UPDATE_RESULT_OK;
+			// Switch to player selection
+			LoopRunnerChange(l, PlayerSelection());
+		}
 	}
 	return result;
 }
@@ -300,9 +307,9 @@ typedef struct
 } PlayerSelectionData;
 static void PlayerSelectionTerminate(GameLoopData *data);
 static void PlayerSelectionOnExit(GameLoopData *data);
-static GameLoopResult PlayerSelectionUpdate(GameLoopData *data);
+static GameLoopResult PlayerSelectionUpdate(GameLoopData *data, LoopRunner *l);
 static void PlayerSelectionDraw(GameLoopData *data);
-GameLoopData PlayerSelection(void)
+GameLoopData *PlayerSelection(void)
 {
 	PlayerSelectionData *data;
 	CCALLOC(data, sizeof *data);
@@ -363,20 +370,7 @@ static void PlayerSelectionOnExit(GameLoopData *data)
 			}
 		}
 
-		if (gCampaign.IsClient)
-		{
-			// If connecting to a server, we've already received the mission index
-			// Do nothing
-		}
-		else if (IsPasswordAllowed(gCampaign.Entry.Mode))
-		{
-			MissionSave m;
-			AutosaveLoadMission(&gAutosave, &m, gCampaign.Entry.Path);
-			GameLoopData g = EnterPassword(&gGraphicsDevice, &m);
-			GameLoop(&g);
-			GameLoopTerminate(&g);
-		}
-		else
+		if (!gCampaign.IsClient)
 		{
 			gCampaign.MissionIndex = 0;
 		}
@@ -386,14 +380,15 @@ static void PlayerSelectionOnExit(GameLoopData *data)
 		CampaignUnload(&gCampaign);
 	}
 }
-static GameLoopResult PlayerSelectionUpdate(GameLoopData *data)
+static GameLoopResult PlayerSelectionUpdate(GameLoopData *data, LoopRunner *l)
 {
 	PlayerSelectionData *pData = data->Data;
 
 	if (GetNumPlayers(PLAYER_ANY, false, true) == 0)
 	{
 		pData->waitResult = EVENT_WAIT_OK;
-		return UPDATE_RESULT_EXIT;
+		LoopRunnerPop(l);
+		return UPDATE_RESULT_OK;
 	}
 
 	// Check if anyone pressed escape
@@ -403,7 +398,8 @@ static GameLoopResult PlayerSelectionUpdate(GameLoopData *data)
 	if (EventIsEscape(&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers)))
 	{
 		pData->waitResult = EVENT_WAIT_CANCEL;
-		return UPDATE_RESULT_EXIT;
+		LoopRunnerPop(l);
+		return UPDATE_RESULT_OK;
 	}
 
 	// Menu input
@@ -449,7 +445,12 @@ static GameLoopResult PlayerSelectionUpdate(GameLoopData *data)
 	if (isDone && hasAtLeastOneInput)
 	{
 		pData->waitResult = EVENT_WAIT_OK;
-		return UPDATE_RESULT_EXIT;
+		LoopRunnerPop(l);
+		if (!gCampaign.IsClient && IsPasswordAllowed(gCampaign.Entry.Mode))
+		{
+			LoopRunnerPush(l, EnterPassword(&gGraphicsDevice));
+		}
+		return UPDATE_RESULT_OK;
 	}
 
 	AssignPlayerInputDevices(&gEventHandlers);
@@ -519,9 +520,9 @@ static menu_t *MenuCreateAllowedWeapons(
 static void GameOptionsTerminate(GameLoopData *data);
 static void GameOptionsOnEnter(GameLoopData *data);
 static void GameOptionsOnExit(GameLoopData *data);
-static GameLoopResult GameOptionsUpdate(GameLoopData *data);
+static GameLoopResult GameOptionsUpdate(GameLoopData *data, LoopRunner *l);
 static void GameOptionsDraw(GameLoopData *data);
-GameLoopData GameOptions(const GameMode gm)
+GameLoopData *GameOptions(const GameMode gm)
 {
 	// Create selection menus
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
@@ -687,15 +688,17 @@ static void GameOptionsOnExit(GameLoopData *data)
 		}
 	}
 }
-static GameLoopResult GameOptionsUpdate(GameLoopData *data)
+static GameLoopResult GameOptionsUpdate(GameLoopData *data, LoopRunner *l)
 {
 	GameOptionsData *gData = data->Data;
 
-	if (!IsGameOptionsNeeded(gCampaign.Entry.Mode))
+	if (!IsGameOptionsNeeded(gCampaign.Entry.Mode) ||
+		MenuUpdate(&gData->ms) == UPDATE_RESULT_OK)
 	{
-		return UPDATE_RESULT_EXIT;
+		LoopRunnerPop(l);
+		return UPDATE_RESULT_OK;
 	}
-	return MenuUpdate(&gData->ms);
+	return UPDATE_RESULT_DRAW;
 }
 static void GameOptionsDraw(GameLoopData *data)
 {
@@ -730,9 +733,9 @@ typedef struct
 } PlayerEquipData;
 static void PlayerEquipTerminate(GameLoopData *data);
 static void PlayerEquipOnExit(GameLoopData *data);
-static GameLoopResult PlayerEquipUpdate(GameLoopData *data);
+static GameLoopResult PlayerEquipUpdate(GameLoopData *data, LoopRunner *l);
 static void PlayerEquipDraw(GameLoopData *data);
-GameLoopData PlayerEquip(void)
+GameLoopData *PlayerEquip(void)
 {
 	PlayerEquipData *data;
 	CCALLOC(data, sizeof *data);
@@ -837,7 +840,7 @@ static void PlayerEquipOnExit(GameLoopData *data)
 		CampaignUnload(&gCampaign);
 	}
 }
-static GameLoopResult PlayerEquipUpdate(GameLoopData *data)
+static GameLoopResult PlayerEquipUpdate(GameLoopData *data, LoopRunner *l)
 {
 	PlayerEquipData *pData = data->Data;
 
@@ -845,7 +848,8 @@ static GameLoopResult PlayerEquipUpdate(GameLoopData *data)
 	if (GetNumPlayers(PLAYER_ANY, false, true) == 0)
 	{
 		pData->waitResult = EVENT_WAIT_OK;
-		return UPDATE_RESULT_EXIT;
+		LoopRunnerPop(l);
+		return UPDATE_RESULT_OK;
 	}
 
 	// Check if anyone pressed escape
@@ -855,7 +859,8 @@ static GameLoopResult PlayerEquipUpdate(GameLoopData *data)
 	if (EventIsEscape(&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers)))
 	{
 		pData->waitResult = EVENT_WAIT_CANCEL;
-		return UPDATE_RESULT_EXIT;
+		LoopRunnerPop(l);
+		return UPDATE_RESULT_OK;
 	}
 
 	// Update menus
@@ -891,7 +896,8 @@ static GameLoopResult PlayerEquipUpdate(GameLoopData *data)
 	if (isDone)
 	{
 		pData->waitResult = EVENT_WAIT_OK;
-		return UPDATE_RESULT_EXIT;
+		LoopRunnerPop(l);
+		return UPDATE_RESULT_OK;
 	}
 
 	return UPDATE_RESULT_DRAW;
@@ -907,8 +913,8 @@ static void PlayerEquipDraw(GameLoopData *data)
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 }
 
-static GameLoopResult CheckGameStart(void *data);
-GameLoopData ScreenWaitForGameStart(void)
+static GameLoopResult CheckGameStart(void *data, LoopRunner *l);
+GameLoopData *ScreenWaitForGameStart(void)
 {
 	gNetClient.Ready = true;
 	if (!gMission.HasStarted)
@@ -918,18 +924,20 @@ GameLoopData ScreenWaitForGameStart(void)
 	}
 	return ScreenWait("Waiting for game start...", CheckGameStart, NULL);
 }
-static GameLoopResult CheckGameStart(void *data)
+static GameLoopResult CheckGameStart(void *data, LoopRunner *l)
 {
 	UNUSED(data);
 	if (!gCampaign.IsClient || gMission.HasStarted)
 	{
-		return UPDATE_RESULT_EXIT;
+		LoopRunnerPop(l);
+		return UPDATE_RESULT_OK;
 	}
 	// Check disconnections
 	if (!NetClientIsConnected(&gNetClient))
 	{
 		CampaignUnload(&gCampaign);
-		return UPDATE_RESULT_EXIT;
+		LoopRunnerPop(l);
+		return UPDATE_RESULT_OK;
 	}
 	return UPDATE_RESULT_DRAW;
 }

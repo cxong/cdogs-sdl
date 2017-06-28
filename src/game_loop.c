@@ -37,44 +37,76 @@
 #include "sounds.h"
 
 
-GameLoopData GameLoopDataNew(
+GameLoopData *GameLoopDataNew(
 	void *data,
 	void (*onTerminate)(GameLoopData *),
 	void (*onEnter)(GameLoopData *), void (*onExit)(GameLoopData *),
 	void (*inputFunc)(GameLoopData *),
-	GameLoopResult (*updateFunc)(GameLoopData *),
+	GameLoopResult (*updateFunc)(GameLoopData *, LoopRunner *),
 	void (*drawFunc)(GameLoopData *))
 {
-	GameLoopData g;
-	memset(&g, 0, sizeof g);
-	g.Data = data;
-	g.OnTerminate = onTerminate;
-	g.OnEnter = onEnter;
-	g.OnExit = onExit;
-	g.InputFunc = inputFunc;
-	g.UpdateFunc = updateFunc;
-	g.DrawFunc = drawFunc;
-	g.FPS = 30;
+	GameLoopData *g;
+	CCALLOC(g, sizeof *g);
+	g->Data = data;
+	g->OnTerminate = onTerminate;
+	g->OnEnter = onEnter;
+	g->OnExit = onExit;
+	g->InputFunc = inputFunc;
+	g->UpdateFunc = updateFunc;
+	g->DrawFunc = drawFunc;
+	g->FPS = 30;
 	return g;
 }
 
-static void GameLoopOnEnter(GameLoopData *data);
+static GameLoopData *GetCurrentLoop(LoopRunner *l);
 
-void GameLoop(GameLoopData *data)
+LoopRunner LoopRunnerNew(GameLoopData *newData)
 {
+	LoopRunner l;
+	CArrayInit(&l.Loops, sizeof(GameLoopData *));
+	LoopRunnerPush(&l, newData);
+	return l;
+}
+static void GameLoopTerminate(GameLoopData *data);
+void LoopRunnerTerminate(LoopRunner *l)
+{
+	for (int i = (int)l->Loops.size - 1; i >= 0; i--)
+	{
+		GameLoopData *g = CArrayGet(&l->Loops, i);
+		GameLoopTerminate(g);
+	}
+	CArrayTerminate(&l->Loops);
+}
+
+static void GameLoopOnEnter(GameLoopData *data);
+static void GameLoopOnExit(GameLoopData *data);
+
+typedef struct
+{
+	GameLoopResult Result;
+	Uint32 TicksNow;
+	Uint32 TicksElapsed;
+	int FrameDurationMs;
+	int FramesSkipped;
+	int MaxFrameskip;
+} LoopRunParams;
+static LoopRunParams LoopRunParamsNew(const GameLoopData *data);
+static bool LoopRunParamsShouldSleep(LoopRunParams *p);
+static bool LoopRunParamsShouldSkip(LoopRunParams *p);
+void LoopRunnerRun(LoopRunner *l)
+{
+	GameLoopData *data = GetCurrentLoop(l);
+	if (data == NULL)
+	{
+		return;
+	}
 	GameLoopOnEnter(data);
-	GameLoopResult result = UPDATE_RESULT_OK;
-	Uint32 ticksNow = SDL_GetTicks();
-	Uint32 ticksElapsed = 0;
-	int framesSkipped = 0;
-	const int maxFrameskip = data->FPS / 5;
-	for (; result != UPDATE_RESULT_EXIT; )
+
+	LoopRunParams p = LoopRunParamsNew(data);
+	for (;;)
 	{
 		// Frame rate control
-		const Uint32 ticksThen = ticksNow;
-		ticksNow = SDL_GetTicks();
-		ticksElapsed += ticksNow - ticksThen;
-		if ((int)ticksElapsed < 1000 / data->FPS)
+		if (LoopRunParamsShouldSleep(&p))
 		{
 			SDL_Delay(1);
 			continue;
@@ -83,7 +115,7 @@ void GameLoop(GameLoopData *data)
 		// Input
 		if ((data->Frames & 1) || !data->InputEverySecondFrame)
 		{
-			EventPoll(&gEventHandlers, ticksNow);
+			EventPoll(&gEventHandlers, p.TicksNow);
 			if (data->InputFunc)
 			{
 				data->InputFunc(data);
@@ -94,11 +126,27 @@ void GameLoop(GameLoopData *data)
 		NetServerPoll(&gNetServer);
 
 		// Update
-		result = data->UpdateFunc(data);
+		p.Result = data->UpdateFunc(data, l);
+		GameLoopData *newData = GetCurrentLoop(l);
+		if (newData == NULL)
+		{
+			break;
+		}
+		else if (newData != data)
+		{
+			// State change; restart loop
+			GameLoopOnExit(data);
+			data = newData;
+			GameLoopOnEnter(data);
+			p = LoopRunParamsNew(data);
+			continue;
+		}
+
 		NetServerFlush(&gNetServer);
 		NetClientFlush(&gNetClient);
+
 		bool draw = !data->HasDrawnFirst;
-		switch (result)
+		switch (p.Result)
 		{
 		case UPDATE_RESULT_OK:
 			// Do nothing
@@ -106,30 +154,16 @@ void GameLoop(GameLoopData *data)
 		case UPDATE_RESULT_DRAW:
 			draw = true;
 			break;
-		case UPDATE_RESULT_EXIT:
-			// Will exit
-			break;
 		default:
 			CASSERT(false, "Unknown loop result");
 			break;
 		}
-		ticksElapsed -= 1000 / data->FPS;
 		data->Frames++;
 		// frame skip
-		if ((int)ticksElapsed > 1000 / data->FPS)
+		if (LoopRunParamsShouldSkip(&p))
 		{
-			framesSkipped++;
-			if (framesSkipped == maxFrameskip)
-			{
-				// We've skipped too many frames; give up
-				ticksElapsed = 0;
-			}
-			else
-			{
-				continue;
-			}
+			continue;
 		}
-		framesSkipped = 0;
 
 		// Draw
 		if (draw)
@@ -142,29 +176,71 @@ void GameLoop(GameLoopData *data)
 			data->HasDrawnFirst = true;
 		}
 	}
-	if (data->OnExit)
+	GameLoopOnExit(data);
+}
+static LoopRunParams LoopRunParamsNew(const GameLoopData *data)
+{
+	LoopRunParams p;
+	p.Result = UPDATE_RESULT_OK;
+	p.TicksNow = SDL_GetTicks();
+	p.TicksElapsed = 0;
+	p.FrameDurationMs = 1000 / data->FPS;
+	p.FramesSkipped = 0;
+	p.MaxFrameskip = data->FPS / 5;
+	return p;
+}
+static bool LoopRunParamsShouldSleep(LoopRunParams *p)
+{
+	const Uint32 ticksThen = p->TicksNow;
+	p->TicksNow = SDL_GetTicks();
+	p->TicksElapsed += p->TicksNow - ticksThen;
+	return (int)p->TicksElapsed < p->FrameDurationMs;
+}
+static bool LoopRunParamsShouldSkip(LoopRunParams *p)
+{
+	p->TicksElapsed -= p->FrameDurationMs;
+	// frame skip
+	if ((int)p->TicksElapsed > p->FrameDurationMs)
 	{
-		data->OnExit(data);
+		p->FramesSkipped++;
+		if (p->FramesSkipped == p->MaxFrameskip)
+		{
+			// We've skipped too many frames; give up
+			p->TicksElapsed = 0;
+		}
+		else
+		{
+			return true;
+		}
 	}
+	p->FramesSkipped = 0;
+	return false;
 }
 
-void GameLoopTerminate(GameLoopData *data)
+void LoopRunnerChange(LoopRunner *l, GameLoopData *newData)
+{
+	LoopRunnerPop(l);
+	LoopRunnerPush(l, newData);
+}
+void LoopRunnerPush(LoopRunner *l, GameLoopData *newData)
+{
+	CArrayPushBack(&l->Loops, &newData);
+	newData->IsUsed = true;
+}
+void LoopRunnerPop(LoopRunner *l)
+{
+	GameLoopData *data = GetCurrentLoop(l);
+	data->IsUsed = false;
+	CArrayDelete(&l->Loops, l->Loops.size - 1);
+}
+
+static void GameLoopTerminate(GameLoopData *data)
 {
 	if (data->OnTerminate)
 	{
 		data->OnTerminate(data);
 	}
-}
-
-void GameLoopChange(GameLoopData *data, GameLoopData newData)
-{
-	if (data->OnExit)
-	{
-		data->OnExit(data);
-	}
-	GameLoopTerminate(data);
-	memcpy(data, &newData, sizeof *data);
-	GameLoopOnEnter(data);
+	CFREE(data);
 }
 
 static void GameLoopOnEnter(GameLoopData *data)
@@ -176,4 +252,24 @@ static void GameLoopOnEnter(GameLoopData *data)
 	EventReset(
 		&gEventHandlers,
 		gEventHandlers.mouse.cursor, gEventHandlers.mouse.trail);
+}
+static void GameLoopOnExit(GameLoopData *data)
+{
+	if (data->OnExit)
+	{
+		data->OnExit(data);
+	}
+	if (!data->IsUsed)
+	{
+		GameLoopTerminate(data);
+	}
+}
+
+static GameLoopData *GetCurrentLoop(LoopRunner *l)
+{
+	if (l->Loops.size == 0)
+	{
+		return NULL;
+	}
+	return *(GameLoopData **)CArrayGet(&l->Loops, l->Loops.size - 1);
 }

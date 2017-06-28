@@ -57,9 +57,9 @@ static void MenuCreateAll(
 static void MainMenuTerminate(GameLoopData *data);
 static void MainMenuOnEnter(GameLoopData *data);
 static void MainMenuOnExit(GameLoopData *data);
-static GameLoopResult MainMenuUpdate(GameLoopData *data);
+static GameLoopResult MainMenuUpdate(GameLoopData *data, LoopRunner *l);
 static void MainMenuDraw(GameLoopData *data);
-GameLoopData MainMenu(GraphicsDevice *graphics)
+GameLoopData *MainMenu(GraphicsDevice *graphics)
 {
 	MainMenuData *data;
 	CMALLOC(data, sizeof *data);
@@ -146,10 +146,15 @@ static void MainMenuOnExit(GameLoopData *data)
 	mData->lastGameMode = gCampaign.Entry.Mode;
 	mData->wasClient = gCampaign.IsClient;
 }
-static GameLoopResult MainMenuUpdate(GameLoopData *data)
+static GameLoopResult MainMenuUpdate(GameLoopData *data, LoopRunner *l)
 {
 	MainMenuData *mData = data->Data;
-	return MenuUpdate(&mData->ms);
+	const GameLoopResult result = MenuUpdate(&mData->ms);
+	if (result == UPDATE_RESULT_OK)
+	{
+		LoopRunnerPop(l);
+	}
+	return result;
 }
 static void MainMenuDraw(GameLoopData *data)
 {
@@ -428,9 +433,9 @@ static void JoinLANGame(menu_t *menu, void *data)
 	LOG(LM_MAIN, LL_INFO, "joining LAN game...");
 	if (NetClientTryConnect(&gNetClient, sinfo->Addr))
 	{
-		GameLoopData g = ScreenWaitForCampaignDef();
-		GameLoop(&g);
-		GameLoopTerminate(&g);
+		LoopRunner l = LoopRunnerNew(ScreenWaitForCampaignDef());
+		LoopRunnerRun(&l);
+		LoopRunnerTerminate(&l);
 	}
 	else
 	{

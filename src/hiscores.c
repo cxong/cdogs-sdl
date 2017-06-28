@@ -180,9 +180,9 @@ typedef struct
 	int scoreIdx;
 } HighScoresData;
 static void HighScoreTerminate(GameLoopData *data);
-static GameLoopResult HighScoreUpdate(GameLoopData *data);
+static GameLoopResult HighScoreUpdate(GameLoopData *data, LoopRunner *l);
 static void HighScoreDraw(GameLoopData *data);
-GameLoopData DisplayAllTimeHighScores(GraphicsDevice *graphics)
+GameLoopData *DisplayAllTimeHighScores(GraphicsDevice *graphics)
 {
 	HighScoresData *data;
 	CMALLOC(data, sizeof *data);
@@ -205,7 +205,7 @@ GameLoopData DisplayAllTimeHighScores(GraphicsDevice *graphics)
 		data, HighScoreTerminate, NULL, NULL,
 		NULL, HighScoreUpdate, HighScoreDraw);
 }
-GameLoopData DisplayTodaysHighScores(GraphicsDevice *graphics)
+GameLoopData *DisplayTodaysHighScores(GraphicsDevice *graphics)
 {
 	HighScoresData *data;
 	CMALLOC(data, sizeof *data);
@@ -243,12 +243,16 @@ static void HighScoreDraw(GameLoopData *data)
 		hData->title, hData->scoreIdx, hData->scores, hData->highlights);
 	BlitUpdateFromBuf(hData->g, hData->g->screen);
 }
-static GameLoopResult HighScoreUpdate(GameLoopData *data)
+static GameLoopResult HighScoreUpdate(GameLoopData *data, LoopRunner *l)
 {
 	UNUSED(data);
 	const EventWaitResult result = EventWaitForAnyKeyOrButton();
-	return
-		result == EVENT_WAIT_CONTINUE ? UPDATE_RESULT_OK : UPDATE_RESULT_EXIT;
+
+	if (result != EVENT_WAIT_CONTINUE)
+	{
+		LoopRunnerPop(l);
+	}
+	return UPDATE_RESULT_OK;
 }
 
 

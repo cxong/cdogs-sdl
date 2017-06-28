@@ -161,9 +161,9 @@ static void RunGameTerminate(GameLoopData *data);
 static void RunGameOnEnter(GameLoopData *data);
 static void RunGameOnExit(GameLoopData *data);
 static void RunGameInput(GameLoopData *data);
-static GameLoopResult RunGameUpdate(GameLoopData *data);
+static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l);
 static void RunGameDraw(GameLoopData *data);
-GameLoopData RunGame(
+GameLoopData *RunGame(
 	const CampaignOptions *co, struct MissionOptions *m, Map *map)
 {
 	RunGameData *data;
@@ -171,11 +171,11 @@ GameLoopData RunGame(
 	data->co = co;
 	data->m = m;
 	data->map = map;
-	GameLoopData g = GameLoopDataNew(
+	GameLoopData *g = GameLoopDataNew(
 		data, RunGameTerminate, RunGameOnEnter, RunGameOnExit,
 		RunGameInput, RunGameUpdate, RunGameDraw);
-	g.FPS = ConfigGetInt(&gConfig, "Game.FPS");
-	g.InputEverySecondFrame = true;
+	g->FPS = ConfigGetInt(&gConfig, "Game.FPS");
+	g->InputEverySecondFrame = true;
 	return g;
 }
 static void RunGameTerminate(GameLoopData *data)
@@ -442,7 +442,7 @@ static void RunGameInput(GameLoopData *data)
 	CameraInput(&rData->Camera, rData->cmds[0], rData->lastCmds[0]);
 }
 static void CheckMissionCompletion(const struct MissionOptions *mo);
-static GameLoopResult RunGameUpdate(GameLoopData *data)
+static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 {
 	RunGameData *rData = data->Data;
 
@@ -452,7 +452,8 @@ static GameLoopResult RunGameUpdate(GameLoopData *data)
 		rData->m->DoneCounter--;
 		if (rData->m->DoneCounter <= 0)
 		{
-			return UPDATE_RESULT_EXIT;
+			LoopRunnerPop(l);
+			return UPDATE_RESULT_OK;
 		}
 		else
 		{

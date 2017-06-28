@@ -49,9 +49,9 @@ typedef struct
 static void CampaignIntroTerminate(GameLoopData *data);
 static void CampaignIntroOnExit(GameLoopData *data);
 static void CampaignIntroInput(GameLoopData *data);
-static GameLoopResult CampaignIntroUpdate(GameLoopData *data);
+static GameLoopResult CampaignIntroUpdate(GameLoopData *data, LoopRunner *l);
 static void CampaignIntroDraw(GameLoopData *data);
-GameLoopData ScreenCampaignIntro(CampaignSetting *c)
+GameLoopData *ScreenCampaignIntro(CampaignSetting *c)
 {
 	ScreenCampaignIntroData *data;
 	CMALLOC(data, sizeof *data);
@@ -82,7 +82,7 @@ static void CampaignIntroInput(GameLoopData *data)
 	ScreenCampaignIntroData *sData = data->Data;
 	sData->waitResult = EventWaitForAnyKeyOrButton();
 }
-static GameLoopResult CampaignIntroUpdate(GameLoopData *data)
+static GameLoopResult CampaignIntroUpdate(GameLoopData *data, LoopRunner *l)
 {
 	const ScreenCampaignIntroData *sData = data->Data;
 
@@ -90,15 +90,14 @@ static GameLoopResult CampaignIntroUpdate(GameLoopData *data)
 		sData->waitResult == EVENT_WAIT_OK)
 	{
 		// Switch to num players selection
-		GameLoopChange(
-			data, NumPlayersSelection(&gGraphicsDevice, &gEventHandlers));
-		return UPDATE_RESULT_OK;
+		LoopRunnerChange(
+			l, NumPlayersSelection(&gGraphicsDevice, &gEventHandlers));
 	}
-	else if (sData->waitResult == EVENT_WAIT_CONTINUE)
+	else if (sData->waitResult == EVENT_WAIT_CANCEL)
 	{
-		return UPDATE_RESULT_OK;
+		LoopRunnerPop(l);
 	}
-	return UPDATE_RESULT_EXIT;
+	return UPDATE_RESULT_OK;
 }
 static void CampaignIntroDraw(GameLoopData *data)
 {
@@ -154,9 +153,9 @@ typedef struct
 static void MissionBriefingTerminate(GameLoopData *data);
 static void MissionBriefingOnExit(GameLoopData *data);
 static void MissionBriefingInput(GameLoopData *data);
-static GameLoopResult MissionBriefingUpdate(GameLoopData *data);
+static GameLoopResult MissionBriefingUpdate(GameLoopData *data, LoopRunner *l);
 static void MissionBriefingDraw(GameLoopData *data);
-GameLoopData ScreenMissionBriefing(const struct MissionOptions *m)
+GameLoopData *ScreenMissionBriefing(const struct MissionOptions *m)
 {
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
@@ -269,20 +268,22 @@ static void MissionBriefingInput(GameLoopData *data)
 		mData->waitResult = EVENT_WAIT_CANCEL;
 	}
 }
-static GameLoopResult MissionBriefingUpdate(GameLoopData *data)
+static GameLoopResult MissionBriefingUpdate(GameLoopData *data, LoopRunner *l)
 {
 	MissionBriefingData *mData = data->Data;
 
 	if (!IsMissionBriefingNeeded(gCampaign.Entry.Mode))
 	{
 		mData->waitResult = EVENT_WAIT_OK;
-		return UPDATE_RESULT_EXIT;
+		LoopRunnerPop(l);
+		return UPDATE_RESULT_OK;
 	}
 
 	// Check exit conditions from input
 	if (mData->waitResult != EVENT_WAIT_CONTINUE)
 	{
-		return UPDATE_RESULT_EXIT;
+		LoopRunnerPop(l);
+		return UPDATE_RESULT_OK;
 	}
 
 	// Update the typewriter effect
@@ -339,12 +340,12 @@ typedef struct
 static void MissionSummaryTerminate(GameLoopData *data);
 static void MissionSummaryOnEnter(GameLoopData *data);
 static void MissionSummaryOnExit(GameLoopData *data);
-static GameLoopResult MissionSummaryUpdate(GameLoopData *data);
+static GameLoopResult MissionSummaryUpdate(GameLoopData *data, LoopRunner *l);
 static void MissionSummaryDraw(GameLoopData *data);
 static void MissionSummaryMenuDraw(
 	const menu_t *menu, GraphicsDevice *g,
 	const Vec2i p, const Vec2i size, const void *data);
-GameLoopData ScreenMissionSummary(
+GameLoopData *ScreenMissionSummary(
 	CampaignOptions *c, struct MissionOptions *m, const bool completed)
 {
 	MissionSummaryData *mData;
@@ -439,11 +440,16 @@ static void MissionSummaryOnExit(GameLoopData *data)
 
 	mData->m->IsQuit = mData->ms.current->u.returnCode == 0;
 }
-static GameLoopResult MissionSummaryUpdate(GameLoopData *data)
+static GameLoopResult MissionSummaryUpdate(GameLoopData *data, LoopRunner *l)
 {
 	MissionSummaryData *mData = data->Data;
 
-	return MenuUpdate(&mData->ms);
+	const GameLoopResult result = MenuUpdate(&mData->ms);
+	if (result == UPDATE_RESULT_OK)
+	{
+		LoopRunnerPop(l);
+	}
+	return result;
 }
 static void MissionSummaryDraw(GameLoopData *data)
 {

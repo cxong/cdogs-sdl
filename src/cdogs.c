@@ -98,20 +98,20 @@
 
 static void MainLoop(void)
 {
-	GameLoopData g = MainMenu(&gGraphicsDevice);
 	for (;;)
 	{
+		LoopRunner l = LoopRunnerNew(MainMenu(&gGraphicsDevice));
 		if (!gCampaign.IsLoaded)
 		{
-			GameLoop(&g);
+			LoopRunnerRun(&l);
 		}
 		if (!gCampaign.IsLoaded)
 		{
 			break;
 		}
 		ScreenStart(&gGraphicsDevice, &gCampaign);
+		LoopRunnerTerminate(&l);
 	}
-	GameLoopTerminate(&g);
 }
 
 int main(int argc, char *argv[])
@@ -255,9 +255,9 @@ int main(int argc, char *argv[])
 	{
 		if (NetClientTryScanAndConnect(&gNetClient, connectAddr.host))
 		{
-			GameLoopData g = ScreenWaitForCampaignDef();
-			GameLoop(&g);
-			GameLoopTerminate(&g);
+			LoopRunner l = LoopRunnerNew(ScreenWaitForCampaignDef());
+			LoopRunnerRun(&l);
+			LoopRunnerTerminate(&l);
 		}
 		else
 		{

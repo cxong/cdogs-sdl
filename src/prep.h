@@ -55,20 +55,20 @@
 #include "game_loop.h"
 
 // Wait for the server to send us the current campaign
-GameLoopData ScreenWaitForCampaignDef(void);
+GameLoopData *ScreenWaitForCampaignDef(void);
 
 // Screen to select the number of (local) players
-GameLoopData NumPlayersSelection(
+GameLoopData *NumPlayersSelection(
 	GraphicsDevice *graphics, EventHandlers *handlers);
 
 // Allow input devices to take control players,
 // and select player name and appearance
-GameLoopData PlayerSelection(void);
+GameLoopData *PlayerSelection(void);
 
 // Choose game-mode-specific options
-GameLoopData GameOptions(const GameMode gm);
+GameLoopData *GameOptions(const GameMode gm);
 
-GameLoopData PlayerEquip(void);
+GameLoopData *PlayerEquip(void);
 
 // Wait for the game to start
-GameLoopData ScreenWaitForGameStart(void);
+GameLoopData *ScreenWaitForGameStart(void);

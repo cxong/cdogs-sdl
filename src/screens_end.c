@@ -118,9 +118,9 @@ static int PlayerListInput(int cmd, void *data);
 static void PlayerListTerminate(GameLoopData *data);
 static void PlayerListOnEnter(GameLoopData *data);
 static void PlayerListOnExit(GameLoopData *data);
-static GameLoopResult PlayerListUpdate(GameLoopData *data);
+static GameLoopResult PlayerListUpdate(GameLoopData *data, LoopRunner *l);
 static void PlayerListDraw(GameLoopData *data);
-static GameLoopData PlayerListLoop(PlayerList *pl)
+static GameLoopData *PlayerListLoop(PlayerList *pl)
 {
 	MenuSystemInit(&pl->ms, &gEventHandlers, &gGraphicsDevice, pl->pos, pl->size);
 	menu_t *menuScores = MenuCreateCustom(
@@ -168,11 +168,16 @@ static void PlayerListOnExit(GameLoopData *data)
 	UNUSED(data);
 	SoundPlay(&gSoundDevice, StrSound("mg"));
 }
-static GameLoopResult PlayerListUpdate(GameLoopData *data)
+static GameLoopResult PlayerListUpdate(GameLoopData *data, LoopRunner *l)
 {
 	PlayerList *pl = data->Data;
 
-	return MenuUpdate(&pl->ms);
+	const GameLoopResult result = MenuUpdate(&pl->ms);
+	if (result == UPDATE_RESULT_OK)
+	{
+		LoopRunnerPop(l);
+	}
+	return result;
 }
 static void PlayerListDraw(GameLoopData *data)
 {
@@ -325,7 +330,7 @@ typedef struct
 	const char *FinalWords;
 } VictoryData;
 static void VictoryDraw(void *data);
-GameLoopData ScreenVictory(CampaignOptions *c)
+GameLoopData *ScreenVictory(CampaignOptions *c)
 {
 	SoundPlay(&gSoundDevice, StrSound("victory"));
 	VictoryData *data;
@@ -391,7 +396,7 @@ static void VictoryDraw(void *data)
 	FontChMask('"', pos, colorDarker);
 }
 
-GameLoopData ScreenDogfightScores(void)
+GameLoopData *ScreenDogfightScores(void)
 {
 	PlayerList *pl = PlayerListNew(NULL, NULL, false, false);
 	pl->pos.y = 24;
@@ -399,7 +404,7 @@ GameLoopData ScreenDogfightScores(void)
 	return PlayerListLoop(pl);
 }
 
-GameLoopData ScreenDogfightFinalScores(void)
+GameLoopData *ScreenDogfightFinalScores(void)
 {
 	SoundPlay(&gSoundDevice, StrSound("victory"));
 	PlayerList *pl = PlayerListNew(NULL, NULL, true, true);
@@ -408,7 +413,7 @@ GameLoopData ScreenDogfightFinalScores(void)
 	return PlayerListLoop(pl);
 }
 
-GameLoopData ScreenDeathmatchFinalScores(void)
+GameLoopData *ScreenDeathmatchFinalScores(void)
 {
 	SoundPlay(&gSoundDevice, StrSound("victory"));
 	PlayerList *pl = PlayerListNew(NULL, NULL, true, true);

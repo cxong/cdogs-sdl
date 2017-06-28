@@ -29,7 +29,7 @@
 
 #include "game_loop.h"
 
-GameLoopData ScreenVictory(CampaignOptions *c);
-GameLoopData ScreenDogfightScores(void);
-GameLoopData ScreenDogfightFinalScores(void);
-GameLoopData ScreenDeathmatchFinalScores(void);
+GameLoopData *ScreenVictory(CampaignOptions *c);
+GameLoopData *ScreenDogfightScores(void);
+GameLoopData *ScreenDogfightFinalScores(void);
+GameLoopData *ScreenDeathmatchFinalScores(void);
