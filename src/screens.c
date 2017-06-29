@@ -85,35 +85,6 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 			run = false;
 			goto bail;
 		}
-
-		// Mission briefing
-		LoopRunnerPush(&l, ScreenMissionBriefing(&gMission));
-		LoopRunnerRun(&l);
-		if (!co->IsLoaded)
-		{
-			run = false;
-			goto bail;
-		}
-
-		// Equip guns
-		LoopRunnerPush(&l, PlayerEquip());
-		LoopRunnerRun(&l);
-		if (!co->IsLoaded)
-		{
-			run = false;
-			goto bail;
-		}
-
-		LoopRunnerPush(&l, ScreenWaitForGameStart());
-		LoopRunnerRun(&l);
-		if (!co->IsLoaded)
-		{
-			run = false;
-			goto bail;
-		}
-
-		LoopRunnerPush(&l, RunGame(co, &gMission, &gMap));
-		LoopRunnerRun(&l);
 		run = !gMission.IsQuit;
 
 		const int survivingPlayers =

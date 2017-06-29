@@ -275,15 +275,13 @@ static GameLoopResult MissionBriefingUpdate(GameLoopData *data, LoopRunner *l)
 	if (!IsMissionBriefingNeeded(gCampaign.Entry.Mode))
 	{
 		mData->waitResult = EVENT_WAIT_OK;
-		LoopRunnerPop(l);
-		return UPDATE_RESULT_OK;
+		goto bail;
 	}
 
 	// Check exit conditions from input
 	if (mData->waitResult != EVENT_WAIT_CONTINUE)
 	{
-		LoopRunnerPop(l);
-		return UPDATE_RESULT_OK;
+		goto bail;
 	}
 
 	// Update the typewriter effect
@@ -295,6 +293,17 @@ static GameLoopResult MissionBriefingUpdate(GameLoopData *data, LoopRunner *l)
 		return UPDATE_RESULT_DRAW;
 	}
 
+	return UPDATE_RESULT_OK;
+
+bail:
+	if (mData->waitResult == EVENT_WAIT_OK)
+	{
+		LoopRunnerChange(l, PlayerEquip());
+	}
+	else
+	{
+		LoopRunnerPop(l);
+	}
 	return UPDATE_RESULT_OK;
 }
 static void MissionBriefingDraw(GameLoopData *data)

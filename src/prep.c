@@ -75,6 +75,8 @@
 #include <cdogs/utils.h>
 
 #include "autosave.h"
+#include "briefing_screens.h"
+#include "game.h"
 #include "password.h"
 #include "player_select_menus.h"
 #include "namegen.h"
@@ -695,7 +697,14 @@ static GameLoopResult GameOptionsUpdate(GameLoopData *data, LoopRunner *l)
 	if (!IsGameOptionsNeeded(gCampaign.Entry.Mode) ||
 		MenuUpdate(&gData->ms) == UPDATE_RESULT_OK)
 	{
-		LoopRunnerPop(l);
+		if (gData->ms.hasAbort)
+		{
+			LoopRunnerPop(l);
+		}
+		else
+		{
+			LoopRunnerChange(l, ScreenMissionBriefing(&gMission));
+		}
 		return UPDATE_RESULT_OK;
 	}
 	return UPDATE_RESULT_DRAW;
@@ -848,8 +857,7 @@ static GameLoopResult PlayerEquipUpdate(GameLoopData *data, LoopRunner *l)
 	if (GetNumPlayers(PLAYER_ANY, false, true) == 0)
 	{
 		pData->waitResult = EVENT_WAIT_OK;
-		LoopRunnerPop(l);
-		return UPDATE_RESULT_OK;
+		goto bail;
 	}
 
 	// Check if anyone pressed escape
@@ -859,8 +867,7 @@ static GameLoopResult PlayerEquipUpdate(GameLoopData *data, LoopRunner *l)
 	if (EventIsEscape(&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers)))
 	{
 		pData->waitResult = EVENT_WAIT_CANCEL;
-		LoopRunnerPop(l);
-		return UPDATE_RESULT_OK;
+		goto bail;
 	}
 
 	// Update menus
@@ -896,11 +903,21 @@ static GameLoopResult PlayerEquipUpdate(GameLoopData *data, LoopRunner *l)
 	if (isDone)
 	{
 		pData->waitResult = EVENT_WAIT_OK;
-		LoopRunnerPop(l);
-		return UPDATE_RESULT_OK;
+		goto bail;
 	}
 
 	return UPDATE_RESULT_DRAW;
+
+bail:
+	if (pData->waitResult == EVENT_WAIT_OK)
+	{
+		LoopRunnerChange(l, ScreenWaitForGameStart());
+	}
+	else
+	{
+		LoopRunnerPop(l);
+	}
+	return UPDATE_RESULT_OK;
 }
 static void PlayerEquipDraw(GameLoopData *data)
 {
@@ -929,15 +946,24 @@ static GameLoopResult CheckGameStart(void *data, LoopRunner *l)
 	UNUSED(data);
 	if (!gCampaign.IsClient || gMission.HasStarted)
 	{
-		LoopRunnerPop(l);
-		return UPDATE_RESULT_OK;
+		goto bail;
 	}
 	// Check disconnections
 	if (!NetClientIsConnected(&gNetClient))
 	{
 		CampaignUnload(&gCampaign);
-		LoopRunnerPop(l);
-		return UPDATE_RESULT_OK;
+		goto bail;
 	}
 	return UPDATE_RESULT_DRAW;
+
+bail:
+	if (!gCampaign.IsLoaded)
+	{
+		LoopRunnerPop(l);
+	}
+	else
+	{
+		LoopRunnerChange(l, RunGame(&gCampaign, &gMission, &gMap));
+	}
+	return UPDATE_RESULT_OK;
 }
