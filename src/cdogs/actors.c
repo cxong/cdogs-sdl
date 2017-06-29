@@ -923,7 +923,7 @@ void UpdateAllActors(int ticks)
 			actor->bleedCounter -= ticks;
 			if (actor->bleedCounter <= 0)
 			{
-				ActorAddBloodSplatters(actor, 1, Vec2iZero());
+				ActorAddBloodSplatters(actor, 1, 1.0, Vec2iZero());
 				actor->bleedCounter += healthPct;
 			}
 		}
@@ -1465,7 +1465,7 @@ bool ActorIsInvulnerable(
 	return 0;
 }
 
-void ActorAddBloodSplatters(TActor *a, const int power, const Vec2i hitVector)
+void ActorAddBloodSplatters(TActor *a, const int power, const double mass, const Vec2i hitVector)
 {
 	const GoreAmount ga = ConfigGetEnum(&gConfig, "Graphics.Gore");
 	if (ga == GORE_NONE) return;
