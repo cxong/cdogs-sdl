@@ -130,7 +130,12 @@ static GameLoopResult ScreenWaitUpdate(GameLoopData *data, LoopRunner *l)
 	{
 		return result;
 	}
-	return MenuUpdate(&swData->ms);
+	const GameLoopResult menuResult = MenuUpdate(&swData->ms);
+	if (menuResult == UPDATE_RESULT_OK)
+	{
+		LoopRunnerPop(l);
+	}
+	return menuResult;
 }
 static void ScreenWaitDraw(GameLoopData *data)
 {

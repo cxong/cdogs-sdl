@@ -100,7 +100,8 @@ static void MainLoop(void)
 {
 	for (;;)
 	{
-		LoopRunner l = LoopRunnerNew(MainMenu(&gGraphicsDevice));
+		LoopRunner l = LoopRunnerNew(NULL);
+		LoopRunnerPush(&l, MainMenu(&gGraphicsDevice, &l));
 		if (!gCampaign.IsLoaded)
 		{
 			LoopRunnerRun(&l);

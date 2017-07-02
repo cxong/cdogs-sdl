@@ -83,7 +83,8 @@ bool CampaignLoad(CampaignOptions *co, CampaignEntry *entry)
 	CASSERT(!co->IsLoaded, "loading campaign without unloading last one");
 	// Note: use the mode already set by the menus
 	const GameMode mode = co->Entry.Mode;
-	co->Entry = *entry;
+	CampaignEntryTerminate(&co->Entry);
+	CampaignEntryCopy(&co->Entry, entry);
 	co->Entry.Mode = mode;
 	CampaignSettingInit(&co->Setting);
 	if (entry->Mode == GAME_MODE_QUICK_PLAY)

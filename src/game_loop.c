@@ -64,7 +64,10 @@ LoopRunner LoopRunnerNew(GameLoopData *newData)
 {
 	LoopRunner l;
 	CArrayInit(&l.Loops, sizeof(GameLoopData *));
-	LoopRunnerPush(&l, newData);
+	if (newData != NULL)
+	{
+		LoopRunnerPush(&l, newData);
+	}
 	return l;
 }
 static void GameLoopTerminate(GameLoopData *data);
