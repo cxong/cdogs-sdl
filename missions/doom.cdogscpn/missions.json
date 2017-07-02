@@ -5407,7 +5407,7 @@
 			"Description": "Bonus",
 			"Type": "Collect",
 			"Pickup": "disk2",
-			"Count": 13,
+			"Count": 14,
 			"Required": 0,
 			"Flags": 1
 		},
@@ -5418,9 +5418,17 @@
 			"Count": 18,
 			"Required": 0,
 			"Flags": 1
+		},
+		{
+			"Description": "Kill the Barons",
+			"Type": "Kill",
+			"Index": 0,
+			"Count": 2,
+			"Required": 2,
+			"Flags": 1
 		}],
 		"Enemies": [],
-		"SpecialChars": [],
+		"SpecialChars": [5],
 		"MapObjectDensities": [],
 		"EnemyDensity": 0,
 		"Weapons": ["Knife",
@@ -5572,13 +5580,6 @@
 			195],
 			[76,
 			195]]
-		},
-		{
-			"Index": 5,
-			"Positions": [[76,
-			107],
-			[81,
-			107]]
 		}],
 		"StaticObjectives": [{
 			"Index": 0,
@@ -5677,6 +5678,15 @@
 			0,
 			0,
 			0,
+			0]
+		},
+		{
+			"Index": 2,
+			"Positions": [[81,
+			107],
+			[76,
+			107]],
+			"Indices": [0,
 			0]
 		}],
 		"StaticKeys": [{
