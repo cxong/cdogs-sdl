@@ -117,6 +117,19 @@
       "Power": 30,
       "Mass": 30.0,
       "Size": [4, 4]
+    },
+    {
+      "Name": "projection",
+      "Pic": {
+        "Type": "Directional",
+        "Sprites": "projection"
+      },
+      "Spark": "spark_yellow",
+      "Speed": 500,
+      "Range": 90,
+      "Power": 50,
+      "Mass": 50.0,
+      "Size": [10, 10]
     }
   ]
 }
