@@ -83,7 +83,6 @@ bool CampaignLoad(CampaignOptions *co, CampaignEntry *entry)
 	CASSERT(!co->IsLoaded, "loading campaign without unloading last one");
 	// Note: use the mode already set by the menus
 	const GameMode mode = co->Entry.Mode;
-	CampaignEntryTerminate(&co->Entry);
 	CampaignEntryCopy(&co->Entry, entry);
 	co->Entry.Mode = mode;
 	CampaignSettingInit(&co->Setting);
@@ -119,6 +118,7 @@ void CampaignUnload(CampaignOptions *co)
 	co->IsLoaded = false;
 	co->IsClient = false;	// TODO: select is client from menu
 	co->OptionsSet = false;
+	CampaignEntryTerminate(&co->Entry);
 }
 
 void MissionOptionsInit(struct MissionOptions *mo)

@@ -107,8 +107,8 @@ Vec2i GetPlayerCenter(
 	int w = device->cachedConfig.Res.x;
 	int h = device->cachedConfig.Res.y;
 
-	if (GetNumPlayers(PLAYER_ALIVE_OR_DYING, true, true) == 1 ||
-		GetNumPlayers(PLAYER_ALIVE_OR_DYING, false , true) == 1 ||
+	if (GetNumPlayers(PLAYER_ANY, true, true) == 1 ||
+		GetNumPlayers(PLAYER_ANY, false , true) == 1 ||
 		CameraIsSingleScreen())
 	{
 		const Vec2i pCenter = camera->lastPosition;

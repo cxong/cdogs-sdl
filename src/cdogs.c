@@ -96,25 +96,6 @@
 #include "screens.h"
 
 
-static void MainLoop(void)
-{
-	for (;;)
-	{
-		LoopRunner l = LoopRunnerNew(NULL);
-		LoopRunnerPush(&l, MainMenu(&gGraphicsDevice, &l));
-		if (!gCampaign.IsLoaded)
-		{
-			LoopRunnerRun(&l);
-		}
-		if (!gCampaign.IsLoaded)
-		{
-			break;
-		}
-		ScreenStart(&gGraphicsDevice, &gCampaign);
-		LoopRunnerTerminate(&l);
-	}
-}
-
 int main(int argc, char *argv[])
 {
 #if defined(_MSC_VER) && !defined(NDEBUG)
@@ -237,7 +218,7 @@ int main(int argc, char *argv[])
 	CampaignInit(&gCampaign);
 	PlayerDataInit(&gPlayerDatas);
 
-	debug(D_NORMAL, ">> Entering main loop\n");
+	LoopRunner l = LoopRunnerNew(NULL);
 	// Attempt to pre-load campaign if requested
 	if (loadCampaign != NULL)
 	{
@@ -256,9 +237,7 @@ int main(int argc, char *argv[])
 	{
 		if (NetClientTryScanAndConnect(&gNetClient, connectAddr.host))
 		{
-			LoopRunner l = LoopRunnerNew(ScreenWaitForCampaignDef());
-			LoopRunnerRun(&l);
-			LoopRunnerTerminate(&l);
+			LoopRunnerPush(&l, ScreenWaitForCampaignDef());
 		}
 		else
 		{
@@ -266,7 +245,20 @@ int main(int argc, char *argv[])
 		}
 	}
 	LOG(LM_MAIN, LL_INFO, "Starting game");
-	MainLoop();
+	for (;;)
+	{
+		if (!gCampaign.IsLoaded)
+		{
+			LoopRunnerPush(&l, MainMenu(&gGraphicsDevice, &l));
+		}
+		LoopRunnerRun(&l);
+		if (!gCampaign.IsLoaded)
+		{
+			break;
+		}
+		ScreenStart(&gGraphicsDevice, &gCampaign);
+	}
+	LoopRunnerTerminate(&l);
 
 bail:
 	NetServerTerminate(&gNetServer);
