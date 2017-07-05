@@ -403,7 +403,7 @@ static GameLoopResult DogfightScoresUpdate(GameLoopData *data, LoopRunner *l);
 GameLoopData *ScreenDogfightScores(void)
 {
 	PlayerList *pl = PlayerListNew(
-		NULL, NULL, false, false, DogfightScoresUpdate);
+		DogfightScoresUpdate, NULL, NULL, false, false);
 	pl->pos.y = 24;
 	pl->size.y -= pl->pos.y;
 	return PlayerListLoop(pl);
