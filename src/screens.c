@@ -61,7 +61,6 @@
 #include "game.h"
 #include "hiscores.h"
 #include "prep.h"
-#include "screens_end.h"
 
 
 void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
@@ -75,7 +74,6 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 	}
 
 	bool run = false;
-	bool gameOver = true;
 	do
 	{
 		LoopRunnerPush(&l, GameOptions(co->Entry.Mode));
@@ -87,60 +85,6 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 		}
 		run = !gMission.IsQuit;
 
-		const int survivingPlayers =
-			GetNumPlayers(PLAYER_ALIVE, false, false);
-		const bool survivedAndCompletedObjectives =
-			survivingPlayers > 0 && MissionAllObjectivesComplete(&gMission);
-		if (run && GetNumPlayers(PLAYER_ANY, false, true) > 0)
-		{
-			switch (co->Entry.Mode)
-			{
-			case GAME_MODE_DOGFIGHT:
-				{
-					LoopRunnerPush(&l, ScreenDogfightScores());
-					LoopRunnerRun(&l);
-					// Calculate PVP rounds won
-					int maxScore = 0;
-					CA_FOREACH(PlayerData, p, gPlayerDatas)
-						if (IsPlayerAlive(p))
-						{
-							p->Totals.Score++;
-							maxScore = MAX(maxScore, p->Totals.Score);
-						}
-					CA_FOREACH_END()
-					gameOver = maxScore == ModeMaxRoundsWon(co->Entry.Mode);
-					CASSERT(maxScore <= ModeMaxRoundsWon(co->Entry.Mode),
-						"score exceeds max rounds won");
-					if (gameOver)
-					{
-						LoopRunnerPush(&l, ScreenDogfightFinalScores());
-						LoopRunnerRun(&l);
-					}
-				}
-				break;
-			case GAME_MODE_DEATHMATCH:
-				LoopRunnerPush(&l, ScreenDeathmatchFinalScores());
-				LoopRunnerRun(&l);
-				break;
-			default:
-				// In co-op (non-PVP) modes, at least one player must survive
-				gameOver = !survivedAndCompletedObjectives ||
-					co->MissionIndex == (int)co->Setting.Missions.size - 1;
-				LoopRunnerPush(&l, ScreenMissionSummary(
-					co, &gMission, survivedAndCompletedObjectives));
-				LoopRunnerRun(&l);
-				run = !gMission.IsQuit;
-				// Note: must use cached value because players get cleaned up
-				// in CleanupMission()
-				if (gameOver && survivedAndCompletedObjectives)
-				{
-					LoopRunnerPush(&l, ScreenVictory(co));
-					LoopRunnerRun(&l);
-				}
-				break;
-			}
-		}
-
 		// Check if any scores exceeded high scores, if we're not a PVP mode
 		if (!IsPVP(co->Entry.Mode) &&
 			GetNumPlayers(PLAYER_ANY, false, true) > 0)
@@ -149,7 +93,7 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 			bool allTime = false;
 			bool todays = false;
 			CA_FOREACH(PlayerData, p, gPlayerDatas)
-				if (((run && !p->survived) || gameOver) && p->IsLocal)
+				if (((run && !p->survived) || co->IsComplete) && p->IsLocal)
 				{
 					EnterHighScore(p);
 					allTime |= p->allTime >= 0;
@@ -180,7 +124,7 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 			}
 			SaveHighScores();
 		}
-		if (!HasRounds(co->Entry.Mode) && !gameOver)
+		if (!HasRounds(co->Entry.Mode) && !co->IsComplete)
 		{
 			co->MissionIndex++;
 		}
@@ -188,8 +132,8 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 	bail:
 		// Need to terminate the mission later as it is used in calculating scores
 		MissionOptionsTerminate(&gMission);
-	} while (run && !gameOver);
+	} while (run && !co->IsComplete);
 
 	LoopRunnerTerminate(&l);
-	CampaignUnload(&gCampaign);
+	CampaignUnload(co);
 }

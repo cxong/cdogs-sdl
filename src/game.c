@@ -67,6 +67,9 @@
 #include <cdogs/net_server.h>
 #include <cdogs/objs.h>
 
+#include "briefing_screens.h"
+#include "screens_end.h"
+
 
 static void PlayerSpecialCommands(TActor *actor, const int cmd)
 {
@@ -441,6 +444,7 @@ static void RunGameInput(GameLoopData *data)
 
 	CameraInput(&rData->Camera, rData->cmds[0], rData->lastCmds[0]);
 }
+static void NextLoop(RunGameData *rData, LoopRunner *l);
 static void CheckMissionCompletion(const struct MissionOptions *mo);
 static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 {
@@ -452,7 +456,7 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 		rData->m->DoneCounter--;
 		if (rData->m->DoneCounter <= 0)
 		{
-			LoopRunnerPop(l);
+			NextLoop(rData, l);
 			return UPDATE_RESULT_OK;
 		}
 		else
@@ -620,6 +624,34 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 	CameraUpdate(&rData->Camera, ticksPerFrame, 1000 / data->FPS);
 
 	return UPDATE_RESULT_DRAW;
+}
+static void NextLoop(RunGameData *rData, LoopRunner *l)
+{
+	// Find the next screen to switch to
+	const bool hasLocalPlayers = GetNumPlayers(PLAYER_ANY, false, true) > 0;
+	const int survivingPlayers =
+		GetNumPlayers(PLAYER_ALIVE, false, false);
+	const bool survivedAndCompletedObjectives =
+		survivingPlayers > 0 && MissionAllObjectivesComplete(&gMission);
+
+	// Switch to a score screen if there are local players and we haven't quit
+	const bool showScores = !gMission.IsQuit && hasLocalPlayers;
+	if (showScores)
+	{
+		switch (rData->co->Entry.Mode)
+		{
+		case GAME_MODE_DOGFIGHT:
+			LoopRunnerChange(l, ScreenDogfightScores());
+			break;
+		case GAME_MODE_DEATHMATCH:
+			LoopRunnerChange(l, ScreenDeathmatchFinalScores());
+			break;
+		default:
+			LoopRunnerChange(l, ScreenMissionSummary(
+				rData->co, &gMission, survivedAndCompletedObjectives));
+			break;
+		}
+	}
 }
 static void CheckMissionCompletion(const struct MissionOptions *mo)
 {

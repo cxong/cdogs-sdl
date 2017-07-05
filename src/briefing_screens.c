@@ -37,6 +37,7 @@
 #include "menu_utils.h"
 #include "password.h"
 #include "prep.h"
+#include "screens_end.h"
 
 
 static void DrawObjectiveInfo(const Objective *o, const Vec2i pos);
@@ -342,7 +343,7 @@ static void MissionBriefingDraw(GameLoopData *data)
 typedef struct
 {
 	MenuSystem ms;
-	CampaignOptions *c;
+	const CampaignOptions *c;
 	struct MissionOptions *m;
 	bool completed;
 } MissionSummaryData;
@@ -355,7 +356,7 @@ static void MissionSummaryMenuDraw(
 	const menu_t *menu, GraphicsDevice *g,
 	const Vec2i p, const Vec2i size, const void *data);
 GameLoopData *ScreenMissionSummary(
-	CampaignOptions *c, struct MissionOptions *m, const bool completed)
+	const CampaignOptions *c, struct MissionOptions *m, const bool completed)
 {
 	MissionSummaryData *mData;
 	CMALLOC(mData, sizeof *mData);
@@ -456,7 +457,21 @@ static GameLoopResult MissionSummaryUpdate(GameLoopData *data, LoopRunner *l)
 	const GameLoopResult result = MenuUpdate(&mData->ms);
 	if (result == UPDATE_RESULT_OK)
 	{
-		LoopRunnerPop(l);
+		// In co-op (non-PVP) modes, at least one player must survive
+		const int survivingPlayers =
+			GetNumPlayers(PLAYER_ALIVE, false, false);
+		const bool survivedAndCompletedObjectives =
+			survivingPlayers > 0 && MissionAllObjectivesComplete(&gMission);
+		gCampaign.IsComplete = !survivedAndCompletedObjectives ||
+			gCampaign.MissionIndex == (int)gCampaign.Setting.Missions.size - 1;
+		if (gCampaign.IsComplete && survivedAndCompletedObjectives)
+		{
+			LoopRunnerChange(l, ScreenVictory(&gCampaign));
+		}
+		else
+		{
+			LoopRunnerPop(l);
+		}
 	}
 	return result;
 }

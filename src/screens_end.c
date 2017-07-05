@@ -43,6 +43,7 @@ typedef struct
 	Vec2i pos;
 	Vec2i size;
 	int scroll;
+	GameLoopResult (*updateFunc)(GameLoopData *, LoopRunner *);
 	void (*drawFunc)(void *);
 	void *data;
 	// Whether to use a confirmation "Finish" menu at the end
@@ -56,6 +57,7 @@ typedef struct
 } PlayerList;
 static int ComparePlayerScores(const void *v1, const void *v2);
 static PlayerList *PlayerListNew(
+	GameLoopResult (*updateFunc)(GameLoopData *, LoopRunner *),
 	void (*drawFunc)(void *), void *data,
 	const bool hasMenu, const bool showWinners)
 {
@@ -64,6 +66,7 @@ static PlayerList *PlayerListNew(
 	pl->pos = Vec2iZero();
 	pl->size = gGraphicsDevice.cachedConfig.Res;
 	pl->scroll = 0;
+	pl->updateFunc = updateFunc;
 	pl->drawFunc = drawFunc;
 	pl->data = data;
 	pl->hasMenu = hasMenu;
@@ -118,7 +121,6 @@ static int PlayerListInput(int cmd, void *data);
 static void PlayerListTerminate(GameLoopData *data);
 static void PlayerListOnEnter(GameLoopData *data);
 static void PlayerListOnExit(GameLoopData *data);
-static GameLoopResult PlayerListUpdate(GameLoopData *data, LoopRunner *l);
 static void PlayerListDraw(GameLoopData *data);
 static GameLoopData *PlayerListLoop(PlayerList *pl)
 {
@@ -139,7 +141,7 @@ static GameLoopData *PlayerListLoop(PlayerList *pl)
 	MenuAddExitType(&pl->ms, MENU_TYPE_RETURN);
 	return GameLoopDataNew(
 		pl, PlayerListTerminate, PlayerListOnEnter, PlayerListOnExit,
-		NULL, PlayerListUpdate, PlayerListDraw);
+		NULL, pl->updateFunc, PlayerListDraw);
 }
 static void PlayerListTerminate(GameLoopData *data)
 {
@@ -366,7 +368,8 @@ GameLoopData *ScreenVictory(CampaignOptions *c)
 		const int numWords = sizeof finalWordsMulti / sizeof(char *);
 		data->FinalWords = finalWordsMulti[rand() % numWords];
 	}
-	PlayerList *pl = PlayerListNew(VictoryDraw, data, true, false);
+	PlayerList *pl = PlayerListNew(
+		PlayerListUpdate, VictoryDraw, data, true, false);
 	pl->pos.y = 75;
 	pl->size.y -= pl->pos.y;
 	return PlayerListLoop(pl);
@@ -396,18 +399,51 @@ static void VictoryDraw(void *data)
 	FontChMask('"', pos, colorDarker);
 }
 
+static GameLoopResult DogfightScoresUpdate(GameLoopData *data, LoopRunner *l);
 GameLoopData *ScreenDogfightScores(void)
 {
-	PlayerList *pl = PlayerListNew(NULL, NULL, false, false);
+	PlayerList *pl = PlayerListNew(
+		NULL, NULL, false, false, DogfightScoresUpdate);
 	pl->pos.y = 24;
 	pl->size.y -= pl->pos.y;
 	return PlayerListLoop(pl);
+}
+static GameLoopResult DogfightScoresUpdate(GameLoopData *data, LoopRunner *l)
+{
+	PlayerList *pl = data->Data;
+
+	const GameLoopResult result = MenuUpdate(&pl->ms);
+	if (result == UPDATE_RESULT_OK)
+	{
+		// Calculate PVP rounds won
+		int maxScore = 0;
+		CA_FOREACH(PlayerData, p, gPlayerDatas)
+			if (IsPlayerAlive(p))
+			{
+				p->Totals.Score++;
+				maxScore = MAX(maxScore, p->Totals.Score);
+			}
+		CA_FOREACH_END()
+		gCampaign.IsComplete =
+			maxScore == ModeMaxRoundsWon(gCampaign.Entry.Mode);
+		CASSERT(maxScore <= ModeMaxRoundsWon(gCampaign.Entry.Mode),
+			"score exceeds max rounds won");
+		if (gCampaign.IsComplete)
+		{
+			LoopRunnerChange(l, ScreenDogfightFinalScores());
+		}
+		else
+		{
+			LoopRunnerPop(l);
+		}
+	}
+	return result;
 }
 
 GameLoopData *ScreenDogfightFinalScores(void)
 {
 	SoundPlay(&gSoundDevice, StrSound("victory"));
-	PlayerList *pl = PlayerListNew(NULL, NULL, true, true);
+	PlayerList *pl = PlayerListNew(PlayerListUpdate, NULL, NULL, true, true);
 	pl->pos.y = 24;
 	pl->size.y -= pl->pos.y;
 	return PlayerListLoop(pl);
@@ -416,7 +452,7 @@ GameLoopData *ScreenDogfightFinalScores(void)
 GameLoopData *ScreenDeathmatchFinalScores(void)
 {
 	SoundPlay(&gSoundDevice, StrSound("victory"));
-	PlayerList *pl = PlayerListNew(NULL, NULL, true, true);
+	PlayerList *pl = PlayerListNew(PlayerListUpdate, NULL, NULL, true, true);
 	pl->pos.y = 24;
 	pl->size.y -= pl->pos.y;
 	return PlayerListLoop(pl);
