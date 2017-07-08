@@ -63,7 +63,7 @@
 #include "prep.h"
 
 
-void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
+void ScreenStart(CampaignOptions *co)
 {
 	LoopRunner l = LoopRunnerNew(ScreenCampaignIntro(&co->Setting));
 	LoopRunnerRun(&l);
@@ -73,7 +73,7 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 		return;
 	}
 
-	bool run = false;
+	bool run = true;
 	do
 	{
 		LoopRunnerPush(&l, GameOptions(co->Entry.Mode));
@@ -84,50 +84,6 @@ void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co)
 			goto bail;
 		}
 		run = !gMission.IsQuit;
-
-		// Check if any scores exceeded high scores, if we're not a PVP mode
-		if (!IsPVP(co->Entry.Mode) &&
-			GetNumPlayers(PLAYER_ANY, false, true) > 0)
-		{
-			LoadHighScores();
-			bool allTime = false;
-			bool todays = false;
-			CA_FOREACH(PlayerData, p, gPlayerDatas)
-				if (((run && !p->survived) || co->IsComplete) && p->IsLocal)
-				{
-					EnterHighScore(p);
-					allTime |= p->allTime >= 0;
-					todays |= p->today >= 0;
-				}
-
-				if (!p->survived)
-				{
-					// Reset scores because we died :(
-					memset(&p->Totals, 0, sizeof p->Totals);
-					p->missions = 0;
-				}
-				else
-				{
-					p->missions++;
-				}
-				p->lastMission = co->MissionIndex;
-			CA_FOREACH_END()
-			if (allTime)
-			{
-				LoopRunnerPush(&l, DisplayAllTimeHighScores(graphics));
-				LoopRunnerRun(&l);
-			}
-			if (todays)
-			{
-				LoopRunnerPush(&l, DisplayTodaysHighScores(graphics));
-				LoopRunnerRun(&l);
-			}
-			SaveHighScores();
-		}
-		if (!HasRounds(co->Entry.Mode) && !co->IsComplete)
-		{
-			co->MissionIndex++;
-		}
 
 	bail:
 		// Need to terminate the mission later as it is used in calculating scores

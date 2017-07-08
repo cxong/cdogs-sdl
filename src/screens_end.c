@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@
 #include <cdogs/font.h>
 #include <cdogs/grafx_bg.h>
 
+#include "hiscores.h"
 #include "menu_utils.h"
 
 
@@ -177,7 +178,8 @@ static GameLoopResult PlayerListUpdate(GameLoopData *data, LoopRunner *l)
 	const GameLoopResult result = MenuUpdate(&pl->ms);
 	if (result == UPDATE_RESULT_OK)
 	{
-		LoopRunnerPop(l);
+		LoopRunnerChange(
+			l, HighScoresScreen(&gCampaign, &gGraphicsDevice));
 	}
 	return result;
 }
@@ -434,7 +436,8 @@ static GameLoopResult DogfightScoresUpdate(GameLoopData *data, LoopRunner *l)
 		}
 		else
 		{
-			LoopRunnerPop(l);
+			LoopRunnerChange(
+				l, HighScoresScreen(&gCampaign, &gGraphicsDevice));
 		}
 	}
 	return result;

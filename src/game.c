@@ -68,6 +68,7 @@
 #include <cdogs/objs.h>
 
 #include "briefing_screens.h"
+#include "hiscores.h"
 #include "screens_end.h"
 
 
@@ -651,6 +652,10 @@ static void NextLoop(RunGameData *rData, LoopRunner *l)
 				rData->co, &gMission, survivedAndCompletedObjectives));
 			break;
 		}
+	}
+	else
+	{
+		LoopRunnerChange(l, HighScoresScreen(&gCampaign, &gGraphicsDevice));
 	}
 }
 static void CheckMissionCompletion(const struct MissionOptions *mo)

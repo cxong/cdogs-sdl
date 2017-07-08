@@ -62,6 +62,85 @@
 #include <cdogs/font.h>
 
 
+// Dummy screen to calculate high scores and switch to high scores screens if
+// required
+typedef struct
+{
+	CampaignOptions *co;
+	GraphicsDevice *g;
+} HighScoresScreenData;
+static void HighScoresScreenTerminate(GameLoopData *data);
+static GameLoopResult HighScoresScreenUpdate(
+	GameLoopData *data, LoopRunner *l);
+GameLoopData *HighScoresScreen(CampaignOptions *co, GraphicsDevice *g)
+{
+	HighScoresScreenData *data;
+	CMALLOC(data, sizeof *data);
+	data->co = co;
+	data->g = g;
+	return GameLoopDataNew(
+		data, HighScoresScreenTerminate, NULL, NULL,
+		NULL, HighScoresScreenUpdate, NULL);
+}
+static void HighScoresScreenTerminate(GameLoopData *data)
+{
+	HighScoresScreenData *hData = data->Data;
+	CFREE(hData);
+}
+static GameLoopResult HighScoresScreenUpdate(
+	GameLoopData *data, LoopRunner *l)
+{
+	HighScoresScreenData *hData = data->Data;
+	if (!IsPVP(hData->co->Entry.Mode) &&
+		GetNumPlayers(PLAYER_ANY, false, true) > 0)
+	{
+		LoadHighScores();
+		bool allTime = false;
+		bool todays = false;
+		CA_FOREACH(PlayerData, p, gPlayerDatas)
+			const bool isPlayerComplete =
+				(!gMission.IsQuit && !p->survived) || hData->co->IsComplete;
+			if (isPlayerComplete && p->IsLocal)
+			{
+				EnterHighScore(p);
+				allTime |= p->allTime >= 0;
+				todays |= p->today >= 0;
+			}
+
+			if (!p->survived)
+			{
+				// Reset scores because we died :(
+				memset(&p->Totals, 0, sizeof p->Totals);
+				p->missions = 0;
+			}
+			else
+			{
+				p->missions++;
+			}
+			p->lastMission = hData->co->MissionIndex;
+		CA_FOREACH_END()
+		SaveHighScores();
+
+		// Show high scores screen if high enough
+		LoopRunnerPop(l);
+		if (todays)
+		{
+			LoopRunnerPush(l, DisplayTodaysHighScores(hData->g));
+		}
+		if (allTime)
+		{
+			LoopRunnerPush(l, DisplayAllTimeHighScores(hData->g));
+		}
+	}
+	if (!HasRounds(hData->co->Entry.Mode) && !hData->co->IsComplete)
+	{
+		hData->co->MissionIndex++;
+	}
+
+	return UPDATE_RESULT_OK;
+}
+
+
 // Warning: written as-is to file
 struct Entry {
 	char name[20];

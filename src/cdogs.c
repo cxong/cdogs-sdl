@@ -256,7 +256,7 @@ int main(int argc, char *argv[])
 		{
 			break;
 		}
-		ScreenStart(&gGraphicsDevice, &gCampaign);
+		ScreenStart(&gCampaign);
 	}
 	LoopRunnerTerminate(&l);
 

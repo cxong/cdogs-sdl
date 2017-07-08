@@ -49,6 +49,5 @@
 #pragma once
 
 #include <cdogs/campaigns.h>
-#include <cdogs/grafx.h>
 
-void ScreenStart(GraphicsDevice *graphics, CampaignOptions *co);
+void ScreenStart(CampaignOptions *co);

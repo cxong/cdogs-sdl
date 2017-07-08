@@ -34,6 +34,7 @@
 #include <cdogs/objective.h>
 
 #include "autosave.h"
+#include "hiscores.h"
 #include "menu_utils.h"
 #include "password.h"
 #include "prep.h"
@@ -470,7 +471,8 @@ static GameLoopResult MissionSummaryUpdate(GameLoopData *data, LoopRunner *l)
 		}
 		else
 		{
-			LoopRunnerPop(l);
+			LoopRunnerChange(
+				l, HighScoresScreen(&gCampaign, &gGraphicsDevice));
 		}
 	}
 	return result;

@@ -48,11 +48,13 @@
 */
 #pragma once
 
+#include <cdogs/campaigns.h>
 #include <cdogs/grafx.h>
 #include <cdogs/player.h>
 
 #include "game_loop.h"
 
+GameLoopData *HighScoresScreen(CampaignOptions *co, GraphicsDevice *g);
 void EnterHighScore(PlayerData *data);
 GameLoopData *DisplayAllTimeHighScores(GraphicsDevice *graphics);
 GameLoopData *DisplayTodaysHighScores(GraphicsDevice *graphics);
