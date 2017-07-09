@@ -68,6 +68,7 @@
 #include "autosave.h"
 #include "game_loop.h"
 #include "menu.h"
+#include "prep.h"
 
 #define DONE          "Done"
 
@@ -431,10 +432,10 @@ static GameLoopResult PasswordUpdate(GameLoopData *data, LoopRunner *l)
 			{
 			case RETURN_CODE_CONTINUE:
 				gCampaign.MissionIndex = pData->mission;
-				LoopRunnerPop(l);
+				LoopRunnerChange(l, GameOptions(gCampaign.Entry.Mode));
 				break;
 			case RETURN_CODE_START:
-				LoopRunnerPop(l);
+				LoopRunnerChange(l, GameOptions(gCampaign.Entry.Mode));
 				break;
 			case RETURN_CODE_ENTER_CODE:
 				LoopRunnerPush(l, EnterCodeScreen(pData->save.Password));
@@ -443,7 +444,7 @@ static GameLoopResult PasswordUpdate(GameLoopData *data, LoopRunner *l)
 				// Return code represents the mission to start on
 				CASSERT(returnCode >= 0, "Invalid return code for password menu");
 				gCampaign.MissionIndex = returnCode;
-				LoopRunnerPop(l);
+				LoopRunnerChange(l, GameOptions(gCampaign.Entry.Mode));
 				break;
 			}
 		}

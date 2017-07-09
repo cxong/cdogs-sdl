@@ -88,12 +88,11 @@
 #include <cdogs/utils.h>
 
 #include "autosave.h"
+#include "briefing_screens.h"
 #include "command_line.h"
 #include "credits.h"
 #include "mainmenu.h"
-#include "player_select_menus.h"
 #include "prep.h"
-#include "screens.h"
 
 
 int main(int argc, char *argv[])
@@ -256,7 +255,8 @@ int main(int argc, char *argv[])
 		{
 			break;
 		}
-		ScreenStart(&gCampaign);
+		LoopRunnerPush(&l, ScreenCampaignIntro(&gCampaign.Setting));
+		LoopRunnerRun(&l);
 	}
 	LoopRunnerTerminate(&l);
 

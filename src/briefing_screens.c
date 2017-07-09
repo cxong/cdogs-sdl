@@ -449,7 +449,7 @@ static void MissionSummaryOnExit(GameLoopData *data)
 {
 	MissionSummaryData *mData = data->Data;
 
-	mData->m->IsQuit = mData->ms.current->u.returnCode == 0;
+	mData->m->IsQuit = mData->ms.current->u.returnCode == 1;
 }
 static GameLoopResult MissionSummaryUpdate(GameLoopData *data, LoopRunner *l)
 {

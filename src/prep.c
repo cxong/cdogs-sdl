@@ -176,7 +176,6 @@ static GameLoopResult CheckCampaignDefComplete(void *data, LoopRunner *l)
 
 
 static void NumPlayersTerminate(GameLoopData *data);
-static void NumPlayersOnExit(GameLoopData *data);
 static GameLoopResult NumPlayersUpdate(GameLoopData *data, LoopRunner *l);
 static void NumPlayersDraw(GameLoopData *data);
 GameLoopData *NumPlayersSelection(
@@ -206,21 +205,14 @@ GameLoopData *NumPlayersSelection(
 	ms->current->u.normal.index = 1;
 
 	return GameLoopDataNew(
-		ms, NumPlayersTerminate, NULL, NumPlayersOnExit,
+		ms, NumPlayersTerminate, NULL, NULL,
 		NULL, NumPlayersUpdate, NumPlayersDraw);
 }
 static void NumPlayersTerminate(GameLoopData *data)
 {
-	CFREE(data->Data);
-}
-static void NumPlayersOnExit(GameLoopData *data)
-{
 	MenuSystem *ms = data->Data;
-	if (ms->hasAbort)
-	{
-		CampaignUnload(&gCampaign);
-	}
 	MenuSystemTerminate(ms);
+	CFREE(data->Data);
 }
 static GameLoopResult NumPlayersUpdate(GameLoopData *data, LoopRunner *l)
 {
@@ -230,6 +222,7 @@ static GameLoopResult NumPlayersUpdate(GameLoopData *data, LoopRunner *l)
 	{
 		if (ms->hasAbort)
 		{
+			CampaignUnload(&gCampaign);
 			LoopRunnerPop(l);
 		}
 		else
@@ -452,10 +445,13 @@ static GameLoopResult PlayerSelectionUpdate(GameLoopData *data, LoopRunner *l)
 	if (isDone && hasAtLeastOneInput)
 	{
 		pData->waitResult = EVENT_WAIT_OK;
-		LoopRunnerPop(l);
 		if (!gCampaign.IsClient && IsPasswordAllowed(gCampaign.Entry.Mode))
 		{
-			LoopRunnerPush(l, EnterPassword(&gGraphicsDevice));
+			LoopRunnerChange(l, EnterPassword(&gGraphicsDevice));
+		}
+		else
+		{
+			LoopRunnerChange(l, GameOptions(gCampaign.Entry.Mode));
 		}
 		return UPDATE_RESULT_OK;
 	}

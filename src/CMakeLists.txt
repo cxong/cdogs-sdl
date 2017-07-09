@@ -30,7 +30,6 @@ set(CDOGS_SDL_SOURCES
 	password.c
 	player_select_menus.c
 	prep.c
-	screens.c
 	screens_end.c
 	weapon_menu.c
 	XGetopt.c)
@@ -49,7 +48,6 @@ set(CDOGS_SDL_HEADERS
 	password.h
 	player_select_menus.h
 	prep.h
-	screens.h
 	screens_end.h
 	weapon_menu.h
 	XGetopt.h)
