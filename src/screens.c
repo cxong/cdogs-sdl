@@ -73,23 +73,7 @@ void ScreenStart(CampaignOptions *co)
 		return;
 	}
 
-	bool run = true;
-	do
-	{
-		LoopRunnerPush(&l, GameOptions(co->Entry.Mode));
-		LoopRunnerRun(&l);
-		if (!co->IsLoaded)
-		{
-			run = false;
-			goto bail;
-		}
-		run = !gMission.IsQuit;
-
-	bail:
-		// Need to terminate the mission later as it is used in calculating scores
-		MissionOptionsTerminate(&gMission);
-	} while (run && !co->IsComplete);
-
+	LoopRunnerPush(&l, GameOptions(co->Entry.Mode));
+	LoopRunnerRun(&l);
 	LoopRunnerTerminate(&l);
-	CampaignUnload(co);
 }

@@ -526,7 +526,6 @@ static menu_t *MenuCreateAllowedWeapons(
 	const char *name, GameOptionsData *data);
 static void GameOptionsTerminate(GameLoopData *data);
 static void GameOptionsOnEnter(GameLoopData *data);
-static void GameOptionsOnExit(GameLoopData *data);
 static GameLoopResult GameOptionsUpdate(GameLoopData *data, LoopRunner *l);
 static void GameOptionsDraw(GameLoopData *data);
 GameLoopData *GameOptions(const GameMode gm)
@@ -616,7 +615,7 @@ GameLoopData *GameOptions(const GameMode gm)
 	MenuAddExitType(ms, MENU_TYPE_RETURN);
 
 	return GameLoopDataNew(
-		ms, GameOptionsTerminate, GameOptionsOnEnter, GameOptionsOnExit,
+		ms, GameOptionsTerminate, GameOptionsOnEnter, NULL,
 		NULL, GameOptionsUpdate, GameOptionsDraw);
 }
 static void GameOptionsTerminate(GameLoopData *data)
@@ -631,84 +630,90 @@ static void GameOptionsOnEnter(GameLoopData *data)
 {
 	GameOptionsData *gData = data->Data;
 
-	CampaignAndMissionSetup(&gCampaign, &gMission);
+	if (!gMission.IsQuit)
+	{
+		MissionOptionsTerminate(&gMission);
+		CampaignAndMissionSetup(&gCampaign, &gMission);
+	}
 
 	gData->ms.current = gData->ms.root;
 	// Select "Done"
 	gData->ms.root->u.normal.index =
 		(int)gData->ms.root->u.normal.subMenus.size - 1;
 }
-static void GameOptionsOnExit(GameLoopData *data)
-{
-	GameOptionsData *gData = data->Data;
-
-	const bool ok = !gData->ms.hasAbort;
-	if (!ok)
-	{
-		CampaignUnload(&gCampaign);
-	}
-	else
-	{
-		if (!ConfigApply(&gConfig))
-		{
-			LOG(LM_MAIN, LL_ERROR, "Failed to apply config; reset to last used");
-			ConfigResetChanged(&gConfig);
-		}
-		else
-		{
-			// Save options for later
-			ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
-		}
-
-		// Set allowed weapons
-		// First check if the player has unwittingly disabled all weapons
-		// if so, enable all weapons
-		bool allDisabled = true;
-		for (int i = 0, j = 0; i < (int)gData->allowed.size; i++, j++)
-		{
-			const bool *allowed = CArrayGet(&gData->allowed, i);
-			if (*allowed)
-			{
-				allDisabled = false;
-				break;
-			}
-		}
-		if (!allDisabled)
-		{
-			for (int i = 0, j = 0; i < (int)gData->allowed.size; i++, j++)
-			{
-				const bool *allowed = CArrayGet(&gData->allowed, i);
-				if (!*allowed)
-				{
-					CArrayDelete(&gMission.Weapons, j);
-					j--;
-				}
-			}
-		}
-
-		gCampaign.OptionsSet = true;
-
-		// If enabled, start net server
-		if (!gCampaign.IsClient && ConfigGetBool(&gConfig, "StartServer"))
-		{
-			NetServerOpen(&gNetServer);
-		}
-	}
-}
 static GameLoopResult GameOptionsUpdate(GameLoopData *data, LoopRunner *l)
 {
 	GameOptionsData *gData = data->Data;
 
-	if (!IsGameOptionsNeeded(gCampaign.Entry.Mode) ||
-		MenuUpdate(&gData->ms) == UPDATE_RESULT_OK)
+	// Check end conditions:
+	// - Campaign not loaded
+	// - Campaign complete
+	// - Mission quit
+	// - No options needed
+	// - Menu complete
+	const GameLoopResult result = MenuUpdate(&gData->ms);
+	const bool isQuit =
+		!gCampaign.IsLoaded || gCampaign.IsComplete || gMission.IsQuit ||
+		gData->ms.hasAbort;
+	const bool isDone =
+		!IsGameOptionsNeeded(gCampaign.Entry.Mode) ||
+		result == UPDATE_RESULT_OK;
+	if (isQuit || isDone)
 	{
-		if (gData->ms.hasAbort)
+		if (isQuit)
 		{
+			MissionOptionsTerminate(&gMission);
+			CampaignUnload(&gCampaign);
 			LoopRunnerPop(l);
 		}
 		else
 		{
-			LoopRunnerChange(l, ScreenMissionBriefing(&gMission));
+			if (!ConfigApply(&gConfig))
+			{
+				LOG(LM_MAIN, LL_ERROR,
+					"Failed to apply config; reset to last used");
+				ConfigResetChanged(&gConfig);
+			}
+			else
+			{
+				// Save options for later
+				ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
+			}
+
+			// Set allowed weapons
+			// First check if the player has unwittingly disabled all weapons
+			// if so, enable all weapons
+			bool allDisabled = true;
+			for (int i = 0, j = 0; i < (int)gData->allowed.size; i++, j++)
+			{
+				const bool *allowed = CArrayGet(&gData->allowed, i);
+				if (*allowed)
+				{
+					allDisabled = false;
+					break;
+				}
+			}
+			if (!allDisabled)
+			{
+				for (int i = 0, j = 0; i < (int)gData->allowed.size; i++, j++)
+				{
+					const bool *allowed = CArrayGet(&gData->allowed, i);
+					if (!*allowed)
+					{
+						CArrayDelete(&gMission.Weapons, j);
+						j--;
+					}
+				}
+			}
+
+			gCampaign.OptionsSet = true;
+
+			// If enabled, start net server
+			if (!gCampaign.IsClient && ConfigGetBool(&gConfig, "StartServer"))
+			{
+				NetServerOpen(&gNetServer);
+			}
+			LoopRunnerPush(l, ScreenMissionBriefing(&gMission));
 		}
 		return UPDATE_RESULT_OK;
 	}
