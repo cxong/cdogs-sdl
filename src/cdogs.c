@@ -88,7 +88,6 @@
 #include <cdogs/utils.h>
 
 #include "autosave.h"
-#include "briefing_screens.h"
 #include "command_line.h"
 #include "credits.h"
 #include "mainmenu.h"
@@ -243,21 +242,12 @@ int main(int argc, char *argv[])
 			printf("Failed to connect\n");
 		}
 	}
-	LOG(LM_MAIN, LL_INFO, "Starting game");
-	for (;;)
+	if (!gCampaign.IsLoaded)
 	{
-		if (!gCampaign.IsLoaded)
-		{
-			LoopRunnerPush(&l, MainMenu(&gGraphicsDevice, &l));
-		}
-		LoopRunnerRun(&l);
-		if (!gCampaign.IsLoaded)
-		{
-			break;
-		}
-		LoopRunnerPush(&l, ScreenCampaignIntro(&gCampaign.Setting));
-		LoopRunnerRun(&l);
+		LoopRunnerPush(&l, MainMenu(&gGraphicsDevice, &l));
 	}
+	LOG(LM_MAIN, LL_INFO, "Starting game");
+	LoopRunnerRun(&l);
 	LoopRunnerTerminate(&l);
 
 bail:

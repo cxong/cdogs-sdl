@@ -36,6 +36,7 @@
 #include <cdogs/net_server.h>
 
 #include "autosave.h"
+#include "briefing_screens.h"
 #include "menu.h"
 #include "prep.h"
 
@@ -159,14 +160,21 @@ static GameLoopResult MainMenuUpdate(GameLoopData *data, LoopRunner *l)
 	if (gCampaign.IsLoaded)
 	{
 		// Loaded game already; skip menus and go straight to game
-		LoopRunnerPop(l);
+		LoopRunnerPush(l, ScreenCampaignIntro(&gCampaign.Setting));
 		return UPDATE_RESULT_OK;
 	}
 
 	const GameLoopResult result = MenuUpdate(&mData->ms);
 	if (result == UPDATE_RESULT_OK)
 	{
-		LoopRunnerPop(l);
+		if (gCampaign.IsLoaded)
+		{
+			LoopRunnerPush(l, ScreenCampaignIntro(&gCampaign.Setting));
+		}
+		else
+		{
+			LoopRunnerPop(l);
+		}
 	}
 	return result;
 }
