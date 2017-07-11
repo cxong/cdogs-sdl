@@ -118,6 +118,7 @@ void CampaignUnload(CampaignOptions *co)
 	co->IsLoaded = false;
 	co->IsClient = false;	// TODO: select is client from menu
 	co->OptionsSet = false;
+	co->IsComplete = false;
 	CampaignEntryTerminate(&co->Entry);
 }
 

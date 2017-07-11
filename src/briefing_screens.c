@@ -350,7 +350,6 @@ typedef struct
 } MissionSummaryData;
 static void MissionSummaryTerminate(GameLoopData *data);
 static void MissionSummaryOnEnter(GameLoopData *data);
-static void MissionSummaryOnExit(GameLoopData *data);
 static GameLoopResult MissionSummaryUpdate(GameLoopData *data, LoopRunner *l);
 static void MissionSummaryDraw(GameLoopData *data);
 static void MissionSummaryMenuDraw(
@@ -388,8 +387,7 @@ GameLoopData *ScreenMissionSummary(
 	mData->completed = completed;
 
 	return GameLoopDataNew(
-		mData, MissionSummaryTerminate,
-		MissionSummaryOnEnter, MissionSummaryOnExit,
+		mData, MissionSummaryTerminate, MissionSummaryOnEnter, NULL,
 		NULL, MissionSummaryUpdate, MissionSummaryDraw);
 }
 static void MissionSummaryTerminate(GameLoopData *data)
@@ -445,12 +443,6 @@ static void MissionSummaryOnEnter(GameLoopData *data)
 		CA_FOREACH_END()
 	}
 }
-static void MissionSummaryOnExit(GameLoopData *data)
-{
-	MissionSummaryData *mData = data->Data;
-
-	mData->m->IsQuit = mData->ms.current->u.returnCode == 1;
-}
 static GameLoopResult MissionSummaryUpdate(GameLoopData *data, LoopRunner *l)
 {
 	MissionSummaryData *mData = data->Data;
@@ -458,16 +450,17 @@ static GameLoopResult MissionSummaryUpdate(GameLoopData *data, LoopRunner *l)
 	const GameLoopResult result = MenuUpdate(&mData->ms);
 	if (result == UPDATE_RESULT_OK)
 	{
-		// In co-op (non-PVP) modes, at least one player must survive
-		const int survivingPlayers =
-			GetNumPlayers(PLAYER_ALIVE, false, false);
-		const bool survivedAndCompletedObjectives =
-			survivingPlayers > 0 && MissionAllObjectivesComplete(&gMission);
-		gCampaign.IsComplete = !survivedAndCompletedObjectives ||
+		gCampaign.IsComplete = mData->completed &&
 			gCampaign.MissionIndex == (int)gCampaign.Setting.Missions.size - 1;
-		if (gCampaign.IsComplete && survivedAndCompletedObjectives)
+		if (gCampaign.IsComplete)
 		{
 			LoopRunnerChange(l, ScreenVictory(&gCampaign));
+		}
+		else if (!mData->completed)
+		{
+			// Check if we want to return to menu or replay mission
+			mData->m->IsQuit = mData->ms.current->u.returnCode == 1;
+			LoopRunnerPop(l);
 		}
 		else
 		{

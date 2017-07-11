@@ -648,6 +648,7 @@ static void NextLoop(RunGameData *rData, LoopRunner *l)
 			LoopRunnerChange(l, ScreenDeathmatchFinalScores());
 			break;
 		default:
+			// In co-op (non-PVP) modes, at least one player must survive
 			LoopRunnerChange(l, ScreenMissionSummary(
 				rData->co, &gMission, survivedAndCompletedObjectives));
 			break;
