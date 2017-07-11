@@ -91,6 +91,7 @@ static GameLoopResult HighScoresScreenUpdate(
 	GameLoopData *data, LoopRunner *l)
 {
 	HighScoresScreenData *hData = data->Data;
+	LoopRunnerPop(l);
 	if (!IsPVP(hData->co->Entry.Mode) &&
 		GetNumPlayers(PLAYER_ANY, false, true) > 0)
 	{
@@ -122,7 +123,6 @@ static GameLoopResult HighScoresScreenUpdate(
 		SaveHighScores();
 
 		// Show high scores screen if high enough
-		LoopRunnerPop(l);
 		if (todays)
 		{
 			LoopRunnerPush(l, DisplayTodaysHighScores(hData->g));
