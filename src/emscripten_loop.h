@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2017, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -49,91 +49,20 @@
 #pragma once
 
 #ifdef __EMSCRIPTEN__
-#include <SDL.h>
-#include <SDL/SDL_mixer.h>
-#else
-#include <SDL_mixer.h>
+#include <stdbool.h>
+#include "credits.h"
+#include "cdogs/campaigns.h"
+#include "cdogs/game_mode.h"
+
+struct emscripten_context_t {
+    GameMode lastGameMode;
+    bool wasClient;
+    credits_displayer_t *creditsDisplayer;
+    custom_campaigns_t *campaigns;
+};
+
+struct emscripten_context_t EmscriptenContext;
+
+void EmscriptenMainLoop(void *arg);
+
 #endif
-
-#include "c_array.h"
-#include "game_events.h"
-#include "pic.h"
-#include "proto/msg.pb.h"
-
-typedef enum
-{
-	ACTION_NULL,
-	ACTION_SETTRIGGER,
-	ACTION_CLEARTRIGGER,
-	ACTION_EVENT,
-	ACTION_ACTIVATEWATCH,
-	ACTION_DEACTIVATEWATCH,
-	ACTION_SOUND
-} ActionType;
-
-
-// TODO: eliminate Action, replace with standard game events
-typedef struct
-{
-	ActionType Type;
-	union
-	{
-		Vec2i pos;
-		int index;
-	} u;
-	union
-	{
-		GameEvent Event;
-		Mix_Chunk *Sound;
-	} a;
-} Action;
-
-
-typedef struct
-{
-	int id;
-	int flags;
-	int isActive;
-	CArray actions;	// of Action
-} Trigger;
-
-
-typedef enum
-{
-	CONDITION_TILECLEAR = 1
-} ConditionType;
-typedef struct
-{
-	ConditionType Type;
-	// How many ticks has this condition been fulfilled
-	// Reset to 0 when condition failed
-	int Counter;
-	int CounterMax;
-	Vec2i Pos;
-} Condition;
-
-
-typedef struct
-{
-	int index;
-	CArray conditions;	// of Condition
-	CArray actions;		// of Action
-	bool active;
-} TWatch;
-
-
-bool TriggerCanActivate(const Trigger *t, const int flags);
-void TriggerActivate(Trigger *t, CArray *mapTriggers);
-void UpdateWatches(CArray *mapTriggers, const int ticks);
-Trigger *TriggerNew(void);
-void TriggerTerminate(Trigger *t);
-Action *TriggerAddAction(Trigger *t);
-
-void WatchesInit(void);
-void WatchesTerminate(void);
-
-TWatch *WatchNew(void);
-Condition *WatchAddCondition(
-	TWatch *w, const ConditionType type, const int counterMax,
-	const Vec2i pos);
-Action *WatchAddAction(TWatch *w);

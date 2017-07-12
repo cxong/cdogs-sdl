@@ -1,6 +1,7 @@
 /*
  * A unit test and example of how to use the simple C hashmap
  */
+#ifndef __EMSCRIPTEN__
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -79,3 +80,4 @@ int main(char* argv, int argc)
 
     return 1;
 }
+#endif //__EMSCRIPTEN__

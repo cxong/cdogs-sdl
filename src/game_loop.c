@@ -36,6 +36,9 @@
 #include "net_server.h"
 #include "sounds.h"
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
 GameLoopData *GameLoopDataNew(
 	void *data,
@@ -93,9 +96,96 @@ typedef struct
 	int FramesSkipped;
 	int MaxFrameskip;
 } LoopRunParams;
+typedef struct
+{
+    LoopRunner *l;
+    GameLoopData *data;
+    LoopRunParams p;
+}LoopRunInnerData;
 static LoopRunParams LoopRunParamsNew(const GameLoopData *data);
 static bool LoopRunParamsShouldSleep(LoopRunParams *p);
 static bool LoopRunParamsShouldSkip(LoopRunParams *p);
+bool LoopRunnerRunInner(LoopRunInnerData *ctx)
+{
+    // Frame rate control
+    if (LoopRunParamsShouldSleep(&(ctx->p)))
+    {
+        SDL_Delay(1);
+        return true;
+    }
+
+    // Input
+    if ((ctx->data->Frames & 1) || !ctx->data->InputEverySecondFrame)
+    {
+        EventPoll(&gEventHandlers, ctx->p.TicksNow);
+        if (ctx->data->InputFunc)
+        {
+            ctx->data->InputFunc(ctx->data);
+        }
+    }
+
+    NetClientPoll(&gNetClient);
+    NetServerPoll(&gNetServer);
+
+    // Update
+    ctx->p.Result = ctx->data->UpdateFunc(ctx->data, ctx->l);
+    GameLoopData *newData = GetCurrentLoop(ctx->l);
+    if (newData == NULL)
+    {
+        return false;
+    }
+    else if (newData != ctx->data)
+    {
+        // State change; restart loop
+        GameLoopOnExit(ctx->data);
+        ctx->data = newData;
+        GameLoopOnEnter(ctx->data);
+        ctx->p = LoopRunParamsNew(ctx->data);
+        return true;
+    }
+
+    NetServerFlush(&gNetServer);
+    NetClientFlush(&gNetClient);
+
+    bool draw = !ctx->data->HasDrawnFirst;
+    switch (ctx->p.Result)
+    {
+    case UPDATE_RESULT_OK:
+        // Do nothing
+        break;
+    case UPDATE_RESULT_DRAW:
+        draw = true;
+        break;
+    default:
+        CASSERT(false, "Unknown loop result");
+        break;
+    }
+    ctx->data->Frames++;
+    // frame skip
+    if (LoopRunParamsShouldSkip(&(ctx->p)))
+    {
+        return true;
+    }
+
+    // Draw
+    if (draw)
+    {
+        if (ctx->data->DrawFunc)
+        {
+            ctx->data->DrawFunc(ctx->data);
+            BlitFlip(&gGraphicsDevice);
+        }
+        ctx->data->HasDrawnFirst = true;
+    }
+}
+
+#ifdef __EMSCRIPTEN__
+void EmscriptenMainLoop(void *arg)
+{
+    // struct emscripten_context_t *ctx = arg;
+    LoopRunnerRunInner((LoopRunInnerData *)arg);
+}
+#endif
 void LoopRunnerRun(LoopRunner *l)
 {
 	GameLoopData *data = GetCurrentLoop(l);
@@ -105,80 +195,23 @@ void LoopRunnerRun(LoopRunner *l)
 	}
 	GameLoopOnEnter(data);
 
-	LoopRunParams p = LoopRunParamsNew(data);
+    LoopRunInnerData ctx;
+    ctx.l = l;
+    ctx.data = data;
+    ctx.p = LoopRunParamsNew(data);
+
+#ifdef __EMSCRIPTEN__
+    // TODO use GameLoopData->FPS instead of 30?
+    emscripten_set_main_loop_arg(EmscriptenMainLoop, &ctx, 0, 1);
+#else
 	for (;;)
 	{
-		// Frame rate control
-		if (LoopRunParamsShouldSleep(&p))
-		{
-			SDL_Delay(1);
-			continue;
-		}
-
-		// Input
-		if ((data->Frames & 1) || !data->InputEverySecondFrame)
-		{
-			EventPoll(&gEventHandlers, p.TicksNow);
-			if (data->InputFunc)
-			{
-				data->InputFunc(data);
-			}
-		}
-
-		NetClientPoll(&gNetClient);
-		NetServerPoll(&gNetServer);
-
-		// Update
-		p.Result = data->UpdateFunc(data, l);
-		GameLoopData *newData = GetCurrentLoop(l);
-		if (newData == NULL)
-		{
-			break;
-		}
-		else if (newData != data)
-		{
-			// State change; restart loop
-			GameLoopOnExit(data);
-			data = newData;
-			GameLoopOnEnter(data);
-			p = LoopRunParamsNew(data);
-			continue;
-		}
-
-		NetServerFlush(&gNetServer);
-		NetClientFlush(&gNetClient);
-
-		bool draw = !data->HasDrawnFirst;
-		switch (p.Result)
-		{
-		case UPDATE_RESULT_OK:
-			// Do nothing
-			break;
-		case UPDATE_RESULT_DRAW:
-			draw = true;
-			break;
-		default:
-			CASSERT(false, "Unknown loop result");
-			break;
-		}
-		data->Frames++;
-		// frame skip
-		if (LoopRunParamsShouldSkip(&p))
-		{
-			continue;
-		}
-
-		// Draw
-		if (draw)
-		{
-			if (data->DrawFunc)
-			{
-				data->DrawFunc(data);
-				BlitFlip(&gGraphicsDevice);
-			}
-			data->HasDrawnFirst = true;
-		}
+        if (!LoopRunnerRunInner(&ctx))
+        {
+            break;
+        }
 	}
+#endif
 	GameLoopOnExit(data);
 }
 static LoopRunParams LoopRunParamsNew(const GameLoopData *data)

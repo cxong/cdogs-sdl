@@ -128,6 +128,7 @@ int main(int argc, char *argv[])
 	AutosaveInit(&gAutosave);
 	AutosaveLoad(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 
+#ifndef __EMSCRIPTEN__
 	if (enet_initialize() != 0)
 	{
 		LOG(LM_MAIN, LL_ERROR, "An error occurred while initializing ENet.");
@@ -135,6 +136,7 @@ int main(int argc, char *argv[])
 		goto bail;
 	}
 	NetClientInit(&gNetClient);
+#endif
 
 	// Print command line
 	char buf[CDOGS_PATH_MAX];
@@ -146,9 +148,13 @@ int main(int argc, char *argv[])
 	}
 
 	debug(D_NORMAL, "Initialising SDL...\n");
+#ifndef __EMSCRIPTEN__
 	const int sdlFlags =
 		SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_HAPTIC |
 		SDL_INIT_GAMECONTROLLER;
+#else
+    const int sdlFlags = SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO;
+#endif
 	if (SDL_Init(sdlFlags) != 0)
 	{
 		LOG(LM_MAIN, LL_ERROR, "Could not initialise SDL: %s", SDL_GetError());
@@ -168,6 +174,7 @@ int main(int argc, char *argv[])
 	LOG(LM_MAIN, LL_INFO, "data dir(%s)", buf);
 	LOG(LM_MAIN, LL_INFO, "config dir(%s)", GetConfigFilePath(""));
 
+#ifndef __EMSCRIPTEN__
 	SoundInitialize(&gSoundDevice, "sounds");
 	if (!gSoundDevice.isInitialised)
 	{
@@ -177,6 +184,7 @@ int main(int argc, char *argv[])
 	LoadSongs();
 
 	MusicPlayMenu(&gSoundDevice);
+#endif
 
 	EventInit(&gEventHandlers, NULL, NULL, true);
 	NetServerInit(&gNetServer);

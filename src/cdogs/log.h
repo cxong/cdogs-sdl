@@ -31,6 +31,10 @@
 
 #include "sys_specifics.h"
 
+#ifdef __EMSCRIPTEN__
+#define stderr stdout
+#endif
+
 
 typedef enum
 {
