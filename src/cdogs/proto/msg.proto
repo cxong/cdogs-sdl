@@ -2,7 +2,7 @@
 message NServerInfo {
 	required int32 ProtocolVersion = 1;
 	required uint32 ENetPort = 2;
-	required string HostName = 3;
+	required string Hostname = 3;
 	required int32 GameMode = 4;
 	required string CampaignName = 5;
 	required int32 MissionNumber = 6;

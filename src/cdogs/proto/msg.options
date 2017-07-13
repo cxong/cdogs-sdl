@@ -1,4 +1,4 @@
-NServerInfo.HostName		max_size:12
+NServerInfo.Hostname		max_size:12
 NServerInfo.CampaignName	max_size:20
 
 NCampaignDef.Path			max_size:4096
