@@ -368,6 +368,7 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 }
 static void LoadStaticItems(
 	Mission *m, json_t *node, const char *name, const int version);
+static void LoadStaticWrecks(Mission *m, json_t *node, const char *name);
 static void LoadStaticCharacters(Mission *m, json_t *node, char *name);
 static void LoadStaticObjectives(Mission *m, json_t *node, char *name);
 static void LoadStaticKeys(Mission *m, json_t *node, char *name);
@@ -408,7 +409,7 @@ static bool TryLoadStaticMap(Mission *m, json_t *node, int version)
 	LoadStaticItems(m, node, "StaticItems", version);
 	if (version < 13)
 	{
-		LoadStaticItems(m, node, "StaticWrecks", version);
+		LoadStaticWrecks(m, node, "StaticWrecks");
 	}
 	LoadStaticCharacters(m, node, "StaticCharacters");
 	LoadStaticObjectives(m, node, "StaticObjectives");
@@ -514,6 +515,7 @@ static void LoadClassicDoors(Mission *m, json_t *node, char *name)
 	LoadInt(&m->u.Classic.Doors.Max, child, "Max");
 }
 static const MapObject *LoadMapObjectRef(json_t *node, const int version);
+static const MapObject *LoadMapObjectWreckRef(json_t *itemNode);
 static void LoadStaticItems(
 	Mission *m, json_t *node, const char *name, const int version)
 {
@@ -527,6 +529,43 @@ static void LoadStaticItems(
 	{
 		MapObjectPositions mop;
 		mop.M = LoadMapObjectRef(items, version);
+		if (mop.M == NULL)
+		{
+			continue;
+		}
+		CArrayInit(&mop.Positions, sizeof(Vec2i));
+		json_t *positions = json_find_first_label(items, "Positions");
+		if (!positions || !positions->child)
+		{
+			continue;
+		}
+		positions = positions->child;
+		for (positions = positions->child;
+			positions;
+			positions = positions->next)
+		{
+			Vec2i pos;
+			json_t *position = positions->child;
+			pos.x = atoi(position->text);
+			position = position->next;
+			pos.y = atoi(position->text);
+			CArrayPushBack(&mop.Positions, &pos);
+		}
+		CArrayPushBack(&m->u.Static.Items, &mop);
+	}
+}
+static void LoadStaticWrecks(Mission *m, json_t *node, const char *name)
+{
+	json_t *items = json_find_first_label(node, name);
+	if (!items || !items->child)
+	{
+		return;
+	}
+	items = items->child;
+	for (items = items->child; items; items = items->next)
+	{
+		MapObjectPositions mop;
+		mop.M = LoadMapObjectWreckRef(items);
 		if (mop.M == NULL)
 		{
 			continue;
@@ -581,6 +620,18 @@ static const MapObject *LoadMapObjectRef(json_t *itemNode, const int version)
 		}
 		return mo;
 	}
+}
+static const MapObject *LoadMapObjectWreckRef(json_t *itemNode)
+{
+	const char *moName =
+		json_find_first_label(itemNode, "MapObject")->child->text;
+	const MapObject *mo = StrMapObject(moName);
+	if (mo == NULL)
+	{
+		LOG(LM_MAP, LL_ERROR, "Failed to load map object (%s)", moName);
+	}
+	const MapObject *wreck = StrMapObject(mo->Wreck);
+	return wreck;
 }
 static void LoadStaticCharacters(Mission *m, json_t *node, char *name)
 {
