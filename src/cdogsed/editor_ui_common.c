@@ -82,7 +82,6 @@ void InsertMission(CampaignOptions *co, Mission *mission, int idx)
 		m.u.Classic.Rooms.WallPad = 1;
 		m.u.Classic.Doors.Min = m.u.Classic.Doors.Max = 1;
 		m.u.Classic.Pillars.Min = m.u.Classic.Pillars.Max = 1;
-		mission = &m;
 	}
 	else
 	{

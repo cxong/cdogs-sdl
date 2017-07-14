@@ -182,6 +182,7 @@ static void LoadCharacterClass(CharacterClass *c, json_t *node)
 		LoadStr(&tmp, sounds->child, "Aargh");
 		if (tmp != NULL)
 		{
+			CFREE(c->Sounds.Aargh);
 			c->Sounds.Aargh = tmp;
 		}
 		else

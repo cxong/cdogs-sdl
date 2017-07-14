@@ -168,7 +168,6 @@ static void AddSound(map_t sounds, const char *name, SoundData *sound)
 	{
 		LOG(LM_MAIN, LL_ERROR, "failed to add sound %s: %d", name, error);
 		SoundDataTerminate((any_t)sound);
-		CFREE(sound);
 	}
 }
 

@@ -629,6 +629,7 @@ static const MapObject *LoadMapObjectWreckRef(json_t *itemNode)
 	if (mo == NULL)
 	{
 		LOG(LM_MAP, LL_ERROR, "Failed to load map object (%s)", moName);
+		return NULL;
 	}
 	const MapObject *wreck = StrMapObject(mo->Wreck);
 	return wreck;
