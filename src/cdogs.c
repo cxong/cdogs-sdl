@@ -174,7 +174,6 @@ int main(int argc, char *argv[])
 	LOG(LM_MAIN, LL_INFO, "data dir(%s)", buf);
 	LOG(LM_MAIN, LL_INFO, "config dir(%s)", GetConfigFilePath(""));
 
-#ifndef __EMSCRIPTEN__
 	SoundInitialize(&gSoundDevice, "sounds");
 	if (!gSoundDevice.isInitialised)
 	{
@@ -184,7 +183,6 @@ int main(int argc, char *argv[])
 	LoadSongs();
 
 	MusicPlayMenu(&gSoundDevice);
-#endif
 
 	EventInit(&gEventHandlers, NULL, NULL, true);
 	NetServerInit(&gNetServer);
