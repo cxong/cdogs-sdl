@@ -107,12 +107,14 @@ static bool LoopRunParamsShouldSleep(LoopRunParams *p);
 static bool LoopRunParamsShouldSkip(LoopRunParams *p);
 bool LoopRunnerRunInner(LoopRunInnerData *ctx)
 {
+#ifndef __EMSCRIPTEN__
     // Frame rate control
     if (LoopRunParamsShouldSleep(&(ctx->p)))
     {
         SDL_Delay(1);
         return true;
     }
+#endif
 
     // Input
     if ((ctx->data->Frames & 1) || !ctx->data->InputEverySecondFrame)
@@ -161,11 +163,13 @@ bool LoopRunnerRunInner(LoopRunInnerData *ctx)
         break;
     }
     ctx->data->Frames++;
+#ifndef __EMSCRIPTEN__
     // frame skip
     if (LoopRunParamsShouldSkip(&(ctx->p)))
     {
         return true;
     }
+#endif
 
     // Draw
     if (draw)
@@ -177,6 +181,8 @@ bool LoopRunnerRunInner(LoopRunInnerData *ctx)
         }
         ctx->data->HasDrawnFirst = true;
     }
+
+    return true;
 }
 
 #ifdef __EMSCRIPTEN__
