@@ -23,6 +23,15 @@
       },
       "Health": 0,
       "DrawLast": true
+    },
+    {
+      "Name": "pillar",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "pillar"
+      },
+      "Wreck": "safe_wreck",
+      "Health": 500
     }
   ]
 }
