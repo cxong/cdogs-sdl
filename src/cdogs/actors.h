@@ -201,6 +201,7 @@ Vec2i ActorGetGunMuzzleOffset(const TActor *a);
 int ActorGunGetAmmo(const TActor *a, const Weapon *w);
 bool ActorCanFire(const TActor *a);
 bool ActorCanSwitchGun(const TActor *a);
+bool ActorHasGun(const TActor *a, const GunDescription *gun);
 void ActorSwitchGun(const NActorSwitchGun sg);
 bool ActorIsImmune(const TActor *actor, const special_damage_e damage);
 // Taking a hit only gives the appearance (pushback, special effect)

@@ -574,7 +574,6 @@ bool ActorUsesAmmo(const TActor *actor, const int ammoId)
 	return false;
 }
 
-static bool ActorHasGun(const TActor *a, const GunDescription *gun);
 void ActorReplaceGun(const NActorReplaceGun rg)
 {
 	TActor *a = ActorGetByUID(rg.UID);
@@ -603,7 +602,8 @@ void ActorReplaceGun(const NActorReplaceGun rg)
 
 	SoundPlayAt(&gSoundDevice, gun->SwitchSound, Vec2iFull2Real(a->Pos));
 }
-static bool ActorHasGun(const TActor *a, const GunDescription *gun)
+
+bool ActorHasGun(const TActor *a, const GunDescription *gun)
 {
 	CA_FOREACH(const Weapon, w, a->guns)
 		if (w->Gun == gun)
