@@ -210,8 +210,10 @@ static void MenuCreateAll(
 		MENU_DISPLAY_ITEMS_CREDITS | MENU_DISPLAY_ITEMS_AUTHORS);
 	MenuAddSubmenu(ms->root, MenuCreateStart("Start", ms, l, campaigns));
 	MenuAddSubmenu(ms->root, MenuCreateOptions("Options...", ms));
+#ifndef __EMSCRIPTEN__
 	MenuAddSubmenu(ms->root, MenuCreateQuit("Quit"));
 	MenuAddExitType(ms, MENU_TYPE_QUIT);
+#endif
 	MenuAddExitType(ms, MENU_TYPE_RETURN);
 }
 

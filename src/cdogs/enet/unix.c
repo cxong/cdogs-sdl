@@ -54,6 +54,10 @@
 #include <sys/poll.h>
 #endif
 
+#ifdef __EMSCRIPTEN__
+#define HAS_SOCKLEN_T 1
+#endif
+
 #ifndef HAS_SOCKLEN_T
 typedef int socklen_t;
 #endif

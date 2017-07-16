@@ -485,6 +485,7 @@ struct option longopts[] =
     { 0, 0, 0, 0 }
 };
 
+#ifndef __EMSCRIPTEN__
 int
 main(int argc, char **argv)
 {
@@ -512,5 +513,6 @@ main(int argc, char **argv)
     printf("flag = '%c'\n", heckle);
     return 0;
 }
+#endif //__EMSCRIPTEN__
 
 #endif

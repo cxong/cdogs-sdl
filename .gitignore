@@ -105,3 +105,4 @@ Thumbs.db
 src/cdogs/include/
 src/cdogs/share/
 *.blend1
+emscripten/

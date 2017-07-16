@@ -116,6 +116,12 @@ else()
 		if(NOT APPLE AND NOT BEOS AND NOT HAIKU)
 			add_definitions(-Wshadow)
 		endif()
+		if (CMAKE_C_COMPILER_VERSION VERSION_GREATER 7)
+			add_definitions(
+				-Wimplicit-fallthrough=0 # TODO: is everything caught by implicit-fallthrough intended?
+				-Wno-error=format-overflow # TODO: should probably just make sure buffer sizes are appropriate
+			)
+		endif()
 	endif()
 	if(NOT BEOS AND NOT HAIKU)
 		add_definitions(-Winline -Werror)
