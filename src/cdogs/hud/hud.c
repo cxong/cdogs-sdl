@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -183,11 +183,34 @@ static void DrawWeaponStatus(
 	char buf[128];
 	if (ConfigGetBool(&gConfig, "Game.Ammo") && weapon->Gun->AmmoId >= 0)
 	{
+		const Ammo *ammo = AmmoGetById(&gAmmo, weapon->Gun->AmmoId);
+		const int amount = ActorGunGetAmmo(actor, weapon);
 		// Include ammo counter
 		sprintf(buf, "%s %d/%d",
 			weapon->Gun->name,
 			ActorGunGetAmmo(actor, weapon),
 			AmmoGetById(&gAmmo, weapon->Gun->AmmoId)->Max);
+
+		// If low / no ammo, draw text with different colours, flashing
+		const int fps = ConfigGetInt(&gConfig, "Game.FPS");
+		if (amount == 0)
+		{
+			// No ammo; fast flashing
+			const int pulsePeriod = fps / 4;
+			if ((gMission.time % pulsePeriod) < (pulsePeriod / 2))
+			{
+				opts.Mask = colorRed;
+			}
+		}
+		else if (AmmoIsLow(ammo, amount))
+		{
+			// Low ammo; slow flashing
+			const int pulsePeriod = fps / 2;
+			if ((gMission.time % pulsePeriod) < (pulsePeriod / 2))
+			{
+				opts.Mask = colorOrange;
+			}
+		}
 	}
 	else
 	{

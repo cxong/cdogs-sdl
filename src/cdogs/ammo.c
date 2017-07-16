@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, 2016 Cong Xu
+    Copyright (c) 2014, 2016-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -162,4 +162,11 @@ Ammo *AmmoGetById(AmmoClasses *ammo, const int id)
 int AmmoGetNumClasses(const AmmoClasses *ammo)
 {
 	return (int)ammo->Ammo.size + (int)ammo->CustomAmmo.size;
+}
+
+
+bool AmmoIsLow(const Ammo *a, const int amount)
+{
+	// Low ammo if less than or equal to half the default amount
+	return amount <= (a->Amount / 2);
 }

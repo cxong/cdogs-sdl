@@ -53,6 +53,7 @@ extern color_t colorYellow;
 extern color_t colorMagenta;
 extern color_t colorCyan;
 extern color_t colorFog;
+extern color_t colorOrange;
 
 extern color_t colorMaroon;
 extern color_t colorLonestar;
