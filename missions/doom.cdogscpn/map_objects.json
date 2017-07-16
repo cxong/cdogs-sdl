@@ -42,6 +42,16 @@
       },
       "Wreck": "table_wood_round_wreck",
       "Health": 40
+    },
+    {
+      "Name": "warning_sign",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "warning_sign"
+      },
+      "Offset": [-6, -9],
+      "Health": 0,
+      "Flags": ["OnWall"]
     }
   ]
 }

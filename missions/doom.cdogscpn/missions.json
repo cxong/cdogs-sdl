@@ -700,6 +700,13 @@
 			47],
 			[12,
 			47]]
+		},
+		{
+			"MapObject": "warning_sign",
+			"Positions": [[17,
+			32],
+			[23,
+			30]]
 		}],
 		"StaticCharacters": [{
 			"Index": 1,
@@ -1465,6 +1472,13 @@
 			32],
 			[81,
 			32]]
+		},
+		{
+			"MapObject": "warning_sign",
+			"Positions": [[54,
+			3],
+			[46,
+			3]]
 		}],
 		"StaticCharacters": [{
 			"Index": 2,
