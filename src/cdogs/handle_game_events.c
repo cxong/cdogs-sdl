@@ -288,12 +288,32 @@ static void HandleGameEvent(
 		{
 			TActor *a = ActorGetByUID(e.u.UseAmmo.UID);
 			if (!a->isInUse || a->dead) break;
+			const int ammoBefore =
+				*(int *)CArrayGet(&a->ammo, e.u.UseAmmo.AmmoId);
+			const Ammo *ammo = AmmoGetById(&gAmmo, e.u.UseAmmo.AmmoId);
+			const bool wasAmmoLow = AmmoIsLow(ammo, ammoBefore);
 			ActorAddAmmo(a, e.u.UseAmmo.AmmoId, -(int)e.u.UseAmmo.Amount);
-			if (e.u.UseAmmo.PlayerUID >= 0)
+			const PlayerData *p = PlayerDataGetByUID(e.u.UseAmmo.PlayerUID);
+			if (p != NULL && p->IsLocal)
 			{
 				HUDNumPopupsAdd(
 					&camera->HUD.numPopups, NUMBER_POPUP_AMMO,
 					e.u.UseAmmo.PlayerUID, -(int)e.u.UseAmmo.Amount);
+
+				// Show low or no ammo notifications
+				const int ammoAfter =
+					*(int *)CArrayGet(&a->ammo, e.u.UseAmmo.AmmoId);
+				const bool isAmmoLow = AmmoIsLow(ammo, ammoAfter);
+				if (ammoAfter == 0)
+				{
+					// No ammo
+					SoundPlay(&gSoundDevice, StrSound("ammo_none"));
+				}
+				else if (!wasAmmoLow && isAmmoLow)
+				{
+					// Low ammo
+					SoundPlay(&gSoundDevice, StrSound("ammo_low"));
+				}
 			}
 		}
 		break;
