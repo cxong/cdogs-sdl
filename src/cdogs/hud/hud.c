@@ -132,7 +132,10 @@ static void DrawGauge(
 		pos.y = h - pos.y - size.y;
 		barPos.y = h - barPos.y - barSize.y;
 	}
-	DrawRectangle(device, pos, size, backColor, DRAW_FLAG_ROUNDED);
+	if (backColor.a > 0)
+	{
+		DrawRectangle(device, pos, size, backColor, DRAW_FLAG_ROUNDED);
+	}
 	DrawRectangle(device, barPos, barSize, barColor, 0);
 }
 
@@ -150,11 +153,15 @@ static void DrawWeaponStatus(
 		g->Icon->size, hAlign, vAlign, gGraphicsDevice.cachedConfig.Res);
 	Blit(&gGraphicsDevice, g->Icon, iconPos);
 
-	// don't draw gauge if not reloading
-	if (weapon->lock > 0)
+	// Draw gauge if ammo or reloading
+	const bool useAmmo = ConfigGetBool(&gConfig, "Game.Ammo");
+	const Ammo *ammo =
+		useAmmo ? AmmoGetById(&gAmmo, weapon->Gun->AmmoId) : NULL;
+	const int amount = useAmmo ? ActorGunGetAmmo(actor, weapon) : 0;
+	if (useAmmo || weapon->lock > 0)
 	{
 		const Vec2i gaugePos = Vec2iAdd(pos, Vec2iNew(-1 + GUN_ICON_PAD, -1));
-		const Vec2i size = Vec2iNew(GAUGE_WIDTH - GUN_ICON_PAD, FontH() + 2);
+		const Vec2i size = Vec2iNew(GAUGE_WIDTH - GUN_ICON_PAD, FontH() + 5);
 		const int maxLock = weapon->Gun->Lock;
 		color_t barColor;
 		const double reloadProgressColorMod = 0.5 +
@@ -163,7 +170,7 @@ static void DrawWeaponStatus(
 		barColor = ColorTint(colorWhite, hsv);
 		int innerWidth;
 		color_t backColor = { 128, 128, 128, 255 };
-		if (maxLock == 0)
+		if (maxLock == 0 || weapon->lock == 0)
 		{
 			innerWidth = 0;
 		}
@@ -174,6 +181,20 @@ static void DrawWeaponStatus(
 		DrawGauge(
 			hud->device, gaugePos, size, innerWidth, barColor, backColor,
 			hAlign, vAlign);
+
+		if (useAmmo)
+		{
+			// Draw ammo level as inner mini-gauge, no background
+			const int yOffset = 8;
+			const Vec2i gaugeAmmoPos =
+				Vec2iNew(gaugePos.x, gaugePos.y + yOffset);
+			const Vec2i gaugeAmmoSize = Vec2iNew(size.x, size.y - yOffset);
+			const int ammoGaugeWidth =
+				MAX(1, gaugeAmmoSize.x * amount / ammo->Max);
+			DrawGauge(
+				hud->device, gaugeAmmoPos, gaugeAmmoSize, ammoGaugeWidth,
+				colorBlue, colorTransparent, hAlign, vAlign);
+		}
 	}
 	FontOpts opts = FontOptsNew();
 	opts.HAlign = hAlign;
@@ -181,10 +202,8 @@ static void DrawWeaponStatus(
 	opts.Area = gGraphicsDevice.cachedConfig.Res;
 	opts.Pad = Vec2iNew(pos.x + GUN_ICON_PAD, pos.y);
 	char buf[128];
-	if (ConfigGetBool(&gConfig, "Game.Ammo") && weapon->Gun->AmmoId >= 0)
+	if (useAmmo && weapon->Gun->AmmoId >= 0)
 	{
-		const Ammo *ammo = AmmoGetById(&gAmmo, weapon->Gun->AmmoId);
-		const int amount = ActorGunGetAmmo(actor, weapon);
 		// Include ammo counter
 		sprintf(buf, "%s %d/%d",
 			weapon->Gun->name,
