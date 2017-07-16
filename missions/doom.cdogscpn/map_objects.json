@@ -32,6 +32,16 @@
       },
       "Wreck": "safe_wreck",
       "Health": 500
+    },
+    {
+      "Name": "candelabra",
+      "Pic": {
+        "Type": "AnimatedRandom",
+        "Sprites": "candelabra",
+        "TicksPerFrame": 6
+      },
+      "Wreck": "table_wood_round_wreck",
+      "Health": 40
     }
   ]
 }
