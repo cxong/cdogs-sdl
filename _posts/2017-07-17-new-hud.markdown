@@ -1,0 +1,26 @@
+---
+layout: post
+title:  "New HUD"
+date:   2017-07-17
+categories: progress
+---
+
+Added some extra [ammo notifications](https://github.com/cxong/cdogs-sdl/issues/362) to the HUD, like flashing when low ammo:
+
+![new hud](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/hud_new.gif)
+
+Let's compare this to the classic C-Dogs HUD:
+
+![old hud](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/hud_old.png)
+
+A lot of new stuff has been added since then. HUD improvements was one of the first enhancements added to C-Dogs SDL, with the [health bar](https://github.com/cxong/cdogs-sdl/issues/26) from way back in 2013. From there we've added:
+
+- Reload bar
+- Popup animations
+- Heads (lives)
+- Gun icon
+- Optional cash/ammo instead of score
+- Ammo gauge
+- Gauge animations
+
+And of course, the low ammo flash effect. Look out for the new HUD in the next release of C-Dogs SDL!
