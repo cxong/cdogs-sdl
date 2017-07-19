@@ -211,5 +211,7 @@ bool ActorIsInvulnerable(
 	const TActor *a, const int flags, const int playerUID,
 	const GameMode mode);
 void ActorAddBloodSplatters(TActor *a, const int power, const Vec2i hitVector);
+int ActorGetHealthPercent(const TActor *a);
+bool ActorIsLowHealth(const TActor *a);
 
 bool ActorIsLocalPlayer(const int uid);

@@ -292,11 +292,23 @@ static void DrawHealth(
 		hAlign, vAlign);
 	sprintf(s, "%d", health);
 
+	// Draw health number label
 	FontOpts opts = FontOptsNew();
 	opts.HAlign = hAlign;
 	opts.VAlign = vAlign;
 	opts.Area = gGraphicsDevice.cachedConfig.Res;
 	opts.Pad = pos;
+	// If low health, draw text with different colours, flashing
+	if (ActorIsLowHealth(actor))
+	{
+		// Fast flashing
+		const int fps = ConfigGetInt(&gConfig, "Game.FPS");
+		const int pulsePeriod = fps / 4;
+		if ((gMission.time % pulsePeriod) < (pulsePeriod / 2))
+		{
+			opts.Mask = colorRed;
+		}
+	}
 	FontStrOpt(s, Vec2iZero(), opts);
 }
 

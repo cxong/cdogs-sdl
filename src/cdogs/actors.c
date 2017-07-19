@@ -86,7 +86,8 @@
 #define SOUND_LOCK_WEAPON_CLICK 20
 #define DROP_GUN_CHANCE 0.2
 #define DRAW_RADIAN_SPEED (PI/16)
-#define BLEED_PERCENTAGE 25	// start bleeding if below this % of health
+// Percent of health considered low; bleed and flash HUD if low
+#define LOW_HEALTH_PERCENTAGE 25
 
 
 CArray gPlayerIds;
@@ -915,15 +916,13 @@ void UpdateAllActors(int ticks)
 			}
 		}
 		// If low on health, bleed
-		const int maxHealth = ActorGetCharacter(actor)->maxHealth;
-		const int healthPct = actor->health * 100 / maxHealth;
-		if (healthPct < BLEED_PERCENTAGE)
+		if (ActorIsLowHealth(actor))
 		{
 			actor->bleedCounter -= ticks;
 			if (actor->bleedCounter <= 0)
 			{
 				ActorAddBloodSplatters(actor, 1, Vec2iZero());
-				actor->bleedCounter += healthPct;
+				actor->bleedCounter += ActorGetHealthPercent(actor);
 			}
 		}
 	CA_FOREACH_END()
@@ -1510,6 +1509,17 @@ void ActorAddBloodSplatters(TActor *a, const int power, const Vec2i hitVector)
 			break;
 		}
 	}
+}
+
+int ActorGetHealthPercent(const TActor *a)
+{
+	const int maxHealth = ActorGetCharacter(a)->maxHealth;
+	return a->health * 100 / maxHealth;
+}
+
+bool ActorIsLowHealth(const TActor *a)
+{
+	return ActorGetHealthPercent(a) < LOW_HEALTH_PERCENTAGE;
 }
 
 bool ActorIsLocalPlayer(const int uid)
