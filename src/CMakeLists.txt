@@ -79,7 +79,7 @@ if(GCW0)
 endif()
 
 if(NOT "${GCW0}")
-  add_executable(cdogs-sdl-editor cdogsed.c ${CDOGS_SDL_EXTRA})
+  add_executable(cdogs-sdl-editor cdogsed/cdogsed.c ${CDOGS_SDL_EXTRA})
   if(APPLE)
   	set_target_properties(cdogs-sdl-editor PROPERTIES
   		MACOSX_RPATH 1

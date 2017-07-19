@@ -46,8 +46,6 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __EMSCRIPTEN__
-
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -1423,4 +1421,3 @@ int main(int argc, char *argv[])
 
 	exit(EXIT_SUCCESS);
 }
-#endif //__EMSCRIPTEN__
