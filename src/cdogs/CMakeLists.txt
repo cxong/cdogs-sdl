@@ -54,6 +54,7 @@ set(CDOGS_SOURCES
 	grafx_bg.c
 	handle_game_events.c
 	hud/fps.c
+	hud/health_gauge.c
 	hud/hud.c
 	hud/hud_num_popup.c
 	hud/wall_clock.c
@@ -149,6 +150,7 @@ set(CDOGS_HEADERS
 	grafx_bg.h
 	handle_game_events.h
 	hud/fps.h
+	hud/health_gauge.h
 	hud/hud.h
 	hud/hud_defs.h
 	hud/hud_num_popup.h

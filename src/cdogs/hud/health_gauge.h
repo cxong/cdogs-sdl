@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2017 Cong Xu
+    Copyright (c) 2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -28,47 +28,20 @@
 */
 #pragma once
 
-#include "config.h"
-#include "fps.h"
-#include "gamedata.h"
-#include "health_gauge.h"
-#include "hud_num_popup.h"
-#include "player.h"
-#include "wall_clock.h"
-
-
-#define GAUGE_WIDTH 65
+#include "actors.h"
+#include "font.h"
+#include "grafx.h"
 
 typedef struct
 {
-	struct MissionOptions *mission;
-	char message[256];
-	int messageTicks;
-	GraphicsDevice *device;
-	FPSCounter fpsCounter;
-	WallClock clock;
-	HUDNumPopups numPopups;
-	HealthGauge healthGauges[MAX_LOCAL_PLAYERS];
-	bool showExit;
-} HUD;
+	int health;
+	int waitHealth;
+	// Time to wait before updating health to match real health
+	int waitMs;
+} HealthGauge;
 
-void HUDInit(
-	HUD *hud,
-	GraphicsDevice *device,
-	struct MissionOptions *mission);
-void HUDTerminate(HUD *hud);
-
-// Set ticks to -1 to display a message indefinitely
-void HUDDisplayMessage(HUD *hud, const char *msg, int ticks);
-
-void HUDUpdate(HUD *hud, int ms);
-// INPUT_DEVICE_UNSET if not paused
-void HUDDraw(
-	HUD *hud, const input_device_e pausingDevice,
-	const bool controllerUnplugged);
-
-void HUDDrawGauge(
-	GraphicsDevice *device,
-	Vec2i pos, const Vec2i size, const int innerWidth,
-	const color_t barColor, const color_t backColor,
-	const FontAlign hAlign, const FontAlign vAlign);
+void HealthGaugeInit(HealthGauge *h);
+void HealthGaugeUpdate(HealthGauge *h, const TActor *a, const int ms);
+void HealthGaugeDraw(
+	const HealthGauge *h, GraphicsDevice *device, const TActor *actor,
+	const Vec2i pos, const FontAlign hAlign, const FontAlign vAlign);

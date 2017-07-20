@@ -127,7 +127,6 @@ typedef struct Actor
 	int gunIndex;
 
 	int health;
-	int lastHealth;
 	// A counter for player death
 	// If 0, player is alive
 	// If >0 but less than DEATH_MAX, player is "dying" and this variable

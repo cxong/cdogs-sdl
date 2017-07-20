@@ -78,6 +78,10 @@ void HUDInit(
 	FPSCounterInit(&hud->fpsCounter);
 	WallClockInit(&hud->clock);
 	HUDNumPopupsInit(&hud->numPopups, mission);
+	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
+	{
+		HealthGaugeInit(&hud->healthGauges[i]);
+	}
 	hud->showExit = false;
 }
 void HUDTerminate(HUD *hud)
@@ -104,6 +108,18 @@ void HUDUpdate(HUD *hud, int ms)
 	FPSCounterUpdate(&hud->fpsCounter, ms);
 	WallClockUpdate(&hud->clock, ms);
 	HUDPopupsUpdate(&hud->numPopups, ms);
+	int idx = 0;
+	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
+	{
+		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!IsPlayerScreen(p))
+		{
+			idx--;
+			continue;
+		}
+		const TActor *a = ActorGetByUID(p->ActorUID);
+		HealthGaugeUpdate(&hud->healthGauges[i], a, ms);
+	}
 }
 
 
@@ -111,15 +127,15 @@ void HUDUpdate(HUD *hud, int ms)
 // +--------------+
 // |XXXXXXXX|     |
 // +--------------+
-static void DrawGauge(
+void HUDDrawGauge(
 	GraphicsDevice *device,
-	Vec2i pos, Vec2i size, int innerWidth,
-	color_t barColor, color_t backColor,
+	Vec2i pos, const Vec2i size, const int innerWidth,
+	const color_t barColor, const color_t backColor,
 	const FontAlign hAlign, const FontAlign vAlign)
 {
-	Vec2i offset = Vec2iUnit();
+	const Vec2i offset = Vec2iUnit();
 	Vec2i barPos = Vec2iAdd(pos, offset);
-	Vec2i barSize = Vec2iNew(MAX(0, innerWidth - 2), size.y - 2);
+	const Vec2i barSize = Vec2iNew(MAX(0, innerWidth - 2), size.y - 2);
 	if (hAlign == ALIGN_END)
 	{
 		int w = device->cachedConfig.Res.x;
@@ -139,7 +155,6 @@ static void DrawGauge(
 	DrawRectangle(device, barPos, barSize, barColor, 0);
 }
 
-#define GAUGE_WIDTH 60
 static void DrawWeaponStatus(
 	HUD *hud, const TActor *actor, Vec2i pos,
 	const FontAlign hAlign, const FontAlign vAlign)
@@ -154,7 +169,8 @@ static void DrawWeaponStatus(
 	Blit(&gGraphicsDevice, g->Icon, iconPos);
 
 	// Draw gauge if ammo or reloading
-	const bool useAmmo = ConfigGetBool(&gConfig, "Game.Ammo");
+	const bool useAmmo =
+		ConfigGetBool(&gConfig, "Game.Ammo") && weapon->Gun->AmmoId >= 0;
 	const Ammo *ammo =
 		useAmmo ? AmmoGetById(&gAmmo, weapon->Gun->AmmoId) : NULL;
 	const int amount = useAmmo ? ActorGunGetAmmo(actor, weapon) : 0;
@@ -178,7 +194,7 @@ static void DrawWeaponStatus(
 		{
 			innerWidth = MAX(1, size.x * (maxLock - weapon->lock) / maxLock);
 		}
-		DrawGauge(
+		HUDDrawGauge(
 			hud->device, gaugePos, size, innerWidth, barColor, backColor,
 			hAlign, vAlign);
 
@@ -191,7 +207,7 @@ static void DrawWeaponStatus(
 			const Vec2i gaugeAmmoSize = Vec2iNew(size.x, size.y - yOffset);
 			const int ammoGaugeWidth =
 				MAX(1, gaugeAmmoSize.x * amount / ammo->Max);
-			DrawGauge(
+			HUDDrawGauge(
 				hud->device, gaugeAmmoPos, gaugeAmmoSize, ammoGaugeWidth,
 				colorBlue, colorTransparent, hAlign, vAlign);
 		}
@@ -236,80 +252,6 @@ static void DrawWeaponStatus(
 		strcpy(buf, weapon->Gun->name);
 	}
 	FontStrOpt(buf, Vec2iZero(), opts);
-}
-
-static void DrawHealth(
-	GraphicsDevice *device, const TActor *actor, const Vec2i pos,
-	const FontAlign hAlign, const FontAlign vAlign)
-{
-	char s[50];
-	Vec2i gaugePos = Vec2iAdd(pos, Vec2iNew(-1, -1));
-	Vec2i size = Vec2iNew(GAUGE_WIDTH, FontH() + 2);
-	HSV hsv = { 0.0, 1.0, 1.0 };
-	color_t barColor;
-	int health = actor->health;
-	int lastHealth = actor->lastHealth;
-	const int maxHealth = ActorGetCharacter(actor)->maxHealth;
-	int innerWidthLastHealth;
-	int innerWidthCurrentHealth;
-	int innerWidth;
-	color_t backColor = { 50, 0, 0, 255 };
-	innerWidthLastHealth = MAX(1, size.x * lastHealth / maxHealth);
-	innerWidthCurrentHealth = MAX(1, size.x * health / maxHealth);
-	if (actor->poisoned)
-	{
-		hsv.h = 120.0;
-		hsv.v = 0.5;
-	}
-	else
-	{
-		double maxHealthHue = 50.0;
-		double minHealthHue = 0.0;
-		hsv.h =
-			((maxHealthHue - minHealthHue) * health / maxHealth + minHealthHue);
-	}
-	if (lastHealth > health)
-	{
-		barColor = colorRed;
-		DrawGauge(
-				device, gaugePos, size, innerWidthLastHealth, barColor,
-				backColor, hAlign, vAlign);
-		backColor.a = 0;
-	}
-	else if (lastHealth < health)
-	{
-		barColor = colorGreen;
-		DrawGauge(
-				device, gaugePos, size, innerWidthCurrentHealth, barColor,
-				backColor, hAlign, vAlign);
-		backColor.a = 0;
-	}
-	lastHealth < health ? innerWidth = innerWidthLastHealth:
-		(innerWidth = innerWidthCurrentHealth); 
-	barColor = ColorTint(colorWhite, hsv);
-	DrawGauge(
-		device, gaugePos, size, innerWidth, barColor, backColor,
-		hAlign, vAlign);
-	sprintf(s, "%d", health);
-
-	// Draw health number label
-	FontOpts opts = FontOptsNew();
-	opts.HAlign = hAlign;
-	opts.VAlign = vAlign;
-	opts.Area = gGraphicsDevice.cachedConfig.Res;
-	opts.Pad = pos;
-	// If low health, draw text with different colours, flashing
-	if (ActorIsLowHealth(actor))
-	{
-		// Fast flashing
-		const int fps = ConfigGetInt(&gConfig, "Game.FPS");
-		const int pulsePeriod = fps / 4;
-		if ((gMission.time % pulsePeriod) < (pulsePeriod / 2))
-		{
-			opts.Mask = colorRed;
-		}
-	}
-	FontStrOpt(s, Vec2iZero(), opts);
 }
 
 static void DrawLives(
@@ -462,7 +404,7 @@ static void DrawObjectiveCompass(
 // Draw player's score, health etc.
 static void DrawPlayerStatus(
 	HUD *hud, const PlayerData *data, const TActor *p,
-	const int flags, const Rect2i r)
+	const int flags, const Rect2i r, const HealthGauge *hg)
 {
 	if (p != NULL)
 	{
@@ -513,7 +455,7 @@ static void DrawPlayerStatus(
 
 		// Health
 		pos.y += rowHeight;
-		DrawHealth(hud->device, p, pos, opts.HAlign, opts.VAlign);
+		HealthGaugeDraw(hg, hud->device, p, pos, opts.HAlign, opts.VAlign);
 
 		// Lives
 		pos.y += rowHeight;
@@ -774,7 +716,7 @@ static void DrawPlayerAreas(HUD *hud)
 		{
 			player = ActorGetByUID(p->ActorUID);
 		}
-		DrawPlayerStatus(hud, p, player, drawFlags, r);
+		DrawPlayerStatus(hud, p, player, drawFlags, r, &hud->healthGauges[idx]);
 		HUDNumPopupsDrawPlayer(&hud->numPopups, idx, drawFlags);
 	}
 
