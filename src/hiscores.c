@@ -101,7 +101,7 @@ static GameLoopResult HighScoresScreenUpdate(
 		CA_FOREACH(PlayerData, p, gPlayerDatas)
 			const bool isPlayerComplete =
 				(!gMission.IsQuit && !p->survived) || hData->co->IsComplete;
-			if (isPlayerComplete && p->IsLocal)
+			if (isPlayerComplete && p->IsLocal && IsPlayerHuman(p))
 			{
 				EnterHighScore(p);
 				allTime |= p->allTime >= 0;
