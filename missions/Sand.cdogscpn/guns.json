@@ -8,7 +8,8 @@
       "Cost": 0,
       "Lock": 20,
       "Sound": "",
-      "CanShoot": false
+      "CanShoot": false,
+      "CanDrop": false
     },
     {
       "Pic": "knife",

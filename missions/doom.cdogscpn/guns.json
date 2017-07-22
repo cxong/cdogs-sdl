@@ -72,6 +72,16 @@
       "Sound": "fireball",
       "MuzzleFlashParticle": "",
       "CanDrop": false
+    },
+    {
+      "Pic": "",
+      "Name": "Monster Bite",
+      "Bullet": "monster_bite",
+      "Cost": 0,
+      "Lock": 20,
+      "Sound": "",
+      "CanShoot": false,
+      "CanDrop": false
     }
   ]
 }
