@@ -6142,21 +6142,6 @@
 			97]]
 		},
 		{
-			"MapObject": "statue_ogre",
-			"Positions": [[75,
-			158],
-			[75,
-			166],
-			[82,
-			166],
-			[82,
-			158],
-			[75,
-			146],
-			[82,
-			146]]
-		},
-		{
 			"MapObject": "Marine Shotgun spawner",
 			"Positions": [[93,
 			126],
@@ -6167,6 +6152,21 @@
 			"MapObject": "Chaingun spawner",
 			"Positions": [[92,
 			161]]
+		},
+		{
+			"MapObject": "firestick",
+			"Positions": [[75,
+			146],
+			[82,
+			146],
+			[75,
+			158],
+			[82,
+			158],
+			[75,
+			166],
+			[82,
+			166]]
 		}],
 		"StaticCharacters": [{
 			"Index": 4,

@@ -52,6 +52,18 @@
       "Offset": [-6, -9],
       "Health": 0,
       "Flags": ["OnWall"]
+    },
+    {
+      "Name": "firestick",
+      "Pic": {
+        "Type": "AnimatedRandom",
+        "Sprites": "firestick",
+        "TicksPerFrame": 6
+      },
+      "Wreck": "safe_wreck",
+      "Size": [12, 9],
+      "Offset": [-6, -15],
+      "Health": 40
     }
   ]
 }
