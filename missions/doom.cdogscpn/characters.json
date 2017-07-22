@@ -49,12 +49,12 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Goggles",
+		"Class": "Evil Ogre",
 		"Skin": "ff76f5",
 		"Arms": "ff76f5",
 		"Body": "ff76f5",
 		"Legs": "ff76f5",
-		"Hair": "ff76f5",
+		"Hair": "fffffe",
 		"speed": 320,
 		"Gun": "Monster Bite",
 		"maxHealth": 70,
@@ -65,12 +65,12 @@
 		"actionDelay": 13
 	},
 	{
-		"Class": "Goggles",
+		"Class": "Evil Ogre",
 		"Skin": "ff76f5",
 		"Arms": "ff76f5",
 		"Body": "ff76f5",
 		"Legs": "ff76f5",
-		"Hair": "ff76f5",
+		"Hair": "fffffc",
 		"speed": 320,
 		"Gun": "Monster Bite",
 		"maxHealth": 70,
@@ -81,12 +81,12 @@
 		"actionDelay": 13
 	},
 	{
-		"Class": "Ogre Boss",
+		"Class": "Evil Ogre",
 		"Skin": "ff76f5",
 		"Arms": "9c5858",
 		"Body": "ff76f5",
 		"Legs": "ff8136",
-		"Hair": "9c9c9c",
+		"Hair": "5b5b5b",
 		"speed": 256,
 		"Gun": "Baron Fireball",
 		"maxHealth": 500,
