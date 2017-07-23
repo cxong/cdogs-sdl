@@ -1118,7 +1118,11 @@ static bool KeyAvailable(
 void MenuProcessChangeKey(menu_t *menu)
 {
 	// wait until user has pressed a new button
-	const SDL_Scancode key = GetKey(&gEventHandlers);
+	const SDL_Scancode key = KeyGetPressed(&gEventHandlers.keyboard);
+	if (key == 0)
+	{
+		return;
+	}
 	const key_code_e code = menu->u.normal.changeKeyMenu->u.changeKey.code;
 	const int pi = menu->u.normal.changeKeyMenu->u.changeKey.playerIndex;
 	if (key == SDL_SCANCODE_ESCAPE)
