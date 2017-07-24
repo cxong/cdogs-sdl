@@ -61,6 +61,9 @@
 #include <cdogs/files.h>
 #include <cdogs/font.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
 // Dummy screen to calculate high scores and switch to high scores screens if
 // required
@@ -336,7 +339,6 @@ static GameLoopResult HighScoreUpdate(GameLoopData *data, LoopRunner *l)
 
 
 #define MAGIC        4711
-#define SCORES_FILE "scores.dat"
 
 void SaveHighScores(void)
 {
@@ -367,6 +369,15 @@ void SaveHighScores(void)
 		fwrite(todaysHigh, sizeof(todaysHigh), 1, f);
 
 		fclose(f);
+
+#ifdef __EMSCRIPTEN__
+        EM_ASM(
+            //persist changes
+            FS.syncfs(false,function (err) {
+                              assert(!err);
+            });
+        );
+#endif
 
 		debug(D_NORMAL, "saved high scores\n");
 	} else

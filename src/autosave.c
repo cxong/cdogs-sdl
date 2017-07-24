@@ -39,6 +39,10 @@
 #include <cdogs/utils.h>
 #include <cdogs/sys_specifics.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 Autosave gAutosave;
 
 
@@ -192,6 +196,15 @@ void AutosaveSave(Autosave *autosave, const char *filename)
 	json_free_value(&root);
 	
 	fclose(f);
+
+#ifdef __EMSCRIPTEN__
+    EM_ASM(
+        //persist changes
+        FS.syncfs(false,function (err) {
+                          assert(!err);
+        });
+    );
+#endif
 }
 
 MissionSave *AutosaveFindMission(Autosave *autosave, const char *path)

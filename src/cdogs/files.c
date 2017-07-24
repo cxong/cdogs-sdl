@@ -528,6 +528,10 @@ bail:
 char *cdogs_homepath = NULL;
 const char *GetHomeDirectory(void)
 {
+#ifdef __EMSCRIPTEN__
+    return "/persistent_data/";
+#endif
+
 	const char *p;
 
 	if (cdogs_homepath != NULL)
@@ -571,7 +575,9 @@ const char *GetConfigFilePath(const char *name)
 
 	strcpy(cfpath, homedir);
 
+#ifndef __EMSCRIPTEN__
 	strcat(cfpath, CDOGS_CFG_DIR);
+#endif
 	strcat(cfpath, name);
 
 	return cfpath;

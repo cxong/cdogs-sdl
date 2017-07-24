@@ -54,6 +54,8 @@
 
 #include "game_loop.h"
 
+#define SCORES_FILE "scores.dat"
+
 GameLoopData *HighScoresScreen(CampaignOptions *co, GraphicsDevice *g);
 void EnterHighScore(PlayerData *data);
 GameLoopData *DisplayAllTimeHighScores(GraphicsDevice *graphics);

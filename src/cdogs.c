@@ -93,6 +93,9 @@
 #include "mainmenu.h"
 #include "prep.h"
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -119,14 +122,36 @@ int main(int argc, char *argv[])
 		}
 	}
 
+#ifdef __EMSCRIPTEN__
+    // initialize IDBFS for Emscripten persistent storage
+    EM_ASM(
+        FS.mkdir('/persistent_data');
+        FS.mount(IDBFS,{},'/persistent_data');
+
+        Module.print("start file sync..");
+        Module.syncdone = 0;
+
+        FS.syncfs(true, function(err) {
+                       assert(!err);
+                       Module.print("end file sync..");
+                       Module.syncdone = 1;
+        });
+    );
+
+    SetupConfigDir();
+    gConfig = ConfigDefault();
+#else
 	SetupConfigDir();
 	gConfig = ConfigLoad(GetConfigFilePath(CONFIG_FILE));
+#endif
 	// Set config options that are only set via command line
 	ConfigGet(&gConfig, "Graphics.ShowHUD")->u.Bool.Value = true;
 	ConfigGet(&gConfig, "Graphics.ShakeMultiplier")->u.Int.Value = 1;
 
 	AutosaveInit(&gAutosave);
+#ifndef __EMSCRIPTEN__
 	AutosaveLoad(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
+#endif
 
 #ifndef __EMSCRIPTEN__
 	if (enet_initialize() != 0)
@@ -212,8 +237,10 @@ int main(int argc, char *argv[])
 		&gBulletClasses, &gGunDescriptions,
 		"data/bullets.json", "data/guns.json");
 	CharacterClassesInitialize(&gCharacterClasses, "data/character_classes.json");
+#ifndef __EMSCRIPTEN__
 	LoadPlayerTemplates(
 		&gPlayerTemplates, &gCharacterClasses, PLAYER_TEMPLATE_FILE);
+#endif
 	PickupClassesInit(
 		&gPickupClasses, "data/pickups.json", &gAmmo, &gGunDescriptions);
 	MapObjectsInit(
