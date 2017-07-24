@@ -35,6 +35,10 @@
 #include <cdogs/json_utils.h>
 #include <cdogs/log.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 #define VERSION 2
 
 
@@ -168,5 +172,13 @@ bail:
 	if (f != NULL)
 	{
 		fclose(f);
+#ifdef __EMSCRIPTEN__
+        EM_ASM(
+            //persist changes
+            FS.syncfs(false,function (err) {
+                              assert(!err);
+            });
+        );
+#endif
 	}
 }

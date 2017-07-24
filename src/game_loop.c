@@ -38,6 +38,87 @@
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+#include <cdogs/files.h>
+#include <cdogs/config_io.h>
+#include <cdogs/config_json.h>
+#include <autosave.h>
+#include <hiscores.h>
+#include <cdogs/character_class.h>
+#include <cdogs/player_template.h>
+
+bool emscripten_fs_ready = false;
+
+void emscriptenLoadFiles() {
+    // options.cnf
+    FILE *file_options = fopen(GetConfigFilePath(CONFIG_FILE),"r");
+    if (file_options) {
+        fclose(file_options);
+        ConfigLoadJSON(&gConfig, GetConfigFilePath(CONFIG_FILE));
+        ConfigApply(&gConfig);
+    }
+    else {
+        ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
+    }
+
+    // autosave.json
+    FILE *file_autosave = fopen(GetConfigFilePath(AUTOSAVE_FILE),"r");
+    if (file_autosave) {
+        fclose(file_autosave);
+        AutosaveLoad(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
+    }
+    else {
+        AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
+    }
+
+    // scores.dat
+    FILE *file_scores = fopen(GetConfigFilePath(SCORES_FILE),"r");
+    if (file_scores) {
+        fclose(file_scores);
+    }
+    else {
+        SaveHighScores();
+    }
+
+    // players.cnf
+    FILE *file_players = fopen(GetConfigFilePath(PLAYER_TEMPLATE_FILE),"r");
+    if (file_players) {
+        fclose(file_players);
+        LoadPlayerTemplates(&gPlayerTemplates, &gCharacterClasses, PLAYER_TEMPLATE_FILE);
+    }
+    else {
+        SavePlayerTemplates(&gPlayerTemplates, PLAYER_TEMPLATE_FILE);
+    }
+}
+
+bool emscriptenPersistData() {
+    if (emscripten_fs_ready)
+        return true;
+
+    if(emscripten_run_script_int("Module.syncdone") == 1) {
+        FILE *config_file = fopen(GetConfigFilePath(CONFIG_FILE),"r");
+        if (config_file == NULL) {
+            //persist Emscripten current data to Indexed Db
+            EM_ASM(
+                Module.print("Start File sync..");
+                Module.syncdone = 0;
+                FS.syncfs(false, function(err) {
+                    assert(!err);
+                    Module.print("End File sync..");
+                    Module.syncdone = 1;
+                });
+            );
+            emscriptenLoadFiles();
+            return false;
+        }
+        else {
+            fclose(config_file);
+            emscripten_fs_ready = true;
+            emscriptenLoadFiles();
+            return true;
+        }
+    }
+    return false;
+}
 #endif
 
 GameLoopData *GameLoopDataNew(
@@ -188,7 +269,9 @@ bool LoopRunnerRunInner(LoopRunInnerData *ctx)
 #ifdef __EMSCRIPTEN__
 void EmscriptenMainLoop(void *arg)
 {
-    // struct emscripten_context_t *ctx = arg;
+    if (!emscriptenPersistData())
+        return;
+
     LoopRunnerRunInner((LoopRunInnerData *)arg);
 }
 #endif

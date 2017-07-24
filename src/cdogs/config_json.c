@@ -37,6 +37,9 @@
 #include "keyboard.h"
 #include "log.h"
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
 static void ConfigLoadVisit(Config *c, json_t *node);
 void ConfigLoadJSON(Config *config, const char *filename)
@@ -196,6 +199,15 @@ void ConfigSaveJSON(const Config *config, const char *filename)
 	json_free_value(&root);
 
 	fclose(f);
+
+#ifdef __EMSCRIPTEN__
+    EM_ASM(
+        //persist changes
+        FS.syncfs(false,function (err) {
+                          assert(!err);
+        });
+    );
+#endif
 }
 static void ConfigSaveVisit(const Config *c, json_t *node)
 {
