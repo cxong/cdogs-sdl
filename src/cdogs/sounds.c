@@ -310,7 +310,8 @@ static void SoundDataTerminate(any_t data)
 	CFREE(s);
 }
 
-#define OUT_OF_SIGHT_DISTANCE_PLUS 200
+#define OUT_OF_SIGHT_DISTANCE_PLUS 100
+static int GetChannel(SoundDevice *s, Mix_Chunk *data);
 static void MuffleEffect(int chan, void *stream, int len, void *udata)
 {
 	UNUSED(chan);
@@ -324,22 +325,53 @@ static void MuffleEffect(int chan, void *stream, int len, void *udata)
 		samples[1] = (samples[1] + samples[3] + samples[5]) / 3;
 	}
 }
-#define DISTANCE_CLOSE 16
 static void SoundPlayAtPosition(
-	SoundDevice *device, Mix_Chunk *data, int distance, int bearing,
-	const bool isMuffled)
+	SoundDevice *device, Mix_Chunk *data, const Vec2i dp, const bool isMuffled)
 {
-	if (data == NULL)
+	if (!device->isInitialised || data == NULL)
 	{
 		return;
 	}
-	// If distance is very close, don't place any panning on it
-	if (distance < DISTANCE_CLOSE) bearing = 0;
+
+	int distance = 0;
+	Sint16 bearingDegrees = 0;
+	const int screen = gGraphicsDevice.cachedConfig.Res.x;
+	const int halfScreen = screen / 2;
+	if (!Vec2iIsZero(dp))
+	{
+		// Calculate distance and bearing
+		// Sound position is calculated from an imaginary camera that's half as
+		// distant from the centre of the screen as the screen width, i.e.
+		//
+		//         centre-+
+		//                v
+		// Screen: |------+------|
+		//                |
+		//                |
+		//     camera---> +
+		// Calculate real distance using Pythagoras
+		const int d =
+			(int)sqrt(Vec2iSqrMagnitude(dp) + halfScreen * halfScreen);
+		// Translate so that sounds at exactly centre are distance 0
+		const int dTrans = d - halfScreen;
+		// Scale so that sounds more than a full screen from centre have
+		// maximum distance (255)
+		const int maxDistance =
+			(int)sqrt(screen * screen + halfScreen * halfScreen) - halfScreen;
+		distance = dTrans * 255 / maxDistance;
+
+		// Calculate bearing
+		const double bearing = atan((double)dp.x / halfScreen);
+		bearingDegrees = (Sint16)(bearing * 180 / PI);
+		if (bearingDegrees < 0)
+		{
+			bearingDegrees += 360;
+		}
+	}
 	if (isMuffled)
 	{
 		distance += OUT_OF_SIGHT_DISTANCE_PLUS;
 	}
-	distance /= 2;
 	// Don't play anything if it's too distant
 	// This means we don't waste sound channels
 	if (distance > 255)
@@ -347,33 +379,18 @@ static void SoundPlayAtPosition(
 		return;
 	}
 
-	if (!device->isInitialised)
+	LOG(LM_SOUND, LL_TRACE, "distance(%d) bearing(%d)",
+		distance, bearingDegrees);
+
+	// Get sound channel to play sound
+	const int channel = GetChannel(device, data);
+	if (channel < 0)
 	{
 		return;
 	}
 
-	LOG(LM_SOUND, LL_TRACE, "distance(%d) bearing(%d)", distance, bearing);
-
-	int channel;
-	for (;;)
-	{
-		channel = Mix_PlayChannel(-1, data, 0);
-		if (channel >= 0 || device->channels > 128)
-		{
-			break;
-		}
-		// Check if we cannot play the sound; allocate more channels
-		device->channels *= 2;
-		if (Mix_AllocateChannels(device->channels) != device->channels)
-		{
-			printf("Couldn't allocate channels!\n");
-			return;
-		}
-		// When allocating new channels, need to reset their volume
-		Mix_Volume(-1, ConfigGetInt(&gConfig, "Sound.SoundVolume"));
-	}
 #ifndef __EMSCRIPTEN__
-	Mix_SetPosition(channel, (Sint16)bearing, (Uint8)distance);
+	Mix_SetPosition(channel, bearingDegrees, (Uint8)distance);
 	if (isMuffled)
 	{
 		if (!Mix_RegisterEffect(channel, MuffleEffect, NULL, NULL))
@@ -383,6 +400,26 @@ static void SoundPlayAtPosition(
 	}
 #endif
 }
+static int GetChannel(SoundDevice *s, Mix_Chunk *data)
+{
+	for (;;)
+	{
+		const int channel = Mix_PlayChannel(-1, data, 0);
+		if (channel >= 0 || s->channels > 128)
+		{
+			return channel;
+		}
+		// Check if we cannot play the sound; allocate more channels
+		s->channels *= 2;
+		if (Mix_AllocateChannels(s->channels) != s->channels)
+		{
+			LOG(LM_SOUND, LL_ERROR, "Cannot allocate channels");
+			return -1;
+		}
+		// When allocating new channels, need to reset their volume
+		Mix_Volume(-1, ConfigGetInt(&gConfig, "Sound.SoundVolume"));
+	}
+}
 
 void SoundPlay(SoundDevice *device, Mix_Chunk *data)
 {
@@ -391,7 +428,7 @@ void SoundPlay(SoundDevice *device, Mix_Chunk *data)
 		return;
 	}
 
-	SoundPlayAtPosition(device, data, 0, 0, false);
+	SoundPlayAtPosition(device, data, Vec2iZero(), false);
 }
 
 
@@ -447,9 +484,7 @@ void SoundPlayAtPlusDistance(
 	SoundDevice *device, Mix_Chunk *data,
 	const Vec2i pos, const int plusDistance)
 {
-	int distance, bearing;
 	Vec2i closestLeftEar, closestRightEar;
-	Vec2i origin;
 
 	// Find closest set of ears to the sound
 	if (CHEBYSHEV_DISTANCE(
@@ -475,9 +510,8 @@ void SoundPlayAtPlusDistance(
 		closestRightEar = device->earRight2;
 	}
 
-	origin = CalcClosestPointOnLineSegmentToPoint(
+	const Vec2i origin = CalcClosestPointOnLineSegmentToPoint(
 		closestLeftEar, closestRightEar, pos);
-	CalcChebyshevDistanceAndBearing(origin, pos, &distance, &bearing);
 	HasClearLineData lineData;
 	lineData.IsBlocked = IsPosNoSee;
 	lineData.data = &gMap;
@@ -486,8 +520,10 @@ void SoundPlayAtPlusDistance(
 	{
 		isMuffled = true;
 	}
+	const Vec2i dp = Vec2iMinus(pos, origin);
 	SoundPlayAtPosition(
-		&gSoundDevice, data, distance + plusDistance, bearing, isMuffled);
+		&gSoundDevice, data, Vec2iAdd(dp, Vec2iNew(0, plusDistance)),
+		isMuffled);
 }
 
 static Mix_Chunk *SoundDataGet(SoundData *s);
