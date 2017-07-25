@@ -135,6 +135,16 @@ ActorPics GetCharacterPics(
 	memset(&pics, 0, sizeof pics);
 	pics.Colors = &c->Colors;
 
+	// Dummy return to handle invalid character class
+	if (c->Class == NULL)
+	{
+		pics.IsDead = true;
+		pics.IsDying = true;
+		pics.Body = GetDeathPic(&gPicManager, 0);
+		pics.OrderedPics[0] = pics.Body;
+		return pics;
+	}
+
 	// If the actor is dead, simply draw a dying animation
 	pics.IsDead = deadPic > 0;
 	if (pics.IsDead)
