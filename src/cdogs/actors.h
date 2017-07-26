@@ -209,7 +209,8 @@ void ActorTakeHit(TActor *actor, const special_damage_e damage);
 bool ActorIsInvulnerable(
 	const TActor *a, const int flags, const int playerUID,
 	const GameMode mode);
-void ActorAddBloodSplatters(TActor *a, const int power, const Vec2i hitVector);
+
+void ActorAddBloodSplatters(TActor *a, const int power, const double mass, const Vec2i hitVector);
 int ActorGetHealthPercent(const TActor *a);
 bool ActorIsLowHealth(const TActor *a);
 

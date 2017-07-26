@@ -182,6 +182,7 @@ message NActorHit {
 	required int32 Special = 4;
 	required int32 Power = 5;
 	required NVec2i Vel = 6;
+    required float Mass = 7;
 }
 
 message NActorAddAmmo {

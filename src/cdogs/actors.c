@@ -915,7 +915,8 @@ void UpdateAllActors(int ticks)
 			actor->bleedCounter -= ticks;
 			if (actor->bleedCounter <= 0)
 			{
-				ActorAddBloodSplatters(actor, 1, Vec2iZero());
+
+				ActorAddBloodSplatters(actor, 1, 1.0, Vec2iZero());
 				actor->bleedCounter += ActorGetHealthPercent(actor);
 			}
 		}
@@ -1456,7 +1457,7 @@ bool ActorIsInvulnerable(
 	return 0;
 }
 
-void ActorAddBloodSplatters(TActor *a, const int power, const Vec2i hitVector)
+void ActorAddBloodSplatters(TActor *a, const int power, const double mass, const Vec2i hitVector)
 {
 	const GoreAmount ga = ConfigGetEnum(&gConfig, "Graphics.Gore");
 	if (ga == GORE_NONE) return;
@@ -1486,7 +1487,7 @@ void ActorAddBloodSplatters(TActor *a, const int power, const Vec2i hitVector)
 			bloodSize = 1;
 		}
 		const Vec2i vel = Vec2iScaleDiv(
-			Vec2iScale(hitVector, (rand() % 8 + 8) * power),
+			Vec2iScale(hitVector, (rand() % 8 + 8) * mass),
 			15 * SHOT_IMPULSE_DIVISOR);
 		EmitterStart(em, a->Pos, 10, vel);
 		switch (ga)
