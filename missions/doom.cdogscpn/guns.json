@@ -1,5 +1,5 @@
 {
-  "Version": 1,
+  "Version": 2,
   "Guns": [
     {
       "Pic": "knife",
@@ -8,6 +8,7 @@
       "Description": "What's a chainsaw doing on Mars? Who cares, as long as your enemy is ripped to pieces!",
       "Bullet": "chainsaw",
       "Cost": 0,
+      "Lock": 0,
       "Sound": "",
       "SoundLockLength": 50,
       "CanShoot": false
