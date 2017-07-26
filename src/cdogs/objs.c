@@ -352,7 +352,7 @@ static void DoDamageCharacter(
 	e.u.ActorHit.HitterPlayerUID = playerUID;
 	e.u.ActorHit.Special = special;
 	e.u.ActorHit.Power = canDamage ? power : 0;
-    e.u.ActorHit.Mass = mass;
+    e.u.ActorHit.Mass = (float)mass;
 	e.u.ActorHit.Vel = Vec2i2Net(hitVector);
 	GameEventsEnqueue(&gGameEvents, e);
 

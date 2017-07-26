@@ -1457,7 +1457,8 @@ bool ActorIsInvulnerable(
 	return 0;
 }
 
-void ActorAddBloodSplatters(TActor *a, const int power, const double mass, const Vec2i hitVector)
+void ActorAddBloodSplatters(
+	TActor *a, const int power, const double mass, const Vec2i hitVector)
 {
 	const GoreAmount ga = ConfigGetEnum(&gConfig, "Graphics.Gore");
 	if (ga == GORE_NONE) return;
@@ -1486,9 +1487,10 @@ void ActorAddBloodSplatters(TActor *a, const int power, const double mass, const
 		{
 			bloodSize = 1;
 		}
-		const Vec2i vel = Vec2iScaleDiv(
-			Vec2iScale(hitVector, (rand() % 8 + 8) * mass),
-			15 * SHOT_IMPULSE_DIVISOR);
+		const double speed =
+			(rand() % 8 + 8) * mass / (15 * SHOT_IMPULSE_DIVISOR);
+		const Vec2i vel =
+			Vec2iNew((int)(hitVector.x * speed), (int)(hitVector.y * speed));
 		EmitterStart(em, a->Pos, 10, vel);
 		switch (ga)
 		{
