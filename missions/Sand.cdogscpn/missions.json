@@ -78,7 +78,7 @@
 	},
 	{
 		"Title": "Sabotage of Clan Tantalus Armory",
-		"Description": "The foolish Tantalus know nothing, and are walking into our trap. Sabotage their Clan shields! Find their armory, rumored to house secret \"stranging modules\", and destroy them as well.",
+		"Description": "The foolish Tantalus know nothing, and are walking into our trap. Sabotage their Clan shields! Find their armory, rumored to house secret projector weapons, and destroy them as well.",
 		"Type": "Classic",
 		"Width": 45,
 		"Height": 44,
@@ -97,7 +97,7 @@
 			"Flags": 0
 		},
 		{
-			"Description": "Destroy \"stranging\" modules",
+			"Description": "Destroy projectors",
 			"Type": "Destroy",
 			"MapObject": "safe",
 			"Count": 3,
@@ -587,7 +587,7 @@
 			"Flags": 0
 		},
 		{
-			"Description": "Destroy their stranging modules",
+			"Description": "Destroy their projectors",
 			"Type": "Destroy",
 			"MapObject": "safe",
 			"Count": 4,
@@ -721,7 +721,7 @@
 		"EnemyDensity": 13,
 		"Weapons": ["Khanjali",
 		"Machine gun",
-		"Powergun",
+		"Projector",
 		"Lasergun",
 		"Wurmtooth"],
 		"Song": "",
@@ -818,7 +818,7 @@
 		"Grenades",
 		"Inkvine",
 		"Shotgun",
-		"Powergun",
+		"Projector",
 		"Shrapnel bombs",
 		"Molotovs",
 		"Lasergun",

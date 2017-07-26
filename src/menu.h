@@ -51,11 +51,11 @@
 #include <cdogs/c_array.h>
 #include <cdogs/campaigns.h>
 #include <cdogs/events.h>
-#include <cdogs/game_loop.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/grafx.h>
 
 #include "credits.h"
+#include "game_loop.h"
 
 typedef enum
 {
@@ -249,7 +249,7 @@ void MenuAddExitType(MenuSystem *menu, menu_type_e exitType);
 void MenuSystemAddCustomDisplay(
 	MenuSystem *ms, MenuDisplayFunc func, void *data);
 int MenuIsExit(MenuSystem *ms);
-GameLoopData MenuLoop(MenuSystem *menu);
+GameLoopData *MenuLoop(MenuSystem *menu);
 GameLoopResult MenuUpdate(MenuSystem *ms);
 void MenuDraw(const MenuSystem *ms);
 void MenuDisplay(const MenuSystem *ms);

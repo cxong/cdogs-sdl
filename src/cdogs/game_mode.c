@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@
 
 #include "campaigns.h"
 #include "config.h"
+#include "player.h"
 #include "utils.h"
 
 
@@ -93,7 +94,8 @@ bool IsPasswordAllowed(const GameMode mode)
 
 bool IsMissionBriefingNeeded(const GameMode mode)
 {
-	return mode == GAME_MODE_NORMAL;
+	return
+		mode == GAME_MODE_NORMAL && GetNumPlayers(PLAYER_ANY, false, true) > 0;
 }
 
 bool AreKeysAllowed(const GameMode mode)

@@ -48,14 +48,13 @@ set(CDOGS_SOURCES
 	font.c
 	font_utils.c
 	game_events.c
-	game_loop.c
 	game_mode.c
 	gamedata.c
 	grafx.c
 	grafx_bg.c
 	handle_game_events.c
-	hiscores.c
 	hud/fps.c
+	hud/health_gauge.c
 	hud/hud.c
 	hud/hud_num_popup.c
 	hud/wall_clock.c
@@ -145,14 +144,13 @@ set(CDOGS_HEADERS
 	font.h
 	font_utils.h
 	game_events.h
-	game_loop.h
 	game_mode.h
 	gamedata.h
 	grafx.h
 	grafx_bg.h
 	handle_game_events.h
-	hiscores.h
 	hud/fps.h
+	hud/health_gauge.h
 	hud/hud.h
 	hud/hud_defs.h
 	hud/hud_num_popup.h

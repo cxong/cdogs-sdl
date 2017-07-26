@@ -55,7 +55,11 @@
 #include <ctype.h>
 
 #include <SDL.h>
+#ifdef __EMSCRIPTEN__
+#include <SDL/SDL_mixer.h>
+#else
 #include <SDL_mixer.h>
+#endif
 #include <tinydir/tinydir.h>
 
 #include "actors.h"
@@ -83,7 +87,7 @@ bool CampaignLoad(CampaignOptions *co, CampaignEntry *entry)
 	CASSERT(!co->IsLoaded, "loading campaign without unloading last one");
 	// Note: use the mode already set by the menus
 	const GameMode mode = co->Entry.Mode;
-	co->Entry = *entry;
+	CampaignEntryCopy(&co->Entry, entry);
 	co->Entry.Mode = mode;
 	CampaignSettingInit(&co->Setting);
 	if (entry->Mode == GAME_MODE_QUICK_PLAY)
@@ -118,6 +122,8 @@ void CampaignUnload(CampaignOptions *co)
 	co->IsLoaded = false;
 	co->IsClient = false;	// TODO: select is client from menu
 	co->OptionsSet = false;
+	co->IsComplete = false;
+	CampaignEntryTerminate(&co->Entry);
 }
 
 void MissionOptionsInit(struct MissionOptions *mo)

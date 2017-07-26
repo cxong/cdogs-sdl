@@ -8,7 +8,8 @@
       "Cost": 0,
       "Lock": 20,
       "Sound": "",
-      "CanShoot": false
+      "CanShoot": false,
+      "CanDrop": false
     },
     {
       "Pic": "knife",
@@ -54,6 +55,19 @@
       "SwitchSound": "powergun_r",
       "MuzzleFlashSprite": "muzzle_flash_big",
       "MuzzleFlashColor": "ffff00",
+      "MuzzleFlashDuration": 5,
+      "Ammo": "Cells"
+    },
+    {
+      "Name": "Projector",
+      "Icon": "projector",
+      "Bullet": "projection",
+      "Cost": 5,
+      "Lock": 70,
+      "Sound": "projector",
+      "SwitchSound": "powergun_r",
+      "MuzzleFlashSprite": "muzzle_flash_big",
+      "MuzzleFlashColor": "ffaa00",
       "MuzzleFlashDuration": 5,
       "Ammo": "Cells"
     }

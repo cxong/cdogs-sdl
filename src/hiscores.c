@@ -57,20 +57,88 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include "config.h"
-#include "font.h"
-#include "game_loop.h"
-#include "gamedata.h"
-#include "grafx.h"
-#include "grafx_bg.h"
-#include "blit.h"
-#include "actors.h"
-#include "events.h"
-#include "keyboard.h"
-#include "pics.h"
-#include "sounds.h"
-#include "files.h"
-#include "utils.h"
+#include <cdogs/events.h>
+#include <cdogs/files.h>
+#include <cdogs/font.h>
+
+
+// Dummy screen to calculate high scores and switch to high scores screens if
+// required
+typedef struct
+{
+	CampaignOptions *co;
+	GraphicsDevice *g;
+} HighScoresScreenData;
+static void HighScoresScreenTerminate(GameLoopData *data);
+static GameLoopResult HighScoresScreenUpdate(
+	GameLoopData *data, LoopRunner *l);
+GameLoopData *HighScoresScreen(CampaignOptions *co, GraphicsDevice *g)
+{
+	HighScoresScreenData *data;
+	CMALLOC(data, sizeof *data);
+	data->co = co;
+	data->g = g;
+	return GameLoopDataNew(
+		data, HighScoresScreenTerminate, NULL, NULL,
+		NULL, HighScoresScreenUpdate, NULL);
+}
+static void HighScoresScreenTerminate(GameLoopData *data)
+{
+	HighScoresScreenData *hData = data->Data;
+	CFREE(hData);
+}
+static GameLoopResult HighScoresScreenUpdate(
+	GameLoopData *data, LoopRunner *l)
+{
+	HighScoresScreenData *hData = data->Data;
+	LoopRunnerPop(l);
+	if (!IsPVP(hData->co->Entry.Mode) &&
+		GetNumPlayers(PLAYER_ANY, false, true) > 0)
+	{
+		LoadHighScores();
+		bool allTime = false;
+		bool todays = false;
+		CA_FOREACH(PlayerData, p, gPlayerDatas)
+			const bool isPlayerComplete =
+				(!gMission.IsQuit && !p->survived) || hData->co->IsComplete;
+			if (isPlayerComplete && p->IsLocal && IsPlayerHuman(p))
+			{
+				EnterHighScore(p);
+				allTime |= p->allTime >= 0;
+				todays |= p->today >= 0;
+			}
+
+			if (!p->survived)
+			{
+				// Reset scores because we died :(
+				memset(&p->Totals, 0, sizeof p->Totals);
+				p->missions = 0;
+			}
+			else
+			{
+				p->missions++;
+			}
+			p->lastMission = hData->co->MissionIndex;
+		CA_FOREACH_END()
+		SaveHighScores();
+
+		// Show high scores screen if high enough
+		if (todays)
+		{
+			LoopRunnerPush(l, DisplayTodaysHighScores(hData->g));
+		}
+		if (allTime)
+		{
+			LoopRunnerPush(l, DisplayAllTimeHighScores(hData->g));
+		}
+	}
+	if (!HasRounds(hData->co->Entry.Mode) && !hData->co->IsComplete)
+	{
+		hData->co->MissionIndex++;
+	}
+
+	return UPDATE_RESULT_OK;
+}
 
 
 // Warning: written as-is to file
@@ -190,12 +258,14 @@ typedef struct
 	int highlights[MAX_LOCAL_PLAYERS];
 	int scoreIdx;
 } HighScoresData;
-static GameLoopResult HighScoreUpdate(GameLoopData *data);
+static void HighScoreTerminate(GameLoopData *data);
+static GameLoopResult HighScoreUpdate(GameLoopData *data, LoopRunner *l);
 static void HighScoreDraw(GameLoopData *data);
-void DisplayAllTimeHighScores(GraphicsDevice *graphics)
+GameLoopData *DisplayAllTimeHighScores(GraphicsDevice *graphics)
 {
-	HighScoresData data;
-	data.g = graphics;
+	HighScoresData *data;
+	CMALLOC(data, sizeof *data);
+	data->g = graphics;
 	int idx = 0;
 	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
@@ -205,23 +275,20 @@ void DisplayAllTimeHighScores(GraphicsDevice *graphics)
 			idx--;
 			continue;
 		}
-		data.highlights[idx] = p->allTime;
+		data->highlights[idx] = p->allTime;
 	}
-	data.scoreIdx = 0;
-	data.title = "All time high scores:";
-	data.scores = allTimeHigh;
-	while (data.scoreIdx < MAX_ENTRY && data.scores[data.scoreIdx].score > 0)
-	{
-		GameLoopData gData = GameLoopDataNew(
-			&data, NULL, NULL, NULL, NULL, HighScoreUpdate, HighScoreDraw);
-		GameLoop(&gData);
-		GameLoopTerminate(&gData);
-	}
+	data->scoreIdx = 0;
+	data->title = "All time high scores:";
+	data->scores = allTimeHigh;
+	return GameLoopDataNew(
+		data, HighScoreTerminate, NULL, NULL,
+		NULL, HighScoreUpdate, HighScoreDraw);
 }
-void DisplayTodaysHighScores(GraphicsDevice *graphics)
+GameLoopData *DisplayTodaysHighScores(GraphicsDevice *graphics)
 {
-	HighScoresData data;
-	data.g = graphics;
+	HighScoresData *data;
+	CMALLOC(data, sizeof *data);
+	data->g = graphics;
 	int idx = 0;
 	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
@@ -231,18 +298,20 @@ void DisplayTodaysHighScores(GraphicsDevice *graphics)
 			idx--;
 			continue;
 		}
-		data.highlights[idx] = p->today;
+		data->highlights[idx] = p->today;
 	}
-	data.scoreIdx = 0;
-	data.title = "Today's highest score:";
-	data.scores = todaysHigh;
-	while (data.scoreIdx < MAX_ENTRY && data.scores[data.scoreIdx].score > 0)
-	{
-		GameLoopData gData = GameLoopDataNew(
-			&data, NULL, NULL, NULL, NULL, HighScoreUpdate, HighScoreDraw);
-		GameLoop(&gData);
-		GameLoopTerminate(&gData);
-	}
+	data->scoreIdx = 0;
+	data->title = "Today's highest score:";
+	data->scores = todaysHigh;
+	return GameLoopDataNew(
+		data, HighScoreTerminate, NULL, NULL,
+		NULL, HighScoreUpdate, HighScoreDraw);
+}
+static void HighScoreTerminate(GameLoopData *data)
+{
+	HighScoresData *hData = data->Data;
+
+	CFREE(hData);
 }
 static void HighScoreDraw(GameLoopData *data)
 {
@@ -253,12 +322,16 @@ static void HighScoreDraw(GameLoopData *data)
 		hData->title, hData->scoreIdx, hData->scores, hData->highlights);
 	BlitUpdateFromBuf(hData->g, hData->g->screen);
 }
-static GameLoopResult HighScoreUpdate(GameLoopData *data)
+static GameLoopResult HighScoreUpdate(GameLoopData *data, LoopRunner *l)
 {
 	UNUSED(data);
 	const EventWaitResult result = EventWaitForAnyKeyOrButton();
-	return
-		result == EVENT_WAIT_CONTINUE ? UPDATE_RESULT_OK : UPDATE_RESULT_EXIT;
+
+	if (result != EVENT_WAIT_CONTINUE)
+	{
+		LoopRunnerPop(l);
+	}
+	return UPDATE_RESULT_OK;
 }
 
 
@@ -271,8 +344,6 @@ void SaveHighScores(void)
 	FILE *f;
 	time_t t;
 	struct tm *tp;
-
-	debug(D_NORMAL, "begin\n");
 
 	f = fopen(GetConfigFilePath(SCORES_FILE), "wb");
 	if (f != NULL) {

@@ -230,8 +230,6 @@ static void Display(GraphicsDevice *g, HandleInputResult result)
 	FontStr("Press Ctrl+E to edit characters", Vec2iNew(20, h - 20 - FontH() * 2));
 	FontStr("Press F1 for help", Vec2iNew(20, h - 20 - FontH()));
 
-	y = 150;
-
 	UIObjectDraw(
 		sObjs, g, Vec2iZero(), gEventHandlers.mouse.currentPos, &sDrawObjs);
 
@@ -443,6 +441,7 @@ static void Open(void)
 		char buf[CDOGS_PATH_MAX];
 		PathGetDirname(buf, filename);
 		char tabCompleteCandidate[CDOGS_PATH_MAX];
+		tabCompleteCandidate[0] = '\0';
 		if (!tinydir_open_sorted(&dir, buf))
 		{
 			int numCandidates = 0;
@@ -537,21 +536,18 @@ static void Open(void)
 			// Try original filename
 			if (TryOpen(filename))
 			{
-				done = true;
 				break;
 			}
 			// Try adding .cdogscpn
 			sprintf(buf, "%s.cdogscpn", filename);
 			if (TryOpen(buf))
 			{
-				done = true;
 				break;
 			}
 			// Try adding .cpn
 			sprintf(buf, "%s.cpn", filename);
 			if (TryOpen(buf))
 			{
-				done = true;
 				break;
 			}
 			// All attempts failed
@@ -600,7 +596,7 @@ static void Save(void)
 		pos.y += FontH();
 		pos = FontCh('>', pos);
 		pos = FontStr(filename, pos);
-		pos = FontCh('<', pos);
+		FontCh('<', pos);
 		BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 		BlitFlip(&gGraphicsDevice);
 

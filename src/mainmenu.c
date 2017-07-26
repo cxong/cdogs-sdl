@@ -30,10 +30,13 @@
 
 #include <cdogs/config.h>
 #include <cdogs/font.h>
+#include <cdogs/grafx_bg.h>
 #include <cdogs/log.h>
 #include <cdogs/net_client.h>
+#include <cdogs/net_server.h>
 
 #include "autosave.h"
+#include "briefing_screens.h"
 #include "menu.h"
 #include "prep.h"
 
@@ -48,16 +51,16 @@ typedef struct
 	bool wasClient;
 } MainMenuData;
 static void MenuCreateAll(
-	MenuSystem *ms,
+	MenuSystem *ms, LoopRunner *l,
 	custom_campaigns_t *campaigns,
 	EventHandlers *handlers,
 	GraphicsDevice *graphics);
 static void MainMenuTerminate(GameLoopData *data);
 static void MainMenuOnEnter(GameLoopData *data);
 static void MainMenuOnExit(GameLoopData *data);
-static GameLoopResult MainMenuUpdate(GameLoopData *data);
+static GameLoopResult MainMenuUpdate(GameLoopData *data, LoopRunner *l);
 static void MainMenuDraw(GameLoopData *data);
-GameLoopData MainMenu(GraphicsDevice *graphics)
+GameLoopData *MainMenu(GraphicsDevice *graphics, LoopRunner *l)
 {
 	MainMenuData *data;
 	CMALLOC(data, sizeof *data);
@@ -68,6 +71,9 @@ GameLoopData MainMenu(GraphicsDevice *graphics)
 	LoadAllCampaigns(&data->campaigns);
 	data->lastGameMode = GAME_MODE_QUICK_PLAY;
 	data->wasClient = false;
+	MenuCreateAll(
+		&data->ms, l, &data->campaigns, &gEventHandlers, data->graphics);
+	MenuSetCreditsDisplayer(&data->ms, &data->creditsDisplayer);
 	return GameLoopDataNew(
 		data, MainMenuTerminate, MainMenuOnEnter, MainMenuOnExit,
 		NULL, MainMenuUpdate, MainMenuDraw);
@@ -76,6 +82,7 @@ static void MainMenuTerminate(GameLoopData *data)
 {
 	MainMenuData *mData = data->Data;
 
+	MenuSystemTerminate(&mData->ms);
 	UnloadCredits(&mData->creditsDisplayer);
 	UnloadAllCampaigns(&mData->campaigns);
 	CFREE(mData);
@@ -85,9 +92,20 @@ static void MainMenuOnEnter(GameLoopData *data)
 {
 	MainMenuData *mData = data->Data;
 
-	MenuCreateAll(
-		&mData->ms, &mData->campaigns, &gEventHandlers, mData->graphics);
-	MenuSetCreditsDisplayer(&mData->ms, &mData->creditsDisplayer);
+	if (gCampaign.IsLoaded)
+	{
+		// Loaded game already; skip menus and go straight to game
+		return;
+	}
+
+	GrafxMakeRandomBackground(
+		&gGraphicsDevice, &gCampaign, &gMission, &gMap);
+	NetClientDisconnect(&gNetClient);
+	NetServerClose(&gNetServer);
+	GameEventsTerminate(&gGameEvents);
+	// Reset config - could have been set to other values by server
+	ConfigResetChanged(&gConfig);
+	CampaignSettingTerminate(&gCampaign.Setting);
 
 	// Auto-enter the submenu corresponding to the last game mode
 	menu_t *startMenu = FindSubmenuByName(mData->ms.root, "Start");
@@ -109,7 +127,7 @@ static void MainMenuOnEnter(GameLoopData *data)
 			mData->ms.current = FindSubmenuByName(startMenu, "Deathmatch");
 			break;
 		default:
-			// Do nothing
+			mData->ms.current = mData->ms.root;
 			break;
 		}
 	}
@@ -118,21 +136,47 @@ static menu_t *FindSubmenuByName(menu_t *menu, const char *name)
 {
 	CASSERT(menu->type == MENU_TYPE_NORMAL, "invalid menu type");
 	CA_FOREACH(menu_t, submenu, menu->u.normal.subMenus)
-	if (strcmp(submenu->name, name) == 0) return submenu;
+		if (strcmp(submenu->name, name) == 0) return submenu;
 	CA_FOREACH_END()
 	return menu;
 }
 static void MainMenuOnExit(GameLoopData *data)
 {
 	MainMenuData *mData = data->Data;
-	MenuSystemTerminate(&mData->ms);
+
+	// Reset player datas
+	PlayerDataTerminate(&gPlayerDatas);
+	PlayerDataInit(&gPlayerDatas);
+	// Initialise game events; we need this for init as well as the game
+	GameEventsInit(&gGameEvents);
+
 	mData->lastGameMode = gCampaign.Entry.Mode;
 	mData->wasClient = gCampaign.IsClient;
 }
-static GameLoopResult MainMenuUpdate(GameLoopData *data)
+static GameLoopResult MainMenuUpdate(GameLoopData *data, LoopRunner *l)
 {
 	MainMenuData *mData = data->Data;
-	return MenuUpdate(&mData->ms);
+
+	if (gCampaign.IsLoaded)
+	{
+		// Loaded game already; skip menus and go straight to game
+		LoopRunnerPush(l, ScreenCampaignIntro(&gCampaign.Setting));
+		return UPDATE_RESULT_OK;
+	}
+
+	const GameLoopResult result = MenuUpdate(&mData->ms);
+	if (result == UPDATE_RESULT_OK)
+	{
+		if (gCampaign.IsLoaded)
+		{
+			LoopRunnerPush(l, ScreenCampaignIntro(&gCampaign.Setting));
+		}
+		else
+		{
+			LoopRunnerPop(l);
+		}
+	}
+	return result;
 }
 static void MainMenuDraw(GameLoopData *data)
 {
@@ -141,12 +185,13 @@ static void MainMenuDraw(GameLoopData *data)
 }
 
 static menu_t *MenuCreateStart(
-	const char *name, MenuSystem *ms, custom_campaigns_t *campaigns);
+	const char *name, MenuSystem *ms, LoopRunner *l,
+	custom_campaigns_t *campaigns);
 static menu_t *MenuCreateOptions(const char *name, MenuSystem *ms);
 menu_t *MenuCreateQuit(const char *name);
 
 static void MenuCreateAll(
-	MenuSystem *ms,
+	MenuSystem *ms, LoopRunner *l,
 	custom_campaigns_t *campaigns,
 	EventHandlers *handlers,
 	GraphicsDevice *graphics)
@@ -163,10 +208,12 @@ static void MenuCreateAll(
 		"",
 		MENU_TYPE_NORMAL,
 		MENU_DISPLAY_ITEMS_CREDITS | MENU_DISPLAY_ITEMS_AUTHORS);
-	MenuAddSubmenu(ms->root, MenuCreateStart("Start", ms, campaigns));
+	MenuAddSubmenu(ms->root, MenuCreateStart("Start", ms, l, campaigns));
 	MenuAddSubmenu(ms->root, MenuCreateOptions("Options...", ms));
+#ifndef __EMSCRIPTEN__
 	MenuAddSubmenu(ms->root, MenuCreateQuit("Quit"));
 	MenuAddExitType(ms, MENU_TYPE_QUIT);
+#endif
 	MenuAddExitType(ms, MENU_TYPE_RETURN);
 }
 
@@ -182,10 +229,11 @@ static menu_t *MenuCreateCampaigns(
 	const char *name, const char *title,
 	campaign_list_t *list, const GameMode mode);
 static menu_t *CreateJoinLANGame(
-	const char *name, const char *title, MenuSystem *ms);
+	const char *name, const char *title, MenuSystem *ms, LoopRunner *l);
 static void CheckLANServers(menu_t *menu, void *data);
 static menu_t *MenuCreateStart(
-	const char *name, MenuSystem *ms, custom_campaigns_t *campaigns)
+	const char *name, MenuSystem *ms, LoopRunner *l,
+	custom_campaigns_t *campaigns)
 {
 	menu_t *menu = MenuCreateNormal(name, "Start:", MENU_TYPE_NORMAL, 0);
 	MenuAddSubmenu(
@@ -217,7 +265,7 @@ static menu_t *MenuCreateStart(
 		&campaigns->dogfightList,
 		GAME_MODE_DEATHMATCH));
 	MenuAddSubmenu(
-		menu, CreateJoinLANGame("Join LAN game", "Choose LAN server", ms));
+		menu, CreateJoinLANGame("Join LAN game", "Choose LAN server", ms, l));
 	CheckLANServerData *cdata;
 	CMALLOC(cdata, sizeof *cdata);
 	cdata->MenuJoinIndex = (int)menu->u.normal.subMenus.size - 1;
@@ -349,25 +397,35 @@ static menu_t *MenuCreateCampaignItem(
 	return menu;
 }
 
+typedef struct
+{
+	MenuSystem *MS;
+	LoopRunner *L;
+} CreateJoinLANGameData;
 static void CreateLANServerMenuItems(menu_t *menu, void *data);
 static menu_t *CreateJoinLANGame(
-	const char *name, const char *title, MenuSystem *ms)
+	const char *name, const char *title, MenuSystem *ms, LoopRunner *l)
 {
 	menu_t *menu = MenuCreateNormal(name, title, MENU_TYPE_NORMAL, 0);
 	// We'll create our menu items dynamically after entering
 	// Creating an item for each scanned server address
-	MenuSetPostEnterFunc(menu, CreateLANServerMenuItems, ms, false);
+	CreateJoinLANGameData *data;
+	CMALLOC(data, sizeof *data);
+	data->MS = ms;
+	data->L = l;
+	MenuSetPostEnterFunc(menu, CreateLANServerMenuItems, data, true);
 	return menu;
 }
 typedef struct
 {
 	MenuSystem *MS;
+	LoopRunner *L;
 	int AddrIndex;
 } JoinLANGameData;
 static void JoinLANGame(menu_t *menu, void *data);
 static void CreateLANServerMenuItems(menu_t *menu, void *data)
 {
-	MenuSystem *ms = data;
+	CreateJoinLANGameData *cData = data;
 
 	// Clear and recreate all menu items
 	MenuClearSubmenus(menu);
@@ -391,7 +449,8 @@ static void CreateLANServerMenuItems(menu_t *menu, void *data)
 		serverMenu->enterSound = MENU_SOUND_START;
 		JoinLANGameData *jdata;
 		CMALLOC(jdata, sizeof *jdata);
-		jdata->MS = ms;
+		jdata->MS = cData->MS;
+		jdata->L = cData->L;
 		jdata->AddrIndex = _ca_index;
 		MenuSetPostEnterFunc(serverMenu, JoinLANGame, jdata, true);
 		MenuAddSubmenu(menu, serverMenu);
@@ -411,15 +470,12 @@ static void JoinLANGame(menu_t *menu, void *data)
 	LOG(LM_MAIN, LL_INFO, "joining LAN game...");
 	if (NetClientTryConnect(&gNetClient, sinfo->Addr))
 	{
-		ScreenWaitForCampaignDef();
+		LoopRunnerPush(jdata->L, ScreenWaitForCampaignDef());
+		goto bail;
 	}
 	else
 	{
 		LOG(LM_MAIN, LL_INFO, "failed to connect to LAN game");
-	}
-	if (!gCampaign.IsLoaded)
-	{
-		goto bail;
 	}
 	return;
 

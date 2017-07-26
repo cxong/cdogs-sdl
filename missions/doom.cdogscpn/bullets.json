@@ -72,6 +72,14 @@
         "Flesh": "hit_fire",
         "Wall": "hit_fire"
       }
+    },
+    {
+      "Name": "monster_bite",
+      "Power": 10,
+      "HitSounds": {
+        "Object": "knife_hard",
+        "Flesh": "monster-2"
+      }
     }
   ]
 }

@@ -26,12 +26,13 @@
 #pragma once
 
 #include <cdogs/campaigns.h>
-#include <cdogs/game_loop.h>
+
+#include "game_loop.h"
 
 
-GameLoopData ScreenCampaignIntro(CampaignSetting *c);
-bool ScreenMissionBriefing(const struct MissionOptions *m);
+GameLoopData *ScreenCampaignIntro(CampaignSetting *c);
+GameLoopData *ScreenMissionBriefing(const struct MissionOptions *m);
 // Display a summary page at the end of a mission
 // Returns true if the game is to continue
-bool ScreenMissionSummary(
-	CampaignOptions *c, struct MissionOptions *m, const bool completed);
+GameLoopData *ScreenMissionSummary(
+	const CampaignOptions *c, struct MissionOptions *m, const bool completed);

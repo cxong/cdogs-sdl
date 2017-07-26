@@ -46,7 +46,7 @@ void CampaignInit(CampaignOptions *campaign)
 }
 void CampaignTerminate(CampaignOptions *campaign)
 {
-	campaign->IsLoaded = false;
+	CampaignUnload(&gCampaign);
 	CampaignSettingTerminate(&campaign->Setting);
 }
 void CampaignSettingInit(CampaignSetting *setting)
@@ -218,7 +218,11 @@ void CampaignSeedRandom(const CampaignOptions *campaign)
 void CampaignAndMissionSetup(
 	CampaignOptions *campaign, struct MissionOptions *mo)
 {
+	Mission *m = CampaignGetCurrentMission(campaign);
+	if (m == NULL)
+	{
+		return;
+	}
 	CampaignSeedRandom(campaign);
-	SetupMission(
-		CampaignGetCurrentMission(campaign), mo, campaign->MissionIndex);
+	SetupMission(m, mo, campaign->MissionIndex);
 }

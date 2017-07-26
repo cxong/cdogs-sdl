@@ -133,15 +133,16 @@ int MenuIsExit(MenuSystem *ms)
 
 void MenuProcessChangeKey(menu_t *menu);
 
-static GameLoopResult DefaultMenuUpdate(GameLoopData *data);
+static GameLoopResult DefaultMenuUpdate(GameLoopData *data, LoopRunner *l);
 static void DefaultMenuDraw(GameLoopData *data);
-GameLoopData MenuLoop(MenuSystem *menu)
+GameLoopData *MenuLoop(MenuSystem *menu)
 {
 	return GameLoopDataNew(
 		menu, NULL, NULL, NULL, NULL, DefaultMenuUpdate, DefaultMenuDraw);
 }
-static GameLoopResult DefaultMenuUpdate(GameLoopData *data)
+static GameLoopResult DefaultMenuUpdate(GameLoopData *data, LoopRunner *l)
 {
+	UNUSED(l);
 	return MenuUpdate(data->Data);
 }
 static void DefaultMenuDraw(GameLoopData *data)
@@ -173,11 +174,11 @@ GameLoopResult MenuUpdate(MenuSystem *ms)
 	if (aborted || ms->handlers->HasQuit)
 	{
 		ms->hasAbort = true;
-		return UPDATE_RESULT_EXIT;
+		return UPDATE_RESULT_OK;
 	}
 	if (MenuIsExit(ms))
 	{
-		return UPDATE_RESULT_EXIT;
+		return UPDATE_RESULT_OK;
 	}
 	if (ms->current->customPostUpdateFunc)
 	{
@@ -1117,7 +1118,11 @@ static bool KeyAvailable(
 void MenuProcessChangeKey(menu_t *menu)
 {
 	// wait until user has pressed a new button
-	const SDL_Scancode key = GetKey(&gEventHandlers);
+	const SDL_Scancode key = KeyGetPressed(&gEventHandlers.keyboard);
+	if (key == 0)
+	{
+		return;
+	}
 	const key_code_e code = menu->u.normal.changeKeyMenu->u.changeKey.code;
 	const int pi = menu->u.normal.changeKeyMenu->u.changeKey.playerIndex;
 	if (key == SDL_SCANCODE_ESCAPE)

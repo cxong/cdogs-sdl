@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2016, Cong Xu
+    Copyright (c) 2014-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -27,7 +27,9 @@
 
 #include <cdogs/campaigns.h>
 
-void ScreenVictory(CampaignOptions *c);
-void ScreenDogfightScores(void);
-void ScreenDogfightFinalScores(void);
-void ScreenDeathmatchFinalScores(void);
+#include "game_loop.h"
+
+GameLoopData *ScreenVictory(CampaignOptions *c);
+GameLoopData *ScreenDogfightScores(void);
+GameLoopData *ScreenDogfightFinalScores(void);
+GameLoopData *ScreenDeathmatchFinalScores(void);

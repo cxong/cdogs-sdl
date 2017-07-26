@@ -67,6 +67,16 @@
       }
     },
     {
+      "Name": "Evil Ogre",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/ogre_evil"
+      },
+      "Sounds": {
+        "Aargh": "aargh/ogre"
+      }
+    },
+    {
       "Name": "Grunt",
       "HeadPics": {
         "Type": "Directional",

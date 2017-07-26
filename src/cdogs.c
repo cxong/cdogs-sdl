@@ -68,7 +68,6 @@
 #include <cdogs/font_utils.h>
 #include <cdogs/grafx.h>
 #include <cdogs/handle_game_events.h>
-#include <cdogs/hiscores.h>
 #include <cdogs/joystick.h>
 #include <cdogs/keyboard.h>
 #include <cdogs/log.h>
@@ -92,33 +91,8 @@
 #include "command_line.h"
 #include "credits.h"
 #include "mainmenu.h"
-#include "player_select_menus.h"
 #include "prep.h"
-#include "screens.h"
 
-
-static void MainLoop(void)
-{
-	GameLoopData g = MainMenu(&gGraphicsDevice);
-	for (;;)
-	{
-		GrafxMakeRandomBackground(
-			&gGraphicsDevice, &gCampaign, &gMission, &gMap);
-		if (!gCampaign.IsLoaded)
-		{
-			GameLoop(&g);
-		}
-		if (!gCampaign.IsLoaded)
-		{
-			break;
-		}
-		ScreenStart();
-	}
-	GameLoopTerminate(&g);
-
-	// Close net connection
-	NetServerTerminate(&gNetServer);
-}
 
 int main(int argc, char *argv[])
 {
@@ -154,6 +128,7 @@ int main(int argc, char *argv[])
 	AutosaveInit(&gAutosave);
 	AutosaveLoad(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 
+#ifndef __EMSCRIPTEN__
 	if (enet_initialize() != 0)
 	{
 		LOG(LM_MAIN, LL_ERROR, "An error occurred while initializing ENet.");
@@ -161,6 +136,7 @@ int main(int argc, char *argv[])
 		goto bail;
 	}
 	NetClientInit(&gNetClient);
+#endif
 
 	// Print command line
 	char buf[CDOGS_PATH_MAX];
@@ -172,9 +148,13 @@ int main(int argc, char *argv[])
 	}
 
 	debug(D_NORMAL, "Initialising SDL...\n");
+#ifndef __EMSCRIPTEN__
 	const int sdlFlags =
 		SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_HAPTIC |
 		SDL_INIT_GAMECONTROLLER;
+#else
+    const int sdlFlags = SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO;
+#endif
 	if (SDL_Init(sdlFlags) != 0)
 	{
 		LOG(LM_MAIN, LL_ERROR, "Could not initialise SDL: %s", SDL_GetError());
@@ -200,9 +180,6 @@ int main(int argc, char *argv[])
 		LOG(LM_MAIN, LL_ERROR, "Sound initialization failed!");
 	}
 
-	LoadHighScores();
-
-	debug(D_NORMAL, "Loading song lists...\n");
 	LoadSongs();
 
 	MusicPlayMenu(&gSoundDevice);
@@ -245,7 +222,7 @@ int main(int argc, char *argv[])
 	CampaignInit(&gCampaign);
 	PlayerDataInit(&gPlayerDatas);
 
-	debug(D_NORMAL, ">> Entering main loop\n");
+	LoopRunner l = LoopRunnerNew(NULL);
 	// Attempt to pre-load campaign if requested
 	if (loadCampaign != NULL)
 	{
@@ -264,18 +241,23 @@ int main(int argc, char *argv[])
 	{
 		if (NetClientTryScanAndConnect(&gNetClient, connectAddr.host))
 		{
-			ScreenWaitForCampaignDef();
+			LoopRunnerPush(&l, ScreenWaitForCampaignDef());
 		}
 		else
 		{
 			printf("Failed to connect\n");
 		}
 	}
+	if (!gCampaign.IsLoaded)
+	{
+		LoopRunnerPush(&l, MainMenu(&gGraphicsDevice, &l));
+	}
 	LOG(LM_MAIN, LL_INFO, "Starting game");
-	MainLoop();
+	LoopRunnerRun(&l);
+	LoopRunnerTerminate(&l);
 
 bail:
-	debug(D_NORMAL, ">> Shutting down...\n");
+	NetServerTerminate(&gNetServer);
 	MapTerminate(&gMap);
 	PlayerDataTerminate(&gPlayerDatas);
 	MapObjectsTerminate(&gMapObjects);
@@ -301,7 +283,6 @@ bail:
 	CArrayTerminate(&gPlayerTemplates);
 	FreeSongs(&gMenuSongs);
 	FreeSongs(&gGameSongs);
-	SaveHighScores();
 	SoundTerminate(&gSoundDevice, true);
 	ConfigDestroy(&gConfig);
 	LogTerminate();

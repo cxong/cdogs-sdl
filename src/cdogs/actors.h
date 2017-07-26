@@ -127,7 +127,6 @@ typedef struct Actor
 	int gunIndex;
 
 	int health;
-	int lastHealth;
 	// A counter for player death
 	// If 0, player is alive
 	// If >0 but less than DEATH_MAX, player is "dying" and this variable
@@ -201,6 +200,7 @@ Vec2i ActorGetGunMuzzleOffset(const TActor *a);
 int ActorGunGetAmmo(const TActor *a, const Weapon *w);
 bool ActorCanFire(const TActor *a);
 bool ActorCanSwitchGun(const TActor *a);
+bool ActorHasGun(const TActor *a, const GunDescription *gun);
 void ActorSwitchGun(const NActorSwitchGun sg);
 bool ActorIsImmune(const TActor *actor, const special_damage_e damage);
 // Taking a hit only gives the appearance (pushback, special effect)
@@ -209,6 +209,9 @@ void ActorTakeHit(TActor *actor, const special_damage_e damage);
 bool ActorIsInvulnerable(
 	const TActor *a, const int flags, const int playerUID,
 	const GameMode mode);
+
 void ActorAddBloodSplatters(TActor *a, const int power, const double mass, const Vec2i hitVector);
+int ActorGetHealthPercent(const TActor *a);
+bool ActorIsLowHealth(const TActor *a);
 
 bool ActorIsLocalPlayer(const int uid);

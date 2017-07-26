@@ -392,7 +392,8 @@ static void DrawParticle(const Vec2i pos, const TileItemDrawFuncData *data)
 				p->Count / p->Class->TicksPerFrame,
 				(int)p->Class->Sprites->pics.size - 1);
 		}
-		pic = CArrayGet(&p->Class->Sprites->pics, frame);
+		const CArray *sprites = &p->Class->Sprites->pics;
+		pic = CArrayGet(sprites, frame % sprites->size);
 	}
 	else
 	{

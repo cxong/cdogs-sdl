@@ -90,4 +90,5 @@ void CampaignEntryTerminate(CampaignEntry *entry)
 	CFREE(entry->Filename);
 	CFREE(entry->Path);
 	CFREE(entry->Info);
+	memset(entry, 0, sizeof *entry);
 }

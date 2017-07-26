@@ -58,14 +58,18 @@
 #include <cdogs/camera.h>
 #include <cdogs/draw/drawtools.h>
 #include <cdogs/events.h>
-#include <cdogs/game_loop.h>
 #include <cdogs/grafx_bg.h>
 #include <cdogs/handle_game_events.h>
 #include <cdogs/log.h>
 #include <cdogs/los.h>
+#include <cdogs/music.h>
 #include <cdogs/net_client.h>
 #include <cdogs/net_server.h>
 #include <cdogs/objs.h>
+
+#include "briefing_screens.h"
+#include "hiscores.h"
+#include "screens_end.h"
 
 
 static void PlayerSpecialCommands(TActor *actor, const int cmd)
@@ -107,8 +111,8 @@ Vec2i GetPlayerCenter(
 	int w = device->cachedConfig.Res.x;
 	int h = device->cachedConfig.Res.y;
 
-	if (GetNumPlayers(PLAYER_ALIVE_OR_DYING, true, true) == 1 ||
-		GetNumPlayers(PLAYER_ALIVE_OR_DYING, false , true) == 1 ||
+	if (GetNumPlayers(PLAYER_ANY, true, true) == 1 ||
+		GetNumPlayers(PLAYER_ANY, false , true) == 1 ||
 		CameraIsSingleScreen())
 	{
 		const Vec2i pCenter = camera->lastPosition;
@@ -156,29 +160,33 @@ typedef struct
 	int aiUpdateCounter;
 	PowerupSpawner healthSpawner;
 	CArray ammoSpawners;	// of PowerupSpawner
-	GameLoopData loop;
 } RunGameData;
+static void RunGameTerminate(GameLoopData *data);
 static void RunGameOnEnter(GameLoopData *data);
 static void RunGameOnExit(GameLoopData *data);
 static void RunGameInput(GameLoopData *data);
-static GameLoopResult RunGameUpdate(GameLoopData *data);
+static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l);
 static void RunGameDraw(GameLoopData *data);
-bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map)
+GameLoopData *RunGame(
+	const CampaignOptions *co, struct MissionOptions *m, Map *map)
 {
-	RunGameData data;
-	memset(&data, 0, sizeof data);
-	data.co = co;
-	data.m = m;
-	data.map = map;
-	data.loop = GameLoopDataNew(
-		&data, NULL, RunGameOnEnter, RunGameOnExit,
+	RunGameData *data;
+	CCALLOC(data, sizeof *data);
+	data->co = co;
+	data->m = m;
+	data->map = map;
+	GameLoopData *g = GameLoopDataNew(
+		data, RunGameTerminate, RunGameOnEnter, RunGameOnExit,
 		RunGameInput, RunGameUpdate, RunGameDraw);
-	data.loop.FPS = ConfigGetInt(&gConfig, "Game.FPS");
-	data.loop.InputEverySecondFrame = true;
-	GameLoop(&data.loop);
-	GameLoopTerminate(&data.loop);
+	g->FPS = ConfigGetInt(&gConfig, "Game.FPS");
+	g->InputEverySecondFrame = true;
+	return g;
+}
+static void RunGameTerminate(GameLoopData *data)
+{
+	RunGameData *rData = data->Data;
 
-	return !m->IsQuit;
+	CFREE(rData);
 }
 static void RunGameOnEnter(GameLoopData *data)
 {
@@ -288,6 +296,24 @@ static void RunGameOnExit(GameLoopData *data)
 	// Clear other texures
 	BlitClearBuf(&gGraphicsDevice);
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.hud);
+
+	// Unready all the players
+	CA_FOREACH(PlayerData, p, gPlayerDatas)
+		p->Ready = false;
+	CA_FOREACH_END()
+	gNetClient.Ready = false;
+
+	// Calculate remaining health and survived
+	CA_FOREACH(PlayerData, p, gPlayerDatas)
+		p->survived = IsPlayerAlive(p);
+		if (IsPlayerAlive(p))
+		{
+			const TActor *player = ActorGetByUID(p->ActorUID);
+			p->hp = player->health;
+		}
+	CA_FOREACH_END()
+
+	MusicPlayMenu(&gSoundDevice);
 }
 static void RunGameInput(GameLoopData *data)
 {
@@ -419,8 +445,9 @@ static void RunGameInput(GameLoopData *data)
 
 	CameraInput(&rData->Camera, rData->cmds[0], rData->lastCmds[0]);
 }
+static void NextLoop(RunGameData *rData, LoopRunner *l);
 static void CheckMissionCompletion(const struct MissionOptions *mo);
-static GameLoopResult RunGameUpdate(GameLoopData *data)
+static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 {
 	RunGameData *rData = data->Data;
 
@@ -430,7 +457,8 @@ static GameLoopResult RunGameUpdate(GameLoopData *data)
 		rData->m->DoneCounter--;
 		if (rData->m->DoneCounter <= 0)
 		{
-			return UPDATE_RESULT_EXIT;
+			NextLoop(rData, l);
+			return UPDATE_RESULT_OK;
 		}
 		else
 		{
@@ -594,9 +622,42 @@ static GameLoopResult RunGameUpdate(GameLoopData *data)
 
 	rData->m->time += ticksPerFrame;
 
-	CameraUpdate(&rData->Camera, ticksPerFrame, 1000 / rData->loop.FPS);
+	CameraUpdate(&rData->Camera, ticksPerFrame, 1000 / data->FPS);
 
 	return UPDATE_RESULT_DRAW;
+}
+static void NextLoop(RunGameData *rData, LoopRunner *l)
+{
+	// Find the next screen to switch to
+	const bool hasLocalPlayers = GetNumPlayers(PLAYER_ANY, false, true) > 0;
+	const int survivingPlayers =
+		GetNumPlayers(PLAYER_ALIVE, false, false);
+	const bool survivedAndCompletedObjectives =
+		survivingPlayers > 0 && MissionAllObjectivesComplete(&gMission);
+
+	// Switch to a score screen if there are local players and we haven't quit
+	const bool showScores = !gMission.IsQuit && hasLocalPlayers;
+	if (showScores)
+	{
+		switch (rData->co->Entry.Mode)
+		{
+		case GAME_MODE_DOGFIGHT:
+			LoopRunnerChange(l, ScreenDogfightScores());
+			break;
+		case GAME_MODE_DEATHMATCH:
+			LoopRunnerChange(l, ScreenDeathmatchFinalScores());
+			break;
+		default:
+			// In co-op (non-PVP) modes, at least one player must survive
+			LoopRunnerChange(l, ScreenMissionSummary(
+				rData->co, &gMission, survivedAndCompletedObjectives));
+			break;
+		}
+	}
+	else
+	{
+		LoopRunnerChange(l, HighScoresScreen(&gCampaign, &gGraphicsDevice));
+	}
 }
 static void CheckMissionCompletion(const struct MissionOptions *mo)
 {
@@ -668,7 +729,9 @@ static void RunGameDraw(GameLoopData *data)
 	CameraDrawMode(&rData->Camera);
 	HUDDraw(
 		&rData->Camera.HUD, rData->pausingDevice, rData->controllerUnplugged);
-	if (GameIsMouseUsed())
+	const bool isMouse = GameIsMouseUsed();
+	SDL_SetRelativeMouseMode(isMouse);
+	if (isMouse)
 	{
 		MouseDraw(&gEventHandlers.mouse);
 	}

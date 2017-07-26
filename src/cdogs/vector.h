@@ -64,9 +64,8 @@ Vec2i Vec2iReal2FullCentered(const Vec2i v);
 Vec2i Vec2iToTile(Vec2i v);
 Vec2i Vec2iCenterOfTile(Vec2i v);
 
-int DistanceSquared(Vec2i a, Vec2i b);
-void CalcChebyshevDistanceAndBearing(
-	Vec2i origin, Vec2i target, int *distance, int *bearing);
+int Vec2iSqrMagnitude(const Vec2i v);
+int DistanceSquared(const Vec2i a, const Vec2i b);
 Vec2i CalcClosestPointOnLineSegmentToPoint(
 	Vec2i l1, Vec2i l2, Vec2i p);
 

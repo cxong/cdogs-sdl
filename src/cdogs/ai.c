@@ -444,10 +444,6 @@ static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 			cmd = DirectionToCmd(rand() & 7);
 			ActorSetAIState(actor, AI_STATE_TRACK);
 		}
-		else
-		{
-			cmd = 0;
-		}
 		actor->aiContext->Delay = bot->actionDelay * delayModifier;
 	}
 	if (!bypass)

@@ -72,7 +72,6 @@
 #include "pickup.h"
 #include "gamedata.h"
 #include "triggers.h"
-#include "hiscores.h"
 #include "mission.h"
 #include "game.h"
 #include "utils.h"
@@ -87,7 +86,8 @@
 #define SOUND_LOCK_WEAPON_CLICK 20
 #define DROP_GUN_CHANCE 0.2
 #define DRAW_RADIAN_SPEED (PI/16)
-#define BLEED_PERCENTAGE 25	// start bleeding if below this % of health
+// Percent of health considered low; bleed and flash HUD if low
+#define LOW_HEALTH_PERCENTAGE 25
 
 
 CArray gPlayerIds;
@@ -117,11 +117,6 @@ void UpdateActorState(TActor * actor, int ticks)
 
 	if (actor->health > 0)
 	{
-		if (actor->lastHealth != actor->health)
-		{
-			actor->lastHealth > actor->health ? -- actor->lastHealth:
-				++ actor->lastHealth;
-		}
 		actor->flamed = MAX(0, actor->flamed - ticks);
 		if (actor->poisoned)
 		{
@@ -518,7 +513,6 @@ static void CheckRescue(const TActor *a)
 
 void ActorHeal(TActor *actor, int health)
 {
-	actor->lastHealth = actor->health;
 	actor->health += health;
 	actor->health = MIN(actor->health, ActorGetCharacter(actor)->maxHealth);
 }
@@ -575,7 +569,6 @@ bool ActorUsesAmmo(const TActor *actor, const int ammoId)
 	return false;
 }
 
-static bool ActorHasGun(const TActor *a, const GunDescription *gun);
 void ActorReplaceGun(const NActorReplaceGun rg)
 {
 	TActor *a = ActorGetByUID(rg.UID);
@@ -604,7 +597,8 @@ void ActorReplaceGun(const NActorReplaceGun rg)
 
 	SoundPlayAt(&gSoundDevice, gun->SwitchSound, Vec2iFull2Real(a->Pos));
 }
-static bool ActorHasGun(const TActor *a, const GunDescription *gun)
+
+bool ActorHasGun(const TActor *a, const GunDescription *gun)
 {
 	CA_FOREACH(const Weapon, w, a->guns)
 		if (w->Gun == gun)
@@ -916,15 +910,14 @@ void UpdateAllActors(int ticks)
 			}
 		}
 		// If low on health, bleed
-		const int maxHealth = ActorGetCharacter(actor)->maxHealth;
-		const int healthPct = actor->health * 100 / maxHealth;
-		if (healthPct < BLEED_PERCENTAGE)
+		if (ActorIsLowHealth(actor))
 		{
 			actor->bleedCounter -= ticks;
 			if (actor->bleedCounter <= 0)
 			{
+
 				ActorAddBloodSplatters(actor, 1, 1.0, Vec2iZero());
-				actor->bleedCounter += healthPct;
+				actor->bleedCounter += ActorGetHealthPercent(actor);
 			}
 		}
 	CA_FOREACH_END()
@@ -1206,7 +1199,6 @@ TActor *ActorAdd(NActorAdd aa)
 	}
 	actor->gunIndex = 0;
 	actor->health = aa.Health;
-	actor->lastHealth = actor->health;
 	actor->action = ACTORACTION_MOVING;
 	actor->tileItem.x = actor->tileItem.y = -1;
 	actor->tileItem.kind = KIND_CHARACTER;
@@ -1511,6 +1503,17 @@ void ActorAddBloodSplatters(TActor *a, const int power, const double mass, const
 			break;
 		}
 	}
+}
+
+int ActorGetHealthPercent(const TActor *a)
+{
+	const int maxHealth = ActorGetCharacter(a)->maxHealth;
+	return a->health * 100 / maxHealth;
+}
+
+bool ActorIsLowHealth(const TActor *a)
+{
+	return ActorGetHealthPercent(a) < LOW_HEALTH_PERCENTAGE;
 }
 
 bool ActorIsLocalPlayer(const int uid)

@@ -221,12 +221,17 @@ static char *GetClassNames(const int len, const char *(*indexNameFunc)(int))
 		const char *name = indexNameFunc(i);
 		classLen += strlen(name) + 1;
 	}
+	if (classLen == 0)
+	{
+		return "";
+	}
 	char *names;
 	CMALLOC(names, classLen);
 	char *cp = names;
 	for (int i = 0; i < (int)len; i++)
 	{
 		const char *name = indexNameFunc(i);
+		CASSERT(name != NULL, "Class has no name");
 		strcpy(cp, name);
 		cp += strlen(name) + 1;
 	}
@@ -423,7 +428,6 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 				NK_TEXT_ALIGN_BOTTOM|NK_TEXT_ALIGN_CENTERED, selected))
 			{
 				ec->Char = c;
-				selectedIndex = _ca_index;
 			}
 			DrawCharacter(
 				ec, c, CArrayGet(&ec->texidsChars, _ca_index),

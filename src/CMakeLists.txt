@@ -21,6 +21,8 @@ set(CDOGS_SDL_SOURCES
 	command_line.c
 	credits.c
 	game.c
+	game_loop.c
+	hiscores.c
 	mainmenu.c
 	menu.c
 	menu_utils.c
@@ -28,7 +30,6 @@ set(CDOGS_SDL_SOURCES
 	password.c
 	player_select_menus.c
 	prep.c
-	screens.c
 	screens_end.c
 	weapon_menu.c
 	XGetopt.c)
@@ -38,6 +39,8 @@ set(CDOGS_SDL_HEADERS
 	command_line.h
 	credits.h
 	game.h
+	game_loop.h
+	hiscores.h
 	mainmenu.h
 	menu.h
 	menu_utils.h
@@ -45,7 +48,6 @@ set(CDOGS_SDL_HEADERS
 	password.h
 	player_select_menus.h
 	prep.h
-	screens.h
 	screens_end.h
 	weapon_menu.h
 	XGetopt.h)
@@ -77,7 +79,7 @@ if(GCW0)
 endif()
 
 if(NOT "${GCW0}")
-  add_executable(cdogs-sdl-editor cdogsed.c ${CDOGS_SDL_EXTRA})
+  add_executable(cdogs-sdl-editor cdogsed/cdogsed.c ${CDOGS_SDL_EXTRA})
   if(APPLE)
   	set_target_properties(cdogs-sdl-editor PROPERTIES
   		MACOSX_RPATH 1

@@ -53,7 +53,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <SDL_timer.h>
+#include <SDL_mouse.h>
 
 #include <cdogs/ai_coop.h>
 #include <cdogs/actors.h>
@@ -62,7 +62,6 @@
 #include <cdogs/draw/draw.h>
 #include <cdogs/files.h>
 #include <cdogs/font.h>
-#include <cdogs/game_loop.h>
 #include <cdogs/grafx.h>
 #include <cdogs/handle_game_events.h>
 #include <cdogs/joystick.h>
@@ -75,6 +74,10 @@
 #include <cdogs/sounds.h>
 #include <cdogs/utils.h>
 
+#include "autosave.h"
+#include "briefing_screens.h"
+#include "game.h"
+#include "password.h"
 #include "player_select_menus.h"
 #include "namegen.h"
 #include "weapon_menu.h"
@@ -82,36 +85,67 @@
 
 typedef struct
 {
-	MenuSystem *ms;
+	MenuSystem ms;
+	GameLoopResult (*checkFunc)(void *, LoopRunner *l);
 	void *data;
 } ScreenWaitData;
-static bool ScreenWait(
-	const char *message, void (*checkFunc)(menu_t *, void *), void *data)
+static void ScreenWaitTerminate(GameLoopData *data);
+static GameLoopResult ScreenWaitUpdate(GameLoopData *data, LoopRunner *l);
+static void ScreenWaitDraw(GameLoopData *data);
+static GameLoopData *ScreenWait(
+	const char *message, GameLoopResult (*checkFunc)(void *, LoopRunner *l),
+	void *data)
 {
-	MenuSystem ms;
-	MenuSystemInit(
-		&ms, &gEventHandlers, &gGraphicsDevice,
-		Vec2iZero(),
-		gGraphicsDevice.cachedConfig.Res);
-	ms.allowAborts = true;
-	ms.root = ms.current = MenuCreateNormal("", message, MENU_TYPE_NORMAL, 0);
-	MenuAddExitType(&ms, MENU_TYPE_RETURN);
 	ScreenWaitData *swData;
 	CMALLOC(swData, sizeof *swData);
-	swData->ms = &ms;
+	MenuSystemInit(
+		&swData->ms, &gEventHandlers, &gGraphicsDevice,
+		Vec2iZero(),
+		gGraphicsDevice.cachedConfig.Res);
+	swData->ms.allowAborts = true;
+	swData->ms.root = swData->ms.current =
+		MenuCreateNormal("", message, MENU_TYPE_NORMAL, 0);
+	MenuAddExitType(&swData->ms, MENU_TYPE_RETURN);
+	swData->checkFunc = checkFunc;
 	swData->data = data;
-	MenuSetPostUpdateFunc(ms.root, checkFunc, swData, true);
 
-	GameLoopData g = MenuLoop(&ms);
-	GameLoop(&g);
-	GameLoopTerminate(&g);
-	const bool ok = !ms.hasAbort;
-	MenuSystemTerminate(&ms);
-	return ok;
+	return GameLoopDataNew(
+		swData, ScreenWaitTerminate, NULL, NULL,
+		NULL, ScreenWaitUpdate, ScreenWaitDraw);
+}
+static void ScreenWaitTerminate(GameLoopData *data)
+{
+	ScreenWaitData *swData = data->Data;
+
+	MenuSystemTerminate(&swData->ms);
+	CFREE(swData->data);
+	CFREE(swData);
+}
+static GameLoopResult ScreenWaitUpdate(GameLoopData *data, LoopRunner *l)
+{
+	ScreenWaitData *swData = data->Data;
+
+	const GameLoopResult result = swData->checkFunc(swData->data, l);
+	if (result != UPDATE_RESULT_DRAW)
+	{
+		return result;
+	}
+	const GameLoopResult menuResult = MenuUpdate(&swData->ms);
+	if (menuResult == UPDATE_RESULT_OK)
+	{
+		LoopRunnerPop(l);
+	}
+	return menuResult;
+}
+static void ScreenWaitDraw(GameLoopData *data)
+{
+	const ScreenWaitData *swData = data->Data;
+
+	MenuDraw(&swData->ms);
 }
 
-static void CheckCampaignDefComplete(menu_t *menu, void *data);
-bool ScreenWaitForCampaignDef(void)
+static GameLoopResult CheckCampaignDefComplete(void *data, LoopRunner *l);
+GameLoopData *ScreenWaitForCampaignDef(void)
 {
 	char buf[256];
 	char ipbuf[256];
@@ -120,31 +154,31 @@ bool ScreenWaitForCampaignDef(void)
 		ipbuf, gNetClient.peer->address.port);
 	return ScreenWait(buf, CheckCampaignDefComplete, NULL);
 }
-static void CheckCampaignDefComplete(menu_t *menu, void *data)
+static GameLoopResult CheckCampaignDefComplete(void *data, LoopRunner *l)
 {
+	UNUSED(data);
 	if (gCampaign.IsLoaded || gCampaign.IsError)
 	{
 		if (gCampaign.IsError)
 		{
-			// Failed to load campaign; signal that we want to abort
-			ScreenWaitData *swData = data;
-			swData->ms->hasAbort = true;
+			// Failed to load campaign
+			CampaignUnload(&gCampaign);
 		}
 		else
 		{
 			CASSERT(gCampaign.IsClient, "campaign is not client");
 		}
-		// Hack to force the menu to exit
-		menu->type = MENU_TYPE_RETURN;
+		LoopRunnerPop(l);
+		return UPDATE_RESULT_OK;
 	}
+	return UPDATE_RESULT_DRAW;
 }
 
 
 static void NumPlayersTerminate(GameLoopData *data);
-static void NumPlayersOnExit(GameLoopData *data);
-static GameLoopResult NumPlayersUpdate(GameLoopData *data);
+static GameLoopResult NumPlayersUpdate(GameLoopData *data, LoopRunner *l);
 static void NumPlayersDraw(GameLoopData *data);
-GameLoopData NumPlayersSelection(
+GameLoopData *NumPlayersSelection(
 	GraphicsDevice *graphics, EventHandlers *handlers)
 {
 	MenuSystem *ms;
@@ -171,22 +205,32 @@ GameLoopData NumPlayersSelection(
 	ms->current->u.normal.index = 1;
 
 	return GameLoopDataNew(
-		ms, NumPlayersTerminate, NULL, NumPlayersOnExit,
+		ms, NumPlayersTerminate, NULL, NULL,
 		NULL, NumPlayersUpdate, NumPlayersDraw);
 }
 static void NumPlayersTerminate(GameLoopData *data)
 {
+	MenuSystem *ms = data->Data;
+	MenuSystemTerminate(ms);
 	CFREE(data->Data);
 }
-static void NumPlayersOnExit(GameLoopData *data)
+static GameLoopResult NumPlayersUpdate(GameLoopData *data, LoopRunner *l)
 {
 	MenuSystem *ms = data->Data;
-	if (!ms->hasAbort)
+	const GameLoopResult result = MenuUpdate(ms);
+	if (result == UPDATE_RESULT_OK)
 	{
-		const int numPlayers = ms->current->u.returnCode;
-		CA_FOREACH(const PlayerData, p, gPlayerDatas)
-			CASSERT(!p->IsLocal, "unexpected local player");
-		CA_FOREACH_END()
+		if (ms->hasAbort)
+		{
+			CampaignUnload(&gCampaign);
+			LoopRunnerPop(l);
+		}
+		else
+		{
+			const int numPlayers = ms->current->u.returnCode;
+			CA_FOREACH(const PlayerData, p, gPlayerDatas)
+				CASSERT(!p->IsLocal, "unexpected local player");
+			CA_FOREACH_END()
 			// Add the players
 			for (int i = 0; i < numPlayers; i++)
 			{
@@ -195,21 +239,15 @@ static void NumPlayersOnExit(GameLoopData *data)
 				e.u.PlayerData.UID = gNetClient.FirstPlayerUID + i;
 				GameEventsEnqueue(&gGameEvents, e);
 			}
-		// Process the events to force add the players
-		HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
-		// This also causes the client to send player data to the server
-		// TODO: transition to next menu
+			// Process the events to force add the players
+			HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
+			// This also causes the client to send player data to the server
+
+			// Switch to player selection
+			LoopRunnerChange(l, PlayerSelection());
+		}
 	}
-	else
-	{
-		// TODO: pop menu
-		gCampaign.IsLoaded = false;
-	}
-	MenuSystemTerminate(ms);
-}
-static GameLoopResult NumPlayersUpdate(GameLoopData *data)
-{
-	return MenuUpdate(data->Data);
+	return result;
 }
 static void NumPlayersDraw(GameLoopData *data)
 {
@@ -267,19 +305,19 @@ typedef struct
 	char suffixnames[CDOGS_PATH_MAX];
 	EventWaitResult waitResult;
 } PlayerSelectionData;
+static void PlayerSelectionTerminate(GameLoopData *data);
 static void PlayerSelectionOnExit(GameLoopData *data);
-static GameLoopResult PlayerSelectionUpdate(GameLoopData *data);
+static GameLoopResult PlayerSelectionUpdate(GameLoopData *data, LoopRunner *l);
 static void PlayerSelectionDraw(GameLoopData *data);
-bool PlayerSelection(void)
+GameLoopData *PlayerSelection(void)
 {
-	CASSERT(gPlayerDatas.size > 0, "no players for game");
-	PlayerSelectionData data;
-	memset(&data, 0, sizeof data);
-	data.waitResult = EVENT_WAIT_CONTINUE;
-	GetDataFilePath(data.prefixes, "data/prefixes.txt");
-	GetDataFilePath(data.suffixes, "data/suffixes.txt");
-	GetDataFilePath(data.suffixnames, "data/suffixnames.txt");
-	NameGenInit(&data.g, data.prefixes, data.suffixes, data.suffixnames);
+	PlayerSelectionData *data;
+	CCALLOC(data, sizeof *data);
+	data->waitResult = EVENT_WAIT_CONTINUE;
+	GetDataFilePath(data->prefixes, "data/prefixes.txt");
+	GetDataFilePath(data->suffixes, "data/suffixes.txt");
+	GetDataFilePath(data->suffixnames, "data/suffixnames.txt");
+	NameGenInit(&data->g, data->prefixes, data->suffixes, data->suffixnames);
 
 	// Create selection menus for each local player
 	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
@@ -291,17 +329,25 @@ bool PlayerSelection(void)
 			continue;
 		}
 		PlayerSelectMenusCreate(
-			&data.menus[idx], GetNumPlayers(PLAYER_ANY, false, true),
+			&data->menus[idx], GetNumPlayers(PLAYER_ANY, false, true),
 			idx, p->UID,
-			&gEventHandlers, &gGraphicsDevice, &data.g);
+			&gEventHandlers, &gGraphicsDevice, &data->g);
 	}
 
-	GameLoopData gData = GameLoopDataNew(
-		&data, NULL, NULL, PlayerSelectionOnExit,
+	return GameLoopDataNew(
+		data, PlayerSelectionTerminate, NULL, PlayerSelectionOnExit,
 		NULL, PlayerSelectionUpdate, PlayerSelectionDraw);
-	GameLoop(&gData);
-	GameLoopTerminate(&gData);
-	return data.waitResult == EVENT_WAIT_OK;
+}
+static void PlayerSelectionTerminate(GameLoopData *data)
+{
+	PlayerSelectionData *pData = data->Data;
+
+	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
+	{
+		MenuSystemTerminate(&pData->menus[i].ms);
+	}
+	NameGenTerminate(&pData->g);
+	CFREE(pData);
 }
 static void PlayerSelectionOnExit(GameLoopData *data)
 {
@@ -323,17 +369,27 @@ static void PlayerSelectionOnExit(GameLoopData *data)
 				PlayerTrySetInputDevice(p, INPUT_DEVICE_AI, 0);
 			}
 		}
-	}
 
-	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
-	{
-		MenuSystemTerminate(&pData->menus[i].ms);
+		if (!gCampaign.IsClient)
+		{
+			gCampaign.MissionIndex = 0;
+		}
 	}
-	NameGenTerminate(&pData->g);
+	else
+	{
+		CampaignUnload(&gCampaign);
+	}
 }
-static GameLoopResult PlayerSelectionUpdate(GameLoopData *data)
+static GameLoopResult PlayerSelectionUpdate(GameLoopData *data, LoopRunner *l)
 {
 	PlayerSelectionData *pData = data->Data;
+
+	if (GetNumPlayers(PLAYER_ANY, false, true) == 0)
+	{
+		pData->waitResult = EVENT_WAIT_OK;
+		LoopRunnerPop(l);
+		return UPDATE_RESULT_OK;
+	}
 
 	// Check if anyone pressed escape
 	int cmds[MAX_LOCAL_PLAYERS];
@@ -342,7 +398,8 @@ static GameLoopResult PlayerSelectionUpdate(GameLoopData *data)
 	if (EventIsEscape(&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers)))
 	{
 		pData->waitResult = EVENT_WAIT_CANCEL;
-		return UPDATE_RESULT_EXIT;
+		LoopRunnerPop(l);
+		return UPDATE_RESULT_OK;
 	}
 
 	// Menu input
@@ -388,7 +445,15 @@ static GameLoopResult PlayerSelectionUpdate(GameLoopData *data)
 	if (isDone && hasAtLeastOneInput)
 	{
 		pData->waitResult = EVENT_WAIT_OK;
-		return UPDATE_RESULT_EXIT;
+		if (!gCampaign.IsClient && IsPasswordAllowed(gCampaign.Entry.Mode))
+		{
+			LoopRunnerChange(l, EnterPassword(&gGraphicsDevice));
+		}
+		else
+		{
+			LoopRunnerChange(l, GameOptions(gCampaign.Entry.Mode));
+		}
+		return UPDATE_RESULT_OK;
 	}
 
 	AssignPlayerInputDevices(&gEventHandlers);
@@ -449,34 +514,42 @@ static void PlayerSelectionDraw(GameLoopData *data)
 
 typedef struct
 {
+	MenuSystem ms;
 	const CArray *weapons;
 	CArray allowed;	// of bool
-} AllowedWeaponsData;
-static void AllowedWeaponsDataInit(
-	AllowedWeaponsData *data, const CArray *weapons);
-static void AllowedWeaponsDataTerminate(AllowedWeaponsData *data);
+} GameOptionsData;
 static menu_t *MenuCreateAllowedWeapons(
-	const char *name, AllowedWeaponsData *data);
-bool GameOptions(const GameMode gm)
+	const char *name, GameOptionsData *data);
+static void GameOptionsTerminate(GameLoopData *data);
+static void GameOptionsOnEnter(GameLoopData *data);
+static GameLoopResult GameOptionsUpdate(GameLoopData *data, LoopRunner *l);
+static void GameOptionsDraw(GameLoopData *data);
+GameLoopData *GameOptions(const GameMode gm)
 {
 	// Create selection menus
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
-	MenuSystem ms;
+	GameOptionsData *data;
+	CMALLOC(data, sizeof *data);
+	MenuSystem *ms = &data->ms;
+	data->weapons = &gMission.Weapons;
+	CArrayInit(&data->allowed, sizeof(bool));
+	for (int i = 0; i < (int)data->weapons->size; i++)
+	{
+		const bool f = true;
+		CArrayPushBack(&data->allowed, &f);
+	}
 	MenuSystemInit(
-		&ms, &gEventHandlers, &gGraphicsDevice,
-		Vec2iZero(), Vec2iNew(w, h));
-	ms.align = MENU_ALIGN_CENTER;
-	ms.allowAborts = true;
-	AllowedWeaponsData awData;
-	AllowedWeaponsDataInit(&awData, &gMission.Weapons);
-	ms.root = ms.current = MenuCreateNormal(
+		ms, &gEventHandlers, &gGraphicsDevice, Vec2iZero(), Vec2iNew(w, h));
+	ms->align = MENU_ALIGN_CENTER;
+	ms->allowAborts = true;
+	ms->root = MenuCreateNormal(
 		"",
 		"",
 		MENU_TYPE_OPTIONS,
 		0);
 #define I(_config)\
-	MenuAddConfigOptionsItem(ms.current, ConfigGet(&gConfig, _config));
+	MenuAddConfigOptionsItem(ms->root, ConfigGet(&gConfig, _config));
 	switch (gm)
 	{
 	case GAME_MODE_NORMAL:
@@ -488,7 +561,7 @@ bool GameOptions(const GameMode gm)
 		I("Game.HealthPickups");
 		I("Game.Ammo");
 		I("Game.RandomSeed");
-		MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
+		MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
 		I("StartServer");
 		break;
 	case GAME_MODE_DOGFIGHT:
@@ -497,9 +570,9 @@ bool GameOptions(const GameMode gm)
 		I("Game.HealthPickups");
 		I("Game.Ammo");
 		I("Game.RandomSeed");
-		MenuAddSubmenu(ms.current,
-			MenuCreateAllowedWeapons("Weapons...", &awData));
-		MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
+		MenuAddSubmenu(ms->root,
+			MenuCreateAllowedWeapons("Weapons...", data));
+		MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
 		I("StartServer");
 		break;
 	case GAME_MODE_DEATHMATCH:
@@ -508,9 +581,9 @@ bool GameOptions(const GameMode gm)
 		I("Game.HealthPickups");
 		I("Game.Ammo");
 		I("Game.RandomSeed");
-		MenuAddSubmenu(ms.current,
-			MenuCreateAllowedWeapons("Weapons...", &awData));
-		MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
+		MenuAddSubmenu(ms->root,
+			MenuCreateAllowedWeapons("Weapons...", data));
+		MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
 		I("StartServer");
 		break;
 	case GAME_MODE_QUICK_PLAY:
@@ -533,77 +606,123 @@ bool GameOptions(const GameMode gm)
 		break;
 	}
 #undef I
-	MenuAddSubmenu(ms.current, MenuCreateSeparator(""));
-	MenuAddSubmenu(ms.current, MenuCreateReturn("Done", 0));
-	MenuAddExitType(&ms, MENU_TYPE_RETURN);
-	// Select "Done"
-	ms.root->u.normal.index = (int)ms.root->u.normal.subMenus.size - 1;
+	MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
+	MenuAddSubmenu(ms->root, MenuCreateReturn("Done", 0));
+	MenuAddExitType(ms, MENU_TYPE_RETURN);
 
-	GameLoopData g = MenuLoop(&ms);
-	GameLoop(&g);
-	GameLoopTerminate(&g);
+	return GameLoopDataNew(
+		ms, GameOptionsTerminate, GameOptionsOnEnter, NULL,
+		NULL, GameOptionsUpdate, GameOptionsDraw);
+}
+static void GameOptionsTerminate(GameLoopData *data)
+{
+	GameOptionsData *gData = data->Data;
 
-	const bool ok = !ms.hasAbort;
-	if (ok)
+	MenuSystemTerminate(&gData->ms);
+	CArrayTerminate(&gData->allowed);
+	CFREE(gData);
+}
+static void GameOptionsOnEnter(GameLoopData *data)
+{
+	GameOptionsData *gData = data->Data;
+
+	if (!gMission.IsQuit)
 	{
-		if (!ConfigApply(&gConfig))
+		MissionOptionsTerminate(&gMission);
+		CampaignAndMissionSetup(&gCampaign, &gMission);
+	}
+
+	gData->ms.current = gData->ms.root;
+	// Select "Done"
+	gData->ms.root->u.normal.index =
+		(int)gData->ms.root->u.normal.subMenus.size - 1;
+}
+static GameLoopResult GameOptionsUpdate(GameLoopData *data, LoopRunner *l)
+{
+	GameOptionsData *gData = data->Data;
+
+	// Check end conditions:
+	// - Campaign not loaded
+	// - Campaign complete
+	// - Mission quit
+	// - No options needed
+	// - Menu complete
+	const GameLoopResult result = MenuUpdate(&gData->ms);
+	const bool isQuit =
+		!gCampaign.IsLoaded || gCampaign.IsComplete || gMission.IsQuit ||
+		gData->ms.hasAbort;
+	const bool isDone =
+		!IsGameOptionsNeeded(gCampaign.Entry.Mode) ||
+		result == UPDATE_RESULT_OK;
+	if (isQuit || isDone)
+	{
+		if (isQuit)
 		{
-			LOG(LM_MAIN, LL_ERROR, "Failed to apply config; reset to last used");
-			ConfigResetChanged(&gConfig);
+			MissionOptionsTerminate(&gMission);
+			CampaignUnload(&gCampaign);
+			LoopRunnerPop(l);
 		}
 		else
 		{
-			// Save options for later
-			ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
-		}
-
-		// Set allowed weapons
-		// First check if the player has unwittingly disabled all weapons
-		// if so, enable all weapons
-		bool allDisabled = true;
-		for (int i = 0, j = 0; i < (int)awData.allowed.size; i++, j++)
-		{
-			const bool *allowed = CArrayGet(&awData.allowed, i);
-			if (*allowed)
+			if (!ConfigApply(&gConfig))
 			{
-				allDisabled = false;
-				break;
+				LOG(LM_MAIN, LL_ERROR,
+					"Failed to apply config; reset to last used");
+				ConfigResetChanged(&gConfig);
 			}
-		}
-		if (!allDisabled)
-		{
-			for (int i = 0, j = 0; i < (int)awData.allowed.size; i++, j++)
+			else
 			{
-				const bool *allowed = CArrayGet(&awData.allowed, i);
-				if (!*allowed)
+				// Save options for later
+				ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
+			}
+
+			// Set allowed weapons
+			// First check if the player has unwittingly disabled all weapons
+			// if so, enable all weapons
+			bool allDisabled = true;
+			for (int i = 0, j = 0; i < (int)gData->allowed.size; i++, j++)
+			{
+				const bool *allowed = CArrayGet(&gData->allowed, i);
+				if (*allowed)
 				{
-					CArrayDelete(&gMission.Weapons, j);
-					j--;
+					allDisabled = false;
+					break;
 				}
 			}
+			if (!allDisabled)
+			{
+				for (int i = 0, j = 0; i < (int)gData->allowed.size; i++, j++)
+				{
+					const bool *allowed = CArrayGet(&gData->allowed, i);
+					if (!*allowed)
+					{
+						CArrayDelete(&gMission.Weapons, j);
+						j--;
+					}
+				}
+			}
+
+			gCampaign.OptionsSet = true;
+
+			// If enabled, start net server
+			if (!gCampaign.IsClient && ConfigGetBool(&gConfig, "StartServer"))
+			{
+				NetServerOpen(&gNetServer);
+			}
+			LoopRunnerPush(l, ScreenMissionBriefing(&gMission));
 		}
+		return UPDATE_RESULT_OK;
 	}
-	AllowedWeaponsDataTerminate(&awData);
-	MenuSystemTerminate(&ms);
-	return ok;
+	return UPDATE_RESULT_DRAW;
 }
-static void AllowedWeaponsDataInit(
-	AllowedWeaponsData *data, const CArray *weapons)
+static void GameOptionsDraw(GameLoopData *data)
 {
-	data->weapons = weapons;
-	CArrayInit(&data->allowed, sizeof(bool));
-	for (int i = 0; i < (int)weapons->size; i++)
-	{
-		const bool f = true;
-		CArrayPushBack(&data->allowed, &f);
-	}
-}
-static void AllowedWeaponsDataTerminate(AllowedWeaponsData *data)
-{
-	CArrayTerminate(&data->allowed);
+	const GameOptionsData *gData = data->Data;
+
+	MenuDraw(&gData->ms);
 }
 static menu_t *MenuCreateAllowedWeapons(
-	const char *name, AllowedWeaponsData *data)
+	const char *name, GameOptionsData *data)
 {
 	// Create a menu to choose allowable weapons for this map
 	// The weapons will be chosen from the available weapons
@@ -627,14 +746,15 @@ typedef struct
 	WeaponMenu menus[MAX_LOCAL_PLAYERS];
 	EventWaitResult waitResult;
 } PlayerEquipData;
+static void PlayerEquipTerminate(GameLoopData *data);
 static void PlayerEquipOnExit(GameLoopData *data);
-static GameLoopResult PlayerEquipUpdate(GameLoopData *data);
+static GameLoopResult PlayerEquipUpdate(GameLoopData *data, LoopRunner *l);
 static void PlayerEquipDraw(GameLoopData *data);
-bool PlayerEquip(void)
+GameLoopData *PlayerEquip(void)
 {
-	PlayerEquipData data;
-	memset(&data, 0, sizeof data);
-	data.waitResult = EVENT_WAIT_CONTINUE;
+	PlayerEquipData *data;
+	CCALLOC(data, sizeof *data);
+	data->waitResult = EVENT_WAIT_CONTINUE;
 	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
 		PlayerData *p = CArrayGet(&gPlayerDatas, i);
@@ -648,26 +768,23 @@ bool PlayerEquip(void)
 		RemoveUnavailableWeapons(p, &gMission.Weapons);
 
 		WeaponMenuCreate(
-			&data.menus[idx], GetNumPlayers(PLAYER_ANY, false, true),
+			&data->menus[idx], GetNumPlayers(PLAYER_ANY, false, true),
 			idx, p->UID,
 			&gEventHandlers, &gGraphicsDevice);
 		// For AI players, pre-pick their weapons and go straight to menu end
 		if (p->inputDevice == INPUT_DEVICE_AI)
 		{
 			const int lastMenuIndex =
-				(int)data.menus[idx].ms.root->u.normal.subMenus.size - 1;
-			data.menus[idx].ms.current = CArrayGet(
-				&data.menus[idx].ms.root->u.normal.subMenus, lastMenuIndex);
+				(int)data->menus[idx].ms.root->u.normal.subMenus.size - 1;
+			data->menus[idx].ms.current = CArrayGet(
+				&data->menus[idx].ms.root->u.normal.subMenus, lastMenuIndex);
 			AICoopSelectWeapons(p, idx, &gMission.Weapons);
 		}
 	}
 
-	GameLoopData gData = GameLoopDataNew(
-		&data, NULL, NULL, PlayerEquipOnExit,
+	return GameLoopDataNew(
+		data, PlayerEquipTerminate, NULL, PlayerEquipOnExit,
 		NULL, PlayerEquipUpdate, PlayerEquipDraw);
-	GameLoop(&gData);
-	GameLoopTerminate(&gData);
-	return data.waitResult == EVENT_WAIT_OK;
 }
 static bool HasWeapon(const CArray *weapons, const GunDescription *w);
 static void RemoveUnavailableWeapons(PlayerData *data, const CArray *weapons)
@@ -696,39 +813,58 @@ static bool HasWeapon(const CArray *weapons, const GunDescription *w)
 	}
 	return false;
 }
-static void PlayerEquipOnExit(GameLoopData *data)
+static void PlayerEquipTerminate(GameLoopData *data)
 {
 	PlayerEquipData *pData = data->Data;
-
-	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (!p->IsLocal)
-		{
-			idx--;
-			continue;
-		}
-		NPlayerData pd = NMakePlayerData(p);
-		// Update player definitions
-		if (gCampaign.IsClient)
-		{
-			NetClientSendMsg(&gNetClient, GAME_EVENT_PLAYER_DATA, &pd);
-		}
-		else
-		{
-			NetServerSendMsg(
-				&gNetServer, NET_SERVER_BCAST, GAME_EVENT_PLAYER_DATA, &pd);
-		}
-	}
 
 	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
 	{
 		MenuSystemTerminate(&pData->menus[i].ms);
 	}
+	CFREE(pData);
 }
-static GameLoopResult PlayerEquipUpdate(GameLoopData *data)
+static void PlayerEquipOnExit(GameLoopData *data)
 {
 	PlayerEquipData *pData = data->Data;
+
+	if (pData->waitResult == EVENT_WAIT_OK)
+	{
+		for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
+		{
+			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+			if (!p->IsLocal)
+			{
+				idx--;
+				continue;
+			}
+			NPlayerData pd = NMakePlayerData(p);
+			// Update player definitions
+			if (gCampaign.IsClient)
+			{
+				NetClientSendMsg(&gNetClient, GAME_EVENT_PLAYER_DATA, &pd);
+			}
+			else
+			{
+				NetServerSendMsg(
+					&gNetServer, NET_SERVER_BCAST, GAME_EVENT_PLAYER_DATA, &pd);
+			}
+		}
+	}
+	else
+	{
+		CampaignUnload(&gCampaign);
+	}
+}
+static GameLoopResult PlayerEquipUpdate(GameLoopData *data, LoopRunner *l)
+{
+	PlayerEquipData *pData = data->Data;
+
+	// If no human players, don't show equip screen
+	if (GetNumPlayers(PLAYER_ANY, false, true) == 0)
+	{
+		pData->waitResult = EVENT_WAIT_OK;
+		goto bail;
+	}
 
 	// Check if anyone pressed escape
 	int cmds[MAX_LOCAL_PLAYERS];
@@ -737,7 +873,7 @@ static GameLoopResult PlayerEquipUpdate(GameLoopData *data)
 	if (EventIsEscape(&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers)))
 	{
 		pData->waitResult = EVENT_WAIT_CANCEL;
-		return UPDATE_RESULT_EXIT;
+		goto bail;
 	}
 
 	// Update menus
@@ -773,10 +909,21 @@ static GameLoopResult PlayerEquipUpdate(GameLoopData *data)
 	if (isDone)
 	{
 		pData->waitResult = EVENT_WAIT_OK;
-		return UPDATE_RESULT_EXIT;
+		goto bail;
 	}
 
 	return UPDATE_RESULT_DRAW;
+
+bail:
+	if (pData->waitResult == EVENT_WAIT_OK)
+	{
+		LoopRunnerChange(l, ScreenWaitForGameStart());
+	}
+	else
+	{
+		LoopRunnerPop(l);
+	}
+	return UPDATE_RESULT_OK;
 }
 static void PlayerEquipDraw(GameLoopData *data)
 {
@@ -789,8 +936,8 @@ static void PlayerEquipDraw(GameLoopData *data)
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 }
 
-static void CheckGameStart(menu_t *menu, void *data);
-bool ScreenWaitForGameStart(void)
+static GameLoopResult CheckGameStart(void *data, LoopRunner *l);
+GameLoopData *ScreenWaitForGameStart(void)
 {
 	gNetClient.Ready = true;
 	if (!gMission.HasStarted)
@@ -800,18 +947,29 @@ bool ScreenWaitForGameStart(void)
 	}
 	return ScreenWait("Waiting for game start...", CheckGameStart, NULL);
 }
-static void CheckGameStart(menu_t *menu, void *data)
+static GameLoopResult CheckGameStart(void *data, LoopRunner *l)
 {
-	if (gMission.HasStarted)
+	UNUSED(data);
+	if (!gCampaign.IsClient || gMission.HasStarted)
 	{
-		// Hack to force the menu to exit
-		menu->type = MENU_TYPE_RETURN;
+		goto bail;
 	}
 	// Check disconnections
 	if (!NetClientIsConnected(&gNetClient))
 	{
-		ScreenWaitData *swData = data;
-		swData->ms->hasAbort = true;
-		menu->type = MENU_TYPE_RETURN;
+		CampaignUnload(&gCampaign);
+		goto bail;
 	}
+	return UPDATE_RESULT_DRAW;
+
+bail:
+	if (!gCampaign.IsLoaded)
+	{
+		LoopRunnerPop(l);
+	}
+	else
+	{
+		LoopRunnerChange(l, RunGame(&gCampaign, &gMission, &gMap));
+	}
+	return UPDATE_RESULT_OK;
 }

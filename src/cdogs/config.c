@@ -651,11 +651,12 @@ Config ConfigDefault(void)
 #ifdef __GCWZERO__
 	ConfigGroupAdd(&pk0, ConfigNewInt("button1", SDL_SCANCODE_LCTRL, 0, 0, 0, NULL, NULL));
 	ConfigGroupAdd(&pk0, ConfigNewInt("button2", SDL_SCANCODE_LALT, 0, 0, 0, NULL, NULL));
-#else
-	ConfigGroupAdd(&pk0, ConfigNewInt("button1", SDL_SCANCODE_RETURN, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk0, ConfigNewInt("button2", SDL_SCANCODE_RSHIFT, 0, 0, 0, NULL, NULL));
-#endif
 	ConfigGroupAdd(&pk0, ConfigNewInt("map", SDL_SCANCODE_TAB, 0, 0, 0, NULL, NULL));
+#else
+	ConfigGroupAdd(&pk0, ConfigNewInt("button1", SDL_SCANCODE_X, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk0, ConfigNewInt("button2", SDL_SCANCODE_Z, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk0, ConfigNewInt("map", SDL_SCANCODE_A, 0, 0, 0, NULL, NULL));
+#endif
 	ConfigGroupAdd(&input, pk0);
 	Config pk1 = ConfigNewGroup("PlayerCodes1");
 	ConfigGroupAdd(&pk1, ConfigNewInt("left", SDL_SCANCODE_KP_4, 0, 0, 0, NULL, NULL));

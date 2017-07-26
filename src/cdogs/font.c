@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2016, Cong Xu
+    Copyright (c) 2014-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -250,6 +250,10 @@ Vec2i FontStrMask(const char *s, Vec2i pos, const color_t mask)
 static Vec2i FontStrColor(
 	const char *s, Vec2i pos, const color_t c, const bool blend)
 {
+	if (s == NULL)
+	{
+		return pos;
+	}
 	int left = pos.x;
 	while (*s)
 	{
@@ -276,6 +280,10 @@ Vec2i FontStrMaskWrap(const char *s, Vec2i pos, color_t mask, const int width)
 static Vec2i GetStrPos(const char *s, Vec2i pos, const FontOpts opts);
 void FontStrOpt(const char *s, Vec2i pos, const FontOpts opts)
 {
+	if (s == NULL)
+	{
+		return;
+	}
 	pos = GetStrPos(s, pos, opts);
 	FontStrMask(s, pos, opts.Mask);
 }

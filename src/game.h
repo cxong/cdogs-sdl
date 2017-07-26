@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2015, Cong Xu
+    Copyright (c) 2015, 2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -53,4 +53,7 @@
 #include <cdogs/map.h>
 #include <cdogs/mission.h>
 
-bool RunGame(const CampaignOptions *co, struct MissionOptions *m, Map *map);
+#include "game_loop.h"
+
+GameLoopData *RunGame(
+	const CampaignOptions *co, struct MissionOptions *m, Map *map);

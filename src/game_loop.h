@@ -30,14 +30,21 @@
 
 #include <stdbool.h>
 
+#include <cdogs/c_array.h>
+
+
 // Result from calling update callback,
 // what the game loop should do after update
 typedef enum
 {
 	UPDATE_RESULT_OK,
-	UPDATE_RESULT_DRAW,
-	UPDATE_RESULT_EXIT
+	UPDATE_RESULT_DRAW
 } GameLoopResult;
+
+typedef struct
+{
+	CArray Loops; // of GameLoopData *
+} LoopRunner;
 
 // Generic game loop manager, with callbacks for update/draw
 typedef struct sGameLoopData
@@ -47,20 +54,27 @@ typedef struct sGameLoopData
 	void (*OnEnter)(struct sGameLoopData *);
 	void (*OnExit)(struct sGameLoopData *);
 	void (*InputFunc)(struct sGameLoopData *);
-	GameLoopResult (*UpdateFunc)(struct sGameLoopData *);
+	GameLoopResult (*UpdateFunc)(struct sGameLoopData *, LoopRunner *);
 	void (*DrawFunc)(struct sGameLoopData *);
 	int FPS;
 	bool InputEverySecondFrame;
 	int Frames;		// total frames looped
 	bool HasDrawnFirst;
+	bool IsUsed;
 } GameLoopData;
 
-GameLoopData GameLoopDataNew(
+GameLoopData *GameLoopDataNew(
 	void *data,
 	void (*onTerminate)(GameLoopData *),
 	void (*onEnter)(GameLoopData *), void (*onExit)(GameLoopData *),
 	void (*inputFunc)(GameLoopData *),
-	GameLoopResult (*updateFunc)(GameLoopData *),
+	GameLoopResult (*updateFunc)(GameLoopData *, LoopRunner *),
 	void (*drawFunc)(GameLoopData *));
-void GameLoop(GameLoopData *data);
-void GameLoopTerminate(GameLoopData *data);
+
+LoopRunner LoopRunnerNew(GameLoopData *newData);
+void LoopRunnerTerminate(LoopRunner *l);
+void LoopRunnerRun(LoopRunner *l);
+
+void LoopRunnerChange(LoopRunner *l, GameLoopData *newData);
+void LoopRunnerPush(LoopRunner *l, GameLoopData *newData);
+void LoopRunnerPop(LoopRunner *l);

@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014, 2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -57,5 +57,6 @@ void AmmoTerminate(AmmoClasses *ammo);
 
 Ammo *AmmoGetById(AmmoClasses *ammo, const int id);
 int AmmoGetNumClasses(const AmmoClasses *ammo);
+bool AmmoIsLow(const Ammo *a, const int amount);
 
 #define AMMO_STARTING_MULTIPLE 2

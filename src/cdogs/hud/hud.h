@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -31,10 +31,13 @@
 #include "config.h"
 #include "fps.h"
 #include "gamedata.h"
+#include "health_gauge.h"
 #include "hud_num_popup.h"
 #include "player.h"
 #include "wall_clock.h"
 
+
+#define GAUGE_WIDTH 65
 
 typedef struct
 {
@@ -45,6 +48,7 @@ typedef struct
 	FPSCounter fpsCounter;
 	WallClock clock;
 	HUDNumPopups numPopups;
+	HealthGauge healthGauges[MAX_LOCAL_PLAYERS];
 	bool showExit;
 } HUD;
 
@@ -62,3 +66,9 @@ void HUDUpdate(HUD *hud, int ms);
 void HUDDraw(
 	HUD *hud, const input_device_e pausingDevice,
 	const bool controllerUnplugged);
+
+void HUDDrawGauge(
+	GraphicsDevice *device,
+	Vec2i pos, const Vec2i size, const int innerWidth,
+	const color_t barColor, const color_t backColor,
+	const FontAlign hAlign, const FontAlign vAlign);

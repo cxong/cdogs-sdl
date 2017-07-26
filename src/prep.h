@@ -50,24 +50,25 @@
 
 #include <cdogs/campaigns.h>
 #include <cdogs/events.h>
-#include <cdogs/game_loop.h>
 #include <cdogs/grafx.h>
 
+#include "game_loop.h"
+
 // Wait for the server to send us the current campaign
-bool ScreenWaitForCampaignDef(void);
+GameLoopData *ScreenWaitForCampaignDef(void);
 
 // Screen to select the number of (local) players
-GameLoopData NumPlayersSelection(
+GameLoopData *NumPlayersSelection(
 	GraphicsDevice *graphics, EventHandlers *handlers);
 
 // Allow input devices to take control players,
 // and select player name and appearance
-bool PlayerSelection(void);
+GameLoopData *PlayerSelection(void);
 
 // Choose game-mode-specific options
-bool GameOptions(const GameMode gm);
+GameLoopData *GameOptions(const GameMode gm);
 
-bool PlayerEquip(void);
+GameLoopData *PlayerEquip(void);
 
 // Wait for the game to start
-bool ScreenWaitForGameStart(void);
+GameLoopData *ScreenWaitForGameStart(void);

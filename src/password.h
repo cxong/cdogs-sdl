@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2015, Cong Xu
+    Copyright (c) 2015, 2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -50,7 +50,7 @@
 
 #include <cdogs/grafx.h>
 
-#include "autosave.h"
+#include "game_loop.h"
 
 const char *MakePassword(int mission, int isTwoPlayers);
-int EnterPassword(GraphicsDevice *graphics, const MissionSave *save);
+GameLoopData *EnterPassword(GraphicsDevice *graphics);

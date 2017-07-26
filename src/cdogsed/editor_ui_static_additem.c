@@ -326,6 +326,7 @@ static bool AddPickupSpawnerBrushObjFunc(
 static char *MakePickupTooltip(const MapObject *mo)
 {
 	char *tmp;
+	CASSERT(mo->u.PickupClass->Name != NULL, "No pickup name");
 	CSTRDUP(tmp, mo->u.PickupClass->Name);
 	return tmp;
 }

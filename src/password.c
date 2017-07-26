@@ -53,14 +53,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <SDL_timer.h>
-
 #include <cdogs/actors.h>
 #include <cdogs/blit.h>
 #include <cdogs/config.h>
 #include <cdogs/defs.h>
 #include <cdogs/font.h>
-#include <cdogs/game_loop.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/grafx.h>
 #include <cdogs/grafx_bg.h>
@@ -69,7 +66,9 @@
 #include <cdogs/sounds.h>
 
 #include "autosave.h"
+#include "game_loop.h"
 #include "menu.h"
+#include "prep.h"
 
 #define DONE          "Done"
 
@@ -128,29 +127,33 @@ typedef struct
 	int Mission;
 	int Selection;
 } EnterCodeScreenData;
+static void EnterCodeTerminate(GameLoopData *data);
 static void EnterCodeScreenOnExit(GameLoopData *data);
-static GameLoopResult EnterCodeScreenUpdate(GameLoopData *data);
+static GameLoopResult EnterCodeScreenUpdate(GameLoopData *data, LoopRunner *l);
 static void EnterCodeScreenDraw(GameLoopData *data);
-static int EnterCodeScreen(const char *password)
+static GameLoopData *EnterCodeScreen(const char *password)
 {
-	EnterCodeScreenData data;
-	memset(&data, 0, sizeof data);
-	data.Selection = -1;
-	strcpy(data.Buffer, password);
+	EnterCodeScreenData *data;
+	CCALLOC(data, sizeof *data);
+	data->Selection = -1;
+	strcpy(data->Buffer, password);
 
-	GameLoopData gData = GameLoopDataNew(
-		&data, NULL, NULL, EnterCodeScreenOnExit,
+	return GameLoopDataNew(
+		data, EnterCodeTerminate, NULL, EnterCodeScreenOnExit,
 		NULL, EnterCodeScreenUpdate, EnterCodeScreenDraw);
-	GameLoop(&gData);
-	GameLoopTerminate(&gData);
+}
+static void EnterCodeTerminate(GameLoopData *data)
+{
+	EnterCodeScreenData *eData = data->Data;
 
-	return data.Mission;
+	CFREE(eData);
 }
 static void EnterCodeScreenOnExit(GameLoopData *data)
 {
 	const EnterCodeScreenData *eData = data->Data;
 	if (eData->Mission > 0)
 	{
+		gCampaign.MissionIndex = eData->Mission;
 		SoundPlay(&gSoundDevice, StrSound("mg"));
 	}
 	else
@@ -161,7 +164,7 @@ static void EnterCodeScreenOnExit(GameLoopData *data)
 #define PASSWORD_ENTRY_COLS	10
 #define PASSWORD_LETTERS "abcdefghijklmnopqrstuvwxyz0123456789"
 static bool PasswordEntry(EnterCodeScreenData *data, const int cmd);
-static GameLoopResult EnterCodeScreenUpdate(GameLoopData *data)
+static GameLoopResult EnterCodeScreenUpdate(GameLoopData *data, LoopRunner *l)
 {
 	EnterCodeScreenData *eData = data->Data;
 
@@ -172,7 +175,8 @@ static GameLoopResult EnterCodeScreenUpdate(GameLoopData *data)
 	if (EventIsEscape(&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers)))
 	{
 		eData->Mission = 0;
-		return UPDATE_RESULT_EXIT;
+		LoopRunnerPop(l);
+		return UPDATE_RESULT_OK;
 	}
 
 	const int cmd = GetMenuCmd(&gEventHandlers);
@@ -186,7 +190,8 @@ static GameLoopResult EnterCodeScreenUpdate(GameLoopData *data)
 	{
 		// Nothing in the password buffer; exit
 		eData->Mission = 0;
-		return UPDATE_RESULT_EXIT;
+		LoopRunnerPop(l);
+		return UPDATE_RESULT_OK;
 	}
 
 	eData->Mission = TestPassword(eData->Buffer);
@@ -198,7 +203,8 @@ static GameLoopResult EnterCodeScreenUpdate(GameLoopData *data)
 	}
 
 	// Password works; exit
-	return UPDATE_RESULT_EXIT;
+	LoopRunnerPop(l);
+	return UPDATE_RESULT_OK;
 }
 static bool PasswordEntry(EnterCodeScreenData *data, const int cmd)
 {
@@ -333,55 +339,31 @@ typedef enum
 	RETURN_CODE_ENTER_CODE = -3
 } ReturnCode;
 
+typedef struct
+{
+	MenuSystem ms;
+	MissionSave save;
+	int mission;
+} PasswordData;
+static void PasswordTerminate(GameLoopData *data);
+static void PasswordOnEnter(GameLoopData *data);
+static GameLoopResult PasswordUpdate(GameLoopData *data, LoopRunner *l);
+static void PasswordDraw(GameLoopData *data);
 static void MenuCreateStart(
 	MenuSystem *ms, const int mission, const MissionSave *save);
-int EnterPassword(GraphicsDevice *graphics, const MissionSave *save)
+GameLoopData *EnterPassword(GraphicsDevice *graphics)
 {
-	MenuSystem startMenu;
-	const int mission = TestPassword(save->Password);
-	int res = 0;
+	PasswordData *data;
+	CMALLOC(data, sizeof *data);
+	AutosaveLoadMission(&gAutosave, &data->save, gCampaign.Entry.Path);
 	MenuSystemInit(
-		&startMenu, &gEventHandlers, graphics, Vec2iZero(),
-		Vec2iNew(
-			graphics->cachedConfig.Res.x,
-			graphics->cachedConfig.Res.y));
-	MenuCreateStart(&startMenu, mission, save);
-	for (;;)
-	{
-		GameLoopData g = MenuLoop(&startMenu);
-		GameLoop(&g);
-		GameLoopTerminate(&g);
-		assert(startMenu.current->type == MENU_TYPE_RETURN);
-		const int returnCode = startMenu.current->u.returnCode;
-		switch (returnCode)
-		{
-		case RETURN_CODE_CONTINUE:
-			res = mission;
-			goto bail;
-		case RETURN_CODE_START:
-			goto bail;
-		case RETURN_CODE_ENTER_CODE:
-			{
-				int enteredMission = EnterCodeScreen(save->Password);
-				if (enteredMission > 0)
-				{
-					res = enteredMission;
-					goto bail;
-				}
-				MenuReset(&startMenu);
-			}
-			break;
-		default:
-			// Return code represents the mission to start on
-			CASSERT(returnCode >= 0, "Invalid return code for password menu");
-			res = returnCode;
-			goto bail;
-		}
-	}
-
-bail:
-	MenuSystemTerminate(&startMenu);
-	return res;
+		&data->ms, &gEventHandlers, graphics, Vec2iZero(),
+		graphics->cachedConfig.Res);
+	data->mission = TestPassword(data->save.Password);
+	MenuCreateStart(&data->ms, data->mission, &data->save);
+	return GameLoopDataNew(
+		data, PasswordTerminate, PasswordOnEnter, NULL,
+		NULL, PasswordUpdate, PasswordDraw);
 }
 static void MenuCreateStart(
 	MenuSystem *ms, const int mission, const MissionSave *save)
@@ -415,4 +397,63 @@ static void MenuCreateStart(
 	MenuAddSubmenu(ms->root, MenuCreateReturn("Enter code...", RETURN_CODE_ENTER_CODE));
 
 	MenuAddExitType(ms, MENU_TYPE_RETURN);
+}
+static void PasswordTerminate(GameLoopData *data)
+{
+	PasswordData *pData = data->Data;
+
+	MenuSystemTerminate(&pData->ms);
+	CFREE(data->Data);
+}
+static void PasswordOnEnter(GameLoopData *data)
+{
+	PasswordData *pData = data->Data;
+
+	// TODO: re-detect mission saves on enter
+	MenuReset(&pData->ms);
+	gCampaign.MissionIndex = 0;
+}
+static GameLoopResult PasswordUpdate(GameLoopData *data, LoopRunner *l)
+{
+	PasswordData *pData = data->Data;
+
+	const GameLoopResult result = MenuUpdate(&pData->ms);
+	if (result == UPDATE_RESULT_OK)
+	{
+		if (pData->ms.hasAbort)
+		{
+			LoopRunnerPop(l);
+		}
+		else
+		{
+			// Check valid password
+			const int returnCode = pData->ms.current->u.returnCode;
+			switch (returnCode)
+			{
+			case RETURN_CODE_CONTINUE:
+				gCampaign.MissionIndex = pData->mission;
+				LoopRunnerChange(l, GameOptions(gCampaign.Entry.Mode));
+				break;
+			case RETURN_CODE_START:
+				LoopRunnerChange(l, GameOptions(gCampaign.Entry.Mode));
+				break;
+			case RETURN_CODE_ENTER_CODE:
+				LoopRunnerPush(l, EnterCodeScreen(pData->save.Password));
+				break;
+			default:
+				// Return code represents the mission to start on
+				CASSERT(returnCode >= 0, "Invalid return code for password menu");
+				gCampaign.MissionIndex = returnCode;
+				LoopRunnerChange(l, GameOptions(gCampaign.Entry.Mode));
+				break;
+			}
+		}
+	}
+	return result;
+}
+static void PasswordDraw(GameLoopData *data)
+{
+	const PasswordData *pData = data->Data;
+
+	MenuDraw(&pData->ms);
 }

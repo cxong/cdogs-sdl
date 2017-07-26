@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2017, Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -48,7 +48,21 @@
 */
 #pragma once
 
-#include <cdogs/campaigns.h>
-#include <cdogs/grafx.h>
+#ifdef __EMSCRIPTEN__
+#include <stdbool.h>
+#include "credits.h"
+#include "cdogs/campaigns.h"
+#include "cdogs/game_mode.h"
 
-void ScreenStart(void);
+struct emscripten_context_t {
+    GameMode lastGameMode;
+    bool wasClient;
+    credits_displayer_t *creditsDisplayer;
+    custom_campaigns_t *campaigns;
+};
+
+struct emscripten_context_t EmscriptenContext;
+
+void EmscriptenMainLoop(void *arg);
+
+#endif

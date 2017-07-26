@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2015, Cong Xu
+    Copyright (c) 2014-2015, 2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -111,6 +111,8 @@ void PickupDestroy(const int uid)
 	p->isInUse = false;
 }
 
+static bool TryPickupGun(
+	TActor *a, const Pickup *p, const bool pickupAll, const char **sound);
 void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 {
 	if (p->PickedUp) return;
@@ -197,42 +199,7 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 		break;
 
 	case PICKUP_GUN:
-		if (pickupAll)
-		{
-			const GunDescription *gun = IdGunDescription(p->class->u.GunId);
-			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_REPLACE_GUN);
-			e.u.ActorReplaceGun.UID = a->uid;
-			e.u.ActorReplaceGun.GunIdx =
-				a->guns.size == MAX_WEAPONS ? a->gunIndex : (int)a->guns.size;
-			CASSERT(e.u.ActorReplaceGun.GunIdx <= a->guns.size,
-				"invalid replace gun index");
-			strcpy(e.u.ActorReplaceGun.Gun, gun->name);
-			GameEventsEnqueue(&gGameEvents, e);
-
-			// If the player has less ammo than the default amount,
-			// replenish up to this amount
-			const int ammoId = gun->AmmoId;
-			if (ammoId >= 0)
-			{
-				const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
-				const int ammoDeficit =
-					ammo->Amount * 2 - *(int *)CArrayGet(&a->ammo, ammoId);
-				if (ammoDeficit > 0)
-				{
-					e = GameEventNew(GAME_EVENT_ACTOR_ADD_AMMO);
-					e.u.AddAmmo.UID = a->uid;
-					e.u.AddAmmo.PlayerUID = a->PlayerUID;
-					e.u.AddAmmo.AmmoId = ammoId;
-					e.u.AddAmmo.Amount = ammoDeficit;
-					e.u.AddAmmo.IsRandomSpawned = false;
-					GameEventsEnqueue(&gGameEvents, e);
-				}
-			}
-		}
-		else
-		{
-			canPickup = false;
-		}
+		canPickup = TryPickupGun(a, p, pickupAll, &sound);
 		break;
 
 	default:
@@ -257,6 +224,64 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 		p->PickedUp = true;
 	}
 }
+static bool TryPickupGun(
+	TActor *a, const Pickup *p, const bool pickupAll, const char **sound)
+{
+	// Guns can only be picked up manually
+	if (!pickupAll)
+	{
+		return false;
+	}
+	const GunDescription *gun = IdGunDescription(p->class->u.GunId);
+
+	// Pickup if:
+	// - Actor doesn't have gun
+	// - Actor has less ammo than default for the gun's ammo
+
+	int ammoDeficit = 0;
+	const Ammo *ammo = NULL;
+	const int ammoId = gun->AmmoId;
+	if (ammoId >= 0)
+	{
+		ammo = AmmoGetById(&gAmmo, ammoId);
+		ammoDeficit = ammo->Amount * 2 - *(int *)CArrayGet(&a->ammo, ammoId);
+	}
+
+	const bool pickup = !ActorHasGun(a, gun) || ammoDeficit > 0;
+	if (!pickup)
+	{
+		return false;
+	}
+
+	// Pickup gun
+	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_REPLACE_GUN);
+	e.u.ActorReplaceGun.UID = a->uid;
+	e.u.ActorReplaceGun.GunIdx =
+		a->guns.size == MAX_WEAPONS ? a->gunIndex : (int)a->guns.size;
+	CASSERT(e.u.ActorReplaceGun.GunIdx <= a->guns.size,
+		"invalid replace gun index");
+	strcpy(e.u.ActorReplaceGun.Gun, gun->name);
+	GameEventsEnqueue(&gGameEvents, e);
+
+	// If the player has less ammo than the default amount,
+	// replenish up to this amount
+	if (ammoDeficit > 0)
+	{
+		e = GameEventNew(GAME_EVENT_ACTOR_ADD_AMMO);
+		e.u.AddAmmo.UID = a->uid;
+		e.u.AddAmmo.PlayerUID = a->PlayerUID;
+		e.u.AddAmmo.AmmoId = ammoId;
+		e.u.AddAmmo.Amount = ammoDeficit;
+		e.u.AddAmmo.IsRandomSpawned = false;
+		GameEventsEnqueue(&gGameEvents, e);
+
+		// Also play an ammo pickup sound
+		*sound = ammo->Sound;
+	}
+
+	return true;
+}
+
 bool PickupIsManual(const Pickup *p)
 {
 	if (p->PickedUp) return false;

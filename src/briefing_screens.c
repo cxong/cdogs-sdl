@@ -30,13 +30,15 @@
 #include <cdogs/events.h>
 #include <cdogs/files.h>
 #include <cdogs/font.h>
-#include <cdogs/game_loop.h>
 #include <cdogs/grafx_bg.h>
 #include <cdogs/objective.h>
 
 #include "autosave.h"
+#include "hiscores.h"
 #include "menu_utils.h"
 #include "password.h"
+#include "prep.h"
+#include "screens_end.h"
 
 
 static void DrawObjectiveInfo(const Objective *o, const Vec2i pos);
@@ -49,9 +51,9 @@ typedef struct
 static void CampaignIntroTerminate(GameLoopData *data);
 static void CampaignIntroOnExit(GameLoopData *data);
 static void CampaignIntroInput(GameLoopData *data);
-static GameLoopResult CampaignIntroUpdate(GameLoopData *data);
+static GameLoopResult CampaignIntroUpdate(GameLoopData *data, LoopRunner *l);
 static void CampaignIntroDraw(GameLoopData *data);
-GameLoopData ScreenCampaignIntro(CampaignSetting *c)
+GameLoopData *ScreenCampaignIntro(CampaignSetting *c)
 {
 	ScreenCampaignIntroData *data;
 	CMALLOC(data, sizeof *data);
@@ -68,14 +70,13 @@ static void CampaignIntroTerminate(GameLoopData *data)
 static void CampaignIntroOnExit(GameLoopData *data)
 {
 	const ScreenCampaignIntroData *sData = data->Data;
-	if (sData->waitResult == EVENT_WAIT_OK)
+	if (sData->waitResult != EVENT_WAIT_CANCEL)
 	{
 		SoundPlay(&gSoundDevice, StrSound("mg"));
-		// TODO: switch to next state
 	}
 	else
 	{
-		gCampaign.IsLoaded = false;
+		CampaignUnload(&gCampaign);
 	}
 }
 static void CampaignIntroInput(GameLoopData *data)
@@ -83,12 +84,22 @@ static void CampaignIntroInput(GameLoopData *data)
 	ScreenCampaignIntroData *sData = data->Data;
 	sData->waitResult = EventWaitForAnyKeyOrButton();
 }
-static GameLoopResult CampaignIntroUpdate(GameLoopData *data)
+static GameLoopResult CampaignIntroUpdate(GameLoopData *data, LoopRunner *l)
 {
 	const ScreenCampaignIntroData *sData = data->Data;
-	return
-		sData->waitResult == EVENT_WAIT_CONTINUE ?
-		UPDATE_RESULT_OK : UPDATE_RESULT_EXIT;
+
+	if (!IsIntroNeeded(gCampaign.Entry.Mode) ||
+		sData->waitResult == EVENT_WAIT_OK)
+	{
+		// Switch to num players selection
+		LoopRunnerChange(
+			l, NumPlayersSelection(&gGraphicsDevice, &gEventHandlers));
+	}
+	else if (sData->waitResult == EVENT_WAIT_CANCEL)
+	{
+		LoopRunnerPop(l);
+	}
+	return UPDATE_RESULT_OK;
 }
 static void CampaignIntroDraw(GameLoopData *data)
 {
@@ -141,96 +152,116 @@ typedef struct
 	const struct MissionOptions *MissionOptions;
 	EventWaitResult waitResult;
 } MissionBriefingData;
+static void MissionBriefingTerminate(GameLoopData *data);
 static void MissionBriefingOnExit(GameLoopData *data);
 static void MissionBriefingInput(GameLoopData *data);
-static GameLoopResult MissionBriefingUpdate(GameLoopData *data);
+static GameLoopResult MissionBriefingUpdate(GameLoopData *data, LoopRunner *l);
 static void MissionBriefingDraw(GameLoopData *data);
-bool ScreenMissionBriefing(const struct MissionOptions *m)
+GameLoopData *ScreenMissionBriefing(const struct MissionOptions *m)
 {
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
 	const int y = h / 4;
-	MissionBriefingData mData;
-	memset(&mData, 0, sizeof mData);
-	mData.waitResult = EVENT_WAIT_CONTINUE;
+	MissionBriefingData *mData;
+	CCALLOC(mData, sizeof *mData);
+	mData->waitResult = EVENT_WAIT_CONTINUE;
 
 	// Title
-	CMALLOC(mData.Title, strlen(m->missionData->Title) + 32);
-	sprintf(mData.Title, "Mission %d: %s",
-		m->index + 1, m->missionData->Title);
-	mData.TitleOpts = FontOptsNew();
-	mData.TitleOpts.HAlign = ALIGN_CENTER;
-	mData.TitleOpts.Area = gGraphicsDevice.cachedConfig.Res;
-	mData.TitleOpts.Pad.y = y - 25;
+	if (m->missionData->Title)
+	{
+		CMALLOC(mData->Title, strlen(m->missionData->Title) + 32);
+		sprintf(mData->Title, "Mission %d: %s",
+			m->index + 1, m->missionData->Title);
+		mData->TitleOpts = FontOptsNew();
+		mData->TitleOpts.HAlign = ALIGN_CENTER;
+		mData->TitleOpts.Area = gGraphicsDevice.cachedConfig.Res;
+		mData->TitleOpts.Pad.y = y - 25;
+	}
 
 	// Password
 	if (m->index > 0)
 	{
 		sprintf(
-			mData.Password, "Password: %s", gAutosave.LastMission.Password);
-		mData.PasswordOpts = FontOptsNew();
-		mData.PasswordOpts.HAlign = ALIGN_CENTER;
-		mData.PasswordOpts.Area = gGraphicsDevice.cachedConfig.Res;
-		mData.PasswordOpts.Pad.y = y - 15;
+			mData->Password, "Password: %s", gAutosave.LastMission.Password);
+		mData->PasswordOpts = FontOptsNew();
+		mData->PasswordOpts.HAlign = ALIGN_CENTER;
+		mData->PasswordOpts.Area = gGraphicsDevice.cachedConfig.Res;
+		mData->PasswordOpts.Pad.y = y - 15;
 	}
 
-	// Split the description, and prepare it for typewriter effect
-	mData.TypewriterCount = 0;
-	// allow some slack for newlines
-	CMALLOC(mData.Description, strlen(m->missionData->Description) * 2 + 1);
-	CCALLOC(mData.TypewriterBuf, strlen(m->missionData->Description) * 2 + 1);
-	// Pad about 1/6th of the screen width total (1/12th left and right)
-	FontSplitLines(m->missionData->Description, mData.Description, w * 5 / 6);
-	mData.DescriptionPos = Vec2iNew(w / 12, y);
-
-	// Objectives
-	mData.ObjectiveDescPos =
-		Vec2iNew(w / 6, y + FontStrH(mData.Description) + h / 10);
-	mData.ObjectiveInfoPos =
-		Vec2iNew(w - (w / 6), mData.ObjectiveDescPos.y + FontH());
-	mData.ObjectiveHeight = h / 12;
-	mData.MissionOptions = m;
-
-	GameLoopData gData = GameLoopDataNew(
-		&mData, NULL, NULL, MissionBriefingOnExit,
-		MissionBriefingInput, MissionBriefingUpdate, MissionBriefingDraw);
-	GameLoop(&gData);
-	GameLoopTerminate(&gData);
-	return mData.waitResult == EVENT_WAIT_OK;
-}
-static void MissionBriefingOnExit(GameLoopData *data)
-{
-	const MissionBriefingData *mData = data->Data;
-	if (mData->waitResult == EVENT_WAIT_OK)
+	// Description
+	if (m->missionData->Description)
 	{
-		SoundPlay(&gSoundDevice, StrSound("mg"));
+		// Split the description, and prepare it for typewriter effect
+		// allow some slack for newlines
+		CMALLOC(
+			mData->Description, strlen(m->missionData->Description) * 2 + 1);
+		CCALLOC(
+			mData->TypewriterBuf, strlen(m->missionData->Description) * 2 + 1);
+		// Pad about 1/6th of the screen width total (1/12th left and right)
+		FontSplitLines(
+			m->missionData->Description, mData->Description, w * 5 / 6);
+		mData->DescriptionPos = Vec2iNew(w / 12, y);
+
+		// Objectives
+		mData->ObjectiveDescPos =
+			Vec2iNew(w / 6, y + FontStrH(mData->Description) + h / 10);
+		mData->ObjectiveInfoPos =
+			Vec2iNew(w - (w / 6), mData->ObjectiveDescPos.y + FontH());
+		mData->ObjectiveHeight = h / 12;
 	}
+	mData->MissionOptions = m;
+
+	return GameLoopDataNew(
+		mData, MissionBriefingTerminate, NULL, MissionBriefingOnExit,
+		MissionBriefingInput, MissionBriefingUpdate, MissionBriefingDraw);
+}
+static void MissionBriefingTerminate(GameLoopData *data)
+{
+	MissionBriefingData *mData = data->Data;
 
 	CFREE(mData->Title);
 	CFREE(mData->Description);
 	CFREE(mData->TypewriterBuf);
+	CFREE(mData);
+}
+static void MissionBriefingOnExit(GameLoopData *data)
+{
+	const MissionBriefingData *mData = data->Data;
+
+	if (mData->waitResult == EVENT_WAIT_OK)
+	{
+		SoundPlay(&gSoundDevice, StrSound("mg"));
+	}
+	else
+	{
+		CampaignUnload(&gCampaign);
+	}
 }
 static void MissionBriefingInput(GameLoopData *data)
 {
 	MissionBriefingData *mData = data->Data;
 
-	// Check for player input; if any then skip to the end of the briefing
 	int cmds[MAX_LOCAL_PLAYERS];
 	memset(cmds, 0, sizeof cmds);
 	GetPlayerCmds(&gEventHandlers, &cmds);
-	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
+	if (mData->Description)
 	{
-		if (AnyButton(cmds[i]))
+		// Check for player input; if any then skip to the end of the briefing
+		for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 		{
-			// If the typewriter is still going, skip to end
-			if (mData->TypewriterCount <= (int)strlen(mData->Description))
+			if (AnyButton(cmds[i]))
 			{
-				strcpy(mData->TypewriterBuf, mData->Description);
-				mData->TypewriterCount = strlen(mData->Description);
-				return;
+				// If the typewriter is still going, skip to end
+				if (mData->TypewriterCount <= (int)strlen(mData->Description))
+				{
+					strcpy(mData->TypewriterBuf, mData->Description);
+					mData->TypewriterCount = strlen(mData->Description);
+					return;
+				}
+				// Otherwise, exit out of loop
+				mData->waitResult = EVENT_WAIT_OK;
 			}
-			// Otherwise, exit out of loop
-			mData->waitResult = EVENT_WAIT_OK;
 		}
 	}
 	// Check if anyone pressed escape
@@ -239,14 +270,20 @@ static void MissionBriefingInput(GameLoopData *data)
 		mData->waitResult = EVENT_WAIT_CANCEL;
 	}
 }
-static GameLoopResult MissionBriefingUpdate(GameLoopData *data)
+static GameLoopResult MissionBriefingUpdate(GameLoopData *data, LoopRunner *l)
 {
 	MissionBriefingData *mData = data->Data;
+
+	if (!IsMissionBriefingNeeded(gCampaign.Entry.Mode))
+	{
+		mData->waitResult = EVENT_WAIT_OK;
+		goto bail;
+	}
 
 	// Check exit conditions from input
 	if (mData->waitResult != EVENT_WAIT_CONTINUE)
 	{
-		return UPDATE_RESULT_EXIT;
+		goto bail;
 	}
 
 	// Update the typewriter effect
@@ -258,6 +295,17 @@ static GameLoopResult MissionBriefingUpdate(GameLoopData *data)
 		return UPDATE_RESULT_DRAW;
 	}
 
+	return UPDATE_RESULT_OK;
+
+bail:
+	if (mData->waitResult == EVENT_WAIT_OK)
+	{
+		LoopRunnerChange(l, PlayerEquip());
+	}
+	else
+	{
+		LoopRunnerPop(l);
+	}
 	return UPDATE_RESULT_OK;
 }
 static void MissionBriefingDraw(GameLoopData *data)
@@ -293,30 +341,84 @@ static void MissionBriefingDraw(GameLoopData *data)
 
 #define PERFECT_BONUS 500
 
+typedef struct
+{
+	MenuSystem ms;
+	const CampaignOptions *c;
+	struct MissionOptions *m;
+	bool completed;
+} MissionSummaryData;
+static void MissionSummaryTerminate(GameLoopData *data);
+static void MissionSummaryOnEnter(GameLoopData *data);
+static GameLoopResult MissionSummaryUpdate(GameLoopData *data, LoopRunner *l);
+static void MissionSummaryDraw(GameLoopData *data);
+static void MissionSummaryMenuDraw(
+	const menu_t *menu, GraphicsDevice *g,
+	const Vec2i p, const Vec2i size, const void *data);
+GameLoopData *ScreenMissionSummary(
+	const CampaignOptions *c, struct MissionOptions *m, const bool completed)
+{
+	MissionSummaryData *mData;
+	CMALLOC(mData, sizeof *mData);
+
+	const int h = FontH() * 10;
+	MenuSystemInit(
+		&mData->ms, &gEventHandlers, &gGraphicsDevice,
+		Vec2iNew(0, gGraphicsDevice.cachedConfig.Res.y - h),
+		Vec2iNew(gGraphicsDevice.cachedConfig.Res.x, h));
+	mData->ms.current = mData->ms.root =
+		MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
+	// Use return code 0 for whether to continue the game
+	if (completed)
+	{
+		MenuAddSubmenu(mData->ms.root, MenuCreateReturn("Continue", 0));
+	}
+	else
+	{
+		MenuAddSubmenu(mData->ms.root, MenuCreateReturn("Replay mission", 0));
+		MenuAddSubmenu(mData->ms.root, MenuCreateReturn("Back to menu", 1));
+	}
+	mData->ms.allowAborts = true;
+	MenuAddExitType(&mData->ms, MENU_TYPE_RETURN);
+	MenuSystemAddCustomDisplay(&mData->ms, MissionSummaryMenuDraw, m);
+
+	mData->c = c;
+	mData->m = m;
+	mData->completed = completed;
+
+	return GameLoopDataNew(
+		mData, MissionSummaryTerminate, MissionSummaryOnEnter, NULL,
+		NULL, MissionSummaryUpdate, MissionSummaryDraw);
+}
+static void MissionSummaryTerminate(GameLoopData *data)
+{
+	MissionSummaryData *mData = data->Data;
+
+	MenuSystemTerminate(&mData->ms);
+	CFREE(mData);
+}
 static bool AreAnySurvived(void);
 static int GetAccessBonus(const struct MissionOptions *m);
 static int GetTimeBonus(const struct MissionOptions *m, int *secondsOut);
 static void ApplyBonuses(PlayerData *p, const int bonus);
-static void MissionSummaryDraw(
-	const menu_t *menu, GraphicsDevice *g,
-	const Vec2i p, const Vec2i size, const void *data);
-bool ScreenMissionSummary(
-	CampaignOptions *c, struct MissionOptions *m, const bool completed)
+static void MissionSummaryOnEnter(GameLoopData *data)
 {
-	if (completed)
+	MissionSummaryData *mData = data->Data;
+
+	if (mData->completed)
 	{
 		// Save password
 		MissionSave ms;
 		MissionSaveInit(&ms);
-		ms.Campaign = c->Entry;
+		ms.Campaign = mData->c->Entry;
 		// Don't make password for next level if there is none
-		int passwordIndex = m->index + 1;
-		if (passwordIndex == c->Entry.NumMissions)
+		int passwordIndex = mData->m->index + 1;
+		if (passwordIndex == mData->c->Entry.NumMissions)
 		{
 			passwordIndex--;
 		}
 		strcpy(ms.Password, MakePassword(passwordIndex, 0));
-		ms.MissionsCompleted = m->index + 1;
+		ms.MissionsCompleted = mData->m->index + 1;
 		AutosaveAddMission(&gAutosave, &ms);
 		AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 	}
@@ -327,43 +429,52 @@ bool ScreenMissionSummary(
 	{
 		int bonus = 0;
 		// Objective bonuses
-		CA_FOREACH(const Objective, o, m->missionData->Objectives)
+		CA_FOREACH(const Objective, o, mData->m->missionData->Objectives)
 			if (ObjectiveIsPerfect(o))
 			{
 				bonus += PERFECT_BONUS;
 			}
 		CA_FOREACH_END()
-		bonus += GetAccessBonus(m);
-		bonus += GetTimeBonus(m, NULL);
+		bonus += GetAccessBonus(mData->m);
+		bonus += GetTimeBonus(mData->m, NULL);
 
 		CA_FOREACH(PlayerData, p, gPlayerDatas)
 			ApplyBonuses(p, bonus);
 		CA_FOREACH_END()
 	}
-	MenuSystem ms;
-	const int h = FontH() * 10;
-	MenuSystemInit(
-		&ms, &gEventHandlers, &gGraphicsDevice,
-		Vec2iNew(0, gGraphicsDevice.cachedConfig.Res.y - h),
-		Vec2iNew(gGraphicsDevice.cachedConfig.Res.x, h));
-	ms.current = ms.root = MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
-	// Use return code 0 for whether to continue the game
-	if (completed)
+}
+static GameLoopResult MissionSummaryUpdate(GameLoopData *data, LoopRunner *l)
+{
+	MissionSummaryData *mData = data->Data;
+
+	const GameLoopResult result = MenuUpdate(&mData->ms);
+	if (result == UPDATE_RESULT_OK)
 	{
-		MenuAddSubmenu(ms.root, MenuCreateReturn("Continue", 0));
+		gCampaign.IsComplete = mData->completed &&
+			gCampaign.MissionIndex == (int)gCampaign.Setting.Missions.size - 1;
+		if (gCampaign.IsComplete)
+		{
+			LoopRunnerChange(l, ScreenVictory(&gCampaign));
+		}
+		else if (!mData->completed)
+		{
+			// Check if we want to return to menu or replay mission
+			mData->m->IsQuit = mData->ms.current->u.returnCode == 1;
+			LoopRunnerPop(l);
+		}
+		else
+		{
+			LoopRunnerChange(
+				l, HighScoresScreen(&gCampaign, &gGraphicsDevice));
+		}
 	}
-	else
-	{
-		MenuAddSubmenu(ms.root, MenuCreateReturn("Replay mission", 0));
-		MenuAddSubmenu(ms.root, MenuCreateReturn("Back to menu", 1));
-	}
-	ms.allowAborts = true;
-	MenuAddExitType(&ms, MENU_TYPE_RETURN);
-	MenuSystemAddCustomDisplay(&ms, MissionSummaryDraw, m);
-	GameLoopData g = MenuLoop(&ms);
-	GameLoop(&g);
-	GameLoopTerminate(&g);
-	return ms.current->u.returnCode == 0;
+	return result;
+}
+static void MissionSummaryDraw(GameLoopData *data)
+{
+	const MissionSummaryData *mData = data->Data;
+
+	MenuDraw(&mData->ms);
 }
 static bool AreAnySurvived(void)
 {
@@ -450,7 +561,7 @@ static int GetFriendlyBonus(const PlayerData *p)
 }
 static void DrawPlayerSummary(
 	const Vec2i pos, const Vec2i size, PlayerData *data);
-static void MissionSummaryDraw(
+static void MissionSummaryMenuDraw(
 	const menu_t *menu, GraphicsDevice *g,
 	const Vec2i p, const Vec2i size, const void *data)
 {

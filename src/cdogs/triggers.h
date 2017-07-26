@@ -48,7 +48,12 @@
 */
 #pragma once
 
+#ifdef __EMSCRIPTEN__
+#include <SDL.h>
+#include <SDL/SDL_mixer.h>
+#else
 #include <SDL_mixer.h>
+#endif
 
 #include "c_array.h"
 #include "game_events.h"
