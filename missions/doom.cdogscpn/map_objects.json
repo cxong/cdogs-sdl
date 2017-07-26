@@ -60,9 +60,9 @@
         "Sprites": "firestick",
         "TicksPerFrame": 6
       },
-      "Wreck": "safe_wreck",
-      "Size": [12, 9],
-      "Offset": [-6, -15],
+      "Wreck": "chair_wreck",
+      "Size": [8, 5],
+      "Offset": [-6, -28],
       "Health": 40
     }
   ]
