@@ -233,6 +233,7 @@ message NBulletBounce {
 	required NVec2i BouncePos = 4;
 	required NVec2i Pos = 5;
 	required NVec2i Vel = 6;
+	required bool HitSound = 7;
 }
 
 message NRemoveBullet {

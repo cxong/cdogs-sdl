@@ -233,6 +233,11 @@ bool UpdateBullet(struct MobileObject *obj, const int ticks)
 			b.u.BulletBounce.Pos = Vec2i2Net(pos);
 			b.u.BulletBounce.Vel = Vec2i2Net(obj->tileItem.VelFull);
 		}
+		b.u.BulletBounce.HitSound = obj->tileItem.SoundLock == 0;
+		if (obj->tileItem.SoundLock == 0)
+		{
+			obj->tileItem.SoundLock += SOUND_LOCK_TILE_OBJECT;
+		}
 		GameEventsEnqueue(&gGameEvents, b);
 		if (!alive)
 		{

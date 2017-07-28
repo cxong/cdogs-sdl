@@ -1528,7 +1528,8 @@
       "PosOffset": [0, -5],
       "Offset": [-7, -11],
       "Wreck": "wscreen1_wreck",
-      "Health": 10
+      "Health": 10,
+      "Flags": ["OnWall"]
     },
     {
       "Name": "wscreen2",
@@ -1541,7 +1542,8 @@
       "PosOffset": [0, -5],
       "Offset": [-7, -11],
       "Wreck": "wscreen1_wreck",
-      "Health": 10
+      "Health": 10,
+      "Flags": ["OnWall"]
     },
     {
       "Name": "wscreen1_wreck",

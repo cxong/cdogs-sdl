@@ -71,6 +71,10 @@ void PlayerDataAddOrUpdate(const NPlayerData pd)
 
 	strcpy(p->name, pd.Name);
 	p->Char.Class = StrCharacterClass(pd.CharacterClass);
+	if (p->Char.Class == NULL)
+	{
+		p->Char.Class = StrCharacterClass("Jones");
+	}
 	p->Char.Colors = Net2CharColors(pd.Colors);
 	p->weaponCount = pd.Weapons_count;
 	for (int i = 0; i < (int)pd.Weapons_count; i++)

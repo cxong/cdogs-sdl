@@ -387,9 +387,13 @@ static void HandleGameEvent(
 			TMobileObject *o = MobObjGetByUID(e.u.BulletBounce.UID);
 			if (o == NULL || !o->isInUse) break;
 			const Vec2i bouncePos = Net2Vec2i(e.u.BulletBounce.BouncePos);
-			PlayHitSound(
-				&o->bulletClass->HitSound, (HitType)e.u.BulletBounce.HitType,
-				Vec2iFull2Real(bouncePos));
+			if (e.u.BulletBounce.HitSound)
+			{
+				PlayHitSound(
+					&o->bulletClass->HitSound,
+					(HitType)e.u.BulletBounce.HitType,
+					Vec2iFull2Real(bouncePos));
+			}
 			if (e.u.BulletBounce.Spark && o->bulletClass->Spark != NULL)
 			{
 				GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
