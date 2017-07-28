@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2014, 2016 Cong Xu
+	Copyright (c) 2013-2014, 2016-2017 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -47,13 +47,7 @@ static void LoadPlayerTemplate(
 {
 	PlayerTemplate t;
 	strcpy(t.name, json_find_first_label(node, "Name")->child->text);
-	t.Class = StrCharacterClass(
-		json_find_first_label(node, "Face")->child->text);
-	if (t.Class == NULL)
-	{
-		LOG(LM_MAIN, LL_ERROR, "cannot load player template %s", t.name);
-		return;
-	}
+	t.CharClassName = GetString(node, "Face");
 	if (version == 1)
 	{
 		// Version 1 used integer palettes
@@ -75,9 +69,9 @@ static void LoadPlayerTemplate(
 	}
 	CArrayPushBack(templates, &t);
 	LOG(LM_MAIN, LL_DEBUG, "loaded player template %s (%s)",
-		t.name, t.Class->Name);
+		t.name, t.CharClassName);
 }
-void LoadPlayerTemplates(
+void PlayerTemplatesLoad(
 	CArray *templates, const CharacterClasses *classes, const char *filename)
 {
 	// Note: not used, but included in function to express dependency
@@ -123,11 +117,19 @@ bail:
 	}
 }
 
+void PlayerTemplatesTerminate(CArray *t)
+{
+	CA_FOREACH(PlayerTemplate, pt, *t)
+		CFREE(pt->CharClassName);
+	CA_FOREACH_END()
+	CArrayTerminate(t);
+}
+
 static void SavePlayerTemplate(PlayerTemplate *t, json_t *templates)
 {
 	json_t *template = json_new_object();
 	AddStringPair(template, "Name", t->name);
-	AddStringPair(template, "Face", t->Class->Name);
+	AddStringPair(template, "Face", t->CharClassName);
 	AddColorPair(template, "Body", t->Colors.Body);
 	AddColorPair(template, "Arms", t->Colors.Arms);
 	AddColorPair(template, "Legs", t->Colors.Legs);

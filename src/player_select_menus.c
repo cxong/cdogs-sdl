@@ -315,7 +315,11 @@ static void PostInputLoadTemplate(menu_t *menu, int cmd, void *data)
 			CArrayGet(&gPlayerTemplates, menu->u.normal.index);
 		memset(p->name, 0, sizeof p->name);
 		strncpy(p->name, t->name, sizeof p->name - 1);
-		p->Char.Class = t->Class;
+		p->Char.Class = StrCharacterClass(t->CharClassName);
+		if (p->Char.Class == NULL)
+		{
+			p->Char.Class = StrCharacterClass("Jones");
+		}
 		p->Char.Colors = t->Colors;
 	}
 }
@@ -370,7 +374,8 @@ static void PostInputSaveTemplate(menu_t *menu, int cmd, void *data)
 		CArrayGet(&gPlayerTemplates, menu->u.normal.index);
 	memset(t->name, 0, sizeof t->name);
 	strncpy(t->name, p->name, sizeof t->name - 1);
-	t->Class = p->Char.Class;
+	CFREE(t->CharClassName);
+	CSTRDUP(t->CharClassName, p->Char.Class->Name);
 	t->Colors = p->Char.Colors;
 	SavePlayerTemplates(&gPlayerTemplates, PLAYER_TEMPLATE_FILE);
 }

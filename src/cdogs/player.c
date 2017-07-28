@@ -133,7 +133,7 @@ NPlayerData PlayerDataDefault(const int idx)
 	{
 		const PlayerTemplate *t = CArrayGet(&gPlayerTemplates, idx);
 		strcpy(pd.Name, t->name);
-		strcpy(pd.CharacterClass, t->Class->Name);
+		strcpy(pd.CharacterClass, t->CharClassName);
 		pd.Colors = CharColors2Net(t->Colors);
 	}
 	else

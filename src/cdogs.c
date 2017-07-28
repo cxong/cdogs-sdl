@@ -238,7 +238,7 @@ int main(int argc, char *argv[])
 		"data/bullets.json", "data/guns.json");
 	CharacterClassesInitialize(&gCharacterClasses, "data/character_classes.json");
 #ifndef __EMSCRIPTEN__
-	LoadPlayerTemplates(
+	PlayerTemplatesLoad(
 		&gPlayerTemplates, &gCharacterClasses, PLAYER_TEMPLATE_FILE);
 #endif
 	PickupClassesInit(
@@ -307,7 +307,7 @@ bail:
 	FontTerminate(&gFont);
 	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 	AutosaveTerminate(&gAutosave);
-	CArrayTerminate(&gPlayerTemplates);
+	PlayerTemplatesTerminate(&gPlayerTemplates);
 	FreeSongs(&gMenuSongs);
 	FreeSongs(&gGameSongs);
 	SoundTerminate(&gSoundDevice, true);
