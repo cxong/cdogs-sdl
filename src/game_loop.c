@@ -291,7 +291,7 @@ void LoopRunnerRun(LoopRunner *l)
 
 #ifdef __EMSCRIPTEN__
     // TODO use GameLoopData->FPS instead of 30?
-    emscripten_set_main_loop_arg(EmscriptenMainLoop, &ctx, 0, 1);
+    emscripten_set_main_loop_arg(EmscriptenMainLoop, &ctx, FPS_FRAMELIMIT, 1);
 #else
 	for (;;)
 	{
