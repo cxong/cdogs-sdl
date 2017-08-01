@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -325,6 +325,9 @@ static void MuffleEffect(int chan, void *stream, int len, void *udata)
 		samples[1] = (samples[1] + samples[3] + samples[5]) / 3;
 	}
 }
+static void SetSoundEffect(
+	const int channel, const Sint16 bearingDegrees, const Uint8 distance,
+	const bool isMuffled);
 static void SoundPlayAtPosition(
 	SoundDevice *device, Mix_Chunk *data, const Vec2i dp, const bool isMuffled)
 {
@@ -389,16 +392,7 @@ static void SoundPlayAtPosition(
 		return;
 	}
 
-#ifndef __EMSCRIPTEN__
-	Mix_SetPosition(channel, bearingDegrees, (Uint8)distance);
-	if (isMuffled)
-	{
-		if (!Mix_RegisterEffect(channel, MuffleEffect, NULL, NULL))
-		{
-			fprintf(stderr, "Mix_RegisterEffect: %s\n", Mix_GetError());
-		}
-	}
-#endif
+	SetSoundEffect(channel, bearingDegrees, distance, isMuffled);
 }
 static int GetChannel(SoundDevice *s, Mix_Chunk *data)
 {
@@ -419,6 +413,34 @@ static int GetChannel(SoundDevice *s, Mix_Chunk *data)
 		// When allocating new channels, need to reset their volume
 		Mix_Volume(-1, ConfigGetInt(&gConfig, "Sound.SoundVolume"));
 	}
+}
+static void SetSoundEffect(
+	const int channel, const Sint16 bearingDegrees, const Uint8 distance,
+	const bool isMuffled)
+{
+#ifndef __EMSCRIPTEN__
+	Mix_SetPosition(channel, bearingDegrees, (Uint8)distance);
+	if (isMuffled)
+	{
+		if (!Mix_RegisterEffect(channel, MuffleEffect, NULL, NULL))
+		{
+			fprintf(stderr, "Mix_RegisterEffect: %s\n", Mix_GetError());
+		}
+	}
+#else
+	// Mix_SetPosition and Mix_RegisterEffect not supported by emscripten;
+	// use plain panning instead
+
+	// Calculate left/right channel as values from 0-180
+	int left;
+	if (bearingDegrees < 90) left = 90 - bearingDegrees;
+	else if (bearingDegrees < 270) left = bearingDegrees - 90;
+	else left = 450 - bearingDegrees;
+	const int right = 180 - left;
+	Mix_SetPanning(
+		channel,
+		(Uint8)(left * distance / 180), (Uint8)(right * distance / 180));
+#endif
 }
 
 void SoundPlay(SoundDevice *device, Mix_Chunk *data)
