@@ -28,6 +28,7 @@
 #include "particle.h"
 
 #include "collision/collision.h"
+#include "font.h"
 #include "game_events.h"
 #include "json_utils.h"
 #include "log.h"
@@ -37,9 +38,19 @@
 ParticleClasses gParticleClasses;
 CArray gParticles;
 
-#define VERSION 1
+#define VERSION 2
 
-static void LoadParticleClass(ParticleClass *c, json_t *node);
+
+ParticleType StrParticleType(const char *s)
+{
+	S2T(PARTICLE_PIC, "Pic");
+	S2T(PARTICLE_TEXT, "Text");
+	return PARTICLE_PIC;
+}
+
+
+static void LoadParticleClass(
+	ParticleClass *c, json_t *node, const int version);
 void ParticleClassesInit(ParticleClasses *classes, const char *filename)
 {
 	CArrayInit(&classes->Classes, sizeof(ParticleClass));
@@ -83,7 +94,7 @@ void ParticleClassesLoadJSON(CArray *classes, json_t *root)
 	for (json_t *child = particlesNode->child; child; child = child->next)
 	{
 		ParticleClass c;
-		LoadParticleClass(&c, child);
+		LoadParticleClass(&c, child, version);
 		CArrayPushBack(classes, &c);
 	}
 }
@@ -103,26 +114,70 @@ void ParticleClassesClear(CArray *classes)
 	}
 	CArrayClear(classes);
 }
-static void LoadParticleClass(ParticleClass *c, json_t *node)
+static void LoadParticleClass(
+	ParticleClass *c, json_t *node, const int version)
 {
 	memset(c, 0, sizeof *c);
-	c->Mask = colorWhite;
 	char *tmp;
 
 	c->Name = GetString(node, "Name");
-	if (json_find_first_label(node, "Sprites"))
+
+	c->Type = PARTICLE_PIC;
+	if (version < 2)
 	{
-		tmp = GetString(node, "Sprites");
-		c->Sprites = PicManagerGetSprites(&gPicManager, tmp);
-		CFREE(tmp);
+		if (json_find_first_label(node, "Sprites"))
+		{
+			tmp = GetString(node, "Sprites");
+			c->u.Pic.Type = PICTYPE_DIRECTIONAL;
+			c->u.Pic.u.Sprites =
+				&PicManagerGetSprites(&gPicManager, tmp)->pics;
+			CFREE(tmp);
+		}
+		else
+		{
+			LoadPic(&c->u.Pic.u.Pic, node, "Pic");
+		}
+		if (json_find_first_label(node, "Mask"))
+		{
+			tmp = GetString(node, "Mask");
+			c->u.Pic.u1.Mask = StrColor(tmp);
+			c->u.Pic.UseMask = true;
+			CFREE(tmp);
+		}
+		int ticksPerFrame = 0;
+		LoadInt(&ticksPerFrame, node, "TicksPerFrame");
+		if (ticksPerFrame > 0)
+		{
+			c->u.Pic.Type = PICTYPE_ANIMATED;
+			c->u.Pic.u.Animated.Sprites = c->u.Pic.u.Sprites;
+			c->u.Pic.u.Animated.TicksPerFrame = ticksPerFrame;
+		}
 	}
-	LoadPic(&c->Pic, node, "Pic");
-	if (json_find_first_label(node, "Mask"))
+	else
 	{
-		tmp = GetString(node, "Mask");
-		c->Mask = StrColor(tmp);
-		CFREE(tmp);
+		tmp = NULL;
+		LoadStr(&tmp, node, "Type");
+		if (tmp != NULL)
+		{
+			c->Type = StrParticleType(tmp);
+			CFREE(tmp);
+		}
+		switch (c->Type)
+		{
+			case PARTICLE_PIC:
+				CPicLoadJSON(
+					&c->u.Pic, json_find_first_label(node, "Pic")->child);
+				break;
+			case PARTICLE_TEXT:
+				tmp = GetString(node, "TextMask");
+				c->u.TextColor = StrColor(tmp);
+				CFREE(tmp)
+				break;
+			default:
+				break;
+		}
 	}
+
 	if (json_find_first_label(node, "Range"))
 	{
 		LoadInt(&c->RangeLow, node, "Range");
@@ -138,7 +193,6 @@ static void LoadParticleClass(ParticleClass *c, json_t *node)
 	}
 	c->RangeLow = MIN(c->RangeLow, c->RangeHigh);
 	c->RangeHigh = MAX(c->RangeLow, c->RangeHigh);
-	LoadInt(&c->TicksPerFrame, node, "TicksPerFrame");
 	LoadInt(&c->GravityFactor, node, "GravityFactor");
 	LoadBool(&c->HitsWalls, node, "HitsWalls");
 	c->Bounces = true;
@@ -220,6 +274,14 @@ static bool HitWallFunc(
 	const Vec2i tilePos, void *data, const Vec2i col, const Vec2i normal);
 static bool ParticleUpdate(Particle *p, const int ticks)
 {
+	switch(p->Class->Type)
+	{
+		case PARTICLE_PIC:
+			CPicUpdate(&p->u.Pic, ticks);
+			break;
+		default:
+			break;
+	}
 	p->Count += ticks;
 	const Vec2i startPos = p->Pos;
 	for (int i = 0; i < ticks; i++)
@@ -354,6 +416,17 @@ int ParticleAdd(CArray *particles, const AddParticle add)
 	}
 	memset(p, 0, sizeof *p);
 	p->Class = add.Class;
+	switch (p->Class->Type)
+	{
+		case PARTICLE_PIC:
+			CPicCopyPic(&p->u.Pic, &p->Class->u.Pic);
+			break;
+		case PARTICLE_TEXT:
+			CSTRDUP(p->u.Text, add.Text);
+			break;
+		default:
+			break;
+	}
 	p->Pos = add.FullPos;
 	p->Z = add.Z;
 	p->Angle = add.Angle;
@@ -375,6 +448,10 @@ void ParticleDestroy(CArray *particles, const int id)
 	Particle *p = CArrayGet(particles, id);
 	CASSERT(p->isInUse, "Destroying not-in-use particle");
 	MapRemoveTileItem(&gMap, &p->tileItem);
+	if (p->Class->Type == PARTICLE_TEXT)
+	{
+		CFREE(p->u.Text);
+	}
 	p->isInUse = false;
 }
 
@@ -382,25 +459,28 @@ static void DrawParticle(const Vec2i pos, const TileItemDrawFuncData *data)
 {
 	const Particle *p = CArrayGet(&gParticles, data->MobObjId);
 	CASSERT(p->isInUse, "Cannot draw non-existent particle");
-	const Pic *pic;
-	if (p->Class->Sprites)
+	switch (p->Class->Type)
 	{
-		int frame = (int)RadiansToDirection(p->Angle);
-		if (p->Class->TicksPerFrame > 0)
+		case PARTICLE_PIC:
 		{
-			frame = MIN(
-				p->Count / p->Class->TicksPerFrame,
-				(int)p->Class->Sprites->pics.size - 1);
+			CPicDrawContext context;
+			context.Dir = RadiansToDirection(p->Angle);
+			const Pic *pic = CPicGetPic(&p->u.Pic, context.Dir);
+			context.Offset = Vec2iNew(
+				pic->size.x / -2, pic->size.y / -2- p->Z / Z_FACTOR);
+			CPicDraw(
+				&gGraphicsDevice, &p->Class->u.Pic, pos, &context);
+			break;
 		}
-		const CArray *sprites = &p->Class->Sprites->pics;
-		pic = CArrayGet(sprites, frame % sprites->size);
+		case PARTICLE_TEXT:
+		{
+			FontOpts opts = FontOptsNew();
+			opts.HAlign = ALIGN_CENTER;
+			opts.Mask = p->Class->u.TextColor;
+			FontStrOpt(p->u.Text, pos, opts);
+			break;
+		}
+		default:
+			break;
 	}
-	else
-	{
-		pic = p->Class->Pic;
-	}
-	CASSERT(pic != NULL, "particle picture not found");
-	Vec2i picPos = Vec2iMinus(pos, Vec2iScaleDiv(pic->size, 2));
-	picPos.y -= p->Z / Z_FACTOR;
-	BlitMasked(&gGraphicsDevice, pic, picPos, p->Class->Mask, true);
 }

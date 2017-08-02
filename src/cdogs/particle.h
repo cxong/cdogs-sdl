@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2015, Cong Xu
+    Copyright (c) 2014-2015, 2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -32,16 +32,26 @@
 #include "pic.h"
 #include "tile.h"
 
+typedef enum
+{
+	PARTICLE_PIC,
+	PARTICLE_TEXT
+} ParticleType;
+ParticleType StrParticleType(const char *s);
+
 typedef struct
 {
 	char *Name;
-	const Pic *Pic;
+	ParticleType Type;
+	union
+	{
+		CPic Pic;
+		color_t TextColor;
+	} u;
 	const NamedSprites *Sprites;
 	// -1 is infinite range
 	int RangeLow;
 	int RangeHigh;
-	int TicksPerFrame;
-	color_t Mask;
 	int GravityFactor;
 	bool HitsWalls;
 	bool Bounces;
@@ -57,6 +67,11 @@ extern ParticleClasses gParticleClasses;
 typedef struct
 {
 	const ParticleClass *Class;
+	union
+	{
+		CPic Pic;
+		char *Text;
+	} u;
 	// Coordinates are in full
 	Vec2i Pos;
 	int Z;
@@ -79,6 +94,7 @@ typedef struct
 	double Angle;
 	int DZ;
 	double Spin;
+	char Text[128];
 } AddParticle;
 
 void ParticleClassesInit(ParticleClasses *classes, const char *filename);
