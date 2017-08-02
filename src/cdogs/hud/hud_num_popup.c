@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -68,8 +68,6 @@ void HUDNumPopupsAdd(
 	switch (type)
 	{
 	case NUMBER_POPUP_SCORE:
-	case NUMBER_POPUP_HEALTH:	// fallthrough
-	case NUMBER_POPUP_AMMO:		// fallthrough
 		localPlayerIdx = FindLocalPlayerIndex(idxOrUID);
 		if (localPlayerIdx)
 		{
@@ -92,8 +90,6 @@ void HUDNumPopupsAdd(
 	switch (type)
 	{
 	case NUMBER_POPUP_SCORE:
-	case NUMBER_POPUP_HEALTH:	// fallthrough
-	case NUMBER_POPUP_AMMO:		// fallthrough
 		s.Timer = TIMER_MS;
 		s.TimerMax = TIMER_MS;
 		break;
@@ -111,12 +107,6 @@ void HUDNumPopupsAdd(
 	{
 	case NUMBER_POPUP_SCORE:
 		MergePopups(&popups->score[localPlayerIdx], s);
-		break;
-	case NUMBER_POPUP_HEALTH:
-		MergePopups(&popups->health[localPlayerIdx], s);
-		break;
-	case NUMBER_POPUP_AMMO:
-		MergePopups(&popups->ammo[localPlayerIdx], s);
 		break;
 	case NUMBER_POPUP_OBJECTIVE:
 		MergePopups(CArrayGet(&popups->objective, s.u.ObjectiveIndex), s);
@@ -161,8 +151,6 @@ void HUDPopupsUpdate(HUDNumPopups *popups, const int ms)
 	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 	{
 		NumPopupUpdate(&popups->score[i], ms);
-		NumPopupUpdate(&popups->health[i], ms);
-		NumPopupUpdate(&popups->ammo[i], ms);
 	}
 	CA_FOREACH(HUDNumPopup, p, popups->objective)
 		NumPopupUpdate(p, ms);
@@ -177,14 +165,10 @@ static void NumPopupUpdate(HUDNumPopup *p, const int ms)
 }
 
 static void DrawScoreUpdate(const HUDNumPopup *u, const int flags);
-static void DrawHealthUpdate(const HUDNumPopup *u, const int flags);
-static void DrawAmmoUpdate(const HUDNumPopup *u, const int flags);
 void HUDNumPopupsDrawPlayer(
 	const HUDNumPopups *popups, const int idx, const int drawFlags)
 {
 	DrawScoreUpdate(&popups->score[idx], drawFlags);
-	DrawHealthUpdate(&popups->health[idx], drawFlags);
-	DrawAmmoUpdate(&popups->ammo[idx], drawFlags);
 }
 
 static void DrawNumUpdate(
@@ -213,36 +197,6 @@ static void DrawScoreUpdate(const HUDNumPopup *u, const int flags)
 	const int rowHeight = 1 + FontH();
 	const int y = 5 + rowHeight;
 	DrawNumUpdate(u, "Score: %d", p->Stats.Score, Vec2iNew(5, y), flags);
-}
-static void DrawHealthUpdate(const HUDNumPopup *u, const int flags)
-{
-	if (u->Amount == 0)
-	{
-		return;
-	}
-	const PlayerData *p = PlayerDataGetByUID(u->u.PlayerUID);
-	if (!IsPlayerAlive(p)) return;
-	const int rowHeight = 1 + FontH();
-	const int y = 5 + rowHeight * 2;
-	const TActor *a = ActorGetByUID(p->ActorUID);
-	DrawNumUpdate(u, "%d", a->health, Vec2iNew(5, y), flags);
-}
-static void DrawAmmoUpdate(const HUDNumPopup *u, const int flags)
-{
-	if (u->Amount == 0)
-	{
-		return;
-	}
-	const PlayerData *p = PlayerDataGetByUID(u->u.PlayerUID);
-	if (!IsPlayerAlive(p)) return;
-	const int rowHeight = 1 + FontH();
-	const int y = 5 + rowHeight * 4 + LIVES_ROW_EXTRA_Y;
-	const TActor *a = ActorGetByUID(p->ActorUID);
-	const Weapon *w = ActorGetGun(a);
-	char gunNameBuf[256];
-	sprintf(gunNameBuf, "%s %%d", w->Gun->name);
-	const int ammo = ActorGunGetAmmo(a, w);
-	DrawNumUpdate(u, gunNameBuf, ammo, Vec2iNew(5 + GUN_ICON_PAD, y), flags);
 }
 // Parameters that define how the numeric update is animated
 // The update animates in the following phases:

@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -52,7 +52,6 @@ typedef struct
 {
 	HUDNumPopup score[MAX_LOCAL_PLAYERS];
 	HUDNumPopup health[MAX_LOCAL_PLAYERS];
-	HUDNumPopup ammo[MAX_LOCAL_PLAYERS];
 	CArray objective; // of HUDNumPopup, one per objective
 } HUDNumPopups;
 
@@ -63,8 +62,6 @@ void HUDNumPopupsTerminate(HUDNumPopups *popups);
 typedef enum
 {
 	NUMBER_POPUP_SCORE,
-	NUMBER_POPUP_HEALTH,
-	NUMBER_POPUP_AMMO,
 	NUMBER_POPUP_OBJECTIVE
 } HUDNumPopupType;
 // idx is either player UID or objective index

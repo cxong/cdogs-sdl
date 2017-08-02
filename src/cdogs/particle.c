@@ -169,9 +169,14 @@ static void LoadParticleClass(
 					&c->u.Pic, json_find_first_label(node, "Pic")->child);
 				break;
 			case PARTICLE_TEXT:
-				tmp = GetString(node, "TextMask");
-				c->u.TextColor = StrColor(tmp);
-				CFREE(tmp)
+				c->u.TextColor = colorWhite;
+				tmp = NULL;
+				LoadStr(&tmp, node, "TextMask");
+				if (tmp != NULL)
+				{
+					c->u.TextColor = StrColor(tmp);
+					CFREE(tmp)
+				}
 				break;
 			default:
 				break;
@@ -467,7 +472,7 @@ static void DrawParticle(const Vec2i pos, const TileItemDrawFuncData *data)
 			context.Dir = RadiansToDirection(p->Angle);
 			const Pic *pic = CPicGetPic(&p->u.Pic, context.Dir);
 			context.Offset = Vec2iNew(
-				pic->size.x / -2, pic->size.y / -2- p->Z / Z_FACTOR);
+				pic->size.x / -2, pic->size.y / -2 - p->Z / Z_FACTOR);
 			CPicDraw(
 				&gGraphicsDevice, &p->Class->u.Pic, pos, &context);
 			break;
@@ -477,7 +482,8 @@ static void DrawParticle(const Vec2i pos, const TileItemDrawFuncData *data)
 			FontOpts opts = FontOptsNew();
 			opts.HAlign = ALIGN_CENTER;
 			opts.Mask = p->Class->u.TextColor;
-			FontStrOpt(p->u.Text, pos, opts);
+			FontStrOpt(
+				p->u.Text, Vec2iNew(pos.x, pos.y - p->Z / Z_FACTOR), opts);
 			break;
 		}
 		default:

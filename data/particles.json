@@ -231,6 +231,28 @@
       "HitsWalls": true,
       "Bounces": false,
       "WallBounces": false
+    },
+    {
+      "Name": "ammo_text",
+      "Type": "Text",
+      "TextMask": "ffff00",
+      "Range": 100,
+      "GravityFactor": 2,
+      "Bounces": true
+    },
+    {
+      "Name": "heal_text",
+      "Type": "Text",
+      "TextMask": "00ff00",
+      "Range": 40,
+      "GravityFactor": 0
+    },
+    {
+      "Name": "damage_text",
+      "Type": "Text",
+      "TextMask": "ff0000",
+      "Range": 40,
+      "GravityFactor": 0
     }
   ]
 }

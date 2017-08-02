@@ -258,9 +258,14 @@ static void HandleGameEvent(
 			}
 			if (e.u.Heal.PlayerUID >= 0)
 			{
-				HUDNumPopupsAdd(
-					&camera->HUD.numPopups, NUMBER_POPUP_HEALTH,
-					e.u.Heal.PlayerUID, e.u.Heal.Amount);
+				GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+				s.u.AddParticle.Class =
+					StrParticleClass(&gParticleClasses, "heal_text");
+				s.u.AddParticle.FullPos = a->Pos;
+				s.u.AddParticle.Z = BULLET_Z * Z_FACTOR;
+				s.u.AddParticle.DZ = 3;
+				sprintf(s.u.AddParticle.Text, "+%d", (int)e.u.Heal.Amount);
+				GameEventsEnqueue(&gGameEvents, s);
 			}
 		}
 		break;
@@ -278,9 +283,17 @@ static void HandleGameEvent(
 			}
 			if (e.u.AddAmmo.PlayerUID >= 0)
 			{
-				HUDNumPopupsAdd(
-					&camera->HUD.numPopups, NUMBER_POPUP_AMMO,
-					e.u.AddAmmo.PlayerUID, e.u.AddAmmo.Amount);
+				GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+				s.u.AddParticle.Class =
+					StrParticleClass(&gParticleClasses, "ammo_text");
+				s.u.AddParticle.FullPos = a->Pos;
+				s.u.AddParticle.Z = BULLET_Z * Z_FACTOR;
+				s.u.AddParticle.DZ = 10;
+				const Ammo *ammo = AmmoGetById(&gAmmo, e.u.AddAmmo.AmmoId);
+				sprintf(
+					s.u.AddParticle.Text, "+%d %s",
+					(int)e.u.AddAmmo.Amount, ammo->Name);
+				GameEventsEnqueue(&gGameEvents, s);
 			}
 		}
 		break;
@@ -296,10 +309,6 @@ static void HandleGameEvent(
 			const PlayerData *p = PlayerDataGetByUID(e.u.UseAmmo.PlayerUID);
 			if (p != NULL && p->IsLocal)
 			{
-				HUDNumPopupsAdd(
-					&camera->HUD.numPopups, NUMBER_POPUP_AMMO,
-					e.u.UseAmmo.PlayerUID, -(int)e.u.UseAmmo.Amount);
-
 				// Show low or no ammo notifications
 				const int ammoAfter =
 					*(int *)CArrayGet(&a->ammo, e.u.UseAmmo.AmmoId);
@@ -524,12 +533,17 @@ static void HandleGameEvent(
 			{
 				DamageActor(
 					a, e.u.ActorHit.Power, e.u.ActorHit.HitterPlayerUID);
-				if (e.u.ActorHit.PlayerUID >= 0)
-				{
-					HUDNumPopupsAdd(
-						&camera->HUD.numPopups, NUMBER_POPUP_HEALTH,
-						e.u.ActorHit.PlayerUID, -e.u.ActorHit.Power);
-				}
+				GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+				s.u.AddParticle.Class =
+					StrParticleClass(&gParticleClasses, "damage_text");
+				s.u.AddParticle.FullPos = Vec2iAdd(
+					a->Pos,
+					Vec2iReal2Full(Vec2iNew(rand() % 6 - 3, rand() % 6 - 3)));
+				s.u.AddParticle.Z = BULLET_Z * Z_FACTOR;
+				s.u.AddParticle.DZ = 3;
+				sprintf(
+					s.u.AddParticle.Text, "-%d", (int)e.u.ActorHit.Power);
+				GameEventsEnqueue(&gGameEvents, s);
 
 				ActorAddBloodSplatters(
 					a, e.u.ActorHit.Power, e.u.ActorHit.Mass, Net2Vec2i(e.u.ActorHit.Vel));
