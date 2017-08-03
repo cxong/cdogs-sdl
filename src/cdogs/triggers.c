@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2014-2015, Cong Xu
+    Copyright (c) 2014-2015, 2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -51,12 +51,16 @@
 #include <string.h>
 #include "triggers.h"
 #include "map.h"
+#include "net_util.h"
 #include "objs.h"
 #include "sounds.h"
 #include "utils.h"
 
 CArray gWatches;	// of TWatch
 static int watchIndex = 1;
+
+// Number of frames to wait before repeating the "cannot activate" event
+#define CANNOT_ACTIVATE_LOCK 50
 
 
 Trigger *TriggerNew(void)
@@ -232,9 +236,35 @@ static bool ConditionsMet(CArray *conditions, const int ticks)
 	return allConditionsMet;
 }
 
-bool TriggerCanActivate(const Trigger *t, const int flags)
+bool TriggerTryActivate(Trigger *t, const int flags, const Vec2i tilePos)
 {
-	return t->isActive && (t->flags == 0 || (t->flags & flags));
+	const bool canActivate =
+		t->isActive && (t->flags == 0 || (t->flags & flags));
+	if (canActivate)
+	{
+		GameEvent e = GameEventNew(GAME_EVENT_TRIGGER);
+		e.u.TriggerEvent.ID = t->id;
+		e.u.TriggerEvent.Tile = Vec2i2Net(tilePos);
+		GameEventsEnqueue(&gGameEvents, e);
+	}
+	else
+	{
+		if (t->cannotActivateLock > 0)
+		{
+			t->cannotActivateLock--;
+		}
+	}
+	return canActivate;
+}
+
+bool TriggerCannotActivate(const Trigger *t)
+{
+	return t->cannotActivateLock == 0;
+}
+
+void TriggerSetCannotActivate(Trigger *t)
+{
+	t->cannotActivateLock = CANNOT_ACTIVATE_LOCK;
 }
 
 void TriggerActivate(Trigger *t, CArray *mapTriggers)

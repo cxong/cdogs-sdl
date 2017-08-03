@@ -625,19 +625,22 @@ static void HandleGameEvent(
 	case GAME_EVENT_ADD_KEYS:
 		{
 			gMission.KeyFlags |= e.u.AddKeys.KeyFlags;
-			
+
 			const Vec2i pos = Net2Vec2i(e.u.AddKeys.Pos);
 
-			SoundPlayAt(&gSoundDevice, StrSound("key"), pos);
+			if (!Vec2iIsZero(pos))
+			{
+				SoundPlayAt(&gSoundDevice, StrSound("key"), pos);
 
-			GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
-			s.u.AddParticle.Class =
-				StrParticleClass(&gParticleClasses, "key_text");
-			s.u.AddParticle.FullPos = Vec2iReal2Full(pos);
-			s.u.AddParticle.Z = BULLET_Z * Z_FACTOR;
-			s.u.AddParticle.DZ = 10;
-			sprintf(s.u.AddParticle.Text, "+Key");
-			GameEventsEnqueue(&gGameEvents, s);
+				GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+				s.u.AddParticle.Class =
+					StrParticleClass(&gParticleClasses, "key_text");
+				s.u.AddParticle.FullPos = Vec2iReal2Full(pos);
+				s.u.AddParticle.Z = BULLET_Z * Z_FACTOR;
+				s.u.AddParticle.DZ = 10;
+				sprintf(s.u.AddParticle.Text, "+key");
+				GameEventsEnqueue(&gGameEvents, s);
+			}
 
 			// Clear cache since we may now have new paths
 			PathCacheClear(&gPathCache);

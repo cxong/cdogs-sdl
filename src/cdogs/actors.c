@@ -409,7 +409,7 @@ void ActorMove(const NActorMove am)
 	a->MoveVel = Net2Vec2i(am.MoveVel);
 	OnMove(a);
 }
-static void CheckTrigger(const Vec2i tilePos);
+static void CheckTrigger(const Vec2i tilePos, const bool showLocked);
 static void CheckRescue(const TActor *a);
 static void OnMove(TActor *a)
 {
@@ -426,23 +426,31 @@ static void OnMove(TActor *a)
 
 	if (!gCampaign.IsClient)
 	{
-		CheckTrigger(Vec2iToTile(realPos));
+		CheckTrigger(Vec2iToTile(realPos), ActorIsLocalPlayer(a->uid));
 
 		CheckPickups(a);
 
 		CheckRescue(a);
 	}
 }
-static void CheckTrigger(const Vec2i tilePos)
+static void CheckTrigger(const Vec2i tilePos, const bool showLocked)
 {
 	const Tile *t = MapGetTile(&gMap, tilePos);
 	CA_FOREACH(Trigger *, tp, t->triggers)
-		if (TriggerCanActivate(*tp, gMission.KeyFlags))
+		if (!TriggerTryActivate(*tp, gMission.KeyFlags, tilePos) &&
+			(*tp)->isActive &&
+			TriggerCannotActivate(*tp) &&
+			showLocked)
 		{
-			GameEvent e = GameEventNew(GAME_EVENT_TRIGGER);
-			e.u.TriggerEvent.ID = (*tp)->id;
-			e.u.TriggerEvent.Tile = Vec2i2Net(tilePos);
-			GameEventsEnqueue(&gGameEvents, e);
+			TriggerSetCannotActivate(*tp);
+			GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+			s.u.AddParticle.Class =
+				StrParticleClass(&gParticleClasses, "locked_text");
+			s.u.AddParticle.FullPos =
+				Vec2iReal2Full(Vec2iCenterOfTile(tilePos));
+			s.u.AddParticle.Z = (BULLET_Z * 2) * Z_FACTOR;
+			sprintf(s.u.AddParticle.Text, "locked");
+			GameEventsEnqueue(&gGameEvents, s);
 		}
 	CA_FOREACH_END()
 }

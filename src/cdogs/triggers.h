@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2015, 2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -94,6 +94,7 @@ typedef struct
 	int id;
 	int flags;
 	int isActive;
+	int cannotActivateLock;
 	CArray actions;	// of Action
 } Trigger;
 
@@ -122,7 +123,9 @@ typedef struct
 } TWatch;
 
 
-bool TriggerCanActivate(const Trigger *t, const int flags);
+bool TriggerTryActivate(Trigger *t, const int flags, const Vec2i tilePos);
+bool TriggerCannotActivate(const Trigger *t);
+void TriggerSetCannotActivate(Trigger *t);
 void TriggerActivate(Trigger *t, CArray *mapTriggers);
 void UpdateWatches(CArray *mapTriggers, const int ticks);
 Trigger *TriggerNew(void);
