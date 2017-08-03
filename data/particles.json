@@ -241,6 +241,13 @@
       "Bounces": true
     },
     {
+      "Name": "key_text",
+      "Type": "Text",
+      "Range": 140,
+      "GravityFactor": 2,
+      "Bounces": true
+    },
+    {
       "Name": "heal_text",
       "Type": "Text",
       "TextMask": "00ff00",

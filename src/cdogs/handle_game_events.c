@@ -623,10 +623,25 @@ static void HandleGameEvent(
 		}
 		break;
 	case GAME_EVENT_ADD_KEYS:
-		gMission.KeyFlags |= e.u.AddKeys.KeyFlags;
-		SoundPlayAt(&gSoundDevice, StrSound("key"), Net2Vec2i(e.u.AddKeys.Pos));
-		// Clear cache since we may now have new paths
-		PathCacheClear(&gPathCache);
+		{
+			gMission.KeyFlags |= e.u.AddKeys.KeyFlags;
+			
+			const Vec2i pos = Net2Vec2i(e.u.AddKeys.Pos);
+
+			SoundPlayAt(&gSoundDevice, StrSound("key"), pos);
+
+			GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+			s.u.AddParticle.Class =
+				StrParticleClass(&gParticleClasses, "key_text");
+			s.u.AddParticle.FullPos = Vec2iReal2Full(pos);
+			s.u.AddParticle.Z = BULLET_Z * Z_FACTOR;
+			s.u.AddParticle.DZ = 10;
+			sprintf(s.u.AddParticle.Text, "+Key");
+			GameEventsEnqueue(&gGameEvents, s);
+
+			// Clear cache since we may now have new paths
+			PathCacheClear(&gPathCache);
+		}
 		break;
 	case GAME_EVENT_MISSION_COMPLETE:
 		if (camera != NULL && e.u.MissionComplete.ShowMsg)

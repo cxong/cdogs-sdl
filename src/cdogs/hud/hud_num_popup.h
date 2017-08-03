@@ -51,7 +51,6 @@ typedef struct
 typedef struct
 {
 	HUDNumPopup score[MAX_LOCAL_PLAYERS];
-	HUDNumPopup health[MAX_LOCAL_PLAYERS];
 	CArray objective; // of HUDNumPopup, one per objective
 } HUDNumPopups;
 
