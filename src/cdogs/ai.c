@@ -67,7 +67,7 @@
 #include "utils.h"
 
 static int gBaddieCount = 0;
-static int gAreGoodGuysPresent = 0;
+static bool sAreGoodGuysPresent = false;
 
 
 static bool IsFacingPlayer(TActor *actor, direction_e d)
@@ -249,7 +249,7 @@ static int WillFire(TActor * actor, int roll)
 	{
 		if ((actor->flags & FLAGS_GOOD_GUY) != 0)
 			return 1;	//!FacingPlayer( actor);
-		else if (gAreGoodGuysPresent)
+		else if (sAreGoodGuysPresent)
 		{
 			return 1;
 		}
@@ -323,13 +323,20 @@ int AICommand(const int ticks)
 	}
 
 	CA_FOREACH(TActor, actor, gActors)
-		if (!actor->isInUse || actor->PlayerUID >= 0 || actor->dead ||
-			(actor->flags & FLAGS_PRISONER))
+		if (!actor->isInUse || actor->PlayerUID >= 0 || actor->dead)
 		{
 			continue;
 		}
-		const int cmd = GetCmd(actor, delayModifier, rollLimit);
-		actor->aiContext->Delay = MAX(0, actor->aiContext->Delay - ticks);
+		int cmd = 0;
+		if (!(actor->flags & FLAGS_PRISONER))
+		{
+			if (actor->flags & (FLAGS_VICTIM | FLAGS_GOOD_GUY))
+			{
+				sAreGoodGuysPresent = true;
+			}
+			cmd = GetCmd(actor, delayModifier, rollLimit);
+			actor->aiContext->Delay = MAX(0, actor->aiContext->Delay - ticks);
+		}
 		CommandActor(actor, cmd, ticks);
 		actor->aiContext->LastCmd = cmd;
 		count++;
@@ -339,21 +346,11 @@ int AICommand(const int ticks)
 static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 {
 	const CharBot *bot = ActorGetCharacter(actor)->bot;
-	if ((actor->flags & (FLAGS_VICTIM | FLAGS_GOOD_GUY)) != 0)
-	{
-		gAreGoodGuysPresent = 1;
-	}
-
-	if (actor->flags & FLAGS_PRISONER)
-	{
-		return 0;
-	}
 
 	int cmd = 0;
 
 	// Wake up if it can see a player
-	if ((actor->flags & FLAGS_SLEEPING) &&
-		actor->aiContext->Delay == 0)
+	if ((actor->flags & FLAGS_SLEEPING) && actor->aiContext->Delay == 0)
 	{
 		if (CanSeeAPlayer(actor))
 		{
@@ -387,7 +384,7 @@ static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 
 	if (actor->flags & FLAGS_SLEEPING)
 	{
-		return 0;
+		return cmd;
 	}
 
 	bool bypass = false;
@@ -609,7 +606,7 @@ void InitializeBadGuys(void)
 	CA_FOREACH_END()
 
 	gBaddieCount = gMission.index * 4;
-	gAreGoodGuysPresent = 0;
+	sAreGoodGuysPresent = false;
 }
 
 void CreateEnemies(void)

@@ -392,7 +392,7 @@ static void SoundPlayAtPosition(
 		return;
 	}
 
-	SetSoundEffect(channel, bearingDegrees, distance, isMuffled);
+	SetSoundEffect(channel, bearingDegrees, (Uint8)distance, isMuffled);
 }
 static int GetChannel(SoundDevice *s, Mix_Chunk *data)
 {
