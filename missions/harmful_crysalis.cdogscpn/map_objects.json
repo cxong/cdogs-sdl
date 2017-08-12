@@ -41,6 +41,15 @@
       "Wreck": "table_plastic_wreck",
       "Health": 40,
       "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "phleboltinum",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "phleboltinum"
+      },
+      "Wreck": "safe_wreck",
+      "Health": 50
     }
   ]
 }
