@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2014, Cong Xu
+	Copyright (c) 2013-2014, 2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,8 +25,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __ALGORITHMS
-#define __ALGORITHMS
+#pragma once
 
 #include <stdbool.h>
 
@@ -39,7 +38,8 @@ typedef struct
 } HasClearLineData;
 // Use Bresenham line algorithm to determine whether line is clear
 bool HasClearLineBresenham(Vec2i from, Vec2i to, HasClearLineData *data);
-bool HasClearLineXiaolinWu(Vec2i from, Vec2i to, HasClearLineData *data);
+bool HasClearLineJMRaytrace(
+	const Vec2i from, const Vec2i to, HasClearLineData *data);
 
 typedef struct
 {
@@ -47,7 +47,8 @@ typedef struct
 	void *data;
 } AlgoLineDrawData;
 void BresenhamLineDraw(Vec2i from, Vec2i to, AlgoLineDrawData *data);
-void XiaolinWuLineDraw(Vec2i from, Vec2i to, AlgoLineDrawData *data);
+void JMRaytraceLineDraw(
+	const Vec2i from, const Vec2i to, AlgoLineDrawData *data);
 
 typedef struct
 {
@@ -56,5 +57,3 @@ typedef struct
 	void *data;
 } FloodFillData;
 bool CFloodFill(Vec2i v, FloodFillData *data);
-
-#endif

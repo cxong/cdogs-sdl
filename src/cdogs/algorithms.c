@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2014, Cong Xu
+	Copyright (c) 2013-2014, 2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -89,154 +89,48 @@ static bool BresenhamLine(Vec2i from, Vec2i to, AlgoLineData *data)
 	return true;
 }
 
-static void Vec2iSwap(Vec2i *a, Vec2i *b);
-static bool XiaolinWuDraw(
-	const Vec2i a, const Vec2i b,
-	const double aa, const bool isEnd, AlgoLineData *data);
-static bool XiaolinWuLine(Vec2i from, Vec2i to, AlgoLineData *data)
+// From "Raytracing on a grid" by James McNeill
+// http://playtechs.blogspot.com/2007/03/raytracing-on-grid.html
+// "The code snippets are free to use as you see fit and no attribution is
+// necessary"
+static bool JMRaytrace(int x0, int y0, int x1, int y1, AlgoLineData *data)
 {
-	if (Vec2iEqual(from, to))
+	int dx = abs(x1 - x0);
+	int dy = abs(y1 - y0);
+	int x = x0;
+	int y = y0;
+	int n = 1 + dx + dy;
+	int x_inc = (x1 > x0) ? 1 : -1;
+	int y_inc = (y1 > y0) ? 1 : -1;
+	int error = dx - dy;
+	dx *= 2;
+	dy *= 2;
+
+	for (; n > 0; --n)
 	{
-		return true;
-	}
-	if (from.x == to.x || from.y == to.y)
-	{
-		return BresenhamLine(from, to, data);
-	}
-	const double dx = to.x - from.x;
-	const double dy = to.y - from.y;
-	bool swapped = false;
-	double gradient;
-	double xyend;
-	Vec2i p1, p2;
-	double interx = 0;
-	double intery = 0;
-	Vec2i d = Vec2iZero();
-	bool shallow = fabs(dx) > fabs(dy);
-	if (shallow)
-	{
-		if (to.x < from.x)
+		const Vec2i v = Vec2iNew(x, y);
+		if (data->CheckBlockedAndEarlyTerminate)
 		{
-			Vec2iSwap(&from, &to);
-			swapped = true;
-		}
-		gradient = dy / dx;
-		int xend = from.x;
-		xyend = from.y + gradient*(xend - from.x);
-		p1 = Vec2iNew(xend, (int)xyend);
-		intery = xyend + gradient;
-
-		xend = to.x;
-		xyend = to.y + gradient*(xend - to.x);
-		p2 = Vec2iNew(xend, (int)xyend);
-
-		d.x = swapped ? -1 : 1;
-		if (swapped)
-		{
-			intery = xyend - gradient;
-		}
-	}
-	else
-	{
-		if (to.y < from.y)
-		{
-			Vec2iSwap(&from, &to);
-			swapped = true;
-		}
-		gradient = dx / dy;
-		int yend = from.y;
-		xyend = from.x + gradient*(yend - from.y);
-		p1 = Vec2iNew((int)xyend, yend);
-		interx = xyend + gradient;
-
-		yend = to.y;
-		xyend = to.x + gradient*(yend - to.y);
-		p2 = Vec2iNew((int)xyend, yend);
-
-		d.y = swapped ? -1 : 1;
-		if (swapped)
-		{
-			interx = xyend - gradient;
-		}
-	}
-
-	const Vec2i pstart = swapped ? p2 : p1;
-	if (!XiaolinWuDraw(
-		pstart, Vec2iNew(pstart.x, pstart.y + 1), xyend, true, data))
-	{
-		return false;
-	}
-
-	Vec2i start = Vec2iAdd(swapped ? p2 : p1, d);
-	Vec2i end = Vec2iMinus(swapped ? p1 : p2, d);
-	const Vec2i dp = shallow ? Vec2iNew(0, 1) : Vec2iNew(1, 0);
-	for (Vec2i xy = start;; xy = Vec2iAdd(xy, d))
-	{
-		if (shallow)
-		{
-			if (swapped ? xy.x < end.x : xy.x > end.x)
+			if (data->IsBlocked(data->data, v))
 			{
-				break;
+				return false;
 			}
 		}
 		else
 		{
-			if (swapped ? xy.y < end.y : xy.y > end.y)
-			{
-				break;
-			}
+			data->OnPoint(data->data, v);
 		}
-		const Vec2i p = Vec2iNew(
-			shallow ? xy.x : (int)interx,
-			shallow ? (int)intery : xy.y);
-		if (!XiaolinWuDraw(
-			p, Vec2iAdd(p, dp), shallow ? intery : interx, false, data))
+
+		if (error > 0)
 		{
-			return false;
-		}
-		if (shallow)
-		{
-			intery += swapped ? -gradient : gradient;
+			x += x_inc;
+			error -= dy;
 		}
 		else
 		{
-			interx += swapped ? -gradient : gradient;
+			y += y_inc;
+			error += dx;
 		}
-	}
-
-	const Vec2i pend = swapped ? p1 : p2;
-	if (!XiaolinWuDraw(
-		pend, Vec2iNew(pend.x, pend.y + 1), xyend, true, data))
-	{
-		return false;
-	}
-	return true;
-}
-static void Vec2iSwap(Vec2i *a, Vec2i *b)
-{
-	Vec2i temp = *b;
-	*b = *a;
-	*a = temp;
-}
-#define FPART(_x) ((double)(_x) - (int)(_x))
-#define RFPART(_x) (1.0 - FPART(_x))
-#define AAFACTOR -0.1
-static bool XiaolinWuDraw(
-	const Vec2i a, const Vec2i b,
-	const double aa, const bool isEnd, AlgoLineData *data)
-{
-	if (data->CheckBlockedAndEarlyTerminate)
-	{
-		if ((RFPART(aa) > AAFACTOR && data->IsBlocked(data->data, a)) ||
-			(FPART(aa) > AAFACTOR && !isEnd && data->IsBlocked(data->data, b)))
-		{
-			return false;
-		}
-	}
-	else
-	{
-		if (RFPART(aa) > AAFACTOR) data->OnPoint(data->data, a);
-		if (FPART(aa) > AAFACTOR && !isEnd) data->OnPoint(data->data, b);
 	}
 	return true;
 }
@@ -249,13 +143,14 @@ bool HasClearLineBresenham(Vec2i from, Vec2i to, HasClearLineData *data)
 	bData.data = data->data;
 	return BresenhamLine(from, to, &bData);
 }
-bool HasClearLineXiaolinWu(Vec2i from, Vec2i to, HasClearLineData *data)
+bool HasClearLineJMRaytrace(
+	const Vec2i from, const Vec2i to, HasClearLineData *data)
 {
 	AlgoLineData bData;
 	bData.CheckBlockedAndEarlyTerminate = true;
 	bData.IsBlocked = data->IsBlocked;
 	bData.data = data->data;
-	return XiaolinWuLine(from, to, &bData);
+	return JMRaytrace(from.x, from.y, to.x, to.y, &bData);
 }
 
 
@@ -267,13 +162,14 @@ void BresenhamLineDraw(Vec2i from, Vec2i to, AlgoLineDrawData *data)
 	bData.data = data->data;
 	BresenhamLine(from, to, &bData);
 }
-void XiaolinWuLineDraw(Vec2i from, Vec2i to, AlgoLineDrawData *data)
+void JMRaytraceLineDraw(
+	const Vec2i from, const Vec2i to, AlgoLineDrawData *data)
 {
 	AlgoLineData bData;
 	bData.CheckBlockedAndEarlyTerminate = false;
 	bData.OnPoint = data->Draw;
 	bData.data = data->data;
-	XiaolinWuLine(from, to, &bData);
+	JMRaytrace(from.x, from.y, to.x, to.y, &bData);
 }
 
 bool CFloodFill(Vec2i v, FloodFillData *data)

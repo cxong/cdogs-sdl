@@ -125,22 +125,22 @@ void LOSCalcFrom(Map *map, const Vec2i pos, const bool explore)
 	// Top edge
 	for (; end.x < origin.x + perimSize.x; end.x++)
 	{
-		HasClearLineXiaolinWu(pos, end, &lineData);
+		HasClearLineJMRaytrace(pos, end, &lineData);
 	}
 	// right edge
 	for (; end.y < origin.y + perimSize.y; end.y++)
 	{
-		HasClearLineXiaolinWu(pos, end, &lineData);
+		HasClearLineJMRaytrace(pos, end, &lineData);
 	}
 	// bottom edge
 	for (; end.x > origin.x; end.x--)
 	{
-		HasClearLineXiaolinWu(pos, end, &lineData);
+		HasClearLineJMRaytrace(pos, end, &lineData);
 	}
 	// left edge
 	for (; end.y > origin.y; end.y--)
 	{
-		HasClearLineXiaolinWu(pos, end, &lineData);
+		HasClearLineJMRaytrace(pos, end, &lineData);
 	}
 
 	// Second pass: make any non-visible obstructions that are adjacent to

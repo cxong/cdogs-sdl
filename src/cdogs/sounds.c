@@ -538,7 +538,7 @@ void SoundPlayAtPlusDistance(
 	lineData.IsBlocked = IsPosNoSee;
 	lineData.data = &gMap;
 	bool isMuffled = false;
-	if (!HasClearLineXiaolinWu(pos, origin, &lineData))
+	if (!HasClearLineJMRaytrace(pos, origin, &lineData))
 	{
 		isMuffled = true;
 	}

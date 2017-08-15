@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2015, 2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -199,27 +199,26 @@ int AIReverseDirection(int cmd)
 	return cmd;
 }
 
-typedef bool (*IsBlockedFunc)(void *, Vec2i);
+typedef bool (*IsBlockedFunc)(void *, const Vec2i);
 static bool AIHasClearLine(
 	Vec2i from, Vec2i to, IsBlockedFunc isBlockedFunc);
-static bool IsPosNoWalk(void *data, Vec2i pos);
-static bool IsPosNoWalkAroundObjects(void *data, Vec2i pos);
+static bool IsTileNoWalk(void *data, const Vec2i pos);
+static bool IsTileNoWalkAroundObjects(void *data, const Vec2i pos);
 bool AIHasClearPath(
 	const Vec2i from, const Vec2i to, const bool ignoreObjects)
 {
-	IsBlockedFunc f = ignoreObjects ? IsPosNoWalk : IsPosNoWalkAroundObjects;
-	return AIHasClearLine(from, to, f);
+	IsBlockedFunc f = ignoreObjects ? IsTileNoWalk : IsTileNoWalkAroundObjects;
+	return AIHasClearLine(Vec2iToTile(from), Vec2iToTile(to), f);
 }
 static bool AIHasClearLine(
 	Vec2i from, Vec2i to, IsBlockedFunc isBlockedFunc)
 {
 	// Find all tiles that overlap with the line (from, to)
-	// Uses Bresenham that crosses interiors of tiles
 	HasClearLineData data;
 	data.IsBlocked = isBlockedFunc;
 	data.data = &gMap;
 
-	return HasClearLineXiaolinWu(from, to, &data);
+	return HasClearLineJMRaytrace(from, to, &data);
 }
 static bool IsTileWalkableOrOpenable(Map *map, Vec2i pos);
 bool IsTileWalkable(Map *map, const Vec2i pos)
@@ -245,9 +244,9 @@ bool IsTileWalkable(Map *map, const Vec2i pos)
 	CA_FOREACH_END()
 	return true;
 }
-static bool IsPosNoWalk(void *data, Vec2i pos)
+static bool IsTileNoWalk(void *data, const Vec2i pos)
 {
-	return !IsTileWalkable(data, Vec2iToTile(pos));
+	return !IsTileWalkable(data, pos);
 }
 bool IsTileWalkableAroundObjects(Map *map, const Vec2i pos)
 {
@@ -288,9 +287,9 @@ bool IsTileWalkableAroundObjects(Map *map, const Vec2i pos)
 	CA_FOREACH_END()
 	return true;
 }
-static bool IsPosNoWalkAroundObjects(void *data, Vec2i pos)
+static bool IsTileNoWalkAroundObjects(void *data, const Vec2i pos)
 {
-	return !IsTileWalkableAroundObjects(data, Vec2iToTile(pos));
+	return !IsTileWalkableAroundObjects(data, pos);
 }
 static bool IsTileWalkableOrOpenable(Map *map, Vec2i pos)
 {
