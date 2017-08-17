@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2015, 2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -77,6 +77,8 @@ int AIHuntClosest(TActor *actor);
 int AIRetreatFrom(TActor *actor, const Vec2i from);
 // Like Hunt but biases towards 8 axis movement
 int AITrack(TActor *actor, const Vec2i targetPos);
+int AIMoveAwayFromLine(
+	const Vec2i fullPos, const Vec2i lineStartFull, const direction_e lineD);
 
 // Pathfinding helper functions
 bool IsTileWalkable(Map *map, const Vec2i pos);

@@ -670,3 +670,27 @@ int AITrack(TActor *actor, const Vec2i targetPos)
 
 	return cmd;
 }
+
+int AIMoveAwayFromLine(
+	const Vec2i fullPos, const Vec2i lineStartFull, const direction_e lineD)
+{
+	const Vec2i dv = Vec2iMinus(fullPos, lineStartFull);
+	switch (lineD)
+	{
+		case DIRECTION_UP:
+		case DIRECTION_DOWN:	// fallthrough
+			return dv.x < 0 ? CMD_LEFT : CMD_RIGHT;
+		case DIRECTION_UPLEFT:
+		case DIRECTION_DOWNRIGHT:	// fallthrough
+			return dv.x > dv.y ? (CMD_RIGHT | CMD_UP) : (CMD_LEFT | CMD_DOWN);
+		case DIRECTION_LEFT:
+		case DIRECTION_RIGHT:	// fallthrough
+			return dv.y < 0 ? CMD_UP : CMD_DOWN;
+		case DIRECTION_DOWNLEFT:
+		case DIRECTION_UPRIGHT:	// fallthrough
+			return dv.x < -dv.y ? (CMD_LEFT | CMD_UP) : (CMD_RIGHT | CMD_DOWN);
+		default:
+			CASSERT(false, "unknown direction");
+			return 0;
+	}
+}

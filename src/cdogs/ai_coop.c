@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2015, 2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,8 @@
 // How many ticks to stay in one confusion state
 #define CONFUSION_STATE_TICKS_MIN 25
 #define CONFUSION_STATE_TICKS_RANGE 25
+
+#define DISTANCE_TO_KEEP_OUT_OF_WAY SQUARED(4*16)
 
 
 static int AICoopGetCmdNormal(TActor *actor);
@@ -120,11 +122,12 @@ static int AICoopGetCmdNormal(TActor *actor)
 	// - Check weapons and ammo
 	// - If too far away from nearest player
 	//   - Go to nearest player
+	// - else if blocking a nearby player
+	//   - move out of the way
+	// - else if closest enemy is close enough
+	//   - Attack enemy
 	// - else
-	//   - If closest enemy is close enough
-	//     - Attack enemy
-	//   - else
-	//     - Go to nearest player if too far, or away if too close
+	//   - Go to nearest player if too far, or away if too close
 
 	const Vec2i actorRealPos = Vec2iFull2Real(actor->Pos);
 	const Vec2i actorTilePos = Vec2iToTile(actorRealPos);
@@ -215,6 +218,8 @@ static int AICoopGetCmdNormal(TActor *actor)
 		}
 	}
 
+	// Find nearby players, and move out of the way if any of them are facing
+	// directly at us
 	// Follow the closest player with a lower UID
 	const TActor *closestPlayer = NULL;
 	int minDistance2 = -1;
@@ -231,6 +236,13 @@ static int AICoopGetCmdNormal(TActor *actor)
 			{
 				minDistance2 = distance2;
 				closestPlayer = p;
+			}
+			// TODO: AIIsFacing might be too generous?
+			if (distance2 < DISTANCE_TO_KEEP_OUT_OF_WAY &&
+				AIIsFacing(p, actor->Pos, p->direction))
+			{
+				// Move out of the way
+				return AIMoveAwayFromLine(actor->Pos, p->Pos, p->direction);
 			}
 		}
 	}
