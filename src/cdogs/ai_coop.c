@@ -204,18 +204,23 @@ static int AICoopGetCmdNormal(TActor *actor)
 	}
 
 	// If we're over a weapon pickup, check if we want to pick it up
-	// Pick up if we have a weapon that is low on ammo, or if we have
-	// a free slot
+	// Pick up if we have:
+	// - a weapon that is low on ammo and don't yet have the gun, or
+	// - if we have a free slot
 	if (actor->aiContext->OnGunId != -1)
 	{
-		actor->aiContext->OnGunId = -1;
-		if (lowAmmoGun != -1 || actor->guns.size < MAX_WEAPONS)
+		const GunDescription *gun =
+			IdGunDescription(actor->aiContext->OnGunId);
+		if ((lowAmmoGun != -1 && !ActorHasGun(actor, gun)) ||
+			actor->guns.size < MAX_WEAPONS)
 		{
+			actor->aiContext->OnGunId = -1;
 			// Pick it up
 			// TODO: this will not guarantee the new gun will replace
 			// the low ammo gun; weapon management?
 			return actor->lastCmd == CMD_BUTTON2 ? 0 : CMD_BUTTON2;
 		}
+		actor->aiContext->OnGunId = -1;
 	}
 
 	// Find nearby players, and move out of the way if any of them are facing
