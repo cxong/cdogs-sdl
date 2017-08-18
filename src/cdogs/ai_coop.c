@@ -749,9 +749,11 @@ static bool OnClosestPickupGun(
 	{
 		return false;
 	}
-	// Pick up if we have a gun with less ammo than starting,
-	// and lower than lead player, who uses the ammo, or if
-	// there is a free weapon slot
+	// Pick up if:
+	// - we have a gun with less ammo than starting,
+	// - and lower than lead player, who uses the ammo,
+	// - or if there is a free weapon slot,
+	// - and the
 	bool hasGunLowOnAmmo = false;
 	if (actor->guns.size < MAX_WEAPONS)
 	{
@@ -779,6 +781,11 @@ static bool OnClosestPickupGun(
 	}
 
 	if (!hasGunLowOnAmmo)
+	{
+		return false;
+	}
+
+	if (ActorHasGun(actor, IdGunDescription(p->class->u.GunId)))
 	{
 		return false;
 	}
