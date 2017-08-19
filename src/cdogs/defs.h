@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2014-2015, Cong Xu
+    Copyright (c) 2014-2015, 2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -73,8 +73,8 @@
 #define Button1(x)    (((x) & CMD_BUTTON1) != 0)
 #define Button2(x)    (((x) & CMD_BUTTON2) != 0)
 #define AnyButton(x)  (((x) & (CMD_BUTTON1 | CMD_BUTTON2)) != 0)
-#define CMD_HAS_DIRECTION(x)\
-	((x) & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN))
+#define CMD_DIRECTIONS (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)
+#define CMD_HAS_DIRECTION(x) ((x) & CMD_DIRECTIONS)
 
 // Reverse directions for command
 int CmdGetReverse(int cmd);

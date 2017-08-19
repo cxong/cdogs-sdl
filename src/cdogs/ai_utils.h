@@ -66,17 +66,19 @@ bool AIHasClearPath(
 bool AIHasPath(const Vec2i from, const Vec2i to, const bool ignoreObjects);
 TObject *AIGetObjectRunningInto(TActor *a, int cmd);
 bool AIIsFacing(const TActor *a, const Vec2i targetFull, const direction_e d);
+bool AIIsInLine(const Vec2i tile, const Vec2i tileStart, const Vec2i tileEnd);
 
 // Find path to target
 // destroyObjects - if true, ignore obstructing objects
 //                - if false, will pathfind around them
 int AIGoto(TActor *actor, Vec2i target, bool ignoreObjects);
 int AIGotoDirect(const Vec2i a, const Vec2i p);
-int AIHunt(TActor *actor, Vec2i targetPos);
+int AIHunt(const TActor *actor, const Vec2i targetPos);
+int AIAttack(const TActor *a, const Vec2i targetPosFull);
 int AIHuntClosest(TActor *actor);
-int AIRetreatFrom(TActor *actor, const Vec2i from);
+int AIRetreatFrom(const TActor *actor, const Vec2i from);
 // Like Hunt but biases towards 8 axis movement
-int AITrack(TActor *actor, const Vec2i targetPos);
+int AITrack(const TActor *actor, const Vec2i targetPos);
 int AIMoveAwayFromLine(
 	const Vec2i fullPos, const Vec2i lineStartFull, const direction_e lineD);
 

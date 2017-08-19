@@ -424,6 +424,64 @@ bool AIIsFacing(const TActor *a, const Vec2i targetFull, const direction_e d)
 	return false;
 }
 
+typedef struct
+{
+	int ActorUID;
+	CollisionTeam CT;
+	bool HasFriendly;
+} FindFriendliesInTileData;
+static bool FindFriendliesInTile(void *data, const Vec2i tile);
+// Whether there are friendlies in the direct line of the gun's range
+static bool AIHasFriendliesInLine(const TActor *a, const direction_e d)
+{
+	const Vec2i tileStart = Vec2iToTile(Vec2iFull2Real(a->Pos));
+	const Vec2i dFull = GetFullVectorsForRadians(dir2radians[d]);
+	const GunDescription *gun = ActorGetGun(a)->Gun;
+	const int gunRange = GunGetRange(gun);
+	const Vec2i dvFull = Vec2iScale(dFull, gunRange);
+	const Vec2i posFullEnd = Vec2iAdd(a->Pos, dvFull);
+	const Vec2i tileEnd = Vec2iToTile(Vec2iFull2Real(posFullEnd));
+
+	HasClearLineData data;
+	data.IsBlocked = FindFriendliesInTile;
+	FindFriendliesInTileData tData;
+	tData.ActorUID = a->uid;
+	tData.CT = CalcCollisionTeam(true, a);
+	tData.CT = CalcCollisionTeam(true, a);
+	tData.HasFriendly = false;
+	data.data = &tData;
+	HasClearLineJMRaytrace(tileStart, tileEnd, &data);
+	return tData.HasFriendly;
+}
+static bool FindFriendliesInTile(void *data, const Vec2i tile)
+{
+	const Tile *t = MapGetTile(&gMap, tile);
+	if (t == NULL) return true;
+	FindFriendliesInTileData *tData = data;
+	CA_FOREACH(const ThingId, tid, t->things)
+		if (tid->Kind != KIND_CHARACTER) continue;
+		const TActor *other = CArrayGet(&gActors, tid->Id);
+		// Don't worry about self
+		if (tData->ActorUID == other->uid) continue;
+		// Never shoot prisoners/victims... it's not nice ;)
+		if (other->flags & (FLAGS_PRISONER | FLAGS_VICTIM))
+		{
+			tData->HasFriendly = true;
+			return true;
+		}
+		const CollisionTeam ctOther = CalcCollisionTeam(true, other);
+		if (tData->CT != COLLISIONTEAM_NONE && ctOther != COLLISIONTEAM_NONE &&
+			tData->CT == ctOther)
+		{
+			tData->HasFriendly = true;
+			return true;
+		}
+		// If it's an enemy, do shoot!
+		return true;
+	CA_FOREACH_END()
+	return false;
+}
+
 
 // Use pathfinding to check that there is a path between
 // source and destination tiles
@@ -575,7 +633,7 @@ int AIGoto(TActor *actor, Vec2i p, bool ignoreObjects)
 //    x  xxx
 //  xxxxxxxxxxxxxxxxxxxxxxx
 // Those in slice A will move down-left and those in slice B will move left.
-int AIHunt(TActor *actor, Vec2i targetPos)
+int AIHunt(const TActor *actor, const Vec2i targetPos)
 {
 	const Vec2i fullPos = Vec2iAdd(actor->Pos, ActorGetGunMuzzleOffset(actor));
 	const int dx = abs(targetPos.x - fullPos.x);
@@ -620,9 +678,68 @@ int AIHuntClosest(TActor *actor)
 	return AIHunt(actor, targetPos);
 }
 
+// Smarter attack routine:
+// - Move/position towards target, keeping ideal distance from it
+// - Fire if
+//   - has clear view to target, and
+//   - no friendlies in the way
+int AIAttack(const TActor *a, const Vec2i targetPosFull)
+{
+	// Move to the ideal distance for the weapon
+	int cmd = 0;
+	const GunDescription *gun = ActorGetGun(a)->Gun;
+	const int gunRange = GunGetRange(gun);
+	const int distanceSquared = DistanceSquared(
+		Vec2iFull2Real(a->Pos), Vec2iFull2Real(targetPosFull));
+	const bool canFire = gun->CanShoot && ActorGetGun(a)->lock <= 0;
+	if ((double)distanceSquared <
+		SQUARED(gunRange * 3) * a->aiContext->GunRangeScalar &&
+		!canFire)
+	{
+		// Move away from the enemy because we're too close
+		// Only move away if we can't fire; otherwise turn to fire
+		cmd = AIRetreatFrom(a, targetPosFull);
+	}
+	else
+	{
+		// Move towards the enemy, fire if able
+		// But don't bother firing if too far away
+
+		if ((double)distanceSquared > SQUARED(gunRange * 2))
+		{
+			// Too far away; approach using most efficient method
+			cmd = AIHunt(a, targetPosFull);
+		}
+		else
+		{
+		#define MINIMUM_GUN_DISTANCE 30
+			const bool willFire = canFire &&
+				(distanceSquared < SQUARED(gunRange * 2) ||
+				distanceSquared > SQUARED(MINIMUM_GUN_DISTANCE));
+			if (willFire)
+			{
+				// Hunt; this is the best direction to attack in
+				cmd = AIHunt(a, targetPosFull);
+			}
+			else
+			{
+				// Track so that we end up in a favorable angle
+				cmd = AITrack(a, targetPosFull);
+			}
+			// Don't fire if there's a friendly in the way
+			const direction_e d = cmd2dir[cmd & CMD_DIRECTIONS];
+			if (willFire && !AIHasFriendliesInLine(a, d))
+			{
+				cmd |= CMD_BUTTON1;
+			}
+		}
+	}
+	return cmd;
+}
+
 // Move away from the target
 // Usually used for a simple flee
-int AIRetreatFrom(TActor *actor, const Vec2i from)
+int AIRetreatFrom(const TActor *actor, const Vec2i from)
 {
 	return AIReverseDirection(AIHunt(actor, from));
 }
@@ -637,7 +754,7 @@ int AIRetreatFrom(TActor *actor, const Vec2i from)
 //    x  xxx
 //  xxxxxxxxxxxxxxxxxxxxxxx
 // Those in slice A will move left and those in slice B will move down-left.
-int AITrack(TActor *actor, const Vec2i targetPos)
+int AITrack(const TActor *actor, const Vec2i targetPos)
 {
 	const Vec2i fullPos = Vec2iAdd(actor->Pos, ActorGetGunMuzzleOffset(actor));
 	const int dx = abs(targetPos.x - fullPos.x);
