@@ -659,13 +659,13 @@ void HUDDraw(
 static void DrawPlayerAreas(HUD *hud)
 {
 	int flags = 0;
-	const int numPlayersCreen = GetNumPlayersScreen(NULL);
+	const int numPlayersScreen = GetNumPlayersScreen(NULL);
 
 	Rect2i r;
 	r.Size = Vec2iNew(
 		hud->device->cachedConfig.Res.x,
 		hud->device->cachedConfig.Res.y);
-	if (numPlayersCreen <= 1)
+	if (numPlayersScreen <= 1)
 	{
 		flags = 0;
 	}
@@ -674,12 +674,12 @@ static void DrawPlayerAreas(HUD *hud)
 	{
 		flags |= HUDFLAGS_SHARE_SCREEN;
 	}
-	else if (numPlayersCreen == 2)
+	else if (numPlayersScreen == 2)
 	{
 		r.Size.x /= 2;
 		flags |= HUDFLAGS_HALF_SCREEN;
 	}
-	else if (numPlayersCreen == 3 || numPlayersCreen == 4)
+	else if (numPlayersScreen == 3 || numPlayersScreen == 4)
 	{
 		r.Size.x /= 2;
 		r.Size.y /= 2;
