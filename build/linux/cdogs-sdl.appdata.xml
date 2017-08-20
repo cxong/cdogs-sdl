@@ -3,11 +3,11 @@
   <id>cdogs-sdl.desktop</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-2.0+</project_license>
-  <name>C-Dogs</name>
+  <name>C-Dogs SDL</name>
   <summary>Classic overhead run-and-gun game</summary>
   <description>
     <p>
-      C-Dogs is an arcade shoot-em-up which lets players work alone and
+      C-Dogs SDL is an overhead shoot-em-up which lets players work alone and
       cooperatively during missions or fight against each other in the
       “dogfight” deathmatch mode.
     </p>
