@@ -59,7 +59,7 @@ void CameraTerminate(Camera *camera);
 
 void CameraInput(Camera *camera, const int cmd, const int lastCmd);
 void CameraUpdate(Camera *camera, const int ticks, const int ms);
-void CameraDraw(Camera *camera);
+void CameraDraw(Camera *camera, const HUDDrawData drawData);
 void CameraDrawMode(const Camera *camera);
 
 bool CameraIsSingleScreen(void);

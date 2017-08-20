@@ -95,7 +95,7 @@ void HUDDisplayMessage(HUD *hud, const char *msg, int ticks)
 	hud->messageTicks = ticks;
 }
 
-void HUDUpdate(HUD *hud, int ms)
+void HUDUpdate(HUD *hud, const int ms)
 {
 	if (hud->messageTicks >= 0)
 	{
@@ -108,18 +108,29 @@ void HUDUpdate(HUD *hud, int ms)
 	FPSCounterUpdate(&hud->fpsCounter, ms);
 	WallClockUpdate(&hud->clock, ms);
 	HUDPopupsUpdate(&hud->numPopups, ms);
-	int idx = 0;
-	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
+
+	for (int i = 0; i < hud->DrawData.NumScreens; i++)
 	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (!IsPlayerScreen(p))
-		{
-			idx--;
-			continue;
-		}
+		const PlayerData *p = hud->DrawData.Players[i];
 		const TActor *a = ActorGetByUID(p->ActorUID);
+		if (a == NULL) continue;
 		HealthGaugeUpdate(&hud->healthGauges[i], a, ms);
 	}
+}
+
+HUDDrawData HUDGetDrawData(void)
+{
+	HUDDrawData drawData;
+	memset(&drawData, 0, sizeof drawData);
+	CA_FOREACH(const PlayerData, p, gPlayerDatas)
+		if (!IsPlayerScreen(p))
+		{
+			continue;
+		}
+		drawData.Players[drawData.NumScreens] = p;
+		drawData.NumScreens++;
+	}
+	return drawData;
 }
 
 
@@ -659,13 +670,12 @@ void HUDDraw(
 static void DrawPlayerAreas(HUD *hud)
 {
 	int flags = 0;
-	const int numPlayersScreen = GetNumPlayersScreen(NULL);
 
 	Rect2i r;
 	r.Size = Vec2iNew(
 		hud->device->cachedConfig.Res.x,
 		hud->device->cachedConfig.Res.y);
-	if (numPlayersScreen <= 1)
+	if (hud->DrawData.NumScreens <= 1)
 	{
 		flags = 0;
 	}
@@ -674,12 +684,12 @@ static void DrawPlayerAreas(HUD *hud)
 	{
 		flags |= HUDFLAGS_SHARE_SCREEN;
 	}
-	else if (numPlayersScreen == 2)
+	else if (hud->DrawData.NumScreens == 2)
 	{
 		r.Size.x /= 2;
 		flags |= HUDFLAGS_HALF_SCREEN;
 	}
-	else if (numPlayersScreen == 3 || numPlayersScreen == 4)
+	else if (hud->DrawData.NumScreens == 3 || hud->DrawData.NumScreens == 4)
 	{
 		r.Size.x /= 2;
 		r.Size.y /= 2;
@@ -690,23 +700,17 @@ static void DrawPlayerAreas(HUD *hud)
 		assert(0 && "not implemented");
 	}
 
-	int idx = 0;
-	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
+	for (int i = 0; i < hud->DrawData.NumScreens; i++)
 	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (!IsPlayerScreen(p))
-		{
-			idx--;
-			continue;
-		}
+		const PlayerData *p = hud->DrawData.Players[i];
 		int drawFlags = flags;
 		r.Pos = Vec2iZero();
-		if (idx & 1)
+		if (i & 1)
 		{
 			r.Pos.x = r.Size.x;
 			drawFlags |= HUDFLAGS_PLACE_RIGHT;
 		}
-		if (idx >= 2)
+		if (i >= 2)
 		{
 			r.Pos.y = r.Size.y;
 			drawFlags |= HUDFLAGS_PLACE_BOTTOM;
@@ -716,8 +720,8 @@ static void DrawPlayerAreas(HUD *hud)
 		{
 			player = ActorGetByUID(p->ActorUID);
 		}
-		DrawPlayerStatus(hud, p, player, drawFlags, r, &hud->healthGauges[idx]);
-		HUDNumPopupsDrawPlayer(&hud->numPopups, idx, drawFlags);
+		DrawPlayerStatus(hud, p, player, drawFlags, r, &hud->healthGauges[i]);
+		HUDNumPopupsDrawPlayer(&hud->numPopups, i, drawFlags);
 	}
 
 	// Only draw radar once if shared
@@ -733,7 +737,7 @@ static void DrawDeathmatchScores(HUD *hud)
 {
 	// Only draw deathmatch scores if single screen and non-local players exist
 	if (gCampaign.Entry.Mode != GAME_MODE_DEATHMATCH ||
-		GetNumPlayersScreen(NULL) != 1 ||
+		hud->DrawData.NumScreens != 1 ||
 		GetNumPlayers(PLAYER_ANY, false, false) <= 1)
 	{
 		return;

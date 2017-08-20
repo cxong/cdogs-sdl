@@ -721,7 +721,7 @@ static void RunGameDraw(GameLoopData *data)
 
 	// Draw game layer
 	BlitClearBuf(&gGraphicsDevice);
-	CameraDraw(&rData->Camera);
+	CameraDraw(&rData->Camera, rData->Camera.HUD.DrawData);
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 
 	// Draw HUD layer

@@ -41,6 +41,12 @@
 
 typedef struct
 {
+	int NumScreens;
+	const PlayerData *Players[MAX_LOCAL_PLAYERS];
+} HUDDrawData;
+
+typedef struct
+{
 	struct MissionOptions *mission;
 	char message[256];
 	int messageTicks;
@@ -50,6 +56,7 @@ typedef struct
 	HUDNumPopups numPopups;
 	HealthGauge healthGauges[MAX_LOCAL_PLAYERS];
 	bool showExit;
+	HUDDrawData DrawData;
 } HUD;
 
 void HUDInit(
@@ -61,7 +68,10 @@ void HUDTerminate(HUD *hud);
 // Set ticks to -1 to display a message indefinitely
 void HUDDisplayMessage(HUD *hud, const char *msg, int ticks);
 
-void HUDUpdate(HUD *hud, int ms);
+HUDDrawData HUDGetDrawData(void);
+
+void HUDUpdate(HUD *hud, const int ms);
+
 // INPUT_DEVICE_UNSET if not paused
 void HUDDraw(
 	HUD *hud, const input_device_e pausingDevice,

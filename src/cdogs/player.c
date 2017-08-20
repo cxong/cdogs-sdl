@@ -284,19 +284,6 @@ int GetNumPlayers(
 	return numPlayers;
 }
 
-int GetNumPlayersScreen(const PlayerData **p)
-{
-	const bool humanOnly =
-		IsPVP(gCampaign.Entry.Mode) ||
-		!ConfigGetBool(&gConfig, "Interface.SplitscreenAI");
-	const int n = GetNumPlayers(PLAYER_ALIVE_OR_DYING, humanOnly, true);
-	if (n > 0 && p != NULL)
-	{
-		*p = GetFirstPlayer(true, humanOnly, true);
-	}
-	return n;
-}
-
 bool AreAllPlayersDeadAndNoLives(void)
 {
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)

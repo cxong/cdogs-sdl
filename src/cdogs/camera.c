@@ -66,9 +66,9 @@ void CameraInput(Camera *camera, const int cmd, const int lastCmd)
 	{
 		camera->spectateMode = SPECTATE_FREE;
 		const int pan = PAN_SPEED;
-		if (cmd & CMD_LEFT)	camera->lastPosition.x -= pan;
+		if (cmd & CMD_LEFT)			camera->lastPosition.x -= pan;
 		else if (cmd & CMD_RIGHT)	camera->lastPosition.x += pan;
-		if (cmd & CMD_UP)		camera->lastPosition.y -= pan;
+		if (cmd & CMD_UP)			camera->lastPosition.y -= pan;
 		else if (cmd & CMD_DOWN)	camera->lastPosition.y += pan;
 	}
 	else if ((AnyButton(cmd) && !AnyButton(lastCmd)) ||
@@ -108,37 +108,21 @@ void CameraInput(Camera *camera, const int cmd, const int lastCmd)
 	}
 }
 
+static void FollowPlayer(Vec2i *pos, const PlayerData *p);
 void CameraUpdate(Camera *camera, const int ticks, const int ms)
 {
-	HUDUpdate(&camera->HUD, ms);
-	camera->shake = ScreenShakeUpdate(camera->shake, ticks);
-}
-
-static void FollowPlayer(Vec2i *pos, const int playerUID);
-static void DoBuffer(
-	DrawBuffer *b, Vec2i center, int w, Vec2i noise, Vec2i offset);
-void CameraDraw(Camera *camera)
-{
-	Vec2i centerOffset = Vec2iZero();
-	const PlayerData *firstPlayer = NULL;
-	const int numPlayersScreen = GetNumPlayersScreen(&firstPlayer);
-	const int w = gGraphicsDevice.cachedConfig.Res.x;
-	const int h = gGraphicsDevice.cachedConfig.Res.y;
-
-	const Vec2i noise = ScreenShakeGetDelta(camera->shake);
-
-	GraphicsResetBlitClip(&gGraphicsDevice);
-	if (numPlayersScreen == 0)
+	camera->HUD.DrawData = HUDGetDrawData();
+	if (camera->HUD.DrawData.NumScreens == 0)
 	{
-		// Try to spectate if there are remote players
+		// Try to spectate if there are other players alive
 		if (camera->spectateMode == SPECTATE_NONE)
 		{
 			// Enter spectator mode
 			// Free-look mode
 			camera->spectateMode = SPECTATE_FREE;
-			// If there are remote players, follow them
+			// If there are other players alive, follow them
 			CA_FOREACH(const PlayerData, p, gPlayerDatas)
-				if (p->Lives > 0 && !p->IsLocal)
+				if (IsPlayerAliveOrDying(p))
 				{
 					camera->spectateMode = SPECTATE_FOLLOW;
 					camera->FollowPlayerUID = p->UID;
@@ -146,10 +130,49 @@ void CameraDraw(Camera *camera)
 				}
 			CA_FOREACH_END()
 		}
-		if (camera->spectateMode == SPECTATE_FOLLOW)
+	}
+	else
+	{
+		// Don't spectate
+		camera->spectateMode = SPECTATE_NONE;
+	}
+	if (camera->spectateMode == SPECTATE_FOLLOW)
+	{
+		camera->HUD.DrawData.Players[0] =
+			PlayerDataGetByUID(camera->FollowPlayerUID);
+		if (camera->HUD.DrawData.Players[0] != NULL)
 		{
-			FollowPlayer(&camera->lastPosition, camera->FollowPlayerUID);
+			camera->HUD.DrawData.NumScreens = 1;
+			FollowPlayer(
+				&camera->lastPosition, camera->HUD.DrawData.Players[0]);
 		}
+	}
+
+	HUDUpdate(&camera->HUD, ms);
+	camera->shake = ScreenShakeUpdate(camera->shake, ticks);
+}
+// Try to follow a player
+static void FollowPlayer(Vec2i *pos, const PlayerData *p)
+{
+	const TActor *a = ActorGetByUID(p->ActorUID);
+	if (a == NULL) return;
+	*pos = Vec2iFull2Real(a->Pos);
+}
+
+static void DoBuffer(
+	DrawBuffer *b, Vec2i center, int w, Vec2i noise, Vec2i offset);
+void CameraDraw(Camera *camera, const HUDDrawData drawData)
+{
+	Vec2i centerOffset = Vec2iZero();
+	const PlayerData *firstPlayer = drawData.Players[0];
+	const int w = gGraphicsDevice.cachedConfig.Res.x;
+	const int h = gGraphicsDevice.cachedConfig.Res.y;
+
+	const Vec2i noise = ScreenShakeGetDelta(camera->shake);
+
+	GraphicsResetBlitClip(&gGraphicsDevice);
+	if (drawData.NumScreens == 0)
+	{
 		DoBuffer(
 			&camera->Buffer,
 			camera->lastPosition,
@@ -158,14 +181,12 @@ void CameraDraw(Camera *camera)
 	}
 	else
 	{
-		// Don't spectate
-		camera->spectateMode = SPECTATE_NONE;
 		// Redo LOS if PVP, so that each split screen has its own LOS
-		if (IsPVP(gCampaign.Entry.Mode) && numPlayersScreen > 0)
+		if (IsPVP(gCampaign.Entry.Mode) && drawData.NumScreens > 0)
 		{
 			LOSReset(&gMap.LOS);
 		}
-		const bool onePlayer = numPlayersScreen == 1;
+		const bool onePlayer = drawData.NumScreens == 1;
 		const bool singleScreen = CameraIsSingleScreen();
 		if (onePlayer || singleScreen)
 		{
@@ -218,26 +239,20 @@ void CameraDraw(Camera *camera)
 				X_TILES, noise, centerOffset);
 			SoundSetEars(earPos);
 		}
-		else if (numPlayersScreen == 2)
+		else if (drawData.NumScreens == 2)
 		{
 			// side-by-side split
-			int idx = 0;
-			for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
+			for (int i = 0; i < drawData.NumScreens; i++)
 			{
-				const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-				if (!IsPlayerScreen(p))
-				{
-					idx--;
-					continue;
-				}
+				const PlayerData *p = drawData.Players[i];
 				const TActor *a = ActorGetByUID(p->ActorUID);
 				camera->lastPosition = Vec2iNew(a->tileItem.x, a->tileItem.y);
 				Vec2i centerOffsetPlayer = centerOffset;
-				int clipLeft = (idx & 1) ? w / 2 : 0;
-				int clipRight = (idx & 1) ? w - 1 : (w / 2) - 1;
+				const int clipLeft = (i & 1) ? w / 2 : 0;
+				const int clipRight = (i & 1) ? w - 1 : (w / 2) - 1;
 				GraphicsSetBlitClip(
 					&gGraphicsDevice, clipLeft, 0, clipRight, h - 1);
-				if (idx == 1)
+				if (i == 1)
 				{
 					centerOffsetPlayer.x += w / 2;
 				}
@@ -247,32 +262,26 @@ void CameraDraw(Camera *camera)
 					&camera->Buffer,
 					camera->lastPosition,
 					X_TILES_HALF, noise, centerOffsetPlayer);
-				SoundSetEarsSide(idx == 0, camera->lastPosition);
+				SoundSetEarsSide(i == 0, camera->lastPosition);
 			}
 			Draw_Line(w / 2 - 1, 0, w / 2 - 1, h - 1, colorBlack);
 			Draw_Line(w / 2, 0, w / 2, h - 1, colorBlack);
 		}
-		else if (numPlayersScreen >= 3 && numPlayersScreen <= 4)
+		else if (drawData.NumScreens >= 3 && drawData.NumScreens <= 4)
 		{
 			// 4 player split screen
-			int idx = 0;
-			bool isLocalPlayerAlive[4];
+			bool isLocalPlayerAlive[MAX_LOCAL_PLAYERS];
 			memset(isLocalPlayerAlive, 0, sizeof isLocalPlayerAlive);
-			for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
+			for (int i = 0; i < drawData.NumScreens; i++)
 			{
-				const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-				if (!IsPlayerScreen(p))
-				{
-					idx--;
-					continue;
-				}
+				const PlayerData *p = drawData.Players[i];
 				Vec2i centerOffsetPlayer = centerOffset;
-				const int clipLeft = (idx & 1) ? w / 2 : 0;
-				const int clipTop = (idx < 2) ? 0 : h / 2 - 1;
-				const int clipRight = (idx & 1) ? w - 1 : (w / 2) - 1;
-				const int clipBottom = (idx < 2) ? h / 2 : h - 1;
-				isLocalPlayerAlive[idx] = IsPlayerAliveOrDying(p);
-				if (!isLocalPlayerAlive[idx])
+				const int clipLeft = (i & 1) ? w / 2 : 0;
+				const int clipTop = (i < 2) ? 0 : h / 2 - 1;
+				const int clipRight = (i & 1) ? w - 1 : (w / 2) - 1;
+				const int clipBottom = (i < 2) ? h / 2 : h - 1;
+				isLocalPlayerAlive[i] = IsPlayerAliveOrDying(p);
+				if (!isLocalPlayerAlive[i])
 				{
 					continue;
 				}
@@ -281,11 +290,11 @@ void CameraDraw(Camera *camera)
 				GraphicsSetBlitClip(
 					&gGraphicsDevice,
 					clipLeft, clipTop, clipRight, clipBottom);
-				if (idx & 1)
+				if (i & 1)
 				{
 					centerOffsetPlayer.x += w / 2;
 				}
-				if (idx < 2)
+				if (i < 2)
 				{
 					centerOffsetPlayer.y -= h / 4;
 				}
@@ -300,18 +309,18 @@ void CameraDraw(Camera *camera)
 					X_TILES_HALF, noise, centerOffsetPlayer);
 
 				// Set the sound "ears"
-				const bool isLeft = idx == 0 || idx == 2;
-				const bool isUpper = idx <= 2;
+				const bool isLeft = i == 0 || i == 2;
+				const bool isUpper = i <= 2;
 				SoundSetEar(isLeft, isUpper ? 0 : 1, camera->lastPosition);
 				// If any player is dead, that ear reverts to the other ear
 				// of the same side of the remaining player
-				const int otherIdxOnSameSide = idx ^ 2;
+				const int otherIdxOnSameSide = i ^ 2;
 				if (!isLocalPlayerAlive[otherIdxOnSameSide])
 				{
 					SoundSetEar(
 						isLeft, !isUpper ? 0 : 1, camera->lastPosition);
 				}
-				else if (!isLocalPlayerAlive[3 - idx] &&
+				else if (!isLocalPlayerAlive[3 - i] &&
 					!isLocalPlayerAlive[3 - otherIdxOnSameSide])
 				{
 					// If both players of one side are dead,
@@ -331,15 +340,6 @@ void CameraDraw(Camera *camera)
 		}
 	}
 	GraphicsResetBlitClip(&gGraphicsDevice);
-}
-// Try to follow a player
-static void FollowPlayer(Vec2i *pos, const int playerUID)
-{
-	const PlayerData *p = PlayerDataGetByUID(playerUID);
-	if (p == NULL) return;
-	const TActor *a = ActorGetByUID(p->ActorUID);
-	if (a == NULL) return;
-	*pos = Vec2iFull2Real(a->Pos);
 }
 static void DoBuffer(
 	DrawBuffer *b, Vec2i center, int w, Vec2i noise, Vec2i offset)
