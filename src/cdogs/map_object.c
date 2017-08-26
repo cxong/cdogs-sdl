@@ -206,7 +206,7 @@ int MapObjectGetFlags(const MapObject *mo)
 	{
 		flags |= TILEITEM_DRAW_LAST;
 	}
-	if (mo->Health > 0 && !(mo->Flags & (1 << PLACEMENT_ON_WALL)))
+	if (mo->Health > 0)
 	{
 		flags |= TILEITEM_IMPASSABLE;
 		flags |= TILEITEM_CAN_BE_SHOT;
