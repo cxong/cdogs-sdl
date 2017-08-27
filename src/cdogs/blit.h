@@ -94,7 +94,6 @@ void BlitPicHighlight(
 	GraphicsDevice *g, const Pic *pic, const Vec2i pos, const color_t color);
 void BlitClearBuf(GraphicsDevice *g);
 void BlitUpdateFromBuf(GraphicsDevice *g, SDL_Texture *t);
-void BlitFlip(GraphicsDevice *g);
 
 Uint32 PixelMult(const Uint32 p, const Uint32 m);
 color_t CharColorsGetChannelMask(const CharColors *c, const uint8_t alpha);

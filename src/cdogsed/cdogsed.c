@@ -247,7 +247,7 @@ static void Display(GraphicsDevice *g, HandleInputResult result)
 		MouseDraw(&gEventHandlers.mouse);
 	}
 	BlitUpdateFromBuf(g, g->screen);
-	BlitFlip(g);
+	WindowContextRender(&g->gameWindow);
 }
 
 static void Setup(const bool changedMission);
@@ -488,7 +488,7 @@ static void Open(void)
 		}
 
 		BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
-		BlitFlip(&gGraphicsDevice);
+		WindowContextRender(&gGraphicsDevice.gameWindow);
 
 		bool doOpen = false;
 		const SDL_Scancode sc = EventWaitKeyOrText(&gEventHandlers);
@@ -532,7 +532,7 @@ static void Open(void)
 			FontStrCenter("Loading...");
 
 			BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
-			BlitFlip(&gGraphicsDevice);
+			WindowContextRender(&gGraphicsDevice.gameWindow);
 			// Try original filename
 			if (TryOpen(filename))
 			{
@@ -598,7 +598,7 @@ static void Save(void)
 		pos = FontStr(filename, pos);
 		FontCh('<', pos);
 		BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
-		BlitFlip(&gGraphicsDevice);
+		WindowContextRender(&gGraphicsDevice.gameWindow);
 
 		const SDL_Scancode sc = EventWaitKeyOrText(&gEventHandlers);
 		switch (sc)
@@ -635,7 +635,7 @@ static void Save(void)
 		FontStrCenter("Saving...");
 
 		BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
-		BlitFlip(&gGraphicsDevice);
+		WindowContextRender(&gGraphicsDevice.gameWindow);
 		MapArchiveSave(filename, &gCampaign.Setting);
 		fileChanged = false;
 		strcpy(lastFile, filename);
@@ -700,7 +700,7 @@ static void HelpScreen(void)
 	ClearScreen(&gGraphicsDevice);
 	FontStr(helpText, pos);
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
-	BlitFlip(&gGraphicsDevice);
+	WindowContextRender(&gGraphicsDevice.gameWindow);
 	GetKey(&gEventHandlers);
 }
 

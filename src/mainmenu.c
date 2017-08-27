@@ -545,6 +545,8 @@ menu_t *MenuCreateOptionsGraphics(const char *name, MenuSystem *ms)
 #ifndef __GCWZERO__
 #ifndef __ANDROID__
 	MenuAddConfigOptionsItem(menu, ConfigGet(&gConfig, "Graphics.Fullscreen"));
+	MenuAddConfigOptionsItem(
+		menu, ConfigGet(&gConfig, "Graphics.SecondWindow"));
 #endif	// ANDROID
 
 	MenuAddSubmenu(

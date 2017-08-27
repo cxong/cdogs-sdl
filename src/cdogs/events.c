@@ -184,7 +184,8 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 						false,
 						scale,
 						gGraphicsDevice.cachedConfig.ScaleMode,
-						gGraphicsDevice.cachedConfig.Brightness);
+						gGraphicsDevice.cachedConfig.Brightness,
+						gGraphicsDevice.cachedConfig.SecondWindow);
 					GraphicsInitialize(&gGraphicsDevice);
 				}
 				break;

@@ -111,7 +111,7 @@ bool ConfirmScreen(const char *info, const char *msg)
 	FontStr(info, Vec2iNew((w - FontStrW(info)) / 2, (h - FontH()) / 2));
 	FontStr(msg, Vec2iNew((w - FontStrW(msg)) / 2, (h + FontH()) / 2));
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
-	BlitFlip(&gGraphicsDevice);
+	WindowContextRender(&gGraphicsDevice.gameWindow);
 
 	SDL_Keycode k = SDL_GetKeyFromScancode(GetKey(&gEventHandlers));
 	return k == SDLK_y;

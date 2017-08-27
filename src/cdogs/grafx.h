@@ -55,8 +55,9 @@
 #include "c_array.h"
 #include "color.h"
 #include "config.h"
-#include "vector.h"
 #include "sys_specifics.h"
+#include "window_context.h"
+
 
 #define RESTART_RESOLUTION 1
 #define RESTART_SCALE_MODE 2
@@ -69,6 +70,7 @@ typedef struct
 	int ScaleFactor;
 	ScaleMode ScaleMode;
 	int Brightness;
+	bool SecondWindow;
 	bool IsEditor;
 
 	int RestartFlags;
@@ -89,8 +91,8 @@ typedef struct
 	SDL_Surface *icon;
 	SDL_Texture *screen;
 	SDL_Texture *hud;
-	SDL_Renderer *renderer;
-	SDL_Window *window;
+	WindowContext gameWindow;
+	WindowContext secondWindow;
 	SDL_PixelFormat *Format;
 	GraphicsConfig cachedConfig;
 	CArray validModes;	// of Vec2i, w x h
@@ -111,7 +113,8 @@ int GraphicsGetMemSize(GraphicsConfig *config);
 void GraphicsConfigSet(
 	GraphicsConfig *c,
 	const Vec2i res, const bool fullscreen,
-	const int scaleFactor, const ScaleMode scaleMode, const int brightness);
+	const int scaleFactor, const ScaleMode scaleMode, const int brightness,
+	const bool secondWindow);
 void GraphicsConfigSetFromConfig(GraphicsConfig *gc, Config *c);
 
 void Gfx_ModePrev(void);
