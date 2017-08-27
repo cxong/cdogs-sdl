@@ -579,7 +579,8 @@ static void ShowFailedToOpenMsg(const char *filename)
 	char msgBuf[CDOGS_PATH_MAX];
 	sprintf(msgBuf, "Failed to open file %s", filename);
 	SDL_ShowSimpleMessageBox(
-		SDL_MESSAGEBOX_ERROR, "Error", msgBuf, gGraphicsDevice.window);
+		SDL_MESSAGEBOX_ERROR, "Error", msgBuf,
+		gGraphicsDevice.gameWindow.window);
 }
 
 static void Save(void)
@@ -644,7 +645,7 @@ static void Save(void)
 		sprintf(msgBuf, "Saved to %s", filename);
 		SDL_ShowSimpleMessageBox(
 			SDL_MESSAGEBOX_INFORMATION, "Campaign Saved",
-			msgBuf, gGraphicsDevice.window);
+			msgBuf, gGraphicsDevice.gameWindow.window);
 	}
 }
 

@@ -236,7 +236,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 		{
 			return;
 		}
-		if (g->cachedConfig.SecondWindow)
+		if (g->cachedConfig.SecondWindow && !g->cachedConfig.IsEditor)
 		{
 			if (!WindowContextCreate(
 					&g->secondWindow, windowSize, sdlFlags, title, g->icon,
