@@ -57,11 +57,32 @@ void GrafxMakeRandomBackground(
 	CampaignSettingTerminate(&co->Setting);
 }
 
+static void DrawBackground(
+	GraphicsDevice *g, SDL_Texture *t, DrawBuffer *buffer, Map *map,
+	const HSV tint, const Vec2i pos, GrafxDrawExtra *extra);
 void GrafxDrawBackground(
 	GraphicsDevice *g, DrawBuffer *buffer,
-	HSV tint, Vec2i pos, GrafxDrawExtra *extra)
+	const HSV tint, const Vec2i pos, GrafxDrawExtra *extra)
 {
-	DrawBufferSetFromMap(buffer, &gMap, pos, X_TILES);
+	if (g->cachedConfig.SecondWindow)
+	{
+		DrawBackground(
+			g, g->bkg, buffer, &gMap, tint,
+			Vec2iNew(pos.x - g->cachedConfig.Res.x / 2, pos.y), extra);
+		DrawBackground(
+			g, g->bkg2, buffer, &gMap, tint,
+			Vec2iNew(pos.x + g->cachedConfig.Res.x / 2, pos.y), extra);
+	}
+	else
+	{
+		DrawBackground(g, g->bkg, buffer, &gMap, tint, pos, extra);
+	}
+}
+static void DrawBackground(
+	GraphicsDevice *g, SDL_Texture *t, DrawBuffer *buffer, Map *map,
+	const HSV tint, const Vec2i pos, GrafxDrawExtra *extra)
+{
+	DrawBufferSetFromMap(buffer, map, pos, X_TILES);
 	DrawBufferDraw(buffer, Vec2iZero(), extra);
 
 	if (!HSVEquals(tint, tintNone))
@@ -75,7 +96,7 @@ void GrafxDrawBackground(
 			}
 		}
 	}
-	BlitUpdateFromBuf(g, g->bkg);
+	BlitUpdateFromBuf(g, t);
 	BlitClearBuf(g);
 }
 

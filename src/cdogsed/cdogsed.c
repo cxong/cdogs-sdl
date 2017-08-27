@@ -1324,6 +1324,7 @@ int main(int argc, char *argv[])
 	ConfigGet(&gConfig, "Graphics.ScaleMode")->u.Enum.Value = SCALE_MODE_NN;
 	ConfigGet(&gConfig, "Graphics.ResolutionWidth")->u.Int.Value = 400;
 	ConfigGet(&gConfig, "Graphics.ResolutionHeight")->u.Int.Value = 300;
+	ConfigGet(&gConfig, "Graphics.SecondWindow")->u.Bool.Value = false;
 	// Force enable ammo so that ammo spawners show up
 	ConfigGet(&gConfig, "Game.Ammo")->u.Bool.Value = true;
 	ConfigSetChanged(&gConfig);

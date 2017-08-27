@@ -259,6 +259,10 @@ bool LoopRunnerRunInner(LoopRunInnerData *ctx)
         {
             ctx->data->DrawFunc(ctx->data);
 			WindowContextRender(&gGraphicsDevice.gameWindow);
+			if (gGraphicsDevice.cachedConfig.SecondWindow)
+			{
+				WindowContextRender(&gGraphicsDevice.secondWindow);
+			}
         }
         ctx->data->HasDrawnFirst = true;
     }

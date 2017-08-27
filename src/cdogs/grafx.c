@@ -236,7 +236,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 		{
 			return;
 		}
-		if (g->cachedConfig.SecondWindow && !g->cachedConfig.IsEditor)
+		if (g->cachedConfig.SecondWindow)
 		{
 			if (!WindowContextCreate(
 					&g->secondWindow, windowSize, sdlFlags, title, g->icon,
@@ -290,6 +290,16 @@ void GraphicsInitialize(GraphicsDevice *g)
 		if (g->bkg == NULL)
 		{
 			return;
+		}
+		if (g->cachedConfig.SecondWindow)
+		{
+			g->bkg2 = WindowContextCreateTexture(
+				&g->secondWindow, SDL_TEXTUREACCESS_STATIC, Vec2iNew(w, h),
+				SDL_BLENDMODE_NONE, 255);
+			if (g->bkg2 == NULL)
+			{
+				return;
+			}
 		}
 
 		g->screen = WindowContextCreateTexture(
