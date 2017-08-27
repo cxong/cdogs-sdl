@@ -137,10 +137,14 @@ add_executable(pic_test
 	../cdogs/log.h
 	../cdogs/pic.c
 	../cdogs/pic.h
+	../cdogs/texture.c
+	../cdogs/texture.h
 	../cdogs/utils.c
 	../cdogs/utils.h
 	../cdogs/vector.c
-	../cdogs/vector.h)
+	../cdogs/vector.h
+	../cdogs/window_context.c
+	../cdogs/window_context.h)
 target_link_libraries(pic_test
 	cbehave
 	${SDL2_LIBRARY}
