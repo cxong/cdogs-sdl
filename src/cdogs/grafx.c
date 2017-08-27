@@ -319,6 +319,19 @@ void GraphicsInitialize(GraphicsDevice *g)
 		}
 		BlitClearBuf(g);
 		BlitUpdateFromBuf(g, g->hud);
+
+		if (g->cachedConfig.SecondWindow)
+		{
+			g->hud2 = WindowContextCreateTexture(
+				&g->secondWindow, SDL_TEXTUREACCESS_STREAMING, Vec2iNew(w, h),
+				SDL_BLENDMODE_BLEND, 255);
+			if (g->hud2 == NULL)
+			{
+				return;
+			}
+			BlitClearBuf(g);
+			BlitUpdateFromBuf(g, g->hud2);
+		}
 	}
 
 	if (initBrightness)

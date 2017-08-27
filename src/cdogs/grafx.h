@@ -91,6 +91,7 @@ typedef struct
 	SDL_Surface *icon;
 	SDL_Texture *screen;
 	SDL_Texture *hud;
+	SDL_Texture *hud2;
 	WindowContext gameWindow;
 	WindowContext secondWindow;
 	SDL_PixelFormat *Format;

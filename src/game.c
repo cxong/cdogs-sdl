@@ -296,6 +296,10 @@ static void RunGameOnExit(GameLoopData *data)
 	// Clear other texures
 	BlitClearBuf(&gGraphicsDevice);
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.hud);
+	if (gGraphicsDevice.cachedConfig.SecondWindow)
+	{
+		BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.hud2);
+	}
 
 	// Unready all the players
 	CA_FOREACH(PlayerData, p, gPlayerDatas)
@@ -741,4 +745,14 @@ static void RunGameDraw(GameLoopData *data)
 		AutomapDraw(0, rData->Camera.HUD.showExit);
 	}
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.hud);
+
+	if (gGraphicsDevice.cachedConfig.SecondWindow)
+	{
+		BlitClearBuf(&gGraphicsDevice);
+		if (IsAutoMapEnabled(gCampaign.Entry.Mode))
+		{
+			AutomapDraw(0, rData->Camera.HUD.showExit);
+		}
+		BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.hud2);
+	}
 }
