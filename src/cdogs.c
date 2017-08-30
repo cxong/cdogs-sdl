@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
 		SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_HAPTIC |
 		SDL_INIT_GAMECONTROLLER;
 #else
-    const int sdlFlags = SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO;
+    const int sdlFlags = SDL_INIT_AUDIO | SDL_INIT_VIDEO;
 #endif
 	if (SDL_Init(sdlFlags) != 0)
 	{
