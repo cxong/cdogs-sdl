@@ -58,7 +58,18 @@
 		"FillPercent": 40,
 		"Repeat": 4,
 		"R1": 5,
-		"R2": 2
+		"R2": 2,
+		"Rooms": {
+			"Count": 0,
+			"Min": 0,
+			"Max": 0,
+			"Edge": false,
+			"Overlap": false,
+			"Walls": 0,
+			"WallLength": 0,
+			"WallPad": 0
+		},
+		"Squares": 0
 	},
 	{
 		"Title": "Get the Hell out of Dodge",
@@ -78,7 +89,7 @@
 			"Pickup": "holo",
 			"Count": 1,
 			"Required": 1,
-			"Flags": 2
+			"Flags": 4
 		},
 		{
 			"Description": "Eliminate threats",
@@ -125,7 +136,18 @@
 		"FillPercent": 40,
 		"Repeat": 4,
 		"R1": 5,
-		"R2": 2
+		"R2": 2,
+		"Rooms": {
+			"Count": 8,
+			"Min": 5,
+			"Max": 7,
+			"Edge": false,
+			"Overlap": false,
+			"Walls": 0,
+			"WallLength": 0,
+			"WallPad": 0
+		},
+		"Squares": 0
 	},
 	{
 		"Title": "Emergence",
@@ -236,6 +258,85 @@
 			"Min": 2,
 			"Max": 2
 		}
+	},
+	{
+		"Title": "Rumble in the Dark",
+		"Description": "The air feels somehow lighter around here. The surface must be near.\n\nYou trace some unnatural tunnels into a small cavern. Before you can get closer to the rockfall leading up, you hear a dark murmur...",
+		"Type": "Cave",
+		"Width": 37,
+		"Height": 35,
+		"WallStyle": "rock",
+		"FloorStyle": "cobble",
+		"RoomStyle": "checker",
+		"ExitStyle": "hazard",
+		"KeyStyle": "office",
+		"DoorStyle": "blast",
+		"Objectives": [{
+			"Description": "Kill the guardian",
+			"Type": "Kill",
+			"Index": 0,
+			"Count": 1,
+			"Required": 1,
+			"Flags": 0
+		}],
+		"Enemies": [0,
+		2],
+		"SpecialChars": [7],
+		"MapObjectDensities": [{
+			"MapObject": "skull2",
+			"Density": 20
+		},
+		{
+			"MapObject": "bone_blood",
+			"Density": 15
+		},
+		{
+			"MapObject": "box3_gray",
+			"Density": 25
+		},
+		{
+			"MapObject": "Shotgun spawner",
+			"Density": 5
+		},
+		{
+			"MapObject": "box3_green",
+			"Density": 20
+		},
+		{
+			"MapObject": "crate",
+			"Density": 20
+		},
+		{
+			"MapObject": "crate2",
+			"Density": 20
+		},
+		{
+			"MapObject": "terminal",
+			"Density": 50
+		}],
+		"EnemyDensity": 0,
+		"Weapons": ["Knife",
+		"Pistol"],
+		"Song": "",
+		"WallMask": "484870",
+		"FloorMask": "301c1c",
+		"RoomMask": "20203c",
+		"AltMask": "8484ac",
+		"FillPercent": 50,
+		"Repeat": 4,
+		"R1": 5,
+		"R2": 2,
+		"Rooms": {
+			"Count": 10,
+			"Min": 8,
+			"Max": 8,
+			"Edge": true,
+			"Overlap": true,
+			"Walls": 0,
+			"WallLength": 1,
+			"WallPad": 1
+		},
+		"Squares": 2
 	},
 	{
 		"Title": "The Long Black Road",

@@ -105,11 +105,27 @@
 		"Hair": "000000",
 		"speed": 360,
 		"Gun": "Launcher",
-		"maxHealth": 1000,
+		"maxHealth": 500,
 		"flags": 33555456,
 		"probabilityToMove": 95,
 		"probabilityToTrack": 60,
 		"probabilityToShoot": 80,
 		"actionDelay": 10
+	},
+	{
+		"Class": "Bones",
+		"Skin": "be9bf3",
+		"Arms": "bc97e0",
+		"Body": "ca8dd7",
+		"Legs": "705faa",
+		"Hair": "000000",
+		"speed": 360,
+		"Gun": "Launcher",
+		"maxHealth": 200,
+		"flags": 33555456,
+		"probabilityToMove": 95,
+		"probabilityToTrack": 60,
+		"probabilityToShoot": 58,
+		"actionDelay": 20
 	}]
 }
