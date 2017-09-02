@@ -69,7 +69,8 @@
 			"WallLength": 0,
 			"WallPad": 0
 		},
-		"Squares": 0
+		"Squares": 0,
+		"DoorsEnabled": false
 	},
 	{
 		"Title": "Get the Hell out of Dodge",
@@ -147,7 +148,8 @@
 			"WallLength": 0,
 			"WallPad": 0
 		},
-		"Squares": 0
+		"Squares": 0,
+		"DoorsEnabled": false
 	},
 	{
 		"Title": "Emergence",
@@ -277,7 +279,15 @@
 			"Index": 0,
 			"Count": 1,
 			"Required": 1,
-			"Flags": 0
+			"Flags": 4
+		},
+		{
+			"Description": "Find access panels",
+			"Type": "Collect",
+			"Pickup": "circuit",
+			"Count": 3,
+			"Required": 0,
+			"Flags": 4
 		}],
 		"Enemies": [0,
 		2],
@@ -328,15 +338,16 @@
 		"R2": 2,
 		"Rooms": {
 			"Count": 10,
-			"Min": 8,
-			"Max": 8,
+			"Min": 5,
+			"Max": 7,
 			"Edge": true,
 			"Overlap": true,
 			"Walls": 0,
 			"WallLength": 1,
 			"WallPad": 1
 		},
-		"Squares": 2
+		"Squares": 2,
+		"DoorsEnabled": true
 	},
 	{
 		"Title": "The Long Black Road",

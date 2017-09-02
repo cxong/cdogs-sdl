@@ -200,6 +200,7 @@ typedef struct
 			int CorridorWidth;
 			RoomParams Rooms;
 			int Squares;
+			bool DoorsEnabled;
 		} Cave;
 	} u;
 } Mission;

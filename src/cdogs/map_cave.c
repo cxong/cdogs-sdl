@@ -35,7 +35,7 @@ static void CaveRep(Map *map, const int r1, const int r2);
 static void LinkDisconnectedAreas(Map *map);
 static void FixCorridors(Map *map, const int corridorWidth);
 static void PlaceSquares(Map *map, const int squares);
-static void PlaceRooms(Map *map, const RoomParams r);
+static void PlaceRooms(Map *map, const Mission *m);
 void MapCaveLoad(
 	Map *map, const struct MissionOptions *mo, const CampaignOptions* co)
 {
@@ -66,7 +66,7 @@ void MapCaveLoad(
 
 	PlaceSquares(map, m->u.Cave.Squares);
 
-	PlaceRooms(map, m->u.Cave.Rooms);
+	PlaceRooms(map, m);
 }
 
 // Perform one generation of cellular automata
@@ -450,38 +450,44 @@ static bool MapIsAreaClearForCaveSquare(
 }
 
 static bool MapIsAreaClearForCaveRoom(
-	const Map *map, const Vec2i pos, const Vec2i size);
+	const Map *map, const Vec2i pos, const Vec2i size, const Mission *m,
+	bool *isOverlapRoom, unsigned short *overlapAccess);
 static void MapBuildRoom(
 	Map *map,
 	const Vec2i pos,
 	const Vec2i size,
-	const RoomParams r,
+	const Mission *m,
 	const bool hasKeys,
 	const bool isOverlapRoom,
 	const unsigned short overlapAccess);
-static void PlaceRooms(Map *map, const RoomParams r)
+static void PlaceRooms(Map *map, const Mission *m)
 {
 	int count = 0;
-	for (int i = 0; i < 1000 && count < r.Count; i++)
+	for (int i = 0; i < 1000 && count < m->u.Cave.Rooms.Count; i++)
 	{
 		const Vec2i v = MapGetRandomTile(map);
-		const Vec2i size = MapGetRoomSize(r, 0);
-		if (!MapIsAreaClearForCaveRoom(map, v, size))
+		const Vec2i size = MapGetRoomSize(m->u.Cave.Rooms, 0);
+		bool isOverlapRoom;
+		unsigned short overlapAccess;
+		if (!MapIsAreaClearForCaveRoom(map, v, size, m, &isOverlapRoom, &overlapAccess))
 		{
 			continue;
 		}
-		// TODO: keys
-		// TODO: overlap room
-		// TODO: access
-		MapBuildRoom(map, v, size, r, false, false, 0);
+		MapBuildRoom(
+			map, v, size, m, AreKeysAllowed(gCampaign.Entry.Mode),
+			isOverlapRoom, overlapAccess);
 		count++;
 	}
 }
 
 static bool CaveRoomOutsideOk(const Map *map, const Vec2i v);
 static bool MapIsAreaClearForCaveRoom(
-	const Map *map, const Vec2i pos, const Vec2i size)
+	const Map *map, const Vec2i pos, const Vec2i size, const Mission *m,
+	bool *isOverlapRoom, unsigned short *overlapAccess)
 {
+	*isOverlapRoom = false;
+	*overlapAccess = 0;
+
 	if (!MapIsAreaInside(map, pos, size))
 	{
 		return false;
@@ -490,8 +496,10 @@ static bool MapIsAreaClearForCaveRoom(
 	// For area to be clear, it must have:
 	// - Area has at least one floor tile
 	// - Can only contain floor, wall or room tiles
+	// - Not be entirely surrounded by walls
 	Vec2i v;
 	bool hasFloor = false;
+	bool hasFloorAroundEdge = false;
 	for (v.y = pos.y; v.y < pos.y + size.y; v.y++)
 	{
 		for (v.x = pos.x; v.x < pos.x + size.x; v.x++)
@@ -500,9 +508,17 @@ static bool MapIsAreaClearForCaveRoom(
 			{
 				case MAP_FLOOR:
 					hasFloor = true;
+					if (v.y == pos.y || v.y == pos.y + size.y - 1 ||
+						v.x == pos.x || v.x == pos.x + size.x - 1)
+					{
+						hasFloorAroundEdge = true;
+					}
 					break;
 				case MAP_WALL:	// passthrough
 				case MAP_ROOM:
+					break;
+				case MAP_DOOR:
+					*isOverlapRoom = true;
 					break;
 				default:
 					// Any other tile type is disallowed
@@ -510,7 +526,7 @@ static bool MapIsAreaClearForCaveRoom(
 			}
 		}
 	}
-	if (!hasFloor)
+	if (!hasFloor || !hasFloorAroundEdge)
 	{
 		return false;
 	}
@@ -541,7 +557,8 @@ static bool MapIsAreaClearForCaveRoom(
 				v.x, (isTop || isBottom) ? outside.y : v.y);
 			switch (IMapGet(map, v))
 			{
-				case MAP_WALL:
+				case MAP_WALL:	// passthrough
+				case MAP_DOOR:
 					break;
 				case MAP_FLOOR:	// passthrough
 				case MAP_ROOM:
@@ -560,6 +577,21 @@ static bool MapIsAreaClearForCaveRoom(
 		}
 	}
 
+	// If room overlap is enabled, check if it overlaps with a room
+	if (*isOverlapRoom)
+	{
+		const bool isOverlap =
+			m->u.Cave.Rooms.Overlap && MapIsAreaClearOrRoom(map, pos, size);
+		// Now check if the overlapping rooms will create a passage
+		// large enough
+		const int roomOverlapSize = MapGetRoomOverlapSize(
+			map, pos, size, overlapAccess);
+		if (!isOverlap || roomOverlapSize < m->u.Cave.CorridorWidth)
+		{
+			return false;
+		}
+	}
+
 	return true;
 }
 static bool CaveRoomOutsideOk(const Map *map, const Vec2i v)
@@ -572,7 +604,7 @@ static void MapBuildRoom(
 	Map *map,
 	const Vec2i pos,
 	const Vec2i size,
-	const RoomParams r,
+	const Mission *m,
 	const bool hasKeys,
 	const bool isOverlapRoom,
 	const unsigned short overlapAccess)
@@ -612,7 +644,9 @@ static void MapBuildRoom(
 						CaveRoomOutsideOk(map, outsideX) &&
 						CaveRoomOutsideOk(map, outsideY))
 					{
-						IMapSet(map, v, MAP_DOOR);
+						IMapSet(
+							map, v,
+							m->u.Cave.DoorsEnabled ? MAP_DOOR : MAP_ROOM);
 					}
 					else
 					{
@@ -636,10 +670,27 @@ static void MapBuildRoom(
 
 	MapMakeRoom(map, pos, size, false);
 
-	// TODO: keys/access level
-	UNUSED(hasKeys);
-	UNUSED(isOverlapRoom);
-	UNUSED(overlapAccess);
+	// Work out what access level (i.e. key) this room has
+	unsigned short accessMask = 0;
+	if (hasKeys && m->u.Cave.DoorsEnabled)
+	{
+		// If this room has overlapped another room, use the same
+		// access level as that room
+		if (isOverlapRoom)
+		{
+			accessMask = overlapAccess;
+		}
+		else
+		{
+			// Otherwise, generate an access level for this room
+			accessMask = GenerateAccessMask(&map->keyAccessCount);
+			if (map->keyAccessCount < 1)
+			{
+				map->keyAccessCount = 1;
+			}
+		}
+	}
+	MapSetRoomAccessMask(map, pos, size, accessMask);
 
-	MapMakeRoomWalls(map, r);
+	MapMakeRoomWalls(map, m->u.Cave.Rooms);
 }

@@ -70,6 +70,9 @@ void MapMakeRoomWalls(Map *map, const RoomParams r);
 bool MapTryBuildWall(
 	Map *map, const unsigned short tileType, const int pad,
 	const int wallLength);
+void MapSetRoomAccessMask(
+	Map *map, const Vec2i pos, const Vec2i size,
+	const unsigned short accessMask);
 void MapPlaceDoors(
 	Map *map, Vec2i pos, Vec2i size,
 	int hasDoors, int doors[4], int doorMin, int doorMax,

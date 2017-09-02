@@ -60,6 +60,9 @@ static const char *MissionGetRoomWallPadStr(UIObject *o, void *data);
 static void MissionChangeRoomWallPad(void *data, int d);
 static const char *MissionGetSquareCountStr(UIObject *o, void *data);
 static void MissionChangeSquareCount(void *data, int d);
+static void MissionDrawDoorEnabled(
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data);
+static void MissionChangeDoorEnabled(void *data, int d);
 UIObject *CreateCaveMapObjs(Vec2i pos, CampaignOptions *co)
 {
 	const int th = FontH();
@@ -169,6 +172,14 @@ UIObject *CreateCaveMapObjs(Vec2i pos, CampaignOptions *co)
 	o2->u.LabelFunc = MissionGetSquareCountStr;
 	o2->Data = co;
 	o2->ChangeFunc = MissionChangeSquareCount;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCreate(UITYPE_CUSTOM, 0, pos, o->Size);
+	o2->u.CustomDrawFunc = MissionDrawDoorEnabled;
+	o2->Data = co;
+	o2->ChangeFunc = MissionChangeDoorEnabled;
+	o2->ChangesData = true;
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 
@@ -370,4 +381,23 @@ static void MissionChangeSquareCount(void *data, int d)
 	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Cave.Squares =
 		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Squares + d, 0, 100);
+}
+static void MissionDrawDoorEnabled(
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
+{
+	UNUSED(o);
+	UNUSED(g);
+	CampaignOptions *co = data;
+	if (!CampaignGetCurrentMission(co)) return;
+	DisplayFlag(
+		Vec2iAdd(pos, o->Pos), "Doors",
+		CampaignGetCurrentMission(co)->u.Cave.DoorsEnabled,
+		UIObjectIsHighlighted(o));
+}
+static void MissionChangeDoorEnabled(void *data, int d)
+{
+	UNUSED(d);
+	CampaignOptions *co = data;
+	Mission *m = CampaignGetCurrentMission(co);
+	m->u.Cave.DoorsEnabled = !m->u.Cave.DoorsEnabled;
 }

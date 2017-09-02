@@ -425,6 +425,7 @@ static json_t *SaveMissions(CArray *a)
 				json_insert_pair_into_object(
 					node, "Rooms", SaveRooms(mission->u.Cave.Rooms));
 			AddIntPair(node, "Squares", mission->u.Cave.Squares);
+			AddBoolPair(node, "DoorsEnabled", mission->u.Cave.DoorsEnabled);
 			break;
 		default:
 			assert(0 && "unknown map type");

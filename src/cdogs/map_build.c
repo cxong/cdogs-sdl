@@ -469,6 +469,23 @@ static void MapGrowWall(
 	MapGrowWall(map, x, y, tileType, pad, d, length);
 }
 
+void MapSetRoomAccessMask(
+	Map *map, const Vec2i pos, const Vec2i size,
+	const unsigned short accessMask)
+{
+	Vec2i v;
+	for (v.y = pos.y + 1; v.y < pos.y + size.y - 1; v.y++)
+	{
+		for (v.x = pos.x + 1; v.x < pos.x + size.x - 1; v.x++)
+		{
+			if ((IMapGet(map, v) & MAP_MASKACCESS) == MAP_ROOM)
+			{
+				IMapSet(map, v, MAP_ROOM | accessMask);
+			}
+		}
+	}
+}
+
 static bool TryPlaceDoorTile(
 	Map *map, const Vec2i v, const Vec2i d, const unsigned short t);
 void MapPlaceDoors(
@@ -476,22 +493,12 @@ void MapPlaceDoors(
 	int hasDoors, int doors[4], int doorMin, int doorMax,
 	unsigned short accessMask)
 {
-	int x, y;
 	int i;
 	unsigned short doorTile = hasDoors ? MAP_DOOR : MAP_ROOM;
 	Vec2i v;
 
 	// Set access mask
-	for (y = pos.y + 1; y < pos.y + size.y - 1; y++)
-	{
-		for (x = pos.x + 1; x < pos.x + size.x - 1; x++)
-		{
-			if ((IMapGet(map, Vec2iNew(x, y)) & MAP_MASKACCESS) == MAP_ROOM)
-			{
-				IMapSet(map, Vec2iNew(x, y), MAP_ROOM | accessMask);
-			}
-		}
-	}
+	MapSetRoomAccessMask(map, pos, size, accessMask);
 
 	// Set the doors
 	if (doors[0])
