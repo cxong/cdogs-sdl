@@ -1,0 +1,15 @@
+{
+  "Version": 2,
+  "Characters": [
+    {
+      "Name": "Bones",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/skull"
+      },
+      "Sounds": {
+        "Aargh": "aargh/zombie"
+      }
+    }
+  ]
+}
