@@ -38,7 +38,7 @@ typedef struct
 } GrafxDrawExtra;
 void GrafxDrawBackground(
 	GraphicsDevice *g, DrawBuffer *buffer,
-	HSV tint, Vec2i pos, GrafxDrawExtra *extra);
+	const HSV tint, const Vec2i pos, GrafxDrawExtra *extra);
 void GrafxRedrawBackground(GraphicsDevice *g, const Vec2i pos);
 void GrafxMakeBackground(
 	GraphicsDevice *device, DrawBuffer *buffer,

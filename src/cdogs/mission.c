@@ -119,6 +119,11 @@ void MissionInit(Mission *m)
 	CArrayInit(&m->MapObjectDensities, sizeof(MapObjectDensity));
 	CArrayInit(&m->Weapons, sizeof(const GunDescription *));
 }
+
+static void MapObjectPositionsCopy(CArray *dst, const CArray *src);
+static void CharacterPositionsCopy(CArray *dst, const CArray *src);
+static void ObjectivePositionsCopy(CArray *dst, const CArray *src);
+static void KeyPositionsCopy(CArray *dst, const CArray *src);
 void MissionCopy(Mission *dst, const Mission *src)
 {
 	if (src == NULL)
@@ -168,10 +173,10 @@ void MissionCopy(Mission *dst, const Mission *src)
 	{
 	case MAPTYPE_STATIC:
 		CArrayCopy(&dst->u.Static.Tiles, &src->u.Static.Tiles);
-		CArrayCopy(&dst->u.Static.Items, &src->u.Static.Items);
-		CArrayCopy(&dst->u.Static.Characters, &src->u.Static.Characters);
-		CArrayCopy(&dst->u.Static.Objectives, &src->u.Static.Objectives);
-		CArrayCopy(&dst->u.Static.Keys, &src->u.Static.Keys);
+		MapObjectPositionsCopy(&dst->u.Static.Items, &src->u.Static.Items);
+		CharacterPositionsCopy(&dst->u.Static.Characters, &src->u.Static.Characters);
+		ObjectivePositionsCopy(&dst->u.Static.Objectives, &src->u.Static.Objectives);
+		KeyPositionsCopy(&dst->u.Static.Keys, &src->u.Static.Keys);
 
 		dst->u.Static.Start = src->u.Static.Start;
 		dst->u.Static.Exit = src->u.Static.Exit;
@@ -181,6 +186,52 @@ void MissionCopy(Mission *dst, const Mission *src)
 		break;
 	}
 }
+static void MapObjectPositionsCopy(CArray *dst, const CArray *src)
+{
+	CArrayInit(dst, src->elemSize);
+	CA_FOREACH(const MapObjectPositions, p, *src)
+		MapObjectPositions pCopy;
+		memset(&pCopy, 0, sizeof pCopy);
+		pCopy.M = p->M;
+		CArrayCopy(&pCopy.Positions, &p->Positions);
+		CArrayPushBack(dst, &pCopy);
+	CA_FOREACH_END()
+}
+static void CharacterPositionsCopy(CArray *dst, const CArray *src)
+{
+	CArrayInit(dst, src->elemSize);
+	CA_FOREACH(const CharacterPositions, p, *src)
+		CharacterPositions pCopy;
+		memset(&pCopy, 0, sizeof pCopy);
+		pCopy.Index = p->Index;
+		CArrayCopy(&pCopy.Positions, &p->Positions);
+		CArrayPushBack(dst, &pCopy);
+	CA_FOREACH_END()
+}
+static void ObjectivePositionsCopy(CArray *dst, const CArray *src)
+{
+	CArrayInit(dst, src->elemSize);
+	CA_FOREACH(const ObjectivePositions, p, *src)
+		ObjectivePositions pCopy;
+		memset(&pCopy, 0, sizeof pCopy);
+		pCopy.Index = p->Index;
+		CArrayCopy(&pCopy.Positions, &p->Positions);
+		CArrayCopy(&pCopy.Indices, &p->Indices);
+		CArrayPushBack(dst, &pCopy);
+	CA_FOREACH_END()
+}
+static void KeyPositionsCopy(CArray *dst, const CArray *src)
+{
+	CArrayInit(dst, src->elemSize);
+	CA_FOREACH(const KeyPositions, p, *src)
+		KeyPositions pCopy;
+		memset(&pCopy, 0, sizeof pCopy);
+		pCopy.Index = p->Index;
+		CArrayCopy(&pCopy.Positions, &p->Positions);
+		CArrayPushBack(dst, &pCopy);
+	CA_FOREACH_END()
+}
+
 void MissionTerminate(Mission *m)
 {
 	if (m == NULL) return;
