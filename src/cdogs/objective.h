@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -69,6 +69,13 @@ ObjectiveType StrObjectiveType(const char *s);
 // Use specific colours for objective types
 color_t ObjectiveTypeColor(const ObjectiveType t);
 
+// Objective flags
+#define OBJECTIVE_HIDDEN        1
+#define OBJECTIVE_POSKNOWN      2
+#define OBJECTIVE_HIACCESS      4
+#define OBJECTIVE_UNKNOWNCOUNT	8
+#define OBJECTIVE_NOACCESS		16
+
 typedef struct
 {
 	char *Description;
@@ -96,3 +103,5 @@ void ObjectiveTerminate(Objective *o);
 bool ObjectiveIsRequired(const Objective *o);
 bool ObjectiveIsComplete(const Objective *o);
 bool ObjectiveIsPerfect(const Objective *o);
+
+PlacementAccessFlags ObjectiveGetPlacementAccessFlags(const Objective *o);

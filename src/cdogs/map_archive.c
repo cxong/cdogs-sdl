@@ -148,7 +148,6 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	MapObjectsLoadAmmoAndGunSpawners(
 		&gMapObjects, &gAmmo, &gGunDescriptions, true);
 
-
 	root = ReadArchiveJSON(filename, "missions.json");
 	if (root == NULL)
 	{

@@ -29,7 +29,7 @@
 
 #include "campaigns.h"
 
-#define MAP_VERSION 13
+#define MAP_VERSION 14
 
 int MapNewScanArchive(
 	const char *filename, char **title, int *numMissions);

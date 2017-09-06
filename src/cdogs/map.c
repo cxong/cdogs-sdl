@@ -399,15 +399,20 @@ bool MapTryPlaceOneObject(
 	return true;
 }
 
-int MapHasLockedRooms(Map *map)
+bool MapHasLockedRooms(const Map *map)
 {
 	return map->keyAccessCount > 1;
+}
+
+static bool MapTileIsInLockedRoom(const Map *map, const Vec2i tilePos)
+{
+	return IMapGet(map, tilePos) & MAP_ACCESSBITS;
 }
 
 bool MapPosIsInLockedRoom(const Map *map, const Vec2i pos)
 {
 	const Vec2i tilePos = Vec2iToTile(pos);
-	return IMapGet(map, tilePos) & MAP_ACCESSBITS;
+	return MapTileIsInLockedRoom(map, tilePos);
 }
 
 void MapPlaceCollectible(
@@ -464,33 +469,28 @@ Vec2i MapGenerateFreePosition(Map *map, Vec2i size)
 	return Vec2iZero();
 }
 
+typedef struct
+{
+	const Objective *o;
+	int objective;
+} TryPlaceOneBlowupData;
+static bool TryPlaceOneBlowup(Map *map, const Vec2i tilePos, void *data);
 static bool MapTryPlaceBlowup(
 	Map *map, const Mission *mission, const int objective)
 {
-	const Objective *o = CArrayGet(&mission->Objectives, objective);
-	const bool hasLockedRooms =
-		(o->Flags & OBJECTIVE_HIACCESS) && MapHasLockedRooms(map);
-	const bool noaccess = o->Flags & OBJECTIVE_NOACCESS;
-	int i = (noaccess || hasLockedRooms) ? 1000 : 100;
-
-	while (i > 0)
-	{
-		const Vec2i v = MapGetRandomTile(map);
-		if ((!hasLockedRooms || (IMapGet(map, v) >> 8)) &&
-			(!noaccess || (IMapGet(map, v) >> 8) == 0))
-		{
-			if (MapTryPlaceOneObject(
-					map,
-					v,
-					o->u.MapObject,
-					ObjectiveToTileItem(objective), true))
-			{
-				return 1;
-			}
-		}
-		i--;
-	}
-	return 0;
+	TryPlaceOneBlowupData data;
+	data.o = CArrayGet(&mission->Objectives, objective);
+	const PlacementAccessFlags paFlags =
+		ObjectiveGetPlacementAccessFlags(data.o);
+	data.objective = objective;
+	return MapPlaceRandomTile(map, paFlags, TryPlaceOneBlowup, &data);
+}
+static bool TryPlaceOneBlowup(Map *map, const Vec2i tilePos, void *data)
+{
+	const TryPlaceOneBlowupData *pData = data;
+	return MapTryPlaceOneObject(
+		map, tilePos, pData->o->u.MapObject,
+		ObjectiveToTileItem(pData->objective), true);
 }
 
 void MapPlaceKey(
@@ -508,6 +508,59 @@ void MapPlaceKey(
 	e.u.AddPickup.TileItemFlags = 0;
 	e.u.AddPickup.Pos = Vec2i2Net(Vec2iCenterOfTile(pos));
 	GameEventsEnqueue(&gGameEvents, e);
+}
+
+static int GetPlacementRetries(
+	const Map *map, const PlacementAccessFlags paFlags,
+	bool *locked, bool *unlocked)
+{
+	// Try more times if we need to place in a locked room or unlocked place
+	*locked = paFlags == PLACEMENT_ACCESS_LOCKED && MapHasLockedRooms(map);
+	*unlocked = paFlags == PLACEMENT_ACCESS_NOT_LOCKED;
+	return (*locked || *unlocked) ? 1000 : 100;
+}
+
+bool MapPlaceRandomTile(
+	Map *map, const PlacementAccessFlags paFlags,
+	bool (*tryPlaceFunc)(Map *, const Vec2i, void *), void *data)
+{
+	// Try a bunch of times to place something on a random tile
+	bool locked, unlocked;
+	const int retries = GetPlacementRetries(map, paFlags, &locked, &unlocked);
+	for (int i = 0; i < retries; i++)
+	{
+		const Vec2i tilePos = MapGetRandomTile(map);
+		const bool isInLocked = MapTileIsInLockedRoom(map, tilePos);
+		if ((!locked || isInLocked) && (!unlocked || !isInLocked))
+		{
+			if (tryPlaceFunc(map, tilePos, data))
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+bool MapPlaceRandomPos(
+	Map *map, const PlacementAccessFlags paFlags,
+	bool (*tryPlaceFunc)(Map *, const Vec2i, void *), void *data)
+{
+	// Try a bunch of times to place something at a random location
+	bool locked, unlocked;
+	const int retries = GetPlacementRetries(map, paFlags, &locked, &unlocked);
+	for (int i = 0; i < retries; i++)
+	{
+		const Vec2i v = GuessPixelCoords(map);
+		const bool isInLocked = MapPosIsInLockedRoom(map, v);
+		if ((!locked || isInLocked) && (!unlocked || !isInLocked))
+		{
+			if (tryPlaceFunc(map, v, data))
+			{
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 static void MapPlaceCard(Map *map, int keyIndex, int map_access)

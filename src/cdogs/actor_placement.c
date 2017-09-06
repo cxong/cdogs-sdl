@@ -119,38 +119,51 @@ static NVec2i PlaceActorNear(
 	}
 }
 
-NVec2i PlaceAwayFromPlayers(Map *map, const bool giveUp)
+static bool TryPlaceOneAwayFromPlayers(Map *map, const Vec2i pos, void *data);
+NVec2i PlaceAwayFromPlayers(
+	Map *map, const bool giveUp, const PlacementAccessFlags paFlags)
 {
-	// Don't try forever trying to place
-	for (int i = 0; i < 100; i++)
+	NVec2i out;
+	if (MapPlaceRandomPos(map, paFlags, TryPlaceOneAwayFromPlayers, &out))
 	{
-		// Try spawning out of players' sights
-		const Vec2i pos = Vec2iReal2Full(Vec2iNew(
-			rand() % (map->Size.x * TILE_WIDTH),
-			rand() % (map->Size.y * TILE_HEIGHT)));
-		const TActor *closestPlayer = AIGetClosestPlayer(pos);
-		if (closestPlayer && CHEBYSHEV_DISTANCE(
-			pos.x, pos.y,
-			closestPlayer->Pos.x, closestPlayer->Pos.y) >= 256 * 150 &&
-			MapIsTileAreaClear(map, pos, Vec2iNew(ACTOR_W, ACTOR_H)))
-		{
-			return Vec2i2Net(pos);
-		}
+		return out;
 	}
+
 	// Keep trying, but this time try spawning anywhere,
 	// even close to player
 	for (int i = 0; i < 10000 || !giveUp; i++)
 	{
-		const Vec2i pos = Vec2iReal2Full(Vec2iNew(
+		const Vec2i fullPos = Vec2iReal2Full(Vec2iNew(
 			rand() % (map->Size.x * TILE_WIDTH),
 			rand() % (map->Size.y * TILE_HEIGHT)));
-		if (MapIsTileAreaClear(map, pos, Vec2iNew(ACTOR_W, ACTOR_H)))
+		if (MapIsTileAreaClear(map, fullPos, Vec2iNew(ACTOR_W, ACTOR_H)))
 		{
-			return Vec2i2Net(pos);
+			out = Vec2i2Net(fullPos);
+			return out;
 		}
 	}
+
 	// Uh oh
-	return Vec2i2Net(Vec2iZero());
+	// TODO: scan map for a safe position, to use as default
+	return Vec2i2Net(Vec2iNew(TILE_WIDTH * 3 / 2, TILE_HEIGHT * 3 / 2));
+}
+static bool TryPlaceOneAwayFromPlayers(Map *map, const Vec2i pos, void *data)
+{
+	NVec2i *out = data;
+	// Try spawning out of players' sights
+	const Vec2i fullPos = Vec2iReal2Full(pos);
+	*out = Vec2i2Net(fullPos);
+
+	const TActor *closestPlayer = AIGetClosestPlayer(fullPos);
+	if ((closestPlayer == NULL || CHEBYSHEV_DISTANCE(
+			fullPos.x, fullPos.y,
+			closestPlayer->Pos.x, closestPlayer->Pos.y) >= 256 * 150) &&
+		MapIsTileAreaClear(map, fullPos, Vec2iNew(ACTOR_W, ACTOR_H)))
+	{
+		*out = Vec2i2Net(fullPos);
+		return true;
+	}
+	return false;
 }
 
 NVec2i PlacePrisoner(Map *map)
@@ -178,7 +191,7 @@ Vec2i PlacePlayer(
 	if (IsPVP(gCampaign.Entry.Mode))
 	{
 		// In a PVP mode, always place players apart
-		aa.FullPos = PlaceAwayFromPlayers(&gMap, false);
+		aa.FullPos = PlaceAwayFromPlayers(&gMap, false, PLACEMENT_ACCESS_ANY);
 	}
 	else if (
 		ConfigGetEnum(&gConfig, "Interface.Splitscreen") == SPLITSCREEN_NEVER &&

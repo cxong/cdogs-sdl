@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -122,7 +122,7 @@ bool MapIsTileIn(const Map *map, const Vec2i pos);
 bool MapIsRealPosIn(const Map *map, const Vec2i realPos);
 bool MapIsTileInExit(const Map *map, const TTileItem *ti);
 
-int MapHasLockedRooms(Map *map);
+bool MapHasLockedRooms(const Map *map);
 bool MapPosIsInLockedRoom(const Map *map, const Vec2i pos);
 int MapGetDoorKeycardFlag(Map *map, Vec2i pos);
 
@@ -167,5 +167,11 @@ void MapPlaceCollectible(
 void MapPlaceKey(
 	Map *map, const struct MissionOptions *mo, const Vec2i pos,
 	const int keyIndex);
+bool MapPlaceRandomTile(
+	Map *map, const PlacementAccessFlags paFlags,
+	bool (*tryPlaceFunc)(Map *, const Vec2i, void *), void *data);
+bool MapPlaceRandomPos(
+	Map *map, const PlacementAccessFlags paFlags,
+	bool (*tryPlaceFunc)(Map *, const Vec2i, void *), void *data);
 
 Trigger *MapNewTrigger(Map *map);

@@ -540,7 +540,7 @@ void AIAddRandomEnemies(const int enemies, const Mission *m)
 		const Character *c =
 			CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
 		aa.Health = CharacterGetStartingHealth(c, true);
-		aa.FullPos = PlaceAwayFromPlayers(&gMap, true);
+		aa.FullPos = PlaceAwayFromPlayers(&gMap, true, PLACEMENT_ACCESS_ANY);
 		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 		e.u.ActorAdd = aa;
 		GameEventsEnqueue(&gGameEvents, e);
@@ -551,6 +551,8 @@ void AIAddRandomEnemies(const int enemies, const Mission *m)
 void InitializeBadGuys(void)
 {
 	CA_FOREACH(Objective, o, gMission.missionData->Objectives)
+		const PlacementAccessFlags paFlags =
+			ObjectiveGetPlacementAccessFlags(o);
 		if (o->Type == OBJECTIVE_KILL &&
 			gMission.missionData->SpecialChars.size > 0)
 		{
@@ -565,7 +567,7 @@ void InitializeBadGuys(void)
 				const Character *c =
 					CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
 				aa.Health = CharacterGetStartingHealth(c, true);
-				aa.FullPos = PlaceAwayFromPlayers(&gMap, false);
+				aa.FullPos = PlaceAwayFromPlayers(&gMap, false, paFlags);
 				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 				e.u.ActorAdd = aa;
 				GameEventsEnqueue(&gGameEvents, e);
@@ -593,7 +595,7 @@ void InitializeBadGuys(void)
 				}
 				else
 				{
-					aa.FullPos = PlaceAwayFromPlayers(&gMap, false);
+					aa.FullPos = PlaceAwayFromPlayers(&gMap, false, paFlags);
 				}
 				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 				e.u.ActorAdd = aa;
@@ -625,7 +627,7 @@ void CreateEnemies(void)
 		aa.UID = ActorsGetNextUID();
 		aa.CharId = CharacterStoreGetRandomBaddieId(
 			&gCampaign.Setting.characters);
-		aa.FullPos = PlaceAwayFromPlayers(&gMap, true);
+		aa.FullPos = PlaceAwayFromPlayers(&gMap, true, PLACEMENT_ACCESS_ANY);
 		aa.Direction = rand() % DIRECTION_COUNT;
 		const Character *c =
 			CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);

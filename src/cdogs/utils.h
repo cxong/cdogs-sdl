@@ -221,3 +221,10 @@ typedef enum
 } BodyPart;
 
 BodyPart StrBodyPart(const char *s);
+
+typedef enum
+{
+	PLACEMENT_ACCESS_ANY,		// place anywhere
+	PLACEMENT_ACCESS_LOCKED,	// place in locked rooms
+	PLACEMENT_ACCESS_NOT_LOCKED	// don't place in locked rooms
+} PlacementAccessFlags;

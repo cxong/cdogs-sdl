@@ -70,12 +70,6 @@ typedef enum
 const char *MapTypeStr(MapType t);
 MapType StrMapType(const char *s);
 
-#define OBJECTIVE_HIDDEN        1
-#define OBJECTIVE_POSKNOWN      2
-#define OBJECTIVE_HIACCESS      4
-#define OBJECTIVE_UNKNOWNCOUNT	8
-#define OBJECTIVE_NOACCESS		16
-
 // Keys that have been collected in this level
 // Applies to all players
 #define FLAGS_KEYCARD_YELLOW	0x1
