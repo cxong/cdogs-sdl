@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2015-2016, Cong Xu
+    Copyright (c) 2015-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -118,6 +118,7 @@ void LogInit(void)
 	asl_log_descriptor(
 		NULL, NULL, ASL_LEVEL_NOTICE, STDERR_FILENO, ASL_LOG_DESCRIPTOR_WRITE);
 #endif
+	saveStreamDefaultColor(stderr);
 }
 void LogOpenFile(const char *filename)
 {
@@ -141,29 +142,29 @@ static void LogSetLevelColor(const LogLevel l)
 {
 	switch (l)
 	{
-	case LL_TRACE: setColor(GREY); break;
-	case LL_DEBUG: setColor(WHITE); break;
-	case LL_INFO: setColor(GREEN); break;
-	case LL_WARN: setColor(YELLOW); break;
-	case LL_ERROR: setColor(RED); break;
+	case LL_TRACE: setStreamColor(stderr, GREY); break;
+	case LL_DEBUG: setStreamColor(stderr, WHITE); break;
+	case LL_INFO: setStreamColor(stderr, GREEN); break;
+	case LL_WARN: setStreamColor(stderr, YELLOW); break;
+	case LL_ERROR: setStreamColor(stderr, RED); break;
 	default: CASSERT(false, "Unknown log level"); break;
 	}
 }
 static void LogSetModuleColor(void)
 {
-	setColor(LIGHTBLUE);
+	setStreamColor(stderr, LIGHTBLUE);
 }
 static void LogSetFileColor(void)
 {
-	setColor(BROWN);
+	setStreamColor(stderr, BROWN);
 }
 static void LogSetFuncColor(void)
 {
-	setColor(CYAN);
+	setStreamColor(stderr, CYAN);
 }
 static void LogResetColor(void)
 {
-	resetColor();
+	resetStreamColor(stderr);
 }
 
 void LogLine(

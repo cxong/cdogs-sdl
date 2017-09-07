@@ -131,20 +131,12 @@ namespace rlutil {
  * RLUTIL_STRING_T - String type depending on which one of C or C++ is used
  * RLUTIL_PRINT(str) - Printing macro independent of C/C++
  */
+#ifndef RLUTIL_STRING_T
+	typedef const char* RLUTIL_STRING_T;
+#endif // RLUTIL_STRING_T
 
-#ifdef __cplusplus
-	#ifndef RLUTIL_STRING_T
-		typedef std::string RLUTIL_STRING_T;
-	#endif // RLUTIL_STRING_T
-
-	#define RLUTIL_PRINT(st) do { std::cout << st; } while(false)
-#else // __cplusplus
-	#ifndef RLUTIL_STRING_T
-		typedef const char* RLUTIL_STRING_T;
-	#endif // RLUTIL_STRING_T
-
-	#define RLUTIL_PRINT(st) printf("%s", st)
-#endif // __cplusplus
+#define RLUTIL_FPRINT(f, st) fprintf(f, "%s", st)
+#define RLUTIL_PRINT(st) printf("%s", st)
 
 /**
  * Enums: Color codes
@@ -456,17 +448,21 @@ RLUTIL_INLINE RLUTIL_STRING_T getANSIBackgroundColor(const int c) {
 /// Don't change the background color
 ///
 /// See <Color Codes>
-RLUTIL_INLINE void setColor(int c) {
+RLUTIL_INLINE void setStreamColor(FILE *stream, const int c) {
 #if defined(_WIN32) && !defined(RLUTIL_USE_ANSI)
-	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	HANDLE hConsole = GetStdHandle(
+		stream == stderr ? STD_ERROR_HANDLE : STD_OUTPUT_HANDLE);
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
 
 	GetConsoleScreenBufferInfo(hConsole, &csbi);
 
 	SetConsoleTextAttribute(hConsole, (csbi.wAttributes & 0xFFF0) | (WORD)c); // Foreground colors take up the least significant byte
 #else
-	RLUTIL_PRINT(getANSIColor(c));
+	RLUTIL_FPRINT(stream, getANSIColor(c));
 #endif
+}
+RLUTIL_INLINE void setColor(const int c) {
+	setStreamColor(stdout, c);
 }
 
 /// Function: setBackgroundColor
@@ -493,14 +489,16 @@ RLUTIL_INLINE void setBackgroundColor(int c) {
 ///
 /// See <Color Codes>
 /// See <resetColor>
-RLUTIL_INLINE int saveDefaultColor(void) {
+RLUTIL_INLINE int saveStreamDefaultColor(FILE *stream) {
 #if defined(_WIN32) && !defined(RLUTIL_USE_ANSI)
 	static char initialized = 0; // bool
 	static WORD attributes;
 
 	if (!initialized) {
 		CONSOLE_SCREEN_BUFFER_INFO csbi;
-		GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+		GetConsoleScreenBufferInfo(
+			GetStdHandle(stream == stderr ? STD_ERROR_HANDLE : STD_OUTPUT_HANDLE),
+			&csbi);
 		attributes = csbi.wAttributes;
 		initialized = 1;
 	}
@@ -508,6 +506,9 @@ RLUTIL_INLINE int saveDefaultColor(void) {
 #else
 	return -1;
 #endif
+}
+RLUTIL_INLINE int saveDefaultColor(void) {
+	return saveStreamDefaultColor(stdout);
 }
 
 /// Function: resetColor
@@ -517,12 +518,17 @@ RLUTIL_INLINE int saveDefaultColor(void) {
 /// See <Color Codes>
 /// See <setColor>
 /// See <saveDefaultColor>
-RLUTIL_INLINE void resetColor(void) {
+RLUTIL_INLINE void resetStreamColor(FILE *stream) {
 #if defined(_WIN32) && !defined(RLUTIL_USE_ANSI)
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (WORD)saveDefaultColor());
+	SetConsoleTextAttribute(
+		GetStdHandle(stream == stderr ? STD_ERROR_HANDLE : STD_OUTPUT_HANDLE),
+		(WORD)saveDefaultColor());
 #else
-	RLUTIL_PRINT(ANSI_ATTRIBUTE_RESET);
+	RLUTIL_FPRINT(stream, ANSI_ATTRIBUTE_RESET);
 #endif
+}
+RLUTIL_INLINE void resetColor(void) {
+	resetStreamColor(stdout);
 }
 
 /// Function: cls
