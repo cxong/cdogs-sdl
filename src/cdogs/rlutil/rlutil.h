@@ -504,6 +504,7 @@ RLUTIL_INLINE int saveStreamDefaultColor(FILE *stream) {
 	}
 	return (int)attributes;
 #else
+	(void)stream;
 	return -1;
 #endif
 }
