@@ -149,7 +149,7 @@
 			"WallPad": 0
 		},
 		"Squares": 0,
-		"DoorsEnabled": false
+		"DoorsEnabled": true
 	},
 	{
 		"Title": "Emergence",
@@ -305,8 +305,8 @@
 			"Density": 25
 		},
 		{
-			"MapObject": "Shotgun spawner",
-			"Density": 5
+			"MapObject": "Machine gun spawner",
+			"Density": 10
 		},
 		{
 			"MapObject": "box3_green",
@@ -326,20 +326,21 @@
 		}],
 		"EnemyDensity": 0,
 		"Weapons": ["Knife",
-		"Pistol"],
+		"Pistol",
+		"Shotgun"],
 		"Song": "",
 		"WallMask": "484870",
 		"FloorMask": "301c1c",
 		"RoomMask": "20203c",
 		"AltMask": "8484ac",
-		"FillPercent": 50,
-		"Repeat": 4,
-		"R1": 5,
-		"R2": 2,
+		"FillPercent": 60,
+		"Repeat": 2,
+		"R1": 6,
+		"R2": 3,
 		"Rooms": {
-			"Count": 10,
-			"Min": 5,
-			"Max": 7,
+			"Count": 6,
+			"Min": 6,
+			"Max": 6,
 			"Edge": true,
 			"Overlap": true,
 			"Walls": 0,
@@ -594,8 +595,8 @@
 			"Description": "Destroy all 6 demonic altars",
 			"Type": "Destroy",
 			"MapObject": "statue_behemoth",
-			"Count": 6,
-			"Required": 6,
+			"Count": 5,
+			"Required": 5,
 			"Flags": 4
 		},
 		{

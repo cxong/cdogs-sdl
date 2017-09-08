@@ -357,7 +357,14 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 					LoadRooms(&m.u.Cave.Rooms, roomsNode->child);
 				}
 				LoadInt(&m.u.Cave.Squares, child, "Squares");
-				LoadBool(&m.u.Cave.DoorsEnabled, child, "DoorsEnabled");
+				if (version < 14)
+				{
+					m.u.Cave.DoorsEnabled = true;
+				}
+				else
+				{
+					LoadBool(&m.u.Cave.DoorsEnabled, child, "DoorsEnabled");
+				}
 			}
 			break;
 		default:
