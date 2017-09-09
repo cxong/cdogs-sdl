@@ -388,7 +388,7 @@
 			"MapObject": "bone_blood",
 			"Density": 5
 		}],
-		"EnemyDensity": 6,
+		"EnemyDensity": 3,
 		"Weapons": ["Knife",
 		"Shotgun",
 		"Pistol"],
@@ -661,7 +661,7 @@
 			"MapObject": "wall_skull2",
 			"Density": 40
 		}],
-		"EnemyDensity": 40,
+		"EnemyDensity": 20,
 		"Weapons": ["Machine gun",
 		"Knife",
 		"Shotgun",
@@ -714,7 +714,7 @@
 			"Type": "Kill",
 			"Index": 0,
 			"Count": 1,
-			"Required": 0,
+			"Required": 1,
 			"Flags": 0
 		},
 		{
@@ -787,7 +787,7 @@
 			"MapObject": "bone_blood",
 			"Density": 5
 		}],
-		"EnemyDensity": 40,
+		"EnemyDensity": 20,
 		"Weapons": ["Knife",
 		"Machine gun",
 		"Flamer",
