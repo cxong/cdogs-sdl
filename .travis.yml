@@ -6,6 +6,7 @@ os:
 
 dist: trusty
 sudo: required
+group: deprecated-2017Q3
 
 compiler:
   - gcc
