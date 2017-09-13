@@ -32,6 +32,7 @@
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
 #include <SDL_timer.h>
+#include <stdint.h>
 
 #include "config.h"
 
@@ -77,10 +78,10 @@ typedef struct
 	Uint32 repeatedTicks;
 	bool isFirstRepeat;
 	InputKeys PlayerKeys[MAX_KEYBOARD_CONFIGS];
-        Uint32 upDiagonalTicks;
-        Uint32 downDiagonalTicks;
-        Uint32 leftDiagonalTicks;
-        Uint32 rightDiagonalTicks;
+        int32_t upDiagonalTicks;
+        int32_t downDiagonalTicks;
+        int32_t leftDiagonalTicks;
+        int32_t rightDiagonalTicks;
 } keyboard_t;
 
 void KeyInit(keyboard_t *keyboard);

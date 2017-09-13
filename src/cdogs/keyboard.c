@@ -52,7 +52,7 @@ const char *KeycodeStr(int k)
 
 #define KEYBOARD_REPEAT_DELAY 500
 #define KEYBOARD_REPEAT_TICKS 100
-#define DIAGONAL_RELEASE_DELAY 50000
+#define DIAGONAL_RELEASE_DELAY 1000
 
 void KeyInit(keyboard_t *keyboard)
 {
@@ -112,18 +112,13 @@ void DiagonalHold(keyboard_t *keyboard)
 {
     if (keyboard->currentKeys[SDL_SCANCODE_UP].isPressed == true && keyboard->currentKeys[SDL_SCANCODE_LEFT].isPressed == true) 
     {
-        keyboard->upDiagonalTicks = SDL_GetTicks() + DIAGONAL_RELEASE_DELAY;
-        keyboard->leftDiagonalTicks = SDL_GetTicks() + DIAGONAL_RELEASE_DELAY;
+        keyboard->upDiagonalTicks = (int)SDL_GetTicks() + DIAGONAL_RELEASE_DELAY;
+        keyboard->leftDiagonalTicks = (int)SDL_GetTicks() + DIAGONAL_RELEASE_DELAY;
     } 
-    
-    if (keyboard->upDiagonalTicks - SDL_GetTicks() > 0) 
+    int difTicks = keyboard->upDiagonalTicks - (int)SDL_GetTicks();
+    if (difTicks > 0) 
     {
         keyboard->currentKeys[SDL_SCANCODE_UP].isPressed = true;
-    }
-    
-    if (keyboard->upDiagonalTicks - SDL_GetTicks() <= 0)
-    {
-        keyboard->currentKeys[SDL_SCANCODE_UP].isPressed = false;
     }
     
     if (keyboard->upDiagonalTicks > 0 && keyboard->currentKeys[SDL_SCANCODE_DOWN].isPressed == true)
@@ -192,6 +187,8 @@ void KeyPostPoll(keyboard_t *keyboard, Uint32 ticks)
 		}
 	}
 	keyboard->ticks = ticks;
+    
+    DiagonalHold(keyboard);
 }
 
 bool KeyIsDown(const keyboard_t *k, const int key)
