@@ -189,6 +189,12 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 					GraphicsInitialize(&gGraphicsDevice);
 				}
 				break;
+			case SDL_WINDOWEVENT_CLOSE:
+				if (!gGraphicsDevice.cachedConfig.IsEditor)
+				{
+					handlers->HasQuit = true;
+				}
+				break;
 			default:
 				// do nothing
 				break;
