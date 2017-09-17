@@ -45,8 +45,6 @@ void LoadCredits(
 	int nameOrMessageCounter = 0;
 	FILE *file;
 
-	debug(D_NORMAL, "Reading CREDITS...\n");
-
 	GetDataFilePath(buf, "doc/CREDITS");
 	file = fopen(buf, "r");
 	if (file == NULL)
@@ -86,12 +84,8 @@ void LoadCredits(
 			CSTRDUP(credit.message, buf + 1);
 			CArrayPushBack(&displayer->credits, &credit);
 			nameOrMessageCounter = 0;
-
-			debug(D_VERBOSE, "Read credits for \"%s\"\n", credit.name);
 		}
 	}
-
-	debug(D_NORMAL, "%d credits read\n", (int)displayer->credits.size);
 
 	fclose(file);
 }

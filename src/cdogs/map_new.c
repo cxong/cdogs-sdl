@@ -57,7 +57,6 @@ int MapNewScan(const char *filename, char **title, int *numMissions)
 	f = fopen(filename, "r");
 	if (f == NULL)
 	{
-		debug(D_NORMAL, "MapNewLoad - invalid path!\n");
 		err = -1;
 		goto bail;
 	}
@@ -115,8 +114,6 @@ int MapNewLoad(const char *filename, CampaignSetting *c)
 {
 	int err = 0;
 
-	debug(D_NORMAL, "Loading map %s\n", filename);
-
 	if (IsCampaignOldFile(filename))
 	{
 		CampaignSettingOld cOld;
@@ -143,7 +140,6 @@ int MapNewLoad(const char *filename, CampaignSetting *c)
 	FILE *f = fopen(filename, "r");
 	if (f == NULL)
 	{
-		debug(D_NORMAL, "MapNewLoad - invalid path!\n");
 		err = -1;
 		goto bail;
 	}

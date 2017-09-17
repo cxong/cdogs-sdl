@@ -90,13 +90,6 @@ void PrintHelp(void)
 		"Other:\n"
 		"    --connect=host   (Experimental) connect to a game server\n"
 		);
-
-	printf("%s\n",
-		"The DEBUG environment variable can be set to show debug information.");
-
-	printf(
-		"The DEBUG_LEVEL environment variable can be set to between %d and %d.\n", D_NORMAL, D_MAX
-		);
 }
 
 void ProcessCommandLine(char *buf, const int argc, char *argv[])
@@ -128,7 +121,6 @@ bool ParseArgs(
 		{ "scale",		required_argument,	NULL,	's' },
 		{ "screen",		required_argument,	NULL,	'c' },
 		{ "connect",	required_argument,	NULL,	'x' },
-		{ "debug",		required_argument,	NULL,	'd' },
 		{ "config",		optional_argument,	NULL,	'C' },
 		{ "log",		required_argument,	NULL,	1000 },
 		{ "logfile",	required_argument,	NULL,	1001 },
@@ -137,7 +129,7 @@ bool ParseArgs(
 	};
 	int opt = 0;
 	int idx = 0;
-	while ((opt = getopt_long(argc, argv, "fs:c:x:d:C::\0:\0:h", longopts, &idx)) != -1)
+	while ((opt = getopt_long(argc, argv, "fs:c:x:C::\0:\0:h", longopts, &idx)) != -1)
 	{
 		switch (opt)
 		{
@@ -166,11 +158,6 @@ bool ParseArgs(
 		case 'h':
 			PrintHelp();
 			return false;
-		case 'd':
-			// Set debug level
-			debug = true;
-			debug_level = CLAMP(atoi(optarg), D_NORMAL, D_MAX);
-			break;
 		case 1000:
 			{
 				char *comma = strchr(optarg, ',');

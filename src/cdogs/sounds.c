@@ -84,7 +84,6 @@ int OpenAudio(int frequency, Uint16 format, int channels, int chunkSize)
 	// Check that we got the specs we wanted
 #ifndef __EMSCRIPTEN__
 	Mix_QuerySpec(&qFrequency, &qFormat, &qChannels);
-	debug(D_NORMAL, "spec: f=%d fmt=%d c=%d\n", qFrequency, qFormat, qChannels);
 	if (qFrequency != frequency || qFormat != format || qChannels != channels)
 	{
 		printf("Audio not what we want.\n");
@@ -272,7 +271,6 @@ void SoundTerminate(SoundDevice *device, const bool waitForSoundsComplete)
 		return;
 	}
 
-	debug(D_NORMAL, "shutting down sound\n");
 	if (waitForSoundsComplete)
 	{
 		Uint32 waitStart = SDL_GetTicks();

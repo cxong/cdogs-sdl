@@ -976,7 +976,6 @@ void MenuProcessCmd(MenuSystem *ms, int cmd)
 		menuToChange = MenuProcessButtonCmd(ms, menu, cmd);
 		if (menuToChange != NULL)
 		{
-			debug(D_VERBOSE, "change to menu type %d\n", menuToChange->type);
 			MenuPlaySound(menuToChange->enterSound);
 			ms->current = menuToChange;
 			goto bail;

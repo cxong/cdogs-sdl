@@ -191,9 +191,7 @@ void FreeSongs(struct SongDef **songList)
 
 void LoadSongs(void)
 {
-	debug(D_NORMAL, "loading game music %s\n", CDOGS_GAME_MUSIC_DIR);
 	LoadSongList(&gGameSongs, CDOGS_GAME_MUSIC_DIR);
-	debug(D_NORMAL, "loading menu music %s\n", CDOGS_MENU_MUSIC_DIR);
 	LoadSongList(&gMenuSongs, CDOGS_MENU_MUSIC_DIR);
 }
 
@@ -215,25 +213,21 @@ void LoadSongList(struct SongDef **songList, const char *dirPath)
 		if (tinydir_readfile(&dir, &file) == -1)
 		{
 			errsv = errno;
-			debug(D_VERBOSE, "cannot read file: %s\n", strerror(errsv));
 			goto bail;
 		}
 		if (!file.is_reg)
 		{
-			debug(D_VERBOSE, "not a regular file %s\n", file.name);
 			continue;
 		}
 		if (strcmp(file.extension, "txt") == 0 ||
 			strcmp(file.extension, "TXT") == 0)
 		{
-			debug(D_VERBOSE, "Skipping text file %s\n", file.name);
 			continue;
 		}
 
 		m = Mix_LoadMUS(file.path);
 		if (m == NULL)
 		{
-			debug(D_VERBOSE, "not a music file %s\n", file.name);
 			continue;
 		}
 		Mix_FreeMusic(m);

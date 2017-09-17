@@ -157,8 +157,6 @@ static void DrawPointFunc(void *data, const Vec2i pos)
 void Draw_Line(
 	const int x1, const int y1, const int x2, const int y2, color_t c)
 {
-	//debug("(%d, %d) -> (%d, %d)\n", x1, y1, x2, y2);
-	
 	if (x1 == x2 || y1 == y2) 
 		Draw_StraightLine(x1, y1, x2, y2, c);
 	else if (ABS((x2 - x1)) == ABS((y1 - y2)))

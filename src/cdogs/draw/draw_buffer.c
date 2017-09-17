@@ -56,7 +56,6 @@
 
 void DrawBufferInit(DrawBuffer *b, Vec2i size, GraphicsDevice *g)
 {
-	debug(D_MAX, "Initialising draw buffer %dx%d\n", size.x, size.y);
 	b->OrigSize = size;
 	CMALLOC(b->tiles, size.x * sizeof *b->tiles);
 	CMALLOC(b->tiles[0], size.x * size.y * sizeof *b->tiles[0]);
@@ -67,7 +66,6 @@ void DrawBufferInit(DrawBuffer *b, Vec2i size, GraphicsDevice *g)
 	b->g = g;
 	CArrayInit(&b->displaylist, sizeof(const TTileItem *));
 	CArrayReserve(&b->displaylist, 32);
-	debug(D_MAX, "Initialised draw buffer %dx%d\n", size.x, size.y);
 }
 void DrawBufferTerminate(DrawBuffer *b)
 {

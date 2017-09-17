@@ -612,11 +612,6 @@ int AIGoto(TActor *actor, Vec2i p, bool ignoreObjects)
 		// try simple navigation again
 		if (ASPathGetCount(c->Path.Path) <= 1)
 		{
-			debug(
-				D_MAX,
-				"Error: can't calculate path from {%d, %d} to {%d, %d}",
-				currentTile.x, currentTile.y,
-				goalTile.x, goalTile.y);
 			return AIGotoDirect(a, p);
 		}
 

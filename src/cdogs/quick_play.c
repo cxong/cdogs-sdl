@@ -260,6 +260,7 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 		m->u.Cave.Rooms = RandomRoomParams();
 		m->u.Cave.Squares = GenerateQuickPlayParam(
 			ConfigGetEnum(&gConfig, "QuickPlay.SquareCount"), 0, 1, 3, 6);
+		m->u.Cave.DoorsEnabled = rand() % 2;
 		break;
 	default:
 		assert(0 && "unknown map type");

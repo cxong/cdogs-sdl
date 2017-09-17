@@ -50,8 +50,6 @@ static bool MusicPlay(SoundDevice *device, const char *path)
 		return true;
 	}
 
-	debug(D_NORMAL, "Attempting to play song: %s\n", path);
-
 	if (path == NULL || strlen(path) == 0)
 	{
 		LOG(LM_SOUND, LL_WARN, "Attempting to play song with empty name");
@@ -65,8 +63,6 @@ static bool MusicPlay(SoundDevice *device, const char *path)
 		device->musicStatus = MUSIC_NOLOAD;
 		return false;
 	}
-
-	debug(D_NORMAL, "Playing song: %s\n", path);
 
 	Mix_PlayMusic(device->music, -1);
 	device->musicStatus = MUSIC_PLAYING;

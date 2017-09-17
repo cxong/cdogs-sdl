@@ -173,7 +173,6 @@ bail:
 static json_t *ReadArchiveJSON(const char *archive, const char *filename)
 {
 	json_t *root = NULL;
-	debug(D_VERBOSE, "Loading archive json %s %s\n", archive, filename);
 	char path[CDOGS_PATH_MAX];
 	sprintf(path, "%s/%s", archive, filename);
 	long len;
@@ -214,31 +213,26 @@ static char *ReadFileIntoBuf(const char *path, const char *mode, long *len)
 	FILE *f = fopen(path, mode);
 	if (f == NULL)
 	{
-		debug(D_NORMAL, "Did not open file %s: %s.\n", path, strerror(errno));
 		goto bail;
 	}
 
 	// Read into buffer
 	if (fseek(f, 0L, SEEK_END) != 0)
 	{
-		debug(D_NORMAL, "Cannot seek file %s: %s.\n", path, strerror(errno));
 		goto bail;
 	}
 	*len = ftell(f);
 	if (*len == -1)
 	{
-		debug(D_NORMAL, "Cannot tell file %s: %s.\n", path, strerror(errno));
 		goto bail;
 	}
 	CCALLOC(buf, *len + 1);
 	if (fseek(f, 0L, SEEK_SET) != 0)
 	{
-		debug(D_NORMAL, "Cannot seek file %s: %s.\n", path, strerror(errno));
 		goto bail;
 	}
 	if (fread(buf, 1, *len, f) == 0)
 	{
-		debug(D_NORMAL, "Cannot read file %s: %s.\n", path, strerror(errno));
 		goto bail;
 	}
 
@@ -251,7 +245,8 @@ bail:
 end:
 	if (f != NULL && fclose(f) != 0)
 	{
-		debug(D_NORMAL, "Cannot close file %s: %s.\n", path, strerror(errno));
+		LOG(LM_MAP, LL_ERROR, "Cannot close file %s: %s",
+			path, strerror(errno));
 	}
 	return buf;
 }

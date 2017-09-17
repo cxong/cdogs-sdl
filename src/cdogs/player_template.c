@@ -150,8 +150,6 @@ void SavePlayerTemplates(const CArray *templates, const char *filename)
 		goto bail;
 	}
 
-	debug(D_NORMAL, "begin\n");
-
 	json_insert_pair_into_object(
 		root, "Version", json_new_number(TOSTRING(VERSION)));
 	json_t *templatesNode = json_new_array();

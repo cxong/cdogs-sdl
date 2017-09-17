@@ -61,9 +61,6 @@
 #include "joystick.h"
 #include "sys_config.h"
 
-bool debug = false;
-int debug_level = D_NORMAL;
-
 bool gTrue = true;
 bool gFalse = false;
 
