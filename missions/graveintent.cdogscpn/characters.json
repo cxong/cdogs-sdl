@@ -6,7 +6,7 @@
 		"Arms": "bd5151",
 		"Body": "645c5c",
 		"Legs": "3c5f56",
-		"Hair": "000000",
+		"Hair": "ff0202",
 		"speed": 240,
 		"Gun": "Knife",
 		"maxHealth": 20,
@@ -38,7 +38,7 @@
 		"Arms": "f78313",
 		"Body": "464040",
 		"Legs": "430303",
-		"Hair": "000000",
+		"Hair": "ff0202",
 		"speed": 208,
 		"Gun": "Flamer",
 		"maxHealth": 45,
@@ -70,7 +70,7 @@
 		"Arms": "3f3c7e",
 		"Body": "5f2893",
 		"Legs": "508036",
-		"Hair": "000000",
+		"Hair": "ff0000",
 		"speed": 258,
 		"Gun": "Shotgun",
 		"maxHealth": 10,
@@ -86,7 +86,7 @@
 		"Arms": "fffcfc",
 		"Body": "fffcfc",
 		"Legs": "fffafa",
-		"Hair": "ffffff",
+		"Hair": "ff0000",
 		"speed": 510,
 		"Gun": "Grenades",
 		"maxHealth": 20,
@@ -97,7 +97,7 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Bones",
+		"Class": "Big Bones",
 		"Skin": "a06bf5",
 		"Arms": "a475d4",
 		"Body": "312b2b",
@@ -113,7 +113,7 @@
 		"actionDelay": 10
 	},
 	{
-		"Class": "Bones",
+		"Class": "Big Bones",
 		"Skin": "be9bf3",
 		"Arms": "bc97e0",
 		"Body": "ca8dd7",

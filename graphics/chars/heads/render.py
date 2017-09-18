@@ -26,8 +26,7 @@ axis = 2 # z-axis
 platform = bpy.data.objects["armature"]
 scene = bpy.data.scenes[0]
 scene.objects.active = platform
-# TODO: action
-# platform.animation_data.action = bpy.data.actions[action]
+platform.animation_data.action = bpy.data.actions[action]
 for i in range(len(scene.layers)):
     if i < 3:
         scene.layers[i] = True
