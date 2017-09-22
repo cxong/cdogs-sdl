@@ -1301,6 +1301,8 @@ int main(int argc, char *argv[])
 	int loaded = 0;
 
 	LogInit();
+	// Turn up the logging for map for debugging
+	LogModuleSetLevel(LM_MAP, LL_TRACE);
 	printf("C-Dogs SDL Editor\n");
 
 	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO) != 0)

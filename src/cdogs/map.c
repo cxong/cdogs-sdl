@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -59,6 +59,7 @@
 #include "door.h"
 #include "game_events.h"
 #include "gamedata.h"
+#include "log.h"
 #include "los.h"
 #include "map_build.h"
 #include "map_cave.h"
@@ -669,6 +670,8 @@ void MapTerminate(Map *map)
 	LOSTerminate(&map->LOS);
 	PathCacheTerminate(&gPathCache);
 }
+
+static void DebugPrintMap(const Map *map);
 void MapLoad(
 	Map *map, const struct MissionOptions *mo, const CampaignOptions *co)
 {
@@ -713,6 +716,8 @@ void MapLoad(
 		break;
 	}
 
+	DebugPrintMap(map);
+
 	MapSetupTilesAndWalls(map, mission);
 	MapSetupDoors(map, mission);
 
@@ -753,6 +758,51 @@ void MapLoad(
 			}
 		}
 	}
+}
+static void DebugPrintMap(const Map *map)
+{
+	if (LogModuleGetLevel(LM_MAP) > LL_TRACE)
+	{
+		return;
+	}
+	char *buf;
+	CCALLOC(buf, map->Size.x + 1);
+	char *bufP = buf;
+	Vec2i v;
+	for (v.y = 0; v.y < map->Size.y; v.y++)
+	{
+		for (v.x = 0; v.x < map->Size.x; v.x++)
+		{
+			switch (IMapGet(map, v) & MAP_MASKACCESS)
+			{
+			case MAP_FLOOR:
+				*bufP++ = '.';
+				break;
+			case MAP_WALL:
+				*bufP++ = '#';
+				break;
+			case MAP_DOOR:
+				*bufP++ = '+';
+				break;
+			case MAP_ROOM:
+				*bufP++ = '-';
+				break;
+			case MAP_NOTHING:
+				*bufP++ = ' ';
+				break;
+			case MAP_SQUARE:
+				*bufP++ = '_';
+				break;
+			default:
+				*bufP++ = '?';
+				break;
+			}
+		}
+		LOG(LM_MAP, LL_TRACE, buf);
+		*buf = '\0';
+		bufP = buf;
+	}
+	CFREE(buf);
 }
 
 static void AddObjectives(Map *map, const struct MissionOptions *mo);

@@ -514,9 +514,9 @@ static bool MapIsAreaClearForCaveRoom(
 						hasFloorAroundEdge = true;
 					}
 					break;
-				case MAP_WALL:	// passthrough
-				case MAP_ROOM:
+				case MAP_WALL:
 					break;
+				case MAP_ROOM:	// passthrough
 				case MAP_DOOR:
 					*isOverlapRoom = true;
 					break;
@@ -559,6 +559,14 @@ static bool MapIsAreaClearForCaveRoom(
 			{
 				case MAP_WALL:	// passthrough
 				case MAP_DOOR:
+					// Note: also need to check outside to see if we overlap
+					// but just along the edge
+					if (IMapGet(map, outside) == MAP_ROOM ||
+						IMapGet(map, outsideX) == MAP_ROOM ||
+						IMapGet(map, outsideY) == MAP_ROOM)
+					{
+						*isOverlapRoom = true;
+					}
 					break;
 				case MAP_FLOOR:	// passthrough
 				case MAP_ROOM:
@@ -577,16 +585,19 @@ static bool MapIsAreaClearForCaveRoom(
 		}
 	}
 
-	// If room overlap is enabled, check if it overlaps with a room
+	// Check if room overlaps with another room and the overlap is valid
 	if (*isOverlapRoom)
 	{
-		const bool isOverlap =
-			m->u.Cave.Rooms.Overlap && MapIsAreaClearOrRoom(map, pos, size);
+		if (!m->u.Cave.Rooms.Overlap)
+		{
+			// Overlapping disabled
+			return false;
+		}
 		// Now check if the overlapping rooms will create a passage
 		// large enough
 		const int roomOverlapSize = MapGetRoomOverlapSize(
 			map, pos, size, overlapAccess);
-		if (!isOverlap || roomOverlapSize < m->u.Cave.CorridorWidth)
+		if (roomOverlapSize < m->u.Cave.CorridorWidth)
 		{
 			return false;
 		}
@@ -635,7 +646,7 @@ static void MapBuildRoom(
 			const bool atEdgeOfMap =
 				v.y == 0 || v.y == map->Size.y - 1 ||
 				v.x == 0 || v.x == map->Size.x - 1;
-			switch (IMapGet(map, v))
+			switch (IMapGet(map, v) & MAP_MASKACCESS)
 			{
 				case MAP_FLOOR:
 					// Check outside tiles
@@ -650,6 +661,15 @@ static void MapBuildRoom(
 					}
 					else
 					{
+						IMapSet(map, v, MAP_WALL);
+					}
+					break;
+				case MAP_DOOR:
+					if (!CaveRoomOutsideOk(map, outside) &&
+						!CaveRoomOutsideOk(map, outsideX) &&
+						!CaveRoomOutsideOk(map, outsideY))
+					{
+						// This door would become a corner
 						IMapSet(map, v, MAP_WALL);
 					}
 					break;
