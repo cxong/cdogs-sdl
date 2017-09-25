@@ -351,15 +351,12 @@ static void SoundPlayAtPosition(
 		//                |
 		//     camera---> +
 		// Calculate real distance using Pythagoras
-		const int d =
-			(int)sqrt(Vec2iSqrMagnitude(dp) + halfScreen * halfScreen);
-		// Translate so that sounds at exactly centre are distance 0
-		const int dTrans = d - halfScreen;
+		const int d = (int)sqrt(Vec2iSqrMagnitude(dp));
 		// Scale so that sounds more than a full screen from centre have
 		// maximum distance (255)
 		const int maxDistance =
-			(int)sqrt(screen * screen + halfScreen * halfScreen) - halfScreen;
-		distance = dTrans * 255 / maxDistance;
+			(int)sqrt(screen * screen + halfScreen * halfScreen);
+		distance = d * 255 / maxDistance;
 
 		// Calculate bearing
 		const double bearing = atan((double)dp.x / halfScreen);
@@ -542,7 +539,7 @@ void SoundPlayAtPlusDistance(
 	}
 	const Vec2i dp = Vec2iMinus(pos, origin);
 	SoundPlayAtPosition(
-		&gSoundDevice, data, Vec2iAdd(dp, Vec2iNew(0, plusDistance)),
+		&gSoundDevice, data, Vec2iNew(dp.x, abs(dp.y) + plusDistance),
 		isMuffled);
 }
 

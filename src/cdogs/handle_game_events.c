@@ -39,7 +39,7 @@
 #include "pickup.h"
 #include "triggers.h"
 
-#define RELOAD_DISTANCE_PLUS 300
+#define RELOAD_DISTANCE_PLUS 200
 
 static void HandleGameEvent(
 	const GameEvent e,

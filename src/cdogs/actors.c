@@ -76,7 +76,7 @@
 #include "game.h"
 #include "utils.h"
 
-#define FOOTSTEP_DISTANCE_PLUS 380
+#define FOOTSTEP_DISTANCE_PLUS 250
 #define REPEL_STRENGTH 14
 #define SLIDE_LOCK 50
 #define SLIDE_X (TILE_WIDTH / 3)
@@ -172,6 +172,7 @@ void UpdateActorState(TActor * actor, int ticks)
 	// Step on 2 and 6
 	// TODO: custom animation and footstep frames
 	if (ConfigGetBool(&gConfig, "Sound.Footsteps") &&
+		actor->anim.Type == ACTORANIMATION_WALKING &&
 		(AnimationGetFrame(&actor->anim) == 2 ||
 		AnimationGetFrame(&actor->anim) == 6) &&
 		actor->anim.newFrame)
