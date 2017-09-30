@@ -48,6 +48,7 @@
 */
 #include "map_build.h"
 
+#include "log.h"
 
 #define EXIT_WIDTH  8
 #define EXIT_HEIGHT 8
@@ -486,6 +487,42 @@ void MapSetRoomAccessMask(
 	}
 }
 
+static void AddOverlapRooms(
+	Map *map, const Rect2i room, CArray *overlapRooms, CArray *rooms,
+	const unsigned short accessMask);
+void MapSetRoomAccessMaskOverlap(
+	Map *map, CArray *rooms, const unsigned short accessMask)
+{
+	CArray overlapRooms;
+	CArrayInit(&overlapRooms, sizeof(Rect2i));
+	const Rect2i room = *(const Rect2i *)CArrayGet(rooms, 0);
+	CArrayPushBack(&overlapRooms, &room);
+	CA_FOREACH(const Rect2i, r, overlapRooms)
+		AddOverlapRooms(map, *r, &overlapRooms, rooms, accessMask);
+	CA_FOREACH_END()
+}
+static void AddOverlapRooms(
+	Map *map, const Rect2i room, CArray *overlapRooms, CArray *rooms,
+	const unsigned short accessMask)
+{
+	// Find all rooms that overlap with a room, and move it to the overlap
+	// rooms array, setting access mask as we go
+	CA_FOREACH(const Rect2i, r, *rooms)
+		if (Rect2iOverlap(room, *r))
+		{
+			LOG(LM_MAP, LL_TRACE,
+				"Room overlap {%d, %d (%dx%d)} {%d, %d (%dx%d)} access(%d)",
+				room.Pos.x, room.Pos.y, room.Size.x, room.Size.y,
+				r->Pos.x, r->Pos.y, r->Size.x, r->Size.y,
+				accessMask);
+			MapSetRoomAccessMask(map, r->Pos, r->Size, accessMask);
+			CArrayPushBack(overlapRooms, r);
+			CArrayDelete(rooms, _ca_index);
+			_ca_index--;
+		}
+	CA_FOREACH_END()
+}
+
 static bool TryPlaceDoorTile(
 	Map *map, const Vec2i v, const Vec2i d, const unsigned short t);
 void MapPlaceDoors(
@@ -753,8 +790,11 @@ bool MapGetRoomOverlapSize(
 						{
 							if ((IMapGet(map, v2) & MAP_MASKACCESS) == MAP_ROOM)
 							{
-								*overlapAccess |=
-									IMapGet(map, v2) & MAP_ACCESSBITS;
+								if (overlapAccess != NULL)
+								{
+									*overlapAccess |=
+										IMapGet(map, v2) & MAP_ACCESSBITS;
+								}
 							}
 						}
 					}

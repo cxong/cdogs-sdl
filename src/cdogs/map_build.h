@@ -73,12 +73,13 @@ bool MapTryBuildWall(
 void MapSetRoomAccessMask(
 	Map *map, const Vec2i pos, const Vec2i size,
 	const unsigned short accessMask);
+void MapSetRoomAccessMaskOverlap(
+	Map *map, CArray *rooms, const unsigned short accessMask);
 void MapPlaceDoors(
 	Map *map, Vec2i pos, Vec2i size,
 	int hasDoors, int doors[4], int doorMin, int doorMax,
 	unsigned short accessMask);
 void MapMakePillar(Map *map, Vec2i pos, Vec2i size);
-void MapMakeWall(Map *map, Vec2i pos);
 void MapSetTile(Map *map, Vec2i pos, unsigned short tileType, Mission *m);
 
 void MapSetupTilesAndWalls(Map *map, const Mission *m);

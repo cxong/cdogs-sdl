@@ -183,3 +183,18 @@ Vec2i CalcClosestPointOnLineSegmentToPoint(
 	closestPoint.y = (int)Round(l1.y + t*(l2.y - l1.y));
 	return closestPoint;
 }
+
+
+bool Rect2iIsAtEdge(const Rect2i r, const Vec2i v)
+{
+	return
+		v.y == r.Pos.y || v.y == r.Pos.y + r.Size.y - 1 ||
+		v.x == r.Pos.x || v.x == r.Pos.x + r.Size.x - 1;
+}
+
+bool Rect2iOverlap(const Rect2i r1, const Rect2i r2)
+{
+	return
+		r1.Pos.x < r2.Pos.x + r2.Size.x && r1.Pos.x + r1.Size.x > r2.Pos.x &&
+		r1.Pos.y < r2.Pos.y + r2.Size.y && r1.Pos.y + r1.Size.y > r2.Pos.y;
+}

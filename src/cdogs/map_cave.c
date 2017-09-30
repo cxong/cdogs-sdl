@@ -28,6 +28,7 @@
 #include "map_cave.h"
 
 #include "algorithms.h"
+#include "log.h"
 #include "map_build.h"
 
 
@@ -450,45 +451,49 @@ static bool MapIsAreaClearForCaveSquare(
 }
 
 static bool MapIsAreaClearForCaveRoom(
-	const Map *map, const Vec2i pos, const Vec2i size, const Mission *m,
-	bool *isOverlapRoom, unsigned short *overlapAccess);
-static void MapBuildRoom(
-	Map *map,
-	const Vec2i pos,
-	const Vec2i size,
-	const Mission *m,
-	const bool hasKeys,
-	const bool isOverlapRoom,
-	const unsigned short overlapAccess);
+	const Map *map, const Rect2i room, const Mission *m);
+static void MapBuildRoom(Map *map, const Rect2i room, const Mission *m);
 static void PlaceRooms(Map *map, const Mission *m)
 {
-	int count = 0;
-	for (int i = 0; i < 1000 && count < m->u.Cave.Rooms.Count; i++)
+	CArray rooms;	// of Rect2i
+	CArrayInit(&rooms, sizeof(Rect2i));
+	for (int i = 0; i < 1000 && (int)rooms.size < m->u.Cave.Rooms.Count; i++)
 	{
-		const Vec2i v = MapGetRandomTile(map);
-		const Vec2i size = MapGetRoomSize(m->u.Cave.Rooms, 0);
-		bool isOverlapRoom;
-		unsigned short overlapAccess;
-		if (!MapIsAreaClearForCaveRoom(map, v, size, m, &isOverlapRoom, &overlapAccess))
+		Rect2i room;
+		room.Pos = MapGetRandomTile(map);
+		room.Size = MapGetRoomSize(m->u.Cave.Rooms, 0);
+		if (!MapIsAreaClearForCaveRoom(map, room, m))
 		{
 			continue;
 		}
-		MapBuildRoom(
-			map, v, size, m, AreKeysAllowed(gCampaign.Entry.Mode),
-			isOverlapRoom, overlapAccess);
-		count++;
+		MapBuildRoom(map, room, m);
+		CArrayPushBack(&rooms, &room);
+		LOG(LM_MAP, LL_TRACE, "Room %d, %d (%dx%d)",
+			room.Pos.x, room.Pos.y, room.Size.x, room.Size.y);
 	}
+	// Set keys for rooms
+	if (AreKeysAllowed(gCampaign.Entry.Mode) && m->u.Cave.DoorsEnabled)
+	{
+		while (rooms.size > 0)
+		{
+			// generate an access level for this room
+			const unsigned short accessMask =
+				GenerateAccessMask(&map->keyAccessCount);
+			if (map->keyAccessCount < 1)
+			{
+				map->keyAccessCount = 1;
+			}
+			MapSetRoomAccessMaskOverlap(map, &rooms, accessMask);
+		}
+	}
+	CArrayTerminate(&rooms);
 }
 
 static bool CaveRoomOutsideOk(const Map *map, const Vec2i v);
 static bool MapIsAreaClearForCaveRoom(
-	const Map *map, const Vec2i pos, const Vec2i size, const Mission *m,
-	bool *isOverlapRoom, unsigned short *overlapAccess)
+	const Map *map, const Rect2i room, const Mission *m)
 {
-	*isOverlapRoom = false;
-	*overlapAccess = 0;
-
-	if (!MapIsAreaInside(map, pos, size))
+	if (!MapIsAreaInside(map, room.Pos, room.Size))
 	{
 		return false;
 	}
@@ -497,35 +502,30 @@ static bool MapIsAreaClearForCaveRoom(
 	// - Area has at least one floor tile
 	// - Can only contain floor, wall or room tiles
 	// - Not be entirely surrounded by walls
-	Vec2i v;
 	bool hasFloor = false;
 	bool hasFloorAroundEdge = false;
-	for (v.y = pos.y; v.y < pos.y + size.y; v.y++)
-	{
-		for (v.x = pos.x; v.x < pos.x + size.x; v.x++)
+	bool isOverlapRoom = false;
+	RECT_FOREACH(room)
+		switch (IMapGet(map, _v))
 		{
-			switch (IMapGet(map, v))
-			{
-				case MAP_FLOOR:
-					hasFloor = true;
-					if (v.y == pos.y || v.y == pos.y + size.y - 1 ||
-						v.x == pos.x || v.x == pos.x + size.x - 1)
-					{
-						hasFloorAroundEdge = true;
-					}
-					break;
-				case MAP_WALL:
-					break;
-				case MAP_ROOM:	// passthrough
-				case MAP_DOOR:
-					*isOverlapRoom = true;
-					break;
-				default:
-					// Any other tile type is disallowed
-					return false;
-			}
+			case MAP_FLOOR:
+				hasFloor = true;
+				if (Rect2iIsAtEdge(room, _v))
+				{
+					hasFloorAroundEdge = true;
+				}
+				break;
+			case MAP_WALL:
+				break;
+			case MAP_ROOM:	// passthrough
+			case MAP_DOOR:
+				isOverlapRoom = true;
+				break;
+			default:
+				// Any other tile type is disallowed
+				return false;
 		}
-	}
+	RECT_FOREACH_END()
 	if (!hasFloor || !hasFloorAroundEdge)
 	{
 		return false;
@@ -535,58 +535,55 @@ static bool MapIsAreaClearForCaveRoom(
 	// - Either the edge is a wall, or
 	// - Edge is floor/room, and outside is floor/room/square
 	// This is to prevent rooms from cutting off areas of the map
-	for (v.y = pos.y; v.y < pos.y + size.y; v.y++)
-	{
-		for (v.x = pos.x; v.x < pos.x + size.x; v.x++)
+	RECT_FOREACH(room)
+		if (!Rect2iIsAtEdge(room, _v))
 		{
-			if (v.y > pos.y && v.y < pos.y + size.y - 1 &&
-				v.x > pos.x && v.x < pos.x + size.x - 1)
-			{
-				continue;
-			}
-			const bool isTop = v.y == pos.y;
-			const bool isBottom = v.y == pos.y + size.y - 1;
-			const bool isLeft = v.x == pos.x;
-			const bool isRight = v.x == pos.x + size.x - 1;
-			const Vec2i outside = Vec2iNew(
-				isLeft ? pos.x - 1 : (isRight ? pos.x + size.x : v.x),
-				isTop ? pos.y - 1 : (isBottom ? pos.y + size.y : v.y));
-			const Vec2i outsideX = Vec2iNew(
-				(isLeft || isRight) ? outside.x : v.x, v.y);
-			const Vec2i outsideY = Vec2iNew(
-				v.x, (isTop || isBottom) ? outside.y : v.y);
-			switch (IMapGet(map, v))
-			{
-				case MAP_WALL:	// passthrough
-				case MAP_DOOR:
-					// Note: also need to check outside to see if we overlap
-					// but just along the edge
-					if (IMapGet(map, outside) == MAP_ROOM ||
-						IMapGet(map, outsideX) == MAP_ROOM ||
-						IMapGet(map, outsideY) == MAP_ROOM)
-					{
-						*isOverlapRoom = true;
-					}
-					break;
-				case MAP_FLOOR:	// passthrough
-				case MAP_ROOM:
-					// Check outside tiles
-					if (!CaveRoomOutsideOk(map, outside) ||
-						!CaveRoomOutsideOk(map, outsideX) ||
-						!CaveRoomOutsideOk(map, outsideY))
-					{
-						return false;
-					}
-					break;
-				default:
-					CASSERT(false, "unexpected tile type");
-					return false;
-			}
+			continue;
 		}
-	}
+		const bool isTop = _v.y == room.Pos.y;
+		const bool isBottom = _v.y == room.Pos.y + room.Size.y - 1;
+		const bool isLeft = _v.x == room.Pos.x;
+		const bool isRight = _v.x == room.Pos.x + room.Size.x - 1;
+		const Vec2i outside = Vec2iNew(
+			isLeft ? room.Pos.x - 1 :
+			(isRight ? room.Pos.x + room.Size.x : _v.x),
+			isTop ? room.Pos.y - 1 :
+			(isBottom ? room.Pos.y + room.Size.y : _v.y));
+		const Vec2i outsideX = Vec2iNew(
+			(isLeft || isRight) ? outside.x : _v.x, _v.y);
+		const Vec2i outsideY = Vec2iNew(
+			_v.x, (isTop || isBottom) ? outside.y : _v.y);
+		switch (IMapGet(map, _v))
+		{
+			case MAP_WALL:	// passthrough
+			case MAP_DOOR:
+				// Note: also need to check outside to see if we overlap
+				// but just along the edge
+				if (IMapGet(map, outside) == MAP_ROOM ||
+					IMapGet(map, outsideX) == MAP_ROOM ||
+					IMapGet(map, outsideY) == MAP_ROOM)
+				{
+					isOverlapRoom = true;
+				}
+				break;
+			case MAP_FLOOR:	// passthrough
+			case MAP_ROOM:
+				// Check outside tiles
+				if (!CaveRoomOutsideOk(map, outside) ||
+					!CaveRoomOutsideOk(map, outsideX) ||
+					!CaveRoomOutsideOk(map, outsideY))
+				{
+					return false;
+				}
+				break;
+			default:
+				CASSERT(false, "unexpected tile type");
+				return false;
+		}
+	RECT_FOREACH_END()
 
 	// Check if room overlaps with another room and the overlap is valid
-	if (*isOverlapRoom)
+	if (isOverlapRoom)
 	{
 		if (!m->u.Cave.Rooms.Overlap)
 		{
@@ -596,7 +593,7 @@ static bool MapIsAreaClearForCaveRoom(
 		// Now check if the overlapping rooms will create a passage
 		// large enough
 		const int roomOverlapSize = MapGetRoomOverlapSize(
-			map, pos, size, overlapAccess);
+			map, room.Pos, room.Size, NULL);
 		if (roomOverlapSize < m->u.Cave.CorridorWidth)
 		{
 			return false;
@@ -611,106 +608,73 @@ static bool CaveRoomOutsideOk(const Map *map, const Vec2i v)
 	return t == MAP_FLOOR || t == MAP_ROOM || t == MAP_SQUARE;
 }
 
-static void MapBuildRoom(
-	Map *map,
-	const Vec2i pos,
-	const Vec2i size,
-	const Mission *m,
-	const bool hasKeys,
-	const bool isOverlapRoom,
-	const unsigned short overlapAccess)
+static void MapBuildRoom(Map *map, const Rect2i room, const Mission *m)
 {
 	// For edges, any tile that was a floor must be turned into
 	// a door, unless it was a corner - then it must be a wall
-	Vec2i v;
-	for (v.y = pos.y; v.y < pos.y + size.y; v.y++)
-	{
-		for (v.x = pos.x; v.x < pos.x + size.x; v.x++)
+	RECT_FOREACH(room)
+		if (!Rect2iIsAtEdge(room, _v))
 		{
-			if (v.y > pos.y && v.y < pos.y + size.y - 1 &&
-				v.x > pos.x && v.x < pos.x + size.x - 1)
-			{
-				continue;
-			}
-			const bool isTop = v.y == pos.y;
-			const bool isBottom = v.y == pos.y + size.y - 1;
-			const bool isLeft = v.x == pos.x;
-			const bool isRight = v.x == pos.x + size.x - 1;
-			const Vec2i outside = Vec2iNew(
-				isLeft ? pos.x - 1 : (isRight ? pos.x + size.x : v.x),
-				isTop ? pos.y - 1 : (isBottom ? pos.y + size.y : v.y));
-			const Vec2i outsideX = Vec2iNew(
-				(isLeft || isRight) ? outside.x : v.x, v.y);
-			const Vec2i outsideY = Vec2iNew(
-				v.x, (isTop || isBottom) ? outside.y : v.y);
-			const bool atEdgeOfMap =
-				v.y == 0 || v.y == map->Size.y - 1 ||
-				v.x == 0 || v.x == map->Size.x - 1;
-			switch (IMapGet(map, v) & MAP_MASKACCESS)
-			{
-				case MAP_FLOOR:
-					// Check outside tiles
-					if (!atEdgeOfMap &&
-						CaveRoomOutsideOk(map, outside) &&
-						CaveRoomOutsideOk(map, outsideX) &&
-						CaveRoomOutsideOk(map, outsideY))
-					{
-						IMapSet(
-							map, v,
-							m->u.Cave.DoorsEnabled ? MAP_DOOR : MAP_ROOM);
-					}
-					else
-					{
-						IMapSet(map, v, MAP_WALL);
-					}
-					break;
-				case MAP_DOOR:
-					if (!CaveRoomOutsideOk(map, outside) &&
-						!CaveRoomOutsideOk(map, outsideX) &&
-						!CaveRoomOutsideOk(map, outsideY))
-					{
-						// This door would become a corner
-						IMapSet(map, v, MAP_WALL);
-					}
-					break;
-				default:
-					// do nothing
-					break;
-			}
-
-			const bool leftOrRightEdge = isLeft || isRight;
-			const bool topOrBottomEdge = isTop || isBottom;
-			if (leftOrRightEdge && topOrBottomEdge)
-			{
-				// corner
-				IMapSet(map, v, MAP_WALL);
-			}
+			continue;
 		}
-	}
-
-	MapMakeRoom(map, pos, size, false);
-
-	// Work out what access level (i.e. key) this room has
-	unsigned short accessMask = 0;
-	if (hasKeys && m->u.Cave.DoorsEnabled)
-	{
-		// If this room has overlapped another room, use the same
-		// access level as that room
-		if (isOverlapRoom)
+		const bool isTop = _v.y == room.Pos.y;
+		const bool isBottom = _v.y == room.Pos.y + room.Size.y - 1;
+		const bool isLeft = _v.x == room.Pos.x;
+		const bool isRight = _v.x == room.Pos.x + room.Size.x - 1;
+		const Vec2i outside = Vec2iNew(
+			isLeft ? room.Pos.x - 1 :
+			(isRight ? room.Pos.x + room.Size.x : _v.x),
+			isTop ? room.Pos.y - 1 :
+			(isBottom ? room.Pos.y + room.Size.y : _v.y));
+		const Vec2i outsideX = Vec2iNew(
+			(isLeft || isRight) ? outside.x : _v.x, _v.y);
+		const Vec2i outsideY = Vec2iNew(
+			_v.x, (isTop || isBottom) ? outside.y : _v.y);
+		const bool atEdgeOfMap =
+			_v.y == 0 || _v.y == map->Size.y - 1 ||
+			_v.x == 0 || _v.x == map->Size.x - 1;
+		switch (IMapGet(map, _v) & MAP_MASKACCESS)
 		{
-			accessMask = overlapAccess;
+			case MAP_FLOOR:
+				// Check outside tiles
+				if (!atEdgeOfMap &&
+					CaveRoomOutsideOk(map, outside) &&
+					CaveRoomOutsideOk(map, outsideX) &&
+					CaveRoomOutsideOk(map, outsideY))
+				{
+					IMapSet(
+						map, _v,
+						m->u.Cave.DoorsEnabled ? MAP_DOOR : MAP_ROOM);
+				}
+				else
+				{
+					IMapSet(map, _v, MAP_WALL);
+				}
+				break;
+			case MAP_DOOR:
+				if (!CaveRoomOutsideOk(map, outside) &&
+					!CaveRoomOutsideOk(map, outsideX) &&
+					!CaveRoomOutsideOk(map, outsideY))
+				{
+					// This door would become a corner
+					IMapSet(map, _v, MAP_WALL);
+				}
+				break;
+			default:
+				// do nothing
+				break;
 		}
-		else
+
+		const bool leftOrRightEdge = isLeft || isRight;
+		const bool topOrBottomEdge = isTop || isBottom;
+		if (leftOrRightEdge && topOrBottomEdge)
 		{
-			// Otherwise, generate an access level for this room
-			accessMask = GenerateAccessMask(&map->keyAccessCount);
-			if (map->keyAccessCount < 1)
-			{
-				map->keyAccessCount = 1;
-			}
+			// corner
+			IMapSet(map, _v, MAP_WALL);
 		}
-	}
-	MapSetRoomAccessMask(map, pos, size, accessMask);
+	RECT_FOREACH_END()
+
+	MapMakeRoom(map, room.Pos, room.Size, false);
 
 	MapMakeRoomWalls(map, m->u.Cave.Rooms);
 }

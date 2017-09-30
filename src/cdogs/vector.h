@@ -78,3 +78,15 @@ typedef struct
 	Vec2i Pos;
 	Vec2i Size;
 } Rect2i;
+// Convenience macro for looping through elements in rect
+#define RECT_FOREACH(_r)\
+	{\
+		Vec2i _v;\
+		for (_v.y = _r.Pos.y; _v.y < _r.Pos.y + _r.Size.y; _v.y++)\
+		{\
+			for (_v.x = _r.Pos.x; _v.x < _r.Pos.x + _r.Size.x; _v.x++)\
+			{
+#define RECT_FOREACH_END() } } }
+
+bool Rect2iIsAtEdge(const Rect2i r, const Vec2i v);
+bool Rect2iOverlap(const Rect2i r1, const Rect2i r2);

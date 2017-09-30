@@ -52,6 +52,9 @@ static const char *MissionGetRoomMinStr(UIObject *o, void *data);
 static void MissionChangeRoomMin(void *data, int d);
 static const char *MissionGetRoomMaxStr(UIObject *o, void *data);
 static void MissionChangeRoomMax(void *data, int d);
+static void MissionDrawRoomsOverlap(
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data);
+static void MissionChangeRoomsOverlap(void *data, int d);
 static const char *MissionGetRoomWallCountStr(UIObject *o, void *data);
 static void MissionChangeRoomWallCount(void *data, int d);
 static const char *MissionGetRoomWallLenStr(UIObject *o, void *data);
@@ -139,6 +142,12 @@ UIObject *CreateCaveMapObjs(Vec2i pos, CampaignOptions *co)
 	o2->Data = co;
 	o2->ChangeFunc = MissionChangeRoomMax;
 	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCreate(UITYPE_CUSTOM, 0, pos, Vec2iNew(60, th));
+	o2->u.CustomDrawFunc = MissionDrawRoomsOverlap;
+	o2->Data = co;
+	o2->ChangeFunc = MissionChangeRoomsOverlap;
 	UIObjectAddChild(c, o2);
 
 	pos.x = x;
@@ -321,6 +330,26 @@ static void MissionChangeRoomMax(void *data, int d)
 	CampaignGetCurrentMission(co)->u.Cave.Rooms.Min = MIN(
 		CampaignGetCurrentMission(co)->u.Cave.Rooms.Min,
 		CampaignGetCurrentMission(co)->u.Cave.Rooms.Max);
+}
+static void MissionDrawRoomsOverlap(
+	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
+{
+	UNUSED(o);
+	UNUSED(g);
+	UNUSED(pos);
+	CampaignOptions *co = data;
+	if (!CampaignGetCurrentMission(co)) return;
+	DisplayFlag(
+		Vec2iAdd(pos, o->Pos), "Room overlap",
+		CampaignGetCurrentMission(co)->u.Cave.Rooms.Overlap,
+		UIObjectIsHighlighted(o));
+}
+static void MissionChangeRoomsOverlap(void *data, int d)
+{
+	UNUSED(d);
+	CampaignOptions *co = data;
+	CampaignGetCurrentMission(co)->u.Cave.Rooms.Overlap =
+		!CampaignGetCurrentMission(co)->u.Cave.Rooms.Overlap;
 }
 static const char *MissionGetRoomWallCountStr(UIObject *o, void *data)
 {
