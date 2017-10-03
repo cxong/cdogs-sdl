@@ -610,8 +610,12 @@ static bool CaveRoomOutsideOk(const Map *map, const Vec2i v)
 
 static void MapBuildRoom(Map *map, const Rect2i room, const Mission *m)
 {
-	// For edges, any tile that was a floor must be turned into
+	// For edges, any tile that is next to a floor must be turned into
 	// a door, unless it was a corner - then it must be a wall
+	// This is to prevent generating inaccessible rooms, or blocking off
+	// sections of the map
+	// TODO: if this is a locked room, can still cause the level to be
+	// blocked off
 	RECT_FOREACH(room)
 		if (!Rect2iIsAtEdge(room, _v))
 		{
@@ -635,22 +639,6 @@ static void MapBuildRoom(Map *map, const Rect2i room, const Mission *m)
 			_v.x == 0 || _v.x == map->Size.x - 1;
 		switch (IMapGet(map, _v) & MAP_MASKACCESS)
 		{
-			case MAP_FLOOR:
-				// Check outside tiles
-				if (!atEdgeOfMap &&
-					CaveRoomOutsideOk(map, outside) &&
-					CaveRoomOutsideOk(map, outsideX) &&
-					CaveRoomOutsideOk(map, outsideY))
-				{
-					IMapSet(
-						map, _v,
-						m->u.Cave.DoorsEnabled ? MAP_DOOR : MAP_ROOM);
-				}
-				else
-				{
-					IMapSet(map, _v, MAP_WALL);
-				}
-				break;
 			case MAP_DOOR:
 				if (!CaveRoomOutsideOk(map, outside) &&
 					!CaveRoomOutsideOk(map, outsideX) &&
@@ -661,7 +649,20 @@ static void MapBuildRoom(Map *map, const Rect2i room, const Mission *m)
 				}
 				break;
 			default:
-				// do nothing
+				// Check outside tiles
+				if (!atEdgeOfMap &&
+					(Vec2iEqual(outside, _v) || CaveRoomOutsideOk(map, outside)) &&
+					(Vec2iEqual(outsideX, _v) || CaveRoomOutsideOk(map, outsideX)) &&
+					(Vec2iEqual(outsideY, _v) || CaveRoomOutsideOk(map, outsideY)))
+				{
+					IMapSet(
+						map, _v,
+						m->u.Cave.DoorsEnabled ? MAP_DOOR : MAP_ROOM);
+				}
+				else
+				{
+					IMapSet(map, _v, MAP_WALL);
+				}
 				break;
 		}
 
