@@ -145,6 +145,7 @@ UIObject *CreateCaveMapObjs(Vec2i pos, CampaignOptions *co)
 	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;
 	o2 = UIObjectCreate(UITYPE_CUSTOM, 0, pos, Vec2iNew(60, th));
+	o2->ChangesData = true;
 	o2->u.CustomDrawFunc = MissionDrawRoomsOverlap;
 	o2->Data = co;
 	o2->ChangeFunc = MissionChangeRoomsOverlap;
