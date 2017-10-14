@@ -38,9 +38,8 @@
 #include <cdogs/player_template.h>
 
 
-static char letters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ !#?:.-0123456789";
-static char smallLetters[] = "abcdefghijklmnopqrstuvwxyz !#?:.-0123456789";
-
+static char letters[] = "1234567890-QWERTYUIOP!ASDFGHJKL:#ZXCVBNM  .?";
+static char smallLetters[] = "1234567890-qwertyuiop!asdfghjkl:#zxcvbnm  .?";
 
 static void DrawNameMenu(
 	const menu_t *menu, GraphicsDevice *g,
@@ -48,7 +47,7 @@ static void DrawNameMenu(
 {
 	const PlayerSelectMenuData *d = data;
 
-#define ENTRY_COLS	8
+#define ENTRY_COLS	11
 #define	ENTRY_SPACING	7
 
 	int x = pos.x;
