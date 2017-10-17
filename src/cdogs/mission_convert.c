@@ -397,7 +397,6 @@ bool MissionStaticTryAddObjective(Mission *m, int idx, int idx2, Vec2i pos)
 		// Check if the objective already has an entry, and add to its list
 		// of positions
 		int hasAdded = 0;
-		int objectiveIndex = -1;
 		ObjectivePositions *op = NULL;
 		for (int i = 0; i < (int)m->u.Static.Objectives.size; i++)
 		{
@@ -406,7 +405,6 @@ bool MissionStaticTryAddObjective(Mission *m, int idx, int idx2, Vec2i pos)
 			{
 				CArrayPushBack(&op->Positions, &pos);
 				CArrayPushBack(&op->Indices, &idx2);
-				objectiveIndex = op->Index;
 				hasAdded = 1;
 				break;
 			}
@@ -420,7 +418,6 @@ bool MissionStaticTryAddObjective(Mission *m, int idx, int idx2, Vec2i pos)
 			CArrayInit(&newOp.Indices, sizeof(int));
 			CArrayPushBack(&newOp.Positions, &pos);
 			CArrayPushBack(&newOp.Indices, &idx2);
-			objectiveIndex = (int)newOp.Positions.size - 1;
 			CArrayPushBack(&m->u.Static.Objectives, &newOp);
 		}
 		// Increase number of objectives
