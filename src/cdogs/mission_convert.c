@@ -424,7 +424,7 @@ bool MissionStaticTryAddObjective(Mission *m, int idx, int idx2, Vec2i pos)
 			CArrayPushBack(&m->u.Static.Objectives, &newOp);
 		}
 		// Increase number of objectives
-		Objective *o = CArrayGet(&m->Objectives, objectiveIndex);
+		Objective *o = CArrayGet(&m->Objectives, idx);
 		o->Count++;
 		return true;
 	}
