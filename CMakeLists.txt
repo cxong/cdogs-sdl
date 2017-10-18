@@ -95,7 +95,6 @@ else()
 	add_definitions(
 		-fsigned-char
 		-Wall -W
-		-Wno-deprecated-declarations # TODO: this avoids error on deprecated readdir_r() call. Proper way to fix this bug is change readdir_r() to readdir()
 		-Wstrict-prototypes -Wpointer-arith -Wcast-qual)
 	if(DEBUG)
 		ADD_DEFINITIONS(-g)
