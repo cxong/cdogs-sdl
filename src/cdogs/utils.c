@@ -435,7 +435,7 @@ char *PercentStr(int p)
 }
 char *Div8Str(int i)
 {
-	static char buf[8];
+	static char buf[16];
 	sprintf(buf, "%d", i/8);
 	return buf;
 }
