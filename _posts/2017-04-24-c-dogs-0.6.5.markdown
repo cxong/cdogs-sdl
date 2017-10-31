@@ -18,13 +18,13 @@ C-Dogs SDL 0.6.5 released, with a new campaign, new character editor, and some h
 
 There's a spiffy new character editor, powered by the awesome GUI library [**nuklear**](https://github.com/vurtun/nuklear), with extra previews!
 
-![harmful crysalis](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/cdogs_nuklear_char_editor.gif)
+![character editor](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/cdogs_nuklear_char_editor.gif)
 
 ## Hitscan Weapons
 
 The C-Dogs collision code has been completely overhauled; now it uses [**Continuous Collision Detection**](https://gamedev.stackexchange.com/q/55873/26250). In plain terms, it prevents fast-moving objects from tunnelling through each other, and makes it possible to implement **hitscan weapons**!
 
-![harmful crysalis](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/doom_hitscan_chaingun.gif)
+![hitscan chaingun](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/doom_hitscan_chaingun.gif)
 
 This might come with performance penalties though... next release we'll look at some performance optimisations.
 

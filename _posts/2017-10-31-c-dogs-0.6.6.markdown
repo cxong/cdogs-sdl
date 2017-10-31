@@ -1,0 +1,29 @@
+---
+layout: post
+title:  "C-Dogs 0.6.6 Released!"
+date:   2017-10-31
+categories: release
+published: true
+---
+
+Happy Halloween! C-Dogs SDL 0.6.6 released, with two spooky new campaigns, and some cool HUD enhancements!
+
+## Grave Intent
+
+A new contributor has created a unique campaign, **Grave Intent**, with creepy vibes, and skeleton enemies!
+
+![grave intent](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/grave_intent.png)
+
+![grave intent skeletons](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/grave_intent_skeletons.png)
+
+## AI Insurgency II
+
+[**Sauer2**](https://github.com/sauer2) and killer robots are back, in this action-packed sequel campaign!
+
+![AI Insurgency II](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/ai_insurgency_2.png)
+
+## HUD improvements
+
+There's a bunch of HUD improvements in this release. Ammo notifications as covered in the last post, some text popups when you pick things up, showing a map in a second window, health gauge animations, and more! Thanks to new contributors [**Ottani**](https://github.com/Ottani) and [**davidrgmcb**](https://github.com/davidrgmcb) for some of these.
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.6.6>
