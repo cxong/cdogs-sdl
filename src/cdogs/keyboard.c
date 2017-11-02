@@ -180,11 +180,11 @@ void DiagonalHold(keyboard_t *keyboard)
     } //Ends a SUSTAIN, returns keyboard to neutral state
     
     if ((keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed == true && keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed == true) && ((keyboard->upLeftDiagonal == UNPRESSED) || (keyboard->upLeftDiagonal == 0))
-    && (downLeftDiagonal == SSUSTAIN || upRightDiagonal == SUSTAIN || downRightDiagonal == SUSTAIN))
+    && (keyboard->downLeftDiagonal == SUSTAIN || keyboard->upRightDiagonal == SUSTAIN || keyboard->downRightDiagonal == SUSTAIN))
     {
-        downLeftDiagonal = UNPRESSED;
-        upRightDiagonal = UNPRESSED;
-        downRightDiagonal = UNPRESSED;
+        keyboard->downLeftDiagonal = UNPRESSED;
+        keyboard->upRightDiagonal = UNPRESSED;
+        keyboard->downRightDiagonal = UNPRESSED;
         keyboard->upDiagonalTicks = (-1);
         keyboard->leftDiagonalTicks = (-1);
         keyboard->rightDiagonalTicks = (-1);
