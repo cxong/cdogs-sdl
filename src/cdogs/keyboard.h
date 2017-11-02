@@ -82,7 +82,18 @@ typedef struct
         int32_t downDiagonalTicks;
         int32_t leftDiagonalTicks;
         int32_t rightDiagonalTicks;
+        char upLeftDiagonal;
+        char upRightDiagonal;
+        char downLeftDiagonal;
+        char downRightDiagonal;
 } keyboard_t;
+
+typedef enum
+{
+       UNPRESSED,
+       PRESSED,
+       SUSTAIN
+} diagonal_status;
 
 void KeyInit(keyboard_t *keyboard);
 InputKeys KeyLoadPlayerKeys(Config *c);
