@@ -199,8 +199,7 @@ bool UpdateBullet(struct MobileObject *obj, const int ticks)
 	{
 		hit = HitItem(obj, posStart, obj->bulletClass->Persists);
 	}
-	Vec2i pos =
-		Vec2iScale(Vec2iAdd(posStart, obj->tileItem.VelFull), ticks);
+	Vec2i pos = Vec2iAdd(posStart, Vec2iScale(obj->tileItem.VelFull, ticks));
 
 	if (hit.Type != HIT_NONE)
 	{
