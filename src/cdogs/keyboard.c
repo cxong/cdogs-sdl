@@ -140,59 +140,73 @@ void DiagonalHold(keyboard_t *keyboard)
 {
     int currentTicks = (int)SDL_GetTicks(); //Everything uses this to determine whether to keep holding a diagonal by comparing how long it has been since it set that diagonal's ticks vs current time
     
-    if ((keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed == true && keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed == true) && ((keyboard->upLeftDiagonal == UNPRESSED) || (keyboard->upLeftDiagonal == 0)))
+    if ((keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed == true && keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed == true) && ((keyboard->upLeftDiagonal == UNPRESSED)))
     {
         keyboard->upLeftDiagonal = PRESSED;
-        keyboard->upDiagonalTicks = (-1);
-        keyboard->leftDiagonalTicks = (-1);
+        keyboard->upLeftDiagonalTicks = (-1);
+        //keyboard->leftDiagonalTicks = (-1);
     } //A basic "make sure everything is ready to be set to SUSTAIN barring anything else changing"
     
-    if ((keyboard->previousKeys[keyboard->PlayerKeys->up].isPressed == true && keyboard->previousKeys[keyboard->PlayerKeys->left].isPressed == true) 
+    else if ((keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed == true && keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed == true) && ((keyboard->upLeftDiagonal == UNPRESSED)))
+    {
+        keyboard->upLeftDiagonal = PRESSED;
+        keyboard->upLeftDiagonalTicks = (-1);
+        //keyboard->leftDiagonalTicks = (-1);
+    }
+    
+    else if ((keyboard->previousKeys[keyboard->PlayerKeys->up].isPressed == true && keyboard->previousKeys[keyboard->PlayerKeys->left].isPressed == true) 
         && (keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed == false && keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed == false)
         && (keyboard->upLeftDiagonal != SUSTAIN))
         {
             keyboard->upLeftDiagonal = SUSTAIN;
-            keyboard->upDiagonalTicks = (int)SDL_GetTicks() + DIAGONAL_RELEASE_DELAY;
-            keyboard->leftDiagonalTicks = (int)SDL_GetTicks() + DIAGONAL_RELEASE_DELAY;
+            keyboard->upLeftDiagonalTicks = currentTicks + DIAGONAL_RELEASE_DELAY;
+            //keyboard->leftDiagonalTicks = currentTicks + DIAGONAL_RELEASE_DELAY;
         } //Sets to SUSTAIN, makes sure that it only does so when the buttons have actually released
         
-    if ((keyboard->upLeftDiagonal == SUSTAIN) && ((keyboard->upDiagonalTicks - keyboard->leftDiagonalTicks < 30) && (keyboard->upDiagonalTicks - keyboard->leftDiagonalTicks > 0)))
+    /*else if ((keyboard->upLeftDiagonal == SUSTAIN) && ((keyboard->upLeftDiagonalTicks - keyboard->leftDiagonalTicks < 30) && (keyboard->upDiagonalTicks - keyboard->leftDiagonalTicks > 0)))
     {
         keyboard->leftDiagonalTicks = keyboard->upDiagonalTicks;
     }
     
-    if ((keyboard->upLeftDiagonal == SUSTAIN) && ((keyboard->leftDiagonalTicks - keyboard->upDiagonalTicks < 30) && (keyboard->leftDiagonalTicks - keyboard->upDiagonalTicks > 0)))
+    else if ((keyboard->upLeftDiagonal == SUSTAIN) && ((keyboard->leftDiagonalTicks - keyboard->upDiagonalTicks < 30) && (keyboard->leftDiagonalTicks - keyboard->upDiagonalTicks > 0)))
     {
         keyboard->upDiagonalTicks = keyboard->leftDiagonalTicks;
-    } //Allows things within a range to exit pressed/sustain status at the same time, otherwise the problem is just kicked down the road
+    } //Allows things within a range to exit pressed/sustain status at the same time, otherwise the problem is just kicked down the road*/
     
-    if ((keyboard->upDiagonalTicks > currentTicks) && (keyboard->leftDiagonalTicks > currentTicks) && (keyboard->upLeftDiagonal == SUSTAIN))
+    else if ((keyboard->upLeftDiagonalTicks > currentTicks) && (keyboard->upLeftDiagonal == SUSTAIN))
     {
         keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed = true; 
         keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed = true;
     } //Keeps buttons pressed for x milliseconds to help determine if a diagonal was intended
     
-    if ((keyboard->upLeftDiagonal == SUSTAIN) && ((keyboard->upDiagonalTicks <= currentTicks) && (keyboard->leftDiagonalTicks <= currentTicks)))
+    else if ((keyboard->upLeftDiagonal == SUSTAIN) && ((keyboard->upLeftDiagonalTicks <= currentTicks)))
     {
         keyboard->upLeftDiagonal = UNPRESSED;
         keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed = false;
         keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed = false;
     } //Ends a SUSTAIN, returns keyboard to neutral state
     
-    if ((keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed == true && keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed == true) && ((keyboard->upLeftDiagonal == UNPRESSED) || (keyboard->upLeftDiagonal == 0))
+    else if ((keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed == true && keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed == true) && ((keyboard->upLeftDiagonal == UNPRESSED))
     && (keyboard->downLeftDiagonal == SUSTAIN || keyboard->upRightDiagonal == SUSTAIN || keyboard->downRightDiagonal == SUSTAIN))
     {
         keyboard->downLeftDiagonal = UNPRESSED;
         keyboard->upRightDiagonal = UNPRESSED;
         keyboard->downRightDiagonal = UNPRESSED;
-        keyboard->upDiagonalTicks = (-1);
-        keyboard->leftDiagonalTicks = (-1);
-        keyboard->rightDiagonalTicks = (-1);
-        keyboard->downDiagonalTicks = (-1);
+        keyboard->upLeftDiagonalTicks = (-1);
+        keyboard->downLeftDiagonalTicks = (-1);
+        keyboard->upRightDiagonalTicks = (-1);
+        keyboard->downRightDiagonalTicks = (-1);
     } //A check to make sure that sustain status is never in place for multiple directions, probably a shorter less redundant way to do this but story of this function's hideous life
+    
+else if (((keyboard->upLeftDiagonal == SUSTAIN) && (keyboard->currentKeys[keyboard->PlayerKeys->down].isPressed == true)) || (keyboard->currentKeys[keyboard->PlayerKeys->right].isPressed == true))
+{
+    keyboard->upLeftDiagonal = UNPRESSED;
+    keyboard->upLeftDiagonalTicks = (-1);
+    //keyboard->leftDiagonalTicks = (-1);
+}
 
     //fprintf(stderr, "%d\n", keyboard->upLeftDiagonal);
-    //fprintf(stderr, "%d\n", keyboard->upDiagonalTicks);
+    //fprintf(stderr, "%d\n", keyboard->upLeftDiagonalTicks);
 }
 
 void KeyPostPoll(keyboard_t *keyboard, Uint32 ticks)

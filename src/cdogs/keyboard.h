@@ -67,6 +67,13 @@ typedef enum
 } key_code_e;
 const char *KeycodeStr(int k);
 
+typedef enum
+{
+       UNPRESSED,
+       PRESSED,
+       SUSTAIN
+} diagonal_status;
+
 typedef struct
 {
 	KeyPress previousKeys[SDL_NUM_SCANCODES];
@@ -78,22 +85,15 @@ typedef struct
 	Uint32 repeatedTicks;
 	bool isFirstRepeat;
 	InputKeys PlayerKeys[MAX_KEYBOARD_CONFIGS];
-        int32_t upDiagonalTicks;
-        int32_t downDiagonalTicks;
-        int32_t leftDiagonalTicks;
-        int32_t rightDiagonalTicks;
-        char upLeftDiagonal;
-        char upRightDiagonal;
-        char downLeftDiagonal;
-        char downRightDiagonal;
+        int32_t upLeftDiagonalTicks;
+        int32_t downRightDiagonalTicks;
+        int32_t downLeftDiagonalTicks;
+        int32_t upRightDiagonalTicks;
+        diagonal_status upLeftDiagonal;
+        diagonal_status upRightDiagonal;
+        diagonal_status downLeftDiagonal;
+        diagonal_status downRightDiagonal;
 } keyboard_t;
-
-typedef enum
-{
-       UNPRESSED,
-       PRESSED,
-       SUSTAIN
-} diagonal_status;
 
 void KeyInit(keyboard_t *keyboard);
 InputKeys KeyLoadPlayerKeys(Config *c);
