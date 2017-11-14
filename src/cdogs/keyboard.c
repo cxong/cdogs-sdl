@@ -52,7 +52,7 @@ const char *KeycodeStr(int k)
 
 #define KEYBOARD_REPEAT_DELAY 500
 #define KEYBOARD_REPEAT_TICKS 100
-#define DIAGONAL_RELEASE_DELAY 10000
+#define DIAGONAL_RELEASE_DELAY 30
 
 void KeyInit(keyboard_t *keyboard)
 {
@@ -140,6 +140,15 @@ void DiagonalHold(keyboard_t *keyboard)
 {
     int currentTicks = (int)SDL_GetTicks(); //Everything uses this to determine whether to keep holding a diagonal by comparing how long it has been since it set that diagonal's ticks vs current time
     
+    if ((keyboard->upLeftDiagonal == SUSTAIN) && ((keyboard->currentKeys[keyboard->PlayerKeys->down].isPressed == true) || (keyboard->currentKeys[keyboard->PlayerKeys->right].isPressed == true)))
+    {
+        keyboard->upLeftDiagonal = UNPRESSED;
+        keyboard->upLeftDiagonalTicks = (-1);
+        keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed = false;
+        keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed = false;
+        //keyboard->leftDiagonalTicks = (-1);
+    } // move to top, expllicitly set to false -- done
+    
     if ((keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed == true && keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed == true) && ((keyboard->upLeftDiagonal == UNPRESSED)))
     {
         keyboard->upLeftDiagonal = PRESSED;
@@ -147,21 +156,31 @@ void DiagonalHold(keyboard_t *keyboard)
         //keyboard->leftDiagonalTicks = (-1);
     } //A basic "make sure everything is ready to be set to SUSTAIN barring anything else changing"
     
-    else if ((keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed == true && keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed == true) && ((keyboard->upLeftDiagonal == UNPRESSED)))
+    else if (((keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed == true && keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed == false)
+    || (keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed == false && keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed == true))  && ((keyboard->upLeftDiagonal == PRESSED)))
+    {
+        keyboard->upLeftDiagonal = SUSTAIN;
+        keyboard->upLeftDiagonalTicks = currentTicks + DIAGONAL_RELEASE_DELAY;
+    }
+    
+    //-------
+    //This doesn't work and never would but I wanted to experiment with ending sustains because one direction is still clearly held, it needs to specifically set the one not pressed to false, but that info isn't stored
+    /*else if ((keyboard->upLeftDiagonal == SUSTAIN) && (keyboard->upLeftDiagonalTicks > currentTicks) && 
+    ((keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed == true && keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed == false)
+    || (keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed == false && keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed == true)))
     {
         keyboard->upLeftDiagonal = PRESSED;
         keyboard->upLeftDiagonalTicks = (-1);
-        //keyboard->leftDiagonalTicks = (-1);
-    }
+    }*/ //-------
     
-    else if ((keyboard->previousKeys[keyboard->PlayerKeys->up].isPressed == true && keyboard->previousKeys[keyboard->PlayerKeys->left].isPressed == true) 
+    /*else if ((keyboard->previousKeys[keyboard->PlayerKeys->up].isPressed == true && keyboard->previousKeys[keyboard->PlayerKeys->left].isPressed == true) 
         && (keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed == false && keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed == false)
         && (keyboard->upLeftDiagonal != SUSTAIN))
         {
             keyboard->upLeftDiagonal = SUSTAIN;
             keyboard->upLeftDiagonalTicks = currentTicks + DIAGONAL_RELEASE_DELAY;
             //keyboard->leftDiagonalTicks = currentTicks + DIAGONAL_RELEASE_DELAY;
-        } //Sets to SUSTAIN, makes sure that it only does so when the buttons have actually released
+        } //Sets to SUSTAIN, makes sure that it only does so when the buttons have actually released*/
         
     /*else if ((keyboard->upLeftDiagonal == SUSTAIN) && ((keyboard->upLeftDiagonalTicks - keyboard->leftDiagonalTicks < 30) && (keyboard->upDiagonalTicks - keyboard->leftDiagonalTicks > 0)))
     {
@@ -197,13 +216,6 @@ void DiagonalHold(keyboard_t *keyboard)
         keyboard->upRightDiagonalTicks = (-1);
         keyboard->downRightDiagonalTicks = (-1);
     } //A check to make sure that sustain status is never in place for multiple directions, probably a shorter less redundant way to do this but story of this function's hideous life
-    
-else if (((keyboard->upLeftDiagonal == SUSTAIN) && (keyboard->currentKeys[keyboard->PlayerKeys->down].isPressed == true)) || (keyboard->currentKeys[keyboard->PlayerKeys->right].isPressed == true))
-{
-    keyboard->upLeftDiagonal = UNPRESSED;
-    keyboard->upLeftDiagonalTicks = (-1);
-    //keyboard->leftDiagonalTicks = (-1);
-}
 
     //fprintf(stderr, "%d\n", keyboard->upLeftDiagonal);
     //fprintf(stderr, "%d\n", keyboard->upLeftDiagonalTicks);
