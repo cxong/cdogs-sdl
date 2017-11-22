@@ -128,26 +128,30 @@ void DiagonalHold(keyboard_t *keyboard)
         keyboard->upLeftDiagonalTicks = (-1);
     } //A basic "make sure everything is ready to be set to SUSTAIN barring anything else changing"
     
-    else if (((keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed == true && keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed == false)
-    || (keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed == false && keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed == true))  && ((keyboard->upLeftDiagonal == PRESSED)))
+    else if (((realKeyboardState[keyboard->PlayerKeys->up] == true && realKeyboardState[keyboard->PlayerKeys->left] == false)
+    || (realKeyboardState[keyboard->PlayerKeys->up] == false && realKeyboardState[keyboard->PlayerKeys->left] == true))  && ((keyboard->upLeftDiagonal == PRESSED)))
     {
         keyboard->upLeftDiagonal = SUSTAIN;
         keyboard->upLeftDiagonalTicks = currentTicks + DIAGONAL_RELEASE_DELAY;
-        /*if (realKeyboardState[keyboard->PlayerKeys->up] == true)
+        if (realKeyboardState[keyboard->PlayerKeys->up] == true)
         {
             keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed = false;
         }
         else
         {
             keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed = false;
-        }*/
+        }
     } // use realKeyboardState for comparison to suss out which button to set to false
+    
+    // Kinda see what I was going for here, but have little idea how I thought it would work. Can't say for sure if I was tired and lit on a nonsense idea or if I'm currently tired and not seeing the sense
+    // I've tried every permutation of turning both these ifs on, not convinced either does anything, can't really think of a cogent plan of approach for an actual fix right now, too caught up in
+    // trying to work out what this was for good or ill.
     
     //-------
     //This doesn't work and never would but I wanted to experiment with ending sustains because one direction is still clearly held, it needs to specifically set the one not pressed to false, but that info isn't stored
-    else if ((keyboard->upLeftDiagonal == SUSTAIN) && (keyboard->upLeftDiagonalTicks > currentTicks) && 
-    ((keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed == true && keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed == false)
-    || (keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed == false && keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed == true)))
+    /*else if ((keyboard->upLeftDiagonal == SUSTAIN) && (keyboard->upLeftDiagonalTicks > currentTicks) && 
+    ((realKeyboardState[keyboard->PlayerKeys->up] == true && realKeyboardState[keyboard->PlayerKeys->left] == false)
+    || (realKeyboardState[keyboard->PlayerKeys->up] == false && realKeyboardState[keyboard->PlayerKeys->left] == true)))
     {
         keyboard->upLeftDiagonal = PRESSED;
         keyboard->upLeftDiagonalTicks = (-1);
@@ -159,7 +163,7 @@ void DiagonalHold(keyboard_t *keyboard)
         {
             keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed = false;
         }
-    } //-------
+    }*/ //------- add the real check to the if statement, currenlty this second if does less than nothing.
     
     else if ((keyboard->upLeftDiagonalTicks > currentTicks) && (keyboard->upLeftDiagonal == SUSTAIN))
     {
