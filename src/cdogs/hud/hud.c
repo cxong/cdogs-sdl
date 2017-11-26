@@ -382,8 +382,7 @@ static void DrawRadar(
 
 	if (!Vec2iIsZero(pos))
 	{
-		Vec2i playerPos = Vec2iNew(
-			p->tileItem.x / TILE_WIDTH, p->tileItem.y / TILE_HEIGHT);
+		const Vec2i playerPos = Vec2ToTile(p->tileItem.Pos);
 		AutomapDrawRegion(
 			&gMap,
 			pos,
@@ -398,9 +397,7 @@ static void DrawSharedRadar(GraphicsDevice *device, bool showExit)
 {
 	int w = device->cachedConfig.Res.x;
 	Vec2i pos = Vec2iNew(w / 2 - AUTOMAP_SIZE / 2, AUTOMAP_PADDING);
-	Vec2i playerMidpoint = PlayersGetMidpoint();
-	playerMidpoint.x /= TILE_WIDTH;
-	playerMidpoint.y /= TILE_HEIGHT;
+	const Vec2i playerMidpoint = Vec2ToTile(PlayersGetMidpoint());
 	AutomapDrawRegion(
 		&gMap,
 		pos,
@@ -411,7 +408,8 @@ static void DrawSharedRadar(GraphicsDevice *device, bool showExit)
 }
 
 static void DrawObjectiveCompass(
-	GraphicsDevice *g, Vec2i playerPos, Rect2i r, bool showExit);
+	GraphicsDevice *g, const struct vec playerPos, const Rect2i r,
+	const bool showExit);
 // Draw player's score, health etc.
 static void DrawPlayerStatus(
 	HUD *hud, const PlayerData *data, const TActor *p,
@@ -419,8 +417,7 @@ static void DrawPlayerStatus(
 {
 	if (p != NULL)
 	{
-		DrawObjectiveCompass(
-			hud->device, Vec2iFull2Real(p->Pos), r, hud->showExit);
+		DrawObjectiveCompass(hud->device, p->Pos, r, hud->showExit);
 	}
 
 	Vec2i pos = Vec2iNew(5, 5);
@@ -492,10 +489,11 @@ static void DrawPlayerStatus(
 
 
 static void DrawCompassArrow(
-	GraphicsDevice *g, Rect2i r, Vec2i pos, Vec2i playerPos, color_t mask,
-	const char *label);
+	GraphicsDevice *g,const Rect2i r, const struct vec pos,
+	const struct vec playerPos, const color_t mask, const char *label);
 static void DrawObjectiveCompass(
-	GraphicsDevice *g, Vec2i playerPos, Rect2i r, bool showExit)
+	GraphicsDevice *g, const struct vec playerPos, const Rect2i r,
+	const bool showExit)
 {
 	// Draw exit position
 	if (showExit)
@@ -529,8 +527,7 @@ static void DrawObjectiveCompass(
 				{
 					continue;
 				}
-				DrawCompassArrow(
-					g, r, Vec2iNew(ti->x, ti->y), playerPos, o->color, NULL);
+				DrawCompassArrow(g, r, ti->Pos, playerPos, o->color, NULL);
 			CA_FOREACH_END()
 		}
 	}
@@ -538,24 +535,24 @@ static void DrawObjectiveCompass(
 
 #define COMP_SATURATE_DIST 350
 static void DrawCompassArrow(
-	GraphicsDevice *g, Rect2i r, Vec2i pos, Vec2i playerPos, color_t mask,
-	const char *label)
+	GraphicsDevice *g,const Rect2i r, const struct vec pos,
+	const struct vec playerPos, const color_t mask, const char *label)
 {
-	Vec2i compassV = Vec2iMinus(pos, playerPos);
+	const struct vec compassV = vector2_subtract(pos, playerPos);
 	// Don't draw if objective is on screen
-	if (abs(pos.x - playerPos.x) < r.Size.x / 2 &&
-		abs(pos.y - playerPos.y) < r.Size.y / 2)
+	if (fabsf(pos.x - playerPos.x) < r.Size.x / 2 &&
+		fabsf(pos.y - playerPos.y) < r.Size.y / 2)
 	{
 		return;
 	}
 	// Saturate according to dist from screen edge
-	int xDist = abs(pos.x - playerPos.x) - r.Size.x / 2;
-	int yDist = abs(pos.y - playerPos.y) - r.Size.y / 2;
+	int xDist = fabsf(pos.x - playerPos.x) - r.Size.x / 2;
+	int yDist = fabsf(pos.y - playerPos.y) - r.Size.y / 2;
 	int lDist;
 	xDist > yDist ? lDist = xDist: (lDist = yDist);
 	HSV hsv = { -1.0, 1.0,
 		2.0 - 1.5 * MIN(lDist, COMP_SATURATE_DIST) / COMP_SATURATE_DIST };
-	mask = ColorTint(mask, hsv);
+	const color_t tintedMask = ColorTint(mask, hsv);
 	Vec2i textPos = Vec2iZero();
 	// Find which edge of screen is the best
 	bool hasDrawn = false;
@@ -575,7 +572,7 @@ static void DrawCompassArrow(
 				const Pic *p = PicManagerGetPic(&gPicManager, "arrow_right");
 				Vec2i drawPos = Vec2iNew(
 					textPos.x - p->size.x, textPos.y - p->size.y / 2);
-				BlitMasked(g, p, drawPos, mask, true);
+				BlitMasked(g, p, drawPos, tintedMask, true);
 			}
 			else if (compassV.x < 0)
 			{
@@ -583,7 +580,7 @@ static void DrawCompassArrow(
 				textPos = Vec2iNew(r.Pos.x, r.Pos.y + r.Size.y / 2 + yInt);
 				const Pic *p = PicManagerGetPic(&gPicManager, "arrow_left");
 				Vec2i drawPos = Vec2iNew(textPos.x, textPos.y - p->size.y / 2);
-				BlitMasked(g, p, drawPos, mask, true);
+				BlitMasked(g, p, drawPos, tintedMask, true);
 			}
 		}
 	}
@@ -602,7 +599,7 @@ static void DrawCompassArrow(
 				const Pic *p = PicManagerGetPic(&gPicManager, "arrow_down");
 				Vec2i drawPos = Vec2iNew(
 					textPos.x - p->size.x / 2, textPos.y - p->size.y);
-				BlitMasked(g, p, drawPos, mask, true);
+				BlitMasked(g, p, drawPos, tintedMask, true);
 			}
 			else if (compassV.y < 0)
 			{
@@ -610,7 +607,7 @@ static void DrawCompassArrow(
 				textPos = Vec2iNew(r.Pos.x + r.Size.x / 2 + xInt, r.Pos.y);
 				const Pic *p = PicManagerGetPic(&gPicManager, "arrow_up");
 				Vec2i drawPos = Vec2iNew(textPos.x - p->size.x / 2, textPos.y);
-				BlitMasked(g, p, drawPos, mask, true);
+				BlitMasked(g, p, drawPos, tintedMask, true);
 			}
 		}
 	}
@@ -626,7 +623,7 @@ static void DrawCompassArrow(
 		textPos.x = MIN(textPos.x, r.Pos.x + r.Size.x - textSize.x - padding);
 		textPos.y = MAX(textPos.y, r.Pos.y + padding);
 		textPos.y = MIN(textPos.y, r.Pos.y + r.Size.y - textSize.y - padding);
-		FontStrMask(label, textPos, mask);
+		FontStrMask(label, textPos, tintedMask);
 	}
 }
 

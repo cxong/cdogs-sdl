@@ -215,10 +215,9 @@ static void AddTileNeighbors(
 }
 static float AStarHeuristic(void *fromNode, void *toNode, void *context)
 {
-	// Simple Euclidean
-	Vec2i *v1 = fromNode;
-	Vec2i *v2 = toNode;
+	const Vec2i *v1 = fromNode;
+	const Vec2i *v2 = toNode;
 	UNUSED(context);
-	return (float)sqrt(DistanceSquared(
-		Vec2iCenterOfTile(*v1), Vec2iCenterOfTile(*v2)));
+	return CHEBYSHEV_DISTANCE(
+		(float)v1->x, (float)v1->y, (float)v2->x, (float)v2->y);
 }

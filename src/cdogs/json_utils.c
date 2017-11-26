@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2013-2016, Cong Xu
+ Copyright (c) 2013-2017 Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -109,6 +109,15 @@ void LoadDouble(double *value, json_t *node, const char *name)
 	}
 	*value = atof(node->text);
 }
+void LoadFullInt(float *value, json_t *node, const char *name)
+{
+	if (!TryLoadValue(&node, name))
+	{
+		return;
+	}
+	const int fullValue = atoi(node->text);
+	*value = fullValue / 256.0f;
+}
 void LoadVec2i(Vec2i *value, json_t *node, const char *name)
 {
 	if (!TryLoadValue(&node, name))
@@ -119,6 +128,17 @@ void LoadVec2i(Vec2i *value, json_t *node, const char *name)
 	value->x = atoi(node->text);
 	node = node->next;
 	value->y = atoi(node->text);
+}
+void LoadVec2(struct vec *value, json_t *node, const char *name)
+{
+	if (!TryLoadValue(&node, name))
+	{
+		return;
+	}
+	node = node->child;
+	value->x = atof(node->text);
+	node = node->next;
+	value->y = atof(node->text);
 }
 void LoadStr(char **value, json_t *node, const char *name)
 {

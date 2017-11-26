@@ -111,10 +111,11 @@ int AICoopGetCmd(TActor *actor, const int ticks)
 	return cmd;
 }
 
-static int SmartGoto(TActor *actor, Vec2i pos, int minDistance2);
+static int SmartGoto(
+	TActor *actor, const struct vec pos, const float minDistance2);
 static bool TryCompleteNearbyObjective(
 	TActor *actor, const TActor *closestPlayer,
-	const int distanceTooFarFromPlayer, int *cmdOut);
+	const float distanceTooFarFromPlayer, int *cmdOut);
 static int AICoopGetCmdNormal(TActor *actor)
 {
 	// Use decision tree to command the AI
@@ -128,20 +129,18 @@ static int AICoopGetCmdNormal(TActor *actor)
 	//   - Attack enemy
 	// - else
 	//   - Go to nearest player if too far, or away if too close
-
-	const Vec2i actorRealPos = Vec2iFull2Real(actor->Pos);
-	const Vec2i actorTilePos = Vec2iToTile(actorRealPos);
+	const Vec2i actorTilePos = Vec2ToTile(actor->Pos);
 
 	// Look for dangerous bullets in a 1-tile radius
 	// These are bullets with the "HurtAlways" property true
 	Vec2i v;
-	Vec2i dangerBulletFullPos = Vec2iZero();
+	struct vec dangerBulletPos = vector2_zero();
 	for (v.x = actorTilePos.x - 1;
-		v.x <= actorTilePos.x + 1 && Vec2iIsZero(dangerBulletFullPos);
+		v.x <= actorTilePos.x + 1 && vector2_is_zero(dangerBulletPos);
 		v.x++)
 	{
 		for (v.y = actorTilePos.y - 1;
-			v.y <= actorTilePos.y + 1 && Vec2iIsZero(dangerBulletFullPos);
+			v.y <= actorTilePos.y + 1 && vector2_is_zero(dangerBulletPos);
 			v.y++)
 		{
 			const Tile *t = MapGetTile(&gMap, v);
@@ -152,16 +151,16 @@ static int AICoopGetCmdNormal(TActor *actor)
 				const TMobileObject *mo = CArrayGet(&gMobObjs, tid->Id);
 				if (mo->bulletClass->HurtAlways)
 				{
-					dangerBulletFullPos = Vec2iNew(mo->x, mo->y);
+					dangerBulletPos = mo->Pos;
 					break;
 				}
 			CA_FOREACH_END()
 		}
 	}
 	// Run away if dangerous bullet found
-	if (!Vec2iIsZero(dangerBulletFullPos))
+	if (!vector2_is_zero(dangerBulletPos))
 	{
-		return AIRetreatFrom(actor, dangerBulletFullPos);
+		return AIRetreatFrom(actor, dangerBulletPos);
 	}
 
 	// Check the weapon for ammo
@@ -227,7 +226,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 	// directly at us
 	// Follow the closest player with a lower UID
 	const TActor *closestPlayer = NULL;
-	int minDistance2 = -1;
+	float minDistance2 = -1;
 	if (!IsPVP(gCampaign.Entry.Mode))
 	{
 		for (int uid = 0; uid < actor->PlayerUID; uid++)
@@ -235,8 +234,8 @@ static int AICoopGetCmdNormal(TActor *actor)
 			const PlayerData *pd = PlayerDataGetByUID(uid);
 			if (pd == NULL || !IsPlayerAlive(pd)) continue;
 			const TActor *p = ActorGetByUID(pd->ActorUID);
-			const int distance2 =
-				DistanceSquared(actorRealPos, Vec2iFull2Real(p->Pos));
+			const float distance2 = vector2_distance_squared_to(
+				actor->Pos, p->Pos);
 			if (!closestPlayer || distance2 < minDistance2)
 			{
 				minDistance2 = distance2;
@@ -253,16 +252,16 @@ static int AICoopGetCmdNormal(TActor *actor)
 	}
 
 	// Set distance we want to stay within the lead player
-	int distanceTooFarFromPlayer = 8;
+	float distanceTooFarFromPlayer = 8.0f;
 	// If player is exiting, we want to be very close to the player
 	if (closestPlayer && closestPlayer->action == ACTORACTION_EXITING)
 	{
-		distanceTooFarFromPlayer = 2;
+		distanceTooFarFromPlayer = 2.0f;
 	}
 	if (closestPlayer && minDistance2 > SQUARED(distanceTooFarFromPlayer*16))
 	{
 		ActorSetAIState(actor, AI_STATE_FOLLOW);
-		return SmartGoto(actor, Vec2iFull2Real(closestPlayer->Pos), minDistance2);
+		return SmartGoto(actor, closestPlayer->Pos, minDistance2);
 	}
 
 	// Check if closest enemy is close enough, and visible
@@ -273,8 +272,8 @@ static int AICoopGetCmdNormal(TActor *actor)
 			actor->Pos.x, actor->Pos.y,
 			closestEnemy->Pos.x, closestEnemy->Pos.y);
 		// Also only engage if there's a clear shot
-		if (minEnemyDistance > 0 && minEnemyDistance < ((12 * 16) << 8) &&
-			AIHasClearShot(actorRealPos, Vec2iFull2Real(closestEnemy->Pos)))
+		if (minEnemyDistance > 0 && minEnemyDistance < 12 * 16 &&
+			AIHasClearShot(actor->Pos, closestEnemy->Pos))
 		{
 			ActorSetAIState(actor, AI_STATE_HUNT);
 			if (closestEnemy->uid != actor->aiContext->EnemyId)
@@ -307,8 +306,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 		if (minDistance2 > SQUARED(2*16))
 		{
 			ActorSetAIState(actor, AI_STATE_FOLLOW);
-			return SmartGoto(
-				actor, Vec2iFull2Real(closestPlayer->Pos), minDistance2);
+			return SmartGoto(actor, closestPlayer->Pos, minDistance2);
 		}
 		else if (minDistance2 < SQUARED(4*16/3))
 		{
@@ -327,27 +325,24 @@ static int AICoopGetCmdNormal(TActor *actor)
 // - If clear path, slide
 // - If non-dangerous object blocking, shoot at it
 // - If stuck for a long time, pathfind around obstructing object
-static int SmartGoto(TActor *actor, Vec2i realPos, int minDistance2)
+static int SmartGoto(
+	TActor *actor, const struct vec pos, const float minDistance2)
 {
-	int cmd = AIGoto(actor, realPos, true);
+	int cmd = AIGoto(actor, pos, true);
 	// Try to slide if there is a clear path and we are far enough away
 	if (CMD_HAS_DIRECTION(cmd) &&
-		AIHasClearPath(
-			Vec2iFull2Real(actor->Pos),
-			realPos,
-			!actor->aiContext->IsStuckTooLong) &&
-		minDistance2 > 7 * 7 * 16 * 16)
+		AIHasClearPath(actor->Pos, pos, !actor->aiContext->IsStuckTooLong) &&
+		minDistance2 > SQUARED(7 * 16))
 	{
 		cmd |= CMD_BUTTON2;
 	}
 	// If running into safe object, and we're being blocked, shoot at it
-	TObject *o = AIGetObjectRunningInto(actor, cmd);
-	Vec2i tilePos = Vec2iToTile(Vec2iFull2Real(actor->Pos));
+	const TObject *o = AIGetObjectRunningInto(actor, cmd);
+	const Vec2i tilePos = Vec2ToTile(actor->Pos);
 	if (o && ObjIsDangerous(o) &&
 		Vec2iEqual(tilePos, actor->aiContext->LastTile))
 	{
-		cmd = AIGoto(
-			actor, Vec2iNew(o->tileItem.x, o->tileItem.y), true);
+		cmd = AIGoto(actor, o->tileItem.Pos, true);
 		if (ActorGetGun(actor)->lock <= 0)
 		{
 			cmd |= CMD_BUTTON1;
@@ -368,7 +363,7 @@ static int SmartGoto(TActor *actor, Vec2i realPos, int minDistance2)
 				actor->aiContext->Goto.IsFollowing = false;
 			}
 			actor->aiContext->IsStuckTooLong = true;
-			cmd = AIGoto(actor, realPos, !actor->aiContext->IsStuckTooLong);
+			cmd = AIGoto(actor, pos, !actor->aiContext->IsStuckTooLong);
 		}
 	}
 	else
@@ -381,29 +376,28 @@ static int SmartGoto(TActor *actor, Vec2i realPos, int minDistance2)
 }
 typedef struct
 {
-	int Distance;
+	float Distance2;
 	union
 	{
 		const Objective *Objective;
 		int UID;
 	} u;
-	Vec2i Pos;
+	struct vec Pos;
 	bool IsDestructible;
 	AIObjectiveType Type;
 } ClosestObjective;
 static void FindObjectivesSortedByDistance(
 	CArray *objectives, const TActor *actor, const TActor *closestPlayer);
 static bool CanGetObjective(
-	const Vec2i objRealPos, const Vec2i actorRealPos, const TActor *player,
-	const int distanceTooFarFromPlayer);
-static int GotoObjective(TActor *actor, int objDistance);
+	const struct vec objPos, const struct vec actorPos, const TActor *player,
+	const float distanceTooFarFromPlayer);
+static int GotoObjective(TActor *actor, const float objDistance2);
 static bool TryCompleteNearbyObjective(
 	TActor *actor, const TActor *closestPlayer,
-	const int distanceTooFarFromPlayer, int *cmdOut)
+	const float distanceTooFarFromPlayer, int *cmdOut)
 {
 	AIContext *context = actor->aiContext;
 	AIObjectiveState *objState = &context->ObjectiveState;
-	const Vec2i actorRealPos = Vec2iFull2Real(actor->Pos);
 
 	// Check to see if we are already attempting to complete an objective,
 	// and that it hasn't been updated since we last checked.
@@ -426,9 +420,7 @@ static bool TryCompleteNearbyObjective(
 				const TActor *target = ActorGetByUID(objState->u.UID);
 				hasNoUpdates = target->health > 0;
 				// Update target position
-				objState->Goal = Vec2iNew(
-					target->tileItem.x,
-					target->tileItem.y);
+				objState->Goal = target->tileItem.Pos;
 			}
 			break;
 		case AI_OBJECTIVE_TYPE_PICKUP:
@@ -458,9 +450,9 @@ static bool TryCompleteNearbyObjective(
 
 	// First, check if mission complete;
 	// if so (and there's a path) go to exit
-	const Vec2i exitPos = MapGetExitPos(&gMap);
+	const struct vec exitPos = MapGetExitPos(&gMap);
 	if (CanCompleteMission(&gMission) && CanGetObjective(
-		exitPos, actorRealPos, closestPlayer, distanceTooFarFromPlayer))
+		exitPos, actor->Pos, closestPlayer, distanceTooFarFromPlayer))
 	{
 		ActorSetAIState(actor, AI_STATE_NEXT_OBJECTIVE);
 		objState->Type = AI_OBJECTIVE_TYPE_EXIT;
@@ -477,7 +469,7 @@ static bool TryCompleteNearbyObjective(
 	// Starting from the closest objectives, find one we can go to
 	CA_FOREACH(ClosestObjective, c, objectives)
 		if (CanGetObjective(
-			c->Pos, actorRealPos, closestPlayer, distanceTooFarFromPlayer))
+			c->Pos, actor->Pos, closestPlayer, distanceTooFarFromPlayer))
 		{
 			ActorSetAIState(actor, AI_STATE_NEXT_OBJECTIVE);
 			objState->Type = c->Type;
@@ -502,7 +494,7 @@ static bool TryCompleteNearbyObjective(
 				break;
 			}
 			objState->Goal = c->Pos;
-			*cmdOut = GotoObjective(actor, c->Distance);
+			*cmdOut = GotoObjective(actor, c->Distance2);
 			return true;
 		}
 	CA_FOREACH_END()
@@ -515,7 +507,6 @@ static int CompareClosestObjective(const void *v1, const void *v2);
 static void FindObjectivesSortedByDistance(
 	CArray *objectives, const TActor *actor, const TActor *closestPlayer)
 {
-	const Vec2i actorRealPos = Vec2iFull2Real(actor->Pos);
 	CArrayInit(objectives, sizeof(ClosestObjective));
 
 	// If PVP, find the closest enemy and go to them
@@ -527,12 +518,10 @@ static void FindObjectivesSortedByDistance(
 		{
 			ClosestObjective co;
 			memset(&co, 0, sizeof co);
-			co.Pos = Vec2iNew(
-				closestEnemy->tileItem.x,
-				closestEnemy->tileItem.y);
+			co.Pos = closestEnemy->tileItem.Pos;
 			co.IsDestructible = false;
 			co.Type = AI_OBJECTIVE_TYPE_KILL;
-			co.Distance = DistanceSquared(actorRealPos, co.Pos);
+			co.Distance2 = vector2_distance_squared_to(actor->Pos, co.Pos);
 			co.u.UID = closestEnemy->uid;
 			CArrayPushBack(objectives, &co);
 		}
@@ -546,7 +535,7 @@ static void FindObjectivesSortedByDistance(
 		}
 		ClosestObjective co;
 		memset(&co, 0, sizeof co);
-		co.Pos = Vec2iNew(p->tileItem.x, p->tileItem.y);
+		co.Pos = p->tileItem.Pos;
 		co.IsDestructible = false;
 		co.Type = AI_OBJECTIVE_TYPE_NORMAL;
 		switch (p->class->Type)
@@ -597,11 +586,11 @@ static void FindObjectivesSortedByDistance(
 		// Check if the pickup is actually accessible
 		// This is because random spawning may cause some pickups to be spawned
 		// in inaccessible areas
-		if (MapGetTile(&gMap, Vec2iToTile(co.Pos))->flags & MAPTILE_NO_WALK)
+		if (MapGetTile(&gMap, Vec2ToTile(co.Pos))->flags & MAPTILE_NO_WALK)
 		{
 			continue;
 		}
-		co.Distance = DistanceSquared(actorRealPos, co.Pos);
+		co.Distance2 = vector2_distance_squared_to(actor->Pos, co.Pos);
 		if (co.Type == AI_OBJECTIVE_TYPE_NORMAL)
 		{
 			const int objective = ObjectiveFromTileItem(p->tileItem.flags);
@@ -619,7 +608,7 @@ static void FindObjectivesSortedByDistance(
 		}
 		ClosestObjective co;
 		memset(&co, 0, sizeof co);
-		co.Pos = Vec2iNew(o->tileItem.x, o->tileItem.y);
+		co.Pos = o->tileItem.Pos;
 		co.IsDestructible = true;
 		co.Type = AI_OBJECTIVE_TYPE_NORMAL;
 		if (!(o->tileItem.flags & TILEITEM_OBJECTIVE))
@@ -627,7 +616,7 @@ static void FindObjectivesSortedByDistance(
 			continue;
 		}
 		// Destructible objective; go towards it and fire
-		co.Distance = DistanceSquared(actorRealPos, co.Pos);
+		co.Distance2 = vector2_distance_squared_to(actor->Pos, co.Pos);
 		if (co.Type == AI_OBJECTIVE_TYPE_NORMAL)
 		{
 			const int objective = ObjectiveFromTileItem(o->tileItem.flags);
@@ -662,10 +651,10 @@ static void FindObjectivesSortedByDistance(
 		}
 		ClosestObjective co;
 		memset(&co, 0, sizeof co);
-		co.Pos = Vec2iNew(ti->x, ti->y);
+		co.Pos = ti->Pos;
 		co.IsDestructible = false;
 		co.Type = AI_OBJECTIVE_TYPE_NORMAL;
-		co.Distance = DistanceSquared(actorRealPos, co.Pos);
+		co.Distance2 = vector2_distance_squared_to(actor->Pos, co.Pos);
 		co.u.Objective = o;
 		CArrayPushBack(objectives, &co);
 	CA_FOREACH_END()
@@ -681,15 +670,15 @@ static void FindObjectivesSortedByDistance(
 			continue;
 		}
 		// Find the nearest unexplored tile
-		const Vec2i actorTile = Vec2iToTile(actorRealPos);
+		const Vec2i actorTile = Vec2ToTile(actor->Pos);
 		const Vec2i unexploredTile = MapSearchTileAround(
 			&gMap, actorTile, MapTileIsUnexplored);
 		ClosestObjective co;
 		memset(&co, 0, sizeof co);
-		co.Pos = Vec2iCenterOfTile(unexploredTile);
+		co.Pos = Vec2CenterOfTile(unexploredTile);
 		co.IsDestructible = false;
 		co.Type = AI_OBJECTIVE_TYPE_NORMAL;
-		co.Distance = DistanceSquared(actorRealPos, co.Pos);
+		co.Distance2 = vector2_distance_squared_to(actor->Pos, co.Pos);
 		co.u.Objective = o;
 		CArrayPushBack(objectives, &co);
 	CA_FOREACH_END()
@@ -756,74 +745,73 @@ static int CompareClosestObjective(const void *v1, const void *v2)
 {
 	const ClosestObjective *c1 = v1;
 	const ClosestObjective *c2 = v2;
-	if (c1->Distance < c2->Distance)
+	if (c1->Distance2 < c2->Distance2)
 	{
 		return -1;
 	}
-	else if (c1->Distance > c2->Distance)
+	else if (c1->Distance2 > c2->Distance2)
 	{
 		return 1;
 	}
 	return 0;
 }
 static bool IsPosCloseEnoughToPlayer(
-	const Vec2i realPos, const TActor *player,
-	const int distanceTooFarFromPlayer);
+	const struct vec pos, const TActor *player,
+	const float distanceTooFarFromPlayer);
 static bool CanGetObjective(
-	const Vec2i objRealPos, const Vec2i actorRealPos, const TActor *player,
-	const int distanceTooFarFromPlayer)
+	const struct vec objPos, const struct vec actorPos, const TActor *player,
+	const float distanceTooFarFromPlayer)
 {
 	// Check if we can complete an objective.
 	// If we don't need to follow any player, then only check that we can
 	// pathfind to it.
 	if (!player)
 	{
-		return AIHasPath(actorRealPos, objRealPos, true);
+		return AIHasPath(actorPos, objPos, true);
 	}
 	// If we need to stick close to a player, then check that it is both:
 	// - Close enough from the lead player
 	// - In line of sight from us
-	if (!IsPosCloseEnoughToPlayer(
-		objRealPos, player, distanceTooFarFromPlayer))
+	if (!IsPosCloseEnoughToPlayer(objPos, player, distanceTooFarFromPlayer))
 	{
 		return false;
 	}
-	return AIHasClearPath(actorRealPos, objRealPos, true);
+	return AIHasClearPath(actorPos, objPos, true);
 }
 static bool IsPosCloseEnoughToPlayer(
-	const Vec2i realPos, const TActor *player,
-	const int distanceTooFarFromPlayer)
+	const struct vec pos, const TActor *player,
+	const float distanceTooFarFromPlayer)
 {
 	if (!player)
 	{
 		return true;
 	}
-	const int distanceFromPlayer2 =
-		DistanceSquared(realPos, Vec2iFull2Real(player->Pos));
+	const float distanceFromPlayer2 =
+		vector2_distance_squared_to(pos, player->Pos);
 	const int distanceMax2 = SQUARED(distanceTooFarFromPlayer * 16);
 	return distanceFromPlayer2 < distanceMax2;
 }
 // Navigate to the current objective
 // If the objective is destructible and it makes sense to shoot it,
 // shoot at it as well
-static int GotoObjective(TActor *actor, int objDistance)
+static int GotoObjective(TActor *actor, const float objDistance2)
 {
 	const AIObjectiveState *objState = &actor->aiContext->ObjectiveState;
-	const Vec2i goal = objState->Goal;
+	const struct vec goal = objState->Goal;
 	int cmd = 0;
 	// Check to see if we need to go any closer to the objective
 	const bool isDestruction =
 		objState->Type == AI_OBJECTIVE_TYPE_NORMAL && objState->IsDestructible;
 	if (!isDestruction ||
-		DistanceSquared(Vec2iFull2Real(actor->Pos), goal) > 3 * 16 * 16 ||
-		!AIHasClearShot(Vec2iFull2Real(actor->Pos), goal))
+		vector2_distance_squared_to(actor->Pos, goal) > SQUARED(3 * 16) ||
+		!AIHasClearShot(actor->Pos, goal))
 	{
-		cmd = SmartGoto(actor, goal, objDistance);
+		cmd = SmartGoto(actor, goal, objDistance2);
 	}
 	else if (isDestruction && ActorGetGun(actor)->lock <= 0)
 	{
-		cmd = AIHunt(actor, Vec2iReal2FullCentered(goal));
-		if (AIHasClearShot(Vec2iFull2Real(actor->Pos), goal))
+		cmd = AIHunt(actor, goal);
+		if (AIHasClearShot(actor->Pos, goal))
 		{
 			 cmd |= CMD_BUTTON1;
 		}

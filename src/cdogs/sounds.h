@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -60,6 +60,7 @@
 #include "c_array.h"
 #include "c_hashmap/hashmap.h"
 #include "defs.h"
+#include "mathc/mathc.h"
 #include "sys_config.h"
 #include "utils.h"
 #include "vector.h"
@@ -101,10 +102,10 @@ typedef struct
 	int channels;
 
 	// Two sets of ears for 4-player split screen
-	Vec2i earLeft1;
-	Vec2i earLeft2;
-	Vec2i earRight1;
-	Vec2i earRight2;
+	struct vec earLeft1;
+	struct vec earLeft2;
+	struct vec earRight1;
+	struct vec earRight2;
 
 	map_t sounds;		// of SoundData
 	map_t customSounds;	// of SoundData
@@ -136,15 +137,15 @@ void SoundReconfigure(SoundDevice *s);
 void SoundClear(map_t sounds);
 void SoundTerminate(SoundDevice *device, const bool waitForSoundsComplete);
 void SoundPlay(SoundDevice *device, Mix_Chunk *data);
-void SoundSetEarsSide(const bool isLeft, const Vec2i pos);
-void SoundSetEar(const bool isLeft, const int idx, Vec2i pos);
-void SoundSetEars(Vec2i pos);
-void SoundPlayAt(SoundDevice *device, Mix_Chunk *data, const Vec2i pos);
+void SoundSetEarsSide(const bool isLeft, const struct vec pos);
+void SoundSetEar(const bool isLeft, const int idx, const struct vec pos);
+void SoundSetEars(const struct vec pos);
+void SoundPlayAt(SoundDevice *device, Mix_Chunk *data, const struct vec pos);
 
 // Play a sound but with distance added
 // Simulates a quieter sound by adding distance attenuation
 void SoundPlayAtPlusDistance(
 	SoundDevice *device, Mix_Chunk *data,
-	const Vec2i pos, const int plusDistance);
+	const struct vec pos, const int plusDistance);
 
 Mix_Chunk *StrSound(const char *s);

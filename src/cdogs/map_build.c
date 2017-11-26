@@ -106,8 +106,7 @@ void MapSetupTilesAndWalls(Map *map, const Mission *m)
 	// Randomly change normal floor tiles to alternative floor tiles
 	for (int i = 0; i < map->Size.x*map->Size.y / 22; i++)
 	{
-		Tile *t = MapGetTile(
-			map, Vec2iNew(rand() % map->Size.x, rand() % map->Size.y));
+		Tile *t = MapGetTile(map, MapGetRandomTile(map));
 		if (TileIsNormalFloor(t))
 		{
 			TileSetAlternateFloor(t, PicManagerGetMaskedStylePic(
@@ -117,8 +116,7 @@ void MapSetupTilesAndWalls(Map *map, const Mission *m)
 	}
 	for (int i = 0; i < map->Size.x*map->Size.y / 16; i++)
 	{
-		Tile *t = MapGetTile(
-			map, Vec2iNew(rand() % map->Size.x, rand() % map->Size.y));
+		Tile *t = MapGetTile(map, MapGetRandomTile(map));
 		if (TileIsNormalFloor(t))
 		{
 			TileSetAlternateFloor(t, PicManagerGetMaskedStylePic(
@@ -271,11 +269,6 @@ int MapIsValidStartForWall(
 	return 1;
 }
 
-Vec2i MapGetRandomTile(const Map *map)
-{
-	return Vec2iNew(rand() % map->Size.x, rand() % map->Size.y);
-}
-
 Vec2i MapGetRoomSize(const RoomParams r, const int doorMin)
 {
 	// Work out dimensions of room
@@ -283,8 +276,7 @@ Vec2i MapGetRoomSize(const RoomParams r, const int doorMin)
 	const int roomMin = MAX(r.Min, doorMin + 4);
 	const int roomMax = MAX(r.Max, doorMin + 4);
 	return Vec2iNew(
-		rand() % (roomMax - roomMin + 1) + roomMin,
-		rand() % (roomMax - roomMin + 1) + roomMin);
+		RAND_INT(roomMin, roomMax + 1), RAND_INT(roomMin, roomMax + 1));
 }
 
 void MapMakeRoom(Map *map, const Vec2i pos, const Vec2i size, const bool walls)

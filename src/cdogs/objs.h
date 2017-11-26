@@ -60,7 +60,7 @@
 
 #define AMMO_SPAWNER_RESPAWN_TICKS (FPS_FRAMELIMIT * 30)
 
-#define SHOT_IMPULSE_DIVISOR 25
+#define SHOT_IMPULSE_FACTOR 0.04f
 
 
 typedef struct
@@ -80,7 +80,8 @@ typedef struct MobileObject
 	int ActorUID;	// unique ID of actor that owns this object
 					// (prevent self collision)
 	const BulletClass *bulletClass;
-	int x, y, z;
+	struct vec Pos;
+	int z;
 	int dz;
 	int count;
 	int range;
@@ -102,7 +103,7 @@ bool HasHitSound(
 	const TileItemKind targetKind, const int targetUID,
 	const special_damage_e special, const bool allowFriendlyHitSound);
 void Damage(
-	const Vec2i hitVector,
+	const struct vec hitVector,
 	const int power,
 	const double mass,
 	const int flags, const int playerUID, const int uid,

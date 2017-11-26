@@ -82,8 +82,7 @@ color_t colorExit = { 255, 255, 255, 255 };
 
 static void DisplayPlayer(const TActor *player, Vec2i pos, const int scale)
 {
-	Vec2i playerPos = Vec2iToTile(
-		Vec2iNew(player->tileItem.x, player->tileItem.y));
+	const Vec2i playerPos = Vec2ToTile(player->tileItem.Pos);
 	pos = Vec2iAdd(pos, Vec2iScale(playerPos, scale));
 	if (scale >= 2)
 	{
@@ -98,7 +97,7 @@ static void DisplayPlayer(const TActor *player, Vec2i pos, const int scale)
 static void DisplayObjective(
 	TTileItem *t, int objectiveIndex, Vec2i pos, int scale, int flags)
 {
-	Vec2i objectivePos = Vec2iNew(t->x / TILE_WIDTH, t->y / TILE_HEIGHT);
+	const Vec2i objectivePos = Vec2ToTile(t->Pos);
 	const Objective *o =
 		CArrayGet(&gMission.missionData->Objectives, objectiveIndex);
 	color_t color = o->color;
@@ -193,7 +192,7 @@ color_t DoorColor(int x, int y)
 
 void DrawDot(TTileItem *t, color_t color, Vec2i pos, int scale)
 {
-	Vec2i dotPos = Vec2iNew(t->x / TILE_WIDTH, t->y / TILE_HEIGHT);
+	const Vec2i dotPos = Vec2ToTile(t->Pos);
 	pos = Vec2iAdd(pos, Vec2iScale(dotPos, scale));
 	Draw_Rect(pos.x, pos.y, scale, scale, color);
 }

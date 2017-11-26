@@ -51,7 +51,7 @@ void GrafxMakeRandomBackground(
 	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES), device);
 	co->MissionIndex = 0;
 	GrafxMakeBackground(
-		device, &buffer, co, mo, map, tint, false, Vec2iZero(), NULL);
+		device, &buffer, co, mo, map, tint, false, vector2_zero(), NULL);
 	DrawBufferTerminate(&buffer);
 	MissionOptionsTerminate(mo);
 	CampaignSettingTerminate(&co->Setting);
@@ -59,19 +59,19 @@ void GrafxMakeRandomBackground(
 
 static void DrawBackground(
 	GraphicsDevice *g, SDL_Texture *t, DrawBuffer *buffer, Map *map,
-	const HSV tint, const Vec2i pos, GrafxDrawExtra *extra);
+	const HSV tint, const struct vec pos, GrafxDrawExtra *extra);
 void GrafxDrawBackground(
 	GraphicsDevice *g, DrawBuffer *buffer,
-	const HSV tint, const Vec2i pos, GrafxDrawExtra *extra)
+	const HSV tint, const struct vec pos, GrafxDrawExtra *extra)
 {
 	if (g->cachedConfig.SecondWindow)
 	{
 		DrawBackground(
 			g, g->bkg, buffer, &gMap, tint,
-			Vec2iNew(pos.x - g->cachedConfig.Res.x / 2, pos.y), extra);
+			to_vector2(pos.x - g->cachedConfig.Res.x / 2, pos.y), extra);
 		DrawBackground(
 			g, g->bkg2, buffer, &gMap, tint,
-			Vec2iNew(pos.x + g->cachedConfig.Res.x / 2, pos.y), extra);
+			to_vector2(pos.x + g->cachedConfig.Res.x / 2, pos.y), extra);
 	}
 	else
 	{
@@ -80,7 +80,7 @@ void GrafxDrawBackground(
 }
 static void DrawBackground(
 	GraphicsDevice *g, SDL_Texture *t, DrawBuffer *buffer, Map *map,
-	const HSV tint, const Vec2i pos, GrafxDrawExtra *extra)
+	const HSV tint, const struct vec pos, GrafxDrawExtra *extra)
 {
 	DrawBufferSetFromMap(buffer, map, pos, X_TILES);
 	DrawBufferDraw(buffer, Vec2iZero(), extra);
@@ -100,7 +100,7 @@ static void DrawBackground(
 	BlitClearBuf(g);
 }
 
-void GrafxRedrawBackground(GraphicsDevice *g, const Vec2i pos)
+void GrafxRedrawBackground(GraphicsDevice *g, const struct vec pos)
 {
 	memset(g->buf, 0, GraphicsGetMemSize(&g->cachedConfig));
 	DrawBuffer buffer;
@@ -115,7 +115,7 @@ void GrafxRedrawBackground(GraphicsDevice *g, const Vec2i pos)
 void GrafxMakeBackground(
 	GraphicsDevice *device, DrawBuffer *buffer,
 	CampaignOptions *co, struct MissionOptions *mo, Map *map, HSV tint,
-	const bool isEditor, Vec2i pos, GrafxDrawExtra *extra)
+	const bool isEditor, struct vec pos, GrafxDrawExtra *extra)
 {
 	CampaignAndMissionSetup(co, mo);
 	GameEventsInit(&gGameEvents);
@@ -130,7 +130,7 @@ void GrafxMakeBackground(
 	}
 	else
 	{
-		pos = Vec2iCenterOfTile(Vec2iScaleDiv(map->Size, 2));
+		pos = Vec2CenterOfTile(Vec2iScaleDiv(map->Size, 2));
 	}
 	// Process the events that place dynamic objects
 	HandleGameEvents(&gGameEvents, NULL, NULL, NULL);

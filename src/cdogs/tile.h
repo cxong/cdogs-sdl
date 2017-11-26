@@ -51,6 +51,7 @@
 #include <stdbool.h>
 
 #include "c_array.h"
+#include "mathc/mathc.h"
 #include "pic.h"
 #include "pic_manager.h"
 #include "pics.h"
@@ -116,9 +117,8 @@ typedef struct
 typedef void (*TileItemDrawFunc)(const Vec2i, const TileItemDrawFuncData *);
 typedef struct TileItem
 {
-	int x, y;
-	// Velocity in full coordinates
-	Vec2i VelFull;
+	struct vec Pos;
+	struct vec Vel;
 	Vec2i size;
 	TileItemKind kind;
 	int id;	// Id of item (actor, mobobj or obj)
@@ -154,7 +154,7 @@ typedef struct
 Tile TileNone(void);
 void TileInit(Tile *t);
 void TileDestroy(Tile *t);
-bool IsTileItemInsideTile(TTileItem *i, Vec2i tilePos);
+bool IsTileItemInsideTile(const TTileItem *i, const Vec2i tilePos);
 bool TileCanSee(Tile *t);
 bool TileCanWalk(const Tile *t);
 bool TileIsNormalFloor(const Tile *t);
@@ -162,6 +162,9 @@ bool TileIsClear(const Tile *t);
 bool TileHasCharacter(Tile *t);
 void TileSetAlternateFloor(Tile *t, NamedPic *p);
 
+void TileItemInit(
+	TTileItem *t, const int id, const TileItemKind kind, const Vec2i size,
+	const int flags);
 void TileItemUpdate(TTileItem *t, const int ticks);
 
 TTileItem *ThingIdGetTileItem(const ThingId *tid);

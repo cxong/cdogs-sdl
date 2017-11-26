@@ -112,6 +112,17 @@ NVec2i Vec2i2Net(const Vec2i v)
 	nv.y = v.y;
 	return nv;
 }
+struct vec NetToVec2(const NVec2 v)
+{
+	return to_vector2(v.x, v.y);
+}
+NVec2 Vec2ToNet(const struct vec v)
+{
+	NVec2 nv;
+	nv.x = v.x;
+	nv.y = v.y;
+	return nv;
+}
 color_t Net2Color(const NColor c)
 {
 	color_t co;

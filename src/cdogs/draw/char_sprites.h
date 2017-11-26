@@ -29,6 +29,7 @@
 
 #include "c_hashmap/hashmap.h"
 #include "defs.h"
+#include "mathc/mathc.h"
 #include "utils.h"
 
 typedef struct
@@ -41,7 +42,7 @@ typedef struct
 		// of CArray of Vec2i, mapped by animation and indexed by frame
 		map_t Frame[BODY_PART_COUNT];
 		// Offsets by direction
-		Vec2i Dir[BODY_PART_COUNT][DIRECTION_COUNT];
+		struct vec Dir[BODY_PART_COUNT][DIRECTION_COUNT];
 	} Offsets;
 } CharSprites;
 typedef struct

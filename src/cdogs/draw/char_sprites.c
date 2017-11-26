@@ -102,7 +102,8 @@ bail:
 	tinydir_close(&dir);
 }
 static map_t LoadFrameOffsets(yajl_val node, const char *path);
-static void LoadDirOffsets(Vec2i *offsets, yajl_val node, const char *path);
+static void LoadDirOffsets(
+	struct vec *offsets, yajl_val node, const char *path);
 static CharSprites *CharSpritesLoadJSON(const char *name, const char *path)
 {
 	CharSprites *c = NULL;
@@ -177,7 +178,8 @@ static map_t LoadFrameOffsets(yajl_val node, const char *path)
 	}
 	return offsets;
 }
-static void LoadDirOffsets(Vec2i *offsets, yajl_val node, const char *path)
+static void LoadDirOffsets(
+	struct vec *offsets, yajl_val node, const char *path)
 {
 	const yajl_array offsetsArray = YAJL_GET_ARRAY(YAJLFindNode(node, path));
 	if (offsetsArray == NULL)
@@ -186,7 +188,7 @@ static void LoadDirOffsets(Vec2i *offsets, yajl_val node, const char *path)
 	}
 	for (direction_e d = DIRECTION_UP; d < DIRECTION_COUNT; d++)
 	{
-		offsets[d] = YAJL_GET_VEC2I(offsetsArray->values[d]);
+		offsets[d] = Vec2iToVec2(YAJL_GET_VEC2I(offsetsArray->values[d]));
 	}
 }
 

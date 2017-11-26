@@ -46,8 +46,7 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __DRAW_BUFFER
-#define __DRAW_BUFFER
+#pragma once
 
 #include "map.h"
 
@@ -67,8 +66,7 @@ void DrawBufferInit(DrawBuffer *b, Vec2i size, GraphicsDevice *g);
 void DrawBufferTerminate(DrawBuffer *b);
 
 void DrawBufferSetFromMap(
-	DrawBuffer *buffer, Map *map, Vec2i origin, int width);
+	DrawBuffer *buffer, const Map *map, const struct vec origin,
+	const int width);
 void DrawBufferFix(DrawBuffer *buffer);
 void DrawBufferSortDisplayList(DrawBuffer *buffer);
-
-#endif

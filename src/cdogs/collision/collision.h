@@ -87,29 +87,32 @@ typedef struct
 	bool IsPVP;
 } CollisionParams;
 
-bool IsCollisionWithWall(const Vec2i pos, const Vec2i fullSize);
+bool IsCollisionWithWall(const struct vec pos, const Vec2i size2);
 // Check collision of an object with a diamond shape
-bool IsCollisionDiamond(const Map *map, const Vec2i pos, const Vec2i fullSize);
+bool IsCollisionDiamond(
+	const Map *map, const struct vec pos, const Vec2i size2);
 
 // Get all TTileItem that overlap with a target TTileItem, with callback.
 // The callback returns bool continue, as multiple callbacks can result.
 typedef bool (*CollideItemFunc)(
-	TTileItem *, void *, const Vec2i, const Vec2i, const Vec2i);
+	TTileItem *, void *, const struct vec, const struct vec, const struct vec);
 typedef bool (*CheckWallFunc)(const Vec2i);
-typedef bool (*CollideWallFunc)(const Vec2i, void *, const Vec2i, const Vec2i);
+typedef bool (*CollideWallFunc)(
+	const Vec2i, void *, const struct vec, const struct vec);
 void OverlapTileItems(
-	const TTileItem *item, const Vec2i pos, const Vec2i size,
+	const TTileItem *item, const struct vec pos, const Vec2i size,
 	const CollisionParams params, CollideItemFunc func, void *data,
 	CheckWallFunc checkWallFunc, CollideWallFunc wallFunc, void *wallData);
 // Get the first TTileItem that overlaps
 TTileItem *OverlapGetFirstItem(
-	const TTileItem *item, const Vec2i pos, const Vec2i size,
+	const TTileItem *item, const struct vec pos, const Vec2i size,
 	const CollisionParams params);
 
 bool AABBOverlap(
-	const Vec2i pos1, const Vec2i pos2, const Vec2i size1, const Vec2i size2);
+	const struct vec pos1, const struct vec pos2,
+	const Vec2i size1, const Vec2i size2);
 
-// Resolve wall bounces; all coordinates in full
-void GetWallBouncePosVelFull(
-	const Vec2i pos, const Vec2i vel, const Vec2i colPos,
-	const Vec2i colNormal, Vec2i *outPos, Vec2i *outVel);
+// Resolve wall bounces
+void GetWallBouncePosVel(
+	const struct vec pos, const struct vec vel, const struct vec colPos,
+	const struct vec colNormal, struct vec *outPos, struct vec *outVel);

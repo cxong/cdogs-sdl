@@ -72,8 +72,7 @@ typedef struct
 		CPic Pic;
 		char *Text;
 	} u;
-	// Coordinates are in full
-	Vec2i Pos;
+	struct vec Pos;
 	int Z;
 	double Angle;
 	int DZ;
@@ -88,9 +87,9 @@ extern CArray gParticles;	// of Particle
 typedef struct
 {
 	const ParticleClass *Class;
-	Vec2i FullPos;
+	struct vec Pos;
 	int Z;
-	Vec2i Vel;
+	struct vec Vel;
 	double Angle;
 	int DZ;
 	double Spin;

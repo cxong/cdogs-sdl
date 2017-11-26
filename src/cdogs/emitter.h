@@ -1,7 +1,7 @@
 /*
 C-Dogs SDL
 A port of the legendary (and fun) action/arcade cdogs.
-Copyright (c) 2016, Cong Xu
+Copyright (c) 2016-2017 Cong Xu
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -32,9 +32,9 @@ POSSIBILITY OF SUCH DAMAGE.
 typedef struct
 {
 	const ParticleClass *p;
-	Vec2i offset;
-	int minSpeed;
-	int maxSpeed;
+	struct vec offset;
+	float minSpeed;
+	float maxSpeed;
 	int minDZ;
 	int maxDZ;
 	double minRotation;
@@ -42,8 +42,9 @@ typedef struct
 } Emitter;
 
 void EmitterInit(
-	Emitter *em, const ParticleClass *p, const Vec2i offset,
-	const int minSpeed, const int maxSpeed, const int minDZ, const int maxDZ,
+	Emitter *em, const ParticleClass *p, const struct vec offset,
+	const float minSpeed, const float maxSpeed,
+	const int minDZ, const int maxDZ,
 	double minRotation, double maxRotation);
 void EmitterStart(
-	Emitter *em, const Vec2i fullPos, const int z, const Vec2i vel);
+	Emitter *em, const struct vec pos, const int z, const struct vec vel);

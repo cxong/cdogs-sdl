@@ -152,9 +152,9 @@ CollisionTeam CalcCollisionTeam(const bool isActor, const TActor *actor)
 	return COLLISIONTEAM_BAD;
 }
 
-bool IsCollisionWithWall(const Vec2i pos, const Vec2i fullSize)
+bool IsCollisionWithWall(const struct vec pos, const Vec2i size2)
 {
-	Vec2i size = Vec2iScaleDiv(fullSize, 2);
+	const Vec2i size = Vec2iScaleDiv(size2, 2);
 	if (pos.x - size.x < 0 ||
 		pos.y - size.y < 0 ||
 		pos.x + size.x >= gMap.Size.x * TILE_WIDTH ||
@@ -192,11 +192,12 @@ bool IsCollisionWithWall(const Vec2i pos, const Vec2i fullSize)
 //       x   w
 //           w
 // Where 'x' denotes the bounding diamond, and 'w' represents a wall corner.
-bool IsCollisionDiamond(const Map *map, const Vec2i pos, const Vec2i fullSize)
+bool IsCollisionDiamond(
+	const Map *map, const struct vec pos, const Vec2i size2)
 {
 	const Vec2i mapSize =
 		Vec2iNew(map->Size.x * TILE_WIDTH, map->Size.y * TILE_HEIGHT);
-	const Vec2i size = Vec2iScaleDiv(fullSize, 2);
+	const Vec2i size = Vec2iScaleDiv(size2, 2);
 	if (pos.x - size.x < 0 || pos.x + size.x >= mapSize.x ||
 		pos.y - size.y < 0 || pos.y + size.y >= mapSize.y)
 	{
@@ -213,7 +214,7 @@ bool IsCollisionDiamond(const Map *map, const Vec2i pos, const Vec2i fullSize)
 	for (int i = 0; i < size.x; i++)
 	{
 		const int y = (int)Round((-size.x + i)* gradient);
-		const Vec2i p = Vec2iAdd(pos, Vec2iNew(i, y));
+		const struct vec p = vector2_add(pos, to_vector2(i, y));
 		if (HitWall(p.x, p.y))
 		{
 			return true;
@@ -223,7 +224,7 @@ bool IsCollisionDiamond(const Map *map, const Vec2i pos, const Vec2i fullSize)
 	for (int i = 0; i < size.x; i++)
 	{
 		const int y = (int)Round(i * gradient);
-		const Vec2i p = Vec2iAdd(pos, Vec2iNew(size.x - i, y));
+		const struct vec p = vector2_add(pos, to_vector2(size.x - i, y));
 		if (HitWall(p.x, p.y))
 		{
 			return true;
@@ -233,7 +234,7 @@ bool IsCollisionDiamond(const Map *map, const Vec2i pos, const Vec2i fullSize)
 	for (int i = 0; i < size.x; i++)
 	{
 		const int y = (int)Round((size.x - i) * gradient);
-		const Vec2i p = Vec2iAdd(pos, Vec2iNew(-i, y));
+		const struct vec p = vector2_add(pos, to_vector2(-i, y));
 		if (HitWall(p.x, p.y))
 		{
 			return true;
@@ -243,7 +244,7 @@ bool IsCollisionDiamond(const Map *map, const Vec2i pos, const Vec2i fullSize)
 	for (int i = 0; i < size.x; i++)
 	{
 		const int y = (int)Round(-i * gradient);
-		const Vec2i p = Vec2iAdd(pos, Vec2iNew(-size.x + i, y));
+		const struct vec p = vector2_add(pos, to_vector2(-size.x + i, y));
 		if (HitWall(p.x, p.y))
 		{
 			return true;
@@ -253,10 +254,12 @@ bool IsCollisionDiamond(const Map *map, const Vec2i pos, const Vec2i fullSize)
 }
 
 bool AABBOverlap(
-	const Vec2i pos1, const Vec2i pos2, const Vec2i size1, const Vec2i size2)
+	const struct vec pos1, const struct vec pos2,
+	const Vec2i size1, const Vec2i size2)
 {
 	// Use Minkowski addition to check overlap of two rects
-	const Vec2i d = Vec2iNew(abs(pos1.x - pos2.x), abs(pos1.y - pos2.y));
+	const struct vec d = to_vector2(
+		fabsf(pos1.x - pos2.x), fabsf(pos1.y - pos2.y));
 	const Vec2i r = Vec2iScaleDiv(Vec2iAdd(size1, size2), 2);
 	return d.x < r.x && d.y < r.y;
 }
@@ -286,12 +289,13 @@ static bool CheckParams(
 
 static void AddPosToTileCache(void *data, Vec2i pos);
 static bool CheckOverlaps(
-	const TTileItem *item, const Vec2i pos, const Vec2i vel, const Vec2i size,
+	const TTileItem *item, const struct vec pos, const struct vec vel,
+	const Vec2i size,
 	const CollisionParams params, CollideItemFunc func, void *data,
 	CheckWallFunc checkWallFunc, CollideWallFunc wallFunc, void *wallData,
 	const Vec2i tilePos);
 void OverlapTileItems(
-	const TTileItem *item, const Vec2i pos, const Vec2i size,
+	const TTileItem *item, const struct vec pos, const Vec2i size,
 	const CollisionParams params, CollideItemFunc func, void *data,
 	CheckWallFunc checkWallFunc, CollideWallFunc wallFunc, void *wallData)
 {
@@ -300,14 +304,13 @@ void OverlapTileItems(
 	AlgoLineDrawData drawData;
 	drawData.Draw = AddPosToTileCache;
 	drawData.data = &gCollisionSystem.tileCache;
-	const Vec2i posReal = Vec2iFull2Real(pos);
-	const Vec2i vel = Vec2iFull2Real(item->VelFull);
-	BresenhamLineDraw(posReal, Vec2iAdd(posReal, vel), &drawData);
+	BresenhamLineDraw(
+		Vec2ToVec2i(pos), Vec2ToVec2i(vector2_add(pos, item->Vel)), &drawData);
 
 	// Check collisions with all tiles in the cache
 	CA_FOREACH(const Vec2i, dtv, gCollisionSystem.tileCache)
 		if (!CheckOverlaps(
-			item, pos, item->VelFull, size, params, func, data,
+			item, pos, item->Vel, size, params, func, data,
 			checkWallFunc, wallFunc, wallData,
 			*dtv))
 		{
@@ -322,12 +325,13 @@ static void AddPosToTileCache(void *data, Vec2i pos)
 	TileCacheAdd(tileCache, tv);
 }
 static bool CheckOverlaps(
-	const TTileItem *item, const Vec2i pos, const Vec2i vel, const Vec2i size,
+	const TTileItem *item, const struct vec pos, const struct vec vel,
+	const Vec2i size,
 	const CollisionParams params, CollideItemFunc func, void *data,
 	CheckWallFunc checkWallFunc, CollideWallFunc wallFunc, void *wallData,
 	const Vec2i tilePos)
 {
-	Vec2i colA, colB, normal;
+	struct vec colA, colB, normal;
 	// Check item collisions
 	if (func != NULL)
 	{
@@ -339,9 +343,8 @@ static bool CheckOverlaps(
 				continue;
 			}
 			if (!MinkowskiHexCollide(
-				pos, vel, Vec2iReal2Full(size),
-				Vec2iReal2Full(Vec2iNew(ti->x, ti->y)), ti->VelFull,
-				Vec2iReal2Full(ti->size), &colA, &colB, &normal))
+				pos, vel, size, ti->Pos, ti->Vel,
+				ti->size, &colA, &colB, &normal))
 			{
 				continue;
 			}
@@ -360,9 +363,9 @@ static bool CheckOverlaps(
 		const Vec2i sizeForWall =
 			item->kind == KIND_MOBILEOBJECT ? Vec2iZero() : size;
 		if (MinkowskiHexCollide(
-			pos, vel, Vec2iReal2Full(sizeForWall),
-			Vec2iReal2Full(Vec2iCenterOfTile(tilePos)), Vec2iZero(),
-			Vec2iReal2Full(TILE_SIZE), &colA, &colB, &normal) &&
+			pos, vel, sizeForWall,
+			Vec2CenterOfTile(tilePos), vector2_zero(),
+			TILE_SIZE, &colA, &colB, &normal) &&
 			!wallFunc(tilePos, wallData, colA, normal))
 		{
 			return false;
@@ -372,10 +375,10 @@ static bool CheckOverlaps(
 }
 
 static bool OverlapGetFirstItemCallback(
-	TTileItem *ti, void *data, const Vec2i colA, const Vec2i colB,
-	const Vec2i normal);
+	TTileItem *ti, void *data, const struct vec colA, const struct vec colB,
+	const struct vec normal);
 TTileItem *OverlapGetFirstItem(
-	const TTileItem *item, const Vec2i pos, const Vec2i size,
+	const TTileItem *item, const struct vec pos, const Vec2i size,
 	const CollisionParams params)
 {
 	TTileItem *firstItem = NULL;
@@ -385,8 +388,8 @@ TTileItem *OverlapGetFirstItem(
 	return firstItem;
 }
 static bool OverlapGetFirstItemCallback(
-	TTileItem *ti, void *data, const Vec2i colA, const Vec2i colB,
-	const Vec2i normal)
+	TTileItem *ti, void *data, const struct vec colA, const struct vec colB,
+	const struct vec normal)
 {
 	UNUSED(colA);
 	UNUSED(colB);
@@ -415,30 +418,30 @@ static bool CheckParams(
 	return true;
 }
 
-void GetWallBouncePosVelFull(
-	const Vec2i pos, const Vec2i vel, const Vec2i colPos,
-	const Vec2i colNormal, Vec2i *outPos, Vec2i *outVel)
+void GetWallBouncePosVel(
+	const struct vec pos, const struct vec vel, const struct vec colPos,
+	const struct vec colNormal, struct vec *outPos, struct vec *outVel)
 {
-	const Vec2i velBeforeCol = Vec2iMinus(colPos, pos);
-	const Vec2i velAfterCol = Vec2iMinus(vel, velBeforeCol);
+	const struct vec velBeforeCol = vector2_subtract(colPos, pos);
+	const struct vec velAfterCol = vector2_subtract(vel, velBeforeCol);
 
 	// If normal is zero, this means we were in collision from the start
-	if (Vec2iIsZero(colNormal))
+	if (vector2_is_zero(colNormal))
 	{
 		// Reverse the vector
-		*outPos = Vec2iMinus(pos, vel);
-		*outVel = Vec2iScale(vel, -1);
+		*outPos = vector2_subtract(pos, vel);
+		*outVel = vector2_scale(vel, -1);
 		return;
 	}
 
 	// Reflect the out position by the collision normal about the collision pos
-	const Vec2i velReflected = Vec2iNew(
-		colNormal.x == 0 ? velAfterCol.x : colNormal.x * abs(velAfterCol.x),
-		colNormal.y == 0 ? velAfterCol.y : colNormal.y * abs(velAfterCol.y));
-	*outPos = Vec2iAdd(colPos, velReflected);
+	const struct vec velReflected = to_vector2(
+		colNormal.x == 0 ? velAfterCol.x : colNormal.x * fabsf(velAfterCol.x),
+		colNormal.y == 0 ? velAfterCol.y : colNormal.y * fabsf(velAfterCol.y));
+	*outPos = vector2_add(colPos, velReflected);
 
 	// Out velocity follows the collision normal
-	*outVel = Vec2iNew(
-		colNormal.x == 0 ? vel.x : colNormal.x * abs(vel.x),
-		colNormal.y == 0 ? vel.y : colNormal.y * abs(vel.y));
+	*outVel = to_vector2(
+		colNormal.x == 0 ? vel.x : colNormal.x * fabsf(vel.x),
+		colNormal.y == 0 ? vel.y : colNormal.y * fabsf(vel.y));
 }

@@ -271,13 +271,14 @@ void ParticlesUpdate(CArray *particles, const int ticks)
 typedef struct
 {
 	const TTileItem *Obj;
-	Vec2i ColPos;
-	Vec2i ColNormal;
-	int ColPosDistRealSquared;
+	struct vec ColPos;
+	struct vec ColNormal;
+	float ColPosDist2;
 } HitWallData;
 static bool CheckWall(const Vec2i tilePos);
 static bool HitWallFunc(
-	const Vec2i tilePos, void *data, const Vec2i col, const Vec2i normal);
+	const Vec2i tilePos, void *data, const struct vec col,
+	const struct vec normal);
 static bool ParticleUpdate(Particle *p, const int ticks)
 {
 	switch(p->Class->Type)
@@ -289,10 +290,10 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 			break;
 	}
 	p->Count += ticks;
-	const Vec2i startPos = p->Pos;
+	const struct vec startPos = p->Pos;
 	for (int i = 0; i < ticks; i++)
 	{
-		p->Pos = Vec2iAdd(p->Pos, p->tileItem.VelFull);
+		p->Pos = vector2_add(p->Pos, p->tileItem.Vel);
 		p->Z += p->DZ;
 		if (p->Class->GravityFactor != 0)
 		{
@@ -314,7 +315,7 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 			}
 			if (p->DZ == 0 && p->Z == 0)
 			{
-				p->tileItem.VelFull = Vec2iZero();
+				p->tileItem.Vel = vector2_zero();
 				p->Spin = 0;
 				// Fell to ground, draw last
 				p->tileItem.flags |= TILEITEM_DRAW_LAST;
@@ -322,33 +323,32 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 		}
 	}
 	// Wall collision, bounce off walls
-	if (!Vec2iIsZero(p->tileItem.VelFull) && p->Class->HitsWalls)
+	if (!vector2_is_zero(p->tileItem.Vel) && p->Class->HitsWalls)
 	{
 		const CollisionParams params =
 		{
 			0, COLLISIONTEAM_NONE, IsPVP(gCampaign.Entry.Mode)
 		};
-		HitWallData data = { &p->tileItem, Vec2iZero(), Vec2iZero(), -1 };
+		HitWallData data = { &p->tileItem, vector2_zero(), vector2_zero(), -1 };
 		OverlapTileItems(
 			&p->tileItem, startPos,
 			p->tileItem.size, params, NULL, NULL,
 			CheckWall, HitWallFunc, &data);
-		if (data.ColPosDistRealSquared >= 0)
+		if (data.ColPosDist2 >= 0)
 		{
 			if (p->Class->WallBounces)
 			{
-				GetWallBouncePosVelFull(
-					startPos, p->tileItem.VelFull, data.ColPos, data.ColNormal,
-					&p->Pos, &p->tileItem.VelFull);
+				GetWallBouncePosVel(
+					startPos, p->tileItem.Vel, data.ColPos, data.ColNormal,
+					&p->Pos, &p->tileItem.Vel);
 			}
 			else
 			{
-				p->tileItem.VelFull = Vec2iZero();
+				p->tileItem.Vel = vector2_zero();
 			}
 		}
-	}
-	const Vec2i realPos = Vec2iFull2Real(p->Pos);
-	if (!MapTryMoveTileItem(&gMap, &p->tileItem, realPos))
+	}\
+	if (!MapTryMoveTileItem(&gMap, &p->tileItem, p->Pos))
 	{
 		// Out of map; destroy
 		return false;
@@ -356,26 +356,27 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 
 	// Spin
 	p->Angle += p->Spin;
-	if (p->Angle > 2 * PI)
+	if (p->Angle > 2 * M_PI)
 	{
-		p->Angle -= PI * 2;
+		p->Angle -= M_PI * 2;
 	}
 	if (p->Angle < 0)
 	{
-		p->Angle += PI * 2;
+		p->Angle += M_PI * 2;
 	}
 
 	return p->Count <= p->Range;
 }
 static void SetClosestCollision(
-	HitWallData *data, const Vec2i col, const Vec2i normal);
+	HitWallData *data, const struct vec col, const struct vec normal);
 static bool CheckWall(const Vec2i tilePos)
 {
 	const Tile *t = MapGetTile(&gMap, tilePos);
 	return t == NULL || t->flags & MAPTILE_NO_SHOOT;
 }
 static bool HitWallFunc(
-	const Vec2i tilePos, void *data, const Vec2i col, const Vec2i normal)
+	const Vec2i tilePos, void *data, const struct vec col,
+	const struct vec normal)
 {
 	UNUSED(tilePos);
 	HitWallData *hData = data;
@@ -383,15 +384,14 @@ static bool HitWallFunc(
 	return true;
 }
 static void SetClosestCollision(
-	HitWallData *data, const Vec2i col, const Vec2i normal)
+	HitWallData *data, const struct vec col, const struct vec normal)
 {
 	// Choose the best collision point (i.e. closest to origin)
-	const int d2 = DistanceSquared(
-		Vec2iFull2Real(col), Vec2iNew(data->Obj->x, data->Obj->y));
-	if (data->ColPosDistRealSquared < 0 || d2 < data->ColPosDistRealSquared)
+	const float d2 = vector2_distance_squared_to(col, data->Obj->Pos);
+	if (data->ColPosDist2 < 0 || d2 < data->ColPosDist2)
 	{
 		data->ColPos = col;
-		data->ColPosDistRealSquared = d2;
+		data->ColPosDist2 = d2;
 		data->ColNormal = normal;
 	}
 }
@@ -433,20 +433,20 @@ int ParticleAdd(CArray *particles, const AddParticle add)
 		default:
 			break;
 	}
-	p->Pos = add.FullPos;
+	p->Pos = add.Pos;
 	p->Z = add.Z;
 	p->Angle = add.Angle;
 	p->DZ = add.DZ;
 	p->Spin = add.Spin;
 	p->Range = RAND_INT(add.Class->RangeLow, add.Class->RangeHigh);
 	p->isInUse = true;
-	p->tileItem.x = p->tileItem.y = -1;
-	p->tileItem.VelFull = add.Vel;
+	p->tileItem.Pos.x = p->tileItem.Pos.y = -1;
+	p->tileItem.Vel = add.Vel;
 	p->tileItem.kind = KIND_PARTICLE;
 	p->tileItem.id = i;
 	p->tileItem.drawFunc = DrawParticle;
 	p->tileItem.drawData.MobObjId = i;
-	MapTryMoveTileItem(&gMap, &p->tileItem, Vec2iFull2Real(add.FullPos));
+	MapTryMoveTileItem(&gMap, &p->tileItem, add.Pos);
 	return i;
 }
 void ParticleDestroy(CArray *particles, const int id)

@@ -74,7 +74,7 @@ message NTileSet {
 message NMapObjectAdd {
 	required uint32 UID = 1;
 	required string MapObjectClass = 2;
-	required NVec2i Pos = 3;
+	required NVec2 Pos = 3;
 	required uint32 TileItemFlags = 4;
 	required int32 Health = 5;
 }
@@ -101,13 +101,18 @@ message NScore {
 
 message NSound {
 	required string Sound = 1;
-	required NVec2i Pos = 2;
+	required NVec2 Pos = 2;
 	required bool IsHit = 3;
 }
 
 message NVec2i {
 	required int32 x = 1;
 	required int32 y = 2;
+}
+
+message NVec2 {
+	required float x = 1;
+	required float y = 2;
 }
 
 message NGameBegin {
@@ -121,13 +126,13 @@ message NActorAdd {
 	required int32 Health = 4;
 	required int32 PlayerUID = 5 [default=-1];
 	required uint32 TileItemFlags = 6;
-	required NVec2i FullPos = 7;
+	required NVec2 Pos = 7;
 }
 
 message NActorMove {
 	required uint32 UID = 1;
-	required NVec2i Pos = 2;
-	required NVec2i MoveVel = 3;
+	required NVec2 Pos = 2;
+	required NVec2 MoveVel = 3;
 }
 
 message NActorState {
@@ -142,13 +147,13 @@ message NActorDir {
 
 message NActorSlide {
 	required uint32 UID = 1;
-	required NVec2i Vel = 2;
+	required NVec2 Vel = 2;
 }
 
 message NActorImpulse {
 	required uint32 UID = 1;
-	required NVec2i Vel = 2;
-	required NVec2i Pos = 3;
+	required NVec2 Vel = 2;
+	required NVec2 Pos = 3;
 }
 
 message NActorSwitchGun {
@@ -181,7 +186,7 @@ message NActorHit {
 	required int32 HitterPlayerUID = 3 [default=-1];
 	required int32 Special = 4;
 	required int32 Power = 5;
-	required NVec2i Vel = 6;
+	required NVec2 Vel = 6;
     required float Mass = 7;
 }
 
@@ -218,7 +223,7 @@ message NAddPickup {
 	required bool IsRandomSpawned = 3;
 	required int32 SpawnerUID = 4 [default=-1];
 	required uint32 TileItemFlags = 5;
-	required NVec2i Pos = 6;
+	required NVec2 Pos = 6;
 }
 
 message NRemovePickup {
@@ -230,9 +235,9 @@ message NBulletBounce {
 	required uint32 UID = 1;
 	required int32 HitType = 2;
 	required bool Spark = 3;
-	required NVec2i BouncePos = 4;
-	required NVec2i Pos = 5;
-	required NVec2i Vel = 6;
+	required NVec2 BouncePos = 4;
+	required NVec2 Pos = 5;
+	required NVec2 Vel = 6;
 	required bool HitSound = 7;
 }
 
@@ -243,7 +248,7 @@ message NRemoveBullet {
 message NGunReload {
 	required int32 PlayerUID = 1 [default=-1];
 	required string Gun = 2;
-	required NVec2i FullPos = 3;
+	required NVec2 Pos = 3;
 	required int32 Direction = 4;
 }
 
@@ -251,7 +256,7 @@ message NGunFire {
 	required int32 UID = 1 [default=-1];
 	required int32 PlayerUID = 2 [default=-1];
 	required string Gun = 3;
-	required NVec2i MuzzleFullPos = 4;
+	required NVec2 MuzzlePos = 4;
 	required int32 Z = 5;
 	required float Angle = 6;
 	required bool Sound = 7;
@@ -268,7 +273,7 @@ message NGunState {
 message NAddBullet {
 	required uint32 UID = 1;
 	required string BulletClass = 2;
-	required NVec2i MuzzlePos = 3;
+	required NVec2 MuzzlePos = 3;
 	required int32 MuzzleHeight = 4;
 	required float Angle = 5;
 	required int32 Elevation = 6;
@@ -302,7 +307,7 @@ message NObjectiveUpdate {
 
 message NAddKeys {
 	required uint32 KeyFlags = 1;
-	required NVec2i Pos = 2;
+	required NVec2 Pos = 2;
 }
 
 message NMissionComplete {

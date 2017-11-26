@@ -75,7 +75,8 @@ void DrawBufferTerminate(DrawBuffer *b)
 }
 
 void DrawBufferSetFromMap(
-	DrawBuffer *buffer, Map *map, Vec2i origin, int width)
+	DrawBuffer *buffer, const Map *map, const struct vec origin,
+	const int width)
 {
 	int x, y;
 	Tile *bufTile;
@@ -177,11 +178,11 @@ static int CompareY(const void *v1, const void *v2)
 {
 	const TTileItem * const *t1 = v1;
 	const TTileItem * const *t2 = v2;
-	if ((*t1)->y < (*t2)->y)
+	if ((*t1)->Pos.y < (*t2)->Pos.y)
 	{
 		return -1;
 	}
-	else if ((*t1)->y >(*t2)->y)
+	else if ((*t1)->Pos.y >(*t2)->Pos.y)
 	{
 		return 1;
 	}

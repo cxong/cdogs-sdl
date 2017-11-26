@@ -117,7 +117,7 @@ unsigned short GetAccessMask(int k)
 	return MAP_ACCESS_YELLOW << k;
 }
 
-Tile *MapGetTile(Map *map, Vec2i pos)
+Tile *MapGetTile(const Map *map, const Vec2i pos)
 {
 	if (pos.x < 0 || pos.x >= map->Size.x || pos.y < 0 || pos.y >= map->Size.y)
 	{
@@ -132,48 +132,42 @@ bool MapIsTileIn(const Map *map, const Vec2i pos)
 	return !(pos.x < 0 || pos.y < 0 ||
 		pos.x > map->Size.x - 1 || pos.y > map->Size.y - 1);
 }
-bool MapIsRealPosIn(const Map *map, const Vec2i realPos)
+static bool MapIsPosIn(const Map *map, const struct vec pos)
 {
-	// Check that the real pos is within the interior of the map
-	// Note: can't use Vec2iToTile as division will cause small
-	// negative values to appear to be 0 i.e. valid
-	return !(realPos.x < 0 || realPos.y < 0 ||
-		realPos.x / TILE_WIDTH > map->Size.x - 1 ||
-		realPos.y / TILE_HEIGHT > map->Size.y - 1);
+	// Check that the pos is within the interior of the map
+	return MapIsTileIn(map, Vec2ToTile(pos));
 }
 
 bool MapIsTileInExit(const Map *map, const TTileItem *ti)
 {
+	const Vec2i tilePos = Vec2ToTile(ti->Pos);
 	return
-		ti->x / TILE_WIDTH >= map->ExitStart.x &&
-		ti->x / TILE_WIDTH <= map->ExitEnd.x &&
-		ti->y / TILE_HEIGHT >= map->ExitStart.y &&
-		ti->y / TILE_HEIGHT <= map->ExitEnd.y;
+		tilePos.x >= map->ExitStart.x && tilePos.x <= map->ExitEnd.x &&
+		tilePos.y >= map->ExitStart.y && tilePos.y <= map->ExitEnd.y;
 }
 
 static Tile *MapGetTileOfItem(Map *map, TTileItem *t)
 {
-	Vec2i pos = Vec2iToTile(Vec2iNew(t->x, t->y));
+	const Vec2i pos = Vec2ToTile(t->Pos);
 	return MapGetTile(map, pos);
 }
 
 static void AddItemToTile(TTileItem *t, Tile *tile);
-bool MapTryMoveTileItem(Map *map, TTileItem *t, Vec2i pos)
+bool MapTryMoveTileItem(Map *map, TTileItem *t, const struct vec pos)
 {
 	// Check if we can move to new position
-	if (!MapIsRealPosIn(map, pos))
+	if (!MapIsPosIn(map, pos))
 	{
 		return false;
 	}
 	// When first initialised, position is -1
-	bool doRemove = t->x >= 0 && t->y >= 0;
-	Vec2i t1 = Vec2iToTile(Vec2iNew(t->x, t->y));
-	Vec2i t2 = Vec2iToTile(pos);
+	const bool doRemove = t->Pos.x >= 0 && t->Pos.y >= 0;
+	const Vec2i t1 = Vec2ToTile(t->Pos);
+	const Vec2i t2 = Vec2ToTile(pos);
 	// If we'll be in the same tile, do nothing
 	if (Vec2iEqual(t1, t2) && doRemove)
 	{
-		t->x = pos.x;
-		t->y = pos.y;
+		t->Pos = pos;
 		return true;
 	}
 	// Moving; remove from old tile...
@@ -182,8 +176,7 @@ bool MapTryMoveTileItem(Map *map, TTileItem *t, Vec2i pos)
 		MapRemoveTileItem(map, t);
 	}
 	// ...move and add to new tile
-	t->x = pos.x;
-	t->y = pos.y;
+	t->Pos = pos;
 	AddItemToTile(t, MapGetTile(map, t2));
 	return true;
 }
@@ -199,7 +192,7 @@ static void AddItemToTile(TTileItem *t, Tile *tile)
 
 void MapRemoveTileItem(Map *map, TTileItem *t)
 {
-	if (!MapIsRealPosIn(map, Vec2iNew(t->x, t->y)))
+	if (!MapIsPosIn(map, t->Pos))
 	{
 		return;
 	}
@@ -214,11 +207,16 @@ void MapRemoveTileItem(Map *map, TTileItem *t)
 	CASSERT(false, "Did not find element to delete");
 }
 
-static Vec2i GuessPixelCoords(Map *map)
+Vec2i MapGetRandomTile(const Map *map)
 {
-	return Vec2iNew(
-		rand() % (map->Size.x * TILE_WIDTH),
-		rand() % (map->Size.y * TILE_HEIGHT));
+	return Vec2iNew(rand() % map->Size.x, rand() % map->Size.y);
+}
+
+struct vec MapGetRandomPos(const Map *map)
+{
+	return to_vector2(
+		RAND_FLOAT(0, map->Size.x * TILE_WIDTH),
+		RAND_FLOAT(0, map->Size.y * TILE_HEIGHT));
 }
 
 unsigned short IMapGet(const Map *map, const Vec2i pos)
@@ -296,10 +294,10 @@ void MapShowExitArea(Map *map, const Vec2i exitStart, const Vec2i exitEnd)
 	}
 }
 
-Vec2i MapGetExitPos(const Map *m)
+struct vec MapGetExitPos(const Map *m)
 {
-	return Vec2iCenterOfTile(
-		Vec2iScaleDiv(Vec2iAdd(m->ExitStart, m->ExitEnd), 2));
+	return Vec2iToVec2(Vec2iCenterOfTile(
+		Vec2iScaleDiv(Vec2iAdd(m->ExitStart, m->ExitEnd), 2)));
 }
 
 // Adjacent means to the left, right, above or below
@@ -393,7 +391,7 @@ bool MapTryPlaceOneObject(
 	NMapObjectAdd amo = NMapObjectAdd_init_default;
 	amo.UID = ObjsGetNextUID();
 	strcpy(amo.MapObjectClass, mo->Name);
-	amo.Pos = Vec2i2Net(MapObjectGetPlacementPos(mo, v));
+	amo.Pos = Vec2ToNet(MapObjectGetPlacementPos(mo, v));
 	amo.TileItemFlags = MapObjectGetFlags(mo) | extraFlags;
 	amo.Health = mo->Health;
 	ObjAdd(amo);
@@ -410,14 +408,14 @@ static bool MapTileIsInLockedRoom(const Map *map, const Vec2i tilePos)
 	return IMapGet(map, tilePos) & MAP_ACCESSBITS;
 }
 
-bool MapPosIsInLockedRoom(const Map *map, const Vec2i pos)
+bool MapPosIsInLockedRoom(const Map *map, const struct vec pos)
 {
-	const Vec2i tilePos = Vec2iToTile(pos);
+	const Vec2i tilePos = Vec2ToTile(pos);
 	return MapTileIsInLockedRoom(map, tilePos);
 }
 
 void MapPlaceCollectible(
-	const struct MissionOptions *mo, const int objective, const Vec2i realPos)
+	const struct MissionOptions *mo, const int objective, const struct vec pos)
 {
 	const Objective *o = CArrayGet(&mo->missionData->Objectives, objective);
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
@@ -426,7 +424,7 @@ void MapPlaceCollectible(
 	e.u.AddPickup.IsRandomSpawned = false;
 	e.u.AddPickup.SpawnerUID = -1;
 	e.u.AddPickup.TileItemFlags = ObjectiveToTileItem(objective);
-	e.u.AddPickup.Pos = Vec2i2Net(realPos);
+	e.u.AddPickup.Pos = Vec2ToNet(pos);
 	GameEventsEnqueue(&gGameEvents, e);
 }
 static int MapTryPlaceCollectible(
@@ -441,8 +439,8 @@ static int MapTryPlaceCollectible(
 
 	while (i)
 	{
-		Vec2i v = GuessPixelCoords(map);
-		Vec2i size = Vec2iNew(COLLECTABLE_W, COLLECTABLE_H);
+		const struct vec v = MapGetRandomPos(map);
+		const Vec2i size = Vec2iNew(COLLECTABLE_W, COLLECTABLE_H);
 		if (!IsCollisionWithWall(v, size))
 		{
 			if ((!hasLockedRooms || MapPosIsInLockedRoom(map, v)) &&
@@ -457,17 +455,17 @@ static int MapTryPlaceCollectible(
 	return 0;
 }
 
-Vec2i MapGenerateFreePosition(Map *map, Vec2i size)
+struct vec MapGenerateFreePosition(Map *map, const Vec2i size)
 {
 	for (int i = 0; i < 100; i++)
 	{
-		Vec2i v = GuessPixelCoords(map);
+		const struct vec v = MapGetRandomPos(map);
 		if (!IsCollisionWithWall(v, size))
 		{
 			return v;
 		}
 	}
-	return Vec2iZero();
+	return vector2_zero();
 }
 
 typedef struct
@@ -495,7 +493,7 @@ static bool TryPlaceOneBlowup(Map *map, const Vec2i tilePos, void *data)
 }
 
 void MapPlaceKey(
-	Map *map, const struct MissionOptions *mo, const Vec2i pos,
+	Map *map, const struct MissionOptions *mo, const Vec2i tilePos,
 	const int keyIndex)
 {
 	UNUSED(map);
@@ -507,7 +505,7 @@ void MapPlaceKey(
 	e.u.AddPickup.IsRandomSpawned = false;
 	e.u.AddPickup.SpawnerUID = -1;
 	e.u.AddPickup.TileItemFlags = 0;
-	e.u.AddPickup.Pos = Vec2i2Net(Vec2iCenterOfTile(pos));
+	e.u.AddPickup.Pos = Vec2ToNet(Vec2CenterOfTile(tilePos));
 	GameEventsEnqueue(&gGameEvents, e);
 }
 
@@ -544,14 +542,14 @@ bool MapPlaceRandomTile(
 }
 bool MapPlaceRandomPos(
 	Map *map, const PlacementAccessFlags paFlags,
-	bool (*tryPlaceFunc)(Map *, const Vec2i, void *), void *data)
+	bool (*tryPlaceFunc)(Map *, const struct vec, void *), void *data)
 {
 	// Try a bunch of times to place something at a random location
 	bool locked, unlocked;
 	const int retries = GetPlacementRetries(map, paFlags, &locked, &unlocked);
 	for (int i = 0; i < retries; i++)
 	{
-		const Vec2i v = GuessPixelCoords(map);
+		const struct vec v = MapGetRandomPos(map);
 		const bool isInLocked = MapPosIsInLockedRoom(map, v);
 		if ((!locked || isInLocked) && (!unlocked || !isInLocked))
 		{
@@ -729,9 +727,9 @@ void MapLoad(
 		for (int i = 0; i < map->Size.x*map->Size.y / 45; i++)
 		{
 			// Make sure drain tiles aren't next to each other
-			v = Vec2iNew(
-				(rand() % map->Size.x) & 0xFFFFFE,
-				(rand() % map->Size.y) & 0xFFFFFE);
+			v = MapGetRandomTile(map);
+			v.x &= 0xFFFFFE;
+			v.y &= 0xFFFFFE;
 			const Tile *t = MapGetTile(map, v);
 			if (TileIsNormalFloor(t))
 			{
@@ -823,12 +821,7 @@ void MapLoadDynamic(
 			j < (mod->Density * map->Size.x * map->Size.y) / 1000;
 			j++)
 		{
-			MapTryPlaceOneObject(
-				map,
-				Vec2iNew(rand() % map->Size.x, rand() % map->Size.y),
-				mod->M,
-				0,
-				true);
+			MapTryPlaceOneObject(map, MapGetRandomTile(map), mod->M, 0, true);
 		}
 	CA_FOREACH_END()
 
@@ -900,10 +893,10 @@ static void AddKeys(Map *map)
 	}
 }
 
-bool MapIsFullPosOKforPlayer(
-	const Map *map, const Vec2i pos, const bool allowAllTiles)
+bool MapIsPosOKForPlayer(
+	const Map *map, const struct vec pos, const bool allowAllTiles)
 {
-	Vec2i tilePos = Vec2iToTile(Vec2iFull2Real(pos));
+	const Vec2i tilePos = Vec2ToTile(pos);
 	unsigned short tile = IMapGet(map, tilePos);
 	if (tile == MAP_FLOOR)
 	{
@@ -920,18 +913,16 @@ bool MapIsFullPosOKforPlayer(
 // This includes collisions that make the target illegal, such as walls
 // But it also includes item collisions, whether or not the collisions
 // are legal, e.g. item pickups, friendly collisions
-bool MapIsTileAreaClear(Map *map, const Vec2i fullPos, const Vec2i size)
+bool MapIsTileAreaClear(Map *map, const struct vec pos, const Vec2i size)
 {
-	const Vec2i realPos = Vec2iFull2Real(fullPos);
-
 	// Wall collision
-	if (IsCollisionWithWall(realPos, size))
+	if (IsCollisionWithWall(pos, size))
 	{
 		return false;
 	}
 
 	// Item collision
-	const Vec2i tv = Vec2iToTile(realPos);
+	const Vec2i tv = Vec2ToTile(pos);
 	Vec2i dv;
 	// Check collisions with all other items on this tile, in all 8 directions
 	for (dv.y = -1; dv.y <= 1; dv.y++)
@@ -952,8 +943,7 @@ bool MapIsTileAreaClear(Map *map, const Vec2i fullPos, const Vec2i size)
 			{
 				const TTileItem *ti =
 					ThingIdGetTileItem(CArrayGet(tileThings, i));
-				if (AABBOverlap(
-						realPos, Vec2iNew(ti->x, ti->y), size, ti->size))
+				if (AABBOverlap(pos, ti->Pos, size, ti->size))
 				{
 					return false;
 				}

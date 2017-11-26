@@ -113,7 +113,7 @@ static void DrawObjectiveHighlight(
 	}
 	
 	const Vec2i pos = Vec2iNew(
-		ti->x - b->xTop + offset.x, ti->y - b->yTop + offset.y);
+		ti->Pos.x - b->xTop + offset.x, ti->Pos.y - b->yTop + offset.y);
 	const int pulsePeriod = ConfigGetInt(&gConfig, "Game.FPS");
 	int alphaUnscaled =
 		(gMission.time % pulsePeriod) * 255 / (pulsePeriod / 2);

@@ -97,13 +97,11 @@ static bool TryPlacePickup(PowerupSpawner *p)
 	// Attempt to place one in out-of-sight area
 	for (int i = 0; i < 100; i++)
 	{
-		const Vec2i v = MapGenerateFreePosition(p->map, size);
-		const Vec2i fullpos = Vec2iReal2Full(v);
-		const TActor *closestPlayer = AIGetClosestPlayer(fullpos);
-		if (!Vec2iIsZero(v) &&
-			(!closestPlayer || CHEBYSHEV_DISTANCE(
-			fullpos.x, fullpos.y,
-			closestPlayer->Pos.x, closestPlayer->Pos.y) >= 256 * 150))
+		const struct vec v = MapGenerateFreePosition(p->map, size);
+		const TActor *closestPlayer = AIGetClosestPlayer(v);
+		if (!vector2_is_zero(v) &&
+			(!closestPlayer ||
+			vector2_distance_squared_to(v, closestPlayer->Pos) >= SQUARED(150)))
 		{
 			p->PlaceFunc(v, p->Data);
 			return true;
@@ -112,8 +110,8 @@ static bool TryPlacePickup(PowerupSpawner *p)
 	// Attempt to place one anyway
 	for (int i = 0; i < 100; i++)
 	{
-		const Vec2i v = MapGenerateFreePosition(p->map, size);
-		if (!Vec2iIsZero(v))
+		const struct vec v = MapGenerateFreePosition(p->map, size);
+		if (!vector2_is_zero(v))
 		{
 			p->PlaceFunc(v, p->Data);
 			return true;
@@ -131,7 +129,7 @@ void PowerupSpawnerRemoveOne(PowerupSpawner *p)
 #define HEALTH_SPAWN_TIME (20 * FPS_FRAMELIMIT)
 
 static double HealthScale(void *data);
-static void HealthPlace(const Vec2i pos, void *data);
+static void HealthPlace(const struct vec pos, void *data);
 void HealthSpawnerInit(PowerupSpawner *p, Map *map)
 {
 	PowerupSpawnerInit(p, map);
@@ -164,12 +162,12 @@ static double HealthScale(void *data)
 	// Double spawn rate if near 0 health
 	return (minHealth + maxHealth) / (maxHealth * 2.0);
 }
-static void HealthPlace(const Vec2i pos, void *data)
+static void HealthPlace(const struct vec pos, void *data)
 {
 	UNUSED(data);
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
 	e.u.AddPickup.UID = PickupsGetNextUID();
-	e.u.AddPickup.Pos = Vec2i2Net(pos);
+	e.u.AddPickup.Pos = Vec2ToNet(pos);
 	strcpy(e.u.AddPickup.PickupClass, "health");
 	e.u.AddPickup.IsRandomSpawned = true;
 	e.u.AddPickup.SpawnerUID = -1;
@@ -181,7 +179,7 @@ static void HealthPlace(const Vec2i pos, void *data)
 #define AMMO_SPAWN_TIME (20 * FPS_FRAMELIMIT)
 
 static double AmmoScale(void *data);
-static void AmmoPlace(const Vec2i pos, void *data);
+static void AmmoPlace(const struct vec pos, void *data);
 void AmmoSpawnerInit(PowerupSpawner *p, Map *map, const int ammoId)
 {
 	PowerupSpawnerInit(p, map);
@@ -224,12 +222,12 @@ static double AmmoScale(void *data)
 	// 10-fold spawn rate if near 0 ammo
 	return (minVal * 9.0 + maxVal) / (maxVal * 10.0) / numPlayersWithAmmo;
 }
-static void AmmoPlace(const Vec2i pos, void *data)
+static void AmmoPlace(const struct vec pos, void *data)
 {
 	const int ammoId = *(int *)data;
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
 	e.u.AddPickup.UID = PickupsGetNextUID();
-	e.u.AddPickup.Pos = Vec2i2Net(pos);
+	e.u.AddPickup.Pos = Vec2ToNet(pos);
 	const Ammo *a = AmmoGetById(&gAmmo, ammoId);
 	sprintf(e.u.AddPickup.PickupClass, "ammo_%s", a->Name);
 	e.u.AddPickup.IsRandomSpawned = true;

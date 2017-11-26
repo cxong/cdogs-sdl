@@ -38,12 +38,12 @@ typedef struct
 } GrafxDrawExtra;
 void GrafxDrawBackground(
 	GraphicsDevice *g, DrawBuffer *buffer,
-	const HSV tint, const Vec2i pos, GrafxDrawExtra *extra);
-void GrafxRedrawBackground(GraphicsDevice *g, const Vec2i pos);
+	const HSV tint, const struct vec pos, GrafxDrawExtra *extra);
+void GrafxRedrawBackground(GraphicsDevice *g, const struct vec pos);
 void GrafxMakeBackground(
 	GraphicsDevice *device, DrawBuffer *buffer,
 	CampaignOptions *co, struct MissionOptions *mo, Map *map, HSV tint,
-	const bool isEditor, Vec2i pos, GrafxDrawExtra *extra);
+	const bool isEditor, struct vec pos, GrafxDrawExtra *extra);
 
 void GrafxMakeRandomBackground(
 	GraphicsDevice *device,

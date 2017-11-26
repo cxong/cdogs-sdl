@@ -25,9 +25,11 @@
 */
 #pragma once
 
+#include "mathc/mathc.h"
 #include "utils.h"
 
-#define CHEBYSHEV_DISTANCE(x1, y1, x2, y2)  MAX(abs((x1) - (x2)), abs((y1) - (y2)))
+#define CHEBYSHEV_DISTANCE(x1, y1, x2, y2) \
+	MAX(fabsf((x1) - (x2)), fabsf((y1) - (y2)))
 
 typedef struct
 {
@@ -38,9 +40,6 @@ typedef struct
 Vec2i Vec2iNew(int x, int y);
 Vec2i Vec2iZero(void);
 Vec2i Vec2iUnit(void);	// (1, 1)
-// r radius, theta radians; result will be rounded
-// Note: 0 radians is north, continuing clockwise
-Vec2i Vec2iFromPolar(const double r, const double th);
 Vec2i Vec2iAdd(Vec2i a, Vec2i b);
 Vec2i Vec2iMinus(Vec2i a, Vec2i b);
 // Multiply the components of two Vec2is together
@@ -56,18 +55,15 @@ Vec2i Vec2iMin(Vec2i a, Vec2i b);	// Get min x and y of both vectors
 Vec2i Vec2iMax(Vec2i a, Vec2i b);	// Get max x and y of both vectors
 Vec2i Vec2iClamp(Vec2i v, Vec2i lo, Vec2i hi);
 
-// Convert to and from real (i.e. integral) coordinates and full (fractional)
-Vec2i Vec2iFull2Real(Vec2i v);
-Vec2i Vec2iReal2Full(Vec2i v);
-Vec2i Vec2iReal2FullCentered(const Vec2i v);
-
 Vec2i Vec2iToTile(Vec2i v);
 Vec2i Vec2iCenterOfTile(Vec2i v);
+Vec2i Vec2ToVec2i(const struct vec v);
+Vec2i Vec2ToTile(const struct vec v);
+struct vec Vec2iToVec2(const Vec2i v);
+struct vec Vec2CenterOfTile(const Vec2i v);
 
 int Vec2iSqrMagnitude(const Vec2i v);
 int DistanceSquared(const Vec2i a, const Vec2i b);
-Vec2i CalcClosestPointOnLineSegmentToPoint(
-	Vec2i l1, Vec2i l2, Vec2i p);
 
 // Helper macros for positioning
 #define CENTER_X(_pos, _size, _w) ((_pos).x + ((_size).x - (_w)) / 2)

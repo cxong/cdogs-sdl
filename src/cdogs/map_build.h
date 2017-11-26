@@ -62,7 +62,6 @@ bool MapGetRoomOverlapSize(
 int MapIsLessThanTwoWallOverlaps(Map *map, Vec2i pos, Vec2i size);
 int MapIsValidStartForWall(
 	Map *map, int x, int y, unsigned short tileType, int pad);
-Vec2i MapGetRandomTile(const Map *map);
 void MapMakeSquare(Map *map, Vec2i pos, Vec2i size);
 Vec2i MapGetRoomSize(const RoomParams r, const int doorMin);
 void MapMakeRoom(Map *map, const Vec2i pos, const Vec2i size, const bool walls);

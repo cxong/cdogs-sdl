@@ -132,7 +132,7 @@ void CharacterLoadJSON(CharacterStore *c, json_t *root, int version)
 				ch->Colors.Hair = colorRed;
 			}
 		}
-		LoadInt(&ch->speed, child, "speed");
+		LoadFullInt(&ch->speed, child, "speed");
 		tmp = GetString(child, "Gun");
 		ch->Gun = StrGunDescription(tmp);
 		CFREE(tmp);
@@ -163,7 +163,7 @@ bool CharacterSave(CharacterStore *s, const char *path)
 		AddColorPair(node, "Body", c->Colors.Body);
 		AddColorPair(node, "Legs", c->Colors.Legs);
 		AddColorPair(node, "Hair", c->Colors.Hair);
-		AddIntPair(node, "speed", c->speed);
+		AddIntPair(node, "speed", c->speed * 256);
 		json_insert_pair_into_object(
 			node, "Gun", json_new_string(c->Gun->name));
 		AddIntPair(node, "maxHealth", c->maxHealth);

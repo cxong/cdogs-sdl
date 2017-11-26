@@ -35,28 +35,25 @@
 #include "handle_game_events.h"
 
 
-static NVec2i PlaceActor(Map *map)
+static NVec2 PlaceActor(Map *map)
 {
-	Vec2i pos;
+	struct vec pos;
 
 	if (HasExit(gCampaign.Entry.Mode))
 	{
 		// First, try to place at least half the map away from the exit
 		const int halfMap =
 			MAX(map->Size.x * TILE_WIDTH, map->Size.y * TILE_HEIGHT) / 2;
-		const Vec2i exitPos = MapGetExitPos(map);
+		const struct vec exitPos = MapGetExitPos(map);
 		// Don't try forever trying to place
 		for (int i = 0; i < 100; i++)
 		{
-			const Vec2i realPos = Vec2iNew(
-				rand() % (map->Size.x * TILE_WIDTH),
-				rand() % (map->Size.y * TILE_HEIGHT));
-			pos = Vec2iFull2Real(realPos);
-			if (abs(realPos.x - exitPos.x) > halfMap &&
-				abs(realPos.y - exitPos.y) > halfMap &&
+			pos = MapGetRandomPos(map);
+			if (fabsf(pos.x - exitPos.x) > halfMap &&
+				fabsf(pos.y - exitPos.y) > halfMap &&
 				MapIsTileAreaClear(map, pos, Vec2iNew(ACTOR_W, ACTOR_H)))
 			{
-				return Vec2i2Net(pos);
+				return Vec2ToNet(pos);
 			}
 		}
 	}
@@ -64,15 +61,14 @@ static NVec2i PlaceActor(Map *map)
 	// Try to place randomly
 	do
 	{
-		pos.x = ((rand() % (map->Size.x * TILE_WIDTH)) << 8);
-		pos.y = ((rand() % (map->Size.y * TILE_HEIGHT)) << 8);
-	} while (!MapIsFullPosOKforPlayer(map, pos, false) ||
+		pos = MapGetRandomPos(map);
+	} while (!MapIsPosOKForPlayer(map, pos, false) ||
 		!MapIsTileAreaClear(map, pos, Vec2iNew(ACTOR_W, ACTOR_H)));
-	return Vec2i2Net(pos);
+	return Vec2ToNet(pos);
 }
 
-static NVec2i PlaceActorNear(
-	Map *map, const Vec2i nearPos, const bool allowAllTiles)
+static NVec2 PlaceActorNear(
+	Map *map, const struct vec nearPos, const bool allowAllTiles)
 {
 	// Try a concentric rhombus pattern, clockwise from right
 	// That is, start by checking right, below, left, above,
@@ -83,18 +79,18 @@ static NVec2i PlaceActorNear(
 	//    8 2 6
 	//      7
 #define TRY_LOCATION()\
-	pos = Vec2iAdd(nearPos, Vec2iNew(dx, dy));\
-	if (MapIsFullPosOKforPlayer(map, pos, allowAllTiles) && \
+	pos = vector2_add(nearPos, to_vector2(dx, dy));\
+	if (MapIsPosOKForPlayer(map, pos, allowAllTiles) && \
 		MapIsTileAreaClear(map, pos, Vec2iNew(ACTOR_W, ACTOR_H)))\
 	{\
-		return Vec2i2Net(pos);\
+		return Vec2ToNet(pos);\
 	}
 	int dx = 0;
 	int dy = 0;
-	Vec2i pos;
+	struct vec pos;
 	TRY_LOCATION();
-	int inc = 1 << 8;
-	for (int radius = 12 << 8;; radius += 12 << 8)
+	const int inc = 1;
+	for (int radius = 12;; radius += 12)
 	{
 		// Going from right to below
 		for (dx = radius, dy = 0; dy < radius; dx -= inc, dy += inc)
@@ -119,11 +115,12 @@ static NVec2i PlaceActorNear(
 	}
 }
 
-static bool TryPlaceOneAwayFromPlayers(Map *map, const Vec2i pos, void *data);
-NVec2i PlaceAwayFromPlayers(
+static bool TryPlaceOneAwayFromPlayers(
+	Map *map, const struct vec pos, void *data);
+NVec2 PlaceAwayFromPlayers(
 	Map *map, const bool giveUp, const PlacementAccessFlags paFlags)
 {
-	NVec2i out;
+	NVec2 out;
 	if (MapPlaceRandomPos(map, paFlags, TryPlaceOneAwayFromPlayers, &out))
 	{
 		return out;
@@ -133,55 +130,53 @@ NVec2i PlaceAwayFromPlayers(
 	// even close to player
 	for (int i = 0; i < 10000 || !giveUp; i++)
 	{
-		const Vec2i fullPos = Vec2iReal2Full(Vec2iNew(
-			rand() % (map->Size.x * TILE_WIDTH),
-			rand() % (map->Size.y * TILE_HEIGHT)));
-		if (MapIsTileAreaClear(map, fullPos, Vec2iNew(ACTOR_W, ACTOR_H)))
+		const struct vec pos = MapGetRandomPos(map);
+		if (MapIsTileAreaClear(map, pos, Vec2iNew(ACTOR_W, ACTOR_H)))
 		{
-			out = Vec2i2Net(fullPos);
+			out = Vec2ToNet(pos);
 			return out;
 		}
 	}
 
 	// Uh oh
 	// TODO: scan map for a safe position, to use as default
-	return Vec2i2Net(Vec2iNew(TILE_WIDTH * 3 / 2, TILE_HEIGHT * 3 / 2));
+	return Vec2ToNet(to_vector2(TILE_WIDTH * 3 / 2, TILE_HEIGHT * 3 / 2));
 }
-static bool TryPlaceOneAwayFromPlayers(Map *map, const Vec2i pos, void *data)
+static bool TryPlaceOneAwayFromPlayers(
+	Map *map, const struct vec pos, void *data)
 {
-	NVec2i *out = data;
+	NVec2 *out = data;
 	// Try spawning out of players' sights
-	const Vec2i fullPos = Vec2iReal2Full(pos);
-	*out = Vec2i2Net(fullPos);
+	*out = Vec2ToNet(pos);
 
-	const TActor *closestPlayer = AIGetClosestPlayer(fullPos);
+	const TActor *closestPlayer = AIGetClosestPlayer(pos);
 	if ((closestPlayer == NULL || CHEBYSHEV_DISTANCE(
-			fullPos.x, fullPos.y,
-			closestPlayer->Pos.x, closestPlayer->Pos.y) >= 256 * 150) &&
-		MapIsTileAreaClear(map, fullPos, Vec2iNew(ACTOR_W, ACTOR_H)))
+			pos.x, pos.y,
+			closestPlayer->Pos.x, closestPlayer->Pos.y) >= 150) &&
+		MapIsTileAreaClear(map, pos, Vec2iNew(ACTOR_W, ACTOR_H)))
 	{
-		*out = Vec2i2Net(fullPos);
+		*out = Vec2ToNet(pos);
 		return true;
 	}
 	return false;
 }
 
-NVec2i PlacePrisoner(Map *map)
+NVec2 PlacePrisoner(Map *map)
 {
-	Vec2i fullPos;
+	struct vec pos;
 	do
 	{
 		do
 		{
-			fullPos.x = ((rand() % (map->Size.x * TILE_WIDTH)) << 8);
-			fullPos.y = ((rand() % (map->Size.y * TILE_HEIGHT)) << 8);
-		} while (!MapPosIsInLockedRoom(map, Vec2iFull2Real(fullPos)));
-	} while (!MapIsTileAreaClear(map, fullPos, Vec2iNew(ACTOR_W, ACTOR_H)));
-	return Vec2i2Net(fullPos);
+			pos = MapGetRandomPos(map);
+		} while (!MapPosIsInLockedRoom(map, pos));
+	} while (!MapIsTileAreaClear(map, pos, Vec2iNew(ACTOR_W, ACTOR_H)));
+	return Vec2ToNet(pos);
 }
 
-Vec2i PlacePlayer(
-	Map *map, const PlayerData *p, const Vec2i firstPos, const bool pumpEvents)
+struct vec PlacePlayer(
+	Map *map, const PlayerData *p, const struct vec firstPos,
+	const bool pumpEvents)
 {
 	NActorAdd aa = NActorAdd_init_default;
 	aa.UID = ActorsGetNextUID();
@@ -191,26 +186,26 @@ Vec2i PlacePlayer(
 	if (IsPVP(gCampaign.Entry.Mode))
 	{
 		// In a PVP mode, always place players apart
-		aa.FullPos = PlaceAwayFromPlayers(&gMap, false, PLACEMENT_ACCESS_ANY);
+		aa.Pos = PlaceAwayFromPlayers(&gMap, false, PLACEMENT_ACCESS_ANY);
 	}
 	else if (
 		ConfigGetEnum(&gConfig, "Interface.Splitscreen") == SPLITSCREEN_NEVER &&
-		!Vec2iIsZero(firstPos))
+		!vector2_is_zero(firstPos))
 	{
 		// If never split screen, try to place players near the first player
-		aa.FullPos = PlaceActorNear(map, firstPos, true);
+		aa.Pos = PlaceActorNear(map, firstPos, true);
 	}
 	else if (gMission.missionData->Type == MAPTYPE_STATIC &&
 		!Vec2iIsZero(gMission.missionData->u.Static.Start))
 	{
 		// place players near the start point
-		Vec2i startPoint = Vec2iReal2Full(Vec2iCenterOfTile(
-			gMission.missionData->u.Static.Start));
-		aa.FullPos = PlaceActorNear(map, startPoint, true);
+		const struct vec startPoint = Vec2CenterOfTile(
+			gMission.missionData->u.Static.Start);
+		aa.Pos = PlaceActorNear(map, startPoint, true);
 	}
 	else
 	{
-		aa.FullPos = PlaceActor(map);
+		aa.Pos = PlaceActor(map);
 	}
 
 	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
@@ -223,5 +218,5 @@ Vec2i PlacePlayer(
 		HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
 	}
 
-	return Vec2iNew(aa.FullPos.x, aa.FullPos.y);
+	return to_vector2(aa.Pos.x, aa.Pos.y);
 }

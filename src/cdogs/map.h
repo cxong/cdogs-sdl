@@ -117,17 +117,16 @@ extern Map gMap;
 
 unsigned short GetAccessMask(int k);
 
-Tile *MapGetTile(Map *map, Vec2i pos);
+Tile *MapGetTile(const Map *map, const Vec2i pos);
 bool MapIsTileIn(const Map *map, const Vec2i pos);
-bool MapIsRealPosIn(const Map *map, const Vec2i realPos);
 bool MapIsTileInExit(const Map *map, const TTileItem *ti);
 
 bool MapHasLockedRooms(const Map *map);
-bool MapPosIsInLockedRoom(const Map *map, const Vec2i pos);
+bool MapPosIsInLockedRoom(const Map *map, const struct vec pos);
 int MapGetDoorKeycardFlag(Map *map, Vec2i pos);
 
 // Return false if cannot move to new position
-bool MapTryMoveTileItem(Map *map, TTileItem *t, Vec2i pos);
+bool MapTryMoveTileItem(Map *map, TTileItem *t, const struct vec pos);
 void MapRemoveTileItem(Map *map, TTileItem *t);
 
 void MapTerminate(Map *map);
@@ -135,14 +134,16 @@ void MapLoad(
 	Map *map, const struct MissionOptions *mo, const CampaignOptions* co);
 void MapLoadDynamic(
 	Map *map, const struct MissionOptions *mo, const CharacterStore *store);
-bool MapIsFullPosOKforPlayer(
-	const Map *map, const Vec2i pos, const bool allowAllTiles);
-bool MapIsTileAreaClear(Map *map, const Vec2i fullPos, const Vec2i size);
+bool MapIsPosOKForPlayer(
+	const Map *map, const struct vec pos, const bool allowAllTiles);
+bool MapIsTileAreaClear(Map *map, const struct vec pos, const Vec2i size);
 void MapChangeFloor(
 	Map *map, const Vec2i pos, NamedPic *normal, NamedPic *shadow);
 void MapShowExitArea(Map *map, const Vec2i exitStart, const Vec2i exitEnd);
 // Returns the center of the tile that's the middle of the exit area
-Vec2i MapGetExitPos(const Map *m);
+struct vec MapGetExitPos(const Map *m);
+Vec2i MapGetRandomTile(const Map *map);
+struct vec MapGetRandomPos(const Map *map);
 
 void MapMarkAsVisited(Map *map, Vec2i pos);
 void MapMarkAllAsVisited(Map *map);
@@ -156,22 +157,22 @@ bool MapTileIsUnexplored(Map *map, Vec2i tile);
 // Map construction functions
 unsigned short IMapGet(const Map *map, const Vec2i pos);
 void IMapSet(Map *map, Vec2i pos, unsigned short v);
-Vec2i MapGenerateFreePosition(Map *map, Vec2i size);
+struct vec MapGenerateFreePosition(Map *map, const Vec2i size);
 bool MapTryPlaceOneObject(
 	Map *map, const Vec2i v, const MapObject *mo, const int extraFlags,
 	const bool isStrictMode);
 // TODO: refactor
 void MapPlaceCollectible(
-	const struct MissionOptions *mo, const int objective, const Vec2i realPos);
+	const struct MissionOptions *mo, const int objective, const struct vec pos);
 // TODO: refactor
 void MapPlaceKey(
-	Map *map, const struct MissionOptions *mo, const Vec2i pos,
+	Map *map, const struct MissionOptions *mo, const Vec2i tilePos,
 	const int keyIndex);
 bool MapPlaceRandomTile(
 	Map *map, const PlacementAccessFlags paFlags,
 	bool (*tryPlaceFunc)(Map *, const Vec2i, void *), void *data);
 bool MapPlaceRandomPos(
 	Map *map, const PlacementAccessFlags paFlags,
-	bool (*tryPlaceFunc)(Map *, const Vec2i, void *), void *data);
+	bool (*tryPlaceFunc)(Map *, const struct vec, void *), void *data);
 
 Trigger *MapNewTrigger(Map *map);

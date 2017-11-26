@@ -39,7 +39,7 @@ typedef struct
 	bool Enabled;
 	int SpawnTime;
 	double (*RateScaleFunc)(void *);
-	void (*PlaceFunc)(const Vec2i, void *);
+	void (*PlaceFunc)(const struct vec, void *);
 	void *Data;
 } PowerupSpawner;
 

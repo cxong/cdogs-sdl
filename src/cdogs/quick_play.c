@@ -79,20 +79,16 @@ static Vec2i GenerateQuickPlayMapSize(QuickPlayQuantity size)
 	{
 	case QUICKPLAY_QUANTITY_ANY:
 		return GenerateRandomPairPartitionWithRestrictions(
-			32 + (rand() % (128 - 32 + 1)),
-			minMapDim, maxMapDim);
+			RAND_INT(32, 128 + 1), minMapDim, maxMapDim);
 	case QUICKPLAY_QUANTITY_SMALL:
 		return GenerateRandomPairPartitionWithRestrictions(
-			32 + (rand() % (64 - 32 + 1)),
-			minMapDim, maxMapDim);
+			RAND_INT(32, 64 + 1), minMapDim, maxMapDim);
 	case QUICKPLAY_QUANTITY_MEDIUM:
 		return GenerateRandomPairPartitionWithRestrictions(
-			64 + (rand() % (96 - 64 + 1)),
-			minMapDim, maxMapDim);
+			RAND_INT(64, 96 + 1), minMapDim, maxMapDim);
 	case QUICKPLAY_QUANTITY_LARGE:
 		return GenerateRandomPairPartitionWithRestrictions(
-			96 + (rand() % (128 - 96 + 1)),
-			minMapDim, maxMapDim);
+			RAND_INT(96, 128 + 1), minMapDim, maxMapDim);
 	default:
 		assert(0 && "invalid quick play map size config");
 		return Vec2iZero();
@@ -108,15 +104,34 @@ static int GenerateQuickPlayParam(
 	switch (qty)
 	{
 	case QUICKPLAY_QUANTITY_ANY:
-		return low + (rand() % (max - low + 1));
+		return RAND_INT(low, max + 1);
 	case QUICKPLAY_QUANTITY_SMALL:
-		return low + (rand() % (medium - low + 1));
+		return RAND_INT(low, medium + 1);
 	case QUICKPLAY_QUANTITY_MEDIUM:
-		return medium + (rand() % (high - medium + 1));
+		return RAND_INT(medium, high + 1);
 	case QUICKPLAY_QUANTITY_LARGE:
-		return high + (rand() % (max - high + 1));
+		return RAND_INT(high, max + 1);
 	default:
-		assert(0);
+		CASSERT(false, "unknown quick play quantity");
+		return 0;
+	}
+}
+static float GenerateQuickPlayParamFloat(
+	QuickPlayQuantity qty,
+	const float low, const float medium, const float high, const float max)
+{
+	switch (qty)
+	{
+	case QUICKPLAY_QUANTITY_ANY:
+		return RAND_FLOAT(low, max);
+	case QUICKPLAY_QUANTITY_SMALL:
+		return RAND_FLOAT(low, medium);
+	case QUICKPLAY_QUANTITY_MEDIUM:
+		return RAND_FLOAT(medium, high);
+	case QUICKPLAY_QUANTITY_LARGE:
+		return RAND_FLOAT(high, max);
+	default:
+		CASSERT(false, "unknown quick play quantity");
 		return 0;
 	}
 }
@@ -125,11 +140,11 @@ static void SetupQuickPlayEnemy(Character *enemy, const GunDescription *gun)
 {
 	CharacterShuffleAppearance(enemy);
 	enemy->Gun = gun;
-	enemy->speed =GenerateQuickPlayParam(
-		ConfigGetEnum(&gConfig, "QuickPlay.EnemySpeed"), 64, 112, 160, 256);
+	enemy->speed =GenerateQuickPlayParamFloat(
+		ConfigGetEnum(&gConfig, "QuickPlay.EnemySpeed"), 0.25f, 0.4f, 0.7f, 1);
 	if (IsShortRange(enemy->Gun))
 	{
-		enemy->speed = enemy->speed * 4 / 3;
+		enemy->speed = enemy->speed * 1.25f;
 	}
 	if (IsShortRange(enemy->Gun))
 	{

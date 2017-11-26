@@ -196,7 +196,7 @@ static TWatch *CreateCloseDoorWatch(
 	// play close sound at the center of the door group
 	a = WatchAddAction(w);
 	a->Type = ACTION_SOUND;
-	a->u.pos = Vec2iCenterOfTile(
+	a->u.pos = Vec2CenterOfTile(
 		Vec2iAdd(v, Vec2iScale(dv, doorGroupCount / 2)));
 	a->a.Sound = StrSound("door_close");
 
@@ -320,7 +320,7 @@ static Trigger *CreateOpenDoorTrigger(
 	/// play sound at the center of the door group
 	a = TriggerAddAction(t);
 	a->Type = ACTION_SOUND;
-	a->u.pos = Vec2iCenterOfTile(
+	a->u.pos = Vec2CenterOfTile(
 		Vec2iAdd(v, Vec2iScale(dv, doorGroupCount / 2)));
 	a->a.Sound = StrSound("door");
 

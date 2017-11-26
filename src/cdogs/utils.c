@@ -378,11 +378,32 @@ double Round(double x)
 
 double ToDegrees(double radians)
 {
-	return radians * 180.0 / PI;
+	return radians * 180.0 / M_PI;
 }
 double ToRadians(double degrees)
 {
-	return degrees * PI / 180.0;
+	return degrees * M_PI / 180.0;
+}
+
+struct vec CalcClosestPointOnLineSegmentToPoint(
+	const struct vec l1, const struct vec l2, const struct vec p)
+{
+	// Using parametric representation, line l1->l2 is
+	// P(t) = l1 + t(l2 - l1)
+	// Projection of point p on line is
+	// t = ((p.x - l1.x)(l2.x - l1.x) + (p.y - l1.y)(l2.y - l1.y)) / ||l2 - l1||^2
+	const float lineDistanceSquared = vector2_distance_squared_to(l1, l2);
+	// Early exit since same point means 0 distance, and div by 0
+	if (lineDistanceSquared == 0)
+	{
+		return l1;
+	}
+	const float numerator =
+		(p.x - l1.x)*(l2.x - l1.x) + (p.y - l1.y)*(l2.y - l1.y);
+	const float t = CLAMP(numerator / lineDistanceSquared, 0, 1);
+	const struct vec closestPoint = to_vector2(
+		l1.x + t*(l2.x - l1.x), l1.y + t*(l2.y - l1.y));
+	return closestPoint;
 }
 
 const char *InputDeviceName(const int d, const int deviceIndex)

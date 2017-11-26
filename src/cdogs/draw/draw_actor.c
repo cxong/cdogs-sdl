@@ -76,7 +76,7 @@ static Vec2i GetActorDrawOffset(
 		cs->Offsets.Frame[part],
 		anim == ACTORANIMATION_WALKING ? "run" : "idle",
 		frame));
-	offset = Vec2iAdd(offset, cs->Offsets.Dir[part][d]);
+	offset = Vec2iAdd(offset, Vec2ToVec2i(cs->Offsets.Dir[part][d]));
 	return offset;
 }
 
@@ -303,11 +303,10 @@ void DrawLaserSight(
 	}
 	// Draw weapon indicators
 	const GunDescription *g = ActorGetGun(a)->Gun;
-	Vec2i muzzlePos = Vec2iAdd(
-		picPos, Vec2iFull2Real(ActorGetGunMuzzleOffset(a)));
+	Vec2i muzzlePos = Vec2iAdd(picPos, Vec2ToVec2i(ActorGetGunMuzzleOffset(a)));
 	muzzlePos.y -= g->MuzzleHeight / Z_FACTOR;
 	const double radians = dir2radians[a->direction] + g->AngleOffset;
-	const int range = GunGetRange(g);
+	const float range = GunGetRange(g);
 	color_t color = colorCyan;
 	color.a = 64;
 	const double spreadHalf =
@@ -397,9 +396,9 @@ static void DrawChatter(
 	if (strlen(a->Chatter) > 0)
 	{
 		const Vec2i textPos = Vec2iNew(
-			a->tileItem.x - b->xTop + offset.x -
+			a->tileItem.Pos.x - b->xTop + offset.x -
 			FontStrW(a->Chatter) / 2,
-			a->tileItem.y - b->yTop + offset.y - ACTOR_HEIGHT);
+			a->tileItem.Pos.y - b->yTop + offset.y - ACTOR_HEIGHT);
 		FontStr(a->Chatter, textPos);
 	}
 }

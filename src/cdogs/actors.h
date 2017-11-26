@@ -52,6 +52,7 @@
 #include "animation.h"
 #include "emitter.h"
 #include "grafx.h"
+#include "mathc/mathc.h"
 #include "player.h"
 #include "weapon.h"
 
@@ -92,9 +93,9 @@ typedef enum
 
 typedef struct Actor
 {
-	Vec2i Pos;		// These are the full coordinates, including fractions
+	struct vec Pos;
 	// Vector that the player is attempting to move in, based on input
-	Vec2i MoveVel;
+	struct vec MoveVel;
 	direction_e direction;
 	// Rotation used to draw the actor, which will lag behind the actual
 	// rotation in order to show smooth rotation
@@ -171,7 +172,7 @@ extern CArray gActors;	// of TActor
 
 void ActorSetState(TActor *actor, const ActorAnimation state);
 void UpdateActorState(TActor * actor, int ticks);
-bool TryMoveActor(TActor *actor, Vec2i pos);
+bool TryMoveActor(TActor *actor, struct vec pos);
 void ActorMove(const NActorMove am);
 void CommandActor(TActor *actor, int cmd, int ticks);
 void SlideActor(TActor *actor, int cmd);
@@ -195,7 +196,7 @@ void ActorDestroy(TActor *a);
 TActor *ActorGetByUID(const int uid);
 const Character *ActorGetCharacter(const TActor *a);
 Weapon *ActorGetGun(const TActor *a);
-Vec2i ActorGetGunMuzzleOffset(const TActor *a);
+struct vec ActorGetGunMuzzleOffset(const TActor *a);
 // Returns -1 if gun does not use ammo
 int ActorGunGetAmmo(const TActor *a, const Weapon *w);
 bool ActorCanFire(const TActor *a);
@@ -211,7 +212,7 @@ bool ActorIsInvulnerable(
 	const GameMode mode);
 
 void ActorAddBloodSplatters(
-	TActor *a, const int power, const double mass, const Vec2i hitVector);
+	TActor *a, const int power, const double mass, const struct vec hitVector);
 int ActorGetHealthPercent(const TActor *a);
 bool ActorIsLowHealth(const TActor *a);
 

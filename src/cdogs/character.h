@@ -43,7 +43,7 @@ typedef struct
 typedef struct
 {
 	const CharacterClass *Class;
-	int speed;
+	float speed;
 	const GunDescription *Gun;
 	int maxHealth;
 	unsigned int flags;

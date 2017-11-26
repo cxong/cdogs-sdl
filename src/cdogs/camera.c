@@ -42,7 +42,7 @@ void CameraInit(Camera *camera)
 	memset(camera, 0, sizeof *camera);
 	DrawBufferInit(
 		&camera->Buffer, Vec2iNew(X_TILES, Y_TILES), &gGraphicsDevice);
-	camera->lastPosition = Vec2iZero();
+	camera->lastPosition = vector2_zero();
 	HUDInit(&camera->HUD, &gGraphicsDevice, &gMission);
 	camera->shake = ScreenShakeZero();
 }
@@ -108,7 +108,8 @@ void CameraInput(Camera *camera, const int cmd, const int lastCmd)
 	}
 }
 
-static void FollowPlayer(Vec2i *pos, const PlayerData *p);
+static struct vec GetFollowPlayerPos(
+	const struct vec lastPos, const PlayerData *p);
 void CameraUpdate(Camera *camera, const int ticks, const int ms)
 {
 	camera->HUD.DrawData = HUDGetDrawData();
@@ -143,8 +144,8 @@ void CameraUpdate(Camera *camera, const int ticks, const int ms)
 		if (camera->HUD.DrawData.Players[0] != NULL)
 		{
 			camera->HUD.DrawData.NumScreens = 1;
-			FollowPlayer(
-				&camera->lastPosition, camera->HUD.DrawData.Players[0]);
+			camera->lastPosition = GetFollowPlayerPos(
+				camera->lastPosition, camera->HUD.DrawData.Players[0]);
 		}
 	}
 
@@ -152,15 +153,17 @@ void CameraUpdate(Camera *camera, const int ticks, const int ms)
 	camera->shake = ScreenShakeUpdate(camera->shake, ticks);
 }
 // Try to follow a player
-static void FollowPlayer(Vec2i *pos, const PlayerData *p)
+static struct vec GetFollowPlayerPos(
+	const struct vec lastPos, const PlayerData *p)
 {
 	const TActor *a = ActorGetByUID(p->ActorUID);
-	if (a == NULL) return;
-	*pos = Vec2iFull2Real(a->Pos);
+	if (a == NULL) return lastPos;
+	return a->Pos;
 }
 
 static void DoBuffer(
-	DrawBuffer *b, Vec2i center, int w, Vec2i noise, Vec2i offset);
+	DrawBuffer *b, const struct vec center, const int w, const struct vec noise,
+	const Vec2i offset);
 void CameraDraw(Camera *camera, const HUDDrawData drawData)
 {
 	Vec2i centerOffset = Vec2iZero();
@@ -168,7 +171,7 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
 
-	const Vec2i noise = ScreenShakeGetDelta(camera->shake);
+	const struct vec noise = ScreenShakeGetDelta(camera->shake);
 
 	GraphicsResetBlitClip(&gGraphicsDevice);
 	if (drawData.NumScreens == 0)
@@ -194,7 +197,7 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 			if (onePlayer)
 			{
 				const TActor *p = ActorGetByUID(firstPlayer->ActorUID);
-				camera->lastPosition = Vec2iNew(p->tileItem.x, p->tileItem.y);
+				camera->lastPosition = p->tileItem.Pos;
 			}
 			else if (singleScreen)
 			{
@@ -206,7 +209,7 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 			// However, it is important to keep the ear positions unmodified
 			// so that sounds don't get muffled just because there's a wall
 			// between player and camera center
-			const Vec2i earPos = camera->lastPosition;
+			const struct vec earPos = camera->lastPosition;
 			if (gMap.Size.x * TILE_WIDTH < gGraphicsDevice.cachedConfig.Res.x)
 			{
 				camera->lastPosition.x = gMap.Size.x * TILE_WIDTH / 2;
@@ -226,10 +229,7 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 						continue;
 					}
 					const TActor *a = ActorGetByUID(p->ActorUID);
-					LOSCalcFrom(
-						&gMap,
-						Vec2iToTile(Vec2iNew(a->tileItem.x, a->tileItem.y)),
-						false);
+					LOSCalcFrom(&gMap, Vec2ToTile(a->tileItem.Pos), false);
 				CA_FOREACH_END()
 			}
 
@@ -246,7 +246,7 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 			{
 				const PlayerData *p = drawData.Players[i];
 				const TActor *a = ActorGetByUID(p->ActorUID);
-				camera->lastPosition = Vec2iNew(a->tileItem.x, a->tileItem.y);
+				camera->lastPosition = a->tileItem.Pos;
 				Vec2i centerOffsetPlayer = centerOffset;
 				const int clipLeft = (i & 1) ? w / 2 : 0;
 				const int clipRight = (i & 1) ? w - 1 : (w / 2) - 1;
@@ -257,7 +257,7 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 					centerOffsetPlayer.x += w / 2;
 				}
 
-				LOSCalcFrom(&gMap, Vec2iToTile(camera->lastPosition), false);
+				LOSCalcFrom(&gMap, Vec2ToTile(camera->lastPosition), false);
 				DoBuffer(
 					&camera->Buffer,
 					camera->lastPosition,
@@ -286,7 +286,7 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 					continue;
 				}
 				const TActor *a = ActorGetByUID(p->ActorUID);
-				camera->lastPosition = Vec2iNew(a->tileItem.x, a->tileItem.y);
+				camera->lastPosition = a->tileItem.Pos;
 				GraphicsSetBlitClip(
 					&gGraphicsDevice,
 					clipLeft, clipTop, clipRight, clipBottom);
@@ -302,7 +302,7 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 				{
 					centerOffsetPlayer.y += h / 4;
 				}
-				LOSCalcFrom(&gMap, Vec2iToTile(camera->lastPosition), false);
+				LOSCalcFrom(&gMap, Vec2ToTile(camera->lastPosition), false);
 				DoBuffer(
 					&camera->Buffer,
 					camera->lastPosition,
@@ -342,9 +342,10 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 	GraphicsResetBlitClip(&gGraphicsDevice);
 }
 static void DoBuffer(
-	DrawBuffer *b, Vec2i center, int w, Vec2i noise, Vec2i offset)
+	DrawBuffer *b, const struct vec center, const int w, const struct vec noise,
+	const Vec2i offset)
 {
-	DrawBufferSetFromMap(b, &gMap, Vec2iAdd(center, noise), w);
+	DrawBufferSetFromMap(b, &gMap, vector2_add(center, noise), w);
 	if (gPlayerDatas.size > 0)
 	{
 		DrawBufferFix(b);
@@ -445,8 +446,7 @@ bool CameraIsSingleScreen(void)
 		return true;
 	}
 	// Finally, use split screen if players don't fit on camera
-	Vec2i min;
-	Vec2i max;
+	struct vec min, max;
 	PlayersGetBoundingRectangle(&min, &max);
 	return
 		max.x - min.x < gGraphicsDevice.cachedConfig.Res.x - CAMERA_SPLIT_PADDING &&

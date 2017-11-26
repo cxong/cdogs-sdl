@@ -57,14 +57,14 @@ ScreenShake ScreenShakeAdd(ScreenShake s, int force, int multiplier)
 // Convert ticks left to a shake delta
 #define TICKS_TO_DELTA_RATIO 28
 
-Vec2i ScreenShakeGetDelta(ScreenShake s)
+struct vec ScreenShakeGetDelta(ScreenShake s)
 {
 	int maxDelta = s * TICKS_TO_DELTA_RATIO / SHAKE_STANDARD;
 	if (maxDelta == 0)
 	{
-		return Vec2iZero();
+		return vector2_zero();
 	}
-	return Vec2iNew(rand() % maxDelta, rand() % maxDelta);
+	return to_vector2(rand() % maxDelta, rand() % maxDelta);
 }
 
 ScreenShake ScreenShakeUpdate(ScreenShake s, int ticks)

@@ -78,7 +78,7 @@ typedef struct
 	ActionType Type;
 	union
 	{
-		Vec2i pos;
+		struct vec pos;
 		int index;
 	} u;
 	union

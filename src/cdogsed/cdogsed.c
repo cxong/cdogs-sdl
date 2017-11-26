@@ -91,9 +91,14 @@ static bool sIgnoreMouse = false;
 
 // Globals
 
+typedef struct
+{
+	GraphicsDevice *g;
+	struct vec camera;
+} EditorContext;
+EditorContext ec;
 static char lastFile[CDOGS_PATH_MAX];
 static EditorBrush brush;
-Vec2i camera = { 0, 0 };
 #define CAMERA_PAN_SPEED 3
 Mission currentMission;
 Mission lastMission;
@@ -130,7 +135,7 @@ static int IsBrushPosValid(Vec2i pos, Mission *m)
 		pos.y >= 0 && pos.y < m->Size.y;
 }
 
-static void MakeBackground(GraphicsDevice *g, const bool changedMission)
+static void MakeBackground(const bool changedMission)
 {
 	if (changedMission)
 	{
@@ -142,11 +147,11 @@ static void MakeBackground(GraphicsDevice *g, const bool changedMission)
 		{
 			focusTile = m->u.Static.Start;
 		}
-		camera = Vec2iCenterOfTile(focusTile);
+		ec.camera = Vec2CenterOfTile(focusTile);
 	}
 
 	// Clear background first
-	memset(g->buf, 0, GraphicsGetMemSize(&g->cachedConfig));
+	memset(ec.g->buf, 0, GraphicsGetMemSize(&ec.g->cachedConfig));
 	GrafxDrawExtra extra;
 	extra.guideImage = brush.GuideImageSurface;
 	extra.guideImageAlpha = brush.GuideImageAlpha;
@@ -154,8 +159,8 @@ static void MakeBackground(GraphicsDevice *g, const bool changedMission)
 	DrawBufferTerminate(&sDrawBuffer);
 	DrawBufferInit(&sDrawBuffer, Vec2iNew(X_TILES, Y_TILES), &gGraphicsDevice);
 	GrafxMakeBackground(
-		g, &sDrawBuffer, &gCampaign, &gMission, &gMap,
-		tintNone, true, camera, &extra);
+		ec.g, &sDrawBuffer, &gCampaign, &gMission, &gMap,
+		tintNone, true, ec.camera, &extra);
 }
 
 // Returns whether a redraw is required
@@ -167,12 +172,12 @@ typedef struct
 	bool Done;
 } HandleInputResult;
 
-static void Display(GraphicsDevice *g, HandleInputResult result)
+static void Display(HandleInputResult result)
 {
 	char s[128];
 	int y = 5;
-	int w = g->cachedConfig.Res.x;
-	int h = g->cachedConfig.Res.y;
+	const int w = ec.g->cachedConfig.Res.x;
+	const int h = ec.g->cachedConfig.Res.y;
 	Mission *mission = CampaignGetCurrentMission(&gCampaign);
 
 	if (mission)
@@ -180,19 +185,20 @@ static void Display(GraphicsDevice *g, HandleInputResult result)
 		// Re-make the background if the resolution has changed
 		if (gEventHandlers.HasResolutionChanged)
 		{
-			MakeBackground(g, false);
+			MakeBackground(false);
 		}
 		if (result.RemakeBg || brush.IsGuideImageNew)
 		{
 			// Clear background first
-			memset(g->buf, 0, GraphicsGetMemSize(&g->cachedConfig));
+			memset(ec.g->buf, 0, GraphicsGetMemSize(&ec.g->cachedConfig));
 			brush.IsGuideImageNew = false;
 			GrafxDrawExtra extra;
 			extra.guideImage = brush.GuideImageSurface;
 			extra.guideImageAlpha = brush.GuideImageAlpha;
-			GrafxDrawBackground(g, &sDrawBuffer, tintNone, camera, &extra);
+			GrafxDrawBackground(
+				ec.g, &sDrawBuffer, tintNone, ec.camera, &extra);
 		}
-		BlitClearBuf(g);
+		BlitClearBuf(ec.g);
 
 		// Draw brush highlight tiles
 		if (brush.IsActive && IsBrushPosValid(brush.Pos, mission))
@@ -205,7 +211,7 @@ static void Display(GraphicsDevice *g, HandleInputResult result)
 				screenPos.y >= 0 && screenPos.y < h)
 			{
 				DrawRectangle(
-					g, screenPos, TILE_SIZE, colorWhite, DRAW_FLAG_LINE);
+					ec.g, screenPos, TILE_SIZE, colorWhite, DRAW_FLAG_LINE);
 			}
 		CA_FOREACH_END()
 
@@ -217,7 +223,7 @@ static void Display(GraphicsDevice *g, HandleInputResult result)
 	}
 	else
 	{
-		ClearScreen(g);
+		ClearScreen(ec.g);
 	}
 
 	if (fileChanged)
@@ -231,7 +237,7 @@ static void Display(GraphicsDevice *g, HandleInputResult result)
 	FontStr("Press F1 for help", Vec2iNew(20, h - 20 - FontH()));
 
 	UIObjectDraw(
-		sObjs, g, Vec2iZero(), gEventHandlers.mouse.currentPos, &sDrawObjs);
+		sObjs, ec.g, Vec2iZero(), gEventHandlers.mouse.currentPos, &sDrawObjs);
 
 	if (result.WillDisplayAutomap && mission)
 	{
@@ -242,12 +248,12 @@ static void Display(GraphicsDevice *g, HandleInputResult result)
 		if (sTooltipObj && sTooltipObj->Tooltip)
 		{
 			UITooltipDraw(
-				g, gEventHandlers.mouse.currentPos, sTooltipObj->Tooltip);
+				ec.g, gEventHandlers.mouse.currentPos, sTooltipObj->Tooltip);
 		}
 		MouseDraw(&gEventHandlers.mouse);
 	}
-	BlitUpdateFromBuf(g, g->screen);
-	WindowContextRender(&g->gameWindow);
+	BlitUpdateFromBuf(ec.g, ec.g->screen);
+	WindowContextRender(&ec.g->gameWindow);
 }
 
 static void Setup(const bool changedMission);
@@ -398,7 +404,7 @@ static void Setup(const bool changedMission)
 	MissionCopy(&currentMission, m);
 	MissionOptionsTerminate(&gMission);
 	CampaignAndMissionSetup(&gCampaign, &gMission);
-	MakeBackground(&gGraphicsDevice, changedMission);
+	MakeBackground(changedMission);
 
 	Autosave();
 
@@ -944,34 +950,34 @@ static HandleInputResult HandleInput(
 	{
 		if (KeyIsDown(&gEventHandlers.keyboard, SDL_SCANCODE_LEFT))
 		{
-			camera.x -= CAMERA_PAN_SPEED;
+			ec.camera.x -= CAMERA_PAN_SPEED;
 			result.Redraw = result.RemakeBg = true;
 		}
 		else if (KeyIsDown(&gEventHandlers.keyboard, SDL_SCANCODE_RIGHT))
 		{
-			camera.x += CAMERA_PAN_SPEED;
+			ec.camera.x += CAMERA_PAN_SPEED;
 			result.Redraw = result.RemakeBg = true;
 		}
 		if (KeyIsDown(&gEventHandlers.keyboard, SDL_SCANCODE_UP))
 		{
-			camera.y -= CAMERA_PAN_SPEED;
+			ec.camera.y -= CAMERA_PAN_SPEED;
 			result.Redraw = result.RemakeBg = true;
 		}
 		else if (KeyIsDown(&gEventHandlers.keyboard, SDL_SCANCODE_DOWN))
 		{
-			camera.y += CAMERA_PAN_SPEED;
+			ec.camera.y += CAMERA_PAN_SPEED;
 			result.Redraw = result.RemakeBg = true;
 		}
 		// Also pan the camera based on middle mouse drag
 		if (MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_MIDDLE))
 		{
-			camera = Vec2iAdd(camera, Vec2iMinus(
+			ec.camera = vector2_add(ec.camera, Vec2iToVec2(Vec2iMinus(
 				gEventHandlers.mouse.previousPos,
-				gEventHandlers.mouse.currentPos));
+				gEventHandlers.mouse.currentPos)));
 			result.Redraw = result.RemakeBg = true;
 		}
-		camera.x = CLAMP(camera.x, 0, Vec2iCenterOfTile(mission->Size).x);
-		camera.y = CLAMP(camera.y, 0, Vec2iCenterOfTile(mission->Size).y);
+		ec.camera.x = CLAMP(ec.camera.x, 0, Vec2CenterOfTile(mission->Size).x);
+		ec.camera.y = CLAMP(ec.camera.y, 0, Vec2CenterOfTile(mission->Size).y);
 	}
 	bool hasQuit = false;
 	if (sc != SDL_SCANCODE_UNKNOWN)
@@ -1076,7 +1082,7 @@ static HandleInputResult HandleInput(
 
 		case 'e':
 			CharEditor(
-				&gGraphicsDevice, &gCampaign.Setting, &gEventHandlers,
+				ec.g, &gCampaign.Setting, &gEventHandlers,
 				&fileChanged);
 			Setup(false);
 			UIObjectUnhighlight(sObjs, true);
@@ -1280,7 +1286,7 @@ static void EditCampaign(void)
 		{
 			sJustLoaded = false;
 			LOG(LM_EDIT, LL_TRACE, "Drawing UI");
-			Display(&gGraphicsDevice, result);
+			Display(result);
 			if (result.WillDisplayAutomap)
 			{
 				GetKey(&gEventHandlers);
@@ -1316,6 +1322,9 @@ int main(int argc, char *argv[])
 	printf("Data directory:\t\t%s\n", buf);
 	printf("Config directory:\t%s\n\n", GetConfigFilePath(""));
 
+	ec.g = &gGraphicsDevice;
+	ec.camera = vector2_zero();
+
 	EditorBrushInit(&brush);
 	strcpy(lastFile, "");
 
@@ -1330,10 +1339,10 @@ int main(int argc, char *argv[])
 	// Force enable ammo so that ammo spawners show up
 	ConfigGet(&gConfig, "Game.Ammo")->u.Bool.Value = true;
 	ConfigSetChanged(&gConfig);
-	GraphicsInit(&gGraphicsDevice, &gConfig);
-	gGraphicsDevice.cachedConfig.IsEditor = true;
-	GraphicsInitialize(&gGraphicsDevice);
-	if (!gGraphicsDevice.IsInitialized)
+	GraphicsInit(ec.g, &gConfig);
+	ec.g->cachedConfig.IsEditor = true;
+	GraphicsInitialize(ec.g);
+	if (!ec.g->IsInitialized)
 	{
 		printf("Video didn't init!\n");
 		exit(EXIT_FAILURE);
@@ -1409,7 +1418,7 @@ int main(int argc, char *argv[])
 	CollisionSystemTerminate(&gCollisionSystem);
 
 	DrawBufferTerminate(&sDrawBuffer);
-	GraphicsTerminate(&gGraphicsDevice);
+	GraphicsTerminate(ec.g);
 	CharSpriteClassesTerminate(&gCharSpriteClasses);
 	PicManagerTerminate(&gPicManager);
 	FontTerminate(&gFont);

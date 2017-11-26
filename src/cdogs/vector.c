@@ -46,10 +46,6 @@ Vec2i Vec2iUnit(void)
 {
 	return Vec2iNew(1, 1);
 }
-Vec2i Vec2iFromPolar(const double r, const double th)
-{
-	return Vec2iNew((int)Round(sin(th) * r), -(int)Round(cos(th) * r));
-}
 
 Vec2i Vec2iAdd(Vec2i a, Vec2i b)
 {
@@ -125,20 +121,6 @@ Vec2i Vec2iClamp(Vec2i v, Vec2i lo, Vec2i hi)
 	return v;
 }
 
-Vec2i Vec2iFull2Real(Vec2i v)
-{
-	return Vec2iScaleDiv(v, 256);
-}
-Vec2i Vec2iReal2Full(Vec2i v)
-{
-	return Vec2iScale(v, 256);
-}
-Vec2i Vec2iReal2FullCentered(const Vec2i v)
-{
-	return Vec2iAdd(
-		Vec2iScale(v, 256), Vec2iNew(128 * SIGN(v.x), 128 * SIGN(v.y)));
-}
-
 Vec2i Vec2iToTile(Vec2i v)
 {
 	return Vec2iNew(v.x / TILE_WIDTH, v.y / TILE_HEIGHT);
@@ -150,6 +132,23 @@ Vec2i Vec2iCenterOfTile(Vec2i v)
 		v.y * TILE_HEIGHT + TILE_HEIGHT / 2);
 }
 
+Vec2i Vec2ToVec2i(const struct vec v)
+{
+	return Vec2iNew(v.x, v.y);
+}
+Vec2i Vec2ToTile(const struct vec v)
+{
+	return Vec2iNew(v.x / TILE_WIDTH, v.y / TILE_HEIGHT);
+}
+struct vec Vec2iToVec2(const Vec2i v)
+{
+	return to_vector2(v.x, v.y);
+}
+struct vec Vec2CenterOfTile(const Vec2i v)
+{
+	return Vec2iToVec2(Vec2iCenterOfTile(v));
+}
+
 int Vec2iSqrMagnitude(const Vec2i v)
 {
 	return v.x * v.x + v.y * v.y;
@@ -159,29 +158,6 @@ int DistanceSquared(const Vec2i a, const Vec2i b)
 {
 	const Vec2i d = Vec2iMinus(a, b);
 	return Vec2iSqrMagnitude(d);
-}
-
-Vec2i CalcClosestPointOnLineSegmentToPoint(
-	Vec2i l1, Vec2i l2, Vec2i p)
-{
-	// Using parametric representation, line l1->l2 is
-	// P(t) = l1 + t(l2 - l1)
-	// Projection of point p on line is
-	// t = ((p.x - l1.x)(l2.x - l1.x) + (p.y - l1.y)(l2.y - l1.y)) / ||l2 - l1||^2
-	int lineDistanceSquared = DistanceSquared(l1, l2);
-	int numerator;
-	double t;
-	Vec2i closestPoint;
-	// Early exit since same point means 0 distance, and div by 0
-	if (lineDistanceSquared == 0)
-	{
-		return l1;
-	}
-	numerator = (p.x - l1.x)*(l2.x - l1.x) + (p.y - l1.y)*(l2.y - l1.y);
-	t = CLAMP(numerator * 1.0 / lineDistanceSquared, 0, 1);
-	closestPoint.x = (int)Round(l1.x + t*(l2.x - l1.x));
-	closestPoint.y = (int)Round(l1.y + t*(l2.y - l1.y));
-	return closestPoint;
 }
 
 

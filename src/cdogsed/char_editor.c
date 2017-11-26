@@ -506,8 +506,8 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 		{
 			// Speed (256 = 100%)
 			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
-			nk_property_int(
-				ec->ctx, "Speed:", 0, &ec->Char->speed, 1024, 16, 1);
+			nk_property_float(
+				ec->ctx, "Speed:", 0, &ec->Char->speed, 4, 0.05f, 0.01f);
 
 			nk_layout_row(ec->ctx, NK_DYNAMIC, ROW_HEIGHT, 2, colRatios);
 			const int selectedGun = DrawClassSelection(
@@ -600,7 +600,7 @@ static void AddCharacter(EditorContext *ec, const int cloneIdx)
 		ec->Char->Colors.Body = darkGray;
 		ec->Char->Colors.Legs = darkGray;
 		ec->Char->Colors.Hair = colorBlack;
-		ec->Char->speed = 256;
+		ec->Char->speed = 1;
 		ec->Char->Gun = StrGunDescription("Machine gun");
 		ec->Char->maxHealth = 40;
 		ec->Char->flags = FLAGS_IMMUNITY;

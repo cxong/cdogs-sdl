@@ -327,7 +327,8 @@ static void SetSoundEffect(
 	const int channel, const Sint16 bearingDegrees, const Uint8 distance,
 	const bool isMuffled);
 static void SoundPlayAtPosition(
-	SoundDevice *device, Mix_Chunk *data, const Vec2i dp, const bool isMuffled)
+	SoundDevice *device, Mix_Chunk *data, const struct vec dp,
+	const bool isMuffled)
 {
 	if (!device->isInitialised || data == NULL)
 	{
@@ -338,7 +339,7 @@ static void SoundPlayAtPosition(
 	Sint16 bearingDegrees = 0;
 	const int screen = gGraphicsDevice.cachedConfig.Res.x;
 	const int halfScreen = screen / 2;
-	if (!Vec2iIsZero(dp))
+	if (!vector2_is_zero(dp))
 	{
 		// Calculate distance and bearing
 		// Sound position is calculated from an imaginary camera that's half as
@@ -351,16 +352,16 @@ static void SoundPlayAtPosition(
 		//                |
 		//     camera---> +
 		// Calculate real distance using Pythagoras
-		const int d = (int)sqrt(Vec2iSqrMagnitude(dp));
+		const float d = vector2_length(dp);
 		// Scale so that sounds more than a full screen from centre have
 		// maximum distance (255)
-		const int maxDistance =
-			(int)sqrt(screen * screen + halfScreen * halfScreen);
+		const float maxDistance =
+			sqrtf(screen * screen + halfScreen * halfScreen);
 		distance = d * 255 / maxDistance;
 
 		// Calculate bearing
 		const double bearing = atan((double)dp.x / halfScreen);
-		bearingDegrees = (Sint16)(bearing * 180 / PI);
+		bearingDegrees = (Sint16)(bearing * 180 / M_PI);
 		if (bearingDegrees < 0)
 		{
 			bearingDegrees += 360;
@@ -445,11 +446,11 @@ void SoundPlay(SoundDevice *device, Mix_Chunk *data)
 		return;
 	}
 
-	SoundPlayAtPosition(device, data, Vec2iZero(), false);
+	SoundPlayAtPosition(device, data, vector2_zero(), false);
 }
 
 
-void SoundSetEar(const bool isLeft, const int idx, Vec2i pos)
+void SoundSetEar(const bool isLeft, const int idx, const struct vec pos)
 {
 	if (isLeft)
 	{
@@ -475,19 +476,19 @@ void SoundSetEar(const bool isLeft, const int idx, Vec2i pos)
 	}
 }
 
-void SoundSetEarsSide(const bool isLeft, const Vec2i pos)
+void SoundSetEarsSide(const bool isLeft, const struct vec pos)
 {
 	SoundSetEar(isLeft, 0, pos);
 	SoundSetEar(isLeft, 1, pos);
 }
 
-void SoundSetEars(Vec2i pos)
+void SoundSetEars(const struct vec pos)
 {
 	SoundSetEarsSide(true, pos);
 	SoundSetEarsSide(false, pos);
 }
 
-void SoundPlayAt(SoundDevice *device, Mix_Chunk *data, const Vec2i pos)
+void SoundPlayAt(SoundDevice *device, Mix_Chunk *data, const struct vec pos)
 {
 	SoundPlayAtPlusDistance(device, data, pos, 0);
 }
@@ -499,15 +500,13 @@ static bool IsPosNoSee(void *data, Vec2i pos)
 }
 void SoundPlayAtPlusDistance(
 	SoundDevice *device, Mix_Chunk *data,
-	const Vec2i pos, const int plusDistance)
+	const struct vec pos, const int plusDistance)
 {
-	Vec2i closestLeftEar, closestRightEar;
+	struct vec closestLeftEar, closestRightEar;
 
 	// Find closest set of ears to the sound
-	if (CHEBYSHEV_DISTANCE(
-		pos.x, pos.y, device->earLeft1.x, device->earLeft1.y) <
-		CHEBYSHEV_DISTANCE(
-		pos.x, pos.y, device->earLeft2.x, device->earLeft2.y))
+	if (vector2_distance_squared_to(pos, device->earLeft1) <
+		vector2_distance_squared_to(pos, device->earLeft2))
 	{
 		closestLeftEar = device->earLeft1;
 	}
@@ -515,10 +514,8 @@ void SoundPlayAtPlusDistance(
 	{
 		closestLeftEar = device->earLeft2;
 	}
-	if (CHEBYSHEV_DISTANCE(
-		pos.x, pos.y, device->earRight1.x, device->earRight1.y) <
-		CHEBYSHEV_DISTANCE(
-		pos.x, pos.y, device->earRight2.x, device->earRight2.y))
+	if (vector2_distance_squared_to(pos, device->earRight1) <
+		vector2_distance_squared_to(pos, device->earRight2))
 	{
 		closestRightEar = device->earRight1;
 	}
@@ -527,19 +524,20 @@ void SoundPlayAtPlusDistance(
 		closestRightEar = device->earRight2;
 	}
 
-	const Vec2i origin = CalcClosestPointOnLineSegmentToPoint(
+	const struct vec origin = CalcClosestPointOnLineSegmentToPoint(
 		closestLeftEar, closestRightEar, pos);
 	HasClearLineData lineData;
 	lineData.IsBlocked = IsPosNoSee;
 	lineData.data = &gMap;
 	bool isMuffled = false;
-	if (!HasClearLineJMRaytrace(pos, origin, &lineData))
+	if (!HasClearLineJMRaytrace(
+		Vec2ToVec2i(pos), Vec2ToVec2i(origin), &lineData))
 	{
 		isMuffled = true;
 	}
-	const Vec2i dp = Vec2iMinus(pos, origin);
+	const struct vec dp = vector2_subtract(pos, origin);
 	SoundPlayAtPosition(
-		&gSoundDevice, data, Vec2iNew(dp.x, abs(dp.y) + plusDistance),
+		&gSoundDevice, data, to_vector2(dp.x, fabsf(dp.y) + plusDistance),
 		isMuffled);
 }
 

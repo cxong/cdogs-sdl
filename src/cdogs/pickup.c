@@ -91,13 +91,10 @@ void PickupAdd(const NAddPickup ap)
 	memset(p, 0, sizeof *p);
 	p->UID = ap.UID;
 	p->class = StrPickupClass(ap.PickupClass);
-	p->tileItem.x = p->tileItem.y = -1;
-	p->tileItem.flags = ap.TileItemFlags;
-	p->tileItem.kind = KIND_PICKUP;
+	TileItemInit(
+		&p->tileItem, i, KIND_PICKUP, p->class->Pic->size, ap.TileItemFlags);
 	p->tileItem.getPicFunc = GetPickupPic;
-	p->tileItem.size = p->class->Pic->size;
-	p->tileItem.id = i;
-	MapTryMoveTileItem(&gMap, &p->tileItem, Net2Vec2i(ap.Pos));
+	MapTryMoveTileItem(&gMap, &p->tileItem, NetToVec2(ap.Pos));
 	p->IsRandomSpawned = ap.IsRandomSpawned;
 	p->PickedUp = false;
 	p->SpawnerUID = ap.SpawnerUID;
@@ -119,7 +116,7 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 	CASSERT(a->PlayerUID >= 0, "NPCs cannot pickup");
 	bool canPickup = true;
 	const char *sound = NULL;
-	const Vec2i actorPos = Vec2iNew(a->tileItem.x, a->tileItem.y);
+	const struct vec actorPos = a->tileItem.Pos;
 	switch (p->class->Type)
 	{
 	case PICKUP_JEWEL:
@@ -193,7 +190,7 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_ADD_KEYS);
 			e.u.AddKeys.KeyFlags = p->class->u.Keys;
-			e.u.AddKeys.Pos = Vec2i2Net(actorPos);
+			e.u.AddKeys.Pos = Vec2ToNet(actorPos);
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 		break;
@@ -212,7 +209,7 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 		{
 			GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
 			strcpy(es.u.SoundAt.Sound, sound);
-			es.u.SoundAt.Pos = Vec2i2Net(actorPos);
+			es.u.SoundAt.Pos = Vec2ToNet(actorPos);
 			es.u.SoundAt.IsHit = false;
 			GameEventsEnqueue(&gGameEvents, es);
 		}

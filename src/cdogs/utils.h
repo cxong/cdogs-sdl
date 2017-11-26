@@ -142,12 +142,13 @@ char *CDogsGetCWD(char *buf);
 void RelPathFromCWD(char *buf, const char *to);
 void GetDataFilePath(char *buf, const char *path);
 
-#define PI 3.14159265
-
 double Round(double x);
 
 double ToDegrees(double radians);
 double ToRadians(double degrees);
+
+struct vec CalcClosestPointOnLineSegmentToPoint(
+	const struct vec l1, const struct vec l2, const struct vec p);
 
 typedef enum
 {
@@ -184,6 +185,7 @@ bool StrEndsWith(const char *str, const char *suffix);
 #define S2T(_type, _str) if (strcmp(s, _str) == 0) { return _type; }
 
 #define RAND_INT(_low, _high) ((_low) == (_high) ? (_low) : (_low) + (rand() % ((_high) - (_low))))
+#define RAND_FLOAT(_low, _high) ((_low) + ((float)rand() / RAND_MAX * ((_high) - (_low))))
 #define RAND_DOUBLE(_low, _high) ((_low) + ((double)rand() / RAND_MAX * ((_high) - (_low))))
 
 typedef struct

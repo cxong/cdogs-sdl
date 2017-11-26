@@ -29,23 +29,24 @@
 
 
 static bool RectangleLineIntersect(
-	const Vec2i rectPos, const Vec2i rectSize,
-	const Vec2i lineStart, const Vec2i lineEnd, float *s, Vec2i *normal);
+	const struct vec rectPos, const Vec2i rectSize,
+	const struct vec lineStart, const struct vec lineEnd, float *s,
+	struct vec *normal);
 bool MinkowskiHexCollide(
-	const Vec2i posA, const Vec2i velA, const Vec2i sizeA,
-	const Vec2i posB, const Vec2i velB, const Vec2i sizeB,
-	Vec2i *colA, Vec2i *colB, Vec2i *normal)
+	const struct vec posA, const struct vec velA, const Vec2i sizeA,
+	const struct vec posB, const struct vec velB, const Vec2i sizeB,
+	struct vec *colA, struct vec *colB, struct vec *normal)
 {
 	// Find rectangle C by combining A and B
 	const Vec2i sizeC = Vec2iAdd(sizeA, sizeB);
 
 	// Subtract velA from vB
-	const Vec2i velBA = Vec2iMinus(velB, velA);
+	const struct vec velBA = vector2_subtract(velB, velA);
 
 	// Find the intersection between velBA and the rectangle C centered on posA
 	float s;
 	if (!RectangleLineIntersect(
-		posA, sizeC, posB, Vec2iAdd(posB, velBA), &s, normal))
+		posA, sizeC, posB, vector2_add(posB, velBA), &s, normal))
 	{
 		return false;
 	}
@@ -59,19 +60,20 @@ bool MinkowskiHexCollide(
 	else
 	{
 		// Find the actual intersection points based on the result
-		*colA = Vec2iAdd(posA, Vec2iScaleD(velA, s));
-		*colB = Vec2iAdd(posB, Vec2iScaleD(velB, s));
+		*colA = vector2_add(posA, vector2_scale(velA, s));
+		*colB = vector2_add(posB, vector2_scale(velB, s));
 	}
 
 	return true;
 }
 static bool LinesIntersect(
-	const Vec2i p1Start, const Vec2i p1End,
-	const Vec2i p2Start, const Vec2i p2End,
+	const struct vec p1Start, const struct vec p1End,
+	const struct vec p2Start, const struct vec p2End,
 	float *s);
 static bool RectangleLineIntersect(
-	const Vec2i rectPos, const Vec2i rectSize,
-	const Vec2i lineStart, const Vec2i lineEnd, float *s, Vec2i *normal)
+	const struct vec rectPos, const Vec2i rectSize,
+	const struct vec lineStart, const struct vec lineEnd, float *s,
+	struct vec *normal)
 {
 	// Find the closest point at which a line intersects a rectangle
 	// Do this by finding intersections between the line and all four sides of
@@ -80,17 +82,17 @@ static bool RectangleLineIntersect(
 	const int right = left + rectSize.x;
 	const int top = rectPos.y - rectSize.y / 2;
 	const int bottom = top + rectSize.y;
-	const Vec2i topLeft = Vec2iNew(left, top);
-	const Vec2i topRight = Vec2iNew(right, top);
-	const Vec2i bottomRight = Vec2iNew(right, bottom);
-	const Vec2i bottomLeft = Vec2iNew(left, bottom);
+	const struct vec topLeft = to_vector2(left, top);
+	const struct vec topRight = to_vector2(right, top);
+	const struct vec bottomRight = to_vector2(right, bottom);
+	const struct vec bottomLeft = to_vector2(left, bottom);
 
 	// Border case: check if line start is entirely within rectangle
 	if (lineStart.x > left && lineStart.x < right &&
 		lineStart.y > top && lineStart.y < bottom)
 	{
 		*s = 0;
-		*normal = Vec2iZero();
+		*normal = vector2_zero();
 		return true;
 	}
 
@@ -104,22 +106,22 @@ static bool RectangleLineIntersect(
 		*s = sPart;\
 		*normal = _n;\
 	}
-	_CHECK_MIN_DISTANCE(topLeft, topRight, Vec2iNew(0, 1));
-	_CHECK_MIN_DISTANCE(topRight, bottomRight, Vec2iNew(-1, 0));
-	_CHECK_MIN_DISTANCE(bottomLeft, bottomRight, Vec2iNew(0, -1));
-	_CHECK_MIN_DISTANCE(topLeft, bottomLeft, Vec2iNew(1, 0));
+	_CHECK_MIN_DISTANCE(topLeft, topRight, to_vector2(0, 1));
+	_CHECK_MIN_DISTANCE(topRight, bottomRight, to_vector2(-1, 0));
+	_CHECK_MIN_DISTANCE(bottomLeft, bottomRight, to_vector2(0, -1));
+	_CHECK_MIN_DISTANCE(topLeft, bottomLeft, to_vector2(1, 0));
 
 	return *s >= 0 && *s <= 1;
 }
 static bool LinesIntersect(
-	const Vec2i p1Start, const Vec2i p1End,
-	const Vec2i p2Start, const Vec2i p2End,
+	const struct vec p1Start, const struct vec p1End,
+	const struct vec p2Start, const struct vec p2End,
 	float *s)
 {
 	// Return whether two line segments intersect, and at which fraction
 	// http://stackoverflow.com/a/1968345/2038264
-	const Vec2i v1 = Vec2iMinus(p1End, p1Start);
-	const Vec2i v2 = Vec2iMinus(p2End, p2Start);
+	const struct vec v1 = vector2_subtract(p1End, p1Start);
+	const struct vec v2 = vector2_subtract(p2End, p2Start);
 
 	const int divisor = -v2.x * v1.y + v1.x * v2.y;
 	if (divisor == 0)
@@ -127,7 +129,7 @@ static bool LinesIntersect(
 		// Lines are parallel/collinear, just assume no collision
 		return false;
 	}
-	const Vec2i p12Start = Vec2iMinus(p1Start, p2Start);
+	const struct vec p12Start = vector2_subtract(p1Start, p2Start);
 	*s = (float)(-v1.y * p12Start.x + v1.x * p12Start.y) / divisor;
 	const float t = (float)(v2.x * p12Start.y - v2.y * p12Start.x) / divisor;
 

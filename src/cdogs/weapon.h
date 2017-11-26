@@ -51,6 +51,7 @@
 #include "bullet_class.h"
 #include "defs.h"
 #include "draw/char_sprites.h"
+#include "mathc/mathc.h"
 #include "pic.h"
 #include "pics.h"
 #include "sounds.h"
@@ -150,21 +151,21 @@ const GunDescription *StrGunDescription(const char *s);
 GunDescription *IdGunDescription(const int i);
 int GunDescriptionId(const GunDescription *g);
 GunDescription *IndexGunDescriptionReal(const int i);
-Vec2i GunGetMuzzleOffset(
+struct vec GunGetMuzzleOffset(
 	const GunDescription *desc, const CharSprites *cs, const direction_e dir);
 void WeaponUpdate(Weapon *w, const int ticks);
 bool WeaponIsLocked(const Weapon *w);
 void WeaponSetState(Weapon *w, const gunstate_e state);
 void GunFire(
-	const GunDescription *g, const Vec2i fullPos, const int z,
+	const GunDescription *g, const struct vec pos, const int z,
 	const double radians,
 	const int flags, const int playerUID, const int uid,
 	const bool playSound, const bool isGun);
 void GunAddBrass(
-	const GunDescription *g, const direction_e d, const Vec2i pos);
+	const GunDescription *g, const direction_e d, const struct vec pos);
 
 
-int GunGetRange(const GunDescription *g);
+float GunGetRange(const GunDescription *g);
 bool GunHasMuzzle(const GunDescription *g);
 bool IsHighDPS(const GunDescription *g);
 bool IsLongRange(const GunDescription *g);

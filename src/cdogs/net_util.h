@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014-2016, Cong Xu
+    Copyright (c) 2014-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@
 
 #define NET_LISTEN_PORT 34219
 
-#define NET_PROTOCOL_VERSION 4
+#define NET_PROTOCOL_VERSION 5
 
 // Messages
 
@@ -58,6 +58,8 @@ NMissionComplete NMakeMissionComplete(
 
 Vec2i Net2Vec2i(const NVec2i v);
 NVec2i Vec2i2Net(const Vec2i v);
+struct vec NetToVec2(const NVec2 v);
+NVec2 Vec2ToNet(const struct vec v);
 NColor Color2Net(const color_t c);
 NCharColors CharColors2Net(const CharColors c);
 CharColors Net2CharColors(const NCharColors c);

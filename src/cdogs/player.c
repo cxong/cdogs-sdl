@@ -61,7 +61,7 @@ void PlayerDataAddOrUpdate(const NPlayerData pd)
 			(int)pd.UID < gNetClient.FirstPlayerUID + MAX_LOCAL_PLAYERS;
 		p->inputDevice = INPUT_DEVICE_UNSET;
 
-		p->Char.speed = 256;
+		p->Char.speed = 1;
 
 		LOG(LM_MAIN, LL_INFO, "add default player UID(%u) local(%s)",
 			pd.UID, p->IsLocal ? "true" : "false");
@@ -344,20 +344,19 @@ bool IsPlayerScreen(const PlayerData *p)
 	return p->IsLocal && humanOrScreen && IsPlayerAliveOrDying(p);
 }
 
-Vec2i PlayersGetMidpoint(void)
+struct vec PlayersGetMidpoint(void)
 {
 	// for all surviving players, find bounding rectangle, and get center
-	Vec2i min;
-	Vec2i max;
+	struct vec min, max;
 	PlayersGetBoundingRectangle(&min, &max);
-	return Vec2iScaleDiv(Vec2iAdd(min, max), 2);
+	return vector2_scale(vector2_add(min, max), 0.5f);
 }
 
-void PlayersGetBoundingRectangle(Vec2i *min, Vec2i *max)
+void PlayersGetBoundingRectangle(struct vec *min, struct vec *max)
 {
 	bool isFirst = true;
-	*min = Vec2iZero();
-	*max = Vec2iZero();
+	*min = vector2_zero();
+	*max = vector2_zero();
 	const bool humansOnly =
 		GetNumPlayers(PLAYER_ALIVE_OR_DYING, true, false) > 0;
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
@@ -371,14 +370,14 @@ void PlayersGetBoundingRectangle(Vec2i *min, Vec2i *max)
 			const TTileItem *ti = &player->tileItem;
 			if (isFirst)
 			{
-				*min = *max = Vec2iNew(ti->x, ti->y);
+				*min = *max = ti->Pos;
 			}
 			else
 			{
-				if (ti->x < min->x)	min->x = ti->x;
-				if (ti->y < min->y)	min->y = ti->y;
-				if (ti->x > max->x)	max->x = ti->x;
-				if (ti->y > max->y)	max->y = ti->y;
+				min->x = MIN(ti->Pos.x, min->x);
+				min->y = MIN(ti->Pos.y, min->y);
+				max->x = MAX(ti->Pos.x, max->x);
+				max->y = MAX(ti->Pos.y, max->y);
 			}
 			isFirst = false;
 		}

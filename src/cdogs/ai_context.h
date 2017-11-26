@@ -79,7 +79,7 @@ typedef struct
 		int UID;
 	} u;
 	int LastDone;
-	Vec2i Goal;
+	struct vec Goal;
 } AIObjectiveState;
 typedef struct
 {
