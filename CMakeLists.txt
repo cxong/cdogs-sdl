@@ -222,7 +222,8 @@ IF(UNIX AND NOT APPLE AND NOT BEOS AND NOT HAIKU)
 	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-sdl.appdata.xml DESTINATION ${INSTALL_PREFIX}/share/appdata)
 	foreach(RES 16 22 32 48 128)
 		INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-icon.${RES}.png
-			DESTINATION ${INSTALL_PREFIX}/share/icons/hicolor/${RES}x${RES}/apps/cdogs-sdl.png)
+			DESTINATION ${INSTALL_PREFIX}/share/icons/hicolor/${RES}x${RES}/apps
+			RENAME cdogs-sdl.png)
 	endforeach(RES)
 elseif(WIN32)
 	# Package for Windows
