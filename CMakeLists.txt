@@ -194,15 +194,21 @@ elseif(APPLE)
 else()
 	set(LIB_EXTENSION ".so")
 endif()
+
+# Since Debian wants games binaries in /usr/games
+if(NOT DEFINED CDOGS_BIN_DIR)
+	set(CDOGS_BIN_DIR "${INSTALL_PREFIX}/bin")
+endif()
+
 install(
   PROGRAMS
     ${CMAKE_CURRENT_BINARY_DIR}/src/cdogs-sdl${EXE_EXTENSION}
-  DESTINATION ${INSTALL_PREFIX}/bin)
+    DESTINATION ${CDOGS_BIN_DIR})
 if(NOT "${GCW0}")
 	install(
 	  PROGRAMS
 	    ${CMAKE_CURRENT_BINARY_DIR}/src/cdogs-sdl-editor${EXE_EXTENSION}
-	  DESTINATION ${INSTALL_PREFIX}/bin)
+	    DESTINATION ${CDOGS_BIN_DIR})
 endif()
 
 INSTALL(DIRECTORY
