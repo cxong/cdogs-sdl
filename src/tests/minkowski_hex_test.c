@@ -15,10 +15,10 @@ FEATURE(minkowski_hex, "Minkowski Hex")
 		GIVEN("two rectangles with the same position")
 			const struct vec rectPos1 = to_vector2(3, 4);
 			const struct vec rectVel1 = to_vector2(-4, 5);
-			const struct vec rectSize1 = to_vector2(1, 3);
+			const Vec2i rectSize1 = Vec2iNew(1, 3);
 			const struct vec rectPos2 = rectPos1;
+			const struct vec rectVel2 = to_vector2(7, -8);
 			const Vec2i rectSize2 = Vec2iNew(2, 1);
-			const Vec2i rectVel2 = Vec2iNew(7, -8);
 
 		WHEN("I check for their collision")
 			struct vec collide1, collide2, normal;

@@ -25,6 +25,8 @@
 */
 #pragma once
 
+#include <math.h>
+
 #include "mathc/mathc.h"
 #include "utils.h"
 
