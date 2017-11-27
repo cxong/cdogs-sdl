@@ -118,65 +118,50 @@ void DiagonalHold(keyboard_t *keyboard)
     {
         keyboard->upLeftDiagonal = UNPRESSED;
         keyboard->upLeftDiagonalTicks = (-1);
-        keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed = false;
-        keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed = false;
-    } // move to top, expllicitly set to false -- done
+        keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed = realKeyboardState[keyboard->PlayerKeys->up];
+        keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed = realKeyboardState[keyboard->PlayerKeys->left];
+        // replace to equalize with real keyboard state
+    } 
     
-    if ((keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed == true && keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed == true) && ((keyboard->upLeftDiagonal == UNPRESSED)))
+    // -----
+    //Sets the stage to change to sustain, hopefully avoids false positives
+    if ((keyboard->upLeftDiagonal == UNPRESSED) && (keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed == true && keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed == true))
     {
         keyboard->upLeftDiagonal = PRESSED;
         keyboard->upLeftDiagonalTicks = (-1);
-    } //A basic "make sure everything is ready to be set to SUSTAIN barring anything else changing"
+    } 
     
-    else if (((keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed == true && keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed == false)
-    || (keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed == false && keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed == true))  && ((keyboard->upLeftDiagonal == PRESSED)))
+    // ------
+    //Sets sustain if both buttons in a diagonal have been pressed but one is no longer pressed 
+    else if ((keyboard->upLeftDiagonal == PRESSED) && ((keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed == true && keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed == false)
+    || (keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed == false && keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed == true)))
     {
         keyboard->upLeftDiagonal = SUSTAIN;
         keyboard->upLeftDiagonalTicks = currentTicks + DIAGONAL_RELEASE_DELAY;
-        if (realKeyboardState[keyboard->PlayerKeys->up] == true)
-        {
-            keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed = false;
-        }
-        else
-        {
-            keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed = false;
-        }
-    } // use realKeyboardState for comparison to suss out which button to set to false
+    } 
     
-    // Kinda see what I was going for here, but have little idea how I thought it would work. Can't say for sure if I was tired and lit on a nonsense idea or if I'm currently tired and not seeing the sense
-    // I've tried every permutation of turning both these ifs on, not convinced either does anything, can't really think of a cogent plan of approach for an actual fix right now
-    
-    //-------
-    //This doesn't work and never would but I wanted to experiment with ending sustains because one direction is still clearly held, it needs to specifically set the one not pressed to false, but that info isn't stored
-    else if ((keyboard->upLeftDiagonal == SUSTAIN) && (keyboard->upLeftDiagonalTicks > currentTicks) && 
-    ((realKeyboardState[keyboard->PlayerKeys->up] == true && realKeyboardState[keyboard->PlayerKeys->left] == false)
-    || (realKeyboardState[keyboard->PlayerKeys->up] == false && realKeyboardState[keyboard->PlayerKeys->left] == true)))
-    {
-        keyboard->upLeftDiagonal = PRESSED;
-        keyboard->upLeftDiagonalTicks = (-1);
-        if (realKeyboardState[keyboard->PlayerKeys->up] == true)
-        {
-            keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed = false;
-        }
-        else
-        {
-            keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed = false;
-        }
-    } //------- add the real check to the if statement, currenlty this second if does less than nothing.
-    
-    else if ((keyboard->upLeftDiagonalTicks > currentTicks) && (keyboard->upLeftDiagonal == SUSTAIN))
+    // -----
+    //Keeps buttons pressed for (currenlty 30) milliseconds to help determine if a diagonal was intended
+    else if ((keyboard->upLeftDiagonal == SUSTAIN)  && (keyboard->upLeftDiagonalTicks > currentTicks))
     {
         keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed = true; 
         keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed = true;
-    } //Keeps buttons pressed for x milliseconds to help determine if a diagonal was intended
+    } 
     
+    // -----
+    //Ends a SUSTAIN, returns keyboard to neutral state, assigns both to false before assigning both to their real value to avoid causing a bug that makes up or left immediately stop functioning
+    //the first time after being pressed after a sustain, uncertain if this is another case where the problem is eliminated because the function effectively does nothing
     else if ((keyboard->upLeftDiagonal == SUSTAIN) && ((keyboard->upLeftDiagonalTicks <= currentTicks)))
     {
         keyboard->upLeftDiagonal = UNPRESSED;
         keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed = false;
         keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed = false;
-    } //Ends a SUSTAIN, returns keyboard to neutral state
+        keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed = realKeyboardState[keyboard->PlayerKeys->up];
+        keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed = realKeyboardState[keyboard->PlayerKeys->left];
+    } 
     
+    // -----
+    //A check to make sure that sustain status is never in place for multiple directions, probably a shorter less redundant way to do this but story of this function's hideous life
     else if ((keyboard->currentKeys[keyboard->PlayerKeys->up].isPressed == true && keyboard->currentKeys[keyboard->PlayerKeys->left].isPressed == true) && ((keyboard->upLeftDiagonal == UNPRESSED))
     && (keyboard->downLeftDiagonal == SUSTAIN || keyboard->upRightDiagonal == SUSTAIN || keyboard->downRightDiagonal == SUSTAIN))
     {
@@ -187,7 +172,7 @@ void DiagonalHold(keyboard_t *keyboard)
         keyboard->downLeftDiagonalTicks = (-1);
         keyboard->upRightDiagonalTicks = (-1);
         keyboard->downRightDiagonalTicks = (-1);
-    } //A check to make sure that sustain status is never in place for multiple directions, probably a shorter less redundant way to do this but story of this function's hideous life
+    } 
 
     //fprintf(stderr, "%d\n", keyboard->upLeftDiagonal);
     //fprintf(stderr, "%d\n", keyboard->upLeftDiagonalTicks);
