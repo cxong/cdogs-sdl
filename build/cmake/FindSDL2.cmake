@@ -26,9 +26,12 @@
 # correspond to the ./configure --prefix=$SDLDIR
 # used in building SDL.
 #
-
 #=============================================================================
-# Copyright 2014 Justin Jacobs
+# Copyright 2000-2014 Kitware, Inc.
+# Copyright 2000-2011 Insight Software Consortium
+# Copyright 2014 Justin Jacobs <jajdorkster@gmail.com>
+# Copyright 2015 Cong Xu <congusbongus@gmail.com>
+# All rights reserved.
 #
 # Distributed under the OSI-approved BSD License (the "License");
 # see accompanying file Copyright.txt for details.
