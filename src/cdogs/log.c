@@ -108,16 +108,10 @@ LogLevel StrLogLevel(const char *s)
 }
 
 #ifdef __APPLE__
-#include <asl.h>
+#include <os/log.h>
 #endif
 void LogInit(void)
 {
-#ifdef __APPLE__
-	asl_log_descriptor(
-		NULL, NULL, ASL_LEVEL_INFO, STDOUT_FILENO, ASL_LOG_DESCRIPTOR_WRITE);
-	asl_log_descriptor(
-		NULL, NULL, ASL_LEVEL_NOTICE, STDERR_FILENO, ASL_LOG_DESCRIPTOR_WRITE);
-#endif
 	saveStreamDefaultColor(stderr);
 }
 void LogOpenFile(const char *filename)
@@ -167,6 +161,35 @@ static void LogResetColor(void)
 	resetStreamColor(stderr);
 }
 
+#ifdef __APPLE__
+static int GetOSLogType(const LogLevel l)
+{
+	switch (l)
+	{
+	case LL_TRACE:	// fallthrough
+	case LL_DEBUG: return OS_LOG_TYPE_DEBUG;
+	case LL_INFO:	// fallthrough
+	case LL_WARN: return OS_LOG_TYPE_INFO;
+	case LL_ERROR: return OS_LOG_TYPE_ERROR;
+	default: CASSERT(false, "Unknown log level"); return OS_LOG_TYPE_DEFAULT;
+	}
+}
+
+#define LOG_STR(_level, _stream, _fmt, ...)\
+	os_log_with_type(OS_LOG_DEFAULT, GetOSLogType(_level), _fmt, ##__VA_ARGS__)
+#define LOG_VSTR(_level, _stream, _fmt, _args)\
+	{\
+		char _log_vstr_buf[1024];\
+		vsnprintf(_log_vstr_buf, sizeof(_log_vstr_buf), _fmt, _args);\
+		os_log_with_type(\
+			OS_LOG_DEFAULT, GetOSLogType(_level), "%s", _log_vstr_buf);\
+	}
+#else
+#define LOG_STR(_level, _stream, _fmt, ...)\
+	fprintf(_stream, _fmt, ##__VA_ARGS__)
+#define LOG_VSTR(_level, _stream, _fmt, _args)\
+	vfprintf(_stream, _fmt, _args)
+#endif
 void LogLine(
 	FILE *stream, const LogModule m, const LogLevel l, const char *filename,
 	const int line, const char *function, const char *fmt, ...)
@@ -181,28 +204,28 @@ void LogLine(
 		return;
 	}
 	LogSetLevelColor(l);
-	fprintf(stream, "%-5s ", LogLevelName(l));
+	LOG_STR(l, stream, "%-5s ", LogLevelName(l));
 	LogResetColor();
-	fprintf(stream, "[");
+	LOG_STR(l, stream, "[");
 	LogSetModuleColor();
-	fprintf(stream, "%-5s", LogModuleName(m));
+	LOG_STR(l, stream, "%-5s", LogModuleName(m));
 	LogResetColor();
-	fprintf(stream, "] [");
+	LOG_STR(l, stream, "] [");
 	LogSetFileColor();
-	fprintf(stream, "%s:%d", filename, line);
+	LOG_STR(l, stream, "%s:%d", filename, line);
 	LogResetColor();
-	fprintf(stream, "] ");
+	LOG_STR(l, stream, "] ");
 	LogSetFuncColor();
-	fprintf(stream, "%s()", function);
+	LOG_STR(l, stream, "%s()", function);
 	LogResetColor();
-	fprintf(stream, ": ");
+	LOG_STR(l, stream, ": ");
 	LogSetLevelColor(l);
 	va_list args;
 	va_start(args, fmt);
-	vfprintf(stream, fmt, args);
+	LOG_VSTR(l, stream, fmt, args);
 	va_end(args);
 	LogResetColor();
-	fprintf(stream, "\n");
+	LOG_STR(l, stream, "\n");
 	if (l >= LL_WARN)
 	{
 		fflush(stream);
