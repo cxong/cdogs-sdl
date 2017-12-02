@@ -509,11 +509,11 @@ int AIGotoDirect(const struct vec a, const struct vec p)
 {
 	int cmd = 0;
 
-	if (a.x < p.x)		cmd |= CMD_RIGHT;
-	else if (a.x > p.x)	cmd |= CMD_LEFT;
+	if (a.x + 1 < p.x)		cmd |= CMD_RIGHT;
+	else if (a.x > p.x + 1)	cmd |= CMD_LEFT;
 
-	if (a.y < p.y)		cmd |= CMD_DOWN;
-	else if (a.y > p.y)	cmd |= CMD_UP;
+	if (a.y + 1 < p.y)		cmd |= CMD_DOWN;
+	else if (a.y > p.y + 1)	cmd |= CMD_UP;
 
 	return cmd;
 }
