@@ -413,13 +413,8 @@ static void DrawObjectiveCompass(
 // Draw player's score, health etc.
 static void DrawPlayerStatus(
 	HUD *hud, const PlayerData *data, const TActor *p,
-	const int flags, const Rect2i r, const HealthGauge *hg)
+	const int flags, const HealthGauge *hg)
 {
-	if (p != NULL)
-	{
-		DrawObjectiveCompass(hud->device, p->Pos, r, hud->showExit);
-	}
-
 	Vec2i pos = Vec2iNew(5, 5);
 
 	FontOpts opts = FontOptsNew();
@@ -638,11 +633,57 @@ static void DrawMissionTime(HUD *hud);
 static void DrawObjectiveCounts(HUD *hud);
 void HUDDraw(
 	HUD *hud, const input_device_e pausingDevice,
-	const bool controllerUnplugged)
+	const bool controllerUnplugged, const int numViews)
 {
 	if (ConfigGetBool(&gConfig, "Graphics.ShowHUD"))
 	{
 		DrawPlayerAreas(hud);
+
+		// Draw objective compass
+		Rect2i r;
+		r.Size = Vec2iNew(
+			hud->device->cachedConfig.Res.x,
+			hud->device->cachedConfig.Res.y);
+		if (numViews == 1)
+		{
+		}
+		else if (numViews == 2)
+		{
+			r.Size.x /= 2;
+		}
+		else if (numViews == 3 || numViews == 4)
+		{
+			r.Size.x /= 2;
+			r.Size.y /= 2;
+		}
+		else
+		{
+			CASSERT(false, "not implemented");
+		}
+		for (int i = 0; i < numViews; i++)
+		{
+			const PlayerData *p = hud->DrawData.Players[i];
+			r.Pos = Vec2iZero();
+			if (i & 1)
+			{
+				r.Pos.x = r.Size.x;
+			}
+			if (i >= 2)
+			{
+				r.Pos.y = r.Size.y;
+			}
+			if (!IsPlayerAlive(p))
+			{
+				continue;
+			}
+			TActor *player = ActorGetByUID(p->ActorUID);
+			if (player == NULL)
+			{
+				continue;
+			}
+			DrawObjectiveCompass(hud->device, player->Pos, r, hud->showExit);
+		}
+
 		DrawDeathmatchScores(hud);
 		DrawHUDMessage(hud);
 		if (ConfigGetBool(&gConfig, "Interface.ShowFPS"))
@@ -717,7 +758,7 @@ static void DrawPlayerAreas(HUD *hud)
 		{
 			player = ActorGetByUID(p->ActorUID);
 		}
-		DrawPlayerStatus(hud, p, player, drawFlags, r, &hud->healthGauges[i]);
+		DrawPlayerStatus(hud, p, player, drawFlags, &hud->healthGauges[i]);
 		HUDNumPopupsDrawPlayer(&hud->numPopups, i, drawFlags);
 	}
 

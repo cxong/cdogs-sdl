@@ -52,6 +52,7 @@ typedef struct
 	// This is used for when the game has no players; all spectators should
 	// immediately follow the next player to join
 	bool FollowNextPlayer;
+	int NumViews;
 } Camera;
 
 void CameraInit(Camera *camera);

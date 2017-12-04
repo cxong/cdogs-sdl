@@ -732,7 +732,8 @@ static void RunGameDraw(GameLoopData *data)
 	BlitClearBuf(&gGraphicsDevice);
 	CameraDrawMode(&rData->Camera);
 	HUDDraw(
-		&rData->Camera.HUD, rData->pausingDevice, rData->controllerUnplugged);
+		&rData->Camera.HUD, rData->pausingDevice, rData->controllerUnplugged,
+		rData->Camera.NumViews);
 	const bool isMouse = GameIsMouseUsed();
 	SDL_SetRelativeMouseMode(isMouse);
 	if (isMouse)
