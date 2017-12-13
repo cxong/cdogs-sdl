@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, 2016 Cong Xu
+    Copyright (c) 2013, 2016-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -51,6 +51,7 @@
 #include "sounds.h"
 
 
+Mix_Music *MusicLoad(const char *path);
 void MusicPlayGame(
 	SoundDevice *device, const char *missionPath, const char *music);
 void MusicPlayMenu(SoundDevice *device);

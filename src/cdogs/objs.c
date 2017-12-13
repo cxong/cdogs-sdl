@@ -64,15 +64,16 @@ static unsigned int sMobObjUIDs = 0;
 
 // Draw functions
 
-static CPicDrawContext GetMapObjectDrawContext(const int id)
+static void MapObjectDraw(
+	GraphicsDevice *g, const int id, const Vec2i pos)
 {
 	TObject *obj = CArrayGet(&gObjs, id);
-	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
+	CASSERT(obj->isInUse, "Cannot draw non-existent map object");
 	CPicDrawContext c;
 	c.Dir = DIRECTION_UP;
 	c.Offset = obj->Class->Offset;
 	CPicCopyPic(&obj->tileItem.CPic, &obj->Class->Pic);
-	return c;
+	CPicDraw(g, &obj->Class->Pic, pos, &c);
 }
 
 
@@ -453,7 +454,7 @@ void ObjAdd(const NMapObjectAdd amo)
 		&o->tileItem, i, KIND_OBJECT, o->Class->Size, amo.TileItemFlags);
 	o->Health = amo.Health;
 	o->tileItem.CPic = o->Class->Pic;
-	o->tileItem.CPicFunc = GetMapObjectDrawContext;
+	o->tileItem.CPicFunc = MapObjectDraw;
 	MapTryMoveTileItem(&gMap, &o->tileItem, NetToVec2(amo.Pos));
 	o->isInUse = true;
 	LOG(LM_MAIN, LL_DEBUG,

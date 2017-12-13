@@ -50,6 +50,7 @@
 
 #include <ctype.h>
 #include <math.h>
+#include <memory.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -159,6 +160,15 @@ static void SoundLoad(map_t sounds, const char *name, const char *path)
 }
 static Mix_Chunk *LoadSound(const char *path)
 {
+	// Only load sounds from known extensions
+	const char *ext = strrchr(path, '.');
+	if (ext == NULL || !(
+		strcmp(ext, ".ogg") == 0 || strcmp(ext, ".OGG") == 0 ||
+		strcmp(ext, ".wav") == 0 || strcmp(ext, ".WAV") == 0))
+	{
+		return NULL;
+	}
+	LOG(LM_MAIN, LL_TRACE, "loading sound file %s", path);
 	return Mix_LoadWAV(path);
 }
 static void SoundDataTerminate(any_t data);
@@ -568,6 +578,11 @@ static Mix_Chunk *SoundDataGet(SoundData *s)
 		case SOUND_NORMAL:
 			return s->u.normal;
 		case SOUND_RANDOM:
+			if (s->u.random.sounds.size == 0)
+			{
+				return NULL;
+			}
+			else
 			{
 				// Don't get the last sound used
 				int idx = s->u.random.lastPlayed;

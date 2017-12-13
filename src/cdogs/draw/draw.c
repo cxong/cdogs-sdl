@@ -298,8 +298,7 @@ static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset)
 
 	if (t->CPicFunc)
 	{
-		CPicDrawContext c = t->CPicFunc(t->id);
-		CPicDraw(b->g, &t->CPic, picPos, &c);
+		t->CPicFunc(b->g, t->id, picPos);
 	}
 	else if (t->getPicFunc)
 	{

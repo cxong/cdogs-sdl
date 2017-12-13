@@ -127,7 +127,7 @@ typedef struct TileItem
 	TileItemDrawFunc drawFunc;
 	TileItemDrawFuncData drawData;
 	CPic CPic;
-	GetDrawContextFunc CPicFunc;
+	DrawCPicFunc CPicFunc;
 	Vec2i ShadowSize;
 	int SoundLock;
 } TTileItem;

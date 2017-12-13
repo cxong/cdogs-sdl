@@ -81,7 +81,7 @@ typedef struct
 	direction_e Dir;
 	Vec2i Offset;
 } CPicDrawContext;
-typedef CPicDrawContext (*GetDrawContextFunc)(const int);
+typedef void (*DrawCPicFunc)(GraphicsDevice *, const int, const Vec2i);
 
 void NamedPicFree(NamedPic *n);
 

@@ -91,22 +91,21 @@ BulletClass *StrBulletClass(const char *s)
 
 // Draw functions
 
-static CPicDrawContext GetBulletDrawContext(const int id)
+static void BulletDraw(GraphicsDevice *g, const int id, const Vec2i pos)
 {
 	const TMobileObject *obj = CArrayGet(&gMobObjs, id);
 	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
-	// Calculate direction based on velocity
-	const direction_e dir =
-		RadiansToDirection(vector2_angle(obj->tileItem.Vel) + M_PI_2);
-	const Pic *pic = CPicGetPic(&obj->tileItem.CPic, dir);
 	CPicDrawContext c;
-	c.Dir = dir;
+	// Calculate direction based on velocity
+	c.Dir = RadiansToDirection(vector2_angle(obj->tileItem.Vel) + M_PI_2);
+	c.Offset = Vec2iZero();
+	const Pic *pic = CPicGetPic(&obj->tileItem.CPic, c.Dir);
 	if (pic != NULL)
 	{
 		c.Offset = Vec2iNew(
 			pic->size.x / -2, pic->size.y / -2 - obj->z / Z_FACTOR);
 	}
-	return c;
+	CPicDraw(g, &obj->tileItem.CPic, pos, &c);
 }
 
 
@@ -902,7 +901,7 @@ void BulletAdd(const NAddBullet add)
 	obj->tileItem.drawFunc = NULL;
 	obj->tileItem.drawData.MobObjId = i;
 	obj->tileItem.CPic = obj->bulletClass->CPic;
-	obj->tileItem.CPicFunc = GetBulletDrawContext;
+	obj->tileItem.CPicFunc = BulletDraw;
 	obj->tileItem.ShadowSize = obj->bulletClass->ShadowSize;
 	obj->updateFunc = UpdateBullet;
 	MapTryMoveTileItem(&gMap, &obj->tileItem, pos);

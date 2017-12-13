@@ -37,7 +37,7 @@ typedef struct
 	LogLevel Level;
 	const char *Name;
 } LogModuleInfo;
-// Indexed by LogModule
+// Log modules and default logging levels; indexed by LogModule
 static LogModuleInfo sModuleInfo[] =
 {
 	{ LL_INFO, "MAIN" },
@@ -132,36 +132,50 @@ void LogTerminate(void)
 	}
 }
 
+static void LogSetColor(const int color)
+{
+#ifdef __EMSCRIPTEN__
+	UNUSED(color);
+	return;
+#else
+	setStreamColor(stderr, color);
+#endif
+}
+
 static void LogSetLevelColor(const LogLevel l)
 {
 	switch (l)
 	{
-	case LL_TRACE: setStreamColor(stderr, GREY); break;
-	case LL_DEBUG: setStreamColor(stderr, WHITE); break;
-	case LL_INFO: setStreamColor(stderr, GREEN); break;
-	case LL_WARN: setStreamColor(stderr, YELLOW); break;
-	case LL_ERROR: setStreamColor(stderr, RED); break;
+	case LL_TRACE: LogSetColor(GREY); break;
+	case LL_DEBUG: LogSetColor(WHITE); break;
+	case LL_INFO: LogSetColor(GREEN); break;
+	case LL_WARN: LogSetColor(YELLOW); break;
+	case LL_ERROR: LogSetColor(RED); break;
 	default: CASSERT(false, "Unknown log level"); break;
 	}
 }
 static void LogSetModuleColor(void)
 {
-	setStreamColor(stderr, LIGHTBLUE);
+	LogSetColor(LIGHTBLUE);
 }
 static void LogSetFileColor(void)
 {
-	setStreamColor(stderr, BROWN);
+	LogSetColor(BROWN);
 }
 static void LogSetFuncColor(void)
 {
-	setStreamColor(stderr, CYAN);
+	LogSetColor(CYAN);
 }
 static void LogResetColor(void)
 {
+#ifndef __EMSCRIPTEN__
 	resetStreamColor(stderr);
+#endif
 }
 
+// LOG_STR / LOG_VSTR
 #ifdef __APPLE__
+
 static int GetOSLogType(const LogLevel l)
 {
 	switch (l)
@@ -184,11 +198,35 @@ static int GetOSLogType(const LogLevel l)
 		os_log_with_type(\
 			OS_LOG_DEFAULT, GetOSLogType(_level), "%s", _log_vstr_buf);\
 	}
+#elif defined(__EMSCRIPTEN__)
+
+#define LOG_STR(_level, _stream, _fmt, ...)\
+	if (_level >= LL_WARN)\
+	{\
+		fprintf(_stream, _fmt, ##__VA_ARGS__);\
+	}\
+	else\
+	{\
+		printf(_fmt, ##__VA_ARGS__);\
+	}
+
+#define LOG_VSTR(_level, _stream, _fmt, _args)\
+	if (_level >= LL_WARN)\
+	{\
+		vfprintf(_stream, _fmt, _args);\
+	}\
+	else\
+	{\
+		vprintf(_fmt, _args);\
+	}
+
 #else
+
 #define LOG_STR(_level, _stream, _fmt, ...)\
 	fprintf(_stream, _fmt, ##__VA_ARGS__)
 #define LOG_VSTR(_level, _stream, _fmt, _args)\
 	vfprintf(_stream, _fmt, _args)
+
 #endif
 void LogLine(
 	FILE *stream, const LogModule m, const LogLevel l, const char *filename,
