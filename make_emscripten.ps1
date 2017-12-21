@@ -30,3 +30,4 @@ emcc -D "PB_FIELD_16BIT=1" `
 SDL2_IMAGE_FORMATS="[""png""]"
 '@
 
+Copy-Item .\build\windows\cdogs-icon.ico emscripten/favicon.ico

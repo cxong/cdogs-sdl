@@ -32,3 +32,5 @@ emcc -D "PB_FIELD_16BIT=1" \
     --preload-file music \
     --preload-file sounds \
     -o emscripten/index.html
+
+cp build/windows/cdogs-icon.ico emscripten/favicon.ico
