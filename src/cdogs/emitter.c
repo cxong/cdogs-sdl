@@ -58,9 +58,9 @@ void EmitterStart(
 	e.u.AddParticle.Class = em->p;
 	const float speed = RAND_FLOAT(em->minSpeed, em->maxSpeed);
 	const struct vec baseVel = vector2_rotate(
-		to_vector2(0, speed), RAND_FLOAT(0, M_PI * 2));
+		to_vector2(0, speed), RAND_FLOAT(0, M_PIF * 2));
 	e.u.AddParticle.Vel = vector2_add(vel, baseVel);
-	e.u.AddParticle.Angle = RAND_FLOAT(0, M_PI * 2);
+	e.u.AddParticle.Angle = RAND_FLOAT(0, M_PIF * 2);
 	e.u.AddParticle.DZ = RAND_INT(em->minDZ, em->maxDZ);
 	e.u.AddParticle.Spin = RAND_DOUBLE(em->minRotation, em->maxRotation);
 	GameEventsEnqueue(&gGameEvents, e);

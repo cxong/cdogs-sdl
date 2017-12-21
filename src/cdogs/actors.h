@@ -212,7 +212,7 @@ bool ActorIsInvulnerable(
 	const GameMode mode);
 
 void ActorAddBloodSplatters(
-	TActor *a, const int power, const double mass, const struct vec hitVector);
+	TActor *a, const int power, const float mass, const struct vec hitVector);
 int ActorGetHealthPercent(const TActor *a);
 bool ActorIsLowHealth(const TActor *a);
 

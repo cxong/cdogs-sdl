@@ -185,11 +185,11 @@ void CameraUpdate(Camera *camera, const int ticks, const int ms)
 			const struct vec earPos = camera->lastPosition;
 			if (gMap.Size.x * TILE_WIDTH < gGraphicsDevice.cachedConfig.Res.x)
 			{
-				camera->lastPosition.x = gMap.Size.x * TILE_WIDTH / 2;
+				camera->lastPosition.x = (float)gMap.Size.x * TILE_WIDTH / 2;
 			}
 			if (gMap.Size.y * TILE_HEIGHT < gGraphicsDevice.cachedConfig.Res.y)
 			{
-				camera->lastPosition.y = gMap.Size.y * TILE_HEIGHT / 2;
+				camera->lastPosition.y = (float)gMap.Size.y * TILE_HEIGHT / 2;
 			}
 
 			SoundSetEars(earPos);

@@ -347,8 +347,8 @@ static void SoundPlayAtPosition(
 
 	int distance = 0;
 	Sint16 bearingDegrees = 0;
-	const int screen = gGraphicsDevice.cachedConfig.Res.x;
-	const int halfScreen = screen / 2;
+	const float screen = (float)gGraphicsDevice.cachedConfig.Res.x;
+	const float halfScreen = screen / 2;
 	if (!vector2_is_zero(dp))
 	{
 		// Calculate distance and bearing
@@ -367,7 +367,7 @@ static void SoundPlayAtPosition(
 		// maximum distance (255)
 		const float maxDistance =
 			sqrtf(screen * screen + halfScreen * halfScreen);
-		distance = d * 255 / maxDistance;
+		distance = (int)(d * 255 / maxDistance);
 
 		// Calculate bearing
 		const double bearing = atan((double)dp.x / halfScreen);

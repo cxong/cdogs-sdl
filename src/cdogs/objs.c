@@ -274,7 +274,7 @@ bool HasHitSound(
 static void DoDamageCharacter(
 	const struct vec hitVector,
 	const int power,
-	const double mass,
+	const float mass,
 	const int flags,
 	const int playerUID,
 	const int uid,
@@ -283,7 +283,7 @@ static void DoDamageCharacter(
 void Damage(
 	const struct vec hitVector,
 	const int power,
-	const double mass,
+	const float mass,
 	const int flags,
 	const int playerUID,
 	const int uid,
@@ -317,7 +317,7 @@ void Damage(
 static void DoDamageCharacter(
 	const struct vec hitVector,
 	const int power,
-	const double mass,
+	const float mass,
 	const int flags,
 	const int playerUID,
 	const int uid,

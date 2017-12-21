@@ -268,7 +268,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 	const TActor *closestEnemy = AIGetClosestVisibleEnemy(actor, true);
 	if (closestEnemy)
 	{
-		int minEnemyDistance = CHEBYSHEV_DISTANCE(
+		const float minEnemyDistance = CHEBYSHEV_DISTANCE(
 			actor->Pos.x, actor->Pos.y,
 			closestEnemy->Pos.x, closestEnemy->Pos.y);
 		// Also only engage if there's a clear shot
@@ -788,7 +788,7 @@ static bool IsPosCloseEnoughToPlayer(
 	}
 	const float distanceFromPlayer2 =
 		vector2_distance_squared_to(pos, player->Pos);
-	const int distanceMax2 = SQUARED(distanceTooFarFromPlayer * 16);
+	const float distanceMax2 = SQUARED(distanceTooFarFromPlayer * 16);
 	return distanceFromPlayer2 < distanceMax2;
 }
 // Navigate to the current objective

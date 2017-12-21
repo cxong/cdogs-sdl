@@ -83,9 +83,8 @@ void DrawBufferSetFromMap(
 
 	buffer->Size = Vec2iNew(width, buffer->OrigSize.y);
 
-	buffer->xTop = origin.x - TILE_WIDTH * width / 2;
-	//buffer->yTop = y_origin - 100;
-	buffer->yTop = origin.y - TILE_HEIGHT * buffer->OrigSize.y / 2;
+	buffer->xTop = (int)origin.x - TILE_WIDTH * width / 2;
+	buffer->yTop = (int)origin.y - TILE_HEIGHT * buffer->OrigSize.y / 2;
 
 	buffer->xStart = buffer->xTop / TILE_WIDTH;
 	buffer->yStart = buffer->yTop / TILE_HEIGHT;

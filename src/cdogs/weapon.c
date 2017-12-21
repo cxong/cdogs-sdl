@@ -234,11 +234,11 @@ static void LoadGunDescription(
 
 	LoadInt(&g->SoundLockLength, node, "SoundLockLength");
 
-	LoadDouble(&g->Recoil, node, "Recoil");
+	LoadFloat(&g->Recoil, node, "Recoil");
 
 	LoadInt(&g->Spread.Count, node, "SpreadCount");
-	LoadDouble(&g->Spread.Width, node, "SpreadWidth");
-	LoadDouble(&g->AngleOffset, node, "AngleOffset");
+	LoadFloat(&g->Spread.Width, node, "SpreadWidth");
+	LoadFloat(&g->AngleOffset, node, "AngleOffset");
 
 	LoadInt(&g->MuzzleHeight, node, "MuzzleHeight");
 	g->MuzzleHeight *= Z_FACTOR;
@@ -498,14 +498,13 @@ void GunAddBrass(
 	CASSERT(g->Brass, "Cannot create brass for no-brass weapon");
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 	e.u.AddParticle.Class = g->Brass;
-	double x, y;
-	const double radians = dir2radians[d];
-	GetVectorsForRadians(radians, &x, &y);
-	const struct vec ejectionPortOffset = vector2_scale(to_vector2(x, y), 7);
+	const float radians = dir2radians[d];
+	const struct vec ejectionPortOffset = vector2_scale(
+		Vec2FromRadiansScaled(radians), 7);
 	e.u.AddParticle.Pos = vector2_subtract(pos, ejectionPortOffset);
 	e.u.AddParticle.Z = g->MuzzleHeight;
 	e.u.AddParticle.Vel = vector2_scale(
-		Vec2FromRadians(radians + M_PI_2), 0.333333f);
+		Vec2FromRadians(radians + M_PIF_2), 0.333333f);
 	e.u.AddParticle.Vel.x += RAND_FLOAT(-0.25f, 0.25f);
 	e.u.AddParticle.Vel.y += RAND_FLOAT(-0.25f, 0.25f);
 	e.u.AddParticle.Angle = RAND_DOUBLE(0, M_PI * 2);

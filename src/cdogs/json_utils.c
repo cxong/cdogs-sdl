@@ -109,6 +109,14 @@ void LoadDouble(double *value, json_t *node, const char *name)
 	}
 	*value = atof(node->text);
 }
+void LoadFloat(float *value, json_t *node, const char *name)
+{
+	if (!TryLoadValue(&node, name))
+	{
+		return;
+	}
+	*value = strtof(node->text, NULL);
+}
 void LoadFullInt(float *value, json_t *node, const char *name)
 {
 	if (!TryLoadValue(&node, name))
@@ -136,9 +144,9 @@ void LoadVec2(struct vec *value, json_t *node, const char *name)
 		return;
 	}
 	node = node->child;
-	value->x = atof(node->text);
+	value->x = strtof(node->text, NULL);
 	node = node->next;
-	value->y = atof(node->text);
+	value->y = strtof(node->text, NULL);
 }
 void LoadStr(char **value, json_t *node, const char *name)
 {

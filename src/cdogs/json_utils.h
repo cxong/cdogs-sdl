@@ -43,6 +43,7 @@ void AddColorPair(json_t *parent, const char *name, const color_t c);
 void LoadBool(bool *value, json_t *node, const char *name);
 void LoadInt(int *value, json_t *node, const char *name);
 void LoadDouble(double *value, json_t *node, const char *name);
+void LoadFloat(float *value, json_t *node, const char *name);
 void LoadFullInt(float *value, json_t *node, const char *name);
 void LoadVec2i(Vec2i *value, json_t *node, const char *name);
 void LoadVec2(struct vec *value, json_t *node, const char *name);

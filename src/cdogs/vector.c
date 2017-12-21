@@ -134,15 +134,15 @@ Vec2i Vec2iCenterOfTile(Vec2i v)
 
 Vec2i Vec2ToVec2i(const struct vec v)
 {
-	return Vec2iNew(v.x, v.y);
+	return Vec2iNew((int)v.x, (int)v.y);
 }
 Vec2i Vec2ToTile(const struct vec v)
 {
-	return Vec2iNew(v.x / TILE_WIDTH, v.y / TILE_HEIGHT);
+	return Vec2iNew((int)(v.x / TILE_WIDTH), (int)(v.y / TILE_HEIGHT));
 }
 struct vec Vec2iToVec2(const Vec2i v)
 {
-	return to_vector2(v.x, v.y);
+	return to_vector2((float)v.x, (float)v.y);
 }
 struct vec Vec2CenterOfTile(const Vec2i v)
 {

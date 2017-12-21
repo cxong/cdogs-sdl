@@ -64,7 +64,7 @@ struct vec ScreenShakeGetDelta(ScreenShake s)
 	{
 		return vector2_zero();
 	}
-	return to_vector2(rand() % maxDelta, rand() % maxDelta);
+	return to_vector2(RAND_FLOAT(0, maxDelta), RAND_FLOAT(0, maxDelta));
 }
 
 ScreenShake ScreenShakeUpdate(ScreenShake s, int ticks)

@@ -162,14 +162,14 @@ bool IsCollisionWithWall(const struct vec pos, const Vec2i size2)
 	{
 		return true;
 	}
-	if (HitWall(pos.x - size.x,	pos.y - size.y) ||
-		HitWall(pos.x - size.x,	pos.y) ||
-		HitWall(pos.x - size.x,	pos.y + size.y) ||
-		HitWall(pos.x,			pos.y + size.y) ||
-		HitWall(pos.x + size.x,	pos.y + size.y) ||
-		HitWall(pos.x + size.x,	pos.y) ||
-		HitWall(pos.x + size.x,	pos.y - size.y) ||
-		HitWall(pos.x,			pos.y - size.y))
+	if (HitWall((int)pos.x - size.x,	(int)pos.y - size.y) ||
+		HitWall((int)pos.x - size.x,	(int)pos.y) ||
+		HitWall((int)pos.x - size.x,	(int)pos.y + size.y) ||
+		HitWall((int)pos.x,				(int)pos.y + size.y) ||
+		HitWall((int)pos.x + size.x,	(int)pos.y + size.y) ||
+		HitWall((int)pos.x + size.x,	(int)pos.y) ||
+		HitWall((int)pos.x + size.x,	(int)pos.y - size.y) ||
+		HitWall((int)pos.x,				(int)pos.y - size.y))
 	{
 		return true;
 	}
@@ -206,15 +206,15 @@ bool IsCollisionDiamond(
 
 	// Only support wider-than-taller collision diamonds for now
 	CASSERT(size.x >= size.y, "not implemented, taller than wider diamond");
-	const double gradient = (double)size.y / size.x;
+	const float gradient = (float)size.y / size.x;
 
 	// Now we need to check in a diamond pattern that the boundary does not
 	// collide
 	// Top to right
 	for (int i = 0; i < size.x; i++)
 	{
-		const int y = (int)Round((-size.x + i)* gradient);
-		const struct vec p = vector2_add(pos, to_vector2(i, y));
+		const float y = (-size.x + i) * gradient;
+		const struct vec p = vector2_add(pos, to_vector2((float)i, y));
 		if (HitWall(p.x, p.y))
 		{
 			return true;
@@ -223,8 +223,9 @@ bool IsCollisionDiamond(
 	// Right to bottom
 	for (int i = 0; i < size.x; i++)
 	{
-		const int y = (int)Round(i * gradient);
-		const struct vec p = vector2_add(pos, to_vector2(size.x - i, y));
+		const float y = i * gradient;
+		const struct vec p = vector2_add(
+			pos, to_vector2(size.x - (float)i, y));
 		if (HitWall(p.x, p.y))
 		{
 			return true;
@@ -233,8 +234,8 @@ bool IsCollisionDiamond(
 	// Bottom to left
 	for (int i = 0; i < size.x; i++)
 	{
-		const int y = (int)Round((size.x - i) * gradient);
-		const struct vec p = vector2_add(pos, to_vector2(-i, y));
+		const float y = (size.x - i) * gradient;
+		const struct vec p = vector2_add(pos, to_vector2((float)-i, y));
 		if (HitWall(p.x, p.y))
 		{
 			return true;
@@ -243,8 +244,9 @@ bool IsCollisionDiamond(
 	// Left to top
 	for (int i = 0; i < size.x; i++)
 	{
-		const int y = (int)Round(-i * gradient);
-		const struct vec p = vector2_add(pos, to_vector2(-size.x + i, y));
+		const float y = -i * gradient;
+		const struct vec p = vector2_add(
+			pos, to_vector2((float)-size.x + i, y));
 		if (HitWall(p.x, p.y))
 		{
 			return true;

@@ -311,7 +311,7 @@ const PlayerData *GetFirstPlayer(
 
 bool IsPlayerAlive(const PlayerData *player)
 {
-	if (player->ActorUID == -1)
+	if (player == NULL || player->ActorUID == -1)
 	{
 		return false;
 	}

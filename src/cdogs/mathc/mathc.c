@@ -1713,7 +1713,7 @@ void pmatrix_inverse(struct mat *m, struct mat *result)
 	det = m->m11 * inv.m11 + m->m21 * inv.m12 + m->m31 * inv.m13 + m->m41 * inv.m14;
 	/* Matrix can not be inverted if det == 0 */
 	if (det != 0) {
-		det = 1.0 / det;
+		det = 1.0f / det;
 	}
 	result->m11 = inv.m11 * det;
 	result->m21 = inv.m21 * det;

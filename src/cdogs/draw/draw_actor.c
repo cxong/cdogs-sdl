@@ -287,7 +287,7 @@ void DrawActorPics(const ActorPics *pics, const Vec2i pos)
 	}
 }
 static void DrawLaserSightSingle(
-	const Vec2i from, const double radians, const int range,
+	const Vec2i from, const float radians, const int range,
 	const color_t color);
 void DrawLaserSight(
 	const ActorPics *pics, const TActor *a, const Vec2i picPos)
@@ -305,11 +305,11 @@ void DrawLaserSight(
 	const GunDescription *g = ActorGetGun(a)->Gun;
 	Vec2i muzzlePos = Vec2iAdd(picPos, Vec2ToVec2i(ActorGetGunMuzzleOffset(a)));
 	muzzlePos.y -= g->MuzzleHeight / Z_FACTOR;
-	const double radians = dir2radians[a->direction] + g->AngleOffset;
-	const float range = GunGetRange(g);
+	const float radians = dir2radians[a->direction] + g->AngleOffset;
+	const int range = (int)GunGetRange(g);
 	color_t color = colorCyan;
 	color.a = 64;
-	const double spreadHalf =
+	const float spreadHalf =
 		(g->Spread.Count - 1) * g->Spread.Width / 2 + g->Recoil / 2;
 	if (spreadHalf > 0)
 	{
@@ -322,13 +322,12 @@ void DrawLaserSight(
 	}
 }
 static void DrawLaserSightSingle(
-	const Vec2i from, const double radians, const int range,
+	const Vec2i from, const float radians, const int range,
 	const color_t color)
 {
-	double x, y;
-	GetVectorsForRadians(radians, &x, &y);
-	const Vec2i to = Vec2iAdd(
-		from, Vec2iNew((int)round(x * range), (int)round(y * range)));
+	const struct vec v = vector2_scale(
+		Vec2FromRadiansScaled(radians), (float)range);
+	const Vec2i to = Vec2iAdd(from, Vec2ToVec2i(v));
 	DrawLine(from, to, color);
 }
 
@@ -396,9 +395,9 @@ static void DrawChatter(
 	if (strlen(a->Chatter) > 0)
 	{
 		const Vec2i textPos = Vec2iNew(
-			a->tileItem.Pos.x - b->xTop + offset.x -
+			(int)a->tileItem.Pos.x - b->xTop + offset.x -
 			FontStrW(a->Chatter) / 2,
-			a->tileItem.Pos.y - b->yTop + offset.y - ACTOR_HEIGHT);
+			(int)a->tileItem.Pos.y - b->yTop + offset.y - ACTOR_HEIGHT);
 		FontStr(a->Chatter, textPos);
 	}
 }

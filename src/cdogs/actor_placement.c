@@ -85,12 +85,12 @@ static NVec2 PlaceActorNear(
 	{\
 		return Vec2ToNet(pos);\
 	}
-	int dx = 0;
-	int dy = 0;
+	float dx = 0;
+	float dy = 0;
 	struct vec pos;
 	TRY_LOCATION();
-	const int inc = 1;
-	for (int radius = 12;; radius += 12)
+	const float inc = 1;
+	for (float radius = 12;; radius += 12)
 	{
 		// Going from right to below
 		for (dx = radius, dy = 0; dy < radius; dx -= inc, dy += inc)

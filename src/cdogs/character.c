@@ -163,7 +163,7 @@ bool CharacterSave(CharacterStore *s, const char *path)
 		AddColorPair(node, "Body", c->Colors.Body);
 		AddColorPair(node, "Legs", c->Colors.Legs);
 		AddColorPair(node, "Hair", c->Colors.Hair);
-		AddIntPair(node, "speed", c->speed * 256);
+		AddIntPair(node, "speed", (int)(c->speed * 256));
 		json_insert_pair_into_object(
 			node, "Gun", json_new_string(c->Gun->name));
 		AddIntPair(node, "maxHealth", c->maxHealth);

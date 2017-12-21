@@ -108,12 +108,12 @@ special_damage_e StrSpecialDamage(const char *s);
 
 extern int cmd2dir[16];
 extern int dir2cmd[8];
-extern double dir2radians[8];
+extern float dir2radians[8];
 
 #define CmdToDirection(c)   cmd2dir[(c)&15]
 #define DirectionToCmd(d)   dir2cmd[(d)&7]
 
-void GetVectorsForRadians(const double radians, double *x, double *y);
+struct vec Vec2FromRadiansScaled(const float radians);
 struct vec Vec2FromRadians(const float radians);
 direction_e RadiansToDirection(const double r);
 direction_e DirectionOpposite(const direction_e d);

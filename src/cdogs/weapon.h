@@ -105,13 +105,13 @@ typedef struct
 	Mix_Chunk *ReloadSound;
 	Mix_Chunk *SwitchSound;
 	int SoundLockLength;
-	double Recoil;		// Random recoil for inaccurate weapons, in radians
+	float Recoil;		// Random recoil for inaccurate weapons, in radians
 	struct
 	{
 		int Count;		// Number of bullets in spread
-		double Width;	// Width of individual spread, in radians
+		float Width;	// Width of individual spread, in radians
 	} Spread;
-	double AngleOffset;
+	float AngleOffset;
 	int MuzzleHeight;
 	int ElevationLow;
 	int ElevationHigh;

@@ -152,13 +152,13 @@ void UpdateActorState(TActor * actor, int ticks)
 
 	// Draw rotation interpolation
 	const float targetRadians = (float)dir2radians[actor->direction];
-	if (actor->DrawRadians - targetRadians > M_PI)
+	if (actor->DrawRadians - targetRadians > M_PIF)
 	{
-		actor->DrawRadians -= 2 * M_PI;
+		actor->DrawRadians -= 2 * M_PIF;
 	}
-	if (actor->DrawRadians - targetRadians < -M_PI)
+	if (actor->DrawRadians - targetRadians < -M_PIF)
 	{
-		actor->DrawRadians += 2 * M_PI;
+		actor->DrawRadians += 2 * M_PIF;
 	}
 	const float dr = actor->DrawRadians - targetRadians;
 	if (dr < 0)
@@ -920,7 +920,7 @@ void UpdateAllActors(int ticks)
 			actor->bleedCounter -= ticks;
 			if (actor->bleedCounter <= 0)
 			{
-				ActorAddBloodSplatters(actor, 1, 1.0, vector2_zero());
+				ActorAddBloodSplatters(actor, 1, 1.0f, vector2_zero());
 				actor->bleedCounter += ActorGetHealthPercent(actor);
 			}
 		}
@@ -932,7 +932,8 @@ static void ActorUpdatePosition(TActor *actor, int ticks)
 	struct vec newPos = vector2_add(actor->Pos, actor->MoveVel);
 	if (!vector2_is_zero(actor->tileItem.Vel))
 	{
-		newPos = vector2_add(newPos, vector2_scale(actor->tileItem.Vel, ticks));
+		newPos = vector2_add(
+			newPos, vector2_scale(actor->tileItem.Vel, (float)ticks));
 
 		for (int i = 0; i < ticks; i++)
 		{
@@ -1076,8 +1077,8 @@ static void ActorAddAmmoPickup(const TActor *actor)
 			e.u.AddPickup.TileItemFlags = 0;
 			// Add a little random offset so the pickups aren't all together
 			const struct vec offset = to_vector2(
-				RAND_INT(-TILE_WIDTH, TILE_WIDTH) / 2,
-				RAND_INT(-TILE_HEIGHT, TILE_HEIGHT) / 2);
+				(float)RAND_INT(-TILE_WIDTH, TILE_WIDTH) / 2,
+				(float)RAND_INT(-TILE_HEIGHT, TILE_HEIGHT) / 2);
 			e.u.AddPickup.Pos = Vec2ToNet(vector2_add(actor->Pos, offset));
 			GameEventsEnqueue(&gGameEvents, e);
 		CA_FOREACH_END()
@@ -1459,7 +1460,7 @@ bool ActorIsInvulnerable(
 }
 
 void ActorAddBloodSplatters(
-	TActor *a, const int power, const double mass, const struct vec hitVector)
+	TActor *a, const int power, const float mass, const struct vec hitVector)
 {
 	const GoreAmount ga = ConfigGetEnum(&gConfig, "Graphics.Gore");
 	if (ga == GORE_NONE) return;

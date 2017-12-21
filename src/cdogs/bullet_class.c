@@ -97,7 +97,7 @@ static void BulletDraw(GraphicsDevice *g, const int id, const Vec2i pos)
 	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
 	CPicDrawContext c;
 	// Calculate direction based on velocity
-	c.Dir = RadiansToDirection(vector2_angle(obj->tileItem.Vel) + M_PI_2);
+	c.Dir = RadiansToDirection(vector2_angle(obj->tileItem.Vel) + M_PIF_2);
 	c.Offset = Vec2iZero();
 	const Pic *pic = CPicGetPic(&obj->tileItem.CPic, c.Dir);
 	if (pic != NULL)
@@ -199,7 +199,7 @@ bool UpdateBullet(struct MobileObject *obj, const int ticks)
 		hit = HitItem(obj, posStart, obj->bulletClass->Persists);
 	}
 	struct vec pos =
-		vector2_add(posStart, vector2_scale(obj->tileItem.Vel, ticks));
+		vector2_add(posStart, vector2_scale(obj->tileItem.Vel, (float)ticks));
 
 	if (hit.Type != HIT_NONE)
 	{
@@ -327,8 +327,9 @@ bool UpdateBullet(struct MobileObject *obj, const int ticks)
 		for (int i = 0; i < ticks; i++)
 		{
 			obj->tileItem.Vel = vector2_add(
-				obj->tileItem.Vel, vector2_scale(
-					to_vector2((rand() % 3) - 1, (rand() % 3) - 1), 0.5f));
+				obj->tileItem.Vel,
+				vector2_scale(to_vector2(
+					(float)(rand() % 3) - 1, (float)(rand() % 3) - 1), 0.5f));
 		}
 	}
 
@@ -364,7 +365,7 @@ bool UpdateBullet(struct MobileObject *obj, const int ticks)
 }
 static void FireGuns(const TMobileObject *obj, const CArray *guns)
 {
-	const float angle = vector2_angle(obj->tileItem.Vel) + M_PI_2;
+	const float angle = vector2_angle(obj->tileItem.Vel) + M_PIF_2;
 	for (int i = 0; i < (int)guns->size; i++)
 	{
 		const GunDescription **g = CArrayGet(guns, i);
@@ -668,11 +669,11 @@ static void LoadBullet(
 	if (version < 2)
 	{
 		// Old version default mass = power
-		b->Mass = b->Power;
+		b->Mass = (float)b->Power;
 	}
 	else
 	{
-		LoadDouble(&b->Mass, node, "Mass");
+		LoadFloat(&b->Mass, node, "Mass");
 	}
 
 	LoadVec2i(&b->Size, node, "Size");

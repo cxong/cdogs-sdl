@@ -435,13 +435,13 @@ static void HandleGameEvent(
 				// Find the starting angle of the spread (clockwise)
 				// Keep in mind the fencepost problem, i.e. spread of 3 means a
 				// total spread angle of 2x width
-				const double spreadStartAngle =
+				const float spreadStartAngle =
 					g->AngleOffset -
 					(g->Spread.Count - 1) * g->Spread.Width / 2;
 				for (int i = 0; i < g->Spread.Count; i++)
 				{
-					const double recoil = RAND_DOUBLE(-0.5f, 0.5f) * g->Recoil;
-					const double finalAngle =
+					const float recoil = RAND_FLOAT(-0.5f, 0.5f) * g->Recoil;
+					const float finalAngle =
 						e.u.GunFire.Angle + spreadStartAngle +
 						i * g->Spread.Width + recoil;
 					GameEvent ab = GameEventNew(GAME_EVENT_ADD_BULLET);
@@ -449,7 +449,7 @@ static void HandleGameEvent(
 					strcpy(ab.u.AddBullet.BulletClass, g->Bullet->Name);
 					ab.u.AddBullet.MuzzlePos = Vec2ToNet(pos);
 					ab.u.AddBullet.MuzzleHeight = e.u.GunFire.Z;
-					ab.u.AddBullet.Angle = (float)finalAngle;
+					ab.u.AddBullet.Angle = finalAngle;
 					ab.u.AddBullet.Elevation =
 						RAND_INT(g->ElevationLow, g->ElevationHigh);
 					ab.u.AddBullet.Flags = e.u.GunFire.Flags;
@@ -528,11 +528,13 @@ static void HandleGameEvent(
 			{
 				DamageActor(
 					a, e.u.ActorHit.Power, e.u.ActorHit.HitterPlayerUID);
+
+				// Add damage text
 				GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 				s.u.AddParticle.Class =
 					StrParticleClass(&gParticleClasses, "damage_text");
 				s.u.AddParticle.Pos = vector2_add(
-					a->Pos, to_vector2(rand() % 6 - 3, rand() % 6 - 3));
+					a->Pos, to_vector2(RAND_FLOAT(-3, 3), RAND_FLOAT(-3, 3)));
 				s.u.AddParticle.Z = BULLET_Z * Z_FACTOR;
 				s.u.AddParticle.DZ = 3;
 				sprintf(

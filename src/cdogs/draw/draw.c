@@ -289,7 +289,8 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset)
 {
 	const Vec2i picPos = Vec2iNew(
-		t->Pos.x - b->xTop + offset.x, t->Pos.y - b->yTop + offset.y);
+		(int)t->Pos.x - b->xTop + offset.x,
+		(int)t->Pos.y - b->yTop + offset.y);
 
 	if (!Vec2iIsZero(t->ShadowSize))
 	{
@@ -444,8 +445,8 @@ static void DrawObjectiveName(
 		CArrayGet(&gMission.missionData->Objectives, objective);
 	const char *typeName = ObjectiveTypeStr(o->Type);
 	const Vec2i textPos = Vec2iNew(
-		ti->Pos.x - b->xTop + offset.x - FontStrW(typeName) / 2,
-		ti->Pos.y - b->yTop + offset.y);
+		(int)ti->Pos.x - b->xTop + offset.x - FontStrW(typeName) / 2,
+		(int)ti->Pos.y - b->yTop + offset.y);
 	FontStr(typeName, textPos);
 }
 static void DrawSpawnerName(
@@ -453,7 +454,7 @@ static void DrawSpawnerName(
 {
 	const char *name = obj->Class->u.PickupClass->Name;
 	const Vec2i textPos = Vec2iNew(
-		obj->tileItem.Pos.x - b->xTop + offset.x - FontStrW(name) / 2,
-		obj->tileItem.Pos.y - b->yTop + offset.y);
+		(int)obj->tileItem.Pos.x - b->xTop + offset.x - FontStrW(name) / 2,
+		(int)obj->tileItem.Pos.y - b->yTop + offset.y);
 	FontStr(name, textPos);
 }

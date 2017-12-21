@@ -103,23 +103,23 @@ int dir2cmd[8] = {
 	CMD_UP + CMD_LEFT
 };
 
-double dir2radians[8] =
+float dir2radians[8] =
 {
 	0,
-	M_PI * 0.25,
-	M_PI * 0.5,
-	M_PI * 0.75,
-	M_PI,
-	M_PI * 1.25,
-	M_PI * 1.5,
-	M_PI * 1.75,
+	M_PIF * 0.25f,
+	M_PIF * 0.5f,
+	M_PIF * 0.75f,
+	M_PIF,
+	M_PIF * 1.25f,
+	M_PIF * 1.5f,
+	M_PIF * 1.75f,
 };
 
 
-void GetVectorsForRadians(const double radians, double *x, double *y)
+struct vec Vec2FromRadiansScaled(const float radians)
 {
-	*x = sin(radians);
-	*y = -cos(radians) * TILE_HEIGHT / TILE_WIDTH;
+	return to_vector2(
+		sinf(radians), -cosf(radians) * TILE_HEIGHT / TILE_WIDTH);
 }
 struct vec Vec2FromRadians(const float radians)
 {

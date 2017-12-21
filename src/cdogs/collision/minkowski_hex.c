@@ -78,10 +78,10 @@ static bool RectangleLineIntersect(
 	// Find the closest point at which a line intersects a rectangle
 	// Do this by finding intersections between the line and all four sides of
 	// the rectangle, and returning the closest one
-	const int left = rectPos.x - rectSize.x / 2;
-	const int right = left + rectSize.x;
-	const int top = rectPos.y - rectSize.y / 2;
-	const int bottom = top + rectSize.y;
+	const float left = rectPos.x - rectSize.x / 2;
+	const float right = left + rectSize.x;
+	const float top = rectPos.y - rectSize.y / 2;
+	const float bottom = top + rectSize.y;
 	const struct vec topLeft = to_vector2(left, top);
 	const struct vec topRight = to_vector2(right, top);
 	const struct vec bottomRight = to_vector2(right, bottom);
@@ -123,7 +123,7 @@ static bool LinesIntersect(
 	const struct vec v1 = vector2_subtract(p1End, p1Start);
 	const struct vec v2 = vector2_subtract(p2End, p2Start);
 
-	const int divisor = -v2.x * v1.y + v1.x * v2.y;
+	const float divisor = -v2.x * v1.y + v1.x * v2.y;
 	if (divisor == 0)
 	{
 		// Lines are parallel/collinear, just assume no collision

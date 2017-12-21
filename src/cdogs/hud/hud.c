@@ -541,8 +541,8 @@ static void DrawCompassArrow(
 		return;
 	}
 	// Saturate according to dist from screen edge
-	int xDist = fabsf(pos.x - playerPos.x) - r.Size.x / 2;
-	int yDist = fabsf(pos.y - playerPos.y) - r.Size.y / 2;
+	int xDist = (int)fabsf(pos.x - playerPos.x) - r.Size.x / 2;
+	int yDist = (int)fabsf(pos.y - playerPos.y) - r.Size.y / 2;
 	int lDist;
 	xDist > yDist ? lDist = xDist: (lDist = yDist);
 	HSV hsv = { -1.0, 1.0,
