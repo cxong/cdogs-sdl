@@ -2270,9 +2270,9 @@ MATHC_EXTERN_INLINE bool vector2_in_circle(struct vec v, struct vec circle_posit
 static bool psame_side(struct vec *p1, struct vec *p2, struct vec *a, struct vec *b)
 {
 	bool result = false;
-	struct vec b_minus_a = {0};
-	struct vec p1_minus_a = {0};
-	struct vec p2_minus_a = {0};
+	struct vec b_minus_a = { 0, 0, 0, 0 };
+	struct vec p1_minus_a = { 0, 0, 0, 0 };
+	struct vec p2_minus_a = { 0, 0, 0, 0 };
 	struct vec cross_p1;
 	struct vec cross_p2;
 	pvector2_subtract(b, a, &b_minus_a);
