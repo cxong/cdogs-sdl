@@ -114,7 +114,7 @@ matrix_to_array(pv, v);
 
 ## Easing Functions
 
-The easing functions are an implementation of the functions presented in [easing.net](http://easings.net/). They are mainly useful for animations.
+The easing functions are an implementation of the functions presented in [easings.net](http://easings.net/). They are mainly useful for animations.
 
 Easing functions take a value that range from `0.0f` to `1.0f` and usually will return a value inside that same range. However, in some of the easing functions, the returned value extrapolate that range.
 

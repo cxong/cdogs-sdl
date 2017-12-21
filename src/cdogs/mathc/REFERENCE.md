@@ -20,7 +20,7 @@ int nearly_equal(float a, float b, float epsilon);
 
 Used to compare two `float` variables with an error margin `epsilon`. The standard header `<float.h>` comes with the macro `FLT_EPSILON` that can be used as the error margin. Greater values are also acceptable in most cases, such as `FLT_EPSILON * 10.0f` and `FLT_EPSILON * 100.0f`.
 
-Returns `TRUE` if the values are accepted as equal and `FALSE` otherwise.
+Returns `true` if the values are accepted as equal and `false` otherwise.
 
 ```c
 float to_radians(float degrees);
@@ -80,21 +80,21 @@ int pvector2_is_zero(struct vec *a);
 int vector2_is_zero(struct vec a);
 ```
 
-Test if the 2D vector is zero with `FLT_EPSILON` as error margin. Returns `TRUE` if the values are accepted as equal to zero and `FALSE` otherwise.
+Test if the 2D vector is zero with `FLT_EPSILON` as error margin. Returns `true` if the values are accepted as equal to zero and `false` otherwise.
 
 ```c
 int pvector2_is_near_zero(struct vec *a, float epsilon);
 int vector2_is_near_zero(struct vec a, float epsilon);
 ```
 
-Test if the 2D vector is near zero with `epsilon` as error margin. Returns `TRUE` if the values are accepted as nearly equal to zero and `FALSE` otherwise.
+Test if the 2D vector is near zero with `epsilon` as error margin. Returns `true` if the values are accepted as nearly equal to zero and `false` otherwise.
 
 ```c
 int pvector2_is_equal(struct vec *a, struct vec *b, float epsilon);
 int vector2_is_equal(struct vec a, struct vec b, float epsilon);
 ```
 
-Test if the 2D vector `a` and the 2D vector `b` are equal with `epsilon` as error margin. Returns `TRUE` if the values are accepted as equal and `FALSE` otherwise.
+Test if the 2D vector `a` and the 2D vector `b` are equal with `epsilon` as error margin. Returns `true` if the values are accepted as equal and `false` otherwise.
 
 ```c
 void pvector2_add(struct vec *a, struct vec *b, struct vec *result);
@@ -294,21 +294,21 @@ int pvector3_is_zero(struct vec *a);
 int vector3_is_zero(struct vec a);
 ```
 
-Test if the 3D vector is zero with `FLT_EPSILON` as error margin. Returns `TRUE` if the values are accepted as equal to zero and `FALSE` otherwise.
+Test if the 3D vector is zero with `FLT_EPSILON` as error margin. Returns `true` if the values are accepted as equal to zero and `false` otherwise.
 
 ```c
 int pvector3_is_near_zero(struct vec *a, float epsilon);
 int vector3_is_near_zero(struct vec a, float epsilon);
 ```
 
-Test if the 3D vector is near zero with `epsilon` as error margin. Returns `TRUE` if the values are accepted as nearly equal to zero and `FALSE` otherwise.
+Test if the 3D vector is near zero with `epsilon` as error margin. Returns `true` if the values are accepted as nearly equal to zero and `false` otherwise.
 
 ```c
 int pvector3_is_equal(struct vec *a, struct vec *b, float epsilon);
 int vector3_is_equal(struct vec a, struct vec b, float epsilon);
 ```
 
-Test if the 3D vector `a` and the 3D vector `b` are equal with `epsilon` as error margin. Returns `TRUE` if the values are accepted as equal and `FALSE` otherwise.
+Test if the 3D vector `a` and the 3D vector `b` are equal with `epsilon` as error margin. Returns `true` if the values are accepted as equal and `false` otherwise.
 
 ```c
 void pvector3_add(struct vec *a, struct vec *b, struct vec *result);
@@ -492,21 +492,21 @@ int pquaternion_is_zero(struct vec *a);
 int quaternion_is_zero(struct vec a);
 ```
 
-Test if the quaternion is zero with `FLT_EPSILON` as error margin. Returns `TRUE` if the values are accepted as equal to zero and `FALSE` otherwise.
+Test if the quaternion is zero with `FLT_EPSILON` as error margin. Returns `true` if the values are accepted as equal to zero and `false` otherwise.
 
 ```c
 int pquaternion_is_near_zero(struct vec *a, float epsilon);
 int quaternion_is_near_zero(struct vec a, float epsilon);
 ```
 
-Test if the quaternion is near zero with `epsilon` as error margin. Returns `TRUE` if the values are accepted as nearly equal to zero and `FALSE` otherwise.
+Test if the quaternion is near zero with `epsilon` as error margin. Returns `true` if the values are accepted as nearly equal to zero and `false` otherwise.
 
 ```c
 int pquaternion_is_equal(struct vec *a, struct vec *b, float epsilon);
 int quaternion_is_equal(struct vec a, struct vec b, float epsilon);
 ```
 
-Test if the quaternion `a` and the quaternion `b` are equal with `epsilon` as error margin. Returns `TRUE` if the values are accepted as equal and `FALSE` otherwise.
+Test if the quaternion `a` and the quaternion `b` are equal with `epsilon` as error margin. Returns `true` if the values are accepted as equal and `false` otherwise.
 
 ```c
 void pquaternion_add(struct vec *a, struct vec *b, struct vec *result);
@@ -845,6 +845,22 @@ void matrix_to_array(struct mat m, float *result);
 ```
 
 Copy the elements of the matrix `m` to the array `result` with 16 `float` elements.
+
+## Intersection
+
+```c
+bool pvector2_in_circle(struct vec *v, struct vec *circle_position, float radius);
+bool vector2_in_circle(struct vec v, struct vec circle_position, float radius);
+```
+
+Test if the 2D vector `v` is inside the 2D circle at `circle_position` with radius `radius`. Returns `true` if the 2D vector is inside the 2D circle and `false` otherwise.
+
+```c
+bool pvector2_in_triangle(struct vec *v, struct vec *a, struct vec *b, struct vec *c);
+bool vector2_in_triangle(struct vec v, struct vec a, struct vec b, struct vec c);
+```
+
+Test if the 2D vector `v` is inside the 2D triangle with vertices `a`, `b` and `c`. Returns `true` if the 2D vector is inside the 2D triangle and `false` otherwise.
 
 ## Easing Functions
 

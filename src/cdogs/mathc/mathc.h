@@ -24,7 +24,7 @@ the following restrictions:
 #include <stdbool.h>
 
 #define MATHC_MAJOR_VERSION 1
-#define MATHC_MINOR_VERSION 0
+#define MATHC_MINOR_VERSION 2
 #define MATHC_PATCH_VERSION 0
 #define M_PIF 3.1415926536f
 #define M_PIF_2 1.5707963268f
@@ -162,6 +162,7 @@ void pvector3_bezier3(struct vec *a, struct vec *b, struct vec *c, float p, stru
 void pvector3_bezier4(struct vec *a, struct vec *b, struct vec *c, struct vec *d, float p, struct vec *result);
 
 struct vec to_vector3(float x, float y, float z);
+struct vec vector3_zero(void);
 struct vec vector3_add(struct vec a, struct vec b);
 bool vector3_is_zero(struct vec a);
 bool vector3_is_near_zero(struct vec a, float epsilon);
@@ -194,6 +195,7 @@ struct vec vector3_bezier4(struct vec a, struct vec b, struct vec c, struct vec 
 /* Quaternion */
 void to_pquaternion(float x, float y, float z, float w, struct vec *result);
 void pquaternion_zero(struct vec *result);
+void pquaternion_null(struct vec *result);
 bool pquaternion_is_zero(struct vec *a);
 bool pquaternion_is_near_zero(struct vec *a, float epsilon);
 bool pquaternion_is_equal(struct vec *a, struct vec *b, float epsilon);
@@ -219,6 +221,7 @@ void pquaternion_normalize(struct vec *a, struct vec *result);
 void pquaternion_power(struct vec *a, float exponent, struct vec *result);
 void pquaternion_from_axis_angle(struct vec *a, float angle, struct vec *result);
 void pquaternion_to_axis_angle(struct vec *a, struct vec *result);
+void pquaternion_from_2_vectors(struct vec *a, struct vec *b, struct vec *result);
 void pquaternion_rotation_matrix(struct mat *m, struct vec *result);
 void pquaternion_yaw_pitch_roll(float yaw, float pitch, float roll, struct vec *result);
 void pquaternion_linear_interpolation(struct vec *a, struct vec *b, float p, struct vec *result);
@@ -226,6 +229,7 @@ void pquaternion_spherical_linear_interpolation(struct vec *a, struct vec *b, fl
 
 struct vec to_quaternion(float x, float y, float z, float w);
 struct vec quaternion_zero(void);
+struct vec quaternion_null(void);
 bool quaternion_is_zero(struct vec a);
 bool quaternion_is_near_zero(struct vec a, float epsilon);
 bool quaternion_is_equal(struct vec a, struct vec b, float epsilon);
@@ -251,6 +255,7 @@ struct vec quaternion_normalize(struct vec a);
 struct vec quaternion_power(struct vec a, float exponent);
 struct vec quaternion_from_axis_angle(struct vec a, float angle);
 struct vec quaternion_to_axis_angle(struct vec a);
+struct vec quaternion_from_2_vectors(struct vec a, struct vec b);
 struct vec quaternion_rotation_matrix(struct mat m);
 struct vec quaternion_yaw_pitch_roll(float yaw, float pitch, float roll);
 struct vec quaternion_linear_interpolation(struct vec a, struct vec b, float p);
@@ -308,6 +313,13 @@ struct mat matrix_multiply_matrix(struct mat a, struct mat b);
 struct mat matrix_linear_interpolation(struct mat a, struct mat b, float p);
 void matrix_multiply_f4(struct mat m, float *result);
 void matrix_to_array(struct mat m, float *result);
+
+/* Intersection */
+bool pvector2_in_circle(struct vec *v, struct vec *circle_position, float radius);
+bool pvector2_in_triangle(struct vec *v, struct vec *a, struct vec *b, struct vec *c);
+
+bool vector2_in_circle(struct vec v, struct vec circle_position, float radius);
+bool vector2_in_triangle(struct vec v, struct vec a, struct vec b, struct vec c);
 
 /* Easing functions */
 float quadratic_ease_in(float p);
