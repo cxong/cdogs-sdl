@@ -27,7 +27,11 @@
 */
 #include "pic_manager.h"
 
+#ifdef __EMSCRIPTEN__
+#include <SDL/SDL_image.h>
+#else
 #include <SDL_image.h>
+#endif
 
 #include <tinydir/tinydir.h>
 

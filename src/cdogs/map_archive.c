@@ -27,7 +27,6 @@
 */
 #include "map_archive.h"
 
-#include <SDL_image.h>
 #include <tinydir/tinydir.h>
 
 #include "ammo.h"

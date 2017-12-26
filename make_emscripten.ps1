@@ -13,11 +13,13 @@ emcc -D "PB_FIELD_16BIT=1" `
     @(Get-ChildItem -Path src/*.c) `
     @(Get-ChildItem -Path .\src\cdogs\*.c -Recurse -File) `
     @(Get-ChildItem -Path src/json/*.c) `
-    -O3 `
+    -O0 -g4 `
     -s ASSERTIONS=1 `
     -s ALLOW_MEMORY_GROWTH=1 `
     -s USE_SDL=2 `
     -s USE_SDL_IMAGE=2 `
+    -s USE_OGG=1 `
+    -s USE_VORBIS=1 `
     --preload-file data `
     --preload-file doc `
     --preload-file dogfights `

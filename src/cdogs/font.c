@@ -28,7 +28,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifdef __EMSCRIPTEN__
+#include <SDL/SDL_image.h>
+#else
 #include <SDL_image.h>
+#endif
 
 #include "blit.h"
 #include "pic.h"
