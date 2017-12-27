@@ -67,7 +67,7 @@ void CharacterStoreResetOthers(CharacterStore *store);
 void CharacterLoadJSON(CharacterStore *c, json_t *root, int version);
 bool CharacterSave(CharacterStore *s, const char *path);
 Character *CharacterStoreAddOther(CharacterStore *store);
-Character *CharacterStoreInsertOther(CharacterStore *store, int idx);
+Character *CharacterStoreInsertOther(CharacterStore *store, const size_t idx);
 void CharacterStoreDeleteOther(CharacterStore *store, int idx);
 void CharacterStoreAddPrisoner(CharacterStore *store, int character);
 void CharacterStoreAddBaddie(CharacterStore *store, int character);

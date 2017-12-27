@@ -584,7 +584,7 @@ RLUTIL_INLINE void setString(const RLUTIL_STRING_T & str_) {
 	unsigned int len = str_.size();
 #else // __cplusplus
 RLUTIL_INLINE void setString(RLUTIL_STRING_T str) {
-	unsigned int len = strlen(str);
+	unsigned int len = (unsigned int)strlen(str);
 #endif // __cplusplus
 #if defined(_WIN32) && !defined(RLUTIL_USE_ANSI)
 	HANDLE hConsoleOutput = GetStdHandle(STD_OUTPUT_HANDLE);

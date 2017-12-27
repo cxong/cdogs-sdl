@@ -278,7 +278,7 @@ int MapArchiveSave(const char *filename, CampaignSetting *c)
 	AddStringPair(root, "Title", c->Title);
 	AddStringPair(root, "Author", c->Author);
 	AddStringPair(root, "Description", c->Description);
-	AddIntPair(root, "Missions", c->Missions.size);
+	AddIntPair(root, "Missions", (int)c->Missions.size);
 	char buf2[CDOGS_PATH_MAX];
 	sprintf(buf2, "%s/campaign.json", buf);
 	if (!TrySaveJSONFile(root, buf2))

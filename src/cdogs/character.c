@@ -192,7 +192,7 @@ Character *CharacterStoreAddOther(CharacterStore *store)
 {
 	return CharacterStoreInsertOther(store, store->OtherChars.size);
 }
-Character *CharacterStoreInsertOther(CharacterStore *store, int idx)
+Character *CharacterStoreInsertOther(CharacterStore *store, const size_t idx)
 {
 	Character newChar;
 	memset(&newChar, 0, sizeof newChar);

@@ -297,7 +297,7 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 			ConfigGetEnum(&gConfig, "QuickPlay.ItemCount"), 0, 5, 10, 20);
 		CArrayPushBack(&m->MapObjectDensities, &mop);
 	}
-	m->EnemyDensity = (40 + (rand() % 20)) / m->Enemies.size;
+	m->EnemyDensity = (40 + (rand() % 20)) / (int)m->Enemies.size;
 	CA_FOREACH(const GunDescription, g, gGunDescriptions.Guns)
 		if (g->IsRealGun)
 		{

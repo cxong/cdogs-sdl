@@ -487,7 +487,7 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 			const int selectedClass = DrawClassSelection(
 				ec, "Class:", ec->texIdsCharClasses.data,
 				ec->CharacterClassNames,
-				CharacterClassIndex(ec->Char->Class), NumCharacterClasses());
+				(int)CharacterClassIndex(ec->Char->Class), NumCharacterClasses());
 			ec->Char->Class = IndexCharacterClass(selectedClass);
 
 			// Character colours

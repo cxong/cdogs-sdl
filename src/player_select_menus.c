@@ -52,7 +52,7 @@ static void DrawNameMenu(
 
 	int x = pos.x;
 	int y = CENTER_Y(
-		pos, size, FontH() * ((strlen(letters) - 1) / ENTRY_COLS));
+		pos, size, FontH() * (((int)strlen(letters) - 1) / ENTRY_COLS));
 
 	UNUSED(menu);
 	UNUSED(g);

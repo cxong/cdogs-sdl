@@ -256,7 +256,7 @@ static void MissionBriefingInput(GameLoopData *data)
 				if (mData->TypewriterCount <= (int)strlen(mData->Description))
 				{
 					strcpy(mData->TypewriterBuf, mData->Description);
-					mData->TypewriterCount = strlen(mData->Description);
+					mData->TypewriterCount = (int)strlen(mData->Description);
 					return;
 				}
 				// Otherwise, exit out of loop

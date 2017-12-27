@@ -113,7 +113,7 @@ static inline Node NodeMake(VisitedNodes nodes, size_t idx)
     Node n;
     memset(&n, 0, sizeof n);
     n.nodes = nodes;
-    n.index = idx;
+    n.index = (int)idx;
     return n;
 }
 

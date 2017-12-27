@@ -142,7 +142,7 @@ int FontH(void)
 }
 int FontStrW(const char *s)
 {
-	return FontSubstrW(s, strlen(s));
+	return FontSubstrW(s, (int)strlen(s));
 }
 int FontSubstrW(const char *s, int len)
 {
@@ -181,7 +181,7 @@ Vec2i FontStrSize(const char *s)
 		size.y += FontH();
 		if (lineEnd)
 		{
-			size.x = MAX(size.x, FontSubstrW(s, lineEnd - s));
+			size.x = MAX(size.x, FontSubstrW(s, (int)(lineEnd - s)));
 			s = lineEnd + 1;
 		}
 		else

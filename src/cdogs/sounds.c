@@ -128,7 +128,7 @@ static void SoundLoad(map_t sounds, const char *name, const char *path)
 		CArrayInit(&sound->u.random.sounds, sizeof(Mix_Chunk *));
 		// Remove "0.<ext>" from path
 		const char *ext = StrGetFileExt(path);
-		const int len = ext - path - 2;
+		const int len = (int)(ext - path - 2);
 		char fmt[CDOGS_FILENAME_MAX];
 		strncpy(fmt, path, len);
 		// Create format string path/to/sound/%d.<ext>
