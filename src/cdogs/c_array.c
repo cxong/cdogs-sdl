@@ -121,7 +121,7 @@ void CArrayResize(CArray *a, const size_t size, const void *value)
 void *CArrayGet(const CArray *a, const size_t idx)
 {
 	CASSERT(a->elemSize > 0, "array has not been initialised");
-	CASSERT(idx >= 0 && idx < (int)a->size, "array index out of bounds");
+	CASSERT(idx < a->size, "array index out of bounds");
 	return &((char *)a->data)[idx * a->elemSize];
 }
 
