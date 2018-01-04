@@ -85,14 +85,16 @@ typedef struct
 	Uint32 repeatedTicks;
 	bool isFirstRepeat;
 	InputKeys PlayerKeys[MAX_KEYBOARD_CONFIGS];
-        int32_t upLeftDiagonalTicks;
-        int32_t downRightDiagonalTicks;
-        int32_t downLeftDiagonalTicks;
-        int32_t upRightDiagonalTicks;
-        diagonal_status upLeftDiagonal;
-        diagonal_status upRightDiagonal;
-        diagonal_status downLeftDiagonal;
-        diagonal_status downRightDiagonal;
+        int32_t diagonalTicks[4];
+        //diagonalTicks[0] = upRightDiagonalTicks;
+        //diagonalTicks[1] = downRightDiagonalTicks;
+        //diagonalTicks[2] = downLeftDiagonalTicks};
+        //diagonalTicks[3] = upLeftDiagonalTicks;
+        diagonal_status diagonalStatus[4];
+        //diagonal_status upRightDiagonal;
+        //diagonal_status downRightDiagonal;
+        //diagonal_status downLeftDiagonal; 
+        //diagonal_status upLeftDiagonal; Keep arrays straight, status and ticks have to match for the loops to work.
 } keyboard_t;
 
 void KeyInit(keyboard_t *keyboard);
