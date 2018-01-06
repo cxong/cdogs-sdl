@@ -137,7 +137,7 @@ void DiagonalHold(keyboard_t *keyboard)
     //Sets the stage to change to sustain, hopefully avoids false positives
     for (int i = 0; i < 4; ++i) 
         {
-            if ((playerOneKeys[i % 4].isPressed == true && playerOneKeys[(i + 1) % 4].isPressed == true) && (keyboard->diagonalStatus[i] == UNPRESSED)) 
+            if ((playerOneKeys[i].isPressed == true && playerOneKeys[(i + 1) % 4].isPressed == true) && (keyboard->diagonalStatus[i] == UNPRESSED)) 
                 {
                     keyboard->diagonalStatus[i] = PRESSED;
                     keyboard->diagonalTicks[i] = (-1);
@@ -164,7 +164,7 @@ void DiagonalHold(keyboard_t *keyboard)
         }
     
     // -----
-    //Keeps buttons pressed for (currenlty 30) milliseconds to help determine if a diagonal was intended
+    //Keeps buttons pressed for DIAGONAL_RELEASE_DELAY (currently 30) milliseconds to help determine if a diagonal was intended
     for (int i = 0; i < 4; ++i)
         if ((keyboard->diagonalStatus[i] == SUSTAIN)  && (keyboard->diagonalTicks[i] > currentTicks))
         {
@@ -181,7 +181,7 @@ void DiagonalHold(keyboard_t *keyboard)
         {
             keyboard->diagonalStatus[i] = UNPRESSED;
             playerOneKeys[i].isPressed = realPlayerOneKeys[i];
-            playerOneKeys[i].isPressed = realPlayerOneKeys[(i + 1) % 4];
+            playerOneKeys[(i + 1) % 4].isPressed = realPlayerOneKeys[(i + 1) % 4];
         } 
     
     // -----
