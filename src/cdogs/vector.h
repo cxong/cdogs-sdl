@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2014, 2016-2017 Cong Xu
+    Copyright (c) 2013-2014, 2016-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -86,5 +86,6 @@ typedef struct
 			{
 #define RECT_FOREACH_END() } } }
 
+Rect2i Rect2iNew(const Vec2i pos, const Vec2i size);
 bool Rect2iIsAtEdge(const Rect2i r, const Vec2i v);
 bool Rect2iOverlap(const Rect2i r1, const Rect2i r2);
