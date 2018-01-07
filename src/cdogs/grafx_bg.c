@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2014, 2016-2017 Cong Xu
+    Copyright (c) 2013-2014, 2016-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@
 #include "draw/drawtools.h"
 #include "game_events.h"
 #include "handle_game_events.h"
+#include "log.h"
 #include "objs.h"
 #include "pickup.h"
 #include "quick_play.h"
@@ -84,20 +85,14 @@ static void DrawBackground(
 {
 	DrawBufferSetFromMap(buffer, map, pos, X_TILES);
 	DrawBufferDraw(buffer, Vec2iZero(), extra);
-
-	if (!HSVEquals(tint, tintNone))
-	{
-		Vec2i v;
-		for (v.y = 0; v.y < g->cachedConfig.Res.y; v.y++)
-		{
-			for (v.x = 0; v.x < g->cachedConfig.Res.x; v.x++)
-			{
-				DrawPointTint(g, v, tint);
-			}
-		}
-	}
 	BlitUpdateFromBuf(g, t);
 	BlitClearBuf(g);
+	const color_t mask = ColorTint(colorWhite, tint);
+	if (SDL_SetTextureColorMod(t, mask.r, mask.g, mask.b) != 0)
+	{
+		LOG(LM_GFX, LL_ERROR, "cannot set background tint: %s",
+			SDL_GetError());
+	}
 }
 
 void GrafxRedrawBackground(GraphicsDevice *g, const struct vec pos)
