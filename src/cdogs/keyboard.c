@@ -176,8 +176,8 @@ void DiagonalHold(keyboard_t *keyboard)
     //Ends a SUSTAIN, returns keyboard to neutral state, assigns both to false before assigning both to their real value to avoid causing a bug that makes up or left immediately stop functioning
     //the first time after being pressed after a sustain, uncertain if this is another case where the problem is eliminated because the function effectively does nothing
     for (int i = 0; i < 4; ++i)
-        if (((keyboard->diagonalStatus[i] == SUSTAIN) && (keyboard->diagonalTicks[i] <= currentTicks)) 
-        || ((realPlayerOneKeys[i] == false) && (realPlayerOneKeys[(i + 1) % 4] == false)))
+        if (((keyboard->diagonalStatus[i] == SUSTAIN) && ((keyboard->diagonalTicks[i] <= currentTicks) // re group these so that it's 1 and 3 not 2 and 2
+        || ((realPlayerOneKeys[i] == false) && (realPlayerOneKeys[(i + 1) % 4] == false)))))
         {
             keyboard->diagonalStatus[i] = UNPRESSED;
             playerOneKeys[i].isPressed = realPlayerOneKeys[i];
