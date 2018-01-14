@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2015, Cong Xu
+	Copyright (c) 2013-2015, 2018 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,25 @@
 #include <cdogs/font.h>
 
 
+static void WeaponSetEnabled(
+	menu_t *menu, const GunDescription *g, const bool enable)
+{
+	CA_FOREACH(menu_t, subMenu, menu->u.normal.subMenus)
+		if (strcmp(subMenu->name, g->name) == 0)
+		{
+			subMenu->isDisabled = !enable;
+			break;
+		}
+	CA_FOREACH_END()
+}
+
+static const GunDescription *GetSelectedGun(const menu_t *menu)
+{
+	const menu_t *subMenu =
+		CArrayGet(&menu->u.normal.subMenus, menu->u.normal.index);
+	return StrGunDescription(subMenu->name);
+}
+
 static void WeaponSelect(menu_t *menu, int cmd, void *data)
 {
 	WeaponMenuData *d = data;
@@ -45,11 +64,10 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 		// Add the selected weapon
 
 		// Check that the weapon hasn't been chosen yet
-		const GunDescription **selectedWeapon =
-			CArrayGet(weapons, menu->u.normal.index);
+		const GunDescription *selectedWeapon = GetSelectedGun(menu);
 		for (int i = 0; i < p->weaponCount; i++)
 		{
-			if (p->weapons[i] == *selectedWeapon)
+			if (p->weapons[i] == selectedWeapon)
 			{
 				return;
 			}
@@ -61,9 +79,9 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 			return;
 		}
 
-		p->weapons[p->weaponCount] = *selectedWeapon;
+		p->weapons[p->weaponCount] = selectedWeapon;
 		p->weaponCount++;
-		SoundPlay(&gSoundDevice, (*selectedWeapon)->SwitchSound);
+		SoundPlay(&gSoundDevice, selectedWeapon->SwitchSound);
 
 		// Note: need to enable before disabling otherwise
 		// menu index is not updated properly
@@ -84,15 +102,7 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 
 			// Re-enable the menu entry for this weapon
 			const GunDescription *removedWeapon = p->weapons[p->weaponCount];
-			for (int i = 0; i < (int)weapons->size; i++)
-			{
-				const GunDescription **g = CArrayGet(weapons, i);
-				if (*g == removedWeapon)
-				{
-					MenuEnableSubmenu(menu, i);
-					break;
-				}
-			}
+			WeaponSetEnabled(menu, removedWeapon, true);
 		}
 
 		// Disable "Done" if no weapons selected
@@ -133,6 +143,9 @@ static void DisplayEquippedWeapons(
 	}
 }
 
+static void AddGunMenuItems(
+	MenuSystem *ms, const CArray *weapons, const Vec2i menuSize,
+	const bool isGrenade);
 static void DisplayGunIcon(
 	const menu_t *menu, GraphicsDevice *g, const Vec2i pos, const Vec2i size,
 	const void *data);
@@ -187,42 +200,15 @@ void WeaponMenuCreate(
 		MENU_TYPE_NORMAL,
 		0);
 	ms->root->u.normal.maxItems = 11;
-	const CArray *weapons = &gMission.Weapons;
-	for (int i = 0; i < (int)weapons->size; i++)
-	{
-		const GunDescription **g = CArrayGet(weapons, i);
-		menu_t *gunMenu;
-		if ((*g)->Description != NULL)
-		{
-			// Gun description menu
-			gunMenu = MenuCreateNormal((*g)->name, "", MENU_TYPE_NORMAL, 0);
-			char *buf;
-			CMALLOC(buf, strlen((*g)->Description) * 2);
-			FontSplitLines((*g)->Description, buf, size.x * 5 / 6);
-			MenuAddSubmenu(gunMenu, MenuCreateBack(buf));
-			CFREE(buf);
-			gunMenu->u.normal.isSubmenusAlt = true;
-			MenuSetCustomDisplay(gunMenu, DisplayDescriptionGunIcon, *g);
-		}
-		else
-		{
-			gunMenu = MenuCreate((*g)->name, MENU_TYPE_BASIC);
-		}
-		MenuAddSubmenu(ms->root, gunMenu);
-	}
+	AddGunMenuItems(ms, &gMission.Weapons, size, false);
+	MenuAddSubmenu(ms->root, MenuCreateSeparator("----------------"));
+	AddGunMenuItems(ms, &gMission.Weapons, size, true);
 	MenuSetPostInputFunc(ms->root, WeaponSelect, &data->display);
 	// Disable menu items where the player already has the weapon
 	PlayerData *pData = PlayerDataGetByUID(playerUID);
 	for (int i = 0; i < pData->weaponCount; i++)
 	{
-		for (int j = 0; j < (int)weapons->size; j++)
-		{
-			const GunDescription **g = CArrayGet(weapons, j);
-			if (pData->weapons[i] == *g)
-			{
-				MenuDisableSubmenu(ms->root, j);
-			}
-		}
+		WeaponSetEnabled(ms->root, pData->weapons[i], false);
 	}
 	MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
 	MenuAddSubmenu(
@@ -242,27 +228,56 @@ void WeaponMenuCreate(
 	MenuSystemAddCustomDisplay(
 		ms, MenuDisplayPlayerControls, &data->PlayerUID);
 }
+static void AddGunMenuItems(
+	MenuSystem *ms, const CArray *weapons, const Vec2i menuSize,
+	const bool isGrenade)
+{
+	CA_FOREACH(const GunDescription *, g, *weapons)
+		if ((*g)->IsGrenade != isGrenade)
+		{
+			continue;
+		}
+		menu_t *gunMenu;
+		if ((*g)->Description != NULL)
+		{
+			// Gun description menu
+			gunMenu = MenuCreateNormal((*g)->name, "", MENU_TYPE_NORMAL, 0);
+			char *buf;
+			CMALLOC(buf, strlen((*g)->Description) * 2);
+			FontSplitLines((*g)->Description, buf, menuSize.x * 5 / 6);
+			MenuAddSubmenu(gunMenu, MenuCreateBack(buf));
+			CFREE(buf);
+			gunMenu->u.normal.isSubmenusAlt = true;
+			MenuSetCustomDisplay(gunMenu, DisplayDescriptionGunIcon, *g);
+		}
+		else
+		{
+			gunMenu = MenuCreate((*g)->name, MENU_TYPE_BASIC);
+		}
+		MenuAddSubmenu(ms->root, gunMenu);
+	CA_FOREACH_END()
+}
 static void DisplayGunIcon(
 	const menu_t *menu, GraphicsDevice *g, const Vec2i pos, const Vec2i size,
 	const void *data)
 {
 	UNUSED(data);
-	if (menu->u.normal.index >= (int)gMission.Weapons.size)
+	// Display a gun icon next to the currently selected weapon
+	const GunDescription *gun = GetSelectedGun(menu);
+	if (gun == NULL)
 	{
 		return;
 	}
-	// Display a gun icon next to the currently selected weapon
-	const GunDescription **gun =
-		CArrayGet(&gMission.Weapons, menu->u.normal.index);
 	const int menuItems = MIN(
 		menu->u.normal.maxItems, (int)menu->u.normal.subMenus.size);
 	const int textScroll =
 		-menuItems * FontH() / 2 +
 		(menu->u.normal.index - menu->u.normal.scroll) * FontH();
 	const Vec2i iconPos = Vec2iNew(
-		pos.x - (*gun)->Icon->size.x - 4,
-		pos.y + size.y / 2 + textScroll + (FontH() - (*gun)->Icon->size.y) / 2);
-	Blit(g, (*gun)->Icon, iconPos);
+		pos.x - gun->Icon->size.x - 4,
+		pos.y + size.y / 2 + textScroll +
+		(FontH() - gun->Icon->size.y) / 2);
+	Blit(g, gun->Icon, iconPos);
 }
 static void DisplayDescriptionGunIcon(
 	const menu_t *menu, GraphicsDevice *g, const Vec2i pos, const Vec2i size,

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017, Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -182,6 +182,8 @@ static void LoadGunDescription(
 		g->Pic = PicManagerGetSprites(&gPicManager, buf);
 		CFREE(tmp);
 	}
+
+	LoadBool(&g->IsGrenade, node, "IsGrenade");
 
 	const Pic *icon = NULL;
 	LoadPic(&icon, node, "Icon");

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017, Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -94,6 +94,7 @@ typedef struct
 {
 	const NamedSprites *Pic;
 	const Pic *Icon;
+	bool IsGrenade;
 	char *name;
 	char *Description;
 	const BulletClass *Bullet;
