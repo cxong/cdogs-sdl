@@ -179,8 +179,8 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 					const int scale = ConfigGetInt(&gConfig, "Graphics.ScaleFactor");
 					GraphicsConfigSet(
 						&gGraphicsDevice.cachedConfig,
-						Vec2iScaleDiv(
-							Vec2iNew(e.window.data1, e.window.data2), scale),
+						svec2i_scale_divide(
+							svec2i(e.window.data1, e.window.data2), scale),
 						false,
 						scale,
 						gGraphicsDevice.cachedConfig.ScaleMode,
@@ -235,7 +235,7 @@ int GetKeyboardCmd(
 	return cmd;
 }
 static int GetMouseCmd(
-	Mouse *mouse, bool isPressed, int useMouseMove, Vec2i pos)
+	Mouse *mouse, bool isPressed, int useMouseMove, struct vec2i pos)
 {
 	int cmd = 0;
 	bool (*mouseFunc)(const Mouse *, const int) =
@@ -283,7 +283,7 @@ static int GetJoystickCmd(const SDL_JoystickID id, bool isPressed)
 
 int GetGameCmd(
 	EventHandlers *handlers,
-	const PlayerData *playerData, const Vec2i playerPos)
+	const PlayerData *playerData, const struct vec2i playerPos)
 {
 	int cmd = 0;
 
@@ -318,7 +318,7 @@ int GetOnePlayerCmd(
 		cmd = GetKeyboardCmd(&handlers->keyboard, deviceIndex, isPressed);
 		break;
 	case INPUT_DEVICE_MOUSE:
-		cmd = GetMouseCmd(&handlers->mouse, isPressed, 0, Vec2iZero());
+		cmd = GetMouseCmd(&handlers->mouse, isPressed, 0, svec2i_zero());
 		break;
 	case INPUT_DEVICE_JOYSTICK:
 		cmd = GetJoystickCmd(deviceIndex, isPressed);

@@ -69,11 +69,11 @@ void HealthGaugeUpdate(HealthGauge *h, const TActor *a, const int ms)
 
 void HealthGaugeDraw(
 	const HealthGauge *h, GraphicsDevice *device, const TActor *actor,
-	const Vec2i pos, const FontAlign hAlign, const FontAlign vAlign)
+	const struct vec2i pos, const FontAlign hAlign, const FontAlign vAlign)
 {
 	char s[50];
-	Vec2i gaugePos = Vec2iAdd(pos, Vec2iNew(-1, -1));
-	Vec2i size = Vec2iNew(GAUGE_WIDTH, FontH() + 2);
+	struct vec2i gaugePos = svec2i_add(pos, svec2i(-1, -1));
+	struct vec2i size = svec2i(GAUGE_WIDTH, FontH() + 2);
 	HSV hsv = { 0.0, 1.0, 1.0 };
 	const int health = actor->health;
 	const int maxHealth = ActorGetCharacter(actor)->maxHealth;
@@ -126,5 +126,5 @@ void HealthGaugeDraw(
 			opts.Mask = colorRed;
 		}
 	}
-	FontStrOpt(s, Vec2iZero(), opts);
+	FontStrOpt(s, svec2i_zero(), opts);
 }

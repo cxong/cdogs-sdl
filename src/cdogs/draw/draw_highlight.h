@@ -30,4 +30,4 @@
 
 #include "draw/draw_buffer.h"
 
-void DrawObjectiveHighlights(DrawBuffer *b, const Vec2i offset);
+void DrawObjectiveHighlights(DrawBuffer *b, const struct vec2i offset);

@@ -39,15 +39,15 @@ typedef struct
 } WindowContext;
 
 bool WindowContextCreate(
-	WindowContext *wc, const Vec2i windowSize, const int sdlFlags,
-	const char *title, SDL_Surface *icon, const Vec2i rendererLogicalSize);
+	WindowContext *wc, const struct vec2i windowSize, const int sdlFlags,
+	const char *title, SDL_Surface *icon, const struct vec2i rendererLogicalSize);
 void WindowContextDestroy(WindowContext *wc);
 void WindowContextDestroyTextures(WindowContext *wc);
 
 void WindowsAdjustPosition(WindowContext *wc1, WindowContext *wc2);
 
 SDL_Texture *WindowContextCreateTexture(
-	WindowContext *wc, const SDL_TextureAccess access, const Vec2i res,
+	WindowContext *wc, const SDL_TextureAccess access, const struct vec2i res,
 	const SDL_BlendMode blend, const Uint8 alpha);
 
 void WindowContextRender(WindowContext *wc);

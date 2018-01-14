@@ -38,5 +38,5 @@ typedef int ScreenShake;
 
 ScreenShake ScreenShakeZero(void);
 ScreenShake ScreenShakeAdd(ScreenShake s, int force, int multiplier);
-struct vec ScreenShakeGetDelta(ScreenShake s);
+struct vec2 ScreenShakeGetDelta(ScreenShake s);
 ScreenShake ScreenShakeUpdate(ScreenShake s, int ticks);

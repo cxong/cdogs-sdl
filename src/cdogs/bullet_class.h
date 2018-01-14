@@ -62,7 +62,7 @@ typedef struct
 {
 	char *Name;
 	CPic CPic;
-	Vec2i ShadowSize;
+	struct vec2i ShadowSize;
 	int Delay;	// number of frames before moving
 	float SpeedLow;
 	float SpeedHigh;
@@ -73,7 +73,7 @@ typedef struct
 	int RangeHigh;
 	int Power;
 	float Mass;
-	Vec2i Size;
+	struct vec2i Size;
 	special_damage_e Special;
 	bool HurtAlways;
 	bool Persists;	// remains even after hitting walls/items
@@ -132,4 +132,4 @@ typedef enum
 	HIT_OBJECT,
 	HIT_FLESH
 } HitType;
-void PlayHitSound(const HitSounds *h, const HitType t, const struct vec pos);
+void PlayHitSound(const HitSounds *h, const HitType t, const struct vec2 pos);

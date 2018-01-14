@@ -101,22 +101,22 @@ NMissionComplete NMakeMissionComplete(
 	return mc;
 }
 
-Vec2i Net2Vec2i(const NVec2i v)
+struct vec2i Net2Vec2i(const NVec2i v)
 {
-	return Vec2iNew(v.x, v.y);
+	return svec2i(v.x, v.y);
 }
-NVec2i Vec2i2Net(const Vec2i v)
+NVec2i Vec2i2Net(const struct vec2i v)
 {
 	NVec2i nv;
 	nv.x = v.x;
 	nv.y = v.y;
 	return nv;
 }
-struct vec NetToVec2(const NVec2 v)
+struct vec2 NetToVec2(const NVec2 v)
 {
-	return to_vector2(v.x, v.y);
+	return svec2(v.x, v.y);
 }
-NVec2 Vec2ToNet(const struct vec v)
+NVec2 Vec2ToNet(const struct vec2 v)
 {
 	NVec2 nv;
 	nv.x = v.x;

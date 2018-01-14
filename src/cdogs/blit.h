@@ -75,23 +75,23 @@ color_t *CharColorGetByType(CharColors *c, const CharColorType t);
 
 void BlitBackground(
 	GraphicsDevice *device,
-	const Pic *pic, Vec2i pos, const HSV *tint, const bool isTransparent);
-void Blit(GraphicsDevice *device, const Pic *pic, Vec2i pos);
+	const Pic *pic, struct vec2i pos, const HSV *tint, const bool isTransparent);
+void Blit(GraphicsDevice *device, const Pic *pic, struct vec2i pos);
 void BlitMasked(
 	GraphicsDevice *device,
 	const Pic *pic,
-	Vec2i pos,
+	struct vec2i pos,
 	color_t mask,
 	int isTransparent);
 void BlitCharMultichannel(
 	GraphicsDevice *device,
 	const Pic *pic,
-	const Vec2i pos,
+	const struct vec2i pos,
 	const CharColors *masks);
 void BlitBlend(
-	GraphicsDevice *g, const Pic *pic, Vec2i pos, const color_t blend);
+	GraphicsDevice *g, const Pic *pic, struct vec2i pos, const color_t blend);
 void BlitPicHighlight(
-	GraphicsDevice *g, const Pic *pic, const Vec2i pos, const color_t color);
+	GraphicsDevice *g, const Pic *pic, const struct vec2i pos, const color_t color);
 void BlitClearBuf(GraphicsDevice *g);
 void BlitUpdateFromBuf(GraphicsDevice *g, SDL_Texture *t);
 

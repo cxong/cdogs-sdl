@@ -471,7 +471,7 @@ bool WeaponIsLocked(const Weapon *w)
 }
 
 void GunFire(
-	const GunDescription *g, const struct vec pos, const int z,
+	const GunDescription *g, const struct vec2 pos, const int z,
 	const double radians,
 	const int flags, const int playerUID, const int uid,
 	const bool playSound, const bool isGun)
@@ -490,7 +490,7 @@ void GunFire(
 }
 
 void GunAddBrass(
-	const GunDescription *g, const direction_e d, const struct vec pos)
+	const GunDescription *g, const direction_e d, const struct vec2 pos)
 {
 	// Check configuration
 	if (!ConfigGetBool(&gConfig, "Graphics.Brass"))
@@ -501,12 +501,12 @@ void GunAddBrass(
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 	e.u.AddParticle.Class = g->Brass;
 	const float radians = dir2radians[d];
-	const struct vec ejectionPortOffset = vector2_scale(
+	const struct vec2 ejectionPortOffset = svec2_scale(
 		Vec2FromRadiansScaled(radians), 7);
-	e.u.AddParticle.Pos = vector2_subtract(pos, ejectionPortOffset);
+	e.u.AddParticle.Pos = svec2_subtract(pos, ejectionPortOffset);
 	e.u.AddParticle.Z = g->MuzzleHeight;
-	e.u.AddParticle.Vel = vector2_scale(
-		Vec2FromRadians(radians + M_PIF_2), 0.333333f);
+	e.u.AddParticle.Vel = svec2_scale(
+		Vec2FromRadians(radians + MPI_2), 0.333333f);
 	e.u.AddParticle.Vel.x += RAND_FLOAT(-0.25f, 0.25f);
 	e.u.AddParticle.Vel.y += RAND_FLOAT(-0.25f, 0.25f);
 	e.u.AddParticle.Angle = RAND_DOUBLE(0, M_PI * 2);
@@ -515,23 +515,23 @@ void GunAddBrass(
 	GameEventsEnqueue(&gGameEvents, e);
 }
 
-static struct vec GetMuzzleOffset(const direction_e d);
-struct vec GunGetMuzzleOffset(
+static struct vec2 GetMuzzleOffset(const direction_e d);
+struct vec2 GunGetMuzzleOffset(
 	const GunDescription *desc, const CharSprites *cs, const direction_e dir)
 {
 	if (!GunHasMuzzle(desc))
 	{
-		return vector2_zero();
+		return svec2_zero();
 	}
 	CASSERT(desc->Pic != NULL, "Gun has no pic");
-	const struct vec gunOffset = cs->Offsets.Dir[BODY_PART_GUN][dir];
-	return vector2_add(gunOffset, GetMuzzleOffset(dir));
+	const struct vec2 gunOffset = cs->Offsets.Dir[BODY_PART_GUN][dir];
+	return svec2_add(gunOffset, GetMuzzleOffset(dir));
 }
-static struct vec GetMuzzleOffset(const direction_e d)
+static struct vec2 GetMuzzleOffset(const direction_e d)
 {
 	// TODO: gun-specific muzzle offsets
 	#define BARREL_LENGTH 10
-	return vector2_scale(Vec2FromRadians(dir2radians[d]), BARREL_LENGTH);
+	return svec2_scale(Vec2FromRadians(dir2radians[d]), BARREL_LENGTH);
 }
 
 void WeaponSetState(Weapon *w, const gunstate_e state)

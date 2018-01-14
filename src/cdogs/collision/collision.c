@@ -57,7 +57,7 @@
 
 static void TileCacheInit(CArray *tc)
 {
-	CArrayInit(tc, sizeof(Vec2i));
+	CArrayInit(tc, sizeof(struct vec2i));
 }
 static void TileCacheReset(CArray *tc)
 {
@@ -68,26 +68,26 @@ static void TileCacheTerminate(CArray *tc)
 	CArrayTerminate(tc);
 }
 static void TileCacheAddImpl(
-	CArray *tc, const Vec2i v, const bool addAdjacents);
-static void TileCacheAdd(CArray *tc, const Vec2i v)
+	CArray *tc, const struct vec2i v, const bool addAdjacents);
+static void TileCacheAdd(CArray *tc, const struct vec2i v)
 {
 	TileCacheAddImpl(tc, v, true);
 }
 static void TileCacheAddImpl(
-	CArray *tc, const Vec2i v, const bool addAdjacents)
+	CArray *tc, const struct vec2i v, const bool addAdjacents)
 {
 	if (!MapIsTileIn(&gMap, v))
 	{
 		return;
 	}
 	// Add tile in y/x order
-	CA_FOREACH(const Vec2i, t, *tc)
+	CA_FOREACH(const struct vec2i, t, *tc)
 		if (t->y > v.y || (t->y == v.y && t->x > v.x))
 		{
 			CArrayInsert(tc, _ca_index, &v);
 			break;
 		}
-		else if (Vec2iEqual(*t, v))
+		else if (svec2i_is_equal(*t, v))
 		{
 			// Don't add the same tile twice
 			return;
@@ -98,16 +98,16 @@ static void TileCacheAddImpl(
 	// Also add the adjacencies for the tile
 	if (addAdjacents)
 	{
-		Vec2i dv;
+		struct vec2i dv;
 		for (dv.y = -1; dv.y <= 1; dv.y++)
 		{
 			for (dv.x = -1; dv.x <= 1; dv.x++)
 			{
-				if (Vec2iIsZero(dv))
+				if (svec2i_is_zero(dv))
 				{
 					continue;
 				}
-				const Vec2i dtv = Vec2iAdd(v, dv);
+				const struct vec2i dtv = svec2i_add(v, dv);
 				if (!MapIsTileIn(&gMap, dtv))
 				{
 					continue;
@@ -152,9 +152,9 @@ CollisionTeam CalcCollisionTeam(const bool isActor, const TActor *actor)
 	return COLLISIONTEAM_BAD;
 }
 
-bool IsCollisionWithWall(const struct vec pos, const Vec2i size2)
+bool IsCollisionWithWall(const struct vec2 pos, const struct vec2i size2)
 {
-	const Vec2i size = Vec2iScaleDiv(size2, 2);
+	const struct vec2i size = svec2i_scale_divide(size2, 2);
 	if (pos.x - size.x < 0 ||
 		pos.y - size.y < 0 ||
 		pos.x + size.x >= gMap.Size.x * TILE_WIDTH ||
@@ -193,11 +193,11 @@ bool IsCollisionWithWall(const struct vec pos, const Vec2i size2)
 //           w
 // Where 'x' denotes the bounding diamond, and 'w' represents a wall corner.
 bool IsCollisionDiamond(
-	const Map *map, const struct vec pos, const Vec2i size2)
+	const Map *map, const struct vec2 pos, const struct vec2i size2)
 {
-	const Vec2i mapSize =
-		Vec2iNew(map->Size.x * TILE_WIDTH, map->Size.y * TILE_HEIGHT);
-	const Vec2i size = Vec2iScaleDiv(size2, 2);
+	const struct vec2i mapSize =
+		svec2i(map->Size.x * TILE_WIDTH, map->Size.y * TILE_HEIGHT);
+	const struct vec2i size = svec2i_scale_divide(size2, 2);
 	if (pos.x - size.x < 0 || pos.x + size.x >= mapSize.x ||
 		pos.y - size.y < 0 || pos.y + size.y >= mapSize.y)
 	{
@@ -214,7 +214,7 @@ bool IsCollisionDiamond(
 	for (int i = 0; i < size.x; i++)
 	{
 		const float y = (-size.x + i) * gradient;
-		const struct vec p = vector2_add(pos, to_vector2((float)i, y));
+		const struct vec2 p = svec2_add(pos, svec2((float)i, y));
 		if (HitWall(p.x, p.y))
 		{
 			return true;
@@ -224,8 +224,8 @@ bool IsCollisionDiamond(
 	for (int i = 0; i < size.x; i++)
 	{
 		const float y = i * gradient;
-		const struct vec p = vector2_add(
-			pos, to_vector2(size.x - (float)i, y));
+		const struct vec2 p = svec2_add(
+			pos, svec2(size.x - (float)i, y));
 		if (HitWall(p.x, p.y))
 		{
 			return true;
@@ -235,7 +235,7 @@ bool IsCollisionDiamond(
 	for (int i = 0; i < size.x; i++)
 	{
 		const float y = (size.x - i) * gradient;
-		const struct vec p = vector2_add(pos, to_vector2((float)-i, y));
+		const struct vec2 p = svec2_add(pos, svec2((float)-i, y));
 		if (HitWall(p.x, p.y))
 		{
 			return true;
@@ -245,8 +245,8 @@ bool IsCollisionDiamond(
 	for (int i = 0; i < size.x; i++)
 	{
 		const float y = -i * gradient;
-		const struct vec p = vector2_add(
-			pos, to_vector2((float)-size.x + i, y));
+		const struct vec2 p = svec2_add(
+			pos, svec2((float)-size.x + i, y));
 		if (HitWall(p.x, p.y))
 		{
 			return true;
@@ -256,13 +256,13 @@ bool IsCollisionDiamond(
 }
 
 bool AABBOverlap(
-	const struct vec pos1, const struct vec pos2,
-	const Vec2i size1, const Vec2i size2)
+	const struct vec2 pos1, const struct vec2 pos2,
+	const struct vec2i size1, const struct vec2i size2)
 {
 	// Use Minkowski addition to check overlap of two rects
-	const struct vec d = to_vector2(
+	const struct vec2 d = svec2(
 		fabsf(pos1.x - pos2.x), fabsf(pos1.y - pos2.y));
-	const Vec2i r = Vec2iScaleDiv(Vec2iAdd(size1, size2), 2);
+	const struct vec2i r = svec2i_scale_divide(svec2i_add(size1, size2), 2);
 	return d.x < r.x && d.y < r.y;
 }
 
@@ -289,15 +289,15 @@ static bool CollisionIsOnSameTeam(
 static bool CheckParams(
 	const CollisionParams params, const TTileItem *a, const TTileItem *b);
 
-static void AddPosToTileCache(void *data, Vec2i pos);
+static void AddPosToTileCache(void *data, struct vec2i pos);
 static bool CheckOverlaps(
-	const TTileItem *item, const struct vec pos, const struct vec vel,
-	const Vec2i size,
+	const TTileItem *item, const struct vec2 pos, const struct vec2 vel,
+	const struct vec2i size,
 	const CollisionParams params, CollideItemFunc func, void *data,
 	CheckWallFunc checkWallFunc, CollideWallFunc wallFunc, void *wallData,
-	const Vec2i tilePos);
+	const struct vec2i tilePos);
 void OverlapTileItems(
-	const TTileItem *item, const struct vec pos, const Vec2i size,
+	const TTileItem *item, const struct vec2 pos, const struct vec2i size,
 	const CollisionParams params, CollideItemFunc func, void *data,
 	CheckWallFunc checkWallFunc, CollideWallFunc wallFunc, void *wallData)
 {
@@ -307,10 +307,10 @@ void OverlapTileItems(
 	drawData.Draw = AddPosToTileCache;
 	drawData.data = &gCollisionSystem.tileCache;
 	BresenhamLineDraw(
-		Vec2ToVec2i(pos), Vec2ToVec2i(vector2_add(pos, item->Vel)), &drawData);
+		svec2i_assign_vec2(pos), svec2i_assign_vec2(svec2_add(pos, item->Vel)), &drawData);
 
 	// Check collisions with all tiles in the cache
-	CA_FOREACH(const Vec2i, dtv, gCollisionSystem.tileCache)
+	CA_FOREACH(const struct vec2i, dtv, gCollisionSystem.tileCache)
 		if (!CheckOverlaps(
 			item, pos, item->Vel, size, params, func, data,
 			checkWallFunc, wallFunc, wallData,
@@ -320,20 +320,20 @@ void OverlapTileItems(
 		}
 	CA_FOREACH_END()
 }
-static void AddPosToTileCache(void *data, Vec2i pos)
+static void AddPosToTileCache(void *data, struct vec2i pos)
 {
 	CArray *tileCache = data;
-	const Vec2i tv = Vec2iToTile(pos);
+	const struct vec2i tv = Vec2iToTile(pos);
 	TileCacheAdd(tileCache, tv);
 }
 static bool CheckOverlaps(
-	const TTileItem *item, const struct vec pos, const struct vec vel,
-	const Vec2i size,
+	const TTileItem *item, const struct vec2 pos, const struct vec2 vel,
+	const struct vec2i size,
 	const CollisionParams params, CollideItemFunc func, void *data,
 	CheckWallFunc checkWallFunc, CollideWallFunc wallFunc, void *wallData,
-	const Vec2i tilePos)
+	const struct vec2i tilePos)
 {
-	struct vec colA, colB, normal;
+	struct vec2 colA, colB, normal;
 	// Check item collisions
 	if (func != NULL)
 	{
@@ -362,11 +362,11 @@ static bool CheckOverlaps(
 	{
 		// Hack: bullets always considered 0x0 when colliding with walls
 		// TODO: bullet size for walls
-		const Vec2i sizeForWall =
-			item->kind == KIND_MOBILEOBJECT ? Vec2iZero() : size;
+		const struct vec2i sizeForWall =
+			item->kind == KIND_MOBILEOBJECT ? svec2i_zero() : size;
 		if (MinkowskiHexCollide(
 			pos, vel, sizeForWall,
-			Vec2CenterOfTile(tilePos), vector2_zero(),
+			Vec2CenterOfTile(tilePos), svec2_zero(),
 			TILE_SIZE, &colA, &colB, &normal) &&
 			!wallFunc(tilePos, wallData, colA, normal))
 		{
@@ -377,10 +377,10 @@ static bool CheckOverlaps(
 }
 
 static bool OverlapGetFirstItemCallback(
-	TTileItem *ti, void *data, const struct vec colA, const struct vec colB,
-	const struct vec normal);
+	TTileItem *ti, void *data, const struct vec2 colA, const struct vec2 colB,
+	const struct vec2 normal);
 TTileItem *OverlapGetFirstItem(
-	const TTileItem *item, const struct vec pos, const Vec2i size,
+	const TTileItem *item, const struct vec2 pos, const struct vec2i size,
 	const CollisionParams params)
 {
 	TTileItem *firstItem = NULL;
@@ -390,8 +390,8 @@ TTileItem *OverlapGetFirstItem(
 	return firstItem;
 }
 static bool OverlapGetFirstItemCallback(
-	TTileItem *ti, void *data, const struct vec colA, const struct vec colB,
-	const struct vec normal)
+	TTileItem *ti, void *data, const struct vec2 colA, const struct vec2 colB,
+	const struct vec2 normal)
 {
 	UNUSED(colA);
 	UNUSED(colB);
@@ -421,29 +421,29 @@ static bool CheckParams(
 }
 
 void GetWallBouncePosVel(
-	const struct vec pos, const struct vec vel, const struct vec colPos,
-	const struct vec colNormal, struct vec *outPos, struct vec *outVel)
+	const struct vec2 pos, const struct vec2 vel, const struct vec2 colPos,
+	const struct vec2 colNormal, struct vec2 *outPos, struct vec2 *outVel)
 {
-	const struct vec velBeforeCol = vector2_subtract(colPos, pos);
-	const struct vec velAfterCol = vector2_subtract(vel, velBeforeCol);
+	const struct vec2 velBeforeCol = svec2_subtract(colPos, pos);
+	const struct vec2 velAfterCol = svec2_subtract(vel, velBeforeCol);
 
 	// If normal is zero, this means we were in collision from the start
-	if (vector2_is_zero(colNormal))
+	if (svec2_is_zero(colNormal))
 	{
 		// Reverse the vector
-		*outPos = vector2_subtract(pos, vel);
-		*outVel = vector2_scale(vel, -1);
+		*outPos = svec2_subtract(pos, vel);
+		*outVel = svec2_scale(vel, -1);
 		return;
 	}
 
 	// Reflect the out position by the collision normal about the collision pos
-	const struct vec velReflected = to_vector2(
+	const struct vec2 velReflected = svec2(
 		colNormal.x == 0 ? velAfterCol.x : colNormal.x * fabsf(velAfterCol.x),
 		colNormal.y == 0 ? velAfterCol.y : colNormal.y * fabsf(velAfterCol.y));
-	*outPos = vector2_add(colPos, velReflected);
+	*outPos = svec2_add(colPos, velReflected);
 
 	// Out velocity follows the collision normal
-	*outVel = to_vector2(
+	*outVel = svec2(
 		colNormal.x == 0 ? vel.x : colNormal.x * fabsf(vel.x),
 		colNormal.y == 0 ? vel.y : colNormal.y * fabsf(vel.y));
 }

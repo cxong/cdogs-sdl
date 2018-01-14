@@ -53,36 +53,36 @@
 #include "actors.h"
 #include "objs.h"
 
-TActor *AIGetClosestPlayer(const struct vec pos);
+TActor *AIGetClosestPlayer(const struct vec2 pos);
 const TActor *AIGetClosestEnemy(
-	const struct vec from, const TActor *a, const int flags);
+	const struct vec2 from, const TActor *a, const int flags);
 const TActor *AIGetClosestVisibleEnemy(
 	const TActor *from, const bool isPlayer);
-struct vec AIGetClosestPlayerPos(const struct vec pos);
+struct vec2 AIGetClosestPlayerPos(const struct vec2 pos);
 int AIReverseDirection(int cmd);
-bool AIHasClearShot(const struct vec from, const struct vec to);
+bool AIHasClearShot(const struct vec2 from, const struct vec2 to);
 bool AIHasClearPath(
-	const struct vec from, const struct vec to, const bool ignoreObjects);
+	const struct vec2 from, const struct vec2 to, const bool ignoreObjects);
 bool AIHasPath(
-	const struct vec from, const struct vec to, const bool ignoreObjects);
+	const struct vec2 from, const struct vec2 to, const bool ignoreObjects);
 TObject *AIGetObjectRunningInto(TActor *a, int cmd);
-bool AIIsFacing(const TActor *a, const struct vec target, const direction_e d);
-bool AIIsInLine(const Vec2i tile, const Vec2i tileStart, const Vec2i tileEnd);
+bool AIIsFacing(const TActor *a, const struct vec2 target, const direction_e d);
+bool AIIsInLine(const struct vec2i tile, const struct vec2i tileStart, const struct vec2i tileEnd);
 
 // Find path to target
 // destroyObjects - if true, ignore obstructing objects
 //                - if false, will pathfind around them
-int AIGoto(const TActor *actor, const struct vec p, const bool ignoreObjects);
-int AIGotoDirect(const struct vec a, const struct vec p);
-int AIHunt(const TActor *actor, const struct vec targetPos);
-int AIAttack(const TActor *a, const struct vec targetPos);
+int AIGoto(const TActor *actor, const struct vec2 p, const bool ignoreObjects);
+int AIGotoDirect(const struct vec2 a, const struct vec2 p);
+int AIHunt(const TActor *actor, const struct vec2 targetPos);
+int AIAttack(const TActor *a, const struct vec2 targetPos);
 int AIHuntClosest(TActor *actor);
-int AIRetreatFrom(const TActor *actor, const struct vec from);
+int AIRetreatFrom(const TActor *actor, const struct vec2 from);
 // Like Hunt but biases towards 8 axis movement
-int AITrack(const TActor *actor, const struct vec targetPos);
+int AITrack(const TActor *actor, const struct vec2 targetPos);
 int AIMoveAwayFromLine(
-	const struct vec pos, const struct vec lineStart, const direction_e lineD);
+	const struct vec2 pos, const struct vec2 lineStart, const direction_e lineD);
 
 // Pathfinding helper functions
-bool IsTileWalkable(Map *map, const Vec2i pos);
-bool IsTileWalkableAroundObjects(Map *map, const Vec2i pos);
+bool IsTileWalkable(Map *map, const struct vec2i pos);
+bool IsTileWalkableAroundObjects(Map *map, const struct vec2i pos);

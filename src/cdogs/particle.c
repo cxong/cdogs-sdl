@@ -271,14 +271,14 @@ void ParticlesUpdate(CArray *particles, const int ticks)
 typedef struct
 {
 	const TTileItem *Obj;
-	struct vec ColPos;
-	struct vec ColNormal;
+	struct vec2 ColPos;
+	struct vec2 ColNormal;
 	float ColPosDist2;
 } HitWallData;
-static bool CheckWall(const Vec2i tilePos);
+static bool CheckWall(const struct vec2i tilePos);
 static bool HitWallFunc(
-	const Vec2i tilePos, void *data, const struct vec col,
-	const struct vec normal);
+	const struct vec2i tilePos, void *data, const struct vec2 col,
+	const struct vec2 normal);
 static bool ParticleUpdate(Particle *p, const int ticks)
 {
 	switch(p->Class->Type)
@@ -290,10 +290,10 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 			break;
 	}
 	p->Count += ticks;
-	const struct vec startPos = p->Pos;
+	const struct vec2 startPos = p->Pos;
 	for (int i = 0; i < ticks; i++)
 	{
-		p->Pos = vector2_add(p->Pos, p->tileItem.Vel);
+		p->Pos = svec2_add(p->Pos, p->tileItem.Vel);
 		p->Z += p->DZ;
 		if (p->Class->GravityFactor != 0)
 		{
@@ -315,7 +315,7 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 			}
 			if (p->DZ == 0 && p->Z == 0)
 			{
-				p->tileItem.Vel = vector2_zero();
+				p->tileItem.Vel = svec2_zero();
 				p->Spin = 0;
 				// Fell to ground, draw last
 				p->tileItem.flags |= TILEITEM_DRAW_LAST;
@@ -323,13 +323,13 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 		}
 	}
 	// Wall collision, bounce off walls
-	if (!vector2_is_zero(p->tileItem.Vel) && p->Class->HitsWalls)
+	if (!svec2_is_zero(p->tileItem.Vel) && p->Class->HitsWalls)
 	{
 		const CollisionParams params =
 		{
 			0, COLLISIONTEAM_NONE, IsPVP(gCampaign.Entry.Mode)
 		};
-		HitWallData data = { &p->tileItem, vector2_zero(), vector2_zero(), -1 };
+		HitWallData data = { &p->tileItem, svec2_zero(), svec2_zero(), -1 };
 		OverlapTileItems(
 			&p->tileItem, startPos,
 			p->tileItem.size, params, NULL, NULL,
@@ -344,7 +344,7 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 			}
 			else
 			{
-				p->tileItem.Vel = vector2_zero();
+				p->tileItem.Vel = svec2_zero();
 			}
 		}
 	}\
@@ -368,15 +368,15 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 	return p->Count <= p->Range;
 }
 static void SetClosestCollision(
-	HitWallData *data, const struct vec col, const struct vec normal);
-static bool CheckWall(const Vec2i tilePos)
+	HitWallData *data, const struct vec2 col, const struct vec2 normal);
+static bool CheckWall(const struct vec2i tilePos)
 {
 	const Tile *t = MapGetTile(&gMap, tilePos);
 	return t == NULL || t->flags & MAPTILE_NO_SHOOT;
 }
 static bool HitWallFunc(
-	const Vec2i tilePos, void *data, const struct vec col,
-	const struct vec normal)
+	const struct vec2i tilePos, void *data, const struct vec2 col,
+	const struct vec2 normal)
 {
 	UNUSED(tilePos);
 	HitWallData *hData = data;
@@ -384,10 +384,10 @@ static bool HitWallFunc(
 	return true;
 }
 static void SetClosestCollision(
-	HitWallData *data, const struct vec col, const struct vec normal)
+	HitWallData *data, const struct vec2 col, const struct vec2 normal)
 {
 	// Choose the best collision point (i.e. closest to origin)
-	const float d2 = vector2_distance_squared_to(col, data->Obj->Pos);
+	const float d2 = svec2_distance_squared(col, data->Obj->Pos);
 	if (data->ColPosDist2 < 0 || d2 < data->ColPosDist2)
 	{
 		data->ColPos = col;
@@ -396,7 +396,7 @@ static void SetClosestCollision(
 	}
 }
 
-static void DrawParticle(const Vec2i pos, const TileItemDrawFuncData *data);
+static void DrawParticle(const struct vec2i pos, const TileItemDrawFuncData *data);
 int ParticleAdd(CArray *particles, const AddParticle add)
 {
 	// Find an empty slot in list
@@ -461,7 +461,7 @@ void ParticleDestroy(CArray *particles, const int id)
 	p->isInUse = false;
 }
 
-static void DrawParticle(const Vec2i pos, const TileItemDrawFuncData *data)
+static void DrawParticle(const struct vec2i pos, const TileItemDrawFuncData *data)
 {
 	const Particle *p = CArrayGet(&gParticles, data->MobObjId);
 	CASSERT(p->isInUse, "Cannot draw non-existent particle");
@@ -472,7 +472,7 @@ static void DrawParticle(const Vec2i pos, const TileItemDrawFuncData *data)
 			CPicDrawContext context;
 			context.Dir = RadiansToDirection(p->Angle);
 			const Pic *pic = CPicGetPic(&p->u.Pic, context.Dir);
-			context.Offset = Vec2iNew(
+			context.Offset = svec2i(
 				pic->size.x / -2, pic->size.y / -2 - p->Z / Z_FACTOR);
 			CPicDraw(
 				&gGraphicsDevice, &p->Class->u.Pic, pos, &context);
@@ -484,7 +484,7 @@ static void DrawParticle(const Vec2i pos, const TileItemDrawFuncData *data)
 			opts.HAlign = ALIGN_CENTER;
 			opts.Mask = p->Class->u.TextColor;
 			FontStrOpt(
-				p->u.Text, Vec2iNew(pos.x, pos.y - p->Z / Z_FACTOR), opts);
+				p->u.Text, svec2i(pos.x, pos.y - p->Z / Z_FACTOR), opts);
 			break;
 		}
 		default:

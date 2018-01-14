@@ -54,10 +54,10 @@
 static void MapSetupPerimeter(Map *map);
 static int MapTryBuildSquare(Map *map);
 static bool MapIsAreaClearForClassicRoom(
-	const Map *map, const Vec2i pos, const Vec2i size, const Mission *m,
+	const Map *map, const struct vec2i pos, const struct vec2i size, const Mission *m,
 	const int pad, bool *isOverlapRoom, unsigned short *overlapAccess);
 static void MapBuildRoom(
-	Map *map, const Vec2i pos, const Vec2i size, const Mission *m,
+	Map *map, const struct vec2i pos, const struct vec2i size, const Mission *m,
 	const int doorMin, const int doorMax, const bool hasKeys,
 	const bool isOverlapRoom, const unsigned short overlapAccess);
 static bool MapTryBuildPillar(Map *map, const Mission *m, const int pad);
@@ -103,10 +103,10 @@ void MapClassicLoad(Map *map, const Mission *m, const CampaignOptions* co)
 	count = 0;
 	for (i = 0; i < 1000 && count < m->u.Classic.Rooms.Count; i++)
 	{
-		const Vec2i v = MapGetRandomTile(map);
+		const struct vec2i v = MapGetRandomTile(map);
 		const int doorMin = CLAMP(m->u.Classic.Doors.Min, 1, 6);
 		const int doorMax = CLAMP(m->u.Classic.Doors.Max, doorMin, 6);
-		const Vec2i size = MapGetRoomSize(m->u.Classic.Rooms, doorMin);
+		const struct vec2i size = MapGetRoomSize(m->u.Classic.Rooms, doorMin);
 		bool isOverlapRoom;
 		unsigned short overlapAccess;
 		if (!MapIsAreaClearForClassicRoom(
@@ -148,7 +148,7 @@ void MapClassicLoad(Map *map, const Mission *m, const CampaignOptions* co)
 
 static void MapSetupPerimeter(Map *map)
 {
-	Vec2i v;
+	struct vec2i v;
 	for (v.y = 0; v.y < map->Size.y; v.y++)
 	{
 		for (v.x = 0; v.x < map->Size.x; v.x++)
@@ -164,8 +164,8 @@ static void MapSetupPerimeter(Map *map)
 
 static int MapTryBuildSquare(Map *map)
 {
-	const Vec2i v = MapGetRandomTile(map);
-	Vec2i size = Vec2iNew(rand() % 9 + 8, rand() % 9 + 8);
+	const struct vec2i v = MapGetRandomTile(map);
+	struct vec2i size = svec2i(rand() % 9 + 8, rand() % 9 + 8);
 	if (MapIsAreaClear(map, v, size))
 	{
 		MapMakeSquare(map, v, size);
@@ -175,11 +175,11 @@ static int MapTryBuildSquare(Map *map)
 }
 
 static bool MapIsAreaClearForClassicRoom(
-	const Map *map, const Vec2i pos, const Vec2i size, const Mission *m,
+	const Map *map, const struct vec2i pos, const struct vec2i size, const Mission *m,
 	const int pad, bool *isOverlapRoom, unsigned short *overlapAccess)
 {
-	Vec2i clearPos = Vec2iNew(pos.x - pad, pos.y - pad);
-	Vec2i clearSize = Vec2iNew(size.x + 2 * pad, size.y + 2 * pad);
+	struct vec2i clearPos = svec2i(pos.x - pad, pos.y - pad);
+	struct vec2i clearSize = svec2i(size.x + 2 * pad, size.y + 2 * pad);
 	bool isEdgeRoom = false;
 	*isOverlapRoom = false;
 	*overlapAccess = 0;
@@ -234,12 +234,12 @@ static bool MapIsAreaClearForClassicRoom(
 }
 
 static void MapFindAvailableDoors(
-	Map *map, Vec2i pos, Vec2i size, int doorMin, int doors[4]);
+	Map *map, struct vec2i pos, struct vec2i size, int doorMin, int doors[4]);
 
 void MapMakeRoomWalls(Map *map, const RoomParams r);
 
 static void MapBuildRoom(
-	Map *map, const Vec2i pos, const Vec2i size, const Mission *m,
+	Map *map, const struct vec2i pos, const struct vec2i size, const Mission *m,
 	const int doorMin, const int doorMax, const bool hasKeys,
 	const bool isOverlapRoom, const unsigned short overlapAccess)
 {
@@ -313,12 +313,12 @@ static bool MapTryBuildPillar(Map *map, const Mission *m, const int pad)
 {
 	int pillarMin = m->u.Classic.Pillars.Min;
 	int pillarMax = m->u.Classic.Pillars.Max;
-	Vec2i size = Vec2iNew(
+	struct vec2i size = svec2i(
 		rand() % (pillarMax - pillarMin + 1) + pillarMin,
 		rand() % (pillarMax - pillarMin + 1) + pillarMin);
-	const Vec2i pos = MapGetRandomTile(map);
-	Vec2i clearPos = Vec2iNew(pos.x - pad, pos.y - pad);
-	Vec2i clearSize = Vec2iNew(size.x + 2 * pad, size.y + 2 * pad);
+	const struct vec2i pos = MapGetRandomTile(map);
+	struct vec2i clearPos = svec2i(pos.x - pad, pos.y - pad);
+	struct vec2i clearSize = svec2i(size.x + 2 * pad, size.y + 2 * pad);
 	int isEdge = 0;
 	int isClear = 0;
 
@@ -370,9 +370,9 @@ static bool MapTryBuildPillar(Map *map, const Mission *m, const int pad)
 
 // Find the maximum door size for a wall
 static int FindWallRun(
-	const Map *map, const Vec2i mid, const Vec2i d, const int len);
+	const Map *map, const struct vec2i mid, const struct vec2i d, const int len);
 static void MapFindAvailableDoors(
-	Map *map, Vec2i pos, Vec2i size, int doorMin, int doors[4])
+	Map *map, struct vec2i pos, struct vec2i size, int doorMin, int doors[4])
 {
 	int i;
 	for (i = 0; i < 4; i++)
@@ -386,8 +386,8 @@ static void MapFindAvailableDoors(
 	}
 	else if (FindWallRun(
 		map,
-		Vec2iNew(pos.x, pos.y + size.y / 2),
-		Vec2iNew(0, 1),
+		svec2i(pos.x, pos.y + size.y / 2),
+		svec2i(0, 1),
 		size.y - 2) < doorMin)
 	{
 		doors[0] = 0;
@@ -399,8 +399,8 @@ static void MapFindAvailableDoors(
 	}
 	else if (FindWallRun(
 		map,
-		Vec2iNew(pos.x + size.x - 1, pos.y + size.y / 2),
-		Vec2iNew(0, 1),
+		svec2i(pos.x + size.x - 1, pos.y + size.y / 2),
+		svec2i(0, 1),
 		size.y - 2) < doorMin)
 	{
 		doors[1] = 0;
@@ -412,8 +412,8 @@ static void MapFindAvailableDoors(
 	}
 	else if (FindWallRun(
 		map,
-		Vec2iNew(pos.x + size.x / 2, pos.y),
-		Vec2iNew(1, 0),
+		svec2i(pos.x + size.x / 2, pos.y),
+		svec2i(1, 0),
 		size.x - 2) < doorMin)
 	{
 		doors[2] = 0;
@@ -425,15 +425,15 @@ static void MapFindAvailableDoors(
 	}
 	else if (FindWallRun(
 		map,
-		Vec2iNew(pos.x + size.x / 2, pos.y + size.y - 1),
-		Vec2iNew(1, 0),
+		svec2i(pos.x + size.x / 2, pos.y + size.y - 1),
+		svec2i(1, 0),
 		size.x - 2) < doorMin)
 	{
 		doors[3] = 0;
 	}
 }
 static int FindWallRun(
-	const Map *map, const Vec2i mid, const Vec2i d, const int len)
+	const Map *map, const struct vec2i mid, const struct vec2i d, const int len)
 {
 	int run = 0;
 	int next = 0;
@@ -455,12 +455,12 @@ static int FindWallRun(
 		{
 			next -= i;
 		}
-		const Vec2i v = Vec2iAdd(mid, Vec2iScale(d, next));
+		const struct vec2i v = svec2i_add(mid, svec2i_scale(d, next));
 		plus = !plus;
 
 		if (IMapGet(map, v) != MAP_WALL ||
-			IMapGet(map, Vec2iNew(v.x + d.y, v.y + d.x)) == MAP_WALL ||
-			IMapGet(map, Vec2iNew(v.x - d.y, v.y - d.x)) == MAP_WALL)
+			IMapGet(map, svec2i(v.x + d.y, v.y + d.x)) == MAP_WALL ||
+			IMapGet(map, svec2i(v.x - d.y, v.y - d.x)) == MAP_WALL)
 		{
 			break;
 		}

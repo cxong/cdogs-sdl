@@ -79,18 +79,18 @@ static void BrushSetBrushTypeAddKey(void *data, int d)
 
 
 static void DrawPickupSpawner(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
 {
 	const IndexedEditorBrush *data = vData;
 	const MapObject *mo = data->u.MapObject;
 	DisplayMapItem(
-		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)), mo);
+		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)), mo);
 	const Pic *pic = mo->u.PickupClass->Pic;
-	pos = Vec2iMinus(pos, Vec2iScaleDiv(pic->size, 2));
-	Blit(g, pic, Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)));
+	pos = svec2i_subtract(pos, svec2i_scale_divide(pic->size, 2));
+	Blit(g, pic, svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)));
 }
 static void DrawCharacter(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
 {
 	UNUSED(g);
 	EditorBrushAndCampaign *data = vData;
@@ -98,11 +98,11 @@ static void DrawCharacter(
 	Character *c = CArrayGet(&store->OtherChars, data->Brush.u.ItemIndex);
 	DrawCharacterSimple(
 		c,
-		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)),
+		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
 		DIRECTION_DOWN, false, false);
 }
 static void DrawObjective(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
 {
 	UNUSED(g);
 	EditorBrushAndCampaign *data = vData;
@@ -113,7 +113,7 @@ static void DrawObjective(
 		return;
 	}
 	CharacterStore *store = &data->Campaign->Setting.characters;
-	pos = Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
+	pos = svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2));
 	switch (obj->Type)
 	{
 	case OBJECTIVE_KILL:
@@ -135,7 +135,7 @@ static void DrawObjective(
 	case OBJECTIVE_COLLECT:
 		{
 			const Pic *p = obj->u.Pickup->Pic;
-			pos = Vec2iMinus(pos, Vec2iScaleDiv(p->size, 2));
+			pos = svec2i_subtract(pos, svec2i_scale_divide(p->size, 2));
 			Blit(&gGraphicsDevice, p, pos);
 		}
 		break;
@@ -189,22 +189,22 @@ static bool AddMapItemBrushObjFunc(UIObject *o, MapObject *mo, void *vData);
 static bool AddPickupSpawnerBrushObjFunc(
 	UIObject *o, MapObject *mo, void *vData);
 static UIObject *CreateAddCharacterObjs(
-	Vec2i pos, EditorBrush *brush, CampaignOptions *co);
+	struct vec2i pos, EditorBrush *brush, CampaignOptions *co);
 static UIObject *CreateAddObjectiveObjs(
-	Vec2i pos, EditorBrush *brush, CampaignOptions *co);
-static UIObject *CreateAddKeyObjs(Vec2i pos, EditorBrush *brush);
+	struct vec2i pos, EditorBrush *brush, CampaignOptions *co);
+static UIObject *CreateAddKeyObjs(struct vec2i pos, EditorBrush *brush);
 UIObject *CreateAddItemObjs(
-	Vec2i pos, EditorBrush *brush, CampaignOptions *co)
+	struct vec2i pos, EditorBrush *brush, CampaignOptions *co)
 {
 	const int th = FontH();
 	UIObject *o2;
-	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
+	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, svec2i_zero());
 
 	UIObject *o = UIObjectCreate(
-		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(65, th));
+		UITYPE_LABEL, 0, svec2i_zero(), svec2i(65, th));
 	o->Data = brush;
 
-	pos = Vec2iZero();
+	pos = svec2i_zero();
 	o2 = UIObjectCopy(o);
 	o2->Label = "Player start";
 	o2->ChangeFunc = BrushSetBrushTypeSetPlayerStart;
@@ -254,7 +254,7 @@ UIObject *CreateAddItemObjs(
 }
 
 static void DrawMapItem(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData);
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData);
 static char *MakeMapObjectTooltip(const MapObject *mo);
 static bool AddMapItemBrushObjFunc(UIObject *o, MapObject *mo, void *vData)
 {
@@ -272,12 +272,12 @@ static bool AddMapItemBrushObjFunc(UIObject *o, MapObject *mo, void *vData)
 	return true;
 }
 static void DrawMapItem(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
 {
 	UNUSED(g);
 	const EditorBrush *brush = vData;
 	DisplayMapItem(
-		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)),
+		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
 		brush->u.MapObject);
 }
 static char *MakeMapObjectTooltip(const MapObject *mo)
@@ -332,9 +332,9 @@ static char *MakePickupTooltip(const MapObject *mo)
 }
 static void CreateAddCharacterSubObjs(UIObject *c, void *vData);
 static UIObject *CreateAddCharacterObjs(
-	Vec2i pos, EditorBrush *brush, CampaignOptions *co)
+	struct vec2i pos, EditorBrush *brush, CampaignOptions *co)
 {
-	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
+	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, svec2i_zero());
 	// Need to update UI objects dynamically as new characters can be
 	// added and removed
 	c->OnFocusFunc = CreateAddCharacterSubObjs;
@@ -365,12 +365,12 @@ static void CreateAddCharacterSubObjs(UIObject *c, void *vData)
 
 	UIObject *o = UIObjectCreate(
 		UITYPE_CUSTOM, 0,
-		Vec2iZero(), Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT * 2 + 4));
+		svec2i_zero(), svec2i(TILE_WIDTH + 4, TILE_HEIGHT * 2 + 4));
 	o->ChangeFunc = BrushSetBrushTypeAddCharacter;
 	o->u.CustomDrawFunc = DrawCharacter;
 	o->OnFocusFunc = ActivateEditorBrushAndCampaignBrush;
 	o->OnUnfocusFunc = DeactivateEditorBrushAndCampaignBrush;
-	Vec2i pos = Vec2iZero();
+	struct vec2i pos = svec2i_zero();
 	int width = 8;
 	for (int i = 0; i < (int)store->OtherChars.size; i++)
 	{
@@ -395,9 +395,9 @@ static void CreateAddCharacterSubObjs(UIObject *c, void *vData)
 }
 static void CreateAddObjectiveSubObjs(UIObject *c, void *vData);
 static UIObject *CreateAddObjectiveObjs(
-	Vec2i pos, EditorBrush *brush, CampaignOptions *co)
+	struct vec2i pos, EditorBrush *brush, CampaignOptions *co)
 {
-	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
+	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, svec2i_zero());
 	// Need to update UI objects dynamically as new objectives can be
 	// added and removed
 	c->OnFocusFunc = CreateAddObjectiveSubObjs;
@@ -475,12 +475,12 @@ static void CreateAddObjectiveSubObjs(UIObject *c, void *vData)
 
 	UIObject *o = UIObjectCreate(
 		UITYPE_CUSTOM, 0,
-		Vec2iZero(), Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT * 2 + 4));
+		svec2i_zero(), svec2i(TILE_WIDTH + 4, TILE_HEIGHT * 2 + 4));
 	o->ChangeFunc = BrushSetBrushTypeAddObjective;
 	o->u.CustomDrawFunc = DrawObjective;
 	o->OnFocusFunc = ActivateEditorBrushAndCampaignBrush;
 	o->OnUnfocusFunc = DeactivateEditorBrushAndCampaignBrush;
-	Vec2i pos = Vec2iZero();
+	struct vec2i pos = svec2i_zero();
 	CA_FOREACH(const Objective, obj, m->Objectives)
 		int secondaryCount = 1;
 		const CharacterStore *store = &data->Campaign->Setting.characters;
@@ -523,19 +523,19 @@ static void CreateAddObjectiveSubObjs(UIObject *c, void *vData)
 	CA_FOREACH_END()
 	UIObjectDestroy(o);
 }
-static UIObject *CreateAddKeyObjs(Vec2i pos, EditorBrush *brush)
+static UIObject *CreateAddKeyObjs(struct vec2i pos, EditorBrush *brush)
 {
 	UIObject *o2;
-	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
+	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, svec2i_zero());
 
 	UIObject *o = UIObjectCreate(
 		UITYPE_CUSTOM, 0,
-		Vec2iZero(), Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT + 4));
+		svec2i_zero(), svec2i(TILE_WIDTH + 4, TILE_HEIGHT + 4));
 	o->ChangeFunc = BrushSetBrushTypeAddKey;
 	o->u.CustomDrawFunc = DrawKey;
 	o->OnFocusFunc = ActivateIndexedEditorBrush;
 	o->OnUnfocusFunc = DeactivateIndexedEditorBrush;
-	pos = Vec2iZero();
+	pos = svec2i_zero();
 	int width = 4;
 	for (int i = 0; i < KEY_COUNT; i++)
 	{

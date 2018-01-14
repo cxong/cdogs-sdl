@@ -85,7 +85,7 @@ static void HandleGameEvent(
 		break;
 	case GAME_EVENT_TILE_SET:
 		{
-			Vec2i pos = Net2Vec2i(e.u.TileSet.Pos);
+			struct vec2i pos = Net2Vec2i(e.u.TileSet.Pos);
 			for (int i = 0; i <= e.u.TileSet.RunLength; i++)
 			{
 				Tile *t = MapGetTile(&gMap, pos);
@@ -220,9 +220,9 @@ static void HandleGameEvent(
 			TActor *a = ActorGetByUID(e.u.ActorImpulse.UID);
 			if (!a->isInUse) break;
 			a->tileItem.Vel =
-				vector2_add(a->tileItem.Vel, NetToVec2(e.u.ActorImpulse.Vel));
-			const struct vec pos = NetToVec2(e.u.ActorImpulse.Pos);
-			if (!vector2_is_zero(pos))
+				svec2_add(a->tileItem.Vel, NetToVec2(e.u.ActorImpulse.Vel));
+			const struct vec2 pos = NetToVec2(e.u.ActorImpulse.Pos);
+			if (!svec2_is_zero(pos))
 			{
 				a->Pos = pos;
 			}
@@ -338,7 +338,7 @@ static void HandleGameEvent(
 				{
 					// Find the closest player alive; try to spawn next to that position
 					// if no other suitable position exists
-					struct vec defaultSpawnPosition = vector2_zero();
+					struct vec2 defaultSpawnPosition = svec2_zero();
 					const TActor *closestActor = AIGetClosestPlayer(a->Pos);
 					if (closestActor != NULL)
 					{
@@ -367,7 +367,7 @@ static void HandleGameEvent(
 			{
 				// TODO: melee hitback (vel)?
 				Damage(
-					vector2_zero(),
+					svec2_zero(),
 					b->Power, b->Mass,
 					a->flags, a->PlayerUID, a->uid,
 					(TileItemKind)e.u.Melee.TargetKind, e.u.Melee.TargetUID,
@@ -394,7 +394,7 @@ static void HandleGameEvent(
 		{
 			TMobileObject *o = MobObjGetByUID(e.u.BulletBounce.UID);
 			if (o == NULL || !o->isInUse) break;
-			const struct vec bouncePos = NetToVec2(e.u.BulletBounce.BouncePos);
+			const struct vec2 bouncePos = NetToVec2(e.u.BulletBounce.BouncePos);
 			if (e.u.BulletBounce.HitSound)
 			{
 				PlayHitSound(
@@ -427,7 +427,7 @@ static void HandleGameEvent(
 	case GAME_EVENT_GUN_FIRE:
 		{
 			const GunDescription *g = StrGunDescription(e.u.GunFire.Gun);
-			const struct vec pos = NetToVec2(e.u.GunFire.MuzzlePos);
+			const struct vec2 pos = NetToVec2(e.u.GunFire.MuzzlePos);
 
 			// Add bullets
 			if (g->Bullet && !gCampaign.IsClient)
@@ -493,7 +493,7 @@ static void HandleGameEvent(
 	case GAME_EVENT_GUN_RELOAD:
 		{
 			const GunDescription *g = StrGunDescription(e.u.GunReload.Gun);
-			const struct vec pos = NetToVec2(e.u.GunReload.Pos);
+			const struct vec2 pos = NetToVec2(e.u.GunReload.Pos);
 			SoundPlayAtPlusDistance(
 				&gSoundDevice,
 				g->ReloadSound,
@@ -533,8 +533,8 @@ static void HandleGameEvent(
 				GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 				s.u.AddParticle.Class =
 					StrParticleClass(&gParticleClasses, "damage_text");
-				s.u.AddParticle.Pos = vector2_add(
-					a->Pos, to_vector2(RAND_FLOAT(-3, 3), RAND_FLOAT(-3, 3)));
+				s.u.AddParticle.Pos = svec2_add(
+					a->Pos, svec2(RAND_FLOAT(-3, 3), RAND_FLOAT(-3, 3)));
 				s.u.AddParticle.Z = BULLET_Z * Z_FACTOR;
 				s.u.AddParticle.DZ = 3;
 				sprintf(
@@ -574,7 +574,7 @@ static void HandleGameEvent(
 		// Process runs of explored tiles
 		for (int i = 0; i < (int)e.u.ExploreTiles.Runs_count; i++)
 		{
-			Vec2i tile = Net2Vec2i(e.u.ExploreTiles.Runs[i].Tile);
+			struct vec2i tile = Net2Vec2i(e.u.ExploreTiles.Runs[i].Tile);
 			for (int j = 0; j < e.u.ExploreTiles.Runs[i].Run; j++)
 			{
 				MapMarkAsVisited(&gMap, tile);
@@ -622,9 +622,9 @@ static void HandleGameEvent(
 		{
 			gMission.KeyFlags |= e.u.AddKeys.KeyFlags;
 
-			const struct vec pos = NetToVec2(e.u.AddKeys.Pos);
+			const struct vec2 pos = NetToVec2(e.u.AddKeys.Pos);
 
-			if (!vector2_is_zero(pos))
+			if (!svec2_is_zero(pos))
 			{
 				SoundPlayAt(&gSoundDevice, StrSound("key"), pos);
 

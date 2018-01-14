@@ -291,7 +291,7 @@ static void EnterCodeScreenDraw(GameLoopData *data)
 	BlitClearBuf(&gGraphicsDevice);
 
 	// Password display
-	Vec2i pos = Vec2iNew(
+	struct vec2i pos = svec2i(
 		CenterX(FontStrW(eData->Buffer) + FontW('>') + FontW('<')),
 		gGraphicsDevice.cachedConfig.Res.y / 4);
 	pos = FontCh('>', pos);
@@ -302,7 +302,7 @@ static void EnterCodeScreenDraw(GameLoopData *data)
 	opts.HAlign = ALIGN_CENTER;
 	opts.Area = gGraphicsDevice.cachedConfig.Res;
 	opts.Pad.y = gGraphicsDevice.cachedConfig.Res.y / 12;
-	FontStrOpt("Enter code", Vec2iZero(), opts);
+	FontStrOpt("Enter code", svec2i_zero(), opts);
 
 	// Draw password entry letters
 #define	ENTRY_SPACING	12
@@ -313,7 +313,7 @@ static void EnterCodeScreenDraw(GameLoopData *data)
 		FontH() * ((strlen(PASSWORD_LETTERS) - 1) / PASSWORD_ENTRY_COLS));
 	for (int i = 0; i < (int)strlen(PASSWORD_LETTERS) + 1; i++)
 	{
-		pos = Vec2iNew(
+		pos = svec2i(
 			x + (i % PASSWORD_ENTRY_COLS) * ENTRY_SPACING,
 			y + (i / PASSWORD_ENTRY_COLS) * FontH());
 		color_t mask = (i == eData->Selection) ? colorRed : colorWhite;
@@ -357,7 +357,7 @@ GameLoopData *EnterPassword(GraphicsDevice *graphics)
 	CMALLOC(data, sizeof *data);
 	AutosaveLoadMission(&gAutosave, &data->save, gCampaign.Entry.Path);
 	MenuSystemInit(
-		&data->ms, &gEventHandlers, graphics, Vec2iZero(),
+		&data->ms, &gEventHandlers, graphics, svec2i_zero(),
 		graphics->cachedConfig.Res);
 	data->mission = TestPassword(data->save.Password);
 	MenuCreateStart(&data->ms, data->mission, &data->save);

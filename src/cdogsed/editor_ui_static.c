@@ -282,19 +282,19 @@ static bool DeactivateIndexedEditorBrush(void *data)
 }
 
 
-static UIObject *CreateSetKeyObjs(Vec2i pos, EditorBrush *brush);
+static UIObject *CreateSetKeyObjs(struct vec2i pos, EditorBrush *brush);
 UIObject *CreateStaticMapObjs(
-	Vec2i pos, CampaignOptions *co, EditorBrush *brush)
+	struct vec2i pos, CampaignOptions *co, EditorBrush *brush)
 {
 	int x = pos.x;
 	const int th = FontH();
-	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, svec2i_zero(), svec2i_zero());
 	UIObject *o2;
 	// Check whether the map type matches, and set visibility
 	c->CheckVisible = MissionCheckTypeFunc;
 	c->Data = co;
 
-	UIObject *o = UIObjectCreate(UITYPE_BUTTON, 0, Vec2iZero(), Vec2iZero());
+	UIObject *o = UIObjectCreate(UITYPE_BUTTON, 0, svec2i_zero(), svec2i_zero());
 	o->Data = brush;
 	o->OnFocusFunc = ActivateBrush;
 	o->OnUnfocusFunc = DeactivateBrush;
@@ -392,7 +392,7 @@ UIObject *CreateStaticMapObjs(
 
 	UIObjectDestroy(o);
 	o = UIObjectCreate(
-		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(60, th));
+		UITYPE_LABEL, 0, svec2i_zero(), svec2i(60, th));
 	pos.x = x;
 	pos.y += o2->Size.y;
 	o2 = UIObjectCopy(o);
@@ -427,7 +427,7 @@ UIObject *CreateStaticMapObjs(
 	UIObjectAddChild(c, o2);
 
 	UIObjectDestroy(o);
-	o = UIObjectCreate(UITYPE_TEXTBOX, 0, Vec2iZero(), Vec2iNew(100, th));
+	o = UIObjectCreate(UITYPE_TEXTBOX, 0, svec2i_zero(), svec2i(100, th));
 	pos.x = x;
 	pos.y += th;
 	o2 = UIObjectCopy(o);
@@ -441,7 +441,7 @@ UIObject *CreateStaticMapObjs(
 	UIObjectAddChild(c, o2);
 
 	UIObjectDestroy(o);
-	o = UIObjectCreate(UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(100, th));
+	o = UIObjectCreate(UITYPE_LABEL, 0, svec2i_zero(), svec2i(100, th));
 	pos.x = x;
 	pos.y += th;
 	o2 = UIObjectCopy(o);
@@ -455,19 +455,19 @@ UIObject *CreateStaticMapObjs(
 	return c;
 }
 
-static UIObject *CreateSetKeyObjs(Vec2i pos, EditorBrush *brush)
+static UIObject *CreateSetKeyObjs(struct vec2i pos, EditorBrush *brush)
 {
 	UIObject *o2;
-	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
+	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, svec2i_zero());
 
 	UIObject *o = UIObjectCreate(
 		UITYPE_CUSTOM, 0,
-		Vec2iZero(), Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT + 4));
+		svec2i_zero(), svec2i(TILE_WIDTH + 4, TILE_HEIGHT + 4));
 	o->ChangeFunc = BrushSetBrushTypeSetKey;
 	o->u.CustomDrawFunc = DrawKey;
 	o->OnFocusFunc = ActivateIndexedEditorBrush;
 	o->OnUnfocusFunc = DeactivateIndexedEditorBrush;
-	pos = Vec2iZero();
+	pos = svec2i_zero();
 	for (int i = -1; i < KEY_COUNT; i++)
 	{
 		o2 = UIObjectCopy(o);

@@ -33,27 +33,27 @@
 #include <cdogs/palette.h>
 
 
-void DisplayMapItem(const Vec2i pos, const MapObject *mo)
+void DisplayMapItem(const struct vec2i pos, const MapObject *mo)
 {
-	Vec2i offset;
+	struct vec2i offset;
 	const Pic *pic = MapObjectGetPic(mo, &offset);
-	Blit(&gGraphicsDevice, pic, Vec2iAdd(pos, offset));
+	Blit(&gGraphicsDevice, pic, svec2i_add(pos, offset));
 }
 
 void DisplayMapItemWithDensity(
-	const Vec2i pos, const MapObjectDensity *mod, const bool isHighlighted)
+	const struct vec2i pos, const MapObjectDensity *mod, const bool isHighlighted)
 {
 	DisplayMapItem(pos, mod->M);
 	if (isHighlighted)
 	{
-		FontCh('>', Vec2iAdd(pos, Vec2iNew(-8, -4)));
+		FontCh('>', svec2i_add(pos, svec2i(-8, -4)));
 	}
 	char s[10];
 	sprintf(s, "%d", mod->Density);
-	FontStr(s, Vec2iAdd(pos, Vec2iNew(-8, 5)));
+	FontStr(s, svec2i_add(pos, svec2i(-8, 5)));
 }
 
-void DrawKey(UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
+void DrawKey(UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
 {
 	const IndexedEditorBrush *data = vData;
 	if (data->u.ItemIndex == -1)
@@ -63,8 +63,8 @@ void DrawKey(UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
 	}
 	const Mission *m = CampaignGetCurrentMission(&gCampaign);
 	const Pic *pic = KeyPickupClass(m->KeyStyle, data->u.ItemIndex)->Pic;
-	pos = Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
-	pos = Vec2iMinus(pos, Vec2iScaleDiv(pic->size, 2));
+	pos = svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2));
+	pos = svec2i_subtract(pos, svec2i_scale_divide(pic->size, 2));
 	Blit(g, pic, pos);
 }
 
@@ -74,7 +74,7 @@ void InsertMission(CampaignOptions *co, Mission *mission, int idx)
 	if (mission == NULL)
 	{
 		MissionInit(&m);
-		m.Size = Vec2iNew(48, 48);
+		m.Size = svec2i(48, 48);
 		// Set some default values for the mission
 		m.u.Classic.CorridorWidth = 1;
 		m.u.Classic.Rooms.Min = m.u.Classic.Rooms.Max = 5;
@@ -108,8 +108,8 @@ bool ConfirmScreen(const char *info, const char *msg)
 	int w = gGraphicsDevice.cachedConfig.Res.x;
 	int h = gGraphicsDevice.cachedConfig.Res.y;
 	ClearScreen(&gGraphicsDevice);
-	FontStr(info, Vec2iNew((w - FontStrW(info)) / 2, (h - FontH()) / 2));
-	FontStr(msg, Vec2iNew((w - FontStrW(msg)) / 2, (h + FontH()) / 2));
+	FontStr(info, svec2i((w - FontStrW(info)) / 2, (h - FontH()) / 2));
+	FontStr(msg, svec2i((w - FontStrW(msg)) / 2, (h + FontH()) / 2));
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 	WindowContextRender(&gGraphicsDevice.gameWindow);
 
@@ -128,21 +128,21 @@ void ClearScreen(GraphicsDevice *g)
 }
 
 void DisplayFlag(
-	const Vec2i pos, const char *s, const bool isOn, const bool isHighlighted)
+	const struct vec2i pos, const char *s, const bool isOn, const bool isHighlighted)
 {
 	color_t labelMask = isHighlighted ? colorRed : colorWhite;
-	Vec2i p = FontStrMask(s, pos, labelMask);
+	struct vec2i p = FontStrMask(s, pos, labelMask);
 	p = FontChMask(':', p, labelMask);
 	FontStrMask(isOn ? "On" : "Off", p, isOn ? colorPurple : colorWhite);
 }
 
 static const char *CampaignGetSeedStr(UIObject *o, void *data);
 static void CampaignChangeSeed(void *data, int d);
-UIObject *CreateCampaignSeedObj(const Vec2i pos, CampaignOptions *co)
+UIObject *CreateCampaignSeedObj(const struct vec2i pos, CampaignOptions *co)
 {
 	const int th = FontH();
 	UIObject *o = UIObjectCreate(
-		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(50, th));
+		UITYPE_LABEL, 0, svec2i_zero(), svec2i(50, th));
 	o->ChangesData = true;
 	o->u.LabelFunc = CampaignGetSeedStr;
 	o->Data = co;
@@ -178,51 +178,51 @@ typedef struct
 	void *Data;
 	// Data size required for map item change checking
 	size_t DataSize;
-	Vec2i GridItemSize;
-	Vec2i GridSize;
-	Vec2i PageOffset;
+	struct vec2i GridItemSize;
+	struct vec2i GridSize;
+	struct vec2i PageOffset;
 } CreateAddMapItemObjsImplData;
 static UIObject *CreateAddMapItemObjsImpl(
-	Vec2i pos, CreateAddMapItemObjsImplData data);
+	struct vec2i pos, CreateAddMapItemObjsImplData data);
 UIObject *CreateAddMapItemObjs(
-	const Vec2i pos, bool (*objFunc)(UIObject *, MapObject *, void *),
+	const struct vec2i pos, bool (*objFunc)(UIObject *, MapObject *, void *),
 	void *data, const size_t dataSize, const bool expandDown)
 {
 	CreateAddMapItemObjsImplData d;
 	d.ObjFunc = objFunc;
 	d.Data = data;
 	d.DataSize = dataSize;
-	d.GridItemSize = Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT * 2 + 4);
-	d.GridSize = Vec2iNew(8, 6);
+	d.GridItemSize = svec2i(TILE_WIDTH + 4, TILE_HEIGHT * 2 + 4);
+	d.GridSize = svec2i(8, 6);
 	if (expandDown)
 	{
-		d.PageOffset = Vec2iNew(-5, 5);
+		d.PageOffset = svec2i(-5, 5);
 	}
 	else
 	{
 		d.PageOffset =
-			Vec2iNew(-5, -d.GridItemSize.y * d.GridSize.y - FontH() - 5);
+			svec2i(-5, -d.GridItemSize.y * d.GridSize.y - FontH() - 5);
 	}
 	return CreateAddMapItemObjsImpl(pos, d);
 }
 UIObject *CreateAddPickupSpawnerObjs(
-	const Vec2i pos, bool (*objFunc)(UIObject *, MapObject *, void *),
+	const struct vec2i pos, bool (*objFunc)(UIObject *, MapObject *, void *),
 	void *data, const size_t dataSize)
 {
 	CreateAddMapItemObjsImplData d;
 	d.ObjFunc = objFunc;
 	d.Data = data;
 	d.DataSize = dataSize;
-	d.GridItemSize = Vec2iNew(TILE_WIDTH + 4, TILE_HEIGHT + 4);
-	d.GridSize = Vec2iNew(5, 9);
-	d.PageOffset = Vec2iNew(-5, 5);
+	d.GridItemSize = svec2i(TILE_WIDTH + 4, TILE_HEIGHT + 4);
+	d.GridSize = svec2i(5, 9);
+	d.PageOffset = svec2i(-5, 5);
 	return CreateAddMapItemObjsImpl(pos, d);
 }
 static void CreateAddMapItemSubObjs(UIObject *c, void *vData);
 static UIObject *CreateAddMapItemObjsImpl(
-	Vec2i pos, CreateAddMapItemObjsImplData data)
+	struct vec2i pos, CreateAddMapItemObjsImplData data)
 {
-	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
+	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, svec2i_zero());
 	c->OnFocusFunc = CreateAddMapItemSubObjs;
 	c->IsDynamicData = true;
 	CMALLOC(c->Data, sizeof(CreateAddMapItemObjsImplData));
@@ -243,7 +243,7 @@ static void CreateAddMapItemSubObjs(UIObject *c, void *vData)
 	{
 		MapObject *mo = IndexMapObject(i);
 		UIObject *o2 =
-			UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), data->GridItemSize);
+			UIObjectCreate(UITYPE_CUSTOM, 0, svec2i_zero(), data->GridItemSize);
 		o2->IsDynamicData = true;
 		CCALLOC(o2->Data, data->DataSize);
 		if (!data->ObjFunc(o2, mo, data->Data))
@@ -295,10 +295,10 @@ static void CreateAddMapItemSubObjs(UIObject *c, void *vData)
 	UIObject *pageLabel = NULL;
 	UIObject *page = NULL;
 	UIObject *o =
-		UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), data->GridItemSize);
+		UIObjectCreate(UITYPE_CUSTOM, 0, svec2i_zero(), data->GridItemSize);
 	o->ChangesData = true;
-	const Vec2i gridStart = Vec2iZero();
-	Vec2i pos = Vec2iZero();
+	const struct vec2i gridStart = svec2i_zero();
+	struct vec2i pos = svec2i_zero();
 	count = 0;
 	for (int i = 0; i < MapObjectsCount(&gMapObjects); i++)
 	{
@@ -317,13 +317,13 @@ static void CreateAddMapItemSubObjs(UIObject *c, void *vData)
 		{
 			pageLabel = UIObjectCreate(
 				UITYPE_LABEL, 0,
-				Vec2iNew((pageNum - 1) * 10, 0), Vec2iNew(10, FontH()));
+				svec2i((pageNum - 1) * 10, 0), svec2i(10, FontH()));
 			char buf[32];
 			sprintf(buf, "%d", pageNum);
 			UIObjectSetDynamicLabel(pageLabel, buf);
 			page = UIObjectCreate(
 				UITYPE_CONTEXT_MENU, 0,
-				Vec2iAdd(data->PageOffset, pageLabel->Size), Vec2iZero());
+				svec2i_add(data->PageOffset, pageLabel->Size), svec2i_zero());
 			UIObjectAddChild(pageLabel, page);
 			pageNum++;
 		}
@@ -409,10 +409,10 @@ char *MakePlacementFlagTooltip(const MapObject *mo)
 }
 
 static void CloseChange(void *data, int d);
-void CreateCloseLabel(UIObject *c, const Vec2i pos)
+void CreateCloseLabel(UIObject *c, const struct vec2i pos)
 {
 	char *closeLabel = "Close";
-	const Vec2i closeSize = FontStrSize(closeLabel);
+	const struct vec2i closeSize = FontStrSize(closeLabel);
 	UIObject *oClose = UIObjectCreate(UITYPE_LABEL, 0, pos, closeSize);
 	oClose->Label = closeLabel;
 	oClose->ReloadData = true;

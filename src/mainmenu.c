@@ -199,8 +199,8 @@ static void MenuCreateAll(
 	MenuSystemInit(
 		ms,
 		handlers, graphics,
-		Vec2iZero(),
-		Vec2iNew(
+		svec2i_zero(),
+		svec2i(
 			graphics->cachedConfig.Res.x,
 			graphics->cachedConfig.Res.y));
 	ms->root = ms->current = MenuCreateNormal(
@@ -329,7 +329,7 @@ static menu_t *MenuCreateCampaignItem(
 
 static void CampaignsDisplayFilename(
 	const menu_t *menu, GraphicsDevice *g,
-	const Vec2i pos, const Vec2i size, const void *data)
+	const struct vec2i pos, const struct vec2i size, const void *data)
 {
 	const menu_t *subMenu =
 		CArrayGet(&menu->u.normal.subMenus, menu->u.normal.index);

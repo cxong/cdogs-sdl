@@ -74,7 +74,7 @@
 
 GraphicsDevice gGraphicsDevice;
 
-static void Gfx_ModeSet(const Vec2i *mode)
+static void Gfx_ModeSet(const struct vec2i *mode)
 {
 	ConfigGet(&gConfig, "Graphics.ResolutionWidth")->u.Int.Value = mode->x;
 	ConfigGet(&gConfig, "Graphics.ResolutionHeight")->u.Int.Value = mode->y;
@@ -104,7 +104,7 @@ void Gfx_ModeNext(void)
 
 static int FindValidMode(GraphicsDevice *device, const int w, const int h)
 {
-	CA_FOREACH(const Vec2i, mode, device->validModes)
+	CA_FOREACH(const struct vec2i, mode, device->validModes)
 		if (mode->x == w && mode->y == h)
 		{
 			return _ca_index;
@@ -126,21 +126,21 @@ static void AddGraphicsMode(GraphicsDevice *device, const int w, const int h)
 	for (i = 0; i < (int)device->validModes.size; i++)
 	{
 		// Ordered by actual resolution ascending and scale descending
-		const Vec2i *mode = CArrayGet(&device->validModes, i);
+		const struct vec2i *mode = CArrayGet(&device->validModes, i);
 		const int actualResolution = mode->x * mode->y;
 		if (actualResolution >= size)
 		{
 			break;
 		}
 	}
-	Vec2i mode = Vec2iNew(w, h);
+	struct vec2i mode = svec2i(w, h);
 	CArrayInsert(&device->validModes, i, &mode);
 }
 
 void GraphicsInit(GraphicsDevice *device, Config *c)
 {
 	memset(device, 0, sizeof *device);
-	CArrayInit(&device->validModes, sizeof(Vec2i));
+	CArrayInit(&device->validModes, sizeof(struct vec2i));
 	// Add default modes
 	AddGraphicsMode(device, 320, 240);
 	AddGraphicsMode(device, 400, 300);
@@ -218,7 +218,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 		LOG(LM_GFX, LL_INFO, "graphics mode(%dx%d %dx)",
 			w, h, g->cachedConfig.ScaleFactor);
 		// Get the previous window's size and recreate it
-		Vec2i windowSize = Vec2iNew(
+		struct vec2i windowSize = svec2i(
 			w * g->cachedConfig.ScaleFactor, h * g->cachedConfig.ScaleFactor);
 		if (g->gameWindow.window)
 		{
@@ -229,14 +229,14 @@ void GraphicsInitialize(GraphicsDevice *g)
 		WindowContextDestroy(&g->gameWindow);
 		WindowContextDestroy(&g->secondWindow);
 		SDL_FreeFormat(g->Format);
-		
+
 		char title[32];
 		sprintf(title, "C-Dogs SDL %s%s",
 			g->cachedConfig.IsEditor ? "Editor " : "",
 			CDOGS_SDL_VERSION);
 		if (!WindowContextCreate(
 				&g->gameWindow, windowSize, sdlFlags, title, g->icon,
-				Vec2iNew(w, h)))
+				svec2i(w, h)))
 		{
 			return;
 		}
@@ -244,7 +244,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 		{
 			if (!WindowContextCreate(
 					&g->secondWindow, windowSize, sdlFlags, title, g->icon,
-					Vec2iNew(w, h)))
+					svec2i(w, h)))
 			{
 				return;
 			}
@@ -289,7 +289,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 		CFREE(g->buf);
 		CCALLOC(g->buf, GraphicsGetMemSize(&g->cachedConfig));
 		g->bkg = WindowContextCreateTexture(
-			&g->gameWindow, SDL_TEXTUREACCESS_STATIC, Vec2iNew(w, h),
+			&g->gameWindow, SDL_TEXTUREACCESS_STATIC, svec2i(w, h),
 			SDL_BLENDMODE_NONE, 255);
 		if (g->bkg == NULL)
 		{
@@ -298,7 +298,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 		if (g->cachedConfig.SecondWindow)
 		{
 			g->bkg2 = WindowContextCreateTexture(
-				&g->secondWindow, SDL_TEXTUREACCESS_STATIC, Vec2iNew(w, h),
+				&g->secondWindow, SDL_TEXTUREACCESS_STATIC, svec2i(w, h),
 				SDL_BLENDMODE_NONE, 255);
 			if (g->bkg2 == NULL)
 			{
@@ -307,7 +307,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 		}
 
 		g->screen = WindowContextCreateTexture(
-			&g->gameWindow, SDL_TEXTUREACCESS_STREAMING, Vec2iNew(w, h),
+			&g->gameWindow, SDL_TEXTUREACCESS_STREAMING, svec2i(w, h),
 			SDL_BLENDMODE_BLEND, 255);
 		if (g->screen == NULL)
 		{
@@ -315,7 +315,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 		}
 
 		g->hud = WindowContextCreateTexture(
-			&g->gameWindow, SDL_TEXTUREACCESS_STREAMING, Vec2iNew(w, h),
+			&g->gameWindow, SDL_TEXTUREACCESS_STREAMING, svec2i(w, h),
 			SDL_BLENDMODE_BLEND, 255);
 		if (g->hud == NULL)
 		{
@@ -327,7 +327,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 		if (g->cachedConfig.SecondWindow)
 		{
 			g->hud2 = WindowContextCreateTexture(
-				&g->secondWindow, SDL_TEXTUREACCESS_STREAMING, Vec2iNew(w, h),
+				&g->secondWindow, SDL_TEXTUREACCESS_STREAMING, svec2i(w, h),
 				SDL_BLENDMODE_BLEND, 255);
 			if (g->hud2 == NULL)
 			{
@@ -350,14 +350,14 @@ void GraphicsInitialize(GraphicsDevice *g)
 		const Uint8 alpha =
 			(Uint8)(brightness > 0 ? brightness : -brightness) * 13;
 		g->brightnessOverlay = WindowContextCreateTexture(
-			&g->gameWindow, SDL_TEXTUREACCESS_STATIC, Vec2iNew(w, h),
+			&g->gameWindow, SDL_TEXTUREACCESS_STATIC, svec2i(w, h),
 			SDL_BLENDMODE_BLEND, alpha);
 		if (g->brightnessOverlay == NULL)
 		{
 			return;
 		}
 		const color_t overlayColour = brightness > 0 ? colorWhite : colorBlack;
-		DrawRectangle(g, Vec2iZero(), g->cachedConfig.Res, overlayColour, 0);
+		DrawRectangle(g, svec2i_zero(), g->cachedConfig.Res, overlayColour, 0);
 		BlitUpdateFromBuf(g, g->brightnessOverlay);
 		g->cachedConfig.Brightness = brightness;
 	}
@@ -391,11 +391,11 @@ int GraphicsGetMemSize(GraphicsConfig *config)
 
 void GraphicsConfigSet(
 	GraphicsConfig *c,
-	const Vec2i res, const bool fullscreen,
+	const struct vec2i res, const bool fullscreen,
 	const int scaleFactor, const ScaleMode scaleMode, const int brightness,
 	const bool secondWindow)
 {
-	if (!Vec2iEqual(res, c->Res))
+	if (!svec2i_is_equal(res, c->Res))
 	{
 		c->Res = res;
 		c->RestartFlags |= RESTART_RESOLUTION;
@@ -417,7 +417,7 @@ void GraphicsConfigSetFromConfig(GraphicsConfig *gc, Config *c)
 {
 	GraphicsConfigSet(
 		gc,
-		Vec2iNew(
+		svec2i(
 			ConfigGetInt(c, "Graphics.ResolutionWidth"),
 			ConfigGetInt(c, "Graphics.ResolutionHeight")),
 		ConfigGetBool(c, "Graphics.Fullscreen"),

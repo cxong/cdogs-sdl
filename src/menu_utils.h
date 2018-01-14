@@ -40,13 +40,13 @@ typedef struct
 } MenuDisplayPlayerData;
 void MenuDisplayPlayer(
 	const menu_t *menu, GraphicsDevice *g,
-	const Vec2i pos, const Vec2i size, const void *data);
+	const struct vec2i pos, const struct vec2i size, const void *data);
 
 // Data is PlayerUID
 void MenuDisplayPlayerControls(
 	const menu_t *menu, GraphicsDevice *g,
-	const Vec2i pos, const Vec2i size, const void *data);
+	const struct vec2i pos, const struct vec2i size, const void *data);
 
 void DisplayCharacterAndName(
-	Vec2i pos, Character *c, const direction_e d,
+	struct vec2i pos, Character *c, const direction_e d,
 	const char *name, const color_t color);

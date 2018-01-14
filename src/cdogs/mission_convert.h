@@ -31,17 +31,17 @@
 #include "map.h"
 
 void MissionConvertToType(Mission *m, Map *map, MapType type);
-bool MissionTrySetTile(Mission *m, Vec2i pos, unsigned short tile);
-unsigned short MissionGetTile(Mission *m, Vec2i pos);
+bool MissionTrySetTile(Mission *m, struct vec2i pos, unsigned short tile);
+unsigned short MissionGetTile(Mission *m, struct vec2i pos);
 
-void MissionStaticLayout(Mission *m, Vec2i oldSize);
-bool MissionStaticTryAddItem(Mission *m, const MapObject *mo, const Vec2i pos);
-bool MissionStaticTryRemoveItemAt(Mission *m, const Vec2i pos);
-bool MissionStaticTryAddCharacter(Mission *m, int ch, Vec2i pos);
-bool MissionStaticTryRemoveCharacterAt(Mission *m, Vec2i pos);
-bool MissionStaticTryAddObjective(Mission *m, int idx, int idx2, Vec2i pos);
-bool MissionStaticTryRemoveObjectiveAt(Mission *m, Vec2i pos);
-bool MissionStaticTryAddKey(Mission *m, int k, Vec2i pos);
-bool MissionStaticTryRemoveKeyAt(Mission *m, Vec2i pos);
-bool MissionStaticTrySetKey(Mission *m, int k, Vec2i pos);
-bool MissionStaticTryUnsetKeyAt(Mission *m, Vec2i pos);
+void MissionStaticLayout(Mission *m, struct vec2i oldSize);
+bool MissionStaticTryAddItem(Mission *m, const MapObject *mo, const struct vec2i pos);
+bool MissionStaticTryRemoveItemAt(Mission *m, const struct vec2i pos);
+bool MissionStaticTryAddCharacter(Mission *m, int ch, struct vec2i pos);
+bool MissionStaticTryRemoveCharacterAt(Mission *m, struct vec2i pos);
+bool MissionStaticTryAddObjective(Mission *m, int idx, int idx2, struct vec2i pos);
+bool MissionStaticTryRemoveObjectiveAt(Mission *m, struct vec2i pos);
+bool MissionStaticTryAddKey(Mission *m, int k, struct vec2i pos);
+bool MissionStaticTryRemoveKeyAt(Mission *m, struct vec2i pos);
+bool MissionStaticTrySetKey(Mission *m, int k, struct vec2i pos);
+bool MissionStaticTryUnsetKeyAt(Mission *m, struct vec2i pos);

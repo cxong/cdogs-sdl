@@ -60,7 +60,7 @@ const float colRatios[] = { 0.25f, 0.75f };
 typedef struct
 {
 	struct nk_context *ctx;
-	Vec2i WindowSize;
+	struct vec2i WindowSize;
 	Character *Char;
 	CampaignSetting *Setting;
 	EventHandlers *Handlers;
@@ -357,13 +357,13 @@ static void DrawCharColor(EditorContext *ec, const char *label, color_t *c);
 static void DrawFlag(
 	EditorContext *ec, const char *label, const int flag, const char *tooltip);
 static void DrawCharacter(
-	EditorContext *ec, Character *c, GLuint *texids, const Vec2i pos,
+	EditorContext *ec, Character *c, GLuint *texids, const struct vec2i pos,
 	const Animation *anim, const direction_e d);
 static void Draw(SDL_Window *win, EditorContext *ec)
 {
 	// Stretch char store with window
 	SDL_GetWindowSize(win, &ec->WindowSize.x, &ec->WindowSize.y);
-	const Vec2i charStoreSize = Vec2iNew(
+	const struct vec2i charStoreSize = svec2i(
 		MAX(400, ec->WindowSize.x - 100),
 		MAX(200, ec->WindowSize.y - 300));
 	const float pad = 10;
@@ -431,7 +431,7 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 			}
 			DrawCharacter(
 				ec, c, CArrayGet(&ec->texidsChars, _ca_index),
-				Vec2iNew(-34, 5), &ec->animSelection, DIRECTION_DOWN);
+				svec2i(-34, 5), &ec->animSelection, DIRECTION_DOWN);
 		CA_FOREACH_END()
 	}
 	nk_end(ec->ctx);
@@ -459,7 +459,7 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 			// Preview
 			nk_layout_row_dynamic(ec->ctx, 32 * PIC_SCALE, 1);
 			DrawCharacter(
-				ec, ec->Char, ec->texidsPreview, Vec2iNew(0, 5), &ec->anim,
+				ec, ec->Char, ec->texidsPreview, svec2i(0, 5), &ec->anim,
 				ec->previewDir);
 			// Animation
 			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
@@ -829,7 +829,7 @@ static void BeforeDrawTex(const GLuint texid)
 }
 
 static void DrawCharacter(
-	EditorContext *ec, Character *c, GLuint *texids, const Vec2i pos,
+	EditorContext *ec, Character *c, GLuint *texids, const struct vec2i pos,
 	const Animation *anim, const direction_e d)
 {
 	const int frame = AnimationGetFrame(anim);
@@ -843,7 +843,7 @@ static void DrawCharacter(
 		{
 			continue;
 		}
-		const Vec2i drawPos = Vec2iAdd(pos, pics.OrderedOffsets[i]);
+		const struct vec2i drawPos = svec2i_add(pos, pics.OrderedOffsets[i]);
 		LoadMultiChannelTexFromPic(texids[i], pic, pics.Colors);
 		struct nk_image tex = nk_image_id((int)texids[i]);
 		glTexParameteri(

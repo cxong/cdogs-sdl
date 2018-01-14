@@ -54,7 +54,7 @@
 #include "los.h"
 
 
-void DrawBufferInit(DrawBuffer *b, Vec2i size, GraphicsDevice *g)
+void DrawBufferInit(DrawBuffer *b, struct vec2i size, GraphicsDevice *g)
 {
 	b->OrigSize = size;
 	CMALLOC(b->tiles, size.x * sizeof *b->tiles);
@@ -75,13 +75,13 @@ void DrawBufferTerminate(DrawBuffer *b)
 }
 
 void DrawBufferSetFromMap(
-	DrawBuffer *buffer, const Map *map, const struct vec origin,
+	DrawBuffer *buffer, const Map *map, const struct vec2 origin,
 	const int width)
 {
 	int x, y;
 	Tile *bufTile;
 
-	buffer->Size = Vec2iNew(width, buffer->OrigSize.y);
+	buffer->Size = svec2i(width, buffer->OrigSize.y);
 
 	buffer->xTop = (int)origin.x - TILE_WIDTH * width / 2;
 	buffer->yTop = (int)origin.y - TILE_HEIGHT * buffer->OrigSize.y / 2;
@@ -109,7 +109,7 @@ void DrawBufferSetFromMap(
 		{
 			if (x >= 0 && x < map->Size.x && y >= 0 && y < map->Size.y)
 			{
-				*bufTile = *MapGetTile(map, Vec2iNew(x, y));
+				*bufTile = *MapGetTile(map, svec2i(x, y));
 			}
 			else
 			{
@@ -149,8 +149,8 @@ void DrawBufferFix(DrawBuffer *buffer)
 	{
 		for (int x = 0; x < buffer->Size.x; x++, tile++)
 		{
-			const Vec2i mapTile =
-				Vec2iNew(x + buffer->xStart, y + buffer->yStart);
+			const struct vec2i mapTile =
+				svec2i(x + buffer->xStart, y + buffer->yStart);
 			if (!LOSTileIsVisible(&gMap, mapTile))
 			{
 				tile->flags |= MAPTILE_OUT_OF_SIGHT;

@@ -34,6 +34,6 @@
 #include "ui_object.h"
 
 UIObject *CreateAddItemObjs(
-	Vec2i pos, EditorBrush *brush, CampaignOptions *co);
+	struct vec2i pos, EditorBrush *brush, CampaignOptions *co);
 
 #endif

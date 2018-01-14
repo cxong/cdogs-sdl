@@ -2,121 +2,125 @@
 
 [![Build Status](https://travis-ci.org/ferreiradaselva/mathc.svg?branch=master)](https://travis-ci.org/ferreiradaselva/mathc)
 
-MATHC is a simple math library for 2D and 3D game programming. It contains implementations for:
+MATHC (version 2) is a simple math library for 2D and 3D programming. It contains implementations for:
 
-- 2D vectors
-- 3D vectors
+- Vectors (2D, 3D and 4D)
 - Quaternions
-- Matrices
+- Matrices (2×2, 3×3, and 4×4)
 - Easing functions
 
-It support C99 standard or later.
+## Configuring
 
-## Release
+MATHC can be configured with the following preprocessors (described in the following sections of this document):
 
-The CHANGELOG and RELEASE NOTES can be found in [CHANGELOG.md](CHANGELOG.md#020---2017-11-11).
+- `MATHC_NO_STDBOOL`
+- `mfloat_t`
+- `MATHC_DOUBLE_PRECISION`
+- `MATHC_NO_STRUCTURES`
+- `MATHC_NO_POINTER_STRUCT_FUNCTIONS`
+- `MATHC_NO_STRUCT_FUNCTIONS`
+- `MATHC_NO_EASING_FUNCTIONS`
 
-## Reference
+You can define these macros during compilation time with flags:
 
-The reference is the file `REFERENCE.md`.
-
-There are examples on my other repository using this math library:
-
-[CGDFW examples](https://github.com/ferreiradaselva/cgdfw/tree/master/examples)
-
-## Contributing
-
-Check the file `CONTRIBUTING.md` for contribution rules and contributions of interest.
-
-## Float
-
-Every structure and function uses `float`, because it is the most used type on 2D and 3D programming with OpenGL.
-
-**The type `float` loses precision with large numbers, why not use `double`?** Because every `double` value would be converted to `float` before sending to OpenGL, anyway. Which means your physics would run with high precision, but the rendering would still be affected by the `float` imprecision. Instead, *the good practice* to solve the problem with large numbers is to truncate the world position back to `[0.0f, 0.0f, 0.0f]` when the world distance to the center is too large. If the world is too big that even when truncating there are stil large numbers, the correct approach is to divide the world in chunks.
-
-## Passing Arguments as Value or Pointer
-
-For every function **that takes a structure**, there are two versions. One that you pass structures as value and other that you pass as pointer. The functions that pass the value by pointer have a prefix `p` before the type name (pvector2, pvector3, pquaternion and pmatrix) and the result is the `*result` argument or a returned `float`.
-
-You can decide which one you want to use.
-
-Examples:
-
-```c
-/* Pass by value and return a value */
-struct mat projection = matrix_ortho(-100.0f, 100.0f, 100.0f, -100.0f);
-struct mat view = matrix_look_at(to_vector3(0.0f, 0.0f, 1.0f),
-	to_vector3(0.0f, 0.0f, 0.0f));
-struct mat pv = matrix_multiply_matrix(projection, view);
-
-/* Pass by pointer */
-struct vec pos = {0};
-struct vec target = {0};
-struct mat projection = {0};
-struct mat view = {0};
-struct mat multiplied_matrix = {0};
-
-to_pvector3(0.0f, 0.0f, 1.0f, &pos);
-to_pvector3(0.0f, 0.0f, 0.0f, &target);
-to_pvector3(0.0f, 1.0f, 0.0f, &up);
-pmatrix_ortho(-100.0f, 100.0f, 100.0f, -100.0f, &projection);
-pmatrix_look_at(&pos, &target, &view);
-pmatrix_multiply_matrix(&projection, &view, &multiplied_matrix);
+```
+gcc -DMATHC_NO_STDBOOL=ON -Dmfloat_t=double -DMATHC_DOUBLE_PRECISION=ON
 ```
 
-## Vectors
-
-All vectors (2D, 3D and quaternions) use the same structure type `struct vec`. The `z` component is still useful for 2D vectors, as it is used by OpenGL for depth testing. This means the only extra component on 2D and 3D vectors is the `w` component, which is used by quaternions.
-
-Examples:
+Or include `mathc.c` in a source file. This second approach is more useful and flexible, because you can define `mfloat_t` as a different type other than the built-in types `float` or `double`, such as `GLfloat`:
 
 ```c
-/* Rotate a 2D vector 90º */
-struct vec direction = to_vector2(0.0f, -1.0f);
-direction = vector2_rotate(90.0f * M_PIF / 180.0f);
-
-/* Get the angle (radians) of a 2D vector */
-float angle = vector2_angle(direction);
-
-/* Create a 3D vector */
-struct vec position = to_vector3(0.0f, 0.0f, 0.0f);
-
-/* Create a quaternion */
-struct vec quaternion = to_quaternion(0.0f, 0.0f, 0.0f, 1.0f);
-/* Spherical interpolation between two quaternions */
-struct vec interpolated = quaternion_spherical_linear_interpolation(a, b, 0.5f);
+/* In a *.c file */
+#include <GL.h>
+#define mfloat_t GLfloat
+#define MATHC_DOUBLE_PRECISION
+#include <mathc.c>
 ```
 
-You don't need to create your OpenGL buffer (VBO) to take 4 elements. When using `glMapBufferRange()`/`glMapBuffer()` and `glUnmapBuffer()`, you can pass only the used elements to the VBO, that has element count of your choice.
+## Integer Type
 
-## Matrices
+By default, `mint_t` is a `int32_t` if the header `stdint.h` is available. If the header `stdint.h` is not avaliable, disabled by defining `MATHC_NO_STDINT`, `mint_t` is a `int`. This can be changed by predefining `mint_t` as a desired type.
 
-All matrices are 4×4. There are functions for setting up projection matrices, view matrices and model matrices.
+Some operations integer vector will use float-point internally, then assign the float-point value back to the integer vector. The value assigned is rounded with `MVECI_ROUND`. By default, `MVECI_ROUND` is a rounding function. Define `MVECI_ROUND_CEIL_FUNC` to use a ceiling function or `MVECI_ROUND_FLOOR_FUNC` for a flooring function.
 
-Usually, model matrices are used to modify vertices on client-side or GPU-side. If you want to modify on client-side, you can use the functions `matrix_multiply_f4()` or `pmatrix_multiply_f4()` to modify an array with 4 `float` elements. Example:
+## Float-Point Type
+
+By default, `mfloat_t` is a `float`. This can be changed by predefining `mfloat_t` as a desired type.
+
+## Math Precision
+
+By default, MATHC will use single-precision internally. This can be changed by predefining `MATHC_DOUBLE_PRECISION`.
+
+## Types
+
+By default, types are can be declared as `mfloat_t` arrays or `mint_t` arrays, or structures:
 
 ```c
-float v[4] = {0.0f, 10.0f, 0.0f, 1.0f}; /* Compoments X, Y, Z and W */
-struct mat rotation = matrix_rotation_z(to_radians(45.0f));
-matrix_multiply_f4(rotation, v);
+/* As float arrays */
+mfloat_t texture_coordinates[VEC2_SIZE];
+mfloat_t position[VEC3_SIZE];
+mfloat_t rgba[VEC4_SIZE];
+mfloat_t rotation[QUAT_SIZE];
+mfloat_t rotation_mat[MAT3_SIZE];
+mfloat_t model_mat[MAT4_SIZE];
+
+/* As float structures */
+struct vec2 texture_coordinates;
+struct vec3 position;
+struct vec4 rgba;
+struct quat rotation;
+struct mat3 rotation_mat;
+struct mat4 model_mat;
+
+/* As integer arrays */
+mint_t texture_coordinates[VEC2_SIZE];
+mint_t position[VEC3_SIZE];
+mint_t rgba[VEC4_SIZE];
+
+/* As integer structures */
+struct vec2i texture_coordinates;
+struct vec3i position;
+struct vec4i rgba;
 ```
 
-If you want to modify on GPU-side, you can use the functions `matrix_to_array()` or `pmatrix_to_array()` to push the matrix to an array with 16 `float` elements. Example:
+By defining `MATHC_NO_STRUCTURES`, structure types will not defined.
+
+## Functions
+
+By default, MATHC will declare functions that take `mfloat_t` array or `mint_t` array, structure values, and structure pointers as arguments:
 
 ```c
-float v[MAT_SIZE]; /* MAT_SIZE is a macro in mathc.h with value 16 */
-struct mat projection = matrix_ortho(-100.0f, 100.0f, -100.0f, 100.0f, 0.0f, 1.0f);
-struct mat view = matrix_look_at(to_vector3(0.0f, 0.0f, 1.0f),
-	to_vector3(0.0f, 0.0f, 0.0f));
-struct mat pv = matrix_multiply_matrix(projection, view);
-matrix_to_array(pv, v);
+/* As array */
+mfloat_t position[VEC3_SIZE];
+mfloat_t offset[VEC3_SIZE];
+
+vec2_add(position,
+	vec2(position, 0.0f, 0.0f),
+	vec2(offset, 1.0f, 1.0f));
+
+/* As structures */
+struct vec2 position = svec2(0.0f, 0.0f);
+struct vec2 offset = svec2(1.0f, 1.0f);
+
+/* As structure value */
+position = svec2_add(position, offset);
+/* As structure pointer */
+psvec2_add(&position, &position, &offset);
 ```
+
+Functions that take structure as value have a prefix `s`. Functions that take structure pointers have a prefix `ps`.
+
+By defining `MATHC_NO_STRUCT_FUNCTIONS`, functions that take structure as value will not be defined.
+
+By defining `MATHC_NO_POINTER_STRUCT_FUNCTIONS`, functions that take structure pointers will not be defined.
 
 ## Easing Functions
 
-The easing functions are an implementation of the functions presented in [easings.net](http://easings.net/). They are mainly useful for animations.
+The easing functions are an implementation of the functions presented in [easings.net](http://easings.net/), useful particularly for animations.
 
-Easing functions take a value that range from `0.0f` to `1.0f` and usually will return a value inside that same range. However, in some of the easing functions, the returned value extrapolate that range.
+Easing functions take a value inside the range `0.0-1.0` and usually will return a value inside that same range. However, in some of the easing functions, the returned value extrapolate that range (Check the [easings.net](http://easings.net/) to see those functions).
+
+By defining `MATHC_NO_EASING_FUNCTIONS`, the easing functions will not be defined.
 
 ## LICENSE
 

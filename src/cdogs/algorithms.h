@@ -33,27 +33,27 @@
 
 typedef struct
 {
-	bool (*IsBlocked)(void *, Vec2i);
+	bool (*IsBlocked)(void *, struct vec2i);
 	void *data;
 } HasClearLineData;
 // Use Bresenham line algorithm to determine whether line is clear
-bool HasClearLineBresenham(Vec2i from, Vec2i to, HasClearLineData *data);
+bool HasClearLineBresenham(struct vec2i from, struct vec2i to, HasClearLineData *data);
 bool HasClearLineJMRaytrace(
-	const Vec2i from, const Vec2i to, HasClearLineData *data);
+	const struct vec2i from, const struct vec2i to, HasClearLineData *data);
 
 typedef struct
 {
-	void (*Draw)(void *, Vec2i);
+	void (*Draw)(void *, struct vec2i);
 	void *data;
 } AlgoLineDrawData;
-void BresenhamLineDraw(Vec2i from, Vec2i to, AlgoLineDrawData *data);
+void BresenhamLineDraw(struct vec2i from, struct vec2i to, AlgoLineDrawData *data);
 void JMRaytraceLineDraw(
-	const Vec2i from, const Vec2i to, AlgoLineDrawData *data);
+	const struct vec2i from, const struct vec2i to, AlgoLineDrawData *data);
 
 typedef struct
 {
-	void (*Fill)(void *, Vec2i);
-	bool (*IsSame)(void *, Vec2i);
+	void (*Fill)(void *, struct vec2i);
+	bool (*IsSame)(void *, struct vec2i);
 	void *data;
 } FloodFillData;
-bool CFloodFill(Vec2i v, FloodFillData *data);
+bool CFloodFill(struct vec2i v, FloodFillData *data);

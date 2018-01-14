@@ -13,15 +13,15 @@ const char *JoyName(const int deviceIndex)
 FEATURE(minkowski_hex, "Minkowski Hex")
 	SCENARIO("Same position")
 		GIVEN("two rectangles with the same position")
-			const struct vec rectPos1 = to_vector2(3, 4);
-			const struct vec rectVel1 = to_vector2(-4, 5);
-			const Vec2i rectSize1 = Vec2iNew(1, 3);
-			const struct vec rectPos2 = rectPos1;
-			const struct vec rectVel2 = to_vector2(7, -8);
-			const Vec2i rectSize2 = Vec2iNew(2, 1);
+			const struct vec2 rectPos1 = svec2(3, 4);
+			const struct vec2 rectVel1 = svec2(-4, 5);
+			const struct vec2i rectSize1 = svec2i(1, 3);
+			const struct vec2 rectPos2 = rectPos1;
+			const struct vec2 rectVel2 = svec2(7, -8);
+			const struct vec2i rectSize2 = svec2i(2, 1);
 
 		WHEN("I check for their collision")
-			struct vec collide1, collide2, normal;
+			struct vec2 collide1, collide2, normal;
 			const bool result = MinkowskiHexCollide(
 				rectPos1, rectVel1, rectSize1,
 				rectPos2, rectVel2, rectSize2,
@@ -41,15 +41,15 @@ FEATURE(minkowski_hex, "Minkowski Hex")
 
 	SCENARIO("No overlap, no movement")
 		GIVEN("two non-overlapping rectangles with no movement")
-			const struct vec rectPos1 = to_vector2(3, 4);
-			const struct vec rectVel1 = vector2_zero();
-			const Vec2i rectSize1 = Vec2iNew(1, 3);
-			const struct vec rectPos2 = to_vector2(8, 9);
-			const struct vec rectVel2 = vector2_zero();
-			const Vec2i rectSize2 = Vec2iNew(2, 1);
+			const struct vec2 rectPos1 = svec2(3, 4);
+			const struct vec2 rectVel1 = svec2_zero();
+			const struct vec2i rectSize1 = svec2i(1, 3);
+			const struct vec2 rectPos2 = svec2(8, 9);
+			const struct vec2 rectVel2 = svec2_zero();
+			const struct vec2i rectSize2 = svec2i(2, 1);
 
 		WHEN("I check for their collision")
-			struct vec collide1, collide2, normal;
+			struct vec2 collide1, collide2, normal;
 			const bool result = MinkowskiHexCollide(
 				rectPos1, rectVel1, rectSize1,
 				rectPos2, rectVel2, rectSize2,
@@ -61,15 +61,15 @@ FEATURE(minkowski_hex, "Minkowski Hex")
 
 	SCENARIO("Single axis single movement")
 		GIVEN("two rectangles, one moving into the other")
-			const struct vec rectPos1 = vector2_zero();
-			const struct vec rectVel1 = to_vector2(10, 0);
-			const Vec2i rectSize1 = Vec2iNew(2, 2);
-			const struct vec rectPos2 = to_vector2(5, 0);
-			const struct vec rectVel2 = vector2_zero();
-			const Vec2i rectSize2 = Vec2iNew(2, 2);
+			const struct vec2 rectPos1 = svec2_zero();
+			const struct vec2 rectVel1 = svec2(10, 0);
+			const struct vec2i rectSize1 = svec2i(2, 2);
+			const struct vec2 rectPos2 = svec2(5, 0);
+			const struct vec2 rectVel2 = svec2_zero();
+			const struct vec2i rectSize2 = svec2i(2, 2);
 
 		WHEN("I check for their collision")
-			struct vec collide1, collide2, normal;
+			struct vec2 collide1, collide2, normal;
 			const bool result = MinkowskiHexCollide(
 				rectPos1, rectVel1, rectSize1,
 				rectPos2, rectVel2, rectSize2,

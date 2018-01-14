@@ -47,27 +47,27 @@ static bool ColorPickerSetFromText(void *data);
 typedef struct
 {
 	color_t Color;
-	Vec2i SwatchSize;
-	Vec2i SwatchPad;
+	struct vec2i SwatchSize;
+	struct vec2i SwatchPad;
 	void *Data;
 	ColorPickerChangeFunc ChangeFunc;
 } ColorPickerData;
 static void ColorPickerUpdateText(UIObject *o, void *data);
 static void ColorPickerChange(void *data, int d);
 static void ColorPickerDrawSwatch(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data);
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data);
 // Create a colour picker using the C-Dogs palette
 UIObject *CreateColorPicker(
-	const Vec2i pos, void *data,
+	const struct vec2i pos, void *data,
 	ColorPickerGetFunc getFunc, ColorPickerChangeFunc changeFunc)
 {
-	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, Vec2iZero());
+	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, svec2i_zero());
 	c->IsDynamicData = true;
 	c->Data = data;
 
 	// Create a text input area for the colour hex code
 	UIObject *oText = UIObjectCreate(
-		UITYPE_TEXTBOX, 0, Vec2iZero(), FontStrSize("#abcdef"));
+		UITYPE_TEXTBOX, 0, svec2i_zero(), FontStrSize("#abcdef"));
 	oText->u.Textbox.IsEditable = true;
 	oText->u.Textbox.TextLinkFunc = ColorPickerText;
 	oText->u.Textbox.MaxLen = sizeof ((ColorTextData *)0)->Text - 1;
@@ -88,10 +88,10 @@ UIObject *CreateColorPicker(
 	const int yStart = oText->Size.y + 4;
 
 	// Create colour squares from the palette
-	const Vec2i swatchSize = Vec2iNew(5, 5);
-	const Vec2i swatchPad = Vec2iNew(2, 2);
+	const struct vec2i swatchSize = svec2i(5, 5);
+	const struct vec2i swatchPad = svec2i(2, 2);
 	UIObject *o = UIObjectCreate(
-		UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iAdd(swatchSize, swatchPad));
+		UITYPE_CUSTOM, 0, svec2i_zero(), svec2i_add(swatchSize, swatchPad));
 	o->ChangeFunc = ColorPickerChange;
 	// Changing colour updates the masked pics for the mission, which requires
 	// a reload
@@ -99,7 +99,7 @@ UIObject *CreateColorPicker(
 	o->ReloadData = true;
 	o->u.CustomDrawFunc = ColorPickerDrawSwatch;
 	const Pic *palette = PicManagerGetPic(&gPicManager, "palette");
-	Vec2i v;
+	struct vec2i v;
 	for (v.y = 0; v.y < palette->size.y; v.y++)
 	{
 		for (v.x = 0; v.x < palette->size.x; v.x++)
@@ -118,7 +118,7 @@ UIObject *CreateColorPicker(
 			((ColorPickerData *)o2->Data)->SwatchPad = swatchPad;
 			((ColorPickerData *)o2->Data)->Data = data;
 			((ColorPickerData *)o2->Data)->ChangeFunc = changeFunc;
-			o2->Pos = Vec2iMult(v, o->Size);
+			o2->Pos = svec2i_multiply(v, o->Size);
 			o2->Pos.y += yStart;
 			UIObjectAddChild(c, o2);
 		}
@@ -126,7 +126,7 @@ UIObject *CreateColorPicker(
 	UIObjectDestroy(o);
 
 	// Create a dummy label that can be clicked to close the context menu
-	CreateCloseLabel(c, Vec2iNew(
+	CreateCloseLabel(c, svec2i(
 		palette->size.x * (swatchSize.x + swatchPad.x) - FontStrW("Close"),
 		0));
 
@@ -160,13 +160,13 @@ static void ColorPickerChange(void *data, int d)
 	mc->ChangeFunc(mc->Color, mc->Data);
 }
 static void ColorPickerDrawSwatch(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
 {
 	UNUSED(o);
 	const ColorPickerData *cpd = data;
 	DrawRectangle(
 		g,
-		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(cpd->SwatchPad, 2)),
+		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(cpd->SwatchPad, 2)),
 		cpd->SwatchSize,
 		cpd->Color,
 		0);
@@ -189,12 +189,12 @@ typedef struct
 static const char *MissionGetColorStr(UIObject *o, void *data);
 static void MissionColorChange(const color_t c, void *data);
 static color_t CampaignGetMissionColor(void *data);
-Vec2i CreateColorObjs(CampaignOptions *co, UIObject *c, Vec2i pos)
+struct vec2i CreateColorObjs(CampaignOptions *co, UIObject *c, struct vec2i pos)
 {
 	const int th = FontH();
 
 	UIObject *o = UIObjectCreate(
-		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(100, th));
+		UITYPE_LABEL, 0, svec2i_zero(), svec2i(100, th));
 	o->ChangesData = true;
 	o->ReloadData = true;
 	o->u.LabelFunc = MissionGetColorStr;
@@ -213,7 +213,7 @@ Vec2i CreateColorObjs(CampaignOptions *co, UIObject *c, Vec2i pos)
 		mcd->C = co;
 		mcd->Type = (MissionColorType)i;
 		UIObjectAddChild(o2, CreateColorPicker(
-			Vec2iZero(), mcd, CampaignGetMissionColor, MissionColorChange));
+			svec2i_zero(), mcd, CampaignGetMissionColor, MissionColorChange));
 		UIObjectAddChild(c, o2);
 		pos.y += th;
 	}

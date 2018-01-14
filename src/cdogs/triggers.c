@@ -97,7 +97,7 @@ TWatch *WatchNew(void)
 }
 Condition *WatchAddCondition(
 	TWatch *w, const ConditionType type, const int counterMax,
-	const Vec2i pos)
+	const struct vec2i pos)
 {
 	Condition c;
 	memset(&c, 0, sizeof c);
@@ -236,7 +236,7 @@ static bool ConditionsMet(CArray *conditions, const int ticks)
 	return allConditionsMet;
 }
 
-bool TriggerTryActivate(Trigger *t, const int flags, const Vec2i tilePos)
+bool TriggerTryActivate(Trigger *t, const int flags, const struct vec2i tilePos)
 {
 	const bool canActivate =
 		t->isActive && (t->flags == 0 || (t->flags & flags));

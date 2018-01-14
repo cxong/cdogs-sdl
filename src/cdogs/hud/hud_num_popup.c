@@ -173,9 +173,9 @@ void HUDNumPopupsDrawPlayer(
 
 static void DrawNumUpdate(
 	const HUDNumPopup *p,
-	const char *formatText, const int currentValue, Vec2i pos, const int flags);
+	const char *formatText, const int currentValue, struct vec2i pos, const int flags);
 void HUDNumPopupsDrawObjective(
-	const HUDNumPopups *popups, const int idx, const Vec2i pos)
+	const HUDNumPopups *popups, const int idx, const struct vec2i pos)
 {
 	const Objective *o = CArrayGet(&gMission.missionData->Objectives, idx);
 	const HUDNumPopup *p = CArrayGet(&popups->objective, idx);
@@ -196,7 +196,7 @@ static void DrawScoreUpdate(const HUDNumPopup *u, const int flags)
 	if (!IsPlayerAlive(p)) return;
 	const int rowHeight = 1 + FontH();
 	const int y = 5 + rowHeight;
-	DrawNumUpdate(u, "Score: %d", p->Stats.Score, Vec2iNew(5, y), flags);
+	DrawNumUpdate(u, "Score: %d", p->Stats.Score, svec2i(5, y), flags);
 }
 // Parameters that define how the numeric update is animated
 // The update animates in the following phases:
@@ -208,7 +208,7 @@ static void DrawScoreUpdate(const HUDNumPopup *u, const int flags)
 #define NUM_UPDATE_POP_UP_HEIGHT 5
 static void DrawNumUpdate(
 	const HUDNumPopup *p,
-	const char *formatText, const int currentValue, Vec2i pos, const int flags)
+	const char *formatText, const int currentValue, struct vec2i pos, const int flags)
 {
 	if (p->Timer <= 0 || p->Amount == 0)
 	{
@@ -277,5 +277,5 @@ static void DrawNumUpdate(
 	opts.Pad = pos;
 	opts.Mask = color;
 	opts.Blend = true;
-	FontStrOpt(s, Vec2iZero(), opts);
+	FontStrOpt(s, svec2i_zero(), opts);
 }

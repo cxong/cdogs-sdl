@@ -76,7 +76,7 @@ static void PicManagerAdd(
 	// Special case: if the file name is in the form foobar_WxH.ext,
 	// this is a spritesheet where each sprite is W wide by H high
 	// Load multiple images from this single sheet
-	Vec2i size = Vec2iNew(imageIn->w, imageIn->h);
+	struct vec2i size = svec2i(imageIn->w, imageIn->h);
 	bool isSpritesheet = false;
 	char *underscore = strrchr(buf, '_');
 	const char *x = strrchr(buf, 'x');
@@ -85,7 +85,7 @@ static void PicManagerAdd(
 	{
 		if (sscanf(underscore, "_%dx%d", &size.x, &size.y) != 2)
 		{
-			size = Vec2iNew(imageIn->w, imageIn->h);
+			size = svec2i(imageIn->w, imageIn->h);
 		}
 		else
 		{
@@ -108,7 +108,7 @@ static void PicManagerAdd(
 		imageIn, SDL_PIXELFORMAT_RGBA8888, 0);
 	SDL_FreeSurface(imageIn);
 	SDL_LockSurface(image);
-	Vec2i offset;
+	struct vec2i offset;
 	for (offset.y = 0; offset.y < image->h; offset.y += size.y)
 	{
 		for (offset.x = 0; offset.x < image->w; offset.x += size.x)

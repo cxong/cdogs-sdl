@@ -83,4 +83,4 @@
 #define XC_COLOR4           9
 
 
-UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush, Vec2i size);
+UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush, struct vec2i size);

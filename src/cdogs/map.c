@@ -117,7 +117,7 @@ unsigned short GetAccessMask(int k)
 	return MAP_ACCESS_YELLOW << k;
 }
 
-Tile *MapGetTile(const Map *map, const Vec2i pos)
+Tile *MapGetTile(const Map *map, const struct vec2i pos)
 {
 	if (pos.x < 0 || pos.x >= map->Size.x || pos.y < 0 || pos.y >= map->Size.y)
 	{
@@ -126,13 +126,13 @@ Tile *MapGetTile(const Map *map, const Vec2i pos)
 	return CArrayGet(&map->Tiles, pos.y * map->Size.x + pos.x);
 }
 
-bool MapIsTileIn(const Map *map, const Vec2i pos)
+bool MapIsTileIn(const Map *map, const struct vec2i pos)
 {
 	// Check that the tile pos is within the interior of the map
 	return !(pos.x < 0 || pos.y < 0 ||
 		pos.x > map->Size.x - 1 || pos.y > map->Size.y - 1);
 }
-static bool MapIsPosIn(const Map *map, const struct vec pos)
+static bool MapIsPosIn(const Map *map, const struct vec2 pos)
 {
 	// Check that the pos is within the interior of the map
 	return MapIsTileIn(map, Vec2ToTile(pos));
@@ -140,7 +140,7 @@ static bool MapIsPosIn(const Map *map, const struct vec pos)
 
 bool MapIsTileInExit(const Map *map, const TTileItem *ti)
 {
-	const Vec2i tilePos = Vec2ToTile(ti->Pos);
+	const struct vec2i tilePos = Vec2ToTile(ti->Pos);
 	return
 		tilePos.x >= map->ExitStart.x && tilePos.x <= map->ExitEnd.x &&
 		tilePos.y >= map->ExitStart.y && tilePos.y <= map->ExitEnd.y;
@@ -148,12 +148,12 @@ bool MapIsTileInExit(const Map *map, const TTileItem *ti)
 
 static Tile *MapGetTileOfItem(Map *map, TTileItem *t)
 {
-	const Vec2i pos = Vec2ToTile(t->Pos);
+	const struct vec2i pos = Vec2ToTile(t->Pos);
 	return MapGetTile(map, pos);
 }
 
 static void AddItemToTile(TTileItem *t, Tile *tile);
-bool MapTryMoveTileItem(Map *map, TTileItem *t, const struct vec pos)
+bool MapTryMoveTileItem(Map *map, TTileItem *t, const struct vec2 pos)
 {
 	// Check if we can move to new position
 	if (!MapIsPosIn(map, pos))
@@ -162,10 +162,10 @@ bool MapTryMoveTileItem(Map *map, TTileItem *t, const struct vec pos)
 	}
 	// When first initialised, position is -1
 	const bool doRemove = t->Pos.x >= 0 && t->Pos.y >= 0;
-	const Vec2i t1 = Vec2ToTile(t->Pos);
-	const Vec2i t2 = Vec2ToTile(pos);
+	const struct vec2i t1 = Vec2ToTile(t->Pos);
+	const struct vec2i t2 = Vec2ToTile(pos);
 	// If we'll be in the same tile, do nothing
-	if (Vec2iEqual(t1, t2) && doRemove)
+	if (svec2i_is_equal(t1, t2) && doRemove)
 	{
 		t->Pos = pos;
 		return true;
@@ -207,19 +207,19 @@ void MapRemoveTileItem(Map *map, TTileItem *t)
 	CASSERT(false, "Did not find element to delete");
 }
 
-Vec2i MapGetRandomTile(const Map *map)
+struct vec2i MapGetRandomTile(const Map *map)
 {
-	return Vec2iNew(rand() % map->Size.x, rand() % map->Size.y);
+	return svec2i(rand() % map->Size.x, rand() % map->Size.y);
 }
 
-struct vec MapGetRandomPos(const Map *map)
+struct vec2 MapGetRandomPos(const Map *map)
 {
-	return to_vector2(
+	return svec2(
 		RAND_FLOAT(0, map->Size.x * TILE_WIDTH),
 		RAND_FLOAT(0, map->Size.y * TILE_HEIGHT));
 }
 
-unsigned short IMapGet(const Map *map, const Vec2i pos)
+unsigned short IMapGet(const Map *map, const struct vec2i pos)
 {
 	if (pos.x < 0 || pos.x >= map->Size.x || pos.y < 0 || pos.y >= map->Size.y)
 	{
@@ -228,15 +228,15 @@ unsigned short IMapGet(const Map *map, const Vec2i pos)
 	return *(unsigned short *)CArrayGet(
 		&map->iMap, pos.y * map->Size.x + pos.x);
 }
-void IMapSet(Map *map, Vec2i pos, unsigned short v)
+void IMapSet(Map *map, struct vec2i pos, unsigned short v)
 {
 	*(unsigned short *)CArrayGet(&map->iMap, pos.y * map->Size.x + pos.x) = v;
 }
 
 void MapChangeFloor(
-	Map *map, const Vec2i pos, NamedPic *normal, NamedPic *shadow)
+	Map *map, const struct vec2i pos, NamedPic *normal, NamedPic *shadow)
 {
-	Tile *tAbove = MapGetTile(map, Vec2iNew(pos.x, pos.y - 1));
+	Tile *tAbove = MapGetTile(map, svec2i(pos.x, pos.y - 1));
 	int canSeeTileAbove = !(pos.y > 0 && !TileCanSee(tAbove));
 	Tile *t = MapGetTile(map, pos);
 	switch (IMapGet(map, pos) & MAP_MASKACCESS)
@@ -259,7 +259,7 @@ void MapChangeFloor(
 	}
 }
 
-void MapShowExitArea(Map *map, const Vec2i exitStart, const Vec2i exitEnd)
+void MapShowExitArea(Map *map, const struct vec2i exitStart, const struct vec2i exitEnd)
 {
 	const int left = exitStart.x;
 	const int right = exitEnd.x;
@@ -271,7 +271,7 @@ void MapShowExitArea(Map *map, const Vec2i exitStart, const Vec2i exitEnd)
 	NamedPic *exitShadowPic = PicManagerGetExitPic(
 		&gPicManager, gMission.missionData->ExitStyle, true);
 
-	Vec2i v;
+	struct vec2i v;
 	v.y = top;
 	for (v.x = left; v.x <= right; v.x++)
 	{
@@ -294,31 +294,31 @@ void MapShowExitArea(Map *map, const Vec2i exitStart, const Vec2i exitEnd)
 	}
 }
 
-struct vec MapGetExitPos(const Map *m)
+struct vec2 MapGetExitPos(const Map *m)
 {
-	return Vec2iToVec2(Vec2iCenterOfTile(
-		Vec2iScaleDiv(Vec2iAdd(m->ExitStart, m->ExitEnd), 2)));
+	return svec2_assign_vec2i(Vec2iCenterOfTile(
+		svec2i_scale_divide(svec2i_add(m->ExitStart, m->ExitEnd), 2)));
 }
 
 // Adjacent means to the left, right, above or below
-static int MapGetNumWallsAdjacentTile(Map *map, Vec2i v)
+static int MapGetNumWallsAdjacentTile(Map *map, struct vec2i v)
 {
 	int count = 0;
 	if (v.x > 0 && v.y > 0 && v.x < map->Size.x - 1 && v.y < map->Size.y - 1)
 	{
-		if (!TileCanWalk(MapGetTile(map, Vec2iNew(v.x - 1, v.y))))
+		if (!TileCanWalk(MapGetTile(map, svec2i(v.x - 1, v.y))))
 		{
 			count++;
 		}
-		if (!TileCanWalk(MapGetTile(map, Vec2iNew(v.x + 1, v.y))))
+		if (!TileCanWalk(MapGetTile(map, svec2i(v.x + 1, v.y))))
 		{
 			count++;
 		}
-		if (!TileCanWalk(MapGetTile(map, Vec2iNew(v.x, v.y - 1))))
+		if (!TileCanWalk(MapGetTile(map, svec2i(v.x, v.y - 1))))
 		{
 			count++;
 		}
-		if (!TileCanWalk(MapGetTile(map, Vec2iNew(v.x, v.y + 1))))
+		if (!TileCanWalk(MapGetTile(map, svec2i(v.x, v.y + 1))))
 		{
 			count++;
 		}
@@ -327,25 +327,25 @@ static int MapGetNumWallsAdjacentTile(Map *map, Vec2i v)
 }
 
 // Around means the 8 tiles surrounding the tile
-static int MapGetNumWallsAroundTile(Map *map, Vec2i v)
+static int MapGetNumWallsAroundTile(Map *map, struct vec2i v)
 {
 	int count = MapGetNumWallsAdjacentTile(map, v);
 	if (v.x > 0 && v.y > 0 && v.x < map->Size.x - 1 && v.y < map->Size.y - 1)
 	{
 		// Having checked the adjacencies, check the diagonals
-		if (!TileCanWalk(MapGetTile(map, Vec2iNew(v.x - 1, v.y - 1))))
+		if (!TileCanWalk(MapGetTile(map, svec2i(v.x - 1, v.y - 1))))
 		{
 			count++;
 		}
-		if (!TileCanWalk(MapGetTile(map, Vec2iNew(v.x + 1, v.y + 1))))
+		if (!TileCanWalk(MapGetTile(map, svec2i(v.x + 1, v.y + 1))))
 		{
 			count++;
 		}
-		if (!TileCanWalk(MapGetTile(map, Vec2iNew(v.x + 1, v.y - 1))))
+		if (!TileCanWalk(MapGetTile(map, svec2i(v.x + 1, v.y - 1))))
 		{
 			count++;
 		}
-		if (!TileCanWalk(MapGetTile(map, Vec2iNew(v.x - 1, v.y + 1))))
+		if (!TileCanWalk(MapGetTile(map, svec2i(v.x - 1, v.y + 1))))
 		{
 			count++;
 		}
@@ -354,7 +354,7 @@ static int MapGetNumWallsAroundTile(Map *map, Vec2i v)
 }
 
 bool MapTryPlaceOneObject(
-	Map *map, const Vec2i v, const MapObject *mo, const int extraFlags,
+	Map *map, const struct vec2i v, const MapObject *mo, const int extraFlags,
 	const bool isStrictMode)
 {
 	// Don't place ammo spawners if ammo is disabled
@@ -370,22 +370,22 @@ bool MapTryPlaceOneObject(
 	const bool isEmpty = TileIsClear(t);
 	if (isStrictMode && !MapObjectIsTileOKStrict(
 			mo, iMap, isEmpty,
-			IMapGet(map, Vec2iNew(v.x, v.y - 1)),
-			IMapGet(map, Vec2iNew(v.x, v.y + 1)),
+			IMapGet(map, svec2i(v.x, v.y - 1)),
+			IMapGet(map, svec2i(v.x, v.y + 1)),
 			MapGetNumWallsAdjacentTile(map, v),
 			MapGetNumWallsAroundTile(map, v)))
 	{
 		return 0;
 	}
 	else if (!MapObjectIsTileOK(
-		mo, iMap, isEmpty, IMapGet(map, Vec2iNew(v.x, v.y - 1))))
+		mo, iMap, isEmpty, IMapGet(map, svec2i(v.x, v.y - 1))))
 	{
 		return 0;
 	}
 
 	if (mo->Flags & (1 << PLACEMENT_FREE_IN_FRONT))
 	{
-		IMapSet(map, Vec2iNew(v.x, v.y + 1), IMapGet(map, Vec2iNew(v.x, v.y + 1)) | MAP_LEAVEFREE);
+		IMapSet(map, svec2i(v.x, v.y + 1), IMapGet(map, svec2i(v.x, v.y + 1)) | MAP_LEAVEFREE);
 	}
 
 	NMapObjectAdd amo = NMapObjectAdd_init_default;
@@ -403,19 +403,19 @@ bool MapHasLockedRooms(const Map *map)
 	return map->keyAccessCount > 1;
 }
 
-static bool MapTileIsInLockedRoom(const Map *map, const Vec2i tilePos)
+static bool MapTileIsInLockedRoom(const Map *map, const struct vec2i tilePos)
 {
 	return IMapGet(map, tilePos) & MAP_ACCESSBITS;
 }
 
-bool MapPosIsInLockedRoom(const Map *map, const struct vec pos)
+bool MapPosIsInLockedRoom(const Map *map, const struct vec2 pos)
 {
-	const Vec2i tilePos = Vec2ToTile(pos);
+	const struct vec2i tilePos = Vec2ToTile(pos);
 	return MapTileIsInLockedRoom(map, tilePos);
 }
 
 void MapPlaceCollectible(
-	const struct MissionOptions *mo, const int objective, const struct vec pos)
+	const struct MissionOptions *mo, const int objective, const struct vec2 pos)
 {
 	const Objective *o = CArrayGet(&mo->missionData->Objectives, objective);
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
@@ -439,8 +439,8 @@ static int MapTryPlaceCollectible(
 
 	while (i)
 	{
-		const struct vec v = MapGetRandomPos(map);
-		const Vec2i size = Vec2iNew(COLLECTABLE_W, COLLECTABLE_H);
+		const struct vec2 v = MapGetRandomPos(map);
+		const struct vec2i size = svec2i(COLLECTABLE_W, COLLECTABLE_H);
 		if (!IsCollisionWithWall(v, size))
 		{
 			if ((!hasLockedRooms || MapPosIsInLockedRoom(map, v)) &&
@@ -455,17 +455,17 @@ static int MapTryPlaceCollectible(
 	return 0;
 }
 
-struct vec MapGenerateFreePosition(Map *map, const Vec2i size)
+struct vec2 MapGenerateFreePosition(Map *map, const struct vec2i size)
 {
 	for (int i = 0; i < 100; i++)
 	{
-		const struct vec v = MapGetRandomPos(map);
+		const struct vec2 v = MapGetRandomPos(map);
 		if (!IsCollisionWithWall(v, size))
 		{
 			return v;
 		}
 	}
-	return vector2_zero();
+	return svec2_zero();
 }
 
 typedef struct
@@ -473,7 +473,7 @@ typedef struct
 	const Objective *o;
 	int objective;
 } TryPlaceOneBlowupData;
-static bool TryPlaceOneBlowup(Map *map, const Vec2i tilePos, void *data);
+static bool TryPlaceOneBlowup(Map *map, const struct vec2i tilePos, void *data);
 static bool MapTryPlaceBlowup(
 	Map *map, const Mission *mission, const int objective)
 {
@@ -484,7 +484,7 @@ static bool MapTryPlaceBlowup(
 	data.objective = objective;
 	return MapPlaceRandomTile(map, paFlags, TryPlaceOneBlowup, &data);
 }
-static bool TryPlaceOneBlowup(Map *map, const Vec2i tilePos, void *data)
+static bool TryPlaceOneBlowup(Map *map, const struct vec2i tilePos, void *data)
 {
 	const TryPlaceOneBlowupData *pData = data;
 	return MapTryPlaceOneObject(
@@ -493,7 +493,7 @@ static bool TryPlaceOneBlowup(Map *map, const Vec2i tilePos, void *data)
 }
 
 void MapPlaceKey(
-	Map *map, const struct MissionOptions *mo, const Vec2i tilePos,
+	Map *map, const struct MissionOptions *mo, const struct vec2i tilePos,
 	const int keyIndex)
 {
 	UNUSED(map);
@@ -521,14 +521,14 @@ static int GetPlacementRetries(
 
 bool MapPlaceRandomTile(
 	Map *map, const PlacementAccessFlags paFlags,
-	bool (*tryPlaceFunc)(Map *, const Vec2i, void *), void *data)
+	bool (*tryPlaceFunc)(Map *, const struct vec2i, void *), void *data)
 {
 	// Try a bunch of times to place something on a random tile
 	bool locked, unlocked;
 	const int retries = GetPlacementRetries(map, paFlags, &locked, &unlocked);
 	for (int i = 0; i < retries; i++)
 	{
-		const Vec2i tilePos = MapGetRandomTile(map);
+		const struct vec2i tilePos = MapGetRandomTile(map);
 		const bool isInLocked = MapTileIsInLockedRoom(map, tilePos);
 		if ((!locked || isInLocked) && (!unlocked || !isInLocked))
 		{
@@ -542,14 +542,14 @@ bool MapPlaceRandomTile(
 }
 bool MapPlaceRandomPos(
 	Map *map, const PlacementAccessFlags paFlags,
-	bool (*tryPlaceFunc)(Map *, const struct vec, void *), void *data)
+	bool (*tryPlaceFunc)(Map *, const struct vec2, void *), void *data)
 {
 	// Try a bunch of times to place something at a random location
 	bool locked, unlocked;
 	const int retries = GetPlacementRetries(map, paFlags, &locked, &unlocked);
 	for (int i = 0; i < retries; i++)
 	{
-		const struct vec v = MapGetRandomPos(map);
+		const struct vec2 v = MapGetRandomPos(map);
 		const bool isInLocked = MapPosIsInLockedRoom(map, v);
 		if ((!locked || isInLocked) && (!unlocked || !isInLocked))
 		{
@@ -566,13 +566,13 @@ static void MapPlaceCard(Map *map, int keyIndex, int map_access)
 {
 	for (;;)
 	{
-		const Vec2i v = MapGetRandomTile(map);
+		const struct vec2i v = MapGetRandomTile(map);
 		Tile *t;
 		Tile *tBelow;
 		unsigned short iMap;
 		t = MapGetTile(map, v);
 		iMap = IMapGet(map, v);
-		tBelow = MapGetTile(map, Vec2iNew(v.x, v.y + 1));
+		tBelow = MapGetTile(map, svec2i(v.x, v.y + 1));
 		if (TileIsClear(t) &&
 			(iMap & 0xF00) == map_access &&
 			(iMap & MAP_MASKACCESS) == MAP_ROOM &&
@@ -599,13 +599,13 @@ static int AccessCodeToFlags(int code)
 
 static int MapGetAccessLevel(Map *map, int x, int y)
 {
-	return AccessCodeToFlags(IMapGet(map, Vec2iNew(x, y)));
+	return AccessCodeToFlags(IMapGet(map, svec2i(x, y)));
 }
 
 // Need to check the flags around the door tile because it's the
 // triggers that contain the right flags
 // TODO: refactor door
-int MapGetDoorKeycardFlag(Map *map, Vec2i pos)
+int MapGetDoorKeycardFlag(Map *map, struct vec2i pos)
 {
 	int l = MapGetAccessLevel(map, pos.x, pos.y);
 	if (l) return l;
@@ -621,17 +621,17 @@ int MapGetDoorKeycardFlag(Map *map, Vec2i pos)
 static int MapGetAccessFlags(Map *map, int x, int y)
 {
 	int flags = 0;
-	flags = MAX(flags, AccessCodeToFlags(IMapGet(map, Vec2iNew(x, y))));
-	flags = MAX(flags, AccessCodeToFlags(IMapGet(map, Vec2iNew(x - 1, y))));
-	flags = MAX(flags, AccessCodeToFlags(IMapGet(map, Vec2iNew(x + 1, y))));
-	flags = MAX(flags, AccessCodeToFlags(IMapGet(map, Vec2iNew(x, y - 1))));
-	flags = MAX(flags, AccessCodeToFlags(IMapGet(map, Vec2iNew(x, y + 1))));
+	flags = MAX(flags, AccessCodeToFlags(IMapGet(map, svec2i(x, y))));
+	flags = MAX(flags, AccessCodeToFlags(IMapGet(map, svec2i(x - 1, y))));
+	flags = MAX(flags, AccessCodeToFlags(IMapGet(map, svec2i(x + 1, y))));
+	flags = MAX(flags, AccessCodeToFlags(IMapGet(map, svec2i(x, y - 1))));
+	flags = MAX(flags, AccessCodeToFlags(IMapGet(map, svec2i(x, y + 1))));
 	return flags;
 }
 
 static void MapSetupDoors(Map *map, const Mission *m)
 {
-	Vec2i v;
+	struct vec2i v;
 	for (v.x = 0; v.x < map->Size.x; v.x++)
 	{
 		for (v.y = 0; v.y < map->Size.y; v.y++)
@@ -639,8 +639,8 @@ static void MapSetupDoors(Map *map, const Mission *m)
 			// Check if this is the start of a door group
 			// Top or left-most door
 			if ((IMapGet(map, v) & MAP_MASKACCESS) == MAP_DOOR &&
-				(IMapGet(map, Vec2iNew(v.x - 1, v.y)) & MAP_MASKACCESS) != MAP_DOOR &&
-				(IMapGet(map, Vec2iNew(v.x, v.y - 1)) & MAP_MASKACCESS) != MAP_DOOR)
+				(IMapGet(map, svec2i(v.x - 1, v.y)) & MAP_MASKACCESS) != MAP_DOOR &&
+				(IMapGet(map, svec2i(v.x, v.y - 1)) & MAP_MASKACCESS) != MAP_DOOR)
 			{
 				MapAddDoorGroup(map, m, v, MapGetAccessFlags(map, v.x, v.y));
 			}
@@ -654,7 +654,7 @@ void MapTerminate(Map *map)
 		TriggerTerminate(*t);
 	CA_FOREACH_END()
 	CArrayTerminate(&map->triggers);
-	Vec2i v;
+	struct vec2i v;
 	for (v.y = 0; v.y < map->Size.y; v.y++)
 	{
 		for (v.x = 0; v.x < map->Size.x; v.x++)
@@ -685,7 +685,7 @@ void MapLoad(
 	CArrayInit(&map->triggers, sizeof(Trigger *));
 	PathCacheInit(&gPathCache, map);
 
-	Vec2i v;
+	struct vec2i v;
 	for (v.y = 0; v.y < map->Size.y; v.y++)
 	{
 		for (v.x = 0; v.x < map->Size.x; v.x++)
@@ -739,7 +739,7 @@ void MapLoad(
 	}
 
 	// Set exit now since we have set up all the tiles
-	if (Vec2iIsZero(map->ExitStart) && Vec2iIsZero(map->ExitEnd))
+	if (svec2i_is_zero(map->ExitStart) && svec2i_is_zero(map->ExitEnd))
 	{
 		MapGenerateRandomExitArea(map);
 	}
@@ -766,7 +766,7 @@ static void DebugPrintMap(const Map *map)
 	char *buf;
 	CCALLOC(buf, map->Size.x + 1);
 	char *bufP = buf;
-	Vec2i v;
+	struct vec2i v;
 	for (v.y = 0; v.y < map->Size.y; v.y++)
 	{
 		for (v.x = 0; v.x < map->Size.x; v.x++)
@@ -894,9 +894,9 @@ static void AddKeys(Map *map)
 }
 
 bool MapIsPosOKForPlayer(
-	const Map *map, const struct vec pos, const bool allowAllTiles)
+	const Map *map, const struct vec2 pos, const bool allowAllTiles)
 {
-	const Vec2i tilePos = Vec2ToTile(pos);
+	const struct vec2i tilePos = Vec2ToTile(pos);
 	unsigned short tile = IMapGet(map, tilePos);
 	if (tile == MAP_FLOOR)
 	{
@@ -913,7 +913,7 @@ bool MapIsPosOKForPlayer(
 // This includes collisions that make the target illegal, such as walls
 // But it also includes item collisions, whether or not the collisions
 // are legal, e.g. item pickups, friendly collisions
-bool MapIsTileAreaClear(Map *map, const struct vec pos, const Vec2i size)
+bool MapIsTileAreaClear(Map *map, const struct vec2 pos, const struct vec2i size)
 {
 	// Wall collision
 	if (IsCollisionWithWall(pos, size))
@@ -922,14 +922,14 @@ bool MapIsTileAreaClear(Map *map, const struct vec pos, const Vec2i size)
 	}
 
 	// Item collision
-	const Vec2i tv = Vec2ToTile(pos);
-	Vec2i dv;
+	const struct vec2i tv = Vec2ToTile(pos);
+	struct vec2i dv;
 	// Check collisions with all other items on this tile, in all 8 directions
 	for (dv.y = -1; dv.y <= 1; dv.y++)
 	{
 		for (dv.x = -1; dv.x <= 1; dv.x++)
 		{
-			const Vec2i dtv = Vec2iAdd(tv, dv);
+			const struct vec2i dtv = svec2i_add(tv, dv);
 			if (!MapIsTileIn(map, dtv))
 			{
 				continue;
@@ -954,7 +954,7 @@ bool MapIsTileAreaClear(Map *map, const struct vec pos, const Vec2i size)
 	return true;
 }
 
-void MapMarkAsVisited(Map *map, Vec2i pos)
+void MapMarkAsVisited(Map *map, struct vec2i pos)
 {
 	Tile *t = MapGetTile(map, pos);
 	if (!t->isVisited && !(t->flags & MAPTILE_NO_WALK))
@@ -966,7 +966,7 @@ void MapMarkAsVisited(Map *map, Vec2i pos)
 
 void MapMarkAllAsVisited(Map *map)
 {
-	Vec2i pos;
+	struct vec2i pos;
 	for (pos.y = 0; pos.y < map->Size.y; pos.y++)
 	{
 		for (pos.x = 0; pos.x < map->Size.x; pos.x++)
@@ -981,7 +981,7 @@ int MapGetExploredPercentage(Map *map)
 	return (100 * map->tilesSeen) / map->NumExplorableTiles;
 }
 
-Vec2i MapSearchTileAround(Map *map, Vec2i start, TileSelectFunc func)
+struct vec2i MapSearchTileAround(Map *map, struct vec2i start, TileSelectFunc func)
 {
 	if (func(map, start))
 	{
@@ -990,7 +990,7 @@ Vec2i MapSearchTileAround(Map *map, Vec2i start, TileSelectFunc func)
 	// Search using an expanding box pattern around the goal
 	for (int radius = 1; radius < MAX(map->Size.x, map->Size.y); radius++)
 	{
-		Vec2i tile;
+		struct vec2i tile;
 		for (tile.x = start.x - radius;
 			tile.x <= start.x + radius;
 			tile.x++)
@@ -1020,9 +1020,9 @@ Vec2i MapSearchTileAround(Map *map, Vec2i start, TileSelectFunc func)
 	}
 	// Should never reach this point; something is very wrong
 	CASSERT(false, "failed to find tile around tile");
-	return Vec2iZero();
+	return svec2i_zero();
 }
-bool MapTileIsUnexplored(Map *map, Vec2i tile)
+bool MapTileIsUnexplored(Map *map, struct vec2i tile)
 {
 	const Tile *t = MapGetTile(map, tile);
 	return !t->isVisited && !(t->flags & MAPTILE_NO_WALK);

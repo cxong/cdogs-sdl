@@ -1,5 +1,13 @@
 # Contributors
 
+## Version 2
+
+- [@cxong](https://github.com/cxong) helped with initial design of version 2.
+- [@paladin-t](https://github.com/paladin-t) helped with initial design of version 2.
+- [@r-lyeh](https://github.com/r-lyeh) helped with initial design of version 2.
+
+## Version 1
+
 - [@ratchetfreak](https://github.com/ratchetfreak) added `pquaternion_null`/`quaternion_null` and `pquaternion_from_2_vectors`/`quaternion_from_2_vectors`
 - [@ratchetfreak](https://github.com/ratchetfreak) found bug with function for quaternion inverse
 - [@ratchetfreak](https://github.com/ratchetfreak) found bug with function for testing if quaternion is zero

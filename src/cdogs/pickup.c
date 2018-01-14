@@ -59,7 +59,7 @@ int PickupsGetNextUID(void)
 {
 	return sPickupUIDs++;
 }
-static const Pic *GetPickupPic(const int id, Vec2i *offset);
+static const Pic *GetPickupPic(const int id, struct vec2i *offset);
 void PickupAdd(const NAddPickup ap)
 {
 	// Check if existing pickup
@@ -116,7 +116,7 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 	CASSERT(a->PlayerUID >= 0, "NPCs cannot pickup");
 	bool canPickup = true;
 	const char *sound = NULL;
-	const struct vec actorPos = a->tileItem.Pos;
+	const struct vec2 actorPos = a->tileItem.Pos;
 	switch (p->class->Type)
 	{
 	case PICKUP_JEWEL:
@@ -291,10 +291,10 @@ bool PickupIsManual(const Pickup *p)
 	}
 }
 
-static const Pic *GetPickupPic(const int id, Vec2i *offset)
+static const Pic *GetPickupPic(const int id, struct vec2i *offset)
 {
 	const Pickup *p = CArrayGet(&gPickups, id);
-	*offset = Vec2iScaleDiv(p->class->Pic->size, -2);
+	*offset = svec2i_scale_divide(p->class->Pic->size, -2);
 	return p->class->Pic;
 }
 

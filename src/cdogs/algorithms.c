@@ -35,20 +35,20 @@ typedef struct
 	// Whether to use the IsBlocked func to check visibility,
 	// and also whether to early-terminate if the line is blocked
 	bool CheckBlockedAndEarlyTerminate;
-	bool (*IsBlocked)(void *, Vec2i);
-	void (*OnPoint)(void *, Vec2i);
+	bool (*IsBlocked)(void *, struct vec2i);
+	void (*OnPoint)(void *, struct vec2i);
 	void *data;
 } AlgoLineData;
-static bool BresenhamLine(Vec2i from, Vec2i to, AlgoLineData *data)
+static bool BresenhamLine(struct vec2i from, struct vec2i to, AlgoLineData *data)
 {
-	Vec2i d = Vec2iNew(abs(to.x - from.x), abs(to.y - from.y));
-	Vec2i s = Vec2iNew(from.x < to.x ? 1 : -1, from.y < to.y ? 1 : -1);
+	struct vec2i d = svec2i(abs(to.x - from.x), abs(to.y - from.y));
+	struct vec2i s = svec2i(from.x < to.x ? 1 : -1, from.y < to.y ? 1 : -1);
 	int err = d.x - d.y;
-	Vec2i v = from;
+	struct vec2i v = from;
 	for (;;)
 	{
 		int e2 = 2 * err;
-		if (Vec2iEqual(v, to))
+		if (svec2i_is_equal(v, to))
 		{
 			break;
 		}
@@ -68,7 +68,7 @@ static bool BresenhamLine(Vec2i from, Vec2i to, AlgoLineData *data)
 			err -= d.y;
 			v.x += s.x;
 		}
-		if (Vec2iEqual(v, to))
+		if (svec2i_is_equal(v, to))
 		{
 			break;
 		}
@@ -108,7 +108,7 @@ static bool JMRaytrace(int x0, int y0, int x1, int y1, AlgoLineData *data)
 
 	for (; n > 0; --n)
 	{
-		const Vec2i v = Vec2iNew(x, y);
+		const struct vec2i v = svec2i(x, y);
 		if (data->CheckBlockedAndEarlyTerminate)
 		{
 			if (data->IsBlocked(data->data, v))
@@ -135,7 +135,7 @@ static bool JMRaytrace(int x0, int y0, int x1, int y1, AlgoLineData *data)
 	return true;
 }
 
-bool HasClearLineBresenham(Vec2i from, Vec2i to, HasClearLineData *data)
+bool HasClearLineBresenham(struct vec2i from, struct vec2i to, HasClearLineData *data)
 {
 	AlgoLineData bData;
 	bData.CheckBlockedAndEarlyTerminate = true;
@@ -144,7 +144,7 @@ bool HasClearLineBresenham(Vec2i from, Vec2i to, HasClearLineData *data)
 	return BresenhamLine(from, to, &bData);
 }
 bool HasClearLineJMRaytrace(
-	const Vec2i from, const Vec2i to, HasClearLineData *data)
+	const struct vec2i from, const struct vec2i to, HasClearLineData *data)
 {
 	AlgoLineData bData;
 	bData.CheckBlockedAndEarlyTerminate = true;
@@ -154,7 +154,7 @@ bool HasClearLineJMRaytrace(
 }
 
 
-void BresenhamLineDraw(Vec2i from, Vec2i to, AlgoLineDrawData *data)
+void BresenhamLineDraw(struct vec2i from, struct vec2i to, AlgoLineDrawData *data)
 {
 	AlgoLineData bData;
 	bData.CheckBlockedAndEarlyTerminate = false;
@@ -163,7 +163,7 @@ void BresenhamLineDraw(Vec2i from, Vec2i to, AlgoLineDrawData *data)
 	BresenhamLine(from, to, &bData);
 }
 void JMRaytraceLineDraw(
-	const Vec2i from, const Vec2i to, AlgoLineDrawData *data)
+	const struct vec2i from, const struct vec2i to, AlgoLineDrawData *data)
 {
 	AlgoLineData bData;
 	bData.CheckBlockedAndEarlyTerminate = false;
@@ -172,15 +172,15 @@ void JMRaytraceLineDraw(
 	JMRaytrace(from.x, from.y, to.x, to.y, &bData);
 }
 
-bool CFloodFill(Vec2i v, FloodFillData *data)
+bool CFloodFill(struct vec2i v, FloodFillData *data)
 {
 	if (data->IsSame(data->data, v))
 	{
 		data->Fill(data->data, v);
-		CFloodFill(Vec2iNew(v.x - 1, v.y), data);
-		CFloodFill(Vec2iNew(v.x + 1, v.y), data);
-		CFloodFill(Vec2iNew(v.x, v.y - 1), data);
-		CFloodFill(Vec2iNew(v.x, v.y + 1), data);
+		CFloodFill(svec2i(v.x - 1, v.y), data);
+		CFloodFill(svec2i(v.x + 1, v.y), data);
+		CFloodFill(svec2i(v.x, v.y - 1), data);
+		CFloodFill(svec2i(v.x, v.y + 1), data);
 		return true;
 	}
 	return false;

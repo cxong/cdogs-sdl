@@ -41,8 +41,8 @@ void CameraInit(Camera *camera)
 {
 	memset(camera, 0, sizeof *camera);
 	DrawBufferInit(
-		&camera->Buffer, Vec2iNew(X_TILES, Y_TILES), &gGraphicsDevice);
-	camera->lastPosition = vector2_zero();
+		&camera->Buffer, svec2i(X_TILES, Y_TILES), &gGraphicsDevice);
+	camera->lastPosition = svec2_zero();
 	HUDInit(&camera->HUD, &gGraphicsDevice, &gMission);
 	camera->shake = ScreenShakeZero();
 }
@@ -108,8 +108,8 @@ void CameraInput(Camera *camera, const int cmd, const int lastCmd)
 	}
 }
 
-static struct vec GetFollowPlayerPos(
-	const struct vec lastPos, const PlayerData *p);
+static struct vec2 GetFollowPlayerPos(
+	const struct vec2 lastPos, const PlayerData *p);
 void CameraUpdate(Camera *camera, const int ticks, const int ms)
 {
 	camera->HUD.DrawData = HUDGetDrawData();
@@ -182,7 +182,7 @@ void CameraUpdate(Camera *camera, const int ticks, const int ms)
 			// However, it is important to keep the ear positions unmodified
 			// so that sounds don't get muffled just because there's a wall
 			// between player and camera center
-			const struct vec earPos = camera->lastPosition;
+			const struct vec2 earPos = camera->lastPosition;
 			if (gMap.Size.x * TILE_WIDTH < gGraphicsDevice.cachedConfig.Res.x)
 			{
 				camera->lastPosition.x = (float)gMap.Size.x * TILE_WIDTH / 2;
@@ -257,8 +257,8 @@ void CameraUpdate(Camera *camera, const int ticks, const int ms)
 	}
 }
 // Try to follow a player
-static struct vec GetFollowPlayerPos(
-	const struct vec lastPos, const PlayerData *p)
+static struct vec2 GetFollowPlayerPos(
+	const struct vec2 lastPos, const PlayerData *p)
 {
 	const TActor *a = ActorGetByUID(p->ActorUID);
 	if (a == NULL) return lastPos;
@@ -266,15 +266,15 @@ static struct vec GetFollowPlayerPos(
 }
 
 static void DoBuffer(
-	DrawBuffer *b, const struct vec center, const int w, const struct vec noise,
-	const Vec2i offset);
+	DrawBuffer *b, const struct vec2 center, const int w, const struct vec2 noise,
+	const struct vec2i offset);
 void CameraDraw(Camera *camera, const HUDDrawData drawData)
 {
-	Vec2i centerOffset = Vec2iZero();
+	struct vec2i centerOffset = svec2i_zero();
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
 
-	const struct vec noise = ScreenShakeGetDelta(camera->shake);
+	const struct vec2 noise = ScreenShakeGetDelta(camera->shake);
 
 	GraphicsResetBlitClip(&gGraphicsDevice);
 	if (drawData.NumScreens == 0)
@@ -319,7 +319,7 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 			// side-by-side split
 			for (int i = 0; i < drawData.NumScreens; i++)
 			{
-				Vec2i centerOffsetPlayer = centerOffset;
+				struct vec2i centerOffsetPlayer = centerOffset;
 				const int clipLeft = (i & 1) ? w / 2 : 0;
 				const int clipRight = (i & 1) ? w - 1 : (w / 2) - 1;
 				GraphicsSetBlitClip(
@@ -344,7 +344,7 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 			for (int i = 0; i < drawData.NumScreens; i++)
 			{
 				const PlayerData *p = drawData.Players[i];
-				Vec2i centerOffsetPlayer = centerOffset;
+				struct vec2i centerOffsetPlayer = centerOffset;
 				const int clipLeft = (i & 1) ? w / 2 : 0;
 				const int clipTop = (i < 2) ? 0 : h / 2 - 1;
 				const int clipRight = (i & 1) ? w - 1 : (w / 2) - 1;
@@ -387,10 +387,10 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 	GraphicsResetBlitClip(&gGraphicsDevice);
 }
 static void DoBuffer(
-	DrawBuffer *b, const struct vec center, const int w, const struct vec noise,
-	const Vec2i offset)
+	DrawBuffer *b, const struct vec2 center, const int w, const struct vec2 noise,
+	const struct vec2i offset)
 {
-	DrawBufferSetFromMap(b, &gMap, vector2_add(center, noise), w);
+	DrawBufferSetFromMap(b, &gMap, svec2_add(center, noise), w);
 	if (gPlayerDatas.size > 0)
 	{
 		DrawBufferFix(b);
@@ -435,7 +435,7 @@ void CameraDrawMode(const Camera *camera)
 	// Draw the message centered at the bottom
 	FontStrMask(
 		cameraNameBuf,
-		Vec2iNew((w - FontStrW(cameraNameBuf)) / 2, h - FontH() * 2),
+		svec2i((w - FontStrW(cameraNameBuf)) / 2, h - FontH() * 2),
 		colorYellow);
 
 	// Show camera controls
@@ -448,7 +448,7 @@ void CameraDrawMode(const Camera *camera)
 		inputDevice = p->inputDevice;
 		deviceIndex = p->deviceIndex;
 	}
-	Vec2i pos = Vec2iNew(
+	struct vec2i pos = svec2i(
 		(w - FontStrW("foo/bar to follow player, baz to free-look")) / 2,
 		h - FontH());
 	char buf[256];
@@ -491,7 +491,7 @@ bool CameraIsSingleScreen(void)
 		return true;
 	}
 	// Finally, use split screen if players don't fit on camera
-	struct vec min, max;
+	struct vec2 min, max;
 	PlayersGetBoundingRectangle(&min, &max);
 	return
 		max.x - min.x < gGraphicsDevice.cachedConfig.Res.x - CAMERA_SPLIT_PADDING &&

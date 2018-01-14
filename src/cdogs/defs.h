@@ -113,8 +113,8 @@ extern float dir2radians[8];
 #define CmdToDirection(c)   cmd2dir[(c)&15]
 #define DirectionToCmd(d)   dir2cmd[(d)&7]
 
-struct vec Vec2FromRadiansScaled(const float radians);
-struct vec Vec2FromRadians(const float radians);
+struct vec2 Vec2FromRadiansScaled(const float radians);
+struct vec2 Vec2FromRadians(const float radians);
 direction_e RadiansToDirection(const double r);
 direction_e DirectionOpposite(const direction_e d);
 

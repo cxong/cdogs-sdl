@@ -31,8 +31,8 @@
 
 typedef struct
 {
-	Vec2i size;
-	Vec2i offset;
+	struct vec2i size;
+	struct vec2i offset;
 	Uint32 *Data;
 } Pic;
 
@@ -48,7 +48,7 @@ Uint32 ColorToPixel(
 	ColorToPixel(gGraphicsDevice.Format, gGraphicsDevice.Format->Ashift, _c)
 
 void PicLoad(
-	Pic *p, const Vec2i size, const Vec2i offset, const SDL_Surface *image);
+	Pic *p, const struct vec2i size, const struct vec2i offset, const SDL_Surface *image);
 Pic PicCopy(const Pic *src);
 void PicFree(Pic *pic);
 bool PicIsNone(const Pic *pic);
@@ -56,4 +56,4 @@ bool PicIsNone(const Pic *pic);
 // Detect unused edges and update size and offset to fit
 void PicTrim(Pic *pic, const bool xTrim, const bool yTrim);
 
-bool PicPxIsEdge(const Pic *pic, const Vec2i pos, const bool isPixel);
+bool PicPxIsEdge(const Pic *pic, const struct vec2i pos, const bool isPixel);

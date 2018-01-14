@@ -38,8 +38,8 @@ typedef struct
 {
 	ASPath Path;
 	int *refs;
-	Vec2i from;
-	Vec2i to;
+	struct vec2i from;
+	struct vec2i to;
 } CachedPath;
 
 typedef struct
@@ -65,5 +65,5 @@ void PathCacheTerminate(PathCache *pc);
 void PathCacheClear(PathCache *pc);
 
 CachedPath PathCacheCreate(
-	PathCache *pc, Vec2i from, Vec2i to,
+	PathCache *pc, struct vec2i from, struct vec2i to,
 	const bool ignoreObjects, const bool cache);

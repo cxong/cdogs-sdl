@@ -385,23 +385,23 @@ double ToRadians(double degrees)
 	return degrees * M_PI / 180.0;
 }
 
-struct vec CalcClosestPointOnLineSegmentToPoint(
-	const struct vec l1, const struct vec l2, const struct vec p)
+struct vec2 CalcClosestPointOnLineSegmentToPoint(
+	const struct vec2 l1, const struct vec2 l2, const struct vec2 p)
 {
 	// Using parametric representation, line l1->l2 is
 	// P(t) = l1 + t(l2 - l1)
 	// Projection of point p on line is
 	// t = ((p.x - l1.x)(l2.x - l1.x) + (p.y - l1.y)(l2.y - l1.y)) / ||l2 - l1||^2
-	const float lineDistanceSquared = vector2_distance_squared_to(l1, l2);
+	const float linesvec2i_distance_squared = svec2_distance_squared(l1, l2);
 	// Early exit since same point means 0 distance, and div by 0
-	if (lineDistanceSquared == 0)
+	if (linesvec2i_distance_squared == 0)
 	{
 		return l1;
 	}
 	const float numerator =
 		(p.x - l1.x)*(l2.x - l1.x) + (p.y - l1.y)*(l2.y - l1.y);
-	const float t = CLAMP(numerator / lineDistanceSquared, 0, 1);
-	const struct vec closestPoint = to_vector2(
+	const float t = CLAMP(numerator / linesvec2i_distance_squared, 0, 1);
+	const struct vec2 closestPoint = svec2(
 		l1.x + t*(l2.x - l1.x), l1.y + t*(l2.y - l1.y));
 	return closestPoint;
 }

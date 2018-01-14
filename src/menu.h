@@ -94,7 +94,7 @@ typedef struct menu menu_t;
 // Callback for drawing custom menu
 // menu, graphics, pos, size, data
 typedef void (*MenuDisplayFunc)(
-	const menu_t *, GraphicsDevice *, const Vec2i, const Vec2i, const void *);
+	const menu_t *, GraphicsDevice *, const struct vec2i, const struct vec2i, const void *);
 // Callback for handling user input
 // cmd, data
 // returns: 0 if stay on menu, 1 if exit from menu
@@ -231,8 +231,8 @@ typedef struct
 	credits_displayer_t *creditsDisplayer;
 	EventHandlers *handlers;
 	GraphicsDevice *graphics;
-	Vec2i pos;
-	Vec2i size;
+	struct vec2i pos;
+	struct vec2i size;
 	MenuAlignStyle align;
 	bool allowAborts;
 	bool hasAbort;
@@ -242,7 +242,7 @@ typedef struct
 
 void MenuSystemInit(
 	MenuSystem *ms,
-	EventHandlers *handlers, GraphicsDevice *graphics, Vec2i pos, Vec2i size);
+	EventHandlers *handlers, GraphicsDevice *graphics, struct vec2i pos, struct vec2i size);
 void MenuSystemTerminate(MenuSystem *ms);
 void MenuSetCreditsDisplayer(MenuSystem *menu, credits_displayer_t *creditsDisplayer);
 void MenuAddExitType(MenuSystem *menu, menu_type_e exitType);
@@ -260,8 +260,8 @@ void MenuEnableSubmenu(menu_t *menu, int index);
 menu_t *MenuGetSubmenuByName(menu_t *menu, const char *name);
 
 void ShowControls(void);
-Vec2i DisplayMenuItem(
-	Vec2i pos, const char *s, int selected, int isDisabled, color_t color);
+struct vec2i DisplayMenuItem(
+	struct vec2i pos, const char *s, int selected, int isDisabled, color_t color);
 
 menu_t *MenuCreate(const char *name, menu_type_e type);
 menu_t *MenuCreateNormal(

@@ -106,24 +106,24 @@ int dir2cmd[8] = {
 float dir2radians[8] =
 {
 	0,
-	M_PIF * 0.25f,
-	M_PIF * 0.5f,
-	M_PIF * 0.75f,
-	M_PIF,
-	M_PIF * 1.25f,
-	M_PIF * 1.5f,
-	M_PIF * 1.75f,
+	MPI * 0.25f,
+	MPI * 0.5f,
+	MPI * 0.75f,
+	MPI,
+	MPI * 1.25f,
+	MPI * 1.5f,
+	MPI * 1.75f,
 };
 
 
-struct vec Vec2FromRadiansScaled(const float radians)
+struct vec2 Vec2FromRadiansScaled(const float radians)
 {
-	return to_vector2(
+	return svec2(
 		sinf(radians), -cosf(radians) * TILE_HEIGHT / TILE_WIDTH);
 }
-struct vec Vec2FromRadians(const float radians)
+struct vec2 Vec2FromRadians(const float radians)
 {
-	struct vec v = vector2_rotate(to_vector2(0, -1), radians);
+	struct vec2 v = svec2_rotate(svec2(0, -1), radians);
 	// Scale Y so that they match the tile ratios
 	v.y *= (float)TILE_HEIGHT / TILE_WIDTH;
 	return v;

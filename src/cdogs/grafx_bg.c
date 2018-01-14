@@ -49,10 +49,10 @@ void GrafxMakeRandomBackground(
 		rand() * 360.0 / RAND_MAX, rand() * 1.0 / RAND_MAX, 0.5
 	};
 	DrawBuffer buffer;
-	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES), device);
+	DrawBufferInit(&buffer, svec2i(X_TILES, Y_TILES), device);
 	co->MissionIndex = 0;
 	GrafxMakeBackground(
-		device, &buffer, co, mo, map, tint, false, vector2_zero(), NULL);
+		device, &buffer, co, mo, map, tint, false, svec2_zero(), NULL);
 	DrawBufferTerminate(&buffer);
 	MissionOptionsTerminate(mo);
 	CampaignSettingTerminate(&co->Setting);
@@ -60,19 +60,19 @@ void GrafxMakeRandomBackground(
 
 static void DrawBackground(
 	GraphicsDevice *g, SDL_Texture *t, DrawBuffer *buffer, Map *map,
-	const HSV tint, const struct vec pos, GrafxDrawExtra *extra);
+	const HSV tint, const struct vec2 pos, GrafxDrawExtra *extra);
 void GrafxDrawBackground(
 	GraphicsDevice *g, DrawBuffer *buffer,
-	const HSV tint, const struct vec pos, GrafxDrawExtra *extra)
+	const HSV tint, const struct vec2 pos, GrafxDrawExtra *extra)
 {
 	if (g->cachedConfig.SecondWindow)
 	{
 		DrawBackground(
 			g, g->bkg, buffer, &gMap, tint,
-			to_vector2(pos.x - g->cachedConfig.Res.x / 2, pos.y), extra);
+			svec2(pos.x - g->cachedConfig.Res.x / 2, pos.y), extra);
 		DrawBackground(
 			g, g->bkg2, buffer, &gMap, tint,
-			to_vector2(pos.x + g->cachedConfig.Res.x / 2, pos.y), extra);
+			svec2(pos.x + g->cachedConfig.Res.x / 2, pos.y), extra);
 	}
 	else
 	{
@@ -81,10 +81,10 @@ void GrafxDrawBackground(
 }
 static void DrawBackground(
 	GraphicsDevice *g, SDL_Texture *t, DrawBuffer *buffer, Map *map,
-	const HSV tint, const struct vec pos, GrafxDrawExtra *extra)
+	const HSV tint, const struct vec2 pos, GrafxDrawExtra *extra)
 {
 	DrawBufferSetFromMap(buffer, map, pos, X_TILES);
-	DrawBufferDraw(buffer, Vec2iZero(), extra);
+	DrawBufferDraw(buffer, svec2i_zero(), extra);
 	BlitUpdateFromBuf(g, t);
 	BlitClearBuf(g);
 	const color_t mask = ColorTint(colorWhite, tint);
@@ -95,11 +95,11 @@ static void DrawBackground(
 	}
 }
 
-void GrafxRedrawBackground(GraphicsDevice *g, const struct vec pos)
+void GrafxRedrawBackground(GraphicsDevice *g, const struct vec2 pos)
 {
 	memset(g->buf, 0, GraphicsGetMemSize(&g->cachedConfig));
 	DrawBuffer buffer;
-	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES), g);
+	DrawBufferInit(&buffer, svec2i(X_TILES, Y_TILES), g);
 	const HSV tint = {
 		rand() * 360.0 / RAND_MAX, rand() * 1.0 / RAND_MAX, 0.5
 	};
@@ -110,7 +110,7 @@ void GrafxRedrawBackground(GraphicsDevice *g, const struct vec pos)
 void GrafxMakeBackground(
 	GraphicsDevice *device, DrawBuffer *buffer,
 	CampaignOptions *co, struct MissionOptions *mo, Map *map, HSV tint,
-	const bool isEditor, struct vec pos, GrafxDrawExtra *extra)
+	const bool isEditor, struct vec2 pos, GrafxDrawExtra *extra)
 {
 	CampaignAndMissionSetup(co, mo);
 	GameEventsInit(&gGameEvents);
@@ -125,7 +125,7 @@ void GrafxMakeBackground(
 	}
 	else
 	{
-		pos = Vec2CenterOfTile(Vec2iScaleDiv(map->Size, 2));
+		pos = Vec2CenterOfTile(svec2i_scale_divide(map->Size, 2));
 	}
 	// Process the events that place dynamic objects
 	HandleGameEvents(&gGameEvents, NULL, NULL, NULL);

@@ -30,7 +30,7 @@ bool ConfigIsOld(FILE *f)
 	return false;
 }
 void DrawRectangle(
-	GraphicsDevice *device, Vec2i pos, Vec2i size, color_t color, int flags)
+	GraphicsDevice *device, struct vec2i pos, struct vec2i size, color_t color, int flags)
 {
 	UNUSED(device);
 	UNUSED(pos);
@@ -61,9 +61,9 @@ FEATURE(PicLoad, "Pic load")
 
 		WHEN("I load the pic")
 			Pic p;
-			p.size = Vec2iNew(1, 1);
-			p.offset = Vec2iZero();
-			PicLoad(&p, p.size, Vec2iZero(), image);
+			p.size = svec2i(1, 1);
+			p.offset = svec2i_zero();
+			PicLoad(&p, p.size, svec2i_zero(), image);
 
 		THEN("the loaded pic should have values that match");
 			const color_t c = PIXEL2COLOR(p.Data[0]);

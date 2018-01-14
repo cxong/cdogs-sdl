@@ -81,13 +81,13 @@ typedef struct
 	int IsActive;
 	int IsPainting;
 	int BrushSize;
-	Vec2i LastPos;
-	Vec2i Pos;
-	CArray HighlightedTiles;	// of Vec2i
-	Vec2i SelectionStart;
-	Vec2i SelectionSize;
+	struct vec2i LastPos;
+	struct vec2i Pos;
+	CArray HighlightedTiles;	// of struct vec2i
+	struct vec2i SelectionStart;
+	struct vec2i SelectionSize;
 	int IsMoving;	// for the select tool, whether selecting or moving
-	Vec2i DragPos;	// when moving, location that the drag started
+	struct vec2i DragPos;	// when moving, location that the drag started
 
 	char GuideImage[CDOGS_PATH_MAX];
 	bool IsGuideImageNew;

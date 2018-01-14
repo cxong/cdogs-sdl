@@ -80,7 +80,7 @@ typedef struct MobileObject
 	int ActorUID;	// unique ID of actor that owns this object
 					// (prevent self collision)
 	const BulletClass *bulletClass;
-	struct vec Pos;
+	struct vec2 Pos;
 	int z;
 	int dz;
 	int count;
@@ -103,7 +103,7 @@ bool HasHitSound(
 	const TileItemKind targetKind, const int targetUID,
 	const special_damage_e special, const bool allowFriendlyHitSound);
 void Damage(
-	const struct vec hitVector,
+	const struct vec2 hitVector,
 	const int power,
 	const float mass,
 	const int flags, const int playerUID, const int uid,
