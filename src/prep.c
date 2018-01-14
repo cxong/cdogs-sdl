@@ -55,7 +55,6 @@
 
 #include <SDL_mouse.h>
 
-#include <cdogs/ai_coop.h>
 #include <cdogs/actors.h>
 #include <cdogs/blit.h>
 #include <cdogs/config_io.h>
@@ -771,15 +770,6 @@ GameLoopData *PlayerEquip(void)
 			&data->menus[idx], GetNumPlayers(PLAYER_ANY, false, true),
 			idx, p->UID,
 			&gEventHandlers, &gGraphicsDevice);
-		// For AI players, pre-pick their weapons and go straight to menu end
-		if (p->inputDevice == INPUT_DEVICE_AI)
-		{
-			const int lastMenuIndex =
-				(int)data->menus[idx].ms.root->u.normal.subMenus.size - 1;
-			data->menus[idx].ms.current = CArrayGet(
-				&data->menus[idx].ms.root->u.normal.subMenus, lastMenuIndex);
-			AICoopSelectWeapons(p, idx, &gMission.Weapons);
-		}
 	}
 
 	return GameLoopDataNew(
@@ -819,7 +809,7 @@ static void PlayerEquipTerminate(GameLoopData *data)
 
 	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
 	{
-		MenuSystemTerminate(&pData->menus[i].ms);
+		WeaponMenuTerminate(&pData->menus[i]);
 	}
 	CFREE(pData);
 }
@@ -877,34 +867,11 @@ static GameLoopResult PlayerEquipUpdate(GameLoopData *data, LoopRunner *l)
 	}
 
 	// Update menus
-	int idx = 0;
-	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (!p->IsLocal)
-		{
-			idx--;
-			continue;
-		}
-		if (!MenuIsExit(&pData->menus[idx].ms))
-		{
-			MenuProcessCmd(&pData->menus[idx].ms, cmds[idx]);
-		}
-		else if (p->weaponCount == 0)
-		{
-			// Check exit condition; must have selected at least one weapon
-			// Otherwise reset the current menu
-			pData->menus[idx].ms.current = pData->menus[idx].ms.root;
-		}
-	}
-
 	bool isDone = true;
 	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
 	{
-		if (strcmp(pData->menus[i].ms.current->name, "(End)") != 0)
-		{
-			isDone = false;
-		}
+		WeaponMenuUpdate(&pData->menus[i], cmds[i]);
+		isDone = isDone && WeaponMenuIsDone(&pData->menus[i]);
 	}
 	if (isDone)
 	{
@@ -931,7 +898,7 @@ static void PlayerEquipDraw(GameLoopData *data)
 	BlitClearBuf(&gGraphicsDevice);
 	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
 	{
-		MenuDisplay(&pData->menus[i].ms);
+		WeaponMenuDraw(&pData->menus[i]);
 	}
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 }

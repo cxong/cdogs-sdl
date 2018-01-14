@@ -30,6 +30,7 @@
 
 #include <assert.h>
 
+#include <cdogs/ai_coop.h>
 #include <cdogs/font.h>
 
 
@@ -227,6 +228,14 @@ void WeaponMenuCreate(
 	MenuSystemAddCustomDisplay(ms, DisplayEquippedWeapons, data);
 	MenuSystemAddCustomDisplay(
 		ms, MenuDisplayPlayerControls, &data->PlayerUID);
+
+	// For AI players, pre-pick their weapons and go straight to menu end
+	if (pData->inputDevice == INPUT_DEVICE_AI)
+	{
+		const int lastMenuIndex = (int)ms->root->u.normal.subMenus.size - 1;
+		ms->current = CArrayGet(&ms->root->u.normal.subMenus, lastMenuIndex);
+		AICoopSelectWeapons(pData, player, &gMission.Weapons);
+	}
 }
 static void AddGunMenuItems(
 	MenuSystem *ms, const CArray *weapons, const Vec2i menuSize,
@@ -290,4 +299,34 @@ static void DisplayDescriptionGunIcon(
 	const Vec2i iconPos = Vec2iNew(
 		pos.x - gun->Icon->size.x - 4, pos.y + size.y / 2);
 	Blit(g, gun->Icon, iconPos);
+}
+
+void WeaponMenuTerminate(WeaponMenu *menu)
+{
+	MenuSystemTerminate(&menu->ms);
+}
+
+void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
+{
+	const PlayerData *p = PlayerDataGetByUID(menu->data.PlayerUID);
+	if (!MenuIsExit(&menu->ms))
+	{
+		MenuProcessCmd(&menu->ms, cmd);
+	}
+	else if (p->weaponCount == 0)
+	{
+		// Check exit condition; must have selected at least one weapon
+		// Otherwise reset the current menu
+		menu->ms.current = menu->ms.root;
+	}
+}
+
+bool WeaponMenuIsDone(const WeaponMenu *menu)
+{
+	return strcmp(menu->ms.current->name, "(End)") == 0;
+}
+
+void WeaponMenuDraw(const WeaponMenu *menu)
+{
+	MenuDisplay(&menu->ms);
 }
