@@ -41,8 +41,6 @@ Or include `mathc.c` in a source file. This second approach is more useful and f
 
 By default, `mint_t` is a `int32_t` if the header `stdint.h` is available. If the header `stdint.h` is not avaliable, disabled by defining `MATHC_NO_STDINT`, `mint_t` is a `int`. This can be changed by predefining `mint_t` as a desired type.
 
-Some operations integer vector will use float-point internally, then assign the float-point value back to the integer vector. The value assigned is rounded with `MVECI_ROUND`. By default, `MVECI_ROUND` is a flooring function. Define `MVECI_ROUND_CEIL_FUNC` to use a ceiling function, define `MVECI_ROUND_ROUND_FUNC` to use a rounding function or `MVECI_ROUND_FLOOR_FUNC` for a flooring function.
-
 ## Float-Point Type
 
 By default, `mfloat_t` is a `float`. This can be changed by predefining `mfloat_t` as a desired type.
