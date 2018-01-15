@@ -85,12 +85,12 @@ typedef struct
 	Uint32 repeatedTicks;
 	bool isFirstRepeat;
 	InputKeys PlayerKeys[MAX_KEYBOARD_CONFIGS];
-        int32_t diagonalTicks[4];
+        int32_t diagonalTicks[MAX_KEYBOARD_CONFIGS][4];
         //diagonalTicks[0] = upRightDiagonalTicks;
         //diagonalTicks[1] = downRightDiagonalTicks;
         //diagonalTicks[2] = downLeftDiagonalTicks};
         //diagonalTicks[3] = upLeftDiagonalTicks;
-        diagonal_status diagonalStatus[4];
+        diagonal_status diagonalStatus[MAX_KEYBOARD_CONFIGS][4];
         //diagonal_status upRightDiagonal;
         //diagonal_status downRightDiagonal;
         //diagonal_status downLeftDiagonal; 
