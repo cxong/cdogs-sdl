@@ -54,10 +54,10 @@ Uint32 ColorToPixel(
 
 
 void PicLoad(
-	Pic *p, const Vec2i size, const Vec2i offset, const SDL_Surface *image)
+	Pic *p, const struct vec2i size, const struct vec2i offset, const SDL_Surface *image)
 {
 	p->size = size;
-	p->offset = Vec2iZero();
+	p->offset = svec2i_zero();
 	CMALLOC(p->Data, size.x * size.y * sizeof *((Pic *)0)->Data);
 	// Manually copy the pixels and replace the alpha component,
 	// since our gfx device format has no alpha
@@ -106,9 +106,9 @@ bool PicIsNone(const Pic *pic)
 void PicTrim(Pic *pic, const bool xTrim, const bool yTrim)
 {
 	// Scan all pixels looking for the min/max of x and y
-	Vec2i min = pic->size;
-	Vec2i max = Vec2iZero();
-	for (Vec2i pos = Vec2iZero(); pos.y < pic->size.y; pos.y++)
+	struct vec2i min = pic->size;
+	struct vec2i max = svec2i_zero();
+	for (struct vec2i pos = svec2i_zero(); pos.y < pic->size.y; pos.y++)
 	{
 		for (pos.x = 0; pos.x < pic->size.x; pos.x++)
 		{
@@ -123,8 +123,8 @@ void PicTrim(Pic *pic, const bool xTrim, const bool yTrim)
 		}
 	}
 	// If no opaque pixels found, don't trim
-	Vec2i newSize = pic->size;
-	Vec2i offset = Vec2iZero();
+	struct vec2i newSize = pic->size;
+	struct vec2i offset = svec2i_zero();
 	if (min.x < max.x && min.y < max.y)
 	{
 		if (xTrim)
@@ -141,7 +141,7 @@ void PicTrim(Pic *pic, const bool xTrim, const bool yTrim)
 	// Trim by copying pixels
 	Uint32 *newData;
 	CMALLOC(newData, newSize.x * newSize.y * sizeof *newData);
-	for (Vec2i pos = Vec2iZero(); pos.y < newSize.y; pos.y++)
+	for (struct vec2i pos = svec2i_zero(); pos.y < newSize.y; pos.y++)
 	{
 		for (pos.x = 0; pos.x < newSize.x; pos.x++)
 		{
@@ -155,10 +155,10 @@ void PicTrim(Pic *pic, const bool xTrim, const bool yTrim)
 	CFREE(pic->Data);
 	pic->Data = newData;
 	pic->size = newSize;
-	pic->offset = Vec2iZero();
+	pic->offset = svec2i_zero();
 }
 
-bool PicPxIsEdge(const Pic *pic, const Vec2i pos, const bool isPixel)
+bool PicPxIsEdge(const Pic *pic, const struct vec2i pos, const bool isPixel)
 {
 	const bool isTopOrBottomEdge = pos.y == -1 || pos.y == pic->size.y;
 	const bool isLeftOrRightEdge = pos.x == -1 || pos.x == pic->size.x;

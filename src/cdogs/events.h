@@ -60,7 +60,7 @@ int GetOnePlayerCmd(
 	const input_device_e device, const int deviceIndex);
 int GetGameCmd(
 	EventHandlers *handlers,
-	const PlayerData *playerData, const Vec2i playerPos);
+	const PlayerData *playerData, const struct vec2i playerPos);
 int GetKeyboardCmd(
 	keyboard_t *keyboard, const int kbIndex, const bool isPressed);
 SDL_Scancode GetKey(EventHandlers *handlers);

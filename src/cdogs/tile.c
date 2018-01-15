@@ -75,7 +75,7 @@ void TileDestroy(Tile *t)
 	CArrayTerminate(&t->things);
 }
 
-bool IsTileItemInsideTile(const TTileItem *i, const Vec2i tilePos)
+bool IsTileItemInsideTile(const TTileItem *i, const struct vec2i tilePos)
 {
 	return
 		i->Pos.x - i->size.x / 2 >= tilePos.x * TILE_WIDTH &&
@@ -125,7 +125,7 @@ void TileSetAlternateFloor(Tile *t, NamedPic *p)
 }
 
 void TileItemInit(
-	TTileItem *t, const int id, const TileItemKind kind, const Vec2i size,
+	TTileItem *t, const int id, const TileItemKind kind, const struct vec2i size,
 	const int flags)
 {
 	memset(t, 0, sizeof *t);
@@ -134,7 +134,7 @@ void TileItemInit(
 	t->size = size;
 	t->flags = flags;
 	// Ininitalise pos
-	t->Pos = to_vector2(-1, -1);
+	t->Pos = svec2(-1, -1);
 }
 
 void TileItemUpdate(TTileItem *t, const int ticks)

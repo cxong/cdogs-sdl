@@ -42,7 +42,7 @@ typedef enum
 typedef struct
 {
 	DrawBuffer Buffer;
-	struct vec lastPosition;
+	struct vec2 lastPosition;
 	HUD HUD;
 	ScreenShake shake;
 	SpectateMode spectateMode;

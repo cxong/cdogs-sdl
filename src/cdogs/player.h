@@ -91,8 +91,8 @@ bool IsPlayerHuman(const PlayerData *player);
 bool IsPlayerHumanAndAlive(const PlayerData *player);
 bool IsPlayerAliveOrDying(const PlayerData *player);
 bool IsPlayerScreen(const PlayerData *p);
-struct vec PlayersGetMidpoint(void);
-void PlayersGetBoundingRectangle(struct vec *min, struct vec *max);
+struct vec2 PlayersGetMidpoint(void);
+void PlayersGetBoundingRectangle(struct vec2 *min, struct vec2 *max);
 int PlayersNumUseAmmo(const int ammoId);
 bool PlayerIsLocal(const int uid);
 

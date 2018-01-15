@@ -102,10 +102,10 @@ typedef struct
 	int channels;
 
 	// Two sets of ears for 4-player split screen
-	struct vec earLeft1;
-	struct vec earLeft2;
-	struct vec earRight1;
-	struct vec earRight2;
+	struct vec2 earLeft1;
+	struct vec2 earLeft2;
+	struct vec2 earRight1;
+	struct vec2 earRight2;
 
 	map_t sounds;		// of SoundData
 	map_t customSounds;	// of SoundData
@@ -137,15 +137,15 @@ void SoundReconfigure(SoundDevice *s);
 void SoundClear(map_t sounds);
 void SoundTerminate(SoundDevice *device, const bool waitForSoundsComplete);
 void SoundPlay(SoundDevice *device, Mix_Chunk *data);
-void SoundSetEarsSide(const bool isLeft, const struct vec pos);
-void SoundSetEar(const bool isLeft, const int idx, const struct vec pos);
-void SoundSetEars(const struct vec pos);
-void SoundPlayAt(SoundDevice *device, Mix_Chunk *data, const struct vec pos);
+void SoundSetEarsSide(const bool isLeft, const struct vec2 pos);
+void SoundSetEar(const bool isLeft, const int idx, const struct vec2 pos);
+void SoundSetEars(const struct vec2 pos);
+void SoundPlayAt(SoundDevice *device, Mix_Chunk *data, const struct vec2 pos);
 
 // Play a sound but with distance added
 // Simulates a quieter sound by adding distance attenuation
 void SoundPlayAtPlusDistance(
 	SoundDevice *device, Mix_Chunk *data,
-	const struct vec pos, const int plusDistance);
+	const struct vec2 pos, const int plusDistance);
 
 Mix_Chunk *StrSound(const char *s);

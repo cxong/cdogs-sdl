@@ -195,7 +195,7 @@ void EnterHighScore(PlayerData *data)
 static void DisplayAt(int x, int y, const char *s, int hilite)
 {
 	color_t mask = hilite ? colorRed : colorWhite;
-	FontStrMask(s, Vec2iNew(x, y), mask);
+	FontStrMask(s, svec2i(x, y), mask);
 }
 
 static int DisplayEntry(
@@ -230,7 +230,7 @@ static int DisplayPage(
 	int x = 80;
 	int y = 5 + FontH();
 
-	FontStr(title, Vec2iNew(5, 5));
+	FontStr(title, svec2i(5, 5));
 	int idx = idxStart;
 	while (idx < MAX_ENTRY && e[idx].score > 0 && x < 300)
 	{

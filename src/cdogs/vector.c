@@ -29,138 +29,34 @@
 
 #include "tile.h"
 
-
-Vec2i Vec2iNew(int x, int y)
+struct vec2i svec2i_scale_divide(struct vec2i v, mint_t scale)
 {
-	Vec2i v;
-	v.x = x;
-	v.y = y;
-	return v;
+	return svec2i(v.x / scale, v.y / scale);
 }
 
-Vec2i Vec2iZero(void)
+struct vec2i Vec2iToTile(struct vec2i v)
 {
-	return Vec2iNew(0, 0);
-}
-Vec2i Vec2iUnit(void)
-{
-	return Vec2iNew(1, 1);
+	return svec2i(v.x / TILE_WIDTH, v.y / TILE_HEIGHT);
 }
 
-Vec2i Vec2iAdd(Vec2i a, Vec2i b)
+struct vec2i Vec2iCenterOfTile(struct vec2i v)
 {
-	a.x += b.x;
-	a.y += b.y;
-	return a;
-}
-Vec2i Vec2iMinus(Vec2i a, Vec2i b)
-{
-	a.x -= b.x;
-	a.y -= b.y;
-	return a;
-}
-
-Vec2i Vec2iMult(const Vec2i a, const Vec2i b)
-{
-	return Vec2iNew(a.x * b.x, a.y * b.y);
-}
-
-Vec2i Vec2iScale(Vec2i v, int scalar)
-{
-	v.x *= scalar;
-	v.y *= scalar;
-	return v;
-}
-
-Vec2i Vec2iScaleD(const Vec2i v, const double scalar)
-{
-	return Vec2iNew((int)(v.x * scalar), (int)(v.y * scalar));
-}
-
-Vec2i Vec2iScaleDiv(Vec2i v, int scaleDiv)
-{
-	v.x /= scaleDiv;
-	v.y /= scaleDiv;
-	return v;
-}
-
-Vec2i Vec2iNorm(Vec2i v)
-{
-	double magnitude;
-	if (Vec2iIsZero(v))
-	{
-		return v;
-	}
-	magnitude = sqrt(v.x*v.x + v.y*v.y);
-	v.x = (int)floor(v.x / magnitude + 0.5);
-	v.y = (int)floor(v.y / magnitude + 0.5);
-	return v;
-}
-
-bool Vec2iEqual(const Vec2i a, const Vec2i b)
-{
-	return a.x == b.x && a.y == b.y;
-}
-bool Vec2iIsZero(const Vec2i v)
-{
-	return Vec2iEqual(v, Vec2iZero());
-}
-
-Vec2i Vec2iMin(Vec2i a, Vec2i b)
-{
-	return Vec2iNew(MIN(a.x, b.x), MIN(a.y, b.y));
-}
-Vec2i Vec2iMax(Vec2i a, Vec2i b)
-{
-	return Vec2iNew(MAX(a.x, b.x), MAX(a.y, b.y));
-}
-Vec2i Vec2iClamp(Vec2i v, Vec2i lo, Vec2i hi)
-{
-	v.x = CLAMP(v.x, lo.x, hi.x);
-	v.y = CLAMP(v.y, lo.y, hi.y);
-	return v;
-}
-
-Vec2i Vec2iToTile(Vec2i v)
-{
-	return Vec2iNew(v.x / TILE_WIDTH, v.y / TILE_HEIGHT);
-}
-Vec2i Vec2iCenterOfTile(Vec2i v)
-{
-	return Vec2iNew(
+	return svec2i(
 		v.x * TILE_WIDTH + TILE_WIDTH / 2,
 		v.y * TILE_HEIGHT + TILE_HEIGHT / 2);
 }
 
-Vec2i Vec2ToVec2i(const struct vec v)
+struct vec2i Vec2ToTile(const struct vec2 v)
 {
-	return Vec2iNew((int)v.x, (int)v.y);
-}
-Vec2i Vec2ToTile(const struct vec v)
-{
-	return Vec2iNew((int)(v.x / TILE_WIDTH), (int)(v.y / TILE_HEIGHT));
-}
-struct vec Vec2iToVec2(const Vec2i v)
-{
-	return to_vector2((float)v.x, (float)v.y);
-}
-struct vec Vec2CenterOfTile(const Vec2i v)
-{
-	return Vec2iToVec2(Vec2iCenterOfTile(v));
+	return svec2i((int)(v.x / TILE_WIDTH), (int)(v.y / TILE_HEIGHT));
 }
 
-int Vec2iSqrMagnitude(const Vec2i v)
+struct vec2 Vec2CenterOfTile(const struct vec2i v)
 {
-	return v.x * v.x + v.y * v.y;
+	return svec2_assign_vec2i(Vec2iCenterOfTile(v));
 }
 
-int DistanceSquared(const Vec2i a, const Vec2i b)
-{
-	const Vec2i d = Vec2iMinus(a, b);
-	return Vec2iSqrMagnitude(d);
-}
-
-Rect2i Rect2iNew(const Vec2i pos, const Vec2i size)
+Rect2i Rect2iNew(const struct vec2i pos, const struct vec2i size)
 {
 	Rect2i r;
 	r.Pos = pos;
@@ -168,7 +64,7 @@ Rect2i Rect2iNew(const Vec2i pos, const Vec2i size)
 	return r;
 }
 
-bool Rect2iIsAtEdge(const Rect2i r, const Vec2i v)
+bool Rect2iIsAtEdge(const Rect2i r, const struct vec2i v)
 {
 	return
 		v.y == r.Pos.y || v.y == r.Pos.y + r.Size.y - 1 ||

@@ -77,7 +77,7 @@ color_t *CharColorGetByType(CharColors *c, const CharColorType t)
 
 
 void BlitPicHighlight(
-	GraphicsDevice *g, const Pic *pic, const Vec2i pos, const color_t color)
+	GraphicsDevice *g, const Pic *pic, const struct vec2i pos, const color_t color)
 {
 	// Draw highlight around the picture
 	int i;
@@ -113,7 +113,7 @@ void BlitPicHighlight(
 				isTopOrBottomEdge || isLeftOrRightEdge ||
 				!PIXEL2COLOR(*(pic->Data + j + i * pic->size.x)).a;
 			if (isPixelEmpty &&
-				PicPxIsEdge(pic, Vec2iNew(j, i), !isPixelEmpty))
+				PicPxIsEdge(pic, svec2i(j, i), !isPixelEmpty))
 			{
 				Uint32 *target = g->buf + yoff + xoff;
 				const color_t targetColor = PIXEL2COLOR(*target);
@@ -127,10 +127,10 @@ void BlitPicHighlight(
 
 void BlitBackground(
 	GraphicsDevice *device,
-	const Pic *pic, Vec2i pos, const HSV *tint, const bool isTransparent)
+	const Pic *pic, struct vec2i pos, const HSV *tint, const bool isTransparent)
 {
 	Uint32 *current = pic->Data;
-	pos = Vec2iAdd(pos, pic->offset);
+	pos = svec2i_add(pos, pic->offset);
 	for (int i = 0; i < pic->size.y; i++)
 	{
 		int yoff = i + pos.y;
@@ -176,10 +176,10 @@ void BlitBackground(
 	}
 }
 
-void Blit(GraphicsDevice *device, const Pic *pic, Vec2i pos)
+void Blit(GraphicsDevice *device, const Pic *pic, struct vec2i pos)
 {
 	Uint32 *current = pic->Data;
-	pos = Vec2iAdd(pos, pic->offset);
+	pos = svec2i_add(pos, pic->offset);
 	for (int i = 0; i < pic->size.y; i++)
 	{
 		int yoff = i + pos.y;
@@ -230,7 +230,7 @@ Uint32 PixelMult(const Uint32 p, const Uint32 m)
 void BlitMasked(
 	GraphicsDevice *device,
 	const Pic *pic,
-	Vec2i pos,
+	struct vec2i pos,
 	color_t mask,
 	int isTransparent)
 {
@@ -242,7 +242,7 @@ void BlitMasked(
 	}
 	const Uint32 maskPixel = COLOR2PIXEL(mask);
 	int i;
-	pos = Vec2iAdd(pos, pic->offset);
+	pos = svec2i_add(pos, pic->offset);
 	for (i = 0; i < pic->size.y; i++)
 	{
 		int yoff = i + pos.y;
@@ -286,11 +286,11 @@ void BlitMasked(
 void BlitCharMultichannel(
 	GraphicsDevice *device,
 	const Pic *pic,
-	const Vec2i pos,
+	const struct vec2i pos,
 	const CharColors *masks)
 {
 	Uint32 *current = pic->Data;
-	Vec2i v = Vec2iAdd(pos, pic->offset);
+	struct vec2i v = svec2i_add(pos, pic->offset);
 	for (int i = 0; i < pic->size.y; i++)
 	{
 		int yoff = i + v.y;
@@ -349,10 +349,10 @@ color_t CharColorsGetChannelMask(
 	}
 }
 void BlitBlend(
-	GraphicsDevice *g, const Pic *pic, Vec2i pos, const color_t blend)
+	GraphicsDevice *g, const Pic *pic, struct vec2i pos, const color_t blend)
 {
 	Uint32 *current = pic->Data;
-	pos = Vec2iAdd(pos, pic->offset);
+	pos = svec2i_add(pos, pic->offset);
 	for (int i = 0; i < pic->size.y; i++)
 	{
 		int yoff = i + pos.y;

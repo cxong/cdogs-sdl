@@ -54,18 +54,18 @@
 #define EXIT_HEIGHT 8
 
 
-static void MapSetupTile(Map *map, const Vec2i pos, const Mission *m);
+static void MapSetupTile(Map *map, const struct vec2i pos, const Mission *m);
 
-void MapSetTile(Map *map, Vec2i pos, unsigned short tileType, Mission *m)
+void MapSetTile(Map *map, struct vec2i pos, unsigned short tileType, Mission *m)
 {
 	IMapSet(map, pos, tileType);
 	// Update the tile as well, plus neighbours as they may be affected
 	// by shadows etc. especially walls
 	MapSetupTile(map, pos, m);
-	MapSetupTile(map, Vec2iNew(pos.x - 1, pos.y), m);
-	MapSetupTile(map, Vec2iNew(pos.x + 1, pos.y), m);
-	MapSetupTile(map, Vec2iNew(pos.x, pos.y - 1), m);
-	MapSetupTile(map, Vec2iNew(pos.x, pos.y + 1), m);
+	MapSetupTile(map, svec2i(pos.x - 1, pos.y), m);
+	MapSetupTile(map, svec2i(pos.x + 1, pos.y), m);
+	MapSetupTile(map, svec2i(pos.x, pos.y - 1), m);
+	MapSetupTile(map, svec2i(pos.x, pos.y + 1), m);
 }
 
 void MapSetupTilesAndWalls(Map *map, const Mission *m)
@@ -94,7 +94,7 @@ void MapSetupTilesAndWalls(Map *map, const Mission *m)
 			m->RoomMask, m->AltMask);
 	}
 
-	Vec2i v;
+	struct vec2i v;
 	for (v.x = 0; v.x < map->Size.x; v.x++)
 	{
 		for (v.y = 0; v.y < map->Size.y; v.y++)
@@ -125,11 +125,11 @@ void MapSetupTilesAndWalls(Map *map, const Mission *m)
 		}
 	}
 }
-static const char *MapGetWallPic(const Map *m, const Vec2i pos);
+static const char *MapGetWallPic(const Map *m, const struct vec2i pos);
 // Set tile properties for a map tile, such as picture to use
-static void MapSetupTile(Map *map, const Vec2i pos, const Mission *m)
+static void MapSetupTile(Map *map, const struct vec2i pos, const Mission *m)
 {
-	Tile *tAbove = MapGetTile(map, Vec2iNew(pos.x, pos.y - 1));
+	Tile *tAbove = MapGetTile(map, svec2i(pos.x, pos.y - 1));
 	bool canSeeTileAbove = !(tAbove != NULL && !TileCanSee(tAbove));
 	Tile *t = MapGetTile(map, pos);
 	if (!t)
@@ -177,7 +177,7 @@ static void MapSetupTile(Map *map, const Vec2i pos, const Mission *m)
 	}
 }
 static int W(const Map *map, const int x, const int y);
-static const char *MapGetWallPic(const Map *m, const Vec2i pos)
+static const char *MapGetWallPic(const Map *m, const struct vec2i pos)
 {
 	const int x = pos.x;
 	const int y = pos.y;
@@ -245,13 +245,13 @@ static const char *MapGetWallPic(const Map *m, const Vec2i pos)
 }
 static int W(const Map *map, const int x, const int y)
 {
-	return IMapGet(map, Vec2iNew(x, y)) == MAP_WALL;
+	return IMapGet(map, svec2i(x, y)) == MAP_WALL;
 }
 
 int MapIsValidStartForWall(
 	Map *map, int x, int y, unsigned short tileType, int pad)
 {
-	Vec2i d;
+	struct vec2i d;
 	if (x == 0 || y == 0 || x == map->Size.x - 1 || y == map->Size.y - 1)
 	{
 		return 0;
@@ -269,19 +269,19 @@ int MapIsValidStartForWall(
 	return 1;
 }
 
-Vec2i MapGetRoomSize(const RoomParams r, const int doorMin)
+struct vec2i MapGetRoomSize(const RoomParams r, const int doorMin)
 {
 	// Work out dimensions of room
 	// make sure room is large enough to accommodate doors
 	const int roomMin = MAX(r.Min, doorMin + 4);
 	const int roomMax = MAX(r.Max, doorMin + 4);
-	return Vec2iNew(
+	return svec2i(
 		RAND_INT(roomMin, roomMax + 1), RAND_INT(roomMin, roomMax + 1));
 }
 
-void MapMakeRoom(Map *map, const Vec2i pos, const Vec2i size, const bool walls)
+void MapMakeRoom(Map *map, const struct vec2i pos, const struct vec2i size, const bool walls)
 {
-	Vec2i v;
+	struct vec2i v;
 	// Set the perimeter walls and interior
 	// If the tile is a room interior already, do not turn it into a wall
 	// This is due to overlapping rooms
@@ -312,10 +312,10 @@ void MapMakeRoom(Map *map, const Vec2i pos, const Vec2i size, const bool walls)
 			if (v.y == pos.y || v.y == pos.y + size.y - 1 ||
 				v.x == pos.x || v.x == pos.x + size.x - 1)
 			{
-				if (((IMapGet(map, Vec2iNew(v.x + 1, v.y)) & MAP_MASKACCESS) == MAP_ROOM &&
-					(IMapGet(map, Vec2iNew(v.x - 1, v.y)) & MAP_MASKACCESS) == MAP_ROOM) ||
-					((IMapGet(map, Vec2iNew(v.x, v.y + 1)) & MAP_MASKACCESS) == MAP_ROOM &&
-					(IMapGet(map, Vec2iNew(v.x, v.y - 1)) & MAP_MASKACCESS) == MAP_ROOM))
+				if (((IMapGet(map, svec2i(v.x + 1, v.y)) & MAP_MASKACCESS) == MAP_ROOM &&
+					(IMapGet(map, svec2i(v.x - 1, v.y)) & MAP_MASKACCESS) == MAP_ROOM) ||
+					((IMapGet(map, svec2i(v.x, v.y + 1)) & MAP_MASKACCESS) == MAP_ROOM &&
+					(IMapGet(map, svec2i(v.x, v.y - 1)) & MAP_MASKACCESS) == MAP_ROOM))
 				{
 					IMapSet(map, v, MAP_ROOM);
 				}
@@ -344,7 +344,7 @@ bool MapTryBuildWall(
 	Map *map, const unsigned short tileType, const int pad,
 	const int wallLength)
 {
-	const Vec2i v = MapGetRandomTile(map);
+	const struct vec2i v = MapGetRandomTile(map);
 	if (MapIsValidStartForWall(map, v.x, v.y, tileType, pad))
 	{
 		IMapSet(map, v, MAP_WALL);
@@ -358,7 +358,7 @@ static void MapGrowWall(
 	unsigned short tileType, int pad, int d, int length)
 {
 	int l;
-	Vec2i v;
+	struct vec2i v;
 
 	if (length <= 0)
 		return;
@@ -449,7 +449,7 @@ static void MapGrowWall(
 			x--;
 			break;
 	}
-	IMapSet(map, Vec2iNew(x, y), MAP_WALL);
+	IMapSet(map, svec2i(x, y), MAP_WALL);
 	length--;
 	if (length > 0 && (rand() & 3) == 0)
 	{
@@ -463,10 +463,10 @@ static void MapGrowWall(
 }
 
 void MapSetRoomAccessMask(
-	Map *map, const Vec2i pos, const Vec2i size,
+	Map *map, const struct vec2i pos, const struct vec2i size,
 	const unsigned short accessMask)
 {
-	Vec2i v;
+	struct vec2i v;
 	for (v.y = pos.y + 1; v.y < pos.y + size.y - 1; v.y++)
 	{
 		for (v.x = pos.x + 1; v.x < pos.x + size.x - 1; v.x++)
@@ -516,15 +516,15 @@ static void AddOverlapRooms(
 }
 
 static bool TryPlaceDoorTile(
-	Map *map, const Vec2i v, const Vec2i d, const unsigned short t);
+	Map *map, const struct vec2i v, const struct vec2i d, const unsigned short t);
 void MapPlaceDoors(
-	Map *map, Vec2i pos, Vec2i size,
+	Map *map, struct vec2i pos, struct vec2i size,
 	int hasDoors, int doors[4], int doorMin, int doorMax,
 	unsigned short accessMask)
 {
 	int i;
 	unsigned short doorTile = hasDoors ? MAP_DOOR : MAP_ROOM;
-	Vec2i v;
+	struct vec2i v;
 
 	// Set access mask
 	MapSetRoomAccessMask(map, pos, size, accessMask);
@@ -537,8 +537,8 @@ void MapPlaceDoors(
 			size.y - 4);
 		for (i = -doorSize / 2; i < (doorSize + 1) / 2; i++)
 		{
-			v = Vec2iNew(pos.x, pos.y + size.y / 2 + i);
-			if (!TryPlaceDoorTile(map, v, Vec2iNew(1, 0), doorTile))
+			v = svec2i(pos.x, pos.y + size.y / 2 + i);
+			if (!TryPlaceDoorTile(map, v, svec2i(1, 0), doorTile))
 			{
 				break;
 			}
@@ -551,8 +551,8 @@ void MapPlaceDoors(
 			size.y - 4);
 		for (i = -doorSize / 2; i < (doorSize + 1) / 2; i++)
 		{
-			v = Vec2iNew(pos.x + size.x - 1, pos.y + size.y / 2 + i);
-			if (!TryPlaceDoorTile(map, v, Vec2iNew(1, 0), doorTile))
+			v = svec2i(pos.x + size.x - 1, pos.y + size.y / 2 + i);
+			if (!TryPlaceDoorTile(map, v, svec2i(1, 0), doorTile))
 			{
 				break;
 			}
@@ -565,8 +565,8 @@ void MapPlaceDoors(
 			size.x - 4);
 		for (i = -doorSize / 2; i < (doorSize + 1) / 2; i++)
 		{
-			v = Vec2iNew(pos.x + size.x / 2 + i, pos.y);
-			if (!TryPlaceDoorTile(map, v, Vec2iNew(0, 1), doorTile))
+			v = svec2i(pos.x + size.x / 2 + i, pos.y);
+			if (!TryPlaceDoorTile(map, v, svec2i(0, 1), doorTile))
 			{
 				break;
 			}
@@ -579,8 +579,8 @@ void MapPlaceDoors(
 			size.x - 4);
 		for (i = -doorSize / 2; i < (doorSize + 1) / 2; i++)
 		{
-			v = Vec2iNew(pos.x + size.x / 2 + i, pos.y + size.y - 1);
-			if (!TryPlaceDoorTile(map, v, Vec2iNew(0, 1), doorTile))
+			v = svec2i(pos.x + size.x / 2 + i, pos.y + size.y - 1);
+			if (!TryPlaceDoorTile(map, v, svec2i(0, 1), doorTile))
 			{
 				break;
 			}
@@ -588,11 +588,11 @@ void MapPlaceDoors(
 	}
 }
 static bool TryPlaceDoorTile(
-	Map *map, const Vec2i v, const Vec2i d, const unsigned short t)
+	Map *map, const struct vec2i v, const struct vec2i d, const unsigned short t)
 {
 	if (IMapGet(map, v) == MAP_WALL &&
-		IMapGet(map, Vec2iAdd(v, d)) != MAP_WALL &&
-		IMapGet(map, Vec2iMinus(v, d)) != MAP_WALL)
+		IMapGet(map, svec2i_add(v, d)) != MAP_WALL &&
+		IMapGet(map, svec2i_subtract(v, d)) != MAP_WALL)
 	{
 		IMapSet(map, v, t);
 		return true;
@@ -600,19 +600,19 @@ static bool TryPlaceDoorTile(
 	return false;
 }
 
-bool MapIsAreaInside(const Map *map, const Vec2i pos, const Vec2i size)
+bool MapIsAreaInside(const Map *map, const struct vec2i pos, const struct vec2i size)
 {
 	return pos.x >= 0 && pos.y >= 0 &&
 		pos.x + size.x < map->Size.x && pos.y + size.y < map->Size.y;
 }
 
-bool MapIsAreaClear(const Map *map, const Vec2i pos, const Vec2i size)
+bool MapIsAreaClear(const Map *map, const struct vec2i pos, const struct vec2i size)
 {
 	if (!MapIsAreaInside(map, pos, size))
 	{
 		return 0;
 	}
-	Vec2i v;
+	struct vec2i v;
 	for (v.y = pos.y; v.y < pos.y + size.y; v.y++)
 	{
 		for (v.x = pos.x; v.x < pos.x + size.x; v.x++)
@@ -626,9 +626,9 @@ bool MapIsAreaClear(const Map *map, const Vec2i pos, const Vec2i size)
 
 	return 1;
 }
-static bool MapTileIsPartOfRoom(const Map *map, const Vec2i pos)
+static bool MapTileIsPartOfRoom(const Map *map, const struct vec2i pos)
 {
-	Vec2i v2;
+	struct vec2i v2;
 	int isRoom = 0;
 	int isFloor = 0;
 	// Find whether a wall tile is part of a room perimeter
@@ -650,9 +650,9 @@ static bool MapTileIsPartOfRoom(const Map *map, const Vec2i pos)
 	}
 	return isRoom && isFloor;
 }
-bool MapIsAreaClearOrRoom(const Map *map, const Vec2i pos, const Vec2i size)
+bool MapIsAreaClearOrRoom(const Map *map, const struct vec2i pos, const struct vec2i size)
 {
-	Vec2i v;
+	struct vec2i v;
 
 	if (pos.x < 0 || pos.y < 0 ||
 		pos.x + size.x >= map->Size.x || pos.y + size.y >= map->Size.y)
@@ -685,9 +685,9 @@ bool MapIsAreaClearOrRoom(const Map *map, const Vec2i pos, const Vec2i size)
 
 	return 1;
 }
-int MapIsAreaClearOrWall(Map *map, Vec2i pos, Vec2i size)
+int MapIsAreaClearOrWall(Map *map, struct vec2i pos, struct vec2i size)
 {
-	Vec2i v;
+	struct vec2i v;
 
 	if (pos.x < 0 || pos.y < 0 ||
 		pos.x + size.x >= map->Size.x || pos.y + size.y >= map->Size.y)
@@ -742,14 +742,14 @@ int MapIsAreaClearOrWall(Map *map, Vec2i pos, Vec2i size)
 // minus 1
 bool MapGetRoomOverlapSize(
 	const Map *map,
-	const Vec2i pos,
-	const Vec2i size,
+	const struct vec2i pos,
+	const struct vec2i size,
 	unsigned short *overlapAccess)
 {
-	Vec2i v;
+	struct vec2i v;
 	int numOverlaps = 0;
-	Vec2i overlapMin = Vec2iZero();
-	Vec2i overlapMax = Vec2iZero();
+	struct vec2i overlapMin = svec2i_zero();
+	struct vec2i overlapMax = svec2i_zero();
 
 	if (pos.x < 0 || pos.y < 0 ||
 		pos.x + size.x >= map->Size.x || pos.y + size.y >= map->Size.y)
@@ -775,7 +775,7 @@ bool MapGetRoomOverlapSize(
 				if (MapTileIsPartOfRoom(map, v))
 				{
 					// Get the access level of the room
-					Vec2i v2;
+					struct vec2i v2;
 					for (v2.y = v.y - 1; v2.y <= v.y + 1; v2.y++)
 					{
 						for (v2.x = v.x - 1; v2.x <= v.x + 1; v2.x++)
@@ -796,8 +796,8 @@ bool MapGetRoomOverlapSize(
 					}
 					else
 					{
-						overlapMin = Vec2iMin(overlapMin, v);
-						overlapMax = Vec2iMax(overlapMax, v);
+						overlapMin = svec2i_min(overlapMin, v);
+						overlapMax = svec2i_max(overlapMax, v);
 					}
 					numOverlaps++;
 				}
@@ -839,12 +839,12 @@ bool MapGetRoomOverlapSize(
 	return MAX(overlapMax.x - overlapMin.x, overlapMax.y - overlapMin.y) - 1;
 }
 // Check that this area does not overlap two or more "walls"
-int MapIsLessThanTwoWallOverlaps(Map *map, Vec2i pos, Vec2i size)
+int MapIsLessThanTwoWallOverlaps(Map *map, struct vec2i pos, struct vec2i size)
 {
-	Vec2i v;
+	struct vec2i v;
 	int numOverlaps = 0;
-	Vec2i overlapMin = Vec2iZero();
-	Vec2i overlapMax = Vec2iZero();
+	struct vec2i overlapMin = svec2i_zero();
+	struct vec2i overlapMax = svec2i_zero();
 
 	if (pos.x < 0 || pos.y < 0 ||
 		pos.x + size.x >= map->Size.x || pos.y + size.y >= map->Size.y)
@@ -874,8 +874,8 @@ int MapIsLessThanTwoWallOverlaps(Map *map, Vec2i pos, Vec2i size)
 					}
 					else
 					{
-						overlapMin = Vec2iMin(overlapMin, v);
-						overlapMax = Vec2iMax(overlapMax, v);
+						overlapMin = svec2i_min(overlapMin, v);
+						overlapMax = svec2i_max(overlapMax, v);
 					}
 					numOverlaps++;
 				}
@@ -915,9 +915,9 @@ int MapIsLessThanTwoWallOverlaps(Map *map, Vec2i pos, Vec2i size)
 	return 1;
 }
 
-void MapMakeSquare(Map *map, Vec2i pos, Vec2i size)
+void MapMakeSquare(Map *map, struct vec2i pos, struct vec2i size)
 {
-	Vec2i v;
+	struct vec2i v;
 	for (v.y = pos.y; v.y < pos.y + size.y; v.y++)
 	{
 		for (v.x = pos.x; v.x < pos.x + size.x; v.x++)
@@ -926,9 +926,9 @@ void MapMakeSquare(Map *map, Vec2i pos, Vec2i size)
 		}
 	}
 }
-void MapMakePillar(Map *map, Vec2i pos, Vec2i size)
+void MapMakePillar(Map *map, struct vec2i pos, struct vec2i size)
 {
-	Vec2i v;
+	struct vec2i v;
 	for (v.y = pos.y; v.y < pos.y + size.y; v.y++)
 	{
 		for (v.x = pos.x; v.x < pos.x + size.x; v.x++)
@@ -1000,7 +1000,7 @@ void MapGenerateRandomExitArea(Map *map)
 		map->ExitStart.y = (rand() % (abs(map->Size.y) - EXIT_HEIGHT - 1));
 		map->ExitEnd.y = map->ExitStart.y + EXIT_HEIGHT + 1;
 		// Check that the exit area is walkable
-		const Vec2i center = Vec2iNew(
+		const struct vec2i center = svec2i(
 			(map->ExitStart.x + map->ExitEnd.x) / 2,
 			(map->ExitStart.y + map->ExitEnd.y) / 2);
 		t = MapGetTile(map, center);

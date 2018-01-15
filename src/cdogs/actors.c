@@ -144,7 +144,7 @@ void UpdateActorState(TActor * actor, int ticks)
 
 	if (actor->health <= 0) {
 		actor->dead++;
-		actor->MoveVel = vector2_zero();
+		actor->MoveVel = svec2_zero();
 		actor->stateCounter = 4;
 		actor->tileItem.flags = 0;
 		return;
@@ -152,13 +152,13 @@ void UpdateActorState(TActor * actor, int ticks)
 
 	// Draw rotation interpolation
 	const float targetRadians = (float)dir2radians[actor->direction];
-	if (actor->DrawRadians - targetRadians > M_PIF)
+	if (actor->DrawRadians - targetRadians > MPI)
 	{
-		actor->DrawRadians -= 2 * M_PIF;
+		actor->DrawRadians -= 2 * MPI;
 	}
-	if (actor->DrawRadians - targetRadians < -M_PIF)
+	if (actor->DrawRadians - targetRadians < -MPI)
 	{
-		actor->DrawRadians += 2 * M_PIF;
+		actor->DrawRadians += 2 * MPI;
 	}
 	const float dr = actor->DrawRadians - targetRadians;
 	if (dr < 0)
@@ -196,21 +196,21 @@ void UpdateActorState(TActor * actor, int ticks)
 	}
 }
 
-static struct vec GetConstrainedPos(
-	const Map *map, const struct vec from, const struct vec to,
-	const Vec2i size);
+static struct vec2 GetConstrainedPos(
+	const Map *map, const struct vec2 from, const struct vec2 to,
+	const struct vec2i size);
 static void OnMove(TActor *a);
-bool TryMoveActor(TActor *actor, struct vec pos)
+bool TryMoveActor(TActor *actor, struct vec2 pos)
 {
-	CASSERT(!vector2_is_equal(actor->Pos, pos, EPSILON_POS),
+	CASSERT(!svec2_is_nearly_equal(actor->Pos, pos, EPSILON_POS),
 		"trying to move to same position");
 
 	actor->hasCollided = true;
 	actor->CanPickupSpecial = false;
 
-	const struct vec oldPos = actor->Pos;
+	const struct vec2 oldPos = actor->Pos;
 	pos = GetConstrainedPos(&gMap, actor->Pos, pos, actor->tileItem.size);
-	if (vector2_is_equal(oldPos, pos, EPSILON_POS))
+	if (svec2_is_nearly_equal(oldPos, pos, EPSILON_POS))
 	{
 		return false;
 	}
@@ -274,13 +274,13 @@ bool TryMoveActor(TActor *actor, struct vec pos)
 				return false;
 			}
 
-			const struct vec yPos = to_vector2(actor->Pos.x, pos.y);
+			const struct vec2 yPos = svec2(actor->Pos.x, pos.y);
 			if (OverlapGetFirstItem(
 				&actor->tileItem, yPos, actor->tileItem.size, params))
 			{
 				pos.y = actor->Pos.y;
 			}
-			const struct vec xPos = to_vector2(pos.x, actor->Pos.y);
+			const struct vec2 xPos = svec2(pos.x, actor->Pos.y);
 			if (OverlapGetFirstItem(
 				&actor->tileItem, xPos, actor->tileItem.size, params))
 			{
@@ -310,9 +310,9 @@ bool TryMoveActor(TActor *actor, struct vec pos)
 // Get a movement position that is constrained by collisions
 // May return a position that is the same as the 'from', that is, we cannot
 // move in the direction specified.
-static struct vec GetConstrainedPos(
-	const Map *map, const struct vec from, const struct vec to,
-	const Vec2i size)
+static struct vec2 GetConstrainedPos(
+	const Map *map, const struct vec2 from, const struct vec2 to,
+	const struct vec2i size)
 {
 	// Check collision with wall
 	if (!IsCollisionWithWall(to, size))
@@ -322,20 +322,20 @@ static struct vec GetConstrainedPos(
 	}
 	
 	CASSERT(size.x >= size.y, "tall collision not supported");
-	const struct vec dv = vector2_subtract(to, from);
+	const struct vec2 dv = svec2_subtract(to, from);
 
 	// If moving diagonally, use rectangular bounds and
 	// try to move in only x or y directions
 	if (dv.x != 0 && dv.y != 0)
 	{
 		// X-only movement
-		const struct vec xVec = to_vector2(to.x, from.y);
+		const struct vec2 xVec = svec2(to.x, from.y);
 		if (!IsCollisionWithWall(xVec, size))
 		{
 			return xVec;
 		}
 		// Y-only movement
-		const struct vec yVec = to_vector2(from.x, to.y);
+		const struct vec2 yVec = svec2(from.x, to.y);
 		if (!IsCollisionWithWall(yVec, size))
 		{
 			return yVec;
@@ -344,13 +344,13 @@ static struct vec GetConstrainedPos(
 		// in collision with a diamond but is colliding with the box.
 		// If so try x- or y-only movement, but with the benefit of diamond
 		// slipping.
-		const struct vec xPos = GetConstrainedPos(map, from, xVec, size);
-		if (!vector2_is_equal(xPos, from, EPSILON_POS))
+		const struct vec2 xPos = GetConstrainedPos(map, from, xVec, size);
+		if (!svec2_is_nearly_equal(xPos, from, EPSILON_POS))
 		{
 			return xPos;
 		}
-		const struct vec yPos = GetConstrainedPos(map, from, yVec, size);
-		if (!vector2_is_equal(yPos, from, EPSILON_POS))
+		const struct vec2 yPos = GetConstrainedPos(map, from, yVec, size);
+		if (!svec2_is_nearly_equal(yPos, from, EPSILON_POS))
 		{
 			return yPos;
 		}
@@ -367,14 +367,14 @@ static struct vec GetConstrainedPos(
 		// may need to scale the diamond wider.
 		const int xScale =
 			size.x > size.y ? (int)ceil((double)size.x / size.y) : 1;
-		const struct vec diag1Vec =
-			vector2_add(from, to_vector2(-dv.y * xScale, dv.y));
+		const struct vec2 diag1Vec =
+			svec2_add(from, svec2(-dv.y * xScale, dv.y));
 		if (!IsCollisionDiamond(map, diag1Vec, size))
 		{
 			return diag1Vec;
 		}
-		const struct vec diag2Vec =
-			vector2_add(from, to_vector2(dv.y * xScale, dv.y));
+		const struct vec2 diag2Vec =
+			svec2_add(from, svec2(dv.y * xScale, dv.y));
 		if (!IsCollisionDiamond(map, diag2Vec, size))
 		{
 			return diag2Vec;
@@ -383,14 +383,14 @@ static struct vec GetConstrainedPos(
 	else if (dv.y == 0)
 	{
 		// Moving left or right; try moving up or down diagonally
-		const struct vec diag1Vec =
-			vector2_add(from, to_vector2(dv.x, -dv.x));
+		const struct vec2 diag1Vec =
+			svec2_add(from, svec2(dv.x, -dv.x));
 		if (!IsCollisionDiamond(map, diag1Vec, size))
 		{
 			return diag1Vec;
 		}
-		const struct vec diag2Vec =
-			vector2_add(from, to_vector2(dv.x, dv.x));
+		const struct vec2 diag2Vec =
+			svec2_add(from, svec2(dv.x, dv.x));
 		if (!IsCollisionDiamond(map, diag2Vec, size))
 		{
 			return diag2Vec;
@@ -409,7 +409,7 @@ void ActorMove(const NActorMove am)
 	a->MoveVel = NetToVec2(am.MoveVel);
 	OnMove(a);
 }
-static void CheckTrigger(const Vec2i tilePos, const bool showLocked);
+static void CheckTrigger(const struct vec2i tilePos, const bool showLocked);
 static void CheckRescue(const TActor *a);
 static void OnMove(TActor *a)
 {
@@ -432,7 +432,7 @@ static void OnMove(TActor *a)
 		CheckRescue(a);
 	}
 }
-static void CheckTrigger(const Vec2i tilePos, const bool showLocked)
+static void CheckTrigger(const struct vec2i tilePos, const bool showLocked)
 {
 	const Tile *t = MapGetTile(&gMap, tilePos);
 	CA_FOREACH(Trigger *, tp, t->triggers)
@@ -454,8 +454,8 @@ static void CheckTrigger(const Vec2i tilePos, const bool showLocked)
 }
 // Check if the player can pickup any item
 static bool CheckPickupFunc(
-	TTileItem *ti, void *data, const struct vec colA, const struct vec colB,
-	const struct vec normal);
+	TTileItem *ti, void *data, const struct vec2 colA, const struct vec2 colB,
+	const struct vec2 normal);
 static void CheckPickups(TActor *actor)
 {
 	// NPCs can't pickup
@@ -472,8 +472,8 @@ static void CheckPickups(TActor *actor)
 		params, CheckPickupFunc, actor, NULL, NULL, NULL);
 }
 static bool CheckPickupFunc(
-	TTileItem *ti, void *data, const struct vec colA, const struct vec colB,
-	const struct vec normal)
+	TTileItem *ti, void *data, const struct vec2 colA, const struct vec2 colB,
+	const struct vec2 normal)
 {
 	UNUSED(colA);
 	UNUSED(colB);
@@ -499,7 +499,7 @@ static void CheckRescue(const TActor *a)
 	};
 	const TTileItem *target = OverlapGetFirstItem(
 		&a->tileItem, a->Pos,
-		Vec2iAdd(a->tileItem.size, Vec2iNew(RESCUE_CHECK_PAD, RESCUE_CHECK_PAD)),
+		svec2i_add(a->tileItem.size, svec2i(RESCUE_CHECK_PAD, RESCUE_CHECK_PAD)),
 		params);
 	if (target != NULL && target->kind == KIND_CHARACTER)
 	{
@@ -775,7 +775,7 @@ static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks)
 		(cmd & CMD_BUTTON2));
 	const bool willMove =
 		!actor->petrified && CMD_HAS_DIRECTION(cmd) && canMoveWhenShooting;
-	actor->MoveVel = vector2_zero();
+	actor->MoveVel = svec2_zero();
 	if (willMove)
 	{
 		const float moveAmount = ActorGetCharacter(actor)->speed * ticks;
@@ -846,7 +846,7 @@ void SlideActor(TActor *actor, int cmd)
 
 	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_SLIDE);
 	e.u.ActorSlide.UID = actor->uid;
-	struct vec vel = vector2_zero();
+	struct vec2 vel = svec2_zero();
 	if (cmd & CMD_LEFT)			vel.x = -SLIDE_X;
 	else if (cmd & CMD_RIGHT)	vel.x = SLIDE_X;
 	if (cmd & CMD_UP)			vel.y = -SLIDE_Y;
@@ -895,20 +895,20 @@ void UpdateAllActors(int ticks)
 				if (CalcCollisionTeam(1, collidingActor) ==
 					CalcCollisionTeam(1, actor))
 				{
-					struct vec v = vector2_subtract(
+					struct vec2 v = svec2_subtract(
 						actor->Pos, collidingActor->Pos);
-					if (vector2_is_zero(v))
+					if (svec2_is_zero(v))
 					{
-						v = to_vector2(1, 0);
+						v = svec2(1, 0);
 					}
-					v = vector2_scale(vector2_normalize(v), REPEL_STRENGTH);
+					v = svec2_scale(svec2_normalize(v), REPEL_STRENGTH);
 					GameEvent e = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
 					e.u.ActorImpulse.UID = actor->uid;
 					e.u.ActorImpulse.Vel = Vec2ToNet(v);
 					e.u.ActorImpulse.Pos = Vec2ToNet(actor->Pos);
 					GameEventsEnqueue(&gGameEvents, e);
 					e.u.ActorImpulse.UID = collidingActor->uid;
-					e.u.ActorImpulse.Vel = Vec2ToNet(vector2_scale(v, -1));
+					e.u.ActorImpulse.Vel = Vec2ToNet(svec2_scale(v, -1));
 					e.u.ActorImpulse.Pos = Vec2ToNet(collidingActor->Pos);
 					GameEventsEnqueue(&gGameEvents, e);
 				}
@@ -920,7 +920,7 @@ void UpdateAllActors(int ticks)
 			actor->bleedCounter -= ticks;
 			if (actor->bleedCounter <= 0)
 			{
-				ActorAddBloodSplatters(actor, 1, 1.0f, vector2_zero());
+				ActorAddBloodSplatters(actor, 1, 1.0f, svec2_zero());
 				actor->bleedCounter += ActorGetHealthPercent(actor);
 			}
 		}
@@ -929,11 +929,11 @@ void UpdateAllActors(int ticks)
 static void CheckManualPickups(TActor *a);
 static void ActorUpdatePosition(TActor *actor, int ticks)
 {
-	struct vec newPos = vector2_add(actor->Pos, actor->MoveVel);
-	if (!vector2_is_zero(actor->tileItem.Vel))
+	struct vec2 newPos = svec2_add(actor->Pos, actor->MoveVel);
+	if (!svec2_is_zero(actor->tileItem.Vel))
 	{
-		newPos = vector2_add(
-			newPos, vector2_scale(actor->tileItem.Vel, (float)ticks));
+		newPos = svec2_add(
+			newPos, svec2_scale(actor->tileItem.Vel, (float)ticks));
 
 		for (int i = 0; i < ticks; i++)
 		{
@@ -960,7 +960,7 @@ static void ActorUpdatePosition(TActor *actor, int ticks)
 		}
 	}
 
-	if (!vector2_is_equal(actor->Pos, newPos, EPSILON_POS))
+	if (!svec2_is_nearly_equal(actor->Pos, newPos, EPSILON_POS))
 	{
 		TryMoveActor(actor, newPos);
 	}
@@ -969,8 +969,8 @@ static void ActorUpdatePosition(TActor *actor, int ticks)
 }
 // Check if the actor is over any manual pickups
 static bool CheckManualPickupFunc(
-	TTileItem *ti, void *data, const struct vec colA, const struct vec colB,
-	const struct vec normal);
+	TTileItem *ti, void *data, const struct vec2 colA, const struct vec2 colB,
+	const struct vec2 normal);
 static void CheckManualPickups(TActor *a)
 {
 	// NPCs can't pickup
@@ -984,8 +984,8 @@ static void CheckManualPickups(TActor *a)
 		a->tileItem.size, params, CheckManualPickupFunc, a, NULL, NULL, NULL);
 }
 static bool CheckManualPickupFunc(
-	TTileItem *ti, void *data, const struct vec colA, const struct vec colB,
-	const struct vec normal)
+	TTileItem *ti, void *data, const struct vec2 colA, const struct vec2 colB,
+	const struct vec2 normal)
 {
 	UNUSED(colA);
 	UNUSED(colB);
@@ -1076,10 +1076,10 @@ static void ActorAddAmmoPickup(const TActor *actor)
 			e.u.AddPickup.SpawnerUID = -1;
 			e.u.AddPickup.TileItemFlags = 0;
 			// Add a little random offset so the pickups aren't all together
-			const struct vec offset = to_vector2(
+			const struct vec2 offset = svec2(
 				(float)RAND_INT(-TILE_WIDTH, TILE_WIDTH) / 2,
 				(float)RAND_INT(-TILE_HEIGHT, TILE_HEIGHT) / 2);
-			e.u.AddPickup.Pos = Vec2ToNet(vector2_add(actor->Pos, offset));
+			e.u.AddPickup.Pos = Vec2ToNet(svec2_add(actor->Pos, offset));
 			GameEventsEnqueue(&gGameEvents, e);
 		CA_FOREACH_END()
 	}
@@ -1209,7 +1209,7 @@ TActor *ActorAdd(NActorAdd aa)
 	actor->tileItem.kind = KIND_CHARACTER;
 	actor->tileItem.getPicFunc = NULL;
 	actor->tileItem.drawFunc = NULL;
-	actor->tileItem.size = Vec2iNew(ACTOR_W, ACTOR_H);
+	actor->tileItem.size = svec2i(ACTOR_W, ACTOR_H);
 	actor->tileItem.flags =
 		TILEITEM_IMPASSABLE | TILEITEM_CAN_BE_SHOT | aa.TileItemFlags;
 	actor->tileItem.id = id;
@@ -1268,7 +1268,7 @@ static void GoreEmitterInit(Emitter *em, const char *particleClassName)
 {
 	EmitterInit(
 		em, StrParticleClass(&gParticleClasses, particleClassName),
-		vector2_zero(), 0, GORE_EMITTER_MAX_SPEED, 6, 12, -0.1, 0.1);
+		svec2_zero(), 0, GORE_EMITTER_MAX_SPEED, 6, 12, -0.1, 0.1);
 }
 
 void ActorDestroy(TActor *a)
@@ -1308,7 +1308,7 @@ Weapon *ActorGetGun(const TActor *a)
 {
 	return CArrayGet(&a->guns, a->gunIndex);
 }
-struct vec ActorGetGunMuzzleOffset(const TActor *a)
+struct vec2 ActorGetGunMuzzleOffset(const TActor *a)
 {
 	const GunDescription *gun = ActorGetGun(a)->Gun;
 	const CharSprites *cs = ActorGetCharacter(a)->Class->Sprites;
@@ -1460,7 +1460,7 @@ bool ActorIsInvulnerable(
 }
 
 void ActorAddBloodSplatters(
-	TActor *a, const int power, const float mass, const struct vec hitVector)
+	TActor *a, const int power, const float mass, const struct vec2 hitVector)
 {
 	const GoreAmount ga = ConfigGetEnum(&gConfig, "Graphics.Gore");
 	if (ga == GORE_NONE) return;
@@ -1490,7 +1490,7 @@ void ActorAddBloodSplatters(
 			bloodSize = 1;
 		}
 		const float speed = RAND_FLOAT(0.5f, 1) * mass * SHOT_IMPULSE_FACTOR;
-		const struct vec vel = vector2_scale(hitVector, speed);
+		const struct vec2 vel = svec2_scale(hitVector, speed);
 		EmitterStart(em, a->Pos, 10, vel);
 		switch (ga)
 		{

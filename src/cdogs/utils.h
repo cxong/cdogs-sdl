@@ -147,8 +147,8 @@ double Round(double x);
 double ToDegrees(double radians);
 double ToRadians(double degrees);
 
-struct vec CalcClosestPointOnLineSegmentToPoint(
-	const struct vec l1, const struct vec l2, const struct vec p);
+struct vec2 CalcClosestPointOnLineSegmentToPoint(
+	const struct vec2 l1, const struct vec2 l2, const struct vec2 p);
 
 typedef enum
 {

@@ -31,7 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 
 void EmitterInit(
-	Emitter *em, const ParticleClass *p, const struct vec offset,
+	Emitter *em, const ParticleClass *p, const struct vec2 offset,
 	const float minSpeed, const float maxSpeed,
 	const int minDZ, const int maxDZ,
 	double minRotation, double maxRotation)
@@ -47,9 +47,9 @@ void EmitterInit(
 	em->maxRotation = maxRotation;
 }
 void EmitterStart(
-	Emitter *em, const struct vec pos, const int z, const struct vec vel)
+	Emitter *em, const struct vec2 pos, const int z, const struct vec2 vel)
 {
-	const struct vec p = vector2_add(pos, em->offset);
+	const struct vec2 p = svec2_add(pos, em->offset);
 
 	// TODO: single event multiple particles
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PARTICLE);
@@ -57,10 +57,10 @@ void EmitterStart(
 	e.u.AddParticle.Z = z * Z_FACTOR;
 	e.u.AddParticle.Class = em->p;
 	const float speed = RAND_FLOAT(em->minSpeed, em->maxSpeed);
-	const struct vec baseVel = vector2_rotate(
-		to_vector2(0, speed), RAND_FLOAT(0, M_PIF * 2));
-	e.u.AddParticle.Vel = vector2_add(vel, baseVel);
-	e.u.AddParticle.Angle = RAND_FLOAT(0, M_PIF * 2);
+	const struct vec2 baseVel = svec2_rotate(
+		svec2(0, speed), RAND_FLOAT(0, MPI * 2));
+	e.u.AddParticle.Vel = svec2_add(vel, baseVel);
+	e.u.AddParticle.Angle = RAND_FLOAT(0, MPI * 2);
 	e.u.AddParticle.DZ = RAND_INT(em->minDZ, em->maxDZ);
 	e.u.AddParticle.Spin = RAND_DOUBLE(em->minRotation, em->maxRotation);
 	GameEventsEnqueue(&gGameEvents, e);

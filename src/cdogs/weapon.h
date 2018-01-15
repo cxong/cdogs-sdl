@@ -152,18 +152,18 @@ const GunDescription *StrGunDescription(const char *s);
 GunDescription *IdGunDescription(const int i);
 int GunDescriptionId(const GunDescription *g);
 GunDescription *IndexGunDescriptionReal(const int i);
-struct vec GunGetMuzzleOffset(
+struct vec2 GunGetMuzzleOffset(
 	const GunDescription *desc, const CharSprites *cs, const direction_e dir);
 void WeaponUpdate(Weapon *w, const int ticks);
 bool WeaponIsLocked(const Weapon *w);
 void WeaponSetState(Weapon *w, const gunstate_e state);
 void GunFire(
-	const GunDescription *g, const struct vec pos, const int z,
+	const GunDescription *g, const struct vec2 pos, const int z,
 	const double radians,
 	const int flags, const int playerUID, const int uid,
 	const bool playSound, const bool isGun);
 void GunAddBrass(
-	const GunDescription *g, const direction_e d, const struct vec pos);
+	const GunDescription *g, const direction_e d, const struct vec2 pos);
 
 
 float GunGetRange(const GunDescription *g);

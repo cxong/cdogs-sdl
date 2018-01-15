@@ -116,16 +116,16 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 
 static void DisplayEquippedWeapons(
 	const menu_t *menu, GraphicsDevice *g,
-	const Vec2i pos, const Vec2i size, const void *data)
+	const struct vec2i pos, const struct vec2i size, const void *data)
 {
 	UNUSED(g);
 	const WeaponMenuData *d = data;
-	Vec2i weaponsPos;
-	Vec2i maxTextSize = FontStrSize("LongestWeaponName");
+	struct vec2i weaponsPos;
+	struct vec2i maxTextSize = FontStrSize("LongestWeaponName");
 	UNUSED(menu);
-	Vec2i dPos = pos;
+	struct vec2i dPos = pos;
 	dPos.x -= size.x;	// move to left half of screen
-	weaponsPos = Vec2iNew(
+	weaponsPos = svec2i(
 		dPos.x + size.x * 3 / 4 - maxTextSize.x / 2,
 		CENTER_Y(dPos, size, 0) + 14);
 	const PlayerData *p = PlayerDataGetByUID(d->display.PlayerUID);
@@ -139,19 +139,19 @@ static void DisplayEquippedWeapons(
 		{
 			FontStr(
 				p->weapons[i]->name,
-				Vec2iAdd(weaponsPos, Vec2iNew(0, i * FontH())));
+				svec2i_add(weaponsPos, svec2i(0, i * FontH())));
 		}
 	}
 }
 
 static void AddGunMenuItems(
-	MenuSystem *ms, const CArray *weapons, const Vec2i menuSize,
+	MenuSystem *ms, const CArray *weapons, const struct vec2i menuSize,
 	const bool isGrenade);
 static void DisplayGunIcon(
-	const menu_t *menu, GraphicsDevice *g, const Vec2i pos, const Vec2i size,
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos, const struct vec2i size,
 	const void *data);
 static void DisplayDescriptionGunIcon(
-	const menu_t *menu, GraphicsDevice *g, const Vec2i pos, const Vec2i size,
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos, const struct vec2i size,
 	const void *data);
 void WeaponMenuCreate(
 	WeaponMenu *menu,
@@ -160,7 +160,7 @@ void WeaponMenuCreate(
 {
 	MenuSystem *ms = &menu->ms;
 	WeaponMenuData *data = &menu->data;
-	Vec2i pos, size;
+	struct vec2i pos, size;
 	int w = graphics->cachedConfig.Res.x;
 	int h = graphics->cachedConfig.Res.y;
 
@@ -173,24 +173,24 @@ void WeaponMenuCreate(
 	{
 	case 1:
 		// Single menu, entire screen
-		pos = Vec2iNew(w / 2, 0);
-		size = Vec2iNew(w / 2, h);
+		pos = svec2i(w / 2, 0);
+		size = svec2i(w / 2, h);
 		break;
 	case 2:
 		// Two menus, side by side
-		pos = Vec2iNew(player * w / 2 + w / 4, 0);
-		size = Vec2iNew(w / 4, h);
+		pos = svec2i(player * w / 2 + w / 4, 0);
+		size = svec2i(w / 4, h);
 		break;
 	case 3:
 	case 4:
 		// Four corners
-		pos = Vec2iNew((player & 1) * w / 2 + w / 4, (player / 2) * h / 2);
-		size = Vec2iNew(w / 4, h / 2);
+		pos = svec2i((player & 1) * w / 2 + w / 4, (player / 2) * h / 2);
+		size = svec2i(w / 4, h / 2);
 		break;
 	default:
 		CASSERT(false, "not implemented");
-		pos = Vec2iNew(w / 2, 0);
-		size = Vec2iNew(w / 2, h);
+		pos = svec2i(w / 2, 0);
+		size = svec2i(w / 2, h);
 		break;
 	}
 	MenuSystemInit(ms, handlers, graphics, pos, size);
@@ -238,7 +238,7 @@ void WeaponMenuCreate(
 	}
 }
 static void AddGunMenuItems(
-	MenuSystem *ms, const CArray *weapons, const Vec2i menuSize,
+	MenuSystem *ms, const CArray *weapons, const struct vec2i menuSize,
 	const bool isGrenade)
 {
 	CA_FOREACH(const GunDescription *, g, *weapons)
@@ -267,7 +267,7 @@ static void AddGunMenuItems(
 	CA_FOREACH_END()
 }
 static void DisplayGunIcon(
-	const menu_t *menu, GraphicsDevice *g, const Vec2i pos, const Vec2i size,
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos, const struct vec2i size,
 	const void *data)
 {
 	UNUSED(data);
@@ -282,21 +282,21 @@ static void DisplayGunIcon(
 	const int textScroll =
 		-menuItems * FontH() / 2 +
 		(menu->u.normal.index - menu->u.normal.scroll) * FontH();
-	const Vec2i iconPos = Vec2iNew(
+	const struct vec2i iconPos = svec2i(
 		pos.x - gun->Icon->size.x - 4,
 		pos.y + size.y / 2 + textScroll +
 		(FontH() - gun->Icon->size.y) / 2);
 	Blit(g, gun->Icon, iconPos);
 }
 static void DisplayDescriptionGunIcon(
-	const menu_t *menu, GraphicsDevice *g, const Vec2i pos, const Vec2i size,
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos, const struct vec2i size,
 	const void *data)
 {
 	UNUSED(menu);
 	UNUSED(size);
 	const GunDescription *gun = data;
 	// Display the gun just to the left of the description text
-	const Vec2i iconPos = Vec2iNew(
+	const struct vec2i iconPos = svec2i(
 		pos.x - gun->Icon->size.x - 4, pos.y + size.y / 2);
 	Blit(g, gun->Icon, iconPos);
 }

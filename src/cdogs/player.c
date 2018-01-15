@@ -344,19 +344,19 @@ bool IsPlayerScreen(const PlayerData *p)
 	return p->IsLocal && humanOrScreen && IsPlayerAliveOrDying(p);
 }
 
-struct vec PlayersGetMidpoint(void)
+struct vec2 PlayersGetMidpoint(void)
 {
 	// for all surviving players, find bounding rectangle, and get center
-	struct vec min, max;
+	struct vec2 min, max;
 	PlayersGetBoundingRectangle(&min, &max);
-	return vector2_scale(vector2_add(min, max), 0.5f);
+	return svec2_scale(svec2_add(min, max), 0.5f);
 }
 
-void PlayersGetBoundingRectangle(struct vec *min, struct vec *max)
+void PlayersGetBoundingRectangle(struct vec2 *min, struct vec2 *max)
 {
 	bool isFirst = true;
-	*min = vector2_zero();
-	*max = vector2_zero();
+	*min = svec2_zero();
+	*max = svec2_zero();
 	const bool humansOnly =
 		GetNumPlayers(PLAYER_ALIVE_OR_DYING, true, false) > 0;
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)

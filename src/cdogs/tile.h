@@ -59,7 +59,7 @@
 
 #define TILE_WIDTH      16
 #define TILE_HEIGHT     12
-#define TILE_SIZE		Vec2iNew(TILE_WIDTH, TILE_HEIGHT)
+#define TILE_SIZE		svec2i(TILE_WIDTH, TILE_HEIGHT)
 
 #define X_TILES			((gGraphicsDevice.cachedConfig.Res.x + TILE_WIDTH - 1) / TILE_WIDTH + 1)
 
@@ -99,7 +99,7 @@ typedef enum
 #define OBJECTIVE_SHIFT         3
 
 
-typedef const Pic *(*TileItemGetPicFunc)(int, Vec2i *);
+typedef const Pic *(*TileItemGetPicFunc)(int, struct vec2i *);
 
 typedef struct
 {
@@ -114,12 +114,12 @@ typedef struct
 		} MuzzleFlash;
 	} u;
 } TileItemDrawFuncData;
-typedef void (*TileItemDrawFunc)(const Vec2i, const TileItemDrawFuncData *);
+typedef void (*TileItemDrawFunc)(const struct vec2i, const TileItemDrawFuncData *);
 typedef struct TileItem
 {
-	struct vec Pos;
-	struct vec Vel;
-	Vec2i size;
+	struct vec2 Pos;
+	struct vec2 Vel;
+	struct vec2i size;
 	TileItemKind kind;
 	int id;	// Id of item (actor, mobobj or obj)
 	int flags;
@@ -128,7 +128,7 @@ typedef struct TileItem
 	TileItemDrawFuncData drawData;
 	CPic CPic;
 	DrawCPicFunc CPicFunc;
-	Vec2i ShadowSize;
+	struct vec2i ShadowSize;
 	int SoundLock;
 } TTileItem;
 #define SOUND_LOCK_TILE_OBJECT 12
@@ -154,7 +154,7 @@ typedef struct
 Tile TileNone(void);
 void TileInit(Tile *t);
 void TileDestroy(Tile *t);
-bool IsTileItemInsideTile(const TTileItem *i, const Vec2i tilePos);
+bool IsTileItemInsideTile(const TTileItem *i, const struct vec2i tilePos);
 bool TileCanSee(Tile *t);
 bool TileCanWalk(const Tile *t);
 bool TileIsNormalFloor(const Tile *t);
@@ -163,7 +163,7 @@ bool TileHasCharacter(Tile *t);
 void TileSetAlternateFloor(Tile *t, NamedPic *p);
 
 void TileItemInit(
-	TTileItem *t, const int id, const TileItemKind kind, const Vec2i size,
+	TTileItem *t, const int id, const TileItemKind kind, const struct vec2i size,
 	const int flags);
 void TileItemUpdate(TTileItem *t, const int ticks);
 

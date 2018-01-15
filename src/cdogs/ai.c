@@ -89,12 +89,12 @@ static bool IsFacingPlayer(TActor *actor, direction_e d)
 
 #define Distance(a,b) CHEBYSHEV_DISTANCE(a->x, a->y, b->x, b->y)
 
-static bool IsCloseToPlayer(const struct vec pos, const float distance)
+static bool IsCloseToPlayer(const struct vec2 pos, const float distance)
 {
 	const TActor *closestPlayer = AIGetClosestPlayer(pos);
 	const float distance2 = distance * distance;
 	return closestPlayer &&
-		vector2_distance_squared_to(pos, closestPlayer->Pos) < distance2;
+		svec2_distance_squared(pos, closestPlayer->Pos) < distance2;
 }
 
 static bool CanSeeAPlayer(const TActor *a)
@@ -113,7 +113,7 @@ static bool CanSeeAPlayer(const TActor *a)
 			continue;
 		}
 		const float distance2 =
-			vector2_distance_squared_to(a->Pos, player->Pos);
+			svec2_distance_squared(a->Pos, player->Pos);
 		const bool isClose = distance2 < SQUARED(16 * 4);
 		const bool isNotTooFar = distance2 < SQUARED(16 * 30);
 		if (isClose ||
@@ -126,7 +126,7 @@ static bool CanSeeAPlayer(const TActor *a)
 }
 
 
-static bool IsPosOK(const TActor *actor, const struct vec pos)
+static bool IsPosOK(const TActor *actor, const struct vec2 pos)
 {
 	if (IsCollisionDiamond(&gMap, pos, actor->tileItem.size))
 	{
@@ -151,36 +151,36 @@ static bool IsDirectionOK(const TActor *a, const int dir)
 {
 	switch (dir) {
 	case DIRECTION_UP:
-		return IsPosOK(a, vector2_add(a->Pos, to_vector2(0, -STEPSIZE)));
+		return IsPosOK(a, svec2_add(a->Pos, svec2(0, -STEPSIZE)));
 	case DIRECTION_UPLEFT:
 		return
-			IsPosOK(a, vector2_add(a->Pos, to_vector2(-STEPSIZE, -STEPSIZE))) ||
-			IsPosOK(a, vector2_add(a->Pos, to_vector2(-STEPSIZE, 0))) ||
-			IsPosOK(a, vector2_add(a->Pos, to_vector2(0, -STEPSIZE)));
+			IsPosOK(a, svec2_add(a->Pos, svec2(-STEPSIZE, -STEPSIZE))) ||
+			IsPosOK(a, svec2_add(a->Pos, svec2(-STEPSIZE, 0))) ||
+			IsPosOK(a, svec2_add(a->Pos, svec2(0, -STEPSIZE)));
 	case DIRECTION_LEFT:
 		return
-			IsPosOK(a, vector2_add(a->Pos, to_vector2(-STEPSIZE, 0)));
+			IsPosOK(a, svec2_add(a->Pos, svec2(-STEPSIZE, 0)));
 	case DIRECTION_DOWNLEFT:
 		return
-			IsPosOK(a, vector2_add(a->Pos, to_vector2(-STEPSIZE, STEPSIZE))) ||
-			IsPosOK(a, vector2_add(a->Pos, to_vector2(-STEPSIZE, 0))) ||
-			IsPosOK(a, vector2_add(a->Pos, to_vector2(0, STEPSIZE)));
+			IsPosOK(a, svec2_add(a->Pos, svec2(-STEPSIZE, STEPSIZE))) ||
+			IsPosOK(a, svec2_add(a->Pos, svec2(-STEPSIZE, 0))) ||
+			IsPosOK(a, svec2_add(a->Pos, svec2(0, STEPSIZE)));
 	case DIRECTION_DOWN:
 		return
-			IsPosOK(a, vector2_add(a->Pos, to_vector2(0, STEPSIZE)));
+			IsPosOK(a, svec2_add(a->Pos, svec2(0, STEPSIZE)));
 	case DIRECTION_DOWNRIGHT:
 		return
-			IsPosOK(a, vector2_add(a->Pos, to_vector2(STEPSIZE, STEPSIZE))) ||
-			IsPosOK(a, vector2_add(a->Pos, to_vector2(STEPSIZE, 0))) ||
-			IsPosOK(a, vector2_add(a->Pos, to_vector2(0, STEPSIZE)));
+			IsPosOK(a, svec2_add(a->Pos, svec2(STEPSIZE, STEPSIZE))) ||
+			IsPosOK(a, svec2_add(a->Pos, svec2(STEPSIZE, 0))) ||
+			IsPosOK(a, svec2_add(a->Pos, svec2(0, STEPSIZE)));
 	case DIRECTION_RIGHT:
 		return
-			IsPosOK(a, vector2_add(a->Pos, to_vector2(STEPSIZE, 0)));
+			IsPosOK(a, svec2_add(a->Pos, svec2(STEPSIZE, 0)));
 	case DIRECTION_UPRIGHT:
 		return
-			IsPosOK(a, vector2_add(a->Pos, to_vector2(STEPSIZE, -STEPSIZE))) ||
-			IsPosOK(a, vector2_add(a->Pos, to_vector2(STEPSIZE, 0))) ||
-			IsPosOK(a, vector2_add(a->Pos, to_vector2(0, -STEPSIZE)));
+			IsPosOK(a, svec2_add(a->Pos, svec2(STEPSIZE, -STEPSIZE))) ||
+			IsPosOK(a, svec2_add(a->Pos, svec2(STEPSIZE, 0))) ||
+			IsPosOK(a, svec2_add(a->Pos, svec2(0, -STEPSIZE)));
 	}
 	return 0;
 }
@@ -421,7 +421,7 @@ static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 		else
 		{
 			// Run towards exit
-			const struct vec exitPos = MapGetExitPos(&gMap);
+			const struct vec2 exitPos = MapGetExitPos(&gMap);
 			cmd = AIGoto(actor, exitPos, false);
 		}
 	}

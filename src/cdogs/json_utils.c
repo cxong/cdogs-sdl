@@ -126,7 +126,7 @@ void LoadFullInt(float *value, json_t *node, const char *name)
 	const int fullValue = atoi(node->text);
 	*value = fullValue / 256.0f;
 }
-void LoadVec2i(Vec2i *value, json_t *node, const char *name)
+void LoadVec2i(struct vec2i *value, json_t *node, const char *name)
 {
 	if (!TryLoadValue(&node, name))
 	{
@@ -137,7 +137,7 @@ void LoadVec2i(Vec2i *value, json_t *node, const char *name)
 	node = node->next;
 	value->y = atoi(node->text);
 }
-void LoadVec2(struct vec *value, json_t *node, const char *name)
+void LoadVec2(struct vec2 *value, json_t *node, const char *name)
 {
 	if (!TryLoadValue(&node, name))
 	{

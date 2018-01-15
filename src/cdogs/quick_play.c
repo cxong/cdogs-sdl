@@ -37,10 +37,10 @@
 // Generate a random partition of an integer `total` into a pair of ints x, y
 // With the restrictions that neither x, y are less than min, and
 // neither x, y are greater than max
-static Vec2i GenerateRandomPairPartitionWithRestrictions(
+static struct vec2i GenerateRandomPairPartitionWithRestrictions(
 	int total, int min, int max)
 {
-	Vec2i v;
+	struct vec2i v;
 	int xLow, xHigh;
 
 	// Check for invalid input
@@ -49,7 +49,7 @@ static Vec2i GenerateRandomPairPartitionWithRestrictions(
 	if ((total + 1) / 2 > max || total < min)
 	{
 		assert(0 && "invalid random pair partition input");
-		return Vec2iNew(total / 2, total - (total / 2));
+		return svec2i(total / 2, total - (total / 2));
 	}
 
 	// Find range of x first
@@ -66,7 +66,7 @@ static Vec2i GenerateRandomPairPartitionWithRestrictions(
 	return v;
 }
 
-static Vec2i GenerateQuickPlayMapSize(QuickPlayQuantity size)
+static struct vec2i GenerateQuickPlayMapSize(QuickPlayQuantity size)
 {
 	const int minMapDim = 16;
 	const int maxMapDim = 64;
@@ -91,7 +91,7 @@ static Vec2i GenerateQuickPlayMapSize(QuickPlayQuantity size)
 			RAND_INT(96, 128 + 1), minMapDim, maxMapDim);
 	default:
 		assert(0 && "invalid quick play map size config");
-		return Vec2iZero();
+		return svec2i_zero();
 	}
 }
 

@@ -86,23 +86,23 @@ typedef struct
 typedef struct
 {
 	const MapObject *M;
-	CArray Positions;	// of Vec2i
+	CArray Positions;	// of struct vec2i
 } MapObjectPositions;
 typedef struct
 {
 	int Index;
-	CArray Positions;	// of Vec2i
+	CArray Positions;	// of struct vec2i
 } CharacterPositions;
 typedef struct
 {
 	int Index;
-	CArray Positions;	// of Vec2i
+	CArray Positions;	// of struct vec2i
 	CArray Indices;		// of int
 } ObjectivePositions;
 typedef struct
 {
 	int Index;
-	CArray Positions;	// of Vec2i
+	CArray Positions;	// of struct vec2i
 } KeyPositions;
 typedef struct
 {
@@ -120,7 +120,7 @@ typedef struct
 	char *Title;
 	char *Description;
 	MapType Type;
-	Vec2i Size;
+	struct vec2i Size;
 
 	// styles
 	char WallStyle[CDOGS_FILENAME_MAX];
@@ -177,11 +177,11 @@ typedef struct
 			CArray Characters;	// of CharacterPositions
 			CArray Objectives;	// of ObjectivePositions
 			CArray Keys;		// of KeyPositions
-			Vec2i Start;
+			struct vec2i Start;
 			struct
 			{
-				Vec2i Start;
-				Vec2i End;
+				struct vec2i Start;
+				struct vec2i End;
 			} Exit;
 		} Static;
 		// Cave

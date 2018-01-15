@@ -42,7 +42,7 @@ color_t hiliteColor = { 96, 96, 96, 255 };
 #define TOOLTIP_PADDING 4
 
 
-UIObject *UIObjectCreate(UIType type, int id, Vec2i pos, Vec2i size)
+UIObject *UIObjectCreate(UIType type, int id, struct vec2i pos, struct vec2i size)
 {
 	UIObject *o;
 	CCALLOC(o, sizeof *o);
@@ -80,7 +80,7 @@ void UIButtonSetPic(UIObject *o, Pic *pic)
 {
 	assert(o->Type == UITYPE_BUTTON && "invalid UI type");
 	o->u.Button.Pic = pic;
-	if (Vec2iIsZero(o->Size))
+	if (svec2i_is_zero(o->Size))
 	{
 		o->Size = o->u.Button.Pic->size;
 	}
@@ -154,7 +154,7 @@ void UIObjectAddChild(UIObject *o, UIObject *c)
 	if (o->Type == UITYPE_CONTEXT_MENU)
 	{
 		// Resize context menu based on children
-		o->Size = Vec2iMax(o->Size, Vec2iAdd(c->Pos, c->Size));
+		o->Size = svec2i_max(o->Size, svec2i_add(c->Pos, c->Size));
 	}
 }
 
@@ -350,7 +350,7 @@ EditorResult UIObjectDelChar(UIObject *o)
 	return EDITOR_RESULT_NEW(o->ChangesData, o->ReloadData);
 }
 
-static int IsInside(Vec2i pos, Vec2i rectPos, Vec2i rectSize);
+static int IsInside(struct vec2i pos, struct vec2i rectPos, struct vec2i rectSize);
 
 static const char *LabelGetText(UIObject *o)
 {
@@ -368,10 +368,10 @@ static const char *LabelGetText(UIObject *o)
 typedef struct
 {
 	UIObject *obj;
-	Vec2i pos;
+	struct vec2i pos;
 } UIObjectDrawContext;
 static void UIObjectDrawAndAddChildren(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, Vec2i mouse, CArray *objs)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, struct vec2i mouse, CArray *objs)
 {
 	if (!o)
 	{
@@ -386,7 +386,7 @@ static void UIObjectDrawAndAddChildren(
 		return;
 	}
 	int isHighlighted = UIObjectIsHighlighted(o);
-	Vec2i oPos = Vec2iAdd(pos, o->Pos);
+	struct vec2i oPos = svec2i_add(pos, o->Pos);
 	switch (o->Type)
 	{
 	case UITYPE_LABEL:
@@ -443,17 +443,17 @@ static void UIObjectDrawAndAddChildren(
 			// Draw background
 			DrawRectangle(
 				g,
-				Vec2iAdd(oPos, Vec2iScale(Vec2iUnit(), -TOOLTIP_PADDING)),
-				Vec2iAdd(o->Size, Vec2iScale(Vec2iUnit(), 2 * TOOLTIP_PADDING)),
+				svec2i_add(oPos, svec2i_scale(svec2i_one(), -TOOLTIP_PADDING)),
+				svec2i_add(o->Size, svec2i_scale(svec2i_one(), 2 * TOOLTIP_PADDING)),
 				menuBGColor,
 				0);
 			// Find if mouse over any children, and draw highlight
 			CA_FOREACH(UIObject *, child, o->Children)
-				if (IsInside(mouse, Vec2iAdd(oPos, (*child)->Pos), (*child)->Size))
+				if (IsInside(mouse, svec2i_add(oPos, (*child)->Pos), (*child)->Size))
 				{
 					DrawRectangle(
 						g,
-						Vec2iAdd(oPos, (*child)->Pos),
+						svec2i_add(oPos, (*child)->Pos),
 						(*child)->Size,
 						hiliteColor,
 						0);
@@ -485,7 +485,7 @@ static void UIObjectDrawAndAddChildren(
 	}
 }
 void UIObjectDraw(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, Vec2i mouse, CArray *drawObjs)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, struct vec2i mouse, CArray *drawObjs)
 {
 	// Draw this UIObject and its children in BFS order
 	// Maintain a queue of UIObjects to draw
@@ -514,7 +514,7 @@ void UIObjectDraw(
 	}
 }
 
-static int IsInside(Vec2i pos, Vec2i rectPos, Vec2i rectSize)
+static int IsInside(struct vec2i pos, struct vec2i rectPos, struct vec2i rectSize)
 {
 	return
 		pos.x >= rectPos.x &&
@@ -523,8 +523,8 @@ static int IsInside(Vec2i pos, Vec2i rectPos, Vec2i rectSize)
 		pos.y < rectPos.y + rectSize.y;
 }
 
-bool UITryGetObjectImpl(UIObject *o, const Vec2i pos, UIObject **out);
-bool UITryGetObject(UIObject *o, Vec2i pos, UIObject **out)
+bool UITryGetObjectImpl(UIObject *o, const struct vec2i pos, UIObject **out);
+bool UITryGetObject(UIObject *o, struct vec2i pos, UIObject **out)
 {
 	if (o == NULL)
 	{
@@ -535,12 +535,12 @@ bool UITryGetObject(UIObject *o, Vec2i pos, UIObject **out)
 	const UIObject *o2 = o->Parent;
 	while (o2 != NULL)
 	{
-		pos = Vec2iMinus(pos, o2->Pos);
+		pos = svec2i_subtract(pos, o2->Pos);
 		o2 = o2->Parent;
 	}
 	return UITryGetObjectImpl(o, pos, out);
 }
-bool UITryGetObjectImpl(UIObject *o, const Vec2i pos, UIObject **out)
+bool UITryGetObjectImpl(UIObject *o, const struct vec2i pos, UIObject **out)
 {
 	if (!o->IsVisible)
 	{
@@ -551,7 +551,7 @@ bool UITryGetObjectImpl(UIObject *o, const Vec2i pos, UIObject **out)
 		if ((!((*obj)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
 			isHighlighted) &&
 			(*obj)->IsVisible &&
-			UITryGetObjectImpl(*obj, Vec2iMinus(pos, o->Pos), out))
+			UITryGetObjectImpl(*obj, svec2i_subtract(pos, o->Pos), out))
 		{
 			return true;
 		}
@@ -564,14 +564,14 @@ bool UITryGetObjectImpl(UIObject *o, const Vec2i pos, UIObject **out)
 	return false;
 }
 
-void UITooltipDraw(GraphicsDevice *device, Vec2i pos, const char *s)
+void UITooltipDraw(GraphicsDevice *device, struct vec2i pos, const char *s)
 {
-	Vec2i bgSize = FontStrSize(s);
-	pos = Vec2iAdd(pos, Vec2iNew(10, 10));	// add offset
+	struct vec2i bgSize = FontStrSize(s);
+	pos = svec2i_add(pos, svec2i(10, 10));	// add offset
 	DrawRectangle(
 		device,
-		Vec2iAdd(pos, Vec2iScale(Vec2iUnit(), -TOOLTIP_PADDING)),
-		Vec2iAdd(bgSize, Vec2iScale(Vec2iUnit(), 2 * TOOLTIP_PADDING)),
+		svec2i_add(pos, svec2i_scale(svec2i_one(), -TOOLTIP_PADDING)),
+		svec2i_add(bgSize, svec2i_scale(svec2i_one(), 2 * TOOLTIP_PADDING)),
 		bgColor,
 		0);
 	FontStr(s, pos);

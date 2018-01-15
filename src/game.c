@@ -98,16 +98,16 @@ static void PlayerSpecialCommands(TActor *actor, const int cmd)
 
 
 // TODO: reimplement in camera
-Vec2i GetPlayerCenter(
+struct vec2i GetPlayerCenter(
 	GraphicsDevice *device, const Camera *camera,
 	const PlayerData *pData, const int playerIdx)
 {
 	if (pData->ActorUID < 0)
 	{
 		// Player is dead
-		return Vec2iZero();
+		return svec2i_zero();
 	}
-	Vec2i center = Vec2iZero();
+	struct vec2i center = svec2i_zero();
 	int w = device->cachedConfig.Res.x;
 	int h = device->cachedConfig.Res.y;
 
@@ -115,13 +115,13 @@ Vec2i GetPlayerCenter(
 		GetNumPlayers(PLAYER_ANY, false , true) == 1 ||
 		CameraIsSingleScreen())
 	{
-		const struct vec pCenter = camera->lastPosition;
-		const Vec2i screenCenter =
-			Vec2iNew(w / 2, device->cachedConfig.Res.y / 2);
+		const struct vec2 pCenter = camera->lastPosition;
+		const struct vec2i screenCenter =
+			svec2i(w / 2, device->cachedConfig.Res.y / 2);
 		const TActor *actor = ActorGetByUID(pData->ActorUID);
-		const struct vec p = actor->tileItem.Pos;
-		center = Vec2iAdd(
-			Vec2ToVec2i(vector2_subtract(p, pCenter)), screenCenter);
+		const struct vec2 p = actor->tileItem.Pos;
+		center = svec2i_add(
+			svec2i_assign_vec2(svec2_subtract(p, pCenter)), screenCenter);
 	}
 	else
 	{
@@ -195,7 +195,7 @@ static void RunGameOnEnter(GameLoopData *data)
 
 	// Clear the background
 	DrawRectangle(
-		&gGraphicsDevice, Vec2iZero(), gGraphicsDevice.cachedConfig.Res,
+		&gGraphicsDevice, svec2i_zero(), gGraphicsDevice.cachedConfig.Res,
 		colorBlack, 0);
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.bkg);
 
@@ -232,7 +232,7 @@ static void RunGameOnEnter(GameLoopData *data)
 
 		// Note: place players first,
 		// as bad guys are placed away from players
-		struct vec firstPos = vector2_zero();
+		struct vec2 firstPos = svec2_zero();
 		CA_FOREACH(const PlayerData, p, gPlayerDatas)
 			if (!p->Ready) continue;
 			firstPos = PlacePlayer(&gMap, p, firstPos, true);
@@ -250,7 +250,7 @@ static void RunGameOnEnter(GameLoopData *data)
 	{
 		LOSSetAllVisible(&rData->map->LOS);
 		rData->Camera.lastPosition =
-			Vec2CenterOfTile(Vec2iScaleDiv(rData->map->Size, 2));
+			Vec2CenterOfTile(svec2i_scale_divide(rData->map->Size, 2));
 		rData->Camera.FollowNextPlayer = true;
 	}
 	HealthSpawnerInit(&rData->healthSpawner, rData->map);
@@ -553,8 +553,8 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 	{
 		const int w = gGraphicsDevice.cachedConfig.Res.x;
 		const int h = gGraphicsDevice.cachedConfig.Res.y;
-		const Vec2i screen = Vec2iAdd(
-			Vec2ToVec2i(PlayersGetMidpoint()), Vec2iNew(-w / 2, -h / 2));
+		const struct vec2i screen = svec2i_add(
+			svec2i_assign_vec2(PlayersGetMidpoint()), svec2i(-w / 2, -h / 2));
 		CA_FOREACH(const PlayerData, pd, gPlayerDatas)
 			if (!pd->IsLocal || !IsPlayerAlive(pd))
 			{
@@ -562,7 +562,7 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 			}
 			const TActor *p = ActorGetByUID(pd->ActorUID);
 			const int pad = CAMERA_SPLIT_PADDING;
-			struct vec vel = vector2_zero();
+			struct vec2 vel = svec2_zero();
 			if (screen.x + pad > p->tileItem.Pos.x && p->tileItem.Vel.x < 1)
 			{
 				vel.x = screen.x + pad - p->tileItem.Pos.x;
@@ -581,12 +581,12 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 			{
 				vel.y = screen.y + h - pad - p->tileItem.Pos.y;
 			}
-			if (!vector2_is_zero(vel))
+			if (!svec2_is_zero(vel))
 			{
 				GameEvent ei = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
 				ei.u.ActorImpulse.UID = p->uid;
-				ei.u.ActorImpulse.Vel = Vec2ToNet(vector2_scale(vel, 0.25f));
-				ei.u.ActorImpulse.Pos = Vec2ToNet(vector2_zero());
+				ei.u.ActorImpulse.Vel = Vec2ToNet(svec2_scale(vel, 0.25f));
+				ei.u.ActorImpulse.Pos = Vec2ToNet(svec2_zero());
 				GameEventsEnqueue(&gGameEvents, ei);
 				LOG(LM_MAIN, LL_TRACE,
 					"playerUID(%d) pos(%f, %f) screen(%d, %d) impulse(%f, %f)",

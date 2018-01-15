@@ -99,7 +99,7 @@ static GameLoopData *ScreenWait(
 	CMALLOC(swData, sizeof *swData);
 	MenuSystemInit(
 		&swData->ms, &gEventHandlers, &gGraphicsDevice,
-		Vec2iZero(),
+		svec2i_zero(),
 		gGraphicsDevice.cachedConfig.Res);
 	swData->ms.allowAborts = true;
 	swData->ms.root = swData->ms.current =
@@ -184,7 +184,7 @@ GameLoopData *NumPlayersSelection(
 	CMALLOC(ms, sizeof *ms);
 	MenuSystemInit(
 		ms, handlers, graphics,
-		Vec2iZero(),
+		svec2i_zero(),
 		graphics->cachedConfig.Res);
 	ms->allowAborts = true;
 	ms->root = ms->current = MenuCreateNormal(
@@ -481,30 +481,30 @@ static void PlayerSelectionDraw(GameLoopData *data)
 		}
 		else
 		{
-			Vec2i center = Vec2iZero();
+			struct vec2i center = svec2i_zero();
 			const char *prompt = "Press Fire to join...";
-			const Vec2i offset = Vec2iScaleDiv(FontStrSize(prompt), -2);
+			const struct vec2i offset = svec2i_scale_divide(FontStrSize(prompt), -2);
 			switch (GetNumPlayers(false, false, true))
 			{
 			case 1:
 				// Center of screen
-				center = Vec2iNew(w / 2, h / 2);
+				center = svec2i(w / 2, h / 2);
 				break;
 			case 2:
 				// Side by side
-				center = Vec2iNew(idx * w / 2 + w / 4, h / 2);
+				center = svec2i(idx * w / 2 + w / 4, h / 2);
 				break;
 			case 3:
 			case 4:
 				// Four corners
-				center = Vec2iNew(
+				center = svec2i(
 					(idx & 1) * w / 2 + w / 4, (idx / 2) * h / 2 + h / 4);
 				break;
 			default:
 				CASSERT(false, "not implemented");
 				break;
 			}
-			FontStr(prompt, Vec2iAdd(center, offset));
+			FontStr(prompt, svec2i_add(center, offset));
 		}
 	}
 
@@ -539,7 +539,7 @@ GameLoopData *GameOptions(const GameMode gm)
 		CArrayPushBack(&data->allowed, &f);
 	}
 	MenuSystemInit(
-		ms, &gEventHandlers, &gGraphicsDevice, Vec2iZero(), Vec2iNew(w, h));
+		ms, &gEventHandlers, &gGraphicsDevice, svec2i_zero(), svec2i(w, h));
 	ms->align = MENU_ALIGN_CENTER;
 	ms->allowAborts = true;
 	ms->root = MenuCreateNormal(

@@ -65,7 +65,7 @@ static unsigned int sMobObjUIDs = 0;
 // Draw functions
 
 static void MapObjectDraw(
-	GraphicsDevice *g, const int id, const Vec2i pos)
+	GraphicsDevice *g, const int id, const struct vec2i pos)
 {
 	TObject *obj = CArrayGet(&gObjs, id);
 	CASSERT(obj->isInUse, "Cannot draw non-existent map object");
@@ -272,7 +272,7 @@ bool HasHitSound(
 }
 
 static void DoDamageCharacter(
-	const struct vec hitVector,
+	const struct vec2 hitVector,
 	const int power,
 	const float mass,
 	const int flags,
@@ -281,7 +281,7 @@ static void DoDamageCharacter(
 	TActor *actor,
 	const special_damage_e special);
 void Damage(
-	const struct vec hitVector,
+	const struct vec2 hitVector,
 	const int power,
 	const float mass,
 	const int flags,
@@ -315,7 +315,7 @@ void Damage(
 	}
 }
 static void DoDamageCharacter(
-	const struct vec hitVector,
+	const struct vec2 hitVector,
 	const int power,
 	const float mass,
 	const int flags,
@@ -330,8 +330,8 @@ static void DoDamageCharacter(
 
 	// Shot pushback, based on mass and velocity
 	const float impulseFactor = mass * SHOT_IMPULSE_FACTOR;
-	const struct vec vel = vector2_scale(hitVector, impulseFactor);
-	if (!vector2_is_zero(vel))
+	const struct vec2 vel = svec2_scale(hitVector, impulseFactor);
+	if (!svec2_is_zero(vel))
 	{
 		GameEvent ei = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
 		ei.u.ActorImpulse.UID = actor->uid;

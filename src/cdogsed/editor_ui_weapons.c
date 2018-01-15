@@ -99,7 +99,7 @@ typedef struct
 	const GunDescription *Gun;
 } MissionGunData;
 static void MissionDrawWeaponStatus(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
 {
 	UNUSED(g);
 	const MissionGunData *data = vData;
@@ -107,7 +107,7 @@ static void MissionDrawWeaponStatus(
 	if (currentMission == NULL) return;
 	const bool hasWeapon = HasWeapon(currentMission, data->Gun);
 	DisplayFlag(
-		Vec2iAdd(pos, o->Pos),
+		svec2i_add(pos, o->Pos),
 		data->Gun->name,
 		hasWeapon,
 		UIObjectIsHighlighted(o));
@@ -152,7 +152,7 @@ static bool HasWeapon(const Mission *m, const GunDescription *g)
 #define COLUMN_WIDTH 90
 
 static void CreateWeaponSpecialToggleObj(
-	CampaignOptions *co, UIObject *c, const Vec2i pos,
+	CampaignOptions *co, UIObject *c, const struct vec2i pos,
 	const SelectMode mode, char *label);
 static void CreateWeaponToggleObjs(
 	CampaignOptions *co, UIObject *c, const UIObject *o,
@@ -161,22 +161,22 @@ UIObject *CreateWeaponObjs(CampaignOptions *co)
 {
 	const int th = FontH();
 	UIObject *c = UIObjectCreate(
-		UITYPE_CONTEXT_MENU, 0, Vec2iZero(), Vec2iZero());
+		UITYPE_CONTEXT_MENU, 0, svec2i_zero(), svec2i_zero());
 	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 
 	// Add special toggle controls
-	CreateWeaponSpecialToggleObj(co, c, Vec2iZero(), SELECT_ALL, "Select All");
+	CreateWeaponSpecialToggleObj(co, c, svec2i_zero(), SELECT_ALL, "Select All");
 	CreateWeaponSpecialToggleObj(
-		co, c, Vec2iNew(HEADER_COLUMN_WIDTH, 0), SELECT_NONE, "Select None");
+		co, c, svec2i(HEADER_COLUMN_WIDTH, 0), SELECT_NONE, "Select None");
 	CreateWeaponSpecialToggleObj(
-		co, c, Vec2iNew(HEADER_COLUMN_WIDTH * 2, 0), SELECT_INVERSE, "Invert");
+		co, c, svec2i(HEADER_COLUMN_WIDTH * 2, 0), SELECT_INVERSE, "Invert");
 
 	// Create a dummy label that can be clicked to close the context menu
-	CreateCloseLabel(c, Vec2iNew(HEADER_COLUMN_WIDTH * 3, 0));
+	CreateCloseLabel(c, svec2i(HEADER_COLUMN_WIDTH * 3, 0));
 
 	// Add a toggle entry for each gun
 	UIObject *o = UIObjectCreate(
-		UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(80, th));
+		UITYPE_CUSTOM, 0, svec2i_zero(), svec2i(80, th));
 	o->u.CustomDrawFunc = MissionDrawWeaponStatus;
 	o->ChangeFunc = MissionChangeWeapon;
 	o->ChangeDisablesContext = false;
@@ -191,12 +191,12 @@ UIObject *CreateWeaponObjs(CampaignOptions *co)
 	return c;
 }
 static void CreateWeaponSpecialToggleObj(
-	CampaignOptions *co, UIObject *c, const Vec2i pos,
+	CampaignOptions *co, UIObject *c, const struct vec2i pos,
 	const SelectMode mode, char *label)
 {
 	const int th = FontH();
 	UIObject *o = UIObjectCreate(
-		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(HEADER_COLUMN_WIDTH - 10, th));
+		UITYPE_LABEL, 0, svec2i_zero(), svec2i(HEADER_COLUMN_WIDTH - 10, th));
 	o->Label = label;
 	o->ChangeFunc = MissionSelectWeapons;
 	o->ChangeDisablesContext = false;
@@ -223,7 +223,7 @@ static void CreateWeaponToggleObjs(
 		o2->IsDynamicData = true;
 		((MissionGunData *)o2->Data)->co = co;
 		((MissionGunData *)o2->Data)->Gun = g;
-		o2->Pos = Vec2iNew(
+		o2->Pos = svec2i(
 			*idx / rows * COLUMN_WIDTH, (*idx % rows) * th + th * 2);
 		UIObjectAddChild(c, o2);
 		(*idx)++;

@@ -65,7 +65,7 @@
 #define RESTART_ALL -1
 typedef struct
 {
-	Vec2i Res;
+	struct vec2i Res;
 	bool Fullscreen;
 	int ScaleFactor;
 	ScaleMode ScaleMode;
@@ -96,7 +96,7 @@ typedef struct
 	WindowContext secondWindow;
 	SDL_PixelFormat *Format;
 	GraphicsConfig cachedConfig;
-	CArray validModes;	// of Vec2i, w x h
+	CArray validModes;	// of struct vec2i, w x h
 	int modeIndex;
 	BlitClipping clipping;
 	Uint32 *buf;
@@ -114,7 +114,7 @@ int GraphicsGetScreenSize(GraphicsConfig *config);
 int GraphicsGetMemSize(GraphicsConfig *config);
 void GraphicsConfigSet(
 	GraphicsConfig *c,
-	const Vec2i res, const bool fullscreen,
+	const struct vec2i res, const bool fullscreen,
 	const int scaleFactor, const ScaleMode scaleMode, const int brightness,
 	const bool secondWindow);
 void GraphicsConfigSetFromConfig(GraphicsConfig *gc, Config *c);

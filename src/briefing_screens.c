@@ -41,7 +41,7 @@
 #include "screens_end.h"
 
 
-static void DrawObjectiveInfo(const Objective *o, const Vec2i pos);
+static void DrawObjectiveInfo(const Objective *o, const struct vec2i pos);
 
 typedef struct
 {
@@ -118,7 +118,7 @@ static void CampaignIntroDraw(GameLoopData *data)
 	opts.HAlign = ALIGN_CENTER;
 	opts.Area = gGraphicsDevice.cachedConfig.Res;
 	opts.Pad.y = y - 25;
-	FontStrOpt(buf, Vec2iZero(), opts);
+	FontStrOpt(buf, svec2i_zero(), opts);
 	CFREE(buf);
 
 	// Display campaign description
@@ -128,7 +128,7 @@ static void CampaignIntroDraw(GameLoopData *data)
 		CMALLOC(buf, strlen(sData->c->Description) * 2);
 		// Pad about 1/6th of the screen width total (1/12th left and right)
 		FontSplitLines(sData->c->Description, buf, w * 5 / 6);
-		FontStr(buf, Vec2iNew(w / 12, y));
+		FontStr(buf, svec2i(w / 12, y));
 		CFREE(buf);
 	}
 
@@ -145,9 +145,9 @@ typedef struct
 	int TypewriterCount;
 	char *Description;
 	char *TypewriterBuf;
-	Vec2i DescriptionPos;
-	Vec2i ObjectiveDescPos;
-	Vec2i ObjectiveInfoPos;
+	struct vec2i DescriptionPos;
+	struct vec2i ObjectiveDescPos;
+	struct vec2i ObjectiveInfoPos;
 	int ObjectiveHeight;
 	const struct MissionOptions *MissionOptions;
 	EventWaitResult waitResult;
@@ -201,13 +201,13 @@ GameLoopData *ScreenMissionBriefing(const struct MissionOptions *m)
 		// Pad about 1/6th of the screen width total (1/12th left and right)
 		FontSplitLines(
 			m->missionData->Description, mData->Description, w * 5 / 6);
-		mData->DescriptionPos = Vec2iNew(w / 12, y);
+		mData->DescriptionPos = svec2i(w / 12, y);
 
 		// Objectives
 		mData->ObjectiveDescPos =
-			Vec2iNew(w / 6, y + FontStrH(mData->Description) + h / 10);
+			svec2i(w / 6, y + FontStrH(mData->Description) + h / 10);
 		mData->ObjectiveInfoPos =
-			Vec2iNew(w - (w / 6), mData->ObjectiveDescPos.y + FontH());
+			svec2i(w - (w / 6), mData->ObjectiveDescPos.y + FontH());
 		mData->ObjectiveHeight = h / 12;
 	}
 	mData->MissionOptions = m;
@@ -315,9 +315,9 @@ static void MissionBriefingDraw(GameLoopData *data)
 	BlitClearBuf(&gGraphicsDevice);
 
 	// Mission title
-	FontStrOpt(mData->Title, Vec2iZero(), mData->TitleOpts);
+	FontStrOpt(mData->Title, svec2i_zero(), mData->TitleOpts);
 	// Display password
-	FontStrOpt(mData->Password, Vec2iZero(), mData->PasswordOpts);
+	FontStrOpt(mData->Password, svec2i_zero(), mData->PasswordOpts);
 	// Display description with typewriter effect
 	FontStr(mData->TypewriterBuf, mData->DescriptionPos);
 	// Display objectives
@@ -328,12 +328,12 @@ static void MissionBriefingDraw(GameLoopData *data)
 		{
 			continue;
 		}
-		Vec2i offset = Vec2iNew(0, _ca_index * mData->ObjectiveHeight);
-		FontStr(o->Description, Vec2iAdd(mData->ObjectiveDescPos, offset));
+		struct vec2i offset = svec2i(0, _ca_index * mData->ObjectiveHeight);
+		FontStr(o->Description, svec2i_add(mData->ObjectiveDescPos, offset));
 		// Draw the icons slightly offset so that tall icons don't overlap each
 		// other
 		offset.x = -16 * (_ca_index & 1);
-		DrawObjectiveInfo(o, Vec2iAdd(mData->ObjectiveInfoPos, offset));
+		DrawObjectiveInfo(o, svec2i_add(mData->ObjectiveInfoPos, offset));
 	CA_FOREACH_END()
 
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
@@ -354,7 +354,7 @@ static GameLoopResult MissionSummaryUpdate(GameLoopData *data, LoopRunner *l);
 static void MissionSummaryDraw(GameLoopData *data);
 static void MissionSummaryMenuDraw(
 	const menu_t *menu, GraphicsDevice *g,
-	const Vec2i p, const Vec2i size, const void *data);
+	const struct vec2i p, const struct vec2i size, const void *data);
 GameLoopData *ScreenMissionSummary(
 	const CampaignOptions *c, struct MissionOptions *m, const bool completed)
 {
@@ -364,8 +364,8 @@ GameLoopData *ScreenMissionSummary(
 	const int h = FontH() * 10;
 	MenuSystemInit(
 		&mData->ms, &gEventHandlers, &gGraphicsDevice,
-		Vec2iNew(0, gGraphicsDevice.cachedConfig.Res.y - h),
-		Vec2iNew(gGraphicsDevice.cachedConfig.Res.x, h));
+		svec2i(0, gGraphicsDevice.cachedConfig.Res.y - h),
+		svec2i(gGraphicsDevice.cachedConfig.Res.x, h));
 	mData->ms.current = mData->ms.root =
 		MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
 	// Use return code 0 for whether to continue the game
@@ -560,10 +560,10 @@ static int GetFriendlyBonus(const PlayerData *p)
 	return (p->Stats.Kills == 0 && p->Stats.Friendlies == 0) ? 500 : 0;
 }
 static void DrawPlayerSummary(
-	const Vec2i pos, const Vec2i size, PlayerData *data);
+	const struct vec2i pos, const struct vec2i size, PlayerData *data);
 static void MissionSummaryMenuDraw(
 	const menu_t *menu, GraphicsDevice *g,
-	const Vec2i p, const Vec2i size, const void *data)
+	const struct vec2i p, const struct vec2i size, const void *data)
 {
 	UNUSED(menu);
 	UNUSED(p);
@@ -583,11 +583,11 @@ static void MissionSummaryMenuDraw(
 		opts.VAlign = ALIGN_END;
 		opts.Area = g->cachedConfig.Res;
 		opts.Pad.y = opts.Area.y / 12;
-		FontStrOpt(s, Vec2iZero(), opts);
+		FontStrOpt(s, svec2i_zero(), opts);
 	}
 
 	// Display objectives and bonuses
-	Vec2i pos = Vec2iNew(w / 6, h / 2 + h / 10);
+	struct vec2i pos = svec2i(w / 6, h / 2 + h / 10);
 	int idx = 1;
 	CA_FOREACH(const Objective, o, m->missionData->Objectives)
 		// Do not mention optional objectives with none completed
@@ -597,7 +597,7 @@ static void MissionSummaryMenuDraw(
 		}
 
 		// Objective icon
-		DrawObjectiveInfo(o, Vec2iAdd(pos, Vec2iNew(-26, FontH())));
+		DrawObjectiveInfo(o, svec2i_add(pos, svec2i(-26, FontH())));
 
 		// Objective completion text
 		char s[100];
@@ -611,7 +611,7 @@ static void MissionSummaryMenuDraw(
 			// Show optional objectives in purple
 			opts.Mask = colorPurple;
 		}
-		FontStrOpt(s, Vec2iZero(), opts);
+		FontStrOpt(s, svec2i_zero(), opts);
 
 		// Objective status text
 		opts = FontOptsNew();
@@ -621,22 +621,22 @@ static void MissionSummaryMenuDraw(
 		if (!ObjectiveIsComplete(o))
 		{
 			opts.Mask = colorRed;
-			FontStrOpt("Failed", Vec2iZero(), opts);
+			FontStrOpt("Failed", svec2i_zero(), opts);
 		}
 		else if (ObjectiveIsPerfect(o) && AreAnySurvived())
 		{
 			opts.Mask = colorGreen;
 			char buf[16];
 			sprintf(buf, "Perfect: %d", PERFECT_BONUS);
-			FontStrOpt(buf, Vec2iZero(), opts);
+			FontStrOpt(buf, svec2i_zero(), opts);
 		}
 		else if (ObjectiveIsRequired(o))
 		{
-			FontStrOpt("Done", Vec2iZero(), opts);
+			FontStrOpt("Done", svec2i_zero(), opts);
 		}
 		else
 		{
-			FontStrOpt("Bonus!", Vec2iZero(), opts);
+			FontStrOpt("Bonus!", svec2i_zero(), opts);
 		}
 
 		pos.y += 15;
@@ -669,29 +669,29 @@ static void MissionSummaryMenuDraw(
 		pds[idx] = pd;
 		idx++;
 	CA_FOREACH_END()
-	Vec2i playerSize;
+	struct vec2i playerSize;
 	switch (idx)
 	{
 	case 1:
-		playerSize = Vec2iNew(w, h / 2);
-		DrawPlayerSummary(Vec2iZero(), playerSize, pds[0]);
+		playerSize = svec2i(w, h / 2);
+		DrawPlayerSummary(svec2i_zero(), playerSize, pds[0]);
 		break;
 	case 2:
 		// side by side
-		playerSize = Vec2iNew(w / 2, h / 2);
-		DrawPlayerSummary(Vec2iZero(), playerSize, pds[0]);
-		DrawPlayerSummary(Vec2iNew(w / 2, 0), playerSize, pds[1]);
+		playerSize = svec2i(w / 2, h / 2);
+		DrawPlayerSummary(svec2i_zero(), playerSize, pds[0]);
+		DrawPlayerSummary(svec2i(w / 2, 0), playerSize, pds[1]);
 		break;
 	case 3:	// fallthrough
 	case 4:
 		// 2x2
-		playerSize = Vec2iNew(w / 2, h / 4);
-		DrawPlayerSummary(Vec2iZero(), playerSize, pds[0]);
-		DrawPlayerSummary(Vec2iNew(w / 2, 0), playerSize, pds[1]);
-		DrawPlayerSummary(Vec2iNew(0, h / 4), playerSize, pds[2]);
+		playerSize = svec2i(w / 2, h / 4);
+		DrawPlayerSummary(svec2i_zero(), playerSize, pds[0]);
+		DrawPlayerSummary(svec2i(w / 2, 0), playerSize, pds[1]);
+		DrawPlayerSummary(svec2i(0, h / 4), playerSize, pds[2]);
 		if (idx == 4)
 		{
-			DrawPlayerSummary(Vec2iNew(w / 2, h / 4), playerSize, pds[3]);
+			DrawPlayerSummary(svec2i(w / 2, h / 4), playerSize, pds[3]);
 		}
 		break;
 	default:
@@ -702,16 +702,16 @@ static void MissionSummaryMenuDraw(
 // Display compact player summary, with player on left half and score summaries
 // on right half
 static void DrawPlayerSummary(
-	const Vec2i pos, const Vec2i size, PlayerData *data)
+	const struct vec2i pos, const struct vec2i size, PlayerData *data)
 {
 	char s[50];
 	const int totalTextHeight = FontH() * 7;
 	// display text on right half
-	Vec2i textPos = Vec2iNew(
+	struct vec2i textPos = svec2i(
 		pos.x + size.x / 2, CENTER_Y(pos, size, totalTextHeight));
 
 	DisplayCharacterAndName(
-		Vec2iAdd(pos, Vec2iNew(size.x / 4, size.y / 2)),
+		svec2i_add(pos, svec2i(size.x / 4, size.y / 2)),
 		&data->Char, DIRECTION_DOWN, data->name, colorWhite);
 
 	if (data->survived)
@@ -775,7 +775,7 @@ static void DrawPlayerSummary(
 	}
 }
 
-static void DrawObjectiveInfo(const Objective *o, const Vec2i pos)
+static void DrawObjectiveInfo(const Objective *o, const struct vec2i pos)
 {
 	const CharacterStore *store = &gCampaign.Setting.characters;
 
@@ -799,14 +799,14 @@ static void DrawObjectiveInfo(const Objective *o, const Vec2i pos)
 		{
 			const Pic *p = o->u.Pickup->Pic;
 			Blit(&gGraphicsDevice, p,
-				Vec2iMinus(pos, Vec2iScaleDiv(p->size, 2)));
+				svec2i_subtract(pos, svec2i_scale_divide(p->size, 2)));
 		}
 		break;
 	case OBJECTIVE_DESTROY:
 		{
-			Vec2i picOffset;
+			struct vec2i picOffset;
 			const Pic *p = MapObjectGetPic(o->u.MapObject, &picOffset);
-			Blit(&gGraphicsDevice, p, Vec2iAdd(pos, picOffset));
+			Blit(&gGraphicsDevice, p, svec2i_add(pos, picOffset));
 		}
 		break;
 	case OBJECTIVE_INVESTIGATE:

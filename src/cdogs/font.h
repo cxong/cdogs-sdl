@@ -34,7 +34,7 @@
 
 typedef struct
 {
-	Vec2i Size;
+	struct vec2i Size;
 	int Stride;
 	struct
 	{
@@ -43,7 +43,7 @@ typedef struct
 		int Right;
 		int Bottom;
 	} Padding;
-	Vec2i Gap;
+	struct vec2i Gap;
 	CArray Chars;	// of Pic
 } Font;
 
@@ -57,8 +57,8 @@ typedef struct
 {
 	FontAlign HAlign;
 	FontAlign VAlign;
-	Vec2i Area;
-	Vec2i Pad;
+	struct vec2i Area;
+	struct vec2i Pad;
 	color_t Mask;
 	bool Blend;
 } FontOpts;
@@ -75,20 +75,20 @@ int FontH(void);
 int FontStrW(const char *s);
 int FontSubstrW(const char *s, int len);
 int FontStrH(const char *s);
-Vec2i FontStrSize(const char *s);
+struct vec2i FontStrSize(const char *s);
 int FontStrNumLines(const char *s);
 
 // Returns updated cursor position
-Vec2i FontCh(const char c, const Vec2i pos);
-Vec2i FontChMask(const char c, const Vec2i pos, const color_t mask);
-Vec2i FontStr(const char *s, Vec2i pos);
-Vec2i FontStrMask(const char *s, Vec2i pos, const color_t mask);
-Vec2i FontStrMaskWrap(const char *s, Vec2i pos, color_t mask, const int width);
-void FontStrOpt(const char *s, Vec2i pos, const FontOpts opts);
+struct vec2i FontCh(const char c, const struct vec2i pos);
+struct vec2i FontChMask(const char c, const struct vec2i pos, const color_t mask);
+struct vec2i FontStr(const char *s, struct vec2i pos);
+struct vec2i FontStrMask(const char *s, struct vec2i pos, const color_t mask);
+struct vec2i FontStrMaskWrap(const char *s, struct vec2i pos, color_t mask, const int width);
+void FontStrOpt(const char *s, struct vec2i pos, const FontOpts opts);
 void FontStrCenter(const char *s);
 
 void FontSplitLines(const char *text, char *buf, const int width);
 
-Vec2i Vec2iAligned(
-	const Vec2i v, const Vec2i size,
-	const FontAlign hAlign, const FontAlign vAlign, const Vec2i area);
+struct vec2i Vec2iAligned(
+	const struct vec2i v, const struct vec2i size,
+	const FontAlign hAlign, const FontAlign vAlign, const struct vec2i area);

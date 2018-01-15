@@ -32,7 +32,7 @@ POSSIBILITY OF SUCH DAMAGE.
 typedef struct
 {
 	const ParticleClass *p;
-	struct vec offset;
+	struct vec2 offset;
 	float minSpeed;
 	float maxSpeed;
 	int minDZ;
@@ -42,9 +42,9 @@ typedef struct
 } Emitter;
 
 void EmitterInit(
-	Emitter *em, const ParticleClass *p, const struct vec offset,
+	Emitter *em, const ParticleClass *p, const struct vec2 offset,
 	const float minSpeed, const float maxSpeed,
 	const int minDZ, const int maxDZ,
 	double minRotation, double maxRotation);
 void EmitterStart(
-	Emitter *em, const struct vec pos, const int z, const struct vec vel);
+	Emitter *em, const struct vec2 pos, const int z, const struct vec2 vel);

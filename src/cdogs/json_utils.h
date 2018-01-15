@@ -45,8 +45,8 @@ void LoadInt(int *value, json_t *node, const char *name);
 void LoadDouble(double *value, json_t *node, const char *name);
 void LoadFloat(float *value, json_t *node, const char *name);
 void LoadFullInt(float *value, json_t *node, const char *name);
-void LoadVec2i(Vec2i *value, json_t *node, const char *name);
-void LoadVec2(struct vec *value, json_t *node, const char *name);
+void LoadVec2i(struct vec2i *value, json_t *node, const char *name);
+void LoadVec2(struct vec2 *value, json_t *node, const char *name);
 
 // remember to free
 void LoadStr(char **value, json_t *node, const char *name);

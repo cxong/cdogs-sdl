@@ -53,7 +53,7 @@ static void MissionChangeRoomMin(void *data, int d);
 static const char *MissionGetRoomMaxStr(UIObject *o, void *data);
 static void MissionChangeRoomMax(void *data, int d);
 static void MissionDrawRoomsOverlap(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data);
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data);
 static void MissionChangeRoomsOverlap(void *data, int d);
 static const char *MissionGetRoomWallCountStr(UIObject *o, void *data);
 static void MissionChangeRoomWallCount(void *data, int d);
@@ -64,14 +64,14 @@ static void MissionChangeRoomWallPad(void *data, int d);
 static const char *MissionGetSquareCountStr(UIObject *o, void *data);
 static void MissionChangeSquareCount(void *data, int d);
 static void MissionDrawDoorEnabled(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data);
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data);
 static void MissionChangeDoorEnabled(void *data, int d);
-UIObject *CreateCaveMapObjs(Vec2i pos, CampaignOptions *co)
+UIObject *CreateCaveMapObjs(struct vec2i pos, CampaignOptions *co)
 {
 	const int th = FontH();
-	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, svec2i_zero(), svec2i_zero());
 	UIObject *o = UIObjectCreate(
-		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(50, th));
+		UITYPE_LABEL, 0, svec2i_zero(), svec2i(50, th));
 	const int x = pos.x;
 	o->ChangesData = true;
 	// Check whether the map type matches, and set visibility
@@ -144,7 +144,7 @@ UIObject *CreateCaveMapObjs(Vec2i pos, CampaignOptions *co)
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;
-	o2 = UIObjectCreate(UITYPE_CUSTOM, 0, pos, Vec2iNew(60, th));
+	o2 = UIObjectCreate(UITYPE_CUSTOM, 0, pos, svec2i(60, th));
 	o2->ChangesData = true;
 	o2->u.CustomDrawFunc = MissionDrawRoomsOverlap;
 	o2->Data = co;
@@ -333,7 +333,7 @@ static void MissionChangeRoomMax(void *data, int d)
 		CampaignGetCurrentMission(co)->u.Cave.Rooms.Max);
 }
 static void MissionDrawRoomsOverlap(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
 {
 	UNUSED(o);
 	UNUSED(g);
@@ -341,7 +341,7 @@ static void MissionDrawRoomsOverlap(
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return;
 	DisplayFlag(
-		Vec2iAdd(pos, o->Pos), "Room overlap",
+		svec2i_add(pos, o->Pos), "Room overlap",
 		CampaignGetCurrentMission(co)->u.Cave.Rooms.Overlap,
 		UIObjectIsHighlighted(o));
 }
@@ -413,14 +413,14 @@ static void MissionChangeSquareCount(void *data, int d)
 		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Squares + d, 0, 100);
 }
 static void MissionDrawDoorEnabled(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
 {
 	UNUSED(o);
 	UNUSED(g);
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return;
 	DisplayFlag(
-		Vec2iAdd(pos, o->Pos), "Doors",
+		svec2i_add(pos, o->Pos), "Doors",
 		CampaignGetCurrentMission(co)->u.Cave.DoorsEnabled,
 		UIObjectIsHighlighted(o));
 }

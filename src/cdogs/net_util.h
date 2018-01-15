@@ -56,10 +56,10 @@ NCampaignDef NMakeCampaignDef(const CampaignOptions *co);
 NMissionComplete NMakeMissionComplete(
 	const struct MissionOptions *mo, const Map *map);
 
-Vec2i Net2Vec2i(const NVec2i v);
-NVec2i Vec2i2Net(const Vec2i v);
-struct vec NetToVec2(const NVec2 v);
-NVec2 Vec2ToNet(const struct vec v);
+struct vec2i Net2Vec2i(const NVec2i v);
+NVec2i Vec2i2Net(const struct vec2i v);
+struct vec2 NetToVec2(const NVec2 v);
+NVec2 Vec2ToNet(const struct vec2 v);
 NColor Color2Net(const color_t c);
 NCharColors CharColors2Net(const CharColors c);
 CharColors Net2CharColors(const NCharColors c);

@@ -313,8 +313,8 @@ static void OnReceive(NetServer *n, ENetEvent event)
 				NetServerSendGameStartMessages(n, peerId);
 
 				// Find a current player to spawn next to
-				struct vec defaultSpawnPosition = vector2_zero();
-				const TActor *closestActor = AIGetClosestPlayer(vector2_zero());
+				struct vec2 defaultSpawnPosition = svec2_zero();
+				const TActor *closestActor = AIGetClosestPlayer(svec2_zero());
 				if (closestActor != NULL)
 				{
 					defaultSpawnPosition = closestActor->Pos;
@@ -463,7 +463,7 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 	// Send all tiles, RLE
 	const Tile *tLast = NULL;
 	NTileSet ts = NTileSet_init_default;
-	Vec2i pos;
+	struct vec2i pos;
 	for (pos.y = 0; pos.y < gMap.Size.y; pos.y++)
 	{
 		for (pos.x = 0; pos.x < gMap.Size.x; pos.x++)

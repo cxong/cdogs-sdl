@@ -45,10 +45,10 @@ void EditorBrushInit(EditorBrush *b)
 	b->IsActive = 0;
 	b->IsPainting = 0;
 	b->BrushSize = 1;
-	b->LastPos = Vec2iNew(-1, -1);
-	b->Pos = Vec2iNew(-1, -1);
+	b->LastPos = svec2i(-1, -1);
+	b->Pos = svec2i(-1, -1);
 	b->GuideImageAlpha = 64;
-	CArrayInit(&b->HighlightedTiles, sizeof(Vec2i));
+	CArrayInit(&b->HighlightedTiles, sizeof(struct vec2i));
 }
 void EditorBrushTerminate(EditorBrush *b)
 {
@@ -56,15 +56,15 @@ void EditorBrushTerminate(EditorBrush *b)
 	SDL_FreeSurface(b->GuideImageSurface);
 }
 
-static void EditorBrushHighlightPoint(void *data, Vec2i p)
+static void EditorBrushHighlightPoint(void *data, struct vec2i p)
 {
 	EditorBrush *b = data;
-	Vec2i v;
+	struct vec2i v;
 	for (v.y = 0; v.y < b->BrushSize; v.y++)
 	{
 		for (v.x = 0; v.x < b->BrushSize; v.x++)
 		{
-			Vec2i pos = Vec2iAdd(p, v);
+			struct vec2i pos = svec2i_add(p, v);
 			CArrayPushBack(&b->HighlightedTiles, &pos);
 		}
 	}
@@ -95,8 +95,8 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 	case BRUSHTYPE_SET_EXIT:
 		if (b->IsPainting)
 		{
-			Vec2i v;
-			Vec2i d = Vec2iNew(
+			struct vec2i v;
+			struct vec2i d = svec2i(
 				b->Pos.x > b->LastPos.x ? 1 : -1,
 				b->Pos.y > b->LastPos.y ? 1 : -1);
 			useSimpleHighlight = 0;
@@ -117,8 +117,8 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 	case BRUSHTYPE_BOX_FILLED:
 		if (b->IsPainting)
 		{
-			Vec2i v;
-			Vec2i d = Vec2iNew(
+			struct vec2i v;
+			struct vec2i d = svec2i(
 				b->Pos.x > b->LastPos.x ? 1 : -1,
 				b->Pos.y > b->LastPos.y ? 1 : -1);
 			useSimpleHighlight = 0;
@@ -137,8 +137,8 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 		{
 			if (b->IsMoving)
 			{
-				Vec2i v;
-				Vec2i offset = Vec2iNew(
+				struct vec2i v;
+				struct vec2i offset = svec2i(
 					b->Pos.x - b->DragPos.x, b->Pos.y - b->DragPos.y);
 				useSimpleHighlight = 0;
 				CArrayClear(&b->HighlightedTiles);
@@ -146,8 +146,8 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 				{
 					for (v.x = 0; v.x < b->SelectionSize.x; v.x++)
 					{
-						Vec2i vOffset = Vec2iAdd(
-							Vec2iAdd(v, b->SelectionStart), offset);
+						struct vec2i vOffset = svec2i_add(
+							svec2i_add(v, b->SelectionStart), offset);
 						EditorBrushHighlightPoint(b, vOffset);
 					}
 				}
@@ -155,8 +155,8 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 			else
 			{
 				// resize the selection
-				Vec2i v;
-				Vec2i d = Vec2iNew(
+				struct vec2i v;
+				struct vec2i d = svec2i(
 					b->Pos.x > b->LastPos.x ? 1 : -1,
 					b->Pos.y > b->LastPos.y ? 1 : -1);
 				useSimpleHighlight = 0;
@@ -175,14 +175,14 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 			// If there's a valid selection, draw that instead
 			if (b->SelectionSize.x > 0 && b->SelectionSize.y > 0)
 			{
-				Vec2i v;
+				struct vec2i v;
 				useSimpleHighlight = 0;
 				CArrayClear(&b->HighlightedTiles);
 				for (v.y = 0; v.y < b->SelectionSize.y; v.y++)
 				{
 					for (v.x = 0; v.x < b->SelectionSize.x; v.x++)
 					{
-						Vec2i vOffset = Vec2iAdd(v, b->SelectionStart);
+						struct vec2i vOffset = svec2i_add(v, b->SelectionStart);
 						EditorBrushHighlightPoint(b, vOffset);
 					}
 				}
@@ -200,7 +200,7 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 	}
 }
 
-static void SetTile(Mission *m, Vec2i pos, unsigned short tile)
+static void SetTile(Mission *m, struct vec2i pos, unsigned short tile)
 {
 	if (MissionTrySetTile(m, pos, tile))
 	{
@@ -213,9 +213,9 @@ typedef struct
 	EditorBrush *brush;
 	Mission *mission;
 } EditorBrushPaintTilesAtData;
-static void EditorBrushPaintTilesAt(void *data, Vec2i pos)
+static void EditorBrushPaintTilesAt(void *data, struct vec2i pos)
 {
-	Vec2i v;
+	struct vec2i v;
 	EditorBrushPaintTilesAtData *paintData = data;
 	EditorBrush *b = paintData->brush;
 	Mission *m = paintData->mission;
@@ -223,7 +223,7 @@ static void EditorBrushPaintTilesAt(void *data, Vec2i pos)
 	{
 		for (v.x = 0; v.x < b->BrushSize; v.x++)
 		{
-			SetTile(m, Vec2iAdd(pos, v), b->PaintType);
+			SetTile(m, svec2i_add(pos, v), b->PaintType);
 		}
 	}
 }
@@ -248,7 +248,7 @@ static void EditorBrushPaintLine(EditorBrush *b, Mission *m)
 // then paint the interior as room tiles
 static void EditorBrushPaintRoom(EditorBrush *b, Mission *m)
 {
-	Vec2i v;
+	struct vec2i v;
 	for (v.y = 0; v.y < b->BrushSize; v.y++)
 	{
 		for (v.x = 0; v.x < b->BrushSize; v.x++)
@@ -259,7 +259,7 @@ static void EditorBrushPaintRoom(EditorBrush *b, Mission *m)
 			{
 				tile = MAP_WALL;
 			}
-			const Vec2i pos = Vec2iAdd(b->Pos, v);
+			const struct vec2i pos = svec2i_add(b->Pos, v);
 			const unsigned short tileExisting = IMapGet(&gMap, pos);
 			if (tileExisting != MAP_ROOM)
 			{
@@ -276,8 +276,8 @@ typedef struct
 	unsigned short fromType;
 	unsigned short toType;
 } PaintFloodFillData;
-static void MissionFillTile(void *data, Vec2i v);
-static bool MissionIsTileSame(void *data, Vec2i v);
+static void MissionFillTile(void *data, struct vec2i v);
+static bool MissionIsTileSame(void *data, struct vec2i v);
 EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 {
 	if (!b->IsPainting)
@@ -438,12 +438,12 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	b->IsPainting = 1;
 	return EDITOR_RESULT_NONE;
 }
-static void MissionFillTile(void *data, Vec2i v)
+static void MissionFillTile(void *data, struct vec2i v)
 {
 	PaintFloodFillData *pData = data;
 	SetTile(pData->m, v, pData->toType);
 }
-static bool MissionIsTileSame(void *data, Vec2i v)
+static bool MissionIsTileSame(void *data, struct vec2i v)
 {
 	PaintFloodFillData *pData = data;
 	return (MissionGetTile(pData->m, v) & MAP_MASKACCESS) == pData->fromType;
@@ -456,8 +456,8 @@ static void EditorBrushPaintBox(
 	// This will create the expected results when brush size is
 	// greater than one, without having the box drawing routine made
 	// aware of brush sizes
-	Vec2i v;
-	Vec2i d = Vec2iNew(
+	struct vec2i v;
+	struct vec2i d = svec2i(
 		b->Pos.x > b->LastPos.x ? 1 : -1,
 		b->Pos.y > b->LastPos.y ? 1 : -1);
 	EditorBrushPaintTilesAtData paintData;
@@ -530,7 +530,7 @@ EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 				// Need to copy all the tiles to a temp buffer first in case
 				// we are moving to an overlapped position
 				CArray movedTiles;
-				Vec2i v;
+				struct vec2i v;
 				int i;
 				int delta;
 				CArrayInit(&movedTiles, sizeof(unsigned short));
@@ -540,7 +540,7 @@ EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 				{
 					for (v.x = 0; v.x < b->SelectionSize.x; v.x++)
 					{
-						Vec2i vOffset = Vec2iAdd(v, b->SelectionStart);
+						struct vec2i vOffset = svec2i_add(v, b->SelectionStart);
 						int idx = vOffset.y * m->Size.x + vOffset.x;
 						unsigned short *tile = CArrayGet(
 							&m->u.Static.Tiles, idx);
@@ -558,7 +558,7 @@ EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 				{
 					for (v.x = 0; v.x < b->SelectionSize.x; v.x++)
 					{
-						Vec2i vOffset = Vec2iAdd(v, b->SelectionStart);
+						struct vec2i vOffset = svec2i_add(v, b->SelectionStart);
 						if (vOffset.x >= 0 && vOffset.x < m->Size.x &&
 							vOffset.y >= 0 && vOffset.y < m->Size.y)
 						{
@@ -599,7 +599,7 @@ EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 				// Check if the selection is still valid; if not, invalidate it
 				if (b->SelectionSize.x < 0 || b->SelectionSize.y < 0)
 				{
-					b->SelectionSize = Vec2iZero();
+					b->SelectionSize = svec2i_zero();
 				}
 
 				b->IsMoving = 0;
@@ -607,33 +607,33 @@ EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 			else
 			{
 				// Record the selection size
-				b->SelectionStart = Vec2iMin(b->LastPos, b->Pos);
+				b->SelectionStart = svec2i_min(b->LastPos, b->Pos);
 				b->SelectionSize.x = abs(b->LastPos.x - b->Pos.x) + 1;
 				b->SelectionSize.y = abs(b->LastPos.y - b->Pos.y) + 1;
 				// Disallow 1x1 selection sizes
 				if (b->SelectionSize.x <= 1 && b->SelectionSize.y <= 1)
 				{
-					b->SelectionSize = Vec2iZero();
+					b->SelectionSize = svec2i_zero();
 				}
 			}
 			break;
 		case BRUSHTYPE_SET_EXIT:
 			{
-				Vec2i exitStart = Vec2iMin(b->LastPos, b->Pos);
-				Vec2i exitEnd = Vec2iMax(b->LastPos, b->Pos);
+				struct vec2i exitStart = svec2i_min(b->LastPos, b->Pos);
+				struct vec2i exitEnd = svec2i_max(b->LastPos, b->Pos);
 				// Clamp within map boundaries
-				exitStart = Vec2iClamp(
-					exitStart, Vec2iZero(), Vec2iMinus(m->Size, Vec2iUnit()));
-				exitEnd = Vec2iClamp(
-					exitEnd, Vec2iZero(), Vec2iMinus(m->Size, Vec2iUnit()));
+				exitStart = svec2i_clamp(
+					exitStart, svec2i_zero(), svec2i_subtract(m->Size, svec2i_one()));
+				exitEnd = svec2i_clamp(
+					exitEnd, svec2i_zero(), svec2i_subtract(m->Size, svec2i_one()));
 				// Check that size is big enough
-				Vec2i size =
-					Vec2iAdd(Vec2iMinus(exitEnd, exitStart), Vec2iUnit());
+				struct vec2i size =
+					svec2i_add(svec2i_subtract(exitEnd, exitStart), svec2i_one());
 				if (size.x >= 3 && size.y >= 3)
 				{
 					// Check that exit area has changed
-					if (!Vec2iEqual(exitStart, m->u.Static.Exit.Start) ||
-						!Vec2iEqual(exitEnd, m->u.Static.Exit.End))
+					if (!svec2i_is_equal(exitStart, m->u.Static.Exit.Start) ||
+						!svec2i_is_equal(exitEnd, m->u.Static.Exit.End))
 					{
 						m->u.Static.Exit.Start = exitStart;
 						m->u.Static.Exit.End = exitEnd;

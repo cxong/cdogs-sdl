@@ -78,7 +78,7 @@ typedef struct
 	ActionType Type;
 	union
 	{
-		struct vec pos;
+		struct vec2 pos;
 		int index;
 	} u;
 	union
@@ -110,7 +110,7 @@ typedef struct
 	// Reset to 0 when condition failed
 	int Counter;
 	int CounterMax;
-	Vec2i Pos;
+	struct vec2i Pos;
 } Condition;
 
 
@@ -123,7 +123,7 @@ typedef struct
 } TWatch;
 
 
-bool TriggerTryActivate(Trigger *t, const int flags, const Vec2i tilePos);
+bool TriggerTryActivate(Trigger *t, const int flags, const struct vec2i tilePos);
 bool TriggerCannotActivate(const Trigger *t);
 void TriggerSetCannotActivate(Trigger *t);
 void TriggerActivate(Trigger *t, CArray *mapTriggers);
@@ -138,5 +138,5 @@ void WatchesTerminate(void);
 TWatch *WatchNew(void);
 Condition *WatchAddCondition(
 	TWatch *w, const ConditionType type, const int counterMax,
-	const Vec2i pos);
+	const struct vec2i pos);
 Action *WatchAddAction(TWatch *w);

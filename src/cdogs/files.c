@@ -352,7 +352,7 @@ static void ConvertMission(
 	CFREE(dest->Description);
 	CSTRDUP(dest->Description, src->description);
 	dest->Type = MAPTYPE_CLASSIC;
-	dest->Size = Vec2iNew(src->mapWidth, src->mapHeight);
+	dest->Size = svec2i(src->mapWidth, src->mapHeight);
 	strcpy(dest->WallStyle, IntWallStyle(src->wallStyle));
 	strcpy(dest->FloorStyle, IntFloorStyle(src->floorStyle));
 	strcpy(dest->RoomStyle, IntRoomStyle(src->roomStyle));

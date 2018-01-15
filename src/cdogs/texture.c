@@ -29,7 +29,7 @@
 
 
 SDL_Texture *TextureCreate(
-	SDL_Renderer *renderer, const SDL_TextureAccess access, const Vec2i res,
+	SDL_Renderer *renderer, const SDL_TextureAccess access, const struct vec2i res,
 	const SDL_BlendMode blend, const Uint8 alpha)
 {
 	SDL_Texture *t = SDL_CreateTexture(

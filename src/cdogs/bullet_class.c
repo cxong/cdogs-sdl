@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -91,44 +91,44 @@ BulletClass *StrBulletClass(const char *s)
 
 // Draw functions
 
-static void BulletDraw(GraphicsDevice *g, const int id, const Vec2i pos)
+static void BulletDraw(GraphicsDevice *g, const int id, const struct vec2i pos)
 {
 	const TMobileObject *obj = CArrayGet(&gMobObjs, id);
 	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
 	CPicDrawContext c;
 	// Calculate direction based on velocity
-	c.Dir = RadiansToDirection(vector2_angle(obj->tileItem.Vel) + M_PIF_2);
-	c.Offset = Vec2iZero();
+	c.Dir = RadiansToDirection(svec2_angle(obj->tileItem.Vel) + MPI_2);
+	c.Offset = svec2i_zero();
 	const Pic *pic = CPicGetPic(&obj->tileItem.CPic, c.Dir);
 	if (pic != NULL)
 	{
-		c.Offset = Vec2iNew(
+		c.Offset = svec2i(
 			pic->size.x / -2, pic->size.y / -2 - obj->z / Z_FACTOR);
 	}
 	CPicDraw(g, &obj->tileItem.CPic, pos, &c);
 }
 
 
-static struct vec SeekTowards(
-	const struct vec pos, const struct vec vel, const float speedMin,
-	const struct vec targetPos, const int seekFactor)
+static struct vec2 SeekTowards(
+	const struct vec2 pos, const struct vec2 vel, const float speedMin,
+	const struct vec2 targetPos, const int seekFactor)
 {
 	// Compensate for bullet's velocity
-	const struct vec targetVel =
-		vector2_subtract(vector2_subtract(targetPos, pos), vel);
+	const struct vec2 targetVel =
+		svec2_subtract(svec2_subtract(targetPos, pos), vel);
 	// Don't seek if the coordinates are too big
 	if (fabsf(targetVel.x) > 40 || fabsf(targetVel.y) > 40 ||
-		vector2_is_zero(targetVel))
+		svec2_is_zero(targetVel))
 	{
 		return vel;
 	}
-	const float targetMag = vector2_length(targetVel);
-	const float magnitude = MAX(speedMin, vector2_length(vel));
+	const float targetMag = svec2_length(targetVel);
+	const float magnitude = MAX(speedMin, svec2_length(vel));
 	const float combinedX =
 		vel.x / magnitude * seekFactor + targetVel.x / targetMag;
 	const float combinedY =
 		vel.y / magnitude * seekFactor + targetVel.y / targetMag;
-	return to_vector2(
+	return svec2(
 		combinedX * magnitude / (seekFactor + 1),
 		combinedY * magnitude / (seekFactor + 1));
 }
@@ -138,11 +138,11 @@ static void FireGuns(const TMobileObject *obj, const CArray *guns);
 typedef struct
 {
 	HitType Type;
-	struct vec Pos;
-	struct vec Normal;
+	struct vec2 Pos;
+	struct vec2 Normal;
 } HitResult;
 static HitResult HitItem(
-	TMobileObject *obj, const struct vec pos, const bool multipleHits);
+	TMobileObject *obj, const struct vec2 pos, const bool multipleHits);
 bool UpdateBullet(struct MobileObject *obj, const int ticks)
 {
 	TileItemUpdate(&obj->tileItem, ticks);
@@ -170,7 +170,7 @@ bool UpdateBullet(struct MobileObject *obj, const int ticks)
 		return false;
 	}
 
-	const struct vec posStart = obj->Pos;
+	const struct vec2 posStart = obj->Pos;
 
 	if (obj->bulletClass->SeekFactor > 0)
 	{
@@ -193,13 +193,13 @@ bool UpdateBullet(struct MobileObject *obj, const int ticks)
 		}
 	}
 
-	HitResult hit = { HIT_NONE, vector2_zero(), vector2_zero() };
+	HitResult hit = { HIT_NONE, svec2_zero(), svec2_zero() };
 	if (!gCampaign.IsClient)
 	{
 		hit = HitItem(obj, posStart, obj->bulletClass->Persists);
 	}
-	struct vec pos =
-		vector2_add(posStart, vector2_scale(obj->tileItem.Vel, (float)ticks));
+	struct vec2 pos =
+		svec2_add(posStart, svec2_scale(obj->tileItem.Vel, (float)ticks));
 
 	if (hit.Type != HIT_NONE)
 	{
@@ -219,11 +219,11 @@ bool UpdateBullet(struct MobileObject *obj, const int ticks)
 				alive = false;
 			}
 		}
-		const struct vec hitPos = hit.Type != HIT_NONE ? hit.Pos : pos;
+		const struct vec2 hitPos = hit.Type != HIT_NONE ? hit.Pos : pos;
 		b.u.BulletBounce.BouncePos = Vec2ToNet(hitPos);
 		b.u.BulletBounce.Pos = Vec2ToNet(pos);
 		b.u.BulletBounce.Vel = Vec2ToNet(obj->tileItem.Vel);
-		if (hit.Type == HIT_WALL && !vector2_is_zero(obj->tileItem.Vel))
+		if (hit.Type == HIT_WALL && !svec2_is_zero(obj->tileItem.Vel))
 		{
 			// Bouncing
 			GetWallBouncePosVel(
@@ -288,7 +288,7 @@ bool UpdateBullet(struct MobileObject *obj, const int ticks)
 			}
 		}
 	}
-	
+
 	// Friction
 	const bool isDiagonal =
 		fabsf(obj->tileItem.Vel.x) < FLT_EPSILON &&
@@ -326,9 +326,9 @@ bool UpdateBullet(struct MobileObject *obj, const int ticks)
 	{
 		for (int i = 0; i < ticks; i++)
 		{
-			obj->tileItem.Vel = vector2_add(
+			obj->tileItem.Vel = svec2_add(
 				obj->tileItem.Vel,
-				vector2_scale(to_vector2(
+				svec2_scale(svec2(
 					(float)(rand() % 3) - 1, (float)(rand() % 3) - 1), 0.5f));
 		}
 	}
@@ -340,13 +340,13 @@ bool UpdateBullet(struct MobileObject *obj, const int ticks)
 		if (!gCampaign.IsClient)
 		{
 			// Detonate the mine if there are characters in the tiles around it
-			const Vec2i tv = Vec2ToTile(pos);
-			Vec2i dv;
+			const struct vec2i tv = Vec2ToTile(pos);
+			struct vec2i dv;
 			for (dv.y = -1; dv.y <= 1; dv.y++)
 			{
 				for (dv.x = -1; dv.x <= 1; dv.x++)
 				{
-					const Vec2i dtv = Vec2iAdd(tv, dv);
+					const struct vec2i dtv = svec2i_add(tv, dv);
 					if (!MapIsTileIn(&gMap, dtv))
 					{
 						continue;
@@ -365,7 +365,7 @@ bool UpdateBullet(struct MobileObject *obj, const int ticks)
 }
 static void FireGuns(const TMobileObject *obj, const CArray *guns)
 {
-	const float angle = vector2_angle(obj->tileItem.Vel) + M_PIF_2;
+	const float angle = svec2_angle(obj->tileItem.Vel) + MPI_2;
 	for (int i = 0; i < (int)guns->size; i++)
 	{
 		const GunDescription **g = CArrayGet(guns, i);
@@ -383,22 +383,22 @@ typedef struct
 	union
 	{
 		TTileItem *Target;
-		Vec2i TilePos;
+		struct vec2i TilePos;
 	} u;
-	struct vec ColPos;
-	struct vec ColNormal;
+	struct vec2 ColPos;
+	struct vec2 ColNormal;
 	float ColPosDist2;
 } HitItemData;
 static bool HitItemFunc(
-	TTileItem *ti, void *data, const struct vec colA, const struct vec colB,
-	const struct vec normal);
-static bool CheckWall(const Vec2i tilePos);
+	TTileItem *ti, void *data, const struct vec2 colA, const struct vec2 colB,
+	const struct vec2 normal);
+static bool CheckWall(const struct vec2i tilePos);
 static bool HitWallFunc(
-	const Vec2i tilePos, void *data,
-	const struct vec col, const struct vec normal);
+	const struct vec2i tilePos, void *data,
+	const struct vec2 col, const struct vec2 normal);
 static void OnHit(HitItemData *data, TTileItem *target);
 static HitResult HitItem(
-	TMobileObject *obj, const struct vec pos, const bool multipleHits)
+	TMobileObject *obj, const struct vec2 pos, const bool multipleHits)
 {
 	// Get all items that collide
 	HitItemData data;
@@ -406,7 +406,7 @@ static HitResult HitItem(
 	data.MultipleHits = multipleHits;
 	data.Obj = obj;
 	data.ColPos = pos;
-	data.ColNormal = vector2_zero();
+	data.ColNormal = svec2_zero();
 	data.ColPosDist2 = -1;
 	const CollisionParams params =
 	{
@@ -429,11 +429,11 @@ static HitResult HitItem(
 static HitType GetHitType(
 	const TTileItem *ti, const TMobileObject *bullet, int *targetUID);
 static void SetClosestCollision(
-	HitItemData *data, const struct vec col, const struct vec normal,
-	const HitType ht, TTileItem *target, const Vec2i tilePos);
+	HitItemData *data, const struct vec2 col, const struct vec2 normal,
+	const HitType ht, TTileItem *target, const struct vec2i tilePos);
 static bool HitItemFunc(
-	TTileItem *ti, void *data, const struct vec colA, const struct vec colB,
-	const struct vec normal)
+	TTileItem *ti, void *data, const struct vec2 colA, const struct vec2 colB,
+	const struct vec2 normal)
 {
 	UNUSED(colB);
 	HitItemData *hData = data;
@@ -455,7 +455,7 @@ static bool HitItemFunc(
 	{
 		SetClosestCollision(
 			hData, colA, normal, GetHitType(ti, hData->Obj, NULL),
-			ti, Vec2iZero());
+			ti, svec2i_zero());
 	}
 
 bail:
@@ -493,14 +493,14 @@ static HitType GetHitType(
 	}
 	return ht;
 }
-static bool CheckWall(const Vec2i tilePos)
+static bool CheckWall(const struct vec2i tilePos)
 {
 	const Tile *t = MapGetTile(&gMap, tilePos);
 	return t == NULL || t->flags & MAPTILE_NO_SHOOT;
 }
 static bool HitWallFunc(
-	const Vec2i tilePos, void *data,
-	const struct vec col, const struct vec normal)
+	const struct vec2i tilePos, void *data,
+	const struct vec2 col, const struct vec2 normal)
 {
 	HitItemData *hData = data;
 
@@ -509,11 +509,11 @@ static bool HitWallFunc(
 	return true;
 }
 static void SetClosestCollision(
-	HitItemData *data, const struct vec col, const struct vec normal,
-	const HitType ht, TTileItem *target, const Vec2i tilePos)
+	HitItemData *data, const struct vec2 col, const struct vec2 normal,
+	const HitType ht, TTileItem *target, const struct vec2i tilePos)
 {
 	// Choose the best collision point (i.e. closest to origin)
-	const float d2 = vector2_distance_squared_to(col, data->Obj->Pos);
+	const float d2 = svec2_distance_squared(col, data->Obj->Pos);
 	if (data->ColPosDist2 < 0 || d2 < data->ColPosDist2)
 	{
 		data->ColPos = col;
@@ -847,7 +847,7 @@ static void BulletClassFree(BulletClass *b)
 
 void BulletAdd(const NAddBullet add)
 {
-	const struct vec pos = NetToVec2(add.MuzzlePos);
+	const struct vec2 pos = NetToVec2(add.MuzzlePos);
 
 	// Find an empty slot in mobobj list
 	TMobileObject *obj = NULL;
@@ -878,7 +878,7 @@ void BulletAdd(const NAddBullet add)
 	obj->z = add.MuzzleHeight;
 	obj->dz = add.Elevation;
 
-	obj->tileItem.Vel = vector2_scale(
+	obj->tileItem.Vel = svec2_scale(
 		Vec2FromRadians(add.Angle),
 		RAND_FLOAT(obj->bulletClass->SpeedLow, obj->bulletClass->SpeedHigh));
 	if (obj->bulletClass->SpeedScale)
@@ -908,7 +908,7 @@ void BulletAdd(const NAddBullet add)
 	MapTryMoveTileItem(&gMap, &obj->tileItem, pos);
 }
 
-void PlayHitSound(const HitSounds *h, const HitType t, const struct vec pos)
+void PlayHitSound(const HitSounds *h, const HitType t, const struct vec2 pos)
 {
 	switch (t)
 	{

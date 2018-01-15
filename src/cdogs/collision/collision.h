@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003-2007 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@ typedef struct
 {
 	AllyCollision allyCollision;
 	// Cache of tiles to check for potential collisions, of tile coords
-	CArray tileCache;	// of Vec2i
+	CArray tileCache;	// of struct vec2i
 } CollisionSystem;
 
 extern CollisionSystem gCollisionSystem;
@@ -67,12 +67,12 @@ void CollisionSystemTerminate(CollisionSystem *cs);
 #define HitWall(x, y)\
 	(MapGetTile(\
 		&gMap,\
-		Vec2iNew((int)(x)/TILE_WIDTH, (int)(y)/TILE_HEIGHT)\
+		svec2i((int)(x)/TILE_WIDTH, (int)(y)/TILE_HEIGHT)\
 	)->flags & MAPTILE_NO_WALK)
 #define ShootWall(x, y) \
 	(MapGetTile(\
 		&gMap,\
-		Vec2iNew((int)(x)/TILE_WIDTH, (int)(y)/TILE_HEIGHT))\
+		svec2i((int)(x)/TILE_WIDTH, (int)(y)/TILE_HEIGHT))\
 	->flags & MAPTILE_NO_SHOOT)
 
 // Which "team" the actor's on, for collision
@@ -95,32 +95,32 @@ typedef struct
 	bool IsPVP;
 } CollisionParams;
 
-bool IsCollisionWithWall(const struct vec pos, const Vec2i size2);
+bool IsCollisionWithWall(const struct vec2 pos, const struct vec2i size2);
 // Check collision of an object with a diamond shape
 bool IsCollisionDiamond(
-	const Map *map, const struct vec pos, const Vec2i size2);
+	const Map *map, const struct vec2 pos, const struct vec2i size2);
 
 // Get all TTileItem that overlap with a target TTileItem, with callback.
 // The callback returns bool continue, as multiple callbacks can result.
 typedef bool (*CollideItemFunc)(
-	TTileItem *, void *, const struct vec, const struct vec, const struct vec);
-typedef bool (*CheckWallFunc)(const Vec2i);
+	TTileItem *, void *, const struct vec2, const struct vec2, const struct vec2);
+typedef bool (*CheckWallFunc)(const struct vec2i);
 typedef bool (*CollideWallFunc)(
-	const Vec2i, void *, const struct vec, const struct vec);
+	const struct vec2i, void *, const struct vec2, const struct vec2);
 void OverlapTileItems(
-	const TTileItem *item, const struct vec pos, const Vec2i size,
+	const TTileItem *item, const struct vec2 pos, const struct vec2i size,
 	const CollisionParams params, CollideItemFunc func, void *data,
 	CheckWallFunc checkWallFunc, CollideWallFunc wallFunc, void *wallData);
 // Get the first TTileItem that overlaps
 TTileItem *OverlapGetFirstItem(
-	const TTileItem *item, const struct vec pos, const Vec2i size,
+	const TTileItem *item, const struct vec2 pos, const struct vec2i size,
 	const CollisionParams params);
 
 bool AABBOverlap(
-	const struct vec pos1, const struct vec pos2,
-	const Vec2i size1, const Vec2i size2);
+	const struct vec2 pos1, const struct vec2 pos2,
+	const struct vec2i size1, const struct vec2i size2);
 
 // Resolve wall bounces
 void GetWallBouncePosVel(
-	const struct vec pos, const struct vec vel, const struct vec colPos,
-	const struct vec colNormal, struct vec *outPos, struct vec *outVel);
+	const struct vec2 pos, const struct vec2 vel, const struct vec2 colPos,
+	const struct vec2 colNormal, struct vec2 *outPos, struct vec2 *outVel);

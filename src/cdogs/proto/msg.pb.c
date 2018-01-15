@@ -108,7 +108,7 @@ const pb_field_t NTileSet_fields[6] = {
 const pb_field_t NMapObjectAdd_fields[6] = {
     PB_FIELD(  1, UINT32  , REQUIRED, STATIC  , FIRST, NMapObjectAdd, UID, UID, 0),
     PB_FIELD(  2, STRING  , REQUIRED, STATIC  , OTHER, NMapObjectAdd, MapObjectClass, UID, 0),
-    PB_FIELD(  3, MESSAGE , REQUIRED, STATIC  , OTHER, NMapObjectAdd, Pos, MapObjectClass, &NVec2_fields),
+    PB_FIELD(  3, MESSAGE , REQUIRED, STATIC  , OTHER, NMapObjectAdd, Pos, MapObjectClass, &Nsvec2_fields),
     PB_FIELD(  4, UINT32  , REQUIRED, STATIC  , OTHER, NMapObjectAdd, TileItemFlags, Pos, 0),
     PB_FIELD(  5, INT32   , REQUIRED, STATIC  , OTHER, NMapObjectAdd, Health, TileItemFlags, 0),
     PB_LAST_FIELD
@@ -139,7 +139,7 @@ const pb_field_t NScore_fields[3] = {
 
 const pb_field_t NSound_fields[4] = {
     PB_FIELD(  1, STRING  , REQUIRED, STATIC  , FIRST, NSound, Sound, Sound, 0),
-    PB_FIELD(  2, MESSAGE , REQUIRED, STATIC  , OTHER, NSound, Pos, Sound, &NVec2_fields),
+    PB_FIELD(  2, MESSAGE , REQUIRED, STATIC  , OTHER, NSound, Pos, Sound, &Nsvec2_fields),
     PB_FIELD(  3, BOOL    , REQUIRED, STATIC  , OTHER, NSound, IsHit, Pos, 0),
     PB_LAST_FIELD
 };
@@ -150,7 +150,7 @@ const pb_field_t NVec2i_fields[3] = {
     PB_LAST_FIELD
 };
 
-const pb_field_t NVec2_fields[3] = {
+const pb_field_t Nsvec2_fields[3] = {
     PB_FIELD(  1, FLOAT   , REQUIRED, STATIC  , FIRST, NVec2, x, x, 0),
     PB_FIELD(  2, FLOAT   , REQUIRED, STATIC  , OTHER, NVec2, y, x, 0),
     PB_LAST_FIELD
@@ -168,14 +168,14 @@ const pb_field_t NActorAdd_fields[8] = {
     PB_FIELD(  4, INT32   , REQUIRED, STATIC  , OTHER, NActorAdd, Health, Direction, 0),
     PB_FIELD(  5, INT32   , REQUIRED, STATIC  , OTHER, NActorAdd, PlayerUID, Health, &NActorAdd_PlayerUID_default),
     PB_FIELD(  6, UINT32  , REQUIRED, STATIC  , OTHER, NActorAdd, TileItemFlags, PlayerUID, 0),
-    PB_FIELD(  7, MESSAGE , REQUIRED, STATIC  , OTHER, NActorAdd, Pos, TileItemFlags, &NVec2_fields),
+    PB_FIELD(  7, MESSAGE , REQUIRED, STATIC  , OTHER, NActorAdd, Pos, TileItemFlags, &Nsvec2_fields),
     PB_LAST_FIELD
 };
 
 const pb_field_t NActorMove_fields[4] = {
     PB_FIELD(  1, UINT32  , REQUIRED, STATIC  , FIRST, NActorMove, UID, UID, 0),
-    PB_FIELD(  2, MESSAGE , REQUIRED, STATIC  , OTHER, NActorMove, Pos, UID, &NVec2_fields),
-    PB_FIELD(  3, MESSAGE , REQUIRED, STATIC  , OTHER, NActorMove, MoveVel, Pos, &NVec2_fields),
+    PB_FIELD(  2, MESSAGE , REQUIRED, STATIC  , OTHER, NActorMove, Pos, UID, &Nsvec2_fields),
+    PB_FIELD(  3, MESSAGE , REQUIRED, STATIC  , OTHER, NActorMove, MoveVel, Pos, &Nsvec2_fields),
     PB_LAST_FIELD
 };
 
@@ -193,14 +193,14 @@ const pb_field_t NActorDir_fields[3] = {
 
 const pb_field_t NActorSlide_fields[3] = {
     PB_FIELD(  1, UINT32  , REQUIRED, STATIC  , FIRST, NActorSlide, UID, UID, 0),
-    PB_FIELD(  2, MESSAGE , REQUIRED, STATIC  , OTHER, NActorSlide, Vel, UID, &NVec2_fields),
+    PB_FIELD(  2, MESSAGE , REQUIRED, STATIC  , OTHER, NActorSlide, Vel, UID, &Nsvec2_fields),
     PB_LAST_FIELD
 };
 
 const pb_field_t NActorImpulse_fields[4] = {
     PB_FIELD(  1, UINT32  , REQUIRED, STATIC  , FIRST, NActorImpulse, UID, UID, 0),
-    PB_FIELD(  2, MESSAGE , REQUIRED, STATIC  , OTHER, NActorImpulse, Vel, UID, &NVec2_fields),
-    PB_FIELD(  3, MESSAGE , REQUIRED, STATIC  , OTHER, NActorImpulse, Pos, Vel, &NVec2_fields),
+    PB_FIELD(  2, MESSAGE , REQUIRED, STATIC  , OTHER, NActorImpulse, Vel, UID, &Nsvec2_fields),
+    PB_FIELD(  3, MESSAGE , REQUIRED, STATIC  , OTHER, NActorImpulse, Pos, Vel, &Nsvec2_fields),
     PB_LAST_FIELD
 };
 
@@ -237,7 +237,7 @@ const pb_field_t NActorHit_fields[8] = {
     PB_FIELD(  3, INT32   , REQUIRED, STATIC  , OTHER, NActorHit, HitterPlayerUID, PlayerUID, &NActorHit_HitterPlayerUID_default),
     PB_FIELD(  4, INT32   , REQUIRED, STATIC  , OTHER, NActorHit, Special, HitterPlayerUID, 0),
     PB_FIELD(  5, INT32   , REQUIRED, STATIC  , OTHER, NActorHit, Power, Special, 0),
-    PB_FIELD(  6, MESSAGE , REQUIRED, STATIC  , OTHER, NActorHit, Vel, Power, &NVec2_fields),
+    PB_FIELD(  6, MESSAGE , REQUIRED, STATIC  , OTHER, NActorHit, Vel, Power, &Nsvec2_fields),
     PB_FIELD(  7, FLOAT   , REQUIRED, STATIC  , OTHER, NActorHit, Mass, Vel, 0),
     PB_LAST_FIELD
 };
@@ -279,7 +279,7 @@ const pb_field_t NAddPickup_fields[7] = {
     PB_FIELD(  3, BOOL    , REQUIRED, STATIC  , OTHER, NAddPickup, IsRandomSpawned, PickupClass, 0),
     PB_FIELD(  4, INT32   , REQUIRED, STATIC  , OTHER, NAddPickup, SpawnerUID, IsRandomSpawned, &NAddPickup_SpawnerUID_default),
     PB_FIELD(  5, UINT32  , REQUIRED, STATIC  , OTHER, NAddPickup, TileItemFlags, SpawnerUID, 0),
-    PB_FIELD(  6, MESSAGE , REQUIRED, STATIC  , OTHER, NAddPickup, Pos, TileItemFlags, &NVec2_fields),
+    PB_FIELD(  6, MESSAGE , REQUIRED, STATIC  , OTHER, NAddPickup, Pos, TileItemFlags, &Nsvec2_fields),
     PB_LAST_FIELD
 };
 
@@ -293,9 +293,9 @@ const pb_field_t NBulletBounce_fields[8] = {
     PB_FIELD(  1, UINT32  , REQUIRED, STATIC  , FIRST, NBulletBounce, UID, UID, 0),
     PB_FIELD(  2, INT32   , REQUIRED, STATIC  , OTHER, NBulletBounce, HitType, UID, 0),
     PB_FIELD(  3, BOOL    , REQUIRED, STATIC  , OTHER, NBulletBounce, Spark, HitType, 0),
-    PB_FIELD(  4, MESSAGE , REQUIRED, STATIC  , OTHER, NBulletBounce, BouncePos, Spark, &NVec2_fields),
-    PB_FIELD(  5, MESSAGE , REQUIRED, STATIC  , OTHER, NBulletBounce, Pos, BouncePos, &NVec2_fields),
-    PB_FIELD(  6, MESSAGE , REQUIRED, STATIC  , OTHER, NBulletBounce, Vel, Pos, &NVec2_fields),
+    PB_FIELD(  4, MESSAGE , REQUIRED, STATIC  , OTHER, NBulletBounce, BouncePos, Spark, &Nsvec2_fields),
+    PB_FIELD(  5, MESSAGE , REQUIRED, STATIC  , OTHER, NBulletBounce, Pos, BouncePos, &Nsvec2_fields),
+    PB_FIELD(  6, MESSAGE , REQUIRED, STATIC  , OTHER, NBulletBounce, Vel, Pos, &Nsvec2_fields),
     PB_FIELD(  7, BOOL    , REQUIRED, STATIC  , OTHER, NBulletBounce, HitSound, Vel, 0),
     PB_LAST_FIELD
 };
@@ -308,7 +308,7 @@ const pb_field_t NRemoveBullet_fields[2] = {
 const pb_field_t NGunReload_fields[5] = {
     PB_FIELD(  1, INT32   , REQUIRED, STATIC  , FIRST, NGunReload, PlayerUID, PlayerUID, &NGunReload_PlayerUID_default),
     PB_FIELD(  2, STRING  , REQUIRED, STATIC  , OTHER, NGunReload, Gun, PlayerUID, 0),
-    PB_FIELD(  3, MESSAGE , REQUIRED, STATIC  , OTHER, NGunReload, Pos, Gun, &NVec2_fields),
+    PB_FIELD(  3, MESSAGE , REQUIRED, STATIC  , OTHER, NGunReload, Pos, Gun, &Nsvec2_fields),
     PB_FIELD(  4, INT32   , REQUIRED, STATIC  , OTHER, NGunReload, Direction, Pos, 0),
     PB_LAST_FIELD
 };
@@ -317,7 +317,7 @@ const pb_field_t NGunFire_fields[10] = {
     PB_FIELD(  1, INT32   , REQUIRED, STATIC  , FIRST, NGunFire, UID, UID, &NGunFire_UID_default),
     PB_FIELD(  2, INT32   , REQUIRED, STATIC  , OTHER, NGunFire, PlayerUID, UID, &NGunFire_PlayerUID_default),
     PB_FIELD(  3, STRING  , REQUIRED, STATIC  , OTHER, NGunFire, Gun, PlayerUID, 0),
-    PB_FIELD(  4, MESSAGE , REQUIRED, STATIC  , OTHER, NGunFire, MuzzlePos, Gun, &NVec2_fields),
+    PB_FIELD(  4, MESSAGE , REQUIRED, STATIC  , OTHER, NGunFire, MuzzlePos, Gun, &Nsvec2_fields),
     PB_FIELD(  5, INT32   , REQUIRED, STATIC  , OTHER, NGunFire, Z, MuzzlePos, 0),
     PB_FIELD(  6, FLOAT   , REQUIRED, STATIC  , OTHER, NGunFire, Angle, Z, 0),
     PB_FIELD(  7, BOOL    , REQUIRED, STATIC  , OTHER, NGunFire, Sound, Angle, 0),
@@ -335,7 +335,7 @@ const pb_field_t NGunState_fields[3] = {
 const pb_field_t NAddBullet_fields[10] = {
     PB_FIELD(  1, UINT32  , REQUIRED, STATIC  , FIRST, NAddBullet, UID, UID, 0),
     PB_FIELD(  2, STRING  , REQUIRED, STATIC  , OTHER, NAddBullet, BulletClass, UID, 0),
-    PB_FIELD(  3, MESSAGE , REQUIRED, STATIC  , OTHER, NAddBullet, MuzzlePos, BulletClass, &NVec2_fields),
+    PB_FIELD(  3, MESSAGE , REQUIRED, STATIC  , OTHER, NAddBullet, MuzzlePos, BulletClass, &Nsvec2_fields),
     PB_FIELD(  4, INT32   , REQUIRED, STATIC  , OTHER, NAddBullet, MuzzleHeight, MuzzlePos, 0),
     PB_FIELD(  5, FLOAT   , REQUIRED, STATIC  , OTHER, NAddBullet, Angle, MuzzleHeight, 0),
     PB_FIELD(  6, INT32   , REQUIRED, STATIC  , OTHER, NAddBullet, Elevation, Angle, 0),
@@ -375,7 +375,7 @@ const pb_field_t NObjectiveUpdate_fields[3] = {
 
 const pb_field_t NAddKeys_fields[3] = {
     PB_FIELD(  1, UINT32  , REQUIRED, STATIC  , FIRST, NAddKeys, KeyFlags, KeyFlags, 0),
-    PB_FIELD(  2, MESSAGE , REQUIRED, STATIC  , OTHER, NAddKeys, Pos, KeyFlags, &NVec2_fields),
+    PB_FIELD(  2, MESSAGE , REQUIRED, STATIC  , OTHER, NAddKeys, Pos, KeyFlags, &Nsvec2_fields),
     PB_LAST_FIELD
 };
 
@@ -403,7 +403,7 @@ const pb_field_t NMissionEnd_fields[4] = {
  * numbers or field sizes that are larger than what can fit in 8 or 16 bit
  * field descriptors.
  */
-PB_STATIC_ASSERT((pb_membersize(NCharColors, Skin) < 65536 && pb_membersize(NCharColors, Arms) < 65536 && pb_membersize(NCharColors, Body) < 65536 && pb_membersize(NCharColors, Legs) < 65536 && pb_membersize(NCharColors, Hair) < 65536 && pb_membersize(NPlayerData, Colors) < 65536 && pb_membersize(NPlayerData, Stats) < 65536 && pb_membersize(NPlayerData, Totals) < 65536 && pb_membersize(NTileSet, Pos) < 65536 && pb_membersize(NMapObjectAdd, Pos) < 65536 && pb_membersize(NSound, Pos) < 65536 && pb_membersize(NActorAdd, Pos) < 65536 && pb_membersize(NActorMove, Pos) < 65536 && pb_membersize(NActorMove, MoveVel) < 65536 && pb_membersize(NActorSlide, Vel) < 65536 && pb_membersize(NActorImpulse, Vel) < 65536 && pb_membersize(NActorImpulse, Pos) < 65536 && pb_membersize(NActorHit, Vel) < 65536 && pb_membersize(NAddPickup, Pos) < 65536 && pb_membersize(NBulletBounce, BouncePos) < 65536 && pb_membersize(NBulletBounce, Pos) < 65536 && pb_membersize(NBulletBounce, Vel) < 65536 && pb_membersize(NGunReload, Pos) < 65536 && pb_membersize(NGunFire, MuzzlePos) < 65536 && pb_membersize(NAddBullet, MuzzlePos) < 65536 && pb_membersize(NTrigger, Tile) < 65536 && pb_membersize(NExploreTiles, Runs[0]) < 65536 && pb_membersize(NExploreTiles_Run, Tile) < 65536 && pb_membersize(NAddKeys, Pos) < 65536 && pb_membersize(NMissionComplete, ExitStart) < 65536 && pb_membersize(NMissionComplete, ExitEnd) < 65536), YOU_MUST_DEFINE_PB_FIELD_32BIT_FOR_MESSAGES_NServerInfo_NClientId_NCampaignDef_NColor_NCharColors_NPlayerStats_NPlayerData_NPlayerRemove_NConfig_NTileSet_NMapObjectAdd_NMapObjectDamage_NMapObjectRemove_NScore_NSound_NVec2i_NVec2_NGameBegin_NActorAdd_NActorMove_NActorState_NActorDir_NActorSlide_NActorImpulse_NActorSwitchGun_NActorPickupAll_NActorReplaceGun_NActorHeal_NActorHit_NActorAddAmmo_NActorUseAmmo_NActorDie_NActorMelee_NAddPickup_NRemovePickup_NBulletBounce_NRemoveBullet_NGunReload_NGunFire_NGunState_NAddBullet_NTrigger_NExploreTiles_NExploreTiles_Run_NRescueCharacter_NObjectiveUpdate_NAddKeys_NMissionComplete_NMissionEnd)
+PB_STATIC_ASSERT((pb_membersize(NCharColors, Skin) < 65536 && pb_membersize(NCharColors, Arms) < 65536 && pb_membersize(NCharColors, Body) < 65536 && pb_membersize(NCharColors, Legs) < 65536 && pb_membersize(NCharColors, Hair) < 65536 && pb_membersize(NPlayerData, Colors) < 65536 && pb_membersize(NPlayerData, Stats) < 65536 && pb_membersize(NPlayerData, Totals) < 65536 && pb_membersize(NTileSet, Pos) < 65536 && pb_membersize(NMapObjectAdd, Pos) < 65536 && pb_membersize(NSound, Pos) < 65536 && pb_membersize(NActorAdd, Pos) < 65536 && pb_membersize(NActorMove, Pos) < 65536 && pb_membersize(NActorMove, MoveVel) < 65536 && pb_membersize(NActorSlide, Vel) < 65536 && pb_membersize(NActorImpulse, Vel) < 65536 && pb_membersize(NActorImpulse, Pos) < 65536 && pb_membersize(NActorHit, Vel) < 65536 && pb_membersize(NAddPickup, Pos) < 65536 && pb_membersize(NBulletBounce, BouncePos) < 65536 && pb_membersize(NBulletBounce, Pos) < 65536 && pb_membersize(NBulletBounce, Vel) < 65536 && pb_membersize(NGunReload, Pos) < 65536 && pb_membersize(NGunFire, MuzzlePos) < 65536 && pb_membersize(NAddBullet, MuzzlePos) < 65536 && pb_membersize(NTrigger, Tile) < 65536 && pb_membersize(NExploreTiles, Runs[0]) < 65536 && pb_membersize(NExploreTiles_Run, Tile) < 65536 && pb_membersize(NAddKeys, Pos) < 65536 && pb_membersize(NMissionComplete, ExitStart) < 65536 && pb_membersize(NMissionComplete, ExitEnd) < 65536), YOU_MUST_DEFINE_PB_FIELD_32BIT_FOR_MESSAGES_NServerInfo_NClientId_NCampaignDef_NColor_NCharColors_NPlayerStats_NPlayerData_NPlayerRemove_NConfig_NTileSet_NMapObjectAdd_NMapObjectDamage_NMapObjectRemove_NScore_NSound_NVec2i_Nsvec2_NGameBegin_NActorAdd_NActorMove_NActorState_NActorDir_NActorSlide_NActorImpulse_NActorSwitchGun_NActorPickupAll_NActorReplaceGun_NActorHeal_NActorHit_NActorAddAmmo_NActorUseAmmo_NActorDie_NActorMelee_NAddPickup_NRemovePickup_NBulletBounce_NRemoveBullet_NGunReload_NGunFire_NGunState_NAddBullet_NTrigger_NExploreTiles_NExploreTiles_Run_NRescueCharacter_NObjectiveUpdate_NAddKeys_NMissionComplete_NMissionEnd)
 #endif
 
 #if !defined(PB_FIELD_16BIT) && !defined(PB_FIELD_32BIT)

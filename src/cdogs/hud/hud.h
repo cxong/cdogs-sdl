@@ -79,6 +79,6 @@ void HUDDraw(
 
 void HUDDrawGauge(
 	GraphicsDevice *device,
-	Vec2i pos, const Vec2i size, const int innerWidth,
+	struct vec2i pos, const struct vec2i size, const int innerWidth,
 	const color_t barColor, const color_t backColor,
 	const FontAlign hAlign, const FontAlign vAlign);

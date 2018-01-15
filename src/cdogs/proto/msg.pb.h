@@ -413,43 +413,43 @@ extern const int32_t NAddBullet_ActorUID_default;
 #define NPlayerRemove_init_default               {0}
 #define NConfig_init_default                     {"", ""}
 #define NTileSet_init_default                    {NVec2i_init_default, 0, "", "", 0}
-#define NMapObjectAdd_init_default               {0, "", NVec2_init_default, 0, 0}
+#define NMapObjectAdd_init_default               {0, "", Nsvec2_init_default, 0, 0}
 #define NMapObjectDamage_init_default            {0, 0, 0, 0, 0}
 #define NMapObjectRemove_init_default            {0, 0, 0, 0}
 #define NScore_init_default                      {0, 0}
-#define NSound_init_default                      {"", NVec2_init_default, 0}
+#define NSound_init_default                      {"", Nsvec2_init_default, 0}
 #define NVec2i_init_default                      {0, 0}
-#define NVec2_init_default                       {0, 0}
+#define Nsvec2_init_default                       {0, 0}
 #define NGameBegin_init_default                  {0}
-#define NActorAdd_init_default                   {0, 0, 4, 0, -1, 0, NVec2_init_default}
-#define NActorMove_init_default                  {0, NVec2_init_default, NVec2_init_default}
+#define NActorAdd_init_default                   {0, 0, 4, 0, -1, 0, Nsvec2_init_default}
+#define NActorMove_init_default                  {0, Nsvec2_init_default, Nsvec2_init_default}
 #define NActorState_init_default                 {0, 0}
 #define NActorDir_init_default                   {0, 0}
-#define NActorSlide_init_default                 {0, NVec2_init_default}
-#define NActorImpulse_init_default               {0, NVec2_init_default, NVec2_init_default}
+#define NActorSlide_init_default                 {0, Nsvec2_init_default}
+#define NActorImpulse_init_default               {0, Nsvec2_init_default, Nsvec2_init_default}
 #define NActorSwitchGun_init_default             {0, 0}
 #define NActorPickupAll_init_default             {0, 0}
 #define NActorReplaceGun_init_default            {0, 0, ""}
 #define NActorHeal_init_default                  {0, -1, 0, 0}
-#define NActorHit_init_default                   {0, -1, -1, 0, 0, NVec2_init_default, 0}
+#define NActorHit_init_default                   {0, -1, -1, 0, 0, Nsvec2_init_default, 0}
 #define NActorAddAmmo_init_default               {0, -1, 0, 0, 0}
 #define NActorUseAmmo_init_default               {0, -1, 0, 0}
 #define NActorDie_init_default                   {0}
 #define NActorMelee_init_default                 {0, "", 0, 0, 0}
-#define NAddPickup_init_default                  {0, "", 0, -1, 0, NVec2_init_default}
+#define NAddPickup_init_default                  {0, "", 0, -1, 0, Nsvec2_init_default}
 #define NRemovePickup_init_default               {0, -1}
-#define NBulletBounce_init_default               {0, 0, 0, NVec2_init_default, NVec2_init_default, NVec2_init_default, 0}
+#define NBulletBounce_init_default               {0, 0, 0, Nsvec2_init_default, Nsvec2_init_default, Nsvec2_init_default, 0}
 #define NRemoveBullet_init_default               {0}
-#define NGunReload_init_default                  {-1, "", NVec2_init_default, 0}
-#define NGunFire_init_default                    {-1, -1, "", NVec2_init_default, 0, 0, 0, 0, 0}
+#define NGunReload_init_default                  {-1, "", Nsvec2_init_default, 0}
+#define NGunFire_init_default                    {-1, -1, "", Nsvec2_init_default, 0, 0, 0, 0, 0}
 #define NGunState_init_default                   {0, 0}
-#define NAddBullet_init_default                  {0, "", NVec2_init_default, 0, 0, 0, 0, -1, -1}
+#define NAddBullet_init_default                  {0, "", Nsvec2_init_default, 0, 0, 0, 0, -1, -1}
 #define NTrigger_init_default                    {0, NVec2i_init_default}
 #define NExploreTiles_init_default               {0, {NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default}}
 #define NExploreTiles_Run_init_default           {NVec2i_init_default, 0}
 #define NRescueCharacter_init_default            {0}
 #define NObjectiveUpdate_init_default            {0, 0}
-#define NAddKeys_init_default                    {0, NVec2_init_default}
+#define NAddKeys_init_default                    {0, Nsvec2_init_default}
 #define NMissionComplete_init_default            {0, NVec2i_init_default, NVec2i_init_default}
 #define NMissionEnd_init_default                 {0, 0, ""}
 #define NServerInfo_init_zero                    {0, 0, "", 0, "", 0, 0, 0}
@@ -462,43 +462,43 @@ extern const int32_t NAddBullet_ActorUID_default;
 #define NPlayerRemove_init_zero                  {0}
 #define NConfig_init_zero                        {"", ""}
 #define NTileSet_init_zero                       {NVec2i_init_zero, 0, "", "", 0}
-#define NMapObjectAdd_init_zero                  {0, "", NVec2_init_zero, 0, 0}
+#define NMapObjectAdd_init_zero                  {0, "", Nsvec2_init_zero, 0, 0}
 #define NMapObjectDamage_init_zero               {0, 0, 0, 0, 0}
 #define NMapObjectRemove_init_zero               {0, 0, 0, 0}
 #define NScore_init_zero                         {0, 0}
-#define NSound_init_zero                         {"", NVec2_init_zero, 0}
+#define NSound_init_zero                         {"", Nsvec2_init_zero, 0}
 #define NVec2i_init_zero                         {0, 0}
-#define NVec2_init_zero                          {0, 0}
+#define Nsvec2_init_zero                          {0, 0}
 #define NGameBegin_init_zero                     {0}
-#define NActorAdd_init_zero                      {0, 0, 0, 0, 0, 0, NVec2_init_zero}
-#define NActorMove_init_zero                     {0, NVec2_init_zero, NVec2_init_zero}
+#define NActorAdd_init_zero                      {0, 0, 0, 0, 0, 0, Nsvec2_init_zero}
+#define NActorMove_init_zero                     {0, Nsvec2_init_zero, Nsvec2_init_zero}
 #define NActorState_init_zero                    {0, 0}
 #define NActorDir_init_zero                      {0, 0}
-#define NActorSlide_init_zero                    {0, NVec2_init_zero}
-#define NActorImpulse_init_zero                  {0, NVec2_init_zero, NVec2_init_zero}
+#define NActorSlide_init_zero                    {0, Nsvec2_init_zero}
+#define NActorImpulse_init_zero                  {0, Nsvec2_init_zero, Nsvec2_init_zero}
 #define NActorSwitchGun_init_zero                {0, 0}
 #define NActorPickupAll_init_zero                {0, 0}
 #define NActorReplaceGun_init_zero               {0, 0, ""}
 #define NActorHeal_init_zero                     {0, 0, 0, 0}
-#define NActorHit_init_zero                      {0, 0, 0, 0, 0, NVec2_init_zero, 0}
+#define NActorHit_init_zero                      {0, 0, 0, 0, 0, Nsvec2_init_zero, 0}
 #define NActorAddAmmo_init_zero                  {0, 0, 0, 0, 0}
 #define NActorUseAmmo_init_zero                  {0, 0, 0, 0}
 #define NActorDie_init_zero                      {0}
 #define NActorMelee_init_zero                    {0, "", 0, 0, 0}
-#define NAddPickup_init_zero                     {0, "", 0, 0, 0, NVec2_init_zero}
+#define NAddPickup_init_zero                     {0, "", 0, 0, 0, Nsvec2_init_zero}
 #define NRemovePickup_init_zero                  {0, 0}
-#define NBulletBounce_init_zero                  {0, 0, 0, NVec2_init_zero, NVec2_init_zero, NVec2_init_zero, 0}
+#define NBulletBounce_init_zero                  {0, 0, 0, Nsvec2_init_zero, Nsvec2_init_zero, Nsvec2_init_zero, 0}
 #define NRemoveBullet_init_zero                  {0}
-#define NGunReload_init_zero                     {0, "", NVec2_init_zero, 0}
-#define NGunFire_init_zero                       {0, 0, "", NVec2_init_zero, 0, 0, 0, 0, 0}
+#define NGunReload_init_zero                     {0, "", Nsvec2_init_zero, 0}
+#define NGunFire_init_zero                       {0, 0, "", Nsvec2_init_zero, 0, 0, 0, 0, 0}
 #define NGunState_init_zero                      {0, 0}
-#define NAddBullet_init_zero                     {0, "", NVec2_init_zero, 0, 0, 0, 0, 0, 0}
+#define NAddBullet_init_zero                     {0, "", Nsvec2_init_zero, 0, 0, 0, 0, 0, 0}
 #define NTrigger_init_zero                       {0, NVec2i_init_zero}
 #define NExploreTiles_init_zero                  {0, {NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero}}
 #define NExploreTiles_Run_init_zero              {NVec2i_init_zero, 0}
 #define NRescueCharacter_init_zero               {0}
 #define NObjectiveUpdate_init_zero               {0, 0}
-#define NAddKeys_init_zero                       {0, NVec2_init_zero}
+#define NAddKeys_init_zero                       {0, Nsvec2_init_zero}
 #define NMissionComplete_init_zero               {0, NVec2i_init_zero, NVec2i_init_zero}
 #define NMissionEnd_init_zero                    {0, 0, ""}
 
@@ -577,8 +577,8 @@ extern const int32_t NAddBullet_ActorUID_default;
 #define NServerInfo_MissionNumber_tag            6
 #define NServerInfo_NumPlayers_tag               7
 #define NServerInfo_MaxPlayers_tag               8
-#define NVec2_x_tag                              1
-#define NVec2_y_tag                              2
+#define Nsvec2_x_tag                              1
+#define Nsvec2_y_tag                              2
 #define NVec2i_x_tag                             1
 #define NVec2i_y_tag                             2
 #define NActorAdd_UID_tag                        1
@@ -694,7 +694,7 @@ extern const pb_field_t NMapObjectRemove_fields[5];
 extern const pb_field_t NScore_fields[3];
 extern const pb_field_t NSound_fields[4];
 extern const pb_field_t NVec2i_fields[3];
-extern const pb_field_t NVec2_fields[3];
+extern const pb_field_t Nsvec2_fields[3];
 extern const pb_field_t NGameBegin_fields[2];
 extern const pb_field_t NActorAdd_fields[8];
 extern const pb_field_t NActorMove_fields[4];
@@ -745,7 +745,7 @@ extern const pb_field_t NMissionEnd_fields[4];
 #define NScore_size                              17
 #define NSound_size                              145
 #define NVec2i_size                              22
-#define NVec2_size                               10
+#define Nsvec2_size                               10
 #define NGameBegin_size                          11
 #define NActorAdd_size                           63
 #define NActorMove_size                          30

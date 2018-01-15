@@ -32,14 +32,14 @@
 #include "map.h"
 
 
-void LOSInit(Map *map, const Vec2i size);
+void LOSInit(Map *map, const struct vec2i size);
 void LOSTerminate(LineOfSight *los);
 void LOSReset(LineOfSight *los);
 void LOSSetAllVisible(LineOfSight *los);
-void LOSCalcFrom(Map *map, const Vec2i pos, const bool explore);
+void LOSCalcFrom(Map *map, const struct vec2i pos, const bool explore);
 
 // Helper function for populating explore tiles runs
 // Returns true if the runs have filled
 bool LOSAddRun(
-	NExploreTiles *runs, bool *run, const Vec2i tile, const bool explored);
-bool LOSTileIsVisible(Map *map, const Vec2i pos);
+	NExploreTiles *runs, bool *run, const struct vec2i tile, const bool explored);
+bool LOSTileIsVisible(Map *map, const struct vec2i pos);

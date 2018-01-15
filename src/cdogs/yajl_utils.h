@@ -1,16 +1,16 @@
 /*
  Copyright (c) 2013-2017 Cong Xu
  All rights reserved.
- 
+
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
- 
+
  Redistributions of source code must retain the above copyright notice, this
  list of conditions and the following disclaimer.
  Redistributions in binary form must reproduce the above copyright notice,
  this list of conditions and the following disclaimer in the documentation
  and/or other materials provided with the distribution.
- 
+
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -41,8 +41,8 @@ void AddColorPair(json_t *parent, const char *name, const color_t c);
 void YAJLBool(bool *value, yajl_val node, const char *name);
 void YAJLInt(int *value, yajl_val node, const char *name);
 void YAJLDouble(double *value, yajl_val node, const char *name);
-void YAJLVec2i(Vec2i *value, yajl_val node, const char *name);
-#define YAJL_GET_VEC2I(v) Vec2iNew(\
+void YAJLVec2i(struct vec2i *value, yajl_val node, const char *name);
+#define YAJL_GET_VEC2I(v) svec2i(\
 	(int)YAJL_GET_INTEGER(YAJL_GET_ARRAY(v)->values[0]),\
 	(int)YAJL_GET_INTEGER(YAJL_GET_ARRAY(v)->values[1]))
 // remember to free

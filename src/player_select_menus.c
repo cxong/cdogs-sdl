@@ -43,7 +43,7 @@ static char smallLetters[] = "1234567890-qwertyuiop!asdfghjkl:#zxcvbnm  .?";
 
 static void DrawNameMenu(
 	const menu_t *menu, GraphicsDevice *g,
-	const Vec2i pos, const Vec2i size, const void *data)
+	const struct vec2i pos, const struct vec2i size, const void *data)
 {
 	const PlayerSelectMenuData *d = data;
 
@@ -60,7 +60,7 @@ static void DrawNameMenu(
 	int i;
 	for (i = 0; i < (int)strlen(letters); i++)
 	{
-		Vec2i menuPos = Vec2iNew(
+		struct vec2i menuPos = svec2i(
 			x + (i % ENTRY_COLS) * ENTRY_SPACING,
 			y + (i / ENTRY_COLS) * FontH());
 		FontChMask(
@@ -69,7 +69,7 @@ static void DrawNameMenu(
 	}
 
 	DisplayMenuItem(
-		Vec2iNew(
+		svec2i(
 			x + (i % ENTRY_COLS) * ENTRY_SPACING,
 			y + (i / ENTRY_COLS) * FontH()),
 		"(End)", i == d->nameMenuSelection, 0, colorBlack);
@@ -197,7 +197,7 @@ static void PostInputFaceMenu(menu_t *menu, int cmd, void *data)
 
 static void DrawColorMenu(
 	const menu_t *menu, GraphicsDevice *g,
-	const Vec2i pos, const Vec2i size, const void *data);
+	const struct vec2i pos, const struct vec2i size, const void *data);
 static int HandleInputColorMenu(int cmd, void *data);
 static menu_t *CreateColorMenu(
 	const char *name, ColorMenuData *data,
@@ -211,7 +211,7 @@ static menu_t *CreateColorMenu(
 	int errorLowest = -1;
 	PlayerData *p = PlayerDataGetByUID(playerUID);
 	const color_t currentColour = *CharColorGetByType(&p->Char.Colors, type);
-	Vec2i v;
+	struct vec2i v;
 	for (v.y = 0; v.y < data->palette->size.y; v.y++)
 	{
 		for (v.x = 0; v.x < data->palette->size.x; v.x++)
@@ -237,15 +237,15 @@ static menu_t *CreateColorMenu(
 }
 static void DrawColorMenu(
 	const menu_t *menu, GraphicsDevice *g,
-	const Vec2i pos, const Vec2i size, const void *data)
+	const struct vec2i pos, const struct vec2i size, const void *data)
 {
 	UNUSED(menu);
 	const ColorMenuData *d = data;
 	// Draw colour squares from the palette
-	const Vec2i swatchSize = Vec2iNew(4, 4);
-	const Vec2i drawPos = Vec2iNew(
+	const struct vec2i swatchSize = svec2i(4, 4);
+	const struct vec2i drawPos = svec2i(
 		pos.x, CENTER_Y(pos, size, d->palette->size.y * swatchSize.y));
-	Vec2i v;
+	struct vec2i v;
 	for (v.y = 0; v.y < d->palette->size.y; v.y++)
 	{
 		for (v.x = 0; v.x < d->palette->size.x; v.x++)
@@ -257,24 +257,24 @@ static void DrawColorMenu(
 				continue;
 			}
 			DrawRectangle(
-				g, Vec2iAdd(drawPos, Vec2iMult(v, swatchSize)), swatchSize,
+				g, svec2i_add(drawPos, svec2i_multiply(v, swatchSize)), swatchSize,
 				colour, 0);
 		}
 	}
 	// Draw a highlight around the selected colour
 	DrawRectangle(
 		g,
-		Vec2iAdd(
+		svec2i_add(
 			drawPos,
-			Vec2iMinus(
-				Vec2iMult(d->selectedColor, swatchSize), Vec2iNew(1, 1))),
-		Vec2iAdd(swatchSize, Vec2iNew(2, 2)),
+			svec2i_subtract(
+				svec2i_multiply(d->selectedColor, swatchSize), svec2i(1, 1))),
+		svec2i_add(swatchSize, svec2i(2, 2)),
 		colorWhite, DRAW_FLAG_LINE);
 }
 static int HandleInputColorMenu(int cmd, void *data)
 {
 	ColorMenuData *d = data;
-	Vec2i selected = d->selectedColor;
+	struct vec2i selected = d->selectedColor;
 	switch (cmd)
 	{
 	case CMD_LEFT: selected.x--; break;
@@ -381,7 +381,7 @@ static void PostInputSaveTemplate(menu_t *menu, int cmd, void *data)
 
 static void SaveTemplateDisplayTitle(
 	const menu_t *menu, GraphicsDevice *g,
-	const Vec2i pos, const Vec2i size, const void *data)
+	const struct vec2i pos, const struct vec2i size, const void *data)
 {
 	UNUSED(g);
 	const PlayerSelectMenuData *d = data;
@@ -393,7 +393,7 @@ static void SaveTemplateDisplayTitle(
 	// Display "Save <template>..." title
 	const PlayerData *p = PlayerDataGetByUID(d->display.PlayerUID);
 	sprintf(buf, "Save %s...", p->name);
-	FontStr(buf, Vec2iAdd(pos, Vec2iNew(0, 0)));
+	FontStr(buf, svec2i_add(pos, svec2i(0, 0)));
 }
 
 static menu_t *CreateSaveTemplateMenu(
@@ -425,7 +425,7 @@ void PlayerSelectMenusCreate(
 {
 	MenuSystem *ms = &menu->ms;
 	PlayerSelectMenuData *data = &menu->data;
-	Vec2i pos, size;
+	struct vec2i pos, size;
 	int w = graphics->cachedConfig.Res.x;
 	int h = graphics->cachedConfig.Res.y;
 
@@ -439,24 +439,24 @@ void PlayerSelectMenusCreate(
 	{
 	case 1:
 		// Single menu, entire screen
-		pos = Vec2iNew(w / 2, 0);
-		size = Vec2iNew(w / 2, h);
+		pos = svec2i(w / 2, 0);
+		size = svec2i(w / 2, h);
 		break;
 	case 2:
 		// Two menus, side by side
-		pos = Vec2iNew(player * w / 2 + w / 4, 0);
-		size = Vec2iNew(w / 4, h);
+		pos = svec2i(player * w / 2 + w / 4, 0);
+		size = svec2i(w / 4, h);
 		break;
 	case 3:
 	case 4:
 		// Four corners
-		pos = Vec2iNew((player & 1) * w / 2 + w / 4, (player / 2) * h / 2);
-		size = Vec2iNew(w / 4, h / 2);
+		pos = svec2i((player & 1) * w / 2 + w / 4, (player / 2) * h / 2);
+		size = svec2i(w / 4, h / 2);
 		break;
 	default:
 		CASSERT(false, "not implemented");
-		pos = Vec2iNew(w / 2, 0);
-		size = Vec2iNew(w / 2, h);
+		pos = svec2i(w / 2, 0);
+		size = svec2i(w / 2, h);
 		break;
 	}
 	MenuSystemInit(ms, handlers, graphics, pos, size);

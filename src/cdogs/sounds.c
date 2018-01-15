@@ -337,7 +337,7 @@ static void SetSoundEffect(
 	const int channel, const Sint16 bearingDegrees, const Uint8 distance,
 	const bool isMuffled);
 static void SoundPlayAtPosition(
-	SoundDevice *device, Mix_Chunk *data, const struct vec dp,
+	SoundDevice *device, Mix_Chunk *data, const struct vec2 dp,
 	const bool isMuffled)
 {
 	if (!device->isInitialised || data == NULL)
@@ -349,7 +349,7 @@ static void SoundPlayAtPosition(
 	Sint16 bearingDegrees = 0;
 	const float screen = (float)gGraphicsDevice.cachedConfig.Res.x;
 	const float halfScreen = screen / 2;
-	if (!vector2_is_zero(dp))
+	if (!svec2_is_zero(dp))
 	{
 		// Calculate distance and bearing
 		// Sound position is calculated from an imaginary camera that's half as
@@ -362,7 +362,7 @@ static void SoundPlayAtPosition(
 		//                |
 		//     camera---> +
 		// Calculate real distance using Pythagoras
-		const float d = vector2_length(dp);
+		const float d = svec2_length(dp);
 		// Scale so that sounds more than a full screen from centre have
 		// maximum distance (255)
 		const float maxDistance =
@@ -456,11 +456,11 @@ void SoundPlay(SoundDevice *device, Mix_Chunk *data)
 		return;
 	}
 
-	SoundPlayAtPosition(device, data, vector2_zero(), false);
+	SoundPlayAtPosition(device, data, svec2_zero(), false);
 }
 
 
-void SoundSetEar(const bool isLeft, const int idx, const struct vec pos)
+void SoundSetEar(const bool isLeft, const int idx, const struct vec2 pos)
 {
 	if (isLeft)
 	{
@@ -486,37 +486,37 @@ void SoundSetEar(const bool isLeft, const int idx, const struct vec pos)
 	}
 }
 
-void SoundSetEarsSide(const bool isLeft, const struct vec pos)
+void SoundSetEarsSide(const bool isLeft, const struct vec2 pos)
 {
 	SoundSetEar(isLeft, 0, pos);
 	SoundSetEar(isLeft, 1, pos);
 }
 
-void SoundSetEars(const struct vec pos)
+void SoundSetEars(const struct vec2 pos)
 {
 	SoundSetEarsSide(true, pos);
 	SoundSetEarsSide(false, pos);
 }
 
-void SoundPlayAt(SoundDevice *device, Mix_Chunk *data, const struct vec pos)
+void SoundPlayAt(SoundDevice *device, Mix_Chunk *data, const struct vec2 pos)
 {
 	SoundPlayAtPlusDistance(device, data, pos, 0);
 }
 
-static bool IsPosNoSee(void *data, Vec2i pos)
+static bool IsPosNoSee(void *data, struct vec2i pos)
 {
 	const Tile *t = MapGetTile(data, Vec2iToTile(pos));
 	return t != NULL && (t->flags & MAPTILE_NO_SEE);
 }
 void SoundPlayAtPlusDistance(
 	SoundDevice *device, Mix_Chunk *data,
-	const struct vec pos, const int plusDistance)
+	const struct vec2 pos, const int plusDistance)
 {
-	struct vec closestLeftEar, closestRightEar;
+	struct vec2 closestLeftEar, closestRightEar;
 
 	// Find closest set of ears to the sound
-	if (vector2_distance_squared_to(pos, device->earLeft1) <
-		vector2_distance_squared_to(pos, device->earLeft2))
+	if (svec2_distance_squared(pos, device->earLeft1) <
+		svec2_distance_squared(pos, device->earLeft2))
 	{
 		closestLeftEar = device->earLeft1;
 	}
@@ -524,8 +524,8 @@ void SoundPlayAtPlusDistance(
 	{
 		closestLeftEar = device->earLeft2;
 	}
-	if (vector2_distance_squared_to(pos, device->earRight1) <
-		vector2_distance_squared_to(pos, device->earRight2))
+	if (svec2_distance_squared(pos, device->earRight1) <
+		svec2_distance_squared(pos, device->earRight2))
 	{
 		closestRightEar = device->earRight1;
 	}
@@ -534,20 +534,20 @@ void SoundPlayAtPlusDistance(
 		closestRightEar = device->earRight2;
 	}
 
-	const struct vec origin = CalcClosestPointOnLineSegmentToPoint(
+	const struct vec2 origin = CalcClosestPointOnLineSegmentToPoint(
 		closestLeftEar, closestRightEar, pos);
 	HasClearLineData lineData;
 	lineData.IsBlocked = IsPosNoSee;
 	lineData.data = &gMap;
 	bool isMuffled = false;
 	if (!HasClearLineJMRaytrace(
-		Vec2ToVec2i(pos), Vec2ToVec2i(origin), &lineData))
+		svec2i_assign_vec2(pos), svec2i_assign_vec2(origin), &lineData))
 	{
 		isMuffled = true;
 	}
-	const struct vec dp = vector2_subtract(pos, origin);
+	const struct vec2 dp = svec2_subtract(pos, origin);
 	SoundPlayAtPosition(
-		&gSoundDevice, data, to_vector2(dp.x, fabsf(dp.y) + plusDistance),
+		&gSoundDevice, data, svec2(dp.x, fabsf(dp.y) + plusDistance),
 		isMuffled);
 }
 

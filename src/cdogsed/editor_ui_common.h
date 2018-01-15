@@ -50,10 +50,10 @@ typedef struct
 	CampaignOptions *Campaign;
 } EditorBrushAndCampaign;
 
-void DisplayMapItem(const Vec2i pos, const MapObject *mo);
+void DisplayMapItem(const struct vec2i pos, const MapObject *mo);
 void DisplayMapItemWithDensity(
-	const Vec2i pos, const MapObjectDensity *mod, const bool isHighlighted);
-void DrawKey(UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData);
+	const struct vec2i pos, const MapObjectDensity *mod, const bool isHighlighted);
+void DrawKey(UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData);
 
 void InsertMission(CampaignOptions *co, Mission *mission, int idx);
 void DeleteMission(CampaignOptions *co);
@@ -62,20 +62,20 @@ bool ConfirmScreen(const char *info, const char *msg);
 void ClearScreen(GraphicsDevice *g);
 
 void DisplayFlag(
-	const Vec2i pos, const char *s, const bool isOn, const bool isHighlighted);
+	const struct vec2i pos, const char *s, const bool isOn, const bool isHighlighted);
 
-UIObject *CreateCampaignSeedObj(const Vec2i pos, CampaignOptions *co);
+UIObject *CreateCampaignSeedObj(const struct vec2i pos, CampaignOptions *co);
 UIObject *CreateAddMapItemObjs(
-	const Vec2i pos, bool (*objFunc)(UIObject *, MapObject *, void *),
+	const struct vec2i pos, bool (*objFunc)(UIObject *, MapObject *, void *),
 	void *data, const size_t dataSize, const bool expandDown);
 UIObject *CreateAddPickupSpawnerObjs(
-	const Vec2i pos, bool (*objFunc)(UIObject *, MapObject *, void *),
+	const struct vec2i pos, bool (*objFunc)(UIObject *, MapObject *, void *),
 	void *data, const size_t dataSize);
 
 char *MakePlacementFlagTooltip(const MapObject *mo);
 
 // Create a dummy label that can be clicked to close the context menu
-void CreateCloseLabel(UIObject *c, const Vec2i pos);
+void CreateCloseLabel(UIObject *c, const struct vec2i pos);
 
 // Macro for creating the helper function to show/hide controls for specific
 // map types

@@ -251,13 +251,13 @@ static void MissionChangeObjectiveFlags(void *vData, int d)
 
 
 static UIObject *CreateObjectiveObjs(
-	Vec2i pos, CampaignOptions *co, const int idx);
-void CreateObjectivesObjs(CampaignOptions *co, UIObject *c, Vec2i pos)
+	struct vec2i pos, CampaignOptions *co, const int idx);
+void CreateObjectivesObjs(CampaignOptions *co, UIObject *c, struct vec2i pos)
 {
 	const int th = FontH();
-	Vec2i objectivesPos = Vec2iNew(0, 7 * th);
+	struct vec2i objectivesPos = svec2i(0, 7 * th);
 	UIObject *o =
-		UIObjectCreate(UITYPE_TEXTBOX, 0, Vec2iZero(), Vec2iNew(300, th));
+		UIObjectCreate(UITYPE_TEXTBOX, 0, svec2i_zero(), svec2i(300, th));
 	o->Flags = UI_SELECT_ONLY;
 
 	for (int i = 0; i < OBJECTIVE_MAX_OLD; i++)
@@ -284,25 +284,25 @@ void CreateObjectivesObjs(CampaignOptions *co, UIObject *c, Vec2i pos)
 	UIObjectDestroy(o);
 }
 static void CreateObjectiveItemObjs(
-	UIObject *c, const Vec2i pos, CampaignOptions *co, const int idx);
+	UIObject *c, const struct vec2i pos, CampaignOptions *co, const int idx);
 static UIObject *CreateObjectiveObjs(
-	Vec2i pos, CampaignOptions *co, const int idx)
+	struct vec2i pos, CampaignOptions *co, const int idx)
 {
 	const int th = FontH();
 	UIObject *c;
 	UIObject *o;
 	UIObject *o2;
-	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	c = UIObjectCreate(UITYPE_NONE, 0, svec2i_zero(), svec2i_zero());
 	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 
-	o = UIObjectCreate(UITYPE_LABEL, 0, Vec2iZero(), Vec2iZero());
+	o = UIObjectCreate(UITYPE_LABEL, 0, svec2i_zero(), svec2i_zero());
 	o->Flags = UI_LEAVE_YC;
 	o->ChangesData = 1;
 
 	pos.y -= idx * th;
 	// Drop-down menu for objective type
 	o2 = UIObjectCopy(o);
-	o2->Size = Vec2iNew(35, th);
+	o2->Size = svec2i(35, th);
 	o2->u.LabelFunc = MissionGetObjectiveStr;
 	CMALLOC(o2->Data, sizeof(MissionIndexData));
 	o2->IsDynamicData = true;
@@ -311,11 +311,11 @@ static UIObject *CreateObjectiveObjs(
 	o2->Pos = pos;
 	CSTRDUP(o2->Tooltip, "Objective type");
 	UIObject *oObjType =
-		UIObjectCreate(UITYPE_CONTEXT_MENU, 0, Vec2iZero(), Vec2iZero());
+		UIObjectCreate(UITYPE_CONTEXT_MENU, 0, svec2i_zero(), svec2i_zero());
 	for (int i = 0; i < (int)OBJECTIVE_MAX; i++)
 	{
 		UIObject *oObjTypeChild =
-			UIObjectCreate(UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(50, th));
+			UIObjectCreate(UITYPE_LABEL, 0, svec2i_zero(), svec2i(50, th));
 		oObjTypeChild->ChangesData = true;
 		oObjTypeChild->Pos.y = i * th;
 		UIObjectSetDynamicLabel(
@@ -345,7 +345,7 @@ static UIObject *CreateObjectiveObjs(
 	((MissionIndexData *)o2->Data)->co = co;
 	((MissionIndexData *)o2->Data)->index = idx;
 	o2->Pos = pos;
-	o2->Size = Vec2iNew(20, th);
+	o2->Size = svec2i(20, th);
 	CSTRDUP(o2->Tooltip, "0: optional objective");
 	UIObjectAddChild(c, o2);
 	pos.x += 20;
@@ -357,7 +357,7 @@ static UIObject *CreateObjectiveObjs(
 	((MissionIndexData *)o2->Data)->co = co;
 	((MissionIndexData *)o2->Data)->index = idx;
 	o2->Pos = pos;
-	o2->Size = Vec2iNew(40, th);
+	o2->Size = svec2i(40, th);
 	UIObjectAddChild(c, o2);
 	pos.x += 45;
 	o2 = UIObjectCopy(o);
@@ -368,7 +368,7 @@ static UIObject *CreateObjectiveObjs(
 	((MissionIndexData *)o2->Data)->co = co;
 	((MissionIndexData *)o2->Data)->index = idx;
 	o2->Pos = pos;
-	o2->Size = Vec2iNew(100, th);
+	o2->Size = svec2i(100, th);
 	CSTRDUP(o2->Tooltip,
 		"hidden: not shown on map\n"
 		"pos.known: always shown on map\n"
@@ -388,13 +388,13 @@ typedef struct
 	MapObject *M;
 } DestroyObjectiveData;
 static void MissionDrawKillObjective(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData);
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData);
 static void MissionDrawCollectObjective(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData);
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData);
 static void MissionDrawDestroyObjective(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData);
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData);
 static void MissionDrawRescueObjective(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData);
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData);
 static void MissionChangeCollectObjectiveIndex(void *vData, int d);
 static void MissionChangeRescueObjectiveIndex(void *vData, int d);
 static void MissionCheckObjectiveIsKill(UIObject *o, void *vData);
@@ -403,10 +403,10 @@ static void MissionCheckObjectiveIsDestroy(UIObject *o, void *vData);
 static void MissionCheckObjectiveIsRescue(UIObject *o, void *vData);
 static bool ObjectiveDestroyObjFunc(UIObject *o, MapObject *mo, void *data);
 static void CreateObjectiveItemObjs(
-	UIObject *c, const Vec2i pos, CampaignOptions *co, const int idx)
+	UIObject *c, const struct vec2i pos, CampaignOptions *co, const int idx)
 {
 	// TODO: context menu
-	UIObject *o = UIObjectCreate(UITYPE_CUSTOM, 0, pos, Vec2iNew(30, 20));
+	UIObject *o = UIObjectCreate(UITYPE_CUSTOM, 0, pos, svec2i(30, 20));
 	o->Flags = UI_LEAVE_YC;
 	o->ChangesData = true;
 	UIObject *o2;
@@ -458,7 +458,7 @@ static void CreateObjectiveItemObjs(
 }
 
 static void MissionDrawKillObjective(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
 {
 	MissionIndexData *data = vData;
 	UNUSED(g);
@@ -471,13 +471,13 @@ static void MissionDrawKillObjective(
 	{
 		Character *c = CArrayGet(
 			&store->OtherChars, CharacterStoreGetSpecialId(store, 0));
-		const Vec2i drawPos =
-			Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
+		const struct vec2i drawPos =
+			svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2));
 		DrawCharacterSimple(c, drawPos, DIRECTION_DOWN, false, true);
 	}
 }
 static void MissionDrawCollectObjective(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
 {
 	MissionIndexData *data = vData;
 	UNUSED(g);
@@ -487,12 +487,12 @@ static void MissionDrawCollectObjective(
 	// TODO: only one kill and rescue objective allowed
 	const Objective *obj = CArrayGet(&m->Objectives, data->index);
 	const Pic *newPic = obj->u.Pickup->Pic;
-	const Vec2i drawPos =
-		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
-	Blit(g, newPic, Vec2iMinus(drawPos, Vec2iScaleDiv(newPic->size, 2)));
+	const struct vec2i drawPos =
+		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2));
+	Blit(g, newPic, svec2i_subtract(drawPos, svec2i_scale_divide(newPic->size, 2)));
 }
 static void MissionDrawDestroyObjective(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
 {
 	MissionIndexData *data = vData;
 	UNUSED(g);
@@ -501,14 +501,14 @@ static void MissionDrawDestroyObjective(
 	if ((int)m->Objectives.size <= data->index) return;
 	// TODO: only one kill and rescue objective allowed
 	const Objective *obj = CArrayGet(&m->Objectives, data->index);
-	Vec2i offset;
+	struct vec2i offset;
 	const Pic *newPic = MapObjectGetPic(obj->u.MapObject, &offset);
-	const Vec2i drawPos =
-		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
-	Blit(g, newPic, Vec2iAdd(drawPos, offset));
+	const struct vec2i drawPos =
+		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2));
+	Blit(g, newPic, svec2i_add(drawPos, offset));
 }
 static void MissionDrawRescueObjective(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
 {
 	MissionIndexData *data = vData;
 	UNUSED(g);
@@ -521,8 +521,8 @@ static void MissionDrawRescueObjective(
 	{
 		Character *c = CArrayGet(
 			&store->OtherChars, CharacterStoreGetPrisonerId(store, 0));
-		const Vec2i drawPos =
-			Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2));
+		const struct vec2i drawPos =
+			svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2));
 		DrawCharacterSimple(c, drawPos, DIRECTION_DOWN, false, true);
 	}
 }
@@ -593,7 +593,7 @@ static void MissionCheckObjectiveIsRescue(UIObject *o, void *vData)
 	o->IsVisible = obj->Type == OBJECTIVE_RESCUE;
 }
 static void DrawMapItem(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData);
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData);
 static bool ObjectiveDestroyObjFunc(UIObject *o, MapObject *mo, void *vData)
 {
 	if (mo->Type != MAP_OBJECT_TYPE_NORMAL)
@@ -610,10 +610,10 @@ static bool ObjectiveDestroyObjFunc(UIObject *o, MapObject *mo, void *vData)
 	return true;
 }
 static void DrawMapItem(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
 {
 	UNUSED(g);
 	const DestroyObjectiveData *data = vData;
 	DisplayMapItem(
-		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)), data->M);
+		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)), data->M);
 }

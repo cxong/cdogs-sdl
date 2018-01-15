@@ -38,29 +38,29 @@
 // Display a character and the player name above it, with the character
 // centered around the target position
 void DisplayCharacterAndName(
-	Vec2i pos, Character *c, const direction_e d,
+	struct vec2i pos, Character *c, const direction_e d,
 	const char *name, const color_t color)
 {
 	// Move the point down a bit since the default character draw point is at
 	// its feet
 	pos.y += 8;
-	Vec2i namePos = Vec2iAdd(pos, Vec2iNew(-FontStrW(name) / 2, -30));
+	struct vec2i namePos = svec2i_add(pos, svec2i(-FontStrW(name) / 2, -30));
 	DrawCharacterSimple(c, pos, d, false, false);
 	FontStrMask(name, namePos, color);
 }
 
 void MenuDisplayPlayer(
 	const menu_t *menu, GraphicsDevice *g,
-	const Vec2i pos, const Vec2i size, const void *data)
+	const struct vec2i pos, const struct vec2i size, const void *data)
 {
 	UNUSED(g);
 	const MenuDisplayPlayerData *d = data;
-	Vec2i playerPos;
+	struct vec2i playerPos;
 	char s[22];
 	UNUSED(menu);
-	Vec2i dPos = pos;
+	struct vec2i dPos = pos;
 	dPos.x -= size.x;	// move to left half of screen
-	playerPos = Vec2iNew(
+	playerPos = svec2i(
 		dPos.x + size.x * 3 / 4 - 12 / 2, CENTER_Y(dPos, size, 0));
 
 	PlayerData *pData = PlayerDataGetByUID(d->PlayerUID);
@@ -78,7 +78,7 @@ void MenuDisplayPlayer(
 
 void MenuDisplayPlayerControls(
 	const menu_t *menu, GraphicsDevice *g,
-	const Vec2i pos, const Vec2i size, const void *data)
+	const struct vec2i pos, const struct vec2i size, const void *data)
 {
 	UNUSED(g);
 	char s[256];
@@ -101,18 +101,18 @@ void MenuDisplayPlayerControls(
 			InputGetButtonName(
 				pData->inputDevice, pData->deviceIndex, CMD_BUTTON2, button2);
 			sprintf(s, "(%s,\n%s and %s)", directionNames, button1, button2);
-			FontStr(s, Vec2iNew(pos.x - FontStrW(s) / 2, y - FontH()));
+			FontStr(s, svec2i(pos.x - FontStrW(s) / 2, y - FontH()));
 		}
 		break;
 	case INPUT_DEVICE_MOUSE:
 		sprintf(s, "(%s to scroll,\nleft and right click)", directionNames);
-		FontStr(s, Vec2iNew(pos.x - FontStrW(s) / 2, y - FontH()));
+		FontStr(s, svec2i(pos.x - FontStrW(s) / 2, y - FontH()));
 		break;
 	case INPUT_DEVICE_JOYSTICK:
 		{
 			sprintf(s, "(%s,",
 				InputDeviceName(pData->inputDevice, pData->deviceIndex));
-			Vec2i textPos = Vec2iNew(pos.x - FontStrW(s) / 2, y - FontH());
+			struct vec2i textPos = svec2i(pos.x - FontStrW(s) / 2, y - FontH());
 			FontStr(s, textPos);
 			textPos.y += FontH();
 			color_t c = colorWhite;
@@ -130,11 +130,11 @@ void MenuDisplayPlayerControls(
 	case INPUT_DEVICE_AI:
 		sprintf(s, "(%s)",
 			InputDeviceName(pData->inputDevice, pData->deviceIndex));
-		FontStr(s, Vec2iNew(pos.x - FontStrW(s) / 2, y));
+		FontStr(s, svec2i(pos.x - FontStrW(s) / 2, y));
 		break;
 	case INPUT_DEVICE_UNSET:
 		strcpy(s, "(no device; plug in a controller)");
-		FontStr(s, Vec2iNew(pos.x - FontStrW(s) / 2, y));
+		FontStr(s, svec2i(pos.x - FontStrW(s) / 2, y));
 		break;
 	default:
 		CASSERT(false, "unknown device");

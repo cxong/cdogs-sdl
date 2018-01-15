@@ -52,4 +52,4 @@
 #include "gamedata.h"
 #include "grafx_bg.h"
 
-void DrawBufferDraw(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra);
+void DrawBufferDraw(DrawBuffer *b, struct vec2i offset, GrafxDrawExtra *extra);
