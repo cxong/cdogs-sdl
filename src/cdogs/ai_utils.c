@@ -551,13 +551,13 @@ static int AStarCloseToPath(
 	}
 	// Check if we're too far from the current start of the path
 	pathTile = ASPathGetNode(c->Path.Path, c->PathIndex);
-	if (svec2i_distance_squared(currentTile, svec2i(pathTile->x, pathTile->y)) > 4)
+	if ((int)svec2i_distance_squared(currentTile, svec2i(pathTile->x, pathTile->y)) > 4)
 	{
 		return 0;
 	}
 	// Check if we're too far from the end of the path
 	pathEnd = ASPathGetNode(c->Path.Path, ASPathGetCount(c->Path.Path) - 1);
-	if (svec2i_distance_squared(goalTile, svec2i(pathEnd->x, pathEnd->y)) > 0)
+	if ((int)svec2i_distance_squared(goalTile, svec2i(pathEnd->x, pathEnd->y)) > 0)
 	{
 		return 0;
 	}
@@ -684,10 +684,10 @@ int AIAttack(const TActor *a, const struct vec2 targetPos)
 	int cmd = 0;
 	const GunDescription *gun = ActorGetGun(a)->Gun;
 	const float gunRange = GunGetRange(gun);
-	const float svec2i_distance_squared = svec2_distance_squared(
+	const float distanceSquared = svec2_distance_squared(
 		a->Pos, targetPos);
 	const bool canFire = gun->CanShoot && ActorGetGun(a)->lock <= 0;
-	if ((double)svec2i_distance_squared <
+	if ((double)distanceSquared <
 		SQUARED(gunRange * 3) * a->aiContext->GunRangeScalar &&
 		!canFire)
 	{
@@ -700,7 +700,7 @@ int AIAttack(const TActor *a, const struct vec2 targetPos)
 		// Move towards the enemy, fire if able
 		// But don't bother firing if too far away
 
-		if ((double)svec2i_distance_squared > SQUARED(gunRange * 2))
+		if ((double)distanceSquared > SQUARED(gunRange * 2))
 		{
 			// Too far away; approach using most efficient method
 			cmd = AIHunt(a, targetPos);
@@ -709,8 +709,8 @@ int AIAttack(const TActor *a, const struct vec2 targetPos)
 		{
 		#define MINIMUM_GUN_DISTANCE 30
 			const bool willFire = canFire &&
-				(svec2i_distance_squared < SQUARED(gunRange * 2) ||
-				svec2i_distance_squared > SQUARED(MINIMUM_GUN_DISTANCE));
+				(distanceSquared < SQUARED(gunRange * 2) ||
+				distanceSquared > SQUARED(MINIMUM_GUN_DISTANCE));
 			if (willFire)
 			{
 				// Hunt; this is the best direction to attack in

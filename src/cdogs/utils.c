@@ -392,15 +392,15 @@ struct vec2 CalcClosestPointOnLineSegmentToPoint(
 	// P(t) = l1 + t(l2 - l1)
 	// Projection of point p on line is
 	// t = ((p.x - l1.x)(l2.x - l1.x) + (p.y - l1.y)(l2.y - l1.y)) / ||l2 - l1||^2
-	const float linesvec2i_distance_squared = svec2_distance_squared(l1, l2);
+	const float lineDistanceSquared = (int)svec2_distance_squared(l1, l2);
 	// Early exit since same point means 0 distance, and div by 0
-	if (linesvec2i_distance_squared == 0)
+	if (lineDistanceSquared == 0)
 	{
 		return l1;
 	}
 	const float numerator =
 		(p.x - l1.x)*(l2.x - l1.x) + (p.y - l1.y)*(l2.y - l1.y);
-	const float t = CLAMP(numerator / linesvec2i_distance_squared, 0, 1);
+	const float t = CLAMP(numerator / lineDistanceSquared, 0, 1);
 	const struct vec2 closestPoint = svec2(
 		l1.x + t*(l2.x - l1.x), l1.y + t*(l2.y - l1.y));
 	return closestPoint;
