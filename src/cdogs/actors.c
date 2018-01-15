@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017, Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -1016,6 +1016,7 @@ static bool CheckManualPickupFunc(
 }
 static void ActorAddAmmoPickup(const TActor *actor);
 static void ActorAddGunPickup(const TActor *actor);
+static void ActorAddBloodPool(const TActor *a);
 static void ActorDie(TActor *actor)
 {
 	// Add an ammo pickup of the actor's gun
@@ -1030,17 +1031,12 @@ static void ActorDie(TActor *actor)
 		ActorAddGunPickup(actor);
 	}
 
-	// Add a blood pool
-	GameEvent e = GameEventNew(GAME_EVENT_MAP_OBJECT_ADD);
-	e.u.MapObjectAdd.UID = ObjsGetNextUID();
-	const MapObject *mo = RandomBloodMapObject(&gMapObjects);
-	strcpy(e.u.MapObjectAdd.MapObjectClass, mo->Name);
-	e.u.MapObjectAdd.Pos = Vec2ToNet(actor->Pos);
-	e.u.MapObjectAdd.TileItemFlags = MapObjectGetFlags(mo);
-	e.u.MapObjectAdd.Health = mo->Health;
-	GameEventsEnqueue(&gGameEvents, e);
+	if (ConfigGetEnum(&gConfig, "Graphics.Gore") != GORE_NONE)
+	{
+		ActorAddBloodPool(actor);
+	}
 
-	e = GameEventNew(GAME_EVENT_ACTOR_DIE);
+	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_DIE);
 	e.u.ActorDie.UID = actor->uid;
 	GameEventsEnqueue(&gGameEvents, e);
 }
@@ -1117,6 +1113,17 @@ static bool IsUnarmedBot(const TActor *actor)
 	// then it's an unarmed actor
 	const Character *c = ActorGetCharacter(actor);
 	return c->bot != NULL && c->bot->probabilityToShoot == 0;
+}
+static void ActorAddBloodPool(const TActor *a)
+{
+	GameEvent e = GameEventNew(GAME_EVENT_MAP_OBJECT_ADD);
+	e.u.MapObjectAdd.UID = ObjsGetNextUID();
+	const MapObject *mo = RandomBloodMapObject(&gMapObjects);
+	strcpy(e.u.MapObjectAdd.MapObjectClass, mo->Name);
+	e.u.MapObjectAdd.Pos = Vec2ToNet(a->Pos);
+	e.u.MapObjectAdd.TileItemFlags = MapObjectGetFlags(mo);
+	e.u.MapObjectAdd.Health = mo->Health;
+	GameEventsEnqueue(&gGameEvents, e);
 }
 
 void ActorsInit(void)
