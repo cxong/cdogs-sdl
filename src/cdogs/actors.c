@@ -326,7 +326,7 @@ static struct vec2 GetConstrainedPos(
 
 	// If moving diagonally, use rectangular bounds and
 	// try to move in only x or y directions
-	if (dv.x != 0 && dv.y != 0)
+	if (!nearly_equal(dv.x, 0.0f, EPSILON_POS) && !nearly_equal(dv.y, 0.0f, EPSILON_POS))
 	{
 		// X-only movement
 		const struct vec2 xVec = svec2(to.x, from.y);
@@ -360,7 +360,7 @@ static struct vec2 GetConstrainedPos(
 	// only direction
 	// Note: we're moving at extra speed because dx/dy are only magnitude 1;
 	// if we divide then we get 0 which ruins the logic
-	if (dv.x == 0)
+	if (nearly_equal(dv.x, 0.0f, EPSILON_POS))
 	{
 		// Moving up or down; try moving to the left or right diagonally
 		// Scale X movement because our diamond is wider than tall, so we
@@ -380,7 +380,7 @@ static struct vec2 GetConstrainedPos(
 			return diag2Vec;
 		}
 	}
-	else if (dv.y == 0)
+	else if (nearly_equal(dv.y, 0.0f, EPSILON_POS))
 	{
 		// Moving left or right; try moving up or down diagonally
 		const struct vec2 diag1Vec =
