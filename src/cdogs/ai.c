@@ -475,7 +475,7 @@ static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 			if ((actor->flags & FLAGS_VISIBLE) == 0)
 			{
 				// I think this is some hack to make sure invisible enemies don't fire so much
-				ActorGetGun(actor)->lock = 40;
+				ACTOR_GET_GUN(actor)->lock = 40;
 			}
 			if (cmd && !IsDirectionOK(actor, CmdToDirection(cmd)) &&
 				(actor->flags & FLAGS_DETOURING) == 0)

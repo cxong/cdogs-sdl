@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2016, Cong Xu
+    Copyright (c) 2014-2016, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -76,10 +76,14 @@ void PlayerDataAddOrUpdate(const NPlayerData pd)
 		p->Char.Class = StrCharacterClass("Jones");
 	}
 	p->Char.Colors = Net2CharColors(pd.Colors);
-	p->weaponCount = pd.Weapons_count;
 	for (int i = 0; i < (int)pd.Weapons_count; i++)
 	{
-		p->weapons[i] = StrGunDescription(pd.Weapons[i]);
+		p->guns[i] = NULL;
+		if (strlen(pd.Weapons[i]) > 0)
+		{
+			const GunDescription *g = StrGunDescription(pd.Weapons[i]);
+			p->guns[i] = g;
+		}
 	}
 	p->Lives = pd.Lives;
 	p->Stats = pd.Stats;
@@ -394,10 +398,10 @@ int PlayersNumUseAmmo(const int ammoId)
 			continue;
 		}
 		const TActor *player = ActorGetByUID(p->ActorUID);
-		for (int j = 0; j < (int)player->guns.size; j++)
+		for (int j = 0; j < MAX_WEAPONS; j++)
 		{
-			const Weapon *w = CArrayGet(&player->guns, j);
-			if (w->Gun->AmmoId == ammoId)
+			const Weapon *w = &player->guns[j];
+			if (w->Gun != NULL && w->Gun->AmmoId == ammoId)
 			{
 				numPlayersWithAmmo++;
 			}
@@ -449,4 +453,17 @@ bool PlayerTrySetUnusedInputDevice(
 		}
 	CA_FOREACH_END()
 	return PlayerTrySetInputDevice(p, d, idx);
+}
+
+int PlayerGetNumWeapons(const PlayerData *p)
+{
+	int count = 0;
+	for (int i = 0; i < MAX_WEAPONS; i++)
+	{
+		if (p->guns[i] != NULL)
+		{
+			count++;
+		}
+	}
+	return count;
 }

@@ -31,14 +31,27 @@
 #include "menu.h"
 #include "menu_utils.h"
 
+typedef enum
+{
+	WEAPON_MENU_NONE,
+	WEAPON_MENU_SELECT,
+	WEAPON_MENU_CANCEL
+} WeaponMenuResult;
 typedef struct
 {
 	MenuDisplayPlayerData display;
 	int PlayerUID;
+	int EquipSlot;
+	const GunDescription *SelectedGun;
+	WeaponMenuResult SelectResult;
 } WeaponMenuData;
 typedef struct
 {
 	MenuSystem ms;
+	MenuSystem msEquip;
+	menu_t *gunMenu;
+	menu_t *grenadeMenu;
+	bool equipping;
 	WeaponMenuData data;
 } WeaponMenu;
 

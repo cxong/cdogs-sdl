@@ -33,14 +33,20 @@
 #include <cdogs/ai_coop.h>
 #include <cdogs/font.h>
 
+#define END_MENU_LABEL "(End)"
+
 
 static void WeaponSetEnabled(
 	menu_t *menu, const GunDescription *g, const bool enable)
 {
+	if (g == NULL)
+	{
+		return;
+	}
 	CA_FOREACH(menu_t, subMenu, menu->u.normal.subMenus)
 		if (strcmp(subMenu->name, g->name) == 0)
 		{
-			subMenu->isDisabled = !enable;
+			MenuSetDisabled(subMenu, !enable);
 			break;
 		}
 	CA_FOREACH_END()
@@ -56,103 +62,92 @@ static const GunDescription *GetSelectedGun(const menu_t *menu)
 static void WeaponSelect(menu_t *menu, int cmd, void *data)
 {
 	WeaponMenuData *d = data;
-	PlayerData *p = PlayerDataGetByUID(d->display.PlayerUID);
-	const CArray *weapons = &gMission.Weapons;
 
-	// Don't process if we're not selecting a weapon
-	if ((cmd & CMD_BUTTON1) && menu->u.normal.index < (int)weapons->size)
+	if (cmd & CMD_BUTTON1)
 	{
-		// Add the selected weapon
-
-		// Check that the weapon hasn't been chosen yet
-		const GunDescription *selectedWeapon = GetSelectedGun(menu);
-		for (int i = 0; i < p->weaponCount; i++)
+		// Add the selected weapon to the slot
+		d->SelectedGun = GetSelectedGun(menu);
+		d->SelectResult = WEAPON_MENU_SELECT;
+		if (d->SelectedGun == NULL)
 		{
-			if (p->weapons[i] == selectedWeapon)
-			{
-				return;
-			}
-		}
-
-		// Check that there are empty slots to add weapons
-		if (p->weaponCount == MAX_WEAPONS)
-		{
+			MenuPlaySound(MENU_SOUND_SWITCH);
 			return;
 		}
-
-		p->weapons[p->weaponCount] = selectedWeapon;
-		p->weaponCount++;
-		SoundPlay(&gSoundDevice, selectedWeapon->SwitchSound);
-
-		// Note: need to enable before disabling otherwise
-		// menu index is not updated properly
-
-		// Enable "Done" menu item
-		MenuEnableSubmenu(menu, (int)menu->u.normal.subMenus.size - 1);
-
-		// Disable this menu entry
-		MenuDisableSubmenu(menu, menu->u.normal.index);
+		SoundPlay(&gSoundDevice, d->SelectedGun->SwitchSound);
 	}
 	else if (cmd & CMD_BUTTON2)
 	{
-		// Remove a weapon
-		if (p->weaponCount > 0)
-		{
-			p->weaponCount--;
-			MenuPlaySound(MENU_SOUND_BACK);
-
-			// Re-enable the menu entry for this weapon
-			const GunDescription *removedWeapon = p->weapons[p->weaponCount];
-			WeaponSetEnabled(menu, removedWeapon, true);
-		}
-
-		// Disable "Done" if no weapons selected
-		if (p->weaponCount == 0)
-		{
-			MenuDisableSubmenu(menu, (int)menu->u.normal.subMenus.size - 1);
-		}
+		d->SelectedGun = GetSelectedGun(menu);
+		d->SelectResult = WEAPON_MENU_CANCEL;
+		MenuPlaySound(MENU_SOUND_BACK);
 	}
 }
 
-static void DisplayEquippedWeapons(
-	const menu_t *menu, GraphicsDevice *g,
-	const struct vec2i pos, const struct vec2i size, const void *data)
+static void AddEquippedMenuItem(
+	menu_t *menu, const PlayerData *p, const int slot);
+static void CreateEquippedWeaponsMenu(
+	MenuSystem *ms, EventHandlers *handlers, GraphicsDevice *g,
+	const struct vec2i pos, const struct vec2i size, const PlayerData *p)
 {
-	UNUSED(g);
-	const WeaponMenuData *d = data;
-	struct vec2i weaponsPos;
-	struct vec2i maxTextSize = FontStrSize("LongestWeaponName");
-	UNUSED(menu);
+	const struct vec2i maxTextSize = FontStrSize("LongestWeaponName");
 	struct vec2i dPos = pos;
 	dPos.x -= size.x;	// move to left half of screen
-	weaponsPos = svec2i(
+	const struct vec2i weaponsPos = svec2i(
 		dPos.x + size.x * 3 / 4 - maxTextSize.x / 2,
-		CENTER_Y(dPos, size, 0) + 14);
-	const PlayerData *p = PlayerDataGetByUID(d->display.PlayerUID);
-	if (p->weaponCount == 0)
+		CENTER_Y(dPos, size, 0) + 2);
+	const int numRows = MAX_GUNS + 1 + MAX_GRENADES + 1 + 1;
+	const struct vec2i weaponsSize = svec2i(size.x, FontH() * numRows);
+
+	MenuSystemInit(ms, handlers, g, weaponsPos, weaponsSize);
+	ms->align = MENU_ALIGN_LEFT;
+	ms->root = ms->current = MenuCreateNormal(
+		"",
+		"",
+		MENU_TYPE_NORMAL,
+		0);
+	MenuAddExitType(ms, MENU_TYPE_RETURN);
+	int i;
+	for (i = 0; i < MAX_GUNS; i++)
 	{
-		FontStr("None selected...", weaponsPos);
+		AddEquippedMenuItem(ms->root, p, i);
+	}
+	MenuAddSubmenu(ms->root, MenuCreateSeparator("--Grenades--"));
+	for (; i < MAX_GUNS + MAX_GRENADES; i++)
+	{
+		AddEquippedMenuItem(ms->root, p, i);
+	}
+	MenuAddSubmenu(ms->root, MenuCreateReturn(END_MENU_LABEL, 0));
+}
+static void SetEquippedMenuItemName(
+	menu_t *menu, const PlayerData *p, const int slot)
+{
+	CFREE(menu->name);
+	if (p->guns[slot] != NULL)
+	{
+		CSTRDUP(menu->name, p->guns[slot]->name);
 	}
 	else
 	{
-		for (int i = 0; i < p->weaponCount; i++)
-		{
-			FontStr(
-				p->weapons[i]->name,
-				svec2i_add(weaponsPos, svec2i(0, i * FontH())));
-		}
+		CSTRDUP(menu->name, "(none)");
 	}
 }
+static void AddEquippedMenuItem(
+	menu_t *menu, const PlayerData *p, const int slot)
+{
+	menu_t *submenu = MenuCreateReturn("", slot);
+	SetEquippedMenuItemName(submenu, p, slot);
+	MenuAddSubmenu(menu, submenu);
+}
 
-static void AddGunMenuItems(
-	MenuSystem *ms, const CArray *weapons, const struct vec2i menuSize,
-	const bool isGrenade);
+static menu_t *CreateGunMenu(
+	const CArray *weapons, const struct vec2i menuSize, const bool isGrenade,
+	MenuDisplayPlayerData *display);
 static void DisplayGunIcon(
-	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos, const struct vec2i size,
-	const void *data);
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
+	const struct vec2i size, const void *data);
 static void DisplayDescriptionGunIcon(
-	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos, const struct vec2i size,
-	const void *data);
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
+	const struct vec2i size, const void *data);
 void WeaponMenuCreate(
 	WeaponMenu *menu,
 	int numPlayers, int player, const int playerUID,
@@ -165,7 +160,7 @@ void WeaponMenuCreate(
 	int h = graphics->cachedConfig.Res.y;
 
 	data->display.PlayerUID = playerUID;
-	data->display.currentMenu = &ms->current;
+	data->display.currentMenu = NULL;
 	data->display.Dir = DIRECTION_DOWN;
 	data->PlayerUID = playerUID;
 
@@ -195,39 +190,18 @@ void WeaponMenuCreate(
 	}
 	MenuSystemInit(ms, handlers, graphics, pos, size);
 	ms->align = MENU_ALIGN_LEFT;
-	ms->root = ms->current = MenuCreateNormal(
-		"",
-		"",
-		MENU_TYPE_NORMAL,
-		0);
-	ms->root->u.normal.maxItems = 11;
-	AddGunMenuItems(ms, &gMission.Weapons, size, false);
-	MenuAddSubmenu(ms->root, MenuCreateSeparator("----------------"));
-	AddGunMenuItems(ms, &gMission.Weapons, size, true);
-	MenuSetPostInputFunc(ms->root, WeaponSelect, &data->display);
-	// Disable menu items where the player already has the weapon
 	PlayerData *pData = PlayerDataGetByUID(playerUID);
-	for (int i = 0; i < pData->weaponCount; i++)
-	{
-		WeaponSetEnabled(ms->root, pData->weapons[i], false);
-	}
-	MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
-	MenuAddSubmenu(
-		ms->root, MenuCreateNormal("(End)", "", MENU_TYPE_NORMAL, 0));
-	// Select "(End)"
-	ms->root->u.normal.index = (int)ms->root->u.normal.subMenus.size - 1;
-
-	// Disable "Done" if no weapons selected
-	if (pData->weaponCount == 0)
-	{
-		MenuDisableSubmenu(ms->root, (int)ms->root->u.normal.subMenus.size - 1);
-	}
-
-	MenuSetCustomDisplay(ms->root, DisplayGunIcon, NULL);
+	menu->gunMenu = CreateGunMenu(
+		&gMission.Weapons, size, false, &data->display);
+	menu->grenadeMenu = CreateGunMenu(
+		&gMission.Weapons, size, true, &data->display);
 	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayer, &data->display);
-	MenuSystemAddCustomDisplay(ms, DisplayEquippedWeapons, data);
 	MenuSystemAddCustomDisplay(
 		ms, MenuDisplayPlayerControls, &data->PlayerUID);
+
+	// Create equipped weapons menu
+	CreateEquippedWeaponsMenu(
+		&menu->msEquip, handlers, graphics, pos, size, pData);
 
 	// For AI players, pre-pick their weapons and go straight to menu end
 	if (pData->inputDevice == INPUT_DEVICE_AI)
@@ -237,10 +211,13 @@ void WeaponMenuCreate(
 		AICoopSelectWeapons(pData, player, &gMission.Weapons);
 	}
 }
-static void AddGunMenuItems(
-	MenuSystem *ms, const CArray *weapons, const struct vec2i menuSize,
-	const bool isGrenade)
+static menu_t *CreateGunMenu(
+	const CArray *weapons, const struct vec2i menuSize, const bool isGrenade,
+	MenuDisplayPlayerData *display)
 {
+	menu_t *menu = MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
+	menu->u.normal.maxItems = 11;
+	MenuAddSubmenu(menu, MenuCreate("(none)", MENU_TYPE_BASIC));
 	CA_FOREACH(const GunDescription *, g, *weapons)
 		if ((*g)->IsGrenade != isGrenade)
 		{
@@ -263,12 +240,18 @@ static void AddGunMenuItems(
 		{
 			gunMenu = MenuCreate((*g)->name, MENU_TYPE_BASIC);
 		}
-		MenuAddSubmenu(ms->root, gunMenu);
+		MenuAddSubmenu(menu, gunMenu);
 	CA_FOREACH_END()
+
+	MenuSetPostInputFunc(menu, WeaponSelect, display);
+
+	MenuSetCustomDisplay(menu, DisplayGunIcon, NULL);
+
+	return menu;
 }
 static void DisplayGunIcon(
-	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos, const struct vec2i size,
-	const void *data)
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
+	const struct vec2i size, const void *data)
 {
 	UNUSED(data);
 	// Display a gun icon next to the currently selected weapon
@@ -289,8 +272,8 @@ static void DisplayGunIcon(
 	Blit(g, gun->Icon, iconPos);
 }
 static void DisplayDescriptionGunIcon(
-	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos, const struct vec2i size,
-	const void *data)
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
+	const struct vec2i size, const void *data)
 {
 	UNUSED(menu);
 	UNUSED(size);
@@ -308,25 +291,96 @@ void WeaponMenuTerminate(WeaponMenu *menu)
 
 void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 {
-	const PlayerData *p = PlayerDataGetByUID(menu->data.PlayerUID);
-	if (!MenuIsExit(&menu->ms))
+	PlayerData *p = PlayerDataGetByUID(menu->data.PlayerUID);
+	if (menu->equipping)
 	{
 		MenuProcessCmd(&menu->ms, cmd);
+		switch (menu->data.SelectResult)
+		{
+			case WEAPON_MENU_NONE:
+				break;
+			case WEAPON_MENU_SELECT:
+				// Enable menu items due to changed equipment
+				if (menu->data.SelectedGun == NULL)
+				{
+					WeaponSetEnabled(
+						menu->data.EquipSlot < MAX_GUNS ?
+						menu->gunMenu : menu->grenadeMenu,
+						menu->data.SelectedGun, true);
+				}
+				WeaponSetEnabled(
+					menu->data.EquipSlot < MAX_GUNS ?
+					menu->gunMenu : menu->grenadeMenu,
+					p->guns[menu->data.EquipSlot], true);
+				p->guns[menu->data.EquipSlot] = menu->data.SelectedGun;
+				// fallthrough
+			case WEAPON_MENU_CANCEL:
+				// Switch back to equip menu
+				menu->equipping = false;
+				menu->ms.current = NULL;
+				// Update menu name based on new weapon equipped
+				CA_FOREACH(
+					menu_t, submenu, menu->msEquip.root->u.normal.subMenus)
+					if (submenu->type == MENU_TYPE_RETURN &&
+						submenu->u.returnCode == menu->data.EquipSlot)
+					{
+						SetEquippedMenuItemName(
+							submenu, p, menu->data.EquipSlot);
+						break;
+					}
+				CA_FOREACH_END()
+				break;
+			default:
+				CASSERT(false, "unhandled case");
+				break;
+		}
+		// Disable menu items where the player already has the weapon
+		for (int i = 0; i < MAX_WEAPONS; i++)
+		{
+			WeaponSetEnabled(
+				menu->data.EquipSlot < MAX_GUNS ?
+				menu->gunMenu : menu->grenadeMenu,
+				p->guns[i], false);
+		}
 	}
-	else if (p->weaponCount == 0)
+	else
 	{
-		// Check exit condition; must have selected at least one weapon
-		// Otherwise reset the current menu
-		menu->ms.current = menu->ms.root;
+		MenuProcessCmd(&menu->msEquip, cmd);
+		if (MenuIsExit(&menu->msEquip) &&
+			strcmp(menu->msEquip.current->name, END_MENU_LABEL) != 0)
+		{
+			// Open weapon selection menu
+			menu->equipping = true;
+			menu->data.EquipSlot = menu->msEquip.current->u.returnCode;
+			menu->ms.current =
+				menu->data.EquipSlot < MAX_GUNS ?
+				menu->gunMenu : menu->grenadeMenu;
+			menu->msEquip.current = menu->msEquip.root;
+			menu->data.SelectResult = WEAPON_MENU_NONE;
+		}
+	}
+
+	menu_t *equipMenu = menu->msEquip.root;
+	// Disable "Done" if no weapons selected
+	if (PlayerGetNumWeapons(p) == 0)
+	{
+		MenuDisableSubmenu(
+			equipMenu, (int)equipMenu->u.normal.subMenus.size - 1);
+	}
+	else
+	{
+		MenuEnableSubmenu(
+			equipMenu, (int)equipMenu->u.normal.subMenus.size - 1);
 	}
 }
 
 bool WeaponMenuIsDone(const WeaponMenu *menu)
 {
-	return strcmp(menu->ms.current->name, "(End)") == 0;
+	return strcmp(menu->msEquip.current->name, END_MENU_LABEL) == 0;
 }
 
 void WeaponMenuDraw(const WeaponMenu *menu)
 {
 	MenuDisplay(&menu->ms);
+	MenuDisplay(&menu->msEquip);
 }

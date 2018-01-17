@@ -508,9 +508,9 @@ static void HandleGameEvent(
 		break;
 	case GAME_EVENT_GUN_STATE:
 		{
-			const TActor *a = ActorGetByUID(e.u.GunState.ActorUID);
+			TActor *a = ActorGetByUID(e.u.GunState.ActorUID);
 			if (!a->isInUse) break;
-			WeaponSetState(ActorGetGun(a), (gunstate_e)e.u.GunState.State);
+			WeaponSetState(ACTOR_GET_GUN(a), (gunstate_e)e.u.GunState.State);
 		}
 		break;
 	case GAME_EVENT_ADD_BULLET:

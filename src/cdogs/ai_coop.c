@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2015, 2017 Cong Xu
+    Copyright (c) 2013-2015, 2017-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -172,25 +172,31 @@ static int AICoopGetCmdNormal(TActor *actor)
 		// This is because unlimited ammo guns tend to be worse
 		int mostPreferredWeaponWithAmmo = -1;
 		bool mostPreferredWeaponHasAmmo = false;
-		CA_FOREACH(const Weapon, w, actor->guns)
-		const int ammoAmount = ActorGunGetAmmo(actor, w);
-		if ((mostPreferredWeaponWithAmmo == -1 && ammoAmount != 0) ||
-			(!mostPreferredWeaponHasAmmo && ammoAmount > 0))
+		for (int i = 0; i < MAX_GUNS; i++)
 		{
-			// Note: -1 means the gun has unlimited ammo
-			mostPreferredWeaponWithAmmo = _ca_index;
-			mostPreferredWeaponHasAmmo = ammoAmount > 0;
-		}
-		if (w->Gun->AmmoId != -1)
-		{
-			const Ammo *ammo = AmmoGetById(&gAmmo, w->Gun->AmmoId);
-			if (lowAmmoGun == -1 &&
-				ammoAmount < ammo->Amount * AMMO_STARTING_MULTIPLE)
+			const Weapon *w = &actor->guns[i];
+			if (w->Gun == NULL)
 			{
-				lowAmmoGun = _ca_index;
+				continue;
+			}
+			const int ammoAmount = ActorGunGetAmmo(actor, w);
+			if ((mostPreferredWeaponWithAmmo == -1 && ammoAmount != 0) ||
+				(!mostPreferredWeaponHasAmmo && ammoAmount > 0))
+			{
+				// Note: -1 means the gun has unlimited ammo
+				mostPreferredWeaponWithAmmo = i;
+				mostPreferredWeaponHasAmmo = ammoAmount > 0;
+			}
+			if (w->Gun->AmmoId != -1)
+			{
+				const Ammo *ammo = AmmoGetById(&gAmmo, w->Gun->AmmoId);
+				if (lowAmmoGun == -1 &&
+					ammoAmount < ammo->Amount * AMMO_STARTING_MULTIPLE)
+				{
+					lowAmmoGun = i;
+				}
 			}
 		}
-		CA_FOREACH_END()
 
 		// If we're out of ammo, switch to one with ammo
 		// Prioritise our selection based on weapon order, i.e.
@@ -211,7 +217,9 @@ static int AICoopGetCmdNormal(TActor *actor)
 		const GunDescription *gun =
 			IdGunDescription(actor->aiContext->OnGunId);
 		if ((lowAmmoGun != -1 && !ActorHasGun(actor, gun)) ||
-			actor->guns.size < MAX_WEAPONS)
+			(gun->IsGrenade ?
+			ActorGetNumGrenades(actor) < MAX_GRENADES :
+			ActorGetNumGuns(actor) < MAX_GUNS))
 		{
 			actor->aiContext->OnGunId = -1;
 			// Pick it up
@@ -343,7 +351,7 @@ static int SmartGoto(
 		svec2i_is_equal(tilePos, actor->aiContext->LastTile))
 	{
 		cmd = AIGoto(actor, o->tileItem.Pos, true);
-		if (ActorGetGun(actor)->lock <= 0)
+		if (ACTOR_GET_GUN(actor)->lock <= 0)
 		{
 			cmd |= CMD_BUTTON1;
 		}
@@ -702,14 +710,14 @@ static bool OnClosestPickupGun(
 	// - or if there is a free weapon slot,
 	// - and the
 	bool hasGunLowOnAmmo = false;
-	if (actor->guns.size < MAX_WEAPONS)
+	for (int i = 0; i < MAX_WEAPONS; i++)
 	{
-		hasGunLowOnAmmo = true;
-	}
-	else
-	{
-		CA_FOREACH(const Weapon, w, actor->guns)
-			const int ammoId = w->Gun->AmmoId;
+		if (actor->guns[i].Gun == NULL)
+		{
+			hasGunLowOnAmmo = true;
+			break;
+		}
+		const int ammoId = actor->guns[i].Gun->AmmoId;
 		if (ammoId < 0)
 		{
 			continue;
@@ -724,7 +732,6 @@ static bool OnClosestPickupGun(
 			continue;
 		}
 		hasGunLowOnAmmo = true;
-		CA_FOREACH_END()
 	}
 
 	if (!hasGunLowOnAmmo)
@@ -808,7 +815,7 @@ static int GotoObjective(TActor *actor, const float objDistance2)
 	{
 		cmd = SmartGoto(actor, goal, objDistance2);
 	}
-	else if (isDestruction && ActorGetGun(actor)->lock <= 0)
+	else if (isDestruction && ACTOR_GET_GUN(actor)->lock <= 0)
 	{
 		cmd = AIHunt(actor, goal);
 		if (AIHasClearShot(actor->Pos, goal))
@@ -823,12 +830,12 @@ static bool PlayerHasWeapon(const PlayerData *p, const GunDescription *w);
 void AICoopSelectWeapons(
 	PlayerData *p, const int player, const CArray *weapons)
 {
-	p->weaponCount = 0;
-
 	// Select two weapons from available ones
 	// Offset the starting index a bit so each AI uses different guns
-	const int startIdx = (player * 3) % weapons->size;
-	for (int i = 0; i < MAX_WEAPONS; i++)
+	// TODO: select grenades
+	const int startIdx = (player * MAX_GUNS) % weapons->size;
+	int gunCount = 0;
+	for (int i = 0; gunCount < MAX_GUNS; i++)
 	{
 		const int idx = (startIdx + i) % weapons->size;
 		if (idx == startIdx && i > 0)
@@ -837,8 +844,12 @@ void AICoopSelectWeapons(
 			break;
 		}
 		const GunDescription **g = CArrayGet(weapons, idx);
-		p->weapons[i] = *g;
-		p->weaponCount++;
+		if ((*g)->IsGrenade)
+		{
+			continue;
+		}
+		p->guns[gunCount] = *g;
+		gunCount++;
 	}
 
 	if (ConfigGetBool(&gConfig, "Game.Ammo"))
@@ -847,16 +858,16 @@ void AICoopSelectWeapons(
 		const GunDescription *pistol = StrGunDescription("Pistol");
 		if (!PlayerHasWeapon(p, pistol))
 		{
-			if (p->weaponCount == MAX_WEAPONS)
+			if (gunCount == MAX_GUNS)
 			{
-				// Player has full weapons; replace last weapon
-				p->weapons[MAX_WEAPONS - 1] = pistol;
+				// Player has full weapons; replace last gun
+				p->guns[MAX_GUNS - 1] = pistol;
 			}
 			else
 			{
 				// Add the pistol
-				p->weapons[p->weaponCount] = pistol;
-				p->weaponCount++;
+				p->guns[gunCount] = pistol;
+				gunCount++;
 			}
 		}
 	}
@@ -865,7 +876,7 @@ static bool PlayerHasWeapon(const PlayerData *p, const GunDescription *w)
 {
 	for (int i = 0; i < MAX_WEAPONS; i++)
 	{
-		const GunDescription *g = p->weapons[i];
+		const GunDescription *g = p->guns[i];
 		if (w == g)
 		{
 			return true;

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017, Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -91,7 +91,14 @@ static void PlayerSpecialCommands(TActor *actor, const int cmd)
 	{
 		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_SWITCH_GUN);
 		e.u.ActorSwitchGun.UID = actor->uid;
-		e.u.ActorSwitchGun.GunIdx = (actor->gunIndex + 1) % actor->guns.size;
+		for (;;)
+		{
+			e.u.ActorSwitchGun.GunIdx = (actor->gunIndex + 1) % MAX_GUNS;
+			if (actor->guns[e.u.ActorSwitchGun.GunIdx].Gun != NULL)
+			{
+				break;
+			}
+		}
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 }

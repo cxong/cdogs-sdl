@@ -548,10 +548,22 @@ static int GetButcherPenalty(const PlayerData *p)
 // TODO: amend ninja bonus to check if no shots fired
 static int GetNinjaBonus(const PlayerData *p)
 {
-	if (p->weaponCount == 1 && !p->weapons[0]->CanShoot &&
-		p->Stats.Friendlies == 0 && p->Stats.Kills > 5)
+	if (PlayerGetNumWeapons(p) == 1)
 	{
-		return 50 * p->Stats.Kills;
+		const GunDescription *g = NULL;
+		for (int i = 0; i < MAX_GUNS; i++)
+		{
+			if (p->guns[i] != NULL)
+			{
+				g = p->guns[i];
+				break;
+			}
+		}
+		if (g != NULL && !g->CanShoot && p->Stats.Friendlies == 0 &&
+			p->Stats.Kills > 5)
+		{
+			return 50 * p->Stats.Kills;
+		}
 	}
 	return 0;
 }

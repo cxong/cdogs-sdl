@@ -66,10 +66,10 @@ NPlayerData NMakePlayerData(const PlayerData *p)
 	strcpy(d.Name, p->name);
 	strcpy(d.CharacterClass, p->Char.Class->Name);
 	d.Colors = CharColors2Net(c->Colors);
-	d.Weapons_count = (pb_size_t)p->weaponCount;
+	d.Weapons_count = MAX_WEAPONS;
 	for (int i = 0; i < (int)d.Weapons_count; i++)
 	{
-		strcpy(d.Weapons[i], p->weapons[i]->name);
+		strcpy(d.Weapons[i], p->guns[i] != NULL ? p->guns[i]->name : "");
 	}
 	d.Lives = p->Lives;
 	d.Stats = p->Stats;

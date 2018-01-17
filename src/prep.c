@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017 Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -779,15 +779,11 @@ GameLoopData *PlayerEquip(void)
 static bool HasWeapon(const CArray *weapons, const GunDescription *w);
 static void RemoveUnavailableWeapons(PlayerData *data, const CArray *weapons)
 {
-	for (int i = data->weaponCount - 1; i >= 0; i--)
+	for (int i = 0; i < 0; i++)
 	{
-		if (!HasWeapon(weapons, data->weapons[i]))
+		if (!HasWeapon(weapons, data->guns[i]))
 		{
-			for (int j = i + 1; j < data->weaponCount; j++)
-			{
-				data->weapons[j - 1] = data->weapons[j];
-			}
-			data->weaponCount--;
+			data->guns[i] = NULL;
 		}
 	}
 }
@@ -871,7 +867,7 @@ static GameLoopResult PlayerEquipUpdate(GameLoopData *data, LoopRunner *l)
 	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
 	{
 		WeaponMenuUpdate(&pData->menus[i], cmds[i]);
-		isDone = isDone && WeaponMenuIsDone(&pData->menus[i]);
+		isDone = WeaponMenuIsDone(&pData->menus[i]);
 	}
 	if (isDone)
 	{

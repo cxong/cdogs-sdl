@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017, Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -123,9 +123,11 @@ typedef struct Actor
 	int charId;
 	int PlayerUID;	// -1 unless a human player
 	int uid;	// unique ID across all actors
-	CArray guns;	// of Weapon
+	Weapon guns[MAX_WEAPONS];
 	CArray ammo;	// of int
 	int gunIndex;
+	// TODO: multiple grenade slots?
+	int grenadeIndex;
 
 	int health;
 	// A counter for player death
@@ -195,13 +197,16 @@ void ActorDestroy(TActor *a);
 
 TActor *ActorGetByUID(const int uid);
 const Character *ActorGetCharacter(const TActor *a);
-Weapon *ActorGetGun(const TActor *a);
+#define ACTOR_GET_GUN(a) (&(a)->guns[(a)->gunIndex])
 struct vec2 ActorGetGunMuzzleOffset(const TActor *a);
 // Returns -1 if gun does not use ammo
 int ActorGunGetAmmo(const TActor *a, const Weapon *w);
 bool ActorCanFire(const TActor *a);
 bool ActorCanSwitchGun(const TActor *a);
 bool ActorHasGun(const TActor *a, const GunDescription *gun);
+int ActorGetNumWeapons(const TActor *a);
+int ActorGetNumGuns(const TActor *a);
+int ActorGetNumGrenades(const TActor *a);
 void ActorSwitchGun(const NActorSwitchGun sg);
 bool ActorIsImmune(const TActor *actor, const special_damage_e damage);
 // Taking a hit only gives the appearance (pushback, special effect)

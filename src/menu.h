@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017 Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -257,6 +257,7 @@ void MenuProcessCmd(MenuSystem *ms, int cmd);
 void MenuReset(MenuSystem *menu);
 void MenuDisableSubmenu(menu_t *menu, int index);
 void MenuEnableSubmenu(menu_t *menu, int index);
+void MenuSetDisabled(menu_t *menu, const bool isDisabled);
 menu_t *MenuGetSubmenuByName(menu_t *menu, const char *name);
 
 void ShowControls(void);

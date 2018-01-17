@@ -113,6 +113,7 @@
     {
       "Index": 6,
       "Pic": "",
+      "IsGrenade": true,
       "Name": "Shrapnel bombs",
       "Icon": "frag_grenades",
       "Description": "A throwable timed weapon which bounces around for a while. When its lifespan is over, the shrapnel bomb will release 16 dangerous bullets in a circle pattern.\n\nDamage: 40 per bullet (max. 640)\nRate of fire: 140 round/min\nRange of bomb: Medium\nLifespan of bomb: 1.42s\nSpeed of bomb: 384\nCost: 20",

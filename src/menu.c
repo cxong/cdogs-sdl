@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, 2016-2017 Cong Xu
+    Copyright (c) 2013-2014, 2016-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -244,13 +244,20 @@ static void MoveIndexToNextEnabledSubmenu(menu_t *menu, const bool isDown)
 void MenuDisableSubmenu(menu_t *menu, int idx)
 {
 	menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, idx);
-	subMenu->isDisabled = true;
-	MoveIndexToNextEnabledSubmenu(menu, true);
+	MenuSetDisabled(subMenu, true);
 }
 void MenuEnableSubmenu(menu_t *menu, int idx)
 {
 	menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, idx);
-	subMenu->isDisabled = false;
+	MenuSetDisabled(subMenu, false);
+}
+void MenuSetDisabled(menu_t *menu, const bool isDisabled)
+{
+	menu->isDisabled = isDisabled;
+	if (isDisabled && menu->parentMenu != NULL)
+	{
+		MoveIndexToNextEnabledSubmenu(menu->parentMenu, true);
+	}
 }
 
 menu_t *MenuGetSubmenuByName(menu_t *menu, const char *name)
@@ -583,30 +590,33 @@ static void MenuDisplaySubmenus(const MenuSystem *ms);
 void MenuDisplay(const MenuSystem *ms)
 {
 	const menu_t *menu = ms->current;
-	if (menu->type == MENU_TYPE_CUSTOM)
+	if (menu != NULL)
 	{
-		menu->u.customData.displayFunc(
-			menu, ms->graphics, ms->pos, ms->size, menu->u.customData.data);
-	}
-	else
-	{
-		MenuDisplayItems(ms);
-
-		if (strlen(menu->u.normal.title) != 0)
+		if (menu->type == MENU_TYPE_CUSTOM)
 		{
-			FontOpts opts = FontOptsNew();
-			opts.HAlign = ALIGN_CENTER;
-			opts.Area = ms->size;
-			opts.Pad = svec2i(20, 20);
-			FontStrOpt(menu->u.normal.title, ms->pos, opts);
+			menu->u.customData.displayFunc(
+				menu, ms->graphics, ms->pos, ms->size, menu->u.customData.data);
 		}
+		else
+		{
+			MenuDisplayItems(ms);
 
-		MenuDisplaySubmenus(ms);
+			if (strlen(menu->u.normal.title) != 0)
+			{
+				FontOpts opts = FontOptsNew();
+				opts.HAlign = ALIGN_CENTER;
+				opts.Area = ms->size;
+				opts.Pad = svec2i(20, 20);
+				FontStrOpt(menu->u.normal.title, ms->pos, opts);
+			}
+
+			MenuDisplaySubmenus(ms);
+		}
 	}
 	CA_FOREACH(MenuCustomDisplayFunc, cdf, ms->customDisplayFuncs)
 		cdf->Func(NULL, ms->graphics, ms->pos, ms->size, cdf->Data);
 	CA_FOREACH_END()
-	if (menu->customDisplayFunc)
+	if (menu != NULL && menu->customDisplayFunc)
 	{
 		menu->customDisplayFunc(
 			menu, ms->graphics, ms->pos, ms->size, menu->customDisplayData);
@@ -971,7 +981,7 @@ void MenuProcessCmd(MenuSystem *ms, int cmd)
 			goto bail;
 		}
 	}
-	else
+	else if (cmd != 0)
 	{
 		menuToChange = MenuProcessButtonCmd(ms, menu, cmd);
 		if (menuToChange != NULL)

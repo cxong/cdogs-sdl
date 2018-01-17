@@ -61,7 +61,7 @@ void MenuDisplayPlayer(
 	struct vec2i dPos = pos;
 	dPos.x -= size.x;	// move to left half of screen
 	playerPos = svec2i(
-		dPos.x + size.x * 3 / 4 - 12 / 2, CENTER_Y(dPos, size, 0));
+		dPos.x + size.x * 3 / 4 - 12 / 2, CENTER_Y(dPos, size, 0) - 12);
 
 	PlayerData *pData = PlayerDataGetByUID(d->PlayerUID);
 	if (d->currentMenu && strcmp((*d->currentMenu)->name, "Name") == 0)

@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2015, 2017 Cong Xu
+    Copyright (c) 2014-2015, 2017-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -150,13 +150,15 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 		{
 			// Don't pickup if no guns can use ammo
 			bool hasGunUsingAmmo = false;
-			CA_FOREACH(const Weapon, w, a->guns)
-				if (w->Gun->AmmoId == p->class->u.Ammo.Id)
+			for (int i = 0; i < MAX_WEAPONS; i++)
+			{
+				if (a->guns[i].Gun != NULL &&
+					a->guns[i].Gun->AmmoId == p->class->u.Ammo.Id)
 				{
 					hasGunUsingAmmo = true;
 					break;
 				}
-			CA_FOREACH_END()
+			}
 			if (!hasGunUsingAmmo)
 			{
 				canPickup = false;
@@ -253,10 +255,25 @@ static bool TryPickupGun(
 	// Pickup gun
 	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_REPLACE_GUN);
 	e.u.ActorReplaceGun.UID = a->uid;
-	e.u.ActorReplaceGun.GunIdx =
-		a->guns.size == MAX_WEAPONS ? a->gunIndex : (int)a->guns.size;
-	CASSERT(e.u.ActorReplaceGun.GunIdx <= a->guns.size,
-		"invalid replace gun index");
+	// Replace the current gun, unless there's a free slot, in which case pick
+	// up into the free spot
+	if (gun->IsGrenade)
+	{
+		// TODO: multiple grenade slots
+		e.u.ActorReplaceGun.GunIdx = 0;
+	}
+	else
+	{
+		e.u.ActorReplaceGun.GunIdx = a->gunIndex;
+		for (int i = 0; i < MAX_GUNS; i++)
+		{
+			if (a->guns[i].Gun == NULL)
+			{
+				e.u.ActorReplaceGun.GunIdx = i;
+				break;
+			}
+		}
+	}
 	strcpy(e.u.ActorReplaceGun.Gun, gun->name);
 	GameEventsEnqueue(&gGameEvents, e);
 

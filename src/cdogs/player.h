@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2016, Cong Xu
+    Copyright (c) 2014-2016, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,9 @@
 
 #include "character.h"
 
-#define MAX_WEAPONS 3
+#define MAX_GUNS 2
+#define MAX_GRENADES 1
+#define MAX_WEAPONS (MAX_GUNS + MAX_GRENADES)
 // TODO: track accuracy
 // this requires sending the bullet type with the ActorHit event,
 // since we want to exclude melee and explosives from accuracy calcuation
@@ -41,8 +43,7 @@ typedef struct
 	bool Ready;
 	Character Char;
 	char name[20];
-	int weaponCount;
-	const GunDescription *weapons[MAX_WEAPONS];
+	const GunDescription *guns[MAX_WEAPONS];
 	int Lives;
 
 	NPlayerStats Stats;
@@ -104,3 +105,5 @@ bool PlayerTrySetInputDevice(
 // or this device/index is already used by another player
 bool PlayerTrySetUnusedInputDevice(
 	PlayerData *p, const input_device_e d, const int idx);
+
+int PlayerGetNumWeapons(const PlayerData *p);
