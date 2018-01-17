@@ -2,8 +2,8 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
     Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003 Lucas Martin-King 
+    Copyright (C) 2003 Jeremy Chin
+    Copyright (C) 2003 Lucas Martin-King
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -80,11 +80,10 @@ color_t colorExit = { 255, 255, 255, 255 };
 
 
 
-static void DisplayPlayer(const TActor *player, Vec2i pos, const int scale)
+static void DisplayPlayer(const TActor *player, struct vec2i pos, const int scale)
 {
-	Vec2i playerPos = Vec2iToTile(
-		Vec2iNew(player->tileItem.x, player->tileItem.y));
-	pos = Vec2iAdd(pos, Vec2iScale(playerPos, scale));
+	const struct vec2i playerPos = Vec2ToTile(player->tileItem.Pos);
+	pos = svec2i_add(pos, svec2i_scale(playerPos, scale));
 	if (scale >= 2)
 	{
 		DrawHead(ActorGetCharacter(player), DIRECTION_DOWN, pos);
@@ -96,13 +95,13 @@ static void DisplayPlayer(const TActor *player, Vec2i pos, const int scale)
 }
 
 static void DisplayObjective(
-	TTileItem *t, int objectiveIndex, Vec2i pos, int scale, int flags)
+	TTileItem *t, int objectiveIndex, struct vec2i pos, int scale, int flags)
 {
-	Vec2i objectivePos = Vec2iNew(t->x / TILE_WIDTH, t->y / TILE_HEIGHT);
+	const struct vec2i objectivePos = Vec2ToTile(t->Pos);
 	const Objective *o =
 		CArrayGet(&gMission.missionData->Objectives, objectiveIndex);
 	color_t color = o->color;
-	pos = Vec2iAdd(pos, Vec2iScale(objectivePos, scale));
+	pos = svec2i_add(pos, svec2i_scale(objectivePos, scale));
 	if (flags & AUTOMAP_FLAGS_MASK)
 	{
 		color.a = MASK_ALPHA;
@@ -117,20 +116,20 @@ static void DisplayObjective(
 	}
 }
 
-static void DisplayExit(Vec2i pos, int scale, int flags)
+static void DisplayExit(struct vec2i pos, int scale, int flags)
 {
-	Vec2i exitPos = gMap.ExitStart;
-	Vec2i exitSize = Vec2iAdd(Vec2iMinus(gMap.ExitEnd, exitPos), Vec2iUnit());
+	struct vec2i exitPos = gMap.ExitStart;
+	struct vec2i exitSize = svec2i_add(svec2i_subtract(gMap.ExitEnd, exitPos), svec2i_one());
 	color_t color = colorExit;
 
 	if (!HasExit(gCampaign.Entry.Mode))
 	{
 		return;
 	}
-	
-	exitPos = Vec2iScale(exitPos, scale);
-	exitSize = Vec2iScale(exitSize, scale);
-	exitPos = Vec2iAdd(exitPos, pos);
+
+	exitPos = svec2i_scale(exitPos, scale);
+	exitSize = svec2i_scale(exitSize, scale);
+	exitPos = svec2i_add(exitPos, pos);
 
 	if (flags & AUTOMAP_FLAGS_MASK)
 	{
@@ -142,7 +141,7 @@ static void DisplayExit(Vec2i pos, int scale, int flags)
 static void DisplaySummary(void)
 {
 	char sScore[20];
-	Vec2i pos;
+	struct vec2i pos;
 	pos.y = gGraphicsDevice.cachedConfig.Res.y - 5 - FontH();
 
 	CA_FOREACH(const Objective, o, gMission.missionData->Objectives)
@@ -175,7 +174,7 @@ static void DisplaySummary(void)
 
 color_t DoorColor(int x, int y)
 {
-	int l = MapGetDoorKeycardFlag(&gMap, Vec2iNew(x, y));
+	int l = MapGetDoorKeycardFlag(&gMap, svec2i(x, y));
 
 	switch (l) {
 	case FLAGS_KEYCARD_YELLOW:
@@ -191,20 +190,20 @@ color_t DoorColor(int x, int y)
 	}
 }
 
-void DrawDot(TTileItem *t, color_t color, Vec2i pos, int scale)
+void DrawDot(TTileItem *t, color_t color, struct vec2i pos, int scale)
 {
-	Vec2i dotPos = Vec2iNew(t->x / TILE_WIDTH, t->y / TILE_HEIGHT);
-	pos = Vec2iAdd(pos, Vec2iScale(dotPos, scale));
+	const struct vec2i dotPos = Vec2ToTile(t->Pos);
+	pos = svec2i_add(pos, svec2i_scale(dotPos, scale));
 	Draw_Rect(pos.x, pos.y, scale, scale, color);
 }
 
 static void DrawMap(
 	Map *map,
-	Vec2i center, Vec2i centerOn, Vec2i size,
+	struct vec2i center, struct vec2i centerOn, struct vec2i size,
 	int scale, int flags)
 {
 	int x, y;
-	Vec2i mapPos = Vec2iAdd(center, Vec2iScale(centerOn, -scale));
+	struct vec2i mapPos = svec2i_add(center, svec2i_scale(centerOn, -scale));
 	for (y = 0; y < gMap.Size.y; y++)
 	{
 		int i;
@@ -212,14 +211,14 @@ static void DrawMap(
 		{
 			for (x = 0; x < gMap.Size.x; x++)
 			{
-				Tile *tile = MapGetTile(map, Vec2iNew(x, y));
+				Tile *tile = MapGetTile(map, svec2i(x, y));
 				if (!(tile->flags & MAPTILE_IS_NOTHING) &&
 					(tile->isVisited || (flags & AUTOMAP_FLAGS_SHOWALL)))
 				{
 					int j;
 					for (j = 0; j < scale; j++)
 					{
-						Vec2i drawPos = Vec2iNew(
+						struct vec2i drawPos = svec2i(
 							mapPos.x + x*scale + j,
 							mapPos.y + y*scale + i);
 						color_t color = colorRoom;
@@ -260,14 +259,14 @@ static void DrawMap(
 }
 
 static void DrawTileItem(
-	TTileItem *t, Tile *tile, Vec2i pos, int scale, int flags);
-static void DrawObjectivesAndKeys(Map *map, Vec2i pos, int scale, int flags)
+	TTileItem *t, Tile *tile, struct vec2i pos, int scale, int flags);
+static void DrawObjectivesAndKeys(Map *map, struct vec2i pos, int scale, int flags)
 {
 	for (int y = 0; y < map->Size.y; y++)
 	{
 		for (int x = 0; x < map->Size.x; x++)
 		{
-			Tile *tile = MapGetTile(map, Vec2iNew(x, y));
+			Tile *tile = MapGetTile(map, svec2i(x, y));
 			CA_FOREACH(ThingId, tid, tile->things)
 				DrawTileItem(
 					ThingIdGetTileItem(tid), tile, pos, scale, flags);
@@ -276,7 +275,7 @@ static void DrawObjectivesAndKeys(Map *map, Vec2i pos, int scale, int flags)
 	}
 }
 static void DrawTileItem(
-	TTileItem *t, Tile *tile, Vec2i pos, int scale, int flags)
+	TTileItem *t, Tile *tile, struct vec2i pos, int scale, int flags)
 {
 	if ((t->flags & TILEITEM_OBJECTIVE) != 0)
 	{
@@ -325,18 +324,18 @@ static void DrawTileItem(
 void AutomapDraw(int flags, bool showExit)
 {
 	color_t mask = { 0, 128, 0, 255 };
-	Vec2i mapCenter = Vec2iNew(
+	struct vec2i mapCenter = svec2i(
 		gGraphicsDevice.cachedConfig.Res.x / 2,
 		gGraphicsDevice.cachedConfig.Res.y / 2);
-	Vec2i centerOn = Vec2iNew(gMap.Size.x / 2, gMap.Size.y / 2);
-	Vec2i pos = Vec2iAdd(mapCenter, Vec2iScale(centerOn, -MAP_FACTOR));
+	struct vec2i centerOn = svec2i(gMap.Size.x / 2, gMap.Size.y / 2);
+	struct vec2i pos = svec2i_add(mapCenter, svec2i_scale(centerOn, -MAP_FACTOR));
 
 	// Draw faded green overlay
 	for (int y = 0; y < gGraphicsDevice.cachedConfig.Res.y; y++)
 	{
 		for (int x = 0; x < gGraphicsDevice.cachedConfig.Res.x; x++)
 		{
-			DrawPointMask(&gGraphicsDevice, Vec2iNew(x, y), mask);
+			DrawPointMask(&gGraphicsDevice, svec2i(x, y), mask);
 		}
 	}
 
@@ -360,16 +359,16 @@ void AutomapDraw(int flags, bool showExit)
 
 void AutomapDrawRegion(
 	Map *map,
-	Vec2i pos, Vec2i size, Vec2i mapCenter, int flags, bool showExit)
+	struct vec2i pos, struct vec2i size, struct vec2i mapCenter, int flags, bool showExit)
 {
 	const int scale = 1;
 	const BlitClipping oldClip = gGraphicsDevice.clipping;
 	GraphicsSetBlitClip(
 		&gGraphicsDevice,
 		pos.x, pos.y, pos.x + size.x - 1, pos.y + size.y - 1);
-	pos = Vec2iAdd(pos, Vec2iScaleDiv(size, 2));
+	pos = svec2i_add(pos, svec2i_scale_divide(size, 2));
 	DrawMap(map, pos, mapCenter, size, scale, flags);
-	const Vec2i centerOn = Vec2iAdd(pos, Vec2iScale(mapCenter, -scale));
+	const struct vec2i centerOn = svec2i_add(pos, svec2i_scale(mapCenter, -scale));
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 		if (!IsPlayerAlive(p))
 		{

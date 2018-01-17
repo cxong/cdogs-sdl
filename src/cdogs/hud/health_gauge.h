@@ -44,4 +44,4 @@ void HealthGaugeInit(HealthGauge *h);
 void HealthGaugeUpdate(HealthGauge *h, const TActor *a, const int ms);
 void HealthGaugeDraw(
 	const HealthGauge *h, GraphicsDevice *device, const TActor *actor,
-	const Vec2i pos, const FontAlign hAlign, const FontAlign vAlign);
+	const struct vec2i pos, const FontAlign hAlign, const FontAlign vAlign);

@@ -54,9 +54,8 @@
 #include "los.h"
 
 
-void DrawBufferInit(DrawBuffer *b, Vec2i size, GraphicsDevice *g)
+void DrawBufferInit(DrawBuffer *b, struct vec2i size, GraphicsDevice *g)
 {
-	debug(D_MAX, "Initialising draw buffer %dx%d\n", size.x, size.y);
 	b->OrigSize = size;
 	CMALLOC(b->tiles, size.x * sizeof *b->tiles);
 	CMALLOC(b->tiles[0], size.x * size.y * sizeof *b->tiles[0]);
@@ -67,7 +66,6 @@ void DrawBufferInit(DrawBuffer *b, Vec2i size, GraphicsDevice *g)
 	b->g = g;
 	CArrayInit(&b->displaylist, sizeof(const TTileItem *));
 	CArrayReserve(&b->displaylist, 32);
-	debug(D_MAX, "Initialised draw buffer %dx%d\n", size.x, size.y);
 }
 void DrawBufferTerminate(DrawBuffer *b)
 {
@@ -77,16 +75,16 @@ void DrawBufferTerminate(DrawBuffer *b)
 }
 
 void DrawBufferSetFromMap(
-	DrawBuffer *buffer, Map *map, Vec2i origin, int width)
+	DrawBuffer *buffer, const Map *map, const struct vec2 origin,
+	const int width)
 {
 	int x, y;
 	Tile *bufTile;
 
-	buffer->Size = Vec2iNew(width, buffer->OrigSize.y);
+	buffer->Size = svec2i(width, buffer->OrigSize.y);
 
-	buffer->xTop = origin.x - TILE_WIDTH * width / 2;
-	//buffer->yTop = y_origin - 100;
-	buffer->yTop = origin.y - TILE_HEIGHT * buffer->OrigSize.y / 2;
+	buffer->xTop = (int)origin.x - TILE_WIDTH * width / 2;
+	buffer->yTop = (int)origin.y - TILE_HEIGHT * buffer->OrigSize.y / 2;
 
 	buffer->xStart = buffer->xTop / TILE_WIDTH;
 	buffer->yStart = buffer->yTop / TILE_HEIGHT;
@@ -111,7 +109,7 @@ void DrawBufferSetFromMap(
 		{
 			if (x >= 0 && x < map->Size.x && y >= 0 && y < map->Size.y)
 			{
-				*bufTile = *MapGetTile(map, Vec2iNew(x, y));
+				*bufTile = *MapGetTile(map, svec2i(x, y));
 			}
 			else
 			{
@@ -151,8 +149,8 @@ void DrawBufferFix(DrawBuffer *buffer)
 	{
 		for (int x = 0; x < buffer->Size.x; x++, tile++)
 		{
-			const Vec2i mapTile =
-				Vec2iNew(x + buffer->xStart, y + buffer->yStart);
+			const struct vec2i mapTile =
+				svec2i(x + buffer->xStart, y + buffer->yStart);
 			if (!LOSTileIsVisible(&gMap, mapTile))
 			{
 				tile->flags |= MAPTILE_OUT_OF_SIGHT;
@@ -179,11 +177,11 @@ static int CompareY(const void *v1, const void *v2)
 {
 	const TTileItem * const *t1 = v1;
 	const TTileItem * const *t2 = v2;
-	if ((*t1)->y < (*t2)->y)
+	if ((*t1)->Pos.y < (*t2)->Pos.y)
 	{
 		return -1;
 	}
-	else if ((*t1)->y >(*t2)->y)
+	else if ((*t1)->Pos.y >(*t2)->Pos.y)
 	{
 		return 1;
 	}

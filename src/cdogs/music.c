@@ -43,6 +43,23 @@
 #include "sounds.h"
 
 
+Mix_Music *MusicLoad(const char *path)
+{
+	// Only load music from known extensions
+	const char *ext = strrchr(path, '.');
+	if (ext == NULL || !(
+		strcmp(ext, ".it") == 0 || strcmp(ext, ".IT") == 0 ||
+		strcmp(ext, ".mod") == 0 || strcmp(ext, ".MOD") == 0 ||
+		strcmp(ext, ".ogg") == 0 || strcmp(ext, ".OGG") == 0 ||
+		strcmp(ext, ".s3m") == 0 || strcmp(ext, ".S3M") == 0 ||
+		strcmp(ext, ".xm") == 0 || strcmp(ext, ".XM") == 0))
+	{
+		return NULL;
+	}
+	LOG(LM_MAIN, LL_TRACE, "loading music file %s", path);
+	return Mix_LoadMUS(path);
+}
+
 static bool MusicPlay(SoundDevice *device, const char *path)
 {
 	if (!device->isInitialised)
@@ -50,23 +67,19 @@ static bool MusicPlay(SoundDevice *device, const char *path)
 		return true;
 	}
 
-	debug(D_NORMAL, "Attempting to play song: %s\n", path);
-
 	if (path == NULL || strlen(path) == 0)
 	{
 		LOG(LM_SOUND, LL_WARN, "Attempting to play song with empty name");
 		return false;
 	}
 
-	device->music = Mix_LoadMUS(path);
+	device->music = MusicLoad(path);
 	if (device->music == NULL)
 	{
 		strcpy(device->musicErrorMessage, SDL_GetError());
 		device->musicStatus = MUSIC_NOLOAD;
 		return false;
 	}
-
-	debug(D_NORMAL, "Playing song: %s\n", path);
 
 	Mix_PlayMusic(device->music, -1);
 	device->musicStatus = MUSIC_PLAYING;

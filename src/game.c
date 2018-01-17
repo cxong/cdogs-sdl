@@ -98,16 +98,16 @@ static void PlayerSpecialCommands(TActor *actor, const int cmd)
 
 
 // TODO: reimplement in camera
-Vec2i GetPlayerCenter(
+struct vec2i GetPlayerCenter(
 	GraphicsDevice *device, const Camera *camera,
 	const PlayerData *pData, const int playerIdx)
 {
 	if (pData->ActorUID < 0)
 	{
 		// Player is dead
-		return Vec2iZero();
+		return svec2i_zero();
 	}
-	Vec2i center = Vec2iZero();
+	struct vec2i center = svec2i_zero();
 	int w = device->cachedConfig.Res.x;
 	int h = device->cachedConfig.Res.y;
 
@@ -115,12 +115,13 @@ Vec2i GetPlayerCenter(
 		GetNumPlayers(PLAYER_ANY, false , true) == 1 ||
 		CameraIsSingleScreen())
 	{
-		const Vec2i pCenter = camera->lastPosition;
-		const Vec2i screenCenter =
-			Vec2iNew(w / 2, device->cachedConfig.Res.y / 2);
+		const struct vec2 pCenter = camera->lastPosition;
+		const struct vec2i screenCenter =
+			svec2i(w / 2, device->cachedConfig.Res.y / 2);
 		const TActor *actor = ActorGetByUID(pData->ActorUID);
-		const Vec2i p = Vec2iNew(actor->tileItem.x, actor->tileItem.y);
-		center = Vec2iAdd(Vec2iMinus(p, pCenter), screenCenter);
+		const struct vec2 p = actor->tileItem.Pos;
+		center = svec2i_add(
+			svec2i_assign_vec2(svec2_subtract(p, pCenter)), screenCenter);
 	}
 	else
 	{
@@ -194,7 +195,7 @@ static void RunGameOnEnter(GameLoopData *data)
 
 	// Clear the background
 	DrawRectangle(
-		&gGraphicsDevice, Vec2iZero(), gGraphicsDevice.cachedConfig.Res,
+		&gGraphicsDevice, svec2i_zero(), gGraphicsDevice.cachedConfig.Res,
 		colorBlack, 0);
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.bkg);
 
@@ -231,7 +232,7 @@ static void RunGameOnEnter(GameLoopData *data)
 
 		// Note: place players first,
 		// as bad guys are placed away from players
-		Vec2i firstPos = Vec2iZero();
+		struct vec2 firstPos = svec2_zero();
 		CA_FOREACH(const PlayerData, p, gPlayerDatas)
 			if (!p->Ready) continue;
 			firstPos = PlacePlayer(&gMap, p, firstPos, true);
@@ -249,7 +250,7 @@ static void RunGameOnEnter(GameLoopData *data)
 	{
 		LOSSetAllVisible(&rData->map->LOS);
 		rData->Camera.lastPosition =
-			Vec2iCenterOfTile(Vec2iScaleDiv(rData->map->Size, 2));
+			Vec2CenterOfTile(svec2i_scale_divide(rData->map->Size, 2));
 		rData->Camera.FollowNextPlayer = true;
 	}
 	HealthSpawnerInit(&rData->healthSpawner, rData->map);
@@ -296,6 +297,10 @@ static void RunGameOnExit(GameLoopData *data)
 	// Clear other texures
 	BlitClearBuf(&gGraphicsDevice);
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.hud);
+	if (gGraphicsDevice.cachedConfig.SecondWindow)
+	{
+		BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.hud2);
+	}
 
 	// Unready all the players
 	CA_FOREACH(PlayerData, p, gPlayerDatas)
@@ -506,9 +511,7 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 			if (player->dead > DEATH_MAX) continue;
 			// Calculate LOS for all players alive or dying
 			LOSCalcFrom(
-				&gMap,
-				Vec2iToTile(Vec2iNew(player->tileItem.x, player->tileItem.y)),
-				!gCampaign.IsClient);
+				&gMap, Vec2ToTile(player->tileItem.Pos), !gCampaign.IsClient);
 
 			if (player->dead) continue;
 
@@ -550,8 +553,8 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 	{
 		const int w = gGraphicsDevice.cachedConfig.Res.x;
 		const int h = gGraphicsDevice.cachedConfig.Res.y;
-		const Vec2i screen = Vec2iAdd(
-			PlayersGetMidpoint(), Vec2iNew(-w / 2, -h / 2));
+		const struct vec2i screen = svec2i_add(
+			svec2i_assign_vec2(PlayersGetMidpoint()), svec2i(-w / 2, -h / 2));
 		CA_FOREACH(const PlayerData, pd, gPlayerDatas)
 			if (!pd->IsLocal || !IsPlayerAlive(pd))
 			{
@@ -559,35 +562,36 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 			}
 			const TActor *p = ActorGetByUID(pd->ActorUID);
 			const int pad = CAMERA_SPLIT_PADDING;
-			Vec2i vel = Vec2iZero();
-			if (screen.x + pad > p->tileItem.x && p->tileItem.VelFull.x < 256)
+			struct vec2 vel = svec2_zero();
+			if (screen.x + pad > p->tileItem.Pos.x && p->tileItem.Vel.x < 1)
 			{
-				vel.x = screen.x + pad - p->tileItem.x;
+				vel.x = screen.x + pad - p->tileItem.Pos.x;
 			}
-			else if (screen.x + w - pad < p->tileItem.x &&
-				p->tileItem.VelFull.x > -256)
+			else if (screen.x + w - pad < p->tileItem.Pos.x &&
+				p->tileItem.Vel.x > -1)
 			{
-				vel.x = screen.x + w - pad - p->tileItem.x;
+				vel.x = screen.x + w - pad - p->tileItem.Pos.x;
 			}
-			if (screen.y + pad > p->tileItem.y && p->tileItem.VelFull.y < 256)
+			if (screen.y + pad > p->tileItem.Pos.y && p->tileItem.Vel.y < 1)
 			{
-				vel.y = screen.y + pad - p->tileItem.y; 
+				vel.y = screen.y + pad - p->tileItem.Pos.y;
 			}
-			else if (screen.y + h - pad < p->tileItem.y
-				&& p->tileItem.VelFull.y > -256)
+			else if (screen.y + h - pad < p->tileItem.Pos.y &&
+				p->tileItem.Vel.y > -1)
 			{
-				vel.y = screen.y + h - pad - p->tileItem.y;
+				vel.y = screen.y + h - pad - p->tileItem.Pos.y;
 			}
-			if (!Vec2iIsZero(vel))
+			if (!svec2_is_zero(vel))
 			{
 				GameEvent ei = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
 				ei.u.ActorImpulse.UID = p->uid;
-				ei.u.ActorImpulse.Vel = Vec2i2Net(Vec2iScale(vel, 64));
-				ei.u.ActorImpulse.Pos = Vec2i2Net(Vec2iZero());
+				ei.u.ActorImpulse.Vel = Vec2ToNet(svec2_scale(vel, 0.25f));
+				ei.u.ActorImpulse.Pos = Vec2ToNet(svec2_zero());
 				GameEventsEnqueue(&gGameEvents, ei);
 				LOG(LM_MAIN, LL_TRACE,
-					"playerUID(%d) pos(%d, %d) screen(%d, %d) impulse(%d, %d)",
-					p->uid, p->tileItem.x, p->tileItem.y, screen.x, screen.y,
+					"playerUID(%d) pos(%f, %f) screen(%d, %d) impulse(%f, %f)",
+					p->uid, p->tileItem.Pos.x, p->tileItem.Pos.y,
+					screen.x, screen.y,
 					ei.u.ActorImpulse.Vel.x, ei.u.ActorImpulse.Vel.y);
 			}
 		CA_FOREACH_END()
@@ -728,7 +732,8 @@ static void RunGameDraw(GameLoopData *data)
 	BlitClearBuf(&gGraphicsDevice);
 	CameraDrawMode(&rData->Camera);
 	HUDDraw(
-		&rData->Camera.HUD, rData->pausingDevice, rData->controllerUnplugged);
+		&rData->Camera.HUD, rData->pausingDevice, rData->controllerUnplugged,
+		rData->Camera.NumViews);
 	const bool isMouse = GameIsMouseUsed();
 	SDL_SetRelativeMouseMode(isMouse);
 	if (isMouse)
@@ -741,4 +746,14 @@ static void RunGameDraw(GameLoopData *data)
 		AutomapDraw(0, rData->Camera.HUD.showExit);
 	}
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.hud);
+
+	if (gGraphicsDevice.cachedConfig.SecondWindow)
+	{
+		BlitClearBuf(&gGraphicsDevice);
+		if (IsAutoMapEnabled(gCampaign.Entry.Mode))
+		{
+			AutomapDraw(0, rData->Camera.HUD.showExit);
+		}
+		BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.hud2);
+	}
 }

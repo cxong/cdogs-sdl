@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017, Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -58,6 +58,7 @@
 #include "game_events.h"
 #include "json_utils.h"
 #include "log.h"
+#include "mathc/mathc.h"
 #include "net_util.h"
 #include "objs.h"
 #include "sounds.h"
@@ -182,6 +183,8 @@ static void LoadGunDescription(
 		CFREE(tmp);
 	}
 
+	LoadBool(&g->IsGrenade, node, "IsGrenade");
+
 	const Pic *icon = NULL;
 	LoadPic(&icon, node, "Icon");
 	if (icon != NULL)
@@ -233,11 +236,11 @@ static void LoadGunDescription(
 
 	LoadInt(&g->SoundLockLength, node, "SoundLockLength");
 
-	LoadDouble(&g->Recoil, node, "Recoil");
+	LoadFloat(&g->Recoil, node, "Recoil");
 
 	LoadInt(&g->Spread.Count, node, "SpreadCount");
-	LoadDouble(&g->Spread.Width, node, "SpreadWidth");
-	LoadDouble(&g->AngleOffset, node, "AngleOffset");
+	LoadFloat(&g->Spread.Width, node, "SpreadWidth");
+	LoadFloat(&g->AngleOffset, node, "AngleOffset");
 
 	LoadInt(&g->MuzzleHeight, node, "MuzzleHeight");
 	g->MuzzleHeight *= Z_FACTOR;
@@ -468,7 +471,7 @@ bool WeaponIsLocked(const Weapon *w)
 }
 
 void GunFire(
-	const GunDescription *g, const Vec2i fullPos, const int z,
+	const GunDescription *g, const struct vec2 pos, const int z,
 	const double radians,
 	const int flags, const int playerUID, const int uid,
 	const bool playSound, const bool isGun)
@@ -477,7 +480,7 @@ void GunFire(
 	e.u.GunFire.UID = uid;
 	e.u.GunFire.PlayerUID = playerUID;
 	strcpy(e.u.GunFire.Gun, g->name);
-	e.u.GunFire.MuzzleFullPos = Vec2i2Net(fullPos);
+	e.u.GunFire.MuzzlePos = Vec2ToNet(pos);
 	e.u.GunFire.Z = z;
 	e.u.GunFire.Angle = (float)radians;
 	e.u.GunFire.Sound = playSound;
@@ -487,7 +490,7 @@ void GunFire(
 }
 
 void GunAddBrass(
-	const GunDescription *g, const direction_e d, const Vec2i pos)
+	const GunDescription *g, const direction_e d, const struct vec2 pos)
 {
 	// Check configuration
 	if (!ConfigGetBool(&gConfig, "Graphics.Brass"))
@@ -497,43 +500,38 @@ void GunAddBrass(
 	CASSERT(g->Brass, "Cannot create brass for no-brass weapon");
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 	e.u.AddParticle.Class = g->Brass;
-	double x, y;
-	const double radians = dir2radians[d];
-	GetVectorsForRadians(radians, &x, &y);
-	const Vec2i ejectionPortOffset = Vec2iReal2Full(Vec2iScale(Vec2iNew(
-		(int)round(x), (int)round(y)), 7));
-	e.u.AddParticle.FullPos = Vec2iMinus(pos, ejectionPortOffset);
+	const float radians = dir2radians[d];
+	const struct vec2 ejectionPortOffset = svec2_scale(
+		Vec2FromRadiansScaled(radians), 7);
+	e.u.AddParticle.Pos = svec2_subtract(pos, ejectionPortOffset);
 	e.u.AddParticle.Z = g->MuzzleHeight;
-	e.u.AddParticle.Vel = Vec2iScaleDiv(
-		GetFullVectorsForRadians(radians + PI / 2), 3);
-	e.u.AddParticle.Vel.x += (rand() % 128) - 64;
-	e.u.AddParticle.Vel.y += (rand() % 128) - 64;
-	e.u.AddParticle.Angle = RAND_DOUBLE(0, PI * 2);
+	e.u.AddParticle.Vel = svec2_scale(
+		Vec2FromRadians(radians + MPI_2), 0.333333f);
+	e.u.AddParticle.Vel.x += RAND_FLOAT(-0.25f, 0.25f);
+	e.u.AddParticle.Vel.y += RAND_FLOAT(-0.25f, 0.25f);
+	e.u.AddParticle.Angle = RAND_DOUBLE(0, M_PI * 2);
 	e.u.AddParticle.DZ = (rand() % 6) + 6;
 	e.u.AddParticle.Spin = RAND_DOUBLE(-0.1, 0.1);
 	GameEventsEnqueue(&gGameEvents, e);
 }
 
-static Vec2i GetMuzzleOffset(const direction_e d);
-Vec2i GunGetMuzzleOffset(
+static struct vec2 GetMuzzleOffset(const direction_e d);
+struct vec2 GunGetMuzzleOffset(
 	const GunDescription *desc, const CharSprites *cs, const direction_e dir)
 {
 	if (!GunHasMuzzle(desc))
 	{
-		return Vec2iZero();
+		return svec2_zero();
 	}
 	CASSERT(desc->Pic != NULL, "Gun has no pic");
-	const Vec2i gunOffset = cs->Offsets.Dir[BODY_PART_GUN][dir];
-	const Vec2i position = Vec2iAdd(gunOffset, GetMuzzleOffset(dir));
-	return Vec2iReal2Full(position);
+	const struct vec2 gunOffset = cs->Offsets.Dir[BODY_PART_GUN][dir];
+	return svec2_add(gunOffset, GetMuzzleOffset(dir));
 }
-static Vec2i GetMuzzleOffset(const direction_e d)
+static struct vec2 GetMuzzleOffset(const direction_e d)
 {
 	// TODO: gun-specific muzzle offsets
 	#define BARREL_LENGTH 10
-	Vec2i v = Vec2iFromPolar(BARREL_LENGTH, dir2radians[d]);
-	v.y = v.y * 3 / 4;
-	return v;
+	return svec2_scale(Vec2FromRadians(dir2radians[d]), BARREL_LENGTH);
 }
 
 void WeaponSetState(Weapon *w, const gunstate_e state)
@@ -571,23 +569,23 @@ bool IsHighDPS(const GunDescription *g)
 		g->Bullet->OutOfRangeGuns.size > 0 ||
 		g->Bullet->HitGuns.size > 0;
 }
-int GunGetRange(const GunDescription *g)
+float GunGetRange(const GunDescription *g)
 {
 	const BulletClass *b = g->Bullet;
 	if (b == NULL)
 	{
 		return 0;
 	}
-	const int speed = (b->SpeedLow + b->SpeedHigh) / 2;
+	const float speed = (b->SpeedLow + b->SpeedHigh) / 2;
 	const int range = (b->RangeLow + b->RangeHigh) / 2;
-	int effectiveRange = speed * range;
+	float effectiveRange = speed * range;
 	if (b->Falling.GravityFactor != 0 && b->Falling.DestroyOnDrop)
 	{
 		// Halve effective range
 		// TODO: this assumes a certain bouncing range
-		effectiveRange /= 2;
+		effectiveRange *= 0.5f;
 	}
-	return effectiveRange / 256;
+	return effectiveRange;
 }
 bool IsLongRange(const GunDescription *g)
 {

@@ -175,12 +175,12 @@ bool CPicIsLoaded(const CPic *p)
 	}
 }
 
-Vec2i CPicGetSize(const CPic *p)
+struct vec2i CPicGetSize(const CPic *p)
 {
 	const Pic *pic = CPicGetPic(p, 0);
 	if (pic == NULL)
 	{
-		return Vec2iZero();
+		return svec2i_zero();
 	}
 	return pic->size;
 }
@@ -272,14 +272,14 @@ const Pic *CPicGetPic(const CPic *p, const int idx)
 }
 void CPicDraw(
 	GraphicsDevice *g, const CPic *p,
-	const Vec2i pos, const CPicDrawContext *context)
+	const struct vec2i pos, const CPicDrawContext *context)
 {
 	const Pic *pic = CPicGetPic(p, context->Dir);
 	if (pic == NULL)
 	{
 		return;
 	}
-	const Vec2i picPos = Vec2iAdd(pos, context->Offset);
+	const struct vec2i picPos = svec2i_add(pos, context->Offset);
 	if (p->UseMask)
 	{
 		BlitMasked(g, pic, picPos, p->u1.Mask, true);

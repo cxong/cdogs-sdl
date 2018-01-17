@@ -11,7 +11,7 @@ project(cdogs-sdl C)
 
 SET(VERSION_MAJOR "0")
 SET(VERSION_MINOR "6")
-SET(VERSION_PATCH "5")
+SET(VERSION_PATCH "6")
 SET(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/appveyor.yml.cmake ${CMAKE_SOURCE_DIR}/appveyor.yml)
 # this must be 4 numbers
@@ -95,7 +95,6 @@ else()
 	add_definitions(
 		-fsigned-char
 		-Wall -W
-		-Wno-deprecated-declarations # TODO: this avoids error on deprecated readdir_r() call. Proper way to fix this bug is change readdir_r() to readdir()
 		-Wstrict-prototypes -Wpointer-arith -Wcast-qual)
 	if(DEBUG)
 		ADD_DEFINITIONS(-g)
@@ -195,19 +194,24 @@ elseif(APPLE)
 else()
 	set(LIB_EXTENSION ".so")
 endif()
+
+# Since Debian wants games binaries in /usr/games
+if(NOT DEFINED CDOGS_BIN_DIR)
+	set(CDOGS_BIN_DIR "${INSTALL_PREFIX}/bin")
+endif()
+
 install(
   PROGRAMS
     ${CMAKE_CURRENT_BINARY_DIR}/src/cdogs-sdl${EXE_EXTENSION}
-  DESTINATION ${INSTALL_PREFIX}/bin)
+    DESTINATION ${CDOGS_BIN_DIR})
 if(NOT "${GCW0}")
 	install(
 	  PROGRAMS
 	    ${CMAKE_CURRENT_BINARY_DIR}/src/cdogs-sdl-editor${EXE_EXTENSION}
-	  DESTINATION ${INSTALL_PREFIX}/bin)
+	    DESTINATION ${CDOGS_BIN_DIR})
 endif()
 
 INSTALL(DIRECTORY
-	${CMAKE_SOURCE_DIR}/doc
 	${CMAKE_SOURCE_DIR}/data
 	${CMAKE_SOURCE_DIR}/missions
 	${CMAKE_SOURCE_DIR}/dogfights
@@ -215,6 +219,14 @@ INSTALL(DIRECTORY
 	${CMAKE_SOURCE_DIR}/music
 	${CMAKE_SOURCE_DIR}/sounds
 	DESTINATION ${DATA_INSTALL_DIR})
+
+if(NOT DEFINED CDOGS_DOC_DIR)
+	set(CDOGS_DOC_DIR "${DATA_INSTALL_DIR}/doc")
+endif()
+INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/
+	DESTINATION ${CDOGS_DOC_DIR}
+	)
+
 INSTALL(FILES
 	${CMAKE_SOURCE_DIR}/README.md
 	DESTINATION ${DATA_INSTALL_DIR})
@@ -223,7 +235,8 @@ IF(UNIX AND NOT APPLE AND NOT BEOS AND NOT HAIKU)
 	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-sdl.appdata.xml DESTINATION ${INSTALL_PREFIX}/share/appdata)
 	foreach(RES 16 22 32 48 128)
 		INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-icon.${RES}.png
-			DESTINATION ${INSTALL_PREFIX}/share/icons/hicolor/${RES}x${RES}/apps/cdogs-sdl.png)
+			DESTINATION ${INSTALL_PREFIX}/share/icons/hicolor/${RES}x${RES}/apps
+			RENAME cdogs-sdl.png)
 	endforeach(RES)
 elseif(WIN32)
 	# Package for Windows

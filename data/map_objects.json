@@ -1525,7 +1525,7 @@
         "TicksPerFrame": 10
       },
       "Size": [14, 1],
-      "PosOffset": [0, -5],
+      "PosOffset": [0, 2],
       "Offset": [-7, -11],
       "Wreck": "wscreen1_wreck",
       "Health": 10,
@@ -1539,7 +1539,7 @@
         "TicksPerFrame": 10
       },
       "Size": [14, 1],
-      "PosOffset": [0, -5],
+      "PosOffset": [0, 2],
       "Offset": [-7, -11],
       "Wreck": "wscreen1_wreck",
       "Health": 10,

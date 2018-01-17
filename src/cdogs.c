@@ -112,16 +112,6 @@ int main(int argc, char *argv[])
 
 	PrintTitle();
 
-	if (getenv("DEBUG") != NULL)
-	{
-		debug = true;
-		char *dbg;
-		if ((dbg = getenv("DEBUG_LEVEL")) != NULL)
-		{
-			debug_level = CLAMP(atoi(dbg), D_NORMAL, D_MAX);
-		}
-	}
-
 #ifdef __EMSCRIPTEN__
     // initialize IDBFS for Emscripten persistent storage
     EM_ASM(
@@ -172,13 +162,12 @@ int main(int argc, char *argv[])
 		goto bail;
 	}
 
-	debug(D_NORMAL, "Initialising SDL...\n");
 #ifndef __EMSCRIPTEN__
 	const int sdlFlags =
 		SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_HAPTIC |
 		SDL_INIT_GAMECONTROLLER;
 #else
-    const int sdlFlags = SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO;
+    const int sdlFlags = SDL_INIT_AUDIO | SDL_INIT_VIDEO;
 #endif
 	if (SDL_Init(sdlFlags) != 0)
 	{

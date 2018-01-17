@@ -258,7 +258,11 @@ bool LoopRunnerRunInner(LoopRunInnerData *ctx)
         if (ctx->data->DrawFunc)
         {
             ctx->data->DrawFunc(ctx->data);
-            BlitFlip(&gGraphicsDevice);
+			WindowContextRender(&gGraphicsDevice.gameWindow);
+			if (gGraphicsDevice.cachedConfig.SecondWindow)
+			{
+				WindowContextRender(&gGraphicsDevice.secondWindow);
+			}
         }
         ctx->data->HasDrawnFirst = true;
     }

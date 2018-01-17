@@ -75,10 +75,10 @@ void HUDUpdate(HUD *hud, const int ms);
 // INPUT_DEVICE_UNSET if not paused
 void HUDDraw(
 	HUD *hud, const input_device_e pausingDevice,
-	const bool controllerUnplugged);
+	const bool controllerUnplugged, const int numViews);
 
 void HUDDrawGauge(
 	GraphicsDevice *device,
-	Vec2i pos, const Vec2i size, const int innerWidth,
+	struct vec2i pos, const struct vec2i size, const int innerWidth,
 	const color_t barColor, const color_t backColor,
 	const FontAlign hAlign, const FontAlign vAlign);

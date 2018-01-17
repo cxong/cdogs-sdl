@@ -206,7 +206,7 @@ int MapObjectGetFlags(const MapObject *mo)
 	{
 		flags |= TILEITEM_DRAW_LAST;
 	}
-	if (mo->Health > 0 && !(mo->Flags & (1 << PLACEMENT_ON_WALL)))
+	if (mo->Health > 0)
 	{
 		flags |= TILEITEM_IMPASSABLE;
 		flags |= TILEITEM_CAN_BE_SHOT;
@@ -318,8 +318,8 @@ static bool TryLoadMapObject(MapObject *m, json_t *node, const int version)
 	if (CPicIsLoaded(&m->Pic))
 	{
 		// Default offset: centered X, align bottom of tile and sprite
-		const Vec2i size = CPicGetSize(&m->Pic);
-		m->Offset = Vec2iNew(-size.x / 2, TILE_HEIGHT / 2 - size.y);
+		const struct vec2i size = CPicGetSize(&m->Pic);
+		m->Offset = svec2i(-size.x / 2, TILE_HEIGHT / 2 - size.y);
 		LoadVec2i(&m->Offset, node, "Offset");
 	}
 
@@ -348,7 +348,7 @@ static bool TryLoadMapObject(MapObject *m, json_t *node, const int version)
 	// Default tile size
 	m->Size = TILE_SIZE;
 	LoadVec2i(&m->Size, node, "Size");
-	LoadVec2i(&m->PosOffset, node, "PosOffset");
+	LoadVec2(&m->PosOffset, node, "PosOffset");
 	LoadInt(&m->Health, node, "Health");
 	LoadBulletGuns(&m->DestroyGuns, node, "DestroyGuns");
 
@@ -495,8 +495,8 @@ static void SetupSpawner(
 	m->Pic.u.Pic = PicManagerGetPic(&gPicManager, "spawn_pad");
 	m->Pic.UseMask = true;
 	m->Pic.u1.Mask = colorWhite;
-	const Vec2i size = CPicGetSize(&m->Pic);
-	m->Offset = Vec2iNew(-size.x / 2, TILE_HEIGHT / 2 - size.y);
+	const struct vec2i size = CPicGetSize(&m->Pic);
+	m->Offset = svec2i(-size.x / 2, TILE_HEIGHT / 2 - size.y);
 	m->Size = TILE_SIZE;
 	m->Health = 0;
 	m->DrawLast = true;
@@ -537,7 +537,7 @@ int MapObjectsCount(const MapObjects *classes)
 }
 
 
-const Pic *MapObjectGetPic(const MapObject *mo, Vec2i *offset)
+const Pic *MapObjectGetPic(const MapObject *mo, struct vec2i *offset)
 {
 	*offset = mo->Offset;
 	return CPicGetPic(&mo->Pic, 0);
@@ -609,10 +609,10 @@ bool MapObjectIsTileOKStrict(
 
 	return true;
 }
-Vec2i MapObjectGetPlacementPos(const MapObject *mo, const Vec2i tilePos)
+struct vec2 MapObjectGetPlacementPos(const MapObject *mo, const struct vec2i tilePos)
 {
-	Vec2i pos = Vec2iCenterOfTile(tilePos);
-	pos = Vec2iAdd(pos, mo->PosOffset);
+	struct vec2 pos = Vec2CenterOfTile(tilePos);
+	pos = svec2_add(pos, mo->PosOffset);
 	// For on-wall objects, set their position to the top of the tile
 	// This guarantees that they are drawn last
 	if (mo->Flags & (1 << PLACEMENT_ON_WALL))

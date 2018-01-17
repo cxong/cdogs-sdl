@@ -108,7 +108,7 @@ int CharacterClassIndex(const CharacterClass *c)
 	CA_FOREACH(const CharacterClass, cc, gCharacterClasses.CustomClasses)
 		if (cc == c)
 		{
-			return _ca_index + gCharacterClasses.Classes.size;
+			return _ca_index + (int)gCharacterClasses.Classes.size;
 		}
 	CA_FOREACH_END()
 	CASSERT(false, "cannot find character class");

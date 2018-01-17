@@ -34,6 +34,6 @@
 // Checks whether two moving rectangles will collide, and at what points the
 // two rectangles will collide
 bool MinkowskiHexCollide(
-	const Vec2i posA, const Vec2i velA, const Vec2i sizeA,
-	const Vec2i posB, const Vec2i velB, const Vec2i sizeB,
-	Vec2i *colA, Vec2i *colB, Vec2i *normal);
+	const struct vec2 posA, const struct vec2 velA, const struct vec2i sizeA,
+	const struct vec2 posB, const struct vec2 velB, const struct vec2i sizeB,
+	struct vec2 *colA, struct vec2 *colB, struct vec2 *normal);

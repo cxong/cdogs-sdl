@@ -51,6 +51,7 @@
 #include <stdbool.h>
 
 #include "c_array.h"
+#include "mathc/mathc.h"
 #include "pic.h"
 #include "pic_manager.h"
 #include "pics.h"
@@ -58,7 +59,7 @@
 
 #define TILE_WIDTH      16
 #define TILE_HEIGHT     12
-#define TILE_SIZE		Vec2iNew(TILE_WIDTH, TILE_HEIGHT)
+#define TILE_SIZE		svec2i(TILE_WIDTH, TILE_HEIGHT)
 
 #define X_TILES			((gGraphicsDevice.cachedConfig.Res.x + TILE_WIDTH - 1) / TILE_WIDTH + 1)
 
@@ -98,7 +99,7 @@ typedef enum
 #define OBJECTIVE_SHIFT         3
 
 
-typedef const Pic *(*TileItemGetPicFunc)(int, Vec2i *);
+typedef const Pic *(*TileItemGetPicFunc)(int, struct vec2i *);
 
 typedef struct
 {
@@ -113,13 +114,12 @@ typedef struct
 		} MuzzleFlash;
 	} u;
 } TileItemDrawFuncData;
-typedef void (*TileItemDrawFunc)(const Vec2i, const TileItemDrawFuncData *);
+typedef void (*TileItemDrawFunc)(const struct vec2i, const TileItemDrawFuncData *);
 typedef struct TileItem
 {
-	int x, y;
-	// Velocity in full coordinates
-	Vec2i VelFull;
-	Vec2i size;
+	struct vec2 Pos;
+	struct vec2 Vel;
+	struct vec2i size;
 	TileItemKind kind;
 	int id;	// Id of item (actor, mobobj or obj)
 	int flags;
@@ -127,8 +127,8 @@ typedef struct TileItem
 	TileItemDrawFunc drawFunc;
 	TileItemDrawFuncData drawData;
 	CPic CPic;
-	GetDrawContextFunc CPicFunc;
-	Vec2i ShadowSize;
+	DrawCPicFunc CPicFunc;
+	struct vec2i ShadowSize;
 	int SoundLock;
 } TTileItem;
 #define SOUND_LOCK_TILE_OBJECT 12
@@ -154,7 +154,7 @@ typedef struct
 Tile TileNone(void);
 void TileInit(Tile *t);
 void TileDestroy(Tile *t);
-bool IsTileItemInsideTile(TTileItem *i, Vec2i tilePos);
+bool IsTileItemInsideTile(const TTileItem *i, const struct vec2i tilePos);
 bool TileCanSee(Tile *t);
 bool TileCanWalk(const Tile *t);
 bool TileIsNormalFloor(const Tile *t);
@@ -162,6 +162,9 @@ bool TileIsClear(const Tile *t);
 bool TileHasCharacter(Tile *t);
 void TileSetAlternateFloor(Tile *t, NamedPic *p);
 
+void TileItemInit(
+	TTileItem *t, const int id, const TileItemKind kind, const struct vec2i size,
+	const int flags);
 void TileItemUpdate(TTileItem *t, const int ticks);
 
 TTileItem *ThingIdGetTileItem(const ThingId *tid);

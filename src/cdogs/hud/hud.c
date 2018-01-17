@@ -140,13 +140,13 @@ HUDDrawData HUDGetDrawData(void)
 // +--------------+
 void HUDDrawGauge(
 	GraphicsDevice *device,
-	Vec2i pos, const Vec2i size, const int innerWidth,
+	struct vec2i pos, const struct vec2i size, const int innerWidth,
 	const color_t barColor, const color_t backColor,
 	const FontAlign hAlign, const FontAlign vAlign)
 {
-	const Vec2i offset = Vec2iUnit();
-	Vec2i barPos = Vec2iAdd(pos, offset);
-	const Vec2i barSize = Vec2iNew(MAX(0, innerWidth - 2), size.y - 2);
+	const struct vec2i offset = svec2i_one();
+	struct vec2i barPos = svec2i_add(pos, offset);
+	const struct vec2i barSize = svec2i(MAX(0, innerWidth - 2), size.y - 2);
 	if (hAlign == ALIGN_END)
 	{
 		int w = device->cachedConfig.Res.x;
@@ -167,15 +167,15 @@ void HUDDrawGauge(
 }
 
 static void DrawWeaponStatus(
-	HUD *hud, const TActor *actor, Vec2i pos,
+	HUD *hud, const TActor *actor, struct vec2i pos,
 	const FontAlign hAlign, const FontAlign vAlign)
 {
 	const Weapon *weapon = ActorGetGun(actor);
 
 	// Draw gun icon, and allocate padding to draw the gun icon
 	const GunDescription *g = ActorGetGun(actor)->Gun;
-	const Vec2i iconPos = Vec2iAligned(
-		Vec2iNew(pos.x - 2, pos.y - 2),
+	const struct vec2i iconPos = Vec2iAligned(
+		svec2i(pos.x - 2, pos.y - 2),
 		g->Icon->size, hAlign, vAlign, gGraphicsDevice.cachedConfig.Res);
 	Blit(&gGraphicsDevice, g->Icon, iconPos);
 
@@ -187,8 +187,8 @@ static void DrawWeaponStatus(
 	const int amount = useAmmo ? ActorGunGetAmmo(actor, weapon) : 0;
 	if (useAmmo || weapon->lock > 0)
 	{
-		const Vec2i gaugePos = Vec2iAdd(pos, Vec2iNew(-1 + GUN_ICON_PAD, -1));
-		const Vec2i size = Vec2iNew(GAUGE_WIDTH - GUN_ICON_PAD, FontH() + 5);
+		const struct vec2i gaugePos = svec2i_add(pos, svec2i(-1 + GUN_ICON_PAD, -1));
+		const struct vec2i size = svec2i(GAUGE_WIDTH - GUN_ICON_PAD, FontH() + 5);
 		const int maxLock = weapon->Gun->Lock;
 		color_t barColor;
 		const double reloadProgressColorMod = 0.5 +
@@ -213,9 +213,9 @@ static void DrawWeaponStatus(
 		{
 			// Draw ammo level as inner mini-gauge, no background
 			const int yOffset = 8;
-			const Vec2i gaugeAmmoPos =
-				Vec2iNew(gaugePos.x, gaugePos.y + yOffset);
-			const Vec2i gaugeAmmoSize = Vec2iNew(size.x, size.y - yOffset);
+			const struct vec2i gaugeAmmoPos =
+				svec2i(gaugePos.x, gaugePos.y + yOffset);
+			const struct vec2i gaugeAmmoSize = svec2i(size.x, size.y - yOffset);
 			const int ammoGaugeWidth =
 				MAX(1, gaugeAmmoSize.x * amount / ammo->Max);
 			HUDDrawGauge(
@@ -227,7 +227,7 @@ static void DrawWeaponStatus(
 	opts.HAlign = hAlign;
 	opts.VAlign = vAlign;
 	opts.Area = gGraphicsDevice.cachedConfig.Res;
-	opts.Pad = Vec2iNew(pos.x + GUN_ICON_PAD, pos.y);
+	opts.Pad = svec2i(pos.x + GUN_ICON_PAD, pos.y);
 	char buf[128];
 	if (useAmmo && weapon->Gun->AmmoId >= 0)
 	{
@@ -262,16 +262,16 @@ static void DrawWeaponStatus(
 	{
 		strcpy(buf, weapon->Gun->name);
 	}
-	FontStrOpt(buf, Vec2iZero(), opts);
+	FontStrOpt(buf, svec2i_zero(), opts);
 }
 
 static void DrawLives(
-	const GraphicsDevice *device, const PlayerData *player, const Vec2i pos,
+	const GraphicsDevice *device, const PlayerData *player, const struct vec2i pos,
 	const FontAlign hAlign, const FontAlign vAlign)
 {
 	const int xStep = hAlign == ALIGN_START ? 10 : -10;
-	const Vec2i offset = Vec2iNew(2, 5);
-	Vec2i drawPos = Vec2iAdd(pos, offset);
+	const struct vec2i offset = svec2i(2, 5);
+	struct vec2i drawPos = svec2i_add(pos, offset);
 	if (hAlign == ALIGN_END)
 	{
 		const int w = device->cachedConfig.Res.x;
@@ -295,7 +295,7 @@ static void DrawRadar(
 	GraphicsDevice *device, const TActor *p,
 	const int flags, const bool showExit)
 {
-	Vec2i pos = Vec2iZero();
+	struct vec2i pos = svec2i_zero();
 	int w = device->cachedConfig.Res.x;
 	int h = device->cachedConfig.Res.y;
 
@@ -380,14 +380,13 @@ static void DrawRadar(
 		}
 	}
 
-	if (!Vec2iIsZero(pos))
+	if (!svec2i_is_zero(pos))
 	{
-		Vec2i playerPos = Vec2iNew(
-			p->tileItem.x / TILE_WIDTH, p->tileItem.y / TILE_HEIGHT);
+		const struct vec2i playerPos = Vec2ToTile(p->tileItem.Pos);
 		AutomapDrawRegion(
 			&gMap,
 			pos,
-			Vec2iNew(AUTOMAP_SIZE, AUTOMAP_SIZE),
+			svec2i(AUTOMAP_SIZE, AUTOMAP_SIZE),
 			playerPos,
 			AUTOMAP_FLAGS_MASK,
 			showExit);
@@ -397,33 +396,26 @@ static void DrawRadar(
 static void DrawSharedRadar(GraphicsDevice *device, bool showExit)
 {
 	int w = device->cachedConfig.Res.x;
-	Vec2i pos = Vec2iNew(w / 2 - AUTOMAP_SIZE / 2, AUTOMAP_PADDING);
-	Vec2i playerMidpoint = PlayersGetMidpoint();
-	playerMidpoint.x /= TILE_WIDTH;
-	playerMidpoint.y /= TILE_HEIGHT;
+	struct vec2i pos = svec2i(w / 2 - AUTOMAP_SIZE / 2, AUTOMAP_PADDING);
+	const struct vec2i playerMidpoint = Vec2ToTile(PlayersGetMidpoint());
 	AutomapDrawRegion(
 		&gMap,
 		pos,
-		Vec2iNew(AUTOMAP_SIZE, AUTOMAP_SIZE),
+		svec2i(AUTOMAP_SIZE, AUTOMAP_SIZE),
 		playerMidpoint,
 		AUTOMAP_FLAGS_MASK,
 		showExit);
 }
 
 static void DrawObjectiveCompass(
-	GraphicsDevice *g, Vec2i playerPos, Rect2i r, bool showExit);
+	GraphicsDevice *g, const struct vec2 playerPos, const Rect2i r,
+	const bool showExit);
 // Draw player's score, health etc.
 static void DrawPlayerStatus(
 	HUD *hud, const PlayerData *data, const TActor *p,
-	const int flags, const Rect2i r, const HealthGauge *hg)
+	const int flags, const HealthGauge *hg)
 {
-	if (p != NULL)
-	{
-		DrawObjectiveCompass(
-			hud->device, Vec2iFull2Real(p->Pos), r, hud->showExit);
-	}
-
-	Vec2i pos = Vec2iNew(5, 5);
+	struct vec2i pos = svec2i(5, 5);
 
 	FontOpts opts = FontOptsNew();
 	if (flags & HUDFLAGS_PLACE_RIGHT)
@@ -437,7 +429,7 @@ static void DrawPlayerStatus(
 	}
 	opts.Area = gGraphicsDevice.cachedConfig.Res;
 	opts.Pad = pos;
-	FontStrOpt(data->name, Vec2iZero(), opts);
+	FontStrOpt(data->name, svec2i_zero(), opts);
 
 	const int rowHeight = 1 + FontH();
 	pos.y += rowHeight;
@@ -462,7 +454,7 @@ static void DrawPlayerStatus(
 	{
 		// Score/money
 		opts.Pad = pos;
-		FontStrOpt(s, Vec2iZero(), opts);
+		FontStrOpt(s, svec2i_zero(), opts);
 
 		// Health
 		pos.y += rowHeight;
@@ -479,7 +471,7 @@ static void DrawPlayerStatus(
 	else
 	{
 		opts.Pad = pos;
-		FontStrOpt(s, Vec2iZero(), opts);
+		FontStrOpt(s, svec2i_zero(), opts);
 	}
 
 	if (ConfigGetBool(&gConfig, "Interface.ShowHUDMap") &&
@@ -492,10 +484,11 @@ static void DrawPlayerStatus(
 
 
 static void DrawCompassArrow(
-	GraphicsDevice *g, Rect2i r, Vec2i pos, Vec2i playerPos, color_t mask,
-	const char *label);
+	GraphicsDevice *g,const Rect2i r, const struct vec2 pos,
+	const struct vec2 playerPos, const color_t mask, const char *label);
 static void DrawObjectiveCompass(
-	GraphicsDevice *g, Vec2i playerPos, Rect2i r, bool showExit)
+	GraphicsDevice *g, const struct vec2 playerPos, const Rect2i r,
+	const bool showExit)
 {
 	// Draw exit position
 	if (showExit)
@@ -506,7 +499,7 @@ static void DrawObjectiveCompass(
 
 	// Draw objectives
 	Map *map = &gMap;
-	Vec2i tilePos;
+	struct vec2i tilePos;
 	for (tilePos.y = 0; tilePos.y < map->Size.y; tilePos.y++)
 	{
 		for (tilePos.x = 0; tilePos.x < map->Size.x; tilePos.x++)
@@ -529,8 +522,7 @@ static void DrawObjectiveCompass(
 				{
 					continue;
 				}
-				DrawCompassArrow(
-					g, r, Vec2iNew(ti->x, ti->y), playerPos, o->color, NULL);
+				DrawCompassArrow(g, r, ti->Pos, playerPos, o->color, NULL);
 			CA_FOREACH_END()
 		}
 	}
@@ -538,25 +530,25 @@ static void DrawObjectiveCompass(
 
 #define COMP_SATURATE_DIST 350
 static void DrawCompassArrow(
-	GraphicsDevice *g, Rect2i r, Vec2i pos, Vec2i playerPos, color_t mask,
-	const char *label)
+	GraphicsDevice *g,const Rect2i r, const struct vec2 pos,
+	const struct vec2 playerPos, const color_t mask, const char *label)
 {
-	Vec2i compassV = Vec2iMinus(pos, playerPos);
+	const struct vec2 compassV = svec2_subtract(pos, playerPos);
 	// Don't draw if objective is on screen
-	if (abs(pos.x - playerPos.x) < r.Size.x / 2 &&
-		abs(pos.y - playerPos.y) < r.Size.y / 2)
+	if (fabsf(pos.x - playerPos.x) < r.Size.x / 2 &&
+		fabsf(pos.y - playerPos.y) < r.Size.y / 2)
 	{
 		return;
 	}
 	// Saturate according to dist from screen edge
-	int xDist = abs(pos.x - playerPos.x) - r.Size.x / 2;
-	int yDist = abs(pos.y - playerPos.y) - r.Size.y / 2;
+	int xDist = (int)fabsf(pos.x - playerPos.x) - r.Size.x / 2;
+	int yDist = (int)fabsf(pos.y - playerPos.y) - r.Size.y / 2;
 	int lDist;
 	xDist > yDist ? lDist = xDist: (lDist = yDist);
 	HSV hsv = { -1.0, 1.0,
 		2.0 - 1.5 * MIN(lDist, COMP_SATURATE_DIST) / COMP_SATURATE_DIST };
-	mask = ColorTint(mask, hsv);
-	Vec2i textPos = Vec2iZero();
+	const color_t tintedMask = ColorTint(mask, hsv);
+	struct vec2i textPos = svec2i_zero();
 	// Find which edge of screen is the best
 	bool hasDrawn = false;
 	if (compassV.x != 0)
@@ -570,20 +562,20 @@ static void DrawCompassArrow(
 			if (compassV.x > 0)
 			{
 				// right edge
-				textPos = Vec2iNew(
+				textPos = svec2i(
 					r.Pos.x + r.Size.x, r.Pos.y + r.Size.y / 2 + yInt);
 				const Pic *p = PicManagerGetPic(&gPicManager, "arrow_right");
-				Vec2i drawPos = Vec2iNew(
+				struct vec2i drawPos = svec2i(
 					textPos.x - p->size.x, textPos.y - p->size.y / 2);
-				BlitMasked(g, p, drawPos, mask, true);
+				BlitMasked(g, p, drawPos, tintedMask, true);
 			}
 			else if (compassV.x < 0)
 			{
 				// left edge
-				textPos = Vec2iNew(r.Pos.x, r.Pos.y + r.Size.y / 2 + yInt);
+				textPos = svec2i(r.Pos.x, r.Pos.y + r.Size.y / 2 + yInt);
 				const Pic *p = PicManagerGetPic(&gPicManager, "arrow_left");
-				Vec2i drawPos = Vec2iNew(textPos.x, textPos.y - p->size.y / 2);
-				BlitMasked(g, p, drawPos, mask, true);
+				struct vec2i drawPos = svec2i(textPos.x, textPos.y - p->size.y / 2);
+				BlitMasked(g, p, drawPos, tintedMask, true);
 			}
 		}
 	}
@@ -597,26 +589,26 @@ static void DrawCompassArrow(
 			if (compassV.y > 0)
 			{
 				// bottom edge
-				textPos = Vec2iNew(
+				textPos = svec2i(
 					r.Pos.x + r.Size.x / 2 + xInt, r.Pos.y + r.Size.y);
 				const Pic *p = PicManagerGetPic(&gPicManager, "arrow_down");
-				Vec2i drawPos = Vec2iNew(
+				struct vec2i drawPos = svec2i(
 					textPos.x - p->size.x / 2, textPos.y - p->size.y);
-				BlitMasked(g, p, drawPos, mask, true);
+				BlitMasked(g, p, drawPos, tintedMask, true);
 			}
 			else if (compassV.y < 0)
 			{
 				// top edge
-				textPos = Vec2iNew(r.Pos.x + r.Size.x / 2 + xInt, r.Pos.y);
+				textPos = svec2i(r.Pos.x + r.Size.x / 2 + xInt, r.Pos.y);
 				const Pic *p = PicManagerGetPic(&gPicManager, "arrow_up");
-				Vec2i drawPos = Vec2iNew(textPos.x - p->size.x / 2, textPos.y);
-				BlitMasked(g, p, drawPos, mask, true);
+				struct vec2i drawPos = svec2i(textPos.x - p->size.x / 2, textPos.y);
+				BlitMasked(g, p, drawPos, tintedMask, true);
 			}
 		}
 	}
 	if (label && strlen(label) > 0)
 	{
-		Vec2i textSize = FontStrSize(label);
+		struct vec2i textSize = FontStrSize(label);
 		// Center the text around the target position
 		textPos.x -= textSize.x / 2;
 		textPos.y -= textSize.y / 2;
@@ -626,7 +618,7 @@ static void DrawCompassArrow(
 		textPos.x = MIN(textPos.x, r.Pos.x + r.Size.x - textSize.x - padding);
 		textPos.y = MAX(textPos.y, r.Pos.y + padding);
 		textPos.y = MIN(textPos.y, r.Pos.y + r.Size.y - textSize.y - padding);
-		FontStrMask(label, textPos, mask);
+		FontStrMask(label, textPos, tintedMask);
 	}
 }
 
@@ -641,11 +633,57 @@ static void DrawMissionTime(HUD *hud);
 static void DrawObjectiveCounts(HUD *hud);
 void HUDDraw(
 	HUD *hud, const input_device_e pausingDevice,
-	const bool controllerUnplugged)
+	const bool controllerUnplugged, const int numViews)
 {
 	if (ConfigGetBool(&gConfig, "Graphics.ShowHUD"))
 	{
 		DrawPlayerAreas(hud);
+
+		// Draw objective compass
+		Rect2i r;
+		r.Size = svec2i(
+			hud->device->cachedConfig.Res.x,
+			hud->device->cachedConfig.Res.y);
+		if (numViews == 1)
+		{
+		}
+		else if (numViews == 2)
+		{
+			r.Size.x /= 2;
+		}
+		else if (numViews == 3 || numViews == 4)
+		{
+			r.Size.x /= 2;
+			r.Size.y /= 2;
+		}
+		else
+		{
+			CASSERT(false, "not implemented");
+		}
+		for (int i = 0; i < numViews; i++)
+		{
+			const PlayerData *p = hud->DrawData.Players[i];
+			r.Pos = svec2i_zero();
+			if (i & 1)
+			{
+				r.Pos.x = r.Size.x;
+			}
+			if (i >= 2)
+			{
+				r.Pos.y = r.Size.y;
+			}
+			if (!IsPlayerAlive(p))
+			{
+				continue;
+			}
+			TActor *player = ActorGetByUID(p->ActorUID);
+			if (player == NULL)
+			{
+				continue;
+			}
+			DrawObjectiveCompass(hud->device, player->Pos, r, hud->showExit);
+		}
+
 		DrawDeathmatchScores(hud);
 		DrawHUDMessage(hud);
 		if (ConfigGetBool(&gConfig, "Interface.ShowFPS"))
@@ -672,7 +710,7 @@ static void DrawPlayerAreas(HUD *hud)
 	int flags = 0;
 
 	Rect2i r;
-	r.Size = Vec2iNew(
+	r.Size = svec2i(
 		hud->device->cachedConfig.Res.x,
 		hud->device->cachedConfig.Res.y);
 	if (hud->DrawData.NumScreens <= 1)
@@ -704,7 +742,7 @@ static void DrawPlayerAreas(HUD *hud)
 	{
 		const PlayerData *p = hud->DrawData.Players[i];
 		int drawFlags = flags;
-		r.Pos = Vec2iZero();
+		r.Pos = svec2i_zero();
 		if (i & 1)
 		{
 			r.Pos.x = r.Size.x;
@@ -720,7 +758,7 @@ static void DrawPlayerAreas(HUD *hud)
 		{
 			player = ActorGetByUID(p->ActorUID);
 		}
-		DrawPlayerStatus(hud, p, player, drawFlags, r, &hud->healthGauges[i]);
+		DrawPlayerStatus(hud, p, player, drawFlags, &hud->healthGauges[i]);
 		HUDNumPopupsDrawPlayer(&hud->numPopups, i, drawFlags);
 	}
 
@@ -751,11 +789,11 @@ static void DrawDeathmatchScores(HUD *hud)
 	const int killsColumn = 5;
 	int y = 5;
 	opts.Pad.x = nameColumn;
-	FontStrOpt("Player", Vec2iNew(0, y), opts);
+	FontStrOpt("Player", svec2i(0, y), opts);
 	opts.Pad.x = livesColumn;
-	FontStrOpt("Lives", Vec2iNew(0, y), opts);
+	FontStrOpt("Lives", svec2i(0, y), opts);
 	opts.Pad.x = killsColumn;
-	FontStrOpt("Kills", Vec2iNew(0, y), opts);
+	FontStrOpt("Kills", svec2i(0, y), opts);
 	y += FontH();
 	// Find the player(s) with the most lives and kills
 	int maxLives = 0;
@@ -768,20 +806,20 @@ static void DrawDeathmatchScores(HUD *hud)
 		// Player name; red if dead
 		opts.Mask = p->Lives > 0 ? colorWhite : colorRed;
 		opts.Pad.x = nameColumn;
-		FontStrOpt(p->name, Vec2iNew(0, y), opts);
+		FontStrOpt(p->name, svec2i(0, y), opts);
 
 		// lives; cyan if most lives
 		opts.Mask = p->Lives == maxLives ? colorCyan : colorWhite;
 		opts.Pad.x = livesColumn;
 		char buf[32];
 		sprintf(buf, "%d", p->Lives);
-		FontStrOpt(buf, Vec2iNew(0, y), opts);
+		FontStrOpt(buf, svec2i(0, y), opts);
 
 		// kills; cyan if most kills
 		opts.Mask = p->Stats.Kills == maxKills ? colorCyan : colorWhite;
 		opts.Pad.x = killsColumn;
 		sprintf(buf, "%d", p->Stats.Kills);
-		FontStrOpt(buf, Vec2iNew(0, y), opts);
+		FontStrOpt(buf, svec2i(0, y), opts);
 		y += FontH();
 	CA_FOREACH_END()
 }
@@ -793,7 +831,7 @@ static void DrawStateMessage(
 {
 	if (controllerUnplugged)
 	{
-		Vec2i pos = Vec2iScaleDiv(Vec2iMinus(
+		struct vec2i pos = svec2i_scale_divide(svec2i_subtract(
 			gGraphicsDevice.cachedConfig.Res,
 			FontStrSize("<Paused>\nFoobar\nPlease reconnect controller")), 2);
 		const int x = pos.x;
@@ -813,7 +851,7 @@ static void DrawStateMessage(
 	}
 	else if (pausingDevice != INPUT_DEVICE_UNSET)
 	{
-		Vec2i pos = Vec2iScaleDiv(Vec2iMinus(
+		struct vec2i pos = svec2i_scale_divide(svec2i_subtract(
 			gGraphicsDevice.cachedConfig.Res,
 			FontStrSize("Foo\nPress foo or bar to unpause\nBaz")), 2);
 		const int x = pos.x;
@@ -895,7 +933,7 @@ static void DrawHUDMessage(HUD *hud)
 	if (hud->messageTicks > 0 || hud->messageTicks == -1)
 	{
 		// Draw the message centered, and just below the automap
-		Vec2i pos = Vec2iNew(
+		struct vec2i pos = svec2i(
 			(hud->device->cachedConfig.Res.x -
 				FontStrW(hud->message)) / 2,
 			AUTOMAP_SIZE + AUTOMAP_PADDING + AUTOMAP_PADDING);
@@ -925,7 +963,7 @@ static void DrawKeycards(HUD *hud)
 			Blit(
 				&gGraphicsDevice,
 				pic,
-				Vec2iNew(CenterX(pic->size.x) - xOffset, yOffset));
+				svec2i(CenterX(pic->size.x) - xOffset, yOffset));
 		}
 		xOffset += xOffsetIncr;
 	}
@@ -943,7 +981,7 @@ static void DrawMissionTime(HUD *hud)
 	opts.HAlign = ALIGN_CENTER;
 	opts.Area = hud->device->cachedConfig.Res;
 	opts.Pad.y = 5;
-	FontStrOpt(s, Vec2iZero(), opts);
+	FontStrOpt(s, svec2i_zero(), opts);
 }
 
 static void DrawObjectiveCounts(HUD *hud)
@@ -978,10 +1016,10 @@ static void DrawObjectiveCounts(HUD *hud)
 		{
 			strcpy(s, "Done");
 		}
-		FontStr(s, Vec2iNew(x, y));
+		FontStr(s, svec2i(x, y));
 
 		HUDNumPopupsDrawObjective(
-			&hud->numPopups, _ca_index, Vec2iNew(x + FontStrW(s) - 8, y));
+			&hud->numPopups, _ca_index, svec2i(x + FontStrW(s) - 8, y));
 
 		x += 40;
 	CA_FOREACH_END()

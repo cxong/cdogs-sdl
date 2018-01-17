@@ -35,7 +35,7 @@
 typedef color_t (*ColorPickerGetFunc)(void *data);
 typedef void (*ColorPickerChangeFunc)(const color_t c, void *data);
 UIObject *CreateColorPicker(
-	const Vec2i pos, void *data,
+	const struct vec2i pos, void *data,
 	ColorPickerGetFunc getFunc, ColorPickerChangeFunc changeFunc);
 
-Vec2i CreateColorObjs(CampaignOptions *co, UIObject *c, Vec2i pos);
+struct vec2i CreateColorObjs(CampaignOptions *co, UIObject *c, struct vec2i pos);

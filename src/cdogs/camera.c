@@ -41,8 +41,8 @@ void CameraInit(Camera *camera)
 {
 	memset(camera, 0, sizeof *camera);
 	DrawBufferInit(
-		&camera->Buffer, Vec2iNew(X_TILES, Y_TILES), &gGraphicsDevice);
-	camera->lastPosition = Vec2iZero();
+		&camera->Buffer, svec2i(X_TILES, Y_TILES), &gGraphicsDevice);
+	camera->lastPosition = svec2_zero();
 	HUDInit(&camera->HUD, &gGraphicsDevice, &gMission);
 	camera->shake = ScreenShakeZero();
 }
@@ -108,7 +108,8 @@ void CameraInput(Camera *camera, const int cmd, const int lastCmd)
 	}
 }
 
-static void FollowPlayer(Vec2i *pos, const PlayerData *p);
+static struct vec2 GetFollowPlayerPos(
+	const struct vec2 lastPos, const PlayerData *p);
 void CameraUpdate(Camera *camera, const int ticks, const int ms)
 {
 	camera->HUD.DrawData = HUDGetDrawData();
@@ -143,58 +144,33 @@ void CameraUpdate(Camera *camera, const int ticks, const int ms)
 		if (camera->HUD.DrawData.Players[0] != NULL)
 		{
 			camera->HUD.DrawData.NumScreens = 1;
-			FollowPlayer(
-				&camera->lastPosition, camera->HUD.DrawData.Players[0]);
+			camera->lastPosition = GetFollowPlayerPos(
+				camera->lastPosition, camera->HUD.DrawData.Players[0]);
 		}
 	}
 
 	HUDUpdate(&camera->HUD, ms);
 	camera->shake = ScreenShakeUpdate(camera->shake, ticks);
-}
-// Try to follow a player
-static void FollowPlayer(Vec2i *pos, const PlayerData *p)
-{
-	const TActor *a = ActorGetByUID(p->ActorUID);
-	if (a == NULL) return;
-	*pos = Vec2iFull2Real(a->Pos);
-}
 
-static void DoBuffer(
-	DrawBuffer *b, Vec2i center, int w, Vec2i noise, Vec2i offset);
-void CameraDraw(Camera *camera, const HUDDrawData drawData)
-{
-	Vec2i centerOffset = Vec2iZero();
-	const PlayerData *firstPlayer = drawData.Players[0];
-	const int w = gGraphicsDevice.cachedConfig.Res.x;
-	const int h = gGraphicsDevice.cachedConfig.Res.y;
-
-	const Vec2i noise = ScreenShakeGetDelta(camera->shake);
-
-	GraphicsResetBlitClip(&gGraphicsDevice);
-	if (drawData.NumScreens == 0)
+	// Determine how many camera views to use, and set camera position
+	if (camera->HUD.DrawData.NumScreens == 0)
 	{
-		DoBuffer(
-			&camera->Buffer,
-			camera->lastPosition,
-			X_TILES, noise, centerOffset);
+		camera->NumViews = 1;
 		SoundSetEars(camera->lastPosition);
 	}
 	else
 	{
-		// Redo LOS if PVP, so that each split screen has its own LOS
-		if (IsPVP(gCampaign.Entry.Mode) && drawData.NumScreens > 0)
-		{
-			LOSReset(&gMap.LOS);
-		}
-		const bool onePlayer = drawData.NumScreens == 1;
+		const bool onePlayer = camera->HUD.DrawData.NumScreens == 1;
 		const bool singleScreen = CameraIsSingleScreen();
 		if (onePlayer || singleScreen)
 		{
 			// Single camera screen
 			if (onePlayer)
 			{
+				const PlayerData *firstPlayer =
+					camera->HUD.DrawData.Players[0];
 				const TActor *p = ActorGetByUID(firstPlayer->ActorUID);
-				camera->lastPosition = Vec2iNew(p->tileItem.x, p->tileItem.y);
+				camera->lastPosition = p->tileItem.Pos;
 			}
 			else if (singleScreen)
 			{
@@ -206,107 +182,49 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 			// However, it is important to keep the ear positions unmodified
 			// so that sounds don't get muffled just because there's a wall
 			// between player and camera center
-			const Vec2i earPos = camera->lastPosition;
+			const struct vec2 earPos = camera->lastPosition;
 			if (gMap.Size.x * TILE_WIDTH < gGraphicsDevice.cachedConfig.Res.x)
 			{
-				camera->lastPosition.x = gMap.Size.x * TILE_WIDTH / 2;
+				camera->lastPosition.x = (float)gMap.Size.x * TILE_WIDTH / 2;
 			}
 			if (gMap.Size.y * TILE_HEIGHT < gGraphicsDevice.cachedConfig.Res.y)
 			{
-				camera->lastPosition.y = gMap.Size.y * TILE_HEIGHT / 2;
+				camera->lastPosition.y = (float)gMap.Size.y * TILE_HEIGHT / 2;
 			}
 
-			// Redo LOS for every local human player
-			if (IsPVP(gCampaign.Entry.Mode))
-			{
-				CA_FOREACH(const PlayerData, p, gPlayerDatas)
-					if (!p->IsLocal || !IsPlayerAliveOrDying(p) ||
-						!IsPlayerHuman(p))
-					{
-						continue;
-					}
-					const TActor *a = ActorGetByUID(p->ActorUID);
-					LOSCalcFrom(
-						&gMap,
-						Vec2iToTile(Vec2iNew(a->tileItem.x, a->tileItem.y)),
-						false);
-				CA_FOREACH_END()
-			}
-
-			DoBuffer(
-				&camera->Buffer,
-				camera->lastPosition,
-				X_TILES, noise, centerOffset);
 			SoundSetEars(earPos);
+
+			camera->NumViews = 1;
 		}
-		else if (drawData.NumScreens == 2)
+		else if (camera->HUD.DrawData.NumScreens == 2)
 		{
 			// side-by-side split
-			for (int i = 0; i < drawData.NumScreens; i++)
+			for (int i = 0; i < camera->HUD.DrawData.NumScreens; i++)
 			{
-				const PlayerData *p = drawData.Players[i];
+				const PlayerData *p = camera->HUD.DrawData.Players[i];
 				const TActor *a = ActorGetByUID(p->ActorUID);
-				camera->lastPosition = Vec2iNew(a->tileItem.x, a->tileItem.y);
-				Vec2i centerOffsetPlayer = centerOffset;
-				const int clipLeft = (i & 1) ? w / 2 : 0;
-				const int clipRight = (i & 1) ? w - 1 : (w / 2) - 1;
-				GraphicsSetBlitClip(
-					&gGraphicsDevice, clipLeft, 0, clipRight, h - 1);
-				if (i == 1)
-				{
-					centerOffsetPlayer.x += w / 2;
-				}
-
-				LOSCalcFrom(&gMap, Vec2iToTile(camera->lastPosition), false);
-				DoBuffer(
-					&camera->Buffer,
-					camera->lastPosition,
-					X_TILES_HALF, noise, centerOffsetPlayer);
+				camera->lastPosition = a->tileItem.Pos;
 				SoundSetEarsSide(i == 0, camera->lastPosition);
 			}
-			Draw_Line(w / 2 - 1, 0, w / 2 - 1, h - 1, colorBlack);
-			Draw_Line(w / 2, 0, w / 2, h - 1, colorBlack);
+
+			camera->NumViews = 2;
 		}
-		else if (drawData.NumScreens >= 3 && drawData.NumScreens <= 4)
+		else if (camera->HUD.DrawData.NumScreens >= 3 &&
+			camera->HUD.DrawData.NumScreens <= 4)
 		{
 			// 4 player split screen
 			bool isLocalPlayerAlive[MAX_LOCAL_PLAYERS];
 			memset(isLocalPlayerAlive, 0, sizeof isLocalPlayerAlive);
-			for (int i = 0; i < drawData.NumScreens; i++)
+			for (int i = 0; i < camera->HUD.DrawData.NumScreens; i++)
 			{
-				const PlayerData *p = drawData.Players[i];
-				Vec2i centerOffsetPlayer = centerOffset;
-				const int clipLeft = (i & 1) ? w / 2 : 0;
-				const int clipTop = (i < 2) ? 0 : h / 2 - 1;
-				const int clipRight = (i & 1) ? w - 1 : (w / 2) - 1;
-				const int clipBottom = (i < 2) ? h / 2 : h - 1;
+				const PlayerData *p = camera->HUD.DrawData.Players[i];
 				isLocalPlayerAlive[i] = IsPlayerAliveOrDying(p);
 				if (!isLocalPlayerAlive[i])
 				{
 					continue;
 				}
 				const TActor *a = ActorGetByUID(p->ActorUID);
-				camera->lastPosition = Vec2iNew(a->tileItem.x, a->tileItem.y);
-				GraphicsSetBlitClip(
-					&gGraphicsDevice,
-					clipLeft, clipTop, clipRight, clipBottom);
-				if (i & 1)
-				{
-					centerOffsetPlayer.x += w / 2;
-				}
-				if (i < 2)
-				{
-					centerOffsetPlayer.y -= h / 4;
-				}
-				else
-				{
-					centerOffsetPlayer.y += h / 4;
-				}
-				LOSCalcFrom(&gMap, Vec2iToTile(camera->lastPosition), false);
-				DoBuffer(
-					&camera->Buffer,
-					camera->lastPosition,
-					X_TILES_HALF, noise, centerOffsetPlayer);
+				camera->lastPosition = a->tileItem.Pos;
 
 				// Set the sound "ears"
 				const bool isLeft = i == 0 || i == 2;
@@ -329,6 +247,133 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 					SoundSetEarsSide(!isLeft, camera->lastPosition);
 				}
 			}
+
+			camera->NumViews = 4;
+		}
+		else
+		{
+			CASSERT(false, "not implemented yet");
+		}
+	}
+}
+// Try to follow a player
+static struct vec2 GetFollowPlayerPos(
+	const struct vec2 lastPos, const PlayerData *p)
+{
+	const TActor *a = ActorGetByUID(p->ActorUID);
+	if (a == NULL) return lastPos;
+	return a->Pos;
+}
+
+static void DoBuffer(
+	DrawBuffer *b, const struct vec2 center, const int w, const struct vec2 noise,
+	const struct vec2i offset);
+void CameraDraw(Camera *camera, const HUDDrawData drawData)
+{
+	struct vec2i centerOffset = svec2i_zero();
+	const int w = gGraphicsDevice.cachedConfig.Res.x;
+	const int h = gGraphicsDevice.cachedConfig.Res.y;
+
+	const struct vec2 noise = ScreenShakeGetDelta(camera->shake);
+
+	GraphicsResetBlitClip(&gGraphicsDevice);
+	if (drawData.NumScreens == 0)
+	{
+		DoBuffer(
+			&camera->Buffer,
+			camera->lastPosition,
+			X_TILES, noise, centerOffset);
+	}
+	else
+	{
+		// Redo LOS if PVP, so that each split screen has its own LOS
+		if (IsPVP(gCampaign.Entry.Mode) && drawData.NumScreens > 0)
+		{
+			LOSReset(&gMap.LOS);
+		}
+		if (camera->NumViews == 1)
+		{
+			// Single camera screen
+
+			// Redo LOS for every local human player
+			if (IsPVP(gCampaign.Entry.Mode))
+			{
+				CA_FOREACH(const PlayerData, p, gPlayerDatas)
+					if (!p->IsLocal || !IsPlayerAliveOrDying(p) ||
+						!IsPlayerHuman(p))
+					{
+						continue;
+					}
+					const TActor *a = ActorGetByUID(p->ActorUID);
+					LOSCalcFrom(&gMap, Vec2ToTile(a->tileItem.Pos), false);
+				CA_FOREACH_END()
+			}
+
+			DoBuffer(
+				&camera->Buffer,
+				camera->lastPosition,
+				X_TILES, noise, centerOffset);
+		}
+		else if (drawData.NumScreens == 2)
+		{
+			// side-by-side split
+			for (int i = 0; i < drawData.NumScreens; i++)
+			{
+				struct vec2i centerOffsetPlayer = centerOffset;
+				const int clipLeft = (i & 1) ? w / 2 : 0;
+				const int clipRight = (i & 1) ? w - 1 : (w / 2) - 1;
+				GraphicsSetBlitClip(
+					&gGraphicsDevice, clipLeft, 0, clipRight, h - 1);
+				if (i == 1)
+				{
+					centerOffsetPlayer.x += w / 2;
+				}
+
+				LOSCalcFrom(&gMap, Vec2ToTile(camera->lastPosition), false);
+				DoBuffer(
+					&camera->Buffer,
+					camera->lastPosition,
+					X_TILES_HALF, noise, centerOffsetPlayer);
+			}
+			Draw_Line(w / 2 - 1, 0, w / 2 - 1, h - 1, colorBlack);
+			Draw_Line(w / 2, 0, w / 2, h - 1, colorBlack);
+		}
+		else if (drawData.NumScreens >= 3 && drawData.NumScreens <= 4)
+		{
+			// 4 player split screen
+			for (int i = 0; i < drawData.NumScreens; i++)
+			{
+				const PlayerData *p = drawData.Players[i];
+				struct vec2i centerOffsetPlayer = centerOffset;
+				const int clipLeft = (i & 1) ? w / 2 : 0;
+				const int clipTop = (i < 2) ? 0 : h / 2 - 1;
+				const int clipRight = (i & 1) ? w - 1 : (w / 2) - 1;
+				const int clipBottom = (i < 2) ? h / 2 : h - 1;
+				if (!IsPlayerAliveOrDying(p))
+				{
+					continue;
+				}
+				GraphicsSetBlitClip(
+					&gGraphicsDevice,
+					clipLeft, clipTop, clipRight, clipBottom);
+				if (i & 1)
+				{
+					centerOffsetPlayer.x += w / 2;
+				}
+				if (i < 2)
+				{
+					centerOffsetPlayer.y -= h / 4;
+				}
+				else
+				{
+					centerOffsetPlayer.y += h / 4;
+				}
+				LOSCalcFrom(&gMap, Vec2ToTile(camera->lastPosition), false);
+				DoBuffer(
+					&camera->Buffer,
+					camera->lastPosition,
+					X_TILES_HALF, noise, centerOffsetPlayer);
+			}
 			Draw_Line(w / 2 - 1, 0, w / 2 - 1, h - 1, colorBlack);
 			Draw_Line(w / 2, 0, w / 2, h - 1, colorBlack);
 			Draw_Line(0, h / 2 - 1, w - 1, h / 2 - 1, colorBlack);
@@ -342,9 +387,10 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 	GraphicsResetBlitClip(&gGraphicsDevice);
 }
 static void DoBuffer(
-	DrawBuffer *b, Vec2i center, int w, Vec2i noise, Vec2i offset)
+	DrawBuffer *b, const struct vec2 center, const int w, const struct vec2 noise,
+	const struct vec2i offset)
 {
-	DrawBufferSetFromMap(b, &gMap, Vec2iAdd(center, noise), w);
+	DrawBufferSetFromMap(b, &gMap, svec2_add(center, noise), w);
 	if (gPlayerDatas.size > 0)
 	{
 		DrawBufferFix(b);
@@ -389,7 +435,7 @@ void CameraDrawMode(const Camera *camera)
 	// Draw the message centered at the bottom
 	FontStrMask(
 		cameraNameBuf,
-		Vec2iNew((w - FontStrW(cameraNameBuf)) / 2, h - FontH() * 2),
+		svec2i((w - FontStrW(cameraNameBuf)) / 2, h - FontH() * 2),
 		colorYellow);
 
 	// Show camera controls
@@ -402,7 +448,7 @@ void CameraDrawMode(const Camera *camera)
 		inputDevice = p->inputDevice;
 		deviceIndex = p->deviceIndex;
 	}
-	Vec2i pos = Vec2iNew(
+	struct vec2i pos = svec2i(
 		(w - FontStrW("foo/bar to follow player, baz to free-look")) / 2,
 		h - FontH());
 	char buf[256];
@@ -445,8 +491,7 @@ bool CameraIsSingleScreen(void)
 		return true;
 	}
 	// Finally, use split screen if players don't fit on camera
-	Vec2i min;
-	Vec2i max;
+	struct vec2 min, max;
 	PlayersGetBoundingRectangle(&min, &max);
 	return
 		max.x - min.x < gGraphicsDevice.cachedConfig.Res.x - CAMERA_SPLIT_PADDING &&

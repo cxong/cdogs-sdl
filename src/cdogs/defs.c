@@ -103,35 +103,30 @@ int dir2cmd[8] = {
 	CMD_UP + CMD_LEFT
 };
 
-double dir2radians[8] =
+float dir2radians[8] =
 {
 	0,
-	PI * 0.25,
-	PI * 0.5,
-	PI * 0.75,
-	PI,
-	PI * 1.25,
-	PI * 1.5,
-	PI * 1.75,
+	MPI * 0.25f,
+	MPI * 0.5f,
+	MPI * 0.75f,
+	MPI,
+	MPI * 1.25f,
+	MPI * 1.5f,
+	MPI * 1.75f,
 };
 
 
-void GetVectorsForRadians(const double radians, double *x, double *y)
+struct vec2 Vec2FromRadiansScaled(const float radians)
 {
-	*x = sin(radians);
-	*y = -cos(radians) * TILE_HEIGHT / TILE_WIDTH;
+	return svec2(
+		sinf(radians), -cosf(radians) * TILE_HEIGHT / TILE_WIDTH);
 }
-Vec2i GetFullVectorsForRadians(double radians)
+struct vec2 Vec2FromRadians(const float radians)
 {
-	int scalar = 256;
+	struct vec2 v = svec2_rotate(svec2(0, -1), radians);
 	// Scale Y so that they match the tile ratios
-	return Vec2iNew(
-		(int)(sin(radians) * scalar),
-		(int)(-cos(radians) * scalar * TILE_HEIGHT / TILE_WIDTH));
-}
-double Vec2iToRadians(const Vec2i v)
-{
-	return atan2(v.y, v.x) + PI / 2.0;
+	v.y *= (float)TILE_HEIGHT / TILE_WIDTH;
+	return v;
 }
 direction_e RadiansToDirection(const double r)
 {
@@ -139,13 +134,13 @@ direction_e RadiansToDirection(const double r)
 	double radians = r;
 	while (radians < 0)
 	{
-		radians += 2 * PI;
+		radians += 2 * M_PI;
 	}
-	while (radians >= 2 * PI)
+	while (radians >= 2 * M_PI)
 	{
-		radians -= 2 * PI;
+		radians -= 2 * M_PI;
 	}
-	int d = (int)floor((radians + PI / 8.0) / (PI / 4.0));
+	int d = (int)floor((radians + M_PI / 8.0) / (M_PI / 4.0));
 	if (d < DIRECTION_UP)
 	{
 		d += DIRECTION_COUNT;

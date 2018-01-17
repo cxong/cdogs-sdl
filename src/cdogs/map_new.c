@@ -57,7 +57,6 @@ int MapNewScan(const char *filename, char **title, int *numMissions)
 	f = fopen(filename, "r");
 	if (f == NULL)
 	{
-		debug(D_NORMAL, "MapNewLoad - invalid path!\n");
 		err = -1;
 		goto bail;
 	}
@@ -115,8 +114,6 @@ int MapNewLoad(const char *filename, CampaignSetting *c)
 {
 	int err = 0;
 
-	debug(D_NORMAL, "Loading map %s\n", filename);
-
 	if (IsCampaignOldFile(filename))
 	{
 		CampaignSettingOld cOld;
@@ -143,7 +140,6 @@ int MapNewLoad(const char *filename, CampaignSetting *c)
 	FILE *f = fopen(filename, "r");
 	if (f == NULL)
 	{
-		debug(D_NORMAL, "MapNewLoad - invalid path!\n");
 		err = -1;
 		goto bail;
 	}
@@ -357,6 +353,14 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 					LoadRooms(&m.u.Cave.Rooms, roomsNode->child);
 				}
 				LoadInt(&m.u.Cave.Squares, child, "Squares");
+				if (version < 14)
+				{
+					m.u.Cave.DoorsEnabled = true;
+				}
+				else
+				{
+					LoadBool(&m.u.Cave.DoorsEnabled, child, "DoorsEnabled");
+				}
 			}
 			break;
 		default:
@@ -535,7 +539,7 @@ static void LoadStaticItems(
 		{
 			continue;
 		}
-		CArrayInit(&mop.Positions, sizeof(Vec2i));
+		CArrayInit(&mop.Positions, sizeof(struct vec2i));
 		json_t *positions = json_find_first_label(items, "Positions");
 		if (!positions || !positions->child)
 		{
@@ -546,7 +550,7 @@ static void LoadStaticItems(
 			positions;
 			positions = positions->next)
 		{
-			Vec2i pos;
+			struct vec2i pos;
 			json_t *position = positions->child;
 			pos.x = atoi(position->text);
 			position = position->next;
@@ -573,7 +577,7 @@ static void LoadStaticWrecks(
 		{
 			continue;
 		}
-		CArrayInit(&mop.Positions, sizeof(Vec2i));
+		CArrayInit(&mop.Positions, sizeof(struct vec2i));
 		json_t *positions = json_find_first_label(items, "Positions");
 		if (!positions || !positions->child)
 		{
@@ -584,7 +588,7 @@ static void LoadStaticWrecks(
 			positions;
 			positions = positions->next)
 		{
-			Vec2i pos;
+			struct vec2i pos;
 			json_t *position = positions->child;
 			pos.x = atoi(position->text);
 			position = position->next;
@@ -658,7 +662,7 @@ static void LoadStaticCharacters(Mission *m, json_t *node, char *name)
 	{
 		CharacterPositions cp;
 		LoadInt(&cp.Index, chars, "Index");
-		CArrayInit(&cp.Positions, sizeof(Vec2i));
+		CArrayInit(&cp.Positions, sizeof(struct vec2i));
 		json_t *positions = json_find_first_label(chars, "Positions");
 		if (!positions || !positions->child)
 		{
@@ -669,7 +673,7 @@ static void LoadStaticCharacters(Mission *m, json_t *node, char *name)
 			positions;
 			positions = positions->next)
 		{
-			Vec2i pos;
+			struct vec2i pos;
 			json_t *position = positions->child;
 			pos.x = atoi(position->text);
 			position = position->next;
@@ -693,7 +697,7 @@ static void LoadStaticObjectives(Mission *m, json_t *node, char *name)
 	{
 		ObjectivePositions op;
 		LoadInt(&op.Index, objs, "Index");
-		CArrayInit(&op.Positions, sizeof(Vec2i));
+		CArrayInit(&op.Positions, sizeof(struct vec2i));
 		CArrayInit(&op.Indices, sizeof(int));
 		json_t *positions = json_find_first_label(objs, "Positions");
 		if (!positions || !positions->child)
@@ -705,7 +709,7 @@ static void LoadStaticObjectives(Mission *m, json_t *node, char *name)
 			 positions;
 			 positions = positions->next)
 		{
-			Vec2i pos;
+			struct vec2i pos;
 			json_t *position = positions->child;
 			pos.x = atoi(position->text);
 			position = position->next;
@@ -730,7 +734,7 @@ static void LoadStaticKeys(Mission *m, json_t *node, char *name)
 	{
 		KeyPositions kp;
 		LoadInt(&kp.Index, keys, "Index");
-		CArrayInit(&kp.Positions, sizeof(Vec2i));
+		CArrayInit(&kp.Positions, sizeof(struct vec2i));
 		json_t *positions = json_find_first_label(keys, "Positions");
 		if (!positions || !positions->child)
 		{
@@ -741,7 +745,7 @@ static void LoadStaticKeys(Mission *m, json_t *node, char *name)
 			 positions;
 			 positions = positions->next)
 		{
-			Vec2i pos;
+			struct vec2i pos;
 			json_t *position = positions->child;
 			pos.x = atoi(position->text);
 			position = position->next;

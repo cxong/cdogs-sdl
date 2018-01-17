@@ -61,9 +61,9 @@ void CachedPathDestroy(CachedPath *c)
 }
 
 static bool CachedPathMatches(
-	const CachedPath *c, const Vec2i from, const Vec2i to)
+	const CachedPath *c, const struct vec2i from, const struct vec2i to)
 {
-	return Vec2iEqual(c->from, from) && Vec2iEqual(c->to, to);
+	return svec2i_is_equal(c->from, from) && svec2i_is_equal(c->to, to);
 }
 
 
@@ -98,10 +98,10 @@ static void AddTileNeighbors(
 static float AStarHeuristic(void *fromNode, void *toNode, void *context);
 static ASPathNodeSource cPathNodeSource =
 {
-	sizeof(Vec2i), AddTileNeighbors, AStarHeuristic, NULL, NULL
+	sizeof(struct vec2i), AddTileNeighbors, AStarHeuristic, NULL, NULL
 };
 CachedPath PathCacheCreate(
-	PathCache *pc, Vec2i from, Vec2i to,
+	PathCache *pc, struct vec2i from, struct vec2i to,
 	const bool ignoreObjects, const bool cache)
 {
 	// Search through existing cache for path
@@ -161,7 +161,7 @@ CachedPath PathCacheCreate(
 static void AddTileNeighbors(
 	ASNeighborList neighbors, void *node, void *context)
 {
-	Vec2i *v = node;
+	struct vec2i *v = node;
 	int y;
 	AStarContext *c = context;
 	for (y = v->y - 1; y <= v->y + 1; y++)
@@ -174,7 +174,7 @@ static void AddTileNeighbors(
 		for (x = v->x - 1; x <= v->x + 1; x++)
 		{
 			float cost;
-			Vec2i neighbor;
+			struct vec2i neighbor;
 			neighbor.x = x;
 			neighbor.y = y;
 			if (x < 0 || x >= c->Map->Size.x)
@@ -187,9 +187,9 @@ static void AddTileNeighbors(
 			}
 			// if we're moving diagonally,
 			// need to check the axis-aligned neighbours are also clear
-			if (!c->IsTileOk(c->Map, Vec2iNew(x, y)) ||
-				!c->IsTileOk(c->Map, Vec2iNew(v->x, y)) ||
-				!c->IsTileOk(c->Map, Vec2iNew(x, v->y)))
+			if (!c->IsTileOk(c->Map, svec2i(x, y)) ||
+				!c->IsTileOk(c->Map, svec2i(v->x, y)) ||
+				!c->IsTileOk(c->Map, svec2i(x, v->y)))
 			{
 				continue;
 			}
@@ -215,10 +215,9 @@ static void AddTileNeighbors(
 }
 static float AStarHeuristic(void *fromNode, void *toNode, void *context)
 {
-	// Simple Euclidean
-	Vec2i *v1 = fromNode;
-	Vec2i *v2 = toNode;
+	const struct vec2i *v1 = fromNode;
+	const struct vec2i *v2 = toNode;
 	UNUSED(context);
-	return (float)sqrt(DistanceSquared(
-		Vec2iCenterOfTile(*v1), Vec2iCenterOfTile(*v2)));
+	return CHEBYSHEV_DISTANCE(
+		(float)v1->x, (float)v1->y, (float)v2->x, (float)v2->y);
 }

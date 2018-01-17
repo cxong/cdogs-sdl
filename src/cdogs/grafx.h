@@ -55,8 +55,9 @@
 #include "c_array.h"
 #include "color.h"
 #include "config.h"
-#include "vector.h"
 #include "sys_specifics.h"
+#include "window_context.h"
+
 
 #define RESTART_RESOLUTION 1
 #define RESTART_SCALE_MODE 2
@@ -64,11 +65,12 @@
 #define RESTART_ALL -1
 typedef struct
 {
-	Vec2i Res;
+	struct vec2i Res;
 	bool Fullscreen;
 	int ScaleFactor;
 	ScaleMode ScaleMode;
 	int Brightness;
+	bool SecondWindow;
 	bool IsEditor;
 
 	int RestartFlags;
@@ -89,15 +91,17 @@ typedef struct
 	SDL_Surface *icon;
 	SDL_Texture *screen;
 	SDL_Texture *hud;
-	SDL_Renderer *renderer;
-	SDL_Window *window;
+	SDL_Texture *hud2;
+	WindowContext gameWindow;
+	WindowContext secondWindow;
 	SDL_PixelFormat *Format;
 	GraphicsConfig cachedConfig;
-	CArray validModes;	// of Vec2i, w x h
+	CArray validModes;	// of struct vec2i, w x h
 	int modeIndex;
 	BlitClipping clipping;
 	Uint32 *buf;
 	SDL_Texture *bkg;
+	SDL_Texture *bkg2;
 	SDL_Texture *brightnessOverlay;
 } GraphicsDevice;
 
@@ -110,8 +114,9 @@ int GraphicsGetScreenSize(GraphicsConfig *config);
 int GraphicsGetMemSize(GraphicsConfig *config);
 void GraphicsConfigSet(
 	GraphicsConfig *c,
-	const Vec2i res, const bool fullscreen,
-	const int scaleFactor, const ScaleMode scaleMode, const int brightness);
+	const struct vec2i res, const bool fullscreen,
+	const int scaleFactor, const ScaleMode scaleMode, const int brightness,
+	const bool secondWindow);
 void GraphicsConfigSetFromConfig(GraphicsConfig *gc, Config *c);
 
 void Gfx_ModePrev(void);

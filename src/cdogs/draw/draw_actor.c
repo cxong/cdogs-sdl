@@ -67,16 +67,16 @@
 #include "pic_manager.h"
 
 
-static Vec2i GetActorDrawOffset(
+static struct vec2i GetActorDrawOffset(
 	const Pic *pic, const BodyPart part, const CharSprites *cs,
 	const ActorAnimation anim, const int frame, const direction_e d)
 {
-	Vec2i offset = Vec2iScaleDiv(pic->size, -2);
-	offset = Vec2iMinus(offset, CharSpritesGetOffset(
+	struct vec2i offset = svec2i_scale_divide(pic->size, -2);
+	offset = svec2i_subtract(offset, CharSpritesGetOffset(
 		cs->Offsets.Frame[part],
 		anim == ACTORANIMATION_WALKING ? "run" : "idle",
 		frame));
-	offset = Vec2iAdd(offset, cs->Offsets.Dir[part][d]);
+	offset = svec2i_add(offset, svec2i_assign_vec2(cs->Offsets.Dir[part][d]));
 	return offset;
 }
 
@@ -244,8 +244,8 @@ static Character *ActorGetCharacterMutable(TActor *a)
 }
 
 static void DrawDyingBody(
-	GraphicsDevice *g, const ActorPics *pics, const Vec2i pos);
-void DrawActorPics(const ActorPics *pics, const Vec2i pos)
+	GraphicsDevice *g, const ActorPics *pics, const struct vec2i pos);
+void DrawActorPics(const ActorPics *pics, const struct vec2i pos)
 {
 	if (pics->IsDead)
 	{
@@ -259,7 +259,7 @@ void DrawActorPics(const ActorPics *pics, const Vec2i pos)
 		// Draw shadow
 		if (!pics->IsTransparent)
 		{
-			DrawShadow(&gGraphicsDevice, pos, Vec2iNew(8, 6));
+			DrawShadow(&gGraphicsDevice, pos, svec2i(8, 6));
 		}
 		for (int i = 0; i < BODY_PART_COUNT; i++)
 		{
@@ -268,7 +268,7 @@ void DrawActorPics(const ActorPics *pics, const Vec2i pos)
 			{
 				continue;
 			}
-			const Vec2i drawPos = Vec2iAdd(pos, pics->OrderedOffsets[i]);
+			const struct vec2i drawPos = svec2i_add(pos, pics->OrderedOffsets[i]);
 			if (pics->IsTransparent)
 			{
 				BlitBackground(
@@ -287,10 +287,10 @@ void DrawActorPics(const ActorPics *pics, const Vec2i pos)
 	}
 }
 static void DrawLaserSightSingle(
-	const Vec2i from, const double radians, const int range,
+	const struct vec2i from, const float radians, const int range,
 	const color_t color);
 void DrawLaserSight(
-	const ActorPics *pics, const TActor *a, const Vec2i picPos)
+	const ActorPics *pics, const TActor *a, const struct vec2i picPos)
 {
 	// Don't draw if dead or transparent
 	if (pics->IsDead || pics->IsTransparent) return;
@@ -303,14 +303,13 @@ void DrawLaserSight(
 	}
 	// Draw weapon indicators
 	const GunDescription *g = ActorGetGun(a)->Gun;
-	Vec2i muzzlePos = Vec2iAdd(
-		picPos, Vec2iFull2Real(ActorGetGunMuzzleOffset(a)));
+	struct vec2i muzzlePos = svec2i_add(picPos, svec2i_assign_vec2(ActorGetGunMuzzleOffset(a)));
 	muzzlePos.y -= g->MuzzleHeight / Z_FACTOR;
-	const double radians = dir2radians[a->direction] + g->AngleOffset;
-	const int range = GunGetRange(g);
+	const float radians = dir2radians[a->direction] + g->AngleOffset;
+	const int range = (int)GunGetRange(g);
 	color_t color = colorCyan;
 	color.a = 64;
-	const double spreadHalf =
+	const float spreadHalf =
 		(g->Spread.Count - 1) * g->Spread.Width / 2 + g->Recoil / 2;
 	if (spreadHalf > 0)
 	{
@@ -323,18 +322,17 @@ void DrawLaserSight(
 	}
 }
 static void DrawLaserSightSingle(
-	const Vec2i from, const double radians, const int range,
+	const struct vec2i from, const float radians, const int range,
 	const color_t color)
 {
-	double x, y;
-	GetVectorsForRadians(radians, &x, &y);
-	const Vec2i to = Vec2iAdd(
-		from, Vec2iNew((int)round(x * range), (int)round(y * range)));
+	const struct vec2 v = svec2_scale(
+		Vec2FromRadiansScaled(radians), (float)range);
+	const struct vec2i to = svec2i_add(from, svec2i_assign_vec2(v));
 	DrawLine(from, to, color);
 }
 
 void DrawActorHighlight(
-	const ActorPics *pics, const Vec2i pos, const color_t color)
+	const ActorPics *pics, const struct vec2i pos, const color_t color)
 {
 	// Do not highlight dead, dying or transparent characters
 	if (pics->IsDead || pics->IsTransparent)
@@ -342,29 +340,29 @@ void DrawActorHighlight(
 		return;
 	}
 	BlitPicHighlight(
-		&gGraphicsDevice, pics->Head, Vec2iAdd(pos, pics->HeadOffset), color);
+		&gGraphicsDevice, pics->Head, svec2i_add(pos, pics->HeadOffset), color);
 	if (pics->Body != NULL)
 	{
 		BlitPicHighlight(
-			&gGraphicsDevice, pics->Body, Vec2iAdd(pos, pics->BodyOffset),
+			&gGraphicsDevice, pics->Body, svec2i_add(pos, pics->BodyOffset),
 			color);
 	}
 	if (pics->Legs != NULL)
 	{
 		BlitPicHighlight(
-			&gGraphicsDevice, pics->Legs, Vec2iAdd(pos, pics->LegsOffset),
+			&gGraphicsDevice, pics->Legs, svec2i_add(pos, pics->LegsOffset),
 			color);
 	}
 	if (pics->Gun != NULL)
 	{
 		BlitPicHighlight(
-			&gGraphicsDevice, pics->Gun, Vec2iAdd(pos, pics->GunOffset), color);
+			&gGraphicsDevice, pics->Gun, svec2i_add(pos, pics->GunOffset), color);
 	}
 }
 
 static void DrawChatter(
-	const TTileItem *ti, DrawBuffer *b, const Vec2i offset);
-void DrawChatters(DrawBuffer *b, const Vec2i offset)
+	const TTileItem *ti, DrawBuffer *b, const struct vec2i offset);
+void DrawChatters(DrawBuffer *b, const struct vec2i offset)
 {
 	const Tile *tile = &b->tiles[0][0];
 	for (int y = 0; y < Y_TILES; y++)
@@ -385,7 +383,7 @@ void DrawChatters(DrawBuffer *b, const Vec2i offset)
 }
 #define ACTOR_HEIGHT 25
 static void DrawChatter(
-	const TTileItem *ti, DrawBuffer *b, const Vec2i offset)
+	const TTileItem *ti, DrawBuffer *b, const struct vec2i offset)
 {
 	if (!ConfigGetBool(&gConfig, "Graphics.ShowHUD"))
 	{
@@ -396,10 +394,10 @@ static void DrawChatter(
 	// Draw character text
 	if (strlen(a->Chatter) > 0)
 	{
-		const Vec2i textPos = Vec2iNew(
-			a->tileItem.x - b->xTop + offset.x -
+		const struct vec2i textPos = svec2i(
+			(int)a->tileItem.Pos.x - b->xTop + offset.x -
 			FontStrW(a->Chatter) / 2,
-			a->tileItem.y - b->yTop + offset.y - ACTOR_HEIGHT);
+			(int)a->tileItem.Pos.y - b->yTop + offset.y - ACTOR_HEIGHT);
 		FontStr(a->Chatter, textPos);
 	}
 }
@@ -455,7 +453,7 @@ static const Pic *GetDeathPic(PicManager *pm, const int frame)
 }
 
 void DrawCharacterSimple(
-	Character *c, const Vec2i pos, const direction_e d,
+	Character *c, const struct vec2i pos, const direction_e d,
 	const bool hilite, const bool showGun)
 {
 	ActorPics pics = GetCharacterPics(
@@ -464,28 +462,28 @@ void DrawCharacterSimple(
 	DrawActorPics(&pics, pos);
 	if (hilite)
 	{
-		FontCh('>', Vec2iAdd(pos, Vec2iNew(-8, -16)));
+		FontCh('>', svec2i_add(pos, svec2i(-8, -16)));
 		if (showGun)
 		{
-			FontStr(c->Gun->name, Vec2iAdd(pos, Vec2iNew(-8, 8)));
+			FontStr(c->Gun->name, svec2i_add(pos, svec2i(-8, 8)));
 		}
 	}
 }
 
 void DrawHead(
-	const Character *c, const direction_e dir, const Vec2i pos)
+	const Character *c, const direction_e dir, const struct vec2i pos)
 {
 	const Pic *head = GetHeadPic(c->Class, dir, GUNSTATE_READY);
-	const Vec2i drawPos = Vec2iMinus(pos, Vec2iNew(
+	const struct vec2i drawPos = svec2i_subtract(pos, svec2i(
 		head->size.x / 2, head->size.y / 2));
 	BlitCharMultichannel(&gGraphicsDevice, head, drawPos, &c->Colors);
 }
 #define DYING_BODY_OFFSET 3
 static void DrawDyingBody(
-	GraphicsDevice *g, const ActorPics *pics, const Vec2i pos)
+	GraphicsDevice *g, const ActorPics *pics, const struct vec2i pos)
 {
 	const Pic *body = pics->Body;
-	const Vec2i drawPos = Vec2iMinus(pos, Vec2iNew(
+	const struct vec2i drawPos = svec2i_subtract(pos, svec2i(
 		body->size.x / 2, body->size.y / 2 + DYING_BODY_OFFSET));
 	const color_t mask = pics->Mask != NULL ? *pics->Mask : colorWhite;
 	BlitMasked(g, pics->Body, drawPos, mask, true);

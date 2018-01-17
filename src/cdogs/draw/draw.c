@@ -92,7 +92,7 @@ static TileLOS GetTileLOS(const Tile *tile, const bool useFog)
 	}
 	return TILE_LOS_NORMAL;
 }
-void DrawWallColumn(int y, Vec2i pos, Tile *tile)
+void DrawWallColumn(int y, struct vec2i pos, Tile *tile)
 {
 	const bool useFog = ConfigGetBool(&gConfig, "Game.Fog");
 	while (y >= 0 && (tile->flags & MAPTILE_IS_WALL))
@@ -117,12 +117,12 @@ void DrawWallColumn(int y, Vec2i pos, Tile *tile)
 }
 
 
-static void DrawFloor(DrawBuffer *b, Vec2i offset);
-static void DrawDebris(DrawBuffer *b, Vec2i offset);
-static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset);
-static void DrawExtra(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra);
+static void DrawFloor(DrawBuffer *b, struct vec2i offset);
+static void DrawDebris(DrawBuffer *b, struct vec2i offset);
+static void DrawWallsAndThings(DrawBuffer *b, struct vec2i offset);
+static void DrawExtra(DrawBuffer *b, struct vec2i offset, GrafxDrawExtra *extra);
 
-void DrawBufferDraw(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra)
+void DrawBufferDraw(DrawBuffer *b, struct vec2i offset, GrafxDrawExtra *extra)
 {
 	// First draw the floor tiles (which do not obstruct anything)
 	DrawFloor(b, offset);
@@ -141,10 +141,10 @@ void DrawBufferDraw(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra)
 	}
 }
 
-static void DrawFloor(DrawBuffer *b, Vec2i offset)
+static void DrawFloor(DrawBuffer *b, struct vec2i offset)
 {
 	int x, y;
-	Vec2i pos;
+	struct vec2i pos;
 	const Tile *tile = &b->tiles[0][0];
 	const bool useFog = ConfigGetBool(&gConfig, "Game.Fog");
 	for (y = 0, pos.y = b->dy + offset.y;
@@ -182,9 +182,9 @@ static void DrawFloor(DrawBuffer *b, Vec2i offset)
 	}
 }
 
-static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset);
+static void DrawThing(DrawBuffer *b, const TTileItem *t, const struct vec2i offset);
 
-static void DrawDebris(DrawBuffer *b, Vec2i offset)
+static void DrawDebris(DrawBuffer *b, struct vec2i offset)
 {
 	Tile *tile = &b->tiles[0][0];
 	for (int y = 0; y < Y_TILES; y++)
@@ -213,9 +213,9 @@ static void DrawDebris(DrawBuffer *b, Vec2i offset)
 }
 
 #define WALL_OFFSET_Y (-12)
-static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
+static void DrawWallsAndThings(DrawBuffer *b, struct vec2i offset)
 {
-	Vec2i pos;
+	struct vec2i pos;
 	Tile *tile = &b->tiles[0][0];
 	pos.y = b->dy + WALL_OFFSET_Y + offset.y;
 	const bool useFog = ConfigGetBool(&gConfig, "Game.Fog");
@@ -237,7 +237,7 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 				// Drawing doors
 				// Doors may be offset; vertical doors are drawn centered
 				// horizontal doors are bottom aligned
-				Vec2i doorPos = pos;
+				struct vec2i doorPos = pos;
 				doorPos.x += (TILE_WIDTH - tile->picAlt->pic.size.x) / 2;
 				if (tile->picAlt->pic.size.y > 16)
 				{
@@ -286,26 +286,26 @@ static void DrawWallsAndThings(DrawBuffer *b, Vec2i offset)
 		tile += X_TILES - b->Size.x;
 	}
 }
-static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset)
+static void DrawThing(DrawBuffer *b, const TTileItem *t, const struct vec2i offset)
 {
-	const Vec2i picPos = Vec2iNew(
-		t->x - b->xTop + offset.x, t->y - b->yTop + offset.y);
+	const struct vec2i picPos = svec2i(
+		(int)t->Pos.x - b->xTop + offset.x,
+		(int)t->Pos.y - b->yTop + offset.y);
 
-	if (!Vec2iIsZero(t->ShadowSize))
+	if (!svec2i_is_zero(t->ShadowSize))
 	{
 		DrawShadow(&gGraphicsDevice, picPos, t->ShadowSize);
 	}
 
 	if (t->CPicFunc)
 	{
-		CPicDrawContext c = t->CPicFunc(t->id);
-		CPicDraw(b->g, &t->CPic, picPos, &c);
+		t->CPicFunc(b->g, t->id, picPos);
 	}
 	else if (t->getPicFunc)
 	{
-		Vec2i picOffset;
+		struct vec2i picOffset;
 		const Pic *pic = t->getPicFunc(t->id, &picOffset);
-		Blit(&gGraphicsDevice, pic, Vec2iAdd(picPos, picOffset));
+		Blit(&gGraphicsDevice, pic, svec2i_add(picPos, picOffset));
 	}
 	else if (t->kind == KIND_CHARACTER)
 	{
@@ -331,16 +331,16 @@ static void DrawThing(DrawBuffer *b, const TTileItem *t, const Vec2i offset)
 	color_t color = colorPurple;
 	color.a = (Uint8)alphaUnscaled;
 	DrawRectangle(
-		&gGraphicsDevice, Vec2iMinus(picPos, Vec2iScaleDiv(t->size, 2)),
+		&gGraphicsDevice, svec2i_subtract(picPos, svec2i_scale_divide(t->size, 2)),
 		t->size, color, DRAW_FLAG_LINE);
 #endif
 }
 
-static void DrawEditorTiles(DrawBuffer *b, const Vec2i offset);
+static void DrawEditorTiles(DrawBuffer *b, const struct vec2i offset);
 static void DrawGuideImage(
 	DrawBuffer *b, SDL_Surface *guideImage, Uint8 alpha);
-static void DrawObjectNames(DrawBuffer *b, const Vec2i offset);
-static void DrawExtra(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra)
+static void DrawObjectNames(DrawBuffer *b, const struct vec2i offset);
+static void DrawExtra(DrawBuffer *b, struct vec2i offset, GrafxDrawExtra *extra)
 {
 	// Draw guide image
 	if (extra->guideImage && extra->guideImageAlpha > 0)
@@ -351,9 +351,9 @@ static void DrawExtra(DrawBuffer *b, Vec2i offset, GrafxDrawExtra *extra)
 	DrawObjectNames(b, offset);
 }
 
-static void DrawEditorTiles(DrawBuffer *b, const Vec2i offset)
+static void DrawEditorTiles(DrawBuffer *b, const struct vec2i offset)
 {
-	Vec2i pos;
+	struct vec2i pos;
 	Tile *tile = &b->tiles[0][0];
 	pos.y = b->dy + offset.y;
 	for (int y = 0; y < Y_TILES; y++, pos.y += TILE_HEIGHT)
@@ -363,9 +363,9 @@ static void DrawEditorTiles(DrawBuffer *b, const Vec2i offset)
 		{
 			if (gMission.missionData->Type == MAPTYPE_STATIC)
 			{
-				Vec2i start = gMission.missionData->u.Static.Start;
-				if (!Vec2iIsZero(start) &&
-					Vec2iEqual(start, Vec2iNew(x + b->xStart, y + b->yStart)))
+				struct vec2i start = gMission.missionData->u.Static.Start;
+				if (!svec2i_is_zero(start) &&
+					svec2i_is_equal(start, svec2i(x + b->xStart, y + b->yStart)))
 				{
 					// mission start
 					BlitMasked(
@@ -408,10 +408,10 @@ static void DrawGuideImage(
 
 // Draw names of objects (objectives, spawners etc.)
 static void DrawObjectiveName(
-	const TTileItem *ti, DrawBuffer *b, const Vec2i offset);
+	const TTileItem *ti, DrawBuffer *b, const struct vec2i offset);
 static void DrawSpawnerName(
-	const TObject *obj, DrawBuffer *b, const Vec2i offset);
-static void DrawObjectNames(DrawBuffer *b, const Vec2i offset)
+	const TObject *obj, DrawBuffer *b, const struct vec2i offset);
+static void DrawObjectNames(DrawBuffer *b, const struct vec2i offset)
 {
 	const Tile *tile = &b->tiles[0][0];
 	for (int y = 0; y < Y_TILES; y++)
@@ -438,23 +438,23 @@ static void DrawObjectNames(DrawBuffer *b, const Vec2i offset)
 	}
 }
 static void DrawObjectiveName(
-	const TTileItem *ti, DrawBuffer *b, const Vec2i offset)
+	const TTileItem *ti, DrawBuffer *b, const struct vec2i offset)
 {
 	const int objective = ObjectiveFromTileItem(ti->flags);
 	const Objective *o =
 		CArrayGet(&gMission.missionData->Objectives, objective);
 	const char *typeName = ObjectiveTypeStr(o->Type);
-	const Vec2i textPos = Vec2iNew(
-		ti->x - b->xTop + offset.x - FontStrW(typeName) / 2,
-		ti->y - b->yTop + offset.y);
+	const struct vec2i textPos = svec2i(
+		(int)ti->Pos.x - b->xTop + offset.x - FontStrW(typeName) / 2,
+		(int)ti->Pos.y - b->yTop + offset.y);
 	FontStr(typeName, textPos);
 }
 static void DrawSpawnerName(
-	const TObject *obj, DrawBuffer *b, const Vec2i offset)
+	const TObject *obj, DrawBuffer *b, const struct vec2i offset)
 {
 	const char *name = obj->Class->u.PickupClass->Name;
-	const Vec2i textPos = Vec2iNew(
-		obj->tileItem.x - b->xTop + offset.x - FontStrW(name) / 2,
-		obj->tileItem.y - b->yTop + offset.y);
+	const struct vec2i textPos = svec2i(
+		(int)obj->tileItem.Pos.x - b->xTop + offset.x - FontStrW(name) / 2,
+		(int)obj->tileItem.Pos.y - b->yTop + offset.y);
 	FontStr(name, textPos);
 }

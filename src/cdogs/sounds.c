@@ -50,6 +50,7 @@
 
 #include <ctype.h>
 #include <math.h>
+#include <memory.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -84,7 +85,6 @@ int OpenAudio(int frequency, Uint16 format, int channels, int chunkSize)
 	// Check that we got the specs we wanted
 #ifndef __EMSCRIPTEN__
 	Mix_QuerySpec(&qFrequency, &qFormat, &qChannels);
-	debug(D_NORMAL, "spec: f=%d fmt=%d c=%d\n", qFrequency, qFormat, qChannels);
 	if (qFrequency != frequency || qFormat != format || qChannels != channels)
 	{
 		printf("Audio not what we want.\n");
@@ -128,7 +128,7 @@ static void SoundLoad(map_t sounds, const char *name, const char *path)
 		CArrayInit(&sound->u.random.sounds, sizeof(Mix_Chunk *));
 		// Remove "0.<ext>" from path
 		const char *ext = StrGetFileExt(path);
-		const int len = ext - path - 2;
+		const int len = (int)(ext - path - 2);
 		char fmt[CDOGS_FILENAME_MAX];
 		strncpy(fmt, path, len);
 		// Create format string path/to/sound/%d.<ext>
@@ -160,6 +160,15 @@ static void SoundLoad(map_t sounds, const char *name, const char *path)
 }
 static Mix_Chunk *LoadSound(const char *path)
 {
+	// Only load sounds from known extensions
+	const char *ext = strrchr(path, '.');
+	if (ext == NULL || !(
+		strcmp(ext, ".ogg") == 0 || strcmp(ext, ".OGG") == 0 ||
+		strcmp(ext, ".wav") == 0 || strcmp(ext, ".WAV") == 0))
+	{
+		return NULL;
+	}
+	LOG(LM_MAIN, LL_TRACE, "loading sound file %s", path);
 	return Mix_LoadWAV(path);
 }
 static void SoundDataTerminate(any_t data);
@@ -272,7 +281,6 @@ void SoundTerminate(SoundDevice *device, const bool waitForSoundsComplete)
 		return;
 	}
 
-	debug(D_NORMAL, "shutting down sound\n");
 	if (waitForSoundsComplete)
 	{
 		Uint32 waitStart = SDL_GetTicks();
@@ -329,7 +337,8 @@ static void SetSoundEffect(
 	const int channel, const Sint16 bearingDegrees, const Uint8 distance,
 	const bool isMuffled);
 static void SoundPlayAtPosition(
-	SoundDevice *device, Mix_Chunk *data, const Vec2i dp, const bool isMuffled)
+	SoundDevice *device, Mix_Chunk *data, const struct vec2 dp,
+	const bool isMuffled)
 {
 	if (!device->isInitialised || data == NULL)
 	{
@@ -338,9 +347,9 @@ static void SoundPlayAtPosition(
 
 	int distance = 0;
 	Sint16 bearingDegrees = 0;
-	const int screen = gGraphicsDevice.cachedConfig.Res.x;
-	const int halfScreen = screen / 2;
-	if (!Vec2iIsZero(dp))
+	const float screen = (float)gGraphicsDevice.cachedConfig.Res.x;
+	const float halfScreen = screen / 2;
+	if (!svec2_is_zero(dp))
 	{
 		// Calculate distance and bearing
 		// Sound position is calculated from an imaginary camera that's half as
@@ -353,19 +362,16 @@ static void SoundPlayAtPosition(
 		//                |
 		//     camera---> +
 		// Calculate real distance using Pythagoras
-		const int d =
-			(int)sqrt(Vec2iSqrMagnitude(dp) + halfScreen * halfScreen);
-		// Translate so that sounds at exactly centre are distance 0
-		const int dTrans = d - halfScreen;
+		const float d = svec2_length(dp);
 		// Scale so that sounds more than a full screen from centre have
 		// maximum distance (255)
-		const int maxDistance =
-			(int)sqrt(screen * screen + halfScreen * halfScreen) - halfScreen;
-		distance = dTrans * 255 / maxDistance;
+		const float maxDistance =
+			sqrtf(screen * screen + halfScreen * halfScreen);
+		distance = (int)(d * 255 / maxDistance);
 
 		// Calculate bearing
 		const double bearing = atan((double)dp.x / halfScreen);
-		bearingDegrees = (Sint16)(bearing * 180 / PI);
+		bearingDegrees = (Sint16)(bearing * 180 / M_PI);
 		if (bearingDegrees < 0)
 		{
 			bearingDegrees += 360;
@@ -450,11 +456,11 @@ void SoundPlay(SoundDevice *device, Mix_Chunk *data)
 		return;
 	}
 
-	SoundPlayAtPosition(device, data, Vec2iZero(), false);
+	SoundPlayAtPosition(device, data, svec2_zero(), false);
 }
 
 
-void SoundSetEar(const bool isLeft, const int idx, Vec2i pos)
+void SoundSetEar(const bool isLeft, const int idx, const struct vec2 pos)
 {
 	if (isLeft)
 	{
@@ -480,39 +486,37 @@ void SoundSetEar(const bool isLeft, const int idx, Vec2i pos)
 	}
 }
 
-void SoundSetEarsSide(const bool isLeft, const Vec2i pos)
+void SoundSetEarsSide(const bool isLeft, const struct vec2 pos)
 {
 	SoundSetEar(isLeft, 0, pos);
 	SoundSetEar(isLeft, 1, pos);
 }
 
-void SoundSetEars(Vec2i pos)
+void SoundSetEars(const struct vec2 pos)
 {
 	SoundSetEarsSide(true, pos);
 	SoundSetEarsSide(false, pos);
 }
 
-void SoundPlayAt(SoundDevice *device, Mix_Chunk *data, const Vec2i pos)
+void SoundPlayAt(SoundDevice *device, Mix_Chunk *data, const struct vec2 pos)
 {
 	SoundPlayAtPlusDistance(device, data, pos, 0);
 }
 
-static bool IsPosNoSee(void *data, Vec2i pos)
+static bool IsPosNoSee(void *data, struct vec2i pos)
 {
 	const Tile *t = MapGetTile(data, Vec2iToTile(pos));
 	return t != NULL && (t->flags & MAPTILE_NO_SEE);
 }
 void SoundPlayAtPlusDistance(
 	SoundDevice *device, Mix_Chunk *data,
-	const Vec2i pos, const int plusDistance)
+	const struct vec2 pos, const int plusDistance)
 {
-	Vec2i closestLeftEar, closestRightEar;
+	struct vec2 closestLeftEar, closestRightEar;
 
 	// Find closest set of ears to the sound
-	if (CHEBYSHEV_DISTANCE(
-		pos.x, pos.y, device->earLeft1.x, device->earLeft1.y) <
-		CHEBYSHEV_DISTANCE(
-		pos.x, pos.y, device->earLeft2.x, device->earLeft2.y))
+	if (svec2_distance_squared(pos, device->earLeft1) <
+		svec2_distance_squared(pos, device->earLeft2))
 	{
 		closestLeftEar = device->earLeft1;
 	}
@@ -520,10 +524,8 @@ void SoundPlayAtPlusDistance(
 	{
 		closestLeftEar = device->earLeft2;
 	}
-	if (CHEBYSHEV_DISTANCE(
-		pos.x, pos.y, device->earRight1.x, device->earRight1.y) <
-		CHEBYSHEV_DISTANCE(
-		pos.x, pos.y, device->earRight2.x, device->earRight2.y))
+	if (svec2_distance_squared(pos, device->earRight1) <
+		svec2_distance_squared(pos, device->earRight2))
 	{
 		closestRightEar = device->earRight1;
 	}
@@ -532,19 +534,20 @@ void SoundPlayAtPlusDistance(
 		closestRightEar = device->earRight2;
 	}
 
-	const Vec2i origin = CalcClosestPointOnLineSegmentToPoint(
+	const struct vec2 origin = CalcClosestPointOnLineSegmentToPoint(
 		closestLeftEar, closestRightEar, pos);
 	HasClearLineData lineData;
 	lineData.IsBlocked = IsPosNoSee;
 	lineData.data = &gMap;
 	bool isMuffled = false;
-	if (!HasClearLineJMRaytrace(pos, origin, &lineData))
+	if (!HasClearLineJMRaytrace(
+		svec2i_assign_vec2(pos), svec2i_assign_vec2(origin), &lineData))
 	{
 		isMuffled = true;
 	}
-	const Vec2i dp = Vec2iMinus(pos, origin);
+	const struct vec2 dp = svec2_subtract(pos, origin);
 	SoundPlayAtPosition(
-		&gSoundDevice, data, Vec2iAdd(dp, Vec2iNew(0, plusDistance)),
+		&gSoundDevice, data, svec2(dp.x, fabsf(dp.y) + plusDistance),
 		isMuffled);
 }
 
@@ -575,6 +578,11 @@ static Mix_Chunk *SoundDataGet(SoundData *s)
 		case SOUND_NORMAL:
 			return s->u.normal;
 		case SOUND_RANDOM:
+			if (s->u.random.sounds.size == 0)
+			{
+				return NULL;
+			}
+			else
 			{
 				// Don't get the last sound used
 				int idx = s->u.random.lastPlayed;

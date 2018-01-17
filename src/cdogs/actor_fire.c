@@ -45,8 +45,8 @@ void ActorFire(Weapon *w, const TActor *a)
 	}
 
 	const double radians = dir2radians[a->direction];
-	const Vec2i muzzleOffset = ActorGetGunMuzzleOffset(a);
-	const Vec2i muzzlePosition = Vec2iAdd(a->Pos, muzzleOffset);
+	const struct vec2 muzzleOffset = ActorGetGunMuzzleOffset(a);
+	const struct vec2 muzzlePosition = svec2_add(a->Pos, muzzleOffset);
 	const bool playSound = w->soundLock <= 0;
 	GunFire(
 		w->Gun, muzzlePosition, w->Gun->MuzzleHeight, radians,
@@ -71,9 +71,9 @@ void ActorFireUpdate(Weapon *w, const TActor *a, const int ticks)
 		GameEvent e = GameEventNew(GAME_EVENT_GUN_RELOAD);
 		e.u.GunReload.PlayerUID = a->PlayerUID;
 		strcpy(e.u.GunReload.Gun, w->Gun->name);
-		const Vec2i muzzleOffset = ActorGetGunMuzzleOffset(a);
-		const Vec2i muzzlePosition = Vec2iAdd(a->Pos, muzzleOffset);
-		e.u.GunReload.FullPos = Vec2i2Net(muzzlePosition);
+		const struct vec2 muzzleOffset = ActorGetGunMuzzleOffset(a);
+		const struct vec2 muzzlePosition = svec2_add(a->Pos, muzzleOffset);
+		e.u.GunReload.Pos = Vec2ToNet(muzzlePosition);
 		e.u.GunReload.Direction = (int)a->direction;
 		GameEventsEnqueue(&gGameEvents, e);
 	}

@@ -73,4 +73,4 @@ void HUDPopupsUpdate(HUDNumPopups *popups, const int ms);
 void HUDNumPopupsDrawPlayer(
 	const HUDNumPopups *popups, const int idx, const int drawFlags);
 void HUDNumPopupsDrawObjective(
-	const HUDNumPopups *popups, const int idx, const Vec2i pos);
+	const HUDNumPopups *popups, const int idx, const struct vec2i pos);

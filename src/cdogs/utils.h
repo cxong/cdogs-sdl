@@ -57,22 +57,12 @@
 #include "color.h"
 #include "sys_specifics.h"
 
-// TODO: remove these, deprecated to be replaced by the LOG module
-extern bool debug;
-extern int debug_level;
-
 // Global variables so their address can be taken (passed into void * funcs)
 extern bool gTrue;
 extern bool gFalse;
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
-
-#define D_NORMAL	0
-#define D_VERBOSE	1
-#define D_MAX		2
-
-#define debug(n,...)	if (debug && (n <= debug_level)) { fprintf(stderr, "[%s:%d] %s(): ", __FILE__, __LINE__, __FUNCTION__); fprintf(stderr, __VA_ARGS__); }
 
 #ifdef _MSC_VER
 #define CHALT() __debugbreak()
@@ -99,14 +89,8 @@ extern bool gFalse;
 {\
 	if (_var == NULL && _size > 0)\
 	{\
-		debug(D_MAX,\
-			_func "(" #_var " size %d) failed\n",\
-			(int)_size);\
 		exit(1);\
 	}\
-	debug(D_MAX,\
-		_func "(" #_var " size %d) at 0x%p\n",\
-		(int)_size, _var);\
 }
 
 #define CMALLOC(_var, _size)\
@@ -132,9 +116,6 @@ extern bool gFalse;
 
 #define CFREE(_var)\
 {\
-	debug(D_MAX,\
-		"CFREE(" #_var ") at 0x%p\n",\
-		_var);\
 	free(_var);\
 }
 
@@ -161,12 +142,13 @@ char *CDogsGetCWD(char *buf);
 void RelPathFromCWD(char *buf, const char *to);
 void GetDataFilePath(char *buf, const char *path);
 
-#define PI 3.14159265
-
 double Round(double x);
 
 double ToDegrees(double radians);
 double ToRadians(double degrees);
+
+struct vec2 CalcClosestPointOnLineSegmentToPoint(
+	const struct vec2 l1, const struct vec2 l2, const struct vec2 p);
 
 typedef enum
 {
@@ -203,6 +185,7 @@ bool StrEndsWith(const char *str, const char *suffix);
 #define S2T(_type, _str) if (strcmp(s, _str) == 0) { return _type; }
 
 #define RAND_INT(_low, _high) ((_low) == (_high) ? (_low) : (_low) + (rand() % ((_high) - (_low))))
+#define RAND_FLOAT(_low, _high) ((_low) + ((float)rand() / RAND_MAX * ((_high) - (_low))))
 #define RAND_DOUBLE(_low, _high) ((_low) + ((double)rand() / RAND_MAX * ((_high) - (_low))))
 
 typedef struct
@@ -221,3 +204,10 @@ typedef enum
 } BodyPart;
 
 BodyPart StrBodyPart(const char *s);
+
+typedef enum
+{
+	PLACEMENT_ACCESS_ANY,		// place anywhere
+	PLACEMENT_ACCESS_LOCKED,	// place in locked rooms
+	PLACEMENT_ACCESS_NOT_LOCKED	// don't place in locked rooms
+} PlacementAccessFlags;

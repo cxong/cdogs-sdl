@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2015, Cong Xu
+	Copyright (c) 2013-2015, 2018 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -30,8 +30,28 @@
 
 #include <assert.h>
 
+#include <cdogs/ai_coop.h>
 #include <cdogs/font.h>
 
+
+static void WeaponSetEnabled(
+	menu_t *menu, const GunDescription *g, const bool enable)
+{
+	CA_FOREACH(menu_t, subMenu, menu->u.normal.subMenus)
+		if (strcmp(subMenu->name, g->name) == 0)
+		{
+			subMenu->isDisabled = !enable;
+			break;
+		}
+	CA_FOREACH_END()
+}
+
+static const GunDescription *GetSelectedGun(const menu_t *menu)
+{
+	const menu_t *subMenu =
+		CArrayGet(&menu->u.normal.subMenus, menu->u.normal.index);
+	return StrGunDescription(subMenu->name);
+}
 
 static void WeaponSelect(menu_t *menu, int cmd, void *data)
 {
@@ -45,11 +65,10 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 		// Add the selected weapon
 
 		// Check that the weapon hasn't been chosen yet
-		const GunDescription **selectedWeapon =
-			CArrayGet(weapons, menu->u.normal.index);
+		const GunDescription *selectedWeapon = GetSelectedGun(menu);
 		for (int i = 0; i < p->weaponCount; i++)
 		{
-			if (p->weapons[i] == *selectedWeapon)
+			if (p->weapons[i] == selectedWeapon)
 			{
 				return;
 			}
@@ -61,9 +80,9 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 			return;
 		}
 
-		p->weapons[p->weaponCount] = *selectedWeapon;
+		p->weapons[p->weaponCount] = selectedWeapon;
 		p->weaponCount++;
-		SoundPlay(&gSoundDevice, (*selectedWeapon)->SwitchSound);
+		SoundPlay(&gSoundDevice, selectedWeapon->SwitchSound);
 
 		// Note: need to enable before disabling otherwise
 		// menu index is not updated properly
@@ -84,15 +103,7 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 
 			// Re-enable the menu entry for this weapon
 			const GunDescription *removedWeapon = p->weapons[p->weaponCount];
-			for (int i = 0; i < (int)weapons->size; i++)
-			{
-				const GunDescription **g = CArrayGet(weapons, i);
-				if (*g == removedWeapon)
-				{
-					MenuEnableSubmenu(menu, i);
-					break;
-				}
-			}
+			WeaponSetEnabled(menu, removedWeapon, true);
 		}
 
 		// Disable "Done" if no weapons selected
@@ -105,16 +116,16 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 
 static void DisplayEquippedWeapons(
 	const menu_t *menu, GraphicsDevice *g,
-	const Vec2i pos, const Vec2i size, const void *data)
+	const struct vec2i pos, const struct vec2i size, const void *data)
 {
 	UNUSED(g);
 	const WeaponMenuData *d = data;
-	Vec2i weaponsPos;
-	Vec2i maxTextSize = FontStrSize("LongestWeaponName");
+	struct vec2i weaponsPos;
+	struct vec2i maxTextSize = FontStrSize("LongestWeaponName");
 	UNUSED(menu);
-	Vec2i dPos = pos;
+	struct vec2i dPos = pos;
 	dPos.x -= size.x;	// move to left half of screen
-	weaponsPos = Vec2iNew(
+	weaponsPos = svec2i(
 		dPos.x + size.x * 3 / 4 - maxTextSize.x / 2,
 		CENTER_Y(dPos, size, 0) + 14);
 	const PlayerData *p = PlayerDataGetByUID(d->display.PlayerUID);
@@ -128,16 +139,19 @@ static void DisplayEquippedWeapons(
 		{
 			FontStr(
 				p->weapons[i]->name,
-				Vec2iAdd(weaponsPos, Vec2iNew(0, i * FontH())));
+				svec2i_add(weaponsPos, svec2i(0, i * FontH())));
 		}
 	}
 }
 
+static void AddGunMenuItems(
+	MenuSystem *ms, const CArray *weapons, const struct vec2i menuSize,
+	const bool isGrenade);
 static void DisplayGunIcon(
-	const menu_t *menu, GraphicsDevice *g, const Vec2i pos, const Vec2i size,
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos, const struct vec2i size,
 	const void *data);
 static void DisplayDescriptionGunIcon(
-	const menu_t *menu, GraphicsDevice *g, const Vec2i pos, const Vec2i size,
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos, const struct vec2i size,
 	const void *data);
 void WeaponMenuCreate(
 	WeaponMenu *menu,
@@ -146,7 +160,7 @@ void WeaponMenuCreate(
 {
 	MenuSystem *ms = &menu->ms;
 	WeaponMenuData *data = &menu->data;
-	Vec2i pos, size;
+	struct vec2i pos, size;
 	int w = graphics->cachedConfig.Res.x;
 	int h = graphics->cachedConfig.Res.y;
 
@@ -159,24 +173,24 @@ void WeaponMenuCreate(
 	{
 	case 1:
 		// Single menu, entire screen
-		pos = Vec2iNew(w / 2, 0);
-		size = Vec2iNew(w / 2, h);
+		pos = svec2i(w / 2, 0);
+		size = svec2i(w / 2, h);
 		break;
 	case 2:
 		// Two menus, side by side
-		pos = Vec2iNew(player * w / 2 + w / 4, 0);
-		size = Vec2iNew(w / 4, h);
+		pos = svec2i(player * w / 2 + w / 4, 0);
+		size = svec2i(w / 4, h);
 		break;
 	case 3:
 	case 4:
 		// Four corners
-		pos = Vec2iNew((player & 1) * w / 2 + w / 4, (player / 2) * h / 2);
-		size = Vec2iNew(w / 4, h / 2);
+		pos = svec2i((player & 1) * w / 2 + w / 4, (player / 2) * h / 2);
+		size = svec2i(w / 4, h / 2);
 		break;
 	default:
 		CASSERT(false, "not implemented");
-		pos = Vec2iNew(w / 2, 0);
-		size = Vec2iNew(w / 2, h);
+		pos = svec2i(w / 2, 0);
+		size = svec2i(w / 2, h);
 		break;
 	}
 	MenuSystemInit(ms, handlers, graphics, pos, size);
@@ -187,42 +201,15 @@ void WeaponMenuCreate(
 		MENU_TYPE_NORMAL,
 		0);
 	ms->root->u.normal.maxItems = 11;
-	const CArray *weapons = &gMission.Weapons;
-	for (int i = 0; i < (int)weapons->size; i++)
-	{
-		const GunDescription **g = CArrayGet(weapons, i);
-		menu_t *gunMenu;
-		if ((*g)->Description != NULL)
-		{
-			// Gun description menu
-			gunMenu = MenuCreateNormal((*g)->name, "", MENU_TYPE_NORMAL, 0);
-			char *buf;
-			CMALLOC(buf, strlen((*g)->Description) * 2);
-			FontSplitLines((*g)->Description, buf, size.x * 5 / 6);
-			MenuAddSubmenu(gunMenu, MenuCreateBack(buf));
-			CFREE(buf);
-			gunMenu->u.normal.isSubmenusAlt = true;
-			MenuSetCustomDisplay(gunMenu, DisplayDescriptionGunIcon, *g);
-		}
-		else
-		{
-			gunMenu = MenuCreate((*g)->name, MENU_TYPE_BASIC);
-		}
-		MenuAddSubmenu(ms->root, gunMenu);
-	}
+	AddGunMenuItems(ms, &gMission.Weapons, size, false);
+	MenuAddSubmenu(ms->root, MenuCreateSeparator("----------------"));
+	AddGunMenuItems(ms, &gMission.Weapons, size, true);
 	MenuSetPostInputFunc(ms->root, WeaponSelect, &data->display);
 	// Disable menu items where the player already has the weapon
 	PlayerData *pData = PlayerDataGetByUID(playerUID);
 	for (int i = 0; i < pData->weaponCount; i++)
 	{
-		for (int j = 0; j < (int)weapons->size; j++)
-		{
-			const GunDescription **g = CArrayGet(weapons, j);
-			if (pData->weapons[i] == *g)
-			{
-				MenuDisableSubmenu(ms->root, j);
-			}
-		}
+		WeaponSetEnabled(ms->root, pData->weapons[i], false);
 	}
 	MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
 	MenuAddSubmenu(
@@ -241,38 +228,105 @@ void WeaponMenuCreate(
 	MenuSystemAddCustomDisplay(ms, DisplayEquippedWeapons, data);
 	MenuSystemAddCustomDisplay(
 		ms, MenuDisplayPlayerControls, &data->PlayerUID);
+
+	// For AI players, pre-pick their weapons and go straight to menu end
+	if (pData->inputDevice == INPUT_DEVICE_AI)
+	{
+		const int lastMenuIndex = (int)ms->root->u.normal.subMenus.size - 1;
+		ms->current = CArrayGet(&ms->root->u.normal.subMenus, lastMenuIndex);
+		AICoopSelectWeapons(pData, player, &gMission.Weapons);
+	}
+}
+static void AddGunMenuItems(
+	MenuSystem *ms, const CArray *weapons, const struct vec2i menuSize,
+	const bool isGrenade)
+{
+	CA_FOREACH(const GunDescription *, g, *weapons)
+		if ((*g)->IsGrenade != isGrenade)
+		{
+			continue;
+		}
+		menu_t *gunMenu;
+		if ((*g)->Description != NULL)
+		{
+			// Gun description menu
+			gunMenu = MenuCreateNormal((*g)->name, "", MENU_TYPE_NORMAL, 0);
+			char *buf;
+			CMALLOC(buf, strlen((*g)->Description) * 2);
+			FontSplitLines((*g)->Description, buf, menuSize.x * 5 / 6);
+			MenuAddSubmenu(gunMenu, MenuCreateBack(buf));
+			CFREE(buf);
+			gunMenu->u.normal.isSubmenusAlt = true;
+			MenuSetCustomDisplay(gunMenu, DisplayDescriptionGunIcon, *g);
+		}
+		else
+		{
+			gunMenu = MenuCreate((*g)->name, MENU_TYPE_BASIC);
+		}
+		MenuAddSubmenu(ms->root, gunMenu);
+	CA_FOREACH_END()
 }
 static void DisplayGunIcon(
-	const menu_t *menu, GraphicsDevice *g, const Vec2i pos, const Vec2i size,
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos, const struct vec2i size,
 	const void *data)
 {
 	UNUSED(data);
-	if (menu->u.normal.index >= (int)gMission.Weapons.size)
+	// Display a gun icon next to the currently selected weapon
+	const GunDescription *gun = GetSelectedGun(menu);
+	if (gun == NULL)
 	{
 		return;
 	}
-	// Display a gun icon next to the currently selected weapon
-	const GunDescription **gun =
-		CArrayGet(&gMission.Weapons, menu->u.normal.index);
 	const int menuItems = MIN(
 		menu->u.normal.maxItems, (int)menu->u.normal.subMenus.size);
 	const int textScroll =
 		-menuItems * FontH() / 2 +
 		(menu->u.normal.index - menu->u.normal.scroll) * FontH();
-	const Vec2i iconPos = Vec2iNew(
-		pos.x - (*gun)->Icon->size.x - 4,
-		pos.y + size.y / 2 + textScroll + (FontH() - (*gun)->Icon->size.y) / 2);
-	Blit(g, (*gun)->Icon, iconPos);
+	const struct vec2i iconPos = svec2i(
+		pos.x - gun->Icon->size.x - 4,
+		pos.y + size.y / 2 + textScroll +
+		(FontH() - gun->Icon->size.y) / 2);
+	Blit(g, gun->Icon, iconPos);
 }
 static void DisplayDescriptionGunIcon(
-	const menu_t *menu, GraphicsDevice *g, const Vec2i pos, const Vec2i size,
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos, const struct vec2i size,
 	const void *data)
 {
 	UNUSED(menu);
 	UNUSED(size);
 	const GunDescription *gun = data;
 	// Display the gun just to the left of the description text
-	const Vec2i iconPos = Vec2iNew(
+	const struct vec2i iconPos = svec2i(
 		pos.x - gun->Icon->size.x - 4, pos.y + size.y / 2);
 	Blit(g, gun->Icon, iconPos);
+}
+
+void WeaponMenuTerminate(WeaponMenu *menu)
+{
+	MenuSystemTerminate(&menu->ms);
+}
+
+void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
+{
+	const PlayerData *p = PlayerDataGetByUID(menu->data.PlayerUID);
+	if (!MenuIsExit(&menu->ms))
+	{
+		MenuProcessCmd(&menu->ms, cmd);
+	}
+	else if (p->weaponCount == 0)
+	{
+		// Check exit condition; must have selected at least one weapon
+		// Otherwise reset the current menu
+		menu->ms.current = menu->ms.root;
+	}
+}
+
+bool WeaponMenuIsDone(const WeaponMenu *menu)
+{
+	return strcmp(menu->ms.current->name, "(End)") == 0;
+}
+
+void WeaponMenuDraw(const WeaponMenu *menu)
+{
+	MenuDisplay(&menu->ms);
 }

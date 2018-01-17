@@ -32,4 +32,4 @@
 #include "editor_brush.h"
 #include "ui_object.h"
 
-UIObject *CreateCaveMapObjs(Vec2i pos, CampaignOptions *co);
+UIObject *CreateCaveMapObjs(struct vec2i pos, CampaignOptions *co);

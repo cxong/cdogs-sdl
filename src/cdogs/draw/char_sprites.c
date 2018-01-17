@@ -102,7 +102,8 @@ bail:
 	tinydir_close(&dir);
 }
 static map_t LoadFrameOffsets(yajl_val node, const char *path);
-static void LoadDirOffsets(Vec2i *offsets, yajl_val node, const char *path);
+static void LoadDirOffsets(
+	struct vec2 *offsets, yajl_val node, const char *path);
 static CharSprites *CharSpritesLoadJSON(const char *name, const char *path)
 {
 	CharSprites *c = NULL;
@@ -160,11 +161,11 @@ static map_t LoadFrameOffsets(yajl_val node, const char *path)
 		const char *key = obj->keys[i];
 		CArray *offsetVals;
 		CMALLOC(offsetVals, sizeof *offsetVals);
-		CArrayInit(offsetVals, sizeof(Vec2i));
+		CArrayInit(offsetVals, sizeof(struct vec2i));
 		const yajl_array offsetsArray = YAJL_GET_ARRAY(obj->values[i]);
 		for (int j = 0; j < (int)offsetsArray->len; j++)
 		{
-			const Vec2i offset = YAJL_GET_VEC2I(offsetsArray->values[j]);
+			const struct vec2i offset = YAJL_GET_VEC2I(offsetsArray->values[j]);
 			CArrayPushBack(offsetVals, &offset);
 		}
 		const int error = hashmap_put(offsets, key, offsetVals);
@@ -177,7 +178,8 @@ static map_t LoadFrameOffsets(yajl_val node, const char *path)
 	}
 	return offsets;
 }
-static void LoadDirOffsets(Vec2i *offsets, yajl_val node, const char *path)
+static void LoadDirOffsets(
+	struct vec2 *offsets, yajl_val node, const char *path)
 {
 	const yajl_array offsetsArray = YAJL_GET_ARRAY(YAJLFindNode(node, path));
 	if (offsetsArray == NULL)
@@ -186,7 +188,7 @@ static void LoadDirOffsets(Vec2i *offsets, yajl_val node, const char *path)
 	}
 	for (direction_e d = DIRECTION_UP; d < DIRECTION_COUNT; d++)
 	{
-		offsets[d] = YAJL_GET_VEC2I(offsetsArray->values[d]);
+		offsets[d] = svec2_assign_vec2i(YAJL_GET_VEC2I(offsetsArray->values[d]));
 	}
 }
 
@@ -207,7 +209,7 @@ void CharSpriteClassesTerminate(CharSpriteClasses *c)
 	CharSpriteClassesClear(c->customClasses);
 }
 
-Vec2i CharSpritesGetOffset(
+struct vec2i CharSpritesGetOffset(
 	const map_t offsets, const char *anim, const int frame)
 {
 	CArray *animOffsets;
@@ -220,7 +222,7 @@ Vec2i CharSpritesGetOffset(
 	if (error != MAP_OK)
 	{
 		CASSERT(false, "animation not found");
-		return Vec2iZero();
+		return svec2i_zero();
 	}
-	return *(Vec2i *)CArrayGet(animOffsets, frame % animOffsets->size);
+	return *(struct vec2i *)CArrayGet(animOffsets, frame % animOffsets->size);
 }

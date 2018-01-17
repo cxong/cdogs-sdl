@@ -51,7 +51,7 @@
 #define Y_ABS 200
 
 static void DrawStyleArea(
-	Vec2i pos,
+	struct vec2i pos,
 	const char *name,
 	const Pic *pic,
 	int idx, int count,
@@ -252,19 +252,19 @@ static const char *MissionGetRoomMaxStr(UIObject *o, void *data)
 	return s;
 }
 static void MissionDrawEdgeRooms(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
 {
 	UNUSED(o);
 	UNUSED(g);
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return;
 	DisplayFlag(
-		Vec2iAdd(pos, o->Pos), "Edge rooms",
+		svec2i_add(pos, o->Pos), "Edge rooms",
 		CampaignGetCurrentMission(co)->u.Classic.Rooms.Edge,
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawRoomsOverlap(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
 {
 	UNUSED(o);
 	UNUSED(g);
@@ -272,7 +272,7 @@ static void MissionDrawRoomsOverlap(
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return;
 	DisplayFlag(
-		Vec2iAdd(pos, o->Pos), "Room overlap",
+		svec2i_add(pos, o->Pos), "Room overlap",
 		CampaignGetCurrentMission(co)->u.Classic.Rooms.Overlap,
 		UIObjectIsHighlighted(o));
 }
@@ -313,14 +313,14 @@ static const char *MissionGetSquareCountStr(UIObject *o, void *data)
 	return s;
 }
 static void MissionDrawDoorEnabled(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
 {
 	UNUSED(o);
 	UNUSED(g);
 	CampaignOptions *co = data;
 	if (!CampaignGetCurrentMission(co)) return;
 	DisplayFlag(
-		Vec2iAdd(pos, o->Pos), "Doors",
+		svec2i_add(pos, o->Pos), "Doors",
 		CampaignGetCurrentMission(co)->u.Classic.Doors.Enabled,
 		UIObjectIsHighlighted(o));
 }
@@ -388,7 +388,7 @@ static const char *MissionGetTypeStr(UIObject *o, void *data)
 	return s;
 }
 static void MissionDrawWallStyle(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
 {
 	UNUSED(g);
 	CampaignOptions *co = data;
@@ -396,7 +396,7 @@ static void MissionDrawWallStyle(
 	if (!m) return;
 	const int idx = PicManagerGetWallStyleIndex(&gPicManager, m->WallStyle);
 	DrawStyleArea(
-		Vec2iAdd(pos, o->Pos),
+		svec2i_add(pos, o->Pos),
 		"Wall",
 		&PicManagerGetMaskedStylePic(
 			&gPicManager, "wall", m->WallStyle, "o",
@@ -405,7 +405,7 @@ static void MissionDrawWallStyle(
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawFloorStyle(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
 {
 	UNUSED(g);
 	CampaignOptions *co = data;
@@ -413,7 +413,7 @@ static void MissionDrawFloorStyle(
 	if (!m) return;
 	const int idx = PicManagerGetTileStyleIndex(&gPicManager, m->FloorStyle);
 	DrawStyleArea(
-		Vec2iAdd(pos, o->Pos),
+		svec2i_add(pos, o->Pos),
 		"Floor",
 		&PicManagerGetMaskedStylePic(
 			&gPicManager, "tile", m->FloorStyle, "normal",
@@ -422,7 +422,7 @@ static void MissionDrawFloorStyle(
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawRoomStyle(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
 {
 	UNUSED(g);
 	CampaignOptions *co = data;
@@ -430,7 +430,7 @@ static void MissionDrawRoomStyle(
 	if (!m) return;
 	const int idx = PicManagerGetTileStyleIndex(&gPicManager, m->RoomStyle);
 	DrawStyleArea(
-		Vec2iAdd(pos, o->Pos),
+		svec2i_add(pos, o->Pos),
 		"Rooms",
 		&PicManagerGetMaskedStylePic(
 			&gPicManager, "tile", m->RoomStyle, "normal",
@@ -439,7 +439,7 @@ static void MissionDrawRoomStyle(
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawDoorStyle(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
 {
 	UNUSED(g);
 	CampaignOptions *co = data;
@@ -447,14 +447,14 @@ static void MissionDrawDoorStyle(
 	if (!m) return;
 	const int idx = PicManagerGetDoorStyleIndex(&gPicManager, m->DoorStyle);
 	DrawStyleArea(
-		Vec2iAdd(pos, o->Pos),
+		svec2i_add(pos, o->Pos),
 		"Doors",
 		&GetDoorPic(&gPicManager, m->DoorStyle, "normal", true)->pic,
 		idx, (int)gPicManager.doorStyleNames.size,
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawKeyStyle(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
 {
 	UNUSED(g);
 	CampaignOptions *co = data;
@@ -465,14 +465,14 @@ static void MissionDrawKeyStyle(
 	}
 	const int idx = PicManagerGetKeyStyleIndex(&gPicManager, m->KeyStyle);
 	DrawStyleArea(
-		Vec2iAdd(pos, o->Pos),
+		svec2i_add(pos, o->Pos),
 		"Keys",
 		KeyPickupClass(m->KeyStyle, 0)->Pic,
 		idx, (int)gPicManager.keyStyleNames.size,
 		UIObjectIsHighlighted(o));
 }
 static void MissionDrawExitStyle(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
 {
 	UNUSED(g);
 	CampaignOptions *co = data;
@@ -483,7 +483,7 @@ static void MissionDrawExitStyle(
 	}
 	const int idx = PicManagerGetExitStyleIndex(&gPicManager, m->ExitStyle);
 	DrawStyleArea(
-		Vec2iAdd(pos, o->Pos),
+		svec2i_add(pos, o->Pos),
 		"Exit",
 		&PicManagerGetExitPic(&gPicManager, m->ExitStyle, false)->pic,
 		idx, (int)gPicManager.exitStyleNames.size,
@@ -559,7 +559,7 @@ typedef struct
 	int index;
 } MissionIndexData;
 static void MissionDrawEnemy(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
 {
 	UNUSED(g);
 	MissionIndexData *data = vData;
@@ -572,11 +572,11 @@ static void MissionDrawEnemy(
 	const int charIndex = *(int *)CArrayGet(&store->baddieIds, data->index);
 	DrawCharacterSimple(
 		CArrayGet(&store->OtherChars, charIndex),
-		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)),
+		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
 		DIRECTION_DOWN, UIObjectIsHighlighted(o), true);
 }
 static void MissionDrawSpecialChar(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
 {
 	UNUSED(g);
 	MissionIndexData *data = vData;
@@ -590,11 +590,11 @@ static void MissionDrawSpecialChar(
 	const int charIndex = CharacterStoreGetSpecialId(store, data->index);
 	DrawCharacterSimple(
 		CArrayGet(&store->OtherChars, charIndex),
-		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)),
+		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
 		DIRECTION_DOWN, UIObjectIsHighlighted(o), true);
 }
 static void MissionDrawMapItem(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
 {
 	UNUSED(g);
 	MissionIndexData *data = vData;
@@ -604,12 +604,12 @@ static void MissionDrawMapItem(
 	const MapObjectDensity *mod =
 		CArrayGet(&m->MapObjectDensities, data->index);
 	DisplayMapItemWithDensity(
-		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)),
+		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
 		mod,
 		UIObjectIsHighlighted(o));
 }
 static void DrawStyleArea(
-	Vec2i pos,
+	struct vec2i pos,
 	const char *name,
 	const Pic *pic,
 	int idx, int count,
@@ -622,7 +622,7 @@ static void DrawStyleArea(
 	char buf[16];
 	sprintf(buf, "%d/%d", idx + 1, count);
 	FontStrMask(
-		buf, Vec2iNew(pos.x + 28 - FontStrW(buf), pos.y + 17), colorGray);
+		buf, svec2i(pos.x + 28 - FontStrW(buf), pos.y + 17), colorGray);
 }
 
 
@@ -661,7 +661,7 @@ static void MissionChangeWidth(void *data, int d)
 	m->Size.x = CLAMP(m->Size.x + d, 16, 256);
 	if (m->Type == MAPTYPE_STATIC)
 	{
-		MissionStaticLayout(m, Vec2iNew(old, m->Size.y));
+		MissionStaticLayout(m, svec2i(old, m->Size.y));
 	}
 }
 static void MissionChangeHeight(void *data, int d)
@@ -676,7 +676,7 @@ static void MissionChangeHeight(void *data, int d)
 	m->Size.y = CLAMP(m->Size.y + d, 16, 256);
 	if (m->Type == MAPTYPE_STATIC)
 	{
-		MissionStaticLayout(m, Vec2iNew(m->Size.x, old));
+		MissionStaticLayout(m, svec2i(m->Size.x, old));
 	}
 }
 static void MissionChangeWallCount(void *data, int d)
@@ -933,7 +933,7 @@ static void DeactivateBrush(UIObject *o, void *data)
 
 static UIObject *CreateCampaignObjs(CampaignOptions *co);
 static UIObject *CreateMissionObjs(CampaignOptions *co);
-static UIObject *CreateClassicMapObjs(Vec2i pos, CampaignOptions *co);
+static UIObject *CreateClassicMapObjs(struct vec2i pos, CampaignOptions *co);
 static UIObject *CreateMapItemObjs(CampaignOptions *co, int dy);
 static UIObject *CreateCharacterObjs(CampaignOptions *co, int dy);
 static UIObject *CreateSpecialCharacterObjs(CampaignOptions *co, int dy);
@@ -941,7 +941,7 @@ static UIObject *CreateSpecialCharacterObjs(CampaignOptions *co, int dy);
 typedef struct
 {
 	bool IsCollapsed;
-	Vec2i Size;
+	struct vec2i Size;
 	Pic *collapsePic;
 	Pic *expandPic;
 	UIObject *collapseButton;
@@ -950,11 +950,11 @@ typedef struct
 } CollapsedData;
 static void ToggleCollapse(void *data, int d);
 static void DrawBackground(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data);
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data);
 static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush);
-UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush, Vec2i size)
+UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush, struct vec2i size)
 {
-	UIObject *cc = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	UIObject *cc = UIObjectCreate(UITYPE_NONE, 0, svec2i_zero(), svec2i_zero());
 	CollapsedData *cData;
 	CMALLOC(cData, sizeof(CollapsedData));
 	cData->IsCollapsed = false;
@@ -969,7 +969,7 @@ UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush, Vec2i size)
 	cData->expandPic = PicManagerGetPic(&gPicManager, "editor/expand");
 	o = UIObjectCreate(
 		UITYPE_BUTTON, 0,
-		Vec2iMinus(size, cData->collapsePic->size), Vec2iZero());
+		svec2i_subtract(size, cData->collapsePic->size), svec2i_zero());
 	UIButtonSetPic(o, cData->collapsePic);
 	o->DoNotHighlight = true;
 	o->ChangeFunc = ToggleCollapse;
@@ -984,7 +984,7 @@ UIObject *CreateMainObjs(CampaignOptions *co, EditorBrush *brush, Vec2i size)
 	cData->child = o;
 
 	// Background
-	o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), size);
+	o = UIObjectCreate(UITYPE_CUSTOM, 0, svec2i_zero(), size);
 	o->IsBackground = true;
 	o->u.CustomDrawFunc = DrawBackground;
 	o->OnFocusFunc = DeactivateBrush;
@@ -1003,31 +1003,31 @@ static void ToggleCollapse(void *data, int d)
 	{
 		// Change button pic, move button
 		cData->collapseButton->u.Button.Pic = cData->expandPic;
-		cData->collapseButton->Pos = Vec2iZero();
+		cData->collapseButton->Pos = svec2i_zero();
 	}
 	else
 	{
 		// Change button pic, move button
 		cData->collapseButton->u.Button.Pic = cData->collapsePic;
-		cData->collapseButton->Pos = Vec2iMinus(
+		cData->collapseButton->Pos = svec2i_subtract(
 			cData->Size, cData->collapsePic->size);
 	}
 	cData->child->IsVisible = !cData->IsCollapsed;
 	cData->background->IsVisible = !cData->IsCollapsed;
 }
 static void DrawBackground(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *data)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
 {
 	UNUSED(data);
 	// Only draw background over completely transparent pixels
 	const color_t c = { 32, 32, 64, 196 };
 	const Uint32 p = COLOR2PIXEL(c);
-	Vec2i v;
+	struct vec2i v;
 	for (v.y = 0; v.y < o->Size.y; v.y++)
 	{
 		for (v.x = 0; v.x < o->Size.x; v.x++)
 		{
-			const Vec2i pos1 = Vec2iAdd(pos, v);
+			const struct vec2i pos1 = svec2i_add(pos, v);
 			if (pos1.x < g->clipping.left || pos1.x > g->clipping.right ||
 				pos1.y < g->clipping.top || pos1.y > g->clipping.bottom)
 			{
@@ -1051,8 +1051,8 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	UIObject *o;
 	UIObject *o2;
 	UIObject *oc;
-	Vec2i pos = Vec2iZero();
-	UIObject *cc = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	struct vec2i pos = svec2i_zero();
+	UIObject *cc = UIObjectCreate(UITYPE_NONE, 0, svec2i_zero(), svec2i_zero());
 
 	// Titles
 
@@ -1060,7 +1060,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 
 	o = UIObjectCreate(
 		UITYPE_TEXTBOX, YC_CAMPAIGNTITLE,
-		Vec2iNew(25, pos.y), Vec2iNew(140, th));
+		svec2i(25, pos.y), svec2i(140, th));
 	o->u.Textbox.TextLinkFunc = CampaignGetTitle;
 	o->u.Textbox.TextSourceFunc = CampaignGetTitleSrc;
 	o->Data = co;
@@ -1073,14 +1073,14 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	// Layout from right to left
 	o = UIObjectCreate(
 		UITYPE_LABEL, 0,
-		Vec2iNew(270, pos.y), Vec2iNew(FontStrW("Mission 99/99"), th));
+		svec2i(270, pos.y), svec2i(FontStrW("Mission 99/99"), th));
 	o->u.LabelFunc = CampaignGetMissionIndexStr;
 	o->ChangeFunc = CampaignChangeMission;
 	o->ReloadData = true;
 	o->Data = &gCampaign;
 	UIObjectAddChild(cc, o);
 	o = UIObjectCreate(
-		UITYPE_LABEL, 0, Vec2iNew(o->Pos.x, pos.y), Vec2iNew(0, th));
+		UITYPE_LABEL, 0, svec2i(o->Pos.x, pos.y), svec2i(0, th));
 	o->Label = "Insert mission";
 	o->Size.x = FontStrW(o->Label);
 	o->Pos.x -= o->Size.x + 10;
@@ -1089,7 +1089,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	o->ChangesData = true;
 	UIObjectAddChild(cc, o);
 	o = UIObjectCreate(
-		UITYPE_LABEL, 0, Vec2iNew(o->Pos.x, pos.y), Vec2iNew(0, th));
+		UITYPE_LABEL, 0, svec2i(o->Pos.x, pos.y), svec2i(0, th));
 	o->Label = "Delete mission";
 	o->Size.x = FontStrW(o->Label);
 	o->Pos.x -= o->Size.x + 10;
@@ -1102,14 +1102,14 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 
 	// Mission-only controls
 	// Only visible if the current mission is valid
-	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	c = UIObjectCreate(UITYPE_NONE, 0, svec2i_zero(), svec2i_zero());
 	c->CheckVisible = CheckMission;
 	c->Data = co;
 	UIObjectAddChild(cc, c);
 
 	o = UIObjectCreate(
 		UITYPE_TEXTBOX, YC_MISSIONTITLE,
-		Vec2iNew(25, pos.y), Vec2iNew(175, th));
+		svec2i(25, pos.y), svec2i(175, th));
 	o->Id2 = XC_MISSIONTITLE;
 	o->u.Textbox.TextLinkFunc = MissionGetTitle;
 	o->u.Textbox.TextSourceFunc = MissionGetTitleSrc;
@@ -1125,7 +1125,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	pos.y = 10 + 2 * th;
 
 	o = UIObjectCreate(
-		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(40, th));
+		UITYPE_LABEL, 0, svec2i_zero(), svec2i(40, th));
 	o->ChangesData = 1;
 
 	pos.x = 20;
@@ -1161,7 +1161,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	CSTRDUP(o2->Tooltip,
 		"WARNING: changing map type will\nlose your previous map settings");
 	UIObject *oMapType =
-		UIObjectCreate(UITYPE_CONTEXT_MENU, 0, Vec2iZero(), Vec2iZero());
+		UIObjectCreate(UITYPE_CONTEXT_MENU, 0, svec2i_zero(), svec2i_zero());
 	for (int i = 0; i < (int)MAPTYPE_COUNT; i++)
 	{
 		UIObject *oMapTypeChild = UIObjectCopy(o);
@@ -1178,7 +1178,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	// HACK: add another container UI object so that the BFS draw order doesn't
 	// draw the context menu below the type-specific objs
 	UIObject *hackContainer =
-		UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+		UIObjectCreate(UITYPE_NONE, 0, svec2i_zero(), svec2i_zero());
 	UIObjectAddChild(hackContainer, o2);
 	UIObjectAddChild(c, hackContainer);
 	pos.x = 20;
@@ -1194,7 +1194,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 
 	UIObjectDestroy(o);
 	o = UIObjectCreate(
-		UITYPE_CUSTOM, YC_MISSIONLOOKS, Vec2iZero(), Vec2iNew(25, 25 + th));
+		UITYPE_CUSTOM, YC_MISSIONLOOKS, svec2i_zero(), svec2i(25, 25 + th));
 	o->ChangesData = 1;
 
 	pos.x = 20;
@@ -1262,7 +1262,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	pos.y += th + 5;
 
 	UIObjectDestroy(o);
-	o = UIObjectCreate(UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(189, th));
+	o = UIObjectCreate(UITYPE_LABEL, 0, svec2i_zero(), svec2i(189, th));
 	o->Flags = UI_SELECT_ONLY;
 
 	o2 = UIObjectCopy(o);
@@ -1272,7 +1272,7 @@ static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 	o2->Size = FontStrSize(o2->Label);
 	oc = UIObjectCreate(
 		UITYPE_TEXTBOX, YC_MISSIONDESC,
-		Vec2iNew(0, Y_ABS - pos.y), Vec2iNew(295, 5 * th));
+		svec2i(0, Y_ABS - pos.y), svec2i(295, 5 * th));
 	oc->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 	oc->u.Textbox.TextLinkFunc = MissionGetDescription;
 	oc->u.Textbox.TextSourceFunc = MissionGetDescriptionSrc;
@@ -1337,14 +1337,14 @@ static UIObject *CreateCampaignObjs(CampaignOptions *co)
 	UIObject *o2;
 	int x;
 	int y;
-	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	c = UIObjectCreate(UITYPE_NONE, 0, svec2i_zero(), svec2i_zero());
 	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 
 	x = 0;
 	y = Y_ABS;
 
 	o = UIObjectCreate(
-		UITYPE_TEXTBOX, YC_CAMPAIGNTITLE, Vec2iZero(), Vec2iZero());
+		UITYPE_TEXTBOX, YC_CAMPAIGNTITLE, svec2i_zero(), svec2i_zero());
 	o->Flags = UI_SELECT_ONLY;
 
 	o2 = UIObjectCopy(o);
@@ -1353,8 +1353,8 @@ static UIObject *CreateCampaignObjs(CampaignOptions *co)
 	o2->Data = co;
 	CSTRDUP(o2->u.Textbox.Hint, "(Campaign author)");
 	o2->Id2 = XC_AUTHOR;
-	o2->Pos = Vec2iNew(x, y);
-	o2->Size = Vec2iNew(295, th);
+	o2->Pos = svec2i(x, y);
+	o2->Size = svec2i(295, th);
 	UIObjectAddChild(c, o2);
 
 	y += th;
@@ -1364,8 +1364,8 @@ static UIObject *CreateCampaignObjs(CampaignOptions *co)
 	o2->Data = co;
 	CSTRDUP(o2->u.Textbox.Hint, "(Campaign description)");
 	o2->Id2 = XC_CAMPAIGNDESC;
-	o2->Pos = Vec2iNew(x, y);
-	o2->Size = Vec2iNew(295, 5 * th);
+	o2->Pos = svec2i(x, y);
+	o2->Size = svec2i(295, 5 * th);
 	UIObjectAddChild(c, o2);
 
 	UIObjectDestroy(o);
@@ -1376,11 +1376,11 @@ static UIObject *CreateMissionObjs(CampaignOptions *co)
 	const int th = FontH();
 	UIObject *c;
 	UIObject *o;
-	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	c = UIObjectCreate(UITYPE_NONE, 0, svec2i_zero(), svec2i_zero());
 	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 
 	o = UIObjectCreate(
-		UITYPE_TEXTBOX, YC_MISSIONTITLE, Vec2iNew(0, Y_ABS), Vec2iNew(319, th));
+		UITYPE_TEXTBOX, YC_MISSIONTITLE, svec2i(0, Y_ABS), svec2i(319, th));
 	o->u.Textbox.TextLinkFunc = MissionGetSong;
 	o->u.Textbox.MaxLen = sizeof ((Mission *)0)->Song - 1;
 	o->Data = co;
@@ -1392,12 +1392,12 @@ static UIObject *CreateMissionObjs(CampaignOptions *co)
 
 	return c;
 }
-static UIObject *CreateClassicMapObjs(Vec2i pos, CampaignOptions *co)
+static UIObject *CreateClassicMapObjs(struct vec2i pos, CampaignOptions *co)
 {
 	const int th = FontH();
-	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, svec2i_zero(), svec2i_zero());
 	UIObject *o = UIObjectCreate(
-		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(50, th));
+		UITYPE_LABEL, 0, svec2i_zero(), svec2i(50, th));
 	const int x = pos.x;
 	o->ChangesData = true;
 	// Check whether the map type matches, and set visibility
@@ -1453,13 +1453,15 @@ static UIObject *CreateClassicMapObjs(Vec2i pos, CampaignOptions *co)
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;
-	o2 = UIObjectCreate(UITYPE_CUSTOM, 0, pos, Vec2iNew(60, th));
+	o2 = UIObjectCreate(UITYPE_CUSTOM, 0, pos, svec2i(60, th));
+	o2->ChangesData = true;
 	o2->u.CustomDrawFunc = MissionDrawEdgeRooms;
 	o2->Data = co;
 	o2->ChangeFunc = MissionChangeEdgeRooms;
 	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;
-	o2 = UIObjectCreate(UITYPE_CUSTOM, 0, pos, Vec2iNew(60, th));
+	o2 = UIObjectCreate(UITYPE_CUSTOM, 0, pos, svec2i(60, th));
+	o2->ChangesData = true;
 	o2->u.CustomDrawFunc = MissionDrawRoomsOverlap;
 	o2->Data = co;
 	o2->ChangeFunc = MissionChangeRoomsOverlap;
@@ -1560,11 +1562,11 @@ static void MissionChangeMapItemDensity(void *vData, int d);
 static bool MapItemObjFunc(UIObject *o, MapObject *mo, void *vData);
 static UIObject *CreateMapItemObjs(CampaignOptions *co, int dy)
 {
-	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, svec2i_zero(), svec2i_zero());
 	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 
 	UIObject *o = UIObjectCreate(
-		UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(20, 40));
+		UITYPE_CUSTOM, 0, svec2i_zero(), svec2i(20, 40));
 	o->u.CustomDrawFunc = MissionDrawMapItem;
 	o->ChangeFuncAlt = MissionChangeMapItemDensity;
 	o->Flags = UI_LEAVE_YC;
@@ -1579,12 +1581,12 @@ static UIObject *CreateMapItemObjs(CampaignOptions *co, int dy)
 		o2->IsDynamicData = 1;
 		((MissionIndexData *)o2->Data)->co = co;
 		((MissionIndexData *)o2->Data)->index = i;
-		o2->Pos = Vec2iNew(x, Y_ABS - dy);
+		o2->Pos = svec2i(x, Y_ABS - dy);
 		CSTRDUP(
 			o2->Tooltip,
 			"Click: change map object; Shift+Click: change density");
 		UIObjectAddChild(o2, CreateAddMapItemObjs(
-			Vec2iNew(o2->Size.x, o2->Size.y / 2),
+			svec2i(o2->Size.x, o2->Size.y / 2),
 			MapItemObjFunc, o2->Data, sizeof(MapItemIndexData), false));
 		UIObjectAddChild(c, o2);
 	}
@@ -1605,7 +1607,7 @@ static void MissionChangeMapItemDensity(void *vData, int d)
 }
 static void MissionSetMapItem(void *vData, int d);
 static void DrawMapItem(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData);
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData);
 static bool MapItemObjFunc(UIObject *o, MapObject *mo, void *vData)
 {
 	o->ChangeFunc = MissionSetMapItem;
@@ -1630,19 +1632,19 @@ static void MissionSetMapItem(void *vData, int d)
 	mod->M = data->M;
 }
 static void DrawMapItem(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, void *vData)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
 {
 	const MapItemIndexData *data = vData;
 	DisplayMapItem(
-		Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)), data->M);
+		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)), data->M);
 	if (data->M->Type == MAP_OBJECT_TYPE_PICKUP_SPAWNER)
 	{
 		// Also draw the pickup object spawned by this spawner
 		const Pic *pic = data->M->u.PickupClass->Pic;
-		pos = Vec2iMinus(pos, Vec2iScaleDiv(pic->size, 2));
+		pos = svec2i_subtract(pos, svec2i_scale_divide(pic->size, 2));
 		Blit(
 			g, pic,
-			Vec2iAdd(Vec2iAdd(pos, o->Pos), Vec2iScaleDiv(o->Size, 2)));
+			svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)));
 	}
 }
 
@@ -1652,10 +1654,10 @@ static UIObject *CreateCharacterObjs(CampaignOptions *co, int dy)
 	UIObject *o;
 	UIObject *o2;
 	int i;
-	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	c = UIObjectCreate(UITYPE_NONE, 0, svec2i_zero(), svec2i_zero());
 	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 
-	o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(20, 40));
+	o = UIObjectCreate(UITYPE_CUSTOM, 0, svec2i_zero(), svec2i(20, 40));
 	o->u.CustomDrawFunc = MissionDrawEnemy;
 	o->ChangeFunc = MissionChangeEnemy;
 	o->Flags = UI_LEAVE_YC | UI_SELECT_ONLY_FIRST;
@@ -1669,7 +1671,7 @@ static UIObject *CreateCharacterObjs(CampaignOptions *co, int dy)
 		CMALLOC(o2->Data, sizeof(MissionIndexData));
 		((MissionIndexData *)o2->Data)->co = co;
 		((MissionIndexData *)o2->Data)->index = i;
-		o2->Pos = Vec2iNew(x, Y_ABS - dy);
+		o2->Pos = svec2i(x, Y_ABS - dy);
 		UIObjectAddChild(c, o2);
 	}
 
@@ -1682,10 +1684,10 @@ static UIObject *CreateSpecialCharacterObjs(CampaignOptions *co, int dy)
 	UIObject *o;
 	UIObject *o2;
 	int i;
-	c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	c = UIObjectCreate(UITYPE_NONE, 0, svec2i_zero(), svec2i_zero());
 	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
 
-	o = UIObjectCreate(UITYPE_CUSTOM, 0, Vec2iZero(), Vec2iNew(20, 40));
+	o = UIObjectCreate(UITYPE_CUSTOM, 0, svec2i_zero(), svec2i(20, 40));
 	o->u.CustomDrawFunc = MissionDrawSpecialChar;
 	o->ChangeFunc = MissionChangeSpecialChar;
 	o->Flags = UI_LEAVE_YC | UI_SELECT_ONLY_FIRST;
@@ -1699,7 +1701,7 @@ static UIObject *CreateSpecialCharacterObjs(CampaignOptions *co, int dy)
 		CMALLOC(o2->Data, sizeof(MissionIndexData));
 		((MissionIndexData *)o2->Data)->co = co;
 		((MissionIndexData *)o2->Data)->index = i;
-		o2->Pos = Vec2iNew(x, Y_ABS - dy);
+		o2->Pos = svec2i(x, Y_ABS - dy);
 		UIObjectAddChild(c, o2);
 	}
 

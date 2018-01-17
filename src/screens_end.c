@@ -41,8 +41,8 @@
 typedef struct
 {
 	MenuSystem ms;
-	Vec2i pos;
-	Vec2i size;
+	struct vec2i pos;
+	struct vec2i size;
 	int scroll;
 	GameLoopResult (*updateFunc)(GameLoopData *, LoopRunner *);
 	void (*drawFunc)(void *);
@@ -64,7 +64,7 @@ static PlayerList *PlayerListNew(
 {
 	PlayerList *pl;
 	CMALLOC(pl, sizeof *pl);
-	pl->pos = Vec2iZero();
+	pl->pos = svec2i_zero();
 	pl->size = gGraphicsDevice.cachedConfig.Res;
 	pl->scroll = 0;
 	pl->updateFunc = updateFunc;
@@ -116,7 +116,7 @@ static int ComparePlayerScores(const void *v1, const void *v2)
 	return 0;
 }
 static void PlayerListCustomDraw(
-	const menu_t *menu, GraphicsDevice *g, const Vec2i pos, const Vec2i size,
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos, const struct vec2i size,
 	const void *data);
 static int PlayerListInput(int cmd, void *data);
 static void PlayerListTerminate(GameLoopData *data);
@@ -192,7 +192,7 @@ static void PlayerListDraw(GameLoopData *data)
 static int PlayerListMaxScroll(const PlayerList *pl);
 static int PlayerListMaxRows(const PlayerList *pl);
 static void PlayerListCustomDraw(
-	const menu_t *menu, GraphicsDevice *g, const Vec2i pos, const Vec2i size,
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos, const struct vec2i size,
 	const void *data)
 {
 	UNUSED(menu);
@@ -205,11 +205,11 @@ static void PlayerListCustomDraw(
 	const int xStart = pos.x + 80 + (size.x - 320) / 2;
 	int x = xStart;
 	int y = pos.y;
-	FontStrMask("Player", Vec2iNew(x, y), colorPurple);
+	FontStrMask("Player", svec2i(x, y), colorPurple);
 	x += 100;
-	FontStrMask("Score", Vec2iNew(x, y), colorPurple);
+	FontStrMask("Score", svec2i(x, y), colorPurple);
 	x += 32;
-	FontStrMask("Kills", Vec2iNew(x, y), colorPurple);
+	FontStrMask("Kills", svec2i(x, y), colorPurple);
 	y += FontH() * 2 + PLAYER_LIST_ROW_HEIGHT + 4;
 	// Then draw the player list
 	int maxScore = -1;
@@ -234,31 +234,31 @@ static void PlayerListCustomDraw(
 
 		// Draw the players offset on alternate rows
 		DisplayCharacterAndName(
-			Vec2iNew(x + (i & 1) * 16, y + 4), &p->Char, DIRECTION_DOWN,
+			svec2i(x + (i & 1) * 16, y + 4), &p->Char, DIRECTION_DOWN,
 			p->name, textColor);
 
 		// Draw score
 		x += 100;
 		char buf[256];
 		sprintf(buf, "%d", p->Totals.Score);
-		FontStrMask(buf, Vec2iNew(x, y), textColor);
+		FontStrMask(buf, svec2i(x, y), textColor);
 
 		// Draw kills
 		x += 32;
 		sprintf(buf, "%d", p->Totals.Kills);
-		FontStrMask(buf, Vec2iNew(x, y), textColor);
+		FontStrMask(buf, svec2i(x, y), textColor);
 
 		// Draw winner/award text
 		x += 32;
 		if (pl->showWinners && GetModeScore(p) == maxScore)
 		{
-			FontStrMask("Winner!", Vec2iNew(x, y), colorGreen);
+			FontStrMask("Winner!", svec2i(x, y), colorGreen);
 		}
 		else if (pl->showLastMan && p->Lives > 0 &&
 			gCampaign.Entry.Mode == GAME_MODE_DEATHMATCH)
 		{
 			// Only show last man standing on deathmatch mode
-			FontStrMask("Last man standing!", Vec2iNew(x, y), colorGreen);
+			FontStrMask("Last man standing!", svec2i(x, y), colorGreen);
 		}
 
 		y += PLAYER_LIST_ROW_HEIGHT;
@@ -267,12 +267,12 @@ static void PlayerListCustomDraw(
 	// Draw indicator arrows if there's enough to scroll
 	if (pl->scroll > 0)
 	{
-		FontStr("^", Vec2iNew(
+		FontStr("^", svec2i(
 			CENTER_X(pos, size, FontStrW("^")), pos.y + FontH()));
 	}
 	if (pl->scroll < PlayerListMaxScroll(pl))
 	{
-		FontStr("v", Vec2iNew(
+		FontStr("v", svec2i(
 			CENTER_X(pos, size, FontStrW("v")), pos.y + size.y - FontH()));
 	}
 
@@ -388,14 +388,14 @@ static void VictoryDraw(void *data)
 
 	// Congratulations text
 #define CONGRATULATIONS "Congratulations, you have completed "
-	FontStrOpt(CONGRATULATIONS, Vec2iNew(0, y), opts);
+	FontStrOpt(CONGRATULATIONS, svec2i(0, y), opts);
 	y += 15;
 	opts.Mask = colorRed;
-	FontStrOpt(vd->Campaign->Setting.Title, Vec2iNew(0, y), opts);
+	FontStrOpt(vd->Campaign->Setting.Title, svec2i(0, y), opts);
 	y += 15;
 
 	// Final words
-	Vec2i pos = Vec2iNew((w - FontStrW(vd->FinalWords)) / 2, y);
+	struct vec2i pos = svec2i((w - FontStrW(vd->FinalWords)) / 2, y);
 	pos = FontChMask('"', pos, colorDarker);
 	pos = FontStrMask(vd->FinalWords, pos, colorPurple);
 	FontChMask('"', pos, colorDarker);

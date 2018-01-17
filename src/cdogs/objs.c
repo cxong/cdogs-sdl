@@ -64,15 +64,16 @@ static unsigned int sMobObjUIDs = 0;
 
 // Draw functions
 
-static CPicDrawContext GetMapObjectDrawContext(const int id)
+static void MapObjectDraw(
+	GraphicsDevice *g, const int id, const struct vec2i pos)
 {
 	TObject *obj = CArrayGet(&gObjs, id);
-	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
+	CASSERT(obj->isInUse, "Cannot draw non-existent map object");
 	CPicDrawContext c;
 	c.Dir = DIRECTION_UP;
 	c.Offset = obj->Class->Offset;
 	CPicCopyPic(&obj->tileItem.CPic, &obj->Class->Pic);
-	return c;
+	CPicDraw(g, &obj->Class->Pic, pos, &c);
 }
 
 
@@ -136,7 +137,7 @@ static void AddPickupAtObject(const TObject *o, const PickupType type)
 	default: CASSERT(false, "unexpected pickup type"); break;
 	}
 	e.u.AddPickup.UID = PickupsGetNextUID();
-	e.u.AddPickup.Pos = Vec2i2Net(Vec2iNew(o->tileItem.x, o->tileItem.y));
+	e.u.AddPickup.Pos = Vec2ToNet(o->tileItem.Pos);
 	e.u.AddPickup.IsRandomSpawned = true;
 	e.u.AddPickup.SpawnerUID = -1;
 	e.u.AddPickup.TileItemFlags = 0;
@@ -148,8 +149,6 @@ void ObjRemove(const NMapObjectRemove mor)
 {
 	TObject *o = ObjGetByUID(mor.UID);
 	o->Health = 0;
-
-	const Vec2i realPos = Vec2iNew(o->tileItem.x, o->tileItem.y);
 
 	if (!gCampaign.IsClient)
 	{
@@ -166,10 +165,10 @@ void ObjRemove(const NMapObjectRemove mor)
 		}
 
 		// Weapons that go off when this object is destroyed
-		const Vec2i fullPos = Vec2iReal2Full(realPos);
 		CA_FOREACH(const GunDescription *, g, o->Class->DestroyGuns)
 			GunFire(
-				*g, fullPos, 0, 0, mor.Flags, mor.PlayerUID, mor.ActorUID,
+				*g, o->tileItem.Pos, 0, 0, mor.Flags, mor.PlayerUID,
+				mor.ActorUID,
 				true, false);
 		CA_FOREACH_END()
 
@@ -191,7 +190,7 @@ void ObjRemove(const NMapObjectRemove mor)
 		GameEvent e = GameEventNew(GAME_EVENT_ADD_BULLET);
 		e.u.AddBullet.UID = MobObjsObjsGetNextUID();
 		strcpy(e.u.AddBullet.BulletClass, "fireball_wreck");
-		e.u.AddBullet.MuzzlePos = Vec2i2Net(fullPos);
+		e.u.AddBullet.MuzzlePos = Vec2ToNet(o->tileItem.Pos);
 		e.u.AddBullet.MuzzleHeight = 0;
 		e.u.AddBullet.Angle = 0;
 		e.u.AddBullet.Elevation = 0;
@@ -201,7 +200,7 @@ void ObjRemove(const NMapObjectRemove mor)
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 
-	SoundPlayAt(&gSoundDevice, StrSound("bang"), realPos);
+	SoundPlayAt(&gSoundDevice, StrSound("bang"), o->tileItem.Pos);
 
 	// If wreck is available spawn it in the exact same position
 	PlaceWreck(o->Class->Wreck, &o->tileItem);
@@ -228,7 +227,7 @@ static void PlaceWreck(const char *wreckClass, const TTileItem *ti)
 		return;
 	}
 	strcpy(e.u.MapObjectAdd.MapObjectClass, mo->Name);
-	e.u.MapObjectAdd.Pos = Vec2i2Net(Vec2iNew(ti->x, ti->y));
+	e.u.MapObjectAdd.Pos = Vec2ToNet(ti->Pos);
 	e.u.MapObjectAdd.TileItemFlags = MapObjectGetFlags(mo);
 	e.u.MapObjectAdd.Health = mo->Health;
 	GameEventsEnqueue(&gGameEvents, e);
@@ -273,18 +272,18 @@ bool HasHitSound(
 }
 
 static void DoDamageCharacter(
-	const Vec2i hitVector,
+	const struct vec2 hitVector,
 	const int power,
-	const double mass,
+	const float mass,
 	const int flags,
 	const int playerUID,
 	const int uid,
 	TActor *actor,
 	const special_damage_e special);
 void Damage(
-	const Vec2i hitVector,
+	const struct vec2 hitVector,
 	const int power,
-	const double mass,
+	const float mass,
 	const int flags,
 	const int playerUID,
 	const int uid,
@@ -316,9 +315,9 @@ void Damage(
 	}
 }
 static void DoDamageCharacter(
-	const Vec2i hitVector,
+	const struct vec2 hitVector,
 	const int power,
-	const double mass,
+	const float mass,
 	const int flags,
 	const int playerUID,
 	const int uid,
@@ -330,16 +329,14 @@ static void DoDamageCharacter(
 	CASSERT(CanHitCharacter(flags, uid, actor), "damaging undamageable actor");
 
 	// Shot pushback, based on mass and velocity
-	const double impulseFactor = mass / SHOT_IMPULSE_DIVISOR;
-	const Vec2i vel = Vec2iNew(
-		(int)Round(hitVector.x * impulseFactor),
-		(int)Round(hitVector.y * impulseFactor));
-	if (!Vec2iIsZero(vel))
+	const float impulseFactor = mass * SHOT_IMPULSE_FACTOR;
+	const struct vec2 vel = svec2_scale(hitVector, impulseFactor);
+	if (!svec2_is_zero(vel))
 	{
 		GameEvent ei = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
 		ei.u.ActorImpulse.UID = actor->uid;
-		ei.u.ActorImpulse.Vel = Vec2i2Net(vel);
-		ei.u.ActorImpulse.Pos = Vec2i2Net(actor->Pos);
+		ei.u.ActorImpulse.Vel = Vec2ToNet(vel);
+		ei.u.ActorImpulse.Pos = Vec2ToNet(actor->Pos);
 		GameEventsEnqueue(&gGameEvents, ei);
 	}
 
@@ -352,8 +349,8 @@ static void DoDamageCharacter(
 	e.u.ActorHit.HitterPlayerUID = playerUID;
 	e.u.ActorHit.Special = special;
 	e.u.ActorHit.Power = canDamage ? power : 0;
-    e.u.ActorHit.Mass = (float)mass;
-	e.u.ActorHit.Vel = Vec2i2Net(hitVector);
+	e.u.ActorHit.Mass = (float)mass;
+	e.u.ActorHit.Vel = Vec2ToNet(hitVector);
 	GameEventsEnqueue(&gGameEvents, e);
 
 	if (canDamage)
@@ -453,16 +450,12 @@ void ObjAdd(const NMapObjectAdd amo)
 	memset(o, 0, sizeof *o);
 	o->uid = amo.UID;
 	o->Class = StrMapObject(amo.MapObjectClass);
+	TileItemInit(
+		&o->tileItem, i, KIND_OBJECT, o->Class->Size, amo.TileItemFlags);
 	o->Health = amo.Health;
-	o->tileItem.x = o->tileItem.y = -1;
-	o->tileItem.flags = amo.TileItemFlags;
-	o->tileItem.kind = KIND_OBJECT;
-	o->tileItem.getPicFunc = NULL;
 	o->tileItem.CPic = o->Class->Pic;
-	o->tileItem.CPicFunc = GetMapObjectDrawContext;
-	o->tileItem.size = o->Class->Size;
-	o->tileItem.id = i;
-	MapTryMoveTileItem(&gMap, &o->tileItem, Net2Vec2i(amo.Pos));
+	o->tileItem.CPicFunc = MapObjectDraw;
+	MapTryMoveTileItem(&gMap, &o->tileItem, NetToVec2(amo.Pos));
 	o->isInUse = true;
 	LOG(LM_MAIN, LL_DEBUG,
 		"added object uid(%d) class(%s) health(%d) pos(%d, %d)",
@@ -516,8 +509,7 @@ void UpdateObjects(const int ticks)
 				e.u.AddPickup.IsRandomSpawned = false;
 				e.u.AddPickup.SpawnerUID = obj->uid;
 				e.u.AddPickup.TileItemFlags = 0;
-				e.u.AddPickup.Pos =
-					Vec2i2Net(Vec2iNew(obj->tileItem.x, obj->tileItem.y));
+				e.u.AddPickup.Pos = Vec2ToNet(obj->tileItem.Pos);
 				GameEventsEnqueue(&gGameEvents, e);
 			}
 			break;

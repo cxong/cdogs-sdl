@@ -15,12 +15,15 @@ emcc -D "PB_FIELD_16BIT=1" \
     src/*.c \
     $(find src/cdogs/ -name "*.c") \
     src/json/*.c \
-    -O3 \
+    -g4 \
+    -O0 \
     -s ASSERTIONS=1 \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s USE_SDL=2 \
     -s USE_SDL_IMAGE=2 \
     -s SDL2_IMAGE_FORMATS='["png"]' \
+    -s USE_VORBIS=1 \
+    -s USE_OGG=1 \
     --preload-file data \
     --preload-file doc \
     --preload-file dogfights \
@@ -30,3 +33,4 @@ emcc -D "PB_FIELD_16BIT=1" \
     --preload-file sounds \
     -o emscripten/index.html
 
+cp build/windows/cdogs-icon.ico emscripten/favicon.ico

@@ -29,6 +29,7 @@
 
 #include "c_hashmap/hashmap.h"
 #include "defs.h"
+#include "mathc/mathc.h"
 #include "utils.h"
 
 typedef struct
@@ -38,10 +39,10 @@ typedef struct
 	struct
 	{
 		// Offsets by animation frame
-		// of CArray of Vec2i, mapped by animation and indexed by frame
+		// of CArray of struct vec2i, mapped by animation and indexed by frame
 		map_t Frame[BODY_PART_COUNT];
 		// Offsets by direction
-		Vec2i Dir[BODY_PART_COUNT][DIRECTION_COUNT];
+		struct vec2 Dir[BODY_PART_COUNT][DIRECTION_COUNT];
 	} Offsets;
 } CharSprites;
 typedef struct
@@ -58,5 +59,5 @@ void CharSpriteClassesLoadDir(map_t classes, const char *path);
 void CharSpriteClassesClear(map_t classes);
 void CharSpriteClassesTerminate(CharSpriteClasses *c);
 
-Vec2i CharSpritesGetOffset(
+struct vec2i CharSpritesGetOffset(
 	const map_t offsets, const char *anim, const int frame);

@@ -54,7 +54,11 @@
 #include <sys/types.h>
 
 #include <SDL_events.h>
+#ifdef __EMSCRIPTEN__
+#include <SDL/SDL_image.h>
+#else
 #include <SDL_image.h>
+#endif
 #include <SDL_mouse.h>
 
 #include "blit.h"
@@ -70,7 +74,7 @@
 
 GraphicsDevice gGraphicsDevice;
 
-static void Gfx_ModeSet(const Vec2i *mode)
+static void Gfx_ModeSet(const struct vec2i *mode)
 {
 	ConfigGet(&gConfig, "Graphics.ResolutionWidth")->u.Int.Value = mode->x;
 	ConfigGet(&gConfig, "Graphics.ResolutionHeight")->u.Int.Value = mode->y;
@@ -100,7 +104,7 @@ void Gfx_ModeNext(void)
 
 static int FindValidMode(GraphicsDevice *device, const int w, const int h)
 {
-	CA_FOREACH(const Vec2i, mode, device->validModes)
+	CA_FOREACH(const struct vec2i, mode, device->validModes)
 		if (mode->x == w && mode->y == h)
 		{
 			return _ca_index;
@@ -122,21 +126,21 @@ static void AddGraphicsMode(GraphicsDevice *device, const int w, const int h)
 	for (i = 0; i < (int)device->validModes.size; i++)
 	{
 		// Ordered by actual resolution ascending and scale descending
-		const Vec2i *mode = CArrayGet(&device->validModes, i);
+		const struct vec2i *mode = CArrayGet(&device->validModes, i);
 		const int actualResolution = mode->x * mode->y;
 		if (actualResolution >= size)
 		{
 			break;
 		}
 	}
-	Vec2i mode = Vec2iNew(w, h);
+	struct vec2i mode = svec2i(w, h);
 	CArrayInsert(&device->validModes, i, &mode);
 }
 
 void GraphicsInit(GraphicsDevice *device, Config *c)
 {
 	memset(device, 0, sizeof *device);
-	CArrayInit(&device->validModes, sizeof(Vec2i));
+	CArrayInit(&device->validModes, sizeof(struct vec2i));
 	// Add default modes
 	AddGraphicsMode(device, 320, 240);
 	AddGraphicsMode(device, 400, 300);
@@ -173,10 +177,6 @@ static void AddSupportedGraphicsModes(GraphicsDevice *device)
 // Initialises the video subsystem.
 // To prevent needless screen flickering, config is compared with cache
 // to see if anything changed. If not, don't recreate the screen.
-static void DestroyTextures(GraphicsDevice *g);
-static SDL_Texture *CreateTexture(
-	SDL_Renderer *renderer, const SDL_TextureAccess access, const Vec2i res,
-	const SDL_BlendMode blend, const Uint8 alpha);
 void GraphicsInitialize(GraphicsDevice *g)
 {
 	if (g->IsInitialized && !g->cachedConfig.RestartFlags)
@@ -218,43 +218,40 @@ void GraphicsInitialize(GraphicsDevice *g)
 		LOG(LM_GFX, LL_INFO, "graphics mode(%dx%d %dx)",
 			w, h, g->cachedConfig.ScaleFactor);
 		// Get the previous window's size and recreate it
-		Vec2i windowSize = Vec2iNew(
+		struct vec2i windowSize = svec2i(
 			w * g->cachedConfig.ScaleFactor, h * g->cachedConfig.ScaleFactor);
-		if (g->window)
+		if (g->gameWindow.window)
 		{
-			SDL_GetWindowSize(g->window, &windowSize.x, &windowSize.y);
+			SDL_GetWindowSize(
+				g->gameWindow.window, &windowSize.x, &windowSize.y);
 		}
 		LOG(LM_GFX, LL_DEBUG, "destroying previous renderer");
-		DestroyTextures(g);
-		SDL_DestroyRenderer(g->renderer);
+		WindowContextDestroy(&g->gameWindow);
+		WindowContextDestroy(&g->secondWindow);
 		SDL_FreeFormat(g->Format);
-		SDL_DestroyWindow(g->window);
-		LOG(LM_GFX, LL_DEBUG, "creating window %dx%d flags(%X)",
-			windowSize.x, windowSize.y, sdlFlags);
-		if (SDL_CreateWindowAndRenderer(
-				windowSize.x, windowSize.y, sdlFlags,
-				&g->window, &g->renderer) == -1 ||
-			g->window == NULL || g->renderer == NULL)
-		{
-			LOG(LM_GFX, LL_ERROR, "cannot create window or renderer: %s",
-				SDL_GetError());
-			return;
-		}
+
 		char title[32];
 		sprintf(title, "C-Dogs SDL %s%s",
 			g->cachedConfig.IsEditor ? "Editor " : "",
 			CDOGS_SDL_VERSION);
-		LOG(LM_GFX, LL_DEBUG, "setting title(%s) and icon", title);
-		SDL_SetWindowTitle(g->window, title);
-		SDL_SetWindowIcon(g->window, g->icon);
-		g->Format = SDL_AllocFormat(SDL_PIXELFORMAT_ARGB8888);
-
-		if (SDL_RenderSetLogicalSize(g->renderer, w, h) != 0)
+		if (!WindowContextCreate(
+				&g->gameWindow, windowSize, sdlFlags, title, g->icon,
+				svec2i(w, h)))
 		{
-			LOG(LM_GFX, LL_ERROR, "cannot set renderer logical size: %s",
-				SDL_GetError());
 			return;
 		}
+		if (g->cachedConfig.SecondWindow)
+		{
+			if (!WindowContextCreate(
+					&g->secondWindow, windowSize, sdlFlags, title, g->icon,
+					svec2i(w, h)))
+			{
+				return;
+			}
+			WindowsAdjustPosition(&g->gameWindow, &g->secondWindow);
+		}
+
+		g->Format = SDL_AllocFormat(SDL_PIXELFORMAT_ARGB8888);
 
 		GraphicsSetBlitClip(
 			g, 0, 0, g->cachedConfig.Res.x - 1, g->cachedConfig.Res.y - 1);
@@ -264,7 +261,8 @@ void GraphicsInitialize(GraphicsDevice *g)
 	{
 		if (!initRenderer)
 		{
-			DestroyTextures(g);
+			WindowContextDestroyTextures(&g->gameWindow);
+			WindowContextDestroyTextures(&g->secondWindow);
 		}
 
 		// Set render scale mode
@@ -288,25 +286,36 @@ void GraphicsInitialize(GraphicsDevice *g)
 				SDL_GetError());
 		}
 
-		g->screen = CreateTexture(
-			g->renderer, SDL_TEXTUREACCESS_STREAMING, Vec2iNew(w, h),
+		CFREE(g->buf);
+		CCALLOC(g->buf, GraphicsGetMemSize(&g->cachedConfig));
+		g->bkg = WindowContextCreateTexture(
+			&g->gameWindow, SDL_TEXTUREACCESS_STATIC, svec2i(w, h),
+			SDL_BLENDMODE_NONE, 255);
+		if (g->bkg == NULL)
+		{
+			return;
+		}
+		if (g->cachedConfig.SecondWindow)
+		{
+			g->bkg2 = WindowContextCreateTexture(
+				&g->secondWindow, SDL_TEXTUREACCESS_STATIC, svec2i(w, h),
+				SDL_BLENDMODE_NONE, 255);
+			if (g->bkg2 == NULL)
+			{
+				return;
+			}
+		}
+
+		g->screen = WindowContextCreateTexture(
+			&g->gameWindow, SDL_TEXTUREACCESS_STREAMING, svec2i(w, h),
 			SDL_BLENDMODE_BLEND, 255);
 		if (g->screen == NULL)
 		{
 			return;
 		}
 
-		CFREE(g->buf);
-		CCALLOC(g->buf, GraphicsGetMemSize(&g->cachedConfig));
-		g->bkg = CreateTexture(
-			g->renderer, SDL_TEXTUREACCESS_STATIC, Vec2iNew(w, h),
-			SDL_BLENDMODE_NONE, 255);
-		if (g->bkg == NULL)
-		{
-			return;
-		}
-		g->hud = CreateTexture(
-			g->renderer, SDL_TEXTUREACCESS_STREAMING, Vec2iNew(w, h),
+		g->hud = WindowContextCreateTexture(
+			&g->gameWindow, SDL_TEXTUREACCESS_STREAMING, svec2i(w, h),
 			SDL_BLENDMODE_BLEND, 255);
 		if (g->hud == NULL)
 		{
@@ -314,6 +323,19 @@ void GraphicsInitialize(GraphicsDevice *g)
 		}
 		BlitClearBuf(g);
 		BlitUpdateFromBuf(g, g->hud);
+
+		if (g->cachedConfig.SecondWindow)
+		{
+			g->hud2 = WindowContextCreateTexture(
+				&g->secondWindow, SDL_TEXTUREACCESS_STREAMING, svec2i(w, h),
+				SDL_BLENDMODE_BLEND, 255);
+			if (g->hud2 == NULL)
+			{
+				return;
+			}
+			BlitClearBuf(g);
+			BlitUpdateFromBuf(g, g->hud2);
+		}
 	}
 
 	if (initBrightness)
@@ -325,16 +347,17 @@ void GraphicsInitialize(GraphicsDevice *g)
 
 		const int brightness = ConfigGetInt(&gConfig, "Graphics.Brightness");
 		// Alpha is approximately 50% max
-		const Uint8 alpha = (Uint8)(brightness > 0 ? brightness : -brightness) * 13;
-		g->brightnessOverlay = CreateTexture(
-			g->renderer, SDL_TEXTUREACCESS_STATIC, Vec2iNew(w, h),
+		const Uint8 alpha =
+			(Uint8)(brightness > 0 ? brightness : -brightness) * 13;
+		g->brightnessOverlay = WindowContextCreateTexture(
+			&g->gameWindow, SDL_TEXTUREACCESS_STATIC, svec2i(w, h),
 			SDL_BLENDMODE_BLEND, alpha);
 		if (g->brightnessOverlay == NULL)
 		{
 			return;
 		}
 		const color_t overlayColour = brightness > 0 ? colorWhite : colorBlack;
-		DrawRectangle(g, Vec2iZero(), g->cachedConfig.Res, overlayColour, 0);
+		DrawRectangle(g, svec2i_zero(), g->cachedConfig.Res, overlayColour, 0);
 		BlitUpdateFromBuf(g, g->brightnessOverlay);
 		g->cachedConfig.Brightness = brightness;
 	}
@@ -344,46 +367,14 @@ void GraphicsInitialize(GraphicsDevice *g)
 	g->cachedConfig.Res.y = h;
 	g->cachedConfig.RestartFlags = 0;
 }
-static void DestroyTextures(GraphicsDevice *g)
-{
-	SDL_DestroyTexture(g->screen);
-	SDL_DestroyTexture(g->bkg);
-	SDL_DestroyTexture(g->hud);
-	SDL_DestroyTexture(g->brightnessOverlay);
-}
-static SDL_Texture *CreateTexture(
-	SDL_Renderer *renderer, const SDL_TextureAccess access, const Vec2i res,
-	const SDL_BlendMode blend, const Uint8 alpha)
-{
-	SDL_Texture *t = SDL_CreateTexture(
-		renderer, SDL_PIXELFORMAT_ARGB8888, access, res.x, res.y);
-	if (t == NULL)
-	{
-		LOG(LM_GFX, LL_ERROR, "cannot create texture: %s", SDL_GetError());
-		return NULL;
-	}
-	if (SDL_SetTextureBlendMode(t, blend) != 0)
-	{
-		LOG(LM_GFX, LL_ERROR, "cannot set blend mode: %s", SDL_GetError());
-		return NULL;
-	}
-	if (SDL_SetTextureAlphaMod(t, alpha) != 0)
-	{
-		LOG(LM_GFX, LL_ERROR, "cannot set texture alpha: %s", SDL_GetError());
-		return NULL;
-	}
-	return t;
-}
 
 void GraphicsTerminate(GraphicsDevice *g)
 {
 	CArrayTerminate(&g->validModes);
 	SDL_FreeSurface(g->icon);
-	DestroyTextures(g);
-	SDL_DestroyTexture(g->brightnessOverlay);
-	SDL_DestroyRenderer(g->renderer);
+	WindowContextDestroy(&g->gameWindow);
+	WindowContextDestroy(&g->secondWindow);
 	SDL_FreeFormat(g->Format);
-	SDL_DestroyWindow(g->window);
 	SDL_VideoQuit();
 	CFREE(g->buf);
 }
@@ -400,10 +391,11 @@ int GraphicsGetMemSize(GraphicsConfig *config)
 
 void GraphicsConfigSet(
 	GraphicsConfig *c,
-	const Vec2i res, const bool fullscreen,
-	const int scaleFactor, const ScaleMode scaleMode, const int brightness)
+	const struct vec2i res, const bool fullscreen,
+	const int scaleFactor, const ScaleMode scaleMode, const int brightness,
+	const bool secondWindow)
 {
-	if (!Vec2iEqual(res, c->Res))
+	if (!svec2i_is_equal(res, c->Res))
 	{
 		c->Res = res;
 		c->RestartFlags |= RESTART_RESOLUTION;
@@ -418,19 +410,21 @@ void GraphicsConfigSet(
 	SET(c->ScaleFactor, scaleFactor, RESTART_RESOLUTION);
 	SET(c->ScaleMode, scaleMode, RESTART_SCALE_MODE);
 	SET(c->Brightness, brightness, RESTART_BRIGHTNESS);
+	SET(c->SecondWindow, secondWindow, RESTART_RESOLUTION);
 }
 
 void GraphicsConfigSetFromConfig(GraphicsConfig *gc, Config *c)
 {
 	GraphicsConfigSet(
 		gc,
-		Vec2iNew(
+		svec2i(
 			ConfigGetInt(c, "Graphics.ResolutionWidth"),
 			ConfigGetInt(c, "Graphics.ResolutionHeight")),
 		ConfigGetBool(c, "Graphics.Fullscreen"),
 		ConfigGetInt(c, "Graphics.ScaleFactor"),
 		(ScaleMode)ConfigGetEnum(c, "Graphics.ScaleMode"),
-		ConfigGetInt(c, "Graphics.Brightness"));
+		ConfigGetInt(c, "Graphics.Brightness"),
+		ConfigGetBool(c, "Graphics.SecondWindow"));
 }
 
 char *GrafxGetModeStr(void)

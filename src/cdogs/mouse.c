@@ -61,12 +61,12 @@ void MousePrePoll(Mouse *mouse)
 		mouse->previousButtons,
 		mouse->currentButtons,
 		sizeof mouse->previousButtons);
-	mouse->wheel = Vec2iZero();
+	mouse->wheel = svec2i_zero();
 	mouse->previousPos = mouse->currentPos;
 	SDL_GetMouseState(&mouse->currentPos.x, &mouse->currentPos.y);
 	int scale = ConfigGetInt(&gConfig, "Graphics.ScaleFactor");
 	if (scale == 0) scale = 1;
-	mouse->currentPos = Vec2iScaleDiv(mouse->currentPos, scale);
+	mouse->currentPos = svec2i_scale_divide(mouse->currentPos, scale);
 }
 
 
@@ -86,7 +86,7 @@ void MouseOnButtonUp(Mouse *mouse, Uint8 button)
 }
 void MouseOnWheel(Mouse *m, const Sint32 x, const Sint32 y)
 {
-	m->wheel = Vec2iNew(x, y);
+	m->wheel = svec2i(x, y);
 }
 
 void MousePostPoll(Mouse *mouse, Uint32 ticks)
@@ -137,7 +137,7 @@ void MousePostPoll(Mouse *mouse, Uint32 ticks)
 
 bool MouseHasMoved(const Mouse *m)
 {
-	return !Vec2iEqual(m->previousPos, m->currentPos);
+	return !svec2i_is_equal(m->previousPos, m->currentPos);
 }
 
 int MouseGetPressed(const Mouse *m)
@@ -162,12 +162,12 @@ bool MouseIsDown(const Mouse *m, const int button)
 	return m->currentButtons[button];
 }
 
-Vec2i MouseWheel(const Mouse *m)
+struct vec2i MouseWheel(const Mouse *m)
 {
 	return m->wheel;
 }
 
-int MouseGetMove(Mouse *mouse, const Vec2i pos)
+int MouseGetMove(Mouse *mouse, const struct vec2i pos)
 {
 	int cmd = 0;
 	const int dx = abs(mouse->currentPos.x - pos.x);
@@ -210,13 +210,13 @@ void MouseDraw(const Mouse *mouse)
 		{
 			// Draw a trail between the mouse move pos and mouse pos
 			// The trail is made up of a fixed number of dots
-			const Vec2i d =
-				Vec2iMinus(mouse->currentPos, mouse->mouseMovePos);
+			const struct vec2i d =
+				svec2i_subtract(mouse->currentPos, mouse->mouseMovePos);
 			for (int i = 1; i <= TRAIL_NUM_DOTS; i++)
 			{
-				const Vec2i pos = Vec2iAdd(
+				const struct vec2i pos = svec2i_add(
 					mouse->mouseMovePos,
-					Vec2iScaleDiv(Vec2iScale(d, i), TRAIL_NUM_DOTS + 1));
+					svec2i_scale_divide(svec2i_scale(d, i), TRAIL_NUM_DOTS + 1));
 				BlitMasked(
 					&gGraphicsDevice, mouse->trail, pos, colorWhite, false);
 			}

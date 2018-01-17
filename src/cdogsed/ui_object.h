@@ -59,8 +59,8 @@ typedef struct _UIObject
 	int Id;
 	int Id2;
 	int Flags;
-	Vec2i Pos;
-	Vec2i Size;
+	struct vec2i Pos;
+	struct vec2i Size;
 	bool IsVisible;
 	// TODO: memory leak with dynamically allocated tooltips
 	char *Tooltip;
@@ -89,7 +89,7 @@ typedef struct _UIObject
 			int (*IsDownFunc)(void *);	// whether the button is down
 		} Button;
 		// Custom
-		void (*CustomDrawFunc)(struct _UIObject *, GraphicsDevice *g, Vec2i, void *);
+		void (*CustomDrawFunc)(struct _UIObject *, GraphicsDevice *g, struct vec2i, void *);
 	} u;
 	char *Label;
 	bool IsDynamicLabel;
@@ -111,7 +111,7 @@ typedef struct _UIObject
 	void (*CheckVisible)(struct _UIObject *, void *);
 } UIObject;
 
-UIObject *UIObjectCreate(UIType type, int id, Vec2i pos, Vec2i size);
+UIObject *UIObjectCreate(UIType type, int id, struct vec2i pos, struct vec2i size);
 void UIObjectSetDynamicLabel(UIObject *o, const char *label);
 void UIButtonSetPic(UIObject *o, Pic *pic);
 UIObject *UIObjectCopy(const UIObject *o);
@@ -130,9 +130,9 @@ EditorResult UIObjectAddChar(UIObject *o, char c);
 EditorResult UIObjectDelChar(UIObject *o);
 
 void UIObjectDraw(
-	UIObject *o, GraphicsDevice *g, Vec2i pos, Vec2i mouse, CArray *drawObjs);
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, struct vec2i mouse, CArray *drawObjs);
 
 // Get the UIObject that is at pos (e.g. for mouse clicks)
-bool UITryGetObject(UIObject *o, Vec2i pos, UIObject **out);
+bool UITryGetObject(UIObject *o, struct vec2i pos, UIObject **out);
 
-void UITooltipDraw(GraphicsDevice *device, Vec2i pos, const char *s);
+void UITooltipDraw(GraphicsDevice *device, struct vec2i pos, const char *s);

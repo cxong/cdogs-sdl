@@ -55,7 +55,6 @@
 
 #include <SDL_mouse.h>
 
-#include <cdogs/ai_coop.h>
 #include <cdogs/actors.h>
 #include <cdogs/blit.h>
 #include <cdogs/config_io.h>
@@ -100,7 +99,7 @@ static GameLoopData *ScreenWait(
 	CMALLOC(swData, sizeof *swData);
 	MenuSystemInit(
 		&swData->ms, &gEventHandlers, &gGraphicsDevice,
-		Vec2iZero(),
+		svec2i_zero(),
 		gGraphicsDevice.cachedConfig.Res);
 	swData->ms.allowAborts = true;
 	swData->ms.root = swData->ms.current =
@@ -185,7 +184,7 @@ GameLoopData *NumPlayersSelection(
 	CMALLOC(ms, sizeof *ms);
 	MenuSystemInit(
 		ms, handlers, graphics,
-		Vec2iZero(),
+		svec2i_zero(),
 		graphics->cachedConfig.Res);
 	ms->allowAborts = true;
 	ms->root = ms->current = MenuCreateNormal(
@@ -482,30 +481,30 @@ static void PlayerSelectionDraw(GameLoopData *data)
 		}
 		else
 		{
-			Vec2i center = Vec2iZero();
+			struct vec2i center = svec2i_zero();
 			const char *prompt = "Press Fire to join...";
-			const Vec2i offset = Vec2iScaleDiv(FontStrSize(prompt), -2);
+			const struct vec2i offset = svec2i_scale_divide(FontStrSize(prompt), -2);
 			switch (GetNumPlayers(false, false, true))
 			{
 			case 1:
 				// Center of screen
-				center = Vec2iNew(w / 2, h / 2);
+				center = svec2i(w / 2, h / 2);
 				break;
 			case 2:
 				// Side by side
-				center = Vec2iNew(idx * w / 2 + w / 4, h / 2);
+				center = svec2i(idx * w / 2 + w / 4, h / 2);
 				break;
 			case 3:
 			case 4:
 				// Four corners
-				center = Vec2iNew(
+				center = svec2i(
 					(idx & 1) * w / 2 + w / 4, (idx / 2) * h / 2 + h / 4);
 				break;
 			default:
 				CASSERT(false, "not implemented");
 				break;
 			}
-			FontStr(prompt, Vec2iAdd(center, offset));
+			FontStr(prompt, svec2i_add(center, offset));
 		}
 	}
 
@@ -540,7 +539,7 @@ GameLoopData *GameOptions(const GameMode gm)
 		CArrayPushBack(&data->allowed, &f);
 	}
 	MenuSystemInit(
-		ms, &gEventHandlers, &gGraphicsDevice, Vec2iZero(), Vec2iNew(w, h));
+		ms, &gEventHandlers, &gGraphicsDevice, svec2i_zero(), svec2i(w, h));
 	ms->align = MENU_ALIGN_CENTER;
 	ms->allowAborts = true;
 	ms->root = MenuCreateNormal(
@@ -771,15 +770,6 @@ GameLoopData *PlayerEquip(void)
 			&data->menus[idx], GetNumPlayers(PLAYER_ANY, false, true),
 			idx, p->UID,
 			&gEventHandlers, &gGraphicsDevice);
-		// For AI players, pre-pick their weapons and go straight to menu end
-		if (p->inputDevice == INPUT_DEVICE_AI)
-		{
-			const int lastMenuIndex =
-				(int)data->menus[idx].ms.root->u.normal.subMenus.size - 1;
-			data->menus[idx].ms.current = CArrayGet(
-				&data->menus[idx].ms.root->u.normal.subMenus, lastMenuIndex);
-			AICoopSelectWeapons(p, idx, &gMission.Weapons);
-		}
 	}
 
 	return GameLoopDataNew(
@@ -819,7 +809,7 @@ static void PlayerEquipTerminate(GameLoopData *data)
 
 	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
 	{
-		MenuSystemTerminate(&pData->menus[i].ms);
+		WeaponMenuTerminate(&pData->menus[i]);
 	}
 	CFREE(pData);
 }
@@ -877,34 +867,11 @@ static GameLoopResult PlayerEquipUpdate(GameLoopData *data, LoopRunner *l)
 	}
 
 	// Update menus
-	int idx = 0;
-	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (!p->IsLocal)
-		{
-			idx--;
-			continue;
-		}
-		if (!MenuIsExit(&pData->menus[idx].ms))
-		{
-			MenuProcessCmd(&pData->menus[idx].ms, cmds[idx]);
-		}
-		else if (p->weaponCount == 0)
-		{
-			// Check exit condition; must have selected at least one weapon
-			// Otherwise reset the current menu
-			pData->menus[idx].ms.current = pData->menus[idx].ms.root;
-		}
-	}
-
 	bool isDone = true;
 	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
 	{
-		if (strcmp(pData->menus[i].ms.current->name, "(End)") != 0)
-		{
-			isDone = false;
-		}
+		WeaponMenuUpdate(&pData->menus[i], cmds[i]);
+		isDone = isDone && WeaponMenuIsDone(&pData->menus[i]);
 	}
 	if (isDone)
 	{
@@ -931,7 +898,7 @@ static void PlayerEquipDraw(GameLoopData *data)
 	BlitClearBuf(&gGraphicsDevice);
 	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
 	{
-		MenuDisplay(&pData->menus[i].ms);
+		WeaponMenuDraw(&pData->menus[i]);
 	}
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 }

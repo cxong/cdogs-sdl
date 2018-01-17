@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017, Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -51,6 +51,7 @@
 #include "bullet_class.h"
 #include "defs.h"
 #include "draw/char_sprites.h"
+#include "mathc/mathc.h"
 #include "pic.h"
 #include "pics.h"
 #include "sounds.h"
@@ -93,6 +94,7 @@ typedef struct
 {
 	const NamedSprites *Pic;
 	const Pic *Icon;
+	bool IsGrenade;
 	char *name;
 	char *Description;
 	const BulletClass *Bullet;
@@ -104,13 +106,13 @@ typedef struct
 	Mix_Chunk *ReloadSound;
 	Mix_Chunk *SwitchSound;
 	int SoundLockLength;
-	double Recoil;		// Random recoil for inaccurate weapons, in radians
+	float Recoil;		// Random recoil for inaccurate weapons, in radians
 	struct
 	{
 		int Count;		// Number of bullets in spread
-		double Width;	// Width of individual spread, in radians
+		float Width;	// Width of individual spread, in radians
 	} Spread;
-	double AngleOffset;
+	float AngleOffset;
 	int MuzzleHeight;
 	int ElevationLow;
 	int ElevationHigh;
@@ -150,21 +152,21 @@ const GunDescription *StrGunDescription(const char *s);
 GunDescription *IdGunDescription(const int i);
 int GunDescriptionId(const GunDescription *g);
 GunDescription *IndexGunDescriptionReal(const int i);
-Vec2i GunGetMuzzleOffset(
+struct vec2 GunGetMuzzleOffset(
 	const GunDescription *desc, const CharSprites *cs, const direction_e dir);
 void WeaponUpdate(Weapon *w, const int ticks);
 bool WeaponIsLocked(const Weapon *w);
 void WeaponSetState(Weapon *w, const gunstate_e state);
 void GunFire(
-	const GunDescription *g, const Vec2i fullPos, const int z,
+	const GunDescription *g, const struct vec2 pos, const int z,
 	const double radians,
 	const int flags, const int playerUID, const int uid,
 	const bool playSound, const bool isGun);
 void GunAddBrass(
-	const GunDescription *g, const direction_e d, const Vec2i pos);
+	const GunDescription *g, const direction_e d, const struct vec2 pos);
 
 
-int GunGetRange(const GunDescription *g);
+float GunGetRange(const GunDescription *g);
 bool GunHasMuzzle(const GunDescription *g);
 bool IsHighDPS(const GunDescription *g);
 bool IsLongRange(const GunDescription *g);

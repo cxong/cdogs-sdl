@@ -147,8 +147,6 @@ int ScanCampaignOld(const char *filename, char **title, int *missions)
 	int i;
 	CampaignSettingOld setting;
 
-	debug(D_NORMAL, "filename: %s\n", filename);
-
 	f = fopen(filename, "rb");
 	if (f != NULL)
 	{
@@ -156,19 +154,12 @@ int ScanCampaignOld(const char *filename, char **title, int *missions)
 
 		if (i != CAMPAIGN_MAGIC) {
 			fclose(f);
-			debug(D_NORMAL, "Filename: %s\n", filename);
-			debug(D_NORMAL, "Magic: %d FileM: %d\n", CAMPAIGN_MAGIC, i);
-			debug(D_NORMAL, "ScanCampaignOld - bad file!\n");
 			return -1;
 		}
 
 		f_read32(f, &i, sizeof(i));
 		if (i != CAMPAIGN_VERSION) {
 			fclose(f);
-			debug(
-				D_NORMAL,
-				"ScanCampaignOld - version mismatch (expected %d, read %d)\n",
-				CAMPAIGN_VERSION, i);
 			return -1;
 		}
 
@@ -197,8 +188,6 @@ static void load_mission_objective(FILE *f, struct MissionObjectiveOld *o)
 	f_read32(f, &o->count, sizeof(o->count));
 	f_read32(f, &o->required, sizeof(o->required));
 	f_read32(f, &o->flags, sizeof(o->flags));
-	debug(D_VERBOSE, " >> Objective: %s data: %d %d %d %d %d\n",
-		o->description, o->type, o->index, o->count, o->required, o->flags);
 }
 
 static void load_mission(FILE *f, struct MissionOld *m)
@@ -207,10 +196,6 @@ static void load_mission(FILE *f, struct MissionOld *m)
 
 	f_read(f, m->title, sizeof(m->title));
 	f_read(f, m->description, sizeof(m->description));
-
-	debug(D_NORMAL, "== MISSION ==\n");
-	debug(D_NORMAL, "t: %s\n", m->title);
-	debug(D_NORMAL, "d: %s\n", m->description);
 
 	R32(m->wallStyle);
 	R32(m->floorStyle);
@@ -228,7 +213,6 @@ static void load_mission(FILE *f, struct MissionOld *m)
 
 	R32(m->objectiveCount);
 
-	debug(D_NORMAL, "number of objectives: %d\n", m->objectiveCount);
 	for (i = 0; i < OBJECTIVE_MAX; i++) {
 		load_mission_objective(f, &m->objectives[i]);
 	}
@@ -261,8 +245,6 @@ static void load_mission(FILE *f, struct MissionOld *m)
 	R32(m->floorRange);
 	R32(m->roomRange);
 	R32(m->altRange);
-
-	debug(D_VERBOSE, "number of baddies: %d\n", m->baddieCount);
 }
 
 
@@ -320,7 +302,7 @@ void load_character(FILE *f, TBadGuy *b)
 void ConvertCharacter(Character *c, TBadGuy *b)
 {
 	c->Class = IntCharacterClass(b->facePic);
-	c->speed = b->speed;
+	c->speed = b->speed / 256.0f;
 	c->bot->probabilityToMove = b->probabilityToMove;
 	c->bot->probabilityToTrack = b->probabilityToTrack;
 	c->bot->probabilityToShoot = b->probabilityToShoot;
@@ -370,7 +352,7 @@ static void ConvertMission(
 	CFREE(dest->Description);
 	CSTRDUP(dest->Description, src->description);
 	dest->Type = MAPTYPE_CLASSIC;
-	dest->Size = Vec2iNew(src->mapWidth, src->mapHeight);
+	dest->Size = svec2i(src->mapWidth, src->mapHeight);
 	strcpy(dest->WallStyle, IntWallStyle(src->wallStyle));
 	strcpy(dest->FloorStyle, IntFloorStyle(src->floorStyle));
 	strcpy(dest->RoomStyle, IntRoomStyle(src->roomStyle));
@@ -462,7 +444,6 @@ int LoadCampaignOld(const char *filename, CampaignSettingOld *setting)
 	int32_t i;
 	int err = 0;
 
-	debug(D_NORMAL, "f: %s\n", filename);
 	f = fopen(filename, "rb");
 	if (f == NULL)
 	{
@@ -473,7 +454,6 @@ int LoadCampaignOld(const char *filename, CampaignSettingOld *setting)
 	f_read32(f, &i, sizeof(i));
 	if (i != CAMPAIGN_MAGIC)
 	{
-		debug(D_NORMAL, "LoadCampaign - bad file!\n");
 		err = -1;
 		goto bail;
 	}
@@ -481,7 +461,6 @@ int LoadCampaignOld(const char *filename, CampaignSettingOld *setting)
 	f_read32(f, &i, sizeof(i));
 	if (i != CAMPAIGN_VERSION)
 	{
-		debug(D_NORMAL, "LoadCampaign - version mismatch!\n");
 		err = -1;
 		goto bail;
 	}
@@ -494,7 +473,6 @@ int LoadCampaignOld(const char *filename, CampaignSettingOld *setting)
 	CCALLOC(
 		setting->missions,
 		setting->missionCount * sizeof *setting->missions);
-	debug(D_NORMAL, "No. missions: %d\n", setting->missionCount);
 	for (i = 0; i < setting->missionCount; i++)
 	{
 		load_mission(f, &setting->missions[i]);
@@ -504,7 +482,6 @@ int LoadCampaignOld(const char *filename, CampaignSettingOld *setting)
 	CCALLOC(
 		setting->characters,
 		setting->characterCount * sizeof *setting->characters);
-	debug(D_NORMAL, "No. characters: %d\n", setting->characterCount);
 	for (i = 0; i < setting->characterCount; i++)
 	{
 		load_character(f, &setting->characters[i]);

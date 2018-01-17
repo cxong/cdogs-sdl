@@ -52,7 +52,7 @@
 
 
 void MapAddDoorGroup(
-	Map *map, const Mission *m, const Vec2i v, const int keyFlags);
+	Map *map, const Mission *m, const struct vec2i v, const int keyFlags);
 
 // Get the picture of a door
 // style: office/dungeon/blast/alien, or custom

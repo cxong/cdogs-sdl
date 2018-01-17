@@ -54,12 +54,6 @@
 #include <string.h>
 #include <ctype.h>
 
-#include <SDL.h>
-#ifdef __EMSCRIPTEN__
-#include <SDL/SDL_mixer.h>
-#else
-#include <SDL_mixer.h>
-#endif
 #include <tinydir/tinydir.h>
 
 #include "actors.h"
@@ -67,6 +61,7 @@
 #include "defs.h"
 #include "keyboard.h"
 #include "log.h"
+#include "music.h"
 #include "objs.h"
 #include "pickup.h"
 #include "player_template.h"
@@ -191,20 +186,20 @@ void FreeSongs(struct SongDef **songList)
 
 void LoadSongs(void)
 {
-	debug(D_NORMAL, "loading game music %s\n", CDOGS_GAME_MUSIC_DIR);
-	LoadSongList(&gGameSongs, CDOGS_GAME_MUSIC_DIR);
-	debug(D_NORMAL, "loading menu music %s\n", CDOGS_MENU_MUSIC_DIR);
-	LoadSongList(&gMenuSongs, CDOGS_MENU_MUSIC_DIR);
+	LoadSongList(&gGameSongs, "music/game");
+	LoadSongList(&gMenuSongs, "music/menu");
 }
 
 void LoadSongList(struct SongDef **songList, const char *dirPath)
 {
 	tinydir_dir dir;
-	int errsv;
-	if (tinydir_open(&dir, dirPath) == -1)
+	char buf[CDOGS_PATH_MAX];
+	GetDataFilePath(buf, dirPath);
+	if (tinydir_open(&dir, buf) == -1)
 	{
-		errsv = errno;
-		printf("Cannot open music dir: %s\n", strerror(errsv));
+
+		LOG(LM_MAIN, LL_ERROR, "Cannot open music dir %s: %s",
+			buf, strerror(errno));
 		goto bail;
 	}
 
@@ -214,26 +209,16 @@ void LoadSongList(struct SongDef **songList, const char *dirPath)
 		tinydir_file file;
 		if (tinydir_readfile(&dir, &file) == -1)
 		{
-			errsv = errno;
-			debug(D_VERBOSE, "cannot read file: %s\n", strerror(errsv));
 			goto bail;
 		}
 		if (!file.is_reg)
 		{
-			debug(D_VERBOSE, "not a regular file %s\n", file.name);
-			continue;
-		}
-		if (strcmp(file.extension, "txt") == 0 ||
-			strcmp(file.extension, "TXT") == 0)
-		{
-			debug(D_VERBOSE, "Skipping text file %s\n", file.name);
 			continue;
 		}
 
-		m = Mix_LoadMUS(file.path);
+		m = MusicLoad(file.path);
 		if (m == NULL)
 		{
-			debug(D_VERBOSE, "not a music file %s\n", file.name);
 			continue;
 		}
 		Mix_FreeMusic(m);

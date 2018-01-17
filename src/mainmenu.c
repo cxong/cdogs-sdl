@@ -199,8 +199,8 @@ static void MenuCreateAll(
 	MenuSystemInit(
 		ms,
 		handlers, graphics,
-		Vec2iZero(),
-		Vec2iNew(
+		svec2i_zero(),
+		svec2i(
 			graphics->cachedConfig.Res.x,
 			graphics->cachedConfig.Res.y));
 	ms->root = ms->current = MenuCreateNormal(
@@ -309,8 +309,6 @@ static void StartGameMode(menu_t *menu, void *data)
 	UNUSED(menu);
 	StartGameModeData *mData = data;
 	gCampaign.Entry.Mode = mData->GameMode;
-	debug(D_NORMAL, "Starting game mode %s %d\n",
-		mData->Entry->Path, (int)mData->GameMode);
 	if (!CampaignLoad(&gCampaign, mData->Entry))
 	{
 		// Failed to load
@@ -331,7 +329,7 @@ static menu_t *MenuCreateCampaignItem(
 
 static void CampaignsDisplayFilename(
 	const menu_t *menu, GraphicsDevice *g,
-	const Vec2i pos, const Vec2i size, const void *data)
+	const struct vec2i pos, const struct vec2i size, const void *data)
 {
 	const menu_t *subMenu =
 		CArrayGet(&menu->u.normal.subMenus, menu->u.normal.index);
@@ -545,6 +543,8 @@ menu_t *MenuCreateOptionsGraphics(const char *name, MenuSystem *ms)
 #ifndef __GCWZERO__
 #ifndef __ANDROID__
 	MenuAddConfigOptionsItem(menu, ConfigGet(&gConfig, "Graphics.Fullscreen"));
+	MenuAddConfigOptionsItem(
+		menu, ConfigGet(&gConfig, "Graphics.SecondWindow"));
 #endif	// ANDROID
 
 	MenuAddSubmenu(

@@ -26,6 +26,7 @@ add_executable(autosave_test
 	../cdogs/json_utils.h
 	../cdogs/log.c
 	../cdogs/log.h
+	../cdogs/mathc/mathc.c
 	../cdogs/utils.c
 	../cdogs/utils.h)
 target_link_libraries(autosave_test
@@ -47,6 +48,7 @@ add_executable(c_array_test
 	../cdogs/c_array.h
 	../cdogs/c_array.c
 	../cdogs/color.c
+	../cdogs/mathc/mathc.c
 	../cdogs/utils.c
 	../cdogs/utils.h)
 target_link_libraries(c_array_test
@@ -79,6 +81,7 @@ add_executable(config_test
 	../cdogs/json_utils.h
 	../cdogs/log.c
 	../cdogs/log.h
+	../cdogs/mathc/mathc.c
 	../cdogs/utils.c
 	../cdogs/utils.h)
 target_link_libraries(config_test
@@ -98,6 +101,7 @@ add_executable(json_test
 	../cdogs/json_utils.h
 	../cdogs/log.c
 	../cdogs/log.h
+	../cdogs/mathc/mathc.c
 	../cdogs/utils.c
 	../cdogs/utils.h)
 target_link_libraries(json_test
@@ -109,6 +113,7 @@ add_test(NAME json_test COMMAND json_test)
 
 add_executable(minkowski_hex_test
 	minkowski_hex_test.c
+	../cdogs/mathc/mathc.c
 	../cdogs/collision/minkowski_hex.c
 	../cdogs/collision/minkowski_hex.h
 	../cdogs/utils.c
@@ -135,12 +140,17 @@ add_executable(pic_test
 	../cdogs/grafx.h
 	../cdogs/log.c
 	../cdogs/log.h
+	../cdogs/mathc/mathc.c
 	../cdogs/pic.c
 	../cdogs/pic.h
+	../cdogs/texture.c
+	../cdogs/texture.h
 	../cdogs/utils.c
 	../cdogs/utils.h
 	../cdogs/vector.c
-	../cdogs/vector.h)
+	../cdogs/vector.h
+	../cdogs/window_context.c
+	../cdogs/window_context.h)
 target_link_libraries(pic_test
 	cbehave
 	${SDL2_LIBRARY}
@@ -157,6 +167,7 @@ add_executable(player_test
 	../cdogs/color.h
 	../cdogs/log.c
 	../cdogs/log.h
+	../cdogs/mathc/mathc.c
 	../cdogs/player.c
 	../cdogs/player.h
 	../cdogs/vector.c
@@ -171,6 +182,7 @@ add_test(NAME player_test COMMAND player_test)
 
 add_executable(utils_test
 	utils_test.c
+	../cdogs/mathc/mathc.c
 	../cdogs/utils.c
 	../cdogs/utils.h)
 target_link_libraries(utils_test

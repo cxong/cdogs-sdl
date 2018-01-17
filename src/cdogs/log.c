@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2015-2016, Cong Xu
+    Copyright (c) 2015-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,7 @@ typedef struct
 	LogLevel Level;
 	const char *Name;
 } LogModuleInfo;
-// Indexed by LogModule
+// Log modules and default logging levels; indexed by LogModule
 static LogModuleInfo sModuleInfo[] =
 {
 	{ LL_INFO, "MAIN" },
@@ -108,16 +108,11 @@ LogLevel StrLogLevel(const char *s)
 }
 
 #ifdef __APPLE__
-#include <asl.h>
+#include <os/log.h>
 #endif
 void LogInit(void)
 {
-#ifdef __APPLE__
-	asl_log_descriptor(
-		NULL, NULL, ASL_LEVEL_INFO, STDOUT_FILENO, ASL_LOG_DESCRIPTOR_WRITE);
-	asl_log_descriptor(
-		NULL, NULL, ASL_LEVEL_NOTICE, STDERR_FILENO, ASL_LOG_DESCRIPTOR_WRITE);
-#endif
+	saveStreamDefaultColor(stderr);
 }
 void LogOpenFile(const char *filename)
 {
@@ -137,35 +132,102 @@ void LogTerminate(void)
 	}
 }
 
+static void LogSetColor(const int color)
+{
+#ifdef __EMSCRIPTEN__
+	UNUSED(color);
+	return;
+#else
+	setStreamColor(stderr, color);
+#endif
+}
+
 static void LogSetLevelColor(const LogLevel l)
 {
 	switch (l)
 	{
-	case LL_TRACE: setColor(GREY); break;
-	case LL_DEBUG: setColor(WHITE); break;
-	case LL_INFO: setColor(GREEN); break;
-	case LL_WARN: setColor(YELLOW); break;
-	case LL_ERROR: setColor(RED); break;
+	case LL_TRACE: LogSetColor(GREY); break;
+	case LL_DEBUG: LogSetColor(WHITE); break;
+	case LL_INFO: LogSetColor(GREEN); break;
+	case LL_WARN: LogSetColor(YELLOW); break;
+	case LL_ERROR: LogSetColor(RED); break;
 	default: CASSERT(false, "Unknown log level"); break;
 	}
 }
 static void LogSetModuleColor(void)
 {
-	setColor(LIGHTBLUE);
+	LogSetColor(LIGHTBLUE);
 }
 static void LogSetFileColor(void)
 {
-	setColor(BROWN);
+	LogSetColor(BROWN);
 }
 static void LogSetFuncColor(void)
 {
-	setColor(CYAN);
+	LogSetColor(CYAN);
 }
 static void LogResetColor(void)
 {
-	resetColor();
+#ifndef __EMSCRIPTEN__
+	resetStreamColor(stderr);
+#endif
 }
 
+// LOG_STR / LOG_VSTR
+#ifdef __APPLE__
+
+static int GetOSLogType(const LogLevel l)
+{
+	switch (l)
+	{
+	case LL_TRACE:	// fallthrough
+	case LL_DEBUG: return OS_LOG_TYPE_DEBUG;
+	case LL_INFO:	// fallthrough
+	case LL_WARN: return OS_LOG_TYPE_INFO;
+	case LL_ERROR: return OS_LOG_TYPE_ERROR;
+	default: CASSERT(false, "Unknown log level"); return OS_LOG_TYPE_DEFAULT;
+	}
+}
+
+#define LOG_STR(_level, _stream, _fmt, ...)\
+	os_log_with_type(OS_LOG_DEFAULT, GetOSLogType(_level), _fmt, ##__VA_ARGS__)
+#define LOG_VSTR(_level, _stream, _fmt, _args)\
+	{\
+		char _log_vstr_buf[1024];\
+		vsnprintf(_log_vstr_buf, sizeof(_log_vstr_buf), _fmt, _args);\
+		os_log_with_type(\
+			OS_LOG_DEFAULT, GetOSLogType(_level), "%s", _log_vstr_buf);\
+	}
+#elif defined(__EMSCRIPTEN__)
+
+#define LOG_STR(_level, _stream, _fmt, ...)\
+	if (_level >= LL_WARN)\
+	{\
+		fprintf(_stream, _fmt, ##__VA_ARGS__);\
+	}\
+	else\
+	{\
+		printf(_fmt, ##__VA_ARGS__);\
+	}
+
+#define LOG_VSTR(_level, _stream, _fmt, _args)\
+	if (_level >= LL_WARN)\
+	{\
+		vfprintf(_stream, _fmt, _args);\
+	}\
+	else\
+	{\
+		vprintf(_fmt, _args);\
+	}
+
+#else
+
+#define LOG_STR(_level, _stream, _fmt, ...)\
+	fprintf(_stream, _fmt, ##__VA_ARGS__)
+#define LOG_VSTR(_level, _stream, _fmt, _args)\
+	vfprintf(_stream, _fmt, _args)
+
+#endif
 void LogLine(
 	FILE *stream, const LogModule m, const LogLevel l, const char *filename,
 	const int line, const char *function, const char *fmt, ...)
@@ -180,28 +242,28 @@ void LogLine(
 		return;
 	}
 	LogSetLevelColor(l);
-	fprintf(stream, "%-5s ", LogLevelName(l));
+	LOG_STR(l, stream, "%-5s ", LogLevelName(l));
 	LogResetColor();
-	fprintf(stream, "[");
+	LOG_STR(l, stream, "[");
 	LogSetModuleColor();
-	fprintf(stream, "%-5s", LogModuleName(m));
+	LOG_STR(l, stream, "%-5s", LogModuleName(m));
 	LogResetColor();
-	fprintf(stream, "] [");
+	LOG_STR(l, stream, "] [");
 	LogSetFileColor();
-	fprintf(stream, "%s:%d", filename, line);
+	LOG_STR(l, stream, "%s:%d", filename, line);
 	LogResetColor();
-	fprintf(stream, "] ");
+	LOG_STR(l, stream, "] ");
 	LogSetFuncColor();
-	fprintf(stream, "%s()", function);
+	LOG_STR(l, stream, "%s()", function);
 	LogResetColor();
-	fprintf(stream, ": ");
+	LOG_STR(l, stream, ": ");
 	LogSetLevelColor(l);
 	va_list args;
 	va_start(args, fmt);
-	vfprintf(stream, fmt, args);
+	LOG_VSTR(l, stream, fmt, args);
 	va_end(args);
 	LogResetColor();
-	fprintf(stream, "\n");
+	LOG_STR(l, stream, "\n");
 	if (l >= LL_WARN)
 	{
 		fflush(stream);

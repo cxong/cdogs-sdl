@@ -61,9 +61,6 @@
 #include "joystick.h"
 #include "sys_config.h"
 
-bool debug = false;
-int debug_level = D_NORMAL;
-
 bool gTrue = true;
 bool gFalse = false;
 
@@ -381,11 +378,32 @@ double Round(double x)
 
 double ToDegrees(double radians)
 {
-	return radians * 180.0 / PI;
+	return radians * 180.0 / M_PI;
 }
 double ToRadians(double degrees)
 {
-	return degrees * PI / 180.0;
+	return degrees * M_PI / 180.0;
+}
+
+struct vec2 CalcClosestPointOnLineSegmentToPoint(
+	const struct vec2 l1, const struct vec2 l2, const struct vec2 p)
+{
+	// Using parametric representation, line l1->l2 is
+	// P(t) = l1 + t(l2 - l1)
+	// Projection of point p on line is
+	// t = ((p.x - l1.x)(l2.x - l1.x) + (p.y - l1.y)(l2.y - l1.y)) / ||l2 - l1||^2
+	const float lineDistanceSquared = (int)svec2_distance_squared(l1, l2);
+	// Early exit since same point means 0 distance, and div by 0
+	if (lineDistanceSquared == 0)
+	{
+		return l1;
+	}
+	const float numerator =
+		(p.x - l1.x)*(l2.x - l1.x) + (p.y - l1.y)*(l2.y - l1.y);
+	const float t = CLAMP(numerator / lineDistanceSquared, 0, 1);
+	const struct vec2 closestPoint = svec2(
+		l1.x + t*(l2.x - l1.x), l1.y + t*(l2.y - l1.y));
+	return closestPoint;
 }
 
 const char *InputDeviceName(const int d, const int deviceIndex)
@@ -438,7 +456,7 @@ char *PercentStr(int p)
 }
 char *Div8Str(int i)
 {
-	static char buf[8];
+	static char buf[16];
 	sprintf(buf, "%d", i/8);
 	return buf;
 }

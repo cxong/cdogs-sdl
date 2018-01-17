@@ -57,30 +57,30 @@
 
 
 static int GetDoorCountInGroup(
-	const Map *map, const Vec2i v, const bool isHorizontal);
+	const Map *map, const struct vec2i v, const bool isHorizontal);
 static NamedPic *GetDoorBasePic(
 	const PicManager *pm, const char *style, const bool isHorizontal);
 static TWatch *CreateCloseDoorWatch(
-	Map *map, const Mission *m, const Vec2i v,
+	Map *map, const Mission *m, const struct vec2i v,
 	const bool isHorizontal, const int doorGroupCount,
 	const char *picAltName);
 static Trigger *CreateOpenDoorTrigger(
-	Map *map, const Mission *m, const Vec2i v,
+	Map *map, const Mission *m, const struct vec2i v,
 	const bool isHorizontal, const int doorGroupCount, const int keyFlags);
 void MapAddDoorGroup(
-	Map *map, const Mission *m, const Vec2i v, const int keyFlags)
+	Map *map, const Mission *m, const struct vec2i v, const int keyFlags)
 {
 	const unsigned short tileLeftType =
-		IMapGet(map, Vec2iNew(v.x - 1, v.y)) & MAP_MASKACCESS;
+		IMapGet(map, svec2i(v.x - 1, v.y)) & MAP_MASKACCESS;
 	const unsigned short tileRightType =
-		IMapGet(map, Vec2iNew(v.x + 1, v.y)) & MAP_MASKACCESS;
+		IMapGet(map, svec2i(v.x + 1, v.y)) & MAP_MASKACCESS;
 	const bool isHorizontal =
 		tileLeftType == MAP_WALL || tileRightType == MAP_WALL ||
 		tileLeftType == MAP_DOOR || tileRightType == MAP_DOOR ||
 		tileLeftType == MAP_NOTHING || tileRightType == MAP_NOTHING;
 	const int doorGroupCount = GetDoorCountInGroup(map, v, isHorizontal);
-	const Vec2i dv = Vec2iNew(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
-	const Vec2i dAside = Vec2iNew(dv.y, dv.x);
+	const struct vec2i dv = svec2i(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
+	const struct vec2i dAside = svec2i(dv.y, dv.x);
 
 	const char *doorKey;
 	switch (keyFlags)
@@ -97,17 +97,17 @@ void MapAddDoorGroup(
 	// set up the door pics
 	for (int i = 0; i < doorGroupCount; i++)
 	{
-		const Vec2i vI = Vec2iAdd(v, Vec2iScale(dv, i));
+		const struct vec2i vI = svec2i_add(v, svec2i_scale(dv, i));
 		Tile *tile = MapGetTile(map, vI);
 		tile->picAlt = doorPic;
 		tile->pic = GetDoorBasePic(&gPicManager, m->DoorStyle, isHorizontal);
 		tile->flags = DOOR_TILE_FLAGS;
 		if (isHorizontal)
 		{
-			const Vec2i vB = Vec2iAdd(vI, dAside);
+			const struct vec2i vB = svec2i_add(vI, dAside);
 			Tile *tileB = MapGetTile(map, vB);
 			CASSERT(TileCanWalk(MapGetTile(
-				map, Vec2iNew(vI.x - dAside.x, vI.y - dAside.y))),
+				map, svec2i(vI.x - dAside.x, vI.y - dAside.y))),
 				"map gen error: entrance should be clear");
 			CASSERT(TileCanWalk(tileB),
 				"map gen error: entrance should be clear");
@@ -137,11 +137,11 @@ void MapAddDoorGroup(
 	// Set tiles on and besides doors free
 	for (int i = 0; i < doorGroupCount; i++)
 	{
-		const Vec2i vI = Vec2iAdd(v, Vec2iScale(dv, i));
+		const struct vec2i vI = svec2i_add(v, svec2i_scale(dv, i));
 		IMapSet(map, vI, IMapGet(map, vI) | MAP_LEAVEFREE);
-		const Vec2i vI1 = Vec2iAdd(vI, dAside);
+		const struct vec2i vI1 = svec2i_add(vI, dAside);
 		IMapSet(map, vI1, IMapGet(map, vI1) | MAP_LEAVEFREE);
-		const Vec2i vI2 = Vec2iMinus(vI, dAside);
+		const struct vec2i vI2 = svec2i_subtract(vI, dAside);
 		IMapSet(map, vI2, IMapGet(map, vI2) | MAP_LEAVEFREE);
 	}
 }
@@ -149,13 +149,13 @@ void MapAddDoorGroup(
 // Count the number of doors that are in the same group as this door
 // Only check to the right/below
 static int GetDoorCountInGroup(
-	const Map *map, const Vec2i v, const bool isHorizontal)
+	const Map *map, const struct vec2i v, const bool isHorizontal)
 {
-	const Vec2i dv = Vec2iNew(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
+	const struct vec2i dv = svec2i(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
 	int count = 0;
-	for (Vec2i vi = v;
+	for (struct vec2i vi = v;
 		(IMapGet(map, vi) & MAP_MASKACCESS) == MAP_DOOR;
-		vi = Vec2iAdd(vi, dv))
+		vi = svec2i_add(vi, dv))
 	{
 		count++;
 	}
@@ -165,25 +165,25 @@ static int GetDoorCountInGroup(
 #define CLOSE_DOOR_TICKS FPS_FRAMELIMIT
 // Create the watch responsible for closing the door
 static TWatch *CreateCloseDoorWatch(
-	Map *map, const Mission *m, const Vec2i v,
+	Map *map, const Mission *m, const struct vec2i v,
 	const bool isHorizontal, const int doorGroupCount,
 	const char *picAltName)
 {
 	TWatch *w = WatchNew();
-	const Vec2i dv = Vec2iNew(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
-	const Vec2i dAside = Vec2iNew(dv.y, dv.x);
+	const struct vec2i dv = svec2i(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
+	const struct vec2i dAside = svec2i(dv.y, dv.x);
 
 	// The conditions are that the tile above, at and below the doors are empty
 	for (int i = 0; i < doorGroupCount; i++)
 	{
-		const Vec2i vI = Vec2iAdd(v, Vec2iScale(dv, i));
+		const struct vec2i vI = svec2i_add(v, svec2i_scale(dv, i));
 
 		WatchAddCondition(
-			w, CONDITION_TILECLEAR, CLOSE_DOOR_TICKS, Vec2iMinus(vI, dAside));
+			w, CONDITION_TILECLEAR, CLOSE_DOOR_TICKS, svec2i_subtract(vI, dAside));
 		WatchAddCondition(
 			w, CONDITION_TILECLEAR, CLOSE_DOOR_TICKS, vI);
 		WatchAddCondition(
-			w, CONDITION_TILECLEAR, CLOSE_DOOR_TICKS, Vec2iAdd(vI, dAside));
+			w, CONDITION_TILECLEAR, CLOSE_DOOR_TICKS, svec2i_add(vI, dAside));
 	}
 
 	// Now the actions of the watch once it's triggered
@@ -196,14 +196,14 @@ static TWatch *CreateCloseDoorWatch(
 	// play close sound at the center of the door group
 	a = WatchAddAction(w);
 	a->Type = ACTION_SOUND;
-	a->u.pos = Vec2iCenterOfTile(
-		Vec2iAdd(v, Vec2iScale(dv, doorGroupCount / 2)));
+	a->u.pos = Vec2CenterOfTile(
+		svec2i_add(v, svec2i_scale(dv, doorGroupCount / 2)));
 	a->a.Sound = StrSound("door_close");
 
 	// Close doors
 	for (int i = 0; i < doorGroupCount; i++)
 	{
-		const Vec2i vI = Vec2iAdd(v, Vec2iScale(dv, i));
+		const struct vec2i vI = svec2i_add(v, svec2i_scale(dv, i));
 
 		a = WatchAddAction(w);
 		a->Type = ACTION_EVENT;
@@ -221,12 +221,12 @@ static TWatch *CreateCloseDoorWatch(
 	{
 		for (int i = 0; i < doorGroupCount; i++)
 		{
-			const Vec2i vI = Vec2iAdd(v, Vec2iScale(dv, i));
+			const struct vec2i vI = svec2i_add(v, svec2i_scale(dv, i));
 			
 			a = WatchAddAction(w);
 			a->Type = ACTION_EVENT;
 			a->a.Event = GameEventNew(GAME_EVENT_TILE_SET);
-			const Vec2i vI2 = Vec2iNew(vI.x + dAside.x, vI.y + dAside.y);
+			const struct vec2i vI2 = svec2i(vI.x + dAside.x, vI.y + dAside.y);
 			a->a.Event.u.TileSet.Pos = Vec2i2Net(vI2);
 			const bool isFloor = IMapGet(map, vI2) == MAP_FLOOR;
 			strcpy(
@@ -245,12 +245,12 @@ static TWatch *CreateCloseDoorWatch(
 }
 static void TileAddTrigger(Tile *t, Trigger *tr);
 static Trigger *CreateOpenDoorTrigger(
-	Map *map, const Mission *m, const Vec2i v,
+	Map *map, const Mission *m, const struct vec2i v,
 	const bool isHorizontal, const int doorGroupCount, const int keyFlags)
 {
 	// All tiles on either side of the door group use the same trigger
-	const Vec2i dv = Vec2iNew(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
-	const Vec2i dAside = Vec2iNew(dv.y, dv.x);
+	const struct vec2i dv = svec2i(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
+	const struct vec2i dAside = svec2i(dv.y, dv.x);
 	Trigger *t = MapNewTrigger(map);
 	t->flags = keyFlags;
 
@@ -263,7 +263,7 @@ static Trigger *CreateOpenDoorTrigger(
 	// Open doors
 	for (int i = 0; i < doorGroupCount; i++)
 	{
-		const Vec2i vI = Vec2iAdd(v, Vec2iScale(dv, i));
+		const struct vec2i vI = svec2i_add(v, svec2i_scale(dv, i));
 		a = TriggerAddAction(t);
 		a->Type = ACTION_EVENT;
 		a->a.Event = GameEventNew(GAME_EVENT_TILE_SET);
@@ -287,8 +287,8 @@ static Trigger *CreateOpenDoorTrigger(
 	{
 		for (int i = 0; i < doorGroupCount; i++)
 		{
-			const Vec2i vI = Vec2iAdd(v, Vec2iScale(dv, i));
-			const Vec2i vIAside = Vec2iAdd(vI, dAside);
+			const struct vec2i vI = svec2i_add(v, svec2i_scale(dv, i));
+			const struct vec2i vIAside = svec2i_add(vI, dAside);
 			a = TriggerAddAction(t);
 			// Remove shadows below doors
 			a->Type = ACTION_EVENT;
@@ -310,18 +310,18 @@ static Trigger *CreateOpenDoorTrigger(
 	// Now place the two triggers on the tiles along either side of the doors
 	for (int i = 0; i < doorGroupCount; i++)
 	{
-		const Vec2i vI = Vec2iAdd(v, Vec2iScale(dv, i));
-		const Vec2i vIA = Vec2iMinus(vI, dAside);
+		const struct vec2i vI = svec2i_add(v, svec2i_scale(dv, i));
+		const struct vec2i vIA = svec2i_subtract(vI, dAside);
 		TileAddTrigger(MapGetTile(map, vIA), t);
-		const Vec2i vIB = Vec2iAdd(vI, dAside);
+		const struct vec2i vIB = svec2i_add(vI, dAside);
 		TileAddTrigger(MapGetTile(map, vIB), t);
 	}
 
 	/// play sound at the center of the door group
 	a = TriggerAddAction(t);
 	a->Type = ACTION_SOUND;
-	a->u.pos = Vec2iCenterOfTile(
-		Vec2iAdd(v, Vec2iScale(dv, doorGroupCount / 2)));
+	a->u.pos = Vec2CenterOfTile(
+		svec2i_add(v, svec2i_scale(dv, doorGroupCount / 2)));
 	a->a.Sound = StrSound("door");
 
 	return t;

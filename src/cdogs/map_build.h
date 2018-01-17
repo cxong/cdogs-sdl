@@ -50,33 +50,36 @@
 
 #include "map.h"
 
-bool MapIsAreaInside(const Map *map, const Vec2i pos, const Vec2i size);
-bool MapIsAreaClear(const Map *map, const Vec2i pos, const Vec2i size);
-bool MapIsAreaClearOrRoom(const Map *map, const Vec2i pos, const Vec2i size);
-int MapIsAreaClearOrWall(Map *map, Vec2i pos, Vec2i size);
+bool MapIsAreaInside(const Map *map, const struct vec2i pos, const struct vec2i size);
+bool MapIsAreaClear(const Map *map, const struct vec2i pos, const struct vec2i size);
+bool MapIsAreaClearOrRoom(const Map *map, const struct vec2i pos, const struct vec2i size);
+int MapIsAreaClearOrWall(Map *map, struct vec2i pos, struct vec2i size);
 bool MapGetRoomOverlapSize(
 	const Map *map,
-	const Vec2i pos,
-	const Vec2i size,
+	const struct vec2i pos,
+	const struct vec2i size,
 	unsigned short *overlapAccess);
-int MapIsLessThanTwoWallOverlaps(Map *map, Vec2i pos, Vec2i size);
+int MapIsLessThanTwoWallOverlaps(Map *map, struct vec2i pos, struct vec2i size);
 int MapIsValidStartForWall(
 	Map *map, int x, int y, unsigned short tileType, int pad);
-Vec2i MapGetRandomTile(const Map *map);
-void MapMakeSquare(Map *map, Vec2i pos, Vec2i size);
-Vec2i MapGetRoomSize(const RoomParams r, const int doorMin);
-void MapMakeRoom(Map *map, const Vec2i pos, const Vec2i size, const bool walls);
+void MapMakeSquare(Map *map, struct vec2i pos, struct vec2i size);
+struct vec2i MapGetRoomSize(const RoomParams r, const int doorMin);
+void MapMakeRoom(Map *map, const struct vec2i pos, const struct vec2i size, const bool walls);
 void MapMakeRoomWalls(Map *map, const RoomParams r);
 bool MapTryBuildWall(
 	Map *map, const unsigned short tileType, const int pad,
 	const int wallLength);
+void MapSetRoomAccessMask(
+	Map *map, const struct vec2i pos, const struct vec2i size,
+	const unsigned short accessMask);
+void MapSetRoomAccessMaskOverlap(
+	Map *map, CArray *rooms, const unsigned short accessMask);
 void MapPlaceDoors(
-	Map *map, Vec2i pos, Vec2i size,
+	Map *map, struct vec2i pos, struct vec2i size,
 	int hasDoors, int doors[4], int doorMin, int doorMax,
 	unsigned short accessMask);
-void MapMakePillar(Map *map, Vec2i pos, Vec2i size);
-void MapMakeWall(Map *map, Vec2i pos);
-void MapSetTile(Map *map, Vec2i pos, unsigned short tileType, Mission *m);
+void MapMakePillar(Map *map, struct vec2i pos, struct vec2i size);
+void MapSetTile(Map *map, struct vec2i pos, unsigned short tileType, Mission *m);
 
 void MapSetupTilesAndWalls(Map *map, const Mission *m);
 

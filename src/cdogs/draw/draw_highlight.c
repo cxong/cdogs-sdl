@@ -54,8 +54,8 @@
 
 
 static void DrawObjectiveHighlight(
-	TTileItem *ti, Tile *tile, DrawBuffer *b, Vec2i offset);
-void DrawObjectiveHighlights(DrawBuffer *b, const Vec2i offset)
+	TTileItem *ti, Tile *tile, DrawBuffer *b, struct vec2i offset);
+void DrawObjectiveHighlights(DrawBuffer *b, const struct vec2i offset)
 {
 	if (!ConfigGetBool(&gConfig, "Graphics.ShowHUD"))
 	{
@@ -77,7 +77,7 @@ void DrawObjectiveHighlights(DrawBuffer *b, const Vec2i offset)
 	}
 }
 static void DrawObjectiveHighlight(
-	TTileItem *ti, Tile *tile, DrawBuffer *b, Vec2i offset)
+	TTileItem *ti, Tile *tile, DrawBuffer *b, struct vec2i offset)
 {
 	color_t color;
 	if (ti->flags & TILEITEM_OBJECTIVE)
@@ -112,8 +112,9 @@ static void DrawObjectiveHighlight(
 		return;
 	}
 	
-	const Vec2i pos = Vec2iNew(
-		ti->x - b->xTop + offset.x, ti->y - b->yTop + offset.y);
+	const struct vec2i pos = svec2i(
+		(int)ti->Pos.x - b->xTop + offset.x,
+		(int)ti->Pos.y - b->yTop + offset.y);
 	const int pulsePeriod = ConfigGetInt(&gConfig, "Game.FPS");
 	int alphaUnscaled =
 		(gMission.time % pulsePeriod) * 255 / (pulsePeriod / 2);
@@ -124,10 +125,10 @@ static void DrawObjectiveHighlight(
 	color.a = (Uint8)alphaUnscaled;
 	if (ti->getPicFunc != NULL)
 	{
-		Vec2i picOffset;
+		struct vec2i picOffset;
 		const Pic *pic = ti->getPicFunc(ti->id, &picOffset);
 		BlitPicHighlight(
-			&gGraphicsDevice, pic, Vec2iAdd(pos, picOffset), color);
+			&gGraphicsDevice, pic, svec2i_add(pos, picOffset), color);
 	}
 	else if (ti->kind == KIND_CHARACTER)
 	{

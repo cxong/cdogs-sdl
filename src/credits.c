@@ -45,8 +45,6 @@ void LoadCredits(
 	int nameOrMessageCounter = 0;
 	FILE *file;
 
-	debug(D_NORMAL, "Reading CREDITS...\n");
-
 	GetDataFilePath(buf, "doc/CREDITS");
 	file = fopen(buf, "r");
 	if (file == NULL)
@@ -86,12 +84,8 @@ void LoadCredits(
 			CSTRDUP(credit.message, buf + 1);
 			CArrayPushBack(&displayer->credits, &credit);
 			nameOrMessageCounter = 0;
-
-			debug(D_VERBOSE, "Read credits for \"%s\"\n", credit.name);
 		}
 	}
-
-	debug(D_NORMAL, "%d credits read\n", (int)displayer->credits.size);
 
 	fclose(file);
 }
@@ -121,11 +115,11 @@ void ShowCredits(credits_displayer_t *displayer)
 			CArrayGet(&displayer->credits, displayer->creditsIndex);
 		int y = gGraphicsDevice.cachedConfig.Res.y - 50;
 
-		FontStrMask("Credits:", Vec2iNew(16, y), displayer->textColor);
+		FontStrMask("Credits:", svec2i(16, y), displayer->textColor);
 		y += FontH() + 2;
-		FontStrMask(credits->name, Vec2iNew(20, y), displayer->nameColor);
+		FontStrMask(credits->name, svec2i(20, y), displayer->nameColor);
 		y += FontH();
-		FontStrMask(credits->message, Vec2iNew(20, y), displayer->textColor);
+		FontStrMask(credits->message, svec2i(20, y), displayer->textColor);
 
 		if (difftime(now, displayer->lastUpdateTime) > CREDIT_DISPLAY_PERIOD_SECONDS)
 		{

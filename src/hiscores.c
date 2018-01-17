@@ -195,7 +195,7 @@ void EnterHighScore(PlayerData *data)
 static void DisplayAt(int x, int y, const char *s, int hilite)
 {
 	color_t mask = hilite ? colorRed : colorWhite;
-	FontStrMask(s, Vec2iNew(x, y), mask);
+	FontStrMask(s, svec2i(x, y), mask);
 }
 
 static int DisplayEntry(
@@ -230,7 +230,7 @@ static int DisplayPage(
 	int x = 80;
 	int y = 5 + FontH();
 
-	FontStr(title, Vec2iNew(5, 5));
+	FontStr(title, svec2i(5, 5));
 	int idx = idxStart;
 	while (idx < MAX_ENTRY && e[idx].score > 0 && x < 300)
 	{
@@ -356,7 +356,6 @@ void SaveHighScores(void)
 
 		t = time(NULL);
 		tp = localtime(&t);
-		debug(D_NORMAL, "time now, y: %d m: %d d: %d\n", tp->tm_year, tp->tm_mon, tp->tm_mday);
 
 		magic = tp->tm_year;
 		fwrite(&magic, sizeof(magic), 1, f);
@@ -365,7 +364,6 @@ void SaveHighScores(void)
 		magic = tp->tm_mday;
 		fwrite(&magic, sizeof(magic), 1, f);
 
-		debug(D_NORMAL, "writing today's high: %d\n", todaysHigh[0].score);
 		fwrite(todaysHigh, sizeof(todaysHigh), 1, f);
 
 		fclose(f);
@@ -378,8 +376,6 @@ void SaveHighScores(void)
             });
         );
 #endif
-
-		debug(D_NORMAL, "saved high scores\n");
 	} else
 		printf("Unable to open %s\n", SCORES_FILE);
 }
@@ -392,8 +388,6 @@ void LoadHighScores(void)
 	time_t t;
 	struct tm *tp;
 
-	debug(D_NORMAL, "Reading hi-scores...\n");
-
 	memset(allTimeHigh, 0, sizeof(allTimeHigh));
 	memset(todaysHigh, 0, sizeof(todaysHigh));
 
@@ -402,14 +396,12 @@ void LoadHighScores(void)
 		size_t elementsRead;
 	#define CHECK_FREAD(count)\
 		if (elementsRead != count) {\
-			debug(D_NORMAL, "Error reading scores file\n");\
 			fclose(f);\
 			return;\
 		}
 		elementsRead = fread(&magic, sizeof(magic), 1, f);
 		CHECK_FREAD(1)
 		if (magic != MAGIC) {
-			debug(D_NORMAL, "Scores file magic doesn't match!\n");
 			fclose(f);
 			return;
 		}
@@ -427,13 +419,10 @@ void LoadHighScores(void)
 		CHECK_FREAD(1)
 		elementsRead = fread(&d, sizeof(d), 1, f);
 		CHECK_FREAD(1)
-		debug(D_NORMAL, "scores time, y: %d m: %d d: %d\n", y, m, d);
-
 
 		if (tp->tm_year == y && tp->tm_mon == m && tp->tm_mday == d) {
 			elementsRead = fread(todaysHigh, sizeof(todaysHigh), 1, f);
 			CHECK_FREAD(1)
-			debug(D_NORMAL, "reading today's high: %d\n", todaysHigh[0].score);
 		}
 
 		fclose(f);

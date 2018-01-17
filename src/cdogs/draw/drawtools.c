@@ -140,15 +140,15 @@ static void Draw_DiagonalLine(const int x1, const int x2, color_t c)
 	return;
 }
 
-static void DrawPointFunc(void *data, const Vec2i pos);
-void DrawLine(const Vec2i from, const Vec2i to, color_t c)
+static void DrawPointFunc(void *data, const struct vec2i pos);
+void DrawLine(const struct vec2i from, const struct vec2i to, color_t c)
 {
 	AlgoLineDrawData data;
 	data.Draw = DrawPointFunc;
 	data.data = &c;
 	BresenhamLineDraw(from, to, &data);
 }
-static void DrawPointFunc(void *data, const Vec2i pos)
+static void DrawPointFunc(void *data, const struct vec2i pos)
 {
 	const color_t *c = data;
 	Draw_Point(pos.x, pos.y, *c);
@@ -157,8 +157,6 @@ static void DrawPointFunc(void *data, const Vec2i pos)
 void Draw_Line(
 	const int x1, const int y1, const int x2, const int y2, color_t c)
 {
-	//debug("(%d, %d) -> (%d, %d)\n", x1, y1, x2, y2);
-	
 	if (x1 == x2 || y1 == y2) 
 		Draw_StraightLine(x1, y1, x2, y2, c);
 	else if (ABS((x2 - x1)) == ABS((y1 - y2)))
@@ -169,7 +167,7 @@ void Draw_Line(
 	return;
 }
 
-void DrawPointMask(GraphicsDevice *g, Vec2i pos, color_t mask)
+void DrawPointMask(GraphicsDevice *g, struct vec2i pos, color_t mask)
 {
 	if (pos.x < g->clipping.left || pos.x > g->clipping.right ||
 		pos.y < g->clipping.top || pos.y > g->clipping.bottom)
@@ -184,7 +182,7 @@ void DrawPointMask(GraphicsDevice *g, Vec2i pos, color_t mask)
 	screen[idx] = COLOR2PIXEL(c);
 }
 
-void DrawPointTint(GraphicsDevice *device, Vec2i pos, HSV tint)
+void DrawPointTint(GraphicsDevice *device, struct vec2i pos, HSV tint)
 {
 	Uint32 *screen = device->buf;
 	int idx = PixelIndex(
@@ -203,7 +201,7 @@ void DrawPointTint(GraphicsDevice *device, Vec2i pos, HSV tint)
 }
 
 void DrawRectangle(
-	GraphicsDevice *device, Vec2i pos, Vec2i size, color_t color, int flags)
+	GraphicsDevice *device, struct vec2i pos, struct vec2i size, color_t color, int flags)
 {
 	int y;
 	if (size.x < 3 || size.y < 3)
@@ -256,13 +254,13 @@ void DrawCross(GraphicsDevice *device, int x, int y, color_t color)
 	*(screen + gGraphicsDevice.cachedConfig.Res.x) = pixel;
 }
 
-void DrawShadow(GraphicsDevice *device, Vec2i pos, Vec2i size)
+void DrawShadow(GraphicsDevice *device, struct vec2i pos, struct vec2i size)
 {
 	if (!ConfigGetBool(&gConfig, "Graphics.Shadows"))
 	{
 		return;
 	}
-	Vec2i drawPos;
+	struct vec2i drawPos;
 	for (drawPos.y = pos.y - size.y; drawPos.y < pos.y + size.y; drawPos.y++)
 	{
 		if (drawPos.y >= device->clipping.bottom)
@@ -276,7 +274,7 @@ void DrawShadow(GraphicsDevice *device, Vec2i pos, Vec2i size)
 		for (drawPos.x = pos.x - size.x; drawPos.x < pos.x + size.x; drawPos.x++)
 		{
 			// Calculate value tint based on distance from center
-			Vec2i scaledPos;
+			struct vec2i scaledPos;
 			int distance2;
 			if (drawPos.x >= device->clipping.right)
 			{
@@ -288,7 +286,7 @@ void DrawShadow(GraphicsDevice *device, Vec2i pos, Vec2i size)
 			}
 			scaledPos.x = drawPos.x;
 			scaledPos.y = (drawPos.y - pos.y) * size.x / size.y + pos.y;
-			distance2 = DistanceSquared(scaledPos, pos);
+			distance2 = svec2i_distance_squared(scaledPos, pos);
 			// Maximum distance is x, so scale distance squared by x squared
 			const HSV tint =
 			{

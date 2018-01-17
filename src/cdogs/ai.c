@@ -89,35 +89,33 @@ static bool IsFacingPlayer(TActor *actor, direction_e d)
 
 #define Distance(a,b) CHEBYSHEV_DISTANCE(a->x, a->y, b->x, b->y)
 
-static bool IsCloseToPlayer(const Vec2i fullPos, const int fullDistance)
+static bool IsCloseToPlayer(const struct vec2 pos, const float distance)
 {
-	TActor *closestPlayer = AIGetClosestPlayer(fullPos);
-	return closestPlayer && CHEBYSHEV_DISTANCE(
-		fullPos.x, fullPos.y,
-		closestPlayer->Pos.x, closestPlayer->Pos.y) < fullDistance;
+	const TActor *closestPlayer = AIGetClosestPlayer(pos);
+	const float distance2 = distance * distance;
+	return closestPlayer &&
+		svec2_distance_squared(pos, closestPlayer->Pos) < distance2;
 }
 
 static bool CanSeeAPlayer(const TActor *a)
 {
-	const Vec2i realPos = Vec2iFull2Real(a->Pos);
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 		if (!IsPlayerAlive(p))
 		{
 			continue;
 		}
 		const TActor *player = ActorGetByUID(p->ActorUID);
-		const Vec2i playerRealPos = Vec2iFull2Real(player->Pos);
 		// Can see player if:
 		// - Clear line of sight, and
 		// - If they are close, or if facing and they are not too far
-		if (!AIHasClearShot(realPos, playerRealPos))
+		if (!AIHasClearShot(a->Pos, player->Pos))
 		{
 			continue;
 		}
-		const int distance = CHEBYSHEV_DISTANCE(
-			realPos.x, realPos.y, playerRealPos.x, playerRealPos.y);
-		const bool isClose = distance < 16 * 4;
-		const bool isNotTooFar = distance < 16 * 30;
+		const float distance2 =
+			svec2_distance_squared(a->Pos, player->Pos);
+		const bool isClose = distance2 < SQUARED(16 * 4);
+		const bool isNotTooFar = distance2 < SQUARED(16 * 30);
 		if (isClose ||
 			(isNotTooFar && AIIsFacing(a, player->Pos, a->direction)))
 		{
@@ -128,10 +126,9 @@ static bool CanSeeAPlayer(const TActor *a)
 }
 
 
-static bool IsPosOK(TActor *actor, Vec2i pos)
+static bool IsPosOK(const TActor *actor, const struct vec2 pos)
 {
-	const Vec2i realPos = Vec2iFull2Real(pos);
-	if (IsCollisionDiamond(&gMap, realPos, actor->tileItem.size))
+	if (IsCollisionDiamond(&gMap, pos, actor->tileItem.size))
 	{
 		return false;
 	}
@@ -148,39 +145,42 @@ static bool IsPosOK(TActor *actor, Vec2i pos)
 	return true;
 }
 
-#define STEPSIZE    1024
+#define STEPSIZE    4
 
-static bool IsDirectionOK(TActor *a, int dir)
+static bool IsDirectionOK(const TActor *a, const int dir)
 {
 	switch (dir) {
 	case DIRECTION_UP:
-		return IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(0, -STEPSIZE)));
+		return IsPosOK(a, svec2_add(a->Pos, svec2(0, -STEPSIZE)));
 	case DIRECTION_UPLEFT:
 		return
-			IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(-STEPSIZE, -STEPSIZE))) ||
-			IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(-STEPSIZE, 0))) ||
-			IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(0, -STEPSIZE)));
+			IsPosOK(a, svec2_add(a->Pos, svec2(-STEPSIZE, -STEPSIZE))) ||
+			IsPosOK(a, svec2_add(a->Pos, svec2(-STEPSIZE, 0))) ||
+			IsPosOK(a, svec2_add(a->Pos, svec2(0, -STEPSIZE)));
 	case DIRECTION_LEFT:
-		return IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(-STEPSIZE, 0)));
+		return
+			IsPosOK(a, svec2_add(a->Pos, svec2(-STEPSIZE, 0)));
 	case DIRECTION_DOWNLEFT:
 		return
-			IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(-STEPSIZE, STEPSIZE))) ||
-			IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(-STEPSIZE, 0))) ||
-			IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(0, STEPSIZE)));
+			IsPosOK(a, svec2_add(a->Pos, svec2(-STEPSIZE, STEPSIZE))) ||
+			IsPosOK(a, svec2_add(a->Pos, svec2(-STEPSIZE, 0))) ||
+			IsPosOK(a, svec2_add(a->Pos, svec2(0, STEPSIZE)));
 	case DIRECTION_DOWN:
-		return IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(0, STEPSIZE)));
+		return
+			IsPosOK(a, svec2_add(a->Pos, svec2(0, STEPSIZE)));
 	case DIRECTION_DOWNRIGHT:
 		return
-			IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(STEPSIZE, STEPSIZE))) ||
-			IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(STEPSIZE, 0))) ||
-			IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(0, STEPSIZE)));
+			IsPosOK(a, svec2_add(a->Pos, svec2(STEPSIZE, STEPSIZE))) ||
+			IsPosOK(a, svec2_add(a->Pos, svec2(STEPSIZE, 0))) ||
+			IsPosOK(a, svec2_add(a->Pos, svec2(0, STEPSIZE)));
 	case DIRECTION_RIGHT:
-		return IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(STEPSIZE, 0)));
+		return
+			IsPosOK(a, svec2_add(a->Pos, svec2(STEPSIZE, 0)));
 	case DIRECTION_UPRIGHT:
 		return
-			IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(STEPSIZE, -STEPSIZE))) ||
-			IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(STEPSIZE, 0))) ||
-			IsPosOK(a, Vec2iAdd(a->Pos, Vec2iNew(0, -STEPSIZE)));
+			IsPosOK(a, svec2_add(a->Pos, svec2(STEPSIZE, -STEPSIZE))) ||
+			IsPosOK(a, svec2_add(a->Pos, svec2(STEPSIZE, 0))) ||
+			IsPosOK(a, svec2_add(a->Pos, svec2(0, -STEPSIZE)));
 	}
 	return 0;
 }
@@ -375,7 +375,7 @@ static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 		actor->aiContext->Delay == 0 &&
 		!(actor->flags & FLAGS_AWAKEALWAYS))
 	{
-		if (!IsCloseToPlayer(actor->Pos, (40 * 16) << 8))
+		if (!IsCloseToPlayer(actor->Pos, 40 * 16))
 		{
 			actor->flags |= FLAGS_SLEEPING;
 			ActorSetAIState(actor, AI_STATE_IDLE);
@@ -421,7 +421,7 @@ static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 		else
 		{
 			// Run towards exit
-			const Vec2i exitPos = MapGetExitPos(&gMap);
+			const struct vec2 exitPos = MapGetExitPos(&gMap);
 			cmd = AIGoto(actor, exitPos, false);
 		}
 	}
@@ -501,7 +501,7 @@ static int Follow(TActor *a)
 		a->flags |= FLAGS_RESCUED;
 		return 0;
 	}
-	else if (IsCloseToPlayer(a->Pos, 32 << 8))
+	else if (IsCloseToPlayer(a->Pos, 32))
 	{
 		ActorSetAIState(a, AI_STATE_IDLE);
 		return 0;
@@ -540,7 +540,7 @@ void AIAddRandomEnemies(const int enemies, const Mission *m)
 		const Character *c =
 			CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
 		aa.Health = CharacterGetStartingHealth(c, true);
-		aa.FullPos = PlaceAwayFromPlayers(&gMap, true);
+		aa.Pos = PlaceAwayFromPlayers(&gMap, true, PLACEMENT_ACCESS_ANY);
 		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 		e.u.ActorAdd = aa;
 		GameEventsEnqueue(&gGameEvents, e);
@@ -551,6 +551,8 @@ void AIAddRandomEnemies(const int enemies, const Mission *m)
 void InitializeBadGuys(void)
 {
 	CA_FOREACH(Objective, o, gMission.missionData->Objectives)
+		const PlacementAccessFlags paFlags =
+			ObjectiveGetPlacementAccessFlags(o);
 		if (o->Type == OBJECTIVE_KILL &&
 			gMission.missionData->SpecialChars.size > 0)
 		{
@@ -565,7 +567,7 @@ void InitializeBadGuys(void)
 				const Character *c =
 					CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
 				aa.Health = CharacterGetStartingHealth(c, true);
-				aa.FullPos = PlaceAwayFromPlayers(&gMap, false);
+				aa.Pos = PlaceAwayFromPlayers(&gMap, false, paFlags);
 				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 				e.u.ActorAdd = aa;
 				GameEventsEnqueue(&gGameEvents, e);
@@ -589,11 +591,11 @@ void InitializeBadGuys(void)
 				aa.Health = CharacterGetStartingHealth(c, true);
 				if (MapHasLockedRooms(&gMap))
 				{
-					aa.FullPos = PlacePrisoner(&gMap);
+					aa.Pos = PlacePrisoner(&gMap);
 				}
 				else
 				{
-					aa.FullPos = PlaceAwayFromPlayers(&gMap, false);
+					aa.Pos = PlaceAwayFromPlayers(&gMap, false, paFlags);
 				}
 				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 				e.u.ActorAdd = aa;
@@ -625,7 +627,7 @@ void CreateEnemies(void)
 		aa.UID = ActorsGetNextUID();
 		aa.CharId = CharacterStoreGetRandomBaddieId(
 			&gCampaign.Setting.characters);
-		aa.FullPos = PlaceAwayFromPlayers(&gMap, true);
+		aa.Pos = PlaceAwayFromPlayers(&gMap, true, PLACEMENT_ACCESS_ANY);
 		aa.Direction = rand() % DIRECTION_COUNT;
 		const Character *c =
 			CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);

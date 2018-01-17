@@ -43,7 +43,7 @@ void MapStaticLoad(Map *map, const struct MissionOptions *mo)
 	const Mission *m = mo->missionData;
 
 	// Tiles
-	Vec2i v;
+	struct vec2i v;
 	for (v.y = 0; v.y < m->Size.y; v.y++)
 	{
 		for (v.x = 0; v.x < m->Size.x; v.x++)
@@ -60,8 +60,8 @@ void MapStaticLoad(Map *map, const struct MissionOptions *mo)
 	}
 	
 	// Exit area
-	if (!Vec2iIsZero(m->u.Static.Exit.Start) &&
-		!Vec2iIsZero(m->u.Static.Exit.End))
+	if (!svec2i_is_zero(m->u.Static.Exit.Start) &&
+		!svec2i_is_zero(m->u.Static.Exit.End))
 	{
 		map->ExitStart = m->u.Static.Exit.Start;
 		map->ExitEnd = m->u.Static.Exit.End;
@@ -83,7 +83,7 @@ void MapStaticLoadDynamic(
 	CA_FOREACH(const MapObjectPositions, mop, m->u.Static.Items)
 		for (int j = 0; j < (int)mop->Positions.size; j++)
 		{
-			const Vec2i *pos = CArrayGet(&mop->Positions, j);
+			const struct vec2i *pos = CArrayGet(&mop->Positions, j);
 			MapTryPlaceOneObject(map, *pos, mop->M, 0, false);
 		}
 	CA_FOREACH_END()
@@ -120,11 +120,10 @@ static void AddCharacter(const CharacterPositions *cp)
 	const Character *c =
 		CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
 	aa.Health = CharacterGetStartingHealth(c, true);
-	CA_FOREACH(const Vec2i, pos, cp->Positions)
+	CA_FOREACH(const struct vec2i, pos, cp->Positions)
 		aa.UID = ActorsGetNextUID();
 		aa.Direction = rand() % DIRECTION_COUNT;
-		const Vec2i fullPos = Vec2iReal2Full(Vec2iCenterOfTile(*pos));
-		aa.FullPos = Vec2i2Net(fullPos);
+		aa.Pos = Vec2ToNet(Vec2CenterOfTile(*pos));
 
 		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 		e.u.ActorAdd = aa;
@@ -153,10 +152,9 @@ static void AddObjective(
 		return;
 	}
 	Objective *o = CArrayGet(&mo->missionData->Objectives, op->Index);
-	CA_FOREACH(const Vec2i, pos, op->Positions)
+	CA_FOREACH(const struct vec2i, tilePos, op->Positions)
 		const int *idx = CArrayGet(&op->Indices, _ca_index);
-		const Vec2i realPos = Vec2iCenterOfTile(*pos);
-		const Vec2i fullPos = Vec2iReal2Full(realPos);
+		const struct vec2 pos = Vec2CenterOfTile(*tilePos);
 		switch (o->Type)
 		{
 		case OBJECTIVE_KILL:
@@ -169,19 +167,19 @@ static void AddObjective(
 			const Character *c =
 				CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
 			aa.Health = CharacterGetStartingHealth(c, true);
-			aa.FullPos = Vec2i2Net(fullPos);
+			aa.Pos = Vec2ToNet(pos);
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 			e.u.ActorAdd = aa;
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 		break;
 		case OBJECTIVE_COLLECT:
-			MapPlaceCollectible(mo, op->Index, realPos);
+			MapPlaceCollectible(mo, op->Index, pos);
 			break;
 		case OBJECTIVE_DESTROY:
 			MapTryPlaceOneObject(
 				map,
-				*pos,
+				*tilePos,
 				o->u.MapObject,
 				ObjectiveToTileItem(op->Index), false);
 			break;
@@ -195,7 +193,7 @@ static void AddObjective(
 			const Character *c =
 				CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
 			aa.Health = CharacterGetStartingHealth(c, true);
-			aa.FullPos = Vec2i2Net(fullPos);
+			aa.Pos = Vec2ToNet(pos);
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 			e.u.ActorAdd = aa;
 			GameEventsEnqueue(&gGameEvents, e);
@@ -220,7 +218,7 @@ static void AddKeys(
 static void AddKey(
 	Map *map, const struct MissionOptions *mo, const KeyPositions *kp)
 {
-	CA_FOREACH(const Vec2i, pos, kp->Positions)
+	CA_FOREACH(const struct vec2i, pos, kp->Positions)
 		MapPlaceKey(map, mo, *pos, kp->Index);
 	CA_FOREACH_END()
 }

@@ -27,7 +27,11 @@
 */
 #include "pic_manager.h"
 
+#ifdef __EMSCRIPTEN__
+#include <SDL/SDL_image.h>
+#else
 #include <SDL_image.h>
+#endif
 
 #include <tinydir/tinydir.h>
 
@@ -69,11 +73,10 @@ static void PicManagerAdd(
 		strcpy(buf, name);
 	}
 	// TODO: check if name already exists
-	// TODO: use efficient data structure like trie
 	// Special case: if the file name is in the form foobar_WxH.ext,
 	// this is a spritesheet where each sprite is W wide by H high
 	// Load multiple images from this single sheet
-	Vec2i size = Vec2iNew(imageIn->w, imageIn->h);
+	struct vec2i size = svec2i(imageIn->w, imageIn->h);
 	bool isSpritesheet = false;
 	char *underscore = strrchr(buf, '_');
 	const char *x = strrchr(buf, 'x');
@@ -82,7 +85,7 @@ static void PicManagerAdd(
 	{
 		if (sscanf(underscore, "_%dx%d", &size.x, &size.y) != 2)
 		{
-			size = Vec2iNew(imageIn->w, imageIn->h);
+			size = svec2i(imageIn->w, imageIn->h);
 		}
 		else
 		{
@@ -105,7 +108,7 @@ static void PicManagerAdd(
 		imageIn, SDL_PIXELFORMAT_RGBA8888, 0);
 	SDL_FreeSurface(imageIn);
 	SDL_LockSurface(image);
-	Vec2i offset;
+	struct vec2i offset;
 	for (offset.y = 0; offset.y < image->h; offset.y += size.y)
 	{
 		for (offset.x = 0; offset.x < image->w; offset.x += size.x)
@@ -511,8 +514,6 @@ void PicManagerGenerateMaskedPic(
 
 	// Create the new pic by masking the original pic
 	Pic p = PicCopy(original);
-	debug(D_VERBOSE, "Creating new masked pic %s (%d x %d)\n",
-		maskedName, p.size.x, p.size.y);
 	for (int i = 0; i < p.size.x * p.size.y; i++)
 	{
 		color_t c = PIXEL2COLOR(original->Data[i]);

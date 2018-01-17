@@ -71,6 +71,7 @@ set(CDOGS_SOURCES
 	map_new.c
 	map_object.c
 	map_static.c
+	mathc/mathc.c
 	mission.c
 	mission_convert.c
 	mouse.c
@@ -94,11 +95,13 @@ set(CDOGS_SOURCES
 	quick_play.c
 	screen_shake.c
 	sounds.c
+	texture.c
 	tile.c
 	triggers.c
 	utils.c
 	vector.c
 	weapon.c
+	window_context.c
 	yajl_utils.c)
 set(CDOGS_HEADERS
 	actor_fire.h
@@ -168,6 +171,7 @@ set(CDOGS_HEADERS
 	map_new.h
 	map_object.h
 	map_static.h
+	mathc/mathc.h
 	mission.h
 	mission_convert.h
 	mouse.h
@@ -193,11 +197,13 @@ set(CDOGS_HEADERS
 	sounds.h
 	sys_config.h
 	sys_specifics.h
+	texture.h
 	tile.h
 	triggers.h
 	utils.h
 	vector.h
 	weapon.h
+	window_context.h
 	yajl_utils.h)
 set(NANOPB_SOURCES
 	proto/msg.pb.c

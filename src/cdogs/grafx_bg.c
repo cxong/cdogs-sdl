@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2014, 2016-2017 Cong Xu
+    Copyright (c) 2013-2014, 2016-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@
 #include "draw/drawtools.h"
 #include "game_events.h"
 #include "handle_game_events.h"
+#include "log.h"
 #include "objs.h"
 #include "pickup.h"
 #include "quick_play.h"
@@ -48,42 +49,57 @@ void GrafxMakeRandomBackground(
 		rand() * 360.0 / RAND_MAX, rand() * 1.0 / RAND_MAX, 0.5
 	};
 	DrawBuffer buffer;
-	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES), device);
+	DrawBufferInit(&buffer, svec2i(X_TILES, Y_TILES), device);
 	co->MissionIndex = 0;
 	GrafxMakeBackground(
-		device, &buffer, co, mo, map, tint, false, Vec2iZero(), NULL);
+		device, &buffer, co, mo, map, tint, false, svec2_zero(), NULL);
 	DrawBufferTerminate(&buffer);
 	MissionOptionsTerminate(mo);
 	CampaignSettingTerminate(&co->Setting);
 }
 
+static void DrawBackground(
+	GraphicsDevice *g, SDL_Texture *t, DrawBuffer *buffer, Map *map,
+	const HSV tint, const struct vec2 pos, GrafxDrawExtra *extra);
 void GrafxDrawBackground(
 	GraphicsDevice *g, DrawBuffer *buffer,
-	HSV tint, Vec2i pos, GrafxDrawExtra *extra)
+	const HSV tint, const struct vec2 pos, GrafxDrawExtra *extra)
 {
-	DrawBufferSetFromMap(buffer, &gMap, pos, X_TILES);
-	DrawBufferDraw(buffer, Vec2iZero(), extra);
-
-	if (!HSVEquals(tint, tintNone))
+	if (g->cachedConfig.SecondWindow)
 	{
-		Vec2i v;
-		for (v.y = 0; v.y < g->cachedConfig.Res.y; v.y++)
-		{
-			for (v.x = 0; v.x < g->cachedConfig.Res.x; v.x++)
-			{
-				DrawPointTint(g, v, tint);
-			}
-		}
+		DrawBackground(
+			g, g->bkg, buffer, &gMap, tint,
+			svec2(pos.x - g->cachedConfig.Res.x / 2, pos.y), extra);
+		DrawBackground(
+			g, g->bkg2, buffer, &gMap, tint,
+			svec2(pos.x + g->cachedConfig.Res.x / 2, pos.y), extra);
 	}
-	BlitUpdateFromBuf(g, g->bkg);
+	else
+	{
+		DrawBackground(g, g->bkg, buffer, &gMap, tint, pos, extra);
+	}
+}
+static void DrawBackground(
+	GraphicsDevice *g, SDL_Texture *t, DrawBuffer *buffer, Map *map,
+	const HSV tint, const struct vec2 pos, GrafxDrawExtra *extra)
+{
+	DrawBufferSetFromMap(buffer, map, pos, X_TILES);
+	DrawBufferDraw(buffer, svec2i_zero(), extra);
+	BlitUpdateFromBuf(g, t);
 	BlitClearBuf(g);
+	const color_t mask = ColorTint(colorWhite, tint);
+	if (SDL_SetTextureColorMod(t, mask.r, mask.g, mask.b) != 0)
+	{
+		LOG(LM_GFX, LL_ERROR, "cannot set background tint: %s",
+			SDL_GetError());
+	}
 }
 
-void GrafxRedrawBackground(GraphicsDevice *g, const Vec2i pos)
+void GrafxRedrawBackground(GraphicsDevice *g, const struct vec2 pos)
 {
 	memset(g->buf, 0, GraphicsGetMemSize(&g->cachedConfig));
 	DrawBuffer buffer;
-	DrawBufferInit(&buffer, Vec2iNew(X_TILES, Y_TILES), g);
+	DrawBufferInit(&buffer, svec2i(X_TILES, Y_TILES), g);
 	const HSV tint = {
 		rand() * 360.0 / RAND_MAX, rand() * 1.0 / RAND_MAX, 0.5
 	};
@@ -94,7 +110,7 @@ void GrafxRedrawBackground(GraphicsDevice *g, const Vec2i pos)
 void GrafxMakeBackground(
 	GraphicsDevice *device, DrawBuffer *buffer,
 	CampaignOptions *co, struct MissionOptions *mo, Map *map, HSV tint,
-	const bool isEditor, Vec2i pos, GrafxDrawExtra *extra)
+	const bool isEditor, struct vec2 pos, GrafxDrawExtra *extra)
 {
 	CampaignAndMissionSetup(co, mo);
 	GameEventsInit(&gGameEvents);
@@ -109,7 +125,7 @@ void GrafxMakeBackground(
 	}
 	else
 	{
-		pos = Vec2iCenterOfTile(Vec2iScaleDiv(map->Size, 2));
+		pos = Vec2CenterOfTile(svec2i_scale_divide(map->Size, 2));
 	}
 	// Process the events that place dynamic objects
 	HandleGameEvents(&gGameEvents, NULL, NULL, NULL);

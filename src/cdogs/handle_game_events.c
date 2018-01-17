@@ -39,7 +39,7 @@
 #include "pickup.h"
 #include "triggers.h"
 
-#define RELOAD_DISTANCE_PLUS 300
+#define RELOAD_DISTANCE_PLUS 200
 
 static void HandleGameEvent(
 	const GameEvent e,
@@ -85,7 +85,7 @@ static void HandleGameEvent(
 		break;
 	case GAME_EVENT_TILE_SET:
 		{
-			Vec2i pos = Net2Vec2i(e.u.TileSet.Pos);
+			struct vec2i pos = Net2Vec2i(e.u.TileSet.Pos);
 			for (int i = 0; i <= e.u.TileSet.RunLength; i++)
 			{
 				Tile *t = MapGetTile(&gMap, pos);
@@ -158,7 +158,7 @@ static void HandleGameEvent(
 		{
 			SoundPlayAt(
 				&gSoundDevice,
-				StrSound(e.u.SoundAt.Sound), Net2Vec2i(e.u.SoundAt.Pos));
+				StrSound(e.u.SoundAt.Sound), NetToVec2(e.u.SoundAt.Pos));
 		}
 		break;
 	case GAME_EVENT_SCREEN_SHAKE:
@@ -206,13 +206,12 @@ static void HandleGameEvent(
 		{
 			TActor *a = ActorGetByUID(e.u.ActorSlide.UID);
 			if (!a->isInUse) break;
-			a->tileItem.VelFull = Net2Vec2i(e.u.ActorSlide.Vel);
+			a->tileItem.Vel = NetToVec2(e.u.ActorSlide.Vel);
 			// Slide sound
 			if (ConfigGetBool(&gConfig, "Sound.Footsteps"))
 			{
 				SoundPlayAt(
-					&gSoundDevice, StrSound("slide"),
-					Vec2iNew(a->tileItem.x, a->tileItem.y));
+					&gSoundDevice, StrSound("slide"), a->tileItem.Pos);
 			}
 		}
 		break;
@@ -220,10 +219,10 @@ static void HandleGameEvent(
 		{
 			TActor *a = ActorGetByUID(e.u.ActorImpulse.UID);
 			if (!a->isInUse) break;
-			a->tileItem.VelFull =
-				Vec2iAdd(a->tileItem.VelFull, Net2Vec2i(e.u.ActorImpulse.Vel));
-			const Vec2i pos = Net2Vec2i(e.u.ActorImpulse.Pos);
-			if (!Vec2iIsZero(pos))
+			a->tileItem.Vel =
+				svec2_add(a->tileItem.Vel, NetToVec2(e.u.ActorImpulse.Vel));
+			const struct vec2 pos = NetToVec2(e.u.ActorImpulse.Pos);
+			if (!svec2_is_zero(pos))
 			{
 				a->Pos = pos;
 			}
@@ -248,8 +247,7 @@ static void HandleGameEvent(
 			if (!a->isInUse || a->dead) break;
 			ActorHeal(a, e.u.Heal.Amount);
 			// Sound of healing
-			SoundPlayAt(
-				&gSoundDevice, StrSound("health"), Vec2iFull2Real(a->Pos));
+			SoundPlayAt(&gSoundDevice, StrSound("health"), a->Pos);
 			// Tell the spawner that we took a health so we can
 			// spawn more (but only if we're the server)
 			if (e.u.Heal.IsRandomSpawned && !gCampaign.IsClient)
@@ -261,7 +259,7 @@ static void HandleGameEvent(
 				GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 				s.u.AddParticle.Class =
 					StrParticleClass(&gParticleClasses, "heal_text");
-				s.u.AddParticle.FullPos = a->Pos;
+				s.u.AddParticle.Pos = a->Pos;
 				s.u.AddParticle.Z = BULLET_Z * Z_FACTOR;
 				s.u.AddParticle.DZ = 3;
 				sprintf(s.u.AddParticle.Text, "+%d", (int)e.u.Heal.Amount);
@@ -286,7 +284,7 @@ static void HandleGameEvent(
 				GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 				s.u.AddParticle.Class =
 					StrParticleClass(&gParticleClasses, "ammo_text");
-				s.u.AddParticle.FullPos = a->Pos;
+				s.u.AddParticle.Pos = a->Pos;
 				s.u.AddParticle.Z = BULLET_Z * Z_FACTOR;
 				s.u.AddParticle.DZ = 10;
 				const Ammo *ammo = AmmoGetById(&gAmmo, e.u.AddAmmo.AmmoId);
@@ -340,9 +338,12 @@ static void HandleGameEvent(
 				{
 					// Find the closest player alive; try to spawn next to that position
 					// if no other suitable position exists
-					Vec2i defaultSpawnPosition = Vec2iZero();
+					struct vec2 defaultSpawnPosition = svec2_zero();
 					const TActor *closestActor = AIGetClosestPlayer(a->Pos);
-					if (closestActor != NULL) defaultSpawnPosition = closestActor->Pos;
+					if (closestActor != NULL)
+					{
+						defaultSpawnPosition = closestActor->Pos;
+					}
 					PlacePlayer(&gMap, p, defaultSpawnPosition, false);
 				}
 			}
@@ -360,15 +361,13 @@ static void HandleGameEvent(
 				(TileItemKind)e.u.Melee.TargetKind, e.u.Melee.TargetUID,
 				SPECIAL_NONE, false))
 			{
-				PlayHitSound(
-					&b->HitSound, (HitType)e.u.Melee.HitType,
-					Vec2iFull2Real(a->Pos));
+				PlayHitSound(&b->HitSound, (HitType)e.u.Melee.HitType, a->Pos);
 			}
 			if (!gCampaign.IsClient)
 			{
 				// TODO: melee hitback (vel)?
 				Damage(
-					Vec2iZero(),
+					svec2_zero(),
 					b->Power, b->Mass,
 					a->flags, a->PlayerUID, a->uid,
 					(TileItemKind)e.u.Melee.TargetKind, e.u.Melee.TargetUID,
@@ -381,7 +380,7 @@ static void HandleGameEvent(
 		// Play a spawn sound
 		SoundPlayAt(
 			&gSoundDevice,
-			StrSound("spawn_item"), Net2Vec2i(e.u.AddPickup.Pos));
+			StrSound("spawn_item"), NetToVec2(e.u.AddPickup.Pos));
 		break;
 	case GAME_EVENT_REMOVE_PICKUP:
 		PickupDestroy(e.u.RemovePickup.UID);
@@ -395,26 +394,24 @@ static void HandleGameEvent(
 		{
 			TMobileObject *o = MobObjGetByUID(e.u.BulletBounce.UID);
 			if (o == NULL || !o->isInUse) break;
-			const Vec2i bouncePos = Net2Vec2i(e.u.BulletBounce.BouncePos);
+			const struct vec2 bouncePos = NetToVec2(e.u.BulletBounce.BouncePos);
 			if (e.u.BulletBounce.HitSound)
 			{
 				PlayHitSound(
 					&o->bulletClass->HitSound,
 					(HitType)e.u.BulletBounce.HitType,
-					Vec2iFull2Real(bouncePos));
+					bouncePos);
 			}
 			if (e.u.BulletBounce.Spark && o->bulletClass->Spark != NULL)
 			{
 				GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 				s.u.AddParticle.Class = o->bulletClass->Spark;
-				s.u.AddParticle.FullPos = bouncePos;
+				s.u.AddParticle.Pos = bouncePos;
 				s.u.AddParticle.Z = o->z;
 				GameEventsEnqueue(&gGameEvents, s);
 			}
-			const Vec2i pos = Net2Vec2i(e.u.BulletBounce.Pos);
-			o->x = pos.x;
-			o->y = pos.y;
-			o->tileItem.VelFull = Net2Vec2i(e.u.BulletBounce.Vel);
+			o->Pos = NetToVec2(e.u.BulletBounce.Pos);
+			o->tileItem.Vel = NetToVec2(e.u.BulletBounce.Vel);
 		}
 		break;
 	case GAME_EVENT_REMOVE_BULLET:
@@ -430,7 +427,7 @@ static void HandleGameEvent(
 	case GAME_EVENT_GUN_FIRE:
 		{
 			const GunDescription *g = StrGunDescription(e.u.GunFire.Gun);
-			const Vec2i fullPos = Net2Vec2i(e.u.GunFire.MuzzleFullPos);
+			const struct vec2 pos = NetToVec2(e.u.GunFire.MuzzlePos);
 
 			// Add bullets
 			if (g->Bullet && !gCampaign.IsClient)
@@ -438,23 +435,21 @@ static void HandleGameEvent(
 				// Find the starting angle of the spread (clockwise)
 				// Keep in mind the fencepost problem, i.e. spread of 3 means a
 				// total spread angle of 2x width
-				const double spreadStartAngle =
+				const float spreadStartAngle =
 					g->AngleOffset -
 					(g->Spread.Count - 1) * g->Spread.Width / 2;
 				for (int i = 0; i < g->Spread.Count; i++)
 				{
-					const double recoil =
-						((double)rand() / RAND_MAX * g->Recoil) -
-						g->Recoil / 2;
-					const double finalAngle =
+					const float recoil = RAND_FLOAT(-0.5f, 0.5f) * g->Recoil;
+					const float finalAngle =
 						e.u.GunFire.Angle + spreadStartAngle +
 						i * g->Spread.Width + recoil;
 					GameEvent ab = GameEventNew(GAME_EVENT_ADD_BULLET);
 					ab.u.AddBullet.UID = MobObjsObjsGetNextUID();
 					strcpy(ab.u.AddBullet.BulletClass, g->Bullet->Name);
-					ab.u.AddBullet.MuzzlePos = Vec2i2Net(fullPos);
+					ab.u.AddBullet.MuzzlePos = Vec2ToNet(pos);
 					ab.u.AddBullet.MuzzleHeight = e.u.GunFire.Z;
-					ab.u.AddBullet.Angle = (float)finalAngle;
+					ab.u.AddBullet.Angle = finalAngle;
 					ab.u.AddBullet.Elevation =
 						RAND_INT(g->ElevationLow, g->ElevationHigh);
 					ab.u.AddBullet.Flags = e.u.GunFire.Flags;
@@ -469,7 +464,7 @@ static void HandleGameEvent(
 			{
 				GameEvent ap = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 				ap.u.AddParticle.Class = g->MuzzleFlash;
-				ap.u.AddParticle.FullPos = fullPos;
+				ap.u.AddParticle.Pos = pos;
 				ap.u.AddParticle.Z = e.u.GunFire.Z;
 				ap.u.AddParticle.Angle = e.u.GunFire.Angle;
 				GameEventsEnqueue(&gGameEvents, ap);
@@ -477,7 +472,7 @@ static void HandleGameEvent(
 			// Sound
 			if (e.u.GunFire.Sound && g->Sound)
 			{
-				SoundPlayAt(&gSoundDevice, g->Sound, Vec2iFull2Real(fullPos));
+				SoundPlayAt(&gSoundDevice, g->Sound, pos);
 			}
 			// Screen shake
 			if (g->ShakeAmount > 0)
@@ -491,23 +486,23 @@ static void HandleGameEvent(
 			if (g->Brass && g->ReloadLead == 0)
 			{
 				const direction_e d = RadiansToDirection(e.u.GunFire.Angle);
-				GunAddBrass(g, d, fullPos);
+				GunAddBrass(g, d, pos);
 			}
 		}
 		break;
 	case GAME_EVENT_GUN_RELOAD:
 		{
 			const GunDescription *g = StrGunDescription(e.u.GunReload.Gun);
-			const Vec2i fullPos = Net2Vec2i(e.u.GunReload.FullPos);
+			const struct vec2 pos = NetToVec2(e.u.GunReload.Pos);
 			SoundPlayAtPlusDistance(
 				&gSoundDevice,
 				g->ReloadSound,
-				Vec2iFull2Real(fullPos),
+				pos,
 				RELOAD_DISTANCE_PLUS);
 			// Brass shells
 			if (g->Brass)
 			{
-				GunAddBrass(g, (direction_e)e.u.GunReload.Direction, fullPos);
+				GunAddBrass(g, (direction_e)e.u.GunReload.Direction, pos);
 			}
 		}
 		break;
@@ -533,12 +528,13 @@ static void HandleGameEvent(
 			{
 				DamageActor(
 					a, e.u.ActorHit.Power, e.u.ActorHit.HitterPlayerUID);
+
+				// Add damage text
 				GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 				s.u.AddParticle.Class =
 					StrParticleClass(&gParticleClasses, "damage_text");
-				s.u.AddParticle.FullPos = Vec2iAdd(
-					a->Pos,
-					Vec2iReal2Full(Vec2iNew(rand() % 6 - 3, rand() % 6 - 3)));
+				s.u.AddParticle.Pos = svec2_add(
+					a->Pos, svec2(RAND_FLOAT(-3, 3), RAND_FLOAT(-3, 3)));
 				s.u.AddParticle.Z = BULLET_Z * Z_FACTOR;
 				s.u.AddParticle.DZ = 3;
 				sprintf(
@@ -546,7 +542,8 @@ static void HandleGameEvent(
 				GameEventsEnqueue(&gGameEvents, s);
 
 				ActorAddBloodSplatters(
-					a, e.u.ActorHit.Power, e.u.ActorHit.Mass, Net2Vec2i(e.u.ActorHit.Vel));
+					a, e.u.ActorHit.Power, e.u.ActorHit.Mass,
+					NetToVec2(e.u.ActorHit.Vel));
 
 				// Rumble if taking hit
 				if (a->PlayerUID >= 0)
@@ -577,7 +574,7 @@ static void HandleGameEvent(
 		// Process runs of explored tiles
 		for (int i = 0; i < (int)e.u.ExploreTiles.Runs_count; i++)
 		{
-			Vec2i tile = Net2Vec2i(e.u.ExploreTiles.Runs[i].Tile);
+			struct vec2i tile = Net2Vec2i(e.u.ExploreTiles.Runs[i].Tile);
 			for (int j = 0; j < e.u.ExploreTiles.Runs[i].Run; j++)
 			{
 				MapMarkAsVisited(&gMap, tile);
@@ -601,8 +598,7 @@ static void HandleGameEvent(
 			{
 				a->flags |= FLAGS_RESCUED;
 			}
-			SoundPlayAt(
-				&gSoundDevice, StrSound("rescue"), Vec2iFull2Real(a->Pos));
+			SoundPlayAt(&gSoundDevice, StrSound("rescue"), a->Pos);
 		}
 		break;
 	case GAME_EVENT_OBJECTIVE_UPDATE:
@@ -626,16 +622,16 @@ static void HandleGameEvent(
 		{
 			gMission.KeyFlags |= e.u.AddKeys.KeyFlags;
 
-			const Vec2i pos = Net2Vec2i(e.u.AddKeys.Pos);
+			const struct vec2 pos = NetToVec2(e.u.AddKeys.Pos);
 
-			if (!Vec2iIsZero(pos))
+			if (!svec2_is_zero(pos))
 			{
 				SoundPlayAt(&gSoundDevice, StrSound("key"), pos);
 
 				GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 				s.u.AddParticle.Class =
 					StrParticleClass(&gParticleClasses, "key_text");
-				s.u.AddParticle.FullPos = Vec2iReal2Full(pos);
+				s.u.AddParticle.Pos = pos;
 				s.u.AddParticle.Z = BULLET_Z * Z_FACTOR;
 				s.u.AddParticle.DZ = 10;
 				sprintf(s.u.AddParticle.Text, "+key");

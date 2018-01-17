@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2013-2016, Cong Xu
+ Copyright (c) 2013-2017 Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -109,7 +109,24 @@ void LoadDouble(double *value, json_t *node, const char *name)
 	}
 	*value = atof(node->text);
 }
-void LoadVec2i(Vec2i *value, json_t *node, const char *name)
+void LoadFloat(float *value, json_t *node, const char *name)
+{
+	if (!TryLoadValue(&node, name))
+	{
+		return;
+	}
+	*value = strtof(node->text, NULL);
+}
+void LoadFullInt(float *value, json_t *node, const char *name)
+{
+	if (!TryLoadValue(&node, name))
+	{
+		return;
+	}
+	const int fullValue = atoi(node->text);
+	*value = fullValue / 256.0f;
+}
+void LoadVec2i(struct vec2i *value, json_t *node, const char *name)
 {
 	if (!TryLoadValue(&node, name))
 	{
@@ -119,6 +136,17 @@ void LoadVec2i(Vec2i *value, json_t *node, const char *name)
 	value->x = atoi(node->text);
 	node = node->next;
 	value->y = atoi(node->text);
+}
+void LoadVec2(struct vec2 *value, json_t *node, const char *name)
+{
+	if (!TryLoadValue(&node, name))
+	{
+		return;
+	}
+	node = node->child;
+	value->x = strtof(node->text, NULL);
+	node = node->next;
+	value->y = strtof(node->text, NULL);
 }
 void LoadStr(char **value, json_t *node, const char *name)
 {

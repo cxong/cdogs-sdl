@@ -59,9 +59,9 @@
 #include "weapon.h"
 
 
-TActor *AIGetClosestPlayer(Vec2i fullpos)
+TActor *AIGetClosestPlayer(const struct vec2 pos)
 {
-	int minDistance = -1;
+	float minDistance2 = -1;
 	TActor *closestPlayer = NULL;
 	CA_FOREACH(const PlayerData, pd, gPlayerDatas)
 		if (!IsPlayerAlive(pd))
@@ -69,25 +69,24 @@ TActor *AIGetClosestPlayer(Vec2i fullpos)
 			continue;
 		}
 		TActor *p = ActorGetByUID(pd->ActorUID);
-		const int distance = CHEBYSHEV_DISTANCE(
-			fullpos.x, fullpos.y, p->Pos.x, p->Pos.y);
-		if (!closestPlayer || distance < minDistance)
+		const float distance2 = svec2_distance_squared(pos, p->Pos);
+		if (!closestPlayer || distance2 < minDistance2)
 		{
 			closestPlayer = p;
-			minDistance = distance;
+			minDistance2 = distance2;
 		}
 	CA_FOREACH_END()
 	return closestPlayer;
 }
 
 static TActor *AIGetClosestActor(
-	const Vec2i fromPos, const TActor *from,
+	const struct vec2 fromPos, const TActor *from,
 	bool (*compFunc)(const TActor *, const TActor *))
 {
 	// Search all the actors and find the closest one that
 	// satisfies the condition
 	TActor *closest = NULL;
-	int minDistance = -1;
+	float minDistance2 = -1;
 	CA_FOREACH(TActor, a, gActors)
 		if (!a->isInUse || a->dead)
 		{
@@ -100,11 +99,11 @@ static TActor *AIGetClosestActor(
 		}
 		if (compFunc(a, from))
 		{
-			int distance = CHEBYSHEV_DISTANCE(
-				fromPos.x, fromPos.y, a->Pos.x, a->Pos.y);
-			if (!closest || distance < minDistance)
+			const float distance2 =
+				svec2_distance_squared(fromPos, a->Pos);
+			if (!closest || distance2 < minDistance2)
 			{
-				minDistance = distance;
+				minDistance2 = distance2;
 				closest = a;
 			}
 		}
@@ -126,7 +125,7 @@ static bool IsDifferent(const TActor *a, const TActor *b)
 	return a != b;
 }
 const TActor *AIGetClosestEnemy(
-	const Vec2i from, const TActor *a, const int flags)
+	const struct vec2 from, const TActor *a, const int flags)
 {
 	if (IsPVP(gCampaign.Entry.Mode))
 	{
@@ -173,16 +172,16 @@ const TActor *AIGetClosestVisibleEnemy(
 	}
 }
 
-Vec2i AIGetClosestPlayerPos(Vec2i pos)
+struct vec2 AIGetClosestPlayerPos(const struct vec2 pos)
 {
 	TActor *closestPlayer = AIGetClosestPlayer(pos);
 	if (closestPlayer)
 	{
-		return Vec2iFull2Real(closestPlayer->Pos);
+		return closestPlayer->Pos;
 	}
 	else
 	{
-		return Vec2iFull2Real(pos);
+		return pos;
 	}
 }
 
@@ -199,19 +198,19 @@ int AIReverseDirection(int cmd)
 	return cmd;
 }
 
-typedef bool (*IsBlockedFunc)(void *, const Vec2i);
+typedef bool (*IsBlockedFunc)(void *, const struct vec2i);
 static bool AIHasClearLine(
-	Vec2i from, Vec2i to, IsBlockedFunc isBlockedFunc);
-static bool IsTileNoWalk(void *data, const Vec2i pos);
-static bool IsTileNoWalkAroundObjects(void *data, const Vec2i pos);
+	struct vec2i from, struct vec2i to, IsBlockedFunc isBlockedFunc);
+static bool IsTileNoWalk(void *data, const struct vec2i pos);
+static bool IsTileNoWalkAroundObjects(void *data, const struct vec2i pos);
 bool AIHasClearPath(
-	const Vec2i from, const Vec2i to, const bool ignoreObjects)
+	const struct vec2 from, const struct vec2 to, const bool ignoreObjects)
 {
 	IsBlockedFunc f = ignoreObjects ? IsTileNoWalk : IsTileNoWalkAroundObjects;
-	return AIHasClearLine(Vec2iToTile(from), Vec2iToTile(to), f);
+	return AIHasClearLine(Vec2ToTile(from), Vec2ToTile(to), f);
 }
 static bool AIHasClearLine(
-	Vec2i from, Vec2i to, IsBlockedFunc isBlockedFunc)
+	struct vec2i from, struct vec2i to, IsBlockedFunc isBlockedFunc)
 {
 	// Find all tiles that overlap with the line (from, to)
 	HasClearLineData data;
@@ -220,8 +219,8 @@ static bool AIHasClearLine(
 
 	return HasClearLineJMRaytrace(from, to, &data);
 }
-static bool IsTileWalkableOrOpenable(Map *map, Vec2i pos);
-bool IsTileWalkable(Map *map, const Vec2i pos)
+static bool IsTileWalkableOrOpenable(Map *map, struct vec2i pos);
+bool IsTileWalkable(Map *map, const struct vec2i pos)
 {
 	if (!IsTileWalkableOrOpenable(map, pos))
 	{
@@ -244,11 +243,11 @@ bool IsTileWalkable(Map *map, const Vec2i pos)
 	CA_FOREACH_END()
 	return true;
 }
-static bool IsTileNoWalk(void *data, const Vec2i pos)
+static bool IsTileNoWalk(void *data, const struct vec2i pos)
 {
 	return !IsTileWalkable(data, pos);
 }
-bool IsTileWalkableAroundObjects(Map *map, const Vec2i pos)
+bool IsTileWalkableAroundObjects(Map *map, const struct vec2i pos)
 {
 	if (!IsTileWalkableOrOpenable(map, pos))
 	{
@@ -287,11 +286,11 @@ bool IsTileWalkableAroundObjects(Map *map, const Vec2i pos)
 	CA_FOREACH_END()
 	return true;
 }
-static bool IsTileNoWalkAroundObjects(void *data, const Vec2i pos)
+static bool IsTileNoWalkAroundObjects(void *data, const struct vec2i pos)
 {
 	return !IsTileWalkableAroundObjects(data, pos);
 }
-static bool IsTileWalkableOrOpenable(Map *map, Vec2i pos)
+static bool IsTileWalkableOrOpenable(Map *map, struct vec2i pos)
 {
 	const Tile *tile = MapGetTile(map, pos);
 	if (tile == NULL)
@@ -317,42 +316,42 @@ static bool IsTileWalkableOrOpenable(Map *map, Vec2i pos)
 	// Otherwise, we cannot walk over this tile
 	return false;
 }
-static bool IsPosNoSee(void *data, Vec2i pos);
-bool AIHasClearShot(const Vec2i from, const Vec2i to)
+static bool IsPosNoSee(void *data, struct vec2i pos);
+bool AIHasClearShot(const struct vec2 from, const struct vec2 to)
 {
 	// Perform 4 line tests - above, below, left and right
 	// This is to account for possible positions for the muzzle
-	Vec2i fromOffset = from;
+	struct vec2 fromOffset = from;
 
 	const int pad = 2;
 	fromOffset.x = from.x - (ACTOR_W + pad) / 2;
-	if (Vec2iToTile(fromOffset).x >= 0 &&
-		!AIHasClearLine(fromOffset, to, IsPosNoSee))
+	if (Vec2ToTile(fromOffset).x >= 0 &&
+		!AIHasClearLine(svec2i_assign_vec2(fromOffset), svec2i_assign_vec2(to), IsPosNoSee))
 	{
 		return false;
 	}
 	fromOffset.x = from.x + (ACTOR_W + pad) / 2;
-	if (Vec2iToTile(fromOffset).x < gMap.Size.x &&
-		!AIHasClearLine(fromOffset, to, IsPosNoSee))
+	if (Vec2ToTile(fromOffset).x < gMap.Size.x &&
+		!AIHasClearLine(svec2i_assign_vec2(fromOffset), svec2i_assign_vec2(to), IsPosNoSee))
 	{
 		return false;
 	}
 	fromOffset.x = from.x;
 	fromOffset.y = from.y - (ACTOR_H + pad) / 2;
-	if (Vec2iToTile(fromOffset).y >= 0 &&
-		!AIHasClearLine(fromOffset, to, IsPosNoSee))
+	if (Vec2ToTile(fromOffset).y >= 0 &&
+		!AIHasClearLine(svec2i_assign_vec2(fromOffset), svec2i_assign_vec2(to), IsPosNoSee))
 	{
 		return false;
 	}
 	fromOffset.y = from.y + (ACTOR_H + pad) / 2;
-	if (Vec2iToTile(fromOffset).y < gMap.Size.y &&
-		!AIHasClearLine(fromOffset, to, IsPosNoSee))
+	if (Vec2ToTile(fromOffset).y < gMap.Size.y &&
+		!AIHasClearLine(svec2i_assign_vec2(fromOffset), svec2i_assign_vec2(to), IsPosNoSee))
 	{
 		return false;
 	}
 	return true;
 }
-static bool IsPosNoSee(void *data, Vec2i pos)
+static bool IsPosNoSee(void *data, struct vec2i pos)
 {
 	return MapGetTile(data, Vec2iToTile(pos))->flags & MAPTILE_NO_SEE;
 }
@@ -361,7 +360,7 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd)
 {
 	// Check the position just in front of the character;
 	// check if there's a (non-dangerous) object in front of it
-	Vec2i frontPos = Vec2iFull2Real(a->Pos);
+	struct vec2 frontPos = a->Pos;
 	TTileItem *item;
 	if (cmd & CMD_LEFT)
 	{
@@ -385,7 +384,7 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd)
 		IsPVP(gCampaign.Entry.Mode)
 	};
 	item = OverlapGetFirstItem(
-		&a->tileItem, Vec2iReal2Full(frontPos), a->tileItem.size, params);
+		&a->tileItem, frontPos, a->tileItem.size, params);
 	if (!item || item->kind != KIND_OBJECT)
 	{
 		return NULL;
@@ -393,12 +392,13 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd)
 	return CArrayGet(&gObjs, item->id);
 }
 
-bool AIIsFacing(const TActor *a, const Vec2i targetFull, const direction_e d)
+bool AIIsFacing(
+	const TActor *a, const struct vec2 target, const direction_e d)
 {
 	const bool isUpperOrLowerOctants =
-		abs(a->Pos.x - targetFull.x) < abs(a->Pos.y - targetFull.y);
-	const bool isRight = a->Pos.x < targetFull.x;
-	const bool isAbove = a->Pos.y > targetFull.y;
+		fabsf(a->Pos.x - target.x) < fabsf(a->Pos.y - target.y);
+	const bool isRight = a->Pos.x < target.x;
+	const bool isAbove = a->Pos.y > target.y;
 	switch (d)
 	{
 	case DIRECTION_UP:
@@ -430,17 +430,17 @@ typedef struct
 	CollisionTeam CT;
 	bool HasFriendly;
 } FindFriendliesInTileData;
-static bool FindFriendliesInTile(void *data, const Vec2i tile);
+static bool FindFriendliesInTile(void *data, const struct vec2i tile);
 // Whether there are friendlies in the direct line of the gun's range
-static bool AIHasFriendliesInLine(const TActor *a, const direction_e d)
+static bool AIHasFriendliesInLine(const TActor *a, const direction_e dir)
 {
-	const Vec2i tileStart = Vec2iToTile(Vec2iFull2Real(a->Pos));
-	const Vec2i dFull = GetFullVectorsForRadians(dir2radians[d]);
+	const struct vec2i tileStart = Vec2ToTile(a->Pos);
+	const struct vec2 d = Vec2FromRadians(dir2radians[dir]);
 	const GunDescription *gun = ActorGetGun(a)->Gun;
-	const int gunRange = GunGetRange(gun);
-	const Vec2i dvFull = Vec2iScale(dFull, gunRange);
-	const Vec2i posFullEnd = Vec2iAdd(a->Pos, dvFull);
-	const Vec2i tileEnd = Vec2iToTile(Vec2iFull2Real(posFullEnd));
+	const float gunRange = GunGetRange(gun);
+	const struct vec2 dv = svec2_scale(d, gunRange);
+	const struct vec2 posEnd = svec2_add(a->Pos, dv);
+	const struct vec2i tileEnd = Vec2ToTile(posEnd);
 
 	HasClearLineData data;
 	data.IsBlocked = FindFriendliesInTile;
@@ -453,7 +453,7 @@ static bool AIHasFriendliesInLine(const TActor *a, const direction_e d)
 	HasClearLineJMRaytrace(tileStart, tileEnd, &data);
 	return tData.HasFriendly;
 }
-static bool FindFriendliesInTile(void *data, const Vec2i tile)
+static bool FindFriendliesInTile(void *data, const struct vec2i tile)
 {
 	const Tile *t = MapGetTile(&gMap, tile);
 	if (t == NULL) return true;
@@ -485,7 +485,8 @@ static bool FindFriendliesInTile(void *data, const Vec2i tile)
 
 // Use pathfinding to check that there is a path between
 // source and destination tiles
-bool AIHasPath(const Vec2i from, const Vec2i to, const bool ignoreObjects)
+bool AIHasPath(
+	const struct vec2 from, const struct vec2 to, const bool ignoreObjects)
 {
 	// Quick first test: check there is a clear path
 	if (AIHasClearPath(from, to, ignoreObjects))
@@ -493,9 +494,9 @@ bool AIHasPath(const Vec2i from, const Vec2i to, const bool ignoreObjects)
 		return true;
 	}
 	// Pathfind
-	const Vec2i fromTile = Vec2iToTile(from);
-	const Vec2i toTile = MapSearchTileAround(
-		&gMap, Vec2iToTile(to),
+	const struct vec2i fromTile = Vec2ToTile(from);
+	const struct vec2i toTile = MapSearchTileAround(
+		&gMap, Vec2ToTile(to),
 		ignoreObjects ? IsTileWalkable : IsTileWalkableAroundObjects);
 	CachedPath path = PathCacheCreate(
 		&gPathCache, fromTile, toTile, ignoreObjects, true);
@@ -504,44 +505,45 @@ bool AIHasPath(const Vec2i from, const Vec2i to, const bool ignoreObjects)
 	return pathCount >= 1;
 }
 
-int AIGotoDirect(const Vec2i a, const Vec2i p)
+int AIGotoDirect(const struct vec2 a, const struct vec2 p)
 {
 	int cmd = 0;
 
-	if (a.x < p.x)		cmd |= CMD_RIGHT;
-	else if (a.x > p.x)	cmd |= CMD_LEFT;
+	if (a.x + 1 < p.x)		cmd |= CMD_RIGHT;
+	else if (a.x > p.x + 1)	cmd |= CMD_LEFT;
 
-	if (a.y < p.y)		cmd |= CMD_DOWN;
-	else if (a.y > p.y)	cmd |= CMD_UP;
+	if (a.y + 1 < p.y)		cmd |= CMD_DOWN;
+	else if (a.y > p.y + 1)	cmd |= CMD_UP;
 
 	return cmd;
 }
 
 // Follow the current A* path
 static int AStarFollow(
-	AIGotoContext *c, Vec2i currentTile, TTileItem *i, Vec2i a)
+	AIGotoContext *c, const struct vec2i currentTile, const TTileItem *i,
+	const struct vec2 a)
 {
-	Vec2i *pathTile = ASPathGetNode(c->Path.Path, c->PathIndex);
+	struct vec2i *pathTile = ASPathGetNode(c->Path.Path, c->PathIndex);
 	c->IsFollowing = 1;
 	// Check if we need to follow the next step in the path
 	// Note: need to make sure the actor is fully within the current tile
 	// otherwise it may get stuck at corners
-	if (Vec2iEqual(currentTile, *pathTile) &&
+	if (svec2i_is_equal(currentTile, *pathTile) &&
 		IsTileItemInsideTile(i, currentTile))
 	{
 		c->PathIndex++;
 		pathTile = ASPathGetNode(c->Path.Path, c->PathIndex);
 	}
 	// Go directly to the center of the next tile
-	return AIGotoDirect(a, Vec2iCenterOfTile(*pathTile));
+	return AIGotoDirect(a, Vec2CenterOfTile(*pathTile));
 }
 // Check that we are still close to the start of the A* path,
 // and the end of the path is close to our goal
 static int AStarCloseToPath(
-	AIGotoContext *c, Vec2i currentTile, Vec2i goalTile)
+	AIGotoContext *c, struct vec2i currentTile, struct vec2i goalTile)
 {
-	Vec2i *pathTile;
-	Vec2i *pathEnd;
+	struct vec2i *pathTile;
+	struct vec2i *pathEnd;
 	if (!c ||
 		c->PathIndex >= (int)ASPathGetCount(c->Path.Path) - 1) // at end of path
 	{
@@ -549,25 +551,22 @@ static int AStarCloseToPath(
 	}
 	// Check if we're too far from the current start of the path
 	pathTile = ASPathGetNode(c->Path.Path, c->PathIndex);
-	if (CHEBYSHEV_DISTANCE(
-		currentTile.x, currentTile.y, pathTile->x, pathTile->y) > 2)
+	if ((int)svec2i_distance_squared(currentTile, svec2i(pathTile->x, pathTile->y)) > 4)
 	{
 		return 0;
 	}
 	// Check if we're too far from the end of the path
 	pathEnd = ASPathGetNode(c->Path.Path, ASPathGetCount(c->Path.Path) - 1);
-	if (CHEBYSHEV_DISTANCE(
-		goalTile.x, goalTile.y, pathEnd->x, pathEnd->y) > 0)
+	if ((int)svec2i_distance_squared(goalTile, svec2i(pathEnd->x, pathEnd->y)) > 0)
 	{
 		return 0;
 	}
 	return 1;
 }
-int AIGoto(TActor *actor, Vec2i p, bool ignoreObjects)
+int AIGoto(const TActor *actor, const struct vec2 p, const bool ignoreObjects)
 {
-	Vec2i a = Vec2iFull2Real(actor->Pos);
-	Vec2i currentTile = Vec2iToTile(a);
-	Vec2i goalTile = Vec2iToTile(p);
+	const struct vec2i currentTile = Vec2ToTile(actor->Pos);
+	const struct vec2i goalTile = Vec2ToTile(p);
 	AIGotoContext *c = &actor->aiContext->Goto;
 
 	CASSERT(c != NULL, "no AI context");
@@ -575,9 +574,9 @@ int AIGoto(TActor *actor, Vec2i p, bool ignoreObjects)
 	// If we are already there, go directly to the goal
 	// This can happen if AI is trying to track the player,
 	// but the player has died, for example.
-	if (Vec2iEqual(currentTile, goalTile))
+	if (svec2i_is_equal(currentTile, goalTile))
 	{
-		return AIGotoDirect(a, p);
+		return AIGotoDirect(actor->Pos, p);
 	}
 
 	// If we are currently following an A* path,
@@ -585,13 +584,13 @@ int AIGoto(TActor *actor, Vec2i p, bool ignoreObjects)
 	// we have reached a new tile
 	if (c && c->IsFollowing && AStarCloseToPath(c, currentTile, goalTile))
 	{
-		return AStarFollow(c, currentTile, &actor->tileItem, a);
+		return AStarFollow(c, currentTile, &actor->tileItem, actor->Pos);
 	}
-	else if (AIHasClearPath(a, p, ignoreObjects))
+	else if (AIHasClearPath(actor->Pos, p, ignoreObjects))
 	{
 		// Simple case: if there's a clear line between AI and target,
 		// walk straight towards it
-		return AIGotoDirect(a, p);
+		return AIGotoDirect(actor->Pos, p);
 	}
 	else
 	{
@@ -612,15 +611,10 @@ int AIGoto(TActor *actor, Vec2i p, bool ignoreObjects)
 		// try simple navigation again
 		if (ASPathGetCount(c->Path.Path) <= 1)
 		{
-			debug(
-				D_MAX,
-				"Error: can't calculate path from {%d, %d} to {%d, %d}",
-				currentTile.x, currentTile.y,
-				goalTile.x, goalTile.y);
-			return AIGotoDirect(a, p);
+			return AIGotoDirect(actor->Pos, p);
 		}
 
-		return AStarFollow(c, currentTile, &actor->tileItem, a);
+		return AStarFollow(c, currentTile, &actor->tileItem, actor->Pos);
 	}
 }
 
@@ -633,22 +627,23 @@ int AIGoto(TActor *actor, Vec2i p, bool ignoreObjects)
 //    x  xxx
 //  xxxxxxxxxxxxxxxxxxxxxxx
 // Those in slice A will move down-left and those in slice B will move left.
-int AIHunt(const TActor *actor, const Vec2i targetPos)
+int AIHunt(const TActor *actor, const struct vec2 targetPos)
 {
-	const Vec2i fullPos = Vec2iAdd(actor->Pos, ActorGetGunMuzzleOffset(actor));
-	const int dx = abs(targetPos.x - fullPos.x);
-	const int dy = abs(targetPos.y - fullPos.y);
+	const struct vec2 pos = svec2_add(
+		actor->Pos, ActorGetGunMuzzleOffset(actor));
+	const float dx = fabsf(targetPos.x - pos.x);
+	const float dy = fabsf(targetPos.y - pos.y);
 
 	int cmd = 0;
 	if (2 * dx > dy)
 	{
-		if (fullPos.x < targetPos.x)		cmd |= CMD_RIGHT;
-		else if (fullPos.x > targetPos.x)	cmd |= CMD_LEFT;
+		if (pos.x < targetPos.x)		cmd |= CMD_RIGHT;
+		else if (pos.x > targetPos.x)	cmd |= CMD_LEFT;
 	}
 	if (2 * dy > dx)
 	{
-		if (fullPos.y < targetPos.y)		cmd |= CMD_DOWN;
-		else if (fullPos.y > targetPos.y)	cmd |= CMD_UP;
+		if (pos.y < targetPos.y)		cmd |= CMD_DOWN;
+		else if (pos.y > targetPos.y)	cmd |= CMD_UP;
 	}
 	// If it's a coward, reverse directions...
 	if (actor->flags & FLAGS_RUNS_AWAY)
@@ -660,7 +655,7 @@ int AIHunt(const TActor *actor, const Vec2i targetPos)
 }
 int AIHuntClosest(TActor *actor)
 {
-	Vec2i targetPos = actor->Pos;
+	struct vec2 targetPos = actor->Pos;
 	if (!(actor->PlayerUID >= 0 || (actor->flags & FLAGS_GOOD_GUY)))
 	{
 		targetPos = AIGetClosestPlayerPos(actor->Pos);
@@ -683,14 +678,14 @@ int AIHuntClosest(TActor *actor)
 // - Fire if
 //   - has clear view to target, and
 //   - no friendlies in the way
-int AIAttack(const TActor *a, const Vec2i targetPosFull)
+int AIAttack(const TActor *a, const struct vec2 targetPos)
 {
 	// Move to the ideal distance for the weapon
 	int cmd = 0;
 	const GunDescription *gun = ActorGetGun(a)->Gun;
-	const int gunRange = GunGetRange(gun);
-	const int distanceSquared = DistanceSquared(
-		Vec2iFull2Real(a->Pos), Vec2iFull2Real(targetPosFull));
+	const float gunRange = GunGetRange(gun);
+	const float distanceSquared = svec2_distance_squared(
+		a->Pos, targetPos);
 	const bool canFire = gun->CanShoot && ActorGetGun(a)->lock <= 0;
 	if ((double)distanceSquared <
 		SQUARED(gunRange * 3) * a->aiContext->GunRangeScalar &&
@@ -698,7 +693,7 @@ int AIAttack(const TActor *a, const Vec2i targetPosFull)
 	{
 		// Move away from the enemy because we're too close
 		// Only move away if we can't fire; otherwise turn to fire
-		cmd = AIRetreatFrom(a, targetPosFull);
+		cmd = AIRetreatFrom(a, targetPos);
 	}
 	else
 	{
@@ -708,7 +703,7 @@ int AIAttack(const TActor *a, const Vec2i targetPosFull)
 		if ((double)distanceSquared > SQUARED(gunRange * 2))
 		{
 			// Too far away; approach using most efficient method
-			cmd = AIHunt(a, targetPosFull);
+			cmd = AIHunt(a, targetPos);
 		}
 		else
 		{
@@ -719,12 +714,12 @@ int AIAttack(const TActor *a, const Vec2i targetPosFull)
 			if (willFire)
 			{
 				// Hunt; this is the best direction to attack in
-				cmd = AIHunt(a, targetPosFull);
+				cmd = AIHunt(a, targetPos);
 			}
 			else
 			{
 				// Track so that we end up in a favorable angle
-				cmd = AITrack(a, targetPosFull);
+				cmd = AITrack(a, targetPos);
 			}
 			// Don't fire if there's a friendly in the way
 			const direction_e d = cmd2dir[cmd & CMD_DIRECTIONS];
@@ -739,7 +734,7 @@ int AIAttack(const TActor *a, const Vec2i targetPosFull)
 
 // Move away from the target
 // Usually used for a simple flee
-int AIRetreatFrom(const TActor *actor, const Vec2i from)
+int AIRetreatFrom(const TActor *actor, const struct vec2 from)
 {
 	return AIReverseDirection(AIHunt(actor, from));
 }
@@ -754,11 +749,12 @@ int AIRetreatFrom(const TActor *actor, const Vec2i from)
 //    x  xxx
 //  xxxxxxxxxxxxxxxxxxxxxxx
 // Those in slice A will move left and those in slice B will move down-left.
-int AITrack(const TActor *actor, const Vec2i targetPos)
+int AITrack(const TActor *actor, const struct vec2 targetPos)
 {
-	const Vec2i fullPos = Vec2iAdd(actor->Pos, ActorGetGunMuzzleOffset(actor));
-	const int dx = abs(targetPos.x - fullPos.x);
-	const int dy = abs(targetPos.y - fullPos.y);
+	const struct vec2 pos = svec2_add(
+		actor->Pos, ActorGetGunMuzzleOffset(actor));
+	const float dx = fabsf(targetPos.x - pos.x);
+	const float dy = fabsf(targetPos.y - pos.y);
 
 	int cmd = 0;
 	// Terminology: imagine the compass directions sliced into 16 equal parts,
@@ -772,26 +768,26 @@ int AITrack(const TActor *actor, const Vec2i targetPos)
 	// Repeat this for all 4 cardinal directions.
 	// Furthermore, give a bit of leeway for the 8 axes so we don't
 	// fluctuate between perpendicular movement vectors.
-	const bool xException = dy < 2 * dx && dy > (int)(dx * 1.1);
+	const bool xException = dy < 2 * dx && dy > dx * 1.1f;
 	if (!xException)
 	{
-		if (fullPos.x - targetPos.x < (int)(dy * 0.1))			cmd |= CMD_RIGHT;
-		else if (fullPos.x - targetPos.x > -(int)(dy * 0.1))	cmd |= CMD_LEFT;
+		if (pos.x - targetPos.x < dy * 0.1f)		cmd |= CMD_RIGHT;
+		else if (pos.x - targetPos.x > -dy * 0.1f)	cmd |= CMD_LEFT;
 	}
-	const bool yException = dx < 2 * dy && dx > (int)(dy * 1.1);
+	const bool yException = dx < 2 * dy && dx > dy * 1.1f;
 	if (!yException)
 	{
-		if (fullPos.y - targetPos.y < (int)(dx * 0.1))			cmd |= CMD_DOWN;
-		else if (fullPos.y - targetPos.y > -(int)(dx * 0.1))	cmd |= CMD_UP;
+		if (pos.y - targetPos.y < dx * 0.1f)		cmd |= CMD_DOWN;
+		else if (pos.y - targetPos.y > -dx * 0.1f)	cmd |= CMD_UP;
 	}
 
 	return cmd;
 }
 
 int AIMoveAwayFromLine(
-	const Vec2i fullPos, const Vec2i lineStartFull, const direction_e lineD)
+	const struct vec2 pos, const struct vec2 lineStart, const direction_e lineD)
 {
-	const Vec2i dv = Vec2iMinus(fullPos, lineStartFull);
+	const struct vec2 dv = svec2_subtract(pos, lineStart);
 	switch (lineD)
 	{
 		case DIRECTION_UP:

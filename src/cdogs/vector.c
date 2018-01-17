@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2014, 2016-2017 Cong Xu
+    Copyright (c) 2013-2014, 2016-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -29,157 +29,51 @@
 
 #include "tile.h"
 
-
-Vec2i Vec2iNew(int x, int y)
+struct vec2i svec2i_scale_divide(struct vec2i v, mint_t scale)
 {
-	Vec2i v;
-	v.x = x;
-	v.y = y;
-	return v;
+	return svec2i(v.x / scale, v.y / scale);
 }
 
-Vec2i Vec2iZero(void)
+struct vec2i Vec2iToTile(struct vec2i v)
 {
-	return Vec2iNew(0, 0);
-}
-Vec2i Vec2iUnit(void)
-{
-	return Vec2iNew(1, 1);
-}
-Vec2i Vec2iFromPolar(const double r, const double th)
-{
-	return Vec2iNew((int)Round(sin(th) * r), -(int)Round(cos(th) * r));
+	return svec2i(v.x / TILE_WIDTH, v.y / TILE_HEIGHT);
 }
 
-Vec2i Vec2iAdd(Vec2i a, Vec2i b)
+struct vec2i Vec2iCenterOfTile(struct vec2i v)
 {
-	a.x += b.x;
-	a.y += b.y;
-	return a;
-}
-Vec2i Vec2iMinus(Vec2i a, Vec2i b)
-{
-	a.x -= b.x;
-	a.y -= b.y;
-	return a;
-}
-
-Vec2i Vec2iMult(const Vec2i a, const Vec2i b)
-{
-	return Vec2iNew(a.x * b.x, a.y * b.y);
-}
-
-Vec2i Vec2iScale(Vec2i v, int scalar)
-{
-	v.x *= scalar;
-	v.y *= scalar;
-	return v;
-}
-
-Vec2i Vec2iScaleD(const Vec2i v, const double scalar)
-{
-	return Vec2iNew((int)(v.x * scalar), (int)(v.y * scalar));
-}
-
-Vec2i Vec2iScaleDiv(Vec2i v, int scaleDiv)
-{
-	v.x /= scaleDiv;
-	v.y /= scaleDiv;
-	return v;
-}
-
-Vec2i Vec2iNorm(Vec2i v)
-{
-	double magnitude;
-	if (Vec2iIsZero(v))
-	{
-		return v;
-	}
-	magnitude = sqrt(v.x*v.x + v.y*v.y);
-	v.x = (int)floor(v.x / magnitude + 0.5);
-	v.y = (int)floor(v.y / magnitude + 0.5);
-	return v;
-}
-
-bool Vec2iEqual(const Vec2i a, const Vec2i b)
-{
-	return a.x == b.x && a.y == b.y;
-}
-bool Vec2iIsZero(const Vec2i v)
-{
-	return Vec2iEqual(v, Vec2iZero());
-}
-
-Vec2i Vec2iMin(Vec2i a, Vec2i b)
-{
-	return Vec2iNew(MIN(a.x, b.x), MIN(a.y, b.y));
-}
-Vec2i Vec2iMax(Vec2i a, Vec2i b)
-{
-	return Vec2iNew(MAX(a.x, b.x), MAX(a.y, b.y));
-}
-Vec2i Vec2iClamp(Vec2i v, Vec2i lo, Vec2i hi)
-{
-	v.x = CLAMP(v.x, lo.x, hi.x);
-	v.y = CLAMP(v.y, lo.y, hi.y);
-	return v;
-}
-
-Vec2i Vec2iFull2Real(Vec2i v)
-{
-	return Vec2iScaleDiv(v, 256);
-}
-Vec2i Vec2iReal2Full(Vec2i v)
-{
-	return Vec2iScale(v, 256);
-}
-Vec2i Vec2iReal2FullCentered(const Vec2i v)
-{
-	return Vec2iAdd(
-		Vec2iScale(v, 256), Vec2iNew(128 * SIGN(v.x), 128 * SIGN(v.y)));
-}
-
-Vec2i Vec2iToTile(Vec2i v)
-{
-	return Vec2iNew(v.x / TILE_WIDTH, v.y / TILE_HEIGHT);
-}
-Vec2i Vec2iCenterOfTile(Vec2i v)
-{
-	return Vec2iNew(
+	return svec2i(
 		v.x * TILE_WIDTH + TILE_WIDTH / 2,
 		v.y * TILE_HEIGHT + TILE_HEIGHT / 2);
 }
 
-int Vec2iSqrMagnitude(const Vec2i v)
+struct vec2i Vec2ToTile(const struct vec2 v)
 {
-	return v.x * v.x + v.y * v.y;
+	return svec2i((int)(v.x / TILE_WIDTH), (int)(v.y / TILE_HEIGHT));
 }
 
-int DistanceSquared(const Vec2i a, const Vec2i b)
+struct vec2 Vec2CenterOfTile(const struct vec2i v)
 {
-	const Vec2i d = Vec2iMinus(a, b);
-	return Vec2iSqrMagnitude(d);
+	return svec2_assign_vec2i(Vec2iCenterOfTile(v));
 }
 
-Vec2i CalcClosestPointOnLineSegmentToPoint(
-	Vec2i l1, Vec2i l2, Vec2i p)
+Rect2i Rect2iNew(const struct vec2i pos, const struct vec2i size)
 {
-	// Using parametric representation, line l1->l2 is
-	// P(t) = l1 + t(l2 - l1)
-	// Projection of point p on line is
-	// t = ((p.x - l1.x)(l2.x - l1.x) + (p.y - l1.y)(l2.y - l1.y)) / ||l2 - l1||^2
-	int lineDistanceSquared = DistanceSquared(l1, l2);
-	int numerator;
-	double t;
-	Vec2i closestPoint;
-	// Early exit since same point means 0 distance, and div by 0
-	if (lineDistanceSquared == 0)
-	{
-		return l1;
-	}
-	numerator = (p.x - l1.x)*(l2.x - l1.x) + (p.y - l1.y)*(l2.y - l1.y);
-	t = CLAMP(numerator * 1.0 / lineDistanceSquared, 0, 1);
-	closestPoint.x = (int)Round(l1.x + t*(l2.x - l1.x));
-	closestPoint.y = (int)Round(l1.y + t*(l2.y - l1.y));
-	return closestPoint;
+	Rect2i r;
+	r.Pos = pos;
+	r.Size = size;
+	return r;
+}
+
+bool Rect2iIsAtEdge(const Rect2i r, const struct vec2i v)
+{
+	return
+		v.y == r.Pos.y || v.y == r.Pos.y + r.Size.y - 1 ||
+		v.x == r.Pos.x || v.x == r.Pos.x + r.Size.x - 1;
+}
+
+bool Rect2iOverlap(const Rect2i r1, const Rect2i r2)
+{
+	return
+		r1.Pos.x < r2.Pos.x + r2.Size.x && r1.Pos.x + r1.Size.x > r2.Pos.x &&
+		r1.Pos.y < r2.Pos.y + r2.Size.y && r1.Pos.y + r1.Size.y > r2.Pos.y;
 }

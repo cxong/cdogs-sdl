@@ -1,7 +1,7 @@
 /*
 C-Dogs SDL
 A port of the legendary (and fun) action/arcade cdogs.
-Copyright (c) 2016, Cong Xu
+Copyright (c) 2016-2017 Cong Xu
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -31,8 +31,9 @@ POSSIBILITY OF SUCH DAMAGE.
 
 
 void EmitterInit(
-	Emitter *em, const ParticleClass *p, const Vec2i offset,
-	const int minSpeed, const int maxSpeed, const int minDZ, const int maxDZ,
+	Emitter *em, const ParticleClass *p, const struct vec2 offset,
+	const float minSpeed, const float maxSpeed,
+	const int minDZ, const int maxDZ,
 	double minRotation, double maxRotation)
 {
 	memset(em, 0, sizeof *em);
@@ -46,19 +47,20 @@ void EmitterInit(
 	em->maxRotation = maxRotation;
 }
 void EmitterStart(
-	Emitter *em, const Vec2i fullPos, const int z, const Vec2i vel)
+	Emitter *em, const struct vec2 pos, const int z, const struct vec2 vel)
 {
-	const Vec2i p = Vec2iAdd(fullPos, Vec2iReal2Full(em->offset));
+	const struct vec2 p = svec2_add(pos, em->offset);
 
 	// TODO: single event multiple particles
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PARTICLE);
-	e.u.AddParticle.FullPos = p;
+	e.u.AddParticle.Pos = p;
 	e.u.AddParticle.Z = z * Z_FACTOR;
 	e.u.AddParticle.Class = em->p;
-	const int speed = RAND_INT(em->minSpeed, em->maxSpeed);
-	const Vec2i baseVel = Vec2iFromPolar(speed, RAND_DOUBLE(0, PI * 2));
-	e.u.AddParticle.Vel = Vec2iAdd(vel, baseVel);
-	e.u.AddParticle.Angle = RAND_DOUBLE(0, PI * 2);
+	const float speed = RAND_FLOAT(em->minSpeed, em->maxSpeed);
+	const struct vec2 baseVel = svec2_rotate(
+		svec2(0, speed), RAND_FLOAT(0, MPI * 2));
+	e.u.AddParticle.Vel = svec2_add(vel, baseVel);
+	e.u.AddParticle.Angle = RAND_FLOAT(0, MPI * 2);
 	e.u.AddParticle.DZ = RAND_INT(em->minDZ, em->maxDZ);
 	e.u.AddParticle.Spin = RAND_DOUBLE(em->minRotation, em->maxRotation);
 	GameEventsEnqueue(&gGameEvents, e);

@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2015, 2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -34,10 +34,6 @@
 #define CDOGS_DATA_DIR "@CDOGS_DATA_DIR@"
 
 #define CDOGS_CFG_DIR "@CDOGS_CFG_DIR@"
-
-#define CDOGS_MUSIC_DIR "@CDOGS_DATA_DIR@music"
-#define CDOGS_GAME_MUSIC_DIR CDOGS_MUSIC_DIR "/game"
-#define CDOGS_MENU_MUSIC_DIR CDOGS_MUSIC_DIR "/menu"
 
 #define CDOGS_CAMPAIGN_DIR "missions"
 #define CDOGS_DOGFIGHT_DIR "dogfights"

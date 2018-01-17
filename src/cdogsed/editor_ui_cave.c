@@ -52,6 +52,9 @@ static const char *MissionGetRoomMinStr(UIObject *o, void *data);
 static void MissionChangeRoomMin(void *data, int d);
 static const char *MissionGetRoomMaxStr(UIObject *o, void *data);
 static void MissionChangeRoomMax(void *data, int d);
+static void MissionDrawRoomsOverlap(
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data);
+static void MissionChangeRoomsOverlap(void *data, int d);
 static const char *MissionGetRoomWallCountStr(UIObject *o, void *data);
 static void MissionChangeRoomWallCount(void *data, int d);
 static const char *MissionGetRoomWallLenStr(UIObject *o, void *data);
@@ -60,12 +63,15 @@ static const char *MissionGetRoomWallPadStr(UIObject *o, void *data);
 static void MissionChangeRoomWallPad(void *data, int d);
 static const char *MissionGetSquareCountStr(UIObject *o, void *data);
 static void MissionChangeSquareCount(void *data, int d);
-UIObject *CreateCaveMapObjs(Vec2i pos, CampaignOptions *co)
+static void MissionDrawDoorEnabled(
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data);
+static void MissionChangeDoorEnabled(void *data, int d);
+UIObject *CreateCaveMapObjs(struct vec2i pos, CampaignOptions *co)
 {
 	const int th = FontH();
-	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, Vec2iZero(), Vec2iZero());
+	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, svec2i_zero(), svec2i_zero());
 	UIObject *o = UIObjectCreate(
-		UITYPE_LABEL, 0, Vec2iZero(), Vec2iNew(50, th));
+		UITYPE_LABEL, 0, svec2i_zero(), svec2i(50, th));
 	const int x = pos.x;
 	o->ChangesData = true;
 	// Check whether the map type matches, and set visibility
@@ -137,6 +143,13 @@ UIObject *CreateCaveMapObjs(Vec2i pos, CampaignOptions *co)
 	o2->ChangeFunc = MissionChangeRoomMax;
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCreate(UITYPE_CUSTOM, 0, pos, svec2i(60, th));
+	o2->ChangesData = true;
+	o2->u.CustomDrawFunc = MissionDrawRoomsOverlap;
+	o2->Data = co;
+	o2->ChangeFunc = MissionChangeRoomsOverlap;
+	UIObjectAddChild(c, o2);
 
 	pos.x = x;
 	pos.y += th;
@@ -169,6 +182,14 @@ UIObject *CreateCaveMapObjs(Vec2i pos, CampaignOptions *co)
 	o2->u.LabelFunc = MissionGetSquareCountStr;
 	o2->Data = co;
 	o2->ChangeFunc = MissionChangeSquareCount;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCreate(UITYPE_CUSTOM, 0, pos, o->Size);
+	o2->u.CustomDrawFunc = MissionDrawDoorEnabled;
+	o2->Data = co;
+	o2->ChangeFunc = MissionChangeDoorEnabled;
+	o2->ChangesData = true;
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 
@@ -311,6 +332,26 @@ static void MissionChangeRoomMax(void *data, int d)
 		CampaignGetCurrentMission(co)->u.Cave.Rooms.Min,
 		CampaignGetCurrentMission(co)->u.Cave.Rooms.Max);
 }
+static void MissionDrawRoomsOverlap(
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
+{
+	UNUSED(o);
+	UNUSED(g);
+	UNUSED(pos);
+	CampaignOptions *co = data;
+	if (!CampaignGetCurrentMission(co)) return;
+	DisplayFlag(
+		svec2i_add(pos, o->Pos), "Room overlap",
+		CampaignGetCurrentMission(co)->u.Cave.Rooms.Overlap,
+		UIObjectIsHighlighted(o));
+}
+static void MissionChangeRoomsOverlap(void *data, int d)
+{
+	UNUSED(d);
+	CampaignOptions *co = data;
+	CampaignGetCurrentMission(co)->u.Cave.Rooms.Overlap =
+		!CampaignGetCurrentMission(co)->u.Cave.Rooms.Overlap;
+}
 static const char *MissionGetRoomWallCountStr(UIObject *o, void *data)
 {
 	static char s[128];
@@ -370,4 +411,23 @@ static void MissionChangeSquareCount(void *data, int d)
 	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Cave.Squares =
 		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Squares + d, 0, 100);
+}
+static void MissionDrawDoorEnabled(
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
+{
+	UNUSED(o);
+	UNUSED(g);
+	CampaignOptions *co = data;
+	if (!CampaignGetCurrentMission(co)) return;
+	DisplayFlag(
+		svec2i_add(pos, o->Pos), "Doors",
+		CampaignGetCurrentMission(co)->u.Cave.DoorsEnabled,
+		UIObjectIsHighlighted(o));
+}
+static void MissionChangeDoorEnabled(void *data, int d)
+{
+	UNUSED(d);
+	CampaignOptions *co = data;
+	Mission *m = CampaignGetCurrentMission(co);
+	m->u.Cave.DoorsEnabled = !m->u.Cave.DoorsEnabled;
 }

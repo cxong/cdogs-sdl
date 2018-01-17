@@ -53,6 +53,7 @@
     {
       "Index": 2,
       "Pic": "",
+      "IsGrenade": true,
       "Icon": "grenades",
       "Name": "Grenades",
       "Description": "Throw timed grenades which will bounce off the ground, walls and enemies. Each grenade causes a big explosion after the end of its lifespan. It is very damaging to anyone caught by it - including the thrower! Grenades are quite expensive, so use sparingly if you aim for a high score.\n\nDamage: Large explosion\nRate of fire: 140 round/min\nRange: Medium\nLifespan: 1.42s\nSpeed: 384\nCost: 20",
@@ -126,6 +127,7 @@
     {
       "Index": 7,
       "Pic": "",
+      "IsGrenade": true,
       "Name": "Molotovs",
       "Icon": "molotovs",
       "Description": "A throwable weapon which will burst into fire when it hits the ground, at wall or an enemy. The flames are very hot, so use the molotovs with care!\n\nDamage: Fire\nRate of fire: 140 round/min\nRange: Short\nSpeed: 384\nCost: 20",
@@ -157,6 +159,7 @@
     {
       "Index": 9,
       "Pic": "",
+      "IsGrenade": true,
       "Name": "Prox. mine",
       "Icon": "proxmines",
       "Description": "Proximity mine. You will place a mine on the ground which will become active after 2 seconds. When the mine is active, it will explode as soon as any player (including the placer) is careless enough to walk in proximity to it. So don't wait for too long after you placed a mine.\n\nDamage: Large explosion\nRate of fire: 42 round/min\nCost: 10",
@@ -173,6 +176,7 @@
     {
       "Index": 10,
       "Pic": "",
+      "IsGrenade": true,
       "Name": "Dynamite",
       "Icon": "dynamite",
       "Description": "You will light and place a stick of dynamite on the ground, which will burst in a large explosion after 3 seconds.\n\nDamage: Large explosion\nRate of fire: 42 round/min\nLifespan: 3.00s\nCost: 7",
@@ -189,6 +193,7 @@
     {
       "Index": 11,
       "Pic": "",
+      "IsGrenade": true,
       "Name": "Chemo bombs",
       "Icon": "gas_grenades",
       "Description": "A bouncing grenade that bursts into a cloud of poison gas. Poisoned players lose health constantly for a while.\n\nDamage: Poison\nRate of fire: 140 round/min\nRange: Medium\nLifespan: 1.42s\nSpeed: 384\nCost: 7",
@@ -231,6 +236,7 @@
     {
       "Index": 14,
       "Pic": "",
+      "IsGrenade": true,
       "Name": "Confusion bombs",
       "Icon": "confusion_bombs",
       "Description": "A throwable weapon which bounces and bursts in a cloud of confusion gas after its lifespan. Players affected by confusion gas walk in the opposite direction they intended to and the effect wears off after a while.\n\nDamage: 0\nRate of fire: 140 round/min\nRange: Medium\nLifespan: 1.42s\nSpeed: 384\nCost: 10",

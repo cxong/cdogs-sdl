@@ -79,9 +79,9 @@ typedef struct
 typedef struct
 {
 	direction_e Dir;
-	Vec2i Offset;
+	struct vec2i Offset;
 } CPicDrawContext;
-typedef CPicDrawContext (*GetDrawContextFunc)(const int);
+typedef void (*DrawCPicFunc)(GraphicsDevice *, const int, const struct vec2i);
 
 void NamedPicFree(NamedPic *n);
 
@@ -91,11 +91,11 @@ void NamedSpritesFree(NamedSprites *ns);
 void CPicLoadJSON(CPic *p, json_t *node);
 void CPicLoadNormal(CPic *p, json_t *node);
 bool CPicIsLoaded(const CPic *p);
-Vec2i CPicGetSize(const CPic *p);
+struct vec2i CPicGetSize(const CPic *p);
 // Copy everything except frame
 void CPicCopyPic(CPic *dest, const CPic *src);
 void CPicUpdate(CPic *p, const int ticks);
 const Pic *CPicGetPic(const CPic *p, const int idx);
 void CPicDraw(
 	GraphicsDevice *g, const CPic *p,
-	const Vec2i pos, const CPicDrawContext *context);
+	const struct vec2i pos, const CPicDrawContext *context);

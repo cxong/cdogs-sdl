@@ -27,7 +27,6 @@
 */
 #include "map_archive.h"
 
-#include <SDL_image.h>
 #include <tinydir/tinydir.h>
 
 #include "ammo.h"
@@ -148,7 +147,6 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	MapObjectsLoadAmmoAndGunSpawners(
 		&gMapObjects, &gAmmo, &gGunDescriptions, true);
 
-
 	root = ReadArchiveJSON(filename, "missions.json");
 	if (root == NULL)
 	{
@@ -174,7 +172,6 @@ bail:
 static json_t *ReadArchiveJSON(const char *archive, const char *filename)
 {
 	json_t *root = NULL;
-	debug(D_VERBOSE, "Loading archive json %s %s\n", archive, filename);
 	char path[CDOGS_PATH_MAX];
 	sprintf(path, "%s/%s", archive, filename);
 	long len;
@@ -215,31 +212,26 @@ static char *ReadFileIntoBuf(const char *path, const char *mode, long *len)
 	FILE *f = fopen(path, mode);
 	if (f == NULL)
 	{
-		debug(D_NORMAL, "Did not open file %s: %s.\n", path, strerror(errno));
 		goto bail;
 	}
 
 	// Read into buffer
 	if (fseek(f, 0L, SEEK_END) != 0)
 	{
-		debug(D_NORMAL, "Cannot seek file %s: %s.\n", path, strerror(errno));
 		goto bail;
 	}
 	*len = ftell(f);
 	if (*len == -1)
 	{
-		debug(D_NORMAL, "Cannot tell file %s: %s.\n", path, strerror(errno));
 		goto bail;
 	}
 	CCALLOC(buf, *len + 1);
 	if (fseek(f, 0L, SEEK_SET) != 0)
 	{
-		debug(D_NORMAL, "Cannot seek file %s: %s.\n", path, strerror(errno));
 		goto bail;
 	}
 	if (fread(buf, 1, *len, f) == 0)
 	{
-		debug(D_NORMAL, "Cannot read file %s: %s.\n", path, strerror(errno));
 		goto bail;
 	}
 
@@ -252,7 +244,8 @@ bail:
 end:
 	if (f != NULL && fclose(f) != 0)
 	{
-		debug(D_NORMAL, "Cannot close file %s: %s.\n", path, strerror(errno));
+		LOG(LM_MAP, LL_ERROR, "Cannot close file %s: %s",
+			path, strerror(errno));
 	}
 	return buf;
 }
@@ -285,7 +278,7 @@ int MapArchiveSave(const char *filename, CampaignSetting *c)
 	AddStringPair(root, "Title", c->Title);
 	AddStringPair(root, "Author", c->Author);
 	AddStringPair(root, "Description", c->Description);
-	AddIntPair(root, "Missions", c->Missions.size);
+	AddIntPair(root, "Missions", (int)c->Missions.size);
 	char buf2[CDOGS_PATH_MAX];
 	sprintf(buf2, "%s/campaign.json", buf);
 	if (!TrySaveJSONFile(root, buf2))
@@ -317,7 +310,7 @@ bail:
 
 static json_t *SaveObjectives(CArray *a);
 static json_t *SaveIntArray(CArray *a);
-static json_t *SaveVec2i(Vec2i v);
+static json_t *SaveVec2i(struct vec2i v);
 static json_t *SaveWeapons(const CArray *weapons);
 static json_t *SaveRooms(const RoomParams r);
 static json_t *SaveClassicDoors(Mission *m);
@@ -425,6 +418,7 @@ static json_t *SaveMissions(CArray *a)
 				json_insert_pair_into_object(
 					node, "Rooms", SaveRooms(mission->u.Cave.Rooms));
 			AddIntPair(node, "Squares", mission->u.Cave.Squares);
+			AddBoolPair(node, "DoorsEnabled", mission->u.Cave.DoorsEnabled);
 			break;
 		default:
 			assert(0 && "unknown map type");
@@ -505,7 +499,7 @@ static json_t *SaveStaticItems(Mission *m)
 		json_t *positions = json_new_array();
 		for (int j = 0; j < (int)mop->Positions.size; j++)
 		{
-			Vec2i *pos = CArrayGet(&mop->Positions, j);
+			struct vec2i *pos = CArrayGet(&mop->Positions, j);
 			json_insert_child(positions, SaveVec2i(*pos));
 		}
 		json_insert_pair_into_object(
@@ -523,7 +517,7 @@ static json_t *SaveStaticCharacters(Mission *m)
 		json_t *positions = json_new_array();
 		for (int j = 0; j < (int)cp->Positions.size; j++)
 		{
-			Vec2i *pos = CArrayGet(&cp->Positions, j);
+			struct vec2i *pos = CArrayGet(&cp->Positions, j);
 			json_insert_child(positions, SaveVec2i(*pos));
 		}
 		json_insert_pair_into_object(
@@ -541,7 +535,7 @@ static json_t *SaveStaticObjectives(Mission *m)
 		json_t *positions = json_new_array();
 		for (int j = 0; j < (int)op->Positions.size; j++)
 		{
-			Vec2i *pos = CArrayGet(&op->Positions, j);
+			struct vec2i *pos = CArrayGet(&op->Positions, j);
 			json_insert_child(positions, SaveVec2i(*pos));
 		}
 		json_insert_pair_into_object(
@@ -561,7 +555,7 @@ static json_t *SaveStaticKeys(Mission *m)
 		json_t *positions = json_new_array();
 		for (int j = 0; j < (int)kp->Positions.size; j++)
 		{
-			Vec2i *pos = CArrayGet(&kp->Positions, j);
+			struct vec2i *pos = CArrayGet(&kp->Positions, j);
 			json_insert_child(positions, SaveVec2i(*pos));
 		}
 		json_insert_pair_into_object(
@@ -610,7 +604,7 @@ static json_t *SaveIntArray(CArray *a)
 	}
 	return node;
 }
-static json_t *SaveVec2i(Vec2i v)
+static json_t *SaveVec2i(struct vec2i v)
 {
 	json_t *node = json_new_array();
 	char buf[32];

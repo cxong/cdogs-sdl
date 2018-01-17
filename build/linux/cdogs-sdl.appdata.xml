@@ -21,7 +21,7 @@
   <screenshots>
     <screenshot
     type="default">https://raw.githubusercontent.com/cxong/cdogs-sdl/master/wiki/images/game_screen.png</screenshot>
-    <screenshot>https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/hqx_new.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/cxong/cdogs-sdl/master/wiki/images/screenshots/hqx_new.png</screenshot>
     <screenshot>https://raw.githubusercontent.com/cxong/cdogs-sdl/master/wiki/images/screenshots/quick_play.png</screenshot>
   </screenshots>
 </component>

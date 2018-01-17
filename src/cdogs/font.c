@@ -28,7 +28,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifdef __EMSCRIPTEN__
+#include <SDL/SDL_image.h>
+#else
 #include <SDL_image.h>
+#endif
 
 #include "blit.h"
 #include "pic.h"
@@ -72,7 +76,7 @@ void FontLoad(Font *f, const char *imgPath, const bool isProportional)
 	CArrayInit(&f->Chars, sizeof(Pic));
 
 	// Check that the image is big enough for the dimensions
-	const Vec2i step = Vec2iNew(
+	const struct vec2i step = svec2i(
 		f->Size.x + f->Padding.Left + f->Padding.Right,
 		f->Size.y + f->Padding.Top + f->Padding.Bottom);
 	if (step.x * f->Stride > image->w || step.y > image->h)
@@ -90,7 +94,7 @@ void FontLoad(Font *f, const char *imgPath, const bool isProportional)
 	// Load letters from image file
 	SDL_LockSurface(image);
 	int chars = 0;
-	for (Vec2i pos = Vec2iZero();
+	for (struct vec2i pos = svec2i_zero();
 		pos.y + step.y <= image->h && chars < LAST_CHAR - FIRST_CHAR + 1;
 		pos.y += step.y)
 	{
@@ -101,10 +105,10 @@ void FontLoad(Font *f, const char *imgPath, const bool isProportional)
 		{
 			Pic p;
 			p.size = f->Size;
-			p.offset = Vec2iZero();
+			p.offset = svec2i_zero();
 			PicLoad(
 				&p, f->Size,
-				Vec2iAdd(pos, Vec2iNew(f->Padding.Left, f->Padding.Top)),
+				svec2i_add(pos, svec2i(f->Padding.Left, f->Padding.Top)),
 				image);
 			if (isProportional)
 			{
@@ -138,7 +142,7 @@ int FontH(void)
 }
 int FontStrW(const char *s)
 {
-	return FontSubstrW(s, strlen(s));
+	return FontSubstrW(s, (int)strlen(s));
 }
 int FontSubstrW(const char *s, int len)
 {
@@ -168,16 +172,16 @@ int FontStrH(const char *s)
 {
 	return FontStrNumLines(s) * FontH();
 }
-Vec2i FontStrSize(const char *s)
+struct vec2i FontStrSize(const char *s)
 {
-	Vec2i size = Vec2iZero();
+	struct vec2i size = svec2i_zero();
 	while (*s)
 	{
 		char *lineEnd = strchr(s, '\n');
 		size.y += FontH();
 		if (lineEnd)
 		{
-			size.x = MAX(size.x, FontSubstrW(s, lineEnd - s));
+			size.x = MAX(size.x, FontSubstrW(s, (int)(lineEnd - s)));
 			s = lineEnd + 1;
 		}
 		else
@@ -202,18 +206,18 @@ int FontStrNumLines(const char *s)
 	return lines;
 }
 
-Vec2i FontCh(const char c, const Vec2i pos)
+struct vec2i FontCh(const char c, const struct vec2i pos)
 {
 	return FontChMask(c, pos, colorWhite);
 }
-static Vec2i FontChColor(
-	const char c, const Vec2i pos, const color_t color, const bool blend);
-Vec2i FontChMask(const char c, const Vec2i pos, const color_t mask)
+static struct vec2i FontChColor(
+	const char c, const struct vec2i pos, const color_t color, const bool blend);
+struct vec2i FontChMask(const char c, const struct vec2i pos, const color_t mask)
 {
 	return FontChColor(c, pos, mask, false);
 }
-static Vec2i FontChColor(
-	const char c, const Vec2i pos, const color_t color, const bool blend)
+static struct vec2i FontChColor(
+	const char c, const struct vec2i pos, const color_t color, const bool blend)
 {
 	int idx = (int)c - FIRST_CHAR;
 	if (idx < 0)
@@ -235,20 +239,20 @@ static Vec2i FontChColor(
 		BlitMasked(&gGraphicsDevice, pic, pos, color, true);
 	}
 	// Add gap between characters
-	return Vec2iNew(pos.x + pic->size.x + gFont.Gap.x, pos.y);
+	return svec2i(pos.x + pic->size.x + gFont.Gap.x, pos.y);
 }
-Vec2i FontStr(const char *s, Vec2i pos)
+struct vec2i FontStr(const char *s, struct vec2i pos)
 {
 	return FontStrMask(s, pos, colorWhite);
 }
-static Vec2i FontStrColor(
-	const char *s, Vec2i pos, const color_t c, const bool blend);
-Vec2i FontStrMask(const char *s, Vec2i pos, const color_t mask)
+static struct vec2i FontStrColor(
+	const char *s, struct vec2i pos, const color_t c, const bool blend);
+struct vec2i FontStrMask(const char *s, struct vec2i pos, const color_t mask)
 {
 	return FontStrColor(s, pos, mask, false);
 }
-static Vec2i FontStrColor(
-	const char *s, Vec2i pos, const color_t c, const bool blend)
+static struct vec2i FontStrColor(
+	const char *s, struct vec2i pos, const color_t c, const bool blend)
 {
 	if (s == NULL)
 	{
@@ -270,15 +274,15 @@ static Vec2i FontStrColor(
 	}
 	return pos;
 }
-Vec2i FontStrMaskWrap(const char *s, Vec2i pos, color_t mask, const int width)
+struct vec2i FontStrMaskWrap(const char *s, struct vec2i pos, color_t mask, const int width)
 {
 	char buf[1024];
 	CASSERT(strlen(s) < 1024, "string too long to wrap");
 	FontSplitLines(s, buf, width);
 	return FontStrMask(buf, pos, mask);
 }
-static Vec2i GetStrPos(const char *s, Vec2i pos, const FontOpts opts);
-void FontStrOpt(const char *s, Vec2i pos, const FontOpts opts)
+static struct vec2i GetStrPos(const char *s, struct vec2i pos, const FontOpts opts);
+void FontStrOpt(const char *s, struct vec2i pos, const FontOpts opts)
 {
 	if (s == NULL)
 	{
@@ -290,10 +294,10 @@ void FontStrOpt(const char *s, Vec2i pos, const FontOpts opts)
 static int GetAlign(
 	const FontAlign align,
 	const int pos, const int pad, const int area, const int size);
-static Vec2i GetStrPos(const char *s, Vec2i pos, const FontOpts opts)
+static struct vec2i GetStrPos(const char *s, struct vec2i pos, const FontOpts opts)
 {
-	const Vec2i textSize = FontStrSize(s);
-	return Vec2iNew(
+	const struct vec2i textSize = FontStrSize(s);
+	return svec2i(
 		GetAlign(opts.HAlign, pos.x, opts.Pad.x, opts.Area.x, textSize.x),
 		GetAlign(opts.VAlign, pos.y, opts.Pad.y, opts.Area.y, textSize.y));
 }
@@ -324,7 +328,7 @@ void FontStrCenter(const char *s)
 	opts.HAlign = ALIGN_CENTER;
 	opts.VAlign = ALIGN_CENTER;
 	opts.Area = gGraphicsDevice.cachedConfig.Res;
-	FontStrOpt(s, Vec2iZero(), opts);
+	FontStrOpt(s, svec2i_zero(), opts);
 }
 
 void FontSplitLines(const char *text, char *buf, const int width)
@@ -339,7 +343,7 @@ void FontSplitLines(const char *text, char *buf, const int width)
 
 	ix = x = CenterX(width);
 	s = ws = word = text;
-	
+
 	while (*s)
 	{
 		// Skip spaces
@@ -377,7 +381,7 @@ void FontSplitLines(const char *text, char *buf, const int width)
 			ws = word;
 			*buf++ = '\n';
 		}
-		
+
 		for (p = ws; p < word; p++)
 		{
 			x += FontW(*p);
@@ -392,11 +396,11 @@ void FontSplitLines(const char *text, char *buf, const int width)
 	*buf = '\0';
 }
 
-Vec2i Vec2iAligned(
-	const Vec2i v, const Vec2i size,
-	const FontAlign hAlign, const FontAlign vAlign, const Vec2i area)
+struct vec2i Vec2iAligned(
+	const struct vec2i v, const struct vec2i size,
+	const FontAlign hAlign, const FontAlign vAlign, const struct vec2i area)
 {
-	Vec2i vAligned = v;
+	struct vec2i vAligned = v;
 	switch (hAlign)
 	{
 	case ALIGN_CENTER:

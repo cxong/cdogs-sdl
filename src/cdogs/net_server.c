@@ -313,9 +313,12 @@ static void OnReceive(NetServer *n, ENetEvent event)
 				NetServerSendGameStartMessages(n, peerId);
 
 				// Find a current player to spawn next to
-				Vec2i defaultSpawnPosition = Vec2iZero();
-				const TActor *closestActor = AIGetClosestPlayer(Vec2iZero());
-				if (closestActor != NULL) defaultSpawnPosition = closestActor->Pos;
+				struct vec2 defaultSpawnPosition = svec2_zero();
+				const TActor *closestActor = AIGetClosestPlayer(svec2_zero());
+				if (closestActor != NULL)
+				{
+					defaultSpawnPosition = closestActor->Pos;
+				}
 
 				// Add the client's actors
 				for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
@@ -438,8 +441,7 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 		aa.Direction = (int32_t)a->direction;
 		aa.PlayerUID = a->PlayerUID;
 		aa.TileItemFlags = a->tileItem.flags;
-		aa.FullPos.x = a->Pos.x;
-		aa.FullPos.y = a->Pos.y;
+		aa.Pos = Vec2ToNet(a->Pos);
 		LOG(LM_NET, LL_DEBUG, "send add actor UID(%d) playerUID(%d)",
 			(int)aa.UID, (int)aa.PlayerUID);
 		NetServerSendMsg(n, peerId, GAME_EVENT_ACTOR_ADD, &aa);
@@ -461,7 +463,7 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 	// Send all tiles, RLE
 	const Tile *tLast = NULL;
 	NTileSet ts = NTileSet_init_default;
-	Vec2i pos;
+	struct vec2i pos;
 	for (pos.y = 0; pos.y < gMap.Size.y; pos.y++)
 	{
 		for (pos.x = 0; pos.x < gMap.Size.x; pos.x++)
@@ -527,7 +529,7 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 		api.IsRandomSpawned = p->IsRandomSpawned;
 		api.SpawnerUID = p->SpawnerUID;
 		api.TileItemFlags = p->tileItem.flags;
-		api.Pos = Vec2i2Net(Vec2iNew(p->tileItem.x, p->tileItem.y));
+		api.Pos = Vec2ToNet(p->tileItem.Pos);
 		NetServerSendMsg(n, peerId, GAME_EVENT_ADD_PICKUP, &api);
 	CA_FOREACH_END()
 
@@ -537,7 +539,7 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 		NMapObjectAdd amo = NMapObjectAdd_init_default;
 		amo.UID = o->uid;
 		strcpy(amo.MapObjectClass, o->Class->Name);
-		amo.Pos = Vec2i2Net(Vec2iNew(o->tileItem.x, o->tileItem.y));
+		amo.Pos = Vec2ToNet(o->tileItem.Pos);
 		amo.TileItemFlags = o->tileItem.flags;
 		amo.Health = o->Health;
 		LOG(LM_NET, LL_DEBUG,

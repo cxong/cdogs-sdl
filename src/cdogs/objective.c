@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2014, 2016 Cong Xu
+    Copyright (c) 2014, 2016-2017 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -142,6 +142,20 @@ void ObjectiveLoadJSON(Objective *o, json_t *node, const int version)
 	LoadInt(&o->Count, node, "Count");
 	LoadInt(&o->Required, node, "Required");
 	LoadInt(&o->Flags, node, "Flags");
+	if (version < 14)
+	{
+		// Classic objective flags: rescue always in locked rooms, kill always
+		// anywhere
+		if (o->Type == OBJECTIVE_RESCUE)
+		{
+			o->Flags |= OBJECTIVE_HIACCESS;
+			o->Flags &= ~OBJECTIVE_NOACCESS;
+		}
+		else if (o->Type == OBJECTIVE_KILL)
+		{
+			o->Flags &= ~(OBJECTIVE_HIACCESS | OBJECTIVE_NOACCESS);
+		}
+	}
 }
 void ObjectiveSetup(Objective *o)
 {
@@ -173,4 +187,17 @@ bool ObjectiveIsPerfect(const Objective *o)
 {
 	// Don't count objectives that are fully required anyway
 	return o->done == o->Count && o->done > o->Required;
+}
+
+PlacementAccessFlags ObjectiveGetPlacementAccessFlags(const Objective *o)
+{
+	if (o->Flags & OBJECTIVE_HIACCESS)
+	{
+		return PLACEMENT_ACCESS_LOCKED;
+	}
+	if (o->Flags & OBJECTIVE_NOACCESS)
+	{
+		return PLACEMENT_ACCESS_NOT_LOCKED;
+	}
+	return PLACEMENT_ACCESS_ANY;
 }

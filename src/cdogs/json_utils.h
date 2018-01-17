@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2013-2016, Cong Xu
+ Copyright (c) 2013-2017 Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,10 @@ void AddColorPair(json_t *parent, const char *name, const color_t c);
 void LoadBool(bool *value, json_t *node, const char *name);
 void LoadInt(int *value, json_t *node, const char *name);
 void LoadDouble(double *value, json_t *node, const char *name);
-void LoadVec2i(Vec2i *value, json_t *node, const char *name);
+void LoadFloat(float *value, json_t *node, const char *name);
+void LoadFullInt(float *value, json_t *node, const char *name);
+void LoadVec2i(struct vec2i *value, json_t *node, const char *name);
+void LoadVec2(struct vec2 *value, json_t *node, const char *name);
 
 // remember to free
 void LoadStr(char **value, json_t *node, const char *name);

@@ -60,7 +60,7 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 		break;
 	case MAPTYPE_STATIC:
 		{
-			Vec2i v;
+			struct vec2i v;
 			// Take all the tiles from the current map
 			// and save them in the static map
 			CArrayInit(&m->u.Static.Tiles, sizeof(unsigned short));
@@ -107,7 +107,7 @@ static int IsClear(unsigned short tile)
 	tile &= MAP_MASKACCESS;
 	return tile == MAP_FLOOR || tile == MAP_ROOM || tile == MAP_SQUARE;
 }
-static unsigned short GetTileAt(Mission *m, Vec2i pos)
+static unsigned short GetTileAt(Mission *m, struct vec2i pos)
 {
 	int idx = pos.y * m->Size.x + pos.x;
 	// check for out-of-bounds
@@ -121,7 +121,7 @@ static unsigned short GetTileAt(Mission *m, Vec2i pos)
 // to be oriented in a certain way
 // If there are walls or doors in the neighbourhood, they can force a certain
 // orientation of the door
-static int HasDoorOrientedAt(Mission *m, Vec2i pos,int isHorizontal)
+static int HasDoorOrientedAt(Mission *m, struct vec2i pos,int isHorizontal)
 {
 	unsigned short tile = GetTileAt(m, pos);
 	if (tile != MAP_DOOR)
@@ -129,18 +129,18 @@ static int HasDoorOrientedAt(Mission *m, Vec2i pos,int isHorizontal)
 		return 0;
 	}
 	// Check for walls and doors that force the orientation of the door
-	if (GetTileAt(m, Vec2iNew(pos.x - 1, pos.y)) == MAP_WALL ||
-		GetTileAt(m, Vec2iNew(pos.x - 1, pos.y)) == MAP_DOOR ||
-		GetTileAt(m, Vec2iNew(pos.x + 1, pos.y)) == MAP_WALL ||
-		GetTileAt(m, Vec2iNew(pos.x + 1, pos.y)) == MAP_DOOR)
+	if (GetTileAt(m, svec2i(pos.x - 1, pos.y)) == MAP_WALL ||
+		GetTileAt(m, svec2i(pos.x - 1, pos.y)) == MAP_DOOR ||
+		GetTileAt(m, svec2i(pos.x + 1, pos.y)) == MAP_WALL ||
+		GetTileAt(m, svec2i(pos.x + 1, pos.y)) == MAP_DOOR)
 	{
 		// There is a horizontal door
 		return isHorizontal;
 	}
-	else if (GetTileAt(m, Vec2iNew(pos.x, pos.y - 1)) == MAP_WALL ||
-		GetTileAt(m, Vec2iNew(pos.x, pos.y - 1)) == MAP_DOOR ||
-		GetTileAt(m, Vec2iNew(pos.x, pos.y + 1)) == MAP_WALL ||
-		GetTileAt(m, Vec2iNew(pos.x, pos.y + 1)) == MAP_DOOR)
+	else if (GetTileAt(m, svec2i(pos.x, pos.y - 1)) == MAP_WALL ||
+		GetTileAt(m, svec2i(pos.x, pos.y - 1)) == MAP_DOOR ||
+		GetTileAt(m, svec2i(pos.x, pos.y + 1)) == MAP_WALL ||
+		GetTileAt(m, svec2i(pos.x, pos.y + 1)) == MAP_DOOR)
 	{
 		// There is a vertical door
 		return !isHorizontal;
@@ -148,7 +148,7 @@ static int HasDoorOrientedAt(Mission *m, Vec2i pos,int isHorizontal)
 	// There is a door but it is free to be oriented in any way
 	return 0;
 }
-bool MissionTrySetTile(Mission *m, Vec2i pos, unsigned short tile)
+bool MissionTrySetTile(Mission *m, struct vec2i pos, unsigned short tile)
 {
 	if (pos.x < 0 || pos.x >= m->Size.x || pos.y < 0 || pos.y >= m->Size.y)
 	{
@@ -159,10 +159,10 @@ bool MissionTrySetTile(Mission *m, Vec2i pos, unsigned short tile)
 	{
 	case MAP_WALL:
 		// Check that there are no incompatible doors
-		if (HasDoorOrientedAt(m, Vec2iNew(pos.x - 1, pos.y), 0) ||
-			HasDoorOrientedAt(m, Vec2iNew(pos.x + 1, pos.y), 0) ||
-			HasDoorOrientedAt(m, Vec2iNew(pos.x, pos.y - 1), 1) ||
-			HasDoorOrientedAt(m, Vec2iNew(pos.x, pos.y + 1), 1))
+		if (HasDoorOrientedAt(m, svec2i(pos.x - 1, pos.y), 0) ||
+			HasDoorOrientedAt(m, svec2i(pos.x + 1, pos.y), 0) ||
+			HasDoorOrientedAt(m, svec2i(pos.x, pos.y - 1), 1) ||
+			HasDoorOrientedAt(m, svec2i(pos.x, pos.y + 1), 1))
 		{
 			// Can't place this wall
 			return false;
@@ -172,20 +172,20 @@ bool MissionTrySetTile(Mission *m, Vec2i pos, unsigned short tile)
 		{
 			// Check that there is a clear passage through this door
 			int isHClear =
-				IsClear(GetTileAt(m, Vec2iNew(pos.x - 1, pos.y))) &&
-				IsClear(GetTileAt(m, Vec2iNew(pos.x + 1, pos.y)));
+				IsClear(GetTileAt(m, svec2i(pos.x - 1, pos.y))) &&
+				IsClear(GetTileAt(m, svec2i(pos.x + 1, pos.y)));
 			int isVClear =
-				IsClear(GetTileAt(m, Vec2iNew(pos.x, pos.y - 1))) &&
-				IsClear(GetTileAt(m, Vec2iNew(pos.x, pos.y + 1)));
+				IsClear(GetTileAt(m, svec2i(pos.x, pos.y - 1))) &&
+				IsClear(GetTileAt(m, svec2i(pos.x, pos.y + 1)));
 			if (!isHClear && !isVClear)
 			{
 				return false;
 			}
 			// Check that there are no incompatible doors
-			if (HasDoorOrientedAt(m, Vec2iNew(pos.x - 1, pos.y), 0) ||
-				HasDoorOrientedAt(m, Vec2iNew(pos.x + 1, pos.y), 0) ||
-				HasDoorOrientedAt(m, Vec2iNew(pos.x, pos.y - 1), 1) ||
-				HasDoorOrientedAt(m, Vec2iNew(pos.x, pos.y + 1), 1))
+			if (HasDoorOrientedAt(m, svec2i(pos.x - 1, pos.y), 0) ||
+				HasDoorOrientedAt(m, svec2i(pos.x + 1, pos.y), 0) ||
+				HasDoorOrientedAt(m, svec2i(pos.x, pos.y - 1), 1) ||
+				HasDoorOrientedAt(m, svec2i(pos.x, pos.y + 1), 1))
 			{
 				// Can't place this door
 				return false;
@@ -198,7 +198,7 @@ bool MissionTrySetTile(Mission *m, Vec2i pos, unsigned short tile)
 	return true;
 }
 
-unsigned short MissionGetTile(Mission *m, Vec2i pos)
+unsigned short MissionGetTile(Mission *m, struct vec2i pos)
 {
 	if (pos.x < 0 || pos.x >= m->Size.x || pos.y < 0 || pos.y >= m->Size.y)
 	{
@@ -208,13 +208,13 @@ unsigned short MissionGetTile(Mission *m, Vec2i pos)
 	return *(unsigned short *)CArrayGet(&m->u.Static.Tiles, idx);
 }
 
-void MissionStaticLayout(Mission *m, Vec2i oldSize)
+void MissionStaticLayout(Mission *m, struct vec2i oldSize)
 {
 	assert(m->Type == MAPTYPE_STATIC && "invalid map type");
 	// re-layout the static map after a resize
 	// The mission contains the new size; the old dimensions are oldSize
 	// Simply try to "paint" the old tiles to the new mission
-	Vec2i v;
+	struct vec2i v;
 	CArray oldTiles;
 	CArrayInit(&oldTiles, m->u.Static.Tiles.elemSize);
 	CArrayCopy(&oldTiles, &m->u.Static.Tiles);
@@ -253,23 +253,23 @@ void MissionStaticLayout(Mission *m, Vec2i oldSize)
 
 	if (m->u.Static.Start.x >= m->Size.x || m->u.Static.Start.y >= m->Size.y)
 	{
-		m->u.Static.Start = Vec2iZero();
+		m->u.Static.Start = svec2i_zero();
 	}
 }
 
 static bool TryAddMapObject(
-	Mission *m, const MapObject *mo, const Vec2i pos, CArray *objs);
-static bool TryRemoveMapObjectAt(const Vec2i pos, CArray *objs);
-bool MissionStaticTryAddItem(Mission *m, const MapObject *mo, const Vec2i pos)
+	Mission *m, const MapObject *mo, const struct vec2i pos, CArray *objs);
+static bool TryRemoveMapObjectAt(const struct vec2i pos, CArray *objs);
+bool MissionStaticTryAddItem(Mission *m, const MapObject *mo, const struct vec2i pos)
 {
 	return TryAddMapObject(m, mo, pos, &m->u.Static.Items);
 }
-bool MissionStaticTryRemoveItemAt(Mission *m, const Vec2i pos)
+bool MissionStaticTryRemoveItemAt(Mission *m, const struct vec2i pos)
 {
 	return TryRemoveMapObjectAt(pos, &m->u.Static.Items);
 }
 static bool TryAddMapObject(
-	Mission *m, const MapObject *mo, const Vec2i pos, CArray *objs)
+	Mission *m, const MapObject *mo, const struct vec2i pos, CArray *objs)
 {
 	CASSERT(m->Type == MAPTYPE_STATIC, "invalid map type");
 	const unsigned short tile = MissionGetTile(m, pos);
@@ -278,7 +278,7 @@ static bool TryAddMapObject(
 	TryRemoveMapObjectAt(pos, objs);
 
 	if (MapObjectIsTileOK(
-		mo, tile, 1, MissionGetTile(m, Vec2iNew(pos.x, pos.y - 1))))
+		mo, tile, 1, MissionGetTile(m, svec2i(pos.x, pos.y - 1))))
 	{
 		// Check if the item already has an entry, and add to its list
 		// of positions
@@ -298,7 +298,7 @@ static bool TryAddMapObject(
 		{
 			MapObjectPositions mop;
 			mop.M = mo;
-			CArrayInit(&mop.Positions, sizeof(Vec2i));
+			CArrayInit(&mop.Positions, sizeof(struct vec2i));
 			CArrayPushBack(&mop.Positions, &pos);
 			CArrayPushBack(objs, &mop);
 		}
@@ -306,15 +306,15 @@ static bool TryAddMapObject(
 	}
 	return false;
 }
-static bool TryRemoveMapObjectAt(const Vec2i pos, CArray *objs)
+static bool TryRemoveMapObjectAt(const struct vec2i pos, CArray *objs)
 {
 	for (int i = 0; i < (int)objs->size; i++)
 	{
 		MapObjectPositions *mop = CArrayGet(objs, i);
 		for (int j = 0; j < (int)mop->Positions.size; j++)
 		{
-			const Vec2i *mopPos = CArrayGet(&mop->Positions, j);
-			if (Vec2iEqual(*mopPos, pos))
+			const struct vec2i *mopPos = CArrayGet(&mop->Positions, j);
+			if (svec2i_is_equal(*mopPos, pos))
 			{
 				CArrayDelete(&mop->Positions, j);
 				if (mop->Positions.size == 0)
@@ -329,7 +329,7 @@ static bool TryRemoveMapObjectAt(const Vec2i pos, CArray *objs)
 	return false;
 }
 
-bool MissionStaticTryAddCharacter(Mission *m, int ch, Vec2i pos)
+bool MissionStaticTryAddCharacter(Mission *m, int ch, struct vec2i pos)
 {
 	assert(m->Type == MAPTYPE_STATIC && "invalid map type");
 	unsigned short tile = MissionGetTile(m, pos);
@@ -355,7 +355,7 @@ bool MissionStaticTryAddCharacter(Mission *m, int ch, Vec2i pos)
 		{
 			CharacterPositions cp;
 			cp.Index = ch;
-			CArrayInit(&cp.Positions, sizeof(Vec2i));
+			CArrayInit(&cp.Positions, sizeof(struct vec2i));
 			CArrayPushBack(&cp.Positions, &pos);
 			CArrayPushBack(&m->u.Static.Characters, &cp);
 		}
@@ -363,13 +363,13 @@ bool MissionStaticTryAddCharacter(Mission *m, int ch, Vec2i pos)
 	}
 	return false;
 }
-bool MissionStaticTryRemoveCharacterAt(Mission *m, Vec2i pos)
+bool MissionStaticTryRemoveCharacterAt(Mission *m, struct vec2i pos)
 {
 	CA_FOREACH(CharacterPositions, cp, m->u.Static.Characters)
 		for (int j = 0; j < (int)cp->Positions.size; j++)
 		{
-			Vec2i *cpPos = CArrayGet(&cp->Positions, j);
-			if (Vec2iEqual(*cpPos, pos))
+			struct vec2i *cpPos = CArrayGet(&cp->Positions, j);
+			if (svec2i_is_equal(*cpPos, pos))
 			{
 				CArrayDelete(&cp->Positions, j);
 				if (cp->Positions.size == 0)
@@ -384,7 +384,7 @@ bool MissionStaticTryRemoveCharacterAt(Mission *m, Vec2i pos)
 	return false;
 }
 
-bool MissionStaticTryAddObjective(Mission *m, int idx, int idx2, Vec2i pos)
+bool MissionStaticTryAddObjective(Mission *m, int idx, int idx2, struct vec2i pos)
 {
 	assert(m->Type == MAPTYPE_STATIC && "invalid map type");
 	unsigned short tile = MissionGetTile(m, pos);
@@ -397,7 +397,6 @@ bool MissionStaticTryAddObjective(Mission *m, int idx, int idx2, Vec2i pos)
 		// Check if the objective already has an entry, and add to its list
 		// of positions
 		int hasAdded = 0;
-		int objectiveIndex = -1;
 		ObjectivePositions *op = NULL;
 		for (int i = 0; i < (int)m->u.Static.Objectives.size; i++)
 		{
@@ -406,7 +405,6 @@ bool MissionStaticTryAddObjective(Mission *m, int idx, int idx2, Vec2i pos)
 			{
 				CArrayPushBack(&op->Positions, &pos);
 				CArrayPushBack(&op->Indices, &idx2);
-				objectiveIndex = op->Index;
 				hasAdded = 1;
 				break;
 			}
@@ -416,27 +414,26 @@ bool MissionStaticTryAddObjective(Mission *m, int idx, int idx2, Vec2i pos)
 		{
 			ObjectivePositions newOp;
 			newOp.Index = idx;
-			CArrayInit(&newOp.Positions, sizeof(Vec2i));
+			CArrayInit(&newOp.Positions, sizeof(struct vec2i));
 			CArrayInit(&newOp.Indices, sizeof(int));
 			CArrayPushBack(&newOp.Positions, &pos);
 			CArrayPushBack(&newOp.Indices, &idx2);
-			objectiveIndex = (int)newOp.Positions.size - 1;
 			CArrayPushBack(&m->u.Static.Objectives, &newOp);
 		}
 		// Increase number of objectives
-		Objective *o = CArrayGet(&m->Objectives, objectiveIndex);
+		Objective *o = CArrayGet(&m->Objectives, idx);
 		o->Count++;
 		return true;
 	}
 	return false;
 }
-bool MissionStaticTryRemoveObjectiveAt(Mission *m, Vec2i pos)
+bool MissionStaticTryRemoveObjectiveAt(Mission *m, struct vec2i pos)
 {
 	CA_FOREACH(ObjectivePositions, op, m->u.Static.Objectives)
 		for (int j = 0; j < (int)op->Positions.size; j++)
 		{
-			Vec2i *opPos = CArrayGet(&op->Positions, j);
-			if (Vec2iEqual(*opPos, pos))
+			struct vec2i *opPos = CArrayGet(&op->Positions, j);
+			if (svec2i_is_equal(*opPos, pos))
 			{
 				CArrayDelete(&op->Positions, j);
 				CArrayDelete(&op->Indices, j);
@@ -457,7 +454,7 @@ bool MissionStaticTryRemoveObjectiveAt(Mission *m, Vec2i pos)
 	return false;
 }
 
-bool MissionStaticTryAddKey(Mission *m, int k, Vec2i pos)
+bool MissionStaticTryAddKey(Mission *m, int k, struct vec2i pos)
 {
 	assert(m->Type == MAPTYPE_STATIC && "invalid map type");
 	unsigned short tile = MissionGetTile(m, pos);
@@ -483,7 +480,7 @@ bool MissionStaticTryAddKey(Mission *m, int k, Vec2i pos)
 		{
 			KeyPositions kp;
 			kp.Index = k;
-			CArrayInit(&kp.Positions, sizeof(Vec2i));
+			CArrayInit(&kp.Positions, sizeof(struct vec2i));
 			CArrayPushBack(&kp.Positions, &pos);
 			CArrayPushBack(&m->u.Static.Keys, &kp);
 		}
@@ -491,13 +488,13 @@ bool MissionStaticTryAddKey(Mission *m, int k, Vec2i pos)
 	}
 	return false;
 }
-bool MissionStaticTryRemoveKeyAt(Mission *m, Vec2i pos)
+bool MissionStaticTryRemoveKeyAt(Mission *m, struct vec2i pos)
 {
 	CA_FOREACH(KeyPositions, kp, m->u.Static.Keys)
 		for (int j = 0; j < (int)kp->Positions.size; j++)
 		{
-			Vec2i *kpPos = CArrayGet(&kp->Positions, j);
-			if (Vec2iEqual(*kpPos, pos))
+			struct vec2i *kpPos = CArrayGet(&kp->Positions, j);
+			if (svec2i_is_equal(*kpPos, pos))
 			{
 				CArrayDelete(&kp->Positions, j);
 				if (kp->Positions.size == 0)
@@ -517,9 +514,9 @@ typedef struct
 	Mission *m;
 	unsigned short mask;
 } MissionFloodFillData;
-static void MissionFillTile(void *data, Vec2i v);
-static bool MissionIsTileSame(void *data, Vec2i v);
-bool MissionStaticTrySetKey(Mission *m, int k, Vec2i pos)
+static void MissionFillTile(void *data, struct vec2i v);
+static bool MissionIsTileSame(void *data, struct vec2i v);
+bool MissionStaticTrySetKey(Mission *m, int k, struct vec2i pos)
 {
 	assert(m->Type == MAPTYPE_STATIC && "invalid map type");
 	unsigned short mask = GetAccessMask(k);
@@ -532,12 +529,12 @@ bool MissionStaticTrySetKey(Mission *m, int k, Vec2i pos)
 	data.data = &mData;
 	return CFloodFill(pos, &data);
 }
-static void MissionFillTile(void *data, Vec2i v)
+static void MissionFillTile(void *data, struct vec2i v)
 {
 	MissionFloodFillData *mData = data;
 	MissionTrySetTile(mData->m, v, MAP_DOOR | mData->mask);
 }
-static bool MissionIsTileSame(void *data, Vec2i v)
+static bool MissionIsTileSame(void *data, struct vec2i v)
 {
 	MissionFloodFillData *mData = data;
 	unsigned short tile = MissionGetTile(mData->m, v);
@@ -545,7 +542,7 @@ static bool MissionIsTileSame(void *data, Vec2i v)
 		(tile & MAP_ACCESSBITS) != mData->mask;
 }
 
-bool MissionStaticTryUnsetKeyAt(Mission *m, Vec2i pos)
+bool MissionStaticTryUnsetKeyAt(Mission *m, struct vec2i pos)
 {
 	// -1 for no access level
 	return MissionStaticTrySetKey(m, -1, pos);

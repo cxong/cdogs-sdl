@@ -75,13 +75,13 @@ void TileDestroy(Tile *t)
 	CArrayTerminate(&t->things);
 }
 
-bool IsTileItemInsideTile(TTileItem *i, Vec2i tilePos)
+bool IsTileItemInsideTile(const TTileItem *i, const struct vec2i tilePos)
 {
 	return
-		i->x - i->size.x / 2 >= tilePos.x * TILE_WIDTH &&
-		i->x + i->size.x / 2 < (tilePos.x + 1) * TILE_WIDTH &&
-		i->y - i->size.y / 2 >= tilePos.y * TILE_HEIGHT &&
-		i->y + i->size.y / 2 < (tilePos.y + 1) * TILE_HEIGHT;
+		i->Pos.x - i->size.x / 2 >= tilePos.x * TILE_WIDTH &&
+		i->Pos.x + i->size.x / 2 < (tilePos.x + 1) * TILE_WIDTH &&
+		i->Pos.y - i->size.y / 2 >= tilePos.y * TILE_HEIGHT &&
+		i->Pos.y + i->size.y / 2 < (tilePos.y + 1) * TILE_HEIGHT;
 }
 
 bool TileCanSee(Tile *t)
@@ -122,6 +122,19 @@ void TileSetAlternateFloor(Tile *t, NamedPic *p)
 {
 	t->pic = p;
 	t->flags &= ~MAPTILE_IS_NORMAL_FLOOR;
+}
+
+void TileItemInit(
+	TTileItem *t, const int id, const TileItemKind kind, const struct vec2i size,
+	const int flags)
+{
+	memset(t, 0, sizeof *t);
+	t->id = id;
+	t->kind = kind;
+	t->size = size;
+	t->flags = flags;
+	// Ininitalise pos
+	t->Pos = svec2(-1, -1);
 }
 
 void TileItemUpdate(TTileItem *t, const int ticks)

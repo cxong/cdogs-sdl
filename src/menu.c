@@ -68,7 +68,7 @@
 
 void MenuSystemInit(
 	MenuSystem *ms,
-	EventHandlers *handlers, GraphicsDevice *graphics, Vec2i pos, Vec2i size)
+	EventHandlers *handlers, GraphicsDevice *graphics, struct vec2i pos, struct vec2i size)
 {
 	memset(ms, 0, sizeof *ms);
 	ms->root = ms->current = NULL;
@@ -273,15 +273,15 @@ void ShowControls(void)
 	opts.Pad.y = 10;
 #ifdef __GCWZERO__
 	FontStrOpt(
-		"(use joystick or D pad + START + SELECT)", Vec2iZero(), opts);
+		"(use joystick or D pad + START + SELECT)", svec2i_zero(), opts);
 #else
 	FontStrOpt(
-		"(use joystick 1 or arrow keys + Enter/Backspace)", Vec2iZero(), opts);
+		"(use joystick 1 or arrow keys + Enter/Backspace)", svec2i_zero(), opts);
 #endif
 }
 
-Vec2i DisplayMenuItem(
-	Vec2i pos, const char *s, int selected, int isDisabled, color_t color)
+struct vec2i DisplayMenuItem(
+	struct vec2i pos, const char *s, int selected, int isDisabled, color_t color)
 {
 	if (selected)
 	{
@@ -597,7 +597,7 @@ void MenuDisplay(const MenuSystem *ms)
 			FontOpts opts = FontOptsNew();
 			opts.HAlign = ALIGN_CENTER;
 			opts.Area = ms->size;
-			opts.Pad = Vec2iNew(20, 20);
+			opts.Pad = svec2i(20, 20);
 			FontStrOpt(menu->u.normal.title, ms->pos, opts);
 		}
 
@@ -622,14 +622,14 @@ static void MenuDisplayItems(const MenuSystem *ms)
 	if (d & MENU_DISPLAY_ITEMS_AUTHORS)
 	{
 		const Pic *logo = PicManagerGetPic(&gPicManager, "logo");
-		const Vec2i pos = Vec2iNew(
+		const struct vec2i pos = svec2i(
 			MS_CENTER_X(*ms, logo->size.x), ms->pos.y + ms->size.y / 12);
 		Blit(&gGraphicsDevice, logo, pos);
 
 		FontOpts opts = FontOptsNew();
 		opts.HAlign = ALIGN_END;
 		opts.Area = ms->size;
-		opts.Pad = Vec2iNew(20, 20);
+		opts.Pad = svec2i(20, 20);
 		FontStrOpt("Version: " CDOGS_SDL_VERSION, ms->pos, opts);
 	}
 }
@@ -710,7 +710,7 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 				if (menu->u.normal.scroll != 0)
 				{
 					DisplayMenuItem(
-						Vec2iNew(
+						svec2i(
 							MS_CENTER_X(*ms, FontW('^')),
 							yStart - 2 - FontH()),
 						"^",
@@ -720,7 +720,7 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 				if (iEnd < (int)menu->u.normal.subMenus.size - 1)
 				{
 					DisplayMenuItem(
-						Vec2iNew(
+						svec2i(
 							MS_CENTER_X(*ms, FontW('v')),
 							yStart + numMenuLines*FontH() + 2),
 						"v",
@@ -731,7 +731,7 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 			const int xOptions = x + maxWidth + 10;
 
 			// Display normal menu items
-			Vec2i pos = Vec2iNew(x, yStart);
+			struct vec2i pos = svec2i(x, yStart);
 			for (int i = iStart; i < iEnd; i++)
 			{
 				const menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
@@ -770,7 +770,7 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 
 				// display option value
 				const int optionInt = MenuOptionGetIntValue(subMenu);
-				const Vec2i valuePos = Vec2iNew(xOptions, pos.y);
+				const struct vec2i valuePos = svec2i(xOptions, pos.y);
 				if (subMenu->type == MENU_TYPE_SET_OPTION_RANGE ||
 					subMenu->type == MENU_TYPE_SET_OPTION_SEED ||
 					subMenu->type == MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID ||
@@ -817,11 +817,11 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 				if (isSelected &&
 					subMenu->type != MENU_TYPE_SET_OPTION_CHANGE_KEY)
 				{
-					FontStrMask(name, Vec2iNew(x, y), colorRed);
+					FontStrMask(name, svec2i(x, y), colorRed);
 				}
 				else
 				{
-					FontStr(name, Vec2iNew(x, y));
+					FontStr(name, svec2i(x, y));
 				}
 
 				if (subMenu->type == MENU_TYPE_SET_OPTION_CHANGE_KEY)
@@ -845,7 +845,7 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 						}
 					}
 					DisplayMenuItem(
-						Vec2iNew(xKeys, y),
+						svec2i(xKeys, y),
 						keyName,
 						isSelected,
 						0,
@@ -976,7 +976,6 @@ void MenuProcessCmd(MenuSystem *ms, int cmd)
 		menuToChange = MenuProcessButtonCmd(ms, menu, cmd);
 		if (menuToChange != NULL)
 		{
-			debug(D_VERBOSE, "change to menu type %d\n", menuToChange->type);
 			MenuPlaySound(menuToChange->enterSound);
 			ms->current = menuToChange;
 			goto bail;
@@ -1356,8 +1355,8 @@ void PostInputConfigApply(menu_t *menu, int cmd, void *data)
 	// Update menu system so that resolution changes don't
 	// affect menu positions
 	MenuSystem *ms = data;
-	ms->pos = Vec2iZero();
-	ms->size = Vec2iNew(
+	ms->pos = svec2i_zero();
+	ms->size = svec2i(
 		ms->graphics->cachedConfig.Res.x,
 		ms->graphics->cachedConfig.Res.y);
 }

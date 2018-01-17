@@ -194,6 +194,26 @@
         "Type": "Directional",
         "Sprites": "chars/heads/goggles"
       }
+    },
+    {
+      "Name": "Bones",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/skull"
+      },
+      "Sounds": {
+        "Aargh": "aargh/zombie"
+      }
+    },
+    {
+      "Name": "Big Bones",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/skull_big"
+      },
+      "Sounds": {
+        "Aargh": "aargh/zombie"
+      }
     }
   ]
 }

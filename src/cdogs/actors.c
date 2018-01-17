@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017, Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -49,6 +49,7 @@
 #include "actors.h"
 
 #include <assert.h>
+#include <float.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -76,18 +77,19 @@
 #include "game.h"
 #include "utils.h"
 
-#define FOOTSTEP_DISTANCE_PLUS 380
-#define REPEL_STRENGTH 14
+#define FOOTSTEP_DISTANCE_PLUS 250
+#define REPEL_STRENGTH 0.06f
 #define SLIDE_LOCK 50
 #define SLIDE_X (TILE_WIDTH / 3)
 #define SLIDE_Y (TILE_HEIGHT / 3)
-#define VEL_DECAY_X (TILE_WIDTH * 2)
-#define VEL_DECAY_Y (TILE_WIDTH * 2)	// Note: deliberately tile width
+#define VEL_DECAY_X (TILE_WIDTH * 2 / 256.0f)
+#define VEL_DECAY_Y (TILE_WIDTH * 2 / 256.0f)	// Note: deliberately tile width
 #define SOUND_LOCK_WEAPON_CLICK 20
 #define DROP_GUN_CHANCE 0.2
-#define DRAW_RADIAN_SPEED (PI/16)
+#define DRAW_RADIAN_SPEED (M_PI/16)
 // Percent of health considered low; bleed and flash HUD if low
 #define LOW_HEALTH_PERCENTAGE 25
+#define GORE_EMITTER_MAX_SPEED 0.25f
 
 
 CArray gPlayerIds;
@@ -142,7 +144,7 @@ void UpdateActorState(TActor * actor, int ticks)
 
 	if (actor->health <= 0) {
 		actor->dead++;
-		actor->MoveVel = Vec2iZero();
+		actor->MoveVel = svec2_zero();
 		actor->stateCounter = 4;
 		actor->tileItem.flags = 0;
 		return;
@@ -150,13 +152,13 @@ void UpdateActorState(TActor * actor, int ticks)
 
 	// Draw rotation interpolation
 	const float targetRadians = (float)dir2radians[actor->direction];
-	if (actor->DrawRadians - targetRadians > PI)
+	if (actor->DrawRadians - targetRadians > MPI)
 	{
-		actor->DrawRadians -= 2 * (float)PI;
+		actor->DrawRadians -= 2 * MPI;
 	}
-	if (actor->DrawRadians - targetRadians < -PI)
+	if (actor->DrawRadians - targetRadians < -MPI)
 	{
-		actor->DrawRadians += 2 * (float)PI;
+		actor->DrawRadians += 2 * MPI;
 	}
 	const float dr = actor->DrawRadians - targetRadians;
 	if (dr < 0)
@@ -172,13 +174,13 @@ void UpdateActorState(TActor * actor, int ticks)
 	// Step on 2 and 6
 	// TODO: custom animation and footstep frames
 	if (ConfigGetBool(&gConfig, "Sound.Footsteps") &&
+		actor->anim.Type == ACTORANIMATION_WALKING &&
 		(AnimationGetFrame(&actor->anim) == 2 ||
 		AnimationGetFrame(&actor->anim) == 6) &&
 		actor->anim.newFrame)
 	{
 		SoundPlayAtPlusDistance(
-			&gSoundDevice, StrSound("footsteps"),
-			Vec2iNew(actor->tileItem.x, actor->tileItem.y),
+			&gSoundDevice, StrSound("footsteps"), actor->tileItem.Pos,
 			FOOTSTEP_DISTANCE_PLUS);
 	}
 
@@ -194,20 +196,21 @@ void UpdateActorState(TActor * actor, int ticks)
 	}
 }
 
-static Vec2i GetConstrainedFullPos(
-	const Map *map, const Vec2i fromFull, const Vec2i toFull,
-	const Vec2i size);
+static struct vec2 GetConstrainedPos(
+	const Map *map, const struct vec2 from, const struct vec2 to,
+	const struct vec2i size);
 static void OnMove(TActor *a);
-bool TryMoveActor(TActor *actor, Vec2i pos)
+bool TryMoveActor(TActor *actor, struct vec2 pos)
 {
-	CASSERT(!Vec2iEqual(actor->Pos, pos), "trying to move to same position");
+	CASSERT(!svec2_is_nearly_equal(actor->Pos, pos, EPSILON_POS),
+		"trying to move to same position");
 
 	actor->hasCollided = true;
 	actor->CanPickupSpecial = false;
 
-	const Vec2i oldPos = actor->Pos;
-	pos = GetConstrainedFullPos(&gMap, actor->Pos, pos, actor->tileItem.size);
-	if (Vec2iEqual(oldPos, pos))
+	const struct vec2 oldPos = actor->Pos;
+	pos = GetConstrainedPos(&gMap, actor->Pos, pos, actor->tileItem.size);
+	if (svec2_is_nearly_equal(oldPos, pos, EPSILON_POS))
 	{
 		return false;
 	}
@@ -271,13 +274,13 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 				return false;
 			}
 
-			const Vec2i yPos = Vec2iNew(actor->Pos.x, pos.y);
+			const struct vec2 yPos = svec2(actor->Pos.x, pos.y);
 			if (OverlapGetFirstItem(
 				&actor->tileItem, yPos, actor->tileItem.size, params))
 			{
 				pos.y = actor->Pos.y;
 			}
-			const Vec2i xPos = Vec2iNew(pos.x, actor->Pos.y);
+			const struct vec2 xPos = svec2(pos.x, actor->Pos.y);
 			if (OverlapGetFirstItem(
 				&actor->tileItem, xPos, actor->tileItem.size, params))
 			{
@@ -291,7 +294,7 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 				pos.y = actor->Pos.y;
 			}
 			if ((pos.x == actor->Pos.x && pos.y == actor->Pos.y) ||
-				IsCollisionWithWall(Vec2iFull2Real(pos), actor->tileItem.size))
+				IsCollisionWithWall(pos, actor->tileItem.size))
 			{
 				return false;
 			}
@@ -307,36 +310,33 @@ bool TryMoveActor(TActor *actor, Vec2i pos)
 // Get a movement position that is constrained by collisions
 // May return a position that is the same as the 'from', that is, we cannot
 // move in the direction specified.
-// Note: must use full coordinates to do collisions, despite collisions using
-// real coordinates, because fractional movement will be blocked otherwise
-// since real coordinates are the same.
-static Vec2i GetConstrainedFullPos(
-	const Map *map, const Vec2i fromFull, const Vec2i toFull,
-	const Vec2i size)
+static struct vec2 GetConstrainedPos(
+	const Map *map, const struct vec2 from, const struct vec2 to,
+	const struct vec2i size)
 {
 	// Check collision with wall
-	if (!IsCollisionWithWall(Vec2iFull2Real(toFull), size))
+	if (!IsCollisionWithWall(to, size))
 	{
 		// Not in collision; just return where we wanted to go
-		return toFull;
+		return to;
 	}
 	
 	CASSERT(size.x >= size.y, "tall collision not supported");
-	const Vec2i dv = Vec2iMinus(toFull, fromFull);
+	const struct vec2 dv = svec2_subtract(to, from);
 
 	// If moving diagonally, use rectangular bounds and
 	// try to move in only x or y directions
 	if (dv.x != 0 && dv.y != 0)
 	{
 		// X-only movement
-		const Vec2i xVec = Vec2iNew(toFull.x, fromFull.y);
-		if (!IsCollisionWithWall(Vec2iFull2Real(xVec), size))
+		const struct vec2 xVec = svec2(to.x, from.y);
+		if (!IsCollisionWithWall(xVec, size))
 		{
 			return xVec;
 		}
 		// Y-only movement
-		const Vec2i yVec = Vec2iNew(fromFull.x, toFull.y);
-		if (!IsCollisionWithWall(Vec2iFull2Real(yVec), size))
+		const struct vec2 yVec = svec2(from.x, to.y);
+		if (!IsCollisionWithWall(yVec, size))
 		{
 			return yVec;
 		}
@@ -344,13 +344,13 @@ static Vec2i GetConstrainedFullPos(
 		// in collision with a diamond but is colliding with the box.
 		// If so try x- or y-only movement, but with the benefit of diamond
 		// slipping.
-		const Vec2i xPos = GetConstrainedFullPos(map, fromFull, xVec, size);
-		if (!Vec2iEqual(xPos, fromFull))
+		const struct vec2 xPos = GetConstrainedPos(map, from, xVec, size);
+		if (!svec2_is_nearly_equal(xPos, from, EPSILON_POS))
 		{
 			return xPos;
 		}
-		const Vec2i yPos = GetConstrainedFullPos(map, fromFull, yVec, size);
-		if (!Vec2iEqual(yPos, fromFull))
+		const struct vec2 yPos = GetConstrainedPos(map, from, yVec, size);
+		if (!svec2_is_nearly_equal(yPos, from, EPSILON_POS))
 		{
 			return yPos;
 		}
@@ -367,15 +367,15 @@ static Vec2i GetConstrainedFullPos(
 		// may need to scale the diamond wider.
 		const int xScale =
 			size.x > size.y ? (int)ceil((double)size.x / size.y) : 1;
-		const Vec2i diag1Vec =
-			Vec2iAdd(fromFull, Vec2iNew(-dv.y * xScale, dv.y));
-		if (!IsCollisionDiamond(map, Vec2iFull2Real(diag1Vec), size))
+		const struct vec2 diag1Vec =
+			svec2_add(from, svec2(-dv.y * xScale, dv.y));
+		if (!IsCollisionDiamond(map, diag1Vec, size))
 		{
 			return diag1Vec;
 		}
-		const Vec2i diag2Vec =
-			Vec2iAdd(fromFull, Vec2iNew(dv.y * xScale, dv.y));
-		if (!IsCollisionDiamond(map, Vec2iFull2Real(diag2Vec), size))
+		const struct vec2 diag2Vec =
+			svec2_add(from, svec2(dv.y * xScale, dv.y));
+		if (!IsCollisionDiamond(map, diag2Vec, size))
 		{
 			return diag2Vec;
 		}
@@ -383,38 +383,37 @@ static Vec2i GetConstrainedFullPos(
 	else if (dv.y == 0)
 	{
 		// Moving left or right; try moving up or down diagonally
-		const Vec2i diag1Vec =
-			Vec2iAdd(fromFull, Vec2iNew(dv.x, -dv.x));
-		if (!IsCollisionDiamond(map, Vec2iFull2Real(diag1Vec), size))
+		const struct vec2 diag1Vec =
+			svec2_add(from, svec2(dv.x, -dv.x));
+		if (!IsCollisionDiamond(map, diag1Vec, size))
 		{
 			return diag1Vec;
 		}
-		const Vec2i diag2Vec =
-			Vec2iAdd(fromFull, Vec2iNew(dv.x, dv.x));
-		if (!IsCollisionDiamond(map, Vec2iFull2Real(diag2Vec), size))
+		const struct vec2 diag2Vec =
+			svec2_add(from, svec2(dv.x, dv.x));
+		if (!IsCollisionDiamond(map, diag2Vec, size))
 		{
 			return diag2Vec;
 		}
 	}
 
 	// All alternative movements are in collision; don't move
-	return fromFull;
+	return from;
 }
 
 void ActorMove(const NActorMove am)
 {
 	TActor *a = ActorGetByUID(am.UID);
 	if (a == NULL || !a->isInUse) return;
-	a->Pos = Net2Vec2i(am.Pos);
-	a->MoveVel = Net2Vec2i(am.MoveVel);
+	a->Pos = NetToVec2(am.Pos);
+	a->MoveVel = NetToVec2(am.MoveVel);
 	OnMove(a);
 }
-static void CheckTrigger(const Vec2i tilePos, const bool showLocked);
+static void CheckTrigger(const struct vec2i tilePos, const bool showLocked);
 static void CheckRescue(const TActor *a);
 static void OnMove(TActor *a)
 {
-	const Vec2i realPos = Vec2iFull2Real(a->Pos);
-	MapTryMoveTileItem(&gMap, &a->tileItem, realPos);
+	MapTryMoveTileItem(&gMap, &a->tileItem, a->Pos);
 	if (MapIsTileInExit(&gMap, &a->tileItem))
 	{
 		a->action = ACTORACTION_EXITING;
@@ -426,14 +425,14 @@ static void OnMove(TActor *a)
 
 	if (!gCampaign.IsClient)
 	{
-		CheckTrigger(Vec2iToTile(realPos), ActorIsLocalPlayer(a->uid));
+		CheckTrigger(Vec2ToTile(a->Pos), ActorIsLocalPlayer(a->uid));
 
 		CheckPickups(a);
 
 		CheckRescue(a);
 	}
 }
-static void CheckTrigger(const Vec2i tilePos, const bool showLocked)
+static void CheckTrigger(const struct vec2i tilePos, const bool showLocked)
 {
 	const Tile *t = MapGetTile(&gMap, tilePos);
 	CA_FOREACH(Trigger *, tp, t->triggers)
@@ -446,8 +445,7 @@ static void CheckTrigger(const Vec2i tilePos, const bool showLocked)
 			GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 			s.u.AddParticle.Class =
 				StrParticleClass(&gParticleClasses, "locked_text");
-			s.u.AddParticle.FullPos =
-				Vec2iReal2Full(Vec2iCenterOfTile(tilePos));
+			s.u.AddParticle.Pos = Vec2CenterOfTile(tilePos);
 			s.u.AddParticle.Z = (BULLET_Z * 2) * Z_FACTOR;
 			sprintf(s.u.AddParticle.Text, "locked");
 			GameEventsEnqueue(&gGameEvents, s);
@@ -456,8 +454,8 @@ static void CheckTrigger(const Vec2i tilePos, const bool showLocked)
 }
 // Check if the player can pickup any item
 static bool CheckPickupFunc(
-	TTileItem *ti, void *data, const Vec2i colA, const Vec2i colB,
-	const Vec2i normal);
+	TTileItem *ti, void *data, const struct vec2 colA, const struct vec2 colB,
+	const struct vec2 normal);
 static void CheckPickups(TActor *actor)
 {
 	// NPCs can't pickup
@@ -474,8 +472,8 @@ static void CheckPickups(TActor *actor)
 		params, CheckPickupFunc, actor, NULL, NULL, NULL);
 }
 static bool CheckPickupFunc(
-	TTileItem *ti, void *data, const Vec2i colA, const Vec2i colB,
-	const Vec2i normal)
+	TTileItem *ti, void *data, const struct vec2 colA, const struct vec2 colB,
+	const struct vec2 normal)
 {
 	UNUSED(colA);
 	UNUSED(colB);
@@ -501,7 +499,7 @@ static void CheckRescue(const TActor *a)
 	};
 	const TTileItem *target = OverlapGetFirstItem(
 		&a->tileItem, a->Pos,
-		Vec2iAdd(a->tileItem.size, Vec2iNew(RESCUE_CHECK_PAD, RESCUE_CHECK_PAD)),
+		svec2i_add(a->tileItem.size, svec2i(RESCUE_CHECK_PAD, RESCUE_CHECK_PAD)),
 		params);
 	if (target != NULL && target->kind == KIND_CHARACTER)
 	{
@@ -532,16 +530,16 @@ void InjureActor(TActor * actor, int injury)
 	if (lastHealth > 0 && actor->health <= 0)
 	{
 		actor->stateCounter = 0;
-		const Vec2i pos = Vec2iNew(actor->tileItem.x, actor->tileItem.y);
 		SoundPlayAt(
 			&gSoundDevice,
-			StrSound(ActorGetCharacter(actor)->Class->Sounds.Aargh), pos);
+			StrSound(ActorGetCharacter(actor)->Class->Sounds.Aargh),
+			actor->tileItem.Pos);
 		if (actor->PlayerUID >= 0)
 		{
 			SoundPlayAt(
 				&gSoundDevice,
 				StrSound("hahaha"),
-				pos);
+				actor->tileItem.Pos);
 		}
 		if (actor->tileItem.flags & TILEITEM_OBJECTIVE)
 		{
@@ -603,7 +601,7 @@ void ActorReplaceGun(const NActorReplaceGun rg)
 		memcpy(CArrayGet(&a->guns, rg.GunIdx), &w, a->guns.elemSize);
 	}
 
-	SoundPlayAt(&gSoundDevice, gun->SwitchSound, Vec2iFull2Real(a->Pos));
+	SoundPlayAt(&gSoundDevice, gun->SwitchSound, a->Pos);
 }
 
 bool ActorHasGun(const TActor *a, const GunDescription *gun)
@@ -641,9 +639,7 @@ void Shoot(TActor *actor)
 			// Play a clicking sound if this gun is out of ammo
 			if (gun->clickLock <= 0)
 			{
-				SoundPlayAt(
-					&gSoundDevice,
-					StrSound("click"), Vec2iFull2Real(actor->Pos));
+				SoundPlayAt(&gSoundDevice, StrSound("click"), actor->Pos);
 				gun->clickLock = SOUND_LOCK_WEAPON_CLICK;
 			}
 		}
@@ -779,10 +775,10 @@ static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks)
 		(cmd & CMD_BUTTON2));
 	const bool willMove =
 		!actor->petrified && CMD_HAS_DIRECTION(cmd) && canMoveWhenShooting;
-	actor->MoveVel = Vec2iZero();
+	actor->MoveVel = svec2_zero();
 	if (willMove)
 	{
-		const int moveAmount = ActorGetCharacter(actor)->speed * ticks;
+		const float moveAmount = ActorGetCharacter(actor)->speed * ticks;
 		if (cmd & CMD_LEFT)
 		{
 			actor->MoveVel.x -= moveAmount;
@@ -824,8 +820,8 @@ static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks)
 	{
 		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_MOVE);
 		e.u.ActorMove.UID = actor->uid;
-		e.u.ActorMove.Pos = Vec2i2Net(actor->Pos);
-		e.u.ActorMove.MoveVel = Vec2i2Net(actor->MoveVel);
+		e.u.ActorMove.Pos = Vec2ToNet(actor->Pos);
+		e.u.ActorMove.MoveVel = Vec2ToNet(actor->MoveVel);
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 
@@ -850,12 +846,12 @@ void SlideActor(TActor *actor, int cmd)
 
 	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_SLIDE);
 	e.u.ActorSlide.UID = actor->uid;
-	Vec2i vel = Vec2iZero();
-	if (cmd & CMD_LEFT)			vel.x = -SLIDE_X * 256;
-	else if (cmd & CMD_RIGHT)	vel.x = SLIDE_X * 256;
-	if (cmd & CMD_UP)			vel.y = -SLIDE_Y * 256;
-	else if (cmd & CMD_DOWN)	vel.y = SLIDE_Y * 256;
-	e.u.ActorSlide.Vel = Vec2i2Net(vel);
+	struct vec2 vel = svec2_zero();
+	if (cmd & CMD_LEFT)			vel.x = -SLIDE_X;
+	else if (cmd & CMD_RIGHT)	vel.x = SLIDE_X;
+	if (cmd & CMD_UP)			vel.y = -SLIDE_Y;
+	else if (cmd & CMD_DOWN)	vel.y = SLIDE_Y;
+	e.u.ActorSlide.Vel = Vec2ToNet(vel);
 	GameEventsEnqueue(&gGameEvents, e);
 	
 	actor->slideLock = SLIDE_LOCK;
@@ -899,20 +895,21 @@ void UpdateAllActors(int ticks)
 				if (CalcCollisionTeam(1, collidingActor) ==
 					CalcCollisionTeam(1, actor))
 				{
-					Vec2i v = Vec2iMinus(actor->Pos, collidingActor->Pos);
-					if (Vec2iIsZero(v))
+					struct vec2 v = svec2_subtract(
+						actor->Pos, collidingActor->Pos);
+					if (svec2_is_zero(v))
 					{
-						v = Vec2iNew(1, 0);
+						v = svec2(1, 0);
 					}
-					v = Vec2iScale(Vec2iNorm(v), REPEL_STRENGTH);
+					v = svec2_scale(svec2_normalize(v), REPEL_STRENGTH);
 					GameEvent e = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
 					e.u.ActorImpulse.UID = actor->uid;
-					e.u.ActorImpulse.Vel = Vec2i2Net(v);
-					e.u.ActorImpulse.Pos = Vec2i2Net(actor->Pos);
+					e.u.ActorImpulse.Vel = Vec2ToNet(v);
+					e.u.ActorImpulse.Pos = Vec2ToNet(actor->Pos);
 					GameEventsEnqueue(&gGameEvents, e);
 					e.u.ActorImpulse.UID = collidingActor->uid;
-					e.u.ActorImpulse.Vel = Vec2i2Net(Vec2iScale(v, -1));
-					e.u.ActorImpulse.Pos = Vec2i2Net(collidingActor->Pos);
+					e.u.ActorImpulse.Vel = Vec2ToNet(svec2_scale(v, -1));
+					e.u.ActorImpulse.Pos = Vec2ToNet(collidingActor->Pos);
 					GameEventsEnqueue(&gGameEvents, e);
 				}
 			}
@@ -923,8 +920,7 @@ void UpdateAllActors(int ticks)
 			actor->bleedCounter -= ticks;
 			if (actor->bleedCounter <= 0)
 			{
-
-				ActorAddBloodSplatters(actor, 1, 1.0, Vec2iZero());
+				ActorAddBloodSplatters(actor, 1, 1.0f, svec2_zero());
 				actor->bleedCounter += ActorGetHealthPercent(actor);
 			}
 		}
@@ -933,37 +929,38 @@ void UpdateAllActors(int ticks)
 static void CheckManualPickups(TActor *a);
 static void ActorUpdatePosition(TActor *actor, int ticks)
 {
-	Vec2i newPos = Vec2iAdd(actor->Pos, actor->MoveVel);
-	if (!Vec2iIsZero(actor->tileItem.VelFull))
+	struct vec2 newPos = svec2_add(actor->Pos, actor->MoveVel);
+	if (!svec2_is_zero(actor->tileItem.Vel))
 	{
-		newPos = Vec2iAdd(newPos, Vec2iScale(actor->tileItem.VelFull, ticks));
+		newPos = svec2_add(
+			newPos, svec2_scale(actor->tileItem.Vel, (float)ticks));
 
 		for (int i = 0; i < ticks; i++)
 		{
-			if (actor->tileItem.VelFull.x > 0)
+			if (actor->tileItem.Vel.x > FLT_EPSILON)
 			{
-				actor->tileItem.VelFull.x =
-					MAX(0, actor->tileItem.VelFull.x - VEL_DECAY_X);
+				actor->tileItem.Vel.x =
+					MAX(0, actor->tileItem.Vel.x - VEL_DECAY_X);
 			}
-			else
+			else if (actor->tileItem.Vel.x < -FLT_EPSILON)
 			{
-				actor->tileItem.VelFull.x =
-					MIN(0, actor->tileItem.VelFull.x + VEL_DECAY_X);
+				actor->tileItem.Vel.x =
+					MIN(0, actor->tileItem.Vel.x + VEL_DECAY_X);
 			}
-			if (actor->tileItem.VelFull.y > 0)
+			if (actor->tileItem.Vel.y > FLT_EPSILON)
 			{
-				actor->tileItem.VelFull.y =
-					MAX(0, actor->tileItem.VelFull.y - VEL_DECAY_Y);
+				actor->tileItem.Vel.y =
+					MAX(0, actor->tileItem.Vel.y - VEL_DECAY_Y);
 			}
-			else
+			else if (actor->tileItem.Vel.y < FLT_EPSILON)
 			{
-				actor->tileItem.VelFull.y =
-					MIN(0, actor->tileItem.VelFull.y + VEL_DECAY_Y);
+				actor->tileItem.Vel.y =
+					MIN(0, actor->tileItem.Vel.y + VEL_DECAY_Y);
 			}
 		}
 	}
 
-	if (!Vec2iEqual(actor->Pos, newPos))
+	if (!svec2_is_nearly_equal(actor->Pos, newPos, EPSILON_POS))
 	{
 		TryMoveActor(actor, newPos);
 	}
@@ -972,8 +969,8 @@ static void ActorUpdatePosition(TActor *actor, int ticks)
 }
 // Check if the actor is over any manual pickups
 static bool CheckManualPickupFunc(
-	TTileItem *ti, void *data, const Vec2i colA, const Vec2i colB,
-	const Vec2i normal);
+	TTileItem *ti, void *data, const struct vec2 colA, const struct vec2 colB,
+	const struct vec2 normal);
 static void CheckManualPickups(TActor *a)
 {
 	// NPCs can't pickup
@@ -987,8 +984,8 @@ static void CheckManualPickups(TActor *a)
 		a->tileItem.size, params, CheckManualPickupFunc, a, NULL, NULL, NULL);
 }
 static bool CheckManualPickupFunc(
-	TTileItem *ti, void *data, const Vec2i colA, const Vec2i colB,
-	const Vec2i normal)
+	TTileItem *ti, void *data, const struct vec2 colA, const struct vec2 colB,
+	const struct vec2 normal)
 {
 	UNUSED(colA);
 	UNUSED(colB);
@@ -1019,6 +1016,7 @@ static bool CheckManualPickupFunc(
 }
 static void ActorAddAmmoPickup(const TActor *actor);
 static void ActorAddGunPickup(const TActor *actor);
+static void ActorAddBloodPool(const TActor *a);
 static void ActorDie(TActor *actor)
 {
 	// Add an ammo pickup of the actor's gun
@@ -1033,17 +1031,12 @@ static void ActorDie(TActor *actor)
 		ActorAddGunPickup(actor);
 	}
 
-	// Add a blood pool
-	GameEvent e = GameEventNew(GAME_EVENT_MAP_OBJECT_ADD);
-	e.u.MapObjectAdd.UID = ObjsGetNextUID();
-	const MapObject *mo = RandomBloodMapObject(&gMapObjects);
-	strcpy(e.u.MapObjectAdd.MapObjectClass, mo->Name);
-	e.u.MapObjectAdd.Pos = Vec2i2Net(Vec2iFull2Real(actor->Pos));
-	e.u.MapObjectAdd.TileItemFlags = MapObjectGetFlags(mo);
-	e.u.MapObjectAdd.Health = mo->Health;
-	GameEventsEnqueue(&gGameEvents, e);
+	if (ConfigGetEnum(&gConfig, "Graphics.Gore") != GORE_NONE)
+	{
+		ActorAddBloodPool(actor);
+	}
 
-	e = GameEventNew(GAME_EVENT_ACTOR_DIE);
+	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_DIE);
 	e.u.ActorDie.UID = actor->uid;
 	GameEventsEnqueue(&gGameEvents, e);
 }
@@ -1079,10 +1072,10 @@ static void ActorAddAmmoPickup(const TActor *actor)
 			e.u.AddPickup.SpawnerUID = -1;
 			e.u.AddPickup.TileItemFlags = 0;
 			// Add a little random offset so the pickups aren't all together
-			const Vec2i offset = Vec2iNew(
-				RAND_INT(-TILE_WIDTH, TILE_WIDTH) / 2,
-				RAND_INT(-TILE_HEIGHT, TILE_HEIGHT) / 2);
-			e.u.AddPickup.Pos = Vec2i2Net(Vec2iAdd(Vec2iFull2Real(actor->Pos), offset));
+			const struct vec2 offset = svec2(
+				(float)RAND_INT(-TILE_WIDTH, TILE_WIDTH) / 2,
+				(float)RAND_INT(-TILE_HEIGHT, TILE_HEIGHT) / 2);
+			e.u.AddPickup.Pos = Vec2ToNet(svec2_add(actor->Pos, offset));
 			GameEventsEnqueue(&gGameEvents, e);
 		CA_FOREACH_END()
 	}
@@ -1110,7 +1103,7 @@ static void ActorAddGunPickup(const TActor *actor)
 		e.u.AddPickup.IsRandomSpawned = false;
 		e.u.AddPickup.SpawnerUID = -1;
 		e.u.AddPickup.TileItemFlags = 0;
-		e.u.AddPickup.Pos = Vec2i2Net(Vec2iFull2Real(actor->Pos));
+		e.u.AddPickup.Pos = Vec2ToNet(actor->Pos);
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 }
@@ -1120,6 +1113,17 @@ static bool IsUnarmedBot(const TActor *actor)
 	// then it's an unarmed actor
 	const Character *c = ActorGetCharacter(actor);
 	return c->bot != NULL && c->bot->probabilityToShoot == 0;
+}
+static void ActorAddBloodPool(const TActor *a)
+{
+	GameEvent e = GameEventNew(GAME_EVENT_MAP_OBJECT_ADD);
+	e.u.MapObjectAdd.UID = ObjsGetNextUID();
+	const MapObject *mo = RandomBloodMapObject(&gMapObjects);
+	strcpy(e.u.MapObjectAdd.MapObjectClass, mo->Name);
+	e.u.MapObjectAdd.Pos = Vec2ToNet(a->Pos);
+	e.u.MapObjectAdd.TileItemFlags = MapObjectGetFlags(mo);
+	e.u.MapObjectAdd.Health = mo->Health;
+	GameEventsEnqueue(&gGameEvents, e);
 }
 
 void ActorsInit(void)
@@ -1208,11 +1212,11 @@ TActor *ActorAdd(NActorAdd aa)
 	actor->gunIndex = 0;
 	actor->health = aa.Health;
 	actor->action = ACTORACTION_MOVING;
-	actor->tileItem.x = actor->tileItem.y = -1;
+	actor->tileItem.Pos.x = actor->tileItem.Pos.y = -1;
 	actor->tileItem.kind = KIND_CHARACTER;
 	actor->tileItem.getPicFunc = NULL;
 	actor->tileItem.drawFunc = NULL;
-	actor->tileItem.size = Vec2iNew(ACTOR_W, ACTOR_H);
+	actor->tileItem.size = svec2i(ACTOR_W, ACTOR_H);
 	actor->tileItem.flags =
 		TILEITEM_IMPASSABLE | TILEITEM_CAN_BE_SHOT | aa.TileItemFlags;
 	actor->tileItem.id = id;
@@ -1258,13 +1262,12 @@ TActor *ActorAdd(NActorAdd aa)
 	GoreEmitterInit(&actor->blood2, "blood2");
 	GoreEmitterInit(&actor->blood3, "blood3");
 
-	TryMoveActor(actor, Net2Vec2i(aa.FullPos));
+	TryMoveActor(actor, NetToVec2(aa.Pos));
 
 	// Spawn sound for player actors
 	if (aa.PlayerUID >= 0)
 	{
-		SoundPlayAt(
-			&gSoundDevice, StrSound("spawn"), Vec2iFull2Real(actor->Pos));
+		SoundPlayAt(&gSoundDevice, StrSound("spawn"), actor->Pos);
 	}
 	return actor;
 }
@@ -1272,7 +1275,7 @@ static void GoreEmitterInit(Emitter *em, const char *particleClassName)
 {
 	EmitterInit(
 		em, StrParticleClass(&gParticleClasses, particleClassName),
-		Vec2iZero(), 0, 64, 6, 12, -0.1, 0.1);
+		svec2_zero(), 0, GORE_EMITTER_MAX_SPEED, 6, 12, -0.1, 0.1);
 }
 
 void ActorDestroy(TActor *a)
@@ -1312,7 +1315,7 @@ Weapon *ActorGetGun(const TActor *a)
 {
 	return CArrayGet(&a->guns, a->gunIndex);
 }
-Vec2i ActorGetGunMuzzleOffset(const TActor *a)
+struct vec2 ActorGetGunMuzzleOffset(const TActor *a)
 {
 	const GunDescription *gun = ActorGetGun(a)->Gun;
 	const CharSprites *cs = ActorGetCharacter(a)->Class->Sprites;
@@ -1345,9 +1348,7 @@ void ActorSwitchGun(const NActorSwitchGun sg)
 	CASSERT(sg.GunIdx < a->guns.size, "can't switch to unavailable gun");
 	a->gunIndex = sg.GunIdx;
 	SoundPlayAt(
-		&gSoundDevice,
-		ActorGetGun(a)->Gun->SwitchSound,
-		Vec2iNew(a->tileItem.x, a->tileItem.y));
+		&gSoundDevice, ActorGetGun(a)->Gun->SwitchSound, a->tileItem.Pos);
 }
 
 bool ActorIsImmune(const TActor *actor, const special_damage_e damage)
@@ -1466,7 +1467,7 @@ bool ActorIsInvulnerable(
 }
 
 void ActorAddBloodSplatters(
-	TActor *a, const int power, const double mass, const Vec2i hitVector)
+	TActor *a, const int power, const float mass, const struct vec2 hitVector)
 {
 	const GoreAmount ga = ConfigGetEnum(&gConfig, "Graphics.Gore");
 	if (ga == GORE_NONE) return;
@@ -1495,10 +1496,8 @@ void ActorAddBloodSplatters(
 		{
 			bloodSize = 1;
 		}
-		const double speed =
-			(rand() % 8 + 8) * mass / (15 * SHOT_IMPULSE_DIVISOR);
-		const Vec2i vel =
-			Vec2iNew((int)(hitVector.x * speed), (int)(hitVector.y * speed));
+		const float speed = RAND_FLOAT(0.5f, 1) * mass * SHOT_IMPULSE_FACTOR;
+		const struct vec2 vel = svec2_scale(hitVector, speed);
 		EmitterStart(em, a->Pos, 10, vel);
 		switch (ga)
 		{

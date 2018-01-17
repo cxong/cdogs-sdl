@@ -86,10 +86,10 @@ typedef struct
 {
 	char *Name;
 	CPic Pic;
-	Vec2i Offset;
+	struct vec2i Offset;
 	char *Wreck;
-	Vec2i Size;
-	Vec2i PosOffset;
+	struct vec2i Size;
+	struct vec2 PosOffset;
 	int Health;
 	// Guns that are fired when this map object is destroyed
 	// i.e. explosion on destruction
@@ -137,7 +137,7 @@ void MapObjectsClear(CArray *classes);
 void MapObjectsTerminate(MapObjects *classes);
 int MapObjectsCount(const MapObjects *classes);
 
-const Pic *MapObjectGetPic(const MapObject *mo, Vec2i *offset);
+const Pic *MapObjectGetPic(const MapObject *mo, struct vec2i *offset);
 
 bool MapObjectIsTileOK(
 	const MapObject *obj, unsigned short tile, const bool isEmpty,
@@ -146,4 +146,4 @@ bool MapObjectIsTileOKStrict(
 	const MapObject *obj, const unsigned short tile, const bool isEmpty,
 	const unsigned short tileAbove, const unsigned short tileBelow,
 	const int numWallsAdjacent, const int numWallsAround);
-Vec2i MapObjectGetPlacementPos(const MapObject *mo, const Vec2i tilePos);
+struct vec2 MapObjectGetPlacementPos(const MapObject *mo, const struct vec2i tilePos);

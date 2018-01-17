@@ -56,16 +56,16 @@
 typedef struct
 {
 	const Pic *Head;
-	Vec2i HeadOffset;
+	struct vec2i HeadOffset;
 	const Pic *Body;
-	Vec2i BodyOffset;
+	struct vec2i BodyOffset;
 	const Pic *Legs;
-	Vec2i LegsOffset;
+	struct vec2i LegsOffset;
 	const Pic *Gun;
-	Vec2i GunOffset;
+	struct vec2i GunOffset;
 	// In draw order
 	const Pic *OrderedPics[BODY_PART_COUNT];
-	Vec2i OrderedOffsets[BODY_PART_COUNT];
+	struct vec2i OrderedOffsets[BODY_PART_COUNT];
 	const CharColors *Colors;
 	bool IsDead;
 	bool IsDying;
@@ -76,11 +76,11 @@ typedef struct
 } ActorPics;
 
 void DrawCharacterSimple(
-	Character *c, const Vec2i pos, const direction_e d,
+	Character *c, const struct vec2i pos, const direction_e d,
 	const bool hilite, const bool showGun);
-void DrawHead(const Character *c, const direction_e dir, const Vec2i pos);
+void DrawHead(const Character *c, const direction_e dir, const struct vec2i pos);
 
-void DrawChatters(DrawBuffer *b, const Vec2i offset);
+void DrawChatters(DrawBuffer *b, const struct vec2i offset);
 
 const Pic *GetHeadPic(
 	const CharacterClass *c, const direction_e dir, const gunstate_e gunState);
@@ -91,8 +91,8 @@ ActorPics GetCharacterPics(
 	const bool isTransparent, HSV *tint, color_t *mask,
 	const int deadPic);
 ActorPics GetCharacterPicsFromActor(TActor *a);
-void DrawActorPics(const ActorPics *pics, const Vec2i pos);
+void DrawActorPics(const ActorPics *pics, const struct vec2i pos);
 void DrawLaserSight(
-	const ActorPics *pics, const TActor *a, const Vec2i picPos);
+	const ActorPics *pics, const TActor *a, const struct vec2i picPos);
 void DrawActorHighlight(
-	const ActorPics *pics, const Vec2i pos, const color_t color);
+	const ActorPics *pics, const struct vec2i pos, const color_t color);

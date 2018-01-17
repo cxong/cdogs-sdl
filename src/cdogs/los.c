@@ -33,11 +33,11 @@
 #include "net_util.h"
 
 
-void LOSInit(Map *map, const Vec2i size)
+void LOSInit(Map *map, const struct vec2i size)
 {
 	CArrayInit(&map->LOS.LOS, sizeof(bool));
 	CArrayInit(&map->LOS.Explored, sizeof(bool));
-	Vec2i v;
+	struct vec2i v;
 	for (v.y = 0; v.y < size.y; v.y++)
 	{
 		for (v.x = 0; v.x < size.x; v.x++)
@@ -70,17 +70,17 @@ void LOSSetAllVisible(LineOfSight *los)
 typedef struct
 {
 	Map *Map;
-	Vec2i Center;
+	struct vec2i Center;
 	int SightRange2;
 	bool Explore;
 } LOSData;
 // Calculate LOS cells from a certain start position
 // Sight range based on config
-static void SetLOSVisible(Map *map, const Vec2i pos, const bool explore);
-static bool IsNextTileBlockedAndSetVisibility(void *data, Vec2i pos);
+static void SetLOSVisible(Map *map, const struct vec2i pos, const bool explore);
+static bool IsNextTileBlockedAndSetVisibility(void *data, struct vec2i pos);
 static void SetObstructionVisible(
-	Map *map, const Vec2i pos, const bool explore);
-void LOSCalcFrom(Map *map, const Vec2i pos, const bool explore)
+	Map *map, const struct vec2i pos, const bool explore);
+void LOSCalcFrom(Map *map, const struct vec2i pos, const bool explore)
 {
 	// Perform LOS by casting rays from the centre to the edges, terminating
 	// whenever an obstruction or out-of-range is reached.
@@ -95,7 +95,7 @@ void LOSCalcFrom(Map *map, const Vec2i pos, const bool explore)
 	// +-+-+-+
 	// |V|V|V|  (C=center, V=visible)
 	// +-+-+-+
-	Vec2i end;
+	struct vec2i end;
 	for (end.x = pos.x - 1; end.x <= pos.x + 1; end.x++)
 	{
 		for (end.y = pos.y - 1; end.y <= pos.y + 1; end.y++)
@@ -108,8 +108,8 @@ void LOSCalcFrom(Map *map, const Vec2i pos, const bool explore)
 	if (sightRange == 0) return;
 
 	// Limit the perimeter to the sight range
-	const Vec2i origin = Vec2iNew(pos.x - sightRange, pos.y - sightRange);
-	const Vec2i perimSize = Vec2iScale(Vec2iMinus(pos, origin), 2);
+	const struct vec2i origin = svec2i(pos.x - sightRange, pos.y - sightRange);
+	const struct vec2i perimSize = svec2i_scale(svec2i_subtract(pos, origin), 2);
 
 	LOSData data;
 	data.Map = map;
@@ -156,7 +156,7 @@ void LOSCalcFrom(Map *map, const Vec2i pos, const bool explore)
 				continue;
 			}
 			// Check sight range
-			if (DistanceSquared(pos, end) >= data.SightRange2)
+			if (svec2i_distance_squared(pos, end) >= data.SightRange2)
 			{
 				continue;
 			}
@@ -190,7 +190,7 @@ void LOSCalcFrom(Map *map, const Vec2i pos, const bool explore)
 	}
 	CArrayFillZero(&map->LOS.Explored);
 }
-static void SetLOSVisible(Map *map, const Vec2i pos, const bool explore)
+static void SetLOSVisible(Map *map, const struct vec2i pos, const bool explore)
 {
 	const Tile *t = MapGetTile(map, pos);
 	if (t == NULL) return;
@@ -211,11 +211,11 @@ static void SetLOSVisible(Map *map, const Vec2i pos, const bool explore)
 		}
 	CA_FOREACH_END()
 }
-static bool IsNextTileBlockedAndSetVisibility(void *data, Vec2i pos)
+static bool IsNextTileBlockedAndSetVisibility(void *data, struct vec2i pos)
 {
 	LOSData *lData = data;
 	// Check sight range
-	if (DistanceSquared(lData->Center, pos) >= lData->SightRange2) return true;
+	if (svec2i_distance_squared(lData->Center, pos) >= lData->SightRange2) return true;
 	// Check map range
 	const Tile *t = MapGetTile(lData->Map, pos);
 	if (t == NULL) return true;
@@ -223,16 +223,16 @@ static bool IsNextTileBlockedAndSetVisibility(void *data, Vec2i pos)
 	// Check if this tile is an obstruction
 	return t->flags & MAPTILE_NO_SEE;
 }
-static bool IsTileVisibleNonObstruction(Map *map, const Vec2i pos);
+static bool IsTileVisibleNonObstruction(Map *map, const struct vec2i pos);
 static void SetObstructionVisible(
-	Map *map, const Vec2i pos, const bool explore)
+	Map *map, const struct vec2i pos, const bool explore)
 {
-	Vec2i d;
+	struct vec2i d;
 	for (d.x = -1; d.x < 2; d.x++)
 	{
 		for (d.y = -1; d.y < 2; d.y++)
 		{
-			if (IsTileVisibleNonObstruction(map, Vec2iAdd(pos, d)))
+			if (IsTileVisibleNonObstruction(map, svec2i_add(pos, d)))
 			{
 				SetLOSVisible(map, pos, explore);
 				return;
@@ -240,7 +240,7 @@ static void SetObstructionVisible(
 		}
 	}
 }
-static bool IsTileVisibleNonObstruction(Map *map, const Vec2i pos)
+static bool IsTileVisibleNonObstruction(Map *map, const struct vec2i pos)
 {
 	const Tile *t = MapGetTile(map, pos);
 	if (t == NULL) return false;
@@ -248,7 +248,7 @@ static bool IsTileVisibleNonObstruction(Map *map, const Vec2i pos)
 }
 
 bool LOSAddRun(
-	NExploreTiles *runs, bool *run, const Vec2i tile, const bool explored)
+	NExploreTiles *runs, bool *run, const struct vec2i tile, const bool explored)
 {
 	if (explored)
 	{
@@ -275,7 +275,7 @@ bool LOSAddRun(
 	return false;
 }
 
-bool LOSTileIsVisible(Map *map, const Vec2i pos)
+bool LOSTileIsVisible(Map *map, const struct vec2i pos)
 {
 	if (MapGetTile(map, pos) == NULL) return false;
 	return *((bool *)CArrayGet(&map->LOS.LOS, pos.y * map->Size.x + pos.x));

@@ -79,11 +79,11 @@ typedef struct
 		int UID;
 	} u;
 	int LastDone;
-	Vec2i Goal;
+	struct vec2 Goal;
 } AIObjectiveState;
 typedef struct
 {
-	Vec2i Goal;
+	struct vec2i Goal;
 	CachedPath Path;
 	int PathIndex;
 	bool IsFollowing;
@@ -101,7 +101,7 @@ typedef struct
 
 	AIConfusionState ConfusionState;
 	AIObjectiveState ObjectiveState;
-	Vec2i LastTile;
+	struct vec2i LastTile;
 	bool IsStuckTooLong;
 	AIGotoContext Goto;
 	int EnemyId;

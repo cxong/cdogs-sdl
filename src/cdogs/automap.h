@@ -37,4 +37,4 @@
 void AutomapDraw(int flags, bool showExit);
 void AutomapDrawRegion(
 	Map *map,
-	Vec2i pos, Vec2i size, Vec2i mapCenter, int flags, bool showExit);
+	struct vec2i pos, struct vec2i size, struct vec2i mapCenter, int flags, bool showExit);

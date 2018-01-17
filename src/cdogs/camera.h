@@ -42,7 +42,7 @@ typedef enum
 typedef struct
 {
 	DrawBuffer Buffer;
-	Vec2i lastPosition;
+	struct vec2 lastPosition;
 	HUD HUD;
 	ScreenShake shake;
 	SpectateMode spectateMode;
@@ -52,6 +52,7 @@ typedef struct
 	// This is used for when the game has no players; all spectators should
 	// immediately follow the next player to join
 	bool FollowNextPlayer;
+	int NumViews;
 } Camera;
 
 void CameraInit(Camera *camera);

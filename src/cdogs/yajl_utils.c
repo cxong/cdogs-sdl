@@ -144,7 +144,7 @@ void YAJLDouble(double *value, yajl_val node, const char *name)
 	}
 	*value = YAJL_GET_DOUBLE(node);
 }
-void YAJLVec2i(Vec2i *value, yajl_val node, const char *name)
+void YAJLVec2i(struct vec2i *value, yajl_val node, const char *name)
 {
 	if (!YAJLTryLoadValue(&node, name) || !YAJL_IS_ARRAY(node))
 	{

@@ -32,4 +32,4 @@
 #include <cdogs/gamedata.h>
 
 
-void CreateObjectivesObjs(CampaignOptions *co, UIObject *c, Vec2i pos);
+void CreateObjectivesObjs(CampaignOptions *co, UIObject *c, struct vec2i pos);
