@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2017 Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -627,6 +627,8 @@ static void MenuCreateKeysSingleSection(
 		menu, MenuCreateOptionChangeKey(KEY_CODE_BUTTON1, playerIndex));
 	MenuAddSubmenu(
 		menu, MenuCreateOptionChangeKey(KEY_CODE_BUTTON2, playerIndex));
+	MenuAddSubmenu(
+		menu, MenuCreateOptionChangeKey(KEY_CODE_GRENADE, playerIndex));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 }
 

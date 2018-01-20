@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2014, 2016-2017 Cong Xu
+    Copyright (c) 2013-2014, 2016-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -652,10 +652,12 @@ Config ConfigDefault(void)
 #ifdef __GCWZERO__
 	ConfigGroupAdd(&pk0, ConfigNewInt("button1", SDL_SCANCODE_LCTRL, 0, 0, 0, NULL, NULL));
 	ConfigGroupAdd(&pk0, ConfigNewInt("button2", SDL_SCANCODE_LALT, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk0, ConfigNewInt("grenade", SDL_SCANCODE_BACKSPACE, 0, 0, 0, NULL, NULL));
 	ConfigGroupAdd(&pk0, ConfigNewInt("map", SDL_SCANCODE_TAB, 0, 0, 0, NULL, NULL));
 #else
 	ConfigGroupAdd(&pk0, ConfigNewInt("button1", SDL_SCANCODE_X, 0, 0, 0, NULL, NULL));
 	ConfigGroupAdd(&pk0, ConfigNewInt("button2", SDL_SCANCODE_Z, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk0, ConfigNewInt("grenade", SDL_SCANCODE_S, 0, 0, 0, NULL, NULL));
 	ConfigGroupAdd(&pk0, ConfigNewInt("map", SDL_SCANCODE_A, 0, 0, 0, NULL, NULL));
 #endif
 	ConfigGroupAdd(&input, pk0);
@@ -664,9 +666,10 @@ Config ConfigDefault(void)
 	ConfigGroupAdd(&pk1, ConfigNewInt("right", SDL_SCANCODE_KP_6, 0, 0, 0, NULL, NULL));
 	ConfigGroupAdd(&pk1, ConfigNewInt("up", SDL_SCANCODE_KP_8, 0, 0, 0, NULL, NULL));
 	ConfigGroupAdd(&pk1, ConfigNewInt("down", SDL_SCANCODE_KP_2, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk1, ConfigNewInt("button1", SDL_SCANCODE_KP_0, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk1, ConfigNewInt("button2", SDL_SCANCODE_KP_ENTER, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk1, ConfigNewInt("map", SDL_SCANCODE_KP_PERIOD, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk1, ConfigNewInt("button1", SDL_SCANCODE_KP_ENTER, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk1, ConfigNewInt("button2", SDL_SCANCODE_KP_PERIOD, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk1, ConfigNewInt("grenade", SDL_SCANCODE_KP_3, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(&pk1, ConfigNewInt("map", SDL_SCANCODE_KP_0, 0, 0, 0, NULL, NULL));
 	ConfigGroupAdd(&input, pk1);
 	ConfigGroupAdd(&root, input);
 

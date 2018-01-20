@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2016, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -229,8 +229,8 @@ int GetKeyboardCmd(
 	else if (keyFunc(keyboard, keys->down))		cmd |= CMD_DOWN;
 
 	if (keyFunc(keyboard, keys->button1))		cmd |= CMD_BUTTON1;
-
 	if (keyFunc(keyboard, keys->button2))		cmd |= CMD_BUTTON2;
+	if (keyFunc(keyboard, keys->grenade))		cmd |= CMD_GRENADE;
 
 	return cmd;
 }
@@ -253,7 +253,8 @@ static int GetMouseCmd(
 
 	if (mouseFunc(mouse, SDL_BUTTON_LEFT))		cmd |= CMD_BUTTON1;
 	if (mouseFunc(mouse, SDL_BUTTON_RIGHT))		cmd |= CMD_BUTTON2;
-	if (mouseFunc(mouse, SDL_BUTTON_MIDDLE))	cmd |= CMD_MAP;
+	if (mouseFunc(mouse, SDL_BUTTON_MIDDLE))	cmd |= CMD_GRENADE;
+	if (mouseFunc(mouse, SDL_BUTTON_X1))		cmd |= CMD_MAP;
 
 	return cmd;
 }
@@ -271,8 +272,8 @@ static int GetJoystickCmd(const SDL_JoystickID id, bool isPressed)
 	else if (joyFunc(id, CMD_DOWN))		cmd |= CMD_DOWN;
 
 	if (joyFunc(id, CMD_BUTTON1))		cmd |= CMD_BUTTON1;
-
 	if (joyFunc(id, CMD_BUTTON2))		cmd |= CMD_BUTTON2;
+	if (joyFunc(id, CMD_GRENADE))		cmd |= CMD_GRENADE;
 
 	if (joyFunc(id, CMD_MAP))			cmd |= CMD_MAP;
 
@@ -416,6 +417,7 @@ void InputGetButtonNameColor(
 			case CMD_DOWN:strcpy(buf, "down"); return;
 			case CMD_BUTTON1: strcpy(buf, "A"); return;
 			case CMD_BUTTON2: strcpy(buf, "B"); return;
+			case CMD_GRENADE: *color = colorGray; strcpy(buf, "R"); return;
 			case CMD_MAP: *color = colorGray; strcpy(buf, "L"); return;
 			case CMD_ESC: strcpy(buf, "SELECT"); return;
 			default: CASSERT(false, "unknown button"); return;
@@ -432,6 +434,7 @@ void InputGetButtonNameColor(
 			case CMD_DOWN: strcpy(buf, SDL_GetScancodeName(keys->down)); return;
 			case CMD_BUTTON1: strcpy(buf, SDL_GetScancodeName(keys->button1)); return;
 			case CMD_BUTTON2: strcpy(buf, SDL_GetScancodeName(keys->button2)); return;
+			case CMD_GRENADE: strcpy(buf, SDL_GetScancodeName(keys->grenade)); return;
 			case CMD_MAP: strcpy(buf, SDL_GetScancodeName(keys->map)); return;
 			case CMD_ESC: strcpy(buf, SDL_GetScancodeName(SDL_SCANCODE_ESCAPE)); return;
 			default: CASSERT(false, "unknown button"); return;
@@ -527,7 +530,7 @@ EventWaitResult EventWaitForAnyKeyOrButton(void)
 	GetPlayerCmds(&gEventHandlers, &cmds);
 	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 	{
-		if (cmds[i] & (CMD_BUTTON1 | CMD_BUTTON2))
+		if (cmds[i] & (CMD_BUTTON1 | CMD_BUTTON2 | CMD_GRENADE))
 		{
 			// Interpret anything other than CMD_BUTTON1 as cancel
 			return WaitResult(cmds[i] & CMD_BUTTON1);
@@ -536,7 +539,7 @@ EventWaitResult EventWaitForAnyKeyOrButton(void)
 
 	// Check menu commands
 	const int menuCmd = GetMenuCmd(&gEventHandlers);
-	if (menuCmd & (CMD_BUTTON1 | CMD_BUTTON2))
+	if (menuCmd & (CMD_BUTTON1 | CMD_BUTTON2 | CMD_GRENADE))
 	{
 		// Interpret anything other than CMD_BUTTON1 as cancel
 		return WaitResult(menuCmd & CMD_BUTTON1);

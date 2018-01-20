@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2015, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -230,6 +230,7 @@ int ControllerButtonToCmd(const Uint8 button)
 	case SDL_CONTROLLER_BUTTON_B: return CMD_BUTTON2;
 	case SDL_CONTROLLER_BUTTON_BACK: return CMD_MAP;
 	case SDL_CONTROLLER_BUTTON_START: return CMD_ESC;
+	case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER: return CMD_GRENADE;
 	case SDL_CONTROLLER_BUTTON_DPAD_UP: return CMD_UP;
 	case SDL_CONTROLLER_BUTTON_DPAD_DOWN: return CMD_DOWN;
 	case SDL_CONTROLLER_BUTTON_DPAD_LEFT: return CMD_LEFT;
@@ -343,6 +344,7 @@ static int CmdToControllerButton(const int cmd)
 	{
 	case CMD_BUTTON1: return SDL_CONTROLLER_BUTTON_A;
 	case CMD_BUTTON2: return SDL_CONTROLLER_BUTTON_B;
+	case CMD_GRENADE: return SDL_CONTROLLER_BUTTON_RIGHTSHOULDER;
 	case CMD_MAP: return SDL_CONTROLLER_BUTTON_BACK;
 	case CMD_ESC: return SDL_CONTROLLER_BUTTON_START;
 	case CMD_UP: return SDL_CONTROLLER_BUTTON_DPAD_UP;

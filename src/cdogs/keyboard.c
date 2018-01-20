@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2015, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -44,6 +44,7 @@ const char *KeycodeStr(int k)
 		T2S(KEY_CODE_DOWN, "down");
 		T2S(KEY_CODE_BUTTON1, "button1");
 		T2S(KEY_CODE_BUTTON2, "button2");
+		T2S(KEY_CODE_GRENADE, "grenade");
 		T2S(KEY_CODE_MAP, "map");
 	default:
 		return "";
@@ -76,6 +77,7 @@ InputKeys KeyLoadPlayerKeys(Config *c)
 	k.down = (SDL_Scancode)ConfigGetInt(c, "down");
 	k.button1 = (SDL_Scancode)ConfigGetInt(c, "button1");
 	k.button2 = (SDL_Scancode)ConfigGetInt(c, "button2");
+	k.grenade = (SDL_Scancode)ConfigGetInt(c, "grenade");
 	k.map = (SDL_Scancode)ConfigGetInt(c, "map");
 	return k;
 }
@@ -212,6 +214,8 @@ SDL_Scancode KeyGet(const InputKeys *keys, const key_code_e keyCode)
 		return keys->button1;
 	case KEY_CODE_BUTTON2:
 		return keys->button2;
+	case KEY_CODE_GRENADE:
+		return keys->grenade;
 	case KEY_CODE_MAP:
 		return keys->map;
 	default:

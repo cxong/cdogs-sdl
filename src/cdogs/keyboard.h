@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2015, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -48,6 +48,7 @@ typedef struct
 	SDL_Scancode down;
 	SDL_Scancode button1;
 	SDL_Scancode button2;
+	SDL_Scancode grenade;
 	SDL_Scancode map;
 } InputKeys;
 #define MAX_KEYBOARD_CONFIGS 2
@@ -60,6 +61,7 @@ typedef enum
 	KEY_CODE_DOWN,
 	KEY_CODE_BUTTON1,
 	KEY_CODE_BUTTON2,
+	KEY_CODE_GRENADE,
 
 	KEY_CODE_MAP
 } key_code_e;
