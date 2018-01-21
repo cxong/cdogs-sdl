@@ -204,7 +204,7 @@ struct vec2 ActorGetGunMuzzleOffset(const TActor *a);
 int ActorGunGetAmmo(const TActor *a, const Weapon *w);
 bool ActorCanFire(const TActor *a);
 bool ActorCanFireWeapon(const TActor *a, const Weapon *w);
-bool ActorCanSwitchGun(const TActor *a);
+bool ActorTrySwitchWeapon(const TActor *a, const bool allGuns);
 bool ActorHasGun(const TActor *a, const GunDescription *gun);
 int ActorGetNumWeapons(const TActor *a);
 int ActorGetNumGuns(const TActor *a);

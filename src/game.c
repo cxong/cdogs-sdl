@@ -86,20 +86,11 @@ static void PlayerSpecialCommands(TActor *actor, const int cmd)
 		!(cmd & CMD_BUTTON2) &&
 		!actor->specialCmdDir &&
 		!actor->CanPickupSpecial &&
-		!(ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") == SWITCHMOVE_SLIDE && CMD_HAS_DIRECTION(cmd)) &&
-		ActorCanSwitchGun(actor))
+		!(ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") == SWITCHMOVE_SLIDE && CMD_HAS_DIRECTION(cmd)))
 	{
-		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_SWITCH_GUN);
-		e.u.ActorSwitchGun.UID = actor->uid;
-		for (;;)
-		{
-			e.u.ActorSwitchGun.GunIdx = (actor->gunIndex + 1) % MAX_GUNS;
-			if (actor->guns[e.u.ActorSwitchGun.GunIdx].Gun != NULL)
-			{
-				break;
-			}
-		}
-		GameEventsEnqueue(&gGameEvents, e);
+		const PlayerData *p = PlayerDataGetByUID(actor->PlayerUID);
+		const bool allGuns = p == NULL || !PlayerHasGrenadeButton(p);
+		ActorTrySwitchWeapon(actor, allGuns);
 	}
 }
 

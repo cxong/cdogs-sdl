@@ -107,3 +107,4 @@ bool PlayerTrySetUnusedInputDevice(
 	PlayerData *p, const input_device_e d, const int idx);
 
 int PlayerGetNumWeapons(const PlayerData *p);
+bool PlayerHasGrenadeButton(const PlayerData *p);

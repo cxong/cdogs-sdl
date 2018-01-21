@@ -28,6 +28,7 @@
 #include "player.h"
 
 #include "actors.h"
+#include "events.h"
 #include "log.h"
 #include "net_client.h"
 #include "player_template.h"
@@ -466,4 +467,27 @@ int PlayerGetNumWeapons(const PlayerData *p)
 		}
 	}
 	return count;
+}
+
+
+bool PlayerHasGrenadeButton(const PlayerData *p)
+{
+	switch (p->inputDevice)
+	{
+	case INPUT_DEVICE_UNSET:
+		return false;
+	case INPUT_DEVICE_KEYBOARD:
+		return KeyGet(
+			&gEventHandlers.keyboard.PlayerKeys[p->deviceIndex],
+			KEY_CODE_GRENADE) != SDL_SCANCODE_UNKNOWN;
+	case INPUT_DEVICE_MOUSE:
+		return true;
+	case INPUT_DEVICE_JOYSTICK:
+		return true;
+	case INPUT_DEVICE_AI:
+		return false;
+	default:
+		CASSERT(false, "unknown input device");
+		return true;
+	}
 }

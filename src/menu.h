@@ -207,6 +207,8 @@ struct menu
 		{
 			key_code_e code;
 			int playerIndex;
+			// If key is optional, allow it to be unset
+			bool isOptional;
 		} changeKey;
 		int returnCode;
 		struct

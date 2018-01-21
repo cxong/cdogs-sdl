@@ -1394,9 +1394,30 @@ bool ActorCanFireWeapon(const TActor *a, const Weapon *w)
 		!WeaponIsLocked(w) &&
 		(!ConfigGetBool(&gConfig, "Game.Ammo") || hasAmmo);
 }
-bool ActorCanSwitchGun(const TActor *a)
+bool ActorTrySwitchWeapon(const TActor *a, const bool allGuns)
 {
-	return ActorGetNumGuns(a) > 1;
+	// Find the next weapon to switch to
+	// If the player does not have a grenade key set, allow switching to
+	// grenades (classic style)
+	const int switchCount = allGuns ? MAX_WEAPONS : MAX_GUNS;
+	const int startIndex =
+		ActorGetNumGuns(a) > 0 ? a->gunIndex : a->grenadeIndex + MAX_GUNS;
+	int weaponIndex = startIndex;
+	do
+	{
+		weaponIndex = (weaponIndex + 1) % switchCount;
+	} while (a->guns[weaponIndex].Gun == NULL);
+	if (weaponIndex == startIndex)
+	{
+		// No other weapon to switch to
+		return false;
+	}
+
+	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_SWITCH_GUN);
+	e.u.ActorSwitchGun.UID = a->uid;
+	e.u.ActorSwitchGun.GunIdx = weaponIndex;
+	GameEventsEnqueue(&gGameEvents, e);
+	return true;
 }
 void ActorSwitchGun(const NActorSwitchGun sg)
 {
