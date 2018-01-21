@@ -351,7 +351,7 @@ static int SmartGoto(
 		svec2i_is_equal(tilePos, actor->aiContext->LastTile))
 	{
 		cmd = AIGoto(actor, o->tileItem.Pos, true);
-		if (ACTOR_GET_GUN(actor)->lock <= 0)
+		if (ACTOR_GET_WEAPON(actor)->lock <= 0)
 		{
 			cmd |= CMD_BUTTON1;
 		}
@@ -815,7 +815,7 @@ static int GotoObjective(TActor *actor, const float objDistance2)
 	{
 		cmd = SmartGoto(actor, goal, objDistance2);
 	}
-	else if (isDestruction && ACTOR_GET_GUN(actor)->lock <= 0)
+	else if (isDestruction && ACTOR_GET_WEAPON(actor)->lock <= 0)
 	{
 		cmd = AIHunt(actor, goal);
 		if (AIHasClearShot(actor->Pos, goal))

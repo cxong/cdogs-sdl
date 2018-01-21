@@ -83,7 +83,7 @@ static struct vec2i GetActorDrawOffset(
 static Character *ActorGetCharacterMutable(TActor *a);
 ActorPics GetCharacterPicsFromActor(TActor *a)
 {
-	const Weapon *gun = ACTOR_GET_GUN(a);
+	const Weapon *gun = ACTOR_GET_WEAPON(a);
 	HSV *tint = NULL;
 	color_t *mask = NULL;
 	if (a->flamed)
@@ -302,8 +302,8 @@ void DrawLaserSight(
 		return;
 	}
 	// Draw weapon indicators
-	const GunDescription *g = ACTOR_GET_GUN(a)->Gun;
-	struct vec2i muzzlePos = svec2i_add(picPos, svec2i_assign_vec2(ActorGetGunMuzzleOffset(a)));
+	const GunDescription *g = ACTOR_GET_WEAPON(a)->Gun;
+	struct vec2i muzzlePos = svec2i_add(picPos, svec2i_assign_vec2(ActorGetMuzzleOffset(a, g)));
 	muzzlePos.y -= g->MuzzleHeight / Z_FACTOR;
 	const float radians = dir2radians[a->direction] + g->AngleOffset;
 	const int range = (int)GunGetRange(g);

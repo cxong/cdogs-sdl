@@ -239,10 +239,10 @@ bool TryMoveActor(TActor *actor, struct vec2 pos)
 			&actor->tileItem, pos, actor->tileItem.size, params);
 		if (target)
 		{
-			Weapon *gun = ACTOR_GET_GUN(actor);
+			Weapon *gun = ACTOR_GET_WEAPON(actor);
 			const TObject *object = target->kind == KIND_OBJECT ?
 				CArrayGet(&gObjs, target->id) : NULL;
-			if (ActorCanFire(actor) && !gun->Gun->CanShoot &&
+			if (ActorCanFireWeapon(actor, gun) && !gun->Gun->CanShoot &&
 				actor->health > 0 &&
 				(!object || !ObjIsDangerous(object)))
 			{
@@ -1387,11 +1387,16 @@ const Character *ActorGetCharacter(const TActor *a)
 	return CArrayGet(&gCampaign.Setting.characters.OtherChars, a->charId);
 }
 
-struct vec2 ActorGetGunMuzzleOffset(const TActor *a)
+struct vec2 ActorGetWeaponMuzzleOffset(const TActor *a)
 {
-	const GunDescription *gun = ACTOR_GET_GUN(a)->Gun;
+	const GunDescription *g = ACTOR_GET_WEAPON(a)->Gun;
+	return ActorGetMuzzleOffset(a, g);
+}
+struct vec2 ActorGetMuzzleOffset(
+	const TActor *a, const GunDescription *g)
+{
 	const CharSprites *cs = ActorGetCharacter(a)->Class->Sprites;
-	return GunGetMuzzleOffset(gun, cs, a->direction);
+	return GunGetMuzzleOffset(g, cs, a->direction);
 }
 int ActorGunGetAmmo(const TActor *a, const Weapon *w)
 {
@@ -1400,11 +1405,6 @@ int ActorGunGetAmmo(const TActor *a, const Weapon *w)
 		return -1;
 	}
 	return *(int *)CArrayGet(&a->ammo, w->Gun->AmmoId);
-}
-bool ActorCanFire(const TActor *a)
-{
-	const Weapon *w = ACTOR_GET_GUN(a);
-	return ActorCanFireWeapon(a, w);
 }
 bool ActorCanFireWeapon(const TActor *a, const Weapon *w)
 {
@@ -1448,7 +1448,7 @@ void ActorSwitchGun(const NActorSwitchGun sg)
 	if (a == NULL || !a->isInUse) return;
 	a->gunIndex = sg.GunIdx;
 	SoundPlayAt(
-		&gSoundDevice, ACTOR_GET_GUN(a)->Gun->SwitchSound, a->tileItem.Pos);
+		&gSoundDevice, ACTOR_GET_WEAPON(a)->Gun->SwitchSound, a->tileItem.Pos);
 }
 
 bool ActorIsImmune(const TActor *actor, const special_damage_e damage)

@@ -510,7 +510,8 @@ static void HandleGameEvent(
 		{
 			TActor *a = ActorGetByUID(e.u.GunState.ActorUID);
 			if (!a->isInUse) break;
-			WeaponSetState(ACTOR_GET_GUN(a), (gunstate_e)e.u.GunState.State);
+			WeaponSetState(
+				ACTOR_GET_WEAPON(a), (gunstate_e)e.u.GunState.State);
 		}
 		break;
 	case GAME_EVENT_ADD_BULLET:

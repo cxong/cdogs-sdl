@@ -199,10 +199,13 @@ TActor *ActorGetByUID(const int uid);
 const Character *ActorGetCharacter(const TActor *a);
 #define ACTOR_GET_GUN(a) (&(a)->guns[(a)->gunIndex])
 #define ACTOR_GET_GRENADE(a) (&(a)->guns[(a)->grenadeIndex+MAX_GUNS])
-struct vec2 ActorGetGunMuzzleOffset(const TActor *a);
+#define ACTOR_GET_WEAPON(a) \
+	(ACTOR_GET_GUN(a)->Gun!=NULL?ACTOR_GET_GUN(a):ACTOR_GET_GRENADE(a))
+struct vec2 ActorGetWeaponMuzzleOffset(const TActor *a);
+struct vec2 ActorGetMuzzleOffset(
+	const TActor *a, const GunDescription *g);
 // Returns -1 if gun does not use ammo
 int ActorGunGetAmmo(const TActor *a, const Weapon *w);
-bool ActorCanFire(const TActor *a);
 bool ActorCanFireWeapon(const TActor *a, const Weapon *w);
 bool ActorTrySwitchWeapon(const TActor *a, const bool allGuns);
 bool ActorHasGun(const TActor *a, const GunDescription *gun);

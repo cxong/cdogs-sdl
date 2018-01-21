@@ -170,7 +170,7 @@ static void DrawWeaponStatus(
 	HUD *hud, const TActor *actor, struct vec2i pos,
 	const FontAlign hAlign, const FontAlign vAlign)
 {
-	const Weapon *weapon = ACTOR_GET_GUN(actor);
+	const Weapon *weapon = ACTOR_GET_WEAPON(actor);
 
 	// Draw gun icon, and allocate padding to draw the gun icon
 	const GunDescription *g = weapon->Gun;
