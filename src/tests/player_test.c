@@ -86,6 +86,10 @@ bool IsPVP(const GameMode mode)
 {
 	UNUSED(mode); return false;
 }
+bool InputHasGrenadeButton(const input_device_e d, const int dIndex)
+{
+	UNUSED(d); UNUSED(dIndex); return false;
+}
 
 
 FEATURE(assign_unused, "Assign unused input device")

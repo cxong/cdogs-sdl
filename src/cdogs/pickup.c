@@ -257,21 +257,16 @@ static bool TryPickupGun(
 	e.u.ActorReplaceGun.UID = a->uid;
 	// Replace the current gun, unless there's a free slot, in which case pick
 	// up into the free spot
-	if (gun->IsGrenade)
+	const int weaponIndexStart = gun->IsGrenade ? MAX_GUNS : 0;
+	const int weaponIndexEnd = gun->IsGrenade ? MAX_WEAPONS : MAX_GUNS;
+	e.u.ActorReplaceGun.GunIdx =
+		gun->IsGrenade ? a->grenadeIndex + MAX_GUNS : a->gunIndex;
+	for (int i = weaponIndexStart; i < weaponIndexEnd; i++)
 	{
-		// TODO: multiple grenade slots
-		e.u.ActorReplaceGun.GunIdx = 0;
-	}
-	else
-	{
-		e.u.ActorReplaceGun.GunIdx = a->gunIndex;
-		for (int i = 0; i < MAX_GUNS; i++)
+		if (a->guns[i].Gun == NULL)
 		{
-			if (a->guns[i].Gun == NULL)
-			{
-				e.u.ActorReplaceGun.GunIdx = i;
-				break;
-			}
+			e.u.ActorReplaceGun.GunIdx = i;
+			break;
 		}
 	}
 	strcpy(e.u.ActorReplaceGun.Gun, gun->name);

@@ -601,7 +601,15 @@ void ActorReplaceGun(const NActorReplaceGun rg)
 	Weapon w = WeaponCreate(gun);
 	memcpy(&a->guns[rg.GunIdx], &w, sizeof w);
 	// Switch immediately to picked up gun
-	a->gunIndex = rg.GunIdx;
+	const PlayerData *p = PlayerDataGetByUID(a->PlayerUID);
+	if (gun->IsGrenade && PlayerHasGrenadeButton(p))
+	{
+		a->grenadeIndex = rg.GunIdx - MAX_GUNS;
+	}
+	else
+	{
+		a->gunIndex = rg.GunIdx;
+	}
 
 	SoundPlayAt(&gSoundDevice, gun->SwitchSound, a->Pos);
 }
