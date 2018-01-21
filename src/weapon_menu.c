@@ -191,6 +191,22 @@ void WeaponMenuCreate(
 	MenuSystemInit(ms, handlers, graphics, pos, size);
 	ms->align = MENU_ALIGN_LEFT;
 	PlayerData *pData = PlayerDataGetByUID(playerUID);
+	// Remove weapons that are not available in the mission
+	for (int i = 0; i < MAX_WEAPONS; i++)
+	{
+		bool hasWeapon = false;
+		CA_FOREACH(const GunDescription *, g, gMission.Weapons)
+			if (pData->guns[i] == *g)
+			{
+				hasWeapon = true;
+				break;
+			}
+		CA_FOREACH_END()
+		if (!hasWeapon)
+		{
+			pData->guns[i] = NULL;
+		}
+	}
 	menu->gunMenu = CreateGunMenu(
 		&gMission.Weapons, size, false, &data->display);
 	menu->grenadeMenu = CreateGunMenu(

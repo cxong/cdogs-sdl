@@ -110,7 +110,7 @@ ActorPics GetCharacterPicsFromActor(TActor *a)
 		ActorGetCharacterMutable(a),
 		RadiansToDirection(a->DrawRadians), a->anim.Type,
 		AnimationGetFrame(&a->anim),
-		gun->Gun->Pic, gun->state,
+		gun->Gun != NULL ? gun->Gun->Pic : NULL, gun->state,
 		!!(a->flags & FLAGS_SEETHROUGH),
 		tint, mask,
 		a->dead);

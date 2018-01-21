@@ -83,6 +83,7 @@ void InputGetButtonNameColor(
 // Return a string that shows the direction controls for an input device
 void InputGetDirectionNames(
 	char *buf, const input_device_e d, const int dIndex);
+bool InputHasGrenadeButton(const input_device_e d, const int dIndex);
 
 bool EventIsEscape(
 	EventHandlers *handlers,

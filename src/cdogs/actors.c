@@ -670,6 +670,10 @@ void ActorSetAIState(TActor *actor, const AIState s)
 
 static void FireWeapon(TActor *a, Weapon *w)
 {
+	if (w->Gun == NULL)
+	{
+		return;
+	}
 	if (!ActorCanFireWeapon(a, w))
 	{
 		if (!WeaponIsLocked(w) && ConfigGetBool(&gConfig, "Game.Ammo"))
@@ -1257,6 +1261,14 @@ TActor *ActorAdd(NActorAdd aa)
 		{
 			Weapon gun = WeaponCreate(p->guns[i]);
 			actor->guns[i] = gun;
+			if (i < MAX_GUNS && ACTOR_GET_GUN(actor)->Gun == NULL)
+			{
+				actor->gunIndex = i;
+			}
+			if (i >= MAX_GUNS && ACTOR_GET_GRENADE(actor)->Gun == NULL)
+			{
+				actor->grenadeIndex = i - MAX_GUNS;
+			}
 		}
 		p->ActorUID = aa.UID;
 	}
@@ -1265,9 +1277,8 @@ TActor *ActorAdd(NActorAdd aa)
 		// Add sole weapon from character type
 		Weapon gun = WeaponCreate(c->Gun);
 		actor->guns[0] = gun;
+		actor->gunIndex = 0;
 	}
-	actor->gunIndex = 0;
-	actor->grenadeIndex = 0;
 	actor->health = aa.Health;
 	actor->action = ACTORACTION_MOVING;
 	actor->tileItem.Pos.x = actor->tileItem.Pos.y = -1;
@@ -1389,6 +1400,10 @@ bool ActorCanFire(const TActor *a)
 }
 bool ActorCanFireWeapon(const TActor *a, const Weapon *w)
 {
+	if (w->Gun == NULL)
+	{
+		return false;
+	}
 	const bool hasAmmo = ActorGunGetAmmo(a, w) != 0;
 	return
 		!WeaponIsLocked(w) &&

@@ -497,6 +497,27 @@ void InputGetDirectionNames(
 		break;
 	}
 }
+bool InputHasGrenadeButton(const input_device_e d, const int dIndex)
+{
+	switch (d)
+	{
+	case INPUT_DEVICE_UNSET:
+		return false;
+	case INPUT_DEVICE_KEYBOARD:
+		return KeyGet(
+			&gEventHandlers.keyboard.PlayerKeys[dIndex],
+			KEY_CODE_GRENADE) != SDL_SCANCODE_UNKNOWN;
+	case INPUT_DEVICE_MOUSE:
+		return true;
+	case INPUT_DEVICE_JOYSTICK:
+		return true;
+	case INPUT_DEVICE_AI:
+		return false;
+	default:
+		CASSERT(false, "unknown input device");
+		return true;
+	}
+}
 
 SDL_Scancode GetKey(EventHandlers *handlers)
 {
