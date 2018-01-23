@@ -116,7 +116,8 @@ static void CreateEquippedWeaponsMenu(
 	{
 		AddEquippedMenuItem(ms->root, p, i);
 	}
-	MenuAddSubmenu(ms->root, MenuCreateReturn(END_MENU_LABEL, 0));
+	MenuAddSubmenu(
+		ms->root, MenuCreateNormal(END_MENU_LABEL, x"", MENU_TYPE_NORMAL, 0));
 }
 static void SetEquippedMenuItemName(
 	menu_t *menu, const PlayerData *p, const int slot)
