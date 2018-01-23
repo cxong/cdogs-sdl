@@ -191,22 +191,6 @@ void WeaponMenuCreate(
 	MenuSystemInit(ms, handlers, graphics, pos, size);
 	ms->align = MENU_ALIGN_LEFT;
 	PlayerData *pData = PlayerDataGetByUID(playerUID);
-	// Remove weapons that are not available in the mission
-	for (int i = 0; i < MAX_WEAPONS; i++)
-	{
-		bool hasWeapon = false;
-		CA_FOREACH(const GunDescription *, g, gMission.Weapons)
-			if (pData->guns[i] == *g)
-			{
-				hasWeapon = true;
-				break;
-			}
-		CA_FOREACH_END()
-		if (!hasWeapon)
-		{
-			pData->guns[i] = NULL;
-		}
-	}
 	menu->gunMenu = CreateGunMenu(
 		&gMission.Weapons, size, false, &data->display);
 	menu->grenadeMenu = CreateGunMenu(
@@ -376,18 +360,10 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 		}
 	}
 
-	menu_t *equipMenu = menu->msEquip.root;
 	// Disable "Done" if no weapons selected
-	if (PlayerGetNumWeapons(p) == 0)
-	{
-		MenuDisableSubmenu(
-			equipMenu, (int)equipMenu->u.normal.subMenus.size - 1);
-	}
-	else
-	{
-		MenuEnableSubmenu(
-			equipMenu, (int)equipMenu->u.normal.subMenus.size - 1);
-	}
+	menu_t *endMenuItem =
+		MenuGetSubmenuByName(menu->msEquip.root, END_MENU_LABEL);
+	MenuSetDisabled(endMenuItem, PlayerGetNumWeapons(p) == 0);
 }
 
 bool WeaponMenuIsDone(const WeaponMenu *menu)

@@ -779,7 +779,7 @@ GameLoopData *PlayerEquip(void)
 static bool HasWeapon(const CArray *weapons, const GunDescription *w);
 static void RemoveUnavailableWeapons(PlayerData *data, const CArray *weapons)
 {
-	for (int i = 0; i < 0; i++)
+	for (int i = 0; i < MAX_WEAPONS; i++)
 	{
 		if (!HasWeapon(weapons, data->guns[i]))
 		{
