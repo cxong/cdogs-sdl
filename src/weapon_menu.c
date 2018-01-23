@@ -222,8 +222,8 @@ void WeaponMenuCreate(
 	// For AI players, pre-pick their weapons and go straight to menu end
 	if (pData->inputDevice == INPUT_DEVICE_AI)
 	{
-		const int lastMenuIndex = (int)ms->root->u.normal.subMenus.size - 1;
-		ms->current = CArrayGet(&ms->root->u.normal.subMenus, lastMenuIndex);
+		menu->msEquip.current =
+			MenuGetSubmenuByName(menu->msEquip.root, END_MENU_LABEL);
 		AICoopSelectWeapons(pData, player, &gMission.Weapons);
 	}
 }

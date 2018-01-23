@@ -867,7 +867,7 @@ static GameLoopResult PlayerEquipUpdate(GameLoopData *data, LoopRunner *l)
 	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
 	{
 		WeaponMenuUpdate(&pData->menus[i], cmds[i]);
-		isDone = WeaponMenuIsDone(&pData->menus[i]);
+		isDone = isDone && WeaponMenuIsDone(&pData->menus[i]);
 	}
 	if (isDone)
 	{
