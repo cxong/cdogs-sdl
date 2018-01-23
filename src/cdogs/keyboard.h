@@ -32,7 +32,6 @@
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
 #include <SDL_timer.h>
-#include <stdint.h>
 
 #include "config.h"
 
@@ -69,10 +68,16 @@ const char *KeycodeStr(int k);
 
 typedef enum
 {
-       UNPRESSED,
-       PRESSED,
-       SUSTAIN
+       DIAGONAL_STATUS_UNPRESSED,
+       DIAGONAL_STATUS_PRESSED,
+       DIAGONAL_STATUS_SUSTAIN
 } diagonal_status;
+
+typedef struct
+{
+        int32_t diagonalTicks[MAX_KEYBOARD_CONFIGS][4];
+        diagonal_status diagonalStatus[MAX_KEYBOARD_CONFIGS][4];
+} diagonals_hold_status;
 
 typedef struct
 {
@@ -85,12 +90,12 @@ typedef struct
 	Uint32 repeatedTicks;
 	bool isFirstRepeat;
 	InputKeys PlayerKeys[MAX_KEYBOARD_CONFIGS];
-        int32_t diagonalTicks[MAX_KEYBOARD_CONFIGS][4];
+        diagonals_hold_status diagonalState;
         //diagonalTicks[0] = upRightDiagonalTicks;
         //diagonalTicks[1] = downRightDiagonalTicks;
         //diagonalTicks[2] = downLeftDiagonalTicks};
         //diagonalTicks[3] = upLeftDiagonalTicks;
-        diagonal_status diagonalStatus[MAX_KEYBOARD_CONFIGS][4];
+        //diagonal_status diagonalStatus[MAX_KEYBOARD_CONFIGS][4];
         //diagonal_status upRightDiagonal;
         //diagonal_status downRightDiagonal;
         //diagonal_status downLeftDiagonal; 

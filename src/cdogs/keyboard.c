@@ -118,21 +118,22 @@ void DiagonalHold(keyboard_t *keyboard, int c)
     const Uint8* realKeyboardState = SDL_GetKeyboardState(NULL); //This is the physical state of the keyboard untouched by any program manipulations, never manipulated, just compared against, eliminates a lot of bugs
     
     // -----
-    KeyPress currentPlayerKeys[4] = {(*keyboard).currentKeys[(*keyboard).PlayerKeys[c].up], (*keyboard).currentKeys[(*keyboard).PlayerKeys[c].right], 
-    (*keyboard).currentKeys[(*keyboard).PlayerKeys[c].down], (*keyboard).currentKeys[(*keyboard).PlayerKeys[c].left]}; //Needed an array of keyboard directions arranged in a circle to be able to urn this into a simple loop
+    KeyPress currentPlayerKeys[4] = {keyboard->currentKeys[keyboard->PlayerKeys[c].up], keyboard->currentKeys[keyboard->PlayerKeys[c].right], 
+    keyboard->currentKeys[keyboard->PlayerKeys[c].down], keyboard->currentKeys[keyboard->PlayerKeys[c].left]}; 
+    //Needed an array of keyboard directions arranged in a circle to be able to urn this into a simple loop
     
-    int realCurrentPlayerKeys[4] = {realKeyboardState[(*keyboard).PlayerKeys[c].up], realKeyboardState[(*keyboard).PlayerKeys[c].right],
-    realKeyboardState[(*keyboard).PlayerKeys[c].down], realKeyboardState[(*keyboard).PlayerKeys[c].left]};
-      //Needed a similar array for the actual state of the keyboard so 'i' would always match between currentKeys and realKeyboard
+    int realCurrentPlayerKeys[4] = {realKeyboardState[keyboard->PlayerKeys[c].up], realKeyboardState[keyboard->PlayerKeys[c].right],
+    realKeyboardState[keyboard->PlayerKeys[c].down], realKeyboardState[keyboard->PlayerKeys[c].left]};
+    //Needed a similar array for the actual state of the keyboard so 'i' would always match between currentKeys and realKeyboard
     
     //------
     //If an opposing direction is pressed to what is currently sustained, immediately end sustain, an attempt to make sure false positives are nipped in the bud
     for (int i = 0; i < 4; ++i)
     {
-        if ((keyboard->diagonalStatus[c][i] == SUSTAIN) && ((currentPlayerKeys[(i + 2) % 4].isPressed == true || (currentPlayerKeys[(i + 3) % 4].isPressed == true))))
+        if ((keyboard->diagonalState.diagonalStatus[c][i] == DIAGONAL_STATUS_SUSTAIN) && (currentPlayerKeys[(i + 2) % 4].isPressed || (currentPlayerKeys[(i + 3) % 4].isPressed)))
             {
-                keyboard->diagonalStatus[c][i] = UNPRESSED;
-                keyboard->diagonalTicks[c][i] = (-1);
+                keyboard->diagonalState.diagonalStatus[c][i] = DIAGONAL_STATUS_UNPRESSED;
+                keyboard->diagonalState.diagonalTicks[c][i] = (-1);
                 currentPlayerKeys[i].isPressed = realCurrentPlayerKeys[i];
                 currentPlayerKeys[(i + 1) % 4].isPressed = realCurrentPlayerKeys[(i + 1) % 4];
             } 
@@ -142,10 +143,10 @@ void DiagonalHold(keyboard_t *keyboard, int c)
     //Sets the stage to change to sustain, hopefully avoids false positives by creating an intermediary state between not pressed and a diagonal being sustained
     for (int i = 0; i < 4; ++i) 
     {
-        if ((currentPlayerKeys[i].isPressed == true && currentPlayerKeys[(i + 1) % 4].isPressed == true) && (keyboard->diagonalStatus[c][i] == UNPRESSED)) 
+        if ((currentPlayerKeys[i].isPressed && currentPlayerKeys[(i + 1) % 4].isPressed) && (keyboard->diagonalState.diagonalStatus[c][i] == DIAGONAL_STATUS_UNPRESSED)) 
             {
-                keyboard->diagonalStatus[c][i] = PRESSED;
-                keyboard->diagonalTicks[c][i] = (-1);
+                keyboard->diagonalState.diagonalStatus[c][i] = DIAGONAL_STATUS_PRESSED;
+                keyboard->diagonalState.diagonalTicks[c][i] = (-1);
             }
     }
     
@@ -153,11 +154,10 @@ void DiagonalHold(keyboard_t *keyboard, int c)
     //Sets sustain if both buttons in a diagonal have been pressed but one is no longer pressed 
     for (int i = 0; i < 4; ++i) 
     {
-        if ((keyboard->diagonalStatus[c][i] == PRESSED) && ((currentPlayerKeys[i].isPressed == true && currentPlayerKeys[(i + 1) % 4].isPressed == false)
-        || (currentPlayerKeys[i].isPressed == false && currentPlayerKeys[(i + 1) % 4].isPressed == true)))
+        if ((keyboard->diagonalState.diagonalStatus[c][i] == DIAGONAL_STATUS_PRESSED) && ((currentPlayerKeys[i].isPressed || currentPlayerKeys[(i + 1) % 4].isPressed)))
             {
-                keyboard->diagonalStatus[c][i] = SUSTAIN;
-                keyboard->diagonalTicks[c][i] = currentTicks + DIAGONAL_RELEASE_DELAY;
+                keyboard->diagonalState.diagonalStatus[c][i] = DIAGONAL_STATUS_SUSTAIN;
+                keyboard->diagonalState.diagonalTicks[c][i] = currentTicks + DIAGONAL_RELEASE_DELAY;
             } 
     
     }
@@ -166,7 +166,7 @@ void DiagonalHold(keyboard_t *keyboard, int c)
     //Keeps buttons pressed for DIAGONAL_RELEASE_DELAY (currently 20) milliseconds to help determine if a diagonal was intended
     for (int i = 0; i < 4; ++i)
     {
-        if ((keyboard->diagonalStatus[c][i] == SUSTAIN)  && (keyboard->diagonalTicks[c][i] > currentTicks))
+        if ((keyboard->diagonalState.diagonalStatus[c][i] == DIAGONAL_STATUS_SUSTAIN)  && (keyboard->diagonalState.diagonalTicks[c][i] > currentTicks))
         {
             currentPlayerKeys[i].isPressed = true; 
             currentPlayerKeys[(i + 1) % 4].isPressed = true;
@@ -178,20 +178,20 @@ void DiagonalHold(keyboard_t *keyboard, int c)
     //the first time after being pressed after a sustain
     for (int i = 0; i < 4; ++i)
     {
-        if (((keyboard->diagonalStatus[c][i] == SUSTAIN) && ((keyboard->diagonalTicks[c][i] <= currentTicks) 
-        || ((realCurrentPlayerKeys[i] == false) && (realCurrentPlayerKeys[(i + 1) % 4] == false)))))
+        if (((keyboard->diagonalState.diagonalStatus[c][i] == DIAGONAL_STATUS_SUSTAIN) && ((keyboard->diagonalState.diagonalTicks[c][i] <= currentTicks) 
+        || ((!realCurrentPlayerKeys[i]) && (!realCurrentPlayerKeys[(i + 1) % 4])))))
             {
-                keyboard->diagonalStatus[c][i] = UNPRESSED;
+                keyboard->diagonalState.diagonalStatus[c][i] = DIAGONAL_STATUS_UNPRESSED;
                 currentPlayerKeys[i].isPressed = realCurrentPlayerKeys[i];
                 currentPlayerKeys[(i + 1) % 4].isPressed = realCurrentPlayerKeys[(i + 1) % 4];
             } 
     }
     
     // -----
-    (*keyboard).currentKeys[(*keyboard).PlayerKeys[c].up].isPressed = currentPlayerKeys[0].isPressed;
-    (*keyboard).currentKeys[(*keyboard).PlayerKeys[c].right].isPressed = currentPlayerKeys[1].isPressed;
-    (*keyboard).currentKeys[(*keyboard).PlayerKeys[c].down].isPressed = currentPlayerKeys[2].isPressed;
-    (*keyboard).currentKeys[(*keyboard).PlayerKeys[c].left].isPressed = currentPlayerKeys[3].isPressed;
+    keyboard->currentKeys[keyboard->PlayerKeys[c].up].isPressed = currentPlayerKeys[0].isPressed;
+    keyboard->currentKeys[keyboard->PlayerKeys[c].right].isPressed = currentPlayerKeys[1].isPressed;
+    keyboard->currentKeys[keyboard->PlayerKeys[c].down].isPressed = currentPlayerKeys[2].isPressed;
+    keyboard->currentKeys[keyboard->PlayerKeys[c].left].isPressed = currentPlayerKeys[3].isPressed;
     //Propogates all changes to the keyboard state, when these are removed the function ceases to do anything.
 }
 
@@ -256,14 +256,10 @@ void KeyPostPoll(keyboard_t *keyboard, Uint32 ticks)
 	}
 	keyboard->ticks = ticks;
     
-    for (int c = 0; c < 2; ++c)
+    for (int c = 0; c < MAX_KEYBOARD_CONFIGS; ++c)
         {
             //cycles through keys set to diagonals on each player to make them a bit stickier so diagonals are easier to land on
             DiagonalHold(keyboard, c);
-            if (c >= 2)
-            {
-                c = (c % 2);
-            }
         }
 }
 
