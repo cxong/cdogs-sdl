@@ -686,7 +686,7 @@ static void FireWeapon(TActor *a, Weapon *w)
 	{
 		if (!WeaponIsLocked(w) && ConfigGetBool(&gConfig, "Game.Ammo"))
 		{
-			CASSERT(ActorGunGetAmmo(a, w) == 0, "should be out of ammo");
+			CASSERT(ActorWeaponGetAmmo(a, w->Gun) == 0, "should be out of ammo");
 			// Play a clicking sound if this weapon is out of ammo
 			if (w->clickLock <= 0)
 			{
@@ -1398,13 +1398,13 @@ struct vec2 ActorGetMuzzleOffset(
 	const CharSprites *cs = ActorGetCharacter(a)->Class->Sprites;
 	return GunGetMuzzleOffset(g, cs, a->direction);
 }
-int ActorGunGetAmmo(const TActor *a, const Weapon *w)
+int ActorWeaponGetAmmo(const TActor *a, const GunDescription *g)
 {
-	if (w->Gun->AmmoId == -1)
+	if (g->AmmoId == -1)
 	{
 		return -1;
 	}
-	return *(int *)CArrayGet(&a->ammo, w->Gun->AmmoId);
+	return *(int *)CArrayGet(&a->ammo, g->AmmoId);
 }
 bool ActorCanFireWeapon(const TActor *a, const Weapon *w)
 {
@@ -1412,7 +1412,7 @@ bool ActorCanFireWeapon(const TActor *a, const Weapon *w)
 	{
 		return false;
 	}
-	const bool hasAmmo = ActorGunGetAmmo(a, w) != 0;
+	const bool hasAmmo = ActorWeaponGetAmmo(a, w->Gun) != 0;
 	return
 		!WeaponIsLocked(w) &&
 		(!ConfigGetBool(&gConfig, "Game.Ammo") || hasAmmo);

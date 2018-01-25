@@ -179,7 +179,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 			{
 				continue;
 			}
-			const int ammoAmount = ActorGunGetAmmo(actor, w);
+			const int ammoAmount = ActorWeaponGetAmmo(actor, w->Gun);
 			if ((mostPreferredWeaponWithAmmo == -1 && ammoAmount != 0) ||
 				(!mostPreferredWeaponHasAmmo && ammoAmount > 0))
 			{

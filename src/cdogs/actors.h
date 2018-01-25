@@ -205,7 +205,7 @@ struct vec2 ActorGetWeaponMuzzleOffset(const TActor *a);
 struct vec2 ActorGetMuzzleOffset(
 	const TActor *a, const GunDescription *g);
 // Returns -1 if gun does not use ammo
-int ActorGunGetAmmo(const TActor *a, const Weapon *w);
+int ActorWeaponGetAmmo(const TActor *a, const GunDescription *g);
 bool ActorCanFireWeapon(const TActor *a, const Weapon *w);
 bool ActorTrySwitchWeapon(const TActor *a, const bool allGuns);
 bool ActorHasGun(const TActor *a, const GunDescription *gun);

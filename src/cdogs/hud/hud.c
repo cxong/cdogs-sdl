@@ -176,15 +176,14 @@ static void DrawWeaponStatus(
 	const GunDescription *g = weapon->Gun;
 	const struct vec2i iconPos = Vec2iAligned(
 		svec2i(pos.x - 2, pos.y - 2),
-		g->Icon->size, hAlign, vAlign, gGraphicsDevice.cachedConfig.Res);
-	Blit(&gGraphicsDevice, g->Icon, iconPos);
+		g->Icon->size, hAlign, vAlign, hud->device->cachedConfig.Res);
+	Blit(hud->device, g->Icon, iconPos);
 
 	// Draw gauge if ammo or reloading
 	const bool useAmmo =
-		ConfigGetBool(&gConfig, "Game.Ammo") && weapon->Gun->AmmoId >= 0;
-	const Ammo *ammo =
-		useAmmo ? AmmoGetById(&gAmmo, weapon->Gun->AmmoId) : NULL;
-	const int amount = useAmmo ? ActorGunGetAmmo(actor, weapon) : 0;
+		ConfigGetBool(&gConfig, "Game.Ammo") && g->AmmoId >= 0;
+	const Ammo *ammo = useAmmo ? AmmoGetById(&gAmmo, g->AmmoId) : NULL;
+	const int amount = useAmmo ? ActorWeaponGetAmmo(actor, g) : 0;
 	if (useAmmo || weapon->lock > 0)
 	{
 		const struct vec2i gaugePos = svec2i_add(pos, svec2i(-1 + GUN_ICON_PAD, -1));
@@ -226,16 +225,16 @@ static void DrawWeaponStatus(
 	FontOpts opts = FontOptsNew();
 	opts.HAlign = hAlign;
 	opts.VAlign = vAlign;
-	opts.Area = gGraphicsDevice.cachedConfig.Res;
+	opts.Area = hud->device->cachedConfig.Res;
 	opts.Pad = svec2i(pos.x + GUN_ICON_PAD, pos.y);
 	char buf[128];
-	if (useAmmo && weapon->Gun->AmmoId >= 0)
+	if (useAmmo && g->AmmoId >= 0)
 	{
 		// Include ammo counter
 		sprintf(buf, "%s %d/%d",
-			weapon->Gun->name,
-			ActorGunGetAmmo(actor, weapon),
-			AmmoGetById(&gAmmo, weapon->Gun->AmmoId)->Max);
+			g->name,
+			ActorWeaponGetAmmo(actor, g),
+			AmmoGetById(&gAmmo, g->AmmoId)->Max);
 
 		// If low / no ammo, draw text with different colours, flashing
 		const int fps = ConfigGetInt(&gConfig, "Game.FPS");
@@ -263,6 +262,71 @@ static void DrawWeaponStatus(
 		strcpy(buf, weapon->Gun->name);
 	}
 	FontStrOpt(buf, svec2i_zero(), opts);
+}
+
+static void DrawGrenadeStatus(
+	HUD *hud, const TActor *a, struct vec2i pos,
+	const FontAlign hAlign, const FontAlign vAlign)
+{
+	const Weapon *grenade = ACTOR_GET_GRENADE(a);
+	const GunDescription *g = grenade->Gun;
+	if (g == NULL)
+	{
+		return;
+	}
+
+	// Draw number of grenade icons; if there are too many draw one with the
+	// amount as text
+	const bool useAmmo =
+		ConfigGetBool(&gConfig, "Game.Ammo") && g->AmmoId >= 0;
+	const int amount = useAmmo ? ActorWeaponGetAmmo(a, g) : -1;
+	if (useAmmo && amount > 0 && amount <= MAX_GRENADE_ICONS)
+	{
+		const struct vec2i iconPosEnd = svec2i_add(
+			pos, svec2i(GRENADES_ROW_PAD_LEFT, GRENADES_ROW_PAD_TOP));
+		const int width = GAUGE_WIDTH - GRENADES_ROW_PAD_LEFT * 2;
+		for (int i = 0; i < amount; i++)
+		{
+			const int x =
+				iconPosEnd.x + width - g->Icon->size.x -
+				width * i / MAX_GRENADE_ICONS;
+			const struct vec2i posAligned = Vec2iAligned(
+				svec2i(x, iconPosEnd.y),
+				g->Icon->size, hAlign, vAlign, hud->device->cachedConfig.Res);
+			Blit(hud->device, g->Icon, posAligned);
+		}
+	}
+	else
+	{
+		char buf[256];
+		if (amount >= 0)
+		{
+			sprintf(buf, " x %d", amount);
+		}
+		else
+		{
+			sprintf(buf, " x 99");
+		}
+		struct vec2i iconPos =
+			svec2i_add(pos, svec2i(GAUGE_WIDTH, GRENADES_ROW_PAD_TOP));
+		const struct vec2i ammoSize =
+			svec2i(FontStrW(buf) + g->Icon->size.x, FontH());
+		iconPos.x -= ammoSize.x;
+			svec2i(pos.x + GAUGE_WIDTH, pos.y + GRENADES_ROW_PAD_TOP);
+		iconPos = Vec2iAligned(
+			iconPos, ammoSize, hAlign, vAlign, hud->device->cachedConfig.Res);
+		Blit(hud->device, g->Icon, iconPos);
+		iconPos.x += g->Icon->size.x;
+		FontStr(buf, iconPos);
+	}
+
+	// Grenade name
+	FontOpts opts = FontOptsNew();
+	opts.HAlign = hAlign;
+	opts.VAlign = vAlign;
+	opts.Area = hud->device->cachedConfig.Res;
+	opts.Pad = svec2i(pos.x, pos.y);
+	FontStrOpt(g->name, svec2i_zero(), opts);
 }
 
 static void DrawLives(
@@ -467,6 +531,10 @@ static void DrawPlayerStatus(
 		// Weapon
 		pos.y += rowHeight + LIVES_ROW_EXTRA_Y;
 		DrawWeaponStatus(hud, p, pos, opts.HAlign, opts.VAlign);
+
+		// Grenades
+		pos.y += rowHeight + GRENADES_ROW_EXTRA_Y;
+		DrawGrenadeStatus(hud, p, pos, opts.HAlign, opts.VAlign);
 	}
 	else
 	{
