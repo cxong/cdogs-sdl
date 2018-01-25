@@ -31,7 +31,7 @@ Pic *PicManagerGetPic(const PicManager *pm, const char *name)
 	UNUSED(name);
 	return NULL;
 }
-const GunDescription *StrGunDescription(const char *s)
+const WeaponClass *StrWeaponClass(const char *s)
 {
 	UNUSED(s);
 	return NULL;

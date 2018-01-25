@@ -550,16 +550,16 @@ static int GetNinjaBonus(const PlayerData *p)
 {
 	if (PlayerGetNumWeapons(p) == 1)
 	{
-		const GunDescription *g = NULL;
+		const WeaponClass *wc = NULL;
 		for (int i = 0; i < MAX_GUNS; i++)
 		{
 			if (p->guns[i] != NULL)
 			{
-				g = p->guns[i];
+				wc = p->guns[i];
 				break;
 			}
 		}
-		if (g != NULL && !g->CanShoot && p->Stats.Friendlies == 0 &&
+		if (wc != NULL && !wc->CanShoot && p->Stats.Friendlies == 0 &&
 			p->Stats.Kills > 5)
 		{
 			return 50 * p->Stats.Kills;

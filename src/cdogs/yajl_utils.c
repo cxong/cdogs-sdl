@@ -197,10 +197,10 @@ void LoadBulletGuns(CArray *guns, json_t *node, const char *name)
 	{
 		return;
 	}
-	CArrayInit(guns, sizeof(const GunDescription *));
+	CArrayInit(guns, sizeof(const WeaponClass *));
 	for (json_t *gun = node->child->child; gun; gun = gun->next)
 	{
-		const GunDescription *g = StrGunDescription(gun->text);
+		const WeaponClass *wc = StrWeaponClass(gun->text);
 		CArrayPushBack(guns, &g);
 	}
 }

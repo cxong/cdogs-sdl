@@ -426,32 +426,32 @@ static void HandleGameEvent(
 		break;
 	case GAME_EVENT_GUN_FIRE:
 		{
-			const GunDescription *g = StrGunDescription(e.u.GunFire.Gun);
+			const WeaponClass *wc = StrWeaponClass(e.u.GunFire.Gun);
 			const struct vec2 pos = NetToVec2(e.u.GunFire.MuzzlePos);
 
 			// Add bullets
-			if (g->Bullet && !gCampaign.IsClient)
+			if (wc->Bullet && !gCampaign.IsClient)
 			{
 				// Find the starting angle of the spread (clockwise)
 				// Keep in mind the fencepost problem, i.e. spread of 3 means a
 				// total spread angle of 2x width
 				const float spreadStartAngle =
-					g->AngleOffset -
-					(g->Spread.Count - 1) * g->Spread.Width / 2;
-				for (int i = 0; i < g->Spread.Count; i++)
+					wc->AngleOffset -
+					(wc->Spread.Count - 1) * wc->Spread.Width / 2;
+				for (int i = 0; i < wc->Spread.Count; i++)
 				{
-					const float recoil = RAND_FLOAT(-0.5f, 0.5f) * g->Recoil;
+					const float recoil = RAND_FLOAT(-0.5f, 0.5f) * wc->Recoil;
 					const float finalAngle =
 						e.u.GunFire.Angle + spreadStartAngle +
-						i * g->Spread.Width + recoil;
+						i * wc->Spread.Width + recoil;
 					GameEvent ab = GameEventNew(GAME_EVENT_ADD_BULLET);
 					ab.u.AddBullet.UID = MobObjsObjsGetNextUID();
-					strcpy(ab.u.AddBullet.BulletClass, g->Bullet->Name);
+					strcpy(ab.u.AddBullet.BulletClass, wc->Bullet->Name);
 					ab.u.AddBullet.MuzzlePos = Vec2ToNet(pos);
 					ab.u.AddBullet.MuzzleHeight = e.u.GunFire.Z;
 					ab.u.AddBullet.Angle = finalAngle;
 					ab.u.AddBullet.Elevation =
-						RAND_INT(g->ElevationLow, g->ElevationHigh);
+						RAND_INT(wc->ElevationLow, wc->ElevationHigh);
 					ab.u.AddBullet.Flags = e.u.GunFire.Flags;
 					ab.u.AddBullet.PlayerUID = e.u.GunFire.PlayerUID;
 					ab.u.AddBullet.ActorUID = e.u.GunFire.UID;
@@ -460,49 +460,50 @@ static void HandleGameEvent(
 			}
 
 			// Add muzzle flash
-			if (GunHasMuzzle(g) && g->MuzzleFlash != NULL)
+			if (WeaponClassHasMuzzle(wc) && wc->MuzzleFlash != NULL)
 			{
 				GameEvent ap = GameEventNew(GAME_EVENT_ADD_PARTICLE);
-				ap.u.AddParticle.Class = g->MuzzleFlash;
+				ap.u.AddParticle.Class = wc->MuzzleFlash;
 				ap.u.AddParticle.Pos = pos;
 				ap.u.AddParticle.Z = e.u.GunFire.Z;
 				ap.u.AddParticle.Angle = e.u.GunFire.Angle;
 				GameEventsEnqueue(&gGameEvents, ap);
 			}
 			// Sound
-			if (e.u.GunFire.Sound && g->Sound)
+			if (e.u.GunFire.Sound && wc->Sound)
 			{
-				SoundPlayAt(&gSoundDevice, g->Sound, pos);
+				SoundPlayAt(&gSoundDevice, wc->Sound, pos);
 			}
 			// Screen shake
-			if (g->ShakeAmount > 0)
+			if (wc->ShakeAmount > 0)
 			{
 				GameEvent s = GameEventNew(GAME_EVENT_SCREEN_SHAKE);
-				s.u.ShakeAmount = g->ShakeAmount;
+				s.u.ShakeAmount = wc->ShakeAmount;
 				GameEventsEnqueue(&gGameEvents, s);
 			}
 			// Brass shells
 			// If we have a reload lead, defer the creation of shells until then
-			if (g->Brass && g->ReloadLead == 0)
+			if (wc->Brass && wc->ReloadLead == 0)
 			{
 				const direction_e d = RadiansToDirection(e.u.GunFire.Angle);
-				GunAddBrass(g, d, pos);
+				WeaponClassAddBrass(wc, d, pos);
 			}
 		}
 		break;
 	case GAME_EVENT_GUN_RELOAD:
 		{
-			const GunDescription *g = StrGunDescription(e.u.GunReload.Gun);
+			const WeaponClass *wc = StrWeaponClass(e.u.GunReload.Gun);
 			const struct vec2 pos = NetToVec2(e.u.GunReload.Pos);
 			SoundPlayAtPlusDistance(
 				&gSoundDevice,
-				g->ReloadSound,
+				wc->ReloadSound,
 				pos,
 				RELOAD_DISTANCE_PLUS);
 			// Brass shells
-			if (g->Brass)
+			if (wc->Brass)
 			{
-				GunAddBrass(g, (direction_e)e.u.GunReload.Direction, pos);
+				WeaponClassAddBrass(
+					wc, (direction_e)e.u.GunReload.Direction, pos);
 			}
 		}
 		break;

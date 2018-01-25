@@ -43,7 +43,7 @@ typedef struct
 	bool Ready;
 	Character Char;
 	char name[20];
-	const GunDescription *guns[MAX_WEAPONS];
+	const WeaponClass *guns[MAX_WEAPONS];
 	int Lives;
 
 	NPlayerStats Stats;

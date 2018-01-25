@@ -167,7 +167,7 @@ int StrPickupClassId(const char *s)
 
 void PickupClassesInit(
 	PickupClasses *classes, const char *filename,
-	const AmmoClasses *ammo, const GunClasses *guns)
+	const AmmoClasses *ammo, const WeaponClasses *guns)
 {
 	CArrayInit(&classes->Classes, sizeof(PickupClass));
 	CArrayInit(&classes->CustomClasses, sizeof(PickupClass));
@@ -281,14 +281,14 @@ void PickupClassesLoadGuns(CArray *classes, const CArray *gunClasses)
 {
 	for (int i = 0; i < (int)gunClasses->size; i++)
 	{
-		const GunDescription *g = CArrayGet(gunClasses, i);
+		const WeaponClass *wc = CArrayGet(gunClasses, i);
 		PickupClass c;
 		char buf[256];
-		sprintf(buf, "gun_%s", g->name);
+		sprintf(buf, "gun_%s", wc->name);
 		CSTRDUP(c.Name, buf);
-		c.Pic = g->Icon;
+		c.Pic = wc->Icon;
 		c.Type = PICKUP_GUN;
-		c.u.GunId = GunDescriptionId(g);
+		c.u.GunId = WeaponClassId(wc);
 		CArrayPushBack(classes, &c);
 	}
 }

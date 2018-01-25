@@ -120,8 +120,8 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	root = ReadArchiveJSON(filename, "guns.json");
 	if (root != NULL)
 	{
-		WeaponLoadJSON(
-			&gGunDescriptions, &gGunDescriptions.CustomGuns, root);
+		WeaponClassesLoadJSON(
+			&gWeaponClasses, &gWeaponClasses.CustomGuns, root);
 		json_free_value(&root);
 	}
 
@@ -134,7 +134,7 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	}
 	PickupClassesLoadAmmo(&gPickupClasses.CustomClasses, &gAmmo.CustomAmmo);
 	PickupClassesLoadGuns(
-		&gPickupClasses.CustomClasses, &gGunDescriptions.CustomGuns);
+		&gPickupClasses.CustomClasses, &gWeaponClasses.CustomGuns);
 	PickupClassesLoadKeys(&gPickupClasses.KeyClasses);
 
 	// Reset custom map objects
@@ -145,7 +145,7 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 		MapObjectsLoadJSON(&gMapObjects.CustomClasses, root);
 	}
 	MapObjectsLoadAmmoAndGunSpawners(
-		&gMapObjects, &gAmmo, &gGunDescriptions, true);
+		&gMapObjects, &gAmmo, &gWeaponClasses, true);
 
 	root = ReadArchiveJSON(filename, "missions.json");
 	if (root == NULL)
@@ -620,8 +620,8 @@ static json_t *SaveWeapons(const CArray *weapons)
 	json_t *node = json_new_array();
 	for (int i = 0; i < (int)weapons->size; i++)
 	{
-		const GunDescription **g = CArrayGet(weapons, i);
-		json_insert_child(node, json_new_string((*g)->name));
+		const WeaponClass **wc = CArrayGet(weapons, i);
+		json_insert_child(node, json_new_string((*wc)->name));
 	}
 	return node;
 }

@@ -76,7 +76,7 @@ void CampaignSettingTerminate(CampaignSetting *setting)
 	AmmoClassesClear(&gAmmo.CustomAmmo);
 	CharacterClassesClear(&gCharacterClasses.CustomClasses);
 	BulletClassesClear(&gBulletClasses.CustomClasses);
-	WeaponClassesClear(&gGunDescriptions.CustomGuns);
+	WeaponClassesClear(&gWeaponClasses.CustomGuns);
 	PickupClassesClear(&gPickupClasses.CustomClasses);
 	PickupClassesClear(&gPickupClasses.KeyClasses);
 	MapObjectsClear(&gMapObjects.CustomClasses);

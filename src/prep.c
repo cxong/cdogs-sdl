@@ -730,9 +730,11 @@ static menu_t *MenuCreateAllowedWeapons(
 	m->customPostInputData = data;
 	for (int i = 0; i < (int)data->weapons->size; i++)
 	{
-		const GunDescription **g = CArrayGet(data->weapons, i);
-		MenuAddSubmenu(m,
-			MenuCreateOptionToggle((*g)->name, CArrayGet(&data->allowed, i)));
+		const WeaponClass **wc = CArrayGet(data->weapons, i);
+		MenuAddSubmenu(
+			m,
+			MenuCreateOptionToggle(
+				(*wc)->name, CArrayGet(&data->allowed, i)));
 	}
 	MenuAddSubmenu(m, MenuCreateSeparator(""));
 	MenuAddSubmenu(m, MenuCreateBack("Done"));
@@ -776,7 +778,7 @@ GameLoopData *PlayerEquip(void)
 		data, PlayerEquipTerminate, NULL, PlayerEquipOnExit,
 		NULL, PlayerEquipUpdate, PlayerEquipDraw);
 }
-static bool HasWeapon(const CArray *weapons, const GunDescription *w);
+static bool HasWeapon(const CArray *weapons, const WeaponClass *wc);
 static void RemoveUnavailableWeapons(PlayerData *data, const CArray *weapons)
 {
 	for (int i = 0; i < MAX_WEAPONS; i++)
@@ -787,12 +789,12 @@ static void RemoveUnavailableWeapons(PlayerData *data, const CArray *weapons)
 		}
 	}
 }
-static bool HasWeapon(const CArray *weapons, const GunDescription *w)
+static bool HasWeapon(const CArray *weapons, const WeaponClass *wc)
 {
 	for (int i = 0; i < (int)weapons->size; i++)
 	{
-		const GunDescription **g = CArrayGet(weapons, i);
-		if (w == *g)
+		const WeaponClass **wc2 = CArrayGet(weapons, i);
+		if (wc == *wc2)
 		{
 			return true;
 		}

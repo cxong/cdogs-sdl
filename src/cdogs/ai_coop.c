@@ -214,10 +214,10 @@ static int AICoopGetCmdNormal(TActor *actor)
 	// - if we have a free slot
 	if (actor->aiContext->OnGunId != -1)
 	{
-		const GunDescription *gun =
-			IdGunDescription(actor->aiContext->OnGunId);
-		if ((lowAmmoGun != -1 && !ActorHasGun(actor, gun)) ||
-			(gun->IsGrenade ?
+		const WeaponClass *wc =
+			IdWeaponClass(actor->aiContext->OnGunId);
+		if ((lowAmmoGun != -1 && !ActorHasGun(actor, wc)) ||
+			(wc->IsGrenade ?
 			ActorGetNumGrenades(actor) < MAX_GRENADES :
 			ActorGetNumGuns(actor) < MAX_GUNS))
 		{
@@ -739,7 +739,7 @@ static bool OnClosestPickupGun(
 		return false;
 	}
 
-	if (ActorHasGun(actor, IdGunDescription(p->class->u.GunId)))
+	if (ActorHasGun(actor, IdWeaponClass(p->class->u.GunId)))
 	{
 		return false;
 	}
@@ -826,7 +826,7 @@ static int GotoObjective(TActor *actor, const float objDistance2)
 	return cmd;
 }
 
-static bool PlayerHasWeapon(const PlayerData *p, const GunDescription *w);
+static bool PlayerHasWeapon(const PlayerData *p, const WeaponClass *wc);
 void AICoopSelectWeapons(
 	PlayerData *p, const int player, const CArray *weapons)
 {
@@ -843,19 +843,19 @@ void AICoopSelectWeapons(
 			// Not enough weapons
 			break;
 		}
-		const GunDescription **g = CArrayGet(weapons, idx);
-		if ((*g)->IsGrenade)
+		const WeaponClass **wc = CArrayGet(weapons, idx);
+		if ((*wc)->IsGrenade)
 		{
 			continue;
 		}
-		p->guns[gunCount] = *g;
+		p->guns[gunCount] = *wc;
 		gunCount++;
 	}
 
 	if (ConfigGetBool(&gConfig, "Game.Ammo"))
 	{
 		// Select pistol as an infinite-ammo backup
-		const GunDescription *pistol = StrGunDescription("Pistol");
+		const WeaponClass *pistol = StrWeaponClass("Pistol");
 		if (!PlayerHasWeapon(p, pistol))
 		{
 			if (gunCount == MAX_GUNS)
@@ -872,12 +872,12 @@ void AICoopSelectWeapons(
 		}
 	}
 }
-static bool PlayerHasWeapon(const PlayerData *p, const GunDescription *w)
+static bool PlayerHasWeapon(const PlayerData *p, const WeaponClass *wc)
 {
 	for (int i = 0; i < MAX_WEAPONS; i++)
 	{
-		const GunDescription *g = p->guns[i];
-		if (w == g)
+		const WeaponClass *wc2 = p->guns[i];
+		if (wc == wc2)
 		{
 			return true;
 		}

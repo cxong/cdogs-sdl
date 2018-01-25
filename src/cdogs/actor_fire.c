@@ -48,7 +48,7 @@ void ActorFire(Weapon *w, const TActor *a)
 	const struct vec2 muzzleOffset = ActorGetMuzzleOffset(a, w->Gun);
 	const struct vec2 muzzlePosition = svec2_add(a->Pos, muzzleOffset);
 	const bool playSound = w->soundLock <= 0;
-	GunFire(
+	WeaponClassFire(
 		w->Gun, muzzlePosition, w->Gun->MuzzleHeight, radians,
 		a->flags, a->PlayerUID, a->uid, playSound, true);
 	if (playSound)

@@ -117,7 +117,7 @@ void MissionInit(Mission *m)
 	CArrayInit(&m->Enemies, sizeof(int));
 	CArrayInit(&m->SpecialChars, sizeof(int));
 	CArrayInit(&m->MapObjectDensities, sizeof(MapObjectDensity));
-	CArrayInit(&m->Weapons, sizeof(const GunDescription *));
+	CArrayInit(&m->Weapons, sizeof(const WeaponClass *));
 }
 
 static void MapObjectPositionsCopy(CArray *dst, const CArray *src);

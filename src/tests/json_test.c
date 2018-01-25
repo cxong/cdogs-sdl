@@ -24,7 +24,7 @@ bool ConfigGetBool(Config *c, const char *name)
 	return false;
 }
 int PicManagerGetPic(void) { return 0; }
-int StrGunDescription(void) { return 0; }
+int StrWeaponClass(void) { return 0; }
 Config gConfig;
 int gPicManager;
 

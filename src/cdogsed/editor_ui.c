@@ -521,14 +521,14 @@ static const char *GetWeaponCountStr(UIObject *o, void *v)
 		return NULL;
 	}
 	int totalWeapons = 0;
-	CA_FOREACH(const GunDescription, g, gGunDescriptions.Guns)
-		if (g->IsRealGun)
+	CA_FOREACH(const WeaponClass, wc, gWeaponClasses.Guns)
+		if (wc->IsRealGun)
 		{
 			totalWeapons++;
 		}
 	CA_FOREACH_END()
-	CA_FOREACH(const GunDescription, g, gGunDescriptions.CustomGuns)
-		if (g->IsRealGun)
+	CA_FOREACH(const WeaponClass, wc, gWeaponClasses.CustomGuns)
+		if (wc->IsRealGun)
 		{
 			totalWeapons++;
 		}

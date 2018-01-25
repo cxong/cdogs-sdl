@@ -173,17 +173,17 @@ static void DrawWeaponStatus(
 	const Weapon *weapon = ACTOR_GET_WEAPON(actor);
 
 	// Draw gun icon, and allocate padding to draw the gun icon
-	const GunDescription *g = weapon->Gun;
+	const WeaponClass *wc = weapon->Gun;
 	const struct vec2i iconPos = Vec2iAligned(
 		svec2i(pos.x - 2, pos.y - 2),
-		g->Icon->size, hAlign, vAlign, hud->device->cachedConfig.Res);
-	Blit(hud->device, g->Icon, iconPos);
+		wc->Icon->size, hAlign, vAlign, hud->device->cachedConfig.Res);
+	Blit(hud->device, wc->Icon, iconPos);
 
 	// Draw gauge if ammo or reloading
 	const bool useAmmo =
-		ConfigGetBool(&gConfig, "Game.Ammo") && g->AmmoId >= 0;
-	const Ammo *ammo = useAmmo ? AmmoGetById(&gAmmo, g->AmmoId) : NULL;
-	const int amount = useAmmo ? ActorWeaponGetAmmo(actor, g) : 0;
+		ConfigGetBool(&gConfig, "Game.Ammo") && wc->AmmoId >= 0;
+	const Ammo *ammo = useAmmo ? AmmoGetById(&gAmmo, wc->AmmoId) : NULL;
+	const int amount = useAmmo ? ActorWeaponGetAmmo(actor, wc) : 0;
 	if (useAmmo || weapon->lock > 0)
 	{
 		const struct vec2i gaugePos = svec2i_add(pos, svec2i(-1 + GUN_ICON_PAD, -1));
@@ -228,13 +228,13 @@ static void DrawWeaponStatus(
 	opts.Area = hud->device->cachedConfig.Res;
 	opts.Pad = svec2i(pos.x + GUN_ICON_PAD, pos.y);
 	char buf[128];
-	if (useAmmo && g->AmmoId >= 0)
+	if (useAmmo && wc->AmmoId >= 0)
 	{
 		// Include ammo counter
 		sprintf(buf, "%s %d/%d",
-			g->name,
-			ActorWeaponGetAmmo(actor, g),
-			AmmoGetById(&gAmmo, g->AmmoId)->Max);
+			wc->name,
+			ActorWeaponGetAmmo(actor, wc),
+			AmmoGetById(&gAmmo, wc->AmmoId)->Max);
 
 		// If low / no ammo, draw text with different colours, flashing
 		const int fps = ConfigGetInt(&gConfig, "Game.FPS");
@@ -269,8 +269,8 @@ static void DrawGrenadeStatus(
 	const FontAlign hAlign, const FontAlign vAlign)
 {
 	const Weapon *grenade = ACTOR_GET_GRENADE(a);
-	const GunDescription *g = grenade->Gun;
-	if (g == NULL)
+	const WeaponClass *wc = grenade->Gun;
+	if (wc == NULL)
 	{
 		return;
 	}
@@ -278,8 +278,9 @@ static void DrawGrenadeStatus(
 	// Draw number of grenade icons; if there are too many draw one with the
 	// amount as text
 	const bool useAmmo =
-		ConfigGetBool(&gConfig, "Game.Ammo") && g->AmmoId >= 0;
-	const int amount = useAmmo ? ActorWeaponGetAmmo(a, g) : -1;
+		ConfigGetBool(&gConfig, "Game.Ammo") && wc->AmmoId >= 0;
+	const int amount = useAmmo ? ActorWeaponGetAmmo(a, wc) : -1;
+	const Pic *icon = WeaponClassGetIcon(wc);
 	if (useAmmo && amount > 0 && amount <= MAX_GRENADE_ICONS)
 	{
 		const struct vec2i iconPosEnd = svec2i_add(
@@ -288,12 +289,12 @@ static void DrawGrenadeStatus(
 		for (int i = 0; i < amount; i++)
 		{
 			const int x =
-				iconPosEnd.x + width - g->Icon->size.x -
+				iconPosEnd.x + width - wc->Icon->size.x -
 				width * i / MAX_GRENADE_ICONS;
 			const struct vec2i posAligned = Vec2iAligned(
 				svec2i(x, iconPosEnd.y),
-				g->Icon->size, hAlign, vAlign, hud->device->cachedConfig.Res);
-			Blit(hud->device, g->Icon, posAligned);
+				icon->size, hAlign, vAlign, hud->device->cachedConfig.Res);
+			Blit(hud->device, icon, posAligned);
 		}
 	}
 	else
@@ -310,13 +311,13 @@ static void DrawGrenadeStatus(
 		struct vec2i iconPos =
 			svec2i_add(pos, svec2i(GAUGE_WIDTH, GRENADES_ROW_PAD_TOP));
 		const struct vec2i ammoSize =
-			svec2i(FontStrW(buf) + g->Icon->size.x, FontH());
+			svec2i(FontStrW(buf) + icon->size.x, FontH());
 		iconPos.x -= ammoSize.x;
 			svec2i(pos.x + GAUGE_WIDTH, pos.y + GRENADES_ROW_PAD_TOP);
 		iconPos = Vec2iAligned(
 			iconPos, ammoSize, hAlign, vAlign, hud->device->cachedConfig.Res);
-		Blit(hud->device, g->Icon, iconPos);
-		iconPos.x += g->Icon->size.x;
+		Blit(hud->device, icon, iconPos);
+		iconPos.x += wc->Icon->size.x;
 		FontStr(buf, iconPos);
 	}
 
@@ -326,7 +327,7 @@ static void DrawGrenadeStatus(
 	opts.VAlign = vAlign;
 	opts.Area = hud->device->cachedConfig.Res;
 	opts.Pad = svec2i(pos.x, pos.y);
-	FontStrOpt(g->name, svec2i_zero(), opts);
+	FontStrOpt(wc->name, svec2i_zero(), opts);
 }
 
 static void DrawLives(

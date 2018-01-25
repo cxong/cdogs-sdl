@@ -218,7 +218,7 @@ int MapObjectGetFlags(const MapObject *mo)
 
 void MapObjectsInit(
 	MapObjects *classes, const char *filename,
-	const AmmoClasses *ammo, const GunClasses *guns)
+	const AmmoClasses *ammo, const WeaponClasses *guns)
 {
 	CArrayInit(&classes->Classes, sizeof(MapObject));
 	CArrayInit(&classes->CustomClasses, sizeof(MapObject));
@@ -434,7 +434,7 @@ static void AddDestructibles(MapObjects *m, const CArray *classes)
 static void LoadAmmoSpawners(CArray *classes, const CArray *ammo);
 static void LoadGunSpawners(CArray *classes, const CArray *guns);
 void MapObjectsLoadAmmoAndGunSpawners(
-	MapObjects *classes, const AmmoClasses *ammo, const GunClasses *guns,
+	MapObjects *classes, const AmmoClasses *ammo, const WeaponClasses *guns,
 	const bool isCustom)
 {
 	if (isCustom)
@@ -471,16 +471,16 @@ static void LoadGunSpawners(CArray *classes, const CArray *guns)
 {
 	for (int i = 0; i < (int)guns->size; i++)
 	{
-		const GunDescription *g = CArrayGet(guns, i);
-		if (!g->IsRealGun)
+		const WeaponClass *wc = CArrayGet(guns, i);
+		if (!wc->IsRealGun)
 		{
 			continue;
 		}
 		MapObject m;
 		char spawnerName[256];
 		char pickupClassName[256];
-		sprintf(spawnerName, "%s spawner", g->name);
-		sprintf(pickupClassName, "gun_%s", g->name);
+		sprintf(spawnerName, "%s spawner", wc->name);
+		sprintf(pickupClassName, "gun_%s", wc->name);
 		SetupSpawner(&m, spawnerName, pickupClassName);
 		CArrayPushBack(classes, &m);
 	}

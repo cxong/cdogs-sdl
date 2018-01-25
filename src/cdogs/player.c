@@ -82,8 +82,8 @@ void PlayerDataAddOrUpdate(const NPlayerData pd)
 		p->guns[i] = NULL;
 		if (strlen(pd.Weapons[i]) > 0)
 		{
-			const GunDescription *g = StrGunDescription(pd.Weapons[i]);
-			p->guns[i] = g;
+			const WeaponClass *wc = StrWeaponClass(pd.Weapons[i]);
+			p->guns[i] = wc;
 		}
 	}
 	p->Lives = pd.Lives;

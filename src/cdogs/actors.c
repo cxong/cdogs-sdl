@@ -589,20 +589,20 @@ void ActorReplaceGun(const NActorReplaceGun rg)
 {
 	TActor *a = ActorGetByUID(rg.UID);
 	if (a == NULL || !a->isInUse) return;
-	const GunDescription *gun = StrGunDescription(rg.Gun);
-	CASSERT(gun != NULL, "cannot find gun");
+	const WeaponClass *wc = StrWeaponClass(rg.Gun);
+	CASSERT(wc != NULL, "cannot find gun");
 	// If player already has gun, don't do anything
-	if (ActorHasGun(a, gun))
+	if (ActorHasGun(a, wc))
 	{
 		return;
 	}
 	LOG(LM_ACTOR, LL_DEBUG, "actor uid(%d) replacing gun(%s) idx(%d)",
 		(int)rg.UID, rg.Gun, rg.GunIdx);
-	Weapon w = WeaponCreate(gun);
+	Weapon w = WeaponCreate(wc);
 	memcpy(&a->guns[rg.GunIdx], &w, sizeof w);
 	// Switch immediately to picked up gun
 	const PlayerData *p = PlayerDataGetByUID(a->PlayerUID);
-	if (gun->IsGrenade && PlayerHasGrenadeButton(p))
+	if (wc->IsGrenade && PlayerHasGrenadeButton(p))
 	{
 		a->grenadeIndex = rg.GunIdx - MAX_GUNS;
 	}
@@ -611,14 +611,14 @@ void ActorReplaceGun(const NActorReplaceGun rg)
 		a->gunIndex = rg.GunIdx;
 	}
 
-	SoundPlayAt(&gSoundDevice, gun->SwitchSound, a->Pos);
+	SoundPlayAt(&gSoundDevice, wc->SwitchSound, a->Pos);
 }
 
-bool ActorHasGun(const TActor *a, const GunDescription *gun)
+bool ActorHasGun(const TActor *a, const WeaponClass *wc)
 {
 	for (int i = 0; i < MAX_WEAPONS; i++)
 	{
-		if (a->guns[i].Gun == gun)
+		if (a->guns[i].Gun == wc)
 		{
 			return true;
 		}
@@ -1063,7 +1063,7 @@ static bool CheckManualPickupFunc(
 		InputGetButtonName(
 			pData->inputDevice, pData->deviceIndex, CMD_BUTTON2, buf);
 		sprintf(a->Chatter, "%s to pick up\n%s",
-			buf, IdGunDescription(p->class->u.GunId)->name);
+			buf, IdWeaponClass(p->class->u.GunId)->name);
 		a->ChatterCounter = 2;
 	}
 	// If co-op AI, alert it so it can try to pick the gun up
@@ -1389,22 +1389,22 @@ const Character *ActorGetCharacter(const TActor *a)
 
 struct vec2 ActorGetWeaponMuzzleOffset(const TActor *a)
 {
-	const GunDescription *g = ACTOR_GET_WEAPON(a)->Gun;
-	return ActorGetMuzzleOffset(a, g);
+	const WeaponClass *wc = ACTOR_GET_WEAPON(a)->Gun;
+	return ActorGetMuzzleOffset(a, wc);
 }
 struct vec2 ActorGetMuzzleOffset(
-	const TActor *a, const GunDescription *g)
+	const TActor *a, const WeaponClass *wc)
 {
 	const CharSprites *cs = ActorGetCharacter(a)->Class->Sprites;
-	return GunGetMuzzleOffset(g, cs, a->direction);
+	return WeaponClassGetMuzzleOffset(wc, cs, a->direction);
 }
-int ActorWeaponGetAmmo(const TActor *a, const GunDescription *g)
+int ActorWeaponGetAmmo(const TActor *a, const WeaponClass *wc)
 {
-	if (g->AmmoId == -1)
+	if (wc->AmmoId == -1)
 	{
 		return -1;
 	}
-	return *(int *)CArrayGet(&a->ammo, g->AmmoId);
+	return *(int *)CArrayGet(&a->ammo, wc->AmmoId);
 }
 bool ActorCanFireWeapon(const TActor *a, const Weapon *w)
 {

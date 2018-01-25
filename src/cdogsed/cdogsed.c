@@ -1354,14 +1354,14 @@ int main(int argc, char *argv[])
 	ParticleClassesInit(&gParticleClasses, "data/particles.json");
 	AmmoInitialize(&gAmmo, "data/ammo.json");
 	BulletAndWeaponInitialize(
-		&gBulletClasses, &gGunDescriptions,
+		&gBulletClasses, &gWeaponClasses,
 		"data/bullets.json", "data/guns.json");
 	CharacterClassesInitialize(
 		&gCharacterClasses, "data/character_classes.json");
 	PickupClassesInit(
-		&gPickupClasses, "data/pickups.json", &gAmmo, &gGunDescriptions);
+		&gPickupClasses, "data/pickups.json", &gAmmo, &gWeaponClasses);
 	MapObjectsInit(
-		&gMapObjects, "data/map_objects.json", &gAmmo, &gGunDescriptions);
+		&gMapObjects, "data/map_objects.json", &gAmmo, &gWeaponClasses);
 	CollisionSystemInit(&gCollisionSystem);
 	CampaignInit(&gCampaign);
 	MissionInit(&lastMission);
@@ -1409,7 +1409,7 @@ int main(int argc, char *argv[])
 	PickupClassesTerminate(&gPickupClasses);
 	ParticleClassesTerminate(&gParticleClasses);
 	AmmoTerminate(&gAmmo);
-	WeaponTerminate(&gGunDescriptions);
+	WeaponClassesTerminate(&gWeaponClasses);
 	BulletTerminate(&gBulletClasses);
 	CharacterClassesTerminate(&gCharacterClasses);
 	CampaignTerminate(&gCampaign);

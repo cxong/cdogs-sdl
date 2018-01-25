@@ -130,8 +130,8 @@ static void AddPickupAtObject(const TObject *o, const PickupType type)
 		// Pick a random mission gun type and spawn it
 		{
 			const int gunId = (int)(rand() % gMission.Weapons.size);
-			const GunDescription **gun = CArrayGet(&gMission.Weapons, gunId);
-			sprintf(e.u.AddPickup.PickupClass, "gun_%s", (*gun)->name);
+			const WeaponClass **wc = CArrayGet(&gMission.Weapons, gunId);
+			sprintf(e.u.AddPickup.PickupClass, "gun_%s", (*wc)->name);
 		}
 		break;
 	default: CASSERT(false, "unexpected pickup type"); break;
@@ -165,9 +165,9 @@ void ObjRemove(const NMapObjectRemove mor)
 		}
 
 		// Weapons that go off when this object is destroyed
-		CA_FOREACH(const GunDescription *, g, o->Class->DestroyGuns)
-			GunFire(
-				*g, o->tileItem.Pos, 0, 0, mor.Flags, mor.PlayerUID,
+		CA_FOREACH(const WeaponClass *, wc, o->Class->DestroyGuns)
+			WeaponClassFire(
+				*wc, o->tileItem.Pos, 0, 0, mor.Flags, mor.PlayerUID,
 				mor.ActorUID,
 				true, false);
 		CA_FOREACH_END()

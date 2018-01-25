@@ -231,7 +231,7 @@ static bool TryPickupGun(
 	{
 		return false;
 	}
-	const GunDescription *gun = IdGunDescription(p->class->u.GunId);
+	const WeaponClass *wc = IdWeaponClass(p->class->u.GunId);
 
 	// Pickup if:
 	// - Actor doesn't have gun
@@ -239,14 +239,14 @@ static bool TryPickupGun(
 
 	int ammoDeficit = 0;
 	const Ammo *ammo = NULL;
-	const int ammoId = gun->AmmoId;
+	const int ammoId = wc->AmmoId;
 	if (ammoId >= 0)
 	{
 		ammo = AmmoGetById(&gAmmo, ammoId);
 		ammoDeficit = ammo->Amount * 2 - *(int *)CArrayGet(&a->ammo, ammoId);
 	}
 
-	const bool pickup = !ActorHasGun(a, gun) || ammoDeficit > 0;
+	const bool pickup = !ActorHasGun(a, wc) || ammoDeficit > 0;
 	if (!pickup)
 	{
 		return false;
@@ -257,10 +257,10 @@ static bool TryPickupGun(
 	e.u.ActorReplaceGun.UID = a->uid;
 	// Replace the current gun, unless there's a free slot, in which case pick
 	// up into the free spot
-	const int weaponIndexStart = gun->IsGrenade ? MAX_GUNS : 0;
-	const int weaponIndexEnd = gun->IsGrenade ? MAX_WEAPONS : MAX_GUNS;
+	const int weaponIndexStart = wc->IsGrenade ? MAX_GUNS : 0;
+	const int weaponIndexEnd = wc->IsGrenade ? MAX_WEAPONS : MAX_GUNS;
 	e.u.ActorReplaceGun.GunIdx =
-		gun->IsGrenade ? a->grenadeIndex + MAX_GUNS : a->gunIndex;
+		wc->IsGrenade ? a->grenadeIndex + MAX_GUNS : a->gunIndex;
 	for (int i = weaponIndexStart; i < weaponIndexEnd; i++)
 	{
 		if (a->guns[i].Gun == NULL)
@@ -269,7 +269,7 @@ static bool TryPickupGun(
 			break;
 		}
 	}
-	strcpy(e.u.ActorReplaceGun.Gun, gun->name);
+	strcpy(e.u.ActorReplaceGun.Gun, wc->name);
 	GameEventsEnqueue(&gGameEvents, e);
 
 	// If the player has less ammo than the default amount,

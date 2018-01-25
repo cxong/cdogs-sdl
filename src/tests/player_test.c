@@ -68,7 +68,7 @@ NPlayerData NMakePlayerData(const PlayerData *p)
 	NPlayerData d = NPlayerData_init_default;
 	return d;
 }
-const GunDescription *StrGunDescription(const char *s)
+const WeaponClass *StrWeaponClass(const char *s)
 {
 	UNUSED(s);
 	return NULL;

@@ -42,7 +42,7 @@ typedef struct
 	MenuDisplayPlayerData display;
 	int PlayerUID;
 	int EquipSlot;
-	const GunDescription *SelectedGun;
+	const WeaponClass *SelectedGun;
 	WeaponMenuResult SelectResult;
 } WeaponMenuData;
 typedef struct

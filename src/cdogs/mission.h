@@ -136,7 +136,7 @@ typedef struct
 	CArray MapObjectDensities;	// of MapObjectDensity
 
 	int EnemyDensity;
-	CArray Weapons;	// of GunDescription *
+	CArray Weapons;	// of WeaponClass *
 
 	char Song[CDOGS_PATH_MAX];
 
@@ -212,7 +212,7 @@ struct MissionOptions
 	int KeyFlags;
 
 	Mission *missionData;
-	CArray Weapons;	// of GunDescription *
+	CArray Weapons;	// of WeaponClass *
 	int time;
 	// Time when players first entered pickup area
 	int pickupTime;
