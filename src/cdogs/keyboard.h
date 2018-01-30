@@ -75,8 +75,9 @@ typedef enum
 
 typedef struct
 {
-        int32_t diagonalTicks[MAX_KEYBOARD_CONFIGS][4];
-        diagonal_status diagonalStatus[MAX_KEYBOARD_CONFIGS][4];
+        int currentDiagonal;
+        int32_t diagonalTicks;
+        diagonal_status diagonalStatus;
 } diagonals_hold_status;
 
 typedef struct
@@ -90,7 +91,7 @@ typedef struct
 	Uint32 repeatedTicks;
 	bool isFirstRepeat;
 	InputKeys PlayerKeys[MAX_KEYBOARD_CONFIGS];
-        diagonals_hold_status diagonalState;
+        diagonals_hold_status diagonalState[MAX_KEYBOARD_CONFIGS];
         //diagonalTicks[0] = upRightDiagonalTicks;
         //diagonalTicks[1] = downRightDiagonalTicks;
         //diagonalTicks[2] = downLeftDiagonalTicks};
