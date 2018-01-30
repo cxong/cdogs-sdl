@@ -92,15 +92,6 @@ typedef struct
 	bool isFirstRepeat;
 	InputKeys PlayerKeys[MAX_KEYBOARD_CONFIGS];
         diagonals_hold_status diagonalState[MAX_KEYBOARD_CONFIGS];
-        //diagonalTicks[0] = upRightDiagonalTicks;
-        //diagonalTicks[1] = downRightDiagonalTicks;
-        //diagonalTicks[2] = downLeftDiagonalTicks};
-        //diagonalTicks[3] = upLeftDiagonalTicks;
-        //diagonal_status diagonalStatus[MAX_KEYBOARD_CONFIGS][4];
-        //diagonal_status upRightDiagonal;
-        //diagonal_status downRightDiagonal;
-        //diagonal_status downLeftDiagonal; 
-        //diagonal_status upLeftDiagonal; Keep arrays straight, status and ticks have to match for the loops to work.
 } keyboard_t;
 
 void KeyInit(keyboard_t *keyboard);
