@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2015, 2018 Cong Xu
+    Copyright (c) 2013-2015, 2018 Cong Xu, davidrgmcb
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -53,7 +53,7 @@ const char *KeycodeStr(int k)
 
 #define KEYBOARD_REPEAT_DELAY 500
 #define KEYBOARD_REPEAT_TICKS 100
-#define DIAGONAL_RELEASE_DELAY 20
+#define DIAGONAL_RELEASE_DELAY 50
 
 void KeyInit(keyboard_t *keyboard)
 {
