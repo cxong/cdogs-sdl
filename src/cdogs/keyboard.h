@@ -31,6 +31,7 @@
 #include <SDL_events.h>
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
+#include <SDL_timer.h>
 
 #include "config.h"
 
@@ -67,6 +68,20 @@ typedef enum
 } key_code_e;
 const char *KeycodeStr(int k);
 
+typedef enum
+{
+       DIAGONAL_STATUS_UNPRESSED,
+       DIAGONAL_STATUS_PRESSED,
+       DIAGONAL_STATUS_SUSTAIN
+} diagonal_status;
+
+typedef struct
+{
+        int currentDiagonal;
+        int32_t diagonalTicks;
+        diagonal_status diagonalStatus;
+} diagonals_hold_status;
+
 typedef struct
 {
 	KeyPress previousKeys[SDL_NUM_SCANCODES];
@@ -78,6 +93,7 @@ typedef struct
 	Uint32 repeatedTicks;
 	bool isFirstRepeat;
 	InputKeys PlayerKeys[MAX_KEYBOARD_CONFIGS];
+        diagonals_hold_status diagonalState[MAX_KEYBOARD_CONFIGS];
 } keyboard_t;
 
 void KeyInit(keyboard_t *keyboard);
