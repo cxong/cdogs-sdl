@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014, 2016-2017 Cong Xu
+    Copyright (c) 2014, 2016-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -255,15 +255,20 @@ bool LoopRunnerRunInner(LoopRunInnerData *ctx)
     // Draw
     if (draw)
     {
+		WindowContextPreRender(&gGraphicsDevice.gameWindow);
+		if (gGraphicsDevice.cachedConfig.SecondWindow)
+		{
+			WindowContextPreRender(&gGraphicsDevice.secondWindow);
+		}
         if (ctx->data->DrawFunc)
         {
             ctx->data->DrawFunc(ctx->data);
-			WindowContextRender(&gGraphicsDevice.gameWindow);
-			if (gGraphicsDevice.cachedConfig.SecondWindow)
-			{
-				WindowContextRender(&gGraphicsDevice.secondWindow);
-			}
         }
+		WindowContextPostRender(&gGraphicsDevice.gameWindow);
+		if (gGraphicsDevice.cachedConfig.SecondWindow)
+		{
+			WindowContextPostRender(&gGraphicsDevice.secondWindow);
+		}
         ctx->data->HasDrawnFirst = true;
     }
 

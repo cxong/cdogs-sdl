@@ -61,5 +61,7 @@ typedef struct
 #define RECT_FOREACH_END() } } }
 
 Rect2i Rect2iNew(const struct vec2i pos, const struct vec2i size);
+Rect2i Rect2iZero(void);
+bool Rect2iIsZero(const Rect2i r);
 bool Rect2iIsAtEdge(const Rect2i r, const struct vec2i v);
 bool Rect2iOverlap(const Rect2i r1, const Rect2i r2);

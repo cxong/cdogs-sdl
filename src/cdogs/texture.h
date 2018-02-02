@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2017 Cong Xu
+ Copyright (c) 2017-2018 Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -34,4 +34,4 @@ SDL_Texture *TextureCreate(
 	SDL_Renderer *renderer, const SDL_TextureAccess access, const struct vec2i res,
 	const SDL_BlendMode blend, const Uint8 alpha);
 
-void TextureRender(SDL_Texture *t, SDL_Renderer *r);
+void TextureRender(SDL_Texture *t, SDL_Renderer *r, const Rect2i dest);

@@ -63,6 +63,15 @@ Rect2i Rect2iNew(const struct vec2i pos, const struct vec2i size)
 	r.Size = size;
 	return r;
 }
+Rect2i Rect2iZero(void)
+{
+	return Rect2iNew(svec2i_zero(), svec2i_zero());
+}
+
+bool Rect2iIsZero(const Rect2i r)
+{
+	return svec2i_is_zero(r.Pos) && svec2i_is_zero(r.Size);
+}
 
 bool Rect2iIsAtEdge(const Rect2i r, const struct vec2i v)
 {

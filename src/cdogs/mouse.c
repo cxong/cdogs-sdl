@@ -216,7 +216,7 @@ void MouseDraw(const Mouse *mouse)
 			{
 				const struct vec2i pos = svec2i_add(
 					mouse->mouseMovePos,
-					svec2i_scale_divide(svec2i_scale(d, i), TRAIL_NUM_DOTS + 1));
+					svec2i_scale_divide(svec2i_scale(d, (float)i), TRAIL_NUM_DOTS + 1));
 				BlitMasked(
 					&gGraphicsDevice, mouse->trail, pos, colorWhite, false);
 			}

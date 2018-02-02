@@ -99,6 +99,8 @@ the following restrictions:
 	#define MROUND roundf
 	#define MFLOAT_C(c) c ## f
 #endif
+#define MMAXI(x, y) ((x) > (y) ? (x) : (y))
+#define MMINI(x, y) ((x) < (y) ? (x) : (y))
 
 /* Enable or disable structures */
 #ifdef MATHC_NO_STRUCTURES
@@ -293,12 +295,12 @@ mint_t *vec2i_rotate(mint_t *result, mint_t *a, mfloat_t angle);
 mint_t *vec2i_lerp(mint_t *result, mint_t *a, mint_t *b, mfloat_t p);
 mint_t *vec2i_bezier3(mint_t *result, mint_t *a, mint_t *b, mint_t *c, mfloat_t p);
 mint_t *vec2i_bezier4(mint_t *result, mint_t *a, mint_t *b, mint_t *c, mint_t *d, mfloat_t p);
-mfloat_t vec2i_dot(mint_t *a, mint_t *b);
+mint_t vec2i_dot(mint_t *a, mint_t *b);
 mfloat_t vec2i_angle(mint_t *a);
 mfloat_t vec2i_length(mint_t *a);
-mfloat_t vec2i_length_squared(mint_t *a);
+mint_t vec2i_length_squared(mint_t *a);
 mfloat_t vec2i_distance(mint_t *a, mint_t *b);
-mfloat_t vec2i_distance_squared(mint_t *a, mint_t *b);
+mint_t vec2i_distance_squared(mint_t *a, mint_t *b);
 
 /* Vector 3D */
 bool vec3_is_zero(mfloat_t *a);
@@ -372,11 +374,11 @@ mint_t *vec3i_reflect(mint_t *result, mint_t *a, mint_t *b);
 mint_t *vec3i_lerp(mint_t *result, mint_t *a, mint_t *b, mfloat_t p);
 mint_t *vec3i_bezier3(mint_t *result, mint_t *a, mint_t *b, mint_t *c, mfloat_t p);
 mint_t *vec3i_bezier4(mint_t *result, mint_t *a, mint_t *b, mint_t *c, mint_t *d, mfloat_t p);
-mfloat_t vec3i_dot(mint_t *a, mint_t *b);
+mint_t vec3i_dot(mint_t *a, mint_t *b);
 mfloat_t vec3i_length(mint_t *a);
-mfloat_t vec3i_length_squared(mint_t *a);
+mint_t vec3i_length_squared(mint_t *a);
 mfloat_t vec3i_distance(mint_t *a, mint_t *b);
-mfloat_t vec3i_distance_squared(mint_t *a, mint_t *b);
+mint_t vec3i_distance_squared(mint_t *a, mint_t *b);
 
 /* Vector 4D */
 bool vec4_is_zero(mfloat_t *a);
@@ -783,7 +785,7 @@ MATHC_INLINE bool psvec2i_is_equal(struct vec2i *a, struct vec2i *b)
 	return vec2i_is_equal((mint_t *)a, (mint_t *)b);
 }
 
-MATHC_INLINE struct vec2i *psvec2i(struct vec2i *result, mfloat_t x, mfloat_t y)
+MATHC_INLINE struct vec2i *psvec2i(struct vec2i *result, mint_t x, mint_t y)
 {
 	vec2i((mint_t *)result, x, y);
 	return result;
@@ -963,7 +965,7 @@ MATHC_INLINE struct vec2i *psvec2i_bezier4(struct vec2i *result, struct vec2i *a
 	return result;
 }
 
-MATHC_INLINE mfloat_t psvec2i_dot(struct vec2i *a, struct vec2i *b)
+MATHC_INLINE mint_t psvec2i_dot(struct vec2i *a, struct vec2i *b)
 {
 	return vec2i_dot((mint_t *)a, (mint_t *)b);
 }
@@ -973,7 +975,7 @@ MATHC_INLINE mfloat_t psvec2i_angle(struct vec2i *a)
 	return vec2i_angle((mint_t *)a);
 }
 
-MATHC_INLINE mfloat_t psvec2i_length_squared(struct vec2i *a)
+MATHC_INLINE mint_t psvec2i_length_squared(struct vec2i *a)
 {
 	return vec2i_length_squared((mint_t *)a);
 }
@@ -988,7 +990,7 @@ MATHC_INLINE mfloat_t psvec2i_distance(struct vec2i *a, struct vec2i *b)
 	return vec2i_distance((mint_t *)a, (mint_t *)b);
 }
 
-MATHC_INLINE mfloat_t psvec2i_distance_squared(struct vec2i *a, struct vec2i *b)
+MATHC_INLINE mint_t psvec2i_distance_squared(struct vec2i *a, struct vec2i *b)
 {
 	return vec2i_distance_squared((mint_t *)a, (mint_t *)b);
 }
@@ -1224,7 +1226,7 @@ MATHC_INLINE bool psvec3i_is_equal(struct vec3i *a, struct vec3i *b)
 	return vec3i_is_equal((mint_t *)a, (mint_t *)b);
 }
 
-MATHC_INLINE struct vec3i *psvec3i(struct vec3i *result, mfloat_t x, mfloat_t y, mfloat_t z)
+MATHC_INLINE struct vec3i *psvec3i(struct vec3i *result, mint_t x, mint_t y, mint_t z)
 {
 	vec3i((mint_t *)result, x, y, z);
 	return result;
@@ -1398,7 +1400,7 @@ MATHC_INLINE struct vec3i *psvec3i_bezier4(struct vec3i *result, struct vec3i *a
 	return result;
 }
 
-MATHC_INLINE mfloat_t psvec3i_dot(struct vec3i *a, struct vec3i *b)
+MATHC_INLINE mint_t psvec3i_dot(struct vec3i *a, struct vec3i *b)
 {
 	return vec3i_dot((mint_t *)a, (mint_t *)b);
 }
@@ -1408,7 +1410,7 @@ MATHC_INLINE mfloat_t psvec3i_length(struct vec3i *a)
 	return vec3i_length((mint_t *)a);
 }
 
-MATHC_INLINE mfloat_t psvec3i_length_squared(struct vec3i *a)
+MATHC_INLINE mint_t psvec3i_length_squared(struct vec3i *a)
 {
 	return vec3i_length_squared((mint_t *)a);
 }
@@ -1418,7 +1420,7 @@ MATHC_INLINE mfloat_t psvec3i_distance(struct vec3i *a, struct vec3i *b)
 	return vec3i_distance((mint_t *)a, (mint_t *)b);
 }
 
-MATHC_INLINE mfloat_t psvec3i_distance_squared(struct vec3i *a, struct vec3i *b)
+MATHC_INLINE mint_t psvec3i_distance_squared(struct vec3i *a, struct vec3i *b)
 {
 	return vec3i_distance_squared((mint_t *)a, (mint_t *)b);
 }
@@ -1593,7 +1595,7 @@ MATHC_INLINE bool psvec4i_is_equal(struct vec4i *a, struct vec4i *b)
 	return vec4i_is_equal((mint_t *)a, (mint_t *)b);
 }
 
-MATHC_INLINE struct vec4i *psvec4i(struct vec4i *result, mfloat_t x, mfloat_t y, mfloat_t z, mfloat_t w)
+MATHC_INLINE struct vec4i *psvec4i(struct vec4i *result, mint_t x, mint_t y, mint_t z, mint_t w)
 {
 	vec4i((mint_t *)result, x, y, z, w);
 	return result;
@@ -2550,7 +2552,7 @@ MATHC_INLINE bool svec2i_is_equal(struct vec2i a, struct vec2i b)
 	return vec2i_is_equal((mint_t *)&a, (mint_t *)&b);
 }
 
-MATHC_INLINE struct vec2i svec2i(mfloat_t x, mfloat_t y)
+MATHC_INLINE struct vec2i svec2i(mint_t x, mint_t y)
 {
 	struct vec2i result;
 	vec2i((mint_t *)&result, x, y);
@@ -2760,7 +2762,7 @@ MATHC_INLINE struct vec2i svec2i_bezier4(struct vec2i a, struct vec2i b, struct 
 	return result;
 }
 
-MATHC_INLINE mfloat_t svec2i_dot(struct vec2i a, struct vec2i b)
+MATHC_INLINE mint_t svec2i_dot(struct vec2i a, struct vec2i b)
 {
 	return vec2i_dot((mint_t *)&a, (mint_t *)&b);
 }
@@ -2770,7 +2772,7 @@ MATHC_INLINE mfloat_t svec2i_angle(struct vec2i a)
 	return vec2i_angle((mint_t *)&a);
 }
 
-MATHC_INLINE mfloat_t svec2i_length_squared(struct vec2i a)
+MATHC_INLINE mint_t svec2i_length_squared(struct vec2i a)
 {
 	return vec2i_length_squared((mint_t *)&a);
 }
@@ -2785,7 +2787,7 @@ MATHC_INLINE mfloat_t svec2i_distance(struct vec2i a, struct vec2i b)
 	return vec2i_distance((mint_t *)&a, (mint_t *)&b);
 }
 
-MATHC_INLINE mfloat_t svec2i_distance_squared(struct vec2i a, struct vec2i b)
+MATHC_INLINE mint_t svec2i_distance_squared(struct vec2i a, struct vec2i b)
 {
 	return vec2i_distance_squared((mint_t *)&a, (mint_t *)&b);
 }
@@ -3099,7 +3101,7 @@ MATHC_INLINE struct vec3i svec3i_subtract(struct vec3i a, struct vec3i b)
 	return result;
 }
 
-MATHC_INLINE struct vec3i svec3i_scale(struct vec3i a, mint_t scalar)
+MATHC_INLINE struct vec3i svec3i_scale(struct vec3i a, mfloat_t scalar)
 {
 	struct vec3i result;
 	vec3i_scale((mint_t *)&result, (mint_t *)&a, scalar);
@@ -3232,21 +3234,21 @@ MATHC_INLINE struct vec3i svec3i_reflect(struct vec3i a, struct vec3i b)
 	return result;
 }
 
-MATHC_INLINE struct vec3i svec3i_lerp(struct vec3i a, struct vec3i b, mint_t p)
+MATHC_INLINE struct vec3i svec3i_lerp(struct vec3i a, struct vec3i b, mfloat_t p)
 {
 	struct vec3i result;
 	vec3i_lerp((mint_t *)&result, (mint_t *)&a, (mint_t *)&b, p);
 	return result;
 }
 
-MATHC_INLINE struct vec3i svec3i_bezier3(struct vec3i a, struct vec3i b, struct vec3i c, mint_t p)
+MATHC_INLINE struct vec3i svec3i_bezier3(struct vec3i a, struct vec3i b, struct vec3i c, mfloat_t p)
 {
 	struct vec3i result;
 	vec3i_bezier3((mint_t *)&result, (mint_t *)&a, (mint_t *)&b, (mint_t *)&c, p);
 	return result;
 }
 
-MATHC_INLINE struct vec3i svec3i_bezier4(struct vec3i a, struct vec3i b, struct vec3i c, struct vec3i d, mint_t p)
+MATHC_INLINE struct vec3i svec3i_bezier4(struct vec3i a, struct vec3i b, struct vec3i c, struct vec3i d, mfloat_t p)
 {
 	struct vec3i result;
 	vec3i_bezier4((mint_t *)&result, (mint_t *)&a, (mint_t *)&b, (mint_t *)&c, (mint_t *)&d, p);
@@ -3258,7 +3260,7 @@ MATHC_INLINE mint_t svec3i_dot(struct vec3i a, struct vec3i b)
 	return vec3i_dot((mint_t *)&a, (mint_t *)&b);
 }
 
-MATHC_INLINE mint_t svec3i_length(struct vec3i a)
+MATHC_INLINE mfloat_t svec3i_length(struct vec3i a)
 {
 	return vec3i_length((mint_t *)&a);
 }
@@ -3268,7 +3270,7 @@ MATHC_INLINE mint_t svec3i_length_squared(struct vec3i a)
 	return vec3i_length_squared((mint_t *)&a);
 }
 
-MATHC_INLINE mint_t svec3i_distance(struct vec3i a, struct vec3i b)
+MATHC_INLINE mfloat_t svec3i_distance(struct vec3i a, struct vec3i b)
 {
 	return vec3i_distance((mint_t *)&a, (mint_t *)&b);
 }
@@ -3520,7 +3522,7 @@ MATHC_INLINE struct vec4i svec4i_subtract(struct vec4i a, struct vec4i b)
 	return result;
 }
 
-MATHC_INLINE struct vec4i svec4i_scale(struct vec4i a, mint_t scalar)
+MATHC_INLINE struct vec4i svec4i_scale(struct vec4i a, mfloat_t scalar)
 {
 	struct vec4i result;
 	vec4i_scale((mint_t *)&result, (mint_t *)&a, scalar);
@@ -3625,7 +3627,7 @@ MATHC_INLINE struct vec4i svec4i_normalize(struct vec4i a)
 	return result;
 }
 
-MATHC_INLINE struct vec4i svec4i_lerp(struct vec4i a, struct vec4i b, mint_t p)
+MATHC_INLINE struct vec4i svec4i_lerp(struct vec4i a, struct vec4i b, mfloat_t p)
 {
 	struct vec4i result;
 	vec4i_lerp((mint_t *)&result, (mint_t *)&a, (mint_t *)&b, p);

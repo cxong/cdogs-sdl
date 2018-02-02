@@ -83,7 +83,7 @@ color_t colorExit = { 255, 255, 255, 255 };
 static void DisplayPlayer(const TActor *player, struct vec2i pos, const int scale)
 {
 	const struct vec2i playerPos = Vec2ToTile(player->tileItem.Pos);
-	pos = svec2i_add(pos, svec2i_scale(playerPos, scale));
+	pos = svec2i_add(pos, svec2i_scale(playerPos, (float)scale));
 	if (scale >= 2)
 	{
 		DrawHead(ActorGetCharacter(player), DIRECTION_DOWN, pos);
@@ -101,7 +101,7 @@ static void DisplayObjective(
 	const Objective *o =
 		CArrayGet(&gMission.missionData->Objectives, objectiveIndex);
 	color_t color = o->color;
-	pos = svec2i_add(pos, svec2i_scale(objectivePos, scale));
+	pos = svec2i_add(pos, svec2i_scale(objectivePos, (float)scale));
 	if (flags & AUTOMAP_FLAGS_MASK)
 	{
 		color.a = MASK_ALPHA;
@@ -127,8 +127,8 @@ static void DisplayExit(struct vec2i pos, int scale, int flags)
 		return;
 	}
 
-	exitPos = svec2i_scale(exitPos, scale);
-	exitSize = svec2i_scale(exitSize, scale);
+	exitPos = svec2i_scale(exitPos, (float)scale);
+	exitSize = svec2i_scale(exitSize, (float)scale);
 	exitPos = svec2i_add(exitPos, pos);
 
 	if (flags & AUTOMAP_FLAGS_MASK)
@@ -193,7 +193,7 @@ color_t DoorColor(int x, int y)
 void DrawDot(TTileItem *t, color_t color, struct vec2i pos, int scale)
 {
 	const struct vec2i dotPos = Vec2ToTile(t->Pos);
-	pos = svec2i_add(pos, svec2i_scale(dotPos, scale));
+	pos = svec2i_add(pos, svec2i_scale(dotPos, (float)scale));
 	Draw_Rect(pos.x, pos.y, scale, scale, color);
 }
 
@@ -203,7 +203,8 @@ static void DrawMap(
 	int scale, int flags)
 {
 	int x, y;
-	struct vec2i mapPos = svec2i_add(center, svec2i_scale(centerOn, -scale));
+	struct vec2i mapPos =
+		svec2i_add(center, svec2i_scale(centerOn, (float)-scale));
 	for (y = 0; y < gMap.Size.y; y++)
 	{
 		int i;
@@ -368,7 +369,8 @@ void AutomapDrawRegion(
 		pos.x, pos.y, pos.x + size.x - 1, pos.y + size.y - 1);
 	pos = svec2i_add(pos, svec2i_scale_divide(size, 2));
 	DrawMap(map, pos, mapCenter, size, scale, flags);
-	const struct vec2i centerOn = svec2i_add(pos, svec2i_scale(mapCenter, -scale));
+	const struct vec2i centerOn =
+		svec2i_add(pos, svec2i_scale(mapCenter, (float)-scale));
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 		if (!IsPlayerAlive(p))
 		{

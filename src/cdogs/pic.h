@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2016, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@
 */
 #pragma once
 
-#include <SDL_surface.h>
+#include <SDL_render.h>
 
 #include "vector.h"
 
@@ -34,6 +34,7 @@ typedef struct
 	struct vec2i size;
 	struct vec2i offset;
 	Uint32 *Data;
+	SDL_Texture *Tex;
 } Pic;
 
 extern Pic picNone;
@@ -57,3 +58,5 @@ bool PicIsNone(const Pic *pic);
 void PicTrim(Pic *pic, const bool xTrim, const bool yTrim);
 
 bool PicPxIsEdge(const Pic *pic, const struct vec2i pos, const bool isPixel);
+
+void PicRender(const Pic *p, SDL_Renderer *r, const struct vec2i pos);

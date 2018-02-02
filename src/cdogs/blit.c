@@ -403,5 +403,9 @@ void BlitClearBuf(GraphicsDevice *g)
 }
 void BlitUpdateFromBuf(GraphicsDevice *g, SDL_Texture *t)
 {
-	SDL_UpdateTexture(t, NULL, g->buf, g->cachedConfig.Res.x * sizeof(Uint32));
+	if (SDL_UpdateTexture(
+		t, NULL, g->buf, g->cachedConfig.Res.x * sizeof(Uint32)) != 0)
+	{
+		LOG(LM_GFX, LL_ERROR, "cannot update texture: %s", SDL_GetError());
+	}
 }

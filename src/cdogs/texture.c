@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2017 Cong Xu
+ Copyright (c) 2017-2018 Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -52,9 +52,12 @@ SDL_Texture *TextureCreate(
 	return t;
 }
 
-void TextureRender(SDL_Texture *t, SDL_Renderer *r)
+void TextureRender(SDL_Texture *t, SDL_Renderer *r, const Rect2i dest)
 {
-	if (SDL_RenderCopy(r, t, NULL, NULL) != 0)
+	const SDL_Rect destRect = {
+		dest.Pos.x, dest.Pos.y, dest.Size.x, dest.Size.y
+	};
+	if (SDL_RenderCopy(r, t, NULL, Rect2iIsZero(dest) ? NULL : &destRect) != 0)
 	{
 		LOG(LM_MAIN, LL_ERROR, "Failed to render texture: %s", SDL_GetError());
 	}

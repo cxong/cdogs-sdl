@@ -290,7 +290,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 		CCALLOC(g->buf, GraphicsGetMemSize(&g->cachedConfig));
 		g->bkg = WindowContextCreateTexture(
 			&g->gameWindow, SDL_TEXTUREACCESS_STATIC, svec2i(w, h),
-			SDL_BLENDMODE_NONE, 255);
+			SDL_BLENDMODE_NONE, 255, true);
 		if (g->bkg == NULL)
 		{
 			return;
@@ -299,7 +299,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 		{
 			g->bkg2 = WindowContextCreateTexture(
 				&g->secondWindow, SDL_TEXTUREACCESS_STATIC, svec2i(w, h),
-				SDL_BLENDMODE_NONE, 255);
+				SDL_BLENDMODE_NONE, 255, true);
 			if (g->bkg2 == NULL)
 			{
 				return;
@@ -308,7 +308,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 
 		g->screen = WindowContextCreateTexture(
 			&g->gameWindow, SDL_TEXTUREACCESS_STREAMING, svec2i(w, h),
-			SDL_BLENDMODE_BLEND, 255);
+			SDL_BLENDMODE_BLEND, 255, false);
 		if (g->screen == NULL)
 		{
 			return;
@@ -316,7 +316,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 
 		g->hud = WindowContextCreateTexture(
 			&g->gameWindow, SDL_TEXTUREACCESS_STREAMING, svec2i(w, h),
-			SDL_BLENDMODE_BLEND, 255);
+			SDL_BLENDMODE_BLEND, 255, false);
 		if (g->hud == NULL)
 		{
 			return;
@@ -328,7 +328,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 		{
 			g->hud2 = WindowContextCreateTexture(
 				&g->secondWindow, SDL_TEXTUREACCESS_STREAMING, svec2i(w, h),
-				SDL_BLENDMODE_BLEND, 255);
+				SDL_BLENDMODE_BLEND, 255, false);
 			if (g->hud2 == NULL)
 			{
 				return;
@@ -351,7 +351,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 			(Uint8)(brightness > 0 ? brightness : -brightness) * 13;
 		g->brightnessOverlay = WindowContextCreateTexture(
 			&g->gameWindow, SDL_TEXTUREACCESS_STATIC, svec2i(w, h),
-			SDL_BLENDMODE_BLEND, alpha);
+			SDL_BLENDMODE_BLEND, alpha, false);
 		if (g->brightnessOverlay == NULL)
 		{
 			return;

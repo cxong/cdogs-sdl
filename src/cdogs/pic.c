@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2016, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,8 @@
 
 #include "defs.h"
 #include "grafx.h"
+#include "log.h"
+#include "texture.h"
 #include "utils.h"
 
 Pic picNone = { { 0, 0 }, { 0, 0 }, NULL };
@@ -53,6 +55,7 @@ Uint32 ColorToPixel(
 }
 
 
+static bool TryMakeTex(Pic *p);
 void PicLoad(
 	Pic *p, const struct vec2i size, const struct vec2i offset, const SDL_Surface *image)
 {
@@ -82,6 +85,33 @@ void PicLoad(
 			srcI += image->w - size.x;
 		}
 	}
+
+	if (!TryMakeTex(p))
+	{
+		goto bail;
+	}
+	return;
+
+bail:
+	PicFree(p);
+}
+static bool TryMakeTex(Pic *p)
+{
+	p->Tex = TextureCreate(
+		gGraphicsDevice.gameWindow.renderer, SDL_TEXTUREACCESS_STATIC,
+		p->size, SDL_BLENDMODE_NONE, 255);
+	if (p->Tex == NULL)
+	{
+		LOG(LM_GFX, LL_ERROR, "cannot create texture: %s", SDL_GetError());
+		return false;
+	}
+	if (SDL_UpdateTexture(
+		p->Tex, NULL, p->Data, p->size.x * sizeof(Uint32)) != 0)
+	{
+		LOG(LM_GFX, LL_ERROR, "cannot update texture: %s", SDL_GetError());
+		return false;
+	}
+	return true;
 }
 
 Pic PicCopy(const Pic *src)
@@ -90,12 +120,14 @@ Pic PicCopy(const Pic *src)
 	const size_t size = p.size.x * p.size.y * sizeof *p.Data;
 	CMALLOC(p.Data, size);
 	memcpy(p.Data, src->Data, size);
+	p.Tex = src->Tex;
 	return p;
 }
 
 void PicFree(Pic *pic)
 {
 	CFREE(pic->Data);
+	SDL_DestroyTexture(pic->Tex);
 }
 
 bool PicIsNone(const Pic *pic)
@@ -156,6 +188,7 @@ void PicTrim(Pic *pic, const bool xTrim, const bool yTrim)
 	pic->Data = newData;
 	pic->size = newSize;
 	pic->offset = svec2i_zero();
+	TryMakeTex(pic);
 }
 
 bool PicPxIsEdge(const Pic *pic, const struct vec2i pos, const bool isPixel)
@@ -182,4 +215,10 @@ bool PicPxIsEdge(const Pic *pic, const struct vec2i pos, const bool isPixel)
 	{
 		return isLeft || isRight || isAbove || isBelow;
 	}
+}
+
+void PicRender(const Pic *p, SDL_Renderer *r, const struct vec2i pos)
+{
+	const Rect2i dest = Rect2iNew(pos, p->size);
+	TextureRender(p->Tex, r, dest);
 }

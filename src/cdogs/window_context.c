@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2017 Cong Xu
+ Copyright (c) 2017-2018 Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@ bool WindowContextCreate(
 	WindowContext *wc, const struct vec2i windowSize, const int sdlFlags,
 	const char *title, SDL_Surface *icon, const struct vec2i rendererLogicalSize)
 {
+	CArrayInit(&wc->texturesBkg, sizeof(SDL_Texture *));
 	CArrayInit(&wc->textures, sizeof(SDL_Texture *));
 
 	LOG(LM_GFX, LL_DEBUG, "creating window %dx%d flags(%X)",
@@ -67,6 +68,10 @@ void WindowContextDestroy(WindowContext *wc)
 }
 void WindowContextDestroyTextures(WindowContext *wc)
 {
+	CA_FOREACH(SDL_Texture *, t, wc->texturesBkg)
+		SDL_DestroyTexture(*t);
+	CA_FOREACH_END()
+	CArrayTerminate(&wc->texturesBkg);
 	CA_FOREACH(SDL_Texture *, t, wc->textures)
 		SDL_DestroyTexture(*t);
 	CA_FOREACH_END()
@@ -86,23 +91,31 @@ void WindowsAdjustPosition(WindowContext *wc1, WindowContext *wc2)
 }
 
 SDL_Texture *WindowContextCreateTexture(
-	WindowContext *wc, const SDL_TextureAccess access, const struct vec2i res,
-	const SDL_BlendMode blend, const Uint8 alpha)
+	WindowContext *wc, const SDL_TextureAccess texAccess,
+	const struct vec2i res, const SDL_BlendMode blend, const Uint8 alpha,
+	const bool isBkg)
 {
-	SDL_Texture *t = TextureCreate(wc->renderer, access, res, blend, alpha);
-	CArrayPushBack(&wc->textures, &t);
+	SDL_Texture *t = TextureCreate(wc->renderer, texAccess, res, blend, alpha);
+	CArrayPushBack(isBkg ? &wc->texturesBkg : &wc->textures, &t);
 	return t;
 }
 
-void WindowContextRender(WindowContext *wc)
+void WindowContextPreRender(WindowContext *wc)
 {
 	if (SDL_RenderClear(wc->renderer) != 0)
 	{
 		LOG(LM_MAIN, LL_ERROR, "Failed to clear renderer: %s", SDL_GetError());
 		return;
 	}
+	CA_FOREACH(SDL_Texture *, t, wc->texturesBkg)
+		TextureRender(*t, wc->renderer, Rect2iZero());
+	CA_FOREACH_END()
+}
+
+void WindowContextPostRender(WindowContext *wc)
+{
 	CA_FOREACH(SDL_Texture *, t, wc->textures)
-		TextureRender(*t, wc->renderer);
+		TextureRender(*t, wc->renderer, Rect2iZero());
 	CA_FOREACH_END()
 
 	SDL_RenderPresent(wc->renderer);

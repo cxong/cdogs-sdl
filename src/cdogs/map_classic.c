@@ -455,7 +455,7 @@ static int FindWallRun(
 		{
 			next -= i;
 		}
-		const struct vec2i v = svec2i_add(mid, svec2i_scale(d, next));
+		const struct vec2i v = svec2i_add(mid, svec2i_scale(d, (float)next));
 		plus = !plus;
 
 		if (IMapGet(map, v) != MAP_WALL ||
