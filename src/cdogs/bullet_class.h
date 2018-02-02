@@ -88,15 +88,15 @@ typedef struct
 		bool FallsDown;	// if false, DZ is never negative
 		bool DestroyOnDrop;
 		bool Bounces;
-		CArray DropGuns;	// of const GunDescription *
+		CArray DropGuns;	// of const WeaponClass *
 	} Falling;
 	int SeekFactor;	// -1 to disable; higher = less seeking
 	bool Erratic;
 
 	// Special weapons to fire if certain events occur
-	CArray OutOfRangeGuns;	// of const GunDescription *
-	CArray HitGuns;	// of const GunDescription *
-	CArray ProximityGuns;	// of const GunDescription *
+	CArray OutOfRangeGuns;	// of const WeaponClass *
+	CArray HitGuns;	// of const WeaponClass *
+	CArray ProximityGuns;	// of const WeaponClass *
 
 	// Temporary JSON object for two-step bullet loading
 	json_t *node;

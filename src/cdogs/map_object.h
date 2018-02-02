@@ -93,7 +93,7 @@ typedef struct
 	int Health;
 	// Guns that are fired when this map object is destroyed
 	// i.e. explosion on destruction
-	CArray DestroyGuns;	// of const GunDescription *
+	CArray DestroyGuns;	// of const WeaponClass *
 	// Bit field composed of bits shifted by PlacementFlags
 	int Flags;
 	bool DrawLast;
@@ -128,10 +128,10 @@ int MapObjectGetFlags(const MapObject *mo);
 
 void MapObjectsInit(
 	MapObjects *classes, const char *filename,
-	const AmmoClasses *ammo, const GunClasses *guns);
+	const AmmoClasses *ammo, const WeaponClasses *guns);
 void MapObjectsLoadJSON(CArray *classes, json_t *root);
 void MapObjectsLoadAmmoAndGunSpawners(
-	MapObjects *classes, const AmmoClasses *ammo, const GunClasses *guns,
+	MapObjects *classes, const AmmoClasses *ammo, const WeaponClasses *guns,
 	const bool isCustom);
 void MapObjectsClear(CArray *classes);
 void MapObjectsTerminate(MapObjects *classes);

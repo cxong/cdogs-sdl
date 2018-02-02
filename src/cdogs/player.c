@@ -28,6 +28,7 @@
 #include "player.h"
 
 #include "actors.h"
+#include "events.h"
 #include "log.h"
 #include "net_client.h"
 #include "player_template.h"
@@ -81,8 +82,8 @@ void PlayerDataAddOrUpdate(const NPlayerData pd)
 		p->guns[i] = NULL;
 		if (strlen(pd.Weapons[i]) > 0)
 		{
-			const GunDescription *g = StrGunDescription(pd.Weapons[i]);
-			p->guns[i] = g;
+			const WeaponClass *wc = StrWeaponClass(pd.Weapons[i]);
+			p->guns[i] = wc;
 		}
 	}
 	p->Lives = pd.Lives;
@@ -466,4 +467,10 @@ int PlayerGetNumWeapons(const PlayerData *p)
 		}
 	}
 	return count;
+}
+
+
+bool PlayerHasGrenadeButton(const PlayerData *p)
+{
+	return InputHasGrenadeButton(p->inputDevice, p->deviceIndex);
 }

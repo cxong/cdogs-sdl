@@ -48,91 +48,11 @@
 */
 #pragma once
 
-#include "bullet_class.h"
-#include "defs.h"
-#include "draw/char_sprites.h"
-#include "mathc/mathc.h"
-#include "pic.h"
-#include "pics.h"
-#include "sounds.h"
-#include "utils.h"
-
-// WARNING: used for old-style maps, do not touch
-typedef enum
-{
-	GUN_KNIFE,
-	GUN_MG,
-	GUN_GRENADE,
-	GUN_FLAMER,
-	GUN_SHOTGUN,
-	GUN_POWERGUN,
-	GUN_FRAGGRENADE,
-	GUN_MOLOTOV,
-	GUN_SNIPER,
-	GUN_MINE,
-	GUN_DYNAMITE,
-	GUN_GASBOMB,
-	GUN_PETRIFY,
-	GUN_BROWN,
-	GUN_CONFUSEBOMB,
-	GUN_GASGUN,
-	GUN_PULSERIFLE,
-	GUN_HEATSEEKER,
-	GUN_COUNT
-} gun_e;
-
-// Gun states
-typedef enum
-{
-	GUNSTATE_READY,
-	GUNSTATE_FIRING,
-	GUNSTATE_RECOIL,
-	GUNSTATE_COUNT
-} gunstate_e;
+#include "weapon_class.h"
 
 typedef struct
 {
-	const NamedSprites *Pic;
-	const Pic *Icon;
-	bool IsGrenade;
-	char *name;
-	char *Description;
-	const BulletClass *Bullet;
-	int AmmoId;			// -1 if the gun does not consume ammo
-	int Cost;			// Cost in score to fire weapon
-	int Lock;
-	int ReloadLead;
-	Mix_Chunk *Sound;
-	Mix_Chunk *ReloadSound;
-	Mix_Chunk *SwitchSound;
-	int SoundLockLength;
-	float Recoil;		// Random recoil for inaccurate weapons, in radians
-	struct
-	{
-		int Count;		// Number of bullets in spread
-		float Width;	// Width of individual spread, in radians
-	} Spread;
-	float AngleOffset;
-	int MuzzleHeight;
-	int ElevationLow;
-	int ElevationHigh;
-	const ParticleClass *MuzzleFlash;
-	const ParticleClass *Brass;
-	bool CanShoot;
-	bool CanDrop;	// whether this gun can be dropped to be picked up
-	int ShakeAmount;	// Amount of screen shake to produce
-	bool IsRealGun;	// whether this gun can be used as is by players
-} GunDescription;
-typedef struct
-{
-	CArray Guns;	// of GunDescription
-	GunDescription Default;
-	CArray CustomGuns;	// of GunDescription
-} GunClasses;
-
-typedef struct
-{
-	const GunDescription *Gun;
+	const WeaponClass *Gun;
 	gunstate_e state;
 	int lock;
 	int soundLock;
@@ -140,38 +60,7 @@ typedef struct
 	int stateCounter;
 } Weapon;
 
-extern GunClasses gGunDescriptions;
-
-void WeaponInitialize(GunClasses *g);
-void WeaponLoadJSON(GunClasses *g, CArray *classes, json_t *root);
-void WeaponClassesClear(CArray *classes);
-void WeaponTerminate(GunClasses *g);
-int GunGetNumClasses(const GunClasses *g);
-Weapon WeaponCreate(const GunDescription *gun);
-const GunDescription *StrGunDescription(const char *s);
-GunDescription *IdGunDescription(const int i);
-int GunDescriptionId(const GunDescription *g);
-GunDescription *IndexGunDescriptionReal(const int i);
-struct vec2 GunGetMuzzleOffset(
-	const GunDescription *desc, const CharSprites *cs, const direction_e dir);
+Weapon WeaponCreate(const WeaponClass *wc);
 void WeaponUpdate(Weapon *w, const int ticks);
 bool WeaponIsLocked(const Weapon *w);
 void WeaponSetState(Weapon *w, const gunstate_e state);
-void GunFire(
-	const GunDescription *g, const struct vec2 pos, const int z,
-	const double radians,
-	const int flags, const int playerUID, const int uid,
-	const bool playSound, const bool isGun);
-void GunAddBrass(
-	const GunDescription *g, const direction_e d, const struct vec2 pos);
-
-
-float GunGetRange(const GunDescription *g);
-bool GunHasMuzzle(const GunDescription *g);
-bool IsHighDPS(const GunDescription *g);
-bool IsLongRange(const GunDescription *g);
-bool IsShortRange(const GunDescription *g);
-
-// Initialise bullets and weapons in one go
-void BulletAndWeaponInitialize(
-	BulletClasses *b, GunClasses *g, const char *bpath, const char *gpath);

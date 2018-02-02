@@ -307,7 +307,7 @@ void ConvertCharacter(Character *c, TBadGuy *b)
 	c->bot->probabilityToTrack = b->probabilityToTrack;
 	c->bot->probabilityToShoot = b->probabilityToShoot;
 	c->bot->actionDelay = b->actionDelay;
-	c->Gun = CArrayGet(&gGunDescriptions.Guns, b->gun);
+	c->Gun = CArrayGet(&gWeaponClasses.Guns, b->gun);
 	ConvertCharacterColors(
 		b->skinColor, b->armColor, b->bodyColor, b->legColor, b->hairColor,
 		&c->Colors);
@@ -389,8 +389,8 @@ static void ConvertMission(
 	{
 		if ((src->weaponSelection & (1 << i)) || !src->weaponSelection)
 		{
-			GunDescription *g = CArrayGet(&gGunDescriptions.Guns, i);
-			CArrayPushBack(&dest->Weapons, &g);
+			WeaponClass *wc = CArrayGet(&gWeaponClasses.Guns, i);
+			CArrayPushBack(&dest->Weapons, &wc);
 		}
 	}
 	strcpy(dest->Song, src->song);

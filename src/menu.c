@@ -1091,6 +1091,10 @@ static bool KeyAvailable(
 	{
 		return false;
 	}
+	if (key == SDL_SCANCODE_UNKNOWN)
+	{
+		return true;
+	}
 	if (key == (SDL_Scancode)ConfigGetInt(&gConfig, "Input.PlayerCodes0.map"))
 	{
 		return false;
@@ -1124,43 +1128,52 @@ static bool KeyAvailable(
 	return true;
 }
 
+static void ChangeKey(
+	const SDL_Scancode key, const key_code_e code, const int playerIndex);
 void MenuProcessChangeKey(menu_t *menu)
 {
 	// wait until user has pressed a new button
-	const SDL_Scancode key = KeyGetPressed(&gEventHandlers.keyboard);
-	if (key == 0)
+	SDL_Scancode key = KeyGetPressed(&gEventHandlers.keyboard);
+	if (key == SDL_SCANCODE_UNKNOWN)
 	{
 		return;
 	}
-	const key_code_e code = menu->u.normal.changeKeyMenu->u.changeKey.code;
-	const int pi = menu->u.normal.changeKeyMenu->u.changeKey.playerIndex;
+	const menu_t *changeKeyMenu = menu->u.normal.changeKeyMenu;
+	const key_code_e code = changeKeyMenu->u.changeKey.code;
+	const int pi = changeKeyMenu->u.changeKey.playerIndex;
 	if (key == SDL_SCANCODE_ESCAPE)
 	{
-		MenuPlaySound(MENU_SOUND_BACK);
-	}
-	else if (KeyAvailable(key, code, pi))
-	{
-		if (code != KEY_CODE_MAP)
+		if (changeKeyMenu->u.changeKey.isOptional)
 		{
-			char buf[256];
-			sprintf(buf, "Input.PlayerCodes%d.%s", pi, KeycodeStr(code));
-			ConfigGet(&gConfig, buf)->u.Int.Value = key;
-			sprintf(buf, "Input.PlayerCodes%d", pi);
-			gEventHandlers.keyboard.PlayerKeys[pi] = KeyLoadPlayerKeys(
-				ConfigGet(&gConfig, buf));
+			// Unset the key
+			key = SDL_SCANCODE_UNKNOWN;
 		}
 		else
 		{
-			ConfigGet(&gConfig, "Input.PlayerCodes0.map")->u.Int.Value = key;
-			gEventHandlers.keyboard.PlayerKeys[0].map = key;
+			MenuPlaySound(MENU_SOUND_BACK);
 		}
-		MenuPlaySound(MENU_SOUND_ENTER);
 	}
-	else
+	ChangeKey(key, code, pi);
+	menu->u.normal.changeKeyMenu = NULL;
+}
+static void ChangeKey(
+	const SDL_Scancode key, const key_code_e code, const int playerIndex)
+{
+	if (!KeyAvailable(key, code, playerIndex))
 	{
 		MenuPlaySound(MENU_SOUND_ERROR);
+		return;
 	}
-	menu->u.normal.changeKeyMenu = NULL;
+	// Players share map key
+	const int changePlayerIndex = code == KEY_CODE_MAP ? 0 : playerIndex;
+	char buf[256];
+	sprintf(
+		buf, "Input.PlayerCodes%d.%s", changePlayerIndex, KeycodeStr(code));
+	ConfigGet(&gConfig, buf)->u.Int.Value = key;
+	sprintf(buf, "Input.PlayerCodes%d", changePlayerIndex);
+	gEventHandlers.keyboard.PlayerKeys[changePlayerIndex] =
+		KeyLoadPlayerKeys(ConfigGet(&gConfig, buf));
+	MenuPlaySound(MENU_SOUND_ENTER);
 }
 
 

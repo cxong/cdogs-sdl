@@ -83,7 +83,7 @@ static struct vec2i GetActorDrawOffset(
 static Character *ActorGetCharacterMutable(TActor *a);
 ActorPics GetCharacterPicsFromActor(TActor *a)
 {
-	const Weapon *gun = ACTOR_GET_GUN(a);
+	const Weapon *gun = ACTOR_GET_WEAPON(a);
 	HSV *tint = NULL;
 	color_t *mask = NULL;
 	if (a->flamed)
@@ -110,7 +110,7 @@ ActorPics GetCharacterPicsFromActor(TActor *a)
 		ActorGetCharacterMutable(a),
 		RadiansToDirection(a->DrawRadians), a->anim.Type,
 		AnimationGetFrame(&a->anim),
-		gun->Gun->Pic, gun->state,
+		gun->Gun != NULL ? gun->Gun->Pic : NULL, gun->state,
 		!!(a->flags & FLAGS_SEETHROUGH),
 		tint, mask,
 		a->dead);
@@ -302,15 +302,15 @@ void DrawLaserSight(
 		return;
 	}
 	// Draw weapon indicators
-	const GunDescription *g = ACTOR_GET_GUN(a)->Gun;
-	struct vec2i muzzlePos = svec2i_add(picPos, svec2i_assign_vec2(ActorGetGunMuzzleOffset(a)));
-	muzzlePos.y -= g->MuzzleHeight / Z_FACTOR;
-	const float radians = dir2radians[a->direction] + g->AngleOffset;
-	const int range = (int)GunGetRange(g);
+	const WeaponClass *wc = ACTOR_GET_WEAPON(a)->Gun;
+	struct vec2i muzzlePos = svec2i_add(picPos, svec2i_assign_vec2(ActorGetMuzzleOffset(a, wc)));
+	muzzlePos.y -= wc->MuzzleHeight / Z_FACTOR;
+	const float radians = dir2radians[a->direction] + wc->AngleOffset;
+	const int range = (int)WeaponClassGetRange(wc);
 	color_t color = colorCyan;
 	color.a = 64;
 	const float spreadHalf =
-		(g->Spread.Count - 1) * g->Spread.Width / 2 + g->Recoil / 2;
+		(wc->Spread.Count - 1) * wc->Spread.Width / 2 + wc->Recoil / 2;
 	if (spreadHalf > 0)
 	{
 		DrawLaserSightSingle(muzzlePos, radians - spreadHalf, range, color);

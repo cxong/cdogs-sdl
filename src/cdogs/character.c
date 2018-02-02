@@ -134,7 +134,7 @@ void CharacterLoadJSON(CharacterStore *c, json_t *root, int version)
 		}
 		LoadFullInt(&ch->speed, child, "speed");
 		tmp = GetString(child, "Gun");
-		ch->Gun = StrGunDescription(tmp);
+		ch->Gun = StrWeaponClass(tmp);
 		CFREE(tmp);
 		LoadInt(&ch->maxHealth, child, "maxHealth");
 		int flags;

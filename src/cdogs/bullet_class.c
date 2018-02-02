@@ -368,9 +368,9 @@ static void FireGuns(const TMobileObject *obj, const CArray *guns)
 	const float angle = svec2_angle(obj->tileItem.Vel) + MPI_2;
 	for (int i = 0; i < (int)guns->size; i++)
 	{
-		const GunDescription **g = CArrayGet(guns, i);
-		GunFire(
-			*g, obj->Pos, obj->z, angle, obj->flags, obj->PlayerUID,
+		const WeaponClass **wc = CArrayGet(guns, i);
+		WeaponClassFire(
+			*wc, obj->Pos, obj->z, angle, obj->flags, obj->PlayerUID,
 			obj->ActorUID,
 			true, false);
 	}

@@ -244,7 +244,7 @@ static int WillFire(TActor * actor, int roll)
 {
 	const CharBot *bot = ActorGetCharacter(actor)->bot;
 	if ((actor->flags & FLAGS_VISIBLE) != 0 &&
-		ActorCanFire(actor) &&
+		ActorCanFireWeapon(actor, ACTOR_GET_WEAPON(actor)) &&
 		roll < bot->probabilityToShoot)
 	{
 		if ((actor->flags & FLAGS_GOOD_GUY) != 0)
@@ -475,7 +475,7 @@ static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 			if ((actor->flags & FLAGS_VISIBLE) == 0)
 			{
 				// I think this is some hack to make sure invisible enemies don't fire so much
-				ACTOR_GET_GUN(actor)->lock = 40;
+				ACTOR_GET_WEAPON(actor)->lock = 40;
 			}
 			if (cmd && !IsDirectionOK(actor, CmdToDirection(cmd)) &&
 				(actor->flags & FLAGS_DETOURING) == 0)

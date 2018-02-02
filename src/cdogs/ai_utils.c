@@ -436,8 +436,8 @@ static bool AIHasFriendliesInLine(const TActor *a, const direction_e dir)
 {
 	const struct vec2i tileStart = Vec2ToTile(a->Pos);
 	const struct vec2 d = Vec2FromRadians(dir2radians[dir]);
-	const GunDescription *gun = ACTOR_GET_GUN(a)->Gun;
-	const float gunRange = GunGetRange(gun);
+	const WeaponClass *wc = ACTOR_GET_WEAPON(a)->Gun;
+	const float gunRange = WeaponClassGetRange(wc);
 	const struct vec2 dv = svec2_scale(d, gunRange);
 	const struct vec2 posEnd = svec2_add(a->Pos, dv);
 	const struct vec2i tileEnd = Vec2ToTile(posEnd);
@@ -630,7 +630,7 @@ int AIGoto(const TActor *actor, const struct vec2 p, const bool ignoreObjects)
 int AIHunt(const TActor *actor, const struct vec2 targetPos)
 {
 	const struct vec2 pos = svec2_add(
-		actor->Pos, ActorGetGunMuzzleOffset(actor));
+		actor->Pos, ActorGetWeaponMuzzleOffset(actor));
 	const float dx = fabsf(targetPos.x - pos.x);
 	const float dy = fabsf(targetPos.y - pos.y);
 
@@ -682,11 +682,12 @@ int AIAttack(const TActor *a, const struct vec2 targetPos)
 {
 	// Move to the ideal distance for the weapon
 	int cmd = 0;
-	const GunDescription *gun = ACTOR_GET_GUN(a)->Gun;
-	const float gunRange = GunGetRange(gun);
+	const Weapon *w = ACTOR_GET_WEAPON(a);
+	const WeaponClass *wc = w->Gun;
+	const float gunRange = WeaponClassGetRange(wc);
 	const float distanceSquared = svec2_distance_squared(
 		a->Pos, targetPos);
-	const bool canFire = gun->CanShoot && ACTOR_GET_GUN(a)->lock <= 0;
+	const bool canFire = wc->CanShoot && w->lock <= 0;
 	if ((double)distanceSquared <
 		SQUARED(gunRange * 3) * a->aiContext->GunRangeScalar &&
 		!canFire)
@@ -752,7 +753,7 @@ int AIRetreatFrom(const TActor *actor, const struct vec2 from)
 int AITrack(const TActor *actor, const struct vec2 targetPos)
 {
 	const struct vec2 pos = svec2_add(
-		actor->Pos, ActorGetGunMuzzleOffset(actor));
+		actor->Pos, ActorGetWeaponMuzzleOffset(actor));
 	const float dx = fabsf(targetPos.x - pos.x);
 	const float dy = fabsf(targetPos.y - pos.y);
 

@@ -104,12 +104,12 @@ void ActorSetState(TActor *actor, const ActorAnimation state)
 	actor->anim = AnimationGetActorAnimation(state);
 }
 
+static void ActorUpdateWeapon(TActor *a, Weapon *w, const int ticks);
 static void CheckPickups(TActor *actor);
 void UpdateActorState(TActor * actor, int ticks)
 {
-	Weapon *gun = ACTOR_GET_GUN(actor);
-	WeaponUpdate(gun, ticks);
-	ActorFireUpdate(gun, actor, ticks);
+	ActorUpdateWeapon(actor, ACTOR_GET_GUN(actor), ticks);
+	ActorUpdateWeapon(actor, ACTOR_GET_GRENADE(actor), ticks);
 
 	// If we're ready to pick up, always check the pickups
 	if (actor->PickupAll && !gCampaign.IsClient)
@@ -195,6 +195,15 @@ void UpdateActorState(TActor * actor, int ticks)
 		strcpy(actor->Chatter, "");
 	}
 }
+static void ActorUpdateWeapon(TActor *a, Weapon *w, const int ticks)
+{
+	if (w->Gun == NULL)
+	{
+		return;
+	}
+	WeaponUpdate(w, ticks);
+	ActorFireUpdate(w, a, ticks);
+}
 
 static struct vec2 GetConstrainedPos(
 	const Map *map, const struct vec2 from, const struct vec2 to,
@@ -230,10 +239,10 @@ bool TryMoveActor(TActor *actor, struct vec2 pos)
 			&actor->tileItem, pos, actor->tileItem.size, params);
 		if (target)
 		{
-			Weapon *gun = ACTOR_GET_GUN(actor);
+			Weapon *gun = ACTOR_GET_WEAPON(actor);
 			const TObject *object = target->kind == KIND_OBJECT ?
 				CArrayGet(&gObjs, target->id) : NULL;
-			if (ActorCanFire(actor) && !gun->Gun->CanShoot &&
+			if (ActorCanFireWeapon(actor, gun) && !gun->Gun->CanShoot &&
 				actor->health > 0 &&
 				(!object || !ObjIsDangerous(object)))
 			{
@@ -580,28 +589,36 @@ void ActorReplaceGun(const NActorReplaceGun rg)
 {
 	TActor *a = ActorGetByUID(rg.UID);
 	if (a == NULL || !a->isInUse) return;
-	const GunDescription *gun = StrGunDescription(rg.Gun);
-	CASSERT(gun != NULL, "cannot find gun");
+	const WeaponClass *wc = StrWeaponClass(rg.Gun);
+	CASSERT(wc != NULL, "cannot find gun");
 	// If player already has gun, don't do anything
-	if (ActorHasGun(a, gun))
+	if (ActorHasGun(a, wc))
 	{
 		return;
 	}
 	LOG(LM_ACTOR, LL_DEBUG, "actor uid(%d) replacing gun(%s) idx(%d)",
 		(int)rg.UID, rg.Gun, rg.GunIdx);
-	Weapon w = WeaponCreate(gun);
+	Weapon w = WeaponCreate(wc);
 	memcpy(&a->guns[rg.GunIdx], &w, sizeof w);
 	// Switch immediately to picked up gun
-	a->gunIndex = rg.GunIdx;
+	const PlayerData *p = PlayerDataGetByUID(a->PlayerUID);
+	if (wc->IsGrenade && PlayerHasGrenadeButton(p))
+	{
+		a->grenadeIndex = rg.GunIdx - MAX_GUNS;
+	}
+	else
+	{
+		a->gunIndex = rg.GunIdx;
+	}
 
-	SoundPlayAt(&gSoundDevice, gun->SwitchSound, a->Pos);
+	SoundPlayAt(&gSoundDevice, wc->SwitchSound, a->Pos);
 }
 
-bool ActorHasGun(const TActor *a, const GunDescription *gun)
+bool ActorHasGun(const TActor *a, const WeaponClass *wc)
 {
 	for (int i = 0; i < MAX_WEAPONS; i++)
 	{
-		if (a->guns[i].Gun == gun)
+		if (a->guns[i].Gun == wc)
 		{
 			return true;
 		}
@@ -659,41 +676,44 @@ void ActorSetAIState(TActor *actor, const AIState s)
 	}
 }
 
-void Shoot(TActor *actor)
+static void FireWeapon(TActor *a, Weapon *w)
 {
-	Weapon *gun = ACTOR_GET_GUN(actor);
-	if (!ActorCanFire(actor))
+	if (w->Gun == NULL)
 	{
-		if (!WeaponIsLocked(gun) && ConfigGetBool(&gConfig, "Game.Ammo"))
+		return;
+	}
+	if (!ActorCanFireWeapon(a, w))
+	{
+		if (!WeaponIsLocked(w) && ConfigGetBool(&gConfig, "Game.Ammo"))
 		{
-			CASSERT(ActorGunGetAmmo(actor, gun) == 0, "should be out of ammo");
-			// Play a clicking sound if this gun is out of ammo
-			if (gun->clickLock <= 0)
+			CASSERT(ActorWeaponGetAmmo(a, w->Gun) == 0, "should be out of ammo");
+			// Play a clicking sound if this weapon is out of ammo
+			if (w->clickLock <= 0)
 			{
-				SoundPlayAt(&gSoundDevice, StrSound("click"), actor->Pos);
-				gun->clickLock = SOUND_LOCK_WEAPON_CLICK;
+				SoundPlayAt(&gSoundDevice, StrSound("click"), a->Pos);
+				w->clickLock = SOUND_LOCK_WEAPON_CLICK;
 			}
 		}
 		return;
 	}
-	ActorFire(gun, actor);
-	if (actor->PlayerUID >= 0)
+	ActorFire(w, a);
+	if (a->PlayerUID >= 0)
 	{
-		if (ConfigGetBool(&gConfig, "Game.Ammo") && gun->Gun->AmmoId >= 0)
+		if (ConfigGetBool(&gConfig, "Game.Ammo") && w->Gun->AmmoId >= 0)
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_USE_AMMO);
-			e.u.UseAmmo.UID = actor->uid;
-			e.u.UseAmmo.PlayerUID = actor->PlayerUID;
-			e.u.UseAmmo.AmmoId = gun->Gun->AmmoId;
+			e.u.UseAmmo.UID = a->uid;
+			e.u.UseAmmo.PlayerUID = a->PlayerUID;
+			e.u.UseAmmo.AmmoId = w->Gun->AmmoId;
 			e.u.UseAmmo.Amount = 1;
 			GameEventsEnqueue(&gGameEvents, e);
 		}
-		else if (gun->Gun->Cost != 0)
+		else if (w->Gun->Cost != 0)
 		{
 			// Classic C-Dogs score consumption
 			GameEvent e = GameEventNew(GAME_EVENT_SCORE);
-			e.u.Score.PlayerUID = actor->PlayerUID;
-			e.u.Score.Score = -gun->Gun->Cost;
+			e.u.Score.PlayerUID = a->PlayerUID;
+			e.u.Score.Score = -w->Gun->Cost;
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 	}
@@ -720,12 +740,12 @@ static bool ActorTryChangeDirection(
 	return willChangeDirecton;
 }
 
-int ActorTryShoot(TActor *actor, int cmd)
+static bool ActorTryShoot(TActor *actor, const int cmd)
 {
-	int willShoot = !actor->petrified && (cmd & CMD_BUTTON1);
+	const bool willShoot = !actor->petrified && (cmd & CMD_BUTTON1);
 	if (willShoot)
 	{
-		Shoot(actor);
+		FireWeapon(actor, ACTOR_GET_GUN(actor));
 	}
 	else if (ACTOR_GET_GUN(actor)->state != GUNSTATE_READY)
 	{
@@ -735,6 +755,16 @@ int ActorTryShoot(TActor *actor, int cmd)
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 	return willShoot;
+}
+
+static bool TryGrenade(TActor *a, const int cmd)
+{
+	const bool willGrenade = !a->petrified && (cmd & CMD_GRENADE);
+	if (willGrenade)
+	{
+		FireWeapon(a, ACTOR_GET_GRENADE(a));
+	}
+	return willGrenade;
 }
 
 static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks);
@@ -747,20 +777,19 @@ void CommandActor(TActor * actor, int cmd, int ticks)
 
 	if (actor->health > 0)
 	{
-		int hasChangedDirection, hasShot, hasMoved;
-		hasChangedDirection = ActorTryChangeDirection(actor, cmd, actor->lastCmd);
-		hasShot = ActorTryShoot(actor, cmd);
-		hasMoved = ActorTryMove(actor, cmd, hasShot, ticks);
-		if (!hasChangedDirection && !hasShot && !hasMoved)
+		const bool hasChangedDirection =
+			ActorTryChangeDirection(actor, cmd, actor->lastCmd);
+		const bool hasShot = ActorTryShoot(actor, cmd);
+		const bool hasGrenaded = TryGrenade(actor, cmd);
+		const bool hasMoved = ActorTryMove(actor, cmd, hasShot, ticks);
+		// Idle if player hasn't done anything
+		if (!(hasChangedDirection || hasShot || hasGrenaded || hasMoved) &&
+			actor->anim.Type != ACTORANIMATION_IDLE)
 		{
-			// Idle if player hasn't done anything
-			if (actor->anim.Type != ACTORANIMATION_IDLE)
-			{
-				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_STATE);
-				e.u.ActorState.UID = actor->uid;
-				e.u.ActorState.State = (int32_t)ACTORANIMATION_IDLE;
-				GameEventsEnqueue(&gGameEvents, e);
-			}
+			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_STATE);
+			e.u.ActorState.UID = actor->uid;
+			e.u.ActorState.State = (int32_t)ACTORANIMATION_IDLE;
+			GameEventsEnqueue(&gGameEvents, e);
 		}
 	}
 
@@ -1034,7 +1063,7 @@ static bool CheckManualPickupFunc(
 		InputGetButtonName(
 			pData->inputDevice, pData->deviceIndex, CMD_BUTTON2, buf);
 		sprintf(a->Chatter, "%s to pick up\n%s",
-			buf, IdGunDescription(p->class->u.GunId)->name);
+			buf, IdWeaponClass(p->class->u.GunId)->name);
 		a->ChatterCounter = 2;
 	}
 	// If co-op AI, alert it so it can try to pick the gun up
@@ -1240,6 +1269,14 @@ TActor *ActorAdd(NActorAdd aa)
 		{
 			Weapon gun = WeaponCreate(p->guns[i]);
 			actor->guns[i] = gun;
+			if (i < MAX_GUNS && ACTOR_GET_GUN(actor)->Gun == NULL)
+			{
+				actor->gunIndex = i;
+			}
+			if (i >= MAX_GUNS && ACTOR_GET_GRENADE(actor)->Gun == NULL)
+			{
+				actor->grenadeIndex = i - MAX_GUNS;
+			}
 		}
 		p->ActorUID = aa.UID;
 	}
@@ -1248,9 +1285,8 @@ TActor *ActorAdd(NActorAdd aa)
 		// Add sole weapon from character type
 		Weapon gun = WeaponCreate(c->Gun);
 		actor->guns[0] = gun;
+		actor->gunIndex = 0;
 	}
-	actor->gunIndex = 0;
-	actor->grenadeIndex = 0;
 	actor->health = aa.Health;
 	actor->action = ACTORACTION_MOVING;
 	actor->tileItem.Pos.x = actor->tileItem.Pos.y = -1;
@@ -1351,31 +1387,60 @@ const Character *ActorGetCharacter(const TActor *a)
 	return CArrayGet(&gCampaign.Setting.characters.OtherChars, a->charId);
 }
 
-struct vec2 ActorGetGunMuzzleOffset(const TActor *a)
+struct vec2 ActorGetWeaponMuzzleOffset(const TActor *a)
 {
-	const GunDescription *gun = ACTOR_GET_GUN(a)->Gun;
-	const CharSprites *cs = ActorGetCharacter(a)->Class->Sprites;
-	return GunGetMuzzleOffset(gun, cs, a->direction);
+	const WeaponClass *wc = ACTOR_GET_WEAPON(a)->Gun;
+	return ActorGetMuzzleOffset(a, wc);
 }
-int ActorGunGetAmmo(const TActor *a, const Weapon *w)
+struct vec2 ActorGetMuzzleOffset(
+	const TActor *a, const WeaponClass *wc)
 {
-	if (w->Gun->AmmoId == -1)
+	const CharSprites *cs = ActorGetCharacter(a)->Class->Sprites;
+	return WeaponClassGetMuzzleOffset(wc, cs, a->direction);
+}
+int ActorWeaponGetAmmo(const TActor *a, const WeaponClass *wc)
+{
+	if (wc->AmmoId == -1)
 	{
 		return -1;
 	}
-	return *(int *)CArrayGet(&a->ammo, w->Gun->AmmoId);
+	return *(int *)CArrayGet(&a->ammo, wc->AmmoId);
 }
-bool ActorCanFire(const TActor *a)
+bool ActorCanFireWeapon(const TActor *a, const Weapon *w)
 {
-	const Weapon *w = ACTOR_GET_GUN(a);
-	const bool hasAmmo = ActorGunGetAmmo(a, w) != 0;
+	if (w->Gun == NULL)
+	{
+		return false;
+	}
+	const bool hasAmmo = ActorWeaponGetAmmo(a, w->Gun) != 0;
 	return
 		!WeaponIsLocked(w) &&
 		(!ConfigGetBool(&gConfig, "Game.Ammo") || hasAmmo);
 }
-bool ActorCanSwitchGun(const TActor *a)
+bool ActorTrySwitchWeapon(const TActor *a, const bool allGuns)
 {
-	return ActorGetNumGuns(a) > 1;
+	// Find the next weapon to switch to
+	// If the player does not have a grenade key set, allow switching to
+	// grenades (classic style)
+	const int switchCount = allGuns ? MAX_WEAPONS : MAX_GUNS;
+	const int startIndex =
+		ActorGetNumGuns(a) > 0 ? a->gunIndex : a->grenadeIndex + MAX_GUNS;
+	int weaponIndex = startIndex;
+	do
+	{
+		weaponIndex = (weaponIndex + 1) % switchCount;
+	} while (a->guns[weaponIndex].Gun == NULL);
+	if (weaponIndex == startIndex)
+	{
+		// No other weapon to switch to
+		return false;
+	}
+
+	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_SWITCH_GUN);
+	e.u.ActorSwitchGun.UID = a->uid;
+	e.u.ActorSwitchGun.GunIdx = weaponIndex;
+	GameEventsEnqueue(&gGameEvents, e);
+	return true;
 }
 void ActorSwitchGun(const NActorSwitchGun sg)
 {
@@ -1383,7 +1448,7 @@ void ActorSwitchGun(const NActorSwitchGun sg)
 	if (a == NULL || !a->isInUse) return;
 	a->gunIndex = sg.GunIdx;
 	SoundPlayAt(
-		&gSoundDevice, ACTOR_GET_GUN(a)->Gun->SwitchSound, a->tileItem.Pos);
+		&gSoundDevice, ACTOR_GET_WEAPON(a)->Gun->SwitchSound, a->tileItem.Pos);
 }
 
 bool ActorIsImmune(const TActor *actor, const special_damage_e damage)

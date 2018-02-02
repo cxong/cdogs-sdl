@@ -136,17 +136,17 @@ static float GenerateQuickPlayParamFloat(
 	}
 }
 
-static void SetupQuickPlayEnemy(Character *enemy, const GunDescription *gun)
+static void SetupQuickPlayEnemy(Character *enemy, const WeaponClass *wc)
 {
 	CharacterShuffleAppearance(enemy);
-	enemy->Gun = gun;
+	enemy->Gun = wc;
 	enemy->speed =GenerateQuickPlayParamFloat(
 		ConfigGetEnum(&gConfig, "QuickPlay.EnemySpeed"), 0.25f, 0.4f, 0.7f, 1);
-	if (IsShortRange(enemy->Gun))
+	if (WeaponClassIsShortRange(enemy->Gun))
 	{
 		enemy->speed = enemy->speed * 1.25f;
 	}
-	if (IsShortRange(enemy->Gun))
+	if (WeaponClassIsShortRange(enemy->Gun))
 	{
 		enemy->bot->probabilityToMove = 35 + (rand() % 35);
 	}
@@ -159,7 +159,7 @@ static void SetupQuickPlayEnemy(Character *enemy, const GunDescription *gun)
 	{
 		enemy->bot->probabilityToShoot = 0;
 	}
-	else if (IsHighDPS(enemy->Gun))
+	else if (WeaponClassIsHighDPS(enemy->Gun))
 	{
 		enemy->bot->probabilityToShoot = 1 + (rand() % 3);
 	}
@@ -179,15 +179,15 @@ static void SetupQuickPlayEnemies(
 	int i;
 	for (i = 0; i < numEnemies; i++)
 	{
-		const GunDescription *gun;
+		const WeaponClass *wc;
 		CArrayPushBack(&mission->Enemies, &i);
 
 		for (;;)
 		{
-			gun = CArrayGet(
-				&gGunDescriptions.Guns,
-				rand() % (int)gGunDescriptions.Guns.size);
-			if (!gun->IsRealGun)
+			wc = CArrayGet(
+				&gWeaponClasses.Guns,
+				rand() % (int)gWeaponClasses.Guns.size);
+			if (!wc->IsRealGun)
 			{
 				continue;
 			}
@@ -195,30 +195,30 @@ static void SetupQuickPlayEnemies(
 			// - Short range weapon
 			// - Long range weapon
 			// - High explosive weapon
-			if (i == 0 && !IsShortRange(gun))
+			if (i == 0 && !WeaponClassIsShortRange(wc))
 			{
 				continue;
 			}
-			if (i == 1 && !IsLongRange(gun))
+			if (i == 1 && !WeaponClassIsLongRange(wc))
 			{
 				continue;
 			}
 			if (i == 2 &&
 				ConfigGetBool(&gConfig, "QuickPlay.EnemiesWithExplosives") &&
-				!IsHighDPS(gun))
+				!WeaponClassIsHighDPS(wc))
 			{
 				continue;
 			}
 
 			if (!ConfigGetBool(&gConfig, "QuickPlay.EnemiesWithExplosives") &&
-				IsHighDPS(gun))
+				WeaponClassIsHighDPS(wc))
 			{
 				continue;
 			}
 			break;
 		}
 		Character *ch = CharacterStoreAddOther(store);
-		SetupQuickPlayEnemy(ch, gun);
+		SetupQuickPlayEnemy(ch, wc);
 	}
 }
 
@@ -298,10 +298,10 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 		CArrayPushBack(&m->MapObjectDensities, &mop);
 	}
 	m->EnemyDensity = (40 + (rand() % 20)) / (int)m->Enemies.size;
-	CA_FOREACH(const GunDescription, g, gGunDescriptions.Guns)
-		if (g->IsRealGun)
+	CA_FOREACH(const WeaponClass, wc, gWeaponClasses.Guns)
+		if (wc->IsRealGun)
 		{
-			CArrayPushBack(&m->Weapons, &g);
+			CArrayPushBack(&m->Weapons, &wc);
 		}
 	CA_FOREACH_END()
 	m->WallMask = RandomBGColor();

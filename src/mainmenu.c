@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2017 Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -593,7 +593,7 @@ menu_t *MenuCreateQuit(const char *name)
 static void MenuCreateKeysSingleSection(
 	menu_t *menu, const char *sectionName, const int playerIndex);
 static menu_t *MenuCreateOptionChangeKey(
-	const key_code_e code, const int playerIndex);
+	const key_code_e code, const int playerIndex, const bool isOptional);
 
 menu_t *MenuCreateKeys(const char *name, MenuSystem *ms)
 {
@@ -604,7 +604,7 @@ menu_t *MenuCreateKeys(const char *name, MenuSystem *ms)
 		0);
 	MenuCreateKeysSingleSection(menu, "Keyboard 1", 0);
 	MenuCreateKeysSingleSection(menu, "Keyboard 2", 1);
-	MenuAddSubmenu(menu, MenuCreateOptionChangeKey(KEY_CODE_MAP, 0));
+	MenuAddSubmenu(menu, MenuCreateOptionChangeKey(KEY_CODE_MAP, 0, true));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
 	MenuSetPostInputFunc(menu, PostInputConfigApply, ms);
@@ -616,26 +616,29 @@ static void MenuCreateKeysSingleSection(
 {
 	MenuAddSubmenu(menu, MenuCreateSeparator(sectionName));
 	MenuAddSubmenu(
-		menu, MenuCreateOptionChangeKey(KEY_CODE_LEFT, playerIndex));
+		menu, MenuCreateOptionChangeKey(KEY_CODE_LEFT, playerIndex, false));
 	MenuAddSubmenu(
-		menu, MenuCreateOptionChangeKey(KEY_CODE_RIGHT, playerIndex));
+		menu, MenuCreateOptionChangeKey(KEY_CODE_RIGHT, playerIndex, false));
 	MenuAddSubmenu(
-		menu, MenuCreateOptionChangeKey(KEY_CODE_UP, playerIndex));
+		menu, MenuCreateOptionChangeKey(KEY_CODE_UP, playerIndex, false));
 	MenuAddSubmenu(
-		menu, MenuCreateOptionChangeKey(KEY_CODE_DOWN, playerIndex));
+		menu, MenuCreateOptionChangeKey(KEY_CODE_DOWN, playerIndex, false));
 	MenuAddSubmenu(
-		menu, MenuCreateOptionChangeKey(KEY_CODE_BUTTON1, playerIndex));
+		menu, MenuCreateOptionChangeKey(KEY_CODE_BUTTON1, playerIndex, false));
 	MenuAddSubmenu(
-		menu, MenuCreateOptionChangeKey(KEY_CODE_BUTTON2, playerIndex));
+		menu, MenuCreateOptionChangeKey(KEY_CODE_BUTTON2, playerIndex, false));
+	MenuAddSubmenu(
+		menu, MenuCreateOptionChangeKey(KEY_CODE_GRENADE, playerIndex, true));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 }
 
 static menu_t *MenuCreateOptionChangeKey(
-	const key_code_e code, const int playerIndex)
+	const key_code_e code, const int playerIndex, const bool isOptional)
 {
 	menu_t *menu =
 		MenuCreate(KeycodeStr(code), MENU_TYPE_SET_OPTION_CHANGE_KEY);
 	menu->u.changeKey.code = code;
 	menu->u.changeKey.playerIndex = playerIndex;
+	menu->u.changeKey.isOptional = isOptional;
 	return menu;
 }

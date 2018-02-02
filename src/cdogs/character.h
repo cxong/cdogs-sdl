@@ -44,7 +44,7 @@ typedef struct
 {
 	const CharacterClass *Class;
 	float speed;
-	const GunDescription *Gun;
+	const WeaponClass *Gun;
 	int maxHealth;
 	unsigned int flags;
 	CharColors Colors;

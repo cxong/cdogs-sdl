@@ -83,7 +83,7 @@ int StrPickupClassId(const char *s);
 
 void PickupClassesInit(
 	PickupClasses *classes, const char *filename,
-	const AmmoClasses *ammo, const GunClasses *guns);
+	const AmmoClasses *ammo, const WeaponClasses *guns);
 void PickupClassesLoadJSON(CArray *classes, json_t *root);
 void PickupClassesLoadAmmo(CArray *classes, const CArray *ammoClasses);
 void PickupClassesLoadGuns(CArray *classes, const CArray *gunClasses);

@@ -43,7 +43,7 @@ typedef struct
 	CampaignOptions *co;
 	SelectMode Mode;
 } MissionAllGunsData;
-static bool HasWeapon(const Mission *m, const GunDescription *g);
+static bool HasWeapon(const Mission *m, const WeaponClass *wc);
 static void AddAllWeapons(Mission *m);
 static void MissionSelectWeapons(void *vData, int d)
 {
@@ -79,16 +79,16 @@ static void MissionSelectWeapons(void *vData, int d)
 }
 static void AddAllWeapons(Mission *m)
 {
-	CA_FOREACH(const GunDescription, g, gGunDescriptions.Guns)
-		if (g->IsRealGun && !HasWeapon(m, g))
+	CA_FOREACH(const WeaponClass, wc, gWeaponClasses.Guns)
+		if (wc->IsRealGun && !HasWeapon(m, wc))
 		{
-			CArrayPushBack(&m->Weapons, &g);
+			CArrayPushBack(&m->Weapons, &wc);
 		}
 	CA_FOREACH_END()
-		CA_FOREACH(const GunDescription, g, gGunDescriptions.CustomGuns)
-		if (g->IsRealGun && !HasWeapon(m, g))
+		CA_FOREACH(const WeaponClass, wc, gWeaponClasses.CustomGuns)
+		if (wc->IsRealGun && !HasWeapon(m, wc))
 		{
-			CArrayPushBack(&m->Weapons, &g);
+			CArrayPushBack(&m->Weapons, &wc);
 		}
 	CA_FOREACH_END()
 }
@@ -96,7 +96,7 @@ static void AddAllWeapons(Mission *m)
 typedef struct
 {
 	CampaignOptions *co;
-	const GunDescription *Gun;
+	const WeaponClass *Gun;
 } MissionGunData;
 static void MissionDrawWeaponStatus(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
@@ -119,8 +119,8 @@ static void MissionChangeWeapon(void *vData, int d)
 	bool hasWeapon = false;
 	int weaponIndex = -1;
 	Mission *currentMission = CampaignGetCurrentMission(data->co);
-	CA_FOREACH(const GunDescription *, desc, currentMission->Weapons)
-		if (data->Gun == *desc)
+	CA_FOREACH(const WeaponClass *, wc, currentMission->Weapons)
+		if (data->Gun == *wc)
 		{
 			hasWeapon = true;
 			weaponIndex = _ca_index;
@@ -137,10 +137,10 @@ static void MissionChangeWeapon(void *vData, int d)
 	}
 }
 // Check if the current mission has this gun available already
-static bool HasWeapon(const Mission *m, const GunDescription *g)
+static bool HasWeapon(const Mission *m, const WeaponClass *wc)
 {
-	CA_FOREACH(const GunDescription *, desc, m->Weapons)
-		if (g == *desc)
+	CA_FOREACH(const WeaponClass *, wc2, m->Weapons)
+		if (wc == *wc2)
 		{
 			return true;
 		}
@@ -184,8 +184,8 @@ UIObject *CreateWeaponObjs(CampaignOptions *co)
 	o->ChangesData = true;
 	const int rows = 10;
 	int idx = 0;
-	CreateWeaponToggleObjs(co, c, o, &idx, rows, &gGunDescriptions.Guns);
-	CreateWeaponToggleObjs(co, c, o, &idx, rows, &gGunDescriptions.CustomGuns);
+	CreateWeaponToggleObjs(co, c, o, &idx, rows, &gWeaponClasses.Guns);
+	CreateWeaponToggleObjs(co, c, o, &idx, rows, &gWeaponClasses.CustomGuns);
 
 	UIObjectDestroy(o);
 	return c;
@@ -213,8 +213,8 @@ static void CreateWeaponToggleObjs(
 	int *idx, const int rows, CArray *guns)
 {
 	const int th = FontH();
-	CA_FOREACH(const GunDescription, g, *guns)
-		if (!g->IsRealGun)
+	CA_FOREACH(const WeaponClass, wc, *guns)
+		if (!wc->IsRealGun)
 		{
 			continue;
 		}
@@ -222,7 +222,7 @@ static void CreateWeaponToggleObjs(
 		CMALLOC(o2->Data, sizeof(MissionGunData));
 		o2->IsDynamicData = true;
 		((MissionGunData *)o2->Data)->co = co;
-		((MissionGunData *)o2->Data)->Gun = g;
+		((MissionGunData *)o2->Data)->Gun = wc;
 		o2->Pos = svec2i(
 			*idx / rows * COLUMN_WIDTH, (*idx % rows) * th + th * 2);
 		UIObjectAddChild(c, o2);

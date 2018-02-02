@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2014-2015, 2017 Cong Xu
+    Copyright (c) 2014-2015, 2017-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -64,6 +64,7 @@
 #define CMD_BUTTON2        32
 #define CMD_MAP            64
 #define CMD_ESC           128
+#define CMD_GRENADE       256
 
 // Command macros
 #define Left(x)       (((x) & CMD_LEFT) != 0)

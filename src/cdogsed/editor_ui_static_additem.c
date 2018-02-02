@@ -296,8 +296,8 @@ static char *MakeMapObjectTooltip(const MapObject *mo)
 			{
 				strcat(exBuf, ", ");
 			}
-			const GunDescription **g = CArrayGet(&mo->DestroyGuns, i);
-			strcat(exBuf, (*g)->name);
+			const WeaponClass **wc = CArrayGet(&mo->DestroyGuns, i);
+			strcat(exBuf, (*wc)->name);
 		}
 	}
 	sprintf(buf, "%s\nHealth: %d%s", mo->Name, mo->Health, exBuf);

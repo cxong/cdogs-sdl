@@ -43,7 +43,7 @@ typedef struct
 	bool Ready;
 	Character Char;
 	char name[20];
-	const GunDescription *guns[MAX_WEAPONS];
+	const WeaponClass *guns[MAX_WEAPONS];
 	int Lives;
 
 	NPlayerStats Stats;
@@ -107,3 +107,4 @@ bool PlayerTrySetUnusedInputDevice(
 	PlayerData *p, const input_device_e d, const int idx);
 
 int PlayerGetNumWeapons(const PlayerData *p);
+bool PlayerHasGrenadeButton(const PlayerData *p);

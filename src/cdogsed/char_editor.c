@@ -90,7 +90,7 @@ static const char *IndexCharacterClassName(const int i);
 static int NumCharacterClasses(void);
 static const char *IndexGunName(const int i);
 static int NumGuns(void);
-static int GunIndex(const GunDescription *g);
+static int GunIndex(const WeaponClass *wc);
 static void AddCharacterTextures(EditorContext *ec);
 static bool HandleEvents(EditorContext *ec);
 static void Draw(SDL_Window *win, EditorContext *ec);
@@ -158,8 +158,8 @@ void CharEditor(
 	for (int i = 0; i < NumGuns(); i++)
 	{
 		const GLuint *texid = CArrayGet(&ec.texIdsGuns, i);
-		const GunDescription *gd = IndexGunDescriptionReal(i);
-		LoadTexFromPic(*texid, gd->Icon);
+		const WeaponClass *wc = IndexWeaponClassReal(i);
+		LoadTexFromPic(*texid, wc->Icon);
 	}
 
 	ec.anim = AnimationGetActorAnimation(ACTORANIMATION_WALKING);
@@ -250,46 +250,46 @@ static int NumCharacterClasses(void)
 }
 static const char *IndexGunName(const int i)
 {
-	const GunDescription *g = IndexGunDescriptionReal(i);
-	return g ? g->name : NULL;
+	const WeaponClass *wc = IndexWeaponClassReal(i);
+	return wc ? wc->name : NULL;
 }
 static int NumGuns(void)
 {
 	int totalWeapons = 0;
-	CA_FOREACH(const GunDescription, g, gGunDescriptions.Guns)
-		if (g->IsRealGun)
+	CA_FOREACH(const WeaponClass, wc, gWeaponClasses.Guns)
+		if (wc->IsRealGun)
 		{
 			totalWeapons++;
 		}
 	CA_FOREACH_END()
-	CA_FOREACH(const GunDescription, g, gGunDescriptions.CustomGuns)
-		if (g->IsRealGun)
+	CA_FOREACH(const WeaponClass, wc, gWeaponClasses.CustomGuns)
+		if (wc->IsRealGun)
 		{
 			totalWeapons++;
 		}
 	CA_FOREACH_END()
 	return totalWeapons;
 }
-static int GunIndex(const GunDescription *g)
+static int GunIndex(const WeaponClass *wc)
 {
 	int j = 0;
-	CA_FOREACH(const GunDescription, gg, gGunDescriptions.Guns)
-		if (!gg->IsRealGun)
+	CA_FOREACH(const WeaponClass, wc2, gWeaponClasses.Guns)
+		if (!wc2->IsRealGun)
 		{
 			continue;
 		}
-		if (g == gg)
+		if (wc == wc2)
 		{
 			return j;
 		}
 		j++;
 	CA_FOREACH_END()
-	CA_FOREACH(const GunDescription, gg, gGunDescriptions.CustomGuns)
-		if (!g->IsRealGun)
+	CA_FOREACH(const WeaponClass, wc2, gWeaponClasses.CustomGuns)
+		if (!wc2->IsRealGun)
 		{
 			continue;
 		}
-		if (g == gg)
+		if (wc == wc2)
 		{
 			return j;
 		}
@@ -513,7 +513,7 @@ static void Draw(SDL_Window *win, EditorContext *ec)
 			const int selectedGun = DrawClassSelection(
 				ec, "Gun:", ec->texIdsGuns.data, ec->GunNames,
 				GunIndex(ec->Char->Gun), NumGuns());
-			ec->Char->Gun = IndexGunDescriptionReal(selectedGun);
+			ec->Char->Gun = IndexWeaponClassReal(selectedGun);
 
 			nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
 			nk_property_int(
@@ -601,7 +601,7 @@ static void AddCharacter(EditorContext *ec, const int cloneIdx)
 		ec->Char->Colors.Legs = darkGray;
 		ec->Char->Colors.Hair = colorBlack;
 		ec->Char->speed = 1;
-		ec->Char->Gun = StrGunDescription("Machine gun");
+		ec->Char->Gun = StrWeaponClass("Machine gun");
 		ec->Char->maxHealth = 40;
 		ec->Char->flags = FLAGS_IMMUNITY;
 		ec->Char->bot->probabilityToMove = 50;

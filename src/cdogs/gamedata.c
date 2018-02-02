@@ -124,7 +124,7 @@ void CampaignUnload(CampaignOptions *co)
 void MissionOptionsInit(struct MissionOptions *mo)
 {
 	memset(mo, 0, sizeof *mo);
-	CArrayInit(&mo->Weapons, sizeof(GunDescription *));
+	CArrayInit(&mo->Weapons, sizeof(WeaponClass *));
 }
 void MissionOptionsTerminate(struct MissionOptions *mo)
 {

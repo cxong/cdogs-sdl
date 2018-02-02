@@ -101,6 +101,7 @@ set(CDOGS_SOURCES
 	utils.c
 	vector.c
 	weapon.c
+	weapon_class.c
 	window_context.c
 	yajl_utils.c)
 set(CDOGS_HEADERS
@@ -203,6 +204,7 @@ set(CDOGS_HEADERS
 	utils.h
 	vector.h
 	weapon.h
+	weapon_class.h
 	window_context.h
 	yajl_utils.h)
 set(NANOPB_SOURCES

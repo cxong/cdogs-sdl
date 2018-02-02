@@ -68,7 +68,7 @@ NPlayerData NMakePlayerData(const PlayerData *p)
 	NPlayerData d = NPlayerData_init_default;
 	return d;
 }
-const GunDescription *StrGunDescription(const char *s)
+const WeaponClass *StrWeaponClass(const char *s)
 {
 	UNUSED(s);
 	return NULL;
@@ -85,6 +85,10 @@ bool ConfigGetBool(Config *c, const char *name)
 bool IsPVP(const GameMode mode)
 {
 	UNUSED(mode); return false;
+}
+bool InputHasGrenadeButton(const input_device_e d, const int dIndex)
+{
+	UNUSED(d); UNUSED(dIndex); return false;
 }
 
 

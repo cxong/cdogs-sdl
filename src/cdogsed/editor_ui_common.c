@@ -396,8 +396,8 @@ char *MakePlacementFlagTooltip(const MapObject *mo)
 			{
 				strcat(exBuf, ", ");
 			}
-			const GunDescription **g = CArrayGet(&mo->DestroyGuns, i);
-			strcat(exBuf, (*g)->name);
+			const WeaponClass **wc = CArrayGet(&mo->DestroyGuns, i);
+			strcat(exBuf, (*wc)->name);
 		}
 	}
 	sprintf(
