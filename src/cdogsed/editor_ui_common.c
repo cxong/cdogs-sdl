@@ -110,8 +110,9 @@ bool ConfirmScreen(const char *info, const char *msg)
 	ClearScreen(&gGraphicsDevice);
 	FontStr(info, svec2i((w - FontStrW(info)) / 2, (h - FontH()) / 2));
 	FontStr(msg, svec2i((w - FontStrW(msg)) / 2, (h + FontH()) / 2));
+	WindowContextPreRender(&gGraphicsDevice.gameWindow);
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
-	WindowContextRender(&gGraphicsDevice.gameWindow);
+	WindowContextPostRender(&gGraphicsDevice.gameWindow);
 
 	SDL_Keycode k = SDL_GetKeyFromScancode(GetKey(&gEventHandlers));
 	return k == SDLK_y;

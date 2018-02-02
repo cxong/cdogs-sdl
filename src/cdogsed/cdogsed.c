@@ -252,8 +252,9 @@ static void Display(HandleInputResult result)
 		}
 		MouseDraw(&gEventHandlers.mouse);
 	}
+	WindowContextPreRender(&ec.g->gameWindow);
 	BlitUpdateFromBuf(ec.g, ec.g->screen);
-	WindowContextRender(&ec.g->gameWindow);
+	WindowContextPostRender(&ec.g->gameWindow);
 }
 
 static void Setup(const bool changedMission);
@@ -493,8 +494,9 @@ static void Open(void)
 			}
 		}
 
+		WindowContextPreRender(&gGraphicsDevice.gameWindow);
 		BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
-		WindowContextRender(&gGraphicsDevice.gameWindow);
+		WindowContextPostRender(&gGraphicsDevice.gameWindow);
 
 		bool doOpen = false;
 		const SDL_Scancode sc = EventWaitKeyOrText(&gEventHandlers);
@@ -537,8 +539,9 @@ static void Open(void)
 
 			FontStrCenter("Loading...");
 
+			WindowContextPreRender(&gGraphicsDevice.gameWindow);
 			BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
-			WindowContextRender(&gGraphicsDevice.gameWindow);
+			WindowContextPostRender(&gGraphicsDevice.gameWindow);
 			// Try original filename
 			if (TryOpen(filename))
 			{
@@ -604,8 +607,9 @@ static void Save(void)
 		pos = FontCh('>', pos);
 		pos = FontStr(filename, pos);
 		FontCh('<', pos);
+		WindowContextPreRender(&gGraphicsDevice.gameWindow);
 		BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
-		WindowContextRender(&gGraphicsDevice.gameWindow);
+		WindowContextPostRender(&gGraphicsDevice.gameWindow);
 
 		const SDL_Scancode sc = EventWaitKeyOrText(&gEventHandlers);
 		switch (sc)
@@ -641,8 +645,9 @@ static void Save(void)
 
 		FontStrCenter("Saving...");
 
+		WindowContextPreRender(&gGraphicsDevice.gameWindow);
 		BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
-		WindowContextRender(&gGraphicsDevice.gameWindow);
+		WindowContextPostRender(&gGraphicsDevice.gameWindow);
 		MapArchiveSave(filename, &gCampaign.Setting);
 		fileChanged = false;
 		strcpy(lastFile, filename);
@@ -706,8 +711,9 @@ static void HelpScreen(void)
 		"F1:                             This screen\n";
 	ClearScreen(&gGraphicsDevice);
 	FontStr(helpText, pos);
+	WindowContextPreRender(&gGraphicsDevice.gameWindow);
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
-	WindowContextRender(&gGraphicsDevice.gameWindow);
+	WindowContextPostRender(&gGraphicsDevice.gameWindow);
 	GetKey(&gEventHandlers);
 }
 

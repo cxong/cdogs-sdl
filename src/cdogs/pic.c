@@ -34,7 +34,7 @@
 #include "texture.h"
 #include "utils.h"
 
-Pic picNone = { { 0, 0 }, { 0, 0 }, NULL };
+Pic picNone = { { 0, 0 }, { 0, 0 }, NULL, NULL };
 
 
 color_t PixelToColor(
