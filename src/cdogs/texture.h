@@ -34,4 +34,5 @@ SDL_Texture *TextureCreate(
 	SDL_Renderer *renderer, const SDL_TextureAccess access, const struct vec2i res,
 	const SDL_BlendMode blend, const Uint8 alpha);
 
-void TextureRender(SDL_Texture *t, SDL_Renderer *r, const Rect2i dest);
+void TextureRender(
+	SDL_Texture *t, SDL_Renderer *r, const Rect2i dest, const color_t mask);

@@ -49,7 +49,9 @@ Uint32 ColorToPixel(
 	ColorToPixel(gGraphicsDevice.Format, gGraphicsDevice.Format->Ashift, _c)
 
 void PicLoad(
-	Pic *p, const struct vec2i size, const struct vec2i offset, const SDL_Surface *image);
+	Pic *p, const struct vec2i size, const struct vec2i offset,
+	const SDL_Surface *image);
+bool PicTryMakeTex(Pic *p);
 Pic PicCopy(const Pic *src);
 void PicFree(Pic *pic);
 bool PicIsNone(const Pic *pic);
@@ -59,4 +61,5 @@ void PicTrim(Pic *pic, const bool xTrim, const bool yTrim);
 
 bool PicPxIsEdge(const Pic *pic, const struct vec2i pos, const bool isPixel);
 
-void PicRender(const Pic *p, SDL_Renderer *r, const struct vec2i pos);
+void PicRender(
+	const Pic *p, SDL_Renderer *r, const struct vec2i pos, const color_t mask);

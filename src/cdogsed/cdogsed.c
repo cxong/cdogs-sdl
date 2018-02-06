@@ -157,7 +157,8 @@ static void MakeBackground(const bool changedMission)
 	extra.guideImageAlpha = brush.GuideImageAlpha;
 
 	DrawBufferTerminate(&sDrawBuffer);
-	DrawBufferInit(&sDrawBuffer, svec2i(X_TILES, Y_TILES), &gGraphicsDevice);
+	DrawBufferInit(
+		&sDrawBuffer, svec2i(X_TILES, Y_TILES), &gGraphicsDevice, true);
 	GrafxMakeBackground(
 		ec.g, &sDrawBuffer, &gCampaign, &gMission, &gMap,
 		tintNone, true, ec.camera, &extra);
@@ -1377,7 +1378,8 @@ int main(int argc, char *argv[])
 	// Note: must do this after text init since positions depend on text height
 	sObjs = CreateMainObjs(&gCampaign, &brush, svec2i(320, 240));
 	memset(&sDrawObjs, 0, sizeof sDrawObjs);
-	DrawBufferInit(&sDrawBuffer, svec2i(X_TILES, Y_TILES), &gGraphicsDevice);
+	DrawBufferInit(
+		&sDrawBuffer, svec2i(X_TILES, Y_TILES), &gGraphicsDevice, true);
 
 	// Reset campaign (graphics init may have created dummy campaigns)
 	CampaignSettingTerminate(&gCampaign.Setting);

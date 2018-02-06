@@ -531,6 +531,11 @@ void PicManagerGenerateMaskedPic(
 		}
 		p.Data[i] = COLOR2PIXEL(c);
 		// TODO: more channels
+
+		if (!PicTryMakeTex(&p))
+		{
+			p.Tex = NULL;
+		}
 	}
 	AddNamedPic(pm->customPics, maskedName, &p);
 

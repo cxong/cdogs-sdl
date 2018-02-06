@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2014, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -54,7 +54,9 @@
 #include "los.h"
 
 
-void DrawBufferInit(DrawBuffer *b, struct vec2i size, GraphicsDevice *g)
+void DrawBufferInit(
+	DrawBuffer *b, struct vec2i size, GraphicsDevice *g,
+	const bool renderToTex)
 {
 	b->OrigSize = size;
 	CMALLOC(b->tiles, size.x * sizeof *b->tiles);
@@ -66,6 +68,7 @@ void DrawBufferInit(DrawBuffer *b, struct vec2i size, GraphicsDevice *g)
 	b->g = g;
 	CArrayInit(&b->displaylist, sizeof(const TTileItem *));
 	CArrayReserve(&b->displaylist, 32);
+	b->renderToTex = renderToTex;
 }
 void DrawBufferTerminate(DrawBuffer *b)
 {

@@ -104,8 +104,6 @@ void FontLoad(Font *f, const char *imgPath, const bool isProportional)
 			pos.x += step.x, x++, chars++)
 		{
 			Pic p;
-			p.size = f->Size;
-			p.offset = svec2i_zero();
 			PicLoad(
 				&p, f->Size,
 				svec2i_add(pos, svec2i(f->Padding.Left, f->Padding.Top)),

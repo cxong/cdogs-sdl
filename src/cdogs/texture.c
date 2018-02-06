@@ -52,11 +52,18 @@ SDL_Texture *TextureCreate(
 	return t;
 }
 
-void TextureRender(SDL_Texture *t, SDL_Renderer *r, const Rect2i dest)
+void TextureRender(
+	SDL_Texture *t, SDL_Renderer *r, const Rect2i dest, const color_t mask)
 {
 	const SDL_Rect destRect = {
 		dest.Pos.x, dest.Pos.y, dest.Size.x, dest.Size.y
 	};
+	if (!ColorEquals(mask, colorTransparent) &&
+		SDL_SetTextureColorMod(t, mask.r, mask.g, mask.b) != 0)
+	{
+		LOG(LM_MAIN, LL_ERROR, "Failed to set texture mask: %s",
+			SDL_GetError());
+	}
 	if (SDL_RenderCopy(r, t, NULL, Rect2iIsZero(dest) ? NULL : &destRect) != 0)
 	{
 		LOG(LM_MAIN, LL_ERROR, "Failed to render texture: %s", SDL_GetError());

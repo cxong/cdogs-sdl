@@ -55,10 +55,10 @@ Uint32 ColorToPixel(
 }
 
 
-static bool TryMakeTex(Pic *p);
 void PicLoad(
 	Pic *p, const struct vec2i size, const struct vec2i offset, const SDL_Surface *image)
 {
+	memset(p, 0, sizeof *p);
 	p->size = size;
 	p->offset = svec2i_zero();
 	CMALLOC(p->Data, size.x * size.y * sizeof *((Pic *)0)->Data);
@@ -86,7 +86,7 @@ void PicLoad(
 		}
 	}
 
-	if (!TryMakeTex(p))
+	if (!PicTryMakeTex(p))
 	{
 		goto bail;
 	}
@@ -95,8 +95,9 @@ void PicLoad(
 bail:
 	PicFree(p);
 }
-static bool TryMakeTex(Pic *p)
+bool PicTryMakeTex(Pic *p)
 {
+	SDL_DestroyTexture(p->Tex);
 	p->Tex = TextureCreate(
 		gGraphicsDevice.gameWindow.renderer, SDL_TEXTUREACCESS_STATIC,
 		p->size, SDL_BLENDMODE_NONE, 255);
@@ -188,7 +189,7 @@ void PicTrim(Pic *pic, const bool xTrim, const bool yTrim)
 	pic->Data = newData;
 	pic->size = newSize;
 	pic->offset = svec2i_zero();
-	TryMakeTex(pic);
+	PicTryMakeTex(pic);
 }
 
 bool PicPxIsEdge(const Pic *pic, const struct vec2i pos, const bool isPixel)
@@ -217,8 +218,9 @@ bool PicPxIsEdge(const Pic *pic, const struct vec2i pos, const bool isPixel)
 	}
 }
 
-void PicRender(const Pic *p, SDL_Renderer *r, const struct vec2i pos)
+void PicRender(
+	const Pic *p, SDL_Renderer *r, const struct vec2i pos, const color_t mask)
 {
 	const Rect2i dest = Rect2iNew(pos, p->size);
-	TextureRender(p->Tex, r, dest);
+	TextureRender(p->Tex, r, dest, mask);
 }

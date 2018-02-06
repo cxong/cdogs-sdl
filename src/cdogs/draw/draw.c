@@ -158,23 +158,34 @@ static void DrawFloor(DrawBuffer *b, struct vec2i offset)
 			if (tile->pic != NULL && tile->pic->pic.Data != NULL &&
 				!(tile->flags & MAPTILE_IS_WALL))
 			{
+				const NamedPic *pic = tile->pic;
+				color_t mask = colorWhite;
 				switch (GetTileLOS(tile, useFog))
 				{
 				case TILE_LOS_NORMAL:
-					Blit(&gGraphicsDevice, &tile->pic->pic, pos);
 					break;
 				case TILE_LOS_FOG:
-					BlitMasked(
-						&gGraphicsDevice,
-						&tile->pic->pic,
-						pos,
-						colorFog,
-						false);
+					mask = colorFog;
 					break;
 				case TILE_LOS_NONE:
 				default:
 					// don't draw
+					pic = NULL;
 					break;
+				}
+				if (pic == NULL)
+				{
+					continue;
+				}
+				if (b->renderToTex)
+				{
+					BlitMasked(&gGraphicsDevice, &pic->pic, pos, mask, false);
+				}
+				else
+				{
+					PicRender(
+						&pic->pic, gGraphicsDevice.gameWindow.renderer,
+						pos, mask);
 				}
 			}
 		}
