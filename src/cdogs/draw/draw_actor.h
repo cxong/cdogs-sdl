@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, 2016-2017 Cong Xu
+    Copyright (c) 2013-2014, 2016-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -91,7 +91,8 @@ ActorPics GetCharacterPics(
 	const bool isTransparent, HSV *tint, color_t *mask,
 	const int deadPic);
 ActorPics GetCharacterPicsFromActor(TActor *a);
-void DrawActorPics(const ActorPics *pics, const struct vec2i pos);
+void DrawActorPics(
+	const ActorPics *pics, const struct vec2i pos, const bool renderToTex);
 void DrawLaserSight(
 	const ActorPics *pics, const TActor *a, const struct vec2i picPos);
 void DrawActorHighlight(

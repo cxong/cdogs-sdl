@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017, Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -245,7 +245,8 @@ static Character *ActorGetCharacterMutable(TActor *a)
 
 static void DrawDyingBody(
 	GraphicsDevice *g, const ActorPics *pics, const struct vec2i pos);
-void DrawActorPics(const ActorPics *pics, const struct vec2i pos)
+void DrawActorPics(
+	const ActorPics *pics, const struct vec2i pos, const bool renderToTex)
 {
 	if (pics->IsDead)
 	{
@@ -259,7 +260,7 @@ void DrawActorPics(const ActorPics *pics, const struct vec2i pos)
 		// Draw shadow
 		if (!pics->IsTransparent)
 		{
-			DrawShadow(&gGraphicsDevice, pos, svec2i(8, 6));
+			DrawShadow(&gGraphicsDevice, pos, svec2i(8, 6), renderToTex);
 		}
 		for (int i = 0; i < BODY_PART_COUNT; i++)
 		{
@@ -459,7 +460,7 @@ void DrawCharacterSimple(
 	ActorPics pics = GetCharacterPics(
 		c, d, ACTORANIMATION_IDLE, 0, NULL, GUNSTATE_READY,
 		false, NULL, NULL, 0);
-	DrawActorPics(&pics, pos);
+	DrawActorPics(&pics, pos, true);
 	if (hilite)
 	{
 		FontCh('>', svec2i_add(pos, svec2i(-8, -16)));

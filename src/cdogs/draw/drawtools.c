@@ -20,7 +20,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2014, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -51,6 +51,8 @@
 #include "config.h"
 #include "draw/drawtools.h"
 #include "palette.h"
+#include "pic_manager.h"
+#include "texture.h"
 #include "utils.h"
 #include "blit.h"
 #include "grafx.h"
@@ -118,8 +120,6 @@ Draw_StraightLine(
 	return;
 }
 
-#define ABS(x)	( x > 0 ? x : (-x) )
-
 static void Draw_DiagonalLine(const int x1, const int x2, color_t c)
 {
 	register int i;
@@ -159,7 +159,7 @@ void Draw_Line(
 {
 	if (x1 == x2 || y1 == y2) 
 		Draw_StraightLine(x1, y1, x2, y2, c);
-	else if (ABS((x2 - x1)) == ABS((y1 - y2)))
+	else if (abs((x2 - x1)) == abs((y1 - y2)))
 		Draw_DiagonalLine(x1, x2, c);
 	/*else
 		Draw_OtherLine(x1, y1, x2, y2, c);*/
@@ -254,45 +254,64 @@ void DrawCross(GraphicsDevice *device, int x, int y, color_t color)
 	*(screen + gGraphicsDevice.cachedConfig.Res.x) = pixel;
 }
 
-void DrawShadow(GraphicsDevice *device, struct vec2i pos, struct vec2i size)
+// Note: size is half-size
+void DrawShadow(
+	GraphicsDevice *g, struct vec2i pos, struct vec2i size,
+	const bool renderToTex)
 {
 	if (!ConfigGetBool(&gConfig, "Graphics.Shadows"))
 	{
 		return;
 	}
-	struct vec2i drawPos;
-	for (drawPos.y = pos.y - size.y; drawPos.y < pos.y + size.y; drawPos.y++)
+	if (renderToTex)
 	{
-		if (drawPos.y >= device->clipping.bottom)
+		struct vec2i drawPos;
+		for (drawPos.y = pos.y - size.y;
+			drawPos.y < pos.y + size.y;
+			drawPos.y++)
 		{
-			break;
-		}
-		if (drawPos.y < device->clipping.top)
-		{
-			continue;
-		}
-		for (drawPos.x = pos.x - size.x; drawPos.x < pos.x + size.x; drawPos.x++)
-		{
-			// Calculate value tint based on distance from center
-			struct vec2i scaledPos;
-			int distance2;
-			if (drawPos.x >= device->clipping.right)
+			if (drawPos.y >= g->clipping.bottom)
 			{
 				break;
 			}
-			if (drawPos.x < device->clipping.left)
+			if (drawPos.y < g->clipping.top)
 			{
 				continue;
 			}
-			scaledPos.x = drawPos.x;
-			scaledPos.y = (drawPos.y - pos.y) * size.x / size.y + pos.y;
-			distance2 = svec2i_distance_squared(scaledPos, pos);
-			// Maximum distance is x, so scale distance squared by x squared
-			const HSV tint =
+			for (drawPos.x = pos.x - size.x;
+				drawPos.x < pos.x + size.x;
+				drawPos.x++)
 			{
-				-1.0, 1.0, CLAMP(distance2 * 1.0 / (size.x*size.x), 0.0, 1.0)
-			};
-			DrawPointTint(device, drawPos, tint);
+				// Calculate value tint based on distance from center
+				struct vec2i scaledPos;
+				int distance2;
+				if (drawPos.x >= g->clipping.right)
+				{
+					break;
+				}
+				if (drawPos.x < g->clipping.left)
+				{
+					continue;
+				}
+				scaledPos.x = drawPos.x;
+				scaledPos.y = (drawPos.y - pos.y) * size.x / size.y + pos.y;
+				distance2 = svec2i_distance_squared(scaledPos, pos);
+				// Maximum distance is x, so scale distance squared by x squared
+				const HSV tint =
+				{
+					-1.0, 1.0,
+					CLAMP(distance2 * 1.0 / (size.x*size.x), 0.0, 1.0)
+				};
+				DrawPointTint(g, drawPos, tint);
+			}
 		}
+	}
+	else
+	{
+		const Pic *shadow = PicManagerGetPic(&gPicManager, "shadow");
+		const Rect2i dest =
+			Rect2iNew(svec2i_subtract(pos, size), svec2i_scale(size, 2));
+		TextureRender(
+			shadow->Tex, g->gameWindow.renderer, dest, colorTransparent);
 	}
 }

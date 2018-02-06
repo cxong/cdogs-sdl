@@ -305,7 +305,7 @@ static void DrawThing(DrawBuffer *b, const TTileItem *t, const struct vec2i offs
 
 	if (!svec2i_is_zero(t->ShadowSize))
 	{
-		DrawShadow(&gGraphicsDevice, picPos, t->ShadowSize);
+		DrawShadow(&gGraphicsDevice, picPos, t->ShadowSize, b->renderToTex);
 	}
 
 	if (t->CPicFunc)
@@ -322,7 +322,7 @@ static void DrawThing(DrawBuffer *b, const TTileItem *t, const struct vec2i offs
 	{
 		TActor *a = CArrayGet(&gActors, t->id);
 		ActorPics pics = GetCharacterPicsFromActor(a);
-		DrawActorPics(&pics, picPos);
+		DrawActorPics(&pics, picPos, b->renderToTex);
 		// Draw weapon indicators
 		DrawLaserSight(&pics, a, picPos);
 	}
