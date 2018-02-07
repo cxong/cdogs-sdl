@@ -209,21 +209,25 @@ void GraphicsInitialize(GraphicsDevice *g)
 
 	if (initRenderer)
 	{
-		Uint32 sdlFlags = SDL_WINDOW_RESIZABLE;
+		Uint32 windowFlags = SDL_WINDOW_RESIZABLE;
 		if (g->cachedConfig.Fullscreen)
 		{
-			sdlFlags |= SDL_WINDOW_FULLSCREEN;
+			windowFlags |= SDL_WINDOW_FULLSCREEN;
 		}
 
 		LOG(LM_GFX, LL_INFO, "graphics mode(%dx%d %dx)",
 			w, h, g->cachedConfig.ScaleFactor);
-		// Get the previous window's size and recreate it
-		struct vec2i windowSize = svec2i(
-			w * g->cachedConfig.ScaleFactor, h * g->cachedConfig.ScaleFactor);
+		// Get the previous window's dimensions and recreate it
+		Rect2i windowDim = Rect2iNew(
+			svec2i(SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED),
+			svec2i_scale(svec2i(w, h), (float)g->cachedConfig.ScaleFactor)
+		);
 		if (g->gameWindow.window)
 		{
+			SDL_GetWindowPosition(
+				g->gameWindow.window, &windowDim.Pos.x, &windowDim.Pos.y);
 			SDL_GetWindowSize(
-				g->gameWindow.window, &windowSize.x, &windowSize.y);
+				g->gameWindow.window, &windowDim.Size.x, &windowDim.Size.y);
 		}
 		LOG(LM_GFX, LL_DEBUG, "destroying previous renderer");
 		WindowContextDestroy(&g->gameWindow);
@@ -235,7 +239,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 			g->cachedConfig.IsEditor ? "Editor " : "",
 			CDOGS_SDL_VERSION);
 		if (!WindowContextCreate(
-				&g->gameWindow, windowSize, sdlFlags, title, g->icon,
+				&g->gameWindow, windowDim, windowFlags, title, g->icon,
 				svec2i(w, h)))
 		{
 			return;
@@ -243,7 +247,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 		if (g->cachedConfig.SecondWindow)
 		{
 			if (!WindowContextCreate(
-					&g->secondWindow, windowSize, sdlFlags, title, g->icon,
+					&g->secondWindow, windowDim, windowFlags, title, g->icon,
 					svec2i(w, h)))
 			{
 				return;
@@ -288,18 +292,32 @@ void GraphicsInitialize(GraphicsDevice *g)
 
 		CFREE(g->buf);
 		CCALLOC(g->buf, GraphicsGetMemSize(&g->cachedConfig));
+		g->bkgTgt = WindowContextCreateTexture(
+			&g->gameWindow, SDL_TEXTUREACCESS_TARGET, svec2i(w, h),
+			SDL_BLENDMODE_NONE, 255, true);
+		if (g->bkgTgt == NULL)
+		{
+			return;
+		}
 		g->bkg = WindowContextCreateTexture(
 			&g->gameWindow, SDL_TEXTUREACCESS_STATIC, svec2i(w, h),
-			SDL_BLENDMODE_NONE, 255, true);
+			SDL_BLENDMODE_BLEND, 255, true);
 		if (g->bkg == NULL)
 		{
 			return;
 		}
 		if (g->cachedConfig.SecondWindow)
 		{
-			g->bkg2 = WindowContextCreateTexture(
-				&g->secondWindow, SDL_TEXTUREACCESS_STATIC, svec2i(w, h),
+			g->bkgTgt2 = WindowContextCreateTexture(
+				&g->gameWindow, SDL_TEXTUREACCESS_TARGET, svec2i(w, h),
 				SDL_BLENDMODE_NONE, 255, true);
+			if (g->bkgTgt2 == NULL)
+			{
+				return;
+			}
+			g->bkg2 = WindowContextCreateTexture(
+				&g->secondWindow, SDL_TEXTUREACCESS_TARGET, svec2i(w, h),
+				SDL_BLENDMODE_BLEND, 255, true);
 			if (g->bkg2 == NULL)
 			{
 				return;

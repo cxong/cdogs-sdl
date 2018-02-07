@@ -30,25 +30,32 @@
 
 
 bool WindowContextCreate(
-	WindowContext *wc, const struct vec2i windowSize, const int sdlFlags,
-	const char *title, SDL_Surface *icon, const struct vec2i rendererLogicalSize)
+	WindowContext *wc, const Rect2i windowDim, const int windowFlags,
+	const char *title, SDL_Surface *icon,
+	const struct vec2i rendererLogicalSize)
 {
 	CArrayInit(&wc->texturesBkg, sizeof(SDL_Texture *));
 	CArrayInit(&wc->textures, sizeof(SDL_Texture *));
 
-	LOG(LM_GFX, LL_DEBUG, "creating window %dx%d flags(%X)",
-		windowSize.x, windowSize.y, sdlFlags);
-	if (SDL_CreateWindowAndRenderer(
-			windowSize.x, windowSize.y, sdlFlags,
-			&wc->window, &wc->renderer) == -1 ||
-		wc->window == NULL || wc->renderer == NULL)
+	LOG(LM_GFX, LL_DEBUG, "creating window (%d, %d) %dx%d flags(%X)",
+		windowDim.Pos.x, windowDim.Pos.y, windowDim.Size.x, windowDim.Size.y,
+		windowFlags);
+	wc->window = SDL_CreateWindow(
+		title, windowDim.Pos.x, windowDim.Pos.y,
+		windowDim.Size.x, windowDim.Size.y, windowFlags);
+	if (wc->window == NULL)
 	{
-		LOG(LM_GFX, LL_ERROR, "cannot create window or renderer: %s",
-			SDL_GetError());
+		LOG(LM_GFX, LL_ERROR, "cannot create window: %s", SDL_GetError());
 		return false;
 	}
-	LOG(LM_GFX, LL_DEBUG, "setting title(%s) and icon", title);
-	SDL_SetWindowTitle(wc->window, title);
+	wc->renderer = SDL_CreateRenderer(
+		wc->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+	if (wc->renderer == NULL)
+	{
+		LOG(LM_GFX, LL_ERROR, "cannot create renderer: %s", SDL_GetError());
+		return false;
+	}
+	LOG(LM_GFX, LL_DEBUG, "setting icon");
 	SDL_SetWindowIcon(wc->window, icon);
 
 	if (SDL_RenderSetLogicalSize(

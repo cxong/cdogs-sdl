@@ -43,10 +43,6 @@ void CameraInit(Camera *camera)
 	memset(camera, 0, sizeof *camera);
 	DrawBufferInit(
 		&camera->Buffer, svec2i(X_TILES, Y_TILES), &gGraphicsDevice);
-	if (SDL_SetRenderTarget(gGraphicsDevice.gameWindow.renderer, NULL) != 0)
-	{
-		LOG(LM_MAIN, LL_ERROR, "cannot set render target: %s", SDL_GetError());
-	}
 	camera->lastPosition = svec2_zero();
 	HUDInit(&camera->HUD, &gGraphicsDevice, &gMission);
 	camera->shake = ScreenShakeZero();

@@ -102,6 +102,8 @@ typedef struct
 	Uint32 *buf;
 	SDL_Texture *bkg;
 	SDL_Texture *bkg2;
+	SDL_Texture *bkgTgt;
+	SDL_Texture *bkgTgt2;
 	SDL_Texture *brightnessOverlay;
 } GraphicsDevice;
 

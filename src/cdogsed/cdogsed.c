@@ -151,14 +151,13 @@ static void MakeBackground(const bool changedMission)
 	}
 
 	// Clear background first
-	memset(ec.g->buf, 0, GraphicsGetMemSize(&ec.g->cachedConfig));
+	BlitClearBuf(ec.g);
 	GrafxDrawExtra extra;
 	extra.guideImage = brush.GuideImageSurface;
 	extra.guideImageAlpha = brush.GuideImageAlpha;
 
 	DrawBufferTerminate(&sDrawBuffer);
-	DrawBufferInit(
-		&sDrawBuffer, svec2i(X_TILES, Y_TILES), &gGraphicsDevice, true);
+	DrawBufferInit(&sDrawBuffer, svec2i(X_TILES, Y_TILES), &gGraphicsDevice);
 	GrafxMakeBackground(
 		ec.g, &sDrawBuffer, &gCampaign, &gMission, &gMap,
 		tintNone, true, ec.camera, &extra);
@@ -191,7 +190,7 @@ static void Display(HandleInputResult result)
 		if (result.RemakeBg || brush.IsGuideImageNew)
 		{
 			// Clear background first
-			memset(ec.g->buf, 0, GraphicsGetMemSize(&ec.g->cachedConfig));
+			BlitClearBuf(ec.g);
 			brush.IsGuideImageNew = false;
 			GrafxDrawExtra extra;
 			extra.guideImage = brush.GuideImageSurface;
@@ -1378,8 +1377,7 @@ int main(int argc, char *argv[])
 	// Note: must do this after text init since positions depend on text height
 	sObjs = CreateMainObjs(&gCampaign, &brush, svec2i(320, 240));
 	memset(&sDrawObjs, 0, sizeof sDrawObjs);
-	DrawBufferInit(
-		&sDrawBuffer, svec2i(X_TILES, Y_TILES), &gGraphicsDevice, true);
+	DrawBufferInit(&sDrawBuffer, svec2i(X_TILES, Y_TILES), &gGraphicsDevice);
 
 	// Reset campaign (graphics init may have created dummy campaigns)
 	CampaignSettingTerminate(&gCampaign.Setting);

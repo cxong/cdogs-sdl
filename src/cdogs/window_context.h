@@ -40,8 +40,9 @@ typedef struct
 } WindowContext;
 
 bool WindowContextCreate(
-	WindowContext *wc, const struct vec2i windowSize, const int sdlFlags,
-	const char *title, SDL_Surface *icon, const struct vec2i rendererLogicalSize);
+	WindowContext *wc, const Rect2i windowDim, const int windowFlags,
+	const char *title, SDL_Surface *icon,
+	const struct vec2i rendererLogicalSize);
 void WindowContextDestroy(WindowContext *wc);
 void WindowContextDestroyTextures(WindowContext *wc);
 
