@@ -91,8 +91,7 @@ ActorPics GetCharacterPics(
 	const bool isTransparent, HSV *tint, color_t *mask,
 	const int deadPic);
 ActorPics GetCharacterPicsFromActor(TActor *a);
-void DrawActorPics(
-	const ActorPics *pics, const struct vec2i pos, const bool renderToTex);
+void DrawActorPics(const ActorPics *pics, const struct vec2i pos);
 void DrawLaserSight(
 	const ActorPics *pics, const TActor *a, const struct vec2i picPos);
 void DrawActorHighlight(

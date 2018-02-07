@@ -60,12 +60,9 @@ typedef struct
 	struct vec2i Size;	// size in tiles
 	Tile **tiles;
 	CArray displaylist;	// of const TTileItem *, to determine draw order
-	bool renderToTex;
 } DrawBuffer;
 
-void DrawBufferInit(
-	DrawBuffer *b, struct vec2i size, GraphicsDevice *g,
-	const bool renderToTex);
+void DrawBufferInit(DrawBuffer *b, struct vec2i size, GraphicsDevice *g);
 void DrawBufferTerminate(DrawBuffer *b);
 
 void DrawBufferSetFromMap(

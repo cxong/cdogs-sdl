@@ -49,7 +49,7 @@ void GrafxMakeRandomBackground(
 		rand() * 360.0 / RAND_MAX, rand() * 1.0 / RAND_MAX, 0.5
 	};
 	DrawBuffer buffer;
-	DrawBufferInit(&buffer, svec2i(X_TILES, Y_TILES), device, true);
+	DrawBufferInit(&buffer, svec2i(X_TILES, Y_TILES), device);
 	co->MissionIndex = 0;
 	GrafxMakeBackground(
 		device, &buffer, co, mo, map, tint, false, svec2_zero(), NULL);
@@ -65,8 +65,17 @@ void GrafxDrawBackground(
 	GraphicsDevice *g, DrawBuffer *buffer,
 	const HSV tint, const struct vec2 pos, GrafxDrawExtra *extra)
 {
+	if (SDL_SetRenderTarget(g->gameWindow.renderer, g->bkg) != 0)
+	{
+		LOG(LM_MAIN, LL_ERROR, "cannot set render target: %s", SDL_GetError());
+	}
 	if (g->cachedConfig.SecondWindow)
 	{
+		if (SDL_SetRenderTarget(g->gameWindow.renderer, g->bkg2) != 0)
+		{
+			LOG(LM_MAIN, LL_ERROR, "cannot set render target: %s",
+				SDL_GetError());
+		}
 		DrawBackground(
 			g, g->bkg, buffer, &gMap, tint,
 			svec2(pos.x - g->cachedConfig.Res.x / 2, pos.y), extra);
@@ -99,7 +108,7 @@ void GrafxRedrawBackground(GraphicsDevice *g, const struct vec2 pos)
 {
 	memset(g->buf, 0, GraphicsGetMemSize(&g->cachedConfig));
 	DrawBuffer buffer;
-	DrawBufferInit(&buffer, svec2i(X_TILES, Y_TILES), g, true);
+	DrawBufferInit(&buffer, svec2i(X_TILES, Y_TILES), g);
 	const HSV tint = {
 		rand() * 360.0 / RAND_MAX, rand() * 1.0 / RAND_MAX, 0.5
 	};

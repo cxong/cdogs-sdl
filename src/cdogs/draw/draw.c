@@ -177,16 +177,9 @@ static void DrawFloor(DrawBuffer *b, struct vec2i offset)
 				{
 					continue;
 				}
-				if (b->renderToTex)
-				{
-					BlitMasked(&gGraphicsDevice, &pic->pic, pos, mask, false);
-				}
-				else
-				{
-					PicRender(
-						&pic->pic, gGraphicsDevice.gameWindow.renderer,
-						pos, mask);
-				}
+				PicRender(
+					&pic->pic, gGraphicsDevice.gameWindow.renderer,
+					pos, mask);
 			}
 		}
 		tile += X_TILES - b->Size.x;
@@ -305,7 +298,7 @@ static void DrawThing(DrawBuffer *b, const TTileItem *t, const struct vec2i offs
 
 	if (!svec2i_is_zero(t->ShadowSize))
 	{
-		DrawShadow(&gGraphicsDevice, picPos, t->ShadowSize, b->renderToTex);
+		DrawShadow(&gGraphicsDevice, picPos, t->ShadowSize);
 	}
 
 	if (t->CPicFunc)
@@ -322,7 +315,7 @@ static void DrawThing(DrawBuffer *b, const TTileItem *t, const struct vec2i offs
 	{
 		TActor *a = CArrayGet(&gActors, t->id);
 		ActorPics pics = GetCharacterPicsFromActor(a);
-		DrawActorPics(&pics, picPos, b->renderToTex);
+		DrawActorPics(&pics, picPos);
 		// Draw weapon indicators
 		DrawLaserSight(&pics, a, picPos);
 	}

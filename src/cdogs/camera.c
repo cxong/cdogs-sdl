@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2017 Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
@@ -31,6 +31,7 @@
 #include "draw/drawtools.h"
 #include "events.h"
 #include "font.h"
+#include "log.h"
 #include "los.h"
 #include "player.h"
 
@@ -41,7 +42,11 @@ void CameraInit(Camera *camera)
 {
 	memset(camera, 0, sizeof *camera);
 	DrawBufferInit(
-		&camera->Buffer, svec2i(X_TILES, Y_TILES), &gGraphicsDevice, false);
+		&camera->Buffer, svec2i(X_TILES, Y_TILES), &gGraphicsDevice);
+	if (SDL_SetRenderTarget(gGraphicsDevice.gameWindow.renderer, NULL) != 0)
+	{
+		LOG(LM_MAIN, LL_ERROR, "cannot set render target: %s", SDL_GetError());
+	}
 	camera->lastPosition = svec2_zero();
 	HUDInit(&camera->HUD, &gGraphicsDevice, &gMission);
 	camera->shake = ScreenShakeZero();

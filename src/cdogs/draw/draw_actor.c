@@ -245,8 +245,7 @@ static Character *ActorGetCharacterMutable(TActor *a)
 
 static void DrawDyingBody(
 	GraphicsDevice *g, const ActorPics *pics, const struct vec2i pos);
-void DrawActorPics(
-	const ActorPics *pics, const struct vec2i pos, const bool renderToTex)
+void DrawActorPics(const ActorPics *pics, const struct vec2i pos)
 {
 	if (pics->IsDead)
 	{
@@ -260,7 +259,7 @@ void DrawActorPics(
 		// Draw shadow
 		if (!pics->IsTransparent)
 		{
-			DrawShadow(&gGraphicsDevice, pos, svec2i(8, 6), renderToTex);
+			DrawShadow(&gGraphicsDevice, pos, svec2i(8, 6));
 		}
 		for (int i = 0; i < BODY_PART_COUNT; i++)
 		{
@@ -460,7 +459,7 @@ void DrawCharacterSimple(
 	ActorPics pics = GetCharacterPics(
 		c, d, ACTORANIMATION_IDLE, 0, NULL, GUNSTATE_READY,
 		false, NULL, NULL, 0);
-	DrawActorPics(&pics, pos, true);
+	DrawActorPics(&pics, pos);
 	if (hilite)
 	{
 		FontCh('>', svec2i_add(pos, svec2i(-8, -16)));

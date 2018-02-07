@@ -255,63 +255,15 @@ void DrawCross(GraphicsDevice *device, int x, int y, color_t color)
 }
 
 // Note: size is half-size
-void DrawShadow(
-	GraphicsDevice *g, struct vec2i pos, struct vec2i size,
-	const bool renderToTex)
+void DrawShadow(GraphicsDevice *g, struct vec2i pos, struct vec2i size)
 {
 	if (!ConfigGetBool(&gConfig, "Graphics.Shadows"))
 	{
 		return;
 	}
-	if (renderToTex)
-	{
-		struct vec2i drawPos;
-		for (drawPos.y = pos.y - size.y;
-			drawPos.y < pos.y + size.y;
-			drawPos.y++)
-		{
-			if (drawPos.y >= g->clipping.bottom)
-			{
-				break;
-			}
-			if (drawPos.y < g->clipping.top)
-			{
-				continue;
-			}
-			for (drawPos.x = pos.x - size.x;
-				drawPos.x < pos.x + size.x;
-				drawPos.x++)
-			{
-				// Calculate value tint based on distance from center
-				struct vec2i scaledPos;
-				int distance2;
-				if (drawPos.x >= g->clipping.right)
-				{
-					break;
-				}
-				if (drawPos.x < g->clipping.left)
-				{
-					continue;
-				}
-				scaledPos.x = drawPos.x;
-				scaledPos.y = (drawPos.y - pos.y) * size.x / size.y + pos.y;
-				distance2 = svec2i_distance_squared(scaledPos, pos);
-				// Maximum distance is x, so scale distance squared by x squared
-				const HSV tint =
-				{
-					-1.0, 1.0,
-					CLAMP(distance2 * 1.0 / (size.x*size.x), 0.0, 1.0)
-				};
-				DrawPointTint(g, drawPos, tint);
-			}
-		}
-	}
-	else
-	{
-		const Pic *shadow = PicManagerGetPic(&gPicManager, "shadow");
-		const Rect2i dest =
-			Rect2iNew(svec2i_subtract(pos, size), svec2i_scale(size, 2));
-		TextureRender(
-			shadow->Tex, g->gameWindow.renderer, dest, colorTransparent);
-	}
+	const Pic *shadow = PicManagerGetPic(&gPicManager, "shadow");
+	const Rect2i dest =
+		Rect2iNew(svec2i_subtract(pos, size), svec2i_scale(size, 2));
+	TextureRender(
+		shadow->Tex, g->gameWindow.renderer, dest, colorTransparent);
 }

@@ -79,6 +79,4 @@ void DrawRectangle(
 //  *
 void DrawCross(GraphicsDevice *device, int x, int y, color_t color);
 
-void DrawShadow(
-	GraphicsDevice *g, struct vec2i pos, struct vec2i size,
-	const bool renderToTex);
+void DrawShadow(GraphicsDevice *g, struct vec2i pos, struct vec2i size);

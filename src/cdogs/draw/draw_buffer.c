@@ -54,9 +54,7 @@
 #include "los.h"
 
 
-void DrawBufferInit(
-	DrawBuffer *b, struct vec2i size, GraphicsDevice *g,
-	const bool renderToTex)
+void DrawBufferInit(DrawBuffer *b, struct vec2i size, GraphicsDevice *g)
 {
 	b->OrigSize = size;
 	CMALLOC(b->tiles, size.x * sizeof *b->tiles);
@@ -68,7 +66,6 @@ void DrawBufferInit(
 	b->g = g;
 	CArrayInit(&b->displaylist, sizeof(const TTileItem *));
 	CArrayReserve(&b->displaylist, 32);
-	b->renderToTex = renderToTex;
 }
 void DrawBufferTerminate(DrawBuffer *b)
 {
