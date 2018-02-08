@@ -59,7 +59,7 @@
 #include "window_context.h"
 
 
-#define RESTART_RESOLUTION 1
+#define RESTART_WINDOW 1
 #define RESTART_SCALE_MODE 2
 #define RESTART_BRIGHTNESS 4
 #define RESTART_ALL -1

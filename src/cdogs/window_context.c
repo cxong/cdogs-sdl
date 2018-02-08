@@ -34,9 +34,6 @@ bool WindowContextCreate(
 	const char *title, SDL_Surface *icon,
 	const struct vec2i rendererLogicalSize)
 {
-	CArrayInit(&wc->texturesBkg, sizeof(SDL_Texture *));
-	CArrayInit(&wc->textures, sizeof(SDL_Texture *));
-
 	LOG(LM_GFX, LL_DEBUG, "creating window (%d, %d) %dx%d flags(%X)",
 		windowDim.Pos.x, windowDim.Pos.y, windowDim.Size.x, windowDim.Size.y,
 		windowFlags);
@@ -58,8 +55,20 @@ bool WindowContextCreate(
 	LOG(LM_GFX, LL_DEBUG, "setting icon");
 	SDL_SetWindowIcon(wc->window, icon);
 
+	if (!WindowContextInitTextures(wc, rendererLogicalSize))
+	{
+		return false;
+	}
+	return true;
+}
+bool WindowContextInitTextures(
+	WindowContext *wc, const struct vec2i rendererLogicalSize)
+{
+	CArrayInit(&wc->texturesBkg, sizeof(SDL_Texture *));
+	CArrayInit(&wc->textures, sizeof(SDL_Texture *));
+
 	if (SDL_RenderSetLogicalSize(
-			wc->renderer, rendererLogicalSize.x, rendererLogicalSize.y) != 0)
+		wc->renderer, rendererLogicalSize.x, rendererLogicalSize.y) != 0)
 	{
 		LOG(LM_GFX, LL_ERROR, "cannot set renderer logical size: %s",
 			SDL_GetError());

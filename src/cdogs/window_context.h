@@ -43,6 +43,8 @@ bool WindowContextCreate(
 	WindowContext *wc, const Rect2i windowDim, const int windowFlags,
 	const char *title, SDL_Surface *icon,
 	const struct vec2i rendererLogicalSize);
+bool WindowContextInitTextures(
+	WindowContext *wc, const struct vec2i rendererLogicalSize);
 void WindowContextDestroy(WindowContext *wc);
 void WindowContextDestroyTextures(WindowContext *wc);
 

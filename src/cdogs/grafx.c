@@ -146,6 +146,7 @@ void GraphicsInit(GraphicsDevice *device, Config *c)
 	AddGraphicsMode(device, 400, 300);
 	AddGraphicsMode(device, 640, 480);
 	GraphicsConfigSetFromConfig(&device->cachedConfig, c);
+	device->cachedConfig.RestartFlags = RESTART_ALL;
 }
 
 static void AddSupportedGraphicsModes(GraphicsDevice *device)
@@ -198,36 +199,30 @@ void GraphicsInitialize(GraphicsDevice *g)
 	const int w = g->cachedConfig.Res.x;
 	const int h = g->cachedConfig.Res.y;
 
-	const bool initRenderer =
-		!!(g->cachedConfig.RestartFlags & RESTART_RESOLUTION);
+	const bool initWindow =
+		!!(g->cachedConfig.RestartFlags & RESTART_WINDOW);
 	const bool initTextures =
 		!!(g->cachedConfig.RestartFlags &
-		(RESTART_RESOLUTION | RESTART_SCALE_MODE));
+		(RESTART_WINDOW | RESTART_SCALE_MODE));
 	const bool initBrightness =
 		!!(g->cachedConfig.RestartFlags &
-		(RESTART_RESOLUTION | RESTART_SCALE_MODE | RESTART_BRIGHTNESS));
+		(RESTART_WINDOW | RESTART_SCALE_MODE | RESTART_BRIGHTNESS));
 
-	if (initRenderer)
+	if (initWindow)
 	{
-		Uint32 windowFlags = SDL_WINDOW_RESIZABLE;
-		if (g->cachedConfig.Fullscreen)
-		{
-			windowFlags |= SDL_WINDOW_FULLSCREEN;
-		}
+		LOG(LM_GFX, LL_INFO, "graphics mode(%dx%d %dx%s)",
+			w, h, g->cachedConfig.ScaleFactor,
+			g->cachedConfig.Fullscreen ? " fullscreen" : "");
 
-		LOG(LM_GFX, LL_INFO, "graphics mode(%dx%d %dx)",
-			w, h, g->cachedConfig.ScaleFactor);
-		// Get the previous window's dimensions and recreate it
+		Uint32 windowFlags = SDL_WINDOW_RESIZABLE;
 		Rect2i windowDim = Rect2iNew(
 			svec2i(SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED),
 			svec2i_scale(svec2i(w, h), (float)g->cachedConfig.ScaleFactor)
 		);
-		if (g->gameWindow.window)
+		if (g->cachedConfig.Fullscreen)
 		{
-			SDL_GetWindowPosition(
-				g->gameWindow.window, &windowDim.Pos.x, &windowDim.Pos.y);
-			SDL_GetWindowSize(
-				g->gameWindow.window, &windowDim.Size.x, &windowDim.Size.y);
+			windowFlags |= SDL_WINDOW_FULLSCREEN;
+			windowDim.Size = svec2i(w, h);
 		}
 		LOG(LM_GFX, LL_DEBUG, "destroying previous renderer");
 		WindowContextDestroy(&g->gameWindow);
@@ -256,18 +251,20 @@ void GraphicsInitialize(GraphicsDevice *g)
 		}
 
 		g->Format = SDL_AllocFormat(SDL_PIXELFORMAT_ARGB8888);
-
-		GraphicsSetBlitClip(
-			g, 0, 0, g->cachedConfig.Res.x - 1, g->cachedConfig.Res.y - 1);
 	}
 
 	if (initTextures)
 	{
-		if (!initRenderer)
+		if (!initWindow)
 		{
 			WindowContextDestroyTextures(&g->gameWindow);
 			WindowContextDestroyTextures(&g->secondWindow);
+			WindowContextInitTextures(&g->gameWindow, svec2i(w, h));
+			WindowContextInitTextures(&g->secondWindow, svec2i(w, h));
 		}
+
+		GraphicsSetBlitClip(
+			g, 0, 0, g->cachedConfig.Res.x - 1, g->cachedConfig.Res.y - 1);
 
 		// Set render scale mode
 		const char *renderScaleQuality = "nearest";
@@ -358,7 +355,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 
 	if (initBrightness)
 	{
-		if (!initRenderer && !initTextures)
+		if (!initWindow && !initTextures)
 		{
 			SDL_DestroyTexture(g->brightnessOverlay);
 		}
@@ -416,7 +413,7 @@ void GraphicsConfigSet(
 	if (!svec2i_is_equal(res, c->Res))
 	{
 		c->Res = res;
-		c->RestartFlags |= RESTART_RESOLUTION;
+		c->RestartFlags |= RESTART_SCALE_MODE;
 	}
 #define SET(_lhs, _rhs, _flag) \
 	if ((_lhs) != (_rhs)) \
@@ -424,11 +421,11 @@ void GraphicsConfigSet(
 		(_lhs) = (_rhs); \
 		c->RestartFlags |= (_flag); \
 	}
-	SET(c->Fullscreen, fullscreen, RESTART_RESOLUTION);
-	SET(c->ScaleFactor, scaleFactor, RESTART_RESOLUTION);
+	SET(c->Fullscreen, fullscreen, RESTART_WINDOW);
+	SET(c->ScaleFactor, scaleFactor, RESTART_SCALE_MODE);
 	SET(c->ScaleMode, scaleMode, RESTART_SCALE_MODE);
 	SET(c->Brightness, brightness, RESTART_BRIGHTNESS);
-	SET(c->SecondWindow, secondWindow, RESTART_RESOLUTION);
+	SET(c->SecondWindow, secondWindow, RESTART_WINDOW);
 }
 
 void GraphicsConfigSetFromConfig(GraphicsConfig *gc, Config *c)

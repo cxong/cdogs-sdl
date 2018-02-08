@@ -47,7 +47,7 @@ bool ConfigApply(Config *config)
 		GraphicsConfigSetFromConfig(&gGraphicsDevice.cachedConfig, config);
 		const bool makeBackground =
 			gGraphicsDevice.cachedConfig.RestartFlags &
-			(RESTART_RESOLUTION | RESTART_SCALE_MODE);
+			(RESTART_WINDOW | RESTART_SCALE_MODE);
 		GraphicsInitialize(&gGraphicsDevice);
 		if (makeBackground)
 		{
