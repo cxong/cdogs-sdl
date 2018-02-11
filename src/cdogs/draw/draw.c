@@ -92,32 +92,35 @@ static TileLOS GetTileLOS(const Tile *tile, const bool useFog)
 	}
 	return TILE_LOS_NORMAL;
 }
+static void DrawLOSPic(
+	const Tile *tile, const Pic *pic, const struct vec2i pos,
+	const bool useFog)
+{
+	color_t mask = colorWhite;
+	switch (GetTileLOS(tile, useFog))
+	{
+	case TILE_LOS_NORMAL:
+		break;
+	case TILE_LOS_FOG:
+		mask = colorFog;
+		break;
+	case TILE_LOS_NONE:
+	default:
+		// don't draw
+		pic = NULL;
+		break;
+	}
+	if (pic != NULL)
+	{
+		PicRender(pic, gGraphicsDevice.gameWindow.renderer, pos, mask);
+	}
+}
 void DrawWallColumn(int y, struct vec2i pos, Tile *tile)
 {
 	const bool useFog = ConfigGetBool(&gConfig, "Game.Fog");
 	while (y >= 0 && (tile->flags & MAPTILE_IS_WALL))
 	{
-		const NamedPic *pic = tile->pic;
-		color_t mask = colorWhite;
-		switch (GetTileLOS(tile, useFog))
-		{
-		case TILE_LOS_NORMAL:
-			break;
-		case TILE_LOS_FOG:
-			mask = colorFog;
-			break;
-		case TILE_LOS_NONE:
-		default:
-			// don't draw
-			pic = NULL;
-			break;
-		}
-		if (pic != NULL)
-		{
-			PicRender(
-				&pic->pic, gGraphicsDevice.gameWindow.renderer,
-				pos, mask);
-		}
+		DrawLOSPic(tile, &tile->pic->pic, pos, useFog);
 		pos.y -= TILE_HEIGHT;
 		tile -= X_TILES;
 		y--;
@@ -166,28 +169,7 @@ static void DrawFloor(DrawBuffer *b, struct vec2i offset)
 			if (tile->pic != NULL && tile->pic->pic.Data != NULL &&
 				!(tile->flags & MAPTILE_IS_WALL))
 			{
-				const NamedPic *pic = tile->pic;
-				color_t mask = colorWhite;
-				switch (GetTileLOS(tile, useFog))
-				{
-				case TILE_LOS_NORMAL:
-					break;
-				case TILE_LOS_FOG:
-					mask = colorFog;
-					break;
-				case TILE_LOS_NONE:
-				default:
-					// don't draw
-					pic = NULL;
-					break;
-				}
-				if (pic == NULL)
-				{
-					continue;
-				}
-				PicRender(
-					&pic->pic, gGraphicsDevice.gameWindow.renderer,
-					pos, mask);
+				DrawLOSPic(tile, &tile->pic->pic, pos, useFog);
 			}
 		}
 		tile += X_TILES - b->Size.x;
@@ -257,24 +239,7 @@ static void DrawWallsAndThings(DrawBuffer *b, struct vec2i offset)
 					doorPos.y +=
 						TILE_HEIGHT - (tile->picAlt->pic.size.y % TILE_HEIGHT);
 				}
-				switch (GetTileLOS(tile, useFog))
-				{
-				case TILE_LOS_NORMAL:
-					Blit(&gGraphicsDevice, &tile->picAlt->pic, doorPos);
-					break;
-				case TILE_LOS_FOG:
-					BlitMasked(
-						&gGraphicsDevice,
-						&tile->picAlt->pic,
-						doorPos,
-						colorFog,
-						false);
-					break;
-				case TILE_LOS_NONE:
-				default:
-					// don't draw anything
-					break;
-				}
+				DrawLOSPic(tile, &tile->picAlt->pic, doorPos, useFog);
 			}
 
 			// Draw the items that are in LOS
