@@ -186,7 +186,8 @@ static void DrawFloor(DrawBuffer *b, struct vec2i offset)
 	}
 }
 
-static void DrawThing(DrawBuffer *b, const TTileItem *t, const struct vec2i offset);
+static void DrawThing(
+	DrawBuffer *b, const TTileItem *t, const struct vec2i offset);
 
 static void DrawDebris(DrawBuffer *b, struct vec2i offset)
 {
@@ -290,7 +291,8 @@ static void DrawWallsAndThings(DrawBuffer *b, struct vec2i offset)
 		tile += X_TILES - b->Size.x;
 	}
 }
-static void DrawThing(DrawBuffer *b, const TTileItem *t, const struct vec2i offset)
+static void DrawThing(
+	DrawBuffer *b, const TTileItem *t, const struct vec2i offset)
 {
 	const struct vec2i picPos = svec2i(
 		(int)t->Pos.x - b->xTop + offset.x,
@@ -309,7 +311,9 @@ static void DrawThing(DrawBuffer *b, const TTileItem *t, const struct vec2i offs
 	{
 		struct vec2i picOffset;
 		const Pic *pic = t->getPicFunc(t->id, &picOffset);
-		Blit(&gGraphicsDevice, pic, svec2i_add(picPos, picOffset));
+		const struct vec2i drawPos = svec2i_add(picPos, picOffset);
+		PicRender(
+			pic, gGraphicsDevice.gameWindow.renderer, drawPos, colorWhite);
 	}
 	else if (t->kind == KIND_CHARACTER)
 	{

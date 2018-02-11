@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2016, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -280,12 +280,11 @@ void CPicDraw(
 		return;
 	}
 	const struct vec2i picPos = svec2i_add(pos, context->Offset);
-	if (p->UseMask)
+	color_t mask = p->u1.Mask;
+	if (!p->UseMask)
 	{
-		BlitMasked(g, pic, picPos, p->u1.Mask, true);
+		mask = ColorTint(colorWhite, p->u1.Tint);
+		mask.a = 128;
 	}
-	else
-	{
-		BlitBackground(g, pic, picPos, &p->u1.Tint, true);
-	}
+	PicRender(pic, g->gameWindow.renderer, picPos, mask);
 }
