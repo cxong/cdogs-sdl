@@ -97,18 +97,26 @@ void DrawWallColumn(int y, struct vec2i pos, Tile *tile)
 	const bool useFog = ConfigGetBool(&gConfig, "Game.Fog");
 	while (y >= 0 && (tile->flags & MAPTILE_IS_WALL))
 	{
+		const NamedPic *pic = tile->pic;
+		color_t mask = colorWhite;
 		switch (GetTileLOS(tile, useFog))
 		{
 		case TILE_LOS_NORMAL:
-			Blit(&gGraphicsDevice, &tile->pic->pic, pos);
 			break;
 		case TILE_LOS_FOG:
-			BlitMasked(&gGraphicsDevice, &tile->pic->pic, pos, colorFog, false);
+			mask = colorFog;
 			break;
 		case TILE_LOS_NONE:
 		default:
-			// don't draw anything
+			// don't draw
+			pic = NULL;
 			break;
+		}
+		if (pic != NULL)
+		{
+			PicRender(
+				&pic->pic, gGraphicsDevice.gameWindow.renderer,
+				pos, mask);
 		}
 		pos.y -= TILE_HEIGHT;
 		tile -= X_TILES;
