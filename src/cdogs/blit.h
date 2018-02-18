@@ -73,9 +73,6 @@ typedef enum
 } CharColorType;
 color_t *CharColorGetByType(CharColors *c, const CharColorType t);
 
-void BlitBackground(
-	GraphicsDevice *device,
-	const Pic *pic, struct vec2i pos, const HSV *tint, const bool isTransparent);
 void Blit(GraphicsDevice *device, const Pic *pic, struct vec2i pos);
 void BlitMasked(
 	GraphicsDevice *device,

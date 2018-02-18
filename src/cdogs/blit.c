@@ -125,57 +125,6 @@ void BlitPicHighlight(
 	}
 }
 
-void BlitBackground(
-	GraphicsDevice *device,
-	const Pic *pic, struct vec2i pos, const HSV *tint, const bool isTransparent)
-{
-	Uint32 *current = pic->Data;
-	pos = svec2i_add(pos, pic->offset);
-	for (int i = 0; i < pic->size.y; i++)
-	{
-		int yoff = i + pos.y;
-		if (yoff > device->clipping.bottom)
-		{
-			break;
-		}
-		if (yoff < device->clipping.top)
-		{
-			current += pic->size.x;
-			continue;
-		}
-		yoff *= device->cachedConfig.Res.x;
-		for (int j = 0; j < pic->size.x; j++)
-		{
-			int xoff = j + pos.x;
-			if (xoff < device->clipping.left)
-			{
-				current++;
-				continue;
-			}
-			if (xoff > device->clipping.right)
-			{
-				current += pic->size.x - j;
-				break;
-			}
-			if ((isTransparent && *current) ||  !isTransparent)
-			{
-				Uint32 *target = gGraphicsDevice.buf + yoff + xoff;
-				if (tint != NULL)
-				{
-					const color_t targetColor = PIXEL2COLOR(*target);
-					const color_t blendedColor = ColorTint(targetColor, *tint);
-					*target = COLOR2PIXEL(blendedColor);
-				}
-				else
-				{
-					*target = *current;
-				}
-			}
-			current++;
-		}
-	}
-}
-
 void Blit(GraphicsDevice *device, const Pic *pic, struct vec2i pos)
 {
 	Uint32 *current = pic->Data;

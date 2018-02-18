@@ -271,12 +271,17 @@ void DrawActorPics(const ActorPics *pics, const struct vec2i pos)
 			const struct vec2i drawPos = svec2i_add(pos, pics->OrderedOffsets[i]);
 			if (pics->IsTransparent)
 			{
-				BlitBackground(
-					&gGraphicsDevice, pic, drawPos, pics->Tint, true);
+				color_t mask = ColorTint(colorWhite, *pics->Tint);
+				mask.a = 64;
+				PicRender(
+					pic, gGraphicsDevice.gameWindow.renderer, drawPos,
+					mask);
 			}
 			else if (pics->Mask != NULL)
 			{
-				BlitMasked(&gGraphicsDevice, pic, drawPos, *pics->Mask, true);
+				PicRender(
+					pic, gGraphicsDevice.gameWindow.renderer, drawPos,
+					*pics->Mask);
 			}
 			else
 			{
@@ -486,5 +491,5 @@ static void DrawDyingBody(
 	const struct vec2i drawPos = svec2i_subtract(pos, svec2i(
 		body->size.x / 2, body->size.y / 2 + DYING_BODY_OFFSET));
 	const color_t mask = pics->Mask != NULL ? *pics->Mask : colorWhite;
-	BlitMasked(g, pics->Body, drawPos, mask, true);
+	PicRender(body, g->gameWindow.renderer, drawPos, mask);
 }
