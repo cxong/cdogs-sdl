@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2016, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -68,13 +68,7 @@ typedef struct
 			int TicksPerFrame;
 		} Animated;
 	} u;
-	// Special draw options
-	bool UseMask;
-	union
-	{
-		color_t Mask;
-		HSV Tint;
-	} u1;
+	color_t Mask;
 } CPic;
 typedef struct
 {

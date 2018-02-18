@@ -493,8 +493,7 @@ static void SetupSpawner(
 	CSTRDUP(m->Name, spawnerName);
 	m->Pic.Type = PICTYPE_NORMAL;
 	m->Pic.u.Pic = PicManagerGetPic(&gPicManager, "spawn_pad");
-	m->Pic.UseMask = true;
-	m->Pic.u1.Mask = colorWhite;
+	m->Pic.Mask = colorWhite;
 	const struct vec2i size = CPicGetSize(&m->Pic);
 	m->Offset = svec2i(-size.x / 2, TILE_HEIGHT / 2 - size.y);
 	m->Size = TILE_SIZE;

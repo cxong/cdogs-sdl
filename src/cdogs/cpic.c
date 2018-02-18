@@ -125,8 +125,7 @@ void CPicLoadNormal(CPic *p, json_t *node)
 {
 	p->Type = PICTYPE_NORMAL;
 	LoadNormal(p, node);
-	p->UseMask = true;
-	p->u1.Mask = colorWhite;
+	p->Mask = colorWhite;
 }
 
 static void LoadNormal(CPic *p, json_t *node)
@@ -138,23 +137,24 @@ static void LoadNormal(CPic *p, json_t *node)
 
 static void LoadMaskTint(CPic *p, json_t *node)
 {
-	p->UseMask = true;
-	p->u1.Mask = colorWhite;
+	p->Mask = colorWhite;
 	if (json_find_first_label(node, "Mask"))
 	{
 		char *tmp = GetString(node, "Mask");
-		p->u1.Mask = StrColor(tmp);
+		p->Mask = StrColor(tmp);
 		CFREE(tmp);
 	}
 	else if (json_find_first_label(node, "Tint"))
 	{
-		p->UseMask = false;
 		json_t *tint = json_find_first_label(node, "Tint")->child->child;
-		p->u1.Tint.h = atof(tint->text);
+		HSV hsv;
+		hsv.h = atof(tint->text);
 		tint = tint->next;
-		p->u1.Tint.s = atof(tint->text);
+		hsv.s = atof(tint->text);
 		tint = tint->next;
-		p->u1.Tint.v = atof(tint->text);
+		hsv.v = atof(tint->text);
+		p->Mask = ColorTint(colorWhite, hsv);
+		p->Mask.a = 0x40;
 	}
 }
 
@@ -187,26 +187,7 @@ struct vec2i CPicGetSize(const CPic *p)
 
 void CPicCopyPic(CPic *dest, const CPic *src)
 {
-	dest->Type = src->Type;
-	switch (src->Type)
-	{
-	case PICTYPE_NORMAL:
-		dest->u.Pic = src->u.Pic;
-		break;
-	case PICTYPE_DIRECTIONAL:
-		dest->u.Sprites = src->u.Sprites;
-		break;
-	case PICTYPE_ANIMATED:
-	case PICTYPE_ANIMATED_RANDOM:
-		dest->u.Animated.Sprites = src->u.Sprites;
-		dest->u.Animated.TicksPerFrame = src->u.Animated.TicksPerFrame;
-		break;
-	default:
-		CASSERT(false, "unknown pic type");
-		break;
-	}
-	dest->UseMask = src->UseMask;
-	dest->u1 = src->u1;
+	memcpy(dest, src, sizeof *src);
 }
 
 void CPicUpdate(CPic *p, const int ticks)
@@ -280,11 +261,5 @@ void CPicDraw(
 		return;
 	}
 	const struct vec2i picPos = svec2i_add(pos, context->Offset);
-	color_t mask = p->u1.Mask;
-	if (!p->UseMask)
-	{
-		mask = ColorTint(colorWhite, p->u1.Tint);
-		mask.a = 128;
-	}
-	PicRender(pic, g->gameWindow.renderer, picPos, mask);
+	PicRender(pic, g->gameWindow.renderer, picPos, p->Mask);
 }

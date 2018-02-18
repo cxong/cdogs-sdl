@@ -58,11 +58,18 @@ void TextureRender(
 	const SDL_Rect destRect = {
 		dest.Pos.x, dest.Pos.y, dest.Size.x, dest.Size.y
 	};
-	if (!ColorEquals(mask, colorTransparent) &&
-		SDL_SetTextureColorMod(t, mask.r, mask.g, mask.b) != 0)
+	if (!ColorEquals(mask, colorTransparent))
 	{
-		LOG(LM_MAIN, LL_ERROR, "Failed to set texture mask: %s",
-			SDL_GetError());
+		if (SDL_SetTextureColorMod(t, mask.r, mask.g, mask.b) != 0)
+		{
+			LOG(LM_MAIN, LL_ERROR, "Failed to set texture mask: %s",
+				SDL_GetError());
+		}
+		if (mask.a < 255 && SDL_SetTextureAlphaMod(t, mask.a) != 0)
+		{
+			LOG(LM_MAIN, LL_ERROR, "Failed to set texture alpha: %s",
+				SDL_GetError());
+		}
 	}
 	if (SDL_RenderCopy(r, t, NULL, Rect2iIsZero(dest) ? NULL : &destRect) != 0)
 	{

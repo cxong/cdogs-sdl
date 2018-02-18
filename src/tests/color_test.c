@@ -209,6 +209,18 @@ FEATURE(StrColor, "String conversion")
 			color_t expected = { 100, 149, 237, 255 };
 			SHOULD_BE_TRUE(ColorEquals(result, expected));
 	SCENARIO_END
+
+	SCENARIO("Convert from hex with alpha")
+		GIVEN("a hex string")
+			const char *str = "aabbccdd";
+
+		WHEN("I convert it into a color")
+			color_t result = StrColor(str);
+
+		THEN("the result should be the expected color")
+			color_t expected = { 0xaa, 0xbb, 0xcc, 0xdd };
+			SHOULD_BE_TRUE(ColorEquals(result, expected));
+	SCENARIO_END
 	
 	SCENARIO("Convert invalid string")
 		GIVEN("an invalid string")

@@ -241,7 +241,7 @@
         "Type": "AnimatedRandom",
         "Sprites": "gas_cloud",
         "TicksPerFrame": 4,
-        "Tint": [120.0, 0.33, 2.0]
+        "Mask": "99ff9940"
       },
       "Speed": 384,
       "Friction": 4,
@@ -507,7 +507,7 @@
         "Type": "AnimatedRandom",
         "Sprites": "gas_cloud",
         "TicksPerFrame": 4,
-        "Tint": [120.0, 0.33, 2.0]
+        "Mask": "99ff9940"
       },
       "SpeedLow": 0,
       "SpeedHigh": 255,
@@ -533,7 +533,7 @@
         "Type": "AnimatedRandom",
         "Sprites": "gas_cloud",
         "TicksPerFrame": 4,
-        "Tint": [300.0, 1.0, 1.0]
+        "Mask": "40004080"
       },
       "SpeedLow": 0,
       "SpeedHigh": 255,

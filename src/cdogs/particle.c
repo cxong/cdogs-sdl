@@ -125,8 +125,7 @@ static void LoadParticleClass(
 	c->Type = PARTICLE_PIC;
 	if (version < 2)
 	{
-		c->u.Pic.UseMask = true;
-		c->u.Pic.u1.Mask = colorWhite;
+		c->u.Pic.Mask = colorWhite;
 		if (json_find_first_label(node, "Sprites"))
 		{
 			tmp = GetString(node, "Sprites");
@@ -142,7 +141,7 @@ static void LoadParticleClass(
 		if (json_find_first_label(node, "Mask"))
 		{
 			tmp = GetString(node, "Mask");
-			c->u.Pic.u1.Mask = StrColor(tmp);
+			c->u.Pic.Mask = StrColor(tmp);
 			CFREE(tmp);
 		}
 		int ticksPerFrame = 0;

@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2017 Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -206,13 +206,26 @@ bool HSVEquals(const HSV a, const HSV b)
 
 color_t StrColor(const char *s)
 {
-	if (s == NULL || strlen(s) != 6)
+	if (s == NULL)
 	{
 		return colorBlack;
 	}
-	int hex = (int)strtol(s, NULL, 16);
+	const int len = strlen(s);
+	if (len != 6 && len != 8)
+	{
+		return colorBlack;
+	}
+	long long hex = strtoll(s, NULL, 16);
 	color_t c;
-	c.a = 255;
+	if (len == 6)
+	{
+		c.a = 255;
+	}
+	else
+	{
+		c.a = hex & 255;
+		hex >>= 8;
+	}
 	c.r = (hex >> 16) & 255;
 	c.g = (hex >> 8) & 255;
 	c.b = hex & 255;
