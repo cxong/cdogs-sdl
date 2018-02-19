@@ -279,9 +279,17 @@ void DrawActorPics(const ActorPics *pics, const struct vec2i pos)
 			}
 			else if (pics->Mask != NULL)
 			{
-				PicRender(
-					pic, gGraphicsDevice.gameWindow.renderer, drawPos,
-					*pics->Mask);
+				// Mask a white version of the actor
+				// TODO: texture rendering
+				const CharColors colors = {
+					*pics->Mask,
+					*pics->Mask,
+					*pics->Mask,
+					*pics->Mask,
+					*pics->Mask
+				};
+				BlitCharMultichannel(
+					&gGraphicsDevice, pic, drawPos, &colors);
 			}
 			else
 			{
