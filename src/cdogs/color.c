@@ -195,7 +195,7 @@ color_t ColorTint(color_t c, HSV hsv)
 
 bool ColorEquals(const color_t a, const color_t b)
 {
-	return a.r == b.r && a.g == b.g && a.b == b.b;
+	return a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a;
 }
 bool HSVEquals(const HSV a, const HSV b)
 {

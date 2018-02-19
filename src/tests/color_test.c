@@ -247,10 +247,42 @@ FEATURE(StrColor, "String conversion")
 	SCENARIO_END
 FEATURE_END
 
+FEATURE(ColorEquals, "Color equals")
+	SCENARIO("Same RGBA")
+		GIVEN("two colors with the same values")
+			color_t c1, c2;
+			c1.r = c2.r = 123;
+			c1.g = c2.g = 45;
+			c1.b = c2.b = 67;
+			c1.a = c2.a = 89;
+
+		WHEN("I compare them")
+
+		THEN("the result should be true")
+			SHOULD_BE_TRUE(ColorEquals(c1, c2));
+	SCENARIO_END
+
+	SCENARIO("Different alpha")
+		GIVEN("two colors with the same values except A")
+			color_t c1, c2;
+			c1.r = c2.r = 123;
+			c1.g = c2.g = 45;
+			c1.b = c2.b = 67;
+			c1.a = 12;
+			c2.a = 34;
+
+		WHEN("I compare them")
+
+		THEN("the result should be false")
+			SHOULD_BE_FALSE(ColorEquals(c1, c2));
+	SCENARIO_END
+FEATURE_END
+
 CBEHAVE_RUN(
 	"Color features are:",
 	TEST_FEATURE(ColorMult),
 	TEST_FEATURE(ColorAlphaBlend),
 	TEST_FEATURE(ColorTint),
-	TEST_FEATURE(StrColor)
+	TEST_FEATURE(StrColor),
+	TEST_FEATURE(ColorEquals)
 )

@@ -66,6 +66,8 @@
 #include "blit.h"
 #include "pic_manager.h"
 
+#define TRANSPARENT_ACTOR_ALPHA 64
+
 
 static struct vec2i GetActorDrawOffset(
 	const Pic *pic, const BodyPart part, const CharSprites *cs,
@@ -271,8 +273,8 @@ void DrawActorPics(const ActorPics *pics, const struct vec2i pos)
 			const struct vec2i drawPos = svec2i_add(pos, pics->OrderedOffsets[i]);
 			if (pics->IsTransparent)
 			{
-				color_t mask = ColorTint(colorWhite, *pics->Tint);
-				mask.a = 64;
+				color_t mask = ColorTint(colorBlack, *pics->Tint);
+				mask.a = TRANSPARENT_ACTOR_ALPHA;
 				PicRender(
 					pic, gGraphicsDevice.gameWindow.renderer, drawPos,
 					mask);
