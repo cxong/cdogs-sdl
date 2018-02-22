@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017 Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -232,54 +232,10 @@ void BlitMasked(
 		}
 	}
 }
-void BlitCharMultichannel(
-	GraphicsDevice *device,
-	const Pic *pic,
-	const struct vec2i pos,
-	const CharColors *masks)
+CharColors CharColorsFromOneColor(const color_t color)
 {
-	Uint32 *current = pic->Data;
-	struct vec2i v = svec2i_add(pos, pic->offset);
-	for (int i = 0; i < pic->size.y; i++)
-	{
-		int yoff = i + v.y;
-		if (yoff > device->clipping.bottom)
-		{
-			break;
-		}
-		if (yoff < device->clipping.top)
-		{
-			current += pic->size.x;
-			continue;
-		}
-		yoff *= device->cachedConfig.Res.x;
-		for (int j = 0; j < pic->size.x; j++)
-		{
-			Uint32 *target;
-			const int xoff = j + v.x;
-			if (xoff < device->clipping.left)
-			{
-				current++;
-				continue;
-			}
-			if (xoff > device->clipping.right)
-			{
-				current += pic->size.x - j;
-				break;
-			}
-			if (*current == 0)
-			{
-				current++;
-				continue;
-			}
-			target = device->buf + yoff + xoff;
-			const color_t color = PIXEL2COLOR(*current);
-			*target = PixelMult(
-				*current,
-				COLOR2PIXEL(CharColorsGetChannelMask(masks, color.a)));
-			current++;
-		}
-	}
+	CharColors c = { color, color, color, color, color };
+	return c;
 }
 color_t CharColorsGetChannelMask(
 	const CharColors *c, const uint8_t alpha)
@@ -296,6 +252,17 @@ color_t CharColorsGetChannelMask(
 		CASSERT(false, "Unknown alpha channel");
 		return colorWhite;
 	}
+}
+void CharColorsGetMaskedName(char *buf, const char *base, const CharColors *c)
+{
+	char bufSkin[16], bufArms[16], bufBody[16], bufLegs[16], bufHair[16];
+	ColorStr(bufSkin, c->Skin);
+	ColorStr(bufArms, c->Arms);
+	ColorStr(bufBody, c->Body);
+	ColorStr(bufLegs, c->Legs);
+	ColorStr(bufHair, c->Hair);
+	sprintf(buf, "%s/%s/%s/%s/%s/%s", base,
+		bufSkin, bufArms, bufBody, bufLegs, bufHair);
 }
 void BlitBlend(
 	GraphicsDevice *g, const Pic *pic, struct vec2i pos, const color_t blend)

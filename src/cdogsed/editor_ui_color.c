@@ -230,7 +230,7 @@ static const char *MissionGetColorStr(UIObject *o, void *data)
 	{
 		"Walls", "Floors", "Rooms", "Extra"
 	};
-	char c[8];
+	char c[16];
 	ColorStr(c, CampaignGetMissionColor(mc));
 	sprintf(s, "%s: #%s", colourTypeNames[(int)mc->Type], c);
 	return s;

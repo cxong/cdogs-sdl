@@ -89,6 +89,7 @@ color_t ColorMult(color_t c, color_t m)
 	c.r = (uint8_t)((int)c.r * m.r / 255);
 	c.g = (uint8_t)((int)c.g * m.g / 255);
 	c.b = (uint8_t)((int)c.b * m.b / 255);
+	c.a = (uint8_t)((int)c.a * m.a / 255);
 	return c;
 }
 color_t ColorAlphaBlend(color_t a, color_t b)
@@ -233,5 +234,5 @@ color_t StrColor(const char *s)
 }
 void ColorStr(char *s, const color_t c)
 {
-	sprintf(s, "%02x%02x%02x", c.r, c.g, c.b);
+	sprintf(s, "%02x%02x%02x%02x", c.r, c.g, c.b, c.a);
 }

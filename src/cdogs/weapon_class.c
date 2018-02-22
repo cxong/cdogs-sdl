@@ -137,6 +137,10 @@ static void LoadGunDescription(
 		{
 			CSTRDUP(wc->name, defaultGun->name);
 		}
+		if (defaultGun->Sprites)
+		{
+			CSTRDUP(wc->Sprites, defaultGun->Sprites);
+		}
 		if (defaultGun->Description)
 		{
 			CSTRDUP(wc->Description, defaultGun->Description);
@@ -149,9 +153,14 @@ static void LoadGunDescription(
 	LoadStr(&tmp, node, "Pic");
 	if (tmp != NULL)
 	{
-		char buf[CDOGS_PATH_MAX];
-		sprintf(buf, "chars/guns/%s", tmp);
-		wc->Pic = PicManagerGetSprites(&gPicManager, buf);
+		CFREE(wc->Sprites);
+		wc->Sprites = NULL;
+		if (strlen(tmp) > 0)
+		{
+			char buf[CDOGS_PATH_MAX];
+			sprintf(buf, "chars/guns/%s", tmp);
+			CSTRDUP(wc->Sprites, buf);
+		}
 		CFREE(tmp);
 	}
 
@@ -295,6 +304,7 @@ void WeaponClassesClear(CArray *classes)
 static void GunDescriptionTerminate(WeaponClass *wc)
 {
 	CFREE(wc->name);
+	CFREE(wc->Sprites);
 	CFREE(wc->Description);
 	memset(wc, 0, sizeof *wc);
 }
@@ -435,7 +445,7 @@ struct vec2 WeaponClassGetMuzzleOffset(
 	{
 		return svec2_zero();
 	}
-	CASSERT(desc->Pic != NULL, "Gun has no pic");
+	CASSERT(desc->Sprites != NULL, "Gun has no pic");
 	const struct vec2 gunOffset = cs->Offsets.Dir[BODY_PART_GUN][dir];
 	return svec2_add(gunOffset, GetMuzzleOffset(dir));
 }
@@ -448,7 +458,7 @@ static struct vec2 GetMuzzleOffset(const direction_e d)
 
 bool WeaponClassHasMuzzle(const WeaponClass *wc)
 {
-	return wc->Pic != NULL && wc->CanShoot;
+	return wc->Sprites != NULL && wc->CanShoot;
 }
 bool WeaponClassIsHighDPS(const WeaponClass *wc)
 {

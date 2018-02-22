@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2017, Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -478,7 +478,7 @@ static void GetMaskedName(
 	char *buf, const char *name, const color_t mask, const color_t maskAlt);
 
 // Get a pic that is colour-masked.
-// The name of the pic will be <name>_<mask>_<maskAlt>
+// The name of the pic will be <name>/<mask>/<maskAlt>
 // Used for dynamic map tile pic colours
 static NamedPic *PicManagerGetMaskedPic(
 	const PicManager *pm, const char *name,
@@ -498,7 +498,7 @@ NamedPic *PicManagerGetMaskedStylePic(
 	return PicManagerGetMaskedPic(pm, buf, mask, maskAlt);
 }
 
-void PicManagerGenerateMaskedPic(
+static void PicManagerGenerateMaskedPic(
 	PicManager *pm, const char *name,
 	const color_t mask, const color_t maskAlt)
 {
@@ -531,11 +531,10 @@ void PicManagerGenerateMaskedPic(
 		}
 		p.Data[i] = COLOR2PIXEL(c);
 		// TODO: more channels
-
-		if (!PicTryMakeTex(&p))
-		{
-			p.Tex = NULL;
-		}
+	}
+	if (!PicTryMakeTex(&p))
+	{
+		p.Tex = NULL;
 	}
 	AddNamedPic(pm->customPics, maskedName, &p);
 
@@ -550,12 +549,49 @@ void PicManagerGenerateMaskedStylePic(
 	PicManagerGenerateMaskedPic(pm, buf, mask, maskAlt);
 }
 
+const NamedSprites *PicManagerGetCharSprites(
+	PicManager *pm, const char *name, const CharColors *colors)
+{
+	char buf[CDOGS_PATH_MAX];
+	CharColorsGetMaskedName(buf, name, colors);
+	// Get or generate masked sprites
+	const NamedSprites *ns = PicManagerGetSprites(&gPicManager, buf);
+	if (ns == NULL)
+	{
+		const NamedSprites *ons = PicManagerGetSprites(pm, name);
+		NamedSprites *nsp = AddNamedSprites(pm->customSprites, buf);
+		CA_FOREACH(Pic, op, ons->pics)
+			Pic p = PicCopy(op);
+			p.Tex = NULL;
+			for (int i = 0; i < p.size.x * p.size.y; i++)
+			{
+				if (op->Data[i] == 0)
+				{
+					continue;
+				}
+				const color_t c = PIXEL2COLOR(op->Data[i]);
+				p.Data[i] = COLOR2PIXEL(ColorMult(
+					c, CharColorsGetChannelMask(colors, c.a)
+				));
+			}
+			if (!PicTryMakeTex(&p))
+			{
+				p.Tex = NULL;
+			}
+			CArrayPushBack(&nsp->pics, &p);
+		CA_FOREACH_END()
+		AfterAdd(pm);
+		ns = nsp;
+	}
+	return ns;
+}
+
 static void GetMaskedName(
 	char *buf, const char *name, const color_t mask, const color_t maskAlt)
 {
-	char maskName[8];
+	char maskName[16];
 	ColorStr(maskName, mask);
-	char maskAltName[8];
+	char maskAltName[16];
 	ColorStr(maskAltName, maskAlt);
 	sprintf(buf, "%s/%s/%s", name, maskName, maskAltName);
 }

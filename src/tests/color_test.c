@@ -9,8 +9,8 @@ FEATURE(ColorMult, "Multiply")
 	SCENARIO("Multiply two colors")
 		GIVEN("two colors")
 			color_t c1, c2;
-			c1.r = c1.g = c1.b = 123;
-			c2.r = c2.g = c2.b = 234;
+			c1.r = c1.g = c1.b = c1.a = 123;
+			c2.r = c2.g = c2.b = c2.a = 234;
 
 		WHEN("I multiply them")
 			color_t result = ColorMult(c1, c2);
@@ -19,6 +19,7 @@ FEATURE(ColorMult, "Multiply")
 			SHOULD_INT_EQUAL(result.r, c1.r * c2.r / 255);
 			SHOULD_INT_EQUAL(result.g, c1.g * c2.g / 255);
 			SHOULD_INT_EQUAL(result.b, c1.b * c2.b / 255);
+			SHOULD_INT_EQUAL(result.a, c1.a * c2.a / 255);
 	SCENARIO_END
 
 	SCENARIO("Multiply by white")
@@ -232,17 +233,19 @@ FEATURE(StrColor, "String conversion")
 		THEN("the result should be black")
 			SHOULD_BE_TRUE(ColorEquals(result, colorBlack));
 	SCENARIO_END
+FEATURE_END
 
-	SCENARIO("Convert to hex")
+FEATURE(ColorStr , "Convert to string")
+	SCENARIO("Convert RGBA")
 		GIVEN("a colour")
 			color_t c = { 0x64, 0x95, 0xed, 0xff };
 
 		WHEN("I convert it to hex")
-			char buf[8];
+			char buf[16];
 			ColorStr(buf, c);
 
 		THEN("the result should be the expected hex string")
-			const char *expected = "6495ed";
+			const char *expected = "6495edff";
 			SHOULD_STR_EQUAL(buf, expected);
 	SCENARIO_END
 FEATURE_END
@@ -284,5 +287,6 @@ CBEHAVE_RUN(
 	TEST_FEATURE(ColorAlphaBlend),
 	TEST_FEATURE(ColorTint),
 	TEST_FEATURE(StrColor),
+	TEST_FEATURE(ColorStr),
 	TEST_FEATURE(ColorEquals)
 )

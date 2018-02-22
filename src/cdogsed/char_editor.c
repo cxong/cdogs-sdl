@@ -149,8 +149,8 @@ void CharEditor(
 	{
 		const GLuint *texid = CArrayGet(&ec.texIdsCharClasses, i);
 		const CharacterClass *c = IndexCharacterClass(i);
-		LoadMultiChannelTexFromPic(
-			*texid, GetHeadPic(c, DIRECTION_DOWN, GUNSTATE_READY), &cc);
+		LoadTexFromPic(
+			*texid, GetHeadPic(c, DIRECTION_DOWN, GUNSTATE_READY, &cc));
 	}
 	CArrayInit(&ec.texIdsGuns, sizeof(GLuint));
 	CArrayResize(&ec.texIdsGuns, NumGuns(), NULL);
@@ -835,7 +835,7 @@ static void DrawCharacter(
 	const int frame = AnimationGetFrame(anim);
 	ActorPics pics = GetCharacterPics(
 		c, d, anim->Type, frame,
-		c->Gun->Pic, GUNSTATE_READY, false, NULL, NULL, 0);
+		c->Gun->Sprites, GUNSTATE_READY, true, NULL, NULL, 0);
 	for (int i = 0; i < BODY_PART_COUNT; i++)
 	{
 		const Pic *pic = pics.OrderedPics[i];
@@ -844,7 +844,7 @@ static void DrawCharacter(
 			continue;
 		}
 		const struct vec2i drawPos = svec2i_add(pos, pics.OrderedOffsets[i]);
-		LoadMultiChannelTexFromPic(texids[i], pic, pics.Colors);
+		LoadTexFromPic(texids[i], pic);
 		struct nk_image tex = nk_image_id((int)texids[i]);
 		glTexParameteri(
 			GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

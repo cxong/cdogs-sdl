@@ -299,7 +299,7 @@ struct vec2i DisplayMenuItem(
 		color_t dark = { 64, 64, 64, 255 };
 		return FontStrMask(s, pos, dark);
 	}
-	else if (!ColorEquals(color, colorBlack))
+	else if (!ColorEquals(color, colorTransparent))
 	{
 		return FontStrMask(s, pos, color);
 	}

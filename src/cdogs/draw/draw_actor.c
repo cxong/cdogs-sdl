@@ -85,57 +85,78 @@ static struct vec2i GetActorDrawOffset(
 static Character *ActorGetCharacterMutable(TActor *a);
 ActorPics GetCharacterPicsFromActor(TActor *a)
 {
+	Character *c = ActorGetCharacterMutable(a);
 	const Weapon *gun = ACTOR_GET_WEAPON(a);
-	HSV *tint = NULL;
-	color_t *mask = NULL;
+
+	color_t mask;
+	bool hasStatus = false;
 	if (a->flamed)
 	{
-		tint = &tintRed;
-		mask = &colorRed;
+		mask = colorRed;
+		hasStatus = true;
 	}
 	else if (a->poisoned)
 	{
-		tint = &tintPoison;
-		mask = &colorPoison;
+		mask = colorPoison;
+		hasStatus = true;
 	}
 	else if (a->petrified)
 	{
-		tint = &tintGray;
-		mask = &colorGray;
+		mask = colorGray;
+		hasStatus = true;
 	}
 	else if (a->confused)
 	{
-		tint = &tintPurple;
-		mask = &colorPurple;
+		mask = colorPurple;
+		hasStatus = true;
 	}
+
+	const CharColors allBlack = CharColorsFromOneColor(colorBlack);
+	const CharColors allWhite = CharColorsFromOneColor(colorWhite);
+	const bool isTransparent = !!(a->flags & FLAGS_SEETHROUGH);
+	const CharColors *colors = NULL;
+	const color_t *maskP = NULL;
+	if (isTransparent)
+	{
+		colors = &allBlack;
+		maskP = &mask;
+		mask.a = TRANSPARENT_ACTOR_ALPHA;
+	}
+	else if (hasStatus)
+	{
+		maskP = &mask;
+		colors = &allWhite;
+	}
+
 	return GetCharacterPics(
-		ActorGetCharacterMutable(a),
+		c,
 		RadiansToDirection(a->DrawRadians), a->anim.Type,
 		AnimationGetFrame(&a->anim),
-		gun->Gun != NULL ? gun->Gun->Pic : NULL, gun->state,
-		!!(a->flags & FLAGS_SEETHROUGH),
-		tint, mask,
+		gun->Gun != NULL ? gun->Gun->Sprites : NULL, gun->state,
+		!isTransparent, maskP, colors,
 		a->dead);
 }
 static const Pic *GetBodyPic(
 	PicManager *pm, const CharSprites *cs, const direction_e dir,
-	const ActorAnimation anim, const int frame, const bool isArmed);
+	const ActorAnimation anim, const int frame, const bool isArmed,
+	const CharColors *colors);
 static const Pic *GetLegsPic(
 	PicManager *pm, const CharSprites *cs, const direction_e dir,
-	const ActorAnimation anim, const int frame);
+	const ActorAnimation anim, const int frame,
+	const CharColors *colors);
 static const Pic *GetGunPic(
-	const NamedSprites *gunPics, const direction_e dir, const int gunState);
+	PicManager *pm, const char *gunSprites, const direction_e dir,
+	const int gunState, const CharColors *colors);
 static const Pic *GetDeathPic(PicManager *pm, const int frame);
 ActorPics GetCharacterPics(
 	Character *c, const direction_e dir,
 	const ActorAnimation anim, const int frame,
-	const NamedSprites *gunPics, const gunstate_e gunState,
-	const bool isTransparent, HSV *tint, color_t *mask,
+	const char *gunSprites, const gunstate_e gunState,
+	const bool hasShadow, const color_t *mask, const CharColors *colors,
 	const int deadPic)
 {
 	ActorPics pics;
 	memset(&pics, 0, sizeof pics);
-	pics.Colors = &c->Colors;
 
 	// Dummy return to handle invalid character class
 	if (c->Class == NULL)
@@ -146,6 +167,8 @@ ActorPics GetCharacterPics(
 		pics.OrderedPics[0] = pics.Body;
 		return pics;
 	}
+
+	pics.HasShadow = hasShadow;
 
 	// If the actor is dead, simply draw a dying animation
 	pics.IsDead = deadPic > 0;
@@ -160,15 +183,17 @@ ActorPics GetCharacterPics(
 		return pics;
 	}
 
-	pics.IsTransparent = isTransparent;
-	if (pics.IsTransparent)
+	if (mask != NULL)
 	{
-		pics.Tint = &tintDarker;
+		pics.Mask = *mask;
 	}
-	else if (tint != NULL)
+	else
 	{
-		pics.Tint = tint;
-		pics.Mask = mask;
+		pics.Mask = colorWhite;
+	}
+	if (colors == NULL)
+	{
+		colors = &c->Colors;
 	}
 
 	// Head
@@ -179,20 +204,21 @@ ActorPics GetCharacterPics(
 		if (frame == IDLEHEAD_LEFT) headDir = (dir + 7) % 8;
 		else if (frame == IDLEHEAD_RIGHT) headDir = (dir + 1) % 8;
 	}
-	pics.Head = GetHeadPic(c->Class, headDir, gunState);
+	pics.Head = GetHeadPic(c->Class, headDir, gunState, colors);
 	pics.HeadOffset = GetActorDrawOffset(
 		pics.Head, BODY_PART_HEAD, c->Class->Sprites, anim, frame, dir);
 
 	// Body
-	const bool isArmed = gunPics != NULL;
+	const bool isArmed = gunSprites != NULL;
 	pics.Body = GetBodyPic(
-		&gPicManager, c->Class->Sprites, dir, anim, frame, isArmed);
+		&gPicManager, c->Class->Sprites, dir, anim, frame, isArmed,
+		colors);
 	pics.BodyOffset = GetActorDrawOffset(
 		pics.Body, BODY_PART_BODY, c->Class->Sprites, anim, frame, dir);
 
 	// Legs
 	pics.Legs = GetLegsPic(
-		&gPicManager, c->Class->Sprites, dir, anim, frame);
+		&gPicManager, c->Class->Sprites, dir, anim, frame, colors);
 	pics.LegsOffset = GetActorDrawOffset(
 		pics.Legs, BODY_PART_LEGS, c->Class->Sprites, anim, frame, dir);
 
@@ -200,7 +226,7 @@ ActorPics GetCharacterPics(
 	pics.Gun = NULL;
 	if (isArmed)
 	{
-		pics.Gun = GetGunPic(gunPics, dir, gunState);
+		pics.Gun = GetGunPic(&gPicManager, gunSprites, dir, gunState, colors);
 		pics.GunOffset = GetActorDrawOffset(
 			pics.Gun, BODY_PART_GUN, c->Class->Sprites, anim, frame, dir);
 	}
@@ -259,7 +285,7 @@ void DrawActorPics(const ActorPics *pics, const struct vec2i pos)
 	else
 	{
 		// Draw shadow
-		if (!pics->IsTransparent)
+		if (pics->HasShadow)
 		{
 			DrawShadow(&gGraphicsDevice, pos, svec2i(8, 6));
 		}
@@ -271,33 +297,9 @@ void DrawActorPics(const ActorPics *pics, const struct vec2i pos)
 				continue;
 			}
 			const struct vec2i drawPos = svec2i_add(pos, pics->OrderedOffsets[i]);
-			if (pics->IsTransparent)
-			{
-				color_t mask = ColorTint(colorBlack, *pics->Tint);
-				mask.a = TRANSPARENT_ACTOR_ALPHA;
-				PicRender(
-					pic, gGraphicsDevice.gameWindow.renderer, drawPos,
-					mask);
-			}
-			else if (pics->Mask != NULL)
-			{
-				// Mask a white version of the actor
-				// TODO: texture rendering
-				const CharColors colors = {
-					*pics->Mask,
-					*pics->Mask,
-					*pics->Mask,
-					*pics->Mask,
-					*pics->Mask
-				};
-				BlitCharMultichannel(
-					&gGraphicsDevice, pic, drawPos, &colors);
-			}
-			else
-			{
-				BlitCharMultichannel(
-					&gGraphicsDevice, pic, drawPos, pics->Colors);
-			}
+			PicRender(
+				pic, gGraphicsDevice.gameWindow.renderer, drawPos,
+				pics->Mask);
 		}
 	}
 }
@@ -308,7 +310,7 @@ void DrawLaserSight(
 	const ActorPics *pics, const TActor *a, const struct vec2i picPos)
 {
 	// Don't draw if dead or transparent
-	if (pics->IsDead || pics->IsTransparent) return;
+	if (pics->IsDead || !pics->HasShadow) return;
 	// Check config
 	const LaserSight ls = ConfigGetEnum(&gConfig, "Game.LaserSight");
 	if (ls != LASER_SIGHT_ALL &&
@@ -350,7 +352,7 @@ void DrawActorHighlight(
 	const ActorPics *pics, const struct vec2i pos, const color_t color)
 {
 	// Do not highlight dead, dying or transparent characters
-	if (pics->IsDead || pics->IsTransparent)
+	if (pics->IsDead || !pics->HasShadow)
 	{
 		return;
 	}
@@ -418,17 +420,22 @@ static void DrawChatter(
 }
 
 const Pic *GetHeadPic(
-	const CharacterClass *c, const direction_e dir, const gunstate_e gunState)
+	const CharacterClass *c, const direction_e dir, const gunstate_e gunState,
+	const CharColors *colors)
 {
 	// If firing, draw the firing head pic
 	const int row =
 		(gunState == GUNSTATE_FIRING || gunState == GUNSTATE_RECOIL) ? 1 : 0;
 	const int idx = (int)dir + row * 8;
-	return CPicGetPic(&c->HeadPics, idx);
+	// Get or generate masked sprites
+	const NamedSprites *ns = PicManagerGetCharSprites(
+		&gPicManager, c->HeadSprites, colors);
+	return CArrayGet(&ns->pics, idx);
 }
 static const Pic *GetBodyPic(
 	PicManager *pm, const CharSprites *cs, const direction_e dir,
-	const ActorAnimation anim, const int frame, const bool isArmed)
+	const ActorAnimation anim, const int frame, const bool isArmed,
+	const CharColors *colors)
 {
 	const int stride = anim == ACTORANIMATION_IDLE ? 1 : 8;
 	const int col = frame % stride;
@@ -440,11 +447,14 @@ static const Pic *GetBodyPic(
 		cs->Name,
 		anim == ACTORANIMATION_IDLE ? "idle" : "run",
 		isArmed ? "_handgun" : "");	// TODO: other gun holding poses
-	return CArrayGet(&PicManagerGetSprites(pm, buf)->pics, idx);
+	// Get or generate masked sprites
+	const NamedSprites *ns = PicManagerGetCharSprites(pm, buf, colors);
+	return CArrayGet(&ns->pics, idx);
 }
 static const Pic *GetLegsPic(
 	PicManager *pm, const CharSprites *cs, const direction_e dir,
-	const ActorAnimation anim, const int frame)
+	const ActorAnimation anim, const int frame,
+	const CharColors *colors)
 {
 	const int stride = anim == ACTORANIMATION_IDLE ? 1 : 8;
 	const int col = frame % stride;
@@ -454,13 +464,19 @@ static const Pic *GetLegsPic(
 	sprintf(
 		buf, "chars/bodies/%s/legs_%s",
 		cs->Name, anim == ACTORANIMATION_IDLE ? "idle" : "run");
-	return CArrayGet(&PicManagerGetSprites(pm, buf)->pics, idx);
+	// Get or generate masked sprites
+	const NamedSprites *ns = PicManagerGetCharSprites(pm, buf, colors);
+	return CArrayGet(&ns->pics, idx);
 }
 static const Pic *GetGunPic(
-	const NamedSprites *gunPics, const direction_e dir, const int gunState)
+	PicManager *pm, const char *gunSprites, const direction_e dir,
+	const int gunState, const CharColors *colors)
 {
 	const int idx = (gunState == GUNSTATE_READY ? 8 : 0) + dir;
-	return CArrayGet(&gunPics->pics, idx);
+	// Get or generate masked sprites
+	const NamedSprites *ns = PicManagerGetCharSprites(
+		pm, gunSprites, colors);
+	return CArrayGet(&ns->pics, idx);
 }
 static const Pic *GetDeathPic(PicManager *pm, const int frame)
 {
@@ -473,7 +489,7 @@ void DrawCharacterSimple(
 {
 	ActorPics pics = GetCharacterPics(
 		c, d, ACTORANIMATION_IDLE, 0, NULL, GUNSTATE_READY,
-		false, NULL, NULL, 0);
+		true, NULL, NULL, 0);
 	DrawActorPics(&pics, pos);
 	if (hilite)
 	{
@@ -488,10 +504,10 @@ void DrawCharacterSimple(
 void DrawHead(
 	const Character *c, const direction_e dir, const struct vec2i pos)
 {
-	const Pic *head = GetHeadPic(c->Class, dir, GUNSTATE_READY);
+	const Pic *head = GetHeadPic(c->Class, dir, GUNSTATE_READY, &c->Colors);
 	const struct vec2i drawPos = svec2i_subtract(pos, svec2i(
 		head->size.x / 2, head->size.y / 2));
-	BlitCharMultichannel(&gGraphicsDevice, head, drawPos, &c->Colors);
+	PicRender(head, gGraphicsDevice.gameWindow.renderer, drawPos, colorWhite);
 }
 #define DYING_BODY_OFFSET 3
 static void DrawDyingBody(
@@ -500,6 +516,5 @@ static void DrawDyingBody(
 	const Pic *body = pics->Body;
 	const struct vec2i drawPos = svec2i_subtract(pos, svec2i(
 		body->size.x / 2, body->size.y / 2 + DYING_BODY_OFFSET));
-	const color_t mask = pics->Mask != NULL ? *pics->Mask : colorWhite;
-	PicRender(body, g->gameWindow.renderer, drawPos, mask);
+	PicRender(body, g->gameWindow.renderer, drawPos, pics->Mask);
 }

@@ -169,7 +169,9 @@ static void LoadCharacterClass(CharacterClass *c, json_t *node)
 {
 	memset(c, 0, sizeof *c);
 	c->Name = GetString(node, "Name");
-	CPicLoadJSON(&c->HeadPics, json_find_first_label(node, "HeadPics")->child);
+	// TODO: allow non-directional head sprites?
+	json_t *headPics = json_find_first_label(node, "HeadPics")->child;
+	c->HeadSprites = GetString(headPics, "Sprites");
 	// TODO: custom character sprites
 	c->Sprites = StrCharSpriteClass("base");
 

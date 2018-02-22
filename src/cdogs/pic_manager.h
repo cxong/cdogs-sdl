@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2016, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -69,12 +69,12 @@ NamedPic *PicManagerGetMaskedStylePic(
 	const char *name, const char *style, const char *type,
 	const color_t mask, const color_t maskAlt);
 // To support dynamic colours, generate pics on request.
-void PicManagerGenerateMaskedPic(
-	PicManager *pm, const char *name,
-	const color_t mask, const color_t maskAlt);
 void PicManagerGenerateMaskedStylePic(
 	PicManager *pm, const char *name, const char *style, const char *type,
 	const color_t mask, const color_t maskAlt);
+// Get masked character pics
+const NamedSprites *PicManagerGetCharSprites(
+	PicManager *pm, const char *name, const CharColors *colors);
 
 NamedPic *PicManagerGetExitPic(
 	PicManager *pm, const char *style, const bool isShadow);

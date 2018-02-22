@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, 2016-2017 Cong Xu
+    Copyright (c) 2013-2014, 2016-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -80,11 +80,6 @@ void BlitMasked(
 	struct vec2i pos,
 	color_t mask,
 	int isTransparent);
-void BlitCharMultichannel(
-	GraphicsDevice *device,
-	const Pic *pic,
-	const struct vec2i pos,
-	const CharColors *masks);
 void BlitBlend(
 	GraphicsDevice *g, const Pic *pic, struct vec2i pos, const color_t blend);
 void BlitPicHighlight(
@@ -93,7 +88,9 @@ void BlitClearBuf(GraphicsDevice *g);
 void BlitUpdateFromBuf(GraphicsDevice *g, SDL_Texture *t);
 
 Uint32 PixelMult(const Uint32 p, const Uint32 m);
+CharColors CharColorsFromOneColor(const color_t color);
 color_t CharColorsGetChannelMask(const CharColors *c, const uint8_t alpha);
+void CharColorsGetMaskedName(char *buf, const char *base, const CharColors *c);
 
 #define BLIT_BRIGHTNESS_MIN (-10)
 #define BLIT_BRIGHTNESS_MAX 10

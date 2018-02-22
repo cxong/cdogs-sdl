@@ -65,7 +65,7 @@ typedef enum
 
 typedef struct
 {
-	const NamedSprites *Pic;
+	char *Sprites;
 	const Pic *Icon;
 	bool IsGrenade;
 	char *name;
