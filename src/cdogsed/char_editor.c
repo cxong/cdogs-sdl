@@ -80,8 +80,6 @@ const float bg[4] = { 0.16f, 0.1f, 0.1f, 1.f };
 
 // Util functions
 static void LoadTexFromPic(const GLuint texid, const Pic *pic);
-static void LoadMultiChannelTexFromPic(
-	const GLuint texid, const Pic *pic, const CharColors *colors);
 static void BeforeDrawTex(const GLuint texid);
 
 
@@ -794,31 +792,6 @@ static void LoadTexFromPic(const GLuint texid, const Pic *pic)
 	glTexImage2D(
 		GL_TEXTURE_2D, 0, GL_RGBA, pic->size.x, pic->size.y, 0, GL_BGRA,
 		GL_UNSIGNED_BYTE, pic->Data);
-}
-static void LoadMultiChannelTexFromPic(
-	const GLuint texid, const Pic *pic, const CharColors *colors)
-{
-	glBindTexture(GL_TEXTURE_2D, texid);
-	Uint32 *data;
-	CMALLOC(data, pic->size.x * pic->size.y * sizeof *data);
-	for (int i = 0; i < pic->size.x * pic->size.y; i++)
-	{
-		const Uint32 pixel = pic->Data[i];
-		const color_t color = PIXEL2COLOR(pixel);
-		if (pixel == 0)
-		{
-			data[i] = 0;
-		}
-		else
-		{
-			data[i] = PixelMult(
-				pixel, COLOR2PIXEL(CharColorsGetChannelMask(colors, color.a)));
-		}
-	}
-	glTexImage2D(
-		GL_TEXTURE_2D, 0, GL_RGBA, pic->size.x, pic->size.y, 0, GL_BGRA,
-		GL_UNSIGNED_BYTE, data);
-	CFREE(data);
 }
 
 static void BeforeDrawTex(const GLuint texid)
