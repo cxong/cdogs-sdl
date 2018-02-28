@@ -371,7 +371,7 @@ static void SoundPlayAtPosition(
 
 		// Calculate bearing
 		const double bearing = atan((double)dp.x / halfScreen);
-		bearingDegrees = (Sint16)(bearing * 180 / M_PI);
+		bearingDegrees = (Sint16)(bearing * 180 / MPI);
 		if (bearingDegrees < 0)
 		{
 			bearingDegrees += 360;

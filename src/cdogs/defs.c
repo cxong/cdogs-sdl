@@ -134,13 +134,13 @@ direction_e RadiansToDirection(const double r)
 	double radians = r;
 	while (radians < 0)
 	{
-		radians += 2 * M_PI;
+		radians += 2 * MPI;
 	}
-	while (radians >= 2 * M_PI)
+	while (radians >= 2 * MPI)
 	{
-		radians -= 2 * M_PI;
+		radians -= 2 * MPI;
 	}
-	int d = (int)floor((radians + M_PI / 8.0) / (M_PI / 4.0));
+	int d = (int)floor((radians + MPI / 8.0) / (MPI / 4.0));
 	if (d < DIRECTION_UP)
 	{
 		d += DIRECTION_COUNT;

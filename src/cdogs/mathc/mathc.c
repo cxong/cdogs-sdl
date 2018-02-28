@@ -20,6 +20,13 @@ the following restrictions:
 
 #include "mathc.h"
 
+#ifdef __GCWZERO__
+#undef MMIN
+#define MMIN fmin
+#undef MMAX
+#define MMAX fmax
+#endif
+
 /* Utils */
 bool nearly_equal(mfloat_t a, mfloat_t b, mfloat_t epsilon)
 {

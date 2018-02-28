@@ -431,7 +431,7 @@ void WeaponClassAddBrass(
 		Vec2FromRadians(radians + MPI_2), 0.333333f);
 	e.u.AddParticle.Vel.x += RAND_FLOAT(-0.25f, 0.25f);
 	e.u.AddParticle.Vel.y += RAND_FLOAT(-0.25f, 0.25f);
-	e.u.AddParticle.Angle = RAND_DOUBLE(0, M_PI * 2);
+	e.u.AddParticle.Angle = RAND_DOUBLE(0, MPI * 2);
 	e.u.AddParticle.DZ = (rand() % 6) + 6;
 	e.u.AddParticle.Spin = RAND_DOUBLE(-0.1, 0.1);
 	GameEventsEnqueue(&gGameEvents, e);

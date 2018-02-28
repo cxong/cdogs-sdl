@@ -355,13 +355,13 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 
 	// Spin
 	p->Angle += p->Spin;
-	if (p->Angle > 2 * M_PI)
+	if (p->Angle > 2 * MPI)
 	{
-		p->Angle -= M_PI * 2;
+		p->Angle -= 2 * MPI;
 	}
 	if (p->Angle < 0)
 	{
-		p->Angle += M_PI * 2;
+		p->Angle += 2 * MPI;
 	}
 
 	return p->Count <= p->Range;

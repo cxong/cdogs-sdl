@@ -86,7 +86,7 @@
 #define VEL_DECAY_Y (TILE_WIDTH * 2 / 256.0f)	// Note: deliberately tile width
 #define SOUND_LOCK_WEAPON_CLICK 20
 #define DROP_GUN_CHANCE 0.2
-#define DRAW_RADIAN_SPEED (M_PI/16)
+#define DRAW_RADIAN_SPEED (MPI/16)
 // Percent of health considered low; bleed and flash HUD if low
 #define LOW_HEALTH_PERCENTAGE 25
 #define GORE_EMITTER_MAX_SPEED 0.25f

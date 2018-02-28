@@ -46,6 +46,8 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
+#define _BSD_SOURCE
+
 #include "utils.h"
 
 #include <assert.h>
@@ -378,11 +380,11 @@ double Round(double x)
 
 double ToDegrees(double radians)
 {
-	return radians * 180.0 / M_PI;
+	return radians * 180.0 / MPI;
 }
 double ToRadians(double degrees)
 {
-	return degrees * M_PI / 180.0;
+	return degrees * MPI / 180.0;
 }
 
 struct vec2 CalcClosestPointOnLineSegmentToPoint(

@@ -638,18 +638,6 @@ RLUTIL_INLINE void showcursor(void) {
 	setCursorVisibility(1);
 }
 
-/// Function: msleep
-/// Waits given number of milliseconds before continuing.
-RLUTIL_INLINE void msleep(unsigned int ms) {
-#ifdef _WIN32
-	Sleep(ms);
-#else
-	// usleep argument must be under 1 000 000
-	if (ms > 1000) sleep(ms/1000000);
-	usleep((ms % 1000000) * 1000);
-#endif
-}
-
 /// Function: trows
 /// Get the number of rows in the terminal window or -1 on error.
 RLUTIL_INLINE int trows(void) {
