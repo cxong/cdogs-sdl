@@ -50,6 +50,7 @@ cache:
 
 artifacts:
   - path: /.\C-Dogs*.exe/
+  - path: /.\C-Dogs*.zip/
 
 deploy:
   provider: GitHub
