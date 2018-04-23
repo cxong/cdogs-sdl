@@ -4,10 +4,14 @@ os:
   - linux
   - osx
 
+env:
+  - CCACHE_CPP2=yes
+
 dist: trusty
 sudo: required
 group: deprecated-2017Q3
 
+cache: ccache
 compiler:
   - gcc
   - clang
