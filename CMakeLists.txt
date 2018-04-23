@@ -78,11 +78,8 @@ if(NOT "${CCACHE_FOUND}")
 endif()
 link_directories(${SDL2_LIBRARY_DIRS} ${SDL2_IMAGE_LIBRARY_DIRS} ${SDL2_MIXER_LIBRARY_DIRS})
 
-if(CCACHE_FOUND)
-	set(ENV{CCACHE_CPP2} "yes")
-	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-		add_definitions(-Qunused-arguments -fcolor-diagnostics)
-	endif()
+if(CCACHE_FOUND AND CLANG)
+	add_definitions(-Qunused-arguments -fcolor-diagnostics)
 endif()
 
 SET(ENet_LIBRARY enet)
