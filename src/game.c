@@ -396,9 +396,11 @@ static void RunGameInput(GameLoopData *data)
 	// - escape was pressed, or
 	// - window lost focus
 	// - controller unplugged
+	// If the game is paused, unpause if a button is released
 	// If the game was not paused, enter pause mode
 	// If the game was paused and escape was pressed, exit the game
-	if (AnyButton(cmdAll))
+	if (rData->pausingDevice != INPUT_DEVICE_UNSET
+	    && AnyButton(lastCmdAll) && !AnyButton(cmdAll))
 	{
 		rData->pausingDevice = INPUT_DEVICE_UNSET;
 	}
