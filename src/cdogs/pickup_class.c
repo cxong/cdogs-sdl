@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2015-2016, Cong Xu
+    Copyright (c) 2015-2016, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -279,9 +279,7 @@ void PickupClassesLoadAmmo(CArray *classes, const CArray *ammoClasses)
 
 void PickupClassesLoadGuns(CArray *classes, const CArray *gunClasses)
 {
-	for (int i = 0; i < (int)gunClasses->size; i++)
-	{
-		const WeaponClass *wc = CArrayGet(gunClasses, i);
+	CA_FOREACH(const WeaponClass, wc, *gunClasses)
 		PickupClass c;
 		char buf[256];
 		sprintf(buf, "gun_%s", wc->name);
@@ -290,7 +288,7 @@ void PickupClassesLoadGuns(CArray *classes, const CArray *gunClasses)
 		c.Type = PICKUP_GUN;
 		c.u.GunId = WeaponClassId(wc);
 		CArrayPushBack(classes, &c);
-	}
+	CA_FOREACH_END()
 }
 
 void PickupClassesLoadKeys(CArray *classes)

@@ -202,6 +202,16 @@ static void LoadGunDescription(
 	if (tmp != NULL)
 	{
 		wc->AmmoId = StrAmmoId(tmp);
+		if (wc->IsGrenade)
+		{
+			// Grenade weapons also allow the ammo pickups to act as gun
+			// pickups
+			Ammo *ammo = AmmoGetById(&gAmmo, wc->AmmoId);
+			CFREE(ammo->DefaultGun);
+			CSTRDUP(ammo->DefaultGun, wc->name);
+			// Replace icon with that of the ammo
+			wc->Icon = ammo->Pic;
+		}
 		CFREE(tmp);
 	}
 
@@ -267,7 +277,8 @@ static void LoadGunDescription(
 	}
 
 	LOG(LM_MAP, LL_DEBUG,
-		"loaded gun name(%s) bullet(%s) ammo(%d) cost(%d) lock(%d)...",
+		"loaded %s name(%s) bullet(%s) ammo(%d) cost(%d) lock(%d)...",
+		wc->IsGrenade ? "grenade" : "gun",
 		wc->name, wc->Bullet != NULL ? wc->Bullet->Name : "", wc->AmmoId,
 		wc->Cost, wc->Lock);
 	LOG(LM_MAP, LL_DEBUG,

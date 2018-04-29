@@ -1062,8 +1062,21 @@ static bool CheckManualPickupFunc(
 		strcpy(buf, "");
 		InputGetButtonName(
 			pData->inputDevice, pData->deviceIndex, CMD_BUTTON2, buf);
-		sprintf(a->Chatter, "%s to pick up\n%s",
-			buf, IdWeaponClass(p->class->u.GunId)->name);
+		const char *pickupName;
+		switch (p->class->Type)
+		{
+		case PICKUP_AMMO:
+			pickupName = AmmoGetById(&gAmmo, p->class->u.Ammo.Id)->Name;
+			break;
+		case PICKUP_GUN:
+			pickupName = IdWeaponClass(p->class->u.GunId)->name;
+			break;
+		default:
+			CASSERT(false, "unknown pickup type");
+			pickupName = "???";
+			break;
+		}
+		sprintf(a->Chatter, "%s to pick up\n%s", buf, pickupName);
 		a->ChatterCounter = 2;
 	}
 	// If co-op AI, alert it so it can try to pick the gun up

@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, 2016-2017 Cong Xu
+    Copyright (c) 2014, 2016-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -120,6 +120,7 @@ void AmmoLoadJSON(CArray *ammo, json_t *node)
 }
 static void LoadAmmo(Ammo *a, json_t *node)
 {
+	memset(a, 0, sizeof *a);
 	a->Name = GetString(node, "Name");
 	char *tmp;
 	tmp = GetString(node, "Pic");
@@ -131,12 +132,11 @@ static void LoadAmmo(Ammo *a, json_t *node)
 }
 void AmmoClassesClear(CArray *ammo)
 {
-	for (int i = 0; i < (int)ammo->size; i++)
-	{
-		Ammo *a = CArrayGet(ammo, i);
+	CA_FOREACH(Ammo, a, *ammo)
 		CFREE(a->Name);
 		CFREE(a->Sound);
-	}
+		CFREE(a->DefaultGun);
+	CA_FOREACH_END()
 	CArrayClear(ammo);
 }
 void AmmoTerminate(AmmoClasses *ammo)

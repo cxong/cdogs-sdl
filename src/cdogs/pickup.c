@@ -108,6 +108,8 @@ void PickupDestroy(const int uid)
 	p->isInUse = false;
 }
 
+static bool TreatAsGunPickup(const Pickup *p, const TActor *a);
+static bool TryPickupAmmo(TActor *a, const Pickup *p, const char **sound);
 static bool TryPickupGun(
 	TActor *a, const Pickup *p, const bool pickupAll, const char **sound);
 void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
@@ -146,45 +148,15 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 		}
 		break;
 
-	case PICKUP_AMMO:
+	case PICKUP_AMMO:	// fallthrough
+	case PICKUP_GUN:
+		if (TreatAsGunPickup(p, a))
 		{
-			// Don't pickup if no guns can use ammo
-			bool hasGunUsingAmmo = false;
-			for (int i = 0; i < MAX_WEAPONS; i++)
-			{
-				if (a->guns[i].Gun != NULL &&
-					a->guns[i].Gun->AmmoId == p->class->u.Ammo.Id)
-				{
-					hasGunUsingAmmo = true;
-					break;
-				}
-			}
-			if (!hasGunUsingAmmo)
-			{
-				canPickup = false;
-				break;
-			}
-
-			// Don't pickup if ammo full
-			const Ammo *ammo = AmmoGetById(&gAmmo, p->class->u.Ammo.Id);
-			const int current = *(int *)CArrayGet(&a->ammo, p->class->u.Ammo.Id);
-			if (current >= ammo->Max)
-			{
-				canPickup = false;
-				break;
-			}
-
-			// Take ammo
-			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD_AMMO);
-			e.u.AddAmmo.UID = a->uid;
-			e.u.AddAmmo.PlayerUID = a->PlayerUID;
-			e.u.AddAmmo.AmmoId = p->class->u.Ammo.Id;
-			e.u.AddAmmo.Amount = p->class->u.Ammo.Amount;
-			e.u.AddAmmo.IsRandomSpawned = p->IsRandomSpawned;
-			// Note: receiving end will prevent ammo from exceeding max
-			GameEventsEnqueue(&gGameEvents, e);
-
-			sound = ammo->Sound;
+			canPickup = TryPickupGun(a, p, pickupAll, &sound);
+		}
+		else
+		{
+			canPickup = TryPickupAmmo(a, p, &sound);
 		}
 		break;
 
@@ -195,10 +167,6 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 			e.u.AddKeys.Pos = Vec2ToNet(actorPos);
 			GameEventsEnqueue(&gGameEvents, e);
 		}
-		break;
-
-	case PICKUP_GUN:
-		canPickup = TryPickupGun(a, p, pickupAll, &sound);
 		break;
 
 	default:
@@ -222,6 +190,70 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 		// Prevent multiple pickups by marking
 		p->PickedUp = true;
 	}
+}
+
+static bool HasGunUsingAmmo(const TActor *a, const int ammoId);
+static bool TreatAsGunPickup(const Pickup *p, const TActor *a)
+{
+	// Grenades can also be gun pickups; treat as gun pickup if the player
+	// doesn't have its ammo
+	switch (p->class->Type)
+	{
+	case PICKUP_AMMO:
+		if (!HasGunUsingAmmo(a, p->class->u.Ammo.Id))
+		{
+			const Ammo *ammo = AmmoGetById(&gAmmo, p->class->u.Ammo.Id);
+			if (ammo->DefaultGun)
+			{
+				return true;
+			}
+		}
+		return false;
+	case PICKUP_GUN:
+		{
+			const WeaponClass *wc = IdWeaponClass(p->class->u.GunId);
+			return !wc->IsGrenade || !HasGunUsingAmmo(a, wc->AmmoId);
+		}
+	default:
+		CASSERT(false, "unexpected pickup type");
+		return false;
+	}
+}
+static bool HasGunUsingAmmo(const TActor *a, const int ammoId)
+{
+	for (int i = 0; i < MAX_WEAPONS; i++)
+	{
+		if (a->guns[i].Gun != NULL &&
+			a->guns[i].Gun->AmmoId == ammoId)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+static bool TryPickupAmmo(TActor *a, const Pickup *p, const char **sound)
+{
+	// Don't pickup if ammo full
+	const Ammo *ammo = AmmoGetById(&gAmmo, p->class->u.Ammo.Id);
+	const int current = *(int *)CArrayGet(&a->ammo, p->class->u.Ammo.Id);
+	if (current >= ammo->Max)
+	{
+		return false;
+	}
+
+	// Take ammo
+	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD_AMMO);
+	e.u.AddAmmo.UID = a->uid;
+	e.u.AddAmmo.PlayerUID = a->PlayerUID;
+	e.u.AddAmmo.AmmoId = p->class->u.Ammo.Id;
+	e.u.AddAmmo.Amount = p->class->u.Ammo.Amount;
+	e.u.AddAmmo.IsRandomSpawned = p->IsRandomSpawned;
+	// Note: receiving end will prevent ammo from exceeding max
+	GameEventsEnqueue(&gGameEvents, e);
+
+	*sound = ammo->Sound;
+	return true;
 }
 static bool TryPickupGun(
 	TActor *a, const Pickup *p, const bool pickupAll, const char **sound)
@@ -298,6 +330,11 @@ bool PickupIsManual(const Pickup *p)
 	{
 	case PICKUP_GUN:
 		return true;
+	case PICKUP_AMMO:
+		{
+			const Ammo *ammo = AmmoGetById(&gAmmo, p->class->u.Ammo.Id);
+			return ammo->DefaultGun != NULL;
+		}
 	default:
 		return false;
 	}
