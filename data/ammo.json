@@ -66,6 +66,13 @@
     },
     {
       "Name": "Gas bombs",
+      "Pic": "confusion_grenade_pickup",
+      "Sound": "grenade_pickup",
+      "Amount": 5,
+      "Max": 30
+    },
+    {
+      "Name": "Confusion bombs",
       "Pic": "gas_grenade_pickup",
       "Sound": "grenade_pickup",
       "Amount": 5,
