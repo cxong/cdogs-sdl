@@ -65,6 +65,7 @@
     },
     {
       "Pic": "",
+      "IsGrenade": true,
       "Name": "Prototype III",
       "Bullet": "proto_bomb",
       "Cost": 20,
@@ -72,10 +73,9 @@
       "Sound": "launch",
       "SwitchSound": "grenade_pickup",
       "Elevation": 24,
-      "Ammo": "Frag grenades"
+      "Ammo": "Protobombs"
     },
     {
-      "Index": 0,
       "Pic": "",
       "Icon": "",
       "Name": "Steel Teeth",

@@ -51,31 +51,6 @@
       "Power": 12
     },
     {
-      "Name": "bio_grenade",
-      "Pic": {
-        "Type": "Animated",
-        "Sprites": "grenade",
-        "TicksPerFrame": 2
-      },
-      "ShadowSize": [6, 4],
-      "Speed": 384,
-      "Range": 100,
-      "Spark": "",
-      "HitSounds": {
-        "Object": "",
-        "Flesh": "",
-        "Wall": "bounce"
-      },
-      "WallBounces": true,
-      "HitsObjects": false,
-      "Falling": {
-        "GravityFactor": 1
-      },
-      "OutOfRangeGuns": [
-        "particle_explosion"
-      ]
-    },
-    {
       "Name": "yellow_particle",
       "Pic": {
         "Type": "Directional",

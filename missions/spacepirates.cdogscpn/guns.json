@@ -74,7 +74,7 @@
     },
     {
       "Pic": "",
-      "Icon": "grenades",
+      "IsGrenade": true,
       "Name": "Bioreactive Grenades",
       "Bullet": "bio_grenade",
       "Cost": 10,
@@ -82,7 +82,7 @@
       "Sound": "launch",
       "SwitchSound": "grenade_pickup",
       "Elevation": 24,
-      "Ammo": "Grenades"
+      "Ammo": "Bio Grenades"
     }
   ], "PseudoGuns" : [
     {

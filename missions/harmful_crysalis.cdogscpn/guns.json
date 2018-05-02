@@ -50,18 +50,6 @@
     },
     {
       "Pic": "",
-      "Icon": "grenades",
-      "Name": "Bioreactive Grenades",
-      "Bullet": "bio_grenade",
-      "Cost": 10,
-      "Lock": 30,
-      "Sound": "launch",
-      "SwitchSound": "grenade_pickup",
-      "Elevation": 24,
-      "Ammo": "Grenades"
-    },
-    {
-      "Pic": "",
       "Name": "Monster Bite",
       "Bullet": "monster_bite",
       "Cost": 0,

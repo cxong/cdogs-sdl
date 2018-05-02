@@ -73,7 +73,7 @@
     },
     {
       "Name": "Confusion bombs",
-      "Pic": "confusion_grenade_pickup",
+      "Pic": "confusion_grenade",
       "Sound": "grenade_pickup",
       "Amount": 5,
       "Max": 30

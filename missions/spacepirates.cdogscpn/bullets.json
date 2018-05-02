@@ -71,7 +71,7 @@
       "Name": "bio_grenade",
       "Pic": {
         "Type": "Animated",
-        "Sprites": "grenade",
+        "Sprites": "bio_grenade",
         "TicksPerFrame": 2
       },
       "ShadowSize": [6, 4],
