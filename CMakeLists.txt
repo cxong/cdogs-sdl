@@ -11,7 +11,7 @@ project(cdogs-sdl C)
 
 SET(VERSION_MAJOR "0")
 SET(VERSION_MINOR "6")
-SET(VERSION_PATCH "6")
+SET(VERSION_PATCH "7")
 SET(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/appveyor.yml.cmake ${CMAKE_SOURCE_DIR}/appveyor.yml)
 # this must be 4 numbers

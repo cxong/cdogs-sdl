@@ -33,6 +33,7 @@
 #include <cdogs/ai_coop.h>
 #include <cdogs/font.h>
 
+#define NO_GUN_LABEL "(None)"
 #define END_MENU_LABEL "(End)"
 
 
@@ -56,6 +57,10 @@ static const WeaponClass *GetSelectedGun(const menu_t *menu)
 {
 	const menu_t *subMenu =
 		CArrayGet(&menu->u.normal.subMenus, menu->u.normal.index);
+	if (strcmp(subMenu->name, NO_GUN_LABEL) == 0)
+	{
+		return NULL;
+	}
 	return StrWeaponClass(subMenu->name);
 }
 
@@ -132,7 +137,7 @@ static void SetEquippedMenuItemName(
 	}
 	else
 	{
-		CSTRDUP(menu->name, "(none)");
+		CSTRDUP(menu->name, NO_GUN_LABEL);
 	}
 }
 static void AddEquippedMenuItem(
@@ -221,7 +226,7 @@ static menu_t *CreateGunMenu(
 {
 	menu_t *menu = MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
 	menu->u.normal.maxItems = 11;
-	MenuAddSubmenu(menu, MenuCreate("(none)", MENU_TYPE_BASIC));
+	MenuAddSubmenu(menu, MenuCreate(NO_GUN_LABEL, MENU_TYPE_BASIC));
 	CA_FOREACH(const WeaponClass *, wc, *weapons)
 		if ((*wc)->IsGrenade != isGrenade)
 		{
