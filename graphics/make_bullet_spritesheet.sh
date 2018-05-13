@@ -16,7 +16,7 @@ BASENAME=`basename "$1" | cut -d. -f1`
 DIMENSIONS=`identify -format "%wx%h" $1`
 OUTFILE=${BASENAME}_${DIMENSIONS}.png
 
-command="$command +append -channel A -threshold 60% $OUTFILE"
+command="$command +append -alpha on $OUTFILE"
 
 eval $command
 
