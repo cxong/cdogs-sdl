@@ -1,4 +1,7 @@
-Derived from Bullet Collection 2 (M484 Games)
-by Master484 (http://m484games.ucoz.com/)
-http://opengameart.org/content/bullet-collection-2-m484-games
-http://creativecommons.org/publicdomain/zero/1.0/
+Adapted from Space Ship Construction Kit
+By Skorpio
+http://opengameart.org/content/space-ship-construction-kit
+Muzzle_flashes.zip
+Bullet
+
+http://creativecommons.org/licenses/by-sa/3.0/

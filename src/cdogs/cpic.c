@@ -146,6 +146,9 @@ static void LoadMaskTint(CPic *p, json_t *node)
 	}
 	else if (json_find_first_label(node, "Tint"))
 	{
+		// TODO: create new pic, as tinting does not work correctly using mask
+		// Mask only darkens, whereas tinting can change hue without affecting
+		// value, for example
 		json_t *tint = json_find_first_label(node, "Tint")->child->child;
 		HSV hsv;
 		hsv.h = atof(tint->text);
