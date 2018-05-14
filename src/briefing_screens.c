@@ -809,7 +809,7 @@ static void DrawObjectiveInfo(const Objective *o, const struct vec2i pos)
 		break;
 	case OBJECTIVE_COLLECT:
 		{
-			const Pic *p = o->u.Pickup->Pic;
+			const Pic *p = CPicGetPic(&o->u.Pickup->Pic, 0);
 			Blit(&gGraphicsDevice, p,
 				svec2i_subtract(pos, svec2i_scale_divide(p->size, 2)));
 		}

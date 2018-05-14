@@ -62,7 +62,8 @@ void DrawKey(UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
 		return;
 	}
 	const Mission *m = CampaignGetCurrentMission(&gCampaign);
-	const Pic *pic = KeyPickupClass(m->KeyStyle, data->u.ItemIndex)->Pic;
+	const Pic *pic = CPicGetPic(
+		&KeyPickupClass(m->KeyStyle, data->u.ItemIndex)->Pic, 0);
 	pos = svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2));
 	pos = svec2i_subtract(pos, svec2i_scale_divide(pic->size, 2));
 	Blit(g, pic, pos);

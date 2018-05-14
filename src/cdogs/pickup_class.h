@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2015-2016, Cong Xu
+    Copyright (c) 2015-2016, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -57,7 +57,7 @@ typedef struct
 		int Keys;	// Refer to flags in mission.h
 		int GunId;
 	} u;
-	const Pic *Pic;
+	CPic Pic;
 } PickupClass;
 typedef struct
 {

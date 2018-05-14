@@ -123,14 +123,7 @@ static void DrawObjectiveHighlight(
 		alphaUnscaled = 255 * 2 - alphaUnscaled;
 	}
 	color.a = (Uint8)alphaUnscaled;
-	if (ti->getPicFunc != NULL)
-	{
-		struct vec2i picOffset;
-		const Pic *pic = ti->getPicFunc(ti->id, &picOffset);
-		BlitPicHighlight(
-			&gGraphicsDevice, pic, svec2i_add(pos, picOffset), color);
-	}
-	else if (ti->kind == KIND_CHARACTER)
+	if (ti->kind == KIND_CHARACTER)
 	{
 		TActor *a = CArrayGet(&gActors, ti->id);
 		ActorPics pics = GetCharacterPicsFromActor(a);

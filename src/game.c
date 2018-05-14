@@ -66,6 +66,7 @@
 #include <cdogs/net_client.h>
 #include <cdogs/net_server.h>
 #include <cdogs/objs.h>
+#include <cdogs/pickup.h>
 
 #include "briefing_screens.h"
 #include "hiscores.h"
@@ -600,6 +601,7 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 	UpdateAllActors(ticksPerFrame);
 	UpdateObjects(ticksPerFrame);
 	UpdateMobileObjects(ticksPerFrame);
+	PickupsUpdate(&gPickups, ticksPerFrame);
 	ParticlesUpdate(&gParticles, ticksPerFrame);
 
 	UpdateWatches(&rData->map->triggers, ticksPerFrame);

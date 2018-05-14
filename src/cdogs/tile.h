@@ -99,8 +99,6 @@ typedef enum
 #define OBJECTIVE_SHIFT         3
 
 
-typedef const Pic *(*TileItemGetPicFunc)(int, struct vec2i *);
-
 typedef struct
 {
 	int MobObjId;
@@ -123,7 +121,6 @@ typedef struct TileItem
 	TileItemKind kind;
 	int id;	// Id of item (actor, mobobj or obj)
 	int flags;
-	TileItemGetPicFunc getPicFunc;
 	TileItemDrawFunc drawFunc;
 	TileItemDrawFuncData drawData;
 	CPic CPic;

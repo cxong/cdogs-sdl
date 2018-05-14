@@ -464,10 +464,11 @@ static void MissionDrawKeyStyle(
 		return;
 	}
 	const int idx = PicManagerGetKeyStyleIndex(&gPicManager, m->KeyStyle);
+	const Pic *pic = CPicGetPic(&KeyPickupClass(m->KeyStyle, 0)->Pic, 0);
 	DrawStyleArea(
 		svec2i_add(pos, o->Pos),
 		"Keys",
-		KeyPickupClass(m->KeyStyle, 0)->Pic,
+		pic,
 		idx, (int)gPicManager.keyStyleNames.size,
 		UIObjectIsHighlighted(o));
 }
@@ -1640,7 +1641,7 @@ static void DrawMapItem(
 	if (data->M->Type == MAP_OBJECT_TYPE_PICKUP_SPAWNER)
 	{
 		// Also draw the pickup object spawned by this spawner
-		const Pic *pic = data->M->u.PickupClass->Pic;
+		const Pic *pic = CPicGetPic(&data->M->u.PickupClass->Pic, 0);
 		pos = svec2i_subtract(pos, svec2i_scale_divide(pic->size, 2));
 		Blit(
 			g, pic,

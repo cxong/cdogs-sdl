@@ -1304,7 +1304,6 @@ TActor *ActorAdd(NActorAdd aa)
 	actor->action = ACTORACTION_MOVING;
 	actor->tileItem.Pos.x = actor->tileItem.Pos.y = -1;
 	actor->tileItem.kind = KIND_CHARACTER;
-	actor->tileItem.getPicFunc = NULL;
 	actor->tileItem.drawFunc = NULL;
 	actor->tileItem.size = svec2i(ACTOR_W, ACTOR_H);
 	actor->tileItem.flags =

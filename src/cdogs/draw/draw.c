@@ -280,14 +280,6 @@ static void DrawThing(
 	{
 		t->CPicFunc(b->g, t->id, picPos);
 	}
-	else if (t->getPicFunc)
-	{
-		struct vec2i picOffset;
-		const Pic *pic = t->getPicFunc(t->id, &picOffset);
-		const struct vec2i drawPos = svec2i_add(picPos, picOffset);
-		PicRender(
-			pic, gGraphicsDevice.gameWindow.renderer, drawPos, colorWhite);
-	}
 	else if (t->kind == KIND_CHARACTER)
 	{
 		TActor *a = CArrayGet(&gActors, t->id);

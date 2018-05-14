@@ -83,7 +83,9 @@ void NamedSpritesInit(NamedSprites *ns, const char *name);
 void NamedSpritesFree(NamedSprites *ns);
 
 void CPicLoadJSON(CPic *p, json_t *node);
-void CPicLoadNormal(CPic *p, json_t *node);
+void CPicInitNormal(CPic *p, const Pic *pic);
+void CPicInitNormalFromName(CPic *p, const char *name);
+void CPicLoadNormal(CPic *p, const json_t *node);
 bool CPicIsLoaded(const CPic *p);
 struct vec2i CPicGetSize(const CPic *p);
 // Copy everything except frame

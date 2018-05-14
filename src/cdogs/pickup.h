@@ -54,6 +54,8 @@ int PickupsGetNextUID(void);
 void PickupAdd(const NAddPickup ap);
 void PickupDestroy(const int uid);
 
+void PickupsUpdate(CArray *pickups, const int ticks);
+
 void PickupPickup(TActor *a, Pickup *p, const bool pickupAll);
 // Check if the pickup needs to be picked up manually
 bool PickupIsManual(const Pickup *p);

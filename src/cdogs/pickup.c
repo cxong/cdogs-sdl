@@ -37,6 +37,7 @@
 
 CArray gPickups;
 static unsigned int sPickupUIDs;
+#define PICKUP_SIZE svec2i(8, 8)
 
 
 void PickupsInit(void)
@@ -59,7 +60,8 @@ int PickupsGetNextUID(void)
 {
 	return sPickupUIDs++;
 }
-static const Pic *GetPickupPic(const int id, struct vec2i *offset);
+static void PickupDraw(
+	GraphicsDevice *g, const int id, const struct vec2i pos);
 void PickupAdd(const NAddPickup ap)
 {
 	// Check if existing pickup
@@ -92,8 +94,9 @@ void PickupAdd(const NAddPickup ap)
 	p->UID = ap.UID;
 	p->class = StrPickupClass(ap.PickupClass);
 	TileItemInit(
-		&p->tileItem, i, KIND_PICKUP, p->class->Pic->size, ap.TileItemFlags);
-	p->tileItem.getPicFunc = GetPickupPic;
+		&p->tileItem, i, KIND_PICKUP, PICKUP_SIZE, ap.TileItemFlags);
+	p->tileItem.CPic = p->class->Pic;
+	p->tileItem.CPicFunc = PickupDraw;
 	MapTryMoveTileItem(&gMap, &p->tileItem, NetToVec2(ap.Pos));
 	p->IsRandomSpawned = ap.IsRandomSpawned;
 	p->PickedUp = false;
@@ -106,6 +109,17 @@ void PickupDestroy(const int uid)
 	CASSERT(p->isInUse, "Destroying not-in-use pickup");
 	MapRemoveTileItem(&gMap, &p->tileItem);
 	p->isInUse = false;
+}
+
+void PickupsUpdate(CArray *pickups, const int ticks)
+{
+	CA_FOREACH(Pickup, p, *pickups)
+		if (!p->isInUse)
+		{
+			continue;
+		}
+		TileItemUpdate(&p->tileItem, ticks);
+	CA_FOREACH_END()
 }
 
 static bool TreatAsGunPickup(const Pickup *p, const TActor *a);
@@ -340,11 +354,20 @@ bool PickupIsManual(const Pickup *p)
 	}
 }
 
-static const Pic *GetPickupPic(const int id, struct vec2i *offset)
+static void PickupDraw(
+	GraphicsDevice *g, const int id, const struct vec2i pos)
 {
 	const Pickup *p = CArrayGet(&gPickups, id);
-	*offset = svec2i_scale_divide(p->class->Pic->size, -2);
-	return p->class->Pic;
+	CASSERT(p->isInUse, "Cannot draw non-existent pickup");
+	CPicDrawContext c;
+	c.Dir = DIRECTION_UP;
+	c.Offset = svec2i_zero();
+	const Pic *pic = CPicGetPic(&p->tileItem.CPic, c.Dir);
+	if (pic != NULL)
+	{
+		c.Offset = svec2i_scale_divide(CPicGetSize(&p->class->Pic), -2);
+	}
+	CPicDraw(g, &p->tileItem.CPic, pos, &c);
 }
 
 Pickup *PickupGetByUID(const int uid)

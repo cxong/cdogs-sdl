@@ -163,7 +163,7 @@ int StrPickupClassId(const char *s)
 	return 0;
 }
 
-#define VERSION 1
+#define VERSION 2
 
 void PickupClassesInit(
 	PickupClasses *classes, const char *filename,
@@ -200,7 +200,8 @@ bail:
 	}
 	json_free_value(&root);
 }
-static bool TryLoadPickupclass(PickupClass *c, json_t *node);
+static bool TryLoadPickupclass(
+	PickupClass *c, json_t *node, const int version);
 void PickupClassesLoadJSON(CArray *classes, json_t *root)
 {
 	int version = -1;
@@ -215,13 +216,14 @@ void PickupClassesLoadJSON(CArray *classes, json_t *root)
 	for (json_t *child = pickupsNode->child; child; child = child->next)
 	{
 		PickupClass c;
-		if (TryLoadPickupclass(&c, child))
+		if (TryLoadPickupclass(&c, child, version))
 		{
 			CArrayPushBack(classes, &c);
 		}
 	}
 }
-static bool TryLoadPickupclass(PickupClass *c, json_t *node)
+static bool TryLoadPickupclass(
+	PickupClass *c, json_t *node, const int version)
 {
 	memset(c, 0, sizeof *c);
 	char *tmp;
@@ -256,25 +258,31 @@ static bool TryLoadPickupclass(PickupClass *c, json_t *node)
 		break;
 	}
 	c->Name = GetString(node, "Name");
-	LoadPic(&c->Pic, node, "Pic");
+	json_t *picNode = json_find_first_label(node, "Pic")->child;
+	if (version < 2)
+	{
+		CPicLoadNormal(&c->Pic, picNode);
+	}
+	else
+	{
+		CPicLoadJSON(&c->Pic, picNode);
+	}
 	return true;
 }
 
 void PickupClassesLoadAmmo(CArray *classes, const CArray *ammoClasses)
 {
-	for (int i = 0; i < (int)ammoClasses->size; i++)
-	{
-		const Ammo *a = CArrayGet(ammoClasses, i);
+	CA_FOREACH(const Ammo, a, *ammoClasses)
 		PickupClass c;
 		char buf[256];
 		sprintf(buf, "ammo_%s", a->Name);
 		CSTRDUP(c.Name, buf);
-		c.Pic = a->Pic;
+		CPicInitNormal(&c.Pic, a->Pic);
 		c.Type = PICKUP_AMMO;
 		c.u.Ammo.Id = StrAmmoId(a->Name);
 		c.u.Ammo.Amount = a->Amount;
 		CArrayPushBack(classes, &c);
-	}
+	CA_FOREACH_END()
 }
 
 void PickupClassesLoadGuns(CArray *classes, const CArray *gunClasses)
@@ -284,7 +292,7 @@ void PickupClassesLoadGuns(CArray *classes, const CArray *gunClasses)
 		char buf[256];
 		sprintf(buf, "gun_%s", wc->name);
 		CSTRDUP(c.Name, buf);
-		c.Pic = wc->Icon;
+		CPicInitNormal(&c.Pic, wc->Icon);
 		c.Type = PICKUP_GUN;
 		c.u.GunId = WeaponClassId(wc);
 		CArrayPushBack(classes, &c);
@@ -301,7 +309,7 @@ void PickupClassesLoadKeys(CArray *classes)
 			char buf[CDOGS_FILENAME_MAX];
 			sprintf(buf, "keys/%s/%s", *keyStyleName, keyColors[i]);
 			CSTRDUP(c.Name, buf);
-			c.Pic = PicManagerGetPic(&gPicManager, c.Name);
+			CPicInitNormalFromName(&c.Pic, c.Name);
 			c.Type = PICKUP_KEYCARD;
 			c.u.Keys = StrKeycard(keyColors[i]);
 			CArrayPushBack(classes, &c);

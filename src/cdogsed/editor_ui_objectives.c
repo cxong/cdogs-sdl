@@ -486,7 +486,7 @@ static void MissionDrawCollectObjective(
 	if ((int)m->Objectives.size <= data->index) return;
 	// TODO: only one kill and rescue objective allowed
 	const Objective *obj = CArrayGet(&m->Objectives, data->index);
-	const Pic *newPic = obj->u.Pickup->Pic;
+	const Pic *newPic = CPicGetPic(&obj->u.Pickup->Pic, 0);
 	const struct vec2i drawPos =
 		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2));
 	Blit(g, newPic, svec2i_subtract(drawPos, svec2i_scale_divide(newPic->size, 2)));

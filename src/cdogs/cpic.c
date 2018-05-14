@@ -72,7 +72,7 @@ void NamedSpritesFree(NamedSprites *ns)
 	CArrayTerminate(&ns->pics);
 }
 
-static void LoadNormal(CPic *p, json_t *node);
+static void LoadNormal(CPic *p, const json_t *node);
 static void LoadMaskTint(CPic *p, json_t *node);
 
 void CPicLoadJSON(CPic *p, json_t *node)
@@ -121,14 +121,27 @@ bail:
 	return;
 }
 
-void CPicLoadNormal(CPic *p, json_t *node)
+void CPicInitNormal(CPic *p, const Pic *pic)
+{
+	p->Type = PICTYPE_NORMAL;
+	p->u.Pic = pic;
+	p->Mask = colorWhite;
+}
+void CPicInitNormalFromName(CPic *p, const char *name)
+{
+	p->Type = PICTYPE_NORMAL;
+	p->u.Pic = PicManagerGetPic(&gPicManager, name);
+	p->Mask = colorWhite;
+}
+
+void CPicLoadNormal(CPic *p, const json_t *node)
 {
 	p->Type = PICTYPE_NORMAL;
 	LoadNormal(p, node);
 	p->Mask = colorWhite;
 }
 
-static void LoadNormal(CPic *p, json_t *node)
+static void LoadNormal(CPic *p, const json_t *node)
 {
 	char *tmp = json_unescape(node->text);
 	p->u.Pic = PicManagerGetPic(&gPicManager, tmp);

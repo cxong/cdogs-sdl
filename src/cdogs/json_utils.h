@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2013-2017 Cong Xu
+ Copyright (c) 2013-2018 Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -50,7 +50,7 @@ void LoadVec2(struct vec2 *value, json_t *node, const char *name);
 
 // remember to free
 void LoadStr(char **value, json_t *node, const char *name);
-char *GetString(json_t *node, const char *name);
+char *GetString(const json_t *node, const char *name);
 
 void LoadSoundFromNode(Mix_Chunk **value, json_t *node, const char *name);
 // Load a const Pic * based on a name

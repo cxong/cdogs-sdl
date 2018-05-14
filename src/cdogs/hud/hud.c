@@ -1027,8 +1027,9 @@ static void DrawKeycards(HUD *hud)
 	{
 		if (hud->mission->KeyFlags & keyFlags[i])
 		{
-			const Pic *pic = KeyPickupClass(
-				hud->mission->missionData->KeyStyle, i)->Pic;
+			const Pic *pic = CPicGetPic(
+				&KeyPickupClass(hud->mission->missionData->KeyStyle, i)->Pic,
+				0);
 			Blit(
 				&gGraphicsDevice,
 				pic,

@@ -85,7 +85,7 @@ static void DrawPickupSpawner(
 	const MapObject *mo = data->u.MapObject;
 	DisplayMapItem(
 		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)), mo);
-	const Pic *pic = mo->u.PickupClass->Pic;
+	const Pic *pic = CPicGetPic(&mo->u.PickupClass->Pic, 0);
 	pos = svec2i_subtract(pos, svec2i_scale_divide(pic->size, 2));
 	Blit(g, pic, svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)));
 }
@@ -134,7 +134,7 @@ static void DrawObjective(
 		break;
 	case OBJECTIVE_COLLECT:
 		{
-			const Pic *p = obj->u.Pickup->Pic;
+			const Pic *p = CPicGetPic(&obj->u.Pickup->Pic, 0);
 			pos = svec2i_subtract(pos, svec2i_scale_divide(p->size, 2));
 			Blit(&gGraphicsDevice, p, pos);
 		}
