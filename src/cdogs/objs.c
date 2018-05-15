@@ -67,13 +67,12 @@ static unsigned int sMobObjUIDs = 0;
 static void MapObjectDraw(
 	GraphicsDevice *g, const int id, const struct vec2i pos)
 {
-	TObject *obj = CArrayGet(&gObjs, id);
+	const TObject *obj = CArrayGet(&gObjs, id);
 	CASSERT(obj->isInUse, "Cannot draw non-existent map object");
 	CPicDrawContext c;
 	c.Dir = DIRECTION_UP;
 	c.Offset = obj->Class->Offset;
-	CPicCopyPic(&obj->tileItem.CPic, &obj->Class->Pic);
-	CPicDraw(g, &obj->Class->Pic, pos, &c);
+	CPicDraw(g, &obj->tileItem.CPic, pos, &c);
 }
 
 

@@ -491,8 +491,10 @@ static void SetupSpawner(
 {
 	memset(m, 0, sizeof *m);
 	CSTRDUP(m->Name, spawnerName);
-	m->Pic.Type = PICTYPE_NORMAL;
-	m->Pic.u.Pic = PicManagerGetPic(&gPicManager, "spawn_pad");
+	m->Pic.Type = PICTYPE_ANIMATED;
+	m->Pic.u.Animated.Sprites =
+		&PicManagerGetSprites(&gPicManager, "spawn_pad")->pics;
+	m->Pic.u.Animated.TicksPerFrame = 8;
 	m->Pic.Mask = colorWhite;
 	const struct vec2i size = CPicGetSize(&m->Pic);
 	m->Offset = svec2i(-size.x / 2, TILE_HEIGHT / 2 - size.y);
