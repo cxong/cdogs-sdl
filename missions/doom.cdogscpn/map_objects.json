@@ -4,8 +4,9 @@
     {
       "Name": "barrel_nukage",
       "Pic": {
-        "Type": "Normal",
-        "Pic": "barrel_nukage"
+        "Type": "Animated",
+        "Sprites": "barrel_nukage",
+        "TicksPerFrame": 10
       },
       "Wreck": "barrel_nukage_wreck",
       "Health": 20,
