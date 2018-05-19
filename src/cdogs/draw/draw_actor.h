@@ -76,7 +76,9 @@ typedef struct
 void DrawCharacterSimple(
 	Character *c, const struct vec2i pos, const direction_e d,
 	const bool hilite, const bool showGun);
-void DrawHead(const Character *c, const direction_e dir, const struct vec2i pos);
+void DrawHead(
+	SDL_Renderer *renderer, const Character *c, const direction_e dir,
+	const struct vec2i pos);
 
 void DrawChatters(DrawBuffer *b, const struct vec2i offset);
 

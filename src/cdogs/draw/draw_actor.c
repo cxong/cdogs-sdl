@@ -502,12 +502,13 @@ void DrawCharacterSimple(
 }
 
 void DrawHead(
-	const Character *c, const direction_e dir, const struct vec2i pos)
+	SDL_Renderer *renderer, const Character *c, const direction_e dir,
+	const struct vec2i pos)
 {
 	const Pic *head = GetHeadPic(c->Class, dir, GUNSTATE_READY, &c->Colors);
 	const struct vec2i drawPos = svec2i_subtract(pos, svec2i(
 		head->size.x / 2, head->size.y / 2));
-	PicRender(head, gGraphicsDevice.gameWindow.renderer, drawPos, colorWhite);
+	PicRender(head, renderer, drawPos, colorWhite);
 }
 #define DYING_BODY_OFFSET 3
 static void DrawDyingBody(

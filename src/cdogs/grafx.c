@@ -306,14 +306,14 @@ void GraphicsInitialize(GraphicsDevice *g)
 		if (g->cachedConfig.SecondWindow)
 		{
 			g->bkgTgt2 = WindowContextCreateTexture(
-				&g->gameWindow, SDL_TEXTUREACCESS_TARGET, svec2i(w, h),
+				&g->secondWindow, SDL_TEXTUREACCESS_TARGET, svec2i(w, h),
 				SDL_BLENDMODE_NONE, 255, true);
 			if (g->bkgTgt2 == NULL)
 			{
 				return;
 			}
 			g->bkg2 = WindowContextCreateTexture(
-				&g->secondWindow, SDL_TEXTUREACCESS_TARGET, svec2i(w, h),
+				&g->secondWindow, SDL_TEXTUREACCESS_STATIC, svec2i(w, h),
 				SDL_BLENDMODE_BLEND, 255, true);
 			if (g->bkg2 == NULL)
 			{

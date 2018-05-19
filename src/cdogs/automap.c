@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, 2016 Cong Xu
+    Copyright (c) 2013-2014, 2016, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -80,13 +80,15 @@ color_t colorExit = { 255, 255, 255, 255 };
 
 
 
-static void DisplayPlayer(const TActor *player, struct vec2i pos, const int scale)
+static void DisplayPlayer(
+	SDL_Renderer *renderer, const TActor *player, struct vec2i pos,
+	const int scale)
 {
 	const struct vec2i playerPos = Vec2ToTile(player->tileItem.Pos);
 	pos = svec2i_add(pos, svec2i_scale(playerPos, (float)scale));
 	if (scale >= 2)
 	{
-		DrawHead(ActorGetCharacter(player), DIRECTION_DOWN, pos);
+		DrawHead(renderer, ActorGetCharacter(player), DIRECTION_DOWN, pos);
 	}
 	else
 	{
@@ -322,7 +324,7 @@ static void DrawTileItem(
 	}
 }
 
-void AutomapDraw(int flags, bool showExit)
+void AutomapDraw(SDL_Renderer *renderer, const int flags, const bool showExit)
 {
 	color_t mask = { 0, 128, 0, 255 };
 	struct vec2i mapCenter = svec2i(
@@ -348,7 +350,7 @@ void AutomapDraw(int flags, bool showExit)
 		{
 			continue;
 		}
-		DisplayPlayer(ActorGetByUID(p->ActorUID), pos, MAP_FACTOR);
+		DisplayPlayer(renderer, ActorGetByUID(p->ActorUID), pos, MAP_FACTOR);
 	CA_FOREACH_END()
 
 	if (showExit)
@@ -359,8 +361,9 @@ void AutomapDraw(int flags, bool showExit)
 }
 
 void AutomapDrawRegion(
-	Map *map,
-	struct vec2i pos, struct vec2i size, struct vec2i mapCenter, int flags, bool showExit)
+	SDL_Renderer *renderer, Map *map,
+	struct vec2i pos, const struct vec2i size, const struct vec2i mapCenter,
+	const int flags, const bool showExit)
 {
 	const int scale = 1;
 	const BlitClipping oldClip = gGraphicsDevice.clipping;
@@ -377,7 +380,7 @@ void AutomapDrawRegion(
 			continue;
 		}
 		const TActor *player = ActorGetByUID(p->ActorUID);
-		DisplayPlayer(player, centerOn, scale);
+		DisplayPlayer(renderer, player, centerOn, scale);
 	CA_FOREACH_END()
 	DrawObjectivesAndKeys(&gMap, centerOn, scale, flags);
 	if (showExit)

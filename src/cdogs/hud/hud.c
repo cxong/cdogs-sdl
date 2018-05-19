@@ -349,7 +349,9 @@ static void DrawLives(
 	}
 	for (int i = 0; i < player->Lives; i++)
 	{
-		DrawHead(&player->Char, DIRECTION_DOWN, drawPos);
+		DrawHead(
+			device->gameWindow.renderer, &player->Char, DIRECTION_DOWN,
+			drawPos);
 		drawPos.x += xStep;
 	}
 }
@@ -449,6 +451,7 @@ static void DrawRadar(
 	{
 		const struct vec2i playerPos = Vec2ToTile(p->tileItem.Pos);
 		AutomapDrawRegion(
+			device->gameWindow.renderer,
 			&gMap,
 			pos,
 			svec2i(AUTOMAP_SIZE, AUTOMAP_SIZE),
@@ -464,6 +467,7 @@ static void DrawSharedRadar(GraphicsDevice *device, bool showExit)
 	struct vec2i pos = svec2i(w / 2 - AUTOMAP_SIZE / 2, AUTOMAP_PADDING);
 	const struct vec2i playerMidpoint = Vec2ToTile(PlayersGetMidpoint());
 	AutomapDrawRegion(
+		device->gameWindow.renderer,
 		&gMap,
 		pos,
 		svec2i(AUTOMAP_SIZE, AUTOMAP_SIZE),

@@ -797,14 +797,16 @@ static void DrawObjectiveInfo(const Objective *o, const struct vec2i pos)
 		{
 			const Character *cd = CArrayGet(
 				&store->OtherChars, CharacterStoreGetSpecialId(store, 0));
-			DrawHead(cd, DIRECTION_DOWN, pos);
+			DrawHead(
+				gGraphicsDevice.gameWindow.renderer, cd, DIRECTION_DOWN, pos);
 		}
 		break;
 	case OBJECTIVE_RESCUE:
 		{
 			const Character *cd = CArrayGet(
 				&store->OtherChars, CharacterStoreGetPrisonerId(store, 0));
-			DrawHead(cd, DIRECTION_DOWN, pos);
+			DrawHead(
+				gGraphicsDevice.gameWindow.renderer, cd, DIRECTION_DOWN, pos);
 		}
 		break;
 	case OBJECTIVE_COLLECT:

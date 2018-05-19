@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2014, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,8 @@
 #define AUTOMAP_FLAGS_SHOWALL 0x01
 #define AUTOMAP_FLAGS_MASK 0x02
 
-void AutomapDraw(int flags, bool showExit);
+void AutomapDraw(SDL_Renderer *renderer, const int flags, const bool showExit);
 void AutomapDrawRegion(
-	Map *map,
-	struct vec2i pos, struct vec2i size, struct vec2i mapCenter, int flags, bool showExit);
+	SDL_Renderer *renderer, Map *map,
+	struct vec2i pos, const struct vec2i size, const struct vec2i mapCenter,
+	const int flags, const bool showExit);

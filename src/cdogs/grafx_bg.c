@@ -116,6 +116,7 @@ static void DrawBackground(
 	GraphicsDevice *g, SDL_Texture *tTgt, SDL_Texture *t, DrawBuffer *buffer,
 	Map *map, const HSV tint, const struct vec2 pos, GrafxDrawExtra *extra)
 {
+	BlitClearBuf(g);
 	DrawBufferSetFromMap(buffer, map, pos, X_TILES);
 	DrawBufferDraw(buffer, svec2i_zero(), extra);
 	BlitUpdateFromBuf(g, t);
