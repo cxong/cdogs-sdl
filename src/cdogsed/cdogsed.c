@@ -241,7 +241,8 @@ static void Display(HandleInputResult result)
 
 	if (result.WillDisplayAutomap && mission)
 	{
-		AutomapDraw(AUTOMAP_FLAGS_SHOWALL, true);
+		AutomapDraw(
+			gGraphicsDevice.gameWindow.renderer, AUTOMAP_FLAGS_SHOWALL, true);
 	}
 	else
 	{
