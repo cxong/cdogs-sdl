@@ -28,7 +28,7 @@ To support it, we've _reduced_ the number of gun slots to two, and made grenades
 
 ![Grenade selection](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/grenade_selection.png)
 
-Although this means you can't have three guns anymore (or three grenades... I'm sure we've all played with this at some point :feelsgood:), having two guns makes it easy to switch between them, and one grenade makes the most sense.
+Although this means you can't have three guns anymore (or three grenades... I'm sure we've all played with this at some point 😈), having two guns makes it easy to switch between them, and one grenade makes the most sense.
 
 We've also added a neat grenade counter to the HUD, so you can quickly see how many you have!
 
@@ -40,7 +40,7 @@ Try it out! I think this is a great excuse to replay your favorite C-Dogs campai
 
 ## Texture Rendering
 
-We've also reworked the graphics backend to render textures instead of raw pixels. The goal was to improve performance; unfortunately that failed :frowning:, but on the bright side, it means we now support semi-transparency effects!
+We've also reworked the graphics backend to render textures instead of raw pixels. The goal was to improve performance; unfortunately that failed 😟, but on the bright side, it means we now support semi-transparency effects!
 
 This means we can have better-looking muzzle flashes, and glowy laser beams!
 
