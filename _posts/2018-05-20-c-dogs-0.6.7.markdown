@@ -44,8 +44,8 @@ We've also reworked the graphics backend to render textures instead of raw pixel
 
 This means we can have better-looking muzzle flashes, and glowy laser beams!
 
-![Before](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/sniper_pixels.png)
-![After](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/sniper_texture.png)
+![Before](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/sniper_pixels.gif)
+![After](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/sniper_texture.gif)
 
 Enjoy the eye candy!
 
