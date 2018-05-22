@@ -1,0 +1,52 @@
+---
+layout: post
+title:  "C-Dogs 0.6.7 Released!"
+date:   2018-05-20
+categories: release
+published: true
+---
+
+C-Dogs SDL 0.6.7 released! This time we've added a secondary weapon system for grenades and explosives, plus there's some graphical enhancements!
+
+## Grenade key
+
+C-Dogs grenades have always been awkward to use: you have to cycle through your weapons, standing still while doing so. What if throwing a grenade was just a single key press?
+
+Well now you can!
+
+![grenade key](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/grenade.gif)
+
+This idea isn't new, although it wasn't very common back when C-Dogs was first released. Giant Bomb calls it ["Automated Grenade Throw"](https://www.giantbomb.com/automated-grenade-throw/3015-2244/), and says it started with [Shadow Warrior](https://en.wikipedia.org/wiki/Shadow_Warrior_(1997_video_game)), but it was also available possibly earlier with [Assault Trooper (1997)](http://www.abandonia.com/en/games/486/Assault+Trooper.html), or if you want to stretch the definition, [Metal Slug (1996)](https://en.wikipedia.org/wiki/Metal_Slug), or, um, [Taito's Front Line (1982)???](https://en.wikipedia.org/wiki/Front_Line_(video_game))
+
+![Assault Trooper](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/assault_trooper.gif)
+![Metal Slug](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/metal_slug_grenades.gif)
+![Front Line](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/front_line.gif)
+
+Now it's very common, especially in FPS games, and it's a great design; grenades are really a situational weapon, so to have easy access to it without switching out your current gun is handy. Although it is possibly the biggest gameplay change we've made, it's what C-Dogs SDL is about: making a great retro game even better with modern tech and game design.
+
+To support it, we've _reduced_ the number of gun slots to two, and made grenades occupy the third slot.
+
+![Grenade selection](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/grenade_selection.png)
+
+Although this means you can't have three guns anymore (or three grenades... I'm sure we've all played with this at some point :feelsgood:), having two guns makes it easy to switch between them, and one grenade makes the most sense.
+
+We've also added a neat grenade counter to the HUD, so you can quickly see how many you have!
+
+![Grenade HUD](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/grenade_hud.png)
+
+Finally we've redesigned the way ammo pickups work for grenades. For guns we have gun pickups and ammo pickups, but for grenades, they're one and the same: if you have the same grenade type, you pick up as ammo, otherwise you can choose to switch out your grenades with the one you are picking up.
+
+Try it out! I think this is a great excuse to replay your favorite C-Dogs campaigns!
+
+## Texture Rendering
+
+We've also reworked the graphics backend to render textures instead of raw pixels. The goal was to improve performance; unfortunately that failed :frowning:, but on the bright side, it means we now support semi-transparency effects!
+
+This means we can have better-looking muzzle flashes, and glowy laser beams!
+
+![Before](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/sniper_pixels.png)
+![After](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/sniper_texture.png)
+
+Enjoy the eye candy!
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.6.7>
