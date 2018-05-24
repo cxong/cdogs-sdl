@@ -1,19 +1,6 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
@@ -22,7 +9,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, 2018 Cong Xu
+    Copyright (c) 2013-2014, 2016-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,27 +33,73 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#pragma once
+#include "thing.h"
 
-#include "map.h"
+#include "actors.h"
+#include "objs.h"
+#include "pickup.h"
+#include "tile.h"
 
-typedef struct
+
+bool IsThingInsideTile(const Thing *i, const struct vec2i tilePos)
 {
-	GraphicsDevice *g;
-	int xTop, yTop;	// offset from top/left in pixels
-	int xStart, yStart;	// starting tile of buffer
-	int dx, dy;	// remainder pixel offset from starting tile
-	struct vec2i OrigSize;
-	struct vec2i Size;	// size in tiles
-	Tile **tiles;
-	CArray displaylist;	// of const Thing *, to determine draw order
-} DrawBuffer;
+	return
+		i->Pos.x - i->size.x / 2 >= tilePos.x * TILE_WIDTH &&
+		i->Pos.x + i->size.x / 2 < (tilePos.x + 1) * TILE_WIDTH &&
+		i->Pos.y - i->size.y / 2 >= tilePos.y * TILE_HEIGHT &&
+		i->Pos.y + i->size.y / 2 < (tilePos.y + 1) * TILE_HEIGHT;
+}
 
-void DrawBufferInit(DrawBuffer *b, struct vec2i size, GraphicsDevice *g);
-void DrawBufferTerminate(DrawBuffer *b);
 
-void DrawBufferSetFromMap(
-	DrawBuffer *buffer, const Map *map, const struct vec2 origin,
-	const int width);
-void DrawBufferFix(DrawBuffer *buffer);
-void DrawBufferSortDisplayList(DrawBuffer *buffer);
+void ThingInit(
+	Thing *t, const int id, const ThingKind kind, const struct vec2i size,
+	const int flags)
+{
+	memset(t, 0, sizeof *t);
+	t->id = id;
+	t->kind = kind;
+	t->size = size;
+	t->flags = flags;
+	// Ininitalise pos
+	t->Pos = svec2(-1, -1);
+}
+
+void ThingUpdate(Thing *t, const int ticks)
+{
+	t->SoundLock = MAX(0, t->SoundLock - ticks);
+	CPicUpdate(&t->CPic, ticks);
+}
+
+
+Thing *ThingIdGetThing(const ThingId *tid)
+{
+	Thing *ti = NULL;
+	switch (tid->Kind)
+	{
+	case KIND_CHARACTER:
+		ti = &((TActor *)CArrayGet(&gActors, tid->Id))->thing;
+		break;
+	case KIND_PARTICLE:
+		ti = &((Particle *)CArrayGet(&gParticles, tid->Id))->thing;
+		break;
+	case KIND_MOBILEOBJECT:
+		ti = &((TMobileObject *)CArrayGet(
+			&gMobObjs, tid->Id))->thing;
+		break;
+	case KIND_OBJECT:
+		ti = &((TObject *)CArrayGet(&gObjs, tid->Id))->thing;
+		break;
+	case KIND_PICKUP:
+		ti = &((Pickup *)CArrayGet(&gPickups, tid->Id))->thing;
+		break;
+	default:
+		CASSERT(false, "unknown tile item to get");
+		break;
+	}
+	return ti;
+}
+
+bool ThingDrawLast(const Thing *t)
+{
+	return t->flags & THING_DRAW_LAST;
+}

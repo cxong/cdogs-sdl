@@ -84,7 +84,7 @@ static void DisplayPlayer(
 	SDL_Renderer *renderer, const TActor *player, struct vec2i pos,
 	const int scale)
 {
-	const struct vec2i playerPos = Vec2ToTile(player->tileItem.Pos);
+	const struct vec2i playerPos = Vec2ToTile(player->thing.Pos);
 	pos = svec2i_add(pos, svec2i_scale(playerPos, (float)scale));
 	if (scale >= 2)
 	{
@@ -97,7 +97,7 @@ static void DisplayPlayer(
 }
 
 static void DisplayObjective(
-	TTileItem *t, int objectiveIndex, struct vec2i pos, int scale, int flags)
+	Thing *t, int objectiveIndex, struct vec2i pos, int scale, int flags)
 {
 	const struct vec2i objectivePos = Vec2ToTile(t->Pos);
 	const Objective *o =
@@ -192,7 +192,7 @@ color_t DoorColor(int x, int y)
 	}
 }
 
-void DrawDot(TTileItem *t, color_t color, struct vec2i pos, int scale)
+void DrawDot(Thing *t, color_t color, struct vec2i pos, int scale)
 {
 	const struct vec2i dotPos = Vec2ToTile(t->Pos);
 	pos = svec2i_add(pos, svec2i_scale(dotPos, (float)scale));
@@ -261,8 +261,8 @@ static void DrawMap(
 	}
 }
 
-static void DrawTileItem(
-	TTileItem *t, Tile *tile, struct vec2i pos, int scale, int flags);
+static void DrawThing(
+	Thing *t, Tile *tile, struct vec2i pos, int scale, int flags);
 static void DrawObjectivesAndKeys(Map *map, struct vec2i pos, int scale, int flags)
 {
 	for (int y = 0; y < map->Size.y; y++)
@@ -271,18 +271,18 @@ static void DrawObjectivesAndKeys(Map *map, struct vec2i pos, int scale, int fla
 		{
 			Tile *tile = MapGetTile(map, svec2i(x, y));
 			CA_FOREACH(ThingId, tid, tile->things)
-				DrawTileItem(
-					ThingIdGetTileItem(tid), tile, pos, scale, flags);
+				DrawThing(
+					ThingIdGetThing(tid), tile, pos, scale, flags);
 			CA_FOREACH_END()
 		}
 	}
 }
-static void DrawTileItem(
-	TTileItem *t, Tile *tile, struct vec2i pos, int scale, int flags)
+static void DrawThing(
+	Thing *t, Tile *tile, struct vec2i pos, int scale, int flags)
 {
-	if ((t->flags & TILEITEM_OBJECTIVE) != 0)
+	if ((t->flags & THING_OBJECTIVE) != 0)
 	{
-		const int obj = ObjectiveFromTileItem(t->flags);
+		const int obj = ObjectiveFromThing(t->flags);
 		const Objective *o =
 			CArrayGet(&gMission.missionData->Objectives, obj);
 		if (!(o->Flags & OBJECTIVE_HIDDEN) || (flags & AUTOMAP_FLAGS_SHOWALL))

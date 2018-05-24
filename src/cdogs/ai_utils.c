@@ -361,7 +361,7 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd)
 	// Check the position just in front of the character;
 	// check if there's a (non-dangerous) object in front of it
 	struct vec2 frontPos = a->Pos;
-	TTileItem *item;
+	Thing *item;
 	if (cmd & CMD_LEFT)
 	{
 		frontPos.x--;
@@ -380,11 +380,11 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd)
 	}
 	const CollisionParams params =
 	{
-		TILEITEM_IMPASSABLE, CalcCollisionTeam(true, a),
+		THING_IMPASSABLE, CalcCollisionTeam(true, a),
 		IsPVP(gCampaign.Entry.Mode)
 	};
 	item = OverlapGetFirstItem(
-		&a->tileItem, frontPos, a->tileItem.size, params);
+		&a->thing, frontPos, a->thing.size, params);
 	if (!item || item->kind != KIND_OBJECT)
 	{
 		return NULL;
@@ -520,7 +520,7 @@ int AIGotoDirect(const struct vec2 a, const struct vec2 p)
 
 // Follow the current A* path
 static int AStarFollow(
-	AIGotoContext *c, const struct vec2i currentTile, const TTileItem *i,
+	AIGotoContext *c, const struct vec2i currentTile, const Thing *i,
 	const struct vec2 a)
 {
 	struct vec2i *pathTile = ASPathGetNode(c->Path.Path, c->PathIndex);
@@ -529,7 +529,7 @@ static int AStarFollow(
 	// Note: need to make sure the actor is fully within the current tile
 	// otherwise it may get stuck at corners
 	if (svec2i_is_equal(currentTile, *pathTile) &&
-		IsTileItemInsideTile(i, currentTile))
+		IsThingInsideTile(i, currentTile))
 	{
 		c->PathIndex++;
 		pathTile = ASPathGetNode(c->Path.Path, c->PathIndex);
@@ -584,7 +584,7 @@ int AIGoto(const TActor *actor, const struct vec2 p, const bool ignoreObjects)
 	// we have reached a new tile
 	if (c && c->IsFollowing && AStarCloseToPath(c, currentTile, goalTile))
 	{
-		return AStarFollow(c, currentTile, &actor->tileItem, actor->Pos);
+		return AStarFollow(c, currentTile, &actor->thing, actor->Pos);
 	}
 	else if (AIHasClearPath(actor->Pos, p, ignoreObjects))
 	{
@@ -614,7 +614,7 @@ int AIGoto(const TActor *actor, const struct vec2 p, const bool ignoreObjects)
 			return AIGotoDirect(actor->Pos, p);
 		}
 
-		return AStarFollow(c, currentTile, &actor->tileItem, actor->Pos);
+		return AStarFollow(c, currentTile, &actor->thing, actor->Pos);
 	}
 }
 

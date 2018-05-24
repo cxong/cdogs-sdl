@@ -177,7 +177,7 @@ static void DrawFloor(DrawBuffer *b, struct vec2i offset)
 }
 
 static void DrawThing(
-	DrawBuffer *b, const TTileItem *t, const struct vec2i offset);
+	DrawBuffer *b, const Thing *t, const struct vec2i offset);
 
 static void DrawDebris(DrawBuffer *b, struct vec2i offset)
 {
@@ -192,15 +192,15 @@ static void DrawDebris(DrawBuffer *b, struct vec2i offset)
 				continue;
 			}
 			CA_FOREACH(ThingId, tid, tile->things)
-				const TTileItem *ti = ThingIdGetTileItem(tid);
-				if (TileItemDrawLast(ti))
+				const Thing *ti = ThingIdGetThing(tid);
+				if (ThingDrawLast(ti))
 				{
 					CArrayPushBack(&b->displaylist, &ti);
 				}
 			CA_FOREACH_END()
 		}
 		DrawBufferSortDisplayList(b);
-		CA_FOREACH(const TTileItem *, tp, b->displaylist)
+		CA_FOREACH(const Thing *, tp, b->displaylist)
 			DrawThing(b, *tp, offset);
 		CA_FOREACH_END()
 		tile += X_TILES - b->Size.x;
@@ -248,9 +248,9 @@ static void DrawWallsAndThings(DrawBuffer *b, struct vec2i offset)
 				continue;
 			}
 			CA_FOREACH(ThingId, tid, tile->things)
-				const TTileItem *ti = ThingIdGetTileItem(tid);
+				const Thing *ti = ThingIdGetThing(tid);
 				// Drawn later
-				if (TileItemDrawLast(ti))
+				if (ThingDrawLast(ti))
 				{
 					continue;
 				}
@@ -258,14 +258,14 @@ static void DrawWallsAndThings(DrawBuffer *b, struct vec2i offset)
 			CA_FOREACH_END()
 		}
 		DrawBufferSortDisplayList(b);
-		CA_FOREACH(const TTileItem *, tp, b->displaylist)
+		CA_FOREACH(const Thing *, tp, b->displaylist)
 			DrawThing(b, *tp, offset);
 		CA_FOREACH_END()
 		tile += X_TILES - b->Size.x;
 	}
 }
 static void DrawThing(
-	DrawBuffer *b, const TTileItem *t, const struct vec2i offset)
+	DrawBuffer *b, const Thing *t, const struct vec2i offset)
 {
 	const struct vec2i picPos = svec2i(
 		(int)t->Pos.x - b->xTop + offset.x,
@@ -381,7 +381,7 @@ static void DrawGuideImage(
 
 // Draw names of objects (objectives, spawners etc.)
 static void DrawObjectiveName(
-	const TTileItem *ti, DrawBuffer *b, const struct vec2i offset);
+	const Thing *ti, DrawBuffer *b, const struct vec2i offset);
 static void DrawSpawnerName(
 	const TObject *obj, DrawBuffer *b, const struct vec2i offset);
 static void DrawObjectNames(DrawBuffer *b, const struct vec2i offset)
@@ -392,8 +392,8 @@ static void DrawObjectNames(DrawBuffer *b, const struct vec2i offset)
 		for (int x = 0; x < b->Size.x; x++, tile++)
 		{
 			CA_FOREACH(ThingId, tid, tile->things)
-				const TTileItem *ti = ThingIdGetTileItem(tid);
-				if (ti->flags & TILEITEM_OBJECTIVE)
+				const Thing *ti = ThingIdGetThing(tid);
+				if (ti->flags & THING_OBJECTIVE)
 				{
 					DrawObjectiveName(ti, b, offset);
 				}
@@ -411,9 +411,9 @@ static void DrawObjectNames(DrawBuffer *b, const struct vec2i offset)
 	}
 }
 static void DrawObjectiveName(
-	const TTileItem *ti, DrawBuffer *b, const struct vec2i offset)
+	const Thing *ti, DrawBuffer *b, const struct vec2i offset)
 {
-	const int objective = ObjectiveFromTileItem(ti->flags);
+	const int objective = ObjectiveFromThing(ti->flags);
 	const Objective *o =
 		CArrayGet(&gMission.missionData->Objectives, objective);
 	const char *typeName = ObjectiveTypeStr(o->Type);
@@ -427,7 +427,7 @@ static void DrawSpawnerName(
 {
 	const char *name = obj->Class->u.PickupClass->Name;
 	const struct vec2i textPos = svec2i(
-		(int)obj->tileItem.Pos.x - b->xTop + offset.x - FontStrW(name) / 2,
-		(int)obj->tileItem.Pos.y - b->yTop + offset.y);
+		(int)obj->thing.Pos.x - b->xTop + offset.x - FontStrW(name) / 2,
+		(int)obj->thing.Pos.y - b->yTop + offset.y);
 	FontStr(name, textPos);
 }

@@ -54,6 +54,7 @@
 #include "grafx.h"
 #include "mathc/mathc.h"
 #include "player.h"
+#include "thing.h"
 #include "weapon.h"
 
 
@@ -158,7 +159,7 @@ typedef struct Actor
 	// Signals to other AIs what this actor is doing
 	ActorAction action;
 	AIContext *aiContext;
-	TTileItem tileItem;
+	Thing thing;
 	bool isInUse;
 } TActor;
 

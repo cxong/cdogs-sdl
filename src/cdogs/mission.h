@@ -55,8 +55,8 @@
 #include "proto/msg.pb.h"
 #include "sys_config.h"
 
-#define ObjectiveFromTileItem(f) ((((f) & TILEITEM_OBJECTIVE) >> OBJECTIVE_SHIFT)-1)
-#define ObjectiveToTileItem(o)   (((o)+1) << OBJECTIVE_SHIFT)
+#define ObjectiveFromThing(f) ((((f) & THING_OBJECTIVE) >> OBJECTIVE_SHIFT)-1)
+#define ObjectiveToThing(o)   (((o)+1) << OBJECTIVE_SHIFT)
 
 #define KEY_COUNT 4
 

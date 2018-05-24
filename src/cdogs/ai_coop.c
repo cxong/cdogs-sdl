@@ -350,7 +350,7 @@ static int SmartGoto(
 	if (o && ObjIsDangerous(o) &&
 		svec2i_is_equal(tilePos, actor->aiContext->LastTile))
 	{
-		cmd = AIGoto(actor, o->tileItem.Pos, true);
+		cmd = AIGoto(actor, o->thing.Pos, true);
 		if (ACTOR_GET_WEAPON(actor)->lock <= 0)
 		{
 			cmd |= CMD_BUTTON1;
@@ -428,7 +428,7 @@ static bool TryCompleteNearbyObjective(
 				const TActor *target = ActorGetByUID(objState->u.UID);
 				hasNoUpdates = target->health > 0;
 				// Update target position
-				objState->Goal = target->tileItem.Pos;
+				objState->Goal = target->thing.Pos;
 			}
 			break;
 		case AI_OBJECTIVE_TYPE_PICKUP:
@@ -526,7 +526,7 @@ static void FindObjectivesSortedByDistance(
 		{
 			ClosestObjective co;
 			memset(&co, 0, sizeof co);
-			co.Pos = closestEnemy->tileItem.Pos;
+			co.Pos = closestEnemy->thing.Pos;
 			co.IsDestructible = false;
 			co.Type = AI_OBJECTIVE_TYPE_KILL;
 			co.Distance2 = svec2_distance_squared(actor->Pos, co.Pos);
@@ -543,7 +543,7 @@ static void FindObjectivesSortedByDistance(
 		}
 		ClosestObjective co;
 		memset(&co, 0, sizeof co);
-		co.Pos = p->tileItem.Pos;
+		co.Pos = p->thing.Pos;
 		co.IsDestructible = false;
 		co.Type = AI_OBJECTIVE_TYPE_NORMAL;
 		switch (p->class->Type)
@@ -601,7 +601,7 @@ static void FindObjectivesSortedByDistance(
 		co.Distance2 = svec2_distance_squared(actor->Pos, co.Pos);
 		if (co.Type == AI_OBJECTIVE_TYPE_NORMAL)
 		{
-			const int objective = ObjectiveFromTileItem(p->tileItem.flags);
+			const int objective = ObjectiveFromThing(p->thing.flags);
 			co.u.Objective =
 				CArrayGet(&gMission.missionData->Objectives, objective);
 		}
@@ -616,10 +616,10 @@ static void FindObjectivesSortedByDistance(
 		}
 		ClosestObjective co;
 		memset(&co, 0, sizeof co);
-		co.Pos = o->tileItem.Pos;
+		co.Pos = o->thing.Pos;
 		co.IsDestructible = true;
 		co.Type = AI_OBJECTIVE_TYPE_NORMAL;
-		if (!(o->tileItem.flags & TILEITEM_OBJECTIVE))
+		if (!(o->thing.flags & THING_OBJECTIVE))
 		{
 			continue;
 		}
@@ -627,7 +627,7 @@ static void FindObjectivesSortedByDistance(
 		co.Distance2 = svec2_distance_squared(actor->Pos, co.Pos);
 		if (co.Type == AI_OBJECTIVE_TYPE_NORMAL)
 		{
-			const int objective = ObjectiveFromTileItem(o->tileItem.flags);
+			const int objective = ObjectiveFromThing(o->thing.flags);
 			co.u.Objective =
 				CArrayGet(&gMission.missionData->Objectives, objective);
 		}
@@ -640,12 +640,12 @@ static void FindObjectivesSortedByDistance(
 		{
 			continue;
 		}
-		const TTileItem *ti = &a->tileItem;
-		if (!(ti->flags & TILEITEM_OBJECTIVE))
+		const Thing *ti = &a->thing;
+		if (!(ti->flags & THING_OBJECTIVE))
 		{
 			continue;
 		}
-		const int objective = ObjectiveFromTileItem(ti->flags);
+		const int objective = ObjectiveFromThing(ti->flags);
 		const Objective *o =
 			CArrayGet(&gMission.missionData->Objectives, objective);
 		if (o->Type != OBJECTIVE_KILL && o->Type != OBJECTIVE_RESCUE)

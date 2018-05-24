@@ -203,7 +203,7 @@ static void SetLOSVisible(Map *map, const struct vec2i pos, const bool explore)
 	// Mark any actors on this tile as visible
 	// This affects some AI
 	CA_FOREACH(ThingId, tid, t->things)
-		const TTileItem *ti = ThingIdGetTileItem(tid);
+		const Thing *ti = ThingIdGetThing(tid);
 		if (ti->kind == KIND_CHARACTER)
 		{
 			TActor *a = CArrayGet(&gActors, ti->id);

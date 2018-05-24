@@ -162,7 +162,7 @@ static void AddObjective(
 			NActorAdd aa = NActorAdd_init_default;
 			aa.UID = ActorsGetNextUID();
 			aa.CharId = CharacterStoreGetSpecialId(store, *idx);
-			aa.TileItemFlags = ObjectiveToTileItem(op->Index);
+			aa.ThingFlags = ObjectiveToThing(op->Index);
 			aa.Direction = rand() % DIRECTION_COUNT;
 			const Character *c =
 				CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
@@ -181,14 +181,14 @@ static void AddObjective(
 				map,
 				*tilePos,
 				o->u.MapObject,
-				ObjectiveToTileItem(op->Index), false);
+				ObjectiveToThing(op->Index), false);
 			break;
 		case OBJECTIVE_RESCUE:
 		{
 			NActorAdd aa = NActorAdd_init_default;
 			aa.UID = ActorsGetNextUID();
 			aa.CharId = CharacterStoreGetPrisonerId(store, *idx);
-			aa.TileItemFlags = ObjectiveToTileItem(op->Index);
+			aa.ThingFlags = ObjectiveToThing(op->Index);
 			aa.Direction = rand() % DIRECTION_COUNT;
 			const Character *c =
 				CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);

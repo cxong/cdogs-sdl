@@ -69,7 +69,7 @@ typedef struct
 	const MapObject *Class;
 	int Health;
 	int counter;
-	TTileItem tileItem;
+	Thing thing;
 	bool isInUse;
 } TObject;
 
@@ -88,7 +88,7 @@ typedef struct MobileObject
 	int flags;
 	// Don't trigger special effects too frequently
 	int specialLock;
-	TTileItem tileItem;
+	Thing thing;
 	BulletUpdateFunc updateFunc;
 	bool isInUse;
 } TMobileObject;
@@ -97,17 +97,17 @@ extern CArray gMobObjs;	// of TMobileObject
 extern CArray gObjs;	// of TObject
 
 
-bool CanHit(const int flags, const int uid, const TTileItem *target);
+bool CanHit(const int flags, const int uid, const Thing *target);
 bool HasHitSound(
 	const int flags, const int playerUID,
-	const TileItemKind targetKind, const int targetUID,
+	const ThingKind targetKind, const int targetUID,
 	const special_damage_e special, const bool allowFriendlyHitSound);
 void Damage(
 	const struct vec2 hitVector,
 	const int power,
 	const float mass,
 	const int flags, const int playerUID, const int uid,
-	const TileItemKind targetKind, const int targetUID,
+	const ThingKind targetKind, const int targetUID,
 	const special_damage_e special);
 
 void ObjsInit(void);

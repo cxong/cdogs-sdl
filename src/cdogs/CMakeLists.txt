@@ -96,6 +96,7 @@ set(CDOGS_SOURCES
 	screen_shake.c
 	sounds.c
 	texture.c
+	thing.c
 	tile.c
 	triggers.c
 	utils.c
@@ -199,6 +200,7 @@ set(CDOGS_HEADERS
 	sys_config.h
 	sys_specifics.h
 	texture.h
+	thing.h
 	tile.h
 	triggers.h
 	utils.h

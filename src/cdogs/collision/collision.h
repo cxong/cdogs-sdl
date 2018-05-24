@@ -90,7 +90,7 @@ CollisionTeam CalcCollisionTeam(const bool isActor, const TActor *actor);
 // TODO: replace with single layer mask
 typedef struct
 {
-	int TileItemMask;
+	int ThingMask;
 	CollisionTeam Team;
 	bool IsPVP;
 } CollisionParams;
@@ -100,20 +100,20 @@ bool IsCollisionWithWall(const struct vec2 pos, const struct vec2i size2);
 bool IsCollisionDiamond(
 	const Map *map, const struct vec2 pos, const struct vec2i size2);
 
-// Get all TTileItem that overlap with a target TTileItem, with callback.
+// Get all Thing that overlap with a target Thing, with callback.
 // The callback returns bool continue, as multiple callbacks can result.
 typedef bool (*CollideItemFunc)(
-	TTileItem *, void *, const struct vec2, const struct vec2, const struct vec2);
+	Thing *, void *, const struct vec2, const struct vec2, const struct vec2);
 typedef bool (*CheckWallFunc)(const struct vec2i);
 typedef bool (*CollideWallFunc)(
 	const struct vec2i, void *, const struct vec2, const struct vec2);
-void OverlapTileItems(
-	const TTileItem *item, const struct vec2 pos, const struct vec2i size,
+void OverlapThings(
+	const Thing *item, const struct vec2 pos, const struct vec2i size,
 	const CollisionParams params, CollideItemFunc func, void *data,
 	CheckWallFunc checkWallFunc, CollideWallFunc wallFunc, void *wallData);
-// Get the first TTileItem that overlaps
-TTileItem *OverlapGetFirstItem(
-	const TTileItem *item, const struct vec2 pos, const struct vec2i size,
+// Get the first Thing that overlaps
+Thing *OverlapGetFirstItem(
+	const Thing *item, const struct vec2 pos, const struct vec2i size,
 	const CollisionParams params);
 
 bool AABBOverlap(

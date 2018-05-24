@@ -1,7 +1,8 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2015, 2017 Cong Xu
+
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -27,85 +28,75 @@
 */
 #pragma once
 
-#include <json/json.h>
+#include <stdbool.h>
 
+#include "c_array.h"
+#include "cpic.h"
+#include "mathc/mathc.h"
 #include "pic.h"
-#include "thing.h"
+#include "vector.h"
 
 typedef enum
 {
-	PARTICLE_PIC,
-	PARTICLE_TEXT
-} ParticleType;
-ParticleType StrParticleType(const char *s);
+	KIND_CHARACTER,
+	KIND_PARTICLE,
+	KIND_MOBILEOBJECT,
+	KIND_OBJECT,
+	KIND_PICKUP
+} ThingKind;
+
+#define THING_IMPASSABLE     1
+#define THING_CAN_BE_SHOT    2
+#define THING_OBJECTIVE      (8 + 16 + 32 + 64 + 128)
+#define THING_DRAW_LAST      256
+#define OBJECTIVE_SHIFT      3
+
 
 typedef struct
 {
-	char *Name;
-	ParticleType Type;
+	int MobObjId;
 	union
 	{
-		CPic Pic;
-		color_t TextColor;
+		struct
+		{
+			const CArray *Sprites;
+			direction_e Dir;
+			color_t Color;
+		} MuzzleFlash;
 	} u;
-	const NamedSprites *Sprites;
-	// -1 is infinite range
-	int RangeLow;
-	int RangeHigh;
-	int GravityFactor;
-	bool HitsWalls;
-	bool Bounces;
-	bool WallBounces;
-} ParticleClass;
+} ThingDrawFuncData;
+typedef void (*ThingDrawFunc)(const struct vec2i, const ThingDrawFuncData *);
 typedef struct
 {
-	CArray Classes;	// of ParticleClass
-	CArray CustomClasses;	// of ParticleClass
-} ParticleClasses;
-extern ParticleClasses gParticleClasses;
-
-typedef struct
-{
-	const ParticleClass *Class;
-	union
-	{
-		CPic Pic;
-		char *Text;
-	} u;
 	struct vec2 Pos;
-	int Z;
-	double Angle;
-	int DZ;
-	double Spin;
-	int Count;
-	int Range;
-	Thing thing;
-	bool isInUse;
-} Particle;
-extern CArray gParticles;	// of Particle
-
-typedef struct
-{
-	const ParticleClass *Class;
-	struct vec2 Pos;
-	int Z;
 	struct vec2 Vel;
-	double Angle;
-	int DZ;
-	double Spin;
-	char Text[128];
-} AddParticle;
+	struct vec2i size;
+	ThingKind kind;
+	int id;	// Id of item (actor, mobobj or obj)
+	int flags;
+	ThingDrawFunc drawFunc;
+	ThingDrawFuncData drawData;
+	CPic CPic;
+	DrawCPicFunc CPicFunc;
+	struct vec2i ShadowSize;
+	int SoundLock;
+} Thing;
+#define SOUND_LOCK_THING 12
 
-void ParticleClassesInit(ParticleClasses *classes, const char *filename);
-void ParticleClassesLoadJSON(CArray *classes, json_t *root);
-void ParticleClassesTerminate(ParticleClasses *classes);
-void ParticleClassesClear(CArray *classes);
-const ParticleClass *StrParticleClass(
-	const ParticleClasses *classes, const char *name);
 
-void ParticlesInit(CArray *particles);
-void ParticlesTerminate(CArray *particles);
-void ParticlesUpdate(CArray *particles, const int ticks);
+typedef struct
+{
+	int Id;
+	ThingKind Kind;
+} ThingId;
 
-int ParticleAdd(CArray *particles, const AddParticle add);
-void ParticleDestroy(CArray *particles, const int id);
+
+bool IsThingInsideTile(const Thing *i, const struct vec2i tilePos);
+
+void ThingInit(
+	Thing *t, const int id, const ThingKind kind, const struct vec2i size,
+	const int flags);
+void ThingUpdate(Thing *t, const int ticks);
+
+Thing *ThingIdGetThing(const ThingId *tid);
+bool ThingDrawLast(const Thing *t);

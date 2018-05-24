@@ -449,7 +449,7 @@ static void DrawRadar(
 
 	if (!svec2i_is_zero(pos))
 	{
-		const struct vec2i playerPos = Vec2ToTile(p->tileItem.Pos);
+		const struct vec2i playerPos = Vec2ToTile(p->thing.Pos);
 		AutomapDrawRegion(
 			device->gameWindow.renderer,
 			&gMap,
@@ -579,12 +579,12 @@ static void DrawObjectiveCompass(
 		{
 			Tile *tile = MapGetTile(map, tilePos);
 			CA_FOREACH(ThingId, tid, tile->things)
-				TTileItem *ti = ThingIdGetTileItem(tid);
-				if (!(ti->flags & TILEITEM_OBJECTIVE))
+				Thing *ti = ThingIdGetThing(tid);
+				if (!(ti->flags & THING_OBJECTIVE))
 				{
 					continue;
 				}
-				const int objective = ObjectiveFromTileItem(ti->flags);
+				const int objective = ObjectiveFromThing(ti->flags);
 				const Objective *o =
 					CArrayGet(&gMission.missionData->Objectives, objective);
 				if (o->Flags & OBJECTIVE_HIDDEN)

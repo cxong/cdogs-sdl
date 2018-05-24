@@ -38,7 +38,7 @@ typedef struct
 {
 	int UID;
 	const PickupClass *class;
-	TTileItem tileItem;
+	Thing thing;
 	bool IsRandomSpawned;
 	bool isInUse;
 	bool PickedUp;

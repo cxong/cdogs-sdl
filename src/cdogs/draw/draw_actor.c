@@ -378,7 +378,7 @@ void DrawActorHighlight(
 }
 
 static void DrawChatter(
-	const TTileItem *ti, DrawBuffer *b, const struct vec2i offset);
+	const Thing *ti, DrawBuffer *b, const struct vec2i offset);
 void DrawChatters(DrawBuffer *b, const struct vec2i offset)
 {
 	const Tile *tile = &b->tiles[0][0];
@@ -387,7 +387,7 @@ void DrawChatters(DrawBuffer *b, const struct vec2i offset)
 		for (int x = 0; x < b->Size.x; x++, tile++)
 		{
 			CA_FOREACH(ThingId, tid, tile->things)
-				const TTileItem *ti = ThingIdGetTileItem(tid);
+				const Thing *ti = ThingIdGetThing(tid);
 				if (ti->kind != KIND_CHARACTER)
 				{
 					continue;
@@ -400,7 +400,7 @@ void DrawChatters(DrawBuffer *b, const struct vec2i offset)
 }
 #define ACTOR_HEIGHT 25
 static void DrawChatter(
-	const TTileItem *ti, DrawBuffer *b, const struct vec2i offset)
+	const Thing *ti, DrawBuffer *b, const struct vec2i offset)
 {
 	if (!ConfigGetBool(&gConfig, "Graphics.ShowHUD"))
 	{
@@ -412,9 +412,9 @@ static void DrawChatter(
 	if (strlen(a->Chatter) > 0)
 	{
 		const struct vec2i textPos = svec2i(
-			(int)a->tileItem.Pos.x - b->xTop + offset.x -
+			(int)a->thing.Pos.x - b->xTop + offset.x -
 			FontStrW(a->Chatter) / 2,
-			(int)a->tileItem.Pos.y - b->yTop + offset.y - ACTOR_HEIGHT);
+			(int)a->thing.Pos.y - b->yTop + offset.y - ACTOR_HEIGHT);
 		FontStr(a->Chatter, textPos);
 	}
 }

@@ -267,7 +267,7 @@ bool AABBOverlap(
 }
 
 static bool CollisionIsOnSameTeam(
-	const TTileItem *i, const CollisionTeam team, const bool isPVP)
+	const Thing *i, const CollisionTeam team, const bool isPVP)
 {
 	if (gCollisionSystem.allyCollision == ALLYCOLLISION_NORMAL)
 	{
@@ -287,17 +287,17 @@ static bool CollisionIsOnSameTeam(
 }
 
 static bool CheckParams(
-	const CollisionParams params, const TTileItem *a, const TTileItem *b);
+	const CollisionParams params, const Thing *a, const Thing *b);
 
 static void AddPosToTileCache(void *data, struct vec2i pos);
 static bool CheckOverlaps(
-	const TTileItem *item, const struct vec2 pos, const struct vec2 vel,
+	const Thing *item, const struct vec2 pos, const struct vec2 vel,
 	const struct vec2i size,
 	const CollisionParams params, CollideItemFunc func, void *data,
 	CheckWallFunc checkWallFunc, CollideWallFunc wallFunc, void *wallData,
 	const struct vec2i tilePos);
-void OverlapTileItems(
-	const TTileItem *item, const struct vec2 pos, const struct vec2i size,
+void OverlapThings(
+	const Thing *item, const struct vec2 pos, const struct vec2i size,
 	const CollisionParams params, CollideItemFunc func, void *data,
 	CheckWallFunc checkWallFunc, CollideWallFunc wallFunc, void *wallData)
 {
@@ -327,7 +327,7 @@ static void AddPosToTileCache(void *data, struct vec2i pos)
 	TileCacheAdd(tileCache, tv);
 }
 static bool CheckOverlaps(
-	const TTileItem *item, const struct vec2 pos, const struct vec2 vel,
+	const Thing *item, const struct vec2 pos, const struct vec2 vel,
 	const struct vec2i size,
 	const CollisionParams params, CollideItemFunc func, void *data,
 	CheckWallFunc checkWallFunc, CollideWallFunc wallFunc, void *wallData,
@@ -339,7 +339,7 @@ static bool CheckOverlaps(
 	{
 		const CArray *tileThings = &MapGetTile(&gMap, tilePos)->things;
 		CA_FOREACH(const ThingId, tid, *tileThings)
-			TTileItem *ti = ThingIdGetTileItem(tid);
+			Thing *ti = ThingIdGetThing(tid);
 			if (!CheckParams(params, item, ti))
 			{
 				continue;
@@ -377,33 +377,33 @@ static bool CheckOverlaps(
 }
 
 static bool OverlapGetFirstItemCallback(
-	TTileItem *ti, void *data, const struct vec2 colA, const struct vec2 colB,
+	Thing *ti, void *data, const struct vec2 colA, const struct vec2 colB,
 	const struct vec2 normal);
-TTileItem *OverlapGetFirstItem(
-	const TTileItem *item, const struct vec2 pos, const struct vec2i size,
+Thing *OverlapGetFirstItem(
+	const Thing *item, const struct vec2 pos, const struct vec2i size,
 	const CollisionParams params)
 {
-	TTileItem *firstItem = NULL;
-	OverlapTileItems(
+	Thing *firstItem = NULL;
+	OverlapThings(
 		item, pos, size, params, OverlapGetFirstItemCallback, &firstItem,
 		NULL, NULL, NULL);
 	return firstItem;
 }
 static bool OverlapGetFirstItemCallback(
-	TTileItem *ti, void *data, const struct vec2 colA, const struct vec2 colB,
+	Thing *ti, void *data, const struct vec2 colA, const struct vec2 colB,
 	const struct vec2 normal)
 {
 	UNUSED(colA);
 	UNUSED(colB);
 	UNUSED(normal);
-	TTileItem **pFirstItem = data;
+	Thing **pFirstItem = data;
 	// Store the first item in custom data and return
 	*pFirstItem = ti;
 	return false;
 }
 
 static bool CheckParams(
-	const CollisionParams params, const TTileItem *a, const TTileItem *b)
+	const CollisionParams params, const Thing *a, const Thing *b)
 {
 	// Don't collide if items are on the same team
 	if (CollisionIsOnSameTeam(b, params.Team, params.IsPVP))
@@ -412,7 +412,7 @@ static bool CheckParams(
 	}
 	// No same-item collision
 	if (a == b) return false;
-	if (params.TileItemMask != 0 && !(b->flags & params.TileItemMask))
+	if (params.ThingMask != 0 && !(b->flags & params.ThingMask))
 	{
 		return false;
 	}

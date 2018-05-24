@@ -109,8 +109,8 @@ const pb_field_t NMapObjectAdd_fields[6] = {
     PB_FIELD(  1, UINT32  , REQUIRED, STATIC  , FIRST, NMapObjectAdd, UID, UID, 0),
     PB_FIELD(  2, STRING  , REQUIRED, STATIC  , OTHER, NMapObjectAdd, MapObjectClass, UID, 0),
     PB_FIELD(  3, MESSAGE , REQUIRED, STATIC  , OTHER, NMapObjectAdd, Pos, MapObjectClass, &NVec2_fields),
-    PB_FIELD(  4, UINT32  , REQUIRED, STATIC  , OTHER, NMapObjectAdd, TileItemFlags, Pos, 0),
-    PB_FIELD(  5, INT32   , REQUIRED, STATIC  , OTHER, NMapObjectAdd, Health, TileItemFlags, 0),
+    PB_FIELD(  4, UINT32  , REQUIRED, STATIC  , OTHER, NMapObjectAdd, ThingFlags, Pos, 0),
+    PB_FIELD(  5, INT32   , REQUIRED, STATIC  , OTHER, NMapObjectAdd, Health, ThingFlags, 0),
     PB_LAST_FIELD
 };
 
@@ -167,8 +167,8 @@ const pb_field_t NActorAdd_fields[8] = {
     PB_FIELD(  3, INT32   , REQUIRED, STATIC  , OTHER, NActorAdd, Direction, CharId, &NActorAdd_Direction_default),
     PB_FIELD(  4, INT32   , REQUIRED, STATIC  , OTHER, NActorAdd, Health, Direction, 0),
     PB_FIELD(  5, INT32   , REQUIRED, STATIC  , OTHER, NActorAdd, PlayerUID, Health, &NActorAdd_PlayerUID_default),
-    PB_FIELD(  6, UINT32  , REQUIRED, STATIC  , OTHER, NActorAdd, TileItemFlags, PlayerUID, 0),
-    PB_FIELD(  7, MESSAGE , REQUIRED, STATIC  , OTHER, NActorAdd, Pos, TileItemFlags, &NVec2_fields),
+    PB_FIELD(  6, UINT32  , REQUIRED, STATIC  , OTHER, NActorAdd, ThingFlags, PlayerUID, 0),
+    PB_FIELD(  7, MESSAGE , REQUIRED, STATIC  , OTHER, NActorAdd, Pos, ThingFlags, &NVec2_fields),
     PB_LAST_FIELD
 };
 
@@ -278,8 +278,8 @@ const pb_field_t NAddPickup_fields[7] = {
     PB_FIELD(  2, STRING  , REQUIRED, STATIC  , OTHER, NAddPickup, PickupClass, UID, 0),
     PB_FIELD(  3, BOOL    , REQUIRED, STATIC  , OTHER, NAddPickup, IsRandomSpawned, PickupClass, 0),
     PB_FIELD(  4, INT32   , REQUIRED, STATIC  , OTHER, NAddPickup, SpawnerUID, IsRandomSpawned, &NAddPickup_SpawnerUID_default),
-    PB_FIELD(  5, UINT32  , REQUIRED, STATIC  , OTHER, NAddPickup, TileItemFlags, SpawnerUID, 0),
-    PB_FIELD(  6, MESSAGE , REQUIRED, STATIC  , OTHER, NAddPickup, Pos, TileItemFlags, &NVec2_fields),
+    PB_FIELD(  5, UINT32  , REQUIRED, STATIC  , OTHER, NAddPickup, ThingFlags, SpawnerUID, 0),
+    PB_FIELD(  6, MESSAGE , REQUIRED, STATIC  , OTHER, NAddPickup, Pos, ThingFlags, &NVec2_fields),
     PB_LAST_FIELD
 };
 

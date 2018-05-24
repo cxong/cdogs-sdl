@@ -269,7 +269,7 @@ void ParticlesUpdate(CArray *particles, const int ticks)
 
 typedef struct
 {
-	const TTileItem *Obj;
+	const Thing *Obj;
 	struct vec2 ColPos;
 	struct vec2 ColNormal;
 	float ColPosDist2;
@@ -292,7 +292,7 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 	const struct vec2 startPos = p->Pos;
 	for (int i = 0; i < ticks; i++)
 	{
-		p->Pos = svec2_add(p->Pos, p->tileItem.Vel);
+		p->Pos = svec2_add(p->Pos, p->thing.Vel);
 		p->Z += p->DZ;
 		if (p->Class->GravityFactor != 0)
 		{
@@ -314,40 +314,40 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 			}
 			if (p->DZ == 0 && p->Z == 0)
 			{
-				p->tileItem.Vel = svec2_zero();
+				p->thing.Vel = svec2_zero();
 				p->Spin = 0;
 				// Fell to ground, draw last
-				p->tileItem.flags |= TILEITEM_DRAW_LAST;
+				p->thing.flags |= THING_DRAW_LAST;
 			}
 		}
 	}
 	// Wall collision, bounce off walls
-	if (!svec2_is_zero(p->tileItem.Vel) && p->Class->HitsWalls)
+	if (!svec2_is_zero(p->thing.Vel) && p->Class->HitsWalls)
 	{
 		const CollisionParams params =
 		{
 			0, COLLISIONTEAM_NONE, IsPVP(gCampaign.Entry.Mode)
 		};
-		HitWallData data = { &p->tileItem, svec2_zero(), svec2_zero(), -1 };
-		OverlapTileItems(
-			&p->tileItem, startPos,
-			p->tileItem.size, params, NULL, NULL,
+		HitWallData data = { &p->thing, svec2_zero(), svec2_zero(), -1 };
+		OverlapThings(
+			&p->thing, startPos,
+			p->thing.size, params, NULL, NULL,
 			CheckWall, HitWallFunc, &data);
 		if (data.ColPosDist2 >= 0)
 		{
 			if (p->Class->WallBounces)
 			{
 				GetWallBouncePosVel(
-					startPos, p->tileItem.Vel, data.ColPos, data.ColNormal,
-					&p->Pos, &p->tileItem.Vel);
+					startPos, p->thing.Vel, data.ColPos, data.ColNormal,
+					&p->Pos, &p->thing.Vel);
 			}
 			else
 			{
-				p->tileItem.Vel = svec2_zero();
+				p->thing.Vel = svec2_zero();
 			}
 		}
 	}\
-	if (!MapTryMoveTileItem(&gMap, &p->tileItem, p->Pos))
+	if (!MapTryMoveThing(&gMap, &p->thing, p->Pos))
 	{
 		// Out of map; destroy
 		return false;
@@ -395,7 +395,7 @@ static void SetClosestCollision(
 	}
 }
 
-static void DrawParticle(const struct vec2i pos, const TileItemDrawFuncData *data);
+static void DrawParticle(const struct vec2i pos, const ThingDrawFuncData *data);
 int ParticleAdd(CArray *particles, const AddParticle add)
 {
 	// Find an empty slot in list
@@ -439,20 +439,20 @@ int ParticleAdd(CArray *particles, const AddParticle add)
 	p->Spin = add.Spin;
 	p->Range = RAND_INT(add.Class->RangeLow, add.Class->RangeHigh);
 	p->isInUse = true;
-	p->tileItem.Pos.x = p->tileItem.Pos.y = -1;
-	p->tileItem.Vel = add.Vel;
-	p->tileItem.kind = KIND_PARTICLE;
-	p->tileItem.id = i;
-	p->tileItem.drawFunc = DrawParticle;
-	p->tileItem.drawData.MobObjId = i;
-	MapTryMoveTileItem(&gMap, &p->tileItem, add.Pos);
+	p->thing.Pos.x = p->thing.Pos.y = -1;
+	p->thing.Vel = add.Vel;
+	p->thing.kind = KIND_PARTICLE;
+	p->thing.id = i;
+	p->thing.drawFunc = DrawParticle;
+	p->thing.drawData.MobObjId = i;
+	MapTryMoveThing(&gMap, &p->thing, add.Pos);
 	return i;
 }
 void ParticleDestroy(CArray *particles, const int id)
 {
 	Particle *p = CArrayGet(particles, id);
 	CASSERT(p->isInUse, "Destroying not-in-use particle");
-	MapRemoveTileItem(&gMap, &p->tileItem);
+	MapRemoveThing(&gMap, &p->thing);
 	if (p->Class->Type == PARTICLE_TEXT)
 	{
 		CFREE(p->u.Text);
@@ -460,7 +460,7 @@ void ParticleDestroy(CArray *particles, const int id)
 	p->isInUse = false;
 }
 
-static void DrawParticle(const struct vec2i pos, const TileItemDrawFuncData *data)
+static void DrawParticle(const struct vec2i pos, const ThingDrawFuncData *data)
 {
 	const Particle *p = CArrayGet(&gParticles, data->MobObjId);
 	CASSERT(p->isInUse, "Cannot draw non-existent particle");

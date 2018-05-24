@@ -204,12 +204,12 @@ int MapObjectGetFlags(const MapObject *mo)
 	int flags = 0;
 	if (mo->DrawLast)
 	{
-		flags |= TILEITEM_DRAW_LAST;
+		flags |= THING_DRAW_LAST;
 	}
 	if (mo->Health > 0)
 	{
-		flags |= TILEITEM_IMPASSABLE;
-		flags |= TILEITEM_CAN_BE_SHOT;
+		flags |= THING_IMPASSABLE;
+		flags |= THING_CAN_BE_SHOT;
 	}
 	return flags;
 }

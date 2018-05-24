@@ -206,12 +206,12 @@ static void HandleGameEvent(
 		{
 			TActor *a = ActorGetByUID(e.u.ActorSlide.UID);
 			if (!a->isInUse) break;
-			a->tileItem.Vel = NetToVec2(e.u.ActorSlide.Vel);
+			a->thing.Vel = NetToVec2(e.u.ActorSlide.Vel);
 			// Slide sound
 			if (ConfigGetBool(&gConfig, "Sound.Footsteps"))
 			{
 				SoundPlayAt(
-					&gSoundDevice, StrSound("slide"), a->tileItem.Pos);
+					&gSoundDevice, StrSound("slide"), a->thing.Pos);
 			}
 		}
 		break;
@@ -219,8 +219,8 @@ static void HandleGameEvent(
 		{
 			TActor *a = ActorGetByUID(e.u.ActorImpulse.UID);
 			if (!a->isInUse) break;
-			a->tileItem.Vel =
-				svec2_add(a->tileItem.Vel, NetToVec2(e.u.ActorImpulse.Vel));
+			a->thing.Vel =
+				svec2_add(a->thing.Vel, NetToVec2(e.u.ActorImpulse.Vel));
 			const struct vec2 pos = NetToVec2(e.u.ActorImpulse.Pos);
 			if (!svec2_is_zero(pos))
 			{
@@ -358,7 +358,7 @@ static void HandleGameEvent(
 			const BulletClass *b = StrBulletClass(e.u.Melee.BulletClass);
 			if ((HitType)e.u.Melee.HitType != HIT_NONE &&
 				HasHitSound(a->flags, a->PlayerUID,
-				(TileItemKind)e.u.Melee.TargetKind, e.u.Melee.TargetUID,
+				(ThingKind)e.u.Melee.TargetKind, e.u.Melee.TargetUID,
 				SPECIAL_NONE, false))
 			{
 				PlayHitSound(&b->HitSound, (HitType)e.u.Melee.HitType, a->Pos);
@@ -370,7 +370,7 @@ static void HandleGameEvent(
 					svec2_zero(),
 					b->Power, b->Mass,
 					a->flags, a->PlayerUID, a->uid,
-					(TileItemKind)e.u.Melee.TargetKind, e.u.Melee.TargetUID,
+					(ThingKind)e.u.Melee.TargetKind, e.u.Melee.TargetUID,
 					SPECIAL_NONE);
 			}
 		}
@@ -411,7 +411,7 @@ static void HandleGameEvent(
 				GameEventsEnqueue(&gGameEvents, s);
 			}
 			o->Pos = NetToVec2(e.u.BulletBounce.Pos);
-			o->tileItem.Vel = NetToVec2(e.u.BulletBounce.Vel);
+			o->thing.Vel = NetToVec2(e.u.BulletBounce.Vel);
 		}
 		break;
 	case GAME_EVENT_REMOVE_BULLET:

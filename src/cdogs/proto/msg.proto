@@ -75,7 +75,7 @@ message NMapObjectAdd {
 	required uint32 UID = 1;
 	required string MapObjectClass = 2;
 	required NVec2 Pos = 3;
-	required uint32 TileItemFlags = 4;
+	required uint32 ThingFlags = 4;
 	required int32 Health = 5;
 }
 
@@ -125,7 +125,7 @@ message NActorAdd {
 	required int32 Direction = 3 [default=4];
 	required int32 Health = 4;
 	required int32 PlayerUID = 5 [default=-1];
-	required uint32 TileItemFlags = 6;
+	required uint32 ThingFlags = 6;
 	required NVec2 Pos = 7;
 }
 
@@ -222,7 +222,7 @@ message NAddPickup {
 	required string PickupClass = 2;
 	required bool IsRandomSpawned = 3;
 	required int32 SpawnerUID = 4 [default=-1];
-	required uint32 TileItemFlags = 5;
+	required uint32 ThingFlags = 5;
 	required NVec2 Pos = 6;
 }
 

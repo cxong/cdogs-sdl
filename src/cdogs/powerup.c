@@ -171,7 +171,7 @@ static void HealthPlace(const struct vec2 pos, void *data)
 	strcpy(e.u.AddPickup.PickupClass, "health");
 	e.u.AddPickup.IsRandomSpawned = true;
 	e.u.AddPickup.SpawnerUID = -1;
-	e.u.AddPickup.TileItemFlags = 0;
+	e.u.AddPickup.ThingFlags = 0;
 	GameEventsEnqueue(&gGameEvents, e);
 }
 
@@ -232,6 +232,6 @@ static void AmmoPlace(const struct vec2 pos, void *data)
 	sprintf(e.u.AddPickup.PickupClass, "ammo_%s", a->Name);
 	e.u.AddPickup.IsRandomSpawned = true;
 	e.u.AddPickup.SpawnerUID = -1;
-	e.u.AddPickup.TileItemFlags = 0;
+	e.u.AddPickup.ThingFlags = 0;
 	GameEventsEnqueue(&gGameEvents, e);
 }

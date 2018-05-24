@@ -171,7 +171,7 @@ void CameraUpdate(Camera *camera, const int ticks, const int ms)
 				const PlayerData *firstPlayer =
 					camera->HUD.DrawData.Players[0];
 				const TActor *p = ActorGetByUID(firstPlayer->ActorUID);
-				camera->lastPosition = p->tileItem.Pos;
+				camera->lastPosition = p->thing.Pos;
 			}
 			else if (singleScreen)
 			{
@@ -204,7 +204,7 @@ void CameraUpdate(Camera *camera, const int ticks, const int ms)
 			{
 				const PlayerData *p = camera->HUD.DrawData.Players[i];
 				const TActor *a = ActorGetByUID(p->ActorUID);
-				camera->lastPosition = a->tileItem.Pos;
+				camera->lastPosition = a->thing.Pos;
 				SoundSetEarsSide(i == 0, camera->lastPosition);
 			}
 
@@ -225,7 +225,7 @@ void CameraUpdate(Camera *camera, const int ticks, const int ms)
 					continue;
 				}
 				const TActor *a = ActorGetByUID(p->ActorUID);
-				camera->lastPosition = a->tileItem.Pos;
+				camera->lastPosition = a->thing.Pos;
 
 				// Set the sound "ears"
 				const bool isLeft = i == 0 || i == 2;
@@ -306,7 +306,7 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 						continue;
 					}
 					const TActor *a = ActorGetByUID(p->ActorUID);
-					LOSCalcFrom(&gMap, Vec2ToTile(a->tileItem.Pos), false);
+					LOSCalcFrom(&gMap, Vec2ToTile(a->thing.Pos), false);
 				CA_FOREACH_END()
 			}
 

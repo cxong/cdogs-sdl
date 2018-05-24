@@ -372,7 +372,7 @@ void PlayersGetBoundingRectangle(struct vec2 *min, struct vec2 *max)
 		if (humansOnly ? IsPlayerHumanAndAlive(p) : IsPlayerAlive(p))
 		{
 			const TActor *player = ActorGetByUID(p->ActorUID);
-			const TTileItem *ti = &player->tileItem;
+			const Thing *ti = &player->thing;
 			if (isFirst)
 			{
 				*min = *max = ti->Pos;

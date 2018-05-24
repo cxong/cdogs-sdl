@@ -54,7 +54,7 @@
 
 
 static void DrawObjectiveHighlight(
-	TTileItem *ti, Tile *tile, DrawBuffer *b, struct vec2i offset);
+	Thing *ti, Tile *tile, DrawBuffer *b, struct vec2i offset);
 void DrawObjectiveHighlights(DrawBuffer *b, const struct vec2i offset)
 {
 	if (!ConfigGetBool(&gConfig, "Graphics.ShowHUD"))
@@ -69,7 +69,7 @@ void DrawObjectiveHighlights(DrawBuffer *b, const struct vec2i offset)
 		{
 			// Draw the items that are in LOS
 			CA_FOREACH(ThingId, tid, tile->things)
-				TTileItem *ti = ThingIdGetTileItem(tid);
+				Thing *ti = ThingIdGetThing(tid);
 				DrawObjectiveHighlight(ti, tile, b, offset);
 			CA_FOREACH_END()
 		}
@@ -77,13 +77,13 @@ void DrawObjectiveHighlights(DrawBuffer *b, const struct vec2i offset)
 	}
 }
 static void DrawObjectiveHighlight(
-	TTileItem *ti, Tile *tile, DrawBuffer *b, struct vec2i offset)
+	Thing *ti, Tile *tile, DrawBuffer *b, struct vec2i offset)
 {
 	color_t color;
-	if (ti->flags & TILEITEM_OBJECTIVE)
+	if (ti->flags & THING_OBJECTIVE)
 	{
 		// Objective
-		const int objective = ObjectiveFromTileItem(ti->flags);
+		const int objective = ObjectiveFromThing(ti->flags);
 		const Objective *o =
 			CArrayGet(&gMission.missionData->Objectives, objective);
 		if (o->Flags & OBJECTIVE_HIDDEN)

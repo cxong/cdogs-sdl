@@ -128,17 +128,17 @@ static bool CanSeeAPlayer(const TActor *a)
 
 static bool IsPosOK(const TActor *actor, const struct vec2 pos)
 {
-	if (IsCollisionDiamond(&gMap, pos, actor->tileItem.size))
+	if (IsCollisionDiamond(&gMap, pos, actor->thing.size))
 	{
 		return false;
 	}
 	const CollisionParams params =
 	{
-		TILEITEM_IMPASSABLE, CalcCollisionTeam(true, actor),
+		THING_IMPASSABLE, CalcCollisionTeam(true, actor),
 		IsPVP(gCampaign.Entry.Mode)
 	};
 	if (OverlapGetFirstItem(
-		&actor->tileItem, pos, actor->tileItem.size, params))
+		&actor->thing, pos, actor->thing.size, params))
 	{
 		return false;
 	}
@@ -495,7 +495,7 @@ static int Follow(TActor *a)
 	const Character *ch = ActorGetCharacter(a);
 	const CharacterStore *store = &gCampaign.Setting.characters;
 	if (CharacterIsPrisoner(store, ch) && CanCompleteMission(&gMission) &&
-		MapIsTileInExit(&gMap, &a->tileItem))
+		MapIsTileInExit(&gMap, &a->thing))
 	{
 		a->flags &= ~FLAGS_FOLLOWER;
 		a->flags |= FLAGS_RESCUED;
@@ -562,7 +562,7 @@ void InitializeBadGuys(void)
 				aa.UID = ActorsGetNextUID();
 				aa.CharId = CharacterStoreGetRandomSpecialId(
 					&gCampaign.Setting.characters);
-				aa.TileItemFlags = ObjectiveToTileItem(_ca_index);
+				aa.ThingFlags = ObjectiveToThing(_ca_index);
 				aa.Direction = rand() % DIRECTION_COUNT;
 				const Character *c =
 					CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
@@ -584,7 +584,7 @@ void InitializeBadGuys(void)
 				aa.UID = ActorsGetNextUID();
 				aa.CharId = CharacterStoreGetPrisonerId(
 					&gCampaign.Setting.characters, 0);
-				aa.TileItemFlags = ObjectiveToTileItem(_ca_index);
+				aa.ThingFlags = ObjectiveToThing(_ca_index);
 				aa.Direction = rand() % DIRECTION_COUNT;
 				const Character *c =
 					CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);

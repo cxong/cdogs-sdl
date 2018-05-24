@@ -64,7 +64,7 @@ void DrawBufferInit(DrawBuffer *b, struct vec2i size, GraphicsDevice *g)
 		b->tiles[i] = b->tiles[0] + i * size.y;
 	}
 	b->g = g;
-	CArrayInit(&b->displaylist, sizeof(const TTileItem *));
+	CArrayInit(&b->displaylist, sizeof(const Thing *));
 	CArrayReserve(&b->displaylist, 32);
 }
 void DrawBufferTerminate(DrawBuffer *b)
@@ -175,8 +175,8 @@ void DrawBufferSortDisplayList(DrawBuffer *buffer)
 }
 static int CompareY(const void *v1, const void *v2)
 {
-	const TTileItem * const *t1 = v1;
-	const TTileItem * const *t2 = v2;
+	const Thing * const *t1 = v1;
+	const Thing * const *t2 = v2;
 	if ((*t1)->Pos.y < (*t2)->Pos.y)
 	{
 		return -1;

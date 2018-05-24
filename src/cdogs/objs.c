@@ -72,7 +72,7 @@ static void MapObjectDraw(
 	CPicDrawContext c;
 	c.Dir = DIRECTION_UP;
 	c.Offset = obj->Class->Offset;
-	CPicDraw(g, &obj->tileItem.CPic, pos, &c);
+	CPicDraw(g, &obj->thing.CPic, pos, &c);
 }
 
 
@@ -136,14 +136,14 @@ static void AddPickupAtObject(const TObject *o, const PickupType type)
 	default: CASSERT(false, "unexpected pickup type"); break;
 	}
 	e.u.AddPickup.UID = PickupsGetNextUID();
-	e.u.AddPickup.Pos = Vec2ToNet(o->tileItem.Pos);
+	e.u.AddPickup.Pos = Vec2ToNet(o->thing.Pos);
 	e.u.AddPickup.IsRandomSpawned = true;
 	e.u.AddPickup.SpawnerUID = -1;
-	e.u.AddPickup.TileItemFlags = 0;
+	e.u.AddPickup.ThingFlags = 0;
 	GameEventsEnqueue(&gGameEvents, e);
 }
 
-static void PlaceWreck(const char *wreckClass, const TTileItem *ti);
+static void PlaceWreck(const char *wreckClass, const Thing *ti);
 void ObjRemove(const NMapObjectRemove mor)
 {
 	TObject *o = ObjGetByUID(mor.UID);
@@ -153,9 +153,9 @@ void ObjRemove(const NMapObjectRemove mor)
 	{
 		// Update objective
 		UpdateMissionObjective(
-			&gMission, o->tileItem.flags, OBJECTIVE_DESTROY, 1);
+			&gMission, o->thing.flags, OBJECTIVE_DESTROY, 1);
 		// Extra score if objective
-		if ((o->tileItem.flags & TILEITEM_OBJECTIVE) && mor.PlayerUID >= 0)
+		if ((o->thing.flags & THING_OBJECTIVE) && mor.PlayerUID >= 0)
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_SCORE);
 			e.u.Score.PlayerUID = mor.PlayerUID;
@@ -166,7 +166,7 @@ void ObjRemove(const NMapObjectRemove mor)
 		// Weapons that go off when this object is destroyed
 		CA_FOREACH(const WeaponClass *, wc, o->Class->DestroyGuns)
 			WeaponClassFire(
-				*wc, o->tileItem.Pos, 0, 0, mor.Flags, mor.PlayerUID,
+				*wc, o->thing.Pos, 0, 0, mor.Flags, mor.PlayerUID,
 				mor.ActorUID,
 				true, false);
 		CA_FOREACH_END()
@@ -189,7 +189,7 @@ void ObjRemove(const NMapObjectRemove mor)
 		GameEvent e = GameEventNew(GAME_EVENT_ADD_BULLET);
 		e.u.AddBullet.UID = MobObjsObjsGetNextUID();
 		strcpy(e.u.AddBullet.BulletClass, "fireball_wreck");
-		e.u.AddBullet.MuzzlePos = Vec2ToNet(o->tileItem.Pos);
+		e.u.AddBullet.MuzzlePos = Vec2ToNet(o->thing.Pos);
 		e.u.AddBullet.MuzzleHeight = 0;
 		e.u.AddBullet.Angle = 0;
 		e.u.AddBullet.Elevation = 0;
@@ -199,10 +199,10 @@ void ObjRemove(const NMapObjectRemove mor)
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 
-	SoundPlayAt(&gSoundDevice, StrSound("bang"), o->tileItem.Pos);
+	SoundPlayAt(&gSoundDevice, StrSound("bang"), o->thing.Pos);
 
 	// If wreck is available spawn it in the exact same position
-	PlaceWreck(o->Class->Wreck, &o->tileItem);
+	PlaceWreck(o->Class->Wreck, &o->thing);
 
 	ObjDestroy(o);
 
@@ -210,7 +210,7 @@ void ObjRemove(const NMapObjectRemove mor)
 	// before
 	PathCacheClear(&gPathCache);
 }
-static void PlaceWreck(const char *wreckClass, const TTileItem *ti)
+static void PlaceWreck(const char *wreckClass, const Thing *ti)
 {
 	if (wreckClass == NULL)
 	{
@@ -227,12 +227,12 @@ static void PlaceWreck(const char *wreckClass, const TTileItem *ti)
 	}
 	strcpy(e.u.MapObjectAdd.MapObjectClass, mo->Name);
 	e.u.MapObjectAdd.Pos = Vec2ToNet(ti->Pos);
-	e.u.MapObjectAdd.TileItemFlags = MapObjectGetFlags(mo);
+	e.u.MapObjectAdd.ThingFlags = MapObjectGetFlags(mo);
 	e.u.MapObjectAdd.Health = mo->Health;
 	GameEventsEnqueue(&gGameEvents, e);
 }
 
-bool CanHit(const int flags, const int uid, const TTileItem *target)
+bool CanHit(const int flags, const int uid, const Thing *target)
 {
 	switch (target->kind)
 	{
@@ -248,7 +248,7 @@ bool CanHit(const int flags, const int uid, const TTileItem *target)
 }
 bool HasHitSound(
 	const int flags, const int playerUID,
-	const TileItemKind targetKind, const int targetUID,
+	const ThingKind targetKind, const int targetUID,
 	const special_damage_e special, const bool allowFriendlyHitSound)
 {
 	switch (targetKind)
@@ -286,7 +286,7 @@ void Damage(
 	const int flags,
 	const int playerUID,
 	const int uid,
-	const TileItemKind targetKind, const int targetUID,
+	const ThingKind targetKind, const int targetUID,
 	const special_damage_e special)
 {
 	switch (targetKind)
@@ -449,12 +449,12 @@ void ObjAdd(const NMapObjectAdd amo)
 	memset(o, 0, sizeof *o);
 	o->uid = amo.UID;
 	o->Class = StrMapObject(amo.MapObjectClass);
-	TileItemInit(
-		&o->tileItem, i, KIND_OBJECT, o->Class->Size, amo.TileItemFlags);
+	ThingInit(
+		&o->thing, i, KIND_OBJECT, o->Class->Size, amo.ThingFlags);
 	o->Health = amo.Health;
-	o->tileItem.CPic = o->Class->Pic;
-	o->tileItem.CPicFunc = MapObjectDraw;
-	MapTryMoveTileItem(&gMap, &o->tileItem, NetToVec2(amo.Pos));
+	o->thing.CPic = o->Class->Pic;
+	o->thing.CPicFunc = MapObjectDraw;
+	MapTryMoveThing(&gMap, &o->thing, NetToVec2(amo.Pos));
 	o->isInUse = true;
 	LOG(LM_MAIN, LL_DEBUG,
 		"added object uid(%d) class(%s) health(%d) pos(%d, %d)",
@@ -467,7 +467,7 @@ void ObjAdd(const NMapObjectAdd amo)
 void ObjDestroy(TObject *o)
 {
 	CASSERT(o->isInUse, "Destroying in-use object");
-	MapRemoveTileItem(&gMap, &o->tileItem);
+	MapRemoveThing(&gMap, &o->thing);
 	o->isInUse = false;
 }
 
@@ -484,7 +484,7 @@ void UpdateObjects(const int ticks)
 		{
 			continue;
 		}
-		TileItemUpdate(&obj->tileItem, ticks);
+		ThingUpdate(&obj->thing, ticks);
 		switch (obj->Class->Type)
 		{
 		case MAP_OBJECT_TYPE_PICKUP_SPAWNER:
@@ -507,8 +507,8 @@ void UpdateObjects(const int ticks)
 					obj->Class->u.PickupClass->Name);
 				e.u.AddPickup.IsRandomSpawned = false;
 				e.u.AddPickup.SpawnerUID = obj->uid;
-				e.u.AddPickup.TileItemFlags = 0;
-				e.u.AddPickup.Pos = Vec2ToNet(obj->tileItem.Pos);
+				e.u.AddPickup.ThingFlags = 0;
+				e.u.AddPickup.Pos = Vec2ToNet(obj->thing.Pos);
 				GameEventsEnqueue(&gGameEvents, e);
 			}
 			break;
@@ -564,6 +564,6 @@ TMobileObject *MobObjGetByUID(const int uid)
 void MobObjDestroy(TMobileObject *m)
 {
 	CASSERT(m->isInUse, "Destroying not-in-use mobobj");
-	MapRemoveTileItem(&gMap, &m->tileItem);
+	MapRemoveThing(&gMap, &m->thing);
 	m->isInUse = false;
 }

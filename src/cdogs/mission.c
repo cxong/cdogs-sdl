@@ -364,7 +364,7 @@ static int ObjectiveActorsAlive(const int objective)
 	int count = 0;
 	CA_FOREACH(const TActor, a, gActors)
 		if (a->isInUse && a->health > 0 &&
-			ObjectiveFromTileItem(a->tileItem.flags) == objective)
+			ObjectiveFromThing(a->thing.flags) == objective)
 		{
 			count++;
 		}
@@ -384,11 +384,11 @@ void UpdateMissionObjective(
 	const struct MissionOptions *options,
 	const int flags, const ObjectiveType type, const int count)
 {
-	if (!(flags & TILEITEM_OBJECTIVE))
+	if (!(flags & THING_OBJECTIVE))
 	{
 		return;
 	}
-	const int idx = ObjectiveFromTileItem(flags);
+	const int idx = ObjectiveFromThing(flags);
 	const Objective *o = CArrayGet(&options->missionData->Objectives, idx);
 	if (o->Type != type)
 	{
@@ -521,7 +521,7 @@ static bool AllSurvivingPlayersInExit(void)
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 		if (!IsPlayerAliveOrDying(p)) continue;
 		const TActor *player = ActorGetByUID(p->ActorUID);
-		if (!MapIsTileInExit(&gMap, &player->tileItem)) return false;
+		if (!MapIsTileInExit(&gMap, &player->thing)) return false;
 	CA_FOREACH_END()
 	return true;
 }
@@ -545,7 +545,7 @@ static bool MoreRescuesNeeded(const struct MissionOptions *mo)
 		CA_FOREACH(const TActor, a, gActors)
 			if (!a->isInUse) continue;
 			if (CharacterIsPrisoner(&gCampaign.Setting.characters, ActorGetCharacter(a)) &&
-				MapIsTileInExit(&gMap, &a->tileItem))
+				MapIsTileInExit(&gMap, &a->thing))
 			{
 				prisonersRescued++;
 			}

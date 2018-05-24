@@ -138,7 +138,7 @@ static bool MapIsPosIn(const Map *map, const struct vec2 pos)
 	return MapIsTileIn(map, Vec2ToTile(pos));
 }
 
-bool MapIsTileInExit(const Map *map, const TTileItem *ti)
+bool MapIsTileInExit(const Map *map, const Thing *ti)
 {
 	const struct vec2i tilePos = Vec2ToTile(ti->Pos);
 	return
@@ -146,14 +146,14 @@ bool MapIsTileInExit(const Map *map, const TTileItem *ti)
 		tilePos.y >= map->ExitStart.y && tilePos.y <= map->ExitEnd.y;
 }
 
-static Tile *MapGetTileOfItem(Map *map, TTileItem *t)
+static Tile *MapGetTileOfItem(Map *map, Thing *t)
 {
 	const struct vec2i pos = Vec2ToTile(t->Pos);
 	return MapGetTile(map, pos);
 }
 
-static void AddItemToTile(TTileItem *t, Tile *tile);
-bool MapTryMoveTileItem(Map *map, TTileItem *t, const struct vec2 pos)
+static void AddItemToTile(Thing *t, Tile *tile);
+bool MapTryMoveThing(Map *map, Thing *t, const struct vec2 pos)
 {
 	// Check if we can move to new position
 	if (!MapIsPosIn(map, pos))
@@ -173,14 +173,14 @@ bool MapTryMoveTileItem(Map *map, TTileItem *t, const struct vec2 pos)
 	// Moving; remove from old tile...
 	if (doRemove)
 	{
-		MapRemoveTileItem(map, t);
+		MapRemoveThing(map, t);
 	}
 	// ...move and add to new tile
 	t->Pos = pos;
 	AddItemToTile(t, MapGetTile(map, t2));
 	return true;
 }
-static void AddItemToTile(TTileItem *t, Tile *tile)
+static void AddItemToTile(Thing *t, Tile *tile)
 {
 	ThingId tid;
 	tid.Id = t->id;
@@ -190,7 +190,7 @@ static void AddItemToTile(TTileItem *t, Tile *tile)
 	CArrayPushBack(&tile->things, &tid);
 }
 
-void MapRemoveTileItem(Map *map, TTileItem *t)
+void MapRemoveThing(Map *map, Thing *t)
 {
 	if (!MapIsPosIn(map, t->Pos))
 	{
@@ -392,7 +392,7 @@ bool MapTryPlaceOneObject(
 	amo.UID = ObjsGetNextUID();
 	strcpy(amo.MapObjectClass, mo->Name);
 	amo.Pos = Vec2ToNet(MapObjectGetPlacementPos(mo, v));
-	amo.TileItemFlags = MapObjectGetFlags(mo) | extraFlags;
+	amo.ThingFlags = MapObjectGetFlags(mo) | extraFlags;
 	amo.Health = mo->Health;
 	ObjAdd(amo);
 	return true;
@@ -423,7 +423,7 @@ void MapPlaceCollectible(
 	strcpy(e.u.AddPickup.PickupClass, o->u.Pickup->Name);
 	e.u.AddPickup.IsRandomSpawned = false;
 	e.u.AddPickup.SpawnerUID = -1;
-	e.u.AddPickup.TileItemFlags = ObjectiveToTileItem(objective);
+	e.u.AddPickup.ThingFlags = ObjectiveToThing(objective);
 	e.u.AddPickup.Pos = Vec2ToNet(pos);
 	GameEventsEnqueue(&gGameEvents, e);
 }
@@ -489,7 +489,7 @@ static bool TryPlaceOneBlowup(Map *map, const struct vec2i tilePos, void *data)
 	const TryPlaceOneBlowupData *pData = data;
 	return MapTryPlaceOneObject(
 		map, tilePos, pData->o->u.MapObject,
-		ObjectiveToTileItem(pData->objective), true);
+		ObjectiveToThing(pData->objective), true);
 }
 
 void MapPlaceKey(
@@ -504,7 +504,7 @@ void MapPlaceKey(
 		KeyPickupClass(mo->missionData->KeyStyle, keyIndex)->Name);
 	e.u.AddPickup.IsRandomSpawned = false;
 	e.u.AddPickup.SpawnerUID = -1;
-	e.u.AddPickup.TileItemFlags = 0;
+	e.u.AddPickup.ThingFlags = 0;
 	e.u.AddPickup.Pos = Vec2ToNet(Vec2CenterOfTile(tilePos));
 	GameEventsEnqueue(&gGameEvents, e);
 }
@@ -941,8 +941,8 @@ bool MapIsTileAreaClear(Map *map, const struct vec2 pos, const struct vec2i size
 			}
 			for (int i = 0; i < (int)tileThings->size; i++)
 			{
-				const TTileItem *ti =
-					ThingIdGetTileItem(CArrayGet(tileThings, i));
+				const Thing *ti =
+					ThingIdGetThing(CArrayGet(tileThings, i));
 				if (AABBOverlap(pos, ti->Pos, size, ti->size))
 				{
 					return false;

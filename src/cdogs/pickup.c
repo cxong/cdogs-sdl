@@ -93,11 +93,11 @@ void PickupAdd(const NAddPickup ap)
 	memset(p, 0, sizeof *p);
 	p->UID = ap.UID;
 	p->class = StrPickupClass(ap.PickupClass);
-	TileItemInit(
-		&p->tileItem, i, KIND_PICKUP, PICKUP_SIZE, ap.TileItemFlags);
-	p->tileItem.CPic = p->class->Pic;
-	p->tileItem.CPicFunc = PickupDraw;
-	MapTryMoveTileItem(&gMap, &p->tileItem, NetToVec2(ap.Pos));
+	ThingInit(
+		&p->thing, i, KIND_PICKUP, PICKUP_SIZE, ap.ThingFlags);
+	p->thing.CPic = p->class->Pic;
+	p->thing.CPicFunc = PickupDraw;
+	MapTryMoveThing(&gMap, &p->thing, NetToVec2(ap.Pos));
 	p->IsRandomSpawned = ap.IsRandomSpawned;
 	p->PickedUp = false;
 	p->SpawnerUID = ap.SpawnerUID;
@@ -107,7 +107,7 @@ void PickupDestroy(const int uid)
 {
 	Pickup *p = PickupGetByUID(uid);
 	CASSERT(p->isInUse, "Destroying not-in-use pickup");
-	MapRemoveTileItem(&gMap, &p->tileItem);
+	MapRemoveThing(&gMap, &p->thing);
 	p->isInUse = false;
 }
 
@@ -118,7 +118,7 @@ void PickupsUpdate(CArray *pickups, const int ticks)
 		{
 			continue;
 		}
-		TileItemUpdate(&p->tileItem, ticks);
+		ThingUpdate(&p->thing, ticks);
 	CA_FOREACH_END()
 }
 
@@ -132,7 +132,7 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 	CASSERT(a->PlayerUID >= 0, "NPCs cannot pickup");
 	bool canPickup = true;
 	const char *sound = NULL;
-	const struct vec2 actorPos = a->tileItem.Pos;
+	const struct vec2 actorPos = a->thing.Pos;
 	switch (p->class->Type)
 	{
 	case PICKUP_JEWEL:
@@ -143,7 +143,7 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 			GameEventsEnqueue(&gGameEvents, e);
 			sound = "pickup";
 			UpdateMissionObjective(
-				&gMission, p->tileItem.flags, OBJECTIVE_COLLECT, 1);
+				&gMission, p->thing.flags, OBJECTIVE_COLLECT, 1);
 		}
 		break;
 
@@ -362,12 +362,12 @@ static void PickupDraw(
 	CPicDrawContext c;
 	c.Dir = DIRECTION_UP;
 	c.Offset = svec2i_zero();
-	const Pic *pic = CPicGetPic(&p->tileItem.CPic, c.Dir);
+	const Pic *pic = CPicGetPic(&p->thing.CPic, c.Dir);
 	if (pic != NULL)
 	{
 		c.Offset = svec2i_scale_divide(CPicGetSize(&p->class->Pic), -2);
 	}
-	CPicDraw(g, &p->tileItem.CPic, pos, &c);
+	CPicDraw(g, &p->thing.CPic, pos, &c);
 }
 
 Pickup *PickupGetByUID(const int uid)

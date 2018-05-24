@@ -118,7 +118,7 @@ struct vec2i GetPlayerCenter(
 		const struct vec2i screenCenter =
 			svec2i(w / 2, device->cachedConfig.Res.y / 2);
 		const TActor *actor = ActorGetByUID(pData->ActorUID);
-		const struct vec2 p = actor->tileItem.Pos;
+		const struct vec2 p = actor->thing.Pos;
 		center = svec2i_add(
 			svec2i_assign_vec2(svec2_subtract(p, pCenter)), screenCenter);
 	}
@@ -512,7 +512,7 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 			if (player->dead > DEATH_MAX) continue;
 			// Calculate LOS for all players alive or dying
 			LOSCalcFrom(
-				&gMap, Vec2ToTile(player->tileItem.Pos), !gCampaign.IsClient);
+				&gMap, Vec2ToTile(player->thing.Pos), !gCampaign.IsClient);
 
 			if (player->dead) continue;
 
@@ -564,23 +564,23 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 			const TActor *p = ActorGetByUID(pd->ActorUID);
 			const int pad = CAMERA_SPLIT_PADDING;
 			struct vec2 vel = svec2_zero();
-			if (screen.x + pad > p->tileItem.Pos.x && p->tileItem.Vel.x < 1)
+			if (screen.x + pad > p->thing.Pos.x && p->thing.Vel.x < 1)
 			{
-				vel.x = screen.x + pad - p->tileItem.Pos.x;
+				vel.x = screen.x + pad - p->thing.Pos.x;
 			}
-			else if (screen.x + w - pad < p->tileItem.Pos.x &&
-				p->tileItem.Vel.x > -1)
+			else if (screen.x + w - pad < p->thing.Pos.x &&
+				p->thing.Vel.x > -1)
 			{
-				vel.x = screen.x + w - pad - p->tileItem.Pos.x;
+				vel.x = screen.x + w - pad - p->thing.Pos.x;
 			}
-			if (screen.y + pad > p->tileItem.Pos.y && p->tileItem.Vel.y < 1)
+			if (screen.y + pad > p->thing.Pos.y && p->thing.Vel.y < 1)
 			{
-				vel.y = screen.y + pad - p->tileItem.Pos.y;
+				vel.y = screen.y + pad - p->thing.Pos.y;
 			}
-			else if (screen.y + h - pad < p->tileItem.Pos.y &&
-				p->tileItem.Vel.y > -1)
+			else if (screen.y + h - pad < p->thing.Pos.y &&
+				p->thing.Vel.y > -1)
 			{
-				vel.y = screen.y + h - pad - p->tileItem.Pos.y;
+				vel.y = screen.y + h - pad - p->thing.Pos.y;
 			}
 			if (!svec2_is_zero(vel))
 			{
@@ -591,7 +591,7 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 				GameEventsEnqueue(&gGameEvents, ei);
 				LOG(LM_MAIN, LL_TRACE,
 					"playerUID(%d) pos(%f, %f) screen(%d, %d) impulse(%f, %f)",
-					p->uid, p->tileItem.Pos.x, p->tileItem.Pos.y,
+					p->uid, p->thing.Pos.x, p->thing.Pos.y,
 					screen.x, screen.y,
 					ei.u.ActorImpulse.Vel.x, ei.u.ActorImpulse.Vel.y);
 			}

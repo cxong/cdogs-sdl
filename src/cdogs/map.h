@@ -54,6 +54,7 @@
 #include "map_object.h"
 #include "mission.h"
 #include "pic.h"
+#include "thing.h"
 #include "tile.h"
 #include "triggers.h"
 #include "vector.h"
@@ -119,15 +120,15 @@ unsigned short GetAccessMask(int k);
 
 Tile *MapGetTile(const Map *map, const struct vec2i pos);
 bool MapIsTileIn(const Map *map, const struct vec2i pos);
-bool MapIsTileInExit(const Map *map, const TTileItem *ti);
+bool MapIsTileInExit(const Map *map, const Thing *ti);
 
 bool MapHasLockedRooms(const Map *map);
 bool MapPosIsInLockedRoom(const Map *map, const struct vec2 pos);
 int MapGetDoorKeycardFlag(Map *map, struct vec2i pos);
 
 // Return false if cannot move to new position
-bool MapTryMoveTileItem(Map *map, TTileItem *t, const struct vec2 pos);
-void MapRemoveTileItem(Map *map, TTileItem *t);
+bool MapTryMoveThing(Map *map, Thing *t, const struct vec2 pos);
+void MapRemoveThing(Map *map, Thing *t);
 
 void MapTerminate(Map *map);
 void MapLoad(

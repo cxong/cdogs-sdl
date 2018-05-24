@@ -215,7 +215,7 @@ typedef struct _NActorAdd {
     int32_t Direction;
     int32_t Health;
     int32_t PlayerUID;
-    uint32_t TileItemFlags;
+    uint32_t ThingFlags;
     NVec2 Pos;
 /* @@protoc_insertion_point(struct:NActorAdd) */
 } NActorAdd;
@@ -275,7 +275,7 @@ typedef struct _NAddPickup {
     char PickupClass[128];
     bool IsRandomSpawned;
     int32_t SpawnerUID;
-    uint32_t TileItemFlags;
+    uint32_t ThingFlags;
     NVec2 Pos;
 /* @@protoc_insertion_point(struct:NAddPickup) */
 } NAddPickup;
@@ -331,7 +331,7 @@ typedef struct _NMapObjectAdd {
     uint32_t UID;
     char MapObjectClass[128];
     NVec2 Pos;
-    uint32_t TileItemFlags;
+    uint32_t ThingFlags;
     int32_t Health;
 /* @@protoc_insertion_point(struct:NMapObjectAdd) */
 } NMapObjectAdd;
@@ -586,7 +586,7 @@ extern const int32_t NAddBullet_ActorUID_default;
 #define NActorAdd_Direction_tag                  3
 #define NActorAdd_Health_tag                     4
 #define NActorAdd_PlayerUID_tag                  5
-#define NActorAdd_TileItemFlags_tag              6
+#define NActorAdd_ThingFlags_tag              6
 #define NActorAdd_Pos_tag                        7
 #define NActorHit_UID_tag                        1
 #define NActorHit_PlayerUID_tag                  2
@@ -618,7 +618,7 @@ extern const int32_t NAddBullet_ActorUID_default;
 #define NAddPickup_PickupClass_tag               2
 #define NAddPickup_IsRandomSpawned_tag           3
 #define NAddPickup_SpawnerUID_tag                4
-#define NAddPickup_TileItemFlags_tag             5
+#define NAddPickup_ThingFlags_tag             5
 #define NAddPickup_Pos_tag                       6
 #define NBulletBounce_UID_tag                    1
 #define NBulletBounce_HitType_tag                2
@@ -650,7 +650,7 @@ extern const int32_t NAddBullet_ActorUID_default;
 #define NMapObjectAdd_UID_tag                    1
 #define NMapObjectAdd_MapObjectClass_tag         2
 #define NMapObjectAdd_Pos_tag                    3
-#define NMapObjectAdd_TileItemFlags_tag          4
+#define NMapObjectAdd_ThingFlags_tag          4
 #define NMapObjectAdd_Health_tag                 5
 #define NMissionComplete_ShowMsg_tag             1
 #define NMissionComplete_ExitStart_tag           2
