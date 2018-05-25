@@ -13,7 +13,15 @@ SET(VERSION_MAJOR "0")
 SET(VERSION_MINOR "6")
 SET(VERSION_PATCH "7")
 SET(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
-CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/appveyor.yml.cmake ${CMAKE_SOURCE_DIR}/appveyor.yml)
+
+# Optionally configure appveyor.yml since it is excluded in source archives
+if(EXISTS ${CMAKE_SOURCE_DIR}/appveyor.yml.cmake)
+	CONFIGURE_FILE(
+		${CMAKE_SOURCE_DIR}/appveyor.yml.cmake
+		${CMAKE_SOURCE_DIR}/appveyor.yml
+	)
+endif()
+
 # this must be 4 numbers
 SET(VERSION_RC "${VERSION_MAJOR},${VERSION_MINOR},${VERSION_PATCH},0")
 SET(WEBSITE "http://cxong.github.io/cdogs-sdl/")
