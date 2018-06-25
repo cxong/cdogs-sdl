@@ -320,6 +320,17 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 			// side-by-side split
 			for (int i = 0; i < drawData.NumScreens; i++)
 			{
+				const PlayerData *p = drawData.Players[i];
+				if (!IsPlayerAliveOrDying(p))
+				{
+					continue;
+				}
+				const TActor *a = ActorGetByUID(p->ActorUID);
+				if (a == NULL)
+				{
+					continue;
+				}
+				camera->lastPosition = a->thing.Pos;
 				struct vec2i centerOffsetPlayer = centerOffset;
 				const int clipLeft = (i & 1) ? w / 2 : 0;
 				const int clipRight = (i & 1) ? w - 1 : (w / 2) - 1;
@@ -345,15 +356,21 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 			for (int i = 0; i < drawData.NumScreens; i++)
 			{
 				const PlayerData *p = drawData.Players[i];
+				if (!IsPlayerAliveOrDying(p))
+				{
+					continue;
+				}
+				const TActor *a = ActorGetByUID(p->ActorUID);
+				if (a == NULL)
+				{
+					continue;
+				}
+				camera->lastPosition = a->thing.Pos;
 				struct vec2i centerOffsetPlayer = centerOffset;
 				const int clipLeft = (i & 1) ? w / 2 : 0;
 				const int clipTop = (i < 2) ? 0 : h / 2 - 1;
 				const int clipRight = (i & 1) ? w - 1 : (w / 2) - 1;
 				const int clipBottom = (i < 2) ? h / 2 : h - 1;
-				if (!IsPlayerAliveOrDying(p))
-				{
-					continue;
-				}
 				GraphicsSetBlitClip(
 					&gGraphicsDevice,
 					clipLeft, clipTop, clipRight, clipBottom);
