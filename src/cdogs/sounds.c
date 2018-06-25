@@ -506,7 +506,7 @@ void SoundPlayAt(SoundDevice *device, Mix_Chunk *data, const struct vec2 pos)
 static bool IsPosNoSee(void *data, struct vec2i pos)
 {
 	const Tile *t = MapGetTile(data, Vec2iToTile(pos));
-	return t != NULL && (t->flags & MAPTILE_NO_SEE);
+	return t != NULL && TileIsOpaque(t);
 }
 void SoundPlayAtPlusDistance(
 	SoundDevice *device, Mix_Chunk *data,

@@ -297,12 +297,11 @@ static bool IsTileWalkableOrOpenable(Map *map, struct vec2i pos)
 	{
 		return false;
 	}
-	const int tileFlags = tile->flags;
-	if (!(tileFlags & MAPTILE_NO_WALK))
+	if (TileCanWalk(tile))
 	{
 		return true;
 	}
-	if (tileFlags & MAPTILE_OFFSET_PIC)
+	if (tile->Class->IsDoor)
 	{
 		// A door; check if we can open it
 		int keycard = MapGetDoorKeycardFlag(map, pos);
@@ -353,7 +352,7 @@ bool AIHasClearShot(const struct vec2 from, const struct vec2 to)
 }
 static bool IsPosNoSee(void *data, struct vec2i pos)
 {
-	return MapGetTile(data, Vec2iToTile(pos))->flags & MAPTILE_NO_SEE;
+	return TileIsOpaque(MapGetTile(data, Vec2iToTile(pos)));
 }
 
 TObject *AIGetObjectRunningInto(TActor *a, int cmd)

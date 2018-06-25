@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2016, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -54,11 +54,9 @@
 void MapAddDoorGroup(
 	Map *map, const Mission *m, const struct vec2i v, const int keyFlags);
 
-// Get the picture of a door
-// style: office/dungeon/blast/alien, or custom
-// key: normal/yellow/green/blue/red/wall/open
-NamedPic *GetDoorPic(
-	const PicManager *pm, const char *style, const char *key,
+const TileClass *DoorGetClass(
+	map_t classes, const PicManager *pm,
+	const char *style, const char *key,
 	const bool isHorizontal);
 
 // Legacy door style int to str

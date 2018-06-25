@@ -48,59 +48,26 @@
 */
 #pragma once
 
-#include <stdbool.h>
-
 #include "c_array.h"
-#include "mathc/mathc.h"
-#include "pic.h"
-#include "pic_manager.h"
-#include "pics.h"
-#include "vector.h"
-
-#define TILE_WIDTH      16
-#define TILE_HEIGHT     12
-#define TILE_SIZE		svec2i(TILE_WIDTH, TILE_HEIGHT)
-
-#define X_TILES			((gGraphicsDevice.cachedConfig.Res.x + TILE_WIDTH - 1) / TILE_WIDTH + 1)
-
-#define X_TILES_HALF    ((X_TILES + 1) / 2)
-
-// + 1 because walls from bottom row show up one row above
-#define Y_TILES			((gGraphicsDevice.cachedConfig.Res.y + TILE_HEIGHT - 1) / TILE_HEIGHT + 2)
-#define Y_TILES_HALF    ((Y_TILES + 1 / 2)
-
-typedef enum
-{
-	MAPTILE_NO_WALK			= 0x0001,
-	MAPTILE_NO_SEE			= 0x0002,
-	MAPTILE_NO_SHOOT		= 0x0004,
-	MAPTILE_IS_WALL			= 0x0008,
-	MAPTILE_IS_NOTHING		= 0x0010,
-	MAPTILE_IS_NORMAL_FLOOR	= 0x0020,
-	MAPTILE_OFFSET_PIC		= 0x0040,
-// These constants are used internally in draw, it is never set in the map
-	MAPTILE_DELAY_DRAW		= 0x0080,
-	MAPTILE_OUT_OF_SIGHT	= 0x0100
-} MapTileFlags;
+#include "tile_class.h"
 
 typedef struct
 {
-	// Note: use NamedPic so we can serialise over net using name
-	NamedPic *pic;
-	NamedPic *picAlt;
-	int flags;
-	bool isVisited;
+	const TileClass *Class;
+	const TileClass *ClassAlt;
 	CArray triggers;	// of Trigger *
 	CArray things;		// of ThingId
+	// flags for drawing
+	bool outOfSight;
+	bool isVisited;
 } Tile;
 
 
 Tile TileNone(void);
 void TileInit(Tile *t);
 void TileDestroy(Tile *t);
-bool TileCanSee(Tile *t);
+bool TileIsOpaque(const Tile *t);
+bool TileIsShootable(const Tile *t);
 bool TileCanWalk(const Tile *t);
-bool TileIsNormalFloor(const Tile *t);
 bool TileIsClear(const Tile *t);
 bool TileHasCharacter(Tile *t);
-void TileSetAlternateFloor(Tile *t, NamedPic *p);

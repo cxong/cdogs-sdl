@@ -594,7 +594,7 @@ static void FindObjectivesSortedByDistance(
 		// Check if the pickup is actually accessible
 		// This is because random spawning may cause some pickups to be spawned
 		// in inaccessible areas
-		if (MapGetTile(&gMap, Vec2ToTile(co.Pos))->flags & MAPTILE_NO_WALK)
+		if (!TileCanWalk(MapGetTile(&gMap, Vec2ToTile(co.Pos))))
 		{
 			continue;
 		}

@@ -151,7 +151,7 @@ void LOSCalcFrom(Map *map, const struct vec2i pos, const bool explore)
 		for (end.x = origin.x; end.x < origin.x + perimSize.x; end.x++)
 		{
 			const Tile *tile = MapGetTile(map, end);
-			if (!tile || !(tile->flags & MAPTILE_NO_SEE))
+			if (!tile || !TileIsOpaque(tile))
 			{
 				continue;
 			}
@@ -221,7 +221,7 @@ static bool IsNextTileBlockedAndSetVisibility(void *data, struct vec2i pos)
 	if (t == NULL) return true;
 	SetLOSVisible(lData->Map, pos, lData->Explore);
 	// Check if this tile is an obstruction
-	return t->flags & MAPTILE_NO_SEE;
+	return TileIsOpaque(t);
 }
 static bool IsTileVisibleNonObstruction(Map *map, const struct vec2i pos);
 static void SetObstructionVisible(
@@ -244,7 +244,7 @@ static bool IsTileVisibleNonObstruction(Map *map, const struct vec2i pos)
 {
 	const Tile *t = MapGetTile(map, pos);
 	if (t == NULL) return false;
-	return !(t->flags & MAPTILE_NO_SEE) && LOSTileIsVisible(map, pos);
+	return !TileIsOpaque(t) && LOSTileIsVisible(map, pos);
 }
 
 bool LOSAddRun(

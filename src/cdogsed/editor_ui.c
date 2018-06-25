@@ -449,7 +449,7 @@ static void MissionDrawDoorStyle(
 	DrawStyleArea(
 		svec2i_add(pos, o->Pos),
 		"Doors",
-		&GetDoorPic(&gPicManager, m->DoorStyle, "normal", true)->pic,
+		DoorGetClass(gTileClasses, &gPicManager, m->DoorStyle, "normal", true)->Pic,
 		idx, (int)gPicManager.doorStyleNames.size,
 		UIObjectIsHighlighted(o));
 }
@@ -486,7 +486,7 @@ static void MissionDrawExitStyle(
 	DrawStyleArea(
 		svec2i_add(pos, o->Pos),
 		"Exit",
-		&PicManagerGetExitPic(&gPicManager, m->ExitStyle, false)->pic,
+		TileClassesGetGetExit(gTileClasses, &gPicManager, m->ExitStyle, false)->Pic,
 		idx, (int)gPicManager.exitStyleNames.size,
 		UIObjectIsHighlighted(o));
 }

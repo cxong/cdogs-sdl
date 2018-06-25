@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2015, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -49,21 +49,16 @@
 #include "door.h"
 
 #include "gamedata.h"
+#include "log.h"
 #include "net_util.h"
-
-
-#define DOOR_TILE_FLAGS \
-	(MAPTILE_NO_SEE | MAPTILE_NO_WALK | MAPTILE_NO_SHOOT | MAPTILE_OFFSET_PIC)
 
 
 static int GetDoorCountInGroup(
 	const Map *map, const struct vec2i v, const bool isHorizontal);
-static NamedPic *GetDoorBasePic(
-	const PicManager *pm, const char *style, const bool isHorizontal);
 static TWatch *CreateCloseDoorWatch(
 	Map *map, const Mission *m, const struct vec2i v,
 	const bool isHorizontal, const int doorGroupCount,
-	const char *picAltName);
+	const TileClass *classAlt);
 static Trigger *CreateOpenDoorTrigger(
 	Map *map, const Mission *m, const struct vec2i v,
 	const bool isHorizontal, const int doorGroupCount, const int keyFlags);
@@ -91,39 +86,45 @@ void MapAddDoorGroup(
 	case FLAGS_KEYCARD_YELLOW:	doorKey = "yellow";	break;
 	default:					doorKey = "normal";	break;
 	}
-	NamedPic *doorPic =
-		GetDoorPic(&gPicManager, m->DoorStyle, doorKey, isHorizontal);
+	const TileClass *doorClass = DoorGetClass(
+		gTileClasses, &gPicManager, m->DoorStyle, doorKey, isHorizontal);
+	const TileClass *doorClassOpen = DoorGetClass(
+		gTileClasses, &gPicManager, m->DoorStyle, "open", isHorizontal);
 
 	// set up the door pics
 	for (int i = 0; i < doorGroupCount; i++)
 	{
 		const struct vec2i vI = svec2i_add(v, svec2i_scale(dv, (float)i));
 		Tile *tile = MapGetTile(map, vI);
-		tile->picAlt = doorPic;
-		tile->pic = GetDoorBasePic(&gPicManager, m->DoorStyle, isHorizontal);
-		tile->flags = DOOR_TILE_FLAGS;
+		tile->ClassAlt = doorClass;
+		tile->Class = doorClassOpen;
 		if (isHorizontal)
 		{
 			const struct vec2i vB = svec2i_add(vI, dAside);
 			Tile *tileB = MapGetTile(map, vB);
-			CASSERT(TileCanWalk(MapGetTile(
-				map, svec2i(vI.x - dAside.x, vI.y - dAside.y))),
+			CASSERT(
+				TileCanWalk(MapGetTile(
+					map, svec2i(vI.x - dAside.x, vI.y - dAside.y)
+				)),
 				"map gen error: entrance should be clear");
 			CASSERT(TileCanWalk(tileB),
 				"map gen error: entrance should be clear");
 			// Change the tile below to shadow, cast by this door
 			const bool isFloor = IMapGet(map, vB) == MAP_FLOOR;
-			tileB->pic = PicManagerGetMaskedStylePic(
+			tileB->Class = TileClassesGetMaskedTile(
+				gTileClasses,
 				&gPicManager,
-				"tile",
+				&gTileFloor,
 				isFloor ? m->FloorStyle : m->RoomStyle,
 				"shadow",
-				isFloor ? m->FloorMask : m->RoomMask, m->AltMask);
+				isFloor ? m->FloorMask : m->RoomMask,
+				m->AltMask
+			);
 		}
 	}
 
 	TWatch *w = CreateCloseDoorWatch(
-		map, m, v, isHorizontal, doorGroupCount, doorPic->name);
+		map, m, v, isHorizontal, doorGroupCount, doorClass);
 	Trigger *t = CreateOpenDoorTrigger(
 		map, m, v, isHorizontal, doorGroupCount, keyFlags);
 	// Connect trigger and watch up
@@ -167,7 +168,7 @@ static int GetDoorCountInGroup(
 static TWatch *CreateCloseDoorWatch(
 	Map *map, const Mission *m, const struct vec2i v,
 	const bool isHorizontal, const int doorGroupCount,
-	const char *picAltName)
+	const TileClass *classAlt)
 {
 	TWatch *w = WatchNew();
 	const struct vec2i dv = svec2i(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
@@ -209,11 +210,13 @@ static TWatch *CreateCloseDoorWatch(
 		a->Type = ACTION_EVENT;
 		a->a.Event = GameEventNew(GAME_EVENT_TILE_SET);
 		a->a.Event.u.TileSet.Pos = Vec2i2Net(vI);
-		a->a.Event.u.TileSet.Flags = DOOR_TILE_FLAGS;
 		strcpy(
-			a->a.Event.u.TileSet.PicName,
-			GetDoorBasePic(&gPicManager, m->DoorStyle, isHorizontal)->name);
-		strcpy(a->a.Event.u.TileSet.PicAltName, picAltName);
+			a->a.Event.u.TileSet.ClassName,
+			DoorGetClass(
+				gTileClasses, &gPicManager, m->DoorStyle, "open", isHorizontal
+			)->Name
+		);
+		strcpy(a->a.Event.u.TileSet.ClassAltName, classAlt->Name);
 	}
 
 	// Add shadows below doors
@@ -230,14 +233,17 @@ static TWatch *CreateCloseDoorWatch(
 			a->a.Event.u.TileSet.Pos = Vec2i2Net(vI2);
 			const bool isFloor = IMapGet(map, vI2) == MAP_FLOOR;
 			strcpy(
-				a->a.Event.u.TileSet.PicName,
-				PicManagerGetMaskedStylePic(
+				a->a.Event.u.TileSet.ClassName,
+				TileClassesGetMaskedTile(
+					gTileClasses,
 					&gPicManager,
-					"tile",
+					&gTileFloor,
 					isFloor ? m->FloorStyle : m->RoomStyle,
 					"shadow",
 					isFloor ? m->FloorMask : m->RoomMask,
-					m->AltMask)->name);
+					m->AltMask
+				)->Name
+			);
 		}
 	}
 
@@ -268,17 +274,21 @@ static Trigger *CreateOpenDoorTrigger(
 		a->Type = ACTION_EVENT;
 		a->a.Event = GameEventNew(GAME_EVENT_TILE_SET);
 		a->a.Event.u.TileSet.Pos = Vec2i2Net(vI);
-		a->a.Event.u.TileSet.Flags =
-			(isHorizontal || i > 0) ? 0 : MAPTILE_OFFSET_PIC;
 		strcpy(
-			a->a.Event.u.TileSet.PicName,
-			GetDoorBasePic(&gPicManager, m->DoorStyle, isHorizontal)->name);
+			a->a.Event.u.TileSet.ClassName,
+			DoorGetClass(
+				gTileClasses, &gPicManager, m->DoorStyle, "open", isHorizontal
+			)->Name
+		);
 		if (!isHorizontal && i == 0)
 		{
 			// special door cavity picture
 			strcpy(
-				a->a.Event.u.TileSet.PicAltName,
-				GetDoorPic(&gPicManager, m->DoorStyle, "wall", false)->name);
+				a->a.Event.u.TileSet.ClassAltName,
+				DoorGetClass(
+					gTileClasses, &gPicManager, m->DoorStyle, "wall", false
+				)->Name
+			);
 		}
 	}
 
@@ -296,14 +306,17 @@ static Trigger *CreateOpenDoorTrigger(
 			const bool isFloor = IMapGet(map, vIAside) == MAP_FLOOR;
 			a->a.Event.u.TileSet.Pos = Vec2i2Net(vIAside);
 			strcpy(
-				a->a.Event.u.TileSet.PicName,
-				PicManagerGetMaskedStylePic(
+				a->a.Event.u.TileSet.ClassName,
+				TileClassesGetMaskedTile(
+					gTileClasses,
 					&gPicManager,
-					"tile",
+					&gTileFloor,
 					isFloor? m->FloorStyle : m->RoomStyle,
 					"normal",
 					isFloor ? m->FloorMask : m->RoomMask,
-					m->AltMask)->name);
+					m->AltMask
+				)->Name
+			);
 		}
 	}
 
@@ -331,12 +344,6 @@ static void TileAddTrigger(Tile *t, Trigger *tr)
 	CArrayPushBack(&t->triggers, &tr);
 }
 
-static NamedPic *GetDoorBasePic(
-	const PicManager *pm, const char *style, const bool isHorizontal)
-{
-	return GetDoorPic(pm, style, "open", isHorizontal);
-}
-
 
 // Old door pics definitions
 typedef struct
@@ -356,17 +363,49 @@ typedef struct
 	int Wall;
 } DoorPics;
 
-NamedPic *GetDoorPic(
-	const PicManager *pm, const char *style, const char *key,
+static void GetClassName(
+	char *buf, const char *style, const char *key, const bool isHorizontal);
+// Get the tile class of a door; if it doesn't exist create it
+// style: office/dungeon/blast/alien, or custom
+// key: normal/yellow/green/blue/red/wall/open
+const TileClass *DoorGetClass(
+	map_t classes, const PicManager *pm,
+	const char *style, const char *key,
 	const bool isHorizontal)
 {
 	char buf[CDOGS_FILENAME_MAX];
-	// Construct filename
+	GetClassName(buf, style, key, isHorizontal);
+	TileClass *c;
+	if (hashmap_get(classes, buf, (any_t *)&c) == MAP_OK)
+	{
+		return c;
+	}
+
+	// tile class not found; create it
+	CCALLOC(c, sizeof *c);
+	CSTRDUP(c->Name, buf);
+	c->Pic = PicManagerGetPic(pm, buf);
+	c->IsDoor = true;
+	c->isOpaque = strcmp(key, "open") != 0;
+	c->canWalk = strcmp(key, "open") == 0;
+	c->shootable = strcmp(key, "open") != 0;
+
+	const int error = hashmap_put(classes, buf, c);
+	if (error != MAP_OK)
+	{
+		LOG(LM_MAIN, LL_ERROR, "failed to add door class %s: %d",
+			buf, error);
+		return NULL;
+	}
+	return c;
+}
+static void GetClassName(
+	char *buf, const char *style, const char *key, const bool isHorizontal)
+{
 	// If the key is "wall", it doesn't include orientation
 	sprintf(
 		buf, "door/%s/%s%s", style, key,
 		strcmp(key, "wall") == 0 ? "" : (isHorizontal ? "_h" : "_v"));
-	return PicManagerGetNamedPic(pm, buf);
 }
 
 #define DOORSTYLE_COUNT 4

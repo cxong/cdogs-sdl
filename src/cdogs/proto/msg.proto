@@ -65,10 +65,9 @@ message NConfig {
 
 message NTileSet {
 	required NVec2i Pos = 1;
-	required uint32 Flags = 2;
-	required string PicName = 3;
-	required string PicAltName = 4;
-	required int32 RunLength = 5;
+	required string ClassName = 2;
+	required string ClassAltName = 3;
+	required int32 RunLength = 4;
 }
 
 message NMapObjectAdd {

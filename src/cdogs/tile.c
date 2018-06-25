@@ -56,7 +56,7 @@ Tile TileNone(void)
 {
 	Tile t;
 	TileInit(&t);
-	t.flags = MAPTILE_NO_WALK | MAPTILE_IS_NOTHING;
+	t.Class = &gTileNothing;
 	return t;
 }
 void TileInit(Tile *t)
@@ -64,8 +64,6 @@ void TileInit(Tile *t)
 	memset(t, 0, sizeof *t);
 	CArrayInit(&t->triggers, sizeof(Trigger *));
 	CArrayInit(&t->things, sizeof(ThingId));
-	t->pic = NULL;
-	t->picAlt = NULL;
 }
 void TileDestroy(Tile *t)
 {
@@ -73,29 +71,32 @@ void TileDestroy(Tile *t)
 	CArrayTerminate(&t->things);
 }
 
-bool TileCanSee(Tile *t)
+bool TileIsOpaque(const Tile *t)
 {
-	return !(t->flags & MAPTILE_NO_SEE);
+	return t->Class->isOpaque || (t->Class->IsDoor && t->ClassAlt && t->ClassAlt->isOpaque);
 }
+
+bool TileIsShootable(const Tile *t)
+{
+	return t->Class->shootable || (t->Class->IsDoor && t->ClassAlt && t->ClassAlt->shootable);
+}
+
 bool TileCanWalk(const Tile *t)
 {
-	return !(t->flags & MAPTILE_NO_WALK);
+	return (t->Class->IsDoor && t->ClassAlt) ? t->ClassAlt->canWalk : t->Class->canWalk;
 }
-bool TileIsNormalFloor(const Tile *t)
-{
-	return t->flags & MAPTILE_IS_NORMAL_FLOOR;
-}
+
 bool TileIsClear(const Tile *t)
 {
 	// Check if tile is normal floor
-	const int normalFloorFlags = MAPTILE_IS_NORMAL_FLOOR | MAPTILE_OFFSET_PIC;
-	if (t->flags & ~normalFloorFlags) return false;
+	if (!t->Class->IsFloor && !t->Class->IsDoor) return false;
 	// Check if tile has no things on it, excluding particles
 	CA_FOREACH(const ThingId, tid, t->things)
 		if (tid->Kind != KIND_PARTICLE) return false;
 	CA_FOREACH_END()
 	return true;
 }
+
 bool TileHasCharacter(Tile *t)
 {
 	CA_FOREACH(const ThingId, tid, t->things)
@@ -105,10 +106,4 @@ bool TileHasCharacter(Tile *t)
 		}
 	CA_FOREACH_END()
 	return false;
-}
-
-void TileSetAlternateFloor(Tile *t, NamedPic *p)
-{
-	t->pic = p;
-	t->flags &= ~MAPTILE_IS_NORMAL_FLOOR;
 }

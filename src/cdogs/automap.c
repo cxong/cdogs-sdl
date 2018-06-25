@@ -215,7 +215,7 @@ static void DrawMap(
 			for (x = 0; x < gMap.Size.x; x++)
 			{
 				Tile *tile = MapGetTile(map, svec2i(x, y));
-				if (!(tile->flags & MAPTILE_IS_NOTHING) &&
+				if (tile->Class->Pic != NULL &&
 					(tile->isVisited || (flags & AUTOMAP_FLAGS_SHOWALL)))
 				{
 					int j;
@@ -225,15 +225,15 @@ static void DrawMap(
 							mapPos.x + x*scale + j,
 							mapPos.y + y*scale + i);
 						color_t color = colorRoom;
-						if (tile->flags & MAPTILE_IS_WALL)
+						if (tile->Class->IsWall)
 						{
 							color = colorWall;
 						}
-						else if (tile->flags & MAPTILE_NO_WALK)
+						else if (tile->Class->IsDoor)
 						{
 							color = DoorColor(x, y);
 						}
-						else if (tile->flags & MAPTILE_IS_NORMAL_FLOOR)
+						else if (tile->Class->IsFloor)
 						{
 							color = colorFloor;
 						}

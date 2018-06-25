@@ -627,14 +627,6 @@ static NamedSprites *AddNamedSprites(map_t sprites, const char *name)
 	return ns;
 }
 
-NamedPic *PicManagerGetExitPic(
-	PicManager *pm, const char *style, const bool isShadow)
-{
-	char buf[CDOGS_PATH_MAX];
-	sprintf(buf, "exits/%s/%s", style, isShadow ? "shadow" : "normal");
-	return PicManagerGetNamedPic(pm, buf);
-}
-
 int PicManagerGetWallStyleIndex(PicManager *pm, const char *style)
 {
 	CA_FOREACH(const char *, styleName, pm->wallStyleNames)

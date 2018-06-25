@@ -85,3 +85,5 @@ void MapSetupTilesAndWalls(Map *map, const Mission *m);
 
 unsigned short GenerateAccessMask(int *accessLevel);
 void MapGenerateRandomExitArea(Map *map);
+
+void MapAddDrains(Map *map);

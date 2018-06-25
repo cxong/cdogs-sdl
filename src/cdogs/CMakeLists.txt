@@ -98,6 +98,7 @@ set(CDOGS_SOURCES
 	texture.c
 	thing.c
 	tile.c
+	tile_class.c
 	triggers.c
 	utils.c
 	vector.c
@@ -202,6 +203,7 @@ set(CDOGS_HEADERS
 	texture.h
 	thing.h
 	tile.h
+	tile_class.h
 	triggers.h
 	utils.h
 	vector.h

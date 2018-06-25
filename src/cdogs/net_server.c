@@ -470,9 +470,7 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 		{
 			const Tile *t = MapGetTile(&gMap, pos);
 			// Use RLE, so check if the current tile is the same as the last
-			if (tLast != NULL &&
-				t->pic == tLast->pic && t->picAlt == tLast->picAlt &&
-				t->flags == tLast->flags)
+			if (tLast != NULL && t->Class == tLast->Class)
 			{
 				ts.RunLength++;
 			}
@@ -486,9 +484,10 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 				// Begin the next run
 				memset(&ts, 0, sizeof ts);
 				ts.Pos = Vec2i2Net(pos);
-				if (t->pic != NULL) strcpy(ts.PicName, t->pic->name);
-				if (t->picAlt != NULL) strcpy(ts.PicAltName, t->picAlt->name);
-				ts.Flags = t->flags;
+				if (t->Class != NULL && t->Class->Name)
+				{
+					strcpy(ts.ClassName, t->Class->Name);
+				}
 				ts.RunLength = 0;
 			}
 			tLast = t;

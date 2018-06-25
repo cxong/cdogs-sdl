@@ -233,11 +233,12 @@ void IMapSet(Map *map, struct vec2i pos, unsigned short v)
 	*(unsigned short *)CArrayGet(&map->iMap, pos.y * map->Size.x + pos.x) = v;
 }
 
-void MapChangeFloor(
-	Map *map, const struct vec2i pos, NamedPic *normal, NamedPic *shadow)
+static void MapChangeFloor(
+	Map *map, const struct vec2i pos,
+	const TileClass *normal, const TileClass *shadow)
 {
-	Tile *tAbove = MapGetTile(map, svec2i(pos.x, pos.y - 1));
-	int canSeeTileAbove = !(pos.y > 0 && !TileCanSee(tAbove));
+	const Tile *tAbove = MapGetTile(map, svec2i(pos.x, pos.y - 1));
+	const int canSeeTileAbove = !(pos.y > 0 && TileIsOpaque(tAbove));
 	Tile *t = MapGetTile(map, pos);
 	switch (IMapGet(map, pos) & MAP_MASKACCESS)
 	{
@@ -246,11 +247,11 @@ void MapChangeFloor(
 	case MAP_ROOM:
 		if (!canSeeTileAbove)
 		{
-			t->pic = shadow;
+			t->Class = shadow;
 		}
 		else
 		{
-			t->pic = normal;
+			t->Class = normal;
 		}
 		break;
 	default:
@@ -259,38 +260,40 @@ void MapChangeFloor(
 	}
 }
 
-void MapShowExitArea(Map *map, const struct vec2i exitStart, const struct vec2i exitEnd)
+// Change the perimeter of tiles around the exit area
+void MapShowExitArea(
+	Map *map, const struct vec2i exitStart, const struct vec2i exitEnd)
 {
 	const int left = exitStart.x;
 	const int right = exitEnd.x;
 	const int top = exitStart.y;
 	const int bottom = exitEnd.y;
 
-	NamedPic *exitPic = PicManagerGetExitPic(
-		&gPicManager, gMission.missionData->ExitStyle, false);
-	NamedPic *exitShadowPic = PicManagerGetExitPic(
-		&gPicManager, gMission.missionData->ExitStyle, true);
+	const TileClass *exitClass = TileClassesGetGetExit(
+		gTileClasses, &gPicManager, gMission.missionData->ExitStyle, false);
+	const TileClass *exitShadowClass = TileClassesGetGetExit(
+		gTileClasses, &gPicManager, gMission.missionData->ExitStyle, true);
 
 	struct vec2i v;
 	v.y = top;
 	for (v.x = left; v.x <= right; v.x++)
 	{
-		MapChangeFloor(map, v, exitPic, exitShadowPic);
+		MapChangeFloor(map, v, exitClass, exitShadowClass);
 	}
 	v.y = bottom;
 	for (v.x = left; v.x <= right; v.x++)
 	{
-		MapChangeFloor(map, v, exitPic, exitShadowPic);
+		MapChangeFloor(map, v, exitClass, exitShadowClass);
 	}
 	v.x = left;
 	for (v.y = top + 1; v.y < bottom; v.y++)
 	{
-		MapChangeFloor(map, v, exitPic, exitShadowPic);
+		MapChangeFloor(map, v, exitClass, exitShadowClass);
 	}
 	v.x = right;
 	for (v.y = top + 1; v.y < bottom; v.y++)
 	{
-		MapChangeFloor(map, v, exitPic, exitShadowPic);
+		MapChangeFloor(map, v, exitClass, exitShadowClass);
 	}
 }
 
@@ -721,21 +724,7 @@ void MapLoad(
 
 	if (mission->Type == MAPTYPE_CLASSIC)
 	{
-		// Randomly add drainage tiles for classic map type;
-		// For other map types drains are regular map objects
-		const MapObject *drain = StrMapObject("drain0");
-		for (int i = 0; i < map->Size.x*map->Size.y / 45; i++)
-		{
-			// Make sure drain tiles aren't next to each other
-			v = MapGetRandomTile(map);
-			v.x &= 0xFFFFFE;
-			v.y &= 0xFFFFFE;
-			const Tile *t = MapGetTile(map, v);
-			if (TileIsNormalFloor(t))
-			{
-				MapTryPlaceOneObject(map, v, drain, 0, false);
-			}
-		}
+		MapAddDrains(map);
 	}
 
 	// Set exit now since we have set up all the tiles
@@ -750,7 +739,7 @@ void MapLoad(
 	{
 		for (v.x = 0; v.x < map->Size.x; v.x++)
 		{
-			if (!(MapGetTile(map, v)->flags & MAPTILE_NO_WALK))
+			if (TileCanWalk(MapGetTile(map, v)))
 			{
 				map->NumExplorableTiles++;
 			}
@@ -957,7 +946,7 @@ bool MapIsTileAreaClear(Map *map, const struct vec2 pos, const struct vec2i size
 void MapMarkAsVisited(Map *map, struct vec2i pos)
 {
 	Tile *t = MapGetTile(map, pos);
-	if (!t->isVisited && !(t->flags & MAPTILE_NO_WALK))
+	if (!t->isVisited && TileCanWalk(t))
 	{
 		map->tilesSeen++;
 	}
@@ -1025,7 +1014,7 @@ struct vec2i MapSearchTileAround(Map *map, struct vec2i start, TileSelectFunc fu
 bool MapTileIsUnexplored(Map *map, struct vec2i tile)
 {
 	const Tile *t = MapGetTile(map, tile);
-	return !t->isVisited && !(t->flags & MAPTILE_NO_WALK);
+	return !t->isVisited && TileCanWalk(t);
 }
 
 // Only creates the trigger, but does not place it

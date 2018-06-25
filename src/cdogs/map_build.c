@@ -68,6 +68,28 @@ void MapSetTile(Map *map, struct vec2i pos, unsigned short tileType, Mission *m)
 	MapSetupTile(map, svec2i(pos.x, pos.y + 1), m);
 }
 
+static bool MapTileIsNormalFloor(const Map *map, const struct vec2i pos)
+{
+	// Normal floor tiles can be replaced randomly with
+	// special floor tiles such as drainage
+	switch (IMapGet(map, pos) & MAP_MASKACCESS)
+	{
+	case MAP_FLOOR:
+	case MAP_SQUARE:
+		{
+			const Tile *tAbove = MapGetTile(map, svec2i(pos.x, pos.y - 1));
+			if (!tAbove || TileIsOpaque(tAbove))
+			{
+				break;
+			}
+			return true;
+		}
+	default:
+		break;
+	}
+	return false;
+}
+
 void MapSetupTilesAndWalls(Map *map, const Mission *m)
 {
 	// Pre-load the tile pics that this map will use
@@ -106,31 +128,35 @@ void MapSetupTilesAndWalls(Map *map, const Mission *m)
 	// Randomly change normal floor tiles to alternative floor tiles
 	for (int i = 0; i < map->Size.x*map->Size.y / 22; i++)
 	{
-		Tile *t = MapGetTile(map, MapGetRandomTile(map));
-		if (TileIsNormalFloor(t))
+		const struct vec2i pos = MapGetRandomTile(map);
+		if (MapTileIsNormalFloor(map, pos))
 		{
-			TileSetAlternateFloor(t, PicManagerGetMaskedStylePic(
-				&gPicManager, "tile", m->FloorStyle, "alt1",
-				m->FloorMask, m->AltMask));
+			MapGetTile(map, pos)->Class = TileClassesGetMaskedTile(
+				gTileClasses, &gPicManager, &gTileFloor, m->FloorStyle,
+				"alt1",
+				m->FloorMask, m->AltMask
+			);
 		}
 	}
 	for (int i = 0; i < map->Size.x*map->Size.y / 16; i++)
 	{
-		Tile *t = MapGetTile(map, MapGetRandomTile(map));
-		if (TileIsNormalFloor(t))
+		const struct vec2i pos = MapGetRandomTile(map);
+		if (MapTileIsNormalFloor(map, pos))
 		{
-			TileSetAlternateFloor(t, PicManagerGetMaskedStylePic(
-				&gPicManager, "tile", m->FloorStyle, "alt2",
-				m->FloorMask, m->AltMask));
+			MapGetTile(map, pos)->Class = TileClassesGetMaskedTile(
+				gTileClasses, &gPicManager, &gTileFloor, m->FloorStyle,
+				"alt2",
+				m->FloorMask, m->AltMask
+			);
 		}
 	}
 }
 static const char *MapGetWallPic(const Map *m, const struct vec2i pos);
-// Set tile properties for a map tile, such as picture to use
+// Set tile properties for a map tile
 static void MapSetupTile(Map *map, const struct vec2i pos, const Mission *m)
 {
-	Tile *tAbove = MapGetTile(map, svec2i(pos.x, pos.y - 1));
-	bool canSeeTileAbove = !(tAbove != NULL && !TileCanSee(tAbove));
+	const Tile *tAbove = MapGetTile(map, svec2i(pos.x, pos.y - 1));
+	const bool canSeeTileAbove = !(tAbove != NULL && TileIsOpaque(tAbove));
 	Tile *t = MapGetTile(map, pos);
 	if (!t)
 	{
@@ -140,39 +166,29 @@ static void MapSetupTile(Map *map, const struct vec2i pos, const Mission *m)
 	{
 	case MAP_FLOOR:
 	case MAP_SQUARE:
-		t->pic = PicManagerGetMaskedStylePic(
-			&gPicManager, "tile", m->FloorStyle,
-			canSeeTileAbove ? "normal" : "shadow",
+		t->Class = TileClassesGetMaskedTile(
+			gTileClasses, &gPicManager,
+			&gTileFloor, m->FloorStyle, canSeeTileAbove ? "normal" : "shadow",
 			m->FloorMask, m->AltMask);
-		if (canSeeTileAbove)
-		{
-			// Normal floor tiles can be replaced randomly with
-			// special floor tiles such as drainage
-			t->flags |= MAPTILE_IS_NORMAL_FLOOR;
-		}
 		break;
 
 	case MAP_ROOM:
 	case MAP_DOOR:
-		t->pic = PicManagerGetMaskedStylePic(
-			&gPicManager, "tile", m->RoomStyle,
+		t->Class = TileClassesGetMaskedTile(
+			gTileClasses, &gPicManager, &gTileFloor, m->RoomStyle,
 			canSeeTileAbove ? "normal" : "shadow",
 			m->RoomMask, m->AltMask);
 		break;
 
 	case MAP_WALL:
-		t->pic = PicManagerGetMaskedStylePic(
-			&gPicManager, "wall", m->WallStyle, MapGetWallPic(map, pos),
+		t->Class = TileClassesGetMaskedTile(
+			gTileClasses, &gPicManager, &gTileWall,
+			m->WallStyle, MapGetWallPic(map, pos),
 			m->WallMask, m->AltMask);
-		t->flags =
-			MAPTILE_NO_WALK | MAPTILE_NO_SHOOT |
-			MAPTILE_NO_SEE | MAPTILE_IS_WALL;
 		break;
 
 	case MAP_NOTHING:
-		t->pic = NULL;
-		t->flags =
-			MAPTILE_NO_WALK | MAPTILE_IS_NOTHING;
+		t->Class = &gTileNothing;
 		break;
 	}
 }
@@ -993,7 +1009,7 @@ unsigned short GenerateAccessMask(int *accessLevel)
 void MapGenerateRandomExitArea(Map *map)
 {
 	const Tile *t = NULL;
-	for (int i = 0; i < 10000 && (t == NULL ||!TileCanWalk(t)); i++)
+	for (int i = 0; i < 10000 && (t == NULL || !TileCanWalk(t)); i++)
 	{
 		map->ExitStart.x = (rand() % (abs(map->Size.x) - EXIT_WIDTH - 1));
 		map->ExitEnd.x = map->ExitStart.x + EXIT_WIDTH + 1;
@@ -1004,5 +1020,23 @@ void MapGenerateRandomExitArea(Map *map)
 			(map->ExitStart.x + map->ExitEnd.x) / 2,
 			(map->ExitStart.y + map->ExitEnd.y) / 2);
 		t = MapGetTile(map, center);
+	}
+}
+
+void MapAddDrains(Map *map)
+{
+	// Randomly add drainage tiles for classic map type;
+	// For other map types drains are regular map objects
+	const MapObject *drain = StrMapObject("drain0");
+	for (int i = 0; i < map->Size.x*map->Size.y / 45; i++)
+	{
+		// Make sure drain tiles aren't next to each other
+		struct vec2i v = MapGetRandomTile(map);
+		v.x &= 0xFFFFFE;
+		v.y &= 0xFFFFFE;
+		if (MapTileIsNormalFloor(map, v))
+		{
+			MapTryPlaceOneObject(map, v, drain, 0, false);
+		}
 	}
 }

@@ -201,6 +201,7 @@ int main(int argc, char *argv[])
 	EventInit(&gEventHandlers, NULL, NULL, true);
 	NetServerInit(&gNetServer);
 	PicManagerInit(&gPicManager);
+	TileClassesInit(&gTileClasses);
 	GraphicsInit(&gGraphicsDevice, &gConfig);
 	GraphicsInitialize(&gGraphicsDevice);
 	if (!gGraphicsDevice.IsInitialized)
@@ -292,6 +293,7 @@ bail:
 	CollisionSystemTerminate(&gCollisionSystem);
 
 	CharSpriteClassesTerminate(&gCharSpriteClasses);
+	TileClassesTerminate(gTileClasses);
 	PicManagerTerminate(&gPicManager);
 	FontTerminate(&gFont);
 	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));

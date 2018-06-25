@@ -33,6 +33,7 @@
 #include "events.h"
 #include "game_events.h"
 #include "joystick.h"
+#include "log.h"
 #include "net_server.h"
 #include "objs.h"
 #include "particle.h"
@@ -86,14 +87,14 @@ static void HandleGameEvent(
 	case GAME_EVENT_TILE_SET:
 		{
 			struct vec2i pos = Net2Vec2i(e.u.TileSet.Pos);
+			const TileClass *tileClass = StrTileClass(e.u.TileSet.ClassName);
+			const TileClass *tileClassAlt =
+				StrTileClass(e.u.TileSet.ClassAltName);
 			for (int i = 0; i <= e.u.TileSet.RunLength; i++)
 			{
 				Tile *t = MapGetTile(&gMap, pos);
-				t->flags = e.u.TileSet.Flags;
-				t->pic = PicManagerGetNamedPic(
-					&gPicManager, e.u.TileSet.PicName);
-				t->picAlt = PicManagerGetNamedPic(
-					&gPicManager, e.u.TileSet.PicAltName);
+				t->Class = tileClass;
+				t->ClassAlt = tileClassAlt;
 				pos.x++;
 				if (pos.x == gMap.Size.x)
 				{

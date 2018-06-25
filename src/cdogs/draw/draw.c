@@ -86,7 +86,7 @@ static TileLOS GetTileLOS(const Tile *tile, const bool useFog)
 	{
 		return TILE_LOS_NONE;
 	}
-	if (tile->flags & MAPTILE_OUT_OF_SIGHT)
+	if (tile->outOfSight)
 	{
 		return useFog ? TILE_LOS_FOG : TILE_LOS_NONE;
 	}
@@ -113,17 +113,6 @@ static void DrawLOSPic(
 	if (pic != NULL)
 	{
 		PicRender(pic, gGraphicsDevice.gameWindow.renderer, pos, mask);
-	}
-}
-void DrawWallColumn(int y, struct vec2i pos, Tile *tile)
-{
-	const bool useFog = ConfigGetBool(&gConfig, "Game.Fog");
-	while (y >= 0 && (tile->flags & MAPTILE_IS_WALL))
-	{
-		DrawLOSPic(tile, &tile->pic->pic, pos, useFog);
-		pos.y -= TILE_HEIGHT;
-		tile -= X_TILES;
-		y--;
 	}
 }
 
@@ -166,10 +155,12 @@ static void DrawFloor(DrawBuffer *b, struct vec2i offset)
 			x < b->Size.x;
 			x++, tile++, pos.x += TILE_WIDTH)
 		{
-			if (tile->pic != NULL && tile->pic->pic.Data != NULL &&
-				!(tile->flags & MAPTILE_IS_WALL))
+			if (tile->Class != NULL &&
+				tile->Class->Pic != NULL &&
+				tile->Class->Pic->Data != NULL &&
+				!tile->Class->IsWall)
 			{
-				DrawLOSPic(tile, &tile->pic->pic, pos, useFog);
+				DrawLOSPic(tile, tile->Class->Pic, pos, useFog);
 			}
 		}
 		tile += X_TILES - b->Size.x;
@@ -187,7 +178,7 @@ static void DrawDebris(DrawBuffer *b, struct vec2i offset)
 		CArrayClear(&b->displaylist);
 		for (int x = 0; x < b->Size.x; x++, tile++)
 		{
-			if (tile->flags & MAPTILE_OUT_OF_SIGHT)
+			if (tile->outOfSight)
 			{
 				continue;
 			}
@@ -220,30 +211,27 @@ static void DrawWallsAndThings(DrawBuffer *b, struct vec2i offset)
 		pos.x = b->dx + offset.x;
 		for (int x = 0; x < b->Size.x; x++, tile++, pos.x += TILE_WIDTH)
 		{
-			if (tile->flags & MAPTILE_IS_WALL)
+			if (tile->Class->IsWall)
 			{
-				if (!(tile->flags & MAPTILE_DELAY_DRAW))
-				{
-					DrawWallColumn(y, pos, tile);
-				}
+				DrawLOSPic(tile, tile->Class->Pic, pos, useFog);
 			}
-			else if (tile->flags & MAPTILE_OFFSET_PIC)
+			else if (tile->Class->IsDoor && tile->ClassAlt)
 			{
 				// Drawing doors
 				// Doors may be offset; vertical doors are drawn centered
 				// horizontal doors are bottom aligned
 				struct vec2i doorPos = pos;
-				doorPos.x += (TILE_WIDTH - tile->picAlt->pic.size.x) / 2;
-				if (tile->picAlt->pic.size.y > 16)
+				const Pic *pic = tile->ClassAlt->Pic;
+				doorPos.x += (TILE_WIDTH - pic->size.x) / 2;
+				if (pic->size.y > 16)
 				{
-					doorPos.y +=
-						TILE_HEIGHT - (tile->picAlt->pic.size.y % TILE_HEIGHT);
+					doorPos.y += TILE_HEIGHT - (pic->size.y % TILE_HEIGHT);
 				}
-				DrawLOSPic(tile, &tile->picAlt->pic, doorPos, useFog);
+				DrawLOSPic(tile, pic, doorPos, useFog);
 			}
 
 			// Draw the items that are in LOS
-			if (tile->flags & MAPTILE_OUT_OF_SIGHT)
+			if (tile->outOfSight)
 			{
 				continue;
 			}

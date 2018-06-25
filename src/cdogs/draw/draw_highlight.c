@@ -90,8 +90,7 @@ static void DrawObjectiveHighlight(
 		{
 			return;
 		}
-		if (!(o->Flags & OBJECTIVE_POSKNOWN) &&
-			(tile->flags & MAPTILE_OUT_OF_SIGHT))
+		if (!(o->Flags & OBJECTIVE_POSKNOWN) && tile->outOfSight)
 		{
 			return;
 		}

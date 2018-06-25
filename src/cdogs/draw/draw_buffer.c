@@ -124,41 +124,13 @@ void DrawBufferSetFromMap(
 void DrawBufferFix(DrawBuffer *buffer)
 {
 	Tile *tile = &buffer->tiles[0][0];
-	Tile *tileBelow = &buffer->tiles[0][0] + X_TILES;
-	for (int y = 0; y < Y_TILES - 1; y++)
-	{
-		for (int x = 0; x < buffer->Size.x; x++, tile++, tileBelow++)
-		{
-			if (!(tile->flags & (MAPTILE_IS_WALL | MAPTILE_OFFSET_PIC)) &&
-				(tileBelow->flags & MAPTILE_IS_WALL))
-			{
-				tile->pic = NULL;
-			}
-			else if ((tile->flags & MAPTILE_IS_WALL) &&
-				(tileBelow->flags & MAPTILE_IS_WALL))
-			{
-				tile->flags |= MAPTILE_DELAY_DRAW;
-			}
-		}
-		tile += X_TILES - buffer->Size.x;
-		tileBelow += X_TILES - buffer->Size.x;
-	}
-
-	tile = &buffer->tiles[0][0];
 	for (int y = 0; y < Y_TILES; y++)
 	{
 		for (int x = 0; x < buffer->Size.x; x++, tile++)
 		{
 			const struct vec2i mapTile =
 				svec2i(x + buffer->xStart, y + buffer->yStart);
-			if (!LOSTileIsVisible(&gMap, mapTile))
-			{
-				tile->flags |= MAPTILE_OUT_OF_SIGHT;
-			}
-			else
-			{
-				tile->flags &= ~MAPTILE_OUT_OF_SIGHT;
-			}
+			tile->outOfSight = !LOSTileIsVisible(&gMap, mapTile);
 		}
 		tile += X_TILES - buffer->Size.x;
 	}

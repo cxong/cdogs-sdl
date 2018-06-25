@@ -496,7 +496,7 @@ static HitType GetHitType(
 static bool CheckWall(const struct vec2i tilePos)
 {
 	const Tile *t = MapGetTile(&gMap, tilePos);
-	return t == NULL || t->flags & MAPTILE_NO_SHOOT;
+	return t == NULL || TileIsShootable(t);
 }
 static bool HitWallFunc(
 	const struct vec2i tilePos, void *data,

@@ -1337,6 +1337,7 @@ int main(int argc, char *argv[])
 
 	gConfig = ConfigLoad(GetConfigFilePath(CONFIG_FILE));
 	PicManagerInit(&gPicManager);
+	TileClassesInit(&gTileClasses);
 	// Hardcode config settings
 	ConfigGet(&gConfig, "Graphics.ScaleFactor")->u.Int.Value = 2;
 	ConfigGet(&gConfig, "Graphics.ScaleMode")->u.Enum.Value = SCALE_MODE_NN;
@@ -1427,6 +1428,7 @@ int main(int argc, char *argv[])
 	DrawBufferTerminate(&sDrawBuffer);
 	GraphicsTerminate(ec.g);
 	CharSpriteClassesTerminate(&gCharSpriteClasses);
+	TileClassesTerminate(gTileClasses);
 	PicManagerTerminate(&gPicManager);
 	FontTerminate(&gFont);
 

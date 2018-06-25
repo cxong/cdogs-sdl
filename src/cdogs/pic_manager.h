@@ -76,8 +76,6 @@ void PicManagerGenerateMaskedStylePic(
 const NamedSprites *PicManagerGetCharSprites(
 	PicManager *pm, const char *name, const CharColors *colors);
 
-NamedPic *PicManagerGetExitPic(
-	PicManager *pm, const char *style, const bool isShadow);
 int PicManagerGetWallStyleIndex(PicManager *pm, const char *style);
 int PicManagerGetTileStyleIndex(PicManager *pm, const char *style);
 int PicManagerGetExitStyleIndex(PicManager *pm, const char *style);

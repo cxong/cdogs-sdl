@@ -65,15 +65,10 @@ void CollisionSystemReset(CollisionSystem *cs);
 void CollisionSystemTerminate(CollisionSystem *cs);
 
 #define HitWall(x, y)\
-	(MapGetTile(\
+	(!TileCanWalk(MapGetTile(\
 		&gMap,\
 		svec2i((int)(x)/TILE_WIDTH, (int)(y)/TILE_HEIGHT)\
-	)->flags & MAPTILE_NO_WALK)
-#define ShootWall(x, y) \
-	(MapGetTile(\
-		&gMap,\
-		svec2i((int)(x)/TILE_WIDTH, (int)(y)/TILE_HEIGHT))\
-	->flags & MAPTILE_NO_SHOOT)
+	)))
 
 // Which "team" the actor's on, for collision
 // Actors on the same team don't have to collide
