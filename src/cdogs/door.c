@@ -363,7 +363,7 @@ typedef struct
 	int Wall;
 } DoorPics;
 
-static void GetClassName(
+static void DoorGetClassName(
 	char *buf, const char *style, const char *key, const bool isHorizontal);
 // Get the tile class of a door; if it doesn't exist create it
 // style: office/dungeon/blast/alien, or custom
@@ -374,7 +374,7 @@ const TileClass *DoorGetClass(
 	const bool isHorizontal)
 {
 	char buf[CDOGS_FILENAME_MAX];
-	GetClassName(buf, style, key, isHorizontal);
+	DoorGetClassName(buf, style, key, isHorizontal);
 	TileClass *c;
 	if (hashmap_get(classes, buf, (any_t *)&c) == MAP_OK)
 	{
@@ -399,7 +399,7 @@ const TileClass *DoorGetClass(
 	}
 	return c;
 }
-static void GetClassName(
+static void DoorGetClassName(
 	char *buf, const char *style, const char *key, const bool isHorizontal)
 {
 	// If the key is "wall", it doesn't include orientation
