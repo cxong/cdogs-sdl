@@ -1375,9 +1375,13 @@ void PostInputConfigApply(menu_t *menu, int cmd, void *data)
 		ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
 	}
 
+	MenuResetSize(data);
+}
+
+void MenuResetSize(MenuSystem *ms)
+{
 	// Update menu system so that resolution changes don't
 	// affect menu positions
-	MenuSystem *ms = data;
 	ms->pos = svec2i_zero();
 	ms->size = svec2i(
 		ms->graphics->cachedConfig.Res.x,

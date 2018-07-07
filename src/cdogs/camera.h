@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2015-2017 Cong Xu
+    Copyright (c) 2015-2018 Cong Xu
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
@@ -56,6 +56,7 @@ typedef struct
 } Camera;
 
 void CameraInit(Camera *camera);
+void CameraReset(Camera *camera);
 void CameraTerminate(Camera *camera);
 
 void CameraInput(Camera *camera, const int cmd, const int lastCmd);

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017 Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -96,8 +96,6 @@ typedef struct
 	WindowContext secondWindow;
 	SDL_PixelFormat *Format;
 	GraphicsConfig cachedConfig;
-	CArray validModes;	// of struct vec2i, w x h
-	int modeIndex;
 	BlitClipping clipping;
 	Uint32 *buf;
 	SDL_Texture *bkg;
@@ -111,20 +109,16 @@ extern GraphicsDevice gGraphicsDevice;
 
 void GraphicsInit(GraphicsDevice *device, Config *c);
 void GraphicsInitialize(GraphicsDevice *g);
+void GraphicsReset(GraphicsDevice *g, Config *c);
 void GraphicsTerminate(GraphicsDevice *g);
 int GraphicsGetScreenSize(GraphicsConfig *config);
 int GraphicsGetMemSize(GraphicsConfig *config);
 void GraphicsConfigSet(
 	GraphicsConfig *c,
-	const struct vec2i res, const bool fullscreen,
+	struct vec2i res, const bool fullscreen,
 	const int scaleFactor, const ScaleMode scaleMode, const int brightness,
 	const bool secondWindow);
 void GraphicsConfigSetFromConfig(GraphicsConfig *gc, Config *c);
-
-void Gfx_ModePrev(void);
-void Gfx_ModeNext(void);
-
-char *GrafxGetModeStr(void);
 
 void GraphicsSetBlitClip(
 	GraphicsDevice *device, int left, int top, int right, int bottom);

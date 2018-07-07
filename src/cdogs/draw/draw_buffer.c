@@ -69,8 +69,11 @@ void DrawBufferInit(DrawBuffer *b, struct vec2i size, GraphicsDevice *g)
 }
 void DrawBufferTerminate(DrawBuffer *b)
 {
-	CFREE(b->tiles[0]);
-	CFREE(b->tiles);
+	if (b->tiles)
+	{
+		CFREE(b->tiles[0]);
+		CFREE(b->tiles);
+	}
 	CArrayTerminate(&b->displaylist);
 }
 

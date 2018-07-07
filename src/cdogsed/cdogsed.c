@@ -1341,8 +1341,8 @@ int main(int argc, char *argv[])
 	// Hardcode config settings
 	ConfigGet(&gConfig, "Graphics.ScaleFactor")->u.Int.Value = 2;
 	ConfigGet(&gConfig, "Graphics.ScaleMode")->u.Enum.Value = SCALE_MODE_NN;
-	ConfigGet(&gConfig, "Graphics.ResolutionWidth")->u.Int.Value = 400;
-	ConfigGet(&gConfig, "Graphics.ResolutionHeight")->u.Int.Value = 300;
+	ConfigGet(&gConfig, "Graphics.WindowWidth")->u.Int.Value = 800;
+	ConfigGet(&gConfig, "Graphics.WindowHeight")->u.Int.Value = 600;
 	ConfigGet(&gConfig, "Graphics.SecondWindow")->u.Bool.Value = false;
 	// Force enable ammo so that ammo spawners show up
 	ConfigGet(&gConfig, "Game.Ammo")->u.Bool.Value = true;

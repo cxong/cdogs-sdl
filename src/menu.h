@@ -320,3 +320,4 @@ void MenuPlaySound(MenuSound s);
 void MenuClearSubmenus(menu_t *menu);
 
 void PostInputConfigApply(menu_t *menu, int cmd, void *data);
+void MenuResetSize(MenuSystem *ms);

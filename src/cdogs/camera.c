@@ -41,11 +41,17 @@
 void CameraInit(Camera *camera)
 {
 	memset(camera, 0, sizeof *camera);
-	DrawBufferInit(
-		&camera->Buffer, svec2i(X_TILES, Y_TILES), &gGraphicsDevice);
+	CameraReset(camera);
 	camera->lastPosition = svec2_zero();
 	HUDInit(&camera->HUD, &gGraphicsDevice, &gMission);
 	camera->shake = ScreenShakeZero();
+}
+
+void CameraReset(Camera *camera)
+{
+	DrawBufferTerminate(&camera->Buffer);
+	DrawBufferInit(
+		&camera->Buffer, svec2i(X_TILES, Y_TILES), &gGraphicsDevice);
 }
 
 void CameraTerminate(Camera *camera)

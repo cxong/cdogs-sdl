@@ -32,7 +32,8 @@
 
 #include <SDL_timer.h>
 
-#include "config.h"
+#include "config_io.h"
+#include "files.h"
 #include "gamedata.h"
 #include "log.h"
 #include "music.h"
@@ -174,20 +175,24 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 				break;
 			case SDL_WINDOWEVENT_SIZE_CHANGED:
 				handlers->HasResolutionChanged = true;
-				if (gGraphicsDevice.cachedConfig.IsEditor)
+				const int scale = ConfigGetInt(&gConfig, "Graphics.ScaleFactor");
+				if (!gGraphicsDevice.cachedConfig.IsEditor)
 				{
-					const int scale = ConfigGetInt(&gConfig, "Graphics.ScaleFactor");
-					GraphicsConfigSet(
-						&gGraphicsDevice.cachedConfig,
-						svec2i_scale_divide(
-							svec2i(e.window.data1, e.window.data2), scale),
-						false,
-						scale,
-						gGraphicsDevice.cachedConfig.ScaleMode,
-						gGraphicsDevice.cachedConfig.Brightness,
-						gGraphicsDevice.cachedConfig.SecondWindow);
-					GraphicsInitialize(&gGraphicsDevice);
+					ConfigSetInt(
+						&gConfig, "Graphics.WindowWidth", e.window.data1);
+					ConfigSetInt(
+						&gConfig, "Graphics.WindowHeight", e.window.data2);
+					ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
 				}
+				GraphicsConfigSet(
+					&gGraphicsDevice.cachedConfig,
+					svec2i(e.window.data1, e.window.data2),
+					false,
+					scale,
+					gGraphicsDevice.cachedConfig.ScaleMode,
+					gGraphicsDevice.cachedConfig.Brightness,
+					gGraphicsDevice.cachedConfig.SecondWindow);
+				GraphicsInitialize(&gGraphicsDevice);
 				break;
 			case SDL_WINDOWEVENT_CLOSE:
 				if (!gGraphicsDevice.cachedConfig.IsEditor)

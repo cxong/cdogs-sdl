@@ -215,7 +215,7 @@ static void DrawWallsAndThings(DrawBuffer *b, struct vec2i offset)
 			{
 				DrawLOSPic(tile, tile->Class->Pic, pos, useFog);
 			}
-			else if (tile->Class->IsDoor && tile->ClassAlt)
+			else if (tile->Class->IsDoor && tile->ClassAlt && tile->ClassAlt->Pic)
 			{
 				// Drawing doors
 				// Doors may be offset; vertical doors are drawn centered

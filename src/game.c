@@ -182,6 +182,15 @@ GameLoopData *RunGame(
 	g->InputEverySecondFrame = true;
 	return g;
 }
+static void RunGameReset(RunGameData *rData)
+{
+	// Clear the background
+	DrawRectangle(
+		&gGraphicsDevice, svec2i_zero(), gGraphicsDevice.cachedConfig.Res,
+		colorBlack, 0);
+	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.bkg);
+	CameraReset(&rData->Camera);
+}
 static void RunGameTerminate(GameLoopData *data)
 {
 	RunGameData *rData = data->Data;
@@ -192,11 +201,7 @@ static void RunGameOnEnter(GameLoopData *data)
 {
 	RunGameData *rData = data->Data;
 
-	// Clear the background
-	DrawRectangle(
-		&gGraphicsDevice, svec2i_zero(), gGraphicsDevice.cachedConfig.Res,
-		colorBlack, 0);
-	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.bkg);
+	RunGameReset(rData);
 
 	MapLoad(rData->map, rData->m, rData->co);
 
@@ -628,6 +633,10 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 
 	rData->m->time += ticksPerFrame;
 
+	if (gEventHandlers.HasResolutionChanged)
+	{
+		RunGameReset(rData);
+	}
 	CameraUpdate(&rData->Camera, ticksPerFrame, 1000 / data->FPS);
 
 	return UPDATE_RESULT_DRAW;

@@ -28,11 +28,9 @@
 */
 #include "config.h"
 
-#include "blit.h"
 #include "collision/collision.h"
 #include "gamedata.h"
-#include "grafx_bg.h"
-#include "pic_manager.h"
+#include "grafx.h"
 
 
 bool ConfigApply(Config *config)
@@ -44,16 +42,7 @@ bool ConfigApply(Config *config)
 	}
 	if (ConfigChanged(ConfigGet(config, "Graphics")))
 	{
-		GraphicsConfigSetFromConfig(&gGraphicsDevice.cachedConfig, config);
-		const bool makeBackground =
-			gGraphicsDevice.cachedConfig.RestartFlags &
-			(RESTART_WINDOW | RESTART_SCALE_MODE);
-		GraphicsInitialize(&gGraphicsDevice);
-		if (makeBackground)
-		{
-			GrafxMakeRandomBackground(
-				&gGraphicsDevice, &gCampaign, &gMission, &gMap);
-		}
+		GraphicsReset(&gGraphicsDevice, config);
 	}
 	ConfigSetChanged(config);
 	return gGraphicsDevice.IsInitialized;

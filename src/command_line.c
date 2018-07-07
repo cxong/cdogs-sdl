@@ -47,9 +47,9 @@ void PrintHelp(void)
 	printf("%s\n",
 		"Video Options:\n"
 		"    --fullscreen     Try and use a fullscreen video mode.\n"
-		"    --scale=n        Scale the window resolution up by a factor of n\n"
-		"                       Factors: 2, 3, 4\n"
-		"    --screen=WxH     Set virtual screen width to W x H\n"
+		"    --scale=n        Set pixel size to a factor of n\n"
+		"                       Factors: 1 - 16\n"
+		"    --screen=WxH     Set window size to W x H\n"
 	);
 
 	printf("%s\n",
@@ -141,11 +141,11 @@ bool ParseArgs(
 			break;
 		case 'c':
 			sscanf(optarg, "%dx%d",
-				&ConfigGet(&gConfig, "Graphics.ResolutionWidth")->u.Int.Value,
-				&ConfigGet(&gConfig, "Graphics.ResolutionHeight")->u.Int.Value);
-			LOG(LM_MAIN, LL_DEBUG, "Video mode %dx%d set...",
-				ConfigGetInt(&gConfig, "Graphics.ResolutionWidth"),
-				ConfigGetInt(&gConfig, "Graphics.ResolutionHeight"));
+				&ConfigGet(&gConfig, "Graphics.WindowWidth")->u.Int.Value,
+				&ConfigGet(&gConfig, "Graphics.WindowHeight")->u.Int.Value);
+			LOG(LM_MAIN, LL_DEBUG, "Window size %dx%d set...",
+				ConfigGetInt(&gConfig, "Graphics.WindowWidth"),
+				ConfigGetInt(&gConfig, "Graphics.WindowHeight"));
 			break;
 		case 'm':
 			{

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017 Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -74,105 +74,11 @@
 
 GraphicsDevice gGraphicsDevice;
 
-static void Gfx_ModeSet(const struct vec2i *mode)
-{
-	ConfigGet(&gConfig, "Graphics.ResolutionWidth")->u.Int.Value = mode->x;
-	ConfigGet(&gConfig, "Graphics.ResolutionHeight")->u.Int.Value = mode->y;
-}
-
-void Gfx_ModePrev(void)
-{
-	GraphicsDevice *device = &gGraphicsDevice;
-	device->modeIndex--;
-	if (device->modeIndex < 0)
-	{
-		device->modeIndex = (int)device->validModes.size - 1;
-	}
-	Gfx_ModeSet(CArrayGet(&device->validModes, device->modeIndex));
-}
-
-void Gfx_ModeNext(void)
-{
-	GraphicsDevice *device = &gGraphicsDevice;
-	device->modeIndex++;
-	if (device->modeIndex >= (int)device->validModes.size)
-	{
-		device->modeIndex = 0;
-	}
-	Gfx_ModeSet(CArrayGet(&device->validModes, device->modeIndex));
-}
-
-static int FindValidMode(GraphicsDevice *device, const int w, const int h)
-{
-	CA_FOREACH(const struct vec2i, mode, device->validModes)
-		if (mode->x == w && mode->y == h)
-		{
-			return _ca_index;
-		}
-	CA_FOREACH_END()
-	return -1;
-}
-
-static void AddGraphicsMode(GraphicsDevice *device, const int w, const int h)
-{
-	// Don't add if mode already exists
-	if (FindValidMode(device, w, h) != -1)
-	{
-		return;
-	}
-
-	const int size = w * h;
-	int i;
-	for (i = 0; i < (int)device->validModes.size; i++)
-	{
-		// Ordered by actual resolution ascending and scale descending
-		const struct vec2i *mode = CArrayGet(&device->validModes, i);
-		const int actualResolution = mode->x * mode->y;
-		if (actualResolution >= size)
-		{
-			break;
-		}
-	}
-	struct vec2i mode = svec2i(w, h);
-	CArrayInsert(&device->validModes, i, &mode);
-}
-
 void GraphicsInit(GraphicsDevice *device, Config *c)
 {
 	memset(device, 0, sizeof *device);
-	CArrayInit(&device->validModes, sizeof(struct vec2i));
-	// Add default modes
-	AddGraphicsMode(device, 320, 240);
-	AddGraphicsMode(device, 400, 300);
-	AddGraphicsMode(device, 640, 480);
 	GraphicsConfigSetFromConfig(&device->cachedConfig, c);
 	device->cachedConfig.RestartFlags = RESTART_ALL;
-}
-
-static void AddSupportedGraphicsModes(GraphicsDevice *device)
-{
-	// TODO: multiple window support?
-	const int numDisplayModes = SDL_GetNumDisplayModes(0);
-	if (numDisplayModes < 1)
-	{
-		LOG(LM_GFX, LL_ERROR, "no valid display modes: %s", SDL_GetError());
-		return;
-	}
-	for (int i = 0; i < numDisplayModes; i++)
-	{
-		SDL_DisplayMode mode;
-		if (SDL_GetDisplayMode(0, i, &mode) != 0)
-		{
-			LOG(LM_GFX, LL_ERROR, "cannot get display mode: %s",
-				SDL_GetError());
-			continue;
-		}
-		if (mode.w < 320 || mode.h < 240)
-		{
-			break;
-		}
-		AddGraphicsMode(device, mode.w, mode.h);
-	}
 }
 
 // Initialises the video subsystem.
@@ -190,7 +96,6 @@ void GraphicsInitialize(GraphicsDevice *g)
 		char buf[CDOGS_PATH_MAX];
 		GetDataFilePath(buf, "graphics/cdogs_icon.bmp");
 		g->icon = IMG_Load(buf);
-		AddSupportedGraphicsModes(g);
 		g->IsWindowInitialized = true;
 	}
 
@@ -217,12 +122,15 @@ void GraphicsInitialize(GraphicsDevice *g)
 		Uint32 windowFlags = SDL_WINDOW_RESIZABLE;
 		Rect2i windowDim = Rect2iNew(
 			svec2i(SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED),
-			svec2i_scale(svec2i(w, h), (float)g->cachedConfig.ScaleFactor)
+			svec2i(
+				ConfigGetInt(&gConfig, "Graphics.WindowWidth"),
+				ConfigGetInt(&gConfig, "Graphics.WindowHeight")
+			)
 		);
 		if (g->cachedConfig.Fullscreen)
 		{
-			windowFlags |= SDL_WINDOW_FULLSCREEN;
-			windowDim.Size = svec2i(w, h);
+			windowFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+			windowDim.Pos = svec2i_zero();
 		}
 		LOG(LM_GFX, LL_DEBUG, "destroying previous renderer");
 		WindowContextDestroy(&g->gameWindow);
@@ -383,9 +291,21 @@ void GraphicsInitialize(GraphicsDevice *g)
 	g->cachedConfig.RestartFlags = 0;
 }
 
+void GraphicsReset(GraphicsDevice *g, Config *c)
+{
+	GraphicsConfigSetFromConfig(&g->cachedConfig, c);
+	const bool makeBackground =
+		g->cachedConfig.RestartFlags &
+		(RESTART_WINDOW | RESTART_SCALE_MODE);
+	GraphicsInitialize(g);
+	if (makeBackground)
+	{
+		GrafxMakeRandomBackground(g, &gCampaign, &gMission, &gMap);
+	}
+}
+
 void GraphicsTerminate(GraphicsDevice *g)
 {
-	CArrayTerminate(&g->validModes);
 	SDL_FreeSurface(g->icon);
 	WindowContextDestroy(&g->gameWindow);
 	WindowContextDestroy(&g->secondWindow);
@@ -406,15 +326,10 @@ int GraphicsGetMemSize(GraphicsConfig *config)
 
 void GraphicsConfigSet(
 	GraphicsConfig *c,
-	const struct vec2i res, const bool fullscreen,
+	struct vec2i windowSize, const bool fullscreen,
 	const int scaleFactor, const ScaleMode scaleMode, const int brightness,
 	const bool secondWindow)
 {
-	if (!svec2i_is_equal(res, c->Res))
-	{
-		c->Res = res;
-		c->RestartFlags |= RESTART_SCALE_MODE;
-	}
 #define SET(_lhs, _rhs, _flag) \
 	if ((_lhs) != (_rhs)) \
 	{ \
@@ -422,10 +337,32 @@ void GraphicsConfigSet(
 		c->RestartFlags |= (_flag); \
 	}
 	SET(c->Fullscreen, fullscreen, RESTART_WINDOW);
+	if (c->Fullscreen)
+	{
+		// Set to native resolution
+		SDL_DisplayMode dm;
+		if (SDL_GetCurrentDisplayMode(0, &dm) != 0)
+		{
+			LOG(LM_GFX, LL_WARN, "cannot get display mode: %s",
+				SDL_GetError());
+		}
+		else
+		{
+			windowSize = svec2i(dm.w, dm.h);
+			ConfigSetInt(&gConfig, "Graphics.WindowWidth", dm.w);
+			ConfigSetInt(&gConfig, "Graphics.WindowHeight", dm.h);
+		}
+	}
 	SET(c->ScaleFactor, scaleFactor, RESTART_SCALE_MODE);
 	SET(c->ScaleMode, scaleMode, RESTART_SCALE_MODE);
 	SET(c->Brightness, brightness, RESTART_BRIGHTNESS);
 	SET(c->SecondWindow, secondWindow, RESTART_WINDOW);
+	const struct vec2i res = svec2i_scale_divide(windowSize, scaleFactor);
+	if (!svec2i_is_equal(res, c->Res))
+	{
+		c->Res = res;
+		c->RestartFlags |= RESTART_SCALE_MODE;
+	}
 }
 
 void GraphicsConfigSetFromConfig(GraphicsConfig *gc, Config *c)
@@ -433,22 +370,13 @@ void GraphicsConfigSetFromConfig(GraphicsConfig *gc, Config *c)
 	GraphicsConfigSet(
 		gc,
 		svec2i(
-			ConfigGetInt(c, "Graphics.ResolutionWidth"),
-			ConfigGetInt(c, "Graphics.ResolutionHeight")),
+			ConfigGetInt(c, "Graphics.WindowWidth"),
+			ConfigGetInt(c, "Graphics.WindowHeight")),
 		ConfigGetBool(c, "Graphics.Fullscreen"),
 		ConfigGetInt(c, "Graphics.ScaleFactor"),
 		(ScaleMode)ConfigGetEnum(c, "Graphics.ScaleMode"),
 		ConfigGetInt(c, "Graphics.Brightness"),
 		ConfigGetBool(c, "Graphics.SecondWindow"));
-}
-
-char *GrafxGetModeStr(void)
-{
-	static char buf[16];
-	sprintf(buf, "%dx%d",
-		ConfigGetInt(&gConfig, "Graphics.ResolutionWidth"),
-		ConfigGetInt(&gConfig, "Graphics.ResolutionHeight"));
-	return buf;
 }
 
 void GraphicsSetBlitClip(

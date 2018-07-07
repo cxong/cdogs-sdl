@@ -78,6 +78,11 @@ GameLoopData *MainMenu(GraphicsDevice *graphics, LoopRunner *l)
 		data, MainMenuTerminate, MainMenuOnEnter, MainMenuOnExit,
 		NULL, MainMenuUpdate, MainMenuDraw);
 }
+static void MainMenuReset(MenuSystem *ms)
+{
+	GrafxMakeRandomBackground(ms->graphics, &gCampaign, &gMission, &gMap);
+	MenuResetSize(ms);
+}
 static void MainMenuTerminate(GameLoopData *data)
 {
 	MainMenuData *mData = data->Data;
@@ -98,8 +103,7 @@ static void MainMenuOnEnter(GameLoopData *data)
 		return;
 	}
 
-	GrafxMakeRandomBackground(
-		&gGraphicsDevice, &gCampaign, &gMission, &gMap);
+	MainMenuReset(&mData->ms);
 	NetClientDisconnect(&gNetClient);
 	NetServerClose(&gNetServer);
 	GameEventsTerminate(&gGameEvents);
@@ -175,6 +179,10 @@ static GameLoopResult MainMenuUpdate(GameLoopData *data, LoopRunner *l)
 		{
 			LoopRunnerPop(l);
 		}
+	}
+	if (gEventHandlers.HasResolutionChanged)
+	{
+		MainMenuReset(&mData->ms);
 	}
 	return result;
 }
@@ -547,14 +555,7 @@ menu_t *MenuCreateOptionsGraphics(const char *name, MenuSystem *ms)
 		menu, ConfigGet(&gConfig, "Graphics.SecondWindow"));
 #endif	// ANDROID
 
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionUpDownFunc(
-			"Resolution",
-			Gfx_ModePrev,
-			Gfx_ModeNext,
-			MENU_OPTION_DISPLAY_STYLE_STR_FUNC,
-			GrafxGetModeStr));
+	MenuAddConfigOptionsItem(menu, ConfigGet(&gConfig, "Graphics.ScaleFactor"));
 	MenuAddConfigOptionsItem(menu, ConfigGet(&gConfig, "Graphics.ScaleMode"));
 #endif	// GCWZERO
 	MenuAddConfigOptionsItem(menu, ConfigGet(&gConfig, "Graphics.Shadows"));
