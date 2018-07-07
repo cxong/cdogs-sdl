@@ -291,19 +291,6 @@ void GraphicsInitialize(GraphicsDevice *g)
 	g->cachedConfig.RestartFlags = 0;
 }
 
-void GraphicsReset(GraphicsDevice *g, Config *c)
-{
-	GraphicsConfigSetFromConfig(&g->cachedConfig, c);
-	const bool makeBackground =
-		g->cachedConfig.RestartFlags &
-		(RESTART_WINDOW | RESTART_SCALE_MODE);
-	GraphicsInitialize(g);
-	if (makeBackground)
-	{
-		GrafxMakeRandomBackground(g, &gCampaign, &gMission, &gMap);
-	}
-}
-
 void GraphicsTerminate(GraphicsDevice *g)
 {
 	SDL_FreeSurface(g->icon);

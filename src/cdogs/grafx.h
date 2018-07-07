@@ -109,7 +109,6 @@ extern GraphicsDevice gGraphicsDevice;
 
 void GraphicsInit(GraphicsDevice *device, Config *c);
 void GraphicsInitialize(GraphicsDevice *g);
-void GraphicsReset(GraphicsDevice *g, Config *c);
 void GraphicsTerminate(GraphicsDevice *g);
 int GraphicsGetScreenSize(GraphicsConfig *config);
 int GraphicsGetMemSize(GraphicsConfig *config);

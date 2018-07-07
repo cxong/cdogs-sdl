@@ -132,7 +132,7 @@ void MapRemoveThing(Map *map, Thing *t);
 
 void MapTerminate(Map *map);
 void MapLoad(
-	Map *map, const struct MissionOptions *mo, const CampaignOptions* co);
+	Map *map, const struct MissionOptions *mo, const CampaignOptions *co);
 void MapLoadDynamic(
 	Map *map, const struct MissionOptions *mo, const CharacterStore *store);
 bool MapIsPosOKForPlayer(
