@@ -387,7 +387,7 @@ const TileClass *DoorGetClass(
 	c->Pic = PicManagerGetPic(pm, buf);
 	c->IsDoor = true;
 	c->isOpaque = strcmp(key, "open") != 0;
-	c->canWalk = strcmp(key, "open") == 0;
+	c->canWalk = strcmp(key, "open") == 0 || strcmp(key, "wall") == 0;
 	c->shootable = strcmp(key, "open") != 0;
 
 	const int error = hashmap_put(classes, buf, c);
