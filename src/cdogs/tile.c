@@ -83,7 +83,7 @@ bool TileIsShootable(const Tile *t)
 
 bool TileCanWalk(const Tile *t)
 {
-	return (t->Class->IsDoor && t->ClassAlt) ? t->ClassAlt->canWalk : t->Class->canWalk;
+	return t->Class->canWalk;
 }
 
 bool TileIsClear(const Tile *t)

@@ -51,8 +51,7 @@ typedef struct
 	bool canWalk;	// can walk on tile
 	bool isOpaque;	// cannot see through
 	bool shootable;	// blocks bullets
-	// Mainly for drawing purposes (walls must be drawn as columns)
-	// TODO: or do they?
+	// Mainly for drawing purposes
 	bool IsWall;
 	bool IsFloor;
 	bool IsDoor;
