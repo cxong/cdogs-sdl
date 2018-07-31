@@ -117,6 +117,9 @@ void UpdateActorState(TActor * actor, int ticks)
 	{
 		CheckPickups(actor);
 	}
+	// Stop picking up to prevent multiple pickups
+	// (require repeated key presses)
+	actor->PickupAll = false;
 
 	if (actor->health > 0)
 	{
@@ -794,38 +797,20 @@ void CommandActor(TActor * actor, int cmd, int ticks)
 		}
 	}
 
-	actor->lastCmd = cmd;
-	if (cmd & CMD_BUTTON2)
+	actor->specialCmdDir = CMD_HAS_DIRECTION(cmd);
+	if ((cmd & CMD_BUTTON2) && !actor->specialCmdDir)
 	{
-		if (CMD_HAS_DIRECTION(cmd))
-		{
-			actor->specialCmdDir = true;
-		}
-		else
-		{
-			// Special: pick up things that can only be picked up on demand
-			if (!actor->PickupAll)
-			{
-				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_PICKUP_ALL);
-				e.u.ActorPickupAll.UID = actor->uid;
-				e.u.ActorPickupAll.PickupAll = true;
-				GameEventsEnqueue(&gGameEvents, e);
-			}
-			actor->PickupAll = true;
-		}
-	}
-	else
-	{
-		actor->specialCmdDir = false;
-		if (actor->PickupAll)
+		// Special: pick up things that can only be picked up on demand
+		if (!actor->PickupAll && !(actor->lastCmd & CMD_BUTTON2))
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_PICKUP_ALL);
 			e.u.ActorPickupAll.UID = actor->uid;
-			e.u.ActorPickupAll.PickupAll = false;
+			e.u.ActorPickupAll.PickupAll = true;
 			GameEventsEnqueue(&gGameEvents, e);
 		}
-		actor->PickupAll = false;
 	}
+
+	actor->lastCmd = cmd;
 }
 static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks)
 {
@@ -1177,18 +1162,7 @@ static void ActorAddGunPickup(const TActor *actor)
 				break;
 			}
 		}
-		if (!w->Gun->CanDrop)
-		{
-			return;
-		}
-		GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
-		e.u.AddPickup.UID = PickupsGetNextUID();
-		sprintf(e.u.AddPickup.PickupClass, "gun_%s", w->Gun->name);
-		e.u.AddPickup.IsRandomSpawned = false;
-		e.u.AddPickup.SpawnerUID = -1;
-		e.u.AddPickup.ThingFlags = 0;
-		e.u.AddPickup.Pos = Vec2ToNet(actor->Pos);
-		GameEventsEnqueue(&gGameEvents, e);
+		PickupAddGun(w->Gun, actor->Pos);
 	}
 }
 static bool IsUnarmedBot(const TActor *actor)

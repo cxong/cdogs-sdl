@@ -103,6 +103,21 @@ void PickupAdd(const NAddPickup ap)
 	p->SpawnerUID = ap.SpawnerUID;
 	p->isInUse = true;
 }
+void PickupAddGun(const WeaponClass *w, const struct vec2 pos)
+{
+	if (!w->CanDrop)
+	{
+		return;
+	}
+	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
+	e.u.AddPickup.UID = PickupsGetNextUID();
+	sprintf(e.u.AddPickup.PickupClass, "gun_%s", w->name);
+	e.u.AddPickup.IsRandomSpawned = false;
+	e.u.AddPickup.SpawnerUID = -1;
+	e.u.AddPickup.ThingFlags = 0;
+	e.u.AddPickup.Pos = Vec2ToNet(pos);
+	GameEventsEnqueue(&gGameEvents, e);
+}
 void PickupDestroy(const int uid)
 {
 	Pickup *p = PickupGetByUID(uid);
@@ -203,6 +218,8 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 		GameEventsEnqueue(&gGameEvents, e);
 		// Prevent multiple pickups by marking
 		p->PickedUp = true;
+		a->PickupAll = false;
+		a->CanPickupSpecial = false;
 	}
 }
 
@@ -279,10 +296,6 @@ static bool TryPickupGun(
 	}
 	const WeaponClass *wc = IdWeaponClass(p->class->u.GunId);
 
-	// Pickup if:
-	// - Actor doesn't have gun
-	// - Actor has less ammo than default for the gun's ammo
-
 	int ammoDeficit = 0;
 	const Ammo *ammo = NULL;
 	const int ammoId = wc->AmmoId;
@@ -290,12 +303,6 @@ static bool TryPickupGun(
 	{
 		ammo = AmmoGetById(&gAmmo, ammoId);
 		ammoDeficit = ammo->Amount * 2 - *(int *)CArrayGet(&a->ammo, ammoId);
-	}
-
-	const bool pickup = !ActorHasGun(a, wc) || ammoDeficit > 0;
-	if (!pickup)
-	{
-		return false;
 	}
 
 	// Pickup gun
@@ -307,16 +314,25 @@ static bool TryPickupGun(
 	const int weaponIndexEnd = wc->IsGrenade ? MAX_WEAPONS : MAX_GUNS;
 	e.u.ActorReplaceGun.GunIdx =
 		wc->IsGrenade ? a->grenadeIndex + MAX_GUNS : a->gunIndex;
+	int replaceGunIndex = e.u.ActorReplaceGun.GunIdx;
 	for (int i = weaponIndexStart; i < weaponIndexEnd; i++)
 	{
 		if (a->guns[i].Gun == NULL)
 		{
 			e.u.ActorReplaceGun.GunIdx = i;
+			replaceGunIndex = -1;
 			break;
 		}
 	}
 	strcpy(e.u.ActorReplaceGun.Gun, wc->name);
 	GameEventsEnqueue(&gGameEvents, e);
+
+	// If replacing a gun, "drop" the gun being replaced (i.e. create a gun
+	// pickup)
+	if (replaceGunIndex >= 0)
+	{
+		PickupAddGun(a->guns[replaceGunIndex].Gun, a->Pos);
+	}
 
 	// If the player has less ammo than the default amount,
 	// replenish up to this amount

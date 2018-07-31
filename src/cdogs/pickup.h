@@ -52,6 +52,7 @@ void PickupsInit(void);
 void PickupsTerminate(void);
 int PickupsGetNextUID(void);
 void PickupAdd(const NAddPickup ap);
+void PickupAddGun(const WeaponClass *w, const struct vec2 pos);
 void PickupDestroy(const int uid);
 
 void PickupsUpdate(CArray *pickups, const int ticks);
