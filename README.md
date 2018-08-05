@@ -40,6 +40,8 @@ See the SDL website - <http://www.libsdl.org> for more about SDL itself.
 
 C-Dogs SDL runs on Linux, \*BSD, Windows, Mac OS X, Pandora and GCW-Zero. There are a few other unsupported and outdated ports too.
 
+[![Packaging status](https://repology.org/badge/vertical-allrepos/cdogs-sdl.svg)](https://repology.org/metapackage/cdogs-sdl)
+
 ## ![](https://github.com/cxong/cdogs-sdl/blob/master/graphics/cd.png) Installation ##
 
 Please use the installers for your platform for installing.
