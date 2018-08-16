@@ -71,20 +71,26 @@ void TileDestroy(Tile *t)
 	CArrayTerminate(&t->things);
 }
 
+// t->ClassAlt->Name == NULL for nothing tiles
 bool TileIsOpaque(const Tile *t)
 {
-	return t->Class->isOpaque || (t->Class->IsDoor && t->ClassAlt && t->ClassAlt->isOpaque);
+    return
+        (t->Class->IsDoor && t->ClassAlt && t->ClassAlt->Name) ?
+        t->ClassAlt->isOpaque :
+        t->Class->isOpaque;
 }
 
 bool TileIsShootable(const Tile *t)
 {
-	return t->Class->shootable || (t->Class->IsDoor && t->ClassAlt && t->ClassAlt->shootable);
+    return
+        (t->Class->IsDoor && t->ClassAlt && t->ClassAlt->Name) ?
+        t->ClassAlt->shootable :
+        t->Class->shootable;
 }
 
 bool TileCanWalk(const Tile *t)
 {
 	return
-		// t->ClassAlt->Name == NULL for nothing tiles
 		(t->Class->IsDoor && t->ClassAlt && t->ClassAlt->Name) ?
 		t->ClassAlt->canWalk :
 		t->Class->canWalk;
