@@ -174,25 +174,37 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 					handlers, handlers->mouse.cursor, handlers->mouse.trail);
 				break;
 			case SDL_WINDOWEVENT_SIZE_CHANGED:
-				handlers->HasResolutionChanged = true;
-				const int scale = ConfigGetInt(&gConfig, "Graphics.ScaleFactor");
-				if (!gGraphicsDevice.cachedConfig.IsEditor)
 				{
-					ConfigSetInt(
-						&gConfig, "Graphics.WindowWidth", e.window.data1);
-					ConfigSetInt(
-						&gConfig, "Graphics.WindowHeight", e.window.data2);
-					ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
+					const int w = ConfigGetInt(&gConfig, "Graphics.WindowWidth");
+					const int h = ConfigGetInt(&gConfig, "Graphics.WindowHeight");
+					if (w == e.window.data1 && h == e.window.data2)
+					{
+						// macOS sends spurious size changed events when
+						// switching between fullscreen; don't reinitialise
+						// graphics
+						break;
+					}
+					handlers->HasResolutionChanged = true;
+					const int scale = ConfigGetInt(&gConfig, "Graphics.ScaleFactor");
+					if (!gGraphicsDevice.cachedConfig.IsEditor)
+					{
+						ConfigSetInt(
+							&gConfig, "Graphics.WindowWidth", e.window.data1);
+						ConfigSetInt(
+							&gConfig, "Graphics.WindowHeight", e.window.data2);
+						ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
+					}
+					GraphicsConfigSet(
+						&gGraphicsDevice.cachedConfig,
+						svec2i(e.window.data1, e.window.data2),
+						false,
+						scale,
+						gGraphicsDevice.cachedConfig.ScaleMode,
+						gGraphicsDevice.cachedConfig.Brightness,
+						gGraphicsDevice.cachedConfig.SecondWindow
+					);
+					GraphicsInitialize(&gGraphicsDevice);
 				}
-				GraphicsConfigSet(
-					&gGraphicsDevice.cachedConfig,
-					svec2i(e.window.data1, e.window.data2),
-					false,
-					scale,
-					gGraphicsDevice.cachedConfig.ScaleMode,
-					gGraphicsDevice.cachedConfig.Brightness,
-					gGraphicsDevice.cachedConfig.SecondWindow);
-				GraphicsInitialize(&gGraphicsDevice);
 				break;
 			case SDL_WINDOWEVENT_CLOSE:
 				if (!gGraphicsDevice.cachedConfig.IsEditor)
