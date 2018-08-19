@@ -265,8 +265,17 @@ static bool HasGunUsingAmmo(const TActor *a, const int ammoId)
 
 static bool TryPickupAmmo(TActor *a, const Pickup *p, const char **sound)
 {
+	// Don't pickup if not using ammo
+	if (!ConfigGetBool(&gConfig, "Game.Ammo"))
+	{
+		return false;
+	}
 	// Don't pickup if ammo full
-	const Ammo *ammo = AmmoGetById(&gAmmo, p->class->u.Ammo.Id);
+	const Ammo *ammo = AmmoGetById(
+		&gAmmo,
+		p->class->Type == PICKUP_AMMO ?
+		p->class->u.Ammo.Id :
+		IdWeaponClass(p->class->u.GunId)->AmmoId);
 	const int current = *(int *)CArrayGet(&a->ammo, p->class->u.Ammo.Id);
 	if (current >= ammo->Max)
 	{
@@ -294,7 +303,10 @@ static bool TryPickupGun(
 	{
 		return false;
 	}
-	const WeaponClass *wc = IdWeaponClass(p->class->u.GunId);
+	const WeaponClass *wc =
+		p->class->Type == PICKUP_GUN ?
+		IdWeaponClass(p->class->u.GunId) :
+		StrWeaponClass(AmmoGetById(&gAmmo, p->class->u.Ammo.Id)->DefaultGun);
 
 	int ammoDeficit = 0;
 	const Ammo *ammo = NULL;
