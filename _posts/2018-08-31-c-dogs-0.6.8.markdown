@@ -1,0 +1,34 @@
+---
+layout: post
+title:  "C-Dogs 0.6.8 Released!"
+date:   2018-08-31
+categories: release
+published: true
+---
+
+C-Dogs SDL 0.6.8 released! This is a minor release with some neat improvements to the game.
+
+## Gun Swapping
+
+Previously, guns could only be picked up if: you didn't have the gun, or if you did, you were low on its ammo. Picking up the gun always made it disappear.
+
+Now, you can always pick up guns, but you'll drop the gun you're currently holding.
+
+![gun swap](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/gunswap.gif)
+
+## Grenades As Ammo
+
+Grenade pickups have also been improved. There's no longer separate grenade "gun" and "ammo" pickups, it's just grenades:
+
+- If you have the same grenades, you pick them up as ammo
+- If not, you can switch to them as if they were gun pickups
+
+![grenade pickups](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/grenadepickups.gif)
+
+## Constant Scale Window Resizing
+
+When resizing the window, the game screen will also reset to maintain constant pixel sizes. No more stretchy aliasing!
+
+![constant scale resize](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/constant_scale_resize.gif)
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.6.8>

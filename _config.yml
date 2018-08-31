@@ -2,7 +2,7 @@ name: C-Dogs SDL
 description: Classic overhead shoot-em-up game
 url: http://cxong.github.io
 baseurl: /cdogs-sdl
-version: 0.6.7
+version: 0.6.8
 paginate: 5
 paginate_path: "page:num"
 gems:
