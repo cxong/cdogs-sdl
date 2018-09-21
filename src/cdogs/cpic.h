@@ -74,7 +74,9 @@ typedef struct
 {
 	direction_e Dir;
 	struct vec2i Offset;
+	double Radians;
 } CPicDrawContext;
+CPicDrawContext CPicDrawContextNew(void);
 typedef void (*DrawCPicFunc)(GraphicsDevice *, const int, const struct vec2i);
 
 void NamedPicFree(NamedPic *n);

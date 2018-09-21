@@ -387,9 +387,7 @@ static void PickupDraw(
 {
 	const Pickup *p = CArrayGet(&gPickups, id);
 	CASSERT(p->isInUse, "Cannot draw non-existent pickup");
-	CPicDrawContext c;
-	c.Dir = DIRECTION_UP;
-	c.Offset = svec2i_zero();
+	CPicDrawContext c = CPicDrawContextNew();
 	const Pic *pic = CPicGetPic(&p->thing.CPic, c.Dir);
 	if (pic != NULL)
 	{

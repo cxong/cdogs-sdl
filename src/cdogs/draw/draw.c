@@ -112,7 +112,7 @@ static void DrawLOSPic(
 	}
 	if (pic != NULL)
 	{
-		PicRender(pic, gGraphicsDevice.gameWindow.renderer, pos, mask);
+		PicRender(pic, gGraphicsDevice.gameWindow.renderer, pos, mask, 0);
 	}
 }
 

@@ -234,8 +234,10 @@ bool PicPxIsEdge(const Pic *pic, const struct vec2i pos, const bool isPixel)
 }
 
 void PicRender(
-	const Pic *p, SDL_Renderer *r, const struct vec2i pos, const color_t mask)
+	const Pic *p, SDL_Renderer *r, const struct vec2i pos, const color_t mask,
+	const double radians)
 {
 	const Rect2i dest = Rect2iNew(pos, p->size);
-	TextureRender(p->Tex, r, dest, mask);
+	const double angle = ToDegrees(radians);
+	TextureRender(p->Tex, r, dest, mask, angle);
 }

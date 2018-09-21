@@ -69,8 +69,7 @@ static void MapObjectDraw(
 {
 	const TObject *obj = CArrayGet(&gObjs, id);
 	CASSERT(obj->isInUse, "Cannot draw non-existent map object");
-	CPicDrawContext c;
-	c.Dir = DIRECTION_UP;
+	CPicDrawContext c = CPicDrawContextNew();
 	c.Offset = obj->Class->Offset;
 	CPicDraw(g, &obj->thing.CPic, pos, &c);
 }

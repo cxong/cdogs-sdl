@@ -383,10 +383,6 @@ double ToDegrees(double radians)
 {
 	return radians * 180.0 / MPI;
 }
-double ToRadians(double degrees)
-{
-	return degrees * MPI / 180.0;
-}
 
 struct vec2 CalcClosestPointOnLineSegmentToPoint(
 	const struct vec2 l1, const struct vec2 l2, const struct vec2 p)

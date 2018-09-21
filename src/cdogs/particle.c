@@ -468,13 +468,12 @@ static void DrawParticle(const struct vec2i pos, const ThingDrawFuncData *data)
 	{
 		case PARTICLE_PIC:
 		{
-			CPicDrawContext context;
-			context.Dir = RadiansToDirection(p->Angle);
-			const Pic *pic = CPicGetPic(&p->u.Pic, context.Dir);
-			context.Offset = svec2i(
+			CPicDrawContext c = CPicDrawContextNew();
+			c.Dir = RadiansToDirection(p->Angle);
+			const Pic *pic = CPicGetPic(&p->u.Pic, c.Dir);
+			c.Offset = svec2i(
 				pic->size.x / -2, pic->size.y / -2 - p->Z / Z_FACTOR);
-			CPicDraw(
-				&gGraphicsDevice, &p->Class->u.Pic, pos, &context);
+			CPicDraw(&gGraphicsDevice, &p->Class->u.Pic, pos, &c);
 			break;
 		}
 		case PARTICLE_TEXT:

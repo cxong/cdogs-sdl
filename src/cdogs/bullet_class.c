@@ -95,7 +95,7 @@ static void BulletDraw(GraphicsDevice *g, const int id, const struct vec2i pos)
 {
 	const TMobileObject *obj = CArrayGet(&gMobObjs, id);
 	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
-	CPicDrawContext c;
+	CPicDrawContext c = CPicDrawContextNew();
 	// Calculate direction based on velocity
 	c.Dir = RadiansToDirection(svec2_angle(obj->thing.Vel) + MPI_2);
 	c.Offset = svec2i_zero();

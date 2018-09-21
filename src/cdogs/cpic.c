@@ -46,6 +46,16 @@ PicType StrPicType(const char *s)
 }
 
 
+CPicDrawContext CPicDrawContextNew(void)
+{
+	CPicDrawContext c;
+	c.Dir = DIRECTION_UP;
+	c.Offset = svec2i_zero();
+	c.Radians = 0;
+	return c;
+}
+
+
 void NamedPicFree(NamedPic *n)
 {
 	PicFree(&n->pic);
@@ -277,5 +287,6 @@ void CPicDraw(
 		return;
 	}
 	const struct vec2i picPos = svec2i_add(pos, context->Offset);
-	PicRender(pic, g->gameWindow.renderer, picPos, p->Mask);
+	PicRender(
+		pic, g->gameWindow.renderer, picPos, p->Mask, context->Radians);
 }
