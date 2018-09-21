@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017, Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -95,17 +95,38 @@ static void BulletDraw(GraphicsDevice *g, const int id, const struct vec2i pos)
 {
 	const TMobileObject *obj = CArrayGet(&gMobObjs, id);
 	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
-	CPicDrawContext c = CPicDrawContextNew();
-	// Calculate direction based on velocity
-	c.Dir = RadiansToDirection(svec2_angle(obj->thing.Vel) + MPI_2);
-	c.Offset = svec2i_zero();
-	const Pic *pic = CPicGetPic(&obj->thing.CPic, c.Dir);
-	if (pic != NULL)
+	struct vec2i drawPos = svec2i_subtract(pos, svec2i(0, obj->z / Z_FACTOR));
+
+	// Draw trail
+	if (obj->count > 0)	// don't draw trail until bullet has travelled
 	{
-		c.Offset = svec2i(
-			pic->size.x / -2, pic->size.y / -2 - obj->z / Z_FACTOR);
+		CPicDrawContext c = CPicDrawContextNew();
+		// Rotate around top of pic
+		const Pic *pic = CPicGetPic(&obj->bulletClass->Trail, DIRECTION_UP);
+		if (pic != NULL)
+		{
+			c.Offset = svec2i_scale_divide(pic->size, -2);
+		}
+		c.Radians = svec2_angle(obj->thing.Vel) + MPI_2;
+		const struct vec2i trailPos = svec2i_subtract(
+			drawPos,
+			svec2i_scale_divide(svec2i_round(obj->thing.Vel), 2)
+		);
+		CPicDraw(g, &obj->bulletClass->Trail, trailPos, &c);
 	}
-	CPicDraw(g, &obj->thing.CPic, pos, &c);
+
+	// Draw bullet
+	{
+		CPicDrawContext c = CPicDrawContextNew();
+		// Calculate direction based on velocity
+		c.Dir = RadiansToDirection(svec2_angle(obj->thing.Vel) + MPI_2);
+		const Pic *pic = CPicGetPic(&obj->thing.CPic, c.Dir);
+		if (pic != NULL)
+		{
+			c.Offset = svec2i_scale_divide(pic->size, -2);
+		}
+		CPicDraw(g, &obj->thing.CPic, drawPos, &c);
+	}
 }
 
 
@@ -641,6 +662,10 @@ static void LoadBullet(
 	if (json_find_first_label(node, "Pic"))
 	{
 		CPicLoadJSON(&b->CPic, json_find_first_label(node, "Pic")->child);
+	}
+	if (json_find_first_label(node, "Trail"))
+	{
+		CPicLoadJSON(&b->Trail, json_find_first_label(node, "Trail")->child);
 	}
 	LoadVec2i(&b->ShadowSize, node, "ShadowSize");
 	LoadInt(&b->Delay, node, "Delay");

@@ -15,6 +15,10 @@
         "Type": "Directional",
         "Sprites": "9mm"
       },
+      "Trail": {
+        "Type": "Normal",
+        "Pic": "trail"
+      },
       "OutOfRangeSpark": "spark",
       "Speed": 35000,
       "Range": 1,
@@ -26,6 +30,10 @@
       "Pic": {
         "Type": "Normal",
         "Pic": ""
+      },
+      "Trail": {
+        "Type": "Normal",
+        "Pic": "trail"
       },
       "OutOfRangeSpark": "spark",
       "Speed": 25000,

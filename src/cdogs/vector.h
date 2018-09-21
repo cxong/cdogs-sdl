@@ -33,8 +33,7 @@
 #define CHEBYSHEV_DISTANCE(x1, y1, x2, y2) \
 	MAX(fabsf((x1) - (x2)), fabsf((y1) - (y2)))
 
-struct vec2i svec2i_scale_divide(struct vec2i v, mint_t scale);
-// TODO: due to rounding, this will always return unit component vectors
+struct vec2i svec2i_scale_divide(const struct vec2i v, const mint_t scale);
 
 struct vec2i Vec2iToTile(struct vec2i v);
 struct vec2i Vec2iCenterOfTile(struct vec2i v);

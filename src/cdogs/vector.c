@@ -29,7 +29,7 @@
 
 #include "tile.h"
 
-struct vec2i svec2i_scale_divide(struct vec2i v, mint_t scale)
+struct vec2i svec2i_scale_divide(const struct vec2i v, const mint_t scale)
 {
 	return svec2i(v.x / scale, v.y / scale);
 }
