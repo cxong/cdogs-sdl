@@ -67,6 +67,7 @@ stdout.txt
 stderr.txt
 
 # XCode
+build/
 CMakeScripts/
 *.xcodeproj/
 .DS_Store

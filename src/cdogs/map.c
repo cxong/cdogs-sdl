@@ -160,6 +160,7 @@ bool MapTryMoveThing(Map *map, Thing *t, const struct vec2 pos)
 	{
 		return false;
 	}
+	t->LastPos = t->Pos;
 	// When first initialised, position is -1
 	const bool doRemove = t->Pos.x >= 0 && t->Pos.y >= 0;
 	const struct vec2i t1 = Vec2ToTile(t->Pos);

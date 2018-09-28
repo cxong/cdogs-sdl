@@ -151,7 +151,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 				const TMobileObject *mo = CArrayGet(&gMobObjs, tid->Id);
 				if (mo->bulletClass->HurtAlways)
 				{
-					dangerBulletPos = mo->Pos;
+					dangerBulletPos = mo->thing.Pos;
 					break;
 				}
 			CA_FOREACH_END()

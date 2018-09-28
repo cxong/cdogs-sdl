@@ -1,17 +1,31 @@
 {
-  "Version": 1,
+  "Version": 2,
   "Particles": [
     {
       "Name": "fireball_hit",
-      "Sprites": "fireball_hit",
-      "Range": 4,
-      "TicksPerFrame": 4
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "fireball_hit",
+        "TicksPerFrame": 4
+      },
+      "Range": 4
     },
     {
       "Name": "fireball_green_hit",
-      "Sprites": "fireball_green_hit",
-      "Range": 4,
-      "TicksPerFrame": 4
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "fireball_green_hit",
+        "TicksPerFrame": 4
+      },
+      "Range": 4
+    },
+    {
+      "Name": "trail",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "trail"
+      },
+      "Range": 8
     }
   ]
 }

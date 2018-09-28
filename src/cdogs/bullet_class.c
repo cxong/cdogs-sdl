@@ -97,36 +97,15 @@ static void BulletDraw(GraphicsDevice *g, const int id, const struct vec2i pos)
 	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
 	struct vec2i drawPos = svec2i_subtract(pos, svec2i(0, obj->z / Z_FACTOR));
 
-	// Draw trail
-	if (obj->count > 0)	// don't draw trail until bullet has travelled
+	CPicDrawContext c = CPicDrawContextNew();
+	// Calculate direction based on velocity
+	c.Dir = RadiansToDirection(svec2_angle(obj->thing.Vel) + MPI_2);
+	const Pic *pic = CPicGetPic(&obj->thing.CPic, c.Dir);
+	if (pic != NULL)
 	{
-		CPicDrawContext c = CPicDrawContextNew();
-		// Rotate around top of pic
-		const Pic *pic = CPicGetPic(&obj->bulletClass->Trail, DIRECTION_UP);
-		if (pic != NULL)
-		{
-			c.Offset = svec2i_scale_divide(pic->size, -2);
-		}
-		c.Radians = svec2_angle(obj->thing.Vel) + MPI_2;
-		const struct vec2i trailPos = svec2i_subtract(
-			drawPos,
-			svec2i_scale_divide(svec2i_round(obj->thing.Vel), 2)
-		);
-		CPicDraw(g, &obj->bulletClass->Trail, trailPos, &c);
+		c.Offset = svec2i_scale_divide(pic->size, -2);
 	}
-
-	// Draw bullet
-	{
-		CPicDrawContext c = CPicDrawContextNew();
-		// Calculate direction based on velocity
-		c.Dir = RadiansToDirection(svec2_angle(obj->thing.Vel) + MPI_2);
-		const Pic *pic = CPicGetPic(&obj->thing.CPic, c.Dir);
-		if (pic != NULL)
-		{
-			c.Offset = svec2i_scale_divide(pic->size, -2);
-		}
-		CPicDraw(g, &obj->thing.CPic, drawPos, &c);
-	}
+	CPicDraw(g, &obj->thing.CPic, drawPos, &c);
 }
 
 
@@ -156,6 +135,7 @@ static struct vec2 SeekTowards(
 
 
 static void FireGuns(const TMobileObject *obj, const CArray *guns);
+static void AddTrail(const TMobileObject *obj);
 typedef struct
 {
 	HitType Type;
@@ -164,7 +144,7 @@ typedef struct
 } HitResult;
 static HitResult HitItem(
 	TMobileObject *obj, const struct vec2 pos, const bool multipleHits);
-bool UpdateBullet(struct MobileObject *obj, const int ticks)
+bool BulletUpdate(struct MobileObject *obj, const int ticks)
 {
 	ThingUpdate(&obj->thing, ticks);
 	obj->count += ticks;
@@ -184,14 +164,14 @@ bool UpdateBullet(struct MobileObject *obj, const int ticks)
 		{
 			GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 			s.u.AddParticle.Class = obj->bulletClass->OutOfRangeSpark;
-			s.u.AddParticle.Pos = obj->Pos;
+			s.u.AddParticle.Pos = obj->thing.Pos;
 			s.u.AddParticle.Z = obj->z;
 			GameEventsEnqueue(&gGameEvents, s);
 		}
 		return false;
 	}
 
-	const struct vec2 posStart = obj->Pos;
+	const struct vec2 posStart = obj->thing.Pos;
 
 	if (obj->bulletClass->SeekFactor > 0)
 	{
@@ -241,10 +221,9 @@ bool UpdateBullet(struct MobileObject *obj, const int ticks)
 			}
 		}
 		const struct vec2 hitPos = hit.Type != HIT_NONE ? hit.Pos : pos;
-		b.u.BulletBounce.BouncePos = Vec2ToNet(hitPos);
-		b.u.BulletBounce.Pos = Vec2ToNet(pos);
+		b.u.BulletBounce.Pos = b.u.BulletBounce.BouncePos = Vec2ToNet(hitPos);
 		b.u.BulletBounce.Vel = Vec2ToNet(obj->thing.Vel);
-		if (hit.Type == HIT_WALL && !svec2_is_zero(obj->thing.Vel))
+		if (hit.Type == HIT_WALL && !svec2_is_zero(obj->thing.Vel) && alive)
 		{
 			// Bouncing
 			GetWallBouncePosVel(
@@ -341,7 +320,6 @@ bool UpdateBullet(struct MobileObject *obj, const int ticks)
 		obj->count = obj->range;
 		return false;
 	}
-	obj->Pos = pos;
 
 	if (obj->bulletClass->Erratic)
 	{
@@ -382,6 +360,8 @@ bool UpdateBullet(struct MobileObject *obj, const int ticks)
 		}
 	}
 
+	AddTrail(obj);
+
 	return true;
 }
 static void FireGuns(const TMobileObject *obj, const CArray *guns)
@@ -391,10 +371,26 @@ static void FireGuns(const TMobileObject *obj, const CArray *guns)
 	{
 		const WeaponClass **wc = CArrayGet(guns, i);
 		WeaponClassFire(
-			*wc, obj->Pos, obj->z, angle, obj->flags, obj->PlayerUID,
+			*wc, obj->thing.Pos, obj->z, angle, obj->flags, obj->PlayerUID,
 			obj->ActorUID,
 			true, false);
 	}
+}
+static void AddTrail(const TMobileObject *obj)
+{
+	if (obj->bulletClass->Trail == NULL ||
+		svec2_is_equal(obj->thing.Pos, obj->thing.LastPos))
+	{
+		return;
+	}
+	GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+	s.u.AddParticle.Class = obj->bulletClass->Trail;
+	s.u.AddParticle.Pos = svec2_scale(svec2_add(
+		obj->thing.Pos, obj->thing.LastPos
+	), 0.5f);
+	s.u.AddParticle.Z = obj->z;
+	s.u.AddParticle.Angle = svec2_angle(obj->thing.Vel) + MPI_2;
+	GameEventsEnqueue(&gGameEvents, s);
 }
 typedef struct
 {
@@ -534,7 +530,7 @@ static void SetClosestCollision(
 	const HitType ht, Thing *target, const struct vec2i tilePos)
 {
 	// Choose the best collision point (i.e. closest to origin)
-	const float d2 = svec2_distance_squared(col, data->Obj->Pos);
+	const float d2 = svec2_distance_squared(col, data->Obj->thing.Pos);
 	if (data->ColPosDist2 < 0 || d2 < data->ColPosDist2)
 	{
 		data->ColPos = col;
@@ -663,9 +659,12 @@ static void LoadBullet(
 	{
 		CPicLoadJSON(&b->CPic, json_find_first_label(node, "Pic")->child);
 	}
-	if (json_find_first_label(node, "Trail"))
+	tmp = NULL;
+	LoadStr(&tmp, node, "Trail");
+	if (tmp != NULL)
 	{
-		CPicLoadJSON(&b->Trail, json_find_first_label(node, "Trail")->child);
+		b->Trail = StrParticleClass(&gParticleClasses, tmp);
+		CFREE(tmp);
 	}
 	LoadVec2i(&b->ShadowSize, node, "ShadowSize");
 	LoadInt(&b->Delay, node, "Delay");
@@ -773,9 +772,9 @@ static void LoadBullet(
 		b->Falling.FallsDown ? "true" : "false",
 		b->Falling.DestroyOnDrop ? "true" : "false");
 	LOG(LM_MAP, LL_DEBUG,
-		"...dropGuns(%d) seekFactor(%d) erratic(%s)...",
+		"...dropGuns(%d) seekFactor(%d) erratic(%s) trail(%s)...",
 		(int)b->Falling.DropGuns.size, b->SeekFactor,
-		b->Erratic ? "true" : "false");
+		b->Erratic ? "true" : "false", b->Trail != NULL ? b->Trail->Name : "");
 	LOG(LM_MAP, LL_DEBUG,
 		"...outOfRangeGuns(%d) hitGuns(%d) proximityGuns(%d)",
 		(int)b->OutOfRangeGuns.size,
@@ -899,7 +898,6 @@ void BulletAdd(const NAddBullet add)
 	obj->bulletClass = StrBulletClass(add.BulletClass);
 	ThingInit(
 		&obj->thing, i, KIND_MOBILEOBJECT, obj->bulletClass->Size, 0);
-	obj->Pos = pos;
 	obj->z = add.MuzzleHeight;
 	obj->dz = add.Elevation;
 
@@ -928,7 +926,6 @@ void BulletAdd(const NAddBullet add)
 	obj->thing.CPic = obj->bulletClass->CPic;
 	obj->thing.CPicFunc = BulletDraw;
 	obj->thing.ShadowSize = obj->bulletClass->ShadowSize;
-	obj->updateFunc = UpdateBullet;
 	MapTryMoveThing(&gMap, &obj->thing, pos);
 }
 
@@ -952,4 +949,12 @@ void PlayHitSound(const HitSounds *h, const HitType t, const struct vec2 pos)
 		CASSERT(false, "unknown hit type")
 			break;
 	}
+}
+
+void BulletDestroy(TMobileObject *obj)
+{
+	CASSERT(obj->isInUse, "Destroying not-in-use bullet");
+	AddTrail(obj);
+	MapRemoveThing(&gMap, &obj->thing);
+	obj->isInUse = false;
 }

@@ -80,7 +80,6 @@ typedef struct MobileObject
 	int ActorUID;	// unique ID of actor that owns this object
 					// (prevent self collision)
 	const BulletClass *bulletClass;
-	struct vec2 Pos;
 	int z;
 	int dz;
 	int count;
@@ -89,7 +88,6 @@ typedef struct MobileObject
 	// Don't trigger special effects too frequently
 	int specialLock;
 	Thing thing;
-	BulletUpdateFunc updateFunc;
 	bool isInUse;
 } TMobileObject;
 typedef int (*MobObjUpdateFunc)(TMobileObject *, int);
@@ -131,4 +129,3 @@ void MobObjsInit(void);
 void MobObjsTerminate(void);
 int MobObjsObjsGetNextUID(void);
 TMobileObject *MobObjGetByUID(const int uid);
-void MobObjDestroy(TMobileObject *m);

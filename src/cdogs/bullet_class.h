@@ -57,12 +57,11 @@
 #include "tile.h"
 
 struct MobileObject;
-typedef bool (*BulletUpdateFunc)(struct MobileObject *, int);
 typedef struct
 {
 	char *Name;
 	CPic CPic;
-	CPic Trail;
+	const ParticleClass *Trail;
 	struct vec2i ShadowSize;
 	int Delay;	// number of frames before moving
 	float SpeedLow;
@@ -122,8 +121,9 @@ void BulletClassesClear(CArray *classes);
 void BulletTerminate(BulletClasses *bullets);
 
 void BulletAdd(const NAddBullet add);
+void BulletDestroy(struct MobileObject *obj);
 
-bool UpdateBullet(struct MobileObject *obj, const int ticks);
+bool BulletUpdate(struct MobileObject *obj, const int ticks);
 
 // Type of material that the bullet hit
 typedef enum

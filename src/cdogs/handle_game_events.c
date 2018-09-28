@@ -411,7 +411,7 @@ static void HandleGameEvent(
 				s.u.AddParticle.Z = o->z;
 				GameEventsEnqueue(&gGameEvents, s);
 			}
-			o->Pos = NetToVec2(e.u.BulletBounce.Pos);
+			MapTryMoveThing(&gMap, &o->thing, NetToVec2(e.u.BulletBounce.Pos));
 			o->thing.Vel = NetToVec2(e.u.BulletBounce.Vel);
 		}
 		break;
@@ -419,7 +419,7 @@ static void HandleGameEvent(
 		{
 			TMobileObject *o = MobObjGetByUID(e.u.RemoveBullet.UID);
 			if (o == NULL || !o->isInUse) break;
-			MobObjDestroy(o);
+			BulletDestroy(o);
 		}
 		break;
 	case GAME_EVENT_PARTICLE_REMOVE:

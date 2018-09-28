@@ -69,6 +69,7 @@ typedef void (*ThingDrawFunc)(const struct vec2i, const ThingDrawFuncData *);
 typedef struct
 {
 	struct vec2 Pos;
+	struct vec2 LastPos;
 	struct vec2 Vel;
 	struct vec2i size;
 	ThingKind kind;

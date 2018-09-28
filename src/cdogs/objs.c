@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017, Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,7 @@
 
 #include <assert.h>
 
+#include "bullet_class.h"
 #include "damage.h"
 #include "log.h"
 #include "net_util.h"
@@ -384,7 +385,7 @@ void UpdateMobileObjects(int ticks)
 		{
 			continue;
 		}
-		if (!obj->updateFunc(obj, ticks) && !gCampaign.IsClient)
+		if (!BulletUpdate(obj, ticks) && !gCampaign.IsClient)
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_REMOVE_BULLET);
 			e.u.RemoveBullet.UID = obj->UID;
@@ -541,7 +542,7 @@ void MobObjsTerminate(void)
 	CA_FOREACH(TMobileObject, m, gMobObjs)
 		if (m->isInUse)
 		{
-			MobObjDestroy(m);
+			BulletDestroy(m);
 		}
 	CA_FOREACH_END()
 	CArrayTerminate(&gMobObjs);
@@ -559,10 +560,4 @@ TMobileObject *MobObjGetByUID(const int uid)
 		}
 	CA_FOREACH_END()
 	return NULL;
-}
-void MobObjDestroy(TMobileObject *m)
-{
-	CASSERT(m->isInUse, "Destroying not-in-use mobobj");
-	MapRemoveThing(&gMap, &m->thing);
-	m->isInUse = false;
 }

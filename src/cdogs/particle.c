@@ -346,7 +346,7 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 				p->thing.Vel = svec2_zero();
 			}
 		}
-	}\
+	}
 	if (!MapTryMoveThing(&gMap, &p->thing, p->Pos))
 	{
 		// Out of map; destroy
@@ -471,6 +471,10 @@ static void DrawParticle(const struct vec2i pos, const ThingDrawFuncData *data)
 			CPicDrawContext c = CPicDrawContextNew();
 			c.Dir = RadiansToDirection(p->Angle);
 			const Pic *pic = CPicGetPic(&p->u.Pic, c.Dir);
+			if (p->u.Pic.Type != PICTYPE_DIRECTIONAL)
+			{
+				c.Radians = p->Angle;
+			}
 			c.Offset = svec2i(
 				pic->size.x / -2, pic->size.y / -2 - p->Z / Z_FACTOR);
 			CPicDraw(&gGraphicsDevice, &p->Class->u.Pic, pos, &c);
