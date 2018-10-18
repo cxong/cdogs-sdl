@@ -376,10 +376,11 @@ static void FireGuns(const TMobileObject *obj, const CArray *guns)
 			true, false);
 	}
 }
+#define TRAIL_WIDTH 3
 static void AddTrail(const TMobileObject *obj)
 {
-	if (obj->bulletClass->Trail == NULL ||
-		svec2_is_equal(obj->thing.Pos, obj->thing.LastPos))
+	const struct vec2 vel = svec2_subtract(obj->thing.Pos, obj->thing.LastPos);
+	if (obj->bulletClass->Trail == NULL || svec2_is_zero(vel))
 	{
 		return;
 	}
@@ -389,7 +390,15 @@ static void AddTrail(const TMobileObject *obj)
 		obj->thing.Pos, obj->thing.LastPos
 	), 0.5f);
 	s.u.AddParticle.Z = obj->z;
-	s.u.AddParticle.Angle = svec2_angle(obj->thing.Vel) + MPI_2;
+	s.u.AddParticle.Angle = svec2_angle(vel) + MPI_2;
+	if (obj->bulletClass->Trail->Type == PARTICLE_PIC)
+	{
+		const Pic *pic = CPicGetPic(
+			&obj->bulletClass->Trail->u.Pic, DIRECTION_UP);
+		const struct vec2 trailSize = svec2(TRAIL_WIDTH, svec2_length(vel));
+		s.u.AddParticle.DrawScale = svec2_divide(
+			trailSize, svec2_assign_vec2i(pic->size));
+	}
 	GameEventsEnqueue(&gGameEvents, s);
 }
 typedef struct

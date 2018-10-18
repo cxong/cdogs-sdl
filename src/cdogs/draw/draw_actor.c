@@ -299,7 +299,7 @@ void DrawActorPics(const ActorPics *pics, const struct vec2i pos)
 			const struct vec2i drawPos = svec2i_add(pos, pics->OrderedOffsets[i]);
 			PicRender(
 				pic, gGraphicsDevice.gameWindow.renderer, drawPos,
-				pics->Mask, 0);
+				pics->Mask, 0, svec2_one());
 		}
 	}
 }
@@ -508,7 +508,7 @@ void DrawHead(
 	const Pic *head = GetHeadPic(c->Class, dir, GUNSTATE_READY, &c->Colors);
 	const struct vec2i drawPos = svec2i_subtract(pos, svec2i(
 		head->size.x / 2, head->size.y / 2));
-	PicRender(head, renderer, drawPos, colorWhite, 0);
+	PicRender(head, renderer, drawPos, colorWhite, 0, svec2_one());
 }
 #define DYING_BODY_OFFSET 3
 static void DrawDyingBody(
@@ -517,5 +517,6 @@ static void DrawDyingBody(
 	const Pic *body = pics->Body;
 	const struct vec2i drawPos = svec2i_subtract(pos, svec2i(
 		body->size.x / 2, body->size.y / 2 + DYING_BODY_OFFSET));
-	PicRender(body, g->gameWindow.renderer, drawPos, pics->Mask, 0);
+	PicRender(
+		body, g->gameWindow.renderer, drawPos, pics->Mask, 0, svec2_one());
 }

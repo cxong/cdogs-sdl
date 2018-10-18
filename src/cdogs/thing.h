@@ -55,6 +55,7 @@ typedef enum
 typedef struct
 {
 	int MobObjId;
+	struct vec2 Scale;
 	union
 	{
 		struct

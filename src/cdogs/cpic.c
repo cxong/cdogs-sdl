@@ -52,6 +52,7 @@ CPicDrawContext CPicDrawContextNew(void)
 	c.Dir = DIRECTION_UP;
 	c.Offset = svec2i_zero();
 	c.Radians = 0;
+	c.Scale = svec2_one();
 	return c;
 }
 
@@ -288,5 +289,6 @@ void CPicDraw(
 	}
 	const struct vec2i picPos = svec2i_add(pos, context->Offset);
 	PicRender(
-		pic, g->gameWindow.renderer, picPos, p->Mask, context->Radians);
+		pic, g->gameWindow.renderer, picPos, p->Mask, context->Radians,
+		context->Scale);
 }

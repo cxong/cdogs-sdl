@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2015, 2017 Cong Xu
+    Copyright (c) 2014-2015, 2017-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -93,6 +93,7 @@ typedef struct
 	double Angle;
 	int DZ;
 	double Spin;
+	struct vec2 DrawScale;
 	char Text[128];
 } AddParticle;
 

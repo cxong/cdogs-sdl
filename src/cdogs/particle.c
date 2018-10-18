@@ -445,6 +445,8 @@ int ParticleAdd(CArray *particles, const AddParticle add)
 	p->thing.id = i;
 	p->thing.drawFunc = DrawParticle;
 	p->thing.drawData.MobObjId = i;
+	p->thing.drawData.Scale =
+		svec2_is_zero(add.DrawScale) ? svec2_one() : add.DrawScale;
 	MapTryMoveThing(&gMap, &p->thing, add.Pos);
 	return i;
 }
@@ -477,6 +479,7 @@ static void DrawParticle(const struct vec2i pos, const ThingDrawFuncData *data)
 			}
 			c.Offset = svec2i(
 				pic->size.x / -2, pic->size.y / -2 - p->Z / Z_FACTOR);
+			c.Scale = data->Scale;
 			CPicDraw(&gGraphicsDevice, &p->Class->u.Pic, pos, &c);
 			break;
 		}

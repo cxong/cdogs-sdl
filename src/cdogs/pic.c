@@ -235,9 +235,18 @@ bool PicPxIsEdge(const Pic *pic, const struct vec2i pos, const bool isPixel)
 
 void PicRender(
 	const Pic *p, SDL_Renderer *r, const struct vec2i pos, const color_t mask,
-	const double radians)
+	const double radians, const struct vec2 scale)
 {
-	const Rect2i dest = Rect2iNew(pos, p->size);
+	Rect2i dest = Rect2iNew(pos, p->size);
+	// Apply scale to render dest
+	// TODO: render with anchor at centre by default?
+	if (!svec2_is_equal(scale, svec2_one()))
+	{
+		dest.Pos.x -= (mint_t)MROUND((scale.x - 1) * p->size.x / 2);
+		dest.Pos.y -= (mint_t)MROUND((scale.y - 1) * p->size.y / 2);
+		dest.Size.x = (mint_t)MROUND(p->size.x * scale.x);
+		dest.Size.y = (mint_t)MROUND(p->size.y * scale.y);
+	}
 	const double angle = ToDegrees(radians);
 	TextureRender(p->Tex, r, dest, mask, angle);
 }
