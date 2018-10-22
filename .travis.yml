@@ -45,6 +45,9 @@ script:
   # Tests are broken on osx. Hope this will be fixed some day
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make test ; fi
 
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
 before_deploy:
   - make package
 
