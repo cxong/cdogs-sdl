@@ -480,7 +480,7 @@ static void DrawParticle(const struct vec2i pos, const ThingDrawFuncData *data)
 			c.Offset = svec2i(
 				pic->size.x / -2, pic->size.y / -2 - p->Z / Z_FACTOR);
 			c.Scale = data->Scale;
-			CPicDraw(&gGraphicsDevice, &p->Class->u.Pic, pos, &c);
+			CPicDraw(&gGraphicsDevice, &p->u.Pic, pos, &c);
 			break;
 		}
 		case PARTICLE_TEXT:

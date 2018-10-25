@@ -22,10 +22,11 @@
     {
       "Name": "trail",
       "Pic": {
-        "Type": "Normal",
-        "Pic": "trail"
+        "Type": "Animated",
+        "Sprites": "trail",
+        "TicksPerFrame": 2
       },
-      "Range": 8
+      "Range": 7
     }
   ]
 }
