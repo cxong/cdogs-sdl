@@ -376,26 +376,27 @@ static void FireGuns(const TMobileObject *obj, const CArray *guns)
 			true, false);
 	}
 }
-#define TRAIL_WIDTH 3
 static void AddTrail(const TMobileObject *obj)
 {
 	const struct vec2 vel = svec2_subtract(obj->thing.Pos, obj->thing.LastPos);
-	if (obj->bulletClass->Trail == NULL || svec2_is_zero(vel))
+	if (obj->bulletClass->Trail.P == NULL || svec2_is_zero(vel))
 	{
 		return;
 	}
 	GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
-	s.u.AddParticle.Class = obj->bulletClass->Trail;
+	s.u.AddParticle.Class = obj->bulletClass->Trail.P;
 	s.u.AddParticle.Pos = svec2_scale(svec2_add(
 		obj->thing.Pos, obj->thing.LastPos
 	), 0.5f);
 	s.u.AddParticle.Z = obj->z;
 	s.u.AddParticle.Angle = svec2_angle(vel) + MPI_2;
-	if (obj->bulletClass->Trail->Type == PARTICLE_PIC)
+	if (obj->bulletClass->Trail.P->Type == PARTICLE_PIC)
 	{
 		const Pic *pic = CPicGetPic(
-			&obj->bulletClass->Trail->u.Pic, DIRECTION_UP);
-		const struct vec2 trailSize = svec2(TRAIL_WIDTH, svec2_length(vel));
+			&obj->bulletClass->Trail.P->u.Pic, DIRECTION_UP);
+		const struct vec2 trailSize = svec2(
+			obj->bulletClass->Trail.Width, svec2_length(vel)
+		);
 		s.u.AddParticle.DrawScale = svec2_divide(
 			trailSize, svec2_assign_vec2i(pic->size));
 	}
@@ -668,12 +669,18 @@ static void LoadBullet(
 	{
 		CPicLoadJSON(&b->CPic, json_find_first_label(node, "Pic")->child);
 	}
-	tmp = NULL;
-	LoadStr(&tmp, node, "Trail");
-	if (tmp != NULL)
+	if (json_find_first_label(node, "Trail"))
 	{
-		b->Trail = StrParticleClass(&gParticleClasses, tmp);
-		CFREE(tmp);
+		json_t *trail = json_find_first_label(node, "Trail")->child;
+		tmp = NULL;
+		LoadStr(&tmp, trail, "Particle");
+		if (tmp != NULL)
+		{
+			b->Trail.P = StrParticleClass(&gParticleClasses, tmp);
+			CFREE(tmp);
+		}
+		b->Trail.Width = 1.0f;
+		LoadFloat(&b->Trail.Width, trail, "Width");
 	}
 	LoadVec2i(&b->ShadowSize, node, "ShadowSize");
 	LoadInt(&b->Delay, node, "Delay");
@@ -781,9 +788,10 @@ static void LoadBullet(
 		b->Falling.FallsDown ? "true" : "false",
 		b->Falling.DestroyOnDrop ? "true" : "false");
 	LOG(LM_MAP, LL_DEBUG,
-		"...dropGuns(%d) seekFactor(%d) erratic(%s) trail(%s)...",
+		"...dropGuns(%d) seekFactor(%d) erratic(%s) trail(%s@%f)...",
 		(int)b->Falling.DropGuns.size, b->SeekFactor,
-		b->Erratic ? "true" : "false", b->Trail != NULL ? b->Trail->Name : "");
+		b->Erratic ? "true" : "false",
+		b->Trail.P != NULL ? b->Trail.P->Name : "", b->Trail.Width);
 	LOG(LM_MAP, LL_DEBUG,
 		"...outOfRangeGuns(%d) hitGuns(%d) proximityGuns(%d)",
 		(int)b->OutOfRangeGuns.size,

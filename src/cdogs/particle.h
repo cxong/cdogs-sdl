@@ -48,7 +48,6 @@ typedef struct
 		CPic Pic;
 		color_t TextColor;
 	} u;
-	const NamedSprites *Sprites;
 	// -1 is infinite range
 	int RangeLow;
 	int RangeHigh;

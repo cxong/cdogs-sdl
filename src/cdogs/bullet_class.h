@@ -61,7 +61,11 @@ typedef struct
 {
 	char *Name;
 	CPic CPic;
-	const ParticleClass *Trail;
+	struct
+	{
+		const ParticleClass *P;
+		float Width;
+	} Trail;
 	struct vec2i ShadowSize;
 	int Delay;	// number of frames before moving
 	float SpeedLow;
