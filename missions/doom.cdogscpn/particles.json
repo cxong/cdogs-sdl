@@ -18,15 +18,6 @@
         "TicksPerFrame": 4
       },
       "Range": 4
-    },
-    {
-      "Name": "trail",
-      "Pic": {
-        "Type": "Animated",
-        "Sprites": "trail",
-        "TicksPerFrame": 2
-      },
-      "Range": 7
     }
   ]
 }

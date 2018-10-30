@@ -1,15 +1,27 @@
 {
-  "Version": 1,
+  "Version": 2,
   "Bullets": [
     {
-      "Name": "sshotgun",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "bullet_ball"
+      "Name": "10mm",
+      "Trail": {
+        "Particle": "trail",
+        "Width": 1.0
       },
-      "Speed": 1280,
-      "Range": 30,
-      "Power": 10
+      "Speed": 35000,
+      "Range": 1,
+      "Power": 10,
+      "Mass": 0.2
+    },
+    {
+      "Name": "sshotgun",
+      "Trail": {
+        "Particle": "trail",
+        "Width": 1.0
+      },
+      "Speed": 25000,
+      "Range": 1,
+      "Power": 10,
+      "Mass": 0.2
     },
     {
       "Name": "bfg",
@@ -20,6 +32,7 @@
       "Speed": 550,
       "Range": 200,
       "Power": 50,
+      "Mass": 50,
       "Size": [8, 8],
       "Spark": "",
       "HitSounds": {
@@ -40,6 +53,7 @@
       "Speed": 1280,
       "Range": 15,
       "Power": 25,
+      "Mass": 25,
       "HitSounds": {
         "Object": "",
         "Flesh": "",
@@ -62,7 +76,8 @@
       },
       "Speed": 1280,
       "Range": 40,
-      "Power": 20
+      "Power": 20,
+      "Mass": 20
     }
   ]
 }

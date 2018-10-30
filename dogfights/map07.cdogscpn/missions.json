@@ -16,7 +16,7 @@
 		"SpecialChars": [],
 		"MapObjectDensities": [],
 		"EnemyDensity": 0,
-		"Weapons": ["Pistol"],
+		"Weapons": ["Marine Pistol"],
 		"Song": "",
 		"WallColor": 18,
 		"FloorColor": 14,
@@ -85,7 +85,7 @@
 			13]]
 		},
 		{
-			"MapObject": "Machine gun spawner",
+			"MapObject": "Chaingun spawner",
 			"Positions": [[15,
 			18]]
 		},

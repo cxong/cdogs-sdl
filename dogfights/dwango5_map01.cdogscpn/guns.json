@@ -1,6 +1,18 @@
 {
-  "Version": 1,
+  "Version": 2,
   "Guns": [
+    {
+      "Name": "Marine Pistol",
+      "Icon": "pistol",
+      "Description": "Standard issue sidearm, low rate of fire and damage. Recommend engaging at a distance.",
+      "Bullet": "10mm",
+      "Cost": 0,
+      "Lock": 18,
+      "Sound": "pistol",
+      "Recoil": 0.05,
+      "Brass": "brass",
+      "Ammo": "Bullets"
+    },
     {
       "Name": "Super shotgun",
       "Icon": "shotgun",
@@ -54,6 +66,19 @@
       "Recoil": 0.17,
       "MuzzleFlashParticle": "muzzle_flash_pulse",
       "Ammo": "Mini cells"
+    },
+    {
+      "Name": "Chaingun",
+      "Icon": "machine_gun",
+      "Bullet": "10mm",
+      "Cost": 1,
+      "Lock": 8,
+      "Sound": "mg",
+      "SwitchSound": "mg_switch",
+      "Recoil": 0.3,
+      "MuzzleFlashParticle": "muzzle_flash_mg",
+      "Brass": "brass_big",
+      "Ammo": "Bullets"
     }
   ],
   "PseudoGuns" : [

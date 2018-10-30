@@ -266,12 +266,12 @@
 			43]]
 		},
 		{
-			"MapObject": "Machine gun spawner",
+			"MapObject": "Chaingun spawner",
 			"Positions": [[85,
 			70]]
 		},
 		{
-			"MapObject": "Shotgun spawner",
+			"MapObject": "Marine Shotgun spawner",
 			"Positions": [[86,
 			62],
 			[34,

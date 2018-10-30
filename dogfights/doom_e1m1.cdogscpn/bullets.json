@@ -1,5 +1,5 @@
 {
-  "Version": 1,
+  "Version": 2,
   "Bullets": [
     {
       "Name": "10mm",
@@ -7,9 +7,29 @@
         "Type": "Directional",
         "Sprites": "9mm"
       },
-      "Speed": 1100,
-      "Range": 50,
-      "Power": 10
+      "Trail": {
+        "Particle": "trail",
+        "Width": 1.0
+      },
+      "Speed": 35000,
+      "Range": 1,
+      "Power": 10,
+      "Mass": 0.2
+    },
+    {
+      "Name": "pellet",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": ""
+      },
+      "Trail": {
+        "Particle": "trail",
+        "Width": 1.0
+      },
+      "Speed": 25000,
+      "Range": 1,
+      "Power": 10,
+      "Mass": 0.2
     }
   ]
 }

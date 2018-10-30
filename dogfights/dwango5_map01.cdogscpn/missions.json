@@ -16,7 +16,7 @@
 		"SpecialChars": [],
 		"MapObjectDensities": [],
 		"EnemyDensity": 0,
-		"Weapons": ["Pistol"],
+		"Weapons": ["Marine Pistol"],
 		"Song": "awake10_megaWall.ogg",
 		"WallColor": 5,
 		"FloorColor": 3,
@@ -100,7 +100,7 @@
 			30]]
 		},
 		{
-			"MapObject": "Machine gun spawner",
+			"MapObject": "Chaingun spawner",
 			"Positions": [[46,
 			37]]
 		},

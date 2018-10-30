@@ -267,6 +267,15 @@
       "TextMask": "ff0000",
       "Range": 40,
       "GravityFactor": 0
+    },
+    {
+      "Name": "trail",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "trail",
+        "TicksPerFrame": 2
+      },
+      "Range": 7
     }
   ]
 }
