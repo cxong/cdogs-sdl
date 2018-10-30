@@ -630,8 +630,12 @@
     {
       "Name": "9mm",
       "Pic": {
-        "Type": "Directional",
-        "Sprites": "9mm"
+        "Type": "Normal",
+        "Pic": ""
+      },
+      "Trail": {
+        "Particle": "trail",
+        "Width": 1.0
       },
       "OutOfRangeSpark": "spark",
       "Speed": 25000,

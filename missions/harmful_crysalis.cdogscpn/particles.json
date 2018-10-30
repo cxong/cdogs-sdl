@@ -1,10 +1,21 @@
 {
-  "Version": 1,
+  "Version": 2,
   "Particles": [
-
     {
       "Name": "laser_point",
-      "Sprites": "laser_dot",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "laser_dot"
+      },
+      "Range": 1
+    },
+    {
+      "Name": "laser_trail_green",
+      "Pic": {
+        "Type": "AnimatedRandom",
+        "Sprites": "laser_trail",
+        "Mask": "00ff00"
+      },
       "Range": 1
     }
   ]

@@ -1,12 +1,15 @@
 {
   "Version": 2,
   "Bullets": [
-
     {
       "Name": "laser_point",
       "Pic": {
         "Type": "Normal",
         "Pic": ""
+      },
+      "Trail": {
+        "Particle": "laser_trail_green",
+        "Width": 3.0
       },
       "Speed": 40960,
       "Range": 1,

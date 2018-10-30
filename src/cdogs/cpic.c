@@ -215,6 +215,11 @@ struct vec2i CPicGetSize(const CPic *p)
 void CPicCopyPic(CPic *dest, const CPic *src)
 {
 	memcpy(dest, src, sizeof *src);
+	if (dest->Type == PICTYPE_ANIMATED_RANDOM)
+	{
+		// initialise frame with a random value
+		dest->u.Animated.Frame = rand() % (int)dest->u.Animated.Sprites->size;
+	}
 }
 
 void CPicUpdate(CPic *p, const int ticks)
@@ -264,7 +269,7 @@ const Pic *CPicGetPic(const CPic *p, const int idx)
 	case PICTYPE_NORMAL:
 		return p->u.Pic;
 	case PICTYPE_DIRECTIONAL:
-		return CArrayGet(p->u.Sprites, idx);
+		return p->u.Sprites != NULL ? CArrayGet(p->u.Sprites, idx) : NULL;
 	case PICTYPE_ANIMATED:
 	case PICTYPE_ANIMATED_RANDOM:
 		if (p->u.Animated.Frame < 0 ||
