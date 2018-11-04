@@ -87,9 +87,9 @@ void MapAddDoorGroup(
 	default:					doorKey = "normal";	break;
 	}
 	const TileClass *doorClass = DoorGetClass(
-		gTileClasses, &gPicManager, m->DoorStyle, doorKey, isHorizontal);
+		&gTileClasses, &gPicManager, m->DoorStyle, doorKey, isHorizontal);
 	const TileClass *doorClassOpen = DoorGetClass(
-		gTileClasses, &gPicManager, m->DoorStyle, "open", isHorizontal);
+		&gTileClasses, &gPicManager, m->DoorStyle, "open", isHorizontal);
 
 	// set up the door pics
 	for (int i = 0; i < doorGroupCount; i++)
@@ -112,7 +112,7 @@ void MapAddDoorGroup(
 			// Change the tile below to shadow, cast by this door
 			const bool isFloor = IMapGet(map, vB) == MAP_FLOOR;
 			tileB->Class = TileClassesGetMaskedTile(
-				gTileClasses,
+				&gTileClasses,
 				&gPicManager,
 				&gTileFloor,
 				isFloor ? m->FloorStyle : m->RoomStyle,
@@ -213,7 +213,7 @@ static TWatch *CreateCloseDoorWatch(
 		strcpy(
 			a->a.Event.u.TileSet.ClassName,
 			DoorGetClass(
-				gTileClasses, &gPicManager, m->DoorStyle, "open", isHorizontal
+				&gTileClasses, &gPicManager, m->DoorStyle, "open", isHorizontal
 			)->Name
 		);
 		strcpy(a->a.Event.u.TileSet.ClassAltName, classAlt->Name);
@@ -235,7 +235,7 @@ static TWatch *CreateCloseDoorWatch(
 			strcpy(
 				a->a.Event.u.TileSet.ClassName,
 				TileClassesGetMaskedTile(
-					gTileClasses,
+					&gTileClasses,
 					&gPicManager,
 					&gTileFloor,
 					isFloor ? m->FloorStyle : m->RoomStyle,
@@ -277,7 +277,7 @@ static Trigger *CreateOpenDoorTrigger(
 		strcpy(
 			a->a.Event.u.TileSet.ClassName,
 			DoorGetClass(
-				gTileClasses, &gPicManager, m->DoorStyle, "open", isHorizontal
+				&gTileClasses, &gPicManager, m->DoorStyle, "open", isHorizontal
 			)->Name
 		);
 		if (!isHorizontal && i == 0)
@@ -286,7 +286,7 @@ static Trigger *CreateOpenDoorTrigger(
 			strcpy(
 				a->a.Event.u.TileSet.ClassAltName,
 				DoorGetClass(
-					gTileClasses, &gPicManager, m->DoorStyle, "wall", false
+					&gTileClasses, &gPicManager, m->DoorStyle, "wall", false
 				)->Name
 			);
 		}
@@ -308,7 +308,7 @@ static Trigger *CreateOpenDoorTrigger(
 			strcpy(
 				a->a.Event.u.TileSet.ClassName,
 				TileClassesGetMaskedTile(
-					gTileClasses,
+					&gTileClasses,
 					&gPicManager,
 					&gTileFloor,
 					isFloor? m->FloorStyle : m->RoomStyle,
@@ -369,37 +369,32 @@ static void DoorGetClassName(
 // style: office/dungeon/blast/alien, or custom
 // key: normal/yellow/green/blue/red/wall/open
 const TileClass *DoorGetClass(
-	map_t classes, const PicManager *pm,
+	TileClasses *c, const PicManager *pm,
 	const char *style, const char *key,
 	const bool isHorizontal)
 {
 	char buf[CDOGS_FILENAME_MAX];
 	DoorGetClassName(buf, style, key, isHorizontal);
-	TileClass *c;
-	if (hashmap_get(classes, buf, (any_t *)&c) == MAP_OK)
+	const TileClass *tc = StrTileClass(buf);
+	if (tc != &gTileNothing)
 	{
-		return c;
+		return tc;
 	}
 
 	// tile class not found; create it
-	CCALLOC(c, sizeof *c);
-	CSTRDUP(c->Name, buf);
-	c->Pic = PicManagerGetPic(pm, buf);
-	c->IsDoor = true;
-    const bool isOpenOrWallCavity =
-        strcmp(key, "open") == 0 || strcmp(key, "wall") == 0;
-	c->isOpaque = !isOpenOrWallCavity;
-	c->canWalk = isOpenOrWallCavity;
-	c->shootable = !isOpenOrWallCavity;
-
-	const int error = hashmap_put(classes, buf, c);
-	if (error != MAP_OK)
+	TileClass *t = TileClassAdd(c->customClasses, pm, NULL, buf);
+	if (t == NULL)
 	{
-		LOG(LM_MAIN, LL_ERROR, "failed to add door class %s: %d",
-			buf, error);
 		return NULL;
 	}
-	return c;
+	t->IsDoor = true;
+    const bool isOpenOrWallCavity =
+        strcmp(key, "open") == 0 || strcmp(key, "wall") == 0;
+	t->isOpaque = !isOpenOrWallCavity;
+	t->canWalk = isOpenOrWallCavity;
+	t->shootable = !isOpenOrWallCavity;
+
+	return t;
 }
 static void DoorGetClassName(
 	char *buf, const char *style, const char *key, const bool isHorizontal)

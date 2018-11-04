@@ -30,7 +30,7 @@
 #include "log.h"
 
 
-map_t gTileClasses;
+TileClasses gTileClasses;
 TileClass gTileFloor = {
 	"tile", NULL, true, false, false, false, true, false,
 };
@@ -44,14 +44,21 @@ TileClass gTileExit = {
 	"tile", NULL, true, false, false, false, true, false,
 };
 
-void TileClassesInit(map_t *classes)
+void TileClassesInit(TileClasses *c)
 {
-	*classes = hashmap_new();
+	c->classes = hashmap_new();
+	c->customClasses = hashmap_new();
+}
+void TileClassesClearCustom(TileClasses *c)
+{
+	TileClassesTerminate(c);
+	TileClassesInit(c);
 }
 static void TileClassDestroy(any_t data);
-void TileClassesTerminate(map_t classes)
+void TileClassesTerminate(TileClasses *c)
 {
-	hashmap_destroy(classes, TileClassDestroy);
+	hashmap_destroy(c->classes, TileClassDestroy);
+	hashmap_destroy(c->customClasses, TileClassDestroy);
 }
 static void TileClassDestroy(any_t data)
 {
@@ -66,46 +73,40 @@ const TileClass *StrTileClass(const char *name)
 	{
 		return &gTileNothing;
 	}
-	TileClass *c = &gTileNothing;
-	const int error = hashmap_get(gTileClasses, name, (any_t *)&c);
-	if (error != MAP_OK)
+	TileClass *t;
+	int error = hashmap_get(gTileClasses.customClasses, name, (any_t *)&t);
+	if (error == MAP_OK)
 	{
-		LOG(LM_MAIN, LL_ERROR, "failed to get tile class %s: %d",
-			name, error);
+		return t;
 	}
-	return c;
+	error = hashmap_get(gTileClasses.classes, name, (any_t *)&t);
+	if (error == MAP_OK)
+	{
+		return t;
+	}
+	LOG(LM_MAIN, LL_ERROR, "failed to get tile class %s: %d",
+		name, error);
+	return &gTileNothing;
 }
 
 static void GetMaskedName(
 	char *buf, const char *name, const char *style, const char *type,
 	const color_t mask, const color_t maskAlt);
 const TileClass *TileClassesGetMaskedTile(
-	map_t classes, const PicManager *pm, const TileClass *baseClass,
+	TileClasses *c, const PicManager *pm, const TileClass *baseClass,
 	const char *style, const char *type,
 	const color_t mask, const color_t maskAlt)
 {
 	char buf[256];
 	GetMaskedName(buf, baseClass->Name, style, type, mask, maskAlt);
-	TileClass *c;
-	if (hashmap_get(classes, buf, (any_t *)&c) == MAP_OK)
+	const TileClass *t = StrTileClass(buf);
+	if (t != &gTileNothing)
 	{
-		return c;
+		return t;
 	}
 
 	// tile class not found; create it
-	CMALLOC(c, sizeof *c);
-	memcpy(c, baseClass, sizeof *c);
-	CSTRDUP(c->Name, buf);
-	c->Pic = PicManagerGetPic(pm, buf);
-
-	const int error = hashmap_put(classes, buf, c);
-	if (error != MAP_OK)
-	{
-		LOG(LM_MAIN, LL_ERROR, "failed to add tile class %s: %d",
-			buf, error);
-		return NULL;
-	}
-	return c;
+	return TileClassAdd(c->customClasses, pm, baseClass, buf);
 }
 static void GetMaskedName(
 	char *buf, const char *name, const char *style, const char *type,
@@ -118,30 +119,41 @@ static void GetMaskedName(
 	sprintf(buf, "%s/%s/%s/%s/%s", name, style, type, maskName, maskAltName);
 }
 
-const TileClass *TileClassesGetGetExit(
-	map_t classes, const PicManager *pm,
+const TileClass *TileClassesGetExit(
+	TileClasses *c, const PicManager *pm,
 	const char *style, const bool isShadow)
 {
 	char buf[256];
 	sprintf(buf, "exits/%s/%s", style, isShadow ? "shadow" : "normal");
-	TileClass *c;
-	if (hashmap_get(classes, buf, (any_t *)&c) == MAP_OK)
+	const TileClass *t = StrTileClass(buf);
+	if (t != &gTileNothing)
 	{
-		return c;
+		return t;
 	}
 
 	// tile class not found; create it
-	CMALLOC(c, sizeof *c);
-	memcpy(c, &gTileExit, sizeof *c);
-	CSTRDUP(c->Name, buf);
-	c->Pic = PicManagerGetPic(pm, buf);
+	return TileClassAdd(c->customClasses, pm, &gTileExit, buf);
+}
 
-	const int error = hashmap_put(classes, buf, c);
+TileClass *TileClassAdd(
+	map_t classes, const PicManager *pm, const TileClass *base,
+	const char *name)
+{
+	TileClass *t;
+	CCALLOC(t, sizeof *t);
+	if (base != NULL)
+	{
+		memcpy(t, base, sizeof *t);
+	}
+	CSTRDUP(t->Name, name);
+	t->Pic = PicManagerGetPic(pm, name);
+
+	const int error = hashmap_put(classes, name, t);
 	if (error != MAP_OK)
 	{
 		LOG(LM_MAIN, LL_ERROR, "failed to add tile class %s: %d",
-			buf, error);
+			name, error);
 		return NULL;
 	}
-	return c;
+	return t;
 }

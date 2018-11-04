@@ -270,10 +270,10 @@ void MapShowExitArea(
 	const int top = exitStart.y;
 	const int bottom = exitEnd.y;
 
-	const TileClass *exitClass = TileClassesGetGetExit(
-		gTileClasses, &gPicManager, gMission.missionData->ExitStyle, false);
-	const TileClass *exitShadowClass = TileClassesGetGetExit(
-		gTileClasses, &gPicManager, gMission.missionData->ExitStyle, true);
+	const TileClass *exitClass = TileClassesGetExit(
+		&gTileClasses, &gPicManager, gMission.missionData->ExitStyle, false);
+	const TileClass *exitShadowClass = TileClassesGetExit(
+		&gTileClasses, &gPicManager, gMission.missionData->ExitStyle, true);
 
 	struct vec2i v;
 	v.y = top;

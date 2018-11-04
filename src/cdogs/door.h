@@ -55,7 +55,7 @@ void MapAddDoorGroup(
 	Map *map, const Mission *m, const struct vec2i v, const int keyFlags);
 
 const TileClass *DoorGetClass(
-	map_t classes, const PicManager *pm,
+	TileClasses *c, const PicManager *pm,
 	const char *style, const char *key,
 	const bool isHorizontal);
 

@@ -57,21 +57,31 @@ typedef struct
 	bool IsDoor;
 } TileClass;
 
-extern map_t gTileClasses;	// of TileClass *
+typedef struct
+{
+	map_t classes;	// of TileClass *
+	map_t customClasses;	// of TileClass *
+} TileClasses;
+extern TileClasses gTileClasses;
 // TODO: remove this after making tile classes data-driven
 extern TileClass gTileFloor;
 extern TileClass gTileWall;
 extern TileClass gTileNothing;
 extern TileClass gTileExit;
 
-void TileClassesInit(map_t *classes);
-void TileClassesTerminate(map_t classes);
+void TileClassesInit(TileClasses *c);
+void TileClassesClearCustom(TileClasses *c);
+void TileClassesTerminate(TileClasses *c);
 
 const TileClass *StrTileClass(const char *name);
 const TileClass *TileClassesGetMaskedTile(
-	map_t classes, const PicManager *pm, const TileClass *baseClass,
+	TileClasses *c, const PicManager *pm, const TileClass *baseClass,
 	const char *style, const char *type,
 	const color_t mask, const color_t maskAlt);
-const TileClass *TileClassesGetGetExit(
-	map_t classes, const PicManager *pm,
+const TileClass *TileClassesGetExit(
+	TileClasses *c, const PicManager *pm,
 	const char *style, const bool isShadow);
+
+TileClass *TileClassAdd(
+	map_t classes, const PicManager *pm, const TileClass *base,
+	const char *name);

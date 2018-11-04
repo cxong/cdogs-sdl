@@ -293,7 +293,7 @@ bail:
 	CollisionSystemTerminate(&gCollisionSystem);
 
 	CharSpriteClassesTerminate(&gCharSpriteClasses);
-	TileClassesTerminate(gTileClasses);
+	TileClassesTerminate(&gTileClasses);
 	PicManagerTerminate(&gPicManager);
 	FontTerminate(&gFont);
 	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));

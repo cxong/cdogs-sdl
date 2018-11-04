@@ -1428,7 +1428,7 @@ int main(int argc, char *argv[])
 	DrawBufferTerminate(&sDrawBuffer);
 	GraphicsTerminate(ec.g);
 	CharSpriteClassesTerminate(&gCharSpriteClasses);
-	TileClassesTerminate(gTileClasses);
+	TileClassesTerminate(&gTileClasses);
 	PicManagerTerminate(&gPicManager);
 	FontTerminate(&gFont);
 

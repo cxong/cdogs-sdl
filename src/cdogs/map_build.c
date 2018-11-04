@@ -132,7 +132,7 @@ void MapSetupTilesAndWalls(Map *map, const Mission *m)
 		if (MapTileIsNormalFloor(map, pos))
 		{
 			MapGetTile(map, pos)->Class = TileClassesGetMaskedTile(
-				gTileClasses, &gPicManager, &gTileFloor, m->FloorStyle,
+				&gTileClasses, &gPicManager, &gTileFloor, m->FloorStyle,
 				"alt1",
 				m->FloorMask, m->AltMask
 			);
@@ -144,7 +144,7 @@ void MapSetupTilesAndWalls(Map *map, const Mission *m)
 		if (MapTileIsNormalFloor(map, pos))
 		{
 			MapGetTile(map, pos)->Class = TileClassesGetMaskedTile(
-				gTileClasses, &gPicManager, &gTileFloor, m->FloorStyle,
+				&gTileClasses, &gPicManager, &gTileFloor, m->FloorStyle,
 				"alt2",
 				m->FloorMask, m->AltMask
 			);
@@ -167,7 +167,7 @@ static void MapSetupTile(Map *map, const struct vec2i pos, const Mission *m)
 	case MAP_FLOOR:
 	case MAP_SQUARE:
 		t->Class = TileClassesGetMaskedTile(
-			gTileClasses, &gPicManager,
+			&gTileClasses, &gPicManager,
 			&gTileFloor, m->FloorStyle, canSeeTileAbove ? "normal" : "shadow",
 			m->FloorMask, m->AltMask);
 		break;
@@ -175,14 +175,14 @@ static void MapSetupTile(Map *map, const struct vec2i pos, const Mission *m)
 	case MAP_ROOM:
 	case MAP_DOOR:
 		t->Class = TileClassesGetMaskedTile(
-			gTileClasses, &gPicManager, &gTileFloor, m->RoomStyle,
+			&gTileClasses, &gPicManager, &gTileFloor, m->RoomStyle,
 			canSeeTileAbove ? "normal" : "shadow",
 			m->RoomMask, m->AltMask);
 		break;
 
 	case MAP_WALL:
 		t->Class = TileClassesGetMaskedTile(
-			gTileClasses, &gPicManager, &gTileWall,
+			&gTileClasses, &gPicManager, &gTileWall,
 			m->WallStyle, MapGetWallPic(map, pos),
 			m->WallMask, m->AltMask);
 		break;

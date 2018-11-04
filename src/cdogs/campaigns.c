@@ -72,6 +72,7 @@ void CampaignSettingTerminate(CampaignSetting *setting)
 	// Unload previous custom data
 	SoundClear(gSoundDevice.customSounds);
 	PicManagerClearCustom(&gPicManager);
+	TileClassesClearCustom(&gTileClasses);
 	ParticleClassesClear(&gParticleClasses.CustomClasses);
 	AmmoClassesClear(&gAmmo.CustomAmmo);
 	CharacterClassesClear(&gCharacterClasses.CustomClasses);
