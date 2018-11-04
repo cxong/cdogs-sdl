@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014, 2017 Cong Xu
+    Copyright (c) 2014, 2017-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -57,7 +57,9 @@ typedef struct sGameLoopData
 	GameLoopResult (*UpdateFunc)(struct sGameLoopData *, LoopRunner *);
 	void (*DrawFunc)(struct sGameLoopData *);
 	int FPS;
+	bool SuperhotMode;
 	bool InputEverySecondFrame;
+	bool SkipNextFrame;
 	int Frames;		// total frames looped
 	bool HasDrawnFirst;
 	bool IsUsed;

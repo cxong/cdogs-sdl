@@ -179,6 +179,7 @@ GameLoopData *RunGame(
 		data, RunGameTerminate, RunGameOnEnter, RunGameOnExit,
 		RunGameInput, RunGameUpdate, RunGameDraw);
 	g->FPS = ConfigGetInt(&gConfig, "Game.FPS");
+	g->SuperhotMode = ConfigGetBool(&gConfig, "Game.Superhot(tm)Mode");
 	g->InputEverySecondFrame = true;
 	return g;
 }
@@ -398,6 +399,10 @@ static void RunGameInput(GameLoopData *data)
 		}
 	CA_FOREACH_END()
 
+	// If in Superhot(tm) Mode, don't update unless there was an input in this
+	// or the last frame
+	data->SkipNextFrame = data->SuperhotMode && !lastCmdAll;
+
 	// Check if:
 	// - escape was pressed, or
 	// - window lost focus
@@ -427,6 +432,8 @@ static void RunGameInput(GameLoopData *data)
 			// Need to unpause to process the quit
 			rData->pausingDevice = INPUT_DEVICE_UNSET;
 			rData->controllerUnplugged = false;
+			// Don't skip exiting the game
+			data->SkipNextFrame = false;
 		}
 		else
 		{
@@ -499,6 +506,11 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 		!ConfigGetBool(&gConfig, "StartServer") &&
 		paused &&
 		!gEventHandlers.HasQuit)
+	{
+		return UPDATE_RESULT_DRAW;
+	}
+
+	if (data->SkipNextFrame)
 	{
 		return UPDATE_RESULT_DRAW;
 	}
