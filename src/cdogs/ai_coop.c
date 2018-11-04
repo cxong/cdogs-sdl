@@ -190,8 +190,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 			if (w->Gun->AmmoId != -1)
 			{
 				const Ammo *ammo = AmmoGetById(&gAmmo, w->Gun->AmmoId);
-				if (lowAmmoGun == -1 &&
-					ammoAmount < ammo->Amount * AMMO_STARTING_MULTIPLE)
+				if (lowAmmoGun == -1 && ammoAmount < ammo->Amount)
 				{
 					lowAmmoGun = i;
 				}
@@ -570,7 +569,7 @@ static void FindObjectivesSortedByDistance(
 				const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
 				const int ammoAmount = *(int *)CArrayGet(&actor->ammo, ammoId);
 				if (!ActorUsesAmmo(actor, ammoId) ||
-					ammoAmount > ammo->Amount * AMMO_STARTING_MULTIPLE ||
+					ammoAmount > ammo->Amount ||
 					(closestPlayer != NULL &&
 					ActorUsesAmmo(closestPlayer, ammoId) &&
 					ammoAmount > *(int *)CArrayGet(&closestPlayer->ammo, ammoId)))
@@ -704,13 +703,16 @@ static bool OnClosestPickupGun(
 	{
 		return false;
 	}
+	const WeaponClass *pickupGun = IdWeaponClass(p->class->u.GunId);
+	const int weaponIndexStart = pickupGun->IsGrenade ? MAX_GUNS : 0;
+	const int weaponIndexEnd = pickupGun->IsGrenade ? MAX_WEAPONS : MAX_GUNS;
 	// Pick up if:
 	// - we have a gun with less ammo than starting,
 	// - and lower than lead player, who uses the ammo,
 	// - or if there is a free weapon slot,
-	// - and the
+	// - and the gun is the same type (normal, grenade)
 	bool hasGunLowOnAmmo = false;
-	for (int i = 0; i < MAX_WEAPONS; i++)
+	for (int i = weaponIndexStart; i < weaponIndexEnd; i++)
 	{
 		if (actor->guns[i].Gun == NULL)
 		{
@@ -724,7 +726,7 @@ static bool OnClosestPickupGun(
 		}
 		const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
 		const int ammoAmount = *(int *)CArrayGet(&actor->ammo, ammoId);
-		if (ammoAmount >= ammo->Amount * AMMO_STARTING_MULTIPLE ||
+		if (ammoAmount >= ammo->Amount ||
 			(closestPlayer != NULL &&
 			ActorUsesAmmo(closestPlayer, ammoId) &&
 			ammoAmount > *(int *)CArrayGet(&closestPlayer->ammo, ammoId)))
