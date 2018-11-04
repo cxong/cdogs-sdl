@@ -314,7 +314,9 @@ static bool TryPickupGun(
 	if (ammoId >= 0)
 	{
 		ammo = AmmoGetById(&gAmmo, ammoId);
-		ammoDeficit = ammo->Amount * 2 - *(int *)CArrayGet(&a->ammo, ammoId);
+		ammoDeficit =
+			ammo->Amount * AMMO_STARTING_MULTIPLE -
+			*(int *)CArrayGet(&a->ammo, ammoId);
 	}
 
 	// Pickup gun
