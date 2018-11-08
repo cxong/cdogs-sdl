@@ -198,37 +198,6 @@ NPlayerData PlayerDataDefault(const int idx)
 		}
 	}
 
-	// weapons
-	switch (idx)
-	{
-	case 0:
-		strcpy(pd.Weapons[0], "Shotgun");
-		strcpy(pd.Weapons[1], "Machine gun");
-		strcpy(pd.Weapons[2], "Shrapnel bombs");
-		break;
-	case 1:
-		strcpy(pd.Weapons[0], "Powergun");
-		strcpy(pd.Weapons[1], "Flamer");
-		strcpy(pd.Weapons[2], "Grenades");
-		break;
-	case 2:
-		strcpy(pd.Weapons[0], "Sniper rifle");
-		strcpy(pd.Weapons[1], "Knife");
-		strcpy(pd.Weapons[2], "Molotovs");
-		break;
-	case 3:
-		strcpy(pd.Weapons[0], "Machine gun");
-		strcpy(pd.Weapons[1], "Flamer");
-		strcpy(pd.Weapons[2], "Dynamite");
-		break;
-	default:
-		strcpy(pd.Weapons[0], "Shotgun");
-		strcpy(pd.Weapons[1], "Machine gun");
-		strcpy(pd.Weapons[2], "Shrapnel bombs");
-		break;
-	}
-	pd.Weapons_count = 3;
-
 	pd.MaxHealth = 200;
 
 	return pd;

@@ -38,6 +38,7 @@
 #include "menu_utils.h"
 #include "password.h"
 #include "prep.h"
+#include "prep_equip.h"
 #include "screens_end.h"
 
 
