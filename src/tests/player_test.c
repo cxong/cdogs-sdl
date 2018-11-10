@@ -8,12 +8,13 @@
 #include <actors.h>
 #include <game_mode.h>
 #include <net_client.h>
+#include <player_template.h>
 #include <utils.h>
 
 // Stubs
 CampaignOptions gCampaign;
 NetClient gNetClient;
-CArray gPlayerTemplates;
+PlayerTemplates gPlayerTemplates;
 Config gConfig;
 TActor *ActorGetByUID(const int uid)
 {
@@ -89,6 +90,10 @@ bool IsPVP(const GameMode mode)
 bool InputHasGrenadeButton(const input_device_e d, const int dIndex)
 {
 	UNUSED(d); UNUSED(dIndex); return false;
+}
+PlayerTemplate *PlayerTemplateGetById(PlayerTemplates *pt, const int id)
+{
+	UNUSED(pt); UNUSED(id); return NULL;
 }
 
 
