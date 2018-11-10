@@ -1,0 +1,29 @@
+---
+layout: post
+title:  "C-Dogs 0.6.9 Released!"
+date:   2018-11-10
+categories: release
+published: true
+---
+
+C-Dogs SDL 0.6.9 released! This release adds bullet trails to hitscan guns, as well as Superhot mode...
+
+## Hitscan trails
+
+Hitscan guns were added several releases ago, but one notable thing was missing... bullet trails! Well this release belatedly adds them and take a look:
+
+![trails](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/trails.gif)
+
+## Superhot(tm) mode
+
+Just for fun, we've added a new gameplay option. Just like its namesake, when enabled, time stops unless you are pressing a button.
+
+![superhotmode](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/superhotmode.gif)
+
+Find it in the Game options menu!
+
+## Fixes and improvements
+
+As usual, there are bug fixes and neat improvements in addition to the new features, that are worth upgrading for. Check it out in the release notes, and as always happy gaming! 💥🔫💥
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.6.9>
