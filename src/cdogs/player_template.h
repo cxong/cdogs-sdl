@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2014, 2016-2017 Cong Xu
+	Copyright (c) 2013-2014, 2016-2018 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -38,9 +38,17 @@ typedef struct
 	CharColors Colors;
 } PlayerTemplate;
 
-#define PLAYER_TEMPLATE_FILE "players.cnf"
+typedef struct
+{
+	CArray Classes;	// of PlayerTemplate
+	CArray CustomClasses;	// of PlayerTemplate
+} PlayerTemplates;
+extern PlayerTemplates gPlayerTemplates;
 
-void PlayerTemplatesLoad(
-	CArray *templates, const CharacterClasses *classes, const char *filename);
-void PlayerTemplatesTerminate(CArray *t);
-void SavePlayerTemplates(const CArray *templates, const char *filename);
+void PlayerTemplatesLoad(PlayerTemplates *pt, const CharacterClasses *classes);
+void PlayerTemplatesLoadJSON(CArray *classes, json_t *node);
+void PlayerTemplatesClear(CArray *classes);
+void PlayerTemplatesTerminate(PlayerTemplates *pt);
+
+PlayerTemplate *PlayerTemplateGetById(PlayerTemplates *pt, const int id);
+void PlayerTemplatesSave(const PlayerTemplates *pt);

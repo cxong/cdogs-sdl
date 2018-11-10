@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2014, 2016-2017 Cong Xu
+	Copyright (c) 2013-2014, 2016-2018 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,11 @@
 #include <emscripten.h>
 #endif
 
+#define PLAYER_TEMPLATE_FILE "players.cnf"
+
 #define VERSION 2
+
+PlayerTemplates gPlayerTemplates;
 
 
 static void LoadPlayerTemplate(
@@ -71,43 +75,32 @@ static void LoadPlayerTemplate(
 	LOG(LM_MAIN, LL_DEBUG, "loaded player template %s (%s)",
 		t.name, t.CharClassName);
 }
-void PlayerTemplatesLoad(
-	CArray *templates, const CharacterClasses *classes, const char *filename)
+
+void PlayerTemplatesLoad(PlayerTemplates *pt, const CharacterClasses *classes)
 {
 	// Note: not used, but included in function to express dependency
 	CASSERT(classes->Classes.size > 0,
 		"cannot load player templates without character classes");
 	json_t *root = NULL;
-	int version = 1;
 
-	// initialise templates
-	CArrayInit(templates, sizeof(PlayerTemplate));
-	FILE *f = fopen(GetConfigFilePath(filename), "r");
+	CArrayInit(&pt->Classes, sizeof(PlayerTemplate));
+	CArrayInit(&pt->CustomClasses, sizeof(PlayerTemplate));
+	FILE *f = fopen(GetConfigFilePath(PLAYER_TEMPLATE_FILE), "r");
 	if (!f)
 	{
-		printf("Error loading player templates '%s'\n", filename);
+		LOG(LM_MAIN, LL_ERROR, "loading player templates '%s'",
+			PLAYER_TEMPLATE_FILE);
 		goto bail;
 	}
 
 	if (json_stream_parse(f, &root) != JSON_OK)
 	{
-		printf("Error parsing player templates '%s'\n", filename);
+		LOG(LM_MAIN, LL_ERROR, "parsing player templates '%s'",
+			PLAYER_TEMPLATE_FILE);
 		goto bail;
 	}
 
-	LoadInt(&version, root, "Version");
-
-	if (json_find_first_label(root, "PlayerTemplates") == NULL)
-	{
-		printf("Error: unknown player templates format\n");
-		goto bail;
-	}
-	json_t *child = json_find_first_label(root, "PlayerTemplates")->child->child;
-	while (child != NULL)
-	{
-		LoadPlayerTemplate(templates, child, version);
-		child = child->next;
-	}
+	PlayerTemplatesLoadJSON(&pt->Classes, root);
 
 bail:
 	json_free_value(&root);
@@ -117,15 +110,55 @@ bail:
 	}
 }
 
-void PlayerTemplatesTerminate(CArray *t)
+void PlayerTemplatesLoadJSON(CArray *classes, json_t *node)
 {
-	CA_FOREACH(PlayerTemplate, pt, *t)
-		CFREE(pt->CharClassName);
-	CA_FOREACH_END()
-	CArrayTerminate(t);
+	int version = 1;
+	LoadInt(&version, node, "Version");
+
+	if (json_find_first_label(node, "PlayerTemplates") == NULL)
+	{
+		LOG(LM_MAIN, LL_ERROR, "unknown player templates format");
+		return;
+	}
+	json_t *child =
+		json_find_first_label(node, "PlayerTemplates")->child->child;
+	while (child != NULL)
+	{
+		LoadPlayerTemplate(classes, child, version);
+		child = child->next;
+	}
 }
 
-static void SavePlayerTemplate(PlayerTemplate *t, json_t *templates)
+void PlayerTemplatesClear(CArray *classes)
+{
+	CA_FOREACH(PlayerTemplate, pt, *classes)
+		CFREE(pt->CharClassName);
+	CA_FOREACH_END()
+	CArrayClear(classes);
+}
+
+void PlayerTemplatesTerminate(PlayerTemplates *pt)
+{
+	PlayerTemplatesClear(&pt->Classes);
+	CArrayTerminate(&pt->Classes);
+	PlayerTemplatesClear(&pt->CustomClasses);
+	CArrayTerminate(&pt->Classes);
+}
+
+PlayerTemplate *PlayerTemplateGetById(PlayerTemplates *pt, const int id)
+{
+	if (id < (int)pt->CustomClasses.size)
+	{
+		return CArrayGet(&pt->CustomClasses, id);
+	}
+	else if (id < (int)(pt->CustomClasses.size + pt->Classes.size))
+	{
+		return CArrayGet(&pt->Classes, id - (int)pt->CustomClasses.size);
+	}
+	return NULL;
+}
+
+static void SavePlayerTemplate(const PlayerTemplate *t, json_t *templates)
 {
 	json_t *template = json_new_object();
 	AddStringPair(template, "Name", t->name);
@@ -137,27 +170,26 @@ static void SavePlayerTemplate(PlayerTemplate *t, json_t *templates)
 	AddColorPair(template, "Hair", t->Colors.Hair);
 	json_insert_child(templates, template);
 }
-void SavePlayerTemplates(const CArray *templates, const char *filename)
+void PlayerTemplatesSave(const PlayerTemplates *pt)
 {
-	FILE *f = fopen(GetConfigFilePath(filename), "w");
+	FILE *f = fopen(GetConfigFilePath(PLAYER_TEMPLATE_FILE), "w");
 	char *text = NULL;
 	char *formatText = NULL;
 	json_t *root = json_new_object();
 
 	if (f == NULL)
 	{
-		printf("Error saving player templates '%s'\n", filename);
+		LOG(LM_MAIN, LL_ERROR, "saving player templates '%s'",
+			PLAYER_TEMPLATE_FILE);
 		goto bail;
 	}
 
 	json_insert_pair_into_object(
 		root, "Version", json_new_number(TOSTRING(VERSION)));
 	json_t *templatesNode = json_new_array();
-	for (int i = 0; i < (int)templates->size; i++)
-	{
-		PlayerTemplate *t = CArrayGet(templates, i);
+	CA_FOREACH(const PlayerTemplate, t, pt->Classes)
 		SavePlayerTemplate(t, templatesNode);
-	}
+	CA_FOREACH_END()
 	json_insert_pair_into_object(root, "PlayerTemplates", templatesNode);
 
 	json_tree_to_string(root, &text);

@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2016, Cong Xu
+	Copyright (c) 2013-2016, 2018 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -311,7 +311,7 @@ static void PostInputLoadTemplate(menu_t *menu, int cmd, void *data)
 		PlayerSelectMenuData *d = data;
 		PlayerData *p = PlayerDataGetByUID(d->display.PlayerUID);
 		const PlayerTemplate *t =
-			CArrayGet(&gPlayerTemplates, menu->u.normal.index);
+			PlayerTemplateGetById(&gPlayerTemplates, menu->u.normal.index);
 		memset(p->name, 0, sizeof p->name);
 		strncpy(p->name, t->name, sizeof p->name - 1);
 		p->Char.Class = StrCharacterClass(t->CharClassName);
@@ -327,19 +327,23 @@ static void PostInputLoadTemplate(menu_t *menu, int cmd, void *data)
 static void PostEnterLoadTemplateNames(menu_t *menu, void *data)
 {
 	bool *isSave = (bool *)data;
-	for (int i = 0; i < (int)gPlayerTemplates.size; i++)
+	for (int i = 0; ; i++)
 	{
 		// Add menu if necessary
 		if (i == (int)menu->u.normal.subMenus.size)
 		{
 			MenuAddSubmenu(menu, MenuCreateBack(""));
 		}
+		const PlayerTemplate *pt = PlayerTemplateGetById(&gPlayerTemplates, i);
+		if (pt == NULL)
+		{
+			break;
+		}
 		menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
-		const PlayerTemplate *pt = CArrayGet(&gPlayerTemplates, i);
 		CFREE(subMenu->name);
 		CSTRDUP(subMenu->name, pt->name);
 	}
-	if (*isSave && menu->u.normal.subMenus.size == gPlayerTemplates.size)
+	if (*isSave)
 	{
 		MenuAddSubmenu(menu, MenuCreateBack("(new)"));
 	}
@@ -363,20 +367,14 @@ static void PostInputSaveTemplate(menu_t *menu, int cmd, void *data)
 	}
 	PlayerSelectMenuData *d = data;
 	PlayerData *p = PlayerDataGetByUID(d->display.PlayerUID);
-	while (menu->u.normal.index >= (int)gPlayerTemplates.size)
-	{
-		PlayerTemplate empty;
-		memset(&empty, 0, sizeof empty);
-		CArrayPushBack(&gPlayerTemplates, &empty);
-	}
 	PlayerTemplate *t =
-		CArrayGet(&gPlayerTemplates, menu->u.normal.index);
+		PlayerTemplateGetById(&gPlayerTemplates, menu->u.normal.index);
 	memset(t->name, 0, sizeof t->name);
 	strncpy(t->name, p->name, sizeof t->name - 1);
 	CFREE(t->CharClassName);
 	CSTRDUP(t->CharClassName, p->Char.Class->Name);
 	t->Colors = p->Char.Colors;
-	SavePlayerTemplates(&gPlayerTemplates, PLAYER_TEMPLATE_FILE);
+	PlayerTemplatesSave(&gPlayerTemplates);
 }
 
 static void SaveTemplateDisplayTitle(
@@ -412,7 +410,7 @@ static void CheckReenableLoadMenu(menu_t *menu, void *data)
 	menu_t *loadMenu = MenuGetSubmenuByName(menu, "Load");
 	UNUSED(data);
 	assert(loadMenu);
-	loadMenu->isDisabled = gPlayerTemplates.size == 0;
+	loadMenu->isDisabled = PlayerTemplateGetById(&gPlayerTemplates, 0) == NULL;
 }
 static menu_t *CreateCustomizeMenu(
 	const char *name, PlayerSelectMenuData *data);

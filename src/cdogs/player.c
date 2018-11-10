@@ -35,9 +35,6 @@
 
 
 CArray gPlayerDatas;
-// Templates stored here as it is used by player
-// TODO: 
-CArray gPlayerTemplates;
 
 
 void PlayerDataInit(CArray *p)
@@ -138,9 +135,9 @@ NPlayerData PlayerDataDefault(const int idx)
 	NPlayerData pd = NPlayerData_init_default;
 
 	// load from template if available
-	if ((int)gPlayerTemplates.size > idx)
+	const PlayerTemplate *t = PlayerTemplateGetById(&gPlayerTemplates, idx);
+	if (t != NULL)
 	{
-		const PlayerTemplate *t = CArrayGet(&gPlayerTemplates, idx);
 		strcpy(pd.Name, t->name);
 		strcpy(pd.CharacterClass, t->CharClassName);
 		pd.Colors = CharColors2Net(t->Colors);

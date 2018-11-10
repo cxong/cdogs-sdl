@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2017, Cong Xu
+    Copyright (c) 2014-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,7 @@
 #include "log.h"
 #include "map_new.h"
 #include "pickup.h"
+#include "player_template.h"
 
 
 static char *ReadFileIntoBuf(const char *path, const char *mode, long *len);
@@ -89,6 +90,12 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	LoadArchiveSounds(&gSoundDevice, filename, "sounds");
 
 	LoadArchivePics(&gPicManager, gCharSpriteClasses.customClasses, filename);
+
+	root = ReadArchiveJSON(filename, "players.json");
+	if (root != NULL)
+	{
+		PlayerTemplatesLoadJSON(&gPlayerTemplates.CustomClasses, root);
+	}
 
 	root = ReadArchiveJSON(filename, "particles.json");
 	if (root != NULL)

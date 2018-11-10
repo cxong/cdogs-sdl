@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2017 Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,7 @@
 #include <cdogs/log.h>
 #include <cdogs/map_new.h>
 #include <cdogs/mission.h>
+#include <cdogs/player_template.h>
 #include <cdogs/utils.h>
 
 
@@ -75,6 +76,7 @@ void CampaignSettingTerminate(CampaignSetting *setting)
 	TileClassesClearCustom(&gTileClasses);
 	ParticleClassesClear(&gParticleClasses.CustomClasses);
 	AmmoClassesClear(&gAmmo.CustomAmmo);
+	PlayerTemplatesClear(&gPlayerTemplates.CustomClasses);
 	CharacterClassesClear(&gCharacterClasses.CustomClasses);
 	BulletClassesClear(&gBulletClasses.CustomClasses);
 	WeaponClassesClear(&gWeaponClasses.CustomGuns);

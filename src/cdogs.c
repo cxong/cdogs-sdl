@@ -228,8 +228,7 @@ int main(int argc, char *argv[])
 		"data/bullets.json", "data/guns.json");
 	CharacterClassesInitialize(&gCharacterClasses, "data/character_classes.json");
 #ifndef __EMSCRIPTEN__
-	PlayerTemplatesLoad(
-		&gPlayerTemplates, &gCharacterClasses, PLAYER_TEMPLATE_FILE);
+	PlayerTemplatesLoad(&gPlayerTemplates, &gCharacterClasses);
 #endif
 	PickupClassesInit(
 		&gPickupClasses, "data/pickups.json", &gAmmo, &gWeaponClasses);

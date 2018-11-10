@@ -62,7 +62,6 @@ typedef struct
 } PlayerData;
 
 extern CArray gPlayerDatas;	// of PlayerData
-extern CArray gPlayerTemplates;	// of PlayerTemplate
 
 #define MAX_LOCAL_PLAYERS 4
 
