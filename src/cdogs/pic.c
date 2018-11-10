@@ -51,7 +51,8 @@ Uint32 ColorToPixel(
 {
 	const Uint32 pixel = SDL_MapRGBA(f, color.r, color.g, color.b, color.a);
 	// Manually apply the alpha as SDL seems to always set it to 0
-	return (pixel & (f->Rmask | f->Gmask | f->Bmask)) | (color.a << aShift);
+	return (pixel & (f->Rmask | f->Gmask | f->Bmask)) |
+		((Uint32)color.a << aShift);
 }
 
 
