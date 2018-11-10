@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2017 Cong Xu
+    Copyright (c) 2017-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -785,13 +785,31 @@ static void DrawFlag(
 	}
 }
 
-
+static Pic PadEven(const Pic *pic);
 static void LoadTexFromPic(const GLuint texid, const Pic *pic)
 {
 	glBindTexture(GL_TEXTURE_2D, texid);
+	Pic padded = PadEven(pic);
 	glTexImage2D(
-		GL_TEXTURE_2D, 0, GL_RGBA, pic->size.x, pic->size.y, 0, GL_BGRA,
-		GL_UNSIGNED_BYTE, pic->Data);
+		GL_TEXTURE_2D, 0, GL_RGBA, padded.size.x, padded.size.y, 0, GL_BGRA,
+		GL_UNSIGNED_BYTE, padded.Data);
+	PicFree(&padded);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+static Pic PadEven(const Pic *pic)
+{
+	// OGL needs even dimensions for texture
+	Pic p;
+	memset(&p, 0, sizeof p);
+	p.size = svec2i((pic->size.x + 1) / 2 * 2, (pic->size.y + 1) / 2 * 2);
+	CCALLOC(p.Data, p.size.x * p.size.y * sizeof *((Pic *)0)->Data);
+	for (int i = 0; i < pic->size.y; i++)
+	{
+		memcpy(
+			p.Data + i * p.size.x, pic->Data + i * pic->size.x,
+			pic->size.x * sizeof *p.Data);
+	}
+	return p;
 }
 
 static void BeforeDrawTex(const GLuint texid)

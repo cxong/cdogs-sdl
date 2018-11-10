@@ -144,7 +144,10 @@ Pic PicCopy(const Pic *src)
 void PicFree(Pic *pic)
 {
 	CFREE(pic->Data);
-	SDL_DestroyTexture(pic->Tex);
+	if (pic->Tex != NULL)
+	{
+		SDL_DestroyTexture(pic->Tex);
+	}
 }
 
 bool PicIsNone(const Pic *pic)
