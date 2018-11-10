@@ -208,8 +208,20 @@ ActorPics GetCharacterPics(
 	pics.HeadOffset = GetActorDrawOffset(
 		pics.Head, BODY_PART_HEAD, c->Class->Sprites, anim, frame, dir);
 
+	// Gun
+	pics.Gun = NULL;
+	if (gunSprites != NULL)
+	{
+		pics.Gun = GetGunPic(&gPicManager, gunSprites, dir, gunState, colors);
+		if (pics.Gun != NULL)
+		{
+			pics.GunOffset = GetActorDrawOffset(
+				pics.Gun, BODY_PART_GUN, c->Class->Sprites, anim, frame, dir);
+		}
+	}
+	const bool isArmed = pics.Gun != NULL;
+
 	// Body
-	const bool isArmed = gunSprites != NULL;
 	pics.Body = GetBodyPic(
 		&gPicManager, c->Class->Sprites, dir, anim, frame, isArmed,
 		colors);
@@ -221,15 +233,6 @@ ActorPics GetCharacterPics(
 		&gPicManager, c->Class->Sprites, dir, anim, frame, colors);
 	pics.LegsOffset = GetActorDrawOffset(
 		pics.Legs, BODY_PART_LEGS, c->Class->Sprites, anim, frame, dir);
-
-	// Gun
-	pics.Gun = NULL;
-	if (isArmed)
-	{
-		pics.Gun = GetGunPic(&gPicManager, gunSprites, dir, gunState, colors);
-		pics.GunOffset = GetActorDrawOffset(
-			pics.Gun, BODY_PART_GUN, c->Class->Sprites, anim, frame, dir);
-	}
 
 	// Determine draw order based on the direction the player is facing
 	for (BodyPart bp = BODY_PART_HEAD; bp < BODY_PART_COUNT; bp++)
@@ -476,6 +479,10 @@ static const Pic *GetGunPic(
 	// Get or generate masked sprites
 	const NamedSprites *ns = PicManagerGetCharSprites(
 		pm, gunSprites, colors);
+	if (ns == NULL)
+	{
+		return NULL;
+	}
 	return CArrayGet(&ns->pics, idx);
 }
 static const Pic *GetDeathPic(PicManager *pm, const int frame)

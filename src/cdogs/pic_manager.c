@@ -556,34 +556,38 @@ const NamedSprites *PicManagerGetCharSprites(
 	CharColorsGetMaskedName(buf, name, colors);
 	// Get or generate masked sprites
 	const NamedSprites *ns = PicManagerGetSprites(&gPicManager, buf);
-	if (ns == NULL)
+	if (ns != NULL)
 	{
-		const NamedSprites *ons = PicManagerGetSprites(pm, name);
-		NamedSprites *nsp = AddNamedSprites(pm->customSprites, buf);
-		CA_FOREACH(Pic, op, ons->pics)
-			Pic p = PicCopy(op);
-			p.Tex = NULL;
-			for (int i = 0; i < p.size.x * p.size.y; i++)
-			{
-				if (op->Data[i] == 0)
-				{
-					continue;
-				}
-				const color_t c = PIXEL2COLOR(op->Data[i]);
-				p.Data[i] = COLOR2PIXEL(ColorMult(
-					c, CharColorsGetChannelMask(colors, c.a)
-				));
-			}
-			if (!PicTryMakeTex(&p))
-			{
-				p.Tex = NULL;
-			}
-			CArrayPushBack(&nsp->pics, &p);
-		CA_FOREACH_END()
-		AfterAdd(pm);
-		ns = nsp;
+		return ns;
 	}
-	return ns;
+	const NamedSprites *ons = PicManagerGetSprites(pm, name);
+	if (ons == NULL)
+	{
+		return NULL;
+	}
+	NamedSprites *nsp = AddNamedSprites(pm->customSprites, buf);
+	CA_FOREACH(Pic, op, ons->pics)
+		Pic p = PicCopy(op);
+		p.Tex = NULL;
+		for (int i = 0; i < p.size.x * p.size.y; i++)
+		{
+			if (op->Data[i] == 0)
+			{
+				continue;
+			}
+			const color_t c = PIXEL2COLOR(op->Data[i]);
+			p.Data[i] = COLOR2PIXEL(ColorMult(
+				c, CharColorsGetChannelMask(colors, c.a)
+			));
+		}
+		if (!PicTryMakeTex(&p))
+		{
+			p.Tex = NULL;
+		}
+		CArrayPushBack(&nsp->pics, &p);
+	CA_FOREACH_END()
+	AfterAdd(pm);
+	return nsp;
 }
 
 static void GetMaskedName(

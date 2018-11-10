@@ -3,7 +3,7 @@
 
   "Guns": [
      {
-      "Pic": "proxmines",
+      "Pic": "",
       "Name": "Cryo mine",
       "Icon": "proxmines",
       "Bullet": "proxmine",
@@ -17,7 +17,7 @@
       "Ammo": "Mines"
     },
     {
-      "Pic": "radio",
+      "Pic": "",
       "Icon": "radio",
       "Name": "Aloma Snackbar",
       "Bullet": "aloma",
@@ -27,7 +27,7 @@
       "SwitchSound": "dynamite_pickup"
     },
     {
-      "Pic": "dynamite_pickup",
+      "Pic": "",
       "Icon": "dynamite_pickup",
       "Name": "Line Charges",
       "Bullet": "charge",
