@@ -50,7 +50,11 @@ static void LoadPlayerTemplate(
 	CArray *templates, json_t *node, const int version)
 {
 	PlayerTemplate t;
-	strcpy(t.name, json_find_first_label(node, "Name")->child->text);
+	memset(&t, 0, sizeof t);
+	strncpy(
+		t.name,
+		json_find_first_label(node, "Name")->child->text,
+		PLAYER_NAME_MAXLEN - 1);
 	t.CharClassName = GetString(node, "Face");
 	if (version == 1)
 	{
