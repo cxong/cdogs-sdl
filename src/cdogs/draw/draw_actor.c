@@ -276,7 +276,8 @@ static Character *ActorGetCharacterMutable(TActor *a)
 
 static void DrawDyingBody(
 	GraphicsDevice *g, const ActorPics *pics, const struct vec2i pos);
-void DrawActorPics(const ActorPics *pics, const struct vec2i pos)
+void DrawActorPics(
+	const ActorPics *pics, const struct vec2i pos, const bool blit)
 {
 	if (pics->IsDead)
 	{
@@ -300,9 +301,17 @@ void DrawActorPics(const ActorPics *pics, const struct vec2i pos)
 				continue;
 			}
 			const struct vec2i drawPos = svec2i_add(pos, pics->OrderedOffsets[i]);
-			PicRender(
-				pic, gGraphicsDevice.gameWindow.renderer, drawPos,
-				pics->Mask, 0, svec2_one());
+			if (blit)
+			{
+				// TODO: deprecated
+				Blit(&gGraphicsDevice, pic, drawPos);
+			}
+			else
+			{
+				PicRender(
+					pic, gGraphicsDevice.gameWindow.renderer, drawPos,
+					pics->Mask, 0, svec2_one());
+			}
 		}
 	}
 }
@@ -492,12 +501,12 @@ static const Pic *GetDeathPic(PicManager *pm, const int frame)
 
 void DrawCharacterSimple(
 	Character *c, const struct vec2i pos, const direction_e d,
-	const bool hilite, const bool showGun)
+	const bool hilite, const bool showGun, const bool blit)
 {
 	ActorPics pics = GetCharacterPics(
 		c, d, ACTORANIMATION_IDLE, 0, NULL, GUNSTATE_READY,
 		true, NULL, NULL, 0);
-	DrawActorPics(&pics, pos);
+	DrawActorPics(&pics, pos, blit);
 	if (hilite)
 	{
 		FontCh('>', svec2i_add(pos, svec2i(-8, -16)));

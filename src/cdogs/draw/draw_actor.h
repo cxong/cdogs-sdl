@@ -75,7 +75,7 @@ typedef struct
 
 void DrawCharacterSimple(
 	Character *c, const struct vec2i pos, const direction_e d,
-	const bool hilite, const bool showGun);
+	const bool hilite, const bool showGun, const bool blit);
 void DrawHead(
 	SDL_Renderer *renderer, const Character *c, const direction_e dir,
 	const struct vec2i pos);
@@ -92,7 +92,8 @@ ActorPics GetCharacterPics(
 	const bool hasShadow, const color_t *mask, const CharColors *colors,
 	const int deadPic);
 ActorPics GetCharacterPicsFromActor(TActor *a);
-void DrawActorPics(const ActorPics *pics, const struct vec2i pos);
+void DrawActorPics(
+	const ActorPics *pics, const struct vec2i pos, const bool blit);
 void DrawLaserSight(
 	const ActorPics *pics, const TActor *a, const struct vec2i picPos);
 void DrawActorHighlight(

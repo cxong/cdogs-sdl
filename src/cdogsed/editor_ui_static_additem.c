@@ -99,7 +99,7 @@ static void DrawCharacter(
 	DrawCharacterSimple(
 		c,
 		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
-		DIRECTION_DOWN, false, false);
+		DIRECTION_DOWN, false, false, true);
 }
 static void DrawObjective(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
@@ -121,7 +121,7 @@ static void DrawObjective(
 			Character *c = CArrayGet(
 				&store->OtherChars,
 				CharacterStoreGetSpecialId(store, data->Brush.Index2));
-			DrawCharacterSimple(c, pos, DIRECTION_DOWN, false, false);
+			DrawCharacterSimple(c, pos, DIRECTION_DOWN, false, false, true);
 		}
 		break;
 	case OBJECTIVE_RESCUE:
@@ -129,7 +129,7 @@ static void DrawObjective(
 			Character *c = CArrayGet(
 				&store->OtherChars,
 				CharacterStoreGetPrisonerId(store, data->Brush.Index2));
-			DrawCharacterSimple(c, pos, DIRECTION_DOWN, false, false);
+			DrawCharacterSimple(c, pos, DIRECTION_DOWN, false, false, true);
 		}
 		break;
 	case OBJECTIVE_COLLECT:

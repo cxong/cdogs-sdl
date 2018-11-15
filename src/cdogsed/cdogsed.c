@@ -129,7 +129,7 @@ static struct vec2i GetScreenPos(struct vec2i mapTile)
 		(mapTile.y - sDrawBuffer.yStart) * TILE_HEIGHT + sDrawBuffer.dy);
 }
 
-static int IsBrushPosValid(struct vec2i pos, Mission *m)
+static int IsBrushPosValid(struct vec2i pos, const Mission *m)
 {
 	return pos.x >= 0 && pos.x < m->Size.x &&
 		pos.y >= 0 && pos.y < m->Size.y;
@@ -178,8 +178,10 @@ static void Display(HandleInputResult result)
 	int y = 5;
 	const int w = ec.g->cachedConfig.Res.x;
 	const int h = ec.g->cachedConfig.Res.y;
-	Mission *mission = CampaignGetCurrentMission(&gCampaign);
 
+	ClearScreen(ec.g);
+
+	const Mission *mission = CampaignGetCurrentMission(&gCampaign);
 	if (mission)
 	{
 		// Re-make the background if the resolution has changed
@@ -220,10 +222,6 @@ static void Display(HandleInputResult result)
 			sprintf(s, "(%d, %d)", brush.Pos.x, brush.Pos.y);
 			FontStr(s, svec2i(w - 40, h - 16));
 		}
-	}
-	else
-	{
-		ClearScreen(ec.g);
 	}
 
 	if (fileChanged)

@@ -274,7 +274,7 @@ static void DrawThing(
 	{
 		TActor *a = CArrayGet(&gActors, t->id);
 		ActorPics pics = GetCharacterPicsFromActor(a);
-		DrawActorPics(&pics, picPos);
+		DrawActorPics(&pics, picPos, false);
 		// Draw weapon indicators
 		DrawLaserSight(&pics, a, picPos);
 	}
