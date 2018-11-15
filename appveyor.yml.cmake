@@ -6,7 +6,9 @@ branches:
 
 environment:
   CTEST_OUTPUT_ON_FAILURE: 1
-  SDL2_VERSION: 2.0.5
+  SDL2_VERSION: 2.0.9
+  SDL2_IMAGE_VERSION: 2.0.4
+  SDL2_MIXER_VERSION: 2.0.4
   MINGW_PATH: C:\MinGW
   SDLDIR: C:\MinGW
 
@@ -19,12 +21,12 @@ install:
   - IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\SDL2-devel-%SDL2_VERSION%-mingw.tar.gz appveyor DownloadFile http://libsdl.org/release/SDL2-devel-%SDL2_VERSION%-mingw.tar.gz
   - 7z x SDL2-devel-%SDL2_VERSION%-mingw.tar.gz -so | 7z x -si -ttar -oC:\
   - echo y | xcopy C:\SDL2-%SDL2_VERSION%\i686-w64-mingw32\* %MINGW_PATH%\ /S
-  - IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\SDL2_mixer-devel-2.0.1-mingw.tar.gz appveyor DownloadFile https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-devel-2.0.1-mingw.tar.gz
-  - 7z x SDL2_mixer-devel-2.0.1-mingw.tar.gz -so | 7z x -si -ttar -oC:\
-  - echo y | xcopy C:\SDL2_mixer-2.0.1\i686-w64-mingw32\* %MINGW_PATH%\ /S
-  - IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\SDL2_image-devel-2.0.1-mingw.tar.gz appveyor DownloadFile https://www.libsdl.org/projects/SDL_image/release/SDL2_image-devel-2.0.1-mingw.tar.gz
-  - 7z x SDL2_image-devel-2.0.1-mingw.tar.gz -so | 7z x -si -ttar -oC:\
-  - echo y | xcopy C:\SDL2_image-2.0.1\i686-w64-mingw32\* %MINGW_PATH%\ /S
+  - IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\SDL2_mixer-devel-%SDL2_MIXER_VERSION%-mingw.tar.gz appveyor DownloadFile https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-devel-%SDL2_MIXER_VERSION%-mingw.tar.gz
+  - 7z x SDL2_mixer-devel-%SDL2_MIXER_VERSION%-mingw.tar.gz -so | 7z x -si -ttar -oC:\
+  - echo y | xcopy C:\SDL2_mixer-%SDL2_MIXER_VERSION%\i686-w64-mingw32\* %MINGW_PATH%\ /S
+  - IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\SDL2_image-devel-%SDL2_IMAGE_VERSION%-mingw.tar.gz appveyor DownloadFile https://www.libsdl.org/projects/SDL_image/release/SDL2_image-devel-%SDL2_IMAGE_VERSION%-mingw.tar.gz
+  - 7z x SDL2_image-devel-%SDL2_IMAGE_VERSION%-mingw.tar.gz -so | 7z x -si -ttar -oC:\
+  - echo y | xcopy C:\SDL2_image-%SDL2_IMAGE_VERSION%\i686-w64-mingw32\* %MINGW_PATH%\ /S
 
 before_build:
   - .\build\windows\get-sdl2-dlls.bat dll "appveyor DownloadFile"
@@ -42,11 +44,11 @@ after_build:
 
 cache:
 - SDL2-devel-%SDL2_VERSION%-mingw.tar.gz
-- SDL2_mixer-devel-2.0.1-mingw.tar.gz
-- SDL2_image-devel-2.0.1-mingw.tar.gz
+- SDL2_image-devel-%SDL2_IMAGE_VERSION%-mingw.tar.gz
+- SDL2_mixer-devel-%SDL2_MIXER_VERSION%-mingw.tar.gz
 - dir\SDL2-%SDL2_VERSION%-win32-x86.zip
-- dir\SDL2_image-2.0.1-win32-x86.zip
-- dir\SDL2_mixer-2.0.1-win32-x86.zip
+- dir\SDL2_image-%SDL2_IMAGE_VERSION%-win32-x86.zip
+- dir\SDL2_mixer-%SDL2_MIXER_VERSION%-win32-x86.zip
 
 artifacts:
   - path: /.\C-Dogs*.exe/
