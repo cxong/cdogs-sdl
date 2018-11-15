@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017, Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -66,6 +66,7 @@
 #include <cdogs/files.h>
 #include <cdogs/font_utils.h>
 #include <cdogs/log.h>
+#include <cdogs/player_template.h>
 
 #include <tinydir/tinydir.h>
 
@@ -1364,6 +1365,7 @@ int main(int argc, char *argv[])
 		"data/bullets.json", "data/guns.json");
 	CharacterClassesInitialize(
 		&gCharacterClasses, "data/character_classes.json");
+	PlayerTemplatesLoad(&gPlayerTemplates, &gCharacterClasses);
 	PickupClassesInit(
 		&gPickupClasses, "data/pickups.json", &gAmmo, &gWeaponClasses);
 	MapObjectsInit(
@@ -1429,6 +1431,7 @@ int main(int argc, char *argv[])
 	TileClassesTerminate(&gTileClasses);
 	PicManagerTerminate(&gPicManager);
 	FontTerminate(&gFont);
+	PlayerTemplatesTerminate(&gPlayerTemplates);
 
 	UIObjectDestroy(sObjs);
 	CArrayTerminate(&sDrawObjs);
