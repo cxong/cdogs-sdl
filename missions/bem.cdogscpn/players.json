@@ -16,15 +16,7 @@
 		"Arms": "ffffffff",
 		"Body": "ff8136ff",
 		"Legs": "363636ff",
-		"Hair": "9c0000ff",
-		"speed": 256,
-		"Gun": "Confusion bombs",
-		"maxHealth": 20,
-		"flags": 6356992,
-		"probabilityToMove": 100,
-		"probabilityToTrack": 50,
-		"probabilityToShoot": 0,
-		"actionDelay": 15
+		"Hair": "9c0000ff"
 	},
 	{
 		"Name": "Scientist",
