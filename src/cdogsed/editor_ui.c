@@ -574,7 +574,7 @@ static void MissionDrawEnemy(
 	DrawCharacterSimple(
 		CArrayGet(&store->OtherChars, charIndex),
 		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
-		DIRECTION_DOWN, UIObjectIsHighlighted(o), true);
+		DIRECTION_DOWN, UIObjectIsHighlighted(o), true, true);
 }
 static void MissionDrawSpecialChar(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
@@ -592,7 +592,7 @@ static void MissionDrawSpecialChar(
 	DrawCharacterSimple(
 		CArrayGet(&store->OtherChars, charIndex),
 		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
-		DIRECTION_DOWN, UIObjectIsHighlighted(o), true);
+		DIRECTION_DOWN, UIObjectIsHighlighted(o), true, true);
 }
 static void MissionDrawMapItem(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
@@ -902,12 +902,15 @@ static void MissionChangeExitStyle(void *data, int d)
 static void MissionChangeEnemy(void *vData, int d)
 {
 	MissionIndexData *data = vData;
-	int enemy = *(int *)CArrayGet(
-		&CampaignGetCurrentMission(data->co)->Enemies, data->index);
+	CArray *enemies = &CampaignGetCurrentMission(data->co)->Enemies;
+	if (data->index >= (int)enemies->size)
+	{
+		return;
+	}
+	int enemy = *(int *)CArrayGet(enemies, data->index);
 	enemy = CLAMP_OPPOSITE(
 		enemy + d, 0, (int)data->co->Setting.characters.OtherChars.size - 1);
-	*(int *)CArrayGet(
-		&CampaignGetCurrentMission(data->co)->Enemies, data->index) = enemy;
+	*(int *)CArrayGet(enemies, data->index) = enemy;
 	*(int *)CArrayGet(
 		&data->co->Setting.characters.baddieIds, data->index) = enemy;
 }

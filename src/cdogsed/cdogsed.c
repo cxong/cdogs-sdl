@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017, Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -66,6 +66,7 @@
 #include <cdogs/files.h>
 #include <cdogs/font_utils.h>
 #include <cdogs/log.h>
+#include <cdogs/player_template.h>
 
 #include <tinydir/tinydir.h>
 
@@ -129,7 +130,7 @@ static struct vec2i GetScreenPos(struct vec2i mapTile)
 		(mapTile.y - sDrawBuffer.yStart) * TILE_HEIGHT + sDrawBuffer.dy);
 }
 
-static int IsBrushPosValid(struct vec2i pos, Mission *m)
+static int IsBrushPosValid(struct vec2i pos, const Mission *m)
 {
 	return pos.x >= 0 && pos.x < m->Size.x &&
 		pos.y >= 0 && pos.y < m->Size.y;
@@ -178,8 +179,10 @@ static void Display(HandleInputResult result)
 	int y = 5;
 	const int w = ec.g->cachedConfig.Res.x;
 	const int h = ec.g->cachedConfig.Res.y;
-	Mission *mission = CampaignGetCurrentMission(&gCampaign);
 
+	ClearScreen(ec.g);
+
+	const Mission *mission = CampaignGetCurrentMission(&gCampaign);
 	if (mission)
 	{
 		// Re-make the background if the resolution has changed
@@ -220,10 +223,6 @@ static void Display(HandleInputResult result)
 			sprintf(s, "(%d, %d)", brush.Pos.x, brush.Pos.y);
 			FontStr(s, svec2i(w - 40, h - 16));
 		}
-	}
-	else
-	{
-		ClearScreen(ec.g);
 	}
 
 	if (fileChanged)
@@ -1366,6 +1365,7 @@ int main(int argc, char *argv[])
 		"data/bullets.json", "data/guns.json");
 	CharacterClassesInitialize(
 		&gCharacterClasses, "data/character_classes.json");
+	PlayerTemplatesLoad(&gPlayerTemplates, &gCharacterClasses);
 	PickupClassesInit(
 		&gPickupClasses, "data/pickups.json", &gAmmo, &gWeaponClasses);
 	MapObjectsInit(
@@ -1431,6 +1431,7 @@ int main(int argc, char *argv[])
 	TileClassesTerminate(&gTileClasses);
 	PicManagerTerminate(&gPicManager);
 	FontTerminate(&gFont);
+	PlayerTemplatesTerminate(&gPlayerTemplates);
 
 	UIObjectDestroy(sObjs);
 	CArrayTerminate(&sDrawObjs);

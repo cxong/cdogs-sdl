@@ -5,14 +5,14 @@ set EXTRACT_COMMAND=7z x -y
 
 rem PLEASE NO SPACES IN SDL2_* VARIABLES
 
-set SDL2_URL=http://www.libsdl.org/release/SDL2-2.0.5-win32-x86.zip
-set SDL2_ARCHIVE=SDL2-2.0.5-win32-x86.zip
+set SDL2_URL=http://www.libsdl.org/release/SDL2-2.0.9-win32-x86.zip
+set SDL2_ARCHIVE=SDL2-2.0.9-win32-x86.zip
 
-set SDL2_IMAGE_URL=http://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.1-win32-x86.zip
-set SDL2_IMAGE_ARCHIVE=SDL2_image-2.0.1-win32-x86.zip
+set SDL2_IMAGE_URL=http://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.4-win32-x86.zip
+set SDL2_IMAGE_ARCHIVE=SDL2_image-2.0.4-win32-x86.zip
 
-set SDL2_MIXER_URL=https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.0.1-win32-x86.zip
-set SDL2_MIXER_ARCHIVE=SDL2_mixer-2.0.1-win32-x86.zip
+set SDL2_MIXER_URL=https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.0.4-win32-x86.zip
+set SDL2_MIXER_ARCHIVE=SDL2_mixer-2.0.4-win32-x86.zip
 
 rem ========================================================
 

@@ -31,9 +31,11 @@
 #include "character.h"
 #include "character_class.h"
 
+#define PLAYER_NAME_MAXLEN 20
+
 typedef struct
 {
-	char name[20];
+	char name[PLAYER_NAME_MAXLEN];
 	char *CharClassName;
 	CharColors Colors;
 } PlayerTemplate;
