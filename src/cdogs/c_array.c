@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2017 Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -89,7 +89,7 @@ void CArrayInsert(CArray *a, const size_t idx, const void *elem)
 			CArrayGet(a, idx),
 			a->elemSize * (a->size - 1 - idx));
 	}
-	memcpy(CArrayGet(a, idx), elem, a->elemSize);
+	CArraySet(a, idx, elem);
 }
 void CArrayDelete(CArray *a, const size_t idx)
 {
@@ -123,6 +123,10 @@ void *CArrayGet(const CArray *a, const size_t idx)
 	CASSERT(a->elemSize > 0, "array has not been initialised");
 	CASSERT(idx < a->size, "array index out of bounds");
 	return &((char *)a->data)[idx * a->elemSize];
+}
+void CArraySet(CArray *a, const size_t idx, const void *elem)
+{
+	memcpy(CArrayGet(a, idx), elem, a->elemSize);
 }
 
 void CArrayClear(CArray *a)

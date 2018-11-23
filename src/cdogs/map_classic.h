@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, Cong Xu
+    Copyright (c) 2013-2014, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,11 +46,8 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __MAP_CLASSIC
-#define __MAP_CLASSIC
+#pragma once
 
-#include "map.h"
+#include "map_build.h"
 
-void MapClassicLoad(Map *map, const Mission *m, const CampaignOptions* co);
-
-#endif
+void MapClassicLoad(MapBuilder *mb);

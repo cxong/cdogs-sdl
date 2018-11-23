@@ -34,6 +34,7 @@
 #include "game_events.h"
 #include "handle_game_events.h"
 #include "log.h"
+#include "map_build.h"
 #include "objs.h"
 #include "pickup.h"
 #include "quick_play.h"
@@ -149,8 +150,7 @@ void GrafxMakeBackground(
 {
 	CampaignAndMissionSetup(co, mo);
 	GameEventsInit(&gGameEvents);
-	MapLoad(map, mo, co);
-	MapLoadDynamic(map, mo, &co->Setting.characters);
+	MapBuild(map, mo->missionData, co);
 	InitializeBadGuys();
 	CreateEnemies();
 	MapMarkAllAsVisited(map);

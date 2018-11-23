@@ -49,6 +49,7 @@
 #include "damage.h"
 
 #include "actors.h"
+#include "campaigns.h"
 #include "game_events.h"
 
 

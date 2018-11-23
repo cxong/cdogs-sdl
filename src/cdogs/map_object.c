@@ -565,51 +565,6 @@ bool MapObjectIsTileOK(
 	}
 	return 1;
 }
-bool MapObjectIsTileOKStrict(
-	const MapObject *obj, const unsigned short tile, const bool isEmpty,
-	const unsigned short tileAbove, const unsigned short tileBelow,
-	const int numWallsAdjacent, const int numWallsAround)
-{
-	if (!MapObjectIsTileOK(obj, tile, isEmpty, tileAbove))
-	{
-		return 0;
-	}
-	unsigned short tileAccess = tile & MAP_MASKACCESS;
-	if (tile & MAP_LEAVEFREE)
-	{
-		return 0;
-	}
-
-	if (obj->Flags & (1 << PLACEMENT_OUTSIDE) && tileAccess == MAP_ROOM)
-	{
-		return false;
-	}
-	if ((obj->Flags & (1 << PLACEMENT_INSIDE)) && tileAccess != MAP_ROOM)
-	{
-		return false;
-	}
-	if ((obj->Flags & (1 << PLACEMENT_NO_WALLS)) && numWallsAround != 0)
-	{
-		return false;
-	}
-	if ((obj->Flags & (1 << PLACEMENT_ONE_WALL)) && numWallsAdjacent != 1)
-	{
-		return false;
-	}
-	if ((obj->Flags & (1 << PLACEMENT_ONE_OR_MORE_WALLS)) && numWallsAdjacent < 1)
-	{
-		return false;
-	}
-	if ((obj->Flags & (1 << PLACEMENT_FREE_IN_FRONT)) &&
-		(tileBelow & MAP_MASKACCESS) != MAP_FLOOR &&
-		(tileBelow & MAP_MASKACCESS) != MAP_SQUARE &&
-		(tileBelow & MAP_MASKACCESS) != MAP_ROOM)
-	{
-		return false;
-	}
-
-	return true;
-}
 struct vec2 MapObjectGetPlacementPos(const MapObject *mo, const struct vec2i tilePos)
 {
 	struct vec2 pos = Vec2CenterOfTile(tilePos);

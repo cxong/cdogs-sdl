@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2016, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -33,14 +33,14 @@
 #include "net_util.h"
 
 
-void LOSInit(Map *map, const struct vec2i size)
+void LOSInit(Map *map)
 {
 	CArrayInit(&map->LOS.LOS, sizeof(bool));
 	CArrayInit(&map->LOS.Explored, sizeof(bool));
 	struct vec2i v;
-	for (v.y = 0; v.y < size.y; v.y++)
+	for (v.y = 0; v.y < map->Size.y; v.y++)
 	{
-		for (v.x = 0; v.x < size.x; v.x++)
+		for (v.x = 0; v.x < map->Size.x; v.x++)
 		{
 			const bool f = false;
 			CArrayPushBack(&map->LOS.LOS, &f);

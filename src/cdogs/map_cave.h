@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2016-2017 Cong Xu
+    Copyright (c) 2016-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -27,7 +27,6 @@
 */
 #pragma once
 
-#include "map.h"
+#include "map_build.h"
 
-void MapCaveLoad(
-	Map *map, const struct MissionOptions *mo, const CampaignOptions* co);
+void MapCaveLoad(MapBuilder *mb);

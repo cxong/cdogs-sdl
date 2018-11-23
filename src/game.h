@@ -50,6 +50,7 @@
 
 #include <stdbool.h>
 
+#include <cdogs/campaigns.h>
 #include <cdogs/map.h>
 #include <cdogs/mission.h>
 

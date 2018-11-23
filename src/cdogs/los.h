@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2016, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@
 #include "map.h"
 
 
-void LOSInit(Map *map, const struct vec2i size);
+void LOSInit(Map *map);
 void LOSTerminate(LineOfSight *los);
 void LOSReset(LineOfSight *los);
 void LOSSetAllVisible(LineOfSight *los);

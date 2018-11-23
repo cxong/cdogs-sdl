@@ -51,6 +51,7 @@
 #include "ai_context.h"
 #include "animation.h"
 #include "emitter.h"
+#include "game_mode.h"
 #include "grafx.h"
 #include "mathc/mathc.h"
 #include "player.h"

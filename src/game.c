@@ -62,6 +62,7 @@
 #include <cdogs/handle_game_events.h>
 #include <cdogs/log.h>
 #include <cdogs/los.h>
+#include <cdogs/map_build.h>
 #include <cdogs/music.h>
 #include <cdogs/net_client.h>
 #include <cdogs/net_server.h>
@@ -204,7 +205,7 @@ static void RunGameOnEnter(GameLoopData *data)
 
 	RunGameReset(rData);
 
-	MapLoad(rData->map, rData->m, rData->co);
+	MapBuild(rData->map, rData->m->missionData, rData->co);
 
 	// Seed random if PVP mode (otherwise players will always spawn in same
 	// position)
@@ -215,8 +216,6 @@ static void RunGameOnEnter(GameLoopData *data)
 
 	if (!rData->co->IsClient)
 	{
-		MapLoadDynamic(rData->map, rData->m, &rData->co->Setting.characters);
-
 		// For PVP modes, mark all map as explored
 		if (IsPVP(rData->co->Entry.Mode))
 		{

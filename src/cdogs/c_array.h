@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2017 Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -45,6 +45,7 @@ void CArrayInsert(CArray *a, const size_t index, const void *elem);
 void CArrayDelete(CArray *a, const size_t index);
 void CArrayResize(CArray *a, const size_t size, const void *value);
 void *CArrayGet(const CArray *a, const size_t index);	// gets address
+void CArraySet(CArray *a, const size_t idx, const void *elem);
 void CArrayClear(CArray *a);
 void CArrayRemoveIf(CArray *a, bool(*removeIf)(const void *));
 void CArrayFill(CArray *a, const void *elem);

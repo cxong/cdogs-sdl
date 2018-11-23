@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2016-2017 Cong Xu
+    Copyright (c) 2016-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -36,38 +36,39 @@ static void CaveRep(Map *map, const int r1, const int r2);
 static void LinkDisconnectedAreas(Map *map);
 static void FixCorridors(Map *map, const int corridorWidth);
 static void PlaceSquares(Map *map, const int squares);
-static void PlaceRooms(Map *map, const Mission *m);
-void MapCaveLoad(
-	Map *map, const struct MissionOptions *mo, const CampaignOptions* co)
+static void PlaceRooms(MapBuilder *mb);
+void MapCaveLoad(MapBuilder *mb)
 {
 	// Re-seed RNG so results are consistent
-	CampaignSeedRandom(co);
-
-	const Mission *m = mo->missionData;
+	CampaignSeedRandom(mb->co);
 
 	// Randomly set a percentage of the tiles as walls
 	for (int i = 0;
-		i < m->u.Cave.FillPercent*map->Size.x*map->Size.y / 100;
+		i < mb->mission->u.Cave.FillPercent *
+			mb->Map->Size.x *
+			mb->Map->Size.y /
+			100;
 		i++)
 	{
-		const struct vec2i pos = svec2i(i % map->Size.x, i / map->Size.x);
-		IMapSet(map, pos, MAP_WALL);
+		const struct vec2i pos =
+			svec2i(i % mb->Map->Size.x, i / mb->Map->Size.x);
+		IMapSet(mb->Map, pos, MAP_WALL);
 	}
 	// Shuffle
-	CArrayShuffle(&map->iMap);
+	CArrayShuffle(&mb->Map->iMap);
 	// Repetitions
-	for (int i = 0; i < m->u.Cave.Repeat; i++)
+	for (int i = 0; i < mb->mission->u.Cave.Repeat; i++)
 	{
-		CaveRep(map, m->u.Cave.R1, m->u.Cave.R2);
+		CaveRep(mb->Map, mb->mission->u.Cave.R1, mb->mission->u.Cave.R2);
 	}
 
-	LinkDisconnectedAreas(map);
+	LinkDisconnectedAreas(mb->Map);
 
-	FixCorridors(map, m->u.Cave.CorridorWidth);
+	FixCorridors(mb->Map, mb->mission->u.Cave.CorridorWidth);
 
-	PlaceSquares(map, m->u.Cave.Squares);
+	PlaceSquares(mb->Map, mb->mission->u.Cave.Squares);
 
-	PlaceRooms(map, m);
+	PlaceRooms(mb);
 }
 
 // Perform one generation of cellular automata
@@ -450,50 +451,51 @@ static bool MapIsAreaClearForCaveSquare(
 	return hasFloor;
 }
 
-static bool MapIsAreaClearForCaveRoom(
-	const Map *map, const Rect2i room, const Mission *m);
-static void MapBuildRoom(Map *map, const Rect2i room, const Mission *m);
-static void PlaceRooms(Map *map, const Mission *m)
+static bool MapIsAreaClearForCaveRoom(const MapBuilder *mb, const Rect2i room);
+static void MapBuildRoom(MapBuilder *mb, const Rect2i room);
+static void PlaceRooms(MapBuilder *mb)
 {
 	CArray rooms;	// of Rect2i
 	CArrayInit(&rooms, sizeof(Rect2i));
-	for (int i = 0; i < 1000 && (int)rooms.size < m->u.Cave.Rooms.Count; i++)
+	for (int i = 0;
+		i < 1000 && (int)rooms.size < mb->mission->u.Cave.Rooms.Count;
+		i++)
 	{
 		Rect2i room;
-		room.Pos = MapGetRandomTile(map);
-		room.Size = MapGetRoomSize(m->u.Cave.Rooms, 0);
-		if (!MapIsAreaClearForCaveRoom(map, room, m))
+		room.Pos = MapGetRandomTile(mb->Map);
+		room.Size = MapGetRoomSize(mb->mission->u.Cave.Rooms, 0);
+		if (!MapIsAreaClearForCaveRoom(mb, room))
 		{
 			continue;
 		}
-		MapBuildRoom(map, room, m);
+		MapBuildRoom(mb, room);
 		CArrayPushBack(&rooms, &room);
 		LOG(LM_MAP, LL_TRACE, "Room %d, %d (%dx%d)",
 			room.Pos.x, room.Pos.y, room.Size.x, room.Size.y);
 	}
 	// Set keys for rooms
-	if (AreKeysAllowed(gCampaign.Entry.Mode) && m->u.Cave.DoorsEnabled)
+	if (AreKeysAllowed(gCampaign.Entry.Mode) &&
+		mb->mission->u.Cave.DoorsEnabled)
 	{
 		while (rooms.size > 0)
 		{
 			// generate an access level for this room
 			const unsigned short accessMask =
-				GenerateAccessMask(&map->keyAccessCount);
-			if (map->keyAccessCount < 1)
+				GenerateAccessMask(&mb->Map->keyAccessCount);
+			if (mb->Map->keyAccessCount < 1)
 			{
-				map->keyAccessCount = 1;
+				mb->Map->keyAccessCount = 1;
 			}
-			MapSetRoomAccessMaskOverlap(map, &rooms, accessMask);
+			MapSetRoomAccessMaskOverlap(mb->Map, &rooms, accessMask);
 		}
 	}
 	CArrayTerminate(&rooms);
 }
 
 static bool CaveRoomOutsideOk(const Map *map, const struct vec2i v);
-static bool MapIsAreaClearForCaveRoom(
-	const Map *map, const Rect2i room, const Mission *m)
+static bool MapIsAreaClearForCaveRoom(const MapBuilder *mb, const Rect2i room)
 {
-	if (!MapIsAreaInside(map, room.Pos, room.Size))
+	if (!MapIsAreaInside(mb->Map, room.Pos, room.Size))
 	{
 		return false;
 	}
@@ -506,7 +508,7 @@ static bool MapIsAreaClearForCaveRoom(
 	bool hasFloorAroundEdge = false;
 	bool isOverlapRoom = false;
 	RECT_FOREACH(room)
-		switch (IMapGet(map, _v))
+		switch (IMapGet(mb->Map, _v))
 		{
 			case MAP_FLOOR:
 				hasFloor = true;
@@ -553,15 +555,15 @@ static bool MapIsAreaClearForCaveRoom(
 			(isLeft || isRight) ? outside.x : _v.x, _v.y);
 		const struct vec2i outsideY = svec2i(
 			_v.x, (isTop || isBottom) ? outside.y : _v.y);
-		switch (IMapGet(map, _v))
+		switch (IMapGet(mb->Map, _v))
 		{
 			case MAP_WALL:	// passthrough
 			case MAP_DOOR:
 				// Note: also need to check outside to see if we overlap
 				// but just along the edge
-				if (IMapGet(map, outside) == MAP_ROOM ||
-					IMapGet(map, outsideX) == MAP_ROOM ||
-					IMapGet(map, outsideY) == MAP_ROOM)
+				if (IMapGet(mb->Map, outside) == MAP_ROOM ||
+					IMapGet(mb->Map, outsideX) == MAP_ROOM ||
+					IMapGet(mb->Map, outsideY) == MAP_ROOM)
 				{
 					isOverlapRoom = true;
 				}
@@ -569,9 +571,9 @@ static bool MapIsAreaClearForCaveRoom(
 			case MAP_FLOOR:	// passthrough
 			case MAP_ROOM:
 				// Check outside tiles
-				if (!CaveRoomOutsideOk(map, outside) ||
-					!CaveRoomOutsideOk(map, outsideX) ||
-					!CaveRoomOutsideOk(map, outsideY))
+				if (!CaveRoomOutsideOk(mb->Map, outside) ||
+					!CaveRoomOutsideOk(mb->Map, outsideX) ||
+					!CaveRoomOutsideOk(mb->Map, outsideY))
 				{
 					return false;
 				}
@@ -585,7 +587,7 @@ static bool MapIsAreaClearForCaveRoom(
 	// Check if room overlaps with another room and the overlap is valid
 	if (isOverlapRoom)
 	{
-		if (!m->u.Cave.Rooms.Overlap)
+		if (!mb->mission->u.Cave.Rooms.Overlap)
 		{
 			// Overlapping disabled
 			return false;
@@ -593,8 +595,8 @@ static bool MapIsAreaClearForCaveRoom(
 		// Now check if the overlapping rooms will create a passage
 		// large enough
 		const int roomOverlapSize = MapGetRoomOverlapSize(
-			map, room.Pos, room.Size, NULL);
-		if (roomOverlapSize < m->u.Cave.CorridorWidth)
+			mb->Map, room.Pos, room.Size, NULL);
+		if (roomOverlapSize < mb->mission->u.Cave.CorridorWidth)
 		{
 			return false;
 		}
@@ -608,7 +610,7 @@ static bool CaveRoomOutsideOk(const Map *map, const struct vec2i v)
 	return t == MAP_FLOOR || t == MAP_ROOM || t == MAP_SQUARE;
 }
 
-static void MapBuildRoom(Map *map, const Rect2i room, const Mission *m)
+static void MapBuildRoom(MapBuilder *mb, const Rect2i room)
 {
 	// For edges, any tile that is next to a floor must be turned into
 	// a door, unless it was a corner - then it must be a wall
@@ -635,33 +637,33 @@ static void MapBuildRoom(Map *map, const Rect2i room, const Mission *m)
 		const struct vec2i outsideY = svec2i(
 			_v.x, (isTop || isBottom) ? outside.y : _v.y);
 		const bool atEdgeOfMap =
-			_v.y == 0 || _v.y == map->Size.y - 1 ||
-			_v.x == 0 || _v.x == map->Size.x - 1;
-		switch (IMapGet(map, _v) & MAP_MASKACCESS)
+			_v.y == 0 || _v.y == mb->Map->Size.y - 1 ||
+			_v.x == 0 || _v.x == mb->Map->Size.x - 1;
+		switch (IMapGet(mb->Map, _v) & MAP_MASKACCESS)
 		{
 			case MAP_DOOR:
-				if (!CaveRoomOutsideOk(map, outside) &&
-					!CaveRoomOutsideOk(map, outsideX) &&
-					!CaveRoomOutsideOk(map, outsideY))
+				if (!CaveRoomOutsideOk(mb->Map, outside) &&
+					!CaveRoomOutsideOk(mb->Map, outsideX) &&
+					!CaveRoomOutsideOk(mb->Map, outsideY))
 				{
 					// This door would become a corner
-					IMapSet(map, _v, MAP_WALL);
+					IMapSet(mb->Map, _v, MAP_WALL);
 				}
 				break;
 			default:
 				// Check outside tiles
 				if (!atEdgeOfMap &&
-					(svec2i_is_equal(outside, _v) || CaveRoomOutsideOk(map, outside)) &&
-					(svec2i_is_equal(outsideX, _v) || CaveRoomOutsideOk(map, outsideX)) &&
-					(svec2i_is_equal(outsideY, _v) || CaveRoomOutsideOk(map, outsideY)))
+					(svec2i_is_equal(outside, _v) || CaveRoomOutsideOk(mb->Map, outside)) &&
+					(svec2i_is_equal(outsideX, _v) || CaveRoomOutsideOk(mb->Map, outsideX)) &&
+					(svec2i_is_equal(outsideY, _v) || CaveRoomOutsideOk(mb->Map, outsideY)))
 				{
 					IMapSet(
-						map, _v,
-						m->u.Cave.DoorsEnabled ? MAP_DOOR : MAP_ROOM);
+						mb->Map, _v,
+						mb->mission->u.Cave.DoorsEnabled ? MAP_DOOR : MAP_ROOM);
 				}
 				else
 				{
-					IMapSet(map, _v, MAP_WALL);
+					IMapSet(mb->Map, _v, MAP_WALL);
 				}
 				break;
 		}
@@ -671,11 +673,11 @@ static void MapBuildRoom(Map *map, const Rect2i room, const Mission *m)
 		if (leftOrRightEdge && topOrBottomEdge)
 		{
 			// corner
-			IMapSet(map, _v, MAP_WALL);
+			IMapSet(mb->Map, _v, MAP_WALL);
 		}
 	RECT_FOREACH_END()
 
-	MapMakeRoom(map, room.Pos, room.Size, false);
+	MapMakeRoom(mb->Map, room.Pos, room.Size, false);
 
-	MapMakeRoomWalls(map, m->u.Cave.Rooms);
+	MapMakeRoomWalls(mb->Map, mb->mission->u.Cave.Rooms);
 }

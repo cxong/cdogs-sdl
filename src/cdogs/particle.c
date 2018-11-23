@@ -27,6 +27,7 @@
 */
 #include "particle.h"
 
+#include "campaigns.h"
 #include "collision/collision.h"
 #include "font.h"
 #include "game_events.h"

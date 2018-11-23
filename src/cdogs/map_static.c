@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, 2016, Cong Xu
+    Copyright (c) 2014, 2016, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -38,69 +38,61 @@
 #include "net_util.h"
 
 
-void MapStaticLoad(Map *map, const struct MissionOptions *mo)
+void MapStaticLoad(MapBuilder *mb)
 {
-	const Mission *m = mo->missionData;
-
 	// Tiles
 	struct vec2i v;
-	for (v.y = 0; v.y < m->Size.y; v.y++)
+	for (v.y = 0; v.y < mb->Map->Size.y; v.y++)
 	{
-		for (v.x = 0; v.x < m->Size.x; v.x++)
+		for (v.x = 0; v.x < mb->Map->Size.x; v.x++)
 		{
-			int idx = v.y * m->Size.x + v.x;
+			int idx = v.y * mb->Map->Size.x + v.x;
 			unsigned short tile =
-				*(unsigned short *)CArrayGet(&m->u.Static.Tiles, idx);
+				*(unsigned short *)CArrayGet(&mb->mission->u.Static.Tiles, idx);
 			if (!AreKeysAllowed(gCampaign.Entry.Mode))
 			{
 				tile &= MAP_MASKACCESS;
 			}
-			IMapSet(map, v, tile);
+			IMapSet(mb->Map, v, tile);
 		}
 	}
 	
 	// Exit area
-	if (!svec2i_is_zero(m->u.Static.Exit.Start) &&
-		!svec2i_is_zero(m->u.Static.Exit.End))
+	if (!svec2i_is_zero(mb->mission->u.Static.Exit.Start) &&
+		!svec2i_is_zero(mb->mission->u.Static.Exit.End))
 	{
-		map->ExitStart = m->u.Static.Exit.Start;
-		map->ExitEnd = m->u.Static.Exit.End;
+		mb->Map->ExitStart = mb->mission->u.Static.Exit.Start;
+		mb->Map->ExitEnd = mb->mission->u.Static.Exit.End;
 	}
 }
 
 static void AddCharacters(const CArray *characters);
-static void AddObjectives(
-	Map *map, const struct MissionOptions *mo, const CharacterStore *store,
-	const CArray *objectives);
-static void AddKeys(
-	Map *map, const struct MissionOptions *mo, const CArray *keys);
-void MapStaticLoadDynamic(
-	Map *map, const struct MissionOptions *mo, const CharacterStore *store)
+static void AddObjectives(MapBuilder *mb, const CArray *objectives);
+static void AddKeys(MapBuilder *mb, const CArray *keys);
+void MapStaticLoadDynamic(MapBuilder *mb)
 {
-	const Mission *m = mo->missionData;
-
 	// Map objects
-	CA_FOREACH(const MapObjectPositions, mop, m->u.Static.Items)
+	CA_FOREACH(const MapObjectPositions, mop, mb->mission->u.Static.Items)
 		for (int j = 0; j < (int)mop->Positions.size; j++)
 		{
 			const struct vec2i *pos = CArrayGet(&mop->Positions, j);
-			MapTryPlaceOneObject(map, *pos, mop->M, 0, false);
+			MapTryPlaceOneObject(mb, *pos, mop->M, 0, false);
 		}
 	CA_FOREACH_END()
 
 	if (ModeHasNPCs(gCampaign.Entry.Mode))
 	{
-		AddCharacters(&m->u.Static.Characters);
+		AddCharacters(&mb->mission->u.Static.Characters);
 	}
 
 	if (HasObjectives(gCampaign.Entry.Mode))
 	{
-		AddObjectives(map, mo, store, &m->u.Static.Objectives);
+		AddObjectives(mb, &mb->mission->u.Static.Objectives);
 	}
 
 	if (AreKeysAllowed(gCampaign.Entry.Mode))
 	{
-		AddKeys(map, mo, &m->u.Static.Keys);
+		AddKeys(mb, &mb->mission->u.Static.Keys);
 	}
 
 	// Process the events to place dynamic objects
@@ -130,28 +122,22 @@ static void AddCharacter(const CharacterPositions *cp)
 		GameEventsEnqueue(&gGameEvents, e);
 	CA_FOREACH_END()
 }
-static void AddObjective(
-	Map *map, const struct MissionOptions *mo, const CharacterStore *store,
-	const ObjectivePositions *op);
-static void AddObjectives(
-	Map *map, const struct MissionOptions *mo, const CharacterStore *store,
-	const CArray *objectives)
+static void AddObjective(MapBuilder *mb, const ObjectivePositions *op);
+static void AddObjectives(MapBuilder *mb, const CArray *objectives)
 {
 	CA_FOREACH(const ObjectivePositions, op, *objectives)
-		AddObjective(map, mo, store, op);
+		AddObjective(mb, op);
 	CA_FOREACH_END()
 }
-static void AddObjective(
-	Map *map, const struct MissionOptions *mo, const CharacterStore *store,
-	const ObjectivePositions *op)
+static void AddObjective(MapBuilder *mb, const ObjectivePositions *op)
 {
-	if (op->Index >= (int)mo->missionData->Objectives.size)
+	if (op->Index >= (int)mb->mission->Objectives.size)
 	{
 		LOG(LM_MAP, LL_ERROR, "cannot add objective; objective #%d missing",
 			op->Index);
 		return;
 	}
-	Objective *o = CArrayGet(&mo->missionData->Objectives, op->Index);
+	Objective *o = CArrayGet(&mb->mission->Objectives, op->Index);
 	CA_FOREACH(const struct vec2i, tilePos, op->Positions)
 		const int *idx = CArrayGet(&op->Indices, _ca_index);
 		const struct vec2 pos = Vec2CenterOfTile(*tilePos);
@@ -161,7 +147,8 @@ static void AddObjective(
 		{
 			NActorAdd aa = NActorAdd_init_default;
 			aa.UID = ActorsGetNextUID();
-			aa.CharId = CharacterStoreGetSpecialId(store, *idx);
+			aa.CharId = CharacterStoreGetSpecialId(
+				&mb->co->Setting.characters, *idx);
 			aa.ThingFlags = ObjectiveToThing(op->Index);
 			aa.Direction = rand() % DIRECTION_COUNT;
 			const Character *c =
@@ -174,11 +161,11 @@ static void AddObjective(
 		}
 		break;
 		case OBJECTIVE_COLLECT:
-			MapPlaceCollectible(mo, op->Index, pos);
+			MapPlaceCollectible(mb->mission, op->Index, pos);
 			break;
 		case OBJECTIVE_DESTROY:
 			MapTryPlaceOneObject(
-				map,
+				mb,
 				*tilePos,
 				o->u.MapObject,
 				ObjectiveToThing(op->Index), false);
@@ -187,7 +174,8 @@ static void AddObjective(
 		{
 			NActorAdd aa = NActorAdd_init_default;
 			aa.UID = ActorsGetNextUID();
-			aa.CharId = CharacterStoreGetPrisonerId(store, *idx);
+			aa.CharId = CharacterStoreGetPrisonerId(
+				&mb->co->Setting.characters, *idx);
 			aa.ThingFlags = ObjectiveToThing(op->Index);
 			aa.Direction = rand() % DIRECTION_COUNT;
 			const Character *c =
@@ -206,19 +194,16 @@ static void AddObjective(
 		o->placed++;
 	CA_FOREACH_END()
 }
-static void AddKey(
-	Map *map, const struct MissionOptions *mo, const KeyPositions *kp);
-static void AddKeys(
-	Map *map, const struct MissionOptions *mo, const CArray *keys)
+static void AddKey(MapBuilder *mb, const KeyPositions *kp);
+static void AddKeys(MapBuilder *mb, const CArray *keys)
 {
 	CA_FOREACH(const KeyPositions, kp, *keys)
-		AddKey(map, mo, kp);
+		AddKey(mb, kp);
 	CA_FOREACH_END()
 }
-static void AddKey(
-	Map *map, const struct MissionOptions *mo, const KeyPositions *kp)
+static void AddKey(MapBuilder *mb, const KeyPositions *kp)
 {
 	CA_FOREACH(const struct vec2i, pos, kp->Positions)
-		MapPlaceKey(map, mo, *pos, kp->Index);
+		MapPlaceKey(mb, *pos, kp->Index);
 	CA_FOREACH_END()
 }

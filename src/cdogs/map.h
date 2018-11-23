@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017 Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -50,7 +50,6 @@
 
 #include <stdbool.h>
 
-#include "campaigns.h"
 #include "map_object.h"
 #include "mission.h"
 #include "pic.h"
@@ -81,8 +80,6 @@ IMapType StrIMapType(const char *s);
 #define MAP_MASKACCESS      0xFF
 #define MAP_ACCESSBITS      0x0F00
 
-#define MAP_LEAVEFREE       4096
-
 typedef struct
 {
 	// Array of bools to set lines of sight
@@ -97,8 +94,9 @@ typedef struct
 	CArray Tiles;	// of Tile
 	struct vec2i Size;
 
-	// internal data structure to help build the map
+	// internal data structures to help build the map
 	CArray iMap;	// of unsigned short
+	CArray leaveFree;	// of bool
 
 	LineOfSight LOS;
 
@@ -131,10 +129,7 @@ bool MapTryMoveThing(Map *map, Thing *t, const struct vec2 pos);
 void MapRemoveThing(Map *map, Thing *t);
 
 void MapTerminate(Map *map);
-void MapLoad(
-	Map *map, const struct MissionOptions *mo, const CampaignOptions *co);
-void MapLoadDynamic(
-	Map *map, const struct MissionOptions *mo, const CharacterStore *store);
+void MapInit(Map *map, const struct vec2i size);
 bool MapIsPosOKForPlayer(
 	const Map *map, const struct vec2 pos, const bool allowAllTiles);
 bool MapIsTileAreaClear(Map *map, const struct vec2 pos, const struct vec2i size);
@@ -143,6 +138,10 @@ void MapShowExitArea(Map *map, const struct vec2i exitStart, const struct vec2i 
 struct vec2 MapGetExitPos(const Map *m);
 struct vec2i MapGetRandomTile(const Map *map);
 struct vec2 MapGetRandomPos(const Map *map);
+bool MapPlaceRandomPos(
+	Map *map, const PlacementAccessFlags paFlags,
+	bool (*tryPlaceFunc)(Map *, const struct vec2, void *), void *data);
+int MapGetAccessFlags(const Map *map, const struct vec2i v);
 
 void MapMarkAsVisited(Map *map, struct vec2i pos);
 void MapMarkAllAsVisited(Map *map);
@@ -157,21 +156,5 @@ bool MapTileIsUnexplored(Map *map, struct vec2i tile);
 unsigned short IMapGet(const Map *map, const struct vec2i pos);
 void IMapSet(Map *map, struct vec2i pos, unsigned short v);
 struct vec2 MapGenerateFreePosition(Map *map, const struct vec2i size);
-bool MapTryPlaceOneObject(
-	Map *map, const struct vec2i v, const MapObject *mo, const int extraFlags,
-	const bool isStrictMode);
-// TODO: refactor
-void MapPlaceCollectible(
-	const struct MissionOptions *mo, const int objective, const struct vec2 pos);
-// TODO: refactor
-void MapPlaceKey(
-	Map *map, const struct MissionOptions *mo, const struct vec2i tilePos,
-	const int keyIndex);
-bool MapPlaceRandomTile(
-	Map *map, const PlacementAccessFlags paFlags,
-	bool (*tryPlaceFunc)(Map *, const struct vec2i, void *), void *data);
-bool MapPlaceRandomPos(
-	Map *map, const PlacementAccessFlags paFlags,
-	bool (*tryPlaceFunc)(Map *, const struct vec2, void *), void *data);
 
 Trigger *MapNewTrigger(Map *map);

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, 2017 Cong Xu
+    Copyright (c) 2013-2015, 2017-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -48,7 +48,47 @@
 */
 #pragma once
 
+#include "campaigns.h"
 #include "map.h"
+
+typedef struct
+{
+	Map *Map;
+	const Mission *mission;
+	const CampaignOptions *co;
+	CArray leaveFree;	// of bool
+} MapBuilder;
+
+void MapBuild(Map *m, const Mission *mission, const CampaignOptions *co);
+void MapBuilderInit(
+	MapBuilder *mb, Map *m, const Mission *mission, const CampaignOptions *co);
+void MapBuilderTerminate(MapBuilder *mb);
+
+void MapLoadDynamic(MapBuilder *mb);
+
+// Mark a tile so that it is left free of other map objects
+void MapBuilderSetLeaveFree(
+	MapBuilder *mb, const struct vec2i tile, const bool value);
+bool MapBuilderIsLeaveFree(const MapBuilder *mb, const struct vec2i tile);
+
+bool MapTryPlaceOneObject(
+	MapBuilder *mb, const struct vec2i v, const MapObject *mo,
+	const int extraFlags, const bool isStrictMode);
+// TODO: refactor
+void MapPlaceCollectible(
+	const Mission *m, const int objective, const struct vec2 pos);
+// TODO: refactor
+void MapPlaceKey(
+	MapBuilder *mb, const struct vec2i tilePos, const int keyIndex);
+bool MapPlaceRandomTile(
+	MapBuilder *mb, const PlacementAccessFlags paFlags,
+	bool (*tryPlaceFunc)(MapBuilder *, const struct vec2i, void *), void *data);
+
+bool MapObjectIsTileOKStrict(
+	const MapBuilder *mb, const MapObject *obj, const unsigned short tileAccess,
+	const struct vec2i tile, const bool isEmpty,
+	const unsigned short tileAbove, const unsigned short tileBelow,
+	const int numWallsAdjacent, const int numWallsAround);
 
 bool MapIsAreaInside(const Map *map, const struct vec2i pos, const struct vec2i size);
 bool MapIsAreaClear(const Map *map, const struct vec2i pos, const struct vec2i size);
@@ -81,9 +121,5 @@ void MapPlaceDoors(
 void MapMakePillar(Map *map, struct vec2i pos, struct vec2i size);
 void MapSetTile(Map *map, struct vec2i pos, unsigned short tileType, Mission *m);
 
-void MapSetupTilesAndWalls(Map *map, const Mission *m);
-
 unsigned short GenerateAccessMask(int *accessLevel);
 void MapGenerateRandomExitArea(Map *map);
-
-void MapAddDrains(Map *map);

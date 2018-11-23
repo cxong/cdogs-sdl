@@ -830,10 +830,9 @@ static void MissionChangeType(void *data, int d)
 	Map map;
 	MissionOptionsTerminate(&gMission);
 	CampaignAndMissionSetup(mct->C, &gMission);
-	memset(&map, 0, sizeof map);
-	MapLoad(&map, &gMission, mct->C);
-	MapLoadDynamic(&map, &gMission, &mct->C->Setting.characters);
+	MapBuild(&map, gMission.missionData, mct->C);
 	MissionConvertToType(gMission.missionData, &map, mct->Type);
+	MapTerminate(&map);
 }
 static void MissionChangeWallStyle(void *data, int d)
 {

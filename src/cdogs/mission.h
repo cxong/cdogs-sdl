@@ -51,6 +51,7 @@
 #include <stdbool.h>
 
 #include "config.h"
+#include "map_object.h"
 #include "objective.h"
 #include "proto/msg.pb.h"
 #include "sys_config.h"

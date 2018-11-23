@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, 2017 Cong Xu
+    Copyright (c) 2013-2015, 2017-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,7 @@
 
 #include "actors.h"
 #include "algorithms.h"
+#include "campaigns.h"
 #include "config.h"
 #include "minkowski_hex.h"
 #include "objs.h"

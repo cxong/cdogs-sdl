@@ -48,11 +48,10 @@
 */
 #pragma once
 
-#include "map.h"
+#include "map_build.h"
 
 
-void MapAddDoorGroup(
-	Map *map, const Mission *m, const struct vec2i v, const int keyFlags);
+void MapAddDoorGroup(MapBuilder *mb, const struct vec2i v, const int keyFlags);
 
 const TileClass *DoorGetClass(
 	TileClasses *c, const PicManager *pm,
