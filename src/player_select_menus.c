@@ -327,21 +327,15 @@ static void PostInputLoadTemplate(menu_t *menu, int cmd, void *data)
 static void PostEnterLoadTemplateNames(menu_t *menu, void *data)
 {
 	bool *isSave = (bool *)data;
+	MenuClearSubmenus(menu);
 	for (int i = 0; ; i++)
 	{
-		// Add menu if necessary
-		if (i == (int)menu->u.normal.subMenus.size)
-		{
-			MenuAddSubmenu(menu, MenuCreateBack(""));
-		}
 		const PlayerTemplate *pt = PlayerTemplateGetById(&gPlayerTemplates, i);
 		if (pt == NULL)
 		{
 			break;
 		}
-		menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
-		CFREE(subMenu->name);
-		CSTRDUP(subMenu->name, pt->name);
+		MenuAddSubmenu(menu, MenuCreateBack(pt->name));
 	}
 	if (*isSave)
 	{
