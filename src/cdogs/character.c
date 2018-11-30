@@ -100,37 +100,9 @@ void CharacterLoadJSON(CharacterStore *c, json_t *root, int version)
 			LoadColor(&ch->Colors.Legs, child, "Legs");
 			LoadColor(&ch->Colors.Hair, child, "Hair");
 		}
-		// Hair colour correction; some characters had no hair but now with
-		// specific parts of the head colourised using the hair colour; set
-		// default "hair" colour based on the head type
 		if (version < 12)
 		{
-			const color_t darkRed = {0xC0, 0, 0, 0xFF};
-			if (strcmp(ch->Class->Name, "Cyborg") == 0)
-			{
-				// eye
-				ch->Colors.Hair = colorRed;
-			}
-			else if (strcmp(ch->Class->Name, "Ice") == 0)
-			{
-				// shades
-				ch->Colors.Hair = colorBlack;
-			}
-			else if (strcmp(ch->Class->Name, "Ogre") == 0)
-			{
-				// eyes
-				ch->Colors.Hair = darkRed;
-			}
-			else if (strcmp(ch->Class->Name, "Snake") == 0)
-			{
-				// eyepatch
-				ch->Colors.Hair = colorBlack;
-			}
-			else if (strcmp(ch->Class->Name, "WarBaby") == 0)
-			{
-				// beret
-				ch->Colors.Hair = colorRed;
-			}
+			ConvertHairColors(ch);
 		}
 		LoadFullInt(&ch->speed, child, "speed");
 		tmp = GetString(child, "Gun");

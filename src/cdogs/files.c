@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2016, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -280,6 +280,39 @@ void ConvertCharacterColors(
 	c->Hair = ColorTint(PaletteToColor(cShadePalettes[hair]), tint);
 }
 
+// Hair colour correction; some characters had no hair but now with
+// specific parts of the head colourised using the hair colour; set
+// default "hair" colour based on the head type
+void ConvertHairColors(Character *ch)
+{
+	const color_t darkRed = { 0xC0, 0, 0, 0xFF };
+	if (strcmp(ch->Class->Name, "Cyborg") == 0)
+	{
+		// eye
+		ch->Colors.Hair = colorRed;
+	}
+	else if (strcmp(ch->Class->Name, "Ice") == 0)
+	{
+		// shades
+		ch->Colors.Hair = colorBlack;
+	}
+	else if (strcmp(ch->Class->Name, "Ogre") == 0)
+	{
+		// eyes
+		ch->Colors.Hair = darkRed;
+	}
+	else if (strcmp(ch->Class->Name, "Snake") == 0)
+	{
+		// eyepatch
+		ch->Colors.Hair = colorBlack;
+	}
+	else if (strcmp(ch->Class->Name, "WarBaby") == 0)
+	{
+		// beret
+		ch->Colors.Hair = colorRed;
+	}
+}
+
 void load_character(FILE *f, TBadGuy *b)
 {
 	R32(b->armedBodyPic);
@@ -311,6 +344,7 @@ void ConvertCharacter(Character *c, TBadGuy *b)
 	ConvertCharacterColors(
 		b->skinColor, b->armColor, b->bodyColor, b->legColor, b->hairColor,
 		&c->Colors);
+	ConvertHairColors(c);
 	c->maxHealth = b->health;
 	c->flags = b->flags;
 }

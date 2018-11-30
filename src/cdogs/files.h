@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2016, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -204,6 +204,7 @@ void ConvertCampaignSetting(CampaignSetting *dest, CampaignSettingOld *src);
 void ConvertCharacterColors(
 	const int skin, const int arm, const int body, const int leg,
 	const int hair, CharColors *c);
+void ConvertHairColors(Character *ch);
 
 int ScanCampaignOld(const char *filename, char **title, int *missions);
 int IsCampaignOldFile(const char *filename);
