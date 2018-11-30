@@ -94,11 +94,8 @@ typedef struct
 	CArray Tiles;	// of Tile
 	struct vec2i Size;
 
-	// internal data structures to help build the map
-	CArray iMap;	// of unsigned short
-	CArray leaveFree;	// of bool
-
 	LineOfSight LOS;
+	CArray access;	// of unsigned short
 
 	CArray triggers;	// of Trigger *; owner
 	int triggerId;
@@ -120,6 +117,10 @@ Tile *MapGetTile(const Map *map, const struct vec2i pos);
 bool MapIsTileIn(const Map *map, const struct vec2i pos);
 bool MapIsTileInExit(const Map *map, const Thing *ti);
 
+void MapSetAccess(Map *map, const CArray *access);
+// TODO: remove this function
+unsigned short MapGetAccessLevel(const Map *map, const struct vec2i pos);
+int AccessCodeToFlags(const unsigned short code);
 bool MapHasLockedRooms(const Map *map);
 bool MapPosIsInLockedRoom(const Map *map, const struct vec2 pos);
 int MapGetDoorKeycardFlag(Map *map, struct vec2i pos);
@@ -141,7 +142,6 @@ struct vec2 MapGetRandomPos(const Map *map);
 bool MapPlaceRandomPos(
 	Map *map, const PlacementAccessFlags paFlags,
 	bool (*tryPlaceFunc)(Map *, const struct vec2, void *), void *data);
-int MapGetAccessFlags(const Map *map, const struct vec2i v);
 
 void MapMarkAsVisited(Map *map, struct vec2i pos);
 void MapMarkAllAsVisited(Map *map);
@@ -153,8 +153,6 @@ struct vec2i MapSearchTileAround(Map *map, struct vec2i start, TileSelectFunc fu
 bool MapTileIsUnexplored(Map *map, struct vec2i tile);
 
 // Map construction functions
-unsigned short IMapGet(const Map *map, const struct vec2i pos);
-void IMapSet(Map *map, struct vec2i pos, unsigned short v);
 struct vec2 MapGenerateFreePosition(Map *map, const struct vec2i size);
 
 Trigger *MapNewTrigger(Map *map);

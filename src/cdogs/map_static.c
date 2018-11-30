@@ -53,7 +53,7 @@ void MapStaticLoad(MapBuilder *mb)
 			{
 				tile &= MAP_MASKACCESS;
 			}
-			IMapSet(mb->Map, v, tile);
+			IMapSet(mb, v, tile);
 		}
 	}
 	

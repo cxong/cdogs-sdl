@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2017 Cong Xu
+    Copyright (c) 2014-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@
 #include <assert.h>
 
 #include "algorithms.h"
+#include "map_build.h"
 
 
 void MissionConvertToType(Mission *m, Map *map, MapType type)
@@ -68,8 +69,9 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 			{
 				for (v.x = 0; v.x < m->Size.x; v.x++)
 				{
-					unsigned short tile = IMapGet(map, v);
-					CArrayPushBack(&m->u.Static.Tiles, &tile);
+					const unsigned short ti = MapGetTileType(map, v);
+					// TODO: don't use tiletype
+					CArrayPushBack(&m->u.Static.Tiles, &ti);
 				}
 			}
 			CArrayInit(&m->u.Static.Items, sizeof(MapObjectPositions));

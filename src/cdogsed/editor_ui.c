@@ -828,6 +828,7 @@ static void MissionChangeType(void *data, int d)
 		return;
 	}
 	Map map;
+	memset(&map, 0, sizeof map);
 	MissionOptionsTerminate(&gMission);
 	CampaignAndMissionSetup(mct->C, &gMission);
 	MapBuild(&map, gMission.missionData, mct->C);

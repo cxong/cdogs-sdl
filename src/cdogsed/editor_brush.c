@@ -204,7 +204,7 @@ static void SetTile(Mission *m, struct vec2i pos, unsigned short tile)
 {
 	if (MissionTrySetTile(m, pos, tile))
 	{
-		MapSetTile(&gMap, pos, tile, m);
+		MapBuildTile(&gMap, m, pos, tile);
 	}
 }
 
@@ -260,8 +260,8 @@ static void EditorBrushPaintRoom(EditorBrush *b, Mission *m)
 				tile = MAP_WALL;
 			}
 			const struct vec2i pos = svec2i_add(b->Pos, v);
-			const unsigned short tileExisting = IMapGet(&gMap, pos);
-			if (tileExisting != MAP_ROOM)
+			const TileClass *tcExisting = MapGetTile(&gMap, v)->Class;
+			if (tcExisting->IsDoor || tcExisting->IsWall || tcExisting->IsFloor)
 			{
 				SetTile(m, pos, tile);
 			}

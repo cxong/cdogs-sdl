@@ -54,25 +54,25 @@
 
 
 static int GetDoorCountInGroup(
-	const Map *map, const struct vec2i v, const bool isHorizontal);
+	const MapBuilder *mb, const struct vec2i v, const bool isHorizontal);
 static TWatch *CreateCloseDoorWatch(
-	Map *map, const Mission *m, const struct vec2i v,
+	MapBuilder *mb, const struct vec2i v,
 	const bool isHorizontal, const int doorGroupCount,
 	const TileClass *classAlt);
 static Trigger *CreateOpenDoorTrigger(
-	Map *map, const Mission *m, const struct vec2i v,
+	MapBuilder *mb, const struct vec2i v,
 	const bool isHorizontal, const int doorGroupCount, const int keyFlags);
 void MapAddDoorGroup(MapBuilder *mb, const struct vec2i v, const int keyFlags)
 {
 	const unsigned short tileLeftType =
-		IMapGet(mb->Map, svec2i(v.x - 1, v.y)) & MAP_MASKACCESS;
+		IMapGet(mb, svec2i(v.x - 1, v.y)) & MAP_MASKACCESS;
 	const unsigned short tileRightType =
-		IMapGet(mb->Map, svec2i(v.x + 1, v.y)) & MAP_MASKACCESS;
+		IMapGet(mb, svec2i(v.x + 1, v.y)) & MAP_MASKACCESS;
 	const bool isHorizontal =
 		tileLeftType == MAP_WALL || tileRightType == MAP_WALL ||
 		tileLeftType == MAP_DOOR || tileRightType == MAP_DOOR ||
 		tileLeftType == MAP_NOTHING || tileRightType == MAP_NOTHING;
-	const int doorGroupCount = GetDoorCountInGroup(mb->Map, v, isHorizontal);
+	const int doorGroupCount = GetDoorCountInGroup(mb, v, isHorizontal);
 	const struct vec2i dv = svec2i(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
 	const struct vec2i dAside = svec2i(dv.y, dv.x);
 
@@ -111,7 +111,7 @@ void MapAddDoorGroup(MapBuilder *mb, const struct vec2i v, const int keyFlags)
 			CASSERT(TileCanWalk(tileB),
 				"map gen error: entrance should be clear");
 			// Change the tile below to shadow, cast by this door
-			const bool isFloor = IMapGet(mb->Map, vB) == MAP_FLOOR;
+			const bool isFloor = IMapGet(mb, vB) == MAP_FLOOR;
 			tileB->Class = TileClassesGetMaskedTile(
 				&gTileClasses,
 				&gPicManager,
@@ -125,9 +125,9 @@ void MapAddDoorGroup(MapBuilder *mb, const struct vec2i v, const int keyFlags)
 	}
 
 	TWatch *w = CreateCloseDoorWatch(
-		mb->Map, mb->mission, v, isHorizontal, doorGroupCount, doorClass);
+		mb, v, isHorizontal, doorGroupCount, doorClass);
 	Trigger *t = CreateOpenDoorTrigger(
-		mb->Map, mb->mission, v, isHorizontal, doorGroupCount, keyFlags);
+		mb, v, isHorizontal, doorGroupCount, keyFlags);
 	// Connect trigger and watch up
 	Action *a = TriggerAddAction(t);
 	a->Type = ACTION_ACTIVATEWATCH;
@@ -151,12 +151,12 @@ void MapAddDoorGroup(MapBuilder *mb, const struct vec2i v, const int keyFlags)
 // Count the number of doors that are in the same group as this door
 // Only check to the right/below
 static int GetDoorCountInGroup(
-	const Map *map, const struct vec2i v, const bool isHorizontal)
+	const MapBuilder *mb, const struct vec2i v, const bool isHorizontal)
 {
 	const struct vec2i dv = svec2i(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
 	int count = 0;
 	for (struct vec2i vi = v;
-		(IMapGet(map, vi) & MAP_MASKACCESS) == MAP_DOOR;
+		(IMapGet(mb, vi) & MAP_MASKACCESS) == MAP_DOOR;
 		vi = svec2i_add(vi, dv))
 	{
 		count++;
@@ -167,7 +167,7 @@ static int GetDoorCountInGroup(
 #define CLOSE_DOOR_TICKS FPS_FRAMELIMIT
 // Create the watch responsible for closing the door
 static TWatch *CreateCloseDoorWatch(
-	Map *map, const Mission *m, const struct vec2i v,
+	MapBuilder *mb, const struct vec2i v,
 	const bool isHorizontal, const int doorGroupCount,
 	const TileClass *classAlt)
 {
@@ -214,7 +214,8 @@ static TWatch *CreateCloseDoorWatch(
 		strcpy(
 			a->a.Event.u.TileSet.ClassName,
 			DoorGetClass(
-				&gTileClasses, &gPicManager, m->DoorStyle, "open", isHorizontal
+				&gTileClasses, &gPicManager, mb->mission->DoorStyle, "open",
+				isHorizontal
 			)->Name
 		);
 		strcpy(a->a.Event.u.TileSet.ClassAltName, classAlt->Name);
@@ -232,17 +233,17 @@ static TWatch *CreateCloseDoorWatch(
 			a->a.Event = GameEventNew(GAME_EVENT_TILE_SET);
 			const struct vec2i vI2 = svec2i(vI.x + dAside.x, vI.y + dAside.y);
 			a->a.Event.u.TileSet.Pos = Vec2i2Net(vI2);
-			const bool isFloor = IMapGet(map, vI2) == MAP_FLOOR;
+			const bool isFloor = IMapGet(mb, vI2) == MAP_FLOOR;
 			strcpy(
 				a->a.Event.u.TileSet.ClassName,
 				TileClassesGetMaskedTile(
 					&gTileClasses,
 					&gPicManager,
 					&gTileFloor,
-					isFloor ? m->FloorStyle : m->RoomStyle,
+					isFloor ? mb->mission->FloorStyle : mb->mission->RoomStyle,
 					"shadow",
-					isFloor ? m->FloorMask : m->RoomMask,
-					m->AltMask
+					isFloor ? mb->mission->FloorMask : mb->mission->RoomMask,
+					mb->mission->AltMask
 				)->Name
 			);
 		}
@@ -252,13 +253,13 @@ static TWatch *CreateCloseDoorWatch(
 }
 static void TileAddTrigger(Tile *t, Trigger *tr);
 static Trigger *CreateOpenDoorTrigger(
-	Map *map, const Mission *m, const struct vec2i v,
+	MapBuilder *mb, const struct vec2i v,
 	const bool isHorizontal, const int doorGroupCount, const int keyFlags)
 {
 	// All tiles on either side of the door group use the same trigger
 	const struct vec2i dv = svec2i(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
 	const struct vec2i dAside = svec2i(dv.y, dv.x);
-	Trigger *t = MapNewTrigger(map);
+	Trigger *t = MapNewTrigger(mb->Map);
 	t->flags = keyFlags;
 
 	// Deactivate itself
@@ -278,7 +279,8 @@ static Trigger *CreateOpenDoorTrigger(
 		strcpy(
 			a->a.Event.u.TileSet.ClassName,
 			DoorGetClass(
-				&gTileClasses, &gPicManager, m->DoorStyle, "open", isHorizontal
+				&gTileClasses, &gPicManager, mb->mission->DoorStyle, "open",
+				isHorizontal
 			)->Name
 		);
 		if (!isHorizontal && i == 0)
@@ -287,7 +289,8 @@ static Trigger *CreateOpenDoorTrigger(
 			strcpy(
 				a->a.Event.u.TileSet.ClassAltName,
 				DoorGetClass(
-					&gTileClasses, &gPicManager, m->DoorStyle, "wall", false
+					&gTileClasses, &gPicManager, mb->mission->DoorStyle, "wall",
+					false
 				)->Name
 			);
 		}
@@ -304,7 +307,7 @@ static Trigger *CreateOpenDoorTrigger(
 			// Remove shadows below doors
 			a->Type = ACTION_EVENT;
 			a->a.Event = GameEventNew(GAME_EVENT_TILE_SET);
-			const bool isFloor = IMapGet(map, vIAside) == MAP_FLOOR;
+			const bool isFloor = IMapGet(mb, vIAside) == MAP_FLOOR;
 			a->a.Event.u.TileSet.Pos = Vec2i2Net(vIAside);
 			strcpy(
 				a->a.Event.u.TileSet.ClassName,
@@ -312,10 +315,10 @@ static Trigger *CreateOpenDoorTrigger(
 					&gTileClasses,
 					&gPicManager,
 					&gTileFloor,
-					isFloor? m->FloorStyle : m->RoomStyle,
+					isFloor? mb->mission->FloorStyle : mb->mission->RoomStyle,
 					"normal",
-					isFloor ? m->FloorMask : m->RoomMask,
-					m->AltMask
+					isFloor ? mb->mission->FloorMask : mb->mission->RoomMask,
+					mb->mission->AltMask
 				)->Name
 			);
 		}
@@ -326,9 +329,9 @@ static Trigger *CreateOpenDoorTrigger(
 	{
 		const struct vec2i vI = svec2i_add(v, svec2i_scale(dv, (float)i));
 		const struct vec2i vIA = svec2i_subtract(vI, dAside);
-		TileAddTrigger(MapGetTile(map, vIA), t);
+		TileAddTrigger(MapGetTile(mb->Map, vIA), t);
 		const struct vec2i vIB = svec2i_add(vI, dAside);
-		TileAddTrigger(MapGetTile(map, vIB), t);
+		TileAddTrigger(MapGetTile(mb->Map, vIB), t);
 	}
 
 	/// play sound at the center of the door group

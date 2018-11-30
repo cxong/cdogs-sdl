@@ -56,6 +56,9 @@ typedef struct
 	Map *Map;
 	const Mission *mission;
 	const CampaignOptions *co;
+
+	// internal data structures to help build the map
+	CArray iMap;	// of unsigned short
 	CArray leaveFree;	// of bool
 } MapBuilder;
 
@@ -65,6 +68,9 @@ void MapBuilderInit(
 void MapBuilderTerminate(MapBuilder *mb);
 
 void MapLoadDynamic(MapBuilder *mb);
+
+unsigned short IMapGet(const MapBuilder *mb, const struct vec2i pos);
+void IMapSet(MapBuilder *mb, struct vec2i pos, unsigned short v);
 
 // Mark a tile so that it is left free of other map objects
 void MapBuilderSetLeaveFree(
@@ -91,35 +97,43 @@ bool MapObjectIsTileOKStrict(
 	const int numWallsAdjacent, const int numWallsAround);
 
 bool MapIsAreaInside(const Map *map, const struct vec2i pos, const struct vec2i size);
-bool MapIsAreaClear(const Map *map, const struct vec2i pos, const struct vec2i size);
-bool MapIsAreaClearOrRoom(const Map *map, const struct vec2i pos, const struct vec2i size);
-int MapIsAreaClearOrWall(Map *map, struct vec2i pos, struct vec2i size);
+bool MapIsAreaClear(
+	const MapBuilder *mb, const struct vec2i pos, const struct vec2i size);
+bool MapIsAreaClearOrRoom(
+	const MapBuilder *mb, const struct vec2i pos, const struct vec2i size);
+bool MapIsAreaClearOrWall(
+	const MapBuilder *mb, struct vec2i pos, struct vec2i size);
 bool MapGetRoomOverlapSize(
-	const Map *map,
+	const MapBuilder *mb,
 	const struct vec2i pos,
 	const struct vec2i size,
 	unsigned short *overlapAccess);
-int MapIsLessThanTwoWallOverlaps(Map *map, struct vec2i pos, struct vec2i size);
-int MapIsValidStartForWall(
-	Map *map, int x, int y, unsigned short tileType, int pad);
-void MapMakeSquare(Map *map, struct vec2i pos, struct vec2i size);
+bool MapIsLessThanTwoWallOverlaps(
+	const MapBuilder *mb, struct vec2i pos, struct vec2i size);
+void MapMakeSquare(MapBuilder *mb, struct vec2i pos, struct vec2i size);
 struct vec2i MapGetRoomSize(const RoomParams r, const int doorMin);
-void MapMakeRoom(Map *map, const struct vec2i pos, const struct vec2i size, const bool walls);
-void MapMakeRoomWalls(Map *map, const RoomParams r);
+void MapMakeRoom(
+	MapBuilder *mb, const struct vec2i pos, const struct vec2i size,
+	const bool walls);
+void MapMakeRoomWalls(MapBuilder *mb, const RoomParams r);
 bool MapTryBuildWall(
-	Map *map, const unsigned short tileType, const int pad,
+	MapBuilder *mb, const unsigned short tileType, const int pad,
 	const int wallLength);
 void MapSetRoomAccessMask(
-	Map *map, const struct vec2i pos, const struct vec2i size,
+	MapBuilder *mb, const struct vec2i pos, const struct vec2i size,
 	const unsigned short accessMask);
 void MapSetRoomAccessMaskOverlap(
-	Map *map, CArray *rooms, const unsigned short accessMask);
+	MapBuilder *mb, CArray *rooms, const unsigned short accessMask);
 void MapPlaceDoors(
-	Map *map, struct vec2i pos, struct vec2i size,
+	MapBuilder *mb, struct vec2i pos, struct vec2i size,
 	int hasDoors, int doors[4], int doorMin, int doorMax,
 	unsigned short accessMask);
-void MapMakePillar(Map *map, struct vec2i pos, struct vec2i size);
-void MapSetTile(Map *map, struct vec2i pos, unsigned short tileType, Mission *m);
+void MapMakePillar(MapBuilder *mb, struct vec2i pos, struct vec2i size);
+
+unsigned short MapGetTileType(const Map *map, const struct vec2i pos);
+void MapBuildTile(
+	Map *m, const Mission *mission, const struct vec2i pos,
+	unsigned short tileType);
 
 unsigned short GenerateAccessMask(int *accessLevel);
 void MapGenerateRandomExitArea(Map *map);

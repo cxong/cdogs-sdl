@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017 Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -215,20 +215,6 @@ struct vec2 MapGetRandomPos(const Map *map)
 		RAND_FLOAT(0, map->Size.y * TILE_HEIGHT));
 }
 
-unsigned short IMapGet(const Map *map, const struct vec2i pos)
-{
-	if (pos.x < 0 || pos.x >= map->Size.x || pos.y < 0 || pos.y >= map->Size.y)
-	{
-		return MAP_NOTHING;
-	}
-	return *(unsigned short *)CArrayGet(
-		&map->iMap, pos.y * map->Size.x + pos.x);
-}
-void IMapSet(Map *map, struct vec2i pos, unsigned short v)
-{
-	*(unsigned short *)CArrayGet(&map->iMap, pos.y * map->Size.x + pos.x) = v;
-}
-
 static void MapChangeFloor(
 	Map *map, const struct vec2i pos,
 	const TileClass *normal, const TileClass *shadow)
@@ -236,11 +222,8 @@ static void MapChangeFloor(
 	const Tile *tAbove = MapGetTile(map, svec2i(pos.x, pos.y - 1));
 	const int canSeeTileAbove = !(pos.y > 0 && TileIsOpaque(tAbove));
 	Tile *t = MapGetTile(map, pos);
-	switch (IMapGet(map, pos) & MAP_MASKACCESS)
+	if (t->Class->IsFloor)
 	{
-	case MAP_FLOOR:
-	case MAP_SQUARE:
-	case MAP_ROOM:
 		if (!canSeeTileAbove)
 		{
 			t->Class = shadow;
@@ -249,10 +232,6 @@ static void MapChangeFloor(
 		{
 			t->Class = normal;
 		}
-		break;
-	default:
-		// do nothing
-		break;
 	}
 }
 
@@ -304,9 +283,16 @@ bool MapHasLockedRooms(const Map *map)
 	return map->keyAccessCount > 1;
 }
 
+unsigned short MapGetAccessLevel(const Map *map, const struct vec2i pos)
+{
+	const unsigned short t = *(unsigned short *)CArrayGet(
+		&map->access, pos.y * map->Size.x + pos.x);
+	return AccessCodeToFlags(t);
+}
+
 static bool MapTileIsInLockedRoom(const Map *map, const struct vec2i tilePos)
 {
-	return IMapGet(map, tilePos) & MAP_ACCESSBITS;
+	return MapGetAccessLevel(map, tilePos) != 0;
 }
 
 bool MapPosIsInLockedRoom(const Map *map, const struct vec2 pos)
@@ -411,7 +397,18 @@ bool MapPlaceRandomPos(
 	return false;
 }
 
-static int AccessCodeToFlags(int code)
+
+void MapSetAccess(Map *map, const CArray *access)
+{
+	CASSERT(access->size == map->access.size, "Unequal access sizes");
+	CA_FOREACH(const unsigned short, t, *access)
+		const unsigned short tAccess = *t & MAP_ACCESSBITS;
+		CArraySet(&map->access, _ca_index, &tAccess);
+	CA_FOREACH_END()
+}
+
+// TODO: use enum instead of flag for map access
+int AccessCodeToFlags(const unsigned short code)
 {
 	if (code & MAP_ACCESS_RED)
 		return FLAGS_KEYCARD_RED;
@@ -424,36 +421,20 @@ static int AccessCodeToFlags(int code)
 	return 0;
 }
 
-int MapGetAccessFlags(const Map *map, const struct vec2i v)
-{
-	int flags = 0;
-	flags = MAX(flags, AccessCodeToFlags(IMapGet(map, v)));
-	flags = MAX(flags, AccessCodeToFlags(IMapGet(map, svec2i(v.x - 1, v.y))));
-	flags = MAX(flags, AccessCodeToFlags(IMapGet(map, svec2i(v.x + 1, v.y))));
-	flags = MAX(flags, AccessCodeToFlags(IMapGet(map, svec2i(v.x, v.y - 1))));
-	flags = MAX(flags, AccessCodeToFlags(IMapGet(map, svec2i(v.x, v.y + 1))));
-	return flags;
-}
-
-static int MapGetAccessLevel(Map *map, int x, int y)
-{
-	return AccessCodeToFlags(IMapGet(map, svec2i(x, y)));
-}
-
 // Need to check the flags around the door tile because it's the
 // triggers that contain the right flags
 // TODO: refactor door
 int MapGetDoorKeycardFlag(Map *map, struct vec2i pos)
 {
-	int l = MapGetAccessLevel(map, pos.x, pos.y);
+	int l = MapGetAccessLevel(map, pos);
 	if (l) return l;
-	l = MapGetAccessLevel(map, pos.x - 1, pos.y);
+	l = MapGetAccessLevel(map, svec2i(pos.x - 1, pos.y));
 	if (l) return l;
-	l = MapGetAccessLevel(map, pos.x + 1, pos.y);
+	l = MapGetAccessLevel(map, svec2i(pos.x + 1, pos.y));
 	if (l) return l;
-	l = MapGetAccessLevel(map, pos.x, pos.y - 1);
+	l = MapGetAccessLevel(map, svec2i(pos.x, pos.y - 1));
 	if (l) return l;
-	return MapGetAccessLevel(map, pos.x, pos.y + 1);
+	return MapGetAccessLevel(map, svec2i(pos.x, pos.y + 1));
 }
 
 void MapTerminate(Map *map)
@@ -472,8 +453,8 @@ void MapTerminate(Map *map)
 		}
 	}
 	CArrayTerminate(&map->Tiles);
-	CArrayTerminate(&map->iMap);
 	LOSTerminate(&map->LOS);
+	CArrayTerminate(&map->access);
 	PathCacheTerminate(&gPathCache);
 }
 
@@ -484,9 +465,11 @@ void MapInit(Map *map, const struct vec2i size)
 	// Init map
 	memset(map, 0, sizeof *map);
 	CArrayInit(&map->Tiles, sizeof(Tile));
-	CArrayInit(&map->iMap, sizeof(unsigned short));
 	map->Size = size;
 	LOSInit(map);
+	CArrayInit(&map->access, sizeof(unsigned short));
+	CArrayResize(&map->access, size.x * size.y, NULL);
+	CArrayFillZero(&map->access);
 	CArrayInit(&map->triggers, sizeof(Trigger *));
 	PathCacheInit(&gPathCache, map);
 
@@ -496,10 +479,8 @@ void MapInit(Map *map, const struct vec2i size)
 		for (v.x = 0; v.x < map->Size.x; v.x++)
 		{
 			Tile t;
-			unsigned short tI = MAP_FLOOR;
 			TileInit(&t);
 			CArrayPushBack(&map->Tiles, &t);
-			CArrayPushBack(&map->iMap, &tI);
 		}
 	}
 }
@@ -508,14 +489,14 @@ bool MapIsPosOKForPlayer(
 	const Map *map, const struct vec2 pos, const bool allowAllTiles)
 {
 	const struct vec2i tilePos = Vec2ToTile(pos);
-	unsigned short tile = IMapGet(map, tilePos);
-	if (tile == MAP_FLOOR)
+	const Tile *tile = MapGetTile(map, tilePos);
+	if (tile->Class->IsFloor)
 	{
 		return true;
 	}
 	else if (allowAllTiles)
 	{
-		return tile == MAP_SQUARE || tile == MAP_ROOM;
+		return TileCanWalk(tile);
 	}
 	return false;
 }
