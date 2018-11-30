@@ -120,7 +120,7 @@ bool MapIsTileInExit(const Map *map, const Thing *ti);
 void MapSetAccess(Map *map, const CArray *access);
 // TODO: remove this function
 unsigned short MapGetAccessLevel(const Map *map, const struct vec2i pos);
-int AccessCodeToFlags(const unsigned short code);
+unsigned short AccessCodeToFlags(const unsigned short code);
 bool MapHasLockedRooms(const Map *map);
 bool MapPosIsInLockedRoom(const Map *map, const struct vec2 pos);
 int MapGetDoorKeycardFlag(Map *map, struct vec2i pos);

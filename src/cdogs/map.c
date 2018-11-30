@@ -408,7 +408,7 @@ void MapSetAccess(Map *map, const CArray *access)
 }
 
 // TODO: use enum instead of flag for map access
-int AccessCodeToFlags(const unsigned short code)
+unsigned short AccessCodeToFlags(const unsigned short code)
 {
 	if (code & MAP_ACCESS_RED)
 		return FLAGS_KEYCARD_RED;
