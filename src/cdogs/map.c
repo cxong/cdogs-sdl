@@ -210,9 +210,19 @@ struct vec2i MapGetRandomTile(const Map *map)
 
 struct vec2 MapGetRandomPos(const Map *map)
 {
-	return svec2(
-		RAND_FLOAT(0, map->Size.x * TILE_WIDTH),
-		RAND_FLOAT(0, map->Size.y * TILE_HEIGHT));
+	for (;;)
+	{
+		const struct vec2 pos = svec2(
+			RAND_FLOAT(0, map->Size.x * TILE_WIDTH),
+			RAND_FLOAT(0, map->Size.y * TILE_HEIGHT)
+		);
+		// RAND_FLOAT can sometimes produce the max size
+		if (pos.x < map->Size.x * TILE_WIDTH &&
+			pos.y < map->Size.y * TILE_HEIGHT)
+		{
+			return pos;
+		}
+	}
 }
 
 static void MapChangeFloor(
