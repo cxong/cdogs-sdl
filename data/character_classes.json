@@ -214,6 +214,13 @@
       "Sounds": {
         "Aargh": "aargh/zombie"
       }
+    },
+    {
+      "Name": "Sweeper",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/sweeper"
+      }
     }
   ]
 }

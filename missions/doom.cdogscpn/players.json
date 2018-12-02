@@ -2,7 +2,7 @@
 	"Version": 2,
 	"PlayerTemplates": [{
 		"Name": "Doomguy",
-		"Face": "Grunt",
+		"Face": "Sweeper",
 		"Body": "00a400ff",
 		"Arms": "00a400ff",
 		"Legs": "94802cff",

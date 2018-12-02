@@ -1,7 +1,7 @@
 {
   "Version": 1,
   "Order": [
-    ["gun", "legs", "head", "body"],
+    ["gun", "legs", "body", "head"],
     ["gun", "legs", "body", "head"],
     ["legs", "body", "head", "gun"],
     ["legs", "body", "head", "gun"],
