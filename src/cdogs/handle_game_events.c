@@ -392,28 +392,7 @@ static void HandleGameEvent(
 		}
 		break;
 	case GAME_EVENT_BULLET_BOUNCE:
-		{
-			TMobileObject *o = MobObjGetByUID(e.u.BulletBounce.UID);
-			if (o == NULL || !o->isInUse) break;
-			const struct vec2 bouncePos = NetToVec2(e.u.BulletBounce.BouncePos);
-			if (e.u.BulletBounce.HitSound)
-			{
-				PlayHitSound(
-					&o->bulletClass->HitSound,
-					(HitType)e.u.BulletBounce.HitType,
-					bouncePos);
-			}
-			if (e.u.BulletBounce.Spark && o->bulletClass->Spark != NULL)
-			{
-				GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
-				s.u.AddParticle.Class = o->bulletClass->Spark;
-				s.u.AddParticle.Pos = bouncePos;
-				s.u.AddParticle.Z = o->z;
-				GameEventsEnqueue(&gGameEvents, s);
-			}
-			MapTryMoveThing(&gMap, &o->thing, NetToVec2(e.u.BulletBounce.Pos));
-			o->thing.Vel = NetToVec2(e.u.BulletBounce.Vel);
-		}
+		BulletBounce(e.u.BulletBounce);
 		break;
 	case GAME_EVENT_REMOVE_BULLET:
 		{

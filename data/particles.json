@@ -45,6 +45,15 @@
       "Range": 2
     },
     {
+      "Name": "bullet_hole",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "bullet_hole"
+      },
+      "RangeLow": 10000,
+      "RangeHigh": 11000
+    },
+    {
       "Name": "boom",
       "Pic": {
         "Type": "Animated",

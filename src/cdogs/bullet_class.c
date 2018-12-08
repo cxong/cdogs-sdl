@@ -64,6 +64,7 @@
 BulletClasses gBulletClasses;
 
 #define SPECIAL_LOCK 12
+#define WALL_MARK_Z 5
 
 
 // TODO: use map structure?
@@ -218,6 +219,14 @@ bool BulletUpdate(struct MobileObject *obj, const int ticks)
 			if (hit.Type == HIT_WALL || !obj->bulletClass->Persists)
 			{
 				alive = false;
+			}
+			// Leave a wall mark if hitting a south-facing wall
+			if (hit.Type == HIT_WALL && obj->thing.Vel.y < 0 &&
+				!TileIsOpaque(MapGetTile(
+					&gMap, Vec2ToTile(svec2(hit.Pos.x, hit.Pos.y + 1))
+				)))
+			{
+				b.u.BulletBounce.WallMark = true;
 			}
 		}
 		const struct vec2 hitPos = hit.Type != HIT_NONE ? hit.Pos : pos;
@@ -623,6 +632,8 @@ void BulletLoadJSON(
 
 	bullets->root = bulletNode;
 }
+static void LoadParticle(
+	const ParticleClass **p, json_t *node, const char *name);
 static void LoadHitsound(
 	char **hitsound, json_t *node, const char *name, const int version);
 static void LoadBullet(
@@ -726,20 +737,9 @@ static void LoadBullet(
 	}
 	LoadBool(&b->HurtAlways, node, "HurtAlways");
 	LoadBool(&b->Persists, node, "Persists");
-	tmp = NULL;
-	LoadStr(&tmp, node, "Spark");
-	if (tmp != NULL)
-	{
-		b->Spark = StrParticleClass(&gParticleClasses, tmp);
-		CFREE(tmp);
-	}
-	tmp = NULL;
-	LoadStr(&tmp, node, "OutOfRangeSpark");
-	if (tmp != NULL)
-	{
-		b->OutOfRangeSpark = StrParticleClass(&gParticleClasses, tmp);
-		CFREE(tmp);
-	}
+	LoadParticle(&b->Spark, node, "Spark");
+	LoadParticle(&b->OutOfRangeSpark, node, "OutOfRangeSpark");
+	LoadParticle(&b->WallMark, node, "WallMark");
 	if (json_find_first_label(node, "HitSounds"))
 	{
 		json_t *hitSounds = json_find_first_label(node, "HitSounds")->child;
@@ -776,6 +776,9 @@ static void LoadBullet(
 		b->Persists ? "true" : "false",
 		b->Spark != NULL ? b->Spark->Name : "",
 		b->OutOfRangeSpark != NULL ? b->OutOfRangeSpark->Name : "");
+	LOG(LM_MAP, LL_DEBUG,
+		"...wallMark(%s)...",
+		b->WallMark != NULL ? b->WallMark->Name : "");
 	LOG(LM_MAP, LL_DEBUG,
 		"...hitSounds(object(%s), flesh(%s), wall(%s)) wallBounces(%s)...",
 		b->HitSound.Object != NULL ? b->HitSound.Object : "",
@@ -826,6 +829,17 @@ static void LoadHitsound(
 			}
 		}
 	}
+}
+static void LoadParticle(
+	const ParticleClass **p, json_t *node, const char *name)
+{
+	char *tmp = NULL;
+	LoadStr(&tmp, node, name);
+	if (tmp != NULL)
+	{
+		*p = StrParticleClass(&gParticleClasses, tmp);
+	}
+	CFREE(tmp);
 }
 static void BulletClassesLoadWeapons(CArray *classes);
 void BulletLoadWeapons(BulletClasses *bullets)
@@ -944,6 +958,37 @@ void BulletAdd(const NAddBullet add)
 	obj->thing.CPicFunc = BulletDraw;
 	obj->thing.ShadowSize = obj->bulletClass->ShadowSize;
 	MapTryMoveThing(&gMap, &obj->thing, pos);
+}
+
+void BulletBounce(const NBulletBounce bb)
+{
+	TMobileObject *o = MobObjGetByUID(bb.UID);
+	if (o == NULL || !o->isInUse) return;
+	const struct vec2 bouncePos = NetToVec2(bb.BouncePos);
+	if (bb.HitSound)
+	{
+		PlayHitSound(&o->bulletClass->HitSound, (HitType)bb.HitType, bouncePos);
+	}
+	if (bb.Spark && o->bulletClass->Spark != NULL)
+	{
+		GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+		s.u.AddParticle.Class = o->bulletClass->Spark;
+		s.u.AddParticle.Pos = bouncePos;
+		s.u.AddParticle.Z = o->z;
+		GameEventsEnqueue(&gGameEvents, s);
+	}
+	if (bb.WallMark && o->bulletClass->WallMark != NULL)
+	{
+		GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+		s.u.AddParticle.Class = o->bulletClass->WallMark;
+		s.u.AddParticle.Pos = bouncePos;
+		// Randomise Z on the wall
+		s.u.AddParticle.Z =
+			o->z + RAND_FLOAT(-WALL_MARK_Z, WALL_MARK_Z);
+		GameEventsEnqueue(&gGameEvents, s);
+	}
+	MapTryMoveThing(&gMap, &o->thing, NetToVec2(bb.Pos));
+	o->thing.Vel = NetToVec2(bb.Vel);
 }
 
 void PlayHitSound(const HitSounds *h, const HitType t, const struct vec2 pos)

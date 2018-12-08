@@ -83,6 +83,7 @@ typedef struct
 	bool Persists;	// remains even after hitting walls/items
 	const ParticleClass *Spark;
 	const ParticleClass *OutOfRangeSpark;
+	const ParticleClass *WallMark;
 	HitSounds HitSound;
 	bool WallBounces;
 	bool HitsObjects;
@@ -128,6 +129,7 @@ void BulletAdd(const NAddBullet add);
 void BulletDestroy(struct MobileObject *obj);
 
 bool BulletUpdate(struct MobileObject *obj, const int ticks);
+void BulletBounce(const NBulletBounce bb);
 
 // Type of material that the bullet hit
 typedef enum

@@ -19,6 +19,7 @@
         "Particle": "trail",
         "Width": 1.0
       },
+      "WallMark": "bullet_hole",
       "Speed": 35000,
       "Range": 1,
       "Power": 10,
@@ -34,6 +35,7 @@
         "Particle": "trail",
         "Width": 1.0
       },
+      "WallMark": "bullet_hole",
       "Speed": 25000,
       "Range": 1,
       "Power": 10,
