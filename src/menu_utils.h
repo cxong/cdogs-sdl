@@ -48,5 +48,5 @@ void MenuDisplayPlayerControls(
 	const struct vec2i pos, const struct vec2i size, const void *data);
 
 void DisplayCharacterAndName(
-	struct vec2i pos, Character *c, const direction_e d,
+	struct vec2i pos, const Character *c, const direction_e d,
 	const char *name, const color_t color);

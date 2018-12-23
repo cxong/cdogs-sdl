@@ -15,6 +15,7 @@ add_subdirectory(json)
 add_subdirectory(tests)
 
 set(CDOGS_SDL_SOURCES
+	animated_counter.c
 	autosave.c
 	briefing_screens.c
 	cdogs.c
@@ -35,6 +36,7 @@ set(CDOGS_SDL_SOURCES
 	weapon_menu.c
 	XGetopt.c)
 set(CDOGS_SDL_HEADERS
+	animated_counter.h
 	autosave.h
 	briefing_screens.h
 	command_line.h

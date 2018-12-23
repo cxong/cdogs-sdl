@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2017 Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@
 #include <cdogs/grafx_bg.h>
 #include <cdogs/objective.h>
 
+#include "animated_counter.h"
 #include "autosave.h"
 #include "hiscores.h"
 #include "menu_utils.h"
@@ -344,10 +345,21 @@ static void MissionBriefingDraw(GameLoopData *data)
 
 typedef struct
 {
+	const PlayerData *Pd;
+	AnimatedCounter Score;
+	AnimatedCounter Total;
+	AnimatedCounter HealthResurrection;
+	AnimatedCounter ButcherNinjaFriendly;
+} PlayerSummaryDrawData;
+typedef struct
+{
 	MenuSystem ms;
 	const CampaignOptions *c;
 	struct MissionOptions *m;
 	bool completed;
+	AnimatedCounter AccessBonus;
+	AnimatedCounter TimeBonus;
+	PlayerSummaryDrawData pDatas[MAX_LOCAL_PLAYERS];
 } MissionSummaryData;
 static void MissionSummaryTerminate(GameLoopData *data);
 static void MissionSummaryOnEnter(GameLoopData *data);
@@ -360,7 +372,7 @@ GameLoopData *ScreenMissionSummary(
 	const CampaignOptions *c, struct MissionOptions *m, const bool completed)
 {
 	MissionSummaryData *mData;
-	CMALLOC(mData, sizeof *mData);
+	CCALLOC(mData, sizeof *mData);
 
 	const int h = FontH() * 10;
 	MenuSystemInit(
@@ -381,7 +393,7 @@ GameLoopData *ScreenMissionSummary(
 	}
 	mData->ms.allowAborts = true;
 	MenuAddExitType(&mData->ms, MENU_TYPE_RETURN);
-	MenuSystemAddCustomDisplay(&mData->ms, MissionSummaryMenuDraw, m);
+	MenuSystemAddCustomDisplay(&mData->ms, MissionSummaryMenuDraw, mData);
 
 	mData->c = c;
 	mData->m = m;
@@ -396,12 +408,26 @@ static void MissionSummaryTerminate(GameLoopData *data)
 	MissionSummaryData *mData = data->Data;
 
 	MenuSystemTerminate(&mData->ms);
+	AnimatedCounterTerminate(&mData->AccessBonus);
+	AnimatedCounterTerminate(&mData->TimeBonus);
+	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
+	{
+		AnimatedCounterTerminate(&mData->pDatas[i].Score);
+		AnimatedCounterTerminate(&mData->pDatas[i].Total);
+		AnimatedCounterTerminate(&mData->pDatas[i].HealthResurrection);
+		AnimatedCounterTerminate(&mData->pDatas[i].ButcherNinjaFriendly);
+	}
 	CFREE(mData);
 }
 static bool AreAnySurvived(void);
 static int GetAccessBonus(const struct MissionOptions *m);
 static int GetTimeBonus(const struct MissionOptions *m, int *secondsOut);
 static void ApplyBonuses(PlayerData *p, const int bonus);
+static int GetHealthBonus(const PlayerData *p);
+static int GetResurrectionFee(const PlayerData *p);
+static int GetButcherPenalty(const PlayerData *p);
+static int GetNinjaBonus(const PlayerData *p);
+static int GetFriendlyBonus(const PlayerData *p);
 static void MissionSummaryOnEnter(GameLoopData *data)
 {
 	MissionSummaryData *mData = data->Data;
@@ -443,6 +469,62 @@ static void MissionSummaryOnEnter(GameLoopData *data)
 			ApplyBonuses(p, bonus);
 		CA_FOREACH_END()
 	}
+
+	// Init mission bonuses
+	if (AreAnySurvived())
+	{
+		mData->AccessBonus =
+			AnimatedCounterNew("Access bonus: ", GetAccessBonus(mData->m));
+		int seconds;
+		const int timeBonus = GetTimeBonus(mData->m, &seconds);
+		char buf[256];
+		sprintf(buf, "Time bonus: %d secs x 25 = ", seconds);
+		mData->TimeBonus = AnimatedCounterNew(buf, timeBonus);
+	}
+
+	// Init per-player summaries
+	int idx = 0;
+	CA_FOREACH(PlayerData, pd, gPlayerDatas)
+		if (!pd->IsLocal)
+		{
+			continue;
+		}
+		mData->pDatas[idx].Pd = pd;
+		mData->pDatas[idx].Score =
+			AnimatedCounterNew("Score: ", pd->Stats.Score);
+		mData->pDatas[idx].Total =
+			AnimatedCounterNew("Total: ", pd->Totals.Score);
+		if (pd->survived)
+		{
+			const int healthBonus = GetHealthBonus(pd);
+			if (healthBonus != 0)
+			{
+				mData->pDatas[idx].HealthResurrection = AnimatedCounterNew("Health bonus: ", healthBonus);
+			}
+			const int resurrectionFee = GetResurrectionFee(pd);
+			if (resurrectionFee != 0)
+			{
+				mData->pDatas[idx].HealthResurrection = AnimatedCounterNew("Resurrection fee: ", resurrectionFee);
+			}
+
+			const int butcherPenalty = GetButcherPenalty(pd);
+			if (butcherPenalty != 0)
+			{
+				mData->pDatas[idx].ButcherNinjaFriendly = AnimatedCounterNew("Butcher penalty: ", butcherPenalty);
+			}
+			const int ninjaBonus = GetNinjaBonus(pd);
+			if (ninjaBonus != 0)
+			{
+				mData->pDatas[idx].ButcherNinjaFriendly = AnimatedCounterNew("Ninja bonus: ", ninjaBonus);
+			}
+			const int friendlyBonus = GetFriendlyBonus(pd);
+			if (friendlyBonus != 0)
+			{
+				mData->pDatas[idx].ButcherNinjaFriendly = AnimatedCounterNew("Friendly bonus: ", friendlyBonus);
+			}
+		}
+		idx++;
+	CA_FOREACH_END()
 }
 static GameLoopResult MissionSummaryUpdate(GameLoopData *data, LoopRunner *l)
 {
@@ -467,6 +549,18 @@ static GameLoopResult MissionSummaryUpdate(GameLoopData *data, LoopRunner *l)
 		{
 			LoopRunnerChange(
 				l, HighScoresScreen(&gCampaign, &gGraphicsDevice));
+		}
+	}
+	else
+	{
+		AnimatedCounterUpdate(&mData->AccessBonus, 1);
+		AnimatedCounterUpdate(&mData->TimeBonus, 1);
+		for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
+		{
+			AnimatedCounterUpdate(&mData->pDatas[i].Score, 1);
+			AnimatedCounterUpdate(&mData->pDatas[i].Total, 1);
+			AnimatedCounterUpdate(&mData->pDatas[i].HealthResurrection, 1);
+			AnimatedCounterUpdate(&mData->pDatas[i].ButcherNinjaFriendly, 1);
 		}
 	}
 	return result;
@@ -507,11 +601,6 @@ static int GetTimeBonus(const struct MissionOptions *m, int *secondsOut)
 	}
 	return seconds * 25;
 }
-static int GetHealthBonus(const PlayerData *p);
-static int GetResurrectionFee(const PlayerData *p);
-static int GetButcherPenalty(const PlayerData *p);
-static int GetNinjaBonus(const PlayerData *p);
-static int GetFriendlyBonus(const PlayerData *p);
 static void ApplyBonuses(PlayerData *p, const int bonus)
 {
 	// Apply bonuses to surviving players only
@@ -573,7 +662,8 @@ static int GetFriendlyBonus(const PlayerData *p)
 	return (p->Stats.Kills == 0 && p->Stats.Friendlies == 0) ? 500 : 0;
 }
 static void DrawPlayerSummary(
-	const struct vec2i pos, const struct vec2i size, PlayerData *data);
+	const struct vec2i pos, const struct vec2i size,
+	const PlayerSummaryDrawData *data);
 static void MissionSummaryMenuDraw(
 	const menu_t *menu, GraphicsDevice *g,
 	const struct vec2i p, const struct vec2i size, const void *data)
@@ -581,7 +671,7 @@ static void MissionSummaryMenuDraw(
 	UNUSED(menu);
 	UNUSED(p);
 	UNUSED(size);
-	const struct MissionOptions *m = data;
+	const MissionSummaryData *mData = data;
 
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
@@ -602,7 +692,7 @@ static void MissionSummaryMenuDraw(
 	// Display objectives and bonuses
 	struct vec2i pos = svec2i(w / 6, h / 2 + h / 10);
 	int idx = 1;
-	CA_FOREACH(const Objective, o, m->missionData->Objectives)
+	CA_FOREACH(const Objective, o, mData->m->missionData->Objectives)
 		// Do not mention optional objectives with none completed
 		if (o->done == 0 && !ObjectiveIsRequired(o))
 		{
@@ -657,54 +747,41 @@ static void MissionSummaryMenuDraw(
 	CA_FOREACH_END()
 
 	// Draw other bonuses
-	if (AreAnySurvived())
+	if (mData->AccessBonus.prefix)
 	{
-		char s[64];
-
-		sprintf(s, "Access bonus: %d", GetAccessBonus(m));
-		FontStr(s, pos);
-
+		AnimatedCounterDraw(&mData->AccessBonus, pos);
 		pos.y += FontH() + 1;
-		int seconds;
-		const int timeBonus = GetTimeBonus(m, &seconds);
-		sprintf(s, "Time bonus: %d secs x 25 = %d", seconds, timeBonus);
-		FontStr(s, pos);
+	}
+	if (mData->TimeBonus.prefix)
+	{
+		AnimatedCounterDraw(&mData->TimeBonus, pos);
 	}
 
 	// Draw per-player summaries
-	PlayerData *pds[MAX_LOCAL_PLAYERS];
-	idx = 0;
-	CA_FOREACH(PlayerData, pd, gPlayerDatas)
-		if (!pd->IsLocal)
-		{
-			continue;
-		}
-		pds[idx] = pd;
-		idx++;
-	CA_FOREACH_END()
 	struct vec2i playerSize;
-	switch (idx)
+	switch (GetNumPlayers(PLAYER_ANY, false, true))
 	{
 	case 1:
 		playerSize = svec2i(w, h / 2);
-		DrawPlayerSummary(svec2i_zero(), playerSize, pds[0]);
+		DrawPlayerSummary(svec2i_zero(), playerSize, &mData->pDatas[0]);
 		break;
 	case 2:
 		// side by side
 		playerSize = svec2i(w / 2, h / 2);
-		DrawPlayerSummary(svec2i_zero(), playerSize, pds[0]);
-		DrawPlayerSummary(svec2i(w / 2, 0), playerSize, pds[1]);
+		DrawPlayerSummary(svec2i_zero(), playerSize, &mData->pDatas[0]);
+		DrawPlayerSummary(svec2i(w / 2, 0), playerSize, &mData->pDatas[1]);
 		break;
 	case 3:	// fallthrough
 	case 4:
 		// 2x2
 		playerSize = svec2i(w / 2, h / 4);
-		DrawPlayerSummary(svec2i_zero(), playerSize, pds[0]);
-		DrawPlayerSummary(svec2i(w / 2, 0), playerSize, pds[1]);
-		DrawPlayerSummary(svec2i(0, h / 4), playerSize, pds[2]);
+		DrawPlayerSummary(svec2i_zero(), playerSize, &mData->pDatas[0]);
+		DrawPlayerSummary(svec2i(w / 2, 0), playerSize, &mData->pDatas[1]);
+		DrawPlayerSummary(svec2i(0, h / 4), playerSize, &mData->pDatas[2]);
 		if (idx == 4)
 		{
-			DrawPlayerSummary(svec2i(w / 2, h / 4), playerSize, pds[3]);
+			DrawPlayerSummary(
+				svec2i(w / 2, h / 4), playerSize, &mData->pDatas[3]);
 		}
 		break;
 	default:
@@ -715,7 +792,8 @@ static void MissionSummaryMenuDraw(
 // Display compact player summary, with player on left half and score summaries
 // on right half
 static void DrawPlayerSummary(
-	const struct vec2i pos, const struct vec2i size, PlayerData *data)
+	const struct vec2i pos, const struct vec2i size,
+	const PlayerSummaryDrawData *data)
 {
 	char s[50];
 	const int totalTextHeight = FontH() * 7;
@@ -725,9 +803,9 @@ static void DrawPlayerSummary(
 
 	DisplayCharacterAndName(
 		svec2i_add(pos, svec2i(size.x / 4, size.y / 2)),
-		&data->Char, DIRECTION_DOWN, data->name, colorWhite);
+		&data->Pd->Char, DIRECTION_DOWN, data->Pd->name, colorWhite);
 
-	if (data->survived)
+	if (data->Pd->survived)
 	{
 		FontStr("Completed mission", textPos);
 	}
@@ -737,54 +815,24 @@ static void DrawPlayerSummary(
 	}
 
 	textPos.y += 2 * FontH();
-	sprintf(s, "Score: %d", data->Stats.Score);
+	AnimatedCounterDraw(&data->Score, textPos);
+	textPos.y += FontH();
+	AnimatedCounterDraw(&data->Total, textPos);
 	FontStr(s, textPos);
 	textPos.y += FontH();
-	sprintf(s, "Total: %d", data->Totals.Score);
-	FontStr(s, textPos);
-	textPos.y += FontH();
-	sprintf(s, "Missions: %d", data->missions + (data->survived ? 1 : 0));
+	sprintf(
+		s, "Missions: %d", data->Pd->missions + (data->Pd->survived ? 1 : 0));
 	FontStr(s, textPos);
 	textPos.y += FontH();
 
-	// Display bonuses if the player has survived
-	if (data->survived)
+	if (data->HealthResurrection.prefix)
 	{
-		const int healthBonus = GetHealthBonus(data);
-		if (healthBonus != 0)
-		{
-			sprintf(s, "Health bonus: %d", healthBonus);
-		}
-		const int resurrectionFee = GetResurrectionFee(data);
-		if (resurrectionFee != 0)
-		{
-			sprintf(s, "Resurrection fee: %d", resurrectionFee);
-		}
-		if (healthBonus != 0 || resurrectionFee != 0)
-		{
-			FontStr(s, textPos);
-			textPos.y += FontH();
-		}
-
-		const int butcherPenalty = GetButcherPenalty(data);
-		if (butcherPenalty != 0)
-		{
-			sprintf(s, "Butcher penalty: %d", butcherPenalty);
-		}
-		const int ninjaBonus = GetNinjaBonus(data);
-		if (ninjaBonus != 0)
-		{
-			sprintf(s, "Ninja bonus: %d", ninjaBonus);
-		}
-		const int friendlyBonus = GetFriendlyBonus(data);
-		if (friendlyBonus != 0)
-		{
-			sprintf(s, "Friendly bonus: %d", friendlyBonus);
-		}
-		if (butcherPenalty != 0 || ninjaBonus != 0 || friendlyBonus != 0)
-		{
-			FontStr(s, textPos);
-		}
+		AnimatedCounterDraw(&data->HealthResurrection, textPos);
+		textPos.y += FontH();
+	}
+	if (data->ButcherNinjaFriendly.prefix)
+	{
+		AnimatedCounterDraw(&data->ButcherNinjaFriendly, textPos);
 	}
 }
 

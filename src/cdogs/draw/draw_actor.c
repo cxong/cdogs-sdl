@@ -149,7 +149,7 @@ static const Pic *GetGunPic(
 	const int gunState, const CharColors *colors);
 static const Pic *GetDeathPic(PicManager *pm, const int frame);
 ActorPics GetCharacterPics(
-	Character *c, const direction_e dir,
+	const Character *c, const direction_e dir,
 	const ActorAnimation anim, const int frame,
 	const char *gunSprites, const gunstate_e gunState,
 	const bool hasShadow, const color_t *mask, const CharColors *colors,
@@ -500,7 +500,7 @@ static const Pic *GetDeathPic(PicManager *pm, const int frame)
 }
 
 void DrawCharacterSimple(
-	Character *c, const struct vec2i pos, const direction_e d,
+	const Character *c, const struct vec2i pos, const direction_e d,
 	const bool hilite, const bool showGun, const bool blit)
 {
 	ActorPics pics = GetCharacterPics(
