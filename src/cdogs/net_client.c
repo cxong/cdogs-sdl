@@ -411,7 +411,7 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			case GAME_EVENT_GUN_FIRE:
 				if (e.u.GunFire.IsGun)
 				{
-					actorIsLocal = PlayerIsLocal(e.u.GunFire.PlayerUID);
+					actorUID = e.u.GunFire.ActorUID;
 				}
 				break;
 			case GAME_EVENT_GUN_RELOAD:

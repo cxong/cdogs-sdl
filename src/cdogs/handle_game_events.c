@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2017, Cong Xu
+    Copyright (c) 2014-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@
 #include "handle_game_events.h"
 
 #include "actor_placement.h"
+#include "actors.h"
 #include "ai_utils.h"
 #include "damage.h"
 #include "events.h"
@@ -38,6 +39,7 @@
 #include "objs.h"
 #include "particle.h"
 #include "pickup.h"
+#include "thing.h"
 #include "triggers.h"
 
 #define RELOAD_DISTANCE_PLUS 200
@@ -104,11 +106,11 @@ static void HandleGameEvent(
 			}
 		}
 		break;
+	case GAME_EVENT_THING_DAMAGE:
+		ThingDamage(e.u.ThingDamage);
+		break;
 	case GAME_EVENT_MAP_OBJECT_ADD:
 		ObjAdd(e.u.MapObjectAdd);
-		break;
-	case GAME_EVENT_MAP_OBJECT_DAMAGE:
-		DamageObject(e.u.MapObjectDamage);
 		break;
 	case GAME_EVENT_MAP_OBJECT_REMOVE:
 		ObjRemove(e.u.MapObjectRemove);
@@ -370,7 +372,7 @@ static void HandleGameEvent(
 				Damage(
 					svec2_zero(),
 					b->Power, b->Mass,
-					a->flags, a->PlayerUID, a->uid,
+					a->flags, a,
 					(ThingKind)e.u.Melee.TargetKind, e.u.Melee.TargetUID,
 					SPECIAL_NONE);
 			}
@@ -433,8 +435,7 @@ static void HandleGameEvent(
 					ab.u.AddBullet.Elevation =
 						RAND_INT(wc->ElevationLow, wc->ElevationHigh);
 					ab.u.AddBullet.Flags = e.u.GunFire.Flags;
-					ab.u.AddBullet.PlayerUID = e.u.GunFire.PlayerUID;
-					ab.u.AddBullet.ActorUID = e.u.GunFire.UID;
+					ab.u.AddBullet.ActorUID = e.u.GunFire.ActorUID;
 					GameEventsEnqueue(&gGameEvents, ab);
 				}
 			}
@@ -500,44 +501,6 @@ static void HandleGameEvent(
 		break;
 	case GAME_EVENT_ADD_PARTICLE:
 		ParticleAdd(&gParticles, e.u.AddParticle);
-		break;
-	case GAME_EVENT_ACTOR_HIT:
-		{
-			TActor *a = ActorGetByUID(e.u.ActorHit.UID);
-			if (!a->isInUse) break;
-			ActorTakeHit(a, e.u.ActorHit.Special);
-			if (e.u.ActorHit.Power > 0)
-			{
-				DamageActor(
-					a, e.u.ActorHit.Power, e.u.ActorHit.HitterPlayerUID);
-
-				// Add damage text
-				GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
-				s.u.AddParticle.Class =
-					StrParticleClass(&gParticleClasses, "damage_text");
-				s.u.AddParticle.Pos = svec2_add(
-					a->Pos, svec2(RAND_FLOAT(-3, 3), RAND_FLOAT(-3, 3)));
-				s.u.AddParticle.Z = BULLET_Z * Z_FACTOR;
-				s.u.AddParticle.DZ = 3;
-				sprintf(
-					s.u.AddParticle.Text, "-%d", (int)e.u.ActorHit.Power);
-				GameEventsEnqueue(&gGameEvents, s);
-
-				ActorAddBloodSplatters(
-					a, e.u.ActorHit.Power, e.u.ActorHit.Mass,
-					NetToVec2(e.u.ActorHit.Vel));
-
-				// Rumble if taking hit
-				if (a->PlayerUID >= 0)
-				{
-					const PlayerData *p = PlayerDataGetByUID(a->PlayerUID);
-					if (p->inputDevice == INPUT_DEVICE_JOYSTICK)
-					{
-						JoyImpact(p->deviceIndex);
-					}
-				}
-			}
-		}
 		break;
 	case GAME_EVENT_TRIGGER:
 		{

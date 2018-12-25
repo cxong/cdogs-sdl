@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2017, Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -59,8 +59,9 @@ static GameEventEntry sGameEventEntries[] =
 	{ GAME_EVENT_PLAYER_DATA, true, false, true, false, NPlayerData_fields },
 	{ GAME_EVENT_PLAYER_REMOVE, true, false, true, false, NPlayerRemove_fields },
 	{ GAME_EVENT_TILE_SET, true, false, true, true, NTileSet_fields },
+
+	{ GAME_EVENT_THING_DAMAGE, true, false, true, true, NThingDamage_fields },
 	{ GAME_EVENT_MAP_OBJECT_ADD, true, false, true, true, NMapObjectAdd_fields },
-	{ GAME_EVENT_MAP_OBJECT_DAMAGE, true, false, true, true, NMapObjectDamage_fields },
 	{ GAME_EVENT_MAP_OBJECT_REMOVE, true, false, true, true, NMapObjectRemove_fields },
 	{ GAME_EVENT_CLIENT_READY, false, false, false, false, NULL },
 	{ GAME_EVENT_NET_GAME_START, false, false, false, false, NULL },
@@ -84,7 +85,6 @@ static GameEventEntry sGameEventEntries[] =
 	{ GAME_EVENT_ACTOR_PICKUP_ALL, false, true, true, true, NActorPickupAll_fields },
 	{ GAME_EVENT_ACTOR_REPLACE_GUN, true, false, true, true, NActorReplaceGun_fields },
 	{ GAME_EVENT_ACTOR_HEAL, true, false, true, true, NActorHeal_fields },
-	{ GAME_EVENT_ACTOR_HIT, true, false, true, true, NActorHit_fields },
 	{ GAME_EVENT_ACTOR_ADD_AMMO, true, false, true, true, NActorAddAmmo_fields },
 	{ GAME_EVENT_ACTOR_USE_AMMO, true, true, true, true, NActorUseAmmo_fields },
 	{ GAME_EVENT_ACTOR_DIE, true, false, true, true, NActorDie_fields },
@@ -149,7 +149,7 @@ void GameEventsEnqueue(CArray *store, GameEvent e)
 		case GAME_EVENT_GUN_FIRE:
 			if (e.u.GunFire.IsGun)
 			{
-				actorIsLocal = PlayerIsLocal(e.u.GunFire.PlayerUID);
+				actorUID = e.u.GunFire.ActorUID;
 			}
 			break;
 		case GAME_EVENT_GUN_RELOAD:

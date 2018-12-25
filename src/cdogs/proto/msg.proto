@@ -70,6 +70,17 @@ message NTileSet {
 	required int32 RunLength = 4;
 }
 
+message NThingDamage {
+	required uint32 UID = 1;
+	required int32 Kind = 2;
+	required int32 SourceActorUID = 3 [default=-1];
+	required int32 Power = 4;
+	required NVec2 Vel = 5;
+    required float Mass = 6;
+	required uint32 Flags = 7;
+	required int32 Special = 8;
+}
+
 message NMapObjectAdd {
 	required uint32 UID = 1;
 	required string MapObjectClass = 2;
@@ -78,19 +89,10 @@ message NMapObjectAdd {
 	required int32 Health = 5;
 }
 
-message NMapObjectDamage {
-	required uint32 UID = 1;
-	required int32 Power = 2;
-	required int32 ActorUID = 3;
-	required int32 PlayerUID = 4;
-	required uint32 Flags = 5;
-}
-
 message NMapObjectRemove {
 	required uint32 UID = 1;
 	required int32 ActorUID = 2;
-	required int32 PlayerUID = 3;
-	required uint32 Flags = 4;
+	required uint32 Flags = 3;
 }
 
 message NScore {
@@ -179,16 +181,6 @@ message NActorHeal {
 	required bool IsRandomSpawned = 4;
 }
 
-message NActorHit {
-	required uint32 UID = 1;
-	required int32 PlayerUID = 2 [default=-1];
-	required int32 HitterPlayerUID = 3 [default=-1];
-	required int32 Special = 4;
-	required int32 Power = 5;
-	required NVec2 Vel = 6;
-    required float Mass = 7;
-}
-
 message NActorAddAmmo {
 	required uint32 UID = 1;
 	required int32 PlayerUID = 2 [default=-1];
@@ -253,16 +245,15 @@ message NGunReload {
 }
 
 message NGunFire {
-	required int32 UID = 1 [default=-1];
-	required int32 PlayerUID = 2 [default=-1];
-	required string Gun = 3;
-	required NVec2 MuzzlePos = 4;
-	required int32 Z = 5;
-	required float Angle = 6;
-	required bool Sound = 7;
-	required uint32 Flags = 8;
+	required int32 ActorUID = 1 [default=-1];
+	required string Gun = 2;
+	required NVec2 MuzzlePos = 3;
+	required int32 Z = 4;
+	required float Angle = 5;
+	required bool Sound = 6;
+	required uint32 Flags = 7;
 	// Whether the shot was from a real player-gun, or a derived gun e.g. explode
-	required bool IsGun = 9;
+	required bool IsGun = 8;
 }
 
 message NGunState {
@@ -278,8 +269,7 @@ message NAddBullet {
 	required float Angle = 5;
 	required int32 Elevation = 6;
 	required uint32 Flags = 7;
-	required int32 PlayerUID = 8 [default=-1];
-	required int32 ActorUID = 9 [default=-1];
+	required int32 ActorUID = 8 [default=-1];
 }
 
 message NTrigger {

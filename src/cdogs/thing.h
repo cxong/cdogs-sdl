@@ -34,6 +34,7 @@
 #include "cpic.h"
 #include "mathc/mathc.h"
 #include "pic.h"
+#include "proto/msg.pb.h"
 #include "vector.h"
 
 typedef enum
@@ -80,6 +81,7 @@ typedef struct
 	ThingDrawFuncData drawData;
 	CPic CPic;
 	DrawCPicFunc CPicFunc;
+	struct vec2 drawShake;
 	struct vec2i ShadowSize;
 	int SoundLock;
 } Thing;
@@ -88,6 +90,7 @@ typedef struct
 
 typedef struct
 {
+	// TODO: add an entity id system
 	int Id;
 	ThingKind Kind;
 } ThingId;
@@ -99,6 +102,8 @@ void ThingInit(
 	Thing *t, const int id, const ThingKind kind, const struct vec2i size,
 	const int flags);
 void ThingUpdate(Thing *t, const int ticks);
+void ThingAddDrawShake(Thing *t, const struct vec2 shake);
+void ThingDamage(const NThingDamage d);
 
 Thing *ThingIdGetThing(const ThingId *tid);
 bool ThingDrawLast(const Thing *t);

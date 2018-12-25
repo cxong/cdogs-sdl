@@ -36,9 +36,17 @@
 #include "thing.h"
 
 #include "actors.h"
+#include "net_util.h"
 #include "objs.h"
 #include "pickup.h"
 #include "tile.h"
+
+#define DRAW_SHAKE_MAX 2.0f
+#define DRAW_SHAKE_FACTOR 0.3f
+#define DRAW_SHAKE_DECAY 0.8f
+#define ZERO_DRAW_SHAKE svec2(\
+	RAND_FLOAT(-DRAW_SHAKE_MAX, DRAW_SHAKE_MAX) * 0.7f,\
+	RAND_FLOAT(-DRAW_SHAKE_MAX, DRAW_SHAKE_MAX) * 0.7f)
 
 
 bool IsThingInsideTile(const Thing *i, const struct vec2i tilePos)
@@ -67,7 +75,54 @@ void ThingInit(
 void ThingUpdate(Thing *t, const int ticks)
 {
 	t->SoundLock = MAX(0, t->SoundLock - ticks);
+	for (int i = 0; i < ticks; i++)
+	{
+		t->drawShake = svec2_scale(t->drawShake, -DRAW_SHAKE_DECAY);
+		if (svec2_length_squared(t->drawShake) < 1.0f)
+		{
+			t->drawShake = svec2_zero();
+			break;
+		}
+	}
 	CPicUpdate(&t->CPic, ticks);
+}
+
+void ThingAddDrawShake(Thing *t, const struct vec2 shake)
+{
+	if (svec2_is_zero(shake))
+	{
+		t->drawShake = ZERO_DRAW_SHAKE;
+	}
+	else
+	{
+		t->drawShake = svec2_clamp(
+			svec2_add(t->drawShake, svec2_scale(shake, DRAW_SHAKE_FACTOR)),
+			svec2(-DRAW_SHAKE_MAX, -DRAW_SHAKE_MAX),
+			svec2(DRAW_SHAKE_MAX, DRAW_SHAKE_MAX));
+	}
+}
+
+void ThingDamage(const NThingDamage d)
+{
+	Thing *ti = NULL;
+	switch (d.Kind)
+	{
+	case KIND_CHARACTER:
+		ti = &ActorGetByUID(d.UID)->thing;
+		ActorHit(d);
+		break;
+	case KIND_OBJECT:
+		ti = &ObjGetByUID(d.UID)->thing;
+		DamageObject(d);
+		break;
+	default:
+		// do nothing
+		break;
+	}
+	if (ti != NULL && d.Power > 0)
+	{
+		ThingAddDrawShake(ti, svec2_scale(NetToVec2(d.Vel), d.Mass));
+	}
 }
 
 

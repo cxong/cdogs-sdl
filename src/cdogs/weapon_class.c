@@ -406,12 +406,11 @@ WeaponClass *IndexWeaponClassReal(const int i)
 void WeaponClassFire(
 	const WeaponClass *wc, const struct vec2 pos, const int z,
 	const double radians,
-	const int flags, const int playerUID, const int uid,
+	const int flags, const int actorUID,
 	const bool playSound, const bool isGun)
 {
 	GameEvent e = GameEventNew(GAME_EVENT_GUN_FIRE);
-	e.u.GunFire.UID = uid;
-	e.u.GunFire.PlayerUID = playerUID;
+	e.u.GunFire.ActorUID = actorUID;
 	strcpy(e.u.GunFire.Gun, wc->name);
 	e.u.GunFire.MuzzlePos = Vec2ToNet(pos);
 	e.u.GunFire.Z = z;

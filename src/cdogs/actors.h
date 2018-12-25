@@ -216,15 +216,11 @@ int ActorGetNumGuns(const TActor *a);
 int ActorGetNumGrenades(const TActor *a);
 void ActorSwitchGun(const NActorSwitchGun sg);
 bool ActorIsImmune(const TActor *actor, const special_damage_e damage);
-// Taking a hit only gives the appearance (pushback, special effect)
-// but deals no damage
-void ActorTakeHit(TActor *actor, const special_damage_e damage);
+void ActorHit(const NThingDamage d);
 bool ActorIsInvulnerable(
 	const TActor *a, const int flags, const int playerUID,
 	const GameMode mode);
 
-void ActorAddBloodSplatters(
-	TActor *a, const int power, const float mass, const struct vec2 hitVector);
 int ActorGetHealthPercent(const TActor *a);
 bool ActorIsLowHealth(const TActor *a);
 

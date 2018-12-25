@@ -380,8 +380,7 @@ static void FireGuns(const TMobileObject *obj, const CArray *guns)
 	{
 		const WeaponClass **wc = CArrayGet(guns, i);
 		WeaponClassFire(
-			*wc, obj->thing.Pos, obj->z, angle, obj->flags, obj->PlayerUID,
-			obj->ActorUID,
+			*wc, obj->thing.Pos, obj->z, angle, obj->flags, obj->ActorUID,
 			true, false);
 	}
 }
@@ -516,10 +515,11 @@ static HitType GetHitType(
 		CASSERT(false, "cannot damage target kind");
 		break;
 	}
+	const TActor *bulletActor = ActorGetByUID(bullet->ActorUID);
 	if (bullet->thing.SoundLock > 0 ||
 		!HasHitSound(
-			bullet->flags, bullet->PlayerUID, ti->kind, tUID,
-			bullet->bulletClass->Special, true))
+			bullet->flags, bulletActor ? bulletActor->PlayerUID : -1, ti->kind,
+			tUID, bullet->bulletClass->Special, true))
 	{
 		ht = HIT_NONE;
 	}
@@ -570,10 +570,11 @@ static void OnHit(HitItemData *data, Thing *target)
 {
 	int targetUID = -1;
 	data->HitType = GetHitType(target, data->Obj, &targetUID);
+	const TActor *source = ActorGetByUID(data->Obj->ActorUID);
 	Damage(
 		data->Obj->thing.Vel,
 		data->Obj->bulletClass->Power, data->Obj->bulletClass->Mass,
-		data->Obj->flags, data->Obj->PlayerUID, data->Obj->ActorUID,
+		data->Obj->flags, source,
 		target->kind, targetUID,
 		data->Obj->bulletClass->Special);
 	if (data->Obj->thing.SoundLock <= 0)
@@ -940,7 +941,6 @@ void BulletAdd(const NAddBullet add)
 		obj->thing.Vel.y *= (float)TILE_WIDTH / TILE_HEIGHT;
 	}
 
-	obj->PlayerUID = add.PlayerUID;
 	obj->ActorUID = add.ActorUID;
 	obj->range = RAND_INT(
 		obj->bulletClass->RangeLow, obj->bulletClass->RangeHigh);

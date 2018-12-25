@@ -76,25 +76,24 @@ static void MapObjectDraw(
 }
 
 
-void DamageObject(const NMapObjectDamage mod)
+void DamageObject(const NThingDamage d)
 {
-	TObject *o = ObjGetByUID(mod.UID);
+	TObject *o = ObjGetByUID(d.UID);
 	// Don't bother if object already destroyed
 	if (o->Health <= 0)
 	{
 		return;
 	}
 
-	o->Health -= mod.Power;
+	o->Health -= d.Power;
 
 	// Destroying objects and all the wonderful things that happen
 	if (o->Health <= 0 && !gCampaign.IsClient)
 	{
 		GameEvent e = GameEventNew(GAME_EVENT_MAP_OBJECT_REMOVE);
 		e.u.MapObjectRemove.UID = o->uid;
-		e.u.MapObjectRemove.ActorUID = mod.UID;
-		e.u.MapObjectRemove.PlayerUID = mod.PlayerUID;
-		e.u.MapObjectRemove.Flags = mod.Flags;
+		e.u.MapObjectRemove.ActorUID = d.SourceActorUID;
+		e.u.MapObjectRemove.Flags = d.Flags;
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 }
@@ -154,11 +153,13 @@ void ObjRemove(const NMapObjectRemove mor)
 		// Update objective
 		UpdateMissionObjective(
 			&gMission, o->thing.flags, OBJECTIVE_DESTROY, 1);
+		const TActor *a = ActorGetByUID(mor.ActorUID);
+		const int playerUID = a != NULL ? a->PlayerUID : -1;
 		// Extra score if objective
-		if ((o->thing.flags & THING_OBJECTIVE) && mor.PlayerUID >= 0)
+		if ((o->thing.flags & THING_OBJECTIVE) && playerUID >= 0)
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_SCORE);
-			e.u.Score.PlayerUID = mor.PlayerUID;
+			e.u.Score.PlayerUID = playerUID;
 			e.u.Score.Score = OBJECT_SCORE;
 			GameEventsEnqueue(&gGameEvents, e);
 		}
@@ -166,8 +167,7 @@ void ObjRemove(const NMapObjectRemove mor)
 		// Weapons that go off when this object is destroyed
 		CA_FOREACH(const WeaponClass *, wc, o->Class->DestroyGuns)
 			WeaponClassFire(
-				*wc, o->thing.Pos, 0, 0, mor.Flags, mor.PlayerUID,
-				mor.ActorUID,
+				*wc, o->thing.Pos, 0, 0, mor.Flags, mor.ActorUID,
 				true, false);
 		CA_FOREACH_END()
 
@@ -194,7 +194,6 @@ void ObjRemove(const NMapObjectRemove mor)
 		e.u.AddBullet.Angle = 0;
 		e.u.AddBullet.Elevation = 0;
 		e.u.AddBullet.Flags = 0;
-		e.u.AddBullet.PlayerUID = -1;
 		e.u.AddBullet.ActorUID = -1;
 		GameEventsEnqueue(&gGameEvents, e);
 	}
@@ -270,62 +269,78 @@ bool HasHitSound(
 	return false;
 }
 
+static void DoDamageThing(
+	const ThingKind targetKind, const int targetUID, const TActor *source,
+	const int flags,
+	const special_damage_e special, const bool canDamage, const int power,
+	const float mass, const struct vec2 hitVector);
 static void DoDamageCharacter(
+	const TActor *actor,
+	const TActor *source,
 	const struct vec2 hitVector,
 	const int power,
 	const float mass,
 	const int flags,
-	const int playerUID,
-	const int uid,
-	TActor *actor,
 	const special_damage_e special);
 void Damage(
 	const struct vec2 hitVector,
 	const int power,
 	const float mass,
 	const int flags,
-	const int playerUID,
-	const int uid,
+	const TActor *source,
 	const ThingKind targetKind, const int targetUID,
 	const special_damage_e special)
 {
 	switch (targetKind)
 	{
 	case KIND_CHARACTER:
-		DoDamageCharacter(
-			hitVector,
-			power, mass, flags, playerUID, uid,
-			ActorGetByUID(targetUID), special);
+		{
+			const TActor *actor = ActorGetByUID(targetUID);
+			DoDamageCharacter(
+				actor, source, hitVector, power, mass, flags, special);
+		}
 		break;
 	case KIND_OBJECT:
-		{
-			GameEvent e = GameEventNew(GAME_EVENT_MAP_OBJECT_DAMAGE);
-			e.u.MapObjectDamage.UID = targetUID;
-			e.u.MapObjectDamage.Power = power;
-			e.u.MapObjectDamage.ActorUID = uid;
-			e.u.MapObjectDamage.PlayerUID = playerUID;
-			e.u.MapObjectDamage.Flags = flags;
-			GameEventsEnqueue(&gGameEvents, e);
-		}
+		DoDamageThing(
+			targetKind, targetUID, source, flags, special, true, power, mass,
+			hitVector);
 		break;
 	default:
 		CASSERT(false, "cannot damage tile item kind");
 		break;
 	}
 }
+static void DoDamageThing(
+	const ThingKind targetKind, const int targetUID, const TActor *source,
+	const int flags,
+	const special_damage_e special, const bool canDamage, const int power,
+	const float mass, const struct vec2 hitVector)
+{
+	GameEvent e = GameEventNew(GAME_EVENT_THING_DAMAGE);
+	e.u.ThingDamage.UID = targetUID;
+	e.u.ThingDamage.Kind = targetKind;
+	e.u.ThingDamage.SourceActorUID = source ? source->uid : -1;
+	e.u.ThingDamage.Flags = flags;
+	e.u.ThingDamage.Special = special;
+	e.u.ThingDamage.Power = canDamage ? power : 0;
+	e.u.ThingDamage.Mass = mass;
+	e.u.ThingDamage.Vel = Vec2ToNet(hitVector);
+	GameEventsEnqueue(&gGameEvents, e);
+}
 static void DoDamageCharacter(
+	const TActor *actor,
+	const TActor *source,
 	const struct vec2 hitVector,
 	const int power,
 	const float mass,
 	const int flags,
-	const int playerUID,
-	const int uid,
-	TActor *actor,
 	const special_damage_e special)
 {
 	// Create events: hit, damage, score
 	CASSERT(actor->isInUse, "Cannot damage nonexistent player");
-	CASSERT(CanHitCharacter(flags, uid, actor), "damaging undamageable actor");
+	CASSERT(
+		CanHitCharacter(flags, source ? source->uid : -1, actor),
+		"damaging undamageable actor");
 
 	// Shot pushback, based on mass and velocity
 	const float impulseFactor = mass * SHOT_IMPULSE_FACTOR;
@@ -339,18 +354,11 @@ static void DoDamageCharacter(
 		GameEventsEnqueue(&gGameEvents, ei);
 	}
 
-	const bool canDamage =
-		CanDamageCharacter(flags, playerUID, uid, actor, special);
+	const bool canDamage = CanDamageCharacter(flags, source, actor, special);
 
-	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_HIT);
-	e.u.ActorHit.UID = actor->uid;
-	e.u.ActorHit.PlayerUID = actor->PlayerUID;
-	e.u.ActorHit.HitterPlayerUID = playerUID;
-	e.u.ActorHit.Special = special;
-	e.u.ActorHit.Power = canDamage ? power : 0;
-	e.u.ActorHit.Mass = (float)mass;
-	e.u.ActorHit.Vel = Vec2ToNet(hitVector);
-	GameEventsEnqueue(&gGameEvents, e);
+	DoDamageThing(
+		KIND_CHARACTER, actor->uid, source, flags, special, canDamage, power,
+		mass, hitVector);
 
 	if (canDamage)
 	{
@@ -358,12 +366,12 @@ static void DoDamageCharacter(
 		const bool isFriendly =
 			(actor->flags & FLAGS_GOOD_GUY) ||
 			(!IsPVP(gCampaign.Entry.Mode) && actor->PlayerUID >= 0);
-		if (playerUID >= 0 && power != 0 && !isFriendly)
+		if (source && source->PlayerUID >= 0 && power != 0 && !isFriendly)
 		{
 			// Calculate score based on
 			// if they hit a penalty character
-			e = GameEventNew(GAME_EVENT_SCORE);
-			e.u.Score.PlayerUID = playerUID;
+			GameEvent e = GameEventNew(GAME_EVENT_SCORE);
+			e.u.Score.PlayerUID = source->PlayerUID;
 			if (actor->flags & FLAGS_PENALTY)
 			{
 				e.u.Score.Score = PENALTY_MULTIPLIER * power;

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2016, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -257,9 +257,11 @@ static void DrawWallsAndThings(DrawBuffer *b, struct vec2i offset)
 static void DrawThing(
 	DrawBuffer *b, const Thing *t, const struct vec2i offset)
 {
-	const struct vec2i picPos = svec2i(
-		(int)t->Pos.x - b->xTop + offset.x,
-		(int)t->Pos.y - b->yTop + offset.y);
+	const struct vec2i picPos = svec2i_add(
+		svec2i_subtract(
+			svec2i_floor(svec2_add(t->Pos, t->drawShake)),
+			svec2i(b->xTop, b->yTop)),
+		offset);
 
 	if (!svec2i_is_zero(t->ShadowSize))
 	{

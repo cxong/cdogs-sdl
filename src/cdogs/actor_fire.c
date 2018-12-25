@@ -50,7 +50,7 @@ void ActorFire(Weapon *w, const TActor *a)
 	const bool playSound = w->soundLock <= 0;
 	WeaponClassFire(
 		w->Gun, muzzlePosition, w->Gun->MuzzleHeight, radians,
-		a->flags, a->PlayerUID, a->uid, playSound, true);
+		a->flags, a->uid, playSound, true);
 	if (playSound)
 	{
 		w->soundLock = w->Gun->SoundLockLength;

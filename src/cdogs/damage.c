@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2015, 2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -64,28 +64,31 @@ bool CanHitCharacter(const int flags, const int uid, const TActor *actor)
 }
 
 bool CanDamageCharacter(
-	const int flags, const int playerUID, const int uid,
-	const TActor *actor, const special_damage_e special)
+	const int flags, const TActor *source,
+	const TActor *target, const special_damage_e special)
 {
-	if (!CanHitCharacter(flags, uid, actor))
+	if (!CanHitCharacter(flags, source ? source->uid : -1, target))
 	{
 		return false;
 	}
-	if (ActorIsImmune(actor, special))
+	if (ActorIsImmune(target, special))
 	{
 		return false;
 	}
-	return !ActorIsInvulnerable(actor, flags, playerUID, gCampaign.Entry.Mode);
+	return !ActorIsInvulnerable(
+		target, flags, source ? source->PlayerUID : -1, gCampaign.Entry.Mode);
 }
 
 static void TrackKills(PlayerData *pd, const TActor *victim);
-void DamageActor(TActor *victim, const int power, const int hitterPlayerUID)
+void DamageActor(TActor *victim, const int power, const int sourceActorUID)
 {
 	const int startingHealth = victim->health;
 	InjureActor(victim, power);
-	if (startingHealth > 0 && victim->health <= 0 && hitterPlayerUID >= 0)
+	const TActor *source = ActorGetByUID(sourceActorUID);
+	if (startingHealth > 0 && victim->health <= 0 &&
+		source != NULL && source->PlayerUID >= 0)
 	{
-		TrackKills(PlayerDataGetByUID(hitterPlayerUID), victim);
+		TrackKills(PlayerDataGetByUID(source->PlayerUID), victim);
 	}
 }
 static void TrackKills(PlayerData *pd, const TActor *victim)

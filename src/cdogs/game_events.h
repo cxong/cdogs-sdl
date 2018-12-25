@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2017, Cong Xu
+    Copyright (c) 2013-2018 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -48,8 +48,9 @@ typedef enum
 	GAME_EVENT_PLAYER_DATA,
 	GAME_EVENT_PLAYER_REMOVE,
 	GAME_EVENT_TILE_SET,
+
+	GAME_EVENT_THING_DAMAGE,
 	GAME_EVENT_MAP_OBJECT_ADD,
-	GAME_EVENT_MAP_OBJECT_DAMAGE,
 	GAME_EVENT_MAP_OBJECT_REMOVE,
 	GAME_EVENT_CLIENT_READY,
 	GAME_EVENT_NET_GAME_START,
@@ -75,7 +76,6 @@ typedef enum
 	GAME_EVENT_ACTOR_PICKUP_ALL,
 	GAME_EVENT_ACTOR_REPLACE_GUN,
 	GAME_EVENT_ACTOR_HEAL,
-	GAME_EVENT_ACTOR_HIT,
 	GAME_EVENT_ACTOR_ADD_AMMO,
 	GAME_EVENT_ACTOR_USE_AMMO,
 	GAME_EVENT_ACTOR_DIE,
@@ -133,8 +133,8 @@ typedef struct
 		NPlayerData PlayerData;
 		NPlayerRemove PlayerRemove;
 		NTileSet TileSet;
+		NThingDamage ThingDamage;
 		NMapObjectAdd MapObjectAdd;
-		NMapObjectDamage MapObjectDamage;
 		NMapObjectRemove MapObjectRemove;
 		NConfig Config;
 		NScore Score;
@@ -156,7 +156,6 @@ typedef struct
 		NActorPickupAll ActorPickupAll;
 		NActorReplaceGun ActorReplaceGun;
 		NActorHeal Heal;
-		NActorHit ActorHit;
 		NActorAddAmmo AddAmmo;
 		NActorUseAmmo UseAmmo;
 		NActorDie ActorDie;

@@ -121,7 +121,7 @@ struct vec2 WeaponClassGetMuzzleOffset(
 void WeaponClassFire(
 	const WeaponClass *wc, const struct vec2 pos, const int z,
 	const double radians,
-	const int flags, const int playerUID, const int uid,
+	const int flags, const int actorUID,
 	const bool playSound, const bool isGun);
 void WeaponClassAddBrass(
 	const WeaponClass *wc, const direction_e d, const struct vec2 pos);

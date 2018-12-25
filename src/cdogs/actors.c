@@ -62,6 +62,7 @@
 #include "character.h"
 #include "collision/collision.h"
 #include "config.h"
+#include "damage.h"
 #include "draw/drawtools.h"
 #include "events.h"
 #include "game_events.h"
@@ -903,6 +904,9 @@ void SlideActor(TActor *actor, int cmd)
 	actor->slideLock = SLIDE_LOCK;
 }
 
+static void ActorAddBloodSplatters(
+	TActor *a, const int power, const float mass, const struct vec2 hitVector);
+
 static void ActorUpdatePosition(TActor *actor, int ticks);
 static void ActorDie(TActor *actor);
 void UpdateAllActors(int ticks)
@@ -1499,7 +1503,42 @@ void ActorTakeSpecialDamage(TActor *actor, special_damage_e damage)
 	}
 }
 
-void ActorTakeHit(TActor *actor, const special_damage_e damage)
+static void ActorTakeHit(TActor *actor, const special_damage_e damage);
+void ActorHit(const NThingDamage d)
+{
+	TActor *a = ActorGetByUID(d.UID);
+	if (!a->isInUse) return;
+	ActorTakeHit(a, d.Special);
+	if (d.Power > 0)
+	{
+		DamageActor(a, d.Power, d.SourceActorUID);
+
+		// Add damage text
+		GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+		s.u.AddParticle.Class =
+			StrParticleClass(&gParticleClasses, "damage_text");
+		s.u.AddParticle.Pos = svec2_add(
+			a->Pos, svec2(RAND_FLOAT(-3, 3), RAND_FLOAT(-3, 3)));
+		s.u.AddParticle.Z = BULLET_Z * Z_FACTOR;
+		s.u.AddParticle.DZ = 3;
+		sprintf(s.u.AddParticle.Text, "-%d", (int)d.Power);
+		GameEventsEnqueue(&gGameEvents, s);
+
+		ActorAddBloodSplatters(a, d.Power, d.Mass, NetToVec2(d.Vel));
+
+		// Rumble if taking hit
+		if (a->PlayerUID >= 0)
+		{
+			const PlayerData *p = PlayerDataGetByUID(a->PlayerUID);
+			if (p->inputDevice == INPUT_DEVICE_JOYSTICK)
+			{
+				JoyImpact(p->deviceIndex);
+			}
+		}
+	}
+}
+
+static void ActorTakeHit(TActor *actor, const special_damage_e damage)
 {
 	// Wake up if this is an AI
 	if (!gCampaign.IsClient && actor->aiContext)
@@ -1553,7 +1592,7 @@ bool ActorIsInvulnerable(
 	return 0;
 }
 
-void ActorAddBloodSplatters(
+static void ActorAddBloodSplatters(
 	TActor *a, const int power, const float mass, const struct vec2 hitVector)
 {
 	const GoreAmount ga = ConfigGetEnum(&gConfig, "Graphics.Gore");
