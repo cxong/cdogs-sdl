@@ -18,20 +18,10 @@ include_directories(
 add_executable(autosave_test
 	autosave_test.c
 	../autosave.h
-	../autosave.c
-	../cdogs/campaign_entry.c
-	../cdogs/c_array.c
-	../cdogs/color.c
-	../cdogs/json_utils.c
-	../cdogs/json_utils.h
-	../cdogs/log.c
-	../cdogs/log.h
-	../cdogs/mathc/mathc.c
-	../cdogs/utils.c
-	../cdogs/utils.h)
+	../autosave.c)
 target_link_libraries(autosave_test
 	cbehave
-	json
+	cdogs
 	${SDL2_LIBRARY}
 	${EXTRA_LIBRARIES})
 add_test(NAME autosave_test COMMAND autosave_test)
@@ -46,14 +36,9 @@ add_test(NAME c_hashmap_test COMMAND c_hashmap_test)
 add_executable(c_array_test
 	c_array_test.c
 	../cdogs/c_array.h
-	../cdogs/c_array.c
-	../cdogs/color.c
-	../cdogs/mathc/mathc.c
-	../cdogs/utils.c
-	../cdogs/utils.h)
+	../cdogs/c_array.c)
 target_link_libraries(c_array_test
-	cbehave
-	${SDL2_LIBRARY} ${EXTRA_LIBRARIES})
+	cbehave ${EXTRA_LIBRARIES})
 add_test(NAME c_array_test COMMAND c_array_test)
 
 add_executable(color_test
@@ -63,129 +48,45 @@ add_executable(color_test
 target_link_libraries(color_test cbehave ${EXTRA_LIBRARIES})
 add_test(NAME color_test COMMAND color_test)
 
-add_executable(config_test
-	config_test.c
-	../cdogs/c_array.h
-	../cdogs/c_array.c
-	../cdogs/color.c
-	../cdogs/color.h
-	../cdogs/config.c
-	../cdogs/config.h
-	../cdogs/config_io.c
-	../cdogs/config_io.h
-	../cdogs/config_json.c
-	../cdogs/config_json.h
-	../cdogs/config_old.c
-	../cdogs/config_old.h
-	../cdogs/json_utils.c
-	../cdogs/json_utils.h
-	../cdogs/log.c
-	../cdogs/log.h
-	../cdogs/mathc/mathc.c
-	../cdogs/utils.c
-	../cdogs/utils.h)
+add_executable(config_test config_test.c)
 target_link_libraries(config_test
-	cbehave
-	json
+	cbehave cdogs
 	${SDL2_LIBRARY}
 	${EXTRA_LIBRARIES})
 add_test(NAME config_test COMMAND config_test)
 
-add_executable(json_test
-	json_test.c
-	../cdogs/c_array.h
-	../cdogs/c_array.c
-	../cdogs/color.h
-	../cdogs/color.c
-	../cdogs/json_utils.c
-	../cdogs/json_utils.h
-	../cdogs/log.c
-	../cdogs/log.h
-	../cdogs/mathc/mathc.c
-	../cdogs/utils.c
-	../cdogs/utils.h)
+add_executable(json_test json_test.c)
 target_link_libraries(json_test
-	cbehave
-	json
+	cbehave cdogs
 	${SDL2_LIBRARY}
 	${EXTRA_LIBRARIES})
 add_test(NAME json_test COMMAND json_test)
 
-add_executable(minkowski_hex_test
-	minkowski_hex_test.c
-	../cdogs/mathc/mathc.c
-	../cdogs/collision/minkowski_hex.c
-	../cdogs/collision/minkowski_hex.h
-	../cdogs/utils.c
-	../cdogs/utils.h
-	../cdogs/vector.c
-	../cdogs/vector.h)
+add_executable(minkowski_hex_test minkowski_hex_test.c)
 target_link_libraries(minkowski_hex_test
-	cbehave
+	cbehave cdogs
 	${SDL2_LIBRARY}
 	${EXTRA_LIBRARIES})
 add_test(NAME minkowski_hex_test COMMAND minkowski_hex_test)
 
-add_executable(pic_test
-	pic_test.c
-	../cdogs/blit.c
-	../cdogs/blit.h
-	../cdogs/c_array.c
-	../cdogs/c_array.h
-	../cdogs/color.c
-	../cdogs/color.h
-	../cdogs/config.c
-	../cdogs/config.h
-	../cdogs/grafx.c
-	../cdogs/grafx.h
-	../cdogs/log.c
-	../cdogs/log.h
-	../cdogs/mathc/mathc.c
-	../cdogs/pic.c
-	../cdogs/pic.h
-	../cdogs/texture.c
-	../cdogs/texture.h
-	../cdogs/utils.c
-	../cdogs/utils.h
-	../cdogs/vector.c
-	../cdogs/vector.h
-	../cdogs/window_context.c
-	../cdogs/window_context.h)
+add_executable(pic_test pic_test.c)
 target_link_libraries(pic_test
-	cbehave
+	cbehave cdogs
 	${SDL2_LIBRARY}
 	${SDL2_IMAGE_LIBRARIES}
 	${EXTRA_LIBRARIES})
 # TODO: test disabled since Travis-CI fails with "No available video device"
 #add_test(NAME pic_test COMMAND pic_test)
 
-add_executable(player_test
-	player_test.c
-	../cdogs/c_array.c
-	../cdogs/c_array.h
-	../cdogs/color.c
-	../cdogs/color.h
-	../cdogs/log.c
-	../cdogs/log.h
-	../cdogs/mathc/mathc.c
-	../cdogs/player.c
-	../cdogs/player.h
-	../cdogs/vector.c
-	../cdogs/vector.h
-	../cdogs/utils.c
-	../cdogs/utils.h)
+add_executable(player_test player_test.c)
 target_link_libraries(player_test
-	cbehave
+	cbehave cdogs
 	${SDL2_LIBRARY}
 	${EXTRA_LIBRARIES})
 add_test(NAME player_test COMMAND player_test)
 
-add_executable(utils_test
-	utils_test.c
-	../cdogs/mathc/mathc.c
-	../cdogs/utils.c
-	../cdogs/utils.h)
+add_executable(utils_test utils_test.c)
 target_link_libraries(utils_test
-	cbehave
+	cbehave cdogs
 	${SDL2_LIBRARY} ${EXTRA_LIBRARIES})
 add_test(NAME utils_test COMMAND utils_test)

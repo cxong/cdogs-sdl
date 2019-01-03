@@ -25,6 +25,20 @@ bool ConfigGetBool(Config *c, const char *name)
 {
 	UNUSED(c); UNUSED(name); return false;
 }
+int ConfigGetInt(Config *c, const char *name)
+{
+	UNUSED(c); UNUSED(name); return 0;
+}
+int ConfigGetJSONVersion(FILE *f)
+{
+	UNUSED(f);
+	return 0;
+}
+bool ConfigIsOld(FILE *f)
+{
+	UNUSED(f);
+	return false;
+}
 Pic *PicManagerGetPic(const PicManager *pm, const char *name)
 {
 	UNUSED(pm);

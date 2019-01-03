@@ -23,6 +23,16 @@ bool ConfigGetBool(Config *c, const char *name)
 	UNUSED(name);
 	return false;
 }
+int ConfigGetJSONVersion(FILE *f)
+{
+	UNUSED(f);
+	return 0;
+}
+bool ConfigIsOld(FILE *f)
+{
+	UNUSED(f);
+	return false;
+}
 int PicManagerGetPic(void) { return 0; }
 int StrWeaponClass(void) { return 0; }
 Config gConfig;

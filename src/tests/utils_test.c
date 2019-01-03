@@ -1,3 +1,4 @@
+
 #include <cbehave/cbehave.h>
 
 #include <utils.h>
@@ -6,13 +7,6 @@
 
 #include <sys_config.h>
 #include <sys_specifics.h>
-
-// Stubs
-const char *JoyName(const int deviceIndex)
-{
-	UNUSED(deviceIndex);
-	return NULL;
-}
 
 FEATURE(path_funcs, "Path functions")
 	mkdir("/tmp/path", MKDIR_MODE);
