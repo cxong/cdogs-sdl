@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017, Cong Xu
+    Copyright (c) 2013-2017, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -210,3 +210,5 @@ typedef enum
 	PLACEMENT_ACCESS_LOCKED,	// place in locked rooms
 	PLACEMENT_ACCESS_NOT_LOCKED	// don't place in locked rooms
 } PlacementAccessFlags;
+
+int Pulse256(const int t);

@@ -114,14 +114,7 @@ static void DrawObjectiveHighlight(
 	const struct vec2i pos = svec2i(
 		(int)ti->Pos.x - b->xTop + offset.x,
 		(int)ti->Pos.y - b->yTop + offset.y);
-	const int pulsePeriod = ConfigGetInt(&gConfig, "Game.FPS");
-	int alphaUnscaled =
-		(gMission.time % pulsePeriod) * 255 / (pulsePeriod / 2);
-	if (alphaUnscaled > 255)
-	{
-		alphaUnscaled = 255 * 2 - alphaUnscaled;
-	}
-	color.a = (Uint8)alphaUnscaled;
+	color.a = (Uint8)Pulse256(gMission.time);
 	if (ti->kind == KIND_CHARACTER)
 	{
 		TActor *a = CArrayGet(&gActors, ti->id);

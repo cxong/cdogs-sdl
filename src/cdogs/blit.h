@@ -80,8 +80,6 @@ void BlitMasked(
 	struct vec2i pos,
 	color_t mask,
 	int isTransparent);
-void BlitBlend(
-	GraphicsDevice *g, const Pic *pic, struct vec2i pos, const color_t blend);
 void BlitPicHighlight(
 	GraphicsDevice *g, const Pic *pic, const struct vec2i pos, const color_t color);
 void BlitClearBuf(GraphicsDevice *g);

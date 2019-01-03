@@ -264,54 +264,6 @@ void CharColorsGetMaskedName(char *buf, const char *base, const CharColors *c)
 	sprintf(buf, "%s/%s/%s/%s/%s/%s", base,
 		bufSkin, bufArms, bufBody, bufLegs, bufHair);
 }
-void BlitBlend(
-	GraphicsDevice *g, const Pic *pic, struct vec2i pos, const color_t blend)
-{
-	Uint32 *current = pic->Data;
-	pos = svec2i_add(pos, pic->offset);
-	for (int i = 0; i < pic->size.y; i++)
-	{
-		int yoff = i + pos.y;
-		if (yoff > g->clipping.bottom)
-		{
-			break;
-		}
-		if (yoff < g->clipping.top)
-		{
-			current += pic->size.x;
-			continue;
-		}
-		yoff *= g->cachedConfig.Res.x;
-		for (int j = 0; j < pic->size.x; j++)
-		{
-			int xoff = j + pos.x;
-			if (xoff < g->clipping.left)
-			{
-				current++;
-				continue;
-			}
-			if (xoff > g->clipping.right)
-			{
-				current += pic->size.x - j;
-				break;
-			}
-			if (*current == 0)
-			{
-				current++;
-				continue;
-			}
-			Uint32 *target = g->buf + yoff + xoff;
-			const color_t currentColor = PIXEL2COLOR(*current);
-			color_t blendedColor = ColorMult(
-				currentColor, blend);
-			blendedColor.a = blend.a;
-			const color_t targetColor = PIXEL2COLOR(*target);
-			blendedColor = ColorAlphaBlend(targetColor, blendedColor);
-			*target = COLOR2PIXEL(blendedColor);
-			current++;
-		}
-	}
-}
 
 void BlitClearBuf(GraphicsDevice *g)
 {

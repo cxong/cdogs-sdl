@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017 Cong Xu
+    Copyright (c) 2013-2017, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -1010,7 +1010,9 @@ static void DrawHUDMessage(HUD *hud)
 			(hud->device->cachedConfig.Res.x -
 				FontStrW(hud->message)) / 2,
 			AUTOMAP_SIZE + AUTOMAP_PADDING + AUTOMAP_PADDING);
-		FontStrMask(hud->message, pos, colorCyan);
+		const HSV tint = { -1.0, 1.0, Pulse256(hud->mission->time) / 256.0};
+		const color_t mask = ColorTint(colorCyan, tint);
+		FontStrMask(hud->message, pos, mask);
 	}
 }
 

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2017 Cong Xu
+    Copyright (c) 2014-2017, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -208,14 +208,7 @@ struct vec2i FontCh(const char c, const struct vec2i pos)
 {
 	return FontChMask(c, pos, colorWhite);
 }
-static struct vec2i FontChColor(
-	const char c, const struct vec2i pos, const color_t color, const bool blend);
 struct vec2i FontChMask(const char c, const struct vec2i pos, const color_t mask)
-{
-	return FontChColor(c, pos, mask, false);
-}
-static struct vec2i FontChColor(
-	const char c, const struct vec2i pos, const color_t color, const bool blend)
 {
 	int idx = (int)c - FIRST_CHAR;
 	if (idx < 0)
@@ -228,14 +221,7 @@ static struct vec2i FontChColor(
 		idx = FIRST_CHAR;
 	}
 	const Pic *pic = CArrayGet(&gFont.Chars, idx);
-	if (blend)
-	{
-		BlitBlend(&gGraphicsDevice, pic, pos, color);
-	}
-	else
-	{
-		BlitMasked(&gGraphicsDevice, pic, pos, color, true);
-	}
+	BlitMasked(&gGraphicsDevice, pic, pos, mask, true);
 	// Add gap between characters
 	return svec2i(pos.x + pic->size.x + gFont.Gap.x, pos.y);
 }
@@ -243,14 +229,7 @@ struct vec2i FontStr(const char *s, struct vec2i pos)
 {
 	return FontStrMask(s, pos, colorWhite);
 }
-static struct vec2i FontStrColor(
-	const char *s, struct vec2i pos, const color_t c, const bool blend);
 struct vec2i FontStrMask(const char *s, struct vec2i pos, const color_t mask)
-{
-	return FontStrColor(s, pos, mask, false);
-}
-static struct vec2i FontStrColor(
-	const char *s, struct vec2i pos, const color_t c, const bool blend)
 {
 	if (s == NULL)
 	{
@@ -266,7 +245,7 @@ static struct vec2i FontStrColor(
 		}
 		else
 		{
-			pos = FontChColor(*s, pos, c, blend);
+			pos = FontChMask(*s, pos, mask);
 		}
 		s++;
 	}
