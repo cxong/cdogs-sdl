@@ -75,9 +75,13 @@ const char *AIStateGetChatterText(const AIState s)
 	}
 }
 
-bool AIContextShowChatter(const AIContext *c, const AIChatterFrequency f)
+int AIContextShowChatter(const AIContext *c, const AIChatterFrequency f)
 {
-	return f != AICHATTER_NONE && c->ChatterCounter <= 0;
+	if (f == AICHATTER_NONE)
+	{
+		return 0;
+	}
+	return c->ChatterCounter;
 }
 
 static void AIContextSetChatterDelay(AIContext *c, const AIChatterFrequency f);

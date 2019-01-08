@@ -671,13 +671,11 @@ int ActorGetNumGrenades(const TActor *a)
 // Set AI state and possibly say something based on the state
 void ActorSetAIState(TActor *actor, const AIState s)
 {
-	if (AIContextSetState(actor->aiContext, s) &&
-		AIContextShowChatter(
-		actor->aiContext, ConfigGetEnum(&gConfig, "Interface.AIChatter")))
+	if (AIContextSetState(actor->aiContext, s))
 	{
-		// Say something for a while
 		strcpy(actor->Chatter, AIStateGetChatterText(actor->aiContext->State));
-		actor->ChatterCounter = 2;
+		actor->ChatterCounter = AIContextShowChatter(
+			actor->aiContext, ConfigGetEnum(&gConfig, "Interface.AIChatter"));
 	}
 }
 
