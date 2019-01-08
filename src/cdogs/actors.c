@@ -92,6 +92,7 @@
 // Percent of health considered low; bleed and flash HUD if low
 #define LOW_HEALTH_PERCENTAGE 25
 #define GORE_EMITTER_MAX_SPEED 0.25f
+#define CHATTER_SWITCH_GUN 45 // TODO: based on clock time instead of game ticks
 
 
 CArray gPlayerIds;
@@ -668,14 +669,24 @@ int ActorGetNumGrenades(const TActor *a)
 	return count;
 }
 
+static void ActorSetChatter(TActor *a, const char *text, const int count)
+{
+	strcpy(a->Chatter, text);
+	a->ChatterCounter = count;
+}
+
 // Set AI state and possibly say something based on the state
 void ActorSetAIState(TActor *actor, const AIState s)
 {
 	if (AIContextSetState(actor->aiContext, s))
 	{
-		strcpy(actor->Chatter, AIStateGetChatterText(actor->aiContext->State));
-		actor->ChatterCounter = AIContextShowChatter(
-			actor->aiContext, ConfigGetEnum(&gConfig, "Interface.AIChatter"));
+		ActorSetChatter(
+			actor,
+			AIStateGetChatterText(actor->aiContext->State),
+			AIContextShowChatter(
+				actor->aiContext,
+				ConfigGetEnum(&gConfig, "Interface.AIChatter"))
+		);
 	}
 }
 
@@ -1046,10 +1057,10 @@ static bool CheckManualPickupFunc(
 	const PlayerData *pData = PlayerDataGetByUID(a->PlayerUID);
 	if (pData->IsLocal && IsPlayerHuman(pData))
 	{
-		char buf[256];
-		strcpy(buf, "");
+		char buttonName[256];
+		strcpy(buttonName, "");
 		InputGetButtonName(
-			pData->inputDevice, pData->deviceIndex, CMD_BUTTON2, buf);
+			pData->inputDevice, pData->deviceIndex, CMD_BUTTON2, buttonName);
 		const char *pickupName;
 		switch (p->class->Type)
 		{
@@ -1064,8 +1075,9 @@ static bool CheckManualPickupFunc(
 			pickupName = "???";
 			break;
 		}
-		sprintf(a->Chatter, "%s to pick up\n%s", buf, pickupName);
-		a->ChatterCounter = 2;
+		char buf[256];
+		sprintf(buf, "%s to pick up\n%s", buttonName, pickupName);
+		ActorSetChatter(a, buf, 2);
 	}
 	// If co-op AI, alert it so it can try to pick the gun up
 	if (a->aiContext != NULL)
@@ -1436,8 +1448,9 @@ void ActorSwitchGun(const NActorSwitchGun sg)
 	TActor *a = ActorGetByUID(sg.UID);
 	if (a == NULL || !a->isInUse) return;
 	a->gunIndex = sg.GunIdx;
-	SoundPlayAt(
-		&gSoundDevice, ACTOR_GET_WEAPON(a)->Gun->SwitchSound, a->thing.Pos);
+	const WeaponClass *gun = ACTOR_GET_WEAPON(a)->Gun;
+	SoundPlayAt(&gSoundDevice, gun->SwitchSound, a->thing.Pos);
+	ActorSetChatter(a, gun->name, CHATTER_SWITCH_GUN);
 }
 
 bool ActorIsImmune(const TActor *actor, const special_damage_e damage)
