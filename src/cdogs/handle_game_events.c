@@ -590,7 +590,11 @@ static void HandleGameEvent(
 	case GAME_EVENT_MISSION_COMPLETE:
 		if (e.u.MissionComplete.ShowMsg)
 		{
-			SoundPlay(&gSoundDevice, StrSound("mission_complete"));
+			if (!gMission.HasPlayedCompleteSound)
+			{
+				SoundPlay(&gSoundDevice, StrSound("mission_complete"));
+				gMission.HasPlayedCompleteSound = true;
+			}
 			if (camera != NULL)
 			{
 				HUDDisplayMessage(&camera->HUD, "Mission complete", -1);

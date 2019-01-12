@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017, Cong Xu
+    Copyright (c) 2013-2017, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -173,7 +173,7 @@ typedef struct
 		// Static
 		struct
 		{
-			CArray Tiles;		// of unsigned short (map tile)
+			CArray Tiles;		// of uint16_t (map tile)
 			CArray Items;		// of MapObjectPositions
 			CArray Characters;	// of CharacterPositions
 			CArray Objectives;	// of ObjectivePositions
@@ -225,6 +225,7 @@ struct MissionOptions
 	bool isDone;
 	int DoneCounter;
 	bool IsQuit;
+	bool HasPlayedCompleteSound;
 };
 
 void MissionInit(Mission *m);
