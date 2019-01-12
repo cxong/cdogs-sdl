@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017, Cong Xu
+    Copyright (c) 2013-2017, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -88,6 +88,7 @@
 #include <cdogs/utils.h>
 
 #include "autosave.h"
+#include "briefing_screens.h"
 #include "command_line.h"
 #include "credits.h"
 #include "mainmenu.h"
@@ -239,6 +240,7 @@ int main(int argc, char *argv[])
 	PlayerDataInit(&gPlayerDatas);
 
 	LoopRunner l = LoopRunnerNew(NULL);
+	LoopRunnerPush(&l, MainMenu(&gGraphicsDevice, &l));
 	// Attempt to pre-load campaign if requested
 	if (loadCampaign != NULL)
 	{
@@ -263,10 +265,6 @@ int main(int argc, char *argv[])
 		{
 			printf("Failed to connect\n");
 		}
-	}
-	if (!gCampaign.IsLoaded)
-	{
-		LoopRunnerPush(&l, MainMenu(&gGraphicsDevice, &l));
 	}
 	LOG(LM_MAIN, LL_INFO, "Starting game");
 	LoopRunnerRun(&l);
