@@ -174,31 +174,7 @@ static void LogResetColor(void)
 }
 
 // LOG_STR / LOG_VSTR
-#ifdef __APPLE__
-
-static int GetOSLogType(const LogLevel l)
-{
-	switch (l)
-	{
-	case LL_TRACE:	// fallthrough
-	case LL_DEBUG: return OS_LOG_TYPE_DEBUG;
-	case LL_INFO:	// fallthrough
-	case LL_WARN: return OS_LOG_TYPE_INFO;
-	case LL_ERROR: return OS_LOG_TYPE_ERROR;
-	default: CASSERT(false, "Unknown log level"); return OS_LOG_TYPE_DEFAULT;
-	}
-}
-
-#define LOG_STR(_level, _stream, _fmt, ...)\
-	os_log_with_type(OS_LOG_DEFAULT, GetOSLogType(_level), _fmt, ##__VA_ARGS__)
-#define LOG_VSTR(_level, _stream, _fmt, _args)\
-	{\
-		char _log_vstr_buf[1024];\
-		vsnprintf(_log_vstr_buf, sizeof(_log_vstr_buf), _fmt, _args);\
-		os_log_with_type(\
-			OS_LOG_DEFAULT, GetOSLogType(_level), "%s", _log_vstr_buf);\
-	}
-#elif defined(__EMSCRIPTEN__)
+#if defined(__EMSCRIPTEN__)
 
 #define LOG_STR(_level, _stream, _fmt, ...)\
 	if (_level >= LL_WARN)\
