@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2014, 2016-2018 Cong Xu
+    Copyright (c) 2013-2014, 2016-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -56,7 +56,9 @@ typedef struct
 		for (_v.y = _r.Pos.y; _v.y < _r.Pos.y + _r.Size.y; _v.y++)\
 		{\
 			for (_v.x = _r.Pos.x; _v.x < _r.Pos.x + _r.Size.x; _v.x++)\
-			{
+			{\
+				const int _i = _v.x + _v.y * _r.Size.x;\
+				UNUSED(_i);
 #define RECT_FOREACH_END() } } }
 
 Rect2i Rect2iNew(const struct vec2i pos, const struct vec2i size);
