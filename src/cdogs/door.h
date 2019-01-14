@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, 2018 Cong Xu
+    Copyright (c) 2013-2016, 2018-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -54,9 +54,10 @@
 void MapAddDoorGroup(MapBuilder *mb, const struct vec2i v, const int keyFlags);
 
 const TileClass *DoorGetClass(
+	const char *style, const char *key, const bool isHorizontal);
+void DoorAddClass(
 	TileClasses *c, const PicManager *pm,
-	const char *style, const char *key,
-	const bool isHorizontal);
+	const char *style, const char *key, const bool isHorizontal);
 
 // Legacy door style int to str
 const char *IntDoorStyle(const int i);

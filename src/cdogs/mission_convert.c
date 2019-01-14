@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2018 Cong Xu
+    Copyright (c) 2014-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -64,12 +64,12 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 			struct vec2i v;
 			// Take all the tiles from the current map
 			// and save them in the static map
-			CArrayInit(&m->u.Static.Tiles, sizeof(unsigned short));
+			CArrayInit(&m->u.Static.Tiles, sizeof(uint16_t));
 			for (v.y = 0; v.y < m->Size.y; v.y++)
 			{
 				for (v.x = 0; v.x < m->Size.x; v.x++)
 				{
-					const unsigned short ti = MapGetTileType(map, v);
+					const uint16_t ti = MapGetTileType(map, v);
 					// TODO: don't use tiletype
 					CArrayPushBack(&m->u.Static.Tiles, &ti);
 				}
@@ -104,12 +104,12 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 	m->Type = type;
 }
 
-static int IsClear(unsigned short tile)
+static int IsClear(uint16_t tile)
 {
 	tile &= MAP_MASKACCESS;
 	return tile == MAP_FLOOR || tile == MAP_ROOM || tile == MAP_SQUARE;
 }
-static unsigned short GetTileAt(Mission *m, struct vec2i pos)
+static uint16_t GetTileAt(Mission *m, struct vec2i pos)
 {
 	int idx = pos.y * m->Size.x + pos.x;
 	// check for out-of-bounds
@@ -117,7 +117,7 @@ static unsigned short GetTileAt(Mission *m, struct vec2i pos)
 	{
 		return MAP_NOTHING;
 	}
-	return *(unsigned short *)CArrayGet(&m->u.Static.Tiles, idx);
+	return *(uint16_t *)CArrayGet(&m->u.Static.Tiles, idx);
 }
 // See if the tile located at a position is a door and also needs
 // to be oriented in a certain way
@@ -125,7 +125,7 @@ static unsigned short GetTileAt(Mission *m, struct vec2i pos)
 // orientation of the door
 static int HasDoorOrientedAt(Mission *m, struct vec2i pos,int isHorizontal)
 {
-	unsigned short tile = GetTileAt(m, pos);
+	uint16_t tile = GetTileAt(m, pos);
 	if (tile != MAP_DOOR)
 	{
 		return 0;
@@ -150,7 +150,7 @@ static int HasDoorOrientedAt(Mission *m, struct vec2i pos,int isHorizontal)
 	// There is a door but it is free to be oriented in any way
 	return 0;
 }
-bool MissionTrySetTile(Mission *m, struct vec2i pos, unsigned short tile)
+bool MissionTrySetTile(Mission *m, struct vec2i pos, const uint16_t tile)
 {
 	if (pos.x < 0 || pos.x >= m->Size.x || pos.y < 0 || pos.y >= m->Size.y)
 	{
@@ -196,18 +196,18 @@ bool MissionTrySetTile(Mission *m, struct vec2i pos, unsigned short tile)
 		break;
 	}
 	const int idx = pos.y * m->Size.x + pos.x;
-	*(unsigned short *)CArrayGet(&m->u.Static.Tiles, idx) = tile;
+	*(uint16_t *)CArrayGet(&m->u.Static.Tiles, idx) = tile;
 	return true;
 }
 
-unsigned short MissionGetTile(Mission *m, struct vec2i pos)
+uint16_t MissionGetTile(Mission *m, struct vec2i pos)
 {
 	if (pos.x < 0 || pos.x >= m->Size.x || pos.y < 0 || pos.y >= m->Size.y)
 	{
 		return MAP_UNSET;
 	}
 	int idx = pos.y * m->Size.x + pos.x;
-	return *(unsigned short *)CArrayGet(&m->u.Static.Tiles, idx);
+	return *(uint16_t *)CArrayGet(&m->u.Static.Tiles, idx);
 }
 
 void MissionStaticLayout(Mission *m, struct vec2i oldSize)
@@ -228,7 +228,7 @@ void MissionStaticLayout(Mission *m, struct vec2i oldSize)
 	{
 		for (v.x = 0; v.x < m->Size.x; v.x++)
 		{
-			unsigned short tile = MAP_FLOOR;
+			const uint16_t tile = MAP_FLOOR;
 			CArrayPushBack(&m->u.Static.Tiles, &tile);
 		}
 	}
@@ -245,7 +245,7 @@ void MissionStaticLayout(Mission *m, struct vec2i oldSize)
 			else
 			{
 				int idx = v.y * oldSize.x + v.x;
-				unsigned short *tile = CArrayGet(&oldTiles, idx);
+				const uint16_t *tile = CArrayGet(&oldTiles, idx);
 				MissionTrySetTile(m, v, *tile);
 			}
 		}
@@ -274,13 +274,13 @@ static bool TryAddMapObject(
 	Mission *m, const MapObject *mo, const struct vec2i pos, CArray *objs)
 {
 	CASSERT(m->Type == MAPTYPE_STATIC, "invalid map type");
-	const unsigned short tile = MissionGetTile(m, pos);
+	const Tile *tile = MapGetTile(&gMap, pos);
+	const Tile *tileAbove = MapGetTile(&gMap, svec2i(pos.x, pos.y - 1));
 
 	// Remove any items already there
 	TryRemoveMapObjectAt(pos, objs);
 
-	if (MapObjectIsTileOK(
-		mo, tile, 1, MissionGetTile(m, svec2i(pos.x, pos.y - 1))))
+	if (MapObjectIsTileOK(mo, tile, tileAbove))
 	{
 		// Check if the item already has an entry, and add to its list
 		// of positions
@@ -334,7 +334,7 @@ static bool TryRemoveMapObjectAt(const struct vec2i pos, CArray *objs)
 bool MissionStaticTryAddCharacter(Mission *m, int ch, struct vec2i pos)
 {
 	assert(m->Type == MAPTYPE_STATIC && "invalid map type");
-	unsigned short tile = MissionGetTile(m, pos);
+	const uint16_t tile = MissionGetTile(m, pos);
 
 	// Remove any characters already there
 	MissionStaticTryRemoveCharacterAt(m, pos);
@@ -389,7 +389,7 @@ bool MissionStaticTryRemoveCharacterAt(Mission *m, struct vec2i pos)
 bool MissionStaticTryAddObjective(Mission *m, int idx, int idx2, struct vec2i pos)
 {
 	assert(m->Type == MAPTYPE_STATIC && "invalid map type");
-	unsigned short tile = MissionGetTile(m, pos);
+	const uint16_t tile = MissionGetTile(m, pos);
 	
 	// Remove any objectives already there
 	MissionStaticTryRemoveObjectiveAt(m, pos);
@@ -459,7 +459,7 @@ bool MissionStaticTryRemoveObjectiveAt(Mission *m, struct vec2i pos)
 bool MissionStaticTryAddKey(Mission *m, int k, struct vec2i pos)
 {
 	assert(m->Type == MAPTYPE_STATIC && "invalid map type");
-	unsigned short tile = MissionGetTile(m, pos);
+	const uint16_t tile = MissionGetTile(m, pos);
 	
 	// Remove any keys already there
 	MissionStaticTryRemoveKeyAt(m, pos);
@@ -514,14 +514,14 @@ bool MissionStaticTryRemoveKeyAt(Mission *m, struct vec2i pos)
 typedef struct
 {
 	Mission *m;
-	unsigned short mask;
+	uint16_t mask;
 } MissionFloodFillData;
 static void MissionFillTile(void *data, struct vec2i v);
 static bool MissionIsTileSame(void *data, struct vec2i v);
 bool MissionStaticTrySetKey(Mission *m, int k, struct vec2i pos)
 {
 	assert(m->Type == MAPTYPE_STATIC && "invalid map type");
-	unsigned short mask = GetAccessMask(k);
+	const uint16_t mask = GetAccessMask(k);
 	FloodFillData data;
 	data.Fill = MissionFillTile;
 	data.IsSame = MissionIsTileSame;
@@ -539,7 +539,7 @@ static void MissionFillTile(void *data, struct vec2i v)
 static bool MissionIsTileSame(void *data, struct vec2i v)
 {
 	MissionFloodFillData *mData = data;
-	unsigned short tile = MissionGetTile(mData->m, v);
+	const uint16_t tile = MissionGetTile(mData->m, v);
 	return (tile & MAP_MASKACCESS) == MAP_DOOR &&
 		(tile & MAP_ACCESSBITS) != mData->mask;
 }

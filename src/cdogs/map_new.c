@@ -380,7 +380,7 @@ static void LoadStaticKeys(Mission *m, json_t *node, char *name);
 static void LoadStaticExit(Mission *m, json_t *node, char *name);
 static bool TryLoadStaticMap(Mission *m, json_t *node, int version)
 {
-	CArrayInit(&m->u.Static.Tiles, sizeof(unsigned short));
+	CArrayInit(&m->u.Static.Tiles, sizeof(uint16_t));
 	if (version == 1)
 	{
 		// JSON array
@@ -392,7 +392,7 @@ static bool TryLoadStaticMap(Mission *m, json_t *node, int version)
 		tiles = tiles->child;
 		for (tiles = tiles->child; tiles; tiles = tiles->next)
 		{
-			unsigned short n = (unsigned short)atoi(tiles->text);
+			uint16_t n = (uint16_t)atoi(tiles->text);
 			CArrayPushBack(&m->u.Static.Tiles, &n);
 		}
 	}
@@ -403,7 +403,7 @@ static bool TryLoadStaticMap(Mission *m, json_t *node, int version)
 		char *pch = strtok(tileCSV, ",");
 		while (pch != NULL)
 		{
-			unsigned short n = (unsigned short)atoi(pch);
+			uint16_t n = (uint16_t)atoi(pch);
 			CArrayPushBack(&m->u.Static.Tiles, &n);
 			pch = strtok(NULL, ",");
 		}

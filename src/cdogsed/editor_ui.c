@@ -449,7 +449,7 @@ static void MissionDrawDoorStyle(
 	DrawStyleArea(
 		svec2i_add(pos, o->Pos),
 		"Doors",
-		DoorGetClass(&gTileClasses, &gPicManager, m->DoorStyle, "normal", true)->Pic,
+		DoorGetClass(m->DoorStyle, "normal", true)->Pic,
 		idx, (int)gPicManager.doorStyleNames.size,
 		UIObjectIsHighlighted(o));
 }

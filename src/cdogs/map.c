@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2018 Cong Xu
+    Copyright (c) 2013-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -103,7 +103,7 @@ IMapType StrIMapType(const char *s)
 }
 
 
-unsigned short GetAccessMask(int k)
+uint16_t GetAccessMask(const int k)
 {
 	if (k == -1)
 	{
@@ -114,7 +114,7 @@ unsigned short GetAccessMask(int k)
 
 Tile *MapGetTile(const Map *map, const struct vec2i pos)
 {
-	if (pos.x < 0 || pos.x >= map->Size.x || pos.y < 0 || pos.y >= map->Size.y)
+	if (!MapIsTileIn(map, pos))
 	{
 		return NULL;
 	}
@@ -130,7 +130,7 @@ bool MapIsTileIn(const Map *map, const struct vec2i pos)
 static bool MapIsPosIn(const Map *map, const struct vec2 pos)
 {
 	// Check that the pos is within the interior of the map
-	return MapIsTileIn(map, Vec2ToTile(pos));
+	return pos.x >= 0 && pos.y >= 0 && MapIsTileIn(map, Vec2ToTile(pos));
 }
 
 bool MapIsTileInExit(const Map *map, const Thing *ti)
@@ -293,9 +293,9 @@ bool MapHasLockedRooms(const Map *map)
 	return map->keyAccessCount > 1;
 }
 
-unsigned short MapGetAccessLevel(const Map *map, const struct vec2i pos)
+uint16_t MapGetAccessLevel(const Map *map, const struct vec2i pos)
 {
-	const unsigned short t = *(unsigned short *)CArrayGet(
+	const uint16_t t = *(uint16_t *)CArrayGet(
 		&map->access, pos.y * map->Size.x + pos.x);
 	return AccessCodeToFlags(t);
 }
@@ -407,18 +407,8 @@ bool MapPlaceRandomPos(
 	return false;
 }
 
-
-void MapSetAccess(Map *map, const CArray *access)
-{
-	CASSERT(access->size == map->access.size, "Unequal access sizes");
-	CA_FOREACH(const unsigned short, t, *access)
-		const unsigned short tAccess = *t & MAP_ACCESSBITS;
-		CArraySet(&map->access, _ca_index, &tAccess);
-	CA_FOREACH_END()
-}
-
 // TODO: use enum instead of flag for map access
-unsigned short AccessCodeToFlags(const unsigned short code)
+uint16_t AccessCodeToFlags(const uint16_t code)
 {
 	if (code & MAP_ACCESS_RED)
 		return FLAGS_KEYCARD_RED;
@@ -477,7 +467,7 @@ void MapInit(Map *map, const struct vec2i size)
 	CArrayInit(&map->Tiles, sizeof(Tile));
 	map->Size = size;
 	LOSInit(map);
-	CArrayInit(&map->access, sizeof(unsigned short));
+	CArrayInit(&map->access, sizeof(uint16_t));
 	CArrayResize(&map->access, size.x * size.y, NULL);
 	CArrayFillZero(&map->access);
 	CArrayInit(&map->triggers, sizeof(Trigger *));

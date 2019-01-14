@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2018 Cong Xu
+    Copyright (c) 2013-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -140,6 +140,5 @@ int MapObjectsCount(const MapObjects *classes);
 const Pic *MapObjectGetPic(const MapObject *mo, struct vec2i *offset);
 
 bool MapObjectIsTileOK(
-	const MapObject *obj, unsigned short tile, const bool isEmpty,
-	unsigned short tileAbove);
+	const MapObject *obj, const Tile *tile, const Tile *tileAbove);
 struct vec2 MapObjectGetPlacementPos(const MapObject *mo, const struct vec2i tilePos);

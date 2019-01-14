@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2014, 2016-2017 Cong Xu
+    Copyright (c) 2014, 2016-2017, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -546,24 +546,18 @@ const Pic *MapObjectGetPic(const MapObject *mo, struct vec2i *offset)
 
 
 bool MapObjectIsTileOK(
-	const MapObject *obj, unsigned short tile, const bool isEmpty,
-	unsigned short tileAbove)
+	const MapObject *obj, const Tile *tile, const Tile *tileAbove)
 {
-	tile &= MAP_MASKACCESS;
-	if (tile != MAP_FLOOR && tile != MAP_SQUARE && tile != MAP_ROOM)
+	if (!TileIsClear(tile))
 	{
-		return 0;
+		return false;
 	}
-	if (!isEmpty)
+	if ((obj->Flags & (1 << PLACEMENT_ON_WALL)) &&
+		(tileAbove == NULL || !tileAbove->Class->IsWall))
 	{
-		return 0;
+		return false;
 	}
-	tileAbove &= MAP_MASKACCESS;
-	if ((obj->Flags & (1 << PLACEMENT_ON_WALL)) && tileAbove != MAP_WALL)
-	{
-		return 0;
-	}
-	return 1;
+	return true;
 }
 struct vec2 MapObjectGetPlacementPos(const MapObject *mo, const struct vec2i tilePos)
 {

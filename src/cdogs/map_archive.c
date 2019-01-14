@@ -483,7 +483,7 @@ static json_t *SaveStaticTiles(Mission *m)
 	for (int i = 0; i < size; i++)
 	{
 		char buf[32];
-		sprintf(buf, "%d", *(unsigned short *)CArrayGet(
+		sprintf(buf, "%d", *(uint16_t *)CArrayGet(
 			&m->u.Static.Tiles, i));
 		strcpy(pBuf, buf);
 		pBuf += strlen(buf);

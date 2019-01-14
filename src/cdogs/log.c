@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2015-2017 Cong Xu
+    Copyright (c) 2015-2017, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -244,4 +244,9 @@ void LogLine(
 	{
 		fflush(stream);
 	}
+}
+
+void LogFlush(FILE *stream)
+{
+	fflush(stream);
 }

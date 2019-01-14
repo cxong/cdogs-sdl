@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, 2017-2018 Cong Xu
+    Copyright (c) 2013-2015, 2017-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -58,8 +58,10 @@ typedef struct
 	const CampaignOptions *co;
 
 	// internal data structures to help build the map
-	CArray iMap;	// of unsigned short
+	CArray access;	// of uint16_t
+	CArray tiles;	// of TileClass
 	CArray leaveFree;	// of bool
+	CArray isRoom;	// of bool
 } MapBuilder;
 
 void MapBuild(Map *m, const Mission *mission, const CampaignOptions *co);
@@ -69,8 +71,13 @@ void MapBuilderTerminate(MapBuilder *mb);
 
 void MapLoadDynamic(MapBuilder *mb);
 
-unsigned short IMapGet(const MapBuilder *mb, const struct vec2i pos);
-void IMapSet(MapBuilder *mb, struct vec2i pos, unsigned short v);
+uint16_t MapBuildGetAccess(const MapBuilder *mb, const struct vec2i pos);
+void MapBuildSetAccess(MapBuilder *mb, struct vec2i pos, const uint16_t v);
+bool MapBuilderGetIsRoom(const MapBuilder *mb, const struct vec2i pos);
+const TileClass *MapBuilderGetTile(
+	const MapBuilder *mb, const struct vec2i pos);
+void MapBuilderSetTile(
+	MapBuilder *mb, struct vec2i pos, const TileClass *t, const bool isRoom);
 
 // Mark a tile so that it is left free of other map objects
 void MapBuilderSetLeaveFree(
@@ -90,13 +97,10 @@ bool MapPlaceRandomTile(
 	MapBuilder *mb, const PlacementAccessFlags paFlags,
 	bool (*tryPlaceFunc)(MapBuilder *, const struct vec2i, void *), void *data);
 
-bool MapObjectIsTileOKStrict(
-	const MapBuilder *mb, const MapObject *obj, const unsigned short tileAccess,
-	const struct vec2i tile, const bool isEmpty,
-	const unsigned short tileAbove, const unsigned short tileBelow,
-	const int numWallsAdjacent, const int numWallsAround);
-
 bool MapIsAreaInside(const Map *map, const struct vec2i pos, const struct vec2i size);
+bool MapBuilderIsAreaFunc(
+	const MapBuilder *mb, const struct vec2i pos, const struct vec2i size,
+	bool (*func)(const MapBuilder *, const struct vec2i));
 bool MapIsAreaClear(
 	const MapBuilder *mb, const struct vec2i pos, const struct vec2i size);
 bool MapIsAreaClearOrRoom(
@@ -104,10 +108,7 @@ bool MapIsAreaClearOrRoom(
 bool MapIsAreaClearOrWall(
 	const MapBuilder *mb, struct vec2i pos, struct vec2i size);
 bool MapGetRoomOverlapSize(
-	const MapBuilder *mb,
-	const struct vec2i pos,
-	const struct vec2i size,
-	unsigned short *overlapAccess);
+	const MapBuilder *mb, const Rect2i r, uint16_t *overlapAccess);
 bool MapIsLessThanTwoWallOverlaps(
 	const MapBuilder *mb, struct vec2i pos, struct vec2i size);
 void MapMakeSquare(MapBuilder *mb, struct vec2i pos, struct vec2i size);
@@ -117,23 +118,22 @@ void MapMakeRoom(
 	const bool walls);
 void MapMakeRoomWalls(MapBuilder *mb, const RoomParams r);
 bool MapTryBuildWall(
-	MapBuilder *mb, const unsigned short tileType, const int pad,
-	const int wallLength);
+	MapBuilder *mb, const bool isRoom, const int pad, const int wallLength);
 void MapSetRoomAccessMask(
 	MapBuilder *mb, const struct vec2i pos, const struct vec2i size,
-	const unsigned short accessMask);
+	const uint16_t accessMask);
 void MapSetRoomAccessMaskOverlap(
-	MapBuilder *mb, CArray *rooms, const unsigned short accessMask);
+	MapBuilder *mb, CArray *rooms, const uint16_t accessMask);
 void MapPlaceDoors(
 	MapBuilder *mb, struct vec2i pos, struct vec2i size,
 	int hasDoors, int doors[4], int doorMin, int doorMax,
-	unsigned short accessMask);
+	uint16_t accessMask);
 void MapMakePillar(MapBuilder *mb, struct vec2i pos, struct vec2i size);
 
-unsigned short MapGetTileType(const Map *map, const struct vec2i pos);
+uint16_t MapGetTileType(const Map *map, const struct vec2i pos);
 void MapBuildTile(
 	Map *m, const Mission *mission, const struct vec2i pos,
-	unsigned short tileType);
+	const TileClass *tile);
 
-unsigned short GenerateAccessMask(int *accessLevel);
+uint16_t GenerateAccessMask(int *accessLevel);
 void MapGenerateRandomExitArea(Map *map);

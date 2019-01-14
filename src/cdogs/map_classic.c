@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, 2018 Cong Xu
+    Copyright (c) 2013-2014, 2018-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -56,11 +56,11 @@ static void MapSetupPerimeter(MapBuilder *mb);
 static int MapTryBuildSquare(MapBuilder *mb);
 static bool MapIsAreaClearForClassicRoom(
 	const MapBuilder *mb, const struct vec2i pos, const struct vec2i size,
-	const int pad, bool *isOverlapRoom, unsigned short *overlapAccess);
+	const int pad, bool *isOverlapRoom, uint16_t *overlapAccess);
 static void MapBuildRoom(
 	MapBuilder *mb, const struct vec2i pos, const struct vec2i size,
 	const int doorMin, const int doorMax, const bool hasKeys,
-	const bool isOverlapRoom, const unsigned short overlapAccess);
+	const bool isOverlapRoom, const uint16_t overlapAccess);
 static bool MapTryBuildPillar(MapBuilder *mb, const int pad);
 void MapClassicLoad(MapBuilder *mb)
 {
@@ -110,7 +110,7 @@ void MapClassicLoad(MapBuilder *mb)
 		const struct vec2i size =
 			MapGetRoomSize(mb->mission->u.Classic.Rooms, doorMin);
 		bool isOverlapRoom;
-		unsigned short overlapAccess;
+		uint16_t overlapAccess;
 		if (!MapIsAreaClearForClassicRoom(
 			mb, v, size, pad, &isOverlapRoom, &overlapAccess))
 		{
@@ -139,8 +139,7 @@ void MapClassicLoad(MapBuilder *mb)
 	i = 0;
 	while (i < 1000 && count < mb->mission->u.Classic.Walls)
 	{
-		if (MapTryBuildWall(
-			mb, MAP_FLOOR, pad, mb->mission->u.Classic.WallLength))
+		if (MapTryBuildWall(mb, false, pad, mb->mission->u.Classic.WallLength))
 		{
 			count++;
 		}
@@ -150,18 +149,14 @@ void MapClassicLoad(MapBuilder *mb)
 
 static void MapSetupPerimeter(MapBuilder *mb)
 {
-	struct vec2i v;
-	for (v.y = 0; v.y < mb->Map->Size.y; v.y++)
-	{
-		for (v.x = 0; v.x < mb->Map->Size.x; v.x++)
+	RECT_FOREACH(Rect2iNew(svec2i_zero(), mb->Map->Size))
+		if (_v.x != 0 && _v.x != mb->Map->Size.x - 1 &&
+			_v.y != 0 && _v.y != mb->Map->Size.y - 1)
 		{
-			if (v.y == 0 || v.y == mb->Map->Size.y - 1 ||
-				v.x == 0 || v.x == mb->Map->Size.x - 1)
-			{
-				IMapSet(mb, v, MAP_WALL);
-			}
+			continue;
 		}
-	}
+		MapBuilderSetTile(mb, _v, &gTileWall, false);
+	RECT_FOREACH_END()
 }
 
 static int MapTryBuildSquare(MapBuilder *mb)
@@ -178,7 +173,7 @@ static int MapTryBuildSquare(MapBuilder *mb)
 
 static bool MapIsAreaClearForClassicRoom(
 	const MapBuilder *mb, const struct vec2i pos, const struct vec2i size,
-	const int pad, bool *isOverlapRoom, unsigned short *overlapAccess)
+	const int pad, bool *isOverlapRoom, uint16_t *overlapAccess)
 {
 	struct vec2i clearPos = svec2i(pos.x - pad, pos.y - pad);
 	struct vec2i clearSize = svec2i(size.x + 2 * pad, size.y + 2 * pad);
@@ -228,7 +223,7 @@ static bool MapIsAreaClearForClassicRoom(
 		// Now check if the overlapping rooms will create a passage
 		// large enough
 		const int roomOverlapSize = MapGetRoomOverlapSize(
-			mb, pos, size, overlapAccess);
+			mb, Rect2iNew(pos, size), overlapAccess);
 		isClear =
 			isOverlap &&
 			roomOverlapSize >= mb->mission->u.Classic.CorridorWidth;
@@ -244,13 +239,13 @@ static void MapFindAvailableDoors(
 static void MapBuildRoom(
 	MapBuilder *mb, const struct vec2i pos, const struct vec2i size,
 	const int doorMin, const int doorMax, const bool hasKeys,
-	const bool isOverlapRoom, const unsigned short overlapAccess)
+	const bool isOverlapRoom, const uint16_t overlapAccess)
 {
 	int doormask = rand() % 15 + 1;
 	int doors[4];
 	int doorsUnplaced = 0;
 	int i;
-	unsigned short accessMask = 0;
+	uint16_t accessMask = 0;
 
 	MapMakeRoom(mb, pos, size, true);
 	// Check which walls we can place doors
@@ -466,9 +461,9 @@ static int FindWallRun(
 		const struct vec2i v = svec2i_add(mid, svec2i_scale(d, (float)next));
 		plus = !plus;
 
-		if (IMapGet(mb, v) != MAP_WALL ||
-			IMapGet(mb, svec2i(v.x + d.y, v.y + d.x)) == MAP_WALL ||
-			IMapGet(mb, svec2i(v.x - d.y, v.y - d.x)) == MAP_WALL)
+		if (!MapBuilderGetTile(mb, v)->IsWall ||
+			MapBuilderGetTile(mb, svec2i(v.x + d.y, v.y + d.x))->IsWall ||
+			MapBuilderGetTile(mb, svec2i(v.x - d.y, v.y - d.x))->IsWall)
 		{
 			break;
 		}

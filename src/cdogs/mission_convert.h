@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, 2016 Cong Xu
+    Copyright (c) 2014, 2016, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -31,8 +31,8 @@
 #include "map.h"
 
 void MissionConvertToType(Mission *m, Map *map, MapType type);
-bool MissionTrySetTile(Mission *m, struct vec2i pos, unsigned short tile);
-unsigned short MissionGetTile(Mission *m, struct vec2i pos);
+bool MissionTrySetTile(Mission *m, struct vec2i pos, const uint16_t tile);
+uint16_t MissionGetTile(Mission *m, struct vec2i pos);
 
 void MissionStaticLayout(Mission *m, struct vec2i oldSize);
 bool MissionStaticTryAddItem(Mission *m, const MapObject *mo, const struct vec2i pos);

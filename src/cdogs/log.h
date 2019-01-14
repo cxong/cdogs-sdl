@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2015-2016, Cong Xu
+    Copyright (c) 2015-2016, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -86,6 +86,14 @@ void LogTerminate(void);
 		}\
 	} while ((void)0, 0)
 
+#define LOG_FLUSH()\
+	do\
+	{\
+		LogFlush(stderr);\
+		LogFlush(gLogFile);\
+	} while ((void)0, 0)
+
 void LogLine(
 	FILE *stream, const LogModule m, const LogLevel l, const char *filename,
 	const int line, const char *function, const char *fmt, ...);
+void LogFlush(FILE *stream);

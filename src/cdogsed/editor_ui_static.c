@@ -89,8 +89,8 @@ static const char *BrushGetGuideImageAlphaStr(UIObject *o, void *data)
 
 static void BrushChangeType(EditorBrush *b, int d, int isMain)
 {
-	unsigned short brushType = isMain ? b->MainType : b->SecondaryType;
-	brushType = (unsigned short)CLAMP_OPPOSITE(
+	uint16_t brushType = isMain ? b->MainType : b->SecondaryType;
+	brushType = (uint16_t)CLAMP_OPPOSITE(
 		(int)brushType + d, MAP_FLOOR, MAP_NOTHING);
 	if (isMain)
 	{

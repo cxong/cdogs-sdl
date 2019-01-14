@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, 2016, 2018 Cong Xu
+    Copyright (c) 2014, 2016, 2018-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -47,13 +47,39 @@ void MapStaticLoad(MapBuilder *mb)
 		for (v.x = 0; v.x < mb->Map->Size.x; v.x++)
 		{
 			int idx = v.y * mb->Map->Size.x + v.x;
-			unsigned short tile =
-				*(unsigned short *)CArrayGet(&mb->mission->u.Static.Tiles, idx);
+			uint16_t tile =
+				*(uint16_t *)CArrayGet(&mb->mission->u.Static.Tiles, idx);
+			uint16_t tileAccess = tile & MAP_ACCESSBITS;
+			tile &= MAP_MASKACCESS;
 			if (!AreKeysAllowed(gCampaign.Entry.Mode))
 			{
-				tile &= MAP_MASKACCESS;
+				tileAccess = 0;
 			}
-			IMapSet(mb, v, tile);
+			const TileClass *t = &gTileNothing;
+			bool isRoom = false;
+			switch (tile)
+			{
+				case MAP_FLOOR:
+				case MAP_SQUARE:	// fallthrough
+					t = &gTileFloor;
+					break;
+				case MAP_WALL:
+					t = &gTileWall;
+					break;
+				case MAP_DOOR:
+					t = &gTileDoor;
+					break;
+				case MAP_ROOM:
+					t = &gTileFloor;
+					isRoom = true;
+					break;
+				default:
+					t = &gTileNothing;
+					isRoom = false;
+					break;
+			}
+			MapBuilderSetTile(mb, v, t, isRoom);
+			MapBuildSetAccess(mb, v, tileAccess);
 		}
 	}
 	

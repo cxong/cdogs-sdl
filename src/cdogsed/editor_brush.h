@@ -75,9 +75,9 @@ typedef struct
 		MapObject *MapObject;
 	} u;
 	int Index2;
-	unsigned short MainType;
-	unsigned short SecondaryType;
-	unsigned short PaintType;
+	uint16_t MainType;
+	uint16_t SecondaryType;
+	uint16_t PaintType;
 	int IsActive;
 	int IsPainting;
 	int BrushSize;

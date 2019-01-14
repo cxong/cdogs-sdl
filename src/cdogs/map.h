@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2018 Cong Xu
+    Copyright (c) 2013-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -95,7 +95,7 @@ typedef struct
 	struct vec2i Size;
 
 	LineOfSight LOS;
-	CArray access;	// of unsigned short
+	CArray access;	// of uint16_t
 
 	CArray triggers;	// of Trigger *; owner
 	int triggerId;
@@ -111,16 +111,15 @@ typedef struct
 
 extern Map gMap;
 
-unsigned short GetAccessMask(int k);
+uint16_t GetAccessMask(const int k);
 
 Tile *MapGetTile(const Map *map, const struct vec2i pos);
 bool MapIsTileIn(const Map *map, const struct vec2i pos);
 bool MapIsTileInExit(const Map *map, const Thing *ti);
 
-void MapSetAccess(Map *map, const CArray *access);
 // TODO: remove this function
-unsigned short MapGetAccessLevel(const Map *map, const struct vec2i pos);
-unsigned short AccessCodeToFlags(const unsigned short code);
+uint16_t MapGetAccessLevel(const Map *map, const struct vec2i pos);
+uint16_t AccessCodeToFlags(const uint16_t code);
 bool MapHasLockedRooms(const Map *map);
 bool MapPosIsInLockedRoom(const Map *map, const struct vec2 pos);
 int MapGetDoorKeycardFlag(Map *map, struct vec2i pos);

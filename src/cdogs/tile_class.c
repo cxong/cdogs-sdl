@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2018 Cong Xu
+    Copyright (c) 2018-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -42,6 +42,9 @@ TileClass gTileNothing = {
 };
 TileClass gTileExit = {
 	"tile", NULL, true, false, false, false, true, false,
+};
+TileClass gTileDoor = {
+	"door", NULL, false, true, true, false, false, true,
 };
 
 void TileClassesInit(TileClasses *c)
@@ -93,20 +96,21 @@ static void GetMaskedName(
 	char *buf, const char *name, const char *style, const char *type,
 	const color_t mask, const color_t maskAlt);
 const TileClass *TileClassesGetMaskedTile(
+	const TileClass *baseClass, const char *style, const char *type,
+	const color_t mask, const color_t maskAlt)
+{
+	char buf[256];
+	GetMaskedName(buf, baseClass->Name, style, type, mask, maskAlt);
+	return StrTileClass(buf);
+}
+void TileClassesAddMaskedTile(
 	TileClasses *c, const PicManager *pm, const TileClass *baseClass,
 	const char *style, const char *type,
 	const color_t mask, const color_t maskAlt)
 {
 	char buf[256];
 	GetMaskedName(buf, baseClass->Name, style, type, mask, maskAlt);
-	const TileClass *t = StrTileClass(buf);
-	if (t != &gTileNothing)
-	{
-		return t;
-	}
-
-	// tile class not found; create it
-	return TileClassAdd(c->customClasses, pm, baseClass, buf);
+	TileClassAdd(c->customClasses, pm, baseClass, buf);
 }
 static void GetMaskedName(
 	char *buf, const char *name, const char *style, const char *type,

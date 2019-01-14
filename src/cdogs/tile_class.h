@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2018 Cong Xu
+    Copyright (c) 2018-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -52,6 +52,7 @@ typedef struct
 	bool isOpaque;	// cannot see through
 	bool shootable;	// blocks bullets
 	// Mainly for drawing purposes
+	// TODO: use enum
 	bool IsWall;
 	bool IsFloor;
 	bool IsDoor;
@@ -68,6 +69,7 @@ extern TileClass gTileFloor;
 extern TileClass gTileWall;
 extern TileClass gTileNothing;
 extern TileClass gTileExit;
+extern TileClass gTileDoor;
 
 void TileClassesInit(TileClasses *c);
 void TileClassesClearCustom(TileClasses *c);
@@ -75,6 +77,9 @@ void TileClassesTerminate(TileClasses *c);
 
 const TileClass *StrTileClass(const char *name);
 const TileClass *TileClassesGetMaskedTile(
+	const TileClass *baseClass, const char *style, const char *type,
+	const color_t mask, const color_t maskAlt);
+void TileClassesAddMaskedTile(
 	TileClasses *c, const PicManager *pm, const TileClass *baseClass,
 	const char *style, const char *type,
 	const color_t mask, const color_t maskAlt);
