@@ -666,6 +666,34 @@ uint16_t MapGetTileType(const Map *map, const struct vec2i pos)
 
 static void MapSetupTile(MapBuilder *mb, const struct vec2i pos);
 
+// TODO: remove
+const TileClass *MapBuildGetTileFromType(const uint16_t tile, bool *isRoom)
+{
+	const TileClass *t = &gTileNothing;
+	*isRoom = false;
+	switch (tile)
+	{
+		case MAP_FLOOR:
+		case MAP_SQUARE:	// fallthrough
+			t = &gTileFloor;
+			break;
+		case MAP_WALL:
+			t = &gTileWall;
+			break;
+		case MAP_DOOR:
+			t = &gTileDoor;
+			break;
+		case MAP_ROOM:
+			t = &gTileFloor;
+			*isRoom = true;
+			break;
+		default:
+			t = &gTileNothing;
+			break;
+	}
+	return t;
+}
+
 // TODO: change static map building
 void MapBuildTile(
 	Map *m, const Mission *mission, const struct vec2i pos,

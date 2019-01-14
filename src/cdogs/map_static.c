@@ -55,29 +55,8 @@ void MapStaticLoad(MapBuilder *mb)
 			{
 				tileAccess = 0;
 			}
-			const TileClass *t = &gTileNothing;
 			bool isRoom = false;
-			switch (tile)
-			{
-				case MAP_FLOOR:
-				case MAP_SQUARE:	// fallthrough
-					t = &gTileFloor;
-					break;
-				case MAP_WALL:
-					t = &gTileWall;
-					break;
-				case MAP_DOOR:
-					t = &gTileDoor;
-					break;
-				case MAP_ROOM:
-					t = &gTileFloor;
-					isRoom = true;
-					break;
-				default:
-					t = &gTileNothing;
-					isRoom = false;
-					break;
-			}
+			const TileClass *t = MapBuildGetTileFromType(tile, &isRoom);
 			MapBuilderSetTile(mb, v, t, isRoom);
 			MapBuildSetAccess(mb, v, tileAccess);
 		}
