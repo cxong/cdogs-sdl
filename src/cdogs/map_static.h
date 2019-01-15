@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, 2018 Cong Xu
+    Copyright (c) 2014, 2018-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -30,4 +30,5 @@
 #include "map_build.h"
 
 void MapStaticLoad(MapBuilder *mb);
+void MapStaticLoadTile(MapBuilder *mb, const struct vec2i v);
 void MapStaticLoadDynamic(MapBuilder *mb);

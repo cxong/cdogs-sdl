@@ -134,7 +134,7 @@ uint16_t MapGetTileType(const Map *map, const struct vec2i pos);
 const TileClass *MapBuildGetTileFromType(const uint16_t tile, bool *isRoom);
 void MapBuildTile(
 	Map *m, const Mission *mission, const struct vec2i pos,
-	const TileClass *tile);
+	const TileClass *tile, const bool isRoom);
 
 uint16_t GenerateAccessMask(int *accessLevel);
 void MapGenerateRandomExitArea(Map *map);

@@ -697,27 +697,23 @@ const TileClass *MapBuildGetTileFromType(const uint16_t tile, bool *isRoom)
 // TODO: change static map building
 void MapBuildTile(
 	Map *m, const Mission *mission, const struct vec2i pos,
-	const TileClass *tile)
+	const TileClass *tile, const bool isRoom)
 {
 	MapBuilder mb;
 	MapBuilderInit(&mb, m, mission, NULL);
+	// Load tiles from +2 perimeter
+	RECT_FOREACH(Rect2iNew(svec2i_subtract(pos, svec2i(2, 2)), svec2i(5, 5)))
+		MapStaticLoadTile(&mb, _v);
+	RECT_FOREACH_END()
 	// Update the tile as well, plus neighbours as they may be affected
 	// by shadows etc. especially walls
-	MapBuilderSetTile(&mb, pos, tile, false);
+	MapBuilderSetTile(&mb, pos, tile, isRoom);
 	MapSetupTile(&mb, pos);
-	struct vec2i v;
-	for (v.y = pos.y - 1; v.y <= pos.y + 1; v.y++)
-	{
-		for (v.x = pos.x - 1; v.x <= pos.x + 1; v.x++)
-		{
-			if (!MapIsTileIn(m, v))
-			{
-				continue;
-			}
-			MapSetupTile(&mb, v);
-		}
-	}
+	RECT_FOREACH(Rect2iNew(svec2i_subtract(pos, svec2i(1, 1)), svec2i(3, 3)))
+		MapSetupTile(&mb, _v);
+	RECT_FOREACH_END()
 	CArrayCopy(&mb.Map->access, &mb.access);
+	DebugPrintMap(&mb);
 	MapBuilderTerminate(&mb);
 }
 
@@ -782,6 +778,7 @@ static const char *MapGetWallPic(const MapBuilder *m, const struct vec2i pos);
 // Set tile properties for a map tile
 static void MapSetupTile(MapBuilder *mb, const struct vec2i pos)
 {
+	if (!MapIsTileIn(mb->Map, pos)) return;
 	const Tile *tAbove = MapGetTile(mb->Map, svec2i(pos.x, pos.y - 1));
 	const bool canSeeTileAbove = !(tAbove != NULL && TileIsOpaque(tAbove));
 	Tile *t = MapGetTile(mb->Map, pos);
@@ -889,7 +886,8 @@ static bool W(const MapBuilder *mb, const int x, const int y)
 {
 	const struct vec2i v = svec2i(x, y);
 	if (!MapIsTileIn(mb->Map, v)) return false;
-	return MapBuilderGetTile(mb, v)->IsWall;
+	const TileClass *tc = MapBuilderGetTile(mb, v);
+	return tc->IsWall;
 }
 
 static bool MapIsValidStartForWall(

@@ -206,7 +206,7 @@ static void SetTile(Mission *m, struct vec2i pos, const uint16_t tile)
 	{
 		bool isRoom = false;
 		const TileClass *t = MapBuildGetTileFromType(tile, &isRoom);
-		MapBuildTile(&gMap, m, pos, t);
+		MapBuildTile(&gMap, m, pos, t, isRoom);
 	}
 }
 

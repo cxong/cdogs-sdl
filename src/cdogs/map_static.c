@@ -46,19 +46,7 @@ void MapStaticLoad(MapBuilder *mb)
 	{
 		for (v.x = 0; v.x < mb->Map->Size.x; v.x++)
 		{
-			int idx = v.y * mb->Map->Size.x + v.x;
-			uint16_t tile =
-				*(uint16_t *)CArrayGet(&mb->mission->u.Static.Tiles, idx);
-			uint16_t tileAccess = tile & MAP_ACCESSBITS;
-			tile &= MAP_MASKACCESS;
-			if (!AreKeysAllowed(gCampaign.Entry.Mode))
-			{
-				tileAccess = 0;
-			}
-			bool isRoom = false;
-			const TileClass *t = MapBuildGetTileFromType(tile, &isRoom);
-			MapBuilderSetTile(mb, v, t, isRoom);
-			MapBuildSetAccess(mb, v, tileAccess);
+			MapStaticLoadTile(mb, v);
 		}
 	}
 	
@@ -69,6 +57,24 @@ void MapStaticLoad(MapBuilder *mb)
 		mb->Map->ExitStart = mb->mission->u.Static.Exit.Start;
 		mb->Map->ExitEnd = mb->mission->u.Static.Exit.End;
 	}
+}
+
+void MapStaticLoadTile(MapBuilder *mb, const struct vec2i v)
+{
+	if (!MapIsTileIn(mb->Map, v)) return;
+	const int idx = v.y * mb->Map->Size.x + v.x;
+	uint16_t tile =
+		*(uint16_t *)CArrayGet(&mb->mission->u.Static.Tiles, idx);
+	uint16_t tileAccess = tile & MAP_ACCESSBITS;
+	tile &= MAP_MASKACCESS;
+	if (!AreKeysAllowed(gCampaign.Entry.Mode))
+	{
+		tileAccess = 0;
+	}
+	bool isRoom = false;
+	const TileClass *t = MapBuildGetTileFromType(tile, &isRoom);
+	MapBuilderSetTile(mb, v, t, isRoom);
+	MapBuildSetAccess(mb, v, tileAccess);
 }
 
 static void AddCharacters(const CArray *characters);
