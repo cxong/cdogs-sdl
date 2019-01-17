@@ -219,7 +219,7 @@ int main(int argc, char *argv[])
 		goto bail;
 	}
 	FontLoadFromJSON(&gFont, "graphics/font.png", "graphics/font.json");
-	PicManagerLoad(&gPicManager, "graphics");
+	PicManagerLoad(&gPicManager);
 	CharSpriteClassesInit(&gCharSpriteClasses);
 
 	ParticleClassesInit(&gParticleClasses, "data/particles.json");

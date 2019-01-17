@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, 2018 Cong Xu
+    Copyright (c) 2013-2016, 2018-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -48,12 +48,13 @@ typedef struct
 extern PicManager gPicManager;
 
 void PicManagerInit(PicManager *pm);
-void PicManagerLoad(PicManager *pm, const char *path);
+void PicManagerLoad(PicManager *pm);
 void PicManagerLoadDir(
 	PicManager *pm, const char *path, const char *prefix,
 	map_t pics, map_t sprites);
 void PicManagerClearCustom(PicManager *pm);
 void PicManagerTerminate(PicManager *pm);
+void PicManagerReloadTextures(PicManager *pm);
 
 // Note: return ptr to NamedPic so we can store that instead of the name
 NamedPic *PicManagerGetNamedPic(const PicManager *pm, const char *name);

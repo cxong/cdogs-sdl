@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2018 Cong Xu
+    Copyright (c) 2013-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -38,11 +38,18 @@
 #include "files.h"
 #include "log.h"
 
+#define GRAPHICS_DIR "graphics"
+
 PicManager gPicManager;
 
 
 void PicManagerInit(PicManager *pm)
 {
+	if (!IMG_Init(IMG_INIT_PNG))
+	{
+		perror("Cannot initialise SDL_Image");
+		return;
+	}
 	memset(pm, 0, sizeof *pm);
 	pm->pics = hashmap_new();
 	pm->sprites = hashmap_new();
@@ -260,15 +267,10 @@ void PicManagerLoadDir(
 bail:
 	tinydir_close(&dir);
 }
-void PicManagerLoad(PicManager *pm, const char *path)
+void PicManagerLoad(PicManager *pm)
 {
-	if (!IMG_Init(IMG_INIT_PNG))
-	{
-		perror("Cannot initialise SDL_Image");
-		return;
-	}
 	char buf[CDOGS_PATH_MAX];
-	GetDataFilePath(buf, path);
+	GetDataFilePath(buf, GRAPHICS_DIR);
 	PicManagerLoadDir(pm, buf, NULL, pm->pics, pm->sprites);
 }
 
@@ -289,14 +291,18 @@ static void AfterAdd(PicManager *pm)
 	FindStylePics(pm, &pm->keyStyleNames, MaybeAddKeyPicName);
 }
 static int CompareStyleNames(const void *v1, const void *v2);
+static void StylesClear(CArray *styles)
+{
+	CA_FOREACH(char *, styleName, *styles)
+		CFREE(*styleName);
+	CA_FOREACH_END()
+	CArrayClear(styles);
+}
 static void FindStylePics(
 	PicManager *pm, CArray *styleNames, PFany hashmapFunc)
 {
 	// Scan all pics for style pics
-	CA_FOREACH(char *, styleName, *styleNames)
-		CFREE(*styleName);
-	CA_FOREACH_END()
-	CArrayClear(styleNames);
+	StylesClear(styleNames);
 	hashmap_iterate(pm->customPics, hashmapFunc, pm);
 	hashmap_iterate(pm->pics, hashmapFunc, pm);
 	// Sort the style names alphabetically
@@ -396,32 +402,27 @@ static void NamedPicDestroy(any_t data);
 static void NamedSpritesDestroy(any_t data);
 void PicManagerClearCustom(PicManager *pm)
 {
-	hashmap_destroy(pm->customPics, NamedPicDestroy);
-	hashmap_destroy(pm->customSprites, NamedSpritesDestroy);
-	pm->customPics = hashmap_new();
-	pm->customSprites = hashmap_new();
+	hashmap_clear(pm->customPics, NamedPicDestroy);
+	hashmap_clear(pm->customSprites, NamedSpritesDestroy);
 	AfterAdd(pm);
 }
-static void StylesTerminate(CArray *styles);
+static void PicManagerUnload(PicManager *pm)
+{
+	hashmap_clear(pm->pics, NamedPicDestroy);
+	hashmap_clear(pm->sprites, NamedSpritesDestroy);
+	hashmap_clear(pm->customPics, NamedPicDestroy);
+	hashmap_clear(pm->customSprites, NamedSpritesDestroy);
+	AfterAdd(pm);
+}
 void PicManagerTerminate(PicManager *pm)
 {
-	hashmap_destroy(pm->pics, NamedPicDestroy);
-	hashmap_destroy(pm->sprites, NamedSpritesDestroy);
-	hashmap_destroy(pm->customPics, NamedPicDestroy);
-	hashmap_destroy(pm->customSprites, NamedSpritesDestroy);
-	StylesTerminate(&pm->wallStyleNames);
-	StylesTerminate(&pm->tileStyleNames);
-	StylesTerminate(&pm->exitStyleNames);
-	StylesTerminate(&pm->doorStyleNames);
-	StylesTerminate(&pm->keyStyleNames);
+	PicManagerUnload(pm);
+	CArrayTerminate(&pm->wallStyleNames);
+	CArrayTerminate(&pm->tileStyleNames);
+	CArrayTerminate(&pm->exitStyleNames);
+	CArrayTerminate(&pm->doorStyleNames);
+	CArrayTerminate(&pm->keyStyleNames);
 	IMG_Quit();
-}
-static void StylesTerminate(CArray *styles)
-{
-	CA_FOREACH(char *, styleName, *styles)
-		CFREE(*styleName);
-	CA_FOREACH_END()
-	CArrayTerminate(styles);
 }
 static void NamedPicDestroy(any_t data)
 {
@@ -434,6 +435,39 @@ static void NamedSpritesDestroy(any_t data)
 	NamedSprites *n = data;
 	NamedSpritesFree(n);
 	CFREE(n);
+}
+static int ReloadTexture(any_t data, any_t item);
+static int ReloadSpriteTexture(any_t data, any_t item);
+void PicManagerReloadTextures(PicManager *pm)
+{
+	hashmap_iterate(pm->pics, ReloadTexture, pm);
+	hashmap_iterate(pm->customPics, ReloadTexture, pm);
+	hashmap_iterate(pm->sprites, ReloadSpriteTexture, pm);
+	hashmap_iterate(pm->customSprites, ReloadSpriteTexture, pm);
+}
+static int ReloadTexture(any_t data, any_t item)
+{
+	UNUSED(data);
+	NamedPic *n = item;
+	if (!PicTryMakeTex(&n->pic))
+	{
+		LOG(LM_MAIN, LL_ERROR, "failed to reload pic texture");
+		n->pic.Tex = NULL;
+	}
+	return MAP_OK;
+}
+static int ReloadSpriteTexture(any_t data, any_t item)
+{
+	UNUSED(data);
+	NamedSprites *n = item;
+	CA_FOREACH(Pic, op, n->pics)
+		if (!PicTryMakeTex(op))
+		{
+			LOG(LM_MAIN, LL_ERROR, "failed to reload pic texture");
+			op->Tex = NULL;
+		}
+	CA_FOREACH_END()
+	return MAP_OK;
 }
 
 NamedPic *PicManagerGetNamedPic(const PicManager *pm, const char *name)

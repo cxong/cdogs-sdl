@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2018 Cong Xu
+    Copyright (c) 2013-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -159,6 +159,9 @@ void GraphicsInitialize(GraphicsDevice *g)
 		}
 
 		g->Format = SDL_AllocFormat(SDL_PIXELFORMAT_ARGB8888);
+
+		// Need to reload textures due to them tied to the renderer (window)
+		PicManagerReloadTextures(&gPicManager);
 	}
 
 	if (initTextures)
