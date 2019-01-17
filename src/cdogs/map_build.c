@@ -626,11 +626,13 @@ void MapBuilderSetLeaveFree(
 }
 bool MapBuilderIsLeaveFree(const MapBuilder *mb, const struct vec2i tile)
 {
+	if (!MapIsTileIn(mb->Map, tile)) return false;
 	return *(bool *)CArrayGet(
 		&mb->leaveFree, tile.y * mb->Map->Size.x + tile.x);
 }
 static bool MapBuilderIsRoom(const MapBuilder *mb, const struct vec2i tile)
 {
+	if (!MapIsTileIn(mb->Map, tile)) return false;
 	return *(bool *)CArrayGet(&mb->isRoom, tile.y * mb->Map->Size.x + tile.x);
 }
 static void MapBuilderSetIsRoom(
