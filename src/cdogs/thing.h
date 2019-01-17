@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2018 Cong Xu
+    Copyright (c) 2013-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -105,5 +105,6 @@ void ThingUpdate(Thing *t, const int ticks);
 void ThingAddDrawShake(Thing *t, const struct vec2 shake);
 void ThingDamage(const NThingDamage d);
 
+Thing *ThingGetByUID(const ThingKind kind, const int uid);
 Thing *ThingIdGetThing(const ThingId *tid);
 bool ThingDrawLast(const Thing *t);

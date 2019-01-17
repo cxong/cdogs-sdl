@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2017 Cong Xu
+    Copyright (c) 2014-2017, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,9 @@ ParticleClasses gParticleClasses;
 CArray gParticles;
 
 #define VERSION 2
+
+// Particles get darker when below this height
+#define PARTICLE_DARKEN_Z BULLET_Z
 
 
 ParticleType StrParticleType(const char *s)
@@ -205,6 +208,7 @@ static void LoadParticleClass(
 	LoadBool(&c->Bounces, node, "Bounces");
 	c->WallBounces = true;
 	LoadBool(&c->WallBounces, node, "WallBounces");
+	LoadBool(&c->ZDarken, node, "ZDarken");
 }
 
 const ParticleClass *StrParticleClass(
@@ -481,6 +485,14 @@ static void DrawParticle(const struct vec2i pos, const ThingDrawFuncData *data)
 			c.Offset = svec2i(
 				pic->size.x / -2, pic->size.y / -2 - p->Z / Z_FACTOR);
 			c.Scale = data->Scale;
+			if (p->Class->ZDarken)
+			{
+				// Darken by 50% when on ground
+				const uint8_t maskF = (uint8_t)CLAMP(
+					p->Z * PARTICLE_DARKEN_Z * Z_FACTOR / 256 + 128, 128, 255);
+				const color_t mask = { maskF, maskF, maskF, 255 };
+				c.Mask = mask;
+			}
 			CPicDraw(&gGraphicsDevice, &p->u.Pic, pos, &c);
 			break;
 		}

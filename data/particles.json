@@ -160,7 +160,8 @@
       "RangeLow": 10000,
       "RangeHigh": 11000,
       "GravityFactor": 1,
-      "HitsWalls": true
+      "HitsWalls": true,
+      "ZDarken": true
     },
     {
       "Name": "brass_big",
@@ -171,7 +172,8 @@
       "RangeLow": 10000,
       "RangeHigh": 11000,
       "GravityFactor": 1,
-      "HitsWalls": true
+      "HitsWalls": true,
+      "ZDarken": true
     },
     {
       "Name": "shotshell",
@@ -182,7 +184,8 @@
       "RangeLow": 10000,
       "RangeHigh": 11000,
       "GravityFactor": 1,
-      "HitsWalls": true
+      "HitsWalls": true,
+      "ZDarken": true
     },
     {
       "Name": "smoke",
@@ -226,7 +229,8 @@
       "GravityFactor": 1,
       "HitsWalls": true,
       "Bounces": false,
-      "WallBounces": false
+      "WallBounces": false,
+      "ZDarken": true
     },
     {
       "Name": "blood3",
@@ -239,7 +243,8 @@
       "GravityFactor": 1,
       "HitsWalls": true,
       "Bounces": false,
-      "WallBounces": false
+      "WallBounces": false,
+      "ZDarken": true
     },
     {
       "Name": "ammo_text",

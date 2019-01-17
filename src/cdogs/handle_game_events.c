@@ -355,28 +355,7 @@ static void HandleGameEvent(
 		}
 		break;
 	case GAME_EVENT_ACTOR_MELEE:
-		{
-			const TActor *a = ActorGetByUID(e.u.Melee.UID);
-			if (!a->isInUse) break;
-			const BulletClass *b = StrBulletClass(e.u.Melee.BulletClass);
-			if ((HitType)e.u.Melee.HitType != HIT_NONE &&
-				HasHitSound(a->flags, a->PlayerUID,
-				(ThingKind)e.u.Melee.TargetKind, e.u.Melee.TargetUID,
-				SPECIAL_NONE, false))
-			{
-				PlayHitSound(&b->HitSound, (HitType)e.u.Melee.HitType, a->Pos);
-			}
-			if (!gCampaign.IsClient)
-			{
-				// TODO: melee hitback (vel)?
-				Damage(
-					svec2_zero(),
-					b->Power, b->Mass,
-					a->flags, a,
-					(ThingKind)e.u.Melee.TargetKind, e.u.Melee.TargetUID,
-					SPECIAL_NONE);
-			}
-		}
+		DamageMelee(e.u.Melee);
 		break;
 	case GAME_EVENT_ADD_PICKUP:
 		PickupAdd(e.u.AddPickup);

@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, 2018 Cong Xu
+    Copyright (c) 2013-2016, 2018-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -53,6 +53,7 @@ CPicDrawContext CPicDrawContextNew(void)
 	c.Offset = svec2i_zero();
 	c.Radians = 0;
 	c.Scale = svec2_one();
+	c.Mask = colorWhite;
 	return c;
 }
 
@@ -294,6 +295,7 @@ void CPicDraw(
 	}
 	const struct vec2i picPos = svec2i_add(pos, context->Offset);
 	PicRender(
-		pic, g->gameWindow.renderer, picPos, p->Mask, context->Radians,
+		pic, g->gameWindow.renderer, picPos,ColorMult(p->Mask, context->Mask),
+		context->Radians,
 		context->Scale);
 }

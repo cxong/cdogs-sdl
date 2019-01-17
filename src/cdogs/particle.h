@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2015, 2017-2018 Cong Xu
+    Copyright (c) 2014-2015, 2017-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -55,6 +55,7 @@ typedef struct
 	bool HitsWalls;
 	bool Bounces;
 	bool WallBounces;
+	bool ZDarken;	// darken as the particle falls to the ground
 } ParticleClass;
 typedef struct
 {

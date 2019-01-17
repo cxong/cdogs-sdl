@@ -9,7 +9,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, 2016-2018 Cong Xu
+    Copyright (c) 2013-2014, 2016-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -104,15 +104,13 @@ void ThingAddDrawShake(Thing *t, const struct vec2 shake)
 
 void ThingDamage(const NThingDamage d)
 {
-	Thing *ti = NULL;
+	Thing *ti = ThingGetByUID(d.Kind, d.UID);
 	switch (d.Kind)
 	{
 	case KIND_CHARACTER:
-		ti = &ActorGetByUID(d.UID)->thing;
 		ActorHit(d);
 		break;
 	case KIND_OBJECT:
-		ti = &ObjGetByUID(d.UID)->thing;
 		DamageObject(d);
 		break;
 	default:
@@ -122,6 +120,20 @@ void ThingDamage(const NThingDamage d)
 	if (ti != NULL && d.Power > 0)
 	{
 		ThingAddDrawShake(ti, svec2_scale(NetToVec2(d.Vel), d.Mass));
+	}
+}
+
+
+Thing *ThingGetByUID(const ThingKind kind, const int uid)
+{
+	switch (kind)
+	{
+	case KIND_CHARACTER:
+		return &ActorGetByUID(uid)->thing;
+	case KIND_OBJECT:
+		return &ObjGetByUID(uid)->thing;
+	default:
+		return NULL;
 	}
 }
 

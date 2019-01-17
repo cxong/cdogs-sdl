@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, 2018 Cong Xu
+    Copyright (c) 2013-2015, 2018-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -57,3 +57,4 @@ bool CanDamageCharacter(
 	const int flags, const TActor *source,
 	const TActor *target, const special_damage_e special);
 void DamageActor(TActor *victim, const int power, const int sourceActorUID);
+void DamageMelee(const NActorMelee m);

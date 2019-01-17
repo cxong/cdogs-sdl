@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2018 Cong Xu
+    Copyright (c) 2013-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -1613,6 +1613,7 @@ static void ActorAddBloodSplatters(
 	int bloodPower = power * 2;
 	// Randomly cycle through the blood types
 	int bloodSize = 1;
+	const float speedBase = MAX(1.0f, mass) * SHOT_IMPULSE_FACTOR;
 	while (bloodPower > 0)
 	{
 		Emitter *em = NULL;
@@ -1633,8 +1634,8 @@ static void ActorAddBloodSplatters(
 		{
 			bloodSize = 1;
 		}
-		const float speed = RAND_FLOAT(0.5f, 1) * mass * SHOT_IMPULSE_FACTOR;
-		const struct vec2 vel = svec2_scale(hitVector, speed);
+		const struct vec2 vel =
+			svec2_scale(hitVector, speedBase * RAND_FLOAT(0.5f, 1));
 		EmitterStart(em, a->Pos, 10, vel);
 		switch (ga)
 		{
