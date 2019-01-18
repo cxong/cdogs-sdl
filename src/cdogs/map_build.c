@@ -622,6 +622,7 @@ static bool TryPlaceOneBlowup(
 void MapBuilderSetLeaveFree(
 	MapBuilder *mb, const struct vec2i tile, const bool value)
 {
+	if (!MapIsTileIn(mb->Map, tile)) return;
 	CArraySet(&mb->leaveFree, tile.y * mb->Map->Size.x + tile.x, &value);
 }
 bool MapBuilderIsLeaveFree(const MapBuilder *mb, const struct vec2i tile)
@@ -638,6 +639,7 @@ static bool MapBuilderIsRoom(const MapBuilder *mb, const struct vec2i tile)
 static void MapBuilderSetIsRoom(
 	MapBuilder *mb, const struct vec2i tile, const bool value)
 {
+	if (!MapIsTileIn(mb->Map, tile)) return;
 	CArraySet(&mb->isRoom, tile.y * mb->Map->Size.x + tile.x, &value);
 }
 

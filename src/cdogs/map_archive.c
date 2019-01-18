@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2018 Cong Xu
+    Copyright (c) 2014-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -468,34 +468,33 @@ static json_t *SaveClassicDoors(Mission *m)
 
 static json_t *SaveStaticTiles(Mission *m)
 {
+	// Write out each row of tiles individually as a single CSV
+	json_t *rows = json_new_array();
 	// Create a text buffer for CSV
 	// The buffer will contain n*5 chars (tiles, allow 5 chars each),
 	// and n - 1 commas, so 6n total
-	const int size = (int)m->u.Static.Tiles.size;
-	if (size == 0)
+	char *rowBuf;
+	CMALLOC(rowBuf, m->Size.x * 6);
+	for (int i = 0; i < m->Size.y; i++)
 	{
-		return json_new_string("");
-	}
-	char *bigbuf;
-	CCALLOC(bigbuf, size * 6);
-	char *pBuf = bigbuf;
-	CASSERT(pBuf != NULL, "memory error");
-	for (int i = 0; i < size; i++)
-	{
-		char buf[32];
-		sprintf(buf, "%d", *(uint16_t *)CArrayGet(
-			&m->u.Static.Tiles, i));
-		strcpy(pBuf, buf);
-		pBuf += strlen(buf);
-		if (i < size - 1)
+		char *pBuf = rowBuf;
+		*pBuf = '\0';
+		for (int j = 0; j < m->Size.x; j++)
 		{
-			*pBuf = ',';
-			pBuf++;
+			char buf[32];
+			sprintf(buf, "%d", *(uint16_t *)CArrayGet(
+				&m->u.Static.Tiles, i * m->Size.x + j));
+			strcpy(pBuf, buf);
+			pBuf += strlen(buf);
+			if (j < m->Size.x - 1)
+			{
+				*pBuf++ = ',';
+			}
 		}
+		json_insert_child(rows, json_new_string(rowBuf));
 	}
-	json_t *node = json_new_string(bigbuf);
-	CFREE(bigbuf);
-	return node;
+	CFREE(rowBuf);
+	return rows;
 }
 static json_t *SaveStaticItems(Mission *m)
 {
