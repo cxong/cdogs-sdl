@@ -301,7 +301,7 @@ static bool IsTileWalkableOrOpenable(Map *map, struct vec2i pos)
 	{
 		return true;
 	}
-	if (tile->Class->IsDoor)
+	if (tile->Class->Type == TILE_CLASS_DOOR)
 	{
 		// A door; check if we can open it
 		int keycard = MapGetDoorKeycardFlag(map, pos);

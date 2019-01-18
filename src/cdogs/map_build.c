@@ -215,7 +215,7 @@ static void MapSetupDoors(MapBuilder *mb)
 static bool MapBuilderIsDoor(const MapBuilder *mb, const struct vec2i v)
 {
 	const TileClass *t = MapBuilderGetTile(mb, v);
-	return t != NULL && t->IsDoor;
+	return t != NULL && t->Type == TILE_CLASS_DOOR;
 }
 static int MapGetAccessFlags(const MapBuilder *mb, const struct vec2i v)
 {
@@ -244,10 +244,16 @@ static void DebugPrintMap(const MapBuilder *mb)
 		{
 			const TileClass *t = MapGetTile(mb->Map, v)->Class;
 			if (MapBuilderIsRoom(mb, v)) *bufP++ = '-';
-			else if (t->IsFloor) *bufP++ = '.';
-			else if (t->IsWall) *bufP++ = '#';
-			else if (t->IsDoor) *bufP++ = '+';
-			else *bufP++ = '?';
+			else
+			{
+				switch (t->Type)
+				{
+					case TILE_CLASS_FLOOR: *bufP++ = '.'; break;
+					case TILE_CLASS_WALL: *bufP++ = '#'; break;
+					case TILE_CLASS_DOOR: *bufP++ = '+'; break;
+					default: *bufP++ = '?'; break;
+				}
+			}
 		}
 		LOG(LM_MAP, LL_TRACE, buf);
 		*buf = '\0';
@@ -648,24 +654,21 @@ static void MapBuilderSetIsRoom(
 uint16_t MapGetTileType(const Map *map, const struct vec2i pos)
 {
 	const Tile *tile = MapGetTile(map, pos);
-	uint16_t ti = MAP_NOTHING;
-	if (tile->Class->IsFloor)
+	switch (tile->Class->Type)
 	{
-		ti = MAP_FLOOR;
+		case TILE_CLASS_FLOOR:
+			return MAP_FLOOR;
+		case TILE_CLASS_WALL:
+			return MAP_WALL;
+		case TILE_CLASS_DOOR:
+			return MAP_DOOR | MapGetAccessLevel(map, pos);
+		default:
+			if (TileCanWalk(tile))
+			{
+				return MAP_ROOM;
+			}
+			return MAP_NOTHING;
 	}
-	else if (tile->Class->IsWall)
-	{
-		ti = MAP_WALL;
-	}
-	else if (tile->Class->IsDoor)
-	{
-		ti = MAP_DOOR | MapGetAccessLevel(map, pos);
-	}
-	else if (TileCanWalk(tile))
-	{
-		ti = MAP_ROOM;
-	}
-	return ti;
 }
 
 static void MapSetupTile(MapBuilder *mb, const struct vec2i pos);
@@ -726,12 +729,12 @@ static bool MapTileIsNormalFloor(const MapBuilder *mb, const struct vec2i pos)
 	// Normal floor tiles can be replaced randomly with
 	// special floor tiles such as drainage
 	const TileClass *tile = MapBuilderGetTile(mb, pos);
-	if (!tile->IsFloor || MapBuilderGetIsRoom(mb, pos))
+	if (tile->Type != TILE_CLASS_FLOOR || MapBuilderGetIsRoom(mb, pos))
 	{
 		return false;
 	}
 	const TileClass *tAbove = MapBuilderGetTile(mb, svec2i(pos.x, pos.y - 1));
-	if (!tAbove || !tAbove->IsFloor ||
+	if (!tAbove || tAbove->Type != TILE_CLASS_FLOOR ||
 		MapBuilderGetIsRoom(mb, svec2i(pos.x, pos.y - 1)))
 	{
 		return false;
@@ -792,7 +795,7 @@ static void MapSetupTile(MapBuilder *mb, const struct vec2i pos)
 	}
 	const TileClass *tc = MapBuilderGetTile(mb, pos);
 	const bool isRoom = MapBuilderGetIsRoom(mb, pos);
-	if (tc->IsFloor && !isRoom)
+	if (tc->Type == TILE_CLASS_FLOOR && !isRoom)
 	{
 		// TODO: multiple classes
 		t->Class = TileClassesGetMaskedTile(
@@ -800,14 +803,15 @@ static void MapSetupTile(MapBuilder *mb, const struct vec2i pos)
 			mb->mission->FloorStyle, canSeeTileAbove ? "normal" : "shadow",
 			mb->mission->FloorMask, mb->mission->AltMask);
 	}
-	else if ((tc->IsFloor && isRoom) || tc->IsDoor)
+	else if ((tc->Type == TILE_CLASS_FLOOR && isRoom) ||
+		tc->Type == TILE_CLASS_DOOR)
 	{
 		t->Class = TileClassesGetMaskedTile(
 			&gTileFloor, mb->mission->RoomStyle,
 			canSeeTileAbove ? "normal" : "shadow",
 			mb->mission->RoomMask, mb->mission->AltMask);
 	}
-	else if (tc->IsWall)
+	else if (tc->Type == TILE_CLASS_WALL)
 	{
 		t->Class = TileClassesGetMaskedTile(
 			&gTileWall,
@@ -891,7 +895,7 @@ static bool W(const MapBuilder *mb, const int x, const int y)
 	const struct vec2i v = svec2i(x, y);
 	if (!MapIsTileIn(mb->Map, v)) return false;
 	const TileClass *tc = MapBuilderGetTile(mb, v);
-	return tc->IsWall;
+	return tc->Type == TILE_CLASS_WALL;
 }
 
 static bool MapIsValidStartForWall(
@@ -910,7 +914,7 @@ static bool MapIsValidStartForWall(
 		for (d.y = pos.y - pad; d.y <= pos.y + pad; d.y++)
 		{
 			if (!MapIsTileIn(mb->Map, d) ||
-				!MapBuilderGetTile(mb, d)->IsFloor ||
+				MapBuilderGetTile(mb, d)->Type != TILE_CLASS_FLOOR ||
 				MapBuilderGetIsRoom(mb, d) != isRoom)
 			{
 				return false;
@@ -1033,7 +1037,7 @@ static void MapGrowWall(
 				int level = v.y - (pos.y - 2);
 				for (v.x = pos.x - 1 - level; v.x <= pos.x + 1 + level; v.x++)
 				{
-					if (!MapBuilderGetTile(mb, v)->IsFloor ||
+					if (MapBuilderGetTile(mb, v)->Type != TILE_CLASS_FLOOR ||
 						!MapBuilderGetIsRoom(mb, v) != isRoom)
 					{
 						return;
@@ -1054,7 +1058,7 @@ static void MapGrowWall(
 				int level = v.x - (pos.x + 2);
 				for (v.y = pos.y - 1 - level; v.y <= pos.y + 1 + level; v.y++)
 				{
-					if (!MapBuilderGetTile(mb, v)->IsFloor ||
+					if (MapBuilderGetTile(mb, v)->Type != TILE_CLASS_FLOOR ||
 						!MapBuilderGetIsRoom(mb, v) != isRoom)
 					{
 						return;
@@ -1073,7 +1077,7 @@ static void MapGrowWall(
 				int level = v.y - (pos.y + 2);
 				for (v.x = pos.x - 1 - level; v.x <= pos.x + 1 + level; v.x++)
 				{
-					if (!MapBuilderGetTile(mb, v)->IsFloor ||
+					if (MapBuilderGetTile(mb, v)->Type != TILE_CLASS_FLOOR ||
 						!MapBuilderGetIsRoom(mb, v) != isRoom)
 					{
 						return;
@@ -1098,7 +1102,7 @@ static void MapGrowWall(
 				int level = v.x - (pos.x - 2);
 				for (v.y = pos.y - 1 - level; v.y <= pos.y + 1 + level; v.y++)
 				{
-					if (!MapBuilderGetTile(mb, v)->IsFloor ||
+					if (MapBuilderGetTile(mb, v)->Type != TILE_CLASS_FLOOR ||
 						!MapBuilderGetIsRoom(mb, v) != isRoom)
 					{
 						return;
@@ -1251,9 +1255,9 @@ static bool TryPlaceDoorTile(
 	MapBuilder *mb, const struct vec2i v, const struct vec2i d,
 	const TileClass *tile, const bool isRoom)
 {
-	if (MapBuilderGetTile(mb, v)->IsWall &&
-		!MapBuilderGetTile(mb, svec2i_add(v, d))->IsWall &&
-		!MapBuilderGetTile(mb, svec2i_subtract(v, d))->IsWall)
+	if (MapBuilderGetTile(mb, v)->Type == TILE_CLASS_WALL &&
+		MapBuilderGetTile(mb, svec2i_add(v, d))->Type != TILE_CLASS_WALL &&
+		MapBuilderGetTile(mb, svec2i_subtract(v, d))->Type != TILE_CLASS_WALL)
 	{
 		MapBuilderSetTile(mb, v, tile, isRoom);
 		return true;
@@ -1283,7 +1287,7 @@ bool MapBuilderIsAreaFunc(
 
 static bool IsClear(const MapBuilder *mb, const struct vec2i pos)
 {
-	return MapBuilderGetTile(mb, pos)->IsFloor;
+	return MapBuilderGetTile(mb, pos)->Type == TILE_CLASS_FLOOR;
 }
 bool MapIsAreaClear(
 	const MapBuilder *mb, const struct vec2i pos, const struct vec2i size)
@@ -1303,7 +1307,7 @@ static bool AreaHasRoomAndFloor(const MapBuilder *mb, const struct vec2i pos)
 		{
 			hasRoom = true;
 		}
-		else if (MapBuilderGetTile(mb, _v)->IsFloor)
+		else if (MapBuilderGetTile(mb, _v)->Type == TILE_CLASS_FLOOR)
 		{
 			hasFloor = true;
 		}
@@ -1313,8 +1317,9 @@ static bool AreaHasRoomAndFloor(const MapBuilder *mb, const struct vec2i pos)
 static bool IsClearOrRoom(const MapBuilder *mb, const struct vec2i pos)
 {
 	const TileClass *tile = MapBuilderGetTile(mb, pos);
-	if (tile->IsFloor) return true;
-	if (!tile->IsWall) return false;
+	if (tile->Type == TILE_CLASS_FLOOR) return true;
+	// Check if this wall is part of a room
+	if (tile->Type != TILE_CLASS_WALL) return false;
 	return AreaHasRoomAndFloor(mb, pos);
 }
 bool MapIsAreaClearOrRoom(
@@ -1326,8 +1331,9 @@ static bool IsClearOrWall(const MapBuilder *mb, const struct vec2i pos)
 {
 	const TileClass *tile = MapBuilderGetTile(mb, pos);
 	const bool isRoom = MapBuilderGetIsRoom(mb, pos);
-	if (tile->IsFloor && !isRoom) return true;
-	if (!tile->IsWall) return false;
+	if (tile->Type == TILE_CLASS_FLOOR && !isRoom) return true;
+	// Check if this wall is part of a room
+	if (tile->Type != TILE_CLASS_WALL) return false;
 	return AreaHasRoomAndFloor(mb, pos);
 }
 bool MapIsAreaClearOrWall(
@@ -1378,7 +1384,7 @@ bool MapGetRoomOverlapSize(
 		}
 		const TileClass *tile = MapBuilderGetTile(mb, _v);
 		// Check if this wall is part of a room
-		if (!tile->IsWall || !AreaHasRoomAndFloor(mb, _v))
+		if (tile->Type != TILE_CLASS_WALL || !AreaHasRoomAndFloor(mb, _v))
 		{
 			continue;
 		}
@@ -1421,7 +1427,7 @@ bool MapGetRoomOverlapSize(
 		for (v.x = overlapMin.x; v.x <= overlapMax.x; v.x++)
 		{
 			const TileClass *tile = MapBuilderGetTile(mb, v);
-			if (tile->IsWall)
+			if (tile->Type == TILE_CLASS_WALL)
 			{
 				// Check if this wall is part of a room
 				if (!AreaHasRoomAndFloor(mb, v))
@@ -1462,7 +1468,7 @@ bool MapIsLessThanTwoWallOverlaps(
 			{
 				continue;
 			}
-			if (!MapBuilderGetTile(mb, v)->IsWall)
+			if (MapBuilderGetTile(mb, v)->Type != TILE_CLASS_WALL)
 			{
 				continue;
 			}
@@ -1493,7 +1499,7 @@ bool MapIsLessThanTwoWallOverlaps(
 	{
 		for (v.x = overlapMin.x; v.x <= overlapMax.x; v.x++)
 		{
-			if (!MapBuilderGetTile(mb, v)->IsWall)
+			if (MapBuilderGetTile(mb, v)->Type != TILE_CLASS_WALL)
 			{
 				// invalid tile type
 				return false;

@@ -232,16 +232,17 @@ static void MapChangeFloor(
 	const Tile *tAbove = MapGetTile(map, svec2i(pos.x, pos.y - 1));
 	const int canSeeTileAbove = !(pos.y > 0 && TileIsOpaque(tAbove));
 	Tile *t = MapGetTile(map, pos);
-	if (t->Class->IsFloor)
+	if (t->Class->Type != TILE_CLASS_FLOOR)
 	{
-		if (!canSeeTileAbove)
-		{
-			t->Class = shadow;
-		}
-		else
-		{
-			t->Class = normal;
-		}
+		return;
+	}
+	if (!canSeeTileAbove)
+	{
+		t->Class = shadow;
+	}
+	else
+	{
+		t->Class = normal;
 	}
 }
 
@@ -490,7 +491,7 @@ bool MapIsPosOKForPlayer(
 {
 	const struct vec2i tilePos = Vec2ToTile(pos);
 	const Tile *tile = MapGetTile(map, tilePos);
-	if (tile->Class->IsFloor)
+	if (tile->Class->Type == TILE_CLASS_FLOOR)
 	{
 		return true;
 	}

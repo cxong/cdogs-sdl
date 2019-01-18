@@ -44,6 +44,14 @@
 #define Y_TILES			((gGraphicsDevice.cachedConfig.Res.y + TILE_HEIGHT - 1) / TILE_HEIGHT + 2)
 #define Y_TILES_HALF    ((Y_TILES + 1 / 2)
 
+typedef enum
+{
+	TILE_CLASS_FLOOR,
+	TILE_CLASS_WALL,
+	TILE_CLASS_DOOR,
+	TILE_CLASS_NOTHING,
+} TileClassType;
+
 typedef struct
 {
 	char *Name;
@@ -51,11 +59,7 @@ typedef struct
 	bool canWalk;	// can walk on tile
 	bool isOpaque;	// cannot see through
 	bool shootable;	// blocks bullets
-	// Mainly for drawing purposes
-	// TODO: use enum
-	bool IsWall;
-	bool IsFloor;
-	bool IsDoor;
+	TileClassType Type;
 } TileClass;
 
 typedef struct

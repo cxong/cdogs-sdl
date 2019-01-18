@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, 2016-2018 Cong Xu
+    Copyright (c) 2013-2014, 2016-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -74,24 +74,24 @@ void TileDestroy(Tile *t)
 // t->ClassAlt->Name == NULL for nothing tiles
 bool TileIsOpaque(const Tile *t)
 {
-    return
-        (t->Class->IsDoor && t->ClassAlt && t->ClassAlt->Name) ?
-        t->ClassAlt->isOpaque :
-        t->Class->isOpaque;
+	return
+		(t->Class->Type == TILE_CLASS_DOOR && t->ClassAlt && t->ClassAlt->Name) ?
+		t->ClassAlt->isOpaque :
+		t->Class->isOpaque;
 }
 
 bool TileIsShootable(const Tile *t)
 {
-    return
-        (t->Class->IsDoor && t->ClassAlt && t->ClassAlt->Name) ?
-        t->ClassAlt->shootable :
-        t->Class->shootable;
+	return
+		(t->Class->Type == TILE_CLASS_DOOR && t->ClassAlt && t->ClassAlt->Name) ?
+		t->ClassAlt->shootable :
+		t->Class->shootable;
 }
 
 bool TileCanWalk(const Tile *t)
 {
 	return
-		(t->Class->IsDoor && t->ClassAlt && t->ClassAlt->Name) ?
+		(t->Class->Type == TILE_CLASS_DOOR && t->ClassAlt && t->ClassAlt->Name) ?
 		t->ClassAlt->canWalk :
 		t->Class->canWalk;
 }
@@ -99,7 +99,10 @@ bool TileCanWalk(const Tile *t)
 bool TileIsClear(const Tile *t)
 {
 	// Check if tile is normal floor
-	if (!t->Class->IsFloor && !t->Class->IsDoor) return false;
+	if (t->Class->Type != TILE_CLASS_FLOOR && t->Class->Type != TILE_CLASS_DOOR)
+	{
+		return false;
+	}
 	// Check if tile has no things on it, excluding particles
 	CA_FOREACH(const ThingId, tid, t->things)
 		if (tid->Kind != KIND_PARTICLE) return false;

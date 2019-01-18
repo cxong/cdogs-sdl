@@ -246,8 +246,8 @@ static void EditorBrushPaintLine(EditorBrush *b, Mission *m)
 	b->IsPainting = 1;
 	b->LastPos = b->Pos;
 }
-// Paint all the edge tiles as a wall, unless they are room tiles already;
-// then paint the interior as room tiles
+// Paint all the edge tiles as a wall, then paint the interior as room tiles
+// TODO: change to generic tile painter
 static void EditorBrushPaintRoom(EditorBrush *b, Mission *m)
 {
 	struct vec2i v;
@@ -255,6 +255,7 @@ static void EditorBrushPaintRoom(EditorBrush *b, Mission *m)
 	{
 		for (v.x = 0; v.x < b->BrushSize; v.x++)
 		{
+			// TODO: tile classes
 			uint16_t tile = MAP_ROOM;
 			if (v.x == 0 || v.x == b->BrushSize - 1 ||
 				v.y == 0 || v.y == b->BrushSize - 1)
@@ -262,11 +263,7 @@ static void EditorBrushPaintRoom(EditorBrush *b, Mission *m)
 				tile = MAP_WALL;
 			}
 			const struct vec2i pos = svec2i_add(b->Pos, v);
-			const TileClass *tcExisting = MapGetTile(&gMap, v)->Class;
-			if (tcExisting->IsDoor || tcExisting->IsWall || tcExisting->IsFloor)
-			{
-				SetTile(m, pos, tile);
-			}
+			SetTile(m, pos, tile);
 		}
 	}
 	b->IsPainting = true;

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, 2016, 2018 Cong Xu
+    Copyright (c) 2013-2014, 2016, 2018-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -225,17 +225,20 @@ static void DrawMap(
 							mapPos.x + x*scale + j,
 							mapPos.y + y*scale + i);
 						color_t color = colorRoom;
-						if (tile->Class->IsWall)
+						switch (tile->Class->Type)
 						{
-							color = colorWall;
-						}
-						else if (tile->Class->IsDoor)
-						{
-							color = DoorColor(x, y);
-						}
-						else if (tile->Class->IsFloor)
-						{
-							color = colorFloor;
+							case TILE_CLASS_WALL:
+								color = colorWall;
+								break;
+							case TILE_CLASS_DOOR:
+								color = DoorColor(x, y);
+								break;
+							case TILE_CLASS_FLOOR:
+								color = colorFloor;
+								break;
+							default:
+								CASSERT(false, "Unknown tile class type");
+								break;
 						}
 						if (!ColorEquals(color, colorBlack))
 						{

@@ -177,6 +177,7 @@ set(CDOGS_HEADERS
 	mathc/mathc.h
 	mission.h
 	mission_convert.h
+	mission_static.h
 	mouse.h
 	music.h
 	net_client.h

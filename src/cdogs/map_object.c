@@ -553,7 +553,7 @@ bool MapObjectIsTileOK(
 		return false;
 	}
 	if ((obj->Flags & (1 << PLACEMENT_ON_WALL)) &&
-		(tileAbove == NULL || !tileAbove->Class->IsWall))
+		(tileAbove == NULL || tileAbove->Class->Type != TILE_CLASS_WALL))
 	{
 		return false;
 	}

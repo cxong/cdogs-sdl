@@ -69,7 +69,8 @@ void MapAddDoorGroup(MapBuilder *mb, const struct vec2i v, const int keyFlags)
 		MapBuilderGetTile(mb, svec2i(v.x + 1, v.y));
 	const bool isHorizontal =
 		!tileLeftType->canWalk || !tileRightType->canWalk ||
-		tileLeftType->IsDoor || tileRightType->IsDoor;
+		tileLeftType->Type == TILE_CLASS_DOOR ||
+		tileRightType->Type == TILE_CLASS_DOOR;
 	const int doorGroupCount = GetDoorCountInGroup(mb, v, isHorizontal);
 	const struct vec2i dv = svec2i(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
 	const struct vec2i dAside = svec2i(dv.y, dv.x);
@@ -152,7 +153,7 @@ static int GetDoorCountInGroup(
 	const struct vec2i dv = svec2i(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
 	int count = 0;
 	for (struct vec2i vi = v;
-		MapBuilderGetTile(mb, vi)->IsDoor;
+		MapBuilderGetTile(mb, vi)->Type == TILE_CLASS_DOOR;
 		vi = svec2i_add(vi, dv))
 	{
 		count++;
@@ -373,9 +374,9 @@ void DoorAddClass(
 	DoorGetClassName(buf, style, key, isHorizontal);
 	TileClass *t = TileClassAdd(c->customClasses, pm, NULL, buf);
 	CASSERT(t != NULL, "cannot add door class");
-	t->IsDoor = true;
-    const bool isOpenOrWallCavity =
-        strcmp(key, "open") == 0 || strcmp(key, "wall") == 0;
+	t->Type = TILE_CLASS_DOOR;
+	const bool isOpenOrWallCavity =
+		strcmp(key, "open") == 0 || strcmp(key, "wall") == 0;
 	t->isOpaque = !isOpenOrWallCavity;
 	t->canWalk = isOpenOrWallCavity;
 	t->shootable = !isOpenOrWallCavity;

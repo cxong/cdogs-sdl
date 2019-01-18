@@ -461,9 +461,9 @@ static int FindWallRun(
 		const struct vec2i v = svec2i_add(mid, svec2i_scale(d, (float)next));
 		plus = !plus;
 
-		if (!MapBuilderGetTile(mb, v)->IsWall ||
-			MapBuilderGetTile(mb, svec2i(v.x + d.y, v.y + d.x))->IsWall ||
-			MapBuilderGetTile(mb, svec2i(v.x - d.y, v.y - d.x))->IsWall)
+		if (MapBuilderGetTile(mb, v)->Type != TILE_CLASS_WALL ||
+			MapBuilderGetTile(mb, svec2i(v.x + d.y, v.y + d.x))->Type == TILE_CLASS_WALL ||
+			MapBuilderGetTile(mb, svec2i(v.x - d.y, v.y - d.x))->Type == TILE_CLASS_WALL)
 		{
 			break;
 		}

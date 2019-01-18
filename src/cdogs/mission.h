@@ -52,6 +52,7 @@
 
 #include "config.h"
 #include "map_object.h"
+#include "mission_static.h"
 #include "objective.h"
 #include "proto/msg.pb.h"
 #include "sys_config.h"
@@ -170,21 +171,7 @@ typedef struct
 				int Max;
 			} Pillars;
 		} Classic;
-		// Static
-		struct
-		{
-			CArray Tiles;		// of uint16_t (map tile)
-			CArray Items;		// of MapObjectPositions
-			CArray Characters;	// of CharacterPositions
-			CArray Objectives;	// of ObjectivePositions
-			CArray Keys;		// of KeyPositions
-			struct vec2i Start;
-			struct
-			{
-				struct vec2i Start;
-				struct vec2i End;
-			} Exit;
-		} Static;
+		MissionStatic Static;
 		// Cave
 		struct
 		{

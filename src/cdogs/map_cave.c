@@ -106,7 +106,8 @@ static int CountWallsAround(
 	RECT_FOREACH(
 		Rect2iNew(svec2i_subtract(pos, svec2i(d, d)), svec2i(2*d+1, 2*d+1)))
 		// Also count edge of maps
-		if (!MapIsTileIn(mb->Map, _v) || MapBuilderGetTile(mb, _v)->IsWall)
+		if (!MapIsTileIn(mb->Map, _v) ||
+			MapBuilderGetTile(mb, _v)->Type == TILE_CLASS_WALL)
 		{
 			c++;
 		}
@@ -129,7 +130,7 @@ static void LinkDisconnectedAreas(MapBuilder *mb)
 	// First copy across the wall tiles (as -1)
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), mb->Map->Size))
 		const TileClass *tile = MapBuilderGetTile(mb, _v);
-		if (tile->IsWall)
+		if (tile->Type == TILE_CLASS_WALL)
 		{
 			*(int *)CArrayGet(&fl, _i) = -1;
 		}
@@ -319,7 +320,7 @@ static void FixCorridors(MapBuilder *mb, const int corridorWidth)
 		{
 			const TileClass *tile = MapBuilderGetTile(mb, v);
 			// Make sure that the tile is a wall
-			if (!tile->IsWall)
+			if (tile->Type != TILE_CLASS_WALL)
 			{
 				continue;
 			}
@@ -378,11 +379,12 @@ static void FixCorridorOnTile(void *data, struct vec2i v)
 		// This is the first tile after the starting tile
 		// If this tile is a wall, result is good, and we don't care about
 		// the rest of the tiles anymore
-		onTileData->IsFirstWall = MapBuilderGetTile(onTileData->M, v)->IsWall;
+		onTileData->IsFirstWall =
+			MapBuilderGetTile(onTileData->M, v)->Type == TILE_CLASS_WALL;
 	}
 	if (onTileData->Counter > 0)
 	{
-		if (!MapBuilderGetTile(onTileData->M, v)->IsFloor)
+		if (MapBuilderGetTile(onTileData->M, v)->Type != TILE_CLASS_FLOOR)
 		{
 			onTileData->AreAllFloors = false;
 		}
@@ -427,14 +429,16 @@ static bool MapIsAreaClearForCaveSquare(
 		for (v.x = pos.x; v.x < pos.x + size.x; v.x++)
 		{
 			const TileClass *tile = MapBuilderGetTile(mb, v);
-			if (tile->IsFloor)
+			switch (tile->Type)
 			{
-				hasFloor = true;
-			}
-			else if (!tile->IsWall)
-			{
-				// Any other tile type is disallowed
-				return false;
+				case TILE_CLASS_FLOOR:
+					hasFloor = true;
+					break;
+				case TILE_CLASS_WALL:
+					break;
+				default:
+					// Any other tile type is disallowed
+					return false;
 			}
 		}
 	}
@@ -500,7 +504,7 @@ static bool MapIsAreaClearForCaveRoom(const MapBuilder *mb, const Rect2i room)
 	RECT_FOREACH(room)
 		const TileClass *tile = MapBuilderGetTile(mb, _v);
 		const bool isRoom = MapBuilderGetIsRoom(mb, _v);
-		if (tile->IsFloor && !isRoom)
+		if (tile->Type == TILE_CLASS_FLOOR && !isRoom)
 		{
 			hasFloor = true;
 			if (Rect2iIsAtEdge(room, _v))
@@ -508,11 +512,11 @@ static bool MapIsAreaClearForCaveRoom(const MapBuilder *mb, const Rect2i room)
 				hasFloorAroundEdge = true;
 			}
 		}
-		else if (isRoom || tile->IsDoor)
+		else if (isRoom || tile->Type == TILE_CLASS_DOOR)
 		{
 			isOverlapRoom = true;
 		}
-		else if (!tile->IsWall)
+		else if (tile->Type != TILE_CLASS_WALL)
 		{
 			// Any other tile type is disallowed
 			return false;
@@ -546,31 +550,31 @@ static bool MapIsAreaClearForCaveRoom(const MapBuilder *mb, const Rect2i room)
 		const struct vec2i outsideY = svec2i(
 			_v.x, (isTop || isBottom) ? outside.y : _v.y);
 		const TileClass *tile = MapBuilderGetTile(mb, _v);
-		if (tile->IsWall || tile->IsDoor)
+		switch (tile->Type)
 		{
-			// Note: also need to check outside to see if we overlap
-			// but just along the edge
-			if (MapBuilderGetIsRoom(mb, outside) ||
-				MapBuilderGetIsRoom(mb, outsideX) ||
-				MapBuilderGetIsRoom(mb, outsideY))
-			{
-				isOverlapRoom = true;
-			}
-		}
-		else if (tile->IsFloor)
-		{
-			// Check outside tiles
-			if (!CaveRoomOutsideOk(mb, outside) ||
-				!CaveRoomOutsideOk(mb, outsideX) ||
-				!CaveRoomOutsideOk(mb, outsideY))
-			{
+			case TILE_CLASS_DOOR:
+			case TILE_CLASS_WALL: // fallthrough
+				// Note: also need to check outside to see if we overlap
+				// but just along the edge
+				if (MapBuilderGetIsRoom(mb, outside) ||
+					MapBuilderGetIsRoom(mb, outsideX) ||
+					MapBuilderGetIsRoom(mb, outsideY))
+				{
+					isOverlapRoom = true;
+				}
+				break;
+			case TILE_CLASS_FLOOR:
+				// Check outside tiles
+				if (!CaveRoomOutsideOk(mb, outside) ||
+					!CaveRoomOutsideOk(mb, outsideX) ||
+					!CaveRoomOutsideOk(mb, outsideY))
+				{
+					return false;
+				}
+				break;
+			default:
+				CASSERT(false, "unexpected tile type");
 				return false;
-			}
-		}
-		else
-		{
-			CASSERT(false, "unexpected tile type");
-			return false;
 		}
 	RECT_FOREACH_END()
 
@@ -596,7 +600,7 @@ static bool MapIsAreaClearForCaveRoom(const MapBuilder *mb, const Rect2i room)
 static bool CaveRoomOutsideOk(const MapBuilder *mb, const struct vec2i v)
 {
 	const TileClass *t = MapBuilderGetTile(mb, v);
-	return t != NULL && t->IsFloor;
+	return t != NULL && t->Type == TILE_CLASS_FLOOR;
 }
 
 static void MapBuildRoom(MapBuilder *mb, const Rect2i room)
@@ -629,7 +633,7 @@ static void MapBuildRoom(MapBuilder *mb, const Rect2i room)
 			_v.y == 0 || _v.y == mb->Map->Size.y - 1 ||
 			_v.x == 0 || _v.x == mb->Map->Size.x - 1;
 		const TileClass *tile = MapBuilderGetTile(mb, _v);
-		if (tile->IsDoor)
+		if (tile->Type == TILE_CLASS_DOOR)
 		{
 			if (!CaveRoomOutsideOk(mb, outside) &&
 				!CaveRoomOutsideOk(mb, outsideX) &&
@@ -639,7 +643,7 @@ static void MapBuildRoom(MapBuilder *mb, const Rect2i room)
 				MapBuilderSetTile(mb, _v, &gTileWall, false);
 			}
 		}
-		else if (!tile->IsDoor)
+		else
 		{
 			// Check outside tiles
 			if (!atEdgeOfMap &&

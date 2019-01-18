@@ -32,19 +32,19 @@
 
 TileClasses gTileClasses;
 TileClass gTileFloor = {
-	"tile", NULL, true, false, false, false, true, false,
+	"tile", NULL, true, false, false, TILE_CLASS_FLOOR,
 };
 TileClass gTileWall = {
-	"wall", NULL, false, true, true, true, false, false,
+	"wall", NULL, false, true, true, TILE_CLASS_WALL,
 };
 TileClass gTileNothing = {
-	NULL, NULL, false, false, false, false, false, false,
+	NULL, NULL, false, false, false, TILE_CLASS_NOTHING,
 };
 TileClass gTileExit = {
-	"tile", NULL, true, false, false, false, true, false,
+	"tile", NULL, true, false, false, TILE_CLASS_FLOOR,
 };
 TileClass gTileDoor = {
-	"door", NULL, false, true, true, false, false, true,
+	"door", NULL, false, true, true, TILE_CLASS_DOOR,
 };
 
 void TileClassesInit(TileClasses *c)

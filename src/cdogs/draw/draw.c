@@ -160,7 +160,7 @@ static void DrawFloor(DrawBuffer *b, struct vec2i offset)
 			if (tile->Class != NULL &&
 				tile->Class->Pic != NULL &&
 				tile->Class->Pic->Data != NULL &&
-				!tile->Class->IsWall)
+				tile->Class->Type != TILE_CLASS_WALL)
 			{
 				DrawLOSPic(tile, tile->Class->Pic, pos, useFog);
 			}
@@ -213,11 +213,12 @@ static void DrawWallsAndThings(DrawBuffer *b, struct vec2i offset)
 		pos.x = b->dx + offset.x;
 		for (int x = 0; x < b->Size.x; x++, tile++, pos.x += TILE_WIDTH)
 		{
-			if (tile->Class->IsWall)
+			if (tile->Class->Type == TILE_CLASS_WALL)
 			{
 				DrawLOSPic(tile, tile->Class->Pic, pos, useFog);
 			}
-			else if (tile->Class->IsDoor && tile->ClassAlt && tile->ClassAlt->Pic)
+			else if (tile->Class->Type == TILE_CLASS_DOOR &&
+				tile->ClassAlt && tile->ClassAlt->Pic)
 			{
 				// Drawing doors
 				// Doors may be offset; vertical doors are drawn centered
