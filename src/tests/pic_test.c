@@ -8,38 +8,6 @@
 #include <grafx.h>
 
 
-// Stubs
-const char *JoyName(const int deviceIndex)
-{
-	UNUSED(deviceIndex);
-	return NULL;
-}
-color_t PaletteToColor(unsigned char idx)
-{
-	UNUSED(idx);
-	return colorBlack;
-}
-int ConfigGetJSONVersion(FILE *f)
-{
-	UNUSED(f);
-	return 0;
-}
-bool ConfigIsOld(FILE *f)
-{
-	UNUSED(f);
-	return false;
-}
-void DrawRectangle(
-	GraphicsDevice *device, struct vec2i pos, struct vec2i size, color_t color, int flags)
-{
-	UNUSED(device);
-	UNUSED(pos);
-	UNUSED(size);
-	UNUSED(color);
-	UNUSED(flags);
-}
-
-
 FEATURE(PicLoad, "Pic load")
 	SCENARIO("Load png")
 		GIVEN("a graphics context")
