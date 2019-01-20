@@ -35,12 +35,14 @@ So what are you waiting for? Download C-Dogs SDL today and have a blast!
 
 ## ![](https://github.com/cxong/cdogs-sdl/blob/master/graphics/terminal.png) Platforms ##
 
+<a href="https://repology.org/metapackage/cdogs-sdl/versions">
+    <img src="https://repology.org/badge/vertical-allrepos/cdogs-sdl.svg" alt="Packaging status" align="right">
+</a>
+
 C-Dogs SDL is built using the SDL2 API.
 See the SDL website - <http://www.libsdl.org> for more about SDL itself.
 
 C-Dogs SDL runs on Linux, \*BSD, Windows, Mac OS X, Pandora and GCW-Zero. There are a few other unsupported and outdated ports too.
-
-[![Packaging status](https://repology.org/badge/vertical-allrepos/cdogs-sdl.svg)](https://repology.org/metapackage/cdogs-sdl)
 
 ## ![](https://github.com/cxong/cdogs-sdl/blob/master/graphics/cd.png) Installation ##
 
