@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2017, Cong Xu
+    Copyright (c) 2013-2017, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -52,7 +52,7 @@ typedef struct
 	int frame;
 	int frames[ANIMATION_MAX_FRAMES];
 	int ticksPerFrame[ANIMATION_MAX_FRAMES];
-	int frameCounter;
+	float frameCounter;
 	bool randomFrames;
 	// Flag for whether we entered a new frame
 	// Used for some frame-triggered effects like sounds
@@ -61,4 +61,4 @@ typedef struct
 
 Animation AnimationGetActorAnimation(const ActorAnimation aa);
 int AnimationGetFrame(const Animation *a);
-void AnimationUpdate(Animation *a, const int ticks);
+void AnimationUpdate(Animation *a, const float ticks);

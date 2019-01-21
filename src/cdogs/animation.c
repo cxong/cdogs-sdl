@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2017, Cong Xu
+    Copyright (c) 2013-2017, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,7 @@ Animation AnimationGetActorAnimation(const ActorAnimation aa)
 	}
 }
 
-void AnimationUpdate(Animation *a, const int ticks)
+void AnimationUpdate(Animation *a, const float ticks)
 {
 	a->frameCounter += ticks;
 	a->newFrame = false;

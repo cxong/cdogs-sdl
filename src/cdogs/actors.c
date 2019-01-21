@@ -80,6 +80,7 @@
 #include "utils.h"
 
 #define FOOTSTEP_DISTANCE_PLUS 250
+#define FOOTSTEP_MAX_ANIM_SPEED 2
 #define REPEL_STRENGTH 0.06f
 #define SLIDE_LOCK 50
 #define SLIDE_X (TILE_WIDTH / 3)
@@ -191,7 +192,16 @@ void UpdateActorState(TActor * actor, int ticks)
 	}
 
 	// Animation
-	AnimationUpdate(&actor->anim, ticks);
+	float animTicks = 1;
+	if (actor->anim.Type == ACTORANIMATION_WALKING)
+	{
+		// Update walk animation based on actor speed
+		animTicks = MIN(
+			svec2_length(svec2_add(actor->MoveVel, actor->thing.Vel)),
+			FOOTSTEP_MAX_ANIM_SPEED);
+	}
+	animTicks *= ticks;
+	AnimationUpdate(&actor->anim, animTicks);
 
 	// Chatting
 	actor->ChatterCounter = MAX(0, actor->ChatterCounter - ticks);
@@ -796,13 +806,21 @@ void CommandActor(TActor * actor, int cmd, int ticks)
 		const bool hasShot = ActorTryShoot(actor, cmd);
 		const bool hasGrenaded = TryGrenade(actor, cmd);
 		const bool hasMoved = ActorTryMove(actor, cmd, hasShot, ticks);
+		ActorAnimation anim = actor->anim.Type;
 		// Idle if player hasn't done anything
-		if (!(hasChangedDirection || hasShot || hasGrenaded || hasMoved) &&
-			actor->anim.Type != ACTORANIMATION_IDLE)
+		if (!(hasChangedDirection || hasShot || hasGrenaded || hasMoved))
+		{
+			anim = ACTORANIMATION_IDLE;
+		}
+		else if (hasMoved)
+		{
+			anim = ACTORANIMATION_WALKING;
+		}
+		if (actor->anim.Type != anim)
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_STATE);
 			e.u.ActorState.UID = actor->uid;
-			e.u.ActorState.State = (int32_t)ACTORANIMATION_IDLE;
+			e.u.ActorState.State = (int32_t)anim;
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 	}
@@ -835,39 +853,14 @@ static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks)
 	if (willMove)
 	{
 		const float moveAmount = ActorGetCharacter(actor)->speed * ticks;
-		if (cmd & CMD_LEFT)
+		struct vec2 moveVel = svec2_zero();
+		if (cmd & CMD_LEFT) moveVel.x--;
+		else if (cmd & CMD_RIGHT) moveVel.x++;
+		if (cmd & CMD_UP) moveVel.y--;
+		else if (cmd & CMD_DOWN) moveVel.y++;
+		if (!svec2_is_zero(moveVel))
 		{
-			actor->MoveVel.x -= moveAmount;
-		}
-		else if (cmd & CMD_RIGHT)
-		{
-			actor->MoveVel.x += moveAmount;
-		}
-		if (cmd & CMD_UP)
-		{
-			actor->MoveVel.y -= moveAmount;
-		}
-		else if (cmd & CMD_DOWN)
-		{
-			actor->MoveVel.y += moveAmount;
-		}
-
-		if (actor->anim.Type != ACTORANIMATION_WALKING)
-		{
-			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_STATE);
-			e.u.ActorState.UID = actor->uid;
-			e.u.ActorState.State = (int32_t)ACTORANIMATION_WALKING;
-			GameEventsEnqueue(&gGameEvents, e);
-		}
-	}
-	else
-	{
-		if (actor->anim.Type != ACTORANIMATION_IDLE)
-		{
-			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_STATE);
-			e.u.ActorState.UID = actor->uid;
-			e.u.ActorState.State = (int32_t)ACTORANIMATION_IDLE;
-			GameEventsEnqueue(&gGameEvents, e);
+			actor->MoveVel = svec2_scale(svec2_normalize(moveVel), moveAmount);
 		}
 	}
 
@@ -881,7 +874,7 @@ static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks)
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 
-	return willMove;
+	return willMove || !svec2_is_zero(actor->thing.Vel);
 }
 
 void SlideActor(TActor *actor, int cmd)
