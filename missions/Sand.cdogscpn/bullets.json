@@ -1,9 +1,10 @@
 {
-  "Version": 1,
+  "Version": 3,
   "Bullets": [
     {
       "Name": "khanjali",
       "Power": 20,
+      "Mass": 0,
       "HitSounds": {
         "Object": "knife_hard",
         "Flesh": "knife_flesh"
@@ -12,6 +13,7 @@
     {
       "Name": "wurmtooth",
       "Power": 15,
+      "Mass": 0,
       "HitSounds": {
         "Object": "knife_hard",
         "Flesh": "wurmtooth_flesh"
@@ -20,6 +22,7 @@
     {
       "Name": "monster_bite",
       "Power": 10,
+      "Mass": 0,
       "HitSounds": {
         "Object": "knife_hard",
         "Flesh": "monster-2"
