@@ -157,7 +157,7 @@ static void MapBuilderSetupTileClasses(const MapBuilder *mb)
 	// Floor/square
 	for (int i = 0; i < FLOOR_TYPES; i++)
 	{
-		TileClassesAddMaskedTile(
+		TileClassesAdd(
 			&gTileClasses, &gPicManager,
 			&gTileFloor,
 			mb->mission->FloorStyle, IntTileType(i),
@@ -167,7 +167,7 @@ static void MapBuilderSetupTileClasses(const MapBuilder *mb)
 	// Room
 	for (int i = 0; i < ROOMFLOOR_TYPES; i++)
 	{
-		TileClassesAddMaskedTile(
+		TileClassesAdd(
 			&gTileClasses, &gPicManager, &gTileFloor, mb->mission->RoomStyle,
 			IntTileType(i),
 			mb->mission->RoomMask, mb->mission->AltMask);
@@ -191,7 +191,7 @@ static void MapBuilderSetupTileClasses(const MapBuilder *mb)
 	// Wall
 	for (int i = 0; i < WALL_TYPE_COUNT; i++)
 	{
-		TileClassesAddMaskedTile(
+		TileClassesAdd(
 			&gTileClasses, &gPicManager, &gTileWall,
 			mb->mission->WallStyle, IntWallType(i),
 			mb->mission->WallMask, mb->mission->AltMask);
@@ -1037,6 +1037,7 @@ static void MapGrowWall(
 				int level = v.y - (pos.y - 2);
 				for (v.x = pos.x - 1 - level; v.x <= pos.x + 1 + level; v.x++)
 				{
+					if (!MapIsTileIn(mb->Map, v)) continue;
 					if (MapBuilderGetTile(mb, v)->Type != TILE_CLASS_FLOOR ||
 						!MapBuilderGetIsRoom(mb, v) != isRoom)
 					{
@@ -1058,6 +1059,7 @@ static void MapGrowWall(
 				int level = v.x - (pos.x + 2);
 				for (v.y = pos.y - 1 - level; v.y <= pos.y + 1 + level; v.y++)
 				{
+					if (!MapIsTileIn(mb->Map, v)) continue;
 					if (MapBuilderGetTile(mb, v)->Type != TILE_CLASS_FLOOR ||
 						!MapBuilderGetIsRoom(mb, v) != isRoom)
 					{
@@ -1077,6 +1079,7 @@ static void MapGrowWall(
 				int level = v.y - (pos.y + 2);
 				for (v.x = pos.x - 1 - level; v.x <= pos.x + 1 + level; v.x++)
 				{
+					if (!MapIsTileIn(mb->Map, v)) continue;
 					if (MapBuilderGetTile(mb, v)->Type != TILE_CLASS_FLOOR ||
 						!MapBuilderGetIsRoom(mb, v) != isRoom)
 					{
@@ -1102,6 +1105,7 @@ static void MapGrowWall(
 				int level = v.x - (pos.x - 2);
 				for (v.y = pos.y - 1 - level; v.y <= pos.y + 1 + level; v.y++)
 				{
+					if (!MapIsTileIn(mb->Map, v)) continue;
 					if (MapBuilderGetTile(mb, v)->Type != TILE_CLASS_FLOOR ||
 						!MapBuilderGetIsRoom(mb, v) != isRoom)
 					{

@@ -28,23 +28,29 @@
 #include "tile_class.h"
 
 #include "log.h"
+#include "sys_config.h"
 
 
 TileClasses gTileClasses;
 TileClass gTileFloor = {
-	"tile", NULL, true, false, false, TILE_CLASS_FLOOR,
+	"tile", NULL, NULL, NULL, { 255, 255, 255, 255 }, { 255, 255, 255, 255 },
+	true, false, false, TILE_CLASS_FLOOR,
 };
 TileClass gTileWall = {
-	"wall", NULL, false, true, true, TILE_CLASS_WALL,
+	"wall", NULL, NULL, NULL, { 255, 255, 255, 255 }, { 255, 255, 255, 255 },
+	false, true, true, TILE_CLASS_WALL,
 };
 TileClass gTileNothing = {
-	NULL, NULL, false, false, false, TILE_CLASS_NOTHING,
+	NULL, NULL, NULL, NULL, { 255, 255, 255, 255 }, { 255, 255, 255, 255 },
+	false, false, false, TILE_CLASS_NOTHING,
 };
 TileClass gTileExit = {
-	"tile", NULL, true, false, false, TILE_CLASS_FLOOR,
+	"exits", NULL, NULL, NULL, { 255, 255, 255, 255 }, { 255, 255, 255, 255 },
+	true, false, false, TILE_CLASS_FLOOR,
 };
 TileClass gTileDoor = {
-	"door", NULL, false, true, true, TILE_CLASS_DOOR,
+	"door", NULL, NULL, NULL, { 255, 255, 255, 255 }, { 255, 255, 255, 255 },
+	false, true, true, TILE_CLASS_DOOR,
 };
 
 void TileClassesInit(TileClasses *c)
@@ -67,6 +73,8 @@ static void TileClassDestroy(any_t data)
 {
 	TileClass *c = data;
 	CFREE(c->Name);
+	CFREE(c->Style);
+	CFREE(c->StyleType);
 	CFREE(c);
 }
 
@@ -92,27 +100,38 @@ const TileClass *StrTileClass(const char *name)
 	return &gTileNothing;
 }
 
-static void GetMaskedName(
-	char *buf, const char *name, const char *style, const char *type,
-	const color_t mask, const color_t maskAlt);
 const TileClass *TileClassesGetMaskedTile(
 	const TileClass *baseClass, const char *style, const char *type,
 	const color_t mask, const color_t maskAlt)
 {
 	char buf[256];
-	GetMaskedName(buf, baseClass->Name, style, type, mask, maskAlt);
+	TileClassGetName(buf, baseClass->Name, style, type, mask, maskAlt);
 	return StrTileClass(buf);
 }
-void TileClassesAddMaskedTile(
+TileClass *TileClassesAdd(
 	TileClasses *c, const PicManager *pm, const TileClass *baseClass,
 	const char *style, const char *type,
 	const color_t mask, const color_t maskAlt)
 {
-	char buf[256];
-	GetMaskedName(buf, baseClass->Name, style, type, mask, maskAlt);
-	TileClassAdd(c->customClasses, pm, baseClass, buf);
+	TileClass *t;
+	CCALLOC(t, sizeof *t);
+	memcpy(t, baseClass, sizeof *t);
+	CSTRDUP(t->Name, baseClass->Name);
+	CSTRDUP(t->Style, style);
+	CSTRDUP(t->StyleType, type);
+	char buf[CDOGS_PATH_MAX];
+	TileClassGetName(buf, baseClass->Name, style, type, mask, maskAlt);
+	t->Pic = PicManagerGetPic(pm, buf);
+
+	const int error = hashmap_put(c->customClasses, buf, t);
+	if (error != MAP_OK)
+	{
+		LOG(LM_MAIN, LL_ERROR, "failed to add tile class %s: %d", buf, error);
+		return NULL;
+	}
+	return t;
 }
-static void GetMaskedName(
+void TileClassGetName(
 	char *buf, const char *name, const char *style, const char *type,
 	const color_t mask, const color_t maskAlt)
 {
@@ -124,11 +143,11 @@ static void GetMaskedName(
 }
 
 const TileClass *TileClassesGetExit(
-	TileClasses *c, const PicManager *pm,
-	const char *style, const bool isShadow)
+	TileClasses *c, PicManager *pm, const char *style, const bool isShadow)
 {
 	char buf[256];
-	sprintf(buf, "exits/%s/%s", style, isShadow ? "shadow" : "normal");
+	const char *type = isShadow ? "shadow" : "normal";
+	TileClassGetName(buf, "exits", style, type, colorWhite, colorWhite);
 	const TileClass *t = StrTileClass(buf);
 	if (t != &gTileNothing)
 	{
@@ -136,28 +155,8 @@ const TileClass *TileClassesGetExit(
 	}
 
 	// tile class not found; create it
-	return TileClassAdd(c->customClasses, pm, &gTileExit, buf);
-}
-
-TileClass *TileClassAdd(
-	map_t classes, const PicManager *pm, const TileClass *base,
-	const char *name)
-{
-	TileClass *t;
-	CCALLOC(t, sizeof *t);
-	if (base != NULL)
-	{
-		memcpy(t, base, sizeof *t);
-	}
-	CSTRDUP(t->Name, name);
-	t->Pic = PicManagerGetPic(pm, name);
-
-	const int error = hashmap_put(classes, name, t);
-	if (error != MAP_OK)
-	{
-		LOG(LM_MAIN, LL_ERROR, "failed to add tile class %s: %d",
-			name, error);
-		return NULL;
-	}
-	return t;
+	PicManagerGenerateMaskedStylePic(
+		pm, "exits", style, type, colorWhite, colorWhite);
+	return TileClassesAdd(
+		c, pm, &gTileExit, style, type, colorWhite, colorWhite);
 }

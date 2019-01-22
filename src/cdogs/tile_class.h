@@ -56,6 +56,10 @@ typedef struct
 {
 	char *Name;
 	const Pic *Pic;
+	char *Style;
+	char *StyleType;
+	color_t Mask;
+	color_t MaskAlt;
 	bool canWalk;	// can walk on tile
 	bool isOpaque;	// cannot see through
 	bool shootable;	// blocks bullets
@@ -83,14 +87,12 @@ const TileClass *StrTileClass(const char *name);
 const TileClass *TileClassesGetMaskedTile(
 	const TileClass *baseClass, const char *style, const char *type,
 	const color_t mask, const color_t maskAlt);
-void TileClassesAddMaskedTile(
+TileClass *TileClassesAdd(
 	TileClasses *c, const PicManager *pm, const TileClass *baseClass,
 	const char *style, const char *type,
 	const color_t mask, const color_t maskAlt);
+void TileClassGetName(
+	char *buf, const char *name, const char *style, const char *type,
+	const color_t mask, const color_t maskAlt);
 const TileClass *TileClassesGetExit(
-	TileClasses *c, const PicManager *pm,
-	const char *style, const bool isShadow);
-
-TileClass *TileClassAdd(
-	map_t classes, const PicManager *pm, const TileClass *base,
-	const char *name);
+	TileClasses *c, PicManager *pm,	const char *style, const bool isShadow);

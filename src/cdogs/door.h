@@ -56,7 +56,7 @@ void MapAddDoorGroup(MapBuilder *mb, const struct vec2i v, const int keyFlags);
 const TileClass *DoorGetClass(
 	const char *style, const char *key, const bool isHorizontal);
 void DoorAddClass(
-	TileClasses *c, const PicManager *pm,
+	TileClasses *c, PicManager *pm,
 	const char *style, const char *key, const bool isHorizontal);
 
 // Legacy door style int to str
