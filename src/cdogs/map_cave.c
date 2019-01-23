@@ -52,7 +52,7 @@ void MapCaveLoad(MapBuilder *mb)
 	{
 		const struct vec2i pos =
 			svec2i(i % mb->Map->Size.x, i / mb->Map->Size.x);
-		MapBuilderSetTile(mb, pos, &gTileWall, false);
+		MapBuilderSetTile(mb, pos, &gTileWall);
 	}
 	// Shuffle
 	CArrayShuffle(&mb->tiles);
@@ -95,7 +95,7 @@ static void CaveRep(MapBuilder *mb, const int r1, const int r2)
 		}
 	RECT_FOREACH_END()
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), mb->Map->Size))
-		MapBuilderSetTile(mb, _v, CArrayGet(&buf, _i), false);
+		MapBuilderSetTile(mb, _v, CArrayGet(&buf, _i));
 	RECT_FOREACH_END()
 	CArrayTerminate(&buf);
 }
@@ -287,19 +287,19 @@ static void AddCorridor(
 	struct vec2i v = start;
 	for (; v.x != half.x && v.y != half.y; v = svec2i_add(v, d))
 	{
-		MapBuilderSetTile(mb, v, tile, false);
+		MapBuilderSetTile(mb, v, tile);
 	}
 	// Turn
 	for (; v.x != end.x && v.y != end.y; v = svec2i_add(v, dAlt))
 	{
-		MapBuilderSetTile(mb, v, tile, false);
+		MapBuilderSetTile(mb, v, tile);
 	}
 	// Finish
 	for (; v.x != end.x || v.y != end.y; v = svec2i_add(v, d))
 	{
-		MapBuilderSetTile(mb, v, tile, false);
+		MapBuilderSetTile(mb, v, tile);
 	}
-	MapBuilderSetTile(mb, v, tile, false);
+	MapBuilderSetTile(mb, v, tile);
 }
 
 static bool CheckCorridorsAroundTile(
@@ -327,7 +327,7 @@ static void FixCorridors(MapBuilder *mb, const int corridorWidth)
 			if (!CheckCorridorsAroundTile(mb, corridorWidth, v))
 			{
 				// Corridor checks failed; replace with a floor tile
-				MapBuilderSetTile(mb, v, &gTileFloor, false);
+				MapBuilderSetTile(mb, v, &gTileFloor);
 			}
 		}
 	}
@@ -486,6 +486,7 @@ static void PlaceRooms(MapBuilder *mb)
 	CArrayTerminate(&rooms);
 }
 
+static bool CaveRoomInsideOk(const MapBuilder *mb, const struct vec2i v);
 static bool CaveRoomOutsideOk(const MapBuilder *mb, const struct vec2i v);
 static bool MapIsAreaClearForCaveRoom(const MapBuilder *mb, const Rect2i room)
 {
@@ -503,8 +504,7 @@ static bool MapIsAreaClearForCaveRoom(const MapBuilder *mb, const Rect2i room)
 	bool isOverlapRoom = false;
 	RECT_FOREACH(room)
 		const TileClass *tile = MapBuilderGetTile(mb, _v);
-		const bool isRoom = MapBuilderGetIsRoom(mb, _v);
-		if (tile->Type == TILE_CLASS_FLOOR && !isRoom)
+		if (tile->Type == TILE_CLASS_FLOOR && !tile->IsRoom)
 		{
 			hasFloor = true;
 			if (Rect2iIsAtEdge(room, _v))
@@ -512,7 +512,7 @@ static bool MapIsAreaClearForCaveRoom(const MapBuilder *mb, const Rect2i room)
 				hasFloorAroundEdge = true;
 			}
 		}
-		else if (isRoom || tile->Type == TILE_CLASS_DOOR)
+		else if (tile->IsRoom || tile->Type == TILE_CLASS_DOOR)
 		{
 			isOverlapRoom = true;
 		}
@@ -556,9 +556,9 @@ static bool MapIsAreaClearForCaveRoom(const MapBuilder *mb, const Rect2i room)
 			case TILE_CLASS_WALL: // fallthrough
 				// Note: also need to check outside to see if we overlap
 				// but just along the edge
-				if (MapBuilderGetIsRoom(mb, outside) ||
-					MapBuilderGetIsRoom(mb, outsideX) ||
-					MapBuilderGetIsRoom(mb, outsideY))
+				if (CaveRoomInsideOk(mb, outside) ||
+					CaveRoomInsideOk(mb, outsideX) ||
+					CaveRoomInsideOk(mb, outsideY))
 				{
 					isOverlapRoom = true;
 				}
@@ -597,6 +597,11 @@ static bool MapIsAreaClearForCaveRoom(const MapBuilder *mb, const Rect2i room)
 
 	return true;
 }
+static bool CaveRoomInsideOk(const MapBuilder *mb, const struct vec2i v)
+{
+	const TileClass *t = MapBuilderGetTile(mb, v);
+	return t != NULL && t->IsRoom;
+}
 static bool CaveRoomOutsideOk(const MapBuilder *mb, const struct vec2i v)
 {
 	const TileClass *t = MapBuilderGetTile(mb, v);
@@ -616,59 +621,61 @@ static void MapBuildRoom(MapBuilder *mb, const Rect2i room)
 		{
 			continue;
 		}
+
 		const bool isTop = _v.y == room.Pos.y;
 		const bool isBottom = _v.y == room.Pos.y + room.Size.y - 1;
 		const bool isLeft = _v.x == room.Pos.x;
 		const bool isRight = _v.x == room.Pos.x + room.Size.x - 1;
-		const struct vec2i outside = svec2i(
-			isLeft ? room.Pos.x - 1 :
-			(isRight ? room.Pos.x + room.Size.x : _v.x),
-			isTop ? room.Pos.y - 1 :
-			(isBottom ? room.Pos.y + room.Size.y : _v.y));
-		const struct vec2i outsideX = svec2i(
-			(isLeft || isRight) ? outside.x : _v.x, _v.y);
-		const struct vec2i outsideY = svec2i(
-			_v.x, (isTop || isBottom) ? outside.y : _v.y);
-		const bool atEdgeOfMap =
-			_v.y == 0 || _v.y == mb->Map->Size.y - 1 ||
-			_v.x == 0 || _v.x == mb->Map->Size.x - 1;
-		const TileClass *tile = MapBuilderGetTile(mb, _v);
-		if (tile->Type == TILE_CLASS_DOOR)
-		{
-			if (!CaveRoomOutsideOk(mb, outside) &&
-				!CaveRoomOutsideOk(mb, outsideX) &&
-				!CaveRoomOutsideOk(mb, outsideY))
-			{
-				// This door would become a corner
-				MapBuilderSetTile(mb, _v, &gTileWall, false);
-			}
-		}
-		else
-		{
-			// Check outside tiles
-			if (!atEdgeOfMap &&
-				(svec2i_is_equal(outside, _v) || CaveRoomOutsideOk(mb, outside)) &&
-				(svec2i_is_equal(outsideX, _v) || CaveRoomOutsideOk(mb, outsideX)) &&
-				(svec2i_is_equal(outsideY, _v) || CaveRoomOutsideOk(mb, outsideY)))
-			{
-				MapBuilderSetTile(
-					mb, _v,
-					mb->mission->u.Cave.DoorsEnabled ? &gTileDoor : &gTileFloor,
-					!mb->mission->u.Cave.DoorsEnabled
-				);
-			}
-			else
-			{
-				MapBuilderSetTile(mb, _v, &gTileWall, false);
-			}
-		}
-
 		const bool leftOrRightEdge = isLeft || isRight;
 		const bool topOrBottomEdge = isTop || isBottom;
 		if (leftOrRightEdge && topOrBottomEdge)
 		{
 			// corner
-			MapBuilderSetTile(mb, _v, &gTileWall, false);
+			MapBuilderSetTile(mb, _v, &gTileWall);
+		}
+		else
+		{
+			const struct vec2i outside = svec2i(
+				isLeft ? room.Pos.x - 1 :
+				(isRight ? room.Pos.x + room.Size.x : _v.x),
+				isTop ? room.Pos.y - 1 :
+				(isBottom ? room.Pos.y + room.Size.y : _v.y));
+			const struct vec2i outsideX = svec2i(
+				(isLeft || isRight) ? outside.x : _v.x, _v.y);
+			const struct vec2i outsideY = svec2i(
+				_v.x, (isTop || isBottom) ? outside.y : _v.y);
+			const bool atEdgeOfMap =
+				_v.y == 0 || _v.y == mb->Map->Size.y - 1 ||
+				_v.x == 0 || _v.x == mb->Map->Size.x - 1;
+			const TileClass *tile = MapBuilderGetTile(mb, _v);
+			if (tile->Type == TILE_CLASS_DOOR)
+			{
+				if (!CaveRoomOutsideOk(mb, outside) &&
+					!CaveRoomOutsideOk(mb, outsideX) &&
+					!CaveRoomOutsideOk(mb, outsideY))
+				{
+					// This door would become a corner
+					MapBuilderSetTile(mb, _v, &gTileWall);
+				}
+			}
+			else
+			{
+				// Check outside tiles
+				if (!atEdgeOfMap &&
+					(svec2i_is_equal(outside, _v) || CaveRoomOutsideOk(mb, outside)) &&
+					(svec2i_is_equal(outsideX, _v) || CaveRoomOutsideOk(mb, outsideX)) &&
+					(svec2i_is_equal(outsideY, _v) || CaveRoomOutsideOk(mb, outsideY)))
+				{
+					MapBuilderSetTile(
+						mb, _v,
+						mb->mission->u.Cave.DoorsEnabled ? &gTileDoor : &gTileRoom
+					);
+				}
+				else
+				{
+					MapBuilderSetTile(mb, _v, &gTileWall);
+				}
+			}
 		}
 	RECT_FOREACH_END()
 

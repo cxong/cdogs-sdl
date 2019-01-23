@@ -155,7 +155,7 @@ static void MapSetupPerimeter(MapBuilder *mb)
 		{
 			continue;
 		}
-		MapBuilderSetTile(mb, _v, &gTileWall, false);
+		MapBuilderSetTile(mb, _v, &gTileWall);
 	RECT_FOREACH_END()
 }
 

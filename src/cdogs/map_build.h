@@ -61,7 +61,6 @@ typedef struct
 	CArray access;	// of uint16_t
 	CArray tiles;	// of TileClass
 	CArray leaveFree;	// of bool
-	CArray isRoom;	// of bool
 } MapBuilder;
 
 void MapBuild(Map *m, const Mission *mission, const CampaignOptions *co);
@@ -73,11 +72,9 @@ void MapLoadDynamic(MapBuilder *mb);
 
 uint16_t MapBuildGetAccess(const MapBuilder *mb, const struct vec2i pos);
 void MapBuildSetAccess(MapBuilder *mb, struct vec2i pos, const uint16_t v);
-bool MapBuilderGetIsRoom(const MapBuilder *mb, const struct vec2i pos);
 const TileClass *MapBuilderGetTile(
 	const MapBuilder *mb, const struct vec2i pos);
-void MapBuilderSetTile(
-	MapBuilder *mb, struct vec2i pos, const TileClass *t, const bool isRoom);
+void MapBuilderSetTile(MapBuilder *mb, struct vec2i pos, const TileClass *t);
 
 // Mark a tile so that it is left free of other map objects
 void MapBuilderSetLeaveFree(
@@ -131,10 +128,10 @@ void MapPlaceDoors(
 void MapMakePillar(MapBuilder *mb, struct vec2i pos, struct vec2i size);
 
 uint16_t MapGetTileType(const Map *map, const struct vec2i pos);
-const TileClass *MapBuildGetTileFromType(const uint16_t tile, bool *isRoom);
+const TileClass *MapBuildGetTileFromType(const uint16_t tile);
 void MapBuildTile(
 	Map *m, const Mission *mission, const struct vec2i pos,
-	const TileClass *tile, const bool isRoom);
+	const TileClass *tile);
 
 uint16_t GenerateAccessMask(int *accessLevel);
 void MapGenerateRandomExitArea(Map *map);

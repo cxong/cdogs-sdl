@@ -71,9 +71,8 @@ void MapStaticLoadTile(MapBuilder *mb, const struct vec2i v)
 	{
 		tileAccess = 0;
 	}
-	bool isRoom = false;
-	const TileClass *t = MapBuildGetTileFromType(tile, &isRoom);
-	MapBuilderSetTile(mb, v, t, isRoom);
+	const TileClass *t = MapBuildGetTileFromType(tile);
+	MapBuilderSetTile(mb, v, t);
 	MapBuildSetAccess(mb, v, tileAccess);
 }
 

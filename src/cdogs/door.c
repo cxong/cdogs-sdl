@@ -112,12 +112,13 @@ void MapAddDoorGroup(MapBuilder *mb, const struct vec2i v, const int keyFlags)
 			CASSERT(TileCanWalk(tileB),
 				"map gen error: entrance should be clear");
 			// Change the tile below to shadow, cast by this door
-			const bool isFloor = !MapBuilderGetIsRoom(mb, vB);
 			tileB->Class = TileClassesGetMaskedTile(
 				&gTileFloor,
-				isFloor ? mb->mission->FloorStyle : mb->mission->RoomStyle,
+				tileB->Class->IsRoom ?
+					mb->mission->RoomStyle : mb->mission->FloorStyle,
 				"shadow",
-				isFloor ? mb->mission->FloorMask : mb->mission->RoomMask,
+				tileB->Class->IsRoom ?
+					mb->mission->RoomMask : mb->mission->FloorMask,
 				mb->mission->AltMask
 			);
 		}
@@ -228,13 +229,13 @@ static TWatch *CreateCloseDoorWatch(
 			a->a.Event = GameEventNew(GAME_EVENT_TILE_SET);
 			const struct vec2i vI2 = svec2i(vI.x + dAside.x, vI.y + dAside.y);
 			a->a.Event.u.TileSet.Pos = Vec2i2Net(vI2);
-			const bool isFloor = !MapBuilderGetIsRoom(mb, vI2);
+			const TileClass *t = MapBuilderGetTile(mb, vI2);
 			TileClassGetName(
 				a->a.Event.u.TileSet.ClassName,
 				"tile",
-				isFloor ? mb->mission->FloorStyle : mb->mission->RoomStyle,
+				t->IsRoom ? mb->mission->RoomStyle : mb->mission->FloorStyle,
 				"shadow",
-				isFloor ? mb->mission->FloorMask : mb->mission->RoomMask,
+				t->IsRoom ? mb->mission->RoomMask : mb->mission->FloorMask,
 				mb->mission->AltMask
 			);
 		}
@@ -290,14 +291,14 @@ static Trigger *CreateOpenDoorTrigger(
 			// Remove shadows below doors
 			a->Type = ACTION_EVENT;
 			a->a.Event = GameEventNew(GAME_EVENT_TILE_SET);
-			const bool isFloor = !MapBuilderGetIsRoom(mb, vIAside);
+			const TileClass *t = MapBuilderGetTile(mb, vIAside);
 			a->a.Event.u.TileSet.Pos = Vec2i2Net(vIAside);
 			TileClassGetName(
 				a->a.Event.u.TileSet.ClassName,
 				"tile",
-				isFloor ? mb->mission->FloorStyle : mb->mission->RoomStyle,
+				t->IsRoom ? mb->mission->RoomStyle : mb->mission->FloorStyle,
 				"normal",
-				isFloor ? mb->mission->FloorMask : mb->mission->RoomMask,
+				t->IsRoom ? mb->mission->RoomMask : mb->mission->FloorMask,
 				mb->mission->AltMask
 			);
 		}

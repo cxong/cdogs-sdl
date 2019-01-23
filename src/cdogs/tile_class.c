@@ -34,23 +34,27 @@
 TileClasses gTileClasses;
 TileClass gTileFloor = {
 	"tile", NULL, NULL, NULL, { 255, 255, 255, 255 }, { 255, 255, 255, 255 },
-	true, false, false, TILE_CLASS_FLOOR,
+	true, false, false, false, TILE_CLASS_FLOOR,
+};
+TileClass gTileRoom = {
+	"tile", NULL, NULL, NULL, { 255, 255, 255, 255 }, { 255, 255, 255, 255 },
+	true, false, false, true, TILE_CLASS_FLOOR,
 };
 TileClass gTileWall = {
 	"wall", NULL, NULL, NULL, { 255, 255, 255, 255 }, { 255, 255, 255, 255 },
-	false, true, true, TILE_CLASS_WALL,
+	false, true, true, false, TILE_CLASS_WALL,
 };
 TileClass gTileNothing = {
 	NULL, NULL, NULL, NULL, { 255, 255, 255, 255 }, { 255, 255, 255, 255 },
-	false, false, false, TILE_CLASS_NOTHING,
+	false, false, false, false, TILE_CLASS_NOTHING,
 };
 TileClass gTileExit = {
 	"exits", NULL, NULL, NULL, { 255, 255, 255, 255 }, { 255, 255, 255, 255 },
-	true, false, false, TILE_CLASS_FLOOR,
+	true, false, false, false, TILE_CLASS_FLOOR,
 };
 TileClass gTileDoor = {
 	"door", NULL, NULL, NULL, { 255, 255, 255, 255 }, { 255, 255, 255, 255 },
-	false, true, true, TILE_CLASS_DOOR,
+	false, true, true, true, TILE_CLASS_DOOR,
 };
 
 void TileClassesInit(TileClasses *c)

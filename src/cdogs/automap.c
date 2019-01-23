@@ -224,7 +224,7 @@ static void DrawMap(
 						struct vec2i drawPos = svec2i(
 							mapPos.x + x*scale + j,
 							mapPos.y + y*scale + i);
-						color_t color = colorRoom;
+						color_t color = colorTransparent;
 						switch (tile->Class->Type)
 						{
 							case TILE_CLASS_WALL:
@@ -234,13 +234,14 @@ static void DrawMap(
 								color = DoorColor(x, y);
 								break;
 							case TILE_CLASS_FLOOR:
-								color = colorFloor;
+								color = tile->Class->IsRoom ?
+									colorRoom : colorFloor;
 								break;
 							default:
 								CASSERT(false, "Unknown tile class type");
 								break;
 						}
-						if (!ColorEquals(color, colorBlack))
+						if (!ColorEquals(color, colorTransparent))
 						{
 							if (flags & AUTOMAP_FLAGS_MASK)
 							{

@@ -63,6 +63,7 @@ typedef struct
 	bool canWalk;	// can walk on tile
 	bool isOpaque;	// cannot see through
 	bool shootable;	// blocks bullets
+	bool IsRoom;	// affects random placement of indoor/outdoor map objects
 	TileClassType Type;
 } TileClass;
 
@@ -72,8 +73,8 @@ typedef struct
 	map_t customClasses;	// of TileClass *
 } TileClasses;
 extern TileClasses gTileClasses;
-// TODO: remove this after making tile classes data-driven
 extern TileClass gTileFloor;
+extern TileClass gTileRoom;
 extern TileClass gTileWall;
 extern TileClass gTileNothing;
 extern TileClass gTileExit;
