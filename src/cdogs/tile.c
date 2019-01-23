@@ -99,7 +99,7 @@ bool TileCanWalk(const Tile *t)
 bool TileIsClear(const Tile *t)
 {
 	// Check if tile is normal floor
-	if (t->Class->Type != TILE_CLASS_FLOOR && t->Class->Type != TILE_CLASS_DOOR)
+	if (t->Class->Type != TILE_CLASS_FLOOR)
 	{
 		return false;
 	}
