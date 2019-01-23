@@ -571,7 +571,9 @@ static void MapPlaceCard(
 	for (;;)
 	{
 		const struct vec2i v = MapGetRandomTile(mb->Map);
-		if (TileIsClear(MapGetTile(mb->Map, v)) &&
+		const Tile *t = MapGetTile(mb->Map, v);
+		if (t->Class->IsRoom &&
+			TileIsClear(t) &&
 			MapBuildGetAccess(mb, v) == mapAccess &&
 			TileIsClear(MapGetTile(mb->Map, svec2i(v.x, v.y + 1))))
 		{
