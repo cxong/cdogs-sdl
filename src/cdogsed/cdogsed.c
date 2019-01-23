@@ -1332,7 +1332,10 @@ int main(int argc, char *argv[])
 	ec.camera = svec2_zero();
 
 	EditorBrushInit(&brush);
-	strcpy(lastFile, "");
+	// initialise to missions dir
+	GetDataFilePath(buf, CDOGS_CAMPAIGN_DIR);
+	RelPath(lastFile, buf, ".");
+	strcat(lastFile, "/");
 
 	gConfig = ConfigLoad(GetConfigFilePath(CONFIG_FILE));
 	PicManagerInit(&gPicManager);
