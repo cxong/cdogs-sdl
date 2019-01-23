@@ -291,14 +291,14 @@ static Trigger *CreateOpenDoorTrigger(
 			// Remove shadows below doors
 			a->Type = ACTION_EVENT;
 			a->a.Event = GameEventNew(GAME_EVENT_TILE_SET);
-			const TileClass *t = MapBuilderGetTile(mb, vIAside);
+			const bool isRoom = MapBuilderGetTile(mb, vIAside)->IsRoom;
 			a->a.Event.u.TileSet.Pos = Vec2i2Net(vIAside);
 			TileClassGetName(
 				a->a.Event.u.TileSet.ClassName,
 				"tile",
-				t->IsRoom ? mb->mission->RoomStyle : mb->mission->FloorStyle,
+				isRoom ? mb->mission->RoomStyle : mb->mission->FloorStyle,
 				"normal",
-				t->IsRoom ? mb->mission->RoomMask : mb->mission->FloorMask,
+				isRoom ? mb->mission->RoomMask : mb->mission->FloorMask,
 				mb->mission->AltMask
 			);
 		}
