@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2018 Cong Xu
+    Copyright (c) 2013-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -83,6 +83,8 @@ static struct vec2i GetActorDrawOffset(
 }
 
 static Character *ActorGetCharacterMutable(TActor *a);
+static direction_e GetLegDirAndFrame(
+	const TActor *a, const direction_e bodyDir, int *frame);
 ActorPics GetCharacterPicsFromActor(TActor *a)
 {
 	Character *c = ActorGetCharacterMutable(a);
@@ -128,10 +130,11 @@ ActorPics GetCharacterPicsFromActor(TActor *a)
 		colors = &allWhite;
 	}
 
+	const direction_e dir = RadiansToDirection(a->DrawRadians);
+	int frame;
+	const direction_e legDir = GetLegDirAndFrame(a, dir, &frame);
 	return GetCharacterPics(
-		c,
-		RadiansToDirection(a->DrawRadians), a->anim.Type,
-		AnimationGetFrame(&a->anim),
+		c, dir, legDir, a->anim.Type, frame,
 		gun->Gun != NULL ? gun->Gun->Sprites : NULL, gun->state,
 		!isTransparent, maskP, colors,
 		a->dead);
@@ -149,7 +152,7 @@ static const Pic *GetGunPic(
 	const int gunState, const CharColors *colors);
 static const Pic *GetDeathPic(PicManager *pm, const int frame);
 ActorPics GetCharacterPics(
-	const Character *c, const direction_e dir,
+	const Character *c, const direction_e dir, const direction_e legDir,
 	const ActorAnimation anim, const int frame,
 	const char *gunSprites, const gunstate_e gunState,
 	const bool hasShadow, const color_t *mask, const CharColors *colors,
@@ -230,9 +233,9 @@ ActorPics GetCharacterPics(
 
 	// Legs
 	pics.Legs = GetLegsPic(
-		&gPicManager, c->Class->Sprites, dir, anim, frame, colors);
+		&gPicManager, c->Class->Sprites, legDir, anim, frame, colors);
 	pics.LegsOffset = GetActorDrawOffset(
-		pics.Legs, BODY_PART_LEGS, c->Class->Sprites, anim, frame, dir);
+		pics.Legs, BODY_PART_LEGS, c->Class->Sprites, anim, frame, legDir);
 
 	// Determine draw order based on the direction the player is facing
 	for (BodyPart bp = BODY_PART_HEAD; bp < BODY_PART_COUNT; bp++)
@@ -272,6 +275,26 @@ static Character *ActorGetCharacterMutable(TActor *a)
 		return &PlayerDataGetByUID(a->PlayerUID)->Char;
 	}
 	return CArrayGet(&gCampaign.Setting.characters.OtherChars, a->charId);
+}
+static direction_e GetLegDirAndFrame(
+	const TActor *a, const direction_e bodyDir, int *frame)
+{
+	*frame = AnimationGetFrame(&a->anim);
+	const struct vec2 vel = svec2_add(a->MoveVel, a->thing.Vel);
+	if (svec2_is_zero(vel))
+	{
+		return bodyDir;
+	}
+	const direction_e legDir = RadiansToDirection(svec2_angle(vel) + MPI_2);
+	// Walk backwards if the leg dir is >90 degrees from body dir
+	const int dirDiff = abs((int)bodyDir - (int)legDir);
+	const bool reversed = dirDiff > 2 && dirDiff < 6;
+	if (reversed)
+	{
+		*frame = ANIMATION_MAX_FRAMES - *frame;
+		return DirectionOpposite(legDir);
+	}
+	return legDir;
 }
 
 static void DrawDyingBody(
@@ -504,7 +527,7 @@ void DrawCharacterSimple(
 	const bool hilite, const bool showGun, const bool blit)
 {
 	ActorPics pics = GetCharacterPics(
-		c, d, ACTORANIMATION_IDLE, 0, NULL, GUNSTATE_READY,
+		c, d, d, ACTORANIMATION_IDLE, 0, NULL, GUNSTATE_READY,
 		true, NULL, NULL, 0);
 	DrawActorPics(&pics, pos, blit);
 	if (hilite)

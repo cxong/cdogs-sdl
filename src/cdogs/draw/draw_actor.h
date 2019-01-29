@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, 2016-2018 Cong Xu
+    Copyright (c) 2013-2014, 2016-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -86,7 +86,7 @@ const Pic *GetHeadPic(
 	const CharacterClass *c, const direction_e dir, const gunstate_e gunState,
 	const CharColors *colors);
 ActorPics GetCharacterPics(
-	const Character *c, const direction_e dir,
+	const Character *c, const direction_e dir, const direction_e legDir,
 	const ActorAnimation anim, const int frame,
 	const char *gunSprites, const gunstate_e gunState,
 	const bool hasShadow, const color_t *mask, const CharColors *colors,
