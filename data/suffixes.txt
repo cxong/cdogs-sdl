@@ -29,6 +29,8 @@ hack
 hax
 hex
 hunter
+jack
+killer
 kine
 kinetic
 laser
@@ -39,6 +41,7 @@ lith
 logic
 lux
 machine
+man
 mancer
 master
 maton
@@ -61,6 +64,7 @@ shock
 slayer
 spec
 sphere
+spider
 steel
 sys
 tech
@@ -78,4 +82,5 @@ visor
 X
 Z
 zero
+zine
 zone
