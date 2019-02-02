@@ -363,11 +363,23 @@ static void PostInputSaveTemplate(menu_t *menu, int cmd, void *data)
 	PlayerData *p = PlayerDataGetByUID(d->display.PlayerUID);
 	PlayerTemplate *t =
 		PlayerTemplateGetById(&gPlayerTemplates, menu->u.normal.index);
-	memset(t->name, 0, sizeof t->name);
-	strncpy(t->name, p->name, sizeof t->name - 1);
-	CFREE(t->CharClassName);
-	CSTRDUP(t->CharClassName, p->Char.Class->Name);
-	t->Colors = p->Char.Colors;
+	if(t == NULL)
+	{
+		PlayerTemplate nt;
+		memset(nt.name, 0, sizeof nt.name);
+		strncpy(nt.name, p->name, sizeof nt.name - 1);
+		CSTRDUP(nt.CharClassName, p->Char.Class->Name);
+		nt.Colors = p->Char.Colors;
+		CArrayPushBack(&(gPlayerTemplates.Classes), &nt);
+	}
+	else
+	{
+		memset(t->name, 0, sizeof t->name);
+		strncpy(t->name, p->name, sizeof t->name - 1);
+		CFREE(t->CharClassName);
+		CSTRDUP(t->CharClassName, p->Char.Class->Name);
+		t->Colors = p->Char.Colors;
+	}
 	PlayerTemplatesSave(&gPlayerTemplates);
 }
 
