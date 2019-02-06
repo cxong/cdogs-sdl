@@ -543,7 +543,10 @@ static void DrawPlayerStatus(
 		// Score/money
 		if (scoreCounter > 0)
 		{
+			opts.Mask.a = (uint8_t)CLAMP(
+				scoreCounter * 255 * 2 / SCORE_COUNTER_SHOW_MS, 0, 255);
 			FontStrOpt(s, svec2i_zero(), opts);
+			opts.Mask.a = 255;
 		}
 		pos.y += rowHeight;
 

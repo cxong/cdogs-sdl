@@ -227,7 +227,6 @@ void BlitMasked(
 			}
 			target = device->buf + yoff + xoff;
 			*target = PixelMult(*current, maskPixel);
-			*target |= device->Format->Amask;
 			current++;
 		}
 	}

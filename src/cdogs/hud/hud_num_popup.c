@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2017 Cong Xu
+    Copyright (c) 2013-2017, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -35,8 +35,8 @@
 
 
 // Total number of milliseconds that the numeric popup lasts for
-#define TIMER_MS 500
-#define TIMER_OBJECTIVE_MS 1500
+#define TIMER_MS 1000
+#define TIMER_OBJECTIVE_MS 2000
 
 
 void HUDNumPopupsInit(
@@ -248,7 +248,7 @@ static void DrawNumUpdate(
 	else
 	{
 		// Change alpha so that the popup fades away
-		color.a = (Uint8)(p->Timer * 255 / p->TimerMax);
+		color.a = (uint8_t)CLAMP(p->Timer * 255 * 2 / p->TimerMax, 0, 255);
 	}
 
 	FontOpts opts = FontOptsNew();
