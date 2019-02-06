@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2017 Cong Xu
+    Copyright (c) 2013-2017, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -54,6 +54,7 @@ typedef struct
 	FPSCounter fpsCounter;
 	WallClock clock;
 	HUDNumPopups numPopups;
+	int scoreCounters[MAX_LOCAL_PLAYERS];
 	HealthGauge healthGauges[MAX_LOCAL_PLAYERS];
 	bool showExit;
 	HUDDrawData DrawData;
@@ -70,6 +71,7 @@ void HUDDisplayMessage(HUD *hud, const char *msg, int ticks);
 
 HUDDrawData HUDGetDrawData(void);
 
+void HUDOnScoreChange(HUD *hud, const int playerUID, const int score);
 void HUDUpdate(HUD *hud, const int ms);
 
 // INPUT_DEVICE_UNSET if not paused

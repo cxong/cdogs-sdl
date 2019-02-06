@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2016, 2018 Cong Xu
+    Copyright (c) 2014-2016, 2018-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -231,6 +231,18 @@ PlayerData *PlayerDataGetByUID(const int uid)
 		if (p->UID == uid) return p;
 	CA_FOREACH_END()
 	return NULL;
+}
+
+int FindLocalPlayerIndex(const int uid)
+{
+	const PlayerData *p = PlayerDataGetByUID(uid);
+	if (p == NULL || !p->IsLocal)
+	{
+		// This update was for a non-local player; abort
+		return -1;
+	}
+	// Note: player UIDs divided by MAX_LOCAL_PLAYERS per client
+	return uid % MAX_LOCAL_PLAYERS;
 }
 
 int GetNumPlayers(

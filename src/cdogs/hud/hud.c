@@ -63,6 +63,9 @@
 #include "hud_defs.h"
 #include "mission.h"
 #include "pic_manager.h"
+#include "player.h"
+
+#define SCORE_COUNTER_SHOW_MS 2000
 
 
 void HUDInit(
@@ -80,6 +83,7 @@ void HUDInit(
 	HUDNumPopupsInit(&hud->numPopups, mission);
 	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 	{
+		hud->scoreCounters[i] = SCORE_COUNTER_SHOW_MS;
 		HealthGaugeInit(&hud->healthGauges[i]);
 	}
 	hud->showExit = false;
@@ -93,6 +97,18 @@ void HUDDisplayMessage(HUD *hud, const char *msg, int ticks)
 {
 	strcpy(hud->message, msg);
 	hud->messageTicks = ticks;
+}
+
+void HUDOnScoreChange(HUD *hud, const int playerUID, const int score)
+{
+	const int localPlayerIdx = FindLocalPlayerIndex(playerUID);
+	if (localPlayerIdx < 0)
+	{
+		// This popup was for a non-local player; abort
+		return;
+	}
+	HUDNumPopupsAdd(&hud->numPopups, NUMBER_POPUP_SCORE, playerUID, score);
+	hud->scoreCounters[localPlayerIdx] = SCORE_COUNTER_SHOW_MS;
 }
 
 void HUDUpdate(HUD *hud, const int ms)
@@ -111,6 +127,7 @@ void HUDUpdate(HUD *hud, const int ms)
 
 	for (int i = 0; i < hud->DrawData.NumScreens; i++)
 	{
+		hud->scoreCounters[i] = MAX(hud->scoreCounters[i] - ms, 0);
 		const PlayerData *p = hud->DrawData.Players[i];
 		const TActor *a = ActorGetByUID(p->ActorUID);
 		if (a == NULL) continue;
@@ -482,7 +499,7 @@ static void DrawObjectiveCompass(
 // Draw player's score, health etc.
 static void DrawPlayerStatus(
 	HUD *hud, const PlayerData *data, const TActor *p,
-	const int flags, const HealthGauge *hg)
+	const int flags, const int scoreCounter, const HealthGauge *hg)
 {
 	struct vec2i pos = svec2i(5, 5);
 
@@ -521,24 +538,28 @@ static void DrawPlayerStatus(
 	}
 	if (p)
 	{
-		// Score/money
 		opts.Pad = pos;
-		FontStrOpt(s, svec2i_zero(), opts);
+
+		// Score/money
+		if (scoreCounter > 0)
+		{
+			FontStrOpt(s, svec2i_zero(), opts);
+		}
+		pos.y += rowHeight;
 
 		// Health
-		pos.y += rowHeight;
 		HealthGaugeDraw(hg, hud->device, p, pos, opts.HAlign, opts.VAlign);
+		pos.y += rowHeight;
 
 		// Lives
-		pos.y += rowHeight;
 		DrawLives(hud->device, data, pos, opts.HAlign, opts.VAlign);
+		pos.y += rowHeight + LIVES_ROW_EXTRA_Y;
 
 		// Weapon
-		pos.y += rowHeight + LIVES_ROW_EXTRA_Y;
 		DrawWeaponStatus(hud, p, pos, opts.HAlign, opts.VAlign);
+		pos.y += rowHeight + GRENADES_ROW_EXTRA_Y;
 
 		// Grenades
-		pos.y += rowHeight + GRENADES_ROW_EXTRA_Y;
 		DrawGrenadeStatus(hud, p, pos, opts.HAlign, opts.VAlign);
 	}
 	else
@@ -831,7 +852,9 @@ static void DrawPlayerAreas(HUD *hud)
 		{
 			player = ActorGetByUID(p->ActorUID);
 		}
-		DrawPlayerStatus(hud, p, player, drawFlags, &hud->healthGauges[i]);
+		DrawPlayerStatus(
+			hud, p, player, drawFlags,
+			hud->scoreCounters[i], &hud->healthGauges[i]);
 		HUDNumPopupsDrawPlayer(&hud->numPopups, i, drawFlags);
 	}
 

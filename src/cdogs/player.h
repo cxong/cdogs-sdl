@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2016, 2018 Cong Xu
+    Copyright (c) 2014-2016, 2018-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -74,6 +74,7 @@ NPlayerData PlayerDataMissionReset(const PlayerData *p);
 void PlayerDataTerminate(CArray *p);
 
 PlayerData *PlayerDataGetByUID(const int uid);
+int FindLocalPlayerIndex(const int uid);
 
 typedef enum
 {

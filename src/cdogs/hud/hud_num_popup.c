@@ -54,7 +54,6 @@ void HUDNumPopupsTerminate(HUDNumPopups *popups)
 	CArrayTerminate(&popups->objective);
 }
 
-static int FindLocalPlayerIndex(const int playerUID);
 static void MergePopups(HUDNumPopup *dst, const HUDNumPopup src);
 void HUDNumPopupsAdd(
 	HUDNumPopups *popups, const HUDNumPopupType type,
@@ -69,7 +68,7 @@ void HUDNumPopupsAdd(
 	{
 	case NUMBER_POPUP_SCORE:
 		localPlayerIdx = FindLocalPlayerIndex(idxOrUID);
-		if (localPlayerIdx)
+		if (localPlayerIdx < 0)
 		{
 			// This popup was for a non-local player; abort
 			return;
@@ -115,17 +114,6 @@ void HUDNumPopupsAdd(
 		CASSERT(false, "unknown HUD popup type");
 		break;
 	}
-}
-static int FindLocalPlayerIndex(const int playerUID)
-{
-	const PlayerData *p = PlayerDataGetByUID(playerUID);
-	if (p == NULL || !p->IsLocal)
-	{
-		// This update was for a non-local player; abort
-		return -1;
-	}
-	// Note: player UIDs divided by MAX_LOCAL_PLAYERS per client
-	return playerUID % MAX_LOCAL_PLAYERS;
 }
 static void MergePopups(HUDNumPopup *dst, const HUDNumPopup src)
 {
