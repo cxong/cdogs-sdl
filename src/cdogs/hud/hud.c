@@ -65,8 +65,17 @@
 #include "pic_manager.h"
 #include "player.h"
 
-#define SCORE_COUNTER_SHOW_MS 2000
+#define SCORE_COUNTER_SHOW_MS 4000
+#define HEALTH_COUNTER_SHOW_MS 5000
+#define HEALTH_LOW_THRESHOLD 50
 
+
+static void HUDPlayerInit(HUDPlayer *h)
+{
+	h->scoreCounter = SCORE_COUNTER_SHOW_MS;
+	h->healthCounter = HEALTH_COUNTER_SHOW_MS;
+	HealthGaugeInit(&h->healthGauge);
+}
 
 void HUDInit(
 	HUD *hud,
@@ -83,8 +92,7 @@ void HUDInit(
 	HUDNumPopupsInit(&hud->numPopups, mission);
 	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 	{
-		hud->scoreCounters[i] = SCORE_COUNTER_SHOW_MS;
-		HealthGaugeInit(&hud->healthGauges[i]);
+		HUDPlayerInit(&hud->hudPlayers[i]);
 	}
 	hud->showExit = false;
 }
@@ -108,7 +116,21 @@ void HUDOnScoreChange(HUD *hud, const int playerUID, const int score)
 		return;
 	}
 	HUDNumPopupsAdd(&hud->numPopups, NUMBER_POPUP_SCORE, playerUID, score);
-	hud->scoreCounters[localPlayerIdx] = SCORE_COUNTER_SHOW_MS;
+	hud->hudPlayers[localPlayerIdx].scoreCounter = SCORE_COUNTER_SHOW_MS;
+}
+
+static void HUDPlayerUpdate(HUDPlayer *h, const PlayerData *p, const int ms)
+{
+	h->scoreCounter = MAX(h->scoreCounter - ms, 0);
+	h->healthCounter = MAX(h->healthCounter - ms, 0);
+	const TActor *a = ActorGetByUID(p->ActorUID);
+	if (a == NULL) return;
+	const bool healthUpdating = h->healthGauge.waitMs > 0;
+	HealthGaugeUpdate(&h->healthGauge, a, ms);
+	if ((!healthUpdating || h->healthCounter == 0) && h->healthGauge.waitMs > 0)
+	{
+		h->healthCounter = HEALTH_COUNTER_SHOW_MS;
+	}
 }
 
 void HUDUpdate(HUD *hud, const int ms)
@@ -127,11 +149,8 @@ void HUDUpdate(HUD *hud, const int ms)
 
 	for (int i = 0; i < hud->DrawData.NumScreens; i++)
 	{
-		hud->scoreCounters[i] = MAX(hud->scoreCounters[i] - ms, 0);
 		const PlayerData *p = hud->DrawData.Players[i];
-		const TActor *a = ActorGetByUID(p->ActorUID);
-		if (a == NULL) continue;
-		HealthGaugeUpdate(&hud->healthGauges[i], a, ms);
+		HUDPlayerUpdate(&hud->hudPlayers[i], p, ms);
 	}
 }
 
@@ -499,7 +518,7 @@ static void DrawObjectiveCompass(
 // Draw player's score, health etc.
 static void DrawPlayerStatus(
 	HUD *hud, const PlayerData *data, const TActor *p,
-	const int flags, const int scoreCounter, const HealthGauge *hg)
+	const int flags, const HUDPlayer *h)
 {
 	struct vec2i pos = svec2i(5, 5);
 
@@ -541,17 +560,27 @@ static void DrawPlayerStatus(
 		opts.Pad = pos;
 
 		// Score/money
-		if (scoreCounter > 0)
+		if (h->scoreCounter > 0)
 		{
 			opts.Mask.a = (uint8_t)CLAMP(
-				scoreCounter * 255 * 2 / SCORE_COUNTER_SHOW_MS, 0, 255);
+				h->scoreCounter * 255 * 2 / SCORE_COUNTER_SHOW_MS, 0, 255);
 			FontStrOpt(s, svec2i_zero(), opts);
 			opts.Mask.a = 255;
 		}
 		pos.y += rowHeight;
 
 		// Health
-		HealthGaugeDraw(hg, hud->device, p, pos, opts.HAlign, opts.VAlign);
+		if (h->healthCounter > 0 ||
+			h->healthGauge.health < HEALTH_LOW_THRESHOLD)
+		{
+			if (h->healthGauge.health >= HEALTH_LOW_THRESHOLD)
+			{
+				opts.Mask.a = (uint8_t)CLAMP(
+					h->healthCounter * 255 * 2 / HEALTH_COUNTER_SHOW_MS, 0, 255);
+			}
+			HealthGaugeDraw(&h->healthGauge, hud->device, p, pos, opts);
+			opts.Mask.a = 255;
+		}
 		pos.y += rowHeight;
 
 		// Lives
@@ -855,9 +884,7 @@ static void DrawPlayerAreas(HUD *hud)
 		{
 			player = ActorGetByUID(p->ActorUID);
 		}
-		DrawPlayerStatus(
-			hud, p, player, drawFlags,
-			hud->scoreCounters[i], &hud->healthGauges[i]);
+		DrawPlayerStatus(hud, p, player, drawFlags, &hud->hudPlayers[i]);
 		HUDNumPopupsDrawPlayer(&hud->numPopups, i, drawFlags);
 	}
 

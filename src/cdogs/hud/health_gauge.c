@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2017 Cong Xu
+    Copyright (c) 2017, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -69,7 +69,7 @@ void HealthGaugeUpdate(HealthGauge *h, const TActor *a, const int ms)
 
 void HealthGaugeDraw(
 	const HealthGauge *h, GraphicsDevice *device, const TActor *actor,
-	const struct vec2i pos, const FontAlign hAlign, const FontAlign vAlign)
+	const struct vec2i pos, const FontOpts opts)
 {
 	char s[50];
 	struct vec2i gaugePos = svec2i_add(pos, svec2i(-1, -1));
@@ -89,32 +89,34 @@ void HealthGaugeDraw(
 		hsv.h =
 			(maxHealthHue - minHealthHue) * health / maxHealth + minHealthHue;
 	}
-	color_t backColor = { 50, 0, 0, 255 };
+	color_t barColor;
+	color_t backColor = { 50, 0, 0, opts.Mask.a };
 	if (h->health != health)
 	{
 		// Draw different-coloured health gauge representing health change
 		const int higherHealth = MAX(h->health, health);
 		const int innerWidthUpdate = MAX(1, size.x * higherHealth / maxHealth);
+		barColor = h->health > health ? colorMaroon : colorGreen;
+		barColor.a = opts.Mask.a;
 		HUDDrawGauge(
 			device, gaugePos, size, innerWidthUpdate,
-			h->health > health ? colorMaroon : colorGreen,
-			backColor, hAlign, vAlign);
+			barColor,
+			backColor, opts.HAlign, opts.VAlign);
 		backColor = colorTransparent;
 	}
 	const int lowerHealth = MIN(h->health, health);
 	const int innerWidth = MAX(1, size.x * lowerHealth / maxHealth);
-	const color_t barColor = ColorTint(colorWhite, hsv);
+	barColor = ColorTint(colorWhite, hsv);
+	barColor.a = opts.Mask.a;
 	HUDDrawGauge(
 		device, gaugePos, size, innerWidth, barColor, backColor,
-		hAlign, vAlign);
+		opts.HAlign, opts.VAlign);
 	sprintf(s, "%d", health);
 
 	// Draw health number label
-	FontOpts opts = FontOptsNew();
-	opts.HAlign = hAlign;
-	opts.VAlign = vAlign;
-	opts.Area = gGraphicsDevice.cachedConfig.Res;
-	opts.Pad = pos;
+	FontOpts fOpts = opts;
+	fOpts.Area = gGraphicsDevice.cachedConfig.Res;
+	fOpts.Pad = pos;
 	// If low health, draw text with different colours, flashing
 	if (ActorIsLowHealth(actor))
 	{
@@ -123,8 +125,8 @@ void HealthGaugeDraw(
 		const int pulsePeriod = fps / 4;
 		if ((gMission.time % pulsePeriod) < (pulsePeriod / 2))
 		{
-			opts.Mask = colorRed;
+			fOpts.Mask = colorRed;
 		}
 	}
-	FontStrOpt(s, svec2i_zero(), opts);
+	FontStrOpt(s, svec2i_zero(), fOpts);
 }

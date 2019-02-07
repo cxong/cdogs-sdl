@@ -47,6 +47,13 @@ typedef struct
 
 typedef struct
 {
+	int scoreCounter;
+	int healthCounter;
+	HealthGauge healthGauge;
+} HUDPlayer;
+
+typedef struct
+{
 	struct MissionOptions *mission;
 	char message[256];
 	int messageTicks;
@@ -54,8 +61,7 @@ typedef struct
 	FPSCounter fpsCounter;
 	WallClock clock;
 	HUDNumPopups numPopups;
-	int scoreCounters[MAX_LOCAL_PLAYERS];
-	HealthGauge healthGauges[MAX_LOCAL_PLAYERS];
+	HUDPlayer hudPlayers[MAX_LOCAL_PLAYERS];
 	bool showExit;
 	HUDDrawData DrawData;
 } HUD;

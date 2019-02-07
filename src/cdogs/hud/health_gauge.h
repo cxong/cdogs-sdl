@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2017 Cong Xu
+    Copyright (c) 2017, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -44,4 +44,4 @@ void HealthGaugeInit(HealthGauge *h);
 void HealthGaugeUpdate(HealthGauge *h, const TActor *a, const int ms);
 void HealthGaugeDraw(
 	const HealthGauge *h, GraphicsDevice *device, const TActor *actor,
-	const struct vec2i pos, const FontAlign hAlign, const FontAlign vAlign);
+	const struct vec2i pos, const FontOpts opts);
