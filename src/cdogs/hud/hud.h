@@ -37,7 +37,7 @@
 #include "wall_clock.h"
 
 
-#define GAUGE_WIDTH 65
+#define GAUGE_WIDTH 40
 
 typedef struct
 {

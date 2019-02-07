@@ -207,13 +207,7 @@ static void DrawWeaponStatus(
 	const FontAlign hAlign, const FontAlign vAlign)
 {
 	const Weapon *weapon = ACTOR_GET_WEAPON(actor);
-
-	// Draw gun icon, and allocate padding to draw the gun icon
 	const WeaponClass *wc = weapon->Gun;
-	const struct vec2i iconPos = Vec2iAligned(
-		svec2i(pos.x - 2, pos.y - 2),
-		wc->Icon->size, hAlign, vAlign, hud->device->cachedConfig.Res);
-	Blit(hud->device, wc->Icon, iconPos);
 
 	// Draw gauge if ammo or reloading
 	const bool useAmmo =
@@ -258,17 +252,23 @@ static void DrawWeaponStatus(
 				colorBlue, colorTransparent, hAlign, vAlign);
 		}
 	}
-	FontOpts opts = FontOptsNew();
-	opts.HAlign = hAlign;
-	opts.VAlign = vAlign;
-	opts.Area = hud->device->cachedConfig.Res;
-	opts.Pad = svec2i(pos.x + GUN_ICON_PAD, pos.y);
-	char buf[128];
+
+	// Draw gun icon, and allocate padding to draw the gun icon
+	const struct vec2i iconPos = Vec2iAligned(
+		svec2i(pos.x - 2, pos.y - 2),
+		wc->Icon->size, hAlign, vAlign, hud->device->cachedConfig.Res);
+	Blit(hud->device, wc->Icon, iconPos);
+
 	if (useAmmo && wc->AmmoId >= 0)
 	{
+		FontOpts opts = FontOptsNew();
+		opts.HAlign = hAlign;
+		opts.VAlign = vAlign;
+		opts.Area = hud->device->cachedConfig.Res;
+		opts.Pad = svec2i(pos.x + GUN_ICON_PAD, pos.y);
+		char buf[128];
 		// Include ammo counter
-		sprintf(buf, "%s %d/%d",
-			wc->name,
+		sprintf(buf, "%d/%d",
 			ActorWeaponGetAmmo(actor, wc),
 			AmmoGetById(&gAmmo, wc->AmmoId)->Max);
 
@@ -292,12 +292,8 @@ static void DrawWeaponStatus(
 				opts.Mask = colorOrange;
 			}
 		}
+		FontStrOpt(buf, svec2i_zero(), opts);
 	}
-	else
-	{
-		strcpy(buf, weapon->Gun->name);
-	}
-	FontStrOpt(buf, svec2i_zero(), opts);
 }
 
 static void DrawGrenadeStatus(
