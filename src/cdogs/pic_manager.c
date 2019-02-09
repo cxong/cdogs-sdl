@@ -308,9 +308,12 @@ static void FindStylePics(
 	// Sort the style names alphabetically
 	// This prevents the list from reordering unpredictably, when the editor
 	// is used and masked pics get added
-	qsort(
-		styleNames->data, styleNames->size, styleNames->elemSize,
-		CompareStyleNames);
+	if (styleNames->data != NULL)
+	{
+		qsort(
+			styleNames->data, styleNames->size, styleNames->elemSize,
+			CompareStyleNames);
+	}
 }
 static int CompareStyleNames(const void *v1, const void *v2)
 {
