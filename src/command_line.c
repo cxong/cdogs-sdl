@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2016, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -246,7 +246,10 @@ static void PrintConfig(const Config *c, const int indent)
 	{
 		printf("-");
 	}
-	printf("%s\n", c->Name);
+	if (c->Name != NULL)
+	{
+		printf("%s\n", c->Name);
+	}
 	if (c->Type == CONFIG_TYPE_GROUP)
 	{
 		CA_FOREACH(const Config, child, c->u.Group)
