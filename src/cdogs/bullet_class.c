@@ -984,7 +984,7 @@ void BulletBounce(const NBulletBounce bb)
 		s.u.AddParticle.Pos = bouncePos;
 		// Randomise Z on the wall
 		s.u.AddParticle.Z =
-			o->z + RAND_FLOAT(-WALL_MARK_Z, WALL_MARK_Z);
+			o->z + (int)RAND_FLOAT(-WALL_MARK_Z, WALL_MARK_Z);
 		GameEventsEnqueue(&gGameEvents, s);
 	}
 	MapTryMoveThing(&gMap, &o->thing, NetToVec2(bb.Pos));
