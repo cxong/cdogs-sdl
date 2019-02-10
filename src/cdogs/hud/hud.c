@@ -67,16 +67,18 @@
 
 #define SCORE_COUNTER_SHOW_MS 4000
 #define HEALTH_COUNTER_SHOW_MS 5000
-#define HEALTH_LOW_THRESHOLD 50
+#define AMMO_COUNTER_SHOW_MS 4000
 #define WEAPON_GAUGE_EXTRA_HEIGHT 2
 #define AMMO_GAUGE_HEIGHT 4
 
 
 static void HUDPlayerInit(HUDPlayer *h)
 {
+	memset(h, 0, sizeof *h);
 	h->scoreCounter = SCORE_COUNTER_SHOW_MS;
 	h->healthCounter = HEALTH_COUNTER_SHOW_MS;
 	HealthGaugeInit(&h->healthGauge);
+	h->ammoCounter = AMMO_COUNTER_SHOW_MS;
 }
 
 void HUDInit(
@@ -109,30 +111,35 @@ void HUDDisplayMessage(HUD *hud, const char *msg, int ticks)
 	hud->messageTicks = ticks;
 }
 
-void HUDOnScoreChange(HUD *hud, const int playerUID, const int score)
-{
-	const int localPlayerIdx = FindLocalPlayerIndex(playerUID);
-	if (localPlayerIdx < 0)
-	{
-		// This popup was for a non-local player; abort
-		return;
-	}
-	HUDNumPopupsAdd(&hud->numPopups, NUMBER_POPUP_SCORE, playerUID, score);
-	hud->hudPlayers[localPlayerIdx].scoreCounter = SCORE_COUNTER_SHOW_MS;
-}
-
 static void HUDPlayerUpdate(HUDPlayer *h, const PlayerData *p, const int ms)
 {
 	h->scoreCounter = MAX(h->scoreCounter - ms, 0);
 	h->healthCounter = MAX(h->healthCounter - ms, 0);
+	h->ammoCounter = MAX(h->ammoCounter - ms, 0);
 	const TActor *a = ActorGetByUID(p->ActorUID);
 	if (a == NULL) return;
+	if (p->UID != h->lastPlayerUID || p->Stats.Score != h->lastScore)
+	{
+		h->scoreCounter = SCORE_COUNTER_SHOW_MS;
+	}
 	const bool healthUpdating = h->healthGauge.waitMs > 0;
 	HealthGaugeUpdate(&h->healthGauge, a, ms);
 	if ((!healthUpdating || h->healthCounter == 0) && h->healthGauge.waitMs > 0)
 	{
 		h->healthCounter = HEALTH_COUNTER_SHOW_MS;
 	}
+	const Weapon *w = ACTOR_GET_GUN(a);
+	const int ammo = ActorWeaponGetAmmo(a, w->Gun);
+	if (p->UID != h->lastPlayerUID || a->gunIndex != h->lastGunIndex ||
+		ammo != h->lastAmmo)
+	{
+		h->ammoCounter = AMMO_COUNTER_SHOW_MS;
+	}
+	h->lastPlayerUID = p->UID;
+	h->lastScore = p->Stats.Score;
+	h->lastHealth = a->health;
+	h->lastAmmo = ammo;
+	h->lastGunIndex = a->gunIndex;
 }
 
 void HUDUpdate(HUD *hud, const int ms)
@@ -205,7 +212,7 @@ void HUDDrawGauge(
 }
 
 static void DrawWeaponStatus(
-	HUD *hud, const TActor *actor, struct vec2i pos,
+	HUD *hud, const HUDPlayer *h, const TActor *actor, struct vec2i pos,
 	const FontAlign hAlign, const FontAlign vAlign)
 {
 	const Weapon *weapon = ACTOR_GET_WEAPON(actor);
@@ -214,21 +221,24 @@ static void DrawWeaponStatus(
 	// Draw gauge if ammo or reloading
 	const bool useAmmo =
 		ConfigGetBool(&gConfig, "Game.Ammo") && wc->AmmoId >= 0;
+	const bool showAmmo = useAmmo && wc->AmmoId >= 0 && h->ammoCounter > 0;
+	const uint8_t ammoAlpha = (uint8_t)CLAMP(
+		h->ammoCounter * 255 * 2 / AMMO_COUNTER_SHOW_MS, 0, 255);
 	const Ammo *ammo = useAmmo ? AmmoGetById(&gAmmo, wc->AmmoId) : NULL;
 	const int amount = useAmmo ? ActorWeaponGetAmmo(actor, wc) : 0;
 	const struct vec2i gaugePos = svec2i_add(pos, svec2i(-1 + GUN_ICON_PAD, -1));
 	const struct vec2i size = svec2i(
 		GAUGE_WIDTH - GUN_ICON_PAD, FontH() + 2 + WEAPON_GAUGE_EXTRA_HEIGHT);
-	if (useAmmo || weapon->lock > 0)
+	if (showAmmo || weapon->lock > 0)
 	{
 		const int maxLock = weapon->Gun->Lock;
-		color_t barColor;
 		const double reloadProgressColorMod = 0.5 +
 			0.5 * (weapon->lock / (double) maxLock);
-		HSV hsv = { 0.0, 1.0, reloadProgressColorMod };
-		barColor = ColorTint(colorWhite, hsv);
+		const uint8_t gaugeAlpha = weapon->lock > 0 ? 255 : ammoAlpha;
+		const HSV hsv = { 0.0, 1.0, reloadProgressColorMod };
+		color_t barColor = ColorTint(colorWhite, hsv);
+		barColor.a = gaugeAlpha;
 		int innerWidth;
-		color_t backColor = { 128, 128, 128, weapon->lock > 0 ? 255 : 64 };
 		if (maxLock == 0 || weapon->lock == 0)
 		{
 			innerWidth = 0;
@@ -237,6 +247,7 @@ static void DrawWeaponStatus(
 		{
 			innerWidth = MAX(1, size.x * (maxLock - weapon->lock) / maxLock);
 		}
+		const color_t backColor = { 128, 128, 128, gaugeAlpha };
 		HUDDrawGauge(
 			hud->device, gaugePos, size, innerWidth, barColor, backColor,
 			hAlign, vAlign);
@@ -248,7 +259,7 @@ static void DrawWeaponStatus(
 		wc->Icon->size, hAlign, vAlign, hud->device->cachedConfig.Res);
 	Blit(hud->device, wc->Icon, iconPos);
 
-	if (useAmmo && wc->AmmoId >= 0)
+	if (showAmmo)
 	{
 		FontOpts opts = FontOptsNew();
 		opts.HAlign = hAlign;
@@ -260,6 +271,7 @@ static void DrawWeaponStatus(
 		sprintf(buf, "%d", ActorWeaponGetAmmo(actor, wc));
 
 		// If low / no ammo, draw text with different colours, flashing
+		uint8_t drawAlpha = ammoAlpha;
 		const int fps = ConfigGetInt(&gConfig, "Game.FPS");
 		if (amount == 0)
 		{
@@ -269,6 +281,7 @@ static void DrawWeaponStatus(
 			{
 				opts.Mask = colorRed;
 			}
+			drawAlpha = 255;
 		}
 		else if (AmmoIsLow(ammo, amount))
 		{
@@ -278,7 +291,9 @@ static void DrawWeaponStatus(
 			{
 				opts.Mask = colorOrange;
 			}
+			drawAlpha = 255;
 		}
+		opts.Mask.a = drawAlpha;
 		FontStrOpt(buf, svec2i_zero(), opts);
 
 		// Draw ammo level as inner mini-gauge, no background
@@ -288,6 +303,8 @@ static void DrawWeaponStatus(
 		const struct vec2i gaugeAmmoSize = svec2i(size.x, AMMO_GAUGE_HEIGHT);
 		const int ammoGaugeWidth =
 			MAX(1, gaugeAmmoSize.x * amount / ammo->Max);
+		color_t gaugeColor = colorBlue;
+		gaugeColor.a = drawAlpha;
 		HUDDrawGauge(
 			hud->device, gaugeAmmoPos, gaugeAmmoSize, ammoGaugeWidth,
 			colorBlue, colorTransparent, hAlign, vAlign);
@@ -564,10 +581,10 @@ static void DrawPlayerStatus(
 		pos.y += rowHeight;
 
 		// Health
-		if (h->healthCounter > 0 ||
-			h->healthGauge.health < HEALTH_LOW_THRESHOLD)
+		const bool isLowHealth = ActorIsLowHealth(p);
+		if (h->healthCounter > 0 || isLowHealth)
 		{
-			if (h->healthGauge.health >= HEALTH_LOW_THRESHOLD)
+			if (!isLowHealth)
 			{
 				opts.Mask.a = (uint8_t)CLAMP(
 					h->healthCounter * 255 * 2 / HEALTH_COUNTER_SHOW_MS, 0, 255);
@@ -582,7 +599,7 @@ static void DrawPlayerStatus(
 		pos.y += rowHeight + LIVES_ROW_EXTRA_Y;
 
 		// Weapon
-		DrawWeaponStatus(hud, p, pos, opts.HAlign, opts.VAlign);
+		DrawWeaponStatus(hud, h, p, pos, opts.HAlign, opts.VAlign);
 		pos.y += rowHeight + GRENADES_ROW_EXTRA_Y;
 
 		// Grenades

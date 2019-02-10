@@ -50,6 +50,12 @@ typedef struct
 	int scoreCounter;
 	int healthCounter;
 	HealthGauge healthGauge;
+	int ammoCounter;
+	int lastPlayerUID;
+	int lastScore;
+	int lastHealth;
+	int lastAmmo;
+	int lastGunIndex;
 } HUDPlayer;
 
 typedef struct
@@ -77,7 +83,6 @@ void HUDDisplayMessage(HUD *hud, const char *msg, int ticks);
 
 HUDDrawData HUDGetDrawData(void);
 
-void HUDOnScoreChange(HUD *hud, const int playerUID, const int score);
 void HUDUpdate(HUD *hud, const int ms);
 
 // INPUT_DEVICE_UNSET if not paused

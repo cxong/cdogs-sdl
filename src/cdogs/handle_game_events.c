@@ -151,8 +151,6 @@ static void HandleGameEvent(
 		{
 			PlayerData *p = PlayerDataGetByUID(e.u.Score.PlayerUID);
 			PlayerScore(p, e.u.Score.Score);
-			HUDOnScoreChange(
-				&camera->HUD, e.u.Score.PlayerUID, e.u.Score.Score);
 		}
 		break;
 	case GAME_EVENT_SOUND_AT:
