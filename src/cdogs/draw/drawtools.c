@@ -20,7 +20,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, 2018 Cong Xu
+    Copyright (c) 2013-2014, 2018-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -73,15 +73,7 @@ void Draw_Point(const int x, const int y, color_t c)
 	{
 		return;
 	}
-	if (c.a == 255)
-	{
-		screen[idx] = COLOR2PIXEL(c);
-	}
-	else
-	{
-		const color_t existing = PIXEL2COLOR(screen[idx]);
-		screen[idx] = COLOR2PIXEL(ColorAlphaBlend(existing, c));
-	}
+	screen[idx] = COLOR2PIXEL(c);
 }
 
 static

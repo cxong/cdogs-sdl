@@ -68,6 +68,8 @@
 #define SCORE_COUNTER_SHOW_MS 4000
 #define HEALTH_COUNTER_SHOW_MS 5000
 #define HEALTH_LOW_THRESHOLD 50
+#define WEAPON_GAUGE_EXTRA_HEIGHT 2
+#define AMMO_GAUGE_HEIGHT 4
 
 
 static void HUDPlayerInit(HUDPlayer *h)
@@ -214,10 +216,11 @@ static void DrawWeaponStatus(
 		ConfigGetBool(&gConfig, "Game.Ammo") && wc->AmmoId >= 0;
 	const Ammo *ammo = useAmmo ? AmmoGetById(&gAmmo, wc->AmmoId) : NULL;
 	const int amount = useAmmo ? ActorWeaponGetAmmo(actor, wc) : 0;
+	const struct vec2i gaugePos = svec2i_add(pos, svec2i(-1 + GUN_ICON_PAD, -1));
+	const struct vec2i size = svec2i(
+		GAUGE_WIDTH - GUN_ICON_PAD, FontH() + 2 + WEAPON_GAUGE_EXTRA_HEIGHT);
 	if (useAmmo || weapon->lock > 0)
 	{
-		const struct vec2i gaugePos = svec2i_add(pos, svec2i(-1 + GUN_ICON_PAD, -1));
-		const struct vec2i size = svec2i(GAUGE_WIDTH - GUN_ICON_PAD, FontH() + 5);
 		const int maxLock = weapon->Gun->Lock;
 		color_t barColor;
 		const double reloadProgressColorMod = 0.5 +
@@ -225,7 +228,7 @@ static void DrawWeaponStatus(
 		HSV hsv = { 0.0, 1.0, reloadProgressColorMod };
 		barColor = ColorTint(colorWhite, hsv);
 		int innerWidth;
-		color_t backColor = { 128, 128, 128, 255 };
+		color_t backColor = { 128, 128, 128, weapon->lock > 0 ? 255 : 64 };
 		if (maxLock == 0 || weapon->lock == 0)
 		{
 			innerWidth = 0;
@@ -237,20 +240,6 @@ static void DrawWeaponStatus(
 		HUDDrawGauge(
 			hud->device, gaugePos, size, innerWidth, barColor, backColor,
 			hAlign, vAlign);
-
-		if (useAmmo)
-		{
-			// Draw ammo level as inner mini-gauge, no background
-			const int yOffset = 8;
-			const struct vec2i gaugeAmmoPos =
-				svec2i(gaugePos.x, gaugePos.y + yOffset);
-			const struct vec2i gaugeAmmoSize = svec2i(size.x, size.y - yOffset);
-			const int ammoGaugeWidth =
-				MAX(1, gaugeAmmoSize.x * amount / ammo->Max);
-			HUDDrawGauge(
-				hud->device, gaugeAmmoPos, gaugeAmmoSize, ammoGaugeWidth,
-				colorBlue, colorTransparent, hAlign, vAlign);
-		}
 	}
 
 	// Draw gun icon, and allocate padding to draw the gun icon
@@ -268,9 +257,7 @@ static void DrawWeaponStatus(
 		opts.Pad = svec2i(pos.x + GUN_ICON_PAD, pos.y);
 		char buf[128];
 		// Include ammo counter
-		sprintf(buf, "%d/%d",
-			ActorWeaponGetAmmo(actor, wc),
-			AmmoGetById(&gAmmo, wc->AmmoId)->Max);
+		sprintf(buf, "%d", ActorWeaponGetAmmo(actor, wc));
 
 		// If low / no ammo, draw text with different colours, flashing
 		const int fps = ConfigGetInt(&gConfig, "Game.FPS");
@@ -293,6 +280,17 @@ static void DrawWeaponStatus(
 			}
 		}
 		FontStrOpt(buf, svec2i_zero(), opts);
+
+		// Draw ammo level as inner mini-gauge, no background
+		const int yOffset = size.y - AMMO_GAUGE_HEIGHT;
+		const struct vec2i gaugeAmmoPos =
+			svec2i(gaugePos.x, gaugePos.y + yOffset);
+		const struct vec2i gaugeAmmoSize = svec2i(size.x, AMMO_GAUGE_HEIGHT);
+		const int ammoGaugeWidth =
+			MAX(1, gaugeAmmoSize.x * amount / ammo->Max);
+		HUDDrawGauge(
+			hud->device, gaugeAmmoPos, gaugeAmmoSize, ammoGaugeWidth,
+			colorBlue, colorTransparent, hAlign, vAlign);
 	}
 }
 

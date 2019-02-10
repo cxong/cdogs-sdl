@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2016, 2018 Cong Xu
+    Copyright (c) 2013-2016, 2018-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -28,8 +28,8 @@
 */
 #pragma once
 
-#define LIVES_ROW_EXTRA_Y 6
-#define GRENADES_ROW_EXTRA_Y 6
+#define LIVES_ROW_EXTRA_Y 4
+#define GRENADES_ROW_EXTRA_Y 4
 #define GRENADES_ROW_PAD_LEFT 4
 #define GRENADES_ROW_PAD_TOP 4
 
