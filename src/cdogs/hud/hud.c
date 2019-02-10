@@ -307,7 +307,7 @@ static void DrawWeaponStatus(
 		gaugeColor.a = drawAlpha;
 		HUDDrawGauge(
 			hud->device, gaugeAmmoPos, gaugeAmmoSize, ammoGaugeWidth,
-			colorBlue, colorTransparent, hAlign, vAlign);
+			gaugeColor, colorTransparent, hAlign, vAlign);
 	}
 }
 
