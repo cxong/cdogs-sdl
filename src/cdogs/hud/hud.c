@@ -68,6 +68,7 @@
 #define SCORE_COUNTER_SHOW_MS 4000
 #define HEALTH_COUNTER_SHOW_MS 5000
 #define AMMO_COUNTER_SHOW_MS 4000
+#define GRENADE_COUNTER_SHOW_MS 4000
 #define WEAPON_GAUGE_EXTRA_HEIGHT 2
 #define AMMO_GAUGE_HEIGHT 4
 
@@ -79,6 +80,7 @@ static void HUDPlayerInit(HUDPlayer *h)
 	h->healthCounter = HEALTH_COUNTER_SHOW_MS;
 	HealthGaugeInit(&h->healthGauge);
 	h->ammoCounter = AMMO_COUNTER_SHOW_MS;
+	h->grenadeCounter = GRENADE_COUNTER_SHOW_MS;
 }
 
 void HUDInit(
@@ -116,18 +118,26 @@ static void HUDPlayerUpdate(HUDPlayer *h, const PlayerData *p, const int ms)
 	h->scoreCounter = MAX(h->scoreCounter - ms, 0);
 	h->healthCounter = MAX(h->healthCounter - ms, 0);
 	h->ammoCounter = MAX(h->ammoCounter - ms, 0);
+	h->grenadeCounter = MAX(h->grenadeCounter - ms, 0);
+
 	const TActor *a = ActorGetByUID(p->ActorUID);
 	if (a == NULL) return;
+
+	// Score
 	if (p->UID != h->lastPlayerUID || p->Stats.Score != h->lastScore)
 	{
 		h->scoreCounter = SCORE_COUNTER_SHOW_MS;
 	}
+
+	// Health
 	const bool healthUpdating = h->healthGauge.waitMs > 0;
 	HealthGaugeUpdate(&h->healthGauge, a, ms);
 	if ((!healthUpdating || h->healthCounter == 0) && h->healthGauge.waitMs > 0)
 	{
 		h->healthCounter = HEALTH_COUNTER_SHOW_MS;
 	}
+
+	// Ammo / gauge
 	const Weapon *w = ACTOR_GET_GUN(a);
 	const int ammo = ActorWeaponGetAmmo(a, w->Gun);
 	if (p->UID != h->lastPlayerUID || a->gunIndex != h->lastGunIndex ||
@@ -135,11 +145,22 @@ static void HUDPlayerUpdate(HUDPlayer *h, const PlayerData *p, const int ms)
 	{
 		h->ammoCounter = AMMO_COUNTER_SHOW_MS;
 	}
+
+	// Grenade name
+	const Weapon *grenade = ACTOR_GET_GRENADE(a);
+	if (p->UID != h->lastPlayerUID || a->grenadeIndex != h->lastGrenadeIndex ||
+		grenade->Gun != h->lastGrenade)
+	{
+		h->grenadeCounter = GRENADE_COUNTER_SHOW_MS;
+	}
+
 	h->lastPlayerUID = p->UID;
 	h->lastScore = p->Stats.Score;
 	h->lastHealth = a->health;
 	h->lastAmmo = ammo;
 	h->lastGunIndex = a->gunIndex;
+	h->lastGrenadeIndex = a->grenadeIndex;
+	h->lastGrenade = grenade->Gun;
 }
 
 void HUDUpdate(HUD *hud, const int ms)
@@ -312,7 +333,7 @@ static void DrawWeaponStatus(
 }
 
 static void DrawGrenadeStatus(
-	HUD *hud, const TActor *a, struct vec2i pos,
+	HUD *hud, const HUDPlayer *h, const TActor *a, struct vec2i pos,
 	const FontAlign hAlign, const FontAlign vAlign)
 {
 	const Weapon *grenade = ACTOR_GET_GRENADE(a);
@@ -369,12 +390,17 @@ static void DrawGrenadeStatus(
 	}
 
 	// Grenade name
-	FontOpts opts = FontOptsNew();
-	opts.HAlign = hAlign;
-	opts.VAlign = vAlign;
-	opts.Area = hud->device->cachedConfig.Res;
-	opts.Pad = svec2i(pos.x, pos.y);
-	FontStrOpt(wc->name, svec2i_zero(), opts);
+	if (h->grenadeCounter > 0)
+	{
+		FontOpts opts = FontOptsNew();
+		opts.HAlign = hAlign;
+		opts.VAlign = vAlign;
+		opts.Area = hud->device->cachedConfig.Res;
+		opts.Pad = svec2i(pos.x, pos.y);
+		opts.Mask.a = (uint8_t)CLAMP(
+			h->grenadeCounter * 255 * 2 / GRENADE_COUNTER_SHOW_MS, 0, 255);
+		FontStrOpt(wc->name, svec2i_zero(), opts);
+	}
 }
 
 static void DrawLives(
@@ -603,7 +629,7 @@ static void DrawPlayerStatus(
 		pos.y += rowHeight + GRENADES_ROW_EXTRA_Y;
 
 		// Grenades
-		DrawGrenadeStatus(hud, p, pos, opts.HAlign, opts.VAlign);
+		DrawGrenadeStatus(hud, h, p, pos, opts.HAlign, opts.VAlign);
 	}
 	else
 	{

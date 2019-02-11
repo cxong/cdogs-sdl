@@ -35,6 +35,7 @@
 #include "hud_num_popup.h"
 #include "player.h"
 #include "wall_clock.h"
+#include "weapon_class.h"
 
 
 #define GAUGE_WIDTH 40
@@ -47,15 +48,22 @@ typedef struct
 
 typedef struct
 {
+	// Counters for hiding UI elements when they don't change
 	int scoreCounter;
 	int healthCounter;
 	HealthGauge healthGauge;
 	int ammoCounter;
+	int grenadeCounter;
+
+	// Track last state so we can detect changes - when these change show
+	// UI elements until the counter runs out
 	int lastPlayerUID;
 	int lastScore;
 	int lastHealth;
 	int lastAmmo;
 	int lastGunIndex;
+	int lastGrenadeIndex;
+	const WeaponClass *lastGrenade;
 } HUDPlayer;
 
 typedef struct
