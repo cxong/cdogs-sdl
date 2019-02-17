@@ -37,6 +37,8 @@ typedef struct hashmap_map *map_t;
 */
 map_t hashmap_new(void);
 
+map_t hashmap_copy(const map_t in, any_t (*callback)(any_t));
+
 /*
  * Iteratively call f with argument (item, data) for
  * each element data in the hashmap. The function must
@@ -45,6 +47,8 @@ map_t hashmap_new(void);
  * not reenter any hashmap functions, or deadlock may arise.
  */
 int hashmap_iterate(map_t in, PFany f, any_t item);
+int hashmap_iterate_keys(map_t in, PFany f, any_t item);
+int hashmap_iterate_items(map_t in, PFany f, any_t item);
 
 /*
  * Add an element to the hashmap. Return MAP_OK or MAP_OMEM.
@@ -63,9 +67,8 @@ int hashmap_remove(map_t in, char* key);
 
 /*
  * Get any element. Return MAP_OK or MAP_MISSING.
- * remove - should the element be removed from the hashmap
  */
-int hashmap_get_one(map_t in, any_t *arg, int remove);
+int hashmap_get_one(map_t in, any_t *arg);
 
 /*
 * Remove all elements, with a custom callback to each element, so that they

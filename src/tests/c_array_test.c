@@ -113,9 +113,32 @@ FEATURE(CArrayRemoveIf, "Array remove if")
 	SCENARIO_END
 FEATURE_END
 
+FEATURE(CArrayCopy, "Array copy")
+	SCENARIO("Copy")
+		GIVEN("an array with numbers 0-4")
+			CArray a;
+			CArrayInit(&a, sizeof(int));
+			for (int i = 0; i < 5; i++)
+			{
+				CArrayPushBack(&a, &i);
+			}
+
+		WHEN("I copy the array")
+			CArray a2;
+			memset(&a2, 0, sizeof a2);
+			CArrayCopy(&a2, &a);
+
+		THEN("the array copy should contain 0-4")
+			CA_FOREACH(const int, i, a2)
+				SHOULD_INT_EQUAL(*i, _ca_index);
+			CA_FOREACH_END()
+	SCENARIO_END
+FEATURE_END
+
 CBEHAVE_RUN(
 	"CArray features are:",
 	TEST_FEATURE(CArrayInsert),
 	TEST_FEATURE(CArrayDelete),
-	TEST_FEATURE(CArrayRemoveIf)
+	TEST_FEATURE(CArrayRemoveIf),
+	TEST_FEATURE(CArrayCopy)
 )

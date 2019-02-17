@@ -61,13 +61,13 @@ static void GrowIfFull(CArray *a)
 }
 void CArrayCopy(CArray *dst, const CArray *src)
 {
-	CArrayTerminate(dst);
-	CArrayInit(dst, src->elemSize);
-	CArrayReserve(dst, (int)src->size);
-	for (int i = 0; i < (int)src->size; i++)
+	if (dst->elemSize > 0)
 	{
-		CArrayPushBack(dst, CArrayGet(src, i));
+		CArrayTerminate(dst);
 	}
+	CArrayInit(dst, src->elemSize);
+	CArrayResize(dst, src->size, NULL);
+	memcpy(dst->data, src->data, src->size * src->elemSize);
 }
 
 void CArrayPushBack(CArray *a, const void *elem)

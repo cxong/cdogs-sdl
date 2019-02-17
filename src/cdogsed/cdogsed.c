@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2018 Cong Xu
+    Copyright (c) 2013-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -1304,6 +1304,7 @@ static void EditCampaign(void)
 }
 
 
+static void ResetLastFile(char *s);
 int main(int argc, char *argv[])
 {
 #if defined(_MSC_VER) && !defined(NDEBUG)
@@ -1332,10 +1333,7 @@ int main(int argc, char *argv[])
 	ec.camera = svec2_zero();
 
 	EditorBrushInit(&brush);
-	// initialise to missions dir
-	GetDataFilePath(buf, CDOGS_CAMPAIGN_DIR);
-	RelPath(lastFile, buf, ".");
-	strcat(lastFile, "/");
+	ResetLastFile(lastFile);
 
 	gConfig = ConfigLoad(GetConfigFilePath(CONFIG_FILE));
 	PicManagerInit(&gPicManager);
@@ -1408,7 +1406,7 @@ int main(int argc, char *argv[])
 			}
 			else
 			{
-				lastFile[0] = '\0';
+				ResetLastFile(lastFile);
 			}
 		}
 	}
@@ -1446,4 +1444,12 @@ int main(int argc, char *argv[])
 	SDL_Quit();
 
 	exit(EXIT_SUCCESS);
+}
+static void ResetLastFile(char *s)
+{
+	char buf[CDOGS_PATH_MAX];
+	// initialise to missions dir
+	GetDataFilePath(buf, CDOGS_CAMPAIGN_DIR);
+	RelPath(s, buf, ".");
+	strcat(s, "/");
 }

@@ -46,6 +46,37 @@ map_t hashmap_new(void) {
 		return NULL;
 }
 
+typedef struct
+{
+	map_t dst;
+	const map_t src;
+	any_t (*callback)(any_t);
+} HashmapCopyData;
+static int copy_key(any_t data, any_t key);
+map_t hashmap_copy(const map_t in, any_t (*callback)(any_t))
+{
+	map_t m = hashmap_new();
+	HashmapCopyData data = { m, in, callback };
+	if (hashmap_iterate_keys(in, copy_key, (any_t)&data) != MAP_OK)
+	{
+		hashmap_free(m);
+		m = NULL;
+	}
+	return m;
+}
+static int copy_key(any_t data, any_t key)
+{
+	HashmapCopyData *hData = (HashmapCopyData *)data;
+	any_t value;
+	int error = hashmap_get(hData->src, (char *)key, &value);
+	if (error != MAP_OK)
+	{
+		return error;
+	}
+	any_t copy = hData->callback(value);
+	return hashmap_put(hData->dst, key, copy);
+}
+
 /* The implementation here was originally done by Gary S. Brown.  I have
    borrowed the tables directly, and made some minor changes to the
    crc32-function (including changing the interface). //ylo */
@@ -293,7 +324,10 @@ int hashmap_get(const map_t m, const char* key, any_t *arg){
         int in_use = m->data[curr].in_use;
         if (in_use == 1){
             if (strcmp(m->data[curr].key,key)==0){
-                *arg = (m->data[curr].data);
+            	if (arg)
+            	{
+                	*arg = (m->data[curr].data);
+				}
                 return MAP_OK;
             }
 		}
@@ -301,7 +335,10 @@ int hashmap_get(const map_t m, const char* key, any_t *arg){
 		curr = (curr + 1) % m->table_size;
 	}
 
-	*arg = NULL;
+	if (arg)
+	{
+		*arg = NULL;
+	}
 
 	/* Not found */
 	return MAP_MISSING;
@@ -312,24 +349,56 @@ int hashmap_get(const map_t m, const char* key, any_t *arg){
  * additional any_t argument is passed to the function as its first
  * argument and the hashmap element is the second.
  */
-int hashmap_iterate(map_t m, PFany f, any_t item) {
-	int i;
-
+static int iterate(
+	map_t m, PFany f, any_t item, int (*func)(hashmap_element, PFany, any_t));
+static int iterate_data(hashmap_element elem, PFany f, any_t item);
+int hashmap_iterate(map_t m, PFany f, any_t item)
+{
+	return iterate(m, f, item, iterate_data);
+}
+static int iterate_data(hashmap_element elem, PFany f, any_t item)
+{
+	return f(item, elem.data);
+}
+static int iterate_key(hashmap_element elem, PFany f, any_t item);
+int hashmap_iterate_keys(map_t m, PFany f, any_t item)
+{
+	return iterate(m, f, item, iterate_key);
+}
+static int iterate_key(hashmap_element elem, PFany f, any_t item)
+{
+	return f(item, elem.key);
+}
+static int iterate(
+	map_t m, PFany f, any_t item, int (*func)(hashmap_element, PFany, any_t))
+{
 	/* On empty hashmap, return immediately */
 	if (hashmap_length(m) <= 0)
-		return MAP_MISSING;	
+		return MAP_MISSING;
 
-	/* Linear probing */
-	for(i = 0; i< m->table_size; i++)
-		if(m->data[i].in_use != 0) {
-			any_t data = (any_t) (m->data[i].data);
-			int status = f(item, data);
+	for (int i = 0; i < m->table_size; i++)
+		if (m->data[i].in_use)
+		{
+			const int status = func(m->data[i], f, item);
 			if (status != MAP_OK) {
 				return status;
 			}
 		}
 
     return MAP_OK;
+}
+
+static int hashmap_return_first(any_t data, any_t item);
+int hashmap_get_one(map_t m, any_t *arg)
+{
+	const int error = hashmap_iterate(m, hashmap_return_first, arg);
+	return error == MAP_FULL ? MAP_OK : error;
+}
+static int hashmap_return_first(any_t data, any_t item)
+{
+	any_t *arg = data;
+	*arg = item;
+	return MAP_FULL;
 }
 
 /*

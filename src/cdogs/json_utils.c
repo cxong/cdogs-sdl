@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2013-2018 Cong Xu
+ Copyright (c) 2013-2019 Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -66,8 +66,18 @@ void AddColorPair(json_t *parent, const char *name, const color_t c)
 	ColorStr(buf, c);
 	AddStringPair(parent, name, buf);
 }
+void AddIntArray(json_t *parent, const char *name, const CArray *a)
+{
+	json_t *node = json_new_array();
+	CA_FOREACH(int, i, *a)
+		char buf[32];
+		sprintf(buf, "%d", *i);
+		json_insert_child(node, json_new_number(buf));
+	}
+	json_insert_pair_into_object(parent, name, node);
+}
 
-int TryLoadValue(json_t **node, const char *name)
+bool TryLoadValue(json_t **node, const char *name)
 {
 	if (*node == NULL || (*node)->type != JSON_OBJECT)
 	{
@@ -148,6 +158,21 @@ void LoadVec2(struct vec2 *value, json_t *node, const char *name)
 	node = node->next;
 	value->y = strtof(node->text, NULL);
 }
+void LoadIntArray(CArray *a, const json_t *node, const char *name)
+{
+	const json_t *child = json_find_first_label(node, name);
+	if (!child || !child->child)
+	{
+		return;
+	}
+	child = child->child;
+	for (child = child->child; child; child = child->next)
+	{
+		const int n = atoi(child->text);
+		CArrayPushBack(a, &n);
+	}
+}
+
 void LoadStr(char **value, json_t *node, const char *name)
 {
 	if (!TryLoadValue(&node, name))

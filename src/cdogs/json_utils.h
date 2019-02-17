@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2013-2018 Cong Xu
+ Copyright (c) 2013-2019 Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,8 @@ void AddIntPair(json_t *parent, const char *name, int number);
 void AddBoolPair(json_t *parent, const char *name, int value);
 void AddStringPair(json_t *parent, const char *name, const char *s);
 void AddColorPair(json_t *parent, const char *name, const color_t c);
+void AddIntArray(json_t *parent, const char *name, const CArray *a);
+
 void LoadBool(bool *value, json_t *node, const char *name);
 void LoadInt(int *value, json_t *node, const char *name);
 void LoadDouble(double *value, json_t *node, const char *name);
@@ -47,6 +49,7 @@ void LoadFloat(float *value, json_t *node, const char *name);
 void LoadFullInt(float *value, json_t *node, const char *name);
 void LoadVec2i(struct vec2i *value, json_t *node, const char *name);
 void LoadVec2(struct vec2 *value, json_t *node, const char *name);
+void LoadIntArray(CArray *a, const json_t *node, const char *name);
 
 // remember to free
 void LoadStr(char **value, json_t *node, const char *name);
@@ -67,7 +70,7 @@ json_t *JSONFindNode(json_t *node, const char *path);
 	json_insert_pair_into_object(\
 		(parent), (name), json_new_string(func(value)));
 
-int TryLoadValue(json_t **node, const char *name);
+bool TryLoadValue(json_t **node, const char *name);
 #define JSON_UTILS_LOAD_ENUM(value, node, name, func)\
 	{\
 		json_t *_node = (node);\
