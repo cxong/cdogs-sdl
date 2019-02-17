@@ -181,7 +181,6 @@ void MapNewLoadCampaignJSON(json_t *root, CampaignSetting *c)
 
 static void LoadMissionObjectives(
 	CArray *objectives, json_t *objectivesNode, const int version);
-static void LoadIntArray(CArray *a, json_t *node, char *name);
 static void LoadWeapons(CArray *weapons, json_t *weaponsNode);
 static void LoadRooms(RoomParams *r, json_t *roomsNode);
 static void LoadClassicDoors(Mission *m, json_t *node, char *name);
@@ -451,20 +450,6 @@ static void LoadMissionObjectives(
 		Objective o;
 		ObjectiveLoadJSON(&o, child, version);
 		CArrayPushBack(objectives, &o);
-	}
-}
-static void LoadIntArray(CArray *a, json_t *node, char *name)
-{
-	json_t *child = json_find_first_label(node, name);
-	if (!child || !child->child)
-	{
-		return;
-	}
-	child = child->child;
-	for (child = child->child; child; child = child->next)
-	{
-		int n = atoi(child->text);
-		CArrayPushBack(a, &n);
 	}
 }
 static void AddWeapon(CArray *weapons, const CArray *guns);
