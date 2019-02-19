@@ -1,5 +1,5 @@
 {
-  "Version": 1,
+  "Version": 3,
   "DefaultGun": {
     "Pic": "blaster",
     "Icon": "peashooter",
@@ -152,7 +152,11 @@
       "MuzzleFlashSprite": "muzzle_flash_big",
       "MuzzleFlashColor": "00ffff",
       "MuzzleFlashDuration": 10,
-      "Ammo": "Cells"
+      "Ammo": "Cells",
+      "Shake": {
+        "Amount": 10,
+        "CameraSubjectOnly": true
+      }
     },
     {
       "Index": 9,
@@ -308,7 +312,11 @@
       "Sound": "rocket_launch",
       "SwitchSound": "launcher_switch",
       "MuzzleFlashParticle": "muzzle_flash_shotgun",
-      "Ammo": "Rockets"
+      "Ammo": "Rockets",
+      "Shake": {
+        "Amount": 8,
+        "CameraSubjectOnly": true
+      }
     },
     {
       "Name": "Pistol",
@@ -357,7 +365,9 @@
       "SpreadCount": 8,
       "SpreadWidth": 0.79,
       "AngleOffset": 0.39,
-      "ShakeAmount": 15
+      "Shake": {
+        "Amount": 15
+      }
     },
     {
       "Pic": "",
@@ -385,7 +395,10 @@
       "Bullet": "frag",
       "SpreadCount": 16,
       "SpreadWidth": 0.39,
-      "AngleOffset": 0.2
+      "AngleOffset": 0.2,
+      "Shake": {
+        "Amount": 10
+      }
     },
     {
       "Pic": "",
@@ -409,7 +422,9 @@
       "Pic": "big_quake",
       "Name": "big_quake",
       "Sound": "",
-      "ShakeAmount": 22
+      "Shake": {
+        "Amount": 22
+      }
     }
   ]
 }

@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2018 Cong Xu
+    Copyright (c) 2013-2019 Cong Xu
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
@@ -90,7 +90,7 @@ void CameraInput(Camera *camera, const int cmd, const int lastCmd)
 		// Find index of player
 		int playerIndex = -1;
 		CA_FOREACH(const PlayerData, p, gPlayerDatas)
-			if (p->UID == camera->FollowPlayerUID)
+			if (p->UID == camera->FollowActorUID)
 			{
 				playerIndex = _ca_index;
 				break;
@@ -107,7 +107,7 @@ void CameraInput(Camera *camera, const int cmd, const int lastCmd)
 			if (IsPlayerAliveOrDying(p))
 			{
 				// Follow this player
-				camera->FollowPlayerUID = p->UID;
+				camera->FollowActorUID = p->ActorUID;
 				camera->FollowNextPlayer = false;
 				break;
 			}
@@ -133,7 +133,7 @@ void CameraUpdate(Camera *camera, const int ticks, const int ms)
 				if (IsPlayerAliveOrDying(p))
 				{
 					camera->spectateMode = SPECTATE_FOLLOW;
-					camera->FollowPlayerUID = p->UID;
+					camera->FollowActorUID = p->ActorUID;
 					break;
 				}
 			CA_FOREACH_END()
@@ -146,13 +146,16 @@ void CameraUpdate(Camera *camera, const int ticks, const int ms)
 	}
 	if (camera->spectateMode == SPECTATE_FOLLOW)
 	{
-		camera->HUD.DrawData.Players[0] =
-			PlayerDataGetByUID(camera->FollowPlayerUID);
-		if (camera->HUD.DrawData.Players[0] != NULL)
+		const TActor *a = ActorGetByUID(camera->FollowActorUID);
+		if (a != NULL)
 		{
-			camera->HUD.DrawData.NumScreens = 1;
-			camera->lastPosition = GetFollowPlayerPos(
-				camera->lastPosition, camera->HUD.DrawData.Players[0]);
+			camera->HUD.DrawData.Players[0] = PlayerDataGetByUID(a->PlayerUID);
+			if (camera->HUD.DrawData.Players[0] != NULL)
+			{
+				camera->HUD.DrawData.NumScreens = 1;
+				camera->lastPosition = GetFollowPlayerPos(
+					camera->lastPosition, camera->HUD.DrawData.Players[0]);
+			}
 		}
 	}
 
@@ -434,7 +437,9 @@ void CameraDrawMode(const Camera *camera)
 		break;
 	case SPECTATE_FOLLOW:
 		{
-			const PlayerData *p = PlayerDataGetByUID(camera->FollowPlayerUID);
+			const TActor *a = ActorGetByUID(camera->FollowActorUID);
+			if (a == NULL || !a->isInUse) break;
+			const PlayerData *p = PlayerDataGetByUID(a->PlayerUID);
 			if (p == NULL) break;
 			sprintf(cameraNameBuf, "Following %s", p->name);
 			drawCameraMode = true;

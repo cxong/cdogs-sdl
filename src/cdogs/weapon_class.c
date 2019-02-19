@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2018 Cong Xu
+    Copyright (c) 2013-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,7 @@
 WeaponClasses gWeaponClasses;
 
 // Initialise all the static weapon data
-#define VERSION 2
+#define VERSION 3
 void WeaponClassesInitialize(WeaponClasses *wcs)
 {
 	memset(wcs, 0, sizeof *wcs);
@@ -264,7 +264,15 @@ static void LoadGunDescription(
 
 	LoadBool(&wc->CanDrop, node, "CanDrop");
 
-	LoadInt(&wc->ShakeAmount, node, "ShakeAmount");
+	if (version < 3)
+	{
+		LoadInt(&wc->Shake.Amount, node, "ShakeAmount");
+	}
+	else if (json_find_first_label(node, "Shake"))
+	{
+		json_t *shake = json_find_first_label(node, "Shake")->child;
+		LoadInt(&wc->Shake.Amount, shake, "Amount");
+	}
 
 	wc->IsRealGun = true;
 
@@ -294,8 +302,9 @@ static void LoadGunDescription(
 		wc->Brass != NULL ? wc->Brass->Name : "",
 		wc->CanShoot ? "true" : "false");
 	LOG(LM_MAP, LL_DEBUG,
-		"...canDrop(%s) shakeAmount(%d)",
-		wc->CanDrop ? "true" : "false", wc->ShakeAmount);
+		"...canDrop(%s) shake{amount(%d), cameraSubjectOnly(%s)",
+		wc->CanDrop ? "true" : "false", wc->Shake.Amount,
+		wc->Shake.CameraSubjectOnly ? "true" : "false");
 }
 void WeaponClassesTerminate(WeaponClasses *wcs)
 {

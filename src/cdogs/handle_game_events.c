@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2018 Cong Xu
+    Copyright (c) 2014-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -162,8 +162,13 @@ static void HandleGameEvent(
 		}
 		break;
 	case GAME_EVENT_SCREEN_SHAKE:
+		if (e.u.Shake.CameraSubjectOnly &&
+			e.u.Shake.ActorUID != camera->FollowActorUID)
+		{
+			break;
+		}
 		camera->shake = ScreenShakeAdd(
-			camera->shake, e.u.ShakeAmount,
+			camera->shake, e.u.Shake.Amount,
 			ConfigGetInt(&gConfig, "Graphics.ShakeMultiplier"));
 		// Weak rumble for all joysticks
 		CA_FOREACH(Joystick, j, gEventHandlers.joysticks)
@@ -432,10 +437,12 @@ static void HandleGameEvent(
 				SoundPlayAt(&gSoundDevice, wc->Sound, pos);
 			}
 			// Screen shake
-			if (wc->ShakeAmount > 0)
+			if (wc->Shake.Amount > 0)
 			{
 				GameEvent s = GameEventNew(GAME_EVENT_SCREEN_SHAKE);
-				s.u.ShakeAmount = wc->ShakeAmount;
+				s.u.Shake.Amount = wc->Shake.Amount;
+				s.u.Shake.CameraSubjectOnly = wc->Shake.CameraSubjectOnly;
+				s.u.Shake.ActorUID = e.u.GunFire.ActorUID;
 				GameEventsEnqueue(&gGameEvents, s);
 			}
 			// Brass shells

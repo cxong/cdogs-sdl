@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2015-2018 Cong Xu
+    Copyright (c) 2015-2019 Cong Xu
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
@@ -46,8 +46,8 @@ typedef struct
 	HUD HUD;
 	ScreenShake shake;
 	SpectateMode spectateMode;
-	// UID of player to follow; only used if camera is in follow mode
-	int FollowPlayerUID;
+	// UID of actor to follow; only used if camera is in follow mode
+	int FollowActorUID;
 	// Immediately enter follow mode on the next player that joins the game
 	// This is used for when the game has no players; all spectators should
 	// immediately follow the next player to join

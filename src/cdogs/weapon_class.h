@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2018 Cong Xu
+    Copyright (c) 2013-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -93,7 +93,11 @@ typedef struct
 	const ParticleClass *Brass;
 	bool CanShoot;
 	bool CanDrop;	// whether this gun can be dropped to be picked up
-	int ShakeAmount;	// Amount of screen shake to produce
+	struct
+	{
+		int Amount;	// Amount of screen shake to produce
+		bool CameraSubjectOnly;	// Only shake if gun held by camera subject
+	} Shake;
 	bool IsRealGun;	// whether this gun can be used as is by players
 } WeaponClass;
 typedef struct
