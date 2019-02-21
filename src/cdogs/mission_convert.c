@@ -35,6 +35,10 @@
 
 void MissionConvertToType(Mission *m, Map *map, MapType type)
 {
+	MissionTileClasses mtc;
+	MissionTileClasses *mtcOrig = MissionGetTileClasses(m);
+	MissionTileClassesCopy(&mtc, mtcOrig);
+	MissionTileClassesTerminate(mtcOrig);
 	memset(&m->u, 0, sizeof m->u);
 	switch (type)
 	{
@@ -58,6 +62,7 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 		m->u.Classic.Pillars.Count = 1;
 		m->u.Classic.Pillars.Min = 2;
 		m->u.Classic.Pillars.Max = 3;
+		memcpy(&m->u.Classic.TileClasses, &mtc, sizeof mtc);
 		break;
 	case MAPTYPE_STATIC:
 		MissionStaticFromMap(&m->u.Static, map);
@@ -78,6 +83,7 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 		m->u.Cave.Rooms.WallLength = 1;
 		m->u.Cave.Rooms.WallPad = 1;
 		m->u.Cave.Squares = 1;
+		memcpy(&m->u.Cave.TileClasses, &mtc, sizeof mtc);
 		break;
 	default:
 		CASSERT(false, "unknown map type");

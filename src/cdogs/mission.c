@@ -125,6 +125,20 @@ void MissionInit(Mission *m)
 		IntDoorStyle(0), NULL, colorWhite, colorWhite);
 }
 
+static const MissionTileClasses *MissionGetTileClassesC(const Mission *m)
+{
+	switch (m->Type)
+	{
+		case MAPTYPE_CLASSIC:
+			return &m->u.Classic.TileClasses;
+		case MAPTYPE_STATIC:
+			return NULL;
+		case MAPTYPE_CAVE:
+			return &m->u.Cave.TileClasses;
+		default:
+			return NULL;
+	}
+}
 void MissionCopy(Mission *dst, const Mission *src)
 {
 	if (src == NULL)
@@ -141,7 +155,6 @@ void MissionCopy(Mission *dst, const Mission *src)
 	{
 		CSTRDUP(dst->Description, src->Description);
 	}
-	dst->Type = src->Type;
 	dst->Size = src->Size;
 
 	strcpy(dst->ExitStyle, src->ExitStyle);
@@ -165,18 +178,8 @@ void MissionCopy(Mission *dst, const Mission *src)
 	switch (src->Type)
 	{
 	case MAPTYPE_CLASSIC:
-		TileClassCopy(
-			&dst->u.Classic.TileClasses.Door,
-			&src->u.Classic.TileClasses.Door);
-		TileClassCopy(
-			&dst->u.Classic.TileClasses.Floor,
-			&src->u.Classic.TileClasses.Floor);
-		TileClassCopy(
-			&dst->u.Classic.TileClasses.Wall,
-			&src->u.Classic.TileClasses.Wall);
-		TileClassCopy(
-			&dst->u.Classic.TileClasses.Room,
-			&src->u.Classic.TileClasses.Room);
+		MissionTileClassesCopy(
+			MissionGetTileClasses(dst), MissionGetTileClassesC(src));
 		break;
 
 	case MAPTYPE_STATIC:
@@ -184,23 +187,16 @@ void MissionCopy(Mission *dst, const Mission *src)
 		break;
 
 	case MAPTYPE_CAVE:
-		TileClassCopy(
-			&dst->u.Cave.TileClasses.Door,
-			&src->u.Cave.TileClasses.Door);
-		TileClassCopy(
-			&dst->u.Cave.TileClasses.Floor,
-			&src->u.Cave.TileClasses.Floor);
-		TileClassCopy(
-			&dst->u.Cave.TileClasses.Wall,
-			&src->u.Cave.TileClasses.Wall);
-		TileClassCopy(
-			&dst->u.Cave.TileClasses.Room,
-			&src->u.Cave.TileClasses.Room);
+		MissionTileClassesCopy(
+			MissionGetTileClasses(dst), MissionGetTileClassesC(src));
 		break;
 
 	default:
 		break;
 	}
+
+	// Copy type at the end so we can do type-specific conversions before this
+	dst->Type = src->Type;
 }
 
 void MissionTerminate(Mission *m)
@@ -234,6 +230,20 @@ void MissionTerminate(Mission *m)
 	memset(m, 0, sizeof *m);
 }
 
+MissionTileClasses *MissionGetTileClasses(Mission *m)
+{
+	switch (m->Type)
+	{
+		case MAPTYPE_CLASSIC:
+			return &m->u.Classic.TileClasses;
+		case MAPTYPE_STATIC:
+			return NULL;
+		case MAPTYPE_CAVE:
+			return &m->u.Cave.TileClasses;
+		default:
+			return NULL;
+	}
+}
 
 // +-----------------------+
 // |  And now the code...  |
@@ -305,6 +315,15 @@ void MissionSetupTileClasses(PicManager *pm, const MissionTileClasses *mtc)
 	SetupFloorTileClasses(
 		pm, &mtc->Room, mtc->Room.Style, mtc->Room.Mask, mtc->Room.MaskAlt);
 	SetupDoorTileClasses(pm, mtc->Door.Style);
+}
+void MissionTileClassesCopy(
+	MissionTileClasses *dst, const MissionTileClasses *src)
+{
+	if (dst == NULL || src == NULL) return;
+	TileClassCopy(&dst->Door, &src->Door);
+	TileClassCopy(&dst->Floor, &src->Floor);
+	TileClassCopy(&dst->Wall, &src->Wall);
+	TileClassCopy(&dst->Room, &src->Room);
 }
 void MissionTileClassesTerminate(MissionTileClasses *mtc)
 {
