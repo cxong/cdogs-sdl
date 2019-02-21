@@ -246,15 +246,15 @@ static void MissionColorChange(const color_t c, void *data)
 	switch (mcd->Type)
 	{
 	case MISSION_COLOR_WALL:
-		mtc->Wall.MaskAlt = c;
+		mtc->Wall.Mask = c;
 		mtc->Wall.Pic = TileClassGetPic(&gPicManager, &mtc->Wall);
 		break;
 	case MISSION_COLOR_FLOOR:
-		mtc->Floor.MaskAlt = c;
+		mtc->Floor.Mask = c;
 		mtc->Floor.Pic = TileClassGetPic(&gPicManager, &mtc->Floor);
 		break;
 	case MISSION_COLOR_ROOM:
-		mtc->Room.MaskAlt = c;
+		mtc->Room.Mask = c;
 		mtc->Room.Pic = TileClassGetPic(&gPicManager, &mtc->Room);
 		break;
 	case MISSION_COLOR_EXTRA:
