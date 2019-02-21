@@ -31,17 +31,3 @@
 #include "map.h"
 
 void MissionConvertToType(Mission *m, Map *map, MapType type);
-bool MissionTrySetTile(Mission *m, struct vec2i pos, const uint16_t tile);
-uint16_t MissionGetTile(Mission *m, struct vec2i pos);
-
-void MissionStaticLayout(Mission *m, struct vec2i oldSize);
-bool MissionStaticTryAddItem(Mission *m, const MapObject *mo, const struct vec2i pos);
-bool MissionStaticTryRemoveItemAt(Mission *m, const struct vec2i pos);
-bool MissionStaticTryAddCharacter(Mission *m, int ch, struct vec2i pos);
-bool MissionStaticTryRemoveCharacterAt(Mission *m, struct vec2i pos);
-bool MissionStaticTryAddObjective(Mission *m, int idx, int idx2, struct vec2i pos);
-bool MissionStaticTryRemoveObjectiveAt(Mission *m, struct vec2i pos);
-bool MissionStaticTryAddKey(Mission *m, int k, struct vec2i pos);
-bool MissionStaticTryRemoveKeyAt(Mission *m, struct vec2i pos);
-bool MissionStaticTrySetKey(Mission *m, int k, struct vec2i pos);
-bool MissionStaticTryUnsetKeyAt(Mission *m, struct vec2i pos);

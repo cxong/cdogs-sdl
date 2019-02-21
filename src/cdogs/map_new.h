@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2016, Cong Xu
+    Copyright (c) 2014-2016, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -40,3 +40,6 @@ int MapNewLoad(const char *filename, CampaignSetting *c);
 int MapNewScanJSON(json_t *root, char **title, int *numMissions);
 void MapNewLoadCampaignJSON(json_t *root, CampaignSetting *c);
 void LoadMissions(CArray *missions, json_t *missionsNode, int version);
+void MissionLoadTileClass(TileClass *tc, json_t *node);
+void LoadMissionTileClasses(
+	MissionTileClasses *mtc, json_t *node, const int version);

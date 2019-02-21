@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, 2016 Cong Xu
+    Copyright (c) 2014, 2016, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,6 @@ typedef enum
 	BRUSHTYPE_BOX,
 	BRUSHTYPE_BOX_FILLED,
 	BRUSHTYPE_ROOM,
-	BRUSHTYPE_ROOM_PAINTER,
 	BRUSHTYPE_SELECT,
 	BRUSHTYPE_FILL,
 	BRUSHTYPE_SET_PLAYER_START,
@@ -75,9 +74,9 @@ typedef struct
 		MapObject *MapObject;
 	} u;
 	int Index2;
-	uint16_t MainType;
-	uint16_t SecondaryType;
-	uint16_t PaintType;
+	int MainType;
+	int SecondaryType;
+	int PaintType;
 	int IsActive;
 	int IsPainting;
 	int BrushSize;

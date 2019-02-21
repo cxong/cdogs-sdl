@@ -39,6 +39,9 @@ static void PlaceSquares(MapBuilder *mb, const int squares);
 static void PlaceRooms(MapBuilder *mb);
 void MapCaveLoad(MapBuilder *mb)
 {
+	// TODO: multiple tile types
+	MissionSetupTileClasses(&gPicManager, &mb->mission->u.Cave.TileClasses);
+
 	// Re-seed RNG so results are consistent
 	CampaignSeedRandom(mb->co);
 
@@ -52,7 +55,7 @@ void MapCaveLoad(MapBuilder *mb)
 	{
 		const struct vec2i pos =
 			svec2i(i % mb->Map->Size.x, i / mb->Map->Size.x);
-		MapBuilderSetTile(mb, pos, &gTileWall);
+		MapBuilderSetTile(mb, pos, &mb->mission->u.Cave.TileClasses.Wall);
 	}
 	// Shuffle
 	CArrayShuffle(&mb->tiles);
@@ -81,17 +84,17 @@ static void CaveRep(MapBuilder *mb, const int r1, const int r2)
 {
 	CArray buf;
 	CArrayInit(&buf, mb->tiles.elemSize);
-	CArrayResize(&buf, mb->tiles.size, &gTileFloor);
+	CArrayResize(&buf, mb->tiles.size, &mb->mission->u.Cave.TileClasses.Floor);
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), mb->Map->Size))
 		TileClass *tile = CArrayGet(&buf, _i);
 		if (CountWallsAround(mb, _v, 1) >= r1 ||
 			CountWallsAround(mb, _v, 2) <= r2)
 		{
-			*tile = gTileWall;
+			*tile = mb->mission->u.Cave.TileClasses.Wall;
 		}
 		else
 		{
-			*tile = gTileFloor;
+			*tile = mb->mission->u.Cave.TileClasses.Floor;
 		}
 	RECT_FOREACH_END()
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), mb->Map->Size))
@@ -183,7 +186,8 @@ static void LinkDisconnectedAreas(MapBuilder *mb)
 		const struct vec2i delta = svec2i(abs(v1.x - v2.x), abs(v1.y - v2.y));
 		const int dx = delta.x > delta.y ? 1 : 0;
 		const int dy = 1 - dx;
-		AddCorridor(mb, v1, v2, svec2i(dx, dy), &gTileFloor);
+		AddCorridor(
+			mb, v1, v2, svec2i(dx, dy), &mb->mission->u.Cave.TileClasses.Floor);
 	}
 	CArrayTerminate(&areaStarts);
 }
@@ -327,7 +331,8 @@ static void FixCorridors(MapBuilder *mb, const int corridorWidth)
 			if (!CheckCorridorsAroundTile(mb, corridorWidth, v))
 			{
 				// Corridor checks failed; replace with a floor tile
-				MapBuilderSetTile(mb, v, &gTileFloor);
+				MapBuilderSetTile(
+					mb, v, &mb->mission->u.Cave.TileClasses.Floor);
 			}
 		}
 	}
@@ -407,7 +412,8 @@ static void PlaceSquares(MapBuilder *mb, const int squares)
 		{
 			continue;
 		}
-		MapMakeSquare(mb, v, size);
+		MapMakeSquare(
+			mb, Rect2iNew(v, size), &mb->mission->u.Cave.TileClasses.Floor);
 		count++;
 	}
 }
@@ -631,7 +637,7 @@ static void MapBuildRoom(MapBuilder *mb, const Rect2i room)
 		if (leftOrRightEdge && topOrBottomEdge)
 		{
 			// corner
-			MapBuilderSetTile(mb, _v, &gTileWall);
+			MapBuilderSetTile(mb, _v, &mb->mission->u.Cave.TileClasses.Wall);
 		}
 		else
 		{
@@ -655,7 +661,8 @@ static void MapBuildRoom(MapBuilder *mb, const Rect2i room)
 					!CaveRoomOutsideOk(mb, outsideY))
 				{
 					// This door would become a corner
-					MapBuilderSetTile(mb, _v, &gTileWall);
+					MapBuilderSetTile(
+						mb, _v, &mb->mission->u.Cave.TileClasses.Wall);
 				}
 			}
 			else
@@ -668,18 +675,25 @@ static void MapBuildRoom(MapBuilder *mb, const Rect2i room)
 				{
 					MapBuilderSetTile(
 						mb, _v,
-						mb->mission->u.Cave.DoorsEnabled ? &gTileDoor : &gTileRoom
+						mb->mission->u.Cave.DoorsEnabled ?
+						&mb->mission->u.Cave.TileClasses.Door :
+						&mb->mission->u.Cave.TileClasses.Room
 					);
 				}
 				else
 				{
-					MapBuilderSetTile(mb, _v, &gTileWall);
+					MapBuilderSetTile(
+						mb, _v, &mb->mission->u.Cave.TileClasses.Wall);
 				}
 			}
 		}
 	RECT_FOREACH_END()
 
-	MapMakeRoom(mb, room.Pos, room.Size, false);
+	MapMakeRoom(
+		mb, room.Pos, room.Size, false,
+		&mb->mission->u.Cave.TileClasses.Wall,
+		&mb->mission->u.Cave.TileClasses.Room);
 
-	MapMakeRoomWalls(mb, mb->mission->u.Cave.Rooms);
+	MapMakeRoomWalls(
+		mb, mb->mission->u.Cave.Rooms, &mb->mission->u.Cave.TileClasses.Wall);
 }

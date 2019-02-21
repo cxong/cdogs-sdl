@@ -316,17 +316,11 @@ bail:
 }
 
 static json_t *SaveObjectives(CArray *a);
-static json_t *SaveIntArray(CArray *a);
-static json_t *SaveVec2i(struct vec2i v);
 static json_t *SaveWeapons(const CArray *weapons);
+static json_t *SaveMissionTileClasses(const MissionTileClasses *mtc);
 static json_t *SaveRooms(const RoomParams r);
 static json_t *SaveClassicDoors(Mission *m);
 static json_t *SaveClassicPillars(Mission *m);
-static json_t *SaveStaticTiles(Mission *m);
-static json_t *SaveStaticItems(Mission *m);
-static json_t *SaveStaticCharacters(Mission *m);
-static json_t *SaveStaticObjectives(Mission *m);
-static json_t *SaveStaticKeys(Mission *m);
 static json_t *SaveMissions(CArray *a)
 {
 	json_t *missionsNode = json_new_array();
@@ -340,19 +334,13 @@ static json_t *SaveMissions(CArray *a)
 		AddIntPair(node, "Width", mission->Size.x);
 		AddIntPair(node, "Height", mission->Size.y);
 
-		AddStringPair(node, "WallStyle", mission->WallStyle);
-		AddStringPair(node, "FloorStyle", mission->FloorStyle);
-		AddStringPair(node, "RoomStyle", mission->RoomStyle);
 		AddStringPair(node, "ExitStyle", mission->ExitStyle);
 		AddStringPair(node, "KeyStyle", mission->KeyStyle);
-		AddStringPair(node, "DoorStyle", mission->DoorStyle);
 
 		json_insert_pair_into_object(
 			node, "Objectives", SaveObjectives(&mission->Objectives));
-		json_insert_pair_into_object(
-			node, "Enemies", SaveIntArray(&mission->Enemies));
-		json_insert_pair_into_object(
-			node, "SpecialChars", SaveIntArray(&mission->SpecialChars));
+		AddIntArray(node, "Enemies", &mission->Enemies);
+		AddIntArray(node, "SpecialChars", &mission->SpecialChars);
 		json_t *modsNode = json_new_array();
 		for (int j = 0; j < (int)mission->MapObjectDensities.size; j++)
 		{
@@ -372,14 +360,12 @@ static json_t *SaveMissions(CArray *a)
 		json_insert_pair_into_object(
 			node, "Song", json_new_string(mission->Song));
 
-		AddColorPair(node, "WallMask", mission->WallMask);
-		AddColorPair(node, "FloorMask", mission->FloorMask);
-		AddColorPair(node, "RoomMask", mission->RoomMask);
-		AddColorPair(node, "AltMask", mission->AltMask);
-
 		switch (mission->Type)
 		{
 		case MAPTYPE_CLASSIC:
+			json_insert_pair_into_object(
+				node, "TileClasses",
+				SaveMissionTileClasses(&mission->u.Classic.TileClasses));
 			AddIntPair(node, "Walls", mission->u.Classic.Walls);
 			AddIntPair(node, "WallLength", mission->u.Classic.WallLength);
 			AddIntPair(
@@ -393,31 +379,12 @@ static json_t *SaveMissions(CArray *a)
 				node, "Pillars", SaveClassicPillars(mission));
 			break;
 		case MAPTYPE_STATIC:
-			{
-				json_insert_pair_into_object(
-					node, "Tiles", SaveStaticTiles(mission));
-				json_insert_pair_into_object(
-					node, "StaticItems", SaveStaticItems(mission));
-				json_insert_pair_into_object(
-					node, "StaticCharacters", SaveStaticCharacters(mission));
-				json_insert_pair_into_object(
-					node, "StaticObjectives", SaveStaticObjectives(mission));
-				json_insert_pair_into_object(
-					node, "StaticKeys", SaveStaticKeys(mission));
-
-				json_insert_pair_into_object(
-					node, "Start", SaveVec2i(mission->u.Static.Start));
-				json_t *exitNode = json_new_object();
-				json_insert_pair_into_object(
-					exitNode, "Start",
-					SaveVec2i(mission->u.Static.Exit.Start));
-				json_insert_pair_into_object(
-					exitNode, "End",
-					SaveVec2i(mission->u.Static.Exit.End));
-				json_insert_pair_into_object(node, "Exit", exitNode);
-			}
+			MissionStaticSaveJSON(&mission->u.Static, mission->Size, node);
 			break;
 		case MAPTYPE_CAVE:
+			json_insert_pair_into_object(
+				node, "TileClasses",
+				SaveMissionTileClasses(&mission->u.Cave.TileClasses));
 			AddIntPair(node, "FillPercent", mission->u.Cave.FillPercent);
 			AddIntPair(node, "Repeat", mission->u.Cave.Repeat);
 			AddIntPair(node, "R1", mission->u.Cave.R1);
@@ -449,6 +416,29 @@ static json_t *SaveRooms(const RoomParams r)
 	AddIntPair(node, "WallPad", r.WallPad);
 	return node;
 }
+static json_t *SaveWeapons(const CArray *weapons)
+{
+	json_t *node = json_new_array();
+	for (int i = 0; i < (int)weapons->size; i++)
+	{
+		const WeaponClass **wc = CArrayGet(weapons, i);
+		json_insert_child(node, json_new_string((*wc)->name));
+	}
+	return node;
+}
+static json_t *SaveMissionTileClasses(const MissionTileClasses *mtc)
+{
+	json_t *node = json_new_object();
+	json_insert_pair_into_object(
+		node, "Wall", MissionSaveTileClass(&mtc->Wall));
+	json_insert_pair_into_object(
+		node, "Floor", MissionSaveTileClass(&mtc->Floor));
+	json_insert_pair_into_object(
+		node, "Room", MissionSaveTileClass(&mtc->Room));
+	json_insert_pair_into_object(
+		node, "Door", MissionSaveTileClass(&mtc->Door));
+	return node;
+}
 static json_t *SaveClassicPillars(Mission *m)
 {
 	json_t *node = json_new_object();
@@ -464,111 +454,6 @@ static json_t *SaveClassicDoors(Mission *m)
 	AddIntPair(node, "Min", m->u.Classic.Doors.Min);
 	AddIntPair(node, "Max", m->u.Classic.Doors.Max);
 	return node;
-}
-
-static json_t *SaveStaticTiles(Mission *m)
-{
-	// Write out each row of tiles individually as a single CSV
-	json_t *rows = json_new_array();
-	// Create a text buffer for CSV
-	// The buffer will contain n*5 chars (tiles, allow 5 chars each),
-	// and n - 1 commas, so 6n total
-	char *rowBuf;
-	CMALLOC(rowBuf, m->Size.x * 6);
-	for (int i = 0; i < m->Size.y; i++)
-	{
-		char *pBuf = rowBuf;
-		*pBuf = '\0';
-		for (int j = 0; j < m->Size.x; j++)
-		{
-			char buf[32];
-			sprintf(buf, "%d", *(uint16_t *)CArrayGet(
-				&m->u.Static.Tiles, i * m->Size.x + j));
-			strcpy(pBuf, buf);
-			pBuf += strlen(buf);
-			if (j < m->Size.x - 1)
-			{
-				*pBuf++ = ',';
-			}
-		}
-		json_insert_child(rows, json_new_string(rowBuf));
-	}
-	CFREE(rowBuf);
-	return rows;
-}
-static json_t *SaveStaticItems(Mission *m)
-{
-	json_t *items = json_new_array();
-	CA_FOREACH(MapObjectPositions, mop, m->u.Static.Items)
-		json_t *itemNode = json_new_object();
-		AddStringPair(itemNode, "MapObject", mop->M->Name);
-		json_t *positions = json_new_array();
-		for (int j = 0; j < (int)mop->Positions.size; j++)
-		{
-			struct vec2i *pos = CArrayGet(&mop->Positions, j);
-			json_insert_child(positions, SaveVec2i(*pos));
-		}
-		json_insert_pair_into_object(
-			itemNode, "Positions", positions);
-		json_insert_child(items, itemNode);
-	CA_FOREACH_END()
-	return items;
-}
-static json_t *SaveStaticCharacters(Mission *m)
-{
-	json_t *chars = json_new_array();
-	CA_FOREACH(CharacterPositions, cp, m->u.Static.Characters)
-		json_t *charNode = json_new_object();
-		AddIntPair(charNode, "Index", cp->Index);
-		json_t *positions = json_new_array();
-		for (int j = 0; j < (int)cp->Positions.size; j++)
-		{
-			struct vec2i *pos = CArrayGet(&cp->Positions, j);
-			json_insert_child(positions, SaveVec2i(*pos));
-		}
-		json_insert_pair_into_object(
-			charNode, "Positions", positions);
-		json_insert_child(chars, charNode);
-	CA_FOREACH_END()
-	return chars;
-}
-static json_t *SaveStaticObjectives(Mission *m)
-{
-	json_t *objs = json_new_array();
-	CA_FOREACH(ObjectivePositions, op, m->u.Static.Objectives)
-		json_t *objNode = json_new_object();
-		AddIntPair(objNode, "Index", op->Index);
-		json_t *positions = json_new_array();
-		for (int j = 0; j < (int)op->Positions.size; j++)
-		{
-			struct vec2i *pos = CArrayGet(&op->Positions, j);
-			json_insert_child(positions, SaveVec2i(*pos));
-		}
-		json_insert_pair_into_object(
-			objNode, "Positions", positions);
-		json_insert_pair_into_object(
-			objNode, "Indices", SaveIntArray(&op->Indices));
-		json_insert_child(objs, objNode);
-	CA_FOREACH_END()
-	return objs;
-}
-static json_t *SaveStaticKeys(Mission *m)
-{
-	json_t *keys = json_new_array();
-	CA_FOREACH(KeyPositions, kp, m->u.Static.Keys)
-		json_t *keyNode = json_new_object();
-		AddIntPair(keyNode, "Index", kp->Index);
-		json_t *positions = json_new_array();
-		for (int j = 0; j < (int)kp->Positions.size; j++)
-		{
-			struct vec2i *pos = CArrayGet(&kp->Positions, j);
-			json_insert_child(positions, SaveVec2i(*pos));
-		}
-		json_insert_pair_into_object(
-			keyNode, "Positions", positions);
-		json_insert_child(keys, keyNode);
-	CA_FOREACH_END()
-	return keys;
 }
 
 static json_t *SaveObjectives(CArray *a)
@@ -598,36 +483,17 @@ static json_t *SaveObjectives(CArray *a)
 	return objectivesNode;
 }
 
-static json_t *SaveIntArray(CArray *a)
+json_t *MissionSaveTileClass(const TileClass *tc)
 {
-	json_t *node = json_new_array();
-	int i;
-	for (i = 0; i < (int)a->size; i++)
-	{
-		char buf[32];
-		sprintf(buf, "%d", *(int *)CArrayGet(a, i));
-		json_insert_child(node, json_new_number(buf));
-	}
-	return node;
-}
-static json_t *SaveVec2i(struct vec2i v)
-{
-	json_t *node = json_new_array();
-	char buf[32];
-	sprintf(buf, "%d", v.x);
-	json_insert_child(node, json_new_number(buf));
-	sprintf(buf, "%d", v.y);
-	json_insert_child(node, json_new_number(buf));
-	return node;
-}
-
-static json_t *SaveWeapons(const CArray *weapons)
-{
-	json_t *node = json_new_array();
-	for (int i = 0; i < (int)weapons->size; i++)
-	{
-		const WeaponClass **wc = CArrayGet(weapons, i);
-		json_insert_child(node, json_new_string((*wc)->name));
-	}
-	return node;
+	json_t *itemNode = json_new_object();
+	AddStringPair(itemNode, "Name", tc->Name);
+	AddStringPair(itemNode, "Type", TileClassTypeStr(tc->Type));
+	AddStringPair(itemNode, "Style", tc->Style);
+	AddColorPair(itemNode, "Mask", tc->Mask);
+	AddColorPair(itemNode, "MaskAlt", tc->MaskAlt);
+	AddBoolPair(itemNode, "CanWalk", tc->canWalk);
+	AddBoolPair(itemNode, "IsOpaque", tc->isOpaque);
+	AddBoolPair(itemNode, "Shootable", tc->shootable);
+	AddBoolPair(itemNode, "IsRoom", tc->IsRoom);
+	return itemNode;
 }

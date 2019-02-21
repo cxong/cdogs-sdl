@@ -185,7 +185,6 @@ static void LoadWeapons(CArray *weapons, json_t *weaponsNode);
 static void LoadRooms(RoomParams *r, json_t *roomsNode);
 static void LoadClassicDoors(Mission *m, json_t *node, char *name);
 static void LoadClassicPillars(Mission *m, json_t *node, char *name);
-static bool TryLoadStaticMap(Mission *m, json_t *node, int version);
 void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 {
 	json_t *child;
@@ -198,28 +197,6 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 		JSON_UTILS_LOAD_ENUM(m.Type, child, "Type", StrMapType);
 		LoadInt(&m.Size.x, child, "Width");
 		LoadInt(&m.Size.y, child, "Height");
-		if (version <= 10)
-		{
-			int style;
-			LoadInt(&style, child, "WallStyle");
-			strcpy(m.WallStyle, IntWallStyle(style));
-			LoadInt(&style, child, "FloorStyle");
-			strcpy(m.FloorStyle, IntFloorStyle(style));
-			LoadInt(&style, child, "RoomStyle");
-			strcpy(m.RoomStyle, IntRoomStyle(style));
-		}
-		else
-		{
-			char *tmp = GetString(child, "WallStyle");
-			strcpy(m.WallStyle, tmp);
-			CFREE(tmp);
-			tmp = GetString(child, "FloorStyle");
-			strcpy(m.FloorStyle, tmp);
-			CFREE(tmp);
-			tmp = GetString(child, "RoomStyle");
-			strcpy(m.RoomStyle, tmp);
-			CFREE(tmp);
-		}
 		if (version <= 9)
 		{
 			int style;
@@ -242,18 +219,6 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 		{
 			char *tmp = GetString(child, "KeyStyle");
 			strcpy(m.KeyStyle, tmp);
-			CFREE(tmp);
-		}
-		if (version <= 5)
-		{
-			int doorStyle;
-			LoadInt(&doorStyle, child, "DoorStyle");
-			strcpy(m.DoorStyle, IntDoorStyle(doorStyle));
-		}
-		else
-		{
-			char *tmp = GetString(child, "DoorStyle");
-			strcpy(m.DoorStyle, tmp);
 			CFREE(tmp);
 		}
 		LoadMissionObjectives(
@@ -301,29 +266,10 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 		LoadWeapons(
 			&m.Weapons, json_find_first_label(child, "Weapons")->child);
 		strcpy(m.Song, json_find_first_label(child, "Song")->child->text);
-		if (version <= 4)
-		{
-			// Load colour indices
-			int wc, fc, rc, ac;
-			LoadInt(&wc, child, "WallColor");
-			LoadInt(&fc, child, "FloorColor");
-			LoadInt(&rc, child, "RoomColor");
-			LoadInt(&ac, child, "AltColor");
-			m.WallMask = RangeToColor(wc);
-			m.FloorMask = RangeToColor(fc);
-			m.RoomMask = RangeToColor(rc);
-			m.AltMask = RangeToColor(ac);
-		}
-		else
-		{
-			LoadColor(&m.WallMask, child, "WallMask");
-			LoadColor(&m.FloorMask, child, "FloorMask");
-			LoadColor(&m.RoomMask, child, "RoomMask");
-			LoadColor(&m.AltMask, child, "AltMask");
-		}
 		switch (m.Type)
 		{
 		case MAPTYPE_CLASSIC:
+			LoadMissionTileClasses(&m.u.Classic.TileClasses, child, version);
 			LoadInt(&m.u.Classic.Walls, child, "Walls");
 			LoadInt(&m.u.Classic.WallLength, child, "WallLength");
 			LoadInt(&m.u.Classic.CorridorWidth, child, "CorridorWidth");
@@ -335,13 +281,14 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 			LoadClassicPillars(&m, child, "Pillars");
 			break;
 		case MAPTYPE_STATIC:
-			if (!TryLoadStaticMap(&m, child, version))
+			if (!MissionStaticTryLoadJSON(&m.u.Static, child, version))
 			{
 				continue;
 			}
 			break;
 		case MAPTYPE_CAVE:
 			{
+				LoadMissionTileClasses(&m.u.Cave.TileClasses, child, version);
 				LoadInt(&m.u.Cave.FillPercent, child, "FillPercent");
 				LoadInt(&m.u.Cave.Repeat, child, "Repeat");
 				LoadInt(&m.u.Cave.R1, child, "R1");
@@ -369,78 +316,113 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 		CArrayPushBack(missions, &m);
 	}
 }
-static void LoadStaticTileCSV(Mission *m, char *tileCSV);
-static void LoadStaticItems(
-	Mission *m, json_t *node, const char *name, const int version);
-static void LoadStaticWrecks(
-	Mission *m, json_t *node, const char *name, const int version);
-static void LoadStaticCharacters(Mission *m, json_t *node, char *name);
-static void LoadStaticObjectives(Mission *m, json_t *node, char *name);
-static void LoadStaticKeys(Mission *m, json_t *node, char *name);
-static void LoadStaticExit(Mission *m, json_t *node, char *name);
-static bool TryLoadStaticMap(Mission *m, json_t *node, int version)
+
+void MissionLoadTileClass(TileClass *tc, json_t *node)
 {
-	CArrayInit(&m->u.Static.Tiles, sizeof(uint16_t));
-	if (version == 1)
+	memset(tc, 0, sizeof *tc);
+	LoadStr(&tc->Name, node, "Name");
+	JSON_UTILS_LOAD_ENUM(tc->Type, node, "Type", StrTileClassType);
+	LoadStr(&tc->Style, node, "Style");
+	LoadColor(&tc->Mask, node, "Mask");
+	LoadColor(&tc->MaskAlt, node, "MaskAlt");
+	LoadBool(&tc->canWalk, node, "CanWalk");
+	LoadBool(&tc->isOpaque, node, "IsOpaque");
+	LoadBool(&tc->shootable, node, "Shootable");
+	LoadBool(&tc->IsRoom, node, "IsRoom");
+}
+
+void LoadMissionTileClasses(
+	MissionTileClasses *mtc, json_t *node, const int version)
+{
+	if (version <= 14)
 	{
-		// JSON array
-		json_t *tiles = json_find_first_label(node, "Tiles");
-		if (!tiles || !tiles->child)
+		char wallStyle[CDOGS_FILENAME_MAX];
+		char floorStyle[CDOGS_FILENAME_MAX];
+		char roomStyle[CDOGS_FILENAME_MAX];
+		if (version <= 10)
 		{
-			return false;
+			int style;
+			LoadInt(&style, node, "WallStyle");
+			strcpy(wallStyle, IntWallStyle(style));
+			LoadInt(&style, node, "FloorStyle");
+			strcpy(floorStyle, IntFloorStyle(style));
+			LoadInt(&style, node, "RoomStyle");
+			strcpy(roomStyle, IntRoomStyle(style));
 		}
-		tiles = tiles->child;
-		for (tiles = tiles->child; tiles; tiles = tiles->next)
+		else
 		{
-			uint16_t n = (uint16_t)atoi(tiles->text);
-			CArrayPushBack(&m->u.Static.Tiles, &n);
+			char *tmp = GetString(node, "WallStyle");
+			strcpy(wallStyle, tmp);
+			CFREE(tmp);
+			tmp = GetString(node, "FloorStyle");
+			strcpy(floorStyle, tmp);
+			CFREE(tmp);
+			tmp = GetString(node, "RoomStyle");
+			strcpy(roomStyle, tmp);
+			CFREE(tmp);
 		}
-	}
-	else if (version <= 14)
-	{
-		// CSV string
-		char *tileCSV = GetString(node, "Tiles");
-		LoadStaticTileCSV(m, tileCSV);
-		CFREE(tileCSV);
+		char doorStyle[CDOGS_FILENAME_MAX];
+		if (version <= 5)
+		{
+			int doorStyle;
+			LoadInt(&doorStyle, node, "DoorStyle");
+			strcpy(doorStyle, IntDoorStyle(doorStyle));
+		}
+		else
+		{
+			char *tmp = GetString(node, "DoorStyle");
+			strcpy(doorStyle, tmp);
+			CFREE(tmp);
+		}
+		color_t wallMask;
+		color_t floorMask;
+		color_t roomMask;
+		color_t altMask;
+		if (version <= 4)
+		{
+			// Load colour indices
+			int wc, fc, rc, ac;
+			LoadInt(&wc, node, "WallColor");
+			LoadInt(&fc, node, "FloorColor");
+			LoadInt(&rc, node, "RoomColor");
+			LoadInt(&ac, node, "AltColor");
+			wallMask = RangeToColor(wc);
+			floorMask = RangeToColor(fc);
+			roomMask = RangeToColor(rc);
+			altMask = RangeToColor(ac);
+		}
+		else
+		{
+			LoadColor(&wallMask, node, "WallMask");
+			LoadColor(&floorMask, node, "FloorMask");
+			LoadColor(&roomMask, node, "RoomMask");
+			LoadColor(&altMask, node, "AltMask");
+		}
+		TileClassInit(
+			&mtc->Wall, &gPicManager, &gTileWall, wallStyle, NULL,
+			wallMask, altMask);
+		TileClassInit(
+			&mtc->Floor, &gPicManager, &gTileFloor, floorStyle, NULL,
+			floorMask, altMask);
+		TileClassInit(
+			&mtc->Room, &gPicManager, &gTileRoom, roomStyle, NULL,
+			roomMask, altMask);
+		TileClassInit(
+			&mtc->Door, &gPicManager, &gTileDoor, doorStyle, NULL,
+			colorWhite, colorWhite);
 	}
 	else
 	{
-		// CSV string per row
-		// TODO: tile ids
-		json_t *tile = json_find_first_label(node, "Tiles")->child->child;
-		while (tile)
-		{
-			LoadStaticTileCSV(m, tile->text);
-			tile = tile->next;
-		}
-	}
-
-	CArrayInit(&m->u.Static.Items, sizeof(MapObjectPositions));
-	LoadStaticItems(m, node, "StaticItems", version);
-	if (version < 13)
-	{
-		LoadStaticWrecks(m, node, "StaticWrecks", version);
-	}
-	LoadStaticCharacters(m, node, "StaticCharacters");
-	LoadStaticObjectives(m, node, "StaticObjectives");
-	LoadStaticKeys(m, node, "StaticKeys");
-
-	LoadVec2i(&m->u.Static.Start, node, "Start");
-	LoadStaticExit(m, node, "Exit");
-
-	return true;
-}
-static void LoadStaticTileCSV(Mission *m, char *tileCSV)
-{
-	char *pch = strtok(tileCSV, ",");
-	while (pch != NULL)
-	{
-		const uint16_t n = (uint16_t)atoi(pch);
-		CArrayPushBack(&m->u.Static.Tiles, &n);
-		pch = strtok(NULL, ",");
+		MissionLoadTileClass(
+			&mtc->Wall, json_find_first_label(node, "Wall")->child);
+		MissionLoadTileClass(
+			&mtc->Floor, json_find_first_label(node, "Floor")->child);
+		MissionLoadTileClass(
+			&mtc->Room, json_find_first_label(node, "Room")->child);
+		MissionLoadTileClass(
+			&mtc->Door, json_find_first_label(node, "Door")->child);
 	}
 }
-
 static void LoadMissionObjectives(
 	CArray *objectives, json_t *objectivesNode, const int version)
 {
@@ -519,251 +501,4 @@ static void LoadClassicDoors(Mission *m, json_t *node, char *name)
 	LoadBool(&m->u.Classic.Doors.Enabled, child, "Enabled");
 	LoadInt(&m->u.Classic.Doors.Min, child, "Min");
 	LoadInt(&m->u.Classic.Doors.Max, child, "Max");
-}
-static const MapObject *LoadMapObjectRef(json_t *node, const int version);
-static const MapObject *LoadMapObjectWreckRef(
-	json_t *itemNode, const int version);
-static void LoadStaticItems(
-	Mission *m, json_t *node, const char *name, const int version)
-{
-	json_t *items = json_find_first_label(node, name);
-	if (!items || !items->child)
-	{
-		return;
-	}
-	items = items->child;
-	for (items = items->child; items; items = items->next)
-	{
-		MapObjectPositions mop;
-		mop.M = LoadMapObjectRef(items, version);
-		if (mop.M == NULL)
-		{
-			continue;
-		}
-		CArrayInit(&mop.Positions, sizeof(struct vec2i));
-		json_t *positions = json_find_first_label(items, "Positions");
-		if (!positions || !positions->child)
-		{
-			continue;
-		}
-		positions = positions->child;
-		for (positions = positions->child;
-			positions;
-			positions = positions->next)
-		{
-			struct vec2i pos;
-			json_t *position = positions->child;
-			pos.x = atoi(position->text);
-			position = position->next;
-			pos.y = atoi(position->text);
-			CArrayPushBack(&mop.Positions, &pos);
-		}
-		CArrayPushBack(&m->u.Static.Items, &mop);
-	}
-}
-static void LoadStaticWrecks(
-	Mission *m, json_t *node, const char *name, const int version)
-{
-	json_t *items = json_find_first_label(node, name);
-	if (!items || !items->child)
-	{
-		return;
-	}
-	items = items->child;
-	for (items = items->child; items; items = items->next)
-	{
-		MapObjectPositions mop;
-		mop.M = LoadMapObjectWreckRef(items, version);
-		if (mop.M == NULL)
-		{
-			continue;
-		}
-		CArrayInit(&mop.Positions, sizeof(struct vec2i));
-		json_t *positions = json_find_first_label(items, "Positions");
-		if (!positions || !positions->child)
-		{
-			continue;
-		}
-		positions = positions->child;
-		for (positions = positions->child;
-			positions;
-			positions = positions->next)
-		{
-			struct vec2i pos;
-			json_t *position = positions->child;
-			pos.x = atoi(position->text);
-			position = position->next;
-			pos.y = atoi(position->text);
-			CArrayPushBack(&mop.Positions, &pos);
-		}
-		CArrayPushBack(&m->u.Static.Items, &mop);
-	}
-}
-static const MapObject *LoadMapObjectRef(json_t *itemNode, const int version)
-{
-	if (version <= 3)
-	{
-		int idx;
-		LoadInt(&idx, itemNode, "Index");
-		return IntMapObject(idx);
-	}
-	else
-	{
-		const char *moName =
-			json_find_first_label(itemNode, "MapObject")->child->text;
-		const MapObject *mo = StrMapObject(moName);
-		if (mo == NULL && version <= 11 && StrEndsWith(moName, " spawner"))
-		{
-			char buf[256];
-			// Old version had same name for ammo and gun spawner
-			char itemName[256];
-			strncpy(itemName, moName, strlen(moName) - strlen(" spawner"));
-			itemName[strlen(moName) - strlen(" spawner")] = '\0';
-			snprintf(buf, 256, "%s ammo spawner", itemName);
-			mo = StrMapObject(buf);
-		}
-		if (mo == NULL)
-		{
-			LOG(LM_MAP, LL_ERROR, "Failed to load map object (%s)", moName);
-		}
-		return mo;
-	}
-}
-static const MapObject *LoadMapObjectWreckRef(
-	json_t *itemNode, const int version)
-{
-	if (version <= 3)
-	{
-		int idx;
-		LoadInt(&idx, itemNode, "Index");
-		return IntMapObject(idx);
-	}
-	const char *moName =
-		json_find_first_label(itemNode, "MapObject")->child->text;
-	const MapObject *mo = StrMapObject(moName);
-	if (mo == NULL)
-	{
-		LOG(LM_MAP, LL_ERROR, "Failed to load map object (%s)", moName);
-		return NULL;
-	}
-	const MapObject *wreck = StrMapObject(mo->Wreck);
-	return wreck;
-}
-static void LoadStaticCharacters(Mission *m, json_t *node, char *name)
-{
-	CArrayInit(&m->u.Static.Characters, sizeof(CharacterPositions));
-
-	json_t *chars = json_find_first_label(node, name);
-	if (!chars || !chars->child)
-	{
-		return;
-	}
-	chars = chars->child;
-	for (chars = chars->child; chars; chars = chars->next)
-	{
-		CharacterPositions cp;
-		LoadInt(&cp.Index, chars, "Index");
-		CArrayInit(&cp.Positions, sizeof(struct vec2i));
-		json_t *positions = json_find_first_label(chars, "Positions");
-		if (!positions || !positions->child)
-		{
-			continue;
-		}
-		positions = positions->child;
-		for (positions = positions->child;
-			positions;
-			positions = positions->next)
-		{
-			struct vec2i pos;
-			json_t *position = positions->child;
-			pos.x = atoi(position->text);
-			position = position->next;
-			pos.y = atoi(position->text);
-			CArrayPushBack(&cp.Positions, &pos);
-		}
-		CArrayPushBack(&m->u.Static.Characters, &cp);
-	}
-}
-static void LoadStaticObjectives(Mission *m, json_t *node, char *name)
-{
-	CArrayInit(&m->u.Static.Objectives, sizeof(ObjectivePositions));
-	
-	json_t *objs = json_find_first_label(node, name);
-	if (!objs || !objs->child)
-	{
-		return;
-	}
-	objs = objs->child;
-	for (objs = objs->child; objs; objs = objs->next)
-	{
-		ObjectivePositions op;
-		LoadInt(&op.Index, objs, "Index");
-		CArrayInit(&op.Positions, sizeof(struct vec2i));
-		CArrayInit(&op.Indices, sizeof(int));
-		json_t *positions = json_find_first_label(objs, "Positions");
-		if (!positions || !positions->child)
-		{
-			continue;
-		}
-		positions = positions->child;
-		for (positions = positions->child;
-			 positions;
-			 positions = positions->next)
-		{
-			struct vec2i pos;
-			json_t *position = positions->child;
-			pos.x = atoi(position->text);
-			position = position->next;
-			pos.y = atoi(position->text);
-			CArrayPushBack(&op.Positions, &pos);
-		}
-		LoadIntArray(&op.Indices, objs, "Indices");
-		CArrayPushBack(&m->u.Static.Objectives, &op);
-	}
-}
-static void LoadStaticKeys(Mission *m, json_t *node, char *name)
-{
-	CArrayInit(&m->u.Static.Keys, sizeof(KeyPositions));
-	
-	json_t *keys = json_find_first_label(node, name);
-	if (!keys || !keys->child)
-	{
-		return;
-	}
-	keys = keys->child;
-	for (keys = keys->child; keys; keys = keys->next)
-	{
-		KeyPositions kp;
-		LoadInt(&kp.Index, keys, "Index");
-		CArrayInit(&kp.Positions, sizeof(struct vec2i));
-		json_t *positions = json_find_first_label(keys, "Positions");
-		if (!positions || !positions->child)
-		{
-			continue;
-		}
-		positions = positions->child;
-		for (positions = positions->child;
-			 positions;
-			 positions = positions->next)
-		{
-			struct vec2i pos;
-			json_t *position = positions->child;
-			pos.x = atoi(position->text);
-			position = position->next;
-			pos.y = atoi(position->text);
-			CArrayPushBack(&kp.Positions, &pos);
-		}
-		CArrayPushBack(&m->u.Static.Keys, &kp);
-	}
-}
-static void LoadStaticExit(Mission *m, json_t *node, char *name)
-{
-	json_t *exitNode = json_find_first_label(node, name);
-	if (!exitNode || !exitNode->child)
-	{
-		return;
-	}
-	exitNode = exitNode->child;
-	LoadVec2i(&m->u.Static.Exit.Start, exitNode, "Start");
-	LoadVec2i(&m->u.Static.Exit.End, exitNode, "End");
 }

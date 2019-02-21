@@ -28,12 +28,18 @@
 #pragma once
 
 #include "c_array.h"
+#include "c_hashmap/hashmap.h"
+#include "json_utils.h"
+#include "map.h"
+#include "map_object.h"
 #include "mathc/mathc.h"
+#include "tile_class.h"
 
 typedef struct
 {
-	//map_t TileClasses;	// of TileClass
-	CArray Tiles;		// of char * (tile ids)
+	map_t TileClasses;	// of TileClass
+	CArray Tiles;		// of int (tile ids)
+	CArray Access;		// of int
 	CArray Items;		// of MapObjectPositions
 	CArray Characters;	// of CharacterPositions
 	CArray Objectives;	// of ObjectivePositions
@@ -45,3 +51,46 @@ typedef struct
 		struct vec2i End;
 	} Exit;
 } MissionStatic;
+
+bool MissionStaticTryLoadJSON(
+	MissionStatic *m, json_t *node, const int version);
+void MissionStaticFromMap(MissionStatic *m, const Map *map);
+void MissionStaticTerminate(MissionStatic *m);
+void MissionStaticSaveJSON(
+	const MissionStatic *m, const struct vec2i size, json_t *node);
+
+void MissionStaticCopy(MissionStatic *dst, const MissionStatic *src);
+
+int MissionStaticGetTile(
+	const MissionStatic *m, const struct vec2i size, const struct vec2i pos);
+const TileClass *MissionStaticGetTileClass(
+	const MissionStatic *m, const struct vec2i size, const struct vec2i pos);
+const TileClass *MissionStaticIdTileClass(
+	const MissionStatic *m, const int tile);
+bool MissionStaticTrySetTile(
+	MissionStatic *m, const struct vec2i size, const struct vec2i pos,
+	const int tile);
+void MissionStaticClearTile(
+	MissionStatic *m, const struct vec2i size, const struct vec2i pos);
+
+void MissionStaticLayout(
+	MissionStatic *m, const struct vec2i size, const struct vec2i oldSize);
+bool MissionStaticTryAddItem(
+	MissionStatic *m, const MapObject *mo, const struct vec2i pos);
+bool MissionStaticTryRemoveItemAt(MissionStatic *m, const struct vec2i pos);
+bool MissionStaticTryAddCharacter(
+	MissionStatic *m, const int ch, const struct vec2i pos);
+bool MissionStaticTryRemoveCharacterAt(
+	MissionStatic *m, const struct vec2i pos);
+bool MissionStaticTryAddObjective(
+	MissionStatic *m, const int idx, const int idx2, const struct vec2i pos);
+bool MissionStaticTryRemoveObjectiveAt(
+	MissionStatic *m, const struct vec2i pos);
+bool MissionStaticTryAddKey(
+	MissionStatic *m, const int k, const struct vec2i pos);
+bool MissionStaticTryRemoveKeyAt(MissionStatic *m, const struct vec2i pos);
+bool MissionStaticTrySetKey(
+	MissionStatic *m, const int k,
+	const struct vec2i size, const struct vec2i pos);
+bool MissionStaticTryUnsetKeyAt(
+	MissionStatic *m, const struct vec2i size, const struct vec2i pos);

@@ -49,6 +49,7 @@
 #pragma once
 
 #include "actors.h"
+#include "mission.h"
 
 void InitializeBadGuys(void);
 void CreateEnemies(void);

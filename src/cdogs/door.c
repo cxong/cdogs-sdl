@@ -64,8 +64,10 @@ static TWatch *CreateCloseDoorWatch(
 static Trigger *CreateOpenDoorTrigger(
 	MapBuilder *mb, const struct vec2i v,
 	const bool isHorizontal, const int doorGroupCount, const int keyFlags);
-void MapAddDoorGroup(MapBuilder *mb, const struct vec2i v, const int keyFlags)
+void MapAddDoorGroup(
+	MapBuilder *mb, const struct vec2i v, const int keyFlags)
 {
+	const TileClass *door = MapBuilderGetTile(mb, v);
 	const TileClass *tileLeftType = MapBuilderGetTile(mb, svec2i(v.x - 1, v.y));
 	const TileClass *tileRightType =
 		MapBuilderGetTile(mb, svec2i(v.x + 1, v.y));
@@ -88,10 +90,10 @@ void MapAddDoorGroup(MapBuilder *mb, const struct vec2i v, const int keyFlags)
 	}
 	char doorClassName[CDOGS_FILENAME_MAX];
 	DoorGetClassName(
-		doorClassName, mb->mission->DoorStyle, doorKey, isHorizontal);
+		doorClassName, door->Style, doorKey, isHorizontal);
 	const TileClass *doorClass = StrTileClass(doorClassName);
 	const TileClass *doorClassOpen = DoorGetClass(
-		mb->mission->DoorStyle, "open", isHorizontal);
+		door->Style, "open", isHorizontal);
 
 	// set up the door pics
 	for (int i = 0; i < doorGroupCount; i++)
@@ -113,14 +115,8 @@ void MapAddDoorGroup(MapBuilder *mb, const struct vec2i v, const int keyFlags)
 				"map gen error: entrance should be clear");
 			// Change the tile below to shadow, cast by this door
 			tileB->Class = TileClassesGetMaskedTile(
-				&gTileFloor,
-				tileB->Class->IsRoom ?
-					mb->mission->RoomStyle : mb->mission->FloorStyle,
-				"shadow",
-				tileB->Class->IsRoom ?
-					mb->mission->RoomMask : mb->mission->FloorMask,
-				mb->mission->AltMask
-			);
+				tileB->Class, tileB->Class->Style, "shadow",
+				tileB->Class->Mask, tileB->Class->MaskAlt);
 		}
 	}
 
@@ -203,6 +199,7 @@ static TWatch *CreateCloseDoorWatch(
 	a->a.Sound = StrSound("door_close");
 
 	// Close doors
+	const TileClass *door = MapBuilderGetTile(mb, v);
 	for (int i = 0; i < doorGroupCount; i++)
 	{
 		const struct vec2i vI = svec2i_add(v, svec2i_scale(dv, (float)i));
@@ -212,8 +209,7 @@ static TWatch *CreateCloseDoorWatch(
 		a->a.Event = GameEventNew(GAME_EVENT_TILE_SET);
 		a->a.Event.u.TileSet.Pos = Vec2i2Net(vI);
 		DoorGetClassName(
-			a->a.Event.u.TileSet.ClassName, mb->mission->DoorStyle, "open",
-			isHorizontal);
+			a->a.Event.u.TileSet.ClassName, door->Style, "open", isHorizontal);
 		strcpy(a->a.Event.u.TileSet.ClassAltName, classAltName);
 	}
 
@@ -232,11 +228,7 @@ static TWatch *CreateCloseDoorWatch(
 			const TileClass *t = MapBuilderGetTile(mb, vI2);
 			TileClassGetName(
 				a->a.Event.u.TileSet.ClassName,
-				"tile",
-				t->IsRoom ? mb->mission->RoomStyle : mb->mission->FloorStyle,
-				"shadow",
-				t->IsRoom ? mb->mission->RoomMask : mb->mission->FloorMask,
-				mb->mission->AltMask
+				t, t->Style, "shadow", t->Mask, t->MaskAlt
 			);
 		}
 	}
@@ -261,6 +253,7 @@ static Trigger *CreateOpenDoorTrigger(
 	a->u.index = t->id;
 
 	// Open doors
+	const TileClass *door = MapBuilderGetTile(mb, v);
 	for (int i = 0; i < doorGroupCount; i++)
 	{
 		const struct vec2i vI = svec2i_add(v, svec2i_scale(dv, (float)i));
@@ -269,14 +262,14 @@ static Trigger *CreateOpenDoorTrigger(
 		a->a.Event = GameEventNew(GAME_EVENT_TILE_SET);
 		a->a.Event.u.TileSet.Pos = Vec2i2Net(vI);
 		DoorGetClassName(
-			a->a.Event.u.TileSet.ClassName, mb->mission->DoorStyle, "open",
+			a->a.Event.u.TileSet.ClassName, door->Style, "open",
 			isHorizontal);
 		if (!isHorizontal && i == 0)
 		{
 			// special door cavity picture
 			DoorGetClassName(
 				a->a.Event.u.TileSet.ClassAltName,
-				mb->mission->DoorStyle, "wall", false);
+				door->Style, "wall", false);
 		}
 	}
 
@@ -291,15 +284,11 @@ static Trigger *CreateOpenDoorTrigger(
 			// Remove shadows below doors
 			a->Type = ACTION_EVENT;
 			a->a.Event = GameEventNew(GAME_EVENT_TILE_SET);
-			const bool isRoom = MapBuilderGetTile(mb, vIAside)->IsRoom;
+			const TileClass *tc = MapBuilderGetTile(mb, vIAside);
 			a->a.Event.u.TileSet.Pos = Vec2i2Net(vIAside);
 			TileClassGetName(
 				a->a.Event.u.TileSet.ClassName,
-				"tile",
-				isRoom ? mb->mission->RoomStyle : mb->mission->FloorStyle,
-				"normal",
-				isRoom ? mb->mission->RoomMask : mb->mission->FloorMask,
-				mb->mission->AltMask
+				tc, tc->Style, "normal", tc->Mask, tc->MaskAlt
 			);
 		}
 	}
@@ -370,7 +359,7 @@ static void DoorGetClassName(
 	char type[256];
 	DoorGetTypeName(type, key, isHorizontal);
 	// If the key is "wall", it doesn't include orientation
-	TileClassGetName(buf, "door", style, type, colorWhite, colorWhite);
+	TileClassGetName(buf, &gTileDoor, style, type, colorWhite, colorWhite);
 }
 void DoorAddClass(
 	TileClasses *c, PicManager *pm,

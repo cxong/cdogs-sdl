@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017, Cong Xu
+    Copyright (c) 2013-2017, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -103,27 +103,28 @@ void MissionInit(Mission *m)
 {
 	memset(m, 0, sizeof *m);
 	// Initialise with default styles
-	strcpy(m->WallStyle, IntWallStyle(0));
-	strcpy(m->FloorStyle, IntFloorStyle(0));
-	strcpy(m->RoomStyle, IntRoomStyle(0));
 	strcpy(m->ExitStyle, IntExitStyle(0));
 	strcpy(m->KeyStyle, IntKeyStyle(0));
-	strcpy(m->DoorStyle, IntDoorStyle(0));
-	m->WallMask = colorBattleshipGrey;
-	m->FloorMask = colorGravel;
-	m->RoomMask = colorDoveGray;
-	m->AltMask = colorOfficeGreen;
 	CArrayInit(&m->Objectives, sizeof(Objective));
 	CArrayInit(&m->Enemies, sizeof(int));
 	CArrayInit(&m->SpecialChars, sizeof(int));
 	CArrayInit(&m->MapObjectDensities, sizeof(MapObjectDensity));
 	CArrayInit(&m->Weapons, sizeof(const WeaponClass *));
+	m->Type = MAPTYPE_CLASSIC;
+	TileClassInit(
+		&m->u.Classic.TileClasses.Wall, &gPicManager, &gTileWall,
+		IntWallStyle(0), NULL, colorBattleshipGrey, colorOfficeGreen);
+	TileClassInit(
+		&m->u.Classic.TileClasses.Floor, &gPicManager, &gTileFloor,
+		IntFloorStyle(0), NULL, colorGravel, colorOfficeGreen);
+	TileClassInit(
+		&m->u.Classic.TileClasses.Room, &gPicManager, &gTileRoom,
+		IntRoomStyle(0), NULL, colorDoveGray, colorOfficeGreen);
+	TileClassInit(
+		&m->u.Classic.TileClasses.Door, &gPicManager, &gTileDoor,
+		IntDoorStyle(0), NULL, colorWhite, colorWhite);
 }
 
-static void MapObjectPositionsCopy(CArray *dst, const CArray *src);
-static void CharacterPositionsCopy(CArray *dst, const CArray *src);
-static void ObjectivePositionsCopy(CArray *dst, const CArray *src);
-static void KeyPositionsCopy(CArray *dst, const CArray *src);
 void MissionCopy(Mission *dst, const Mission *src)
 {
 	if (src == NULL)
@@ -143,12 +144,8 @@ void MissionCopy(Mission *dst, const Mission *src)
 	dst->Type = src->Type;
 	dst->Size = src->Size;
 
-	strcpy(dst->WallStyle, src->WallStyle);
-	strcpy(dst->FloorStyle, src->FloorStyle);
-	strcpy(dst->RoomStyle, src->RoomStyle);
 	strcpy(dst->ExitStyle, src->ExitStyle);
 	strcpy(dst->KeyStyle, src->KeyStyle);
-	strcpy(dst->DoorStyle, src->DoorStyle);
 
 	CA_FOREACH(const Objective, srco, src->Objectives)
 		Objective dsto;
@@ -164,72 +161,46 @@ void MissionCopy(Mission *dst, const Mission *src)
 
 	memcpy(dst->Song, src->Song, sizeof dst->Song);
 
-	dst->WallMask = src->WallMask;
-	dst->FloorMask = src->FloorMask;
-	dst->RoomMask = src->RoomMask;
-	dst->AltMask = src->AltMask;
-
-	switch (dst->Type)
+	memcpy(&dst->u, &src->u, sizeof dst->u);
+	switch (src->Type)
 	{
-	case MAPTYPE_STATIC:
-		CArrayCopy(&dst->u.Static.Tiles, &src->u.Static.Tiles);
-		MapObjectPositionsCopy(&dst->u.Static.Items, &src->u.Static.Items);
-		CharacterPositionsCopy(&dst->u.Static.Characters, &src->u.Static.Characters);
-		ObjectivePositionsCopy(&dst->u.Static.Objectives, &src->u.Static.Objectives);
-		KeyPositionsCopy(&dst->u.Static.Keys, &src->u.Static.Keys);
-
-		dst->u.Static.Start = src->u.Static.Start;
-		dst->u.Static.Exit = src->u.Static.Exit;
+	case MAPTYPE_CLASSIC:
+		TileClassCopy(
+			&dst->u.Classic.TileClasses.Door,
+			&src->u.Classic.TileClasses.Door);
+		TileClassCopy(
+			&dst->u.Classic.TileClasses.Floor,
+			&src->u.Classic.TileClasses.Floor);
+		TileClassCopy(
+			&dst->u.Classic.TileClasses.Wall,
+			&src->u.Classic.TileClasses.Wall);
+		TileClassCopy(
+			&dst->u.Classic.TileClasses.Room,
+			&src->u.Classic.TileClasses.Room);
 		break;
+
+	case MAPTYPE_STATIC:
+		MissionStaticCopy(&dst->u.Static, &src->u.Static);
+		break;
+
+	case MAPTYPE_CAVE:
+		TileClassCopy(
+			&dst->u.Cave.TileClasses.Door,
+			&src->u.Cave.TileClasses.Door);
+		TileClassCopy(
+			&dst->u.Cave.TileClasses.Floor,
+			&src->u.Cave.TileClasses.Floor);
+		TileClassCopy(
+			&dst->u.Cave.TileClasses.Wall,
+			&src->u.Cave.TileClasses.Wall);
+		TileClassCopy(
+			&dst->u.Cave.TileClasses.Room,
+			&src->u.Cave.TileClasses.Room);
+		break;
+
 	default:
-		memcpy(&dst->u, &src->u, sizeof dst->u);
 		break;
 	}
-}
-static void MapObjectPositionsCopy(CArray *dst, const CArray *src)
-{
-	CArrayInit(dst, src->elemSize);
-	CA_FOREACH(const MapObjectPositions, p, *src)
-		MapObjectPositions pCopy;
-		memset(&pCopy, 0, sizeof pCopy);
-		pCopy.M = p->M;
-		CArrayCopy(&pCopy.Positions, &p->Positions);
-		CArrayPushBack(dst, &pCopy);
-	CA_FOREACH_END()
-}
-static void CharacterPositionsCopy(CArray *dst, const CArray *src)
-{
-	CArrayInit(dst, src->elemSize);
-	CA_FOREACH(const CharacterPositions, p, *src)
-		CharacterPositions pCopy;
-		memset(&pCopy, 0, sizeof pCopy);
-		pCopy.Index = p->Index;
-		CArrayCopy(&pCopy.Positions, &p->Positions);
-		CArrayPushBack(dst, &pCopy);
-	CA_FOREACH_END()
-}
-static void ObjectivePositionsCopy(CArray *dst, const CArray *src)
-{
-	CArrayInit(dst, src->elemSize);
-	CA_FOREACH(const ObjectivePositions, p, *src)
-		ObjectivePositions pCopy;
-		memset(&pCopy, 0, sizeof pCopy);
-		pCopy.Index = p->Index;
-		CArrayCopy(&pCopy.Positions, &p->Positions);
-		CArrayCopy(&pCopy.Indices, &p->Indices);
-		CArrayPushBack(dst, &pCopy);
-	CA_FOREACH_END()
-}
-static void KeyPositionsCopy(CArray *dst, const CArray *src)
-{
-	CArrayInit(dst, src->elemSize);
-	CA_FOREACH(const KeyPositions, p, *src)
-		KeyPositions pCopy;
-		memset(&pCopy, 0, sizeof pCopy);
-		pCopy.Index = p->Index;
-		CArrayCopy(&pCopy.Positions, &p->Positions);
-		CArrayPushBack(dst, &pCopy);
-	CA_FOREACH_END()
 }
 
 void MissionTerminate(Mission *m)
@@ -248,15 +219,13 @@ void MissionTerminate(Mission *m)
 	switch (m->Type)
 	{
 	case MAPTYPE_CLASSIC:
+		MissionTileClassesTerminate(&m->u.Classic.TileClasses);
 		break;
 	case MAPTYPE_STATIC:
-		CArrayTerminate(&m->u.Static.Tiles);
-		CArrayTerminate(&m->u.Static.Items);
-		CArrayTerminate(&m->u.Static.Characters);
-		CArrayTerminate(&m->u.Static.Objectives);
-		CArrayTerminate(&m->u.Static.Keys);
+		MissionStaticTerminate(&m->u.Static);
 		break;
 	case MAPTYPE_CAVE:
+		MissionTileClassesTerminate(&m->u.Cave.TileClasses);
 		break;
 	default:
 		CASSERT(false, "unknown map type");
@@ -326,6 +295,23 @@ void SetupMission(Mission *m, struct MissionOptions *mo, int missionIndex)
 	SetupObjectives(m);
 	SetupBadguysForMission(m);
 	SetupWeapons(&mo->Weapons, &m->Weapons);
+}
+void MissionSetupTileClasses(PicManager *pm, const MissionTileClasses *mtc)
+{
+	SetupWallTileClasses(
+		pm, mtc->Wall.Style, mtc->Wall.Mask, mtc->Wall.MaskAlt);
+	SetupFloorTileClasses(
+		pm, &mtc->Floor, mtc->Floor.Style, mtc->Floor.Mask, mtc->Floor.MaskAlt);
+	SetupFloorTileClasses(
+		pm, &mtc->Room, mtc->Room.Style, mtc->Room.Mask, mtc->Room.MaskAlt);
+	SetupDoorTileClasses(pm, mtc->Door.Style);
+}
+void MissionTileClassesTerminate(MissionTileClasses *mtc)
+{
+	TileClassTerminate(&mtc->Wall);
+	TileClassTerminate(&mtc->Floor);
+	TileClassTerminate(&mtc->Room);
+	TileClassTerminate(&mtc->Door);
 }
 
 static int ObjectiveActorsAlive(const int objective);

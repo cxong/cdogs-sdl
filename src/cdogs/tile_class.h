@@ -52,6 +52,9 @@ typedef enum
 	TILE_CLASS_NOTHING,
 } TileClassType;
 
+const char *TileClassTypeStr(const TileClassType t);
+TileClassType StrTileClassType(const char *s);
+
 typedef struct
 {
 	char *Name;
@@ -83,7 +86,14 @@ extern TileClass gTileDoor;
 void TileClassesInit(TileClasses *c);
 void TileClassesClearCustom(TileClasses *c);
 void TileClassesTerminate(TileClasses *c);
+void TileClassDestroy(any_t data);
+void TileClassTerminate(TileClass *tc);
 
+void TileClassInit(
+	TileClass *t, const PicManager *pm, const TileClass *base,
+	const char *style, const char *type,
+	const color_t mask, const color_t maskAlt);
+void TileClassCopy(TileClass *dst, const TileClass *src);
 const TileClass *StrTileClass(const char *name);
 const TileClass *TileClassesGetMaskedTile(
 	const TileClass *baseClass, const char *style, const char *type,
@@ -92,8 +102,9 @@ TileClass *TileClassesAdd(
 	TileClasses *c, const PicManager *pm, const TileClass *baseClass,
 	const char *style, const char *type,
 	const color_t mask, const color_t maskAlt);
+const Pic *TileClassGetPic(const PicManager *pm, const TileClass *tc);
 void TileClassGetName(
-	char *buf, const char *name, const char *style, const char *type,
+	char *buf, const TileClass *base, const char *style, const char *type,
 	const color_t mask, const color_t maskAlt);
 const TileClass *TileClassesGetExit(
 	TileClasses *c, PicManager *pm,	const char *style, const bool isShadow);

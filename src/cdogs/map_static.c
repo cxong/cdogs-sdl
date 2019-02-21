@@ -38,17 +38,19 @@
 #include "net_util.h"
 
 
+static int AddTileClass(any_t data, any_t item);
 void MapStaticLoad(MapBuilder *mb)
 {
-	// Tiles
-	struct vec2i v;
-	for (v.y = 0; v.y < mb->Map->Size.y; v.y++)
+	// Tile classes
+	if (hashmap_iterate(mb->mission->u.Static.TileClasses, AddTileClass, NULL) != MAP_OK)
 	{
-		for (v.x = 0; v.x < mb->Map->Size.x; v.x++)
-		{
-			MapStaticLoadTile(mb, v);
-		}
+		CASSERT(false, "failed to add static tile classes");
 	}
+
+	// Tiles
+	RECT_FOREACH(Rect2iNew(svec2i_zero(), mb->Map->Size))
+		MapStaticLoadTile(mb, _v);
+	RECT_FOREACH_END()
 	
 	// Exit area
 	if (!svec2i_is_zero(mb->mission->u.Static.Exit.Start) &&
@@ -58,22 +60,44 @@ void MapStaticLoad(MapBuilder *mb)
 		mb->Map->ExitEnd = mb->mission->u.Static.Exit.End;
 	}
 }
+static int AddTileClass(any_t data, any_t item)
+{
+	UNUSED(data);
+	TileClass *t = item;
+	TileClassesAdd(
+		&gTileClasses, &gPicManager, t, t->Style, t->StyleType,
+		t->Mask, t->MaskAlt);
+	switch (t->Type)
+	{
+		case TILE_CLASS_DOOR:
+			SetupDoorTileClasses(&gPicManager, t->Style);
+			break;
+		case TILE_CLASS_WALL:
+			SetupWallTileClasses(&gPicManager, t->Style, t->Mask, t->MaskAlt);
+			break;
+		case TILE_CLASS_FLOOR:
+			SetupFloorTileClasses(
+				&gPicManager, t, t->Style, t->Mask, t->MaskAlt);
+			break;
+		default:
+			break;
+	}
+	return MAP_OK;
+}
 
 void MapStaticLoadTile(MapBuilder *mb, const struct vec2i v)
 {
 	if (!MapIsTileIn(mb->Map, v)) return;
 	const int idx = v.y * mb->Map->Size.x + v.x;
-	uint16_t tile =
-		*(uint16_t *)CArrayGet(&mb->mission->u.Static.Tiles, idx);
-	uint16_t tileAccess = tile & MAP_ACCESSBITS;
-	tile &= MAP_MASKACCESS;
+	int tileAccess = *(int *)CArrayGet(&mb->mission->u.Static.Access, idx);
 	if (!AreKeysAllowed(gCampaign.Entry.Mode))
 	{
 		tileAccess = 0;
 	}
-	const TileClass *t = MapBuildGetTileFromType(tile);
-	MapBuilderSetTile(mb, v, t);
-	MapBuildSetAccess(mb, v, tileAccess);
+	const TileClass *tc = MissionStaticGetTileClass(
+		&mb->mission->u.Static, mb->Map->Size, v);
+	MapBuilderSetTile(mb, v, tc);
+	MapBuildSetAccess(mb, v, (uint16_t)tileAccess);
 }
 
 static void AddCharacters(const CArray *characters);

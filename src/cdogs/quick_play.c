@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2017 Cong Xu
+    Copyright (c) 2013-2017, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -222,6 +222,8 @@ static void SetupQuickPlayEnemies(
 	}
 }
 
+static void RandomMissionTileClasses(
+	MissionTileClasses *mtc, const PicManager *pm);
 static RoomParams RandomRoomParams(void);
 static void RandomStyle(char *style, const CArray *styleNames);
 static color_t RandomBGColor(void);
@@ -230,12 +232,8 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 	Mission *m;
 	CMALLOC(m, sizeof *m);
 	MissionInit(m);
-	RandomStyle(m->WallStyle, &gPicManager.wallStyleNames);
-	RandomStyle(m->FloorStyle, &gPicManager.tileStyleNames);
-	RandomStyle(m->RoomStyle, &gPicManager.tileStyleNames);
 	RandomStyle(m->ExitStyle, &gPicManager.exitStyleNames);
 	RandomStyle(m->KeyStyle, &gPicManager.keyStyleNames);
-	RandomStyle(m->DoorStyle, &gPicManager.doorStyleNames);
 	m->Size = GenerateQuickPlayMapSize(
 		ConfigGetEnum(&gConfig, "QuickPlay.MapSize"));
 	for (;;)
@@ -250,6 +248,7 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 	switch (m->Type)
 	{
 	case MAPTYPE_CLASSIC:
+		RandomMissionTileClasses(&m->u.Classic.TileClasses, &gPicManager);
 		m->u.Classic.Walls = GenerateQuickPlayParam(
 			ConfigGetEnum(&gConfig, "QuickPlay.WallCount"), 0, 5, 15, 30);
 		m->u.Classic.WallLength = GenerateQuickPlayParam(
@@ -267,6 +266,7 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 		break;
 	case MAPTYPE_CAVE:
 		// TODO: quickplay configs for cave type
+		RandomMissionTileClasses(&m->u.Cave.TileClasses, &gPicManager);
 		m->u.Cave.FillPercent = rand() % 40 + 10;
 		m->u.Cave.Repeat = rand() % 6;
 		m->u.Cave.R1 = rand() % 2 + 4;
@@ -304,10 +304,6 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 			CArrayPushBack(&m->Weapons, &wc);
 		}
 	CA_FOREACH_END()
-	m->WallMask = RandomBGColor();
-	m->FloorMask = RandomBGColor();
-	m->RoomMask = RandomBGColor();
-	m->AltMask = RandomBGColor();
 
 	CFREE(setting->Title);
 	CSTRDUP(setting->Title, "Quick play");
@@ -317,6 +313,26 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 	CSTRDUP(setting->Description, "");
 	CArrayPushBack(&setting->Missions, m);
 	CFREE(m);
+}
+static void RandomMissionTileClasses(
+	MissionTileClasses *mtc, const PicManager *pm)
+{
+	char style[CDOGS_FILENAME_MAX];
+	RandomStyle(style, &pm->wallStyleNames);
+	TileClassInit(
+		&mtc->Wall, pm, &gTileWall, style, NULL,
+		RandomBGColor(), RandomBGColor());
+	RandomStyle(style, &pm->tileStyleNames);
+	TileClassInit(
+		&mtc->Floor, pm, &gTileFloor, style, NULL,
+		RandomBGColor(), RandomBGColor());
+	RandomStyle(style, &pm->tileStyleNames);
+	TileClassInit(
+		&mtc->Room, pm, &gTileRoom, style, NULL,
+		RandomBGColor(), RandomBGColor());
+	RandomStyle(style, &pm->doorStyleNames);
+	TileClassInit(
+		&mtc->Door, pm, &gTileRoom, style, NULL, colorWhite, colorWhite);
 }
 static RoomParams RandomRoomParams(void)
 {

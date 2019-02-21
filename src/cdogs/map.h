@@ -51,7 +51,6 @@
 #include <stdbool.h>
 
 #include "map_object.h"
-#include "mission.h"
 #include "pic.h"
 #include "thing.h"
 #include "tile.h"

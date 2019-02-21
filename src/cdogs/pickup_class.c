@@ -31,7 +31,7 @@
 #include "game_events.h"
 #include "json_utils.h"
 #include "log.h"
-#include "map.h"
+#include "mission.h"
 #include "powerup.h"
 
 

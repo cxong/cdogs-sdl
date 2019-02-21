@@ -108,30 +108,38 @@ bool MapGetRoomOverlapSize(
 	const MapBuilder *mb, const Rect2i r, uint16_t *overlapAccess);
 bool MapIsLessThanTwoWallOverlaps(
 	const MapBuilder *mb, struct vec2i pos, struct vec2i size);
-void MapMakeSquare(MapBuilder *mb, struct vec2i pos, struct vec2i size);
+void MapMakeSquare(MapBuilder *mb, const Rect2i r, const TileClass *tc);
 struct vec2i MapGetRoomSize(const RoomParams r, const int doorMin);
 void MapMakeRoom(
 	MapBuilder *mb, const struct vec2i pos, const struct vec2i size,
-	const bool walls);
-void MapMakeRoomWalls(MapBuilder *mb, const RoomParams r);
+	const bool walls, const TileClass *wall, const TileClass *room);
+void MapMakeRoomWalls(
+	MapBuilder *mb, const RoomParams r, const TileClass *wall);
 bool MapTryBuildWall(
-	MapBuilder *mb, const bool isRoom, const int pad, const int wallLength);
+	MapBuilder *mb, const bool isRoom, const int pad, const int wallLength,
+	const TileClass *wall);
 void MapSetRoomAccessMask(
 	MapBuilder *mb, const struct vec2i pos, const struct vec2i size,
 	const uint16_t accessMask);
 void MapSetRoomAccessMaskOverlap(
 	MapBuilder *mb, CArray *rooms, const uint16_t accessMask);
 void MapPlaceDoors(
-	MapBuilder *mb, struct vec2i pos, struct vec2i size,
-	int hasDoors, int doors[4], int doorMin, int doorMax,
-	uint16_t accessMask);
-void MapMakePillar(MapBuilder *mb, struct vec2i pos, struct vec2i size);
+	MapBuilder *mb, const Rect2i r, const bool hasDoors, const bool doors[4],
+	const int doorMin, const int doorMax, const uint16_t accessMask,
+	const TileClass *door, const TileClass *floor);
 
-uint16_t MapGetTileType(const Map *map, const struct vec2i pos);
-const TileClass *MapBuildGetTileFromType(const uint16_t tile);
 void MapBuildTile(
 	Map *m, const Mission *mission, const struct vec2i pos,
 	const TileClass *tile);
 
 uint16_t GenerateAccessMask(int *accessLevel);
 void MapGenerateRandomExitArea(Map *map);
+
+void SetupWallTileClasses(
+	PicManager *pm, const char *style,
+	const color_t mask, const color_t altMask);
+void SetupFloorTileClasses(
+	PicManager *pm, const TileClass *base, const char *style,
+	const color_t mask, const color_t altMask);
+void SetupDoorTileClasses(PicManager *pm, const char *style);
+

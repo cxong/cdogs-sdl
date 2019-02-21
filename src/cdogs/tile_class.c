@@ -57,6 +57,27 @@ TileClass gTileDoor = {
 	false, true, true, true, TILE_CLASS_DOOR,
 };
 
+const char *TileClassTypeStr(const TileClassType t)
+{
+	switch (t)
+	{
+		T2S(TILE_CLASS_FLOOR, "Floor");
+		T2S(TILE_CLASS_WALL, "Wall");
+		T2S(TILE_CLASS_DOOR, "Door");
+	default:
+		return "";
+	}
+}
+TileClassType StrTileClassType(const char *s)
+{
+	S2T(TILE_CLASS_FLOOR, "Floor");
+	S2T(TILE_CLASS_WALL, "Wall");
+	S2T(TILE_CLASS_DOOR, "Door");
+	S2T(TILE_CLASS_NOTHING, "");
+	CASSERT(false, "unknown tile class type");
+	return TILE_CLASS_NOTHING;
+}
+
 void TileClassesInit(TileClasses *c)
 {
 	c->classes = hashmap_new();
@@ -67,21 +88,31 @@ void TileClassesClearCustom(TileClasses *c)
 	TileClassesTerminate(c);
 	TileClassesInit(c);
 }
-static void TileClassDestroy(any_t data);
 void TileClassesTerminate(TileClasses *c)
 {
 	hashmap_destroy(c->classes, TileClassDestroy);
 	hashmap_destroy(c->customClasses, TileClassDestroy);
 }
-static void TileClassDestroy(any_t data)
+void TileClassDestroy(any_t data)
 {
-	TileClass *c = data;
-	CFREE(c->Name);
-	CFREE(c->Style);
-	CFREE(c->StyleType);
-	CFREE(c);
+	TileClass *tc = data;
+	TileClassTerminate(tc);
+	CFREE(tc);
+}
+void TileClassTerminate(TileClass *tc)
+{
+	CFREE(tc->Name);
+	CFREE(tc->Style);
+	CFREE(tc->StyleType);
 }
 
+void TileClassCopy(TileClass *dst, const TileClass *src)
+{
+	memcpy(dst, src, sizeof *dst);
+	if (src->Name) CSTRDUP(dst->Name, src->Name);
+	if (src->Style) CSTRDUP(dst->Style, src->Style);
+	if (src->StyleType) CSTRDUP(dst->StyleType, src->StyleType);
+}
 const TileClass *StrTileClass(const char *name)
 {
 	if (name == NULL || strlen(name) == 0)
@@ -104,12 +135,28 @@ const TileClass *StrTileClass(const char *name)
 	return &gTileNothing;
 }
 
+void TileClassInit(
+	TileClass *t, const PicManager *pm, const TileClass *base,
+	const char *style, const char *type,
+	const color_t mask, const color_t maskAlt)
+{
+	memcpy(t, base, sizeof *t);
+	CSTRDUP(t->Name, base->Name);
+	CSTRDUP(t->Style, style);
+	if (type && strlen(type))
+	{
+		CSTRDUP(t->StyleType, type);
+	}
+	t->Mask = mask;
+	t->MaskAlt = maskAlt;
+	t->Pic = TileClassGetPic(pm, t);
+}
 const TileClass *TileClassesGetMaskedTile(
 	const TileClass *baseClass, const char *style, const char *type,
 	const color_t mask, const color_t maskAlt)
 {
 	char buf[256];
-	TileClassGetName(buf, baseClass->Name, style, type, mask, maskAlt);
+	TileClassGetName(buf, baseClass, style, type, mask, maskAlt);
 	return StrTileClass(buf);
 }
 TileClass *TileClassesAdd(
@@ -118,15 +165,11 @@ TileClass *TileClassesAdd(
 	const color_t mask, const color_t maskAlt)
 {
 	TileClass *t;
-	CCALLOC(t, sizeof *t);
-	memcpy(t, baseClass, sizeof *t);
-	CSTRDUP(t->Name, baseClass->Name);
-	CSTRDUP(t->Style, style);
-	CSTRDUP(t->StyleType, type);
-	char buf[CDOGS_PATH_MAX];
-	TileClassGetName(buf, baseClass->Name, style, type, mask, maskAlt);
-	t->Pic = PicManagerGetPic(pm, buf);
+	CMALLOC(t, sizeof *t);
+	TileClassInit(t, pm, baseClass, style, type, mask, maskAlt);
 
+	char buf[CDOGS_PATH_MAX];
+	TileClassGetName(buf, t, style, type, mask, maskAlt);
 	const int error = hashmap_put(c->customClasses, buf, t);
 	if (error != MAP_OK)
 	{
@@ -136,14 +179,29 @@ TileClass *TileClassesAdd(
 	return t;
 }
 void TileClassGetName(
-	char *buf, const char *name, const char *style, const char *type,
+	char *buf, const TileClass *base, const char *style, const char *type,
 	const color_t mask, const color_t maskAlt)
 {
 	char maskName[16];
 	ColorStr(maskName, mask);
 	char maskAltName[16];
 	ColorStr(maskAltName, maskAlt);
-	sprintf(buf, "%s/%s/%s/%s/%s", name, style, type, maskName, maskAltName);
+	sprintf(
+		buf, "%s%s/%s/%s/%s/%s",
+		TileClassTypeStr(base->Type), base->IsRoom ? "room" : "",
+		style, type, maskName, maskAltName);
+}
+const Pic *TileClassGetPic(const PicManager *pm, const TileClass *tc)
+{
+	char buf[CDOGS_PATH_MAX];
+	char maskName[16];
+	ColorStr(maskName, tc->Mask);
+	char maskAltName[16];
+	ColorStr(maskAltName, tc->MaskAlt);
+	sprintf(
+		buf, "%s/%s/%s/%s/%s",
+		tc->Name, tc->Style, tc->StyleType, maskName, maskAltName);
+	return PicManagerGetPic(pm, buf);
 }
 
 const TileClass *TileClassesGetExit(
@@ -151,7 +209,7 @@ const TileClass *TileClassesGetExit(
 {
 	char buf[256];
 	const char *type = isShadow ? "shadow" : "normal";
-	TileClassGetName(buf, "exits", style, type, colorWhite, colorWhite);
+	TileClassGetName(buf, &gTileExit, style, type, colorWhite, colorWhite);
 	const TileClass *t = StrTileClass(buf);
 	if (t != &gTileNothing)
 	{

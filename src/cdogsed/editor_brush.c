@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -74,8 +74,7 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 	bool useSimpleHighlight = true;
 	switch (b->Type)
 	{
-	case BRUSHTYPE_POINT:	// fallthrough
-	case BRUSHTYPE_ROOM_PAINTER:
+	case BRUSHTYPE_POINT:
 		useSimpleHighlight = true;
 		break;
 	case BRUSHTYPE_LINE:
@@ -200,12 +199,11 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 	}
 }
 
-static void SetTile(Mission *m, struct vec2i pos, const uint16_t tile)
+static void SetTile(Mission *m, const struct vec2i pos, const int tile)
 {
-	if (MissionTrySetTile(m, pos, tile))
+	if (MissionStaticTrySetTile(&m->u.Static, m->Size, pos, tile))
 	{
-		const TileClass *t = MapBuildGetTileFromType(tile);
-		MapBuildTile(&gMap, m, pos, t);
+		MapBuildTile(&gMap, m, pos, tile);
 	}
 }
 
@@ -245,37 +243,14 @@ static void EditorBrushPaintLine(EditorBrush *b, Mission *m)
 	b->IsPainting = 1;
 	b->LastPos = b->Pos;
 }
-// Paint all the edge tiles as a wall, then paint the interior as room tiles
-// TODO: change to generic tile painter
-static void EditorBrushPaintRoom(EditorBrush *b, Mission *m)
-{
-	struct vec2i v;
-	for (v.y = 0; v.y < b->BrushSize; v.y++)
-	{
-		for (v.x = 0; v.x < b->BrushSize; v.x++)
-		{
-			// TODO: tile classes
-			uint16_t tile = MAP_ROOM;
-			if (v.x == 0 || v.x == b->BrushSize - 1 ||
-				v.y == 0 || v.y == b->BrushSize - 1)
-			{
-				tile = MAP_WALL;
-			}
-			const struct vec2i pos = svec2i_add(b->Pos, v);
-			SetTile(m, pos, tile);
-		}
-	}
-	b->IsPainting = true;
-	b->LastPos = b->Pos;
-}
 typedef struct
 {
 	Mission *m;
-	uint16_t fromType;
-	uint16_t toType;
+	int fromType;
+	int toType;
 } PaintFloodFillData;
-static void MissionFillTile(void *data, struct vec2i v);
-static bool MissionIsTileSame(void *data, struct vec2i v);
+static void MissionFillTile(void *data, const struct vec2i v);
+static bool MissionIsTileSame(void *data, const struct vec2i v);
 EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 {
 	if (!b->IsPainting)
@@ -296,9 +271,6 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	case BRUSHTYPE_SET_EXIT:
 		// don't paint until the end
 		break;
-	case BRUSHTYPE_ROOM_PAINTER:
-		EditorBrushPaintRoom(b, m);
-		return EDITOR_RESULT_CHANGED;
 	case BRUSHTYPE_SELECT:
 		// Perform state changes if we've started painting
 		if (!b->IsPainting)
@@ -323,26 +295,33 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 		// another type
 		// Don't paint if target already same type
 		// Special case: don't flood-fill doors
-		if ((MissionGetTile(m, b->Pos) & MAP_MASKACCESS) != b->PaintType &&
-			b->PaintType != MAP_DOOR)
+		if (MissionStaticIdTileClass(&m->u.Static, b->PaintType)->Type == TILE_CLASS_DOOR)
 		{
+			break;
+		}
+		{
+			const int tile =
+				MissionStaticGetTile(&m->u.Static, m->Size, b->Pos);
+			if (tile == b->PaintType)
+			{
+				break;
+			}
 			FloodFillData data;
 			data.Fill = MissionFillTile;
 			data.IsSame = MissionIsTileSame;
 			PaintFloodFillData pData;
 			pData.m = m;
-			pData.fromType = MissionGetTile(m, b->Pos) & MAP_MASKACCESS;
+			pData.fromType = tile;
 			pData.toType = b->PaintType;
 			data.data = &pData;
-			if (CFloodFill(b->Pos, &data))
+			if (!CFloodFill(b->Pos, &data))
 			{
-				return EDITOR_RESULT_CHANGED;
+				break;
 			}
+			return EDITOR_RESULT_CHANGED;
 		}
-		return EDITOR_RESULT_NONE;
 	case BRUSHTYPE_SET_PLAYER_START:
-		if (MissionGetTile(m, b->Pos) == MAP_ROOM ||
-			MissionGetTile(m, b->Pos) == MAP_FLOOR)
+		if (TileIsClear(MapGetTile(&gMap, b->Pos)))
 		{
 			m->u.Static.Start = b->Pos;
 			return EDITOR_RESULT_CHANGED;
@@ -351,14 +330,14 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	case BRUSHTYPE_ADD_ITEM:
 		if (isMain)
 		{
-			if (MissionStaticTryAddItem(m, b->u.MapObject, b->Pos))
+			if (MissionStaticTryAddItem(&m->u.Static, b->u.MapObject, b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}
 		}
 		else
 		{
-			if (MissionStaticTryRemoveItemAt(m, b->Pos))
+			if (MissionStaticTryRemoveItemAt(&m->u.Static, b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}
@@ -367,14 +346,15 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	case BRUSHTYPE_ADD_CHARACTER:
 		if (isMain)
 		{
-			if (MissionStaticTryAddCharacter(m, b->u.ItemIndex, b->Pos))
+			if (MissionStaticTryAddCharacter(
+				&m->u.Static, b->u.ItemIndex, b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}
 		}
 		else
 		{
-			if (MissionStaticTryRemoveCharacterAt(m, b->Pos))
+			if (MissionStaticTryRemoveCharacterAt(&m->u.Static, b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}
@@ -384,14 +364,14 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 		if (isMain)
 		{
 			if (MissionStaticTryAddObjective(
-				m, b->u.ItemIndex, b->Index2, b->Pos))
+				&m->u.Static, b->u.ItemIndex, b->Index2, b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}
 		}
 		else
 		{
-			if (MissionStaticTryRemoveObjectiveAt(m, b->Pos))
+			if (MissionStaticTryRemoveObjectiveAt(&m->u.Static, b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}
@@ -400,14 +380,14 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	case BRUSHTYPE_ADD_KEY:
 		if (isMain)
 		{
-			if (MissionStaticTryAddKey(m, b->u.ItemIndex, b->Pos))
+			if (MissionStaticTryAddKey(&m->u.Static, b->u.ItemIndex, b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}
 		}
 		else
 		{
-			if (MissionStaticTryRemoveKeyAt(m, b->Pos))
+			if (MissionStaticTryRemoveKeyAt(&m->u.Static, b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}
@@ -416,35 +396,36 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	case BRUSHTYPE_SET_KEY:
 		if (isMain || b->u.ItemIndex > 0)
 		{
-			if (MissionStaticTrySetKey(m, b->u.ItemIndex, b->Pos))
+			if (MissionStaticTrySetKey(
+				&m->u.Static, b->u.ItemIndex, m->Size, b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}
 		}
 		else
 		{
-			if (MissionStaticTryUnsetKeyAt(m, b->Pos))
+			if (MissionStaticTryUnsetKeyAt(&m->u.Static, m->Size, b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}
 		}
 		break;
 	default:
-		assert(0 && "unknown brush type");
+		CASSERT(false, "unknown brush type");
 		break;
 	}
 	b->IsPainting = 1;
 	return EDITOR_RESULT_NONE;
 }
-static void MissionFillTile(void *data, struct vec2i v)
+static void MissionFillTile(void *data, const struct vec2i v)
 {
 	PaintFloodFillData *pData = data;
 	SetTile(pData->m, v, pData->toType);
 }
-static bool MissionIsTileSame(void *data, struct vec2i v)
+static bool MissionIsTileSame(void *data, const struct vec2i v)
 {
 	PaintFloodFillData *pData = data;
-	return (MissionGetTile(pData->m, v) & MAP_MASKACCESS) == pData->fromType;
+	return MissionStaticGetTile(&pData->m->u.Static, pData->m->Size, v) == pData->fromType;
 }
 static void EditorBrushPaintBox(
 	EditorBrush *b, Mission *m, uint16_t lineType, uint16_t fillType)
@@ -516,10 +497,6 @@ EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 			EditorBrushPaintBox(b, m, MAP_WALL, MAP_ROOM);
 			result = EDITOR_RESULT_CHANGED;
 			break;
-		case BRUSHTYPE_ROOM_PAINTER:
-			// Reload map to update tiles
-			result = EDITOR_RESULT_RELOAD;
-			break;
 		case BRUSHTYPE_SELECT:
 			if (b->IsMoving)
 			{
@@ -527,47 +504,32 @@ EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 				// Need to copy all the tiles to a temp buffer first in case
 				// we are moving to an overlapped position
 				CArray movedTiles;
-				struct vec2i v;
-				int i;
 				int delta;
-				CArrayInit(&movedTiles, sizeof(uint16_t));
-				// Copy tiles to temp from selection, setting them to MAP_FLOOR
+				CArrayInit(&movedTiles, m->u.Static.Tiles.elemSize);
+				// Copy tiles to temp from selection, clearing them
 				// in the process
-				for (v.y = 0; v.y < b->SelectionSize.y; v.y++)
-				{
-					for (v.x = 0; v.x < b->SelectionSize.x; v.x++)
-					{
-						struct vec2i vOffset = svec2i_add(v, b->SelectionStart);
-						int idx = vOffset.y * m->Size.x + vOffset.x;
-						uint16_t *tile = CArrayGet(&m->u.Static.Tiles, idx);
-						CArrayPushBack(&movedTiles, tile);
-						*tile = MAP_FLOOR;
-					}
-				}
+				RECT_FOREACH(Rect2iNew(b->SelectionStart, b->SelectionSize))
+					const int tile =
+						MissionStaticGetTile(&m->u.Static, m->Size, _v);
+					CArrayPushBack(&movedTiles, &tile);
+					MissionStaticClearTile(&m->u.Static, m->Size, _v);
+				RECT_FOREACH_END()
 				// Move the selection to the new position
 				b->SelectionStart.x += b->Pos.x - b->DragPos.x;
 				b->SelectionStart.y += b->Pos.y - b->DragPos.y;
 				// Copy tiles to the new area, for parts of the new area that
 				// are valid
-				i = 0;
-				for (v.y = 0; v.y < b->SelectionSize.y; v.y++)
-				{
-					for (v.x = 0; v.x < b->SelectionSize.x; v.x++)
+				RECT_FOREACH(Rect2iNew(b->SelectionStart, b->SelectionSize))
+					if (_v.x >= 0 && _v.x < m->Size.x &&
+						_v.y >= 0 && _v.y < m->Size.y)
 					{
-						struct vec2i vOffset = svec2i_add(v, b->SelectionStart);
-						if (vOffset.x >= 0 && vOffset.x < m->Size.x &&
-							vOffset.y >= 0 && vOffset.y < m->Size.y)
-						{
-							int idx = vOffset.y * m->Size.x + vOffset.x;
-							uint16_t *tileFrom = CArrayGet(&movedTiles, i);
-							uint16_t *tileTo = CArrayGet(
-								&m->u.Static.Tiles, idx);
-							*tileTo = *tileFrom;
-							result = EDITOR_RESULT_CHANGED_AND_RELOAD;
-						}
-						i++;
+						const int tile = *(int *)CArrayGet(&movedTiles, _i);
+						MissionStaticTrySetTile(
+							&m->u.Static, m->Size, _v, tile);
+						result = EDITOR_RESULT_CHANGED_AND_RELOAD;
 					}
-				}
+				RECT_FOREACH_END()
+				CArrayTerminate(&movedTiles);
 				// Update the selection to fit within map boundaries
 				delta = -b->SelectionStart.x;
 				if (delta > 0)

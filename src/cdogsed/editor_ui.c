@@ -387,6 +387,19 @@ static const char *MissionGetTypeStr(UIObject *o, void *data)
 	sprintf(s, "Type: %s", MapTypeStr(CampaignGetCurrentMission(co)->Type));
 	return s;
 }
+static void DrawTileStyle(
+	UIObject *o, const struct vec2i pos, const TileClass *tc,
+	const char *name, const char *styleType, const int idx, const int maxStyles)
+{
+	DrawStyleArea(
+		svec2i_add(pos, o->Pos),
+		name,
+		&PicManagerGetMaskedStylePic(
+			&gPicManager, tc->Name, tc->Style, styleType,
+			tc->Mask, tc->MaskAlt)->pic,
+		idx, maxStyles,
+		UIObjectIsHighlighted(o));
+}
 static void MissionDrawWallStyle(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
 {
@@ -394,15 +407,13 @@ static void MissionDrawWallStyle(
 	CampaignOptions *co = data;
 	const Mission *m = CampaignGetCurrentMission(co);
 	if (!m) return;
-	const int idx = PicManagerGetWallStyleIndex(&gPicManager, m->WallStyle);
-	DrawStyleArea(
-		svec2i_add(pos, o->Pos),
-		"Wall",
-		&PicManagerGetMaskedStylePic(
-			&gPicManager, "wall", m->WallStyle, "o",
-			m->WallMask, m->AltMask)->pic,
-		idx, (int)gPicManager.wallStyleNames.size,
-		UIObjectIsHighlighted(o));
+	if (m->Type == MAPTYPE_STATIC) return;
+	const TileClass *tc =
+		m->Type == MAPTYPE_CLASSIC ?
+		&m->u.Classic.TileClasses.Wall : &m->u.Cave.TileClasses.Wall;
+	const int idx = PicManagerGetWallStyleIndex(&gPicManager, tc->Style);
+	DrawTileStyle(
+		o, pos, tc, "Wall", "o", idx, (int)gPicManager.wallStyleNames.size);
 }
 static void MissionDrawFloorStyle(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
@@ -411,15 +422,14 @@ static void MissionDrawFloorStyle(
 	CampaignOptions *co = data;
 	const Mission *m = CampaignGetCurrentMission(co);
 	if (!m) return;
-	const int idx = PicManagerGetTileStyleIndex(&gPicManager, m->FloorStyle);
-	DrawStyleArea(
-		svec2i_add(pos, o->Pos),
-		"Floor",
-		&PicManagerGetMaskedStylePic(
-			&gPicManager, "tile", m->FloorStyle, "normal",
-			m->FloorMask, m->AltMask)->pic,
-		idx, (int)gPicManager.tileStyleNames.size,
-		UIObjectIsHighlighted(o));
+	if (m->Type == MAPTYPE_STATIC) return;
+	const TileClass *tc =
+		m->Type == MAPTYPE_CLASSIC ?
+		&m->u.Classic.TileClasses.Floor : &m->u.Cave.TileClasses.Floor;
+	const int idx = PicManagerGetTileStyleIndex(&gPicManager, tc->Style);
+	DrawTileStyle(
+		o, pos, tc, "Floor", "normal",
+		idx, (int)gPicManager.tileStyleNames.size);
 }
 static void MissionDrawRoomStyle(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
@@ -428,15 +438,14 @@ static void MissionDrawRoomStyle(
 	CampaignOptions *co = data;
 	const Mission *m = CampaignGetCurrentMission(co);
 	if (!m) return;
-	const int idx = PicManagerGetTileStyleIndex(&gPicManager, m->RoomStyle);
-	DrawStyleArea(
-		svec2i_add(pos, o->Pos),
-		"Rooms",
-		&PicManagerGetMaskedStylePic(
-			&gPicManager, "tile", m->RoomStyle, "normal",
-			m->RoomMask, m->AltMask)->pic,
-		idx, (int)gPicManager.tileStyleNames.size,
-		UIObjectIsHighlighted(o));
+	if (m->Type == MAPTYPE_STATIC) return;
+	const TileClass *tc =
+		m->Type == MAPTYPE_CLASSIC ?
+		&m->u.Classic.TileClasses.Room : &m->u.Cave.TileClasses.Room;
+	const int idx = PicManagerGetTileStyleIndex(&gPicManager, tc->Style);
+	DrawTileStyle(
+		o, pos, tc, "Rooms", "normal",
+		idx, (int)gPicManager.tileStyleNames.size);
 }
 static void MissionDrawDoorStyle(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
@@ -445,11 +454,15 @@ static void MissionDrawDoorStyle(
 	CampaignOptions *co = data;
 	const Mission *m = CampaignGetCurrentMission(co);
 	if (!m) return;
-	const int idx = PicManagerGetDoorStyleIndex(&gPicManager, m->DoorStyle);
+	if (m->Type == MAPTYPE_STATIC) return;
+	const TileClass *tc =
+		m->Type == MAPTYPE_CLASSIC ?
+		&m->u.Classic.TileClasses.Door : &m->u.Cave.TileClasses.Door;
+	const int idx = PicManagerGetDoorStyleIndex(&gPicManager, tc->Style);
 	DrawStyleArea(
 		svec2i_add(pos, o->Pos),
 		"Doors",
-		DoorGetClass(m->DoorStyle, "normal", true)->Pic,
+		DoorGetClass(tc->Style, "normal", true)->Pic,
 		idx, (int)gPicManager.doorStyleNames.size,
 		UIObjectIsHighlighted(o));
 }
@@ -662,7 +675,7 @@ static void MissionChangeWidth(void *data, int d)
 	m->Size.x = CLAMP(m->Size.x + d, 16, 256);
 	if (m->Type == MAPTYPE_STATIC)
 	{
-		MissionStaticLayout(m, svec2i(old, m->Size.y));
+		MissionStaticLayout(&m->u.Static, m->Size, svec2i(old, m->Size.y));
 	}
 }
 static void MissionChangeHeight(void *data, int d)
@@ -677,7 +690,7 @@ static void MissionChangeHeight(void *data, int d)
 	m->Size.y = CLAMP(m->Size.y + d, 16, 256);
 	if (m->Type == MAPTYPE_STATIC)
 	{
-		MissionStaticLayout(m, svec2i(m->Size.x, old));
+		MissionStaticLayout(&m->u.Static, m->Size, svec2i(m->Size.x, old));
 	}
 }
 static void MissionChangeWallCount(void *data, int d)
@@ -839,45 +852,69 @@ static void MissionChangeWallStyle(void *data, int d)
 {
 	CampaignOptions *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
+	if (m->Type == MAPTYPE_STATIC) return;
+	TileClass *tc =
+		m->Type == MAPTYPE_CLASSIC ?
+		&m->u.Classic.TileClasses.Wall : &m->u.Cave.TileClasses.Wall;
 	const int idx = CLAMP_OPPOSITE(
-		PicManagerGetWallStyleIndex(&gPicManager, m->WallStyle) + d,
+		PicManagerGetWallStyleIndex(&gPicManager, tc->Style) + d,
 		0,
 		(int)gPicManager.wallStyleNames.size - 1);
-	strcpy(
-		m->WallStyle, *(char **)CArrayGet(&gPicManager.wallStyleNames, idx));
+	CFREE(tc->Style);
+	CSTRDUP(
+		tc->Style, *(char **)CArrayGet(&gPicManager.wallStyleNames, idx));
+	tc->Pic = TileClassGetPic(&gPicManager, tc);
 }
 static void MissionChangeFloorStyle(void *data, int d)
 {
 	CampaignOptions *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
+	if (m->Type == MAPTYPE_STATIC) return;
+	TileClass *tc =
+		m->Type == MAPTYPE_CLASSIC ?
+		&m->u.Classic.TileClasses.Floor : &m->u.Cave.TileClasses.Floor;
 	const int idx = CLAMP_OPPOSITE(
-		PicManagerGetTileStyleIndex(&gPicManager, m->FloorStyle) + d,
+		PicManagerGetTileStyleIndex(&gPicManager, tc->Style) + d,
 		0,
 		(int)gPicManager.tileStyleNames.size - 1);
-	strcpy(
-		m->FloorStyle, *(char **)CArrayGet(&gPicManager.tileStyleNames, idx));
+	CFREE(tc->Style);
+	CSTRDUP(
+		tc->Style, *(char **)CArrayGet(&gPicManager.tileStyleNames, idx));
+	tc->Pic = TileClassGetPic(&gPicManager, tc);
 }
 static void MissionChangeRoomStyle(void *data, int d)
 {
 	CampaignOptions *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
+	if (m->Type == MAPTYPE_STATIC) return;
+	TileClass *tc =
+		m->Type == MAPTYPE_CLASSIC ?
+		&m->u.Classic.TileClasses.Floor : &m->u.Cave.TileClasses.Floor;
 	const int idx = CLAMP_OPPOSITE(
-		PicManagerGetTileStyleIndex(&gPicManager, m->RoomStyle) + d,
+		PicManagerGetTileStyleIndex(&gPicManager, tc->Style) + d,
 		0,
 		(int)gPicManager.tileStyleNames.size - 1);
-	strcpy(
-		m->RoomStyle, *(char **)CArrayGet(&gPicManager.tileStyleNames, idx));
+	CFREE(tc->Style);
+	CSTRDUP(
+		tc->Style, *(char **)CArrayGet(&gPicManager.tileStyleNames, idx));
+	tc->Pic = TileClassGetPic(&gPicManager, tc);
 }
 static void MissionChangeDoorStyle(void *data, int d)
 {
 	CampaignOptions *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
+	if (m->Type == MAPTYPE_STATIC) return;
+	TileClass *tc =
+		m->Type == MAPTYPE_CLASSIC ?
+		&m->u.Classic.TileClasses.Door : &m->u.Cave.TileClasses.Door;
 	const int idx = CLAMP_OPPOSITE(
-		PicManagerGetDoorStyleIndex(&gPicManager, m->DoorStyle) + d,
+		PicManagerGetDoorStyleIndex(&gPicManager, tc->Style) + d,
 		0,
 		(int)gPicManager.doorStyleNames.size - 1);
-	strcpy(
-		m->DoorStyle, *(char **)CArrayGet(&gPicManager.doorStyleNames, idx));
+	CFREE(tc->Style);
+	CSTRDUP(
+		tc->Style, *(char **)CArrayGet(&gPicManager.doorStyleNames, idx));
+	tc->Pic = TileClassGetPic(&gPicManager, tc);
 }
 static void MissionChangeKeyStyle(void *data, int d)
 {

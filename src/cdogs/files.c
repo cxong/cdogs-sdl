@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, 2018 Cong Xu
+    Copyright (c) 2013-2016, 2018-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -387,12 +387,8 @@ static void ConvertMission(
 	CSTRDUP(dest->Description, src->description);
 	dest->Type = MAPTYPE_CLASSIC;
 	dest->Size = svec2i(src->mapWidth, src->mapHeight);
-	strcpy(dest->WallStyle, IntWallStyle(src->wallStyle));
-	strcpy(dest->FloorStyle, IntFloorStyle(src->floorStyle));
-	strcpy(dest->RoomStyle, IntRoomStyle(src->roomStyle));
 	strcpy(dest->ExitStyle, IntExitStyle(src->exitStyle));
 	strcpy(dest->KeyStyle, IntKeyStyle(src->keyStyle));
-	strcpy(dest->DoorStyle, IntDoorStyle(src->doorStyle));
 	for (int i = 0; i < src->objectiveCount; i++)
 	{
 		Objective o;
@@ -428,11 +424,23 @@ static void ConvertMission(
 		}
 	}
 	strcpy(dest->Song, src->song);
-	dest->WallMask = RangeToColor(abs(src->wallRange) % COLORRANGE_COUNT);
-	dest->FloorMask = RangeToColor(abs(src->floorRange) % COLORRANGE_COUNT);
-	dest->RoomMask = RangeToColor(abs(src->roomRange) % COLORRANGE_COUNT);
-	dest->AltMask = RangeToColor(abs(src->altRange) % COLORRANGE_COUNT);
+	const color_t maskAlt = RangeToColor(abs(src->altRange) % COLORRANGE_COUNT);
 
+	TileClassInit(
+		&dest->u.Classic.TileClasses.Wall, &gPicManager, &gTileWall,
+		IntWallStyle(src->wallStyle), NULL,
+		RangeToColor(abs(src->wallRange) % COLORRANGE_COUNT), maskAlt);
+	TileClassInit(
+		&dest->u.Classic.TileClasses.Floor, &gPicManager, &gTileFloor,
+		IntFloorStyle(src->floorStyle), NULL,
+		RangeToColor(abs(src->floorRange) % COLORRANGE_COUNT), maskAlt);
+	TileClassInit(
+		&dest->u.Classic.TileClasses.Room, &gPicManager, &gTileRoom,
+		IntRoomStyle(src->roomStyle), NULL,
+		RangeToColor(abs(src->roomRange) % COLORRANGE_COUNT), maskAlt);
+	TileClassInit(
+		&dest->u.Classic.TileClasses.Door, &gPicManager, &gTileDoor,
+		IntDoorStyle(src->doorStyle), NULL, colorWhite, colorWhite);
 	dest->u.Classic.Walls = src->wallCount;
 	dest->u.Classic.WallLength = src->wallLength;
 	dest->u.Classic.CorridorWidth = 1;

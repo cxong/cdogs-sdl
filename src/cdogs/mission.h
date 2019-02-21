@@ -82,6 +82,13 @@ int StrKeycard(const char *s);
 
 typedef struct
 {
+	TileClass Wall;
+	TileClass Floor;
+	TileClass Room;
+	TileClass Door;
+} MissionTileClasses;
+typedef struct
+{
 	const MapObject *M;
 	int Density;
 } MapObjectDensity;
@@ -125,12 +132,8 @@ typedef struct
 	struct vec2i Size;
 
 	// styles
-	char WallStyle[CDOGS_FILENAME_MAX];
-	char FloorStyle[CDOGS_FILENAME_MAX];
-	char RoomStyle[CDOGS_FILENAME_MAX];
 	char ExitStyle[CDOGS_FILENAME_MAX];
 	char KeyStyle[CDOGS_FILENAME_MAX];
-	char DoorStyle[CDOGS_FILENAME_MAX];
 
 	CArray Objectives;			// of Objective
 	CArray Enemies;				// of int (character index)
@@ -142,17 +145,13 @@ typedef struct
 
 	char Song[CDOGS_PATH_MAX];
 
-	// Colour ranges
-	color_t WallMask;
-	color_t FloorMask;
-	color_t RoomMask;
-	color_t AltMask;
-
 	union
 	{
 		// Classic
 		struct
 		{
+			// TODO: multiple tile classes
+			MissionTileClasses TileClasses;
 			int Walls;
 			int WallLength;
 			int CorridorWidth;
@@ -175,6 +174,8 @@ typedef struct
 		// Cave
 		struct
 		{
+			// TODO: multiple tile classes
+			MissionTileClasses TileClasses;
 			int FillPercent;
 			int Repeat;
 			int R1;
@@ -220,6 +221,8 @@ void MissionCopy(Mission *dst, const Mission *src);
 void MissionTerminate(Mission *m);
 
 void SetupMission(Mission *m, struct MissionOptions *mo, int missionIndex);
+void MissionSetupTileClasses(PicManager *pm, const MissionTileClasses *mtc);
+void MissionTileClassesTerminate(MissionTileClasses *mtc);
 
 void MissionSetMessageIfComplete(struct MissionOptions *options);
 // If object is a mission objective, send an update event

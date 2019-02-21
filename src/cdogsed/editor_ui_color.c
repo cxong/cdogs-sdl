@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2016, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -239,12 +239,32 @@ static void MissionColorChange(const color_t c, void *data)
 {
 	MissionColorData *mcd = data;
 	Mission *m = CampaignGetCurrentMission(mcd->C);
+	if (m->Type == MAPTYPE_STATIC) return;
+	MissionTileClasses *mtc =
+		m->Type == MAPTYPE_CLASSIC ?
+		&m->u.Classic.TileClasses : &m->u.Cave.TileClasses;
 	switch (mcd->Type)
 	{
-	case MISSION_COLOR_WALL: m->WallMask = c; break;
-	case MISSION_COLOR_FLOOR: m->FloorMask = c; break;
-	case MISSION_COLOR_ROOM: m->RoomMask = c; break;
-	case MISSION_COLOR_EXTRA: m->AltMask = c; break;
+	case MISSION_COLOR_WALL:
+		mtc->Wall.MaskAlt = c;
+		mtc->Wall.Pic = TileClassGetPic(&gPicManager, &mtc->Wall);
+		break;
+	case MISSION_COLOR_FLOOR:
+		mtc->Floor.MaskAlt = c;
+		mtc->Floor.Pic = TileClassGetPic(&gPicManager, &mtc->Floor);
+		break;
+	case MISSION_COLOR_ROOM:
+		mtc->Room.MaskAlt = c;
+		mtc->Room.Pic = TileClassGetPic(&gPicManager, &mtc->Room);
+		break;
+	case MISSION_COLOR_EXTRA:
+		mtc->Wall.MaskAlt = c;
+		mtc->Floor.MaskAlt = c;
+		mtc->Room.MaskAlt = c;
+		mtc->Wall.Pic = TileClassGetPic(&gPicManager, &mtc->Wall);
+		mtc->Floor.Pic = TileClassGetPic(&gPicManager, &mtc->Floor);
+		mtc->Room.Pic = TileClassGetPic(&gPicManager, &mtc->Room);
+		break;
 	default:
 		CASSERT(false, "Unexpected mission colour");
 		break;
@@ -255,12 +275,16 @@ static color_t CampaignGetMissionColor(void *data)
 	MissionColorData *mcd = data;
 	const Mission *m = CampaignGetCurrentMission(mcd->C);
 	if (m == NULL) return colorWhite;
+	if (m->Type == MAPTYPE_STATIC) return colorWhite;
+	const MissionTileClasses *mtc =
+		m->Type == MAPTYPE_CLASSIC ?
+		&m->u.Classic.TileClasses : &m->u.Cave.TileClasses;
 	switch (mcd->Type)
 	{
-	case MISSION_COLOR_WALL: return m->WallMask;
-	case MISSION_COLOR_FLOOR: return m->FloorMask;
-	case MISSION_COLOR_ROOM: return m->RoomMask;
-	case MISSION_COLOR_EXTRA: return m->AltMask;
+	case MISSION_COLOR_WALL: return mtc->Wall.Mask;
+	case MISSION_COLOR_FLOOR: return mtc->Floor.Mask;
+	case MISSION_COLOR_ROOM: return mtc->Room.Mask;
+	case MISSION_COLOR_EXTRA: return mtc->Wall.MaskAlt;
 	default:
 		CASSERT(false, "Unexpected mission colour");
 		return colorWhite;

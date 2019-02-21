@@ -74,6 +74,7 @@ set(CDOGS_SOURCES
 	mathc/mathc.c
 	mission.c
 	mission_convert.c
+	mission_static.c
 	mouse.c
 	music.c
 	net_client.c
