@@ -224,6 +224,7 @@ MissionTileClasses *MissionGetTileClasses(Mission *m);
 
 void SetupMission(Mission *m, struct MissionOptions *mo, int missionIndex);
 void MissionSetupTileClasses(PicManager *pm, const MissionTileClasses *mtc);
+void MissionTileClassesInitDefault(MissionTileClasses *mtc);
 void MissionTileClassesCopy(
 	MissionTileClasses *dst, const MissionTileClasses *src);
 void MissionTileClassesTerminate(MissionTileClasses *mtc);

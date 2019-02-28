@@ -36,9 +36,21 @@
 void MissionConvertToType(Mission *m, Map *map, MapType type)
 {
 	MissionTileClasses mtc;
-	MissionTileClasses *mtcOrig = MissionGetTileClasses(m);
-	MissionTileClassesCopy(&mtc, mtcOrig);
-	MissionTileClassesTerminate(mtcOrig);
+	switch (m->Type)
+	{
+		case MAPTYPE_CLASSIC:
+		case MAPTYPE_CAVE:	// fallthrough
+		{
+			MissionTileClasses *mtcOrig = MissionGetTileClasses(m);
+			MissionTileClassesCopy(&mtc, mtcOrig);
+			MissionTileClassesTerminate(mtcOrig);
+		}
+		break;
+		default:
+			MissionTileClassesInitDefault(&mtc);
+			break;
+	}
+
 	memset(&m->u, 0, sizeof m->u);
 	switch (type)
 	{

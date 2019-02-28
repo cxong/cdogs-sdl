@@ -39,8 +39,8 @@ void EditorBrushInit(EditorBrush *b)
 {
 	memset(b, 0, sizeof *b);
 	b->Type = BRUSHTYPE_POINT;
-	b->MainType = MAP_WALL;
-	b->SecondaryType = MAP_FLOOR;
+	b->MainType = 0;
+	b->SecondaryType = 1;
 	b->PaintType = b->MainType;
 	b->IsActive = 0;
 	b->IsPainting = 0;

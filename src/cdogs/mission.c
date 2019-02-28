@@ -111,18 +111,7 @@ void MissionInit(Mission *m)
 	CArrayInit(&m->MapObjectDensities, sizeof(MapObjectDensity));
 	CArrayInit(&m->Weapons, sizeof(const WeaponClass *));
 	m->Type = MAPTYPE_CLASSIC;
-	TileClassInit(
-		&m->u.Classic.TileClasses.Wall, &gPicManager, &gTileWall,
-		IntWallStyle(0), NULL, colorBattleshipGrey, colorOfficeGreen);
-	TileClassInit(
-		&m->u.Classic.TileClasses.Floor, &gPicManager, &gTileFloor,
-		IntFloorStyle(0), NULL, colorGravel, colorOfficeGreen);
-	TileClassInit(
-		&m->u.Classic.TileClasses.Room, &gPicManager, &gTileRoom,
-		IntRoomStyle(0), NULL, colorDoveGray, colorOfficeGreen);
-	TileClassInit(
-		&m->u.Classic.TileClasses.Door, &gPicManager, &gTileDoor,
-		IntDoorStyle(0), NULL, colorWhite, colorWhite);
+	MissionTileClassesInitDefault(&m->u.Classic.TileClasses);
 }
 
 static const MissionTileClasses *MissionGetTileClassesC(const Mission *m)
@@ -315,6 +304,21 @@ void MissionSetupTileClasses(PicManager *pm, const MissionTileClasses *mtc)
 	SetupFloorTileClasses(
 		pm, &mtc->Room, mtc->Room.Style, mtc->Room.Mask, mtc->Room.MaskAlt);
 	SetupDoorTileClasses(pm, mtc->Door.Style);
+}
+void MissionTileClassesInitDefault(MissionTileClasses *mtc)
+{
+	TileClassInit(
+		&mtc->Wall, &gPicManager, &gTileWall,
+		IntWallStyle(0), NULL, colorBattleshipGrey, colorOfficeGreen);
+	TileClassInit(
+		&mtc->Floor, &gPicManager, &gTileFloor,
+		IntFloorStyle(0), NULL, colorGravel, colorOfficeGreen);
+	TileClassInit(
+		&mtc->Room, &gPicManager, &gTileRoom,
+		IntRoomStyle(0), NULL, colorDoveGray, colorOfficeGreen);
+	TileClassInit(
+		&mtc->Door, &gPicManager, &gTileDoor,
+		IntDoorStyle(0), NULL, colorWhite, colorWhite);
 }
 void MissionTileClassesCopy(
 	MissionTileClasses *dst, const MissionTileClasses *src)
