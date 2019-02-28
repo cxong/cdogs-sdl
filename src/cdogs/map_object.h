@@ -123,7 +123,7 @@ MapObject *IntMapObject(const int m);
 MapObject *IndexMapObject(const int i);
 // Get index of destructible map object; used by editor
 int DestructibleMapObjectIndex(const MapObject *mo);
-MapObject *RandomBloodMapObject(const MapObjects *mo);
+void AddRandomBloodPool(const struct vec2 pos, const color_t mask);
 int MapObjectGetFlags(const MapObject *mo);
 
 void MapObjectsInit(

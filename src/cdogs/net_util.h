@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014-2017 Cong Xu
+    Copyright (c) 2014-2017, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -61,5 +61,6 @@ NVec2i Vec2i2Net(const struct vec2i v);
 struct vec2 NetToVec2(const NVec2 v);
 NVec2 Vec2ToNet(const struct vec2 v);
 NColor Color2Net(const color_t c);
+color_t Net2Color(const NColor c);
 NCharColors CharColors2Net(const CharColors c);
 CharColors Net2CharColors(const NCharColors c);

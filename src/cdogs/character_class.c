@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2016-2017 Cong Xu
+	Copyright (c) 2016-2017, 2019 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -192,6 +192,9 @@ static void LoadCharacterClass(CharacterClass *c, json_t *node)
 			CFREE(tmp);
 		}
 	}
+
+	c->BloodColor = colorRed;
+	LoadColor(&c->BloodColor, node, "BloodColor");
 }
 static void CharacterClassFree(CharacterClass *c);
 void CharacterClassesClear(CArray *classes)

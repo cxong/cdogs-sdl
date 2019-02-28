@@ -71,7 +71,6 @@
 #include "sounds.h"
 #include "thing.h"
 #include "defs.h"
-#include "objs.h"
 #include "pickup.h"
 #include "gamedata.h"
 #include "triggers.h"
@@ -1082,7 +1081,6 @@ static bool CheckManualPickupFunc(
 }
 static void ActorAddAmmoPickup(const TActor *actor);
 static void ActorAddGunPickup(const TActor *actor);
-static void ActorAddBloodPool(const TActor *a);
 static void ActorDie(TActor *actor)
 {
 	// Add an ammo pickup of the actor's gun
@@ -1099,7 +1097,9 @@ static void ActorDie(TActor *actor)
 
 	if (ConfigGetEnum(&gConfig, "Graphics.Gore") != GORE_NONE)
 	{
-		ActorAddBloodPool(actor);
+		// Add blood pool
+		AddRandomBloodPool(
+			actor->Pos, ActorGetCharacter(actor)->Class->BloodColor);
 	}
 
 	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_DIE);
@@ -1178,17 +1178,6 @@ static bool IsUnarmedBot(const TActor *actor)
 	// then it's an unarmed actor
 	const Character *c = ActorGetCharacter(actor);
 	return c->bot != NULL && c->bot->probabilityToShoot == 0;
-}
-static void ActorAddBloodPool(const TActor *a)
-{
-	GameEvent e = GameEventNew(GAME_EVENT_MAP_OBJECT_ADD);
-	e.u.MapObjectAdd.UID = ObjsGetNextUID();
-	const MapObject *mo = RandomBloodMapObject(&gMapObjects);
-	strcpy(e.u.MapObjectAdd.MapObjectClass, mo->Name);
-	e.u.MapObjectAdd.Pos = Vec2ToNet(a->Pos);
-	e.u.MapObjectAdd.ThingFlags = MapObjectGetFlags(mo);
-	e.u.MapObjectAdd.Health = mo->Health;
-	GameEventsEnqueue(&gGameEvents, e);
 }
 
 void ActorsInit(void)
@@ -1629,7 +1618,13 @@ static void ActorAddBloodSplatters(
 		}
 		const struct vec2 vel =
 			svec2_scale(hitVector, speedBase * RAND_FLOAT(0.5f, 1));
-		EmitterStart(em, a->Pos, 10, vel);
+		AddParticle ap;
+		memset(&ap, 0, sizeof ap);
+		ap.Pos = a->Pos;
+		ap.Z = 10;
+		ap.Vel = vel;
+		ap.Mask = ActorGetCharacter(a)->Class->BloodColor;
+		EmitterStart(em, &ap);
 		switch (ga)
 		{
 		case GORE_LOW:

@@ -1,7 +1,7 @@
 /*
 C-Dogs SDL
 A port of the legendary (and fun) action/arcade cdogs.
-Copyright (c) 2016-2017 Cong Xu
+Copyright (c) 2016-2017, 2019 Cong Xu
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -46,5 +46,4 @@ void EmitterInit(
 	const float minSpeed, const float maxSpeed,
 	const int minDZ, const int maxDZ,
 	double minRotation, double maxRotation);
-void EmitterStart(
-	Emitter *em, const struct vec2 pos, const int z, const struct vec2 vel);
+void EmitterStart(Emitter *em, const AddParticle *data);

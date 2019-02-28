@@ -94,6 +94,7 @@ typedef struct
 	int DZ;
 	double Spin;
 	struct vec2 DrawScale;
+	color_t Mask;
 	char Text[128];
 } AddParticle;
 

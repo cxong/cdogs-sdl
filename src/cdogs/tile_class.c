@@ -141,8 +141,8 @@ void TileClassInit(
 	const color_t mask, const color_t maskAlt)
 {
 	memcpy(t, base, sizeof *t);
-	CSTRDUP(t->Name, base->Name);
-	CSTRDUP(t->Style, style);
+	if (base->Name) CSTRDUP(t->Name, base->Name);
+	if (style) CSTRDUP(t->Style, style);
 	if (type && strlen(type))
 	{
 		CSTRDUP(t->StyleType, type);

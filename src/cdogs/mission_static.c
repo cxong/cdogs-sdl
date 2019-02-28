@@ -207,8 +207,8 @@ static void ConvertOldTile(
 		TileClass *tc;
 		CCALLOC(tc, sizeof *tc);
 		memcpy(tc, base, sizeof *tc);
-		CSTRDUP(tc->Name, base->Name);
-		CSTRDUP(tc->Style, base->Style);
+		if (base->Name) CSTRDUP(tc->Name, base->Name);
+		if (base->Style) CSTRDUP(tc->Style, base->Style);
 		tc->Mask = base->Mask;
 		tc->MaskAlt = base->MaskAlt;
 		if (hashmap_put(m->TileClasses, keyBuf, tc) != MAP_OK)

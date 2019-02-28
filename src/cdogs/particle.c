@@ -452,6 +452,10 @@ int ParticleAdd(CArray *particles, const AddParticle add)
 	p->thing.drawData.MobObjId = i;
 	p->thing.drawData.Scale =
 		svec2_is_zero(add.DrawScale) ? svec2_one() : add.DrawScale;
+	if (!ColorEquals(add.Mask, colorTransparent))
+	{
+		p->u.Pic.Mask = add.Mask;
+	}
 	MapTryMoveThing(&gMap, &p->thing, add.Pos);
 	return i;
 }

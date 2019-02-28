@@ -1,7 +1,7 @@
 /*
 C-Dogs SDL
 A port of the legendary (and fun) action/arcade cdogs.
-Copyright (c) 2016-2017 Cong Xu
+Copyright (c) 2016-2017, 2019 Cong Xu
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -46,22 +46,22 @@ void EmitterInit(
 	em->minRotation = minRotation;
 	em->maxRotation = maxRotation;
 }
-void EmitterStart(
-	Emitter *em, const struct vec2 pos, const int z, const struct vec2 vel)
+void EmitterStart(Emitter *em, const AddParticle *data)
 {
-	const struct vec2 p = svec2_add(pos, em->offset);
+	const struct vec2 p = svec2_add(data->Pos, em->offset);
 
 	// TODO: single event multiple particles
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 	e.u.AddParticle.Pos = p;
-	e.u.AddParticle.Z = z * Z_FACTOR;
+	e.u.AddParticle.Z = data->Z * Z_FACTOR;
 	e.u.AddParticle.Class = em->p;
 	const float speed = RAND_FLOAT(em->minSpeed, em->maxSpeed);
 	const struct vec2 baseVel = svec2_rotate(
 		svec2(0, speed), RAND_FLOAT(0, MPI * 2));
-	e.u.AddParticle.Vel = svec2_add(vel, baseVel);
+	e.u.AddParticle.Vel = svec2_add(data->Vel, baseVel);
 	e.u.AddParticle.Angle = RAND_FLOAT(0, MPI * 2);
 	e.u.AddParticle.DZ = RAND_INT(em->minDZ, em->maxDZ);
 	e.u.AddParticle.Spin = RAND_DOUBLE(em->minRotation, em->maxRotation);
+	e.u.AddParticle.Mask = data->Mask;
 	GameEventsEnqueue(&gGameEvents, e);
 }

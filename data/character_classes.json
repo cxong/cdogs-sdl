@@ -23,7 +23,8 @@
       },
       "Sounds": {
         "Aargh": "aargh/ogre"
-      }
+      },
+      "BloodColor": "333333"
     },
     {
       "Name": "Dragon",
@@ -47,7 +48,8 @@
       },
       "Sounds": {
         "Aargh": "aargh/alien"
-      }
+      },
+      "BloodColor": "00ff00"
     },
     {
       "Name": "Smith",
@@ -64,7 +66,8 @@
       },
       "Sounds": {
         "Aargh": "aargh/ogre"
-      }
+      },
+      "BloodColor": "333333"
     },
     {
       "Name": "Evil Ogre",
@@ -74,7 +77,8 @@
       },
       "Sounds": {
         "Aargh": "aargh/ogre"
-      }
+      },
+      "BloodColor": "333333"
     },
     {
       "Name": "Grunt",
@@ -119,7 +123,8 @@
       },
       "Sounds": {
         "Aargh": "aargh/alien"
-      }
+      },
+      "BloodColor": "00ff00"
     },
     {
       "Name": "Cyborg",
@@ -129,7 +134,8 @@
       },
       "Sounds": {
         "Aargh": "aargh/zombie"
-      }
+      },
+      "BloodColor": "ff00ff"
     },
     {
       "Name": "Robot",
@@ -139,7 +145,8 @@
       },
       "Sounds": {
         "Aargh": "aargh/alien"
-      }
+      },
+      "BloodColor": "0000ff"
     },
     {
       "Name": "Lady",
@@ -159,7 +166,8 @@
       },
       "Sounds": {
         "Aargh": "aargh/zombie"
-      }
+      },
+      "BloodColor": "ff00ff"
     },
     {
       "Name": "Cyber Smith",
@@ -169,7 +177,8 @@
       },
       "Sounds": {
         "Aargh": "aargh/zombie"
-      }
+      },
+      "BloodColor": "ff00ff"
     },
     {
       "Name": "Cyber WarBaby",
@@ -179,7 +188,8 @@
       },
       "Sounds": {
         "Aargh": "aargh/zombie"
-      }
+      },
+      "BloodColor": "ff00ff"
     },
     {
       "Name": "Freeze",
@@ -203,7 +213,8 @@
       },
       "Sounds": {
         "Aargh": "aargh/zombie"
-      }
+      },
+      "BloodColor": "ffffff"
     },
     {
       "Name": "Big Bones",
@@ -213,7 +224,8 @@
       },
       "Sounds": {
         "Aargh": "aargh/zombie"
-      }
+      },
+      "BloodColor": "ffffff"
     },
     {
       "Name": "Sweeper",

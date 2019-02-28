@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2018 Cong Xu
+    Copyright (c) 2013-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -461,6 +461,7 @@ void ObjAdd(const NMapObjectAdd amo)
 		&o->thing, i, KIND_OBJECT, o->Class->Size, amo.ThingFlags);
 	o->Health = amo.Health;
 	o->thing.CPic = o->Class->Pic;
+	o->thing.CPic.Mask = Net2Color(amo.Mask);
 	o->thing.CPicFunc = MapObjectDraw;
 	MapTryMoveThing(&gMap, &o->thing, NetToVec2(amo.Pos));
 	o->isInUse = true;

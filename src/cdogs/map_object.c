@@ -51,6 +51,8 @@
 #include "json_utils.h"
 #include "log.h"
 #include "map.h"
+#include "net_util.h"
+#include "objs.h"
 #include "pics.h"
 
 
@@ -193,11 +195,20 @@ int DestructibleMapObjectIndex(const MapObject *mo)
 	CASSERT(false, "cannot find destructible map object");
 	return -1;
 }
-MapObject *RandomBloodMapObject(const MapObjects *mo)
+void AddRandomBloodPool(const struct vec2 pos, const color_t mask)
 {
-	const int idx = rand() % (int)mo->Bloods.size;
-	const char **name = CArrayGet(&mo->Bloods, idx);
-	return StrMapObject(*name);
+	const int idx = rand() % (int)gMapObjects.Bloods.size;
+	const char **name = CArrayGet(&gMapObjects.Bloods, idx);
+	const MapObject *mo = StrMapObject(*name);
+
+	GameEvent e = GameEventNew(GAME_EVENT_MAP_OBJECT_ADD);
+	e.u.MapObjectAdd.UID = ObjsGetNextUID();
+	strcpy(e.u.MapObjectAdd.MapObjectClass, mo->Name);
+	e.u.MapObjectAdd.Pos = Vec2ToNet(pos);
+	e.u.MapObjectAdd.ThingFlags = MapObjectGetFlags(mo);
+	e.u.MapObjectAdd.Health = mo->Health;
+	e.u.MapObjectAdd.Mask = Color2Net(mask);
+	GameEventsEnqueue(&gGameEvents, e);
 }
 int MapObjectGetFlags(const MapObject *mo)
 {
