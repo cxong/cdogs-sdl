@@ -203,7 +203,9 @@ static void SetTile(Mission *m, const struct vec2i pos, const int tile)
 {
 	if (MissionStaticTrySetTile(&m->u.Static, m->Size, pos, tile))
 	{
-		MapBuildTile(&gMap, m, pos, tile);
+		const TileClass *tc = MissionStaticGetTileClass(
+			&m->u.Static, m->Size, pos);
+		MapBuildTile(&gMap, m, pos, tc);
 	}
 }
 
