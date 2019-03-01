@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2016, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -156,10 +156,10 @@ static int BrushIsBrushTypeBoxFilled(void *data)
 	EditorBrush *b = data;
 	return b->Type == BRUSHTYPE_BOX_FILLED;
 }
-static int BrushIsBrushTypeRoom(void *data)
+static int BrushIsBrushTypeBoxAndFill(void *data)
 {
 	EditorBrush *b = data;
-	return b->Type == BRUSHTYPE_ROOM;
+	return b->Type == BRUSHTYPE_BOX_AND_FILL;
 }
 static int BrushIsBrushTypeSelect(void *data)
 {
@@ -214,11 +214,11 @@ static void BrushSetBrushTypeBoxFilled(void *data, int d)
 	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_BOX_FILLED;
 }
-static void BrushSetBrushTypeRoom(void *data, int d)
+static void BrushSetBrushTypeBoxAndFill(void *data, int d)
 {
 	UNUSED(d);
 	EditorBrush *b = data;
-	b->Type = BRUSHTYPE_ROOM;
+	b->Type = BRUSHTYPE_BOX_AND_FILL;
 }
 static void BrushSetBrushTypeSelect(void *data, int d)
 {
@@ -321,10 +321,10 @@ UIObject *CreateStaticMapObjs(
 	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;
 	o2 = UIObjectCopy(o);
-	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "editor/room"));
-	o2->u.Button.IsDownFunc = BrushIsBrushTypeRoom;
-	o2->ChangeFunc = BrushSetBrushTypeRoom;
-	CSTRDUP(o2->Tooltip, "Room");
+	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "editor/box_n_fill"));
+	o2->u.Button.IsDownFunc = BrushIsBrushTypeBoxAndFill;
+	o2->ChangeFunc = BrushSetBrushTypeBoxAndFill;
+	CSTRDUP(o2->Tooltip, "Box & Fill");
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;

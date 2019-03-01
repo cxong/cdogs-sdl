@@ -89,9 +89,9 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 			BresenhamLineDraw(b->LastPos, b->Pos, &data);
 		}
 		break;
-	case BRUSHTYPE_BOX:	// fallthrough
-	case BRUSHTYPE_ROOM:	// fallthrough
-	case BRUSHTYPE_SET_EXIT:
+	case BRUSHTYPE_BOX:
+	case BRUSHTYPE_BOX_AND_FILL:	// fallthrough
+	case BRUSHTYPE_SET_EXIT:	// fallthrough
 		if (b->IsPainting)
 		{
 			struct vec2i v;
@@ -269,7 +269,7 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	case BRUSHTYPE_LINE:	// fallthrough
 	case BRUSHTYPE_BOX:	// fallthrough
 	case BRUSHTYPE_BOX_FILLED:	// fallthrough
-	case BRUSHTYPE_ROOM:	// fallthrough
+	case BRUSHTYPE_BOX_AND_FILL:	// fallthrough
 	case BRUSHTYPE_SET_EXIT:
 		// don't paint until the end
 		break;
@@ -430,7 +430,7 @@ static bool MissionIsTileSame(void *data, const struct vec2i v)
 	return MissionStaticGetTile(&pData->m->u.Static, pData->m->Size, v) == pData->fromType;
 }
 static void EditorBrushPaintBox(
-	EditorBrush *b, Mission *m, uint16_t lineType, uint16_t fillType)
+	EditorBrush *b, Mission *m, const int lineType, const int fillType)
 {
 	// Draw the fill first, then the line
 	// This will create the expected results when brush size is
@@ -444,7 +444,7 @@ static void EditorBrushPaintBox(
 	paintData.brush = b;
 	paintData.mission = m;
 	// Draw fill
-	if (fillType != MAP_UNSET)
+	if (fillType >= 0)
 	{
 		b->PaintType = fillType;
 		for (v.y = b->LastPos.y; v.y != b->Pos.y + d.y; v.y += d.y)
@@ -460,7 +460,7 @@ static void EditorBrushPaintBox(
 		}
 	}
 	// Draw edge
-	if (lineType != MAP_UNSET)
+	if (lineType >= 0)
 	{
 		b->PaintType = lineType;
 		for (v.y = b->LastPos.y; v.y != b->Pos.y + d.y; v.y += d.y)
@@ -488,15 +488,15 @@ EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 			result = EDITOR_RESULT_CHANGED;
 			break;
 		case BRUSHTYPE_BOX:
-			EditorBrushPaintBox(b, m, b->PaintType, MAP_UNSET);
+			EditorBrushPaintBox(b, m, b->PaintType, -1);
 			result = EDITOR_RESULT_CHANGED;
 			break;
 		case BRUSHTYPE_BOX_FILLED:
 			EditorBrushPaintBox(b, m, b->PaintType, b->PaintType);
 			result = EDITOR_RESULT_CHANGED;
 			break;
-		case BRUSHTYPE_ROOM:
-			EditorBrushPaintBox(b, m, MAP_WALL, MAP_ROOM);
+		case BRUSHTYPE_BOX_AND_FILL:
+			EditorBrushPaintBox(b, m, b->MainType, b->SecondaryType);
 			result = EDITOR_RESULT_CHANGED;
 			break;
 		case BRUSHTYPE_SELECT:

@@ -65,8 +65,7 @@ typedef enum
 	MAP_DOOR,
 	MAP_ROOM,
 	MAP_NOTHING,
-	MAP_SQUARE,
-	MAP_UNSET	// internal use by editor
+	MAP_SQUARE
 } IMapType;
 const char *IMapTypeStr(IMapType t);
 IMapType StrIMapType(const char *s);
