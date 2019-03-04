@@ -364,9 +364,9 @@ void LoadMissionTileClasses(
 		char doorStyle[CDOGS_FILENAME_MAX];
 		if (version <= 5)
 		{
-			int doorStyle;
-			LoadInt(&doorStyle, node, "DoorStyle");
-			strcpy(doorStyle, IntDoorStyle(doorStyle));
+			int doorStyleInt;
+			LoadInt(&doorStyleInt, node, "DoorStyle");
+			strcpy(doorStyle, IntDoorStyle(doorStyleInt));
 		}
 		else
 		{
