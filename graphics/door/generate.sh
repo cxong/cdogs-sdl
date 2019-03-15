@@ -21,16 +21,24 @@ convert $1/base/open_h.png -background none -gravity South -extent 16x21 \
   $1/base/left.png -geometry +0+0 -composite \
   $1/base/right.png -geometry +0+0 -composite \
   $1/normal_h.png
-#convert $1/base/open_h.png -background none -gravity South -extent 16x21 tmp.png
-#convert -composite tmp.png $1/base/h.png $1/base/left.png $1/base/right.png $1/normal_h.png
-#rm tmp.png
 # normal_v = v + top + bottom
-convert -composite $1/base/v.png $1/base/top.png $1/base/bottom.png $1/normal_v.png
+convert $1/base/v.png \
+  $1/base/top.png -geometry +0+0 -composite \
+  $1/base/bottom.png -geometry +0+0 -composite \
+  $1/normal_v.png
 
 # Generate keys
 for key in blue green red yellow; do
-  # normal_h + key
-  convert -composite $1/normal_h.png $1/base/${key}_h.png $1/${key}_h.png
-  # normal_v + key
-  convert -composite $1/normal_v.png $1/base/${key}_v.png $1/${key}_v.png
+  # key_h = normal_h + key_h + key_left + key_right
+  convert $1/normal_h.png \
+    $1/base/key/${key}_h.png -geometry +0+0 -composite \
+    $1/base/key/${key}_left.png -geometry +0+0 -composite \
+    $1/base/key/${key}_right.png -geometry +0+0 -composite \
+    $1/${key}_h.png
+  # key_v = normal_v + key_v + key_top + key_bottom
+  convert $1/normal_v.png \
+    $1/base/key/${key}_v.png -geometry +0+0 -composite \
+    $1/base/key/${key}_top.png -geometry +0+0 -composite \
+    $1/base/key/${key}_bottom.png -geometry +0+0 -composite \
+    $1/${key}_v.png
 done
