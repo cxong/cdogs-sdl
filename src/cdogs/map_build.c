@@ -157,10 +157,9 @@ void SetupDoorTileClasses(PicManager *pm, const char *style)
 	};
 	for (int i = 0; i < (int)(sizeof doorStyles / sizeof doorStyles[0]); i++)
 	{
-		for (int j = 0; j < 2; j++)
+		for (DoorType type = DOORTYPE_H; type < DOORTYPE_COUNT; type++)
 		{
-			const bool isHorizontal = j == 0;
-			DoorAddClass(&gTileClasses, pm, style, doorStyles[i], isHorizontal);
+			DoorAddClass(&gTileClasses, pm, style, doorStyles[i], type);
 		}
 	}
 }

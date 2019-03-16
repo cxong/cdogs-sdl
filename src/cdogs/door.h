@@ -51,14 +51,28 @@
 #include "map_build.h"
 
 
+typedef enum
+{
+	DOORTYPE_H,
+	DOORTYPE_LEFT,
+	DOORTYPE_HMID,
+	DOORTYPE_RIGHT,
+	DOORTYPE_V,
+	DOORTYPE_TOP,
+	DOORTYPE_VMID,
+	DOORTYPE_BOTTOM,
+
+	DOORTYPE_COUNT
+} DoorType;
+
 void MapAddDoorGroup(
 	MapBuilder *mb, const struct vec2i v, const int keyFlags);
 
 const TileClass *DoorGetClass(
-	const char *style, const char *key, const bool isHorizontal);
+	const char *style, const char *key, const DoorType type);
 void DoorAddClass(
 	TileClasses *c, PicManager *pm,
-	const char *style, const char *key, const bool isHorizontal);
+	const char *style, const char *key, const DoorType type);
 
 // Legacy door style int to str
 const char *IntDoorStyle(const int i);

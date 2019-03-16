@@ -53,14 +53,63 @@
 #include "net_util.h"
 
 
+static DoorType GetDoorType(
+	const bool isHorizontal, const int i, const int count)
+{
+	if (isHorizontal)
+	{
+		if (count == 1)
+		{
+			return DOORTYPE_H;
+		}
+		else if (i == 0)
+		{
+			return DOORTYPE_LEFT;
+		}
+		else if (i == count - 1)
+		{
+			return DOORTYPE_RIGHT;
+		}
+		else
+		{
+			return DOORTYPE_HMID;
+		}
+	}
+	else
+	{
+		if (count == 1)
+		{
+			return DOORTYPE_V;
+		}
+		else if (i == 0)
+		{
+			return DOORTYPE_TOP;
+		}
+		else if (i == count - 1)
+		{
+			return DOORTYPE_BOTTOM;
+		}
+		else
+		{
+			return DOORTYPE_VMID;
+		}
+	}
+}
+static bool DoorTypeIsHorizontal(const DoorType type)
+{
+	return
+		type == DOORTYPE_H || type == DOORTYPE_LEFT ||
+		type == DOORTYPE_HMID || type == DOORTYPE_RIGHT;
+}
+
 static void DoorGetClassName(
-	char *buf, const char *style, const char *key, const bool isHorizontal);
+	char *buf, const char *style, const char *key, const DoorType dType);
 static int GetDoorCountInGroup(
 	const MapBuilder *mb, const struct vec2i v, const bool isHorizontal);
 static TWatch *CreateCloseDoorWatch(
 	MapBuilder *mb, const struct vec2i v,
 	const bool isHorizontal, const int doorGroupCount,
-	const char *classAltName);
+	const char *doorKey);
 static Trigger *CreateOpenDoorTrigger(
 	MapBuilder *mb, const struct vec2i v,
 	const bool isHorizontal, const int doorGroupCount, const int keyFlags);
@@ -88,16 +137,16 @@ void MapAddDoorGroup(
 	case FLAGS_KEYCARD_YELLOW:	doorKey = "yellow";	break;
 	default:					doorKey = "normal";	break;
 	}
-	char doorClassName[CDOGS_FILENAME_MAX];
-	DoorGetClassName(
-		doorClassName, door->Style, doorKey, isHorizontal);
-	const TileClass *doorClass = StrTileClass(doorClassName);
-	const TileClass *doorClassOpen = DoorGetClass(
-		door->Style, "open", isHorizontal);
 
 	// set up the door pics
 	for (int i = 0; i < doorGroupCount; i++)
 	{
+		char doorClassName[CDOGS_FILENAME_MAX];
+		const DoorType type = GetDoorType(isHorizontal, i, doorGroupCount);
+		DoorGetClassName(doorClassName, door->Style, doorKey, type);
+		const TileClass *doorClass = StrTileClass(doorClassName);
+		const TileClass *doorClassOpen = DoorGetClass(
+			door->Style, "open", type);
 		const struct vec2i vI = svec2i_add(v, svec2i_scale(dv, (float)i));
 		Tile *tile = MapGetTile(mb->Map, vI);
 		tile->ClassAlt = doorClass;
@@ -121,7 +170,7 @@ void MapAddDoorGroup(
 	}
 
 	TWatch *w = CreateCloseDoorWatch(
-		mb, v, isHorizontal, doorGroupCount, doorClassName);
+		mb, v, isHorizontal, doorGroupCount, doorKey);
 	Trigger *t = CreateOpenDoorTrigger(
 		mb, v, isHorizontal, doorGroupCount, keyFlags);
 	// Connect trigger and watch up
@@ -165,7 +214,7 @@ static int GetDoorCountInGroup(
 static TWatch *CreateCloseDoorWatch(
 	MapBuilder *mb, const struct vec2i v,
 	const bool isHorizontal, const int doorGroupCount,
-	const char *classAltName)
+	const char *doorKey)
 {
 	TWatch *w = WatchNew();
 	const struct vec2i dv = svec2i(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
@@ -208,9 +257,13 @@ static TWatch *CreateCloseDoorWatch(
 		a->Type = ACTION_EVENT;
 		a->a.Event = GameEventNew(GAME_EVENT_TILE_SET);
 		a->a.Event.u.TileSet.Pos = Vec2i2Net(vI);
+		const DoorType type = GetDoorType(isHorizontal, i, doorGroupCount);
 		DoorGetClassName(
-			a->a.Event.u.TileSet.ClassName, door->Style, "open", isHorizontal);
-		strcpy(a->a.Event.u.TileSet.ClassAltName, classAltName);
+			a->a.Event.u.TileSet.ClassName, door->Style, "open", type);
+
+		char doorClassName[CDOGS_FILENAME_MAX];
+		DoorGetClassName(doorClassName, door->Style, doorKey, type);
+		strcpy(a->a.Event.u.TileSet.ClassAltName, doorClassName);
 	}
 
 	// Add shadows below doors
@@ -261,15 +314,16 @@ static Trigger *CreateOpenDoorTrigger(
 		a->Type = ACTION_EVENT;
 		a->a.Event = GameEventNew(GAME_EVENT_TILE_SET);
 		a->a.Event.u.TileSet.Pos = Vec2i2Net(vI);
+		const DoorType type = GetDoorType(isHorizontal, i, doorGroupCount);
 		DoorGetClassName(
 			a->a.Event.u.TileSet.ClassName, door->Style, "open",
-			isHorizontal);
-		if (!isHorizontal && i == 0)
+			type);
+		if (type == DOORTYPE_TOP || type == DOORTYPE_V)
 		{
 			// special door cavity picture
 			DoorGetClassName(
 				a->a.Event.u.TileSet.ClassAltName,
-				door->Style, "wall", false);
+				door->Style, "wall", type);
 		}
 	}
 
@@ -340,33 +394,72 @@ typedef struct
 // style: office/dungeon/blast/alien, or custom
 // key: normal/yellow/green/blue/red/wall/open
 const TileClass *DoorGetClass(
-	const char *style, const char *key, const bool isHorizontal)
+	const char *style, const char *key, const DoorType type)
 {
 	char buf[CDOGS_FILENAME_MAX];
-	DoorGetClassName(buf, style, key, isHorizontal);
+	DoorGetClassName(buf, style, key, type);
 	return StrTileClass(buf);
 }
-static void DoorGetTypeName(char *buf, const char *key, const bool isHorizontal)
+static void DoorGetTypeName(char *buf, const char *key, const DoorType type)
 {
-	// If the key is "wall", it doesn't include orientation
-	sprintf(
-		buf, "%s%s", key,
-		strcmp(key, "wall") == 0 ? "" : (isHorizontal ? "_h" : "_v"));
+	const char *typeStr;
+	if (strcmp(key, "wall") == 0)
+	{
+		typeStr = "";
+	}
+	else if (strcmp(key, "open") == 0)
+	{
+		typeStr = DoorTypeIsHorizontal(type) ? "_h" : "_v";
+	}
+	else
+	{
+		switch (type)
+		{
+			case DOORTYPE_H:
+				typeStr = "_h";
+				break;
+			case DOORTYPE_LEFT:
+				typeStr = "_left";
+				break;
+			case DOORTYPE_HMID:
+				typeStr = "_hmid";
+				break;
+			case DOORTYPE_RIGHT:
+				typeStr = "_right";
+				break;
+			case DOORTYPE_V:
+				typeStr = "_v";
+				break;
+			case DOORTYPE_TOP:
+				typeStr = "_top";
+				break;
+			case DOORTYPE_VMID:
+				typeStr = "_vmid";
+				break;
+			case DOORTYPE_BOTTOM:
+				typeStr = "_bottom";
+				break;
+			default:
+				CASSERT(false, "unknown doortype");
+				break;
+		}
+	}
+	sprintf(buf, "%s%s", key, typeStr);
 }
 static void DoorGetClassName(
-	char *buf, const char *style, const char *key, const bool isHorizontal)
+	char *buf, const char *style, const char *key, const DoorType dType)
 {
 	char type[256];
-	DoorGetTypeName(type, key, isHorizontal);
+	DoorGetTypeName(type, key, dType);
 	// If the key is "wall", it doesn't include orientation
 	TileClassGetName(buf, &gTileDoor, style, type, colorWhite, colorWhite);
 }
 void DoorAddClass(
 	TileClasses *c, PicManager *pm,
-	const char *style, const char *key, const bool isHorizontal)
+	const char *style, const char *key, const DoorType type)
 {
 	char buf[CDOGS_FILENAME_MAX];
-	DoorGetTypeName(buf, key, isHorizontal);
+	DoorGetTypeName(buf, key, type);
 	PicManagerGenerateMaskedStylePic(
 		pm, "door", style, buf, colorWhite, colorWhite);
 	TileClass *t = TileClassesAdd(
