@@ -402,10 +402,10 @@ const TileClass *DoorGetClass(
 }
 static void DoorGetTypeName(char *buf, const char *key, const DoorType type)
 {
-	const char *typeStr;
+	const char *typeStr = "";
 	if (strcmp(key, "wall") == 0)
 	{
-		typeStr = "";
+		// no change
 	}
 	else if (strcmp(key, "open") == 0)
 	{
