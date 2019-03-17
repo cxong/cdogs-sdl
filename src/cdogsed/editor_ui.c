@@ -889,7 +889,7 @@ static void MissionChangeRoomStyle(void *data, int d)
 	if (m->Type == MAPTYPE_STATIC) return;
 	TileClass *tc =
 		m->Type == MAPTYPE_CLASSIC ?
-		&m->u.Classic.TileClasses.Floor : &m->u.Cave.TileClasses.Floor;
+		&m->u.Classic.TileClasses.Room : &m->u.Cave.TileClasses.Room;
 	const int idx = CLAMP_OPPOSITE(
 		PicManagerGetTileStyleIndex(&gPicManager, tc->Style) + d,
 		0,
