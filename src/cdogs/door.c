@@ -118,12 +118,18 @@ void MapAddDoorGroup(
 {
 	const TileClass *door = MapBuilderGetTile(mb, v);
 	const TileClass *tileLeftType = MapBuilderGetTile(mb, svec2i(v.x - 1, v.y));
+	const bool tileLeftCanWalk = tileLeftType != NULL && tileLeftType->canWalk;
+	const bool tileLeftIsDoor =
+		tileLeftType != NULL && tileLeftType->Type == TILE_CLASS_DOOR;
 	const TileClass *tileRightType =
 		MapBuilderGetTile(mb, svec2i(v.x + 1, v.y));
+	const bool tileRightCanWalk =
+		tileRightType != NULL && tileRightType->canWalk;
+	const bool tileRightIsDoor =
+		tileRightType != NULL && tileRightType->Type == TILE_CLASS_DOOR;
 	const bool isHorizontal =
-		!tileLeftType->canWalk || !tileRightType->canWalk ||
-		tileLeftType->Type == TILE_CLASS_DOOR ||
-		tileRightType->Type == TILE_CLASS_DOOR;
+		!tileLeftCanWalk || !tileRightCanWalk ||
+		tileLeftIsDoor || tileRightIsDoor;
 	const int doorGroupCount = GetDoorCountInGroup(mb, v, isHorizontal);
 	const struct vec2i dv = svec2i(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
 	const struct vec2i dAside = svec2i(dv.y, dv.x);
@@ -201,6 +207,7 @@ static int GetDoorCountInGroup(
 	const struct vec2i dv = svec2i(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
 	int count = 0;
 	for (struct vec2i vi = v;
+		MapIsTileIn(mb->Map, vi) &&
 		MapBuilderGetTile(mb, vi)->Type == TILE_CLASS_DOOR;
 		vi = svec2i_add(vi, dv))
 	{
