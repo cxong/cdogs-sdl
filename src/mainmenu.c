@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2018 Cong Xu
+    Copyright (c) 2013-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -250,14 +250,14 @@ static menu_t *MenuCreateStart(
 	const int menuContinueIndex = (int)menu->u.normal.subMenus.size - 1;
 	MenuAddSubmenu(
 		menu,
-		MenuCreateQuickPlay("Quick Play", &campaigns->quickPlayEntry));
-	MenuAddSubmenu(
-		menu,
 		MenuCreateCampaigns(
 		"Campaign",
 		"Select a campaign:",
 		&campaigns->campaignList,
 		GAME_MODE_NORMAL));
+	MenuAddSubmenu(
+		menu,
+		MenuCreateQuickPlay("Quick Play", &campaigns->quickPlayEntry));
 	MenuAddSubmenu(
 		menu,
 		MenuCreateCampaigns(
