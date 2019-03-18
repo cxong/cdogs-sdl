@@ -173,14 +173,11 @@ static void SetupQuickPlayEnemy(Character *enemy, const WeaponClass *wc)
 	enemy->flags = 0;
 }
 
-static void SetupQuickPlayEnemies(
-	Mission *mission, const int numEnemies, CharacterStore *store)
+static void SetupQuickPlayEnemies(const int numEnemies, CharacterStore *store)
 {
-	int i;
-	for (i = 0; i < numEnemies; i++)
+	for (int i = 0; i < numEnemies; i++)
 	{
 		const WeaponClass *wc;
-		CArrayPushBack(&mission->Enemies, &i);
 
 		for (;;)
 		{
@@ -222,88 +219,19 @@ static void SetupQuickPlayEnemies(
 	}
 }
 
+static void AddMission(
+	CArray *missions, const PicManager *pm, const CharacterStore *cs);
 static void RandomMissionTileClasses(
 	MissionTileClasses *mtc, const PicManager *pm);
 static RoomParams RandomRoomParams(void);
-static void RandomStyle(char *style, const CArray *styleNames);
 static color_t RandomBGColor(void);
 void SetupQuickPlayCampaign(CampaignSetting *setting)
 {
-	Mission *m;
-	CMALLOC(m, sizeof *m);
-	MissionInit(m);
-	RandomStyle(m->ExitStyle, &gPicManager.exitStyleNames);
-	RandomStyle(m->KeyStyle, &gPicManager.keyStyleNames);
-	m->Size = GenerateQuickPlayMapSize(
-		ConfigGetEnum(&gConfig, "QuickPlay.MapSize"));
-	for (;;)
-	{
-		m->Type = (MapType)(rand() % MAPTYPE_COUNT);
-		// Can't randomly generate static maps
-		if (m->Type != MAPTYPE_STATIC)
-		{
-			break;
-		}
-	}
-	switch (m->Type)
-	{
-	case MAPTYPE_CLASSIC:
-		RandomMissionTileClasses(&m->u.Classic.TileClasses, &gPicManager);
-		m->u.Classic.Walls = GenerateQuickPlayParam(
-			ConfigGetEnum(&gConfig, "QuickPlay.WallCount"), 0, 5, 15, 30);
-		m->u.Classic.WallLength = GenerateQuickPlayParam(
-			ConfigGetEnum(&gConfig, "QuickPlay.WallLength"), 1, 3, 6, 12);
-		m->u.Classic.CorridorWidth = rand() % 3 + 1;
-		m->u.Classic.Rooms = RandomRoomParams();
-		m->u.Classic.Squares = GenerateQuickPlayParam(
-			ConfigGetEnum(&gConfig, "QuickPlay.SquareCount"), 0, 1, 3, 6);
-		m->u.Classic.Doors.Enabled = rand() % 2;
-		m->u.Classic.Doors.Min = 1;
-		m->u.Classic.Doors.Max = 6;
-		m->u.Classic.Pillars.Count = rand() % 5;
-		m->u.Classic.Pillars.Min = rand() % 3 + 1;
-		m->u.Classic.Pillars.Max = rand() % 3 + m->u.Classic.Pillars.Min;
-		break;
-	case MAPTYPE_CAVE:
-		// TODO: quickplay configs for cave type
-		RandomMissionTileClasses(&m->u.Cave.TileClasses, &gPicManager);
-		m->u.Cave.FillPercent = rand() % 40 + 10;
-		m->u.Cave.Repeat = rand() % 6;
-		m->u.Cave.R1 = rand() % 2 + 4;
-		m->u.Cave.R2 = rand() % 5 - 1;
-		m->u.Cave.CorridorWidth = rand() % 3 + 1;
-		m->u.Cave.Rooms = RandomRoomParams();
-		m->u.Cave.Squares = GenerateQuickPlayParam(
-			ConfigGetEnum(&gConfig, "QuickPlay.SquareCount"), 0, 1, 3, 6);
-		m->u.Cave.DoorsEnabled = rand() % 2;
-		break;
-	default:
-		assert(0 && "unknown map type");
-		break;
-	}
 	CharacterStoreTerminate(&setting->characters);
 	CharacterStoreInit(&setting->characters);
 	int c = GenerateQuickPlayParam(
 		ConfigGetEnum(&gConfig, "QuickPlay.EnemyCount"), 3, 5, 8, 12);
-	SetupQuickPlayEnemies(m, c, &setting->characters);
-
-	c = GenerateQuickPlayParam(
-		ConfigGetEnum(&gConfig, "QuickPlay.ItemCount"), 0, 2, 5, 10);
-	for (int i = 0; i < c; i++)
-	{
-		MapObjectDensity mop;
-		mop.M = IndexMapObject(rand() % MapObjectsCount(&gMapObjects));
-		mop.Density = GenerateQuickPlayParam(
-			ConfigGetEnum(&gConfig, "QuickPlay.ItemCount"), 0, 5, 10, 20);
-		CArrayPushBack(&m->MapObjectDensities, &mop);
-	}
-	m->EnemyDensity = (40 + (rand() % 20)) / (int)m->Enemies.size;
-	CA_FOREACH(const WeaponClass, wc, gWeaponClasses.Guns)
-		if (wc->IsRealGun)
-		{
-			CArrayPushBack(&m->Weapons, &wc);
-		}
-	CA_FOREACH_END()
+	SetupQuickPlayEnemies(c, &setting->characters);
 
 	CFREE(setting->Title);
 	CSTRDUP(setting->Title, "Quick play");
@@ -311,8 +239,86 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 	CSTRDUP(setting->Author, "");
 	CFREE(setting->Description);
 	CSTRDUP(setting->Description, "");
-	CArrayPushBack(&setting->Missions, m);
-	CFREE(m);
+	AddMission(&setting->Missions, &gPicManager, &setting->characters);
+}
+static void RandomStyle(char *style, const CArray *styleNames);
+static void AddMission(
+	CArray *missions, const PicManager *pm, const CharacterStore *cs)
+{
+	Mission m;
+	MissionInit(&m);
+	RandomStyle(m.ExitStyle, &pm->exitStyleNames);
+	RandomStyle(m.KeyStyle, &pm->keyStyleNames);
+	m.Size = GenerateQuickPlayMapSize(
+		ConfigGetEnum(&gConfig, "QuickPlay.MapSize"));
+	do
+	{
+		m.Type = (MapType)(rand() % MAPTYPE_COUNT);
+	}
+	// Can't randomly generate static maps
+	while (m.Type == MAPTYPE_STATIC);
+	switch (m.Type)
+	{
+	case MAPTYPE_CLASSIC:
+		RandomMissionTileClasses(&m.u.Classic.TileClasses, pm);
+		m.u.Classic.Walls = GenerateQuickPlayParam(
+			ConfigGetEnum(&gConfig, "QuickPlay.WallCount"), 0, 5, 15, 30);
+		m.u.Classic.WallLength = GenerateQuickPlayParam(
+			ConfigGetEnum(&gConfig, "QuickPlay.WallLength"), 1, 3, 6, 12);
+		m.u.Classic.CorridorWidth = rand() % 3 + 1;
+		m.u.Classic.Rooms = RandomRoomParams();
+		m.u.Classic.Squares = GenerateQuickPlayParam(
+			ConfigGetEnum(&gConfig, "QuickPlay.SquareCount"), 0, 1, 3, 6);
+		m.u.Classic.Doors.Enabled = rand() % 2;
+		m.u.Classic.Doors.Min = 1;
+		m.u.Classic.Doors.Max = 6;
+		m.u.Classic.Pillars.Count = rand() % 5;
+		m.u.Classic.Pillars.Min = rand() % 3 + 1;
+		m.u.Classic.Pillars.Max = rand() % 3 + m.u.Classic.Pillars.Min;
+		break;
+	case MAPTYPE_CAVE:
+		// TODO: quickplay configs for cave type
+		RandomMissionTileClasses(&m.u.Cave.TileClasses, pm);
+		m.u.Cave.FillPercent = rand() % 40 + 10;
+		m.u.Cave.Repeat = rand() % 6;
+		m.u.Cave.R1 = rand() % 2 + 4;
+		m.u.Cave.R2 = rand() % 5 - 1;
+		m.u.Cave.CorridorWidth = rand() % 3 + 1;
+		m.u.Cave.Rooms = RandomRoomParams();
+		m.u.Cave.Squares = GenerateQuickPlayParam(
+			ConfigGetEnum(&gConfig, "QuickPlay.SquareCount"), 0, 1, 3, 6);
+		m.u.Cave.DoorsEnabled = rand() % 2;
+		break;
+	default:
+		assert(0 && "unknown map type");
+		break;
+	}
+
+	for (int i = 0; i < (int)cs->OtherChars.size; i++)
+	{
+		// TODO: select enemies
+		CArrayPushBack(&m.Enemies, &i);
+	}
+
+	int c = GenerateQuickPlayParam(
+		ConfigGetEnum(&gConfig, "QuickPlay.ItemCount"), 0, 2, 5, 10);
+	for (int i = 0; i < c; i++)
+	{
+		MapObjectDensity mop;
+		mop.M = IndexMapObject(rand() % MapObjectsCount(&gMapObjects));
+		mop.Density = GenerateQuickPlayParam(
+			ConfigGetEnum(&gConfig, "QuickPlay.ItemCount"), 0, 5, 10, 20);
+		CArrayPushBack(&m.MapObjectDensities, &mop);
+	}
+	m.EnemyDensity = (40 + (rand() % 20)) / (int)m.Enemies.size;
+	CA_FOREACH(const WeaponClass, wc, gWeaponClasses.Guns)
+		if (wc->IsRealGun)
+		{
+			CArrayPushBack(&m.Weapons, &wc);
+		}
+	CA_FOREACH_END()
+
+	CArrayPushBack(missions, &m);
 }
 static void RandomMissionTileClasses(
 	MissionTileClasses *mtc, const PicManager *pm)
