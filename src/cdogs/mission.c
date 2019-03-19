@@ -459,10 +459,6 @@ bool CanCompleteMission(const struct MissionOptions *options)
 			GetNumPlayers(PLAYER_ANY, false, false) > 1 &&
 			GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) <= 1;
 	}
-	else if (gCampaign.Entry.Mode == GAME_MODE_QUICK_PLAY)
-	{
-		return GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) == 0;
-	}
 
 	return MissionAllObjectivesComplete(options);
 }

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2014, 2016-2017 Cong Xu
+    Copyright (c) 2014, 2016-2017, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -99,8 +99,6 @@ void ObjectiveLoadJSON(Objective *o, json_t *node, const int version)
 	memset(o, 0, sizeof *o);
 	o->Description = GetString(node, "Description");
 	JSON_UTILS_LOAD_ENUM(o->Type, node, "Type", StrObjectiveType);
-	// Set objective colours based on type
-	o->color = ObjectiveTypeColor(o->Type);
 	if (version < 8)
 	{
 		// Index numbers used for all objective classes; convert them
@@ -159,6 +157,8 @@ void ObjectiveLoadJSON(Objective *o, json_t *node, const int version)
 }
 void ObjectiveSetup(Objective *o)
 {
+	// Set objective colours based on type
+	o->color = ObjectiveTypeColor(o->Type);
 	o->placed = 0;
 	o->done = 0;
 }

@@ -247,6 +247,10 @@ static void AddMission(
 {
 	Mission m;
 	MissionInit(&m);
+	CSTRDUP(m.Title, "Rumble in the Cyberpen")
+	CSTRDUP(
+		m.Description,
+		"You are an elite Cyberdog. Your task is to kill your enemies!");
 	RandomStyle(m.ExitStyle, &pm->exitStyleNames);
 	RandomStyle(m.KeyStyle, &pm->keyStyleNames);
 	m.Size = GenerateQuickPlayMapSize(
@@ -300,7 +304,18 @@ static void AddMission(
 		CArrayPushBack(&m.Enemies, &i);
 	}
 
-	int c = GenerateQuickPlayParam(
+	int c = 0;
+	CArrayPushBack(&m.SpecialChars, &c);
+	Objective o;
+	CSTRDUP(o.Description, "Kill the enemies");
+	o.Type = OBJECTIVE_KILL;
+	o.u.Index = 0;
+	o.Count = RAND_INT(5, 20);
+	o.Required = RAND_INT(MAX(1, o.Count / 2), o.Count);
+	o.Flags = OBJECTIVE_POSKNOWN;
+	CArrayPushBack(&m.Objectives, &o);
+
+	c = GenerateQuickPlayParam(
 		ConfigGetEnum(&gConfig, "QuickPlay.ItemCount"), 0, 2, 5, 10);
 	for (int i = 0; i < c; i++)
 	{
