@@ -33,6 +33,23 @@
 #include "door.h"
 #include "files.h"
 
+// Random mission parameters
+#define NUM_MISSIONS 3
+QuickPlayQuantity missionSizes[NUM_MISSIONS] = {
+	QUICKPLAY_QUANTITY_SMALL,
+	QUICKPLAY_QUANTITY_MEDIUM,
+	QUICKPLAY_QUANTITY_LARGE
+};
+const char *missionTitles[NUM_MISSIONS] = {
+	"Rumble in the Cyberpen",
+	"Revenge of the Cyberzombies",
+	"Rise of the Cyberdog",
+};
+const char *missionDescriptions[NUM_MISSIONS] = {
+	"You are an elite Cyberdog. Your task is to kill your enemies!",
+	"The dastardly cyberzombies have gathered! Kill them before they get you!",
+	"End of the line! Kill the remaining enemies to defeat them once and for all!",
+};
 
 // Generate a random partition of an integer `total` into a pair of ints x, y
 // With the restrictions that neither x, y are less than min, and
@@ -220,7 +237,8 @@ static void SetupQuickPlayEnemies(const int numEnemies, CharacterStore *store)
 }
 
 static void AddMission(
-	CArray *missions, const PicManager *pm, const CharacterStore *cs);
+	CArray *missions, const PicManager *pm, const CharacterStore *cs,
+	const int idx);
 static void RandomMissionTileClasses(
 	MissionTileClasses *mtc, const PicManager *pm);
 static RoomParams RandomRoomParams(void);
@@ -239,22 +257,23 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 	CSTRDUP(setting->Author, "");
 	CFREE(setting->Description);
 	CSTRDUP(setting->Description, "");
-	AddMission(&setting->Missions, &gPicManager, &setting->characters);
+	for (int i = 0; i < NUM_MISSIONS; i++)
+	{
+		AddMission(&setting->Missions, &gPicManager, &setting->characters, i);
+	}
 }
 static void RandomStyle(char *style, const CArray *styleNames);
 static void AddMission(
-	CArray *missions, const PicManager *pm, const CharacterStore *cs)
+	CArray *missions, const PicManager *pm, const CharacterStore *cs,
+	const int idx)
 {
 	Mission m;
 	MissionInit(&m);
-	CSTRDUP(m.Title, "Rumble in the Cyberpen")
-	CSTRDUP(
-		m.Description,
-		"You are an elite Cyberdog. Your task is to kill your enemies!");
+	CSTRDUP(m.Title, missionTitles[idx]);
+	CSTRDUP(m.Description, missionDescriptions[idx]);
 	RandomStyle(m.ExitStyle, &pm->exitStyleNames);
 	RandomStyle(m.KeyStyle, &pm->keyStyleNames);
-	m.Size = GenerateQuickPlayMapSize(
-		ConfigGetEnum(&gConfig, "QuickPlay.MapSize"));
+	m.Size = GenerateQuickPlayMapSize(missionSizes[idx]);
 	do
 	{
 		m.Type = (MapType)(rand() % MAPTYPE_COUNT);

@@ -585,7 +585,6 @@ GameLoopData *GameOptions(const GameMode gm)
 		I("StartServer");
 		break;
 	case GAME_MODE_QUICK_PLAY:
-		I("QuickPlay.MapSize");
 		I("QuickPlay.WallCount");
 		I("QuickPlay.WallLength");
 		I("QuickPlay.RoomCount");
