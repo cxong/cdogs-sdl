@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2017-2018 Cong Xu
+    Copyright (c) 2017-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -758,7 +758,9 @@ static void DrawCharColor(EditorContext *ec, const char *label, color_t *c)
 		ec->ctx, color, nk_vec2(nk_widget_width(ec->ctx), 400)))
 	{
 		nk_layout_row_dynamic(ec->ctx, 110, 1);
-		color = nk_color_picker(ec->ctx, color, NK_RGB);
+		struct nk_colorf colorf = nk_color_cf(color);
+		colorf = nk_color_picker(ec->ctx, colorf, NK_RGB);
+		color = nk_rgb_cf(colorf);
 		nk_layout_row_dynamic(ec->ctx, ROW_HEIGHT, 1);
 		color.r = (nk_byte)nk_propertyi(ec->ctx, "#R:", 0, color.r, 255, 1, 1);
 		color.g = (nk_byte)nk_propertyi(ec->ctx, "#G:", 0, color.g, 255, 1, 1);
