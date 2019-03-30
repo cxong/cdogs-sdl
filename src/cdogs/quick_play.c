@@ -331,7 +331,7 @@ static void AddMission(
 	CSTRDUP(o.Description, "Kill the enemies");
 	o.Type = OBJECTIVE_KILL;
 	o.u.Index = 0;
-	o.Count = RAND_INT(missionKillCountMin[idx], missionKillCountMin[idx] * 2);
+	o.Count = RAND_INT(missionKillCountMin[idx], missionKillCountMin[idx] * 3 / 2);
 	o.Required = RAND_INT(MAX(1, o.Count / 2), o.Count);
 	o.Flags = OBJECTIVE_POSKNOWN;
 	CArrayPushBack(&m.Objectives, &o);

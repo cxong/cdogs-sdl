@@ -65,7 +65,7 @@ bool IsGameOptionsNeeded(const GameMode mode)
 	case GAME_MODE_DEATHMATCH:
 		return true;
 	case GAME_MODE_QUICK_PLAY:
-		return true;
+		return !gCampaign.OptionsSet;
 	default:
 		CASSERT(false, "unknown game mode");
 		return false;
