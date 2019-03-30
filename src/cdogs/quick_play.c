@@ -50,6 +50,8 @@ const char *missionDescriptions[NUM_MISSIONS] = {
 	"The dastardly cyberzombies have gathered! Kill them before they get you!",
 	"End of the line! Kill the remaining enemies to defeat them once and for all!",
 };
+const int missionNumEnemies[NUM_MISSIONS] = {2, 4, 6};
+const int missionKillCountMin[NUM_MISSIONS] = {3, 5, 7};
 
 // Generate a random partition of an integer `total` into a pair of ints x, y
 // With the restrictions that neither x, y are less than min, and
@@ -317,7 +319,7 @@ static void AddMission(
 		break;
 	}
 
-	for (int i = 0; i < (int)cs->OtherChars.size; i++)
+	for (int i = 0; i < MIN(missionNumEnemies[idx], (int)cs->OtherChars.size); i++)
 	{
 		// TODO: select enemies
 		CArrayPushBack(&m.Enemies, &i);
@@ -329,7 +331,7 @@ static void AddMission(
 	CSTRDUP(o.Description, "Kill the enemies");
 	o.Type = OBJECTIVE_KILL;
 	o.u.Index = 0;
-	o.Count = RAND_INT(5, 20);
+	o.Count = RAND_INT(missionKillCountMin[idx], missionKillCountMin[idx] * 2);
 	o.Required = RAND_INT(MAX(1, o.Count / 2), o.Count);
 	o.Flags = OBJECTIVE_POSKNOWN;
 	CArrayPushBack(&m.Objectives, &o);
@@ -344,7 +346,7 @@ static void AddMission(
 			ConfigGetEnum(&gConfig, "QuickPlay.ItemCount"), 0, 5, 10, 20);
 		CArrayPushBack(&m.MapObjectDensities, &mop);
 	}
-	m.EnemyDensity = (40 + (rand() % 20)) / (int)m.Enemies.size;
+	m.EnemyDensity = 10 / (int)m.Enemies.size;
 	CA_FOREACH(const WeaponClass, wc, gWeaponClasses.Guns)
 		if (wc->IsRealGun)
 		{
