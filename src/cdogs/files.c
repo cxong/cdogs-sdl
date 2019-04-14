@@ -334,7 +334,11 @@ void load_character(FILE *f, TBadGuy *b)
 }
 void ConvertCharacter(Character *c, TBadGuy *b)
 {
-	c->Class = IntCharacterClass(b->facePic);
+	const char *face = IntCharacterFace(b->facePic);
+	char *newFace = NULL;
+	CharacterOldFaceToHair(face, &newFace, &c->Hair);
+	c->Class = StrCharacterClass(newFace);
+	CFREE(newFace);
 	c->speed = b->speed / 256.0f;
 	c->bot->probabilityToMove = b->probabilityToMove;
 	c->bot->probabilityToTrack = b->probabilityToTrack;

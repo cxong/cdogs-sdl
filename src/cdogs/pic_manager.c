@@ -55,6 +55,7 @@ void PicManagerInit(PicManager *pm)
 	pm->sprites = hashmap_new();
 	pm->customPics = hashmap_new();
 	pm->customSprites = hashmap_new();
+	CArrayInit(&pm->hairstyleNames, sizeof(char *));
 	CArrayInit(&pm->wallStyleNames, sizeof(char *));
 	CArrayInit(&pm->tileStyleNames, sizeof(char *));
 	CArrayInit(&pm->exitStyleNames, sizeof(char *));
@@ -277,6 +278,9 @@ void PicManagerLoad(PicManager *pm)
 
 static void FindStylePics(
 	PicManager *pm, CArray *styleNames, PFany hashmapFunc);
+static void FindStyleSprites(
+	PicManager *pm, CArray *styleNames, PFany hashmapFunc);
+static int MaybeAdHairSpriteName(any_t data, any_t item);
 static int MaybeAddWallPicName(any_t data, any_t item);
 static int MaybeAddTilePicName(any_t data, any_t item);
 static int MaybeAddExitPicName(any_t data, any_t item);
@@ -284,6 +288,7 @@ static int MaybeAddKeyPicName(any_t data, any_t item);
 static int MaybeAddDoorPicName(any_t data, any_t item);
 static void AfterAdd(PicManager *pm)
 {
+	FindStyleSprites(pm, &pm->hairstyleNames, MaybeAdHairSpriteName);
 	FindStylePics(pm, &pm->wallStyleNames, MaybeAddWallPicName);
 	FindStylePics(pm, &pm->tileStyleNames, MaybeAddTilePicName);
 	FindStylePics(pm, &pm->exitStyleNames, MaybeAddExitPicName);
@@ -321,18 +326,38 @@ static int CompareStyleNames(const void *v1, const void *v2)
 	const char * const *s2 = v2;
 	return strcmp(*s1, *s2);
 }
+static void FindStyleSprites(
+	PicManager *pm, CArray *styleNames, PFany hashmapFunc)
+{
+	// Scan all pics for style sprites
+	StylesClear(styleNames);
+	hashmap_iterate(pm->customSprites, hashmapFunc, pm);
+	hashmap_iterate(pm->sprites, hashmapFunc, pm);
+	// Sort the style names alphabetically
+	// This prevents the list from reordering unpredictably, when the editor
+	// is used and masked pics get added
+	if (styleNames->data != NULL)
+	{
+		qsort(
+			styleNames->data, styleNames->size, styleNames->elemSize,
+			CompareStyleNames);
+	}
+}
 static void MaybeAddStyleName(
-	const NamedPic *p, const char *prefix, CArray *styleNames)
+	const char *picName, const char *prefix, CArray *styleNames)
 {
 	// Look for style names within a full name of the form:
 	// prefix/style/suffix
-	// NOTE: prefix should include slash
-	const char *picName = p->name;
+	// NOTE: prefix should include trailing slash
 	if (strncmp(picName, prefix, strlen(prefix)) != 0)
 	{
 		return;
 	}
 	const char *nextSlash = strchr(picName + strlen(prefix), '/');
+	if (nextSlash == NULL)
+	{
+		nextSlash = picName + strlen(picName);
+	}
 	char buf[CDOGS_PATH_MAX];
 	const size_t len = nextSlash - picName - strlen(prefix);
 	strncpy(buf, picName + strlen(prefix), len);
@@ -350,6 +375,13 @@ static void MaybeAddStyleName(
 	CSTRDUP(s, buf);
 	CArrayPushBack(styleNames, &s);
 }
+static int MaybeAdHairSpriteName(any_t data, any_t item)
+{
+	PicManager *pm = data;
+	MaybeAddStyleName(
+		((const NamedSprites *)item)->name, "chars/hairs/", &pm->hairstyleNames);
+	return MAP_OK;
+}
 static int MaybeAddExitPicName(any_t data, any_t item)
 {
 	// Exit pics should be like:
@@ -357,7 +389,8 @@ static int MaybeAddExitPicName(any_t data, any_t item)
 	// where style is the style name to be stored, and
 	// shadow is normal/shadow
 	PicManager *pm = data;
-	MaybeAddStyleName(item, "exits/", &pm->exitStyleNames);
+	MaybeAddStyleName(
+		((const NamedPic *)item)->name, "exits/", &pm->exitStyleNames);
 	return MAP_OK;
 }
 static int MaybeAddDoorPicName(any_t data, any_t item)
@@ -366,7 +399,8 @@ static int MaybeAddDoorPicName(any_t data, any_t item)
 	// door/style/type
 	// where style is the style name to be stored
 	PicManager *pm = data;
-	MaybeAddStyleName(item, "door/", &pm->doorStyleNames);
+	MaybeAddStyleName(
+		((const NamedPic *)item)->name, "door/", &pm->doorStyleNames);
 	return MAP_OK;
 }
 static int MaybeAddKeyPicName(any_t data, any_t item)
@@ -377,7 +411,8 @@ static int MaybeAddKeyPicName(any_t data, any_t item)
 	// colour is yellow/green/blue/red
 	// TODO: more colours
 	PicManager *pm = data;
-	MaybeAddStyleName(item, "keys/", &pm->keyStyleNames);
+	MaybeAddStyleName(
+		((const NamedPic *)item)->name, "keys/", &pm->keyStyleNames);
 	return MAP_OK;
 }
 static int MaybeAddWallPicName(any_t data, any_t item)
@@ -386,7 +421,8 @@ static int MaybeAddWallPicName(any_t data, any_t item)
 	// wall/style/type
 	// where style is the style name to be stored
 	PicManager *pm = data;
-	MaybeAddStyleName(item, "wall/", &pm->wallStyleNames);
+	MaybeAddStyleName(
+		((const NamedPic *)item)->name, "wall/", &pm->wallStyleNames);
 	return MAP_OK;
 }
 static int MaybeAddTilePicName(any_t data, any_t item)
@@ -396,7 +432,8 @@ static int MaybeAddTilePicName(any_t data, any_t item)
 	// where style is the style name to be stored, and
 	// type is normal/shadow/alt1/alt2
 	PicManager *pm = data;
-	MaybeAddStyleName(item, "tile/", &pm->tileStyleNames);
+	MaybeAddStyleName(
+		((const NamedPic *)item)->name, "tile/", &pm->tileStyleNames);
 	return MAP_OK;
 }
 
@@ -417,14 +454,22 @@ static void PicManagerUnload(PicManager *pm)
 	hashmap_clear(pm->customSprites, NamedSpritesDestroy);
 	AfterAdd(pm);
 }
+static void StyleNamesDestroy(CArray *a)
+{
+	CA_FOREACH(char, n, *a)
+		CFREE(n);
+	CA_FOREACH_END()
+	CArrayTerminate(a);
+}
 void PicManagerTerminate(PicManager *pm)
 {
 	PicManagerUnload(pm);
-	CArrayTerminate(&pm->wallStyleNames);
-	CArrayTerminate(&pm->tileStyleNames);
-	CArrayTerminate(&pm->exitStyleNames);
-	CArrayTerminate(&pm->doorStyleNames);
-	CArrayTerminate(&pm->keyStyleNames);
+	StyleNamesDestroy(&pm->hairstyleNames);
+	StyleNamesDestroy(&pm->wallStyleNames);
+	StyleNamesDestroy(&pm->tileStyleNames);
+	StyleNamesDestroy(&pm->exitStyleNames);
+	StyleNamesDestroy(&pm->doorStyleNames);
+	StyleNamesDestroy(&pm->keyStyleNames);
 	IMG_Quit();
 }
 static void NamedPicDestroy(any_t data)

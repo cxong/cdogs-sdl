@@ -38,6 +38,7 @@ typedef struct
 	map_t customPics;	// of NamedPic
 	map_t customSprites;	// of NamedSprites
 
+	CArray hairstyleNames;	// of char *
 	CArray wallStyleNames;	// of char *
 	CArray tileStyleNames;	// of char *
 	CArray exitStyleNames;	// of char *

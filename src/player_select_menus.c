@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2016, 2018 Cong Xu
+	Copyright (c) 2013-2016, 2018-2019 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -191,6 +191,35 @@ static void PostInputFaceMenu(menu_t *menu, int cmd, void *data)
 		c->Class = CArrayGet(
 			&gCharacterClasses.CustomClasses,
 			menu->u.normal.index - (int)gCharacterClasses.Classes.size);
+	}
+	PostInputRotatePlayer(menu, cmd, data);
+}
+
+static void PostInputHairMenu(menu_t *menu, int cmd, void *data);
+static menu_t *CreateHairMenu(MenuDisplayPlayerData *data)
+{
+	menu_t *menu = MenuCreateNormal("Hairstyle", "", MENU_TYPE_NORMAL, 0);
+	menu->u.normal.maxItems = 11;
+	MenuAddSubmenu(menu, MenuCreateBack("(None)"));
+	CA_FOREACH(const char *, h, gPicManager.hairstyleNames)
+		MenuAddSubmenu(menu, MenuCreateBack(*h));
+	CA_FOREACH_END()
+	MenuSetPostInputFunc(menu, PostInputHairMenu, data);
+	return menu;
+}
+static void PostInputHairMenu(menu_t *menu, int cmd, void *data)
+{
+	const MenuDisplayPlayerData *d = data;
+	// Change player hairstyle based on current menu selection
+	PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
+	Character *c = &p->Char;
+	CFREE(c->Hair);
+	c->Hair = NULL;
+	if (menu->u.normal.index > 0)
+	{
+		const char **hair =
+			CArrayGet(&gPicManager.hairstyleNames, menu->u.normal.index - 1);
+		CSTRDUP(c->Hair, *hair);
 	}
 	PostInputRotatePlayer(menu, cmd, data);
 }
@@ -503,6 +532,7 @@ static menu_t *CreateCustomizeMenu(
 	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_NORMAL, 0);
 
 	MenuAddSubmenu(menu, CreateFaceMenu(&data->display));
+	MenuAddSubmenu(menu, CreateHairMenu(&data->display));
 
 	MenuAddSubmenu(menu, CreateColorMenu(
 		"Skin", &data->skinData, CHAR_COLOR_SKIN, data->display.PlayerUID));

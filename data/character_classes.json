@@ -9,13 +9,6 @@
       }
     },
     {
-      "Name": "Ice",
-      "HeadPics": {
-        "Type": "Directional",
-        "Sprites": "chars/heads/ice"
-      }
-    },
-    {
       "Name": "Ogre",
       "HeadPics": {
         "Type": "Directional",

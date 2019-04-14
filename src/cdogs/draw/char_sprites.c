@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2017 Cong Xu
+    Copyright (c) 2017, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@
 #include "yajl_utils.h"
 
 
-#define VERSION 1
+#define VERSION 2
 
 CharSpriteClasses gCharSpriteClasses;
 
@@ -137,6 +137,8 @@ static CharSprites *CharSpritesLoadJSON(const char *name, const char *path)
 	}
 	c->Offsets.Frame[BODY_PART_HEAD] = LoadFrameOffsets(
 		node, "Offsets/Frame/Head");
+	c->Offsets.Frame[BODY_PART_HAIR] = LoadFrameOffsets(
+		node, "Offsets/Frame/Hair");
 	c->Offsets.Frame[BODY_PART_BODY] = LoadFrameOffsets(
 		node, "Offsets/Frame/Body");
 	c->Offsets.Frame[BODY_PART_LEGS] = LoadFrameOffsets(
@@ -144,6 +146,7 @@ static CharSprites *CharSpritesLoadJSON(const char *name, const char *path)
 	c->Offsets.Frame[BODY_PART_GUN] = LoadFrameOffsets(
 		node, "Offsets/Frame/Gun");
 	LoadDirOffsets(c->Offsets.Dir[BODY_PART_HEAD], node, "Offsets/Dir/Head");
+	LoadDirOffsets(c->Offsets.Dir[BODY_PART_HAIR], node, "Offsets/Dir/Hair");
 	LoadDirOffsets(c->Offsets.Dir[BODY_PART_BODY], node, "Offsets/Dir/Body");
 	LoadDirOffsets(c->Offsets.Dir[BODY_PART_LEGS], node, "Offsets/Dir/Legs");
 	LoadDirOffsets(c->Offsets.Dir[BODY_PART_GUN], node, "Offsets/Dir/Gun");

@@ -501,6 +501,7 @@ bool StrEndsWith(const char *str, const char *suffix)
 BodyPart StrBodyPart(const char *s)
 {
 	S2T(BODY_PART_HEAD, "head");
+	S2T(BODY_PART_HAIR, "hair");
 	S2T(BODY_PART_BODY, "body");
 	S2T(BODY_PART_LEGS, "legs");
 	S2T(BODY_PART_GUN, "gun");

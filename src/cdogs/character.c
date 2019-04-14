@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2014, 2016 Cong Xu
+    Copyright (c) 2013-2014, 2016, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -34,8 +34,19 @@
 #include "files.h"
 #include "json_utils.h"
 
-#define CHARACTER_VERSION 12
+#define CHARACTER_VERSION 13
 
+
+static void CharacterInit(Character *c)
+{
+	memset(c, 0, sizeof *c);
+	CCALLOC(c->bot, sizeof *c->bot);
+}
+static void CharacterTerminate(Character *c)
+{
+	CFREE(c->Hair);
+	CFREE(c->bot);
+}
 
 void CharacterStoreInit(CharacterStore *store)
 {
@@ -49,7 +60,7 @@ void CharacterStoreInit(CharacterStore *store)
 void CharacterStoreTerminate(CharacterStore *store)
 {
 	CA_FOREACH(Character, c, store->OtherChars)
-		CFREE(c->bot);
+		CharacterTerminate(c);
 	CA_FOREACH_END()
 	CArrayTerminate(&store->OtherChars);
 	CArrayTerminate(&store->prisonerIds);
@@ -75,12 +86,41 @@ void CharacterLoadJSON(CharacterStore *c, json_t *root, int version)
 	{
 		Character *ch = CharacterStoreAddOther(c);
 		char *tmp;
+
+		// Face
+		if (version < 13)
+		{
+			// Old face names, before face + hair split
+			if (version < 7)
+			{
+				int face;
+				LoadInt(&face, child, "face");
+				CSTRDUP(tmp, IntCharacterFace(face));
+			}
+			else
+			{
+				tmp = GetString(child, "Class");
+			}
+			char *face = NULL;
+			CharacterOldFaceToHair(tmp, &face, &ch->Hair);
+			CFREE(tmp);
+			ch->Class = StrCharacterClass(face);
+			CFREE(face);
+		}
+		else
+		{
+			tmp = GetString(child, "Class");
+			ch->Class = StrCharacterClass(tmp);
+			CFREE(tmp);
+			tmp = NULL;
+			LoadStr(&ch->Hair, child, "HairType");
+			CFREE(tmp);
+		}
+
+		// Colours
 		if (version < 7)
 		{
 			// Old version stored character looks as palette indices
-			int face;
-			LoadInt(&face, child, "face");
-			ch->Class = IntCharacterClass(face);
 			int skin, arm, body, leg, hair;
 			LoadInt(&skin, child, "skin");
 			LoadInt(&arm, child, "arm");
@@ -93,7 +133,6 @@ void CharacterLoadJSON(CharacterStore *c, json_t *root, int version)
 		{
 			tmp = GetString(child, "Class");
 			ch->Class = StrCharacterClass(tmp);
-			CFREE(tmp);
 			LoadColor(&ch->Colors.Skin, child, "Skin");
 			LoadColor(&ch->Colors.Arms, child, "Arms");
 			LoadColor(&ch->Colors.Body, child, "Body");
@@ -130,6 +169,10 @@ bool CharacterSave(CharacterStore *s, const char *path)
 	CA_FOREACH(Character, c, s->OtherChars)
 		json_t *node = json_new_object();
 		AddStringPair(node, "Class", c->Class->Name);
+		if (c->Hair)
+		{
+			AddStringPair(node, "Hair", c->Hair);
+		}
 		AddColorPair(node, "Skin", c->Colors.Skin);
 		AddColorPair(node, "Arms", c->Colors.Arms);
 		AddColorPair(node, "Body", c->Colors.Body);
@@ -167,8 +210,7 @@ Character *CharacterStoreAddOther(CharacterStore *store)
 Character *CharacterStoreInsertOther(CharacterStore *store, const size_t idx)
 {
 	Character newChar;
-	memset(&newChar, 0, sizeof newChar);
-	CCALLOC(newChar.bot, sizeof *newChar.bot);
+	CharacterInit(&newChar);
 	CArrayInsert(&store->OtherChars, idx, &newChar);
 	return CArrayGet(&store->OtherChars, idx);
 }
@@ -265,6 +307,12 @@ void CharacterShuffleAppearance(Character *c)
 			&gCharacterClasses.Classes,
 			charClass - gCharacterClasses.Classes.size);
 	}
+	CFREE(c->Hair);
+	CSTRDUP(
+		c->Hair,
+		*(char **)CArrayGet(
+			&gPicManager.hairstyleNames,
+			rand() % gPicManager.hairstyleNames.size));
 	c->Colors.Skin = RandomColor();
 	c->Colors.Arms = RandomColor();
 	c->Colors.Body = RandomColor();

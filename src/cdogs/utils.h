@@ -196,6 +196,7 @@ typedef struct
 typedef enum
 {
 	BODY_PART_HEAD,
+	BODY_PART_HAIR,
 	BODY_PART_BODY,
 	BODY_PART_LEGS,
 	BODY_PART_GUN,

@@ -54,7 +54,8 @@ extern CharacterClasses gCharacterClasses;
 
 const CharacterClass *StrCharacterClass(const char *s);
 // Legacy character class from "face" index
-const CharacterClass *IntCharacterClass(const int face);
+const char *IntCharacterFace(const int face);
+void CharacterOldFaceToHair(const char *face, char **newFace, char **hair);
 const CharacterClass *IndexCharacterClass(const int i);
 int CharacterClassIndex(const CharacterClass *c);
 

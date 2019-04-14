@@ -55,7 +55,7 @@ const CharacterClass *StrCharacterClass(const char *s)
 	LOG(LM_MAIN, LL_ERROR, "Cannot find character name: %s", s);
 	return NULL;
 }
-static const char *faceNames[] =
+static const char *characterNames[] =
 {
 	"Jones",
 	"Ice",
@@ -75,9 +75,22 @@ static const char *faceNames[] =
 	"Robot",
 	"Lady"
 };
-const CharacterClass *IntCharacterClass(const int face)
+const char *IntCharacterFace(const int face)
 {
-	return StrCharacterClass(faceNames[face]);
+	return characterNames[face];
+}
+void CharacterOldFaceToHair(const char *face, char **newFace, char **hair)
+{
+	// Convert old faces to face + hair
+	if (strcmp(face, "Ice") == 0)
+	{
+		CSTRDUP(*newFace, "Jones");
+		CSTRDUP(*hair, "shades");
+	}
+	else
+	{
+		CSTRDUP(*newFace, face);
+	}
 }
 const CharacterClass *IndexCharacterClass(const int i)
 {
