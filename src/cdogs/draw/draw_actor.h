@@ -56,6 +56,7 @@
 typedef struct
 {
 	const Pic *Head;
+	struct vec2i HairOffset;
 	const Pic *Hair;
 	struct vec2i HeadOffset;
 	const Pic *Body;

@@ -87,6 +87,11 @@ void CharacterOldFaceToHair(const char *face, char **newFace, char **hair)
 		CSTRDUP(*newFace, "Jones");
 		CSTRDUP(*hair, "shades");
 	}
+	else if (strcmp(face, "Bob") == 0)
+	{
+		CSTRDUP(*newFace, "Jones");
+		CSTRDUP(*hair, "beard");
+	}
 	else
 	{
 		CSTRDUP(*newFace, face);

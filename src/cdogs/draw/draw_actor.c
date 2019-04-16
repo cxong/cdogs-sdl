@@ -73,6 +73,10 @@ static struct vec2i GetActorDrawOffset(
 	const Pic *pic, const BodyPart part, const CharSprites *cs,
 	const ActorAnimation anim, const int frame, const direction_e d)
 {
+	if (pic == NULL)
+	{
+		return svec2i_zero();
+	}
 	struct vec2i offset = svec2i_scale_divide(pic->size, -2);
 	offset = svec2i_subtract(offset, CharSpritesGetOffset(
 		cs->Offsets.Frame[part],
@@ -140,7 +144,8 @@ ActorPics GetCharacterPicsFromActor(TActor *a)
 		a->dead);
 }
 static const Pic *GetHairPic(
-	const char *hair, const direction_e dir, const CharColors *colors);
+	const char *hair, const direction_e dir, const gunstate_e gunState,
+	const CharColors *colors);
 static const Pic *GetBodyPic(
 	PicManager *pm, const CharSprites *cs, const direction_e dir,
 	const ActorAnimation anim, const int frame, const bool isArmed,
@@ -210,10 +215,11 @@ ActorPics GetCharacterPics(
 		else if (frame == IDLEHEAD_RIGHT) headDir = (dir + 1) % 8;
 	}
 	pics.Head = GetHeadPic(c->Class, headDir, gunState, colors);
-	// Hair uses same offset
-	pics.Hair = GetHairPic(c->Hair, headDir, colors);
 	pics.HeadOffset = GetActorDrawOffset(
 		pics.Head, BODY_PART_HEAD, c->Class->Sprites, anim, frame, dir);
+	pics.Hair = GetHairPic(c->Hair, headDir, gunState, colors);
+	pics.HairOffset = GetActorDrawOffset(
+		pics.Hair, BODY_PART_HAIR, c->Class->Sprites, anim, frame, dir);
 
 	// Gun
 	pics.Gun = NULL;
@@ -253,7 +259,7 @@ ActorPics GetCharacterPics(
 			break;
 		case BODY_PART_HAIR:
 			pics.OrderedPics[bp] = pics.Hair;
-			pics.OrderedOffsets[bp] = pics.HeadOffset;
+			pics.OrderedOffsets[bp] = pics.HairOffset;
 			break;
 		case BODY_PART_BODY:
 			pics.OrderedPics[bp] = pics.Body;
@@ -476,13 +482,16 @@ const Pic *GetHeadPic(
 	return CArrayGet(&ns->pics, idx);
 }
 static const Pic *GetHairPic(
-	const char *hair, const direction_e dir, const CharColors *colors)
+	const char *hair, const direction_e dir, const gunstate_e gunState,
+	const CharColors *colors)
 {
 	if (hair == NULL)
 	{
 		return NULL;
 	}
-	const int idx = (int)dir;
+	const int row =
+		(gunState == GUNSTATE_FIRING || gunState == GUNSTATE_RECOIL) ? 1 : 0;
+	const int idx = (int)dir + row * 8;
 	// Get or generate masked sprites
 	char buf[CDOGS_PATH_MAX];
 	sprintf(buf, "chars/hairs/%s", hair);

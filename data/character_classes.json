@@ -102,13 +102,6 @@
       }
     },
     {
-      "Name": "Bob",
-      "HeadPics": {
-        "Type": "Directional",
-        "Sprites": "chars/heads/bob"
-      }
-    },
-    {
       "Name": "Mad bug-eye",
       "HeadPics": {
         "Type": "Directional",
