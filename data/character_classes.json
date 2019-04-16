@@ -113,17 +113,6 @@
       "BloodColor": "00ff00"
     },
     {
-      "Name": "Cyborg",
-      "HeadPics": {
-        "Type": "Directional",
-        "Sprites": "chars/heads/cyborg"
-      },
-      "Sounds": {
-        "Aargh": "aargh/zombie"
-      },
-      "BloodColor": "ff00ff"
-    },
-    {
       "Name": "Robot",
       "HeadPics": {
         "Type": "Directional",
@@ -145,10 +134,10 @@
       }
     },
     {
-      "Name": "Cyber Jones",
+      "Name": "Cyborg",
       "HeadPics": {
         "Type": "Directional",
-        "Sprites": "chars/heads/cyberjones"
+        "Sprites": "chars/heads/cyborg"
       },
       "Sounds": {
         "Aargh": "aargh/zombie"
