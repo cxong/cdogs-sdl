@@ -82,25 +82,35 @@ const char *IntCharacterFace(const int face)
 void CharacterOldFaceToHair(const char *face, char **newFace, char **hair)
 {
 	// Convert old faces to face + hair
-	if (strcmp(face, "Ice") == 0)
-	{
-		CSTRDUP(*newFace, "Jones");
-		CSTRDUP(*hair, "shades");
-	}
-	else if (strcmp(face, "Bob") == 0)
+	if (strcmp(face, "Bob") == 0)
 	{
 		CSTRDUP(*newFace, "Jones");
 		CSTRDUP(*hair, "beard");
+	}
+	else if (strcmp(face, "Cyborg") == 0)
+	{
+		CSTRDUP(*newFace, "Cyborg");
+		CSTRDUP(*hair, "cyborg");
 	}
 	else if (strcmp(face, "Cyber Jones") == 0)
 	{
 		CSTRDUP(*newFace, "Cyborg");
 		CSTRDUP(*hair, "cyber_shades");
 	}
-	else if (strcmp(face, "Cyborg") == 0)
+	else if (strcmp(face, "Cyber Smith") == 0)
 	{
 		CSTRDUP(*newFace, "Cyborg");
-		CSTRDUP(*hair, "cyborg");
+		CSTRDUP(*hair, "flattop");
+	}
+	else if (strcmp(face, "Ice") == 0)
+	{
+		CSTRDUP(*newFace, "Jones");
+		CSTRDUP(*hair, "shades");
+	}
+	else if (strcmp(face, "Smith") == 0)
+	{
+		CSTRDUP(*newFace, "Jones");
+		CSTRDUP(*hair, "flattop");
 	}
 	else
 	{

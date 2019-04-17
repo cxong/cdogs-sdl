@@ -45,13 +45,6 @@
       "BloodColor": "00ff00"
     },
     {
-      "Name": "Smith",
-      "HeadPics": {
-        "Type": "Directional",
-        "Sprites": "chars/heads/smith"
-      }
-    },
-    {
       "Name": "Ogre Boss",
       "HeadPics": {
         "Type": "Directional",
@@ -138,17 +131,6 @@
       "HeadPics": {
         "Type": "Directional",
         "Sprites": "chars/heads/cyborg"
-      },
-      "Sounds": {
-        "Aargh": "aargh/zombie"
-      },
-      "BloodColor": "ff00ff"
-    },
-    {
-      "Name": "Cyber Smith",
-      "HeadPics": {
-        "Type": "Directional",
-        "Sprites": "chars/heads/cybersmith"
       },
       "Sounds": {
         "Aargh": "aargh/zombie"

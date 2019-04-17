@@ -1378,7 +1378,8 @@ struct vec2 ActorGetWeaponMuzzleOffset(const TActor *a)
 struct vec2 ActorGetMuzzleOffset(
 	const TActor *a, const WeaponClass *wc)
 {
-	const CharSprites *cs = ActorGetCharacter(a)->Class->Sprites;
+	const Character *c = ActorGetCharacter(a);
+	const CharSprites *cs = c->Class->Sprites;
 	return WeaponClassGetMuzzleOffset(wc, cs, a->direction);
 }
 int ActorWeaponGetAmmo(const TActor *a, const WeaponClass *wc)

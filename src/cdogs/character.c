@@ -116,6 +116,7 @@ void CharacterLoadJSON(CharacterStore *c, json_t *root, int version)
 			LoadStr(&ch->Hair, child, "HairType");
 			CFREE(tmp);
 		}
+		CASSERT(ch->Class != NULL, "Cannot load character class");
 
 		// Colours
 		if (version < 7)
@@ -131,8 +132,6 @@ void CharacterLoadJSON(CharacterStore *c, json_t *root, int version)
 		}
 		else
 		{
-			tmp = GetString(child, "Class");
-			ch->Class = StrCharacterClass(tmp);
 			LoadColor(&ch->Colors.Skin, child, "Skin");
 			LoadColor(&ch->Colors.Arms, child, "Arms");
 			LoadColor(&ch->Colors.Body, child, "Body");
