@@ -124,13 +124,6 @@
       "BloodColor": "ff00ff"
     },
     {
-      "Name": "Goggles",
-      "HeadPics": {
-        "Type": "Directional",
-        "Sprites": "chars/heads/goggles"
-      }
-    },
-    {
       "Name": "Bones",
       "HeadPics": {
         "Type": "Directional",
