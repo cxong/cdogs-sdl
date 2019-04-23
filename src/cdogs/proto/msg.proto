@@ -44,14 +44,15 @@ message NPlayerStats {
 message NPlayerData {
 	required string Name = 1;
 	required string CharacterClass = 2;
-	required NCharColors Colors = 3;
-	repeated string Weapons = 4;
-	required uint32 Lives = 5;
-	required NPlayerStats Stats = 6;
-	required NPlayerStats Totals = 7;
-	required uint32 MaxHealth = 8;
-	required uint32 LastMission = 9;
-	required uint32 UID = 10;
+	required string Hair = 3;
+	required NCharColors Colors = 4;
+	repeated string Weapons = 5;
+	required uint32 Lives = 6;
+	required NPlayerStats Stats = 7;
+	required NPlayerStats Totals = 8;
+	required uint32 MaxHealth = 9;
+	required uint32 LastMission = 10;
+	required uint32 UID = 11;
 }
 
 message NPlayerRemove {

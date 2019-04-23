@@ -73,6 +73,12 @@ void PlayerDataAddOrUpdate(const NPlayerData pd)
 	{
 		p->Char.Class = StrCharacterClass("Jones");
 	}
+	CFREE(p->Char.Hair);
+	p->Char.Hair = NULL;
+	if (strlen(pd.Hair) > 0)
+	{
+		CSTRDUP(p->Char.Hair, pd.Hair);
+	}
 	p->Char.Colors = Net2CharColors(pd.Colors);
 	for (int i = 0; i < (int)pd.Weapons_count; i++)
 	{
@@ -157,7 +163,8 @@ NPlayerData PlayerDataDefault(const int idx)
 			break;
 		case 1:
 			strcpy(pd.Name, "Ice");
-			strcpy(pd.CharacterClass, "Ice");
+			strcpy(pd.CharacterClass, "Jones");
+			strcpy(pd.Hair, "shades");
 			pd.Colors.Skin = Color2Net(colorDarkSkin);
 			pd.Colors.Arms = Color2Net(colorRed);
 			pd.Colors.Body = Color2Net(colorRed);
@@ -166,7 +173,8 @@ NPlayerData PlayerDataDefault(const int idx)
 			break;
 		case 2:
 			strcpy(pd.Name, "Warbaby");
-			strcpy(pd.CharacterClass, "WarBaby");
+			strcpy(pd.CharacterClass, "Jones");
+			strcpy(pd.Hair, "beret");
 			pd.Colors.Skin = Color2Net(colorSkin);
 			pd.Colors.Arms = Color2Net(colorGreen);
 			pd.Colors.Body = Color2Net(colorGreen);
@@ -175,7 +183,8 @@ NPlayerData PlayerDataDefault(const int idx)
 			break;
 		case 3:
 			strcpy(pd.Name, "Han");
-			strcpy(pd.CharacterClass, "Dragon");
+			strcpy(pd.CharacterClass, "Jones");
+			strcpy(pd.Hair, "hogan");
 			pd.Colors.Skin = Color2Net(colorAsianSkin);
 			pd.Colors.Arms = Color2Net(colorYellow);
 			pd.Colors.Body = Color2Net(colorYellow);

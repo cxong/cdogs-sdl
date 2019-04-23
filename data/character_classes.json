@@ -20,13 +20,6 @@
       "BloodColor": "333333"
     },
     {
-      "Name": "Dragon",
-      "HeadPics": {
-        "Type": "Directional",
-        "Sprites": "chars/heads/dragon"
-      }
-    },
-    {
       "Name": "Bug-eye",
       "HeadPics": {
         "Type": "Directional",
