@@ -87,11 +87,6 @@ void CharacterOldFaceToHair(const char *face, char **newFace, char **hair)
 		CSTRDUP(*newFace, "Jones");
 		CSTRDUP(*hair, "beard");
 	}
-	else if (strcmp(face, "Cyborg") == 0)
-	{
-		CSTRDUP(*newFace, "Cyborg");
-		CSTRDUP(*hair, "cyborg");
-	}
 	else if (strcmp(face, "Cyber Jones") == 0)
 	{
 		CSTRDUP(*newFace, "Cyborg");
@@ -102,6 +97,16 @@ void CharacterOldFaceToHair(const char *face, char **newFace, char **hair)
 		CSTRDUP(*newFace, "Cyborg");
 		CSTRDUP(*hair, "flattop");
 	}
+	else if (strcmp(face, "Cyber WarBaby") == 0)
+	{
+		CSTRDUP(*newFace, "Cyborg");
+		CSTRDUP(*hair, "beret");
+	}
+	else if (strcmp(face, "Cyborg") == 0)
+	{
+		CSTRDUP(*newFace, "Cyborg");
+		CSTRDUP(*hair, "cyborg");
+	}
 	else if (strcmp(face, "Ice") == 0)
 	{
 		CSTRDUP(*newFace, "Jones");
@@ -111,6 +116,11 @@ void CharacterOldFaceToHair(const char *face, char **newFace, char **hair)
 	{
 		CSTRDUP(*newFace, "Jones");
 		CSTRDUP(*hair, "flattop");
+	}
+	else if (strcmp(face, "WarBaby") == 0)
+	{
+		CSTRDUP(*newFace, "Jones");
+		CSTRDUP(*hair, "beret");
 	}
 	else
 	{

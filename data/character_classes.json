@@ -27,13 +27,6 @@
       }
     },
     {
-      "Name": "WarBaby",
-      "HeadPics": {
-        "Type": "Directional",
-        "Sprites": "chars/heads/warbaby"
-      }
-    },
-    {
       "Name": "Bug-eye",
       "HeadPics": {
         "Type": "Directional",
@@ -131,17 +124,6 @@
       "HeadPics": {
         "Type": "Directional",
         "Sprites": "chars/heads/cyborg"
-      },
-      "Sounds": {
-        "Aargh": "aargh/zombie"
-      },
-      "BloodColor": "ff00ff"
-    },
-    {
-      "Name": "Cyber WarBaby",
-      "HeadPics": {
-        "Type": "Directional",
-        "Sprites": "chars/heads/cyberwar"
       },
       "Sounds": {
         "Aargh": "aargh/zombie"
