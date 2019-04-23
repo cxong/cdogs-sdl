@@ -53,13 +53,6 @@
       "BloodColor": "333333"
     },
     {
-      "Name": "Grunt",
-      "HeadPics": {
-        "Type": "Directional",
-        "Sprites": "chars/heads/grunt"
-      }
-    },
-    {
       "Name": "Professor",
       "HeadPics": {
         "Type": "Directional",

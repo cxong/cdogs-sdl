@@ -65,6 +65,10 @@ NPlayerData NMakePlayerData(const PlayerData *p)
 	const Character *c = &p->Char;
 	strcpy(d.Name, p->name);
 	strcpy(d.CharacterClass, p->Char.Class->Name);
+	if (p->Char.Hair)
+	{
+		strcpy(d.Hair, p->Char.Hair);
+	}
 	d.Colors = CharColors2Net(c->Colors);
 	d.Weapons_count = MAX_WEAPONS;
 	for (int i = 0; i < (int)d.Weapons_count; i++)
