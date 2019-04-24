@@ -42,17 +42,6 @@
       "BloodColor": "333333"
     },
     {
-      "Name": "Evil Ogre",
-      "HeadPics": {
-        "Type": "Directional",
-        "Sprites": "chars/heads/ogre_evil"
-      },
-      "Sounds": {
-        "Aargh": "aargh/ogre"
-      },
-      "BloodColor": "333333"
-    },
-    {
       "Name": "Professor",
       "HeadPics": {
         "Type": "Directional",
