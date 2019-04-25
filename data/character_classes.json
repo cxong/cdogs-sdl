@@ -31,13 +31,6 @@
       "BloodColor": "00ff00"
     },
     {
-      "Name": "Snake",
-      "HeadPics": {
-        "Type": "Directional",
-        "Sprites": "chars/heads/snake"
-      }
-    },
-    {
       "Name": "Wolf",
       "HeadPics": {
         "Type": "Directional",

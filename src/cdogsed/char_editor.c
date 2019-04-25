@@ -149,6 +149,7 @@ void CharEditor(
 		const CharacterClass *c = IndexCharacterClass(i);
 		LoadTexFromPic(
 			*texid, GetHeadPic(c, DIRECTION_DOWN, GUNSTATE_READY, &cc));
+		// TODO: also get hair pic
 	}
 	CArrayInit(&ec.texIdsGuns, sizeof(GLuint));
 	CArrayResize(&ec.texIdsGuns, NumGuns(), NULL);
