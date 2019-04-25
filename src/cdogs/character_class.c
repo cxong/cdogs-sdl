@@ -162,10 +162,20 @@ void CharacterOldFaceToHair(const char *face, char **newFace, char **hair)
 		CSTRDUP(*newFace, "Jones");
 		CSTRDUP(*hair, "eye_patch");
 	}
+	else if (strcmp(face, "Sweeper") == 0)
+	{
+		CSTRDUP(*newFace, "Jones");
+		CSTRDUP(*hair, "helmet");
+	}
 	else if (strcmp(face, "WarBaby") == 0)
 	{
 		CSTRDUP(*newFace, "Jones");
 		CSTRDUP(*hair, "beret");
+	}
+	else if (strcmp(face, "Wolf") == 0)
+	{
+		CSTRDUP(*newFace, "Jones");
+		CSTRDUP(*hair, "dutch");
 	}
 	else
 	{

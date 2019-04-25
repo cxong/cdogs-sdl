@@ -31,13 +31,6 @@
       "BloodColor": "00ff00"
     },
     {
-      "Name": "Wolf",
-      "HeadPics": {
-        "Type": "Directional",
-        "Sprites": "chars/heads/wolf"
-      }
-    },
-    {
       "Name": "Mad bug-eye",
       "HeadPics": {
         "Type": "Directional",
@@ -101,13 +94,6 @@
         "Aargh": "aargh/zombie"
       },
       "BloodColor": "ffffff"
-    },
-    {
-      "Name": "Sweeper",
-      "HeadPics": {
-        "Type": "Directional",
-        "Sprites": "chars/heads/sweeper"
-      }
     }
   ]
 }
