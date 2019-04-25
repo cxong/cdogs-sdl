@@ -576,10 +576,17 @@ void DrawHead(
 	SDL_Renderer *renderer, const Character *c, const direction_e dir,
 	const struct vec2i pos)
 {
-	const Pic *head = GetHeadPic(c->Class, dir, GUNSTATE_READY, &c->Colors);
+	const gunstate_e g = GUNSTATE_READY;
+	const Pic *head = GetHeadPic(c->Class, dir, g, &c->Colors);
 	const struct vec2i drawPos = svec2i_subtract(pos, svec2i(
 		head->size.x / 2, head->size.y / 2));
-	PicRender(head, renderer, drawPos, colorWhite, 0, svec2_one());
+	const color_t mask = colorWhite;
+	PicRender(head, renderer, drawPos, mask, 0, svec2_one());
+	const Pic *hair = GetHairPic(c->Hair, dir, g, &c->Colors);
+	if (hair)
+	{
+		PicRender(hair, renderer, drawPos, mask, 0, svec2_one());
+	}
 }
 #define DYING_BODY_OFFSET 3
 static void DrawDyingBody(

@@ -31,13 +31,6 @@
       "BloodColor": "00ff00"
     },
     {
-      "Name": "Professor",
-      "HeadPics": {
-        "Type": "Directional",
-        "Sprites": "chars/heads/professor"
-      }
-    },
-    {
       "Name": "Snake",
       "HeadPics": {
         "Type": "Directional",
