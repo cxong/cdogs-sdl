@@ -348,6 +348,12 @@ static void PostInputLoadTemplate(menu_t *menu, int cmd, void *data)
 		{
 			p->Char.Class = StrCharacterClass("Jones");
 		}
+		CFREE(p->Char.Hair);
+		p->Char.Hair = NULL;
+		if (t->Hair)
+		{
+			CSTRDUP(p->Char.Hair, t->Hair);
+		}
 		p->Char.Colors = t->Colors;
 	}
 }
@@ -392,23 +398,22 @@ static void PostInputSaveTemplate(menu_t *menu, int cmd, void *data)
 	PlayerData *p = PlayerDataGetByUID(d->display.PlayerUID);
 	PlayerTemplate *t =
 		PlayerTemplateGetById(&gPlayerTemplates, menu->u.normal.index);
-	if(t == NULL)
+	if (t == NULL)
 	{
 		PlayerTemplate nt;
-		memset(nt.name, 0, sizeof nt.name);
-		strncpy(nt.name, p->name, sizeof nt.name - 1);
-		CSTRDUP(nt.CharClassName, p->Char.Class->Name);
-		nt.Colors = p->Char.Colors;
-		CArrayPushBack(&(gPlayerTemplates.Classes), &nt);
+		CArrayPushBack(&gPlayerTemplates.Classes, &nt);
+		t = CArrayGet(
+			&gPlayerTemplates.Classes, gPlayerTemplates.Classes.size - 1);
 	}
-	else
+	memset(t->name, 0, sizeof t->name);
+	strncpy(t->name, p->name, sizeof t->name - 1);
+	CFREE(t->CharClassName);
+	CSTRDUP(t->CharClassName, p->Char.Class->Name);
+	if (p->Char.Hair)
 	{
-		memset(t->name, 0, sizeof t->name);
-		strncpy(t->name, p->name, sizeof t->name - 1);
-		CFREE(t->CharClassName);
-		CSTRDUP(t->CharClassName, p->Char.Class->Name);
-		t->Colors = p->Char.Colors;
+		CSTRDUP(t->Hair, p->Char.Hair);
 	}
+	t->Colors = p->Char.Colors;
 	PlayerTemplatesSave(&gPlayerTemplates);
 }
 

@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2014, 2016-2018 Cong Xu
+	Copyright (c) 2013-2014, 2016-2019 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@
 
 #define PLAYER_TEMPLATE_FILE "players.cnf"
 
-#define VERSION 2
+#define VERSION 3
 
 PlayerTemplates gPlayerTemplates;
 
@@ -56,6 +56,19 @@ static void LoadPlayerTemplate(
 		json_find_first_label(node, "Name")->child->text,
 		PLAYER_NAME_MAXLEN - 1);
 	t.CharClassName = GetString(node, "Face");
+	// Hair
+	if (version < 3)
+	{
+		char *face;
+		CSTRDUP(face, t.CharClassName);
+		CharacterOldFaceToHair(t.CharClassName, &t.CharClassName, &t.Hair);
+		CFREE(face);
+	}
+	else
+	{
+		LoadStr(&t.Hair, node, "HairType");
+	}
+	// Colors
 	if (version == 1)
 	{
 		// Version 1 used integer palettes
@@ -137,6 +150,7 @@ void PlayerTemplatesClear(CArray *classes)
 {
 	CA_FOREACH(PlayerTemplate, pt, *classes)
 		CFREE(pt->CharClassName);
+		CFREE(pt->Hair);
 	CA_FOREACH_END()
 	CArrayClear(classes);
 }

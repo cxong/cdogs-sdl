@@ -142,6 +142,11 @@ void CharacterOldFaceToHair(const char *face, char **newFace, char **hair)
 		CSTRDUP(*newFace, "Lady");
 		CSTRDUP(*hair, "ponytail");
 	}
+	else if (strcmp(face, "Ogre Boss") == 0)
+	{
+		CSTRDUP(*newFace, "Ogre");
+		CSTRDUP(*hair, "mohawk");
+	}
 	else if (strcmp(face, "Smith") == 0)
 	{
 		CSTRDUP(*newFace, "Jones");

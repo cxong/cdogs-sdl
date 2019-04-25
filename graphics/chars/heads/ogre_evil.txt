@@ -1,2 +1,0 @@
-Derived from C-Dogs data
-http://creativecommons.org/licenses/by/3.0/

@@ -31,17 +31,6 @@
       "BloodColor": "00ff00"
     },
     {
-      "Name": "Ogre Boss",
-      "HeadPics": {
-        "Type": "Directional",
-        "Sprites": "chars/heads/ogreboss"
-      },
-      "Sounds": {
-        "Aargh": "aargh/ogre"
-      },
-      "BloodColor": "333333"
-    },
-    {
       "Name": "Professor",
       "HeadPics": {
         "Type": "Directional",
