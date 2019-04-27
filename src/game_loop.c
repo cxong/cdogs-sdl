@@ -46,6 +46,8 @@
 #include <cdogs/character_class.h>
 #include <cdogs/player_template.h>
 
+#define PLAYER_TEMPLATE_FILE "players.cnf"
+
 bool emscripten_fs_ready = false;
 
 void emscriptenLoadFiles() {
@@ -83,10 +85,10 @@ void emscriptenLoadFiles() {
     FILE *file_players = fopen(GetConfigFilePath(PLAYER_TEMPLATE_FILE),"r");
     if (file_players) {
         fclose(file_players);
-        PlayerTemplatesLoad(&gPlayerTemplates, &gCharacterClasses, PLAYER_TEMPLATE_FILE);
+        PlayerTemplatesLoad(&gPlayerTemplates, &gCharacterClasses);
     }
     else {
-        SavePlayerTemplates(&gPlayerTemplates, PLAYER_TEMPLATE_FILE);
+        PlayerTemplatesSave(&gPlayerTemplates);
     }
 }
 
