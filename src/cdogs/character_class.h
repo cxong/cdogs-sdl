@@ -44,6 +44,7 @@ typedef struct
 		char *Aargh;
 	} Sounds;
 	color_t BloodColor;
+	bool HasHair;
 } CharacterClass;
 typedef struct
 {

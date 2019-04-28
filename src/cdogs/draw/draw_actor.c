@@ -144,7 +144,7 @@ ActorPics GetCharacterPicsFromActor(TActor *a)
 		a->dead);
 }
 static const Pic *GetHairPic(
-	const char *hair, const direction_e dir, const gunstate_e gunState,
+	const Character *c, const direction_e dir, const gunstate_e gunState,
 	const CharColors *colors);
 static const Pic *GetBodyPic(
 	PicManager *pm, const CharSprites *cs, const direction_e dir,
@@ -217,7 +217,7 @@ ActorPics GetCharacterPics(
 	pics.Head = GetHeadPic(c->Class, headDir, gunState, colors);
 	pics.HeadOffset = GetActorDrawOffset(
 		pics.Head, BODY_PART_HEAD, c->Class->Sprites, anim, frame, dir);
-	pics.Hair = GetHairPic(c->Hair, headDir, gunState, colors);
+	pics.Hair = GetHairPic(c, headDir, gunState, colors);
 	pics.HairOffset = GetActorDrawOffset(
 		pics.Hair, BODY_PART_HAIR, c->Class->Sprites, anim, frame, dir);
 
@@ -482,10 +482,10 @@ const Pic *GetHeadPic(
 	return CArrayGet(&ns->pics, idx);
 }
 static const Pic *GetHairPic(
-	const char *hair, const direction_e dir, const gunstate_e gunState,
+	const Character *c, const direction_e dir, const gunstate_e gunState,
 	const CharColors *colors)
 {
-	if (hair == NULL)
+	if (!c->Class->HasHair || c->Hair == NULL)
 	{
 		return NULL;
 	}
@@ -494,7 +494,7 @@ static const Pic *GetHairPic(
 	const int idx = (int)dir + row * 8;
 	// Get or generate masked sprites
 	char buf[CDOGS_PATH_MAX];
-	sprintf(buf, "chars/hairs/%s", hair);
+	sprintf(buf, "chars/hairs/%s", c->Hair);
 	const NamedSprites *ns =
 		PicManagerGetCharSprites(&gPicManager, buf, colors);
 	return CArrayGet(&ns->pics, idx);
@@ -582,7 +582,7 @@ void DrawHead(
 		head->size.x / 2, head->size.y / 2));
 	const color_t mask = colorWhite;
 	PicRender(head, renderer, drawPos, mask, 0, svec2_one());
-	const Pic *hair = GetHairPic(c->Hair, dir, g, &c->Colors);
+	const Pic *hair = GetHairPic(c, dir, g, &c->Colors);
 	if (hair)
 	{
 		PicRender(hair, renderer, drawPos, mask, 0, svec2_one());

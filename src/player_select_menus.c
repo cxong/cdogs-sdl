@@ -161,6 +161,7 @@ static int HandleInputNameMenu(int cmd, void *data)
 }
 
 static void PostInputRotatePlayer(menu_t *menu, int cmd, void *data);
+static void CheckReenableHairHatMenu(menu_t *menu, void *data);
 
 static void PostInputFaceMenu(menu_t *menu, int cmd, void *data);
 static menu_t *CreateFaceMenu(MenuDisplayPlayerData *data)
@@ -198,7 +199,7 @@ static void PostInputFaceMenu(menu_t *menu, int cmd, void *data)
 static void PostInputHairMenu(menu_t *menu, int cmd, void *data);
 static menu_t *CreateHairMenu(MenuDisplayPlayerData *data)
 {
-	menu_t *menu = MenuCreateNormal("Hairstyle", "", MENU_TYPE_NORMAL, 0);
+	menu_t *menu = MenuCreateNormal("Hair/hat", "", MENU_TYPE_NORMAL, 0);
 	menu->u.normal.maxItems = 11;
 	MenuAddSubmenu(menu, MenuCreateBack("(None)"));
 	CA_FOREACH(const char *, h, gPicManager.hairstyleNames)
@@ -554,6 +555,7 @@ static menu_t *CreateCustomizeMenu(
 	MenuAddSubmenu(menu, MenuCreateBack("Back"));
 
 	MenuSetPostInputFunc(menu, PostInputRotatePlayer, &data->display);
+	MenuSetPostEnterFunc(menu, CheckReenableHairHatMenu, &data->display, false);
 
 	return menu;
 }
@@ -580,4 +582,12 @@ static void PostInputRotatePlayer(menu_t *menu, int cmd, void *data)
 			(int)d->Dir + dx, DIRECTION_UP, DIRECTION_UPLEFT);
 		SoundPlay(&gSoundDevice, StrSound("footsteps"));
 	}
+}
+static void CheckReenableHairHatMenu(menu_t *menu, void *data)
+{
+	menu_t *hairMenu = MenuGetSubmenuByName(menu, "Hair/hat");
+	CASSERT(hairMenu, "cannot find menu");
+	MenuDisplayPlayerData *d = data;
+	const PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
+	hairMenu->isDisabled = !p->Char.Class->HasHair;
 }

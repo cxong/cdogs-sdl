@@ -298,6 +298,9 @@ static void LoadCharacterClass(CharacterClass *c, json_t *node)
 
 	c->BloodColor = colorRed;
 	LoadColor(&c->BloodColor, node, "BloodColor");
+
+	c->HasHair = true;
+	LoadBool(&c->HasHair, node, "HasHair");
 }
 static void CharacterClassFree(CharacterClass *c);
 void CharacterClassesClear(CArray *classes)

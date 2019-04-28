@@ -28,7 +28,8 @@
       "Sounds": {
         "Aargh": "aargh/alien"
       },
-      "BloodColor": "00ff00"
+      "BloodColor": "00ff00",
+      "HasHair": false
     },
     {
       "Name": "Mad bug-eye",
@@ -39,7 +40,8 @@
       "Sounds": {
         "Aargh": "aargh/alien"
       },
-      "BloodColor": "00ff00"
+      "BloodColor": "00ff00",
+      "HasHair": false
     },
     {
       "Name": "Robot",
@@ -50,7 +52,8 @@
       "Sounds": {
         "Aargh": "aargh/alien"
       },
-      "BloodColor": "0000ff"
+      "BloodColor": "0000ff",
+      "HasHair": false
     },
     {
       "Name": "Lady",
@@ -93,7 +96,8 @@
       "Sounds": {
         "Aargh": "aargh/zombie"
       },
-      "BloodColor": "ffffff"
+      "BloodColor": "ffffff",
+      "HasHair": false
     }
   ]
 }
