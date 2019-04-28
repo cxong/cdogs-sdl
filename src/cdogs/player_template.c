@@ -39,8 +39,6 @@
 #include <emscripten.h>
 #endif
 
-#define PLAYER_TEMPLATE_FILE "players.cnf"
-
 #define VERSION 3
 
 PlayerTemplates gPlayerTemplates;

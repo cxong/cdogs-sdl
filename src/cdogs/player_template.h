@@ -32,6 +32,7 @@
 #include "character_class.h"
 
 #define PLAYER_NAME_MAXLEN 20
+#define PLAYER_TEMPLATE_FILE "players.cnf"
 
 typedef struct
 {

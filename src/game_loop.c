@@ -46,8 +46,6 @@
 #include <cdogs/character_class.h>
 #include <cdogs/player_template.h>
 
-#define PLAYER_TEMPLATE_FILE "players.cnf"
-
 bool emscripten_fs_ready = false;
 
 void emscriptenLoadFiles() {
