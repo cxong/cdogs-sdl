@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 rm -rf emscripten/*
 mkdir -p emscripten
@@ -21,6 +22,7 @@ emcc -D "PB_FIELD_16BIT=1" \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s USE_SDL=2 \
     -s USE_SDL_IMAGE=2 \
+    -s USE_SDL_MIXER=2 \
     -s SDL2_IMAGE_FORMATS='["png"]' \
     -s USE_VORBIS=1 \
     -s USE_OGG=1 \

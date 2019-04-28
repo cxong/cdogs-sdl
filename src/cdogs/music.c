@@ -32,7 +32,7 @@
 
 #include <SDL.h>
 #ifdef __EMSCRIPTEN__
-#include <SDL/SDL_mixer.h>
+#include <SDL2/SDL_mixer.h>
 #else
 #include <SDL_mixer.h>
 #endif

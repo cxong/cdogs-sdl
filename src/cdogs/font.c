@@ -29,7 +29,7 @@
 #include <string.h>
 
 #ifdef __EMSCRIPTEN__
-#include <SDL/SDL_image.h>
+#include <SDL2/SDL_image.h>
 #else
 #include <SDL_image.h>
 #endif
