@@ -33,7 +33,7 @@ These days the project is maintained by Cong Xu, who along with a few other cont
 So what are you waiting for? Download C-Dogs SDL today and have a blast!
 
 
-## ![](https://github.com/cxong/cdogs-sdl/blob/master/graphics/terminal.png) Platforms ##
+## ![](https://github.com/cxong/cdogs-sdl/blob/master/graphics/barrel_blue.png) Platforms ##
 
 <a href="https://repology.org/metapackage/cdogs-sdl/versions">
     <img src="https://repology.org/badge/vertical-allrepos/cdogs-sdl.svg" alt="Packaging status" align="right">

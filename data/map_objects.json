@@ -780,8 +780,9 @@
     {
       "Name": "terminal",
       "Pic": {
-        "Type": "Normal",
-        "Pic": "terminal"
+        "Type": "Animated",
+        "Sprites": "terminal",
+        "TicksPerFrame": 8
       },
       "Wreck": "table_wood_wreck",
       "Health": 40,
