@@ -93,19 +93,6 @@
       "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
     },
     {
-      "Name": "cabinet_server",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "cabinet_server"
-      },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "cabinet_server_wreck"
-      },
-      "Health": 20,
-      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
-    },
-    {
       "Name": "plant",
       "Pic": {
         "Type": "Normal",

@@ -180,8 +180,9 @@
     {
       "Name": "cabinet_server",
       "Pic": {
-        "Type": "Normal",
-        "Pic": "cabinet_server"
+        "Type": "Animated",
+        "Sprites": "cabinet_server",
+        "TicksPerFrame": 20
       },
       "Wreck": "cabinet_server_wreck",
       "Health": 20,
