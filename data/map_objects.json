@@ -898,8 +898,9 @@
     {
       "Name": "egg_wreck",
       "Pic": {
-        "Type": "Normal",
-        "Pic": "egg_wreck"
+        "Type": "Animated",
+        "Sprites": "egg_wreck",
+        "TicksPerFrame": 20
       },
       "Health": 0,
       "DrawLast": true
