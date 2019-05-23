@@ -908,8 +908,9 @@
     {
       "Name": "egg2",
       "Pic": {
-        "Type": "Normal",
-        "Pic": "egg2"
+        "Type": "Animated",
+        "Sprites": "egg2",
+        "TicksPerFrame": 20
       },
       "Wreck": "egg2_wreck",
       "Health": 30,

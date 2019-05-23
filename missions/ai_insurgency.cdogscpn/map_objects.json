@@ -519,18 +519,6 @@
       "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
     },
     {
-      "Name": "egg2",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "egg2"
-      },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "egg2_wreck"
-      },
-      "Health": 30
-    },
-    {
       "Name": "tree",
       "Pic": {
         "Type": "Normal",
