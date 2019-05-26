@@ -547,20 +547,6 @@
       "Flags": ["Outside", "NoWalls"]
     },
     {
-      "Name": "tree_autumn",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "tree_autumn"
-      },
-      "WreckPic": {
-        "Type": "Normal",
-        "Pic": "tree_autumn_wreck"
-      },
-      "Size": [8, 6],
-      "Health": 40,
-      "Flags": ["Outside", "NoWalls"]
-    },
-    {
       "Name": "barrel",
       "Pic": {
         "Type": "Normal",
