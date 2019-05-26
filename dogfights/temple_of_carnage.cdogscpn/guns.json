@@ -18,8 +18,8 @@
     },
     {
       "Pic": "",
-      "Icon": "radio",
-      "Name": "Aloma Snackbar",
+      "Icon": "detonator",
+      "Name": "Suicide Vest",
       "Bullet": "aloma",
       "Cost": 20,
       "Lock": 40,
