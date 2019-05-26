@@ -166,8 +166,9 @@
     {
       "Name": "radio2",
       "Pic": {
-        "Type": "Normal",
-        "Pic": "radio2"
+        "Type": "Animated",
+        "Sprites": "radio2",
+        "TicksPerFrame": 10
       },
       "Type": "Score"
     },
