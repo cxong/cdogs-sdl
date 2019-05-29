@@ -16,7 +16,7 @@ Have fun!
 
 For more information about the original C-Dogs read [`original\_readme.txt`](https://raw.githubusercontent.com/cxong/cdogs-sdl/master/doc/original_readme.txt).
 
-## ![](https://github.com/cxong/cdogs-sdl/blob/master/graphics/holo.png) What is C-Dogs SDL? ##
+## ![](https://github.com/cxong/cdogs-sdl/blob/master/graphics/folder.png) What is C-Dogs SDL? ##
 
 ![Walk cycle](https://github.com/cxong/cxong.github.io/blob/master/_posts/cdogs_walk_cycle_jones.gif)
 
