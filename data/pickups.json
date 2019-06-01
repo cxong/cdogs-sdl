@@ -116,9 +116,9 @@
     {
       "Name": "holo",
       "Pic": {
-        "Type": "Animated",
+        "Type": "AnimatedRandom",
         "Sprites": "holo",
-        "TicksPerFrame": 5
+        "TicksPerFrame": 1
       },
       "Type": "Score"
     },
