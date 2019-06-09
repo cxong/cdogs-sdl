@@ -210,7 +210,7 @@ static void LoadGunDescription(
 			CFREE(ammo->DefaultGun);
 			CSTRDUP(ammo->DefaultGun, wc->name);
 			// Replace icon with that of the ammo
-			wc->Icon = ammo->Pic;
+			wc->Icon = CPicGetPic(&ammo->Pic, 0);
 		}
 		CFREE(tmp);
 	}

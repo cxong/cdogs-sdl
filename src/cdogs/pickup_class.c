@@ -277,7 +277,7 @@ void PickupClassesLoadAmmo(CArray *classes, const CArray *ammoClasses)
 		char buf[256];
 		sprintf(buf, "ammo_%s", a->Name);
 		CSTRDUP(c.Name, buf);
-		CPicInitNormal(&c.Pic, a->Pic);
+		CPicCopyPic(&c.Pic, &a->Pic);
 		c.Type = PICKUP_AMMO;
 		c.u.Ammo.Id = StrAmmoId(a->Name);
 		c.u.Ammo.Amount = a->Amount;

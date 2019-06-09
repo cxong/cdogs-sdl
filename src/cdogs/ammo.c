@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, 2016-2018 Cong Xu
+    Copyright (c) 2014, 2016-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -65,8 +65,8 @@ int StrAmmoId(const char *s)
 	return 0;
 }
 
-#define VERSION 1
-static void LoadAmmo(Ammo *a, json_t *node);
+#define VERSION 2
+static void LoadAmmo(Ammo *a, json_t *node, const int version);
 void AmmoInitialize(AmmoClasses *ammo, const char *path)
 {
 	memset(ammo, 0, sizeof *ammo);
@@ -114,18 +114,23 @@ void AmmoLoadJSON(CArray *ammo, json_t *node)
 	for (json_t *child = ammoNode->child; child; child = child->next)
 	{
 		Ammo a;
-		LoadAmmo(&a, child);
+		LoadAmmo(&a, child, version);
 		CArrayPushBack(ammo, &a);
 	}
 }
-static void LoadAmmo(Ammo *a, json_t *node)
+static void LoadAmmo(Ammo *a, json_t *node, const int version)
 {
 	memset(a, 0, sizeof *a);
 	a->Name = GetString(node, "Name");
-	char *tmp;
-	tmp = GetString(node, "Pic");
-	a->Pic = PicManagerGetPic(&gPicManager, tmp);
-	CFREE(tmp);
+	json_t *picNode = json_find_first_label(node, "Pic")->child;
+	if (version < 2)
+	{
+		CPicLoadNormal(&a->Pic, picNode);
+	}
+	else
+	{
+		CPicLoadJSON(&a->Pic, picNode);
+	}
 	a->Sound = GetString(node, "Sound");
 	LoadInt(&a->Amount, node, "Amount");
 	LoadInt(&a->Max, node, "Max");

@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, 2017-2018 Cong Xu
+    Copyright (c) 2014, 2017-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -30,12 +30,13 @@
 #include <json/json.h>
 
 #include "c_array.h"
+#include "cpic.h"
 #include "pic.h"
 
 typedef struct
 {
 	char *Name;
-	const Pic *Pic;
+	CPic Pic;
 	char *Sound;
 	int Amount;
 	int Max;
@@ -43,7 +44,7 @@ typedef struct
 } Ammo;
 typedef struct
 {
-	CArray Ammo;	// of Ammo
+	CArray Ammo;		// of Ammo
 	CArray CustomAmmo;	// of Ammo
 } AmmoClasses;
 extern AmmoClasses gAmmo;
