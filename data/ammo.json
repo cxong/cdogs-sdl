@@ -115,8 +115,9 @@
     {
       "Name": "Mini cells",
       "Pic": {
-        "Type": "Normal",
-        "Pic": "mini_cells"
+        "Type": "Animated",
+        "Sprites": "mini_cells",
+        "TicksPerFrame": 10
       },
       "Sound": "mini_cells_pickup",
       "Amount": 40,
