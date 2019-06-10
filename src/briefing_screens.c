@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2018 Cong Xu
+    Copyright (c) 2013-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -452,6 +452,7 @@ static void MissionSummaryOnEnter(GameLoopData *data)
 
 	// Calculate bonus scores
 	// Bonuses only apply if at least one player has lived
+	const int accessBonus = GetAccessBonus(mData->m);
 	if (AreAnySurvived())
 	{
 		int bonus = 0;
@@ -462,7 +463,7 @@ static void MissionSummaryOnEnter(GameLoopData *data)
 				bonus += PERFECT_BONUS;
 			}
 		CA_FOREACH_END()
-		bonus += GetAccessBonus(mData->m);
+		bonus += accessBonus;
 		bonus += GetTimeBonus(mData->m, NULL);
 
 		CA_FOREACH(PlayerData, p, gPlayerDatas)
@@ -473,8 +474,11 @@ static void MissionSummaryOnEnter(GameLoopData *data)
 	// Init mission bonuses
 	if (AreAnySurvived())
 	{
-		mData->AccessBonus =
-			AnimatedCounterNew("Access bonus: ", GetAccessBonus(mData->m));
+		if (accessBonus > 0)
+		{
+			mData->AccessBonus =
+				AnimatedCounterNew("Access bonus: ", accessBonus);
+		}
 		int seconds;
 		const int timeBonus = GetTimeBonus(mData->m, &seconds);
 		char buf[256];

@@ -33,6 +33,7 @@
 
 AnimatedCounter AnimatedCounterNew(const char *prefix, const int max)
 {
+	CASSERT(max >= 0, "cannot create animation with negative max");
 	AnimatedCounter a = { NULL, max, 0 };
 	CSTRDUP(a.prefix, prefix);
 	return a;

@@ -933,8 +933,9 @@
     {
       "Name": "tree",
       "Pic": {
-        "Type": "Normal",
-        "Pic": "tree"
+        "Type": "Animated",
+        "Sprites": "tree",
+        "TicksPerFrame": 10
       },
       "Wreck": "tree_wreck",
       "Size": [8, 6],
