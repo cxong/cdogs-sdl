@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, 2016-2017 Cong Xu
+    Copyright (c) 2013, 2016-2017, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -52,9 +52,9 @@
 
 
 Mix_Music *MusicLoad(const char *path);
-void MusicPlayGame(
-	SoundDevice *device, const char *missionPath, const char *music);
-void MusicPlayMenu(SoundDevice *device);
+void MusicPlay(
+	SoundDevice *device, const MusicType type,
+	const char *missionPath, const char *music);
 void MusicStop(SoundDevice *device);
 void MusicPause(SoundDevice *device);
 void MusicResume(SoundDevice *device);

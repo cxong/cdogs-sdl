@@ -195,10 +195,6 @@ int main(int argc, char *argv[])
 		LOG(LM_MAIN, LL_ERROR, "Sound initialization failed!");
 	}
 
-	LoadSongs();
-
-	MusicPlayMenu(&gSoundDevice);
-
 	EventInit(&gEventHandlers, NULL, NULL, true);
 	NetServerInit(&gNetServer);
 	PicManagerInit(&gPicManager);
@@ -296,8 +292,6 @@ bail:
 	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 	AutosaveTerminate(&gAutosave);
 	PlayerTemplatesTerminate(&gPlayerTemplates);
-	FreeSongs(&gMenuSongs);
-	FreeSongs(&gGameSongs);
 	SoundTerminate(&gSoundDevice, true);
 	ConfigDestroy(&gConfig);
 	LogTerminate();

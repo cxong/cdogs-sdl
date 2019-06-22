@@ -321,8 +321,6 @@ static void RunGameOnExit(GameLoopData *data)
 			p->hp = player->health;
 		}
 	CA_FOREACH_END()
-
-	MusicPlayMenu(&gSoundDevice);
 }
 static void RunGameInput(GameLoopData *data)
 {

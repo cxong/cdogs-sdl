@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017 Cong Xu
+    Copyright (c) 2013-2017, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -182,6 +182,7 @@ static void AddSound(map_t sounds, const char *name, SoundData *sound)
 	}
 }
 
+static void SoundLoadMusic(CArray *tracks, const char *path);
 void SoundInitialize(SoundDevice *device, const char *path)
 {
 	memset(device, 0, sizeof *device);
@@ -198,6 +199,11 @@ void SoundInitialize(SoundDevice *device, const char *path)
 	char buf[CDOGS_PATH_MAX];
 	GetDataFilePath(buf, path);
 	SoundLoadDir(device->sounds, buf, NULL);
+
+	// Load music
+	SoundLoadMusic(&device->musicTracks[MUSIC_MENU], "music/menu");
+	SoundLoadMusic(&device->musicTracks[MUSIC_BRIEFING], "music/briefing");
+	SoundLoadMusic(&device->musicTracks[MUSIC_GAME], "music/game");
 }
 void SoundLoadDir(map_t sounds, const char *path, const char *prefix)
 {
@@ -245,6 +251,43 @@ void SoundLoadDir(map_t sounds, const char *path, const char *prefix)
 bail:
 	tinydir_close(&dir);
 }
+static void SoundLoadMusic(CArray *tracks, const char *path)
+{
+	CArrayInit(tracks, sizeof(Mix_Music *));
+	tinydir_dir dir;
+	char buf[CDOGS_PATH_MAX];
+	GetDataFilePath(buf, path);
+	if (tinydir_open(&dir, buf) == -1)
+	{
+		LOG(LM_MAIN, LL_ERROR, "Cannot open music dir %s: %s",
+			buf, strerror(errno));
+		goto bail;
+	}
+
+	for (; dir.has_next; tinydir_next(&dir))
+	{
+		Mix_Music *m;
+		tinydir_file file;
+		if (tinydir_readfile(&dir, &file) == -1)
+		{
+			goto bail;
+		}
+		if (!file.is_reg)
+		{
+			continue;
+		}
+
+		m = MusicLoad(file.path);
+		if (m == NULL)
+		{
+			continue;
+		}
+		CArrayPushBack(tracks, &m);
+	}
+
+bail:
+	tinydir_close(&dir);
+}
 
 void SoundReconfigure(SoundDevice *s)
 {
@@ -274,6 +317,7 @@ void SoundClear(map_t sounds)
 {
 	hashmap_clear(sounds, SoundDataTerminate);
 }
+static void SoundUnloadMusic(CArray *tracks);
 void SoundTerminate(SoundDevice *device, const bool waitForSoundsComplete)
 {
 	if (!device->isInitialised)
@@ -296,6 +340,11 @@ void SoundTerminate(SoundDevice *device, const bool waitForSoundsComplete)
 
 	hashmap_destroy(device->sounds, SoundDataTerminate);
 	hashmap_destroy(device->customSounds, SoundDataTerminate);
+
+	for (MusicType type = MUSIC_MENU; type < MUSIC_COUNT; type++)
+	{
+		SoundUnloadMusic(&device->musicTracks[type]);
+	}
 }
 static void SoundDataTerminate(any_t data)
 {
@@ -316,6 +365,13 @@ static void SoundDataTerminate(any_t data)
 			break;
 	}
 	CFREE(s);
+}
+static void SoundUnloadMusic(CArray *tracks)
+{
+	CA_FOREACH(Mix_Music *, m, *tracks)
+		Mix_FreeMusic(*m);
+	CA_FOREACH_END()
+	CArrayTerminate(tracks);
 }
 
 #define OUT_OF_SIGHT_DISTANCE_PLUS 100

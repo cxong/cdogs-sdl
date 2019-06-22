@@ -32,6 +32,7 @@
 #include <cdogs/font.h>
 #include <cdogs/grafx_bg.h>
 #include <cdogs/log.h>
+#include <cdogs/music.h>
 #include <cdogs/net_client.h>
 #include <cdogs/net_server.h>
 
@@ -102,6 +103,8 @@ static void MainMenuOnEnter(GameLoopData *data)
 		// Loaded game already; skip menus and go straight to game
 		return;
 	}
+
+	MusicPlay(&gSoundDevice, MUSIC_MENU, NULL, NULL);
 
 	MainMenuReset(&mData->ms);
 	NetClientDisconnect(&gNetClient);

@@ -67,19 +67,6 @@
 
 extern struct MissionOptions gMission;
 
-struct SongDef {
-	char path[255];
-	struct SongDef *next;
-};
-
-extern struct SongDef *gGameSongs;
-extern struct SongDef *gMenuSongs;
-
-void AddSong(struct SongDef **songList, const char *path);
-void ShiftSongs(struct SongDef **songList);
-void FreeSongs(struct SongDef **songList);
-void LoadSongs(void);
-
 bool CampaignLoad(CampaignOptions *co, CampaignEntry *entry);
 void CampaignUnload(CampaignOptions *co);
 

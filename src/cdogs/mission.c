@@ -427,7 +427,8 @@ void MissionBegin(struct MissionOptions *m, const NGameBegin gb)
 {
 	m->HasBegun = true;
 	m->state = MISSION_STATE_PLAY;
-	MusicPlayGame(&gSoundDevice, gCampaign.Entry.Path, m->missionData->Song);
+	MusicPlay(
+		&gSoundDevice, MUSIC_GAME, gCampaign.Entry.Path, m->missionData->Song);
 	if (MusicGetStatus(&gSoundDevice) == MUSIC_NOLOAD)
 	{
 		// Display music error message for 2 seconds

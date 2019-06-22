@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2016, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -60,20 +60,8 @@ Mix_Music *MusicLoad(const char *path)
 	return Mix_LoadMUS(path);
 }
 
-static bool MusicPlay(SoundDevice *device, const char *path)
+static bool PlayMusic(SoundDevice *device)
 {
-	if (!device->isInitialised)
-	{
-		return true;
-	}
-
-	if (path == NULL || strlen(path) == 0)
-	{
-		LOG(LM_SOUND, LL_WARN, "Attempting to play song with empty name");
-		return false;
-	}
-
-	device->music = MusicLoad(path);
 	if (device->music == NULL)
 	{
 		strcpy(device->musicErrorMessage, SDL_GetError());
@@ -94,13 +82,32 @@ static bool MusicPlay(SoundDevice *device, const char *path)
 	return true;
 }
 
-void MusicPlayGame(
-	SoundDevice *device, const char *missionPath, const char *music)
+static bool Play(SoundDevice *device, const char *path)
+{
+	if (!device->isInitialised)
+	{
+		return true;
+	}
+
+	if (path == NULL || strlen(path) == 0)
+	{
+		LOG(LM_SOUND, LL_WARN, "Attempting to play song with empty name");
+		return false;
+	}
+
+	device->music = MusicLoad(path);
+	return PlayMusic(device);
+}
+
+void MusicPlay(
+	SoundDevice *device, const MusicType type,
+	const char *missionPath, const char *music)
 {
 	// Play a tune
 	// Start by trying to play a mission specific song,
 	// otherwise pick one from the general collection...
 	MusicStop(device);
+	device->musicIsDynamic = false;
 	bool played = false;
 	if (music != NULL && strlen(music) != 0)
 	{
@@ -110,29 +117,37 @@ void MusicPlayGame(
 		GetDataFilePath(buf, missionPath);
 		strcat(buf, "/");
 		strcat(buf, music);
-		played = MusicPlay(device, buf);
+		played = Play(device, buf);
 		if (!played)
 		{
 			char buf2[CDOGS_PATH_MAX];
 			GetDataFilePath(buf2, missionPath);
 			PathGetDirname(buf, buf2);
 			strcat(buf, music);
-			played = MusicPlay(device, buf);
+			played = Play(device, buf);
+		}
+		if (played)
+		{
+			device->musicIsDynamic = true;
 		}
 	}
-	if (!played && gGameSongs != NULL)
+	if (!played)
 	{
-		MusicPlay(device, gGameSongs->path);
-		ShiftSongs(&gGameSongs);
-	}
-}
-void MusicPlayMenu(SoundDevice *device)
-{
-	MusicStop(device);
-	if (gMenuSongs)
-	{
-		MusicPlay(device, gMenuSongs->path);
-		ShiftSongs(&gMenuSongs);
+		CArray *tracks = &device->musicTracks[type];
+		if (tracks->size == 0)
+		{
+			return;
+		}
+		device->music = *(Mix_Music **)CArrayGet(tracks, 0);
+		// Shuffle tracks
+		if (tracks->size > 1)
+		{
+			while (device->music == *(Mix_Music **)CArrayGet(tracks, 0))
+			{
+				CArrayShuffle(tracks);
+			}
+		}
+		PlayMusic(device);
 	}
 }
 
@@ -141,7 +156,10 @@ void MusicStop(SoundDevice *device)
 	if (device->music != NULL)
 	{
 		Mix_HaltMusic();
-		Mix_FreeMusic(device->music);
+		if (device->musicIsDynamic)
+		{
+			Mix_FreeMusic(device->music);
+		}
 		device->music = NULL;
 	}
 }

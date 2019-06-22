@@ -31,6 +31,7 @@
 #include <cdogs/files.h>
 #include <cdogs/font.h>
 #include <cdogs/grafx_bg.h>
+#include <cdogs/music.h>
 #include <cdogs/objective.h>
 
 #include "animated_counter.h"
@@ -51,6 +52,7 @@ typedef struct
 	const CampaignSetting *c;
 } ScreenCampaignIntroData;
 static void CampaignIntroTerminate(GameLoopData *data);
+static void CampaignIntroOnEnter(GameLoopData *data);
 static void CampaignIntroOnExit(GameLoopData *data);
 static void CampaignIntroInput(GameLoopData *data);
 static GameLoopResult CampaignIntroUpdate(GameLoopData *data, LoopRunner *l);
@@ -61,13 +63,18 @@ GameLoopData *ScreenCampaignIntro(CampaignSetting *c)
 	CMALLOC(data, sizeof *data);
 	data->c = c;
 	return GameLoopDataNew(
-		data, CampaignIntroTerminate, NULL, CampaignIntroOnExit,
+		data, CampaignIntroTerminate, CampaignIntroOnEnter, CampaignIntroOnExit,
 		CampaignIntroInput, CampaignIntroUpdate, CampaignIntroDraw);
 }
 static void CampaignIntroTerminate(GameLoopData *data)
 {
 	ScreenCampaignIntroData *mData = data->Data;
 	CFREE(mData);
+}
+static void CampaignIntroOnEnter(GameLoopData *data)
+{
+	UNUSED(data);
+	MusicPlay(&gSoundDevice, MUSIC_BRIEFING, NULL, NULL);
 }
 static void CampaignIntroOnExit(GameLoopData *data)
 {
@@ -431,6 +438,8 @@ static int GetFriendlyBonus(const PlayerData *p);
 static void MissionSummaryOnEnter(GameLoopData *data)
 {
 	MissionSummaryData *mData = data->Data;
+
+	MusicPlay(&gSoundDevice, MUSIC_BRIEFING, NULL, NULL);
 
 	if (mData->completed)
 	{
