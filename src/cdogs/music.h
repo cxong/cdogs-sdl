@@ -56,8 +56,7 @@ void MusicPlay(
 	SoundDevice *device, const MusicType type,
 	const char *missionPath, const char *music);
 void MusicStop(SoundDevice *device);
-void MusicPause(SoundDevice *device);
+void MusicPause(SoundDevice *s);
 void MusicResume(SoundDevice *device);
 void MusicSetPlaying(SoundDevice *device, int isPlaying);
-int MusicGetStatus(SoundDevice *device);
 const char *MusicGetErrorMessage(SoundDevice *device);

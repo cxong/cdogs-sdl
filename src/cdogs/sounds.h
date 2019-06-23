@@ -87,14 +87,6 @@ typedef struct
 
 typedef enum
 {
-	MUSIC_OK,
-	MUSIC_NOLOAD,
-	MUSIC_PLAYING,
-	MUSIC_PAUSED
-} music_status_e;
-
-typedef enum
-{
 	MUSIC_MENU,
 	MUSIC_BRIEFING,
 	MUSIC_GAME,
@@ -107,7 +99,6 @@ typedef struct
 	Mix_Music *music;
 	bool musicIsDynamic;
 	CArray musicTracks[MUSIC_COUNT];	// of Mix_Music *
-	music_status_e musicStatus;
 	char musicErrorMessage[128];
 	int channels;
 
@@ -144,6 +135,7 @@ typedef struct
 void SoundInitialize(SoundDevice *device, const char *path);
 void SoundLoadDir(map_t sounds, const char *path, const char *prefix);
 void SoundReconfigure(SoundDevice *s);
+void SoundReopen(SoundDevice *s);
 void SoundClear(map_t sounds);
 void SoundTerminate(SoundDevice *device, const bool waitForSoundsComplete);
 void SoundPlay(SoundDevice *device, Mix_Chunk *data);

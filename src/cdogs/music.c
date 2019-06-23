@@ -65,12 +65,10 @@ static bool PlayMusic(SoundDevice *device)
 	if (device->music == NULL)
 	{
 		strcpy(device->musicErrorMessage, SDL_GetError());
-		device->musicStatus = MUSIC_NOLOAD;
 		return false;
 	}
 
-	Mix_PlayMusic(device->music, -1);
-	device->musicStatus = MUSIC_PLAYING;
+	MusicResume(device);
 
 	if (ConfigGetInt(&gConfig, "Sound.MusicVolume") == 0)
 	{
@@ -164,21 +162,28 @@ void MusicStop(SoundDevice *device)
 	}
 }
 
-void MusicPause(SoundDevice *device)
+void MusicPause(SoundDevice *s)
 {
-	if (device->musicStatus == MUSIC_PLAYING)
+	UNUSED(s);
+	if (Mix_PlayingMusic())
 	{
 		Mix_PauseMusic();
-		device->musicStatus = MUSIC_PAUSED;
 	}
 }
 
 void MusicResume(SoundDevice *device)
 {
-	if (device->musicStatus == MUSIC_PAUSED)
+	if (device->music == NULL)
+	{
+		return;
+	}
+	if (Mix_PausedMusic())
 	{
 		Mix_ResumeMusic();
-		device->musicStatus = MUSIC_PLAYING;
+	}
+	else
+	{
+		Mix_PlayMusic(device->music, -1);
 	}
 }
 
@@ -192,11 +197,6 @@ void MusicSetPlaying(SoundDevice *device, int isPlaying)
 	{
 		MusicPause(device);
 	}
-}
-
-int MusicGetStatus(SoundDevice *device)
-{
-	return device->musicStatus;
 }
 
 const char *MusicGetErrorMessage(SoundDevice *device)

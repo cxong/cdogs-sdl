@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, 2018 Cong Xu
+    Copyright (c) 2013-2016, 2018-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -81,6 +81,16 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 	{
 		switch (e.type)
 		{
+		case SDL_AUDIODEVICEADDED:	// fallthrough
+		case SDL_AUDIODEVICEREMOVED:
+			if (e.adevice.iscapture)
+			{
+				// Ignore capture devices
+				break;
+			}
+			SoundReopen(&gSoundDevice);
+			break;
+
 		case SDL_KEYDOWN:
 			if (e.key.repeat)
 			{

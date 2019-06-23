@@ -186,13 +186,7 @@ static void SoundLoadMusic(CArray *tracks, const char *path);
 void SoundInitialize(SoundDevice *device, const char *path)
 {
 	memset(device, 0, sizeof *device);
-	if (OpenAudio(44100, AUDIO_S16, 2, 1024) != 0)
-	{
-		return;
-	}
-
-	device->channels = 64;
-	SoundReconfigure(device);
+	SoundReopen(device);
 
 	device->sounds = hashmap_new();
 	device->customSounds = hashmap_new();
@@ -289,6 +283,27 @@ bail:
 	tinydir_close(&dir);
 }
 
+static void SoundClose(SoundDevice *s, const bool waitForSoundsComplete)
+{
+	if (!s->isInitialised)
+	{
+		return;
+	}
+
+	if (waitForSoundsComplete)
+	{
+		Uint32 waitStart = SDL_GetTicks();
+		while (Mix_Playing(-1) > 0 && SDL_GetTicks() - waitStart < 1000);
+		// Don't stop the music unless we're reopening
+		MusicStop(s);
+	}
+	while (Mix_Init(0))
+	{
+		Mix_Quit();
+	}
+	Mix_CloseAudio();
+}
+
 void SoundReconfigure(SoundDevice *s)
 {
 	s->isInitialised = false;
@@ -313,6 +328,18 @@ void SoundReconfigure(SoundDevice *s)
 	s->isInitialised = true;
 }
 
+void SoundReopen(SoundDevice *s)
+{
+	SoundClose(s, false);
+	if (OpenAudio(44100, AUDIO_S16, 2, 1024) != 0)
+	{
+		return;
+	}
+
+	s->channels = 64;
+	SoundReconfigure(s);
+}
+
 void SoundClear(map_t sounds)
 {
 	hashmap_clear(sounds, SoundDataTerminate);
@@ -320,23 +347,7 @@ void SoundClear(map_t sounds)
 static void SoundUnloadMusic(CArray *tracks);
 void SoundTerminate(SoundDevice *device, const bool waitForSoundsComplete)
 {
-	if (!device->isInitialised)
-	{
-		return;
-	}
-
-	if (waitForSoundsComplete)
-	{
-		Uint32 waitStart = SDL_GetTicks();
-		while (Mix_Playing(-1) > 0 &&
-			SDL_GetTicks() - waitStart < 1000);
-	}
-	MusicStop(device);
-	while (Mix_Init(0))
-	{
-		Mix_Quit();
-	}
-	Mix_CloseAudio();
+	SoundClose(device, waitForSoundsComplete);
 
 	hashmap_destroy(device->sounds, SoundDataTerminate);
 	hashmap_destroy(device->customSounds, SoundDataTerminate);

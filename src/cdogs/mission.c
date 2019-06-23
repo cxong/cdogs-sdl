@@ -429,12 +429,13 @@ void MissionBegin(struct MissionOptions *m, const NGameBegin gb)
 	m->state = MISSION_STATE_PLAY;
 	MusicPlay(
 		&gSoundDevice, MUSIC_GAME, gCampaign.Entry.Path, m->missionData->Song);
-	if (MusicGetStatus(&gSoundDevice) == MUSIC_NOLOAD)
+	const char *musicErrorMsg = MusicGetErrorMessage(&gSoundDevice);
+	if (strlen(musicErrorMsg) > 0)
 	{
 		// Display music error message for 2 seconds
 		GameEvent e = GameEventNew(GAME_EVENT_SET_MESSAGE);
 		strncat(
-			e.u.SetMessage.Message, MusicGetErrorMessage(&gSoundDevice),
+			e.u.SetMessage.Message, musicErrorMsg,
 			sizeof e.u.SetMessage.Message - 1);
 		e.u.SetMessage.Ticks = FPS_FRAMELIMIT * 2;
 		GameEventsEnqueue(&gGameEvents, e);
