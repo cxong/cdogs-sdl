@@ -9,7 +9,6 @@ env:
 
 dist: xenial
 sudo: required
-group: deprecated-2017Q3
 
 cache: ccache
 compiler:
