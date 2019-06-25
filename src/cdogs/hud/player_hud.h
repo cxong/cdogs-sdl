@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2016, 2018-2019 Cong Xu
+    Copyright (c) 2013-2017, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -28,24 +28,13 @@
 */
 #pragma once
 
-#define LIVES_ROW_EXTRA_Y 4
-#define GRENADES_ROW_EXTRA_Y 4
-#define GRENADES_ROW_PAD_LEFT 4
-#define GRENADES_ROW_PAD_TOP 4
+#include "hud.h"
+#include "player.h"
 
-#define GUN_ICON_PAD 10
 
-#define MAX_GRENADE_ICONS 7
+void HUDPlayerInit(HUDPlayer *h);
+void HUDPlayerUpdate(HUDPlayer *h, const PlayerData *p, const int ms);
 
-#define HUDFLAGS_PLACE_RIGHT	0x01
-#define HUDFLAGS_PLACE_BOTTOM	0x02
-#define HUDFLAGS_HALF_SCREEN	0x04
-#define HUDFLAGS_QUARTER_SCREEN	0x08
-#define HUDFLAGS_SHARE_SCREEN	0x10
-
-// A bit of padding for drawing HUD elements at bottom,
-// so that it doesn't overlap the objective information, clocks etc.
-#define BOTTOM_PADDING 16
-
-#define AUTOMAP_PADDING	5
-#define AUTOMAP_SIZE	45
+void DrawPlayerHUD(
+	HUD *hud, const PlayerData *p, const int drawFlags,
+	const int hudPlayerIndex, const int numViews);

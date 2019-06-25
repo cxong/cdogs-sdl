@@ -57,6 +57,7 @@ set(CDOGS_SOURCES
 	hud/health_gauge.c
 	hud/hud.c
 	hud/hud_num_popup.c
+	hud/player_hud.c
 	hud/wall_clock.c
 	joystick.c
 	json_utils.c
@@ -161,6 +162,7 @@ set(CDOGS_HEADERS
 	hud/hud.h
 	hud/hud_defs.h
 	hud/hud_num_popup.h
+	hud/player_hud.h
 	hud/wall_clock.h
 	joystick.h
 	json_utils.h
