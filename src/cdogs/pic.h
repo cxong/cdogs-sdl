@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2016, 2018 Cong Xu
+    Copyright (c) 2013-2016, 2018-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -63,4 +63,4 @@ bool PicPxIsEdge(const Pic *pic, const struct vec2i pos, const bool isPixel);
 
 void PicRender(
 	const Pic *p, SDL_Renderer *r, const struct vec2i pos, const color_t mask,
-	const double radians, const struct vec2 scale);
+	const double radians, const struct vec2 scale, const SDL_RendererFlip flip);

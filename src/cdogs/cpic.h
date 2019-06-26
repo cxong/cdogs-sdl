@@ -77,6 +77,7 @@ typedef struct
 	double Radians;
 	struct vec2 Scale;
 	color_t Mask;
+	SDL_RendererFlip Flip;
 } CPicDrawContext;
 CPicDrawContext CPicDrawContextNew(void);
 typedef void (*DrawCPicFunc)(GraphicsDevice *, const int, const struct vec2i);

@@ -54,6 +54,7 @@ CPicDrawContext CPicDrawContextNew(void)
 	c.Radians = 0;
 	c.Scale = svec2_one();
 	c.Mask = colorWhite;
+	c.Flip = SDL_FLIP_NONE;
 	return c;
 }
 
@@ -297,5 +298,5 @@ void CPicDraw(
 	PicRender(
 		pic, g->gameWindow.renderer, picPos,ColorMult(p->Mask, context->Mask),
 		context->Radians,
-		context->Scale);
+		context->Scale, context->Flip);
 }

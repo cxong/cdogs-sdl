@@ -132,8 +132,40 @@ static void DrawPlayerStatus(
 	HUD *hud, const PlayerData *data, TActor *p,
 	const int flags, const HUDPlayer *h)
 {
+	struct vec2i pos;
+
+	// Player icon
+	const Pic *framePic = PicManagerGetPic(&gPicManager, "hud/player_frame");
+	SDL_RendererFlip flip = SDL_FLIP_NONE;
+	if (flags & HUDFLAGS_PLACE_RIGHT)
+	{
+		flip |= SDL_FLIP_HORIZONTAL;
+	}
+	if (flags & HUDFLAGS_PLACE_BOTTOM)
+	{
+		flip |= SDL_FLIP_VERTICAL;
+	}
+	PicRender(
+		framePic, hud->device->gameWindow.renderer, svec2i(0, 0), colorWhite, 0,
+		svec2_one(), flip);
+	if (p)
+	{
+		ActorPics pics = GetCharacterPicsFromActor(p);
+		pos = svec2i(framePic->size.x / 2, framePic->size.y / 2);
+		if (flags & HUDFLAGS_PLACE_RIGHT)
+		{
+			pos.x = hud->device->cachedConfig.Res.x - pos.x;
+		}
+		if (flags & HUDFLAGS_PLACE_BOTTOM)
+		{
+			pos.y =  hud->device->cachedConfig.Res.y - pos.y;
+		}
+		pos.y += 10;
+		DrawActorPics(&pics, pos, false);
+	}
+
 	// Name
-	struct vec2i pos = svec2i(5, 5);
+	pos = svec2i(5, 5);
 
 	FontOpts opts = FontOptsNew();
 	if (flags & HUDFLAGS_PLACE_RIGHT)

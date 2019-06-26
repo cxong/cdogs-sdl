@@ -347,7 +347,7 @@ void DrawActorPics(
 			{
 				PicRender(
 					pic, gGraphicsDevice.gameWindow.renderer, drawPos,
-					pics->Mask, 0, svec2_one());
+					pics->Mask, 0, svec2_one(), SDL_FLIP_NONE);
 			}
 		}
 	}
@@ -581,11 +581,11 @@ void DrawHead(
 	const struct vec2i drawPos = svec2i_subtract(pos, svec2i(
 		head->size.x / 2, head->size.y / 2));
 	const color_t mask = colorWhite;
-	PicRender(head, renderer, drawPos, mask, 0, svec2_one());
+	PicRender(head, renderer, drawPos, mask, 0, svec2_one(), SDL_FLIP_NONE);
 	const Pic *hair = GetHairPic(c, dir, g, &c->Colors);
 	if (hair)
 	{
-		PicRender(hair, renderer, drawPos, mask, 0, svec2_one());
+		PicRender(hair, renderer, drawPos, mask, 0, svec2_one(), SDL_FLIP_NONE);
 	}
 }
 #define DYING_BODY_OFFSET 3
@@ -596,5 +596,6 @@ static void DrawDyingBody(
 	const struct vec2i drawPos = svec2i_subtract(pos, svec2i(
 		body->size.x / 2, body->size.y / 2 + DYING_BODY_OFFSET));
 	PicRender(
-		body, g->gameWindow.renderer, drawPos, pics->Mask, 0, svec2_one());
+		body, g->gameWindow.renderer, drawPos, pics->Mask, 0, svec2_one(),
+		SDL_FLIP_NONE);
 }

@@ -257,5 +257,6 @@ void DrawShadow(GraphicsDevice *g, struct vec2i pos, struct vec2i size)
 	const Rect2i dest =
 		Rect2iNew(svec2i_subtract(pos, size), svec2i_scale(size, 2));
 	TextureRender(
-		shadow->Tex, g->gameWindow.renderer, dest, colorTransparent, 0);
+		shadow->Tex, g->gameWindow.renderer, dest, colorTransparent, 0,
+		SDL_FLIP_NONE);
 }

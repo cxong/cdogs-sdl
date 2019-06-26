@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2017-2018 Cong Xu
+ Copyright (c) 2017-2019 Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -36,4 +36,4 @@ SDL_Texture *TextureCreate(
 
 void TextureRender(
 	SDL_Texture *t, SDL_Renderer *r, const Rect2i dest, const color_t mask,
-	const double angle);
+	const double angle, const SDL_RendererFlip flip);
