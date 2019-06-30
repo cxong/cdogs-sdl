@@ -243,7 +243,6 @@ void PicRender(
 {
 	Rect2i dest = Rect2iNew(pos, p->size);
 	// Apply scale to render dest
-	// TODO: render with anchor at centre by default?
 	if (!svec2_is_equal(scale, svec2_one()))
 	{
 		dest.Pos.x -= (mint_t)MROUND((scale.x - 1) * p->size.x / 2);

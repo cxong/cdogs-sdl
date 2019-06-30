@@ -102,20 +102,49 @@ void HUDPlayerUpdate(HUDPlayer *h, const PlayerData *p, const int ms)
 
 static void DrawPlayerStatus(
 	HUD *hud, const PlayerData *data, TActor *p,
-	const int flags, const HUDPlayer *h);
-static void DrawPlayerObjectiveCompass(const HUD *hud, const int numViews);
+	const int flags, const HUDPlayer *h, const Rect2i r);
+static void DrawPlayerObjectiveCompass(
+	const HUD *hud, TActor *a, const Rect2i r);
 void DrawPlayerHUD(
 	HUD *hud, const PlayerData *p, const int drawFlags,
 	const int hudPlayerIndex, const int numViews)
 {
 	TActor *a = IsPlayerAlive(p) ? ActorGetByUID(p->ActorUID) : NULL;
-	DrawPlayerStatus(hud, p, a, drawFlags, &hud->hudPlayers[hudPlayerIndex]);
+	Rect2i r = Rect2iNew(svec2i_zero(), hud->device->cachedConfig.Res);
+	if (hudPlayerIndex & 1)
+	{
+		r.Pos.x = r.Size.x;
+	}
+	if (hudPlayerIndex >= 2)
+	{
+		r.Pos.y = r.Size.y;
+	}
+	if (numViews == 1)
+	{
+		// No change
+	}
+	else if (numViews == 2)
+	{
+		r.Size.x /= 2;
+	}
+	else if (numViews == 3 || numViews == 4)
+	{
+		r.Size.x /= 2;
+		r.Size.y /= 2;
+	}
+	else
+	{
+		CASSERT(false, "not implemented");
+	}
+
+	DrawPlayerStatus(hud, p, a, drawFlags, &hud->hudPlayers[hudPlayerIndex], r);
 	HUDNumPopupsDrawPlayer(&hud->numPopups, hudPlayerIndex, drawFlags);
-	DrawPlayerObjectiveCompass(hud, numViews);
+	DrawPlayerObjectiveCompass(hud, a, r);
 }
 
 static void DrawPlayerIcon(
-	TActor *a, GraphicsDevice *g, const PicManager *pm, const int flags);
+	TActor *a, GraphicsDevice *g, const PicManager *pm, const int flags,
+	const SDL_RendererFlip flip);
 static void DrawLives(
 	const GraphicsDevice *device, const PlayerData *player,
 	const struct vec2i pos,
@@ -132,11 +161,29 @@ static void DrawRadar(
 // Draw player's score, health etc.
 static void DrawPlayerStatus(
 	HUD *hud, const PlayerData *data, TActor *p,
-	const int flags, const HUDPlayer *h)
+	const int flags, const HUDPlayer *h, const Rect2i r)
 {
-	DrawPlayerIcon(p, hud->device, &gPicManager, flags);
+	SDL_RendererFlip flip = SDL_FLIP_NONE;
+	if (flags & HUDFLAGS_PLACE_RIGHT)
+	{
+		flip |= SDL_FLIP_HORIZONTAL;
+	}
+	if (flags & HUDFLAGS_PLACE_BOTTOM)
+	{
+		flip |= SDL_FLIP_VERTICAL;
+	}
+
+	DrawPlayerIcon(p, hud->device, &gPicManager, flags, flip);
 
 	struct vec2i pos;
+
+	// Draw back bar, stretched across the screen
+	const Pic *backBar = PicManagerGetPic(&gPicManager, "hud/back_bar");
+	const int barWidth = r.Size.x - 22;
+	const int barX = 22 + barWidth / 2;
+	PicRender(
+		backBar, hud->device->gameWindow.renderer, svec2i(barX, 0), colorWhite,
+		0, svec2(barWidth, 1), flip);
 
 	// Name
 	pos = svec2i(5, 5);
@@ -227,20 +274,11 @@ static void DrawPlayerStatus(
 	}
 }
 static void DrawPlayerIcon(
-	TActor *a, GraphicsDevice *g, const PicManager *pm, const int flags)
+	TActor *a, GraphicsDevice *g, const PicManager *pm, const int flags,
+	const SDL_RendererFlip flip)
 {
-	// Player icon
 	const Pic *framePic = PicManagerGetPic(pm, "hud/player_frame");
 	const Pic *underlayPic = PicManagerGetPic(pm, "hud/player_frame");
-	SDL_RendererFlip flip = SDL_FLIP_NONE;
-	if (flags & HUDFLAGS_PLACE_RIGHT)
-	{
-		flip |= SDL_FLIP_HORIZONTAL;
-	}
-	if (flags & HUDFLAGS_PLACE_BOTTOM)
-	{
-		flip |= SDL_FLIP_VERTICAL;
-	}
 	PicRender(
 		underlayPic, g->gameWindow.renderer, svec2i(0, 0), colorWhite, 0,
 		svec2_one(), flip);
@@ -568,53 +606,15 @@ static void DrawRadar(
 static void DrawObjectiveCompass(
 	GraphicsDevice *g, const struct vec2 playerPos, const Rect2i r,
 	const bool showExit);
-static void DrawPlayerObjectiveCompass(const HUD *hud, const int numViews)
+static void DrawPlayerObjectiveCompass(
+	const HUD *hud, TActor *a, const Rect2i r)
 {
 	// Draw objective compass
-	Rect2i r;
-	r.Size = svec2i(
-		hud->device->cachedConfig.Res.x,
-		hud->device->cachedConfig.Res.y);
-	if (numViews == 1)
+	if (a == NULL)
 	{
-		// No change
+		return;
 	}
-	else if (numViews == 2)
-	{
-		r.Size.x /= 2;
-	}
-	else if (numViews == 3 || numViews == 4)
-	{
-		r.Size.x /= 2;
-		r.Size.y /= 2;
-	}
-	else
-	{
-		CASSERT(false, "not implemented");
-	}
-	for (int i = 0; i < numViews; i++)
-	{
-		const PlayerData *p = hud->DrawData.Players[i];
-		r.Pos = svec2i_zero();
-		if (i & 1)
-		{
-			r.Pos.x = r.Size.x;
-		}
-		if (i >= 2)
-		{
-			r.Pos.y = r.Size.y;
-		}
-		if (!IsPlayerAlive(p))
-		{
-			continue;
-		}
-		TActor *player = ActorGetByUID(p->ActorUID);
-		if (player == NULL)
-		{
-			continue;
-		}
-		DrawObjectiveCompass(hud->device, player->Pos, r, hud->showExit);
-	}
+	DrawObjectiveCompass(hud->device, a->Pos, r, hud->showExit);
 }
 
 static void DrawCompassArrow(
