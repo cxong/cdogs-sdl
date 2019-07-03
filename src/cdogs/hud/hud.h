@@ -49,7 +49,6 @@ typedef struct
 typedef struct
 {
 	// Counters for hiding UI elements when they don't change
-	int scoreCounter;
 	int healthCounter;
 	HealthGauge healthGauge;
 	int ammoCounter;

@@ -32,7 +32,6 @@
 #include "draw/draw_actor.h"
 #include "hud_defs.h"
 
-#define SCORE_COUNTER_SHOW_MS 4000
 #define HEALTH_COUNTER_SHOW_MS 5000
 #define AMMO_COUNTER_SHOW_MS 4000
 #define GRENADE_COUNTER_SHOW_MS 4000
@@ -43,7 +42,6 @@
 void HUDPlayerInit(HUDPlayer *h)
 {
 	memset(h, 0, sizeof *h);
-	h->scoreCounter = SCORE_COUNTER_SHOW_MS;
 	h->healthCounter = HEALTH_COUNTER_SHOW_MS;
 	HealthGaugeInit(&h->healthGauge);
 	h->ammoCounter = AMMO_COUNTER_SHOW_MS;
@@ -52,19 +50,12 @@ void HUDPlayerInit(HUDPlayer *h)
 
 void HUDPlayerUpdate(HUDPlayer *h, const PlayerData *p, const int ms)
 {
-	h->scoreCounter = MAX(h->scoreCounter - ms, 0);
 	h->healthCounter = MAX(h->healthCounter - ms, 0);
 	h->ammoCounter = MAX(h->ammoCounter - ms, 0);
 	h->grenadeCounter = MAX(h->grenadeCounter - ms, 0);
 
 	const TActor *a = ActorGetByUID(p->ActorUID);
 	if (a == NULL) return;
-
-	// Score
-	if (p->UID != h->lastPlayerUID || p->Stats.Score != h->lastScore)
-	{
-		h->scoreCounter = SCORE_COUNTER_SHOW_MS;
-	}
 
 	// Health
 	const bool healthUpdating = h->healthGauge.waitMs > 0;
@@ -104,47 +95,23 @@ static void DrawPlayerStatus(
 	HUD *hud, const PlayerData *data, TActor *p,
 	const int flags, const HUDPlayer *h, const Rect2i r);
 static void DrawPlayerObjectiveCompass(
-	const HUD *hud, TActor *a, const Rect2i r);
+	const HUD *hud, TActor *a, const int hudPlayerIndex, const int numViews);
 void DrawPlayerHUD(
 	HUD *hud, const PlayerData *p, const int drawFlags,
-	const int hudPlayerIndex, const int numViews)
+	const int hudPlayerIndex, const Rect2i r, const int numViews)
 {
 	TActor *a = IsPlayerAlive(p) ? ActorGetByUID(p->ActorUID) : NULL;
-	Rect2i r = Rect2iNew(svec2i_zero(), hud->device->cachedConfig.Res);
-	if (hudPlayerIndex & 1)
-	{
-		r.Pos.x = r.Size.x;
-	}
-	if (hudPlayerIndex >= 2)
-	{
-		r.Pos.y = r.Size.y;
-	}
-	if (numViews == 1)
-	{
-		// No change
-	}
-	else if (numViews == 2)
-	{
-		r.Size.x /= 2;
-	}
-	else if (numViews == 3 || numViews == 4)
-	{
-		r.Size.x /= 2;
-		r.Size.y /= 2;
-	}
-	else
-	{
-		CASSERT(false, "not implemented");
-	}
-
 	DrawPlayerStatus(hud, p, a, drawFlags, &hud->hudPlayers[hudPlayerIndex], r);
-	HUDNumPopupsDrawPlayer(&hud->numPopups, hudPlayerIndex, drawFlags);
-	DrawPlayerObjectiveCompass(hud, a, r);
+	HUDNumPopupsDrawPlayer(&hud->numPopups, hudPlayerIndex, drawFlags, r);
+	DrawPlayerObjectiveCompass(hud, a, hudPlayerIndex, numViews);
 }
 
 static void DrawPlayerIcon(
 	TActor *a, GraphicsDevice *g, const PicManager *pm, const int flags,
 	const SDL_RendererFlip flip);
+static void DrawScore(
+	GraphicsDevice *g, const PicManager *pm, const TActor *a, const int score,
+	const int flags, const Rect2i r);
 static void DrawLives(
 	const GraphicsDevice *device, const PlayerData *player,
 	const struct vec2i pos,
@@ -180,13 +147,21 @@ static void DrawPlayerStatus(
 	// Draw back bar, stretched across the screen
 	const Pic *backBar = PicManagerGetPic(&gPicManager, "hud/back_bar");
 	const int barWidth = r.Size.x - 22;
-	const int barX = 22 + barWidth / 2;
+	struct vec2i barPos = svec2i(22 + barWidth / 2, 0);
+	if (flags & HUDFLAGS_PLACE_RIGHT)
+	{
+		barPos.x = r.Pos.x + barWidth / 2;
+	}
+	if (flags & HUDFLAGS_PLACE_BOTTOM)
+	{
+		barPos.y = hud->device->cachedConfig.Res.y - backBar->size.y;
+	}
 	PicRender(
-		backBar, hud->device->gameWindow.renderer, svec2i(barX, 0), colorWhite,
+		backBar, hud->device->gameWindow.renderer, barPos, colorWhite,
 		0, svec2(barWidth, 1), flip);
 
 	// Name
-	pos = svec2i(5, 5);
+	pos = svec2i(23, 2);
 
 	FontOpts opts = FontOptsNew();
 	if (flags & HUDFLAGS_PLACE_RIGHT)
@@ -203,38 +178,15 @@ static void DrawPlayerStatus(
 	FontStrOpt(data->name, svec2i_zero(), opts);
 
 	const int rowHeight = 1 + FontH();
+	pos.x = 5;
 	pos.y += rowHeight;
-	char s[50];
-	if (IsScoreNeeded(gCampaign.Entry.Mode))
-	{
-		if (ConfigGetBool(&gConfig, "Game.Ammo"))
-		{
-			// Display money instead of ammo
-			sprintf(s, "Cash: $%d", data->Stats.Score);
-		}
-		else
-		{
-			sprintf(s, "Score: %d", data->Stats.Score);
-		}
-	}
-	else
-	{
-		s[0] = 0;
-	}
+
+	DrawScore(hud->device, &gPicManager, p, data->Stats.Score, flags, r);
+
+	opts.Pad = pos;
+	pos.y += rowHeight;
 	if (p)
 	{
-		opts.Pad = pos;
-
-		// Score/money
-		if (h->scoreCounter > 0)
-		{
-			opts.Mask.a = (uint8_t)CLAMP(
-				h->scoreCounter * 255 * 2 / SCORE_COUNTER_SHOW_MS, 0, 255);
-			FontStrOpt(s, svec2i_zero(), opts);
-			opts.Mask.a = 255;
-		}
-		pos.y += rowHeight;
-
 		// Health
 		const bool isLowHealth = ActorIsLowHealth(p);
 		if (h->healthCounter > 0 || isLowHealth)
@@ -260,11 +212,6 @@ static void DrawPlayerStatus(
 		// Grenades
 		DrawGrenadeStatus(hud, h, p, pos, opts.HAlign, opts.VAlign);
 	}
-	else
-	{
-		opts.Pad = pos;
-		FontStrOpt(s, svec2i_zero(), opts);
-	}
 
 	if (ConfigGetBool(&gConfig, "Interface.ShowHUDMap") &&
 		!(flags & HUDFLAGS_SHARE_SCREEN) &&
@@ -279,8 +226,18 @@ static void DrawPlayerIcon(
 {
 	const Pic *framePic = PicManagerGetPic(pm, "hud/player_frame");
 	const Pic *underlayPic = PicManagerGetPic(pm, "hud/player_frame");
+	struct vec2i picPos = svec2i_zero();
+	if (flags & HUDFLAGS_PLACE_RIGHT)
+	{
+		picPos.x = g->cachedConfig.Res.x - framePic->size.x;
+	}
+	if (flags & HUDFLAGS_PLACE_BOTTOM)
+	{
+		picPos.y = g->cachedConfig.Res.y - framePic->size.y;
+	}
+
 	PicRender(
-		underlayPic, g->gameWindow.renderer, svec2i(0, 0), colorWhite, 0,
+		underlayPic, g->gameWindow.renderer, picPos, colorWhite, 0,
 		svec2_one(), flip);
 	if (a)
 	{
@@ -299,8 +256,55 @@ static void DrawPlayerIcon(
 		DrawActorPics(&pics, pos, false);
 	}
 	PicRender(
-		framePic, g->gameWindow.renderer, svec2i(0, 0), colorWhite, 0,
+		framePic, g->gameWindow.renderer, picPos, colorWhite, 0,
 		svec2_one(), flip);
+}
+static void DrawScore(
+	GraphicsDevice *g, const PicManager *pm, const TActor *a, const int score,
+	const int flags, const Rect2i r)
+{
+	const Pic *backPic = PicManagerGetPic(pm, "hud/score_back");
+
+	// Score aligned to the right
+	struct vec2i backPos = svec2i(r.Size.x - backPic->size.x, 1);
+	if (flags & HUDFLAGS_PLACE_RIGHT)
+	{
+		backPos.x = r.Pos.x;
+	}
+	if (flags & HUDFLAGS_PLACE_BOTTOM)
+	{
+		backPos.y = g->cachedConfig.Res.y - backPic->size.y - 1;
+	}
+
+	PicRender(
+		backPic, g->gameWindow.renderer, backPos, colorWhite, 0, svec2_one(),
+		SDL_FLIP_NONE);
+
+	if (a == NULL)
+	{
+		return;
+	}
+
+	char s[50];
+	if (IsScoreNeeded(gCampaign.Entry.Mode))
+	{
+		if (ConfigGetBool(&gConfig, "Game.Ammo"))
+		{
+			// Display money instead of ammo
+			sprintf(s, "$%d", score);
+		}
+		else
+		{
+			sprintf(s, "%d", score);
+		}
+	}
+	else
+	{
+		s[0] = 0;
+	}
+
+	const FontOpts opts = PlayerHUDGetScorePos(flags, r);
+	FontStrOpt(s, svec2i_zero(), opts);
 }
 static void DrawLives(
 	const GraphicsDevice *device, const PlayerData *player,
@@ -607,12 +611,38 @@ static void DrawObjectiveCompass(
 	GraphicsDevice *g, const struct vec2 playerPos, const Rect2i r,
 	const bool showExit);
 static void DrawPlayerObjectiveCompass(
-	const HUD *hud, TActor *a, const Rect2i r)
+	const HUD *hud, TActor *a, const int hudPlayerIndex, const int numViews)
 {
 	// Draw objective compass
 	if (a == NULL)
 	{
 		return;
+	}
+	Rect2i r = Rect2iNew(svec2i_zero(), hud->device->cachedConfig.Res);
+	if (hudPlayerIndex & 1)
+	{
+		r.Pos.x = r.Size.x;
+	}
+	if (hudPlayerIndex >= 2)
+	{
+		r.Pos.y = r.Size.y;
+	}
+	if (numViews == 1)
+	{
+		// No change
+	}
+	else if (numViews == 2)
+	{
+		r.Size.x /= 2;
+	}
+	else if (numViews == 3 || numViews == 4)
+	{
+		r.Size.x /= 2;
+		r.Size.y /= 2;
+	}
+	else
+	{
+		CASSERT(false, "not implemented");
 	}
 	DrawObjectiveCompass(hud->device, a->Pos, r, hud->showExit);
 }
@@ -754,4 +784,23 @@ static void DrawCompassArrow(
 		textPos.y = MIN(textPos.y, r.Pos.y + r.Size.y - textSize.y - padding);
 		FontStrMask(label, textPos, tintedMask);
 	}
+}
+
+FontOpts PlayerHUDGetScorePos(const int flags, const Rect2i r)
+{
+	FontOpts opts = FontOptsNew();
+	opts.Area = r.Size;
+	opts.Pad = svec2i(2, 2);
+	// Score aligned to the right
+	opts.HAlign = ALIGN_END;
+	if (flags & HUDFLAGS_PLACE_RIGHT)
+	{
+		opts.Pad.x += r.Pos.x;
+		opts.HAlign = ALIGN_START;
+	}
+	if (flags & HUDFLAGS_PLACE_BOTTOM)
+	{
+		opts.VAlign = ALIGN_END;
+	}
+	return opts;
 }

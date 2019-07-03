@@ -37,4 +37,6 @@ void HUDPlayerUpdate(HUDPlayer *h, const PlayerData *p, const int ms);
 
 void DrawPlayerHUD(
 	HUD *hud, const PlayerData *p, const int drawFlags,
-	const int hudPlayerIndex, const int numViews);
+	const int hudPlayerIndex, const Rect2i r, const int numViews);
+
+FontOpts PlayerHUDGetScorePos(const int flags, const Rect2i r);

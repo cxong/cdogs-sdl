@@ -32,6 +32,7 @@
 #include "font.h"
 #include "gamedata.h"
 #include "hud_defs.h"
+#include "player_hud.h"
 
 
 // Total number of milliseconds that the numeric popup lasts for
@@ -152,26 +153,13 @@ static void NumPopupUpdate(HUDNumPopup *p, const int ms)
 	}
 }
 
-static void DrawScoreUpdate(const HUDNumPopup *u, const int flags);
+static void DrawNumUpdate(const HUDNumPopup *p, FontOpts opts);
+
 void HUDNumPopupsDrawPlayer(
-	const HUDNumPopups *popups, const int idx, const int drawFlags)
+	const HUDNumPopups *popups, const int idx, const int drawFlags,
+	const Rect2i r)
 {
-	DrawScoreUpdate(&popups->score[idx], drawFlags);
-}
-
-static void DrawNumUpdate(
-	const HUDNumPopup *p,
-	const char *formatText, const int currentValue, struct vec2i pos, const int flags);
-void HUDNumPopupsDrawObjective(
-	const HUDNumPopups *popups, const int idx, const struct vec2i pos)
-{
-	const Objective *o = CArrayGet(&gMission.missionData->Objectives, idx);
-	const HUDNumPopup *p = CArrayGet(&popups->objective, idx);
-	DrawNumUpdate(p, "%d", o->done, pos, 0);
-}
-
-static void DrawScoreUpdate(const HUDNumPopup *u, const int flags)
-{
+	const HUDNumPopup *u = &popups->score[idx];
 	if (!IsScoreNeeded(gCampaign.Entry.Mode))
 	{
 		return;
@@ -182,10 +170,20 @@ static void DrawScoreUpdate(const HUDNumPopup *u, const int flags)
 	}
 	const PlayerData *p = PlayerDataGetByUID(u->u.PlayerUID);
 	if (!IsPlayerAlive(p)) return;
-	const int rowHeight = 1 + FontH();
-	const int y = 5 + rowHeight;
-	DrawNumUpdate(u, "Score: %d", p->Stats.Score, svec2i(5, y), flags);
+	const FontOpts opts = PlayerHUDGetScorePos(drawFlags, r);
+	DrawNumUpdate(u, opts);
 }
+
+void HUDNumPopupsDrawObjective(
+	const HUDNumPopups *popups, const int idx, const struct vec2i pos)
+{
+	const HUDNumPopup *p = CArrayGet(&popups->objective, idx);
+	FontOpts opts = FontOptsNew();
+	opts.Area = gGraphicsDevice.cachedConfig.Res;
+	opts.Pad = pos;
+	DrawNumUpdate(p, opts);
+}
+
 // Parameters that define how the numeric update is animated
 // The update animates in the following phases:
 // 1. Pop up from text position to slightly above
@@ -194,9 +192,7 @@ static void DrawScoreUpdate(const HUDNumPopup *u, const int flags)
 #define NUM_UPDATE_POP_UP_DURATION_MS 100
 #define NUM_UPDATE_FALL_DOWN_DURATION_MS 100
 #define NUM_UPDATE_POP_UP_HEIGHT 5
-static void DrawNumUpdate(
-	const HUDNumPopup *p,
-	const char *formatText, const int currentValue, struct vec2i pos, const int flags)
+static void DrawNumUpdate(const HUDNumPopup *p, FontOpts opts)
 {
 	if (p->Timer <= 0 || p->Amount == 0)
 	{
@@ -204,25 +200,9 @@ static void DrawNumUpdate(
 	}
 	color_t color = p->Amount > 0 ? colorGreen : colorRed;
 
+	struct vec2i pos = svec2i_zero();
 	char s[50];
-	if (!(flags & HUDFLAGS_PLACE_RIGHT))
-	{
-		// Find the right position to draw the popup
-		// Make sure the popup is displayed lined up with the lowest digits
-		// Find the position of where the normal text is displayed,
-		// and move to its right
-		sprintf(s, formatText, currentValue);
-		pos.x += FontStrW(s);
-		// Then find the size of the popup, and move left
-		sprintf(s, "%s%d", p->Amount > 0 ? "+" : "", p->Amount);
-		pos.x -= FontStrW(s);
-		// The final position should ensure the score popup's lowest digit
-		// lines up with the normal score's lowest digit
-	}
-	else
-	{
-		sprintf(s, "%s%d", p->Amount > 0 ? "+" : "", p->Amount);
-	}
+	sprintf(s, "%s%d", p->Amount > 0 ? "+" : "", p->Amount);
 
 	// Now animate the popup based on its stage
 	int timer = p->TimerMax - p->Timer;
@@ -232,7 +212,7 @@ static void DrawNumUpdate(
 		// calculate height
 		int popupHeight =
 			timer * NUM_UPDATE_POP_UP_HEIGHT / NUM_UPDATE_POP_UP_DURATION_MS;
-		pos.y -= popupHeight;
+		opts.Pad.y -= popupHeight;
 	}
 	else if (timer <
 		NUM_UPDATE_POP_UP_DURATION_MS + NUM_UPDATE_FALL_DOWN_DURATION_MS)
@@ -243,7 +223,7 @@ static void DrawNumUpdate(
 		timer = NUM_UPDATE_FALL_DOWN_DURATION_MS - timer;
 		int popupHeight =
 			timer * NUM_UPDATE_POP_UP_HEIGHT / NUM_UPDATE_FALL_DOWN_DURATION_MS;
-		pos.y -= popupHeight;
+		opts.Pad.y -= popupHeight;
 	}
 	else
 	{
@@ -251,19 +231,7 @@ static void DrawNumUpdate(
 		color.a = (uint8_t)CLAMP(p->Timer * 255 * 2 / p->TimerMax, 0, 255);
 	}
 
-	FontOpts opts = FontOptsNew();
-	if (flags & HUDFLAGS_PLACE_RIGHT)
-	{
-		opts.HAlign = ALIGN_END;
-	}
-	if (flags & HUDFLAGS_PLACE_BOTTOM)
-	{
-		opts.VAlign = ALIGN_END;
-		pos.y += BOTTOM_PADDING;
-	}
-	opts.Area = gGraphicsDevice.cachedConfig.Res;
-	opts.Pad = pos;
 	opts.Mask = color;
 	opts.Blend = true;
-	FontStrOpt(s, svec2i_zero(), opts);
+	FontStrOpt(s, pos, opts);
 }

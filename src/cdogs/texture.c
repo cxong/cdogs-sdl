@@ -73,8 +73,8 @@ void TextureRender(
 		dest.Pos.x, dest.Pos.y, dest.Size.x, dest.Size.y
 	};
 	const SDL_Rect *dstrect = Rect2iIsZero(dest) ? NULL : &destRect;
-	const int renderRes = angle == 0 ?
-		SDL_RenderCopy(r, t, NULL, dstrect) :
+
+	const int renderRes =
 		SDL_RenderCopyEx(r, t, NULL, dstrect, angle, NULL, flip);
 	if (renderRes != 0)
 	{

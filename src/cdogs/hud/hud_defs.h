@@ -47,5 +47,5 @@
 // so that it doesn't overlap the objective information, clocks etc.
 #define BOTTOM_PADDING 16
 
-#define AUTOMAP_PADDING	5
+#define AUTOMAP_PADDING	13
 #define AUTOMAP_SIZE	45

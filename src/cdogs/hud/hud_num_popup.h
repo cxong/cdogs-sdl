@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2017 Cong Xu
+    Copyright (c) 2013-2017, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -71,6 +71,7 @@ void HUDNumPopupsAdd(
 void HUDPopupsUpdate(HUDNumPopups *popups, const int ms);
 
 void HUDNumPopupsDrawPlayer(
-	const HUDNumPopups *popups, const int idx, const int drawFlags);
+	const HUDNumPopups *popups, const int idx, const int drawFlags,
+	const Rect2i r);
 void HUDNumPopupsDrawObjective(
 	const HUDNumPopups *popups, const int idx, const struct vec2i pos);

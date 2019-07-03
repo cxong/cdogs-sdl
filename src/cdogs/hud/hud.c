@@ -223,33 +223,45 @@ static void DrawPlayerAreas(HUD *hud, const int numViews)
 {
 	int flags = 0;
 
-	Rect2i r;
-	r.Size = svec2i(
-		hud->device->cachedConfig.Res.x,
-		hud->device->cachedConfig.Res.y);
+	Rect2i r = Rect2iNew(svec2i_zero(), hud->device->cachedConfig.Res);
 	if (hud->DrawData.NumScreens <= 1)
 	{
-		flags = 0;
+		// Do nothing
 	}
-	else if (
+	else if (hud->DrawData.NumScreens == 2)
+	{
+		r.Size.x /= 2;
+	}
+	else if (hud->DrawData.NumScreens == 3 || hud->DrawData.NumScreens == 4)
+	{
+		r.Size.x /= 2;
+		r.Size.y /= 2;
+	}
+	else
+	{
+		CASSERT(false, "not implemented");
+	}
+
+	if (hud->DrawData.NumScreens <= 1)
+	{
+		// Do nothing
+	}
+	else if (hud->DrawData.NumScreens > 1 &&
 		ConfigGetEnum(&gConfig, "Interface.Splitscreen") == SPLITSCREEN_NEVER)
 	{
 		flags |= HUDFLAGS_SHARE_SCREEN;
 	}
 	else if (hud->DrawData.NumScreens == 2)
 	{
-		r.Size.x /= 2;
 		flags |= HUDFLAGS_HALF_SCREEN;
 	}
 	else if (hud->DrawData.NumScreens == 3 || hud->DrawData.NumScreens == 4)
 	{
-		r.Size.x /= 2;
-		r.Size.y /= 2;
 		flags |= HUDFLAGS_QUARTER_SCREEN;
 	}
 	else
 	{
-		assert(0 && "not implemented");
+		CASSERT(false, "not implemented");
 	}
 
 	for (int i = 0; i < hud->DrawData.NumScreens; i++)
@@ -267,7 +279,7 @@ static void DrawPlayerAreas(HUD *hud, const int numViews)
 			r.Pos.y = r.Size.y;
 			drawFlags |= HUDFLAGS_PLACE_BOTTOM;
 		}
-		DrawPlayerHUD(hud, p, drawFlags, i, numViews);
+		DrawPlayerHUD(hud, p, drawFlags, i, r, numViews);
 	}
 
 	// Only draw radar once if shared
@@ -491,7 +503,7 @@ static void DrawMissionTime(HUD *hud)
 	FontOpts opts = FontOptsNew();
 	opts.HAlign = ALIGN_CENTER;
 	opts.Area = hud->device->cachedConfig.Res;
-	opts.Pad.y = 5;
+	opts.Pad.y = AUTOMAP_PADDING;
 	FontStrOpt(s, svec2i_zero(), opts);
 }
 
