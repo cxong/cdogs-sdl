@@ -32,6 +32,12 @@ SDL_Texture *TextureCreate(
 	SDL_Renderer *renderer, const SDL_TextureAccess access, const struct vec2i res,
 	const SDL_BlendMode blend, const Uint8 alpha)
 {
+	// Don't create 0 sized textures
+	if (svec2i_is_zero(res))
+	{
+		LOG(LM_GFX, LL_ERROR, "attempting to create 0 sized texture");
+		return NULL;
+	}
 	SDL_Texture *t = SDL_CreateTexture(
 		renderer, SDL_PIXELFORMAT_ARGB8888, access, res.x, res.y);
 	if (t == NULL)

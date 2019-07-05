@@ -1504,8 +1504,9 @@
     {
       "Name": "health spawner",
       "Pic": {
-        "Type": "Normal",
-        "Pic": "spawn_pad"
+        "Type": "Animated",
+        "Sprites": "spawn_pad",
+        "TicksPerFrame": 8
       },
       "Offset": [-8, -6],
       "Health": 0,

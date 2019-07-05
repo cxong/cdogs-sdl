@@ -98,6 +98,7 @@ bail:
 }
 bool PicTryMakeTex(Pic *p)
 {
+	CASSERT(!PicIsNone(p), "cannot make tex of none pic");
 	SDL_DestroyTexture(p->Tex);
 	p->Tex = TextureCreate(
 		gGraphicsDevice.gameWindow.renderer, SDL_TEXTUREACCESS_STATIC,
@@ -144,6 +145,8 @@ Pic PicCopy(const Pic *src)
 void PicFree(Pic *pic)
 {
 	CFREE(pic->Data);
+	pic->Data = NULL;
+	pic->size = svec2i_zero();
 	if (pic->Tex != NULL)
 	{
 		SDL_DestroyTexture(pic->Tex);

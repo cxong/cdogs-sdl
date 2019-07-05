@@ -909,17 +909,6 @@
       "Health": 0
     },
     {
-      "Name": "health spawner",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "spawn_pad"
-      },
-      "Offset": [-8, -6],
-      "Health": 0,
-      "Type": "PickupSpawner",
-      "Pickup": "health"
-    },
-    {
       "Name": "fan",
       "Pic": {
         "Type": "Animated",

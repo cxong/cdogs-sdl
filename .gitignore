@@ -91,6 +91,7 @@ dll/
 
 # Other
 *.lnk
+*.log
 *.o
 *.a
 *.so
