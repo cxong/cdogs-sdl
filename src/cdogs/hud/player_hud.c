@@ -114,7 +114,6 @@ static void DrawScore(
 	const int flags, const Rect2i r);
 static void DrawLives(
 	const GraphicsDevice *device, const PlayerData *player,
-	const struct vec2i pos,
 	const FontAlign hAlign, const FontAlign vAlign);
 static void DrawWeaponStatus(
 	HUD *hud, const HUDPlayer *h, const TActor *actor, struct vec2i pos,
@@ -177,11 +176,13 @@ static void DrawPlayerStatus(
 	opts.Pad = pos;
 	FontStrOpt(data->name, svec2i_zero(), opts);
 
+	DrawScore(hud->device, &gPicManager, p, data->Stats.Score, flags, r);
+
+	DrawLives(hud->device, data, opts.HAlign, opts.VAlign);
+
 	const int rowHeight = 1 + FontH();
 	pos.x = 5;
 	pos.y += rowHeight;
-
-	DrawScore(hud->device, &gPicManager, p, data->Stats.Score, flags, r);
 
 	opts.Pad = pos;
 	pos.y += rowHeight;
@@ -200,10 +201,6 @@ static void DrawPlayerStatus(
 			opts.Mask.a = 255;
 		}
 		pos.y += rowHeight;
-
-		// Lives
-		DrawLives(hud->device, data, pos, opts.HAlign, opts.VAlign);
-		pos.y += rowHeight + LIVES_ROW_EXTRA_Y;
 
 		// Weapon
 		DrawWeaponStatus(hud, h, p, pos, opts.HAlign, opts.VAlign);
@@ -308,10 +305,10 @@ static void DrawScore(
 }
 static void DrawLives(
 	const GraphicsDevice *device, const PlayerData *player,
-	const struct vec2i pos,
 	const FontAlign hAlign, const FontAlign vAlign)
 {
-	const int xStep = hAlign == ALIGN_START ? 10 : -10;
+	const struct vec2i pos = svec2i(24, 11);
+	const int xStep = (hAlign == ALIGN_START ? 1 : -1) * 8;
 	const struct vec2i offset = svec2i(2, 5);
 	struct vec2i drawPos = svec2i_add(pos, offset);
 	if (hAlign == ALIGN_END)

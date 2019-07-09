@@ -28,7 +28,6 @@
 */
 #pragma once
 
-#define LIVES_ROW_EXTRA_Y 4
 #define GRENADES_ROW_EXTRA_Y 4
 #define GRENADES_ROW_PAD_LEFT 4
 #define GRENADES_ROW_PAD_TOP 4
