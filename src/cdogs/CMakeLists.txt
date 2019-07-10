@@ -42,6 +42,7 @@ set(CDOGS_SOURCES
 	draw/draw_buffer.c
 	draw/draw_highlight.c
 	draw/drawtools.c
+	draw/nine_slice.c
 	emitter.c
 	events.c
 	files.c
@@ -146,6 +147,7 @@ set(CDOGS_HEADERS
 	draw/draw_buffer.h
 	draw/draw_highlight.h
 	draw/drawtools.h
+	draw/nine_slice.h
 	emitter.h
 	events.h
 	files.h

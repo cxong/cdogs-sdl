@@ -296,7 +296,7 @@ void CPicDraw(
 	}
 	const struct vec2i picPos = svec2i_add(pos, context->Offset);
 	PicRender(
-		pic, g->gameWindow.renderer, picPos,ColorMult(p->Mask, context->Mask),
+		pic, g->gameWindow.renderer, picPos, ColorMult(p->Mask, context->Mask),
 		context->Radians,
 		context->Scale, context->Flip);
 }

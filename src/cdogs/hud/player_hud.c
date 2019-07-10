@@ -30,6 +30,7 @@
 #include "actors.h"
 #include "automap.h"
 #include "draw/draw_actor.h"
+#include "draw/nine_slice.h"
 #include "hud_defs.h"
 
 #define HEALTH_COUNTER_SHOW_MS 5000
@@ -260,22 +261,22 @@ static void DrawScore(
 	GraphicsDevice *g, const PicManager *pm, const TActor *a, const int score,
 	const int flags, const Rect2i r)
 {
-	const Pic *backPic = PicManagerGetPic(pm, "hud/score_back");
+	const Pic *backPic = PicManagerGetPic(pm, "hud/gauge_back");
+	const struct vec2i backPicSize = svec2i(26, 10);
 
 	// Score aligned to the right
-	struct vec2i backPos = svec2i(r.Size.x - backPic->size.x, 1);
+	struct vec2i backPos = svec2i(r.Size.x - backPicSize.x, 1);
 	if (flags & HUDFLAGS_PLACE_RIGHT)
 	{
 		backPos.x = r.Pos.x;
 	}
 	if (flags & HUDFLAGS_PLACE_BOTTOM)
 	{
-		backPos.y = g->cachedConfig.Res.y - backPic->size.y - 1;
+		backPos.y = g->cachedConfig.Res.y - backPicSize.y - 1;
 	}
 
-	PicRender(
-		backPic, g->gameWindow.renderer, backPos, colorWhite, 0, svec2_one(),
-		SDL_FLIP_NONE);
+	Draw9Slice(
+		g, backPic, Rect2iNew(backPos, backPicSize), 0, 3, 0, 3, false);
 
 	if (a == NULL)
 	{
