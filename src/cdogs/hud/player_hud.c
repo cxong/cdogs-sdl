@@ -147,18 +147,18 @@ static void DrawPlayerStatus(
 	// Draw back bar, stretched across the screen
 	const Pic *backBar = PicManagerGetPic(&gPicManager, "hud/back_bar");
 	const int barWidth = r.Size.x - 22;
-	struct vec2i barPos = svec2i(22 + barWidth / 2, 0);
+	struct vec2i barPos = svec2i(22, 0);
 	if (flags & HUDFLAGS_PLACE_RIGHT)
 	{
-		barPos.x = r.Pos.x + barWidth / 2;
+		barPos.x = r.Pos.x;
 	}
 	if (flags & HUDFLAGS_PLACE_BOTTOM)
 	{
 		barPos.y = hud->device->cachedConfig.Res.y - backBar->size.y;
 	}
-	PicRender(
-		backBar, hud->device->gameWindow.renderer, barPos, colorWhite,
-		0, svec2(barWidth, 1), flip);
+	Draw9Slice(
+		hud->device, backBar, Rect2iNew(barPos, svec2i(barWidth, 13)),
+		0, 0, 0, 0, false, flip);
 
 	// Name
 	pos = svec2i(23, 2);
@@ -276,7 +276,8 @@ static void DrawScore(
 	}
 
 	Draw9Slice(
-		g, backPic, Rect2iNew(backPos, backPicSize), 0, 3, 0, 3, false);
+		g, backPic, Rect2iNew(backPos, backPicSize), 0, 3, 0, 3, false,
+		SDL_FLIP_NONE);
 
 	if (a == NULL)
 	{

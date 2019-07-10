@@ -35,4 +35,4 @@ int Draw9Slice(
 	GraphicsDevice *g, const Pic *pic,
 	const Rect2i target,
 	const int top, const int right, const int bottom, const int left,
-	const bool repeat);
+	const bool repeat, const SDL_RendererFlip flip);

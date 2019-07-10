@@ -35,9 +35,8 @@ int Draw9Slice(
 	GraphicsDevice *g, const Pic *pic,
 	const Rect2i target,
 	const int top, const int right, const int bottom, const int left,
-	const bool repeat)
+	const bool repeat, const SDL_RendererFlip flip)
 {
-	// TODO: support flipping
 	const int srcX[] = {0, left, pic->size.x - right};
 	const int srcY[] = {0, top, pic->size.y - bottom};
 	const int srcW[] = {left, pic->size.x - right - left, right};
@@ -80,8 +79,9 @@ int Draw9Slice(
 					{
 						src.h = dst.h = dstY[j + 1] - dst.y;
 					}
-					const int res = SDL_RenderCopy(
-						g->gameWindow.renderer, pic->Tex, &src, &dst);
+					const int res = SDL_RenderCopyEx(
+						g->gameWindow.renderer, pic->Tex, &src, &dst, 0, NULL,
+						flip);
 					if (res != 0)
 					{
 						LOG(LM_GFX, LL_ERROR,
