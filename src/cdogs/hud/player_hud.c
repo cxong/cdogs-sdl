@@ -35,7 +35,6 @@
 
 #define HEALTH_COUNTER_SHOW_MS 5000
 #define AMMO_COUNTER_SHOW_MS 4000
-#define GRENADE_COUNTER_SHOW_MS 4000
 #define WEAPON_GAUGE_EXTRA_HEIGHT 2
 #define AMMO_GAUGE_HEIGHT 4
 
@@ -46,14 +45,12 @@ void HUDPlayerInit(HUDPlayer *h)
 	h->healthCounter = HEALTH_COUNTER_SHOW_MS;
 	HealthGaugeInit(&h->healthGauge);
 	h->ammoCounter = AMMO_COUNTER_SHOW_MS;
-	h->grenadeCounter = GRENADE_COUNTER_SHOW_MS;
 }
 
 void HUDPlayerUpdate(HUDPlayer *h, const PlayerData *p, const int ms)
 {
 	h->healthCounter = MAX(h->healthCounter - ms, 0);
 	h->ammoCounter = MAX(h->ammoCounter - ms, 0);
-	h->grenadeCounter = MAX(h->grenadeCounter - ms, 0);
 
 	const TActor *a = ActorGetByUID(p->ActorUID);
 	if (a == NULL) return;
@@ -75,21 +72,11 @@ void HUDPlayerUpdate(HUDPlayer *h, const PlayerData *p, const int ms)
 		h->ammoCounter = AMMO_COUNTER_SHOW_MS;
 	}
 
-	// Grenade name
-	const Weapon *grenade = ACTOR_GET_GRENADE(a);
-	if (p->UID != h->lastPlayerUID || a->grenadeIndex != h->lastGrenadeIndex ||
-		grenade->Gun != h->lastGrenade)
-	{
-		h->grenadeCounter = GRENADE_COUNTER_SHOW_MS;
-	}
-
 	h->lastPlayerUID = p->UID;
 	h->lastScore = p->Stats.Score;
 	h->lastHealth = a->health;
 	h->lastAmmo = ammo;
 	h->lastGunIndex = a->gunIndex;
-	h->lastGrenadeIndex = a->grenadeIndex;
-	h->lastGrenade = grenade->Gun;
 }
 
 static void DrawPlayerStatus(
@@ -120,8 +107,7 @@ static void DrawWeaponStatus(
 	HUD *hud, const HUDPlayer *h, const TActor *actor, struct vec2i pos,
 	const FontAlign hAlign, const FontAlign vAlign);
 static void DrawGrenadeStatus(
-	HUD *hud, const HUDPlayer *h, const TActor *a, struct vec2i pos,
-	const FontAlign hAlign, const FontAlign vAlign);
+	GraphicsDevice *g, const TActor *a, const int flags, const Rect2i r);
 static void DrawRadar(
 	GraphicsDevice *device, const TActor *p,
 	const int flags, const bool showExit);
@@ -179,6 +165,8 @@ static void DrawPlayerStatus(
 
 	DrawScore(hud->device, &gPicManager, p, data->Stats.Score, flags, r);
 
+	DrawGrenadeStatus(hud->device, p, flags, r);
+
 	DrawLives(hud->device, data, opts.HAlign, opts.VAlign);
 
 	const int rowHeight = 1 + FontH();
@@ -205,10 +193,6 @@ static void DrawPlayerStatus(
 
 		// Weapon
 		DrawWeaponStatus(hud, h, p, pos, opts.HAlign, opts.VAlign);
-		pos.y += rowHeight + GRENADES_ROW_EXTRA_Y;
-
-		// Grenades
-		DrawGrenadeStatus(hud, h, p, pos, opts.HAlign, opts.VAlign);
 	}
 
 	if (ConfigGetBool(&gConfig, "Interface.ShowHUDMap") &&
@@ -432,15 +416,31 @@ static void DrawWeaponStatus(
 	}
 }
 
+static void DrawGrenadeIcons(
+	GraphicsDevice *g, const Pic *icon, const struct vec2i pos, const int width,
+	const int amount);
 static void DrawGrenadeStatus(
-	HUD *hud, const HUDPlayer *h, const TActor *a, struct vec2i pos,
-	const FontAlign hAlign, const FontAlign vAlign)
+	GraphicsDevice *g, const TActor *a, const int flags, const Rect2i r)
 {
 	const Weapon *grenade = ACTOR_GET_GRENADE(a);
 	const WeaponClass *wc = grenade->Gun;
 	if (wc == NULL)
 	{
 		return;
+	}
+
+	// Aligned to the right
+	const int scoreWidth = 27;
+	const int right = 57;
+	const int width = right - scoreWidth;
+	struct vec2i pos = svec2i(r.Size.x - right, 1);
+	if (flags & HUDFLAGS_PLACE_RIGHT)
+	{
+		pos.x = r.Pos.x + scoreWidth;
+	}
+	if (flags & HUDFLAGS_PLACE_BOTTOM)
+	{
+		pos.y = g->cachedConfig.Res.y - 13 - 1;
 	}
 
 	// Draw number of grenade icons; if there are too many draw one with the
@@ -451,22 +451,11 @@ static void DrawGrenadeStatus(
 	const Pic *icon = WeaponClassGetIcon(wc);
 	if (useAmmo && amount > 0 && amount <= MAX_GRENADE_ICONS)
 	{
-		const struct vec2i iconPosEnd = svec2i_add(
-			pos, svec2i(GRENADES_ROW_PAD_LEFT, GRENADES_ROW_PAD_TOP));
-		const int width = GAUGE_WIDTH - GRENADES_ROW_PAD_LEFT * 2;
-		for (int i = 0; i < amount; i++)
-		{
-			const int x =
-				iconPosEnd.x + width - wc->Icon->size.x -
-				width * i / MAX_GRENADE_ICONS;
-			const struct vec2i posAligned = Vec2iAligned(
-				svec2i(x, iconPosEnd.y),
-				icon->size, hAlign, vAlign, hud->device->cachedConfig.Res);
-			Blit(hud->device, icon, posAligned);
-		}
+		DrawGrenadeIcons(g, icon, pos, width, amount);
 	}
 	else
 	{
+		DrawGrenadeIcons(g, icon, pos, width, 1);
 		char buf[256];
 		if (amount >= 0)
 		{
@@ -476,30 +465,22 @@ static void DrawGrenadeStatus(
 		{
 			sprintf(buf, " x 99");
 		}
-		struct vec2i iconPos =
-			svec2i_add(pos, svec2i(GAUGE_WIDTH, GRENADES_ROW_PAD_TOP));
-		const struct vec2i ammoSize =
-			svec2i(FontStrW(buf) + icon->size.x, FontH());
-		iconPos.x -= ammoSize.x;
-			svec2i(pos.x + GAUGE_WIDTH, pos.y + GRENADES_ROW_PAD_TOP);
-		iconPos = Vec2iAligned(
-			iconPos, ammoSize, hAlign, vAlign, hud->device->cachedConfig.Res);
-		Blit(hud->device, icon, iconPos);
-		iconPos.x += wc->Icon->size.x;
-		FontStr(buf, iconPos);
-	}
-
-	// Grenade name
-	if (h->grenadeCounter > 0)
-	{
 		FontOpts opts = FontOptsNew();
-		opts.HAlign = hAlign;
-		opts.VAlign = vAlign;
-		opts.Area = hud->device->cachedConfig.Res;
-		opts.Pad = svec2i(pos.x, pos.y);
-		opts.Mask.a = (uint8_t)CLAMP(
-			h->grenadeCounter * 255 * 2 / GRENADE_COUNTER_SHOW_MS, 0, 255);
-		FontStrOpt(wc->name, svec2i_zero(), opts);
+		opts.HAlign = ALIGN_END;
+		FontStrOpt(buf, svec2i(pos.x + width, pos.y), opts);
+	}
+}
+static void DrawGrenadeIcons(
+	GraphicsDevice *g, const Pic *icon, const struct vec2i pos, const int width,
+	const int amount)
+{
+	const int dx = width / MAX_GRENADE_ICONS;
+	for (int i = 0; i < amount; i++)
+	{
+		const struct vec2i drawPos = svec2i(pos.x + i * dx, pos.y);
+		PicRender(
+			icon, g->gameWindow.renderer, drawPos, colorWhite, 0.0,
+			svec2_one(), SDL_FLIP_NONE);
 	}
 }
 

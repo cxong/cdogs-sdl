@@ -52,7 +52,6 @@ typedef struct
 	int healthCounter;
 	HealthGauge healthGauge;
 	int ammoCounter;
-	int grenadeCounter;
 
 	// Track last state so we can detect changes - when these change show
 	// UI elements until the counter runs out
@@ -61,8 +60,6 @@ typedef struct
 	int lastHealth;
 	int lastAmmo;
 	int lastGunIndex;
-	int lastGrenadeIndex;
-	const WeaponClass *lastGrenade;
 } HUDPlayer;
 
 typedef struct
