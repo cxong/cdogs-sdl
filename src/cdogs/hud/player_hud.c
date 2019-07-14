@@ -40,6 +40,7 @@
 #define SCORE_WIDTH 27
 #define GRENADES_WIDTH 30
 #define AMMO_WIDTH 27
+#define GUN_ICON_WIDTH 14
 
 
 void HUDPlayerInit(HUDPlayer *h)
@@ -110,6 +111,8 @@ static void DrawWeaponStatus(
 	GraphicsDevice *g, const PicManager *pm, const HUDPlayer *h,
 	const TActor *actor,
 	const int flags, const Rect2i r);
+static void DrawGunIcons(
+	GraphicsDevice *g, const TActor *actor, const int flags, const Rect2i r);
 static void DrawGrenadeStatus(
 	GraphicsDevice *g, const TActor *a, const int flags, const Rect2i r);
 static void DrawRadar(
@@ -170,6 +173,7 @@ static void DrawPlayerStatus(
 	DrawScore(hud->device, &gPicManager, p, data->Stats.Score, flags, r);
 	DrawGrenadeStatus(hud->device, p, flags, r);
 	DrawWeaponStatus(hud->device, &gPicManager, h, p, flags, r);
+	DrawGunIcons(hud->device, p, flags, r);
 	DrawLives(hud->device, data, opts.HAlign, opts.VAlign);
 
 	const int rowHeight = 1 + FontH();
@@ -373,12 +377,6 @@ static void DrawWeaponStatus(
 	const struct vec2i size = svec2i(
 		GAUGE_WIDTH - GUN_ICON_PAD, FontH() + 2 + WEAPON_GAUGE_EXTRA_HEIGHT);
 
-	// Draw gun icon, and allocate padding to draw the gun icon
-	const struct vec2i iconPos = Vec2iAligned(
-		svec2i(pos.x - 2 - 16, pos.y - 2),
-		wc->Icon->size, ALIGN_START, ALIGN_START, g->cachedConfig.Res);
-	Blit(g, wc->Icon, iconPos);
-
 	if (showAmmo)
 	{
 		FontOpts opts = FontOptsNew();
@@ -427,6 +425,45 @@ static void DrawWeaponStatus(
 			g, gaugeAmmoPos, gaugeAmmoSize, ammoGaugeWidth,
 			gaugeColor, colorTransparent, ALIGN_START, ALIGN_START);
 	}
+}
+
+static void DrawGunIcons(
+	GraphicsDevice *g, const TActor *actor, const int flags, const Rect2i r)
+{
+	if (actor == NULL)
+	{
+		return;
+	}
+
+	const Weapon *weapon = ACTOR_GET_WEAPON(actor);
+	const WeaponClass *wc = weapon->Gun;
+
+	// Aligned right
+	const int right =
+		GUN_ICON_WIDTH + AMMO_WIDTH + SCORE_WIDTH + GRENADES_WIDTH;
+	struct vec2i pos = svec2i(r.Size.x - right, 0);
+	if (flags & HUDFLAGS_PLACE_RIGHT)
+	{
+		pos.x = r.Pos.x + AMMO_WIDTH + SCORE_WIDTH + GRENADES_WIDTH;
+	}
+	if (flags & HUDFLAGS_PLACE_BOTTOM)
+	{
+		pos.y = g->cachedConfig.Res.y - 13;
+	}
+
+	// Ammo icon
+	if (ConfigGetBool(&gConfig, "Game.Ammo") && wc->AmmoId >= 0)
+	{
+		const Ammo *ammo = AmmoGetById(&gAmmo, wc->AmmoId);
+		const struct vec2i ammoPos = svec2i_add(pos, svec2i(6, 5));
+		const CPicDrawContext context = CPicDrawContextNew();
+		CPicDraw(g, &ammo->Pic, ammoPos, &context);
+	}
+
+	// Gun icon
+	PicRender(
+		wc->Icon, g->gameWindow.renderer, pos, colorWhite, 0.0, svec2_one(),
+		SDL_FLIP_NONE);
 }
 
 static void DrawGrenadeIcons(
