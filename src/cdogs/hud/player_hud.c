@@ -37,6 +37,9 @@
 #define AMMO_COUNTER_SHOW_MS 4000
 #define WEAPON_GAUGE_EXTRA_HEIGHT 2
 #define AMMO_GAUGE_HEIGHT 4
+#define SCORE_WIDTH 27
+#define GRENADES_WIDTH 30
+#define AMMO_WIDTH 27
 
 
 void HUDPlayerInit(HUDPlayer *h)
@@ -104,8 +107,9 @@ static void DrawLives(
 	const GraphicsDevice *device, const PlayerData *player,
 	const FontAlign hAlign, const FontAlign vAlign);
 static void DrawWeaponStatus(
-	HUD *hud, const HUDPlayer *h, const TActor *actor, struct vec2i pos,
-	const FontAlign hAlign, const FontAlign vAlign);
+	GraphicsDevice *g, const PicManager *pm, const HUDPlayer *h,
+	const TActor *actor,
+	const int flags, const Rect2i r);
 static void DrawGrenadeStatus(
 	GraphicsDevice *g, const TActor *a, const int flags, const Rect2i r);
 static void DrawRadar(
@@ -164,9 +168,8 @@ static void DrawPlayerStatus(
 	FontStrOpt(data->name, svec2i_zero(), opts);
 
 	DrawScore(hud->device, &gPicManager, p, data->Stats.Score, flags, r);
-
 	DrawGrenadeStatus(hud->device, p, flags, r);
-
+	DrawWeaponStatus(hud->device, &gPicManager, h, p, flags, r);
 	DrawLives(hud->device, data, opts.HAlign, opts.VAlign);
 
 	const int rowHeight = 1 + FontH();
@@ -189,10 +192,6 @@ static void DrawPlayerStatus(
 			HealthGaugeDraw(&h->healthGauge, hud->device, p, pos, opts);
 			opts.Mask.a = 255;
 		}
-		pos.y += rowHeight;
-
-		// Weapon
-		DrawWeaponStatus(hud, h, p, pos, opts.HAlign, opts.VAlign);
 	}
 
 	if (ConfigGetBool(&gConfig, "Interface.ShowHUDMap") &&
@@ -246,7 +245,7 @@ static void DrawScore(
 	const int flags, const Rect2i r)
 {
 	const Pic *backPic = PicManagerGetPic(pm, "hud/gauge_back");
-	const struct vec2i backPicSize = svec2i(26, 10);
+	const struct vec2i backPicSize = svec2i(SCORE_WIDTH - 1, backPic->size.y);
 
 	// Score aligned to the right
 	struct vec2i backPos = svec2i(r.Size.x - backPicSize.x, 1);
@@ -317,11 +316,50 @@ static void DrawLives(
 }
 
 static void DrawWeaponStatus(
-	HUD *hud, const HUDPlayer *h, const TActor *actor, struct vec2i pos,
-	const FontAlign hAlign, const FontAlign vAlign)
+	GraphicsDevice *g, const PicManager *pm, const HUDPlayer *h,
+	const TActor *actor,
+	const int flags, const Rect2i r)
 {
+	const Pic *backPic = PicManagerGetPic(pm, "hud/gauge_small_back");
+	const struct vec2i backPicSize = svec2i(AMMO_WIDTH - 1, backPic->size.y);
+
+	// Aligned to the right
+	const int right = AMMO_WIDTH + SCORE_WIDTH + GRENADES_WIDTH;
+	struct vec2i pos = svec2i(r.Size.x - right, 1);
+	if (flags & HUDFLAGS_PLACE_RIGHT)
+	{
+		pos.x = r.Pos.x + SCORE_WIDTH + GRENADES_WIDTH;
+	}
+	if (flags & HUDFLAGS_PLACE_BOTTOM)
+	{
+		pos.y = g->cachedConfig.Res.y - 13 - 1;
+	}
+
+	Draw9Slice(
+		g, backPic, Rect2iNew(pos, backPicSize), 0, 2, 0, 2, false,
+		SDL_FLIP_NONE);
+
+	if (actor == NULL)
+	{
+		return;
+	}
+
 	const Weapon *weapon = ACTOR_GET_WEAPON(actor);
 	const WeaponClass *wc = weapon->Gun;
+
+	// Draw reload ball
+	if (weapon->lock > 0)
+	{
+		const int maxLock = weapon->Gun->Lock;
+		const Pic *ballPic = PicManagerGetPic(pm, "hud/gauge_small_ball");
+		const int ballAreaWidth = AMMO_WIDTH - 6;
+		const struct vec2i ballPos = svec2i(
+			pos.x + MAX(0, ballAreaWidth * (maxLock - weapon->lock) / maxLock),
+			pos.y + 1);
+		PicRender(
+			ballPic, g->gameWindow.renderer, ballPos, colorWhite, 0.0,
+			svec2_one(), SDL_FLIP_NONE);
+	}
 
 	// Draw gauge if ammo or reloading
 	const bool useAmmo =
@@ -334,42 +372,17 @@ static void DrawWeaponStatus(
 	const struct vec2i gaugePos = svec2i_add(pos, svec2i(-1 + GUN_ICON_PAD, -1));
 	const struct vec2i size = svec2i(
 		GAUGE_WIDTH - GUN_ICON_PAD, FontH() + 2 + WEAPON_GAUGE_EXTRA_HEIGHT);
-	if (showAmmo || weapon->lock > 0)
-	{
-		const int maxLock = weapon->Gun->Lock;
-		const double reloadProgressColorMod = 0.5 +
-			0.5 * (weapon->lock / (double) maxLock);
-		const uint8_t gaugeAlpha = weapon->lock > 0 ? 255 : ammoAlpha;
-		const HSV hsv = { 0.0, 1.0, reloadProgressColorMod };
-		color_t barColor = ColorTint(colorWhite, hsv);
-		barColor.a = gaugeAlpha;
-		int innerWidth;
-		if (maxLock == 0 || weapon->lock == 0)
-		{
-			innerWidth = 0;
-		}
-		else
-		{
-			innerWidth = MAX(1, size.x * (maxLock - weapon->lock) / maxLock);
-		}
-		const color_t backColor = { 128, 128, 128, gaugeAlpha };
-		HUDDrawGauge(
-			hud->device, gaugePos, size, innerWidth, barColor, backColor,
-			hAlign, vAlign);
-	}
 
 	// Draw gun icon, and allocate padding to draw the gun icon
 	const struct vec2i iconPos = Vec2iAligned(
-		svec2i(pos.x - 2, pos.y - 2),
-		wc->Icon->size, hAlign, vAlign, hud->device->cachedConfig.Res);
-	Blit(hud->device, wc->Icon, iconPos);
+		svec2i(pos.x - 2 - 16, pos.y - 2),
+		wc->Icon->size, ALIGN_START, ALIGN_START, g->cachedConfig.Res);
+	Blit(g, wc->Icon, iconPos);
 
 	if (showAmmo)
 	{
 		FontOpts opts = FontOptsNew();
-		opts.HAlign = hAlign;
-		opts.VAlign = vAlign;
-		opts.Area = hud->device->cachedConfig.Res;
+		opts.Area = g->cachedConfig.Res;
 		opts.Pad = svec2i(pos.x + GUN_ICON_PAD, pos.y);
 		char buf[128];
 		// Include ammo counter
@@ -411,8 +424,8 @@ static void DrawWeaponStatus(
 		color_t gaugeColor = colorBlue;
 		gaugeColor.a = drawAlpha;
 		HUDDrawGauge(
-			hud->device, gaugeAmmoPos, gaugeAmmoSize, ammoGaugeWidth,
-			gaugeColor, colorTransparent, hAlign, vAlign);
+			g, gaugeAmmoPos, gaugeAmmoSize, ammoGaugeWidth,
+			gaugeColor, colorTransparent, ALIGN_START, ALIGN_START);
 	}
 }
 
@@ -422,6 +435,11 @@ static void DrawGrenadeIcons(
 static void DrawGrenadeStatus(
 	GraphicsDevice *g, const TActor *a, const int flags, const Rect2i r)
 {
+	if (a == NULL)
+	{
+		return;
+	}
+
 	const Weapon *grenade = ACTOR_GET_GRENADE(a);
 	const WeaponClass *wc = grenade->Gun;
 	if (wc == NULL)
@@ -430,13 +448,11 @@ static void DrawGrenadeStatus(
 	}
 
 	// Aligned to the right
-	const int scoreWidth = 27;
-	const int right = 57;
-	const int width = right - scoreWidth;
+	const int right = GRENADES_WIDTH + SCORE_WIDTH;
 	struct vec2i pos = svec2i(r.Size.x - right, 1);
 	if (flags & HUDFLAGS_PLACE_RIGHT)
 	{
-		pos.x = r.Pos.x + scoreWidth;
+		pos.x = r.Pos.x + SCORE_WIDTH;
 	}
 	if (flags & HUDFLAGS_PLACE_BOTTOM)
 	{
@@ -451,11 +467,11 @@ static void DrawGrenadeStatus(
 	const Pic *icon = WeaponClassGetIcon(wc);
 	if (useAmmo && amount > 0 && amount <= MAX_GRENADE_ICONS)
 	{
-		DrawGrenadeIcons(g, icon, pos, width, amount);
+		DrawGrenadeIcons(g, icon, pos, GRENADES_WIDTH, amount);
 	}
 	else
 	{
-		DrawGrenadeIcons(g, icon, pos, width, 1);
+		DrawGrenadeIcons(g, icon, pos, GRENADES_WIDTH, 1);
 		char buf[256];
 		if (amount >= 0)
 		{
@@ -467,7 +483,7 @@ static void DrawGrenadeStatus(
 		}
 		FontOpts opts = FontOptsNew();
 		opts.HAlign = ALIGN_END;
-		FontStrOpt(buf, svec2i(pos.x + width, pos.y), opts);
+		FontStrOpt(buf, svec2i(pos.x + GRENADES_WIDTH, pos.y), opts);
 	}
 }
 static void DrawGrenadeIcons(
