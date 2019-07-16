@@ -386,10 +386,10 @@ static void DrawWeaponStatus(
 		if (amount > 0)
 		{
 			const Pic *fillPic = PicManagerGetPic(pm, "hud/gauge_small_fill");
-			const struct vec2i backPicSize = svec2i(
-				MAX(1, (AMMO_WIDTH - 4) * amount / ammo->Max), backPic->size.y);
+			const struct vec2i fillPicSize = svec2i(
+				MAX(1, (AMMO_WIDTH - 4) * amount / ammo->Max), fillPic->size.y);
 			Draw9Slice(
-				g, fillPic, Rect2iNew(svec2i(pos.x + 2, pos.y), backPicSize),
+				g, fillPic, Rect2iNew(svec2i(pos.x + 2, pos.y), fillPicSize),
 				0, 0, 0, 0, false, SDL_FLIP_NONE);
 		}
 	}
