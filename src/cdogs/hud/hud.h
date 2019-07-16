@@ -51,14 +51,12 @@ typedef struct
 	// Counters for hiding UI elements when they don't change
 	int healthCounter;
 	HealthGauge healthGauge;
-	int ammoCounter;
 
 	// Track last state so we can detect changes - when these change show
 	// UI elements until the counter runs out
 	int lastPlayerUID;
 	int lastScore;
 	int lastHealth;
-	int lastAmmo;
 	int lastGunIndex;
 } HUDPlayer;
 

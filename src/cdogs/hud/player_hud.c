@@ -34,9 +34,6 @@
 #include "hud_defs.h"
 
 #define HEALTH_COUNTER_SHOW_MS 5000
-#define AMMO_COUNTER_SHOW_MS 4000
-#define WEAPON_GAUGE_EXTRA_HEIGHT 2
-#define AMMO_GAUGE_HEIGHT 4
 #define SCORE_WIDTH 27
 #define GRENADES_WIDTH 30
 #define AMMO_WIDTH 27
@@ -48,13 +45,11 @@ void HUDPlayerInit(HUDPlayer *h)
 	memset(h, 0, sizeof *h);
 	h->healthCounter = HEALTH_COUNTER_SHOW_MS;
 	HealthGaugeInit(&h->healthGauge);
-	h->ammoCounter = AMMO_COUNTER_SHOW_MS;
 }
 
 void HUDPlayerUpdate(HUDPlayer *h, const PlayerData *p, const int ms)
 {
 	h->healthCounter = MAX(h->healthCounter - ms, 0);
-	h->ammoCounter = MAX(h->ammoCounter - ms, 0);
 
 	const TActor *a = ActorGetByUID(p->ActorUID);
 	if (a == NULL) return;
@@ -67,19 +62,9 @@ void HUDPlayerUpdate(HUDPlayer *h, const PlayerData *p, const int ms)
 		h->healthCounter = HEALTH_COUNTER_SHOW_MS;
 	}
 
-	// Ammo / gauge
-	const Weapon *w = ACTOR_GET_GUN(a);
-	const int ammo = ActorWeaponGetAmmo(a, w->Gun);
-	if (p->UID != h->lastPlayerUID || a->gunIndex != h->lastGunIndex ||
-		ammo != h->lastAmmo)
-	{
-		h->ammoCounter = AMMO_COUNTER_SHOW_MS;
-	}
-
 	h->lastPlayerUID = p->UID;
 	h->lastScore = p->Stats.Score;
 	h->lastHealth = a->health;
-	h->lastAmmo = ammo;
 	h->lastGunIndex = a->gunIndex;
 }
 
@@ -108,8 +93,7 @@ static void DrawLives(
 	const GraphicsDevice *device, const PlayerData *player,
 	const FontAlign hAlign, const FontAlign vAlign);
 static void DrawWeaponStatus(
-	GraphicsDevice *g, const PicManager *pm, const HUDPlayer *h,
-	const TActor *actor,
+	GraphicsDevice *g, const PicManager *pm, const TActor *actor,
 	const int flags, const Rect2i r);
 static void DrawGunIcons(
 	GraphicsDevice *g, const TActor *actor, const int flags, const Rect2i r);
@@ -172,7 +156,7 @@ static void DrawPlayerStatus(
 
 	DrawScore(hud->device, &gPicManager, p, data->Stats.Score, flags, r);
 	DrawGrenadeStatus(hud->device, p, flags, r);
-	DrawWeaponStatus(hud->device, &gPicManager, h, p, flags, r);
+	DrawWeaponStatus(hud->device, &gPicManager, p, flags, r);
 	DrawGunIcons(hud->device, p, flags, r);
 	DrawLives(hud->device, data, opts.HAlign, opts.VAlign);
 
@@ -320,8 +304,7 @@ static void DrawLives(
 }
 
 static void DrawWeaponStatus(
-	GraphicsDevice *g, const PicManager *pm, const HUDPlayer *h,
-	const TActor *actor,
+	GraphicsDevice *g, const PicManager *pm, const TActor *actor,
 	const int flags, const Rect2i r)
 {
 	const Pic *backPic = PicManagerGetPic(pm, "hud/gauge_small_back");
@@ -365,29 +348,19 @@ static void DrawWeaponStatus(
 			svec2_one(), SDL_FLIP_NONE);
 	}
 
-	// Draw gauge if ammo or reloading
-	const bool useAmmo =
-		ConfigGetBool(&gConfig, "Game.Ammo") && wc->AmmoId >= 0;
-	const bool showAmmo = useAmmo && wc->AmmoId >= 0 && h->ammoCounter > 0;
-	const uint8_t ammoAlpha = (uint8_t)CLAMP(
-		h->ammoCounter * 255 * 2 / AMMO_COUNTER_SHOW_MS, 0, 255);
-	const Ammo *ammo = useAmmo ? AmmoGetById(&gAmmo, wc->AmmoId) : NULL;
-	const int amount = useAmmo ? ActorWeaponGetAmmo(actor, wc) : 0;
-	const struct vec2i gaugePos = svec2i_add(pos, svec2i(-1 + GUN_ICON_PAD, -1));
-	const struct vec2i size = svec2i(
-		GAUGE_WIDTH - GUN_ICON_PAD, FontH() + 2 + WEAPON_GAUGE_EXTRA_HEIGHT);
-
-	if (showAmmo)
+	// Draw gauge and ammo counter if ammo used
+	if (ConfigGetBool(&gConfig, "Game.Ammo") && wc->AmmoId >= 0)
 	{
+		const Ammo *ammo = AmmoGetById(&gAmmo, wc->AmmoId);
+		const int amount = ActorWeaponGetAmmo(actor, wc);
 		FontOpts opts = FontOptsNew();
 		opts.Area = g->cachedConfig.Res;
-		opts.Pad = svec2i(pos.x + GUN_ICON_PAD, pos.y);
+		opts.Pad = svec2i(pos.x + AMMO_WIDTH / 2, pos.y);
 		char buf[128];
 		// Include ammo counter
-		sprintf(buf, "%d", ActorWeaponGetAmmo(actor, wc));
+		sprintf(buf, "%d", amount);
 
 		// If low / no ammo, draw text with different colours, flashing
-		uint8_t drawAlpha = ammoAlpha;
 		const int fps = ConfigGetInt(&gConfig, "Game.FPS");
 		if (amount == 0)
 		{
@@ -397,7 +370,6 @@ static void DrawWeaponStatus(
 			{
 				opts.Mask = colorRed;
 			}
-			drawAlpha = 255;
 		}
 		else if (AmmoIsLow(ammo, amount))
 		{
@@ -407,23 +379,19 @@ static void DrawWeaponStatus(
 			{
 				opts.Mask = colorOrange;
 			}
-			drawAlpha = 255;
 		}
-		opts.Mask.a = drawAlpha;
 		FontStrOpt(buf, svec2i_zero(), opts);
 
-		// Draw ammo level as inner mini-gauge, no background
-		const int yOffset = size.y - AMMO_GAUGE_HEIGHT;
-		const struct vec2i gaugeAmmoPos =
-			svec2i(gaugePos.x, gaugePos.y + yOffset);
-		const struct vec2i gaugeAmmoSize = svec2i(size.x, AMMO_GAUGE_HEIGHT);
-		const int ammoGaugeWidth =
-			MAX(1, gaugeAmmoSize.x * amount / ammo->Max);
-		color_t gaugeColor = colorBlue;
-		gaugeColor.a = drawAlpha;
-		HUDDrawGauge(
-			g, gaugeAmmoPos, gaugeAmmoSize, ammoGaugeWidth,
-			gaugeColor, colorTransparent, ALIGN_START, ALIGN_START);
+		// Draw ammo level as inner fill
+		if (amount > 0)
+		{
+			const Pic *fillPic = PicManagerGetPic(pm, "hud/gauge_small_fill");
+			const struct vec2i backPicSize = svec2i(
+				MAX(1, (AMMO_WIDTH - 4) * amount / ammo->Max), backPic->size.y);
+			Draw9Slice(
+				g, fillPic, Rect2iNew(svec2i(pos.x + 2, pos.y), backPicSize),
+				0, 0, 0, 0, false, SDL_FLIP_NONE);
+		}
 	}
 }
 

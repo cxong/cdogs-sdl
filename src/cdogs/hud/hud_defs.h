@@ -28,8 +28,6 @@
 */
 #pragma once
 
-#define GUN_ICON_PAD 10
-
 #define MAX_GRENADE_ICONS 5
 
 #define HUDFLAGS_PLACE_RIGHT	0x01
