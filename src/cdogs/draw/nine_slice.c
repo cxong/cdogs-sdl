@@ -29,13 +29,14 @@
 #include "nine_slice.h"
 
 #include "log.h"
+#include "texture.h"
 
 
-int Draw9Slice(
+void Draw9Slice(
 	GraphicsDevice *g, const Pic *pic,
 	const Rect2i target,
 	const int top, const int right, const int bottom, const int left,
-	const bool repeat, const SDL_RendererFlip flip)
+	const bool repeat, const color_t mask, const SDL_RendererFlip flip)
 {
 	const int srcX[] = {0, left, pic->size.x - right};
 	const int srcY[] = {0, top, pic->size.y - bottom};
@@ -55,42 +56,39 @@ int Draw9Slice(
 	};
 	const int dstW[] = {left, target.Size.x - right - left, right};
 	const int dstH[] = {top, target.Size.y - bottom - top, bottom};
-	SDL_Rect src;
-	SDL_Rect dst;
+	Rect2i src;
+	Rect2i dst;
 	for (int i = 0; i < 3; i++)
 	{
-		src.x = srcX[i];
-		src.w = srcW[i];
-		dst.w = repeat ? srcW[i] : dstW[i];
-		for (dst.x = dstX[i]; dst.x < dstX[i + 1]; dst.x += dst.w)
+		src.Pos.x = srcX[i];
+		src.Size.x = srcW[i];
+		dst.Size.x = repeat ? srcW[i] : dstW[i];
+		for (dst.Pos.x = dstX[i];
+			dst.Pos.x < dstX[i + 1];
+			dst.Pos.x += dst.Size.x)
 		{
-			if (dst.x + dst.w > dstX[i + 1])
+			if (dst.Pos.x + dst.Size.x > dstX[i + 1])
 			{
-				src.w = dst.w = dstX[i + 1] - dst.x;
+				src.Size.x = dst.Size.x = dstX[i + 1] - dst.Pos.x;
 			}
 			for (int j = 0; j < 3; j++)
 			{
-				src.y = srcY[j];
-				src.h = srcH[j];
-				dst.h = repeat ? srcH[j] : dstH[j];
-				for (dst.y = dstY[j]; dst.y < dstY[j + 1]; dst.y += dst.h)
+				src.Pos.y = srcY[j];
+				src.Size.y = srcH[j];
+				dst.Size.y = repeat ? srcH[j] : dstH[j];
+				for (dst.Pos.y = dstY[j];
+					dst.Pos.y < dstY[j + 1];
+					dst.Pos.y += dst.Size.y)
 				{
-					if (dst.y + dst.h > dstY[j + 1])
+					if (dst.Pos.y + dst.Size.y > dstY[j + 1])
 					{
-						src.h = dst.h = dstY[j + 1] - dst.y;
+						src.Size.y = dst.Size.y = dstY[j + 1] - dst.Pos.y;
 					}
-					const int res = SDL_RenderCopyEx(
-						g->gameWindow.renderer, pic->Tex, &src, &dst, 0, NULL,
+					TextureRender(
+						pic->Tex, g->gameWindow.renderer, src, dst, mask, 0,
 						flip);
-					if (res != 0)
-					{
-						LOG(LM_GFX, LL_ERROR,
-							"Could not render texture: %s", SDL_GetError());
-						return res;
-					}
 				}
 			}
 		}
 	}
-	return 0;
 }

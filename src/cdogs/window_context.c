@@ -125,7 +125,8 @@ void WindowContextPreRender(WindowContext *wc)
 	}
 	CA_FOREACH(SDL_Texture *, t, wc->texturesBkg)
 		TextureRender(
-			*t, wc->renderer, Rect2iZero(), colorTransparent, 0, SDL_FLIP_NONE);
+			*t, wc->renderer, Rect2iZero(), Rect2iZero(), colorTransparent, 0,
+			SDL_FLIP_NONE);
 	CA_FOREACH_END()
 }
 
@@ -133,7 +134,8 @@ void WindowContextPostRender(WindowContext *wc)
 {
 	CA_FOREACH(SDL_Texture *, t, wc->textures)
 		TextureRender(
-			*t, wc->renderer, Rect2iZero(), colorTransparent, 0, SDL_FLIP_NONE);
+			*t, wc->renderer, Rect2iZero(), Rect2iZero(), colorTransparent, 0,
+			SDL_FLIP_NONE);
 	CA_FOREACH_END()
 
 	SDL_RenderPresent(wc->renderer);

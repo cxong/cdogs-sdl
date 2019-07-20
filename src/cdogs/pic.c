@@ -254,5 +254,5 @@ void PicRender(
 		dest.Size.y = (mint_t)MROUND(p->size.y * scale.y);
 	}
 	const double angle = ToDegrees(radians);
-	TextureRender(p->Tex, r, dest, mask, angle, flip);
+	TextureRender(p->Tex, r, Rect2iZero(), dest, mask, angle, flip);
 }

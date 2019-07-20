@@ -134,38 +134,6 @@ HUDDrawData HUDGetDrawData(void)
 }
 
 
-// Draw a gauge with an outer background and inner level
-// +--------------+
-// |XXXXXXXX|     |
-// +--------------+
-void HUDDrawGauge(
-	GraphicsDevice *device,
-	struct vec2i pos, const struct vec2i size, const int innerWidth,
-	const color_t barColor, const color_t backColor,
-	const FontAlign hAlign, const FontAlign vAlign)
-{
-	const struct vec2i offset = svec2i_one();
-	struct vec2i barPos = svec2i_add(pos, offset);
-	const struct vec2i barSize = svec2i(MAX(0, innerWidth - 2), size.y - 2);
-	if (hAlign == ALIGN_END)
-	{
-		int w = device->cachedConfig.Res.x;
-		pos.x = w - pos.x - size.x;
-		barPos.x = w - barPos.x - barSize.x;
-	}
-	if (vAlign == ALIGN_END)
-	{
-		int h = device->cachedConfig.Res.y;
-		pos.y = h - pos.y - size.y;
-		barPos.y = h - barPos.y - barSize.y;
-	}
-	if (backColor.a > 0)
-	{
-		DrawRectangle(device, pos, size, backColor, DRAW_FLAG_ROUNDED);
-	}
-	DrawRectangle(device, barPos, barSize, barColor, 0);
-}
-
 static void DrawSharedRadar(GraphicsDevice *device, bool showExit)
 {
 	int w = device->cachedConfig.Res.x;
@@ -509,7 +477,7 @@ static void DrawMissionTime(HUD *hud)
 
 static void DrawObjectiveCounts(HUD *hud)
 {
-	int x = 5 + GAUGE_WIDTH;
+	int x = 45;
 	int y = hud->device->cachedConfig.Res.y - 5 - FontH();
 	CA_FOREACH(const Objective, o, hud->mission->missionData->Objectives)
 		// Don't draw anything for optional objectives

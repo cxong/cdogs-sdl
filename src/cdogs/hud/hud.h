@@ -38,8 +38,6 @@
 #include "weapon_class.h"
 
 
-#define GAUGE_WIDTH 40
-
 typedef struct
 {
 	int NumScreens;
@@ -48,16 +46,11 @@ typedef struct
 
 typedef struct
 {
-	// Counters for hiding UI elements when they don't change
-	int healthCounter;
 	HealthGauge healthGauge;
 
 	// Track last state so we can detect changes - when these change show
 	// UI elements until the counter runs out
-	int lastPlayerUID;
-	int lastScore;
 	int lastHealth;
-	int lastGunIndex;
 } HUDPlayer;
 
 typedef struct
@@ -91,9 +84,3 @@ void HUDUpdate(HUD *hud, const int ms);
 void HUDDraw(
 	HUD *hud, const input_device_e pausingDevice,
 	const bool controllerUnplugged, const int numViews);
-
-void HUDDrawGauge(
-	GraphicsDevice *device,
-	struct vec2i pos, const struct vec2i size, const int innerWidth,
-	const color_t barColor, const color_t backColor,
-	const FontAlign hAlign, const FontAlign vAlign);

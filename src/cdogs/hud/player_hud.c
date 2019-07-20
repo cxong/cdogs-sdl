@@ -33,39 +33,26 @@
 #include "draw/nine_slice.h"
 #include "hud_defs.h"
 
-#define HEALTH_COUNTER_SHOW_MS 5000
 #define SCORE_WIDTH 27
 #define GRENADES_WIDTH 30
 #define AMMO_WIDTH 27
 #define GUN_ICON_WIDTH 14
+#define PLAYER_ICON_WIDTH 20
 
 
 void HUDPlayerInit(HUDPlayer *h)
 {
 	memset(h, 0, sizeof *h);
-	h->healthCounter = HEALTH_COUNTER_SHOW_MS;
 	HealthGaugeInit(&h->healthGauge);
 }
 
 void HUDPlayerUpdate(HUDPlayer *h, const PlayerData *p, const int ms)
 {
-	h->healthCounter = MAX(h->healthCounter - ms, 0);
-
 	const TActor *a = ActorGetByUID(p->ActorUID);
 	if (a == NULL) return;
 
 	// Health
-	const bool healthUpdating = h->healthGauge.waitMs > 0;
 	HealthGaugeUpdate(&h->healthGauge, a, ms);
-	if ((!healthUpdating || h->healthCounter == 0) && h->healthGauge.waitMs > 0)
-	{
-		h->healthCounter = HEALTH_COUNTER_SHOW_MS;
-	}
-
-	h->lastPlayerUID = p->UID;
-	h->lastScore = p->Stats.Score;
-	h->lastHealth = a->health;
-	h->lastGunIndex = a->gunIndex;
 }
 
 static void DrawPlayerStatus(
@@ -102,6 +89,9 @@ static void DrawGrenadeStatus(
 static void DrawRadar(
 	GraphicsDevice *device, const TActor *p,
 	const int flags, const bool showExit);
+static void DrawHealth(
+	GraphicsDevice *g, const PicManager *pm, const TActor *a,
+	const int flags, const HUDPlayer *h, const Rect2i r);
 // Draw player's score, health etc.
 static void DrawPlayerStatus(
 	HUD *hud, const PlayerData *data, TActor *p,
@@ -135,10 +125,7 @@ static void DrawPlayerStatus(
 	}
 	Draw9Slice(
 		hud->device, backBar, Rect2iNew(barPos, svec2i(barWidth, 13)),
-		0, 0, 0, 0, false, flip);
-
-	// Name
-	pos = svec2i(23, 2);
+		0, 0, 0, 0, false, colorWhite, flip);
 
 	FontOpts opts = FontOptsNew();
 	if (flags & HUDFLAGS_PLACE_RIGHT)
@@ -151,36 +138,17 @@ static void DrawPlayerStatus(
 		pos.y += BOTTOM_PADDING;
 	}
 	opts.Area = gGraphicsDevice.cachedConfig.Res;
-	opts.Pad = pos;
-	FontStrOpt(data->name, svec2i_zero(), opts);
 
 	DrawScore(hud->device, &gPicManager, p, data->Stats.Score, flags, r);
 	DrawGrenadeStatus(hud->device, p, flags, r);
 	DrawWeaponStatus(hud->device, &gPicManager, p, flags, r);
 	DrawGunIcons(hud->device, p, flags, r);
 	DrawLives(hud->device, data, opts.HAlign, opts.VAlign);
+	DrawHealth(hud->device, &gPicManager, p, flags, h, r);
 
-	const int rowHeight = 1 + FontH();
-	pos.x = 5;
-	pos.y += rowHeight;
-
-	opts.Pad = pos;
-	pos.y += rowHeight;
-	if (p)
-	{
-		// Health
-		const bool isLowHealth = ActorIsLowHealth(p);
-		if (h->healthCounter > 0 || isLowHealth)
-		{
-			if (!isLowHealth)
-			{
-				opts.Mask.a = (uint8_t)CLAMP(
-					h->healthCounter * 255 * 2 / HEALTH_COUNTER_SHOW_MS, 0, 255);
-			}
-			HealthGaugeDraw(&h->healthGauge, hud->device, p, pos, opts);
-			opts.Mask.a = 255;
-		}
-	}
+	// Name
+	opts.Pad = svec2i(23, 2);
+	FontStrOpt(data->name, svec2i_zero(), opts);
 
 	if (ConfigGetBool(&gConfig, "Interface.ShowHUDMap") &&
 		!(flags & HUDFLAGS_SHARE_SCREEN) &&
@@ -248,7 +216,7 @@ static void DrawScore(
 
 	Draw9Slice(
 		g, backPic, Rect2iNew(backPos, backPicSize), 0, 3, 0, 3, false,
-		SDL_FLIP_NONE);
+		colorWhite, SDL_FLIP_NONE);
 
 	if (a == NULL)
 	{
@@ -280,7 +248,7 @@ static void DrawLives(
 	const GraphicsDevice *device, const PlayerData *player,
 	const FontAlign hAlign, const FontAlign vAlign)
 {
-	const struct vec2i pos = svec2i(24, 11);
+	const struct vec2i pos = svec2i(PLAYER_ICON_WIDTH + 4, 11);
 	const int xStep = (hAlign == ALIGN_START ? 1 : -1) * 8;
 	const struct vec2i offset = svec2i(2, 5);
 	struct vec2i drawPos = svec2i_add(pos, offset);
@@ -324,7 +292,7 @@ static void DrawWeaponStatus(
 
 	Draw9Slice(
 		g, backPic, Rect2iNew(pos, backPicSize), 0, 2, 0, 2, false,
-		SDL_FLIP_NONE);
+		colorWhite, SDL_FLIP_NONE);
 
 	if (actor == NULL)
 	{
@@ -390,7 +358,7 @@ static void DrawWeaponStatus(
 				MAX(1, (AMMO_WIDTH - 4) * amount / ammo->Max), fillPic->size.y);
 			Draw9Slice(
 				g, fillPic, Rect2iNew(svec2i(pos.x + 2, pos.y), fillPicSize),
-				0, 0, 0, 0, false, SDL_FLIP_NONE);
+				0, 0, 0, 0, false, colorWhite, SDL_FLIP_NONE);
 		}
 	}
 }
@@ -606,6 +574,31 @@ static void DrawRadar(
 			AUTOMAP_FLAGS_MASK,
 			showExit);
 	}
+}
+
+static void DrawHealth(
+	GraphicsDevice *g, const PicManager *pm, const TActor *a,
+	const int flags, const HUDPlayer *h, const Rect2i r)
+{
+	const Pic *backPic = PicManagerGetPic(pm, "hud/gauge_back");
+	const int right =
+		SCORE_WIDTH + GRENADES_WIDTH + AMMO_WIDTH + GUN_ICON_WIDTH;
+	const struct vec2i backPicSize =
+		svec2i(r.Size.x - right - PLAYER_ICON_WIDTH, backPic->size.y);
+
+	struct vec2i backPos = svec2i(PLAYER_ICON_WIDTH, 1);
+	if (flags & HUDFLAGS_PLACE_RIGHT)
+	{
+		backPos.x = r.Pos.x + right;
+	}
+	if (flags & HUDFLAGS_PLACE_BOTTOM)
+	{
+		backPos.y = g->cachedConfig.Res.y - backPicSize.y - 1;
+	}
+
+	FontOpts opts = FontOptsNew();
+	opts.HAlign = ALIGN_END;
+	HealthGaugeDraw(&h->healthGauge, g, a, backPos, backPicSize.x, opts);
 }
 
 static void DrawObjectiveCompass(

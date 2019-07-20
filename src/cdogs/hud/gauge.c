@@ -26,13 +26,40 @@
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
 */
-#pragma once
+#include "gauge.h"
 
-#include "grafx.h"
-#include "pic.h"
+#include "draw/nine_slice.h"
 
-void Draw9Slice(
-	GraphicsDevice *g, const Pic *pic,
-	const Rect2i target,
-	const int top, const int right, const int bottom, const int left,
-	const bool repeat, const color_t mask, const SDL_RendererFlip flip);
+
+// Draw a gauge with a 9-slice background and inner level
+// /--------------\
+// |XXXXXXXX|     |
+// \--------------/
+void HUDDrawGauge(
+	GraphicsDevice *g, const PicManager *pm, struct vec2i pos,
+	const int width, const int innerWidth, const color_t barColor)
+{
+	const int height = 10; // TODO: arbitrary height
+
+	const Pic *backPic = PicManagerGetPic(pm, "hud/gauge_back");
+	Draw9Slice(
+		g, backPic, Rect2iNew(pos, svec2i(width, height)), 0, 3, 0, 3, false,
+		colorWhite, SDL_FLIP_NONE);
+
+	if (innerWidth > 0)
+	{
+		HUDDrawGaugeInner(g, pm, pos, innerWidth, barColor);
+	}
+}
+
+void HUDDrawGaugeInner(
+	GraphicsDevice *g, const PicManager *pm, struct vec2i pos,
+	const int width, const color_t barColor)
+{
+	const int height = 10; // TODO: arbitrary height
+
+	const Pic *innerPic = PicManagerGetPic(pm, "hud/gauge_inner");
+	Draw9Slice(
+		g, innerPic, Rect2iNew(pos, svec2i(width, height)), 0, 3, 0, 3, false,
+		barColor, SDL_FLIP_NONE);
+}

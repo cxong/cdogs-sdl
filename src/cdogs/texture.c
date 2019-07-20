@@ -59,8 +59,8 @@ SDL_Texture *TextureCreate(
 }
 
 void TextureRender(
-	SDL_Texture *t, SDL_Renderer *r, const Rect2i dest, const color_t mask,
-	const double angle, const SDL_RendererFlip flip)
+	SDL_Texture *t, SDL_Renderer *r, const Rect2i src, const Rect2i dest,
+	const color_t mask, const double angle, const SDL_RendererFlip flip)
 {
 	if (!ColorEquals(mask, colorTransparent))
 	{
@@ -75,13 +75,16 @@ void TextureRender(
 				SDL_GetError());
 		}
 	}
+	const SDL_Rect srcRect = {
+		src.Pos.x, src.Pos.y, src.Size.x, src.Size.y
+	};
+	const SDL_Rect *srcP = Rect2iIsZero(src) ? NULL : &srcRect;
 	const SDL_Rect destRect = {
 		dest.Pos.x, dest.Pos.y, dest.Size.x, dest.Size.y
 	};
-	const SDL_Rect *dstrect = Rect2iIsZero(dest) ? NULL : &destRect;
+	const SDL_Rect *dstP = Rect2iIsZero(dest) ? NULL : &destRect;
 
-	const int renderRes =
-		SDL_RenderCopyEx(r, t, NULL, dstrect, angle, NULL, flip);
+	const int renderRes = SDL_RenderCopyEx(r, t, srcP, dstP, angle, NULL, flip);
 	if (renderRes != 0)
 	{
 		LOG(LM_MAIN, LL_ERROR, "Failed to render texture: %s", SDL_GetError());

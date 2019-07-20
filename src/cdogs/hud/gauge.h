@@ -29,10 +29,12 @@
 #pragma once
 
 #include "grafx.h"
-#include "pic.h"
+#include "pic_manager.h"
 
-void Draw9Slice(
-	GraphicsDevice *g, const Pic *pic,
-	const Rect2i target,
-	const int top, const int right, const int bottom, const int left,
-	const bool repeat, const color_t mask, const SDL_RendererFlip flip);
+
+void HUDDrawGauge(
+	GraphicsDevice *g, const PicManager *pm, struct vec2i pos,
+	const int width, const int innerWidth, const color_t barColor);
+void HUDDrawGaugeInner(
+	GraphicsDevice *g, const PicManager *pm, struct vec2i pos,
+	const int width, const color_t barColor);

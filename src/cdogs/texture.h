@@ -35,5 +35,5 @@ SDL_Texture *TextureCreate(
 	const SDL_BlendMode blend, const Uint8 alpha);
 
 void TextureRender(
-	SDL_Texture *t, SDL_Renderer *r, const Rect2i dest, const color_t mask,
-	const double angle, const SDL_RendererFlip flip);
+	SDL_Texture *t, SDL_Renderer *r, const Rect2i src, const Rect2i dest,
+	const color_t mask, const double angle, const SDL_RendererFlip flip);

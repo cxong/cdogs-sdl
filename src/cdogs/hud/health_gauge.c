@@ -28,8 +28,8 @@
 */
 #include "health_gauge.h"
 
-#include "font.h"
-#include "hud.h"
+#include "gamedata.h"
+#include "gauge.h"
 
 #define WAIT_MS 1000
 
@@ -69,11 +69,15 @@ void HealthGaugeUpdate(HealthGauge *h, const TActor *a, const int ms)
 
 void HealthGaugeDraw(
 	const HealthGauge *h, GraphicsDevice *device, const TActor *actor,
-	const struct vec2i pos, const FontOpts opts)
+	const struct vec2i pos, const int width, const FontOpts opts)
 {
-	char s[50];
-	struct vec2i gaugePos = svec2i_add(pos, svec2i(-1, -1));
-	struct vec2i size = svec2i(GAUGE_WIDTH, FontH() + 2);
+	// Draw gauge background
+	HUDDrawGauge(device, &gPicManager, pos, width, 0, colorTransparent);
+	if (actor == NULL)
+	{
+		return;
+	}
+
 	HSV hsv = { 0.0, 1.0, 1.0 };
 	const int health = actor->health;
 	const int maxHealth = ActorGetCharacter(actor)->maxHealth;
@@ -90,30 +94,24 @@ void HealthGaugeDraw(
 			(maxHealthHue - minHealthHue) * health / maxHealth + minHealthHue;
 	}
 	color_t barColor;
-	color_t backColor = { 50, 0, 0, opts.Mask.a };
 	if (h->health != health)
 	{
 		// Draw different-coloured health gauge representing health change
 		const int higherHealth = MAX(h->health, health);
-		const int innerWidthUpdate = MAX(1, size.x * higherHealth / maxHealth);
+		const int innerWidthUpdate = MAX(1, width * higherHealth / maxHealth);
 		barColor = h->health > health ? colorMaroon : colorGreen;
 		barColor.a = opts.Mask.a;
-		HUDDrawGauge(
-			device, gaugePos, size, innerWidthUpdate,
-			barColor,
-			backColor, opts.HAlign, opts.VAlign);
-		backColor = colorTransparent;
+		HUDDrawGaugeInner(device, &gPicManager, pos, innerWidthUpdate, barColor);
 	}
 	const int lowerHealth = MIN(h->health, health);
-	const int innerWidth = MAX(1, size.x * lowerHealth / maxHealth);
+	const int innerWidth = MAX(1, width * lowerHealth / maxHealth);
 	barColor = ColorTint(colorWhite, hsv);
 	barColor.a = opts.Mask.a;
-	HUDDrawGauge(
-		device, gaugePos, size, innerWidth, barColor, backColor,
-		opts.HAlign, opts.VAlign);
-	sprintf(s, "%d", health);
+	HUDDrawGaugeInner(device, &gPicManager, pos, innerWidth, barColor);
 
 	// Draw health number label
+	char s[50];
+	sprintf(s, "%d", health);
 	FontOpts fOpts = opts;
 	fOpts.Area = gGraphicsDevice.cachedConfig.Res;
 	fOpts.Pad = pos;
