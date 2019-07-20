@@ -32,9 +32,9 @@
 
 
 // Draw a gauge with a 9-slice background and inner level
-// /--------------\
-// |XXXXXXXX|     |
-// \--------------/
+// ┌--------------┐
+// (XXXXXXXX|     )
+// └--------------┘
 void HUDDrawGauge(
 	GraphicsDevice *g, const PicManager *pm, struct vec2i pos,
 	const int width, const int innerWidth, const color_t barColor)
