@@ -299,20 +299,6 @@ static void DrawWeaponStatus(
 	const Weapon *weapon = ACTOR_GET_WEAPON(actor);
 	const WeaponClass *wc = weapon->Gun;
 
-	// Draw reload ball
-	if (weapon->lock > 0)
-	{
-		const int maxLock = weapon->Gun->Lock;
-		const Pic *ballPic = PicManagerGetPic(pm, "hud/gauge_small_ball");
-		const int ballAreaWidth = AMMO_WIDTH - 6;
-		const struct vec2i ballPos = svec2i(
-			pos.x + MAX(0, ballAreaWidth * (maxLock - weapon->lock) / maxLock),
-			pos.y + 1);
-		PicRender(
-			ballPic, g->gameWindow.renderer, ballPos, colorWhite, 0.0,
-			svec2_one(), SDL_FLIP_NONE);
-	}
-
 	// Draw gauge and ammo counter if ammo used
 	if (ConfigGetBool(&gConfig, "Game.Ammo") && wc->AmmoId >= 0)
 	{
@@ -357,6 +343,20 @@ static void DrawWeaponStatus(
 				g, fillPic, Rect2iNew(svec2i(pos.x + 2, pos.y), fillPicSize),
 				0, 0, 0, 0, false, colorWhite, SDL_FLIP_NONE);
 		}
+	}
+
+	// Draw reload ball
+	if (weapon->lock > 0)
+	{
+		const int maxLock = weapon->Gun->Lock;
+		const Pic *ballPic = PicManagerGetPic(pm, "hud/gauge_small_ball");
+		const int ballAreaWidth = AMMO_WIDTH - 6;
+		const struct vec2i ballPos = svec2i(
+			pos.x + MAX(0, ballAreaWidth * (maxLock - weapon->lock) / maxLock),
+			pos.y + 1);
+		PicRender(
+			ballPic, g->gameWindow.renderer, ballPos, colorWhite, 0.0,
+			svec2_one(), SDL_FLIP_NONE);
 	}
 }
 
@@ -582,17 +582,18 @@ static void DrawHealth(
 	const int width = r.Size.x - right - PLAYER_ICON_WIDTH;
 
 	struct vec2i backPos = svec2i(PLAYER_ICON_WIDTH + 1, 1);
+	FontOpts opts = FontOptsNew();
+	opts.HAlign = ALIGN_END;
 	if (flags & HUDFLAGS_PLACE_RIGHT)
 	{
 		backPos.x = r.Pos.x + right;
+		opts.HAlign = ALIGN_START;
 	}
 	if (flags & HUDFLAGS_PLACE_BOTTOM)
 	{
 		backPos.y = g->cachedConfig.Res.y - 10 - 1;
 	}
 
-	FontOpts opts = FontOptsNew();
-	opts.HAlign = ALIGN_END;
 	HealthGaugeDraw(&h->healthGauge, g, a, backPos, width, opts);
 }
 

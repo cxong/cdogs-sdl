@@ -113,8 +113,8 @@ void HealthGaugeDraw(
 	char s[50];
 	sprintf(s, "%d", health);
 	FontOpts fOpts = opts;
-	fOpts.Area = gGraphicsDevice.cachedConfig.Res;
-	fOpts.Pad = pos;
+	fOpts.Area = svec2i(width, 11);
+	fOpts.Pad = svec2i(2, 1);
 	// If low health, draw text with different colours, flashing
 	if (ActorIsLowHealth(actor))
 	{
@@ -126,5 +126,5 @@ void HealthGaugeDraw(
 			fOpts.Mask = colorRed;
 		}
 	}
-	FontStrOpt(s, svec2i_zero(), fOpts);
+	FontStrOpt(s, pos, fOpts);
 }
