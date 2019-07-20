@@ -32,8 +32,9 @@
 #include "draw/draw_actor.h"
 #include "draw/nine_slice.h"
 #include "hud_defs.h"
+#include "hud/gauge.h"
 
-#define SCORE_WIDTH 27
+#define SCORE_WIDTH 26
 #define GRENADES_WIDTH 30
 #define AMMO_WIDTH 27
 #define GUN_ICON_WIDTH 14
@@ -90,7 +91,7 @@ static void DrawRadar(
 	GraphicsDevice *device, const TActor *p,
 	const int flags, const bool showExit);
 static void DrawHealth(
-	GraphicsDevice *g, const PicManager *pm, const TActor *a,
+	GraphicsDevice *g, const TActor *a,
 	const int flags, const HUDPlayer *h, const Rect2i r);
 // Draw player's score, health etc.
 static void DrawPlayerStatus(
@@ -144,7 +145,7 @@ static void DrawPlayerStatus(
 	DrawWeaponStatus(hud->device, &gPicManager, p, flags, r);
 	DrawGunIcons(hud->device, p, flags, r);
 	DrawLives(hud->device, data, opts.HAlign, opts.VAlign);
-	DrawHealth(hud->device, &gPicManager, p, flags, h, r);
+	DrawHealth(hud->device, p, flags, h, r);
 
 	// Name
 	opts.Pad = svec2i(23, 2);
@@ -200,23 +201,18 @@ static void DrawScore(
 	GraphicsDevice *g, const PicManager *pm, const TActor *a, const int score,
 	const int flags, const Rect2i r)
 {
-	const Pic *backPic = PicManagerGetPic(pm, "hud/gauge_back");
-	const struct vec2i backPicSize = svec2i(SCORE_WIDTH - 1, backPic->size.y);
-
 	// Score aligned to the right
-	struct vec2i backPos = svec2i(r.Size.x - backPicSize.x, 1);
+	struct vec2i backPos = svec2i(r.Size.x - SCORE_WIDTH, 1);
 	if (flags & HUDFLAGS_PLACE_RIGHT)
 	{
 		backPos.x = r.Pos.x;
 	}
 	if (flags & HUDFLAGS_PLACE_BOTTOM)
 	{
-		backPos.y = g->cachedConfig.Res.y - backPicSize.y - 1;
+		backPos.y = g->cachedConfig.Res.y - 9 - 1;
 	}
 
-	Draw9Slice(
-		g, backPic, Rect2iNew(backPos, backPicSize), 0, 3, 0, 3, false,
-		colorWhite, SDL_FLIP_NONE);
+	HUDDrawGauge(g, pm, backPos, SCORE_WIDTH, 0, colorTransparent);
 
 	if (a == NULL)
 	{
@@ -275,19 +271,20 @@ static void DrawWeaponStatus(
 	GraphicsDevice *g, const PicManager *pm, const TActor *actor,
 	const int flags, const Rect2i r)
 {
+	// TODO: draw as gauge
 	const Pic *backPic = PicManagerGetPic(pm, "hud/gauge_small_back");
 	const struct vec2i backPicSize = svec2i(AMMO_WIDTH - 1, backPic->size.y);
 
 	// Aligned to the right
 	const int right = AMMO_WIDTH + SCORE_WIDTH + GRENADES_WIDTH;
-	struct vec2i pos = svec2i(r.Size.x - right, 1);
+	struct vec2i pos = svec2i(r.Size.x - right, 2);
 	if (flags & HUDFLAGS_PLACE_RIGHT)
 	{
 		pos.x = r.Pos.x + SCORE_WIDTH + GRENADES_WIDTH;
 	}
 	if (flags & HUDFLAGS_PLACE_BOTTOM)
 	{
-		pos.y = g->cachedConfig.Res.y - 13 - 1;
+		pos.y = g->cachedConfig.Res.y - 13 - pos.y;
 	}
 
 	Draw9Slice(
@@ -456,7 +453,7 @@ static void DrawGrenadeStatus(
 		}
 		FontOpts opts = FontOptsNew();
 		opts.HAlign = ALIGN_END;
-		FontStrOpt(buf, svec2i(pos.x + GRENADES_WIDTH, pos.y), opts);
+		FontStrOpt(buf, svec2i(pos.x + GRENADES_WIDTH - 5, pos.y + 1), opts);
 	}
 }
 static void DrawGrenadeIcons(
@@ -577,28 +574,26 @@ static void DrawRadar(
 }
 
 static void DrawHealth(
-	GraphicsDevice *g, const PicManager *pm, const TActor *a,
+	GraphicsDevice *g, const TActor *a,
 	const int flags, const HUDPlayer *h, const Rect2i r)
 {
-	const Pic *backPic = PicManagerGetPic(pm, "hud/gauge_back");
 	const int right =
 		SCORE_WIDTH + GRENADES_WIDTH + AMMO_WIDTH + GUN_ICON_WIDTH;
-	const struct vec2i backPicSize =
-		svec2i(r.Size.x - right - PLAYER_ICON_WIDTH, backPic->size.y);
+	const int width = r.Size.x - right - PLAYER_ICON_WIDTH;
 
-	struct vec2i backPos = svec2i(PLAYER_ICON_WIDTH, 1);
+	struct vec2i backPos = svec2i(PLAYER_ICON_WIDTH + 1, 1);
 	if (flags & HUDFLAGS_PLACE_RIGHT)
 	{
 		backPos.x = r.Pos.x + right;
 	}
 	if (flags & HUDFLAGS_PLACE_BOTTOM)
 	{
-		backPos.y = g->cachedConfig.Res.y - backPicSize.y - 1;
+		backPos.y = g->cachedConfig.Res.y - 10 - 1;
 	}
 
 	FontOpts opts = FontOptsNew();
 	opts.HAlign = ALIGN_END;
-	HealthGaugeDraw(&h->healthGauge, g, a, backPos, backPicSize.x, opts);
+	HealthGaugeDraw(&h->healthGauge, g, a, backPos, width, opts);
 }
 
 static void DrawObjectiveCompass(
