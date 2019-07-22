@@ -63,4 +63,5 @@ bool PicPxIsEdge(const Pic *pic, const struct vec2i pos, const bool isPixel);
 
 void PicRender(
 	const Pic *p, SDL_Renderer *r, const struct vec2i pos, const color_t mask,
-	const double radians, const struct vec2 scale, const SDL_RendererFlip flip);
+	const double radians, const struct vec2 scale, const SDL_RendererFlip flip,
+	const Rect2i src);

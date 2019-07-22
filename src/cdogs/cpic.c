@@ -298,5 +298,5 @@ void CPicDraw(
 	PicRender(
 		pic, g->gameWindow.renderer, picPos, ColorMult(p->Mask, context->Mask),
 		context->Radians,
-		context->Scale, context->Flip);
+		context->Scale, context->Flip, Rect2iZero());
 }

@@ -163,7 +163,7 @@ static void DrawPlayerIcon(
 	const SDL_RendererFlip flip)
 {
 	const Pic *framePic = PicManagerGetPic(pm, "hud/player_frame");
-	const Pic *underlayPic = PicManagerGetPic(pm, "hud/player_frame");
+	const Pic *underlayPic = PicManagerGetPic(pm, "hud/player_frame_underlay");
 	struct vec2i picPos = svec2i_zero();
 	if (flags & HUDFLAGS_PLACE_RIGHT)
 	{
@@ -176,12 +176,13 @@ static void DrawPlayerIcon(
 
 	PicRender(
 		underlayPic, g->gameWindow.renderer, picPos, colorWhite, 0,
-		svec2_one(), flip);
+		svec2_one(), flip, Rect2iZero());
 	if (a)
 	{
 		ActorPics pics = GetCharacterPicsFromActor(a);
-		struct vec2i pos =
-			svec2i(framePic->size.x / 2 - 2, framePic->size.y / 2);
+		pics.HasShadow = false;
+		const struct vec2i offset = svec2i(-2, 10);
+		struct vec2i pos = svec2i(framePic->size.x / 2, framePic->size.y / 2);
 		if (flags & HUDFLAGS_PLACE_RIGHT)
 		{
 			pos.x = g->cachedConfig.Res.x - pos.x;
@@ -190,12 +191,13 @@ static void DrawPlayerIcon(
 		{
 			pos.y =  g->cachedConfig.Res.y - pos.y;
 		}
-		pos.y += 10;
-		DrawActorPics(&pics, pos, false);
+		DrawActorPics(
+			&pics, svec2i_add(pos, offset), false,
+			Rect2iNew(svec2i(-12, -12), svec2i(12, 5)));
 	}
 	PicRender(
 		framePic, g->gameWindow.renderer, picPos, colorWhite, 0,
-		svec2_one(), flip);
+		svec2_one(), flip, Rect2iZero());
 }
 static void DrawScore(
 	GraphicsDevice *g, const PicManager *pm, const TActor *a, const int score,
@@ -356,7 +358,7 @@ static void DrawWeaponStatus(
 			pos.y + 1);
 		PicRender(
 			ballPic, g->gameWindow.renderer, ballPos, colorWhite, 0.0,
-			svec2_one(), SDL_FLIP_NONE);
+			svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 	}
 }
 
@@ -396,7 +398,7 @@ static void DrawGunIcons(
 	// Gun icon
 	PicRender(
 		wc->Icon, g->gameWindow.renderer, pos, colorWhite, 0.0, svec2_one(),
-		SDL_FLIP_NONE);
+		SDL_FLIP_NONE, Rect2iZero());
 }
 
 static void DrawGrenadeIcons(
@@ -466,7 +468,7 @@ static void DrawGrenadeIcons(
 		const struct vec2i drawPos = svec2i(pos.x + i * dx, pos.y);
 		PicRender(
 			icon, g->gameWindow.renderer, drawPos, colorWhite, 0.0,
-			svec2_one(), SDL_FLIP_NONE);
+			svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 	}
 }
 

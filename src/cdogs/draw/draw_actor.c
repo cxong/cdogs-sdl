@@ -312,15 +312,17 @@ static direction_e GetLegDirAndFrame(
 }
 
 static void DrawDyingBody(
-	GraphicsDevice *g, const ActorPics *pics, const struct vec2i pos);
+	GraphicsDevice *g, const ActorPics *pics, const struct vec2i pos,
+	const Rect2i bounds);
 void DrawActorPics(
-	const ActorPics *pics, const struct vec2i pos, const bool blit)
+	const ActorPics *pics, const struct vec2i pos, const bool blit,
+	const Rect2i bounds)
 {
 	if (pics->IsDead)
 	{
 		if (pics->IsDying)
 		{
-			DrawDyingBody(&gGraphicsDevice, pics, pos);
+			DrawDyingBody(&gGraphicsDevice, pics, pos, bounds);
 		}
 	}
 	else
@@ -328,6 +330,7 @@ void DrawActorPics(
 		// Draw shadow
 		if (pics->HasShadow)
 		{
+			// TODO: use bounds
 			DrawShadow(&gGraphicsDevice, pos, svec2i(8, 6));
 		}
 		for (int i = 0; i < BODY_PART_COUNT; i++)
@@ -337,7 +340,12 @@ void DrawActorPics(
 			{
 				continue;
 			}
-			const struct vec2i drawPos = svec2i_add(pos, pics->OrderedOffsets[i]);
+			const struct vec2i drawPos =
+				svec2i_add(pos, pics->OrderedOffsets[i]);
+			const Rect2i drawSrc = Rect2iIsZero(bounds) ? bounds : Rect2iNew(
+				svec2i_subtract(bounds.Pos, drawPos),
+				svec2i_subtract(bounds.Size, bounds.Pos)
+			);
 			if (blit)
 			{
 				// TODO: deprecated
@@ -347,7 +355,7 @@ void DrawActorPics(
 			{
 				PicRender(
 					pic, gGraphicsDevice.gameWindow.renderer, drawPos,
-					pics->Mask, 0, svec2_one(), SDL_FLIP_NONE);
+					pics->Mask, 0, svec2_one(), SDL_FLIP_NONE, drawSrc);
 			}
 		}
 	}
@@ -561,7 +569,7 @@ void DrawCharacterSimple(
 	ActorPics pics = GetCharacterPics(
 		c, d, d, ACTORANIMATION_IDLE, 0, NULL, GUNSTATE_READY,
 		true, NULL, NULL, 0);
-	DrawActorPics(&pics, pos, blit);
+	DrawActorPics(&pics, pos, blit, Rect2iZero());
 	if (hilite)
 	{
 		FontCh('>', svec2i_add(pos, svec2i(-8, -16)));
@@ -581,21 +589,30 @@ void DrawHead(
 	const struct vec2i drawPos = svec2i_subtract(pos, svec2i(
 		head->size.x / 2, head->size.y / 2));
 	const color_t mask = colorWhite;
-	PicRender(head, renderer, drawPos, mask, 0, svec2_one(), SDL_FLIP_NONE);
+	PicRender(
+		head, renderer, drawPos, mask, 0, svec2_one(), SDL_FLIP_NONE,
+		Rect2iZero());
 	const Pic *hair = GetHairPic(c, dir, g, &c->Colors);
 	if (hair)
 	{
-		PicRender(hair, renderer, drawPos, mask, 0, svec2_one(), SDL_FLIP_NONE);
+		PicRender(
+			hair, renderer, drawPos, mask, 0, svec2_one(), SDL_FLIP_NONE,
+			Rect2iZero());
 	}
 }
 #define DYING_BODY_OFFSET 3
 static void DrawDyingBody(
-	GraphicsDevice *g, const ActorPics *pics, const struct vec2i pos)
+	GraphicsDevice *g, const ActorPics *pics, const struct vec2i pos,
+	const Rect2i bounds)
 {
 	const Pic *body = pics->Body;
 	const struct vec2i drawPos = svec2i_subtract(pos, svec2i(
 		body->size.x / 2, body->size.y / 2 + DYING_BODY_OFFSET));
+	const Rect2i drawSrc = Rect2iIsZero(bounds) ? bounds : Rect2iNew(
+		svec2i_subtract(bounds.Pos, drawPos),
+		svec2i_subtract(bounds.Size, bounds.Pos)
+	);
 	PicRender(
 		body, g->gameWindow.renderer, drawPos, pics->Mask, 0, svec2_one(),
-		SDL_FLIP_NONE);
+		SDL_FLIP_NONE, drawSrc);
 }

@@ -242,17 +242,23 @@ bool PicPxIsEdge(const Pic *pic, const struct vec2i pos, const bool isPixel)
 
 void PicRender(
 	const Pic *p, SDL_Renderer *r, const struct vec2i pos, const color_t mask,
-	const double radians, const struct vec2 scale, const SDL_RendererFlip flip)
+	const double radians, const struct vec2 scale, const SDL_RendererFlip flip,
+	const Rect2i srcRect)
 {
-	Rect2i dest = Rect2iNew(pos, p->size);
+	Rect2i src = Rect2iNew(
+		svec2i_max(srcRect.Pos, svec2i_zero()), svec2i_zero()
+	);
+	src.Size = svec2i_is_zero(srcRect.Size) ? p->size :
+		svec2i_min(svec2i_subtract(srcRect.Size, src.Pos), p->size);
+	Rect2i dest = Rect2iNew(pos, src.Size);
 	// Apply scale to render dest
 	if (!svec2_is_equal(scale, svec2_one()))
 	{
-		dest.Pos.x -= (mint_t)MROUND((scale.x - 1) * p->size.x / 2);
-		dest.Pos.y -= (mint_t)MROUND((scale.y - 1) * p->size.y / 2);
-		dest.Size.x = (mint_t)MROUND(p->size.x * scale.x);
-		dest.Size.y = (mint_t)MROUND(p->size.y * scale.y);
+		dest.Pos.x -= (mint_t)MROUND((scale.x - 1) * src.Size.x / 2);
+		dest.Pos.y -= (mint_t)MROUND((scale.y - 1) * src.Size.y / 2);
+		dest.Size.x = (mint_t)MROUND(src.Size.x * scale.x);
+		dest.Size.y = (mint_t)MROUND(src.Size.y * scale.y);
 	}
 	const double angle = ToDegrees(radians);
-	TextureRender(p->Tex, r, Rect2iZero(), dest, mask, angle, flip);
+	TextureRender(p->Tex, r, src, dest, mask, angle, flip);
 }

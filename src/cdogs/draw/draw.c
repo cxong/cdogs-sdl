@@ -114,7 +114,7 @@ static void DrawLOSPic(
 	{
 		PicRender(
 			pic, gGraphicsDevice.gameWindow.renderer, pos, mask, 0, svec2_one(),
-			SDL_FLIP_NONE);
+			SDL_FLIP_NONE, Rect2iZero());
 	}
 }
 
@@ -277,7 +277,7 @@ static void DrawThing(
 	{
 		TActor *a = CArrayGet(&gActors, t->id);
 		ActorPics pics = GetCharacterPicsFromActor(a);
-		DrawActorPics(&pics, picPos, false);
+		DrawActorPics(&pics, picPos, false, Rect2iZero());
 		// Draw weapon indicators
 		DrawLaserSight(&pics, a, picPos);
 	}
