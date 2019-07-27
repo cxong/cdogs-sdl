@@ -126,7 +126,7 @@ static void DrawPlayerStatus(
 	}
 	Draw9Slice(
 		hud->device, backBar, Rect2iNew(barPos, svec2i(barWidth, 13)),
-		0, 0, 0, 0, false, colorWhite, flip);
+		0, 0, 0, 0, true, colorWhite, flip);
 
 	FontOpts opts = FontOptsNew();
 	if (flags & HUDFLAGS_PLACE_RIGHT)
@@ -290,7 +290,7 @@ static void DrawWeaponStatus(
 	}
 
 	Draw9Slice(
-		g, backPic, Rect2iNew(pos, backPicSize), 0, 2, 0, 2, false,
+		g, backPic, Rect2iNew(pos, backPicSize), 0, 2, 0, 4, false,
 		colorWhite, SDL_FLIP_NONE);
 
 	if (actor == NULL)
@@ -338,12 +338,12 @@ static void DrawWeaponStatus(
 		// Draw ammo level as inner fill
 		if (amount > 0)
 		{
-			const Pic *fillPic = PicManagerGetPic(pm, "hud/gauge_small_fill");
+			const Pic *fillPic = PicManagerGetPic(pm, "hud/gauge_small_inner");
 			const struct vec2i fillPicSize = svec2i(
-				MAX(1, (AMMO_WIDTH - 4) * amount / ammo->Max), fillPic->size.y);
+				MAX(1, (AMMO_WIDTH - 1) * amount / ammo->Max), fillPic->size.y);
 			Draw9Slice(
-				g, fillPic, Rect2iNew(svec2i(pos.x + 2, pos.y), fillPicSize),
-				0, 0, 0, 0, false, colorWhite, SDL_FLIP_NONE);
+				g, fillPic, Rect2iNew(svec2i(pos.x, pos.y), fillPicSize),
+				1, 1, 1, 1, false, colorBlue, SDL_FLIP_NONE);
 		}
 	}
 

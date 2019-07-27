@@ -43,7 +43,7 @@ void HUDDrawGauge(
 
 	const Pic *backPic = PicManagerGetPic(pm, "hud/gauge_back");
 	Draw9Slice(
-		g, backPic, Rect2iNew(pos, svec2i(width, height)), 0, 3, 0, 3, false,
+		g, backPic, Rect2iNew(pos, svec2i(width, height)), 0, 3, 0, 4, false,
 		colorWhite, SDL_FLIP_NONE);
 
 	if (innerWidth > 0)
@@ -60,6 +60,6 @@ void HUDDrawGaugeInner(
 
 	const Pic *innerPic = PicManagerGetPic(pm, "hud/gauge_inner");
 	Draw9Slice(
-		g, innerPic, Rect2iNew(pos, svec2i(width, height)), 0, 3, 0, 3, false,
+		g, innerPic, Rect2iNew(pos, svec2i(width, height)), 0, 3, 0, 4, false,
 		barColor, SDL_FLIP_NONE);
 }
