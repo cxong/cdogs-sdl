@@ -37,14 +37,15 @@
 // └--------------┘
 void HUDDrawGauge(
 	GraphicsDevice *g, const PicManager *pm, struct vec2i pos,
-	const int width, const int innerWidth, const color_t barColor)
+	const int width, const int innerWidth,
+	const color_t barColor, const color_t backColor)
 {
 	const int height = 10; // TODO: arbitrary height
 
 	const Pic *backPic = PicManagerGetPic(pm, "hud/gauge_back");
 	Draw9Slice(
 		g, backPic, Rect2iNew(pos, svec2i(width, height)), 0, 3, 0, 4, false,
-		colorWhite, SDL_FLIP_NONE);
+		backColor, SDL_FLIP_NONE);
 
 	if (innerWidth > 0)
 	{

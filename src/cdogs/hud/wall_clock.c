@@ -64,6 +64,6 @@ void WallClockDraw(WallClock *wc)
 	FontOpts opts = FontOptsNew();
 	opts.VAlign = ALIGN_END;
 	opts.Area = gGraphicsDevice.cachedConfig.Res;
-	opts.Pad = svec2i(10, 5 + FontH());
+	opts.Pad = svec2i(10, 22);
 	FontStrOpt(s, svec2i_zero(), opts);
 }

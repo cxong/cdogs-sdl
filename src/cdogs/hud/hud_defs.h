@@ -36,9 +36,5 @@
 #define HUDFLAGS_QUARTER_SCREEN	0x08
 #define HUDFLAGS_SHARE_SCREEN	0x10
 
-// A bit of padding for drawing HUD elements at bottom,
-// so that it doesn't overlap the objective information, clocks etc.
-#define BOTTOM_PADDING 16
-
 #define AUTOMAP_PADDING	13
 #define AUTOMAP_SIZE	45

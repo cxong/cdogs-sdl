@@ -69,10 +69,11 @@ void HealthGaugeUpdate(HealthGauge *h, const TActor *a, const int ms)
 
 void HealthGaugeDraw(
 	const HealthGauge *h, GraphicsDevice *device, const TActor *actor,
-	const struct vec2i pos, const int width, const FontOpts opts)
+	const struct vec2i pos, const int width, const FontOpts opts,
+	const color_t mask)
 {
 	// Draw gauge background
-	HUDDrawGauge(device, &gPicManager, pos, width, 0, colorTransparent);
+	HUDDrawGauge(device, &gPicManager, pos, width, 0, colorTransparent, mask);
 	if (actor == NULL)
 	{
 		return;

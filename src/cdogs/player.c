@@ -146,7 +146,10 @@ NPlayerData PlayerDataDefault(const int idx)
 	{
 		strcpy(pd.Name, t->name);
 		strcpy(pd.CharacterClass, t->CharClassName);
-		strcpy(pd.Hair, t->Hair);
+		if (t->Hair != NULL)
+		{
+			strcpy(pd.Hair, t->Hair);
+		}
 		pd.Colors = CharColors2Net(t->Colors);
 	}
 	else

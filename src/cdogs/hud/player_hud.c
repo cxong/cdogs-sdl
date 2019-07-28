@@ -39,6 +39,7 @@
 #define AMMO_WIDTH 27
 #define GUN_ICON_WIDTH 14
 #define PLAYER_ICON_WIDTH 20
+#define BAR_HEIGHT 13
 
 
 void HUDPlayerInit(HUDPlayer *h)
@@ -73,16 +74,16 @@ void DrawPlayerHUD(
 
 static void DrawPlayerIcon(
 	TActor *a, GraphicsDevice *g, const PicManager *pm, const int flags,
-	const SDL_RendererFlip flip);
+	const SDL_RendererFlip flip, const color_t mask);
 static void DrawScore(
 	GraphicsDevice *g, const PicManager *pm, const TActor *a, const int score,
-	const int flags, const Rect2i r);
+	const int flags, const Rect2i r, const color_t mask);
 static void DrawLives(
 	const GraphicsDevice *device, const PlayerData *player,
 	const FontAlign hAlign, const FontAlign vAlign);
 static void DrawWeaponStatus(
 	GraphicsDevice *g, const PicManager *pm, const TActor *actor,
-	const int flags, const Rect2i r);
+	const int flags, const Rect2i r, const color_t mask);
 static void DrawGunIcons(
 	GraphicsDevice *g, const TActor *actor, const int flags, const Rect2i r);
 static void DrawGrenadeStatus(
@@ -92,12 +93,13 @@ static void DrawRadar(
 	const int flags, const bool showExit);
 static void DrawHealth(
 	GraphicsDevice *g, const TActor *a,
-	const int flags, const HUDPlayer *h, const Rect2i r);
+	const int flags, const HUDPlayer *h, const Rect2i r, const color_t mask);
 // Draw player's score, health etc.
 static void DrawPlayerStatus(
 	HUD *hud, const PlayerData *data, TActor *p,
 	const int flags, const HUDPlayer *h, const Rect2i r)
 {
+	const color_t mask = data->Char.Colors.Body;
 	SDL_RendererFlip flip = SDL_FLIP_NONE;
 	if (flags & HUDFLAGS_PLACE_RIGHT)
 	{
@@ -108,9 +110,7 @@ static void DrawPlayerStatus(
 		flip |= SDL_FLIP_VERTICAL;
 	}
 
-	DrawPlayerIcon(p, hud->device, &gPicManager, flags, flip);
-
-	struct vec2i pos;
+	DrawPlayerIcon(p, hud->device, &gPicManager, flags, flip, mask);
 
 	// Draw back bar, stretched across the screen
 	const Pic *backBar = PicManagerGetPic(&gPicManager, "hud/back_bar");
@@ -125,8 +125,8 @@ static void DrawPlayerStatus(
 		barPos.y = hud->device->cachedConfig.Res.y - backBar->size.y;
 	}
 	Draw9Slice(
-		hud->device, backBar, Rect2iNew(barPos, svec2i(barWidth, 13)),
-		0, 0, 0, 0, true, colorWhite, flip);
+		hud->device, backBar, Rect2iNew(barPos, svec2i(barWidth, BAR_HEIGHT)),
+		0, 0, 0, 0, true, mask, flip);
 
 	FontOpts opts = FontOptsNew();
 	if (flags & HUDFLAGS_PLACE_RIGHT)
@@ -136,19 +136,22 @@ static void DrawPlayerStatus(
 	if (flags & HUDFLAGS_PLACE_BOTTOM)
 	{
 		opts.VAlign = ALIGN_END;
-		pos.y += BOTTOM_PADDING;
 	}
 	opts.Area = gGraphicsDevice.cachedConfig.Res;
 
-	DrawScore(hud->device, &gPicManager, p, data->Stats.Score, flags, r);
+	DrawScore(hud->device, &gPicManager, p, data->Stats.Score, flags, r, mask);
 	DrawGrenadeStatus(hud->device, p, flags, r);
-	DrawWeaponStatus(hud->device, &gPicManager, p, flags, r);
+	DrawWeaponStatus(hud->device, &gPicManager, p, flags, r, mask);
 	DrawGunIcons(hud->device, p, flags, r);
 	DrawLives(hud->device, data, opts.HAlign, opts.VAlign);
-	DrawHealth(hud->device, p, flags, h, r);
+	DrawHealth(hud->device, p, flags, h, r, mask);
 
 	// Name
 	opts.Pad = svec2i(23, 2);
+	if (flags & HUDFLAGS_PLACE_BOTTOM)
+	{
+		opts.Pad.y += 1;
+	}
 	FontStrOpt(data->name, svec2i_zero(), opts);
 
 	if (ConfigGetBool(&gConfig, "Interface.ShowHUDMap") &&
@@ -160,7 +163,7 @@ static void DrawPlayerStatus(
 }
 static void DrawPlayerIcon(
 	TActor *a, GraphicsDevice *g, const PicManager *pm, const int flags,
-	const SDL_RendererFlip flip)
+	const SDL_RendererFlip flip, const color_t mask)
 {
 	const Pic *framePic = PicManagerGetPic(pm, "hud/player_frame");
 	const Pic *underlayPic = PicManagerGetPic(pm, "hud/player_frame_underlay");
@@ -185,23 +188,23 @@ static void DrawPlayerIcon(
 		struct vec2i pos = svec2i(framePic->size.x / 2, framePic->size.y / 2);
 		if (flags & HUDFLAGS_PLACE_RIGHT)
 		{
-			pos.x = g->cachedConfig.Res.x - pos.x;
+			pos.x = g->cachedConfig.Res.x - pos.x + 4;
 		}
 		if (flags & HUDFLAGS_PLACE_BOTTOM)
 		{
-			pos.y =  g->cachedConfig.Res.y - pos.y;
+			pos.y =  g->cachedConfig.Res.y - pos.y + 2;
 		}
 		DrawActorPics(
 			&pics, svec2i_add(pos, offset), false,
 			Rect2iNew(svec2i(-12, -12), svec2i(12, 5)));
 	}
 	PicRender(
-		framePic, g->gameWindow.renderer, picPos, colorWhite, 0,
+		framePic, g->gameWindow.renderer, picPos, mask, 0,
 		svec2_one(), flip, Rect2iZero());
 }
 static void DrawScore(
 	GraphicsDevice *g, const PicManager *pm, const TActor *a, const int score,
-	const int flags, const Rect2i r)
+	const int flags, const Rect2i r, const color_t mask)
 {
 	// Score aligned to the right
 	struct vec2i backPos = svec2i(r.Size.x - SCORE_WIDTH, 1);
@@ -211,10 +214,10 @@ static void DrawScore(
 	}
 	if (flags & HUDFLAGS_PLACE_BOTTOM)
 	{
-		backPos.y = g->cachedConfig.Res.y - 9 - 1;
+		backPos.y = g->cachedConfig.Res.y - BAR_HEIGHT + backPos.y;
 	}
 
-	HUDDrawGauge(g, pm, backPos, SCORE_WIDTH, 0, colorTransparent);
+	HUDDrawGauge(g, pm, backPos, SCORE_WIDTH, 0, colorTransparent, mask);
 
 	if (a == NULL)
 	{
@@ -240,7 +243,7 @@ static void DrawScore(
 	}
 
 	const FontOpts opts = PlayerHUDGetScorePos(flags, r);
-	FontStrOpt(s, svec2i_zero(), opts);
+	FontStrOpt(s, r.Pos, opts);
 }
 static void DrawLives(
 	const GraphicsDevice *device, const PlayerData *player,
@@ -271,7 +274,7 @@ static void DrawLives(
 
 static void DrawWeaponStatus(
 	GraphicsDevice *g, const PicManager *pm, const TActor *actor,
-	const int flags, const Rect2i r)
+	const int flags, const Rect2i r, const color_t mask)
 {
 	// TODO: draw as gauge
 	const Pic *backPic = PicManagerGetPic(pm, "hud/gauge_small_back");
@@ -286,12 +289,12 @@ static void DrawWeaponStatus(
 	}
 	if (flags & HUDFLAGS_PLACE_BOTTOM)
 	{
-		pos.y = g->cachedConfig.Res.y - 13 - pos.y;
+		pos.y = g->cachedConfig.Res.y - BAR_HEIGHT + pos.y;
 	}
 
 	Draw9Slice(
 		g, backPic, Rect2iNew(pos, backPicSize), 0, 2, 0, 4, false,
-		colorWhite, SDL_FLIP_NONE);
+		mask, SDL_FLIP_NONE);
 
 	if (actor == NULL)
 	{
@@ -383,7 +386,7 @@ static void DrawGunIcons(
 	}
 	if (flags & HUDFLAGS_PLACE_BOTTOM)
 	{
-		pos.y = g->cachedConfig.Res.y - 13;
+		pos.y = g->cachedConfig.Res.y - BAR_HEIGHT + pos.y;
 	}
 
 	// Ammo icon
@@ -428,7 +431,7 @@ static void DrawGrenadeStatus(
 	}
 	if (flags & HUDFLAGS_PLACE_BOTTOM)
 	{
-		pos.y = g->cachedConfig.Res.y - 13 - 1;
+		pos.y = g->cachedConfig.Res.y - BAR_HEIGHT + pos.y;
 	}
 
 	// Draw number of grenade icons; if there are too many draw one with the
@@ -577,7 +580,7 @@ static void DrawRadar(
 
 static void DrawHealth(
 	GraphicsDevice *g, const TActor *a,
-	const int flags, const HUDPlayer *h, const Rect2i r)
+	const int flags, const HUDPlayer *h, const Rect2i r, const color_t mask)
 {
 	const int right =
 		SCORE_WIDTH + GRENADES_WIDTH + AMMO_WIDTH + GUN_ICON_WIDTH;
@@ -596,7 +599,7 @@ static void DrawHealth(
 		backPos.y = g->cachedConfig.Res.y - 10 - 1;
 	}
 
-	HealthGaugeDraw(&h->healthGauge, g, a, backPos, width, opts);
+	HealthGaugeDraw(&h->healthGauge, g, a, backPos, width, opts, mask);
 }
 
 static void DrawObjectiveCompass(
@@ -787,12 +790,12 @@ FontOpts PlayerHUDGetScorePos(const int flags, const Rect2i r)
 	opts.HAlign = ALIGN_END;
 	if (flags & HUDFLAGS_PLACE_RIGHT)
 	{
-		opts.Pad.x += r.Pos.x;
 		opts.HAlign = ALIGN_START;
 	}
 	if (flags & HUDFLAGS_PLACE_BOTTOM)
 	{
 		opts.VAlign = ALIGN_END;
+		opts.Pad.y += 1;
 	}
 	return opts;
 }

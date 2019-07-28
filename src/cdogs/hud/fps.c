@@ -58,6 +58,6 @@ void FPSCounterDraw(FPSCounter *counter)
 	opts.HAlign = ALIGN_END;
 	opts.VAlign = ALIGN_END;
 	opts.Area = gGraphicsDevice.cachedConfig.Res;
-	opts.Pad = svec2i(10, 5 + FontH());
+	opts.Pad = svec2i(10, 22);
 	FontStrOpt(s, svec2i_zero(), opts);
 }

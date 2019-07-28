@@ -34,7 +34,8 @@
 
 void HUDDrawGauge(
 	GraphicsDevice *g, const PicManager *pm, struct vec2i pos,
-	const int width, const int innerWidth, const color_t barColor);
+	const int width, const int innerWidth,
+	const color_t barColor, const color_t backColor);
 void HUDDrawGaugeInner(
 	GraphicsDevice *g, const PicManager *pm, struct vec2i pos,
 	const int width, const color_t barColor);

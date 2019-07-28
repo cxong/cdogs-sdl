@@ -478,7 +478,7 @@ static void DrawMissionTime(HUD *hud)
 static void DrawObjectiveCounts(HUD *hud)
 {
 	int x = 45;
-	int y = hud->device->cachedConfig.Res.y - 5 - FontH();
+	int y = hud->device->cachedConfig.Res.y - 22;
 	CA_FOREACH(const Objective, o, hud->mission->missionData->Objectives)
 		// Don't draw anything for optional objectives
 		if (!ObjectiveIsRequired(o))
