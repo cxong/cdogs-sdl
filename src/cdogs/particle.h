@@ -72,6 +72,7 @@ typedef struct
 		CPic Pic;
 		char *Text;
 	} u;
+	int ActorUID;
 	struct vec2 Pos;
 	int Z;
 	double Angle;
@@ -87,6 +88,7 @@ extern CArray gParticles;	// of Particle
 typedef struct
 {
 	const ParticleClass *Class;
+	int ActorUID;
 	struct vec2 Pos;
 	int Z;
 	struct vec2 Vel;

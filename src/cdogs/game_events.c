@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2018 Cong Xu
+    Copyright (c) 2013-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -185,5 +185,13 @@ GameEvent GameEventNew(GameEventType type)
 	GameEvent e;
 	memset(&e, 0, sizeof e);
 	e.Type = type;
+	switch (type)
+	{
+		case GAME_EVENT_ADD_PICKUP:
+			e.u.AddParticle.ActorUID = -1;
+			break;
+		default:
+			break;
+	}
 	return e;
 }

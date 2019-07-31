@@ -437,6 +437,7 @@ int ParticleAdd(CArray *particles, const AddParticle add)
 		default:
 			break;
 	}
+	p->ActorUID = add.ActorUID;
 	p->Pos = add.Pos;
 	p->Z = add.Z;
 	p->Angle = add.Angle;

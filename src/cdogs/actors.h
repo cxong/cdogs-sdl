@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2018 Cong Xu
+    Copyright (c) 2013-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -146,6 +146,8 @@ typedef struct Actor
 	int turns;
 	
 	int slideLock;
+	// For damage text
+	int accumulatedDamage;
 
 	// What to say (text label appears above actor) and how long to say it
 	char Chatter[256];

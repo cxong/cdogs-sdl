@@ -1508,14 +1508,32 @@ void ActorHit(const NThingDamage d)
 		DamageActor(a, d.Power, d.SourceActorUID);
 
 		// Add damage text
+		// See if there is one already; if so remove it and add a new one,
+		// combining the damage numbers
+		int damage = (int)d.Power;
+		struct vec2 pos = svec2_add(
+			a->Pos, svec2(RAND_FLOAT(-3, 3), RAND_FLOAT(-3, 3)));
+		CA_FOREACH(const Particle, p, gParticles)
+			if (p->isInUse && p->ActorUID == a->uid)
+			{
+				damage += a->accumulatedDamage;
+				pos = p->Pos;
+				GameEvent e = GameEventNew(GAME_EVENT_PARTICLE_REMOVE);
+				e.u.ParticleRemoveId = _ca_index;
+				GameEventsEnqueue(&gGameEvents, e);
+				break;
+			}
+		CA_FOREACH_END()
+		a->accumulatedDamage = damage;
+
 		GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 		s.u.AddParticle.Class =
 			StrParticleClass(&gParticleClasses, "damage_text");
-		s.u.AddParticle.Pos = svec2_add(
-			a->Pos, svec2(RAND_FLOAT(-3, 3), RAND_FLOAT(-3, 3)));
+		s.u.AddParticle.ActorUID = a->uid;
+		s.u.AddParticle.Pos = pos;
 		s.u.AddParticle.Z = BULLET_Z * Z_FACTOR;
 		s.u.AddParticle.DZ = 3;
-		sprintf(s.u.AddParticle.Text, "-%d", (int)d.Power);
+		sprintf(s.u.AddParticle.Text, "-%d", damage);
 		GameEventsEnqueue(&gGameEvents, s);
 
 		ActorAddBloodSplatters(a, d.Power, d.Mass, NetToVec2(d.Vel));
