@@ -27,6 +27,7 @@
 
 #include <errno.h>
 #include <stdarg.h>
+#include <time.h>
 
 #include "rlutil/rlutil.h"
 #include "utils.h"
