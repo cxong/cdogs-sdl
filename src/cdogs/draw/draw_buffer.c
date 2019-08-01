@@ -81,9 +81,6 @@ void DrawBufferSetFromMap(
 	DrawBuffer *buffer, const Map *map, const struct vec2 origin,
 	const int width)
 {
-	int x, y;
-	Tile *bufTile;
-
 	buffer->Size = svec2i(width, buffer->OrigSize.y);
 
 	buffer->xTop = (int)origin.x - TILE_WIDTH * width / 2;
@@ -103,16 +100,19 @@ void DrawBufferSetFromMap(
 	buffer->dx = buffer->xStart * TILE_WIDTH - buffer->xTop;
 	buffer->dy = buffer->yStart * TILE_HEIGHT - buffer->yTop;
 
-	bufTile = &buffer->tiles[0][0];
-	for (y = buffer->yStart; y < buffer->yStart + buffer->Size.y; y++)
+	Tile *bufTile = &buffer->tiles[0][0];
+	struct vec2i pos;
+	for (pos.y = buffer->yStart;
+		pos.y < buffer->yStart + buffer->Size.y;
+		pos.y++)
 	{
-		for (x = buffer->xStart;
-			x < buffer->xStart + buffer->Size.x;
-			x++, bufTile++)
+		for (pos.x = buffer->xStart;
+			pos.x < buffer->xStart + buffer->Size.x;
+			pos.x++, bufTile++)
 		{
-			if (x >= 0 && x < map->Size.x && y >= 0 && y < map->Size.y)
+			if (MapIsTileIn(map, pos))
 			{
-				*bufTile = *MapGetTile(map, svec2i(x, y));
+				*bufTile = *MapGetTile(map, pos);
 			}
 			else
 			{

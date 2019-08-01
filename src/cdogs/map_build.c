@@ -213,6 +213,7 @@ static void DebugPrintMap(const MapBuilder *mb)
 				case TILE_CLASS_FLOOR: *bufP++ = t->IsRoom ? '-' : '.'; break;
 				case TILE_CLASS_WALL: *bufP++ = '#'; break;
 				case TILE_CLASS_DOOR: *bufP++ = '+'; break;
+				case TILE_CLASS_NOTHING: *bufP++ = ' '; break;
 				default: *bufP++ = '?'; break;
 			}
 		}

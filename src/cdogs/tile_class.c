@@ -119,6 +119,7 @@ const TileClass *StrTileClass(const char *name)
 	{
 		return &gTileNothing;
 	}
+	LOG(LM_MAIN, LL_TRACE, "get tile class %s", name);
 	TileClass *t;
 	int error = hashmap_get(gTileClasses.customClasses, name, (any_t *)&t);
 	if (error == MAP_OK)
@@ -176,6 +177,7 @@ TileClass *TileClassesAdd(
 		LOG(LM_MAIN, LL_ERROR, "failed to add tile class %s: %d", buf, error);
 		return NULL;
 	}
+	LOG(LM_MAIN, LL_DEBUG, "add tile class %s", buf);
 	return t;
 }
 void TileClassGetName(

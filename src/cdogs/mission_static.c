@@ -484,14 +484,14 @@ void MissionStaticFromMap(MissionStatic *m, const Map *map)
 			if (hashmap_put(m->TileClasses, buf, (any_t *)tc) != MAP_OK)
 			{
 				LOG(LM_MAP, LL_ERROR,
-				"Failed to add tile class (%s)", t->Class->Name);
+					"Failed to add tile class (%s)", t->Class->Name);
 				TileClassTerminate(tc);
 				continue;
 			}
 			if (hashmap_put(tileClassMap, t->Class->Name, &tile) != MAP_OK)
 			{
 				LOG(LM_MAP, LL_ERROR,
-				"Failed to add tile class (%s)", t->Class->Name);
+					"Failed to add tile class (%s)", t->Class->Name);
 				TileClassTerminate(tc);
 				continue;
 			}
