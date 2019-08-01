@@ -217,6 +217,12 @@ void LogLine(
 	{
 		return;
 	}
+	time_t now;
+	time(&now);
+	struct tm *ti = localtime(&now);
+	LOG_STR(l, stream, "%d%02d%02d-%02d%02d%02d ",
+		ti->tm_year + 1900, ti->tm_mon + 1, ti->tm_mday,
+		ti->tm_hour, ti->tm_min, ti->tm_sec);
 	LogSetLevelColor(l);
 	LOG_STR(l, stream, "%-5s ", LogLevelName(l));
 	LogResetColor();

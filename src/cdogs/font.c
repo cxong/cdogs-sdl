@@ -221,7 +221,9 @@ struct vec2i FontChMask(const char c, const struct vec2i pos, const color_t mask
 		idx = FIRST_CHAR;
 	}
 	const Pic *pic = CArrayGet(&gFont.Chars, idx);
-	BlitMasked(&gGraphicsDevice, pic, pos, mask, true);
+	PicRender(
+		pic, gGraphicsDevice.gameWindow.renderer, pos, mask, 0, svec2_one(),
+		SDL_FLIP_NONE, Rect2iZero());
 	// Add gap between characters
 	return svec2i(pos.x + pic->size.x + gFont.Gap.x, pos.y);
 }
