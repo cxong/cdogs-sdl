@@ -128,6 +128,7 @@ void MapRemoveThing(Map *map, Thing *t);
 
 void MapTerminate(Map *map);
 void MapInit(Map *map, const struct vec2i size);
+void MapPrintDebug(const Map *m);
 bool MapIsPosOKForPlayer(
 	const Map *map, const struct vec2 pos, const bool allowAllTiles);
 bool MapIsTileAreaClear(Map *map, const struct vec2 pos, const struct vec2i size);

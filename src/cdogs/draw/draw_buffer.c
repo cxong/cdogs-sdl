@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, 2018 Cong Xu
+    Copyright (c) 2013-2014, 2018-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -51,17 +51,18 @@
 #include <assert.h>
 
 #include "algorithms.h"
+#include "log.h"
 #include "los.h"
 
 
 void DrawBufferInit(DrawBuffer *b, struct vec2i size, GraphicsDevice *g)
 {
 	b->OrigSize = size;
-	CMALLOC(b->tiles, size.x * sizeof *b->tiles);
-	CMALLOC(b->tiles[0], size.x * size.y * sizeof *b->tiles[0]);
-	for (int i = 1; i < size.x; i++)
+	CArrayInit(&b->tiles, sizeof(Tile));
+	for (int i = 0; i < size.x * size.y; i++)
 	{
-		b->tiles[i] = b->tiles[0] + i * size.y;
+		const Tile t = TileNone();
+		CArrayPushBack(&b->tiles, &t);
 	}
 	b->g = g;
 	CArrayInit(&b->displaylist, sizeof(const Thing *));
@@ -69,11 +70,10 @@ void DrawBufferInit(DrawBuffer *b, struct vec2i size, GraphicsDevice *g)
 }
 void DrawBufferTerminate(DrawBuffer *b)
 {
-	if (b->tiles)
-	{
-		CFREE(b->tiles[0]);
-		CFREE(b->tiles);
-	}
+	CA_FOREACH(Tile, t, b->tiles)
+		TileDestroy(t);
+	CA_FOREACH_END()
+	CArrayTerminate(&b->tiles);
 	CArrayTerminate(&b->displaylist);
 }
 
@@ -100,7 +100,7 @@ void DrawBufferSetFromMap(
 	buffer->dx = buffer->xStart * TILE_WIDTH - buffer->xTop;
 	buffer->dy = buffer->yStart * TILE_HEIGHT - buffer->yTop;
 
-	Tile *bufTile = &buffer->tiles[0][0];
+	Tile *bufTile = CArrayGet(&buffer->tiles, 0);
 	struct vec2i pos;
 	for (pos.y = buffer->yStart;
 		pos.y < buffer->yStart + buffer->Size.y;
@@ -126,7 +126,7 @@ void DrawBufferSetFromMap(
 // Set visibility and draw order for wall/door columns
 void DrawBufferFix(DrawBuffer *buffer)
 {
-	Tile *tile = &buffer->tiles[0][0];
+	Tile *tile = CArrayGet(&buffer->tiles, 0);
 	for (int y = 0; y < Y_TILES; y++)
 	{
 		for (int x = 0; x < buffer->Size.x; x++, tile++)

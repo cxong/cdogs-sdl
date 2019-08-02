@@ -51,7 +51,7 @@ void MapStaticLoad(MapBuilder *mb)
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), mb->Map->Size))
 		MapStaticLoadTile(mb, _v);
 	RECT_FOREACH_END()
-	
+
 	// Exit area
 	if (!svec2i_is_zero(mb->mission->u.Static.Exit.Start) &&
 		!svec2i_is_zero(mb->mission->u.Static.Exit.End))

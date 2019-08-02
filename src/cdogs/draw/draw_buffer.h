@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, 2018 Cong Xu
+    Copyright (c) 2013-2014, 2018-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -58,7 +58,7 @@ typedef struct
 	int dx, dy;	// remainder pixel offset from starting tile
 	struct vec2i OrigSize;
 	struct vec2i Size;	// size in tiles
-	Tile **tiles;
+	CArray tiles;	// of Tile
 	CArray displaylist;	// of const Thing *, to determine draw order
 } DrawBuffer;
 

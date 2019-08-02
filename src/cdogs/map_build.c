@@ -65,7 +65,6 @@
 
 static void MapSetupTilesAndWalls(MapBuilder *mb);
 static void MapSetupDoors(MapBuilder *mb);
-static void DebugPrintMap(const MapBuilder *mb);
 static void MapAddDrains(MapBuilder *mb);
 void MapBuild(Map *m, const Mission *mission, const CampaignOptions *co)
 {
@@ -92,7 +91,7 @@ void MapBuild(Map *m, const Mission *mission, const CampaignOptions *co)
 
 	MapSetupTilesAndWalls(&mb);
 	MapSetupDoors(&mb);
-	DebugPrintMap(&mb);
+	MapPrintDebug(mb.Map);
 
 	if (mb.mission->Type == MAPTYPE_CLASSIC)
 	{
@@ -192,37 +191,6 @@ static int MapGetAccessFlags(const MapBuilder *mb, const struct vec2i v)
 	flags = MAX(flags, AccessCodeToFlags(MapBuildGetAccess(mb, svec2i(v.x, v.y - 1))));
 	flags = MAX(flags, AccessCodeToFlags(MapBuildGetAccess(mb, svec2i(v.x, v.y + 1))));
 	return flags;
-}
-static void DebugPrintMap(const MapBuilder *mb)
-{
-	if (LogModuleGetLevel(LM_MAP) > LL_TRACE)
-	{
-		return;
-	}
-	char *buf;
-	CCALLOC(buf, mb->Map->Size.x + 1);
-	char *bufP = buf;
-	struct vec2i v;
-	for (v.y = 0; v.y < mb->Map->Size.y; v.y++)
-	{
-		for (v.x = 0; v.x < mb->Map->Size.x; v.x++)
-		{
-			const TileClass *t = MapGetTile(mb->Map, v)->Class;
-			switch (t->Type)
-			{
-				case TILE_CLASS_FLOOR: *bufP++ = t->IsRoom ? '-' : '.'; break;
-				case TILE_CLASS_WALL: *bufP++ = '#'; break;
-				case TILE_CLASS_DOOR: *bufP++ = '+'; break;
-				case TILE_CLASS_NOTHING: *bufP++ = ' '; break;
-				default: *bufP++ = '?'; break;
-			}
-		}
-		LOG(LM_MAP, LL_TRACE, buf);
-		*buf = '\0';
-		bufP = buf;
-	}
-	LOG_FLUSH();
-	CFREE(buf);
 }
 
 void MapBuilderInit(
@@ -607,7 +575,7 @@ void MapBuildTile(
 		MapSetupTile(&mb, _v);
 	RECT_FOREACH_END()
 	CArrayCopy(&mb.Map->access, &mb.access);
-	DebugPrintMap(&mb);
+	MapPrintDebug(mb.Map);
 	MapBuilderTerminate(&mb);
 }
 
@@ -689,9 +657,19 @@ static void MapSetupTile(MapBuilder *mb, const struct vec2i pos)
 		t->Class = TileClassesGetMaskedTile(
 			tc, tc->Style, MapGetWallPic(mb, pos), tc->Mask, tc->MaskAlt);
 	}
+	else if (tc->Type == TILE_CLASS_DOOR)
+	{
+		t->Class = TileClassesGetMaskedTile(
+			tc, tc->Style, "normal_h", tc->Mask, tc->MaskAlt);
+	}
+	else if (tc->Type == TILE_CLASS_NOTHING)
+	{
+		t->Class = &gTileNothing;
+	}
 	else
 	{
-		t->Class = tc;
+		CASSERT(false, "cannot setup tile");
+		t->Class = &gTileNothing;
 	}
 }
 static bool W(const MapBuilder *mb, const int x, const int y);

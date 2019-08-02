@@ -147,7 +147,7 @@ static void DrawFloor(DrawBuffer *b, struct vec2i offset)
 {
 	int x, y;
 	struct vec2i pos;
-	const Tile *tile = &b->tiles[0][0];
+	const Tile *tile = CArrayGet(&b->tiles, 0);
 	const bool useFog = ConfigGetBool(&gConfig, "Game.Fog");
 	for (y = 0, pos.y = b->dy + offset.y;
 		 y < Y_TILES;
@@ -174,7 +174,7 @@ static void DrawThing(
 
 static void DrawDebris(DrawBuffer *b, struct vec2i offset)
 {
-	Tile *tile = &b->tiles[0][0];
+	Tile *tile = CArrayGet(&b->tiles, 0);
 	for (int y = 0; y < Y_TILES; y++)
 	{
 		CArrayClear(&b->displaylist);
@@ -204,7 +204,7 @@ static void DrawDebris(DrawBuffer *b, struct vec2i offset)
 static void DrawWallsAndThings(DrawBuffer *b, struct vec2i offset)
 {
 	struct vec2i pos;
-	Tile *tile = &b->tiles[0][0];
+	Tile *tile = CArrayGet(&b->tiles, 0);
 	pos.y = b->dy + WALL_OFFSET_Y + offset.y;
 	const bool useFog = ConfigGetBool(&gConfig, "Game.Fog");
 	for (int y = 0; y < Y_TILES; y++, pos.y += TILE_HEIGHT)
@@ -320,7 +320,7 @@ static void DrawExtra(DrawBuffer *b, struct vec2i offset, GrafxDrawExtra *extra)
 static void DrawEditorTiles(DrawBuffer *b, const struct vec2i offset)
 {
 	struct vec2i pos;
-	Tile *tile = &b->tiles[0][0];
+	Tile *tile = CArrayGet(&b->tiles, 0);
 	pos.y = b->dy + offset.y;
 	for (int y = 0; y < Y_TILES; y++, pos.y += TILE_HEIGHT)
 	{
@@ -379,7 +379,7 @@ static void DrawSpawnerName(
 	const TObject *obj, DrawBuffer *b, const struct vec2i offset);
 static void DrawObjectNames(DrawBuffer *b, const struct vec2i offset)
 {
-	const Tile *tile = &b->tiles[0][0];
+	const Tile *tile = CArrayGet(&b->tiles, 0);
 	for (int y = 0; y < Y_TILES; y++)
 	{
 		for (int x = 0; x < b->Size.x; x++, tile++)

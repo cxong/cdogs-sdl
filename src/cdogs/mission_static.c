@@ -205,7 +205,7 @@ static void ConvertOldTile(
 	if (hashmap_get(m->TileClasses, keyBuf, NULL) == MAP_MISSING)
 	{
 		TileClass *tc;
-		CCALLOC(tc, sizeof *tc);
+		CMALLOC(tc, sizeof *tc);
 		memcpy(tc, base, sizeof *tc);
 		if (base->Name) CSTRDUP(tc->Name, base->Name);
 		if (base->Style) CSTRDUP(tc->Style, base->Style);

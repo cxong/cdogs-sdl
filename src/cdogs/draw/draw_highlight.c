@@ -54,7 +54,7 @@
 
 
 static void DrawObjectiveHighlight(
-	Thing *ti, Tile *tile, DrawBuffer *b, struct vec2i offset);
+	Thing *ti, const Tile *tile, DrawBuffer *b, struct vec2i offset);
 void DrawObjectiveHighlights(DrawBuffer *b, const struct vec2i offset)
 {
 	if (!ConfigGetBool(&gConfig, "Graphics.ShowHUD"))
@@ -62,7 +62,7 @@ void DrawObjectiveHighlights(DrawBuffer *b, const struct vec2i offset)
 		return;
 	}
 
-	Tile *tile = &b->tiles[0][0];
+	const Tile *tile = CArrayGet(&b->tiles, 0);
 	for (int y = 0; y < Y_TILES; y++)
 	{
 		for (int x = 0; x < b->Size.x; x++, tile++)
@@ -77,7 +77,7 @@ void DrawObjectiveHighlights(DrawBuffer *b, const struct vec2i offset)
 	}
 }
 static void DrawObjectiveHighlight(
-	Thing *ti, Tile *tile, DrawBuffer *b, struct vec2i offset)
+	Thing *ti, const Tile *tile, DrawBuffer *b, struct vec2i offset)
 {
 	color_t color;
 	if (ti->flags & THING_OBJECTIVE)

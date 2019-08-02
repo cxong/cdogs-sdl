@@ -486,6 +486,38 @@ void MapInit(Map *map, const struct vec2i size)
 	}
 }
 
+void MapPrintDebug(const Map *m)
+{
+	if (LogModuleGetLevel(LM_MAP) > LL_TRACE)
+	{
+		return;
+	}
+	char *buf;
+	CCALLOC(buf, m->Size.x + 1);
+	char *bufP = buf;
+	struct vec2i v;
+	for (v.y = 0; v.y < m->Size.y; v.y++)
+	{
+		for (v.x = 0; v.x < m->Size.x; v.x++)
+		{
+			const TileClass *t = MapGetTile(m, v)->Class;
+			switch (t->Type)
+			{
+				case TILE_CLASS_FLOOR: *bufP++ = t->IsRoom ? '-' : '.'; break;
+				case TILE_CLASS_WALL: *bufP++ = '#'; break;
+				case TILE_CLASS_DOOR: *bufP++ = '+'; break;
+				case TILE_CLASS_NOTHING: *bufP++ = ' '; break;
+				default: *bufP++ = '?'; break;
+			}
+		}
+		LOG(LM_MAP, LL_TRACE, buf);
+		*buf = '\0';
+		bufP = buf;
+	}
+	LOG_FLUSH();
+	CFREE(buf);
+}
+
 bool MapIsPosOKForPlayer(
 	const Map *map, const struct vec2 pos, const bool allowAllTiles)
 {
