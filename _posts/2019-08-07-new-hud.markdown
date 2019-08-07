@@ -1,0 +1,14 @@
+---
+layout: post
+title:  "New HUD"
+date:   2019-08-07
+categories: progress
+---
+
+It's been a while since the last update! The next release of C-Dogs SDL is still on the way, with lots of features. Here's a sneak peek: a new HUD redesign!
+
+![new hud](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/new_hud.png)
+
+The old HUD was nice and minimal but as we've added features like ammo and grenades, it was getting a little cramped. This new HUD is much more condensed and with 90's pixel art stylin'. We hope you like it too!
+
+![new hud animated](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/new_hud_animated.gif)
