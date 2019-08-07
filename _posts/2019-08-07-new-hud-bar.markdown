@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "New HUD"
+title:  "New HUD Bar"
 date:   2019-08-07
 categories: progress
 ---
