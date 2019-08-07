@@ -456,9 +456,10 @@ void WeaponClassAddBrass(
 	GameEventsEnqueue(&gGameEvents, e);
 }
 
-static struct vec2 GetMuzzleOffset(const direction_e d);
+static struct vec2 GetMuzzleOffset(const direction_e d, const gunstate_e state);
 struct vec2 WeaponClassGetMuzzleOffset(
-	const WeaponClass *desc, const CharSprites *cs, const direction_e dir)
+	const WeaponClass *desc, const CharSprites *cs,
+	const direction_e dir, const gunstate_e state)
 {
 	if (!WeaponClassHasMuzzle(desc))
 	{
@@ -466,13 +467,22 @@ struct vec2 WeaponClassGetMuzzleOffset(
 	}
 	CASSERT(desc->Sprites != NULL, "Gun has no pic");
 	const struct vec2 gunOffset = cs->Offsets.Dir[BODY_PART_GUN][dir];
-	return svec2_add(gunOffset, GetMuzzleOffset(dir));
+	return svec2_add(gunOffset, GetMuzzleOffset(dir, state));
 }
-static struct vec2 GetMuzzleOffset(const direction_e d)
+static struct vec2 GetMuzzleOffset(const direction_e d, const gunstate_e state)
 {
 	// TODO: gun-specific muzzle offsets
 	#define BARREL_LENGTH 10
-	return svec2_scale(Vec2FromRadians(dir2radians[d]), BARREL_LENGTH);
+	#define BARREL_LENGTH_READY 7
+	// Barrel slightly shortened when not firing
+	const double barrelLength =
+		state == GUNSTATE_FIRING ? BARREL_LENGTH : BARREL_LENGTH_READY;
+	return svec2_scale(Vec2FromRadians(dir2radians[d]), barrelLength);
+}
+int WeaponClassGetMuzzleHeight(const WeaponClass *wc, const gunstate_e state)
+{
+	// Muzzle slightly higher when not firing
+	return wc->MuzzleHeight + (state == GUNSTATE_FIRING ? 0 : 4 * Z_FACTOR);
 }
 
 bool WeaponClassHasMuzzle(const WeaponClass *wc)

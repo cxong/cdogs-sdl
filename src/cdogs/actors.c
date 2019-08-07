@@ -218,6 +218,20 @@ static void ActorUpdateWeapon(TActor *a, Weapon *w, const int ticks)
 	}
 	WeaponUpdate(w, ticks);
 	ActorFireUpdate(w, a, ticks);
+	if (WeaponClassHasMuzzle(w->Gun) && WeaponIsOverheating(w))
+	{
+		a->barrelSmokeCounter -= ticks;
+		if (a->barrelSmokeCounter <= 0)
+		{
+			AddParticle ap;
+			memset(&ap, 0, sizeof ap);
+			ap.Pos = svec2_add(a->Pos, ActorGetMuzzleOffset(a, w));
+			ap.Z = WeaponClassGetMuzzleHeight(w->Gun, w->state) / Z_FACTOR;
+			ap.Mask = colorWhite;
+			EmitterStart(&a->barrelSmoke, &ap);
+			a->barrelSmokeCounter = 10;
+		}
+	}
 }
 
 static struct vec2 GetConstrainedPos(
@@ -1318,6 +1332,10 @@ TActor *ActorAdd(NActorAdd aa)
 		ActorSetAIState(actor, AI_STATE_IDLE);
 	}
 
+	EmitterInit(
+		&actor->barrelSmoke,
+		StrParticleClass(&gParticleClasses, "smoke"),
+		svec2_zero(), -0.05, 0.05, 3, 3, 0, 0);
 	GoreEmitterInit(&actor->blood1, "blood1");
 	GoreEmitterInit(&actor->blood2, "blood2");
 	GoreEmitterInit(&actor->blood3, "blood3");
@@ -1372,15 +1390,13 @@ const Character *ActorGetCharacter(const TActor *a)
 
 struct vec2 ActorGetWeaponMuzzleOffset(const TActor *a)
 {
-	const WeaponClass *wc = ACTOR_GET_WEAPON(a)->Gun;
-	return ActorGetMuzzleOffset(a, wc);
+	return ActorGetMuzzleOffset(a, ACTOR_GET_WEAPON(a));
 }
-struct vec2 ActorGetMuzzleOffset(
-	const TActor *a, const WeaponClass *wc)
+struct vec2 ActorGetMuzzleOffset(const TActor *a, const Weapon *w)
 {
 	const Character *c = ActorGetCharacter(a);
 	const CharSprites *cs = c->Class->Sprites;
-	return WeaponClassGetMuzzleOffset(wc, cs, a->direction);
+	return WeaponClassGetMuzzleOffset(w->Gun, cs, a->direction, w->state);
 }
 int ActorWeaponGetAmmo(const TActor *a, const WeaponClass *wc)
 {

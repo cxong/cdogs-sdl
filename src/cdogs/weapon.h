@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2018 Cong Xu
+    Copyright (c) 2013-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -58,9 +58,12 @@ typedef struct
 	int soundLock;
 	int clickLock;
 	int stateCounter;
+	int heatCounter;
 } Weapon;
 
 Weapon WeaponCreate(const WeaponClass *wc);
 void WeaponUpdate(Weapon *w, const int ticks);
 bool WeaponIsLocked(const Weapon *w);
 void WeaponSetState(Weapon *w, const gunstate_e state);
+void WeaponOnFire(Weapon *w);
+bool WeaponIsOverheating(const Weapon *w);

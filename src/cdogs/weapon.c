@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2018 Cong Xu
+    Copyright (c) 2013-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -97,6 +97,11 @@ void WeaponUpdate(Weapon *w, const int ticks)
 			}
 		}
 	}
+	w->heatCounter -= ticks;
+	if (w->heatCounter < 0)
+	{
+		w->heatCounter = 0;
+	}
 }
 
 bool WeaponIsLocked(const Weapon *w)
@@ -121,4 +126,26 @@ void WeaponSetState(Weapon *w, const gunstate_e state)
 		w->stateCounter = -1;
 		break;
 	}
+}
+
+void WeaponOnFire(Weapon *w)
+{
+	if (w->soundLock <= 0)
+	{
+		w->soundLock = w->Gun->SoundLockLength;
+	}
+
+	w->heatCounter += w->Gun->Lock * 2;
+	// 2 seconds of overheating max
+	if (w->heatCounter > FPS_FRAMELIMIT * 3)
+	{
+		w->heatCounter = FPS_FRAMELIMIT * 3;
+	}
+	w->lock = w->Gun->Lock;
+}
+
+bool WeaponIsOverheating(const Weapon *w)
+{
+	// Overheat after 1 second of continuous firing
+	return w->heatCounter > FPS_FRAMELIMIT;
 }

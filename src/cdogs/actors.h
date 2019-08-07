@@ -153,6 +153,9 @@ typedef struct Actor
 	char Chatter[256];
 	int ChatterCounter;
 
+	Emitter barrelSmoke;
+	int barrelSmokeCounter;
+
 	// Gore emitters
 	Emitter blood1;
 	Emitter blood2;
@@ -206,8 +209,7 @@ const Character *ActorGetCharacter(const TActor *a);
 #define ACTOR_GET_WEAPON(a) \
 	(ACTOR_GET_GUN(a)->Gun!=NULL?ACTOR_GET_GUN(a):ACTOR_GET_GRENADE(a))
 struct vec2 ActorGetWeaponMuzzleOffset(const TActor *a);
-struct vec2 ActorGetMuzzleOffset(
-	const TActor *a, const WeaponClass *wc);
+struct vec2 ActorGetMuzzleOffset(const TActor *a, const Weapon *w);
 // Returns -1 if gun does not use ammo
 int ActorWeaponGetAmmo(const TActor *a, const WeaponClass *wc);
 bool ActorCanFireWeapon(const TActor *a, const Weapon *w);

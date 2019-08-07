@@ -376,8 +376,10 @@ void DrawLaserSight(
 		return;
 	}
 	// Draw weapon indicators
-	const WeaponClass *wc = ACTOR_GET_WEAPON(a)->Gun;
-	struct vec2i muzzlePos = svec2i_add(picPos, svec2i_assign_vec2(ActorGetMuzzleOffset(a, wc)));
+	const Weapon *w = ACTOR_GET_WEAPON(a);
+	const WeaponClass *wc = w->Gun;
+	struct vec2i muzzlePos =
+		svec2i_add(picPos, svec2i_assign_vec2(ActorGetMuzzleOffset(a, w)));
 	muzzlePos.y -= wc->MuzzleHeight / Z_FACTOR;
 	const float radians = dir2radians[a->direction] + wc->AngleOffset;
 	const int range = (int)WeaponClassGetRange(wc);

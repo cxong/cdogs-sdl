@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2017, Cong Xu
+    Copyright (c) 2013-2017, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -45,18 +45,14 @@ void ActorFire(Weapon *w, const TActor *a)
 	}
 
 	const double radians = dir2radians[a->direction];
-	const struct vec2 muzzleOffset = ActorGetMuzzleOffset(a, w->Gun);
+	const struct vec2 muzzleOffset = ActorGetMuzzleOffset(a, w);
 	const struct vec2 muzzlePosition = svec2_add(a->Pos, muzzleOffset);
 	const bool playSound = w->soundLock <= 0;
 	WeaponClassFire(
-		w->Gun, muzzlePosition, w->Gun->MuzzleHeight, radians,
+		w->Gun, muzzlePosition,
+		WeaponClassGetMuzzleHeight(w->Gun, GUNSTATE_FIRING), radians,
 		a->flags, a->uid, playSound, true);
-	if (playSound)
-	{
-		w->soundLock = w->Gun->SoundLockLength;
-	}
-
-	w->lock = w->Gun->Lock;
+	WeaponOnFire(w);
 }
 
 void ActorFireUpdate(Weapon *w, const TActor *a, const int ticks)
@@ -71,7 +67,7 @@ void ActorFireUpdate(Weapon *w, const TActor *a, const int ticks)
 		GameEvent e = GameEventNew(GAME_EVENT_GUN_RELOAD);
 		e.u.GunReload.PlayerUID = a->PlayerUID;
 		strcpy(e.u.GunReload.Gun, w->Gun->name);
-		const struct vec2 muzzleOffset = ActorGetMuzzleOffset(a, w->Gun);
+		const struct vec2 muzzleOffset = ActorGetMuzzleOffset(a, w);
 		const struct vec2 muzzlePosition = svec2_add(a->Pos, muzzleOffset);
 		e.u.GunReload.Pos = Vec2ToNet(muzzlePosition);
 		e.u.GunReload.Direction = (int)a->direction;
