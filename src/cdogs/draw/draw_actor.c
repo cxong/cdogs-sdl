@@ -71,7 +71,8 @@
 
 static struct vec2i GetActorDrawOffset(
 	const Pic *pic, const BodyPart part, const CharSprites *cs,
-	const ActorAnimation anim, const int frame, const direction_e d)
+	const ActorAnimation anim, const int frame, const direction_e d,
+	const gunstate_e state)
 {
 	if (pic == NULL)
 	{
@@ -83,6 +84,21 @@ static struct vec2i GetActorDrawOffset(
 		anim == ACTORANIMATION_WALKING ? "run" : "idle",
 		frame));
 	offset = svec2i_add(offset, svec2i_assign_vec2(cs->Offsets.Dir[part][d]));
+	if (part == BODY_PART_GUN && state == GUNSTATE_RECOIL)
+	{
+		// Offset the gun pic towards the player
+		const struct vec2i recoilOffsets[DIRECTION_COUNT] = {
+			{0, 1},
+			{-1, 1},
+			{-1, 0},
+			{-1, -1},
+			{0, -1},
+			{1, -1},
+			{1, 0},
+			{1, 1}
+		};
+		offset = svec2i_add(offset, recoilOffsets[d]);
+	}
 	return offset;
 }
 
@@ -216,10 +232,12 @@ ActorPics GetCharacterPics(
 	}
 	pics.Head = GetHeadPic(c->Class, headDir, gunState, colors);
 	pics.HeadOffset = GetActorDrawOffset(
-		pics.Head, BODY_PART_HEAD, c->Class->Sprites, anim, frame, dir);
+		pics.Head, BODY_PART_HEAD, c->Class->Sprites, anim, frame, dir,
+		gunState);
 	pics.Hair = GetHairPic(c, headDir, gunState, colors);
 	pics.HairOffset = GetActorDrawOffset(
-		pics.Hair, BODY_PART_HAIR, c->Class->Sprites, anim, frame, dir);
+		pics.Hair, BODY_PART_HAIR, c->Class->Sprites, anim, frame, dir,
+		gunState);
 
 	// Gun
 	pics.Gun = NULL;
@@ -229,7 +247,8 @@ ActorPics GetCharacterPics(
 		if (pics.Gun != NULL)
 		{
 			pics.GunOffset = GetActorDrawOffset(
-				pics.Gun, BODY_PART_GUN, c->Class->Sprites, anim, frame, dir);
+				pics.Gun, BODY_PART_GUN, c->Class->Sprites, anim, frame, dir,
+				gunState);
 		}
 	}
 	const bool isArmed = pics.Gun != NULL;
@@ -239,13 +258,15 @@ ActorPics GetCharacterPics(
 		&gPicManager, c->Class->Sprites, dir, anim, frame, isArmed,
 		colors);
 	pics.BodyOffset = GetActorDrawOffset(
-		pics.Body, BODY_PART_BODY, c->Class->Sprites, anim, frame, dir);
+		pics.Body, BODY_PART_BODY, c->Class->Sprites, anim, frame, dir,
+		gunState);
 
 	// Legs
 	pics.Legs = GetLegsPic(
 		&gPicManager, c->Class->Sprites, legDir, anim, frame, colors);
 	pics.LegsOffset = GetActorDrawOffset(
-		pics.Legs, BODY_PART_LEGS, c->Class->Sprites, anim, frame, legDir);
+		pics.Legs, BODY_PART_LEGS, c->Class->Sprites, anim, frame, legDir,
+		gunState);
 
 	// Determine draw order based on the direction the player is facing
 	for (BodyPart bp = BODY_PART_HEAD; bp < BODY_PART_COUNT; bp++)
