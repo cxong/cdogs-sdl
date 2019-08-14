@@ -829,7 +829,7 @@ static void DrawCharacter(
 	const int frame = AnimationGetFrame(anim);
 	ActorPics pics = GetCharacterPics(
 		c, d, d, anim->Type, frame,
-		c->Gun->Sprites, GUNSTATE_READY, true, NULL, NULL, 0);
+		c->Gun->Sprites, GUNSTATE_READY, colorTransparent, NULL, NULL, 0);
 	for (int i = 0; i < BODY_PART_COUNT; i++)
 	{
 		const Pic *pic = pics.OrderedPics[i];

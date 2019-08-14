@@ -20,7 +20,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, 2018 Cong Xu
+    Copyright (c) 2013-2014, 2018-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -79,4 +79,7 @@ void DrawRectangle(
 //  *
 void DrawCross(GraphicsDevice *device, int x, int y, color_t color);
 
-void DrawShadow(GraphicsDevice *g, struct vec2i pos, struct vec2i size);
+// Note: shadow is centered, size is half-size
+void DrawShadow(
+	GraphicsDevice *g, const struct vec2i pos, const struct vec2 scale,
+	const color_t mask);

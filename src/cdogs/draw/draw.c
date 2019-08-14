@@ -266,7 +266,9 @@ static void DrawThing(
 
 	if (!svec2i_is_zero(t->ShadowSize))
 	{
-		DrawShadow(&gGraphicsDevice, picPos, t->ShadowSize);
+		DrawShadow(
+			&gGraphicsDevice, picPos, svec2_assign_vec2i(t->ShadowSize),
+			colorBlack);
 	}
 
 	if (t->CPicFunc)

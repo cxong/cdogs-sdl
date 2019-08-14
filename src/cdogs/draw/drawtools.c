@@ -246,17 +246,20 @@ void DrawCross(GraphicsDevice *device, int x, int y, color_t color)
 	*(screen + gGraphicsDevice.cachedConfig.Res.x) = pixel;
 }
 
-// Note: size is half-size
-void DrawShadow(GraphicsDevice *g, struct vec2i pos, struct vec2i size)
+void DrawShadow(
+	GraphicsDevice *g, const struct vec2i pos, const struct vec2 scale,
+	const color_t mask)
 {
-	if (!ConfigGetBool(&gConfig, "Graphics.Shadows"))
+	if (!ConfigGetBool(&gConfig, "Graphics.Shadows") ||
+		ColorEquals(mask, colorTransparent))
 	{
 		return;
 	}
 	const Pic *shadow = PicManagerGetPic(&gPicManager, "shadow");
-	const Rect2i dest =
-		Rect2iNew(svec2i_subtract(pos, size), svec2i_scale(size, 2));
-	TextureRender(
-		shadow->Tex, g->gameWindow.renderer, Rect2iZero(), dest,
-		colorTransparent, 0, SDL_FLIP_NONE);
+	const struct vec2 drawScale =
+		svec2_divide(svec2_scale(scale, 2), svec2_assign_vec2i(shadow->size));
+	const struct vec2i drawPos = svec2i_subtract(pos, svec2i_assign_vec2(scale));
+	PicRender(
+		shadow, g->gameWindow.renderer, drawPos, mask, 0,
+		drawScale, SDL_FLIP_NONE, Rect2iZero());
 }

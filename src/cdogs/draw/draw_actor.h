@@ -70,7 +70,7 @@ typedef struct
 	struct vec2i OrderedOffsets[BODY_PART_COUNT];
 	bool IsDead;
 	bool IsDying;
-	bool HasShadow;
+	color_t ShadowMask;
 	color_t Mask;
 	const CharSprites *Sprites;
 } ActorPics;
@@ -91,7 +91,7 @@ ActorPics GetCharacterPics(
 	const Character *c, const direction_e dir, const direction_e legDir,
 	const ActorAnimation anim, const int frame,
 	const char *gunSprites, const gunstate_e gunState,
-	const bool hasShadow, const color_t *mask, const CharColors *colors,
+	const color_t shadowMask, const color_t *mask, const CharColors *colors,
 	const int deadPic);
 ActorPics GetCharacterPicsFromActor(TActor *a);
 void DrawActorPics(

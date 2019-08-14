@@ -138,16 +138,21 @@ ActorPics GetCharacterPicsFromActor(TActor *a)
 	const bool isTransparent = !!(a->flags & FLAGS_SEETHROUGH);
 	const CharColors *colors = NULL;
 	const color_t *maskP = NULL;
+	color_t shadowMask = colorTransparent;
 	if (isTransparent)
 	{
 		colors = &allBlack;
 		maskP = &mask;
 		mask.a = TRANSPARENT_ACTOR_ALPHA;
 	}
-	else if (hasStatus)
+	else
 	{
-		maskP = &mask;
-		colors = &allWhite;
+		shadowMask = a->PlayerUID >= 0 ? c->Colors.Body : colorBlack;
+		if (hasStatus)
+		{
+			maskP = &mask;
+			colors = &allWhite;
+		}
 	}
 
 	const direction_e dir = RadiansToDirection(a->DrawRadians);
@@ -156,8 +161,7 @@ ActorPics GetCharacterPicsFromActor(TActor *a)
 	return GetCharacterPics(
 		c, dir, legDir, a->anim.Type, frame,
 		gun->Gun != NULL ? gun->Gun->Sprites : NULL, gun->state,
-		!isTransparent, maskP, colors,
-		a->dead);
+		shadowMask, maskP, colors, a->dead);
 }
 static const Pic *GetHairPic(
 	const Character *c, const direction_e dir, const gunstate_e gunState,
@@ -178,7 +182,7 @@ ActorPics GetCharacterPics(
 	const Character *c, const direction_e dir, const direction_e legDir,
 	const ActorAnimation anim, const int frame,
 	const char *gunSprites, const gunstate_e gunState,
-	const bool hasShadow, const color_t *mask, const CharColors *colors,
+	const color_t shadowMask, const color_t *mask, const CharColors *colors,
 	const int deadPic)
 {
 	ActorPics pics;
@@ -194,7 +198,7 @@ ActorPics GetCharacterPics(
 		return pics;
 	}
 
-	pics.HasShadow = hasShadow;
+	pics.ShadowMask = shadowMask;
 
 	// If the actor is dead, simply draw a dying animation
 	pics.IsDead = deadPic > 0;
@@ -348,12 +352,8 @@ void DrawActorPics(
 	}
 	else
 	{
-		// Draw shadow
-		if (pics->HasShadow)
-		{
-			// TODO: use bounds
-			DrawShadow(&gGraphicsDevice, pos, svec2i(8, 6));
-		}
+		// TODO: use bounds
+		DrawShadow(&gGraphicsDevice, pos, svec2(8, 6), pics->ShadowMask);
 		for (int i = 0; i < BODY_PART_COUNT; i++)
 		{
 			const Pic *pic = pics->OrderedPics[i];
@@ -388,7 +388,7 @@ void DrawLaserSight(
 	const ActorPics *pics, const TActor *a, const struct vec2i picPos)
 {
 	// Don't draw if dead or transparent
-	if (pics->IsDead || !pics->HasShadow) return;
+	if (pics->IsDead || ColorEquals(pics->ShadowMask, colorTransparent)) return;
 	// Check config
 	const LaserSight ls = ConfigGetEnum(&gConfig, "Game.LaserSight");
 	if (ls != LASER_SIGHT_ALL &&
@@ -432,7 +432,7 @@ void DrawActorHighlight(
 	const ActorPics *pics, const struct vec2i pos, const color_t color)
 {
 	// Do not highlight dead, dying or transparent characters
-	if (pics->IsDead || !pics->HasShadow)
+	if (pics->IsDead || ColorEquals(pics->ShadowMask, colorTransparent))
 	{
 		return;
 	}
@@ -591,7 +591,7 @@ void DrawCharacterSimple(
 {
 	ActorPics pics = GetCharacterPics(
 		c, d, d, ACTORANIMATION_IDLE, 0, NULL, GUNSTATE_READY,
-		true, NULL, NULL, 0);
+		colorBlack, NULL, NULL, 0);
 	DrawActorPics(&pics, pos, blit, Rect2iZero());
 	if (hilite)
 	{

@@ -183,7 +183,7 @@ static void DrawPlayerIcon(
 	if (a)
 	{
 		ActorPics pics = GetCharacterPicsFromActor(a);
-		pics.HasShadow = false;
+		pics.ShadowMask = colorTransparent;
 		const struct vec2i offset = svec2i(-2, 10);
 		struct vec2i pos = svec2i(framePic->size.x / 2, framePic->size.y / 2);
 		if (flags & HUDFLAGS_PLACE_RIGHT)
