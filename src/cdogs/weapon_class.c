@@ -272,6 +272,7 @@ static void LoadGunDescription(
 	{
 		json_t *shake = json_find_first_label(node, "Shake")->child;
 		LoadInt(&wc->Shake.Amount, shake, "Amount");
+		LoadBool(&wc->Shake.CameraSubjectOnly, shake, "CameraSubjectOnly");
 	}
 
 	wc->IsRealGun = true;
