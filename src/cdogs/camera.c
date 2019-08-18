@@ -284,7 +284,7 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
 
-	const struct vec2 noise = ScreenShakeGetDelta(camera->shake);
+	const struct vec2 noise = camera->shake.Delta;
 
 	GraphicsResetBlitClip(&gGraphicsDevice);
 	if (drawData.NumScreens == 0)

@@ -34,9 +34,12 @@
 // where the amount of shake is directly proportional to the ratio
 // of ticks left from max ticks. Base force is derived from maximum
 // time left.
-typedef int ScreenShake;
+typedef struct
+{
+	int ticks;
+	struct vec2 Delta;
+} ScreenShake;
 
 ScreenShake ScreenShakeZero(void);
 ScreenShake ScreenShakeAdd(ScreenShake s, int force, int multiplier);
-struct vec2 ScreenShakeGetDelta(ScreenShake s);
 ScreenShake ScreenShakeUpdate(ScreenShake s, int ticks);

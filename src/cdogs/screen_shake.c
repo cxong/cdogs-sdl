@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -48,28 +48,24 @@ ScreenShake ScreenShakeAdd(ScreenShake s, int force, int multiplier)
 {
 	const int extra =
 		force * multiplier * ConfigGetInt(&gConfig, "Game.FPS") / 100;
-	s += extra;
+	s.ticks += extra;
 	/* So we don't shake too much :) */
-	s = MIN(s, MAX_SHAKE);
+	s.ticks = MIN(s.ticks, MAX_SHAKE);
 	return s;
 }
 
 // Convert ticks left to a shake delta
 #define TICKS_TO_DELTA_RATIO 28
 
-struct vec2 ScreenShakeGetDelta(ScreenShake s)
-{
-	int maxDelta = s * TICKS_TO_DELTA_RATIO / SHAKE_STANDARD;
-	if (maxDelta == 0)
-	{
-		return svec2_zero();
-	}
-	return svec2(RAND_FLOAT(0, maxDelta), RAND_FLOAT(0, maxDelta));
-}
-
 ScreenShake ScreenShakeUpdate(ScreenShake s, int ticks)
 {
-	s -= ticks;
-	s = MAX(s, 0);
+	s.ticks -= ticks;
+	s.ticks = MAX(s.ticks, 0);
+	// Update delta
+	const int maxDelta = s.ticks * TICKS_TO_DELTA_RATIO / SHAKE_STANDARD;
+	s.Delta =
+		maxDelta == 0 ?
+		svec2_zero() :
+		svec2(RAND_FLOAT(0, maxDelta), RAND_FLOAT(0, maxDelta));
 	return s;
 }
