@@ -463,7 +463,10 @@ int ParticleAdd(CArray *particles, const AddParticle add)
 void ParticleDestroy(CArray *particles, const int id)
 {
 	Particle *p = CArrayGet(particles, id);
-	CASSERT(p->isInUse, "Destroying not-in-use particle");
+	if (!p->isInUse)
+	{
+		return;
+	}
 	MapRemoveThing(&gMap, &p->thing);
 	if (p->Class->Type == PARTICLE_TEXT)
 	{
