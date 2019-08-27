@@ -99,5 +99,3 @@ void DrawActorPics(
 	const Rect2i bounds);
 void DrawLaserSight(
 	const ActorPics *pics, const TActor *a, const struct vec2i picPos);
-void DrawActorHighlight(
-	const ActorPics *pics, const struct vec2i pos, const color_t color);

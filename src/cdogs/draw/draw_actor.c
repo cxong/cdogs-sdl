@@ -428,35 +428,6 @@ static void DrawLaserSightSingle(
 	DrawLine(from, to, color);
 }
 
-void DrawActorHighlight(
-	const ActorPics *pics, const struct vec2i pos, const color_t color)
-{
-	// Do not highlight dead, dying or transparent characters
-	if (pics->IsDead || ColorEquals(pics->ShadowMask, colorTransparent))
-	{
-		return;
-	}
-	BlitPicHighlight(
-		&gGraphicsDevice, pics->Head, svec2i_add(pos, pics->HeadOffset), color);
-	if (pics->Body != NULL)
-	{
-		BlitPicHighlight(
-			&gGraphicsDevice, pics->Body, svec2i_add(pos, pics->BodyOffset),
-			color);
-	}
-	if (pics->Legs != NULL)
-	{
-		BlitPicHighlight(
-			&gGraphicsDevice, pics->Legs, svec2i_add(pos, pics->LegsOffset),
-			color);
-	}
-	if (pics->Gun != NULL)
-	{
-		BlitPicHighlight(
-			&gGraphicsDevice, pics->Gun, svec2i_add(pos, pics->GunOffset), color);
-	}
-}
-
 static void DrawChatter(
 	const Thing *ti, DrawBuffer *b, const struct vec2i offset);
 void DrawChatters(DrawBuffer *b, const struct vec2i offset)
