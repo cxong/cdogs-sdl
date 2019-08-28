@@ -462,6 +462,10 @@ void ObjAdd(const NMapObjectAdd amo)
 	o->Health = amo.Health;
 	o->thing.CPic = o->Class->Pic;
 	o->thing.CPic.Mask = Net2Color(amo.Mask);
+	if (ColorEquals(o->thing.CPic.Mask, colorTransparent))
+	{
+		o->thing.CPic.Mask = colorWhite;
+	}
 	o->thing.CPicFunc = MapObjectDraw;
 	MapTryMoveThing(&gMap, &o->thing, NetToVec2(amo.Pos));
 	o->isInUse = true;

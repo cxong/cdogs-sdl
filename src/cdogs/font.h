@@ -60,7 +60,6 @@ typedef struct
 	struct vec2i Area;
 	struct vec2i Pad;
 	color_t Mask;
-	bool Blend;
 } FontOpts;
 
 extern Font gFont;

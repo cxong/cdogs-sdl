@@ -114,16 +114,7 @@ bool PicTryMakeTex(Pic *p)
 		LOG(LM_GFX, LL_ERROR, "cannot update texture: %s", SDL_GetError());
 		return false;
 	}
-	// Check for alpha pixels - if none we can get away with no blending
-	bool hasAlpha = false;
-	for (int i = 0; i < p->size.x * p->size.y; i++)
-	{
-		const Uint32 pixel = p->Data[i];
-		color_t c;
-		SDL_GetRGBA(pixel, gGraphicsDevice.Format, &c.r, &c.g, &c.b, &c.a);
-		hasAlpha = hasAlpha || c.a < 255;
-	}
-	if (hasAlpha && SDL_SetTextureBlendMode(p->Tex, SDL_BLENDMODE_BLEND) != 0)
+	if (SDL_SetTextureBlendMode(p->Tex, SDL_BLENDMODE_BLEND) != 0)
 	{
 		LOG(LM_GFX, LL_ERROR, "cannot set texture blend mode: %s",
 			SDL_GetError());

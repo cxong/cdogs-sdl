@@ -232,6 +232,5 @@ static void DrawNumUpdate(const HUDNumPopup *p, FontOpts opts)
 	}
 
 	opts.Mask = color;
-	opts.Blend = true;
 	FontStrOpt(s, pos, opts);
 }

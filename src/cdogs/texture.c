@@ -62,18 +62,15 @@ void TextureRender(
 	SDL_Texture *t, SDL_Renderer *r, const Rect2i src, const Rect2i dest,
 	const color_t mask, const double angle, const SDL_RendererFlip flip)
 {
-	if (!ColorEquals(mask, colorTransparent))
+	if (SDL_SetTextureColorMod(t, mask.r, mask.g, mask.b) != 0)
 	{
-		if (SDL_SetTextureColorMod(t, mask.r, mask.g, mask.b) != 0)
-		{
-			LOG(LM_MAIN, LL_ERROR, "Failed to set texture mask: %s",
-				SDL_GetError());
-		}
-		if (mask.a < 255 && SDL_SetTextureAlphaMod(t, mask.a) != 0)
-		{
-			LOG(LM_MAIN, LL_ERROR, "Failed to set texture alpha: %s",
-				SDL_GetError());
-		}
+		LOG(LM_MAIN, LL_ERROR, "Failed to set texture mask: %s",
+			SDL_GetError());
+	}
+	if (mask.a < 255 && SDL_SetTextureAlphaMod(t, mask.a) != 0)
+	{
+		LOG(LM_MAIN, LL_ERROR, "Failed to set texture alpha: %s",
+			SDL_GetError());
 	}
 	const SDL_Rect srcRect = {
 		src.Pos.x, src.Pos.y, src.Size.x, src.Size.y
@@ -88,5 +85,12 @@ void TextureRender(
 	if (renderRes != 0)
 	{
 		LOG(LM_MAIN, LL_ERROR, "Failed to render texture: %s", SDL_GetError());
+	}
+	// Reset
+	// TODO: not sure why this reset is necessary and we can't always set alpha
+	if (mask.a < 255 && SDL_SetTextureAlphaMod(t, 255) != 0)
+	{
+		LOG(LM_MAIN, LL_ERROR, "Failed to reset texture alpha: %s",
+			SDL_GetError());
 	}
 }
