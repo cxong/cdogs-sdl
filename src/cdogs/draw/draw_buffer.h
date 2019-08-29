@@ -58,7 +58,7 @@ typedef struct
 	int dx, dy;	// remainder pixel offset from starting tile
 	struct vec2i OrigSize;
 	struct vec2i Size;	// size in tiles
-	CArray tiles;	// of Tile
+	CArray tiles;	// of Tile *
 	CArray displaylist;	// of const Thing *, to determine draw order
 } DrawBuffer;
 
@@ -70,3 +70,4 @@ void DrawBufferSetFromMap(
 	const int width);
 void DrawBufferFix(DrawBuffer *buffer);
 void DrawBufferSortDisplayList(DrawBuffer *buffer);
+const Tile **DrawBufferGetFirstTile(const DrawBuffer *b);

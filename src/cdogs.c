@@ -240,6 +240,8 @@ int main(int argc, char *argv[])
 	// Attempt to pre-load campaign if requested
 	if (loadCampaign != NULL)
 	{
+		GrafxMakeRandomBackground(
+			&gGraphicsDevice, &gCampaign, &gMission, &gMap);
 		LOG(LM_MAIN, LL_INFO, "Loading campaign %s...", loadCampaign);
 		gCampaign.Entry.Mode =
 			strstr(loadCampaign, "/" CDOGS_DOGFIGHT_DIR "/") != NULL ?

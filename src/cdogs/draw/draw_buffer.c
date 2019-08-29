@@ -58,10 +58,10 @@
 void DrawBufferInit(DrawBuffer *b, struct vec2i size, GraphicsDevice *g)
 {
 	b->OrigSize = size;
-	CArrayInit(&b->tiles, sizeof(Tile));
+	CArrayInit(&b->tiles, sizeof(Tile *));
 	for (int i = 0; i < size.x * size.y; i++)
 	{
-		const Tile t = TileNone();
+		const Tile *t = NULL;
 		CArrayPushBack(&b->tiles, &t);
 	}
 	b->g = g;
@@ -70,9 +70,6 @@ void DrawBufferInit(DrawBuffer *b, struct vec2i size, GraphicsDevice *g)
 }
 void DrawBufferTerminate(DrawBuffer *b)
 {
-	CA_FOREACH(Tile, t, b->tiles)
-		TileDestroy(t);
-	CA_FOREACH_END()
 	CArrayTerminate(&b->tiles);
 	CArrayTerminate(&b->displaylist);
 }
@@ -100,7 +97,7 @@ void DrawBufferSetFromMap(
 	buffer->dx = buffer->xStart * TILE_WIDTH - buffer->xTop;
 	buffer->dy = buffer->yStart * TILE_HEIGHT - buffer->yTop;
 
-	Tile *bufTile = CArrayGet(&buffer->tiles, 0);
+	Tile **bufTile = CArrayGet(&buffer->tiles, 0);
 	struct vec2i pos;
 	for (pos.y = buffer->yStart;
 		pos.y < buffer->yStart + buffer->Size.y;
@@ -112,11 +109,11 @@ void DrawBufferSetFromMap(
 		{
 			if (MapIsTileIn(map, pos))
 			{
-				*bufTile = *MapGetTile(map, pos);
+				*bufTile = MapGetTile(map, pos);
 			}
 			else
 			{
-				*bufTile = TileNone();
+				*bufTile = NULL;
 			}
 		}
 		bufTile += buffer->OrigSize.x - buffer->Size.x;
@@ -126,14 +123,15 @@ void DrawBufferSetFromMap(
 // Set visibility and draw order for wall/door columns
 void DrawBufferFix(DrawBuffer *buffer)
 {
-	Tile *tile = CArrayGet(&buffer->tiles, 0);
+	Tile **tile = CArrayGet(&buffer->tiles, 0);
 	for (int y = 0; y < Y_TILES; y++)
 	{
 		for (int x = 0; x < buffer->Size.x; x++, tile++)
 		{
+			if (*tile == NULL) continue;
 			const struct vec2i mapTile =
 				svec2i(x + buffer->xStart, y + buffer->yStart);
-			tile->outOfSight = !LOSTileIsVisible(&gMap, mapTile);
+			(*tile)->outOfSight = !LOSTileIsVisible(&gMap, mapTile);
 		}
 		tile += X_TILES - buffer->Size.x;
 	}
@@ -161,4 +159,9 @@ static int CompareY(const void *v1, const void *v2)
 		return 1;
 	}
 	return 0;
+}
+
+const Tile **DrawBufferGetFirstTile(const DrawBuffer *b)
+{
+	return CArrayGet(&b->tiles, 0);
 }

@@ -62,15 +62,16 @@ void DrawObjectiveHighlights(DrawBuffer *b, const struct vec2i offset)
 		return;
 	}
 
-	const Tile *tile = CArrayGet(&b->tiles, 0);
+	const Tile **tile = DrawBufferGetFirstTile(b);
 	for (int y = 0; y < Y_TILES; y++)
 	{
 		for (int x = 0; x < b->Size.x; x++, tile++)
 		{
+			if (*tile == NULL) continue;
 			// Draw the items that are in LOS
-			CA_FOREACH(ThingId, tid, tile->things)
+			CA_FOREACH(ThingId, tid, (*tile)->things)
 				Thing *ti = ThingIdGetThing(tid);
-				DrawObjectiveHighlight(ti, tile, b, offset);
+				DrawObjectiveHighlight(ti, *tile, b, offset);
 			CA_FOREACH_END()
 		}
 		tile += X_TILES - b->Size.x;

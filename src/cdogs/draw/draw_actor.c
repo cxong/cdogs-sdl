@@ -432,12 +432,13 @@ static void DrawChatter(
 	const Thing *ti, DrawBuffer *b, const struct vec2i offset);
 void DrawChatters(DrawBuffer *b, const struct vec2i offset)
 {
-	const Tile *tile = CArrayGet(&b->tiles, 0);
+	const Tile **tile = DrawBufferGetFirstTile(b);
 	for (int y = 0; y < Y_TILES; y++)
 	{
 		for (int x = 0; x < b->Size.x; x++, tile++)
 		{
-			CA_FOREACH(ThingId, tid, tile->things)
+			if (*tile == NULL) continue;
+			CA_FOREACH(ThingId, tid, (*tile)->things)
 				const Thing *ti = ThingIdGetThing(tid);
 				if (ti->kind != KIND_CHARACTER)
 				{
