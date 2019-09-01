@@ -7,7 +7,6 @@ os:
 env:
   - CCACHE_CPP2=yes
 
-dist: xenial
 sudo: required
 
 cache: ccache
