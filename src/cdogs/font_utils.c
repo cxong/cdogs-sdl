@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2016, Cong Xu
+    Copyright (c) 2014-2016, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -59,8 +59,10 @@ void FontLoadFromJSON(Font *f, const char *imgPath, const char *jsonPath)
 	YAJLVec2i(&f->Gap, node, "Gap");
 	bool proportional = false;
 	YAJLBool(&proportional, node, "Proportional");
+	struct vec2i spaceSize = f->Size;
+	YAJLVec2i(&spaceSize, node, "SpaceSize");
 
-	FontLoad(f, imgPath, proportional);
+	FontLoad(f, imgPath, proportional, spaceSize);
 
 bail:
 	yajl_tree_free(node);

@@ -58,6 +58,7 @@ bool PicIsNone(const Pic *pic);
 
 // Detect unused edges and update size and offset to fit
 void PicTrim(Pic *pic, const bool xTrim, const bool yTrim);
+void PicShrink(Pic *pic, const struct vec2i size, const struct vec2i offset);
 
 bool PicPxIsEdge(const Pic *pic, const struct vec2i pos, const bool isPixel);
 

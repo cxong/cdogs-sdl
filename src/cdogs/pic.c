@@ -184,14 +184,18 @@ void PicTrim(Pic *pic, const bool xTrim, const bool yTrim)
 			offset.y = min.y;
 		}
 	}
+	PicShrink(pic, newSize, offset);
+}
+void PicShrink(Pic *pic, const struct vec2i size, const struct vec2i offset)
+{
 	// Trim by copying pixels
 	Uint32 *newData;
-	CMALLOC(newData, newSize.x * newSize.y * sizeof *newData);
-	for (struct vec2i pos = svec2i_zero(); pos.y < newSize.y; pos.y++)
+	CMALLOC(newData, size.x * size.y * sizeof *newData);
+	for (struct vec2i pos = svec2i_zero(); pos.y < size.y; pos.y++)
 	{
-		for (pos.x = 0; pos.x < newSize.x; pos.x++)
+		for (pos.x = 0; pos.x < size.x; pos.x++)
 		{
-			Uint32 *target = newData + pos.x + pos.y * newSize.x;
+			Uint32 *target = newData + pos.x + pos.y * size.x;
 			const int srcIdx =
 				pos.x + offset.x + (pos.y + offset.y) * pic->size.x;
 			*target = *(pic->Data + srcIdx);
@@ -200,7 +204,7 @@ void PicTrim(Pic *pic, const bool xTrim, const bool yTrim)
 	// Replace the old data
 	CFREE(pic->Data);
 	pic->Data = newData;
-	pic->size = newSize;
+	pic->size = size;
 	pic->offset = svec2i_zero();
 	PicTryMakeTex(pic);
 }

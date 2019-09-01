@@ -54,7 +54,9 @@ FontOpts FontOptsNew(void)
 	return opts;
 }
 
-void FontLoad(Font *f, const char *imgPath, const bool isProportional)
+void FontLoad(
+	Font *f, const char *imgPath, const bool isProportional,
+	const struct vec2i spaceSize)
 {
 	char buf[CDOGS_PATH_MAX];
 	GetDataFilePath(buf, imgPath);
@@ -108,7 +110,11 @@ void FontLoad(Font *f, const char *imgPath, const bool isProportional)
 				&p, f->Size,
 				svec2i_add(pos, svec2i(f->Padding.Left, f->Padding.Top)),
 				image);
-			if (isProportional)
+			if (chars == ' ')
+			{
+				PicShrink(&p, spaceSize, svec2i_zero());
+			}
+			else if (isProportional)
 			{
 				PicTrim(&p, true, false);
 			}

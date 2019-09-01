@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2015, Cong Xu
+    Copyright (c) 2014-2015, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -66,7 +66,9 @@ extern Font gFont;
 
 FontOpts FontOptsNew(void);
 
-void FontLoad(Font *f, const char *imgPath, const bool isProportional);
+void FontLoad(
+	Font *f, const char *imgPath, const bool isProportional,
+	const struct vec2i spaceSize);
 void FontTerminate(Font *f);
 
 int FontW(const char c);

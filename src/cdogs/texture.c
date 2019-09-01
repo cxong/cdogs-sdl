@@ -81,8 +81,7 @@ void TextureRender(
 	};
 	const SDL_Rect *dstP = Rect2iIsZero(dest) ? NULL : &destRect;
 
-	const int renderRes = SDL_RenderCopyEx(r, t, srcP, dstP, angle, NULL, flip);
-	if (renderRes != 0)
+	if (SDL_RenderCopyEx(r, t, srcP, dstP, angle, NULL, flip) != 0)
 	{
 		LOG(LM_MAIN, LL_ERROR, "Failed to render texture: %s", SDL_GetError());
 	}
