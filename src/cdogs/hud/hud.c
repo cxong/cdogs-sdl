@@ -300,9 +300,9 @@ static void DrawStateMessage(
 	{
 		struct vec2i pos = svec2i_scale_divide(svec2i_subtract(
 			gGraphicsDevice.cachedConfig.Res,
-			FontStrSize("<Paused>\nFoobar\nPlease reconnect controller")), 2);
+			FontStrSize("\x11Paused\x10\nFoobar\nPlease reconnect controller")), 2);
 		const int x = pos.x;
-		FontStr("<Paused>", pos);
+		FontStr("\x11Paused\x10", pos);
 
 		pos.y += FontH();
 		pos = FontStr("Press ", pos);
@@ -322,7 +322,7 @@ static void DrawStateMessage(
 			gGraphicsDevice.cachedConfig.Res,
 			FontStrSize("Foo\nPress foo or bar to unpause\nBaz")), 2);
 		const int x = pos.x;
-		FontStr("<Paused>", pos);
+		FontStr("\x11Paused\x10", pos);
 
 		pos.y += FontH();
 		pos = FontStr("Press ", pos);

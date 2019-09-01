@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, 2016-2018 Cong Xu
+    Copyright (c) 2013-2014, 2016-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -721,21 +721,21 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 				{
 					DisplayMenuItem(
 						svec2i(
-							MS_CENTER_X(*ms, FontW('^')),
+							MS_CENTER_X(*ms, FontW('\x1e')),
 							yStart - 2 - FontH()),
-						"^",
+						"\x1e",
 						0, 0,
-						colorBlack);
+						colorWhite);
 				}
 				if (iEnd < (int)menu->u.normal.subMenus.size - 1)
 				{
 					DisplayMenuItem(
 						svec2i(
-							MS_CENTER_X(*ms, FontW('v')),
+							MS_CENTER_X(*ms, FontW('\x1f')),
 							yStart + numMenuLines*FontH() + 2),
-						"v",
+						"\x1f",
 						0, 0,
-						colorBlack);
+						colorWhite);
 				}
 			}
 			const int xOptions = x + maxWidth + 10;
@@ -750,7 +750,7 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 				if (subMenu->type == MENU_TYPE_NORMAL &&
 					subMenu->u.normal.isSubmenusAlt)
 				{
-					sprintf(nameBuf, "%s >", subMenu->name);
+					sprintf(nameBuf, "%s \x10", subMenu->name);
 				}
 				else
 				{
@@ -851,7 +851,7 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 						keyName = SDL_GetScancodeName(sc);
 						if (sc == SDL_SCANCODE_UNKNOWN || keyName == NULL)
 						{
-							keyName = "<Unset>";
+							keyName = "\x11Unset\x10";
 						}
 					}
 					DisplayMenuItem(
