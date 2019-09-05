@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2017-2018 Cong Xu
+ Copyright (c) 2017-2019 Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@ typedef struct
 	SDL_Renderer *renderer;
 	CArray texturesBkg;	// of SDL_Texture *
 	CArray textures;	// of SDL_Texture *
+	color_t bkgMask;
 } WindowContext;
 
 bool WindowContextCreate(

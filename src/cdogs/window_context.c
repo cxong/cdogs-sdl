@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2017-2018 Cong Xu
+ Copyright (c) 2017-2019 Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@ bool WindowContextCreate(
 	LOG(LM_GFX, LL_DEBUG, "creating window (%d, %d) %dx%d flags(%X)",
 		windowDim.Pos.x, windowDim.Pos.y, windowDim.Size.x, windowDim.Size.y,
 		windowFlags);
+	wc->bkgMask = colorWhite;
 	wc->window = SDL_CreateWindow(
 		title, windowDim.Pos.x, windowDim.Pos.y,
 		windowDim.Size.x, windowDim.Size.y, windowFlags);
@@ -125,7 +126,7 @@ void WindowContextPreRender(WindowContext *wc)
 	}
 	CA_FOREACH(SDL_Texture *, t, wc->texturesBkg)
 		TextureRender(
-			*t, wc->renderer, Rect2iZero(), Rect2iZero(), colorWhite, 0,
+			*t, wc->renderer, Rect2iZero(), Rect2iZero(), wc->bkgMask, 0,
 			SDL_FLIP_NONE);
 	CA_FOREACH_END()
 }
