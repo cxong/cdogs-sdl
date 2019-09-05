@@ -165,7 +165,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 
 	// Check the weapon for ammo
 	int lowAmmoGun = -1;
-	if (ConfigGetBool(&gConfig, "Game.Ammo"))
+	if (ConfigGetBool(&gConfig, "Game.Ammo") && actor->aiContext->OnGunId == -1)
 	{
 		// Check all our weapons
 		// Prefer guns using ammo
