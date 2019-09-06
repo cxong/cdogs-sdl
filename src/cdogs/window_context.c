@@ -34,7 +34,7 @@ bool WindowContextCreate(
 	const char *title, SDL_Surface *icon,
 	const struct vec2i rendererLogicalSize)
 {
-	LOG(LM_GFX, LL_DEBUG, "creating window (%d, %d) %dx%d flags(%X)",
+	LOG(LM_GFX, LL_DEBUG, "creating window (%X, %X) %dx%d flags(%X)",
 		windowDim.Pos.x, windowDim.Pos.y, windowDim.Size.x, windowDim.Size.y,
 		windowFlags);
 	wc->bkgMask = colorWhite;

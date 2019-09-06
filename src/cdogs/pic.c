@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "c_hashmap/hashmap.h"
 #include "defs.h"
 #include "grafx.h"
 #include "log.h"
@@ -35,6 +36,7 @@
 #include "utils.h"
 
 Pic picNone = { { 0, 0 }, { 0, 0 }, NULL, NULL };
+map_t textureDebugger = NULL;
 
 
 color_t PixelToColor(
@@ -99,7 +101,31 @@ bail:
 bool PicTryMakeTex(Pic *p)
 {
 	CASSERT(!PicIsNone(p), "cannot make tex of none pic");
-	SDL_DestroyTexture(p->Tex);
+	if (textureDebugger == NULL)
+	{
+		textureDebugger = hashmap_new();
+	}
+	if (p->Tex != NULL)
+	{
+		LOG(LM_GFX, LL_TRACE, "destroying texture %p data(%p)", p->Tex, p->Data);
+		SDL_DestroyTexture(p->Tex);
+		if (LL_TRACE >= LogModuleGetLevel(LM_GFX))
+		{
+			char key[32];
+			sprintf(key, "%p", p->Tex);
+			if (hashmap_get(textureDebugger, key, NULL) == MAP_OK)
+			{
+				if (hashmap_remove(textureDebugger, key) != MAP_OK)
+				{
+					LOG(LM_GFX, LL_TRACE, "Error: cannot remove tex from debugger");
+				}
+			}
+			else
+			{
+				LOG(LM_GFX, LL_TRACE, "Error: destroying unknown texture");
+			}
+		}
+	}
 	p->Tex = TextureCreate(
 		gGraphicsDevice.gameWindow.renderer, SDL_TEXTUREACCESS_STATIC,
 		p->size, SDL_BLENDMODE_NONE, 255);
@@ -119,6 +145,20 @@ bool PicTryMakeTex(Pic *p)
 		LOG(LM_GFX, LL_ERROR, "cannot set texture blend mode: %s",
 			SDL_GetError());
 		return false;
+	}
+	LOG(LM_GFX, LL_TRACE, "made texture %p data(%p)", p->Tex, p->Data);
+	if (LL_TRACE >= LogModuleGetLevel(LM_GFX))
+	{
+		char key[32];
+		sprintf(key, "%p", p->Tex);
+		if (hashmap_get(textureDebugger, key, NULL) != MAP_MISSING)
+		{
+			LOG(LM_GFX, LL_TRACE, "Error: repeated texture loc");
+		}
+		if (hashmap_put(textureDebugger, key, (any_t)0) != MAP_OK)
+		{
+			LOG(LM_GFX, LL_TRACE, "Error: cannot add texture to debugger");
+		}
 	}
 	return true;
 }
