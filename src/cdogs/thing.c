@@ -166,7 +166,11 @@ Thing *ThingIdGetThing(const ThingId *tid)
 	return ti;
 }
 
-bool ThingDrawLast(const Thing *t)
+bool ThingDrawBelow(const Thing *t)
 {
-	return t->flags & THING_DRAW_LAST;
+	return t->flags & THING_DRAW_BELOW;
+}
+bool ThingDrawAbove(const Thing *t)
+{
+	return t->flags & THING_DRAW_ABOVE;
 }

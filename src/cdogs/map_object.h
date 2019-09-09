@@ -96,7 +96,8 @@ typedef struct
 	CArray DestroyGuns;	// of const WeaponClass *
 	// Bit field composed of bits shifted by PlacementFlags
 	int Flags;
-	bool DrawLast;
+	bool DrawBelow;
+	bool DrawAbove;
 	MapObjectType Type;
 	union
 	{

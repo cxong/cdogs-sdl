@@ -428,49 +428,6 @@ static void DrawLaserSightSingle(
 	DrawLine(from, to, color);
 }
 
-static void DrawChatter(
-	const Thing *ti, DrawBuffer *b, const struct vec2i offset);
-void DrawChatters(DrawBuffer *b, const struct vec2i offset)
-{
-	const Tile **tile = DrawBufferGetFirstTile(b);
-	for (int y = 0; y < Y_TILES; y++)
-	{
-		for (int x = 0; x < b->Size.x; x++, tile++)
-		{
-			if (*tile == NULL) continue;
-			CA_FOREACH(ThingId, tid, (*tile)->things)
-				const Thing *ti = ThingIdGetThing(tid);
-				if (ti->kind != KIND_CHARACTER)
-				{
-					continue;
-				}
-				DrawChatter(ti, b, offset);
-			CA_FOREACH_END()
-		}
-		tile += X_TILES - b->Size.x;
-	}
-}
-#define ACTOR_HEIGHT 25
-static void DrawChatter(
-	const Thing *ti, DrawBuffer *b, const struct vec2i offset)
-{
-	if (!ConfigGetBool(&gConfig, "Graphics.ShowHUD"))
-	{
-		return;
-	}
-
-	const TActor *a = CArrayGet(&gActors, ti->id);
-	// Draw character text
-	if (strlen(a->Chatter) > 0)
-	{
-		const struct vec2i textPos = svec2i(
-			(int)a->thing.Pos.x - b->xTop + offset.x -
-			FontStrW(a->Chatter) / 2,
-			(int)a->thing.Pos.y - b->yTop + offset.y - ACTOR_HEIGHT);
-		FontStr(a->Chatter, textPos);
-	}
-}
-
 const Pic *GetHeadPic(
 	const CharacterClass *c, const direction_e dir, const gunstate_e gunState,
 	const CharColors *colors)

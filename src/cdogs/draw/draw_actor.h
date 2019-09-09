@@ -82,8 +82,6 @@ void DrawHead(
 	SDL_Renderer *renderer, const Character *c, const direction_e dir,
 	const struct vec2i pos);
 
-void DrawChatters(DrawBuffer *b, const struct vec2i offset);
-
 const Pic *GetHeadPic(
 	const CharacterClass *c, const direction_e dir, const gunstate_e gunState,
 	const CharColors *colors);

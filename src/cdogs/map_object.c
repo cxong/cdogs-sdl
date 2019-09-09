@@ -213,9 +213,13 @@ void AddRandomBloodPool(const struct vec2 pos, const color_t mask)
 int MapObjectGetFlags(const MapObject *mo)
 {
 	int flags = 0;
-	if (mo->DrawLast)
+	if (mo->DrawBelow)
 	{
-		flags |= THING_DRAW_LAST;
+		flags |= THING_DRAW_BELOW;
+	}
+	if (mo->DrawAbove)
+	{
+		flags |= THING_DRAW_ABOVE;
 	}
 	if (mo->Health > 0)
 	{
@@ -375,7 +379,8 @@ static bool TryLoadMapObject(MapObject *m, json_t *node, const int version)
 		}
 	}
 
-	LoadBool(&m->DrawLast, node, "DrawLast");
+	LoadBool(&m->DrawBelow, node, "DrawBelow");
+	LoadBool(&m->DrawAbove, node, "DrawAbove");
 
 	// Special types
 	JSON_UTILS_LOAD_ENUM(m->Type, node, "Type", StrMapObjectType);
@@ -511,7 +516,7 @@ static void SetupSpawner(
 	m->Offset = svec2i(-size.x / 2, TILE_HEIGHT / 2 - size.y);
 	m->Size = TILE_SIZE;
 	m->Health = 0;
-	m->DrawLast = true;
+	m->DrawBelow = true;
 	m->Type = MAP_OBJECT_TYPE_PICKUP_SPAWNER;
 	m->u.PickupClass = StrPickupClass(pickupClassName);
 }

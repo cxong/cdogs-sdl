@@ -18,7 +18,7 @@
         "Pic": "barrel_blue_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Outside", "OneWall"]
     },
     {
@@ -38,7 +38,7 @@
         "Pic": "barrel_blue2_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Outside", "OneWall"]
     },
     {
@@ -88,7 +88,7 @@
         "Pic": "box_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Outside", "NoWalls"]
     },
     {
@@ -118,7 +118,7 @@
         "Pic": "crate_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Outside", "NoWalls"]
     },
     {
@@ -148,7 +148,7 @@
         "Pic": "crate2_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Outside", "NoWalls"]
     },
     {
@@ -174,7 +174,7 @@
         "Pic": "cabinet_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
     },
     {
@@ -201,7 +201,7 @@
         "Pic": "cabinet_server_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
     },
     {
@@ -222,7 +222,7 @@
         "Pic": "plant_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Inside", "OneOrMoreWalls"],
       "DestroySpawn": [
         {
@@ -255,7 +255,7 @@
         "Pic": "flower_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Inside", "OneOrMoreWalls"]
     },
     {
@@ -275,7 +275,7 @@
         "Pic": "bench_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Inside", "NoWalls"]
     },
     {
@@ -295,7 +295,7 @@
         "Pic": "table_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Inside", "NoWalls"]
     },
     {
@@ -355,7 +355,7 @@
         "Pic": "table_wood_round_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Inside", "NoWalls"]
     },
     {
@@ -375,7 +375,7 @@
         "Pic": "table_wood_round_clothed_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Inside", "NoWalls"]
     },
     {
@@ -395,7 +395,7 @@
         "Pic": "table_wood_round_terminal_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Inside", "NoWalls"]
     },
     {
@@ -425,7 +425,7 @@
         "Pic": "table_plastic_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Inside", "NoWalls"]
     },
     {
@@ -446,7 +446,7 @@
         "Pic": "chair_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Inside", "NoWalls"]
     },
     {
@@ -467,7 +467,7 @@
         "Pic": "chair_task_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Inside", "NoWalls"]
     },
     {
@@ -498,7 +498,7 @@
         "Pic": "cabinet_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["NoWalls"]
     },
     {
@@ -529,7 +529,7 @@
         "Pic": "rod_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Outside", "NoWalls"]
     },
     {
@@ -559,7 +559,7 @@
         "Pic": "barrel_wood2_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Outside", "OneWall"]
     },
     {
@@ -665,7 +665,7 @@
         "Pic": "box3_gray_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Outside", "OneWall"]
     },
     {
@@ -699,7 +699,7 @@
         "Pic": "box3_green_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Outside", "OneWall"]
     },
     {
@@ -729,7 +729,7 @@
         "Pic": "floor_console_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Outside", "OneWall"]
     },
     {
@@ -775,7 +775,7 @@
         "Pic": "bookshelf2_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
     },
     {
@@ -844,7 +844,7 @@
         "Pic": "safe2_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
     },
     {
@@ -903,7 +903,7 @@
         "TicksPerFrame": 20
       },
       "Health": 0,
-      "DrawLast": true
+      "DrawBelow": true
     },
     {
       "Name": "egg2",
@@ -928,7 +928,7 @@
         "Pic": "egg2_wreck"
       },
       "Health": 0,
-      "DrawLast": true
+      "DrawBelow": true
     },
     {
       "Name": "tree",
@@ -949,7 +949,7 @@
         "Pic": "tree_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Outside", "NoWalls"]
     },
     {
@@ -970,7 +970,7 @@
         "Pic": "tree_dead_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Outside", "NoWalls"]
     },
     {
@@ -992,7 +992,7 @@
         "Pic": "tree_autumn_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Outside", "NoWalls"]
     },
     {
@@ -1024,7 +1024,7 @@
         "Pic": "barrel_flame_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Outside", "OneWall"]
     },
     {
@@ -1049,7 +1049,7 @@
         "Pic": "barrel_wood_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Outside", "OneWall"]
     },
     {
@@ -1074,7 +1074,7 @@
         "Pic": "barrel_wood2_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Outside", "OneWall"]
     },
     {
@@ -1100,7 +1100,7 @@
         "Pic": "box_metal_green_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Outside", "OneWall"]
     },
     {
@@ -1140,7 +1140,7 @@
         "Pic": "box3_gray_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Outside", "OneWall"]
     },
     {
@@ -1161,7 +1161,7 @@
         "Pic": "table_wood_wreck"
       },
       "Health": 0,
-      "DrawLast": true
+      "DrawBelow": true
     },
     {
       "Name": "box3_red",
@@ -1209,7 +1209,7 @@
         "Pic": "safe_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Inside"]
     },
     {
@@ -1236,7 +1236,7 @@
         "Pic": "table_plastic_lab_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
     },
     {
@@ -1278,7 +1278,7 @@
         "Pic": "rocket_wreck"
       },
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Flags": ["Outside", "OneWall"]
     },
     {
@@ -1379,7 +1379,7 @@
       },
       "Offset": [-6, -3],
       "Health": 0,
-      "DrawLast": true
+      "DrawBelow": true
     },
     {
       "Name": "gibs",
@@ -1389,7 +1389,7 @@
       },
       "Offset": [-6, -3],
       "Health": 0,
-      "DrawLast": true
+      "DrawBelow": true
     },
     {
       "Name": "skull",
@@ -1399,7 +1399,7 @@
       },
       "Offset": [-6, -4],
       "Health": 0,
-      "DrawLast": true
+      "DrawBelow": true
     },
     {
       "Name": "skull2",
@@ -1409,7 +1409,7 @@
       },
       "Offset": [-6, -4],
       "Health": 0,
-      "DrawLast": true
+      "DrawBelow": true
     },
     {
       "Name": "blood0",
@@ -1419,7 +1419,7 @@
       },
       "Offset": [-8, -3],
       "Health": 0,
-      "DrawLast": true
+      "DrawBelow": true
     },
     {
       "Name": "blood1",
@@ -1429,7 +1429,7 @@
       },
       "Offset": [-8, -3],
       "Health": 0,
-      "DrawLast": true
+      "DrawBelow": true
     },
     {
       "Name": "blood2",
@@ -1439,7 +1439,7 @@
       },
       "Offset": [-8, -3],
       "Health": 0,
-      "DrawLast": true
+      "DrawBelow": true
     },
     {
       "Name": "blood3",
@@ -1449,7 +1449,7 @@
       },
       "Offset": [-8, -3],
       "Health": 0,
-      "DrawLast": true
+      "DrawBelow": true
     },
     {
       "Name": "blood4",
@@ -1459,7 +1459,7 @@
       },
       "Offset": [-8, -3],
       "Health": 0,
-      "DrawLast": true
+      "DrawBelow": true
     },
     {
       "Name": "goo",
@@ -1469,7 +1469,7 @@
       },
       "Offset": [-8, -6],
       "Health": 0,
-      "DrawLast": true
+      "DrawBelow": true
     },
     {
       "Name": "drain0",
@@ -1479,7 +1479,7 @@
       },
       "Offset": [-8, -6],
       "Health": 0,
-      "DrawLast": true
+      "DrawBelow": true
     },
     {
       "Name": "drain1",
@@ -1489,7 +1489,7 @@
       },
       "Offset": [-8, -6],
       "Health": 0,
-      "DrawLast": true
+      "DrawBelow": true
     },
     {
       "Name": "drain2",
@@ -1499,7 +1499,7 @@
       },
       "Offset": [-8, -6],
       "Health": 0,
-      "DrawLast": true
+      "DrawBelow": true
     },
     {
       "Name": "health spawner",
@@ -1510,7 +1510,7 @@
       },
       "Offset": [-8, -6],
       "Health": 0,
-      "DrawLast": true,
+      "DrawBelow": true,
       "Type": "PickupSpawner",
       "Pickup": "health"
     },
@@ -1523,7 +1523,7 @@
       },
       "Offset": [-8, -6],
       "Health": 0,
-      "DrawLast": true
+      "DrawBelow": true
     },
     {
       "Name": "wscreen1",

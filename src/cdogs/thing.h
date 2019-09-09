@@ -49,7 +49,8 @@ typedef enum
 #define THING_IMPASSABLE     1
 #define THING_CAN_BE_SHOT    2
 #define THING_OBJECTIVE      (8 + 16 + 32 + 64 + 128)
-#define THING_DRAW_LAST      256
+#define THING_DRAW_BELOW     256
+#define THING_DRAW_ABOVE     512
 #define OBJECTIVE_SHIFT      3
 
 
@@ -107,4 +108,5 @@ void ThingDamage(const NThingDamage d);
 
 Thing *ThingGetByUID(const ThingKind kind, const int uid);
 Thing *ThingIdGetThing(const ThingId *tid);
-bool ThingDrawLast(const Thing *t);
+bool ThingDrawBelow(const Thing *t);
+bool ThingDrawAbove(const Thing *t);

@@ -23,7 +23,7 @@
         "Pic": "barrel_nukage_wreck"
       },
       "Health": 0,
-      "DrawLast": true
+      "DrawBelow": true
     },
     {
       "Name": "pillar",

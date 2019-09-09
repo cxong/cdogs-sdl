@@ -321,8 +321,8 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 			{
 				p->thing.Vel = svec2_zero();
 				p->Spin = 0;
-				// Fell to ground, draw last
-				p->thing.flags |= THING_DRAW_LAST;
+				// Fell to ground, draw below
+				p->thing.flags |= THING_DRAW_BELOW;
 			}
 		}
 	}

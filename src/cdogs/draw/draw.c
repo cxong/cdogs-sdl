@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, 2018 Cong Xu
+    Copyright (c) 2013-2016, 2018-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -55,7 +55,6 @@
 #include "algorithms.h"
 #include "config.h"
 #include "draw/draw_actor.h"
-#include "draw_highlight.h"
 #include "draw/drawtools.h"
 #include "font.h"
 #include "game_events.h"
@@ -92,25 +91,26 @@ static TileLOS GetTileLOS(const Tile *tile, const bool useFog)
 	}
 	return TILE_LOS_NORMAL;
 }
+static color_t GetLOSMask(const Tile *tile, const bool useFog)
+{
+	switch (GetTileLOS(tile, useFog))
+	{
+	case TILE_LOS_NORMAL:
+		return colorWhite;
+	case TILE_LOS_FOG:
+		return colorFog;
+	case TILE_LOS_NONE:
+	default:
+		// don't draw
+		return colorTransparent;
+	}
+}
 static void DrawLOSPic(
 	const Tile *tile, const Pic *pic, const struct vec2i pos,
 	const bool useFog)
 {
-	color_t mask = colorWhite;
-	switch (GetTileLOS(tile, useFog))
-	{
-	case TILE_LOS_NORMAL:
-		break;
-	case TILE_LOS_FOG:
-		mask = colorFog;
-		break;
-	case TILE_LOS_NONE:
-	default:
-		// don't draw
-		pic = NULL;
-		break;
-	}
-	if (pic != NULL)
+	const color_t mask = GetLOSMask(tile, useFog);
+	if (!ColorEquals(mask, colorTransparent))
 	{
 		PicRender(
 			pic, gGraphicsDevice.gameWindow.renderer, pos, mask, 0, svec2_one(),
@@ -119,23 +119,75 @@ static void DrawLOSPic(
 }
 
 
-static void DrawFloor(DrawBuffer *b, struct vec2i offset);
-static void DrawDebris(DrawBuffer *b, struct vec2i offset);
-static void DrawWallsAndThings(DrawBuffer *b, struct vec2i offset);
+static void DrawThing(DrawBuffer *b, const Thing *t, const struct vec2i offset);
+
+static void DrawTiles(
+	DrawBuffer *b, const struct vec2i offset,
+	void (*drawTileFunc)(
+		DrawBuffer *, const struct vec2i, const Tile *, const struct vec2i,
+		const bool))
+{
+	const bool useFog = ConfigGetBool(&gConfig, "Game.Fog");
+	const Tile **tile = DrawBufferGetFirstTile(b);
+	struct vec2i pos;
+	int x, y;
+	for (y = 0, pos.y = b->dy + offset.y;
+		y < Y_TILES;
+		y++, pos.y += TILE_HEIGHT)
+	{
+		CArrayClear(&b->displaylist);
+		for (x = 0, pos.x = b->dx + offset.x;
+			x < b->Size.x;
+			x++, tile++, pos.x += TILE_WIDTH)
+		{
+			if (*tile == NULL) continue;
+			drawTileFunc(b, offset, *tile, pos, useFog);
+		}
+		DrawBufferSortDisplayList(b);
+		CA_FOREACH(const Thing *, tp, b->displaylist)
+			DrawThing(b, *tp, offset);
+		CA_FOREACH_END()
+		tile += X_TILES - b->Size.x;
+	}
+}
+
+static void DrawFloor(
+	DrawBuffer *b, const struct vec2i offset, const Tile *t,
+	const struct vec2i pos, const bool useFog);
+static void DrawThingsBelow(
+	DrawBuffer *b, const struct vec2i offset, const Tile *t,
+	const struct vec2i pos, const bool useFog);
+static void DrawWallsAndThings(
+	DrawBuffer *b, const struct vec2i offset, const Tile *t,
+	const struct vec2i pos, const bool useFog);
+static void DrawThingsAbove(
+	DrawBuffer *b, const struct vec2i offset, const Tile *t,
+	const struct vec2i pos, const bool useFog);
+static void DrawObjectiveHighlights(
+	DrawBuffer *b, const struct vec2i offset, const Tile *t,
+	const struct vec2i pos, const bool useFog);
+static void DrawChatters(
+	DrawBuffer *b, const struct vec2i offset, const Tile *t,
+	const struct vec2i pos, const bool useFog);
 static void DrawExtra(DrawBuffer *b, struct vec2i offset, GrafxDrawExtra *extra);
 
 void DrawBufferDraw(DrawBuffer *b, struct vec2i offset, GrafxDrawExtra *extra)
 {
 	// First draw the floor tiles (which do not obstruct anything)
-	DrawFloor(b, offset);
-	// Then draw debris (wrecks)
-	DrawDebris(b, offset);
+	DrawTiles(b, offset, DrawFloor);
+	// Then draw things that are below everything like debris (wrecks)
+	DrawTiles(b, offset, DrawThingsBelow);
 	// Now draw walls and (non-wreck) things in proper order
-	DrawWallsAndThings(b, offset);
-	// Draw objective highlights, for visible and always-visible objectives
-	DrawObjectiveHighlights(b, offset);
-	// Draw actor chatter
-	DrawChatters(b, offset);
+	DrawTiles(b, offset, DrawWallsAndThings);
+	// Draw things that are above everything
+	DrawTiles(b, offset, DrawThingsAbove);
+	if (ConfigGetBool(&gConfig, "Graphics.ShowHUD"))
+	{
+		// Draw objective highlights, for visible and always-visible objectives
+		DrawTiles(b, offset, DrawObjectiveHighlights);
+		// Draw actor chatter
+		DrawTiles(b, offset, DrawChatters);
+	}
 	// Draw editor-only things
 	if (extra)
 	{
@@ -143,121 +195,210 @@ void DrawBufferDraw(DrawBuffer *b, struct vec2i offset, GrafxDrawExtra *extra)
 	}
 }
 
-static void DrawFloor(DrawBuffer *b, struct vec2i offset)
+static void DrawFloor(
+	DrawBuffer *b, const struct vec2i offset, const Tile *t,
+	const struct vec2i pos, const bool useFog)
 {
-	int x, y;
-	struct vec2i pos;
-	const Tile **tile = DrawBufferGetFirstTile(b);
-	const bool useFog = ConfigGetBool(&gConfig, "Game.Fog");
-	for (y = 0, pos.y = b->dy + offset.y;
-		 y < Y_TILES;
-		 y++, pos.y += TILE_HEIGHT)
+	UNUSED(b);
+	UNUSED(offset);
+	if (t->Class != NULL &&
+		t->Class->Pic != NULL &&
+		t->Class->Pic->Data != NULL &&
+		t->Class->Type != TILE_CLASS_WALL)
 	{
-		for (x = 0, pos.x = b->dx + offset.x;
-			x < b->Size.x;
-			x++, tile++, pos.x += TILE_WIDTH)
-		{
-			if (*tile == NULL) continue;
-			if ((*tile)->Class != NULL &&
-				(*tile)->Class->Pic != NULL &&
-				(*tile)->Class->Pic->Data != NULL &&
-				(*tile)->Class->Type != TILE_CLASS_WALL)
-			{
-				DrawLOSPic(*tile, (*tile)->Class->Pic, pos, useFog);
-			}
-		}
-		tile += X_TILES - b->Size.x;
+		DrawLOSPic(t, t->Class->Pic, pos, useFog);
 	}
 }
 
-static void DrawThing(
-	DrawBuffer *b, const Thing *t, const struct vec2i offset);
-
-static void DrawDebris(DrawBuffer *b, struct vec2i offset)
+static void DrawThingsBelow(
+	DrawBuffer *b, const struct vec2i offset, const Tile *t,
+	const struct vec2i pos, const bool useFog)
 {
-	const Tile **tile = DrawBufferGetFirstTile(b);
-	for (int y = 0; y < Y_TILES; y++)
+	UNUSED(pos);
+	UNUSED(offset);
+	UNUSED(useFog);
+	if (t->outOfSight)
 	{
-		CArrayClear(&b->displaylist);
-		for (int x = 0; x < b->Size.x; x++, tile++)
-		{
-			if (*tile == NULL) continue;
-			if ((*tile)->outOfSight)
-			{
-				continue;
-			}
-			CA_FOREACH(ThingId, tid, (*tile)->things)
-				const Thing *ti = ThingIdGetThing(tid);
-				if (ThingDrawLast(ti))
-				{
-					CArrayPushBack(&b->displaylist, &ti);
-				}
-			CA_FOREACH_END()
-		}
-		DrawBufferSortDisplayList(b);
-		CA_FOREACH(const Thing *, tp, b->displaylist)
-			DrawThing(b, *tp, offset);
-		CA_FOREACH_END()
-		tile += X_TILES - b->Size.x;
+		return;
 	}
+	CA_FOREACH(ThingId, tid, t->things)
+		const Thing *ti = ThingIdGetThing(tid);
+		if (ThingDrawBelow(ti))
+		{
+			CArrayPushBack(&b->displaylist, &ti);
+		}
+	CA_FOREACH_END()
 }
 
 #define WALL_OFFSET_Y (-12)
-static void DrawWallsAndThings(DrawBuffer *b, struct vec2i offset)
+static void DrawWallsAndThings(
+	DrawBuffer *b, const struct vec2i offset, const Tile *t,
+	const struct vec2i pos, const bool useFog)
 {
-	struct vec2i pos;
-	const Tile **tile = DrawBufferGetFirstTile(b);
-	pos.y = b->dy + WALL_OFFSET_Y + offset.y;
-	const bool useFog = ConfigGetBool(&gConfig, "Game.Fog");
-	for (int y = 0; y < Y_TILES; y++, pos.y += TILE_HEIGHT)
+	UNUSED(offset);
+	if (t->Class->Type == TILE_CLASS_WALL)
 	{
-		CArrayClear(&b->displaylist);
-		pos.x = b->dx + offset.x;
-		for (int x = 0; x < b->Size.x; x++, tile++, pos.x += TILE_WIDTH)
+		DrawLOSPic(
+			t, t->Class->Pic, svec2i_add(pos, svec2i(0, WALL_OFFSET_Y)),
+			useFog);
+	}
+	else if (
+		t->Class->Type == TILE_CLASS_DOOR && t->ClassAlt && t->ClassAlt->Pic)
+	{
+		// Drawing doors
+		// Doors may be offset; vertical doors are drawn centered
+		// horizontal doors are bottom aligned
+		struct vec2i doorPos = pos;
+		const Pic *pic = t->ClassAlt->Pic;
+		doorPos.x += (TILE_WIDTH - pic->size.x) / 2;
+		if (pic->size.y > 16)
 		{
-			if (*tile == NULL) continue;
-			if ((*tile)->Class->Type == TILE_CLASS_WALL)
-			{
-				DrawLOSPic(*tile, (*tile)->Class->Pic, pos, useFog);
-			}
-			else if ((*tile)->Class->Type == TILE_CLASS_DOOR &&
-				(*tile)->ClassAlt && (*tile)->ClassAlt->Pic)
-			{
-				// Drawing doors
-				// Doors may be offset; vertical doors are drawn centered
-				// horizontal doors are bottom aligned
-				struct vec2i doorPos = pos;
-				const Pic *pic = (*tile)->ClassAlt->Pic;
-				doorPos.x += (TILE_WIDTH - pic->size.x) / 2;
-				if (pic->size.y > 16)
-				{
-					doorPos.y += TILE_HEIGHT - (pic->size.y % TILE_HEIGHT);
-				}
-				DrawLOSPic(*tile, pic, doorPos, useFog);
-			}
+			doorPos.y += TILE_HEIGHT - (pic->size.y % TILE_HEIGHT);
+		}
+		DrawLOSPic(t, pic, doorPos, useFog);
+	}
 
-			// Draw the items that are in LOS
-			if ((*tile)->outOfSight)
+	// Draw the items that are in LOS
+	if (t->outOfSight)
+	{
+		return;
+	}
+	CA_FOREACH(ThingId, tid, t->things)
+		const Thing *ti = ThingIdGetThing(tid);
+		if (ThingDrawBelow(ti) || ThingDrawAbove(ti))
+		{
+			continue;
+		}
+		CArrayPushBack(&b->displaylist, &ti);
+	CA_FOREACH_END()
+}
+
+static void DrawThingsAbove(
+	DrawBuffer *b, const struct vec2i offset, const Tile *t,
+	const struct vec2i pos, const bool useFog)
+{
+	UNUSED(offset);
+	UNUSED(pos);
+	UNUSED(useFog);
+	if (t->outOfSight)
+	{
+		return;
+	}
+	CA_FOREACH(ThingId, tid, t->things)
+		const Thing *ti = ThingIdGetThing(tid);
+		if (ThingDrawAbove(ti))
+		{
+			CArrayPushBack(&b->displaylist, &ti);
+		}
+	CA_FOREACH_END()
+}
+
+static void DrawObjectiveHighlights(
+	DrawBuffer *b, const struct vec2i offset, const Tile *t,
+	const struct vec2i pos, const bool useFog)
+{
+	UNUSED(pos);
+	UNUSED(useFog);
+	CA_FOREACH(ThingId, tid, t->things)
+		Thing *ti = ThingIdGetThing(tid);
+		const Pic *pic = NULL;
+		color_t color = colorWhite;
+		struct vec2i drawOffsetExtra = svec2i_zero();
+
+		if (ti->flags & THING_OBJECTIVE)
+		{
+			// Objective
+			const int objective = ObjectiveFromThing(ti->flags);
+			const Objective *o =
+				CArrayGet(&gMission.missionData->Objectives, objective);
+			if (o->Flags & OBJECTIVE_HIDDEN)
 			{
 				continue;
 			}
-			CA_FOREACH(ThingId, tid, (*tile)->things)
-				const Thing *ti = ThingIdGetThing(tid);
-				// Drawn later
-				if (ThingDrawLast(ti))
-				{
-					continue;
-				}
-				CArrayPushBack(&b->displaylist, &ti);
-			CA_FOREACH_END()
+			if (!(o->Flags & OBJECTIVE_POSKNOWN) && t->outOfSight)
+			{
+				continue;
+			}
+			switch (o->Type)
+			{
+			case OBJECTIVE_KILL:
+			case OBJECTIVE_DESTROY:	// fallthrough
+				pic = PicManagerGetPic(&gPicManager, "hud/objective_kill");
+				break;
+			case OBJECTIVE_RESCUE:
+			case OBJECTIVE_COLLECT:	// fallthrough
+				pic = PicManagerGetPic(&gPicManager, "hud/objective_collect");
+				break;
+			default:
+				CASSERT(false, "unexpected objective to draw");
+				continue;
+			}
+			color = o->color;
+			if (ti->kind == KIND_CHARACTER)
+			{
+				drawOffsetExtra.y -= 10;
+			}
 		}
-		DrawBufferSortDisplayList(b);
-		CA_FOREACH(const Thing *, tp, b->displaylist)
-			DrawThing(b, *tp, offset);
-		CA_FOREACH_END()
-		tile += X_TILES - b->Size.x;
-	}
+		else if (ti->kind == KIND_PICKUP)
+		{
+			// Gun pickup
+			const Pickup *p = CArrayGet(&gPickups, ti->id);
+			if (!PickupIsManual(p))
+			{
+				continue;
+			}
+			pic = CPicGetPic(&p->thing.CPic, 0);
+			color = colorDarker;
+			color.a = (Uint8)Pulse256(gMission.time);
+		}
+
+		if (pic != NULL)
+		{
+			const struct vec2i pos = svec2i(
+				(int)ti->Pos.x - b->xTop + offset.x,
+				(int)ti->Pos.y - b->yTop + offset.y);
+			color.a = (Uint8)Pulse256(gMission.time);
+			// Centre the drawing
+			const struct vec2i drawOffset = svec2i_scale_divide(pic->size, -2);
+			PicRender(
+				pic, gGraphicsDevice.gameWindow.renderer,
+				svec2i_add(pos, svec2i_add(drawOffset, drawOffsetExtra)), color,
+				0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
+		}
+	CA_FOREACH_END()
 }
+
+#define ACTOR_HEIGHT 25
+static void DrawChatters(
+	DrawBuffer *b, const struct vec2i offset, const Tile *t,
+	const struct vec2i pos, const bool useFog)
+{
+	UNUSED(pos);
+	UNUSED(useFog);
+	CA_FOREACH(ThingId, tid, t->things)
+		const Thing *ti = ThingIdGetThing(tid);
+		if (ti->kind != KIND_CHARACTER)
+		{
+			continue;
+		}
+
+		const TActor *a = CArrayGet(&gActors, ti->id);
+		// Draw character text
+		if (strlen(a->Chatter) > 0)
+		{
+			const struct vec2i textPos = svec2i(
+				(int)a->thing.Pos.x - b->xTop + offset.x -
+				FontStrW(a->Chatter) / 2,
+				(int)a->thing.Pos.y - b->yTop + offset.y - ACTOR_HEIGHT);
+			const color_t mask = GetLOSMask(t, useFog);
+			if (!ColorEquals(mask, colorTransparent))
+			{
+				FontStrMask(a->Chatter, textPos, mask);
+			}
+		}
+	CA_FOREACH_END()
+}
+
 static void DrawThing(
 	DrawBuffer *b, const Thing *t, const struct vec2i offset)
 {
