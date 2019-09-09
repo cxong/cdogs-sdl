@@ -75,56 +75,6 @@ color_t *CharColorGetByType(CharColors *c, const CharColorType t)
 	}
 }
 
-
-void BlitPicHighlight(
-	GraphicsDevice *g, const Pic *pic, const struct vec2i pos, const color_t color)
-{
-	// Draw highlight around the picture
-	int i;
-	for (i = -1; i < pic->size.y + 1; i++)
-	{
-		int j;
-		int yoff = i + pos.y + pic->offset.y;
-		if (yoff > g->clipping.bottom)
-		{
-			break;
-		}
-		if (yoff < g->clipping.top)
-		{
-			continue;
-		}
-		yoff *= g->cachedConfig.Res.x;
-		for (j = -1; j < pic->size.x + 1; j++)
-		{
-			int xoff = j + pos.x + pic->offset.x;
-			if (xoff < g->clipping.left)
-			{
-				continue;
-			}
-			if (xoff > g->clipping.right)
-			{
-				break;
-			}
-			// Draw highlight if current pixel is empty,
-			// and is next to a picture edge
-			bool isTopOrBottomEdge = i == -1 || i == pic->size.y;
-			bool isLeftOrRightEdge = j == -1 || j == pic->size.x;
-			bool isPixelEmpty =
-				isTopOrBottomEdge || isLeftOrRightEdge ||
-				!PIXEL2COLOR(*(pic->Data + j + i * pic->size.x)).a;
-			if (isPixelEmpty &&
-				PicPxIsEdge(pic, svec2i(j, i), !isPixelEmpty))
-			{
-				Uint32 *target = g->buf + yoff + xoff;
-				const color_t targetColor = PIXEL2COLOR(*target);
-				const color_t blendedColor = ColorAlphaBlend(
-					targetColor, color);
-				*target = COLOR2PIXEL(blendedColor);
-			}
-		}
-	}
-}
-
 void Blit(GraphicsDevice *device, const Pic *pic, struct vec2i pos)
 {
 	Uint32 *current = pic->Data;

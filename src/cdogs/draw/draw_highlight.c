@@ -80,9 +80,9 @@ void DrawObjectiveHighlights(DrawBuffer *b, const struct vec2i offset)
 static void DrawObjectiveHighlight(
 	Thing *ti, const Tile *tile, DrawBuffer *b, struct vec2i offset)
 {
-	const struct vec2i pos = svec2i(
-		(int)ti->Pos.x - b->xTop + offset.x,
-		(int)ti->Pos.y - b->yTop + offset.y);
+	const Pic *pic = NULL;
+	color_t color = colorWhite;
+	struct vec2i drawOffsetExtra = svec2i_zero();
 
 	if (ti->flags & THING_OBJECTIVE)
 	{
@@ -98,32 +98,25 @@ static void DrawObjectiveHighlight(
 		{
 			return;
 		}
-		const Pic *objIcon = NULL;
 		switch (o->Type)
 		{
 		case OBJECTIVE_KILL:
 		case OBJECTIVE_DESTROY:	// fallthrough
-			objIcon = PicManagerGetPic(&gPicManager, "hud/objective_kill");
+			pic = PicManagerGetPic(&gPicManager, "hud/objective_kill");
 			break;
 		case OBJECTIVE_RESCUE:
 		case OBJECTIVE_COLLECT:	// fallthrough
-			objIcon = PicManagerGetPic(&gPicManager, "hud/objective_collect");
+			pic = PicManagerGetPic(&gPicManager, "hud/objective_collect");
 			break;
 		default:
 			CASSERT(false, "unexpected objective to draw");
 			return;
 		}
-		color_t color = o->color;
-		color.a = (Uint8)Pulse256(gMission.time);
-		struct vec2i drawOffset = svec2i_scale_divide(objIcon->size, -2);
+		color = o->color;
 		if (ti->kind == KIND_CHARACTER)
 		{
-			drawOffset.y -= 10;
+			drawOffsetExtra.y -= 10;
 		}
-		PicRender(
-			objIcon, gGraphicsDevice.gameWindow.renderer,
-			svec2i_add(pos, drawOffset), color, 0,
-			svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 	}
 	else if (ti->kind == KIND_PICKUP)
 	{
@@ -133,11 +126,22 @@ static void DrawObjectiveHighlight(
 		{
 			return;
 		}
-		color_t color = colorDarker;
+		pic = CPicGetPic(&p->thing.CPic, 0);
+		color = colorDarker;
 		color.a = (Uint8)Pulse256(gMission.time);
-		const Pic *pic = CPicGetPic(&p->thing.CPic, 0);
-		BlitPicHighlight(
-			&gGraphicsDevice, pic,
-			svec2i_add(pos, svec2i_scale_divide(pic->size, -2)), color);
+	}
+
+	if (pic != NULL)
+	{
+		const struct vec2i pos = svec2i(
+			(int)ti->Pos.x - b->xTop + offset.x,
+			(int)ti->Pos.y - b->yTop + offset.y);
+		color.a = (Uint8)Pulse256(gMission.time);
+		// Centre the drawing
+		const struct vec2i drawOffset = svec2i_scale_divide(pic->size, -2);
+		PicRender(
+			pic, gGraphicsDevice.gameWindow.renderer,
+			svec2i_add(pos, svec2i_add(drawOffset, drawOffsetExtra)), color, 0,
+			svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 	}
 }
