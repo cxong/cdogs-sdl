@@ -354,16 +354,17 @@ static void DrawObjectiveHighlights(
 
 		if (pic != NULL)
 		{
-			const struct vec2i pos = svec2i(
-				(int)ti->Pos.x - b->xTop + offset.x,
-				(int)ti->Pos.y - b->yTop + offset.y);
+			const struct vec2i picPos = svec2i_add(
+				svec2i_subtract(
+					svec2i_floor(ti->Pos), svec2i(b->xTop, b->yTop)),
+				offset);
 			color.a = (Uint8)Pulse256(gMission.time);
 			// Centre the drawing
 			const struct vec2i drawOffset = svec2i_scale_divide(pic->size, -2);
 			PicRender(
 				pic, gGraphicsDevice.gameWindow.renderer,
-				svec2i_add(pos, svec2i_add(drawOffset, drawOffsetExtra)), color,
-				0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
+				svec2i_add(picPos, svec2i_add(drawOffset, drawOffsetExtra)),
+				color, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 		}
 	CA_FOREACH_END()
 }
