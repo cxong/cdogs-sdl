@@ -119,6 +119,11 @@ bool PicTryMakeTex(Pic *p)
 				{
 					LOG(LM_GFX, LL_TRACE, "Error: cannot remove tex from debugger");
 				}
+				else
+				{
+					LOG(LM_GFX, LL_TRACE, "Texture count: %d",
+						hashmap_length(textureDebugger));
+				}
 			}
 			else
 			{
@@ -146,7 +151,8 @@ bool PicTryMakeTex(Pic *p)
 			SDL_GetError());
 		return false;
 	}
-	LOG(LM_GFX, LL_TRACE, "made texture %p data(%p)", p->Tex, p->Data);
+	LOG(LM_GFX, LL_TRACE, "made texture %p data(%p) count(%d)",
+		p->Tex, p->Data, hashmap_length(textureDebugger));
 	if (LL_TRACE >= LogModuleGetLevel(LM_GFX))
 	{
 		char key[32];
@@ -163,25 +169,48 @@ bool PicTryMakeTex(Pic *p)
 	return true;
 }
 
+// Note: does not copy the texture
 Pic PicCopy(const Pic *src)
 {
 	Pic p = *src;
 	const size_t size = p.size.x * p.size.y * sizeof *p.Data;
 	CMALLOC(p.Data, size);
 	memcpy(p.Data, src->Data, size);
-	p.Tex = src->Tex;
+	p.Tex = NULL;
 	return p;
 }
 
 void PicFree(Pic *pic)
 {
-	CFREE(pic->Data);
-	pic->Data = NULL;
 	pic->size = svec2i_zero();
 	if (pic->Tex != NULL)
 	{
+		LOG(LM_GFX, LL_TRACE, "freeing texture %p data(%p)", pic->Tex, pic->Data);
 		SDL_DestroyTexture(pic->Tex);
+		if (LL_TRACE >= LogModuleGetLevel(LM_GFX))
+		{
+			char key[32];
+			sprintf(key, "%p", pic->Tex);
+			if (hashmap_get(textureDebugger, key, NULL) == MAP_OK)
+			{
+				if (hashmap_remove(textureDebugger, key) != MAP_OK)
+				{
+					LOG(LM_GFX, LL_TRACE, "Error: cannot remove tex from debugger");
+				}
+				else
+				{
+					LOG(LM_GFX, LL_TRACE, "Texture count: %d",
+						hashmap_length(textureDebugger));
+				}
+			}
+			else
+			{
+				LOG(LM_GFX, LL_TRACE, "Error: destroying unknown texture");
+			}
+		}
 	}
+	CFREE(pic->Data);
+	pic->Data = NULL;
 }
 
 bool PicIsNone(const Pic *pic)
