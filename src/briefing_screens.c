@@ -831,7 +831,6 @@ static void DrawPlayerSummary(
 	AnimatedCounterDraw(&data->Score, textPos);
 	textPos.y += FontH();
 	AnimatedCounterDraw(&data->Total, textPos);
-	FontStr(s, textPos);
 	textPos.y += FontH();
 	sprintf(
 		s, "Missions: %d", data->Pd->missions + (data->Pd->survived ? 1 : 0));
