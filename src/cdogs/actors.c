@@ -220,17 +220,12 @@ static void ActorUpdateWeapon(TActor *a, Weapon *w, const int ticks)
 	ActorFireUpdate(w, a, ticks);
 	if (WeaponClassHasMuzzle(w->Gun) && WeaponIsOverheating(w))
 	{
-		a->barrelSmokeCounter -= ticks;
-		if (a->barrelSmokeCounter <= 0)
-		{
-			AddParticle ap;
-			memset(&ap, 0, sizeof ap);
-			ap.Pos = svec2_add(a->Pos, ActorGetMuzzleOffset(a, w));
-			ap.Z = WeaponClassGetMuzzleHeight(w->Gun, w->state) / Z_FACTOR;
-			ap.Mask = colorWhite;
-			EmitterStart(&a->barrelSmoke, &ap);
-			a->barrelSmokeCounter = 10;
-		}
+		AddParticle ap;
+		memset(&ap, 0, sizeof ap);
+		ap.Pos = svec2_add(a->Pos, ActorGetMuzzleOffset(a, w));
+		ap.Z = WeaponClassGetMuzzleHeight(w->Gun, w->state) / Z_FACTOR;
+		ap.Mask = colorWhite;
+		EmitterUpdate(&a->barrelSmoke, &ap, ticks);
 	}
 }
 
@@ -1335,7 +1330,7 @@ TActor *ActorAdd(NActorAdd aa)
 	EmitterInit(
 		&actor->barrelSmoke,
 		StrParticleClass(&gParticleClasses, "smoke"),
-		svec2_zero(), -0.05, 0.05, 3, 3, 0, 0);
+		svec2_zero(), -0.05, 0.05, 3, 3, 0, 0, 10);
 	GoreEmitterInit(&actor->blood1, "blood1");
 	GoreEmitterInit(&actor->blood2, "blood2");
 	GoreEmitterInit(&actor->blood3, "blood3");
@@ -1353,7 +1348,7 @@ static void GoreEmitterInit(Emitter *em, const char *particleClassName)
 {
 	EmitterInit(
 		em, StrParticleClass(&gParticleClasses, particleClassName),
-		svec2_zero(), 0, GORE_EMITTER_MAX_SPEED, 6, 12, -0.1, 0.1);
+		svec2_zero(), 0, GORE_EMITTER_MAX_SPEED, 6, 12, -0.1, 0.1, 0);
 }
 
 void ActorDestroy(TActor *a)

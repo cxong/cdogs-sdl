@@ -34,7 +34,8 @@ void EmitterInit(
 	Emitter *em, const ParticleClass *p, const struct vec2 offset,
 	const float minSpeed, const float maxSpeed,
 	const int minDZ, const int maxDZ,
-	double minRotation, double maxRotation)
+	const double minRotation, const double maxRotation,
+	const int ticksPerEmit)
 {
 	memset(em, 0, sizeof *em);
 	em->p = p;
@@ -45,6 +46,7 @@ void EmitterInit(
 	em->maxDZ = maxDZ;
 	em->minRotation = minRotation;
 	em->maxRotation = maxRotation;
+	em->ticksPerEmit = ticksPerEmit;
 }
 void EmitterStart(Emitter *em, const AddParticle *data)
 {
@@ -64,4 +66,17 @@ void EmitterStart(Emitter *em, const AddParticle *data)
 	e.u.AddParticle.Spin = RAND_DOUBLE(em->minRotation, em->maxRotation);
 	e.u.AddParticle.Mask = data->Mask;
 	GameEventsEnqueue(&gGameEvents, e);
+}
+
+void EmitterUpdate(Emitter *em, const AddParticle *data, const int ticks)
+{
+	if (em->ticksPerEmit > 0)
+	{
+		em->counter -= ticks;
+		if (em->counter <= 0)
+		{
+			EmitterStart(em, data);
+			em->counter += em->ticksPerEmit;
+		}
+	}
 }

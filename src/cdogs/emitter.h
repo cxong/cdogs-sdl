@@ -39,11 +39,15 @@ typedef struct
 	int maxDZ;
 	double minRotation;
 	double maxRotation;
+	int ticksPerEmit;
+	int counter;
 } Emitter;
 
 void EmitterInit(
 	Emitter *em, const ParticleClass *p, const struct vec2 offset,
 	const float minSpeed, const float maxSpeed,
 	const int minDZ, const int maxDZ,
-	double minRotation, double maxRotation);
+	const double minRotation, const double maxRotation,
+	const int ticksPerEmit);
 void EmitterStart(Emitter *em, const AddParticle *data);
+void EmitterUpdate(Emitter *em, const AddParticle *data, const int ticks);

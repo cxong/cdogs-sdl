@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, 2018 Cong Xu
+    Copyright (c) 2013-2016, 2018-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -70,6 +70,8 @@ typedef struct
 	int Health;
 	int counter;
 	Thing thing;
+	Emitter damageSmoke;
+	int damageSmokeCounter;
 	bool isInUse;
 } TObject;
 

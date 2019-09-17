@@ -197,6 +197,15 @@
       "Range": 100
     },
     {
+      "Name": "smoke_big",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "smoke_big",
+        "TicksPerFrame": 6
+      },
+      "Range": 100
+    },
+    {
       "Name": "explosion_small",
       "Pic": {
         "Type": "Animated",

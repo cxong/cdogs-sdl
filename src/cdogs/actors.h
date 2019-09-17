@@ -154,7 +154,6 @@ typedef struct Actor
 	int ChatterCounter;
 
 	Emitter barrelSmoke;
-	int barrelSmokeCounter;
 
 	// Gore emitters
 	Emitter blood1;

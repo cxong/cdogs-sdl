@@ -468,6 +468,10 @@ void ObjAdd(const NMapObjectAdd amo)
 	}
 	o->thing.CPicFunc = MapObjectDraw;
 	MapTryMoveThing(&gMap, &o->thing, NetToVec2(amo.Pos));
+	EmitterInit(
+		&o->damageSmoke,
+		StrParticleClass(&gParticleClasses, "smoke_big"),
+		svec2_zero(), -0.05, 0.05, 3, 3, 0, 0, 20);
 	o->isInUse = true;
 	LOG(LM_MAIN, LL_DEBUG,
 		"added object uid(%d) class(%s) health(%d) pos(%d, %d)",
@@ -500,6 +504,21 @@ void UpdateObjects(const int ticks)
 		ThingUpdate(&obj->thing, ticks);
 		switch (obj->Class->Type)
 		{
+		case MAP_OBJECT_TYPE_NORMAL:
+			// Emit smoke when damaged (50% health)
+			if (obj->Class->Health > 0 && obj->Health <= obj->Class->Health / 2)
+			{
+				AddParticle ap;
+				memset(&ap, 0, sizeof ap);
+				ap.Pos = svec2_add(
+					obj->thing.Pos,
+					svec2(
+						RAND_FLOAT(-obj->thing.size.x / 4, obj->thing.size.x / 4),
+						RAND_FLOAT(-obj->thing.size.y / 4, obj->thing.size.y / 4)));
+				ap.Mask = colorWhite;
+				EmitterUpdate(&obj->damageSmoke, &ap, ticks);
+			}
+			break;
 		case MAP_OBJECT_TYPE_PICKUP_SPAWNER:
 			if (gCampaign.IsClient) break;
 			// If counter -1, it is inactive i.e. already spawned pickup
