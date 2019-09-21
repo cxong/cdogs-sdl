@@ -469,7 +469,7 @@ mint_t *vec2i_inverse(mint_t *result, mint_t *a)
 	} else {
 		result[0] = 0;
 	}
-	if (a[1] == 0) {
+	if (a[1] != 0) {
 		result[1] = (mint_t)MROUND(MFLOAT_C(1.0) / a[1]);
 	} else {
 		result[1] = 0;
