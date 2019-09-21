@@ -478,7 +478,7 @@ static struct vec2 GetMuzzleOffset(const direction_e d, const gunstate_e state)
 	// Barrel slightly shortened when not firing
 	const double barrelLength =
 		state == GUNSTATE_FIRING ? BARREL_LENGTH : BARREL_LENGTH_READY;
-	return svec2_scale(Vec2FromRadians(dir2radians[d]), barrelLength);
+	return svec2_scale(Vec2FromRadians(dir2radians[d]), (float)barrelLength);
 }
 int WeaponClassGetMuzzleHeight(const WeaponClass *wc, const gunstate_e state)
 {

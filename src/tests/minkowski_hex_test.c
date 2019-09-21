@@ -30,13 +30,13 @@ FEATURE(minkowski_hex, "Minkowski Hex")
 		THEN("the result should be true");
 			SHOULD_BE_TRUE(result);
 		AND("the collision points should be at the start")
-			SHOULD_INT_EQUAL(collide1.x, rectPos1.x);
-			SHOULD_INT_EQUAL(collide1.y, rectPos1.y);
-			SHOULD_INT_EQUAL(collide2.x, rectPos2.x);
-			SHOULD_INT_EQUAL(collide2.y, rectPos2.y);
+			SHOULD_INT_EQUAL((int)collide1.x, (int)rectPos1.x);
+			SHOULD_INT_EQUAL((int)collide1.y, (int)rectPos1.y);
+			SHOULD_INT_EQUAL((int)collide2.x, (int)rectPos2.x);
+			SHOULD_INT_EQUAL((int)collide2.y, (int)rectPos2.y);
 		AND("the normal should be (0, 0)")
-			SHOULD_INT_EQUAL(normal.x, 0);
-			SHOULD_INT_EQUAL(normal.y, 0);
+			SHOULD_INT_EQUAL((int)normal.x, 0);
+			SHOULD_INT_EQUAL((int)normal.y, 0);
 	SCENARIO_END
 
 	SCENARIO("No overlap, no movement")
@@ -79,15 +79,15 @@ FEATURE(minkowski_hex, "Minkowski Hex")
 			SHOULD_BE_TRUE(result);
 		AND("the collision point for the moving rectangle should not overlap "
 			"with the stationary rectangle")
-			SHOULD_INT_EQUAL(collide1.x, 3);
-			SHOULD_INT_EQUAL(collide1.y, 0);
+			SHOULD_INT_EQUAL((int)collide1.x, 3);
+			SHOULD_INT_EQUAL((int)collide1.y, 0);
 		AND("the collision point for the stationary rectangle should be the "
 			"same as its position")
-			SHOULD_INT_EQUAL(collide2.x, rectPos2.x);
-			SHOULD_INT_EQUAL(collide2.y, rectPos2.y);
+			SHOULD_INT_EQUAL((int)collide2.x, (int)rectPos2.x);
+			SHOULD_INT_EQUAL((int)collide2.y, (int)rectPos2.y);
 		AND("the normal should be (-1, 0)")
-			SHOULD_INT_EQUAL(normal.x, -1);
-			SHOULD_INT_EQUAL(normal.y, 0);
+			SHOULD_INT_EQUAL((int)normal.x, -1);
+			SHOULD_INT_EQUAL((int)normal.y, 0);
 	SCENARIO_END
 FEATURE_END
 

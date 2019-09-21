@@ -1330,7 +1330,7 @@ TActor *ActorAdd(NActorAdd aa)
 	EmitterInit(
 		&actor->barrelSmoke,
 		StrParticleClass(&gParticleClasses, "smoke"),
-		svec2_zero(), -0.05, 0.05, 3, 3, 0, 0, 10);
+		svec2_zero(), -0.05f, 0.05f, 3, 3, 0, 0, 10);
 	GoreEmitterInit(&actor->blood1, "blood1");
 	GoreEmitterInit(&actor->blood2, "blood2");
 	GoreEmitterInit(&actor->blood3, "blood3");

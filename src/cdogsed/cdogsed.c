@@ -1064,8 +1064,8 @@ static HandleInputResult HandleInput(
 			break;
 
 		case 'n':
-			InsertMission(&gCampaign, NULL, gCampaign.Setting.Missions.size);
-			gCampaign.MissionIndex = gCampaign.Setting.Missions.size - 1;
+			InsertMission(&gCampaign, NULL, (int)gCampaign.Setting.Missions.size);
+			gCampaign.MissionIndex = (int)(gCampaign.Setting.Missions.size - 1);
 			fileChanged = true;
 			Setup(true);
 			break;
@@ -1206,7 +1206,7 @@ static void InputInsert(int *xc, const int yc, Mission *mission)
 			int ch = 0;
 			CArrayPushBack(&mission->Enemies, &ch);
 			CharacterStoreAddBaddie(&gCampaign.Setting.characters, ch);
-			*xc = mission->Enemies.size - 1;
+			*xc = (int)(mission->Enemies.size - 1);
 		}
 		break;
 
@@ -1216,7 +1216,7 @@ static void InputInsert(int *xc, const int yc, Mission *mission)
 			int ch = 0;
 			CArrayPushBack(&mission->SpecialChars, &ch);
 			CharacterStoreAddSpecial(&gCampaign.Setting.characters, ch);
-			*xc = mission->SpecialChars.size - 1;
+			*xc = (int)(mission->SpecialChars.size - 1);
 		}
 		break;
 
@@ -1226,7 +1226,7 @@ static void InputInsert(int *xc, const int yc, Mission *mission)
 			mod.M = IndexMapObject(0);
 			mod.Density = 0;
 			CArrayPushBack(&mission->MapObjectDensities, &mod);
-			*xc = mission->MapObjectDensities.size - 1;
+			*xc = (int)(mission->MapObjectDensities.size - 1);
 		}
 		break;
 
