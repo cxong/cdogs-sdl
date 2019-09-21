@@ -551,7 +551,7 @@ static void MissionChangeRescueObjectiveIndex(void *vData, int d)
 	Objective *o = GetMissionObjective(
 		CampaignGetCurrentMission(data->co), data->index);
 	int idx = o->u.Index;
-	const int limit = data->co->Setting.characters.OtherChars.size - 1;
+	const int limit = (int)(data->co->Setting.characters.OtherChars.size - 1);
 	idx = CLAMP_OPPOSITE(idx + d, 0, limit);
 	o->u.Index = idx;
 }

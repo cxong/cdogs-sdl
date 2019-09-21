@@ -471,7 +471,7 @@ void ObjAdd(const NMapObjectAdd amo)
 	EmitterInit(
 		&o->damageSmoke,
 		StrParticleClass(&gParticleClasses, "smoke_big"),
-		svec2_zero(), -0.05, 0.05, 3, 3, 0, 0, 20);
+		svec2_zero(), -0.05f, 0.05f, 3, 3, 0, 0, 20);
 	o->isInUse = true;
 	LOG(LM_MAIN, LL_DEBUG,
 		"added object uid(%d) class(%s) health(%d) pos(%d, %d)",

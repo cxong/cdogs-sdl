@@ -125,7 +125,7 @@ static void CreateEquippedWeaponsMenu(
 		ms->root, MenuCreateNormal(END_MENU_LABEL, "", MENU_TYPE_NORMAL, 0));
 
 	// Pre-select the End menu
-	ms->root->u.normal.index = ms->root->u.normal.subMenus.size - 1;
+	ms->root->u.normal.index = (int)(ms->root->u.normal.subMenus.size - 1);
 }
 static void SetEquippedMenuItemName(
 	menu_t *menu, const PlayerData *p, const int slot)

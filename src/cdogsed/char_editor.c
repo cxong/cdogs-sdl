@@ -200,13 +200,13 @@ bail:
 	CFREE(ec.CharacterClassNames);
 	CFREE(ec.GunNames);
 	glDeleteTextures(
-		BODY_PART_COUNT * ec.texidsChars.size, ec.texidsChars.data);
+		(GLsizei)(BODY_PART_COUNT * ec.texidsChars.size), ec.texidsChars.data);
 	CArrayTerminate(&ec.texidsChars);
 	glDeleteTextures(BODY_PART_COUNT, ec.texidsPreview);
 	glDeleteTextures(
-		ec.texIdsCharClasses.size, (const GLuint *)ec.texIdsCharClasses.data);
+		(GLsizei)(ec.texIdsCharClasses.size), (const GLuint *)ec.texIdsCharClasses.data);
 	CArrayTerminate(&ec.texIdsCharClasses);
-	glDeleteTextures(ec.texIdsGuns.size, (const GLuint *)ec.texIdsGuns.data);
+	glDeleteTextures((GLsizei)(ec.texIdsGuns.size), (const GLuint *)ec.texIdsGuns.data);
 	CArrayTerminate(&ec.texIdsGuns);
 	SDL_GL_DeleteContext(glContext);
 	SDL_DestroyWindow(win);
@@ -218,7 +218,7 @@ static char *GetClassNames(const int len, const char *(*indexNameFunc)(int))
 	for (int i = 0; i < (int)len; i++)
 	{
 		const char *name = indexNameFunc(i);
-		classLen += strlen(name) + 1;
+		classLen += (int)(strlen(name) + 1);
 	}
 	if (classLen == 0)
 	{
@@ -245,7 +245,7 @@ static const char *IndexCharacterClassName(const int i)
 static int NumCharacterClasses(void)
 {
 	return
-		gCharacterClasses.Classes.size + gCharacterClasses.CustomClasses.size;
+		(int)(gCharacterClasses.Classes.size + gCharacterClasses.CustomClasses.size);
 }
 static const char *IndexGunName(const int i)
 {
@@ -674,7 +674,7 @@ static int DrawClassSelection(
 {
 	nk_label(ec->ctx, label, NK_TEXT_LEFT);
 	const int selectedNew = nk_combo_separator_image(
-		ec->ctx, texids, items, '\0', selected, len,
+		ec->ctx, texids, items, '\0', selected, (int)len,
 		ROW_HEIGHT, nk_vec2(nk_widget_width(ec->ctx), 8 * ROW_HEIGHT));
 	if (selectedNew != selected)
 	{

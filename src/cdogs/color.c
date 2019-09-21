@@ -211,7 +211,7 @@ color_t StrColor(const char *s)
 	{
 		return colorBlack;
 	}
-	const int len = strlen(s);
+	const int len = (int)strlen(s);
 	if (len != 6 && len != 8)
 	{
 		return colorBlack;
