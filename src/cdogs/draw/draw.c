@@ -255,7 +255,8 @@ static void DrawWallsAndThings(
 		{
 			doorPos.y += TILE_HEIGHT - (pic->size.y % TILE_HEIGHT);
 		}
-		DrawLOSPic(t, pic, doorPos, useFog);
+		DrawLOSPic(
+			t, pic, svec2i_add(doorPos, svec2i(0, WALL_OFFSET_Y)), useFog);
 	}
 
 	// Draw the items that are in LOS
