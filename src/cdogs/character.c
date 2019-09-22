@@ -307,11 +307,10 @@ void CharacterShuffleAppearance(Character *c)
 			charClass - gCharacterClasses.Classes.size);
 	}
 	CFREE(c->Hair);
-	CSTRDUP(
-		c->Hair,
-		*(char **)CArrayGet(
-			&gPicManager.hairstyleNames,
-			rand() % gPicManager.hairstyleNames.size));
+	const char *hairStyleName = *(char **)CArrayGet(
+		&gPicManager.hairstyleNames,
+		rand() % gPicManager.hairstyleNames.size);
+	CSTRDUP(c->Hair, hairStyleName);
 	c->Colors.Skin = RandomColor();
 	c->Colors.Arms = RandomColor();
 	c->Colors.Body = RandomColor();
