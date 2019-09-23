@@ -192,7 +192,10 @@
           "Type": "Gun",
           "SpawnChance": 0.05
         }
-      ]
+      ],
+      "DamageSmoke": {
+        "HealthThreshold": 0.5
+      }
     },
     {
       "Name": "cabinet_server_wreck",
@@ -386,7 +389,10 @@
       },
       "Wreck": "table_wood_round_terminal_wreck",
       "Health": 40,
-      "Flags": ["Inside", "NoWalls"]
+      "Flags": ["Inside", "NoWalls"],
+      "DamageSmoke": {
+        "HealthThreshold": 0.5
+      }
     },
     {
       "Name": "table_wood_round_terminal_wreck",
@@ -489,7 +495,10 @@
           "Type": "Health",
           "SpawnChance": 0.2
         }
-      ]
+      ],
+      "DamageSmoke": {
+        "HealthThreshold": 0.5
+      }
     },
     {
       "Name": "cabinet_wreck",
@@ -520,7 +529,10 @@
           "Type": "Health",
           "SpawnChance": 0.2
         }
-      ]
+      ],
+      "DamageSmoke": {
+        "HealthThreshold": 0.5
+      }
     },
     {
       "Name": "rod_wreck",
@@ -720,7 +732,10 @@
           "Type": "Gun",
           "SpawnChance": 0.05
         }
-      ]
+      ],
+      "DamageSmoke": {
+        "HealthThreshold": 0.5
+      }
     },
     {
       "Name": "floor_console_wreck",
@@ -787,7 +802,10 @@
       },
       "Wreck": "table_wood_wreck",
       "Health": 40,
-      "Flags": ["Inside", "NoWalls"]
+      "Flags": ["Inside", "NoWalls"],
+      "DamageSmoke": {
+        "HealthThreshold": 0.5
+      }
     },
     {
       "Name": "safe",
@@ -835,7 +853,10 @@
           "Type": "Gun",
           "SpawnChance": 0.2
         }
-      ]
+      ],
+      "DamageSmoke": {
+        "HealthThreshold": 0.5
+      }
     },
     {
       "Name": "safe2_wreck",
@@ -1004,7 +1025,10 @@
       "Wreck": "barrel_wood_wreck",
       "Health": 40,
       "DestroyGuns": ["fire_explosion"],
-      "Flags": ["Outside", "OneWall"]
+      "Flags": ["Outside", "OneWall"],
+      "DamageSmoke": {
+        "HealthThreshold": 0.5
+      }
     },
     {
       "Name": "barrel_flame",
@@ -1015,7 +1039,10 @@
       "Wreck": "barrel_flame_wreck",
       "Health": 40,
       "DestroyGuns": ["fire_explosion"],
-      "Flags": ["Outside", "OneWall"]
+      "Flags": ["Outside", "OneWall"],
+      "DamageSmoke": {
+        "HealthThreshold": 0.5
+      }
     },
     {
       "Name": "barrel_flame_wreck",
@@ -1040,7 +1067,10 @@
         "explosion2",
         "explosion3"
       ],
-      "Flags": ["Outside", "OneWall"]
+      "Flags": ["Outside", "OneWall"],
+      "DamageSmoke": {
+        "HealthThreshold": 0.5
+      }
     },
     {
       "Name": "barrel_wood_wreck",
@@ -1065,7 +1095,10 @@
         "explosion2",
         "explosion3"
       ],
-      "Flags": ["Outside", "OneWall"]
+      "Flags": ["Outside", "OneWall"],
+      "DamageSmoke": {
+        "HealthThreshold": 0.5
+      }
     },
     {
       "Name": "barrel_wood2_wreck",
@@ -1091,7 +1124,10 @@
         "explosion2",
         "explosion3"
       ],
-      "Flags": ["Outside", "OneWall"]
+      "Flags": ["Outside", "OneWall"],
+      "DamageSmoke": {
+        "HealthThreshold": 0.5
+      }
     },
     {
       "Name": "box_metal_green_wreck",
@@ -1115,7 +1151,10 @@
       "DestroyGuns": [
         "gas_poison_explosion"
       ],
-      "Flags": ["Outside", "OneWall"]
+      "Flags": ["Outside", "OneWall"],
+      "DamageSmoke": {
+        "HealthThreshold": 0.5
+      }
     },
     {
       "Name": "box3",
@@ -1131,7 +1170,10 @@
         "explosion2",
         "explosion3"
       ],
-      "Flags": ["Outside", "OneWall"]
+      "Flags": ["Outside", "OneWall"],
+      "DamageSmoke": {
+        "HealthThreshold": 0.5
+      }
     },
     {
       "Name": "box3_gray_wreck",
@@ -1152,7 +1194,10 @@
       "Wreck": "table_wood_wreck",
       "Health": 40,
       "DestroyGuns": ["fire_explosion"],
-      "Flags": ["Outside", "OneWall"]
+      "Flags": ["Outside", "OneWall"],
+      "DamageSmoke": {
+        "HealthThreshold": 0.5
+      }
     },
     {
       "Name": "table_wood_wreck",
@@ -1172,7 +1217,10 @@
       "Wreck": "box3_red_wreck",
       "Health": 40,
       "DestroyGuns": ["fire_explosion"],
-      "Flags": ["Outside", "OneWall"]
+      "Flags": ["Outside", "OneWall"],
+      "DamageSmoke": {
+        "HealthThreshold": 0.5
+      }
     },
     {
       "Name": "box3_red_wreck",
@@ -1200,7 +1248,10 @@
           "Type": "Health",
           "SpawnChance": 0.5
         }
-      ]
+      ],
+      "DamageSmoke": {
+        "HealthThreshold": 0.5
+      }
     },
     {
       "Name": "safe_wreck",
@@ -1227,7 +1278,10 @@
           "Type": "Health",
           "SpawnChance": 0.5
         }
-      ]
+      ],
+      "DamageSmoke": {
+        "HealthThreshold": 0.5
+      }
     },
     {
       "Name": "table_plastic_lab_wreck",
@@ -1253,7 +1307,10 @@
         "explosion2",
         "explosion3"
       ],
-      "Flags": ["Outside", "OneWall"]
+      "Flags": ["Outside", "OneWall"],
+      "DamageSmoke": {
+        "HealthThreshold": 0.5
+      }
     },
     {
       "Name": "rocket2",
@@ -1269,7 +1326,10 @@
         "explosion2",
         "explosion3"
       ],
-      "Flags": ["Outside", "OneWall"]
+      "Flags": ["Outside", "OneWall"],
+      "DamageSmoke": {
+        "HealthThreshold": 0.5
+      }
     },
     {
       "Name": "rocket_wreck",
@@ -1479,7 +1539,10 @@
       },
       "Offset": [-8, -6],
       "Health": 0,
-      "DrawBelow": true
+      "DrawBelow": true,
+      "DamageSmoke": {
+        "HealthThreshold": 1.0
+      }
     },
     {
       "Name": "drain1",
@@ -1489,7 +1552,10 @@
       },
       "Offset": [-8, -6],
       "Health": 0,
-      "DrawBelow": true
+      "DrawBelow": true,
+      "DamageSmoke": {
+        "HealthThreshold": 1.0
+      }
     },
     {
       "Name": "drain2",
@@ -1499,7 +1565,10 @@
       },
       "Offset": [-8, -6],
       "Health": 0,
-      "DrawBelow": true
+      "DrawBelow": true,
+      "DamageSmoke": {
+        "HealthThreshold": 1.0
+      }
     },
     {
       "Name": "health spawner",
@@ -1537,7 +1606,10 @@
       "Offset": [-7, -11],
       "Wreck": "wscreen1_wreck",
       "Health": 10,
-      "Flags": ["OnWall"]
+      "Flags": ["OnWall"],
+      "DamageSmoke": {
+        "HealthThreshold": 0.5
+      }
     },
     {
       "Name": "wscreen2",
@@ -1551,7 +1623,10 @@
       "Offset": [-7, -11],
       "Wreck": "wscreen1_wreck",
       "Health": 10,
-      "Flags": ["OnWall"]
+      "Flags": ["OnWall"],
+      "DamageSmoke": {
+        "HealthThreshold": 0.5
+      }
     },
     {
       "Name": "wscreen1_wreck",

@@ -418,6 +418,16 @@ static bool TryLoadMapObject(MapObject *m, json_t *node, const int version)
 		}
 	}
 
+	// Initialise to negative so zero health map objects don't smoke
+	m->DamageSmoke.HealthThreshold = -1;
+	json_t *dSmokeNode = json_find_first_label(node, "DamageSmoke");
+	if (dSmokeNode != NULL && dSmokeNode->child != NULL)
+	{
+		LoadFloat(
+			&m->DamageSmoke.HealthThreshold, dSmokeNode->child,
+			"HealthThreshold");
+	}
+
 	return true;
 
 bail:

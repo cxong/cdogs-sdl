@@ -505,8 +505,11 @@ void UpdateObjects(const int ticks)
 		switch (obj->Class->Type)
 		{
 		case MAP_OBJECT_TYPE_NORMAL:
-			// Emit smoke when damaged (50% health)
-			if (obj->Class->Health > 0 && obj->Health <= obj->Class->Health / 2)
+			// Emit smoke when damaged
+			if (obj->Class->DamageSmoke.HealthThreshold >= 0 &&
+				obj->Health <=
+					obj->Class->Health *
+					obj->Class->DamageSmoke.HealthThreshold)
 			{
 				AddParticle ap;
 				memset(&ap, 0, sizeof ap);

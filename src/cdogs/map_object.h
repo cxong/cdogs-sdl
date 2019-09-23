@@ -104,6 +104,9 @@ typedef struct
 		const PickupClass *PickupClass;
 	} u;
 	CArray DestroySpawn;	// of MapObjectDestroySpawn
+	struct {
+		float HealthThreshold;	// Smoke if map object damaged below this ratio
+	} DamageSmoke;
 } MapObject;
 typedef struct
 {
