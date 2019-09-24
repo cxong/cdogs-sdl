@@ -374,7 +374,7 @@ static void RandomMissionTileClasses(
 		RandomBGColor(), RandomBGColor());
 	RandomStyle(style, &pm->doorStyleNames);
 	TileClassInit(
-		&mtc->Door, pm, &gTileRoom, style, NULL, colorWhite, colorWhite);
+		&mtc->Door, pm, &gTileDoor, style, NULL, colorWhite, colorWhite);
 }
 static RoomParams RandomRoomParams(void)
 {
