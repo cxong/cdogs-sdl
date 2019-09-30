@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2018 Cong Xu
+    Copyright (c) 2013-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -753,7 +753,7 @@ static void LoadBullet(
 	if (json_find_first_label(node, "Falling"))
 	{
 		json_t *falling = json_find_first_label(node, "Falling")->child;
-		LoadInt(&b->Falling.GravityFactor, falling, "GravityFactor");
+		LoadFloat(&b->Falling.GravityFactor, falling, "GravityFactor");
 		LoadBool(&b->Falling.FallsDown, falling, "FallsDown");
 		LoadBool(&b->Falling.DestroyOnDrop, falling, "DestroyOnDrop");
 		LoadBool(&b->Falling.Bounces, falling, "Bounces");
@@ -787,7 +787,7 @@ static void LoadBullet(
 		b->HitSound.Wall != NULL ? b->HitSound.Wall : "",
 		b->WallBounces ? "true" : "false");
 	LOG(LM_MAP, LL_DEBUG,
-		"...hitsObjects(%s) gravity(%d) fallsDown(%s) destroyOnDrop(%s)...",
+		"...hitsObjects(%s) gravity(%f) fallsDown(%s) destroyOnDrop(%s)...",
 		b->HitsObjects ? "true" : "false", b->Falling.GravityFactor,
 		b->Falling.FallsDown ? "true" : "false",
 		b->Falling.DestroyOnDrop ? "true" : "false");

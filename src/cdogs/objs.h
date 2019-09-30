@@ -81,8 +81,8 @@ typedef struct MobileObject
 	int ActorUID;	// unique ID of actor that owns this object
 					// (prevent self collision)
 	const BulletClass *bulletClass;
-	int z;
-	int dz;
+	float z;
+	float dz;
 	int count;
 	int range;
 	int flags;

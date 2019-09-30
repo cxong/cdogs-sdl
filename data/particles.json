@@ -256,6 +256,16 @@
       "ZDarken": true
     },
     {
+      "Name": "health_plus",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "health_plus",
+        "TicksPerFrame": 10
+      },
+      "Range": 70,
+      "GravityFactor": -0.2
+    },
+    {
       "Name": "ammo_text",
       "Type": "Text",
       "TextMask": "ffff00",

@@ -202,7 +202,7 @@ static void LoadParticleClass(
 	}
 	c->RangeLow = MIN(c->RangeLow, c->RangeHigh);
 	c->RangeHigh = MAX(c->RangeLow, c->RangeHigh);
-	LoadInt(&c->GravityFactor, node, "GravityFactor");
+	LoadFloat(&c->GravityFactor, node, "GravityFactor");
 	LoadBool(&c->HitsWalls, node, "HitsWalls");
 	c->Bounces = true;
 	LoadBool(&c->Bounces, node, "Bounces");
@@ -317,12 +317,14 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 			{
 				p->DZ -= p->Class->GravityFactor;
 			}
-			if (p->DZ == 0 && p->Z == 0)
+			if (fabsf(p->DZ) < fabs(p->Class->GravityFactor) &&
+				nearly_equal(p->Z, 0, 0.1f))
 			{
 				p->thing.Vel = svec2_zero();
 				p->Spin = 0;
 				// Fell to ground, draw below
 				p->thing.flags |= THING_DRAW_BELOW;
+				break;
 			}
 		}
 	}

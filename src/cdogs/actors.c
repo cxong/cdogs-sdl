@@ -554,6 +554,15 @@ void ActorHeal(TActor *actor, int health)
 {
 	actor->health += health;
 	actor->health = MIN(actor->health, ActorGetCharacter(actor)->maxHealth);
+	AddParticle ap;
+	memset(&ap, 0, sizeof ap);
+	ap.Pos = actor->Pos;
+	ap.Z = 10;
+	for (int i = 0; i < MAX(health / 20, 1); i++)
+	{
+		ap.Vel = svec2(RAND_FLOAT(-0.2f, 0.2f), RAND_FLOAT(-0.2f, 0.2f));
+		EmitterStart(&actor->healEffect, &ap);
+	}
 }
 
 void InjureActor(TActor * actor, int injury)
@@ -1331,6 +1340,10 @@ TActor *ActorAdd(NActorAdd aa)
 		&actor->barrelSmoke,
 		StrParticleClass(&gParticleClasses, "smoke"),
 		svec2_zero(), -0.05f, 0.05f, 3, 3, 0, 0, 10);
+	EmitterInit(
+		&actor->healEffect,
+		StrParticleClass(&gParticleClasses, "health_plus"),
+		svec2_zero(), -0.1f, 0.1f, 0, 0, 0, 0, 0);
 	GoreEmitterInit(&actor->blood1, "blood1");
 	GoreEmitterInit(&actor->blood2, "blood2");
 	GoreEmitterInit(&actor->blood3, "blood3");
@@ -1651,6 +1664,7 @@ static void ActorAddBloodSplatters(
 		AddParticle ap;
 		memset(&ap, 0, sizeof ap);
 		ap.Pos = a->Pos;
+		ap.Angle = -1;
 		ap.Z = 10;
 		ap.Vel = vel;
 		ap.Mask = ActorGetCharacter(a)->Class->BloodColor;

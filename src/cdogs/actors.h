@@ -154,6 +154,7 @@ typedef struct Actor
 	int ChatterCounter;
 
 	Emitter barrelSmoke;
+	Emitter healEffect;
 
 	// Gore emitters
 	Emitter blood1;

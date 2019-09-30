@@ -51,7 +51,7 @@ typedef struct
 	// -1 is infinite range
 	int RangeLow;
 	int RangeHigh;
-	int GravityFactor;
+	float GravityFactor;
 	bool HitsWalls;
 	bool Bounces;
 	bool WallBounces;
@@ -74,9 +74,9 @@ typedef struct
 	} u;
 	int ActorUID;
 	struct vec2 Pos;
-	int Z;
+	float Z;
 	double Angle;
-	int DZ;
+	float DZ;
 	double Spin;
 	int Count;
 	int Range;
