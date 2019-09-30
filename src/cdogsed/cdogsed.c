@@ -229,7 +229,10 @@ static void Display(HandleInputResult result)
 	{
 		// Display a disk icon to show the game needs saving
 		const Pic *pic = PicManagerGetPic(&gPicManager, "disk1");
-		Blit(&gGraphicsDevice, pic, svec2i(10, y));
+		PicRender(
+			pic, gGraphicsDevice.gameWindow.renderer,
+			svec2i(10, y), colorWhite, 0, svec2_one(),
+			SDL_FLIP_NONE, Rect2iZero());
 	}
 
 	FontStr("Press Ctrl+E to edit characters", svec2i(20, h - 20 - FontH() * 2));

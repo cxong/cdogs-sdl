@@ -560,13 +560,9 @@ SDL_Scancode GetKey(EventHandlers *handlers)
 
 SDL_Scancode EventWaitKeyOrText(EventHandlers *handlers)
 {
-	SDL_Scancode k = SDL_SCANCODE_UNKNOWN;
-	do
-	{
-		EventPoll(handlers, SDL_GetTicks());
-		k = KeyGetPressed(&handlers->keyboard);
-		SDL_Delay(10);
-	} while (k == SDL_SCANCODE_UNKNOWN && handlers->keyboard.Typed[0] == '\0');
+	EventPoll(handlers, SDL_GetTicks());
+	const SDL_Scancode k = KeyGetPressed(&handlers->keyboard);
+	SDL_Delay(10);
 	return k;
 }
 

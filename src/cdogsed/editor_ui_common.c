@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, 2016-2017 Cong Xu
+    Copyright (c) 2014, 2016-2017, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@
 #include <cdogs/font.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/palette.h>
+#include <cdogs/log.h>
 
 
 void DisplayMapItem(const struct vec2i pos, const MapObject *mo)
@@ -127,6 +128,16 @@ void ClearScreen(GraphicsDevice *g)
 	{
 		g->buf[i] = pixel;
 	}
+	if (SDL_SetRenderTarget(g->gameWindow.renderer, g->bkgTgt) != 0)
+	{
+		LOG(LM_GFX, LL_ERROR, "cannot set render target: %s", SDL_GetError());
+	}
+	BlitUpdateFromBuf(g, g->bkg);
+	if (SDL_SetRenderTarget(g->gameWindow.renderer, NULL) != 0)
+	{
+		LOG(LM_GFX, LL_ERROR, "cannot set render target: %s", SDL_GetError());
+	}
+	BlitClearBuf(g);
 }
 
 void DisplayFlag(
