@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2018 Cong Xu
+    Copyright (c) 2013-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -217,6 +217,13 @@ void CharColorsGetMaskedName(char *buf, const char *base, const CharColors *c)
 void BlitClearBuf(GraphicsDevice *g)
 {
 	memset(g->buf, 0, GraphicsGetMemSize(&g->cachedConfig));
+}
+void BlitFillBuf(GraphicsDevice *g, const color_t c)
+{
+	const Uint32 pixel = COLOR2PIXEL(c);
+	RECT_FOREACH(Rect2iNew(svec2i_zero(), g->cachedConfig.Res))
+		g->buf[_i] = pixel;
+	RECT_FOREACH_END()
 }
 void BlitUpdateFromBuf(GraphicsDevice *g, SDL_Texture *t)
 {

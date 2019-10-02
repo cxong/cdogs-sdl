@@ -166,10 +166,11 @@ static void ColorPickerDrawSwatch(
 	const ColorPickerData *cpd = data;
 	DrawRectangle(
 		g,
-		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(cpd->SwatchPad, 2)),
+		svec2i_add(svec2i_add(pos, o->Pos),
+		svec2i_scale_divide(cpd->SwatchPad, 2)),
 		cpd->SwatchSize,
 		cpd->Color,
-		0);
+		true);
 }
 
 

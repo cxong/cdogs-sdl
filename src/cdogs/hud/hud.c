@@ -466,7 +466,8 @@ static void DrawObjectiveCounts(HUD *hud)
 		}
 
 		// Objective color dot
-		Draw_Rect(x, y + 3, 2, 2, o->color);
+		DrawRectangle(
+			hud->device, svec2i(x, y + 3), svec2i(2, 2), o->color, false);
 
 		x += 5;
 		char s[32];

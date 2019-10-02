@@ -444,9 +444,10 @@ static void UIObjectDrawAndAddChildren(
 			DrawRectangle(
 				g,
 				svec2i_add(oPos, svec2i_scale(svec2i_one(), -TOOLTIP_PADDING)),
-				svec2i_add(o->Size, svec2i_scale(svec2i_one(), 2 * TOOLTIP_PADDING)),
+				svec2i_add(
+					o->Size, svec2i_scale(svec2i_one(), 2 * TOOLTIP_PADDING)),
 				menuBGColor,
-				0);
+				true);
 			// Find if mouse over any children, and draw highlight
 			CA_FOREACH(UIObject *, child, o->Children)
 				if (IsInside(mouse, svec2i_add(oPos, (*child)->Pos), (*child)->Size))
@@ -456,7 +457,7 @@ static void UIObjectDrawAndAddChildren(
 						svec2i_add(oPos, (*child)->Pos),
 						(*child)->Size,
 						hiliteColor,
-						0);
+						true);
 				}
 			CA_FOREACH_END()
 		}
@@ -573,6 +574,6 @@ void UITooltipDraw(GraphicsDevice *device, struct vec2i pos, const char *s)
 		svec2i_add(pos, svec2i_scale(svec2i_one(), -TOOLTIP_PADDING)),
 		svec2i_add(bgSize, svec2i_scale(svec2i_one(), 2 * TOOLTIP_PADDING)),
 		bgColor,
-		0);
+		true);
 	FontStr(s, pos);
 }

@@ -92,7 +92,7 @@ static void DisplayPlayer(
 	}
 	else
 	{
-		Draw_Point(pos.x, pos.y, colorWhite);
+		DrawPoint(pos, colorWhite);
 	}
 }
 
@@ -110,11 +110,11 @@ static void DisplayObjective(
 	}
 	if (scale >= 2)
 	{
-		DrawCross(&gGraphicsDevice, pos.x, pos.y, color);
+		DrawCross(&gGraphicsDevice, pos, color);
 	}
 	else
 	{
-		Draw_Point(pos.x, pos.y, color);
+		DrawPoint(pos, color);
 	}
 }
 
@@ -137,7 +137,7 @@ static void DisplayExit(struct vec2i pos, int scale, int flags)
 	{
 		color.a = MASK_ALPHA;
 	}
-	DrawRectangle(&gGraphicsDevice, exitPos, exitSize, color, DRAW_FLAG_LINE);
+	DrawRectangle(&gGraphicsDevice, exitPos, exitSize, color, false);
 }
 
 static void DisplaySummary(void)
@@ -152,7 +152,9 @@ static void DisplaySummary(void)
 			color_t textColor = colorWhite;
 			pos.x = 5;
 			// Objective color dot
-			Draw_Rect(pos.x, (pos.y + 3), 2, 2, o->color);
+			DrawRectangle(
+				&gGraphicsDevice, svec2i(pos.x, pos.y + 3), svec2i(2, 2),
+				o->color, false);
 
 			pos.x += 5;
 
@@ -196,7 +198,7 @@ void DrawDot(Thing *t, color_t color, struct vec2i pos, int scale)
 {
 	const struct vec2i dotPos = Vec2ToTile(t->Pos);
 	pos = svec2i_add(pos, svec2i_scale(dotPos, (float)scale));
-	Draw_Rect(pos.x, pos.y, scale, scale, color);
+	DrawRectangle(&gGraphicsDevice, pos, svec2i(scale, scale), color, false);
 }
 
 static void DrawMap(
@@ -247,7 +249,7 @@ static void DrawMap(
 							{
 								color.a = MASK_ALPHA;
 							}
-							Draw_Point(drawPos.x, drawPos.y, color);
+							DrawPoint(drawPos, color);
 						}
 					}
 				}
@@ -256,12 +258,11 @@ static void DrawMap(
 	}
 	if (flags & AUTOMAP_FLAGS_MASK)
 	{
-		color_t color = { 255, 255, 255, 128 };
-		Draw_Rect(
-			center.x - size.x / 2,
-			center.y - size.y / 2,
-			size.x, size.y,
-			color);
+		const color_t color = { 255, 255, 255, 128 };
+		DrawRectangle(
+			&gGraphicsDevice,
+			svec2i_subtract(center, svec2i_scale_divide(size, 2)), size,
+			color, false);
 	}
 }
 
@@ -330,7 +331,6 @@ static void DrawThing(
 
 void AutomapDraw(SDL_Renderer *renderer, const int flags, const bool showExit)
 {
-	color_t mask = { 0, 128, 0, 255 };
 	struct vec2i mapCenter = svec2i(
 		gGraphicsDevice.cachedConfig.Res.x / 2,
 		gGraphicsDevice.cachedConfig.Res.y / 2);
@@ -338,13 +338,10 @@ void AutomapDraw(SDL_Renderer *renderer, const int flags, const bool showExit)
 	struct vec2i pos = svec2i_add(mapCenter, svec2i_scale(centerOn, -MAP_FACTOR));
 
 	// Draw faded green overlay
-	for (int y = 0; y < gGraphicsDevice.cachedConfig.Res.y; y++)
-	{
-		for (int x = 0; x < gGraphicsDevice.cachedConfig.Res.x; x++)
-		{
-			DrawPointMask(&gGraphicsDevice, svec2i(x, y), mask);
-		}
-	}
+	const color_t mask = { 0, 128, 0, 128 };
+	DrawRectangle(
+		&gGraphicsDevice, svec2i_zero(), gGraphicsDevice.cachedConfig.Res, mask,
+		true);
 
 	DrawMap(&gMap, mapCenter, centerOn, gMap.Size, MAP_FACTOR, flags);
 	DrawObjectivesAndKeys(&gMap, pos, MAP_FACTOR, flags);

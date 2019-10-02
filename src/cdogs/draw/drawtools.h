@@ -48,36 +48,21 @@
 
 #include "grafx.h"
 
-void Draw_Point(const int x, const int y, color_t c);
+void DrawPoint(const struct vec2i pos, const color_t c);
 void Draw_Line(
 	const int x1, const int y1, const int x2, const int y2, color_t c);
 void DrawLine(const struct vec2i from, const struct vec2i to, color_t c);
 
 #define PixelIndex(x, y, w, h)		(y * w + x)
 
-#define Draw_Box(x1, y1, x2, y2, c)		\
-		Draw_Line(x1, y1, x2, y1, c);	\
-		Draw_Line(x2, y1, x2, y2, c);	\
-		Draw_Line(x1, y2, x2, y2, c);	\
-		Draw_Line(x1, y1, x1, y2, c);
-
-#define Draw_Rect(x, y, w, h, c)	Draw_Box(x,y,((x + (w - 1))),((y + (h - 1))),c)
-
-void DrawPointMask(GraphicsDevice *device, struct vec2i pos, color_t mask);
-void DrawPointTint(GraphicsDevice *device, struct vec2i pos, HSV tint);
-
-typedef enum
-{
-	DRAW_FLAG_LINE = 1,
-	DRAW_FLAG_ROUNDED = 2
-} DrawFlags;
 void DrawRectangle(
-	GraphicsDevice *device, struct vec2i pos, struct vec2i size, color_t color, int flags);
+	GraphicsDevice *g, const struct vec2i pos, const struct vec2i size,
+	const color_t color, const bool filled);
 
 //  *
 // ***
 //  *
-void DrawCross(GraphicsDevice *device, int x, int y, color_t color);
+void DrawCross(GraphicsDevice *g, const struct vec2i pos, const color_t c);
 
 // Note: shadow is centered, size is half-size
 void DrawShadow(

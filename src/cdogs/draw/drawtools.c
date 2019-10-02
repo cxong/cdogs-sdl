@@ -50,6 +50,7 @@
 #include "algorithms.h"
 #include "config.h"
 #include "draw/drawtools.h"
+#include "log.h"
 #include "palette.h"
 #include "pic_manager.h"
 #include "texture.h"
@@ -58,22 +59,25 @@
 #include "grafx.h"
 
 
-void Draw_Point(const int x, const int y, color_t c)
+void DrawPoint(const struct vec2i pos, const color_t c)
 {
-	Uint32 *screen = gGraphicsDevice.buf;
-	int idx = PixelIndex(
-		x,
-		y,
-		gGraphicsDevice.cachedConfig.Res.x,
-		gGraphicsDevice.cachedConfig.Res.y);
-	if (x < gGraphicsDevice.clipping.left ||
-		x > gGraphicsDevice.clipping.right ||
-		y < gGraphicsDevice.clipping.top ||
-		y > gGraphicsDevice.clipping.bottom)
+	if (SDL_SetRenderDrawBlendMode(
+		gGraphicsDevice.gameWindow.renderer, SDL_BLENDMODE_BLEND) != 0)
 	{
-		return;
+		LOG(LM_GFX, LL_ERROR, "Failed to set draw blend mode: %s",
+			SDL_GetError());
 	}
-	screen[idx] = COLOR2PIXEL(c);
+	if (SDL_SetRenderDrawColor(
+		gGraphicsDevice.gameWindow.renderer, c.r, c.g, c.b, c.a) != 0)
+	{
+		LOG(LM_GFX, LL_ERROR, "Failed to set draw color: %s",
+			SDL_GetError());
+	}
+	if (SDL_RenderDrawPoint(
+		gGraphicsDevice.gameWindow.renderer, pos.x, pos.y) != 0)
+	{
+		LOG(LM_GFX, LL_ERROR, "Failed to render point: %s", SDL_GetError());
+	}
 }
 
 static
@@ -94,7 +98,7 @@ Draw_StraightLine(
 		}
 		
 		for (i = start; i <= end; i++) {
-			Draw_Point(x1, i, c);
+			DrawPoint(svec2i(x1, i), c);
 		}
 	} else if (y1 == y2) {				/* horizontal line */
 		if (x2 > x1) {
@@ -106,7 +110,7 @@ Draw_StraightLine(
 		}
 			    
 		for (i = start; i <= end; i++) {
-			Draw_Point(i, y1, c);
+			DrawPoint(svec2i(i, y1), c);
 		}
 	}
 	return;
@@ -126,7 +130,7 @@ static void Draw_DiagonalLine(const int x1, const int x2, color_t c)
 	}
 	
 	for (i = start; i < end; i++) {
-		Draw_Point(i, i, c);
+		DrawPoint(svec2i(i, i), c);
 	}
 	
 	return;
@@ -143,7 +147,7 @@ void DrawLine(const struct vec2i from, const struct vec2i to, color_t c)
 static void DrawPointFunc(void *data, const struct vec2i pos)
 {
 	const color_t *c = data;
-	Draw_Point(pos.x, pos.y, *c);
+	DrawPoint(pos, *c);
 }
 
 void Draw_Line(
@@ -159,91 +163,61 @@ void Draw_Line(
 	return;
 }
 
-void DrawPointMask(GraphicsDevice *g, struct vec2i pos, color_t mask)
-{
-	if (pos.x < g->clipping.left || pos.x > g->clipping.right ||
-		pos.y < g->clipping.top || pos.y > g->clipping.bottom)
-	{
-		return;
-	}
-	const int idx = PixelIndex(
-		pos.x, pos.y, g->cachedConfig.Res.x, g->cachedConfig.Res.y);
-	Uint32 *screen = g->buf;
-	color_t c = PIXEL2COLOR(screen[idx]);
-	c = ColorMult(c, mask);
-	screen[idx] = COLOR2PIXEL(c);
-}
-
-void DrawPointTint(GraphicsDevice *device, struct vec2i pos, HSV tint)
-{
-	Uint32 *screen = device->buf;
-	int idx = PixelIndex(
-		pos.x, pos.y,
-		device->cachedConfig.Res.x,
-		device->cachedConfig.Res.y);
-	color_t c;
-	if (pos.x < device->clipping.left || pos.x > device->clipping.right ||
-		pos.y < device->clipping.top || pos.y > device->clipping.bottom)
-	{
-		return;
-	}
-	c = PIXEL2COLOR(screen[idx]);
-	c = ColorTint(c, tint);
-	screen[idx] = COLOR2PIXEL(c);
-}
-
 void DrawRectangle(
-	GraphicsDevice *device, struct vec2i pos, struct vec2i size, color_t color, int flags)
+	GraphicsDevice *g, const struct vec2i pos, const struct vec2i size,
+	const color_t color, const bool filled)
 {
-	int y;
-	if (size.x < 3 || size.y < 3)
+	SDL_Rect rect = {
+		MAX(pos.x, g->clipping.left),
+		MAX(pos.y, g->clipping.top),
+		MIN(size.x, g->clipping.right + 1 - pos.x),
+		MIN(size.y, g->clipping.bottom + 1 - pos.y)
+	};
+	if (SDL_SetRenderDrawBlendMode(
+		g->gameWindow.renderer, SDL_BLENDMODE_BLEND) != 0)
 	{
-		flags &= ~DRAW_FLAG_ROUNDED;
+		LOG(LM_GFX, LL_ERROR, "Failed to set draw blend mode: %s",
+			SDL_GetError());
 	}
-	for (y = MAX(pos.y, device->clipping.top);
-		y < MIN(pos.y + size.y, device->clipping.bottom + 1);
-		y++)
+	if (SDL_SetRenderDrawColor(
+		g->gameWindow.renderer, color.r, color.g, color.b, color.a) != 0)
 	{
-		int isFirstOrLastLine = y == pos.y || y == pos.y + size.y - 1;
-		if (isFirstOrLastLine && (flags & DRAW_FLAG_ROUNDED))
-		{
-			int x;
-			for (x = MAX(pos.x + 1, device->clipping.left);
-				x < MIN(pos.x + size.x - 1, device->clipping.right + 1);
-				x++)
-			{
-				Draw_Point(x, y, color);
-			}
-		}
-		else if (!isFirstOrLastLine && (flags & DRAW_FLAG_LINE))
-		{
-			Draw_Point(pos.x, y, color);
-			Draw_Point(pos.x + size.x - 1, y, color);
-		}
-		else
-		{
-			int x;
-			for (x = MAX(pos.x, device->clipping.left);
-				x < MIN(pos.x + size.x, device->clipping.right + 1);
-				x++)
-			{
-				Draw_Point(x, y, color);
-			}
-		}
+		LOG(LM_GFX, LL_ERROR, "Failed to set draw color: %s",
+			SDL_GetError());
+	}
+	const int result =
+		filled ?
+		SDL_RenderFillRect(g->gameWindow.renderer, &rect) :
+		SDL_RenderDrawRect(g->gameWindow.renderer, &rect);
+	if (result != 0)
+	{
+		LOG(LM_GFX, LL_ERROR, "Failed to render rect: %s", SDL_GetError());
 	}
 }
 
-void DrawCross(GraphicsDevice *device, int x, int y, color_t color)
+void DrawCross(GraphicsDevice *g, const struct vec2i pos, const color_t c)
 {
-	Uint32 *screen = device->buf;
-	const Uint32 pixel = COLOR2PIXEL(color);
-	screen += x;
-	screen += y * gGraphicsDevice.cachedConfig.Res.x;
-	*screen = pixel;
-	*(screen - 1) = pixel;
-	*(screen + 1) = pixel;
-	*(screen - gGraphicsDevice.cachedConfig.Res.x) = pixel;
-	*(screen + gGraphicsDevice.cachedConfig.Res.x) = pixel;
+	if (SDL_SetRenderDrawBlendMode(
+		g->gameWindow.renderer, SDL_BLENDMODE_BLEND) != 0)
+	{
+		LOG(LM_GFX, LL_ERROR, "Failed to set draw blend mode: %s",
+			SDL_GetError());
+	}
+	if (SDL_SetRenderDrawColor(g->gameWindow.renderer, c.r, c.g, c.b, c.a) != 0)
+	{
+		LOG(LM_GFX, LL_ERROR, "Failed to set draw color: %s",
+			SDL_GetError());
+	}
+	if (SDL_RenderDrawLine(
+		g->gameWindow.renderer, pos.x - 1, pos.y, pos.x + 1, pos.y) != 0)
+	{
+		LOG(LM_GFX, LL_ERROR, "Failed to render line: %s", SDL_GetError());
+	}
+	if (SDL_RenderDrawLine(
+		g->gameWindow.renderer, pos.x, pos.y - 1, pos.x, pos.y + 1) != 0)
+	{
+		LOG(LM_GFX, LL_ERROR, "Failed to render line: %s", SDL_GetError());
+	}
 }
 
 void DrawShadow(

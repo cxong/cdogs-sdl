@@ -287,8 +287,8 @@ static void DrawColorMenu(
 				continue;
 			}
 			DrawRectangle(
-				g, svec2i_add(drawPos, svec2i_multiply(v, swatchSize)), swatchSize,
-				colour, 0);
+				g, svec2i_add(drawPos, svec2i_multiply(v, swatchSize)),
+				swatchSize, colour, true);
 		}
 	}
 	// Draw a highlight around the selected colour
@@ -299,7 +299,7 @@ static void DrawColorMenu(
 			svec2i_subtract(
 				svec2i_multiply(d->selectedColor, swatchSize), svec2i(1, 1))),
 		svec2i_add(swatchSize, svec2i(2, 2)),
-		colorWhite, DRAW_FLAG_LINE);
+		colorWhite, false);
 }
 static int HandleInputColorMenu(int cmd, void *data)
 {

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, 2016-2018 Cong Xu
+    Copyright (c) 2013-2014, 2016-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -81,6 +81,7 @@ void BlitMasked(
 	color_t mask,
 	int isTransparent);
 void BlitClearBuf(GraphicsDevice *g);
+void BlitFillBuf(GraphicsDevice *g, const color_t c);
 void BlitUpdateFromBuf(GraphicsDevice *g, SDL_Texture *t);
 
 Uint32 PixelMult(const Uint32 p, const Uint32 m);

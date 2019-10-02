@@ -214,7 +214,7 @@ static void Display(HandleInputResult result)
 				screenPos.y >= 0 && screenPos.y < h)
 			{
 				DrawRectangle(
-					ec.g, screenPos, TILE_SIZE, colorWhite, DRAW_FLAG_LINE);
+					ec.g, screenPos, TILE_SIZE, colorWhite, false);
 			}
 		CA_FOREACH_END()
 

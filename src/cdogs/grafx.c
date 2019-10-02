@@ -283,7 +283,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 			return;
 		}
 		const color_t overlayColour = brightness > 0 ? colorWhite : colorBlack;
-		DrawRectangle(g, svec2i_zero(), g->cachedConfig.Res, overlayColour, 0);
+		BlitFillBuf(g, overlayColour);
 		BlitUpdateFromBuf(g, g->brightnessOverlay);
 		g->cachedConfig.Brightness = brightness;
 	}

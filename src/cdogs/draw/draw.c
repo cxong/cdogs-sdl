@@ -445,8 +445,9 @@ static void DrawThing(
 	color_t color = colorPurple;
 	color.a = (Uint8)alphaUnscaled;
 	DrawRectangle(
-		&gGraphicsDevice, svec2i_subtract(picPos, svec2i_scale_divide(t->size, 2)),
-		t->size, color, DRAW_FLAG_LINE);
+		&gGraphicsDevice,
+		svec2i_subtract(picPos, svec2i_scale_divide(t->size, 2)),
+		t->size, color, false);
 #endif
 }
 
@@ -511,7 +512,7 @@ static void DrawGuideImage(
 				Uint32 p = ((Uint32 *)guideImage->pixels)[imgIndex];
 				color_t c = PIXEL2COLOR(p);
 				c.a = alpha;
-				Draw_Point(i, j, c);
+				DrawPoint(svec2i(i, j), c);
 			}
 		}
 	}

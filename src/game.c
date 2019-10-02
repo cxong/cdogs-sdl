@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2018 Cong Xu
+    Copyright (c) 2013-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -187,9 +187,7 @@ GameLoopData *RunGame(
 static void RunGameReset(RunGameData *rData)
 {
 	// Clear the background
-	DrawRectangle(
-		&gGraphicsDevice, svec2i_zero(), gGraphicsDevice.cachedConfig.Res,
-		colorBlack, 0);
+	BlitFillBuf(&gGraphicsDevice, colorBlack);
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.bkg);
 	CameraReset(&rData->Camera);
 }
