@@ -54,18 +54,20 @@ void EmitterStart(Emitter *em, const AddParticle *data)
 
 	// TODO: single event multiple particles
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+	e.u.AddParticle = *data;
 	e.u.AddParticle.Pos = p;
-	e.u.AddParticle.Z = data->Z * Z_FACTOR;
+	e.u.AddParticle.Z *= Z_FACTOR;
 	e.u.AddParticle.Class = em->p;
 	const float speed = RAND_FLOAT(em->minSpeed, em->maxSpeed);
 	const struct vec2 baseVel = svec2_rotate(
 		svec2(0, speed), RAND_FLOAT(0, MPI * 2));
 	e.u.AddParticle.Vel = svec2_add(data->Vel, baseVel);
-	e.u.AddParticle.Angle =
-		data->Angle >= 0 ? data->Angle : RAND_FLOAT(0, MPI * 2);
+	if (isnan(data->Angle))
+	{
+		e.u.AddParticle.Angle = RAND_FLOAT(0, MPI * 2);
+	}
 	e.u.AddParticle.DZ = RAND_INT(em->minDZ, em->maxDZ);
 	e.u.AddParticle.Spin = RAND_DOUBLE(em->minRotation, em->maxRotation);
-	e.u.AddParticle.Mask = data->Mask;
 	GameEventsEnqueue(&gGameEvents, e);
 }
 

@@ -136,7 +136,7 @@ static struct vec2 SeekTowards(
 
 
 static void FireGuns(const TMobileObject *obj, const CArray *guns);
-static void AddTrail(const TMobileObject *obj);
+static void AddTrail(TMobileObject *obj, const int ticks);
 typedef struct
 {
 	HitType Type;
@@ -369,7 +369,7 @@ bool BulletUpdate(struct MobileObject *obj, const int ticks)
 		}
 	}
 
-	AddTrail(obj);
+	AddTrail(obj, ticks);
 
 	return true;
 }
@@ -384,31 +384,40 @@ static void FireGuns(const TMobileObject *obj, const CArray *guns)
 			true, false);
 	}
 }
-static void AddTrail(const TMobileObject *obj)
+static void AddTrail(TMobileObject *obj, const int ticks)
 {
 	const struct vec2 vel = svec2_subtract(obj->thing.Pos, obj->thing.LastPos);
-	if (obj->bulletClass->Trail.P == NULL || svec2_is_zero(vel))
+	if (obj->bulletClass->Trail.P == NULL)
 	{
 		return;
 	}
-	GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
-	s.u.AddParticle.Class = obj->bulletClass->Trail.P;
-	s.u.AddParticle.Pos = svec2_scale(svec2_add(
-		obj->thing.Pos, obj->thing.LastPos
-	), 0.5f);
-	s.u.AddParticle.Z = obj->z;
-	s.u.AddParticle.Angle = svec2_angle(vel) + MPI_2;
+	AddParticle ap;
+	memset(&ap, 0, sizeof ap);
+	ap.Pos = svec2_scale(svec2_add(obj->thing.Pos, obj->thing.LastPos), 0.5f);
+	ap.Z = obj->z / Z_FACTOR;
+	ap.Angle = svec2_angle(vel) + MPI_2;
+	ap.Mask = colorWhite;
 	if (obj->bulletClass->Trail.P->Type == PARTICLE_PIC)
 	{
-		const Pic *pic = CPicGetPic(
-			&obj->bulletClass->Trail.P->u.Pic, DIRECTION_UP);
-		const struct vec2 trailSize = svec2(
-			obj->bulletClass->Trail.Width, svec2_length(vel)
-		);
-		s.u.AddParticle.DrawScale = svec2_divide(
-			trailSize, svec2_assign_vec2i(pic->size));
+		const CPic *cpic = &obj->bulletClass->Trail.P->u.Pic;
+		const Pic *pic = CPicGetPic(cpic, 0);
+		if (obj->bulletClass->Trail.Width > 0)
+		{
+			const struct vec2 trailSize = svec2(
+				obj->bulletClass->Trail.Width, svec2_length(vel)
+			);
+			ap.DrawScale = svec2_divide(
+				trailSize, svec2_assign_vec2i(pic->size));
+		}
 	}
-	GameEventsEnqueue(&gGameEvents, s);
+	if (obj->trail.ticksPerEmit > 0 && ticks > 0)
+	{
+		EmitterUpdate(&obj->trail, &ap, ticks);
+	}
+	else
+	{
+		EmitterStart(&obj->trail, &ap);
+	}
 }
 typedef struct
 {
@@ -693,6 +702,7 @@ static void LoadBullet(
 		}
 		b->Trail.Width = 1.0f;
 		LoadFloat(&b->Trail.Width, trail, "Width");
+		LoadInt(&b->Trail.TicksPerEmit, trail, "TicksPerEmit");
 	}
 	LoadVec2i(&b->ShadowSize, node, "ShadowSize");
 	LoadInt(&b->Delay, node, "Delay");
@@ -792,10 +802,11 @@ static void LoadBullet(
 		b->Falling.FallsDown ? "true" : "false",
 		b->Falling.DestroyOnDrop ? "true" : "false");
 	LOG(LM_MAP, LL_DEBUG,
-		"...dropGuns(%d) seekFactor(%d) erratic(%s) trail(%s@%f)...",
+		"...dropGuns(%d) seekFactor(%d) erratic(%s) trail(%s@%f per %d)...",
 		(int)b->Falling.DropGuns.size, b->SeekFactor,
 		b->Erratic ? "true" : "false",
-		b->Trail.P != NULL ? b->Trail.P->Name : "", b->Trail.Width);
+		b->Trail.P != NULL ? b->Trail.P->Name : "", b->Trail.Width,
+		b->Trail.TicksPerEmit);
 	LOG(LM_MAP, LL_DEBUG,
 		"...outOfRangeGuns(%d) hitGuns(%d) proximityGuns(%d)",
 		(int)b->OutOfRangeGuns.size,
@@ -933,6 +944,10 @@ void BulletAdd(const NAddBullet add)
 	obj->z = add.MuzzleHeight;
 	obj->dz = add.Elevation;
 
+	EmitterInit(
+		&obj->trail, obj->bulletClass->Trail.P,
+		svec2_zero(), 0, 0, 0, 0, 0, 0, obj->bulletClass->Trail.TicksPerEmit);
+
 	obj->thing.Vel = svec2_scale(
 		Vec2FromRadians(add.Angle),
 		RAND_FLOAT(obj->bulletClass->SpeedLow, obj->bulletClass->SpeedHigh));
@@ -1016,7 +1031,7 @@ void PlayHitSound(const HitSounds *h, const HitType t, const struct vec2 pos)
 void BulletDestroy(TMobileObject *obj)
 {
 	CASSERT(obj->isInUse, "Destroying not-in-use bullet");
-	AddTrail(obj);
+	AddTrail(obj, 0);
 	MapRemoveThing(&gMap, &obj->thing);
 	obj->isInUse = false;
 }

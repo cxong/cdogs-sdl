@@ -611,6 +611,11 @@
         "Type": "Directional",
         "Sprites": "rocket_blue"
       },
+      "Trail": {
+        "Particle": "smoke_trail",
+        "Width": 0,
+        "TicksPerEmit": 4
+      },
       "ShadowSize": [4, 3],
       "Speed": 250,
       "Friction": -9,

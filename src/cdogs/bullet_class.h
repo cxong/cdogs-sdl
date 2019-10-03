@@ -65,6 +65,7 @@ typedef struct
 	{
 		const ParticleClass *P;
 		float Width;
+		int TicksPerEmit;
 	} Trail;
 	struct vec2i ShadowSize;
 	int Delay;	// number of frames before moving

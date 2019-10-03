@@ -1664,7 +1664,7 @@ static void ActorAddBloodSplatters(
 		AddParticle ap;
 		memset(&ap, 0, sizeof ap);
 		ap.Pos = a->Pos;
-		ap.Angle = -1;
+		ap.Angle = NAN;
 		ap.Z = 10;
 		ap.Vel = vel;
 		ap.Mask = ActorGetCharacter(a)->Class->BloodColor;

@@ -71,7 +71,6 @@ typedef struct
 	int counter;
 	Thing thing;
 	Emitter damageSmoke;
-	int damageSmokeCounter;
 	bool isInUse;
 } TObject;
 
@@ -89,6 +88,7 @@ typedef struct MobileObject
 	// Don't trigger special effects too frequently
 	int specialLock;
 	Thing thing;
+	Emitter trail;
 	bool isInUse;
 } TMobileObject;
 typedef int (*MobObjUpdateFunc)(TMobileObject *, int);
