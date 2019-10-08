@@ -215,6 +215,15 @@
       "Range": 34
     },
     {
+      "Name": "smoke_trail_small",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "smoke_trail_small",
+        "TicksPerFrame": 7
+      },
+      "Range": 27
+    },
+    {
       "Name": "explosion_small",
       "Pic": {
         "Type": "Animated",

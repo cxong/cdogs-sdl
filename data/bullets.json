@@ -278,6 +278,11 @@
         "Type": "Directional",
         "Sprites": "rocket"
       },
+      "Trail": {
+        "Particle": "smoke_trail_small",
+        "Width": 0,
+        "TicksPerEmit": 4
+      },
       "Speed": 512,
       "Range": 60,
       "Power": 20,
@@ -358,6 +363,11 @@
       "Pic": {
         "Type": "Directional",
         "Sprites": "swarmer"
+      },
+      "Trail": {
+        "Particle": "smoke_trail_small",
+        "Width": 0,
+        "TicksPerEmit": 4
       },
       "Speed": 700,
       "Range": 70,
