@@ -10,8 +10,8 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
 project(cdogs-sdl C)
 
 SET(VERSION_MAJOR "0")
-SET(VERSION_MINOR "6")
-SET(VERSION_PATCH "9")
+SET(VERSION_MINOR "7")
+SET(VERSION_PATCH "0")
 SET(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
 # Optionally configure appveyor.yml since it is excluded in source archives
