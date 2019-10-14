@@ -65,6 +65,7 @@
 #include "config.h"
 #include "defs.h"
 #include "draw/drawtools.h"
+#include "font_utils.h"
 #include "grafx_bg.h"
 #include "log.h"
 #include "palette.h"
@@ -162,6 +163,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 
 		// Need to reload textures due to them tied to the renderer (window)
 		PicManagerReloadTextures(&gPicManager);
+		FontLoadFromJSON(&gFont, "graphics/font.png", "graphics/font.json");
 	}
 
 	if (initTextures)
