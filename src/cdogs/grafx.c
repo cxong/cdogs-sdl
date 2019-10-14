@@ -120,7 +120,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 			w, h, g->cachedConfig.ScaleFactor,
 			g->cachedConfig.Fullscreen ? " fullscreen" : "");
 
-		Uint32 windowFlags = SDL_WINDOW_RESIZABLE;
+		Uint32 windowFlags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
 		Rect2i windowDim = Rect2iNew(
 			svec2i(SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED),
 			svec2i(
