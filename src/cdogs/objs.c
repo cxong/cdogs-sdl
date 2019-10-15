@@ -85,6 +85,26 @@ void DamageObject(const NThingDamage d)
 		return;
 	}
 
+	// Create damage spall
+	Emitter e;
+	EmitterInit(&e, NULL, svec2_zero(), -0.5f, 0.5f, 1, 4, 0, 0, 0);
+	AddParticle ap;
+	memset(&ap, 0, sizeof ap);
+	ap.Pos = o->thing.Pos;
+	ap.Angle = NAN;
+	ap.Z = 10;
+	ap.Vel = svec2_scale(NetToVec2(d.Vel), 0.25);
+	// Generate spall
+	for (int i = 0; i < MIN(o->Health, d.Power); i++)
+	{
+		char buf[256];
+		sprintf(buf, "spall%d", rand() % 3 + 1);
+		ap.Class = StrParticleClass(&gParticleClasses, buf);
+		// Choose random colour from object
+		ap.Mask = PicGetRandomColor(CPicGetPic(&o->Class->Pic, 0));
+		EmitterStart(&e, &ap);
+	}
+
 	o->Health -= d.Power;
 
 	// Destroying objects and all the wonderful things that happen

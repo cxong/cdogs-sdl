@@ -206,6 +206,7 @@ static void LoadParticleClass(
 	LoadBool(&c->HitsWalls, node, "HitsWalls");
 	c->Bounces = true;
 	LoadBool(&c->Bounces, node, "Bounces");
+	LoadFloat(&c->BounceFriction, node, "BounceFriction");
 	c->WallBounces = true;
 	LoadBool(&c->WallBounces, node, "WallBounces");
 	LoadBool(&c->ZDarken, node, "ZDarken");
@@ -307,6 +308,8 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 				if (p->Class->Bounces)
 				{
 					p->DZ = -p->DZ / 2;
+					p->thing.Vel = svec2_scale(
+						p->thing.Vel, 1 - p->Class->BounceFriction);
 				}
 				else
 				{

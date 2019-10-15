@@ -303,6 +303,19 @@ bool PicPxIsEdge(const Pic *pic, const struct vec2i pos, const bool isPixel)
 		return isLeft || isRight || isAbove || isBelow;
 	}
 }
+color_t PicGetRandomColor(const Pic *p)
+{
+	// Get a random non-transparent pixel from the pic
+	for (;;)
+	{
+		const uint32_t px = p->Data[rand() % (p->size.x * p->size.y)];
+		const color_t c = PIXEL2COLOR(px);
+		if (c.a > 0)
+		{
+			return c;
+		}
+	}
+}
 
 void PicRender(
 	const Pic *p, SDL_Renderer *r, const struct vec2i pos, const color_t mask,

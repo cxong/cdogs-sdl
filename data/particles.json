@@ -274,6 +274,45 @@
       "ZDarken": true
     },
     {
+      "Name": "spall1",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "spall1"
+      },
+      "RangeLow": 10000,
+      "RangeHigh": 11000,
+      "GravityFactor": 1,
+      "HitsWalls": true,
+      "BounceFriction": 0.4,
+      "ZDarken": true
+    },
+    {
+      "Name": "spall2",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "spall2"
+      },
+      "RangeLow": 10000,
+      "RangeHigh": 11000,
+      "GravityFactor": 1,
+      "HitsWalls": true,
+      "BounceFriction": 0.4,
+      "ZDarken": true
+    },
+    {
+      "Name": "spall3",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "spall3"
+      },
+      "RangeLow": 10000,
+      "RangeHigh": 11000,
+      "GravityFactor": 1,
+      "HitsWalls": true,
+      "BounceFriction": 0.4,
+      "ZDarken": true
+    },
+    {
       "Name": "health_plus",
       "Pic": {
         "Type": "Animated",

@@ -61,6 +61,7 @@ void PicTrim(Pic *pic, const bool xTrim, const bool yTrim);
 void PicShrink(Pic *pic, const struct vec2i size, const struct vec2i offset);
 
 bool PicPxIsEdge(const Pic *pic, const struct vec2i pos, const bool isPixel);
+color_t PicGetRandomColor(const Pic *p);
 
 void PicRender(
 	const Pic *p, SDL_Renderer *r, const struct vec2i pos, const color_t mask,

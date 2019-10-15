@@ -54,6 +54,7 @@ typedef struct
 	float GravityFactor;
 	bool HitsWalls;
 	bool Bounces;
+	float BounceFriction;
 	bool WallBounces;
 	bool ZDarken;	// darken as the particle falls to the ground
 } ParticleClass;

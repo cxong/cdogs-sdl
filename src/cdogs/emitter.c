@@ -57,7 +57,10 @@ void EmitterStart(Emitter *em, const AddParticle *data)
 	e.u.AddParticle = *data;
 	e.u.AddParticle.Pos = p;
 	e.u.AddParticle.Z *= Z_FACTOR;
-	e.u.AddParticle.Class = em->p;
+	if (e.u.AddParticle.Class == NULL)
+	{
+		e.u.AddParticle.Class = em->p;
+	}
 	const float speed = RAND_FLOAT(em->minSpeed, em->maxSpeed);
 	const struct vec2 baseVel = svec2_rotate(
 		svec2(0, speed), RAND_FLOAT(0, MPI * 2));
