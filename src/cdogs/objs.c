@@ -86,8 +86,8 @@ void DamageObject(const NThingDamage d)
 	}
 
 	// Create damage spall
-	Emitter e;
-	EmitterInit(&e, NULL, svec2_zero(), -0.5f, 0.5f, 1, 4, 0, 0, 0);
+	Emitter em;
+	EmitterInit(&em, NULL, svec2_zero(), -0.5f, 0.5f, 1, 4, 0, 0, 0);
 	AddParticle ap;
 	memset(&ap, 0, sizeof ap);
 	ap.Pos = o->thing.Pos;
@@ -102,7 +102,7 @@ void DamageObject(const NThingDamage d)
 		ap.Class = StrParticleClass(&gParticleClasses, buf);
 		// Choose random colour from object
 		ap.Mask = PicGetRandomColor(CPicGetPic(&o->Class->Pic, 0));
-		EmitterStart(&e, &ap);
+		EmitterStart(&em, &ap);
 	}
 
 	o->Health -= d.Power;
