@@ -76,6 +76,7 @@ static void MapObjectDraw(
 }
 
 
+#define NUM_SPALL_PARTICLES 3
 void DamageObject(const NThingDamage d)
 {
 	TObject *o = ObjGetByUID(d.UID);
@@ -98,7 +99,7 @@ void DamageObject(const NThingDamage d)
 	for (int i = 0; i < MIN(o->Health, d.Power); i++)
 	{
 		char buf[256];
-		sprintf(buf, "spall%d", rand() % 3 + 1);
+		sprintf(buf, "spall%d", rand() % NUM_SPALL_PARTICLES + 1);
 		ap.Class = StrParticleClass(&gParticleClasses, buf);
 		// Choose random colour from object
 		ap.Mask = PicGetRandomColor(CPicGetPic(&o->Class->Pic, 0));
@@ -108,13 +109,29 @@ void DamageObject(const NThingDamage d)
 	o->Health -= d.Power;
 
 	// Destroying objects and all the wonderful things that happen
-	if (o->Health <= 0 && !gCampaign.IsClient)
+	if (o->Health <= 0)
 	{
-		GameEvent e = GameEventNew(GAME_EVENT_MAP_OBJECT_REMOVE);
-		e.u.MapObjectRemove.UID = o->uid;
-		e.u.MapObjectRemove.ActorUID = d.SourceActorUID;
-		e.u.MapObjectRemove.Flags = d.Flags;
-		GameEventsEnqueue(&gGameEvents, e);
+		if (!gCampaign.IsClient)
+		{
+			GameEvent e = GameEventNew(GAME_EVENT_MAP_OBJECT_REMOVE);
+			e.u.MapObjectRemove.UID = o->uid;
+			e.u.MapObjectRemove.ActorUID = d.SourceActorUID;
+			e.u.MapObjectRemove.Flags = d.Flags;
+			GameEventsEnqueue(&gGameEvents, e);
+		}
+
+		// Exploding spall
+		EmitterInit(&em, NULL, svec2_zero(), -1.0f, 1.0f, 1, 16, 0, 0, 0);
+		ap.Vel = svec2_scale(NetToVec2(d.Vel), 0.1);
+		for (int i = 0; i < 20; i++)
+		{
+			char buf[256];
+			sprintf(buf, "spall%d", rand() % NUM_SPALL_PARTICLES + 1);
+			ap.Class = StrParticleClass(&gParticleClasses, buf);
+			// Choose random colour from object
+			ap.Mask = PicGetRandomColor(CPicGetPic(&o->Class->Pic, 0));
+			EmitterStart(&em, &ap);
+		}
 	}
 }
 
