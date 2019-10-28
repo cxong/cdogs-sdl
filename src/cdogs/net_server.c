@@ -239,8 +239,7 @@ static void PollListener(NetServer *n)
 	NServerInfo sinfo;
 	sinfo.ProtocolVersion = NET_PROTOCOL_VERSION;
 	sinfo.ENetPort = n->server->address.port;
-	sinfo.Hostname[0] = '\0';
-	strncat(sinfo.Hostname, n->hostname, sizeof sinfo.Hostname - 1);
+	strcpy(sinfo.Hostname, n->hostname);
 	sinfo.GameMode = gCampaign.Entry.Mode;
 	sinfo.CampaignName[0] = '\0';
 	strncat(sinfo.CampaignName, gCampaign.Setting.Title,

@@ -50,7 +50,7 @@ static void LoadFile(CArray *strings, const char *filename)
 	while (fgets(buf, 256, file) != NULL)
 	{
 		char *str = malloc(strlen(buf) + 1);
-		strncpy(str, buf, strlen(buf) - 1);
+		strncpy(str, buf, sizeof buf - 1);
 		str[strlen(buf) - 1] = '\0';
 		CArrayPushBack(strings, &str);
 	}

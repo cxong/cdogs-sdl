@@ -146,7 +146,7 @@ static GameLoopResult CheckCampaignDefComplete(void *data, LoopRunner *l);
 GameLoopData *ScreenWaitForCampaignDef(void)
 {
 	char buf[256];
-	char ipbuf[256];
+	char ipbuf[64];
 	enet_address_get_host_ip(&gNetClient.peer->address, ipbuf, sizeof ipbuf);
 	sprintf(buf, "Connecting to %s:%u...",
 		ipbuf, gNetClient.peer->address.port);

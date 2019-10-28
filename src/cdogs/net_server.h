@@ -43,7 +43,7 @@ typedef struct
 	// The socket for listening and responding to client scans
 	ENetSocket listen;
 	// Cache our hostname as it's potentially very slow to get
-	char hostname[32];
+	char hostname[12];
 	int PrevCmd;
 	int Cmd;
 	int peerId;	// auto-incrementing id for the next connected peer
