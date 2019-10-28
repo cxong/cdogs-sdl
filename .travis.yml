@@ -18,10 +18,7 @@ cache: ccache
 
 addons:
   apt:
-    sources:
-    - ubuntu-toolchain-r-test
     packages:
-    - gcc-multilib
     - rpm
     - libsdl2-dev
     - libsdl2-image-dev
@@ -33,9 +30,6 @@ addons:
     - cmake
     - gcc-9
     - ninja-build
-cache:
-  directories:
-  - /opt/gcw0-toolchain
 
 before_script:
   - export CTEST_OUTPUT_ON_FAILURE=1
@@ -55,9 +49,6 @@ after_success:
 before_deploy:
   - make package
 
-  # GCW-Zero deployment
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]];then bash build/travis-ci/install-gcw0-toolchain.sh && sh make_gcw0.sh ; fi
-
   #debug
   - ls $TRAVIS_BUILD_DIR
 deploy:
@@ -68,7 +59,6 @@ deploy:
   skip_cleanup: true
   file:
     - "$TRAVIS_BUILD_DIR/C-Dogs*SDL-*-{Linux,OSX}.{tar.gz,dmg}"
-    - "$TRAVIS_BUILD_DIR/gcw0build/cdogs-sdl.opk"
   on:
     tags: true
     condition: $CC = gcc
