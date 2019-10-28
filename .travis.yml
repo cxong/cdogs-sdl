@@ -23,7 +23,21 @@ addons:
     - clang-9
     - cmake
     - gcc-9
+    - g++-9
     - ninja-build
+
+install:
+# /usr/bin/gcc points to an older compiler on both Linux and macOS.
+- if [ "$CXX" = "g++" ]; then export CXX="g++-9" CC="gcc-9"; fi
+# /usr/bin/clang points to an older compiler on both Linux and macOS.
+#
+# Homebrew's llvm package doesn't ship a versioned clang++ binary, so the values
+# below don't work on macOS. Fortunately, the path change above makes the
+# default values (clang and clang++) resolve to the correct compiler on macOS.
+- if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+    if [ "$CXX" = "clang++" ]; then export CXX="clang++-9" CC="clang-9"; fi;
+  fi
+- echo ${CC}
 
 before_script:
   - export CTEST_OUTPUT_ON_FAILURE=1
