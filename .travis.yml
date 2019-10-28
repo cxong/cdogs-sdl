@@ -23,9 +23,6 @@ addons:
     - libsdl2-dev
     - libsdl2-image-dev
     - libsdl2-mixer-dev
-    # For gcw0:
-    - libc6-i386
-    - lib32stdc++6
     - clang-9
     - cmake
     - gcc-9
