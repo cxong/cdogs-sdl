@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014, Cong Xu
+    Copyright (c) 2014, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <cdogs/utils.h>
+
 
 static void LoadFile(CArray *strings, const char *filename);
 void NameGenInit(
@@ -49,8 +51,8 @@ static void LoadFile(CArray *strings, const char *filename)
 	char buf[256];
 	while (fgets(buf, 256, file) != NULL)
 	{
-		char *str = malloc(strlen(buf) + 1);
-		strncpy(str, buf, sizeof buf - 1);
+		char *str;
+		CSTRDUP(str, buf);
 		str[strlen(buf) - 1] = '\0';
 		CArrayPushBack(strings, &str);
 	}
