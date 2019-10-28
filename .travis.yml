@@ -9,15 +9,12 @@ os:
   - linux
   - osx
 
-env:
-  - CCACHE_CPP2=yes
-
-sudo: required
-
-cache: ccache
-
 addons:
   apt:
+    sources:
+    - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main'
+      key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+    - sourceline: 'ppa:ubuntu-toolchain-r/test'
     packages:
     - rpm
     - libsdl2-dev
