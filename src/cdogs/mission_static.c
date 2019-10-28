@@ -313,12 +313,12 @@ static const MapObject *LoadMapObjectRef(json_t *itemNode, const int version)
 		const MapObject *mo = StrMapObject(moName);
 		if (mo == NULL && version <= 11 && StrEndsWith(moName, " spawner"))
 		{
-			char buf[256];
 			// Old version had same name for ammo and gun spawner
 			char itemName[256];
-			strncpy(itemName, moName, strlen(moName) - strlen(" spawner"));
+			strcpy(itemName, moName);
 			itemName[strlen(moName) - strlen(" spawner")] = '\0';
-			snprintf(buf, 256, "%s ammo spawner", itemName);
+			char buf[300];
+			snprintf(buf, sizeof buf, "%s ammo spawner", itemName);
 			mo = StrMapObject(buf);
 		}
 		if (mo == NULL)
@@ -479,8 +479,8 @@ void MissionStaticFromMap(MissionStatic *m, const Map *map)
 			CMALLOC(tc, sizeof *tc);
 			TileClassCopy(tc, t->Class);
 			tile = tileIdx++;
-			char buf[6];
-			sprintf(buf, "%d", tile);
+			char buf[12];
+			snprintf(buf, sizeof buf - 1, "%d", tile);
 			if (hashmap_put(m->TileClasses, buf, (any_t *)tc) != MAP_OK)
 			{
 				LOG(LM_MAP, LL_ERROR,

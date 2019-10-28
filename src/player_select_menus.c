@@ -343,7 +343,7 @@ static void PostInputLoadTemplate(menu_t *menu, int cmd, void *data)
 		const PlayerTemplate *t =
 			PlayerTemplateGetById(&gPlayerTemplates, menu->u.normal.index);
 		memset(p->name, 0, sizeof p->name);
-		strncpy(p->name, t->name, sizeof p->name - 1);
+		strcpy(p->name, t->name);
 		p->Char.Class = StrCharacterClass(t->CharClassName);
 		if (p->Char.Class == NULL)
 		{
@@ -407,7 +407,7 @@ static void PostInputSaveTemplate(menu_t *menu, int cmd, void *data)
 			&gPlayerTemplates.Classes, gPlayerTemplates.Classes.size - 1);
 	}
 	memset(t->name, 0, sizeof t->name);
-	strncpy(t->name, p->name, sizeof t->name - 1);
+	strcpy(t->name, p->name);
 	CFREE(t->CharClassName);
 	CSTRDUP(t->CharClassName, p->Char.Class->Name);
 	if (p->Char.Hair)
@@ -565,7 +565,7 @@ static void ShuffleAppearance(void *data)
 	char buf[512];
 	NameGenMake(pData->nameGenerator, buf);
 	PlayerData *p = PlayerDataGetByUID(pData->display.PlayerUID);
-	strncpy(p->name, buf, 20);
+	strcpy(p->name, buf);
 	Character *c = &p->Char;
 	CharacterShuffleAppearance(c);
 }
