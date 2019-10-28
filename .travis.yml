@@ -1,5 +1,10 @@
 language: c
+dist: bionic
+osx_image: xcode10.3
 
+compiler:
+  - gcc
+  - clang
 os:
   - linux
   - osx
@@ -10,9 +15,6 @@ env:
 sudo: required
 
 cache: ccache
-compiler:
-  - gcc
-  - clang
 
 addons:
   apt:
@@ -27,6 +29,10 @@ addons:
     # For gcw0:
     - libc6-i386
     - lib32stdc++6
+    - clang-9
+    - cmake
+    - gcc-9
+    - ninja-build
 cache:
   directories:
   - /opt/gcw0-toolchain
