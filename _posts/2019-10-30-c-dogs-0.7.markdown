@@ -1,0 +1,37 @@
+---
+layout: post
+title:  "C-Dogs 0.7 Released!"
+date:   2019-10-30
+categories: release
+published: true
+---
+
+C-Dogs SDL 0.7 released! This release adds a big bunch of graphical enhancements. Here's the major ones:
+
+## New HUD
+
+![HUD bar](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/hud_bar.gif)
+
+## Customizable Hats/Hair
+
+![Hats and hair](https://user-images.githubusercontent.com/1083215/56714039-ed818100-6776-11e9-9b10-48a1ff358088.gif)
+
+## New Particle Effects
+
+![Smoke trails](https://user-images.githubusercontent.com/1083215/66389554-65d1bb00-ea14-11e9-8626-84e00c3a5984.gif)
+
+![Spall explosions](https://user-images.githubusercontent.com/1083215/67665180-4e577380-f9bd-11e9-9d0b-dbbd9b496b4d.gif)
+
+And there's a load of more enhancements and fixes; find it all in the release notes!
+
+## Broken Stuff
+
+Sadly there's a few outstanding issues with the game. During this release there was a massive graphical refactor, and as a result there are still a few niggling issues, and the editor is pretty broken 😿 These will be fixed in future releases.
+
+## Different Versioning
+
+On an administrative note, we'll be changing the versioning system slightly. Previous releases tended to bump the patch version (e.g. 0.6.8 -> 0.6.9) but this doesn't quite make sense since lots of new features get added all the time. So the next release is slated to be **0.8**. Patch number will be bumped on fixes only. And if there happens to be major changes, we might finally go to **1.0** 😱
+
+Happy gaming! 🎉
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.7>
