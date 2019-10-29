@@ -12,8 +12,8 @@
     {
       "Name": "10mm",
       "Pic": {
-        "Type": "Directional",
-        "Sprites": "9mm"
+        "Type": "Normal",
+        "Pic": ""
       },
       "Trail": {
         "Particle": "trail",

@@ -692,92 +692,96 @@ static void DrawCompassArrow(
 	GraphicsDevice *g,const Rect2i r, const struct vec2 pos,
 	const struct vec2 playerPos, const color_t mask, const char *label)
 {
-	const struct vec2 compassV = svec2_subtract(pos, playerPos);
+	const struct vec2 compassV = svec2_subtract(
+		pos,
+		// Offset a little so the arrow points exactly at center of objective
+		svec2(playerPos.x - TILE_WIDTH / 2, playerPos.y - 20));
 	// Don't draw if objective is on screen
-	if (fabsf(pos.x - playerPos.x) < r.Size.x / 2 &&
-		fabsf(pos.y - playerPos.y) < r.Size.y / 2)
+	if (fabsf(compassV.x) < r.Size.x / 2 && fabsf(compassV.y) < r.Size.y / 2)
 	{
 		return;
 	}
 	// Saturate according to dist from screen edge
-	int xDist = (int)fabsf(pos.x - playerPos.x) - r.Size.x / 2;
-	int yDist = (int)fabsf(pos.y - playerPos.y) - r.Size.y / 2;
+	int xDist = (int)fabsf(compassV.x) - r.Size.x / 2;
+	int yDist = (int)fabsf(compassV.y) - r.Size.y / 2;
 	int lDist;
 	xDist > yDist ? lDist = xDist: (lDist = yDist);
 	HSV hsv = { -1.0, 1.0,
 		2.0 - 1.5 * MIN(lDist, COMP_SATURATE_DIST) / COMP_SATURATE_DIST };
 	const color_t tintedMask = ColorTint(mask, hsv);
 	struct vec2i textPos = svec2i_zero();
+	struct vec2i drawPos = svec2i_zero();
+	const Pic *p = PicManagerGetPic(&gPicManager, "hud/arrow");
 	// Find which edge of screen is the best
-	bool hasDrawn = false;
+	bool draw = false;
 	if (compassV.x != 0)
 	{
 		double sx = r.Size.x / 2.0 / compassV.x;
 		int yInt = (int)floor(fabs(sx) * compassV.y + 0.5);
 		if (yInt >= -r.Size.y / 2 && yInt <= r.Size.y / 2)
 		{
+			draw = true;
 			// Intercepts either left or right side
-			hasDrawn = true;
 			if (compassV.x > 0)
 			{
 				// right edge
 				textPos = svec2i(
 					r.Pos.x + r.Size.x, r.Pos.y + r.Size.y / 2 + yInt);
-				const Pic *p = PicManagerGetPic(&gPicManager, "arrow_right");
-				struct vec2i drawPos = svec2i(
+				drawPos = svec2i(
 					textPos.x - p->size.x, textPos.y - p->size.y / 2);
-				BlitMasked(g, p, drawPos, tintedMask, true);
 			}
-			else if (compassV.x < 0)
+			else
 			{
 				// left edge
 				textPos = svec2i(r.Pos.x, r.Pos.y + r.Size.y / 2 + yInt);
-				const Pic *p = PicManagerGetPic(&gPicManager, "arrow_left");
-				struct vec2i drawPos = svec2i(textPos.x, textPos.y - p->size.y / 2);
-				BlitMasked(g, p, drawPos, tintedMask, true);
+				drawPos = svec2i(textPos.x, textPos.y - p->size.y / 2);
 			}
 		}
 	}
-	if (!hasDrawn && compassV.y != 0)
+	if (!draw && compassV.y != 0)
 	{
 		double sy = r.Size.y / 2.0 / compassV.y;
 		int xInt = (int)floor(fabs(sy) * compassV.x + 0.5);
 		if (xInt >= -r.Size.x / 2 && xInt <= r.Size.x / 2)
 		{
+			draw = true;
 			// Intercepts either top or bottom side
 			if (compassV.y > 0)
 			{
 				// bottom edge
 				textPos = svec2i(
 					r.Pos.x + r.Size.x / 2 + xInt, r.Pos.y + r.Size.y);
-				const Pic *p = PicManagerGetPic(&gPicManager, "arrow_down");
-				struct vec2i drawPos = svec2i(
+				drawPos = svec2i(
 					textPos.x - p->size.x / 2, textPos.y - p->size.y);
-				BlitMasked(g, p, drawPos, tintedMask, true);
 			}
-			else if (compassV.y < 0)
+			else
 			{
 				// top edge
 				textPos = svec2i(r.Pos.x + r.Size.x / 2 + xInt, r.Pos.y);
-				const Pic *p = PicManagerGetPic(&gPicManager, "arrow_up");
-				struct vec2i drawPos = svec2i(textPos.x - p->size.x / 2, textPos.y);
-				BlitMasked(g, p, drawPos, tintedMask, true);
+				drawPos = svec2i(textPos.x - p->size.x / 2, textPos.y);
 			}
 		}
 	}
-	if (label && strlen(label) > 0)
+	if (draw)
 	{
-		struct vec2i textSize = FontStrSize(label);
-		// Center the text around the target position
-		textPos.x -= textSize.x / 2;
-		textPos.y -= textSize.y / 2;
-		// Make sure the text is inside the screen
-		int padding = 8;
-		textPos.x = MAX(textPos.x, r.Pos.x + padding);
-		textPos.x = MIN(textPos.x, r.Pos.x + r.Size.x - textSize.x - padding);
-		textPos.y = MAX(textPos.y, r.Pos.y + padding);
-		textPos.y = MIN(textPos.y, r.Pos.y + r.Size.y - textSize.y - padding);
-		FontStrMask(label, textPos, tintedMask);
+		PicRender(
+			p, g->gameWindow.renderer, drawPos, tintedMask,
+			svec2_angle(compassV) + MPI_2, svec2_one(), SDL_FLIP_NONE,
+			Rect2iZero());
+		if (label && strlen(label) > 0)
+		{
+			struct vec2i textSize = FontStrSize(label);
+			// Center the text around the target position
+			textPos.x -= textSize.x / 2;
+			textPos.y -= textSize.y / 2;
+			// Make sure the text is inside the screen
+			int padding = 8;
+			textPos.x = MAX(textPos.x, r.Pos.x + padding);
+			textPos.x = MIN(textPos.x, r.Pos.x + r.Size.x - textSize.x - padding);
+			textPos.y = MAX(textPos.y, r.Pos.y + padding);
+			textPos.y = MIN(textPos.y, r.Pos.y + r.Size.y - textSize.y - padding);
+			FontStrMask(label, textPos, tintedMask);
+		}
 	}
 }
 
