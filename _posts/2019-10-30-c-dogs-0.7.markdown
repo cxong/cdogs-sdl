@@ -34,4 +34,4 @@ On an administrative note, we'll be changing the versioning system slightly. Pre
 
 Happy gaming! 🎉
 
-Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.7>
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.7.0>
