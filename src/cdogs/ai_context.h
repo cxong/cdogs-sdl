@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2015, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -94,10 +94,8 @@ typedef struct
 	// Delay in executing consecutive actions;
 	// Used to let the AI perform one action for a set amount of time
 	int Delay;
+	AIState lastState;
 	AIState State;
-
-	// Counters to moderate amount of chatter
-	int ChatterCounter;
 
 	AIConfusionState ConfusionState;
 	AIObjectiveState ObjectiveState;
@@ -113,5 +111,5 @@ AIContext *AIContextNew(void);
 void AIContextDestroy(AIContext *c);
 
 const char *AIStateGetChatterText(const AIState s);
-int AIContextShowChatter(const AIContext *c, const AIChatterFrequency f);
+bool AIContextShowChatter(const AIChatterFrequency f);
 bool AIContextSetState(AIContext *c, const AIState s);

@@ -92,6 +92,7 @@
 // Percent of health considered low; bleed and flash HUD if low
 #define LOW_HEALTH_PERCENTAGE 25
 #define GORE_EMITTER_MAX_SPEED 0.25f
+#define CHATTER_SHOW_SECONDS 2
 #define CHATTER_SWITCH_GUN 45 // TODO: based on clock time instead of game ticks
 
 
@@ -705,14 +706,13 @@ static void ActorSetChatter(TActor *a, const char *text, const int count)
 // Set AI state and possibly say something based on the state
 void ActorSetAIState(TActor *actor, const AIState s)
 {
-	if (AIContextSetState(actor->aiContext, s))
+	if (AIContextSetState(actor->aiContext, s) &&
+		AIContextShowChatter(ConfigGetEnum(&gConfig, "Interface.AIChatter")))
 	{
 		ActorSetChatter(
 			actor,
 			AIStateGetChatterText(actor->aiContext->State),
-			AIContextShowChatter(
-				actor->aiContext,
-				ConfigGetEnum(&gConfig, "Interface.AIChatter"))
+			CHATTER_SHOW_SECONDS * ConfigGetInt(&gConfig, "Game.FPS")
 		);
 	}
 }
