@@ -378,6 +378,11 @@ static void DrawChatters(
 	UNUSED(pos);
 	UNUSED(useFog);
 	CA_FOREACH(ThingId, tid, t->things)
+		// Draw the items that are in LOS
+		if (t->outOfSight)
+		{
+			continue;
+		}
 		const Thing *ti = ThingIdGetThing(tid);
 		if (ti->kind != KIND_CHARACTER)
 		{
