@@ -58,7 +58,7 @@
       "Name": "proto_laser",
       "Pic": {
         "Type": "Directional",
-        "Sprites": "beam"
+        "Sprites": "particles/beam"
       },
       "Speed": 2000,
       "Range": 15,

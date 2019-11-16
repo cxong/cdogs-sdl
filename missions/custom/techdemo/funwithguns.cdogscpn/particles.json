@@ -3,7 +3,7 @@
   "Particles": [
     {
       "Name": "muzzle_flash_chaser2",
-      "Sprites": "muzzle_flash",
+      "Sprites": "particles/muzzle_flash",
       "Mask": "66ff66"
     },
     {

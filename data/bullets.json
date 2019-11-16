@@ -72,7 +72,7 @@
       "Name": "laser",
       "Pic": {
         "Type": "Directional",
-        "Sprites": "beam"
+        "Sprites": "particles/beam"
       },
       "Spark": "spark_red",
       "Speed": 1024,
@@ -85,7 +85,7 @@
       "Name": "sniper",
       "Pic": {
         "Type": "Directional",
-        "Sprites": "beam_bright"
+        "Sprites": "particles/beam_bright"
       },
       "Spark": "spark_blue",
       "Speed": 1024,
@@ -264,7 +264,7 @@
       "Name": "pulse",
       "Pic": {
         "Type": "Directional",
-        "Sprites": "pulse"
+        "Sprites": "particles/pulse"
       },
       "Spark": "spark_blue",
       "Speed": 1280,
@@ -599,7 +599,7 @@
       "Name": "explosion_small",
       "Pic": {
         "Type": "Animated",
-        "Sprites": "explosion_small",
+        "Sprites": "particles/explosion_small",
         "TicksPerFrame": 4
       },
       "Speed": 0,

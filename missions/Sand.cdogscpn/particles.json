@@ -3,7 +3,7 @@
   "Particles": [
     {
       "Name": "muzzle_flash_inkvine",
-      "Sprites": "muzzle_flash_big",
+      "Sprites": "particles/muzzle_flash_big",
       "Mask": "00ff00",
       "Range": 8
     },

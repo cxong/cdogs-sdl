@@ -45,7 +45,7 @@
       "Name": "Cells",
       "Pic": {
         "Type": "Animated",
-        "Sprites": "cells",
+        "Sprites": "particles/cells",
         "TicksPerFrame": 10
       },
       "Sound": "cells_pickup",
@@ -116,7 +116,7 @@
       "Name": "Mini cells",
       "Pic": {
         "Type": "Animated",
-        "Sprites": "mini_cells",
+        "Sprites": "particles/mini_cells",
         "TicksPerFrame": 10
       },
       "Sound": "mini_cells_pickup",

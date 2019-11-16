@@ -14,9 +14,6 @@ beam_8x8.png
 beam_yellow_8x8.png
 bench.png
 bench_wreck.png
-blood0.png
-blood1.png
-blood2.png
 bloodstain.png
 blueprint.png
 bone_blood.png
@@ -33,7 +30,6 @@ box_wood.png
 box_wreck.png
 box2.png
 bullet_ball.png
-bulletmarks.png
 cabinet.png
 cabinet_wreck.png
 cd.png
@@ -93,6 +89,12 @@ mine_active.png
 mine_inactive.png
 molotov.png
 paper.png
+particles/blood0.png
+particles/blood1.png
+particles/blood2.png
+particles/bulletmarks.png
+particles/scratch.png
+particles/spark_classic.png
 pci_card.png
 plant.png
 plant_wreck.png
@@ -102,9 +104,7 @@ rocket_wreck.png
 sack.png
 safe.png
 safe_wreck.png
-scratch.png
 skull.png
-spark_classic.png
 statue_ogre.png
 table_clothed.png
 table_lab.png

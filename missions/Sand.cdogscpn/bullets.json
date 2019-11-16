@@ -112,7 +112,7 @@
       "Name": "lase",
       "Pic": {
         "Type": "Directional",
-        "Sprites": "beam_yellow"
+        "Sprites": "particles/beam_yellow"
       },
       "Spark": "spark_yellow",
       "Speed": 800,

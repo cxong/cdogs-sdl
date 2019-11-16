@@ -13,7 +13,7 @@
       "Name": "laser_trail_green",
       "Pic": {
         "Type": "AnimatedRandom",
-        "Sprites": "laser_trail",
+        "Sprites": "particles/laser_trail",
         "Mask": "00ff00"
       },
       "Range": 1

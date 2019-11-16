@@ -27,7 +27,7 @@
       "Name": "blue_beam",
       "Pic": {
         "Type": "Directional",
-        "Sprites": "beam_bright"
+        "Sprites": "particles/beam_bright"
       },
       "Speed": 1200,
       "Range": 55,

@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014-2016, Cong Xu
+    Copyright (c) 2014-2016, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@
 */
 #include "net_client.h"
 
+#include <errno.h>
 #include <string.h>
 
 #include "proto/nanopb/pb_decode.h"
@@ -74,7 +75,8 @@ void NetClientTerminate(NetClient *n)
 	{
 		if (enet_socket_shutdown(n->scanner, ENET_SOCKET_SHUTDOWN_READ_WRITE) != 0)
 		{
-			LOG(LM_NET, LL_ERROR, "Failed to shutdown listen socket");
+			LOG(LM_NET, LL_ERROR,
+				"Failed to shutdown listen socket: %s", strerror(errno));
 		}
 		enet_socket_destroy(n->scanner);
 		n->scanner = ENET_SOCKET_NULL;

@@ -769,26 +769,6 @@
       "Flags": ["OnWall"]
     },
     {
-      "Name": "bulletmarks",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "bulletmarks"
-      },
-      "Offset": [-5, -10],
-      "Health": 0,
-      "Flags": ["OnWall"]
-    },
-    {
-      "Name": "scratch",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "scratch"
-      },
-      "Offset": [-5, -10],
-      "Health": 0,
-      "Flags": ["OnWall"]
-    },
-    {
       "Name": "wall_stuff",
       "Pic": {
         "Type": "Normal",
@@ -852,51 +832,6 @@
         "Pic": "skull2"
       },
       "Offset": [-6, -4],
-      "Health": 0
-    },
-    {
-      "Name": "blood0",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "blood0"
-      },
-      "Offset": [-8, -3],
-      "Health": 0
-    },
-    {
-      "Name": "blood1",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "blood1"
-      },
-      "Offset": [-8, -3],
-      "Health": 0
-    },
-    {
-      "Name": "blood2",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "blood2"
-      },
-      "Offset": [-8, -3],
-      "Health": 0
-    },
-    {
-      "Name": "blood3",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "blood3"
-      },
-      "Offset": [-8, -3],
-      "Health": 0
-    },
-    {
-      "Name": "blood4",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "blood4"
-      },
-      "Offset": [-8, -3],
       "Health": 0
     },
     {
