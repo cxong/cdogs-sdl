@@ -3,5 +3,5 @@
 # Recolor sprites based on C-Dogs palette
 #
 for image in *.png; do
-  convert $image +depth +dither -remap palette.png ${image}_out.png
+  convert $image -colorspace rgb +depth +dither -remap palette.png ${image}
 done
