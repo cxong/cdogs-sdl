@@ -63,3 +63,6 @@ deploy:
   force_update: true 	#to be in piece with Travis CI
   on:
     appveyor_repo_tag: true
+
+after_deploy:
+  script: .\build\appveyor\butler.bat
