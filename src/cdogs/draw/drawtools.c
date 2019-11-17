@@ -229,7 +229,7 @@ void DrawShadow(
 	{
 		return;
 	}
-	const Pic *shadow = PicManagerGetPic(&gPicManager, "shadow");
+	const Pic *shadow = PicManagerGetPic(&gPicManager, "particles/shadow");
 	const struct vec2 drawScale =
 		svec2_divide(svec2_scale(scale, 2), svec2_assign_vec2i(shadow->size));
 	const struct vec2i drawPos = svec2i_subtract(pos, svec2i_assign_vec2(scale));

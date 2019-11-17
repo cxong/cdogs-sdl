@@ -32,7 +32,7 @@
       "Name": "inkvine",
       "Pic": {
         "Type": "Directional",
-        "Sprites": "wave",
+        "Sprites": "particles/wave",
         "Mask": "00ff00"
       },
       "Speed": 640,

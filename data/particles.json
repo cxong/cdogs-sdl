@@ -362,7 +362,7 @@
       "Name": "trail",
       "Pic": {
         "Type": "Animated",
-        "Sprites": "trail",
+        "Sprites": "particles/trail",
         "TicksPerFrame": 2
       },
       "Range": 7
