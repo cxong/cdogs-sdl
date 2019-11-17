@@ -70,3 +70,6 @@ deploy:
   on:
     tags: true
     condition: $CC = gcc
+  
+after_deploy:
+  script: bash build/travis-ci/butler.sh
