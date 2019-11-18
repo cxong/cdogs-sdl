@@ -13,5 +13,5 @@ curl -L -o butler.zip https://broth.itch.ovh/butler/windows-amd64/LATEST/archive
 7z x -y butler.zip
 butler -V
 
-butler .\C-Dogs*.exe !PROJECT!:win
-butler .\C-Dogs*.zip !PROJECT!:win
+butler .\C-Dogs*.exe !PROJECT!:win --userversion !VERSION!
+butler .\C-Dogs*.zip !PROJECT!:win --userversion !VERSION!

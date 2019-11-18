@@ -11,6 +11,7 @@ environment:
   SDL2_MIXER_VERSION: 2.0.4
   MINGW_PATH: C:\MinGW
   SDLDIR: C:\MinGW
+  VERSION: @VERSION@
 
 platform:
   - x86

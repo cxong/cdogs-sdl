@@ -14,7 +14,13 @@ SET(VERSION_MINOR "7")
 SET(VERSION_PATCH "0")
 SET(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
-# Optionally configure appveyor.yml since it is excluded in source archives
+# Optionally configure CI files since they are excluded in source archives
+if(EXISTS ${CMAKE_SOURCE_DIR}/.travis.yml.cmake)
+	CONFIGURE_FILE(
+		${CMAKE_SOURCE_DIR}/.travis.yml.cmake
+		${CMAKE_SOURCE_DIR}/.travis.yml
+	)
+endif()
 if(EXISTS ${CMAKE_SOURCE_DIR}/appveyor.yml.cmake)
 	CONFIGURE_FILE(
 		${CMAKE_SOURCE_DIR}/appveyor.yml.cmake

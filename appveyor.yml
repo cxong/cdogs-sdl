@@ -11,6 +11,7 @@ environment:
   SDL2_MIXER_VERSION: 2.0.4
   MINGW_PATH: C:\MinGW
   SDLDIR: C:\MinGW
+  VERSION: 0.7.0
 
 platform:
   - x86
@@ -63,3 +64,6 @@ deploy:
   force_update: true 	#to be in piece with Travis CI
   on:
     appveyor_repo_tag: true
+
+after_deploy:
+  script: .\build\appveyor\butler.bat

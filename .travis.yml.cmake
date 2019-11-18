@@ -9,7 +9,7 @@ os:
   - linux
   - osx
 env:
-  - VERSION=0.7.0
+  - VERSION=@VERSION@
 
 addons:
   apt:
@@ -39,7 +39,7 @@ install:
 - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
     if [ "$CXX" = "clang++" ]; then export CXX="clang++-9" CC="clang-9"; fi;
   fi
-- echo 
+- echo ${CC}
 
 before_script:
   - export CTEST_OUTPUT_ON_FAILURE=1
