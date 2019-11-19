@@ -427,13 +427,10 @@ static void DrawKeycards(HUD *hud)
 	{
 		if (hud->mission->KeyFlags & keyFlags[i])
 		{
-			const Pic *pic = CPicGetPic(
+			CPicDraw(
+				hud->device,
 				&KeyPickupClass(hud->mission->missionData->KeyStyle, i)->Pic,
-				0);
-			Blit(
-				&gGraphicsDevice,
-				pic,
-				svec2i(CenterX(pic->size.x) - xOffset, yOffset));
+				svec2i(CenterX(8) - xOffset, yOffset), NULL);
 		}
 		xOffset += xOffsetIncr;
 	}

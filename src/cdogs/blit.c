@@ -82,30 +82,11 @@ void Blit(GraphicsDevice *device, const Pic *pic, struct vec2i pos)
 	for (int i = 0; i < pic->size.y; i++)
 	{
 		int yoff = i + pos.y;
-		if (yoff > device->clipping.bottom)
-		{
-			break;
-		}
-		if (yoff < device->clipping.top)
-		{
-			current += pic->size.x;
-			continue;
-		}
 		yoff *= device->cachedConfig.Res.x;
 		for (int j = 0; j < pic->size.x; j++)
 		{
 			Uint32 *target;
 			int xoff = j + pos.x;
-			if (xoff < device->clipping.left)
-			{
-				current++;
-				continue;
-			}
-			if (xoff > device->clipping.right)
-			{
-				current += pic->size.x - j;
-				break;
-			}
 			if ((*current & device->Format->Amask) == 0)
 			{
 				current++;
@@ -145,30 +126,11 @@ void BlitMasked(
 	for (i = 0; i < pic->size.y; i++)
 	{
 		int yoff = i + pos.y;
-		if (yoff > device->clipping.bottom)
-		{
-			break;
-		}
-		if (yoff < device->clipping.top)
-		{
-			current += pic->size.x;
-			continue;
-		}
 		yoff *= device->cachedConfig.Res.x;
 		for (int j = 0; j < pic->size.x; j++)
 		{
 			Uint32 *target;
 			int xoff = j + pos.x;
-			if (xoff < device->clipping.left)
-			{
-				current++;
-				continue;
-			}
-			if (xoff > device->clipping.right)
-			{
-				current += pic->size.x - j;
-				break;
-			}
 			if (isTransparent &&
 				((*current & device->Format->Amask) >> device->Format->Ashift) < 3)
 			{

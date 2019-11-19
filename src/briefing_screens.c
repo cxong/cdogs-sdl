@@ -871,17 +871,18 @@ static void DrawObjectiveInfo(const Objective *o, const struct vec2i pos)
 		}
 		break;
 	case OBJECTIVE_COLLECT:
-		{
-			const Pic *p = CPicGetPic(&o->u.Pickup->Pic, 0);
-			Blit(&gGraphicsDevice, p,
-				svec2i_subtract(pos, svec2i_scale_divide(p->size, 2)));
-		}
+		CPicDraw(
+			&gGraphicsDevice, &o->u.Pickup->Pic,
+			svec2i_subtract(pos, svec2i(-4, -4)), NULL);
 		break;
 	case OBJECTIVE_DESTROY:
 		{
 			struct vec2i picOffset;
 			const Pic *p = MapObjectGetPic(o->u.MapObject, &picOffset);
-			Blit(&gGraphicsDevice, p, svec2i_add(pos, picOffset));
+			PicRender(
+				p, gGraphicsDevice.gameWindow.renderer,
+				svec2i_add(pos, picOffset), colorWhite, 0, svec2_one(),
+				SDL_FLIP_NONE, Rect2iZero());
 		}
 		break;
 	case OBJECTIVE_INVESTIGATE:

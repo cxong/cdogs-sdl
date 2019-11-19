@@ -361,16 +361,15 @@ void AutomapDraw(SDL_Renderer *renderer, const int flags, const bool showExit)
 	DisplaySummary();
 }
 
+// Draw mini automap
 void AutomapDrawRegion(
 	SDL_Renderer *renderer, Map *map,
 	struct vec2i pos, const struct vec2i size, const struct vec2i mapCenter,
 	const int flags, const bool showExit)
 {
 	const int scale = 1;
-	const BlitClipping oldClip = gGraphicsDevice.clipping;
-	GraphicsSetBlitClip(
-		&gGraphicsDevice,
-		pos.x, pos.y, pos.x + size.x - 1, pos.y + size.y - 1);
+	const Rect2i oldClip = GraphicsGetClip(renderer);
+	GraphicsSetClip(renderer, Rect2iNew(pos, size));
 	pos = svec2i_add(pos, svec2i_scale_divide(size, 2));
 	DrawMap(map, pos, mapCenter, size, scale, flags);
 	const struct vec2i centerOn =
@@ -388,7 +387,5 @@ void AutomapDrawRegion(
 	{
 		DisplayExit(centerOn, scale, flags);
 	}
-	GraphicsSetBlitClip(
-		&gGraphicsDevice,
-		oldClip.left, oldClip.top, oldClip.right, oldClip.bottom);
+	GraphicsSetClip(renderer, oldClip);
 }

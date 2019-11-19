@@ -197,8 +197,10 @@ void MouseDraw(const Mouse *mouse)
 {
 	if (mouse->cursor)
 	{
-		BlitMasked(
-			&gGraphicsDevice, mouse->cursor, mouse->currentPos, colorWhite, 1);
+		PicRender(
+			mouse->cursor, gGraphicsDevice.gameWindow.renderer,
+			mouse->currentPos, colorWhite, 0, svec2_one(), SDL_FLIP_NONE,
+			Rect2iZero());
 	}
 	if (mouse->trail)
 	{
@@ -217,8 +219,10 @@ void MouseDraw(const Mouse *mouse)
 				const struct vec2i pos = svec2i_add(
 					mouse->mouseMovePos,
 					svec2i_scale_divide(svec2i_scale(d, (float)i), TRAIL_NUM_DOTS + 1));
-				BlitMasked(
-					&gGraphicsDevice, mouse->trail, pos, colorWhite, false);
+				PicRender(
+					mouse->trail, gGraphicsDevice.gameWindow.renderer,
+					pos, colorWhite, 0, svec2_one(), SDL_FLIP_NONE,
+					Rect2iZero());
 			}
 		}
 	}

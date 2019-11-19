@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2018 Cong Xu
+    Copyright (c) 2013-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -78,14 +78,6 @@ typedef struct
 
 typedef struct
 {
-	int left;
-	int top;
-	int right;
-	int bottom;
-} BlitClipping;
-
-typedef struct
-{
 	int IsInitialized;
 	int IsWindowInitialized;
 	SDL_Surface *icon;
@@ -96,7 +88,6 @@ typedef struct
 	WindowContext secondWindow;
 	SDL_PixelFormat *Format;
 	GraphicsConfig cachedConfig;
-	BlitClipping clipping;
 	Uint32 *buf;
 	SDL_Texture *bkg;
 	SDL_Texture *bkg2;
@@ -119,9 +110,9 @@ void GraphicsConfigSet(
 	const bool secondWindow);
 void GraphicsConfigSetFromConfig(GraphicsConfig *gc, Config *c);
 
-void GraphicsSetBlitClip(
-	GraphicsDevice *device, int left, int top, int right, int bottom);
-void GraphicsResetBlitClip(GraphicsDevice *device);
+void GraphicsSetClip(SDL_Renderer *renderer, const Rect2i r);
+Rect2i GraphicsGetClip(SDL_Renderer *renderer);
+void GraphicsResetClip(SDL_Renderer *renderer);
 
 #define CenterX(w)		((gGraphicsDevice.cachedConfig.Res.x - w) / 2)
 #define CenterY(h)		((gGraphicsDevice.cachedConfig.Res.y - h) / 2)

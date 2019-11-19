@@ -286,7 +286,7 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 
 	const struct vec2 noise = camera->shake.Delta;
 
-	GraphicsResetBlitClip(&gGraphicsDevice);
+	GraphicsResetClip(gGraphicsDevice.gameWindow.renderer);
 	if (drawData.NumScreens == 0)
 	{
 		DoBuffer(
@@ -341,10 +341,9 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 				}
 				camera->lastPosition = a->thing.Pos;
 				struct vec2i centerOffsetPlayer = centerOffset;
-				const int clipLeft = (i & 1) ? w / 2 : 0;
-				const int clipRight = (i & 1) ? w - 1 : (w / 2) - 1;
-				GraphicsSetBlitClip(
-					&gGraphicsDevice, clipLeft, 0, clipRight, h - 1);
+				const Rect2i clip = Rect2iNew(
+					svec2i((i & 1) ? w / 2 : 0, 0), svec2i(w / 2, h));
+				GraphicsSetClip(gGraphicsDevice.gameWindow.renderer, clip);
 				if (i == 1)
 				{
 					centerOffsetPlayer.x += w / 2;
@@ -376,13 +375,10 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 				}
 				camera->lastPosition = a->thing.Pos;
 				struct vec2i centerOffsetPlayer = centerOffset;
-				const int clipLeft = (i & 1) ? w / 2 : 0;
-				const int clipTop = (i < 2) ? 0 : h / 2 - 1;
-				const int clipRight = (i & 1) ? w - 1 : (w / 2) - 1;
-				const int clipBottom = (i < 2) ? h / 2 : h - 1;
-				GraphicsSetBlitClip(
-					&gGraphicsDevice,
-					clipLeft, clipTop, clipRight, clipBottom);
+				const Rect2i clip = Rect2iNew(
+					svec2i((i & 1) ? w / 2 : 0, (i < 2) ? 0 : h / 2 - 1),
+					svec2i(w / 2, h / 2));
+				GraphicsSetClip(gGraphicsDevice.gameWindow.renderer, clip);
 				if (i & 1)
 				{
 					centerOffsetPlayer.x += w / 2;
@@ -411,7 +407,7 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 			assert(0 && "not implemented yet");
 		}
 	}
-	GraphicsResetBlitClip(&gGraphicsDevice);
+	GraphicsResetClip(gGraphicsDevice.gameWindow.renderer);
 }
 static void DoBuffer(
 	DrawBuffer *b, const struct vec2 center, const int w, const struct vec2 noise,

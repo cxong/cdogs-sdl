@@ -176,8 +176,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 			WindowContextInitTextures(&g->secondWindow, svec2i(w, h));
 		}
 
-		GraphicsSetBlitClip(
-			g, 0, 0, g->cachedConfig.Res.x - 1, g->cachedConfig.Res.y - 1);
+		GraphicsResetClip(g->gameWindow.renderer);
 
 		// Set render scale mode
 		const char *renderScaleQuality = "nearest";
@@ -371,20 +370,26 @@ void GraphicsConfigSetFromConfig(GraphicsConfig *gc, Config *c)
 		ConfigGetBool(c, "Graphics.SecondWindow"));
 }
 
-void GraphicsSetBlitClip(
-	GraphicsDevice *device, int left, int top, int right, int bottom)
+void GraphicsSetClip(SDL_Renderer *renderer, const Rect2i r)
 {
-	device->clipping.left = left;
-	device->clipping.top = top;
-	device->clipping.right = right;
-	device->clipping.bottom = bottom;
+	const SDL_Rect rect = { r.Pos.x, r.Pos.y, r.Size.x, r.Size.y };
+	if (SDL_RenderSetClipRect(renderer, Rect2iIsZero(r) ? NULL : &rect) != 0)
+	{
+		LOG(LM_MAIN, LL_ERROR, "Could not set clip rect: %s", SDL_GetError());
+	}
 }
 
-void GraphicsResetBlitClip(GraphicsDevice *device)
+Rect2i GraphicsGetClip(SDL_Renderer *renderer)
 {
-	GraphicsSetBlitClip(
-		device,
-		0, 0,
-		device->cachedConfig.Res.x - 1,
-		device->cachedConfig.Res.y - 1);
+	SDL_Rect rect;
+	SDL_RenderGetClipRect(renderer, &rect);
+	return Rect2iNew(svec2i(rect.x, rect.y), svec2i(rect.w, rect.h));
+}
+
+void GraphicsResetClip(SDL_Renderer *renderer)
+{
+	if (SDL_RenderSetClipRect(renderer, NULL) != 0)
+	{
+		LOG(LM_MAIN, LL_ERROR, "Could not reset clip rect: %s", SDL_GetError());
+	}
 }

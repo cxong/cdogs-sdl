@@ -277,7 +277,9 @@ static void DisplayGunIcon(
 	const struct vec2i iconPos = svec2i(
 		pos.x - wc->Icon->size.x - 4,
 		pos.y + size.y / 2 + textScroll + (FontH() - wc->Icon->size.y) / 2);
-	Blit(g, wc->Icon, iconPos);
+	PicRender(
+		wc->Icon, g->gameWindow.renderer,
+		iconPos, colorWhite, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 }
 static void DisplayDescriptionGunIcon(
 	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
@@ -289,7 +291,9 @@ static void DisplayDescriptionGunIcon(
 	// Display the gun just to the left of the description text
 	const struct vec2i iconPos = svec2i(
 		pos.x - wc->Icon->size.x - 4, pos.y + size.y / 2);
-	Blit(g, wc->Icon, iconPos);
+	PicRender(
+		wc->Icon, g->gameWindow.renderer,
+		iconPos, colorWhite, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 }
 
 void WeaponMenuTerminate(WeaponMenu *menu)

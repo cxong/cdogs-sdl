@@ -119,6 +119,10 @@ SDL_Texture *WindowContextCreateTexture(
 
 void WindowContextPreRender(WindowContext *wc)
 {
+	if (SDL_SetRenderDrawColor(wc->renderer, 0, 0, 0, 255) != 0)
+	{
+		LOG(LM_GFX, LL_ERROR, "Failed to set draw color: %s", SDL_GetError());
+	}
 	if (SDL_RenderClear(wc->renderer) != 0)
 	{
 		LOG(LM_MAIN, LL_ERROR, "Failed to clear renderer: %s", SDL_GetError());

@@ -167,12 +167,6 @@ void DrawRectangle(
 	GraphicsDevice *g, const struct vec2i pos, const struct vec2i size,
 	const color_t color, const bool filled)
 {
-	SDL_Rect rect = {
-		MAX(pos.x, g->clipping.left),
-		MAX(pos.y, g->clipping.top),
-		MIN(size.x, g->clipping.right + 1 - pos.x),
-		MIN(size.y, g->clipping.bottom + 1 - pos.y)
-	};
 	if (SDL_SetRenderDrawBlendMode(
 		g->gameWindow.renderer, SDL_BLENDMODE_BLEND) != 0)
 	{
@@ -185,6 +179,7 @@ void DrawRectangle(
 		LOG(LM_GFX, LL_ERROR, "Failed to set draw color: %s",
 			SDL_GetError());
 	}
+	const SDL_Rect rect = { pos.x, pos.y, size.x, size.y };
 	const int result =
 		filled ?
 		SDL_RenderFillRect(g->gameWindow.renderer, &rect) :

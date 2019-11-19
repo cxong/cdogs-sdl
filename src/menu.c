@@ -634,7 +634,9 @@ static void MenuDisplayItems(const MenuSystem *ms)
 		const Pic *logo = PicManagerGetPic(&gPicManager, "logo");
 		const struct vec2i pos = svec2i(
 			MS_CENTER_X(*ms, logo->size.x), ms->pos.y + ms->size.y / 12);
-		Blit(&gGraphicsDevice, logo, pos);
+		PicRender(
+			logo, ms->graphics->gameWindow.renderer,
+			pos, colorWhite, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 
 		FontOpts opts = FontOptsNew();
 		opts.HAlign = ALIGN_END;

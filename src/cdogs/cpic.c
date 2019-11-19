@@ -289,6 +289,12 @@ void CPicDraw(
 	GraphicsDevice *g, const CPic *p,
 	const struct vec2i pos, const CPicDrawContext *context)
 {
+	CPicDrawContext ctx;
+	if (context == NULL)
+	{
+		ctx = CPicDrawContextNew();
+		context = &ctx;
+	}
 	const Pic *pic = CPicGetPic(p, context->Dir);
 	if (pic == NULL)
 	{
