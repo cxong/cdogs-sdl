@@ -1069,11 +1069,6 @@ static void DrawBackground(
 		for (v.x = 0; v.x < o->Size.x; v.x++)
 		{
 			const struct vec2i pos1 = svec2i_add(pos, v);
-			if (pos1.x < g->clipping.left || pos1.x > g->clipping.right ||
-				pos1.y < g->clipping.top || pos1.y > g->clipping.bottom)
-			{
-				continue;
-			}
 			const int idx = PixelIndex(
 				pos1.x, pos1.y, g->cachedConfig.Res.x, g->cachedConfig.Res.y);
 			const color_t existing = PIXEL2COLOR(g->buf[idx]);
