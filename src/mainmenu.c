@@ -284,7 +284,8 @@ static menu_t *MenuCreateStart(
 	MenuAddSubmenu(menu, MenuCreateBack("Back"));
 
 	if (strlen(gAutosave.LastMission.Password) == 0 ||
-		!gAutosave.LastMission.IsValid)
+		!gAutosave.LastMission.IsValid ||
+		strlen(gAutosave.LastMission.Campaign.Path) == 0)
 	{
 		MenuDisableSubmenu(menu, menuContinueIndex);
 	}

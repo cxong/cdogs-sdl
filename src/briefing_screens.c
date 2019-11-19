@@ -441,7 +441,7 @@ static void MissionSummaryOnEnter(GameLoopData *data)
 
 	MusicPlay(&gSoundDevice, MUSIC_BRIEFING, NULL, NULL);
 
-	if (mData->completed)
+	if (mData->completed && IsPasswordAllowed(mData->c->Entry.Mode))
 	{
 		// Save password
 		MissionSave ms;
