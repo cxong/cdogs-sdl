@@ -15,6 +15,17 @@ include_directories(
 	${SDL2_IMAGE_INCLUDE_DIRS}
 	${SDL2_MIXER_INCLUDE_DIRS})
 
+add_executable(animated_counter_test
+	animated_counter_test.c
+	../animated_counter.h
+	../animated_counter.c)
+target_link_libraries(animated_counter_test
+	cbehave
+	cdogs
+	${SDL2_LIBRARY}
+	${EXTRA_LIBRARIES})
+add_test(NAME animated_counter_test COMMAND animated_counter_test)
+
 add_executable(autosave_test
 	autosave_test.c
 	../autosave.h

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2018 Cong Xu
+    Copyright (c) 2018-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,6 @@
 
 AnimatedCounter AnimatedCounterNew(const char *prefix, const int max)
 {
-	CASSERT(max >= 0, "cannot create animation with negative max");
 	AnimatedCounter a = { NULL, max, 0 };
 	CSTRDUP(a.prefix, prefix);
 	return a;
@@ -49,7 +48,7 @@ void AnimatedCounterUpdate(AnimatedCounter *a, const int ticks)
 	for (int i = 0; i < ticks; i++)
 	{
 		const int diff = a->max - a->current;
-		while (inc > diff)
+		while (diff > 0 ? inc > diff : inc < diff)
 		{
 			inc *= INC_RATIO;
 		}
