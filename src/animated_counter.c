@@ -52,7 +52,7 @@ void AnimatedCounterUpdate(AnimatedCounter *a, const int ticks)
 		{
 			inc *= INC_RATIO;
 		}
-		a->current += (int)ceil(inc);
+		a->current += (int)(diff > 0 ? ceil(inc) : floor(inc));
 	}
 }
 void AnimatedCounterDraw(const AnimatedCounter *a, const struct vec2i pos)
