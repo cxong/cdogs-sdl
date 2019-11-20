@@ -1638,6 +1638,7 @@ static void ActorAddBloodSplatters(
 	int bloodPower = power * 2;
 	// Randomly cycle through the blood types
 	int bloodSize = 1;
+	const struct vec2 hitVNorm = svec2_normalize(hitVector);
 	const float speedBase = MAX(1.0f, mass) * SHOT_IMPULSE_FACTOR;
 	while (bloodPower > 0)
 	{
@@ -1660,7 +1661,7 @@ static void ActorAddBloodSplatters(
 			bloodSize = 1;
 		}
 		const struct vec2 vel =
-			svec2_scale(hitVector, speedBase * RAND_FLOAT(0.5f, 1));
+			svec2_scale(hitVNorm, speedBase * RAND_FLOAT(0.5f, 1));
 		AddParticle ap;
 		memset(&ap, 0, sizeof ap);
 		ap.Pos = a->Pos;

@@ -77,6 +77,7 @@ static void MapObjectDraw(
 
 
 #define NUM_SPALL_PARTICLES 3
+#define SPALL_IMPULSE_FACTOR 1.0f
 void DamageObject(const NThingDamage d)
 {
 	TObject *o = ObjGetByUID(d.UID);
@@ -94,7 +95,8 @@ void DamageObject(const NThingDamage d)
 	ap.Pos = o->thing.Pos;
 	ap.Angle = NAN;
 	ap.Z = 10;
-	ap.Vel = svec2_scale(NetToVec2(d.Vel), 0.25);
+	ap.Vel =
+		svec2_scale(svec2_normalize(NetToVec2(d.Vel)), SPALL_IMPULSE_FACTOR);
 	// Generate spall
 	for (int i = 0; i < MIN(o->Health, d.Power); i++)
 	{
@@ -122,7 +124,7 @@ void DamageObject(const NThingDamage d)
 
 		// Exploding spall
 		EmitterInit(&em, NULL, svec2_zero(), -1.0f, 1.0f, 1, 16, 0, 0, 0);
-		ap.Vel = svec2_scale(NetToVec2(d.Vel), 0.1);
+		ap.Vel = svec2_scale(ap.Vel, 0.5f);
 		for (int i = 0; i < 20; i++)
 		{
 			char buf[256];
