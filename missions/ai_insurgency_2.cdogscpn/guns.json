@@ -1,8 +1,6 @@
 {
   "Version": 1,
-
   "Guns": [
-   
     {
       "Pic": "",
       "Name": "Detonator",
@@ -16,7 +14,8 @@
       "ReloadSound": "package_r",
       "SwitchSound": "package_r",
       "MuzzleHeight": 0,
-      "Ammo": "Dynamite"
+      "Ammo": "Dynamite",
+      "CanDrop": false
     }
   ]
 }
