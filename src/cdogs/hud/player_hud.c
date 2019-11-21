@@ -312,8 +312,20 @@ static void DrawWeaponStatus(
 		FontOpts opts = FontOptsNew();
 		opts.Area = g->cachedConfig.Res;
 		opts.Pad = svec2i(pos.x + AMMO_WIDTH / 2, pos.y);
-		char buf[128];
+
+		// Draw ammo level as inner fill
+		if (amount > 0)
+		{
+			const Pic *fillPic = PicManagerGetPic(pm, "hud/gauge_small_inner");
+			const struct vec2i fillPicSize = svec2i(
+				MAX(1, (AMMO_WIDTH - 1) * amount / ammo->Max), fillPic->size.y);
+			Draw9Slice(
+				g, fillPic, Rect2iNew(svec2i(pos.x, pos.y), fillPicSize),
+				1, 1, 1, 1, false, colorBlue, SDL_FLIP_NONE);
+		}
+
 		// Include ammo counter
+		char buf[128];
 		sprintf(buf, "%d", amount);
 
 		// If low / no ammo, draw text with different colours, flashing
@@ -337,17 +349,6 @@ static void DrawWeaponStatus(
 			}
 		}
 		FontStrOpt(buf, svec2i_zero(), opts);
-
-		// Draw ammo level as inner fill
-		if (amount > 0)
-		{
-			const Pic *fillPic = PicManagerGetPic(pm, "hud/gauge_small_inner");
-			const struct vec2i fillPicSize = svec2i(
-				MAX(1, (AMMO_WIDTH - 1) * amount / ammo->Max), fillPic->size.y);
-			Draw9Slice(
-				g, fillPic, Rect2iNew(svec2i(pos.x, pos.y), fillPicSize),
-				1, 1, 1, 1, false, colorBlue, SDL_FLIP_NONE);
-		}
 	}
 
 	// Draw reload ball
