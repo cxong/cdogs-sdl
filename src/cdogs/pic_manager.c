@@ -600,7 +600,7 @@ static void PicManagerGenerateMaskedPic(
 	{
 		color_t c = PIXEL2COLOR(original->Data[i]);
 		// Apply mask based on which channel each pixel is
-		if (c.g <= 2 && c.b <= 2)
+		if (c.g <= 2 && c.b <= 2 && !ColorEquals(maskAlt, colorWhite))
 		{
 			// Restore to white before masking
 			c.g = c.r;

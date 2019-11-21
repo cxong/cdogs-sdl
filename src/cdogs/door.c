@@ -378,25 +378,6 @@ static void TileAddTrigger(Tile *t, Trigger *tr)
 	CArrayPushBack(&t->triggers, &tr);
 }
 
-
-// Old door pics definitions
-typedef struct
-{
-	int H;
-	int V;
-} DoorPic;
-
-typedef struct
-{
-	DoorPic Normal;
-	DoorPic Yellow;
-	DoorPic Green;
-	DoorPic Blue;
-	DoorPic Red;
-	int OpenH;
-	int Wall;
-} DoorPics;
-
 // Get the tile class of a door; if it doesn't exist create it
 // style: office/dungeon/blast/alien, or custom
 // key: normal/yellow/green/blue/red/wall/open
