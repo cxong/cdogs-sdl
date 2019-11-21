@@ -449,7 +449,7 @@ void DoorAddClass(
 	char buf[CDOGS_FILENAME_MAX];
 	DoorGetTypeName(buf, key, type);
 	PicManagerGenerateMaskedStylePic(
-		pm, "door", style, buf, colorWhite, colorWhite);
+		pm, "door", style, buf, colorWhite, colorWhite, true);
 	TileClass *t = TileClassesAdd(
 		c, pm, &gTileDoor, style, buf, colorWhite, colorWhite);
 	CASSERT(t != NULL, "cannot add door class");

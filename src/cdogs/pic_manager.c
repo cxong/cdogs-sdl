@@ -582,7 +582,7 @@ NamedPic *PicManagerGetMaskedStylePic(
 
 static void PicManagerGenerateMaskedPic(
 	PicManager *pm, const char *name,
-	const color_t mask, const color_t maskAlt)
+	const color_t mask, const color_t maskAlt, const bool noAltMask)
 {
 	char maskedName[256];
 	GetMaskedName(maskedName, name, mask, maskAlt);
@@ -600,7 +600,7 @@ static void PicManagerGenerateMaskedPic(
 	{
 		color_t c = PIXEL2COLOR(original->Data[i]);
 		// Apply mask based on which channel each pixel is
-		if (c.g <= 2 && c.b <= 2 && !ColorEquals(maskAlt, colorWhite))
+		if (c.g <= 2 && c.b <= 2 && !noAltMask)
 		{
 			// Restore to white before masking
 			c.g = c.r;
@@ -624,11 +624,11 @@ static void PicManagerGenerateMaskedPic(
 }
 void PicManagerGenerateMaskedStylePic(
 	PicManager *pm, const char *name, const char *style, const char *type,
-	const color_t mask, const color_t maskAlt)
+	const color_t mask, const color_t maskAlt, const bool noAltMask)
 {
 	char buf[256];
 	sprintf(buf, "%s/%s/%s", name, style, type);
-	PicManagerGenerateMaskedPic(pm, buf, mask, maskAlt);
+	PicManagerGenerateMaskedPic(pm, buf, mask, maskAlt, noAltMask);
 }
 
 const NamedSprites *PicManagerGetCharSprites(

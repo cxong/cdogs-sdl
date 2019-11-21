@@ -131,7 +131,7 @@ void SetupWallTileClasses(
 	for (int i = 0; i < WALL_TYPE_COUNT; i++)
 	{
 		PicManagerGenerateMaskedStylePic(
-			pm, "wall", style, IntWallType(i), mask, altMask);
+			pm, "wall", style, IntWallType(i), mask, altMask, false);
 		TileClassesAdd(
 			&gTileClasses, pm, &gTileWall,
 			style, IntWallType(i), mask, altMask);
@@ -144,7 +144,7 @@ void SetupFloorTileClasses(
 	for (int i = 0; i < FLOOR_TYPES; i++)
 	{
 		PicManagerGenerateMaskedStylePic(
-			pm, "tile", style, IntTileType(i), mask, altMask);
+			pm, "tile", style, IntTileType(i), mask, altMask, false);
 		TileClassesAdd(
 			&gTileClasses, pm, base, style, IntTileType(i), mask, altMask);
 	}

@@ -220,7 +220,7 @@ const TileClass *TileClassesGetExit(
 
 	// tile class not found; create it
 	PicManagerGenerateMaskedStylePic(
-		pm, "exits", style, type, colorWhite, colorWhite);
+		pm, "exits", style, type, colorWhite, colorWhite, true);
 	return TileClassesAdd(
 		c, pm, &gTileExit, style, type, colorWhite, colorWhite);
 }

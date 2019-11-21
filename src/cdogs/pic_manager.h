@@ -73,7 +73,7 @@ NamedPic *PicManagerGetMaskedStylePic(
 // To support dynamic colours, generate pics on request.
 void PicManagerGenerateMaskedStylePic(
 	PicManager *pm, const char *name, const char *style, const char *type,
-	const color_t mask, const color_t maskAlt);
+	const color_t mask, const color_t maskAlt, const bool noAltMask);
 // Get masked character pics
 const NamedSprites *PicManagerGetCharSprites(
 	PicManager *pm, const char *name, const CharColors *colors);
