@@ -342,6 +342,11 @@ static void DrawObjectiveHighlights(
 		}
 		else if (ti->kind == KIND_PICKUP)
 		{
+			// Require LOS for non-deathmatch modes
+			if (!IsPVP(gCampaign.Entry.Mode) && t->outOfSight)
+			{
+				continue;
+			}
 			// Gun pickup
 			const Pickup *p = CArrayGet(&gPickups, ti->id);
 			if (!PickupIsManual(p))
