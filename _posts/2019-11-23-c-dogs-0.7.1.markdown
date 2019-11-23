@@ -1,0 +1,15 @@
+---
+layout: post
+title:  "C-Dogs 0.7.1 Released!"
+date:   2019-11-23
+categories: release
+published: true
+---
+
+C-Dogs SDL 0.7.1 released! This release fixes many graphics bug; thanks to [Wuzzy2](https://github.com/Wuzzy2) for raising most of them.
+
+![Screenshot](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/s4.png)
+
+Happy gaming! 🎉
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.7.1>
