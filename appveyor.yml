@@ -1,4 +1,4 @@
-version: 0.7.0.{build}
+version: 0.7.1.{build}
 
 branches:
   except:
@@ -11,7 +11,7 @@ environment:
   SDL2_MIXER_VERSION: 2.0.4
   MINGW_PATH: C:\MinGW
   SDLDIR: C:\MinGW
-  VERSION: 0.7.0
+  VERSION: 0.7.1
 
 platform:
   - x86
