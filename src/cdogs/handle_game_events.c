@@ -433,7 +433,7 @@ static void HandleGameEvent(
 				GameEvent ap = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 				ap.u.AddParticle.Class = wc->MuzzleFlash;
 				ap.u.AddParticle.Pos = pos;
-				ap.u.AddParticle.Z = e.u.GunFire.Z;
+				ap.u.AddParticle.Z = (float)e.u.GunFire.Z;
 				ap.u.AddParticle.Angle = e.u.GunFire.Angle;
 				GameEventsEnqueue(&gGameEvents, ap);
 			}

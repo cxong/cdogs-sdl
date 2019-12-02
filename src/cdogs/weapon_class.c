@@ -414,7 +414,7 @@ WeaponClass *IndexWeaponClassReal(const int i)
 }
 
 void WeaponClassFire(
-	const WeaponClass *wc, const struct vec2 pos, const int z,
+	const WeaponClass *wc, const struct vec2 pos, const float z,
 	const double radians,
 	const int flags, const int actorUID,
 	const bool playSound, const bool isGun)
@@ -423,7 +423,8 @@ void WeaponClassFire(
 	e.u.GunFire.ActorUID = actorUID;
 	strcpy(e.u.GunFire.Gun, wc->name);
 	e.u.GunFire.MuzzlePos = Vec2ToNet(pos);
-	e.u.GunFire.Z = z;
+	// TODO: GunFire Z to float
+	e.u.GunFire.Z = (int)z;
 	e.u.GunFire.Angle = (float)radians;
 	e.u.GunFire.Sound = playSound;
 	e.u.GunFire.Flags = flags;
@@ -446,13 +447,13 @@ void WeaponClassAddBrass(
 	const struct vec2 ejectionPortOffset = svec2_scale(
 		Vec2FromRadiansScaled(radians), 7);
 	e.u.AddParticle.Pos = svec2_subtract(pos, ejectionPortOffset);
-	e.u.AddParticle.Z = wc->MuzzleHeight;
+	e.u.AddParticle.Z = (float)wc->MuzzleHeight;
 	e.u.AddParticle.Vel = svec2_scale(
 		Vec2FromRadians(radians + MPI_2), 0.333333f);
 	e.u.AddParticle.Vel.x += RAND_FLOAT(-0.25f, 0.25f);
 	e.u.AddParticle.Vel.y += RAND_FLOAT(-0.25f, 0.25f);
 	e.u.AddParticle.Angle = RAND_DOUBLE(0, MPI * 2);
-	e.u.AddParticle.DZ = (rand() % 6) + 6;
+	e.u.AddParticle.DZ = (float)((rand() % 6) + 6);
 	e.u.AddParticle.Spin = RAND_DOUBLE(-0.1, 0.1);
 	GameEventsEnqueue(&gGameEvents, e);
 }
@@ -480,10 +481,11 @@ static struct vec2 GetMuzzleOffset(const direction_e d, const gunstate_e state)
 		state == GUNSTATE_FIRING ? BARREL_LENGTH : BARREL_LENGTH_READY;
 	return svec2_scale(Vec2FromRadians(dir2radians[d]), (float)barrelLength);
 }
-int WeaponClassGetMuzzleHeight(const WeaponClass *wc, const gunstate_e state)
+float WeaponClassGetMuzzleHeight(const WeaponClass *wc, const gunstate_e state)
 {
 	// Muzzle slightly higher when not firing
-	return wc->MuzzleHeight + (state == GUNSTATE_FIRING ? 0 : 4 * Z_FACTOR);
+	// TODO: convert MuzzleHeight to float
+	return (float)(wc->MuzzleHeight + (state == GUNSTATE_FIRING ? 0 : 4 * Z_FACTOR));
 }
 
 bool WeaponClassHasMuzzle(const WeaponClass *wc)

@@ -96,7 +96,7 @@ static void BulletDraw(GraphicsDevice *g, const int id, const struct vec2i pos)
 {
 	const TMobileObject *obj = CArrayGet(&gMobObjs, id);
 	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
-	struct vec2i drawPos = svec2i_subtract(pos, svec2i(0, obj->z / Z_FACTOR));
+	struct vec2i drawPos = svec2i_subtract(pos, svec2i(0, (int)(obj->z / Z_FACTOR)));
 
 	CPicDrawContext c = CPicDrawContextNew();
 	// Calculate direction based on velocity
@@ -941,8 +941,8 @@ void BulletAdd(const NAddBullet add)
 	obj->bulletClass = StrBulletClass(add.BulletClass);
 	ThingInit(
 		&obj->thing, i, KIND_MOBILEOBJECT, obj->bulletClass->Size, 0);
-	obj->z = add.MuzzleHeight;
-	obj->dz = add.Elevation;
+	obj->z = (float)add.MuzzleHeight;
+	obj->dz = (float)add.Elevation;
 
 	EmitterInit(
 		&obj->trail, obj->bulletClass->Trail.P,

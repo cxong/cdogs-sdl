@@ -66,4 +66,4 @@ deploy:
     appveyor_repo_tag: true
 
 after_deploy:
-  script: .\build\appveyor\butler.bat
+  - .\build\appveyor\butler.bat

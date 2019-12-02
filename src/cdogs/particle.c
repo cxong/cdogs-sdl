@@ -444,9 +444,9 @@ int ParticleAdd(CArray *particles, const AddParticle add)
 	}
 	p->ActorUID = add.ActorUID;
 	p->Pos = add.Pos;
-	p->Z = add.Z;
+	p->Z = (float)add.Z;
 	p->Angle = add.Angle;
-	p->DZ = add.DZ;
+	p->DZ = (float)add.DZ;
 	p->Spin = add.Spin;
 	p->Range = RAND_INT(add.Class->RangeLow, add.Class->RangeHigh);
 	p->isInUse = true;
@@ -496,7 +496,7 @@ static void DrawParticle(const struct vec2i pos, const ThingDrawFuncData *data)
 				c.Radians = p->Angle;
 			}
 			c.Offset = svec2i(
-				pic->size.x / -2, pic->size.y / -2 - p->Z / Z_FACTOR);
+				pic->size.x / -2, pic->size.y / -2 - (int)(p->Z / Z_FACTOR));
 			c.Scale = data->Scale;
 			if (p->Class->ZDarken)
 			{
@@ -515,7 +515,7 @@ static void DrawParticle(const struct vec2i pos, const ThingDrawFuncData *data)
 			opts.HAlign = ALIGN_CENTER;
 			opts.Mask = p->Class->u.TextColor;
 			FontStrOpt(
-				p->u.Text, svec2i(pos.x, pos.y - p->Z / Z_FACTOR), opts);
+				p->u.Text, svec2i(pos.x, pos.y - (int)(p->Z / Z_FACTOR)), opts);
 			break;
 		}
 		default:

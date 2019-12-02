@@ -121,10 +121,10 @@ WeaponClass *IndexWeaponClassReal(const int i);
 struct vec2 WeaponClassGetMuzzleOffset(
 	const WeaponClass *desc, const CharSprites *cs,
 	const direction_e dir, const gunstate_e state);
-int WeaponClassGetMuzzleHeight(const WeaponClass *wc, const gunstate_e state);
+float WeaponClassGetMuzzleHeight(const WeaponClass *wc, const gunstate_e state);
 
 void WeaponClassFire(
-	const WeaponClass *wc, const struct vec2 pos, const int z,
+	const WeaponClass *wc, const struct vec2 pos, const float z,
 	const double radians,
 	const int flags, const int actorUID,
 	const bool playSound, const bool isGun);

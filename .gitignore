@@ -46,6 +46,7 @@ bin/
 # Visual Studio
 Debug/
 Release/
+out/
 Win32/
 *.opensdf
 *.sdf

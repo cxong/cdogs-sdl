@@ -111,7 +111,7 @@ ENDIF()
 add_definitions(-DPB_FIELD_16BIT)	# Allow larger field numbers in nanopb
 include_directories(src/cdogs/proto/nanopb)
 if(MSVC)
-	ADD_DEFINITIONS(-MP -W4 -WX -wd"4996" -wd"4204")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -MP -W4 -WX -wd\"4996\" -wd\"4204\"")
 else()
 	add_definitions(
 		-fsigned-char

@@ -91,10 +91,10 @@ typedef struct
 	const ParticleClass *Class;
 	int ActorUID;
 	struct vec2 Pos;
-	int Z;
+	float Z;
 	struct vec2 Vel;
 	double Angle;
-	int DZ;
+	float DZ;
 	double Spin;
 	struct vec2 DrawScale;
 	color_t Mask;
