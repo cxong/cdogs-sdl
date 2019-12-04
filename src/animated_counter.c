@@ -44,15 +44,19 @@ void AnimatedCounterTerminate(AnimatedCounter *a)
 
 void AnimatedCounterUpdate(AnimatedCounter *a, const int ticks)
 {
+	if (a->max == 0)
+	{
+		return;
+	}
 	float inc = a->max * INC_RATIO;
 	for (int i = 0; i < ticks; i++)
 	{
 		const int diff = a->max - a->current;
-		while (diff > 0 ? inc > diff : inc < diff)
+		while (a->max > 0 ? inc > diff : inc < diff)
 		{
 			inc *= INC_RATIO;
 		}
-		a->current += (int)(diff > 0 ? ceil(inc) : floor(inc));
+		a->current += (int)(a->max > 0 ? ceil(inc) : floor(inc));
 	}
 }
 void AnimatedCounterDraw(const AnimatedCounter *a, const struct vec2i pos)

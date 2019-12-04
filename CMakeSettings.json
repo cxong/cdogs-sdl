@@ -2,9 +2,9 @@
   "configurations": [
     {
       "name": "x86-Debug",
-      "generator": "Visual Studio 16 2019",
+      "generator": "Visual Studio 15 2017",
       "configurationType": "Debug",
-      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "buildRoot": "${projectDir}",
       "installRoot": "${projectDir}\\out\\install\\${name}",
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",

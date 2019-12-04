@@ -62,6 +62,7 @@ Win32/
 *.pdb
 *.VC.*
 .vs/
+VSInheritEnvironments.txt
 
 # MinGW
 stdout.txt

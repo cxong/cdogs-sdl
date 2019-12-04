@@ -314,9 +314,11 @@ void SoundReconfigure(SoundDevice *s)
 		return;
 	}
 
-	Mix_Volume(-1, ConfigGetInt(&gConfig, "Sound.SoundVolume"));
-	Mix_VolumeMusic(ConfigGetInt(&gConfig, "Sound.MusicVolume"));
-	if (ConfigGetInt(&gConfig, "Sound.MusicVolume") > 0)
+	const int sVol = ConfigGetInt(&gConfig, "Sound.SoundVolume");
+	Mix_Volume(-1, sVol);
+	const int mVol = ConfigGetInt(&gConfig, "Sound.MusicVolume");
+	Mix_VolumeMusic(mVol);
+	if (mVol > 0)
 	{
 		MusicResume(s);
 	}
