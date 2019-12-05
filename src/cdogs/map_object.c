@@ -578,7 +578,7 @@ bool MapObjectIsTileOK(
 	{
 		return false;
 	}
-	if ((obj->Flags & (1 << PLACEMENT_ON_WALL)) &&
+	if (MapObjectIsOnWall(obj) &&
 		(tileAbove == NULL || tileAbove->Class->Type != TILE_CLASS_WALL))
 	{
 		return false;
@@ -591,9 +591,13 @@ struct vec2 MapObjectGetPlacementPos(const MapObject *mo, const struct vec2i til
 	pos = svec2_add(pos, mo->PosOffset);
 	// For on-wall objects, set their position to the top of the tile
 	// This guarantees that they are drawn last
-	if (mo->Flags & (1 << PLACEMENT_ON_WALL))
+	if (MapObjectIsOnWall(mo))
 	{
 		pos.y -= TILE_HEIGHT / 2 + 1;
 	}
 	return pos;
+}
+bool MapObjectIsOnWall(const MapObject *mo)
+{
+	return mo->Flags & (1 << PLACEMENT_ON_WALL);
 }

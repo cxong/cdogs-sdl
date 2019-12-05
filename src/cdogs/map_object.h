@@ -146,3 +146,4 @@ const Pic *MapObjectGetPic(const MapObject *mo, struct vec2i *offset);
 bool MapObjectIsTileOK(
 	const MapObject *obj, const Tile *tile, const Tile *tileAbove);
 struct vec2 MapObjectGetPlacementPos(const MapObject *mo, const struct vec2i tilePos);
+bool MapObjectIsOnWall(const MapObject *mo);
