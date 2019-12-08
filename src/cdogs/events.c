@@ -239,6 +239,17 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 	}
 	KeyPostPoll(&handlers->keyboard, ticks);
 	MousePostPoll(&handlers->mouse, ticks);
+
+	// Toggle fullscreen
+	if (KeyIsPressed(&handlers->keyboard, SDL_SCANCODE_RETURN) &&
+		(KeyIsDown(&handlers->keyboard, SDL_SCANCODE_LALT) ||
+			KeyIsDown(&handlers->keyboard, SDL_SCANCODE_RALT)))
+	{
+		ConfigGet(&gConfig, "Graphics.Fullscreen")->u.Bool.Value =
+			!ConfigGet(&gConfig, "Graphics.Fullscreen")->u.Bool.Value;
+		GraphicsConfigSetFromConfig(&gGraphicsDevice.cachedConfig, &gConfig);
+		GraphicsInitialize(&gGraphicsDevice);
+	}
 }
 
 int GetKeyboardCmd(
