@@ -179,6 +179,7 @@ static void Display(HandleInputResult result)
 	const int w = ec.g->cachedConfig.Res.x;
 	const int h = ec.g->cachedConfig.Res.y;
 
+	WindowContextPreRender(&ec.g->gameWindow);
 	ClearScreen(ec.g);
 
 	const Mission *mission = CampaignGetCurrentMission(&gCampaign);
@@ -250,7 +251,6 @@ static void Display(HandleInputResult result)
 		}
 		MouseDraw(&gEventHandlers.mouse);
 	}
-	WindowContextPreRender(&ec.g->gameWindow);
 	BlitUpdateFromBuf(ec.g, ec.g->screen);
 	WindowContextPostRender(&ec.g->gameWindow);
 }
@@ -432,6 +432,7 @@ static void Open(void)
 	bool done = false;
 	while (!done)
 	{
+		WindowContextPreRender(&gGraphicsDevice.gameWindow);
 		ClearScreen(&gGraphicsDevice);
 		const int x = 125;
 		struct vec2i pos = svec2i(x, 50);
@@ -492,7 +493,6 @@ static void Open(void)
 			}
 		}
 
-		WindowContextPreRender(&gGraphicsDevice.gameWindow);
 		BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 		WindowContextPostRender(&gGraphicsDevice.gameWindow);
 
@@ -533,11 +533,11 @@ static void Open(void)
 		GetTextInput(filename);
 		if (doOpen)
 		{
+			WindowContextPreRender(&gGraphicsDevice.gameWindow);
 			ClearScreen(&gGraphicsDevice);
 
 			FontStrCenter("Loading...");
 
-			WindowContextPreRender(&gGraphicsDevice.gameWindow);
 			BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 			WindowContextPostRender(&gGraphicsDevice.gameWindow);
 			// Try original filename
@@ -598,6 +598,7 @@ static void Save(void)
 	bool done = false;
 	while (!done)
 	{
+		WindowContextPreRender(&gGraphicsDevice.gameWindow);
 		ClearScreen(&gGraphicsDevice);
 		struct vec2i pos = svec2i(125, 50);
 		FontStr("Save as:", pos);
@@ -605,7 +606,6 @@ static void Save(void)
 		pos = FontCh('>', pos);
 		pos = FontStr(filename, pos);
 		FontCh('<', pos);
-		WindowContextPreRender(&gGraphicsDevice.gameWindow);
 		BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 		WindowContextPostRender(&gGraphicsDevice.gameWindow);
 
@@ -639,11 +639,11 @@ static void Save(void)
 	}
 	if (doSave)
 	{
+		WindowContextPreRender(&gGraphicsDevice.gameWindow);
 		ClearScreen(&gGraphicsDevice);
 
 		FontStrCenter("Saving...");
 
-		WindowContextPreRender(&gGraphicsDevice.gameWindow);
 		BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 		WindowContextPostRender(&gGraphicsDevice.gameWindow);
 		MapArchiveSave(filename, &gCampaign.Setting);
@@ -707,9 +707,9 @@ static void HelpScreen(void)
 		"Ctrl+X, C, V:                   Cut/copy/paste\n"
 		"Ctrl+M:                         Preview automap\n"
 		"F1:                             This screen\n";
+	WindowContextPreRender(&gGraphicsDevice.gameWindow);
 	ClearScreen(&gGraphicsDevice);
 	FontStr(helpText, pos);
-	WindowContextPreRender(&gGraphicsDevice.gameWindow);
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 	WindowContextPostRender(&gGraphicsDevice.gameWindow);
 	GetKey(&gEventHandlers);

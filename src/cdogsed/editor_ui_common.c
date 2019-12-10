@@ -107,12 +107,12 @@ void DeleteMission(CampaignOptions *co)
 
 bool ConfirmScreen(const char *info, const char *msg)
 {
-	int w = gGraphicsDevice.cachedConfig.Res.x;
-	int h = gGraphicsDevice.cachedConfig.Res.y;
+	WindowContextPreRender(&gGraphicsDevice.gameWindow);
 	ClearScreen(&gGraphicsDevice);
+	const int w = gGraphicsDevice.cachedConfig.Res.x;
+	const int h = gGraphicsDevice.cachedConfig.Res.y;
 	FontStr(info, svec2i((w - FontStrW(info)) / 2, (h - FontH()) / 2));
 	FontStr(msg, svec2i((w - FontStrW(msg)) / 2, (h + FontH()) / 2));
-	WindowContextPreRender(&gGraphicsDevice.gameWindow);
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 	WindowContextPostRender(&gGraphicsDevice.gameWindow);
 
