@@ -118,7 +118,6 @@ static void BrushLoadGuideImage(void *data, int d)
 {
 	UNUSED(d);
 	EditorBrush *b = data;
-	b->IsGuideImageNew = true;
 	SDL_FreeSurface(b->GuideImageSurface);
 	SDL_Surface *s = IMG_Load(b->GuideImage);
 	if (s == NULL) return;
@@ -128,7 +127,6 @@ static void BrushLoadGuideImage(void *data, int d)
 static void BrushChangeGuideImageAlpha(void *data, int d)
 {
 	EditorBrush *b = data;
-	b->IsGuideImageNew = true;
 	d *= 4;
 	if (gEventHandlers.keyboard.modState & KMOD_SHIFT)
 	{

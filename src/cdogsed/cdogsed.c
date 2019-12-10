@@ -168,7 +168,6 @@ static void MakeBackground(const bool changedMission)
 typedef struct
 {
 	bool Redraw;
-	bool RemakeBg;
 	bool WillDisplayAutomap;
 	bool Done;
 } HandleInputResult;
@@ -190,17 +189,13 @@ static void Display(HandleInputResult result)
 		{
 			MakeBackground(false);
 		}
-		if (result.RemakeBg || brush.IsGuideImageNew)
-		{
-			// Clear background first
-			BlitClearBuf(ec.g);
-			brush.IsGuideImageNew = false;
-			GrafxDrawExtra extra;
-			extra.guideImage = brush.GuideImageSurface;
-			extra.guideImageAlpha = brush.GuideImageAlpha;
-			GrafxDrawBackground(
-				ec.g, &sDrawBuffer, tintNone, ec.camera, &extra);
-		}
+		// Clear background first
+		BlitClearBuf(ec.g);
+		GrafxDrawExtra extra;
+		extra.guideImage = brush.GuideImageSurface;
+		extra.guideImageAlpha = brush.GuideImageAlpha;
+		GrafxDrawBackground(
+			ec.g, &sDrawBuffer, tintNone, ec.camera, &extra);
 		BlitClearBuf(ec.g);
 
 		// Draw brush highlight tiles
@@ -782,7 +777,7 @@ static HandleInputResult HandleInput(
 	SDL_Scancode sc, const int m,
 	int *xc, int *yc, int *xcOld, int *ycOld, Mission *scrap)
 {
-	HandleInputResult result = { false, false, false, false };
+	HandleInputResult result = { false, false, false };
 	Mission *mission = CampaignGetCurrentMission(&gCampaign);
 	UIObject *o = NULL;
 	const struct vec2i brushLastDrawPos = brush.Pos;
@@ -921,7 +916,6 @@ static HandleInputResult HandleInput(
 				{
 					fileChanged = true;
 					Autosave();
-					result.RemakeBg = true;
 					sHasUnbakedChanges = true;
 				}
 				if (r & EDITOR_RESULT_RELOAD)
@@ -945,7 +939,6 @@ static HandleInputResult HandleInput(
 				fileChanged = true;
 				Autosave();
 				result.Redraw = true;
-				result.RemakeBg = true;
 				sHasUnbakedChanges = true;
 			}
 			if (r & EDITOR_RESULT_RELOAD)
@@ -960,22 +953,22 @@ static HandleInputResult HandleInput(
 		if (KeyIsDown(&gEventHandlers.keyboard, SDL_SCANCODE_LEFT))
 		{
 			ec.camera.x -= CAMERA_PAN_SPEED;
-			result.Redraw = result.RemakeBg = true;
+			result.Redraw = true;
 		}
 		else if (KeyIsDown(&gEventHandlers.keyboard, SDL_SCANCODE_RIGHT))
 		{
 			ec.camera.x += CAMERA_PAN_SPEED;
-			result.Redraw = result.RemakeBg = true;
+			result.Redraw = true;
 		}
 		if (KeyIsDown(&gEventHandlers.keyboard, SDL_SCANCODE_UP))
 		{
 			ec.camera.y -= CAMERA_PAN_SPEED;
-			result.Redraw = result.RemakeBg = true;
+			result.Redraw = true;
 		}
 		else if (KeyIsDown(&gEventHandlers.keyboard, SDL_SCANCODE_DOWN))
 		{
 			ec.camera.y += CAMERA_PAN_SPEED;
-			result.Redraw = result.RemakeBg = true;
+			result.Redraw = true;
 		}
 		// Also pan the camera based on middle mouse drag
 		if (MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_MIDDLE))
@@ -983,7 +976,7 @@ static HandleInputResult HandleInput(
 			ec.camera = svec2_add(ec.camera, svec2_assign_vec2i(svec2i_subtract(
 				gEventHandlers.mouse.previousPos,
 				gEventHandlers.mouse.currentPos)));
-			result.Redraw = result.RemakeBg = true;
+			result.Redraw = true;
 		}
 		ec.camera.x = CLAMP(ec.camera.x, 0, Vec2CenterOfTile(mission->Size).x);
 		ec.camera.y = CLAMP(ec.camera.y, 0, Vec2CenterOfTile(mission->Size).y);
@@ -1291,7 +1284,7 @@ static void EditCampaign(void)
 		{
 			break;
 		}
-		if (result.Redraw || result.RemakeBg || sJustLoaded)
+		if (result.Redraw || sJustLoaded)
 		{
 			sJustLoaded = false;
 			LOG(LM_EDIT, LL_TRACE, "Drawing UI");
