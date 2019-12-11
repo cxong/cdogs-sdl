@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2016, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -1060,25 +1060,8 @@ static void DrawBackground(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
 {
 	UNUSED(data);
-	// Only draw background over completely transparent pixels
 	const color_t c = { 32, 32, 64, 196 };
-	const Uint32 p = COLOR2PIXEL(c);
-	struct vec2i v;
-	for (v.y = 0; v.y < o->Size.y; v.y++)
-	{
-		for (v.x = 0; v.x < o->Size.x; v.x++)
-		{
-			const struct vec2i pos1 = svec2i_add(pos, v);
-			const int idx = PixelIndex(
-				pos1.x, pos1.y, g->cachedConfig.Res.x, g->cachedConfig.Res.y);
-			const color_t existing = PIXEL2COLOR(g->buf[idx]);
-			if (existing.a != 0)
-			{
-				continue;
-			}
-			g->buf[idx] = p;
-		}
-	}
+	DrawRectangle(g, pos, o->Size, c, true);
 }
 static UIObject *CreateEditorObjs(CampaignOptions *co, EditorBrush *brush)
 {

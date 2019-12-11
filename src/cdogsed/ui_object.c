@@ -419,13 +419,13 @@ static void UIObjectDrawAndAddChildren(
 			}
 			if (o->u.Textbox.IsEditable)
 			{
-				oPos = FontChMask('>', oPos, bracketMask);
+				oPos = FontChMask('\x10', oPos, bracketMask);
 			}
 			oPos = FontStrMaskWrap(
 				text, oPos, textMask, o->Pos.x + o->Size.x - oPosX);
 			if (o->u.Textbox.IsEditable)
 			{
-				oPos = FontChMask('<', oPos, bracketMask);
+				oPos = FontChMask('\x11', oPos, bracketMask);
 			}
 			oPos.x = oPosX;
 		}
