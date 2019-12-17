@@ -170,6 +170,9 @@ ENDIF()
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ".")
 IF(UNIX AND NOT APPLE)
 	CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/build/linux/cdogs-sdl.cmake ${CMAKE_SOURCE_DIR}/build/linux/cdogs-sdl)
+	CONFIGURE_FILE(
+		${CMAKE_SOURCE_DIR}/build/linux/io.github.cxong.cdogs-sdl.desktop.cmake
+		${CMAKE_SOURCE_DIR}/build/linux/io.github.cxong.cdogs-sdl.desktop)
 	SET_SOURCE_FILES_PROPERTIES(${CMAKE_SOURCE_DIR}/build/linux/cdogs-sdl PROPERTIES GENERATED TRUE)
 ENDIF()
 IF(WIN32)
@@ -252,12 +255,12 @@ INSTALL(FILES
 	${CMAKE_SOURCE_DIR}/README.md
 	DESTINATION ${DATA_INSTALL_DIR})
 IF(UNIX AND NOT APPLE AND NOT BEOS AND NOT HAIKU)
-	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-sdl.desktop DESTINATION ${INSTALL_PREFIX}/share/applications)
-	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-sdl.appdata.xml DESTINATION ${INSTALL_PREFIX}/share/appdata)
+	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/io.github.cxong.cdogs-sdl.desktop DESTINATION ${INSTALL_PREFIX}/share/applications)
+	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/io.github.cxong.cdogs-sdl.appdata.xml DESTINATION ${INSTALL_PREFIX}/share/appdata)
 	foreach(RES 16 22 32 48 128)
 		INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-icon.${RES}.png
 			DESTINATION ${INSTALL_PREFIX}/share/icons/hicolor/${RES}x${RES}/apps
-			RENAME cdogs-sdl.png)
+			RENAME io.github.cxong.cdogs-sdl.png)
 	endforeach(RES)
 elseif(WIN32)
 	# Package for Windows
