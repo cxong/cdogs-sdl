@@ -1,27 +1,6 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-    This file incorporates work covered by the following copyright and
-    permission notice:
-
     Copyright (c) 2013-2014, 2016-2019 Cong Xu
     All rights reserved.
 
@@ -73,18 +52,10 @@ typedef enum
 } CharColorType;
 color_t *CharColorGetByType(CharColors *c, const CharColorType t);
 
-void Blit(GraphicsDevice *device, const Pic *pic, struct vec2i pos);
-void BlitMasked(
-	GraphicsDevice *device,
-	const Pic *pic,
-	struct vec2i pos,
-	color_t mask,
-	int isTransparent);
 void BlitClearBuf(GraphicsDevice *g);
 void BlitFillBuf(GraphicsDevice *g, const color_t c);
 void BlitUpdateFromBuf(GraphicsDevice *g, SDL_Texture *t);
 
-Uint32 PixelMult(const Uint32 p, const Uint32 m);
 CharColors CharColorsFromOneColor(const color_t color);
 color_t CharColorsGetChannelMask(const CharColors *c, const uint8_t alpha);
 void CharColorsGetMaskedName(char *buf, const char *base, const CharColors *c);

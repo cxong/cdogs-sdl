@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2016, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -473,7 +473,7 @@ static void MissionDrawKillObjective(
 			&store->OtherChars, CharacterStoreGetSpecialId(store, 0));
 		const struct vec2i drawPos =
 			svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2));
-		DrawCharacterSimple(c, drawPos, DIRECTION_DOWN, false, true, true);
+		DrawCharacterSimple(c, drawPos, DIRECTION_DOWN, false, true);
 	}
 }
 static void MissionDrawCollectObjective(
@@ -489,7 +489,10 @@ static void MissionDrawCollectObjective(
 	const Pic *newPic = CPicGetPic(&obj->u.Pickup->Pic, 0);
 	const struct vec2i drawPos =
 		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2));
-	Blit(g, newPic, svec2i_subtract(drawPos, svec2i_scale_divide(newPic->size, 2)));
+	PicRender(
+		newPic, g->gameWindow.renderer,
+		svec2i_subtract(drawPos, svec2i_scale_divide(newPic->size, 2)),
+		colorWhite, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 }
 static void MissionDrawDestroyObjective(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
@@ -505,7 +508,9 @@ static void MissionDrawDestroyObjective(
 	const Pic *newPic = MapObjectGetPic(obj->u.MapObject, &offset);
 	const struct vec2i drawPos =
 		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2));
-	Blit(g, newPic, svec2i_add(drawPos, offset));
+	PicRender(
+		newPic, g->gameWindow.renderer, svec2i_add(drawPos, offset),
+		colorWhite, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 }
 static void MissionDrawRescueObjective(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
@@ -523,7 +528,7 @@ static void MissionDrawRescueObjective(
 			&store->OtherChars, CharacterStoreGetPrisonerId(store, 0));
 		const struct vec2i drawPos =
 			svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2));
-		DrawCharacterSimple(c, drawPos, DIRECTION_DOWN, false, true, true);
+		DrawCharacterSimple(c, drawPos, DIRECTION_DOWN, false, true);
 	}
 }
 

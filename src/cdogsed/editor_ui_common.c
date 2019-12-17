@@ -38,7 +38,9 @@ void DisplayMapItem(const struct vec2i pos, const MapObject *mo)
 {
 	struct vec2i offset;
 	const Pic *pic = MapObjectGetPic(mo, &offset);
-	Blit(&gGraphicsDevice, pic, svec2i_add(pos, offset));
+	PicRender(
+		pic, gGraphicsDevice.gameWindow.renderer, svec2i_add(pos, offset),
+		colorWhite, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 }
 
 void DisplayMapItemWithDensity(
@@ -67,7 +69,9 @@ void DrawKey(UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
 		&KeyPickupClass(m->KeyStyle, data->u.ItemIndex)->Pic, 0);
 	pos = svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2));
 	pos = svec2i_subtract(pos, svec2i_scale_divide(pic->size, 2));
-	Blit(g, pic, pos);
+	PicRender(
+		pic, g->gameWindow.renderer, pos, colorWhite, 0, svec2_one(),
+		SDL_FLIP_NONE, Rect2iZero());
 }
 
 void InsertMission(CampaignOptions *co, Mission *mission, int idx)

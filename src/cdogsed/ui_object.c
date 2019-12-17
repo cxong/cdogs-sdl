@@ -432,10 +432,12 @@ static void UIObjectDrawAndAddChildren(
 		break;
 	case UITYPE_BUTTON:
 		{
-			int isDown =
+			const bool isDown =
 				o->u.Button.IsDownFunc && o->u.Button.IsDownFunc(o->Data);
-			BlitMasked(
-				g, o->u.Button.Pic, oPos, isDown ? colorGray : colorWhite, 1);
+			PicRender(
+				o->u.Button.Pic, g->gameWindow.renderer, oPos,
+				isDown ? colorGray : colorWhite, 0, svec2_one(), SDL_FLIP_NONE,
+				Rect2iZero());
 		}
 		break;
 	case UITYPE_CONTEXT_MENU:

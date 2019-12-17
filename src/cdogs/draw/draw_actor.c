@@ -340,8 +340,7 @@ static void DrawDyingBody(
 	GraphicsDevice *g, const ActorPics *pics, const struct vec2i pos,
 	const Rect2i bounds);
 void DrawActorPics(
-	const ActorPics *pics, const struct vec2i pos, const bool blit,
-	const Rect2i bounds)
+	const ActorPics *pics, const struct vec2i pos, const Rect2i bounds)
 {
 	if (pics->IsDead)
 	{
@@ -367,17 +366,9 @@ void DrawActorPics(
 				svec2i_subtract(bounds.Pos, drawPos),
 				svec2i_subtract(bounds.Size, bounds.Pos)
 			);
-			if (blit)
-			{
-				// TODO: deprecated
-				Blit(&gGraphicsDevice, pic, drawPos);
-			}
-			else
-			{
-				PicRender(
-					pic, gGraphicsDevice.gameWindow.renderer, drawPos,
-					pics->Mask, 0, svec2_one(), SDL_FLIP_NONE, drawSrc);
-			}
+			PicRender(
+				pic, gGraphicsDevice.gameWindow.renderer, drawPos,
+				pics->Mask, 0, svec2_one(), SDL_FLIP_NONE, drawSrc);
 		}
 	}
 }
@@ -516,12 +507,12 @@ static const Pic *GetDeathPic(PicManager *pm, const int frame)
 
 void DrawCharacterSimple(
 	const Character *c, const struct vec2i pos, const direction_e d,
-	const bool hilite, const bool showGun, const bool blit)
+	const bool hilite, const bool showGun)
 {
 	ActorPics pics = GetCharacterPics(
 		c, d, d, ACTORANIMATION_IDLE, 0, NULL, GUNSTATE_READY,
 		colorBlack, NULL, NULL, 0);
-	DrawActorPics(&pics, pos, blit, Rect2iZero());
+	DrawActorPics(&pics, pos, Rect2iZero());
 	if (hilite)
 	{
 		FontCh('>', svec2i_add(pos, svec2i(-8, -16)));

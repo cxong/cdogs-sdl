@@ -435,7 +435,7 @@ static void DrawThing(
 	{
 		TActor *a = CArrayGet(&gActors, t->id);
 		ActorPics pics = GetCharacterPicsFromActor(a);
-		DrawActorPics(&pics, picPos, false, Rect2iZero());
+		DrawActorPics(&pics, picPos, Rect2iZero());
 		// Draw weapon indicators
 		DrawLaserSight(&pics, a, picPos);
 	}
@@ -492,10 +492,10 @@ static void DrawEditorTiles(DrawBuffer *b, const struct vec2i offset)
 					svec2i_is_equal(start, svec2i(x + b->xStart, y + b->yStart)))
 				{
 					// mission start
-					BlitMasked(
-						&gGraphicsDevice,
+					PicRender(
 						PicManagerGetPic(&gPicManager, "editor/start"),
-						pos, colorWhite, 1);
+						b->g->gameWindow.renderer, pos, colorWhite, 0,
+						svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 				}
 			}
 		}

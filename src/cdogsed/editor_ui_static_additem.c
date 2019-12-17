@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2016, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -87,7 +87,10 @@ static void DrawPickupSpawner(
 		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)), mo);
 	const Pic *pic = CPicGetPic(&mo->u.PickupClass->Pic, 0);
 	pos = svec2i_subtract(pos, svec2i_scale_divide(pic->size, 2));
-	Blit(g, pic, svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)));
+	PicRender(
+		pic, g->gameWindow.renderer,
+		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
+		colorWhite, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 }
 static void DrawCharacter(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
@@ -99,7 +102,7 @@ static void DrawCharacter(
 	DrawCharacterSimple(
 		c,
 		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
-		DIRECTION_DOWN, false, false, true);
+		DIRECTION_DOWN, false, false);
 }
 static void DrawObjective(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
@@ -121,7 +124,7 @@ static void DrawObjective(
 			Character *c = CArrayGet(
 				&store->OtherChars,
 				CharacterStoreGetSpecialId(store, data->Brush.Index2));
-			DrawCharacterSimple(c, pos, DIRECTION_DOWN, false, false, true);
+			DrawCharacterSimple(c, pos, DIRECTION_DOWN, false, false);
 		}
 		break;
 	case OBJECTIVE_RESCUE:
@@ -129,14 +132,16 @@ static void DrawObjective(
 			Character *c = CArrayGet(
 				&store->OtherChars,
 				CharacterStoreGetPrisonerId(store, data->Brush.Index2));
-			DrawCharacterSimple(c, pos, DIRECTION_DOWN, false, false, true);
+			DrawCharacterSimple(c, pos, DIRECTION_DOWN, false, false);
 		}
 		break;
 	case OBJECTIVE_COLLECT:
 		{
 			const Pic *p = CPicGetPic(&obj->u.Pickup->Pic, 0);
 			pos = svec2i_subtract(pos, svec2i_scale_divide(p->size, 2));
-			Blit(&gGraphicsDevice, p, pos);
+			PicRender(
+				p, g->gameWindow.renderer, pos, colorWhite, 0, svec2_one(),
+				SDL_FLIP_NONE, Rect2iZero());
 		}
 		break;
 	case OBJECTIVE_DESTROY:

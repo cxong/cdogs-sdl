@@ -45,7 +45,7 @@ void DisplayCharacterAndName(
 	// its feet
 	pos.y += 8;
 	struct vec2i namePos = svec2i_add(pos, svec2i(-FontStrW(name) / 2, -30));
-	DrawCharacterSimple(c, pos, d, false, false, false);
+	DrawCharacterSimple(c, pos, d, false, false);
 	FontStrMask(name, namePos, color);
 }
 

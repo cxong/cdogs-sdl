@@ -1,27 +1,6 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin
-    Copyright (C) 2003-2007 Lucas Martin-King
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-    This file incorporates work covered by the following copyright and
-    permission notice:
-
     Copyright (c) 2013-2019 Cong Xu
     All rights reserved.
 
@@ -75,74 +54,6 @@ color_t *CharColorGetByType(CharColors *c, const CharColorType t)
 	}
 }
 
-void Blit(GraphicsDevice *device, const Pic *pic, struct vec2i pos)
-{
-	Uint32 *current = pic->Data;
-	pos = svec2i_add(pos, pic->offset);
-	for (int i = 0; i < pic->size.y; i++)
-	{
-		int yoff = i + pos.y;
-		yoff *= device->cachedConfig.Res.x;
-		for (int j = 0; j < pic->size.x; j++)
-		{
-			Uint32 *target;
-			int xoff = j + pos.x;
-			if ((*current & device->Format->Amask) == 0)
-			{
-				current++;
-				continue;
-			}
-			target = device->buf + yoff + xoff;
-			*target = *current;
-			current++;
-		}
-	}
-}
-
-Uint32 PixelMult(const Uint32 p, const Uint32 m)
-{
-	return
-		((p & 0xFF) * (m & 0xFF) / 0xFF) |
-		((((p & 0xFF00) >> 8) * ((m & 0xFF00) >> 8) / 0xFF) << 8) |
-		((((p & 0xFF0000) >> 16) * ((m & 0xFF0000) >> 16) / 0xFF) << 16) |
-		((((p & 0xFF000000) >> 24) * ((m & 0xFF000000) >> 24) / 0xFF) << 24);
-}
-void BlitMasked(
-	GraphicsDevice *device,
-	const Pic *pic,
-	struct vec2i pos,
-	color_t mask,
-	int isTransparent)
-{
-	Uint32 *current = pic->Data;
-	if (current == NULL)
-	{
-		CASSERT(false, "unexpected NULL pic data");
-		return;
-	}
-	const Uint32 maskPixel = COLOR2PIXEL(mask);
-	int i;
-	pos = svec2i_add(pos, pic->offset);
-	for (i = 0; i < pic->size.y; i++)
-	{
-		int yoff = i + pos.y;
-		yoff *= device->cachedConfig.Res.x;
-		for (int j = 0; j < pic->size.x; j++)
-		{
-			Uint32 *target;
-			int xoff = j + pos.x;
-			if (isTransparent &&
-				((*current & device->Format->Amask) >> device->Format->Ashift) < 3)
-			{
-				current++;
-				continue;
-			}
-			target = device->buf + yoff + xoff;
-			*target = PixelMult(*current, maskPixel);
-			current++;
-		}
-	}
-}
 CharColors CharColorsFromOneColor(const color_t color)
 {
 	CharColors c = { color, color, color, color, color };

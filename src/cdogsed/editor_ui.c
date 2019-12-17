@@ -587,7 +587,7 @@ static void MissionDrawEnemy(
 	DrawCharacterSimple(
 		CArrayGet(&store->OtherChars, charIndex),
 		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
-		DIRECTION_DOWN, UIObjectIsHighlighted(o), true, true);
+		DIRECTION_DOWN, UIObjectIsHighlighted(o), true);
 }
 static void MissionDrawSpecialChar(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
@@ -605,7 +605,7 @@ static void MissionDrawSpecialChar(
 	DrawCharacterSimple(
 		CArrayGet(&store->OtherChars, charIndex),
 		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
-		DIRECTION_DOWN, UIObjectIsHighlighted(o), true, true);
+		DIRECTION_DOWN, UIObjectIsHighlighted(o), true);
 }
 static void MissionDrawMapItem(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
@@ -631,7 +631,9 @@ static void DrawStyleArea(
 {
 	FontStrMask(name, pos, isHighlighted ? colorRed : colorWhite);
 	pos.y += FontH();
-	Blit(&gGraphicsDevice, pic, pos);
+	PicRender(
+		pic, gGraphicsDevice.gameWindow.renderer, pos, colorWhite, 0,
+		svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 	// Display style index and count, right aligned
 	char buf[16];
 	sprintf(buf, "%d/%d", idx + 1, count);
@@ -1656,15 +1658,17 @@ static void DrawMapItem(
 	const MapItemIndexData *data = vData;
 	DisplayMapItem(
 		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)), data->M);
-	if (data->M->Type == MAP_OBJECT_TYPE_PICKUP_SPAWNER)
+	if (data->M->Type != MAP_OBJECT_TYPE_PICKUP_SPAWNER)
 	{
-		// Also draw the pickup object spawned by this spawner
-		const Pic *pic = CPicGetPic(&data->M->u.PickupClass->Pic, 0);
-		pos = svec2i_subtract(pos, svec2i_scale_divide(pic->size, 2));
-		Blit(
-			g, pic,
-			svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)));
+		return;
 	}
+	// Also draw the pickup object spawned by this spawner
+	const Pic *pic = CPicGetPic(&data->M->u.PickupClass->Pic, 0);
+	pos = svec2i_subtract(pos, svec2i_scale_divide(pic->size, 2));
+	PicRender(
+		pic, g->gameWindow.renderer,
+		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
+		colorWhite, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 }
 
 static UIObject *CreateCharacterObjs(CampaignOptions *co, int dy)

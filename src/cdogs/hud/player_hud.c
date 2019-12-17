@@ -195,7 +195,7 @@ static void DrawPlayerIcon(
 			pos.y =  g->cachedConfig.Res.y - pos.y + 2;
 		}
 		DrawActorPics(
-			&pics, svec2i_add(pos, offset), false,
+			&pics, svec2i_add(pos, offset),
 			Rect2iNew(svec2i(-12, -12), svec2i(12, 5)));
 	}
 	PicRender(
