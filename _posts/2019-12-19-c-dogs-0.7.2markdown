@@ -1,0 +1,15 @@
+---
+layout: post
+title:  "C-Dogs 0.7.2 Released!"
+date:   2019-12-19
+categories: release
+published: true
+---
+
+C-Dogs SDL 0.7.2 released! This release fixes the editor, broken since 0.7.
+
+![Screenshot](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/editor.png)
+
+Happy gaming! 🎉
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.7.2>

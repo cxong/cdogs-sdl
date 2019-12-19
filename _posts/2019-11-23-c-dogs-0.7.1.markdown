@@ -6,7 +6,7 @@ categories: release
 published: true
 ---
 
-C-Dogs SDL 0.7.1 released! This release fixes many graphics bug; thanks to [Wuzzy2](https://github.com/Wuzzy2) for raising most of them.
+C-Dogs SDL 0.7.1 released! This release fixes many graphics bugs; thanks to [Wuzzy2](https://github.com/Wuzzy2) for raising most of them.
 
 ![Screenshot](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/s4.png)
 
