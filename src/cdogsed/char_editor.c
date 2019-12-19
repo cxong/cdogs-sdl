@@ -840,10 +840,7 @@ static void DrawCharacter(
 		const struct vec2i drawPos = svec2i_add(pos, pics.OrderedOffsets[i]);
 		LoadTexFromPic(texids[i], pic);
 		struct nk_image tex = nk_image_id((int)texids[i]);
-		glTexParameteri(
-			GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(
-			GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		BeforeDrawTex(texids[i]);
 		struct nk_rect bounds;
 		nk_layout_widget_space(
 			&bounds, ec->ctx, ec->ctx->current, nk_true);
