@@ -8,7 +8,7 @@ if [[ -z "${BUTLER_API_KEY}" ]]; then
   exit 1
 fi
 
-PROJECT="cxong/cdogs-sdl"
+PROJECT="congusbongus/cdogs-sdl"
 
 echo "Preparing butler..."
 curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default

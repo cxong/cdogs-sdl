@@ -6,12 +6,12 @@ if "!BUTLER_API_KEY!" == "" (
   exit /b 1
 )
 
-set PROJECT="cxong/cdogs-sdl"
+set PROJECT="congusbongus/cdogs-sdl"
 
 echo "Preparing butler..."
 curl -L -o butler.zip https://broth.itch.ovh/butler/windows-amd64/LATEST/archive/default
 7z x -y butler.zip
 butler -V
 
-butler .\C-Dogs*.exe !PROJECT!:win --userversion !VERSION!
-butler .\C-Dogs*.zip !PROJECT!:win --userversion !VERSION!
+butler push .\C-Dogs*.exe !PROJECT!:win --userversion !VERSION!
+butler push .\C-Dogs*.zip !PROJECT!:win --userversion !VERSION!
