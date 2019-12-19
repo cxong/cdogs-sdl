@@ -74,5 +74,5 @@ deploy:
     tags: true
     condition: $CC = gcc
 
-after_deploy
+after_deploy:
   - bash build/travis-ci/butler.sh
