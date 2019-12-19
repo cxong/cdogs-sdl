@@ -11,7 +11,7 @@ project(cdogs-sdl C)
 
 SET(VERSION_MAJOR "0")
 SET(VERSION_MINOR "7")
-SET(VERSION_PATCH "1")
+SET(VERSION_PATCH "2")
 SET(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
 # Optionally configure CI files since they are excluded in source archives
