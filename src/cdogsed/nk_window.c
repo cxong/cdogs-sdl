@@ -179,6 +179,8 @@ static void Draw(const NKWindowConfig cfg)
 	SDL_GL_SwapWindow(cfg.win);
 }
 
+static void BeforeDrawTex(const GLuint texid);
+
 // Custom controls
 int nk_combo_separator_image(struct nk_context *ctx,
 	const GLuint *img_ids, const char *items_separated_by_separator,
@@ -247,34 +249,6 @@ int nk_combo_separator_image(struct nk_context *ctx,
 
 	return selected;
 }
-void DrawCharacter(
-	struct nk_context *ctx, Character *c, GLuint *texids,
-	const struct vec2i pos, const Animation *anim, const direction_e d)
-{
-	const int frame = AnimationGetFrame(anim);
-	ActorPics pics = GetCharacterPics(
-		c, d, d, anim->Type, frame,
-		c->Gun->Sprites, GUNSTATE_READY, colorTransparent, NULL, NULL, 0);
-	for (int i = 0; i < BODY_PART_COUNT; i++)
-	{
-		const Pic *pic = pics.OrderedPics[i];
-		if (pic == NULL)
-		{
-			continue;
-		}
-		const struct vec2i drawPos = svec2i_add(pos, pics.OrderedOffsets[i]);
-		LoadTexFromPic(texids[i], pic);
-		struct nk_image tex = nk_image_id((int)texids[i]);
-		BeforeDrawTex(texids[i]);
-		struct nk_rect bounds;
-		nk_layout_widget_space(&bounds, ctx, ctx->current, nk_true);
-		bounds.x += drawPos.x * PIC_SCALE + 32;
-		bounds.y += drawPos.y * PIC_SCALE + 32;
-		bounds.w = (float)pic->size.x * PIC_SCALE;
-		bounds.h = (float)pic->size.y * PIC_SCALE;
-		nk_draw_image(&ctx->current->buffer, bounds, &tex, nk_white);
-	}
-}
 
 static Pic PadEven(const Pic *pic);
 void LoadTexFromPic(const GLuint texid, const Pic *pic)
@@ -303,7 +277,23 @@ static Pic PadEven(const Pic *pic)
 	return p;
 }
 
-void BeforeDrawTex(const GLuint texid)
+void DrawPic(
+	struct nk_context *ctx, const Pic *pic, const GLuint texid,
+	const struct vec2i pos, const float scale)
+{
+	LoadTexFromPic(texid, pic);
+	struct nk_image tex = nk_image_id((int)texid);
+	BeforeDrawTex(texid);
+	struct nk_rect bounds;
+	nk_layout_widget_space(&bounds, ctx, ctx->current, nk_true);
+	bounds.x += pos.x * scale;
+	bounds.y += pos.y * scale;
+	bounds.w = pic->size.x * scale;
+	bounds.h = pic->size.y * scale;
+	nk_draw_image(&ctx->current->buffer, bounds, &tex, nk_white);
+}
+
+static void BeforeDrawTex(const GLuint texid)
 {
 	glBindTexture(GL_TEXTURE_2D, texid);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

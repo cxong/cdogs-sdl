@@ -27,7 +27,10 @@
 */
 #pragma once
 
+#include <cdogs/campaigns.h>
 #include <cdogs/events.h>
 
 
-void TileBrush(EventHandlers *handlers);
+void TileBrush(
+	const PicManager *pm, EventHandlers *handlers, CampaignOptions *co,
+	int *brushIdx);

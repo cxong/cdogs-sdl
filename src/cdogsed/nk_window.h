@@ -79,10 +79,9 @@ int nk_combo_separator_image(struct nk_context *ctx,
 	const GLuint *img_ids, const char *items_separated_by_separator,
 	int separator, int selected, int count, int item_height,
 	struct nk_vec2 size);
-void DrawCharacter(
-	struct nk_context *ctx, Character *c, GLuint *texids,
-	const struct vec2i pos, const Animation *anim, const direction_e d);
 
 // Util functions
 void LoadTexFromPic(const GLuint texid, const Pic *pic);
-void BeforeDrawTex(const GLuint texid);
+void DrawPic(
+	struct nk_context *ctx, const Pic *pic, const GLuint texid,
+	const struct vec2i pos, const float scale);

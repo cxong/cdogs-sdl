@@ -105,12 +105,14 @@ static void BrushChangeType(EditorBrush *b, int d, int isMain)
 static void BrushChangeMainType(void *data, int d)
 {
 	BrushChangeType(data, d, 1);
-	TileBrush(&gEventHandlers);
+	EditorBrush *b = data;
+	TileBrush(&gPicManager, &gEventHandlers, &gCampaign, &b->MainType);
 }
 static void BrushChangeSecondaryType(void *data, int d)
 {
 	BrushChangeType(data, d, 0);
-	TileBrush(&gEventHandlers);
+	EditorBrush *b = data;
+	TileBrush(&gPicManager, &gEventHandlers, &gCampaign, &b->SecondaryType);
 }
 static void BrushChangeSize(void *data, int d)
 {

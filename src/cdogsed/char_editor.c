@@ -133,7 +133,8 @@ void CharEditor(
 	CArrayTerminate(&ec.texidsChars);
 	glDeleteTextures(BODY_PART_COUNT, ec.texidsPreview);
 	glDeleteTextures(
-		(GLsizei)(ec.texIdsCharClasses.size), (const GLuint *)ec.texIdsCharClasses.data);
+		(GLsizei)ec.texIdsCharClasses.size,
+		(const GLuint *)ec.texIdsCharClasses.data);
 	CArrayTerminate(&ec.texIdsCharClasses);
 	glDeleteTextures((GLsizei)(ec.texIdsGuns.size), (const GLuint *)ec.texIdsGuns.data);
 	CArrayTerminate(&ec.texIdsGuns);
@@ -238,6 +239,9 @@ static void DrawCharColor(
 static void DrawFlag(
 	struct nk_context *ctx, EditorContext *ec, const char *label,
 	const int flag, const char *tooltip);
+static void DrawCharacter(
+	struct nk_context *ctx, Character *c, GLuint *texids,
+	const struct vec2i pos, const Animation *anim, const direction_e d);
 static void Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 {
 	EditorContext *ec = data;
@@ -595,5 +599,27 @@ static void DrawFlag(
 	if (tooltip && nk_input_is_mouse_hovering_rect(&ctx->input, bounds))
 	{
 		nk_tooltip(ctx, tooltip);
+	}
+}
+
+static void DrawCharacter(
+	struct nk_context *ctx, Character *c, GLuint *texids,
+	const struct vec2i pos, const Animation *anim, const direction_e d)
+{
+	const int frame = AnimationGetFrame(anim);
+	ActorPics pics = GetCharacterPics(
+		c, d, d, anim->Type, frame,
+		c->Gun->Sprites, GUNSTATE_READY, colorTransparent, NULL, NULL, 0);
+	for (int i = 0; i < BODY_PART_COUNT; i++)
+	{
+		const Pic *pic = pics.OrderedPics[i];
+		if (pic == NULL)
+		{
+			continue;
+		}
+		const struct vec2i drawPos = svec2i_add(
+			svec2i_add(pos, pics.OrderedOffsets[i]),
+			svec2i(16, 16));
+		DrawPic(ctx, pic, texids[i], drawPos, PIC_SCALE);
 	}
 }
