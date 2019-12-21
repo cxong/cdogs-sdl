@@ -13,6 +13,8 @@ set(CDOGSED_SOURCES
 	editor_ui_static.c
 	editor_ui_static_additem.c
 	editor_ui_weapons.c
+	nk_window.c
+	tile_brush.c
 	ui_object.c)
 set(CDOGSED_HEADERS
 	char_editor.h
@@ -25,6 +27,8 @@ set(CDOGSED_HEADERS
 	editor_ui_static.h
 	editor_ui_static_additem.h
 	editor_ui_weapons.h
+	nk_window.h
+	tile_brush.h
 	ui_object.h)
 add_library(cdogsedlib STATIC ${CDOGSED_SOURCES} ${CDOGSED_HEADERS})
 target_link_libraries(cdogsedlib
