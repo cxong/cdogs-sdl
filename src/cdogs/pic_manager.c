@@ -675,9 +675,9 @@ const NamedSprites *PicManagerGetCharSprites(
 static void GetMaskedName(
 	char *buf, const char *name, const color_t mask, const color_t maskAlt)
 {
-	char maskName[16];
+	char maskName[COLOR_STR_BUF];
 	ColorStr(maskName, mask);
-	char maskAltName[16];
+	char maskAltName[COLOR_STR_BUF];
 	ColorStr(maskAltName, maskAlt);
 	sprintf(buf, "%s/%s/%s", name, maskName, maskAltName);
 }

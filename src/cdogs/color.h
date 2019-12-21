@@ -119,3 +119,4 @@ bool HSVEquals(const HSV a, const HSV b);
 color_t StrColor(const char *s);
 // Convert colour to hex string
 void ColorStr(char *s, const color_t c);
+#define COLOR_STR_BUF 9

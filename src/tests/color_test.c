@@ -241,7 +241,7 @@ FEATURE(ColorStr , "Convert to string")
 			color_t c = { 0x64, 0x95, 0xed, 0xff };
 
 		WHEN("I convert it to hex")
-			char buf[16];
+			char buf[COLOR_STR_BUF];
 			ColorStr(buf, c);
 
 		THEN("the result should be the expected hex string")

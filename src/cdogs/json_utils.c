@@ -62,7 +62,7 @@ void AddStringPair(json_t *parent, const char *name, const char *s)
 }
 void AddColorPair(json_t *parent, const char *name, const color_t c)
 {
-	char buf[16];
+	char buf[COLOR_STR_BUF];
 	ColorStr(buf, c);
 	AddStringPair(parent, name, buf);
 }

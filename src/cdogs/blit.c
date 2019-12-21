@@ -77,7 +77,8 @@ color_t CharColorsGetChannelMask(
 }
 void CharColorsGetMaskedName(char *buf, const char *base, const CharColors *c)
 {
-	char bufSkin[16], bufArms[16], bufBody[16], bufLegs[16], bufHair[16];
+	char bufSkin[COLOR_STR_BUF], bufArms[COLOR_STR_BUF],
+		bufBody[COLOR_STR_BUF], bufLegs[COLOR_STR_BUF], bufHair[COLOR_STR_BUF];
 	ColorStr(bufSkin, c->Skin);
 	ColorStr(bufArms, c->Arms);
 	ColorStr(bufBody, c->Body);

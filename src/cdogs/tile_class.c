@@ -184,9 +184,9 @@ void TileClassGetName(
 	char *buf, const TileClass *base, const char *style, const char *type,
 	const color_t mask, const color_t maskAlt)
 {
-	char maskName[16];
+	char maskName[COLOR_STR_BUF];
 	ColorStr(maskName, mask);
-	char maskAltName[16];
+	char maskAltName[COLOR_STR_BUF];
 	ColorStr(maskAltName, maskAlt);
 	sprintf(
 		buf, "%s%s/%s/%s/%s/%s",
@@ -196,9 +196,9 @@ void TileClassGetName(
 const Pic *TileClassGetPic(const PicManager *pm, const TileClass *tc)
 {
 	char buf[CDOGS_PATH_MAX];
-	char maskName[16];
+	char maskName[COLOR_STR_BUF];
 	ColorStr(maskName, tc->Mask);
-	char maskAltName[16];
+	char maskAltName[COLOR_STR_BUF];
 	ColorStr(maskAltName, tc->MaskAlt);
 	sprintf(
 		buf, "%s/%s/%s/%s/%s",

@@ -37,7 +37,7 @@
 typedef struct
 {
 	color_t Color;
-	char Text[7];
+	char Text[COLOR_STR_BUF];
 	void *Data;
 	ColorPickerGetFunc GetFunc;
 	ColorPickerChangeFunc ChangeFunc;
@@ -231,7 +231,7 @@ static const char *MissionGetColorStr(UIObject *o, void *data)
 	{
 		"Walls", "Floors", "Rooms", "Extra"
 	};
-	char c[16];
+	char c[COLOR_STR_BUF];
 	ColorStr(c, CampaignGetMissionColor(mc));
 	sprintf(s, "%s: #%s", colourTypeNames[(int)mc->Type], c);
 	return s;
