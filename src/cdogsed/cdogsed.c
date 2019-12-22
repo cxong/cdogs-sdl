@@ -67,6 +67,7 @@
 #include <cdogs/font_utils.h>
 #include <cdogs/log.h>
 #include <cdogs/player_template.h>
+#include <cdogs/XGetopt.h>
 
 #include <tinydir/tinydir.h>
 
@@ -1306,12 +1307,56 @@ int main(int argc, char *argv[])
 #if defined(_MSC_VER) && !defined(NDEBUG)
 	FreeConsole();
 #endif
-	int i;
 	int loaded = 0;
 
+	// Print command line
+	char buf[CDOGS_PATH_MAX];
+	struct option longopts[] =
+	{
+		{ "log",			required_argument,	NULL,	1000 },
+		{ "logfile",		required_argument,	NULL,	1001 },
+		{ 0,				0,					NULL,	0 }
+	};
+	int opt = 0;
+	int idx = 0;
+	while ((opt = getopt_long(argc, argv, "\0:\0", longopts, &idx)) != -1)
+	{
+		switch (opt)
+		{
+		case 1000:
+		{
+			char *comma = strchr(optarg, ',');
+			if (comma)
+			{
+				// Set logging level for a single module
+				// The module and level are comma separated
+				*comma = '\0';
+				const LogLevel ll = StrLogLevel(comma + 1);
+				LogModuleSetLevel(StrLogModule(optarg), ll);
+				printf("Logging %s at %s\n", optarg, LogLevelName(ll));
+			}
+			else
+			{
+				// Set logging level for all modules
+				const LogLevel ll = StrLogLevel(optarg);
+				for (int i = 0; i < (int)LM_COUNT; i++)
+				{
+					LogModuleSetLevel((LogModule)i, ll);
+				}
+				printf("Logging everything at %s\n", LogLevelName(ll));
+			}
+		}
+		break;
+		case 1001:
+			LogOpenFile(optarg);
+			break;
+		default:
+			// Ignore unknown arguments
+			break;
+		}
+	}
+
 	LogInit();
-	// Turn up the logging for map for debugging
-	LogModuleSetLevel(LM_MAP, LL_TRACE);
 	printf("C-Dogs SDL Editor\n");
 
 	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO) != 0)
@@ -1320,7 +1365,6 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	char buf[CDOGS_PATH_MAX];
 	GetDataFilePath(buf, "");
 	printf("Data directory:\t\t%s\n", buf);
 	printf("Config directory:\t%s\n\n", GetConfigFilePath(""));
@@ -1384,7 +1428,7 @@ int main(int argc, char *argv[])
 
 	EventInit(&gEventHandlers, NULL, NULL, false);
 
-	for (i = 1; i < argc; i++)
+	for (int i = 1; i < argc; i++)
 	{
 		if (!loaded)
 		{

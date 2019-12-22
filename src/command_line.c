@@ -33,8 +33,7 @@
 #include <cdogs/log.h>
 #include <cdogs/sys_config.h>
 #include <cdogs/utils.h>
-
-#include "XGetopt.h"
+#include <cdogs/XGetopt.h>
 
 
 void PrintTitle(void)
@@ -117,15 +116,15 @@ bool ParseArgs(
 {
 	struct option longopts[] =
 	{
-		{ "fullscreen",	no_argument,		NULL,	'f' },
+		{ "fullscreen",	no_argument,			NULL,	'f' },
 		{ "scale",		required_argument,	NULL,	's' },
 		{ "screen",		required_argument,	NULL,	'c' },
-		{ "connect",	required_argument,	NULL,	'x' },
+		{ "connect",		required_argument,	NULL,	'x' },
 		{ "config",		optional_argument,	NULL,	'C' },
-		{ "log",		required_argument,	NULL,	1000 },
-		{ "logfile",	required_argument,	NULL,	1001 },
-		{ "help",		no_argument,		NULL,	'h' },
-		{ 0,			0,					NULL,	0 }
+		{ "log",			required_argument,	NULL,	1000 },
+		{ "logfile",		required_argument,	NULL,	1001 },
+		{ "help",		no_argument,			NULL,	'h' },
+		{ 0,				0,					NULL,	0 }
 	};
 	int opt = 0;
 	int idx = 0;

@@ -33,8 +33,7 @@ set(CDOGS_SDL_SOURCES
 	prep.c
 	prep_equip.c
 	screens_end.c
-	weapon_menu.c
-	XGetopt.c)
+	weapon_menu.c)
 set(CDOGS_SDL_HEADERS
 	animated_counter.h
 	autosave.h
@@ -53,8 +52,7 @@ set(CDOGS_SDL_HEADERS
 	prep.h
 	prep_equip.h
 	screens_end.h
-	weapon_menu.h
-	XGetopt.h)
+	weapon_menu.h)
 set(CDOGS_SDL_EXTRA)
 if(WIN32)
 	set(CDOGS_SDL_EXTRA ../build/windows/cdogs.rc)

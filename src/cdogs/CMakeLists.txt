@@ -108,6 +108,7 @@ set(CDOGS_SOURCES
 	weapon.c
 	weapon_class.c
 	window_context.c
+	XGetopt.c
 	yajl_utils.c)
 set(CDOGS_HEADERS
 	actor_fire.h
@@ -216,6 +217,7 @@ set(CDOGS_HEADERS
 	weapon.h
 	weapon_class.h
 	window_context.h
+	XGetopt.h
 	yajl_utils.h)
 set(NANOPB_SOURCES
 	proto/msg.pb.c
