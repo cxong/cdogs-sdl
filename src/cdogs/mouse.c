@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2015, 2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -72,7 +72,9 @@ void MousePrePoll(Mouse *mouse)
 
 void MouseOnButtonDown(Mouse *mouse, Uint8 button)
 {
-	mouse->currentButtons[button] = 1;
+	mouse->currentButtons[button] = true;
+	// Capture mouse movement outside window for dragging
+	SDL_CaptureMouse(SDL_TRUE);
 }
 void MouseOnButtonUp(Mouse *mouse, Uint8 button)
 {
@@ -80,9 +82,10 @@ void MouseOnButtonUp(Mouse *mouse, Uint8 button)
 	// Detect these mouse presses before PostPoll
 	if (mouse->currentButtons[button] && !mouse->previousButtons[button])
 	{
-		mouse->pressedButtons[button] = 1;
+		mouse->pressedButtons[button] = true;
 	}
-	mouse->currentButtons[button] = 0;
+	mouse->currentButtons[button] = false;
+	SDL_CaptureMouse(SDL_FALSE);
 }
 void MouseOnWheel(Mouse *m, const Sint32 x, const Sint32 y)
 {
