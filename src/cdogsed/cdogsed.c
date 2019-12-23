@@ -979,6 +979,16 @@ static HandleInputResult HandleInput(
 				gEventHandlers.mouse.currentPos)));
 			result.Redraw = true;
 		}
+
+		// Change cursor to hand while dragging
+		if (MouseIsPressed(&gEventHandlers.mouse, SDL_BUTTON_MIDDLE))
+		{
+			MouseSetCursor(&gEventHandlers.mouse, SDL_SYSTEM_CURSOR_SIZEALL);
+		}
+		if (!MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_MIDDLE))
+		{
+			MouseSetCursor(&gEventHandlers.mouse, SDL_SYSTEM_CURSOR_ARROW);
+		}
 		ec.camera.x = CLAMP(ec.camera.x, 0, Vec2CenterOfTile(mission->Size).x);
 		ec.camera.y = CLAMP(ec.camera.y, 0, Vec2CenterOfTile(mission->Size).y);
 	}

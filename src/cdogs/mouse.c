@@ -52,6 +52,21 @@ void MouseInit(Mouse *mouse, Pic *cursor, Pic *trail, const bool hideMouse)
 	{
 		SDL_ShowCursor(SDL_DISABLE);
 	}
+	for (SDL_SystemCursor i = SDL_SYSTEM_CURSOR_ARROW;
+		i < SDL_NUM_SYSTEM_CURSORS;
+		i++)
+	{
+		mouse->cursors[i] = SDL_CreateSystemCursor(i);
+	}
+}
+void MouseTerminate(Mouse *m)
+{
+	for (SDL_SystemCursor i = SDL_SYSTEM_CURSOR_ARROW;
+		i < SDL_NUM_SYSTEM_CURSORS;
+		i++)
+	{
+		SDL_FreeCursor(m->cursors[i]);
+	}
 }
 
 void MousePrePoll(Mouse *mouse)
@@ -155,14 +170,14 @@ int MouseGetPressed(const Mouse *m)
 	return 0;
 }
 
-bool MouseIsPressed(const Mouse *m, const int button)
-{
-	return m->pressedButtons[button];
-}
-
 bool MouseIsDown(const Mouse *m, const int button)
 {
 	return m->currentButtons[button];
+}
+
+bool MouseIsPressed(const Mouse *m, const int button)
+{
+	return m->pressedButtons[button];
 }
 
 struct vec2i MouseWheel(const Mouse *m)
@@ -194,6 +209,11 @@ int MouseGetMove(Mouse *mouse, const struct vec2i pos)
 		}
 	}
 	return cmd;
+}
+
+void MouseSetCursor(Mouse *m, const SDL_SystemCursor sc)
+{
+	SDL_SetCursor(m->cursors[sc]);
 }
 
 void MouseDraw(const Mouse *mouse)

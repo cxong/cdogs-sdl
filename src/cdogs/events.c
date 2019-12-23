@@ -54,6 +54,7 @@ void EventInit(
 void EventTerminate(EventHandlers *handlers)
 {
 	JoyTerminate(&handlers->joysticks);
+	MouseTerminate(&handlers->mouse);
 }
 void EventReset(EventHandlers *handlers, Pic *mouseCursor, Pic *mouseTrail)
 {
