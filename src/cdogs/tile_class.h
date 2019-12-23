@@ -106,5 +106,6 @@ const Pic *TileClassGetPic(const PicManager *pm, const TileClass *tc);
 void TileClassGetName(
 	char *buf, const TileClass *base, const char *style, const char *type,
 	const color_t mask, const color_t maskAlt);
+void TileClassGetBaseName(char *buf, const TileClass *tc);
 const TileClass *TileClassesGetExit(
 	TileClasses *c, PicManager *pm,	const char *style, const bool isShadow);

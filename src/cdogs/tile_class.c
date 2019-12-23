@@ -106,12 +106,27 @@ void TileClassTerminate(TileClass *tc)
 	CFREE(tc->StyleType);
 }
 
+static const char *TileClassBaseStyleType(const TileClass *tc)
+{
+	switch (tc->Type)
+	{
+	case TILE_CLASS_FLOOR:
+		return "normal";
+	case TILE_CLASS_WALL:
+		return "x";
+	case TILE_CLASS_DOOR:
+		return "normal_h";
+	default:
+		return "";
+	}
+}
+
 void TileClassCopy(TileClass *dst, const TileClass *src)
 {
 	memcpy(dst, src, sizeof *dst);
 	if (src->Name) CSTRDUP(dst->Name, src->Name);
 	if (src->Style) CSTRDUP(dst->Style, src->Style);
-	if (src->StyleType) CSTRDUP(dst->StyleType, src->StyleType);
+	if (src->StyleType) CSTRDUP(dst->StyleType, TileClassBaseStyleType(src));
 }
 const TileClass *StrTileClass(const char *name)
 {
@@ -192,6 +207,11 @@ void TileClassGetName(
 		buf, "%s%s/%s/%s/%s/%s",
 		TileClassTypeStr(base->Type), base->IsRoom ? "room" : "",
 		style, type, maskName, maskAltName);
+}
+void TileClassGetBaseName(char *buf, const TileClass *tc)
+{
+	TileClassGetName(
+		buf, tc, tc->Style, TileClassBaseStyleType(tc), tc->Mask, tc->MaskAlt);
 }
 const Pic *TileClassGetPic(const PicManager *pm, const TileClass *tc)
 {

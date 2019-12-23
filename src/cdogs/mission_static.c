@@ -471,9 +471,9 @@ void MissionStaticFromMap(MissionStatic *m, const Map *map)
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), map->Size))
 		const Tile *t = MapGetTile(map, _v);
 		int tile;
-		int *tileP;
-		if (hashmap_get(
-			tileClassMap, t->Class->Name, (any_t *)&tileP) == MAP_MISSING)
+		char tcName[256];
+		TileClassGetBaseName(tcName, t->Class);
+		if (hashmap_get(tileClassMap, tcName, (any_t *)&tile) == MAP_MISSING)
 		{
 			TileClass *tc;
 			CMALLOC(tc, sizeof *tc);
@@ -483,22 +483,17 @@ void MissionStaticFromMap(MissionStatic *m, const Map *map)
 			snprintf(buf, sizeof buf - 1, "%d", tile);
 			if (hashmap_put(m->TileClasses, buf, (any_t *)tc) != MAP_OK)
 			{
-				LOG(LM_MAP, LL_ERROR,
-					"Failed to add tile class (%s)", t->Class->Name);
+				LOG(LM_MAP, LL_ERROR, "Failed to add tile class (%s)", tcName);
 				TileClassTerminate(tc);
 				continue;
 			}
-			if (hashmap_put(tileClassMap, t->Class->Name, &tile) != MAP_OK)
+			if (hashmap_put(tileClassMap, tcName, (any_t)tile) != MAP_OK)
 			{
-				LOG(LM_MAP, LL_ERROR,
-					"Failed to add tile class (%s)", t->Class->Name);
+				LOG(LM_MAP, LL_ERROR, "Failed to add tile class (%s)", tcName);
 				TileClassTerminate(tc);
 				continue;
 			}
-		}
-		else
-		{
-			tile = *tileP;
+			LOG(LM_MAP, LL_DEBUG, "Added tile class (%s)", tcName);
 		}
 		CArrayPushBack(&m->Tiles, &tile);
 		const uint16_t access = MapGetAccessLevel(map, _v);
