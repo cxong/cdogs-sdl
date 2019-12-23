@@ -480,7 +480,7 @@ void MissionStaticFromMap(MissionStatic *m, const Map *map)
 			TileClassCopy(tc, t->Class);
 			tile = (intptr_t)tileIdx++;
 			char buf[12];
-			snprintf(buf, sizeof buf - 1, "%d", tile);
+			snprintf(buf, sizeof buf - 1, "%d", (int)tile);
 			if (hashmap_put(m->TileClasses, buf, (any_t *)tc) != MAP_OK)
 			{
 				LOG(LM_MAP, LL_ERROR, "Failed to add tile class (%s)", tcName);
