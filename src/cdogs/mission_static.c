@@ -470,7 +470,7 @@ void MissionStaticFromMap(MissionStatic *m, const Map *map)
 	// Take all the tiles from the current map and save them in the static map
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), map->Size))
 		const Tile *t = MapGetTile(map, _v);
-		int tile;
+		intptr_t tile;
 		char tcName[256];
 		TileClassGetBaseName(tcName, t->Class);
 		if (hashmap_get(tileClassMap, tcName, (any_t *)&tile) == MAP_MISSING)
@@ -478,7 +478,7 @@ void MissionStaticFromMap(MissionStatic *m, const Map *map)
 			TileClass *tc;
 			CMALLOC(tc, sizeof *tc);
 			TileClassCopy(tc, t->Class);
-			tile = tileIdx++;
+			tile = (intptr_t)tileIdx++;
 			char buf[12];
 			snprintf(buf, sizeof buf - 1, "%d", tile);
 			if (hashmap_put(m->TileClasses, buf, (any_t *)tc) != MAP_OK)
@@ -495,7 +495,8 @@ void MissionStaticFromMap(MissionStatic *m, const Map *map)
 			}
 			LOG(LM_MAP, LL_DEBUG, "Added tile class (%s)", tcName);
 		}
-		CArrayPushBack(&m->Tiles, &tile);
+		const int tileInt = (int)tile;
+		CArrayPushBack(&m->Tiles, &tileInt);
 		const uint16_t access = MapGetAccessLevel(map, _v);
 		CArrayPushBack(&m->Access, &access);
 	RECT_FOREACH_END()
