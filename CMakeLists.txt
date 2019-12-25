@@ -170,9 +170,6 @@ ENDIF()
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ".")
 IF(UNIX AND NOT APPLE)
 	CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/build/linux/cdogs-sdl.cmake ${CMAKE_SOURCE_DIR}/build/linux/cdogs-sdl)
-	CONFIGURE_FILE(
-		${CMAKE_SOURCE_DIR}/build/linux/io.github.cxong.cdogs-sdl.desktop.cmake
-		${CMAKE_SOURCE_DIR}/build/linux/io.github.cxong.cdogs-sdl.desktop)
 	SET_SOURCE_FILES_PROPERTIES(${CMAKE_SOURCE_DIR}/build/linux/cdogs-sdl PROPERTIES GENERATED TRUE)
 ENDIF()
 IF(WIN32)
