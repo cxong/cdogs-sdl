@@ -59,6 +59,9 @@ void TileBrush(
 	cfg.BG = bg;
 	cfg.Handlers = handlers;
 	cfg.Draw = Draw;
+
+	NKWindowInit(&cfg);
+
 	TileBrushData data;
 	data.pm = pm;
 	data.m = CampaignGetCurrentMission(co);
@@ -67,11 +70,11 @@ void TileBrush(
 	CArrayInit(&data.texIdsTileClasses, sizeof(GLuint));
 	const int nTileClasses = hashmap_length(data.m->u.Static.TileClasses);
 	CArrayResize(&data.texIdsTileClasses, nTileClasses, NULL);
+	// Note: must gen textures after GL context initialised
 	glGenTextures(nTileClasses, (GLuint *)data.texIdsTileClasses.data);
 	cfg.DrawData = &data;
-
-	NKWindowInit(&cfg);
 	data.ctx = cfg.ctx;
+
 	NKWindow(cfg);
 
 	glDeleteTextures(
