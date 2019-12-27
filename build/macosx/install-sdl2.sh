@@ -7,9 +7,9 @@ OSX_SDL2_PATH_FULL="$OSX_LIB_PATH/SDL2.framework"
 OSX_SDL2_IMAGE_PATH_FULL="$OSX_LIB_PATH/SDL2_image.framework"
 OSX_SDL2_MIXER_PATH_FULL="$OSX_LIB_PATH/SDL2_mixer.framework"
 
-SDL2_URL=https://www.libsdl.org/release/SDL2-2.0.9.dmg
-SDL2_IMAGE_URL=https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.2.dmg
-SDL2_MIXER_URL=https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.0.2.dmg
+SDL2_URL=https://www.libsdl.org/release/SDL2-2.0.10.dmg
+SDL2_IMAGE_URL=https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.5.dmg
+SDL2_MIXER_URL=https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.0.4.dmg
 
 function installDMG {
   URL=$1
