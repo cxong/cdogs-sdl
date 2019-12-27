@@ -61,6 +61,7 @@ Win32/
 *.sln
 *.ilk
 *.pdb
+*.tmp
 *.VC.*
 .vs/
 VSInheritEnvironments.txt
