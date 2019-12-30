@@ -113,7 +113,7 @@ static const char *TileClassBaseStyleType(const TileClass *tc)
 	case TILE_CLASS_FLOOR:
 		return "normal";
 	case TILE_CLASS_WALL:
-		return "x";
+		return "o";
 	case TILE_CLASS_DOOR:
 		return "normal_h";
 	default:

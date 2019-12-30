@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2014, 2016-2018 Cong Xu
+    Copyright (c) 2013-2014, 2016-2019 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -78,6 +78,13 @@ bool Rect2iIsAtEdge(const Rect2i r, const struct vec2i v)
 	return
 		v.y == r.Pos.y || v.y == r.Pos.y + r.Size.y - 1 ||
 		v.x == r.Pos.x || v.x == r.Pos.x + r.Size.x - 1;
+}
+
+bool Rect2iIsInside(const Rect2i r, const struct vec2i v)
+{
+	return !(
+		v.y < r.Pos.y || v.y > r.Pos.y + r.Size.y - 1 ||
+		v.x < r.Pos.x || v.x > r.Pos.x + r.Size.x - 1);
 }
 
 bool Rect2iOverlap(const Rect2i r1, const Rect2i r2)

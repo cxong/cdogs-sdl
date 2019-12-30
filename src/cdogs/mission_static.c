@@ -760,6 +760,9 @@ static void KeyPositionsCopy(CArray *dst, const CArray *src)
 int MissionStaticGetTile(
 	const MissionStatic *m, const struct vec2i size, const struct vec2i pos)
 {
+	CASSERT(
+		(int)m->Tiles.size == size.x * size.y,
+		"static mission tiles size mismatch");
 	return *(int *)CArrayGet(&m->Tiles, size.x * pos.y + pos.x);
 }
 const TileClass *MissionStaticGetTileClass(
@@ -864,6 +867,10 @@ static bool HasDoorOrientedAt(
 	const MissionStatic *m, const struct vec2i size, const struct vec2i pos,
 	const bool isHorizontal)
 {
+	if (!Rect2iIsInside(Rect2iNew(svec2i_zero(), size), pos))
+	{
+		return false;
+	}
 	const TileClass *tc = MissionStaticGetTileClass(m, size, pos);
 	if (tc->Type != TILE_CLASS_DOOR)
 	{
