@@ -17,12 +17,12 @@ chmod +x butler
 ./butler -V
 
 prepare_and_push() {
-    echo "Push $3 build to itch.io..."
-    ./butler push $2 $1:$3 --userversion $VERSION
+    echo "./butler push $1 $PROJECT:$2 --userversion $VERSION"
+    ./butler push $1 $PROJECT:$2 --userversion $VERSION
 }
 
-prepare_and_push $PROJECT $TRAVIS_BUILD_DIR/C-Dogs*SDL-*-Linux.tar.gz linux
-prepare_and_push $PROJECT $TRAVIS_BUILD_DIR/C-Dogs*SDL-*-OSX.dmg mac
+prepare_and_push $TRAVIS_BUILD_DIR/C-Dogs*SDL-*-Linux.tar.gz linux
+prepare_and_push $TRAVIS_BUILD_DIR/C-Dogs*SDL-*-OSX.dmg mac
 
 echo "Done."
 exit 0
