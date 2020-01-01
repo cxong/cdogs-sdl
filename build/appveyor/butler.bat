@@ -13,5 +13,4 @@ curl -L -o butler.zip https://broth.itch.ovh/butler/windows-amd64/LATEST/archive
 7z x -y butler.zip
 butler -V
 
-butler push .\C-Dogs*.exe !PROJECT!:win --userversion !VERSION!
-butler push .\C-Dogs*.zip !PROJECT!:win --userversion !VERSION!
+for /F "Tokens=*" %A IN ('DIR /B /S "C-Dogs*"') DO @( butler push %~nxA !PROJECT!:win --userversion !VERSION! )
