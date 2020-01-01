@@ -1,0 +1,13 @@
+---
+layout: post
+title:  "C-Dogs 0.7.3 Released!"
+date:   2020-01-01
+categories: release
+published: true
+---
+
+C-Dogs SDL 0.7.3 released! This release fixes the broken windows build in 0.7.3.
+
+Happy new year! 🎉
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.7.3>
