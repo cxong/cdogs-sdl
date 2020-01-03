@@ -1,3 +1,4 @@
+add_subdirectory(osdialog)
 include_directories(
 	${SDL2_INCLUDE_DIRS}
 	${SDL2_IMAGE_INCLUDE_DIRS}
@@ -32,4 +33,4 @@ set(CDOGSED_HEADERS
 	ui_object.h)
 add_library(cdogsedlib STATIC ${CDOGSED_SOURCES} ${CDOGSED_HEADERS})
 target_link_libraries(cdogsedlib
-	${SDL2_LIBRARY})
+	${SDL2_LIBRARY} osdialog)

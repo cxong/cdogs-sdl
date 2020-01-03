@@ -26,6 +26,7 @@ addons:
     - cmake
     - gcc-9
     - g++-9
+    - libgtk-3-dev
     - ninja-build
 
 install:

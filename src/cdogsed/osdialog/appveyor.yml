@@ -1,0 +1,21 @@
+version: 1.0.0.{build}
+
+clone_folder: c:\projects\osdialog
+image:
+- Visual Studio 2015
+- Visual Studio 2017
+- Visual Studio 2019
+configuration:
+- Release
+- Debug
+matrix:
+  fast_finish: true
+
+before_build:
+- cmake --version
+- cmake .
+
+build:
+  project: c:\projects\osdialog\osdialog.sln
+  verbosity: minimal
+  parallel: true
