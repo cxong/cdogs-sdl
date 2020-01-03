@@ -11,6 +11,8 @@ configuration:
 - Release
 matrix:
   fast_finish: true
+platform:
+  - x86
 environment:
   CTEST_OUTPUT_ON_FAILURE: 1
   SDL2_VERSION: 2.0.10

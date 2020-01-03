@@ -53,10 +53,6 @@ if(WIN32)
 	enable_language(RC)
 	SET(CMAKE_RC_COMPILE_OBJECT
 		"<CMAKE_RC_COMPILER> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
-	# Hide console window
-	if(NOT "${DEBUG}")
-		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows")
-	endif()
 endif()
 SET(LINKDIR /usr/games)
 
