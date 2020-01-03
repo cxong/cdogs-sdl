@@ -33,6 +33,7 @@ install:
   - IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\SDL2_image-devel-%SDL2_IMAGE_VERSION%-VC.zip appveyor DownloadFile https://www.libsdl.org/projects/SDL_image/release/SDL2_image-devel-%SDL2_IMAGE_VERSION%-VC.zip
   - 7z x SDL2_image-devel-%SDL2_IMAGE_VERSION%-VC.zip -oC:\
   - xcopy C:\SDL2_image-%SDL2_IMAGE_VERSION%\* %SDLDIR%\ /S /Y
+  - xcopy %SDLDIR%\lib\x86\* %SDLDIR%\lib\ /S
 
 before_build:
   - .\build\windows\get-sdl2-dlls.bat dll "appveyor DownloadFile"
