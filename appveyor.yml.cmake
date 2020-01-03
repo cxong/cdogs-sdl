@@ -26,13 +26,13 @@ platform:
 install:
   - IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\SDL2-devel-%SDL2_VERSION%-VC.tar.gz appveyor DownloadFile http://libsdl.org/release/SDL2-devel-%SDL2_VERSION%-VC.zip
   - 7z x SDL2-devel-%SDL2_VERSION%-VC.zip -oC:\
-  - echo y | xcopy C:\SDL2-%SDL2_VERSION%\* %SDLDIR%\ /S
+  - xcopy C:\SDL2-%SDL2_VERSION%\* %SDLDIR%\ /S /Y
   - IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\SDL2_mixer-devel-%SDL2_MIXER_VERSION%-VC.zip appveyor DownloadFile https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-devel-%SDL2_MIXER_VERSION%-VC.zip
   - 7z x SDL2_mixer-devel-%SDL2_MIXER_VERSION%-VC.zip -oC:\
-  - echo y | xcopy C:\SDL2_mixer-%SDL2_MIXER_VERSION%\* %SDLDIR%\ /S
+  - xcopy C:\SDL2_mixer-%SDL2_MIXER_VERSION%\* %SDLDIR%\ /S /Y
   - IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\SDL2_image-devel-%SDL2_IMAGE_VERSION%-VC.zip appveyor DownloadFile https://www.libsdl.org/projects/SDL_image/release/SDL2_image-devel-%SDL2_IMAGE_VERSION%-VC.zip
   - 7z x SDL2_image-devel-%SDL2_IMAGE_VERSION%-VC.zip -oC:\
-  - echo y | xcopy C:\SDL2_image-%SDL2_IMAGE_VERSION%\* %SDLDIR%\ /S
+  - xcopy C:\SDL2_image-%SDL2_IMAGE_VERSION%\* %SDLDIR%\ /S /Y
 
 before_build:
   - .\build\windows\get-sdl2-dlls.bat dll "appveyor DownloadFile"
