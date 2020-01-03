@@ -41,7 +41,7 @@ build:
   parallel: true
 
 after_build:
-  - make package
+  - msbuild package
   - dir
 
 cache:
