@@ -66,10 +66,6 @@ Win32/
 .vs/
 VSInheritEnvironments.txt
 
-# MinGW
-stdout.txt
-stderr.txt
-
 # XCode
 XCBuildData/
 CMakeScripts/

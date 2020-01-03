@@ -48,7 +48,7 @@ if("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
     set(CLANG 1)
 endif()
 
-if(MINGW)
+if(WIN32)
 	set(CMAKE_RC_COMPILER_INIT windres)
 	enable_language(RC)
 	SET(CMAKE_RC_COMPILE_OBJECT
