@@ -41,7 +41,7 @@ build:
   parallel: true
 
 after_build:
-  - msbuild package
+  - msbuild c:\projects\cdogs-sdl\src\PACKAGE.vcxproj
   - dir
 
 cache:
