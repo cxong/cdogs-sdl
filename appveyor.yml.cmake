@@ -35,7 +35,7 @@ install:
 
 before_build:
   - .\build\windows\get-sdl2-dlls.bat dll "appveyor DownloadFile"
-  - cmake -DCMAKE_PREFIX_PATH="%SDLDIR%" .
+  - cmake -DCMAKE_PREFIX_PATH="%SDLDIR%" -G "Visual Studio 16 2019" .
 
 build:
   project: c:\projects\cdogs-sdl\cdogs-sdl.sln
