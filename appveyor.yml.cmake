@@ -9,7 +9,6 @@ image:
 - Visual Studio 2019
 configuration:
 - Release
-- Debug
 matrix:
   fast_finish: true
 environment:
@@ -19,9 +18,6 @@ environment:
   SDL2_MIXER_VERSION: 2.0.4
   SDLDIR: C:\projects\cdogs-sdl
   VERSION: @VERSION@
-
-platform:
-  - x86
 
 install:
   - IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\SDL2-devel-%SDL2_VERSION%-VC.tar.gz appveyor DownloadFile http://libsdl.org/release/SDL2-devel-%SDL2_VERSION%-VC.zip
@@ -37,8 +33,7 @@ install:
 
 before_build:
   - .\build\windows\get-sdl2-dlls.bat dll "appveyor DownloadFile"
-  - if "%APPVEYOR_REPO_TAG%"=="true" (set CMAKE_BUILD_TYPE=Release) else (set CMAKE_BUILD_TYPE=Debug)
-  - cmake -DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE%  -DCMAKE_PREFIX_PATH="%SDLDIR%" .
+  - cmake -DCMAKE_PREFIX_PATH="%SDLDIR%" .
 
 build:
   project: c:\projects\cdogs-sdl\cdogs-sdl.sln
