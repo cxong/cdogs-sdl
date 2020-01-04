@@ -3,7 +3,7 @@
 #include "osdialog.h"
 
 
-int main() {
+int main(void) {
 	// Message
 	if (1) {
 		int res;
