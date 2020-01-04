@@ -72,7 +72,3 @@
 #elif defined(_WIN32)
 #define mkdir(p, a) mkdir(p)
 #endif
-
-#ifndef __func__
-#define __func__ __FUNCTION__
-#endif
