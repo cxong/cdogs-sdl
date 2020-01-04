@@ -79,10 +79,10 @@ void LogTerminate(void);
 		{\
 			LogLine(\
 				stderr, _module, _level, __FILENAME__, __LINE__,\
-				__FUNCTION__, _fmt, ##__VA_ARGS__);\
+				__func__, _fmt, ##__VA_ARGS__);\
 			LogLine(\
 				gLogFile, _module, _level, __FILENAME__, __LINE__,\
-				__FUNCTION__, _fmt, ##__VA_ARGS__);\
+				__func__, _fmt, ##__VA_ARGS__);\
 		}\
 	} while ((void)0, 0)
 

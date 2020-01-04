@@ -246,23 +246,23 @@ void cbehave_mock_obj_return(const char *symbol_name, void *value, const char *f
 #define MOCK_ARG     0x0
 #define MOCK_RETV    0x1
 
-#define CBEHAVE_MOCK_ARG() cbehave_mock_obj(__FUNCTION__, __LINE__, __FILE__, MOCK_ARG)
-#define CBEHAVE_MOCK_RETV() cbehave_mock_obj(__FUNCTION__, __LINE__, __FILE__, MOCK_RETV)
+#define CBEHAVE_MOCK_ARG() cbehave_mock_obj(__func__, __LINE__, __FILE__, MOCK_ARG)
+#define CBEHAVE_MOCK_RETV() cbehave_mock_obj(__func__, __LINE__, __FILE__, MOCK_RETV)
 
 #define CBEHAVE_ARG_RETURN(fcname, value) do { \
-    cbehave_mock_obj_return(#fcname, (void*)value, __FUNCTION__, __LINE__, __FILE__, MOCK_ARG, 1); \
+    cbehave_mock_obj_return(#fcname, (void*)value, __func__, __LINE__, __FILE__, MOCK_ARG, 1); \
 } while(0);
 
 #define CBEHAVE_ARG_RETURN_COUNT(fcname, value, count) do { \
-    cbehave_mock_obj_return(#fcname, (void*)value, __FUNCTION__, __LINE__, __FILE__, MOCK_ARG, count); \
+    cbehave_mock_obj_return(#fcname, (void*)value, __func__, __LINE__, __FILE__, MOCK_ARG, count); \
 } while(0);
 
 #define CBEHAVE_RETV_RETURN(fcname, value) do { \
-    cbehave_mock_obj_return(#fcname, (void*)value, __FUNCTION__, __LINE__, __FILE__, MOCK_RETV, 1); \
+    cbehave_mock_obj_return(#fcname, (void*)value, __func__, __LINE__, __FILE__, MOCK_RETV, 1); \
 } while(0);
 
 #define CBEHAVE_RETV_RETURN_COUNT(fcname, value, count) do { \
-    cbehave_mock_obj_return(#fcname, (void*)value, __FUNCTION__, __LINE__, __FILE__, MOCK_RETV, count); \
+    cbehave_mock_obj_return(#fcname, (void*)value, __func__, __LINE__, __FILE__, MOCK_RETV, count); \
 } while(0);
 
 
