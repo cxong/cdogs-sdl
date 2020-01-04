@@ -199,8 +199,8 @@ static void LogResetColor(void)
 
 #else
 
-#define LOG_STR(_level, _stream, _fmt, ...)\
-	fprintf(_stream, _fmt, ##__VA_ARGS__)
+#define LOG_STR(_level, _stream, ...)\
+	fprintf(_stream, ##__VA_ARGS__)
 #define LOG_VSTR(_level, _stream, _fmt, _args)\
 	vfprintf(_stream, _fmt, _args)
 
