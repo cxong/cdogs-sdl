@@ -72,17 +72,17 @@ void LogTerminate(void);
 #else
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #endif
-#define LOG(_module, _level, _fmt, ...)\
+#define LOG(_module, _level, ...)\
 	do\
 	{\
 		if (_level >= LogModuleGetLevel(_module))\
 		{\
 			LogLine(\
 				stderr, _module, _level, __FILENAME__, __LINE__,\
-				__func__, _fmt, ##__VA_ARGS__);\
+				__func__, ##__VA_ARGS__);\
 			LogLine(\
 				gLogFile, _module, _level, __FILENAME__, __LINE__,\
-				__func__, _fmt, ##__VA_ARGS__);\
+				__func__, ##__VA_ARGS__);\
 		}\
 	} while ((void)0, 0)
 
