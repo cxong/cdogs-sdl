@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2019 Cong Xu
+    Copyright (c) 2013-2020 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -70,6 +70,7 @@
 #include <cdogsed/char_editor.h>
 #include <cdogsed/editor_ui.h>
 #include <cdogsed/editor_ui_common.h>
+#include <cdogsed/osdialog/osdialog.h>
 
 
 // Mouse click areas:
@@ -589,52 +590,13 @@ static void ShowFailedToOpenMsg(const char *filename)
 
 static void Save(void)
 {
-	char filename[CDOGS_PATH_MAX];
-	strcpy(filename, lastFile);
-	bool doSave = false;
-	bool done = false;
-	while (!done)
-	{
-		WindowContextPreRender(&gGraphicsDevice.gameWindow);
-		ClearScreen(&gGraphicsDevice);
-		struct vec2i pos = svec2i(125, 50);
-		FontStr("Save as:", pos);
-		pos.y += FontH();
-		pos = FontCh('>', pos);
-		pos = FontStr(filename, pos);
-		FontCh('<', pos);
-		BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
-		WindowContextPostRender(&gGraphicsDevice.gameWindow);
-
-		const SDL_Scancode sc = EventWaitKeyOrText(&gEventHandlers);
-		switch (sc)
-		{
-		case SDL_SCANCODE_RETURN:
-		case SDL_SCANCODE_KP_ENTER:
-			if (!filename[0])
-			{
-				break;
-			}
-			doSave = true;
-			done = true;
-			break;
-
-		case SDL_SCANCODE_ESCAPE:
-			break;
-
-		case SDL_SCANCODE_BACKSPACE:
-			if (filename[0])
-				filename[strlen(filename) - 1] = 0;
-			break;
-
-		default:
-			// Do nothing
-			break;
-		}
-		GetTextInput(filename);
-		SDL_Delay(10);
-	}
-	if (doSave)
+	char dirname[CDOGS_PATH_MAX];
+	PathGetDirname(dirname, lastFile);
+	osdialog_filters *filters =
+		osdialog_filters_parse("C-Dogs SDL Campaign:cdogscpn");
+	char *filename = osdialog_file(
+		OSDIALOG_SAVE, dirname, PathGetBasename(lastFile), filters);
+	if (filename)
 	{
 		WindowContextPreRender(&gGraphicsDevice.gameWindow);
 		ClearScreen(&gGraphicsDevice);
@@ -653,6 +615,8 @@ static void Save(void)
 			SDL_MESSAGEBOX_INFORMATION, "Campaign Saved",
 			msgBuf, gGraphicsDevice.gameWindow.window);
 	}
+	free(filename);
+	osdialog_filters_free(filters);
 }
 
 // Collect keyboard text input into buffer
