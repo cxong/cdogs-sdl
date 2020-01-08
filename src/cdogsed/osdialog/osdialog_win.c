@@ -68,9 +68,9 @@ char *osdialog_prompt(osdialog_message_level level, const char *message, const c
 
 
 static INT CALLBACK browseCallbackProc(HWND hWnd, UINT Msg, LPARAM lParam, LPARAM lpData) {
-	(void)lpData;
+	(void)lParam;
 	if (Msg == BFFM_INITIALIZED) {
-		SendMessageW(hWnd, BFFM_SETSELECTION, 1, lParam);
+		SendMessageW(hWnd, BFFM_SETSELECTION, 1, lpData);
 	}
 	return 0;
 }
@@ -89,21 +89,15 @@ char *osdialog_file(osdialog_file_action action, const char *path, const char *f
 		bInfo.ulFlags = BIF_RETURNONLYFSDIRS | BIF_USENEWUI;
 		bInfo.iImage = -1;
 
-		// TODO Default paths do not seem to work
-		wchar_t *pathW = NULL;
 		if (path) {
-			pathW = utf8_to_wchar(path);
 			bInfo.lpfn = browseCallbackProc;
-			bInfo.lParam = (LPARAM) pathW;
+			bInfo.lParam = (LPARAM)path;
 		}
 
 		PIDLIST_ABSOLUTE lpItem = SHBrowseForFolderW(&bInfo);
 		if (lpItem) {
 		  SHGetPathFromIDListW(lpItem, szDir);
 		  result = wchar_to_utf8(szDir);
-		}
-		if (pathW) {
-			OSDIALOG_FREE(pathW);
 		}
 	}
 	else {

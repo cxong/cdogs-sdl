@@ -425,141 +425,32 @@ static bool TryOpen(const char *filename);
 static void ShowFailedToOpenMsg(const char *filename);
 static void Open(void)
 {
-	char filename[CDOGS_PATH_MAX];
-	strcpy(filename, lastFile);
-	bool done = false;
-	while (!done)
+	char dirname[CDOGS_PATH_MAX];
+	PathGetDirname(dirname, lastFile);
+	char buf[CDOGS_PATH_MAX];
+	RealPath(dirname, buf);
+	FixPathSeparator(dirname, buf);
+	osdialog_filters *filters =
+		osdialog_filters_parse("C-Dogs SDL Campaign:cdogscpn");
+	char *filename = osdialog_file(
+		OSDIALOG_OPEN_DIR, dirname, PathGetBasename(lastFile), filters);
+	// Try original filename
+	if (filename)
 	{
 		WindowContextPreRender(&gGraphicsDevice.gameWindow);
 		ClearScreen(&gGraphicsDevice);
-		const int x = 125;
-		struct vec2i pos = svec2i(x, 50);
-		FontStr("Open file:", pos);
-		pos.y += FontH();
-		pos = FontCh('>', pos);
-		pos = FontStr(filename, pos);
-		pos = FontCh('<', pos);
 
-		// Based on the filename, print a list of candidates
-		tinydir_dir dir;
-		char buf[CDOGS_PATH_MAX];
-		PathGetDirname(buf, filename);
-		char tabCompleteCandidate[CDOGS_PATH_MAX];
-		tabCompleteCandidate[0] = '\0';
-		if (!tinydir_open_sorted(&dir, buf))
-		{
-			int numCandidates = 0;
-			const char *basename = PathGetBasename(filename);
-			pos.x = x;
-			pos.y += FontH() * 2;
-			for (int i = 0; i < (int)dir.n_files; i++)
-			{
-				tinydir_file file;
-				tinydir_readfile_n(&dir, &file, i);
-				if (strncmp(file.name, basename, strlen(basename)) == 0)
-				{
-					// Ignore files that aren't campaigns or interesting folders
-					if (file.name[0] == '.') continue;
-					const bool canOpen =
-						strcmp(file.extension, "cdogscpn") == 0 ||
-						strcmp(file.extension, "CDOGSCPN") == 0 ||
-						strcmp(file.extension, "cpn") == 0 ||
-						strcmp(file.extension, "CPN") == 0;
-					if (!canOpen && !file.is_dir)
-					{
-						continue;
-					}
-					numCandidates++;
-					strcpy(tabCompleteCandidate, file.path);
-					const color_t c = canOpen ? colorCyan : colorGray;
-					pos = FontStrMask(file.path, pos, c);
-					if (!canOpen)
-					{
-						FontStrMask("/", pos, c);
-						strcat(tabCompleteCandidate, "/");
-					}
-					pos.x = x;
-					pos.y += FontH();
-				}
-			}
-			tinydir_close(&dir);
-
-			// See if there is only one candidate for tab-completion
-			if (numCandidates > 1)
-			{
-				tabCompleteCandidate[0] = '\0';
-			}
-		}
+		FontStrCenter("Loading...");
 
 		BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 		WindowContextPostRender(&gGraphicsDevice.gameWindow);
-
-		bool doOpen = false;
-		const SDL_Scancode sc = EventWaitKeyOrText(&gEventHandlers);
-		switch (sc)
+		if (!TryOpen(filename))
 		{
-		case SDL_SCANCODE_RETURN:
-		case SDL_SCANCODE_KP_ENTER:
-			if (!filename[0])
-			{
-				break;
-			}
-			doOpen = true;
-			break;
-
-		case SDL_SCANCODE_ESCAPE:
-			done = true;
-			break;
-
-		case SDL_SCANCODE_BACKSPACE:
-			if (filename[0])
-				filename[strlen(filename) - 1] = 0;
-			break;
-
-		case SDL_SCANCODE_TAB:
-			// tab completion - replace filename buffer with it
-			if (tabCompleteCandidate[0])
-			{
-				strcpy(filename, tabCompleteCandidate);
-			}
-			break;
-
-		default:
-			// Do nothing
-			break;
-		}
-		GetTextInput(filename);
-		if (doOpen)
-		{
-			WindowContextPreRender(&gGraphicsDevice.gameWindow);
-			ClearScreen(&gGraphicsDevice);
-
-			FontStrCenter("Loading...");
-
-			BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
-			WindowContextPostRender(&gGraphicsDevice.gameWindow);
-			// Try original filename
-			if (TryOpen(filename))
-			{
-				break;
-			}
-			// Try adding .cdogscpn
-			sprintf(buf, "%s.cdogscpn", filename);
-			if (TryOpen(buf))
-			{
-				break;
-			}
-			// Try adding .cpn
-			sprintf(buf, "%s.cpn", filename);
-			if (TryOpen(buf))
-			{
-				break;
-			}
-			// All attempts failed
 			ShowFailedToOpenMsg(filename);
 		}
-		SDL_Delay(10);
 	}
+	free(filename);
+	osdialog_filters_free(filters);
 }
 static bool TryOpen(const char *filename)
 {

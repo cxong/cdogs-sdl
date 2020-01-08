@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017, 2019 Cong Xu
+    Copyright (c) 2013-2017, 2019-2020 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -138,6 +138,7 @@ void PathGetWithoutExtension(char *buf, const char *path);
 void PathGetBasenameWithoutExtension(char *buf, const char *path);
 void RealPath(const char *src, char *dest);
 void RelPath(char *buf, const char *to, const char *from);
+void FixPathSeparator(char *dst, const char *src);
 char *CDogsGetCWD(char *buf);
 void RelPathFromCWD(char *buf, const char *to);
 void GetDataFilePath(char *buf, const char *path);

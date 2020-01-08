@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017, 2019 Cong Xu
+    Copyright (c) 2013-2017, 2019-2020 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -305,6 +305,28 @@ static void TrimSlashes(char *s)
 		end--;
 	}
 	*(end + 1) = '\0';
+}
+
+void FixPathSeparator(char *dst, const char *src)
+{
+	const char *s = src;
+	char *d = dst;
+#ifdef _WIN32
+#define SEP '\\'
+#define SEP_OTHER '/'
+#else
+#define SEP '/'
+#define SEP_OTHER '\\'
+#endif
+	while (*s != '\0')
+	{
+		if (*s == SEP_OTHER) *d = SEP;
+		else *d = *s;
+		d++;
+		s++;
+	}
+#undef SEP
+	*d = '\0';
 }
 
 #ifdef __APPLE__
