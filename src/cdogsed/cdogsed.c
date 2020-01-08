@@ -419,8 +419,6 @@ static void ReloadUI(void)
 	sTooltipObj = NULL;
 }
 
-static void GetTextInput(char *buf);
-
 static bool TryOpen(const char *filename);
 static void ShowFailedToOpenMsg(const char *filename);
 static void Open(void)
@@ -508,28 +506,6 @@ static void Save(void)
 	}
 	free(filename);
 	osdialog_filters_free(filters);
-}
-
-// Collect keyboard text input into buffer
-// Only support ASCII and limited characters
-static void GetTextInput(char *buf)
-{
-	// Get the filename typed, ASCII only
-	char *c = gEventHandlers.keyboard.Typed;
-	while (c && strlen(buf) < CDOGS_PATH_MAX - 1 && *c >= ' ' && *c <= '~')
-	{
-		// Prohibit some characters bad for filenames and/or not in font
-		if (*c != '*' &&
-			(strlen(buf) > 1 || *c != '-') &&
-			*c != ':' && *c != '<' && *c != '>' && *c != '?' &&
-			*c != '|')
-		{
-			const size_t si = strlen(buf);
-			buf[si + 1] = 0;
-			buf[si] = *c;
-		}
-		c++;
-	}
 }
 
 static void HelpScreen(void)
