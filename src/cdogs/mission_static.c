@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2019 Cong Xu
+    Copyright (c) 2014-2020 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -844,13 +844,14 @@ bool MissionStaticTrySetTile(
 void MissionStaticClearTile(
 	MissionStatic *m, const struct vec2i size, const struct vec2i pos)
 {
-	int *t;
-	if (hashmap_get_one(m->TileClasses, (any_t *)&t) != MAP_OK)
+	char *key;
+	if (hashmap_get_one_key(m->TileClasses, (any_t *)&key) != MAP_OK)
 	{
 		CASSERT(false, "No default tile for static map");
 		return;
 	}
-	MissionStaticTrySetTile(m, size, pos, *t);
+	const int tile = atoi(key);
+	MissionStaticTrySetTile(m, size, pos, tile);
 }
 
 static bool IsClear(
@@ -899,9 +900,17 @@ void MissionStaticLayout(
 {
 	// re-layout the static map after a resize
 	// Simply try to "paint" the old tiles to the new mission
-	CArray oldTiles;
+	CArray oldTiles, oldAccess;
 	CArrayInit(&oldTiles, m->Tiles.elemSize);
+	CArrayInit(&oldAccess, m->Access.elemSize);
 	CArrayCopy(&oldTiles, &m->Tiles);
+	CArrayCopy(&oldAccess, &m->Access);
+	const int firstTile = MissionStaticGetTile(m, oldSize, svec2i_zero());
+	CArrayResize(&m->Tiles, size.x * size.y, &firstTile);
+	CArrayFillZero(&m->Tiles);
+	const int noAccess = 0;
+	CArrayResize(&m->Access, size.x * size.y, &noAccess);
+	CArrayFillZero(&m->Access);
 
 	// Paint the old tiles back
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), size))
@@ -914,6 +923,8 @@ void MissionStaticLayout(
 			const int idx = _v.y * oldSize.x + _v.x;
 			const int *tile = CArrayGet(&oldTiles, idx);
 			MissionStaticTrySetTile(m, size, _v, *tile);
+			const int *a = CArrayGet(&oldAccess, idx);
+			CArraySet(&m->Access, _v.y * size.x + _v.x, a);
 		}
 	RECT_FOREACH_END()
 

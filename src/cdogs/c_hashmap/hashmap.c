@@ -401,6 +401,12 @@ static int hashmap_return_first(any_t data, any_t item)
 	return MAP_FULL;
 }
 
+int hashmap_get_one_key(map_t m, any_t *arg)
+{
+	const int error = hashmap_iterate_keys(m, hashmap_return_first, arg);
+	return error == MAP_FULL ? MAP_OK : error;
+}
+
 /*
  * Remove an element with that key from the map
  */

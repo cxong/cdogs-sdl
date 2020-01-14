@@ -48,7 +48,6 @@ map_t hashmap_copy(const map_t in, any_t (*callback)(any_t));
  */
 int hashmap_iterate(map_t in, PFany f, any_t item);
 int hashmap_iterate_keys(map_t in, PFany f, any_t item);
-int hashmap_iterate_items(map_t in, PFany f, any_t item);
 
 /*
  * Add an element to the hashmap. Return MAP_OK or MAP_OMEM.
@@ -68,7 +67,8 @@ int hashmap_remove(map_t in, char* key);
 /*
  * Get any element. Return MAP_OK or MAP_MISSING.
  */
-int hashmap_get_one(map_t in, any_t *arg);
+int hashmap_get_one(map_t m, any_t *arg);
+int hashmap_get_one_key(map_t m, any_t *arg);
 
 /*
 * Remove all elements, with a custom callback to each element, so that they

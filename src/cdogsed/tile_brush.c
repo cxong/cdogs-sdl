@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2019 Cong Xu
+    Copyright (c) 2019-2020 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -106,7 +106,7 @@ static void Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 			//selectedIndex = MIN(selectedIndex, (int)ec->Setting->characters.OtherChars.size - 1);
 		}
 
-		nk_layout_row_dynamic(ctx, 32 * PIC_SCALE, WIDTH / 75);
+		nk_layout_row_dynamic(ctx, 40 * PIC_SCALE, WIDTH / 60);
 		tbData->tileIdx = 0;
 		if (hashmap_iterate_keys(
 			tbData->m->u.Static.TileClasses, DrawTileType, tbData) != MAP_OK)
@@ -139,7 +139,7 @@ static int DrawTileType(any_t data, any_t key)
 	}
 	const GLuint *texid =
 		CArrayGet(&tbData->texIdsTileClasses, tbData->tileIdx);
-	DrawTileClass(tbData->ctx, tbData->pm, tc, svec2i(-34, 5), *texid);
+	DrawTileClass(tbData->ctx, tbData->pm, tc, svec2i(-24, 5), *texid);
 	tbData->tileIdx++;
 	return MAP_OK;
 }
