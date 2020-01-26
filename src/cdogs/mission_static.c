@@ -465,7 +465,6 @@ void MissionStaticFromMap(MissionStatic *m, const Map *map)
 {
 	MissionStaticInit(m);
 	// Create map of tile class names to integers
-	int tileIdx = 0;
 	map_t tileClassMap = hashmap_new();
 	// Take all the tiles from the current map and save them in the static map
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), map->Size))
@@ -475,18 +474,12 @@ void MissionStaticFromMap(MissionStatic *m, const Map *map)
 		TileClassGetBaseName(tcName, t->Class);
 		if (hashmap_get(tileClassMap, tcName, (any_t *)&tile) == MAP_MISSING)
 		{
-			TileClass *tc;
-			CMALLOC(tc, sizeof *tc);
-			TileClassCopy(tc, t->Class);
-			tile = (intptr_t)tileIdx++;
-			char buf[12];
-			snprintf(buf, sizeof buf - 1, "%d", (int)tile);
-			if (hashmap_put(m->TileClasses, buf, (any_t *)tc) != MAP_OK)
+			TileClass *tc = MissionStaticAddTileClass(m, t->Class);
+			if (tc == NULL)
 			{
-				LOG(LM_MAP, LL_ERROR, "Failed to add tile class (%s)", tcName);
-				TileClassTerminate(tc);
 				continue;
 			}
+			tile = (intptr_t)hashmap_length(m->TileClasses) - 1;
 			if (hashmap_put(tileClassMap, tcName, (any_t)tile) != MAP_OK)
 			{
 				LOG(LM_MAP, LL_ERROR, "Failed to add tile class (%s)", tcName);
@@ -792,7 +785,7 @@ bool MissionStaticTrySetTile(
 	MissionStatic *m, const struct vec2i size, const struct vec2i pos,
 	const int tile)
 {
-	if (pos.x < 0 || pos.x >= size.x || pos.y < 0 || pos.y >= size.y)
+	if (!Rect2iIsInside(Rect2iNew(svec2i_zero(), size), pos))
 	{
 		return false;
 	}
@@ -852,6 +845,24 @@ void MissionStaticClearTile(
 	}
 	const int tile = atoi(key);
 	MissionStaticTrySetTile(m, size, pos, tile);
+}
+
+TileClass *MissionStaticAddTileClass(MissionStatic *m, const TileClass *base)
+{
+	TileClass *tc;
+	CMALLOC(tc, sizeof *tc);
+	TileClassCopy(tc, base);
+	char buf[12];
+	snprintf(buf, sizeof buf - 1, "%d", hashmap_length(m->TileClasses));
+	if (hashmap_put(m->TileClasses, buf, (any_t *)tc) != MAP_OK)
+	{
+		char tcName[256];
+		TileClassGetBaseName(tcName, base);
+		LOG(LM_MAP, LL_ERROR, "Failed to add tile class (%s)", tcName);
+		TileClassTerminate(tc);
+		return NULL;
+	}
+	return tc;
 }
 
 static bool IsClear(

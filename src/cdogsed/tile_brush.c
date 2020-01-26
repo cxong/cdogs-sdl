@@ -39,13 +39,14 @@ typedef struct
 {
 	struct nk_context *ctx;
 	const PicManager *pm;
-	const Mission *m;
+	Mission *m;
 	int *brushIdx;
 	CArray texIdsTileClasses;	// of GLuint
 	int tileIdx;
 } TileBrushData;
 
 
+static void ResetTexIds(TileBrushData *data);
 static void Draw(SDL_Window *win, struct nk_context *ctx, void *data);
 void TileBrush(
 	const PicManager *pm, EventHandlers *handlers, CampaignOptions *co,
@@ -68,10 +69,7 @@ void TileBrush(
 	CASSERT(data.m->Type == MAPTYPE_STATIC, "unexpected map type");
 	data.brushIdx = brushIdx;
 	CArrayInit(&data.texIdsTileClasses, sizeof(GLuint));
-	const int nTileClasses = hashmap_length(data.m->u.Static.TileClasses);
-	CArrayResize(&data.texIdsTileClasses, nTileClasses, NULL);
-	// Note: must gen textures after GL context initialised
-	glGenTextures(nTileClasses, (GLuint *)data.texIdsTileClasses.data);
+	ResetTexIds(&data);
 	cfg.DrawData = &data;
 	data.ctx = cfg.ctx;
 
@@ -92,8 +90,14 @@ static void Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		nk_layout_row_dynamic(ctx, ROW_HEIGHT, 5);
 		if (nk_button_label(ctx, "Add"))
 		{
-			// AddCharacter(ec, -1);
-			//selectedIndex = MAX((int)ec->Setting->characters.OtherChars.size - 1, 0);
+			const TileClass *selectedTC = MissionStaticIdTileClass(
+				&tbData->m->u.Static, *tbData->brushIdx);
+			if (MissionStaticAddTileClass(
+				&tbData->m->u.Static, selectedTC) != NULL)
+			{
+				ResetTexIds(tbData);
+				*tbData->brushIdx = (int)tbData->texIdsTileClasses.size - 1;
+			}
 		}
 		if (nk_button_label(ctx, "Duplicate"))
 		{
@@ -149,4 +153,18 @@ static void DrawTileClass(
 {
 	const Pic *pic = TileClassGetPic(pm, tc);
 	DrawPic(ctx, pic, texid, pos, PIC_SCALE);
+}
+
+static void ResetTexIds(TileBrushData *data)
+{
+	if (data->texIdsTileClasses.size > 0)
+	{
+		glDeleteTextures(
+			(GLsizei)data->texIdsTileClasses.size,
+			(const GLuint *)data->texIdsTileClasses.data);
+	}
+	const int nTileClasses = hashmap_length(data->m->u.Static.TileClasses);
+	CArrayResize(&data->texIdsTileClasses, nTileClasses, NULL);
+	glGenTextures(
+		nTileClasses, (GLuint *)data->texIdsTileClasses.data);
 }
