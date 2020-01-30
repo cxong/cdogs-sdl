@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, 2019 Cong Xu
+    Copyright (c) 2013-2016, 2019-2020 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,7 @@
 #include <cdogs/draw/draw.h>
 #include <cdogs/events.h>
 #include <cdogs/font.h>
+#include <cdogs/log.h>
 #include <cdogs/map.h>
 
 #include "editor_ui_common.h"
@@ -47,9 +48,19 @@ MISSION_CHECK_TYPE_FUNC(MAPTYPE_STATIC)
 static const char *BrushGetTypeStr(EditorBrush *brush, int isMain)
 {
 	static char s[128];
-	sprintf(s, "Brush %d: %s",
-		isMain ? 1 : 2,
-		IMapTypeStr(isMain ? brush->MainType : brush->SecondaryType));
+	const int idx = isMain ? brush->MainType : brush->SecondaryType;
+	char tcName[256];
+	sprintf(tcName, "%d", idx);
+	const TileClass *tc;
+	if (hashmap_get(
+		gMission.missionData->u.Static.TileClasses, tcName, (any_t *)&tc) !=
+		MAP_OK)
+	{
+		LOG(LM_EDIT, LL_ERROR, "cannot find tile class key: %s", tcName);
+		return "";
+	}
+	TileClassGetBrushName(tcName, tc);
+	sprintf(s, "Brush %d: %s", isMain ? 1 : 2, tcName);
 	return s;
 }
 static const char *BrushGetMainTypeStr(UIObject *o, void *data)
@@ -376,7 +387,7 @@ UIObject *CreateStaticMapObjs(
 
 	UIObjectDestroy(o);
 	o = UIObjectCreate(
-		UITYPE_LABEL, 0, svec2i_zero(), svec2i(60, th));
+		UITYPE_LABEL, 0, svec2i_zero(), svec2i(90, th));
 	pos.x = x;
 	pos.y += o2->Size.y;
 	o2 = UIObjectCopy(o);

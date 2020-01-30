@@ -27,6 +27,7 @@
 */
 #include "tile_brush.h"
 
+#include "editor_ui_common.h"
 #include "nk_window.h"
 
 
@@ -136,7 +137,7 @@ static int DrawTileType(any_t data, any_t key)
 	}
 	// TODO: use keys instead of index
 	char name[256];
-	sprintf(name, "%s (%s)", tc->Name, tc->Style);
+	TileClassGetBrushName(name, tc);
 	const int selected = *tbData->brushIdx == tbData->tileIdx;
 	if (nk_select_label(tbData->ctx, name,
 		NK_TEXT_ALIGN_BOTTOM | NK_TEXT_ALIGN_CENTERED, selected))

@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, 2016-2017, 2019 Cong Xu
+    Copyright (c) 2014, 2016-2017, 2019-2020 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -441,4 +441,9 @@ static void CloseChange(void *data, int d)
 {
 	UNUSED(data);
 	UNUSED(d);
+}
+
+void TileClassGetBrushName(char *buf, const TileClass *tc)
+{
+	sprintf(buf, "%s (%s)", tc->Name, tc->Style);
 }
