@@ -110,7 +110,7 @@ static void Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 			//selectedIndex = MIN(selectedIndex, (int)ec->Setting->characters.OtherChars.size - 1);
 		}
 
-		nk_layout_row_dynamic(ctx, 40 * PIC_SCALE, WIDTH / 60);
+		nk_layout_row_dynamic(ctx, 40 * PIC_SCALE, WIDTH / 120);
 		tbData->tileIdx = 0;
 		if (hashmap_iterate_keys(
 			tbData->m->u.Static.TileClasses, DrawTileType, tbData) != MAP_OK)
@@ -135,15 +135,17 @@ static int DrawTileType(any_t data, any_t key)
 		return error;
 	}
 	// TODO: use keys instead of index
+	char name[256];
+	sprintf(name, "%s (%s)", tc->Name, tc->Style);
 	const int selected = *tbData->brushIdx == tbData->tileIdx;
-	if (nk_select_label(tbData->ctx, tc->Name,
+	if (nk_select_label(tbData->ctx, name,
 		NK_TEXT_ALIGN_BOTTOM | NK_TEXT_ALIGN_CENTERED, selected))
 	{
 		*tbData->brushIdx = tbData->tileIdx;
 	}
 	const GLuint *texid =
 		CArrayGet(&tbData->texIdsTileClasses, tbData->tileIdx);
-	DrawTileClass(tbData->ctx, tbData->pm, tc, svec2i(-24, 5), *texid);
+	DrawTileClass(tbData->ctx, tbData->pm, tc, svec2i(-40, 5), *texid);
 	tbData->tileIdx++;
 	return MAP_OK;
 }
