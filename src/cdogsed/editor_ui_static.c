@@ -51,7 +51,7 @@ static const char *BrushGetTypeStr(EditorBrush *brush, int isMain)
 	const int idx = isMain ? brush->MainType : brush->SecondaryType;
 	char tcName[256];
 	sprintf(tcName, "%d", idx);
-	const TileClass *tc;
+	TileClass *tc;
 	if (hashmap_get(
 		gMission.missionData->u.Static.TileClasses, tcName, (any_t *)&tc) !=
 		MAP_OK)
