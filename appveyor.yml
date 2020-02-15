@@ -20,20 +20,15 @@ environment:
   VERSION: 0.7.3
 
 install:
-  - IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\SDL2-devel-%SDL2_VERSION%-VC.tar.gz appveyor DownloadFile http://libsdl.org/release/SDL2-devel-%SDL2_VERSION%-VC.zip
-  - 7z x SDL2-devel-%SDL2_VERSION%-VC.zip -oC:\
-  - xcopy C:\SDL2-%SDL2_VERSION%\* %SDLDIR%\ /S /Y
-  - IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\SDL2_mixer-devel-%SDL2_MIXER_VERSION%-VC.zip appveyor DownloadFile https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-devel-%SDL2_MIXER_VERSION%-VC.zip
-  - 7z x SDL2_mixer-devel-%SDL2_MIXER_VERSION%-VC.zip -oC:\
-  - xcopy C:\SDL2_mixer-%SDL2_MIXER_VERSION%\* %SDLDIR%\ /S /Y
-  - IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\SDL2_image-devel-%SDL2_IMAGE_VERSION%-VC.zip appveyor DownloadFile https://www.libsdl.org/projects/SDL_image/release/SDL2_image-devel-%SDL2_IMAGE_VERSION%-VC.zip
-  - 7z x SDL2_image-devel-%SDL2_IMAGE_VERSION%-VC.zip -oC:\
-  - xcopy C:\SDL2_image-%SDL2_IMAGE_VERSION%\* %SDLDIR%\ /S /Y
-  - xcopy %SDLDIR%\lib\x86\* %SDLDIR%\lib\ /S
+  - cd C:\Tools\vcpkg
+  - git pull
+  - .\bootstrap-vcpkg.bat
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - vcpkg install sdl2 sdl2-image sdl2-mixer
 
 before_build:
   - .\build\windows\get-sdl2-dlls.bat dll "appveyor DownloadFile"
-  - cmake -DCMAKE_PREFIX_PATH="%SDLDIR%" -G "Visual Studio 16 2019" -A Win32 .
+  - cmake -DCMAKE_TOOLCHAIN_FILE=c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake -G "Visual Studio 16 2019" -A Win32 .
 
 build:
   project: c:\projects\cdogs-sdl\cdogs-sdl.sln
@@ -45,12 +40,7 @@ after_build:
   - dir
 
 cache:
-- SDL2-devel-%SDL2_VERSION%-VC.zip
-- SDL2_image-devel-%SDL2_IMAGE_VERSION%-VC.zip
-- SDL2_mixer-devel-%SDL2_MIXER_VERSION%-VC.zip
-- dir\SDL2-%SDL2_VERSION%-win32-x86.zip
-- dir\SDL2_image-%SDL2_IMAGE_VERSION%-win32-x86.zip
-- dir\SDL2_mixer-%SDL2_MIXER_VERSION%-win32-x86.zip
+- c:\tools\vcpkg\installed\
 
 artifacts:
   - path: /.\C-Dogs*.exe/
