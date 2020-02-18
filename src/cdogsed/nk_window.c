@@ -244,6 +244,7 @@ static Pic PadEven(const Pic *pic)
 	Pic p;
 	memset(&p, 0, sizeof p);
 	p.size = svec2i((pic->size.x + 1) / 2 * 2, (pic->size.y + 1) / 2 * 2);
+	CASSERT(p.size.x > 0 && p.size.y > 0, "invalid pic size");
 	CCALLOC(p.Data, p.size.x * p.size.y * sizeof *((Pic *)0)->Data);
 	for (int i = 0; i < pic->size.y; i++)
 	{
