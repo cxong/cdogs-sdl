@@ -1,29 +1,29 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2019 Cong Xu
-    All rights reserved.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (c) 2019 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "nk_window.h"
 
@@ -91,7 +91,7 @@ void NKWindowInit(NKWindowConfig *cfg)
 }
 
 
-static bool HandleEvents(EventHandlers *handler);
+static bool HandleEvents(EventHandlers *handler, const Uint32 ticks);
 static void Draw(const NKWindowConfig cfg);
 void NKWindow(NKWindowConfig cfg)
 {
@@ -112,7 +112,7 @@ void NKWindow(NKWindowConfig cfg)
 
 		// Note: drawing contains input processing too
 		nk_input_begin(cfg.ctx);
-		if (!HandleEvents(cfg.Handlers))
+		if (!HandleEvents(cfg.Handlers, ticksNow))
 		{
 			goto bail;
 		}
@@ -127,40 +127,17 @@ bail:
 	SDL_GL_DeleteContext(cfg.glContext);
 	SDL_DestroyWindow(cfg.win);
 }
-static bool HandleEvents(EventHandlers *handler)
+static bool HandleEvents(EventHandlers *handler, const Uint32 ticks)
 {
-	SDL_Event e;
-	bool run = true;
-	while (SDL_PollEvent(&e))
-	{
-		switch (e.type)
-		{
-		case SDL_QUIT:
-			run = false;
-			break;
-		case SDL_WINDOWEVENT:
-			switch (e.window.event)
-			{
-			case SDL_WINDOWEVENT_CLOSE:
-				run = false;
-				break;
-			default:
-				break;
-			}
-			break;
-		default:
-			break;
-		}
-		nk_sdl_handle_event(&e);
-	}
-
-	EventPoll(handler, 1);
+	EventPoll(handler, ticks, nk_sdl_handle_event);
+	bool run = !handler->HasQuit;
 	const SDL_Scancode sc = KeyGetPressed(&handler->keyboard);
 	if (sc == SDL_SCANCODE_ESCAPE)
 	{
 		run = false;
 	}
-
+	// Capture quit event; don't allow main window to quit
+	handler->HasQuit = false;
 	return run;
 }
 static void Draw(const NKWindowConfig cfg)

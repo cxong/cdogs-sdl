@@ -1,29 +1,29 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, 2018-2019 Cong Xu
-    All rights reserved.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (c) 2013-2016, 2018-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "events.h"
 
@@ -64,7 +64,8 @@ void EventReset(EventHandlers *handlers, Pic *mouseCursor, Pic *mouseTrail)
 		&handlers->mouse, mouseCursor, mouseTrail, handlers->mouse.hideMouse);
 }
 
-void EventPoll(EventHandlers *handlers, Uint32 ticks)
+void EventPoll(
+	EventHandlers *handlers, const Uint32 ticks, int (*onEvent)(SDL_Event *))
 {
 	SDL_Event e;
 	handlers->HasResolutionChanged = false;
@@ -218,10 +219,7 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 				}
 				break;
 			case SDL_WINDOWEVENT_CLOSE:
-				if (!gGraphicsDevice.cachedConfig.IsEditor)
-				{
-					handlers->HasQuit = true;
-				}
+				handlers->HasQuit = true;
 				break;
 			default:
 				// do nothing
@@ -236,6 +234,10 @@ void EventPoll(EventHandlers *handlers, Uint32 ticks)
 			break;
 		default:
 			break;
+		}
+		if (onEvent)
+		{
+			onEvent(&e);
 		}
 	}
 	KeyPostPoll(&handlers->keyboard, ticks);
@@ -563,7 +565,7 @@ SDL_Scancode GetKey(EventHandlers *handlers)
 	SDL_Scancode k = SDL_SCANCODE_UNKNOWN;
 	do
 	{
-		EventPoll(handlers, SDL_GetTicks());
+		EventPoll(handlers, SDL_GetTicks(), NULL);
 		k = KeyGetPressed(&handlers->keyboard);
 		SDL_Delay(10);
 	} while (k == SDL_SCANCODE_UNKNOWN);
@@ -572,7 +574,7 @@ SDL_Scancode GetKey(EventHandlers *handlers)
 
 SDL_Scancode EventWaitKeyOrText(EventHandlers *handlers)
 {
-	EventPoll(handlers, SDL_GetTicks());
+	EventPoll(handlers, SDL_GetTicks(), NULL);
 	const SDL_Scancode k = KeyGetPressed(&handlers->keyboard);
 	SDL_Delay(10);
 	return k;
