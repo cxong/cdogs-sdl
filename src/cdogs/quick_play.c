@@ -239,10 +239,8 @@ static void SetupQuickPlayEnemies(const int numEnemies, CharacterStore *store)
 }
 
 static void AddMission(
-	CArray *missions, const PicManager *pm, const CharacterStore *cs,
-	const int idx);
-static void RandomMissionTileClasses(
-	MissionTileClasses *mtc, const PicManager *pm);
+	CArray *missions, PicManager *pm, const CharacterStore *cs, const int idx);
+static void RandomMissionTileClasses(MissionTileClasses *mtc, PicManager *pm);
 static RoomParams RandomRoomParams(void);
 static color_t RandomBGColor(void);
 void SetupQuickPlayCampaign(CampaignSetting *setting)
@@ -266,8 +264,7 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 }
 static void RandomStyle(char *style, const CArray *styleNames);
 static void AddMission(
-	CArray *missions, const PicManager *pm, const CharacterStore *cs,
-	const int idx)
+	CArray *missions, PicManager *pm, const CharacterStore *cs, const int idx)
 {
 	Mission m;
 	MissionInit(&m);
@@ -356,8 +353,7 @@ static void AddMission(
 
 	CArrayPushBack(missions, &m);
 }
-static void RandomMissionTileClasses(
-	MissionTileClasses *mtc, const PicManager *pm)
+static void RandomMissionTileClasses(MissionTileClasses *mtc, PicManager *pm)
 {
 	char style[CDOGS_FILENAME_MAX];
 	RandomStyle(style, &pm->wallStyleNames);

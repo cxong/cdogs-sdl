@@ -864,6 +864,24 @@ TileClass *MissionStaticAddTileClass(MissionStatic *m, const TileClass *base)
 	}
 	return tc;
 }
+bool MissionStaticRemoveTileClass(MissionStatic *m, const int tile)
+{
+	char keyBuf[6];
+	sprintf(keyBuf, "%d", tile);
+	if (hashmap_remove(m->TileClasses, keyBuf) != MAP_OK)
+	{
+		CASSERT(false, "cannot remove tile id");
+		return false;
+	}
+	// Set all tiles using this to the first one
+	CA_FOREACH(int, t, m->Tiles)
+		if (*t == tile)
+		{
+			*t = 0;
+		}
+	CA_FOREACH_END()
+	return true;
+}
 
 static bool IsClear(
 	const MissionStatic *m, const struct vec2i size, const struct vec2i pos)

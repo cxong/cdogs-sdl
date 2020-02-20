@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2018-2019 Cong Xu
+    Copyright (c) 2018-2020 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -152,7 +152,7 @@ const TileClass *StrTileClass(const char *name)
 }
 
 void TileClassInit(
-	TileClass *t, const PicManager *pm, const TileClass *base,
+	TileClass *t, PicManager *pm, const TileClass *base,
 	const char *style, const char *type,
 	const color_t mask, const color_t maskAlt)
 {
@@ -165,7 +165,11 @@ void TileClassInit(
 	}
 	t->Mask = mask;
 	t->MaskAlt = maskAlt;
+	// Generate the pic in case it doesn't exist
+	PicManagerGenerateMaskedStylePic(
+		pm, t->Name, style, type, mask, maskAlt, false);
 	t->Pic = TileClassGetPic(pm, t);
+	CASSERT(t->Pic != NULL, "cannot find tile pic");
 }
 const TileClass *TileClassesGetMaskedTile(
 	const TileClass *baseClass, const char *style, const char *type,
@@ -176,7 +180,7 @@ const TileClass *TileClassesGetMaskedTile(
 	return StrTileClass(buf);
 }
 TileClass *TileClassesAdd(
-	TileClasses *c, const PicManager *pm, const TileClass *baseClass,
+	TileClasses *c, PicManager *pm, const TileClass *baseClass,
 	const char *style, const char *type,
 	const color_t mask, const color_t maskAlt)
 {

@@ -91,6 +91,19 @@ static void Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		nk_layout_row_dynamic(ctx, ROW_HEIGHT, 5);
 		if (nk_button_label(ctx, "Add"))
 		{
+			TileClass tc;
+			TileClassInit(
+				&tc, &gPicManager, &gTileFloor, "tile", "normal",
+				colorGray, colorGray);
+			if (MissionStaticAddTileClass(&tbData->m->u.Static, &tc) != NULL)
+			{
+				ResetTexIds(tbData);
+				*tbData->brushIdx = (int)tbData->texIdsTileClasses.size - 1;
+			}
+			TileClassTerminate(&tc);
+		}
+		if (nk_button_label(ctx, "Duplicate"))
+		{
 			const TileClass *selectedTC = MissionStaticIdTileClass(
 				&tbData->m->u.Static, *tbData->brushIdx);
 			if (MissionStaticAddTileClass(
@@ -100,15 +113,17 @@ static void Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 				*tbData->brushIdx = (int)tbData->texIdsTileClasses.size - 1;
 			}
 		}
-		if (nk_button_label(ctx, "Duplicate"))
+		if (hashmap_length(tbData->m->u.Static.TileClasses) > 0 &&
+			nk_button_label(ctx, "Remove"))
 		{
-			// AddCharacter(ec, selectedIndex);
-			//selectedIndex = MAX((int)ec->Setting->characters.OtherChars.size - 1, 0);
-		}
-		if (nk_button_label(ctx, "Remove"))
-		{
-			// DeleteCharacter(ec, selectedIndex);
-			//selectedIndex = MIN(selectedIndex, (int)ec->Setting->characters.OtherChars.size - 1);
+			if (MissionStaticRemoveTileClass(
+				&tbData->m->u.Static, *tbData->brushIdx))
+			{
+				ResetTexIds(tbData);
+				*tbData->brushIdx = MIN(
+					*tbData->brushIdx,
+					(int)tbData->texIdsTileClasses.size - 1);
+			}
 		}
 
 		nk_layout_row_dynamic(ctx, 40 * PIC_SCALE, WIDTH / 120);

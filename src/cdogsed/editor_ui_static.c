@@ -99,29 +99,15 @@ static const char *BrushGetGuideImageAlphaStr(UIObject *o, void *data)
 }
 
 
-static void BrushChangeType(EditorBrush *b, int d, int isMain)
-{
-	uint16_t brushType = (uint16_t)(isMain ? b->MainType : b->SecondaryType);
-	brushType = (uint16_t)CLAMP_OPPOSITE(
-		(int)brushType + d, MAP_FLOOR, MAP_NOTHING);
-	if (isMain)
-	{
-		b->MainType = brushType;
-	}
-	else
-	{
-		b->SecondaryType = brushType;
-	}
-}
 static void BrushChangeMainType(void *data, int d)
 {
-	BrushChangeType(data, d, 1);
+	UNUSED(d);
 	EditorBrush *b = data;
 	TileBrush(&gPicManager, &gEventHandlers, &gCampaign, &b->MainType);
 }
 static void BrushChangeSecondaryType(void *data, int d)
 {
-	BrushChangeType(data, d, 0);
+	UNUSED(d);
 	EditorBrush *b = data;
 	TileBrush(&gPicManager, &gEventHandlers, &gCampaign, &b->SecondaryType);
 }
