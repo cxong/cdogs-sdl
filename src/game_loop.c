@@ -1,30 +1,30 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014, 2016-2018 Cong Xu
-    All rights reserved.
+	Copyright (c) 2014, 2016-2018 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "game_loop.h"
 
@@ -49,75 +49,75 @@
 bool emscripten_fs_ready = false;
 
 void emscriptenLoadFiles() {
-    // options.cnf
-    FILE *file_options = fopen(GetConfigFilePath(CONFIG_FILE),"r");
-    if (file_options) {
-        fclose(file_options);
-        ConfigLoadJSON(&gConfig, GetConfigFilePath(CONFIG_FILE));
-        ConfigApply(&gConfig);
-    }
-    else {
-        ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
-    }
+	// options.cnf
+	FILE *file_options = fopen(GetConfigFilePath(CONFIG_FILE),"r");
+	if (file_options) {
+		fclose(file_options);
+		ConfigLoadJSON(&gConfig, GetConfigFilePath(CONFIG_FILE));
+		ConfigApply(&gConfig);
+	}
+	else {
+		ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
+	}
 
-    // autosave.json
-    FILE *file_autosave = fopen(GetConfigFilePath(AUTOSAVE_FILE),"r");
-    if (file_autosave) {
-        fclose(file_autosave);
-        AutosaveLoad(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
-    }
-    else {
-        AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
-    }
+	// autosave.json
+	FILE *file_autosave = fopen(GetConfigFilePath(AUTOSAVE_FILE),"r");
+	if (file_autosave) {
+		fclose(file_autosave);
+		AutosaveLoad(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
+	}
+	else {
+		AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
+	}
 
-    // scores.dat
-    FILE *file_scores = fopen(GetConfigFilePath(SCORES_FILE),"r");
-    if (file_scores) {
-        fclose(file_scores);
-    }
-    else {
-        SaveHighScores();
-    }
+	// scores.dat
+	FILE *file_scores = fopen(GetConfigFilePath(SCORES_FILE),"r");
+	if (file_scores) {
+		fclose(file_scores);
+	}
+	else {
+		SaveHighScores();
+	}
 
-    // players.cnf
-    FILE *file_players = fopen(GetConfigFilePath(PLAYER_TEMPLATE_FILE),"r");
-    if (file_players) {
-        fclose(file_players);
-        PlayerTemplatesLoad(&gPlayerTemplates, &gCharacterClasses);
-    }
-    else {
-        PlayerTemplatesSave(&gPlayerTemplates);
-    }
+	// players.cnf
+	FILE *file_players = fopen(GetConfigFilePath(PLAYER_TEMPLATE_FILE),"r");
+	if (file_players) {
+		fclose(file_players);
+		PlayerTemplatesLoad(&gPlayerTemplates, &gCharacterClasses);
+	}
+	else {
+		PlayerTemplatesSave(&gPlayerTemplates);
+	}
 }
 
 bool emscriptenPersistData() {
-    if (emscripten_fs_ready)
-        return true;
+	if (emscripten_fs_ready)
+		return true;
 
-    if(emscripten_run_script_int("Module.syncdone") == 1) {
-        FILE *config_file = fopen(GetConfigFilePath(CONFIG_FILE),"r");
-        if (config_file == NULL) {
-            //persist Emscripten current data to Indexed Db
-            EM_ASM(
-                Module.print("Start File sync..");
-                Module.syncdone = 0;
-                FS.syncfs(false, function(err) {
-                    assert(!err);
-                    Module.print("End File sync..");
-                    Module.syncdone = 1;
-                });
-            );
-            emscriptenLoadFiles();
-            return false;
-        }
-        else {
-            fclose(config_file);
-            emscripten_fs_ready = true;
-            emscriptenLoadFiles();
-            return true;
-        }
-    }
-    return false;
+	if(emscripten_run_script_int("Module.syncdone") == 1) {
+		FILE *config_file = fopen(GetConfigFilePath(CONFIG_FILE),"r");
+		if (config_file == NULL) {
+			//persist Emscripten current data to Indexed Db
+			EM_ASM(
+				Module.print("Start File sync..");
+				Module.syncdone = 0;
+				FS.syncfs(false, function(err) {
+					assert(!err);
+					Module.print("End File sync..");
+					Module.syncdone = 1;
+				});
+			);
+			emscriptenLoadFiles();
+			return false;
+		}
+		else {
+			fclose(config_file);
+			emscripten_fs_ready = true;
+			emscriptenLoadFiles();
+			return true;
+		}
+	}
+	return false;
 }
 #endif
 
@@ -179,9 +179,9 @@ typedef struct
 } LoopRunParams;
 typedef struct
 {
-    LoopRunner *l;
-    GameLoopData *data;
-    LoopRunParams p;
+	LoopRunner *l;
+	GameLoopData *data;
+	LoopRunParams p;
 }LoopRunInnerData;
 static LoopRunParams LoopRunParamsNew(const GameLoopData *data);
 static bool LoopRunParamsShouldSleep(LoopRunParams *p);
@@ -189,99 +189,99 @@ static bool LoopRunParamsShouldSkip(LoopRunParams *p);
 bool LoopRunnerRunInner(LoopRunInnerData *ctx)
 {
 #ifndef __EMSCRIPTEN__
-    // Frame rate control
-    if (LoopRunParamsShouldSleep(&(ctx->p)))
-    {
-        SDL_Delay(1);
-        return true;
-    }
+	// Frame rate control
+	if (LoopRunParamsShouldSleep(&(ctx->p)))
+	{
+		SDL_Delay(1);
+		return true;
+	}
 #endif
 
-    // Input
-    if ((ctx->data->Frames & 1) || !ctx->data->InputEverySecondFrame)
-    {
-        EventPoll(&gEventHandlers, ctx->p.TicksNow);
-        if (ctx->data->InputFunc)
-        {
-            ctx->data->InputFunc(ctx->data);
-        }
-    }
+	// Input
+	if ((ctx->data->Frames & 1) || !ctx->data->InputEverySecondFrame)
+	{
+		EventPoll(&gEventHandlers, ctx->p.TicksNow, NULL);
+		if (ctx->data->InputFunc)
+		{
+			ctx->data->InputFunc(ctx->data);
+		}
+	}
 
-    NetClientPoll(&gNetClient);
-    NetServerPoll(&gNetServer);
+	NetClientPoll(&gNetClient);
+	NetServerPoll(&gNetServer);
 
-    // Update
-    ctx->p.Result = ctx->data->UpdateFunc(ctx->data, ctx->l);
-    GameLoopData *newData = GetCurrentLoop(ctx->l);
-    if (newData == NULL)
-    {
-        return false;
-    }
-    else if (newData != ctx->data)
-    {
-        // State change; restart loop
-        GameLoopOnExit(ctx->data);
-        ctx->data = newData;
-        GameLoopOnEnter(ctx->data);
-        ctx->p = LoopRunParamsNew(ctx->data);
-        return true;
-    }
+	// Update
+	ctx->p.Result = ctx->data->UpdateFunc(ctx->data, ctx->l);
+	GameLoopData *newData = GetCurrentLoop(ctx->l);
+	if (newData == NULL)
+	{
+		return false;
+	}
+	else if (newData != ctx->data)
+	{
+		// State change; restart loop
+		GameLoopOnExit(ctx->data);
+		ctx->data = newData;
+		GameLoopOnEnter(ctx->data);
+		ctx->p = LoopRunParamsNew(ctx->data);
+		return true;
+	}
 
-    NetServerFlush(&gNetServer);
-    NetClientFlush(&gNetClient);
+	NetServerFlush(&gNetServer);
+	NetClientFlush(&gNetClient);
 
-    bool draw = !ctx->data->HasDrawnFirst;
-    switch (ctx->p.Result)
-    {
-    case UPDATE_RESULT_OK:
-        // Do nothing
-        break;
-    case UPDATE_RESULT_DRAW:
-        draw = true;
-        break;
-    default:
-        CASSERT(false, "Unknown loop result");
-        break;
-    }
-    ctx->data->Frames++;
+	bool draw = !ctx->data->HasDrawnFirst;
+	switch (ctx->p.Result)
+	{
+	case UPDATE_RESULT_OK:
+		// Do nothing
+		break;
+	case UPDATE_RESULT_DRAW:
+		draw = true;
+		break;
+	default:
+		CASSERT(false, "Unknown loop result");
+		break;
+	}
+	ctx->data->Frames++;
 #ifndef __EMSCRIPTEN__
-    // frame skip
-    if (LoopRunParamsShouldSkip(&(ctx->p)))
-    {
-        return true;
-    }
+	// frame skip
+	if (LoopRunParamsShouldSkip(&(ctx->p)))
+	{
+		return true;
+	}
 #endif
 
-    // Draw
-    if (draw)
-    {
+	// Draw
+	if (draw)
+	{
 		WindowContextPreRender(&gGraphicsDevice.gameWindow);
 		if (gGraphicsDevice.cachedConfig.SecondWindow)
 		{
 			WindowContextPreRender(&gGraphicsDevice.secondWindow);
 		}
-        if (ctx->data->DrawFunc)
-        {
-            ctx->data->DrawFunc(ctx->data);
-        }
+		if (ctx->data->DrawFunc)
+		{
+			ctx->data->DrawFunc(ctx->data);
+		}
 		WindowContextPostRender(&gGraphicsDevice.gameWindow);
 		if (gGraphicsDevice.cachedConfig.SecondWindow)
 		{
 			WindowContextPostRender(&gGraphicsDevice.secondWindow);
 		}
-        ctx->data->HasDrawnFirst = true;
-    }
+		ctx->data->HasDrawnFirst = true;
+	}
 
-    return true;
+	return true;
 }
 
 #ifdef __EMSCRIPTEN__
 void EmscriptenMainLoop(void *arg)
 {
-    if (!emscriptenPersistData())
-        return;
+	if (!emscriptenPersistData())
+		return;
 
-    LoopRunnerRunInner((LoopRunInnerData *)arg);
+	LoopRunnerRunInner((LoopRunInnerData *)arg);
 }
 #endif
 void LoopRunnerRun(LoopRunner *l)
@@ -293,21 +293,21 @@ void LoopRunnerRun(LoopRunner *l)
 	}
 	GameLoopOnEnter(data);
 
-    LoopRunInnerData ctx;
-    ctx.l = l;
-    ctx.data = data;
-    ctx.p = LoopRunParamsNew(data);
+	LoopRunInnerData ctx;
+	ctx.l = l;
+	ctx.data = data;
+	ctx.p = LoopRunParamsNew(data);
 
 #ifdef __EMSCRIPTEN__
-    // TODO use GameLoopData->FPS instead of FPS_FRAMELIMIT?
-    emscripten_set_main_loop_arg(EmscriptenMainLoop, &ctx, FPS_FRAMELIMIT, 1);
+	// TODO use GameLoopData->FPS instead of FPS_FRAMELIMIT?
+	emscripten_set_main_loop_arg(EmscriptenMainLoop, &ctx, FPS_FRAMELIMIT, 1);
 #else
 	for (;;)
 	{
-        if (!LoopRunnerRunInner(&ctx))
-        {
-            break;
-        }
+		if (!LoopRunnerRunInner(&ctx))
+		{
+			break;
+		}
 	}
 #endif
 	GameLoopOnExit(ctx.data);
