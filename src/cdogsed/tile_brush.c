@@ -48,7 +48,7 @@ typedef struct
 
 
 static void ResetTexIds(TileBrushData *data);
-static void Draw(SDL_Window *win, struct nk_context *ctx, void *data);
+static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data);
 void TileBrush(
 	const PicManager *pm, EventHandlers *handlers, CampaignOptions *co,
 	int *brushIdx)
@@ -82,13 +82,18 @@ void TileBrush(
 	CArrayTerminate(&data.texIdsTileClasses);
 }
 static int DrawTileType(any_t data, any_t key);
-static void Draw(SDL_Window *win, struct nk_context *ctx, void *data)
+static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 {
 	UNUSED(win);
+	bool result = true;
 	TileBrushData *tbData = data;
 	if (nk_begin(ctx, "", nk_rect(0, 0, WIDTH, HEIGHT), 0))
 	{
 		nk_layout_row_dynamic(ctx, ROW_HEIGHT, 5);
+		if (nk_button_label(ctx, "Close"))
+		{
+			result = false;
+		}
 		if (nk_button_label(ctx, "Add"))
 		{
 			TileClass tc;
@@ -135,6 +140,7 @@ static void Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		}
 	}
 	nk_end(ctx);
+	return result;
 }
 static void DrawTileClass(
 	struct nk_context *ctx, const PicManager *pm, const TileClass *tc,

@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2019 Cong Xu
+	Copyright (c) 2019-2020 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -92,7 +92,7 @@ void NKWindowInit(NKWindowConfig *cfg)
 
 
 static bool HandleEvents(EventHandlers *handler, const Uint32 ticks);
-static void Draw(const NKWindowConfig cfg);
+static bool Draw(const NKWindowConfig cfg);
 void NKWindow(NKWindowConfig cfg)
 {
 	CASSERT(cfg.win, "Error: did not initialise window");
@@ -116,7 +116,10 @@ void NKWindow(NKWindowConfig cfg)
 		{
 			goto bail;
 		}
-		Draw(cfg);
+		if (!Draw(cfg))
+		{
+			goto bail;
+		}
 		nk_input_end(cfg.ctx);
 
 		ticksElapsed = 0;
@@ -140,9 +143,12 @@ static bool HandleEvents(EventHandlers *handler, const Uint32 ticks)
 	handler->HasQuit = false;
 	return run;
 }
-static void Draw(const NKWindowConfig cfg)
+static bool Draw(const NKWindowConfig cfg)
 {
-	cfg.Draw(cfg.win, cfg.ctx, cfg.DrawData);
+	if (!cfg.Draw(cfg.win, cfg.ctx, cfg.DrawData))
+	{
+		return false;
+	}
 
 	int winWidth, winHeight;
 	SDL_GetWindowSize(cfg.win, &winWidth, &winHeight);
@@ -154,6 +160,8 @@ static void Draw(const NKWindowConfig cfg)
 
 	nk_sdl_render(NK_ANTI_ALIASING_ON);
 	SDL_GL_SwapWindow(cfg.win);
+
+	return true;
 }
 
 static void BeforeDrawTex(const GLuint texid);

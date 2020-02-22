@@ -382,6 +382,7 @@ UIObject *CreateStaticMapObjs(
 	o2->ChangeFunc = BrushChangeMainType;
 	o2->OnFocusFunc = ActivateBrush;
 	o2->OnUnfocusFunc = DeactivateBrush;
+	o2->ReloadData = true;	// may add new tile type
 	CSTRDUP(o2->Tooltip, "Left click to paint the map with this tile type");
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
@@ -392,6 +393,7 @@ UIObject *CreateStaticMapObjs(
 	o2->ChangeFunc = BrushChangeSecondaryType;
 	o2->OnFocusFunc = ActivateBrush;
 	o2->OnUnfocusFunc = DeactivateBrush;
+	o2->ReloadData = true;	// may add new tile type
 	CSTRDUP(o2->Tooltip, "Right click to paint the map with this tile type");
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
