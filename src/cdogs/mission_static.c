@@ -209,6 +209,7 @@ static void ConvertOldTile(
 		memcpy(tc, base, sizeof *tc);
 		if (base->Name) CSTRDUP(tc->Name, base->Name);
 		if (base->Style) CSTRDUP(tc->Style, base->Style);
+		if (base->StyleType) CSTRDUP(tc->StyleType, base->StyleType);
 		tc->Mask = base->Mask;
 		tc->MaskAlt = base->MaskAlt;
 		if (hashmap_put(m->TileClasses, keyBuf, tc) != MAP_OK)

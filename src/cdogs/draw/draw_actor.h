@@ -85,6 +85,9 @@ void DrawHead(
 const Pic *GetHeadPic(
 	const CharacterClass *c, const direction_e dir, const gunstate_e gunState,
 	const CharColors *colors);
+const Pic* GetHairPic(
+    const char* hair, const direction_e dir, const gunstate_e gunState,
+    const CharColors* colors);
 ActorPics GetCharacterPics(
 	const Character *c, const direction_e dir, const direction_e legDir,
 	const ActorAnimation anim, const int frame,

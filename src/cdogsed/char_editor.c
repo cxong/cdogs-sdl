@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2017-2019 Cong Xu
+	Copyright (c) 2017-2020 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -42,10 +42,12 @@ typedef struct
 	CampaignSetting *Setting;
 	bool *FileChanged;
 	char *CharacterClassNames;
+	char *HairNames;
 	char *GunNames;
 	CArray texidsChars;	// of GLuint[BODY_PART_COUNT]
 	GLuint texidsPreview[BODY_PART_COUNT];
 	CArray texIdsCharClasses;	// of GLuint
+	CArray texIdsHairs;	// of GLuint
 	CArray texIdsGuns;	// of GLuint
 	Animation anim;
 	direction_e previewDir;
@@ -55,9 +57,12 @@ typedef struct
 
 static char *GetClassNames(const int len, const char *(*indexNameFunc)(int));
 static const char *IndexCharacterClassName(const int i);
+static const char *IndexHairName(const int i);
 static int NumCharacterClasses(void);
 static const char *IndexGunName(const int i);
 static int NumGuns(void);
+static void TexArrayInit(CArray* arr, const int count);
+static void TexArrayTerminate(CArray *arr);
 static int GunIndex(const WeaponClass *wc);
 static void AddCharacterTextures(EditorContext *ec);
 static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data);
@@ -86,6 +91,8 @@ void CharEditor(
 	ec.FileChanged = fileChanged;
 	ec.CharacterClassNames = GetClassNames(
 		NumCharacterClasses(), IndexCharacterClassName);
+	ec.HairNames = GetClassNames(
+		gPicManager.hairstyleNames.size, IndexHairName);
 	ec.GunNames = GetClassNames(NumGuns(), IndexGunName);
 
 	CArrayInit(&ec.texidsChars, sizeof(GLuint) * BODY_PART_COUNT);
@@ -94,23 +101,26 @@ void CharEditor(
 		AddCharacterTextures(&ec);
 	}
 	glGenTextures(BODY_PART_COUNT, ec.texidsPreview);
-	CArrayInit(&ec.texIdsCharClasses, sizeof(GLuint));
-	CArrayResize(&ec.texIdsCharClasses, NumCharacterClasses(), NULL);
-	glGenTextures(NumCharacterClasses(), (GLuint *)ec.texIdsCharClasses.data);
+
 	CharColors cc;
 	cc.Skin = colorSkin;
 	cc.Hair = colorRed;
-	for (int i = 0; i < NumCharacterClasses(); i++)
-	{
-		const GLuint *texid = CArrayGet(&ec.texIdsCharClasses, i);
-		const CharacterClass *c = IndexCharacterClass(i);
+
+	TexArrayInit(&ec.texIdsCharClasses, NumCharacterClasses());
+	CA_FOREACH(const GLuint, texid, ec.texIdsCharClasses)
+		const CharacterClass *c = IndexCharacterClass(_ca_index);
 		LoadTexFromPic(
 			*texid, GetHeadPic(c, DIRECTION_DOWN, GUNSTATE_READY, &cc));
-		// TODO: also get hair pic
-	}
-	CArrayInit(&ec.texIdsGuns, sizeof(GLuint));
-	CArrayResize(&ec.texIdsGuns, NumGuns(), NULL);
-	glGenTextures(NumGuns(), (GLuint *)ec.texIdsGuns.data);
+	CA_FOREACH_END()
+
+	TexArrayInit(&ec.texIdsHairs, gPicManager.hairstyleNames.size);
+	CA_FOREACH(const GLuint, texid, ec.texIdsHairs)
+		const char *hair = IndexHairName(_ca_index);
+		LoadTexFromPic(
+			*texid, GetHairPic(hair, DIRECTION_DOWN, GUNSTATE_READY, &cc));
+	CA_FOREACH_END()
+
+	TexArrayInit(&ec.texIdsGuns, NumGuns());
 	for (int i = 0; i < NumGuns(); i++)
 	{
 		const GLuint *texid = CArrayGet(&ec.texIdsGuns, i);
@@ -127,17 +137,15 @@ void CharEditor(
 	NKWindow(cfg);
 
 	CFREE(ec.CharacterClassNames);
+	CFREE(ec.HairNames);
 	CFREE(ec.GunNames);
 	glDeleteTextures(
 		(GLsizei)(BODY_PART_COUNT * ec.texidsChars.size), ec.texidsChars.data);
 	CArrayTerminate(&ec.texidsChars);
 	glDeleteTextures(BODY_PART_COUNT, ec.texidsPreview);
-	glDeleteTextures(
-		(GLsizei)ec.texIdsCharClasses.size,
-		(const GLuint *)ec.texIdsCharClasses.data);
-	CArrayTerminate(&ec.texIdsCharClasses);
-	glDeleteTextures((GLsizei)(ec.texIdsGuns.size), (const GLuint *)ec.texIdsGuns.data);
-	CArrayTerminate(&ec.texIdsGuns);
+	TexArrayTerminate(&ec.texIdsCharClasses);
+	TexArrayTerminate(&ec.texIdsHairs);
+	TexArrayTerminate(&ec.texIdsGuns);
 }
 
 static char *GetClassNames(const int len, const char *(*indexNameFunc)(int))
@@ -169,6 +177,10 @@ static const char *IndexCharacterClassName(const int i)
 {
 	const CharacterClass *c = IndexCharacterClass(i);
 	return c->Name;
+}
+static const char *IndexHairName(const int i)
+{
+	return *(char **)CArrayGet(&gPicManager.hairstyleNames, i);
 }
 static int NumCharacterClasses(void)
 {
@@ -226,6 +238,18 @@ static int GunIndex(const WeaponClass *wc)
 	return -1;
 }
 
+static void TexArrayInit(CArray *arr, const int count)
+{
+	CArrayInit(arr, sizeof(GLuint));
+	CArrayResize(arr, count, NULL);
+	glGenTextures(count, (GLuint*)arr->data);
+}
+static void TexArrayTerminate(CArray *arr)
+{
+	glDeleteTextures((GLsizei)arr->size, (const GLuint*)arr->data);
+	CArrayTerminate(arr);
+}
+
 static void AddCharacter(EditorContext *ec, const int cloneIdx);
 static int MoveCharacter(
 	EditorContext *ec, const int selectedIndex, const int d);
@@ -234,6 +258,7 @@ static int DrawClassSelection(
 	struct nk_context *ctx, EditorContext *ec, const char *label,
 	const GLuint *texids, const char *items, const int selected,
 	const size_t len);
+static int HairIndex(const char *hair);
 static void DrawCharColor(
 	struct nk_context *ctx, EditorContext *ec, const char *label, color_t *c);
 static void DrawFlag(
@@ -363,15 +388,43 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		nk_end(ctx);
 
 		if (nk_begin(ctx, "Appearance",
-			nk_rect(pad, (float)charStoreSize.y + pad, 260, 225),
+			nk_rect(pad, (float)charStoreSize.y + pad, 260, 280),
 			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
 		{
 			nk_layout_row(ctx, NK_DYNAMIC, ROW_HEIGHT, 2, colRatios);
+
 			const int selectedClass = DrawClassSelection(
 				ctx, ec, "Class:", ec->texIdsCharClasses.data,
 				ec->CharacterClassNames,
 				(int)CharacterClassIndex(ec->Char->Class), NumCharacterClasses());
 			ec->Char->Class = IndexCharacterClass(selectedClass);
+
+			nk_layout_row_dynamic(ctx, ROW_HEIGHT, 1);
+			int hasHair = ec->Char->Hair != NULL;
+			nk_checkbox_label(ctx, "Has Hair", &hasHair);
+
+			if (hasHair)
+			{
+				nk_layout_row(ctx, NK_DYNAMIC, ROW_HEIGHT, 2, colRatios);
+				const int currentHair = (int)HairIndex(ec->Char->Hair);
+				int selectedHair = DrawClassSelection(
+					ctx, ec, "Hair:", ec->texIdsHairs.data,
+					ec->HairNames, currentHair, gPicManager.hairstyleNames.size);
+				if (selectedHair == -1)
+				{
+					selectedHair = 0;
+				}
+				if (currentHair != selectedHair)
+				{
+					CFREE(ec->Char->Hair);
+					CSTRDUP(ec->Char->Hair, IndexHairName(selectedHair));
+				}
+			}
+			else
+			{
+				CFREE(ec->Char->Hair);
+				ec->Char->Hair = NULL;
+			}
 
 			// Character colours
 			nk_layout_row(ctx, NK_DYNAMIC, ROW_HEIGHT, 2, colRatios);
@@ -563,6 +616,21 @@ static int DrawClassSelection(
 		*ec->FileChanged = true;
 	}
 	return selectedNew;
+}
+
+static int HairIndex(const char *hair)
+{
+	if (hair == NULL)
+	{
+		return -1;
+	}
+	CA_FOREACH(const char *, hairstyleName, gPicManager.hairstyleNames)
+		if (strcmp(*hairstyleName, hair) == 0)
+		{
+			return _ca_index;
+		}
+	CA_FOREACH_END()
+	return -1;
 }
 
 static void DrawCharColor(
