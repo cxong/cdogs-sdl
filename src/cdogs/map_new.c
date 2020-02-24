@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2017, 2019 Cong Xu
+	Copyright (c) 2014-2017, 2019-2020 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -399,16 +399,20 @@ void LoadMissionTileClasses(
 			LoadColor(&altMask, node, "AltMask");
 		}
 		TileClassInit(
-			&mtc->Wall, &gPicManager, &gTileWall, wallStyle, "o",
+			&mtc->Wall, &gPicManager, &gTileWall, wallStyle,
+			TileClassBaseStyleType(TILE_CLASS_WALL),
 			wallMask, altMask);
 		TileClassInit(
-			&mtc->Floor, &gPicManager, &gTileFloor, floorStyle, "normal",
+			&mtc->Floor, &gPicManager, &gTileFloor, floorStyle,
+			TileClassBaseStyleType(TILE_CLASS_FLOOR),
 			floorMask, altMask);
 		TileClassInit(
-			&mtc->Room, &gPicManager, &gTileRoom, roomStyle, "normal",
+			&mtc->Room, &gPicManager, &gTileRoom, roomStyle,
+			TileClassBaseStyleType(TILE_CLASS_FLOOR),
 			roomMask, altMask);
 		TileClassInit(
-			&mtc->Door, &gPicManager, &gTileDoor, doorStyle, "normal_h",
+			&mtc->Door, &gPicManager, &gTileDoor, doorStyle,
+			TileClassBaseStyleType(TILE_CLASS_DOOR),
 			colorWhite, colorWhite);
 	}
 	else

@@ -309,16 +309,20 @@ void MissionTileClassesInitDefault(MissionTileClasses *mtc)
 {
 	TileClassInit(
 		&mtc->Wall, &gPicManager, &gTileWall,
-		IntWallStyle(0), "o", colorBattleshipGrey, colorOfficeGreen);
+		IntWallStyle(0), TileClassBaseStyleType(TILE_CLASS_WALL),
+		colorBattleshipGrey, colorOfficeGreen);
 	TileClassInit(
 		&mtc->Floor, &gPicManager, &gTileFloor,
-		IntFloorStyle(0), "normal", colorGravel, colorOfficeGreen);
+		IntFloorStyle(0), TileClassBaseStyleType(TILE_CLASS_FLOOR),
+		colorGravel, colorOfficeGreen);
 	TileClassInit(
 		&mtc->Room, &gPicManager, &gTileRoom,
-		IntRoomStyle(0), "normal", colorDoveGray, colorOfficeGreen);
+		IntRoomStyle(0), TileClassBaseStyleType(TILE_CLASS_FLOOR),
+		colorDoveGray, colorOfficeGreen);
 	TileClassInit(
 		&mtc->Door, &gPicManager, &gTileDoor,
-		IntDoorStyle(0), "normal_h", colorWhite, colorWhite);
+		IntDoorStyle(0), TileClassBaseStyleType(TILE_CLASS_DOOR),
+		colorWhite, colorWhite);
 }
 void MissionTileClassesCopy(
 	MissionTileClasses *dst, const MissionTileClasses *src)

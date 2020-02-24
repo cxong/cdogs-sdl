@@ -1,29 +1,29 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, 2019 Cong Xu
-    All rights reserved.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (c) 2013-2016, 2019-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "editor_ui.h"
 
@@ -413,7 +413,8 @@ static void MissionDrawWallStyle(
 		&m->u.Classic.TileClasses.Wall : &m->u.Cave.TileClasses.Wall;
 	const int idx = PicManagerGetWallStyleIndex(&gPicManager, tc->Style);
 	DrawTileStyle(
-		o, pos, tc, "Wall", "o", idx, (int)gPicManager.wallStyleNames.size);
+		o, pos, tc, "Wall", TileClassBaseStyleType(TILE_CLASS_WALL), idx,
+		(int)gPicManager.wallStyleNames.size);
 }
 static void MissionDrawFloorStyle(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
@@ -428,7 +429,7 @@ static void MissionDrawFloorStyle(
 		&m->u.Classic.TileClasses.Floor : &m->u.Cave.TileClasses.Floor;
 	const int idx = PicManagerGetTileStyleIndex(&gPicManager, tc->Style);
 	DrawTileStyle(
-		o, pos, tc, "Floor", "normal",
+		o, pos, tc, "Floor", TileClassBaseStyleType(TILE_CLASS_FLOOR),
 		idx, (int)gPicManager.tileStyleNames.size);
 }
 static void MissionDrawRoomStyle(
@@ -444,7 +445,7 @@ static void MissionDrawRoomStyle(
 		&m->u.Classic.TileClasses.Room : &m->u.Cave.TileClasses.Room;
 	const int idx = PicManagerGetTileStyleIndex(&gPicManager, tc->Style);
 	DrawTileStyle(
-		o, pos, tc, "Rooms", "normal",
+		o, pos, tc, "Rooms", TileClassBaseStyleType(TILE_CLASS_FLOOR),
 		idx, (int)gPicManager.tileStyleNames.size);
 }
 static void MissionDrawDoorStyle(
@@ -462,7 +463,7 @@ static void MissionDrawDoorStyle(
 	DrawStyleArea(
 		svec2i_add(pos, o->Pos),
 		"Doors",
-		DoorGetClass(tc->Style, "normal", true)->Pic,
+		tc->Pic,
 		idx, (int)gPicManager.doorStyleNames.size,
 		UIObjectIsHighlighted(o));
 }

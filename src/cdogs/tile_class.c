@@ -27,6 +27,7 @@
 */
 #include "tile_class.h"
 
+#include "door.h"
 #include "log.h"
 #include "sys_config.h"
 
@@ -106,9 +107,9 @@ void TileClassTerminate(TileClass *tc)
 	CFREE(tc->StyleType);
 }
 
-static const char *TileClassBaseStyleType(const TileClass *tc)
+const char *TileClassBaseStyleType(const TileClassType type)
 {
-	switch (tc->Type)
+	switch (type)
 	{
 	case TILE_CLASS_FLOOR:
 		return "normal";
@@ -126,7 +127,7 @@ void TileClassCopy(TileClass *dst, const TileClass *src)
 	memcpy(dst, src, sizeof *dst);
 	if (src->Name) CSTRDUP(dst->Name, src->Name);
 	if (src->Style) CSTRDUP(dst->Style, src->Style);
-	if (src->StyleType) CSTRDUP(dst->StyleType, TileClassBaseStyleType(src));
+	if (src->StyleType) CSTRDUP(dst->StyleType, TileClassBaseStyleType(src->Type));
 }
 const TileClass *StrTileClass(const char *name)
 {
@@ -174,6 +175,43 @@ void TileClassInit(
 		CASSERT(t->Pic != NULL, "cannot find tile pic");
 	}
 }
+void TileClassInitDefault(
+	TileClass *t, PicManager *pm, const TileClass *base,
+	const char *forceStyle, const color_t *forceMask)
+{
+	const char *style = IntFloorStyle(0);
+	color_t mask = colorBattleshipGrey;
+	color_t maskAlt = colorOfficeGreen;
+	switch (base->Type)
+	{
+	case TILE_CLASS_FLOOR:
+		break;
+	case TILE_CLASS_WALL:
+		style = IntWallStyle(0);
+		mask = colorGravel;
+		break;
+	case TILE_CLASS_DOOR:
+		style = IntDoorStyle(0);
+		mask = colorWhite;
+		break;
+	case TILE_CLASS_NOTHING:
+		break;
+	default:
+		CASSERT(false, "unknown tile class");
+		break;
+	}
+	if (forceStyle != NULL)
+	{
+		style = forceStyle;
+	}
+	if (forceMask != NULL)
+	{
+		mask = *forceMask;
+	}
+	TileClassInit(
+		t, pm, base, style, TileClassBaseStyleType(base->Type),
+		mask, maskAlt);
+}
 const TileClass *TileClassesGetMaskedTile(
 	const TileClass *baseClass, const char *style, const char *type,
 	const color_t mask, const color_t maskAlt)
@@ -218,7 +256,8 @@ void TileClassGetName(
 void TileClassGetBaseName(char *buf, const TileClass *tc)
 {
 	TileClassGetName(
-		buf, tc, tc->Style, TileClassBaseStyleType(tc), tc->Mask, tc->MaskAlt);
+		buf, tc, tc->Style, TileClassBaseStyleType(tc->Type),
+		tc->Mask, tc->MaskAlt);
 }
 const Pic *TileClassGetPic(const PicManager *pm, const TileClass *tc)
 {
@@ -230,7 +269,9 @@ const Pic *TileClassGetPic(const PicManager *pm, const TileClass *tc)
 	sprintf(
 		buf, "%s/%s/%s/%s/%s",
 		tc->Name, tc->Style, tc->StyleType, maskName, maskAltName);
-	return PicManagerGetPic(pm, buf);
+	const Pic *pic = PicManagerGetPic(pm, buf);
+	CASSERT(pic != NULL, "tile has no pic");
+	return pic;
 }
 
 const TileClass *TileClassesGetExit(

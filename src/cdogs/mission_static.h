@@ -65,7 +65,7 @@ int MissionStaticGetTile(
 	const MissionStatic *m, const struct vec2i size, const struct vec2i pos);
 const TileClass *MissionStaticGetTileClass(
 	const MissionStatic *m, const struct vec2i size, const struct vec2i pos);
-const TileClass *MissionStaticIdTileClass(
+TileClass *MissionStaticIdTileClass(
 	const MissionStatic *m, const int tile);
 TileClass *MissionStaticAddTileClass(MissionStatic *m, const TileClass *base);
 bool MissionStaticRemoveTileClass(MissionStatic *m, const int tile);

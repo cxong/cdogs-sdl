@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2017, 2019 Cong Xu
+	Copyright (c) 2013-2017, 2019-2020 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -358,19 +358,24 @@ static void RandomMissionTileClasses(MissionTileClasses *mtc, PicManager *pm)
 	char style[CDOGS_FILENAME_MAX];
 	RandomStyle(style, &pm->wallStyleNames);
 	TileClassInit(
-		&mtc->Wall, pm, &gTileWall, style, "o",
+		&mtc->Wall, pm, &gTileWall, style,
+		TileClassBaseStyleType(TILE_CLASS_WALL),
 		RandomBGColor(), RandomBGColor());
 	RandomStyle(style, &pm->tileStyleNames);
 	TileClassInit(
-		&mtc->Floor, pm, &gTileFloor, style, "normal",
+		&mtc->Floor, pm, &gTileFloor, style,
+		TileClassBaseStyleType(TILE_CLASS_FLOOR),
 		RandomBGColor(), RandomBGColor());
 	RandomStyle(style, &pm->tileStyleNames);
 	TileClassInit(
-		&mtc->Room, pm, &gTileRoom, style, "normal",
+		&mtc->Room, pm, &gTileRoom, style,
+		TileClassBaseStyleType(TILE_CLASS_FLOOR),
 		RandomBGColor(), RandomBGColor());
 	RandomStyle(style, &pm->doorStyleNames);
 	TileClassInit(
-		&mtc->Door, pm, &gTileDoor, style, "normal_h", colorWhite, colorWhite);
+		&mtc->Door, pm, &gTileDoor, style,
+		TileClassBaseStyleType(TILE_CLASS_DOOR),
+		colorWhite, colorWhite);
 }
 static RoomParams RandomRoomParams(void)
 {

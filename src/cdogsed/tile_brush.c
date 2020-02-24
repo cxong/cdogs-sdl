@@ -31,7 +31,7 @@
 #include "nk_window.h"
 
 
-#define WIDTH 400
+#define WIDTH 600
 #define HEIGHT 300
 #define ROW_HEIGHT 25
 
@@ -39,18 +39,19 @@
 typedef struct
 {
 	struct nk_context *ctx;
-	const PicManager *pm;
+	PicManager *pm;
 	Mission *m;
 	int *brushIdx;
 	CArray texIdsTileClasses;	// of GLuint
 	int tileIdx;
+	char *tileClassNames;
 } TileBrushData;
 
 
 static void ResetTexIds(TileBrushData *data);
 static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data);
 void TileBrush(
-	const PicManager *pm, EventHandlers *handlers, CampaignOptions *co,
+	PicManager *pm, EventHandlers *handlers, CampaignOptions *co,
 	int *brushIdx)
 {
 	NKWindowConfig cfg;
@@ -73,6 +74,8 @@ void TileBrush(
 	ResetTexIds(&data);
 	cfg.DrawData = &data;
 	data.ctx = cfg.ctx;
+	data.tileClassNames = GetClassNames(
+		TILE_CLASS_COUNT, (const char *(*)(const int))TileClassTypeStr);
 
 	NKWindow(cfg);
 
@@ -80,6 +83,7 @@ void TileBrush(
 		(GLsizei)data.texIdsTileClasses.size,
 		(const GLuint *)data.texIdsTileClasses.data);
 	CArrayTerminate(&data.texIdsTileClasses);
+	CFREE(data.tileClassNames);
 }
 static int DrawTileType(any_t data, any_t key);
 static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
@@ -89,7 +93,10 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 	TileBrushData *tbData = data;
 	if (nk_begin(ctx, "", nk_rect(0, 0, WIDTH, HEIGHT), 0))
 	{
-		nk_layout_row_dynamic(ctx, ROW_HEIGHT, 5);
+		TileClass *selectedTC = MissionStaticIdTileClass(
+			&tbData->m->u.Static, *tbData->brushIdx);
+
+		nk_layout_row_dynamic(ctx, ROW_HEIGHT, 4);
 		if (nk_button_label(ctx, "Close"))
 		{
 			result = false;
@@ -109,8 +116,6 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		}
 		if (nk_button_label(ctx, "Duplicate"))
 		{
-			const TileClass *selectedTC = MissionStaticIdTileClass(
-				&tbData->m->u.Static, *tbData->brushIdx);
 			if (MissionStaticAddTileClass(
 				&tbData->m->u.Static, selectedTC) != NULL)
 			{
@@ -129,6 +134,36 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 					*tbData->brushIdx,
 					(int)tbData->texIdsTileClasses.size - 1);
 			}
+		}
+
+		nk_layout_row_dynamic(ctx, ROW_HEIGHT, 4);
+		const TileClassType newType = nk_combo_separator(
+			ctx, tbData->tileClassNames, '\0', selectedTC->Type,
+			TILE_CLASS_COUNT, ROW_HEIGHT,
+			nk_vec2(nk_widget_width(ctx), 8 * ROW_HEIGHT)
+		);
+		if (newType != selectedTC->Type)
+		{
+			TileClassTerminate(selectedTC);
+			const TileClass *base = &gTileFloor;
+			switch (newType)
+			{
+			case TILE_CLASS_FLOOR:
+				break;
+			case TILE_CLASS_WALL:
+				base = &gTileWall;
+				break;
+			case TILE_CLASS_DOOR:
+				base = &gTileDoor;
+				break;
+			case TILE_CLASS_NOTHING:
+				base = &gTileNothing;
+				break;
+			default:
+				CASSERT(false, "unknown tile class");
+				break;
+			}
+			TileClassInitDefault(selectedTC, tbData->pm, base, NULL, &selectedTC->Mask);
 		}
 
 		nk_layout_row_dynamic(ctx, 40 * PIC_SCALE, WIDTH / 120);
@@ -176,6 +211,7 @@ static void DrawTileClass(
 	const struct vec2i pos, const GLuint texid)
 {
 	const Pic *pic = TileClassGetPic(pm, tc);
+	CASSERT(pic != NULL, "tile has no pic");
 	DrawPic(ctx, pic, texid, pos, PIC_SCALE);
 }
 

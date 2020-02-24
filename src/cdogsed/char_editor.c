@@ -28,6 +28,7 @@
 #include "char_editor.h"
 
 #include <cdogs/draw/draw_actor.h>
+#include "editor_ui_common.h"
 #include "nk_window.h"
 
 #define MAX_VERTEX_MEMORY 512 * 1024
@@ -55,7 +56,6 @@ typedef struct
 } EditorContext;
 
 
-static char *GetClassNames(const int len, const char *(*indexNameFunc)(int));
 static const char *IndexCharacterClassName(const int i);
 static const char *IndexHairName(const int i);
 static int NumCharacterClasses(void);
@@ -146,31 +146,6 @@ void CharEditor(
 	TexArrayTerminate(&ec.texIdsCharClasses);
 	TexArrayTerminate(&ec.texIdsHairs);
 	TexArrayTerminate(&ec.texIdsGuns);
-}
-
-static char *GetClassNames(const int len, const char *(*indexNameFunc)(int))
-{
-	int classLen = 0;
-	for (int i = 0; i < (int)len; i++)
-	{
-		const char *name = indexNameFunc(i);
-		classLen += (int)(strlen(name) + 1);
-	}
-	if (classLen == 0)
-	{
-		return "";
-	}
-	char *names;
-	CMALLOC(names, classLen);
-	char *cp = names;
-	for (int i = 0; i < (int)len; i++)
-	{
-		const char *name = indexNameFunc(i);
-		CASSERT(name != NULL, "Class has no name");
-		strcpy(cp, name);
-		cp += strlen(name) + 1;
-	}
-	return names;
 }
 
 static const char *IndexCharacterClassName(const int i)
