@@ -59,9 +59,9 @@ static const char *IndexFloorStyleName(const int idx);
 static const char *IndexWallStyleName(const int idx);
 static const char *IndexDoorStyleName(const int idx);
 static const char *IndexTileStyleName(const TileClassType type, const int idx);
-static const int FloorStyleIndex(const char *style);
-static const int WallStyleIndex(const char *style);
-static const int DoorStyleIndex(const char *style);
+static int FloorStyleIndex(const char *style);
+static int WallStyleIndex(const char *style);
+static int DoorStyleIndex(const char *style);
 static const TileClass *GetOrAddTileClass(
 	const TileClass *base, PicManager *pm, const char *style,
 	const color_t mask, const color_t maskAlt);
@@ -364,7 +364,7 @@ static const char *IndexTileStyleName(const TileClassType type, const int idx)
 		return NULL;
 	}
 }
-static const int TileStyleIndex(const CArray *styles, const char *style)
+static int TileStyleIndex(const CArray *styles, const char *style)
 {
 	if (style == NULL)
 	{
@@ -378,15 +378,15 @@ static const int TileStyleIndex(const CArray *styles, const char *style)
 	CA_FOREACH_END()
 	return -1;
 }
-static const int FloorStyleIndex(const char *style)
+static int FloorStyleIndex(const char *style)
 {
 	return TileStyleIndex(&gPicManager.tileStyleNames, style);
 }
-static const int WallStyleIndex(const char *style)
+static int WallStyleIndex(const char *style)
 {
 	return TileStyleIndex(&gPicManager.wallStyleNames, style);
 }
-static const int DoorStyleIndex(const char *style)
+static int DoorStyleIndex(const char *style)
 {
 	return TileStyleIndex(&gPicManager.doorStyleNames, style);
 }
