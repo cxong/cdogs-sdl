@@ -166,14 +166,7 @@ void TileClassInit(
 	}
 	t->Mask = mask;
 	t->MaskAlt = maskAlt;
-	if (t->Name != NULL)
-	{
-		// Generate the pic in case it doesn't exist
-		PicManagerGenerateMaskedStylePic(
-			pm, t->Name, style, type, mask, maskAlt, false);
-		t->Pic = TileClassGetPic(pm, t);
-		CASSERT(t->Pic != NULL, "cannot find tile pic");
-	}
+	TileClassReloadPic(t, pm);
 }
 void TileClassInitDefault(
 	TileClass *t, PicManager *pm, const TileClass *base,
@@ -212,6 +205,17 @@ void TileClassInitDefault(
 		t, pm, base, style, TileClassBaseStyleType(base->Type),
 		mask, maskAlt);
 }
+void TileClassReloadPic(TileClass *t, PicManager *pm)
+{
+	if (t->Name != NULL)
+	{
+		// Generate the pic in case it doesn't exist
+		PicManagerGenerateMaskedStylePic(
+			pm, t->Name, t->Style, t->StyleType, t->Mask, t->MaskAlt, false);
+		t->Pic = TileClassGetPic(pm, t);
+		CASSERT(t->Pic != NULL, "cannot find tile pic");
+	}
+}
 const TileClass *TileClassesGetMaskedTile(
 	const TileClass *baseClass, const char *style, const char *type,
 	const color_t mask, const color_t maskAlt)
@@ -235,6 +239,7 @@ TileClass *TileClassesAdd(
 	if (error != MAP_OK)
 	{
 		LOG(LM_MAIN, LL_ERROR, "failed to add tile class %s: %d", buf, error);
+		TileClassDestroy(t);
 		return NULL;
 	}
 	LOG(LM_MAIN, LL_DEBUG, "add tile class %s", buf);
@@ -270,7 +275,6 @@ const Pic *TileClassGetPic(const PicManager *pm, const TileClass *tc)
 		buf, "%s/%s/%s/%s/%s",
 		tc->Name, tc->Style, tc->StyleType, maskName, maskAltName);
 	const Pic *pic = PicManagerGetPic(pm, buf);
-	CASSERT(pic != NULL, "tile has no pic");
 	return pic;
 }
 

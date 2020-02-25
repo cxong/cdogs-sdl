@@ -27,6 +27,8 @@
 */
 #include "editor_ui_common.h"
 
+#include <SDL_opengl.h>
+
 #include <cdogs/events.h>
 #include <cdogs/font.h>
 #include <cdogs/gamedata.h>
@@ -471,4 +473,16 @@ char *GetClassNames(const int len, const char *(*indexNameFunc)(const int))
 		cp += strlen(name) + 1;
 	}
 	return names;
+}
+
+void TexArrayInit(CArray* arr, const int count)
+{
+	CArrayInit(arr, sizeof(GLuint));
+	CArrayResize(arr, count, NULL);
+	glGenTextures(count, (GLuint*)arr->data);
+}
+void TexArrayTerminate(CArray* arr)
+{
+	glDeleteTextures((GLsizei)arr->size, (const GLuint*)arr->data);
+	CArrayTerminate(arr);
 }

@@ -228,9 +228,12 @@ int nk_combo_separator_image(struct nk_context *ctx,
 	}
 
 	// Also draw currently selected image
-	const struct nk_image comboImg = nk_image_id(img_ids[selected]);
-	BeforeDrawTex(img_ids[selected]);
-	nk_draw_image(&ctx->current->buffer, bounds, &comboImg, nk_white);
+	if (img_ids != NULL)
+	{
+		const struct nk_image comboImg = nk_image_id(img_ids[selected]);
+		BeforeDrawTex(img_ids[selected]);
+		nk_draw_image(&ctx->current->buffer, bounds, &comboImg, nk_white);
+	}
 
 	return selected;
 }
@@ -267,15 +270,21 @@ void DrawPic(
 	struct nk_context *ctx, const Pic *pic, const GLuint texid,
 	const struct vec2i pos, const float scale)
 {
-	LoadTexFromPic(texid, pic);
+	if (pic != NULL)
+	{
+		LoadTexFromPic(texid, pic);
+	}
 	struct nk_image tex = nk_image_id((int)texid);
 	BeforeDrawTex(texid);
 	struct nk_rect bounds;
 	nk_layout_widget_space(&bounds, ctx, ctx->current, nk_true);
 	bounds.x += pos.x * scale;
 	bounds.y += pos.y * scale;
-	bounds.w = pic->size.x * scale;
-	bounds.h = pic->size.y * scale;
+	if (pic != NULL)
+	{
+		bounds.w = pic->size.x * scale;
+		bounds.h = pic->size.y * scale;
+	}
 	nk_draw_image(&ctx->current->buffer, bounds, &tex, nk_white);
 }
 

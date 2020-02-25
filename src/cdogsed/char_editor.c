@@ -61,8 +61,6 @@ static const char *IndexHairName(const int i);
 static int NumCharacterClasses(void);
 static const char *IndexGunName(const int i);
 static int NumGuns(void);
-static void TexArrayInit(CArray* arr, const int count);
-static void TexArrayTerminate(CArray *arr);
 static int GunIndex(const WeaponClass *wc);
 static void AddCharacterTextures(EditorContext *ec);
 static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data);
@@ -121,12 +119,10 @@ void CharEditor(
 	CA_FOREACH_END()
 
 	TexArrayInit(&ec.texIdsGuns, NumGuns());
-	for (int i = 0; i < NumGuns(); i++)
-	{
-		const GLuint *texid = CArrayGet(&ec.texIdsGuns, i);
-		const WeaponClass *wc = IndexWeaponClassReal(i);
+	CA_FOREACH(const GLuint, texid, ec.texIdsGuns)
+		const WeaponClass *wc = IndexWeaponClassReal(_ca_index);
 		LoadTexFromPic(*texid, wc->Icon);
-	}
+	CA_FOREACH_END()
 
 	ec.anim = AnimationGetActorAnimation(ACTORANIMATION_WALKING);
 	ec.previewDir = DIRECTION_DOWN;
@@ -211,18 +207,6 @@ static int GunIndex(const WeaponClass *wc)
 	CA_FOREACH_END()
 	CASSERT(false, "cannot find gun");
 	return -1;
-}
-
-static void TexArrayInit(CArray *arr, const int count)
-{
-	CArrayInit(arr, sizeof(GLuint));
-	CArrayResize(arr, count, NULL);
-	glGenTextures(count, (GLuint*)arr->data);
-}
-static void TexArrayTerminate(CArray *arr)
-{
-	glDeleteTextures((GLsizei)arr->size, (const GLuint*)arr->data);
-	CArrayTerminate(arr);
 }
 
 static void AddCharacter(EditorContext *ec, const int cloneIdx);

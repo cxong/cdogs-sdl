@@ -97,6 +97,7 @@ void TileClassInit(
 void TileClassInitDefault(
 	TileClass *t, PicManager *pm, const TileClass *base,
 	const char *forceStyle, const color_t *forceMask);
+void TileClassReloadPic(TileClass *t, PicManager *pm);
 const char *TileClassBaseStyleType(const TileClassType type);
 void TileClassCopy(TileClass *dst, const TileClass *src);
 const TileClass *StrTileClass(const char *name);
