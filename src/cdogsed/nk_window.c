@@ -285,6 +285,11 @@ void DrawPic(
 		bounds.w = pic->size.x * scale;
 		bounds.h = pic->size.y * scale;
 	}
+	else
+	{
+		bounds.w = 0;
+		bounds.h = 0;
+	}
 	nk_draw_image(&ctx->current->buffer, bounds, &tex, nk_white);
 }
 

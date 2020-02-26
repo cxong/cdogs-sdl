@@ -246,45 +246,48 @@ static void DrawTilePropsRow(
 		TileClassInitDefault(selectedTC, tbData->pm, base, NULL, &selectedTC->Mask);
 	}
 
-	nk_label(ctx, "Style:", NK_TEXT_LEFT);
-	const GLuint *styleTexIds = NULL;
-	const char *styles = "";
-	int styleSelected = -1;
-	int styleCount = 0;
-	switch (selectedTC->Type)
+	if (selectedTC->Type != TILE_CLASS_NOTHING)
 	{
-	case TILE_CLASS_FLOOR:
-		styles = tbData->floorStyles;
-		styleSelected = FloorStyleIndex(selectedTC->Style);
-		styleTexIds = tbData->texIdsFloorStyles.data;
-		styleCount = tbData->texIdsFloorStyles.size;
-		break;
-	case TILE_CLASS_WALL:
-		styles = tbData->wallStyles;
-		styleSelected = WallStyleIndex(selectedTC->Style);
-		styleTexIds = tbData->texIdsWallStyles.data;
-		styleCount = tbData->texIdsWallStyles.size;
-		break;
-	case TILE_CLASS_DOOR:
-		styles = tbData->doorStyles;
-		styleSelected = DoorStyleIndex(selectedTC->Style);
-		styleTexIds = tbData->texIdsDoorStyles.data;
-		styleCount = tbData->texIdsDoorStyles.size;
-		break;
-	default:
-		break;
-	}
-	const int newStyle = nk_combo_separator_image(
-		ctx, styleTexIds, styles, '\0', styleSelected,
-		styleCount, ROW_HEIGHT,
-		nk_vec2(nk_widget_width(ctx), 8 * ROW_HEIGHT)
-	);
-	if (newStyle != styleSelected)
-	{
-		CFREE(selectedTC->Style);
-		CSTRDUP(
-			selectedTC->Style, IndexTileStyleName(selectedTC->Type, newStyle));
-		TileClassReloadPic(selectedTC, tbData->pm);
+		nk_label(ctx, "Style:", NK_TEXT_LEFT);
+		const GLuint* styleTexIds = NULL;
+		const char* styles = "";
+		int styleSelected = -1;
+		int styleCount = 0;
+		switch (selectedTC->Type)
+		{
+		case TILE_CLASS_FLOOR:
+			styles = tbData->floorStyles;
+			styleSelected = FloorStyleIndex(selectedTC->Style);
+			styleTexIds = tbData->texIdsFloorStyles.data;
+			styleCount = tbData->texIdsFloorStyles.size;
+			break;
+		case TILE_CLASS_WALL:
+			styles = tbData->wallStyles;
+			styleSelected = WallStyleIndex(selectedTC->Style);
+			styleTexIds = tbData->texIdsWallStyles.data;
+			styleCount = tbData->texIdsWallStyles.size;
+			break;
+		case TILE_CLASS_DOOR:
+			styles = tbData->doorStyles;
+			styleSelected = DoorStyleIndex(selectedTC->Style);
+			styleTexIds = tbData->texIdsDoorStyles.data;
+			styleCount = tbData->texIdsDoorStyles.size;
+			break;
+		default:
+			break;
+		}
+		const int newStyle = nk_combo_separator_image(
+			ctx, styleTexIds, styles, '\0', styleSelected,
+			styleCount, ROW_HEIGHT,
+			nk_vec2(nk_widget_width(ctx), 8 * ROW_HEIGHT)
+		);
+		if (newStyle != styleSelected)
+		{
+			CFREE(selectedTC->Style);
+			CSTRDUP(
+				selectedTC->Style, IndexTileStyleName(selectedTC->Type, newStyle));
+			TileClassReloadPic(selectedTC, tbData->pm);
+		}
 	}
 }
 static void DrawTileClass(
