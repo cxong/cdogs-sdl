@@ -770,10 +770,11 @@ TileClass *MissionStaticIdTileClass(
 {
 	char keyBuf[6];
 	sprintf(keyBuf, "%d", tile);
-	TileClass *tc;
-	if (hashmap_get(m->TileClasses, keyBuf, (any_t)&tc) != MAP_OK)
+	TileClass *tc = NULL;
+	const int error = hashmap_get(m->TileClasses, keyBuf, (any_t)&tc);
+	if (error != MAP_OK && error != MAP_MISSING)
 	{
-		CASSERT(false, "cannot find tile id");
+		CASSERT(false, "error getting tile id");
 	}
 	return tc;
 }
@@ -853,8 +854,11 @@ TileClass *MissionStaticAddTileClass(MissionStatic *m, const TileClass *base)
 	TileClass *tc;
 	CMALLOC(tc, sizeof *tc);
 	TileClassCopy(tc, base);
+	// Try to find an empty slot to add the new tile class
+	int i;
+	for (i = 0; MissionStaticIdTileClass(m, i) != NULL; i++);
 	char buf[12];
-	snprintf(buf, sizeof buf - 1, "%d", hashmap_length(m->TileClasses));
+	snprintf(buf, sizeof buf - 1, "%d", i);
 	if (hashmap_put(m->TileClasses, buf, (any_t *)tc) != MAP_OK)
 	{
 		char tcName[256];
@@ -875,10 +879,12 @@ bool MissionStaticRemoveTileClass(MissionStatic *m, const int tile)
 		return false;
 	}
 	// Set all tiles using this to the first one
+	int i;
+	for (i = 0; MissionStaticIdTileClass(m, i) == NULL; i++);
 	CA_FOREACH(int, t, m->Tiles)
 		if (*t == tile)
 		{
-			*t = 0;
+			*t = i;
 		}
 	CA_FOREACH_END()
 	return true;

@@ -141,7 +141,7 @@ static void DrawTileOpsRow(
 	TileClass *selectedTC, bool *result);
 static void DrawTilePropsRow(
 	struct nk_context *ctx, TileBrushData *tbData, TileClass *selectedTC);
-static int DrawTileType(any_t data, any_t key);
+static int DrawTileType(TileBrushData *tbData, TileClass *tc, const int tileId);
 static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 {
 	UNUSED(win);
@@ -158,10 +158,17 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 
 		nk_layout_row_dynamic(ctx, 40 * PIC_SCALE, WIDTH / 120);
 		tbData->tileIdx = 0;
-		if (hashmap_iterate_keys(
-			tbData->m->u.Static.TileClasses, DrawTileType, tbData) != MAP_OK)
+		int tilesDrawn = 0;
+		for (int i = 0;
+			tilesDrawn < hashmap_length(tbData->m->u.Static.TileClasses);
+			i++)
 		{
-			CASSERT(false, "failed to draw static tile classes");
+			TileClass *tc = MissionStaticIdTileClass(&tbData->m->u.Static, i);
+			if (tc != NULL)
+			{
+				DrawTileType(tbData, tc, i);
+				tilesDrawn++;
+			}
 		}
 	}
 	nk_end(ctx);
@@ -185,7 +192,6 @@ static void DrawTileOpsRow(
 		if (MissionStaticAddTileClass(&tbData->m->u.Static, &tc) != NULL)
 		{
 			ResetTexIds(tbData);
-			*tbData->brushIdx = (int)tbData->texIdsTileClasses.size - 1;
 		}
 		TileClassTerminate(&tc);
 	}
@@ -195,7 +201,6 @@ static void DrawTileOpsRow(
 			&tbData->m->u.Static, selectedTC) != NULL)
 		{
 			ResetTexIds(tbData);
-			*tbData->brushIdx = (int)tbData->texIdsTileClasses.size - 1;
 		}
 	}
 	if (hashmap_length(tbData->m->u.Static.TileClasses) > 0 &&
@@ -205,15 +210,26 @@ static void DrawTileOpsRow(
 			&tbData->m->u.Static, *tbData->brushIdx))
 		{
 			ResetTexIds(tbData);
-			*tbData->brushIdx = MIN(
-				*tbData->brushIdx,
-				(int)tbData->texIdsTileClasses.size - 1);
+			// Set selected tile index to an existing tile
+			if (hashmap_length(tbData->m->u.Static.TileClasses) > 0)
+			{
+				for (*tbData->brushIdx = 0;
+					MissionStaticIdTileClass(
+						&tbData->m->u.Static,
+						*tbData->brushIdx
+					) == NULL;
+					*tbData->brushIdx++);
+			}
 		}
 	}
 }
 static void DrawTilePropsRow(
 	struct nk_context *ctx, TileBrushData *tbData, TileClass *selectedTC)
 {
+	if (selectedTC == NULL)
+	{
+		return;
+	}
 	nk_layout_row_dynamic(ctx, ROW_HEIGHT, 6);
 
 	nk_label(ctx, "Type:", NK_TEXT_LEFT);
@@ -293,20 +309,10 @@ static void DrawTilePropsRow(
 static void DrawTileClass(
 	struct nk_context *ctx, const PicManager *pm, const TileClass *tc,
 	const struct vec2i pos, const GLuint texid);
-static int DrawTileType(any_t data, any_t key)
+static int DrawTileType(TileBrushData *tbData, TileClass *tc, const int tileId)
 {
-	TileBrushData *tbData = data;
-	TileClass *tc;
-	const int error = hashmap_get(
-		tbData->m->u.Static.TileClasses, (const char *)key, (any_t *)&tc);
-	if (error != MAP_OK)
-	{
-		CASSERT(false, "cannot find tile class");
-		return error;
-	}
 	char name[256];
 	TileClassGetBrushName(name, tc);
-	const int tileId = strtol((const char*)key, NULL, 10);
 	const int selected = *tbData->brushIdx == tileId;
 	if (nk_select_label(tbData->ctx, name,
 		NK_TEXT_ALIGN_BOTTOM | NK_TEXT_ALIGN_CENTERED, selected))
