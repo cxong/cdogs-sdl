@@ -218,7 +218,7 @@ static void DrawTileOpsRow(
 						&tbData->m->u.Static,
 						*tbData->brushIdx
 					) == NULL;
-					*tbData->brushIdx++);
+					(*tbData->brushIdx)++);
 			}
 		}
 	}
