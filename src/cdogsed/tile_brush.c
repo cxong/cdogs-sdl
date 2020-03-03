@@ -32,7 +32,9 @@
 
 
 #define WIDTH 600
-#define HEIGHT 300
+#define HEIGHT 500
+#define MAIN_WIDTH 400
+#define SIDE_WIDTH (WIDTH - MAIN_WIDTH)
 #define ROW_HEIGHT 25
 
 
@@ -139,7 +141,7 @@ void TileBrush(
 static void DrawTileOpsRow(
 	struct nk_context *ctx, TileBrushData *tbData,
 	TileClass *selectedTC, bool *result);
-static void DrawTilePropsRow(
+static void DrawTilePropsSidebar(
 	struct nk_context *ctx, TileBrushData *tbData, TileClass *selectedTC);
 static int DrawTileType(TileBrushData *tbData, TileClass *tc, const int tileId);
 static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
@@ -147,16 +149,13 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 	UNUSED(win);
 	bool result = true;
 	TileBrushData *tbData = data;
-	if (nk_begin(ctx, "", nk_rect(0, 0, WIDTH, HEIGHT), 0))
+	TileClass* selectedTC = MissionStaticIdTileClass(
+		&tbData->m->u.Static, *tbData->brushIdx);
+	if (nk_begin(ctx, "", nk_rect(0, 0, MAIN_WIDTH, HEIGHT), NK_WINDOW_BORDER))
 	{
-		TileClass *selectedTC = MissionStaticIdTileClass(
-			&tbData->m->u.Static, *tbData->brushIdx);
-
 		DrawTileOpsRow(ctx, tbData, selectedTC, &result);
 
-		DrawTilePropsRow(ctx, tbData, selectedTC);
-
-		nk_layout_row_dynamic(ctx, 40 * PIC_SCALE, WIDTH / 120);
+		nk_layout_row_dynamic(ctx, 40 * PIC_SCALE, MAIN_WIDTH / 120);
 		tbData->tileIdx = 0;
 		int tilesDrawn = 0;
 		for (int i = 0;
@@ -172,6 +171,15 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		}
 	}
 	nk_end(ctx);
+
+	if (nk_begin(
+		ctx, "Properties", nk_rect(MAIN_WIDTH, 0, SIDE_WIDTH, HEIGHT),
+		NK_WINDOW_BORDER | NK_WINDOW_TITLE) &&
+		selectedTC != NULL)
+	{
+		DrawTilePropsSidebar(ctx, tbData, selectedTC);
+	}
+	nk_end(ctx);
 	return result;
 }
 static void DrawTileOpsRow(
@@ -179,7 +187,7 @@ static void DrawTileOpsRow(
 	TileClass *selectedTC, bool *result)
 {
 	nk_layout_row_dynamic(ctx, ROW_HEIGHT, 4);
-	if (nk_button_label(ctx, "Close"))
+	if (nk_button_label(ctx, "Done"))
 	{
 		*result = false;
 	}
@@ -223,15 +231,10 @@ static void DrawTileOpsRow(
 		}
 	}
 }
-static void DrawTilePropsRow(
+static void DrawTilePropsSidebar(
 	struct nk_context *ctx, TileBrushData *tbData, TileClass *selectedTC)
 {
-	if (selectedTC == NULL)
-	{
-		return;
-	}
-	nk_layout_row_dynamic(ctx, ROW_HEIGHT, 6);
-
+	nk_layout_row_dynamic(ctx, ROW_HEIGHT, 1);
 	nk_label(ctx, "Type:", NK_TEXT_LEFT);
 	const TileClassType newType = nk_combo_separator(
 		ctx, tbData->tcTypes, '\0', selectedTC->Type,
