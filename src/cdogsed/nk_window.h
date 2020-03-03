@@ -85,3 +85,5 @@ void LoadTexFromPic(const GLuint texid, const Pic *pic);
 void DrawPic(
 	struct nk_context *ctx, const Pic *pic, const GLuint texid,
 	const struct vec2i pos, const float scale);
+bool ColorPicker(
+	struct nk_context *ctx, const float height, const char *label, color_t *c);

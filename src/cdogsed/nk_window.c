@@ -293,6 +293,35 @@ void DrawPic(
 	nk_draw_image(&ctx->current->buffer, bounds, &tex, nk_white);
 }
 
+bool ColorPicker(
+	struct nk_context *ctx, const float height, const char *label, color_t *c)
+{
+	bool changed = false;
+	nk_label(ctx, label, NK_TEXT_LEFT);
+	struct nk_color color = { c->r, c->g, c->b, 255 };
+	const struct nk_color colorOriginal = color;
+	if (nk_combo_begin_color(ctx, color, nk_vec2(nk_widget_width(ctx), 400)))
+	{
+		nk_layout_row_dynamic(ctx, 110, 1);
+		struct nk_colorf colorf = nk_color_cf(color);
+		colorf = nk_color_picker(ctx, colorf, NK_RGB);
+		color = nk_rgb_cf(colorf);
+		nk_layout_row_dynamic(ctx, height, 1);
+		color.r = (nk_byte)nk_propertyi(ctx, "#R:", 0, color.r, 255, 1, 1);
+		color.g = (nk_byte)nk_propertyi(ctx, "#G:", 0, color.g, 255, 1, 1);
+		color.b = (nk_byte)nk_propertyi(ctx, "#B:", 0, color.b, 255, 1, 1);
+		nk_combo_end(ctx);
+		c->r = color.r;
+		c->g = color.g;
+		c->b = color.b;
+		if (memcmp(&color, &colorOriginal, sizeof color))
+		{
+			changed = true;
+		}
+	}
+	return changed;
+}
+
 static void BeforeDrawTex(const GLuint texid)
 {
 	glBindTexture(GL_TEXTURE_2D, texid);

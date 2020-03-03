@@ -218,8 +218,6 @@ static int DrawClassSelection(
 	const GLuint *texids, const char *items, const int selected,
 	const size_t len);
 static int HairIndex(const char *hair);
-static void DrawCharColor(
-	struct nk_context *ctx, EditorContext *ec, const char *label, color_t *c);
 static void DrawFlag(
 	struct nk_context *ctx, EditorContext *ec, const char *label,
 	const int flag, const char *tooltip);
@@ -387,11 +385,26 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 
 			// Character colours
 			nk_layout_row(ctx, NK_DYNAMIC, ROW_HEIGHT, 2, colRatios);
-			DrawCharColor(ctx, ec, "Skin:", &ec->Char->Colors.Skin);
-			DrawCharColor(ctx, ec, "Hair:", &ec->Char->Colors.Hair);
-			DrawCharColor(ctx, ec, "Arms:", &ec->Char->Colors.Arms);
-			DrawCharColor(ctx, ec, "Body:", &ec->Char->Colors.Body);
-			DrawCharColor(ctx, ec, "Legs:", &ec->Char->Colors.Legs);
+			if (ColorPicker(ctx, ROW_HEIGHT, "Skin:", &ec->Char->Colors.Skin))
+			{
+				*ec->FileChanged = true;
+			}
+			if (ColorPicker(ctx, ROW_HEIGHT, "Hair:", &ec->Char->Colors.Hair))
+			{
+				*ec->FileChanged = true;
+			}
+			if (ColorPicker(ctx, ROW_HEIGHT, "Arms:", &ec->Char->Colors.Arms))
+			{
+				*ec->FileChanged = true;
+			}
+			if (ColorPicker(ctx, ROW_HEIGHT, "Body:", &ec->Char->Colors.Body))
+			{
+				*ec->FileChanged = true;
+			}
+			if (ColorPicker(ctx, ROW_HEIGHT, "Legs:", &ec->Char->Colors.Legs))
+			{
+				*ec->FileChanged = true;
+			}
 		}
 		nk_end(ctx);
 
@@ -590,33 +603,6 @@ static int HairIndex(const char *hair)
 		}
 	CA_FOREACH_END()
 	return -1;
-}
-
-static void DrawCharColor(
-	struct nk_context *ctx, EditorContext *ec, const char *label, color_t *c)
-{
-	nk_label(ctx, label, NK_TEXT_LEFT);
-	struct nk_color color = { c->r, c->g, c->b, 255 };
-	const struct nk_color colorOriginal = color;
-	if (nk_combo_begin_color(ctx, color, nk_vec2(nk_widget_width(ctx), 400)))
-	{
-		nk_layout_row_dynamic(ctx, 110, 1);
-		struct nk_colorf colorf = nk_color_cf(color);
-		colorf = nk_color_picker(ctx, colorf, NK_RGB);
-		color = nk_rgb_cf(colorf);
-		nk_layout_row_dynamic(ctx, ROW_HEIGHT, 1);
-		color.r = (nk_byte)nk_propertyi(ctx, "#R:", 0, color.r, 255, 1, 1);
-		color.g = (nk_byte)nk_propertyi(ctx, "#G:", 0, color.g, 255, 1, 1);
-		color.b = (nk_byte)nk_propertyi(ctx, "#B:", 0, color.b, 255, 1, 1);
-		nk_combo_end(ctx);
-		c->r = color.r;
-		c->g = color.g;
-		c->b = color.b;
-		if (memcmp(&color, &colorOriginal, sizeof color))
-		{
-			*ec->FileChanged = true;
-		}
-	}
 }
 
 static void DrawFlag(
