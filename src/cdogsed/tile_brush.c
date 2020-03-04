@@ -30,13 +30,11 @@
 #include "editor_ui_common.h"
 #include "nk_window.h"
 
-
 #define WIDTH 600
 #define HEIGHT 500
 #define MAIN_WIDTH 400
 #define SIDE_WIDTH (WIDTH - MAIN_WIDTH)
 #define ROW_HEIGHT 25
-
 
 typedef struct
 {
@@ -44,7 +42,7 @@ typedef struct
 	PicManager *pm;
 	Mission *m;
 	int *brushIdx;
-	CArray texIdsTileClasses;	// of GLuint
+	CArray texIdsTileClasses; // of GLuint
 	int tileIdx;
 	char *tcTypes;
 	char *floorStyles;
@@ -54,7 +52,6 @@ typedef struct
 	CArray texIdsWallStyles;
 	CArray texIdsDoorStyles;
 } TileBrushData;
-
 
 static void ResetTexIds(TileBrushData *data);
 static const char *IndexFloorStyleName(const int idx);
@@ -76,7 +73,7 @@ void TileBrush(
 	memset(&cfg, 0, sizeof cfg);
 	cfg.Title = "Tile Brush";
 	cfg.Size = svec2i(WIDTH, HEIGHT);
-	color_t bg = { 41, 26, 26, 255 };
+	color_t bg = {41, 26, 26, 255};
 	cfg.BG = bg;
 	cfg.Handlers = handlers;
 	cfg.Draw = Draw;
@@ -95,32 +92,32 @@ void TileBrush(
 	data.ctx = cfg.ctx;
 	data.tcTypes = GetClassNames(
 		TILE_CLASS_COUNT, (const char *(*)(const int))TileClassTypeStr);
-	data.floorStyles = GetClassNames(
-		pm->tileStyleNames.size, IndexFloorStyleName);
-	data.wallStyles = GetClassNames(
-		pm->wallStyleNames.size, IndexWallStyleName);
-	data.doorStyles = GetClassNames(
-		pm->doorStyleNames.size, IndexDoorStyleName);
+	data.floorStyles =
+		GetClassNames(pm->tileStyleNames.size, IndexFloorStyleName);
+	data.wallStyles =
+		GetClassNames(pm->wallStyleNames.size, IndexWallStyleName);
+	data.doorStyles =
+		GetClassNames(pm->doorStyleNames.size, IndexDoorStyleName);
 	TexArrayInit(&data.texIdsFloorStyles, pm->tileStyleNames.size);
 	CA_FOREACH(const GLuint, texid, data.texIdsFloorStyles)
-		const char *style = *(char **)CArrayGet(&pm->tileStyleNames, _ca_index);
-		const TileClass *styleClass = GetOrAddTileClass(
-			&gTileFloor, pm, style, colorBattleshipGrey, colorOfficeGreen);
-		LoadTexFromPic(*texid, styleClass->Pic);
+	const char *style = *(char **)CArrayGet(&pm->tileStyleNames, _ca_index);
+	const TileClass *styleClass = GetOrAddTileClass(
+		&gTileFloor, pm, style, colorBattleshipGrey, colorOfficeGreen);
+	LoadTexFromPic(*texid, styleClass->Pic);
 	CA_FOREACH_END()
 	TexArrayInit(&data.texIdsWallStyles, pm->wallStyleNames.size);
 	CA_FOREACH(const GLuint, texid, data.texIdsWallStyles)
-		const char *style = *(char **)CArrayGet(&pm->wallStyleNames, _ca_index);
-		const TileClass *styleClass = GetOrAddTileClass(
-			&gTileWall, pm, style, colorGravel, colorOfficeGreen);
-		LoadTexFromPic(*texid, styleClass->Pic);
+	const char *style = *(char **)CArrayGet(&pm->wallStyleNames, _ca_index);
+	const TileClass *styleClass = GetOrAddTileClass(
+		&gTileWall, pm, style, colorGravel, colorOfficeGreen);
+	LoadTexFromPic(*texid, styleClass->Pic);
 	CA_FOREACH_END()
 	TexArrayInit(&data.texIdsDoorStyles, pm->doorStyleNames.size);
 	CA_FOREACH(const GLuint, texid, data.texIdsDoorStyles)
-		const char *style = *(char **)CArrayGet(&pm->doorStyleNames, _ca_index);
-		const TileClass *styleClass = GetOrAddTileClass(
-			&gTileDoor, pm, style, colorWhite, colorOfficeGreen);
-		LoadTexFromPic(*texid, styleClass->Pic);
+	const char *style = *(char **)CArrayGet(&pm->doorStyleNames, _ca_index);
+	const TileClass *styleClass =
+		GetOrAddTileClass(&gTileDoor, pm, style, colorWhite, colorOfficeGreen);
+	LoadTexFromPic(*texid, styleClass->Pic);
 	CA_FOREACH_END()
 
 	NKWindow(cfg);
@@ -139,18 +136,19 @@ void TileBrush(
 }
 
 static void DrawTileOpsRow(
-	struct nk_context *ctx, TileBrushData *tbData,
-	TileClass *selectedTC, bool *result);
+	struct nk_context *ctx, TileBrushData *tbData, TileClass *selectedTC,
+	bool *result);
 static void DrawTilePropsSidebar(
 	struct nk_context *ctx, TileBrushData *tbData, TileClass *selectedTC);
-static int DrawTileType(TileBrushData *tbData, TileClass *tc, const int tileId);
+static int DrawTileType(
+	TileBrushData *tbData, TileClass *tc, const int tileId);
 static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 {
 	UNUSED(win);
 	bool result = true;
 	TileBrushData *tbData = data;
-	TileClass* selectedTC = MissionStaticIdTileClass(
-		&tbData->m->u.Static, *tbData->brushIdx);
+	TileClass *selectedTC =
+		MissionStaticIdTileClass(&tbData->m->u.Static, *tbData->brushIdx);
 	if (nk_begin(ctx, "", nk_rect(0, 0, MAIN_WIDTH, HEIGHT), NK_WINDOW_BORDER))
 	{
 		DrawTileOpsRow(ctx, tbData, selectedTC, &result);
@@ -159,8 +157,7 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		tbData->tileIdx = 0;
 		int tilesDrawn = 0;
 		for (int i = 0;
-			tilesDrawn < hashmap_length(tbData->m->u.Static.TileClasses);
-			i++)
+			 tilesDrawn < hashmap_length(tbData->m->u.Static.TileClasses); i++)
 		{
 			TileClass *tc = MissionStaticIdTileClass(&tbData->m->u.Static, i);
 			if (tc != NULL)
@@ -173,8 +170,8 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 	nk_end(ctx);
 
 	if (nk_begin(
-		ctx, "Properties", nk_rect(MAIN_WIDTH, 0, SIDE_WIDTH, HEIGHT),
-		NK_WINDOW_BORDER | NK_WINDOW_TITLE) &&
+			ctx, "Properties", nk_rect(MAIN_WIDTH, 0, SIDE_WIDTH, HEIGHT),
+			NK_WINDOW_BORDER | NK_WINDOW_TITLE) &&
 		selectedTC != NULL)
 	{
 		DrawTilePropsSidebar(ctx, tbData, selectedTC);
@@ -183,8 +180,8 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 	return result;
 }
 static void DrawTileOpsRow(
-	struct nk_context *ctx, TileBrushData *tbData,
-	TileClass *selectedTC, bool *result)
+	struct nk_context *ctx, TileBrushData *tbData, TileClass *selectedTC,
+	bool *result)
 {
 	nk_layout_row_dynamic(ctx, ROW_HEIGHT, 4);
 	if (nk_button_label(ctx, "Done"))
@@ -195,8 +192,8 @@ static void DrawTileOpsRow(
 	{
 		TileClass tc;
 		TileClassInit(
-			&tc, &gPicManager, &gTileFloor, "tile", "normal",
-			colorGray, colorGray);
+			&tc, &gPicManager, &gTileFloor, "tile", "normal", colorGray,
+			colorGray);
 		if (MissionStaticAddTileClass(&tbData->m->u.Static, &tc) != NULL)
 		{
 			ResetTexIds(tbData);
@@ -205,8 +202,8 @@ static void DrawTileOpsRow(
 	}
 	if (nk_button_label(ctx, "Duplicate"))
 	{
-		if (MissionStaticAddTileClass(
-			&tbData->m->u.Static, selectedTC) != NULL)
+		if (MissionStaticAddTileClass(&tbData->m->u.Static, selectedTC) !=
+			NULL)
 		{
 			ResetTexIds(tbData);
 		}
@@ -215,18 +212,17 @@ static void DrawTileOpsRow(
 		nk_button_label(ctx, "Remove"))
 	{
 		if (MissionStaticRemoveTileClass(
-			&tbData->m->u.Static, *tbData->brushIdx))
+				&tbData->m->u.Static, *tbData->brushIdx))
 		{
 			ResetTexIds(tbData);
 			// Set selected tile index to an existing tile
 			if (hashmap_length(tbData->m->u.Static.TileClasses) > 0)
 			{
 				for (*tbData->brushIdx = 0;
-					MissionStaticIdTileClass(
-						&tbData->m->u.Static,
-						*tbData->brushIdx
-					) == NULL;
-					(*tbData->brushIdx)++);
+					 MissionStaticIdTileClass(
+						 &tbData->m->u.Static, *tbData->brushIdx) == NULL;
+					 (*tbData->brushIdx)++)
+					;
 			}
 		}
 	}
@@ -239,7 +235,7 @@ static void DrawTilePropsSidebar(
 	struct nk_context *ctx, TileBrushData *tbData, TileClass *selectedTC)
 {
 	nk_layout_row_dynamic(ctx, ROW_HEIGHT, 1);
-	
+
 	DrawTileTypeSelect(ctx, tbData, selectedTC);
 
 	if (selectedTC->Type != TILE_CLASS_NOTHING)
@@ -254,14 +250,12 @@ static void DrawTileTypeSelect(
 {
 	nk_label(ctx, "Type:", NK_TEXT_LEFT);
 	const TileClassType newType = nk_combo_separator(
-		ctx, tbData->tcTypes, '\0', selectedTC->Type,
-		TILE_CLASS_COUNT, ROW_HEIGHT,
-		nk_vec2(nk_widget_width(ctx), 8 * ROW_HEIGHT)
-	);
+		ctx, tbData->tcTypes, '\0', selectedTC->Type, TILE_CLASS_COUNT,
+		ROW_HEIGHT, nk_vec2(nk_widget_width(ctx), 8 * ROW_HEIGHT));
 	if (newType != selectedTC->Type)
 	{
 		TileClassTerminate(selectedTC);
-		const TileClass* base = &gTileFloor;
+		const TileClass *base = &gTileFloor;
 		switch (newType)
 		{
 		case TILE_CLASS_FLOOR:
@@ -287,8 +281,8 @@ static void DrawTileStyleSelect(
 	struct nk_context *ctx, TileBrushData *tbData, TileClass *selectedTC)
 {
 	nk_label(ctx, "Style:", NK_TEXT_LEFT);
-	const GLuint* styleTexIds = NULL;
-	const char* styles = "";
+	const GLuint *styleTexIds = NULL;
+	const char *styles = "";
 	int styleSelected = -1;
 	int styleCount = 0;
 	switch (selectedTC->Type)
@@ -315,10 +309,8 @@ static void DrawTileStyleSelect(
 		break;
 	}
 	const int newStyle = nk_combo_separator_image(
-		ctx, styleTexIds, styles, '\0', styleSelected,
-		styleCount, ROW_HEIGHT,
-		nk_vec2(nk_widget_width(ctx), 8 * ROW_HEIGHT)
-	);
+		ctx, styleTexIds, styles, '\0', styleSelected, styleCount, ROW_HEIGHT,
+		nk_vec2(nk_widget_width(ctx), 8 * ROW_HEIGHT));
 	if (newStyle != styleSelected)
 	{
 		CFREE(selectedTC->Style);
@@ -335,8 +327,9 @@ static int DrawTileType(TileBrushData *tbData, TileClass *tc, const int tileId)
 	char name[256];
 	TileClassGetBrushName(name, tc);
 	const int selected = *tbData->brushIdx == tileId;
-	if (nk_select_label(tbData->ctx, name,
-		NK_TEXT_ALIGN_BOTTOM | NK_TEXT_ALIGN_CENTERED, selected))
+	if (nk_select_label(
+			tbData->ctx, name, NK_TEXT_ALIGN_BOTTOM | NK_TEXT_ALIGN_CENTERED,
+			selected))
 	{
 		*tbData->brushIdx = tileId;
 	}
@@ -364,8 +357,7 @@ static void ResetTexIds(TileBrushData *data)
 	}
 	const int nTileClasses = hashmap_length(data->m->u.Static.TileClasses);
 	CArrayResize(&data->texIdsTileClasses, nTileClasses, NULL);
-	glGenTextures(
-		nTileClasses, (GLuint *)data->texIdsTileClasses.data);
+	glGenTextures(nTileClasses, (GLuint *)data->texIdsTileClasses.data);
 }
 
 static const char *IndexFloorStyleName(const int idx)
@@ -401,10 +393,10 @@ static int TileStyleIndex(const CArray *styles, const char *style)
 		return -1;
 	}
 	CA_FOREACH(const char *, styleName, *styles)
-		if (strcmp(*styleName, style) == 0)
-		{
-			return _ca_index;
-		}
+	if (strcmp(*styleName, style) == 0)
+	{
+		return _ca_index;
+	}
 	CA_FOREACH_END()
 	return -1;
 }
