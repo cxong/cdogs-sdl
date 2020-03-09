@@ -1,57 +1,59 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin
-    Copyright (C) 2003-2007 Lucas Martin-King
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (C) 1995 Ronny Wester
+	Copyright (C) 2003 Jeremy Chin
+	Copyright (C) 2003-2007 Lucas Martin-King
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-    This file incorporates work covered by the following copyright and
-    permission notice:
+	This file incorporates work covered by the following copyright and
+	permission notice:
 
-    Copyright (c) 2013-2017, 2019 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2017, 2019-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "mission.h"
 
 #include <assert.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
+#include "actors.h"
+#include "defs.h"
 #include "door.h"
 #include "files.h"
 #include "game_events.h"
@@ -63,12 +65,9 @@
 #include "objs.h"
 #include "palette.h"
 #include "particle.h"
-#include "pickup.h"
-#include "defs.h"
 #include "pic_manager.h"
-#include "actors.h"
+#include "pickup.h"
 #include "triggers.h"
-
 
 int StrKeycard(const char *s)
 {
@@ -98,7 +97,6 @@ MapType StrMapType(const char *s)
 	return MAPTYPE_CLASSIC;
 }
 
-
 void MissionInit(Mission *m)
 {
 	memset(m, 0, sizeof *m);
@@ -118,14 +116,14 @@ static const MissionTileClasses *MissionGetTileClassesC(const Mission *m)
 {
 	switch (m->Type)
 	{
-		case MAPTYPE_CLASSIC:
-			return &m->u.Classic.TileClasses;
-		case MAPTYPE_STATIC:
-			return NULL;
-		case MAPTYPE_CAVE:
-			return &m->u.Cave.TileClasses;
-		default:
-			return NULL;
+	case MAPTYPE_CLASSIC:
+		return &m->u.Classic.TileClasses;
+	case MAPTYPE_STATIC:
+		return NULL;
+	case MAPTYPE_CAVE:
+		return &m->u.Cave.TileClasses;
+	default:
+		return NULL;
 	}
 }
 void MissionCopy(Mission *dst, const Mission *src)
@@ -150,9 +148,9 @@ void MissionCopy(Mission *dst, const Mission *src)
 	strcpy(dst->KeyStyle, src->KeyStyle);
 
 	CA_FOREACH(const Objective, srco, src->Objectives)
-		Objective dsto;
-		ObjectiveCopy(&dsto, srco);
-		CArrayPushBack(&dst->Objectives, &dsto);
+	Objective dsto;
+	ObjectiveCopy(&dsto, srco);
+	CArrayPushBack(&dst->Objectives, &dsto);
 	CA_FOREACH_END()
 	CArrayCopy(&dst->Enemies, &src->Enemies);
 	CArrayCopy(&dst->SpecialChars, &src->SpecialChars);
@@ -190,11 +188,12 @@ void MissionCopy(Mission *dst, const Mission *src)
 
 void MissionTerminate(Mission *m)
 {
-	if (m == NULL) return;
+	if (m == NULL)
+		return;
 	CFREE(m->Title);
 	CFREE(m->Description);
 	CA_FOREACH(Objective, o, m->Objectives)
-		ObjectiveTerminate(o);
+	ObjectiveTerminate(o);
 	CA_FOREACH_END()
 	CArrayTerminate(&m->Objectives);
 	CArrayTerminate(&m->Enemies);
@@ -223,14 +222,14 @@ MissionTileClasses *MissionGetTileClasses(Mission *m)
 {
 	switch (m->Type)
 	{
-		case MAPTYPE_CLASSIC:
-			return &m->u.Classic.TileClasses;
-		case MAPTYPE_STATIC:
-			return NULL;
-		case MAPTYPE_CAVE:
-			return &m->u.Cave.TileClasses;
-		default:
-			return NULL;
+	case MAPTYPE_CLASSIC:
+		return &m->u.Classic.TileClasses;
+	case MAPTYPE_STATIC:
+		return NULL;
+	case MAPTYPE_CAVE:
+		return &m->u.Cave.TileClasses;
+	default:
+		return NULL;
 	}
 }
 
@@ -250,27 +249,27 @@ static void SetupBadguysForMission(Mission *mission)
 	}
 
 	CA_FOREACH(const Objective, o, mission->Objectives)
-		if (o->Type == OBJECTIVE_RESCUE)
-		{
-			CharacterStoreAddPrisoner(s, o->u.Index);
-			break;	// TODO: multiple prisoners
-		}
+	if (o->Type == OBJECTIVE_RESCUE)
+	{
+		CharacterStoreAddPrisoner(s, o->u.Index);
+		break; // TODO: multiple prisoners
+	}
 	CA_FOREACH_END()
 
 	CA_FOREACH(int, e, mission->Enemies)
-		CharacterStoreAddBaddie(s, *e);
+	CharacterStoreAddBaddie(s, *e);
 	CA_FOREACH_END()
 
 	CA_FOREACH(int, sc, mission->SpecialChars)
-		CharacterStoreAddSpecial(s, *sc);
+	CharacterStoreAddSpecial(s, *sc);
 	CA_FOREACH_END()
 }
 
 static void SetupObjectives(Mission *m)
 {
 	CA_FOREACH(Objective, o, m->Objectives)
-		ObjectiveSetup(o);
-		CASSERT(_ca_index < OBJECTIVE_MAX_OLD, "too many objectives");
+	ObjectiveSetup(o);
+	CASSERT(_ca_index < OBJECTIVE_MAX_OLD, "too many objectives");
 	CA_FOREACH_END()
 }
 
@@ -297,37 +296,34 @@ void SetupMission(Mission *m, struct MissionOptions *mo, int missionIndex)
 }
 void MissionSetupTileClasses(PicManager *pm, const MissionTileClasses *mtc)
 {
-	SetupWallTileClasses(
-		pm, mtc->Wall.Style, mtc->Wall.Mask, mtc->Wall.MaskAlt);
-	SetupFloorTileClasses(
-		pm, &mtc->Floor, mtc->Floor.Style, mtc->Floor.Mask, mtc->Floor.MaskAlt);
-	SetupFloorTileClasses(
-		pm, &mtc->Room, mtc->Room.Style, mtc->Room.Mask, mtc->Room.MaskAlt);
-	SetupDoorTileClasses(pm, mtc->Door.Style);
+	SetupWallTileClasses(pm, &mtc->Wall);
+	SetupFloorTileClasses(pm, &mtc->Floor);
+	SetupFloorTileClasses(pm, &mtc->Room);
+	SetupDoorTileClasses(pm, &mtc->Door);
 }
 void MissionTileClassesInitDefault(MissionTileClasses *mtc)
 {
 	TileClassInit(
-		&mtc->Wall, &gPicManager, &gTileWall,
-		IntWallStyle(0), TileClassBaseStyleType(TILE_CLASS_WALL),
-		colorBattleshipGrey, colorOfficeGreen);
+		&mtc->Wall, &gPicManager, &gTileWall, IntWallStyle(0),
+		TileClassBaseStyleType(TILE_CLASS_WALL), colorBattleshipGrey,
+		colorOfficeGreen);
 	TileClassInit(
-		&mtc->Floor, &gPicManager, &gTileFloor,
-		IntFloorStyle(0), TileClassBaseStyleType(TILE_CLASS_FLOOR),
-		colorGravel, colorOfficeGreen);
+		&mtc->Floor, &gPicManager, &gTileFloor, IntFloorStyle(0),
+		TileClassBaseStyleType(TILE_CLASS_FLOOR), colorGravel,
+		colorOfficeGreen);
 	TileClassInit(
-		&mtc->Room, &gPicManager, &gTileRoom,
-		IntRoomStyle(0), TileClassBaseStyleType(TILE_CLASS_FLOOR),
-		colorDoveGray, colorOfficeGreen);
+		&mtc->Room, &gPicManager, &gTileRoom, IntRoomStyle(0),
+		TileClassBaseStyleType(TILE_CLASS_FLOOR), colorDoveGray,
+		colorOfficeGreen);
 	TileClassInit(
-		&mtc->Door, &gPicManager, &gTileDoor,
-		IntDoorStyle(0), TileClassBaseStyleType(TILE_CLASS_DOOR),
-		colorWhite, colorWhite);
+		&mtc->Door, &gPicManager, &gTileDoor, IntDoorStyle(0),
+		TileClassBaseStyleType(TILE_CLASS_DOOR), colorWhite, colorWhite);
 }
 void MissionTileClassesCopy(
 	MissionTileClasses *dst, const MissionTileClasses *src)
 {
-	if (dst == NULL || src == NULL) return;
+	if (dst == NULL || src == NULL)
+		return;
 	TileClassCopy(&dst->Door, &src->Door);
 	TileClassCopy(&dst->Floor, &src->Floor);
 	TileClassCopy(&dst->Wall, &src->Wall);
@@ -357,16 +353,16 @@ void MissionSetMessageIfComplete(struct MissionOptions *options)
 			// Check if the game is impossible to end
 			// i.e. not enough rescue objectives left alive
 			CA_FOREACH(const Objective, o, options->missionData->Objectives)
-				if (o->Type == OBJECTIVE_RESCUE)
+			if (o->Type == OBJECTIVE_RESCUE)
+			{
+				if (ObjectiveActorsAlive(_ca_index) < o->Required)
 				{
-					if (ObjectiveActorsAlive(_ca_index) < o->Required)
-					{
-						GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
-						e.u.MissionEnd.Delay = GAME_OVER_DELAY;
-						strcpy(e.u.MissionEnd.Msg, "Mission failed");
-						GameEventsEnqueue(&gGameEvents, e);
-					}
+					GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
+					e.u.MissionEnd.Delay = GAME_OVER_DELAY;
+					strcpy(e.u.MissionEnd.Msg, "Mission failed");
+					GameEventsEnqueue(&gGameEvents, e);
 				}
+			}
 			CA_FOREACH_END()
 		}
 	}
@@ -376,11 +372,11 @@ static int ObjectiveActorsAlive(const int objective)
 {
 	int count = 0;
 	CA_FOREACH(const TActor, a, gActors)
-		if (a->isInUse && a->health > 0 &&
-			ObjectiveFromThing(a->thing.flags) == objective)
-		{
-			count++;
-		}
+	if (a->isInUse && a->health > 0 &&
+		ObjectiveFromThing(a->thing.flags) == objective)
+	{
+		count++;
+	}
 	CA_FOREACH_END()
 	return count;
 }
@@ -388,14 +384,15 @@ static int ObjectiveActorsAlive(const int objective)
 bool MissionHasRequiredObjectives(const struct MissionOptions *mo)
 {
 	CA_FOREACH(const Objective, o, mo->missionData->Objectives)
-		if (ObjectiveIsRequired(o)) return true;
+	if (ObjectiveIsRequired(o))
+		return true;
 	CA_FOREACH_END()
 	return false;
 }
 
 void UpdateMissionObjective(
-	const struct MissionOptions *options,
-	const int flags, const ObjectiveType type, const int count)
+	const struct MissionOptions *options, const int flags,
+	const ObjectiveType type, const int count)
 {
 	if (!(flags & THING_OBJECTIVE))
 	{
@@ -461,9 +458,8 @@ bool CanCompleteMission(const struct MissionOptions *options)
 	{
 		// If we're in deathmatch with 1 player only, never complete the game
 		// Instead we'll be showing a "waiting for players..." message
-		return
-			GetNumPlayers(PLAYER_ANY, false, false) > 1 &&
-			GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) <= 1;
+		return GetNumPlayers(PLAYER_ANY, false, false) > 1 &&
+			   GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) <= 1;
 	}
 
 	return MissionAllObjectivesComplete(options);
@@ -473,7 +469,8 @@ bool MissionAllObjectivesComplete(const struct MissionOptions *mo)
 {
 	// Check all objective counts are enough
 	CA_FOREACH(const Objective, o, mo->missionData->Objectives)
-		if (!ObjectiveIsComplete(o)) return false;
+	if (!ObjectiveIsComplete(o))
+		return false;
 	CA_FOREACH_END()
 	return true;
 }
@@ -495,7 +492,8 @@ bool IsMissionComplete(const struct MissionOptions *mo)
 		// Also check that only one player has lives left
 		int numPlayersWithLives = 0;
 		CA_FOREACH(const PlayerData, p, gPlayerDatas)
-			if (p->Lives > 0) numPlayersWithLives++;
+		if (p->Lives > 0)
+			numPlayersWithLives++;
 		CA_FOREACH_END()
 		if (numPlayersWithLives <= 1)
 		{
@@ -518,10 +516,8 @@ bool IsMissionComplete(const struct MissionOptions *mo)
 
 bool MissionNeedsMoreRescuesInExit(const struct MissionOptions *mo)
 {
-	return
-		CanCompleteMission(mo) &&
-		AllSurvivingPlayersInExit() &&
-		MoreRescuesNeeded(mo);
+	return CanCompleteMission(mo) && AllSurvivingPlayersInExit() &&
+		   MoreRescuesNeeded(mo);
 }
 
 static bool AllSurvivingPlayersInExit(void)
@@ -530,9 +526,11 @@ static bool AllSurvivingPlayersInExit(void)
 	// Note: players are still in the exit area if they are dying there;
 	// this is the basis for the "resurrection penalty"
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-		if (!IsPlayerAliveOrDying(p)) continue;
-		const TActor *player = ActorGetByUID(p->ActorUID);
-		if (!MapIsTileInExit(&gMap, &player->thing)) return false;
+	if (!IsPlayerAliveOrDying(p))
+		continue;
+	const TActor *player = ActorGetByUID(p->ActorUID);
+	if (!MapIsTileInExit(&gMap, &player->thing))
+		return false;
 	CA_FOREACH_END()
 	return true;
 }
@@ -543,23 +541,25 @@ static bool MoreRescuesNeeded(const struct MissionOptions *mo)
 	// Find number of rescues required
 	// TODO: support multiple rescue objectives
 	CA_FOREACH(const Objective, o, mo->missionData->Objectives)
-		if (o->Type == OBJECTIVE_RESCUE)
-		{
-			rescuesRequired = o->Required;
-			break;
-		}
+	if (o->Type == OBJECTIVE_RESCUE)
+	{
+		rescuesRequired = o->Required;
+		break;
+	}
 	CA_FOREACH_END()
 	// Check that enough prisoners are in exit zone
 	if (rescuesRequired > 0)
 	{
 		int prisonersRescued = 0;
 		CA_FOREACH(const TActor, a, gActors)
-			if (!a->isInUse) continue;
-			if (CharacterIsPrisoner(&gCampaign.Setting.characters, ActorGetCharacter(a)) &&
-				MapIsTileInExit(&gMap, &a->thing))
-			{
-				prisonersRescued++;
-			}
+		if (!a->isInUse)
+			continue;
+		if (CharacterIsPrisoner(
+				&gCampaign.Setting.characters, ActorGetCharacter(a)) &&
+			MapIsTileInExit(&gMap, &a->thing))
+		{
+			prisonersRescued++;
+		}
 		CA_FOREACH_END()
 		if (prisonersRescued < rescuesRequired)
 		{
@@ -579,9 +579,13 @@ void MissionDone(struct MissionOptions *mo, const NMissionEnd end)
 int KeycardCount(int flags)
 {
 	int count = 0;
-	if (flags & FLAGS_KEYCARD_RED) count++;
-	if (flags & FLAGS_KEYCARD_BLUE) count++;
-	if (flags & FLAGS_KEYCARD_GREEN) count++;
-	if (flags & FLAGS_KEYCARD_YELLOW) count++;
+	if (flags & FLAGS_KEYCARD_RED)
+		count++;
+	if (flags & FLAGS_KEYCARD_BLUE)
+		count++;
+	if (flags & FLAGS_KEYCARD_GREEN)
+		count++;
+	if (flags & FLAGS_KEYCARD_YELLOW)
+		count++;
 	return count;
 }

@@ -1,29 +1,29 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, 2016, 2018-2019 Cong Xu
-    All rights reserved.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (c) 2014, 2016, 2018-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "map_static.h"
 
@@ -37,19 +37,19 @@
 #include "map_build.h"
 #include "net_util.h"
 
-
 static int AddTileClass(any_t data, any_t item);
 void MapStaticLoad(MapBuilder *mb)
 {
 	// Tile classes
-	if (hashmap_iterate(mb->mission->u.Static.TileClasses, AddTileClass, NULL) != MAP_OK)
+	if (hashmap_iterate(
+			mb->mission->u.Static.TileClasses, AddTileClass, NULL) != MAP_OK)
 	{
 		CASSERT(false, "failed to add static tile classes");
 	}
 
 	// Tiles
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), mb->Map->Size))
-		MapStaticLoadTile(mb, _v);
+	MapStaticLoadTile(mb, _v);
 	RECT_FOREACH_END()
 
 	// Exit area
@@ -65,37 +65,37 @@ static int AddTileClass(any_t data, any_t item)
 	UNUSED(data);
 	TileClass *t = item;
 	TileClassesAdd(
-		&gTileClasses, &gPicManager, t, t->Style, t->StyleType,
-		t->Mask, t->MaskAlt);
+		&gTileClasses, &gPicManager, t, t->Style,
+		TileClassBaseStyleType(t->Type), t->Mask, t->MaskAlt);
 	switch (t->Type)
 	{
-		case TILE_CLASS_DOOR:
-			SetupDoorTileClasses(&gPicManager, t->Style);
-			break;
-		case TILE_CLASS_WALL:
-			SetupWallTileClasses(&gPicManager, t->Style, t->Mask, t->MaskAlt);
-			break;
-		case TILE_CLASS_FLOOR:
-			SetupFloorTileClasses(
-				&gPicManager, t, t->Style, t->Mask, t->MaskAlt);
-			break;
-		default:
-			break;
+	case TILE_CLASS_DOOR:
+		SetupDoorTileClasses(&gPicManager, t);
+		break;
+	case TILE_CLASS_WALL:
+		SetupWallTileClasses(&gPicManager, t);
+		break;
+	case TILE_CLASS_FLOOR:
+		SetupFloorTileClasses(&gPicManager, t);
+		break;
+	default:
+		break;
 	}
 	return MAP_OK;
 }
 
 void MapStaticLoadTile(MapBuilder *mb, const struct vec2i v)
 {
-	if (!MapIsTileIn(mb->Map, v)) return;
+	if (!MapIsTileIn(mb->Map, v))
+		return;
 	const int idx = v.y * mb->Map->Size.x + v.x;
 	int tileAccess = *(int *)CArrayGet(&mb->mission->u.Static.Access, idx);
 	if (!AreKeysAllowed(gCampaign.Entry.Mode))
 	{
 		tileAccess = 0;
 	}
-	const TileClass *tc = MissionStaticGetTileClass(
-		&mb->mission->u.Static, mb->Map->Size, v);
+	const TileClass *tc =
+		MissionStaticGetTileClass(&mb->mission->u.Static, mb->Map->Size, v);
 	MapBuilderSetTile(mb, v, tc);
 	MapBuildSetAccess(mb, v, (uint16_t)tileAccess);
 }
@@ -107,11 +107,11 @@ void MapStaticLoadDynamic(MapBuilder *mb)
 {
 	// Map objects
 	CA_FOREACH(const MapObjectPositions, mop, mb->mission->u.Static.Items)
-		for (int j = 0; j < (int)mop->Positions.size; j++)
-		{
-			const struct vec2i *pos = CArrayGet(&mop->Positions, j);
-			MapTryPlaceOneObject(mb, *pos, mop->M, 0, false);
-		}
+	for (int j = 0; j < (int)mop->Positions.size; j++)
+	{
+		const struct vec2i *pos = CArrayGet(&mop->Positions, j);
+		MapTryPlaceOneObject(mb, *pos, mop->M, 0, false);
+	}
 	CA_FOREACH_END()
 
 	if (ModeHasNPCs(gCampaign.Entry.Mode))
@@ -136,7 +136,7 @@ static void AddCharacter(const CharacterPositions *cp);
 static void AddCharacters(const CArray *characters)
 {
 	CA_FOREACH(const CharacterPositions, cp, *characters)
-		AddCharacter(cp);
+	AddCharacter(cp);
 	CA_FOREACH_END()
 }
 static void AddCharacter(const CharacterPositions *cp)
@@ -147,20 +147,20 @@ static void AddCharacter(const CharacterPositions *cp)
 		CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
 	aa.Health = CharacterGetStartingHealth(c, true);
 	CA_FOREACH(const struct vec2i, pos, cp->Positions)
-		aa.UID = ActorsGetNextUID();
-		aa.Direction = rand() % DIRECTION_COUNT;
-		aa.Pos = Vec2ToNet(Vec2CenterOfTile(*pos));
+	aa.UID = ActorsGetNextUID();
+	aa.Direction = rand() % DIRECTION_COUNT;
+	aa.Pos = Vec2ToNet(Vec2CenterOfTile(*pos));
 
-		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-		e.u.ActorAdd = aa;
-		GameEventsEnqueue(&gGameEvents, e);
+	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
+	e.u.ActorAdd = aa;
+	GameEventsEnqueue(&gGameEvents, e);
 	CA_FOREACH_END()
 }
 static void AddObjective(MapBuilder *mb, const ObjectivePositions *op);
 static void AddObjectives(MapBuilder *mb, const CArray *objectives)
 {
 	CA_FOREACH(const ObjectivePositions, op, *objectives)
-		AddObjective(mb, op);
+	AddObjective(mb, op);
 	CA_FOREACH_END()
 }
 static void AddObjective(MapBuilder *mb, const ObjectivePositions *op)
@@ -173,71 +173,66 @@ static void AddObjective(MapBuilder *mb, const ObjectivePositions *op)
 	}
 	Objective *o = CArrayGet(&mb->mission->Objectives, op->Index);
 	CA_FOREACH(const struct vec2i, tilePos, op->Positions)
-		const int *idx = CArrayGet(&op->Indices, _ca_index);
-		const struct vec2 pos = Vec2CenterOfTile(*tilePos);
-		switch (o->Type)
-		{
-		case OBJECTIVE_KILL:
-		{
-			NActorAdd aa = NActorAdd_init_default;
-			aa.UID = ActorsGetNextUID();
-			aa.CharId = CharacterStoreGetSpecialId(
-				&mb->co->Setting.characters, *idx);
-			aa.ThingFlags = ObjectiveToThing(op->Index);
-			aa.Direction = rand() % DIRECTION_COUNT;
-			const Character *c =
-				CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
-			aa.Health = CharacterGetStartingHealth(c, true);
-			aa.Pos = Vec2ToNet(pos);
-			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-			e.u.ActorAdd = aa;
-			GameEventsEnqueue(&gGameEvents, e);
-		}
+	const int *idx = CArrayGet(&op->Indices, _ca_index);
+	const struct vec2 pos = Vec2CenterOfTile(*tilePos);
+	switch (o->Type)
+	{
+	case OBJECTIVE_KILL: {
+		NActorAdd aa = NActorAdd_init_default;
+		aa.UID = ActorsGetNextUID();
+		aa.CharId =
+			CharacterStoreGetSpecialId(&mb->co->Setting.characters, *idx);
+		aa.ThingFlags = ObjectiveToThing(op->Index);
+		aa.Direction = rand() % DIRECTION_COUNT;
+		const Character *c =
+			CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
+		aa.Health = CharacterGetStartingHealth(c, true);
+		aa.Pos = Vec2ToNet(pos);
+		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
+		e.u.ActorAdd = aa;
+		GameEventsEnqueue(&gGameEvents, e);
+	}
+	break;
+	case OBJECTIVE_COLLECT:
+		MapPlaceCollectible(mb->mission, op->Index, pos);
 		break;
-		case OBJECTIVE_COLLECT:
-			MapPlaceCollectible(mb->mission, op->Index, pos);
-			break;
-		case OBJECTIVE_DESTROY:
-			MapTryPlaceOneObject(
-				mb,
-				*tilePos,
-				o->u.MapObject,
-				ObjectiveToThing(op->Index), false);
-			break;
-		case OBJECTIVE_RESCUE:
-		{
-			NActorAdd aa = NActorAdd_init_default;
-			aa.UID = ActorsGetNextUID();
-			aa.CharId = CharacterStoreGetPrisonerId(
-				&mb->co->Setting.characters, *idx);
-			aa.ThingFlags = ObjectiveToThing(op->Index);
-			aa.Direction = rand() % DIRECTION_COUNT;
-			const Character *c =
-				CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
-			aa.Health = CharacterGetStartingHealth(c, true);
-			aa.Pos = Vec2ToNet(pos);
-			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-			e.u.ActorAdd = aa;
-			GameEventsEnqueue(&gGameEvents, e);
-		}
+	case OBJECTIVE_DESTROY:
+		MapTryPlaceOneObject(
+			mb, *tilePos, o->u.MapObject, ObjectiveToThing(op->Index), false);
 		break;
-		default:
-			// do nothing
-			break;
-		}
-		o->placed++;
+	case OBJECTIVE_RESCUE: {
+		NActorAdd aa = NActorAdd_init_default;
+		aa.UID = ActorsGetNextUID();
+		aa.CharId =
+			CharacterStoreGetPrisonerId(&mb->co->Setting.characters, *idx);
+		aa.ThingFlags = ObjectiveToThing(op->Index);
+		aa.Direction = rand() % DIRECTION_COUNT;
+		const Character *c =
+			CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
+		aa.Health = CharacterGetStartingHealth(c, true);
+		aa.Pos = Vec2ToNet(pos);
+		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
+		e.u.ActorAdd = aa;
+		GameEventsEnqueue(&gGameEvents, e);
+	}
+	break;
+	default:
+		// do nothing
+		break;
+	}
+	o->placed++;
 	CA_FOREACH_END()
 }
 static void AddKey(MapBuilder *mb, const KeyPositions *kp);
 static void AddKeys(MapBuilder *mb, const CArray *keys)
 {
 	CA_FOREACH(const KeyPositions, kp, *keys)
-		AddKey(mb, kp);
+	AddKey(mb, kp);
 	CA_FOREACH_END()
 }
 static void AddKey(MapBuilder *mb, const KeyPositions *kp)
 {
 	CA_FOREACH(const struct vec2i, pos, kp->Positions)
-		MapPlaceKey(mb, *pos, kp->Index);
+	MapPlaceKey(mb, *pos, kp->Index);
 	CA_FOREACH_END()
 }

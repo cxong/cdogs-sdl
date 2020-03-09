@@ -241,8 +241,19 @@ static void DrawTilePropsSidebar(
 	if (selectedTC->Type != TILE_CLASS_NOTHING)
 	{
 		DrawTileStyleSelect(ctx, tbData, selectedTC);
+		// TODO: return value file changed
 		ColorPicker(ctx, ROW_HEIGHT, "Primary Color", &selectedTC->Mask);
 		ColorPicker(ctx, ROW_HEIGHT, "Alt Color", &selectedTC->MaskAlt);
+
+		struct nk_rect bounds = nk_widget_bounds(ctx);
+		// TODO: return value file changed
+		int value = (int)selectedTC->canWalk;
+		nk_checkbox_label(ctx, "Can Walk", &value);
+		selectedTC->canWalk = (bool)value;
+		if (nk_input_is_mouse_hovering_rect(&ctx->input, bounds))
+		{
+			nk_tooltip(ctx, "Whether actors can walk through this tile");
+		}
 	}
 }
 static void DrawTileTypeSelect(

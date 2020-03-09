@@ -1,50 +1,50 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin
-    Copyright (C) 2003-2007 Lucas Martin-King
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (C) 1995 Ronny Wester
+	Copyright (C) 2003 Jeremy Chin
+	Copyright (C) 2003-2007 Lucas Martin-King
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-    This file incorporates work covered by the following copyright and
-    permission notice:
+	This file incorporates work covered by the following copyright and
+	permission notice:
 
-    Copyright (c) 2013-2014, 2017-2019 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2014, 2017-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "map_build.h"
 
@@ -59,9 +59,8 @@
 
 #define COLLECTABLE_W 4
 #define COLLECTABLE_H 3
-#define EXIT_WIDTH  8
+#define EXIT_WIDTH 8
 #define EXIT_HEIGHT 8
-
 
 static void MapSetupTilesAndWalls(MapBuilder *mb);
 static void MapSetupDoors(MapBuilder *mb);
@@ -124,41 +123,39 @@ void MapBuild(Map *m, const Mission *mission, const CampaignOptions *co)
 	}
 	MapBuilderTerminate(&mb);
 }
-void SetupWallTileClasses(
-	PicManager *pm, const char *style,
-	const color_t mask, const color_t altMask)
+void SetupWallTileClasses(PicManager *pm, const TileClass *base)
 {
 	for (int i = 0; i < WALL_TYPE_COUNT; i++)
 	{
 		PicManagerGenerateMaskedStylePic(
-			pm, "wall", style, IntWallType(i), mask, altMask, false);
+			pm, "wall", base->Style, IntWallType(i), base->Mask, base->MaskAlt,
+			false);
 		TileClassesAdd(
-			&gTileClasses, pm, &gTileWall,
-			style, IntWallType(i), mask, altMask);
+			&gTileClasses, pm, base, base->Style, IntWallType(i), base->Mask,
+			base->MaskAlt);
 	}
 }
-void SetupFloorTileClasses(
-	PicManager *pm, const TileClass *base, const char *style,
-	const color_t mask, const color_t altMask)
+void SetupFloorTileClasses(PicManager *pm, const TileClass *base)
 {
 	for (int i = 0; i < FLOOR_TYPES; i++)
 	{
 		PicManagerGenerateMaskedStylePic(
-			pm, "tile", style, IntTileType(i), mask, altMask, false);
+			pm, "tile", base->Style, IntTileType(i), base->Mask, base->MaskAlt,
+			false);
 		TileClassesAdd(
-			&gTileClasses, pm, base, style, IntTileType(i), mask, altMask);
+			&gTileClasses, pm, base, base->Style, IntTileType(i), base->Mask,
+			base->MaskAlt);
 	}
 }
-void SetupDoorTileClasses(PicManager *pm, const char *style)
+void SetupDoorTileClasses(PicManager *pm, const TileClass *base)
 {
-	const char *doorStyles[] = {
-		"yellow", "green", "blue", "red", "open", "wall", "normal"
-	};
+	const char *doorStyles[] = {"yellow", "green", "blue",	"red",
+								"open",	  "wall",  "normal"};
 	for (int i = 0; i < (int)(sizeof doorStyles / sizeof doorStyles[0]); i++)
 	{
 		for (DoorType type = DOORTYPE_H; type < DOORTYPE_COUNT; type++)
 		{
-			DoorAddClass(&gTileClasses, pm, style, doorStyles[i], type);
+			DoorAddClass(&gTileClasses, pm, base, doorStyles[i], type);
 		}
 	}
 }
@@ -167,14 +164,14 @@ static int MapGetAccessFlags(const MapBuilder *mb, const struct vec2i v);
 static void MapSetupDoors(MapBuilder *mb)
 {
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), mb->Map->Size))
-		// Check if this is the start of a door group
-		// Top or left-most door
-		if (MapBuilderIsDoor(mb, _v) &&
-			!MapBuilderIsDoor(mb, svec2i(_v.x - 1, _v.y)) &&
-			!MapBuilderIsDoor(mb, svec2i(_v.x, _v.y - 1)))
-		{
-			MapAddDoorGroup(mb, _v, MapGetAccessFlags(mb, _v));
-		}
+	// Check if this is the start of a door group
+	// Top or left-most door
+	if (MapBuilderIsDoor(mb, _v) &&
+		!MapBuilderIsDoor(mb, svec2i(_v.x - 1, _v.y)) &&
+		!MapBuilderIsDoor(mb, svec2i(_v.x, _v.y - 1)))
+	{
+		MapAddDoorGroup(mb, _v, MapGetAccessFlags(mb, _v));
+	}
 	RECT_FOREACH_END()
 }
 static bool MapBuilderIsDoor(const MapBuilder *mb, const struct vec2i v)
@@ -186,10 +183,14 @@ static int MapGetAccessFlags(const MapBuilder *mb, const struct vec2i v)
 {
 	int flags = 0;
 	flags = MAX(flags, AccessCodeToFlags(MapBuildGetAccess(mb, v)));
-	flags = MAX(flags, AccessCodeToFlags(MapBuildGetAccess(mb, svec2i(v.x - 1, v.y))));
-	flags = MAX(flags, AccessCodeToFlags(MapBuildGetAccess(mb, svec2i(v.x + 1, v.y))));
-	flags = MAX(flags, AccessCodeToFlags(MapBuildGetAccess(mb, svec2i(v.x, v.y - 1))));
-	flags = MAX(flags, AccessCodeToFlags(MapBuildGetAccess(mb, svec2i(v.x, v.y + 1))));
+	flags = MAX(
+		flags, AccessCodeToFlags(MapBuildGetAccess(mb, svec2i(v.x - 1, v.y))));
+	flags = MAX(
+		flags, AccessCodeToFlags(MapBuildGetAccess(mb, svec2i(v.x + 1, v.y))));
+	flags = MAX(
+		flags, AccessCodeToFlags(MapBuildGetAccess(mb, svec2i(v.x, v.y - 1))));
+	flags = MAX(
+		flags, AccessCodeToFlags(MapBuildGetAccess(mb, svec2i(v.x, v.y + 1))));
 	return flags;
 }
 
@@ -223,13 +224,15 @@ uint16_t MapBuildGetAccess(const MapBuilder *mb, const struct vec2i pos)
 	{
 		return 0;
 	}
-	return *(uint16_t *)CArrayGet(&mb->access, pos.y * mb->Map->Size.x + pos.x);
+	return *(uint16_t *)CArrayGet(
+		&mb->access, pos.y * mb->Map->Size.x + pos.x);
 }
 void MapBuildSetAccess(MapBuilder *mb, struct vec2i pos, const uint16_t v)
 {
-	*(uint16_t *)CArrayGet(&mb->access, pos.y *mb->Map->Size.x + pos.x) = v;
+	*(uint16_t *)CArrayGet(&mb->access, pos.y * mb->Map->Size.x + pos.x) = v;
 }
-const TileClass *MapBuilderGetTile(const MapBuilder *mb, const struct vec2i pos)
+const TileClass *MapBuilderGetTile(
+	const MapBuilder *mb, const struct vec2i pos)
 {
 	if (!MapIsTileIn(mb->Map, pos))
 	{
@@ -243,10 +246,9 @@ void MapBuilderSetTile(MapBuilder *mb, struct vec2i pos, const TileClass *t)
 }
 
 static bool IsTileOKStrict(
-	const MapObject *obj,
-	const Tile *tile, const Tile *tileAbove, const Tile *tileBelow,
-	const bool isLeaveFree,
-	const int numWallsAdjacent, const int numWallsAround);
+	const MapObject *obj, const Tile *tile, const Tile *tileAbove,
+	const Tile *tileBelow, const bool isLeaveFree, const int numWallsAdjacent,
+	const int numWallsAround);
 static int MapGetNumWallsAdjacentTile(const Map *map, const struct vec2i v);
 static int MapGetNumWallsAroundTile(const Map *map, const struct vec2i v);
 bool MapTryPlaceOneObject(
@@ -263,9 +265,9 @@ bool MapTryPlaceOneObject(
 	const Tile *t = MapGetTile(mb->Map, v);
 	const Tile *tAbove = MapGetTile(mb->Map, svec2i(v.x, v.y - 1));
 	const Tile *tBelow = MapGetTile(mb->Map, svec2i(v.x, v.y + 1));
-	if (isStrictMode && !IsTileOKStrict(
-			mo, t, tAbove, tBelow,
-			MapBuilderIsLeaveFree(mb, v),
+	if (isStrictMode &&
+		!IsTileOKStrict(
+			mo, t, tAbove, tBelow, MapBuilderIsLeaveFree(mb, v),
 			MapGetNumWallsAdjacentTile(mb->Map, v),
 			MapGetNumWallsAroundTile(mb->Map, v)))
 	{
@@ -291,10 +293,9 @@ bool MapTryPlaceOneObject(
 	return true;
 }
 static bool IsTileOKStrict(
-	const MapObject *obj,
-	const Tile *tile, const Tile *tileAbove, const Tile *tileBelow,
-	const bool isLeaveFree,
-	const int numWallsAdjacent, const int numWallsAround)
+	const MapObject *obj, const Tile *tile, const Tile *tileAbove,
+	const Tile *tileBelow, const bool isLeaveFree, const int numWallsAdjacent,
+	const int numWallsAround)
 {
 	if (!MapObjectIsTileOK(obj, tile, tileAbove))
 	{
@@ -321,7 +322,8 @@ static bool IsTileOKStrict(
 	{
 		return false;
 	}
-	if ((obj->Flags & (1 << PLACEMENT_ONE_OR_MORE_WALLS)) && numWallsAdjacent < 1)
+	if ((obj->Flags & (1 << PLACEMENT_ONE_OR_MORE_WALLS)) &&
+		numWallsAdjacent < 1)
 	{
 		return false;
 	}
@@ -396,13 +398,11 @@ void MapLoadDynamic(MapBuilder *mb)
 
 	// Add map objects
 	CA_FOREACH(const MapObjectDensity, mod, mb->mission->MapObjectDensities)
-		for (int j = 0;
-			j < (mod->Density * mb->Map->Size.x * mb->Map->Size.y) / 1000;
-			j++)
-		{
-			MapTryPlaceOneObject(
-				mb, MapGetRandomTile(mb->Map), mod->M, 0, true);
-		}
+	for (int j = 0;
+		 j < (mod->Density * mb->Map->Size.x * mb->Map->Size.y) / 1000; j++)
+	{
+		MapTryPlaceOneObject(mb, MapGetRandomTile(mb->Map), mod->M, 0, true);
+	}
 	CA_FOREACH_END()
 
 	if (HasObjectives(gCampaign.Entry.Mode))
@@ -423,35 +423,35 @@ static void AddObjectives(MapBuilder *mb)
 	// If we are unable to place them all, make sure to reduce the totals
 	// in case we create missions that are impossible to complete
 	CA_FOREACH(Objective, o, mb->mission->Objectives)
-		if (o->Type != OBJECTIVE_COLLECT && o->Type != OBJECTIVE_DESTROY)
+	if (o->Type != OBJECTIVE_COLLECT && o->Type != OBJECTIVE_DESTROY)
+	{
+		continue;
+	}
+	if (o->Type == OBJECTIVE_COLLECT)
+	{
+		for (int i = o->placed; i < o->Count; i++)
 		{
-			continue;
-		}
-		if (o->Type == OBJECTIVE_COLLECT)
-		{
-			for (int i = o->placed; i < o->Count; i++)
+			if (MapTryPlaceCollectible(mb, _ca_index))
 			{
-				if (MapTryPlaceCollectible(mb, _ca_index))
-				{
-					o->placed++;
-				}
+				o->placed++;
 			}
 		}
-		else if (o->Type == OBJECTIVE_DESTROY)
+	}
+	else if (o->Type == OBJECTIVE_DESTROY)
+	{
+		for (int i = o->placed; i < o->Count; i++)
 		{
-			for (int i = o->placed; i < o->Count; i++)
+			if (MapTryPlaceBlowup(mb, _ca_index))
 			{
-				if (MapTryPlaceBlowup(mb, _ca_index))
-				{
-					o->placed++;
-				}
+				o->placed++;
 			}
 		}
-		o->Count = o->placed;
-		if (o->Count < o->Required)
-		{
-			o->Required = o->Count;
-		}
+	}
+	o->Count = o->placed;
+	if (o->Count < o->Required)
+	{
+		o->Required = o->Count;
+	}
 	CA_FOREACH_END()
 }
 static int MapTryPlaceCollectible(MapBuilder *mb, const int objective)
@@ -507,8 +507,7 @@ static void MapPlaceCard(
 	{
 		const struct vec2i v = MapGetRandomTile(mb->Map);
 		const Tile *t = MapGetTile(mb->Map, v);
-		if (t->Class->IsRoom &&
-			TileIsClear(t) &&
+		if (t->Class->IsRoom && TileIsClear(t) &&
 			MapBuildGetAccess(mb, v) == mapAccess &&
 			TileIsClear(MapGetTile(mb->Map, svec2i(v.x, v.y + 1))))
 		{
@@ -538,19 +537,21 @@ static bool TryPlaceOneBlowup(
 {
 	const TryPlaceOneBlowupData *pData = data;
 	return MapTryPlaceOneObject(
-		mb, tilePos, pData->o->u.MapObject,
-		ObjectiveToThing(pData->objective), true);
+		mb, tilePos, pData->o->u.MapObject, ObjectiveToThing(pData->objective),
+		true);
 }
 
 void MapBuilderSetLeaveFree(
 	MapBuilder *mb, const struct vec2i tile, const bool value)
 {
-	if (!MapIsTileIn(mb->Map, tile)) return;
+	if (!MapIsTileIn(mb->Map, tile))
+		return;
 	CArraySet(&mb->leaveFree, tile.y * mb->Map->Size.x + tile.x, &value);
 }
 bool MapBuilderIsLeaveFree(const MapBuilder *mb, const struct vec2i tile)
 {
-	if (!MapIsTileIn(mb->Map, tile)) return false;
+	if (!MapIsTileIn(mb->Map, tile))
+		return false;
 	return *(bool *)CArrayGet(
 		&mb->leaveFree, tile.y * mb->Map->Size.x + tile.x);
 }
@@ -565,14 +566,14 @@ void MapBuildTile(
 	MapBuilderInit(&mb, m, mission, NULL);
 	// Load tiles from +2 perimeter
 	RECT_FOREACH(Rect2iNew(svec2i_subtract(pos, svec2i(2, 2)), svec2i(5, 5)))
-		MapStaticLoadTile(&mb, _v);
+	MapStaticLoadTile(&mb, _v);
 	RECT_FOREACH_END()
 	// Update the tile as well, plus neighbours as they may be affected
 	// by shadows etc. especially walls
 	MapBuilderSetTile(&mb, pos, tile);
 	MapSetupTile(&mb, pos);
 	RECT_FOREACH(Rect2iNew(svec2i_subtract(pos, svec2i(1, 1)), svec2i(3, 3)))
-		MapSetupTile(&mb, _v);
+	MapSetupTile(&mb, _v);
 	RECT_FOREACH_END()
 	CArrayCopy(&mb.Map->access, &mb.access);
 	MapPrintDebug(mb.Map);
@@ -599,36 +600,30 @@ static bool MapTileIsNormalFloor(const MapBuilder *mb, const struct vec2i pos)
 static void MapSetupTilesAndWalls(MapBuilder *mb)
 {
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), mb->Map->Size))
-		MapSetupTile(mb, _v);
+	MapSetupTile(mb, _v);
 	RECT_FOREACH_END()
 
 	// Randomly change normal floor tiles to alternative floor tiles
-	for (int i = 0; i < mb->Map->Size.x*mb->Map->Size.y / 22; i++)
+	for (int i = 0; i < mb->Map->Size.x * mb->Map->Size.y / 22; i++)
 	{
 		const struct vec2i pos = MapGetRandomTile(mb->Map);
 		if (MapTileIsNormalFloor(mb, pos))
 		{
 			Tile *t = MapGetTile(mb->Map, pos);
 			t->Class = TileClassesGetMaskedTile(
-				t->Class,
-				t->Class->Style,
-				"alt1",
-				t->Class->Mask, t->Class->MaskAlt
-			);
+				t->Class, t->Class->Style, "alt1", t->Class->Mask,
+				t->Class->MaskAlt);
 		}
 	}
-	for (int i = 0; i < mb->Map->Size.x*mb->Map->Size.y / 16; i++)
+	for (int i = 0; i < mb->Map->Size.x * mb->Map->Size.y / 16; i++)
 	{
 		const struct vec2i pos = MapGetRandomTile(mb->Map);
 		if (MapTileIsNormalFloor(mb, pos))
 		{
 			Tile *t = MapGetTile(mb->Map, pos);
 			t->Class = TileClassesGetMaskedTile(
-				t->Class,
-				t->Class->Style,
-				"alt2",
-				t->Class->Mask, t->Class->MaskAlt
-			);
+				t->Class, t->Class->Style, "alt2", t->Class->Mask,
+				t->Class->MaskAlt);
 		}
 	}
 }
@@ -636,7 +631,8 @@ static const char *MapGetWallPic(const MapBuilder *m, const struct vec2i pos);
 // Set tile properties for a map tile
 static void MapSetupTile(MapBuilder *mb, const struct vec2i pos)
 {
-	if (!MapIsTileIn(mb->Map, pos)) return;
+	if (!MapIsTileIn(mb->Map, pos))
+		return;
 	const Tile *tAbove = MapGetTile(mb->Map, svec2i(pos.x, pos.y - 1));
 	const bool canSeeTileAbove = !(tAbove != NULL && TileIsOpaque(tAbove));
 	Tile *t = MapGetTile(mb->Map, pos);
@@ -648,9 +644,8 @@ static void MapSetupTile(MapBuilder *mb, const struct vec2i pos)
 	if (tc->Type == TILE_CLASS_FLOOR)
 	{
 		t->Class = TileClassesGetMaskedTile(
-			tc,
-			tc->Style, canSeeTileAbove ? "normal" : "shadow",
-			tc->Mask, tc->MaskAlt);
+			tc, tc->Style, canSeeTileAbove ? "normal" : "shadow", tc->Mask,
+			tc->MaskAlt);
 	}
 	else if (tc->Type == TILE_CLASS_WALL)
 	{
@@ -742,7 +737,8 @@ static const char *MapGetWallPic(const MapBuilder *m, const struct vec2i pos)
 static bool W(const MapBuilder *mb, const int x, const int y)
 {
 	const struct vec2i v = svec2i(x, y);
-	if (!MapIsTileIn(mb->Map, v)) return false;
+	if (!MapIsTileIn(mb->Map, v))
+		return false;
 	const TileClass *tc = MapBuilderGetTile(mb, v);
 	return tc->Type == TILE_CLASS_WALL;
 }
@@ -751,9 +747,8 @@ static bool MapIsValidStartForWall(
 	const MapBuilder *mb, const struct vec2i pos, const bool isRoom,
 	const int pad)
 {
-	if (!MapIsTileIn(mb->Map, pos) ||
-		pos.x == 0 || pos.y == 0 ||
-		pos.x == mb->Map->Size.x - 1 || pos.y ==  mb->Map->Size.y - 1)
+	if (!MapIsTileIn(mb->Map, pos) || pos.x == 0 || pos.y == 0 ||
+		pos.x == mb->Map->Size.x - 1 || pos.y == mb->Map->Size.y - 1)
 	{
 		return false;
 	}
@@ -763,7 +758,8 @@ static bool MapIsValidStartForWall(
 		for (d.y = pos.y - pad; d.y <= pos.y + pad; d.y++)
 		{
 			const TileClass *t = MapBuilderGetTile(mb, d);
-			if (t == NULL || t->Type != TILE_CLASS_FLOOR || t->IsRoom != isRoom)
+			if (t == NULL || t->Type != TILE_CLASS_FLOOR ||
+				t->IsRoom != isRoom)
 			{
 				return false;
 			}
@@ -795,8 +791,8 @@ void MapMakeRoom(
 	{
 		for (v.x = pos.x; v.x < pos.x + size.x; v.x++)
 		{
-			if (v.y == pos.y || v.y == pos.y + size.y - 1 ||
-				v.x == pos.x || v.x == pos.x + size.x - 1)
+			if (v.y == pos.y || v.y == pos.y + size.y - 1 || v.x == pos.x ||
+				v.x == pos.x + size.x - 1)
 			{
 				const TileClass *t = MapBuilderGetTile(mb, v);
 				if (walls && t != NULL && !t->IsRoom)
@@ -816,16 +812,13 @@ void MapMakeRoom(
 	{
 		for (v.x = pos.x; v.x < pos.x + size.x; v.x++)
 		{
-			if (v.y == pos.y || v.y == pos.y + size.y - 1 ||
-				v.x == pos.x || v.x == pos.x + size.x - 1)
+			if (v.y == pos.y || v.y == pos.y + size.y - 1 || v.x == pos.x ||
+				v.x == pos.x + size.x - 1)
 			{
-				if ((
-					MapBuilderGetIsRoom(mb, svec2i(v.x + 1, v.y)) &&
-					MapBuilderGetIsRoom(mb, svec2i(v.x - 1, v.y))
-				) || (
-					MapBuilderGetIsRoom(mb, svec2i(v.x, v.y + 1)) &&
-					MapBuilderGetIsRoom(mb, svec2i(v.x, v.y - 1))
-				))
+				if ((MapBuilderGetIsRoom(mb, svec2i(v.x + 1, v.y)) &&
+					 MapBuilderGetIsRoom(mb, svec2i(v.x - 1, v.y))) ||
+					(MapBuilderGetIsRoom(mb, svec2i(v.x, v.y + 1)) &&
+					 MapBuilderGetIsRoom(mb, svec2i(v.x, v.y - 1))))
 				{
 					MapBuilderSetTile(mb, v, room);
 				}
@@ -839,7 +832,8 @@ static bool MapBuilderGetIsRoom(const MapBuilder *mb, const struct vec2i pos)
 	return t != NULL && t->Type == TILE_CLASS_FLOOR && t->IsRoom;
 }
 
-void MapMakeRoomWalls(MapBuilder *mb, const RoomParams r, const TileClass *wall)
+void MapMakeRoomWalls(
+	MapBuilder *mb, const RoomParams r, const TileClass *wall)
 {
 	int count = 0;
 	for (int i = 0; i < 100 && count < r.Walls; i++)
@@ -880,79 +874,84 @@ static void MapGrowWall(
 	if (length <= 0)
 		return;
 
-	switch (d) {
-		case 0:
-			if (pos.y < 2 + pad)
+	switch (d)
+	{
+	case 0:
+		if (pos.y < 2 + pad)
+		{
+			return;
+		}
+		// Check tiles above
+		// xxxxx
+		//  xxx
+		//   o
+		for (v.y = pos.y - 2; v.y > pos.y - 2 - pad; v.y--)
+		{
+			int level = v.y - (pos.y - 2);
+			for (v.x = pos.x - 1 - level; v.x <= pos.x + 1 + level; v.x++)
 			{
-				return;
+				if (!MapGrowWallCheck(mb, v, isRoom))
+					return;
 			}
-			// Check tiles above
-			// xxxxx
-			//  xxx
-			//   o
-			for (v.y = pos.y - 2; v.y > pos.y - 2 - pad; v.y--)
+		}
+		pos.y--;
+		break;
+	case 1:
+		// Check tiles to the right
+		//   x
+		//  xx
+		// oxx
+		//  xx
+		//   x
+		for (v.x = pos.x + 2; v.x < pos.x + 2 + pad; v.x++)
+		{
+			int level = v.x - (pos.x + 2);
+			for (v.y = pos.y - 1 - level; v.y <= pos.y + 1 + level; v.y++)
 			{
-				int level = v.y - (pos.y - 2);
-				for (v.x = pos.x - 1 - level; v.x <= pos.x + 1 + level; v.x++)
-				{
-					if (!MapGrowWallCheck(mb, v, isRoom)) return;
-				}
+				if (!MapGrowWallCheck(mb, v, isRoom))
+					return;
 			}
-			pos.y--;
-			break;
-		case 1:
-			// Check tiles to the right
-			//   x
-			//  xx
-			// oxx
-			//  xx
-			//   x
-			for (v.x = pos.x + 2; v.x < pos.x + 2 + pad; v.x++)
+		}
+		pos.x++;
+		break;
+	case 2:
+		// Check tiles below
+		//   o
+		//  xxx
+		// xxxxx
+		for (v.y = pos.y + 2; v.y < pos.y + 2 + pad; v.y++)
+		{
+			int level = v.y - (pos.y + 2);
+			for (v.x = pos.x - 1 - level; v.x <= pos.x + 1 + level; v.x++)
 			{
-				int level = v.x - (pos.x + 2);
-				for (v.y = pos.y - 1 - level; v.y <= pos.y + 1 + level; v.y++)
-				{
-					if (!MapGrowWallCheck(mb, v, isRoom)) return;
-				}
+				if (!MapGrowWallCheck(mb, v, isRoom))
+					return;
 			}
-			pos.x++;
-			break;
-		case 2:
-			// Check tiles below
-			//   o
-			//  xxx
-			// xxxxx
-			for (v.y = pos.y + 2; v.y < pos.y + 2 + pad; v.y++)
+		}
+		pos.y++;
+		break;
+	case 4:
+		if (pos.x < 2 + pad)
+		{
+			return;
+		}
+		// Check tiles to the left
+		// x
+		// xx
+		// xxo
+		// xx
+		// x
+		for (v.x = pos.x - 2; v.x > pos.x - 2 - pad; v.x--)
+		{
+			int level = v.x - (pos.x - 2);
+			for (v.y = pos.y - 1 - level; v.y <= pos.y + 1 + level; v.y++)
 			{
-				int level = v.y - (pos.y + 2);
-				for (v.x = pos.x - 1 - level; v.x <= pos.x + 1 + level; v.x++)
-				{
-					if (!MapGrowWallCheck(mb, v, isRoom)) return;
-				}
+				if (!MapGrowWallCheck(mb, v, isRoom))
+					return;
 			}
-			pos.y++;
-			break;
-		case 4:
-			if (pos.x < 2 + pad)
-			{
-				return;
-			}
-			// Check tiles to the left
-			// x
-			// xx
-			// xxo
-			// xx
-			// x
-			for (v.x = pos.x - 2; v.x > pos.x - 2 - pad; v.x--)
-			{
-				int level = v.x - (pos.x - 2);
-				for (v.y = pos.y - 1 - level; v.y <= pos.y + 1 + level; v.y++)
-				{
-					if (!MapGrowWallCheck(mb, v, isRoom)) return;
-				}
-			}
-			pos.x--;
-			break;
+		}
+		pos.x--;
+		break;
 	}
 	MapBuilderSetTile(mb, pos, wall);
 	length--;
@@ -969,10 +968,10 @@ static void MapGrowWall(
 static bool MapGrowWallCheck(
 	const MapBuilder *mb, const struct vec2i v, const bool isRoom)
 {
-	if (!MapIsTileIn(mb->Map, v)) return true;
+	if (!MapIsTileIn(mb->Map, v))
+		return true;
 	const TileClass *t = MapBuilderGetTile(mb, v);
-	if (t == NULL || t->Type != TILE_CLASS_FLOOR ||
-		t->IsRoom != isRoom)
+	if (t == NULL || t->Type != TILE_CLASS_FLOOR || t->IsRoom != isRoom)
 	{
 		return false;
 	}
@@ -1008,7 +1007,7 @@ void MapSetRoomAccessMaskOverlap(
 	const Rect2i room = *(const Rect2i *)CArrayGet(rooms, 0);
 	CArrayPushBack(&overlapRooms, &room);
 	CA_FOREACH(const Rect2i, r, overlapRooms)
-		AddOverlapRooms(mb, *r, &overlapRooms, rooms, accessMask);
+	AddOverlapRooms(mb, *r, &overlapRooms, rooms, accessMask);
 	CA_FOREACH_END()
 }
 static void AddOverlapRooms(
@@ -1018,18 +1017,17 @@ static void AddOverlapRooms(
 	// Find all rooms that overlap with a room, and move it to the overlap
 	// rooms array, setting access mask as we go
 	CA_FOREACH(const Rect2i, r, *rooms)
-		if (Rect2iOverlap(room, *r))
-		{
-			LOG(LM_MAP, LL_TRACE,
-				"Room overlap {%d, %d (%dx%d)} {%d, %d (%dx%d)} access(%d)",
-				room.Pos.x, room.Pos.y, room.Size.x, room.Size.y,
-				r->Pos.x, r->Pos.y, r->Size.x, r->Size.y,
-				accessMask);
-			MapSetRoomAccessMask(mb, r->Pos, r->Size, accessMask);
-			CArrayPushBack(overlapRooms, r);
-			CArrayDelete(rooms, _ca_index);
-			_ca_index--;
-		}
+	if (Rect2iOverlap(room, *r))
+	{
+		LOG(LM_MAP, LL_TRACE,
+			"Room overlap {%d, %d (%dx%d)} {%d, %d (%dx%d)} access(%d)",
+			room.Pos.x, room.Pos.y, room.Size.x, room.Size.y, r->Pos.x,
+			r->Pos.y, r->Size.x, r->Size.y, accessMask);
+		MapSetRoomAccessMask(mb, r->Pos, r->Size, accessMask);
+		CArrayPushBack(overlapRooms, r);
+		CArrayDelete(rooms, _ca_index);
+		_ca_index--;
+	}
 	CA_FOREACH_END()
 }
 
@@ -1049,9 +1047,10 @@ void MapPlaceDoors(
 	// Set the doors
 	if (doors[0])
 	{
-		int doorSize = MIN(
-			(doorMax > doorMin ? (rand() % (doorMax - doorMin + 1)) : 0) + doorMin,
-			r.Size.y - 4);
+		int doorSize =
+			MIN((doorMax > doorMin ? (rand() % (doorMax - doorMin + 1)) : 0) +
+					doorMin,
+				r.Size.y - 4);
 		for (int i = -doorSize / 2; i < (doorSize + 1) / 2; i++)
 		{
 			const struct vec2i v = svec2i(r.Pos.x, r.Pos.y + r.Size.y / 2 + i);
@@ -1063,12 +1062,14 @@ void MapPlaceDoors(
 	}
 	if (doors[1])
 	{
-		int doorSize = MIN(
-			(doorMax > doorMin ? (rand() % (doorMax - doorMin + 1)) : 0) + doorMin,
-			r.Size.y - 4);
+		int doorSize =
+			MIN((doorMax > doorMin ? (rand() % (doorMax - doorMin + 1)) : 0) +
+					doorMin,
+				r.Size.y - 4);
 		for (int i = -doorSize / 2; i < (doorSize + 1) / 2; i++)
 		{
-			const struct vec2i v = svec2i(r.Pos.x + r.Size.x - 1, r.Pos.y + r.Size.y / 2 + i);
+			const struct vec2i v =
+				svec2i(r.Pos.x + r.Size.x - 1, r.Pos.y + r.Size.y / 2 + i);
 			if (!TryPlaceDoorTile(mb, v, svec2i(1, 0), tile))
 			{
 				break;
@@ -1077,9 +1078,10 @@ void MapPlaceDoors(
 	}
 	if (doors[2])
 	{
-		int doorSize = MIN(
-			(doorMax > doorMin ? (rand() % (doorMax - doorMin + 1)) : 0) + doorMin,
-			r.Size.x - 4);
+		int doorSize =
+			MIN((doorMax > doorMin ? (rand() % (doorMax - doorMin + 1)) : 0) +
+					doorMin,
+				r.Size.x - 4);
 		for (int i = -doorSize / 2; i < (doorSize + 1) / 2; i++)
 		{
 			const struct vec2i v = svec2i(r.Pos.x + r.Size.x / 2 + i, r.Pos.y);
@@ -1091,12 +1093,14 @@ void MapPlaceDoors(
 	}
 	if (doors[3])
 	{
-		int doorSize = MIN(
-			(doorMax > doorMin ? (rand() % (doorMax - doorMin + 1)) : 0) + doorMin,
-			r.Size.x - 4);
+		int doorSize =
+			MIN((doorMax > doorMin ? (rand() % (doorMax - doorMin + 1)) : 0) +
+					doorMin,
+				r.Size.x - 4);
 		for (int i = -doorSize / 2; i < (doorSize + 1) / 2; i++)
 		{
-			const struct vec2i v = svec2i(r.Pos.x + r.Size.x / 2 + i, r.Pos.y + r.Size.y - 1);
+			const struct vec2i v =
+				svec2i(r.Pos.x + r.Size.x / 2 + i, r.Pos.y + r.Size.y - 1);
 			if (!TryPlaceDoorTile(mb, v, svec2i(0, 1), tile))
 			{
 				break;
@@ -1118,10 +1122,11 @@ static bool TryPlaceDoorTile(
 	return false;
 }
 
-bool MapIsAreaInside(const Map *map, const struct vec2i pos, const struct vec2i size)
+bool MapIsAreaInside(
+	const Map *map, const struct vec2i pos, const struct vec2i size)
 {
-	return pos.x >= 0 && pos.y >= 0 &&
-		pos.x + size.x < map->Size.x && pos.y + size.y < map->Size.y;
+	return pos.x >= 0 && pos.y >= 0 && pos.x + size.x < map->Size.x &&
+		   pos.y + size.y < map->Size.y;
 }
 
 bool MapBuilderIsAreaFunc(
@@ -1133,7 +1138,8 @@ bool MapBuilderIsAreaFunc(
 		return false;
 	}
 	RECT_FOREACH(Rect2iNew(pos, size))
-		if (!func(mb, _v)) return false;
+	if (!func(mb, _v))
+		return false;
 	RECT_FOREACH_END()
 	return true;
 }
@@ -1155,19 +1161,24 @@ static bool AreaHasRoomAndFloor(const MapBuilder *mb, const struct vec2i pos)
 	bool hasRoom = false;
 	bool hasFloor = false;
 	RECT_FOREACH(Rect2iNew(svec2i_subtract(pos, svec2i_one()), svec2i(3, 3)))
-		const TileClass *t = MapBuilderGetTile(mb, _v);
-		if (t == NULL || t->Type != TILE_CLASS_FLOOR) continue;
-		if (t->IsRoom) hasRoom = true;
-		else hasFloor = true;
+	const TileClass *t = MapBuilderGetTile(mb, _v);
+	if (t == NULL || t->Type != TILE_CLASS_FLOOR)
+		continue;
+	if (t->IsRoom)
+		hasRoom = true;
+	else
+		hasFloor = true;
 	RECT_FOREACH_END()
 	return hasRoom && hasFloor;
 }
 static bool IsClearOrRoom(const MapBuilder *mb, const struct vec2i pos)
 {
 	const TileClass *tile = MapBuilderGetTile(mb, pos);
-	if (tile->Type == TILE_CLASS_FLOOR) return true;
+	if (tile->Type == TILE_CLASS_FLOOR)
+		return true;
 	// Check if this wall is part of a room
-	if (tile->Type != TILE_CLASS_WALL) return false;
+	if (tile->Type != TILE_CLASS_WALL)
+		return false;
 	return AreaHasRoomAndFloor(mb, pos);
 }
 bool MapIsAreaClearOrRoom(
@@ -1178,9 +1189,11 @@ bool MapIsAreaClearOrRoom(
 static bool IsClearOrWall(const MapBuilder *mb, const struct vec2i pos)
 {
 	const TileClass *tile = MapBuilderGetTile(mb, pos);
-	if (tile->Type == TILE_CLASS_FLOOR && !tile->IsRoom) return true;
+	if (tile->Type == TILE_CLASS_FLOOR && !tile->IsRoom)
+		return true;
 	// Check if this wall is part of a room
-	if (tile->Type != TILE_CLASS_WALL) return false;
+	if (tile->Type != TILE_CLASS_WALL)
+		return false;
 	return AreaHasRoomAndFloor(mb, pos);
 }
 bool MapIsAreaClearOrWall(
@@ -1219,48 +1232,48 @@ bool MapGetRoomOverlapSize(
 
 	// Find perimeter tiles that overlap
 	RECT_FOREACH(r)
-		// only check perimeter
-		if (_v.x != r.Pos.x && _v.x != r.Pos.x + r.Size.x - 1 &&
-			_v.y != r.Pos.y && _v.y != r.Pos.y + r.Size.y - 1)
+	// only check perimeter
+	if (_v.x != r.Pos.x && _v.x != r.Pos.x + r.Size.x - 1 && _v.y != r.Pos.y &&
+		_v.y != r.Pos.y + r.Size.y - 1)
+	{
+		continue;
+	}
+	if (!MapIsTileIn(mb->Map, _v))
+	{
+		continue;
+	}
+	const TileClass *tile = MapBuilderGetTile(mb, _v);
+	// Check if this wall is part of a room
+	if (tile->Type != TILE_CLASS_WALL || !AreaHasRoomAndFloor(mb, _v))
+	{
+		continue;
+	}
+	// Get the access level of the room
+	struct vec2i v2;
+	for (v2.y = _v.y - 1; v2.y <= _v.y + 1; v2.y++)
+	{
+		for (v2.x = _v.x - 1; v2.x <= _v.x + 1; v2.x++)
 		{
-			continue;
-		}
-		if (!MapIsTileIn(mb->Map, _v))
-		{
-			continue;
-		}
-		const TileClass *tile = MapBuilderGetTile(mb, _v);
-		// Check if this wall is part of a room
-		if (tile->Type != TILE_CLASS_WALL || !AreaHasRoomAndFloor(mb, _v))
-		{
-			continue;
-		}
-		// Get the access level of the room
-		struct vec2i v2;
-		for (v2.y = _v.y - 1; v2.y <= _v.y + 1; v2.y++)
-		{
-			for (v2.x = _v.x - 1; v2.x <= _v.x + 1; v2.x++)
+			const TileClass *t = MapBuilderGetTile(mb, v2);
+			if (t != NULL && t->IsRoom)
 			{
-				const TileClass *t = MapBuilderGetTile(mb, v2);
-				if (t != NULL && t->IsRoom)
+				if (overlapAccess != NULL)
 				{
-					if (overlapAccess != NULL)
-					{
-						*overlapAccess |= MapBuildGetAccess(mb, v2);
-					}
+					*overlapAccess |= MapBuildGetAccess(mb, v2);
 				}
 			}
 		}
-		if (numOverlaps == 0)
-		{
-			overlapMin = overlapMax = _v;
-		}
-		else
-		{
-			overlapMin = svec2i_min(overlapMin, _v);
-			overlapMax = svec2i_max(overlapMax, _v);
-		}
-		numOverlaps++;
+	}
+	if (numOverlaps == 0)
+	{
+		overlapMin = overlapMax = _v;
+	}
+	else
+	{
+		overlapMin = svec2i_min(overlapMin, _v);
+		overlapMax = svec2i_max(overlapMax, _v);
+	}
+	numOverlaps++;
 	RECT_FOREACH_END()
 	if (numOverlaps < 2)
 	{
@@ -1311,8 +1324,8 @@ bool MapIsLessThanTwoWallOverlaps(
 		for (v.x = pos.x; v.x < pos.x + size.x; v.x++)
 		{
 			// only check perimeter
-			if (v.x != pos.x && v.x != pos.x + size.x - 1 &&
-				v.y != pos.y && v.y != pos.y + size.y - 1)
+			if (v.x != pos.x && v.x != pos.x + size.x - 1 && v.y != pos.y &&
+				v.y != pos.y + size.y - 1)
 			{
 				continue;
 			}
@@ -1352,7 +1365,7 @@ bool MapIsLessThanTwoWallOverlaps(
 				// invalid tile type
 				return false;
 			}
-				// Check if this wall is not part of a room
+			// Check if this wall is not part of a room
 			if (AreaHasRoomAndFloor(mb, v))
 			{
 				return false;
@@ -1366,7 +1379,7 @@ bool MapIsLessThanTwoWallOverlaps(
 void MapMakeSquare(MapBuilder *mb, const Rect2i r, const TileClass *tc)
 {
 	RECT_FOREACH(r)
-		MapBuilderSetTile(mb, _v, tc);
+	MapBuilderSetTile(mb, _v, tc);
 	RECT_FOREACH_END()
 }
 
@@ -1444,7 +1457,7 @@ static void MapAddDrains(MapBuilder *mb)
 	// Randomly add drainage tiles for classic map type;
 	// For other map types drains are regular map objects
 	const MapObject *drain = StrMapObject("drain0");
-	for (int i = 0; i < mb->Map->Size.x*mb->Map->Size.y / 45; i++)
+	for (int i = 0; i < mb->Map->Size.x * mb->Map->Size.y / 45; i++)
 	{
 		// Make sure drain tiles aren't next to each other
 		struct vec2i v = MapGetRandomTile(mb->Map);

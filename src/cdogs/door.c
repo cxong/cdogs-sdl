@@ -1,57 +1,56 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin
-    Copyright (C) 2003-2007 Lucas Martin-King
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (C) 1995 Ronny Wester
+	Copyright (C) 2003 Jeremy Chin
+	Copyright (C) 2003-2007 Lucas Martin-King
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-    This file incorporates work covered by the following copyright and
-    permission notice:
+	This file incorporates work covered by the following copyright and
+	permission notice:
 
-    Copyright (c) 2013-2015, 2018-2019 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2015, 2018-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "door.h"
 
 #include "gamedata.h"
 #include "log.h"
 #include "net_util.h"
-
 
 static DoorType GetDoorType(
 	const bool isHorizontal, const int i, const int count)
@@ -97,9 +96,8 @@ static DoorType GetDoorType(
 }
 static bool DoorTypeIsHorizontal(const DoorType type)
 {
-	return
-		type == DOORTYPE_H || type == DOORTYPE_LEFT ||
-		type == DOORTYPE_HMID || type == DOORTYPE_RIGHT;
+	return type == DOORTYPE_H || type == DOORTYPE_LEFT ||
+		   type == DOORTYPE_HMID || type == DOORTYPE_RIGHT;
 }
 
 static void DoorGetClassName(
@@ -107,17 +105,16 @@ static void DoorGetClassName(
 static int GetDoorCountInGroup(
 	const MapBuilder *mb, const struct vec2i v, const bool isHorizontal);
 static TWatch *CreateCloseDoorWatch(
-	MapBuilder *mb, const struct vec2i v,
-	const bool isHorizontal, const int doorGroupCount,
-	const char *doorKey);
+	MapBuilder *mb, const struct vec2i v, const bool isHorizontal,
+	const int doorGroupCount, const char *doorKey);
 static Trigger *CreateOpenDoorTrigger(
-	MapBuilder *mb, const struct vec2i v,
-	const bool isHorizontal, const int doorGroupCount, const int keyFlags);
-void MapAddDoorGroup(
-	MapBuilder *mb, const struct vec2i v, const int keyFlags)
+	MapBuilder *mb, const struct vec2i v, const bool isHorizontal,
+	const int doorGroupCount, const int keyFlags);
+void MapAddDoorGroup(MapBuilder *mb, const struct vec2i v, const int keyFlags)
 {
 	const TileClass *door = MapBuilderGetTile(mb, v);
-	const TileClass *tileLeftType = MapBuilderGetTile(mb, svec2i(v.x - 1, v.y));
+	const TileClass *tileLeftType =
+		MapBuilderGetTile(mb, svec2i(v.x - 1, v.y));
 	const bool tileLeftCanWalk = tileLeftType != NULL && tileLeftType->canWalk;
 	const bool tileLeftIsDoor =
 		tileLeftType != NULL && tileLeftType->Type == TILE_CLASS_DOOR;
@@ -127,9 +124,8 @@ void MapAddDoorGroup(
 		tileRightType != NULL && tileRightType->canWalk;
 	const bool tileRightIsDoor =
 		tileRightType != NULL && tileRightType->Type == TILE_CLASS_DOOR;
-	const bool isHorizontal =
-		!tileLeftCanWalk || !tileRightCanWalk ||
-		tileLeftIsDoor || tileRightIsDoor;
+	const bool isHorizontal = !tileLeftCanWalk || !tileRightCanWalk ||
+							  tileLeftIsDoor || tileRightIsDoor;
 	const int doorGroupCount = GetDoorCountInGroup(mb, v, isHorizontal);
 	const struct vec2i dv = svec2i(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
 	const struct vec2i dAside = svec2i(dv.y, dv.x);
@@ -137,11 +133,21 @@ void MapAddDoorGroup(
 	const char *doorKey;
 	switch (keyFlags)
 	{
-	case FLAGS_KEYCARD_RED:		doorKey = "red";	break;
-	case FLAGS_KEYCARD_BLUE:	doorKey = "blue";	break;
-	case FLAGS_KEYCARD_GREEN:	doorKey = "green";	break;
-	case FLAGS_KEYCARD_YELLOW:	doorKey = "yellow";	break;
-	default:					doorKey = "normal";	break;
+	case FLAGS_KEYCARD_RED:
+		doorKey = "red";
+		break;
+	case FLAGS_KEYCARD_BLUE:
+		doorKey = "blue";
+		break;
+	case FLAGS_KEYCARD_GREEN:
+		doorKey = "green";
+		break;
+	case FLAGS_KEYCARD_YELLOW:
+		doorKey = "yellow";
+		break;
+	default:
+		doorKey = "normal";
+		break;
 	}
 
 	// set up the door pics
@@ -151,8 +157,8 @@ void MapAddDoorGroup(
 		const DoorType type = GetDoorType(isHorizontal, i, doorGroupCount);
 		DoorGetClassName(doorClassName, door->Style, doorKey, type);
 		const TileClass *doorClass = StrTileClass(doorClassName);
-		const TileClass *doorClassOpen = DoorGetClass(
-			door->Style, "open", type);
+		const TileClass *doorClassOpen =
+			DoorGetClass(door->Style, "open", type);
 		const struct vec2i vI = svec2i_add(v, svec2i_scale(dv, (float)i));
 		Tile *tile = MapGetTile(mb->Map, vI);
 		tile->ClassAlt = doorClass;
@@ -163,11 +169,10 @@ void MapAddDoorGroup(
 			Tile *tileB = MapGetTile(mb->Map, vB);
 			CASSERT(
 				TileCanWalk(MapGetTile(
-					mb->Map, svec2i(vI.x - dAside.x, vI.y - dAside.y)
-				)),
+					mb->Map, svec2i(vI.x - dAside.x, vI.y - dAside.y))),
 				"map gen error: entrance should be clear");
-			CASSERT(TileCanWalk(tileB),
-				"map gen error: entrance should be clear");
+			CASSERT(
+				TileCanWalk(tileB), "map gen error: entrance should be clear");
 			// Change the tile below to shadow, cast by this door
 			tileB->Class = TileClassesGetMaskedTile(
 				tileB->Class, tileB->Class->Style, "shadow",
@@ -175,10 +180,10 @@ void MapAddDoorGroup(
 		}
 	}
 
-	TWatch *w = CreateCloseDoorWatch(
-		mb, v, isHorizontal, doorGroupCount, doorKey);
-	Trigger *t = CreateOpenDoorTrigger(
-		mb, v, isHorizontal, doorGroupCount, keyFlags);
+	TWatch *w =
+		CreateCloseDoorWatch(mb, v, isHorizontal, doorGroupCount, doorKey);
+	Trigger *t =
+		CreateOpenDoorTrigger(mb, v, isHorizontal, doorGroupCount, keyFlags);
 	// Connect trigger and watch up
 	Action *a = TriggerAddAction(t);
 	a->Type = ACTION_ACTIVATEWATCH;
@@ -207,9 +212,9 @@ static int GetDoorCountInGroup(
 	const struct vec2i dv = svec2i(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
 	int count = 0;
 	for (struct vec2i vi = v;
-		MapIsTileIn(mb->Map, vi) &&
-		MapBuilderGetTile(mb, vi)->Type == TILE_CLASS_DOOR;
-		vi = svec2i_add(vi, dv))
+		 MapIsTileIn(mb->Map, vi) &&
+		 MapBuilderGetTile(mb, vi)->Type == TILE_CLASS_DOOR;
+		 vi = svec2i_add(vi, dv))
 	{
 		count++;
 	}
@@ -219,9 +224,8 @@ static int GetDoorCountInGroup(
 #define CLOSE_DOOR_TICKS FPS_FRAMELIMIT
 // Create the watch responsible for closing the door
 static TWatch *CreateCloseDoorWatch(
-	MapBuilder *mb, const struct vec2i v,
-	const bool isHorizontal, const int doorGroupCount,
-	const char *doorKey)
+	MapBuilder *mb, const struct vec2i v, const bool isHorizontal,
+	const int doorGroupCount, const char *doorKey)
 {
 	TWatch *w = WatchNew();
 	const struct vec2i dv = svec2i(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
@@ -233,9 +237,9 @@ static TWatch *CreateCloseDoorWatch(
 		const struct vec2i vI = svec2i_add(v, svec2i_scale(dv, (float)i));
 
 		WatchAddCondition(
-			w, CONDITION_TILECLEAR, CLOSE_DOOR_TICKS, svec2i_subtract(vI, dAside));
-		WatchAddCondition(
-			w, CONDITION_TILECLEAR, CLOSE_DOOR_TICKS, vI);
+			w, CONDITION_TILECLEAR, CLOSE_DOOR_TICKS,
+			svec2i_subtract(vI, dAside));
+		WatchAddCondition(w, CONDITION_TILECLEAR, CLOSE_DOOR_TICKS, vI);
 		WatchAddCondition(
 			w, CONDITION_TILECLEAR, CLOSE_DOOR_TICKS, svec2i_add(vI, dAside));
 	}
@@ -279,7 +283,7 @@ static TWatch *CreateCloseDoorWatch(
 		for (int i = 0; i < doorGroupCount; i++)
 		{
 			const struct vec2i vI = svec2i_add(v, svec2i_scale(dv, (float)i));
-			
+
 			a = WatchAddAction(w);
 			a->Type = ACTION_EVENT;
 			a->a.Event = GameEventNew(GAME_EVENT_TILE_SET);
@@ -287,9 +291,8 @@ static TWatch *CreateCloseDoorWatch(
 			a->a.Event.u.TileSet.Pos = Vec2i2Net(vI2);
 			const TileClass *t = MapBuilderGetTile(mb, vI2);
 			TileClassGetName(
-				a->a.Event.u.TileSet.ClassName,
-				t, t->Style, "shadow", t->Mask, t->MaskAlt
-			);
+				a->a.Event.u.TileSet.ClassName, t, t->Style, "shadow", t->Mask,
+				t->MaskAlt);
 		}
 	}
 
@@ -297,8 +300,8 @@ static TWatch *CreateCloseDoorWatch(
 }
 static void TileAddTrigger(Tile *t, Trigger *tr);
 static Trigger *CreateOpenDoorTrigger(
-	MapBuilder *mb, const struct vec2i v,
-	const bool isHorizontal, const int doorGroupCount, const int keyFlags)
+	MapBuilder *mb, const struct vec2i v, const bool isHorizontal,
+	const int doorGroupCount, const int keyFlags)
 {
 	// All tiles on either side of the door group use the same trigger
 	const struct vec2i dv = svec2i(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
@@ -323,14 +326,12 @@ static Trigger *CreateOpenDoorTrigger(
 		a->a.Event.u.TileSet.Pos = Vec2i2Net(vI);
 		const DoorType type = GetDoorType(isHorizontal, i, doorGroupCount);
 		DoorGetClassName(
-			a->a.Event.u.TileSet.ClassName, door->Style, "open",
-			type);
+			a->a.Event.u.TileSet.ClassName, door->Style, "open", type);
 		if (type == DOORTYPE_TOP || type == DOORTYPE_V)
 		{
 			// special door cavity picture
 			DoorGetClassName(
-				a->a.Event.u.TileSet.ClassAltName,
-				door->Style, "wall", type);
+				a->a.Event.u.TileSet.ClassAltName, door->Style, "wall", type);
 		}
 	}
 
@@ -348,9 +349,8 @@ static Trigger *CreateOpenDoorTrigger(
 			const TileClass *tc = MapBuilderGetTile(mb, vIAside);
 			a->a.Event.u.TileSet.Pos = Vec2i2Net(vIAside);
 			TileClassGetName(
-				a->a.Event.u.TileSet.ClassName,
-				tc, tc->Style, "normal", tc->Mask, tc->MaskAlt
-			);
+				a->a.Event.u.TileSet.ClassName, tc, tc->Style, "normal",
+				tc->Mask, tc->MaskAlt);
 		}
 	}
 
@@ -403,33 +403,33 @@ static void DoorGetTypeName(char *buf, const char *key, const DoorType type)
 	{
 		switch (type)
 		{
-			case DOORTYPE_H:
-				typeStr = "_h";
-				break;
-			case DOORTYPE_LEFT:
-				typeStr = "_left";
-				break;
-			case DOORTYPE_HMID:
-				typeStr = "_hmid";
-				break;
-			case DOORTYPE_RIGHT:
-				typeStr = "_right";
-				break;
-			case DOORTYPE_V:
-				typeStr = "_v";
-				break;
-			case DOORTYPE_TOP:
-				typeStr = "_top";
-				break;
-			case DOORTYPE_VMID:
-				typeStr = "_vmid";
-				break;
-			case DOORTYPE_BOTTOM:
-				typeStr = "_bottom";
-				break;
-			default:
-				CASSERT(false, "unknown doortype");
-				break;
+		case DOORTYPE_H:
+			typeStr = "_h";
+			break;
+		case DOORTYPE_LEFT:
+			typeStr = "_left";
+			break;
+		case DOORTYPE_HMID:
+			typeStr = "_hmid";
+			break;
+		case DOORTYPE_RIGHT:
+			typeStr = "_right";
+			break;
+		case DOORTYPE_V:
+			typeStr = "_v";
+			break;
+		case DOORTYPE_TOP:
+			typeStr = "_top";
+			break;
+		case DOORTYPE_VMID:
+			typeStr = "_vmid";
+			break;
+		case DOORTYPE_BOTTOM:
+			typeStr = "_bottom";
+			break;
+		default:
+			CASSERT(false, "unknown doortype");
+			break;
 		}
 	}
 	sprintf(buf, "%s%s", key, typeStr);
@@ -443,15 +443,15 @@ static void DoorGetClassName(
 	TileClassGetName(buf, &gTileDoor, style, type, colorWhite, colorWhite);
 }
 void DoorAddClass(
-	TileClasses *c, PicManager *pm,
-	const char *style, const char *key, const DoorType type)
+	TileClasses *c, PicManager *pm, const TileClass *base, const char *key,
+	const DoorType type)
 {
 	char buf[CDOGS_FILENAME_MAX];
 	DoorGetTypeName(buf, key, type);
 	PicManagerGenerateMaskedStylePic(
-		pm, "door", style, buf, colorWhite, colorWhite, true);
-	TileClass *t = TileClassesAdd(
-		c, pm, &gTileDoor, style, buf, colorWhite, colorWhite);
+		pm, "door", base->Style, buf, colorWhite, colorWhite, true);
+	TileClass *t =
+		TileClassesAdd(c, pm, base, base->Style, buf, colorWhite, colorWhite);
 	CASSERT(t != NULL, "cannot add door class");
 	const bool isOpenOrWallCavity =
 		strcmp(key, "open") == 0 || strcmp(key, "wall") == 0;
@@ -463,9 +463,7 @@ void DoorAddClass(
 #define DOORSTYLE_COUNT 4
 const char *IntDoorStyle(const int i)
 {
-	static const char *doorStyles[] = {
-		"office", "dungeon", "blast", "alien"
-	};
+	static const char *doorStyles[] = {"office", "dungeon", "blast", "alien"};
 	// fix bugs with old campaigns
 	return doorStyles[abs(i) % DOORSTYLE_COUNT];
 }
