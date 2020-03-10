@@ -1,5 +1,5 @@
 {
-	"Version": 12,
+	"Version": 13,
 	"Characters": [{
 		"Class": "Ogre",
 		"Skin": "149c14ff",
@@ -17,7 +17,7 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Professor",
+		"Class": "Jones",
 		"Skin": "ff8136ff",
 		"Arms": "9c0000ff",
 		"Body": "9c0000ff",
@@ -38,7 +38,7 @@
 		"Arms": "ff8136ff",
 		"Body": "9c589cff",
 		"Legs": "9c589cff",
-		"Hair": "9c0000ff",
+		"Hair": "00000000",
 		"speed": 256,
 		"Gun": "Grenades",
 		"maxHealth": 40,

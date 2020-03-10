@@ -149,7 +149,19 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 	TileBrushData *tbData = data;
 	TileClass *selectedTC =
 		MissionStaticIdTileClass(&tbData->m->u.Static, *tbData->brushIdx);
-	if (nk_begin(ctx, "", nk_rect(0, 0, MAIN_WIDTH, HEIGHT), NK_WINDOW_BORDER))
+
+	if (nk_begin(
+			ctx, "Properties", nk_rect(0, 0, SIDE_WIDTH, HEIGHT),
+			NK_WINDOW_BORDER | NK_WINDOW_TITLE) &&
+		selectedTC != NULL)
+	{
+		DrawTilePropsSidebar(ctx, tbData, selectedTC);
+	}
+	nk_end(ctx);
+
+	if (nk_begin(
+			ctx, "", nk_rect(SIDE_WIDTH, 0, MAIN_WIDTH, HEIGHT),
+			NK_WINDOW_BORDER))
 	{
 		DrawTileOpsRow(ctx, tbData, selectedTC, &result);
 
@@ -166,15 +178,6 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 				tilesDrawn++;
 			}
 		}
-	}
-	nk_end(ctx);
-
-	if (nk_begin(
-			ctx, "Properties", nk_rect(MAIN_WIDTH, 0, SIDE_WIDTH, HEIGHT),
-			NK_WINDOW_BORDER | NK_WINDOW_TITLE) &&
-		selectedTC != NULL)
-	{
-		DrawTilePropsSidebar(ctx, tbData, selectedTC);
 	}
 	nk_end(ctx);
 	return result;

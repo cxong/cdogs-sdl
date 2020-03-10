@@ -64,9 +64,11 @@ static int AddTileClass(any_t data, any_t item)
 {
 	UNUSED(data);
 	TileClass *t = item;
+	// Attach base style to tile class for convenience in editors etc
+	CSTRDUP(t->StyleType, TileClassBaseStyleType(t->Type));
 	TileClassesAdd(
-		&gTileClasses, &gPicManager, t, t->Style,
-		TileClassBaseStyleType(t->Type), t->Mask, t->MaskAlt);
+		&gTileClasses, &gPicManager, t, t->Style, t->StyleType, t->Mask,
+		t->MaskAlt);
 	switch (t->Type)
 	{
 	case TILE_CLASS_DOOR:
