@@ -231,6 +231,9 @@ static void DrawTileTypeSelect(
 	struct nk_context *ctx, TileBrushData *tbData, TileClass *selectedTC);
 static void DrawTileStyleSelect(
 	struct nk_context *ctx, TileBrushData *tbData, TileClass *selectedTC);
+static bool DrawCheckbox(
+	struct nk_context *ctx, const char *label, const char *tooltip,
+	bool *value);
 static void DrawTilePropsSidebar(
 	struct nk_context *ctx, TileBrushData *tbData, TileClass *selectedTC)
 {
@@ -245,15 +248,20 @@ static void DrawTilePropsSidebar(
 		ColorPicker(ctx, ROW_HEIGHT, "Primary Color", &selectedTC->Mask);
 		ColorPicker(ctx, ROW_HEIGHT, "Alt Color", &selectedTC->MaskAlt);
 
-		struct nk_rect bounds = nk_widget_bounds(ctx);
 		// TODO: return value file changed
-		int value = (int)selectedTC->canWalk;
-		nk_checkbox_label(ctx, "Can Walk", &value);
-		selectedTC->canWalk = (bool)value;
-		if (nk_input_is_mouse_hovering_rect(&ctx->input, bounds))
-		{
-			nk_tooltip(ctx, "Whether actors can walk through this tile");
-		}
+		DrawCheckbox(
+			ctx, "Can Walk", "Whether actors can walk through this tile",
+			&selectedTC->canWalk);
+		DrawCheckbox(
+			ctx, "Opaque", "Whether this tile cannot be seen through",
+			&selectedTC->isOpaque);
+		DrawCheckbox(
+			ctx, "Shootable", "Whether bullets will hit this tile",
+			&selectedTC->shootable);
+		DrawCheckbox(
+			ctx, "IsRoom",
+			"Affects random placement of indoor/outdoor map objects",
+			&selectedTC->IsRoom);
 	}
 }
 static void DrawTileTypeSelect(
@@ -330,6 +338,21 @@ static void DrawTileStyleSelect(
 		TileClassReloadPic(selectedTC, tbData->pm);
 	}
 }
+static bool DrawCheckbox(
+	struct nk_context *ctx, const char *label, const char *tooltip,
+	bool *value)
+{
+	struct nk_rect bounds = nk_widget_bounds(ctx);
+	int iValue = (int)*value;
+	const bool changed = nk_checkbox_label(ctx, label, &iValue);
+	*value = (bool)iValue;
+	if (tooltip && nk_input_is_mouse_hovering_rect(&ctx->input, bounds))
+	{
+		nk_tooltip(ctx, tooltip);
+	}
+	return changed;
+}
+
 static void DrawTileClass(
 	struct nk_context *ctx, const PicManager *pm, const TileClass *tc,
 	const struct vec2i pos, const GLuint texid);
