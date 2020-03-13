@@ -41,9 +41,7 @@
 #include "editor_ui_static_additem.h"
 #include "tile_brush.h"
 
-
 MISSION_CHECK_TYPE_FUNC(MAPTYPE_STATIC)
-
 
 static const char *BrushGetTypeStr(EditorBrush *brush, int isMain)
 {
@@ -53,8 +51,8 @@ static const char *BrushGetTypeStr(EditorBrush *brush, int isMain)
 	sprintf(tcName, "%d", idx);
 	TileClass *tc;
 	if (hashmap_get(
-		gMission.missionData->u.Static.TileClasses, tcName, (any_t *)&tc) !=
-		MAP_OK)
+			gMission.missionData->u.Static.TileClasses, tcName,
+			(any_t *)&tc) != MAP_OK)
 	{
 		LOG(LM_EDIT, LL_ERROR, "cannot find tile class key: %s", tcName);
 		return "";
@@ -98,35 +96,38 @@ static const char *BrushGetGuideImageAlphaStr(UIObject *o, void *data)
 	return s;
 }
 
-
-static void BrushChangeMainType(void *data, int d)
+static EditorResult BrushChangeMainType(void *data, int d)
 {
 	UNUSED(d);
 	EditorBrush *b = data;
-	TileBrush(&gPicManager, &gEventHandlers, &gCampaign, &b->MainType);
+	return TileBrush(&gPicManager, &gEventHandlers, &gCampaign, &b->MainType);
 }
-static void BrushChangeSecondaryType(void *data, int d)
+static EditorResult BrushChangeSecondaryType(void *data, int d)
 {
 	UNUSED(d);
 	EditorBrush *b = data;
-	TileBrush(&gPicManager, &gEventHandlers, &gCampaign, &b->SecondaryType);
+	return TileBrush(
+		&gPicManager, &gEventHandlers, &gCampaign, &b->SecondaryType);
 }
-static void BrushChangeSize(void *data, int d)
+static EditorResult BrushChangeSize(void *data, int d)
 {
 	EditorBrush *b = data;
 	b->BrushSize = CLAMP(b->BrushSize + d, 1, 5);
+	return EDITOR_RESULT_NONE;
 }
-static void BrushLoadGuideImage(void *data, int d)
+static EditorResult BrushLoadGuideImage(void *data, int d)
 {
 	UNUSED(d);
 	EditorBrush *b = data;
 	SDL_FreeSurface(b->GuideImageSurface);
 	SDL_Surface *s = IMG_Load(b->GuideImage);
-	if (s == NULL) return;
+	if (s == NULL)
+		return EDITOR_RESULT_NONE;
 	b->GuideImageSurface = SDL_ConvertSurface(s, gGraphicsDevice.Format, 0);
 	SDL_FreeSurface(s);
+	return EDITOR_RESULT_NONE;
 }
-static void BrushChangeGuideImageAlpha(void *data, int d)
+static EditorResult BrushChangeGuideImageAlpha(void *data, int d)
 {
 	EditorBrush *b = data;
 	d *= 4;
@@ -135,6 +136,7 @@ static void BrushChangeGuideImageAlpha(void *data, int d)
 		d *= 8;
 	}
 	b->GuideImageAlpha = (Uint8)CLAMP((int)b->GuideImageAlpha + d, 0, 255);
+	return EDITOR_RESULT_NONE;
 }
 static int BrushIsBrushTypePoint(void *data)
 {
@@ -174,11 +176,9 @@ static int BrushIsBrushTypeFill(void *data)
 static int BrushIsBrushTypeAddItem(void *data)
 {
 	EditorBrush *b = data;
-	return
-		b->Type == BRUSHTYPE_SET_PLAYER_START ||
-		b->Type == BRUSHTYPE_ADD_ITEM ||
-		b->Type == BRUSHTYPE_ADD_CHARACTER ||
-		b->Type == BRUSHTYPE_ADD_KEY;
+	return b->Type == BRUSHTYPE_SET_PLAYER_START ||
+		   b->Type == BRUSHTYPE_ADD_ITEM ||
+		   b->Type == BRUSHTYPE_ADD_CHARACTER || b->Type == BRUSHTYPE_ADD_KEY;
 }
 static int BrushIsBrushTypeSetKey(void *data)
 {
@@ -190,60 +190,69 @@ static int BrushIsBrushTypeSetExit(void *data)
 	EditorBrush *b = data;
 	return b->Type == BRUSHTYPE_SET_EXIT;
 }
-static void BrushSetBrushTypePoint(void *data, int d)
+static EditorResult BrushSetBrushTypePoint(void *data, int d)
 {
 	UNUSED(d);
 	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_POINT;
+	return EDITOR_RESULT_NONE;
 }
-static void BrushSetBrushTypeLine(void *data, int d)
+static EditorResult BrushSetBrushTypeLine(void *data, int d)
 {
 	UNUSED(d);
 	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_LINE;
+	return EDITOR_RESULT_NONE;
 }
-static void BrushSetBrushTypeBox(void *data, int d)
+static EditorResult BrushSetBrushTypeBox(void *data, int d)
 {
 	UNUSED(d);
 	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_BOX;
+	return EDITOR_RESULT_NONE;
 }
-static void BrushSetBrushTypeBoxFilled(void *data, int d)
+static EditorResult BrushSetBrushTypeBoxFilled(void *data, int d)
 {
 	UNUSED(d);
 	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_BOX_FILLED;
+	return EDITOR_RESULT_NONE;
 }
-static void BrushSetBrushTypeBoxAndFill(void *data, int d)
+static EditorResult BrushSetBrushTypeBoxAndFill(void *data, int d)
 {
 	UNUSED(d);
 	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_BOX_AND_FILL;
+	return EDITOR_RESULT_NONE;
 }
-static void BrushSetBrushTypeSelect(void *data, int d)
+static EditorResult BrushSetBrushTypeSelect(void *data, int d)
 {
 	UNUSED(d);
 	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_SELECT;
+	return EDITOR_RESULT_NONE;
 }
-static void BrushSetBrushTypeFill(void *data, int d)
+static EditorResult BrushSetBrushTypeFill(void *data, int d)
 {
 	UNUSED(d);
 	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_FILL;
+	return EDITOR_RESULT_NONE;
 }
-static void BrushSetBrushTypeSetExit(void *data, int d)
+static EditorResult BrushSetBrushTypeSetExit(void *data, int d)
 {
 	UNUSED(d);
 	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_SET_EXIT;
+	return EDITOR_RESULT_NONE;
 }
-static void BrushSetBrushTypeSetKey(void *data, int d)
+static EditorResult BrushSetBrushTypeSetKey(void *data, int d)
 {
 	UNUSED(d);
 	IndexedEditorBrush *b = data;
 	b->Brush->Type = BRUSHTYPE_SET_KEY;
 	b->Brush->u.ItemIndex = b->u.ItemIndex;
+	return EDITOR_RESULT_NONE;
 }
 static void ActivateBrush(UIObject *o, void *data)
 {
@@ -270,7 +279,6 @@ static bool DeactivateIndexedEditorBrush(void *data)
 	return false;
 }
 
-
 static UIObject *CreateSetKeyObjs(struct vec2i pos, EditorBrush *brush);
 UIObject *CreateStaticMapObjs(
 	struct vec2i pos, CampaignOptions *co, EditorBrush *brush)
@@ -283,11 +291,11 @@ UIObject *CreateStaticMapObjs(
 	c->CheckVisible = MissionCheckTypeFunc;
 	c->Data = co;
 
-	UIObject *o = UIObjectCreate(UITYPE_BUTTON, 0, svec2i_zero(), svec2i_zero());
+	UIObject *o =
+		UIObjectCreate(UITYPE_BUTTON, 0, svec2i_zero(), svec2i_zero());
 	o->Data = brush;
 	o->OnFocusFunc = ActivateBrush;
 	o->OnUnfocusFunc = DeactivateBrush;
-	o->ChangesData = false;
 	o2 = UIObjectCopy(o);
 	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "editor/pencil"));
 	o2->u.Button.IsDownFunc = BrushIsBrushTypePoint;
@@ -372,8 +380,7 @@ UIObject *CreateStaticMapObjs(
 	UIObjectAddChild(c, o2);
 
 	UIObjectDestroy(o);
-	o = UIObjectCreate(
-		UITYPE_LABEL, 0, svec2i_zero(), svec2i(90, th));
+	o = UIObjectCreate(UITYPE_LABEL, 0, svec2i_zero(), svec2i(90, th));
 	pos.x = x;
 	pos.y += o2->Size.y;
 	o2 = UIObjectCopy(o);
@@ -382,7 +389,6 @@ UIObject *CreateStaticMapObjs(
 	o2->ChangeFunc = BrushChangeMainType;
 	o2->OnFocusFunc = ActivateBrush;
 	o2->OnUnfocusFunc = DeactivateBrush;
-	o2->ReloadData = true;	// may add new tile type
 	CSTRDUP(o2->Tooltip, "Left click to paint the map with this tile type");
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
@@ -393,7 +399,6 @@ UIObject *CreateStaticMapObjs(
 	o2->ChangeFunc = BrushChangeSecondaryType;
 	o2->OnFocusFunc = ActivateBrush;
 	o2->OnUnfocusFunc = DeactivateBrush;
-	o2->ReloadData = true;	// may add new tile type
 	CSTRDUP(o2->Tooltip, "Right click to paint the map with this tile type");
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
@@ -417,7 +422,6 @@ UIObject *CreateStaticMapObjs(
 	o2->u.Textbox.TextLinkFunc = BrushGetGuideImageStr;
 	o2->u.Textbox.MaxLen = sizeof((EditorBrush *)0)->GuideImage - 1;
 	o2->Data = brush;
-	o2->ChangesData = 0;
 	o2->ChangeFunc = BrushLoadGuideImage;
 	CSTRDUP(o2->u.Textbox.Hint, "(Tracing guide image)");
 	o2->Pos = pos;
@@ -444,8 +448,8 @@ static UIObject *CreateSetKeyObjs(struct vec2i pos, EditorBrush *brush)
 	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, svec2i_zero());
 
 	UIObject *o = UIObjectCreate(
-		UITYPE_CUSTOM, 0,
-		svec2i_zero(), svec2i(TILE_WIDTH + 4, TILE_HEIGHT + 4));
+		UITYPE_CUSTOM, 0, svec2i_zero(),
+		svec2i(TILE_WIDTH + 4, TILE_HEIGHT + 4));
 	o->ChangeFunc = BrushSetBrushTypeSetKey;
 	o->u.CustomDrawFunc = DrawKey;
 	o->OnFocusFunc = ActivateIndexedEditorBrush;
@@ -471,4 +475,3 @@ static UIObject *CreateSetKeyObjs(struct vec2i pos, EditorBrush *brush)
 	UIObjectDestroy(o);
 	return c;
 }
-

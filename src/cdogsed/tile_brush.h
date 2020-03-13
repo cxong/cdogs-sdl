@@ -30,7 +30,8 @@
 #include <cdogs/campaigns.h>
 #include <cdogs/events.h>
 
+#include "editor_brush.h"
 
-void TileBrush(
+EditorResult TileBrush(
 	PicManager *pm, EventHandlers *handlers, CampaignOptions *co,
 	int *brushIdx);

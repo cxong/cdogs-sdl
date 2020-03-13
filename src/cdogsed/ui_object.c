@@ -1,30 +1,31 @@
 /*
- C-Dogs SDL
- A port of the legendary (and fun) action/arcade cdogs.
- 
- Copyright (c) 2013-2016, Cong Xu
- All rights reserved.
- 
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
- 
- Redistributions of source code must retain the above copyright notice, this
- list of conditions and the following disclaimer.
- Redistributions in binary form must reproduce the above copyright notice,
- this list of conditions and the following disclaimer in the documentation
- and/or other materials provided with the distribution.
- 
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
- LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- POSSIBILITY OF SUCH DAMAGE.
+	 C-Dogs SDL
+	 A port of the legendary (and fun) action/arcade cdogs.
+
+	 Copyright (c) 2013-2016, 2020 Cong Xu
+	 All rights reserved.
+
+	 Redistribution and use in source and binary forms, with or without
+	 modification, are permitted provided that the following conditions are
+   met:
+
+	 Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer. Redistributions in
+   binary form must reproduce the above copyright notice, this list of
+   conditions and the following disclaimer in the documentation and/or other
+   materials provided with the distribution.
+
+	 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+   IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+   THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+   PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+   CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+   EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+   PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+   OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+   OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+   ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "ui_object.h"
 
@@ -32,17 +33,16 @@
 #include <string.h>
 
 #include <cdogs/blit.h>
-#include <cdogs/font.h>
 #include <cdogs/draw/drawtools.h>
+#include <cdogs/font.h>
 
-
-color_t bgColor = { 32, 32, 64, 255 };
-color_t menuBGColor = { 48, 48, 48, 255 };
-color_t hiliteColor = { 96, 96, 96, 255 };
+color_t bgColor = {32, 32, 64, 255};
+color_t menuBGColor = {48, 48, 48, 255};
+color_t hiliteColor = {96, 96, 96, 255};
 #define TOOLTIP_PADDING 4
 
-
-UIObject *UIObjectCreate(UIType type, int id, struct vec2i pos, struct vec2i size)
+UIObject *UIObjectCreate(
+	UIType type, int id, struct vec2i pos, struct vec2i size)
 {
 	UIObject *o;
 	CCALLOC(o, sizeof *o);
@@ -56,7 +56,6 @@ UIObject *UIObjectCreate(UIType type, int id, struct vec2i pos, struct vec2i siz
 	{
 	case UITYPE_TEXTBOX:
 		o->u.Textbox.IsEditable = true;
-		o->ChangesData = 1;
 		break;
 	case UITYPE_CONTEXT_MENU:
 		// Context menu always starts as invisible
@@ -107,8 +106,6 @@ UIObject *UIObjectCopy(const UIObject *o)
 	res->ChangeFunc = o->ChangeFunc;
 	res->ChangeFuncAlt = o->ChangeFuncAlt;
 	res->ChangeDisablesContext = o->ChangeDisablesContext;
-	res->ChangesData = o->ChangesData;
-	res->ReloadData = o->ReloadData;
 	res->OnFocusFunc = o->OnFocusFunc;
 	res->OnUnfocusFunc = o->OnUnfocusFunc;
 	res->CheckVisible = o->CheckVisible;
@@ -124,7 +121,7 @@ void UIObjectDestroy(UIObject *o)
 		CFREE(o->Label);
 	}
 	CA_FOREACH(UIObject *, obj, o->Children)
-		UIObjectDestroy(*obj);
+	UIObjectDestroy(*obj);
 	CA_FOREACH_END()
 	CArrayTerminate(&o->Children);
 	if (o->IsDynamicData)
@@ -175,14 +172,14 @@ void UIObjectHighlight(UIObject *o, const bool shift)
 	}
 	// Show any context menu children
 	CA_FOREACH(UIObject *, obj, o->Children)
-		if ((*obj)->Type == UITYPE_CONTEXT_MENU && !shift)
+	if ((*obj)->Type == UITYPE_CONTEXT_MENU && !shift)
+	{
+		(*obj)->IsVisible = true;
+		if ((*obj)->OnFocusFunc)
 		{
-			(*obj)->IsVisible = true;
-			if ((*obj)->OnFocusFunc)
-			{
-				(*obj)->OnFocusFunc(*obj, (*obj)->Data);
-			}
+			(*obj)->OnFocusFunc(*obj, (*obj)->Data);
 		}
+	}
 	CA_FOREACH_END()
 }
 
@@ -210,14 +207,14 @@ bool UIObjectUnhighlight(UIObject *o, const bool unhighlightParents)
 		o->IsVisible = false;
 	}
 	CA_FOREACH(UIObject *, obj, o->Children)
-		if ((*obj)->Type == UITYPE_CONTEXT_MENU)
+	if ((*obj)->Type == UITYPE_CONTEXT_MENU)
+	{
+		(*obj)->IsVisible = false;
+		if ((*obj)->OnUnfocusFunc)
 		{
-			(*obj)->IsVisible = false;
-			if ((*obj)->OnUnfocusFunc)
-			{
-				changed = (*obj)->OnUnfocusFunc((*obj)->Data) || changed;
-			}
+			changed = (*obj)->OnUnfocusFunc((*obj)->Data) || changed;
 		}
+	}
 	CA_FOREACH_END()
 	// Unhighlight all parents
 	if (unhighlightParents && o->Parent != NULL)
@@ -237,26 +234,20 @@ static void DisableContextMenuParents(UIObject *o);
 EditorResult UIObjectChange(UIObject *o, const int d, const bool shift)
 {
 	// Activate change func if available
-	bool changed = false;
+	EditorResult result = EDITOR_RESULT_NONE;
 	if (o->ChangeFuncAlt && shift)
 	{
-		o->ChangeFuncAlt(o->Data, d);
-		changed = true;
+		result = o->ChangeFuncAlt(o->Data, d);
 	}
 	else if (o->ChangeFunc)
 	{
-		o->ChangeFunc(o->Data, d);
-		changed = true;
+		result = o->ChangeFunc(o->Data, d);
 	}
-	if (changed)
+	if (result != EDITOR_RESULT_NONE && o->ChangeDisablesContext)
 	{
-		if (o->ChangeDisablesContext)
-		{
-			DisableContextMenuParents(o);
-		}
-		return EDITOR_RESULT_NEW(o->ChangesData, o->ReloadData);
+		DisableContextMenuParents(o);
 	}
-	return EDITOR_RESULT_NONE;
+	return result;
 }
 // Disable all parent context menus once the child is clicked
 static void DisableContextMenuParents(UIObject *o)
@@ -316,9 +307,9 @@ EditorResult UIObjectAddChar(UIObject *o, char c)
 	}
 	if (o->ChangeFunc)
 	{
-		o->ChangeFunc(o->Data, 1);
+		return o->ChangeFunc(o->Data, 1);
 	}
-	return EDITOR_RESULT_NEW(o->ChangesData, o->ReloadData);
+	return EDITOR_RESULT_NONE;
 }
 EditorResult UIObjectDelChar(UIObject *o)
 {
@@ -345,12 +336,13 @@ EditorResult UIObjectDelChar(UIObject *o)
 	s[strlen(s) - 1] = 0;
 	if (o->ChangeFunc)
 	{
-		o->ChangeFunc(o->Data, -1);
+		return o->ChangeFunc(o->Data, -1);
 	}
-	return EDITOR_RESULT_NEW(o->ChangesData, o->ReloadData);
+	return EDITOR_RESULT_NONE;
 }
 
-static int IsInside(struct vec2i pos, struct vec2i rectPos, struct vec2i rectSize);
+static int IsInside(
+	struct vec2i pos, struct vec2i rectPos, struct vec2i rectSize);
 
 static const char *LabelGetText(UIObject *o)
 {
@@ -371,7 +363,8 @@ typedef struct
 	struct vec2i pos;
 } UIObjectDrawContext;
 static void UIObjectDrawAndAddChildren(
-	UIObject *o, GraphicsDevice *g, struct vec2i pos, struct vec2i mouse, CArray *objs)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, struct vec2i mouse,
+	CArray *objs)
 {
 	if (!o)
 	{
@@ -389,81 +382,72 @@ static void UIObjectDrawAndAddChildren(
 	struct vec2i oPos = svec2i_add(pos, o->Pos);
 	switch (o->Type)
 	{
-	case UITYPE_LABEL:
+	case UITYPE_LABEL: {
+		const char *text = LabelGetText(o);
+		if (!text)
 		{
-			const char *text = LabelGetText(o);
-			if (!text)
-			{
-				break;
-			}
-			color_t textMask = isHighlighted ? colorRed : colorWhite;
-			FontStrMaskWrap(text, oPos, textMask, o->Size.x);
+			break;
 		}
-		break;
-	case UITYPE_TEXTBOX:
+		color_t textMask = isHighlighted ? colorRed : colorWhite;
+		FontStrMaskWrap(text, oPos, textMask, o->Size.x);
+	}
+	break;
+	case UITYPE_TEXTBOX: {
+		int isText = !!o->u.Textbox.TextLinkFunc;
+		const char *text =
+			isText ? o->u.Textbox.TextLinkFunc(o, o->Data) : NULL;
+		int isEmptyText = !isText || !text || strlen(text) == 0;
+		color_t bracketMask = isHighlighted ? colorRed : colorWhite;
+		color_t textMask = isEmptyText ? colorGray : colorWhite;
+		int oPosX = oPos.x;
+		if (isEmptyText)
 		{
-			int isText = !!o->u.Textbox.TextLinkFunc;
-			const char *text =
-				isText ? o->u.Textbox.TextLinkFunc(o, o->Data) : NULL;
-			int isEmptyText = !isText || !text || strlen(text) == 0;
-			color_t bracketMask = isHighlighted ? colorRed : colorWhite;
-			color_t textMask = isEmptyText ? colorGray : colorWhite;
-			int oPosX = oPos.x;
-			if (isEmptyText)
-			{
-				text = o->u.Textbox.Hint;
-			}
-			if (!o->u.Textbox.IsEditable)
-			{
-				textMask = bracketMask;
-			}
-			if (o->u.Textbox.IsEditable)
-			{
-				oPos = FontChMask('\x10', oPos, bracketMask);
-			}
-			oPos = FontStrMaskWrap(
-				text, oPos, textMask, o->Pos.x + o->Size.x - oPosX);
-			if (o->u.Textbox.IsEditable)
-			{
-				oPos = FontChMask('\x11', oPos, bracketMask);
-			}
-			oPos.x = oPosX;
+			text = o->u.Textbox.Hint;
 		}
-		break;
-	case UITYPE_BUTTON:
+		if (!o->u.Textbox.IsEditable)
 		{
-			const bool isDown =
-				o->u.Button.IsDownFunc && o->u.Button.IsDownFunc(o->Data);
-			PicRender(
-				o->u.Button.Pic, g->gameWindow.renderer, oPos,
-				isDown ? colorGray : colorWhite, 0, svec2_one(), SDL_FLIP_NONE,
-				Rect2iZero());
+			textMask = bracketMask;
 		}
-		break;
-	case UITYPE_CONTEXT_MENU:
+		if (o->u.Textbox.IsEditable)
 		{
-			// Draw background
+			oPos = FontChMask('\x10', oPos, bracketMask);
+		}
+		oPos = FontStrMaskWrap(
+			text, oPos, textMask, o->Pos.x + o->Size.x - oPosX);
+		if (o->u.Textbox.IsEditable)
+		{
+			oPos = FontChMask('\x11', oPos, bracketMask);
+		}
+		oPos.x = oPosX;
+	}
+	break;
+	case UITYPE_BUTTON: {
+		const bool isDown =
+			o->u.Button.IsDownFunc && o->u.Button.IsDownFunc(o->Data);
+		PicRender(
+			o->u.Button.Pic, g->gameWindow.renderer, oPos,
+			isDown ? colorGray : colorWhite, 0, svec2_one(), SDL_FLIP_NONE,
+			Rect2iZero());
+	}
+	break;
+	case UITYPE_CONTEXT_MENU: {
+		// Draw background
+		DrawRectangle(
+			g, svec2i_add(oPos, svec2i_scale(svec2i_one(), -TOOLTIP_PADDING)),
+			svec2i_add(
+				o->Size, svec2i_scale(svec2i_one(), 2 * TOOLTIP_PADDING)),
+			menuBGColor, true);
+		// Find if mouse over any children, and draw highlight
+		CA_FOREACH(UIObject *, child, o->Children)
+		if (IsInside(mouse, svec2i_add(oPos, (*child)->Pos), (*child)->Size))
+		{
 			DrawRectangle(
-				g,
-				svec2i_add(oPos, svec2i_scale(svec2i_one(), -TOOLTIP_PADDING)),
-				svec2i_add(
-					o->Size, svec2i_scale(svec2i_one(), 2 * TOOLTIP_PADDING)),
-				menuBGColor,
-				true);
-			// Find if mouse over any children, and draw highlight
-			CA_FOREACH(UIObject *, child, o->Children)
-				if (IsInside(mouse, svec2i_add(oPos, (*child)->Pos), (*child)->Size))
-				{
-					DrawRectangle(
-						g,
-						svec2i_add(oPos, (*child)->Pos),
-						(*child)->Size,
-						hiliteColor,
-						true);
-				}
-			CA_FOREACH_END()
+				g, svec2i_add(oPos, (*child)->Pos), (*child)->Size,
+				hiliteColor, true);
 		}
-		break;
+		CA_FOREACH_END()
+	}
+	break;
 	case UITYPE_CUSTOM:
 		o->u.CustomDrawFunc(o, g, pos, o->Data);
 		break;
@@ -476,19 +460,20 @@ static void UIObjectDrawAndAddChildren(
 	if (objs != NULL)
 	{
 		CA_FOREACH(UIObject *, obj, o->Children)
-			if (!((*obj)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
-				isHighlighted)
-			{
-				UIObjectDrawContext c;
-				c.obj = *obj;
-				c.pos = oPos;
-				CArrayPushBack(objs, &c);
-			}
+		if (!((*obj)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
+			isHighlighted)
+		{
+			UIObjectDrawContext c;
+			c.obj = *obj;
+			c.pos = oPos;
+			CArrayPushBack(objs, &c);
+		}
 		CA_FOREACH_END()
 	}
 }
 void UIObjectDraw(
-	UIObject *o, GraphicsDevice *g, struct vec2i pos, struct vec2i mouse, CArray *drawObjs)
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, struct vec2i mouse,
+	CArray *drawObjs)
 {
 	// Draw this UIObject and its children in BFS order
 	// Maintain a queue of UIObjects to draw
@@ -511,19 +496,16 @@ void UIObjectDraw(
 		for (int i = 0; i < (int)drawObjs->size; i++)
 		{
 			UIObjectDrawContext *cPtr = CArrayGet(drawObjs, i);
-			UIObjectDrawAndAddChildren(
-				cPtr->obj, g, cPtr->pos, mouse, NULL);
+			UIObjectDrawAndAddChildren(cPtr->obj, g, cPtr->pos, mouse, NULL);
 		}
 	}
 }
 
-static int IsInside(struct vec2i pos, struct vec2i rectPos, struct vec2i rectSize)
+static int IsInside(
+	struct vec2i pos, struct vec2i rectPos, struct vec2i rectSize)
 {
-	return
-		pos.x >= rectPos.x &&
-		pos.x < rectPos.x + rectSize.x &&
-		pos.y >= rectPos.y &&
-		pos.y < rectPos.y + rectSize.y;
+	return pos.x >= rectPos.x && pos.x < rectPos.x + rectSize.x &&
+		   pos.y >= rectPos.y && pos.y < rectPos.y + rectSize.y;
 }
 
 bool UITryGetObjectImpl(UIObject *o, const struct vec2i pos, UIObject **out);
@@ -551,13 +533,13 @@ bool UITryGetObjectImpl(UIObject *o, const struct vec2i pos, UIObject **out)
 	}
 	bool isHighlighted = UIObjectIsHighlighted(o);
 	CA_FOREACH(UIObject *, obj, o->Children)
-		if ((!((*obj)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
-			isHighlighted) &&
-			(*obj)->IsVisible &&
-			UITryGetObjectImpl(*obj, svec2i_subtract(pos, o->Pos), out))
-		{
-			return true;
-		}
+	if ((!((*obj)->Flags & UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY) ||
+		 isHighlighted) &&
+		(*obj)->IsVisible &&
+		UITryGetObjectImpl(*obj, svec2i_subtract(pos, o->Pos), out))
+	{
+		return true;
+	}
 	CA_FOREACH_END()
 	if (IsInside(pos, o->Pos, o->Size) && o->Type != UITYPE_CONTEXT_MENU)
 	{
@@ -570,12 +552,10 @@ bool UITryGetObjectImpl(UIObject *o, const struct vec2i pos, UIObject **out)
 void UITooltipDraw(GraphicsDevice *device, struct vec2i pos, const char *s)
 {
 	struct vec2i bgSize = FontStrSize(s);
-	pos = svec2i_add(pos, svec2i(10, 10));	// add offset
+	pos = svec2i_add(pos, svec2i(10, 10)); // add offset
 	DrawRectangle(
-		device,
-		svec2i_add(pos, svec2i_scale(svec2i_one(), -TOOLTIP_PADDING)),
+		device, svec2i_add(pos, svec2i_scale(svec2i_one(), -TOOLTIP_PADDING)),
 		svec2i_add(bgSize, svec2i_scale(svec2i_one(), 2 * TOOLTIP_PADDING)),
-		bgColor,
-		true);
+		bgColor, true);
 	FontStr(s, pos);
 }

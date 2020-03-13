@@ -1,29 +1,29 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2016-2017 Cong Xu
-    All rights reserved.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (c) 2016-2017, 2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "editor_ui_cave.h"
 
@@ -37,35 +37,35 @@ MISSION_CHECK_TYPE_FUNC(MAPTYPE_CAVE)
 
 
 static const char *MissionGetFillPercentStr(UIObject *o, void *data);
-static void MissionChangeFillPercent(void *data, int d);
+static EditorResult MissionChangeFillPercent(void *data, int d);
 static const char *MissionGetRepeatStr(UIObject *o, void *data);
-static void MissionChangeRepeat(void *data, int d);
+static EditorResult MissionChangeRepeat(void *data, int d);
 static const char *MissionGetR1Str(UIObject *o, void *data);
-static void MissionChangeR1(void *data, int d);
+static EditorResult MissionChangeR1(void *data, int d);
 static const char *MissionGetR2Str(UIObject *o, void *data);
-static void MissionChangeR2(void *data, int d);
+static EditorResult MissionChangeR2(void *data, int d);
 static const char *MissionGetCorridorWidthStr(UIObject *o, void *data);
-static void MissionChangeCorridorWidth(void *data, int d);
+static EditorResult MissionChangeCorridorWidth(void *data, int d);
 static const char *MissionGetRoomCountStr(UIObject *o, void *data);
-static void MissionChangeRoomCount(void *data, int d);
+static EditorResult MissionChangeRoomCount(void *data, int d);
 static const char *MissionGetRoomMinStr(UIObject *o, void *data);
-static void MissionChangeRoomMin(void *data, int d);
+static EditorResult MissionChangeRoomMin(void *data, int d);
 static const char *MissionGetRoomMaxStr(UIObject *o, void *data);
-static void MissionChangeRoomMax(void *data, int d);
+static EditorResult MissionChangeRoomMax(void *data, int d);
 static void MissionDrawRoomsOverlap(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data);
-static void MissionChangeRoomsOverlap(void *data, int d);
+static EditorResult MissionChangeRoomsOverlap(void *data, int d);
 static const char *MissionGetRoomWallCountStr(UIObject *o, void *data);
-static void MissionChangeRoomWallCount(void *data, int d);
+static EditorResult MissionChangeRoomWallCount(void *data, int d);
 static const char *MissionGetRoomWallLenStr(UIObject *o, void *data);
-static void MissionChangeRoomWallLen(void *data, int d);
+static EditorResult MissionChangeRoomWallLen(void *data, int d);
 static const char *MissionGetRoomWallPadStr(UIObject *o, void *data);
-static void MissionChangeRoomWallPad(void *data, int d);
+static EditorResult MissionChangeRoomWallPad(void *data, int d);
 static const char *MissionGetSquareCountStr(UIObject *o, void *data);
-static void MissionChangeSquareCount(void *data, int d);
+static EditorResult MissionChangeSquareCount(void *data, int d);
 static void MissionDrawDoorEnabled(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data);
-static void MissionChangeDoorEnabled(void *data, int d);
+static EditorResult MissionChangeDoorEnabled(void *data, int d);
 UIObject *CreateCaveMapObjs(struct vec2i pos, CampaignOptions *co)
 {
 	const int th = FontH();
@@ -73,7 +73,6 @@ UIObject *CreateCaveMapObjs(struct vec2i pos, CampaignOptions *co)
 	UIObject *o = UIObjectCreate(
 		UITYPE_LABEL, 0, svec2i_zero(), svec2i(50, th));
 	const int x = pos.x;
-	o->ChangesData = true;
 	// Check whether the map type matches, and set visibility
 	c->CheckVisible = MissionCheckTypeFunc;
 	c->Data = co;
@@ -145,7 +144,6 @@ UIObject *CreateCaveMapObjs(struct vec2i pos, CampaignOptions *co)
 	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;
 	o2 = UIObjectCreate(UITYPE_CUSTOM, 0, pos, svec2i(60, th));
-	o2->ChangesData = true;
 	o2->u.CustomDrawFunc = MissionDrawRoomsOverlap;
 	o2->Data = co;
 	o2->ChangeFunc = MissionChangeRoomsOverlap;
@@ -189,7 +187,6 @@ UIObject *CreateCaveMapObjs(struct vec2i pos, CampaignOptions *co)
 	o2->u.CustomDrawFunc = MissionDrawDoorEnabled;
 	o2->Data = co;
 	o2->ChangeFunc = MissionChangeDoorEnabled;
-	o2->ChangesData = true;
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 
@@ -206,7 +203,7 @@ static const char *MissionGetFillPercentStr(UIObject *o, void *data)
 	sprintf(s, "Fill: %d%%", m->u.Cave.FillPercent);
 	return s;
 }
-static void MissionChangeFillPercent(void *data, int d)
+static EditorResult MissionChangeFillPercent(void *data, int d)
 {
 	CampaignOptions *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
@@ -215,6 +212,7 @@ static void MissionChangeFillPercent(void *data, int d)
 		d *= 10;
 	}
 	m->u.Cave.FillPercent = CLAMP(m->u.Cave.FillPercent + d, 0, 100);
+	return EDITOR_RESULT_CHANGED;
 }
 static const char *MissionGetRepeatStr(UIObject *o, void *data)
 {
@@ -226,11 +224,12 @@ static const char *MissionGetRepeatStr(UIObject *o, void *data)
 	sprintf(s, "Repeat: %d", m->u.Cave.Repeat);
 	return s;
 }
-static void MissionChangeRepeat(void *data, int d)
+static EditorResult MissionChangeRepeat(void *data, int d)
 {
 	CampaignOptions *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
 	m->u.Cave.Repeat = CLAMP(m->u.Cave.Repeat + d, 0, 10);
+	return EDITOR_RESULT_CHANGED;
 }
 static const char *MissionGetR1Str(UIObject *o, void *data)
 {
@@ -242,11 +241,12 @@ static const char *MissionGetR1Str(UIObject *o, void *data)
 	sprintf(s, "R1: %d", m->u.Cave.R1);
 	return s;
 }
-static void MissionChangeR1(void *data, int d)
+static EditorResult MissionChangeR1(void *data, int d)
 {
 	CampaignOptions *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
 	m->u.Cave.R1 = CLAMP(m->u.Cave.R1 + d, 0, 8);
+	return EDITOR_RESULT_CHANGED;
 }
 static const char *MissionGetR2Str(UIObject *o, void *data)
 {
@@ -258,11 +258,12 @@ static const char *MissionGetR2Str(UIObject *o, void *data)
 	sprintf(s, "R2: %d", m->u.Cave.R2);
 	return s;
 }
-static void MissionChangeR2(void *data, int d)
+static EditorResult MissionChangeR2(void *data, int d)
 {
 	CampaignOptions *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
 	m->u.Cave.R2 = CLAMP(m->u.Cave.R2 + d, -1, 25);
+	return EDITOR_RESULT_CHANGED;
 }
 static const char *MissionGetCorridorWidthStr(UIObject *o, void *data)
 {
@@ -274,11 +275,12 @@ static const char *MissionGetCorridorWidthStr(UIObject *o, void *data)
 	sprintf(s, "CorridorWidth: %d", m->u.Cave.CorridorWidth);
 	return s;
 }
-static void MissionChangeCorridorWidth(void *data, int d)
+static EditorResult MissionChangeCorridorWidth(void *data, int d)
 {
 	CampaignOptions *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
 	m->u.Cave.CorridorWidth = CLAMP(m->u.Cave.CorridorWidth + d, 1, 5);
+	return EDITOR_RESULT_CHANGED;
 }
 static const char *MissionGetRoomCountStr(UIObject *o, void *data)
 {
@@ -308,29 +310,32 @@ static const char *MissionGetRoomMaxStr(UIObject *o, void *data)
 	sprintf(s, "RoomMax: %d", CampaignGetCurrentMission(co)->u.Cave.Rooms.Max);
 	return s;
 }
-static void MissionChangeRoomCount(void *data, int d)
+static EditorResult MissionChangeRoomCount(void *data, int d)
 {
 	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Cave.Rooms.Count =
 		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Rooms.Count + d, 0, 100);
+	return EDITOR_RESULT_CHANGED;
 }
-static void MissionChangeRoomMin(void *data, int d)
+static EditorResult MissionChangeRoomMin(void *data, int d)
 {
 	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Cave.Rooms.Min =
 		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Rooms.Min + d, 5, 50);
 	CampaignGetCurrentMission(co)->u.Cave.Rooms.Max = MAX(
 		CampaignGetCurrentMission(co)->u.Cave.Rooms.Min,
-		CampaignGetCurrentMission(co)->u.Cave.Rooms.Max);
+			CampaignGetCurrentMission(co)->u.Cave.Rooms.Max);
+	return EDITOR_RESULT_CHANGED;
 }
-static void MissionChangeRoomMax(void *data, int d)
+static EditorResult MissionChangeRoomMax(void *data, int d)
 {
 	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Cave.Rooms.Max =
 		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Rooms.Max + d, 5, 50);
 	CampaignGetCurrentMission(co)->u.Cave.Rooms.Min = MIN(
 		CampaignGetCurrentMission(co)->u.Cave.Rooms.Min,
-		CampaignGetCurrentMission(co)->u.Cave.Rooms.Max);
+			CampaignGetCurrentMission(co)->u.Cave.Rooms.Max);
+	return EDITOR_RESULT_CHANGED;
 }
 static void MissionDrawRoomsOverlap(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
@@ -345,12 +350,13 @@ static void MissionDrawRoomsOverlap(
 		CampaignGetCurrentMission(co)->u.Cave.Rooms.Overlap,
 		UIObjectIsHighlighted(o));
 }
-static void MissionChangeRoomsOverlap(void *data, int d)
+static EditorResult MissionChangeRoomsOverlap(void *data, int d)
 {
 	UNUSED(d);
 	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Cave.Rooms.Overlap =
 		!CampaignGetCurrentMission(co)->u.Cave.Rooms.Overlap;
+	return EDITOR_RESULT_CHANGED;
 }
 static const char *MissionGetRoomWallCountStr(UIObject *o, void *data)
 {
@@ -379,23 +385,26 @@ static const char *MissionGetRoomWallPadStr(UIObject *o, void *data)
 	sprintf(s, "RoomWallPad: %d", CampaignGetCurrentMission(co)->u.Cave.Rooms.WallPad);
 	return s;
 }
-static void MissionChangeRoomWallCount(void *data, int d)
+static EditorResult MissionChangeRoomWallCount(void *data, int d)
 {
 	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Cave.Rooms.Walls =
 		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Rooms.Walls + d, 0, 50);
+	return EDITOR_RESULT_CHANGED;
 }
-static void MissionChangeRoomWallLen(void *data, int d)
+static EditorResult MissionChangeRoomWallLen(void *data, int d)
 {
 	CampaignOptions *co = data;
-	CampaignGetCurrentMission(co)->u.Cave.Rooms.WallLength =
-		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Rooms.WallLength + d, 1, 50);
+	CampaignGetCurrentMission(co)->u.Cave.Rooms.WallLength = CLAMP(
+		CampaignGetCurrentMission(co)->u.Cave.Rooms.WallLength + d, 1, 50);
+	return EDITOR_RESULT_CHANGED;
 }
-static void MissionChangeRoomWallPad(void *data, int d)
+static EditorResult MissionChangeRoomWallPad(void *data, int d)
 {
 	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Cave.Rooms.WallPad =
 		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Rooms.WallPad + d, 1, 10);
+	return EDITOR_RESULT_CHANGED;
 }
 static const char *MissionGetSquareCountStr(UIObject *o, void *data)
 {
@@ -406,11 +415,12 @@ static const char *MissionGetSquareCountStr(UIObject *o, void *data)
 	sprintf(s, "Sqr: %d", CampaignGetCurrentMission(co)->u.Cave.Squares);
 	return s;
 }
-static void MissionChangeSquareCount(void *data, int d)
+static EditorResult MissionChangeSquareCount(void *data, int d)
 {
 	CampaignOptions *co = data;
 	CampaignGetCurrentMission(co)->u.Cave.Squares =
 		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Squares + d, 0, 100);
+	return EDITOR_RESULT_CHANGED;
 }
 static void MissionDrawDoorEnabled(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
@@ -424,10 +434,11 @@ static void MissionDrawDoorEnabled(
 		CampaignGetCurrentMission(co)->u.Cave.DoorsEnabled,
 		UIObjectIsHighlighted(o));
 }
-static void MissionChangeDoorEnabled(void *data, int d)
+static EditorResult MissionChangeDoorEnabled(void *data, int d)
 {
 	UNUSED(d);
 	CampaignOptions *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
 	m->u.Cave.DoorsEnabled = !m->u.Cave.DoorsEnabled;
+	return EDITOR_RESULT_CHANGED;
 }

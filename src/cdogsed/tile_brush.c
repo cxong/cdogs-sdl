@@ -51,6 +51,7 @@ typedef struct
 	CArray texIdsFloorStyles;
 	CArray texIdsWallStyles;
 	CArray texIdsDoorStyles;
+	EditorResult result;
 } TileBrushData;
 
 static void ResetTexIds(TileBrushData *data);
@@ -65,7 +66,7 @@ static const TileClass *GetOrAddTileClass(
 	const TileClass *base, PicManager *pm, const char *style,
 	const color_t mask, const color_t maskAlt);
 static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data);
-void TileBrush(
+EditorResult TileBrush(
 	PicManager *pm, EventHandlers *handlers, CampaignOptions *co,
 	int *brushIdx)
 {
@@ -133,6 +134,7 @@ void TileBrush(
 	TexArrayTerminate(&data.texIdsFloorStyles);
 	TexArrayTerminate(&data.texIdsWallStyles);
 	TexArrayTerminate(&data.texIdsDoorStyles);
+	return data.result;
 }
 
 static void DrawTileOpsRow(
@@ -202,6 +204,7 @@ static void DrawTileOpsRow(
 			ResetTexIds(tbData);
 		}
 		TileClassTerminate(&tc);
+		tbData->result |= EDITOR_RESULT_CHANGED;
 	}
 	if (nk_button_label(ctx, "Duplicate"))
 	{
@@ -210,6 +213,7 @@ static void DrawTileOpsRow(
 		{
 			ResetTexIds(tbData);
 		}
+		tbData->result |= EDITOR_RESULT_CHANGED;
 	}
 	if (hashmap_length(tbData->m->u.Static.TileClasses) > 0 &&
 		nk_button_label(ctx, "Remove"))
@@ -228,6 +232,7 @@ static void DrawTileOpsRow(
 					;
 			}
 		}
+		tbData->result |= EDITOR_RESULT_CHANGED_AND_RELOAD;
 	}
 }
 static void DrawTileTypeSelect(
@@ -247,24 +252,42 @@ static void DrawTilePropsSidebar(
 	if (selectedTC->Type != TILE_CLASS_NOTHING)
 	{
 		DrawTileStyleSelect(ctx, tbData, selectedTC);
-		// TODO: return value file changed
-		ColorPicker(ctx, ROW_HEIGHT, "Primary Color", &selectedTC->Mask);
-		ColorPicker(ctx, ROW_HEIGHT, "Alt Color", &selectedTC->MaskAlt);
+		// Changing colour requires regenerating tile mask pics
+		if (ColorPicker(ctx, ROW_HEIGHT, "Primary Color", &selectedTC->Mask))
+		{
+			tbData->result |= EDITOR_RESULT_CHANGED_AND_RELOAD;
+		}
+		if (ColorPicker(ctx, ROW_HEIGHT, "Alt Color", &selectedTC->MaskAlt))
+		{
+			tbData->result |= EDITOR_RESULT_CHANGED_AND_RELOAD;
+		}
 
-		// TODO: return value file changed
-		DrawCheckbox(
+		// Changing tile props can affect map object placement
+		if (DrawCheckbox(
 			ctx, "Can Walk", "Whether actors can walk through this tile",
-			&selectedTC->canWalk);
-		DrawCheckbox(
+			&selectedTC->canWalk))
+		{
+			tbData->result |= EDITOR_RESULT_CHANGED_AND_RELOAD;
+		}
+		if (DrawCheckbox(
 			ctx, "Opaque", "Whether this tile cannot be seen through",
-			&selectedTC->isOpaque);
-		DrawCheckbox(
+			&selectedTC->isOpaque))
+		{
+			tbData->result |= EDITOR_RESULT_CHANGED_AND_RELOAD;
+		}
+		if (DrawCheckbox(
 			ctx, "Shootable", "Whether bullets will hit this tile",
-			&selectedTC->shootable);
-		DrawCheckbox(
+			&selectedTC->shootable))
+		{
+			tbData->result |= EDITOR_RESULT_CHANGED_AND_RELOAD;
+		}
+		if (DrawCheckbox(
 			ctx, "IsRoom",
 			"Affects random placement of indoor/outdoor map objects",
-			&selectedTC->IsRoom);
+			&selectedTC->IsRoom))
+		{
+			tbData->result |= EDITOR_RESULT_CHANGED_AND_RELOAD;
+		}
 	}
 }
 static void DrawTileTypeSelect(
@@ -297,6 +320,7 @@ static void DrawTileTypeSelect(
 		}
 		TileClassInitDefault(
 			selectedTC, tbData->pm, base, NULL, &selectedTC->Mask);
+		tbData->result |= EDITOR_RESULT_CHANGED_AND_RELOAD;
 	}
 }
 static void DrawTileStyleSelect(
@@ -339,6 +363,7 @@ static void DrawTileStyleSelect(
 		CSTRDUP(
 			selectedTC->Style, IndexTileStyleName(selectedTC->Type, newStyle));
 		TileClassReloadPic(selectedTC, tbData->pm);
+		tbData->result |= EDITOR_RESULT_CHANGED_AND_RELOAD;
 	}
 }
 static bool DrawCheckbox(

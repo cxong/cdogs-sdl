@@ -32,9 +32,8 @@
 #include <cdogs/events.h>
 #include <cdogs/font.h>
 #include <cdogs/gamedata.h>
-#include <cdogs/palette.h>
 #include <cdogs/log.h>
-
+#include <cdogs/palette.h>
 
 void DisplayMapItem(const struct vec2i pos, const MapObject *mo)
 {
@@ -46,7 +45,8 @@ void DisplayMapItem(const struct vec2i pos, const MapObject *mo)
 }
 
 void DisplayMapItemWithDensity(
-	const struct vec2i pos, const MapObjectDensity *mod, const bool isHighlighted)
+	const struct vec2i pos, const MapObjectDensity *mod,
+	const bool isHighlighted)
 {
 	DisplayMapItem(pos, mod->M);
 	if (isHighlighted)
@@ -67,8 +67,8 @@ void DrawKey(UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
 		return;
 	}
 	const Mission *m = CampaignGetCurrentMission(&gCampaign);
-	const Pic *pic = CPicGetPic(
-		&KeyPickupClass(m->KeyStyle, data->u.ItemIndex)->Pic, 0);
+	const Pic *pic =
+		CPicGetPic(&KeyPickupClass(m->KeyStyle, data->u.ItemIndex)->Pic, 0);
 	pos = svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2));
 	pos = svec2i_subtract(pos, svec2i_scale_divide(pic->size, 2));
 	PicRender(
@@ -128,7 +128,7 @@ bool ConfirmScreen(const char *info, const char *msg)
 
 void ClearScreen(GraphicsDevice *g)
 {
-	color_t color = { 32, 32, 60, 255 };
+	color_t color = {32, 32, 60, 255};
 	const Uint32 pixel = COLOR2PIXEL(color);
 	for (int i = 0; i < GraphicsGetScreenSize(&g->cachedConfig); i++)
 	{
@@ -147,7 +147,8 @@ void ClearScreen(GraphicsDevice *g)
 }
 
 void DisplayFlag(
-	const struct vec2i pos, const char *s, const bool isOn, const bool isHighlighted)
+	const struct vec2i pos, const char *s, const bool isOn,
+	const bool isHighlighted)
 {
 	color_t labelMask = isHighlighted ? colorRed : colorWhite;
 	struct vec2i p = FontStrMask(s, pos, labelMask);
@@ -156,13 +157,12 @@ void DisplayFlag(
 }
 
 static const char *CampaignGetSeedStr(UIObject *o, void *data);
-static void CampaignChangeSeed(void *data, int d);
+static EditorResult CampaignChangeSeed(void *data, int d);
 UIObject *CreateCampaignSeedObj(const struct vec2i pos, CampaignOptions *co)
 {
 	const int th = FontH();
-	UIObject *o = UIObjectCreate(
-		UITYPE_LABEL, 0, svec2i_zero(), svec2i(50, th));
-	o->ChangesData = true;
+	UIObject *o =
+		UIObjectCreate(UITYPE_LABEL, 0, svec2i_zero(), svec2i(50, th));
 	o->u.LabelFunc = CampaignGetSeedStr;
 	o->Data = co;
 	o->ChangeFunc = CampaignChangeSeed;
@@ -175,11 +175,12 @@ static const char *CampaignGetSeedStr(UIObject *o, void *data)
 	static char s[128];
 	UNUSED(o);
 	CampaignOptions *co = data;
-	if (!CampaignGetCurrentMission(co)) return NULL;
+	if (!CampaignGetCurrentMission(co))
+		return NULL;
 	sprintf(s, "Seed: %d", ConfigGetInt(&gConfig, "Game.RandomSeed"));
 	return s;
 }
-static void CampaignChangeSeed(void *data, int d)
+static EditorResult CampaignChangeSeed(void *data, int d)
 {
 	UNUSED(data);
 	if (gEventHandlers.keyboard.modState & KMOD_SHIFT)
@@ -189,6 +190,7 @@ static void CampaignChangeSeed(void *data, int d)
 	ConfigSetInt(
 		&gConfig, "Game.RandomSeed",
 		ConfigGetInt(&gConfig, "Game.RandomSeed") + d);
+	return EDITOR_RESULT_CHANGED;
 }
 
 typedef struct
@@ -261,8 +263,8 @@ static void CreateAddMapItemSubObjs(UIObject *c, void *vData)
 	for (int i = 0; i < MapObjectsCount(&gMapObjects); i++)
 	{
 		MapObject *mo = IndexMapObject(i);
-		UIObject *o2 =
-			UIObjectCreate(UITYPE_CUSTOM, 0, svec2i_zero(), data->GridItemSize);
+		UIObject *o2 = UIObjectCreate(
+			UITYPE_CUSTOM, 0, svec2i_zero(), data->GridItemSize);
 		o2->IsDynamicData = true;
 		CCALLOC(o2->Data, data->DataSize);
 		if (!data->ObjFunc(o2, mo, data->Data))
@@ -315,7 +317,6 @@ static void CreateAddMapItemSubObjs(UIObject *c, void *vData)
 	UIObject *page = NULL;
 	UIObject *o =
 		UIObjectCreate(UITYPE_CUSTOM, 0, svec2i_zero(), data->GridItemSize);
-	o->ChangesData = true;
 	const struct vec2i gridStart = svec2i_zero();
 	struct vec2i pos = svec2i_zero();
 	count = 0;
@@ -335,8 +336,8 @@ static void CreateAddMapItemSubObjs(UIObject *c, void *vData)
 		if (count == 0)
 		{
 			pageLabel = UIObjectCreate(
-				UITYPE_LABEL, 0,
-				svec2i((pageNum - 1) * 10, 0), svec2i(10, FontH()));
+				UITYPE_LABEL, 0, svec2i((pageNum - 1) * 10, 0),
+				svec2i(10, FontH()));
 			char buf[32];
 			sprintf(buf, "%d", pageNum);
 			UIObjectSetDynamicLabel(pageLabel, buf);
@@ -372,8 +373,8 @@ static int CountAddMapItemSubObjs(const UIObject *o)
 {
 	int count = 0;
 	CA_FOREACH(const UIObject *, page, o->Children)
-		const UIObject **ctx = CArrayGet(&(*page)->Children, 0);
-		count += (int)(*ctx)->Children.size;
+	const UIObject **ctx = CArrayGet(&(*page)->Children, 0);
+	count += (int)(*ctx)->Children.size;
 	CA_FOREACH_END()
 	return count;
 }
@@ -420,29 +421,29 @@ char *MakePlacementFlagTooltip(const MapObject *mo)
 		}
 	}
 	sprintf(
-		buf, "%s\nHealth: %d\nPlacement: %s%s",
-		mo->Name, mo->Health, pfBuf, exBuf);
+		buf, "%s\nHealth: %d\nPlacement: %s%s", mo->Name, mo->Health, pfBuf,
+		exBuf);
 	char *tmp;
 	CSTRDUP(tmp, buf);
 	return tmp;
 }
 
-static void CloseChange(void *data, int d);
+static EditorResult CloseChange(void *data, int d);
 void CreateCloseLabel(UIObject *c, const struct vec2i pos)
 {
 	char *closeLabel = "Close";
 	const struct vec2i closeSize = FontStrSize(closeLabel);
 	UIObject *oClose = UIObjectCreate(UITYPE_LABEL, 0, pos, closeSize);
 	oClose->Label = closeLabel;
-	oClose->ReloadData = true;
 	// Have a dummy change func so that the context menu is closed
 	oClose->ChangeFunc = CloseChange;
 	UIObjectAddChild(c, oClose);
 }
-static void CloseChange(void *data, int d)
+static EditorResult CloseChange(void *data, int d)
 {
 	UNUSED(data);
 	UNUSED(d);
+	return EDITOR_RESULT_RELOAD;
 }
 
 void TileClassGetBrushName(char *buf, const TileClass *tc)
@@ -455,19 +456,19 @@ char *GetClassNames(const int len, const char *(*indexNameFunc)(const int))
 	int classLen = 0;
 	for (int i = 0; i < (int)len; i++)
 	{
-		const char* name = indexNameFunc(i);
+		const char *name = indexNameFunc(i);
 		classLen += (int)(strlen(name) + 1);
 	}
 	if (classLen == 0)
 	{
 		return "";
 	}
-	char* names;
+	char *names;
 	CMALLOC(names, classLen);
-	char* cp = names;
+	char *cp = names;
 	for (int i = 0; i < (int)len; i++)
 	{
-		const char* name = indexNameFunc(i);
+		const char *name = indexNameFunc(i);
 		CASSERT(name != NULL, "Class has no name");
 		strcpy(cp, name);
 		cp += strlen(name) + 1;
@@ -475,14 +476,14 @@ char *GetClassNames(const int len, const char *(*indexNameFunc)(const int))
 	return names;
 }
 
-void TexArrayInit(CArray* arr, const int count)
+void TexArrayInit(CArray *arr, const int count)
 {
 	CArrayInit(arr, sizeof(GLuint));
 	CArrayResize(arr, count, NULL);
-	glGenTextures(count, (GLuint*)arr->data);
+	glGenTextures(count, (GLuint *)arr->data);
 }
-void TexArrayTerminate(CArray* arr)
+void TexArrayTerminate(CArray *arr)
 {
-	glDeleteTextures((GLsizei)arr->size, (const GLuint*)arr->data);
+	glDeleteTextures((GLsizei)arr->size, (const GLuint *)arr->data);
 	CArrayTerminate(arr);
 }

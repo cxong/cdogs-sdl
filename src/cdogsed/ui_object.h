@@ -95,15 +95,11 @@ typedef struct _UIObject
 	bool IsDynamicLabel;
 	void *Data;
 	int IsDynamicData;
-	void (*ChangeFunc)(void *, int d);
+	EditorResult (*ChangeFunc)(void *, int d);
 	// Function that's called when the control is activated with shift key held
-	void (*ChangeFuncAlt)(void *, int d);
+	EditorResult (*ChangeFuncAlt)(void *, int d);
 	// Whether the change func disables parent context menus (default true)
 	bool ChangeDisablesContext;
-	// Whether calling the change func changes the file (i.e. requires save)
-	bool ChangesData;
-	// Whether calling the change func requires a reload
-	bool ReloadData;
 	void (*OnFocusFunc)(struct _UIObject *, void *);
 	// Returns whether mission changed
 	bool (*OnUnfocusFunc)(void *);

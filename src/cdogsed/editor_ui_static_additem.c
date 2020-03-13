@@ -1,29 +1,29 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, 2019 Cong Xu
-    All rights reserved.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (c) 2013-2016, 2019-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "editor_ui_static.h"
 
@@ -39,44 +39,46 @@
 
 #include "editor_ui_common.h"
 
-
-
-static void BrushSetBrushTypeSetPlayerStart(void *data, int d)
+static EditorResult BrushSetBrushTypeSetPlayerStart(void *data, int d)
 {
 	UNUSED(d);
 	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_SET_PLAYER_START;
+	return EDITOR_RESULT_NONE;
 }
-static void BrushSetBrushTypeAddMapItem(void *data, int d)
+static EditorResult BrushSetBrushTypeAddMapItem(void *data, int d)
 {
 	UNUSED(d);
 	IndexedEditorBrush *b = data;
 	b->Brush->Type = BRUSHTYPE_ADD_ITEM;
 	b->Brush->u.MapObject = b->u.MapObject;
+	return EDITOR_RESULT_NONE;
 }
-static void BrushSetBrushTypeAddCharacter(void *data, int d)
+static EditorResult BrushSetBrushTypeAddCharacter(void *data, int d)
 {
 	UNUSED(d);
 	IndexedEditorBrush *b = data;
 	b->Brush->Type = BRUSHTYPE_ADD_CHARACTER;
 	b->Brush->u.ItemIndex = b->u.ItemIndex;
+	return EDITOR_RESULT_NONE;
 }
-static void BrushSetBrushTypeAddObjective(void *data, int d)
+static EditorResult BrushSetBrushTypeAddObjective(void *data, int d)
 {
 	UNUSED(d);
 	IndexedEditorBrush *b = data;
 	b->Brush->Type = BRUSHTYPE_ADD_OBJECTIVE;
 	b->Brush->u.ItemIndex = b->u.ItemIndex;
 	b->Brush->Index2 = b->Index2;
+	return EDITOR_RESULT_NONE;
 }
-static void BrushSetBrushTypeAddKey(void *data, int d)
+static EditorResult BrushSetBrushTypeAddKey(void *data, int d)
 {
 	UNUSED(d);
 	IndexedEditorBrush *b = data;
 	b->Brush->Type = BRUSHTYPE_ADD_KEY;
 	b->Brush->u.ItemIndex = b->u.ItemIndex;
+	return EDITOR_RESULT_NONE;
 }
-
 
 static void DrawPickupSpawner(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
@@ -84,7 +86,8 @@ static void DrawPickupSpawner(
 	const IndexedEditorBrush *data = vData;
 	const MapObject *mo = data->u.MapObject;
 	DisplayMapItem(
-		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)), mo);
+		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
+		mo);
 	const Pic *pic = CPicGetPic(&mo->u.PickupClass->Pic, 0);
 	pos = svec2i_subtract(pos, svec2i_scale_divide(pic->size, 2));
 	PicRender(
@@ -119,31 +122,28 @@ static void DrawObjective(
 	pos = svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2));
 	switch (obj->Type)
 	{
-	case OBJECTIVE_KILL:
-		{
-			Character *c = CArrayGet(
-				&store->OtherChars,
-				CharacterStoreGetSpecialId(store, data->Brush.Index2));
-			DrawCharacterSimple(c, pos, DIRECTION_DOWN, false, false);
-		}
-		break;
-	case OBJECTIVE_RESCUE:
-		{
-			Character *c = CArrayGet(
-				&store->OtherChars,
-				CharacterStoreGetPrisonerId(store, data->Brush.Index2));
-			DrawCharacterSimple(c, pos, DIRECTION_DOWN, false, false);
-		}
-		break;
-	case OBJECTIVE_COLLECT:
-		{
-			const Pic *p = CPicGetPic(&obj->u.Pickup->Pic, 0);
-			pos = svec2i_subtract(pos, svec2i_scale_divide(p->size, 2));
-			PicRender(
-				p, g->gameWindow.renderer, pos, colorWhite, 0, svec2_one(),
-				SDL_FLIP_NONE, Rect2iZero());
-		}
-		break;
+	case OBJECTIVE_KILL: {
+		Character *c = CArrayGet(
+			&store->OtherChars,
+			CharacterStoreGetSpecialId(store, data->Brush.Index2));
+		DrawCharacterSimple(c, pos, DIRECTION_DOWN, false, false);
+	}
+	break;
+	case OBJECTIVE_RESCUE: {
+		Character *c = CArrayGet(
+			&store->OtherChars,
+			CharacterStoreGetPrisonerId(store, data->Brush.Index2));
+		DrawCharacterSimple(c, pos, DIRECTION_DOWN, false, false);
+	}
+	break;
+	case OBJECTIVE_COLLECT: {
+		const Pic *p = CPicGetPic(&obj->u.Pickup->Pic, 0);
+		pos = svec2i_subtract(pos, svec2i_scale_divide(p->size, 2));
+		PicRender(
+			p, g->gameWindow.renderer, pos, colorWhite, 0, svec2_one(),
+			SDL_FLIP_NONE, Rect2iZero());
+	}
+	break;
 	case OBJECTIVE_DESTROY:
 		DisplayMapItem(pos, obj->u.MapObject);
 		break;
@@ -189,7 +189,6 @@ static bool DeactivateEditorBrushAndCampaignBrush(void *data)
 	return false;
 }
 
-
 static bool AddMapItemBrushObjFunc(UIObject *o, MapObject *mo, void *vData);
 static bool AddPickupSpawnerBrushObjFunc(
 	UIObject *o, MapObject *mo, void *vData);
@@ -205,8 +204,8 @@ UIObject *CreateAddItemObjs(
 	UIObject *o2;
 	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, svec2i_zero());
 
-	UIObject *o = UIObjectCreate(
-		UITYPE_LABEL, 0, svec2i_zero(), svec2i(65, th));
+	UIObject *o =
+		UIObjectCreate(UITYPE_LABEL, 0, svec2i_zero(), svec2i(65, th));
 	o->Data = brush;
 
 	pos = svec2i_zero();
@@ -223,17 +222,19 @@ UIObject *CreateAddItemObjs(
 	o2 = UIObjectCopy(o);
 	o2->Label = "Map item >";
 	o2->Pos = pos;
-	UIObjectAddChild(o2, CreateAddMapItemObjs(
-		o2->Size, AddMapItemBrushObjFunc, brush, sizeof(IndexedEditorBrush),
-		true));
+	UIObjectAddChild(
+		o2, CreateAddMapItemObjs(
+				o2->Size, AddMapItemBrushObjFunc, brush,
+				sizeof(IndexedEditorBrush), true));
 	UIObjectAddChild(c, o2);
 	pos.y += th;
 	o2 = UIObjectCopy(o);
 	o2->Label = "Pickup spawner >";
 	o2->Pos = pos;
-	UIObjectAddChild(o2, CreateAddPickupSpawnerObjs(
-		o2->Size, AddPickupSpawnerBrushObjFunc, brush,
-		sizeof(IndexedEditorBrush)));
+	UIObjectAddChild(
+		o2, CreateAddPickupSpawnerObjs(
+				o2->Size, AddPickupSpawnerBrushObjFunc, brush,
+				sizeof(IndexedEditorBrush)));
 	UIObjectAddChild(c, o2);
 	pos.y += th;
 	o2 = UIObjectCopy(o);
@@ -369,8 +370,8 @@ static void CreateAddCharacterSubObjs(UIObject *c, void *vData)
 	CArrayInit(&c->Children, sizeof c);
 
 	UIObject *o = UIObjectCreate(
-		UITYPE_CUSTOM, 0,
-		svec2i_zero(), svec2i(TILE_WIDTH + 4, TILE_HEIGHT * 2 + 4));
+		UITYPE_CUSTOM, 0, svec2i_zero(),
+		svec2i(TILE_WIDTH + 4, TILE_HEIGHT * 2 + 4));
 	o->ChangeFunc = BrushSetBrushTypeAddCharacter;
 	o->u.CustomDrawFunc = DrawCharacter;
 	o->OnFocusFunc = ActivateEditorBrushAndCampaignBrush;
@@ -406,7 +407,8 @@ static UIObject *CreateAddObjectiveObjs(
 	// Need to update UI objects dynamically as new objectives can be
 	// added and removed
 	c->OnFocusFunc = CreateAddObjectiveSubObjs;
-	CSTRDUP(c->Tooltip,
+	CSTRDUP(
+		c->Tooltip,
 		"Manually place objectives\nThe rest will be randomly placed");
 	c->IsDynamicData = 1;
 	CMALLOC(c->Data, sizeof(EditorBrushAndCampaign));
@@ -427,43 +429,44 @@ static void CreateAddObjectiveSubObjs(UIObject *c, void *vData)
 	bool needToRecreate = false;
 	int childIndex = 0;
 	CA_FOREACH(const Objective, obj, m->Objectives)
-		int secondaryCount = 1;
-		const CharacterStore *store = &data->Campaign->Setting.characters;
-		switch (obj->Type)
+	int secondaryCount = 1;
+	const CharacterStore *store = &data->Campaign->Setting.characters;
+	switch (obj->Type)
+	{
+	case OBJECTIVE_KILL:
+		secondaryCount = (int)store->specialIds.size;
+		break;
+	case OBJECTIVE_COLLECT:
+		break;
+	case OBJECTIVE_DESTROY:
+		break;
+	case OBJECTIVE_RESCUE:
+		secondaryCount = (int)store->prisonerIds.size;
+		break;
+	default:
+		continue;
+	}
+	for (int j = 0; j < (int)secondaryCount; j++)
+	{
+		if ((int)c->Children.size <= childIndex)
 		{
-		case OBJECTIVE_KILL:
-			secondaryCount = (int)store->specialIds.size;
-			break;
-		case OBJECTIVE_COLLECT:
-			break;
-		case OBJECTIVE_DESTROY:
-			break;
-		case OBJECTIVE_RESCUE:
-			secondaryCount = (int)store->prisonerIds.size;
-			break;
-		default:
-			continue;
-		}
-		for (int j = 0; j < (int)secondaryCount; j++)
-		{
-			if ((int)c->Children.size <= childIndex)
-			{
-				needToRecreate = true;
-				break;
-			}
-			UIObject *o2 = *(UIObject **)CArrayGet(&c->Children, childIndex);
-			if (((EditorBrushAndCampaign *)o2->Data)->Brush.u.ItemIndex != _ca_index ||
-				((EditorBrushAndCampaign *)o2->Data)->Brush.Index2 != j)
-			{
-				needToRecreate = true;
-				break;
-			}
-			childIndex++;
-		}
-		if (needToRecreate)
-		{
+			needToRecreate = true;
 			break;
 		}
+		UIObject *o2 = *(UIObject **)CArrayGet(&c->Children, childIndex);
+		if (((EditorBrushAndCampaign *)o2->Data)->Brush.u.ItemIndex !=
+				_ca_index ||
+			((EditorBrushAndCampaign *)o2->Data)->Brush.Index2 != j)
+		{
+			needToRecreate = true;
+			break;
+		}
+		childIndex++;
+	}
+	if (needToRecreate)
+	{
+		break;
+	}
 	CA_FOREACH_END()
 	if (!needToRecreate)
 	{
@@ -473,58 +476,57 @@ static void CreateAddObjectiveSubObjs(UIObject *c, void *vData)
 	// Recreate the child UI objects
 	c->Highlighted = NULL;
 	CA_FOREACH(UIObject *, obj, c->Children)
-		UIObjectDestroy(*obj);
+	UIObjectDestroy(*obj);
 	CA_FOREACH_END()
 	CArrayTerminate(&c->Children);
 	CArrayInit(&c->Children, sizeof c);
 
 	UIObject *o = UIObjectCreate(
-		UITYPE_CUSTOM, 0,
-		svec2i_zero(), svec2i(TILE_WIDTH + 4, TILE_HEIGHT * 2 + 4));
+		UITYPE_CUSTOM, 0, svec2i_zero(),
+		svec2i(TILE_WIDTH + 4, TILE_HEIGHT * 2 + 4));
 	o->ChangeFunc = BrushSetBrushTypeAddObjective;
 	o->u.CustomDrawFunc = DrawObjective;
 	o->OnFocusFunc = ActivateEditorBrushAndCampaignBrush;
 	o->OnUnfocusFunc = DeactivateEditorBrushAndCampaignBrush;
 	struct vec2i pos = svec2i_zero();
 	CA_FOREACH(const Objective, obj, m->Objectives)
-		int secondaryCount = 1;
-		const CharacterStore *store = &data->Campaign->Setting.characters;
-		switch (obj->Type)
-		{
-		case OBJECTIVE_KILL:
-			secondaryCount = (int)store->specialIds.size;
-			o->Size.y = TILE_HEIGHT * 2 + 4;
-			break;
-		case OBJECTIVE_COLLECT:
-			o->Size.y = TILE_HEIGHT + 4;
-			break;
-		case OBJECTIVE_DESTROY:
-			o->Size.y = TILE_HEIGHT * 2 + 4;
-			break;
-		case OBJECTIVE_RESCUE:
-			secondaryCount = (int)store->prisonerIds.size;
-			o->Size.y = TILE_HEIGHT * 2 + 4;
-			break;
-		default:
-			continue;
-		}
-		for (int j = 0; j < (int)secondaryCount; j++)
-		{
-			UIObject *o2 = UIObjectCopy(o);
-			CSTRDUP(o2->Tooltip, ObjectiveTypeStr(obj->Type));
-			o2->IsDynamicData = true;
-			CMALLOC(o2->Data, sizeof(EditorBrushAndCampaign));
-			((EditorBrushAndCampaign *)o2->Data)->Brush.Brush =
-				data->Brush.Brush;
-			((EditorBrushAndCampaign *)o2->Data)->Campaign = data->Campaign;
-			((EditorBrushAndCampaign *)o2->Data)->Brush.u.ItemIndex = _ca_index;
-			((EditorBrushAndCampaign *)o2->Data)->Brush.Index2 = j;
-			o2->Pos = pos;
-			UIObjectAddChild(c, o2);
-			pos.x += o->Size.x;
-		}
-		pos.x = 0;
-		pos.y += o->Size.y;
+	int secondaryCount = 1;
+	const CharacterStore *store = &data->Campaign->Setting.characters;
+	switch (obj->Type)
+	{
+	case OBJECTIVE_KILL:
+		secondaryCount = (int)store->specialIds.size;
+		o->Size.y = TILE_HEIGHT * 2 + 4;
+		break;
+	case OBJECTIVE_COLLECT:
+		o->Size.y = TILE_HEIGHT + 4;
+		break;
+	case OBJECTIVE_DESTROY:
+		o->Size.y = TILE_HEIGHT * 2 + 4;
+		break;
+	case OBJECTIVE_RESCUE:
+		secondaryCount = (int)store->prisonerIds.size;
+		o->Size.y = TILE_HEIGHT * 2 + 4;
+		break;
+	default:
+		continue;
+	}
+	for (int j = 0; j < (int)secondaryCount; j++)
+	{
+		UIObject *o2 = UIObjectCopy(o);
+		CSTRDUP(o2->Tooltip, ObjectiveTypeStr(obj->Type));
+		o2->IsDynamicData = true;
+		CMALLOC(o2->Data, sizeof(EditorBrushAndCampaign));
+		((EditorBrushAndCampaign *)o2->Data)->Brush.Brush = data->Brush.Brush;
+		((EditorBrushAndCampaign *)o2->Data)->Campaign = data->Campaign;
+		((EditorBrushAndCampaign *)o2->Data)->Brush.u.ItemIndex = _ca_index;
+		((EditorBrushAndCampaign *)o2->Data)->Brush.Index2 = j;
+		o2->Pos = pos;
+		UIObjectAddChild(c, o2);
+		pos.x += o->Size.x;
+	}
+	pos.x = 0;
+	pos.y += o->Size.y;
 	CA_FOREACH_END()
 	UIObjectDestroy(o);
 }
@@ -534,8 +536,8 @@ static UIObject *CreateAddKeyObjs(struct vec2i pos, EditorBrush *brush)
 	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, svec2i_zero());
 
 	UIObject *o = UIObjectCreate(
-		UITYPE_CUSTOM, 0,
-		svec2i_zero(), svec2i(TILE_WIDTH + 4, TILE_HEIGHT + 4));
+		UITYPE_CUSTOM, 0, svec2i_zero(),
+		svec2i(TILE_WIDTH + 4, TILE_HEIGHT + 4));
 	o->ChangeFunc = BrushSetBrushTypeAddKey;
 	o->u.CustomDrawFunc = DrawKey;
 	o->OnFocusFunc = ActivateIndexedEditorBrush;
