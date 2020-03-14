@@ -264,27 +264,27 @@ static void DrawTilePropsSidebar(
 
 		// Changing tile props can affect map object placement
 		if (DrawCheckbox(
-			ctx, "Can Walk", "Whether actors can walk through this tile",
-			&selectedTC->canWalk))
+				ctx, "Can Walk", "Whether actors can walk through this tile",
+				&selectedTC->canWalk))
 		{
 			tbData->result |= EDITOR_RESULT_CHANGED_AND_RELOAD;
 		}
 		if (DrawCheckbox(
-			ctx, "Opaque", "Whether this tile cannot be seen through",
-			&selectedTC->isOpaque))
+				ctx, "Opaque", "Whether this tile cannot be seen through",
+				&selectedTC->isOpaque))
 		{
 			tbData->result |= EDITOR_RESULT_CHANGED_AND_RELOAD;
 		}
 		if (DrawCheckbox(
-			ctx, "Shootable", "Whether bullets will hit this tile",
-			&selectedTC->shootable))
+				ctx, "Shootable", "Whether bullets will hit this tile",
+				&selectedTC->shootable))
 		{
 			tbData->result |= EDITOR_RESULT_CHANGED_AND_RELOAD;
 		}
 		if (DrawCheckbox(
-			ctx, "IsRoom",
-			"Affects random placement of indoor/outdoor map objects",
-			&selectedTC->IsRoom))
+				ctx, "IsRoom",
+				"Affects random placement of indoor/outdoor map objects",
+				&selectedTC->IsRoom))
 		{
 			tbData->result |= EDITOR_RESULT_CHANGED_AND_RELOAD;
 		}
@@ -382,7 +382,7 @@ static bool DrawCheckbox(
 }
 
 static void DrawTileClass(
-	struct nk_context *ctx, const PicManager *pm, const TileClass *tc,
+	struct nk_context *ctx, PicManager *pm, TileClass *tc,
 	const struct vec2i pos, const GLuint texid);
 static int DrawTileType(TileBrushData *tbData, TileClass *tc, const int tileId)
 {
@@ -402,10 +402,16 @@ static int DrawTileType(TileBrushData *tbData, TileClass *tc, const int tileId)
 	return MAP_OK;
 }
 static void DrawTileClass(
-	struct nk_context *ctx, const PicManager *pm, const TileClass *tc,
+	struct nk_context *ctx, PicManager *pm, TileClass *tc,
 	const struct vec2i pos, const GLuint texid)
 {
 	const Pic *pic = TileClassGetPic(pm, tc);
+	if (pic == NULL)
+	{
+		// Attempt to reload pic (we may have changed its colour for example)
+		TileClassReloadPic(tc, pm);
+		pic = TileClassGetPic(pm, tc);
+	}
 	DrawPic(ctx, pic, texid, pos, PIC_SCALE);
 }
 
