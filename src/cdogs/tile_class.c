@@ -207,7 +207,7 @@ void TileClassInitDefault(
 }
 void TileClassReloadPic(TileClass *t, PicManager *pm)
 {
-	if (t->Name != NULL)
+	if (t->Name != NULL && strlen(t->Name) != 0)
 	{
 		// Generate the pic in case it doesn't exist
 		PicManagerGenerateMaskedStylePic(
