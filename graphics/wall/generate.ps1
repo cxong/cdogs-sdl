@@ -1,4 +1,5 @@
 # Use this script to generate all the other versions of wall tiles, given a complete "o" tile
+# Use "plasteel" as a template
 param (
     [string]$name
 )
