@@ -1,50 +1,50 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin
-    Copyright (C) 2003-2007 Lucas Martin-King
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (C) 1995 Ronny Wester
+	Copyright (C) 2003 Jeremy Chin
+	Copyright (C) 2003-2007 Lucas Martin-King
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-    This file incorporates work covered by the following copyright and
-    permission notice:
+	This file incorporates work covered by the following copyright and
+	permission notice:
 
-    Copyright (c) 2013-2019 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "objs.h"
 
@@ -52,16 +52,15 @@
 
 #include "bullet_class.h"
 #include "damage.h"
+#include "gamedata.h"
 #include "log.h"
 #include "net_util.h"
 #include "pickup.h"
-#include "gamedata.h"
 
 CArray gObjs;
 CArray gMobObjs;
 static unsigned int sObjUIDs = 0;
 static unsigned int sMobObjUIDs = 0;
-
 
 // Draw functions
 
@@ -74,7 +73,6 @@ static void MapObjectDraw(
 	c.Offset = obj->Class->Offset;
 	CPicDraw(g, &obj->thing.CPic, pos, &c);
 }
-
 
 #define NUM_SPALL_PARTICLES 3
 #define SPALL_IMPULSE_FACTOR 1.0f
@@ -142,7 +140,9 @@ static void AddPickupAtObject(const TObject *o, const PickupType type)
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
 	switch (type)
 	{
-	case PICKUP_JEWEL: CASSERT(false, "unexpected pickup type"); break;
+	case PICKUP_JEWEL:
+		CASSERT(false, "unexpected pickup type");
+		break;
 	case PICKUP_HEALTH:
 		if (!ConfigGetBool(&gConfig, "Game.HealthPickups"))
 		{
@@ -162,7 +162,9 @@ static void AddPickupAtObject(const TObject *o, const PickupType type)
 			sprintf(e.u.AddPickup.PickupClass, "ammo_%s", a->Name);
 		}
 		break;
-	case PICKUP_KEYCARD: CASSERT(false, "unexpected pickup type"); break;
+	case PICKUP_KEYCARD:
+		CASSERT(false, "unexpected pickup type");
+		break;
 	case PICKUP_GUN:
 		// Pick a random mission gun type and spawn it
 		{
@@ -171,7 +173,9 @@ static void AddPickupAtObject(const TObject *o, const PickupType type)
 			sprintf(e.u.AddPickup.PickupClass, "gun_%s", (*wc)->name);
 		}
 		break;
-	default: CASSERT(false, "unexpected pickup type"); break;
+	default:
+		CASSERT(false, "unexpected pickup type");
+		break;
 	}
 	e.u.AddPickup.UID = PickupsGetNextUID();
 	e.u.AddPickup.Pos = Vec2ToNet(o->thing.Pos);
@@ -205,21 +209,20 @@ void ObjRemove(const NMapObjectRemove mor)
 
 		// Weapons that go off when this object is destroyed
 		CA_FOREACH(const WeaponClass *, wc, o->Class->DestroyGuns)
-			WeaponClassFire(
-				*wc, o->thing.Pos, 0, 0, mor.Flags, mor.ActorUID,
-				true, false);
+		WeaponClassFire(
+			*wc, o->thing.Pos, 0, 0, mor.Flags, mor.ActorUID, true, false);
 		CA_FOREACH_END()
 
 		// Random chance to add pickups in single player modes
 		if (!IsPVP(gCampaign.Entry.Mode))
 		{
 			CA_FOREACH(
-				const MapObjectDestroySpawn, mods,  o->Class->DestroySpawn)
-				const double chance = (double) rand() / RAND_MAX;
-				if (chance < mods->SpawnChance)
-				{
-					AddPickupAtObject(o, mods->Type);
-				}
+				const MapObjectDestroySpawn, mods, o->Class->DestroySpawn)
+			const double chance = (double)rand() / RAND_MAX;
+			if (chance < mods->SpawnChance)
+			{
+				AddPickupAtObject(o, mods->Type);
+			}
 			CA_FOREACH_END()
 		}
 
@@ -285,20 +288,19 @@ bool CanHit(const int flags, const int uid, const Thing *target)
 	return false;
 }
 bool HasHitSound(
-	const int flags, const int playerUID,
-	const ThingKind targetKind, const int targetUID,
-	const special_damage_e special, const bool allowFriendlyHitSound)
+	const int flags, const int playerUID, const ThingKind targetKind,
+	const int targetUID, const special_damage_e special,
+	const bool allowFriendlyHitSound)
 {
 	switch (targetKind)
 	{
-	case KIND_CHARACTER:
-		{
-			const TActor *a = ActorGetByUID(targetUID);
-			return
-				!ActorIsImmune(a, special) &&
-				(allowFriendlyHitSound || !ActorIsInvulnerable(
+	case KIND_CHARACTER: {
+		const TActor *a = ActorGetByUID(targetUID);
+		return !ActorIsImmune(a, special) &&
+			   (allowFriendlyHitSound ||
+				!ActorIsInvulnerable(
 					a, flags, playerUID, gCampaign.Entry.Mode));
-		}
+	}
 	case KIND_OBJECT:
 		return true;
 	default:
@@ -310,35 +312,25 @@ bool HasHitSound(
 
 static void DoDamageThing(
 	const ThingKind targetKind, const int targetUID, const TActor *source,
-	const int flags,
-	const special_damage_e special, const bool canDamage, const int power,
-	const float mass, const struct vec2 hitVector);
+	const int flags, const special_damage_e special, const bool canDamage,
+	const int power, const float mass, const struct vec2 hitVector);
 static void DoDamageCharacter(
-	const TActor *actor,
-	const TActor *source,
-	const struct vec2 hitVector,
-	const int power,
-	const float mass,
-	const int flags,
+	const TActor *actor, const TActor *source, const struct vec2 hitVector,
+	const int power, const float mass, const int flags,
 	const special_damage_e special);
 void Damage(
-	const struct vec2 hitVector,
-	const int power,
-	const float mass,
-	const int flags,
-	const TActor *source,
-	const ThingKind targetKind, const int targetUID,
-	const special_damage_e special)
+	const struct vec2 hitVector, const int power, const float mass,
+	const int flags, const TActor *source, const ThingKind targetKind,
+	const int targetUID, const special_damage_e special)
 {
 	switch (targetKind)
 	{
-	case KIND_CHARACTER:
-		{
-			const TActor *actor = ActorGetByUID(targetUID);
-			DoDamageCharacter(
-				actor, source, hitVector, power, mass, flags, special);
-		}
-		break;
+	case KIND_CHARACTER: {
+		const TActor *actor = ActorGetByUID(targetUID);
+		DoDamageCharacter(
+			actor, source, hitVector, power, mass, flags, special);
+	}
+	break;
 	case KIND_OBJECT:
 		DoDamageThing(
 			targetKind, targetUID, source, flags, special, true, power, mass,
@@ -351,9 +343,8 @@ void Damage(
 }
 static void DoDamageThing(
 	const ThingKind targetKind, const int targetUID, const TActor *source,
-	const int flags,
-	const special_damage_e special, const bool canDamage, const int power,
-	const float mass, const struct vec2 hitVector)
+	const int flags, const special_damage_e special, const bool canDamage,
+	const int power, const float mass, const struct vec2 hitVector)
 {
 	GameEvent e = GameEventNew(GAME_EVENT_THING_DAMAGE);
 	e.u.ThingDamage.UID = targetUID;
@@ -367,12 +358,8 @@ static void DoDamageThing(
 	GameEventsEnqueue(&gGameEvents, e);
 }
 static void DoDamageCharacter(
-	const TActor *actor,
-	const TActor *source,
-	const struct vec2 hitVector,
-	const int power,
-	const float mass,
-	const int flags,
+	const TActor *actor, const TActor *source, const struct vec2 hitVector,
+	const int power, const float mass, const int flags,
 	const special_damage_e special)
 {
 	// Create events: hit, damage, score
@@ -424,24 +411,22 @@ static void DoDamageCharacter(
 	}
 }
 
-
 void UpdateMobileObjects(int ticks)
 {
 	CA_FOREACH(TMobileObject, obj, gMobObjs)
-		if (!obj->isInUse)
-		{
-			continue;
-		}
-		if (!BulletUpdate(obj, ticks) && !gCampaign.IsClient)
-		{
-			GameEvent e = GameEventNew(GAME_EVENT_REMOVE_BULLET);
-			e.u.RemoveBullet.UID = obj->UID;
-			GameEventsEnqueue(&gGameEvents, e);
-			continue;
-		}
+	if (!obj->isInUse)
+	{
+		continue;
+	}
+	if (!BulletUpdate(obj, ticks) && !gCampaign.IsClient)
+	{
+		GameEvent e = GameEventNew(GAME_EVENT_REMOVE_BULLET);
+		e.u.RemoveBullet.UID = obj->UID;
+		GameEventsEnqueue(&gGameEvents, e);
+		continue;
+	}
 	CA_FOREACH_END()
 }
-
 
 void ObjsInit(void)
 {
@@ -452,10 +437,10 @@ void ObjsInit(void)
 void ObjsTerminate(void)
 {
 	CA_FOREACH(TObject, o, gObjs)
-		if (o->isInUse)
-		{
-			ObjDestroy(o);
-		}
+	if (o->isInUse)
+	{
+		ObjDestroy(o);
+	}
 	CA_FOREACH_END()
 	CArrayTerminate(&gObjs);
 }
@@ -469,8 +454,8 @@ void ObjAdd(const NMapObjectAdd amo)
 	// Don't add if UID exists
 	if (ObjGetByUID(amo.UID) != NULL)
 	{
-		LOG(LM_MAIN, LL_DEBUG,
-			"object uid(%d) already exists; not adding", (int)amo.UID);
+		LOG(LM_MAIN, LL_DEBUG, "object uid(%d) already exists; not adding",
+			(int)amo.UID);
 		return;
 	}
 	// Find an empty slot in object list
@@ -496,25 +481,23 @@ void ObjAdd(const NMapObjectAdd amo)
 	memset(o, 0, sizeof *o);
 	o->uid = amo.UID;
 	o->Class = StrMapObject(amo.MapObjectClass);
-	ThingInit(
-		&o->thing, i, KIND_OBJECT, o->Class->Size, amo.ThingFlags);
+	ThingInit(&o->thing, i, KIND_OBJECT, o->Class->Size, amo.ThingFlags);
 	o->Health = amo.Health;
 	o->thing.CPic = o->Class->Pic;
 	o->thing.CPic.Mask = Net2Color(amo.Mask);
 	if (ColorEquals(o->thing.CPic.Mask, colorTransparent))
 	{
-		o->thing.CPic.Mask = colorWhite;
+		o->thing.CPic.Mask = o->Class->Pic.Mask;
 	}
 	o->thing.CPicFunc = MapObjectDraw;
 	MapTryMoveThing(&gMap, &o->thing, NetToVec2(amo.Pos));
 	EmitterInit(
-		&o->damageSmoke,
-		StrParticleClass(&gParticleClasses, "smoke_big"),
+		&o->damageSmoke, StrParticleClass(&gParticleClasses, "smoke_big"),
 		svec2_zero(), -0.05f, 0.05f, 3, 3, 0, 0, 20);
 	o->isInUse = true;
 	LOG(LM_MAIN, LL_DEBUG,
-		"added object uid(%d) class(%s) health(%d) pos(%d, %d)",
-		(int)amo.UID, amo.MapObjectClass, amo.Health, amo.Pos.x, amo.Pos.y);
+		"added object uid(%d) class(%s) health(%d) pos(%d, %d)", (int)amo.UID,
+		amo.MapObjectClass, amo.Health, amo.Pos.x, amo.Pos.y);
 
 	// Update pathfinding cache since this object could block a path
 	PathCacheClear(&gPathCache);
@@ -536,74 +519,72 @@ bool ObjIsDangerous(const TObject *o)
 void UpdateObjects(const int ticks)
 {
 	CA_FOREACH(TObject, obj, gObjs)
-		if (!obj->isInUse)
+	if (!obj->isInUse)
+	{
+		continue;
+	}
+	ThingUpdate(&obj->thing, ticks);
+	switch (obj->Class->Type)
+	{
+	case MAP_OBJECT_TYPE_NORMAL:
+		// Emit smoke when damaged
+		if (obj->Class->DamageSmoke.HealthThreshold >= 0 &&
+			obj->Health <=
+				obj->Class->Health * obj->Class->DamageSmoke.HealthThreshold)
 		{
-			continue;
+			AddParticle ap;
+			memset(&ap, 0, sizeof ap);
+			ap.Pos = svec2_add(
+				obj->thing.Pos,
+				svec2(
+					RAND_FLOAT(-obj->thing.size.x / 4, obj->thing.size.x / 4),
+					RAND_FLOAT(
+						-obj->thing.size.y / 4, obj->thing.size.y / 4)));
+			ap.Mask = colorWhite;
+			EmitterUpdate(&obj->damageSmoke, &ap, ticks);
 		}
-		ThingUpdate(&obj->thing, ticks);
-		switch (obj->Class->Type)
+		break;
+	case MAP_OBJECT_TYPE_PICKUP_SPAWNER:
+		if (gCampaign.IsClient)
+			break;
+		// If counter -1, it is inactive i.e. already spawned pickup
+		if (obj->counter == -1)
 		{
-		case MAP_OBJECT_TYPE_NORMAL:
-			// Emit smoke when damaged
-			if (obj->Class->DamageSmoke.HealthThreshold >= 0 &&
-				obj->Health <=
-					obj->Class->Health *
-					obj->Class->DamageSmoke.HealthThreshold)
-			{
-				AddParticle ap;
-				memset(&ap, 0, sizeof ap);
-				ap.Pos = svec2_add(
-					obj->thing.Pos,
-					svec2(
-						RAND_FLOAT(-obj->thing.size.x / 4, obj->thing.size.x / 4),
-						RAND_FLOAT(-obj->thing.size.y / 4, obj->thing.size.y / 4)));
-				ap.Mask = colorWhite;
-				EmitterUpdate(&obj->damageSmoke, &ap, ticks);
-			}
-			break;
-		case MAP_OBJECT_TYPE_PICKUP_SPAWNER:
-			if (gCampaign.IsClient) break;
-			// If counter -1, it is inactive i.e. already spawned pickup
-			if (obj->counter == -1)
-			{
-				break;
-			}
-			obj->counter -= ticks;
-			if (obj->counter <= 0)
-			{
-				// Deactivate spawner by setting counter to -1
-				// Spawner reactivated only when ammo taken
-				obj->counter = -1;
-				GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
-				e.u.AddPickup.UID = PickupsGetNextUID();
-				strcpy(
-					e.u.AddPickup.PickupClass,
-					obj->Class->u.PickupClass->Name);
-				e.u.AddPickup.IsRandomSpawned = false;
-				e.u.AddPickup.SpawnerUID = obj->uid;
-				e.u.AddPickup.ThingFlags = 0;
-				e.u.AddPickup.Pos = Vec2ToNet(obj->thing.Pos);
-				GameEventsEnqueue(&gGameEvents, e);
-			}
-			break;
-		default:
-			// Do nothing
 			break;
 		}
+		obj->counter -= ticks;
+		if (obj->counter <= 0)
+		{
+			// Deactivate spawner by setting counter to -1
+			// Spawner reactivated only when ammo taken
+			obj->counter = -1;
+			GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
+			e.u.AddPickup.UID = PickupsGetNextUID();
+			strcpy(e.u.AddPickup.PickupClass, obj->Class->u.PickupClass->Name);
+			e.u.AddPickup.IsRandomSpawned = false;
+			e.u.AddPickup.SpawnerUID = obj->uid;
+			e.u.AddPickup.ThingFlags = 0;
+			e.u.AddPickup.Pos = Vec2ToNet(obj->thing.Pos);
+			GameEventsEnqueue(&gGameEvents, e);
+		}
+		break;
+	default:
+		// Do nothing
+		break;
+	}
 	CA_FOREACH_END()
 }
 
 TObject *ObjGetByUID(const int uid)
 {
 	CA_FOREACH(TObject, o, gObjs)
-		if (o->uid == uid)
-		{
-			return o;
-		}
+	if (o->uid == uid)
+	{
+		return o;
+	}
 	CA_FOREACH_END()
 	return NULL;
 }
-
 
 void MobObjsInit(void)
 {
@@ -614,10 +595,10 @@ void MobObjsInit(void)
 void MobObjsTerminate(void)
 {
 	CA_FOREACH(TMobileObject, m, gMobObjs)
-		if (m->isInUse)
-		{
-			BulletDestroy(m);
-		}
+	if (m->isInUse)
+	{
+		BulletDestroy(m);
+	}
 	CA_FOREACH_END()
 	CArrayTerminate(&gMobObjs);
 }
@@ -628,10 +609,10 @@ int MobObjsObjsGetNextUID(void)
 TMobileObject *MobObjGetByUID(const int uid)
 {
 	CA_FOREACH(TMobileObject, o, gMobObjs)
-		if (o->UID == uid)
-		{
-			return o;
-		}
+	if (o->UID == uid)
+	{
+		return o;
+	}
 	CA_FOREACH_END()
 	return NULL;
 }

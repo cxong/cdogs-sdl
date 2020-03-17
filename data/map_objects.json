@@ -1475,7 +1475,8 @@
       "Name": "blood0",
       "Pic": {
         "Type": "Normal",
-        "Pic": "particles/blood0"
+        "Pic": "particles/blood0",
+        "Mask": "ff0000"
       },
       "Offset": [-8, -3],
       "Health": 0,
@@ -1485,7 +1486,8 @@
       "Name": "blood1",
       "Pic": {
         "Type": "Normal",
-        "Pic": "particles/blood1"
+        "Pic": "particles/blood1",
+        "Mask": "ff0000"
       },
       "Offset": [-8, -3],
       "Health": 0,
@@ -1495,7 +1497,8 @@
       "Name": "blood2",
       "Pic": {
         "Type": "Normal",
-        "Pic": "particles/blood2"
+        "Pic": "particles/blood2",
+        "Mask": "ff0000"
       },
       "Offset": [-8, -3],
       "Health": 0,
@@ -1505,7 +1508,8 @@
       "Name": "blood3",
       "Pic": {
         "Type": "Normal",
-        "Pic": "particles/blood3"
+        "Pic": "particles/blood3",
+        "Mask": "ff0000"
       },
       "Offset": [-8, -3],
       "Health": 0,
@@ -1515,7 +1519,8 @@
       "Name": "blood4",
       "Pic": {
         "Type": "Normal",
-        "Pic": "particles/blood4"
+        "Pic": "particles/blood4",
+        "Mask": "ff0000"
       },
       "Offset": [-8, -3],
       "Health": 0,
