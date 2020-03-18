@@ -36,7 +36,6 @@
 #include "mission.h"
 #include "utils.h"
 
-
 static void MissionStaticInit(MissionStatic *m)
 {
 	memset(m, 0, sizeof *m);
@@ -97,28 +96,28 @@ bool MissionStaticTryLoadJSON(
 		}
 		// Convert old tiles to new
 		CA_FOREACH(uint16_t, t, oldTiles)
-			const int tileAccess = *t & MAP_ACCESSBITS;
-			CArrayPushBack(&m->Access, &tileAccess);
-			*t &= MAP_MASKACCESS;
-			switch (*t)
-			{
-				case MAP_FLOOR:
-				case MAP_SQUARE:	// fallthrough
-					ConvertOldTile(m, *t, &mtc.Floor);
-					break;
-				case MAP_WALL:
-					ConvertOldTile(m, *t, &mtc.Wall);
-					break;
-				case MAP_DOOR:
-					ConvertOldTile(m, *t, &mtc.Door);
-					break;
-				case MAP_ROOM:
-					ConvertOldTile(m, *t, &mtc.Room);
-					break;
-				default:
-					ConvertOldTile(m, *t, &gTileNothing);
-					break;
-			}
+		const int tileAccess = *t & MAP_ACCESSBITS;
+		CArrayPushBack(&m->Access, &tileAccess);
+		*t &= MAP_MASKACCESS;
+		switch (*t)
+		{
+		case MAP_FLOOR:
+		case MAP_SQUARE: // fallthrough
+			ConvertOldTile(m, *t, &mtc.Floor);
+			break;
+		case MAP_WALL:
+			ConvertOldTile(m, *t, &mtc.Wall);
+			break;
+		case MAP_DOOR:
+			ConvertOldTile(m, *t, &mtc.Door);
+			break;
+		case MAP_ROOM:
+			ConvertOldTile(m, *t, &mtc.Room);
+			break;
+		default:
+			ConvertOldTile(m, *t, &gTileNothing);
+			break;
+		}
 		CA_FOREACH_END()
 		CArrayTerminate(&oldTiles);
 		MissionTileClassesTerminate(&mtc);
@@ -129,7 +128,8 @@ bool MissionStaticTryLoadJSON(
 		LoadTileClasses(m->TileClasses, node);
 
 		// CSV string per row
-		const json_t *tile = json_find_first_label(node, "Tiles")->child->child;
+		const json_t *tile =
+			json_find_first_label(node, "Tiles")->child->child;
 		while (tile)
 		{
 			LoadStaticTileCSV(&m->Tiles, tile->text);
@@ -207,9 +207,12 @@ static void ConvertOldTile(
 		TileClass *tc;
 		CMALLOC(tc, sizeof *tc);
 		memcpy(tc, base, sizeof *tc);
-		if (base->Name) CSTRDUP(tc->Name, base->Name);
-		if (base->Style) CSTRDUP(tc->Style, base->Style);
-		if (base->StyleType) CSTRDUP(tc->StyleType, base->StyleType);
+		if (base->Name)
+			CSTRDUP(tc->Name, base->Name);
+		if (base->Style)
+			CSTRDUP(tc->Style, base->Style);
+		if (base->StyleType)
+			CSTRDUP(tc->StyleType, base->StyleType);
 		tc->Mask = base->Mask;
 		tc->MaskAlt = base->MaskAlt;
 		if (hashmap_put(m->TileClasses, keyBuf, tc) != MAP_OK)
@@ -247,9 +250,8 @@ static void LoadStaticItems(
 			continue;
 		}
 		positions = positions->child;
-		for (positions = positions->child;
-			positions;
-			positions = positions->next)
+		for (positions = positions->child; positions;
+			 positions = positions->next)
 		{
 			struct vec2i pos;
 			json_t *position = positions->child;
@@ -285,9 +287,8 @@ static void LoadStaticWrecks(
 			continue;
 		}
 		positions = positions->child;
-		for (positions = positions->child;
-			positions;
-			positions = positions->next)
+		for (positions = positions->child; positions;
+			 positions = positions->next)
 		{
 			struct vec2i pos;
 			json_t *position = positions->child;
@@ -368,9 +369,8 @@ static void LoadStaticCharacters(MissionStatic *m, json_t *node, char *name)
 			continue;
 		}
 		positions = positions->child;
-		for (positions = positions->child;
-			positions;
-			positions = positions->next)
+		for (positions = positions->child; positions;
+			 positions = positions->next)
 		{
 			struct vec2i pos;
 			json_t *position = positions->child;
@@ -402,8 +402,7 @@ static void LoadStaticObjectives(MissionStatic *m, json_t *node, char *name)
 			continue;
 		}
 		positions = positions->child;
-		for (positions = positions->child;
-			 positions;
+		for (positions = positions->child; positions;
 			 positions = positions->next)
 		{
 			struct vec2i pos;
@@ -436,8 +435,7 @@ static void LoadStaticKeys(MissionStatic *m, json_t *node, char *name)
 			continue;
 		}
 		positions = positions->child;
-		for (positions = positions->child;
-			 positions;
+		for (positions = positions->child; positions;
 			 positions = positions->next)
 		{
 			struct vec2i pos;
@@ -469,30 +467,30 @@ void MissionStaticFromMap(MissionStatic *m, const Map *map)
 	map_t tileClassMap = hashmap_new();
 	// Take all the tiles from the current map and save them in the static map
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), map->Size))
-		const Tile *t = MapGetTile(map, _v);
-		intptr_t tile;
-		char tcName[256];
-		TileClassGetBaseName(tcName, t->Class);
-		if (hashmap_get(tileClassMap, tcName, (any_t *)&tile) == MAP_MISSING)
+	const Tile *t = MapGetTile(map, _v);
+	intptr_t tile;
+	char tcName[256];
+	TileClassGetBaseName(tcName, t->Class);
+	if (hashmap_get(tileClassMap, tcName, (any_t *)&tile) == MAP_MISSING)
+	{
+		TileClass *tc = MissionStaticAddTileClass(m, t->Class);
+		if (tc == NULL)
 		{
-			TileClass *tc = MissionStaticAddTileClass(m, t->Class);
-			if (tc == NULL)
-			{
-				continue;
-			}
-			tile = (intptr_t)hashmap_length(m->TileClasses) - 1;
-			if (hashmap_put(tileClassMap, tcName, (any_t)tile) != MAP_OK)
-			{
-				LOG(LM_MAP, LL_ERROR, "Failed to add tile class (%s)", tcName);
-				TileClassTerminate(tc);
-				continue;
-			}
-			LOG(LM_MAP, LL_DEBUG, "Added tile class (%s)", tcName);
+			continue;
 		}
-		const int tileInt = (int)tile;
-		CArrayPushBack(&m->Tiles, &tileInt);
-		const uint16_t access = MapGetAccessLevel(map, _v);
-		CArrayPushBack(&m->Access, &access);
+		tile = (intptr_t)hashmap_length(m->TileClasses) - 1;
+		if (hashmap_put(tileClassMap, tcName, (any_t)tile) != MAP_OK)
+		{
+			LOG(LM_MAP, LL_ERROR, "Failed to add tile class (%s)", tcName);
+			TileClassTerminate(tc);
+			continue;
+		}
+		LOG(LM_MAP, LL_DEBUG, "Added tile class (%s)", tcName);
+	}
+	const int tileInt = (int)tile;
+	CArrayPushBack(&m->Tiles, &tileInt);
+	const uint16_t access = MapGetAccessLevel(map, _v);
+	CArrayPushBack(&m->Access, &access);
 	RECT_FOREACH_END()
 	hashmap_free(tileClassMap);
 }
@@ -518,8 +516,10 @@ static json_t *SaveVec2i(struct vec2i v);
 void MissionStaticSaveJSON(
 	const MissionStatic *m, const struct vec2i size, json_t *node)
 {
-	json_insert_pair_into_object(node, "TileClasses", SaveStaticTileClasses(m));
-	json_insert_pair_into_object(node, "Tiles", SaveStaticCSV(&m->Tiles, size));
+	json_insert_pair_into_object(
+		node, "TileClasses", SaveStaticTileClasses(m));
+	json_insert_pair_into_object(
+		node, "Tiles", SaveStaticCSV(&m->Tiles, size));
 	json_insert_pair_into_object(
 		node, "Access", SaveStaticCSV(&m->Access, size));
 	json_insert_pair_into_object(node, "StaticItems", SaveStaticItems(m));
@@ -544,9 +544,9 @@ static int SaveStaticTileClass(any_t data, any_t key);
 static json_t *SaveStaticTileClasses(const MissionStatic *m)
 {
 	json_t *items = json_new_object();
-	SaveStaticTileClassData data = { items, m->TileClasses };
-	if (hashmap_iterate_keys(
-		m->TileClasses, SaveStaticTileClass, &data) != MAP_OK)
+	SaveStaticTileClassData data = {items, m->TileClasses};
+	if (hashmap_iterate_keys(m->TileClasses, SaveStaticTileClass, &data) !=
+		MAP_OK)
 	{
 		CASSERT(false, "Failed to save static tile classes");
 	}
@@ -556,8 +556,8 @@ static int SaveStaticTileClass(any_t data, any_t key)
 {
 	SaveStaticTileClassData *sData = (SaveStaticTileClassData *)data;
 	TileClass *tc;
-	const int error = hashmap_get(
-		sData->tileClasses, (const char *)key, (any_t *)&tc);
+	const int error =
+		hashmap_get(sData->tileClasses, (const char *)key, (any_t *)&tc);
 	if (error != MAP_OK)
 	{
 		CASSERT(false, "cannot find tile class");
@@ -600,17 +600,16 @@ static json_t *SaveStaticItems(const MissionStatic *m)
 {
 	json_t *items = json_new_array();
 	CA_FOREACH(MapObjectPositions, mop, m->Items)
-		json_t *itemNode = json_new_object();
-		AddStringPair(itemNode, "MapObject", mop->M->Name);
-		json_t *positions = json_new_array();
-		for (int j = 0; j < (int)mop->Positions.size; j++)
-		{
-			struct vec2i *pos = CArrayGet(&mop->Positions, j);
-			json_insert_child(positions, SaveVec2i(*pos));
-		}
-		json_insert_pair_into_object(
-			itemNode, "Positions", positions);
-		json_insert_child(items, itemNode);
+	json_t *itemNode = json_new_object();
+	AddStringPair(itemNode, "MapObject", mop->M->Name);
+	json_t *positions = json_new_array();
+	for (int j = 0; j < (int)mop->Positions.size; j++)
+	{
+		struct vec2i *pos = CArrayGet(&mop->Positions, j);
+		json_insert_child(positions, SaveVec2i(*pos));
+	}
+	json_insert_pair_into_object(itemNode, "Positions", positions);
+	json_insert_child(items, itemNode);
 	CA_FOREACH_END()
 	return items;
 }
@@ -618,17 +617,16 @@ static json_t *SaveStaticCharacters(const MissionStatic *m)
 {
 	json_t *chars = json_new_array();
 	CA_FOREACH(CharacterPositions, cp, m->Characters)
-		json_t *charNode = json_new_object();
-		AddIntPair(charNode, "Index", cp->Index);
-		json_t *positions = json_new_array();
-		for (int j = 0; j < (int)cp->Positions.size; j++)
-		{
-			struct vec2i *pos = CArrayGet(&cp->Positions, j);
-			json_insert_child(positions, SaveVec2i(*pos));
-		}
-		json_insert_pair_into_object(
-			charNode, "Positions", positions);
-		json_insert_child(chars, charNode);
+	json_t *charNode = json_new_object();
+	AddIntPair(charNode, "Index", cp->Index);
+	json_t *positions = json_new_array();
+	for (int j = 0; j < (int)cp->Positions.size; j++)
+	{
+		struct vec2i *pos = CArrayGet(&cp->Positions, j);
+		json_insert_child(positions, SaveVec2i(*pos));
+	}
+	json_insert_pair_into_object(charNode, "Positions", positions);
+	json_insert_child(chars, charNode);
 	CA_FOREACH_END()
 	return chars;
 }
@@ -636,18 +634,17 @@ static json_t *SaveStaticObjectives(const MissionStatic *m)
 {
 	json_t *objs = json_new_array();
 	CA_FOREACH(ObjectivePositions, op, m->Objectives)
-		json_t *objNode = json_new_object();
-		AddIntPair(objNode, "Index", op->Index);
-		json_t *positions = json_new_array();
-		for (int j = 0; j < (int)op->Positions.size; j++)
-		{
-			struct vec2i *pos = CArrayGet(&op->Positions, j);
-			json_insert_child(positions, SaveVec2i(*pos));
-		}
-		json_insert_pair_into_object(
-			objNode, "Positions", positions);
-		AddIntArray(objNode, "Indices", &op->Indices);
-		json_insert_child(objs, objNode);
+	json_t *objNode = json_new_object();
+	AddIntPair(objNode, "Index", op->Index);
+	json_t *positions = json_new_array();
+	for (int j = 0; j < (int)op->Positions.size; j++)
+	{
+		struct vec2i *pos = CArrayGet(&op->Positions, j);
+		json_insert_child(positions, SaveVec2i(*pos));
+	}
+	json_insert_pair_into_object(objNode, "Positions", positions);
+	AddIntArray(objNode, "Indices", &op->Indices);
+	json_insert_child(objs, objNode);
 	CA_FOREACH_END()
 	return objs;
 }
@@ -655,17 +652,16 @@ static json_t *SaveStaticKeys(const MissionStatic *m)
 {
 	json_t *keys = json_new_array();
 	CA_FOREACH(KeyPositions, kp, m->Keys)
-		json_t *keyNode = json_new_object();
-		AddIntPair(keyNode, "Index", kp->Index);
-		json_t *positions = json_new_array();
-		for (int j = 0; j < (int)kp->Positions.size; j++)
-		{
-			struct vec2i *pos = CArrayGet(&kp->Positions, j);
-			json_insert_child(positions, SaveVec2i(*pos));
-		}
-		json_insert_pair_into_object(
-			keyNode, "Positions", positions);
-		json_insert_child(keys, keyNode);
+	json_t *keyNode = json_new_object();
+	AddIntPair(keyNode, "Index", kp->Index);
+	json_t *positions = json_new_array();
+	for (int j = 0; j < (int)kp->Positions.size; j++)
+	{
+		struct vec2i *pos = CArrayGet(&kp->Positions, j);
+		json_insert_child(positions, SaveVec2i(*pos));
+	}
+	json_insert_pair_into_object(keyNode, "Positions", positions);
+	json_insert_child(keys, keyNode);
 	CA_FOREACH_END()
 	return keys;
 }
@@ -709,45 +705,45 @@ static void MapObjectPositionsCopy(CArray *dst, const CArray *src)
 {
 	CArrayInit(dst, src->elemSize);
 	CA_FOREACH(const MapObjectPositions, p, *src)
-		MapObjectPositions pCopy;
-		memset(&pCopy, 0, sizeof pCopy);
-		pCopy.M = p->M;
-		CArrayCopy(&pCopy.Positions, &p->Positions);
-		CArrayPushBack(dst, &pCopy);
+	MapObjectPositions pCopy;
+	memset(&pCopy, 0, sizeof pCopy);
+	pCopy.M = p->M;
+	CArrayCopy(&pCopy.Positions, &p->Positions);
+	CArrayPushBack(dst, &pCopy);
 	CA_FOREACH_END()
 }
 static void CharacterPositionsCopy(CArray *dst, const CArray *src)
 {
 	CArrayInit(dst, src->elemSize);
 	CA_FOREACH(const CharacterPositions, p, *src)
-		CharacterPositions pCopy;
-		memset(&pCopy, 0, sizeof pCopy);
-		pCopy.Index = p->Index;
-		CArrayCopy(&pCopy.Positions, &p->Positions);
-		CArrayPushBack(dst, &pCopy);
+	CharacterPositions pCopy;
+	memset(&pCopy, 0, sizeof pCopy);
+	pCopy.Index = p->Index;
+	CArrayCopy(&pCopy.Positions, &p->Positions);
+	CArrayPushBack(dst, &pCopy);
 	CA_FOREACH_END()
 }
 static void ObjectivePositionsCopy(CArray *dst, const CArray *src)
 {
 	CArrayInit(dst, src->elemSize);
 	CA_FOREACH(const ObjectivePositions, p, *src)
-		ObjectivePositions pCopy;
-		memset(&pCopy, 0, sizeof pCopy);
-		pCopy.Index = p->Index;
-		CArrayCopy(&pCopy.Positions, &p->Positions);
-		CArrayCopy(&pCopy.Indices, &p->Indices);
-		CArrayPushBack(dst, &pCopy);
+	ObjectivePositions pCopy;
+	memset(&pCopy, 0, sizeof pCopy);
+	pCopy.Index = p->Index;
+	CArrayCopy(&pCopy.Positions, &p->Positions);
+	CArrayCopy(&pCopy.Indices, &p->Indices);
+	CArrayPushBack(dst, &pCopy);
 	CA_FOREACH_END()
 }
 static void KeyPositionsCopy(CArray *dst, const CArray *src)
 {
 	CArrayInit(dst, src->elemSize);
 	CA_FOREACH(const KeyPositions, p, *src)
-		KeyPositions pCopy;
-		memset(&pCopy, 0, sizeof pCopy);
-		pCopy.Index = p->Index;
-		CArrayCopy(&pCopy.Positions, &p->Positions);
-		CArrayPushBack(dst, &pCopy);
+	KeyPositions pCopy;
+	memset(&pCopy, 0, sizeof pCopy);
+	pCopy.Index = p->Index;
+	CArrayCopy(&pCopy.Positions, &p->Positions);
+	CArrayPushBack(dst, &pCopy);
 	CA_FOREACH_END()
 }
 
@@ -757,6 +753,9 @@ int MissionStaticGetTile(
 	CASSERT(
 		(int)m->Tiles.size == size.x * size.y,
 		"static mission tiles size mismatch");
+	CASSERT(
+		Rect2iIsInside(Rect2iNew(svec2i_zero(), size), pos),
+		"position outside static map");
 	return *(int *)CArrayGet(&m->Tiles, size.x * pos.y + pos.x);
 }
 const TileClass *MissionStaticGetTileClass(
@@ -765,8 +764,7 @@ const TileClass *MissionStaticGetTileClass(
 	const int tile = MissionStaticGetTile(m, size, pos);
 	return MissionStaticIdTileClass(m, tile);
 }
-TileClass *MissionStaticIdTileClass(
-	const MissionStatic *m, const int tile)
+TileClass *MissionStaticIdTileClass(const MissionStatic *m, const int tile)
 {
 	char keyBuf[6];
 	sprintf(keyBuf, "%d", tile);
@@ -796,39 +794,36 @@ bool MissionStaticTrySetTile(
 	{
 	case TILE_CLASS_WALL:
 		// Check that there are no incompatible doors
-		if (HasDoorOrientedAt(m, size,  svec2i(pos.x - 1, pos.y), false) ||
-			HasDoorOrientedAt(m, size,  svec2i(pos.x + 1, pos.y), false) ||
-			HasDoorOrientedAt(m, size,  svec2i(pos.x, pos.y - 1), true) ||
-			HasDoorOrientedAt(m, size,  svec2i(pos.x, pos.y + 1), true))
+		if (HasDoorOrientedAt(m, size, svec2i(pos.x - 1, pos.y), false) ||
+			HasDoorOrientedAt(m, size, svec2i(pos.x + 1, pos.y), false) ||
+			HasDoorOrientedAt(m, size, svec2i(pos.x, pos.y - 1), true) ||
+			HasDoorOrientedAt(m, size, svec2i(pos.x, pos.y + 1), true))
 		{
 			// Can't place this wall
 			return false;
 		}
 		break;
-	case TILE_CLASS_DOOR:
+	case TILE_CLASS_DOOR: {
+		// Check that there is a clear passage through this door
+		const bool isHClear = IsClear(m, size, svec2i(pos.x - 1, pos.y)) &&
+							  IsClear(m, size, svec2i(pos.x + 1, pos.y));
+		const bool isVClear = IsClear(m, size, svec2i(pos.x, pos.y - 1)) &&
+							  IsClear(m, size, svec2i(pos.x, pos.y + 1));
+		if (!isHClear && !isVClear)
 		{
-			// Check that there is a clear passage through this door
-			const bool isHClear =
-				IsClear(m, size, svec2i(pos.x - 1, pos.y)) &&
-				IsClear(m, size, svec2i(pos.x + 1, pos.y));
-			const bool isVClear =
-				IsClear(m, size, svec2i(pos.x, pos.y - 1)) &&
-				IsClear(m, size, svec2i(pos.x, pos.y + 1));
-			if (!isHClear && !isVClear)
-			{
-				return false;
-			}
-			// Check that there are no incompatible doors
-			if (HasDoorOrientedAt(m, size,  svec2i(pos.x - 1, pos.y), false) ||
-				HasDoorOrientedAt(m, size,  svec2i(pos.x + 1, pos.y), false) ||
-				HasDoorOrientedAt(m, size,  svec2i(pos.x, pos.y - 1), true) ||
-				HasDoorOrientedAt(m, size,  svec2i(pos.x, pos.y + 1), true))
-			{
-				// Can't place this door
-				return false;
-			}
+			return false;
 		}
-		break;
+		// Check that there are no incompatible doors
+		if (HasDoorOrientedAt(m, size, svec2i(pos.x - 1, pos.y), false) ||
+			HasDoorOrientedAt(m, size, svec2i(pos.x + 1, pos.y), false) ||
+			HasDoorOrientedAt(m, size, svec2i(pos.x, pos.y - 1), true) ||
+			HasDoorOrientedAt(m, size, svec2i(pos.x, pos.y + 1), true))
+		{
+			// Can't place this door
+			return false;
+		}
+	}
+	break;
 	default:
 		break;
 	}
@@ -856,7 +851,8 @@ TileClass *MissionStaticAddTileClass(MissionStatic *m, const TileClass *base)
 	TileClassCopy(tc, base);
 	// Try to find an empty slot to add the new tile class
 	int i;
-	for (i = 0; MissionStaticIdTileClass(m, i) != NULL; i++);
+	for (i = 0; MissionStaticIdTileClass(m, i) != NULL; i++)
+		;
 	char buf[12];
 	snprintf(buf, sizeof buf - 1, "%d", i);
 	if (hashmap_put(m->TileClasses, buf, (any_t *)tc) != MAP_OK)
@@ -880,12 +876,13 @@ bool MissionStaticRemoveTileClass(MissionStatic *m, const int tile)
 	}
 	// Set all tiles using this to the first one
 	int i;
-	for (i = 0; MissionStaticIdTileClass(m, i) == NULL; i++);
+	for (i = 0; MissionStaticIdTileClass(m, i) == NULL; i++)
+		;
 	CA_FOREACH(int, t, m->Tiles)
-		if (*t == tile)
-		{
-			*t = i;
-		}
+	if (*t == tile)
+	{
+		*t = i;
+	}
 	CA_FOREACH_END()
 	return true;
 }
@@ -914,14 +911,16 @@ static bool HasDoorOrientedAt(
 		return false;
 	}
 	// Check for walls and doors that force the orientation of the door
-	if (!MissionStaticGetTileClass(m, size, svec2i(pos.x - 1, pos.y))->canWalk ||
+	if (!MissionStaticGetTileClass(m, size, svec2i(pos.x - 1, pos.y))
+			 ->canWalk ||
 		!MissionStaticGetTileClass(m, size, svec2i(pos.x + 1, pos.y))->canWalk)
 	{
 		// There is a horizontal door
 		return isHorizontal;
 	}
 	else if (
-		!MissionStaticGetTileClass(m, size, svec2i(pos.x, pos.y - 1))->canWalk ||
+		!MissionStaticGetTileClass(m, size, svec2i(pos.x, pos.y - 1))
+			 ->canWalk ||
 		!MissionStaticGetTileClass(m, size, svec2i(pos.x, pos.y + 1))->canWalk)
 	{
 		// There is a vertical door
@@ -950,18 +949,18 @@ void MissionStaticLayout(
 
 	// Paint the old tiles back
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), size))
-		if (_v.x >= oldSize.x || _v.y >= oldSize.y)
-		{
-			MissionStaticClearTile(m, size, _v);
-		}
-		else
-		{
-			const int idx = _v.y * oldSize.x + _v.x;
-			const int *tile = CArrayGet(&oldTiles, idx);
-			MissionStaticTrySetTile(m, size, _v, *tile);
-			const int *a = CArrayGet(&oldAccess, idx);
-			CArraySet(&m->Access, _v.y * size.x + _v.x, a);
-		}
+	if (_v.x >= oldSize.x || _v.y >= oldSize.y)
+	{
+		MissionStaticClearTile(m, size, _v);
+	}
+	else
+	{
+		const int idx = _v.y * oldSize.x + _v.x;
+		const int *tile = CArrayGet(&oldTiles, idx);
+		MissionStaticTrySetTile(m, size, _v, *tile);
+		const int *a = CArrayGet(&oldAccess, idx);
+		CArraySet(&m->Access, _v.y * size.x + _v.x, a);
+	}
 	RECT_FOREACH_END()
 
 	CArrayTerminate(&oldTiles);
@@ -1055,12 +1054,12 @@ bool MissionStaticTryAddCharacter(
 		// of positions
 		bool hasAdded = false;
 		CA_FOREACH(CharacterPositions, cp, m->Characters)
-			if (cp->Index == ch)
-			{
-				CArrayPushBack(&cp->Positions, &pos);
-				hasAdded = true;
-				break;
-			}
+		if (cp->Index == ch)
+		{
+			CArrayPushBack(&cp->Positions, &pos);
+			hasAdded = true;
+			break;
+		}
 		CA_FOREACH_END()
 		// If not, create a new entry
 		if (!hasAdded)
@@ -1079,20 +1078,20 @@ bool MissionStaticTryRemoveCharacterAt(
 	MissionStatic *m, const struct vec2i pos)
 {
 	CA_FOREACH(CharacterPositions, cp, m->Characters)
-		for (int j = 0; j < (int)cp->Positions.size; j++)
+	for (int j = 0; j < (int)cp->Positions.size; j++)
+	{
+		struct vec2i *cpPos = CArrayGet(&cp->Positions, j);
+		if (svec2i_is_equal(*cpPos, pos))
 		{
-			struct vec2i *cpPos = CArrayGet(&cp->Positions, j);
-			if (svec2i_is_equal(*cpPos, pos))
+			CArrayDelete(&cp->Positions, j);
+			if (cp->Positions.size == 0)
 			{
-				CArrayDelete(&cp->Positions, j);
-				if (cp->Positions.size == 0)
-				{
-					CArrayTerminate(&cp->Positions);
-					CArrayDelete(&m->Characters, _ca_index);
-				}
-				return true;
+				CArrayTerminate(&cp->Positions);
+				CArrayDelete(&m->Characters, _ca_index);
 			}
+			return true;
 		}
+	}
 	CA_FOREACH_END()
 	return false;
 }
@@ -1143,26 +1142,26 @@ bool MissionStaticTryRemoveObjectiveAt(
 	MissionStatic *m, const struct vec2i pos)
 {
 	CA_FOREACH(ObjectivePositions, op, m->Objectives)
-		for (int j = 0; j < (int)op->Positions.size; j++)
+	for (int j = 0; j < (int)op->Positions.size; j++)
+	{
+		struct vec2i *opPos = CArrayGet(&op->Positions, j);
+		if (svec2i_is_equal(*opPos, pos))
 		{
-			struct vec2i *opPos = CArrayGet(&op->Positions, j);
-			if (svec2i_is_equal(*opPos, pos))
+			CArrayDelete(&op->Positions, j);
+			CArrayDelete(&op->Indices, j);
+			// Decrease number of objectives
+			Objective *o = CArrayGet(&m->Objectives, op->Index);
+			o->Count--;
+			CASSERT(o->Count >= 0, "removing unknown objective");
+			if (op->Positions.size == 0)
 			{
-				CArrayDelete(&op->Positions, j);
-				CArrayDelete(&op->Indices, j);
-				// Decrease number of objectives
-				Objective *o = CArrayGet(&m->Objectives, op->Index);
-				o->Count--;
-				CASSERT(o->Count >= 0, "removing unknown objective");
-				if (op->Positions.size == 0)
-				{
-					CArrayTerminate(&op->Positions);
-					CArrayTerminate(&op->Indices);
-					CArrayDelete(&m->Objectives, _ca_index);
-				}
-				return true;
+				CArrayTerminate(&op->Positions);
+				CArrayTerminate(&op->Indices);
+				CArrayDelete(&m->Objectives, _ca_index);
 			}
+			return true;
 		}
+	}
 	CA_FOREACH_END()
 	return false;
 }
@@ -1180,12 +1179,12 @@ bool MissionStaticTryAddKey(
 		// of positions
 		bool hasAdded = false;
 		CA_FOREACH(KeyPositions, kp, m->Keys)
-			if (kp->Index == k)
-			{
-				CArrayPushBack(&kp->Positions, &pos);
-				hasAdded = true;
-				break;
-			}
+		if (kp->Index == k)
+		{
+			CArrayPushBack(&kp->Positions, &pos);
+			hasAdded = true;
+			break;
+		}
 		CA_FOREACH_END()
 		// If not, create a new entry
 		if (!hasAdded)
@@ -1203,20 +1202,20 @@ bool MissionStaticTryAddKey(
 bool MissionStaticTryRemoveKeyAt(MissionStatic *m, const struct vec2i pos)
 {
 	CA_FOREACH(KeyPositions, kp, m->Keys)
-		for (int j = 0; j < (int)kp->Positions.size; j++)
+	for (int j = 0; j < (int)kp->Positions.size; j++)
+	{
+		struct vec2i *kpPos = CArrayGet(&kp->Positions, j);
+		if (svec2i_is_equal(*kpPos, pos))
 		{
-			struct vec2i *kpPos = CArrayGet(&kp->Positions, j);
-			if (svec2i_is_equal(*kpPos, pos))
+			CArrayDelete(&kp->Positions, j);
+			if (kp->Positions.size == 0)
 			{
-				CArrayDelete(&kp->Positions, j);
-				if (kp->Positions.size == 0)
-				{
-					CArrayTerminate(&kp->Positions);
-					CArrayDelete(&m->Keys, _ca_index);
-				}
-				return true;
+				CArrayTerminate(&kp->Positions);
+				CArrayDelete(&m->Keys, _ca_index);
 			}
+			return true;
 		}
+	}
 	CA_FOREACH_END()
 	return false;
 }
@@ -1230,8 +1229,8 @@ typedef struct
 static void FloodFillSetAccess(void *data, const struct vec2i v);
 static bool FloodFillIsAccessSame(void *data, const struct vec2i v);
 bool MissionStaticTrySetKey(
-	MissionStatic *m, const int k,
-	const struct vec2i size, const struct vec2i pos)
+	MissionStatic *m, const int k, const struct vec2i size,
+	const struct vec2i pos)
 {
 	FloodFillData data;
 	data.Fill = FloodFillSetAccess;
@@ -1246,13 +1245,14 @@ bool MissionStaticTrySetKey(
 static void FloodFillSetAccess(void *data, const struct vec2i v)
 {
 	MissionFloodFillData *mData = data;
-	CArraySet(&mData->m->Access, mData->size.x * v.y + v.x, &mData->tileAccess);
+	CArraySet(
+		&mData->m->Access, mData->size.x * v.y + v.x, &mData->tileAccess);
 }
 static bool FloodFillIsAccessSame(void *data, const struct vec2i v)
 {
 	MissionFloodFillData *mData = data;
-	const int tileAccess = *(int *)CArrayGet(
-		&mData->m->Access, mData->size.x * v.y + v.x);
+	const int tileAccess =
+		*(int *)CArrayGet(&mData->m->Access, mData->size.x * v.y + v.x);
 	const TileClass *tc = MissionStaticGetTileClass(mData->m, mData->size, v);
 	return tc->Type == TILE_CLASS_DOOR && tileAccess != mData->tileAccess;
 }

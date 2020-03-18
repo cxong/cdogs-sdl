@@ -1,57 +1,58 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin
-    Copyright (C) 2003-2007 Lucas Martin-King
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (C) 1995 Ronny Wester
+	Copyright (C) 2003 Jeremy Chin
+	Copyright (C) 2003-2007 Lucas Martin-King
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-    This file incorporates work covered by the following copyright and
-    permission notice:
+	This file incorporates work covered by the following copyright and
+	permission notice:
 
-    Copyright (c) 2013-2019 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "map.h"
 
 #include <assert.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
+#include "actors.h"
 #include "algorithms.h"
 #include "ammo.h"
 #include "collision/collision.h"
@@ -65,17 +66,15 @@
 #include "map_cave.h"
 #include "map_classic.h"
 #include "map_static.h"
+#include "mission.h"
 #include "net_util.h"
+#include "objs.h"
 #include "pic_manager.h"
 #include "pickup.h"
-#include "objs.h"
 #include "sounds.h"
-#include "actors.h"
-#include "mission.h"
 #include "utils.h"
 
 Map gMap;
-
 
 const char *IMapTypeStr(IMapType t)
 {
@@ -102,7 +101,6 @@ IMapType StrIMapType(const char *s)
 	return MAP_FLOOR;
 }
 
-
 uint16_t GetAccessMask(const int k)
 {
 	if (k == -1)
@@ -124,8 +122,7 @@ Tile *MapGetTile(const Map *map, const struct vec2i pos)
 bool MapIsTileIn(const Map *map, const struct vec2i pos)
 {
 	// Check that the tile pos is within the interior of the map
-	return !(pos.x < 0 || pos.y < 0 ||
-		pos.x > map->Size.x - 1 || pos.y > map->Size.y - 1);
+	return Rect2iIsInside(Rect2iNew(svec2i_zero(), map->Size), pos);
 }
 static bool MapIsPosIn(const Map *map, const struct vec2 pos)
 {
@@ -136,9 +133,8 @@ static bool MapIsPosIn(const Map *map, const struct vec2 pos)
 bool MapIsTileInExit(const Map *map, const Thing *ti)
 {
 	const struct vec2i tilePos = Vec2ToTile(ti->Pos);
-	return
-		tilePos.x >= map->ExitStart.x && tilePos.x <= map->ExitEnd.x &&
-		tilePos.y >= map->ExitStart.y && tilePos.y <= map->ExitEnd.y;
+	return tilePos.x >= map->ExitStart.x && tilePos.x <= map->ExitEnd.x &&
+		   tilePos.y >= map->ExitStart.y && tilePos.y <= map->ExitEnd.y;
 }
 
 static Tile *MapGetTileOfItem(Map *map, Thing *t)
@@ -194,11 +190,11 @@ void MapRemoveThing(Map *map, Thing *t)
 	}
 	Tile *tile = MapGetTileOfItem(map, t);
 	CA_FOREACH(ThingId, tid, tile->things)
-		if (tid->Id == t->id && tid->Kind == t->kind)
-		{
-			CArrayDelete(&tile->things, _ca_index);
-			return;
-		}
+	if (tid->Id == t->id && tid->Kind == t->kind)
+	{
+		CArrayDelete(&tile->things, _ca_index);
+		return;
+	}
 	CA_FOREACH_END()
 	CASSERT(false, "Did not find element to delete");
 }
@@ -214,8 +210,7 @@ struct vec2 MapGetRandomPos(const Map *map)
 	{
 		const struct vec2 pos = svec2(
 			RAND_FLOAT(0, map->Size.x * TILE_WIDTH),
-			RAND_FLOAT(0, map->Size.y * TILE_HEIGHT)
-		);
+			RAND_FLOAT(0, map->Size.y * TILE_HEIGHT));
 		// RAND_FLOAT can sometimes produce the max size
 		if (pos.x < map->Size.x * TILE_WIDTH &&
 			pos.y < map->Size.y * TILE_HEIGHT)
@@ -226,8 +221,8 @@ struct vec2 MapGetRandomPos(const Map *map)
 }
 
 static void MapChangeFloor(
-	Map *map, const struct vec2i pos,
-	const TileClass *normal, const TileClass *shadow)
+	Map *map, const struct vec2i pos, const TileClass *normal,
+	const TileClass *shadow)
 {
 	const Tile *tAbove = MapGetTile(map, svec2i(pos.x, pos.y - 1));
 	const int canSeeTileAbove = !(pos.y > 0 && TileIsOpaque(tAbove));
@@ -296,8 +291,8 @@ bool MapHasLockedRooms(const Map *map)
 
 uint16_t MapGetAccessLevel(const Map *map, const struct vec2i pos)
 {
-	const uint16_t t = *(uint16_t *)CArrayGet(
-		&map->access, pos.y * map->Size.x + pos.x);
+	const uint16_t t =
+		*(uint16_t *)CArrayGet(&map->access, pos.y * map->Size.x + pos.x);
 	return AccessCodeToFlags(t);
 }
 
@@ -355,8 +350,8 @@ void MapPlaceKey(
 }
 
 static int GetPlacementRetries(
-	const Map *map, const PlacementAccessFlags paFlags,
-	bool *locked, bool *unlocked)
+	const Map *map, const PlacementAccessFlags paFlags, bool *locked,
+	bool *unlocked)
 {
 	// Try more times if we need to place in a locked room or unlocked place
 	*locked = paFlags == PLACEMENT_ACCESS_LOCKED && MapHasLockedRooms(map);
@@ -370,8 +365,8 @@ bool MapPlaceRandomTile(
 {
 	// Try a bunch of times to place something on a random tile
 	bool locked, unlocked;
-	const int retries = GetPlacementRetries(
-		mb->Map, paFlags, &locked, &unlocked);
+	const int retries =
+		GetPlacementRetries(mb->Map, paFlags, &locked, &unlocked);
 	for (int i = 0; i < retries; i++)
 	{
 		const struct vec2i tilePos = MapGetRandomTile(mb->Map);
@@ -428,20 +423,24 @@ uint16_t AccessCodeToFlags(const uint16_t code)
 int MapGetDoorKeycardFlag(Map *map, struct vec2i pos)
 {
 	int l = MapGetAccessLevel(map, pos);
-	if (l) return l;
+	if (l)
+		return l;
 	l = MapGetAccessLevel(map, svec2i(pos.x - 1, pos.y));
-	if (l) return l;
+	if (l)
+		return l;
 	l = MapGetAccessLevel(map, svec2i(pos.x + 1, pos.y));
-	if (l) return l;
+	if (l)
+		return l;
 	l = MapGetAccessLevel(map, svec2i(pos.x, pos.y - 1));
-	if (l) return l;
+	if (l)
+		return l;
 	return MapGetAccessLevel(map, svec2i(pos.x, pos.y + 1));
 }
 
 void MapTerminate(Map *map)
 {
 	CA_FOREACH(Trigger *, t, map->triggers)
-		TriggerTerminate(*t);
+	TriggerTerminate(*t);
 	CA_FOREACH_END()
 	CArrayTerminate(&map->triggers);
 	struct vec2i v;
@@ -503,11 +502,21 @@ void MapPrintDebug(const Map *m)
 			const TileClass *t = MapGetTile(m, v)->Class;
 			switch (t->Type)
 			{
-				case TILE_CLASS_FLOOR: *bufP++ = t->IsRoom ? '-' : '.'; break;
-				case TILE_CLASS_WALL: *bufP++ = '#'; break;
-				case TILE_CLASS_DOOR: *bufP++ = '+'; break;
-				case TILE_CLASS_NOTHING: *bufP++ = ' '; break;
-				default: *bufP++ = '?'; break;
+			case TILE_CLASS_FLOOR:
+				*bufP++ = t->IsRoom ? '-' : '.';
+				break;
+			case TILE_CLASS_WALL:
+				*bufP++ = '#';
+				break;
+			case TILE_CLASS_DOOR:
+				*bufP++ = '+';
+				break;
+			case TILE_CLASS_NOTHING:
+				*bufP++ = ' ';
+				break;
+			default:
+				*bufP++ = '?';
+				break;
 			}
 		}
 		LOG(LM_MAP, LL_TRACE, buf);
@@ -538,7 +547,8 @@ bool MapIsPosOKForPlayer(
 // This includes collisions that make the target illegal, such as walls
 // But it also includes item collisions, whether or not the collisions
 // are legal, e.g. item pickups, friendly collisions
-bool MapIsTileAreaClear(Map *map, const struct vec2 pos, const struct vec2i size)
+bool MapIsTileAreaClear(
+	Map *map, const struct vec2 pos, const struct vec2i size)
 {
 	// Wall collision
 	if (IsCollisionWithWall(pos, size))
@@ -566,8 +576,7 @@ bool MapIsTileAreaClear(Map *map, const struct vec2 pos, const struct vec2i size
 			}
 			for (int i = 0; i < (int)tileThings->size; i++)
 			{
-				const Thing *ti =
-					ThingIdGetThing(CArrayGet(tileThings, i));
+				const Thing *ti = ThingIdGetThing(CArrayGet(tileThings, i));
 				if (AABBOverlap(pos, ti->Pos, size, ti->size))
 				{
 					return false;
@@ -606,7 +615,8 @@ int MapGetExploredPercentage(Map *map)
 	return (100 * map->tilesSeen) / map->NumExplorableTiles;
 }
 
-struct vec2i MapSearchTileAround(Map *map, struct vec2i start, TileSelectFunc func)
+struct vec2i MapSearchTileAround(
+	Map *map, struct vec2i start, TileSelectFunc func)
 {
 	if (func(map, start))
 	{
@@ -616,23 +626,22 @@ struct vec2i MapSearchTileAround(Map *map, struct vec2i start, TileSelectFunc fu
 	for (int radius = 1; radius < MAX(map->Size.x, map->Size.y); radius++)
 	{
 		struct vec2i tile;
-		for (tile.x = start.x - radius;
-			tile.x <= start.x + radius;
-			tile.x++)
+		for (tile.x = start.x - radius; tile.x <= start.x + radius; tile.x++)
 		{
-			if (tile.x < 0) continue;
-			if (tile.x >= map->Size.x) break;
-			for (tile.y = start.y - radius;
-				tile.y <= start.y + radius;
-				tile.y++)
+			if (tile.x < 0)
+				continue;
+			if (tile.x >= map->Size.x)
+				break;
+			for (tile.y = start.y - radius; tile.y <= start.y + radius;
+				 tile.y++)
 			{
-				if (tile.y < 0) continue;
-				if (tile.y >= map->Size.y) break;
+				if (tile.y < 0)
+					continue;
+				if (tile.y >= map->Size.y)
+					break;
 				// Check box; don't check inside
-				if (tile.x != start.x - radius &&
-					tile.x != start.x + radius &&
-					tile.y != start.y - radius &&
-					tile.y != start.y + radius)
+				if (tile.x != start.x - radius && tile.x != start.x + radius &&
+					tile.y != start.y - radius && tile.y != start.y + radius)
 				{
 					continue;
 				}

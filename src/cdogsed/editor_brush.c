@@ -1,29 +1,29 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, 2019 Cong Xu
-    All rights reserved.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (c) 2014, 2019 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "editor_brush.h"
 
@@ -33,7 +33,6 @@
 #include <cdogs/map.h>
 #include <cdogs/map_build.h>
 #include <cdogs/mission_convert.h>
-
 
 void EditorBrushInit(EditorBrush *b)
 {
@@ -90,8 +89,8 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 		}
 		break;
 	case BRUSHTYPE_BOX:
-	case BRUSHTYPE_BOX_AND_FILL:	// fallthrough
-	case BRUSHTYPE_SET_EXIT:	// fallthrough
+	case BRUSHTYPE_BOX_AND_FILL: // fallthrough
+	case BRUSHTYPE_SET_EXIT:	 // fallthrough
 		if (b->IsPainting)
 		{
 			struct vec2i v;
@@ -137,8 +136,8 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 			if (b->IsMoving)
 			{
 				struct vec2i v;
-				struct vec2i offset = svec2i(
-					b->Pos.x - b->DragPos.x, b->Pos.y - b->DragPos.y);
+				struct vec2i offset =
+					svec2i(b->Pos.x - b->DragPos.x, b->Pos.y - b->DragPos.y);
 				useSimpleHighlight = 0;
 				CArrayClear(&b->HighlightedTiles);
 				for (v.y = 0; v.y < b->SelectionSize.y; v.y++)
@@ -181,7 +180,8 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 				{
 					for (v.x = 0; v.x < b->SelectionSize.x; v.x++)
 					{
-						struct vec2i vOffset = svec2i_add(v, b->SelectionStart);
+						struct vec2i vOffset =
+							svec2i_add(v, b->SelectionStart);
 						EditorBrushHighlightPoint(b, vOffset);
 					}
 				}
@@ -203,8 +203,8 @@ static void SetTile(Mission *m, const struct vec2i pos, const int tile)
 {
 	if (MissionStaticTrySetTile(&m->u.Static, m->Size, pos, tile))
 	{
-		const TileClass *tc = MissionStaticGetTileClass(
-			&m->u.Static, m->Size, pos);
+		const TileClass *tc =
+			MissionStaticGetTileClass(&m->u.Static, m->Size, pos);
 		MapBuildTile(&gMap, m, pos, tc);
 	}
 }
@@ -266,10 +266,10 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 		b->IsPainting = true;
 		EditorBrushPaintLine(b, m);
 		return EDITOR_RESULT_CHANGED;
-	case BRUSHTYPE_LINE:	// fallthrough
-	case BRUSHTYPE_BOX:	// fallthrough
-	case BRUSHTYPE_BOX_FILLED:	// fallthrough
-	case BRUSHTYPE_BOX_AND_FILL:	// fallthrough
+	case BRUSHTYPE_LINE:		 // fallthrough
+	case BRUSHTYPE_BOX:			 // fallthrough
+	case BRUSHTYPE_BOX_FILLED:	 // fallthrough
+	case BRUSHTYPE_BOX_AND_FILL: // fallthrough
 	case BRUSHTYPE_SET_EXIT:
 		// don't paint until the end
 		break;
@@ -297,7 +297,8 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 		// another type
 		// Don't paint if target already same type
 		// Special case: don't flood-fill doors
-		if (MissionStaticIdTileClass(&m->u.Static, b->PaintType)->Type == TILE_CLASS_DOOR)
+		if (MissionStaticIdTileClass(&m->u.Static, b->PaintType)->Type ==
+			TILE_CLASS_DOOR)
 		{
 			break;
 		}
@@ -349,7 +350,7 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 		if (isMain)
 		{
 			if (MissionStaticTryAddCharacter(
-				&m->u.Static, b->u.ItemIndex, b->Pos))
+					&m->u.Static, b->u.ItemIndex, b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}
@@ -366,7 +367,7 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 		if (isMain)
 		{
 			if (MissionStaticTryAddObjective(
-				&m->u.Static, b->u.ItemIndex, b->Index2, b->Pos))
+					&m->u.Static, b->u.ItemIndex, b->Index2, b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}
@@ -399,7 +400,7 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 		if (isMain || b->u.ItemIndex > 0)
 		{
 			if (MissionStaticTrySetKey(
-				&m->u.Static, b->u.ItemIndex, m->Size, b->Pos))
+					&m->u.Static, b->u.ItemIndex, m->Size, b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}
@@ -427,7 +428,12 @@ static void MissionFillTile(void *data, const struct vec2i v)
 static bool MissionIsTileSame(void *data, const struct vec2i v)
 {
 	PaintFloodFillData *pData = data;
-	return MissionStaticGetTile(&pData->m->u.Static, pData->m->Size, v) == pData->fromType;
+	if (!Rect2iIsInside(Rect2iNew(svec2i_zero(), pData->m->Size), v))
+	{
+		return false;
+	}
+	return MissionStaticGetTile(&pData->m->u.Static, pData->m->Size, v) ==
+		   pData->fromType;
 }
 static void EditorBrushPaintBox(
 	EditorBrush *b, Mission *m, const int lineType, const int fillType)
@@ -438,8 +444,7 @@ static void EditorBrushPaintBox(
 	// aware of brush sizes
 	struct vec2i v;
 	struct vec2i d = svec2i(
-		b->Pos.x > b->LastPos.x ? 1 : -1,
-		b->Pos.y > b->LastPos.y ? 1 : -1);
+		b->Pos.x > b->LastPos.x ? 1 : -1, b->Pos.y > b->LastPos.y ? 1 : -1);
 	EditorBrushPaintTilesAtData paintData;
 	paintData.brush = b;
 	paintData.mission = m;
@@ -511,10 +516,10 @@ EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 				// Copy tiles to temp from selection, clearing them
 				// in the process
 				RECT_FOREACH(Rect2iNew(b->SelectionStart, b->SelectionSize))
-					const int tile =
-						MissionStaticGetTile(&m->u.Static, m->Size, _v);
-					CArrayPushBack(&movedTiles, &tile);
-					MissionStaticClearTile(&m->u.Static, m->Size, _v);
+				const int tile =
+					MissionStaticGetTile(&m->u.Static, m->Size, _v);
+				CArrayPushBack(&movedTiles, &tile);
+				MissionStaticClearTile(&m->u.Static, m->Size, _v);
 				RECT_FOREACH_END()
 				// Move the selection to the new position
 				b->SelectionStart.x += b->Pos.x - b->DragPos.x;
@@ -522,14 +527,13 @@ EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 				// Copy tiles to the new area, for parts of the new area that
 				// are valid
 				RECT_FOREACH(Rect2iNew(b->SelectionStart, b->SelectionSize))
-					if (_v.x >= 0 && _v.x < m->Size.x &&
-						_v.y >= 0 && _v.y < m->Size.y)
-					{
-						const int tile = *(int *)CArrayGet(&movedTiles, _i);
-						MissionStaticTrySetTile(
-							&m->u.Static, m->Size, _v, tile);
-						result = EDITOR_RESULT_CHANGED_AND_RELOAD;
-					}
+				if (_v.x >= 0 && _v.x < m->Size.x && _v.y >= 0 &&
+					_v.y < m->Size.y)
+				{
+					const int tile = *(int *)CArrayGet(&movedTiles, _i);
+					MissionStaticTrySetTile(&m->u.Static, m->Size, _v, tile);
+					result = EDITOR_RESULT_CHANGED_AND_RELOAD;
+				}
 				RECT_FOREACH_END()
 				CArrayTerminate(&movedTiles);
 				// Update the selection to fit within map boundaries
@@ -576,31 +580,32 @@ EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 				}
 			}
 			break;
-		case BRUSHTYPE_SET_EXIT:
+		case BRUSHTYPE_SET_EXIT: {
+			struct vec2i exitStart = svec2i_min(b->LastPos, b->Pos);
+			struct vec2i exitEnd = svec2i_max(b->LastPos, b->Pos);
+			// Clamp within map boundaries
+			exitStart = svec2i_clamp(
+				exitStart, svec2i_zero(),
+				svec2i_subtract(m->Size, svec2i_one()));
+			exitEnd = svec2i_clamp(
+				exitEnd, svec2i_zero(),
+				svec2i_subtract(m->Size, svec2i_one()));
+			// Check that size is big enough
+			struct vec2i size =
+				svec2i_add(svec2i_subtract(exitEnd, exitStart), svec2i_one());
+			if (size.x >= 3 && size.y >= 3)
 			{
-				struct vec2i exitStart = svec2i_min(b->LastPos, b->Pos);
-				struct vec2i exitEnd = svec2i_max(b->LastPos, b->Pos);
-				// Clamp within map boundaries
-				exitStart = svec2i_clamp(
-					exitStart, svec2i_zero(), svec2i_subtract(m->Size, svec2i_one()));
-				exitEnd = svec2i_clamp(
-					exitEnd, svec2i_zero(), svec2i_subtract(m->Size, svec2i_one()));
-				// Check that size is big enough
-				struct vec2i size =
-					svec2i_add(svec2i_subtract(exitEnd, exitStart), svec2i_one());
-				if (size.x >= 3 && size.y >= 3)
+				// Check that exit area has changed
+				if (!svec2i_is_equal(exitStart, m->u.Static.Exit.Start) ||
+					!svec2i_is_equal(exitEnd, m->u.Static.Exit.End))
 				{
-					// Check that exit area has changed
-					if (!svec2i_is_equal(exitStart, m->u.Static.Exit.Start) ||
-						!svec2i_is_equal(exitEnd, m->u.Static.Exit.End))
-					{
-						m->u.Static.Exit.Start = exitStart;
-						m->u.Static.Exit.End = exitEnd;
-						result = EDITOR_RESULT_CHANGED_AND_RELOAD;
-					}
+					m->u.Static.Exit.Start = exitStart;
+					m->u.Static.Exit.End = exitEnd;
+					result = EDITOR_RESULT_CHANGED_AND_RELOAD;
 				}
 			}
-			break;
+		}
+		break;
 		default:
 			// do nothing
 			break;
