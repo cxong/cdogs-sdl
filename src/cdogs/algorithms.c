@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2014, 2017 Cong Xu
+	Copyright (c) 2013-2014, 2017, 2020 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,8 @@
 #include <math.h>
 
 #include "c_array.h"
+#include "c_hashmap/hashmap.h"
+#include "log.h"
 
 typedef struct
 {
@@ -175,43 +177,47 @@ void JMRaytraceLineDraw(
 	JMRaytrace(from.x, from.y, to.x, to.y, &bData);
 }
 
+static bool TryAddFloodFillNeighbor(
+	CArray *q, map_t seen, const FloodFillData *data, const struct vec2i v);
 bool CFloodFill(const struct vec2i v, FloodFillData *data)
 {
 	bool result = false;
 	// Use BFS queue
 	CArray q;
 	CArrayInit(&q, sizeof v);
-	if (data->IsSame(data->data, v))
+	map_t seen = hashmap_new();
+	if (TryAddFloodFillNeighbor(&q, seen, data, v))
 	{
-		CArrayPushBack(&q, &v);
 		result = true;
 	}
 	while (q.size > 0)
 	{
 		const struct vec2i *qv = CArrayGet(&q, 0);
 		data->Fill(data->data, *qv);
-		struct vec2i nv = svec2i(qv->x - 1, qv->y);
-		if (data->IsSame(data->data, nv))
-		{
-			CArrayPushBack(&q, &nv);
-		}
-		nv = svec2i(qv->x + 1, qv->y);
-		if (data->IsSame(data->data, nv))
-		{
-			CArrayPushBack(&q, &nv);
-		}
-		nv = svec2i(qv->x, qv->y - 1);
-		if (data->IsSame(data->data, nv))
-		{
-			CArrayPushBack(&q, &nv);
-		}
-		nv = svec2i(qv->x, qv->y + 1);
-		if (data->IsSame(data->data, nv))
-		{
-			CArrayPushBack(&q, &nv);
-		}
+		TryAddFloodFillNeighbor(&q, seen, data, svec2i(qv->x - 1, qv->y));
+		TryAddFloodFillNeighbor(&q, seen, data, svec2i(qv->x + 1, qv->y));
+		TryAddFloodFillNeighbor(&q, seen, data, svec2i(qv->x, qv->y - 1));
+		TryAddFloodFillNeighbor(&q, seen, data, svec2i(qv->x, qv->y + 1));
 		CArrayDelete(&q, 0);
 	}
 	CArrayTerminate(&q);
+	hashmap_free(seen);
 	return result;
+}
+static bool TryAddFloodFillNeighbor(
+	CArray *q, map_t seen, const FloodFillData *data, const struct vec2i v)
+{
+	char buf[256];
+	sprintf(buf, "%d,%d", v.x, v.y);
+	if (data->IsSame(data->data, v) &&
+		hashmap_get(seen, buf, NULL) == MAP_MISSING)
+	{
+		CArrayPushBack(q, &v);
+		if (hashmap_put(seen, buf, NULL) != MAP_OK)
+		{
+			LOG(LM_MAIN, LL_ERROR, "failed to add key to seen set (%s)", buf);
+		}
+		return true;
+	}
+	return false;
 }
