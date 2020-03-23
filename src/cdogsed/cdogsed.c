@@ -46,12 +46,13 @@
 	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 	POSSIBILITY OF SUCH DAMAGE.
 */
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 #include <SDL.h>
 
+#include <cdogs/XGetopt.h>
 #include <cdogs/actors.h>
 #include <cdogs/automap.h>
 #include <cdogs/collision/collision.h>
@@ -63,7 +64,6 @@
 #include <cdogs/font_utils.h>
 #include <cdogs/log.h>
 #include <cdogs/player_template.h>
-#include <cdogs/XGetopt.h>
 
 #include <tinydir/tinydir.h>
 
@@ -72,10 +72,9 @@
 #include <cdogsed/editor_ui_common.h>
 #include <cdogsed/osdialog/osdialog.h>
 
-
 // Mouse click areas:
 static UIObject *sObjs;
-static CArray sDrawObjs;	// of UIObjectDrawContext, used to cache BFS order
+static CArray sDrawObjs; // of UIObjectDrawContext, used to cache BFS order
 static UIObject *sLastHighlightedObj = NULL;
 static UIObject *sTooltipObj = NULL;
 static DrawBuffer sDrawBuffer;
@@ -86,7 +85,6 @@ static int sAutosaveIndex = 0;
 // This is to prevent painting immediately after selecting a new tool,
 // but before the user has clicked again.
 static bool sIgnoreMouse = false;
-
 
 // Globals
 
@@ -106,7 +104,6 @@ Uint32 ticksAutosave;
 Uint32 sTicksElapsed;
 bool fileChanged = false;
 
-
 static struct vec2i GetMouseTile(EventHandlers *e)
 {
 	Mission *m = CampaignGetCurrentMission(&gCampaign);
@@ -117,8 +114,10 @@ static struct vec2i GetMouseTile(EventHandlers *e)
 	else
 	{
 		return svec2i(
-			(e->mouse.currentPos.x - sDrawBuffer.dx) / TILE_WIDTH + sDrawBuffer.xStart,
-			(e->mouse.currentPos.y - sDrawBuffer.dy) / TILE_HEIGHT + sDrawBuffer.yStart);
+			(e->mouse.currentPos.x - sDrawBuffer.dx) / TILE_WIDTH +
+				sDrawBuffer.xStart,
+			(e->mouse.currentPos.y - sDrawBuffer.dy) / TILE_HEIGHT +
+				sDrawBuffer.yStart);
 	}
 }
 static struct vec2i GetScreenPos(struct vec2i mapTile)
@@ -130,8 +129,7 @@ static struct vec2i GetScreenPos(struct vec2i mapTile)
 
 static int IsBrushPosValid(struct vec2i pos, const Mission *m)
 {
-	return pos.x >= 0 && pos.x < m->Size.x &&
-		pos.y >= 0 && pos.y < m->Size.y;
+	return pos.x >= 0 && pos.x < m->Size.x && pos.y >= 0 && pos.y < m->Size.y;
 }
 
 static void MakeBackground(const bool changedMission)
@@ -149,8 +147,6 @@ static void MakeBackground(const bool changedMission)
 		ec.camera = Vec2CenterOfTile(focusTile);
 	}
 
-	// Clear background first
-	BlitClearBuf(ec.g);
 	GrafxDrawExtra extra;
 	extra.guideImage = brush.GuideImageSurface;
 	extra.guideImageAlpha = brush.GuideImageAlpha;
@@ -158,8 +154,8 @@ static void MakeBackground(const bool changedMission)
 	DrawBufferTerminate(&sDrawBuffer);
 	DrawBufferInit(&sDrawBuffer, svec2i(X_TILES, Y_TILES), &gGraphicsDevice);
 	GrafxMakeBackground(
-		ec.g, &sDrawBuffer, &gCampaign, &gMission, &gMap,
-		tintNone, true, ec.camera, &extra);
+		ec.g, &sDrawBuffer, &gCampaign, &gMission, &gMap, tintNone, true,
+		ec.camera, &extra);
 }
 
 // Returns whether a redraw is required
@@ -188,13 +184,10 @@ static void Display(HandleInputResult result)
 		{
 			MakeBackground(false);
 		}
-		// Clear background first
-		BlitClearBuf(ec.g);
 		GrafxDrawExtra extra;
 		extra.guideImage = brush.GuideImageSurface;
 		extra.guideImageAlpha = brush.GuideImageAlpha;
-		GrafxDrawBackground(
-			ec.g, &sDrawBuffer, tintNone, ec.camera, &extra);
+		GrafxDrawBackground(ec.g, &sDrawBuffer, tintNone, ec.camera, &extra);
 		BlitClearBuf(ec.g);
 
 		// Draw brush highlight tiles
@@ -203,13 +196,12 @@ static void Display(HandleInputResult result)
 			EditorBrushSetHighlightedTiles(&brush);
 		}
 		CA_FOREACH(struct vec2i, pos, brush.HighlightedTiles)
-			struct vec2i screenPos = GetScreenPos(*pos);
-			if (screenPos.x >= 0 && screenPos.x < w &&
-				screenPos.y >= 0 && screenPos.y < h)
-			{
-				DrawRectangle(
-					ec.g, screenPos, TILE_SIZE, colorWhite, false);
-			}
+		struct vec2i screenPos = GetScreenPos(*pos);
+		if (screenPos.x >= 0 && screenPos.x < w && screenPos.y >= 0 &&
+			screenPos.y < h)
+		{
+			DrawRectangle(ec.g, screenPos, TILE_SIZE, colorWhite, false);
+		}
 		CA_FOREACH_END()
 
 		if (brush.LastPos.x)
@@ -224,16 +216,17 @@ static void Display(HandleInputResult result)
 		// Display a disk icon to show the game needs saving
 		const Pic *pic = PicManagerGetPic(&gPicManager, "disk1");
 		PicRender(
-			pic, gGraphicsDevice.gameWindow.renderer,
-			svec2i(10, y), colorWhite, 0, svec2_one(),
-			SDL_FLIP_NONE, Rect2iZero());
+			pic, gGraphicsDevice.gameWindow.renderer, svec2i(10, y),
+			colorWhite, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 	}
 
-	FontStr("Press Ctrl+E to edit characters", svec2i(20, h - 20 - FontH() * 2));
+	FontStr(
+		"Press Ctrl+E to edit characters", svec2i(20, h - 20 - FontH() * 2));
 	FontStr("Press F1 for help", svec2i(20, h - 20 - FontH()));
 
 	UIObjectDraw(
-		sObjs, ec.g, svec2i_zero(), gEventHandlers.mouse.currentPos, &sDrawObjs);
+		sObjs, ec.g, svec2i_zero(), gEventHandlers.mouse.currentPos,
+		&sDrawObjs);
 
 	if (result.WillDisplayAutomap && mission)
 	{
@@ -384,7 +377,8 @@ static void Autosave(void)
 		PathGetDirname(dirname, lastFile);
 		char buf[CDOGS_PATH_MAX];
 		sprintf(
-			buf, "%s~%d%s", dirname, sAutosaveIndex, PathGetBasename(lastFile));
+			buf, "%s~%d%s", dirname, sAutosaveIndex,
+			PathGetBasename(lastFile));
 		MapArchiveSave(buf, &gCampaign.Setting);
 		sAutosaveIndex++;
 	}
@@ -501,8 +495,8 @@ static void Save(void)
 		char msgBuf[CDOGS_PATH_MAX];
 		sprintf(msgBuf, "Saved to %s", filename);
 		SDL_ShowSimpleMessageBox(
-			SDL_MESSAGEBOX_INFORMATION, "Campaign Saved",
-			msgBuf, gGraphicsDevice.gameWindow.window);
+			SDL_MESSAGEBOX_INFORMATION, "Campaign Saved", msgBuf,
+			gGraphicsDevice.gameWindow.window);
 	}
 	free(filename);
 	osdialog_filters_free(filters);
@@ -602,10 +596,10 @@ static void Delete(int xc, int yc)
 static void InputInsert(int *xc, const int yc, Mission *mission);
 static void InputDelete(const int xc, const int yc);
 static HandleInputResult HandleInput(
-	SDL_Scancode sc, const int m,
-	int *xc, int *yc, int *xcOld, int *ycOld, Mission *scrap)
+	SDL_Scancode sc, const int m, int *xc, int *yc, int *xcOld, int *ycOld,
+	Mission *scrap)
 {
-	HandleInputResult result = { false, false, false };
+	HandleInputResult result = {false, false, false};
 	Mission *mission = CampaignGetCurrentMission(&gCampaign);
 	UIObject *o = NULL;
 	const struct vec2i brushLastDrawPos = brush.Pos;
@@ -655,9 +649,8 @@ static HandleInputResult HandleInput(
 		result.Redraw = true;
 	}
 
-	if (m &&
-		(m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT ||
-		MouseWheel(&gEventHandlers.mouse).y != 0))
+	if (m && (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT ||
+			  MouseWheel(&gEventHandlers.mouse).y != 0))
 	{
 		result.Redraw = true;
 		if (sLastHighlightedObj && !sLastHighlightedObj->IsBackground)
@@ -701,14 +694,16 @@ static HandleInputResult HandleInput(
 				}
 			}
 			if (!(o->Flags & UI_SELECT_ONLY) &&
-				(!(o->Flags & UI_SELECT_ONLY_FIRST) || (*xc == *xcOld && *yc == *ycOld)))
+				(!(o->Flags & UI_SELECT_ONLY_FIRST) ||
+				 (*xc == *xcOld && *yc == *ycOld)))
 			{
 				if (m == SDL_BUTTON_LEFT ||
 					MouseWheel(&gEventHandlers.mouse).y > 0)
 				{
 					sc = SDL_SCANCODE_PAGEUP;
 				}
-				else if (m == SDL_BUTTON_RIGHT ||
+				else if (
+					m == SDL_BUTTON_RIGHT ||
 					MouseWheel(&gEventHandlers.mouse).y < 0)
 				{
 					sc = SDL_SCANCODE_PAGEDOWN;
@@ -727,7 +722,7 @@ static HandleInputResult HandleInput(
 	}
 	if (!o &&
 		(MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_LEFT) ||
-		MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_RIGHT)) &&
+		 MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_RIGHT)) &&
 		!sIgnoreMouse)
 	{
 		result.Redraw = true;
@@ -759,8 +754,8 @@ static HandleInputResult HandleInput(
 		{
 			// Clamp brush position
 			brush.Pos = svec2i_clamp(
-				brush.Pos,
-				svec2i_zero(), svec2i_subtract(mission->Size, svec2i_one()));
+				brush.Pos, svec2i_zero(),
+				svec2i_subtract(mission->Size, svec2i_one()));
 			const EditorResult r = EditorBrushStopPainting(&brush, mission);
 			if (r & EDITOR_RESULT_CHANGED)
 			{
@@ -801,9 +796,10 @@ static HandleInputResult HandleInput(
 		// Also pan the camera based on middle mouse drag
 		if (MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_MIDDLE))
 		{
-			ec.camera = svec2_add(ec.camera, svec2_assign_vec2i(svec2i_subtract(
-				gEventHandlers.mouse.previousPos,
-				gEventHandlers.mouse.currentPos)));
+			ec.camera = svec2_add(
+				ec.camera, svec2_assign_vec2i(svec2i_subtract(
+							   gEventHandlers.mouse.previousPos,
+							   gEventHandlers.mouse.currentPos)));
 			result.Redraw = true;
 		}
 
@@ -849,15 +845,15 @@ static HandleInputResult HandleInput(
 			// In this case, another set of "acrobatics" is required
 			if (sHasUnbakedChanges)
 			{
-				MissionCopy(&lastMission, mission);	// B,A,Z -> B,A,B
+				MissionCopy(&lastMission, mission); // B,A,Z -> B,A,B
 			}
 			else
 			{
-				MissionCopy(mission, &lastMission);	// B,B,A -> A,B,A
-				MissionCopy(&lastMission, &currentMission);	// A,B,A -> A,B,B
+				MissionCopy(mission, &lastMission);			// B,B,A -> A,B,A
+				MissionCopy(&lastMission, &currentMission); // A,B,A -> A,B,B
 			}
 			fileChanged = true;
-			Setup(false);	// A,B,B -> A,A,B
+			Setup(false); // A,B,B -> A,A,B
 			break;
 
 		case 'x':
@@ -898,15 +894,18 @@ static HandleInputResult HandleInput(
 			break;
 
 		case 'n':
-			InsertMission(&gCampaign, NULL, (int)gCampaign.Setting.Missions.size);
-			gCampaign.MissionIndex = (int)(gCampaign.Setting.Missions.size - 1);
+			InsertMission(
+				&gCampaign, NULL, (int)gCampaign.Setting.Missions.size);
+			gCampaign.MissionIndex =
+				(int)(gCampaign.Setting.Missions.size - 1);
 			fileChanged = true;
 			Setup(true);
 			break;
 
 		case 'o':
 			if (!fileChanged || ConfirmScreen(
-				"File has been modified, but not saved", "Open anyway? (Y/N)"))
+									"File has been modified, but not saved",
+									"Open anyway? (Y/N)"))
 			{
 				Open();
 			}
@@ -922,8 +921,7 @@ static HandleInputResult HandleInput(
 
 		case 'e':
 			CharEditor(
-				ec.g, &gCampaign.Setting, &gEventHandlers,
-				&fileChanged);
+				ec.g, &gCampaign.Setting, &gEventHandlers, &fileChanged);
 			Setup(false);
 			UIObjectUnhighlight(sObjs, true);
 			CArrayTerminate(&sDrawObjs);
@@ -999,8 +997,9 @@ static HandleInputResult HandleInput(
 		// Copy to buf because ConfirmScreen will cause the DropFile to be lost
 		char buf[CDOGS_PATH_MAX];
 		strcpy(buf, gEventHandlers.DropFile);
-		if (!fileChanged || ConfirmScreen(
-			"File has been modified, but not saved", "Open anyway? (Y/N)"))
+		if (!fileChanged ||
+			ConfirmScreen(
+				"File has been modified, but not saved", "Open anyway? (Y/N)"))
 		{
 			if (!TryOpen(buf))
 			{
@@ -1019,8 +1018,10 @@ static HandleInputResult HandleInput(
 		// Make sure we redraw so if the user has cancelled the quit confirm
 		// the editor reappears
 		result.Redraw = true;
-		result.Done = !fileChanged || ConfirmScreen(
-			"File has been modified, but not saved", "Quit anyway? (Y/N)");
+		result.Done =
+			!fileChanged ||
+			ConfirmScreen(
+				"File has been modified, but not saved", "Quit anyway? (Y/N)");
 	}
 	if (!MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_LEFT) &&
 		!MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_RIGHT))
@@ -1054,15 +1055,14 @@ static void InputInsert(int *xc, const int yc, Mission *mission)
 		}
 		break;
 
-	case YC_ITEMS:
-		{
-			MapObjectDensity mod;
-			mod.M = IndexMapObject(0);
-			mod.Density = 0;
-			CArrayPushBack(&mission->MapObjectDensities, &mod);
-			*xc = (int)(mission->MapObjectDensities.size - 1);
-		}
-		break;
+	case YC_ITEMS: {
+		MapObjectDensity mod;
+		mod.M = IndexMapObject(0);
+		mod.Density = 0;
+		CArrayPushBack(&mission->MapObjectDensities, &mod);
+		*xc = (int)(mission->MapObjectDensities.size - 1);
+	}
+	break;
 
 	default:
 		if (yc >= YC_OBJECTIVES)
@@ -1116,8 +1116,8 @@ static void EditCampaign(void)
 		const SDL_Scancode sc = KeyGetPressed(&gEventHandlers.keyboard);
 		const int m = MouseGetPressed(&gEventHandlers.mouse);
 
-		HandleInputResult result = HandleInput(
-			sc, m, &xc, &yc, &xcOld, &ycOld, &scrap);
+		HandleInputResult result =
+			HandleInput(sc, m, &xc, &yc, &xcOld, &ycOld, &scrap);
 		if (result.Done)
 		{
 			break;
@@ -1137,7 +1137,6 @@ static void EditCampaign(void)
 	SDL_StopTextInput();
 }
 
-
 static void ResetLastFile(char *s);
 int main(int argc, char *argv[])
 {
@@ -1148,20 +1147,16 @@ int main(int argc, char *argv[])
 
 	// Print command line
 	char buf[CDOGS_PATH_MAX];
-	struct option longopts[] =
-	{
-		{ "log",			required_argument,	NULL,	1000 },
-		{ "logfile",		required_argument,	NULL,	1001 },
-		{ 0,				0,					NULL,	0 }
-	};
+	struct option longopts[] = {{"log", required_argument, NULL, 1000},
+								{"logfile", required_argument, NULL, 1001},
+								{0, 0, NULL, 0}};
 	int opt = 0;
 	int idx = 0;
 	while ((opt = getopt_long(argc, argv, "\0:\0", longopts, &idx)) != -1)
 	{
 		switch (opt)
 		{
-		case 1000:
-		{
+		case 1000: {
 			char *comma = strchr(optarg, ',');
 			if (comma)
 			{
@@ -1239,8 +1234,8 @@ int main(int argc, char *argv[])
 	ParticleClassesInit(&gParticleClasses, "data/particles.json");
 	AmmoInitialize(&gAmmo, "data/ammo.json");
 	BulletAndWeaponInitialize(
-		&gBulletClasses, &gWeaponClasses,
-		"data/bullets.json", "data/guns.json");
+		&gBulletClasses, &gWeaponClasses, "data/bullets.json",
+		"data/guns.json");
 	CharacterClassesInitialize(
 		&gCharacterClasses, "data/character_classes.json");
 	PlayerTemplatesLoad(&gPlayerTemplates, &gCharacterClasses);

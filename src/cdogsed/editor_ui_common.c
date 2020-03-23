@@ -138,7 +138,7 @@ void ClearScreen(GraphicsDevice *g)
 	{
 		LOG(LM_GFX, LL_ERROR, "cannot set render target: %s", SDL_GetError());
 	}
-	BlitUpdateFromBuf(g, g->bkg);
+	BlitUpdateFromBuf(g, g->bkgTgt);
 	if (SDL_SetRenderTarget(g->gameWindow.renderer, NULL) != 0)
 	{
 		LOG(LM_GFX, LL_ERROR, "cannot set render target: %s", SDL_GetError());
