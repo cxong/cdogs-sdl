@@ -29,8 +29,6 @@
 
 #include <assert.h>
 
-#include <SDL_image.h>
-
 #include <cdogs/draw/draw.h>
 #include <cdogs/events.h>
 #include <cdogs/font.h>
@@ -119,12 +117,7 @@ static EditorResult BrushLoadGuideImage(void *data, int d)
 {
 	UNUSED(d);
 	EditorBrush *b = data;
-	SDL_FreeSurface(b->GuideImageSurface);
-	SDL_Surface *s = IMG_Load(b->GuideImage);
-	if (s == NULL)
-		return EDITOR_RESULT_NONE;
-	b->GuideImageSurface = SDL_ConvertSurface(s, gGraphicsDevice.Format, 0);
-	SDL_FreeSurface(s);
+	EditorBrushTryLoadGuideImage(b, b->GuideImage);
 	return EDITOR_RESULT_NONE;
 }
 static EditorResult BrushChangeGuideImageAlpha(void *data, int d)

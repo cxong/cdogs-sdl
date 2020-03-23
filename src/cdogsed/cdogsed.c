@@ -595,6 +595,7 @@ static void Delete(int xc, int yc)
 
 static void InputInsert(int *xc, const int yc, Mission *mission);
 static void InputDelete(const int xc, const int yc);
+static bool IsCampaignFile(const char *filename);
 static HandleInputResult HandleInput(
 	SDL_Scancode sc, const int m, int *xc, int *yc, int *xcOld, int *ycOld,
 	Mission *scrap)
@@ -997,13 +998,25 @@ static HandleInputResult HandleInput(
 		// Copy to buf because ConfirmScreen will cause the DropFile to be lost
 		char buf[CDOGS_PATH_MAX];
 		strcpy(buf, gEventHandlers.DropFile);
-		if (!fileChanged ||
-			ConfirmScreen(
-				"File has been modified, but not saved", "Open anyway? (Y/N)"))
+		if (IsCampaignFile(buf))
 		{
-			if (!TryOpen(buf))
+			if (!fileChanged || ConfirmScreen(
+									"File has been modified, but not saved",
+									"Open anyway? (Y/N)"))
 			{
-				ShowFailedToOpenMsg(buf);
+				if (!TryOpen(buf))
+				{
+					ShowFailedToOpenMsg(buf);
+				}
+			}
+		}
+		else if (mission && mission->Type == MAPTYPE_STATIC)
+		{
+			// Try to load guide image
+			if (EditorBrushTryLoadGuideImage(&brush, buf))
+			{
+				strcpy(brush.GuideImage, buf);
+				result.Redraw = true;
 			}
 		}
 	}
@@ -1086,6 +1099,11 @@ static void InputDelete(const int xc, const int yc)
 	UIObjectUnhighlight(sObjs, true);
 	CArrayTerminate(&sDrawObjs);
 	sLastHighlightedObj = NULL;
+}
+static bool IsCampaignFile(const char *filename)
+{
+	const char *ext = StrGetFileExt(filename);
+	return stricmp(ext, "cpn") == 0 || stricmp(ext, "cdogscpn") == 0;
 }
 
 static void EditCampaign(void)

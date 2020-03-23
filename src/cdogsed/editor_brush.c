@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014, 2019 Cong Xu
+	Copyright (c) 2014, 2019-2020 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,8 @@
 #include "editor_brush.h"
 
 #include <assert.h>
+
+#include <SDL_image.h>
 
 #include <cdogs/algorithms.h>
 #include <cdogs/map.h>
@@ -614,4 +616,15 @@ EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 	b->IsPainting = 0;
 	CArrayClear(&b->HighlightedTiles);
 	return result;
+}
+
+bool EditorBrushTryLoadGuideImage(EditorBrush *b, const char *filename)
+{
+	SDL_FreeSurface(b->GuideImageSurface);
+	SDL_Surface *s = IMG_Load(filename);
+	if (s == NULL)
+		return false;
+	b->GuideImageSurface = SDL_ConvertSurface(s, gGraphicsDevice.Format, 0);
+	SDL_FreeSurface(s);
+	return true;
 }
