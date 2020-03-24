@@ -1,50 +1,50 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin
-    Copyright (C) 2003-2007 Lucas Martin-King
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (C) 1995 Ronny Wester
+	Copyright (C) 2003 Jeremy Chin
+	Copyright (C) 2003-2007 Lucas Martin-King
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-    This file incorporates work covered by the following copyright and
-    permission notice:
+	This file incorporates work covered by the following copyright and
+	permission notice:
 
-    Copyright (c) 2013-2017, 2019-2020 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2017, 2019-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #define _BSD_SOURCE
 #define _DEFAULT_SOURCE
@@ -217,11 +217,12 @@ void RealPath(const char *src, char *dest)
 	}
 	else
 #endif
-	res = realpath(src, dest);
+		res = realpath(src, dest);
 	if (!res)
 	{
-		fprintf(stderr, "Cannot resolve relative path %s: %s\n",
-			src, strerror(errno));
+		fprintf(
+			stderr, "Cannot resolve relative path %s: %s\n", src,
+			strerror(errno));
 		// Default to relative path
 		strcpy(dest, src);
 	}
@@ -252,7 +253,7 @@ void RelPath(char *buf, const char *to, const char *from)
 	// Remove trailing slashes
 	TrimSlashes(toBuf);
 	TrimSlashes(fromBuf);
-	
+
 	// First, find common string prefix
 	const char *t = toBuf;
 	const char *f = fromBuf;
@@ -320,8 +321,10 @@ void FixPathSeparator(char *dst, const char *src)
 #endif
 	while (*s != '\0')
 	{
-		if (*s == SEP_OTHER) *d = SEP;
-		else *d = *s;
+		if (*s == SEP_OTHER)
+			*d = SEP;
+		else
+			*d = *s;
 		d++;
 		s++;
 	}
@@ -412,7 +415,8 @@ struct vec2 CalcClosestPointOnLineSegmentToPoint(
 	// Using parametric representation, line l1->l2 is
 	// P(t) = l1 + t(l2 - l1)
 	// Projection of point p on line is
-	// t = ((p.x - l1.x)(l2.x - l1.x) + (p.y - l1.y)(l2.y - l1.y)) / ||l2 - l1||^2
+	// t = ((p.x - l1.x)(l2.x - l1.x) + (p.y - l1.y)(l2.y - l1.y)) / ||l2 -
+	// l1||^2
 	const float lineDistanceSquared = svec2_distance_squared(l1, l2);
 	// Early exit since same point means 0 distance, and div by 0
 	if (lineDistanceSquared == 0)
@@ -420,10 +424,10 @@ struct vec2 CalcClosestPointOnLineSegmentToPoint(
 		return l1;
 	}
 	const float numerator =
-		(p.x - l1.x)*(l2.x - l1.x) + (p.y - l1.y)*(l2.y - l1.y);
+		(p.x - l1.x) * (l2.x - l1.x) + (p.y - l1.y) * (l2.y - l1.y);
 	const float t = CLAMP(numerator / lineDistanceSquared, 0, 1);
-	const struct vec2 closestPoint = svec2(
-		l1.x + t*(l2.x - l1.x), l1.y + t*(l2.y - l1.y));
+	const struct vec2 closestPoint =
+		svec2(l1.x + t * (l2.x - l1.x), l1.y + t * (l2.y - l1.y));
 	return closestPoint;
 }
 
@@ -478,7 +482,7 @@ char *PercentStr(int p)
 char *Div8Str(int i)
 {
 	static char buf[16];
-	sprintf(buf, "%d", i/8);
+	sprintf(buf, "%d", i / 8);
 	return buf;
 }
 void CamelToTitle(char *buf, const char *src)
@@ -491,8 +495,7 @@ void CamelToTitle(char *buf, const char *src)
 		// - It's not the first letter, and
 		// - The previous letter is lower case, or
 		// - The next letter is lower case
-		if (IS_UPPER(*src) &&
-			src != first &&
+		if (IS_UPPER(*src) && src != first &&
 			(!IS_UPPER(*(src - 1)) || (*(src + 1) && !IS_UPPER(*(src + 1)))))
 		{
 			*buf++ = ' ';
@@ -518,6 +521,22 @@ bool StrEndsWith(const char *str, const char *suffix)
 		return false;
 	}
 	return strncmp(str + lenStr - lenSuffix, suffix, lenSuffix) == 0;
+}
+
+// From answer by chux
+// https://stackoverflow.com/a/30734030/2038264
+// License: http://creativecommons.org/licenses/by-sa/3.0/
+int Stricmp(const char *a, const char *b)
+{
+	int ca, cb;
+	do
+	{
+		ca = (unsigned char)*a++;
+		cb = (unsigned char)*b++;
+		ca = tolower(toupper(ca));
+		cb = tolower(toupper(cb));
+	} while (ca == cb && ca != '\0');
+	return ca - cb;
 }
 
 BodyPart StrBodyPart(const char *s)

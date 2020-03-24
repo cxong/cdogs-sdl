@@ -1103,7 +1103,7 @@ static void InputDelete(const int xc, const int yc)
 static bool IsCampaignFile(const char *filename)
 {
 	const char *ext = StrGetFileExt(filename);
-	return stricmp(ext, "cpn") == 0 || stricmp(ext, "cdogscpn") == 0;
+	return Stricmp(ext, "cpn") == 0 || Stricmp(ext, "cdogscpn") == 0;
 }
 
 static void EditCampaign(void)
