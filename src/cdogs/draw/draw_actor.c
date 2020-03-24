@@ -2,8 +2,8 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 	Copyright (C) 1995 Ronny Wester
-	Copyright (C) 2003 Jeremy Chin 
-	Copyright (C) 2003-2007 Lucas Martin-King 
+	Copyright (C) 2003 Jeremy Chin
+	Copyright (C) 2003-2007 Lucas Martin-King
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -50,24 +50,23 @@
 
 #include <assert.h>
 #include <math.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "actors.h"
 #include "algorithms.h"
+#include "blit.h"
 #include "config.h"
+#include "draw/draw.h"
 #include "draw/drawtools.h"
 #include "font.h"
 #include "game_events.h"
 #include "net_util.h"
 #include "objs.h"
-#include "pics.h"
-#include "draw/draw.h"
-#include "blit.h"
 #include "pic_manager.h"
+#include "pics.h"
 
 #define TRANSPARENT_ACTOR_ALPHA 64
-
 
 static struct vec2i GetActorDrawOffset(
 	const Pic *pic, const BodyPart part, const CharSprites *cs,
@@ -79,24 +78,17 @@ static struct vec2i GetActorDrawOffset(
 		return svec2i_zero();
 	}
 	struct vec2i offset = svec2i_scale_divide(pic->size, -2);
-	offset = svec2i_subtract(offset, CharSpritesGetOffset(
-		cs->Offsets.Frame[part],
-		anim == ACTORANIMATION_WALKING ? "run" : "idle",
-		frame));
+	offset = svec2i_subtract(
+		offset, CharSpritesGetOffset(
+					cs->Offsets.Frame[part],
+					anim == ACTORANIMATION_WALKING ? "run" : "idle", frame));
 	offset = svec2i_add(offset, svec2i_assign_vec2(cs->Offsets.Dir[part][d]));
 	if (part == BODY_PART_GUN && state == GUNSTATE_RECOIL)
 	{
 		// Offset the gun pic towards the player
 		const struct vec2i recoilOffsets[DIRECTION_COUNT] = {
-			{0, 1},
-			{-1, 1},
-			{-1, 0},
-			{-1, -1},
-			{0, -1},
-			{1, -1},
-			{1, 0},
-			{1, 1}
-		};
+			{0, 1},	 {-1, 1}, {-1, 0}, {-1, -1},
+			{0, -1}, {1, -1}, {1, 0},  {1, 1}};
 		offset = svec2i_add(offset, recoilOffsets[d]);
 	}
 	return offset;
@@ -160,8 +152,8 @@ ActorPics GetCharacterPicsFromActor(TActor *a)
 	const direction_e legDir = GetLegDirAndFrame(a, dir, &frame);
 	return GetCharacterPics(
 		c, dir, legDir, a->anim.Type, frame,
-		gun->Gun != NULL ? gun->Gun->Sprites : NULL, gun->state,
-		shadowMask, maskP, colors, a->dead);
+		gun->Gun != NULL ? gun->Gun->Sprites : NULL, gun->state, shadowMask,
+		maskP, colors, a->dead);
 }
 static const Pic *GetBodyPic(
 	PicManager *pm, const CharSprites *cs, const direction_e dir,
@@ -169,18 +161,16 @@ static const Pic *GetBodyPic(
 	const CharColors *colors);
 static const Pic *GetLegsPic(
 	PicManager *pm, const CharSprites *cs, const direction_e dir,
-	const ActorAnimation anim, const int frame,
-	const CharColors *colors);
+	const ActorAnimation anim, const int frame, const CharColors *colors);
 static const Pic *GetGunPic(
 	PicManager *pm, const char *gunSprites, const direction_e dir,
 	const int gunState, const CharColors *colors);
 static const Pic *GetDeathPic(PicManager *pm, const int frame);
 ActorPics GetCharacterPics(
 	const Character *c, const direction_e dir, const direction_e legDir,
-	const ActorAnimation anim, const int frame,
-	const char *gunSprites, const gunstate_e gunState,
-	const color_t shadowMask, const color_t *mask, const CharColors *colors,
-	const int deadPic)
+	const ActorAnimation anim, const int frame, const char *gunSprites,
+	const gunstate_e gunState, const color_t shadowMask, const color_t *mask,
+	const CharColors *colors, const int deadPic)
 {
 	ActorPics pics;
 	memset(&pics, 0, sizeof pics);
@@ -196,6 +186,14 @@ ActorPics GetCharacterPics(
 	}
 
 	pics.ShadowMask = shadowMask;
+	if (mask != NULL)
+	{
+		pics.Mask = *mask;
+	}
+	else
+	{
+		pics.Mask = colorWhite;
+	}
 
 	// If the actor is dead, simply draw a dying animation
 	pics.IsDead = deadPic > 0;
@@ -210,14 +208,6 @@ ActorPics GetCharacterPics(
 		return pics;
 	}
 
-	if (mask != NULL)
-	{
-		pics.Mask = *mask;
-	}
-	else
-	{
-		pics.Mask = colorWhite;
-	}
 	if (colors == NULL)
 	{
 		colors = &c->Colors;
@@ -228,8 +218,10 @@ ActorPics GetCharacterPics(
 	// If idle, turn head left/right on occasion
 	if (anim == ACTORANIMATION_IDLE)
 	{
-		if (frame == IDLEHEAD_LEFT) headDir = (dir + 7) % 8;
-		else if (frame == IDLEHEAD_RIGHT) headDir = (dir + 1) % 8;
+		if (frame == IDLEHEAD_LEFT)
+			headDir = (dir + 7) % 8;
+		else if (frame == IDLEHEAD_RIGHT)
+			headDir = (dir + 1) % 8;
 	}
 	pics.Head = GetHeadPic(c->Class, headDir, gunState, colors);
 	pics.HeadOffset = GetActorDrawOffset(
@@ -259,8 +251,7 @@ ActorPics GetCharacterPics(
 
 	// Body
 	pics.Body = GetBodyPic(
-		&gPicManager, c->Class->Sprites, dir, anim, frame, isArmed,
-		colors);
+		&gPicManager, c->Class->Sprites, dir, anim, frame, isArmed, colors);
 	pics.BodyOffset = GetActorDrawOffset(
 		pics.Body, BODY_PART_BODY, c->Class->Sprites, anim, frame, dir,
 		gunState);
@@ -362,13 +353,15 @@ void DrawActorPics(
 			}
 			const struct vec2i drawPos =
 				svec2i_add(pos, pics->OrderedOffsets[i]);
-			const Rect2i drawSrc = Rect2iIsZero(bounds) ? bounds : Rect2iNew(
-				svec2i_subtract(bounds.Pos, drawPos),
-				svec2i_subtract(bounds.Size, bounds.Pos)
-			);
+			const Rect2i drawSrc =
+				Rect2iIsZero(bounds)
+					? bounds
+					: Rect2iNew(
+						  svec2i_subtract(bounds.Pos, drawPos),
+						  svec2i_subtract(bounds.Size, bounds.Pos));
 			PicRender(
-				pic, gGraphicsDevice.gameWindow.renderer, drawPos,
-				pics->Mask, 0, svec2_one(), SDL_FLIP_NONE, drawSrc);
+				pic, gGraphicsDevice.gameWindow.renderer, drawPos, pics->Mask,
+				0, svec2_one(), SDL_FLIP_NONE, drawSrc);
 		}
 	}
 }
@@ -379,7 +372,8 @@ void DrawLaserSight(
 	const ActorPics *pics, const TActor *a, const struct vec2i picPos)
 {
 	// Don't draw if dead or transparent
-	if (pics->IsDead || ColorEquals(pics->ShadowMask, colorTransparent)) return;
+	if (pics->IsDead || ColorEquals(pics->ShadowMask, colorTransparent))
+		return;
 	// Check config
 	const LaserSight ls = ConfigGetEnum(&gConfig, "Game.LaserSight");
 	if (ls != LASER_SIGHT_ALL &&
@@ -413,8 +407,8 @@ static void DrawLaserSightSingle(
 	const struct vec2i from, const float radians, const int range,
 	const color_t color)
 {
-	const struct vec2 v = svec2_scale(
-		Vec2FromRadiansScaled(radians), (float)range);
+	const struct vec2 v =
+		svec2_scale(Vec2FromRadiansScaled(radians), (float)range);
 	const struct vec2i to = svec2i_add(from, svec2i_assign_vec2(v));
 	DrawLine(from, to, color);
 }
@@ -428,8 +422,8 @@ const Pic *GetHeadPic(
 		(gunState == GUNSTATE_FIRING || gunState == GUNSTATE_RECOIL) ? 1 : 0;
 	const int idx = (int)dir + row * 8;
 	// Get or generate masked sprites
-	const NamedSprites *ns = PicManagerGetCharSprites(
-		&gPicManager, c->HeadSprites, colors);
+	const NamedSprites *ns =
+		PicManagerGetCharSprites(&gPicManager, c->HeadSprites, colors);
 	return CArrayGet(&ns->pics, idx);
 }
 const Pic *GetHairPic(
@@ -461,18 +455,16 @@ static const Pic *GetBodyPic(
 	const int idx = col + row * stride;
 	char buf[CDOGS_PATH_MAX];
 	sprintf(
-		buf, "chars/bodies/%s/upper_%s%s",
-		cs->Name,
+		buf, "chars/bodies/%s/upper_%s%s", cs->Name,
 		anim == ACTORANIMATION_IDLE ? "idle" : "run",
-		isArmed ? "_handgun" : "");	// TODO: other gun holding poses
+		isArmed ? "_handgun" : ""); // TODO: other gun holding poses
 	// Get or generate masked sprites
 	const NamedSprites *ns = PicManagerGetCharSprites(pm, buf, colors);
 	return CArrayGet(&ns->pics, idx);
 }
 static const Pic *GetLegsPic(
 	PicManager *pm, const CharSprites *cs, const direction_e dir,
-	const ActorAnimation anim, const int frame,
-	const CharColors *colors)
+	const ActorAnimation anim, const int frame, const CharColors *colors)
 {
 	const int stride = anim == ACTORANIMATION_IDLE ? 1 : 8;
 	const int col = frame % stride;
@@ -480,8 +472,8 @@ static const Pic *GetLegsPic(
 	const int idx = col + row * stride;
 	char buf[CDOGS_PATH_MAX];
 	sprintf(
-		buf, "chars/bodies/%s/legs_%s",
-		cs->Name, anim == ACTORANIMATION_IDLE ? "idle" : "run");
+		buf, "chars/bodies/%s/legs_%s", cs->Name,
+		anim == ACTORANIMATION_IDLE ? "idle" : "run");
 	// Get or generate masked sprites
 	const NamedSprites *ns = PicManagerGetCharSprites(pm, buf, colors);
 	return CArrayGet(&ns->pics, idx);
@@ -492,8 +484,7 @@ static const Pic *GetGunPic(
 {
 	const int idx = (gunState == GUNSTATE_READY ? 8 : 0) + dir;
 	// Get or generate masked sprites
-	const NamedSprites *ns = PicManagerGetCharSprites(
-		pm, gunSprites, colors);
+	const NamedSprites *ns = PicManagerGetCharSprites(pm, gunSprites, colors);
 	if (ns == NULL)
 	{
 		return NULL;
@@ -510,8 +501,8 @@ void DrawCharacterSimple(
 	const bool hilite, const bool showGun)
 {
 	ActorPics pics = GetCharacterPics(
-		c, d, d, ACTORANIMATION_IDLE, 0, NULL, GUNSTATE_READY,
-		colorBlack, NULL, NULL, 0);
+		c, d, d, ACTORANIMATION_IDLE, 0, NULL, GUNSTATE_READY, colorBlack,
+		NULL, NULL, 0);
 	DrawActorPics(&pics, pos, Rect2iZero());
 	if (hilite)
 	{
@@ -529,15 +520,15 @@ void DrawHead(
 {
 	const gunstate_e g = GUNSTATE_READY;
 	const Pic *head = GetHeadPic(c->Class, dir, g, &c->Colors);
-	const struct vec2i drawPos = svec2i_subtract(pos, svec2i(
-		head->size.x / 2, head->size.y / 2));
+	const struct vec2i drawPos =
+		svec2i_subtract(pos, svec2i(head->size.x / 2, head->size.y / 2));
 	const color_t mask = colorWhite;
 	PicRender(
 		head, renderer, drawPos, mask, 0, svec2_one(), SDL_FLIP_NONE,
 		Rect2iZero());
 	if (c->Class->HasHair)
 	{
-		const Pic* hair = GetHairPic(c->Hair, dir, g, &c->Colors);
+		const Pic *hair = GetHairPic(c->Hair, dir, g, &c->Colors);
 		if (hair)
 		{
 			PicRender(
@@ -552,12 +543,13 @@ static void DrawDyingBody(
 	const Rect2i bounds)
 {
 	const Pic *body = pics->Body;
-	const struct vec2i drawPos = svec2i_subtract(pos, svec2i(
-		body->size.x / 2, body->size.y / 2 + DYING_BODY_OFFSET));
-	const Rect2i drawSrc = Rect2iIsZero(bounds) ? bounds : Rect2iNew(
-		svec2i_subtract(bounds.Pos, drawPos),
-		svec2i_subtract(bounds.Size, bounds.Pos)
-	);
+	const struct vec2i drawPos = svec2i_subtract(
+		pos, svec2i(body->size.x / 2, body->size.y / 2 + DYING_BODY_OFFSET));
+	const Rect2i drawSrc = Rect2iIsZero(bounds)
+							   ? bounds
+							   : Rect2iNew(
+									 svec2i_subtract(bounds.Pos, drawPos),
+									 svec2i_subtract(bounds.Size, bounds.Pos));
 	PicRender(
 		body, g->gameWindow.renderer, drawPos, pics->Mask, 0, svec2_one(),
 		SDL_FLIP_NONE, drawSrc);
