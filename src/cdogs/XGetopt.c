@@ -73,7 +73,7 @@ static char *nextchar    = NULL;
  */
 
 static int
-lookup_shortopt(int argc, const char **argv, const char *opts)
+lookup_shortopt(int argc, char * const *argv, const char *opts)
 {
     int c = *optarg++;
     /* remember the Alamo - a dodgy character if ever there was one */
@@ -139,8 +139,8 @@ lookup_shortopt(int argc, const char **argv, const char *opts)
     return -1;
 }
 
-static int
-lookup_longopt(int argc, char **argv,
+static int lookup_longopt(
+	int argc, char *const *argv,
                const struct option *longopts,
                int *longindex)
 {
@@ -247,7 +247,7 @@ lookup_longopt(int argc, char **argv,
  * because optarg etc. are defined without const.
  */
 static int getnextopt(
-	int argc, const char **argv, const char *optstring,
+	int argc, char *const *argv, const char *optstring,
            const struct option *longopts, int *longindex,
            bool longonly, enum action act)
 {
@@ -422,7 +422,7 @@ static int getnextopt(
 int getopt(int argc, char * const argv[], const char *optstring)
 {
 	return getnextopt(
-		argc, (const char **)argv, optstring, NULL, NULL,
+		argc, (char *const *)argv, optstring, NULL, NULL,
                       false, E_PERMUTE);
 }
 
@@ -434,7 +434,7 @@ int getopt_long(int argc, char * argv[], const char *optstring,
                 const struct option *longopts, int *longindex)
 {
 	return getnextopt(
-		argc, (const char **)argv, optstring, longopts, longindex,
+		argc, (char *const *)argv, optstring, longopts, longindex,
                       false, E_PERMUTE);
 }
 
@@ -445,7 +445,7 @@ int getopt_long_only(int argc, char * argv[], const char *optstring,
                      const struct option *longopts, int *longindex)
 {
 	return getnextopt(
-		argc, (const char **)argv, optstring, longopts, longindex,
+		argc, (char *const *)argv, optstring, longopts, longindex,
                       true, E_PERMUTE);
 }
 
