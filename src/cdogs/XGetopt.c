@@ -419,7 +419,7 @@ getnextopt(int argc, char **argv, const char *optstring,
 /**
  * Scan the command-line parameters for options in the form \b -x.
  */
-int getopt(int argc, char * argv[], const char *optstring)
+int getopt(int argc, char * const argv[], const char *optstring)
 {
     return getnextopt(argc, (char**)argv, optstring, NULL, NULL,
                       false, E_PERMUTE);

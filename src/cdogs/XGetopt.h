@@ -113,7 +113,7 @@ struct option
 };
 
 /** Scan the command-line parameters for options in the form {\em -x}. */
-int getopt(int argc, char * argv[], const char *optstring);
+int getopt(int argc, char * const argv[], const char *optstring);
 /** Scan the command-line parameters for options, allowing both the short
  * (single character) options and long (string) options.
  */
