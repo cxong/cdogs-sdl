@@ -1,5 +1,5 @@
-#ifndef _XGETOPT_H
-#define _XGETOPT_H
+#pragma once
+#ifdef _WIN32
 
 /*
   getopt.h - comand line option parsing
@@ -127,4 +127,7 @@ int getopt_long_only(int argc, char * argv[], const char *optstring,
 }
 #endif
 
+#else
+#include <unistd.h>
+#include <getopt.h>
 #endif

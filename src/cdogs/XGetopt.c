@@ -27,6 +27,7 @@
   IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
   POSSIBILITY OF SUCH DAMAGE.
 */
+#ifdef _WIN32
 
 #include <stdlib.h>
 #include <string.h>
@@ -447,73 +448,6 @@ int getopt_long_only(int argc, char * argv[], const char *optstring,
 	return getnextopt(
 		argc, (char *const *)argv, optstring, longopts, longindex,
                       true, E_PERMUTE);
-}
-
-
-/***********************************************************************
- * Just in case you wanted to test this stuff (or as an example of how
- * not to use and abuse it), some code to do call it with arguments...
- **********************************************************************/
-
-#ifdef TEST_GETOPT
-
-const char *shortopts = "abcr:o::";
-
-char *Args[] =
-{
-    "arg0",
-    "arg1",
-    "-abc",
-    "-rargr1",
-    "-r", "argr2",
-    "-oargo",
-    "-o",
-    "arg2",
-    "--",
-    "arg3",
-    "-arg4",
-    "arg5",
-    NULL
-};
-
-int heckle = 'x';
-
-struct option longopts[] =
-{
-    { "help",   no_argument,       NULL,    'h' },
-    { "heckle", no_argument,       &heckle, 'k' },
-    { "speck",  no_argument,       &heckle, 's' },
-    { "arg",    required_argument, NULL,    'g' },
-    { "opt",    optional_argument, NULL,    'z' },
-    { 0, 0, 0, 0 }
-};
-
-int
-main(int argc, char **argv)
-{
-    int i;
-    int c;
-    if (argc <= 1)
-    {
-        argv = Args;
-        argc = (sizeof(Args) / sizeof(Args[0])) - 1;
-    }
-    else
-        shortopts="hksg:z::";
-    for (i = 0; i < argc; i++)
-        printf("%2d <%s>\n", i, argv[i]);
-    while ((c = getopt_long(argc, argv, shortopts, longopts, NULL)) != EOF)
-    {
-        printf("option %d '%c' (%s)\n", optind, c, optarg);
-#if DEBUG
-        for (i = 0; i < argc; i++)
-            printf("%2d <%s>\n", i, argv[i]);
-#endif
-    }
-    for (i = optind; i < argc; i++)
-        printf("param %2d <%s>\n", i, argv[i]);
-    printf("flag = '%c'\n", heckle);
-    return 0;
 }
 
 #endif

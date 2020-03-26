@@ -614,8 +614,6 @@ Config ConfigDefault(void)
 		"Brightness", 0, BLIT_BRIGHTNESS_MIN, BLIT_BRIGHTNESS_MAX, 1,
 		NULL, NULL));
 
-	// Full screen setting not needed for macOS
-#ifndef __APPLE__
 	ConfigGroupAdd(&gfx, ConfigNewBool("Fullscreen",
 #ifdef __GCWZERO__
 		true
@@ -623,7 +621,6 @@ Config ConfigDefault(void)
 		false
 #endif
 		));
-#endif
 
 	ConfigGroupAdd(&gfx,
 		ConfigNewInt("WindowWidth", 640, 320, 4096, 0, NULL, NULL));
