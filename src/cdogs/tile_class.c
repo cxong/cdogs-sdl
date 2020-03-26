@@ -102,6 +102,10 @@ void TileClassDestroy(any_t data)
 }
 void TileClassTerminate(TileClass *tc)
 {
+	if (tc->Type == TILE_CLASS_NOTHING)
+	{
+		return;
+	}
 	CFREE(tc->Name);
 	CFREE(tc->Style);
 	CFREE(tc->StyleType);

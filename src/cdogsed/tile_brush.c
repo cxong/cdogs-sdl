@@ -99,6 +99,9 @@ EditorResult TileBrush(
 		GetClassNames(pm->wallStyleNames.size, IndexWallStyleName);
 	data.doorStyles =
 		GetClassNames(pm->doorStyleNames.size, IndexDoorStyleName);
+	// TODO: tile previews show wrong icons; possibly due to clashes between
+	// SDL2 textures and OGL textures. Load SDL2 textures first and in a second
+	// run, load OGL textures
 	TexArrayInit(&data.texIdsFloorStyles, pm->tileStyleNames.size);
 	CA_FOREACH(const GLuint, texid, data.texIdsFloorStyles)
 	const char *style = *(char **)CArrayGet(&pm->tileStyleNames, _ca_index);
