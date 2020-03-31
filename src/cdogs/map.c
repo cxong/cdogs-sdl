@@ -530,6 +530,11 @@ void MapPrintDebug(const Map *m)
 bool MapIsPosOKForPlayer(
 	const Map *map, const struct vec2 pos, const bool allowAllTiles)
 {
+	// Don't put players in locked rooms
+	if (MapPosIsInLockedRoom(map, pos))
+	{
+		return false;
+	}
 	const struct vec2i tilePos = Vec2ToTile(pos);
 	const Tile *tile = MapGetTile(map, tilePos);
 	if (tile->Class->Type == TILE_CLASS_FLOOR)
