@@ -88,7 +88,7 @@ typedef struct
 	struct vec2i DragPos; // when moving, location that the drag started
 
 	char GuideImage[CDOGS_PATH_MAX];
-	SDL_Surface *GuideImageSurface;
+	Pic GuideImagePic;
 	Uint8 GuideImageAlpha;
 } EditorBrush;
 

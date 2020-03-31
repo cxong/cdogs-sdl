@@ -148,7 +148,7 @@ static void MakeBackground(const bool changedMission)
 	}
 
 	GrafxDrawExtra extra;
-	extra.guideImage = brush.GuideImageSurface;
+	extra.guideImage = &brush.GuideImagePic;
 	extra.guideImageAlpha = brush.GuideImageAlpha;
 
 	DrawBufferTerminate(&sDrawBuffer);
@@ -184,8 +184,9 @@ static void Display(HandleInputResult result)
 		{
 			MakeBackground(false);
 		}
+
 		GrafxDrawExtra extra;
-		extra.guideImage = brush.GuideImageSurface;
+		extra.guideImage = &brush.GuideImagePic;
 		extra.guideImageAlpha = brush.GuideImageAlpha;
 		GrafxDrawBackground(ec.g, &sDrawBuffer, tintNone, ec.camera, &extra);
 		BlitClearBuf(ec.g);

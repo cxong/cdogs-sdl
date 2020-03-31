@@ -54,7 +54,7 @@ void EditorBrushInit(EditorBrush *b)
 void EditorBrushTerminate(EditorBrush *b)
 {
 	CArrayTerminate(&b->HighlightedTiles);
-	SDL_FreeSurface(b->GuideImageSurface);
+	PicFree(&b->GuideImagePic);
 }
 
 static void EditorBrushHighlightPoint(void *data, struct vec2i p)
@@ -620,11 +620,13 @@ EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 
 bool EditorBrushTryLoadGuideImage(EditorBrush *b, const char *filename)
 {
-	SDL_FreeSurface(b->GuideImageSurface);
+	PicFree(&b->GuideImagePic);
 	SDL_Surface *s = IMG_Load(filename);
 	if (s == NULL)
 		return false;
-	b->GuideImageSurface = SDL_ConvertSurface(s, gGraphicsDevice.Format, 0);
+	SDL_Surface *sc = SDL_ConvertSurface(s, gGraphicsDevice.Format, 0);
 	SDL_FreeSurface(s);
+	PicLoad(&b->GuideImagePic, svec2i(sc->w, sc->h), svec2i_zero(), sc);
+	SDL_FreeSurface(sc);
 	return true;
 }

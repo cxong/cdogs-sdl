@@ -1,73 +1,73 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin 
-    Copyright (C) 2003-2007 Lucas Martin-King 
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (C) 1995 Ronny Wester
+	Copyright (C) 2003 Jeremy Chin
+	Copyright (C) 2003-2007 Lucas Martin-King
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-    This file incorporates work covered by the following copyright and
-    permission notice:
+	This file incorporates work covered by the following copyright and
+	permission notice:
 
-    Copyright (c) 2013-2016, 2018-2019 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2016, 2018-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include <assert.h>
 #include <math.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "actors.h"
 #include "algorithms.h"
+#include "blit.h"
 #include "config.h"
+#include "draw/draw.h"
 #include "draw/draw_actor.h"
 #include "draw/drawtools.h"
 #include "font.h"
 #include "game_events.h"
 #include "net_util.h"
 #include "objs.h"
+#include "pic_manager.h"
 #include "pickup.h"
 #include "pics.h"
-#include "draw/draw.h"
-#include "blit.h"
-#include "pic_manager.h"
+#include "texture.h"
 
 //#define DEBUG_DRAW_HITBOXES
-
 
 // Three types of tile drawing, based on line of sight:
 // Unvisited: black
@@ -113,13 +113,13 @@ static void DrawLOSPic(
 	if (!ColorEquals(mask, colorTransparent))
 	{
 		PicRender(
-			pic, gGraphicsDevice.gameWindow.renderer, pos, mask, 0, svec2_one(),
-			SDL_FLIP_NONE, Rect2iZero());
+			pic, gGraphicsDevice.gameWindow.renderer, pos, mask, 0,
+			svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 	}
 }
 
-
-static void DrawThing(DrawBuffer *b, const Thing *t, const struct vec2i offset);
+static void DrawThing(
+	DrawBuffer *b, const Thing *t, const struct vec2i offset);
 
 static void DrawTiles(
 	DrawBuffer *b, const struct vec2i offset,
@@ -131,21 +131,20 @@ static void DrawTiles(
 	const Tile **tile = DrawBufferGetFirstTile(b);
 	struct vec2i pos;
 	int x, y;
-	for (y = 0, pos.y = b->dy + offset.y;
-		y < Y_TILES;
-		y++, pos.y += TILE_HEIGHT)
+	for (y = 0, pos.y = b->dy + offset.y; y < Y_TILES;
+		 y++, pos.y += TILE_HEIGHT)
 	{
 		CArrayClear(&b->displaylist);
-		for (x = 0, pos.x = b->dx + offset.x;
-			x < b->Size.x;
-			x++, tile++, pos.x += TILE_WIDTH)
+		for (x = 0, pos.x = b->dx + offset.x; x < b->Size.x;
+			 x++, tile++, pos.x += TILE_WIDTH)
 		{
-			if (*tile == NULL) continue;
+			if (*tile == NULL)
+				continue;
 			drawTileFunc(b, offset, *tile, pos, useFog);
 		}
 		DrawBufferSortDisplayList(b);
 		CA_FOREACH(const Thing *, tp, b->displaylist)
-			DrawThing(b, *tp, offset);
+		DrawThing(b, *tp, offset);
 		CA_FOREACH_END()
 		tile += X_TILES - b->Size.x;
 	}
@@ -169,7 +168,8 @@ static void DrawObjectiveHighlights(
 static void DrawChatters(
 	DrawBuffer *b, const struct vec2i offset, const Tile *t,
 	const struct vec2i pos, const bool useFog);
-static void DrawExtra(DrawBuffer *b, struct vec2i offset, GrafxDrawExtra *extra);
+static void DrawExtra(
+	DrawBuffer *b, struct vec2i offset, GrafxDrawExtra *extra);
 
 void DrawBufferDraw(DrawBuffer *b, struct vec2i offset, GrafxDrawExtra *extra)
 {
@@ -201,10 +201,8 @@ static void DrawFloor(
 {
 	UNUSED(b);
 	UNUSED(offset);
-	if (t->Class != NULL &&
-		t->Class->Pic != NULL &&
-		t->Class->Pic->Data != NULL &&
-		t->Class->Type != TILE_CLASS_WALL)
+	if (t->Class != NULL && t->Class->Pic != NULL &&
+		t->Class->Pic->Data != NULL && t->Class->Type != TILE_CLASS_WALL)
 	{
 		DrawLOSPic(t, t->Class->Pic, pos, useFog);
 	}
@@ -222,11 +220,11 @@ static void DrawThingsBelow(
 		return;
 	}
 	CA_FOREACH(ThingId, tid, t->things)
-		const Thing *ti = ThingIdGetThing(tid);
-		if (ThingDrawBelow(ti))
-		{
-			CArrayPushBack(&b->displaylist, &ti);
-		}
+	const Thing *ti = ThingIdGetThing(tid);
+	if (ThingDrawBelow(ti))
+	{
+		CArrayPushBack(&b->displaylist, &ti);
+	}
 	CA_FOREACH_END()
 }
 
@@ -265,12 +263,12 @@ static void DrawWallsAndThings(
 		return;
 	}
 	CA_FOREACH(ThingId, tid, t->things)
-		const Thing *ti = ThingIdGetThing(tid);
-		if (ThingDrawBelow(ti) || ThingDrawAbove(ti))
-		{
-			continue;
-		}
-		CArrayPushBack(&b->displaylist, &ti);
+	const Thing *ti = ThingIdGetThing(tid);
+	if (ThingDrawBelow(ti) || ThingDrawAbove(ti))
+	{
+		continue;
+	}
+	CArrayPushBack(&b->displaylist, &ti);
 	CA_FOREACH_END()
 }
 
@@ -286,11 +284,11 @@ static void DrawThingsAbove(
 		return;
 	}
 	CA_FOREACH(ThingId, tid, t->things)
-		const Thing *ti = ThingIdGetThing(tid);
-		if (ThingDrawAbove(ti))
-		{
-			CArrayPushBack(&b->displaylist, &ti);
-		}
+	const Thing *ti = ThingIdGetThing(tid);
+	if (ThingDrawAbove(ti))
+	{
+		CArrayPushBack(&b->displaylist, &ti);
+	}
 	CA_FOREACH_END()
 }
 
@@ -301,77 +299,76 @@ static void DrawObjectiveHighlights(
 	UNUSED(pos);
 	UNUSED(useFog);
 	CA_FOREACH(ThingId, tid, t->things)
-		Thing *ti = ThingIdGetThing(tid);
-		const Pic *pic = NULL;
-		color_t color = colorWhite;
-		struct vec2i drawOffsetExtra = svec2i_zero();
+	Thing *ti = ThingIdGetThing(tid);
+	const Pic *pic = NULL;
+	color_t color = colorWhite;
+	struct vec2i drawOffsetExtra = svec2i_zero();
 
-		if (ti->flags & THING_OBJECTIVE)
+	if (ti->flags & THING_OBJECTIVE)
+	{
+		// Objective
+		const int objective = ObjectiveFromThing(ti->flags);
+		const Objective *o =
+			CArrayGet(&gMission.missionData->Objectives, objective);
+		if (o->Flags & OBJECTIVE_HIDDEN)
 		{
-			// Objective
-			const int objective = ObjectiveFromThing(ti->flags);
-			const Objective *o =
-				CArrayGet(&gMission.missionData->Objectives, objective);
-			if (o->Flags & OBJECTIVE_HIDDEN)
-			{
-				continue;
-			}
-			if (!(o->Flags & OBJECTIVE_POSKNOWN) && t->outOfSight)
-			{
-				continue;
-			}
-			switch (o->Type)
-			{
-			case OBJECTIVE_KILL:
-			case OBJECTIVE_DESTROY:	// fallthrough
-				pic = PicManagerGetPic(&gPicManager, "hud/objective_kill");
-				break;
-			case OBJECTIVE_RESCUE:
-			case OBJECTIVE_COLLECT:	// fallthrough
-				pic = PicManagerGetPic(&gPicManager, "hud/objective_collect");
-				break;
-			default:
-				CASSERT(false, "unexpected objective to draw");
-				continue;
-			}
-			color = o->color;
-			if (ti->kind == KIND_CHARACTER)
-			{
-				drawOffsetExtra.y -= 10;
-			}
+			continue;
 		}
-		else if (ti->kind == KIND_PICKUP)
+		if (!(o->Flags & OBJECTIVE_POSKNOWN) && t->outOfSight)
 		{
-			// Require LOS for non-deathmatch modes
-			if (!IsPVP(gCampaign.Entry.Mode) && t->outOfSight)
-			{
-				continue;
-			}
-			// Gun pickup
-			const Pickup *p = CArrayGet(&gPickups, ti->id);
-			if (!PickupIsManual(p))
-			{
-				continue;
-			}
-			pic = CPicGetPic(&p->thing.CPic, 0);
-			color = colorDarker;
-			color.a = (Uint8)Pulse256(gMission.time);
+			continue;
 		}
+		switch (o->Type)
+		{
+		case OBJECTIVE_KILL:
+		case OBJECTIVE_DESTROY: // fallthrough
+			pic = PicManagerGetPic(&gPicManager, "hud/objective_kill");
+			break;
+		case OBJECTIVE_RESCUE:
+		case OBJECTIVE_COLLECT: // fallthrough
+			pic = PicManagerGetPic(&gPicManager, "hud/objective_collect");
+			break;
+		default:
+			CASSERT(false, "unexpected objective to draw");
+			continue;
+		}
+		color = o->color;
+		if (ti->kind == KIND_CHARACTER)
+		{
+			drawOffsetExtra.y -= 10;
+		}
+	}
+	else if (ti->kind == KIND_PICKUP)
+	{
+		// Require LOS for non-deathmatch modes
+		if (!IsPVP(gCampaign.Entry.Mode) && t->outOfSight)
+		{
+			continue;
+		}
+		// Gun pickup
+		const Pickup *p = CArrayGet(&gPickups, ti->id);
+		if (!PickupIsManual(p))
+		{
+			continue;
+		}
+		pic = CPicGetPic(&p->thing.CPic, 0);
+		color = colorDarker;
+		color.a = (Uint8)Pulse256(gMission.time);
+	}
 
-		if (pic != NULL)
-		{
-			const struct vec2i picPos = svec2i_add(
-				svec2i_subtract(
-					svec2i_floor(ti->Pos), svec2i(b->xTop, b->yTop)),
-				offset);
-			color.a = (Uint8)Pulse256(gMission.time);
-			// Centre the drawing
-			const struct vec2i drawOffset = svec2i_scale_divide(pic->size, -2);
-			PicRender(
-				pic, gGraphicsDevice.gameWindow.renderer,
-				svec2i_add(picPos, svec2i_add(drawOffset, drawOffsetExtra)),
-				color, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
-		}
+	if (pic != NULL)
+	{
+		const struct vec2i picPos = svec2i_add(
+			svec2i_subtract(svec2i_floor(ti->Pos), svec2i(b->xTop, b->yTop)),
+			offset);
+		color.a = (Uint8)Pulse256(gMission.time);
+		// Centre the drawing
+		const struct vec2i drawOffset = svec2i_scale_divide(pic->size, -2);
+		PicRender(
+			pic, gGraphicsDevice.gameWindow.renderer,
+			svec2i_add(picPos, svec2i_add(drawOffset, drawOffsetExtra)), color,
+			0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
+	}
 	CA_FOREACH_END()
 }
 
@@ -383,36 +380,35 @@ static void DrawChatters(
 	UNUSED(pos);
 	UNUSED(useFog);
 	CA_FOREACH(ThingId, tid, t->things)
-		// Draw the items that are in LOS
-		if (t->outOfSight)
-		{
-			continue;
-		}
-		const Thing *ti = ThingIdGetThing(tid);
-		if (ti->kind != KIND_CHARACTER)
-		{
-			continue;
-		}
+	// Draw the items that are in LOS
+	if (t->outOfSight)
+	{
+		continue;
+	}
+	const Thing *ti = ThingIdGetThing(tid);
+	if (ti->kind != KIND_CHARACTER)
+	{
+		continue;
+	}
 
-		const TActor *a = CArrayGet(&gActors, ti->id);
-		// Draw character text
-		if (strlen(a->Chatter) > 0)
-		{
-			const struct vec2i textPos = svec2i(
-				(int)a->thing.Pos.x - b->xTop + offset.x -
+	const TActor *a = CArrayGet(&gActors, ti->id);
+	// Draw character text
+	if (strlen(a->Chatter) > 0)
+	{
+		const struct vec2i textPos = svec2i(
+			(int)a->thing.Pos.x - b->xTop + offset.x -
 				FontStrW(a->Chatter) / 2,
-				(int)a->thing.Pos.y - b->yTop + offset.y - ACTOR_HEIGHT);
-			const color_t mask = GetLOSMask(t, useFog);
-			if (!ColorEquals(mask, colorTransparent))
-			{
-				FontStrMask(a->Chatter, textPos, mask);
-			}
+			(int)a->thing.Pos.y - b->yTop + offset.y - ACTOR_HEIGHT);
+		const color_t mask = GetLOSMask(t, useFog);
+		if (!ColorEquals(mask, colorTransparent))
+		{
+			FontStrMask(a->Chatter, textPos, mask);
 		}
+	}
 	CA_FOREACH_END()
 }
 
-static void DrawThing(
-	DrawBuffer *b, const Thing *t, const struct vec2i offset)
+static void DrawThing(DrawBuffer *b, const Thing *t, const struct vec2i offset)
 {
 	const struct vec2i picPos = svec2i_add(
 		svec2i_subtract(
@@ -456,19 +452,20 @@ static void DrawThing(
 	color.a = (Uint8)alphaUnscaled;
 	DrawRectangle(
 		&gGraphicsDevice,
-		svec2i_subtract(picPos, svec2i_scale_divide(t->size, 2)),
-		t->size, color, false);
+		svec2i_subtract(picPos, svec2i_scale_divide(t->size, 2)), t->size,
+		color, false);
 #endif
 }
 
 static void DrawEditorTiles(DrawBuffer *b, const struct vec2i offset);
 static void DrawGuideImage(
-	DrawBuffer *b, SDL_Surface *guideImage, Uint8 alpha);
+	const DrawBuffer *b, const Pic *guideImage, const uint8_t alpha);
 static void DrawObjectNames(DrawBuffer *b, const struct vec2i offset);
-static void DrawExtra(DrawBuffer *b, struct vec2i offset, GrafxDrawExtra *extra)
+static void DrawExtra(
+	DrawBuffer *b, struct vec2i offset, GrafxDrawExtra *extra)
 {
 	// Draw guide image
-	if (extra->guideImage && extra->guideImageAlpha > 0)
+	if (!PicIsNone(extra->guideImage) && extra->guideImageAlpha > 0)
 	{
 		DrawGuideImage(b, extra->guideImage, extra->guideImageAlpha);
 	}
@@ -489,7 +486,8 @@ static void DrawEditorTiles(DrawBuffer *b, const struct vec2i offset)
 			{
 				struct vec2i start = gMission.missionData->u.Static.Start;
 				if (!svec2i_is_zero(start) &&
-					svec2i_is_equal(start, svec2i(x + b->xStart, y + b->yStart)))
+					svec2i_is_equal(
+						start, svec2i(x + b->xStart, y + b->yStart)))
 				{
 					// mission start
 					PicRender(
@@ -503,30 +501,22 @@ static void DrawEditorTiles(DrawBuffer *b, const struct vec2i offset)
 }
 
 static void DrawGuideImage(
-	DrawBuffer *b, SDL_Surface *guideImage, Uint8 alpha)
+	const DrawBuffer *b, const Pic *guideImage, const uint8_t alpha)
 {
-	SDL_LockSurface(guideImage);
 	// Scale based on ratio between map size and guide image size,
 	// so that the guide image stretches to the map size
-	double xScale = (double)guideImage->w / (gMap.Size.x * TILE_WIDTH);
-	double yScale = (double)guideImage->h / (gMap.Size.y * TILE_HEIGHT);
-	for (int j = 0; j < b->g->cachedConfig.Res.y; j++)
-	{
-		int y = (int)round((j + b->yTop) * yScale);
-		for (int i = 0; i < b->g->cachedConfig.Res.x; i++)
-		{
-			int x = (int)round((i + b->xTop) * xScale);
-			if (x >= 0 && x < guideImage->w && y >= 0 && y < guideImage->h)
-			{
-				int imgIndex = y * guideImage->w + x;
-				Uint32 p = ((Uint32 *)guideImage->pixels)[imgIndex];
-				color_t c = PIXEL2COLOR(p);
-				c.a = alpha;
-				DrawPoint(svec2i(i, j), c);
-			}
-		}
-	}
-	SDL_UnlockSurface(guideImage);
+	float xScale = (float)(gMap.Size.x * TILE_WIDTH) / guideImage->size.x;
+	float yScale = (float)(gMap.Size.y * TILE_HEIGHT) / guideImage->size.y;
+	const struct vec2i pos = svec2i(-b->xTop, -b->yTop);
+	color_t mask = colorWhite;
+	mask.a = alpha;
+	TextureRender(
+		guideImage->Tex, gGraphicsDevice.gameWindow.renderer, Rect2iZero(),
+		Rect2iNew(
+			pos,
+			svec2i((mint_t)MROUND(guideImage->size.x * xScale),
+					 (mint_t)MROUND(guideImage->size.y * yScale))),
+		mask, 0, SDL_FLIP_NONE);
 }
 
 // Draw names of objects (objectives, spawners etc.)
@@ -541,21 +531,22 @@ static void DrawObjectNames(DrawBuffer *b, const struct vec2i offset)
 	{
 		for (int x = 0; x < b->Size.x; x++, tile++)
 		{
-			if (*tile == NULL) continue;
+			if (*tile == NULL)
+				continue;
 			CA_FOREACH(ThingId, tid, (*tile)->things)
-				const Thing *ti = ThingIdGetThing(tid);
-				if (ti->flags & THING_OBJECTIVE)
+			const Thing *ti = ThingIdGetThing(tid);
+			if (ti->flags & THING_OBJECTIVE)
+			{
+				DrawObjectiveName(ti, b, offset);
+			}
+			else if (ti->kind == KIND_OBJECT)
+			{
+				const TObject *obj = CArrayGet(&gObjs, ti->id);
+				if (obj->Class->Type == MAP_OBJECT_TYPE_PICKUP_SPAWNER)
 				{
-					DrawObjectiveName(ti, b, offset);
+					DrawSpawnerName(obj, b, offset);
 				}
-				else if (ti->kind == KIND_OBJECT)
-				{
-					const TObject *obj = CArrayGet(&gObjs, ti->id);
-					if (obj->Class->Type == MAP_OBJECT_TYPE_PICKUP_SPAWNER)
-					{
-						DrawSpawnerName(obj, b, offset);
-					}
-				}
+			}
 			CA_FOREACH_END()
 		}
 		tile += X_TILES - b->Size.x;
