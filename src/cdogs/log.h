@@ -73,6 +73,9 @@ void LogTerminate(void);
 #define __FILENAME__                                                          \
 	(strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #endif
+#ifndef _WIN32
+#define __pragma(x)
+#endif
 #define LOG(_module, _level, ...)                                             \
 	do                                                                        \
 	{                                                                         \
