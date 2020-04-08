@@ -1,58 +1,59 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin
-    Copyright (C) 2003-2007 Lucas Martin-King
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (C) 1995 Ronny Wester
+	Copyright (C) 2003 Jeremy Chin
+	Copyright (C) 2003-2007 Lucas Martin-King
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-    This file incorporates work covered by the following copyright and
-    permission notice:
+	This file incorporates work covered by the following copyright and
+	permission notice:
 
-    Copyright (c) 2013-2017, 2019 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2017, 2019-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 #include <SDL.h>
 
+#include <cdogs/SDL_JoystickButtonNames/SDL_joystickbuttonnames.h>
 #include <cdogs/ammo.h>
 #include <cdogs/campaigns.h>
 #include <cdogs/character_class.h>
@@ -79,7 +80,6 @@
 #include <cdogs/pics.h>
 #include <cdogs/player_template.h>
 #include <cdogs/sounds.h>
-#include <cdogs/SDL_JoystickButtonNames/SDL_joystickbuttonnames.h>
 #include <cdogs/triggers.h>
 #include <cdogs/utils.h>
 
@@ -110,23 +110,21 @@ int main(int argc, char *argv[])
 	PrintTitle();
 
 #ifdef __EMSCRIPTEN__
-    // initialize IDBFS for Emscripten persistent storage
-    EM_ASM(
-        FS.mkdir('/persistent_data');
-        FS.mount(IDBFS,{},'/persistent_data');
+	// initialize IDBFS for Emscripten persistent storage
+	EM_ASM(FS.mkdir('/persistent_data');
+		   FS.mount(IDBFS, {}, '/persistent_data');
 
-        Module.print("start file sync..");
-        Module.syncdone = 0;
+		   Module.print("start file sync.."); Module.syncdone = 0;
 
-        FS.syncfs(true, function(err) {
-                       assert(!err);
-                       Module.print("end file sync..");
-                       Module.syncdone = 1;
-        });
-    );
+		   FS.syncfs(
+			   true, function(err) {
+				   assert(!err);
+				   Module.print("end file sync..");
+				   Module.syncdone = 1;
+			   }););
 
-    SetupConfigDir();
-    gConfig = ConfigDefault();
+	SetupConfigDir();
+	gConfig = ConfigDefault();
 #else
 	SetupConfigDir();
 	gConfig = ConfigLoad(GetConfigFilePath(CONFIG_FILE));
@@ -160,11 +158,10 @@ int main(int argc, char *argv[])
 	}
 
 #ifndef __EMSCRIPTEN__
-	const int sdlFlags =
-		SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_HAPTIC |
-		SDL_INIT_GAMECONTROLLER;
+	const int sdlFlags = SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO |
+						 SDL_INIT_HAPTIC | SDL_INIT_GAMECONTROLLER;
 #else
-    const int sdlFlags = SDL_INIT_AUDIO | SDL_INIT_VIDEO;
+	const int sdlFlags = SDL_INIT_AUDIO | SDL_INIT_VIDEO;
 #endif
 	if (SDL_Init(sdlFlags) != 0)
 	{
@@ -191,7 +188,7 @@ int main(int argc, char *argv[])
 		LOG(LM_MAIN, LL_ERROR, "Sound initialization failed!");
 	}
 
-	EventInit(&gEventHandlers, NULL, NULL, true);
+	EventInit(&gEventHandlers, true);
 	NetServerInit(&gNetServer);
 	PicManagerInit(&gPicManager);
 	TileClassesInit(&gTileClasses);
@@ -199,7 +196,8 @@ int main(int argc, char *argv[])
 	GraphicsInitialize(&gGraphicsDevice);
 	if (!gGraphicsDevice.IsInitialized)
 	{
-		LOG(LM_MAIN, LL_WARN, "Cannot initialise video; trying default config");
+		LOG(LM_MAIN, LL_WARN,
+			"Cannot initialise video; trying default config");
 		ConfigResetDefault(ConfigGet(&gConfig, "Graphics"));
 		GraphicsInit(&gGraphicsDevice, &gConfig);
 		GraphicsInitialize(&gGraphicsDevice);
@@ -217,9 +215,10 @@ int main(int argc, char *argv[])
 	ParticleClassesInit(&gParticleClasses, "data/particles.json");
 	AmmoInitialize(&gAmmo, "data/ammo.json");
 	BulletAndWeaponInitialize(
-		&gBulletClasses, &gWeaponClasses,
-		"data/bullets.json", "data/guns.json");
-	CharacterClassesInitialize(&gCharacterClasses, "data/character_classes.json");
+		&gBulletClasses, &gWeaponClasses, "data/bullets.json",
+		"data/guns.json");
+	CharacterClassesInitialize(
+		&gCharacterClasses, "data/character_classes.json");
 #ifndef __EMSCRIPTEN__
 	PlayerTemplatesLoad(&gPlayerTemplates, &gCharacterClasses);
 #endif
@@ -240,8 +239,9 @@ int main(int argc, char *argv[])
 			&gGraphicsDevice, &gCampaign, &gMission, &gMap);
 		LOG(LM_MAIN, LL_INFO, "Loading campaign %s...", loadCampaign);
 		gCampaign.Entry.Mode =
-			strstr(loadCampaign, "/" CDOGS_DOGFIGHT_DIR "/") != NULL ?
-			GAME_MODE_DOGFIGHT : GAME_MODE_NORMAL;
+			strstr(loadCampaign, "/" CDOGS_DOGFIGHT_DIR "/") != NULL
+				? GAME_MODE_DOGFIGHT
+				: GAME_MODE_NORMAL;
 		CampaignEntry entry;
 		if (!CampaignEntryTryLoad(&entry, loadCampaign, GAME_MODE_NORMAL) ||
 			!CampaignLoad(&gCampaign, &entry))

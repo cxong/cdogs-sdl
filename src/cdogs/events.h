@@ -49,21 +49,19 @@ typedef struct
 
 extern EventHandlers gEventHandlers;
 
-void EventInit(
-	EventHandlers *handlers, Pic *mouseCursor, Pic *mouseTrail,
-	const bool hideMouse);
+void EventInit(EventHandlers *handlers, const bool hideMouse);
 void EventTerminate(EventHandlers *handlers);
-void EventReset(EventHandlers *handlers, Pic *mouseCursor, Pic *mouseTrail);
+void EventReset(EventHandlers *handlers);
 
 void EventPoll(
-	EventHandlers* handlers, const Uint32 ticks, int (*onEvent)(SDL_Event *));
+	EventHandlers *handlers, const Uint32 ticks, int (*onEvent)(SDL_Event *));
 
 int GetOnePlayerCmd(
-	EventHandlers *handlers, const bool isPressed,
-	const input_device_e device, const int deviceIndex);
+	EventHandlers *handlers, const bool isPressed, const input_device_e device,
+	const int deviceIndex);
 int GetGameCmd(
-	EventHandlers *handlers,
-	const PlayerData *playerData, const struct vec2i playerPos);
+	EventHandlers *handlers, const PlayerData *playerData,
+	const struct vec2i playerPos);
 int GetKeyboardCmd(
 	keyboard_t *keyboard, const int kbIndex, const bool isPressed);
 SDL_Scancode GetKey(EventHandlers *handlers);
@@ -79,9 +77,9 @@ EventWaitResult EventWaitForAnyKeyOrButton(void);
 void GetPlayerCmds(EventHandlers *handlers, int (*cmds)[MAX_LOCAL_PLAYERS]);
 int GetMenuCmd(EventHandlers *handlers);
 void InputGetButtonNameColor(
-	const input_device_e d, const int dIndex, const int cmd,
-	char *buf, color_t *color);
-#define InputGetButtonName(_d, _dIndex, _cmd, _buf)\
+	const input_device_e d, const int dIndex, const int cmd, char *buf,
+	color_t *color);
+#define InputGetButtonName(_d, _dIndex, _cmd, _buf)                           \
 	InputGetButtonNameColor(_d, _dIndex, _cmd, _buf, NULL)
 // Return a string that shows the direction controls for an input device
 void InputGetDirectionNames(
@@ -89,5 +87,5 @@ void InputGetDirectionNames(
 bool InputHasGrenadeButton(const input_device_e d, const int dIndex);
 
 bool EventIsEscape(
-	EventHandlers *handlers,
-	const int cmds[MAX_LOCAL_PLAYERS], const int menuCmd);
+	EventHandlers *handlers, const int cmds[MAX_LOCAL_PLAYERS],
+	const int menuCmd);

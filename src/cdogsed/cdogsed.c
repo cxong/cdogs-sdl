@@ -127,11 +127,6 @@ static struct vec2i GetScreenPos(struct vec2i mapTile)
 		(mapTile.y - sDrawBuffer.yStart) * TILE_HEIGHT + sDrawBuffer.dy);
 }
 
-static int IsBrushPosValid(struct vec2i pos, const Mission *m)
-{
-	return pos.x >= 0 && pos.x < m->Size.x && pos.y >= 0 && pos.y < m->Size.y;
-}
-
 static void MakeBackground(const bool changedMission)
 {
 	if (changedMission)
@@ -192,7 +187,8 @@ static void Display(HandleInputResult result)
 		BlitClearBuf(ec.g);
 
 		// Draw brush highlight tiles
-		if (brush.IsActive && IsBrushPosValid(brush.Pos, mission))
+		if (brush.IsActive &&
+			Rect2iIsInside(Rect2iNew(svec2i_zero(), mission->Size), brush.Pos))
 		{
 			EditorBrushSetHighlightedTiles(&brush);
 		}
@@ -722,6 +718,11 @@ static HandleInputResult HandleInput(
 			}
 		}
 	}
+	if (!brush.IsActive)
+	{
+		MouseSetPicCursor(&gEventHandlers.mouse, NULL, NULL, false);
+		MouseSetCursor(&gEventHandlers.mouse, SDL_SYSTEM_CURSOR_ARROW);
+	}
 	if (!o &&
 		(MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_LEFT) ||
 		 MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_RIGHT)) &&
@@ -731,7 +732,8 @@ static HandleInputResult HandleInput(
 		if (brush.IsActive && mission->Type == MAPTYPE_STATIC)
 		{
 			// Draw a tile
-			if (IsBrushPosValid(brush.Pos, mission))
+			if (Rect2iIsInside(
+					Rect2iNew(svec2i_zero(), mission->Size), brush.Pos))
 			{
 				const bool isMain =
 					MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_LEFT);
@@ -810,7 +812,7 @@ static HandleInputResult HandleInput(
 		{
 			MouseSetCursor(&gEventHandlers.mouse, SDL_SYSTEM_CURSOR_SIZEALL);
 		}
-		if (!MouseIsDown(&gEventHandlers.mouse, SDL_BUTTON_MIDDLE))
+		if (MouseIsReleased(&gEventHandlers.mouse, SDL_BUTTON_MIDDLE))
 		{
 			MouseSetCursor(&gEventHandlers.mouse, SDL_SYSTEM_CURSOR_ARROW);
 		}
@@ -1277,7 +1279,7 @@ int main(int argc, char *argv[])
 	CampaignSettingTerminate(&gCampaign.Setting);
 	CampaignSettingInit(&gCampaign.Setting);
 
-	EventInit(&gEventHandlers, NULL, NULL, false);
+	EventInit(&gEventHandlers, false);
 
 	for (int i = 1; i < argc; i++)
 	{

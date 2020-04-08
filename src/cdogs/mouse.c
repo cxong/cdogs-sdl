@@ -1,30 +1,30 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2015, 2019 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2015, 2019-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "mouse.h"
 
@@ -39,22 +39,18 @@
 #define MOUSE_MOVE_DEAD_ZONE 12
 #define TRAIL_NUM_DOTS 4
 
-
-void MouseInit(Mouse *mouse, Pic *cursor, Pic *trail, const bool hideMouse)
+void MouseInit(Mouse *mouse, const bool hideMouse)
 {
 	memset(mouse, 0, sizeof *mouse);
-	mouse->cursor = cursor;
-	mouse->trail = trail;
 	mouse->ticks = 0;
 	mouse->repeatedTicks = 0;
-	mouse->hideMouse = cursor != NULL || hideMouse;
+	mouse->hideMouse = hideMouse;
 	if (hideMouse)
 	{
 		SDL_ShowCursor(SDL_DISABLE);
 	}
 	for (SDL_SystemCursor i = SDL_SYSTEM_CURSOR_ARROW;
-		i < SDL_NUM_SYSTEM_CURSORS;
-		i++)
+		 i < SDL_NUM_SYSTEM_CURSORS; i++)
 	{
 		mouse->cursors[i] = SDL_CreateSystemCursor(i);
 	}
@@ -62,8 +58,7 @@ void MouseInit(Mouse *mouse, Pic *cursor, Pic *trail, const bool hideMouse)
 void MouseTerminate(Mouse *m)
 {
 	for (SDL_SystemCursor i = SDL_SYSTEM_CURSOR_ARROW;
-		i < SDL_NUM_SYSTEM_CURSORS;
-		i++)
+		 i < SDL_NUM_SYSTEM_CURSORS; i++)
 	{
 		SDL_FreeCursor(m->cursors[i]);
 	}
@@ -73,17 +68,16 @@ void MousePrePoll(Mouse *mouse)
 {
 	memset(mouse->pressedButtons, 0, sizeof mouse->pressedButtons);
 	memcpy(
-		mouse->previousButtons,
-		mouse->currentButtons,
+		mouse->previousButtons, mouse->currentButtons,
 		sizeof mouse->previousButtons);
 	mouse->wheel = svec2i_zero();
 	mouse->previousPos = mouse->currentPos;
 	SDL_GetMouseState(&mouse->currentPos.x, &mouse->currentPos.y);
 	int scale = ConfigGetInt(&gConfig, "Graphics.ScaleFactor");
-	if (scale == 0) scale = 1;
+	if (scale == 0)
+		scale = 1;
 	mouse->currentPos = svec2i_scale_divide(mouse->currentPos, scale);
 }
-
 
 void MouseOnButtonDown(Mouse *mouse, Uint8 button)
 {
@@ -119,7 +113,8 @@ void MousePostPoll(Mouse *mouse, Uint32 ticks)
 			break;
 		}
 	}
-	// If same buttons have been pressed, remember how long they have been pressed
+	// If same buttons have been pressed, remember how long they have been
+	// pressed
 	if (areSameButtonsPressed)
 	{
 		Uint32 ticksElapsed = ticks - mouse->ticks;
@@ -138,8 +133,7 @@ void MousePostPoll(Mouse *mouse, Uint32 ticks)
 			mouse->pressedButtons[i] |= mouse->currentButtons[i];
 		}
 		memcpy(
-			mouse->pressedButtons,
-			mouse->currentButtons,
+			mouse->pressedButtons, mouse->currentButtons,
 			sizeof mouse->pressedButtons);
 	}
 	else
@@ -180,6 +174,11 @@ bool MouseIsPressed(const Mouse *m, const int button)
 	return m->pressedButtons[button];
 }
 
+bool MouseIsReleased(const Mouse *m, const int button)
+{
+	return !m->currentButtons[button] && m->previousButtons[button];
+}
+
 struct vec2i MouseWheel(const Mouse *m)
 {
 	return m->wheel;
@@ -199,13 +198,17 @@ int MouseGetMove(Mouse *mouse, const struct vec2i pos)
 	{
 		if (2 * dx > dy)
 		{
-			if (pos.x < mouse->currentPos.x)		cmd |= CMD_RIGHT;
-			else if (pos.x > mouse->currentPos.x)	cmd |= CMD_LEFT;
+			if (pos.x < mouse->currentPos.x)
+				cmd |= CMD_RIGHT;
+			else if (pos.x > mouse->currentPos.x)
+				cmd |= CMD_LEFT;
 		}
 		if (2 * dy > dx)
 		{
-			if (pos.y < mouse->currentPos.y)		cmd |= CMD_DOWN;
-			else if (pos.y > mouse->currentPos.y)	cmd |= CMD_UP;
+			if (pos.y < mouse->currentPos.y)
+				cmd |= CMD_DOWN;
+			else if (pos.y > mouse->currentPos.y)
+				cmd |= CMD_UP;
 		}
 	}
 	return cmd;
@@ -214,6 +217,18 @@ int MouseGetMove(Mouse *mouse, const struct vec2i pos)
 void MouseSetCursor(Mouse *m, const SDL_SystemCursor sc)
 {
 	SDL_SetCursor(m->cursors[sc]);
+	m->hideMouse = false;
+	SDL_ShowCursor(SDL_ENABLE);
+}
+void MouseSetPicCursor(
+	Mouse *m, const Pic *cursor, const Pic *trail, const bool hideMouse)
+{
+	// TODO: use hardware cursors with
+	// https://wiki.libsdl.org/SDL_CreateColorCursor
+	m->cursor = cursor;
+	m->trail = trail;
+	m->hideMouse = hideMouse;
+	SDL_ShowCursor(cursor == NULL && !hideMouse);
 }
 
 void MouseDraw(const Mouse *mouse)
@@ -241,11 +256,11 @@ void MouseDraw(const Mouse *mouse)
 			{
 				const struct vec2i pos = svec2i_add(
 					mouse->mouseMovePos,
-					svec2i_scale_divide(svec2i_scale(d, (float)i), TRAIL_NUM_DOTS + 1));
+					svec2i_scale_divide(
+						svec2i_scale(d, (float)i), TRAIL_NUM_DOTS + 1));
 				PicRender(
-					mouse->trail, gGraphicsDevice.gameWindow.renderer,
-					pos, colorWhite, 0, svec2_one(), SDL_FLIP_NONE,
-					Rect2iZero());
+					mouse->trail, gGraphicsDevice.gameWindow.renderer, pos,
+					colorWhite, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 			}
 		}
 	}

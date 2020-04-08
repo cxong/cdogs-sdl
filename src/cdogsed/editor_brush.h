@@ -103,7 +103,8 @@ typedef enum
 	EDITOR_RESULT_RELOAD,
 	// Note: deliberately set so that bit checking works, i.e.
 	// er & EDITOR_RESULT_CHANGED, er & EDITOR_RESULT_RELOAD
-	EDITOR_RESULT_CHANGED_AND_RELOAD
+	EDITOR_RESULT_CHANGED_AND_RELOAD,
+	EDITOR_RESULT_CHANGE_TOOL,
 } EditorResult;
 #define EDITOR_RESULT_NEW(_change, _reload)                                   \
 	(EditorResult)((!!(_change)) | (!!(_reload) << 1))

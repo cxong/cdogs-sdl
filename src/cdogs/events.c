@@ -39,29 +39,25 @@
 #include "music.h"
 #include "pic_manager.h"
 
-
 EventHandlers gEventHandlers;
 
-void EventInit(
-	EventHandlers *handlers, Pic *mouseCursor, Pic *mouseTrail,
-	const bool hideMouse)
+void EventInit(EventHandlers *handlers, const bool hideMouse)
 {
 	memset(handlers, 0, sizeof *handlers);
 	KeyInit(&handlers->keyboard);
 	JoyInit(&handlers->joysticks);
-	MouseInit(&handlers->mouse, mouseCursor, mouseTrail, hideMouse);
+	MouseInit(&handlers->mouse, hideMouse);
 }
 void EventTerminate(EventHandlers *handlers)
 {
 	JoyTerminate(&handlers->joysticks);
 	MouseTerminate(&handlers->mouse);
 }
-void EventReset(EventHandlers *handlers, Pic *mouseCursor, Pic *mouseTrail)
+void EventReset(EventHandlers *handlers)
 {
 	KeyInit(&handlers->keyboard);
 	JoyReset(&handlers->joysticks);
-	MouseInit(
-		&handlers->mouse, mouseCursor, mouseTrail, handlers->mouse.hideMouse);
+	MouseInit(&handlers->mouse, handlers->mouse.hideMouse);
 }
 
 void EventPoll(
@@ -83,7 +79,7 @@ void EventPoll(
 	{
 		switch (e.type)
 		{
-		case SDL_AUDIODEVICEADDED:	// fallthrough
+		case SDL_AUDIODEVICEADDED: // fallthrough
 		case SDL_AUDIODEVICEREMOVED:
 			if (e.adevice.iscapture)
 			{
@@ -107,40 +103,39 @@ void EventPoll(
 			strcpy(handlers->keyboard.Typed, e.text.text);
 			break;
 
-		case SDL_CONTROLLERDEVICEADDED:
+		case SDL_CONTROLLERDEVICEADDED: {
+			const SDL_JoystickID jid = JoyAdded(e.cdevice.which);
+			if (jid == -1)
 			{
-				const SDL_JoystickID jid = JoyAdded(e.cdevice.which);
-				if (jid == -1)
-				{
-					break;
-				}
-				// If there are players with unset devices,
-				// set this controller to them
-				CA_FOREACH(PlayerData, p, gPlayerDatas)
-					if (p->inputDevice == INPUT_DEVICE_UNSET)
-					{
-						PlayerTrySetInputDevice(p, INPUT_DEVICE_JOYSTICK, jid);
-						LOG(LM_INPUT, LL_INFO,
-							"Joystick %d assigned to player %d", jid, p->UID);
-						break;
-					}
-				CA_FOREACH_END()
+				break;
 			}
-			break;
+			// If there are players with unset devices,
+			// set this controller to them
+			CA_FOREACH(PlayerData, p, gPlayerDatas)
+			if (p->inputDevice == INPUT_DEVICE_UNSET)
+			{
+				PlayerTrySetInputDevice(p, INPUT_DEVICE_JOYSTICK, jid);
+				LOG(LM_INPUT, LL_INFO, "Joystick %d assigned to player %d",
+					jid, p->UID);
+				break;
+			}
+			CA_FOREACH_END()
+		}
+		break;
 
 		case SDL_CONTROLLERDEVICEREMOVED:
 			JoyRemoved(e.cdevice.which);
 			// If there was a player using this joystick,
 			// set their input device to nothing
 			CA_FOREACH(PlayerData, p, gPlayerDatas)
-				if (p->inputDevice == INPUT_DEVICE_JOYSTICK &&
-					p->deviceIndex == e.cdevice.which)
-				{
-					PlayerTrySetInputDevice(p, INPUT_DEVICE_UNSET, 0);
-					LOG(LM_INPUT, LL_WARN, "Joystick for player %d removed",
-						p->UID);
-					break;
-				}
+			if (p->inputDevice == INPUT_DEVICE_JOYSTICK &&
+				p->deviceIndex == e.cdevice.which)
+			{
+				PlayerTrySetInputDevice(p, INPUT_DEVICE_UNSET, 0);
+				LOG(LM_INPUT, LL_WARN, "Joystick for player %d removed",
+					p->UID);
+				break;
+			}
 			CA_FOREACH_END()
 			break;
 
@@ -157,15 +152,18 @@ void EventPoll(
 			break;
 
 		case SDL_MOUSEBUTTONDOWN:
-			if (regainedFocus) break;
+			if (regainedFocus)
+				break;
 			MouseOnButtonDown(&handlers->mouse, e.button.button);
 			break;
 		case SDL_MOUSEBUTTONUP:
-			if (regainedFocus) break;
+			if (regainedFocus)
+				break;
 			MouseOnButtonUp(&handlers->mouse, e.button.button);
 			break;
 		case SDL_MOUSEWHEEL:
-			if (regainedFocus) break;
+			if (regainedFocus)
+				break;
 			MouseOnWheel(&handlers->mouse, e.wheel.x, e.wheel.y);
 			break;
 		case SDL_WINDOWEVENT:
@@ -176,48 +174,45 @@ void EventPoll(
 				MusicSetPlaying(&gSoundDevice, true);
 				break;
 			case SDL_WINDOWEVENT_FOCUS_LOST:
-				if (!gCampaign.IsClient && !ConfigGetBool(&gConfig, "StartServer"))
+				if (!gCampaign.IsClient &&
+					!ConfigGetBool(&gConfig, "StartServer"))
 				{
 					MusicSetPlaying(&gSoundDevice, false);
 					handlers->HasLostFocus = true;
 				}
 				// Reset input handlers
-				EventReset(
-					handlers, handlers->mouse.cursor, handlers->mouse.trail);
+				EventReset(handlers);
 				break;
-			case SDL_WINDOWEVENT_SIZE_CHANGED:
+			case SDL_WINDOWEVENT_SIZE_CHANGED: {
+				const int w = ConfigGetInt(&gConfig, "Graphics.WindowWidth");
+				const int h = ConfigGetInt(&gConfig, "Graphics.WindowHeight");
+				if (w == e.window.data1 && h == e.window.data2)
 				{
-					const int w = ConfigGetInt(&gConfig, "Graphics.WindowWidth");
-					const int h = ConfigGetInt(&gConfig, "Graphics.WindowHeight");
-					if (w == e.window.data1 && h == e.window.data2)
-					{
-						// macOS sends spurious size changed events when
-						// switching between fullscreen; don't reinitialise
-						// graphics
-						break;
-					}
-					handlers->HasResolutionChanged = true;
-					const int scale = ConfigGetInt(&gConfig, "Graphics.ScaleFactor");
-					if (!gGraphicsDevice.cachedConfig.IsEditor)
-					{
-						ConfigSetInt(
-							&gConfig, "Graphics.WindowWidth", e.window.data1);
-						ConfigSetInt(
-							&gConfig, "Graphics.WindowHeight", e.window.data2);
-						ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
-					}
-					GraphicsConfigSet(
-						&gGraphicsDevice.cachedConfig,
-						svec2i(e.window.data1, e.window.data2),
-						false,
-						scale,
-						gGraphicsDevice.cachedConfig.ScaleMode,
-						gGraphicsDevice.cachedConfig.Brightness,
-						gGraphicsDevice.cachedConfig.SecondWindow
-					);
-					GraphicsInitialize(&gGraphicsDevice);
+					// macOS sends spurious size changed events when
+					// switching between fullscreen; don't reinitialise
+					// graphics
+					break;
 				}
-				break;
+				handlers->HasResolutionChanged = true;
+				const int scale =
+					ConfigGetInt(&gConfig, "Graphics.ScaleFactor");
+				if (!gGraphicsDevice.cachedConfig.IsEditor)
+				{
+					ConfigSetInt(
+						&gConfig, "Graphics.WindowWidth", e.window.data1);
+					ConfigSetInt(
+						&gConfig, "Graphics.WindowHeight", e.window.data2);
+					ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
+				}
+				GraphicsConfigSet(
+					&gGraphicsDevice.cachedConfig,
+					svec2i(e.window.data1, e.window.data2), false, scale,
+					gGraphicsDevice.cachedConfig.ScaleMode,
+					gGraphicsDevice.cachedConfig.Brightness,
+					gGraphicsDevice.cachedConfig.SecondWindow);
+				GraphicsInitialize(&gGraphicsDevice);
+			}
+			break;
 			case SDL_WINDOWEVENT_CLOSE:
 				handlers->HasQuit = true;
 				break;
@@ -246,7 +241,7 @@ void EventPoll(
 	// Toggle fullscreen
 	if (KeyIsPressed(&handlers->keyboard, SDL_SCANCODE_RETURN) &&
 		(KeyIsDown(&handlers->keyboard, SDL_SCANCODE_LALT) ||
-			KeyIsDown(&handlers->keyboard, SDL_SCANCODE_RALT)))
+		 KeyIsDown(&handlers->keyboard, SDL_SCANCODE_RALT)))
 	{
 		ConfigGet(&gConfig, "Graphics.Fullscreen")->u.Bool.Value =
 			!ConfigGet(&gConfig, "Graphics.Fullscreen")->u.Bool.Value;
@@ -263,15 +258,22 @@ int GetKeyboardCmd(
 		isPressed ? KeyIsPressed : KeyIsDown;
 	const InputKeys *keys = &keyboard->PlayerKeys[kbIndex];
 
-	if (keyFunc(keyboard, keys->left))			cmd |= CMD_LEFT;
-	else if (keyFunc(keyboard, keys->right))	cmd |= CMD_RIGHT;
+	if (keyFunc(keyboard, keys->left))
+		cmd |= CMD_LEFT;
+	else if (keyFunc(keyboard, keys->right))
+		cmd |= CMD_RIGHT;
 
-	if (keyFunc(keyboard, keys->up))			cmd |= CMD_UP;
-	else if (keyFunc(keyboard, keys->down))		cmd |= CMD_DOWN;
+	if (keyFunc(keyboard, keys->up))
+		cmd |= CMD_UP;
+	else if (keyFunc(keyboard, keys->down))
+		cmd |= CMD_DOWN;
 
-	if (keyFunc(keyboard, keys->button1))		cmd |= CMD_BUTTON1;
-	if (keyFunc(keyboard, keys->button2))		cmd |= CMD_BUTTON2;
-	if (keyFunc(keyboard, keys->grenade))		cmd |= CMD_GRENADE;
+	if (keyFunc(keyboard, keys->button1))
+		cmd |= CMD_BUTTON1;
+	if (keyFunc(keyboard, keys->button2))
+		cmd |= CMD_BUTTON2;
+	if (keyFunc(keyboard, keys->grenade))
+		cmd |= CMD_GRENADE;
 
 	return cmd;
 }
@@ -288,14 +290,20 @@ static int GetMouseCmd(
 	}
 	else
 	{
-		if (MouseWheel(mouse).y > 0)			cmd |= CMD_UP;
-		else if (MouseWheel(mouse).y < 0)		cmd |= CMD_DOWN;
+		if (MouseWheel(mouse).y > 0)
+			cmd |= CMD_UP;
+		else if (MouseWheel(mouse).y < 0)
+			cmd |= CMD_DOWN;
 	}
 
-	if (mouseFunc(mouse, SDL_BUTTON_LEFT))		cmd |= CMD_BUTTON1;
-	if (mouseFunc(mouse, SDL_BUTTON_RIGHT))		cmd |= CMD_BUTTON2;
-	if (mouseFunc(mouse, SDL_BUTTON_MIDDLE))	cmd |= CMD_GRENADE;
-	if (mouseFunc(mouse, SDL_BUTTON_X1))		cmd |= CMD_MAP;
+	if (mouseFunc(mouse, SDL_BUTTON_LEFT))
+		cmd |= CMD_BUTTON1;
+	if (mouseFunc(mouse, SDL_BUTTON_RIGHT))
+		cmd |= CMD_BUTTON2;
+	if (mouseFunc(mouse, SDL_BUTTON_MIDDLE))
+		cmd |= CMD_GRENADE;
+	if (mouseFunc(mouse, SDL_BUTTON_X1))
+		cmd |= CMD_MAP;
 
 	return cmd;
 }
@@ -306,26 +314,35 @@ static int GetJoystickCmd(const SDL_JoystickID id, bool isPressed)
 	bool (*joyFunc)(const SDL_JoystickID, const int) =
 		isPressed ? JoyIsPressed : JoyIsDown;
 
-	if (joyFunc(id, CMD_LEFT))			cmd |= CMD_LEFT;
-	else if (joyFunc(id, CMD_RIGHT))	cmd |= CMD_RIGHT;
+	if (joyFunc(id, CMD_LEFT))
+		cmd |= CMD_LEFT;
+	else if (joyFunc(id, CMD_RIGHT))
+		cmd |= CMD_RIGHT;
 
-	if (joyFunc(id, CMD_UP))			cmd |= CMD_UP;
-	else if (joyFunc(id, CMD_DOWN))		cmd |= CMD_DOWN;
+	if (joyFunc(id, CMD_UP))
+		cmd |= CMD_UP;
+	else if (joyFunc(id, CMD_DOWN))
+		cmd |= CMD_DOWN;
 
-	if (joyFunc(id, CMD_BUTTON1))		cmd |= CMD_BUTTON1;
-	if (joyFunc(id, CMD_BUTTON2))		cmd |= CMD_BUTTON2;
-	if (joyFunc(id, CMD_GRENADE))		cmd |= CMD_GRENADE;
+	if (joyFunc(id, CMD_BUTTON1))
+		cmd |= CMD_BUTTON1;
+	if (joyFunc(id, CMD_BUTTON2))
+		cmd |= CMD_BUTTON2;
+	if (joyFunc(id, CMD_GRENADE))
+		cmd |= CMD_GRENADE;
 
-	if (joyFunc(id, CMD_MAP))			cmd |= CMD_MAP;
+	if (joyFunc(id, CMD_MAP))
+		cmd |= CMD_MAP;
 
-	if (joyFunc(id, CMD_ESC))			cmd |= CMD_ESC;
+	if (joyFunc(id, CMD_ESC))
+		cmd |= CMD_ESC;
 
 	return cmd;
 }
 
 int GetGameCmd(
-	EventHandlers *handlers,
-	const PlayerData *playerData, const struct vec2i playerPos)
+	EventHandlers *handlers, const PlayerData *playerData,
+	const struct vec2i playerPos)
 {
 	int cmd = 0;
 
@@ -350,8 +367,8 @@ int GetGameCmd(
 }
 
 int GetOnePlayerCmd(
-	EventHandlers *handlers, const bool isPressed,
-	const input_device_e device, const int deviceIndex)
+	EventHandlers *handlers, const bool isPressed, const input_device_e device,
+	const int deviceIndex)
 {
 	int cmd = 0;
 	switch (device)
@@ -412,21 +429,27 @@ int GetMenuCmd(EventHandlers *handlers)
 	if (!cmd)
 	{
 		// Check keyboard
-		if (KeyIsPressed(kb, SDL_SCANCODE_LEFT))		cmd |= CMD_LEFT;
-		else if (KeyIsPressed(kb, SDL_SCANCODE_RIGHT))	cmd |= CMD_RIGHT;
+		if (KeyIsPressed(kb, SDL_SCANCODE_LEFT))
+			cmd |= CMD_LEFT;
+		else if (KeyIsPressed(kb, SDL_SCANCODE_RIGHT))
+			cmd |= CMD_RIGHT;
 
-		if (KeyIsPressed(kb, SDL_SCANCODE_UP))			cmd |= CMD_UP;
-		else if (KeyIsPressed(kb, SDL_SCANCODE_DOWN))	cmd |= CMD_DOWN;
+		if (KeyIsPressed(kb, SDL_SCANCODE_UP))
+			cmd |= CMD_UP;
+		else if (KeyIsPressed(kb, SDL_SCANCODE_DOWN))
+			cmd |= CMD_DOWN;
 
-		if (KeyIsPressed(kb, SDL_SCANCODE_RETURN))		cmd |= CMD_BUTTON1;
+		if (KeyIsPressed(kb, SDL_SCANCODE_RETURN))
+			cmd |= CMD_BUTTON1;
 
-		if (KeyIsPressed(kb, SDL_SCANCODE_BACKSPACE))	cmd |= CMD_BUTTON2;
+		if (KeyIsPressed(kb, SDL_SCANCODE_BACKSPACE))
+			cmd |= CMD_BUTTON2;
 	}
 	if (!cmd && handlers->joysticks.size > 0)
 	{
 		// Check joystick 1
-		cmd = GetOnePlayerCmd(
-			handlers, true, INPUT_DEVICE_JOYSTICK, firstJoyId);
+		cmd =
+			GetOnePlayerCmd(handlers, true, INPUT_DEVICE_JOYSTICK, firstJoyId);
 	}
 	if (!cmd)
 	{
@@ -437,64 +460,122 @@ int GetMenuCmd(EventHandlers *handlers)
 	return cmd;
 }
 
-
 void InputGetButtonNameColor(
-	const input_device_e d, const int dIndex, const int cmd,
-	char *buf, color_t *color)
+	const input_device_e d, const int dIndex, const int cmd, char *buf,
+	color_t *color)
 {
 	switch (d)
 	{
 	case INPUT_DEVICE_KEYBOARD:
-	#ifdef __GCWZERO__
+#ifdef __GCWZERO__
 		if (color != NULL)
 		{
 			*color = colorBlue;
 		}
 		switch (cmd)
 		{
-			case CMD_LEFT: strcpy(buf, "left"); return;
-			case CMD_RIGHT: strcpy(buf, "right"); return;
-			case CMD_UP: strcpy(buf, "up"); return;
-			case CMD_DOWN:strcpy(buf, "down"); return;
-			case CMD_BUTTON1: strcpy(buf, "A"); return;
-			case CMD_BUTTON2: strcpy(buf, "B"); return;
-			case CMD_GRENADE: *color = colorGray; strcpy(buf, "R"); return;
-			case CMD_MAP: *color = colorGray; strcpy(buf, "L"); return;
-			case CMD_ESC: strcpy(buf, "SELECT"); return;
-			default: CASSERT(false, "unknown button"); return;
+		case CMD_LEFT:
+			strcpy(buf, "left");
+			return;
+		case CMD_RIGHT:
+			strcpy(buf, "right");
+			return;
+		case CMD_UP:
+			strcpy(buf, "up");
+			return;
+		case CMD_DOWN:
+			strcpy(buf, "down");
+			return;
+		case CMD_BUTTON1:
+			strcpy(buf, "A");
+			return;
+		case CMD_BUTTON2:
+			strcpy(buf, "B");
+			return;
+		case CMD_GRENADE:
+			*color = colorGray;
+			strcpy(buf, "R");
+			return;
+		case CMD_MAP:
+			*color = colorGray;
+			strcpy(buf, "L");
+			return;
+		case CMD_ESC:
+			strcpy(buf, "SELECT");
+			return;
+		default:
+			CASSERT(false, "unknown button");
+			return;
 		}
-	#else
+#else
+	{
+		const InputKeys *keys = &gEventHandlers.keyboard.PlayerKeys[dIndex];
+		switch (cmd)
 		{
-			const InputKeys *keys =
-				&gEventHandlers.keyboard.PlayerKeys[dIndex];
-			switch (cmd)
-			{
-			case CMD_LEFT: strcpy(buf, SDL_GetScancodeName(keys->left)); return;
-			case CMD_RIGHT: strcpy(buf, SDL_GetScancodeName(keys->right)); return;
-			case CMD_UP: strcpy(buf, SDL_GetScancodeName(keys->up)); return;
-			case CMD_DOWN: strcpy(buf, SDL_GetScancodeName(keys->down)); return;
-			case CMD_BUTTON1: strcpy(buf, SDL_GetScancodeName(keys->button1)); return;
-			case CMD_BUTTON2: strcpy(buf, SDL_GetScancodeName(keys->button2)); return;
-			case CMD_GRENADE: strcpy(buf, SDL_GetScancodeName(keys->grenade)); return;
-			case CMD_MAP: strcpy(buf, SDL_GetScancodeName(keys->map)); return;
-			case CMD_ESC: strcpy(buf, SDL_GetScancodeName(SDL_SCANCODE_ESCAPE)); return;
-			default: CASSERT(false, "unknown button"); return;
-			}
+		case CMD_LEFT:
+			strcpy(buf, SDL_GetScancodeName(keys->left));
+			return;
+		case CMD_RIGHT:
+			strcpy(buf, SDL_GetScancodeName(keys->right));
+			return;
+		case CMD_UP:
+			strcpy(buf, SDL_GetScancodeName(keys->up));
+			return;
+		case CMD_DOWN:
+			strcpy(buf, SDL_GetScancodeName(keys->down));
+			return;
+		case CMD_BUTTON1:
+			strcpy(buf, SDL_GetScancodeName(keys->button1));
+			return;
+		case CMD_BUTTON2:
+			strcpy(buf, SDL_GetScancodeName(keys->button2));
+			return;
+		case CMD_GRENADE:
+			strcpy(buf, SDL_GetScancodeName(keys->grenade));
+			return;
+		case CMD_MAP:
+			strcpy(buf, SDL_GetScancodeName(keys->map));
+			return;
+		case CMD_ESC:
+			strcpy(buf, SDL_GetScancodeName(SDL_SCANCODE_ESCAPE));
+			return;
+		default:
+			CASSERT(false, "unknown button");
+			return;
 		}
-	#endif
+	}
+#endif
 		break;
 	case INPUT_DEVICE_MOUSE:
 		switch (cmd)
 		{
-		case CMD_LEFT: strcpy(buf, "left"); return;
-		case CMD_RIGHT: strcpy(buf, "right"); return;
-		case CMD_UP: strcpy(buf, "up"); return;
-		case CMD_DOWN: strcpy(buf, "down"); return;
-		case CMD_BUTTON1: strcpy(buf, "left click"); return;
-		case CMD_BUTTON2: strcpy(buf, "right click"); return;
-		case CMD_MAP: strcpy(buf, "middle click"); return;
-		case CMD_ESC: strcpy(buf, ""); return;
-		default: CASSERT(false, "unknown button"); return;
+		case CMD_LEFT:
+			strcpy(buf, "left");
+			return;
+		case CMD_RIGHT:
+			strcpy(buf, "right");
+			return;
+		case CMD_UP:
+			strcpy(buf, "up");
+			return;
+		case CMD_DOWN:
+			strcpy(buf, "down");
+			return;
+		case CMD_BUTTON1:
+			strcpy(buf, "left click");
+			return;
+		case CMD_BUTTON2:
+			strcpy(buf, "right click");
+			return;
+		case CMD_MAP:
+			strcpy(buf, "middle click");
+			return;
+		case CMD_ESC:
+			strcpy(buf, "");
+			return;
+		default:
+			CASSERT(false, "unknown button");
+			return;
 		}
 		break;
 	case INPUT_DEVICE_JOYSTICK:
@@ -513,16 +594,15 @@ void InputGetDirectionNames(
 	strcpy(buf, "");
 	switch (d)
 	{
-	case INPUT_DEVICE_KEYBOARD:
-		{
-			char left[256], right[256], up[256], down[256];
-			InputGetButtonName(d, dIndex, CMD_LEFT, left);
-			InputGetButtonName(d, dIndex, CMD_RIGHT, right),
+	case INPUT_DEVICE_KEYBOARD: {
+		char left[256], right[256], up[256], down[256];
+		InputGetButtonName(d, dIndex, CMD_LEFT, left);
+		InputGetButtonName(d, dIndex, CMD_RIGHT, right),
 			InputGetButtonName(d, dIndex, CMD_UP, up),
 			InputGetButtonName(d, dIndex, CMD_DOWN, down);
-			sprintf(buf, "%s, %s, %s, %s", left, right, up, down);
-		}
-		break;
+		sprintf(buf, "%s, %s, %s, %s", left, right, up, down);
+	}
+	break;
 	case INPUT_DEVICE_MOUSE:
 		strcpy(buf, "mouse wheel");
 		break;
@@ -546,8 +626,8 @@ bool InputHasGrenadeButton(const input_device_e d, const int dIndex)
 		return false;
 	case INPUT_DEVICE_KEYBOARD:
 		return KeyGet(
-			&gEventHandlers.keyboard.PlayerKeys[dIndex],
-			KEY_CODE_GRENADE) != SDL_SCANCODE_UNKNOWN;
+				   &gEventHandlers.keyboard.PlayerKeys[dIndex],
+				   KEY_CODE_GRENADE) != SDL_SCANCODE_UNKNOWN;
 	case INPUT_DEVICE_MOUSE:
 		return true;
 	case INPUT_DEVICE_JOYSTICK:
@@ -617,8 +697,8 @@ static EventWaitResult WaitResult(const bool result)
 }
 
 bool EventIsEscape(
-	EventHandlers *handlers,
-	const int cmds[MAX_LOCAL_PLAYERS], const int menuCmd)
+	EventHandlers *handlers, const int cmds[MAX_LOCAL_PLAYERS],
+	const int menuCmd)
 {
 	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 	{

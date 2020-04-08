@@ -188,6 +188,9 @@ static EditorResult BrushSetBrushTypePoint(void *data, int d)
 	UNUSED(d);
 	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_POINT;
+	MouseSetPicCursor(
+		&gEventHandlers.mouse,
+		PicManagerGetPic(&gPicManager, "editor/cursors/pencil"), NULL, true);
 	return EDITOR_RESULT_NONE;
 }
 static EditorResult BrushSetBrushTypeLine(void *data, int d)
@@ -195,6 +198,9 @@ static EditorResult BrushSetBrushTypeLine(void *data, int d)
 	UNUSED(d);
 	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_LINE;
+	MouseSetPicCursor(
+		&gEventHandlers.mouse,
+		PicManagerGetPic(&gPicManager, "editor/cursors/line"), NULL, true);
 	return EDITOR_RESULT_NONE;
 }
 static EditorResult BrushSetBrushTypeBox(void *data, int d)
@@ -202,6 +208,9 @@ static EditorResult BrushSetBrushTypeBox(void *data, int d)
 	UNUSED(d);
 	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_BOX;
+	MouseSetPicCursor(
+		&gEventHandlers.mouse,
+		PicManagerGetPic(&gPicManager, "editor/cursors/box"), NULL, true);
 	return EDITOR_RESULT_NONE;
 }
 static EditorResult BrushSetBrushTypeBoxFilled(void *data, int d)
@@ -209,6 +218,9 @@ static EditorResult BrushSetBrushTypeBoxFilled(void *data, int d)
 	UNUSED(d);
 	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_BOX_FILLED;
+	MouseSetPicCursor(
+		&gEventHandlers.mouse,
+		PicManagerGetPic(&gPicManager, "editor/cursors/box_filled"), NULL, true);
 	return EDITOR_RESULT_NONE;
 }
 static EditorResult BrushSetBrushTypeBoxAndFill(void *data, int d)
@@ -216,6 +228,9 @@ static EditorResult BrushSetBrushTypeBoxAndFill(void *data, int d)
 	UNUSED(d);
 	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_BOX_AND_FILL;
+	MouseSetPicCursor(
+		&gEventHandlers.mouse,
+		PicManagerGetPic(&gPicManager, "editor/cursors/box_n_fill"), NULL, true);
 	return EDITOR_RESULT_NONE;
 }
 static EditorResult BrushSetBrushTypeSelect(void *data, int d)
@@ -223,6 +238,9 @@ static EditorResult BrushSetBrushTypeSelect(void *data, int d)
 	UNUSED(d);
 	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_SELECT;
+	MouseSetPicCursor(
+		&gEventHandlers.mouse,
+		PicManagerGetPic(&gPicManager, "editor/cursors/select"), NULL, true);
 	return EDITOR_RESULT_NONE;
 }
 static EditorResult BrushSetBrushTypeFill(void *data, int d)
@@ -230,6 +248,9 @@ static EditorResult BrushSetBrushTypeFill(void *data, int d)
 	UNUSED(d);
 	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_FILL;
+	MouseSetPicCursor(
+		&gEventHandlers.mouse,
+		PicManagerGetPic(&gPicManager, "editor/cursors/bucket"), NULL, true);
 	return EDITOR_RESULT_NONE;
 }
 static EditorResult BrushSetBrushTypeSetExit(void *data, int d)
@@ -237,6 +258,9 @@ static EditorResult BrushSetBrushTypeSetExit(void *data, int d)
 	UNUSED(d);
 	EditorBrush *b = data;
 	b->Type = BRUSHTYPE_SET_EXIT;
+	MouseSetPicCursor(
+		&gEventHandlers.mouse,
+		PicManagerGetPic(&gPicManager, "editor/cursors/set_exit"), NULL, true);
 	return EDITOR_RESULT_NONE;
 }
 static EditorResult BrushSetBrushTypeSetKey(void *data, int d)
@@ -245,7 +269,10 @@ static EditorResult BrushSetBrushTypeSetKey(void *data, int d)
 	IndexedEditorBrush *b = data;
 	b->Brush->Type = BRUSHTYPE_SET_KEY;
 	b->Brush->u.ItemIndex = b->u.ItemIndex;
-	return EDITOR_RESULT_NONE;
+	MouseSetPicCursor(
+		&gEventHandlers.mouse,
+		PicManagerGetPic(&gPicManager, "editor/cursors/set_key"), NULL, true);
+	return EDITOR_RESULT_CHANGE_TOOL;
 }
 static void ActivateBrush(UIObject *o, void *data)
 {

@@ -167,16 +167,24 @@ void MapAddDoorGroup(MapBuilder *mb, const struct vec2i v, const int keyFlags)
 		{
 			const struct vec2i vB = svec2i_add(vI, dAside);
 			Tile *tileB = MapGetTile(mb->Map, vB);
-			CASSERT(
-				TileCanWalk(MapGetTile(
-					mb->Map, svec2i(vI.x - dAside.x, vI.y - dAside.y))),
-				"map gen error: entrance should be clear");
-			CASSERT(
-				TileCanWalk(tileB), "map gen error: entrance should be clear");
-			// Change the tile below to shadow, cast by this door
-			tileB->Class = TileClassesGetMaskedTile(
-				tileB->Class, tileB->Class->Style, "shadow",
-				tileB->Class->Mask, tileB->Class->MaskAlt);
+			if (!TileCanWalk(MapGetTile(
+					mb->Map, svec2i(vI.x - dAside.x, vI.y - dAside.y))))
+			{
+				LOG(LM_MAP, LL_ERROR,
+					"map gen error: entrance above should be clear");
+			}
+			if (TileCanWalk(tileB))
+			{
+				// Change the tile below to shadow, cast by this door
+				tileB->Class = TileClassesGetMaskedTile(
+					tileB->Class, tileB->Class->Style, "shadow",
+					tileB->Class->Mask, tileB->Class->MaskAlt);
+			}
+			else
+			{
+				LOG(LM_MAP, LL_ERROR,
+					"map gen error: entrance below should be clear");
+			}
 		}
 	}
 

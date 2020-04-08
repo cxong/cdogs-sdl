@@ -97,6 +97,8 @@ void NKWindow(NKWindowConfig cfg)
 {
 	CASSERT(cfg.win, "Error: did not initialise window");
 	CASSERT(cfg.ctx, "Error: did not initialise NK context");
+	EventReset(cfg.Handlers);
+	MouseSetCursor(&cfg.Handlers->mouse, SDL_SYSTEM_CURSOR_ARROW);
 	Uint32 ticksNow = SDL_GetTicks();
 	Uint32 ticksElapsed = 0;
 	for (;;)
