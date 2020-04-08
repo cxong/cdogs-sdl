@@ -720,7 +720,6 @@ static HandleInputResult HandleInput(
 	}
 	if (!brush.IsActive)
 	{
-		MouseSetPicCursor(&gEventHandlers.mouse, NULL, NULL, false);
 		MouseSetCursor(&gEventHandlers.mouse, SDL_SYSTEM_CURSOR_ARROW);
 	}
 	if (!o &&
@@ -1279,7 +1278,7 @@ int main(int argc, char *argv[])
 	CampaignSettingTerminate(&gCampaign.Setting);
 	CampaignSettingInit(&gCampaign.Setting);
 
-	EventInit(&gEventHandlers, false);
+	EventInit(&gEventHandlers);
 
 	for (int i = 1; i < argc; i++)
 	{

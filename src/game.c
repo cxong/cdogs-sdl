@@ -272,7 +272,7 @@ static void RunGameOnEnter(GameLoopData *data)
 	crosshair->offset.y = -crosshair->size.y / 2;
 	MouseSetPicCursor(
 		&gEventHandlers.mouse, crosshair,
-		PicManagerGetPic(&gPicManager, "crosshair_trail"), true);
+		PicManagerGetPic(&gPicManager, "crosshair_trail"));
 
 	NetServerSendGameStartMessages(&gNetServer, NET_SERVER_BCAST);
 	GameEvent start = GameEventNew(GAME_EVENT_GAME_START);

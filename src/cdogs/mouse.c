@@ -39,16 +39,11 @@
 #define MOUSE_MOVE_DEAD_ZONE 12
 #define TRAIL_NUM_DOTS 4
 
-void MouseInit(Mouse *mouse, const bool hideMouse)
+void MouseInit(Mouse *mouse)
 {
 	memset(mouse, 0, sizeof *mouse);
 	mouse->ticks = 0;
 	mouse->repeatedTicks = 0;
-	mouse->hideMouse = hideMouse;
-	if (hideMouse)
-	{
-		SDL_ShowCursor(SDL_DISABLE);
-	}
 	for (SDL_SystemCursor i = SDL_SYSTEM_CURSOR_ARROW;
 		 i < SDL_NUM_SYSTEM_CURSORS; i++)
 	{
@@ -57,6 +52,7 @@ void MouseInit(Mouse *mouse, const bool hideMouse)
 }
 void MouseTerminate(Mouse *m)
 {
+	SDL_FreeCursor(m->cursor);
 	for (SDL_SystemCursor i = SDL_SYSTEM_CURSOR_ARROW;
 		 i < SDL_NUM_SYSTEM_CURSORS; i++)
 	{
@@ -216,30 +212,38 @@ int MouseGetMove(Mouse *mouse, const struct vec2i pos)
 
 void MouseSetCursor(Mouse *m, const SDL_SystemCursor sc)
 {
+	SDL_FreeCursor(m->cursor);
+	m->cursor = NULL;
 	SDL_SetCursor(m->cursors[sc]);
-	m->hideMouse = false;
 	SDL_ShowCursor(SDL_ENABLE);
 }
 void MouseSetPicCursor(
-	Mouse *m, const Pic *cursor, const Pic *trail, const bool hideMouse)
+	Mouse *m, const Pic *cursor, const Pic *trail)
 {
-	// TODO: use hardware cursors with
-	// https://wiki.libsdl.org/SDL_CreateColorCursor
-	m->cursor = cursor;
+	if (cursor)
+	{
+		SDL_FreeCursor(m->cursor);
+		SDL_Surface *surf = SDL_CreateRGBSurfaceFrom(
+			cursor->Data, cursor->size.x, cursor->size.y, 32,
+			4 * cursor->size.x, gGraphicsDevice.Format->Rmask,
+			gGraphicsDevice.Format->Gmask, gGraphicsDevice.Format->Bmask,
+			0xff000000);
+		m->cursor =
+			SDL_CreateColorCursor(surf, cursor->offset.x, cursor->offset.y);
+		SDL_FreeSurface(surf);
+		SDL_SetCursor(m->cursor);
+	}
+	else
+	{
+		SDL_FreeCursor(m->cursor);
+		m->cursor = NULL;
+	}
 	m->trail = trail;
-	m->hideMouse = hideMouse;
-	SDL_ShowCursor(cursor == NULL && !hideMouse);
+	SDL_ShowCursor(cursor != NULL);
 }
 
 void MouseDraw(const Mouse *mouse)
 {
-	if (mouse->cursor)
-	{
-		PicRender(
-			mouse->cursor, gGraphicsDevice.gameWindow.renderer,
-			mouse->currentPos, colorWhite, 0, svec2_one(), SDL_FLIP_NONE,
-			Rect2iZero());
-	}
 	if (mouse->trail)
 	{
 		const int dx = abs(mouse->currentPos.x - mouse->mouseMovePos.x);

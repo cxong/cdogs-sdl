@@ -49,7 +49,7 @@ typedef struct
 
 extern EventHandlers gEventHandlers;
 
-void EventInit(EventHandlers *handlers, const bool hideMouse);
+void EventInit(EventHandlers *handlers);
 void EventTerminate(EventHandlers *handlers);
 void EventReset(EventHandlers *handlers);
 

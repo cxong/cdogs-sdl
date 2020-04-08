@@ -54,7 +54,7 @@ static EditorResult BrushSetBrushTypeAddMapItem(void *data, int d)
 	b->Brush->u.MapObject = b->u.MapObject;
 	MouseSetPicCursor(
 		&gEventHandlers.mouse,
-		PicManagerGetPic(&gPicManager, "editor/cursors/add"), NULL, true);
+		PicManagerGetPic(&gPicManager, "editor/cursors/add"), NULL);
 	return EDITOR_RESULT_CHANGE_TOOL;
 }
 static EditorResult BrushSetBrushTypeAddCharacter(void *data, int d)

@@ -188,7 +188,7 @@ int main(int argc, char *argv[])
 		LOG(LM_MAIN, LL_ERROR, "Sound initialization failed!");
 	}
 
-	EventInit(&gEventHandlers, true);
+	EventInit(&gEventHandlers);
 	NetServerInit(&gNetServer);
 	PicManagerInit(&gPicManager);
 	TileClassesInit(&gTileClasses);

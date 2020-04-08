@@ -41,12 +41,12 @@
 
 EventHandlers gEventHandlers;
 
-void EventInit(EventHandlers *handlers, const bool hideMouse)
+void EventInit(EventHandlers *handlers)
 {
 	memset(handlers, 0, sizeof *handlers);
 	KeyInit(&handlers->keyboard);
 	JoyInit(&handlers->joysticks);
-	MouseInit(&handlers->mouse, hideMouse);
+	MouseInit(&handlers->mouse);
 }
 void EventTerminate(EventHandlers *handlers)
 {
@@ -57,7 +57,7 @@ void EventReset(EventHandlers *handlers)
 {
 	KeyInit(&handlers->keyboard);
 	JoyReset(&handlers->joysticks);
-	MouseInit(&handlers->mouse, handlers->mouse.hideMouse);
+	MouseInit(&handlers->mouse);
 }
 
 void EventPoll(

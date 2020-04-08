@@ -42,18 +42,17 @@ typedef struct
 	struct vec2i previousPos;
 	struct vec2i currentPos;
 	struct vec2i wheel;
-	const Pic *cursor;
+	SDL_Cursor *cursor;
 	const Pic *trail;
 	Uint32 ticks;
 	Uint32 repeatedTicks;
 
-	bool hideMouse;
 	struct vec2i mouseMovePos;
 
 	SDL_Cursor *cursors[SDL_NUM_SYSTEM_CURSORS];
 } Mouse;
 
-void MouseInit(Mouse *mouse, const bool hideMouse);
+void MouseInit(Mouse *mouse);
 void MouseTerminate(Mouse *m);
 void MousePrePoll(Mouse *mouse);
 void MouseOnButtonDown(Mouse *mouse, Uint8 button);
@@ -72,5 +71,5 @@ struct vec2i MouseWheel(const Mouse *m);
 int MouseGetMove(Mouse *mouse, const struct vec2i pos);
 void MouseSetCursor(Mouse *m, const SDL_SystemCursor sc);
 void MouseSetPicCursor(
-	Mouse *m, const Pic *cursor, const Pic *trail, const bool hideMouse);
+	Mouse *m, const Pic *cursor, const Pic *trail);
 void MouseDraw(const Mouse *mouse);
