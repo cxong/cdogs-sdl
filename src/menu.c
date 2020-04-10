@@ -729,15 +729,15 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 		for (int i = iStart; i < iEnd; i++)
 		{
 			const menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
-			char nameBuf[256];
+			char nameBuf[512];
 			if (subMenu->type == MENU_TYPE_NORMAL &&
 				subMenu->u.normal.isSubmenusAlt)
 			{
-				sprintf(nameBuf, "%s \x10", subMenu->name);
+				snprintf(nameBuf, sizeof(nameBuf), "%s \x10", subMenu->name);
 			}
 			else
 			{
-				strcpy(nameBuf, subMenu->name);
+				snprintf(nameBuf, sizeof(nameBuf), "%s", subMenu->name);
 			}
 
 			switch (menu->u.normal.align)
