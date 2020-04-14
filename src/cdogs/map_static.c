@@ -174,18 +174,15 @@ static void AddObjective(MapBuilder *mb, const ObjectivePositions *op)
 		return;
 	}
 	Objective *o = CArrayGet(&mb->mission->Objectives, op->Index);
-	CA_FOREACH(const int, idx, op->Indices)
-	if (_ca_index >= (int)op->Positions.size)
-		continue;
-	const struct vec2i *tilePos = CArrayGet(&op->Positions, _ca_index);
-	const struct vec2 pos = Vec2CenterOfTile(*tilePos);
+	CA_FOREACH(const PositionIndex, pi, op->PositionIndices)
+	const struct vec2 pos = Vec2CenterOfTile(pi->Position);
 	switch (o->Type)
 	{
 	case OBJECTIVE_KILL: {
 		NActorAdd aa = NActorAdd_init_default;
 		aa.UID = ActorsGetNextUID();
 		aa.CharId =
-			CharacterStoreGetSpecialId(&mb->co->Setting.characters, *idx);
+			CharacterStoreGetSpecialId(&mb->co->Setting.characters, pi->Index);
 		aa.ThingFlags = ObjectiveToThing(op->Index);
 		aa.Direction = rand() % DIRECTION_COUNT;
 		const Character *c =
@@ -202,13 +199,13 @@ static void AddObjective(MapBuilder *mb, const ObjectivePositions *op)
 		break;
 	case OBJECTIVE_DESTROY:
 		MapTryPlaceOneObject(
-			mb, *tilePos, o->u.MapObject, ObjectiveToThing(op->Index), false);
+			mb, pi->Position, o->u.MapObject, ObjectiveToThing(op->Index), false);
 		break;
 	case OBJECTIVE_RESCUE: {
 		NActorAdd aa = NActorAdd_init_default;
 		aa.UID = ActorsGetNextUID();
 		aa.CharId =
-			CharacterStoreGetPrisonerId(&mb->co->Setting.characters, *idx);
+			CharacterStoreGetPrisonerId(&mb->co->Setting.characters, pi->Index);
 		aa.ThingFlags = ObjectiveToThing(op->Index);
 		aa.Direction = rand() % DIRECTION_COUNT;
 		const Character *c =

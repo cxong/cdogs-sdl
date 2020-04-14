@@ -247,7 +247,7 @@ static EditorResult MissionChangeObjectiveTotal(void *vData, int d)
 		CA_FOREACH(const ObjectivePositions, op, m->u.Static.Objectives)
 		if (op->Index == data->index)
 		{
-			o->Count = MAX(o->Count, (int)op->Positions.size);
+			o->Count = MAX(o->Count, (int)op->PositionIndices.size);
 			break;
 		}
 		CA_FOREACH_END()

@@ -1,50 +1,50 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin
-    Copyright (C) 2003-2007 Lucas Martin-King
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (C) 1995 Ronny Wester
+	Copyright (C) 2003 Jeremy Chin
+	Copyright (C) 2003-2007 Lucas Martin-King
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-    This file incorporates work covered by the following copyright and
-    permission notice:
+	This file incorporates work covered by the following copyright and
+	permission notice:
 
-    Copyright (c) 2013-2017, 2019 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2017, 2019-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "sounds.h"
 
@@ -68,7 +68,6 @@
 #include "vector.h"
 
 SoundDevice gSoundDevice;
-
 
 int OpenAudio(int frequency, Uint16 format, int channels, int chunkSize)
 {
@@ -99,7 +98,8 @@ static Mix_Chunk *LoadSound(const char *path);
 static void AddSound(map_t sounds, const char *name, SoundData *sound);
 static void SoundLoad(map_t sounds, const char *name, const char *path)
 {
-	// If the sound basename is a number, it is part of a group of random sounds
+	// If the sound basename is a number, it is part of a group of random
+	// sounds
 	char basename[CDOGS_FILENAME_MAX];
 	PathGetBasenameWithoutExtension(basename, name);
 	char nameNoExt[CDOGS_PATH_MAX];
@@ -138,7 +138,8 @@ static void SoundLoad(map_t sounds, const char *name, const char *path)
 			char buf[CDOGS_PATH_MAX];
 			sprintf(buf, fmt, i);
 			Mix_Chunk *data = LoadSound(buf);
-			if (data == NULL) break;
+			if (data == NULL)
+				break;
 			CArrayPushBack(&sound->u.random.sounds, &data);
 		}
 		// Remove "/0" from name and add
@@ -162,9 +163,9 @@ static Mix_Chunk *LoadSound(const char *path)
 {
 	// Only load sounds from known extensions
 	const char *ext = strrchr(path, '.');
-	if (ext == NULL || !(
-		strcmp(ext, ".ogg") == 0 || strcmp(ext, ".OGG") == 0 ||
-		strcmp(ext, ".wav") == 0 || strcmp(ext, ".WAV") == 0))
+	if (ext == NULL ||
+		!(strcmp(ext, ".ogg") == 0 || strcmp(ext, ".OGG") == 0 ||
+		  strcmp(ext, ".wav") == 0 || strcmp(ext, ".WAV") == 0))
 	{
 		return NULL;
 	}
@@ -206,8 +207,8 @@ void SoundLoadDir(map_t sounds, const char *path, const char *prefix)
 	{
 		if (errno != ENOENT)
 		{
-			LOG(LM_MAIN, LL_ERROR, "Cannot open sound dir '%s': %s",
-				path, strerror(errno));
+			LOG(LM_MAIN, LL_ERROR, "Cannot open sound dir '%s': %s", path,
+				strerror(errno));
 		}
 		goto bail;
 	}
@@ -253,8 +254,8 @@ static void SoundLoadMusic(CArray *tracks, const char *path)
 	GetDataFilePath(buf, path);
 	if (tinydir_open(&dir, buf) == -1)
 	{
-		LOG(LM_MAIN, LL_ERROR, "Cannot open music dir %s: %s",
-			buf, strerror(errno));
+		LOG(LM_MAIN, LL_ERROR, "Cannot open music dir %s: %s", buf,
+			strerror(errno));
 		goto bail;
 	}
 
@@ -293,7 +294,8 @@ static void SoundClose(SoundDevice *s, const bool waitForSoundsComplete)
 	if (waitForSoundsComplete)
 	{
 		Uint32 waitStart = SDL_GetTicks();
-		while (Mix_Playing(-1) > 0 && SDL_GetTicks() - waitStart < 1000);
+		while (Mix_Playing(-1) > 0 && SDL_GetTicks() - waitStart < 1000)
+			;
 		// Don't stop the music unless we're reopening
 		MusicStop(s);
 	}
@@ -364,25 +366,25 @@ static void SoundDataTerminate(any_t data)
 	SoundData *s = data;
 	switch (s->Type)
 	{
-		case SOUND_NORMAL:
-			Mix_FreeChunk(s->u.normal);
-			break;
-		case SOUND_RANDOM:
-			CA_FOREACH(Mix_Chunk *, chunk, s->u.random.sounds)
-				Mix_FreeChunk(*chunk);
-			CA_FOREACH_END()
-			CArrayTerminate(&s->u.random.sounds);
-			break;
-		default:
-			CASSERT(false, "Unknown sound data type");
-			break;
+	case SOUND_NORMAL:
+		Mix_FreeChunk(s->u.normal);
+		break;
+	case SOUND_RANDOM:
+		CA_FOREACH(Mix_Chunk *, chunk, s->u.random.sounds)
+		Mix_FreeChunk(*chunk);
+		CA_FOREACH_END()
+		CArrayTerminate(&s->u.random.sounds);
+		break;
+	default:
+		CASSERT(false, "Unknown sound data type");
+		break;
 	}
 	CFREE(s);
 }
 static void SoundUnloadMusic(CArray *tracks)
 {
 	CA_FOREACH(Mix_Music *, m, *tracks)
-		Mix_FreeMusic(*m);
+	Mix_FreeMusic(*m);
 	CA_FOREACH_END()
 	CArrayTerminate(tracks);
 }
@@ -457,8 +459,8 @@ static void SoundPlayAtPosition(
 		return;
 	}
 
-	LOG(LM_SOUND, LL_TRACE, "distance(%d) bearing(%d)",
-		distance, bearingDegrees);
+	LOG(LM_SOUND, LL_TRACE, "distance(%d) bearing(%d)", distance,
+		bearingDegrees);
 
 	// Get sound channel to play sound
 	const int channel = GetChannel(device, data);
@@ -508,13 +510,16 @@ static void SetSoundEffect(
 
 	// Calculate left/right channel as values from 0-180
 	int left;
-	if (bearingDegrees < 90) left = 90 - bearingDegrees;
-	else if (bearingDegrees < 270) left = bearingDegrees - 90;
-	else left = 450 - bearingDegrees;
+	if (bearingDegrees < 90)
+		left = 90 - bearingDegrees;
+	else if (bearingDegrees < 270)
+		left = bearingDegrees - 90;
+	else
+		left = 450 - bearingDegrees;
 	const int right = 180 - left;
 	Mix_SetPanning(
-		channel,
-		(Uint8)(left * distance / 180), (Uint8)(right * distance / 180));
+		channel, (Uint8)(left * distance / 180),
+		(Uint8)(right * distance / 180));
 #endif
 }
 
@@ -527,7 +532,6 @@ void SoundPlay(SoundDevice *device, Mix_Chunk *data)
 
 	SoundPlayAtPosition(device, data, svec2_zero(), false);
 }
-
 
 void SoundSetEar(const bool isLeft, const int idx, const struct vec2 pos)
 {
@@ -578,9 +582,13 @@ static bool IsPosNoSee(void *data, struct vec2i pos)
 	return t != NULL && TileIsOpaque(t);
 }
 void SoundPlayAtPlusDistance(
-	SoundDevice *device, Mix_Chunk *data,
-	const struct vec2 pos, const int plusDistance)
+	SoundDevice *device, Mix_Chunk *data, const struct vec2 pos,
+	const int plusDistance)
 {
+	if (!device->isInitialised)
+	{
+		return;
+	}
 	struct vec2 closestLeftEar, closestRightEar;
 
 	// Find closest set of ears to the sound
@@ -610,7 +618,7 @@ void SoundPlayAtPlusDistance(
 	lineData.data = &gMap;
 	bool isMuffled = false;
 	if (!HasClearLineJMRaytrace(
-		svec2i_assign_vec2(pos), svec2i_assign_vec2(origin), &lineData))
+			svec2i_assign_vec2(pos), svec2i_assign_vec2(origin), &lineData))
 	{
 		isMuffled = true;
 	}
@@ -644,28 +652,28 @@ static Mix_Chunk *SoundDataGet(SoundData *s)
 {
 	switch (s->Type)
 	{
-		case SOUND_NORMAL:
-			return s->u.normal;
-		case SOUND_RANDOM:
-			if (s->u.random.sounds.size == 0)
-			{
-				return NULL;
-			}
-			else
-			{
-				// Don't get the last sound used
-				int idx = s->u.random.lastPlayed;
-				while ((int)s->u.random.sounds.size > 1 &&
-					idx == s->u.random.lastPlayed)
-				{
-					idx = rand() % s->u.random.sounds.size;
-				}
-				Mix_Chunk **sound = CArrayGet(&s->u.random.sounds, idx);
-				s->u.random.lastPlayed = idx;
-				return *sound;
-			}
-		default:
-			CASSERT(false, "Unknown sound data type");
+	case SOUND_NORMAL:
+		return s->u.normal;
+	case SOUND_RANDOM:
+		if (s->u.random.sounds.size == 0)
+		{
 			return NULL;
+		}
+		else
+		{
+			// Don't get the last sound used
+			int idx = s->u.random.lastPlayed;
+			while ((int)s->u.random.sounds.size > 1 &&
+				   idx == s->u.random.lastPlayed)
+			{
+				idx = rand() % s->u.random.sounds.size;
+			}
+			Mix_Chunk **sound = CArrayGet(&s->u.random.sounds, idx);
+			s->u.random.lastPlayed = idx;
+			return *sound;
+		}
+	default:
+		CASSERT(false, "Unknown sound data type");
+		return NULL;
 	}
 }

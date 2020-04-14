@@ -37,6 +37,32 @@
 
 typedef struct
 {
+	const MapObject *M;
+	CArray Positions; // of struct vec2i
+} MapObjectPositions;
+typedef struct
+{
+	int Index;
+	CArray Positions; // of struct vec2i
+} CharacterPositions;
+typedef struct
+{
+	struct vec2i Position;
+	int Index;
+} PositionIndex;
+typedef struct
+{
+	int Index;
+	CArray PositionIndices; // of PositionIndex
+} ObjectivePositions;
+typedef struct
+{
+	int Index;
+	CArray Positions; // of struct vec2i
+} KeyPositions;
+
+typedef struct
+{
 	map_t TileClasses;	// of TileClass
 	CArray Tiles;		// of int (tile ids)
 	CArray Access;		// of int

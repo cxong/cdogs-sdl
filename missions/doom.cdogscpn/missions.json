@@ -3458,7 +3458,7 @@
 			"Description": "Extras",
 			"Type": "Collect",
 			"Pickup": "folder",
-			"Count": 8,
+			"Count": 10,
 			"Required": 0,
 			"Flags": 1
 		},
@@ -4484,9 +4484,6 @@
 			0,
 			0,
 			0,
-			0,
-			0,
-			0,
 			0]
 		},
 		{
@@ -4576,11 +4573,6 @@
 			[108,
 			17]],
 			"Indices": [0,
-			0,
-			0,
-			0,
-			0,
-			0,
 			0,
 			0,
 			0,
