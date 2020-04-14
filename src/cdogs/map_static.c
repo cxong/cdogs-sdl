@@ -175,6 +175,8 @@ static void AddObjective(MapBuilder *mb, const ObjectivePositions *op)
 	}
 	Objective *o = CArrayGet(&mb->mission->Objectives, op->Index);
 	CA_FOREACH(const int, idx, op->Indices)
+	if (_ca_index >= (int)op->Positions.size)
+		continue;
 	const struct vec2i *tilePos = CArrayGet(&op->Positions, _ca_index);
 	const struct vec2 pos = Vec2CenterOfTile(*tilePos);
 	switch (o->Type)
