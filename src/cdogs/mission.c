@@ -589,3 +589,64 @@ int KeycardCount(int flags)
 		count++;
 	return count;
 }
+
+void MissionStaticAddObjective(
+	Mission *m, MissionStatic *ms, const int idx, const int idx2,
+	const struct vec2i pos)
+{
+	CASSERT(m->Type == MAPTYPE_STATIC, "mission is not static type");
+	// Remove any objectives already there
+	MissionStaticTryRemoveObjective(m, ms, pos);
+
+	// Check if the objective already has an entry, and add to its list
+	// of positions
+	bool hasAdded = false;
+	PositionIndex pi = {pos, idx2};
+	for (int i = 0; i < (int)ms->Objectives.size; i++)
+	{
+		ObjectivePositions *op = CArrayGet(&ms->Objectives, i);
+		if (op->Index == idx)
+		{
+			CArrayPushBack(&op->PositionIndices, &pi);
+			hasAdded = true;
+			break;
+		}
+	}
+	// If not, create a new entry
+	if (!hasAdded)
+	{
+		ObjectivePositions newOp;
+		newOp.Index = idx;
+		CArrayInit(&newOp.PositionIndices, sizeof(PositionIndex));
+		CArrayPushBack(&newOp.PositionIndices, &pi);
+		CArrayPushBack(&ms->Objectives, &newOp);
+	}
+	// Increase number of objectives
+	Objective *o = CArrayGet(&m->Objectives, idx);
+	o->Count++;
+}
+bool MissionStaticTryRemoveObjective(
+	Mission *m, MissionStatic *ms, const struct vec2i pos)
+{
+	CA_FOREACH(ObjectivePositions, op, ms->Objectives)
+	for (int j = 0; j < (int)op->PositionIndices.size; j++)
+	{
+		PositionIndex *pi = CArrayGet(&op->PositionIndices, j);
+		if (svec2i_is_equal(pi->Position, pos))
+		{
+			CArrayDelete(&op->PositionIndices, j);
+			// Decrease number of objectives
+			Objective *o = CArrayGet(&m->Objectives, op->Index);
+			o->Count--;
+			CASSERT(o->Count >= 0, "removing unknown objective");
+			if (op->PositionIndices.size == 0)
+			{
+				CArrayTerminate(&op->PositionIndices);
+				CArrayDelete(&ms->Objectives, _ca_index);
+			}
+			return true;
+		}
+	}
+	CA_FOREACH_END()
+	return false;
+}

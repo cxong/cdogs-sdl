@@ -175,6 +175,12 @@ static void AddObjective(MapBuilder *mb, const ObjectivePositions *op)
 	}
 	Objective *o = CArrayGet(&mb->mission->Objectives, op->Index);
 	CA_FOREACH(const PositionIndex, pi, op->PositionIndices)
+	if (!MapIsTileIn(mb->Map, pi->Position))
+	{
+		LOG(LM_MAP, LL_ERROR, "objective outside map");
+		continue;
+	}
+
 	const struct vec2 pos = Vec2CenterOfTile(pi->Position);
 	switch (o->Type)
 	{

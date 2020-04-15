@@ -223,3 +223,9 @@ void MissionDone(struct MissionOptions *mo, const NMissionEnd end);
 
 // Count the number of keys in the flags
 int KeycardCount(int flags);
+
+void MissionStaticAddObjective(
+	Mission *m, MissionStatic *ms, const int idx, const int idx2,
+	const struct vec2i pos);
+bool MissionStaticTryRemoveObjective(
+	Mission *m, MissionStatic *ms, const struct vec2i pos);

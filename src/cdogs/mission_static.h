@@ -79,7 +79,7 @@ typedef struct
 } MissionStatic;
 
 bool MissionStaticTryLoadJSON(
-	MissionStatic *m, json_t *node, const int version);
+	MissionStatic *m, json_t *node, const struct vec2i size, const int version);
 void MissionStaticFromMap(MissionStatic *m, const Map *map);
 void MissionStaticTerminate(MissionStatic *m);
 void MissionStaticSaveJSON(
@@ -109,10 +109,6 @@ bool MissionStaticTryRemoveItemAt(MissionStatic *m, const struct vec2i pos);
 bool MissionStaticTryAddCharacter(
 	MissionStatic *m, const int ch, const struct vec2i pos);
 bool MissionStaticTryRemoveCharacterAt(
-	MissionStatic *m, const struct vec2i pos);
-bool MissionStaticTryAddObjective(
-	MissionStatic *m, const int idx, const int idx2, const struct vec2i pos);
-bool MissionStaticTryRemoveObjectiveAt(
 	MissionStatic *m, const struct vec2i pos);
 bool MissionStaticTryAddKey(
 	MissionStatic *m, const int k, const struct vec2i pos);

@@ -58,11 +58,12 @@ static void LoadStaticItems(
 static void LoadStaticWrecks(
 	MissionStatic *m, json_t *node, const char *name, const int version);
 static void LoadStaticCharacters(MissionStatic *m, json_t *node, char *name);
-static void LoadStaticObjectives(MissionStatic *m, json_t *node, char *name);
+static void LoadStaticObjectives(
+	MissionStatic *m, const struct vec2i size, json_t *node, char *name);
 static void LoadStaticKeys(MissionStatic *m, json_t *node, char *name);
 static void LoadStaticExit(MissionStatic *m, json_t *node, char *name);
 bool MissionStaticTryLoadJSON(
-	MissionStatic *m, json_t *node, const int version)
+	MissionStatic *m, json_t *node, const struct vec2i size, const int version)
 {
 	MissionStaticInit(m);
 	if (version <= 14)
@@ -149,7 +150,7 @@ bool MissionStaticTryLoadJSON(
 		LoadStaticWrecks(m, node, "StaticWrecks", version);
 	}
 	LoadStaticCharacters(m, node, "StaticCharacters");
-	LoadStaticObjectives(m, node, "StaticObjectives");
+	LoadStaticObjectives(m, size, node, "StaticObjectives");
 	LoadStaticKeys(m, node, "StaticKeys");
 
 	LoadVec2i(&m->Start, node, "Start");
@@ -382,7 +383,8 @@ static void LoadStaticCharacters(MissionStatic *m, json_t *node, char *name)
 		CArrayPushBack(&m->Characters, &cp);
 	}
 }
-static void LoadStaticObjectives(MissionStatic *m, json_t *node, char *name)
+static void LoadStaticObjectives(
+	MissionStatic *m, const struct vec2i size, json_t *node, char *name)
 {
 	json_t *objs = json_find_first_label(node, name);
 	if (!objs || !objs->child)
@@ -410,10 +412,17 @@ static void LoadStaticObjectives(MissionStatic *m, json_t *node, char *name)
 			json_t *position = positions->child;
 			pos.x = atoi(position->text);
 			position = position->next;
+			if (position == NULL)
+				continue;
 			pos.y = atoi(position->text);
+			// Ignore objectives outside map
+			if (!Rect2iIsInside(Rect2iNew(svec2i_zero(), size), pos))
+			{
+				continue;
+			}
 			CArrayPushBack(&opPositions, &pos);
 		}
-		
+
 		CArray opIndices;
 		CArrayInit(&opIndices, sizeof(int));
 		LoadIntArray(&opIndices, objs, "Indices");
@@ -423,7 +432,7 @@ static void LoadStaticObjectives(MissionStatic *m, json_t *node, char *name)
 		{
 			PositionIndex pi;
 			pi.Position = *(struct vec2i *)CArrayGet(&opPositions, i);
-			pi.Index= *(int *)CArrayGet(&opIndices, i);
+			pi.Index = *(int *)CArrayGet(&opIndices, i);
 			CArrayPushBack(&op.PositionIndices, &pi);
 		}
 
@@ -1108,72 +1117,6 @@ bool MissionStaticTryRemoveCharacterAt(
 			{
 				CArrayTerminate(&cp->Positions);
 				CArrayDelete(&m->Characters, _ca_index);
-			}
-			return true;
-		}
-	}
-	CA_FOREACH_END()
-	return false;
-}
-
-bool MissionStaticTryAddObjective(
-	MissionStatic *m, const int idx, const int idx2, const struct vec2i pos)
-{
-	// Remove any objectives already there
-	MissionStaticTryRemoveObjectiveAt(m, pos);
-
-	const Tile *tile = MapGetTile(&gMap, pos);
-	if (TileIsClear(tile))
-	{
-		// Check if the objective already has an entry, and add to its list
-		// of positions
-		bool hasAdded = false;
-		ObjectivePositions *op = NULL;
-		PositionIndex pi = {pos, idx2};
-		for (int i = 0; i < (int)m->Objectives.size; i++)
-		{
-			op = CArrayGet(&m->Objectives, i);
-			if (op->Index == idx)
-			{
-				CArrayPushBack(&op->PositionIndices, &pi);
-				hasAdded = true;
-				break;
-			}
-		}
-		// If not, create a new entry
-		if (!hasAdded)
-		{
-			ObjectivePositions newOp;
-			newOp.Index = idx;
-			CArrayInit(&newOp.PositionIndices, sizeof(PositionIndex));
-			CArrayPushBack(&newOp.PositionIndices, &pi);
-			CArrayPushBack(&m->Objectives, &newOp);
-		}
-		// Increase number of objectives
-		Objective *o = CArrayGet(&m->Objectives, idx);
-		o->Count++;
-		return true;
-	}
-	return false;
-}
-bool MissionStaticTryRemoveObjectiveAt(
-	MissionStatic *m, const struct vec2i pos)
-{
-	CA_FOREACH(ObjectivePositions, op, m->Objectives)
-	for (int j = 0; j < (int)op->PositionIndices.size; j++)
-	{
-		PositionIndex *pi = CArrayGet(&op->PositionIndices, j);
-		if (svec2i_is_equal(pi->Position, pos))
-		{
-			CArrayDelete(&op->PositionIndices, j);
-			// Decrease number of objectives
-			Objective *o = CArrayGet(&m->Objectives, op->Index);
-			o->Count--;
-			CASSERT(o->Count >= 0, "removing unknown objective");
-			if (op->PositionIndices.size == 0)
-			{
-				CArrayTerminate(&op->PositionIndices);
-				CArrayDelete(&m->Objectives, _ca_index);
 			}
 			return true;
 		}

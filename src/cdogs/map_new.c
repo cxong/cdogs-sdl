@@ -281,7 +281,7 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 			LoadClassicPillars(&m, child, "Pillars");
 			break;
 		case MAPTYPE_STATIC:
-			if (!MissionStaticTryLoadJSON(&m.u.Static, child, version))
+			if (!MissionStaticTryLoadJSON(&m.u.Static, child, m.Size, version))
 			{
 				continue;
 			}
