@@ -20,6 +20,7 @@
 
 #include "json.h"
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -1058,6 +1059,7 @@ json_format_string (const char *text)
 	text_length = strlen (text);
 
 	output = rcs_create (text_length);
+	bool in_small_array = false;
 	while (pos < text_length)
 	{
 		switch (text[pos])
@@ -1069,7 +1071,41 @@ json_format_string (const char *text)
 			pos++;
 			break;
 
+		case '[':
+			{
+				int num_elements = 0;
+				// Read ahead to see if this is a big array
+				for (size_t pos_i = pos; pos_i < text_length && num_elements <= 2; pos_i++)
+				{
+					if (text[pos_i] == ']')
+					{
+						num_elements++;
+						break;
+					}
+					if (text[pos_i] == ',')
+					{
+						num_elements++;
+					}
+					if (text[pos_i] == '{')
+					{
+						num_elements = 999;
+						break;
+					}
+				}
+				in_small_array = num_elements <= 2;
+			}
+			rcs_catc(output, text[pos]);
+			pos++;
+			break;
+
+		case ']':
+			in_small_array = false;
+			rcs_catc(output, text[pos]);
+			pos++;
+			break;
+
 		case '{':
+			in_small_array = false;
 			indentation++;
 			rcs_catcs (output, "{\n", 2);
 			for (i = 0; i < indentation; i++)
@@ -1096,10 +1132,17 @@ json_format_string (const char *text)
 			break;
 
 		case ',':
-			rcs_catcs (output, ",\n", 2);
-			for (i = 0; i < indentation; i++)
+			if (in_small_array)
 			{
-				rcs_catc (output, '\t');
+				rcs_catcs(output, ", ", 2);
+			}
+			else
+			{
+				rcs_catcs(output, ",\n", 2);
+				for (i = 0; i < indentation; i++)
+				{
+					rcs_catc(output, '\t');
+				}
 			}
 			pos++;
 			break;

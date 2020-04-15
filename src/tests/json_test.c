@@ -62,6 +62,20 @@ FEATURE(json_format_string, "String format")
 		json_free_value(&root);
 		json_free_value(&parsed);
 	SCENARIO_END
+
+	SCENARIO("Small arrays")
+		GIVEN("a JSON string with a small array")
+		const char *text = "[1, 2]";
+
+		WHEN("I format the string")
+		char *ftext = json_format_string(text);
+
+		THEN("the result should have the array on one line")
+		SHOULD_STR_EQUAL(ftext, "[1, 2]");
+
+		CFREE(ftext);
+	SCENARIO_END
+
 FEATURE_END
 
 CBEHAVE_RUN("JSON features are:", TEST_FEATURE(json_format_string))
