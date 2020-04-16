@@ -449,14 +449,14 @@ static const Pic *GetBodyPic(
 	const ActorAnimation anim, const int frame, const bool isArmed,
 	const CharColors *colors)
 {
-	const int stride = anim == ACTORANIMATION_IDLE ? 1 : 8;
+	const int stride = anim == ACTORANIMATION_WALKING ? 8 : 1;
 	const int col = frame % stride;
 	const int row = (int)dir;
 	const int idx = col + row * stride;
 	char buf[CDOGS_PATH_MAX];
 	sprintf(
 		buf, "chars/bodies/%s/upper_%s%s", cs->Name,
-		anim == ACTORANIMATION_IDLE ? "idle" : "run",
+		anim == ACTORANIMATION_WALKING ? "run" : "idle",
 		isArmed ? "_handgun" : ""); // TODO: other gun holding poses
 	// Get or generate masked sprites
 	const NamedSprites *ns = PicManagerGetCharSprites(pm, buf, colors);
@@ -466,14 +466,14 @@ static const Pic *GetLegsPic(
 	PicManager *pm, const CharSprites *cs, const direction_e dir,
 	const ActorAnimation anim, const int frame, const CharColors *colors)
 {
-	const int stride = anim == ACTORANIMATION_IDLE ? 1 : 8;
+	const int stride = anim == ACTORANIMATION_WALKING ? 8 : 1;
 	const int col = frame % stride;
 	const int row = (int)dir;
 	const int idx = col + row * stride;
 	char buf[CDOGS_PATH_MAX];
 	sprintf(
 		buf, "chars/bodies/%s/legs_%s", cs->Name,
-		anim == ACTORANIMATION_IDLE ? "idle" : "run");
+		anim == ACTORANIMATION_WALKING ? "run" : "idle");
 	// Get or generate masked sprites
 	const NamedSprites *ns = PicManagerGetCharSprites(pm, buf, colors);
 	return CArrayGet(&ns->pics, idx);
