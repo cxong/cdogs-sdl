@@ -38,8 +38,8 @@ if(CMAKE_CROSSCOMPILING)
 	endif()
 endif()
 
-if("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
-    set(CLANG 1)
+if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+	set(CLANG 1)
 endif()
 
 if(WIN32)
