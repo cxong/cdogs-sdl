@@ -1,11 +1,5 @@
-if(APPLE)
-	cmake_minimum_required(VERSION 2.8.12)
-else()
-	cmake_minimum_required(VERSION 2.8.2)
-endif()
-if("${CMAKE_VERSION}" VERSION_GREATER 3.1)
-	cmake_policy(SET CMP0054 NEW)
-endif()
+cmake_minimum_required(VERSION 3.1)
+cmake_policy(SET CMP0054 NEW)
 set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
 project(cdogs-sdl C)
 
