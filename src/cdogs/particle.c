@@ -1,29 +1,29 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2017, 2019 Cong Xu
-    All rights reserved.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (c) 2014-2017, 2019-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "particle.h"
 
@@ -35,7 +35,6 @@
 #include "log.h"
 #include "objs.h"
 
-
 ParticleClasses gParticleClasses;
 CArray gParticles;
 
@@ -44,14 +43,12 @@ CArray gParticles;
 // Particles get darker when below this height
 #define PARTICLE_DARKEN_Z BULLET_Z
 
-
 ParticleType StrParticleType(const char *s)
 {
 	S2T(PARTICLE_PIC, "Pic");
 	S2T(PARTICLE_TEXT, "Text");
 	return PARTICLE_PIC;
 }
-
 
 static void LoadParticleClass(
 	ParticleClass *c, json_t *node, const int version);
@@ -168,22 +165,21 @@ static void LoadParticleClass(
 		}
 		switch (c->Type)
 		{
-			case PARTICLE_PIC:
-				CPicLoadJSON(
-					&c->u.Pic, json_find_first_label(node, "Pic")->child);
-				break;
-			case PARTICLE_TEXT:
-				c->u.TextColor = colorWhite;
-				tmp = NULL;
-				LoadStr(&tmp, node, "TextMask");
-				if (tmp != NULL)
-				{
-					c->u.TextColor = StrColor(tmp);
-					CFREE(tmp)
-				}
-				break;
-			default:
-				break;
+		case PARTICLE_PIC:
+			CPicLoadJSON(&c->u.Pic, json_find_first_label(node, "Pic")->child);
+			break;
+		case PARTICLE_TEXT:
+			c->u.TextColor = colorWhite;
+			tmp = NULL;
+			LoadStr(&tmp, node, "TextMask");
+			if (tmp != NULL)
+			{
+				c->u.TextColor = StrColor(tmp);
+				CFREE(tmp)
+			}
+			break;
+		default:
+			break;
 		}
 	}
 
@@ -220,16 +216,16 @@ const ParticleClass *StrParticleClass(
 		return NULL;
 	}
 	CA_FOREACH(const ParticleClass, c, classes->CustomClasses)
-		if (strcmp(c->Name, name) == 0)
-		{
-			return c;
-		}
+	if (strcmp(c->Name, name) == 0)
+	{
+		return c;
+	}
 	CA_FOREACH_END()
 	CA_FOREACH(const ParticleClass, c, classes->Classes)
-		if (strcmp(c->Name, name) == 0)
-		{
-			return c;
-		}
+	if (strcmp(c->Name, name) == 0)
+	{
+		return c;
+	}
 	CA_FOREACH_END()
 	CASSERT(false, "Cannot find particle class");
 	return NULL;
@@ -272,7 +268,6 @@ void ParticlesUpdate(CArray *particles, const int ticks)
 	}
 }
 
-
 typedef struct
 {
 	const Thing *Obj;
@@ -286,13 +281,13 @@ static bool HitWallFunc(
 	const struct vec2 normal);
 static bool ParticleUpdate(Particle *p, const int ticks)
 {
-	switch(p->Class->Type)
+	switch (p->Class->Type)
 	{
-		case PARTICLE_PIC:
-			CPicUpdate(&p->u.Pic, ticks);
-			break;
-		default:
-			break;
+	case PARTICLE_PIC:
+		CPicUpdate(&p->u.Pic, ticks);
+		break;
+	default:
+		break;
 	}
 	p->Count += ticks;
 	const struct vec2 startPos = p->Pos;
@@ -334,15 +329,12 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 	// Wall collision, bounce off walls
 	if (!svec2_is_zero(p->thing.Vel) && p->Class->HitsWalls)
 	{
-		const CollisionParams params =
-		{
-			0, COLLISIONTEAM_NONE, IsPVP(gCampaign.Entry.Mode)
-		};
-		HitWallData data = { &p->thing, svec2_zero(), svec2_zero(), -1 };
+		const CollisionParams params = {0, COLLISIONTEAM_NONE,
+										IsPVP(gCampaign.Entry.Mode)};
+		HitWallData data = {&p->thing, svec2_zero(), svec2_zero(), -1};
 		OverlapThings(
-			&p->thing, startPos,
-			p->thing.size, params, NULL, NULL,
-			CheckWall, HitWallFunc, &data);
+			&p->thing, startPos, p->thing.size, params, NULL, NULL, CheckWall,
+			HitWallFunc, &data);
 		if (data.ColPosDist2 >= 0)
 		{
 			if (p->Class->WallBounces)
@@ -405,7 +397,8 @@ static void SetClosestCollision(
 	}
 }
 
-static void DrawParticle(const struct vec2i pos, const ThingDrawFuncData *data);
+static void DrawParticle(
+	const struct vec2i pos, const ThingDrawFuncData *data);
 int ParticleAdd(CArray *particles, const AddParticle add)
 {
 	// Find an empty slot in list
@@ -433,14 +426,14 @@ int ParticleAdd(CArray *particles, const AddParticle add)
 	p->Class = add.Class;
 	switch (p->Class->Type)
 	{
-		case PARTICLE_PIC:
-			CPicCopyPic(&p->u.Pic, &p->Class->u.Pic);
-			break;
-		case PARTICLE_TEXT:
-			CSTRDUP(p->u.Text, add.Text);
-			break;
-		default:
-			break;
+	case PARTICLE_PIC:
+		CPicCopyPic(&p->u.Pic, &p->Class->u.Pic);
+		break;
+	case PARTICLE_TEXT:
+		CSTRDUP(p->u.Text, add.Text);
+		break;
+	default:
+		break;
 	}
 	p->ActorUID = add.ActorUID;
 	p->Pos = add.Pos;
@@ -491,46 +484,45 @@ static void DrawParticle(const struct vec2i pos, const ThingDrawFuncData *data)
 	{
 		const struct vec2i t = Vec2iToTile(svec2i_assign_vec2(p->Pos));
 		const Tile *tAbove = MapGetTile(&gMap, svec2i(t.x, t.y - 1));
-		if (tAbove == NULL || !TileIsShootable(tAbove))
+		if (tAbove != NULL && tAbove->Class->Type == TILE_CLASS_DOOR &&
+			!TileIsShootable(tAbove))
 		{
 			return;
 		}
 	}
 	switch (p->Class->Type)
 	{
-		case PARTICLE_PIC:
+	case PARTICLE_PIC: {
+		CPicDrawContext c = CPicDrawContextNew();
+		c.Dir = RadiansToDirection(p->Angle);
+		const Pic *pic = CPicGetPic(&p->u.Pic, c.Dir);
+		if (p->u.Pic.Type != PICTYPE_DIRECTIONAL)
 		{
-			CPicDrawContext c = CPicDrawContextNew();
-			c.Dir = RadiansToDirection(p->Angle);
-			const Pic *pic = CPicGetPic(&p->u.Pic, c.Dir);
-			if (p->u.Pic.Type != PICTYPE_DIRECTIONAL)
-			{
-				c.Radians = p->Angle;
-			}
-			c.Offset = svec2i(
-				pic->size.x / -2, pic->size.y / -2 - (int)(p->Z / Z_FACTOR));
-			c.Scale = data->Scale;
-			if (p->Class->ZDarken)
-			{
-				// Darken by 50% when on ground
-				const uint8_t maskF = (uint8_t)CLAMP(
-					p->Z * PARTICLE_DARKEN_Z * Z_FACTOR / 256 + 128, 128, 255);
-				const color_t mask = { maskF, maskF, maskF, 255 };
-				c.Mask = mask;
-			}
-			CPicDraw(&gGraphicsDevice, &p->u.Pic, pos, &c);
-			break;
+			c.Radians = p->Angle;
 		}
-		case PARTICLE_TEXT:
+		c.Offset = svec2i(
+			pic->size.x / -2, pic->size.y / -2 - (int)(p->Z / Z_FACTOR));
+		c.Scale = data->Scale;
+		if (p->Class->ZDarken)
 		{
-			FontOpts opts = FontOptsNew();
-			opts.HAlign = ALIGN_CENTER;
-			opts.Mask = p->Class->u.TextColor;
-			FontStrOpt(
-				p->u.Text, svec2i(pos.x, pos.y - (int)(p->Z / Z_FACTOR)), opts);
-			break;
+			// Darken by 50% when on ground
+			const uint8_t maskF = (uint8_t)CLAMP(
+				p->Z * PARTICLE_DARKEN_Z * Z_FACTOR / 256 + 128, 128, 255);
+			const color_t mask = {maskF, maskF, maskF, 255};
+			c.Mask = mask;
 		}
-		default:
-			break;
+		CPicDraw(&gGraphicsDevice, &p->u.Pic, pos, &c);
+		break;
+	}
+	case PARTICLE_TEXT: {
+		FontOpts opts = FontOptsNew();
+		opts.HAlign = ALIGN_CENTER;
+		opts.Mask = p->Class->u.TextColor;
+		FontStrOpt(
+			p->u.Text, svec2i(pos.x, pos.y - (int)(p->Z / Z_FACTOR)), opts);
+		break;
+	}
+	default:
+		break;
 	}
 }
