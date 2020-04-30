@@ -1016,9 +1016,6 @@ static bool TryAddMapObject(
 	const Tile *tile = MapGetTile(&gMap, pos);
 	const Tile *tileAbove = MapGetTile(&gMap, svec2i(pos.x, pos.y - 1));
 
-	// Remove any items already there
-	TryRemoveMapObjectAt(pos, objs);
-
 	if (MapObjectIsTileOK(mo, tile, tileAbove))
 	{
 		// Check if the item already has an entry, and add to its list
