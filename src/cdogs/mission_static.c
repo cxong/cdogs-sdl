@@ -1070,9 +1070,6 @@ static bool TryRemoveMapObjectAt(const struct vec2i pos, CArray *objs)
 bool MissionStaticTryAddCharacter(
 	MissionStatic *m, const int ch, const struct vec2i pos)
 {
-	// Remove any characters already there
-	MissionStaticTryRemoveCharacterAt(m, pos);
-
 	const Tile *tile = MapGetTile(&gMap, pos);
 	if (TileIsClear(tile))
 	{
