@@ -147,7 +147,8 @@ static void MakeBackground(const bool changedMission)
 	extra.guideImageAlpha = brush.GuideImageAlpha;
 
 	DrawBufferTerminate(&sDrawBuffer);
-	DrawBufferInit(&sDrawBuffer, svec2i(X_TILES, Y_TILES), &gGraphicsDevice);
+	ClearScreen(ec.g);
+	DrawBufferInit(&sDrawBuffer, svec2i(X_TILES, Y_TILES), ec.g);
 	GrafxMakeBackground(
 		ec.g, &sDrawBuffer, &gCampaign, &gMission, &gMap, tintNone, true,
 		ec.camera, &extra);
