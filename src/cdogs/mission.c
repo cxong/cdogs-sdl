@@ -53,6 +53,7 @@
 #include <string.h>
 
 #include "actors.h"
+#include "color.h"
 #include "defs.h"
 #include "door.h"
 #include "files.h"
@@ -69,6 +70,12 @@
 #include "pickup.h"
 #include "triggers.h"
 
+color_t colorDoor = {172, 172, 172, 255};
+color_t colorYellowDoor = {252, 224, 0, 255};
+color_t colorGreenDoor = {0, 252, 0, 255};
+color_t colorBlueDoor = {0, 252, 252, 255};
+color_t colorRedDoor = {132, 0, 0, 255};
+
 int StrKeycard(const char *s)
 {
 	S2T(FLAGS_KEYCARD_YELLOW, "yellow");
@@ -76,6 +83,22 @@ int StrKeycard(const char *s)
 	S2T(FLAGS_KEYCARD_BLUE, "blue");
 	S2T(FLAGS_KEYCARD_RED, "red");
 	return 0;
+}
+color_t KeyColor(const int flags)
+{
+	switch (flags)
+	{
+	case FLAGS_KEYCARD_YELLOW:
+		return colorYellowDoor;
+	case FLAGS_KEYCARD_GREEN:
+		return colorGreenDoor;
+	case FLAGS_KEYCARD_BLUE:
+		return colorBlueDoor;
+	case FLAGS_KEYCARD_RED:
+		return colorRedDoor;
+	default:
+		return colorDoor;
+	}
 }
 
 const char *MapTypeStr(MapType t)

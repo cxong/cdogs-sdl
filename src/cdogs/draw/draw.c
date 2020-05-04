@@ -513,8 +513,8 @@ static void DrawGuideImage(
 	TextureRender(
 		guideImage->Tex, gGraphicsDevice.gameWindow.renderer, Rect2iZero(),
 		Rect2iNew(
-			pos,
-			svec2i((mint_t)MROUND(guideImage->size.x * xScale),
+			pos, svec2i(
+					 (mint_t)MROUND(guideImage->size.x * xScale),
 					 (mint_t)MROUND(guideImage->size.y * yScale))),
 		mask, 0, SDL_FLIP_NONE);
 }
@@ -524,6 +524,8 @@ static void DrawObjectiveName(
 	const Thing *ti, DrawBuffer *b, const struct vec2i offset);
 static void DrawSpawnerName(
 	const TObject *obj, DrawBuffer *b, const struct vec2i offset);
+static void DrawKeyName(
+	const Pickup *p, DrawBuffer *b, const struct vec2i offset);
 static void DrawObjectNames(DrawBuffer *b, const struct vec2i offset)
 {
 	const Tile **tile = DrawBufferGetFirstTile(b);
@@ -545,6 +547,14 @@ static void DrawObjectNames(DrawBuffer *b, const struct vec2i offset)
 				if (obj->Class->Type == MAP_OBJECT_TYPE_PICKUP_SPAWNER)
 				{
 					DrawSpawnerName(obj, b, offset);
+				}
+			}
+			else if (ti->kind == KIND_PICKUP)
+			{
+				const Pickup *p = CArrayGet(&gPickups, ti->id);
+				if (p->class->Type == PICKUP_KEYCARD)
+				{
+					DrawKeyName(p, b, offset);
 				}
 			}
 			CA_FOREACH_END()
@@ -572,4 +582,14 @@ static void DrawSpawnerName(
 		(int)obj->thing.Pos.x - b->xTop + offset.x - FontStrW(name) / 2,
 		(int)obj->thing.Pos.y - b->yTop + offset.y);
 	FontStr(name, textPos);
+}
+static void DrawKeyName(
+	const Pickup *p, DrawBuffer *b, const struct vec2i offset)
+{
+	const char *label = "key";
+	const color_t c = KeyColor(p->class->u.Keys);
+	const struct vec2i textPos = svec2i(
+		(int)p->thing.Pos.x - b->xTop + offset.x - FontStrW(label) / 2,
+		(int)p->thing.Pos.y - b->yTop + offset.y);
+	FontStrMask(label, textPos, c);
 }

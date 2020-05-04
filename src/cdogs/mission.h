@@ -79,6 +79,7 @@ MapType StrMapType(const char *s);
 #define FLAGS_KEYCARD_BLUE 0x4
 #define FLAGS_KEYCARD_RED 0x8
 int StrKeycard(const char *s);
+color_t KeyColor(const int flags);
 
 typedef struct
 {
