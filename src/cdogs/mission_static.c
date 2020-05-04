@@ -1122,9 +1122,6 @@ bool MissionStaticTryRemoveCharacterAt(
 bool MissionStaticTryAddKey(
 	MissionStatic *m, const int k, const struct vec2i pos)
 {
-	// Remove any keys already there
-	MissionStaticTryRemoveKeyAt(m, pos);
-
 	const Tile *tile = MapGetTile(&gMap, pos);
 	if (TileIsClear(tile))
 	{
