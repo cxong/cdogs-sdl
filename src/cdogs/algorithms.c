@@ -192,12 +192,12 @@ bool CFloodFill(const struct vec2i v, FloodFillData *data)
 	}
 	while (q.size > 0)
 	{
-		const struct vec2i *qv = CArrayGet(&q, 0);
-		data->Fill(data->data, *qv);
-		TryAddFloodFillNeighbor(&q, seen, data, svec2i(qv->x - 1, qv->y));
-		TryAddFloodFillNeighbor(&q, seen, data, svec2i(qv->x + 1, qv->y));
-		TryAddFloodFillNeighbor(&q, seen, data, svec2i(qv->x, qv->y - 1));
-		TryAddFloodFillNeighbor(&q, seen, data, svec2i(qv->x, qv->y + 1));
+		const struct vec2i qv = *(struct vec2i *)CArrayGet(&q, 0);
+		data->Fill(data->data, qv);
+		TryAddFloodFillNeighbor(&q, seen, data, svec2i(qv.x - 1, qv.y));
+		TryAddFloodFillNeighbor(&q, seen, data, svec2i(qv.x + 1, qv.y));
+		TryAddFloodFillNeighbor(&q, seen, data, svec2i(qv.x, qv.y - 1));
+		TryAddFloodFillNeighbor(&q, seen, data, svec2i(qv.x, qv.y + 1));
 		CArrayDelete(&q, 0);
 	}
 	CArrayTerminate(&q);
