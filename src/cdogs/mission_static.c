@@ -818,44 +818,6 @@ bool MissionStaticTrySetTile(
 	{
 		return false;
 	}
-	const TileClass *tc = MissionStaticGetTileClass(m, size, pos);
-	switch (tc->Type)
-	{
-	case TILE_CLASS_WALL:
-		// Check that there are no incompatible doors
-		if (HasDoorOrientedAt(m, size, svec2i(pos.x - 1, pos.y), false) ||
-			HasDoorOrientedAt(m, size, svec2i(pos.x + 1, pos.y), false) ||
-			HasDoorOrientedAt(m, size, svec2i(pos.x, pos.y - 1), true) ||
-			HasDoorOrientedAt(m, size, svec2i(pos.x, pos.y + 1), true))
-		{
-			// Can't place this wall
-			return false;
-		}
-		break;
-	case TILE_CLASS_DOOR: {
-		// Check that there is a clear passage through this door
-		const bool isHClear = IsClear(m, size, svec2i(pos.x - 1, pos.y)) &&
-							  IsClear(m, size, svec2i(pos.x + 1, pos.y));
-		const bool isVClear = IsClear(m, size, svec2i(pos.x, pos.y - 1)) &&
-							  IsClear(m, size, svec2i(pos.x, pos.y + 1));
-		if (!isHClear && !isVClear)
-		{
-			return false;
-		}
-		// Check that there are no incompatible doors
-		if (HasDoorOrientedAt(m, size, svec2i(pos.x - 1, pos.y), false) ||
-			HasDoorOrientedAt(m, size, svec2i(pos.x + 1, pos.y), false) ||
-			HasDoorOrientedAt(m, size, svec2i(pos.x, pos.y - 1), true) ||
-			HasDoorOrientedAt(m, size, svec2i(pos.x, pos.y + 1), true))
-		{
-			// Can't place this door
-			return false;
-		}
-	}
-	break;
-	default:
-		break;
-	}
 	const int idx = pos.y * size.x + pos.x;
 	CArraySet(&m->Tiles, idx, &tile);
 	return true;
