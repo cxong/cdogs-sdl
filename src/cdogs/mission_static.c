@@ -805,11 +805,6 @@ TileClass *MissionStaticIdTileClass(const MissionStatic *m, const int tile)
 	}
 	return tc;
 }
-static bool HasDoorOrientedAt(
-	const MissionStatic *m, const struct vec2i size, const struct vec2i pos,
-	const bool isHorizontal);
-static bool IsClear(
-	const MissionStatic *m, const struct vec2i size, const struct vec2i pos);
 bool MissionStaticTrySetTile(
 	MissionStatic *m, const struct vec2i size, const struct vec2i pos,
 	const int tile)
@@ -876,49 +871,6 @@ bool MissionStaticRemoveTileClass(MissionStatic *m, const int tile)
 	}
 	CA_FOREACH_END()
 	return true;
-}
-
-static bool IsClear(
-	const MissionStatic *m, const struct vec2i size, const struct vec2i pos)
-{
-	const TileClass *tc = MissionStaticGetTileClass(m, size, pos);
-	return tc->canWalk;
-}
-// See if the tile located at a position is a door and also needs
-// to be oriented in a certain way
-// If there are walls or doors in the neighbourhood, they can force a certain
-// orientation of the door
-static bool HasDoorOrientedAt(
-	const MissionStatic *m, const struct vec2i size, const struct vec2i pos,
-	const bool isHorizontal)
-{
-	if (!Rect2iIsInside(Rect2iNew(svec2i_zero(), size), pos))
-	{
-		return false;
-	}
-	const TileClass *tc = MissionStaticGetTileClass(m, size, pos);
-	if (tc->Type != TILE_CLASS_DOOR)
-	{
-		return false;
-	}
-	// Check for walls and doors that force the orientation of the door
-	if (!MissionStaticGetTileClass(m, size, svec2i(pos.x - 1, pos.y))
-			 ->canWalk ||
-		!MissionStaticGetTileClass(m, size, svec2i(pos.x + 1, pos.y))->canWalk)
-	{
-		// There is a horizontal door
-		return isHorizontal;
-	}
-	else if (
-		!MissionStaticGetTileClass(m, size, svec2i(pos.x, pos.y - 1))
-			 ->canWalk ||
-		!MissionStaticGetTileClass(m, size, svec2i(pos.x, pos.y + 1))->canWalk)
-	{
-		// There is a vertical door
-		return !isHorizontal;
-	}
-	// There is a door but it is free to be oriented in any way
-	return false;
 }
 
 void MissionStaticLayout(
