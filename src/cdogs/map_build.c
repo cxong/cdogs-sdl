@@ -559,25 +559,20 @@ bool MapBuilderIsLeaveFree(const MapBuilder *mb, const struct vec2i tile)
 static void MapSetupTile(MapBuilder *mb, const struct vec2i pos);
 
 void MapBuildTile(
-	Map *m, const Mission *mission, const struct vec2i pos,
-	const TileClass *tile)
+	MapBuilder *mb, const struct vec2i pos, const TileClass *tile)
 {
-	MapBuilder mb;
-	MapBuilderInit(&mb, m, mission, NULL);
 	// Load tiles from +2 perimeter
 	RECT_FOREACH(Rect2iNew(svec2i_subtract(pos, svec2i(2, 2)), svec2i(5, 5)))
-	MapStaticLoadTile(&mb, _v);
+	MapStaticLoadTile(mb, _v);
 	RECT_FOREACH_END()
 	// Update the tile as well, plus neighbours as they may be affected
 	// by shadows etc. especially walls
-	MapBuilderSetTile(&mb, pos, tile);
-	MapSetupTile(&mb, pos);
+	MapBuilderSetTile(mb, pos, tile);
+	MapSetupTile(mb, pos);
 	RECT_FOREACH(Rect2iNew(svec2i_subtract(pos, svec2i(1, 1)), svec2i(3, 3)))
-	MapSetupTile(&mb, _v);
+	MapSetupTile(mb, _v);
 	RECT_FOREACH_END()
-	CArrayCopy(&mb.Map->access, &mb.access);
-	MapPrintDebug(mb.Map);
-	MapBuilderTerminate(&mb);
+	CArrayCopy(&mb->Map->access, &mb->access);
 }
 
 static bool MapTileIsNormalFloor(const MapBuilder *mb, const struct vec2i pos)

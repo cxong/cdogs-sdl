@@ -131,8 +131,7 @@ void MapPlaceDoors(
 	const TileClass *door, const TileClass *floor);
 
 void MapBuildTile(
-	Map *m, const Mission *mission, const struct vec2i pos,
-	const TileClass *tile);
+	MapBuilder *mb, const struct vec2i pos, const TileClass *tile);
 
 uint16_t GenerateAccessMask(int *accessLevel);
 void MapGenerateRandomExitArea(Map *map);

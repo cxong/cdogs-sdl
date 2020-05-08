@@ -201,13 +201,17 @@ void EditorBrushSetHighlightedTiles(EditorBrush *b)
 	}
 }
 
-static void SetTile(Mission *m, const struct vec2i pos, const int tile)
+static void SetTile(
+	MapBuilder *mb, Mission *m, const struct vec2i pos, const int tile)
 {
-	if (MissionStaticTrySetTile(&m->u.Static, m->Size, pos, tile))
+	if (MissionStaticTrySetTile(&m->u.Static, mb->Map->Size, pos, tile))
 	{
-		const TileClass *tc =
-			MissionStaticGetTileClass(&m->u.Static, m->Size, pos);
-		MapBuildTile(&gMap, m, pos, tc);
+		const TileClass *tc = MissionStaticGetTileClass(
+			&mb->mission->u.Static, mb->Map->Size, pos);
+		if (tc != NULL)
+		{
+			MapBuildTile(mb, pos, tc);
+		}
 	}
 }
 
@@ -222,13 +226,16 @@ static void EditorBrushPaintTilesAt(void *data, struct vec2i pos)
 	EditorBrushPaintTilesAtData *paintData = data;
 	EditorBrush *b = paintData->brush;
 	Mission *m = paintData->mission;
+	MapBuilder mb;
+	MapBuilderInit(&mb, &gMap, m, NULL);
 	for (v.y = 0; v.y < b->BrushSize; v.y++)
 	{
 		for (v.x = 0; v.x < b->BrushSize; v.x++)
 		{
-			SetTile(m, svec2i_add(pos, v), b->PaintType);
+			SetTile(&mb, m, svec2i_add(pos, v), b->PaintType);
 		}
 	}
+	MapBuilderTerminate(&mb);
 }
 static void EditorBrushPaintLine(EditorBrush *b, Mission *m)
 {
@@ -249,6 +256,7 @@ static void EditorBrushPaintLine(EditorBrush *b, Mission *m)
 }
 typedef struct
 {
+	MapBuilder mb;
 	Mission *m;
 	int fromType;
 	int toType;
@@ -315,11 +323,14 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 			data.Fill = MissionFillTile;
 			data.IsSame = MissionIsTileSame;
 			PaintFloodFillData pData;
+			MapBuilderInit(&pData.mb, &gMap, m, NULL);
 			pData.m = m;
 			pData.fromType = tile;
 			pData.toType = b->PaintType;
 			data.data = &pData;
-			if (!CFloodFill(b->Pos, &data))
+			const bool flooded = CFloodFill(b->Pos, &data);
+			MapBuilderTerminate(&pData.mb);
+			if (!flooded)
 			{
 				break;
 			}
@@ -423,16 +434,17 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 static void MissionFillTile(void *data, const struct vec2i v)
 {
 	PaintFloodFillData *pData = data;
-	SetTile(pData->m, v, pData->toType);
+	SetTile(&pData->mb, pData->m, v, pData->toType);
 }
 static bool MissionIsTileSame(void *data, const struct vec2i v)
 {
 	PaintFloodFillData *pData = data;
-	if (!Rect2iIsInside(Rect2iNew(svec2i_zero(), pData->m->Size), v))
+	if (!Rect2iIsInside(Rect2iNew(svec2i_zero(), pData->mb.Map->Size), v))
 	{
 		return false;
 	}
-	return MissionStaticGetTile(&pData->m->u.Static, pData->m->Size, v) ==
+	return MissionStaticGetTile(
+			   &pData->mb.mission->u.Static, pData->mb.Map->Size, v) ==
 		   pData->fromType;
 }
 static void EditorBrushPaintBox(
