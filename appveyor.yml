@@ -1,4 +1,4 @@
-version: 0.7.3.{build}
+version: 0.8.0.{build}
 
 branches:
   except:
@@ -17,7 +17,7 @@ environment:
   SDL2_IMAGE_VERSION: 2.0.5
   SDL2_MIXER_VERSION: 2.0.4
   SDLDIR: C:\projects\cdogs-sdl
-  VERSION: 0.7.3
+  VERSION: 0.8.0
 
 install:
   - cd C:\Tools\vcpkg
