@@ -62,13 +62,13 @@ before_deploy:
 
   #debug
   - ls $TRAVIS_BUILD_DIR
+
 deploy:
   provider: releases
   edge: true
-  api_key:
+  token:
     secure: Rus8lTl0EnVqM6PXwleQ8cffjMTMY1gHGwVdbGsu8cWaDgAWQ86TFgGBbV+x12z9floDPzI7Z1K/entktkiSWQyRPIa9jQfJBIomNABhIykUvpRsL026Cs8TysI4L4hrTvFev10QI28RFyZvUDBT8yytowFsuU5Pfb4n7kDIisQ=
   file_glob: true
-  skip_cleanup: true
   file:
     - "$TRAVIS_BUILD_DIR/C-Dogs*SDL-*-{Linux,OSX}.{tar.gz,dmg}"
   on:

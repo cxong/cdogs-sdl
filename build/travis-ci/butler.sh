@@ -17,8 +17,8 @@ chmod +x butler
 ./butler -V
 
 prepare_and_push() {
-    echo "./butler push $1 $PROJECT:$2 --userversion $VERSION"
-    ./butler push $1 $PROJECT:$2 --userversion $VERSION
+    echo "./butler push \"$1\" $PROJECT:$2 --userversion $VERSION"
+    ./butler push "$1" $PROJECT:$2 --userversion $VERSION
 }
 
 prepare_and_push $TRAVIS_BUILD_DIR/C-Dogs*SDL-*-Linux.tar.gz linux
