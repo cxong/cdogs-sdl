@@ -1,0 +1,17 @@
+---
+layout: post
+title:  "C-Dogs 0.8 Released!"
+date:   2020-05-27
+categories: release
+published: true
+---
+
+C-Dogs SDL 0.8 released! This release contains a revamped Doom campaign with support for secret doors!
+
+![Doom remaster](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/doom_remaster.png)
+
+![Special walls](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/special_walls.gif)
+
+Behind the scenes, we've done a large refactor to the ways tiles work. Previously the game only allowed a handful of tile types: walls, floors, and doors. Now the tiles are fully customizable (for static map types), meaning whether you can walk through them, shoot through, or see through them This allows all sorts of fancy tile types. This release also fixes a handful of bugs.
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.8.0>
