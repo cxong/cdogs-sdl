@@ -4,17 +4,7 @@ src/cdogs-sdl
 src/cdogs-sdl-editor
 cdogs-sdl.opk
 # tests
-src/tests/autosave_test
-src/tests/c_array_test
-src/tests/c_hashmap_test
-src/tests/color_test
-src/tests/config_test
-src/tests/json_test
-src/tests/minkowski_hex_test
-src/tests/pic_test
-src/tests/player_test
-src/tests/utils_test
-src/cdogs/physfs/test_physfs
+*_test
 
 # CMake stuff
 *CMakeCache.txt
@@ -77,6 +67,9 @@ CMakeScripts/
 # CLion
 .idea/
 *.cbp
+
+# VS Code
+.vscode/
 
 # GCW-Zero
 gcw0build/
