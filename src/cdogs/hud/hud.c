@@ -296,6 +296,13 @@ static void DrawStateMessage(
 	HUD *hud, const input_device_e pausingDevice,
 	const bool controllerUnplugged)
 {
+	if (controllerUnplugged || pausingDevice != INPUT_DEVICE_UNSET)
+	{
+		// Draw a background overlay
+		color_t overlay = colorBlack;
+		overlay.a = 128;
+		DrawRectangle(hud->device, svec2i_zero(), hud->device->cachedConfig.Res, overlay, true);
+	}
 	if (controllerUnplugged)
 	{
 		struct vec2i pos = svec2i_scale_divide(svec2i_subtract(
