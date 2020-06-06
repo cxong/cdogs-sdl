@@ -86,7 +86,7 @@ static const Node NodeNull = {NULL, -1};
 
 /********************************************/
 
-static inline VisitedNodes VisitedNodesCreate(const ASPathNodeSource *source, void *context)
+static VisitedNodes VisitedNodesCreate(const ASPathNodeSource *source, void *context)
 {
 	VisitedNodes nodes;
 	CCALLOC(nodes, sizeof(struct __VisitedNodes));
@@ -95,7 +95,7 @@ static inline VisitedNodes VisitedNodesCreate(const ASPathNodeSource *source, vo
     return nodes;
 }
 
-static inline void VisitedNodesDestroy(VisitedNodes visitedNodes)
+static void VisitedNodesDestroy(VisitedNodes visitedNodes)
 {
     CFREE(visitedNodes->nodeRecordsIndex);
 	CFREE(visitedNodes->nodeRecords);
@@ -103,12 +103,12 @@ static inline void VisitedNodesDestroy(VisitedNodes visitedNodes)
 	CFREE(visitedNodes);
 }
 
-static inline int NodeIsNull(Node n)
+static int NodeIsNull(Node n)
 {
     return (n.nodes == NodeNull.nodes) && (n.index == NodeNull.index);
 }
 
-static inline Node NodeMake(VisitedNodes nodes, size_t idx)
+static Node NodeMake(VisitedNodes nodes, size_t idx)
 {
     Node n;
     memset(&n, 0, sizeof n);
@@ -117,72 +117,72 @@ static inline Node NodeMake(VisitedNodes nodes, size_t idx)
     return n;
 }
 
-static inline NodeRecord *NodeGetRecord(Node node)
+static NodeRecord *NodeGetRecord(Node node)
 {
     return (NodeRecord *)((char *)node.nodes->nodeRecords + (node.index * (node.nodes->source->nodeSize + sizeof(NodeRecord))));
 }
 
-static inline void *GetNodeKey(Node node)
+static void *GetNodeKey(Node node)
 {
     return NodeGetRecord(node)->nodeKey;
 }
 
-static inline int NodeIsInOpenSet(Node n)
+static int NodeIsInOpenSet(Node n)
 {
     return NodeGetRecord(n)->isOpen;
 }
 
-static inline int NodeIsInClosedSet(Node n)
+static int NodeIsInClosedSet(Node n)
 {
     return NodeGetRecord(n)->isClosed;
 }
 
-static inline void RemoveNodeFromClosedSet(Node n)
+static void RemoveNodeFromClosedSet(Node n)
 {
     NodeGetRecord(n)->isClosed = 0;
 }
 
-static inline void AddNodeToClosedSet(Node n)
+static void AddNodeToClosedSet(Node n)
 {
     NodeGetRecord(n)->isClosed = 1;
 }
 
-static inline float GetNodeRank(Node n)
+static float GetNodeRank(Node n)
 {
     NodeRecord *record = NodeGetRecord(n);
     return record->estimatedCost + record->cost;
 }
 
-static inline float GetNodeCost(Node n)
+static float GetNodeCost(Node n)
 {
     return NodeGetRecord(n)->cost;
 }
 
-static inline void SetNodeEstimatedCost(Node n, float estimatedCost)
+static void SetNodeEstimatedCost(Node n, float estimatedCost)
 {
     NodeRecord *record = NodeGetRecord(n);
     record->estimatedCost = estimatedCost;
     record->hasEstimatedCost = 1;
 }
 
-static inline int NodeHasEstimatedCost(Node n)
+static int NodeHasEstimatedCost(Node n)
 {
     return NodeGetRecord(n)->hasEstimatedCost;
 }
 
-static inline void SetNodeIsGoal(Node n)
+static void SetNodeIsGoal(Node n)
 {
     if (!NodeIsNull(n)) {
         NodeGetRecord(n)->isGoal = 1;
     }
 }
 
-static inline int NodeIsGoal(Node n)
+static int NodeIsGoal(Node n)
 {
     return !NodeIsNull(n) && NodeGetRecord(n)->isGoal;
 }
 
-static inline Node GetParentNode(Node n)
+static Node GetParentNode(Node n)
 {
     NodeRecord *record = NodeGetRecord(n);
     if (record->hasParent) {
@@ -192,7 +192,7 @@ static inline Node GetParentNode(Node n)
     }
 }
 
-static inline int NodeRankCompare(Node n1, Node n2)
+static int NodeRankCompare(Node n1, Node n2)
 {
     const float rank1 = GetNodeRank(n1);
     const float rank2 = GetNodeRank(n2);
@@ -205,7 +205,7 @@ static inline int NodeRankCompare(Node n1, Node n2)
     }
 }
 
-static inline float GetPathCostHeuristic(Node a, Node b)
+static float GetPathCostHeuristic(Node a, Node b)
 {
     if (a.nodes->source->pathCostHeuristic && !NodeIsNull(a) && !NodeIsNull(b)) {
         return a.nodes->source->pathCostHeuristic(GetNodeKey(a), GetNodeKey(b), a.nodes->context);
@@ -214,7 +214,7 @@ static inline float GetPathCostHeuristic(Node a, Node b)
     }
 }
 
-static inline int NodeKeyCompare(Node node, void *nodeKey)
+static int NodeKeyCompare(Node node, void *nodeKey)
 {
     if (node.nodes->source->nodeComparator) {
         return node.nodes->source->nodeComparator(GetNodeKey(node), nodeKey, node.nodes->context);
@@ -273,7 +273,7 @@ static Node GetNode(VisitedNodes nodes, void *nodeKey)
     return node;
 }
 
-static inline void SwapOpenSetNodesAtIndexes(VisitedNodes nodes, size_t index1, size_t index2)
+static void SwapOpenSetNodesAtIndexes(VisitedNodes nodes, size_t index1, size_t index2)
 {
     if (index1 != index2) {
         NodeRecord *record1 = NodeGetRecord(NodeMake(nodes, nodes->openNodes[index1]));
@@ -289,7 +289,7 @@ static inline void SwapOpenSetNodesAtIndexes(VisitedNodes nodes, size_t index1, 
     }
 }
 
-static inline void DidRemoveFromOpenSetAtIndex(
+static void DidRemoveFromOpenSetAtIndex(
     VisitedNodes nodes, size_t idx)
 {
     size_t smallestIndex = idx;
@@ -316,7 +316,7 @@ static inline void DidRemoveFromOpenSetAtIndex(
     } while (smallestIndex != idx);
 }
 
-static inline void RemoveNodeFromOpenSet(Node n)
+static void RemoveNodeFromOpenSet(Node n)
 {
     NodeRecord *record = NodeGetRecord(n);
 
@@ -331,7 +331,7 @@ static inline void RemoveNodeFromOpenSet(Node n)
     }
 }
 
-static inline void DidInsertIntoOpenSetAtIndex(VisitedNodes nodes, size_t idx)
+static void DidInsertIntoOpenSetAtIndex(VisitedNodes nodes, size_t idx)
 {
     while (idx > 0)
     {
@@ -349,7 +349,7 @@ static inline void DidInsertIntoOpenSetAtIndex(VisitedNodes nodes, size_t idx)
     }
 }
 
-static inline void AddNodeToOpenSet(Node n, float cost, Node parent)
+static void AddNodeToOpenSet(Node n, float cost, Node parent)
 {
     NodeRecord *record = NodeGetRecord(n);
     const size_t openIndex = n.nodes->openNodesCount;
@@ -376,17 +376,17 @@ static inline void AddNodeToOpenSet(Node n, float cost, Node parent)
     DidInsertIntoOpenSetAtIndex(n.nodes, openIndex);
 }
 
-static inline int HasOpenNode(VisitedNodes nodes)
+static int HasOpenNode(VisitedNodes nodes)
 {
     return nodes->openNodesCount > 0;
 }
 
-static inline Node GetOpenNode(VisitedNodes nodes)
+static Node GetOpenNode(VisitedNodes nodes)
 {
     return NodeMake(nodes, nodes->openNodes[0]);
 }
 
-static inline ASNeighborList NeighborListCreate(const ASPathNodeSource *source)
+static ASNeighborList NeighborListCreate(const ASPathNodeSource *source)
 {
 	ASNeighborList list;
 	CCALLOC(list, sizeof(struct __ASNeighborList));
@@ -394,19 +394,19 @@ static inline ASNeighborList NeighborListCreate(const ASPathNodeSource *source)
     return list;
 }
 
-static inline void NeighborListDestroy(ASNeighborList list)
+static void NeighborListDestroy(ASNeighborList list)
 {
     CFREE(list->costs);
 	CFREE(list->nodeKeys);
 	CFREE(list);
 }
 
-static inline float NeighborListGetEdgeCost(ASNeighborList list, size_t idx)
+static float NeighborListGetEdgeCost(ASNeighborList list, size_t idx)
 {
     return list->costs[idx];
 }
 
-static inline void *NeighborListGetNodeKey(ASNeighborList list, size_t idx)
+static void *NeighborListGetNodeKey(ASNeighborList list, size_t idx)
 {
     return (char *)list->nodeKeys + (idx * list->source->nodeSize);
 }

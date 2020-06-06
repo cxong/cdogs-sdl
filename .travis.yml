@@ -24,14 +24,14 @@ addons:
     - libsdl2-mixer-dev
     - clang-9
     - cmake
-    - gcc-9
-    - g++-9
+    - gcc-10
+    - g++-10
     - libgtk-3-dev
     - ninja-build
 
 install:
 # /usr/bin/gcc points to an older compiler on both Linux and macOS.
-- if [ "$CXX" = "g++" ]; then export CXX="g++-9" CC="gcc-9"; fi
+- if [ "$CXX" = "g++" ]; then export CXX="g++-10" CC="gcc-10"; fi
 # /usr/bin/clang points to an older compiler on both Linux and macOS.
 #
 # Homebrew's llvm package doesn't ship a versioned clang++ binary, so the values

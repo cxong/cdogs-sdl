@@ -256,7 +256,7 @@ static void SoundLoadMusic(CArray *tracks, const char *path)
 	{
 		LOG(LM_MAIN, LL_ERROR, "Cannot open music dir %s: %s", buf,
 			strerror(errno));
-		goto bail;
+		return;
 	}
 
 	for (; dir.has_next; tinydir_next(&dir))

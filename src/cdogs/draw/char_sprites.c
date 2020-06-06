@@ -68,7 +68,7 @@ void CharSpriteClassesLoadDir(map_t classes, const char *path)
 	tinydir_dir dir;
 	if (tinydir_open(&dir, buf) == -1)
 	{
-		goto bail;
+		return;
 	}
 
 	for (; dir.has_next; tinydir_next(&dir))
