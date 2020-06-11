@@ -340,19 +340,19 @@ static void DrawTileStyleSelect(
 		styles = tbData->floorStyles;
 		styleSelected = FloorStyleIndex(selectedTC->Style);
 		styleTexIds = tbData->texIdsFloorStyles.data;
-		styleCount = tbData->texIdsFloorStyles.size;
+		styleCount = (int)tbData->texIdsFloorStyles.size;
 		break;
 	case TILE_CLASS_WALL:
 		styles = tbData->wallStyles;
 		styleSelected = WallStyleIndex(selectedTC->Style);
 		styleTexIds = tbData->texIdsWallStyles.data;
-		styleCount = tbData->texIdsWallStyles.size;
+		styleCount = (int)tbData->texIdsWallStyles.size;
 		break;
 	case TILE_CLASS_DOOR:
 		styles = tbData->doorStyles;
 		styleSelected = DoorStyleIndex(selectedTC->Style);
 		styleTexIds = tbData->texIdsDoorStyles.data;
-		styleCount = tbData->texIdsDoorStyles.size;
+		styleCount = (int)tbData->texIdsDoorStyles.size;
 		break;
 	default:
 		break;

@@ -96,7 +96,7 @@ static void MissionCheckTypeFunc(UIObject *o, void *data)\
 
 void TileClassGetBrushName(char *buf, const TileClass *tc);
 // Get a null-separated string; for nk_combo_separator
-char *GetClassNames(const int len, const char *(*indexNameFunc)(const int));
+char *GetClassNames(const size_t len, const char *(*indexNameFunc)(const int));
 
-void TexArrayInit(CArray *arr, const int count);
+void TexArrayInit(CArray *arr, const size_t count);
 void TexArrayTerminate(CArray *arr);

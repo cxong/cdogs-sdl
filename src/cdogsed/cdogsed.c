@@ -984,6 +984,20 @@ static HandleInputResult HandleInput(
 			fileChanged = UIObjectDelChar(sObjs) || fileChanged;
 			break;
 
+		case SDL_SCANCODE_KP_0:
+			if (!(SDL_GetModState() & KMOD_NUM))
+			{
+				InputInsert(xc, *yc, mission);
+			}
+			break;
+
+		case SDL_SCANCODE_KP_PERIOD:
+			if (!(SDL_GetModState() & KMOD_NUM))
+			{
+				InputDelete(*xc, *yc);
+			}
+			break;
+
 		default:
 			// Do nothing
 			break;

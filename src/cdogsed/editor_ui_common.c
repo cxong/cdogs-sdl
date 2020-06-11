@@ -451,7 +451,7 @@ void TileClassGetBrushName(char *buf, const TileClass *tc)
 	sprintf(buf, "%s (%s)", tc->Name, tc->Style);
 }
 
-char *GetClassNames(const int len, const char *(*indexNameFunc)(const int))
+char *GetClassNames(const size_t len, const char *(*indexNameFunc)(const int))
 {
 	int classLen = 0;
 	for (int i = 0; i < (int)len; i++)
@@ -476,11 +476,11 @@ char *GetClassNames(const int len, const char *(*indexNameFunc)(const int))
 	return names;
 }
 
-void TexArrayInit(CArray *arr, const int count)
+void TexArrayInit(CArray *arr, const size_t count)
 {
 	CArrayInit(arr, sizeof(GLuint));
 	CArrayResize(arr, count, NULL);
-	glGenTextures(count, (GLuint *)arr->data);
+	glGenTextures((GLsizei)count, (GLuint *)arr->data);
 }
 void TexArrayTerminate(CArray *arr)
 {
