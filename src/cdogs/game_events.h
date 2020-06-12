@@ -120,7 +120,7 @@ typedef struct
 	bool Enqueue;
 	// Whether to broadcast these events only after game start
 	bool GameStart;
-	const pb_field_t *Fields;
+	const pb_msgdesc_t *Fields;
 } GameEventEntry;
 GameEventEntry GameEventGetEntry(const GameEventType e);
 

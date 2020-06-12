@@ -36,7 +36,7 @@ ENetPacket *NetEncode(const GameEventType e, const void *data)
 {
 	uint8_t buffer[1024];
 	pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof buffer);
-	const pb_field_t *fields = GameEventGetEntry(e).Fields;
+	const pb_msgdesc_t *fields = GameEventGetEntry(e).Fields;
 	const bool status =
 		(data && fields) ? pb_encode(&stream, fields, data) : true;
 	CASSERT(status, "Failed to encode pb");
@@ -48,8 +48,7 @@ ENetPacket *NetEncode(const GameEventType e, const void *data)
 	return packet;
 }
 
-bool NetDecode(
-	ENetPacket *packet, void *dest, const pb_field_t *fields)
+bool NetDecode(ENetPacket *packet, void *dest, const pb_msgdesc_t *fields)
 {
 	pb_istream_t stream = pb_istream_from_buffer(
 		packet->data + NET_MSG_SIZE, packet->dataLength - NET_MSG_SIZE);

@@ -1,5 +1,6 @@
 include_directories(
 	.
+	proto/nanopb
 	${SDL2_INCLUDE_DIRS}
 	${SDL2_IMAGE_INCLUDE_DIRS}
 	${SDL2_MIXER_INCLUDE_DIRS})
@@ -12,6 +13,7 @@ if(NOT "${GCW0}")
 	add_subdirectory(cdogsed)
 endif()
 add_subdirectory(json)
+add_subdirectory(proto)
 add_subdirectory(tests)
 
 set(CDOGS_SDL_SOURCES
@@ -69,7 +71,7 @@ if(APPLE)
 elseif(MSVC)
 	set_target_properties(cdogs-sdl PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/src")
 endif()
-target_link_libraries(cdogs-sdl cdogs ${EXTRA_LIBRARIES})
+target_link_libraries(cdogs-sdl cdogs cdogs_proto ${EXTRA_LIBRARIES})
 
 if(GCW0)
 	add_custom_command(TARGET cdogs-sdl
@@ -90,5 +92,5 @@ if(NOT "${GCW0}")
   elseif(MSVC)
   	set_target_properties(cdogs-sdl-editor PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/src")
   endif()
-  target_link_libraries(cdogs-sdl-editor cdogsedlib cdogs ${OPENGL_LIBRARIES} ${EXTRA_LIBRARIES})
+  target_link_libraries(cdogs-sdl-editor cdogsedlib cdogs cdogs_proto ${OPENGL_LIBRARIES} ${EXTRA_LIBRARIES})
 endif()

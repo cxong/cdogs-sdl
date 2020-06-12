@@ -1,4 +1,5 @@
 include_directories(
+	.. # to include proto
 	${SDL2_INCLUDE_DIRS}
 	${SDL2_IMAGE_INCLUDE_DIRS}
 	${SDL2_MIXER_INCLUDE_DIRS})
@@ -219,36 +220,17 @@ set(CDOGS_HEADERS
 	window_context.h
 	XGetopt.h
 	yajl_utils.h)
-set(NANOPB_SOURCES
-	proto/msg.pb.c
-    proto/nanopb/pb_common.c
-    proto/nanopb/pb_decode.c
-    proto/nanopb/pb_encode.c
-	proto/msg.options
-	proto/msg.proto
-)
-set(NANOPB_HEADERS
-	proto/msg.pb.h
-    proto/nanopb/pb.h
-    proto/nanopb/pb_common.h
-    proto/nanopb/pb_decode.h
-    proto/nanopb/pb_encode.h
-)
 
 IF(NOT USE_SHARED_ENET)
     ADD_SUBDIRECTORY(enet)
 ENDIF()
-
-# proto
-include_directories(proto/nanopb)
 
 add_subdirectory(c_hashmap)
 add_subdirectory(SDL_JoystickButtonNames)
 add_subdirectory(yajl)
 
 add_library(cdogs STATIC
-	${CDOGS_SOURCES} ${CDOGS_HEADERS}
-	${NANOPB_SOURCES} ${NANOPB_HEADERS})
+	${CDOGS_SOURCES} ${CDOGS_HEADERS})
 
 target_link_libraries(cdogs
 	c_hashmap

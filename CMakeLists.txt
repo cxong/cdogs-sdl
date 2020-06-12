@@ -56,30 +56,17 @@ else()
 	add_definitions(-DNDEBUG)
 endif()
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/build/cmake")
-
-if(NOT "${GCW0}")
-	find_package(PkgConfig)
-	pkg_search_module(SDL2 sdl2)
-	pkg_search_module(SDL2_IMAGE SDL2_image)
-	pkg_search_module(SDL2_MIXER SDL2_mixer)
-endif()
-if(NOT "${SDL2_FOUND}")
-	message("looking for SDL2")
-	find_package(SDL2 REQUIRED)
-endif()
-if(NOT "${SDL2_IMAGE_FOUND}")
-	find_package(SDL2_image REQUIRED)
-endif()
-if(NOT "${SDL2_MIXER_FOUND}")
-	find_package(SDL2_mixer REQUIRED)
-endif()
-if(NOT "${GCW0}")
-	find_package(OpenGL REQUIRED)
-endif()
-if(NOT "${CCACHE_FOUND}")
-	find_package(CCache)
-endif()
+set(CMAKE_MODULE_PATH
+	${CMAKE_MODULE_PATH}
+	"${CMAKE_SOURCE_DIR}/build/cmake"
+	"${CMAKE_SOURCE_DIR}/src/proto/nanopb/extra")
+	
+find_package(NANOPB REQUIRED)
+find_package(SDL2 REQUIRED)
+find_package(SDL2_image REQUIRED)
+find_package(SDL2_mixer REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package(CCache)
 link_directories(${SDL2_LIBRARY_DIRS} ${SDL2_IMAGE_LIBRARY_DIRS} ${SDL2_MIXER_LIBRARY_DIRS})
 
 if(CCACHE_FOUND AND CLANG)
@@ -98,8 +85,6 @@ IF(NOT USE_SHARED_ENET)
     INCLUDE_DIRECTORIES(src/cdogs/enet/include)
 ENDIF()
 
-add_definitions(-DPB_FIELD_16BIT)	# Allow larger field numbers in nanopb
-include_directories(src/cdogs/proto/nanopb)
 if(MSVC)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -MP -W4 -WX -wd\"4996\" -wd\"4204\"")
 else()
@@ -170,7 +155,7 @@ CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/src/cdogs/sys_config.h.cmake ${CMAKE_SOURCE_D
 SET_SOURCE_FILES_PROPERTIES(${CMAKE_SOURCE_DIR}/src/cdogs/sys_config.h PROPERTIES GENERATED TRUE)
 include_directories(src src/cdogs)
 
-#Tests
+# Tests
 enable_testing()
 
 add_subdirectory(src)

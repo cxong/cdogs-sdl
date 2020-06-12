@@ -1,0 +1,317 @@
+syntax = "proto2";
+
+// Message returned to client when scanning a game server's listen port
+message NServerInfo {
+	required int32 ProtocolVersion = 1;
+	required uint32 ENetPort = 2;
+	required string Hostname = 3;
+	required int32 GameMode = 4;
+	required string CampaignName = 5;
+	required int32 MissionNumber = 6;
+	required int32 NumPlayers = 7;
+	required int32 MaxPlayers = 8;
+}
+
+message NClientId {
+	required uint32 Id = 1;
+	// This client's players will use UID from this number
+	required uint32 FirstPlayerUID = 2;
+}
+
+message NCampaignDef {
+	required string Path = 1;
+	required int32 GameMode = 2;
+	required uint32 Mission = 3;
+}
+
+message NColor {
+	required int32 RGBA = 1;
+}
+
+message NCharColors {
+	required NColor Skin = 1;
+	required NColor Arms = 2;
+	required NColor Body = 3;
+	required NColor Legs = 4;
+	required NColor Hair = 5;
+}
+
+message NPlayerStats {
+	required int32 Score = 1;
+	required int32 Kills = 2;
+	required int32 Suicides = 3;
+	required int32 Friendlies = 4;
+}
+
+message NPlayerData {
+	required string Name = 1;
+	required string CharacterClass = 2;
+	required string Hair = 3;
+	required NCharColors Colors = 4;
+	repeated string Weapons = 5;
+	required uint32 Lives = 6;
+	required NPlayerStats Stats = 7;
+	required NPlayerStats Totals = 8;
+	required uint32 MaxHealth = 9;
+	required uint32 LastMission = 10;
+	required uint32 UID = 11;
+}
+
+message NPlayerRemove {
+	required uint32 UID = 1;
+}
+
+message NConfig {
+	required string Name = 1;
+	required string Value = 2;
+}
+
+message NTileSet {
+	required NVec2i Pos = 1;
+	required string ClassName = 2;
+	required string ClassAltName = 3;
+	required int32 RunLength = 4;
+}
+
+message NThingDamage {
+	required uint32 UID = 1;
+	required int32 Kind = 2;
+	required int32 SourceActorUID = 3 [default=-1];
+	required int32 Power = 4;
+	required NVec2 Vel = 5;
+    required float Mass = 6;
+	required uint32 Flags = 7;
+	required int32 Special = 8;
+}
+
+message NMapObjectAdd {
+	required uint32 UID = 1;
+	required string MapObjectClass = 2;
+	required NVec2 Pos = 3;
+	required uint32 ThingFlags = 4;
+	required int32 Health = 5;
+	required NColor Mask = 6;
+}
+
+message NMapObjectRemove {
+	required uint32 UID = 1;
+	required int32 ActorUID = 2;
+	required uint32 Flags = 3;
+}
+
+message NScore {
+	required uint32 PlayerUID = 1;
+	required int32 Score = 2;
+}
+
+message NSound {
+	required string Sound = 1;
+	required NVec2 Pos = 2;
+	required bool IsHit = 3;
+}
+
+message NVec2i {
+	required int32 x = 1;
+	required int32 y = 2;
+}
+
+message NVec2 {
+	required float x = 1;
+	required float y = 2;
+}
+
+message NGameBegin {
+	required int32 MissionTime = 1;
+}
+
+message NActorAdd {
+	required uint32 UID = 1;
+	required uint32 CharId = 2;
+	required int32 Direction = 3 [default=4];
+	required int32 Health = 4;
+	required int32 PlayerUID = 5 [default=-1];
+	required uint32 ThingFlags = 6;
+	required NVec2 Pos = 7;
+}
+
+message NActorMove {
+	required uint32 UID = 1;
+	required NVec2 Pos = 2;
+	required NVec2 MoveVel = 3;
+}
+
+message NActorState {
+	required uint32 UID = 1;
+	required int32 State = 2;
+}
+
+message NActorDir {
+	required uint32 UID = 1;
+	required int32 Dir = 2;
+}
+
+message NActorSlide {
+	required uint32 UID = 1;
+	required NVec2 Vel = 2;
+}
+
+message NActorImpulse {
+	required uint32 UID = 1;
+	required NVec2 Vel = 2;
+	required NVec2 Pos = 3;
+}
+
+message NActorSwitchGun {
+	required uint32 UID = 1;
+	required uint32 GunIdx = 2;
+}
+
+message NActorPickupAll {
+	required uint32 UID = 1;
+	required bool PickupAll = 2;
+}
+
+message NActorReplaceGun {
+	required uint32 UID = 1;
+	// Index of gun in actor to replace
+	required uint32 GunIdx = 2;
+	required string Gun = 3;
+}
+
+message NActorHeal {
+	required uint32 UID = 1;
+	required int32 PlayerUID = 2 [default=-1];
+	required int32 Amount = 3;
+	required bool IsRandomSpawned = 4;
+}
+
+message NActorAddAmmo {
+	required uint32 UID = 1;
+	required int32 PlayerUID = 2 [default=-1];
+	required uint32 AmmoId = 3;
+	required uint32 Amount = 4;
+	required bool IsRandomSpawned = 5;
+}
+
+message NActorUseAmmo {
+	required uint32 UID = 1;
+	required int32 PlayerUID = 2 [default=-1];
+	required uint32 AmmoId = 3;
+	required uint32 Amount = 4;
+}
+
+message NActorDie {
+	required uint32 UID = 1;
+}
+
+message NActorMelee {
+	required uint32 UID = 1;
+	required string BulletClass = 2;
+	required int32 HitType = 3;
+	required int32 TargetKind = 4;
+	required uint32 TargetUID = 5;
+}
+
+message NAddPickup {
+	required uint32 UID = 1;
+	required string PickupClass = 2;
+	required bool IsRandomSpawned = 3;
+	required int32 SpawnerUID = 4 [default=-1];
+	required uint32 ThingFlags = 5;
+	required NVec2 Pos = 6;
+}
+
+message NRemovePickup {
+	required uint32 UID = 1;
+	required int32 SpawnerUID = 2 [default=-1];
+}
+
+message NBulletBounce {
+	required uint32 UID = 1;
+	required int32 HitType = 2;
+	required bool Spark = 3;
+	required NVec2 BouncePos = 4;
+	required NVec2 Pos = 5;
+	required NVec2 Vel = 6;
+	required bool HitSound = 7;
+	required bool WallMark = 8;
+}
+
+message NRemoveBullet {
+	required uint32 UID = 1;
+}
+
+message NGunReload {
+	required int32 PlayerUID = 1 [default=-1];
+	required string Gun = 2;
+	required NVec2 Pos = 3;
+	required int32 Direction = 4;
+}
+
+message NGunFire {
+	required int32 ActorUID = 1 [default=-1];
+	required string Gun = 2;
+	required NVec2 MuzzlePos = 3;
+	required int32 Z = 4;
+	required float Angle = 5;
+	required bool Sound = 6;
+	required uint32 Flags = 7;
+	// Whether the shot was from a real player-gun, or a derived gun e.g. explode
+	required bool IsGun = 8;
+}
+
+message NGunState {
+	required uint32 ActorUID = 1;
+	required int32 State = 2;
+}
+
+message NAddBullet {
+	required uint32 UID = 1;
+	required string BulletClass = 2;
+	required NVec2 MuzzlePos = 3;
+	required int32 MuzzleHeight = 4;
+	required float Angle = 5;
+	required int32 Elevation = 6;
+	required uint32 Flags = 7;
+	required int32 ActorUID = 8 [default=-1];
+}
+
+message NTrigger {
+	required uint32 ID = 1;
+	required NVec2i Tile = 2;
+}
+
+message NExploreTiles {
+	// RLE explore tiles
+	message Run {
+		required NVec2i Tile = 1;
+		required int32 Run = 2;
+	}
+	repeated Run Runs = 1;
+}
+
+message NRescueCharacter {
+	required uint32 UID = 1;
+}
+
+message NObjectiveUpdate {
+	required uint32 ObjectiveId = 1;
+	required int32 Count = 2;
+}
+
+message NAddKeys {
+	required uint32 KeyFlags = 1;
+	required NVec2 Pos = 2;
+}
+
+message NMissionComplete {
+	required bool ShowMsg = 1;
+	required NVec2i ExitStart = 2;
+	required NVec2i ExitEnd = 3;
+}
+
+message NMissionEnd {
+	required int32 Delay = 1;
+	required bool IsQuit = 2;
+	required string Msg = 3;
+}

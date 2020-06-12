@@ -40,7 +40,7 @@
 
 #define NET_LISTEN_PORT 34219
 
-#define NET_PROTOCOL_VERSION 7
+#define NET_PROTOCOL_VERSION 8
 
 // Messages
 
@@ -49,7 +49,7 @@
 
 
 ENetPacket *NetEncode(const GameEventType e, const void *data);
-bool NetDecode(ENetPacket *packet, void *dest, const pb_field_t *fields);
+bool NetDecode(ENetPacket *packet, void *dest, const pb_msgdesc_t *fields);
 
 NPlayerData NMakePlayerData(const PlayerData *p);
 NCampaignDef NMakeCampaignDef(const CampaignOptions *co);
