@@ -22,6 +22,7 @@ add_executable(animated_counter_test
 target_link_libraries(animated_counter_test
 	cbehave
 	cdogs
+	cdogs_proto
 	${SDL2_LIBRARY}
 	${EXTRA_LIBRARIES})
 add_test(NAME animated_counter_test COMMAND animated_counter_test)
@@ -33,6 +34,7 @@ add_executable(autosave_test
 target_link_libraries(autosave_test
 	cbehave
 	cdogs
+	cdogs_proto
 	${SDL2_LIBRARY}
 	${EXTRA_LIBRARIES})
 add_test(NAME autosave_test COMMAND autosave_test)
@@ -61,28 +63,36 @@ add_test(NAME color_test COMMAND color_test)
 
 add_executable(config_test config_test.c)
 target_link_libraries(config_test
-	cbehave cdogs
+	cbehave
+	cdogs
+	cdogs_proto
 	${SDL2_LIBRARY}
 	${EXTRA_LIBRARIES})
 add_test(NAME config_test COMMAND config_test)
 
 add_executable(json_test json_test.c)
 target_link_libraries(json_test
-	cbehave cdogs
+	cbehave
+	cdogs
+	cdogs_proto
 	${SDL2_LIBRARY}
 	${EXTRA_LIBRARIES})
 add_test(NAME json_test COMMAND json_test)
 
 add_executable(minkowski_hex_test minkowski_hex_test.c)
 target_link_libraries(minkowski_hex_test
-	cbehave cdogs
+	cbehave
+	cdogs
+	cdogs_proto
 	${SDL2_LIBRARY}
 	${EXTRA_LIBRARIES})
 add_test(NAME minkowski_hex_test COMMAND minkowski_hex_test)
 
 add_executable(pic_test pic_test.c)
 target_link_libraries(pic_test
-	cbehave cdogs
+	cbehave
+	cdogs
+	cdogs_proto
 	${SDL2_LIBRARY}
 	${SDL2_IMAGE_LIBRARIES}
 	${EXTRA_LIBRARIES})
@@ -91,13 +101,17 @@ target_link_libraries(pic_test
 
 add_executable(player_test player_test.c)
 target_link_libraries(player_test
-	cbehave cdogs
+	cbehave
+	cdogs
+	cdogs_proto
 	${SDL2_LIBRARY}
 	${EXTRA_LIBRARIES})
 add_test(NAME player_test COMMAND player_test)
 
 add_executable(utils_test utils_test.c)
 target_link_libraries(utils_test
-	cbehave cdogs
+	cbehave
+	cdogs
+	cdogs_proto
 	${SDL2_LIBRARY} ${EXTRA_LIBRARIES})
 add_test(NAME utils_test COMMAND utils_test)
