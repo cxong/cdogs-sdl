@@ -41,14 +41,11 @@ install:
     if [ "$CXX" = "clang++" ]; then export CXX="clang++-9" CC="clang-9"; fi;
   fi
 - echo ${CC}
-- mkdir -p $HOME/protobuf && pushd $HOME/protobuf
-  && curl -LO 'https://github.com/google/protobuf/releases/download/v3.4.0/protoc-3.4.0-linux-x86_64.zip'
-  && unzip protoc-3.4.0-linux-x86_64.zip
-  && popd
-- curl -L 'https://github.com/google/protobuf/releases/download/v3.4.0/protobuf-python-3.4.0.tar.gz' | tar xzf -
-  && pushd protobuf-3.4.0/python
-  && python setup.py build && python setup.py install
-  && popd
+# Install protoc
+- curl -L https://github.com/protocolbuffers/protobuf/releases/download/v3.12.3/protobuf-all-3.12.3.tar.gz | tar xzf - && pushd protobuf-3.12.3 && ./configure && make && make check && sudo make install && sudo ldconfig && popd
+- protoc --version
+- mkdir -p $HOME/protobuf && pushd $HOME/protobuf && curl -LO 'https://github.com/google/protobuf/releases/download/v3.4.0/protoc-3.4.0-linux-x86_64.zip' && unzip protoc-3.4.0-linux-x86_64.zip && popd
+- curl -L 'https://github.com/google/protobuf/releases/download/v3.4.0/protobuf-python-3.4.0.tar.gz' | tar xzf - && pushd protobuf-3.4.0/python && python setup.py build && python setup.py install && popd
 
 before_script:
   - export CTEST_OUTPUT_ON_FAILURE=1
