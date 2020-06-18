@@ -731,11 +731,7 @@
 		"SpecialChars": [],
 		"MapObjectDensities": [],
 		"EnemyDensity": 0,
-		"Weapons": ["Knife",
-		"Chaingun",
-		"Launcher",
-		"Marine Pistol",
-		"Marine Shotgun"],
+		"Weapons": ["Knife", "Marine Pistol"],
 		"Song": "",
 		"TileClasses": {
 			"24": {
@@ -1708,12 +1704,7 @@
 		"SpecialChars": [],
 		"MapObjectDensities": [],
 		"EnemyDensity": 0,
-		"Weapons": ["Knife",
-		"Chaingun",
-		"Launcher",
-		"Marine Shotgun",
-		"Marine Pistol",
-		"Chainsaw"],
+		"Weapons": ["Knife", "Marine Pistol"],
 		"Song": "",
 		"TileClasses": {
 			"13": {
@@ -2807,12 +2798,7 @@
 		"SpecialChars": [],
 		"MapObjectDensities": [],
 		"EnemyDensity": 0,
-		"Weapons": ["Knife",
-		"Chaingun",
-		"Marine Shotgun",
-		"Launcher",
-		"Marine Pistol",
-		"Chainsaw"],
+		"Weapons": ["Knife", "Marine Pistol"],
 		"Song": "",
 		"TileClasses": {
 			"24": {
@@ -3826,12 +3812,7 @@
 		"SpecialChars": [],
 		"MapObjectDensities": [],
 		"EnemyDensity": 0,
-		"Weapons": ["Knife",
-		"Chaingun",
-		"Marine Shotgun",
-		"Launcher",
-		"Marine Pistol",
-		"Chainsaw"],
+		"Weapons": ["Knife", "Marine Pistol"],
 		"Song": "",
 		"TileClasses": {
 			"24": {
@@ -4857,12 +4838,7 @@
 		"SpecialChars": [],
 		"MapObjectDensities": [],
 		"EnemyDensity": 0,
-		"Weapons": ["Knife",
-		"Chaingun",
-		"Marine Shotgun",
-		"Launcher",
-		"Marine Pistol",
-		"Chainsaw"],
+		"Weapons": ["Knife", "Marine Pistol"],
 		"Song": "",
 		"TileClasses": {
 			"13": {
@@ -6097,12 +6073,7 @@
 		"SpecialChars": [],
 		"MapObjectDensities": [],
 		"EnemyDensity": 0,
-		"Weapons": ["Knife",
-		"Chaingun",
-		"Marine Shotgun",
-		"Launcher",
-		"Marine Pistol",
-		"Chainsaw"],
+		"Weapons": ["Knife", "Marine Pistol"],
 		"Song": "",
 		"TileClasses": {
 			"13": {
@@ -7116,12 +7087,7 @@
 		"SpecialChars": [5],
 		"MapObjectDensities": [],
 		"EnemyDensity": 0,
-		"Weapons": ["Knife",
-		"Chaingun",
-		"Marine Shotgun",
-		"Launcher",
-		"Marine Pistol",
-		"Chainsaw"],
+		"Weapons": ["Knife", "Marine Pistol"],
 		"Song": "",
 		"TileClasses": {
 			"13": {
