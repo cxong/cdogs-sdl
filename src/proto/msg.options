@@ -8,6 +8,7 @@ NPlayerData.CharacterClass	max_size:128
 NPlayerData.Hair        	max_size:128
 NPlayerData.Weapons			max_size:128
 NPlayerData.Weapons			max_count:3
+NPlayerData.Ammo			max_count:128
 
 NTileSet.ClassName    max_size:128
 NTileSet.ClassAltName max_size:128
@@ -18,6 +19,8 @@ NConfig.Value				max_size:128
 NMapObjectAdd.MapObjectClass max_size:128
 
 NSound.Sound max_size:128
+
+NActorAdd.Ammo max_count:128
 
 NActorReplaceGun.Gun max_size:128
 

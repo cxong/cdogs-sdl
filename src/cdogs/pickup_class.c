@@ -1,29 +1,29 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2015-2016, 2018 Cong Xu
-    All rights reserved.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (c) 2015-2016, 2018, 2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "pickup.h"
 
@@ -34,9 +34,7 @@
 #include "mission.h"
 #include "powerup.h"
 
-
 PickupClasses gPickupClasses;
-
 
 PickupType StrPickupType(const char *s)
 {
@@ -55,22 +53,22 @@ PickupClass *StrPickupClass(const char *s)
 		return NULL;
 	}
 	CA_FOREACH(PickupClass, c, gPickupClasses.CustomClasses)
-		if (strcmp(s, c->Name) == 0)
-		{
-			return c;
-		}
+	if (strcmp(s, c->Name) == 0)
+	{
+		return c;
+	}
 	CA_FOREACH_END()
 	CA_FOREACH(PickupClass, c, gPickupClasses.Classes)
-		if (strcmp(s, c->Name) == 0)
-		{
-			return c;
-		}
+	if (strcmp(s, c->Name) == 0)
+	{
+		return c;
+	}
 	CA_FOREACH_END()
 	CA_FOREACH(PickupClass, c, gPickupClasses.KeyClasses)
-		if (strcmp(s, c->Name) == 0)
-		{
-			return c;
-		}
+	if (strcmp(s, c->Name) == 0)
+	{
+		return c;
+	}
 	CA_FOREACH_END()
 	CASSERT(false, "cannot parse pickup class");
 	return NULL;
@@ -78,20 +76,9 @@ PickupClass *StrPickupClass(const char *s)
 PickupClass *IntPickupClass(const int i)
 {
 	static const char *pickupItems[] = {
-		"folder",
-		"disk1",
-		"disk2",
-		"disk3",
-		"blueprint",
-		"cd",
-		"sack",
-		"holo",
-		"bottle",
-		"radio",
-		"pci_card",
-		"paper"
-	};
-#define PICKUPS_COUNT (sizeof(pickupItems)/sizeof(const char *))
+		"folder", "disk1", "disk2",	 "disk3", "blueprint", "cd",
+		"sack",	  "holo",  "bottle", "radio", "pci_card",  "paper"};
+#define PICKUPS_COUNT (sizeof(pickupItems) / sizeof(const char *))
 	if (i < 0 || i >= (int)PICKUPS_COUNT)
 	{
 		return NULL;
@@ -100,13 +87,13 @@ PickupClass *IntPickupClass(const int i)
 }
 const char *IntExitStyle(const int i)
 {
-	static const char *exitStyles[] = { "hazard", "plate" };
+	static const char *exitStyles[] = {"hazard", "plate"};
 	return exitStyles[abs(i) % 2];
 }
 #define KEYSTYLE_COUNT 4
 const char *IntKeyStyle(const int style)
 {
-	static const char *keyStyles[] = { "office", "dungeon", "plain", "cube" };
+	static const char *keyStyles[] = {"office", "dungeon", "plain", "cube"};
 	return keyStyles[abs(style) % KEYSTYLE_COUNT];
 }
 PickupClass *IntKeyPickupClass(const int style, const int i)
@@ -114,17 +101,17 @@ PickupClass *IntKeyPickupClass(const int style, const int i)
 	return KeyPickupClass(IntKeyStyle(style), i);
 }
 // Define the key colours
-static const char *keyColors[] = { "yellow", "green", "blue", "red" };
+static const char *keyColors[] = {"yellow", "green", "blue", "red"};
 // TODO: support more colours
 PickupClass *KeyPickupClass(const char *style, const int i)
 {
 	static char buf[256];
 	sprintf(buf, "keys/%s/%s", style, keyColors[abs(i) % KEY_COUNT]);
 	CA_FOREACH(PickupClass, c, gPickupClasses.KeyClasses)
-		if (strcmp(buf, c->Name) == 0)
-		{
-			return c;
-		}
+	if (strcmp(buf, c->Name) == 0)
+	{
+		return c;
+	}
 	CA_FOREACH_END()
 	CASSERT(false, "cannot parse key class");
 	return NULL;
@@ -148,16 +135,16 @@ int StrPickupClassId(const char *s)
 		return 0;
 	}
 	CA_FOREACH(const PickupClass, c, gPickupClasses.CustomClasses)
-		if (strcmp(s, c->Name) == 0)
-		{
-			return _ca_index + (int)gPickupClasses.Classes.size;
-		}
+	if (strcmp(s, c->Name) == 0)
+	{
+		return _ca_index + (int)gPickupClasses.Classes.size;
+	}
 	CA_FOREACH_END()
 	CA_FOREACH(const PickupClass, c, gPickupClasses.Classes)
-		if (strcmp(s, c->Name) == 0)
-		{
-			return _ca_index;
-		}
+	if (strcmp(s, c->Name) == 0)
+	{
+		return _ca_index;
+	}
 	CA_FOREACH_END()
 	CASSERT(false, "cannot parse pickup class name");
 	return 0;
@@ -166,8 +153,8 @@ int StrPickupClassId(const char *s)
 #define VERSION 2
 
 void PickupClassesInit(
-	PickupClasses *classes, const char *filename,
-	const AmmoClasses *ammo, const WeaponClasses *guns)
+	PickupClasses *classes, const char *filename, const AmmoClasses *ammo,
+	const WeaponClasses *guns)
 {
 	CArrayInit(&classes->Classes, sizeof(PickupClass));
 	CArrayInit(&classes->CustomClasses, sizeof(PickupClass));
@@ -222,8 +209,7 @@ void PickupClassesLoadJSON(CArray *classes, json_t *root)
 		}
 	}
 }
-static bool TryLoadPickupclass(
-	PickupClass *c, json_t *node, const int version)
+static bool TryLoadPickupclass(PickupClass *c, json_t *node, const int version)
 {
 	memset(c, 0, sizeof *c);
 	char *tmp;
@@ -241,12 +227,15 @@ static bool TryLoadPickupclass(
 		c->u.Health = HEALTH_PICKUP_HEAL_AMOUNT;
 		LoadInt(&c->u.Health, node, "Health");
 		break;
-	case PICKUP_AMMO:
+	case PICKUP_AMMO: {
 		tmp = GetString(node, "Ammo");
 		c->u.Ammo.Id = StrAmmoId(tmp);
 		CFREE(tmp);
-		LoadInt(&c->u.Ammo.Amount, node, "AmmoAmount");
+		int amount = 0;
+		LoadInt(&amount, node, "AmmoAmount");
+		c->u.Ammo.Amount = amount;
 		break;
+	}
 	case PICKUP_KEYCARD:
 		// Do nothing; keys now loaded directly from graphics files
 		return false;
@@ -273,54 +262,54 @@ static bool TryLoadPickupclass(
 void PickupClassesLoadAmmo(CArray *classes, const CArray *ammoClasses)
 {
 	CA_FOREACH(const Ammo, a, *ammoClasses)
-		PickupClass c;
-		char buf[256];
-		sprintf(buf, "ammo_%s", a->Name);
-		CSTRDUP(c.Name, buf);
-		CPicCopyPic(&c.Pic, &a->Pic);
-		c.Type = PICKUP_AMMO;
-		c.u.Ammo.Id = StrAmmoId(a->Name);
-		c.u.Ammo.Amount = a->Amount;
-		CArrayPushBack(classes, &c);
+	PickupClass c;
+	char buf[256];
+	sprintf(buf, "ammo_%s", a->Name);
+	CSTRDUP(c.Name, buf);
+	CPicCopyPic(&c.Pic, &a->Pic);
+	c.Type = PICKUP_AMMO;
+	c.u.Ammo.Id = StrAmmoId(a->Name);
+	c.u.Ammo.Amount = a->Amount;
+	CArrayPushBack(classes, &c);
 	CA_FOREACH_END()
 }
 
 void PickupClassesLoadGuns(CArray *classes, const CArray *gunClasses)
 {
 	CA_FOREACH(const WeaponClass, wc, *gunClasses)
-		PickupClass c;
-		char buf[256];
-		sprintf(buf, "gun_%s", wc->name);
-		CSTRDUP(c.Name, buf);
-		CPicInitNormal(&c.Pic, wc->Icon);
-		c.Type = PICKUP_GUN;
-		c.u.GunId = WeaponClassId(wc);
-		CArrayPushBack(classes, &c);
+	PickupClass c;
+	char buf[256];
+	sprintf(buf, "gun_%s", wc->name);
+	CSTRDUP(c.Name, buf);
+	CPicInitNormal(&c.Pic, wc->Icon);
+	c.Type = PICKUP_GUN;
+	c.u.GunId = WeaponClassId(wc);
+	CArrayPushBack(classes, &c);
 	CA_FOREACH_END()
 }
 
 void PickupClassesLoadKeys(CArray *classes)
 {
 	CA_FOREACH(const char *, keyStyleName, gPicManager.keyStyleNames)
-		for (int i = 0; i < KEY_COUNT; i++)
-		{
-			PickupClass c;
-			memset(&c, 0, sizeof c);
-			char buf[CDOGS_FILENAME_MAX];
-			sprintf(buf, "keys/%s/%s", *keyStyleName, keyColors[i]);
-			CSTRDUP(c.Name, buf);
-			CPicInitNormalFromName(&c.Pic, c.Name);
-			c.Type = PICKUP_KEYCARD;
-			c.u.Keys = StrKeycard(keyColors[i]);
-			CArrayPushBack(classes, &c);
-		}
+	for (int i = 0; i < KEY_COUNT; i++)
+	{
+		PickupClass c;
+		memset(&c, 0, sizeof c);
+		char buf[CDOGS_FILENAME_MAX];
+		sprintf(buf, "keys/%s/%s", *keyStyleName, keyColors[i]);
+		CSTRDUP(c.Name, buf);
+		CPicInitNormalFromName(&c.Pic, c.Name);
+		c.Type = PICKUP_KEYCARD;
+		c.u.Keys = StrKeycard(keyColors[i]);
+		CArrayPushBack(classes, &c);
+	}
 	CA_FOREACH_END()
 }
 
 void PickupClassesClear(CArray *classes)
 {
 	CA_FOREACH(PickupClass, c, *classes)
-		CFREE(c->Name);
+	CFREE(c->Name);
 	CA_FOREACH_END()
 	CArrayClear(classes);
 }
@@ -342,24 +331,24 @@ int PickupClassesGetScoreIdx(const PickupClass *p)
 	}
 	int idx = -1;
 	CA_FOREACH(const PickupClass, c, gPickupClasses.Classes)
-		if (c->Type == PICKUP_JEWEL)
+	if (c->Type == PICKUP_JEWEL)
+	{
+		idx++;
+		if (c == p)
 		{
-			idx++;
-			if (c == p)
-			{
-				return idx;
-			}
+			return idx;
 		}
+	}
 	CA_FOREACH_END()
 	CA_FOREACH(PickupClass, c, gPickupClasses.CustomClasses)
-		if (c->Type == PICKUP_JEWEL)
+	if (c->Type == PICKUP_JEWEL)
+	{
+		idx++;
+		if (c == p)
 		{
-			idx++;
-			if (c == p)
-			{
-				return idx;
-			}
+			return idx;
 		}
+	}
 	CA_FOREACH_END()
 	return 0;
 }
@@ -367,16 +356,16 @@ int PickupClassesGetScoreCount(const PickupClasses *classes)
 {
 	int count = 0;
 	CA_FOREACH(const PickupClass, c, classes->Classes)
-		if (c->Type == PICKUP_JEWEL)
-		{
-			count++;
-		}
+	if (c->Type == PICKUP_JEWEL)
+	{
+		count++;
+	}
 	CA_FOREACH_END()
 	CA_FOREACH(const PickupClass, c, classes->CustomClasses)
-		if (c->Type == PICKUP_JEWEL)
-		{
-			count++;
-		}
+	if (c->Type == PICKUP_JEWEL)
+	{
+		count++;
+	}
 	CA_FOREACH_END()
 	return count;
 }
@@ -384,24 +373,24 @@ PickupClass *IntScorePickupClass(const int i)
 {
 	int idx = -1;
 	CA_FOREACH(PickupClass, c, gPickupClasses.Classes)
-		if (c->Type == PICKUP_JEWEL)
+	if (c->Type == PICKUP_JEWEL)
+	{
+		idx++;
+		if (idx == i)
 		{
-			idx++;
-			if (idx == i)
-			{
-				return c;
-			}
+			return c;
 		}
+	}
 	CA_FOREACH_END()
 	CA_FOREACH(PickupClass, c, gPickupClasses.CustomClasses)
-		if (c->Type == PICKUP_JEWEL)
+	if (c->Type == PICKUP_JEWEL)
+	{
+		idx++;
+		if (idx == i)
 		{
-			idx++;
-			if (idx == i)
-			{
-				return c;
-			}
+			return c;
 		}
+	}
 	CA_FOREACH_END()
 	return NULL;
 }

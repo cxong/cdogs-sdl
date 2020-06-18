@@ -69,6 +69,7 @@ typedef struct
 	bool IsError;
 	bool OptionsSet;
 	bool IsComplete;
+	bool WeaponPersist;
 } CampaignOptions;
 extern CampaignOptions gCampaign;
 

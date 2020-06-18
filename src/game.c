@@ -648,6 +648,7 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 
 	return UPDATE_RESULT_DRAW;
 }
+static void PersistPlayerWeaponsAndAmmo(PlayerData *p);
 static void NextLoop(RunGameData *rData, LoopRunner *l)
 {
 	// Find the next screen to switch to
@@ -656,6 +657,13 @@ static void NextLoop(RunGameData *rData, LoopRunner *l)
 		GetNumPlayers(PLAYER_ALIVE, false, false);
 	const bool survivedAndCompletedObjectives =
 		survivingPlayers > 0 && MissionAllObjectivesComplete(&gMission);
+	// Persist player weapons/ammo
+	if (rData->co->WeaponPersist)
+	{
+		CA_FOREACH(PlayerData, p, gPlayerDatas)
+		PersistPlayerWeaponsAndAmmo(p);
+		CA_FOREACH_END()
+	}
 
 	// Switch to a score screen if there are local players and we haven't quit
 	const bool showScores = !gMission.IsQuit && hasLocalPlayers;
@@ -680,6 +688,17 @@ static void NextLoop(RunGameData *rData, LoopRunner *l)
 	{
 		LoopRunnerChange(l, HighScoresScreen(&gCampaign, &gGraphicsDevice));
 	}
+}
+static void PersistPlayerWeaponsAndAmmo(PlayerData *p)
+{
+	if (!IsPlayerAlive(p))
+		return;
+	const TActor *a = ActorGetByUID(p->ActorUID);
+	for (int i = 0; i < MAX_WEAPONS; i++)
+	{
+		p->guns[i] = a->guns[i].Gun;
+	}
+	CArrayCopy(&p->ammo, &a->ammo);
 }
 static void CheckMissionCompletion(const struct MissionOptions *mo)
 {

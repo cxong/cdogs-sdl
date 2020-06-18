@@ -14,14 +14,6 @@ extern "C" {
 #endif
 
 /* Struct definitions */
-typedef struct _NActorAddAmmo {
-    uint32_t UID;
-    int32_t PlayerUID;
-    uint32_t AmmoId;
-    uint32_t Amount;
-    bool IsRandomSpawned;
-} NActorAddAmmo;
-
 typedef struct _NActorDie {
     uint32_t UID;
 } NActorDie;
@@ -67,17 +59,16 @@ typedef struct _NActorSwitchGun {
     uint32_t GunIdx;
 } NActorSwitchGun;
 
-typedef struct _NActorUseAmmo {
-    uint32_t UID;
-    int32_t PlayerUID;
-    uint32_t AmmoId;
+typedef struct _NAmmo {
+    uint32_t Id;
     uint32_t Amount;
-} NActorUseAmmo;
+} NAmmo;
 
 typedef struct _NCampaignDef {
     char Path[4096];
     int32_t GameMode;
     uint32_t Mission;
+    bool WeaponPersist;
 } NCampaignDef;
 
 typedef struct _NClientId {
@@ -177,29 +168,53 @@ typedef struct _NActorAdd {
     int32_t Health;
     int32_t PlayerUID;
     uint32_t ThingFlags;
+    bool has_Pos;
     NVec2 Pos;
+    pb_size_t Ammo_count;
+    NAmmo Ammo[128];
 } NActorAdd;
+
+typedef struct _NActorAddAmmo {
+    uint32_t UID;
+    int32_t PlayerUID;
+    bool has_Ammo;
+    NAmmo Ammo;
+    bool IsRandomSpawned;
+} NActorAddAmmo;
 
 typedef struct _NActorImpulse {
     uint32_t UID;
+    bool has_Vel;
     NVec2 Vel;
+    bool has_Pos;
     NVec2 Pos;
 } NActorImpulse;
 
 typedef struct _NActorMove {
     uint32_t UID;
+    bool has_Pos;
     NVec2 Pos;
+    bool has_MoveVel;
     NVec2 MoveVel;
 } NActorMove;
 
 typedef struct _NActorSlide {
     uint32_t UID;
+    bool has_Vel;
     NVec2 Vel;
 } NActorSlide;
+
+typedef struct _NActorUseAmmo {
+    uint32_t UID;
+    int32_t PlayerUID;
+    bool has_Ammo;
+    NAmmo Ammo;
+} NActorUseAmmo;
 
 typedef struct _NAddBullet {
     uint32_t UID;
     char BulletClass[128];
+    bool has_MuzzlePos;
     NVec2 MuzzlePos;
     int32_t MuzzleHeight;
     float Angle;
@@ -210,6 +225,7 @@ typedef struct _NAddBullet {
 
 typedef struct _NAddKeys {
     uint32_t KeyFlags;
+    bool has_Pos;
     NVec2 Pos;
 } NAddKeys;
 
@@ -219,6 +235,7 @@ typedef struct _NAddPickup {
     bool IsRandomSpawned;
     int32_t SpawnerUID;
     uint32_t ThingFlags;
+    bool has_Pos;
     NVec2 Pos;
 } NAddPickup;
 
@@ -226,22 +243,31 @@ typedef struct _NBulletBounce {
     uint32_t UID;
     int32_t HitType;
     bool Spark;
+    bool has_BouncePos;
     NVec2 BouncePos;
+    bool has_Pos;
     NVec2 Pos;
+    bool has_Vel;
     NVec2 Vel;
     bool HitSound;
     bool WallMark;
 } NBulletBounce;
 
 typedef struct _NCharColors {
+    bool has_Skin;
     NColor Skin;
+    bool has_Arms;
     NColor Arms;
+    bool has_Body;
     NColor Body;
+    bool has_Legs;
     NColor Legs;
+    bool has_Hair;
     NColor Hair;
 } NCharColors;
 
 typedef struct _NExploreTiles_Run {
+    bool has_Tile;
     NVec2i Tile;
     int32_t Run;
 } NExploreTiles_Run;
@@ -249,6 +275,7 @@ typedef struct _NExploreTiles_Run {
 typedef struct _NGunFire {
     int32_t ActorUID;
     char Gun[128];
+    bool has_MuzzlePos;
     NVec2 MuzzlePos;
     int32_t Z;
     float Angle;
@@ -260,6 +287,7 @@ typedef struct _NGunFire {
 typedef struct _NGunReload {
     int32_t PlayerUID;
     char Gun[128];
+    bool has_Pos;
     NVec2 Pos;
     int32_t Direction;
 } NGunReload;
@@ -267,20 +295,25 @@ typedef struct _NGunReload {
 typedef struct _NMapObjectAdd {
     uint32_t UID;
     char MapObjectClass[128];
+    bool has_Pos;
     NVec2 Pos;
     uint32_t ThingFlags;
     int32_t Health;
+    bool has_Mask;
     NColor Mask;
 } NMapObjectAdd;
 
 typedef struct _NMissionComplete {
     bool ShowMsg;
+    bool has_ExitStart;
     NVec2i ExitStart;
+    bool has_ExitEnd;
     NVec2i ExitEnd;
 } NMissionComplete;
 
 typedef struct _NSound {
     char Sound[128];
+    bool has_Pos;
     NVec2 Pos;
     bool IsHit;
 } NSound;
@@ -290,6 +323,7 @@ typedef struct _NThingDamage {
     int32_t Kind;
     int32_t SourceActorUID;
     int32_t Power;
+    bool has_Vel;
     NVec2 Vel;
     float Mass;
     uint32_t Flags;
@@ -297,6 +331,7 @@ typedef struct _NThingDamage {
 } NThingDamage;
 
 typedef struct _NTileSet {
+    bool has_Pos;
     NVec2i Pos;
     char ClassName[128];
     char ClassAltName[128];
@@ -305,6 +340,7 @@ typedef struct _NTileSet {
 
 typedef struct _NTrigger {
     uint32_t ID;
+    bool has_Tile;
     NVec2i Tile;
 } NTrigger;
 
@@ -317,122 +353,124 @@ typedef struct _NPlayerData {
     char Name[20];
     char CharacterClass[128];
     char Hair[128];
+    bool has_Colors;
     NCharColors Colors;
     pb_size_t Weapons_count;
     char Weapons[3][128];
     uint32_t Lives;
+    bool has_Stats;
     NPlayerStats Stats;
+    bool has_Totals;
     NPlayerStats Totals;
     uint32_t MaxHealth;
     uint32_t LastMission;
     uint32_t UID;
+    pb_size_t Ammo_count;
+    NAmmo Ammo[128];
 } NPlayerData;
 
 
 /* Initializer values for message structs */
 #define NServerInfo_init_default                 {0, 0, "", 0, "", 0, 0, 0}
 #define NClientId_init_default                   {0, 0}
-#define NCampaignDef_init_default                {"", 0, 0}
+#define NCampaignDef_init_default                {"", 0, 0, 0}
 #define NColor_init_default                      {0}
-#define NCharColors_init_default                 {NColor_init_default, NColor_init_default, NColor_init_default, NColor_init_default, NColor_init_default}
+#define NCharColors_init_default                 {false, NColor_init_default, false, NColor_init_default, false, NColor_init_default, false, NColor_init_default, false, NColor_init_default}
 #define NPlayerStats_init_default                {0, 0, 0, 0}
-#define NPlayerData_init_default                 {"", "", "", NCharColors_init_default, 0, {"", "", ""}, 0, NPlayerStats_init_default, NPlayerStats_init_default, 0, 0, 0}
+#define NPlayerData_init_default                 {"", "", "", false, NCharColors_init_default, 0, {"", "", ""}, 0, false, NPlayerStats_init_default, false, NPlayerStats_init_default, 0, 0, 0, 0, {NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default}}
 #define NPlayerRemove_init_default               {0}
 #define NConfig_init_default                     {"", ""}
-#define NTileSet_init_default                    {NVec2i_init_default, "", "", 0}
-#define NThingDamage_init_default                {0, 0, -1, 0, NVec2_init_default, 0, 0, 0}
-#define NMapObjectAdd_init_default               {0, "", NVec2_init_default, 0, 0, NColor_init_default}
+#define NTileSet_init_default                    {false, NVec2i_init_default, "", "", 0}
+#define NThingDamage_init_default                {0, 0, 0, 0, false, NVec2_init_default, 0, 0, 0}
+#define NMapObjectAdd_init_default               {0, "", false, NVec2_init_default, 0, 0, false, NColor_init_default}
 #define NMapObjectRemove_init_default            {0, 0, 0}
 #define NScore_init_default                      {0, 0}
-#define NSound_init_default                      {"", NVec2_init_default, 0}
+#define NSound_init_default                      {"", false, NVec2_init_default, 0}
 #define NVec2i_init_default                      {0, 0}
 #define NVec2_init_default                       {0, 0}
 #define NGameBegin_init_default                  {0}
-#define NActorAdd_init_default                   {0, 0, 4, 0, -1, 0, NVec2_init_default}
-#define NActorMove_init_default                  {0, NVec2_init_default, NVec2_init_default}
+#define NActorAdd_init_default                   {0, 0, 0, 0, 0, 0, false, NVec2_init_default, 0, {NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default}}
+#define NActorMove_init_default                  {0, false, NVec2_init_default, false, NVec2_init_default}
 #define NActorState_init_default                 {0, 0}
 #define NActorDir_init_default                   {0, 0}
-#define NActorSlide_init_default                 {0, NVec2_init_default}
-#define NActorImpulse_init_default               {0, NVec2_init_default, NVec2_init_default}
+#define NActorSlide_init_default                 {0, false, NVec2_init_default}
+#define NActorImpulse_init_default               {0, false, NVec2_init_default, false, NVec2_init_default}
 #define NActorSwitchGun_init_default             {0, 0}
 #define NActorPickupAll_init_default             {0, 0}
 #define NActorReplaceGun_init_default            {0, 0, ""}
-#define NActorHeal_init_default                  {0, -1, 0, 0}
-#define NActorAddAmmo_init_default               {0, -1, 0, 0, 0}
-#define NActorUseAmmo_init_default               {0, -1, 0, 0}
+#define NActorHeal_init_default                  {0, 0, 0, 0}
+#define NAmmo_init_default                       {0, 0}
+#define NActorAddAmmo_init_default               {0, 0, false, NAmmo_init_default, 0}
+#define NActorUseAmmo_init_default               {0, 0, false, NAmmo_init_default}
 #define NActorDie_init_default                   {0}
 #define NActorMelee_init_default                 {0, "", 0, 0, 0}
-#define NAddPickup_init_default                  {0, "", 0, -1, 0, NVec2_init_default}
-#define NRemovePickup_init_default               {0, -1}
-#define NBulletBounce_init_default               {0, 0, 0, NVec2_init_default, NVec2_init_default, NVec2_init_default, 0, 0}
+#define NAddPickup_init_default                  {0, "", 0, 0, 0, false, NVec2_init_default}
+#define NRemovePickup_init_default               {0, 0}
+#define NBulletBounce_init_default               {0, 0, 0, false, NVec2_init_default, false, NVec2_init_default, false, NVec2_init_default, 0, 0}
 #define NRemoveBullet_init_default               {0}
-#define NGunReload_init_default                  {-1, "", NVec2_init_default, 0}
-#define NGunFire_init_default                    {-1, "", NVec2_init_default, 0, 0, 0, 0, 0}
+#define NGunReload_init_default                  {0, "", false, NVec2_init_default, 0}
+#define NGunFire_init_default                    {0, "", false, NVec2_init_default, 0, 0, 0, 0, 0}
 #define NGunState_init_default                   {0, 0}
-#define NAddBullet_init_default                  {0, "", NVec2_init_default, 0, 0, 0, 0, -1}
-#define NTrigger_init_default                    {0, NVec2i_init_default}
+#define NAddBullet_init_default                  {0, "", false, NVec2_init_default, 0, 0, 0, 0, 0}
+#define NTrigger_init_default                    {0, false, NVec2i_init_default}
 #define NExploreTiles_init_default               {0, {NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default}}
-#define NExploreTiles_Run_init_default           {NVec2i_init_default, 0}
+#define NExploreTiles_Run_init_default           {false, NVec2i_init_default, 0}
 #define NRescueCharacter_init_default            {0}
 #define NObjectiveUpdate_init_default            {0, 0}
-#define NAddKeys_init_default                    {0, NVec2_init_default}
-#define NMissionComplete_init_default            {0, NVec2i_init_default, NVec2i_init_default}
+#define NAddKeys_init_default                    {0, false, NVec2_init_default}
+#define NMissionComplete_init_default            {0, false, NVec2i_init_default, false, NVec2i_init_default}
 #define NMissionEnd_init_default                 {0, 0, ""}
 #define NServerInfo_init_zero                    {0, 0, "", 0, "", 0, 0, 0}
 #define NClientId_init_zero                      {0, 0}
-#define NCampaignDef_init_zero                   {"", 0, 0}
+#define NCampaignDef_init_zero                   {"", 0, 0, 0}
 #define NColor_init_zero                         {0}
-#define NCharColors_init_zero                    {NColor_init_zero, NColor_init_zero, NColor_init_zero, NColor_init_zero, NColor_init_zero}
+#define NCharColors_init_zero                    {false, NColor_init_zero, false, NColor_init_zero, false, NColor_init_zero, false, NColor_init_zero, false, NColor_init_zero}
 #define NPlayerStats_init_zero                   {0, 0, 0, 0}
-#define NPlayerData_init_zero                    {"", "", "", NCharColors_init_zero, 0, {"", "", ""}, 0, NPlayerStats_init_zero, NPlayerStats_init_zero, 0, 0, 0}
+#define NPlayerData_init_zero                    {"", "", "", false, NCharColors_init_zero, 0, {"", "", ""}, 0, false, NPlayerStats_init_zero, false, NPlayerStats_init_zero, 0, 0, 0, 0, {NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero}}
 #define NPlayerRemove_init_zero                  {0}
 #define NConfig_init_zero                        {"", ""}
-#define NTileSet_init_zero                       {NVec2i_init_zero, "", "", 0}
-#define NThingDamage_init_zero                   {0, 0, 0, 0, NVec2_init_zero, 0, 0, 0}
-#define NMapObjectAdd_init_zero                  {0, "", NVec2_init_zero, 0, 0, NColor_init_zero}
+#define NTileSet_init_zero                       {false, NVec2i_init_zero, "", "", 0}
+#define NThingDamage_init_zero                   {0, 0, 0, 0, false, NVec2_init_zero, 0, 0, 0}
+#define NMapObjectAdd_init_zero                  {0, "", false, NVec2_init_zero, 0, 0, false, NColor_init_zero}
 #define NMapObjectRemove_init_zero               {0, 0, 0}
 #define NScore_init_zero                         {0, 0}
-#define NSound_init_zero                         {"", NVec2_init_zero, 0}
+#define NSound_init_zero                         {"", false, NVec2_init_zero, 0}
 #define NVec2i_init_zero                         {0, 0}
 #define NVec2_init_zero                          {0, 0}
 #define NGameBegin_init_zero                     {0}
-#define NActorAdd_init_zero                      {0, 0, 0, 0, 0, 0, NVec2_init_zero}
-#define NActorMove_init_zero                     {0, NVec2_init_zero, NVec2_init_zero}
+#define NActorAdd_init_zero                      {0, 0, 0, 0, 0, 0, false, NVec2_init_zero, 0, {NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero}}
+#define NActorMove_init_zero                     {0, false, NVec2_init_zero, false, NVec2_init_zero}
 #define NActorState_init_zero                    {0, 0}
 #define NActorDir_init_zero                      {0, 0}
-#define NActorSlide_init_zero                    {0, NVec2_init_zero}
-#define NActorImpulse_init_zero                  {0, NVec2_init_zero, NVec2_init_zero}
+#define NActorSlide_init_zero                    {0, false, NVec2_init_zero}
+#define NActorImpulse_init_zero                  {0, false, NVec2_init_zero, false, NVec2_init_zero}
 #define NActorSwitchGun_init_zero                {0, 0}
 #define NActorPickupAll_init_zero                {0, 0}
 #define NActorReplaceGun_init_zero               {0, 0, ""}
 #define NActorHeal_init_zero                     {0, 0, 0, 0}
-#define NActorAddAmmo_init_zero                  {0, 0, 0, 0, 0}
-#define NActorUseAmmo_init_zero                  {0, 0, 0, 0}
+#define NAmmo_init_zero                          {0, 0}
+#define NActorAddAmmo_init_zero                  {0, 0, false, NAmmo_init_zero, 0}
+#define NActorUseAmmo_init_zero                  {0, 0, false, NAmmo_init_zero}
 #define NActorDie_init_zero                      {0}
 #define NActorMelee_init_zero                    {0, "", 0, 0, 0}
-#define NAddPickup_init_zero                     {0, "", 0, 0, 0, NVec2_init_zero}
+#define NAddPickup_init_zero                     {0, "", 0, 0, 0, false, NVec2_init_zero}
 #define NRemovePickup_init_zero                  {0, 0}
-#define NBulletBounce_init_zero                  {0, 0, 0, NVec2_init_zero, NVec2_init_zero, NVec2_init_zero, 0, 0}
+#define NBulletBounce_init_zero                  {0, 0, 0, false, NVec2_init_zero, false, NVec2_init_zero, false, NVec2_init_zero, 0, 0}
 #define NRemoveBullet_init_zero                  {0}
-#define NGunReload_init_zero                     {0, "", NVec2_init_zero, 0}
-#define NGunFire_init_zero                       {0, "", NVec2_init_zero, 0, 0, 0, 0, 0}
+#define NGunReload_init_zero                     {0, "", false, NVec2_init_zero, 0}
+#define NGunFire_init_zero                       {0, "", false, NVec2_init_zero, 0, 0, 0, 0, 0}
 #define NGunState_init_zero                      {0, 0}
-#define NAddBullet_init_zero                     {0, "", NVec2_init_zero, 0, 0, 0, 0, 0}
-#define NTrigger_init_zero                       {0, NVec2i_init_zero}
+#define NAddBullet_init_zero                     {0, "", false, NVec2_init_zero, 0, 0, 0, 0, 0}
+#define NTrigger_init_zero                       {0, false, NVec2i_init_zero}
 #define NExploreTiles_init_zero                  {0, {NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero}}
-#define NExploreTiles_Run_init_zero              {NVec2i_init_zero, 0}
+#define NExploreTiles_Run_init_zero              {false, NVec2i_init_zero, 0}
 #define NRescueCharacter_init_zero               {0}
 #define NObjectiveUpdate_init_zero               {0, 0}
-#define NAddKeys_init_zero                       {0, NVec2_init_zero}
-#define NMissionComplete_init_zero               {0, NVec2i_init_zero, NVec2i_init_zero}
+#define NAddKeys_init_zero                       {0, false, NVec2_init_zero}
+#define NMissionComplete_init_zero               {0, false, NVec2i_init_zero, false, NVec2i_init_zero}
 #define NMissionEnd_init_zero                    {0, 0, ""}
 
 /* Field tags (for use in manual encoding/decoding) */
-#define NActorAddAmmo_UID_tag                    1
-#define NActorAddAmmo_PlayerUID_tag              2
-#define NActorAddAmmo_AmmoId_tag                 3
-#define NActorAddAmmo_Amount_tag                 4
-#define NActorAddAmmo_IsRandomSpawned_tag        5
 #define NActorDie_UID_tag                        1
 #define NActorDir_UID_tag                        1
 #define NActorDir_Dir_tag                        2
@@ -454,13 +492,12 @@ typedef struct _NPlayerData {
 #define NActorState_State_tag                    2
 #define NActorSwitchGun_UID_tag                  1
 #define NActorSwitchGun_GunIdx_tag               2
-#define NActorUseAmmo_UID_tag                    1
-#define NActorUseAmmo_PlayerUID_tag              2
-#define NActorUseAmmo_AmmoId_tag                 3
-#define NActorUseAmmo_Amount_tag                 4
+#define NAmmo_Id_tag                             1
+#define NAmmo_Amount_tag                         2
 #define NCampaignDef_Path_tag                    1
 #define NCampaignDef_GameMode_tag                2
 #define NCampaignDef_Mission_tag                 3
+#define NCampaignDef_WeaponPersist_tag           4
 #define NClientId_Id_tag                         1
 #define NClientId_FirstPlayerUID_tag             2
 #define NColor_RGBA_tag                          1
@@ -507,6 +544,11 @@ typedef struct _NPlayerData {
 #define NActorAdd_PlayerUID_tag                  5
 #define NActorAdd_ThingFlags_tag                 6
 #define NActorAdd_Pos_tag                        7
+#define NActorAdd_Ammo_tag                       8
+#define NActorAddAmmo_UID_tag                    1
+#define NActorAddAmmo_PlayerUID_tag              2
+#define NActorAddAmmo_Ammo_tag                   3
+#define NActorAddAmmo_IsRandomSpawned_tag        4
 #define NActorImpulse_UID_tag                    1
 #define NActorImpulse_Vel_tag                    2
 #define NActorImpulse_Pos_tag                    3
@@ -515,6 +557,9 @@ typedef struct _NPlayerData {
 #define NActorMove_MoveVel_tag                   3
 #define NActorSlide_UID_tag                      1
 #define NActorSlide_Vel_tag                      2
+#define NActorUseAmmo_UID_tag                    1
+#define NActorUseAmmo_PlayerUID_tag              2
+#define NActorUseAmmo_Ammo_tag                   3
 #define NAddBullet_UID_tag                       1
 #define NAddBullet_BulletClass_tag               2
 #define NAddBullet_MuzzlePos_tag                 3
@@ -596,44 +641,46 @@ typedef struct _NPlayerData {
 #define NPlayerData_MaxHealth_tag                9
 #define NPlayerData_LastMission_tag              10
 #define NPlayerData_UID_tag                      11
+#define NPlayerData_Ammo_tag                     12
 
 /* Struct field encoding specification for nanopb */
 #define NServerInfo_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, INT32,    ProtocolVersion,   1) \
-X(a, STATIC,   REQUIRED, UINT32,   ENetPort,          2) \
-X(a, STATIC,   REQUIRED, STRING,   Hostname,          3) \
-X(a, STATIC,   REQUIRED, INT32,    GameMode,          4) \
-X(a, STATIC,   REQUIRED, STRING,   CampaignName,      5) \
-X(a, STATIC,   REQUIRED, INT32,    MissionNumber,     6) \
-X(a, STATIC,   REQUIRED, INT32,    NumPlayers,        7) \
-X(a, STATIC,   REQUIRED, INT32,    MaxPlayers,        8)
+X(a, STATIC,   SINGULAR, INT32,    ProtocolVersion,   1) \
+X(a, STATIC,   SINGULAR, UINT32,   ENetPort,          2) \
+X(a, STATIC,   SINGULAR, STRING,   Hostname,          3) \
+X(a, STATIC,   SINGULAR, INT32,    GameMode,          4) \
+X(a, STATIC,   SINGULAR, STRING,   CampaignName,      5) \
+X(a, STATIC,   SINGULAR, INT32,    MissionNumber,     6) \
+X(a, STATIC,   SINGULAR, INT32,    NumPlayers,        7) \
+X(a, STATIC,   SINGULAR, INT32,    MaxPlayers,        8)
 #define NServerInfo_CALLBACK NULL
 #define NServerInfo_DEFAULT NULL
 
 #define NClientId_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   Id,                1) \
-X(a, STATIC,   REQUIRED, UINT32,   FirstPlayerUID,    2)
+X(a, STATIC,   SINGULAR, UINT32,   Id,                1) \
+X(a, STATIC,   SINGULAR, UINT32,   FirstPlayerUID,    2)
 #define NClientId_CALLBACK NULL
 #define NClientId_DEFAULT NULL
 
 #define NCampaignDef_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, STRING,   Path,              1) \
-X(a, STATIC,   REQUIRED, INT32,    GameMode,          2) \
-X(a, STATIC,   REQUIRED, UINT32,   Mission,           3)
+X(a, STATIC,   SINGULAR, STRING,   Path,              1) \
+X(a, STATIC,   SINGULAR, INT32,    GameMode,          2) \
+X(a, STATIC,   SINGULAR, UINT32,   Mission,           3) \
+X(a, STATIC,   SINGULAR, BOOL,     WeaponPersist,     4)
 #define NCampaignDef_CALLBACK NULL
 #define NCampaignDef_DEFAULT NULL
 
 #define NColor_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, INT32,    RGBA,              1)
+X(a, STATIC,   SINGULAR, INT32,    RGBA,              1)
 #define NColor_CALLBACK NULL
 #define NColor_DEFAULT NULL
 
 #define NCharColors_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, MESSAGE,  Skin,              1) \
-X(a, STATIC,   REQUIRED, MESSAGE,  Arms,              2) \
-X(a, STATIC,   REQUIRED, MESSAGE,  Body,              3) \
-X(a, STATIC,   REQUIRED, MESSAGE,  Legs,              4) \
-X(a, STATIC,   REQUIRED, MESSAGE,  Hair,              5)
+X(a, STATIC,   OPTIONAL, MESSAGE,  Skin,              1) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Arms,              2) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Body,              3) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Legs,              4) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Hair,              5)
 #define NCharColors_CALLBACK NULL
 #define NCharColors_DEFAULT NULL
 #define NCharColors_Skin_MSGTYPE NColor
@@ -643,247 +690,257 @@ X(a, STATIC,   REQUIRED, MESSAGE,  Hair,              5)
 #define NCharColors_Hair_MSGTYPE NColor
 
 #define NPlayerStats_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, INT32,    Score,             1) \
-X(a, STATIC,   REQUIRED, INT32,    Kills,             2) \
-X(a, STATIC,   REQUIRED, INT32,    Suicides,          3) \
-X(a, STATIC,   REQUIRED, INT32,    Friendlies,        4)
+X(a, STATIC,   SINGULAR, INT32,    Score,             1) \
+X(a, STATIC,   SINGULAR, INT32,    Kills,             2) \
+X(a, STATIC,   SINGULAR, INT32,    Suicides,          3) \
+X(a, STATIC,   SINGULAR, INT32,    Friendlies,        4)
 #define NPlayerStats_CALLBACK NULL
 #define NPlayerStats_DEFAULT NULL
 
 #define NPlayerData_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, STRING,   Name,              1) \
-X(a, STATIC,   REQUIRED, STRING,   CharacterClass,    2) \
-X(a, STATIC,   REQUIRED, STRING,   Hair,              3) \
-X(a, STATIC,   REQUIRED, MESSAGE,  Colors,            4) \
+X(a, STATIC,   SINGULAR, STRING,   Name,              1) \
+X(a, STATIC,   SINGULAR, STRING,   CharacterClass,    2) \
+X(a, STATIC,   SINGULAR, STRING,   Hair,              3) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Colors,            4) \
 X(a, STATIC,   REPEATED, STRING,   Weapons,           5) \
-X(a, STATIC,   REQUIRED, UINT32,   Lives,             6) \
-X(a, STATIC,   REQUIRED, MESSAGE,  Stats,             7) \
-X(a, STATIC,   REQUIRED, MESSAGE,  Totals,            8) \
-X(a, STATIC,   REQUIRED, UINT32,   MaxHealth,         9) \
-X(a, STATIC,   REQUIRED, UINT32,   LastMission,      10) \
-X(a, STATIC,   REQUIRED, UINT32,   UID,              11)
+X(a, STATIC,   SINGULAR, UINT32,   Lives,             6) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Stats,             7) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Totals,            8) \
+X(a, STATIC,   SINGULAR, UINT32,   MaxHealth,         9) \
+X(a, STATIC,   SINGULAR, UINT32,   LastMission,      10) \
+X(a, STATIC,   SINGULAR, UINT32,   UID,              11) \
+X(a, STATIC,   REPEATED, MESSAGE,  Ammo,             12)
 #define NPlayerData_CALLBACK NULL
 #define NPlayerData_DEFAULT NULL
 #define NPlayerData_Colors_MSGTYPE NCharColors
 #define NPlayerData_Stats_MSGTYPE NPlayerStats
 #define NPlayerData_Totals_MSGTYPE NPlayerStats
+#define NPlayerData_Ammo_MSGTYPE NAmmo
 
 #define NPlayerRemove_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   UID,               1)
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1)
 #define NPlayerRemove_CALLBACK NULL
 #define NPlayerRemove_DEFAULT NULL
 
 #define NConfig_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, STRING,   Name,              1) \
-X(a, STATIC,   REQUIRED, STRING,   Value,             2)
+X(a, STATIC,   SINGULAR, STRING,   Name,              1) \
+X(a, STATIC,   SINGULAR, STRING,   Value,             2)
 #define NConfig_CALLBACK NULL
 #define NConfig_DEFAULT NULL
 
 #define NTileSet_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, MESSAGE,  Pos,               1) \
-X(a, STATIC,   REQUIRED, STRING,   ClassName,         2) \
-X(a, STATIC,   REQUIRED, STRING,   ClassAltName,      3) \
-X(a, STATIC,   REQUIRED, INT32,    RunLength,         4)
+X(a, STATIC,   OPTIONAL, MESSAGE,  Pos,               1) \
+X(a, STATIC,   SINGULAR, STRING,   ClassName,         2) \
+X(a, STATIC,   SINGULAR, STRING,   ClassAltName,      3) \
+X(a, STATIC,   SINGULAR, INT32,    RunLength,         4)
 #define NTileSet_CALLBACK NULL
 #define NTileSet_DEFAULT NULL
 #define NTileSet_Pos_MSGTYPE NVec2i
 
 #define NThingDamage_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   UID,               1) \
-X(a, STATIC,   REQUIRED, INT32,    Kind,              2) \
-X(a, STATIC,   REQUIRED, INT32,    SourceActorUID,    3) \
-X(a, STATIC,   REQUIRED, INT32,    Power,             4) \
-X(a, STATIC,   REQUIRED, MESSAGE,  Vel,               5) \
-X(a, STATIC,   REQUIRED, FLOAT,    Mass,              6) \
-X(a, STATIC,   REQUIRED, UINT32,   Flags,             7) \
-X(a, STATIC,   REQUIRED, INT32,    Special,           8)
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+X(a, STATIC,   SINGULAR, INT32,    Kind,              2) \
+X(a, STATIC,   SINGULAR, INT32,    SourceActorUID,    3) \
+X(a, STATIC,   SINGULAR, INT32,    Power,             4) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Vel,               5) \
+X(a, STATIC,   SINGULAR, FLOAT,    Mass,              6) \
+X(a, STATIC,   SINGULAR, UINT32,   Flags,             7) \
+X(a, STATIC,   SINGULAR, INT32,    Special,           8)
 #define NThingDamage_CALLBACK NULL
-#define NThingDamage_DEFAULT (const pb_byte_t*)"\x18\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x00"
+#define NThingDamage_DEFAULT NULL
 #define NThingDamage_Vel_MSGTYPE NVec2
 
 #define NMapObjectAdd_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   UID,               1) \
-X(a, STATIC,   REQUIRED, STRING,   MapObjectClass,    2) \
-X(a, STATIC,   REQUIRED, MESSAGE,  Pos,               3) \
-X(a, STATIC,   REQUIRED, UINT32,   ThingFlags,        4) \
-X(a, STATIC,   REQUIRED, INT32,    Health,            5) \
-X(a, STATIC,   REQUIRED, MESSAGE,  Mask,              6)
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+X(a, STATIC,   SINGULAR, STRING,   MapObjectClass,    2) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Pos,               3) \
+X(a, STATIC,   SINGULAR, UINT32,   ThingFlags,        4) \
+X(a, STATIC,   SINGULAR, INT32,    Health,            5) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Mask,              6)
 #define NMapObjectAdd_CALLBACK NULL
 #define NMapObjectAdd_DEFAULT NULL
 #define NMapObjectAdd_Pos_MSGTYPE NVec2
 #define NMapObjectAdd_Mask_MSGTYPE NColor
 
 #define NMapObjectRemove_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   UID,               1) \
-X(a, STATIC,   REQUIRED, INT32,    ActorUID,          2) \
-X(a, STATIC,   REQUIRED, UINT32,   Flags,             3)
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+X(a, STATIC,   SINGULAR, INT32,    ActorUID,          2) \
+X(a, STATIC,   SINGULAR, UINT32,   Flags,             3)
 #define NMapObjectRemove_CALLBACK NULL
 #define NMapObjectRemove_DEFAULT NULL
 
 #define NScore_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   PlayerUID,         1) \
-X(a, STATIC,   REQUIRED, INT32,    Score,             2)
+X(a, STATIC,   SINGULAR, UINT32,   PlayerUID,         1) \
+X(a, STATIC,   SINGULAR, INT32,    Score,             2)
 #define NScore_CALLBACK NULL
 #define NScore_DEFAULT NULL
 
 #define NSound_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, STRING,   Sound,             1) \
-X(a, STATIC,   REQUIRED, MESSAGE,  Pos,               2) \
-X(a, STATIC,   REQUIRED, BOOL,     IsHit,             3)
+X(a, STATIC,   SINGULAR, STRING,   Sound,             1) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Pos,               2) \
+X(a, STATIC,   SINGULAR, BOOL,     IsHit,             3)
 #define NSound_CALLBACK NULL
 #define NSound_DEFAULT NULL
 #define NSound_Pos_MSGTYPE NVec2
 
 #define NVec2i_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, INT32,    x,                 1) \
-X(a, STATIC,   REQUIRED, INT32,    y,                 2)
+X(a, STATIC,   SINGULAR, INT32,    x,                 1) \
+X(a, STATIC,   SINGULAR, INT32,    y,                 2)
 #define NVec2i_CALLBACK NULL
 #define NVec2i_DEFAULT NULL
 
 #define NVec2_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, FLOAT,    x,                 1) \
-X(a, STATIC,   REQUIRED, FLOAT,    y,                 2)
+X(a, STATIC,   SINGULAR, FLOAT,    x,                 1) \
+X(a, STATIC,   SINGULAR, FLOAT,    y,                 2)
 #define NVec2_CALLBACK NULL
 #define NVec2_DEFAULT NULL
 
 #define NGameBegin_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, INT32,    MissionTime,       1)
+X(a, STATIC,   SINGULAR, INT32,    MissionTime,       1)
 #define NGameBegin_CALLBACK NULL
 #define NGameBegin_DEFAULT NULL
 
 #define NActorAdd_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   UID,               1) \
-X(a, STATIC,   REQUIRED, UINT32,   CharId,            2) \
-X(a, STATIC,   REQUIRED, INT32,    Direction,         3) \
-X(a, STATIC,   REQUIRED, INT32,    Health,            4) \
-X(a, STATIC,   REQUIRED, INT32,    PlayerUID,         5) \
-X(a, STATIC,   REQUIRED, UINT32,   ThingFlags,        6) \
-X(a, STATIC,   REQUIRED, MESSAGE,  Pos,               7)
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+X(a, STATIC,   SINGULAR, UINT32,   CharId,            2) \
+X(a, STATIC,   SINGULAR, INT32,    Direction,         3) \
+X(a, STATIC,   SINGULAR, INT32,    Health,            4) \
+X(a, STATIC,   SINGULAR, INT32,    PlayerUID,         5) \
+X(a, STATIC,   SINGULAR, UINT32,   ThingFlags,        6) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Pos,               7) \
+X(a, STATIC,   REPEATED, MESSAGE,  Ammo,              8)
 #define NActorAdd_CALLBACK NULL
-#define NActorAdd_DEFAULT (const pb_byte_t*)"\x18\x04\x28\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x00"
+#define NActorAdd_DEFAULT NULL
 #define NActorAdd_Pos_MSGTYPE NVec2
+#define NActorAdd_Ammo_MSGTYPE NAmmo
 
 #define NActorMove_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   UID,               1) \
-X(a, STATIC,   REQUIRED, MESSAGE,  Pos,               2) \
-X(a, STATIC,   REQUIRED, MESSAGE,  MoveVel,           3)
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Pos,               2) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  MoveVel,           3)
 #define NActorMove_CALLBACK NULL
 #define NActorMove_DEFAULT NULL
 #define NActorMove_Pos_MSGTYPE NVec2
 #define NActorMove_MoveVel_MSGTYPE NVec2
 
 #define NActorState_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   UID,               1) \
-X(a, STATIC,   REQUIRED, INT32,    State,             2)
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+X(a, STATIC,   SINGULAR, INT32,    State,             2)
 #define NActorState_CALLBACK NULL
 #define NActorState_DEFAULT NULL
 
 #define NActorDir_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   UID,               1) \
-X(a, STATIC,   REQUIRED, INT32,    Dir,               2)
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+X(a, STATIC,   SINGULAR, INT32,    Dir,               2)
 #define NActorDir_CALLBACK NULL
 #define NActorDir_DEFAULT NULL
 
 #define NActorSlide_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   UID,               1) \
-X(a, STATIC,   REQUIRED, MESSAGE,  Vel,               2)
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Vel,               2)
 #define NActorSlide_CALLBACK NULL
 #define NActorSlide_DEFAULT NULL
 #define NActorSlide_Vel_MSGTYPE NVec2
 
 #define NActorImpulse_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   UID,               1) \
-X(a, STATIC,   REQUIRED, MESSAGE,  Vel,               2) \
-X(a, STATIC,   REQUIRED, MESSAGE,  Pos,               3)
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Vel,               2) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Pos,               3)
 #define NActorImpulse_CALLBACK NULL
 #define NActorImpulse_DEFAULT NULL
 #define NActorImpulse_Vel_MSGTYPE NVec2
 #define NActorImpulse_Pos_MSGTYPE NVec2
 
 #define NActorSwitchGun_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   UID,               1) \
-X(a, STATIC,   REQUIRED, UINT32,   GunIdx,            2)
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+X(a, STATIC,   SINGULAR, UINT32,   GunIdx,            2)
 #define NActorSwitchGun_CALLBACK NULL
 #define NActorSwitchGun_DEFAULT NULL
 
 #define NActorPickupAll_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   UID,               1) \
-X(a, STATIC,   REQUIRED, BOOL,     PickupAll,         2)
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+X(a, STATIC,   SINGULAR, BOOL,     PickupAll,         2)
 #define NActorPickupAll_CALLBACK NULL
 #define NActorPickupAll_DEFAULT NULL
 
 #define NActorReplaceGun_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   UID,               1) \
-X(a, STATIC,   REQUIRED, UINT32,   GunIdx,            2) \
-X(a, STATIC,   REQUIRED, STRING,   Gun,               3)
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+X(a, STATIC,   SINGULAR, UINT32,   GunIdx,            2) \
+X(a, STATIC,   SINGULAR, STRING,   Gun,               3)
 #define NActorReplaceGun_CALLBACK NULL
 #define NActorReplaceGun_DEFAULT NULL
 
 #define NActorHeal_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   UID,               1) \
-X(a, STATIC,   REQUIRED, INT32,    PlayerUID,         2) \
-X(a, STATIC,   REQUIRED, INT32,    Amount,            3) \
-X(a, STATIC,   REQUIRED, BOOL,     IsRandomSpawned,   4)
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+X(a, STATIC,   SINGULAR, INT32,    PlayerUID,         2) \
+X(a, STATIC,   SINGULAR, INT32,    Amount,            3) \
+X(a, STATIC,   SINGULAR, BOOL,     IsRandomSpawned,   4)
 #define NActorHeal_CALLBACK NULL
-#define NActorHeal_DEFAULT (const pb_byte_t*)"\x10\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x00"
+#define NActorHeal_DEFAULT NULL
+
+#define NAmmo_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, UINT32,   Id,                1) \
+X(a, STATIC,   SINGULAR, UINT32,   Amount,            2)
+#define NAmmo_CALLBACK NULL
+#define NAmmo_DEFAULT NULL
 
 #define NActorAddAmmo_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   UID,               1) \
-X(a, STATIC,   REQUIRED, INT32,    PlayerUID,         2) \
-X(a, STATIC,   REQUIRED, UINT32,   AmmoId,            3) \
-X(a, STATIC,   REQUIRED, UINT32,   Amount,            4) \
-X(a, STATIC,   REQUIRED, BOOL,     IsRandomSpawned,   5)
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+X(a, STATIC,   SINGULAR, INT32,    PlayerUID,         2) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Ammo,              3) \
+X(a, STATIC,   SINGULAR, BOOL,     IsRandomSpawned,   4)
 #define NActorAddAmmo_CALLBACK NULL
-#define NActorAddAmmo_DEFAULT (const pb_byte_t*)"\x10\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x00"
+#define NActorAddAmmo_DEFAULT NULL
+#define NActorAddAmmo_Ammo_MSGTYPE NAmmo
 
 #define NActorUseAmmo_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   UID,               1) \
-X(a, STATIC,   REQUIRED, INT32,    PlayerUID,         2) \
-X(a, STATIC,   REQUIRED, UINT32,   AmmoId,            3) \
-X(a, STATIC,   REQUIRED, UINT32,   Amount,            4)
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+X(a, STATIC,   SINGULAR, INT32,    PlayerUID,         2) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Ammo,              3)
 #define NActorUseAmmo_CALLBACK NULL
-#define NActorUseAmmo_DEFAULT (const pb_byte_t*)"\x10\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x00"
+#define NActorUseAmmo_DEFAULT NULL
+#define NActorUseAmmo_Ammo_MSGTYPE NAmmo
 
 #define NActorDie_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   UID,               1)
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1)
 #define NActorDie_CALLBACK NULL
 #define NActorDie_DEFAULT NULL
 
 #define NActorMelee_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   UID,               1) \
-X(a, STATIC,   REQUIRED, STRING,   BulletClass,       2) \
-X(a, STATIC,   REQUIRED, INT32,    HitType,           3) \
-X(a, STATIC,   REQUIRED, INT32,    TargetKind,        4) \
-X(a, STATIC,   REQUIRED, UINT32,   TargetUID,         5)
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+X(a, STATIC,   SINGULAR, STRING,   BulletClass,       2) \
+X(a, STATIC,   SINGULAR, INT32,    HitType,           3) \
+X(a, STATIC,   SINGULAR, INT32,    TargetKind,        4) \
+X(a, STATIC,   SINGULAR, UINT32,   TargetUID,         5)
 #define NActorMelee_CALLBACK NULL
 #define NActorMelee_DEFAULT NULL
 
 #define NAddPickup_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   UID,               1) \
-X(a, STATIC,   REQUIRED, STRING,   PickupClass,       2) \
-X(a, STATIC,   REQUIRED, BOOL,     IsRandomSpawned,   3) \
-X(a, STATIC,   REQUIRED, INT32,    SpawnerUID,        4) \
-X(a, STATIC,   REQUIRED, UINT32,   ThingFlags,        5) \
-X(a, STATIC,   REQUIRED, MESSAGE,  Pos,               6)
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+X(a, STATIC,   SINGULAR, STRING,   PickupClass,       2) \
+X(a, STATIC,   SINGULAR, BOOL,     IsRandomSpawned,   3) \
+X(a, STATIC,   SINGULAR, INT32,    SpawnerUID,        4) \
+X(a, STATIC,   SINGULAR, UINT32,   ThingFlags,        5) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Pos,               6)
 #define NAddPickup_CALLBACK NULL
-#define NAddPickup_DEFAULT (const pb_byte_t*)"\x20\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x00"
+#define NAddPickup_DEFAULT NULL
 #define NAddPickup_Pos_MSGTYPE NVec2
 
 #define NRemovePickup_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   UID,               1) \
-X(a, STATIC,   REQUIRED, INT32,    SpawnerUID,        2)
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+X(a, STATIC,   SINGULAR, INT32,    SpawnerUID,        2)
 #define NRemovePickup_CALLBACK NULL
-#define NRemovePickup_DEFAULT (const pb_byte_t*)"\x10\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x00"
+#define NRemovePickup_DEFAULT NULL
 
 #define NBulletBounce_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   UID,               1) \
-X(a, STATIC,   REQUIRED, INT32,    HitType,           2) \
-X(a, STATIC,   REQUIRED, BOOL,     Spark,             3) \
-X(a, STATIC,   REQUIRED, MESSAGE,  BouncePos,         4) \
-X(a, STATIC,   REQUIRED, MESSAGE,  Pos,               5) \
-X(a, STATIC,   REQUIRED, MESSAGE,  Vel,               6) \
-X(a, STATIC,   REQUIRED, BOOL,     HitSound,          7) \
-X(a, STATIC,   REQUIRED, BOOL,     WallMark,          8)
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+X(a, STATIC,   SINGULAR, INT32,    HitType,           2) \
+X(a, STATIC,   SINGULAR, BOOL,     Spark,             3) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  BouncePos,         4) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Pos,               5) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Vel,               6) \
+X(a, STATIC,   SINGULAR, BOOL,     HitSound,          7) \
+X(a, STATIC,   SINGULAR, BOOL,     WallMark,          8)
 #define NBulletBounce_CALLBACK NULL
 #define NBulletBounce_DEFAULT NULL
 #define NBulletBounce_BouncePos_MSGTYPE NVec2
@@ -891,54 +948,54 @@ X(a, STATIC,   REQUIRED, BOOL,     WallMark,          8)
 #define NBulletBounce_Vel_MSGTYPE NVec2
 
 #define NRemoveBullet_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   UID,               1)
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1)
 #define NRemoveBullet_CALLBACK NULL
 #define NRemoveBullet_DEFAULT NULL
 
 #define NGunReload_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, INT32,    PlayerUID,         1) \
-X(a, STATIC,   REQUIRED, STRING,   Gun,               2) \
-X(a, STATIC,   REQUIRED, MESSAGE,  Pos,               3) \
-X(a, STATIC,   REQUIRED, INT32,    Direction,         4)
+X(a, STATIC,   SINGULAR, INT32,    PlayerUID,         1) \
+X(a, STATIC,   SINGULAR, STRING,   Gun,               2) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Pos,               3) \
+X(a, STATIC,   SINGULAR, INT32,    Direction,         4)
 #define NGunReload_CALLBACK NULL
-#define NGunReload_DEFAULT (const pb_byte_t*)"\x08\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x00"
+#define NGunReload_DEFAULT NULL
 #define NGunReload_Pos_MSGTYPE NVec2
 
 #define NGunFire_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, INT32,    ActorUID,          1) \
-X(a, STATIC,   REQUIRED, STRING,   Gun,               2) \
-X(a, STATIC,   REQUIRED, MESSAGE,  MuzzlePos,         3) \
-X(a, STATIC,   REQUIRED, INT32,    Z,                 4) \
-X(a, STATIC,   REQUIRED, FLOAT,    Angle,             5) \
-X(a, STATIC,   REQUIRED, BOOL,     Sound,             6) \
-X(a, STATIC,   REQUIRED, UINT32,   Flags,             7) \
-X(a, STATIC,   REQUIRED, BOOL,     IsGun,             8)
+X(a, STATIC,   SINGULAR, INT32,    ActorUID,          1) \
+X(a, STATIC,   SINGULAR, STRING,   Gun,               2) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  MuzzlePos,         3) \
+X(a, STATIC,   SINGULAR, INT32,    Z,                 4) \
+X(a, STATIC,   SINGULAR, FLOAT,    Angle,             5) \
+X(a, STATIC,   SINGULAR, BOOL,     Sound,             6) \
+X(a, STATIC,   SINGULAR, UINT32,   Flags,             7) \
+X(a, STATIC,   SINGULAR, BOOL,     IsGun,             8)
 #define NGunFire_CALLBACK NULL
-#define NGunFire_DEFAULT (const pb_byte_t*)"\x08\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x00"
+#define NGunFire_DEFAULT NULL
 #define NGunFire_MuzzlePos_MSGTYPE NVec2
 
 #define NGunState_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   ActorUID,          1) \
-X(a, STATIC,   REQUIRED, INT32,    State,             2)
+X(a, STATIC,   SINGULAR, UINT32,   ActorUID,          1) \
+X(a, STATIC,   SINGULAR, INT32,    State,             2)
 #define NGunState_CALLBACK NULL
 #define NGunState_DEFAULT NULL
 
 #define NAddBullet_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   UID,               1) \
-X(a, STATIC,   REQUIRED, STRING,   BulletClass,       2) \
-X(a, STATIC,   REQUIRED, MESSAGE,  MuzzlePos,         3) \
-X(a, STATIC,   REQUIRED, INT32,    MuzzleHeight,      4) \
-X(a, STATIC,   REQUIRED, FLOAT,    Angle,             5) \
-X(a, STATIC,   REQUIRED, INT32,    Elevation,         6) \
-X(a, STATIC,   REQUIRED, UINT32,   Flags,             7) \
-X(a, STATIC,   REQUIRED, INT32,    ActorUID,          8)
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+X(a, STATIC,   SINGULAR, STRING,   BulletClass,       2) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  MuzzlePos,         3) \
+X(a, STATIC,   SINGULAR, INT32,    MuzzleHeight,      4) \
+X(a, STATIC,   SINGULAR, FLOAT,    Angle,             5) \
+X(a, STATIC,   SINGULAR, INT32,    Elevation,         6) \
+X(a, STATIC,   SINGULAR, UINT32,   Flags,             7) \
+X(a, STATIC,   SINGULAR, INT32,    ActorUID,          8)
 #define NAddBullet_CALLBACK NULL
-#define NAddBullet_DEFAULT (const pb_byte_t*)"\x40\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x00"
+#define NAddBullet_DEFAULT NULL
 #define NAddBullet_MuzzlePos_MSGTYPE NVec2
 
 #define NTrigger_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   ID,                1) \
-X(a, STATIC,   REQUIRED, MESSAGE,  Tile,              2)
+X(a, STATIC,   SINGULAR, UINT32,   ID,                1) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Tile,              2)
 #define NTrigger_CALLBACK NULL
 #define NTrigger_DEFAULT NULL
 #define NTrigger_Tile_MSGTYPE NVec2i
@@ -950,43 +1007,43 @@ X(a, STATIC,   REPEATED, MESSAGE,  Runs,              1)
 #define NExploreTiles_Runs_MSGTYPE NExploreTiles_Run
 
 #define NExploreTiles_Run_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, MESSAGE,  Tile,              1) \
-X(a, STATIC,   REQUIRED, INT32,    Run,               2)
+X(a, STATIC,   OPTIONAL, MESSAGE,  Tile,              1) \
+X(a, STATIC,   SINGULAR, INT32,    Run,               2)
 #define NExploreTiles_Run_CALLBACK NULL
 #define NExploreTiles_Run_DEFAULT NULL
 #define NExploreTiles_Run_Tile_MSGTYPE NVec2i
 
 #define NRescueCharacter_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   UID,               1)
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1)
 #define NRescueCharacter_CALLBACK NULL
 #define NRescueCharacter_DEFAULT NULL
 
 #define NObjectiveUpdate_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   ObjectiveId,       1) \
-X(a, STATIC,   REQUIRED, INT32,    Count,             2)
+X(a, STATIC,   SINGULAR, UINT32,   ObjectiveId,       1) \
+X(a, STATIC,   SINGULAR, INT32,    Count,             2)
 #define NObjectiveUpdate_CALLBACK NULL
 #define NObjectiveUpdate_DEFAULT NULL
 
 #define NAddKeys_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, UINT32,   KeyFlags,          1) \
-X(a, STATIC,   REQUIRED, MESSAGE,  Pos,               2)
+X(a, STATIC,   SINGULAR, UINT32,   KeyFlags,          1) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Pos,               2)
 #define NAddKeys_CALLBACK NULL
 #define NAddKeys_DEFAULT NULL
 #define NAddKeys_Pos_MSGTYPE NVec2
 
 #define NMissionComplete_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, BOOL,     ShowMsg,           1) \
-X(a, STATIC,   REQUIRED, MESSAGE,  ExitStart,         2) \
-X(a, STATIC,   REQUIRED, MESSAGE,  ExitEnd,           3)
+X(a, STATIC,   SINGULAR, BOOL,     ShowMsg,           1) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  ExitStart,         2) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  ExitEnd,           3)
 #define NMissionComplete_CALLBACK NULL
 #define NMissionComplete_DEFAULT NULL
 #define NMissionComplete_ExitStart_MSGTYPE NVec2i
 #define NMissionComplete_ExitEnd_MSGTYPE NVec2i
 
 #define NMissionEnd_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, INT32,    Delay,             1) \
-X(a, STATIC,   REQUIRED, BOOL,     IsQuit,            2) \
-X(a, STATIC,   REQUIRED, STRING,   Msg,               3)
+X(a, STATIC,   SINGULAR, INT32,    Delay,             1) \
+X(a, STATIC,   SINGULAR, BOOL,     IsQuit,            2) \
+X(a, STATIC,   SINGULAR, STRING,   Msg,               3)
 #define NMissionEnd_CALLBACK NULL
 #define NMissionEnd_DEFAULT NULL
 
@@ -1018,6 +1075,7 @@ extern const pb_msgdesc_t NActorSwitchGun_msg;
 extern const pb_msgdesc_t NActorPickupAll_msg;
 extern const pb_msgdesc_t NActorReplaceGun_msg;
 extern const pb_msgdesc_t NActorHeal_msg;
+extern const pb_msgdesc_t NAmmo_msg;
 extern const pb_msgdesc_t NActorAddAmmo_msg;
 extern const pb_msgdesc_t NActorUseAmmo_msg;
 extern const pb_msgdesc_t NActorDie_msg;
@@ -1068,6 +1126,7 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 #define NActorPickupAll_fields &NActorPickupAll_msg
 #define NActorReplaceGun_fields &NActorReplaceGun_msg
 #define NActorHeal_fields &NActorHeal_msg
+#define NAmmo_fields &NAmmo_msg
 #define NActorAddAmmo_fields &NActorAddAmmo_msg
 #define NActorUseAmmo_fields &NActorUseAmmo_msg
 #define NActorDie_fields &NActorDie_msg
@@ -1092,11 +1151,11 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 /* Maximum encoded size of messages (where known) */
 #define NServerInfo_size                         95
 #define NClientId_size                           12
-#define NCampaignDef_size                        4115
+#define NCampaignDef_size                        4117
 #define NColor_size                              11
 #define NCharColors_size                         65
 #define NPlayerStats_size                        44
-#define NPlayerData_size                         854
+#define NPlayerData_size                         2646
 #define NPlayerRemove_size                       6
 #define NConfig_size                             260
 #define NTileSet_size                            295
@@ -1108,7 +1167,7 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 #define NVec2i_size                              22
 #define NVec2_size                               10
 #define NGameBegin_size                          11
-#define NActorAdd_size                           63
+#define NActorAdd_size                           1855
 #define NActorMove_size                          30
 #define NActorState_size                         17
 #define NActorDir_size                           17
@@ -1118,8 +1177,9 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 #define NActorPickupAll_size                     8
 #define NActorReplaceGun_size                    142
 #define NActorHeal_size                          30
-#define NActorAddAmmo_size                       31
-#define NActorUseAmmo_size                       29
+#define NAmmo_size                               12
+#define NActorAddAmmo_size                       33
+#define NActorUseAmmo_size                       31
 #define NActorDie_size                           6
 #define NActorMelee_size                         164
 #define NAddPickup_size                          167

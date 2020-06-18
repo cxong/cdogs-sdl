@@ -1,29 +1,29 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2019 Cong Xu
-    All rights reserved.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (c) 2014-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "handle_game_events.h"
 
@@ -45,14 +45,10 @@
 #define RELOAD_DISTANCE_PLUS 200
 
 static void HandleGameEvent(
-	const GameEvent e,
-	Camera *camera,
-	PowerupSpawner *healthSpawner,
+	const GameEvent e, Camera *camera, PowerupSpawner *healthSpawner,
 	CArray *ammoSpawners);
 void HandleGameEvents(
-	CArray *store,
-	Camera *camera,
-	PowerupSpawner *healthSpawner,
+	CArray *store, Camera *camera, PowerupSpawner *healthSpawner,
 	CArray *ammoSpawners)
 {
 	for (int i = 0; i < (int)store->size; i++)
@@ -68,9 +64,7 @@ void HandleGameEvents(
 	GameEventsClear(store);
 }
 static void HandleGameEvent(
-	const GameEvent e,
-	Camera *camera,
-	PowerupSpawner *healthSpawner,
+	const GameEvent e, Camera *camera, PowerupSpawner *healthSpawner,
 	CArray *ammoSpawners)
 {
 	switch (e.Type)
@@ -86,26 +80,24 @@ static void HandleGameEvent(
 			camera->FollowNextPlayer = true;
 		}
 		break;
-	case GAME_EVENT_TILE_SET:
+	case GAME_EVENT_TILE_SET: {
+		struct vec2i pos = Net2Vec2i(e.u.TileSet.Pos);
+		const TileClass *tileClass = StrTileClass(e.u.TileSet.ClassName);
+		const TileClass *tileClassAlt = StrTileClass(e.u.TileSet.ClassAltName);
+		for (int i = 0; i <= e.u.TileSet.RunLength; i++)
 		{
-			struct vec2i pos = Net2Vec2i(e.u.TileSet.Pos);
-			const TileClass *tileClass = StrTileClass(e.u.TileSet.ClassName);
-			const TileClass *tileClassAlt =
-				StrTileClass(e.u.TileSet.ClassAltName);
-			for (int i = 0; i <= e.u.TileSet.RunLength; i++)
+			Tile *t = MapGetTile(&gMap, pos);
+			t->Class = tileClass;
+			t->ClassAlt = tileClassAlt;
+			pos.x++;
+			if (pos.x == gMap.Size.x)
 			{
-				Tile *t = MapGetTile(&gMap, pos);
-				t->Class = tileClass;
-				t->ClassAlt = tileClassAlt;
-				pos.x++;
-				if (pos.x == gMap.Size.x)
-				{
-					pos.x = 0;
-					pos.y++;
-				}
+				pos.x = 0;
+				pos.y++;
 			}
 		}
-		break;
+	}
+	break;
 	case GAME_EVENT_THING_DAMAGE:
 		ThingDamage(e.u.ThingDamage);
 		break;
@@ -115,8 +107,7 @@ static void HandleGameEvent(
 	case GAME_EVENT_MAP_OBJECT_REMOVE:
 		ObjRemove(e.u.MapObjectRemove);
 		break;
-	case GAME_EVENT_CONFIG:
-	{
+	case GAME_EVENT_CONFIG: {
 		// Temporarily set config
 		Config *c = ConfigGet(&gConfig, e.u.Config.Name);
 		switch (c->Type)
@@ -163,8 +154,8 @@ static void HandleGameEvent(
 		if (!e.u.SoundAt.IsHit || ConfigGetBool(&gConfig, "Sound.Hits"))
 		{
 			SoundPlayAt(
-				&gSoundDevice,
-				StrSound(e.u.SoundAt.Sound), NetToVec2(e.u.SoundAt.Pos));
+				&gSoundDevice, StrSound(e.u.SoundAt.Sound),
+				NetToVec2(e.u.SoundAt.Pos));
 		}
 		break;
 	case GAME_EVENT_SCREEN_SHAKE:
@@ -178,7 +169,7 @@ static void HandleGameEvent(
 			ConfigGetInt(&gConfig, "Graphics.ShakeMultiplier"));
 		// Weak rumble for all joysticks
 		CA_FOREACH(Joystick, j, gEventHandlers.joysticks)
-			JoyRumble(j->id, 0.3f, 500);
+		JoyRumble(j->id, 0.3f, 500);
 		CA_FOREACH_END()
 		break;
 	case GAME_EVENT_SET_MESSAGE:
@@ -198,170 +189,167 @@ static void HandleGameEvent(
 	case GAME_EVENT_ACTOR_MOVE:
 		ActorMove(e.u.ActorMove);
 		break;
-	case GAME_EVENT_ACTOR_STATE:
+	case GAME_EVENT_ACTOR_STATE: {
+		TActor *a = ActorGetByUID(e.u.ActorState.UID);
+		if (!a->isInUse)
+			break;
+		a->anim =
+			AnimationGetActorAnimation((ActorAnimation)e.u.ActorState.State);
+	}
+	break;
+	case GAME_EVENT_ACTOR_DIR: {
+		TActor *a = ActorGetByUID(e.u.ActorDir.UID);
+		if (!a->isInUse)
+			break;
+		a->direction = (direction_e)e.u.ActorDir.Dir;
+	}
+	break;
+	case GAME_EVENT_ACTOR_SLIDE: {
+		TActor *a = ActorGetByUID(e.u.ActorSlide.UID);
+		if (!a->isInUse)
+			break;
+		a->thing.Vel = NetToVec2(e.u.ActorSlide.Vel);
+		// Slide sound
+		if (ConfigGetBool(&gConfig, "Sound.Footsteps"))
 		{
-			TActor *a = ActorGetByUID(e.u.ActorState.UID);
-			if (!a->isInUse) break;
-			a->anim = AnimationGetActorAnimation(
-				(ActorAnimation)e.u.ActorState.State);
+			SoundPlayAt(&gSoundDevice, StrSound("slide"), a->thing.Pos);
 		}
-		break;
-	case GAME_EVENT_ACTOR_DIR:
+	}
+	break;
+	case GAME_EVENT_ACTOR_IMPULSE: {
+		TActor *a = ActorGetByUID(e.u.ActorImpulse.UID);
+		if (!a->isInUse)
+			break;
+		a->thing.Vel =
+			svec2_add(a->thing.Vel, NetToVec2(e.u.ActorImpulse.Vel));
+		const struct vec2 pos = NetToVec2(e.u.ActorImpulse.Pos);
+		if (!svec2_is_zero(pos))
 		{
-			TActor *a = ActorGetByUID(e.u.ActorDir.UID);
-			if (!a->isInUse) break;
-			a->direction = (direction_e)e.u.ActorDir.Dir;
+			a->Pos = pos;
 		}
-		break;
-	case GAME_EVENT_ACTOR_SLIDE:
-		{
-			TActor *a = ActorGetByUID(e.u.ActorSlide.UID);
-			if (!a->isInUse) break;
-			a->thing.Vel = NetToVec2(e.u.ActorSlide.Vel);
-			// Slide sound
-			if (ConfigGetBool(&gConfig, "Sound.Footsteps"))
-			{
-				SoundPlayAt(
-					&gSoundDevice, StrSound("slide"), a->thing.Pos);
-			}
-		}
-		break;
-	case GAME_EVENT_ACTOR_IMPULSE:
-		{
-			TActor *a = ActorGetByUID(e.u.ActorImpulse.UID);
-			if (!a->isInUse) break;
-			a->thing.Vel =
-				svec2_add(a->thing.Vel, NetToVec2(e.u.ActorImpulse.Vel));
-			const struct vec2 pos = NetToVec2(e.u.ActorImpulse.Pos);
-			if (!svec2_is_zero(pos))
-			{
-				a->Pos = pos;
-			}
-		}
-		break;
+	}
+	break;
 	case GAME_EVENT_ACTOR_SWITCH_GUN:
 		ActorSwitchGun(e.u.ActorSwitchGun);
 		break;
-	case GAME_EVENT_ACTOR_PICKUP_ALL:
-		{
-			TActor *a = ActorGetByUID(e.u.ActorPickupAll.UID);
-			if (!a->isInUse) break;
-			a->PickupAll = e.u.ActorPickupAll.PickupAll;
-		}
-		break;
+	case GAME_EVENT_ACTOR_PICKUP_ALL: {
+		TActor *a = ActorGetByUID(e.u.ActorPickupAll.UID);
+		if (!a->isInUse)
+			break;
+		a->PickupAll = e.u.ActorPickupAll.PickupAll;
+	}
+	break;
 	case GAME_EVENT_ACTOR_REPLACE_GUN:
 		ActorReplaceGun(e.u.ActorReplaceGun);
 		break;
-	case GAME_EVENT_ACTOR_HEAL:
+	case GAME_EVENT_ACTOR_HEAL: {
+		TActor *a = ActorGetByUID(e.u.Heal.UID);
+		if (!a->isInUse || a->dead)
+			break;
+		ActorHeal(a, e.u.Heal.Amount);
+		// Sound of healing
+		SoundPlayAt(&gSoundDevice, StrSound("health"), a->Pos);
+		// Tell the spawner that we took a health so we can
+		// spawn more (but only if we're the server)
+		if (e.u.Heal.IsRandomSpawned && !gCampaign.IsClient)
 		{
-			TActor *a = ActorGetByUID(e.u.Heal.UID);
-			if (!a->isInUse || a->dead) break;
-			ActorHeal(a, e.u.Heal.Amount);
-			// Sound of healing
-			SoundPlayAt(&gSoundDevice, StrSound("health"), a->Pos);
-			// Tell the spawner that we took a health so we can
-			// spawn more (but only if we're the server)
-			if (e.u.Heal.IsRandomSpawned && !gCampaign.IsClient)
+			PowerupSpawnerRemoveOne(healthSpawner);
+		}
+		if (e.u.Heal.PlayerUID >= 0)
+		{
+			GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+			s.u.AddParticle.Class =
+				StrParticleClass(&gParticleClasses, "heal_text");
+			s.u.AddParticle.Pos = a->Pos;
+			s.u.AddParticle.Z = BULLET_Z * Z_FACTOR;
+			s.u.AddParticle.DZ = 3;
+			sprintf(s.u.AddParticle.Text, "+%d", (int)e.u.Heal.Amount);
+			GameEventsEnqueue(&gGameEvents, s);
+		}
+	}
+	break;
+	case GAME_EVENT_ACTOR_ADD_AMMO: {
+		TActor *a = ActorGetByUID(e.u.AddAmmo.UID);
+		if (!a->isInUse || a->dead)
+			break;
+		ActorAddAmmo(a, e.u.AddAmmo.Ammo.Id, e.u.AddAmmo.Ammo.Amount);
+		// Tell the spawner that we took ammo so we can
+		// spawn more (but only if we're the server)
+		if (e.u.AddAmmo.IsRandomSpawned && !gCampaign.IsClient)
+		{
+			PowerupSpawnerRemoveOne(
+				CArrayGet(ammoSpawners, e.u.AddAmmo.Ammo.Id));
+		}
+		if (e.u.AddAmmo.PlayerUID >= 0)
+		{
+			GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+			s.u.AddParticle.Class =
+				StrParticleClass(&gParticleClasses, "ammo_text");
+			s.u.AddParticle.Pos = a->Pos;
+			s.u.AddParticle.Z = BULLET_Z * Z_FACTOR;
+			s.u.AddParticle.DZ = 10;
+			const Ammo *ammo = AmmoGetById(&gAmmo, e.u.AddAmmo.Ammo.Id);
+			sprintf(
+				s.u.AddParticle.Text, "+%d %s", (int)e.u.AddAmmo.Ammo.Amount,
+				ammo->Name);
+			GameEventsEnqueue(&gGameEvents, s);
+		}
+	}
+	break;
+	case GAME_EVENT_ACTOR_USE_AMMO: {
+		TActor *a = ActorGetByUID(e.u.UseAmmo.UID);
+		if (!a->isInUse || a->dead)
+			break;
+		const int ammoBefore = *(int *)CArrayGet(&a->ammo, e.u.UseAmmo.Ammo.Id);
+		const Ammo *ammo = AmmoGetById(&gAmmo, e.u.UseAmmo.Ammo.Id);
+		const bool wasAmmoLow = AmmoIsLow(ammo, ammoBefore);
+		ActorAddAmmo(a, e.u.UseAmmo.Ammo.Id, -(int)e.u.UseAmmo.Ammo.Amount);
+		const PlayerData *p = PlayerDataGetByUID(e.u.UseAmmo.PlayerUID);
+		if (p != NULL && p->IsLocal)
+		{
+			// Show low or no ammo notifications
+			const int ammoAfter =
+				*(int *)CArrayGet(&a->ammo, e.u.UseAmmo.Ammo.Id);
+			const bool isAmmoLow = AmmoIsLow(ammo, ammoAfter);
+			if (ammoAfter == 0)
 			{
-				PowerupSpawnerRemoveOne(healthSpawner);
+				// No ammo
+				SoundPlay(&gSoundDevice, StrSound("ammo_none"));
 			}
-			if (e.u.Heal.PlayerUID >= 0)
+			else if (!wasAmmoLow && isAmmoLow)
 			{
-				GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
-				s.u.AddParticle.Class =
-					StrParticleClass(&gParticleClasses, "heal_text");
-				s.u.AddParticle.Pos = a->Pos;
-				s.u.AddParticle.Z = BULLET_Z * Z_FACTOR;
-				s.u.AddParticle.DZ = 3;
-				sprintf(s.u.AddParticle.Text, "+%d", (int)e.u.Heal.Amount);
-				GameEventsEnqueue(&gGameEvents, s);
+				// Low ammo
+				SoundPlay(&gSoundDevice, StrSound("ammo_low"));
 			}
 		}
-		break;
-	case GAME_EVENT_ACTOR_ADD_AMMO:
-		{
-			TActor *a = ActorGetByUID(e.u.AddAmmo.UID);
-			if (!a->isInUse || a->dead) break;
-			ActorAddAmmo(a, e.u.AddAmmo.AmmoId, e.u.AddAmmo.Amount);
-			// Tell the spawner that we took ammo so we can
-			// spawn more (but only if we're the server)
-			if (e.u.AddAmmo.IsRandomSpawned && !gCampaign.IsClient)
-			{
-				PowerupSpawnerRemoveOne(
-					CArrayGet(ammoSpawners, e.u.AddAmmo.AmmoId));
-			}
-			if (e.u.AddAmmo.PlayerUID >= 0)
-			{
-				GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
-				s.u.AddParticle.Class =
-					StrParticleClass(&gParticleClasses, "ammo_text");
-				s.u.AddParticle.Pos = a->Pos;
-				s.u.AddParticle.Z = BULLET_Z * Z_FACTOR;
-				s.u.AddParticle.DZ = 10;
-				const Ammo *ammo = AmmoGetById(&gAmmo, e.u.AddAmmo.AmmoId);
-				sprintf(
-					s.u.AddParticle.Text, "+%d %s",
-					(int)e.u.AddAmmo.Amount, ammo->Name);
-				GameEventsEnqueue(&gGameEvents, s);
-			}
-		}
-		break;
-	case GAME_EVENT_ACTOR_USE_AMMO:
-		{
-			TActor *a = ActorGetByUID(e.u.UseAmmo.UID);
-			if (!a->isInUse || a->dead) break;
-			const int ammoBefore =
-				*(int *)CArrayGet(&a->ammo, e.u.UseAmmo.AmmoId);
-			const Ammo *ammo = AmmoGetById(&gAmmo, e.u.UseAmmo.AmmoId);
-			const bool wasAmmoLow = AmmoIsLow(ammo, ammoBefore);
-			ActorAddAmmo(a, e.u.UseAmmo.AmmoId, -(int)e.u.UseAmmo.Amount);
-			const PlayerData *p = PlayerDataGetByUID(e.u.UseAmmo.PlayerUID);
-			if (p != NULL && p->IsLocal)
-			{
-				// Show low or no ammo notifications
-				const int ammoAfter =
-					*(int *)CArrayGet(&a->ammo, e.u.UseAmmo.AmmoId);
-				const bool isAmmoLow = AmmoIsLow(ammo, ammoAfter);
-				if (ammoAfter == 0)
-				{
-					// No ammo
-					SoundPlay(&gSoundDevice, StrSound("ammo_none"));
-				}
-				else if (!wasAmmoLow && isAmmoLow)
-				{
-					// Low ammo
-					SoundPlay(&gSoundDevice, StrSound("ammo_low"));
-				}
-			}
-		}
-		break;
-	case GAME_EVENT_ACTOR_DIE:
-		{
-			TActor *a = ActorGetByUID(e.u.ActorDie.UID);
+	}
+	break;
+	case GAME_EVENT_ACTOR_DIE: {
+		TActor *a = ActorGetByUID(e.u.ActorDie.UID);
 
-			// Check if the player has lives to revive
-			PlayerData *p = PlayerDataGetByUID(a->PlayerUID);
-			if (p != NULL)
+		// Check if the player has lives to revive
+		PlayerData *p = PlayerDataGetByUID(a->PlayerUID);
+		if (p != NULL)
+		{
+			p->Lives--;
+			CASSERT(p->Lives >= 0, "Player has died too many times");
+			if (p->Lives > 0 && !gCampaign.IsClient)
 			{
-				p->Lives--;
-				CASSERT(p->Lives >= 0, "Player has died too many times");
-				if (p->Lives > 0 && !gCampaign.IsClient)
+				// Find the closest player alive; try to spawn next to that
+				// position if no other suitable position exists
+				struct vec2 defaultSpawnPosition = svec2_zero();
+				const TActor *closestActor = AIGetClosestPlayer(a->Pos);
+				if (closestActor != NULL)
 				{
-					// Find the closest player alive; try to spawn next to that position
-					// if no other suitable position exists
-					struct vec2 defaultSpawnPosition = svec2_zero();
-					const TActor *closestActor = AIGetClosestPlayer(a->Pos);
-					if (closestActor != NULL)
-					{
-						defaultSpawnPosition = closestActor->Pos;
-					}
-					PlacePlayer(&gMap, p, defaultSpawnPosition, false);
+					defaultSpawnPosition = closestActor->Pos;
 				}
+				PlacePlayer(&gMap, p, defaultSpawnPosition, false);
 			}
-
-			ActorDestroy(a);
 		}
-		break;
+
+		ActorDestroy(a);
+	}
+	break;
 	case GAME_EVENT_ACTOR_MELEE:
 		DamageMelee(e.u.Melee);
 		break;
@@ -369,8 +357,8 @@ static void HandleGameEvent(
 		PickupAdd(e.u.AddPickup);
 		// Play a spawn sound
 		SoundPlayAt(
-			&gSoundDevice,
-			StrSound("spawn_item"), NetToVec2(e.u.AddPickup.Pos));
+			&gSoundDevice, StrSound("spawn_item"),
+			NetToVec2(e.u.AddPickup.Pos));
 		break;
 	case GAME_EVENT_REMOVE_PICKUP:
 		PickupDestroy(e.u.RemovePickup.UID);
@@ -383,127 +371,117 @@ static void HandleGameEvent(
 	case GAME_EVENT_BULLET_BOUNCE:
 		BulletBounce(e.u.BulletBounce);
 		break;
-	case GAME_EVENT_REMOVE_BULLET:
-		{
-			TMobileObject *o = MobObjGetByUID(e.u.RemoveBullet.UID);
-			if (o == NULL || !o->isInUse) break;
-			BulletDestroy(o);
-		}
-		break;
+	case GAME_EVENT_REMOVE_BULLET: {
+		TMobileObject *o = MobObjGetByUID(e.u.RemoveBullet.UID);
+		if (o == NULL || !o->isInUse)
+			break;
+		BulletDestroy(o);
+	}
+	break;
 	case GAME_EVENT_PARTICLE_REMOVE:
 		ParticleDestroy(&gParticles, e.u.ParticleRemoveId);
 		break;
-	case GAME_EVENT_GUN_FIRE:
-		{
-			const WeaponClass *wc = StrWeaponClass(e.u.GunFire.Gun);
-			const struct vec2 pos = NetToVec2(e.u.GunFire.MuzzlePos);
+	case GAME_EVENT_GUN_FIRE: {
+		const WeaponClass *wc = StrWeaponClass(e.u.GunFire.Gun);
+		const struct vec2 pos = NetToVec2(e.u.GunFire.MuzzlePos);
 
-			// Add bullets
-			if (wc->Bullet && !gCampaign.IsClient)
+		// Add bullets
+		if (wc->Bullet && !gCampaign.IsClient)
+		{
+			// Find the starting angle of the spread (clockwise)
+			// Keep in mind the fencepost problem, i.e. spread of 3 means a
+			// total spread angle of 2x width
+			const float spreadStartAngle =
+				wc->AngleOffset -
+				(wc->Spread.Count - 1) * wc->Spread.Width / 2;
+			for (int i = 0; i < wc->Spread.Count; i++)
 			{
-				// Find the starting angle of the spread (clockwise)
-				// Keep in mind the fencepost problem, i.e. spread of 3 means a
-				// total spread angle of 2x width
-				const float spreadStartAngle =
-					wc->AngleOffset -
-					(wc->Spread.Count - 1) * wc->Spread.Width / 2;
-				for (int i = 0; i < wc->Spread.Count; i++)
-				{
-					const float recoil = RAND_FLOAT(-0.5f, 0.5f) * wc->Recoil;
-					const float finalAngle =
-						e.u.GunFire.Angle + spreadStartAngle +
-						i * wc->Spread.Width + recoil;
-					GameEvent ab = GameEventNew(GAME_EVENT_ADD_BULLET);
-					ab.u.AddBullet.UID = MobObjsObjsGetNextUID();
-					strcpy(ab.u.AddBullet.BulletClass, wc->Bullet->Name);
-					ab.u.AddBullet.MuzzlePos = Vec2ToNet(pos);
-					ab.u.AddBullet.MuzzleHeight = e.u.GunFire.Z;
-					ab.u.AddBullet.Angle = finalAngle;
-					ab.u.AddBullet.Elevation =
-						RAND_INT(wc->ElevationLow, wc->ElevationHigh);
-					ab.u.AddBullet.Flags = e.u.GunFire.Flags;
-					ab.u.AddBullet.ActorUID = e.u.GunFire.ActorUID;
-					GameEventsEnqueue(&gGameEvents, ab);
-				}
+				const float recoil = RAND_FLOAT(-0.5f, 0.5f) * wc->Recoil;
+				const float finalAngle = e.u.GunFire.Angle + spreadStartAngle +
+										 i * wc->Spread.Width + recoil;
+				GameEvent ab = GameEventNew(GAME_EVENT_ADD_BULLET);
+				ab.u.AddBullet.UID = MobObjsObjsGetNextUID();
+				strcpy(ab.u.AddBullet.BulletClass, wc->Bullet->Name);
+				ab.u.AddBullet.MuzzlePos = Vec2ToNet(pos);
+				ab.u.AddBullet.MuzzleHeight = e.u.GunFire.Z;
+				ab.u.AddBullet.Angle = finalAngle;
+				ab.u.AddBullet.Elevation =
+					RAND_INT(wc->ElevationLow, wc->ElevationHigh);
+				ab.u.AddBullet.Flags = e.u.GunFire.Flags;
+				ab.u.AddBullet.ActorUID = e.u.GunFire.ActorUID;
+				GameEventsEnqueue(&gGameEvents, ab);
 			}
+		}
 
-			// Add muzzle flash
-			if (WeaponClassHasMuzzle(wc) && wc->MuzzleFlash != NULL)
-			{
-				GameEvent ap = GameEventNew(GAME_EVENT_ADD_PARTICLE);
-				ap.u.AddParticle.Class = wc->MuzzleFlash;
-				ap.u.AddParticle.Pos = pos;
-				ap.u.AddParticle.Z = (float)e.u.GunFire.Z;
-				ap.u.AddParticle.Angle = e.u.GunFire.Angle;
-				GameEventsEnqueue(&gGameEvents, ap);
-			}
-			// Sound
-			if (e.u.GunFire.Sound && wc->Sound)
-			{
-				SoundPlayAt(&gSoundDevice, wc->Sound, pos);
-			}
-			// Screen shake
-			if (wc->Shake.Amount > 0)
-			{
-				GameEvent s = GameEventNew(GAME_EVENT_SCREEN_SHAKE);
-				s.u.Shake.Amount = wc->Shake.Amount;
-				s.u.Shake.CameraSubjectOnly = wc->Shake.CameraSubjectOnly;
-				s.u.Shake.ActorUID = e.u.GunFire.ActorUID;
-				GameEventsEnqueue(&gGameEvents, s);
-			}
-			// Brass shells
-			// If we have a reload lead, defer the creation of shells until then
-			if (wc->Brass && wc->ReloadLead == 0)
-			{
-				const direction_e d = RadiansToDirection(e.u.GunFire.Angle);
-				WeaponClassAddBrass(wc, d, pos);
-			}
-		}
-		break;
-	case GAME_EVENT_GUN_RELOAD:
+		// Add muzzle flash
+		if (WeaponClassHasMuzzle(wc) && wc->MuzzleFlash != NULL)
 		{
-			const WeaponClass *wc = StrWeaponClass(e.u.GunReload.Gun);
-			const struct vec2 pos = NetToVec2(e.u.GunReload.Pos);
-			SoundPlayAtPlusDistance(
-				&gSoundDevice,
-				wc->ReloadSound,
-				pos,
-				RELOAD_DISTANCE_PLUS);
-			// Brass shells
-			if (wc->Brass)
-			{
-				WeaponClassAddBrass(
-					wc, (direction_e)e.u.GunReload.Direction, pos);
-			}
+			GameEvent ap = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+			ap.u.AddParticle.Class = wc->MuzzleFlash;
+			ap.u.AddParticle.Pos = pos;
+			ap.u.AddParticle.Z = (float)e.u.GunFire.Z;
+			ap.u.AddParticle.Angle = e.u.GunFire.Angle;
+			GameEventsEnqueue(&gGameEvents, ap);
 		}
-		break;
-	case GAME_EVENT_GUN_STATE:
+		// Sound
+		if (e.u.GunFire.Sound && wc->Sound)
 		{
-			TActor *a = ActorGetByUID(e.u.GunState.ActorUID);
-			if (!a->isInUse) break;
-			WeaponSetState(
-				ACTOR_GET_WEAPON(a), (gunstate_e)e.u.GunState.State);
+			SoundPlayAt(&gSoundDevice, wc->Sound, pos);
 		}
-		break;
+		// Screen shake
+		if (wc->Shake.Amount > 0)
+		{
+			GameEvent s = GameEventNew(GAME_EVENT_SCREEN_SHAKE);
+			s.u.Shake.Amount = wc->Shake.Amount;
+			s.u.Shake.CameraSubjectOnly = wc->Shake.CameraSubjectOnly;
+			s.u.Shake.ActorUID = e.u.GunFire.ActorUID;
+			GameEventsEnqueue(&gGameEvents, s);
+		}
+		// Brass shells
+		// If we have a reload lead, defer the creation of shells until then
+		if (wc->Brass && wc->ReloadLead == 0)
+		{
+			const direction_e d = RadiansToDirection(e.u.GunFire.Angle);
+			WeaponClassAddBrass(wc, d, pos);
+		}
+	}
+	break;
+	case GAME_EVENT_GUN_RELOAD: {
+		const WeaponClass *wc = StrWeaponClass(e.u.GunReload.Gun);
+		const struct vec2 pos = NetToVec2(e.u.GunReload.Pos);
+		SoundPlayAtPlusDistance(
+			&gSoundDevice, wc->ReloadSound, pos, RELOAD_DISTANCE_PLUS);
+		// Brass shells
+		if (wc->Brass)
+		{
+			WeaponClassAddBrass(wc, (direction_e)e.u.GunReload.Direction, pos);
+		}
+	}
+	break;
+	case GAME_EVENT_GUN_STATE: {
+		TActor *a = ActorGetByUID(e.u.GunState.ActorUID);
+		if (!a->isInUse)
+			break;
+		WeaponSetState(ACTOR_GET_WEAPON(a), (gunstate_e)e.u.GunState.State);
+	}
+	break;
 	case GAME_EVENT_ADD_BULLET:
 		BulletAdd(e.u.AddBullet);
 		break;
 	case GAME_EVENT_ADD_PARTICLE:
 		ParticleAdd(&gParticles, e.u.AddParticle);
 		break;
-	case GAME_EVENT_TRIGGER:
+	case GAME_EVENT_TRIGGER: {
+		const Tile *t = MapGetTile(&gMap, Net2Vec2i(e.u.TriggerEvent.Tile));
+		CA_FOREACH(Trigger *, tp, t->triggers)
+		if ((*tp)->id == (int)e.u.TriggerEvent.ID)
 		{
-			const Tile *t =
-				MapGetTile(&gMap, Net2Vec2i(e.u.TriggerEvent.Tile));
-			CA_FOREACH(Trigger *, tp, t->triggers)
-				if ((*tp)->id == (int)e.u.TriggerEvent.ID)
-				{
-					TriggerActivate(*tp, &gMap.triggers);
-					break;
-				}
-			CA_FOREACH_END()
+			TriggerActivate(*tp, &gMap.triggers);
+			break;
 		}
-		break;
+		CA_FOREACH_END()
+	}
+	break;
 	case GAME_EVENT_EXPLORE_TILES:
 		// Process runs of explored tiles
 		for (int i = 0; i < (int)e.u.ExploreTiles.Runs_count; i++)
@@ -521,61 +499,58 @@ static void HandleGameEvent(
 			}
 		}
 		break;
-	case GAME_EVENT_RESCUE_CHARACTER:
+	case GAME_EVENT_RESCUE_CHARACTER: {
+		TActor *a = ActorGetByUID(e.u.Rescue.UID);
+		if (!a->isInUse)
+			break;
+		a->flags &= ~FLAGS_PRISONER;
+		// If the actor isn't a follower, make them automatically run
+		// towards the exit
+		if (!(a->flags & FLAGS_FOLLOWER))
 		{
-			TActor *a = ActorGetByUID(e.u.Rescue.UID);
-			if (!a->isInUse) break;
-			a->flags &= ~FLAGS_PRISONER;
-			// If the actor isn't a follower, make them automatically run
-			// towards the exit
-			if (!(a->flags & FLAGS_FOLLOWER))
-			{
-				a->flags |= FLAGS_RESCUED;
-			}
-			SoundPlayAt(&gSoundDevice, StrSound("rescue"), a->Pos);
+			a->flags |= FLAGS_RESCUED;
 		}
-		break;
-	case GAME_EVENT_OBJECTIVE_UPDATE:
+		SoundPlayAt(&gSoundDevice, StrSound("rescue"), a->Pos);
+	}
+	break;
+	case GAME_EVENT_OBJECTIVE_UPDATE: {
+		Objective *o = CArrayGet(
+			&gMission.missionData->Objectives,
+			e.u.ObjectiveUpdate.ObjectiveId);
+		o->done += e.u.ObjectiveUpdate.Count;
+		// Display a text update effect for the objective
+		if (camera != NULL)
 		{
-			Objective *o = CArrayGet(
-				&gMission.missionData->Objectives,
-				e.u.ObjectiveUpdate.ObjectiveId);
-			o->done += e.u.ObjectiveUpdate.Count;
-			// Display a text update effect for the objective
-			if (camera != NULL)
-			{
-				HUDNumPopupsAdd(
-					&camera->HUD.numPopups, NUMBER_POPUP_OBJECTIVE,
-					e.u.ObjectiveUpdate.ObjectiveId,
-					e.u.ObjectiveUpdate.Count);
-			}
-			MissionSetMessageIfComplete(&gMission);
+			HUDNumPopupsAdd(
+				&camera->HUD.numPopups, NUMBER_POPUP_OBJECTIVE,
+				e.u.ObjectiveUpdate.ObjectiveId, e.u.ObjectiveUpdate.Count);
 		}
-		break;
-	case GAME_EVENT_ADD_KEYS:
+		MissionSetMessageIfComplete(&gMission);
+	}
+	break;
+	case GAME_EVENT_ADD_KEYS: {
+		gMission.KeyFlags |= e.u.AddKeys.KeyFlags;
+
+		const struct vec2 pos = NetToVec2(e.u.AddKeys.Pos);
+
+		if (!svec2_is_zero(pos))
 		{
-			gMission.KeyFlags |= e.u.AddKeys.KeyFlags;
+			SoundPlayAt(&gSoundDevice, StrSound("key"), pos);
 
-			const struct vec2 pos = NetToVec2(e.u.AddKeys.Pos);
-
-			if (!svec2_is_zero(pos))
-			{
-				SoundPlayAt(&gSoundDevice, StrSound("key"), pos);
-
-				GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
-				s.u.AddParticle.Class =
-					StrParticleClass(&gParticleClasses, "key_text");
-				s.u.AddParticle.Pos = pos;
-				s.u.AddParticle.Z = BULLET_Z * Z_FACTOR;
-				s.u.AddParticle.DZ = 10;
-				sprintf(s.u.AddParticle.Text, "+key");
-				GameEventsEnqueue(&gGameEvents, s);
-			}
-
-			// Clear cache since we may now have new paths
-			PathCacheClear(&gPathCache);
+			GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+			s.u.AddParticle.Class =
+				StrParticleClass(&gParticleClasses, "key_text");
+			s.u.AddParticle.Pos = pos;
+			s.u.AddParticle.Z = BULLET_Z * Z_FACTOR;
+			s.u.AddParticle.DZ = 10;
+			sprintf(s.u.AddParticle.Text, "+key");
+			GameEventsEnqueue(&gGameEvents, s);
 		}
-		break;
+
+		// Clear cache since we may now have new paths
+		PathCacheClear(&gPathCache);
+	}
+	break;
 	case GAME_EVENT_MISSION_COMPLETE:
 		if (e.u.MissionComplete.ShowMsg)
 		{
@@ -597,8 +572,7 @@ static void HandleGameEvent(
 				camera->HUD.showExit = true;
 			}
 			MapShowExitArea(
-				&gMap,
-				Net2Vec2i(e.u.MissionComplete.ExitStart),
+				&gMap, Net2Vec2i(e.u.MissionComplete.ExitStart),
 				Net2Vec2i(e.u.MissionComplete.ExitEnd));
 		}
 		break;

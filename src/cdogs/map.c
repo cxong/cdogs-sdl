@@ -314,8 +314,6 @@ void MapPlaceCollectible(
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
 	e.u.AddPickup.UID = PickupsGetNextUID();
 	strcpy(e.u.AddPickup.PickupClass, o->u.Pickup->Name);
-	e.u.AddPickup.IsRandomSpawned = false;
-	e.u.AddPickup.SpawnerUID = -1;
 	e.u.AddPickup.ThingFlags = ObjectiveToThing(objective);
 	e.u.AddPickup.Pos = Vec2ToNet(pos);
 	GameEventsEnqueue(&gGameEvents, e);
@@ -342,9 +340,6 @@ void MapPlaceKey(
 	strcpy(
 		e.u.AddPickup.PickupClass,
 		KeyPickupClass(mb->mission->KeyStyle, keyIndex)->Name);
-	e.u.AddPickup.IsRandomSpawned = false;
-	e.u.AddPickup.SpawnerUID = -1;
-	e.u.AddPickup.ThingFlags = 0;
 	e.u.AddPickup.Pos = Vec2ToNet(Vec2CenterOfTile(tilePos));
 	GameEventsEnqueue(&gGameEvents, e);
 }

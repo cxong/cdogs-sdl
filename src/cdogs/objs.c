@@ -180,8 +180,6 @@ static void AddPickupAtObject(const TObject *o, const PickupType type)
 	e.u.AddPickup.UID = PickupsGetNextUID();
 	e.u.AddPickup.Pos = Vec2ToNet(o->thing.Pos);
 	e.u.AddPickup.IsRandomSpawned = true;
-	e.u.AddPickup.SpawnerUID = -1;
-	e.u.AddPickup.ThingFlags = 0;
 	GameEventsEnqueue(&gGameEvents, e);
 }
 
@@ -232,11 +230,6 @@ void ObjRemove(const NMapObjectRemove mor)
 		e.u.AddBullet.UID = MobObjsObjsGetNextUID();
 		strcpy(e.u.AddBullet.BulletClass, "fireball_wreck");
 		e.u.AddBullet.MuzzlePos = Vec2ToNet(o->thing.Pos);
-		e.u.AddBullet.MuzzleHeight = 0;
-		e.u.AddBullet.Angle = 0;
-		e.u.AddBullet.Elevation = 0;
-		e.u.AddBullet.Flags = 0;
-		e.u.AddBullet.ActorUID = -1;
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 
@@ -561,9 +554,7 @@ void UpdateObjects(const int ticks)
 			GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
 			e.u.AddPickup.UID = PickupsGetNextUID();
 			strcpy(e.u.AddPickup.PickupClass, obj->Class->u.PickupClass->Name);
-			e.u.AddPickup.IsRandomSpawned = false;
 			e.u.AddPickup.SpawnerUID = obj->uid;
-			e.u.AddPickup.ThingFlags = 0;
 			e.u.AddPickup.Pos = Vec2ToNet(obj->thing.Pos);
 			GameEventsEnqueue(&gGameEvents, e);
 		}

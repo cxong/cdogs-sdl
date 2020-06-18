@@ -143,18 +143,14 @@ static void AddCharacters(const CArray *characters)
 }
 static void AddCharacter(const CharacterPositions *cp)
 {
-	NActorAdd aa = NActorAdd_init_default;
-	aa.CharId = cp->Index;
-	const Character *c =
-		CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
-	aa.Health = CharacterGetStartingHealth(c, true);
-	CA_FOREACH(const struct vec2i, pos, cp->Positions)
-	aa.UID = ActorsGetNextUID();
-	aa.Direction = rand() % DIRECTION_COUNT;
-	aa.Pos = Vec2ToNet(Vec2CenterOfTile(*pos));
-
 	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-	e.u.ActorAdd = aa;
+	e.u.ActorAdd.CharId = cp->Index;
+	const Character *c = CArrayGet(
+		&gCampaign.Setting.characters.OtherChars, e.u.ActorAdd.CharId);
+	e.u.ActorAdd.Health = CharacterGetStartingHealth(c, true);
+	CA_FOREACH(const struct vec2i, pos, cp->Positions)
+	e.u.ActorAdd.UID = ActorsGetNextUID();
+	e.u.ActorAdd.Pos = Vec2ToNet(Vec2CenterOfTile(*pos));
 	GameEventsEnqueue(&gGameEvents, e);
 	CA_FOREACH_END()
 }
@@ -185,18 +181,15 @@ static void AddObjective(MapBuilder *mb, const ObjectivePositions *op)
 	switch (o->Type)
 	{
 	case OBJECTIVE_KILL: {
-		NActorAdd aa = NActorAdd_init_default;
-		aa.UID = ActorsGetNextUID();
-		aa.CharId =
-			CharacterStoreGetSpecialId(&mb->co->Setting.characters, pi->Index);
-		aa.ThingFlags = ObjectiveToThing(op->Index);
-		aa.Direction = rand() % DIRECTION_COUNT;
-		const Character *c =
-			CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
-		aa.Health = CharacterGetStartingHealth(c, true);
-		aa.Pos = Vec2ToNet(pos);
 		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-		e.u.ActorAdd = aa;
+		e.u.ActorAdd.UID = ActorsGetNextUID();
+		e.u.ActorAdd.CharId =
+			CharacterStoreGetSpecialId(&mb->co->Setting.characters, pi->Index);
+		e.u.ActorAdd.ThingFlags = ObjectiveToThing(op->Index);
+		const Character *c = CArrayGet(
+			&gCampaign.Setting.characters.OtherChars, e.u.ActorAdd.CharId);
+		e.u.ActorAdd.Health = CharacterGetStartingHealth(c, true);
+		e.u.ActorAdd.Pos = Vec2ToNet(pos);
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 	break;
@@ -208,18 +201,15 @@ static void AddObjective(MapBuilder *mb, const ObjectivePositions *op)
 			mb, pi->Position, o->u.MapObject, ObjectiveToThing(op->Index), false);
 		break;
 	case OBJECTIVE_RESCUE: {
-		NActorAdd aa = NActorAdd_init_default;
-		aa.UID = ActorsGetNextUID();
-		aa.CharId =
-			CharacterStoreGetPrisonerId(&mb->co->Setting.characters, pi->Index);
-		aa.ThingFlags = ObjectiveToThing(op->Index);
-		aa.Direction = rand() % DIRECTION_COUNT;
-		const Character *c =
-			CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
-		aa.Health = CharacterGetStartingHealth(c, true);
-		aa.Pos = Vec2ToNet(pos);
 		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-		e.u.ActorAdd = aa;
+		e.u.ActorAdd.UID = ActorsGetNextUID();
+		e.u.ActorAdd.CharId =
+			CharacterStoreGetPrisonerId(&mb->co->Setting.characters, pi->Index);
+		e.u.ActorAdd.ThingFlags = ObjectiveToThing(op->Index);
+		const Character *c = CArrayGet(
+			&gCampaign.Setting.characters.OtherChars, e.u.ActorAdd.CharId);
+		e.u.ActorAdd.Health = CharacterGetStartingHealth(c, true);
+		e.u.ActorAdd.Pos = Vec2ToNet(pos);
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 	break;

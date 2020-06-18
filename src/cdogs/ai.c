@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, 2016-2017 Cong Xu
+    Copyright (c) 2013-2014, 2016-2017, 2020 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -532,17 +532,15 @@ void AIAddRandomEnemies(const int enemies, const Mission *m)
 	if (m->Enemies.size > 0 && m->EnemyDensity > 0 &&
 		enemies < MAX(1, (m->EnemyDensity * ConfigGetInt(&gConfig, "Game.EnemyDensity")) / 100))
 	{
-		NActorAdd aa = NActorAdd_init_default;
-		aa.UID = ActorsGetNextUID();
-		aa.CharId = CharacterStoreGetRandomBaddieId(
-			&gCampaign.Setting.characters);
-		aa.Direction = rand() % DIRECTION_COUNT;
-		const Character *c =
-			CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
-		aa.Health = CharacterGetStartingHealth(c, true);
-		aa.Pos = PlaceAwayFromPlayers(&gMap, true, PLACEMENT_ACCESS_ANY);
 		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-		e.u.ActorAdd = aa;
+		e.u.ActorAdd.UID = ActorsGetNextUID();
+		e.u.ActorAdd.CharId =
+			CharacterStoreGetRandomBaddieId(&gCampaign.Setting.characters);
+		const Character *c = CArrayGet(
+			&gCampaign.Setting.characters.OtherChars, e.u.ActorAdd.CharId);
+		e.u.ActorAdd.Health = CharacterGetStartingHealth(c, true);
+		e.u.ActorAdd.Pos =
+			PlaceAwayFromPlayers(&gMap, true, PLACEMENT_ACCESS_ANY);
 		GameEventsEnqueue(&gGameEvents, e);
 		gBaddieCount++;
 	}
@@ -558,18 +556,16 @@ void InitializeBadGuys(void)
 		{
 			for (; o->placed < o->Count; o->placed++)
 			{
-				NActorAdd aa = NActorAdd_init_default;
-				aa.UID = ActorsGetNextUID();
-				aa.CharId = CharacterStoreGetRandomSpecialId(
-					&gCampaign.Setting.characters);
-				aa.ThingFlags = ObjectiveToThing(_ca_index);
-				aa.Direction = rand() % DIRECTION_COUNT;
-				const Character *c =
-					CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
-				aa.Health = CharacterGetStartingHealth(c, true);
-				aa.Pos = PlaceAwayFromPlayers(&gMap, false, paFlags);
 				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-				e.u.ActorAdd = aa;
+				e.u.ActorAdd.UID = ActorsGetNextUID();
+				e.u.ActorAdd.CharId = CharacterStoreGetRandomSpecialId(
+					&gCampaign.Setting.characters);
+				e.u.ActorAdd.ThingFlags = ObjectiveToThing(_ca_index);
+				const Character *c = CArrayGet(
+					&gCampaign.Setting.characters.OtherChars,
+					e.u.ActorAdd.CharId);
+				e.u.ActorAdd.Health = CharacterGetStartingHealth(c, true);
+				e.u.ActorAdd.Pos = PlaceAwayFromPlayers(&gMap, false, paFlags);
 				GameEventsEnqueue(&gGameEvents, e);
 
 				// Process the events that actually place the actors
@@ -580,25 +576,24 @@ void InitializeBadGuys(void)
 		{
 			for (; o->placed < o->Count; o->placed++)
 			{
-				NActorAdd aa = NActorAdd_init_default;
-				aa.UID = ActorsGetNextUID();
-				aa.CharId = CharacterStoreGetPrisonerId(
+				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
+				e.u.ActorAdd.UID = ActorsGetNextUID();
+				e.u.ActorAdd.CharId = CharacterStoreGetPrisonerId(
 					&gCampaign.Setting.characters, 0);
-				aa.ThingFlags = ObjectiveToThing(_ca_index);
-				aa.Direction = rand() % DIRECTION_COUNT;
-				const Character *c =
-					CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
-				aa.Health = CharacterGetStartingHealth(c, true);
+				e.u.ActorAdd.ThingFlags = ObjectiveToThing(_ca_index);
+				const Character *c = CArrayGet(
+					&gCampaign.Setting.characters.OtherChars,
+					e.u.ActorAdd.CharId);
+				e.u.ActorAdd.Health = CharacterGetStartingHealth(c, true);
 				if (MapHasLockedRooms(&gMap))
 				{
-					aa.Pos = PlacePrisoner(&gMap);
+					e.u.ActorAdd.Pos = PlacePrisoner(&gMap);
 				}
 				else
 				{
-					aa.Pos = PlaceAwayFromPlayers(&gMap, false, paFlags);
+					e.u.ActorAdd.Pos =
+						PlaceAwayFromPlayers(&gMap, false, paFlags);
 				}
-				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-				e.u.ActorAdd = aa;
 				GameEventsEnqueue(&gGameEvents, e);
 
 				// Process the events that actually place the actors
@@ -623,17 +618,16 @@ void CreateEnemies(void)
 		ConfigGetInt(&gConfig, "Game.EnemyDensity");
 	for (int i = 0; i < density / 100; i++)
 	{
-		NActorAdd aa = NActorAdd_init_default;
-		aa.UID = ActorsGetNextUID();
-		aa.CharId = CharacterStoreGetRandomBaddieId(
-			&gCampaign.Setting.characters);
-		aa.Pos = PlaceAwayFromPlayers(&gMap, true, PLACEMENT_ACCESS_ANY);
-		aa.Direction = rand() % DIRECTION_COUNT;
-		const Character *c =
-			CArrayGet(&gCampaign.Setting.characters.OtherChars, aa.CharId);
-		aa.Health = CharacterGetStartingHealth(c, true);
 		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-		e.u.ActorAdd = aa;
+		e.u.ActorAdd.UID = ActorsGetNextUID();
+		e.u.ActorAdd.CharId =
+			CharacterStoreGetRandomBaddieId(
+			&gCampaign.Setting.characters);
+		e.u.ActorAdd.Pos =
+			PlaceAwayFromPlayers(&gMap, true, PLACEMENT_ACCESS_ANY);
+		const Character *c = CArrayGet(
+			&gCampaign.Setting.characters.OtherChars, e.u.ActorAdd.CharId);
+		e.u.ActorAdd.Health = CharacterGetStartingHealth(c, true);
 		GameEventsEnqueue(&gGameEvents, e);
 		gBaddieCount++;
 

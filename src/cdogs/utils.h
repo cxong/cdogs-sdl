@@ -197,12 +197,6 @@ int Stricmp(const char *a, const char *b);
 #define RAND_DOUBLE(_low, _high)                                              \
 	((_low) + ((double)rand() / RAND_MAX * ((_high) - (_low))))
 
-typedef struct
-{
-	int Id;
-	int Amount;
-} AddAmmo;
-
 typedef enum
 {
 	BODY_PART_HEAD,

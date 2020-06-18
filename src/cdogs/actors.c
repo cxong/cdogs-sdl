@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2019 Cong Xu
+	Copyright (c) 2013-2020 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -255,9 +255,9 @@ bool TryMoveActor(TActor *actor, struct vec2 pos)
 	if ((!gCampaign.IsClient && actor->PlayerUID < 0) ||
 		ActorIsLocalPlayer(actor->uid))
 	{
-		const CollisionParams params = {THING_IMPASSABLE,
-										CalcCollisionTeam(true, actor),
-										IsPVP(gCampaign.Entry.Mode)};
+		const CollisionParams params = {
+			THING_IMPASSABLE, CalcCollisionTeam(true, actor),
+			IsPVP(gCampaign.Entry.Mode)};
 		Thing *target =
 			OverlapGetFirstItem(&actor->thing, pos, actor->thing.size, params);
 		if (target)
@@ -495,8 +495,8 @@ static void CheckPickups(TActor *actor)
 	{
 		return;
 	}
-	const CollisionParams params = {0, CalcCollisionTeam(true, actor),
-									IsPVP(gCampaign.Entry.Mode)};
+	const CollisionParams params = {
+		0, CalcCollisionTeam(true, actor), IsPVP(gCampaign.Entry.Mode)};
 	OverlapThings(
 		&actor->thing, actor->Pos, actor->thing.size, params, CheckPickupFunc,
 		actor, NULL, NULL, NULL);
@@ -524,9 +524,9 @@ static void CheckRescue(const TActor *a)
 		// Check an area slightly bigger than the actor's size for rescue
 		// objectives
 #define RESCUE_CHECK_PAD 2
-	const CollisionParams params = {THING_IMPASSABLE,
-									CalcCollisionTeam(true, a),
-									IsPVP(gCampaign.Entry.Mode)};
+	const CollisionParams params = {
+		THING_IMPASSABLE, CalcCollisionTeam(true, a),
+		IsPVP(gCampaign.Entry.Mode)};
 	const Thing *target = OverlapGetFirstItem(
 		&a->thing, a->Pos,
 		svec2i_add(a->thing.size, svec2i(RESCUE_CHECK_PAD, RESCUE_CHECK_PAD)),
@@ -738,8 +738,8 @@ static void FireWeapon(TActor *a, Weapon *w)
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_USE_AMMO);
 			e.u.UseAmmo.UID = a->uid;
 			e.u.UseAmmo.PlayerUID = a->PlayerUID;
-			e.u.UseAmmo.AmmoId = w->Gun->AmmoId;
-			e.u.UseAmmo.Amount = 1;
+			e.u.UseAmmo.Ammo.Id = w->Gun->AmmoId;
+			e.u.UseAmmo.Ammo.Amount = 1;
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 		else if (w->Gun->Cost != 0)
@@ -958,8 +958,8 @@ void UpdateAllActors(int ticks)
 	if (!gCampaign.IsClient &&
 		gCollisionSystem.allyCollision == ALLYCOLLISION_REPEL)
 	{
-		const CollisionParams params = {THING_IMPASSABLE, COLLISIONTEAM_NONE,
-										IsPVP(gCampaign.Entry.Mode)};
+		const CollisionParams params = {
+			THING_IMPASSABLE, COLLISIONTEAM_NONE, IsPVP(gCampaign.Entry.Mode)};
 		const Thing *collidingItem = OverlapGetFirstItem(
 			&actor->thing, actor->Pos, actor->thing.size, params);
 		if (collidingItem && collidingItem->kind == KIND_CHARACTER)
@@ -1045,8 +1045,8 @@ static void CheckManualPickups(TActor *a)
 	// NPCs can't pickup
 	if (a->PlayerUID < 0)
 		return;
-	const CollisionParams params = {0, CalcCollisionTeam(true, a),
-									IsPVP(gCampaign.Entry.Mode)};
+	const CollisionParams params = {
+		0, CalcCollisionTeam(true, a), IsPVP(gCampaign.Entry.Mode)};
 	OverlapThings(
 		&a->thing, a->Pos, a->thing.size, params, CheckManualPickupFunc, a,
 		NULL, NULL, NULL);
@@ -1155,9 +1155,6 @@ static void ActorAddAmmoPickup(const TActor *actor)
 			e.u.AddPickup.UID = PickupsGetNextUID();
 			const Ammo *a = AmmoGetById(&gAmmo, w->Gun->AmmoId);
 			sprintf(e.u.AddPickup.PickupClass, "ammo_%s", a->Name);
-			e.u.AddPickup.IsRandomSpawned = false;
-			e.u.AddPickup.SpawnerUID = -1;
-			e.u.AddPickup.ThingFlags = 0;
 			// Add a little random offset so the pickups aren't all together
 			const struct vec2 offset = svec2(
 				(float)RAND_INT(-TILE_WIDTH, TILE_WIDTH) / 2,
@@ -1256,11 +1253,22 @@ static void ActorAddAmmoPickup(const TActor *actor)
 		for (int i = 0; i < AmmoGetNumClasses(&gAmmo); i++)
 		{
 			// Initialise with twice the standard ammo amount
-			// TODO: special game modes, keeping track of ammo, ammo
-			// persistence
 			const int amount =
 				AmmoGetById(&gAmmo, i)->Amount * AMMO_STARTING_MULTIPLE;
 			CArrayPushBack(&actor->ammo, &amount);
+		}
+		if (gCampaign.WeaponPersist)
+		{
+			for (int i = 0; i < aa.Ammo_count; i++)
+			{
+				// Use persisted ammo amount if it is greater
+				if ((int)aa.Ammo[i].Amount >
+					AmmoGetById(&gAmmo, aa.Ammo[i].Id)->Amount *
+						AMMO_STARTING_MULTIPLE)
+				{
+					CArraySet(&actor->ammo, aa.Ammo[i].Id, &aa.Ammo[i].Amount);
+				}
+			}
 		}
 		actor->PlayerUID = aa.PlayerUID;
 		actor->charId = aa.CharId;

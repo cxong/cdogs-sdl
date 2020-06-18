@@ -60,7 +60,7 @@ PB_BIND(NVec2, NVec2, AUTO)
 PB_BIND(NGameBegin, NGameBegin, AUTO)
 
 
-PB_BIND(NActorAdd, NActorAdd, AUTO)
+PB_BIND(NActorAdd, NActorAdd, 2)
 
 
 PB_BIND(NActorMove, NActorMove, AUTO)
@@ -88,6 +88,9 @@ PB_BIND(NActorReplaceGun, NActorReplaceGun, AUTO)
 
 
 PB_BIND(NActorHeal, NActorHeal, AUTO)
+
+
+PB_BIND(NAmmo, NAmmo, AUTO)
 
 
 PB_BIND(NActorAddAmmo, NActorAddAmmo, AUTO)
@@ -129,7 +132,7 @@ PB_BIND(NAddBullet, NAddBullet, AUTO)
 PB_BIND(NTrigger, NTrigger, AUTO)
 
 
-PB_BIND(NExploreTiles, NExploreTiles, AUTO)
+PB_BIND(NExploreTiles, NExploreTiles, 2)
 
 
 PB_BIND(NExploreTiles_Run, NExploreTiles_Run, AUTO)

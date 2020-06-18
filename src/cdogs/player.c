@@ -1,29 +1,29 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2016, 2018-2019 Cong Xu
-    All rights reserved.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (c) 2014-2016, 2018-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "player.h"
 
@@ -33,9 +33,7 @@
 #include "net_client.h"
 #include "player_template.h"
 
-
 CArray gPlayerDatas;
-
 
 void PlayerDataInit(CArray *p)
 {
@@ -57,12 +55,14 @@ void PlayerDataAddOrUpdate(const NPlayerData pd)
 		p->IsLocal =
 			(int)pd.UID >= gNetClient.FirstPlayerUID &&
 			(int)pd.UID < gNetClient.FirstPlayerUID + MAX_LOCAL_PLAYERS;
+		CArrayInit(&p->ammo, sizeof(int));
+		CArrayFillZero(&p->ammo);
 		p->inputDevice = INPUT_DEVICE_UNSET;
 
 		p->Char.speed = 1;
 
-		LOG(LM_MAIN, LL_INFO, "add default player UID(%u) local(%s)",
-			pd.UID, p->IsLocal ? "true" : "false");
+		LOG(LM_MAIN, LL_INFO, "add default player UID(%u) local(%s)", pd.UID,
+			p->IsLocal ? "true" : "false");
 	}
 
 	p->UID = pd.UID;
@@ -89,6 +89,11 @@ void PlayerDataAddOrUpdate(const NPlayerData pd)
 			p->guns[i] = wc;
 		}
 	}
+	CArrayFillZero(&p->ammo);
+	for (int i = 0; i < (int)pd.Ammo_count; i++)
+	{
+		CArraySet(&p->ammo, pd.Ammo[i].Id, &pd.Ammo[i].Amount);
+	}
 	p->Lives = pd.Lives;
 	p->Stats = pd.Stats;
 	p->Totals = pd.Totals;
@@ -98,8 +103,8 @@ void PlayerDataAddOrUpdate(const NPlayerData pd)
 	// Ready players as well
 	p->Ready = true;
 
-	LOG(LM_MAIN, LL_INFO, "update player UID(%d) maxHealth(%d)",
-		p->UID, p->Char.maxHealth);
+	LOG(LM_MAIN, LL_INFO, "update player UID(%d) maxHealth(%d)", p->UID,
+		p->Char.maxHealth);
 }
 
 static void PlayerTerminate(PlayerData *p);
@@ -241,7 +246,8 @@ PlayerData *PlayerDataGetByUID(const int uid)
 		return NULL;
 	}
 	CA_FOREACH(PlayerData, p, gPlayerDatas)
-		if (p->UID == uid) return p;
+	if (p->UID == uid)
+		return p;
 	CA_FOREACH_END()
 	return NULL;
 }
@@ -263,19 +269,24 @@ int GetNumPlayers(
 {
 	int numPlayers = 0;
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-		bool life = false;
-		switch (alive)
-		{
-		case PLAYER_ANY: life = true; break;
-		case PLAYER_ALIVE: life = IsPlayerAlive(p); break;
-		case PLAYER_ALIVE_OR_DYING: life = IsPlayerAliveOrDying(p); break;
-		}
-		if (life &&
-			(!human || p->inputDevice != INPUT_DEVICE_AI) &&
-			(!local || p->IsLocal))
-		{
-			numPlayers++;
-		}
+	bool life = false;
+	switch (alive)
+	{
+	case PLAYER_ANY:
+		life = true;
+		break;
+	case PLAYER_ALIVE:
+		life = IsPlayerAlive(p);
+		break;
+	case PLAYER_ALIVE_OR_DYING:
+		life = IsPlayerAliveOrDying(p);
+		break;
+	}
+	if (life && (!human || p->inputDevice != INPUT_DEVICE_AI) &&
+		(!local || p->IsLocal))
+	{
+		numPlayers++;
+	}
 	CA_FOREACH_END()
 	return numPlayers;
 }
@@ -283,10 +294,10 @@ int GetNumPlayers(
 bool AreAllPlayersDeadAndNoLives(void)
 {
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-		if (IsPlayerAlive(p) || p->Lives > 0)
-		{
-			return false;
-		}
+	if (IsPlayerAlive(p) || p->Lives > 0)
+	{
+		return false;
+	}
 	CA_FOREACH_END()
 	return true;
 }
@@ -295,12 +306,12 @@ const PlayerData *GetFirstPlayer(
 	const bool alive, const bool human, const bool local)
 {
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-		if ((!alive || IsPlayerAliveOrDying(p)) &&
-			(!human || p->inputDevice != INPUT_DEVICE_AI) &&
-			(!local || p->IsLocal))
-		{
-			return p;
-		}
+	if ((!alive || IsPlayerAliveOrDying(p)) &&
+		(!human || p->inputDevice != INPUT_DEVICE_AI) &&
+		(!local || p->IsLocal))
+	{
+		return p;
+	}
 	CA_FOREACH_END()
 	return NULL;
 }
@@ -333,9 +344,8 @@ bool IsPlayerAliveOrDying(const PlayerData *player)
 }
 bool IsPlayerScreen(const PlayerData *p)
 {
-	const bool humanOnly =
-		IsPVP(gCampaign.Entry.Mode) ||
-		!ConfigGetBool(&gConfig, "Interface.SplitscreenAI");
+	const bool humanOnly = IsPVP(gCampaign.Entry.Mode) ||
+						   !ConfigGetBool(&gConfig, "Interface.SplitscreenAI");
 	const bool humanOrScreen = !humanOnly || p->inputDevice != INPUT_DEVICE_AI;
 	return p->IsLocal && humanOrScreen && IsPlayerAliveOrDying(p);
 }
@@ -356,27 +366,27 @@ void PlayersGetBoundingRectangle(struct vec2 *min, struct vec2 *max)
 	const bool humansOnly =
 		GetNumPlayers(PLAYER_ALIVE_OR_DYING, true, false) > 0;
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-		if (!p->IsLocal)
+	if (!p->IsLocal)
+	{
+		continue;
+	}
+	if (humansOnly ? IsPlayerHumanAndAlive(p) : IsPlayerAlive(p))
+	{
+		const TActor *player = ActorGetByUID(p->ActorUID);
+		const Thing *ti = &player->thing;
+		if (isFirst)
 		{
-			continue;
+			*min = *max = ti->Pos;
 		}
-		if (humansOnly ? IsPlayerHumanAndAlive(p) : IsPlayerAlive(p))
+		else
 		{
-			const TActor *player = ActorGetByUID(p->ActorUID);
-			const Thing *ti = &player->thing;
-			if (isFirst)
-			{
-				*min = *max = ti->Pos;
-			}
-			else
-			{
-				min->x = MIN(ti->Pos.x, min->x);
-				min->y = MIN(ti->Pos.y, min->y);
-				max->x = MAX(ti->Pos.x, max->x);
-				max->y = MAX(ti->Pos.y, max->y);
-			}
-			isFirst = false;
+			min->x = MIN(ti->Pos.x, min->x);
+			min->y = MIN(ti->Pos.y, min->y);
+			max->x = MAX(ti->Pos.x, max->x);
+			max->y = MAX(ti->Pos.y, max->y);
 		}
+		isFirst = false;
+	}
 	CA_FOREACH_END()
 }
 
@@ -385,19 +395,19 @@ int PlayersNumUseAmmo(const int ammoId)
 {
 	int numPlayersWithAmmo = 0;
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-		if (!IsPlayerAlive(p))
+	if (!IsPlayerAlive(p))
+	{
+		continue;
+	}
+	const TActor *player = ActorGetByUID(p->ActorUID);
+	for (int j = 0; j < MAX_WEAPONS; j++)
+	{
+		const Weapon *w = &player->guns[j];
+		if (w->Gun != NULL && w->Gun->AmmoId == ammoId)
 		{
-			continue;
+			numPlayersWithAmmo++;
 		}
-		const TActor *player = ActorGetByUID(p->ActorUID);
-		for (int j = 0; j < MAX_WEAPONS; j++)
-		{
-			const Weapon *w = &player->guns[j];
-			if (w->Gun != NULL && w->Gun->AmmoId == ammoId)
-			{
-				numPlayersWithAmmo++;
-			}
-		}
+	}
 	CA_FOREACH_END()
 	return numPlayersWithAmmo;
 }
@@ -436,13 +446,14 @@ bool PlayerTrySetUnusedInputDevice(
 	PlayerData *p, const input_device_e d, const int idx)
 {
 	// Check that player's input device is unassigned
-	if (p->inputDevice != INPUT_DEVICE_UNSET) return false;
+	if (p->inputDevice != INPUT_DEVICE_UNSET)
+		return false;
 	// Check that no players use this input device
 	CA_FOREACH(const PlayerData, pOther, gPlayerDatas)
-		if (pOther->inputDevice == d && pOther->deviceIndex == idx)
-		{
-			return false;
-		}
+	if (pOther->inputDevice == d && pOther->deviceIndex == idx)
+	{
+		return false;
+	}
 	CA_FOREACH_END()
 	return PlayerTrySetInputDevice(p, d, idx);
 }
@@ -459,7 +470,6 @@ int PlayerGetNumWeapons(const PlayerData *p)
 	}
 	return count;
 }
-
 
 bool PlayerHasGrenadeButton(const PlayerData *p)
 {

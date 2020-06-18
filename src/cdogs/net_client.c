@@ -473,6 +473,7 @@ static void OnReceive(NetClient *n, ENetEvent event)
 				{
 					gCampaign.IsClient = true;
 					gCampaign.MissionIndex = def.Mission;
+					gCampaign.WeaponPersist = def.WeaponPersist;
 				}
 				else
 				{

@@ -178,22 +178,24 @@ struct vec2 PlacePlayer(
 	Map *map, const PlayerData *p, const struct vec2 firstPos,
 	const bool pumpEvents)
 {
-	NActorAdd aa = NActorAdd_init_default;
-	aa.UID = ActorsGetNextUID();
-	aa.Health = p->Char.maxHealth;
-	aa.PlayerUID = p->UID;
+	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
+	e.u.ActorAdd.UID = ActorsGetNextUID();
+	e.u.ActorAdd.Direction = DIRECTION_DOWN;
+	e.u.ActorAdd.Health = p->Char.maxHealth;
+	e.u.ActorAdd.PlayerUID = p->UID;
 
 	if (IsPVP(gCampaign.Entry.Mode))
 	{
 		// In a PVP mode, always place players apart
-		aa.Pos = PlaceAwayFromPlayers(&gMap, false, PLACEMENT_ACCESS_ANY);
+		e.u.ActorAdd.Pos =
+			PlaceAwayFromPlayers(&gMap, false, PLACEMENT_ACCESS_ANY);
 	}
 	else if (
 		ConfigGetEnum(&gConfig, "Interface.Splitscreen") == SPLITSCREEN_NEVER &&
 		!svec2_is_zero(firstPos))
 	{
 		// If never split screen, try to place players near the first player
-		aa.Pos = PlaceActorNear(map, firstPos, true);
+		e.u.ActorAdd.Pos = PlaceActorNear(map, firstPos, true);
 	}
 	else if (gMission.missionData->Type == MAPTYPE_STATIC &&
 		!svec2i_is_zero(gMission.missionData->u.Static.Start))
@@ -201,15 +203,13 @@ struct vec2 PlacePlayer(
 		// place players near the start point
 		const struct vec2 startPoint = Vec2CenterOfTile(
 			gMission.missionData->u.Static.Start);
-		aa.Pos = PlaceActorNear(map, startPoint, true);
+		e.u.ActorAdd.Pos = PlaceActorNear(map, startPoint, true);
 	}
 	else
 	{
-		aa.Pos = PlaceActor(map);
+		e.u.ActorAdd.Pos = PlaceActor(map);
 	}
-
-	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-	e.u.ActorAdd = aa;
+	Ammo2Net(&e.u.ActorAdd.Ammo_count, e.u.ActorAdd.Ammo, &p->ammo);
 	GameEventsEnqueue(&gGameEvents, e);
 
 	if (pumpEvents)
@@ -218,5 +218,5 @@ struct vec2 PlacePlayer(
 		HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
 	}
 
-	return svec2(aa.Pos.x, aa.Pos.y);
+	return NetToVec2(e.u.ActorAdd.Pos);
 }

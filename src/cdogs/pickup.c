@@ -1,29 +1,29 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2015, 2017-2018 Cong Xu
-    All rights reserved.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (c) 2014-2015, 2017-2018 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "pickup.h"
 
@@ -31,14 +31,12 @@
 #include "game_events.h"
 #include "gamedata.h"
 #include "json_utils.h"
-#include "net_util.h"
 #include "map.h"
-
+#include "net_util.h"
 
 CArray gPickups;
 static unsigned int sPickupUIDs;
 #define PICKUP_SIZE svec2i(8, 8)
-
 
 void PickupsInit(void)
 {
@@ -49,10 +47,10 @@ void PickupsInit(void)
 void PickupsTerminate(void)
 {
 	CA_FOREACH(const Pickup, p, gPickups)
-		if (p->isInUse)
-		{
-			PickupDestroy(p->UID);
-		}
+	if (p->isInUse)
+	{
+		PickupDestroy(p->UID);
+	}
 	CA_FOREACH_END()
 	CArrayTerminate(&gPickups);
 }
@@ -93,8 +91,7 @@ void PickupAdd(const NAddPickup ap)
 	memset(p, 0, sizeof *p);
 	p->UID = ap.UID;
 	p->class = StrPickupClass(ap.PickupClass);
-	ThingInit(
-		&p->thing, i, KIND_PICKUP, PICKUP_SIZE, ap.ThingFlags);
+	ThingInit(&p->thing, i, KIND_PICKUP, PICKUP_SIZE, ap.ThingFlags);
 	p->thing.CPic = p->class->Pic;
 	p->thing.CPicFunc = PickupDraw;
 	MapTryMoveThing(&gMap, &p->thing, NetToVec2(ap.Pos));
@@ -112,9 +109,6 @@ void PickupAddGun(const WeaponClass *w, const struct vec2 pos)
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
 	e.u.AddPickup.UID = PickupsGetNextUID();
 	sprintf(e.u.AddPickup.PickupClass, "gun_%s", w->name);
-	e.u.AddPickup.IsRandomSpawned = false;
-	e.u.AddPickup.SpawnerUID = -1;
-	e.u.AddPickup.ThingFlags = 0;
 	e.u.AddPickup.Pos = Vec2ToNet(pos);
 	GameEventsEnqueue(&gGameEvents, e);
 }
@@ -129,11 +123,11 @@ void PickupDestroy(const int uid)
 void PickupsUpdate(CArray *pickups, const int ticks)
 {
 	CA_FOREACH(Pickup, p, *pickups)
-		if (!p->isInUse)
-		{
-			continue;
-		}
-		ThingUpdate(&p->thing, ticks);
+	if (!p->isInUse)
+	{
+		continue;
+	}
+	ThingUpdate(&p->thing, ticks);
 	CA_FOREACH_END()
 }
 
@@ -143,24 +137,24 @@ static bool TryPickupGun(
 	TActor *a, const Pickup *p, const bool pickupAll, const char **sound);
 void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 {
-	if (p->PickedUp) return;
+	if (p->PickedUp)
+		return;
 	CASSERT(a->PlayerUID >= 0, "NPCs cannot pickup");
 	bool canPickup = true;
 	const char *sound = NULL;
 	const struct vec2 actorPos = a->thing.Pos;
 	switch (p->class->Type)
 	{
-	case PICKUP_JEWEL:
-		{
-			GameEvent e = GameEventNew(GAME_EVENT_SCORE);
-			e.u.Score.PlayerUID = a->PlayerUID;
-			e.u.Score.Score = p->class->u.Score;
-			GameEventsEnqueue(&gGameEvents, e);
-			sound = "pickup";
-			UpdateMissionObjective(
-				&gMission, p->thing.flags, OBJECTIVE_COLLECT, 1);
-		}
-		break;
+	case PICKUP_JEWEL: {
+		GameEvent e = GameEventNew(GAME_EVENT_SCORE);
+		e.u.Score.PlayerUID = a->PlayerUID;
+		e.u.Score.Score = p->class->u.Score;
+		GameEventsEnqueue(&gGameEvents, e);
+		sound = "pickup";
+		UpdateMissionObjective(
+			&gMission, p->thing.flags, OBJECTIVE_COLLECT, 1);
+	}
+	break;
 
 	case PICKUP_HEALTH:
 		// Don't pick up unless taken damage
@@ -177,7 +171,7 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 		}
 		break;
 
-	case PICKUP_AMMO:	// fallthrough
+	case PICKUP_AMMO: // fallthrough
 	case PICKUP_GUN:
 		if (TreatAsGunPickup(p, a))
 		{
@@ -189,14 +183,13 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 		}
 		break;
 
-	case PICKUP_KEYCARD:
-		{
-			GameEvent e = GameEventNew(GAME_EVENT_ADD_KEYS);
-			e.u.AddKeys.KeyFlags = p->class->u.Keys;
-			e.u.AddKeys.Pos = Vec2ToNet(actorPos);
-			GameEventsEnqueue(&gGameEvents, e);
-		}
-		break;
+	case PICKUP_KEYCARD: {
+		GameEvent e = GameEventNew(GAME_EVENT_ADD_KEYS);
+		e.u.AddKeys.KeyFlags = p->class->u.Keys;
+		e.u.AddKeys.Pos = Vec2ToNet(actorPos);
+		GameEventsEnqueue(&gGameEvents, e);
+	}
+	break;
 
 	default:
 		CASSERT(false, "unexpected pickup type");
@@ -240,11 +233,10 @@ static bool TreatAsGunPickup(const Pickup *p, const TActor *a)
 			}
 		}
 		return false;
-	case PICKUP_GUN:
-		{
-			const WeaponClass *wc = IdWeaponClass(p->class->u.GunId);
-			return !wc->IsGrenade || !HasGunUsingAmmo(a, wc->AmmoId);
-		}
+	case PICKUP_GUN: {
+		const WeaponClass *wc = IdWeaponClass(p->class->u.GunId);
+		return !wc->IsGrenade || !HasGunUsingAmmo(a, wc->AmmoId);
+	}
 	default:
 		CASSERT(false, "unexpected pickup type");
 		return false;
@@ -254,8 +246,7 @@ static bool HasGunUsingAmmo(const TActor *a, const int ammoId)
 {
 	for (int i = 0; i < MAX_WEAPONS; i++)
 	{
-		if (a->guns[i].Gun != NULL &&
-			a->guns[i].Gun->AmmoId == ammoId)
+		if (a->guns[i].Gun != NULL && a->guns[i].Gun->AmmoId == ammoId)
 		{
 			return true;
 		}
@@ -272,10 +263,9 @@ static bool TryPickupAmmo(TActor *a, const Pickup *p, const char **sound)
 	}
 	// Don't pickup if ammo full
 	const Ammo *ammo = AmmoGetById(
-		&gAmmo,
-		p->class->Type == PICKUP_AMMO ?
-		p->class->u.Ammo.Id :
-		IdWeaponClass(p->class->u.GunId)->AmmoId);
+		&gAmmo, p->class->Type == PICKUP_AMMO
+					? p->class->u.Ammo.Id
+					: IdWeaponClass(p->class->u.GunId)->AmmoId);
 	const int current = *(int *)CArrayGet(&a->ammo, p->class->u.Ammo.Id);
 	if (current >= ammo->Max)
 	{
@@ -286,8 +276,8 @@ static bool TryPickupAmmo(TActor *a, const Pickup *p, const char **sound)
 	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD_AMMO);
 	e.u.AddAmmo.UID = a->uid;
 	e.u.AddAmmo.PlayerUID = a->PlayerUID;
-	e.u.AddAmmo.AmmoId = p->class->u.Ammo.Id;
-	e.u.AddAmmo.Amount = p->class->u.Ammo.Amount;
+	e.u.AddAmmo.Ammo.Id = p->class->u.Ammo.Id;
+	e.u.AddAmmo.Ammo.Amount = p->class->u.Ammo.Amount;
 	e.u.AddAmmo.IsRandomSpawned = p->IsRandomSpawned;
 	// Note: receiving end will prevent ammo from exceeding max
 	GameEventsEnqueue(&gGameEvents, e);
@@ -304,9 +294,10 @@ static bool TryPickupGun(
 		return false;
 	}
 	const WeaponClass *wc =
-		p->class->Type == PICKUP_GUN ?
-		IdWeaponClass(p->class->u.GunId) :
-		StrWeaponClass(AmmoGetById(&gAmmo, p->class->u.Ammo.Id)->DefaultGun);
+		p->class->Type == PICKUP_GUN
+			? IdWeaponClass(p->class->u.GunId)
+			: StrWeaponClass(
+				  AmmoGetById(&gAmmo, p->class->u.Ammo.Id)->DefaultGun);
 
 	int ammoDeficit = 0;
 	const Ammo *ammo = NULL;
@@ -314,9 +305,8 @@ static bool TryPickupGun(
 	if (ammoId >= 0)
 	{
 		ammo = AmmoGetById(&gAmmo, ammoId);
-		ammoDeficit =
-			ammo->Amount * AMMO_STARTING_MULTIPLE -
-			*(int *)CArrayGet(&a->ammo, ammoId);
+		ammoDeficit = ammo->Amount * AMMO_STARTING_MULTIPLE -
+					  *(int *)CArrayGet(&a->ammo, ammoId);
 	}
 
 	// Pickup gun
@@ -355,8 +345,8 @@ static bool TryPickupGun(
 		e = GameEventNew(GAME_EVENT_ACTOR_ADD_AMMO);
 		e.u.AddAmmo.UID = a->uid;
 		e.u.AddAmmo.PlayerUID = a->PlayerUID;
-		e.u.AddAmmo.AmmoId = ammoId;
-		e.u.AddAmmo.Amount = ammoDeficit;
+		e.u.AddAmmo.Ammo.Id = ammoId;
+		e.u.AddAmmo.Ammo.Amount = ammoDeficit;
 		e.u.AddAmmo.IsRandomSpawned = false;
 		GameEventsEnqueue(&gGameEvents, e);
 
@@ -369,23 +359,22 @@ static bool TryPickupGun(
 
 bool PickupIsManual(const Pickup *p)
 {
-	if (p->PickedUp) return false;
+	if (p->PickedUp)
+		return false;
 	switch (p->class->Type)
 	{
 	case PICKUP_GUN:
 		return true;
-	case PICKUP_AMMO:
-		{
-			const Ammo *ammo = AmmoGetById(&gAmmo, p->class->u.Ammo.Id);
-			return ammo->DefaultGun != NULL;
-		}
+	case PICKUP_AMMO: {
+		const Ammo *ammo = AmmoGetById(&gAmmo, p->class->u.Ammo.Id);
+		return ammo->DefaultGun != NULL;
+	}
 	default:
 		return false;
 	}
 }
 
-static void PickupDraw(
-	GraphicsDevice *g, const int id, const struct vec2i pos)
+static void PickupDraw(GraphicsDevice *g, const int id, const struct vec2i pos)
 {
 	const Pickup *p = CArrayGet(&gPickups, id);
 	CASSERT(p->isInUse, "Cannot draw non-existent pickup");
@@ -401,10 +390,10 @@ static void PickupDraw(
 Pickup *PickupGetByUID(const int uid)
 {
 	CA_FOREACH(Pickup, p, gPickups)
-		if (p->UID == uid)
-		{
-			return p;
-		}
+	if (p->UID == uid)
+	{
+		return p;
+	}
 	CA_FOREACH_END()
 	return NULL;
 }
