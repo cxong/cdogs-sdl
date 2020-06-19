@@ -29,7 +29,6 @@ install:
     if [ "$CXX" = "clang++" ]; then export CXX="clang++-9" CC="clang-9"; fi;
   fi
 - echo ${CC}
-- protoc --version
 
 before_script:
   - export CTEST_OUTPUT_ON_FAILURE=1
