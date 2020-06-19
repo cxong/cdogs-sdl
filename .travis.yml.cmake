@@ -11,21 +11,10 @@ os:
 env:
   - VERSION=@VERSION@
 
-addons:
-  apt:
-    packages:
-    - rpm
-    - libsdl2-dev
-    - libsdl2-image-dev
-    - libsdl2-mixer-dev
-    - clang-9
-    - cmake
-    - gcc-10
-    - g++-10
-    - libgtk-3-dev
-    - ninja-build
-  snaps:
-  - protobuf
+before_install:
+- sudo apt-get -y install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev clang-9 gcc-10 g++-10 libgtk-3-dev ninja-build
+- sudo snap install cmake --classic
+- sudo snap install protobuf --classic
 
 install:
 # /usr/bin/gcc points to an older compiler on both Linux and macOS.
