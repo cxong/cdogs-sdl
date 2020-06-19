@@ -24,7 +24,7 @@ install:
   - git pull
   - .\bootstrap-vcpkg.bat
   - cd %APPVEYOR_BUILD_FOLDER%
-  - vcpkg install sdl2 sdl2-image sdl2-mixer
+  - vcpkg install sdl2 sdl2-image sdl2-mixer protobuf
 
 before_build:
   - .\build\windows\get-sdl2-dlls.bat dll "appveyor DownloadFile"
