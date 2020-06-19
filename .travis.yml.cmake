@@ -13,10 +13,6 @@ env:
 
 addons:
   apt:
-    sources:
-    - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main'
-      key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
-    - sourceline: 'ppa:ubuntu-toolchain-r/test'
     packages:
     - rpm
     - libsdl2-dev
@@ -28,7 +24,8 @@ addons:
     - g++-10
     - libgtk-3-dev
     - ninja-build
-    - protobuf-compiler
+  snaps:
+  - protobuf
 
 install:
 # /usr/bin/gcc points to an older compiler on both Linux and macOS.
@@ -42,6 +39,7 @@ install:
     if [ "$CXX" = "clang++" ]; then export CXX="clang++-9" CC="clang-9"; fi;
   fi
 - echo ${CC}
+- protoc --version
 
 before_script:
   - export CTEST_OUTPUT_ON_FAILURE=1
