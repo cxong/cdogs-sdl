@@ -51,7 +51,7 @@ ENetPacket *NetEncode(const GameEventType e, const void *data);
 bool NetDecode(ENetPacket *packet, void *dest, const pb_msgdesc_t *fields);
 
 NPlayerData NMakePlayerData(const PlayerData *p);
-NCampaignDef NMakeCampaignDef(const CampaignOptions *co);
+NCampaignDef NMakeCampaignDef(const Campaign *co);
 NMissionComplete NMakeMissionComplete(
 	const struct MissionOptions *mo, const Map *map);
 

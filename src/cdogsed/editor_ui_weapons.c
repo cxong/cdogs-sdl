@@ -39,7 +39,7 @@ typedef enum
 } SelectMode;
 typedef struct
 {
-	CampaignOptions *co;
+	Campaign *co;
 	SelectMode Mode;
 } MissionAllGunsData;
 static bool HasWeapon(const Mission *m, const WeaponClass *wc);
@@ -95,7 +95,7 @@ static void AddAllWeapons(Mission *m)
 
 typedef struct
 {
-	CampaignOptions *co;
+	Campaign *co;
 	const WeaponClass *Gun;
 } MissionGunData;
 static void MissionDrawWeaponStatus(
@@ -152,12 +152,12 @@ static bool HasWeapon(const Mission *m, const WeaponClass *wc)
 #define COLUMN_WIDTH 90
 
 static void CreateWeaponSpecialToggleObj(
-	CampaignOptions *co, UIObject *c, const struct vec2i pos,
+	Campaign *co, UIObject *c, const struct vec2i pos,
 	const SelectMode mode, char *label);
 static void CreateWeaponToggleObjs(
-	CampaignOptions *co, UIObject *c, const UIObject *o, int *idx,
+	Campaign *co, UIObject *c, const UIObject *o, int *idx,
 	const int rows, CArray *guns);
-UIObject *CreateWeaponObjs(CampaignOptions *co)
+UIObject *CreateWeaponObjs(Campaign *co)
 {
 	const int th = FontH();
 	UIObject *c =
@@ -191,7 +191,7 @@ UIObject *CreateWeaponObjs(CampaignOptions *co)
 	return c;
 }
 static void CreateWeaponSpecialToggleObj(
-	CampaignOptions *co, UIObject *c, const struct vec2i pos,
+	Campaign *co, UIObject *c, const struct vec2i pos,
 	const SelectMode mode, char *label)
 {
 	const int th = FontH();
@@ -208,7 +208,7 @@ static void CreateWeaponSpecialToggleObj(
 	UIObjectAddChild(c, o);
 }
 static void CreateWeaponToggleObjs(
-	CampaignOptions *co, UIObject *c, const UIObject *o, int *idx,
+	Campaign *co, UIObject *c, const UIObject *o, int *idx,
 	const int rows, CArray *guns)
 {
 	const int th = FontH();

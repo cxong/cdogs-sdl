@@ -44,7 +44,7 @@
 
 void GrafxMakeRandomBackground(
 	GraphicsDevice *device,
-	CampaignOptions *co, struct MissionOptions *mo, Map *map)
+	Campaign *co, struct MissionOptions *mo, Map *map)
 {
 	CampaignSettingInit(&co->Setting);
 	SetupQuickPlayCampaign(&co->Setting);
@@ -138,7 +138,7 @@ void GrafxRedrawBackground(GraphicsDevice *g, const struct vec2 pos)
 
 void GrafxMakeBackground(
 	GraphicsDevice *device, DrawBuffer *buffer,
-	CampaignOptions *co, struct MissionOptions *mo, Map *map, HSV tint,
+	Campaign *co, struct MissionOptions *mo, Map *map, HSV tint,
 	const bool isEditor, struct vec2 pos, GrafxDrawExtra *extra)
 {
 	CampaignAndMissionSetup(co, mo);

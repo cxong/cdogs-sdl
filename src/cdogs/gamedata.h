@@ -67,8 +67,8 @@
 
 extern struct MissionOptions gMission;
 
-bool CampaignLoad(CampaignOptions *co, CampaignEntry *entry);
-void CampaignUnload(CampaignOptions *co);
+bool CampaignLoad(Campaign *co, CampaignEntry *entry);
+void CampaignUnload(Campaign *co);
 
 void MissionOptionsInit(struct MissionOptions *mo);
 void MissionOptionsTerminate(struct MissionOptions *mo);

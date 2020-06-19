@@ -34,6 +34,6 @@
 #include "ui_object.h"
 
 UIObject *CreateStaticMapObjs(
-	struct vec2i pos, CampaignOptions *co, EditorBrush *brush);
+	struct vec2i pos, Campaign *co, EditorBrush *brush);
 
 #endif

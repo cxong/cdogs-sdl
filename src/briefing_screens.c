@@ -361,7 +361,7 @@ typedef struct
 typedef struct
 {
 	MenuSystem ms;
-	const CampaignOptions *c;
+	const Campaign *c;
 	struct MissionOptions *m;
 	bool completed;
 	AnimatedCounter AccessBonus;
@@ -376,7 +376,7 @@ static void MissionSummaryMenuDraw(
 	const menu_t *menu, GraphicsDevice *g,
 	const struct vec2i p, const struct vec2i size, const void *data);
 GameLoopData *ScreenMissionSummary(
-	const CampaignOptions *c, struct MissionOptions *m, const bool completed)
+	const Campaign *c, struct MissionOptions *m, const bool completed)
 {
 	MissionSummaryData *mData;
 	CCALLOC(mData, sizeof *mData);

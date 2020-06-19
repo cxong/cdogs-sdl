@@ -33,4 +33,4 @@
 
 
 // Create a context menu for selecting available weapons for the mission
-UIObject *CreateWeaponObjs(CampaignOptions *co);
+UIObject *CreateWeaponObjs(Campaign *co);

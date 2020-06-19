@@ -196,12 +196,12 @@ static bool AddMapItemBrushObjFunc(UIObject *o, MapObject *mo, void *vData);
 static bool AddPickupSpawnerBrushObjFunc(
 	UIObject *o, MapObject *mo, void *vData);
 static UIObject *CreateAddCharacterObjs(
-	struct vec2i pos, EditorBrush *brush, CampaignOptions *co);
+	struct vec2i pos, EditorBrush *brush, Campaign *co);
 static UIObject *CreateAddObjectiveObjs(
-	struct vec2i pos, EditorBrush *brush, CampaignOptions *co);
+	struct vec2i pos, EditorBrush *brush, Campaign *co);
 static UIObject *CreateAddKeyObjs(struct vec2i pos, EditorBrush *brush);
 UIObject *CreateAddItemObjs(
-	struct vec2i pos, EditorBrush *brush, CampaignOptions *co)
+	struct vec2i pos, EditorBrush *brush, Campaign *co)
 {
 	const int th = FontH();
 	UIObject *o2;
@@ -341,7 +341,7 @@ static char *MakePickupTooltip(const MapObject *mo)
 }
 static void CreateAddCharacterSubObjs(UIObject *c, void *vData);
 static UIObject *CreateAddCharacterObjs(
-	struct vec2i pos, EditorBrush *brush, CampaignOptions *co)
+	struct vec2i pos, EditorBrush *brush, Campaign *co)
 {
 	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, svec2i_zero());
 	// Need to update UI objects dynamically as new characters can be
@@ -404,7 +404,7 @@ static void CreateAddCharacterSubObjs(UIObject *c, void *vData)
 }
 static void CreateAddObjectiveSubObjs(UIObject *c, void *vData);
 static UIObject *CreateAddObjectiveObjs(
-	struct vec2i pos, EditorBrush *brush, CampaignOptions *co)
+	struct vec2i pos, EditorBrush *brush, Campaign *co)
 {
 	UIObject *c = UIObjectCreate(UITYPE_CONTEXT_MENU, 0, pos, svec2i_zero());
 	// Need to update UI objects dynamically as new objectives can be

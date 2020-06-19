@@ -69,7 +69,7 @@
 #include "sys_config.h"
 #include "utils.h"
 
-CampaignOptions gCampaign;
+Campaign gCampaign;
 
 struct MissionOptions gMission;
 
@@ -77,7 +77,7 @@ struct SongDef *gGameSongs = NULL;
 struct SongDef *gMenuSongs = NULL;
 
 
-bool CampaignLoad(CampaignOptions *co, CampaignEntry *entry)
+bool CampaignLoad(Campaign *co, CampaignEntry *entry)
 {
 	CASSERT(!co->IsLoaded, "loading campaign without unloading last one");
 	// Note: use the mode already set by the menus
@@ -112,7 +112,7 @@ bool CampaignLoad(CampaignOptions *co, CampaignEntry *entry)
 	}
 	return co->IsLoaded;
 }
-void CampaignUnload(CampaignOptions *co)
+void CampaignUnload(Campaign *co)
 {
 	co->IsLoaded = false;
 	co->IsClient = false;	// TODO: select is client from menu

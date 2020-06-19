@@ -33,5 +33,5 @@
 #include "editor_brush.h"
 
 EditorResult TileBrush(
-	PicManager *pm, EventHandlers *handlers, CampaignOptions *co,
+	PicManager *pm, EventHandlers *handlers, Campaign *co,
 	int *brushIdx);

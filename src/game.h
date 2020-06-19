@@ -57,4 +57,4 @@
 #include "game_loop.h"
 
 GameLoopData *RunGame(
-	const CampaignOptions *co, struct MissionOptions *m, Map *map);
+	const Campaign *co, struct MissionOptions *m, Map *map);

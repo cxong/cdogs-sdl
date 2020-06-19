@@ -76,7 +76,7 @@ void DrawKey(UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
 		SDL_FLIP_NONE, Rect2iZero());
 }
 
-void InsertMission(CampaignOptions *co, Mission *mission, int idx)
+void InsertMission(Campaign *co, Mission *mission, int idx)
 {
 	Mission m;
 	if (mission == NULL)
@@ -98,7 +98,7 @@ void InsertMission(CampaignOptions *co, Mission *mission, int idx)
 	}
 	CArrayInsert(&co->Setting.Missions, idx, &m);
 }
-void DeleteMission(CampaignOptions *co)
+void DeleteMission(Campaign *co)
 {
 	CASSERT(
 		co->MissionIndex < (int)co->Setting.Missions.size,
@@ -158,7 +158,7 @@ void DisplayFlag(
 
 static const char *CampaignGetSeedStr(UIObject *o, void *data);
 static EditorResult CampaignChangeSeed(void *data, int d);
-UIObject *CreateCampaignSeedObj(const struct vec2i pos, CampaignOptions *co)
+UIObject *CreateCampaignSeedObj(const struct vec2i pos, Campaign *co)
 {
 	const int th = FontH();
 	UIObject *o =
@@ -174,7 +174,7 @@ static const char *CampaignGetSeedStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	if (!CampaignGetCurrentMission(co))
 		return NULL;
 	sprintf(s, "Seed: %d", ConfigGetInt(&gConfig, "Game.RandomSeed"));

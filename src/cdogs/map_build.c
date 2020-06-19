@@ -65,7 +65,7 @@
 static void MapSetupTilesAndWalls(MapBuilder *mb);
 static void MapSetupDoors(MapBuilder *mb);
 static void MapAddDrains(MapBuilder *mb);
-void MapBuild(Map *m, const Mission *mission, const CampaignOptions *co)
+void MapBuild(Map *m, const Mission *mission, const Campaign *co)
 {
 	MapBuilder mb;
 	MapBuilderInit(&mb, m, mission, co);
@@ -195,7 +195,7 @@ static int MapGetAccessFlags(const MapBuilder *mb, const struct vec2i v)
 }
 
 void MapBuilderInit(
-	MapBuilder *mb, Map *m, const Mission *mission, const CampaignOptions *co)
+	MapBuilder *mb, Map *m, const Mission *mission, const Campaign *co)
 {
 	memset(mb, 0, sizeof *mb);
 	mb->Map = m;

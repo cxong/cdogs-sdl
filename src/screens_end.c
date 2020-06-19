@@ -330,11 +330,11 @@ static int PlayerListMaxRows(const PlayerList *pl)
 
 typedef struct
 {
-	const CampaignOptions *Campaign;
+	const Campaign *Campaign;
 	const char *FinalWords;
 } VictoryData;
 static void VictoryDraw(void *data);
-GameLoopData *ScreenVictory(CampaignOptions *c)
+GameLoopData *ScreenVictory(Campaign *c)
 {
 	SoundPlay(&gSoundDevice, StrSound("victory"));
 	VictoryData *data;

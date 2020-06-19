@@ -40,14 +40,14 @@
 #include <cdogs/utils.h>
 
 
-void CampaignInit(CampaignOptions *campaign)
+void CampaignInit(Campaign *campaign)
 {
 	memset(campaign, 0, sizeof *campaign);
 	CampaignSettingInit(&campaign->Setting);
 	// TESTING
 	campaign->WeaponPersist = true;
 }
-void CampaignTerminate(CampaignOptions *campaign)
+void CampaignTerminate(Campaign *campaign)
 {
 	CampaignUnload(&gCampaign);
 	CampaignSettingTerminate(&campaign->Setting);
@@ -203,7 +203,7 @@ static void LoadCampaignsFromFolder(
 	tinydir_close(&dir);
 }
 
-Mission *CampaignGetCurrentMission(CampaignOptions *campaign)
+Mission *CampaignGetCurrentMission(Campaign *campaign)
 {
 	if (campaign->MissionIndex >= (int)campaign->Setting.Missions.size)
 	{
@@ -212,7 +212,7 @@ Mission *CampaignGetCurrentMission(CampaignOptions *campaign)
 	return CArrayGet(&campaign->Setting.Missions, campaign->MissionIndex);
 }
 
-void CampaignSeedRandom(const CampaignOptions *campaign)
+void CampaignSeedRandom(const Campaign *campaign)
 {
 	const int seed =
 		10 * campaign->MissionIndex + ConfigGetInt(&gConfig, "Game.RandomSeed");
@@ -221,7 +221,7 @@ void CampaignSeedRandom(const CampaignOptions *campaign)
 }
 
 void CampaignAndMissionSetup(
-	CampaignOptions *campaign, struct MissionOptions *mo)
+	Campaign *campaign, struct MissionOptions *mo)
 {
 	Mission *m = CampaignGetCurrentMission(campaign);
 	if (m == NULL)

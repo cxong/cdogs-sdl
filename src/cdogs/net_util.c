@@ -81,7 +81,7 @@ NPlayerData NMakePlayerData(const PlayerData *p)
 	Ammo2Net(&d.Ammo_count, d.Ammo, &p->ammo);
 	return d;
 }
-NCampaignDef NMakeCampaignDef(const CampaignOptions *co)
+NCampaignDef NMakeCampaignDef(const Campaign *co)
 {
 	NCampaignDef def;
 	memset(&def, 0, sizeof def);

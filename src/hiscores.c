@@ -69,13 +69,13 @@
 // required
 typedef struct
 {
-	CampaignOptions *co;
+	Campaign *co;
 	GraphicsDevice *g;
 } HighScoresScreenData;
 static void HighScoresScreenTerminate(GameLoopData *data);
 static GameLoopResult HighScoresScreenUpdate(
 	GameLoopData *data, LoopRunner *l);
-GameLoopData *HighScoresScreen(CampaignOptions *co, GraphicsDevice *g)
+GameLoopData *HighScoresScreen(Campaign *co, GraphicsDevice *g)
 {
 	HighScoresScreenData *data;
 	CMALLOC(data, sizeof *data);

@@ -301,7 +301,7 @@ static bool DeactivateIndexedEditorBrush(void *data)
 
 static UIObject *CreateSetKeyObjs(struct vec2i pos, EditorBrush *brush);
 UIObject *CreateStaticMapObjs(
-	struct vec2i pos, CampaignOptions *co, EditorBrush *brush)
+	struct vec2i pos, Campaign *co, EditorBrush *brush)
 {
 	int x = pos.x;
 	const int th = FontH();

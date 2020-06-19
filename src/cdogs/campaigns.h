@@ -70,19 +70,19 @@ typedef struct
 	bool OptionsSet;
 	bool IsComplete;
 	bool WeaponPersist;
-} CampaignOptions;
-extern CampaignOptions gCampaign;
+} Campaign;
+extern Campaign gCampaign;
 
-void CampaignInit(CampaignOptions *campaign);
-void CampaignTerminate(CampaignOptions *campaign);
+void CampaignInit(Campaign *campaign);
+void CampaignTerminate(Campaign *campaign);
 void CampaignSettingInit(CampaignSetting *setting);
 void CampaignSettingTerminate(CampaignSetting *setting);
 
 void LoadAllCampaigns(custom_campaigns_t *campaigns);
 void UnloadAllCampaigns(custom_campaigns_t *campaigns);
 
-Mission *CampaignGetCurrentMission(CampaignOptions *campaign);
-void CampaignSeedRandom(const CampaignOptions *campaign);
+Mission *CampaignGetCurrentMission(Campaign *campaign);
+void CampaignSeedRandom(const Campaign *campaign);
 
 void CampaignAndMissionSetup(
-	CampaignOptions *campaign, struct MissionOptions *mo);
+	Campaign *campaign, struct MissionOptions *mo);

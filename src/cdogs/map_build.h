@@ -55,7 +55,7 @@ typedef struct
 {
 	Map *Map;
 	const Mission *mission;
-	const CampaignOptions *co;
+	const Campaign *co;
 
 	// internal data structures to help build the map
 	CArray access;	  // of uint16_t
@@ -63,9 +63,9 @@ typedef struct
 	CArray leaveFree; // of bool
 } MapBuilder;
 
-void MapBuild(Map *m, const Mission *mission, const CampaignOptions *co);
+void MapBuild(Map *m, const Mission *mission, const Campaign *co);
 void MapBuilderInit(
-	MapBuilder *mb, Map *m, const Mission *mission, const CampaignOptions *co);
+	MapBuilder *mb, Map *m, const Mission *mission, const Campaign *co);
 void MapBuilderTerminate(MapBuilder *mb);
 
 void MapLoadDynamic(MapBuilder *mb);

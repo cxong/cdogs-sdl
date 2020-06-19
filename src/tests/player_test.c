@@ -12,7 +12,7 @@
 #include <utils.h>
 
 // Stubs
-CampaignOptions gCampaign;
+Campaign gCampaign;
 NetClient gNetClient;
 PlayerTemplates gPlayerTemplates;
 Config gConfig;

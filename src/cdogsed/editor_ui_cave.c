@@ -66,7 +66,7 @@ static EditorResult MissionChangeSquareCount(void *data, int d);
 static void MissionDrawDoorEnabled(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data);
 static EditorResult MissionChangeDoorEnabled(void *data, int d);
-UIObject *CreateCaveMapObjs(struct vec2i pos, CampaignOptions *co)
+UIObject *CreateCaveMapObjs(struct vec2i pos, Campaign *co)
 {
 	const int th = FontH();
 	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, svec2i_zero(), svec2i_zero());
@@ -196,7 +196,7 @@ UIObject *CreateCaveMapObjs(struct vec2i pos, CampaignOptions *co)
 static const char *MissionGetFillPercentStr(UIObject *o, void *data)
 {
 	UNUSED(o);
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	const Mission *m = CampaignGetCurrentMission(co);
 	if (m == NULL) return NULL;
 	static char s[128];
@@ -205,7 +205,7 @@ static const char *MissionGetFillPercentStr(UIObject *o, void *data)
 }
 static EditorResult MissionChangeFillPercent(void *data, int d)
 {
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
 	if (gEventHandlers.keyboard.modState & KMOD_SHIFT)
 	{
@@ -217,7 +217,7 @@ static EditorResult MissionChangeFillPercent(void *data, int d)
 static const char *MissionGetRepeatStr(UIObject *o, void *data)
 {
 	UNUSED(o);
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	const Mission *m = CampaignGetCurrentMission(co);
 	if (m == NULL) return NULL;
 	static char s[128];
@@ -226,7 +226,7 @@ static const char *MissionGetRepeatStr(UIObject *o, void *data)
 }
 static EditorResult MissionChangeRepeat(void *data, int d)
 {
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
 	m->u.Cave.Repeat = CLAMP(m->u.Cave.Repeat + d, 0, 10);
 	return EDITOR_RESULT_CHANGED;
@@ -234,7 +234,7 @@ static EditorResult MissionChangeRepeat(void *data, int d)
 static const char *MissionGetR1Str(UIObject *o, void *data)
 {
 	UNUSED(o);
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	const Mission *m = CampaignGetCurrentMission(co);
 	if (m == NULL) return NULL;
 	static char s[128];
@@ -243,7 +243,7 @@ static const char *MissionGetR1Str(UIObject *o, void *data)
 }
 static EditorResult MissionChangeR1(void *data, int d)
 {
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
 	m->u.Cave.R1 = CLAMP(m->u.Cave.R1 + d, 0, 8);
 	return EDITOR_RESULT_CHANGED;
@@ -251,7 +251,7 @@ static EditorResult MissionChangeR1(void *data, int d)
 static const char *MissionGetR2Str(UIObject *o, void *data)
 {
 	UNUSED(o);
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	const Mission *m = CampaignGetCurrentMission(co);
 	if (m == NULL) return NULL;
 	static char s[128];
@@ -260,7 +260,7 @@ static const char *MissionGetR2Str(UIObject *o, void *data)
 }
 static EditorResult MissionChangeR2(void *data, int d)
 {
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
 	m->u.Cave.R2 = CLAMP(m->u.Cave.R2 + d, -1, 25);
 	return EDITOR_RESULT_CHANGED;
@@ -268,7 +268,7 @@ static EditorResult MissionChangeR2(void *data, int d)
 static const char *MissionGetCorridorWidthStr(UIObject *o, void *data)
 {
 	UNUSED(o);
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	const Mission *m = CampaignGetCurrentMission(co);
 	if (m == NULL) return NULL;
 	static char s[128];
@@ -277,7 +277,7 @@ static const char *MissionGetCorridorWidthStr(UIObject *o, void *data)
 }
 static EditorResult MissionChangeCorridorWidth(void *data, int d)
 {
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
 	m->u.Cave.CorridorWidth = CLAMP(m->u.Cave.CorridorWidth + d, 1, 5);
 	return EDITOR_RESULT_CHANGED;
@@ -286,7 +286,7 @@ static const char *MissionGetRoomCountStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(
 		s, "Rooms: %d", CampaignGetCurrentMission(co)->u.Cave.Rooms.Count);
@@ -296,7 +296,7 @@ static const char *MissionGetRoomMinStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "RoomMin: %d", CampaignGetCurrentMission(co)->u.Cave.Rooms.Min);
 	return s;
@@ -305,21 +305,21 @@ static const char *MissionGetRoomMaxStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "RoomMax: %d", CampaignGetCurrentMission(co)->u.Cave.Rooms.Max);
 	return s;
 }
 static EditorResult MissionChangeRoomCount(void *data, int d)
 {
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	CampaignGetCurrentMission(co)->u.Cave.Rooms.Count =
 		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Rooms.Count + d, 0, 100);
 	return EDITOR_RESULT_CHANGED;
 }
 static EditorResult MissionChangeRoomMin(void *data, int d)
 {
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	CampaignGetCurrentMission(co)->u.Cave.Rooms.Min =
 		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Rooms.Min + d, 5, 50);
 	CampaignGetCurrentMission(co)->u.Cave.Rooms.Max = MAX(
@@ -329,7 +329,7 @@ static EditorResult MissionChangeRoomMin(void *data, int d)
 }
 static EditorResult MissionChangeRoomMax(void *data, int d)
 {
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	CampaignGetCurrentMission(co)->u.Cave.Rooms.Max =
 		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Rooms.Max + d, 5, 50);
 	CampaignGetCurrentMission(co)->u.Cave.Rooms.Min = MIN(
@@ -343,7 +343,7 @@ static void MissionDrawRoomsOverlap(
 	UNUSED(o);
 	UNUSED(g);
 	UNUSED(pos);
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	if (!CampaignGetCurrentMission(co)) return;
 	DisplayFlag(
 		svec2i_add(pos, o->Pos), "Room overlap",
@@ -353,7 +353,7 @@ static void MissionDrawRoomsOverlap(
 static EditorResult MissionChangeRoomsOverlap(void *data, int d)
 {
 	UNUSED(d);
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	CampaignGetCurrentMission(co)->u.Cave.Rooms.Overlap =
 		!CampaignGetCurrentMission(co)->u.Cave.Rooms.Overlap;
 	return EDITOR_RESULT_CHANGED;
@@ -362,7 +362,7 @@ static const char *MissionGetRoomWallCountStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "RoomWalls: %d", CampaignGetCurrentMission(co)->u.Cave.Rooms.Walls);
 	return s;
@@ -371,7 +371,7 @@ static const char *MissionGetRoomWallLenStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "RoomWallLen: %d", CampaignGetCurrentMission(co)->u.Cave.Rooms.WallLength);
 	return s;
@@ -380,28 +380,28 @@ static const char *MissionGetRoomWallPadStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "RoomWallPad: %d", CampaignGetCurrentMission(co)->u.Cave.Rooms.WallPad);
 	return s;
 }
 static EditorResult MissionChangeRoomWallCount(void *data, int d)
 {
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	CampaignGetCurrentMission(co)->u.Cave.Rooms.Walls =
 		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Rooms.Walls + d, 0, 50);
 	return EDITOR_RESULT_CHANGED;
 }
 static EditorResult MissionChangeRoomWallLen(void *data, int d)
 {
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	CampaignGetCurrentMission(co)->u.Cave.Rooms.WallLength = CLAMP(
 		CampaignGetCurrentMission(co)->u.Cave.Rooms.WallLength + d, 1, 50);
 	return EDITOR_RESULT_CHANGED;
 }
 static EditorResult MissionChangeRoomWallPad(void *data, int d)
 {
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	CampaignGetCurrentMission(co)->u.Cave.Rooms.WallPad =
 		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Rooms.WallPad + d, 1, 10);
 	return EDITOR_RESULT_CHANGED;
@@ -410,14 +410,14 @@ static const char *MissionGetSquareCountStr(UIObject *o, void *data)
 {
 	static char s[128];
 	UNUSED(o);
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	if (!CampaignGetCurrentMission(co)) return NULL;
 	sprintf(s, "Sqr: %d", CampaignGetCurrentMission(co)->u.Cave.Squares);
 	return s;
 }
 static EditorResult MissionChangeSquareCount(void *data, int d)
 {
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	CampaignGetCurrentMission(co)->u.Cave.Squares =
 		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Squares + d, 0, 100);
 	return EDITOR_RESULT_CHANGED;
@@ -427,7 +427,7 @@ static void MissionDrawDoorEnabled(
 {
 	UNUSED(o);
 	UNUSED(g);
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	if (!CampaignGetCurrentMission(co)) return;
 	DisplayFlag(
 		svec2i_add(pos, o->Pos), "Doors",
@@ -437,7 +437,7 @@ static void MissionDrawDoorEnabled(
 static EditorResult MissionChangeDoorEnabled(void *data, int d)
 {
 	UNUSED(d);
-	CampaignOptions *co = data;
+	Campaign *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
 	m->u.Cave.DoorsEnabled = !m->u.Cave.DoorsEnabled;
 	return EDITOR_RESULT_CHANGED;

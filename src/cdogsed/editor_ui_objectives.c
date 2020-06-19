@@ -36,7 +36,7 @@
 
 typedef struct
 {
-	CampaignOptions *Campaign;
+	Campaign *Campaign;
 	int MissionObjectiveIndex;
 } MissionObjectiveData;
 static char *MissionGetObjectiveDescription(UIObject *o, void *data)
@@ -101,7 +101,7 @@ static char **MissionGetObjectiveDescriptionSrc(void *data)
 }
 typedef struct
 {
-	CampaignOptions *co;
+	Campaign *co;
 	int index;
 } MissionIndexData;
 static const char *MissionGetObjectiveStr(UIObject *o, void *vData)
@@ -189,7 +189,7 @@ static const char *MissionGetObjectiveFlags(UIObject *o, void *vData)
 
 typedef struct
 {
-	CampaignOptions *C;
+	Campaign *C;
 	int ObjectiveIdx;
 	ObjectiveType Type;
 } ObjectiveChangeTypeData;
@@ -265,8 +265,8 @@ static EditorResult MissionChangeObjectiveFlags(void *vData, int d)
 }
 
 static UIObject *CreateObjectiveObjs(
-	struct vec2i pos, CampaignOptions *co, const int idx);
-void CreateObjectivesObjs(CampaignOptions *co, UIObject *c, struct vec2i pos)
+	struct vec2i pos, Campaign *co, const int idx);
+void CreateObjectivesObjs(Campaign *co, UIObject *c, struct vec2i pos)
 {
 	const int th = FontH();
 	struct vec2i objectivesPos = svec2i(0, 7 * th);
@@ -297,9 +297,9 @@ void CreateObjectivesObjs(CampaignOptions *co, UIObject *c, struct vec2i pos)
 	UIObjectDestroy(o);
 }
 static void CreateObjectiveItemObjs(
-	UIObject *c, const struct vec2i pos, CampaignOptions *co, const int idx);
+	UIObject *c, const struct vec2i pos, Campaign *co, const int idx);
 static UIObject *CreateObjectiveObjs(
-	struct vec2i pos, CampaignOptions *co, const int idx)
+	struct vec2i pos, Campaign *co, const int idx)
 {
 	const int th = FontH();
 	UIObject *c;
@@ -394,7 +394,7 @@ static UIObject *CreateObjectiveObjs(
 
 typedef struct
 {
-	CampaignOptions *C;
+	Campaign *C;
 	int ObjIdx;
 	MapObject *M;
 } DestroyObjectiveData;
@@ -414,7 +414,7 @@ static void MissionCheckObjectiveIsDestroy(UIObject *o, void *vData);
 static void MissionCheckObjectiveIsRescue(UIObject *o, void *vData);
 static bool ObjectiveDestroyObjFunc(UIObject *o, MapObject *mo, void *data);
 static void CreateObjectiveItemObjs(
-	UIObject *c, const struct vec2i pos, CampaignOptions *co, const int idx)
+	UIObject *c, const struct vec2i pos, Campaign *co, const int idx)
 {
 	// TODO: context menu
 	UIObject *o = UIObjectCreate(UITYPE_CUSTOM, 0, pos, svec2i(30, 20));

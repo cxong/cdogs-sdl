@@ -182,14 +182,14 @@ typedef enum
 } MissionColorType;
 typedef struct
 {
-	CampaignOptions *C;
+	Campaign *C;
 	MissionColorType Type;
 } MissionColorData;
 static const char *MissionGetColorStr(UIObject *o, void *data);
 static void MissionColorChange(const color_t c, void *data);
 static color_t CampaignGetMissionColor(void *data);
 struct vec2i CreateColorObjs(
-	CampaignOptions *co, UIObject *c, struct vec2i pos)
+	Campaign *co, UIObject *c, struct vec2i pos)
 {
 	const int th = FontH();
 

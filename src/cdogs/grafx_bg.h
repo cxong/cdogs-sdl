@@ -42,10 +42,10 @@ void GrafxDrawBackground(
 	const struct vec2 pos, GrafxDrawExtra *extra);
 void GrafxRedrawBackground(GraphicsDevice *g, const struct vec2 pos);
 void GrafxMakeBackground(
-	GraphicsDevice *device, DrawBuffer *buffer, CampaignOptions *co,
+	GraphicsDevice *device, DrawBuffer *buffer, Campaign *co,
 	struct MissionOptions *mo, Map *map, HSV tint, const bool isEditor,
 	struct vec2 pos, GrafxDrawExtra *extra);
 
 void GrafxMakeRandomBackground(
-	GraphicsDevice *device, CampaignOptions *co, struct MissionOptions *mo,
+	GraphicsDevice *device, Campaign *co, struct MissionOptions *mo,
 	Map *map);

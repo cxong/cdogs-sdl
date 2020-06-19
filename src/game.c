@@ -146,7 +146,7 @@ struct vec2i GetPlayerCenter(
 
 typedef struct
 {
-	const CampaignOptions *co;
+	const Campaign *co;
 	struct MissionOptions *m;
 	Map *map;
 	Camera Camera;
@@ -169,7 +169,7 @@ static void RunGameInput(GameLoopData *data);
 static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l);
 static void RunGameDraw(GameLoopData *data);
 GameLoopData *RunGame(
-	const CampaignOptions *co, struct MissionOptions *m, Map *map)
+	const Campaign *co, struct MissionOptions *m, Map *map)
 {
 	RunGameData *data;
 	CCALLOC(data, sizeof *data);

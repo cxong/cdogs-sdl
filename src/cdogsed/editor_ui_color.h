@@ -38,4 +38,4 @@ UIObject *CreateColorPicker(
 	const struct vec2i pos, void *data,
 	ColorPickerGetFunc getFunc, ColorPickerChangeFunc changeFunc);
 
-struct vec2i CreateColorObjs(CampaignOptions *co, UIObject *c, struct vec2i pos);
+struct vec2i CreateColorObjs(Campaign *co, UIObject *c, struct vec2i pos);

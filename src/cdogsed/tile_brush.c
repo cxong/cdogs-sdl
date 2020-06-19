@@ -67,7 +67,7 @@ static const TileClass *GetOrAddTileClass(
 	const color_t mask, const color_t maskAlt);
 static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data);
 EditorResult TileBrush(
-	PicManager *pm, EventHandlers *handlers, CampaignOptions *co,
+	PicManager *pm, EventHandlers *handlers, Campaign *co,
 	int *brushIdx)
 {
 	NKWindowConfig cfg;
