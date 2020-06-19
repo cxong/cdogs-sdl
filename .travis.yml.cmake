@@ -16,7 +16,6 @@ before_install:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get -q update; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get -y install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev clang-9 gcc-10 g++-10 libgtk-3-dev ninja-build python-protobuf; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo snap install cmake --classic; fi
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo snap install protobuf --classic; fi
 
 install:
 # /usr/bin/gcc points to an older compiler on both Linux and macOS.
