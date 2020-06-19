@@ -12,6 +12,8 @@ env:
   - VERSION=@VERSION@
 
 before_install:
+- sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+- sudo apt-get update
 - sudo apt-get -y install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev clang-9 gcc-10 g++-10 libgtk-3-dev ninja-build
 - sudo snap install cmake --classic
 - sudo snap install protobuf --classic
