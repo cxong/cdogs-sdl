@@ -264,7 +264,7 @@ static bool TryPickupAmmo(TActor *a, const Pickup *p, const char **sound)
 	// Don't pickup if ammo full
 	const Ammo *ammo = AmmoGetById(
 		&gAmmo, p->class->Type == PICKUP_AMMO
-					? p->class->u.Ammo.Id
+					? (int)p->class->u.Ammo.Id
 					: IdWeaponClass(p->class->u.GunId)->AmmoId);
 	const int current = *(int *)CArrayGet(&a->ammo, p->class->u.Ammo.Id);
 	if (current >= ammo->Max)
