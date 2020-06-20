@@ -14,7 +14,7 @@ env:
 before_install:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get -q update; fi
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get -y install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev clang-9 gcc-10 g++-10 libgtk-3-dev ninja-build python-protobuf; fi
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get -y install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev clang-9 gcc-10 g++-10 libgtk-3-dev ninja-build python-protobuf protobuf-compiler; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo snap install cmake --classic; fi
 
 install:
@@ -29,6 +29,7 @@ install:
     if [ "$CXX" = "clang++" ]; then export CXX="clang++-9" CC="clang-9"; fi;
   fi
 - echo ${CC}
+- protoc --version
 
 before_script:
   - export CTEST_OUTPUT_ON_FAILURE=1
