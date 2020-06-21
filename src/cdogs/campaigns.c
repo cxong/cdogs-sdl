@@ -44,8 +44,6 @@ void CampaignInit(Campaign *campaign)
 {
 	memset(campaign, 0, sizeof *campaign);
 	CampaignSettingInit(&campaign->Setting);
-	// TESTING
-	campaign->WeaponPersist = true;
 }
 void CampaignTerminate(Campaign *campaign)
 {

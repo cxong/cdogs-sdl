@@ -242,9 +242,6 @@ static void DrawTileTypeSelect(
 	struct nk_context *ctx, TileBrushData *tbData, TileClass *selectedTC);
 static void DrawTileStyleSelect(
 	struct nk_context *ctx, TileBrushData *tbData, TileClass *selectedTC);
-static bool DrawCheckbox(
-	struct nk_context *ctx, const char *label, const char *tooltip,
-	bool *value);
 static void DrawTilePropsSidebar(
 	struct nk_context *ctx, TileBrushData *tbData, TileClass *selectedTC)
 {
@@ -368,20 +365,6 @@ static void DrawTileStyleSelect(
 		TileClassReloadPic(selectedTC, tbData->pm);
 		tbData->result |= EDITOR_RESULT_CHANGED_AND_RELOAD;
 	}
-}
-static bool DrawCheckbox(
-	struct nk_context *ctx, const char *label, const char *tooltip,
-	bool *value)
-{
-	struct nk_rect bounds = nk_widget_bounds(ctx);
-	int iValue = (int)*value;
-	const bool changed = nk_checkbox_label(ctx, label, &iValue);
-	*value = (bool)iValue;
-	if (tooltip && nk_input_is_mouse_hovering_rect(&ctx->input, bounds))
-	{
-		nk_tooltip(ctx, tooltip);
-	}
-	return changed;
 }
 
 static void DrawTileClass(

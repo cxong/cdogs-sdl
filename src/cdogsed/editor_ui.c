@@ -40,6 +40,7 @@
 #include <cdogs/mission_convert.h>
 #include <cdogs/pic_manager.h>
 
+#include "editor_ui_campaign.h"
 #include "editor_ui_cave.h"
 #include "editor_ui_color.h"
 #include "editor_ui_common.h"
@@ -59,32 +60,11 @@ static char *CampaignGetTitle(UIObject *o, void *data)
 	Campaign *co = data;
 	return co->Setting.Title;
 }
-static char **CampaignGetTitleSrc(void *data)
+static EditorResult CampaignEdit(void *data, int d)
 {
-	Campaign *co = data;
-	return &co->Setting.Title;
-}
-static char *CampaignGetAuthor(UIObject *o, void *data)
-{
-	UNUSED(o);
-	Campaign *co = data;
-	return co->Setting.Author;
-}
-static char **CampaignGetAuthorSrc(void *data)
-{
-	Campaign *co = data;
-	return &co->Setting.Author;
-}
-static char *CampaignGetDescription(UIObject *o, void *data)
-{
-	UNUSED(o);
-	Campaign *co = data;
-	return co->Setting.Description;
-}
-static char **CampaignGetDescriptionSrc(void *data)
-{
-	Campaign *co = data;
-	return &co->Setting.Description;
+	UNUSED(d);
+	Campaign *c = data;
+	return EditCampaignOptions(&gEventHandlers, c);
 }
 static const char *CampaignGetMissionIndexStr(UIObject *o, void *data)
 {
@@ -1029,7 +1009,6 @@ static void DeactivateBrush(UIObject *o, void *data)
 	b->IsActive = false;
 }
 
-static UIObject *CreateCampaignObjs(Campaign *co);
 static UIObject *CreateMissionObjs(Campaign *co);
 static UIObject *CreateClassicMapObjs(struct vec2i pos, Campaign *co);
 static UIObject *CreateMapItemObjs(Campaign *co, int dy);
@@ -1050,8 +1029,7 @@ static EditorResult ToggleCollapse(void *data, int d);
 static void DrawBackground(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data);
 static UIObject *CreateEditorObjs(Campaign *co, EditorBrush *brush);
-UIObject *CreateMainObjs(
-	Campaign *co, EditorBrush *brush, struct vec2i size)
+UIObject *CreateMainObjs(Campaign *co, EditorBrush *brush, struct vec2i size)
 {
 	UIObject *cc =
 		UIObjectCreate(UITYPE_NONE, 0, svec2i_zero(), svec2i_zero());
@@ -1139,13 +1117,11 @@ static UIObject *CreateEditorObjs(Campaign *co, EditorBrush *brush)
 	pos.y = 5;
 
 	o = UIObjectCreate(
-		UITYPE_TEXTBOX, YC_CAMPAIGNTITLE, svec2i(25, pos.y), svec2i(140, th));
-	o->u.Textbox.TextLinkFunc = CampaignGetTitle;
-	o->u.Textbox.TextSourceFunc = CampaignGetTitleSrc;
+		UITYPE_LABEL, YC_CAMPAIGNTITLE, svec2i(25, pos.y), svec2i(140, th));
+	o->u.LabelFunc = CampaignGetTitle;
+	CSTRDUP(o->Tooltip, "Click to edit campaign options");
+	o->ChangeFunc = CampaignEdit;
 	o->Data = co;
-	CSTRDUP(o->u.Textbox.Hint, "(Campaign title)");
-	o->Flags = UI_SELECT_ONLY_FIRST;
-	UIObjectAddChild(o, CreateCampaignObjs(co));
 	UIObjectAddChild(cc, o);
 
 	// Mission insert/delete/index, current mission
@@ -1401,48 +1377,6 @@ static UIObject *CreateEditorObjs(Campaign *co, EditorBrush *brush)
 	CreateObjectivesObjs(co, c, pos);
 
 	return cc;
-}
-static UIObject *CreateCampaignObjs(Campaign *co)
-{
-	const int th = FontH();
-	UIObject *c;
-	UIObject *o;
-	UIObject *o2;
-	int x;
-	int y;
-	c = UIObjectCreate(UITYPE_NONE, 0, svec2i_zero(), svec2i_zero());
-	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
-
-	x = 0;
-	y = Y_ABS;
-
-	o = UIObjectCreate(
-		UITYPE_TEXTBOX, YC_CAMPAIGNTITLE, svec2i_zero(), svec2i_zero());
-	o->Flags = UI_SELECT_ONLY;
-
-	o2 = UIObjectCopy(o);
-	o2->u.Textbox.TextLinkFunc = CampaignGetAuthor;
-	o2->u.Textbox.TextSourceFunc = CampaignGetAuthorSrc;
-	o2->Data = co;
-	CSTRDUP(o2->u.Textbox.Hint, "(Campaign author)");
-	o2->Id2 = XC_AUTHOR;
-	o2->Pos = svec2i(x, y);
-	o2->Size = svec2i(295, th);
-	UIObjectAddChild(c, o2);
-
-	y += th;
-	o2 = UIObjectCopy(o);
-	o2->u.Textbox.TextLinkFunc = CampaignGetDescription;
-	o2->u.Textbox.TextSourceFunc = CampaignGetDescriptionSrc;
-	o2->Data = co;
-	CSTRDUP(o2->u.Textbox.Hint, "(Campaign description)");
-	o2->Id2 = XC_CAMPAIGNDESC;
-	o2->Pos = svec2i(x, y);
-	o2->Size = svec2i(295, 5 * th);
-	UIObjectAddChild(c, o2);
-
-	UIObjectDestroy(o);
-	return c;
 }
 static UIObject *CreateMissionObjs(Campaign *co)
 {

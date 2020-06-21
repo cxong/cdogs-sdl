@@ -53,6 +53,7 @@ typedef struct
 	char *Title;
 	char *Author;
 	char *Description;
+	bool WeaponPersist;
 	CArray Missions;	// of Mission
 	CharacterStore characters;
 } CampaignSetting;
@@ -69,7 +70,6 @@ typedef struct
 	bool IsError;
 	bool OptionsSet;
 	bool IsComplete;
-	bool WeaponPersist;
 } Campaign;
 extern Campaign gCampaign;
 

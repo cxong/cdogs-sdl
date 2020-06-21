@@ -1,8 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-
-	Copyright (c) 2013-2015, 2020 Cong Xu
+	Copyright (c) 2020 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -28,19 +27,9 @@
 */
 #pragma once
 
-#include "game_mode.h"
+#include <cdogs/campaigns.h>
+#include <cdogs/events.h>
 
-typedef struct
-{
-	char *Filename;
-	char *Path;
-	char *Info;
-	GameMode Mode;
-	int NumMissions;
-} CampaignEntry;
+#include "editor_ui_common.h"
 
-void CampaignEntryInit(CampaignEntry *entry, const char *title, GameMode mode);
-void CampaignEntryCopy(CampaignEntry *dst, CampaignEntry *src);
-bool CampaignEntryTryLoad(
-	CampaignEntry *entry, const char *path, GameMode mode);
-void CampaignEntryTerminate(CampaignEntry *entry);
+EditorResult EditCampaignOptions(EventHandlers *handlers, Campaign *c);

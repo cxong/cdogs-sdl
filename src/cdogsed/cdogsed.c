@@ -327,10 +327,6 @@ static void AdjustXC(int yc, int *xc)
 	Mission *mission = CampaignGetCurrentMission(&gCampaign);
 	switch (yc)
 	{
-	case YC_CAMPAIGNTITLE:
-		*xc = CLAMP_OPPOSITE(*xc, 0, XC_CAMPAIGNDESC);
-		break;
-
 	case YC_MISSIONTITLE:
 		*xc = CLAMP_OPPOSITE(*xc, 0, XC_MUSICFILE);
 		break;

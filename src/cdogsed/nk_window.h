@@ -38,7 +38,7 @@
 #ifdef _MSC_VER
 // Guard against compile time constant in nk_memset
 #pragma warning(push)
-#pragma warning(disable: 4127)
+#pragma warning(disable : 4127)
 #endif
 #include <nuklear/nuklear.h>
 #ifdef _MSC_VER
@@ -53,7 +53,6 @@
 #include <cdogs/vector.h>
 
 #define PIC_SCALE 2
-
 
 typedef struct
 {
@@ -75,13 +74,16 @@ typedef struct
 void NKWindowInit(NKWindowConfig *cfg);
 void NKWindow(NKWindowConfig cfg);
 
-int nk_combo_separator_image(struct nk_context *ctx,
-	const GLuint *img_ids, const char *items_separated_by_separator,
-	int separator, int selected, int count, int item_height,
-	struct nk_vec2 size);
+int nk_combo_separator_image(
+	struct nk_context *ctx, const GLuint *img_ids,
+	const char *items_separated_by_separator, int separator, int selected,
+	int count, int item_height, struct nk_vec2 size);
 
 // Util functions
 void LoadTexFromPic(const GLuint texid, const Pic *pic);
+bool DrawCheckbox(
+	struct nk_context *ctx, const char *label, const char *tooltip,
+	bool *value);
 void DrawPic(
 	struct nk_context *ctx, const Pic *pic, const GLuint texid,
 	const struct vec2i pos, const float scale);

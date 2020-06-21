@@ -38,7 +38,6 @@
 #include "map_archive.h"
 #include "mission.h"
 
-
 int MapNewScan(const char *filename, char **title, int *numMissions)
 {
 	int err = 0;
@@ -94,9 +93,8 @@ int MapNewScanJSON(json_t *root, char **title, int *numMissions)
 	if (version < 3)
 	{
 		for (json_t *missionNode =
-			json_find_first_label(root, "Missions")->child->child;
-			missionNode;
-			missionNode = missionNode->next)
+				 json_find_first_label(root, "Missions")->child->child;
+			 missionNode; missionNode = missionNode->next)
 		{
 			(*numMissions)++;
 		}
@@ -157,7 +155,8 @@ int MapNewLoad(const char *filename, CampaignSetting *c)
 		goto bail;
 	}
 	MapNewLoadCampaignJSON(root, c);
-	LoadMissions(&c->Missions, json_find_first_label(root, "Missions")->child, version);
+	LoadMissions(
+		&c->Missions, json_find_first_label(root, "Missions")->child, version);
 	CharacterLoadJSON(&c->characters, root, version);
 
 bail:
@@ -177,6 +176,7 @@ void MapNewLoadCampaignJSON(json_t *root, CampaignSetting *c)
 	c->Author = GetString(root, "Author");
 	CFREE(c->Description);
 	c->Description = GetString(root, "Description");
+	LoadBool(&c->WeaponPersist, root, "WeaponPersist");
 }
 
 static void LoadMissionObjectives(
@@ -222,8 +222,7 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 			CFREE(tmp);
 		}
 		LoadMissionObjectives(
-			&m.Objectives,
-			json_find_first_label(child, "Objectives")->child,
+			&m.Objectives, json_find_first_label(child, "Objectives")->child,
 			version);
 		LoadIntArray(&m.Enemies, child, "Enemies");
 		LoadIntArray(&m.SpecialChars, child, "SpecialChars");
@@ -250,13 +249,13 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 			if (modsNode && modsNode->child)
 			{
 				modsNode = modsNode->child;
-				for (json_t *modNode = modsNode->child;
-					modNode;
-					modNode = modNode->next)
+				for (json_t *modNode = modsNode->child; modNode;
+					 modNode = modNode->next)
 				{
 					MapObjectDensity mod;
 					mod.M = StrMapObject(
-						json_find_first_label(modNode, "MapObject")->child->text);
+						json_find_first_label(modNode, "MapObject")
+							->child->text);
 					LoadInt(&mod.Density, modNode, "Density");
 					CArrayPushBack(&m.MapObjectDensities, &mod);
 				}
@@ -286,29 +285,28 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 				continue;
 			}
 			break;
-		case MAPTYPE_CAVE:
+		case MAPTYPE_CAVE: {
+			LoadMissionTileClasses(&m.u.Cave.TileClasses, child, version);
+			LoadInt(&m.u.Cave.FillPercent, child, "FillPercent");
+			LoadInt(&m.u.Cave.Repeat, child, "Repeat");
+			LoadInt(&m.u.Cave.R1, child, "R1");
+			LoadInt(&m.u.Cave.R2, child, "R2");
+			json_t *roomsNode = json_find_first_label(child, "Rooms");
+			if (roomsNode != NULL && roomsNode->child != NULL)
 			{
-				LoadMissionTileClasses(&m.u.Cave.TileClasses, child, version);
-				LoadInt(&m.u.Cave.FillPercent, child, "FillPercent");
-				LoadInt(&m.u.Cave.Repeat, child, "Repeat");
-				LoadInt(&m.u.Cave.R1, child, "R1");
-				LoadInt(&m.u.Cave.R2, child, "R2");
-				json_t *roomsNode = json_find_first_label(child, "Rooms");
-				if (roomsNode != NULL && roomsNode->child != NULL)
-				{
-					LoadRooms(&m.u.Cave.Rooms, roomsNode->child);
-				}
-				LoadInt(&m.u.Cave.Squares, child, "Squares");
-				if (version < 14)
-				{
-					m.u.Cave.DoorsEnabled = true;
-				}
-				else
-				{
-					LoadBool(&m.u.Cave.DoorsEnabled, child, "DoorsEnabled");
-				}
+				LoadRooms(&m.u.Cave.Rooms, roomsNode->child);
 			}
-			break;
+			LoadInt(&m.u.Cave.Squares, child, "Squares");
+			if (version < 14)
+			{
+				m.u.Cave.DoorsEnabled = true;
+			}
+			else
+			{
+				LoadBool(&m.u.Cave.DoorsEnabled, child, "DoorsEnabled");
+			}
+		}
+		break;
 		default:
 			assert(0 && "unknown map type");
 			continue;
@@ -400,20 +398,16 @@ void LoadMissionTileClasses(
 		}
 		TileClassInit(
 			&mtc->Wall, &gPicManager, &gTileWall, wallStyle,
-			TileClassBaseStyleType(TILE_CLASS_WALL),
-			wallMask, altMask);
+			TileClassBaseStyleType(TILE_CLASS_WALL), wallMask, altMask);
 		TileClassInit(
 			&mtc->Floor, &gPicManager, &gTileFloor, floorStyle,
-			TileClassBaseStyleType(TILE_CLASS_FLOOR),
-			floorMask, altMask);
+			TileClassBaseStyleType(TILE_CLASS_FLOOR), floorMask, altMask);
 		TileClassInit(
 			&mtc->Room, &gPicManager, &gTileRoom, roomStyle,
-			TileClassBaseStyleType(TILE_CLASS_FLOOR),
-			roomMask, altMask);
+			TileClassBaseStyleType(TILE_CLASS_FLOOR), roomMask, altMask);
 		TileClassInit(
 			&mtc->Door, &gPicManager, &gTileDoor, doorStyle,
-			TileClassBaseStyleType(TILE_CLASS_DOOR),
-			colorWhite, colorWhite);
+			TileClassBaseStyleType(TILE_CLASS_DOOR), colorWhite, colorWhite);
 	}
 	else
 	{

@@ -22,7 +22,6 @@ message NCampaignDef {
 	string Path = 1;
 	int32 GameMode = 2;
 	uint32 Mission = 3;
-	bool WeaponPersist = 4;
 }
 
 message NColor {

@@ -1257,7 +1257,7 @@ static void ActorAddAmmoPickup(const TActor *actor)
 				AmmoGetById(&gAmmo, i)->Amount * AMMO_STARTING_MULTIPLE;
 			CArrayPushBack(&actor->ammo, &amount);
 		}
-		if (gCampaign.WeaponPersist)
+		if (gCampaign.Setting.WeaponPersist)
 		{
 			for (int i = 0; i < aa.Ammo_count; i++)
 			{

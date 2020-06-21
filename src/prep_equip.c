@@ -65,7 +65,7 @@ GameLoopData *PlayerEquip(void)
 		CArray weapons;
 		CArrayInit(&weapons, sizeof(WeaponClass *));
 		CArrayCopy(&weapons, &gMission.Weapons);
-		if (gCampaign.WeaponPersist)
+		if (gCampaign.Setting.WeaponPersist)
 		{
 			// Add player's current weapons into available weapons
 			AddPlayerWeapons(&weapons, p->guns);

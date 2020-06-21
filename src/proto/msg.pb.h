@@ -68,7 +68,6 @@ typedef struct _NCampaignDef {
     char Path[4096];
     int32_t GameMode;
     uint32_t Mission;
-    bool WeaponPersist;
 } NCampaignDef;
 
 typedef struct _NClientId {
@@ -373,7 +372,7 @@ typedef struct _NPlayerData {
 /* Initializer values for message structs */
 #define NServerInfo_init_default                 {0, 0, "", 0, "", 0, 0, 0}
 #define NClientId_init_default                   {0, 0}
-#define NCampaignDef_init_default                {"", 0, 0, 0}
+#define NCampaignDef_init_default                {"", 0, 0}
 #define NColor_init_default                      {0}
 #define NCharColors_init_default                 {false, NColor_init_default, false, NColor_init_default, false, NColor_init_default, false, NColor_init_default, false, NColor_init_default}
 #define NPlayerStats_init_default                {0, 0, 0, 0}
@@ -422,7 +421,7 @@ typedef struct _NPlayerData {
 #define NMissionEnd_init_default                 {0, 0, ""}
 #define NServerInfo_init_zero                    {0, 0, "", 0, "", 0, 0, 0}
 #define NClientId_init_zero                      {0, 0}
-#define NCampaignDef_init_zero                   {"", 0, 0, 0}
+#define NCampaignDef_init_zero                   {"", 0, 0}
 #define NColor_init_zero                         {0}
 #define NCharColors_init_zero                    {false, NColor_init_zero, false, NColor_init_zero, false, NColor_init_zero, false, NColor_init_zero, false, NColor_init_zero}
 #define NPlayerStats_init_zero                   {0, 0, 0, 0}
@@ -497,7 +496,6 @@ typedef struct _NPlayerData {
 #define NCampaignDef_Path_tag                    1
 #define NCampaignDef_GameMode_tag                2
 #define NCampaignDef_Mission_tag                 3
-#define NCampaignDef_WeaponPersist_tag           4
 #define NClientId_Id_tag                         1
 #define NClientId_FirstPlayerUID_tag             2
 #define NColor_RGBA_tag                          1
@@ -665,8 +663,7 @@ X(a, STATIC,   SINGULAR, UINT32,   FirstPlayerUID,    2)
 #define NCampaignDef_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, STRING,   Path,              1) \
 X(a, STATIC,   SINGULAR, INT32,    GameMode,          2) \
-X(a, STATIC,   SINGULAR, UINT32,   Mission,           3) \
-X(a, STATIC,   SINGULAR, BOOL,     WeaponPersist,     4)
+X(a, STATIC,   SINGULAR, UINT32,   Mission,           3)
 #define NCampaignDef_CALLBACK NULL
 #define NCampaignDef_DEFAULT NULL
 
@@ -1151,7 +1148,7 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 /* Maximum encoded size of messages (where known) */
 #define NServerInfo_size                         95
 #define NClientId_size                           12
-#define NCampaignDef_size                        4117
+#define NCampaignDef_size                        4115
 #define NColor_size                              11
 #define NCharColors_size                         65
 #define NPlayerStats_size                        44

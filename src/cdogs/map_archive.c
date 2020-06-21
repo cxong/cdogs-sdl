@@ -1,29 +1,29 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2019 Cong Xu
-    All rights reserved.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (c) 2014-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "map_archive.h"
 
@@ -38,12 +38,10 @@
 #include "pickup.h"
 #include "player_template.h"
 
-
 static char *ReadFileIntoBuf(const char *path, const char *mode, long *len);
 
 static json_t *ReadArchiveJSON(const char *archive, const char *filename);
-int MapNewScanArchive(
-	const char *filename, char **title, int *numMissions)
+int MapNewScanArchive(const char *filename, char **title, int *numMissions)
 {
 	int err = 0;
 	json_t *root = ReadArchiveJSON(filename, "campaign.json");
@@ -106,15 +104,13 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	root = ReadArchiveJSON(filename, "character_classes.json");
 	if (root != NULL)
 	{
-		CharacterClassesLoadJSON(
-			&gCharacterClasses.CustomClasses, root);
+		CharacterClassesLoadJSON(&gCharacterClasses.CustomClasses, root);
 	}
 
 	root = ReadArchiveJSON(filename, "bullets.json");
 	if (root != NULL)
 	{
-		BulletLoadJSON(
-			&gBulletClasses, &gBulletClasses.CustomClasses, root);
+		BulletLoadJSON(&gBulletClasses, &gBulletClasses.CustomClasses, root);
 	}
 
 	root = ReadArchiveJSON(filename, "ammo.json");
@@ -183,7 +179,8 @@ static json_t *ReadArchiveJSON(const char *archive, const char *filename)
 	sprintf(path, "%s/%s", archive, filename);
 	long len;
 	char *buf = ReadFileIntoBuf(path, "rb", &len);
-	if (buf == NULL) goto bail;
+	if (buf == NULL)
+		goto bail;
 	const enum json_error e = json_parse_document(&root, buf);
 	if (e != JSON_OK)
 	{
@@ -251,12 +248,11 @@ bail:
 end:
 	if (f != NULL && fclose(f) != 0)
 	{
-		LOG(LM_MAP, LL_ERROR, "Cannot close file %s: %s",
-			path, strerror(errno));
+		LOG(LM_MAP, LL_ERROR, "Cannot close file %s: %s", path,
+			strerror(errno));
 	}
 	return buf;
 }
-
 
 static json_t *SaveMissions(CArray *a);
 int MapArchiveSave(const char *filename, CampaignSetting *c)
@@ -285,6 +281,7 @@ int MapArchiveSave(const char *filename, CampaignSetting *c)
 	AddStringPair(root, "Title", c->Title);
 	AddStringPair(root, "Author", c->Author);
 	AddStringPair(root, "Description", c->Description);
+	AddBoolPair(root, "WeaponPersist", c->WeaponPersist);
 	AddIntPair(root, "Missions", (int)c->Missions.size);
 	char buf2[CDOGS_PATH_MAX];
 	sprintf(buf2, "%s/campaign.json", buf);
@@ -389,8 +386,8 @@ static json_t *SaveMissions(CArray *a)
 			AddIntPair(node, "Repeat", mission->u.Cave.Repeat);
 			AddIntPair(node, "R1", mission->u.Cave.R1);
 			AddIntPair(node, "R2", mission->u.Cave.R2);
-				json_insert_pair_into_object(
-					node, "Rooms", SaveRooms(mission->u.Cave.Rooms));
+			json_insert_pair_into_object(
+				node, "Rooms", SaveRooms(mission->u.Cave.Rooms));
 			AddIntPair(node, "Squares", mission->u.Cave.Squares);
 			AddBoolPair(node, "DoorsEnabled", mission->u.Cave.DoorsEnabled);
 			break;
@@ -460,25 +457,25 @@ static json_t *SaveObjectives(CArray *a)
 {
 	json_t *objectivesNode = json_new_array();
 	CA_FOREACH(const Objective, o, *a)
-		json_t *objNode = json_new_object();
-		AddStringPair(objNode, "Description", o->Description);
-		AddStringPair(objNode, "Type", ObjectiveTypeStr(o->Type));
-		switch (o->Type)
-		{
-		case OBJECTIVE_COLLECT:
-			AddStringPair(objNode, "Pickup", o->u.Pickup->Name);
-			break;
-		case OBJECTIVE_DESTROY:
-			AddStringPair(objNode, "MapObject", o->u.MapObject->Name);
-			break;
-		default:
-			AddIntPair(objNode, "Index", o->u.Index);
-			break;
-		}
-		AddIntPair(objNode, "Count", o->Count);
-		AddIntPair(objNode, "Required", o->Required);
-		AddIntPair(objNode, "Flags", o->Flags);
-		json_insert_child(objectivesNode, objNode);
+	json_t *objNode = json_new_object();
+	AddStringPair(objNode, "Description", o->Description);
+	AddStringPair(objNode, "Type", ObjectiveTypeStr(o->Type));
+	switch (o->Type)
+	{
+	case OBJECTIVE_COLLECT:
+		AddStringPair(objNode, "Pickup", o->u.Pickup->Name);
+		break;
+	case OBJECTIVE_DESTROY:
+		AddStringPair(objNode, "MapObject", o->u.MapObject->Name);
+		break;
+	default:
+		AddIntPair(objNode, "Index", o->u.Index);
+		break;
+	}
+	AddIntPair(objNode, "Count", o->Count);
+	AddIntPair(objNode, "Required", o->Required);
+	AddIntPair(objNode, "Flags", o->Flags);
+	json_insert_child(objectivesNode, objNode);
 	CA_FOREACH_END()
 	return objectivesNode;
 }

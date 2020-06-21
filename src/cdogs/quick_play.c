@@ -257,6 +257,7 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 	CSTRDUP(setting->Author, "");
 	CFREE(setting->Description);
 	CSTRDUP(setting->Description, "");
+	setting->WeaponPersist = true;
 	for (int i = 0; i < NUM_MISSIONS; i++)
 	{
 		AddMission(&setting->Missions, &gPicManager, &setting->characters, i);

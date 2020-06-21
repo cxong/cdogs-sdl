@@ -42,16 +42,15 @@
 #ifdef _MSC_VER
 // Guard against compile time constant in nk_memset
 #pragma warning(push)
-#pragma warning(disable: 4127)
+#pragma warning(disable : 4127)
 #endif
 #include <nuklear/nuklear.h>
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
-#include <nuklear/nuklear_sdl_gl2.h>
 #include <cdogs/draw/draw_actor.h>
 #include <cdogs/sys_config.h>
-
+#include <nuklear/nuklear_sdl_gl2.h>
 
 void NKWindowInit(NKWindowConfig *cfg)
 {
@@ -63,8 +62,7 @@ void NKWindowInit(NKWindowConfig *cfg)
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
 	cfg->win = SDL_CreateWindow(
-		cfg->Title,
-		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+		cfg->Title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 		cfg->Size.x, cfg->Size.y,
 		SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | cfg->WindowFlags);
 	SDL_SetWindowMinimumSize(cfg->win, cfg->MinSize.x, cfg->MinSize.y);
@@ -89,7 +87,6 @@ void NKWindowInit(NKWindowConfig *cfg)
 	nk_sdl_font_stash_begin(&atlas);
 	nk_sdl_font_stash_end();
 }
-
 
 static bool HandleEvents(EventHandlers *handler, const Uint32 ticks);
 static bool Draw(const NKWindowConfig cfg);
@@ -169,10 +166,10 @@ static bool Draw(const NKWindowConfig cfg)
 static void BeforeDrawTex(const GLuint texid);
 
 // Custom controls
-int nk_combo_separator_image(struct nk_context *ctx,
-	const GLuint *img_ids, const char *items_separated_by_separator,
-	int separator, int selected, int count, int item_height,
-	struct nk_vec2 size)
+int nk_combo_separator_image(
+	struct nk_context *ctx, const GLuint *img_ids,
+	const char *items_separated_by_separator, int separator, int selected,
+	int count, int item_height, struct nk_vec2 size)
 {
 	int i;
 	int max_height;
@@ -189,18 +186,22 @@ int nk_combo_separator_image(struct nk_context *ctx,
 
 	/* calculate popup window */
 	item_spacing = ctx->style.window.spacing;
-	window_padding = nk_panel_get_padding(&ctx->style, ctx->current->layout->type);
+	window_padding =
+		nk_panel_get_padding(&ctx->style, ctx->current->layout->type);
 	max_height = count * item_height + count * (int)item_spacing.y;
 	max_height += (int)item_spacing.y * 2 + (int)window_padding.y * 2;
 	size.y = NK_MIN(size.y, (float)max_height);
 
 	/* find selected item */
 	current_item = items_separated_by_separator;
-	for (i = 0; i < count; ++i) {
+	for (i = 0; i < count; ++i)
+	{
 		iter = current_item;
-		while (*iter && *iter != separator) iter++;
+		while (*iter && *iter != separator)
+			iter++;
 		length = (int)(iter - current_item);
-		if (i == selected) break;
+		if (i == selected)
+			break;
 		current_item = iter + 1;
 	}
 
@@ -212,17 +213,21 @@ int nk_combo_separator_image(struct nk_context *ctx,
 	bounds.w = (float)12 * PIC_SCALE;
 	bounds.h = (float)12 * PIC_SCALE;
 
-	if (nk_combo_begin_text(ctx, current_item, length, size)) {
+	if (nk_combo_begin_text(ctx, current_item, length, size))
+	{
 		current_item = items_separated_by_separator;
 		nk_layout_row_dynamic(ctx, (float)item_height, 1);
-		for (i = 0; i < count; ++i) {
+		for (i = 0; i < count; ++i)
+		{
 			const struct nk_image img = nk_image_id(img_ids[i]);
 			// TODO: image size
 			BeforeDrawTex(img_ids[i]);
 			iter = current_item;
-			while (*iter && *iter != separator) iter++;
+			while (*iter && *iter != separator)
+				iter++;
 			length = (int)(iter - current_item);
-			if (nk_contextual_item_image_text(ctx, img, current_item, length, NK_TEXT_LEFT))
+			if (nk_contextual_item_image_text(
+					ctx, img, current_item, length, NK_TEXT_LEFT))
 				selected = i;
 			current_item = current_item + length + 1;
 		}
@@ -268,6 +273,21 @@ static Pic PadEven(const Pic *pic)
 	return p;
 }
 
+bool DrawCheckbox(
+	struct nk_context *ctx, const char *label, const char *tooltip,
+	bool *value)
+{
+	struct nk_rect bounds = nk_widget_bounds(ctx);
+	int iValue = (int)*value;
+	const bool changed = nk_checkbox_label(ctx, label, &iValue);
+	*value = (bool)iValue;
+	if (tooltip && nk_input_is_mouse_hovering_rect(&ctx->input, bounds))
+	{
+		nk_tooltip(ctx, tooltip);
+	}
+	return changed;
+}
+
 void DrawPic(
 	struct nk_context *ctx, const Pic *pic, const GLuint texid,
 	const struct vec2i pos, const float scale)
@@ -300,7 +320,7 @@ bool ColorPicker(
 {
 	bool changed = false;
 	nk_label(ctx, label, NK_TEXT_LEFT);
-	struct nk_color color = { c->r, c->g, c->b, 255 };
+	struct nk_color color = {c->r, c->g, c->b, 255};
 	const struct nk_color colorOriginal = color;
 	if (nk_combo_begin_color(ctx, color, nk_vec2(nk_widget_width(ctx), 400)))
 	{

@@ -64,10 +64,6 @@
 #define YC_ITEMS            9
 #define YC_OBJECTIVES       10
 
-#define XC_CAMPAIGNTITLE    0
-#define XC_AUTHOR           1
-#define XC_CAMPAIGNDESC     2
-
 #define XC_MISSIONTITLE     0
 #define XC_MUSICFILE        1
 
