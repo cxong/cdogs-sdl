@@ -54,7 +54,7 @@ static void DrawStyleArea(
 	struct vec2i pos, const char *name, const Pic *pic, int idx, int count,
 	int isHighlighted);
 
-static char *CampaignGetTitle(UIObject *o, void *data)
+static const char *CampaignGetTitle(UIObject *o, void *data)
 {
 	UNUSED(o);
 	Campaign *co = data;
