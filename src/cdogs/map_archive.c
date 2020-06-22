@@ -282,6 +282,7 @@ int MapArchiveSave(const char *filename, CampaignSetting *c)
 	AddStringPair(root, "Author", c->Author);
 	AddStringPair(root, "Description", c->Description);
 	AddBoolPair(root, "WeaponPersist", c->WeaponPersist);
+	AddBoolPair(root, "SkipWeaponMenu", c->SkipWeaponMenu);
 	AddIntPair(root, "Missions", (int)c->Missions.size);
 	char buf2[CDOGS_PATH_MAX];
 	sprintf(buf2, "%s/campaign.json", buf);

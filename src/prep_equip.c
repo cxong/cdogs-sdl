@@ -237,7 +237,8 @@ static GameLoopResult PlayerEquipUpdate(GameLoopData *data, LoopRunner *l)
 	PlayerEquipData *pData = data->Data;
 
 	// If no human players, don't show equip screen
-	if (GetNumPlayers(PLAYER_ANY, false, true) == 0)
+	if (GetNumPlayers(PLAYER_ANY, false, true) == 0 ||
+		gCampaign.Setting.SkipWeaponMenu)
 	{
 		pData->waitResult = EVENT_WAIT_OK;
 		goto bail;

@@ -177,6 +177,7 @@ void MapNewLoadCampaignJSON(json_t *root, CampaignSetting *c)
 	CFREE(c->Description);
 	c->Description = GetString(root, "Description");
 	LoadBool(&c->WeaponPersist, root, "WeaponPersist");
+	LoadBool(&c->SkipWeaponMenu, root, "SkipWeaponMenu");
 }
 
 static void LoadMissionObjectives(

@@ -111,6 +111,12 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		{
 			changed = true;
 		}
+		if (DrawCheckbox(
+				ctx, "Skip weapon menu", "Skip weapon menu before missions",
+				&cData->c->Setting.SkipWeaponMenu))
+		{
+			changed = true;
+		}
 	}
 	if (changed)
 	{

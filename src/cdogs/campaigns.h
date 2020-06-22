@@ -54,6 +54,7 @@ typedef struct
 	char *Author;
 	char *Description;
 	bool WeaponPersist;
+	bool SkipWeaponMenu;
 	CArray Missions;	// of Mission
 	CharacterStore characters;
 } CampaignSetting;
