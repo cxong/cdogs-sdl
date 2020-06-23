@@ -579,7 +579,6 @@ Config ConfigDefault(void)
 	ConfigGroupAdd(&game,
 		ConfigNewInt("Lives", 2, 1, 5, 1, NULL, NULL));
 	ConfigGroupAdd(&game, ConfigNewBool("HealthPickups", true));
-	ConfigGroupAdd(&game, ConfigNewBool("Ammo", false));
 	ConfigGroupAdd(&game, ConfigNewBool("Fog", true));
 	ConfigGroupAdd(&game,
 		ConfigNewInt("SightRange", 15, 8, 40, 1, NULL, NULL));

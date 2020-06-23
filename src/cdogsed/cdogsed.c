@@ -1247,8 +1247,6 @@ int main(int argc, char *argv[])
 	ConfigGet(&gConfig, "Graphics.WindowWidth")->u.Int.Value = 800;
 	ConfigGet(&gConfig, "Graphics.WindowHeight")->u.Int.Value = 600;
 	ConfigGet(&gConfig, "Graphics.SecondWindow")->u.Bool.Value = false;
-	// Force enable ammo so that ammo spawners show up
-	ConfigGet(&gConfig, "Game.Ammo")->u.Bool.Value = true;
 	ConfigSetChanged(&gConfig);
 	GraphicsInit(ec.g, &gConfig);
 	ec.g->cachedConfig.IsEditor = true;

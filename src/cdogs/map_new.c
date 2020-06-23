@@ -176,6 +176,7 @@ void MapNewLoadCampaignJSON(json_t *root, CampaignSetting *c)
 	c->Author = GetString(root, "Author");
 	CFREE(c->Description);
 	c->Description = GetString(root, "Description");
+	LoadBool(&c->Ammo, root, "Ammo");
 	LoadBool(&c->WeaponPersist, root, "WeaponPersist");
 	LoadBool(&c->SkipWeaponMenu, root, "SkipWeaponMenu");
 }

@@ -1,29 +1,29 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2017, 2019 Cong Xu
-    All rights reserved.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (c) 2013-2017, 2019-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "player_hud.h"
 
@@ -31,8 +31,8 @@
 #include "automap.h"
 #include "draw/draw_actor.h"
 #include "draw/nine_slice.h"
-#include "hud_defs.h"
 #include "hud/gauge.h"
+#include "hud_defs.h"
 
 #define SCORE_WIDTH 26
 #define GRENADES_WIDTH 30
@@ -40,7 +40,6 @@
 #define GUN_ICON_WIDTH 14
 #define PLAYER_ICON_WIDTH 20
 #define BAR_HEIGHT 13
-
 
 void HUDPlayerInit(HUDPlayer *h)
 {
@@ -51,15 +50,16 @@ void HUDPlayerInit(HUDPlayer *h)
 void HUDPlayerUpdate(HUDPlayer *h, const PlayerData *p, const int ms)
 {
 	const TActor *a = ActorGetByUID(p->ActorUID);
-	if (a == NULL) return;
+	if (a == NULL)
+		return;
 
 	// Health
 	HealthGaugeUpdate(&h->healthGauge, a, ms);
 }
 
 static void DrawPlayerStatus(
-	HUD *hud, const PlayerData *data, TActor *p,
-	const int flags, const HUDPlayer *h, const Rect2i r);
+	HUD *hud, const PlayerData *data, TActor *p, const int flags,
+	const HUDPlayer *h, const Rect2i r);
 static void DrawPlayerObjectiveCompass(
 	const HUD *hud, TActor *a, const int hudPlayerIndex, const int numViews);
 void DrawPlayerHUD(
@@ -67,7 +67,8 @@ void DrawPlayerHUD(
 	const int hudPlayerIndex, const Rect2i r, const int numViews)
 {
 	TActor *a = IsPlayerAlive(p) ? ActorGetByUID(p->ActorUID) : NULL;
-	DrawPlayerStatus(hud, p, a, drawFlags, &hud->hudPlayers[hudPlayerIndex], r);
+	DrawPlayerStatus(
+		hud, p, a, drawFlags, &hud->hudPlayers[hudPlayerIndex], r);
 	HUDNumPopupsDrawPlayer(&hud->numPopups, hudPlayerIndex, drawFlags, r);
 	DrawPlayerObjectiveCompass(hud, a, hudPlayerIndex, numViews);
 }
@@ -89,15 +90,15 @@ static void DrawGunIcons(
 static void DrawGrenadeStatus(
 	GraphicsDevice *g, const TActor *a, const int flags, const Rect2i r);
 static void DrawRadar(
-	GraphicsDevice *device, const TActor *p,
-	const int flags, const bool showExit);
+	GraphicsDevice *device, const TActor *p, const int flags,
+	const bool showExit);
 static void DrawHealth(
-	GraphicsDevice *g, const TActor *a,
-	const int flags, const HUDPlayer *h, const Rect2i r, const color_t mask);
+	GraphicsDevice *g, const TActor *a, const int flags, const HUDPlayer *h,
+	const Rect2i r, const color_t mask);
 // Draw player's score, health etc.
 static void DrawPlayerStatus(
-	HUD *hud, const PlayerData *data, TActor *p,
-	const int flags, const HUDPlayer *h, const Rect2i r)
+	HUD *hud, const PlayerData *data, TActor *p, const int flags,
+	const HUDPlayer *h, const Rect2i r)
 {
 	const color_t mask = data->Char.Colors.Body;
 	SDL_RendererFlip flip = SDL_FLIP_NONE;
@@ -192,15 +193,15 @@ static void DrawPlayerIcon(
 		}
 		if (flags & HUDFLAGS_PLACE_BOTTOM)
 		{
-			pos.y =  g->cachedConfig.Res.y - pos.y + 2;
+			pos.y = g->cachedConfig.Res.y - pos.y + 2;
 		}
 		DrawActorPics(
 			&pics, svec2i_add(pos, offset),
 			Rect2iNew(svec2i(-12, -12), svec2i(12, 5)));
 	}
 	PicRender(
-		framePic, g->gameWindow.renderer, picPos, mask, 0,
-		svec2_one(), flip, Rect2iZero());
+		framePic, g->gameWindow.renderer, picPos, mask, 0, svec2_one(), flip,
+		Rect2iZero());
 }
 static void DrawScore(
 	GraphicsDevice *g, const PicManager *pm, const TActor *a, const int score,
@@ -227,7 +228,7 @@ static void DrawScore(
 	char s[50];
 	if (IsScoreNeeded(gCampaign.Entry.Mode))
 	{
-		if (ConfigGetBool(&gConfig, "Game.Ammo"))
+		if (gCampaign.Setting.Ammo)
 		{
 			// Display money instead of ammo
 			sprintf(s, "$%d", score);
@@ -293,8 +294,8 @@ static void DrawWeaponStatus(
 	}
 
 	Draw9Slice(
-		g, backPic, Rect2iNew(pos, backPicSize), 0, 2, 0, 4, false,
-		mask, SDL_FLIP_NONE);
+		g, backPic, Rect2iNew(pos, backPicSize), 0, 2, 0, 4, false, mask,
+		SDL_FLIP_NONE);
 
 	if (actor == NULL)
 	{
@@ -303,9 +304,10 @@ static void DrawWeaponStatus(
 
 	const Weapon *weapon = ACTOR_GET_WEAPON(actor);
 	const WeaponClass *wc = weapon->Gun;
+	CASSERT(wc != NULL, "weapon has no class");
 
 	// Draw gauge and ammo counter if ammo used
-	if (ConfigGetBool(&gConfig, "Game.Ammo") && wc->AmmoId >= 0)
+	if (gCampaign.Setting.Ammo && wc->AmmoId >= 0)
 	{
 		const Ammo *ammo = AmmoGetById(&gAmmo, wc->AmmoId);
 		const int amount = ActorWeaponGetAmmo(actor, wc);
@@ -318,10 +320,11 @@ static void DrawWeaponStatus(
 		{
 			const Pic *fillPic = PicManagerGetPic(pm, "hud/gauge_small_inner");
 			const struct vec2i fillPicSize = svec2i(
-				MAX(1, (AMMO_WIDTH - 1) * amount / ammo->Max), fillPic->size.y);
+				MAX(1, (AMMO_WIDTH - 1) * amount / ammo->Max),
+				fillPic->size.y);
 			Draw9Slice(
-				g, fillPic, Rect2iNew(svec2i(pos.x, pos.y), fillPicSize),
-				1, 1, 1, 1, false, colorBlue, SDL_FLIP_NONE);
+				g, fillPic, Rect2iNew(svec2i(pos.x, pos.y), fillPicSize), 1, 1,
+				1, 1, false, colorBlue, SDL_FLIP_NONE);
 		}
 
 		// Include ammo counter
@@ -376,6 +379,7 @@ static void DrawGunIcons(
 
 	const Weapon *weapon = ACTOR_GET_WEAPON(actor);
 	const WeaponClass *wc = weapon->Gun;
+	CASSERT(wc != NULL, "weapon has no class");
 
 	// Aligned right
 	const int right =
@@ -391,7 +395,7 @@ static void DrawGunIcons(
 	}
 
 	// Ammo icon
-	if (ConfigGetBool(&gConfig, "Game.Ammo") && wc->AmmoId >= 0)
+	if (gCampaign.Setting.Ammo && wc->AmmoId >= 0)
 	{
 		const Ammo *ammo = AmmoGetById(&gAmmo, wc->AmmoId);
 		const struct vec2i ammoPos = svec2i_add(pos, svec2i(6, 5));
@@ -405,8 +409,8 @@ static void DrawGunIcons(
 }
 
 static void DrawGrenadeIcons(
-	GraphicsDevice *g, const Pic *icon, const struct vec2i pos, const int width,
-	const int amount);
+	GraphicsDevice *g, const Pic *icon, const struct vec2i pos,
+	const int width, const int amount);
 static void DrawGrenadeStatus(
 	GraphicsDevice *g, const TActor *a, const int flags, const Rect2i r)
 {
@@ -436,8 +440,7 @@ static void DrawGrenadeStatus(
 
 	// Draw number of grenade icons; if there are too many draw one with the
 	// amount as text
-	const bool useAmmo =
-		ConfigGetBool(&gConfig, "Game.Ammo") && wc->AmmoId >= 0;
+	const bool useAmmo = gCampaign.Setting.Ammo && wc->AmmoId >= 0;
 	const int amount = useAmmo ? ActorWeaponGetAmmo(a, wc) : -1;
 	const Pic *icon = WeaponClassGetIcon(wc);
 	if (useAmmo && amount > 0 && amount <= MAX_GRENADE_ICONS)
@@ -462,8 +465,8 @@ static void DrawGrenadeStatus(
 	}
 }
 static void DrawGrenadeIcons(
-	GraphicsDevice *g, const Pic *icon, const struct vec2i pos, const int width,
-	const int amount)
+	GraphicsDevice *g, const Pic *icon, const struct vec2i pos,
+	const int width, const int amount)
 {
 	const int dx = width / MAX_GRENADE_ICONS;
 	for (int i = 0; i < amount; i++)
@@ -476,8 +479,8 @@ static void DrawGrenadeIcons(
 }
 
 static void DrawRadar(
-	GraphicsDevice *device, const TActor *p,
-	const int flags, const bool showExit)
+	GraphicsDevice *device, const TActor *p, const int flags,
+	const bool showExit)
 {
 	struct vec2i pos = svec2i_zero();
 	int w = device->cachedConfig.Res.x;
@@ -568,19 +571,15 @@ static void DrawRadar(
 	{
 		const struct vec2i playerPos = Vec2ToTile(p->thing.Pos);
 		AutomapDrawRegion(
-			device->gameWindow.renderer,
-			&gMap,
-			pos,
-			svec2i(AUTOMAP_SIZE, AUTOMAP_SIZE),
-			playerPos,
-			AUTOMAP_FLAGS_MASK,
+			device->gameWindow.renderer, &gMap, pos,
+			svec2i(AUTOMAP_SIZE, AUTOMAP_SIZE), playerPos, AUTOMAP_FLAGS_MASK,
 			showExit);
 	}
 }
 
 static void DrawHealth(
-	GraphicsDevice *g, const TActor *a,
-	const int flags, const HUDPlayer *h, const Rect2i r, const color_t mask)
+	GraphicsDevice *g, const TActor *a, const int flags, const HUDPlayer *h,
+	const Rect2i r, const color_t mask)
 {
 	const int right =
 		SCORE_WIDTH + GRENADES_WIDTH + AMMO_WIDTH + GUN_ICON_WIDTH;
@@ -643,7 +642,7 @@ static void DrawPlayerObjectiveCompass(
 }
 
 static void DrawCompassArrow(
-	GraphicsDevice *g,const Rect2i r, const struct vec2 pos,
+	GraphicsDevice *g, const Rect2i r, const struct vec2 pos,
 	const struct vec2 playerPos, const color_t mask, const char *label);
 static void DrawObjectiveCompass(
 	GraphicsDevice *g, const struct vec2 playerPos, const Rect2i r,
@@ -665,23 +664,23 @@ static void DrawObjectiveCompass(
 		{
 			Tile *tile = MapGetTile(map, tilePos);
 			CA_FOREACH(ThingId, tid, tile->things)
-				Thing *ti = ThingIdGetThing(tid);
-				if (!(ti->flags & THING_OBJECTIVE))
-				{
-					continue;
-				}
-				const int objective = ObjectiveFromThing(ti->flags);
-				const Objective *o =
-					CArrayGet(&gMission.missionData->Objectives, objective);
-				if (o->Flags & OBJECTIVE_HIDDEN)
-				{
-					continue;
-				}
-				if (!(o->Flags & OBJECTIVE_POSKNOWN) && !tile->isVisited)
-				{
-					continue;
-				}
-				DrawCompassArrow(g, r, ti->Pos, playerPos, o->color, NULL);
+			Thing *ti = ThingIdGetThing(tid);
+			if (!(ti->flags & THING_OBJECTIVE))
+			{
+				continue;
+			}
+			const int objective = ObjectiveFromThing(ti->flags);
+			const Objective *o =
+				CArrayGet(&gMission.missionData->Objectives, objective);
+			if (o->Flags & OBJECTIVE_HIDDEN)
+			{
+				continue;
+			}
+			if (!(o->Flags & OBJECTIVE_POSKNOWN) && !tile->isVisited)
+			{
+				continue;
+			}
+			DrawCompassArrow(g, r, ti->Pos, playerPos, o->color, NULL);
 			CA_FOREACH_END()
 		}
 	}
@@ -689,7 +688,7 @@ static void DrawObjectiveCompass(
 
 #define COMP_SATURATE_DIST 350
 static void DrawCompassArrow(
-	GraphicsDevice *g,const Rect2i r, const struct vec2 pos,
+	GraphicsDevice *g, const Rect2i r, const struct vec2 pos,
 	const struct vec2 playerPos, const color_t mask, const char *label)
 {
 	const struct vec2 compassV = svec2_subtract(
@@ -705,9 +704,10 @@ static void DrawCompassArrow(
 	int xDist = (int)fabsf(compassV.x) - r.Size.x / 2;
 	int yDist = (int)fabsf(compassV.y) - r.Size.y / 2;
 	int lDist;
-	xDist > yDist ? lDist = xDist: (lDist = yDist);
-	HSV hsv = { -1.0, 1.0,
-		2.0 - 1.5 * MIN(lDist, COMP_SATURATE_DIST) / COMP_SATURATE_DIST };
+	xDist > yDist ? lDist = xDist : (lDist = yDist);
+	HSV hsv = {
+		-1.0, 1.0,
+		2.0 - 1.5 * MIN(lDist, COMP_SATURATE_DIST) / COMP_SATURATE_DIST};
 	const color_t tintedMask = ColorTint(mask, hsv);
 	struct vec2i textPos = svec2i_zero();
 	struct vec2i drawPos = svec2i_zero();
@@ -725,10 +725,10 @@ static void DrawCompassArrow(
 			if (compassV.x > 0)
 			{
 				// right edge
-				textPos = svec2i(
-					r.Pos.x + r.Size.x, r.Pos.y + r.Size.y / 2 + yInt);
-				drawPos = svec2i(
-					textPos.x - p->size.x, textPos.y - p->size.y / 2);
+				textPos =
+					svec2i(r.Pos.x + r.Size.x, r.Pos.y + r.Size.y / 2 + yInt);
+				drawPos =
+					svec2i(textPos.x - p->size.x, textPos.y - p->size.y / 2);
 			}
 			else
 			{
@@ -749,10 +749,10 @@ static void DrawCompassArrow(
 			if (compassV.y > 0)
 			{
 				// bottom edge
-				textPos = svec2i(
-					r.Pos.x + r.Size.x / 2 + xInt, r.Pos.y + r.Size.y);
-				drawPos = svec2i(
-					textPos.x - p->size.x / 2, textPos.y - p->size.y);
+				textPos =
+					svec2i(r.Pos.x + r.Size.x / 2 + xInt, r.Pos.y + r.Size.y);
+				drawPos =
+					svec2i(textPos.x - p->size.x / 2, textPos.y - p->size.y);
 			}
 			else
 			{
@@ -777,9 +777,11 @@ static void DrawCompassArrow(
 			// Make sure the text is inside the screen
 			int padding = 8;
 			textPos.x = MAX(textPos.x, r.Pos.x + padding);
-			textPos.x = MIN(textPos.x, r.Pos.x + r.Size.x - textSize.x - padding);
+			textPos.x =
+				MIN(textPos.x, r.Pos.x + r.Size.x - textSize.x - padding);
 			textPos.y = MAX(textPos.y, r.Pos.y + padding);
-			textPos.y = MIN(textPos.y, r.Pos.y + r.Size.y - textSize.y - padding);
+			textPos.y =
+				MIN(textPos.y, r.Pos.y + r.Size.y - textSize.y - padding);
 			FontStrMask(label, textPos, tintedMask);
 		}
 	}

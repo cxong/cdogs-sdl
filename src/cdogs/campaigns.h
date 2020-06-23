@@ -53,6 +53,7 @@ typedef struct
 	char *Title;
 	char *Author;
 	char *Description;
+	bool Ammo;
 	bool WeaponPersist;
 	bool SkipWeaponMenu;
 	CArray Missions;	// of Mission

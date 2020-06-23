@@ -256,7 +256,7 @@ bool MapTryPlaceOneObject(
 	const int extraFlags, const bool isStrictMode)
 {
 	// Don't place ammo spawners if ammo is disabled
-	if (!ConfigGetBool(&gConfig, "Game.Ammo") &&
+	if (!gCampaign.Setting.Ammo &&
 		mo->Type == MAP_OBJECT_TYPE_PICKUP_SPAWNER &&
 		mo->u.PickupClass->Type == PICKUP_AMMO)
 	{

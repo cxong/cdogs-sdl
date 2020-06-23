@@ -257,7 +257,7 @@ static bool HasGunUsingAmmo(const TActor *a, const int ammoId)
 static bool TryPickupAmmo(TActor *a, const Pickup *p, const char **sound)
 {
 	// Don't pickup if not using ammo
-	if (!ConfigGetBool(&gConfig, "Game.Ammo"))
+	if (!gCampaign.Setting.Ammo)
 	{
 		return false;
 	}

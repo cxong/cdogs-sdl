@@ -717,7 +717,7 @@ static void FireWeapon(TActor *a, Weapon *w)
 	}
 	if (!ActorCanFireWeapon(a, w))
 	{
-		if (!WeaponIsLocked(w) && ConfigGetBool(&gConfig, "Game.Ammo"))
+		if (!WeaponIsLocked(w) && gCampaign.Setting.Ammo)
 		{
 			CASSERT(
 				ActorWeaponGetAmmo(a, w->Gun) == 0, "should be out of ammo");
@@ -733,7 +733,7 @@ static void FireWeapon(TActor *a, Weapon *w)
 	ActorFire(w, a);
 	if (a->PlayerUID >= 0)
 	{
-		if (ConfigGetBool(&gConfig, "Game.Ammo") && w->Gun->AmmoId >= 0)
+		if (gCampaign.Setting.Ammo && w->Gun->AmmoId >= 0)
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_USE_AMMO);
 			e.u.UseAmmo.UID = a->uid;
@@ -1103,7 +1103,7 @@ static void ActorAddGunPickup(const TActor *actor);
 static void ActorDie(TActor *actor)
 {
 	// Add an ammo pickup of the actor's gun
-	if (ConfigGetBool(&gConfig, "Game.Ammo"))
+	if (gCampaign.Setting.Ammo)
 	{
 		ActorAddAmmoPickup(actor);
 	}
@@ -1432,8 +1432,7 @@ static void ActorAddAmmoPickup(const TActor *actor)
 			return false;
 		}
 		const bool hasAmmo = ActorWeaponGetAmmo(a, w->Gun) != 0;
-		return !WeaponIsLocked(w) &&
-			   (!ConfigGetBool(&gConfig, "Game.Ammo") || hasAmmo);
+		return !WeaponIsLocked(w) && (!gCampaign.Setting.Ammo || hasAmmo);
 	}
 	bool ActorTrySwitchWeapon(const TActor *a, const bool allGuns)
 	{

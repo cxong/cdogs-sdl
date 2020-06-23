@@ -420,7 +420,6 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 	// Send all game-specific config values
 	SendConfig(&gConfig, "Game.FriendlyFire", n, peerId);
 	SendConfig(&gConfig, "Game.FPS", n, peerId);
-	SendConfig(&gConfig, "Game.Ammo", n, peerId);
 	SendConfig(&gConfig, "Game.Fog", n, peerId);
 	SendConfig(&gConfig, "Game.SightRange", n, peerId);
 	SendConfig(&gConfig, "Game.AllyCollision", n, peerId);

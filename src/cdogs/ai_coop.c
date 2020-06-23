@@ -1,30 +1,30 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2015, 2017-2018 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2015, 2017-2018, 2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "ai_coop.h"
 
@@ -36,8 +36,7 @@
 #define CONFUSION_STATE_TICKS_MIN 25
 #define CONFUSION_STATE_TICKS_RANGE 25
 
-#define DISTANCE_TO_KEEP_OUT_OF_WAY SQUARED(4*16)
-
+#define DISTANCE_TO_KEEP_OUT_OF_WAY SQUARED(4 * 16)
 
 static int AICoopGetCmdNormal(TActor *actor);
 int AICoopGetCmd(TActor *actor, const int ticks)
@@ -64,9 +63,8 @@ int AICoopGetCmd(TActor *actor, const int ticks)
 		actor->aiContext->Delay = MAX(0, actor->aiContext->Delay - ticks);
 		if (actor->aiContext->Delay == 0)
 		{
-			actor->aiContext->Delay =
-				CONFUSION_STATE_TICKS_MIN +
-				(rand() % CONFUSION_STATE_TICKS_RANGE);
+			actor->aiContext->Delay = CONFUSION_STATE_TICKS_MIN +
+									  (rand() % CONFUSION_STATE_TICKS_RANGE);
 			if (s->Type == AI_CONFUSION_CONFUSED)
 			{
 				s->Type = AI_CONFUSION_CORRECT;
@@ -76,9 +74,8 @@ int AICoopGetCmd(TActor *actor, const int ticks)
 				ActorSetAIState(actor, AI_STATE_CONFUSED);
 				s->Type = AI_CONFUSION_CONFUSED;
 				// Generate the confused action
-				s->Cmd = rand() &
-					(CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN |
-					CMD_BUTTON1 | CMD_BUTTON2);
+				s->Cmd = rand() & (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN |
+								   CMD_BUTTON1 | CMD_BUTTON2);
 			}
 		}
 		// Choose confusion action based on state
@@ -136,24 +133,25 @@ static int AICoopGetCmdNormal(TActor *actor)
 	struct vec2i v;
 	struct vec2 dangerBulletPos = svec2_zero();
 	for (v.x = actorTilePos.x - 1;
-		v.x <= actorTilePos.x + 1 && svec2_is_zero(dangerBulletPos);
-		v.x++)
+		 v.x <= actorTilePos.x + 1 && svec2_is_zero(dangerBulletPos); v.x++)
 	{
 		for (v.y = actorTilePos.y - 1;
-			v.y <= actorTilePos.y + 1 && svec2_is_zero(dangerBulletPos);
-			v.y++)
+			 v.y <= actorTilePos.y + 1 && svec2_is_zero(dangerBulletPos);
+			 v.y++)
 		{
 			const Tile *t = MapGetTile(&gMap, v);
-			if (t == NULL) continue;
+			if (t == NULL)
+				continue;
 			CA_FOREACH(const ThingId, tid, t->things)
-				// Only look for bullets
-				if (tid->Kind != KIND_MOBILEOBJECT) continue;
-				const TMobileObject *mo = CArrayGet(&gMobObjs, tid->Id);
-				if (mo->bulletClass->HurtAlways)
-				{
-					dangerBulletPos = mo->thing.Pos;
-					break;
-				}
+			// Only look for bullets
+			if (tid->Kind != KIND_MOBILEOBJECT)
+				continue;
+			const TMobileObject *mo = CArrayGet(&gMobObjs, tid->Id);
+			if (mo->bulletClass->HurtAlways)
+			{
+				dangerBulletPos = mo->thing.Pos;
+				break;
+			}
 			CA_FOREACH_END()
 		}
 	}
@@ -165,7 +163,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 
 	// Check the weapon for ammo
 	int lowAmmoGun = -1;
-	if (ConfigGetBool(&gConfig, "Game.Ammo") && actor->aiContext->OnGunId == -1)
+	if (gCampaign.Setting.Ammo && actor->aiContext->OnGunId == -1)
 	{
 		// Check all our weapons
 		// Prefer guns using ammo
@@ -213,12 +211,10 @@ static int AICoopGetCmdNormal(TActor *actor)
 	// - if we have a free slot
 	if (actor->aiContext->OnGunId != -1)
 	{
-		const WeaponClass *wc =
-			IdWeaponClass(actor->aiContext->OnGunId);
+		const WeaponClass *wc = IdWeaponClass(actor->aiContext->OnGunId);
 		if ((lowAmmoGun != -1 && !ActorHasGun(actor, wc)) ||
-			(wc->IsGrenade ?
-			ActorGetNumGrenades(actor) < MAX_GRENADES :
-			ActorGetNumGuns(actor) < MAX_GUNS))
+			(wc->IsGrenade ? ActorGetNumGrenades(actor) < MAX_GRENADES
+						   : ActorGetNumGuns(actor) < MAX_GUNS))
 		{
 			actor->aiContext->OnGunId = -1;
 			// Pick it up
@@ -239,10 +235,10 @@ static int AICoopGetCmdNormal(TActor *actor)
 		for (int uid = 0; uid < actor->PlayerUID; uid++)
 		{
 			const PlayerData *pd = PlayerDataGetByUID(uid);
-			if (pd == NULL || !IsPlayerAlive(pd)) continue;
+			if (pd == NULL || !IsPlayerAlive(pd))
+				continue;
 			const TActor *p = ActorGetByUID(pd->ActorUID);
-			const float distance2 = svec2_distance_squared(
-				actor->Pos, p->Pos);
+			const float distance2 = svec2_distance_squared(actor->Pos, p->Pos);
 			if (!closestPlayer || distance2 < minDistance2)
 			{
 				minDistance2 = distance2;
@@ -265,7 +261,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 	{
 		distanceTooFarFromPlayer = 2.0f;
 	}
-	if (closestPlayer && minDistance2 > SQUARED(distanceTooFarFromPlayer*16))
+	if (closestPlayer && minDistance2 > SQUARED(distanceTooFarFromPlayer * 16))
 	{
 		ActorSetAIState(actor, AI_STATE_FOLLOW);
 		return SmartGoto(actor, closestPlayer->Pos, minDistance2);
@@ -276,8 +272,8 @@ static int AICoopGetCmdNormal(TActor *actor)
 	if (closestEnemy)
 	{
 		const float minEnemyDistance = CHEBYSHEV_DISTANCE(
-			actor->Pos.x, actor->Pos.y,
-			closestEnemy->Pos.x, closestEnemy->Pos.y);
+			actor->Pos.x, actor->Pos.y, closestEnemy->Pos.x,
+			closestEnemy->Pos.y);
 		// Also only engage if there's a clear shot
 		if (minEnemyDistance > 0 && minEnemyDistance < 12 * 16 &&
 			AIHasClearShot(actor->Pos, closestEnemy->Pos))
@@ -301,7 +297,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 	// Look for objectives nearby to complete
 	int cmd;
 	if (TryCompleteNearbyObjective(
-		actor, closestPlayer, distanceTooFarFromPlayer, &cmd))
+			actor, closestPlayer, distanceTooFarFromPlayer, &cmd))
 	{
 		return cmd;
 	}
@@ -310,15 +306,14 @@ static int AICoopGetCmdNormal(TActor *actor)
 	// run into them, but keep away if we're too close
 	if (closestPlayer)
 	{
-		if (minDistance2 > SQUARED(2*16))
+		if (minDistance2 > SQUARED(2 * 16))
 		{
 			ActorSetAIState(actor, AI_STATE_FOLLOW);
 			return SmartGoto(actor, closestPlayer->Pos, minDistance2);
 		}
-		else if (minDistance2 < SQUARED(4*16/3))
+		else if (minDistance2 < SQUARED(4 * 16 / 3))
 		{
-			return
-				CmdGetReverse(AIGotoDirect(actor->Pos, closestPlayer->Pos));
+			return CmdGetReverse(AIGotoDirect(actor->Pos, closestPlayer->Pos));
 		}
 	}
 
@@ -384,8 +379,7 @@ static int SmartGoto(
 typedef struct
 {
 	float Distance2;
-	union
-	{
+	union {
 		const Objective *Objective;
 		int UID;
 	} u;
@@ -422,20 +416,18 @@ static bool TryCompleteNearbyObjective(
 			hasNoUpdates =
 				objState->u.Obj && objState->LastDone == objState->u.Obj->done;
 			break;
-		case AI_OBJECTIVE_TYPE_KILL:
-			{
-				const TActor *target = ActorGetByUID(objState->u.UID);
-				hasNoUpdates = target->health > 0;
-				// Update target position
-				objState->Goal = target->thing.Pos;
-			}
-			break;
-		case AI_OBJECTIVE_TYPE_PICKUP:
-			{
-				const Pickup *p = PickupGetByUID(objState->u.UID);
-				hasNoUpdates = p != NULL && p->isInUse;
-			}
-			break;
+		case AI_OBJECTIVE_TYPE_KILL: {
+			const TActor *target = ActorGetByUID(objState->u.UID);
+			hasNoUpdates = target->health > 0;
+			// Update target position
+			objState->Goal = target->thing.Pos;
+		}
+		break;
+		case AI_OBJECTIVE_TYPE_PICKUP: {
+			const Pickup *p = PickupGetByUID(objState->u.UID);
+			hasNoUpdates = p != NULL && p->isInUse;
+		}
+		break;
 		default:
 			// Do nothing
 			break;
@@ -458,8 +450,9 @@ static bool TryCompleteNearbyObjective(
 	// First, check if mission complete;
 	// if so (and there's a path) go to exit
 	const struct vec2 exitPos = MapGetExitPos(&gMap);
-	if (CanCompleteMission(&gMission) && CanGetObjective(
-		exitPos, actor->Pos, closestPlayer, distanceTooFarFromPlayer))
+	if (CanCompleteMission(&gMission) &&
+		CanGetObjective(
+			exitPos, actor->Pos, closestPlayer, distanceTooFarFromPlayer))
 	{
 		ActorSetAIState(actor, AI_STATE_NEXT_OBJECTIVE);
 		objState->Type = AI_OBJECTIVE_TYPE_EXIT;
@@ -475,41 +468,41 @@ static bool TryCompleteNearbyObjective(
 
 	// Starting from the closest objectives, find one we can go to
 	CA_FOREACH(ClosestObjective, c, objectives)
-		if (CanGetObjective(
+	if (CanGetObjective(
 			c->Pos, actor->Pos, closestPlayer, distanceTooFarFromPlayer))
+	{
+		ActorSetAIState(actor, AI_STATE_NEXT_OBJECTIVE);
+		objState->Type = c->Type;
+		objState->IsDestructible = c->IsDestructible;
+		switch (c->Type)
 		{
-			ActorSetAIState(actor, AI_STATE_NEXT_OBJECTIVE);
-			objState->Type = c->Type;
-			objState->IsDestructible = c->IsDestructible;
-			switch (c->Type)
-			{
-			case AI_OBJECTIVE_TYPE_KEY:
-				objState->LastDone = KeycardCount(gMission.KeyFlags);
-				break;
-			case AI_OBJECTIVE_TYPE_NORMAL:
-				objState->u.Obj = c->u.Objective;
-				objState->LastDone = c->u.Objective->done;
-				break;
-			case AI_OBJECTIVE_TYPE_KILL:
-				objState->u.UID = c->u.UID;
-				break;
-			case AI_OBJECTIVE_TYPE_PICKUP:
-				objState->u.UID = c->u.UID;
-				break;
-			default:
-				// Do nothing
-				break;
-			}
-			objState->Goal = c->Pos;
-			*cmdOut = GotoObjective(actor, c->Distance2);
-			return true;
+		case AI_OBJECTIVE_TYPE_KEY:
+			objState->LastDone = KeycardCount(gMission.KeyFlags);
+			break;
+		case AI_OBJECTIVE_TYPE_NORMAL:
+			objState->u.Obj = c->u.Objective;
+			objState->LastDone = c->u.Objective->done;
+			break;
+		case AI_OBJECTIVE_TYPE_KILL:
+			objState->u.UID = c->u.UID;
+			break;
+		case AI_OBJECTIVE_TYPE_PICKUP:
+			objState->u.UID = c->u.UID;
+			break;
+		default:
+			// Do nothing
+			break;
 		}
+		objState->Goal = c->Pos;
+		*cmdOut = GotoObjective(actor, c->Distance2);
+		return true;
+	}
 	CA_FOREACH_END()
 	return false;
 }
 static bool OnClosestPickupGun(
-	ClosestObjective *co, const Pickup *p,
-	const TActor *actor, const TActor *closestPlayer);
+	ClosestObjective *co, const Pickup *p, const TActor *actor,
+	const TActor *closestPlayer);
 static int CompareClosestObjective(const void *v1, const void *v2);
 static void FindObjectivesSortedByDistance(
 	CArray *objectives, const TActor *actor, const TActor *closestPlayer)
@@ -519,8 +512,7 @@ static void FindObjectivesSortedByDistance(
 	// If PVP, find the closest enemy and go to them
 	if (IsPVP(gCampaign.Entry.Mode))
 	{
-		const TActor *closestEnemy =
-			AIGetClosestVisibleEnemy(actor, true);
+		const TActor *closestEnemy = AIGetClosestVisibleEnemy(actor, true);
 		if (closestEnemy != NULL)
 		{
 			ClosestObjective co;
@@ -536,170 +528,167 @@ static void FindObjectivesSortedByDistance(
 
 	// Look for pickups
 	CA_FOREACH(const Pickup, p, gPickups)
-		if (!p->isInUse)
+	if (!p->isInUse)
+	{
+		continue;
+	}
+	ClosestObjective co;
+	memset(&co, 0, sizeof co);
+	co.Pos = p->thing.Pos;
+	co.IsDestructible = false;
+	co.Type = AI_OBJECTIVE_TYPE_NORMAL;
+	switch (p->class->Type)
+	{
+	case PICKUP_KEYCARD:
+		co.Type = AI_OBJECTIVE_TYPE_KEY;
+		break;
+	case PICKUP_JEWEL:
+		break;
+	case PICKUP_HEALTH:
+		// Pick up if we are on low health, and lower than lead player
+		if (actor->health > ModeMaxHealth(gCampaign.Entry.Mode) / 4)
 		{
 			continue;
 		}
-		ClosestObjective co;
-		memset(&co, 0, sizeof co);
-		co.Pos = p->thing.Pos;
-		co.IsDestructible = false;
-		co.Type = AI_OBJECTIVE_TYPE_NORMAL;
-		switch (p->class->Type)
-		{
-		case PICKUP_KEYCARD:
-			co.Type = AI_OBJECTIVE_TYPE_KEY;
-			break;
-		case PICKUP_JEWEL:
-			break;
-		case PICKUP_HEALTH:
-			// Pick up if we are on low health, and lower than lead player
-			if (actor->health > ModeMaxHealth(gCampaign.Entry.Mode) / 4)
-			{
-				continue;
-			}
-			co.Type = AI_OBJECTIVE_TYPE_PICKUP;
-			co.u.UID = p->UID;
-			break;
-		case PICKUP_AMMO:
-			{
-				// Pick up if we use this ammo, have less ammo than starting,
-				// and lower than lead player, who uses the ammo
-				const int ammoId = p->class->u.Ammo.Id;
-				const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
-				const int ammoAmount = *(int *)CArrayGet(&actor->ammo, ammoId);
-				if (!ActorUsesAmmo(actor, ammoId) ||
-					ammoAmount > ammo->Amount ||
-					(closestPlayer != NULL &&
-					ActorUsesAmmo(closestPlayer, ammoId) &&
-					ammoAmount > *(int *)CArrayGet(&closestPlayer->ammo, ammoId)))
-				{
-					continue;
-				}
-				co.Type = AI_OBJECTIVE_TYPE_PICKUP;
-				co.u.UID = p->UID;
-			}
-			break;
-		case PICKUP_GUN:
-			if (!OnClosestPickupGun(&co, p, actor, closestPlayer))
-			{
-				continue;
-			}
-			break;
-		default:
-			// Not something we want to pick up
-			continue;
-		}
-		// Check if the pickup is actually accessible
-		// This is because random spawning may cause some pickups to be spawned
-		// in inaccessible areas
-		if (!TileCanWalk(MapGetTile(&gMap, Vec2ToTile(co.Pos))))
+		co.Type = AI_OBJECTIVE_TYPE_PICKUP;
+		co.u.UID = p->UID;
+		break;
+	case PICKUP_AMMO: {
+		// Pick up if we use this ammo, have less ammo than starting,
+		// and lower than lead player, who uses the ammo
+		const int ammoId = p->class->u.Ammo.Id;
+		const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
+		const int ammoAmount = *(int *)CArrayGet(&actor->ammo, ammoId);
+		if (!ActorUsesAmmo(actor, ammoId) || ammoAmount > ammo->Amount ||
+			(closestPlayer != NULL && ActorUsesAmmo(closestPlayer, ammoId) &&
+			 ammoAmount > *(int *)CArrayGet(&closestPlayer->ammo, ammoId)))
 		{
 			continue;
 		}
-		co.Distance2 = svec2_distance_squared(actor->Pos, co.Pos);
-		if (co.Type == AI_OBJECTIVE_TYPE_NORMAL)
+		co.Type = AI_OBJECTIVE_TYPE_PICKUP;
+		co.u.UID = p->UID;
+	}
+	break;
+	case PICKUP_GUN:
+		if (!OnClosestPickupGun(&co, p, actor, closestPlayer))
 		{
-			const int objective = ObjectiveFromThing(p->thing.flags);
-			co.u.Objective =
-				CArrayGet(&gMission.missionData->Objectives, objective);
+			continue;
 		}
-		CArrayPushBack(objectives, &co);
+		break;
+	default:
+		// Not something we want to pick up
+		continue;
+	}
+	// Check if the pickup is actually accessible
+	// This is because random spawning may cause some pickups to be spawned
+	// in inaccessible areas
+	if (!TileCanWalk(MapGetTile(&gMap, Vec2ToTile(co.Pos))))
+	{
+		continue;
+	}
+	co.Distance2 = svec2_distance_squared(actor->Pos, co.Pos);
+	if (co.Type == AI_OBJECTIVE_TYPE_NORMAL)
+	{
+		const int objective = ObjectiveFromThing(p->thing.flags);
+		co.u.Objective =
+			CArrayGet(&gMission.missionData->Objectives, objective);
+	}
+	CArrayPushBack(objectives, &co);
 	CA_FOREACH_END()
 
 	// Look for destructibles
 	CA_FOREACH(const TObject, o, gObjs)
-		if (!o->isInUse)
-		{
-			continue;
-		}
-		ClosestObjective co;
-		memset(&co, 0, sizeof co);
-		co.Pos = o->thing.Pos;
-		co.IsDestructible = true;
-		co.Type = AI_OBJECTIVE_TYPE_NORMAL;
-		if (!(o->thing.flags & THING_OBJECTIVE))
-		{
-			continue;
-		}
-		// Destructible objective; go towards it and fire
-		co.Distance2 = svec2_distance_squared(actor->Pos, co.Pos);
-		if (co.Type == AI_OBJECTIVE_TYPE_NORMAL)
-		{
-			const int objective = ObjectiveFromThing(o->thing.flags);
-			co.u.Objective =
-				CArrayGet(&gMission.missionData->Objectives, objective);
-		}
-		CArrayPushBack(objectives, &co);
+	if (!o->isInUse)
+	{
+		continue;
+	}
+	ClosestObjective co;
+	memset(&co, 0, sizeof co);
+	co.Pos = o->thing.Pos;
+	co.IsDestructible = true;
+	co.Type = AI_OBJECTIVE_TYPE_NORMAL;
+	if (!(o->thing.flags & THING_OBJECTIVE))
+	{
+		continue;
+	}
+	// Destructible objective; go towards it and fire
+	co.Distance2 = svec2_distance_squared(actor->Pos, co.Pos);
+	if (co.Type == AI_OBJECTIVE_TYPE_NORMAL)
+	{
+		const int objective = ObjectiveFromThing(o->thing.flags);
+		co.u.Objective =
+			CArrayGet(&gMission.missionData->Objectives, objective);
+	}
+	CArrayPushBack(objectives, &co);
 	CA_FOREACH_END()
 
 	// Look for kill or rescue objectives
 	CA_FOREACH(const TActor, a, gActors)
-		if (!a->isInUse)
-		{
-			continue;
-		}
-		const Thing *ti = &a->thing;
-		if (!(ti->flags & THING_OBJECTIVE))
-		{
-			continue;
-		}
-		const int objective = ObjectiveFromThing(ti->flags);
-		const Objective *o =
-			CArrayGet(&gMission.missionData->Objectives, objective);
-		if (o->Type != OBJECTIVE_KILL && o->Type != OBJECTIVE_RESCUE)
-		{
-			continue;
-		}
-		// Only rescue those that need to be rescued
-		if (o->Type == OBJECTIVE_RESCUE && !(a->flags & FLAGS_PRISONER))
-		{
-			continue;
-		}
-		ClosestObjective co;
-		memset(&co, 0, sizeof co);
-		co.Pos = ti->Pos;
-		co.IsDestructible = false;
-		co.Type = AI_OBJECTIVE_TYPE_NORMAL;
-		co.Distance2 = svec2_distance_squared(actor->Pos, co.Pos);
-		co.u.Objective = o;
-		CArrayPushBack(objectives, &co);
+	if (!a->isInUse)
+	{
+		continue;
+	}
+	const Thing *ti = &a->thing;
+	if (!(ti->flags & THING_OBJECTIVE))
+	{
+		continue;
+	}
+	const int objective = ObjectiveFromThing(ti->flags);
+	const Objective *o =
+		CArrayGet(&gMission.missionData->Objectives, objective);
+	if (o->Type != OBJECTIVE_KILL && o->Type != OBJECTIVE_RESCUE)
+	{
+		continue;
+	}
+	// Only rescue those that need to be rescued
+	if (o->Type == OBJECTIVE_RESCUE && !(a->flags & FLAGS_PRISONER))
+	{
+		continue;
+	}
+	ClosestObjective co;
+	memset(&co, 0, sizeof co);
+	co.Pos = ti->Pos;
+	co.IsDestructible = false;
+	co.Type = AI_OBJECTIVE_TYPE_NORMAL;
+	co.Distance2 = svec2_distance_squared(actor->Pos, co.Pos);
+	co.u.Objective = o;
+	CArrayPushBack(objectives, &co);
 	CA_FOREACH_END()
 
 	// Look for explore objectives
 	CA_FOREACH(const Objective, o, gMission.missionData->Objectives)
-		if (o->Type != OBJECTIVE_INVESTIGATE)
-		{
-			continue;
-		}
-		if (ObjectiveIsComplete(o) || MapGetExploredPercentage(&gMap) == 100)
-		{
-			continue;
-		}
-		// Find the nearest unexplored tile
-		const struct vec2i actorTile = Vec2ToTile(actor->Pos);
-		const struct vec2i unexploredTile = MapSearchTileAround(
-			&gMap, actorTile, MapTileIsUnexplored);
-		ClosestObjective co;
-		memset(&co, 0, sizeof co);
-		co.Pos = Vec2CenterOfTile(unexploredTile);
-		co.IsDestructible = false;
-		co.Type = AI_OBJECTIVE_TYPE_NORMAL;
-		co.Distance2 = svec2_distance_squared(actor->Pos, co.Pos);
-		co.u.Objective = o;
-		CArrayPushBack(objectives, &co);
+	if (o->Type != OBJECTIVE_INVESTIGATE)
+	{
+		continue;
+	}
+	if (ObjectiveIsComplete(o) || MapGetExploredPercentage(&gMap) == 100)
+	{
+		continue;
+	}
+	// Find the nearest unexplored tile
+	const struct vec2i actorTile = Vec2ToTile(actor->Pos);
+	const struct vec2i unexploredTile =
+		MapSearchTileAround(&gMap, actorTile, MapTileIsUnexplored);
+	ClosestObjective co;
+	memset(&co, 0, sizeof co);
+	co.Pos = Vec2CenterOfTile(unexploredTile);
+	co.IsDestructible = false;
+	co.Type = AI_OBJECTIVE_TYPE_NORMAL;
+	co.Distance2 = svec2_distance_squared(actor->Pos, co.Pos);
+	co.u.Objective = o;
+	CArrayPushBack(objectives, &co);
 	CA_FOREACH_END()
 
 	// Sort according to distance
 	qsort(
-		objectives->data,
-		objectives->size, objectives->elemSize, CompareClosestObjective);
+		objectives->data, objectives->size, objectives->elemSize,
+		CompareClosestObjective);
 }
 static bool OnClosestPickupGun(
-	ClosestObjective *co, const Pickup *p,
-	const TActor *actor, const TActor *closestPlayer)
+	ClosestObjective *co, const Pickup *p, const TActor *actor,
+	const TActor *closestPlayer)
 {
-	if (!ConfigGetBool(&gConfig, "Game.Ammo"))
+	if (!gCampaign.Setting.Ammo)
 	{
 		return false;
 	}
@@ -727,9 +716,8 @@ static bool OnClosestPickupGun(
 		const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
 		const int ammoAmount = *(int *)CArrayGet(&actor->ammo, ammoId);
 		if (ammoAmount >= ammo->Amount ||
-			(closestPlayer != NULL &&
-			ActorUsesAmmo(closestPlayer, ammoId) &&
-			ammoAmount > *(int *)CArrayGet(&closestPlayer->ammo, ammoId)))
+			(closestPlayer != NULL && ActorUsesAmmo(closestPlayer, ammoId) &&
+			 ammoAmount > *(int *)CArrayGet(&closestPlayer->ammo, ammoId)))
 		{
 			continue;
 		}
@@ -795,8 +783,7 @@ static bool IsPosCloseEnoughToPlayer(
 	{
 		return true;
 	}
-	const float distanceFromPlayer2 =
-		svec2_distance_squared(pos, player->Pos);
+	const float distanceFromPlayer2 = svec2_distance_squared(pos, player->Pos);
 	const float distanceMax2 = SQUARED(distanceTooFarFromPlayer * 16);
 	return distanceFromPlayer2 < distanceMax2;
 }
@@ -822,7 +809,7 @@ static int GotoObjective(TActor *actor, const float objDistance2)
 		cmd = AIHunt(actor, goal);
 		if (AIHasClearShot(actor->Pos, goal))
 		{
-			 cmd |= CMD_BUTTON1;
+			cmd |= CMD_BUTTON1;
 		}
 	}
 	return cmd;
@@ -854,7 +841,7 @@ void AICoopSelectWeapons(
 		gunCount++;
 	}
 
-	if (ConfigGetBool(&gConfig, "Game.Ammo"))
+	if (gCampaign.Setting.Ammo)
 	{
 		// Select pistol as an infinite-ammo backup
 		const WeaponClass *pistol = StrWeaponClass("Pistol");

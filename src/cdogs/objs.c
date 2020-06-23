@@ -151,7 +151,7 @@ static void AddPickupAtObject(const TObject *o, const PickupType type)
 		strcpy(e.u.AddPickup.PickupClass, "health");
 		break;
 	case PICKUP_AMMO:
-		if (!ConfigGetBool(&gConfig, "Game.Ammo"))
+		if (!gCampaign.Setting.Ammo)
 		{
 			return;
 		}

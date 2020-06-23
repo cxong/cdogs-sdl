@@ -557,7 +557,6 @@ GameLoopData *GameOptions(const GameMode gm)
 		I("Game.PlayerHP");
 		I("Game.Lives");
 		I("Game.HealthPickups");
-		I("Game.Ammo");
 		I("Game.RandomSeed");
 		MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
 		I("StartServer");
@@ -566,7 +565,6 @@ GameLoopData *GameOptions(const GameMode gm)
 		I("Dogfight.PlayerHP");
 		I("Dogfight.FirstTo");
 		I("Game.HealthPickups");
-		I("Game.Ammo");
 		I("Game.RandomSeed");
 		MenuAddSubmenu(ms->root,
 			MenuCreateAllowedWeapons("Weapons...", data));
@@ -577,7 +575,6 @@ GameLoopData *GameOptions(const GameMode gm)
 		I("Game.PlayerHP");
 		I("Deathmatch.Lives");
 		I("Game.HealthPickups");
-		I("Game.Ammo");
 		I("Game.RandomSeed");
 		MenuAddSubmenu(ms->root,
 			MenuCreateAllowedWeapons("Weapons...", data));

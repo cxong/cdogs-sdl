@@ -103,6 +103,14 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		DrawTextbox(ctx, cData->Description, 1024, "Description", NK_EDIT_BOX);
 		nk_layout_row_dynamic(ctx, ROW_HEIGHT, 1);
 		if (DrawCheckbox(
+				ctx, "Ammo",
+				"Enable ammo; if disabled all weapons have infinite ammo and "
+				"use up score instead",
+				&cData->c->Setting.Ammo))
+		{
+			changed = true;
+		}
+		if (DrawCheckbox(
 				ctx, "Persist weapons & ammo",
 				"Whether weapons picked up and extra ammo are "
 				"available in the "

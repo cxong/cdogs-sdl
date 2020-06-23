@@ -281,6 +281,7 @@ int MapArchiveSave(const char *filename, CampaignSetting *c)
 	AddStringPair(root, "Title", c->Title);
 	AddStringPair(root, "Author", c->Author);
 	AddStringPair(root, "Description", c->Description);
+	AddBoolPair(root, "Ammo", c->Ammo);
 	AddBoolPair(root, "WeaponPersist", c->WeaponPersist);
 	AddBoolPair(root, "SkipWeaponMenu", c->SkipWeaponMenu);
 	AddIntPair(root, "Missions", (int)c->Missions.size);
