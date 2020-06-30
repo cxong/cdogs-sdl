@@ -315,6 +315,18 @@ void DrawPic(
 	nk_draw_image(&ctx->current->buffer, bounds, &tex, nk_white);
 }
 
+void DrawTextbox(
+	struct nk_context *ctx, char *value, const int len, const char *tooltip,
+	const nk_flags flags)
+{
+	struct nk_rect bounds = nk_widget_bounds(ctx);
+	nk_edit_string_zero_terminated(ctx, flags, value, len, nk_filter_default);
+	if (tooltip && nk_input_is_mouse_hovering_rect(&ctx->input, bounds))
+	{
+		nk_tooltip(ctx, tooltip);
+	}
+}
+
 bool ColorPicker(
 	struct nk_context *ctx, const float height, const char *label, color_t *c)
 {

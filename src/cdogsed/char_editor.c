@@ -27,15 +27,14 @@
 */
 #include "char_editor.h"
 
-#include <cdogs/draw/draw_actor.h>
 #include "editor_ui_common.h"
 #include "nk_window.h"
-
-#define MAX_VERTEX_MEMORY 512 * 1024
-#define MAX_ELEMENT_MEMORY 128 * 1024
+#include <cdogs/draw/draw_actor.h>
 
 #define ROW_HEIGHT 25
-const float colRatios[] = { 0.25f, 0.75f };
+const float colRatios[] = {0.25f, 0.75f};
+#define CHAR_STORE_BOTTOM 470
+#define PAD 10.0f
 
 typedef struct
 {
@@ -45,16 +44,15 @@ typedef struct
 	char *CharacterClassNames;
 	char *HairNames;
 	char *GunNames;
-	CArray texidsChars;	// of GLuint[BODY_PART_COUNT]
+	CArray texidsChars; // of GLuint[BODY_PART_COUNT]
 	GLuint texidsPreview[BODY_PART_COUNT];
-	CArray texIdsCharClasses;	// of GLuint
-	CArray texIdsHairs;	// of GLuint
-	CArray texIdsGuns;	// of GLuint
+	CArray texIdsCharClasses; // of GLuint
+	CArray texIdsHairs;		  // of GLuint
+	CArray texIdsGuns;		  // of GLuint
 	Animation anim;
 	direction_e previewDir;
 	Animation animSelection;
 } EditorContext;
-
 
 static const char *IndexCharacterClassName(const int i);
 static const char *IndexHairName(const int i);
@@ -71,10 +69,10 @@ void CharEditor(
 	NKWindowConfig cfg;
 	memset(&cfg, 0, sizeof cfg);
 	cfg.Title = "Character Editor";
-	cfg.Size = svec2i(800, 600);
+	cfg.Size = svec2i(800, 800);
 	cfg.MinSize = svec2i(800, 500);
 	cfg.WindowFlags = SDL_WINDOW_RESIZABLE;
-	color_t bg = { 41, 26, 26, 255 };
+	color_t bg = {41, 26, 26, 255};
 	cfg.BG = bg;
 	cfg.Icon = g->icon;
 	cfg.Handlers = handlers;
@@ -87,10 +85,10 @@ void CharEditor(
 	ec.Char = NULL;
 	ec.Setting = setting;
 	ec.FileChanged = fileChanged;
-	ec.CharacterClassNames = GetClassNames(
-		NumCharacterClasses(), IndexCharacterClassName);
-	ec.HairNames = GetClassNames(
-		gPicManager.hairstyleNames.size, IndexHairName);
+	ec.CharacterClassNames =
+		GetClassNames(NumCharacterClasses(), IndexCharacterClassName);
+	ec.HairNames =
+		GetClassNames(gPicManager.hairstyleNames.size, IndexHairName);
 	ec.GunNames = GetClassNames(NumGuns(), IndexGunName);
 
 	CArrayInit(&ec.texidsChars, sizeof(GLuint) * BODY_PART_COUNT);
@@ -106,22 +104,21 @@ void CharEditor(
 
 	TexArrayInit(&ec.texIdsCharClasses, NumCharacterClasses());
 	CA_FOREACH(const GLuint, texid, ec.texIdsCharClasses)
-		const CharacterClass *c = IndexCharacterClass(_ca_index);
-		LoadTexFromPic(
-			*texid, GetHeadPic(c, DIRECTION_DOWN, GUNSTATE_READY, &cc));
+	const CharacterClass *c = IndexCharacterClass(_ca_index);
+	LoadTexFromPic(*texid, GetHeadPic(c, DIRECTION_DOWN, GUNSTATE_READY, &cc));
 	CA_FOREACH_END()
 
 	TexArrayInit(&ec.texIdsHairs, gPicManager.hairstyleNames.size);
 	CA_FOREACH(const GLuint, texid, ec.texIdsHairs)
-		const char *hair = IndexHairName(_ca_index);
-		LoadTexFromPic(
-			*texid, GetHairPic(hair, DIRECTION_DOWN, GUNSTATE_READY, &cc));
+	const char *hair = IndexHairName(_ca_index);
+	LoadTexFromPic(
+		*texid, GetHairPic(hair, DIRECTION_DOWN, GUNSTATE_READY, &cc));
 	CA_FOREACH_END()
 
 	TexArrayInit(&ec.texIdsGuns, NumGuns());
 	CA_FOREACH(const GLuint, texid, ec.texIdsGuns)
-		const WeaponClass *wc = IndexWeaponClassReal(_ca_index);
-		LoadTexFromPic(*texid, wc->Icon);
+	const WeaponClass *wc = IndexWeaponClassReal(_ca_index);
+	LoadTexFromPic(*texid, wc->Icon);
 	CA_FOREACH_END()
 
 	ec.anim = AnimationGetActorAnimation(ACTORANIMATION_WALKING);
@@ -155,8 +152,8 @@ static const char *IndexHairName(const int i)
 }
 static int NumCharacterClasses(void)
 {
-	return
-		(int)(gCharacterClasses.Classes.size + gCharacterClasses.CustomClasses.size);
+	return (
+		int)(gCharacterClasses.Classes.size + gCharacterClasses.CustomClasses.size);
 }
 static const char *IndexGunName(const int i)
 {
@@ -167,16 +164,16 @@ static int NumGuns(void)
 {
 	int totalWeapons = 0;
 	CA_FOREACH(const WeaponClass, wc, gWeaponClasses.Guns)
-		if (wc->IsRealGun)
-		{
-			totalWeapons++;
-		}
+	if (wc->IsRealGun)
+	{
+		totalWeapons++;
+	}
 	CA_FOREACH_END()
 	CA_FOREACH(const WeaponClass, wc, gWeaponClasses.CustomGuns)
-		if (wc->IsRealGun)
-		{
-			totalWeapons++;
-		}
+	if (wc->IsRealGun)
+	{
+		totalWeapons++;
+	}
 	CA_FOREACH_END()
 	return totalWeapons;
 }
@@ -184,26 +181,26 @@ static int GunIndex(const WeaponClass *wc)
 {
 	int j = 0;
 	CA_FOREACH(const WeaponClass, wc2, gWeaponClasses.Guns)
-		if (!wc2->IsRealGun)
-		{
-			continue;
-		}
-		if (wc == wc2)
-		{
-			return j;
-		}
-		j++;
+	if (!wc2->IsRealGun)
+	{
+		continue;
+	}
+	if (wc == wc2)
+	{
+		return j;
+	}
+	j++;
 	CA_FOREACH_END()
 	CA_FOREACH(const WeaponClass, wc2, gWeaponClasses.CustomGuns)
-		if (!wc2->IsRealGun)
-		{
-			continue;
-		}
-		if (wc == wc2)
-		{
-			return j;
-		}
-		j++;
+	if (!wc2->IsRealGun)
+	{
+		continue;
+	}
+	if (wc == wc2)
+	{
+		return j;
+	}
+	j++;
 	CA_FOREACH_END()
 	CASSERT(false, "cannot find gun");
 	return -1;
@@ -232,18 +229,20 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 	SDL_GetWindowSize(win, &windowSize.x, &windowSize.y);
 	const struct vec2i charStoreSize = svec2i(
 		MAX(400, windowSize.x - 100),
-		MAX(200, windowSize.y - 300));
-	const float pad = 10;
-	if (nk_begin(ctx, "Character Store",
-		nk_rect(pad, pad, (float)charStoreSize.x - pad, (float)charStoreSize.y - pad),
-		NK_WINDOW_BORDER|NK_WINDOW_TITLE))
+		MAX(200, windowSize.y - CHAR_STORE_BOTTOM));
+	if (nk_begin(
+			ctx, "Character Store",
+			nk_rect(
+				PAD, PAD, (float)charStoreSize.x - PAD,
+				(float)charStoreSize.y - PAD),
+			NK_WINDOW_BORDER | NK_WINDOW_TITLE))
 	{
 		int selectedIndex = -1;
 		CA_FOREACH(Character, c, ec->Setting->characters.OtherChars)
-			if (ec->Char == c)
-			{
-				selectedIndex = _ca_index;
-			}
+		if (ec->Char == c)
+		{
+			selectedIndex = _ca_index;
+		}
 		CA_FOREACH_END()
 
 		// TODO: keep buttons from scrolling off
@@ -251,8 +250,8 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		if (nk_button_label(ctx, "Add"))
 		{
 			AddCharacter(ec, -1);
-			selectedIndex = MAX(
-				(int)ec->Setting->characters.OtherChars.size - 1, 0);
+			selectedIndex =
+				MAX((int)ec->Setting->characters.OtherChars.size - 1, 0);
 		}
 		if (nk_button_label(ctx, "Move Up"))
 		{
@@ -265,20 +264,20 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		if (selectedIndex >= 0 && nk_button_label(ctx, "Duplicate"))
 		{
 			AddCharacter(ec, selectedIndex);
-			selectedIndex = MAX(
-				(int)ec->Setting->characters.OtherChars.size - 1, 0);
+			selectedIndex =
+				MAX((int)ec->Setting->characters.OtherChars.size - 1, 0);
 		}
 		if (selectedIndex >= 0 && nk_button_label(ctx, "Remove"))
 		{
 			DeleteCharacter(ec, selectedIndex);
-			selectedIndex = MIN(
-				selectedIndex,
-				(int)ec->Setting->characters.OtherChars.size - 1);
+			selectedIndex =
+				MIN(selectedIndex,
+					(int)ec->Setting->characters.OtherChars.size - 1);
 		}
 		if (selectedIndex >= 0)
 		{
-			ec->Char = CArrayGet(
-				&ec->Setting->characters.OtherChars, selectedIndex);
+			ec->Char =
+				CArrayGet(&ec->Setting->characters.OtherChars, selectedIndex);
 		}
 		else
 		{
@@ -288,16 +287,21 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		// Show existing characters
 		nk_layout_row_dynamic(ctx, 32 * PIC_SCALE, (int)charStoreSize.x / 75);
 		CA_FOREACH(Character, c, ec->Setting->characters.OtherChars)
-			const int selected = ec->Char == c;
-			// show both label and full character
-			if (nk_select_label(ctx, c->Gun->name,
-				NK_TEXT_ALIGN_BOTTOM|NK_TEXT_ALIGN_CENTERED, selected))
-			{
-				ec->Char = c;
-			}
-			DrawCharacter(
-				ctx, c, CArrayGet(&ec->texidsChars, _ca_index),
-				svec2i(-34, 5), &ec->animSelection, DIRECTION_DOWN);
+		const int selected = ec->Char == c;
+		// show both label and full character
+		char label[256];
+		sprintf(
+			label, "%s%s", c->Gun->name,
+			c->PlayerTemplateName != NULL ? "\nPlayer template" : "");
+		if (nk_select_label(
+				ctx, label, NK_TEXT_ALIGN_BOTTOM | NK_TEXT_ALIGN_CENTERED,
+				selected))
+		{
+			ec->Char = c;
+		}
+		DrawCharacter(
+			ctx, c, CArrayGet(&ec->texidsChars, _ca_index), svec2i(-34, 5),
+			&ec->animSelection, DIRECTION_DOWN);
 		CA_FOREACH_END()
 	}
 	nk_end(ctx);
@@ -305,10 +309,12 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 	if (ec->Char != NULL)
 	{
 		const float previewWidth = 80;
-		if (nk_begin(ctx, "Preview",
-			nk_rect(charStoreSize.x + pad, pad,
-				previewWidth, charStoreSize.y - pad),
-			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
+		if (nk_begin(
+				ctx, "Preview",
+				nk_rect(
+					charStoreSize.x + PAD, PAD, previewWidth,
+					charStoreSize.y - PAD),
+				NK_WINDOW_BORDER | NK_WINDOW_TITLE))
 		{
 			// Preview direction
 			nk_layout_row_dynamic(ctx, ROW_HEIGHT, 2);
@@ -344,16 +350,20 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		}
 		nk_end(ctx);
 
-		if (nk_begin(ctx, "Appearance",
-			nk_rect(pad, (float)charStoreSize.y + pad, 260, 280),
-			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
+		if (nk_begin(
+				ctx, "Appearance",
+				nk_rect(
+					PAD, (float)charStoreSize.y + PAD, 260,
+					CHAR_STORE_BOTTOM - PAD * 2),
+				NK_WINDOW_BORDER | NK_WINDOW_TITLE))
 		{
 			nk_layout_row(ctx, NK_DYNAMIC, ROW_HEIGHT, 2, colRatios);
 
 			const int selectedClass = DrawClassSelection(
 				ctx, ec, "Class:", ec->texIdsCharClasses.data,
 				ec->CharacterClassNames,
-				(int)CharacterClassIndex(ec->Char->Class), NumCharacterClasses());
+				(int)CharacterClassIndex(ec->Char->Class),
+				NumCharacterClasses());
 			ec->Char->Class = IndexCharacterClass(selectedClass);
 
 			nk_layout_row_dynamic(ctx, ROW_HEIGHT, 1);
@@ -365,8 +375,8 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 				nk_layout_row(ctx, NK_DYNAMIC, ROW_HEIGHT, 2, colRatios);
 				const int currentHair = (int)HairIndex(ec->Char->Hair);
 				int selectedHair = DrawClassSelection(
-					ctx, ec, "Hair:", ec->texIdsHairs.data,
-					ec->HairNames, currentHair, gPicManager.hairstyleNames.size);
+					ctx, ec, "Hair:", ec->texIdsHairs.data, ec->HairNames,
+					currentHair, gPicManager.hairstyleNames.size);
 				if (selectedHair == -1)
 				{
 					selectedHair = 0;
@@ -408,12 +418,37 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		}
 		nk_end(ctx);
 
-		if (nk_begin(ctx, "Attributes",
-			nk_rect(280, (float)charStoreSize.y + pad, 250, 225),
-			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
+		if (nk_begin(
+				ctx, "Attributes",
+				nk_rect(280, (float)charStoreSize.y + PAD, 250, 225),
+				NK_WINDOW_BORDER | NK_WINDOW_TITLE))
 		{
 			// Speed (256 = 100%)
 			nk_layout_row_dynamic(ctx, ROW_HEIGHT, 1);
+			int isPlayerTemplate = ec->Char->PlayerTemplateName != NULL;
+			nk_checkbox_label(ctx, "Player Template", &isPlayerTemplate);
+			if (isPlayerTemplate)
+			{
+				char buf[256];
+				buf[0] = '\0';
+				if (ec->Char->PlayerTemplateName != NULL)
+				{
+					strcpy(buf, ec->Char->PlayerTemplateName);
+				}
+				DrawTextbox(ctx, buf, 256, "Name", NK_EDIT_FIELD);
+				if (ec->Char->PlayerTemplateName == NULL ||
+					strcmp(buf, ec->Char->PlayerTemplateName) != 0)
+				{
+					*ec->FileChanged = true;
+					CFREE(ec->Char->PlayerTemplateName);
+					CSTRDUP(ec->Char->PlayerTemplateName, buf);
+				}
+			}
+			else
+			{
+				CFREE(ec->Char->PlayerTemplateName);
+				ec->Char->PlayerTemplateName = NULL;
+			}
 			nk_property_float(
 				ctx, "Speed:", 0, &ec->Char->speed, 4, 0.05f, 0.01f);
 
@@ -440,23 +475,26 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		}
 		nk_end(ctx);
 
-		if (nk_begin(ctx, "AI",
-			nk_rect(540, (float)charStoreSize.y + pad, 250, 280),
-			NK_WINDOW_BORDER|NK_WINDOW_TITLE))
+		if (nk_begin(
+				ctx, "AI",
+				nk_rect(
+					540, (float)charStoreSize.y + PAD, 250,
+					CHAR_STORE_BOTTOM - PAD * 2),
+				NK_WINDOW_BORDER | NK_WINDOW_TITLE))
 		{
 			nk_layout_row_dynamic(ctx, ROW_HEIGHT, 1);
 			nk_property_int(
-				ctx, "Move (%):", 0, &ec->Char->bot->probabilityToMove,
-				100, 5, 1);
+				ctx, "Move (%):", 0, &ec->Char->bot->probabilityToMove, 100, 5,
+				1);
 			nk_property_int(
-				ctx, "Track (%):", 0, &ec->Char->bot->probabilityToTrack,
-				100, 5, 1);
+				ctx, "Track (%):", 0, &ec->Char->bot->probabilityToTrack, 100,
+				5, 1);
 			nk_property_int(
-				ctx, "Shoot (%):", 0, &ec->Char->bot->probabilityToShoot,
-				100, 5, 1);
+				ctx, "Shoot (%):", 0, &ec->Char->bot->probabilityToShoot, 100,
+				5, 1);
 			nk_property_int(
-				ctx, "Action delay:", 0, &ec->Char->bot->actionDelay,
-				50, 5, 1);
+				ctx, "Action delay:", 0, &ec->Char->bot->actionDelay, 50, 5,
+				1);
 
 			nk_layout_row_dynamic(ctx, ROW_HEIGHT, 2);
 			DrawFlag(
@@ -483,7 +521,7 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 
 	AnimationUpdate(&ec->anim, 1);
 	AnimationUpdate(&ec->animSelection, 1);
-	
+
 	return true;
 }
 
@@ -553,13 +591,12 @@ static int MoveCharacter(
 static void DeleteCharacter(EditorContext *ec, const int selectedIndex)
 {
 	CharacterStoreDeleteOther(&ec->Setting->characters, selectedIndex);
-	const int indexClamped = MIN(
-		selectedIndex,
-		(int)ec->Setting->characters.OtherChars.size - 1);
+	const int indexClamped =
+		MIN(selectedIndex, (int)ec->Setting->characters.OtherChars.size - 1);
 	if (indexClamped >= 0)
 	{
-		ec->Char = CArrayGet(
-			&ec->Setting->characters.OtherChars, indexClamped);
+		ec->Char =
+			CArrayGet(&ec->Setting->characters.OtherChars, indexClamped);
 	}
 	else
 	{
@@ -581,8 +618,8 @@ static int DrawClassSelection(
 {
 	nk_label(ctx, label, NK_TEXT_LEFT);
 	const int selectedNew = nk_combo_separator_image(
-		ctx, texids, items, '\0', selected, (int)len,
-		ROW_HEIGHT, nk_vec2(nk_widget_width(ctx), 8 * ROW_HEIGHT));
+		ctx, texids, items, '\0', selected, (int)len, ROW_HEIGHT,
+		nk_vec2(nk_widget_width(ctx), 8 * ROW_HEIGHT));
 	if (selectedNew != selected)
 	{
 		*ec->FileChanged = true;
@@ -597,17 +634,17 @@ static int HairIndex(const char *hair)
 		return -1;
 	}
 	CA_FOREACH(const char *, hairstyleName, gPicManager.hairstyleNames)
-		if (strcmp(*hairstyleName, hair) == 0)
-		{
-			return _ca_index;
-		}
+	if (strcmp(*hairstyleName, hair) == 0)
+	{
+		return _ca_index;
+	}
 	CA_FOREACH_END()
 	return -1;
 }
 
 static void DrawFlag(
-	struct nk_context *ctx, EditorContext *ec, const char *label, const int flag,
-	const char *tooltip)
+	struct nk_context *ctx, EditorContext *ec, const char *label,
+	const int flag, const char *tooltip)
 {
 	struct nk_rect bounds = nk_widget_bounds(ctx);
 	nk_checkbox_flags_label(ctx, label, &ec->Char->flags, flag);
@@ -623,8 +660,8 @@ static void DrawCharacter(
 {
 	const int frame = AnimationGetFrame(anim);
 	ActorPics pics = GetCharacterPics(
-		c, d, d, anim->Type, frame,
-		c->Gun->Sprites, GUNSTATE_READY, colorTransparent, NULL, NULL, 0);
+		c, d, d, anim->Type, frame, c->Gun->Sprites, GUNSTATE_READY,
+		colorTransparent, NULL, NULL, 0);
 	for (int i = 0; i < BODY_PART_COUNT; i++)
 	{
 		const Pic *pic = pics.OrderedPics[i];
@@ -633,8 +670,7 @@ static void DrawCharacter(
 			continue;
 		}
 		const struct vec2i drawPos = svec2i_add(
-			svec2i_add(pos, pics.OrderedOffsets[i]),
-			svec2i(16, 16));
+			svec2i_add(pos, pics.OrderedOffsets[i]), svec2i(16, 16));
 		DrawPic(ctx, pic, texids[i], drawPos, PIC_SCALE);
 	}
 }

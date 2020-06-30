@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2014, 2016-2019 Cong Xu
+	Copyright (c) 2013-2014, 2016-2020 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -43,15 +43,13 @@
 
 PlayerTemplates gPlayerTemplates;
 
-
 static void LoadPlayerTemplate(
 	CArray *templates, json_t *node, const int version)
 {
 	PlayerTemplate t;
 	memset(&t, 0, sizeof t);
 	strncpy(
-		t.name,
-		json_find_first_label(node, "Name")->child->text,
+		t.name, json_find_first_label(node, "Name")->child->text,
 		PLAYER_NAME_MAXLEN - 1);
 	t.CharClassName = GetString(node, "Face");
 	// Hair
@@ -87,14 +85,15 @@ static void LoadPlayerTemplate(
 		LoadColor(&t.Colors.Hair, node, "Hair");
 	}
 	CArrayPushBack(templates, &t);
-	LOG(LM_MAIN, LL_DEBUG, "loaded player template %s (%s)",
-		t.name, t.CharClassName);
+	LOG(LM_MAIN, LL_DEBUG, "loaded player template %s (%s)", t.name,
+		t.CharClassName);
 }
 
 void PlayerTemplatesLoad(PlayerTemplates *pt, const CharacterClasses *classes)
 {
 	// Note: not used, but included in function to express dependency
-	CASSERT(classes->Classes.size > 0,
+	CASSERT(
+		classes->Classes.size > 0,
 		"cannot load player templates without character classes");
 	json_t *root = NULL;
 
@@ -147,8 +146,8 @@ void PlayerTemplatesLoadJSON(CArray *classes, json_t *node)
 void PlayerTemplatesClear(CArray *classes)
 {
 	CA_FOREACH(PlayerTemplate, pt, *classes)
-		CFREE(pt->CharClassName);
-		CFREE(pt->Hair);
+	CFREE(pt->CharClassName);
+	CFREE(pt->Hair);
 	CA_FOREACH_END()
 	CArrayClear(classes);
 }
@@ -204,7 +203,7 @@ void PlayerTemplatesSave(const PlayerTemplates *pt)
 		root, "Version", json_new_number(TOSTRING(VERSION)));
 	json_t *templatesNode = json_new_array();
 	CA_FOREACH(const PlayerTemplate, t, pt->Classes)
-		SavePlayerTemplate(t, templatesNode);
+	SavePlayerTemplate(t, templatesNode);
 	CA_FOREACH_END()
 	json_insert_pair_into_object(root, "PlayerTemplates", templatesNode);
 
@@ -221,12 +220,26 @@ bail:
 	{
 		fclose(f);
 #ifdef __EMSCRIPTEN__
-        EM_ASM(
-            //persist changes
-            FS.syncfs(false,function (err) {
-                              assert(!err);
-            });
-        );
+		EM_ASM(
+			// persist changes
+			FS.syncfs(
+				false, function(err) { assert(!err); }););
 #endif
 	}
+}
+
+void PlayerTemplateAddCharacter(CArray *classes, const Character *c)
+{
+	PlayerTemplate t;
+	memset(&t, 0, sizeof t);
+	strncpy(t.name, c->PlayerTemplateName, PLAYER_NAME_MAXLEN - 1);
+	CSTRDUP(t.CharClassName, c->Class->Name);
+	if (c->Hair != NULL)
+	{
+		CSTRDUP(t.Hair, c->Hair);
+	}
+	t.Colors = c->Colors;
+	CArrayPushBack(classes, &t);
+	LOG(LM_MAIN, LL_DEBUG, "loaded player template from characters %s (%s)",
+		t.name, t.CharClassName);
 }

@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2014, 2016-2019 Cong Xu
+	Copyright (c) 2013-2014, 2016-2020 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -44,8 +44,8 @@ typedef struct
 
 typedef struct
 {
-	CArray Classes;	// of PlayerTemplate
-	CArray CustomClasses;	// of PlayerTemplate
+	CArray Classes;		  // of PlayerTemplate
+	CArray CustomClasses; // of PlayerTemplate
 } PlayerTemplates;
 extern PlayerTemplates gPlayerTemplates;
 
@@ -56,3 +56,4 @@ void PlayerTemplatesTerminate(PlayerTemplates *pt);
 
 PlayerTemplate *PlayerTemplateGetById(PlayerTemplates *pt, const int id);
 void PlayerTemplatesSave(const PlayerTemplates *pt);
+void PlayerTemplateAddCharacter(CArray *classes, const Character *c);

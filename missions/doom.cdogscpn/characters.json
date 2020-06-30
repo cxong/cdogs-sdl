@@ -95,5 +95,23 @@
 		"probabilityToTrack": 25,
 		"probabilityToShoot": 12,
 		"actionDelay": 10
+	},
+	{
+		"Class": "Jones",
+		"PlayerTemplateName": "Doomguy",
+		"HairType": "helmet",
+		"Skin": "f4944cff",
+		"Arms": "00a400ff",
+		"Body": "00a400ff",
+		"Legs": "948029ff",
+		"Hair": "94802cff",
+		"speed": 256,
+		"Gun": "Machine gun",
+		"maxHealth": 40,
+		"flags": 1024,
+		"probabilityToMove": 50,
+		"probabilityToTrack": 25,
+		"probabilityToShoot": 2,
+		"actionDelay": 15
 	}]
 }

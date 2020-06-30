@@ -1,30 +1,30 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2014, 2016, 2019 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2014, 2016, 2019-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "character.h"
 
@@ -33,9 +33,9 @@
 #include "actors.h"
 #include "files.h"
 #include "json_utils.h"
+#include "player_template.h"
 
 #define CHARACTER_VERSION 13
-
 
 static void CharacterInit(Character *c)
 {
@@ -60,7 +60,7 @@ void CharacterStoreInit(CharacterStore *store)
 void CharacterStoreTerminate(CharacterStore *store)
 {
 	CA_FOREACH(Character, c, store->OtherChars)
-		CharacterTerminate(c);
+	CharacterTerminate(c);
 	CA_FOREACH_END()
 	CArrayTerminate(&store->OtherChars);
 	CArrayTerminate(&store->prisonerIds);
@@ -76,11 +76,13 @@ void CharacterStoreResetOthers(CharacterStore *store)
 	CArrayClear(&store->specialIds);
 }
 
-void CharacterLoadJSON(CharacterStore *c, json_t *root, int version)
+void CharacterLoadJSON(
+	CharacterStore *c, CArray *playerTemplates, json_t *root, int version)
 {
 	LoadInt(&version, root, "Version");
 	json_t *child = json_find_first_label(root, "Characters")->child->child;
 	CharacterStoreTerminate(c);
+	PlayerTemplatesClear(playerTemplates);
 	CharacterStoreInit(c);
 	while (child)
 	{
@@ -142,6 +144,7 @@ void CharacterLoadJSON(CharacterStore *c, json_t *root, int version)
 		{
 			ConvertHairColors(ch);
 		}
+		LoadStr(&ch->PlayerTemplateName, child, "PlayerTemplateName");
 		LoadFullInt(&ch->speed, child, "speed");
 		tmp = GetString(child, "Gun");
 		ch->Gun = StrWeaponClass(tmp);
@@ -154,6 +157,12 @@ void CharacterLoadJSON(CharacterStore *c, json_t *root, int version)
 		LoadInt(&ch->bot->probabilityToTrack, child, "probabilityToTrack");
 		LoadInt(&ch->bot->probabilityToShoot, child, "probabilityToShoot");
 		LoadInt(&ch->bot->actionDelay, child, "actionDelay");
+
+		if (ch->PlayerTemplateName != NULL)
+		{
+			PlayerTemplateAddCharacter(playerTemplates, ch);
+		}
+
 		child = child->next;
 	}
 }
@@ -163,30 +172,33 @@ bool CharacterSave(CharacterStore *s, const char *path)
 	json_t *root = json_new_object();
 	AddIntPair(root, "Version", CHARACTER_VERSION);
 	bool res = true;
-	
+
 	json_t *charNode = json_new_array();
 	CA_FOREACH(Character, c, s->OtherChars)
-		json_t *node = json_new_object();
-		AddStringPair(node, "Class", c->Class->Name);
-		if (c->Hair)
-		{
-			AddStringPair(node, "Hair", c->Hair);
-		}
-		AddColorPair(node, "Skin", c->Colors.Skin);
-		AddColorPair(node, "Arms", c->Colors.Arms);
-		AddColorPair(node, "Body", c->Colors.Body);
-		AddColorPair(node, "Legs", c->Colors.Legs);
-		AddColorPair(node, "Hair", c->Colors.Hair);
-		AddIntPair(node, "speed", (int)(c->speed * 256));
-		json_insert_pair_into_object(
-			node, "Gun", json_new_string(c->Gun->name));
-		AddIntPair(node, "maxHealth", c->maxHealth);
-		AddIntPair(node, "flags", c->flags);
-		AddIntPair(node, "probabilityToMove", c->bot->probabilityToMove);
-		AddIntPair(node, "probabilityToTrack", c->bot->probabilityToTrack);
-		AddIntPair(node, "probabilityToShoot", c->bot->probabilityToShoot);
-		AddIntPair(node, "actionDelay", c->bot->actionDelay);
-		json_insert_child(charNode, node);
+	json_t *node = json_new_object();
+	AddStringPair(node, "Class", c->Class->Name);
+	if (c->PlayerTemplateName)
+	{
+		AddStringPair(node, "PlayerTemplateName", c->PlayerTemplateName);
+	}
+	if (c->Hair)
+	{
+		AddStringPair(node, "HairType", c->Hair);
+	}
+	AddColorPair(node, "Skin", c->Colors.Skin);
+	AddColorPair(node, "Arms", c->Colors.Arms);
+	AddColorPair(node, "Body", c->Colors.Body);
+	AddColorPair(node, "Legs", c->Colors.Legs);
+	AddColorPair(node, "Hair", c->Colors.Hair);
+	AddIntPair(node, "speed", (int)(c->speed * 256));
+	json_insert_pair_into_object(node, "Gun", json_new_string(c->Gun->name));
+	AddIntPair(node, "maxHealth", c->maxHealth);
+	AddIntPair(node, "flags", c->flags);
+	AddIntPair(node, "probabilityToMove", c->bot->probabilityToMove);
+	AddIntPair(node, "probabilityToTrack", c->bot->probabilityToTrack);
+	AddIntPair(node, "probabilityToShoot", c->bot->probabilityToShoot);
+	AddIntPair(node, "actionDelay", c->bot->actionDelay);
+	json_insert_child(charNode, node);
 	CA_FOREACH_END()
 	json_insert_pair_into_object(root, "Characters", charNode);
 	char buf[CDOGS_PATH_MAX];
@@ -292,9 +304,8 @@ static color_t RandomColor(void);
 void CharacterShuffleAppearance(Character *c)
 {
 	// Choose a random character class
-	const int numCharClasses =
-		(int)gCharacterClasses.Classes.size +
-		(int)gCharacterClasses.CustomClasses.size;
+	const int numCharClasses = (int)gCharacterClasses.Classes.size +
+							   (int)gCharacterClasses.CustomClasses.size;
 	const int charClass = rand() % numCharClasses;
 	if (charClass < (int)gCharacterClasses.Classes.size)
 	{
@@ -308,8 +319,7 @@ void CharacterShuffleAppearance(Character *c)
 	}
 	CFREE(c->Hair);
 	const char *hairStyleName = *(char **)CArrayGet(
-		&gPicManager.hairstyleNames,
-		rand() % gPicManager.hairstyleNames.size);
+		&gPicManager.hairstyleNames, rand() % gPicManager.hairstyleNames.size);
 	CSTRDUP(c->Hair, hairStyleName);
 	c->Colors.Skin = RandomColor();
 	c->Colors.Arms = RandomColor();

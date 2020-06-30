@@ -89,12 +89,6 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 
 	LoadArchivePics(&gPicManager, gCharSpriteClasses.customClasses, filename);
 
-	root = ReadArchiveJSON(filename, "players.json");
-	if (root != NULL)
-	{
-		PlayerTemplatesLoadJSON(&gPlayerTemplates.CustomClasses, root);
-	}
-
 	root = ReadArchiveJSON(filename, "particles.json");
 	if (root != NULL)
 	{
@@ -164,7 +158,8 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	root = ReadArchiveJSON(filename, "characters.json");
 	if (root != NULL)
 	{
-		CharacterLoadJSON(&c->characters, root, version);
+		CharacterLoadJSON(
+			&c->characters, &gPlayerTemplates.CustomClasses, root, version);
 	}
 
 bail:

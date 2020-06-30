@@ -30,7 +30,7 @@
 #include "nk_window.h"
 
 #define WIDTH 800
-#define HEIGHT 200
+#define HEIGHT 250
 #define ROW_HEIGHT 25
 
 typedef struct
@@ -83,9 +83,6 @@ static void CheckTextChanged(char **dst, const char *src, EditorResult *result)
 	}
 }
 
-static void DrawTextbox(
-	struct nk_context *ctx, char *value, const int len, const char *tooltip,
-	const nk_flags flags);
 static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 {
 	UNUSED(win);
@@ -132,15 +129,4 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 	}
 	nk_end(ctx);
 	return true;
-}
-static void DrawTextbox(
-	struct nk_context *ctx, char *value, const int len, const char *tooltip,
-	const nk_flags flags)
-{
-	struct nk_rect bounds = nk_widget_bounds(ctx);
-	nk_edit_string_zero_terminated(ctx, flags, value, len, nk_filter_default);
-	if (tooltip && nk_input_is_mouse_hovering_rect(&ctx->input, bounds))
-	{
-		nk_tooltip(ctx, tooltip);
-	}
 }

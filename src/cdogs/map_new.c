@@ -37,6 +37,7 @@
 #include "log.h"
 #include "map_archive.h"
 #include "mission.h"
+#include "player_template.h"
 
 int MapNewScan(const char *filename, char **title, int *numMissions)
 {
@@ -157,7 +158,8 @@ int MapNewLoad(const char *filename, CampaignSetting *c)
 	MapNewLoadCampaignJSON(root, c);
 	LoadMissions(
 		&c->Missions, json_find_first_label(root, "Missions")->child, version);
-	CharacterLoadJSON(&c->characters, root, version);
+	CharacterLoadJSON(
+		&c->characters, &gPlayerTemplates.CustomClasses, root, version);
 
 bail:
 	json_free_value(&root);
