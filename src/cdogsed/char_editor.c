@@ -534,6 +534,11 @@ static void AddCharacter(EditorContext *ec, const int cloneIdx)
 			CArrayGet(&ec->Setting->characters.OtherChars, cloneIdx);
 		CFREE(ec->Char->bot);
 		memcpy(ec->Char, clone, sizeof *ec->Char);
+		if (clone->PlayerTemplateName)
+		{
+			CSTRDUP(ec->Char->PlayerTemplateName, clone->PlayerTemplateName);
+		}
+		CSTRDUP(ec->Char->Hair, clone->Hair);
 		CMALLOC(ec->Char->bot, sizeof *ec->Char->bot);
 		memcpy(ec->Char->bot, clone->bot, sizeof *ec->Char->bot);
 	}

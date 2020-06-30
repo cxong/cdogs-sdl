@@ -5,12 +5,8 @@
 		"Type": "Cave",
 		"Width": 40,
 		"Height": 40,
-		"WallStyle": "rock",
-		"FloorStyle": "dirt",
-		"RoomStyle": "flat",
 		"ExitStyle": "hazard",
 		"KeyStyle": "office",
-		"DoorStyle": "office",
 		"Objectives": [{
 			"Description": "Kill creatures",
 			"Type": "Kill",
@@ -20,8 +16,7 @@
 			"Flags": 0
 		}],
 		"Enemies": [],
-		"SpecialChars": [0,
-		1],
+		"SpecialChars": [0, 1],
 		"MapObjectDensities": [{
 			"MapObject": "goo",
 			"Density": 5
@@ -56,10 +51,52 @@
 		"Inkvine",
 		"Lasergun"],
 		"Song": "",
-		"WallMask": "301e0a",
-		"FloorMask": "844400",
-		"RoomMask": "840000",
-		"AltMask": "840000",
+		"TileClasses": {
+			"Wall": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "rock",
+				"Mask": "301e0aff",
+				"MaskAlt": "840000ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"Floor": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "dirt",
+				"Mask": "844400ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"Room": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "flat",
+				"Mask": "840000ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"Door": {
+				"Name": "door",
+				"Type": "Door",
+				"Style": "office",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": true
+			}
+		},
 		"FillPercent": 40,
 		"Repeat": 4,
 		"R1": 5,
@@ -74,7 +111,8 @@
 			"WallLength": 0,
 			"WallPad": 0
 		},
-		"Squares": 3
+		"Squares": 3,
+		"DoorsEnabled": true
 	},
 	{
 		"Title": "Sabotage of Clan Tantalus Armory",
@@ -82,12 +120,8 @@
 		"Type": "Classic",
 		"Width": 45,
 		"Height": 44,
-		"WallStyle": "steelwood",
-		"FloorStyle": "recessed",
-		"RoomStyle": "smallsquare",
 		"ExitStyle": "plate",
 		"KeyStyle": "plain2",
-		"DoorStyle": "alien",
 		"Objectives": [{
 			"Description": "Destroy the Clan shield consoles",
 			"Type": "Destroy",
@@ -164,10 +198,52 @@
 		"Lasergun",
 		"Dynamite"],
 		"Song": "",
-		"WallMask": "703800",
-		"FloorMask": "484848",
-		"RoomMask": "74601c",
-		"AltMask": "480000",
+		"TileClasses": {
+			"Wall": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "steelwood",
+				"Mask": "703800ff",
+				"MaskAlt": "480000ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"Floor": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "recessed",
+				"Mask": "484848ff",
+				"MaskAlt": "480000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"Room": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "smallsquare",
+				"Mask": "74601cff",
+				"MaskAlt": "480000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"Door": {
+				"Name": "door",
+				"Type": "Door",
+				"Style": "alien",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": true
+			}
+		},
 		"Walls": 0,
 		"WallLength": 1,
 		"CorridorWidth": 2,
@@ -199,12 +275,8 @@
 		"Type": "Classic",
 		"Width": 57,
 		"Height": 53,
-		"WallStyle": "steelwood",
-		"FloorStyle": "recessed",
-		"RoomStyle": "smallsquare",
 		"ExitStyle": "plate",
 		"KeyStyle": "plain2",
-		"DoorStyle": "alien",
 		"Objectives": [{
 			"Description": "Purge the Tantalus",
 			"Type": "Kill",
@@ -213,8 +285,7 @@
 			"Required": 25,
 			"Flags": 0
 		}],
-		"Enemies": [15,
-		6],
+		"Enemies": [15, 6],
 		"SpecialChars": [2,
 		3,
 		4],
@@ -265,10 +336,52 @@
 		"Shotgun",
 		"Lasergun"],
 		"Song": "",
-		"WallMask": "703800",
-		"FloorMask": "484848",
-		"RoomMask": "74601c",
-		"AltMask": "480000",
+		"TileClasses": {
+			"Wall": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "steelwood",
+				"Mask": "703800ff",
+				"MaskAlt": "480000ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"Floor": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "recessed",
+				"Mask": "484848ff",
+				"MaskAlt": "480000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"Room": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "smallsquare",
+				"Mask": "74601cff",
+				"MaskAlt": "480000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"Door": {
+				"Name": "door",
+				"Type": "Door",
+				"Style": "alien",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": true
+			}
+		},
 		"Walls": 9,
 		"WallLength": 11,
 		"CorridorWidth": 2,
@@ -300,12 +413,8 @@
 		"Type": "Cave",
 		"Width": 50,
 		"Height": 50,
-		"WallStyle": "rock",
-		"FloorStyle": "dirt",
-		"RoomStyle": "dirt",
 		"ExitStyle": "hazard",
 		"KeyStyle": "office",
-		"DoorStyle": "office",
 		"Objectives": [{
 			"Description": "Exterminate the remnants",
 			"Type": "Kill",
@@ -315,8 +424,7 @@
 			"Flags": 0
 		}],
 		"Enemies": [],
-		"SpecialChars": [2,
-		4],
+		"SpecialChars": [2, 4],
 		"MapObjectDensities": [{
 			"MapObject": "wall_stuff",
 			"Density": 15
@@ -346,10 +454,52 @@
 		"Shrapnel bombs",
 		"Lasergun"],
 		"Song": "",
-		"WallMask": "422500",
-		"FloorMask": "8b4600",
-		"RoomMask": "844400",
-		"AltMask": "840000",
+		"TileClasses": {
+			"Wall": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "rock",
+				"Mask": "422500ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"Floor": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "dirt",
+				"Mask": "8b4600ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"Room": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "dirt",
+				"Mask": "844400ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"Door": {
+				"Name": "door",
+				"Type": "Door",
+				"Style": "office",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": true
+			}
+		},
 		"FillPercent": 46,
 		"Repeat": 3,
 		"R1": 5,
@@ -364,7 +514,8 @@
 			"WallLength": 2,
 			"WallPad": 1
 		},
-		"Squares": 1
+		"Squares": 1,
+		"DoorsEnabled": true
 	},
 	{
 		"Title": "The Duel",
@@ -372,12 +523,8 @@
 		"Type": "Classic",
 		"Width": 35,
 		"Height": 36,
-		"WallStyle": "steel",
-		"FloorStyle": "biggrid",
-		"RoomStyle": "recessed",
 		"ExitStyle": "plate",
 		"KeyStyle": "office",
-		"DoorStyle": "office",
 		"Objectives": [{
 			"Description": "Defeat Denis Colorado",
 			"Type": "Kill",
@@ -417,10 +564,52 @@
 		"Shrapnel bombs",
 		"Lasergun"],
 		"Song": "",
-		"WallMask": "5c5c84",
-		"FloorMask": "008484",
-		"RoomMask": "840000",
-		"AltMask": "840000",
+		"TileClasses": {
+			"Wall": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "steel",
+				"Mask": "5c5c84ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"Floor": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "biggrid",
+				"Mask": "008484ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"Room": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "recessed",
+				"Mask": "840000ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"Door": {
+				"Name": "door",
+				"Type": "Door",
+				"Style": "office",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": true
+			}
+		},
 		"Walls": 32,
 		"WallLength": 17,
 		"CorridorWidth": 2,
@@ -452,12 +641,8 @@
 		"Type": "Cave",
 		"Width": 70,
 		"Height": 64,
-		"WallStyle": "stone",
-		"FloorStyle": "dirt",
-		"RoomStyle": "recessed",
 		"ExitStyle": "hazard",
 		"KeyStyle": "office",
-		"DoorStyle": "office",
 		"Objectives": [{
 			"Description": "Search the area",
 			"Type": "Explore",
@@ -478,10 +663,52 @@
 		"Shrapnel bombs",
 		"Lasergun"],
 		"Song": "",
-		"WallMask": "482400",
-		"FloorMask": "480048",
-		"RoomMask": "840000",
-		"AltMask": "840000",
+		"TileClasses": {
+			"Wall": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "stone",
+				"Mask": "482400ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"Floor": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "dirt",
+				"Mask": "480048ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"Room": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "recessed",
+				"Mask": "840000ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"Door": {
+				"Name": "door",
+				"Type": "Door",
+				"Style": "office",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": true
+			}
+		},
 		"FillPercent": 44,
 		"Repeat": 10,
 		"R1": 5,
@@ -496,7 +723,8 @@
 			"WallLength": 0,
 			"WallPad": 0
 		},
-		"Squares": 0
+		"Squares": 0,
+		"DoorsEnabled": true
 	},
 	{
 		"Title": "Miner Escort",
@@ -504,12 +732,8 @@
 		"Type": "Cave",
 		"Width": 63,
 		"Height": 53,
-		"WallStyle": "stone",
-		"FloorStyle": "dirt",
-		"RoomStyle": "recessed",
 		"ExitStyle": "hazard",
 		"KeyStyle": "office",
-		"DoorStyle": "office",
 		"Objectives": [{
 			"Description": "Repel the natives",
 			"Type": "Kill",
@@ -527,8 +751,7 @@
 			"Flags": 0
 		}],
 		"Enemies": [6],
-		"SpecialChars": [9,
-		10],
+		"SpecialChars": [9, 10],
 		"MapObjectDensities": [{
 			"MapObject": "tree_dead",
 			"Density": 5
@@ -546,10 +769,52 @@
 		"Shrapnel bombs",
 		"Lasergun"],
 		"Song": "",
-		"WallMask": "847024",
-		"FloorMask": "94802c",
-		"RoomMask": "840000",
-		"AltMask": "840000",
+		"TileClasses": {
+			"Wall": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "stone",
+				"Mask": "847024ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"Floor": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "dirt",
+				"Mask": "94802cff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"Room": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "recessed",
+				"Mask": "840000ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"Door": {
+				"Name": "door",
+				"Type": "Door",
+				"Style": "office",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": true
+			}
+		},
 		"FillPercent": 40,
 		"Repeat": 4,
 		"R1": 5,
@@ -564,7 +829,8 @@
 			"WallLength": 0,
 			"WallPad": 0
 		},
-		"Squares": 3
+		"Squares": 3,
+		"DoorsEnabled": true
 	},
 	{
 		"Title": "Deep Desert Raid",
@@ -572,12 +838,8 @@
 		"Type": "Classic",
 		"Width": 52,
 		"Height": 42,
-		"WallStyle": "stone",
-		"FloorStyle": "dirt",
-		"RoomStyle": "stone",
 		"ExitStyle": "hazard",
 		"KeyStyle": "plain",
-		"DoorStyle": "dungeon",
 		"Objectives": [{
 			"Description": "Kill the natives",
 			"Type": "Kill",
@@ -602,8 +864,7 @@
 			"Required": 0,
 			"Flags": 0
 		}],
-		"Enemies": [15,
-		6],
+		"Enemies": [15, 6],
 		"SpecialChars": [8,
 		10,
 		11],
@@ -633,10 +894,52 @@
 		"Molotovs",
 		"Lasergun"],
 		"Song": "",
-		"WallMask": "484848",
-		"FloorMask": "94802c",
-		"RoomMask": "844400",
-		"AltMask": "840000",
+		"TileClasses": {
+			"Wall": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "stone",
+				"Mask": "484848ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"Floor": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "dirt",
+				"Mask": "94802cff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"Room": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "stone",
+				"Mask": "844400ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"Door": {
+				"Name": "door",
+				"Type": "Door",
+				"Style": "dungeon",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": true
+			}
+		},
 		"Walls": 18,
 		"WallLength": 7,
 		"CorridorWidth": 2,
@@ -668,12 +971,8 @@
 		"Type": "Classic",
 		"Width": 48,
 		"Height": 42,
-		"WallStyle": "stone",
-		"FloorStyle": "dirt",
-		"RoomStyle": "stone",
 		"ExitStyle": "hazard",
 		"KeyStyle": "plain",
-		"DoorStyle": "dungeon",
 		"Objectives": [{
 			"Description": "Rescue your troop",
 			"Type": "Rescue",
@@ -725,10 +1024,52 @@
 		"Lasergun",
 		"Wurmtooth"],
 		"Song": "",
-		"WallMask": "484870",
-		"FloorMask": "480048",
-		"RoomMask": "482400",
-		"AltMask": "840000",
+		"TileClasses": {
+			"Wall": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "stone",
+				"Mask": "484870ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"Floor": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "dirt",
+				"Mask": "480048ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"Room": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "stone",
+				"Mask": "482400ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"Door": {
+				"Name": "door",
+				"Type": "Door",
+				"Style": "dungeon",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": true
+			}
+		},
 		"Walls": 11,
 		"WallLength": 9,
 		"CorridorWidth": 1,
@@ -760,12 +1101,8 @@
 		"Type": "Classic",
 		"Width": 66,
 		"Height": 30,
-		"WallStyle": "brick",
-		"FloorStyle": "flat",
-		"RoomStyle": "smallsquare",
 		"ExitStyle": "plate",
 		"KeyStyle": "cube",
-		"DoorStyle": "alien",
 		"Objectives": [{
 			"Description": "Kill general Trolley Hollyoak",
 			"Type": "Kill",
@@ -826,10 +1163,52 @@
 		"Dynamite",
 		"Wurmtooth"],
 		"Song": "",
-		"WallMask": "848484",
-		"FloorMask": "000048",
-		"RoomMask": "004800",
-		"AltMask": "840000",
+		"TileClasses": {
+			"Wall": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "brick",
+				"Mask": "848484ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"Floor": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "flat",
+				"Mask": "000048ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"Room": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "smallsquare",
+				"Mask": "004800ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"Door": {
+				"Name": "door",
+				"Type": "Door",
+				"Style": "alien",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": true
+			}
+		},
 		"Walls": 0,
 		"WallLength": 1,
 		"CorridorWidth": 2,
