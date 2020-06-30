@@ -1,7 +1,8 @@
 {
-	"Version": 12,
+	"Version": 13,
 	"Characters": [{
-		"Class": "Smith",
+		"Class": "Jones",
+		"HairType": "flattop",
 		"Skin": "d25106ff",
 		"Arms": "ffffffff",
 		"Body": "ffffffff",
@@ -17,7 +18,9 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Professor",
+		"Class": "Jones",
+		"PlayerTemplateName": "Scientist",
+		"HairType": "professor",
 		"Skin": "d25106ff",
 		"Arms": "ffffffff",
 		"Body": "ffffffff",
@@ -33,7 +36,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Bob",
+		"Class": "Jones",
+		"HairType": "beard",
 		"Skin": "882800ff",
 		"Arms": "ffffffff",
 		"Body": "ffffffff",
@@ -49,7 +53,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Smith",
+		"Class": "Jones",
+		"HairType": "flattop",
 		"Skin": "882800ff",
 		"Arms": "ffffffff",
 		"Body": "ffffffff",
@@ -65,7 +70,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Smith",
+		"Class": "Jones",
+		"HairType": "flattop",
 		"Skin": "ff8136ff",
 		"Arms": "ffffffff",
 		"Body": "ffffffff",
@@ -81,7 +87,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Smith",
+		"Class": "Jones",
+		"HairType": "flattop",
 		"Skin": "d25106ff",
 		"Arms": "ffffffff",
 		"Body": "ffffffff",
@@ -97,7 +104,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Smith",
+		"Class": "Jones",
+		"HairType": "flattop",
 		"Skin": "d25106ff",
 		"Arms": "ffffffff",
 		"Body": "ffffffff",
@@ -113,7 +121,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Professor",
+		"Class": "Jones",
+		"HairType": "professor",
 		"Skin": "ff8136ff",
 		"Arms": "ffffffff",
 		"Body": "ffffffff",
@@ -129,7 +138,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Wolf",
+		"Class": "Jones",
+		"HairType": "dutch",
 		"Skin": "882800ff",
 		"Arms": "ffffffff",
 		"Body": "ffffffff",
@@ -210,6 +220,7 @@
 	},
 	{
 		"Class": "Lady",
+		"HairType": "ponytail",
 		"Skin": "d25106ff",
 		"Arms": "ffffffff",
 		"Body": "ffffffff",
@@ -225,7 +236,8 @@
 		"actionDelay": 5
 	},
 	{
-		"Class": "WarBaby",
+		"Class": "Jones",
+		"HairType": "beret",
 		"Skin": "882800ff",
 		"Arms": "149c14ff",
 		"Body": "149c14ff",
@@ -241,7 +253,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "WarBaby",
+		"Class": "Jones",
+		"HairType": "beret",
 		"Skin": "ff8136ff",
 		"Arms": "149c14ff",
 		"Body": "149c14ff",
@@ -257,7 +270,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "WarBaby",
+		"Class": "Jones",
+		"HairType": "beret",
 		"Skin": "d25106ff",
 		"Arms": "149c14ff",
 		"Body": "149c14ff",
@@ -289,7 +303,9 @@
 		"actionDelay": 10
 	},
 	{
-		"Class": "Snake",
+		"Class": "Jones",
+		"PlayerTemplateName": "Alpha Commando",
+		"HairType": "eye_patch",
 		"Skin": "d25106ff",
 		"Arms": "363636ff",
 		"Body": "149c14ff",
@@ -305,7 +321,9 @@
 		"actionDelay": 5
 	},
 	{
-		"Class": "Smith",
+		"Class": "Jones",
+		"PlayerTemplateName": "Alpha Marksman",
+		"HairType": "flattop",
 		"Skin": "d25106ff",
 		"Arms": "149c14ff",
 		"Body": "149c14ff",
@@ -321,7 +339,9 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Smith",
+		"Class": "Jones",
+		"PlayerTemplateName": "Alpha Leader",
+		"HairType": "flattop",
 		"Skin": "ff8136ff",
 		"Arms": "149c14ff",
 		"Body": "149c14ff",
@@ -337,7 +357,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Smith",
+		"Class": "Jones",
+		"HairType": "flattop",
 		"Skin": "882800ff",
 		"Arms": "149c14ff",
 		"Body": "149c14ff",
@@ -401,7 +422,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "WarBaby",
+		"Class": "Jones",
+		"HairType": "beret",
 		"Skin": "d25106ff",
 		"Arms": "149c14ff",
 		"Body": "149c14ff",
@@ -417,7 +439,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "WarBaby",
+		"Class": "Jones",
+		"HairType": "beret",
 		"Skin": "d25106ff",
 		"Arms": "149c14ff",
 		"Body": "149c14ff",
@@ -433,7 +456,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "WarBaby",
+		"Class": "Jones",
+		"HairType": "beret",
 		"Skin": "882800ff",
 		"Arms": "149c14ff",
 		"Body": "149c14ff",
@@ -449,7 +473,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "WarBaby",
+		"Class": "Jones",
+		"HairType": "beret",
 		"Skin": "882800ff",
 		"Arms": "149c14ff",
 		"Body": "149c14ff",
@@ -465,7 +490,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "WarBaby",
+		"Class": "Jones",
+		"HairType": "beret",
 		"Skin": "ff8136ff",
 		"Arms": "149c14ff",
 		"Body": "149c14ff",
@@ -481,7 +507,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "WarBaby",
+		"Class": "Jones",
+		"HairType": "beret",
 		"Skin": "ff8136ff",
 		"Arms": "149c14ff",
 		"Body": "149c14ff",

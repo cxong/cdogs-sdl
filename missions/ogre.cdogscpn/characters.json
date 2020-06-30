@@ -1,5 +1,5 @@
 {
-	"Version": 12,
+	"Version": 13,
 	"Characters": [{
 		"Class": "Ogre",
 		"Skin": "149c14ff",
@@ -177,7 +177,8 @@
 		"actionDelay": 10
 	},
 	{
-		"Class": "Ogre Boss",
+		"Class": "Ogre",
+		"HairType": "mohawk",
 		"Skin": "149c14ff",
 		"Arms": "363636ff",
 		"Body": "9c589cff",
@@ -193,7 +194,8 @@
 		"actionDelay": 5
 	},
 	{
-		"Class": "Ogre Boss",
+		"Class": "Ogre",
+		"HairType": "mohawk",
 		"Skin": "58589cff",
 		"Arms": "363636ff",
 		"Body": "58589cff",
@@ -209,7 +211,8 @@
 		"actionDelay": 5
 	},
 	{
-		"Class": "Ogre Boss",
+		"Class": "Ogre",
+		"HairType": "mohawk",
 		"Skin": "9c9c9cff",
 		"Arms": "363636ff",
 		"Body": "9c5858ff",
@@ -225,7 +228,8 @@
 		"actionDelay": 5
 	},
 	{
-		"Class": "Ogre Boss",
+		"Class": "Ogre",
+		"HairType": "mohawk",
 		"Skin": "b79536ff",
 		"Arms": "363636ff",
 		"Body": "9c589cff",
@@ -241,7 +245,9 @@
 		"actionDelay": 10
 	},
 	{
-		"Class": "Smith",
+		"Class": "Jones",
+		"PlayerTemplateName": "Confed Bureaucrat",
+		"HairType": "flattop",
 		"Skin": "ff8136ff",
 		"Arms": "ffffffff",
 		"Body": "ffffffff",
@@ -257,7 +263,8 @@
 		"actionDelay": 10
 	},
 	{
-		"Class": "Smith",
+		"Class": "Jones",
+		"HairType": "flattop",
 		"Skin": "d25106ff",
 		"Arms": "ffffffff",
 		"Body": "9c9c9cff",
@@ -273,7 +280,8 @@
 		"actionDelay": 10
 	},
 	{
-		"Class": "Smith",
+		"Class": "Jones",
+		"HairType": "flattop",
 		"Skin": "882800ff",
 		"Arms": "149c14ff",
 		"Body": "149c14ff",
@@ -289,7 +297,9 @@
 		"actionDelay": 10
 	},
 	{
-		"Class": "Bob",
+		"Class": "Jones",
+		"PlayerTemplateName": "Confed Techie",
+		"HairType": "beard",
 		"Skin": "d25106ff",
 		"Arms": "9c9c9cff",
 		"Body": "ff8136ff",
@@ -305,7 +315,9 @@
 		"actionDelay": 10
 	},
 	{
-		"Class": "WarBaby",
+		"Class": "Jones",
+		"PlayerTemplateName": "Confed Soldier",
+		"HairType": "beret",
 		"Skin": "882800ff",
 		"Arms": "58589cff",
 		"Body": "58589cff",
@@ -321,7 +333,8 @@
 		"actionDelay": 10
 	},
 	{
-		"Class": "WarBaby",
+		"Class": "Jones",
+		"HairType": "beret",
 		"Skin": "d25106ff",
 		"Arms": "58589cff",
 		"Body": "58589cff",
@@ -337,7 +350,9 @@
 		"actionDelay": 10
 	},
 	{
-		"Class": "WarBaby",
+		"Class": "Jones",
+		"PlayerTemplateName": "Confed Trooper",
+		"HairType": "beret",
 		"Skin": "ff8136ff",
 		"Arms": "58589cff",
 		"Body": "58589cff",
@@ -433,7 +448,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Ogre Boss",
+		"Class": "Ogre",
+		"HairType": "mohawk",
 		"Skin": "9c589cff",
 		"Arms": "363636ff",
 		"Body": "d25106ff",
@@ -450,6 +466,7 @@
 	},
 	{
 		"Class": "Lady",
+		"HairType": "ponytail",
 		"Skin": "d25106ff",
 		"Arms": "d25106ff",
 		"Body": "9c0000ff",
@@ -465,7 +482,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Ogre Boss",
+		"Class": "Ogre",
+		"HairType": "mohawk",
 		"Skin": "9c0000ff",
 		"Arms": "363636ff",
 		"Body": "b79536ff",
@@ -577,7 +595,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Ogre Boss",
+		"Class": "Ogre",
+		"HairType": "mohawk",
 		"Skin": "363636ff",
 		"Arms": "9c0000ff",
 		"Body": "9c0000ff",
@@ -593,7 +612,8 @@
 		"actionDelay": 10
 	},
 	{
-		"Class": "Ogre Boss",
+		"Class": "Ogre",
+		"HairType": "mohawk",
 		"Skin": "363636ff",
 		"Arms": "363636ff",
 		"Body": "149c14ff",
@@ -609,7 +629,8 @@
 		"actionDelay": 5
 	},
 	{
-		"Class": "Ogre Boss",
+		"Class": "Ogre",
+		"HairType": "mohawk",
 		"Skin": "363636ff",
 		"Arms": "363636ff",
 		"Body": "149c14ff",
@@ -625,7 +646,8 @@
 		"actionDelay": 5
 	},
 	{
-		"Class": "Ogre Boss",
+		"Class": "Ogre",
+		"HairType": "mohawk",
 		"Skin": "363636ff",
 		"Arms": "363636ff",
 		"Body": "149c14ff",
@@ -641,7 +663,8 @@
 		"actionDelay": 5
 	},
 	{
-		"Class": "Ogre Boss",
+		"Class": "Ogre",
+		"HairType": "mohawk",
 		"Skin": "363636ff",
 		"Arms": "363636ff",
 		"Body": "149c14ff",
@@ -657,7 +680,8 @@
 		"actionDelay": 5
 	},
 	{
-		"Class": "Ogre Boss",
+		"Class": "Ogre",
+		"HairType": "mohawk",
 		"Skin": "363636ff",
 		"Arms": "363636ff",
 		"Body": "149c14ff",

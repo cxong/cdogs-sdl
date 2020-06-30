@@ -1,7 +1,10 @@
 {
-	"Version": 12,
+	"Version": 15,
 	"Title": "Pirates from outer space!",
 	"Author": "Sauer2",
 	"Description": "You are a space security officer on the ship Prodigy IV. The ship is three hours away from Antares III and everyone is happy to leave the ship, when suddenly an unknown ship attacks...",
+	"Ammo": false,
+	"WeaponPersist": false,
+	"SkipWeaponMenu": false,
 	"Missions": 10
 }

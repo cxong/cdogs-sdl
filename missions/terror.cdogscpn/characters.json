@@ -1,7 +1,9 @@
 {
-	"Version": 12,
+	"Version": 13,
 	"Characters": [{
-		"Class": "Smith",
+		"Class": "Jones",
+		"PlayerTemplateName": "Account Exec",
+		"HairType": "flattop",
 		"Skin": "d25106ff",
 		"Arms": "ffffffff",
 		"Body": "ffffffff",
@@ -17,7 +19,9 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Smith",
+		"Class": "Jones",
+		"PlayerTemplateName": "IT Admin",
+		"HairType": "flattop",
 		"Skin": "882800ff",
 		"Arms": "ffffffff",
 		"Body": "ffffffff",
@@ -33,7 +37,9 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Dragon",
+		"Class": "Jones",
+		"PlayerTemplateName": "Facilities Coordinator",
+		"HairType": "hogan",
 		"Skin": "ff8136ff",
 		"Arms": "ffffffff",
 		"Body": "9c9c9cff",
@@ -49,7 +55,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Bob",
+		"Class": "Jones",
+		"HairType": "beard",
 		"Skin": "d25106ff",
 		"Arms": "ffffffff",
 		"Body": "ff8136ff",
@@ -66,6 +73,7 @@
 	},
 	{
 		"Class": "Lady",
+		"HairType": "ponytail",
 		"Skin": "d25106ff",
 		"Arms": "363636ff",
 		"Body": "9c0000ff",
@@ -82,6 +90,7 @@
 	},
 	{
 		"Class": "Lady",
+		"HairType": "ponytail",
 		"Skin": "d25106ff",
 		"Arms": "363636ff",
 		"Body": "363636ff",
@@ -98,6 +107,7 @@
 	},
 	{
 		"Class": "Lady",
+		"HairType": "ponytail",
 		"Skin": "882800ff",
 		"Arms": "58589cff",
 		"Body": "58589cff",
@@ -114,6 +124,7 @@
 	},
 	{
 		"Class": "Lady",
+		"HairType": "ponytail",
 		"Skin": "ff8136ff",
 		"Arms": "363636ff",
 		"Body": "ff8136ff",
@@ -130,6 +141,7 @@
 	},
 	{
 		"Class": "Lady",
+		"HairType": "ponytail",
 		"Skin": "d25106ff",
 		"Arms": "9c0000ff",
 		"Body": "b79536ff",
@@ -145,7 +157,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Smith",
+		"Class": "Jones",
+		"HairType": "flattop",
 		"Skin": "d25106ff",
 		"Arms": "ffffffff",
 		"Body": "ff8136ff",
@@ -161,7 +174,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Smith",
+		"Class": "Jones",
+		"HairType": "flattop",
 		"Skin": "d25106ff",
 		"Arms": "ffffffff",
 		"Body": "58589cff",
@@ -177,7 +191,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Wolf",
+		"Class": "Jones",
+		"HairType": "dutch",
 		"Skin": "d25106ff",
 		"Arms": "9c9c9cff",
 		"Body": "d25106ff",
@@ -193,7 +208,8 @@
 		"actionDelay": 10
 	},
 	{
-		"Class": "Smith",
+		"Class": "Jones",
+		"HairType": "flattop",
 		"Skin": "d25106ff",
 		"Arms": "d25106ff",
 		"Body": "9c5858ff",
@@ -210,6 +226,7 @@
 	},
 	{
 		"Class": "Lady",
+		"HairType": "ponytail",
 		"Skin": "d25106ff",
 		"Arms": "9c0000ff",
 		"Body": "363636ff",
@@ -225,7 +242,8 @@
 		"actionDelay": 10
 	},
 	{
-		"Class": "Snake",
+		"Class": "Jones",
+		"HairType": "eye_patch",
 		"Skin": "d25106ff",
 		"Arms": "58589cff",
 		"Body": "9c589cff",
@@ -241,7 +259,8 @@
 		"actionDelay": 10
 	},
 	{
-		"Class": "Bob",
+		"Class": "Jones",
+		"HairType": "beard",
 		"Skin": "882800ff",
 		"Arms": "149c14ff",
 		"Body": "149c14ff",
@@ -258,6 +277,7 @@
 	},
 	{
 		"Class": "Lady",
+		"HairType": "ponytail",
 		"Skin": "ff8136ff",
 		"Arms": "58589cff",
 		"Body": "9c589cff",
@@ -289,7 +309,8 @@
 		"actionDelay": 10
 	},
 	{
-		"Class": "Ice",
+		"Class": "Jones",
+		"HairType": "shades",
 		"Skin": "882800ff",
 		"Arms": "ffffffff",
 		"Body": "9c0000ff",
@@ -305,7 +326,8 @@
 		"actionDelay": 10
 	},
 	{
-		"Class": "Dragon",
+		"Class": "Jones",
+		"HairType": "hogan",
 		"Skin": "d25106ff",
 		"Arms": "9c9c9cff",
 		"Body": "363636ff",
@@ -322,6 +344,7 @@
 	},
 	{
 		"Class": "Lady",
+		"HairType": "ponytail",
 		"Skin": "d25106ff",
 		"Arms": "9c9c9cff",
 		"Body": "ff8136ff",
@@ -337,7 +360,8 @@
 		"actionDelay": 10
 	},
 	{
-		"Class": "Wolf",
+		"Class": "Jones",
+		"HairType": "dutch",
 		"Skin": "d25106ff",
 		"Arms": "149c14ff",
 		"Body": "9c9c9cff",
@@ -353,7 +377,8 @@
 		"actionDelay": 10
 	},
 	{
-		"Class": "Snake",
+		"Class": "Jones",
+		"HairType": "eye_patch",
 		"Skin": "882800ff",
 		"Arms": "363636ff",
 		"Body": "149c14ff",
@@ -369,7 +394,8 @@
 		"actionDelay": 10
 	},
 	{
-		"Class": "Wolf",
+		"Class": "Jones",
+		"HairType": "dutch",
 		"Skin": "d25106ff",
 		"Arms": "9c5858ff",
 		"Body": "9c5858ff",
@@ -385,7 +411,9 @@
 		"actionDelay": 10
 	},
 	{
-		"Class": "Grunt",
+		"Class": "Jones",
+		"PlayerTemplateName": "Police",
+		"HairType": "riot_helmet",
 		"Skin": "ff8136ff",
 		"Arms": "58589cff",
 		"Body": "58589cff",
@@ -402,6 +430,7 @@
 	},
 	{
 		"Class": "Lady",
+		"HairType": "ponytail",
 		"Skin": "882800ff",
 		"Arms": "58589cff",
 		"Body": "58589cff",
@@ -418,6 +447,7 @@
 	},
 	{
 		"Class": "Cyborg",
+		"HairType": "cyborg",
 		"Skin": "ff8136ff",
 		"Arms": "363636ff",
 		"Body": "9c9c9cff",
@@ -433,7 +463,8 @@
 		"actionDelay": 10
 	},
 	{
-		"Class": "Professor",
+		"Class": "Jones",
+		"HairType": "professor",
 		"Skin": "882800ff",
 		"Arms": "149c14ff",
 		"Body": "ffffffff",
@@ -449,7 +480,8 @@
 		"actionDelay": 30
 	},
 	{
-		"Class": "WarBaby",
+		"Class": "Jones",
+		"HairType": "beret",
 		"Skin": "ff8136ff",
 		"Arms": "d25106ff",
 		"Body": "363636ff",
