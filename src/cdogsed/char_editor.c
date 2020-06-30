@@ -291,8 +291,9 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		// show both label and full character
 		char label[256];
 		sprintf(
-			label, "%s%s", c->Gun->name,
-			c->PlayerTemplateName != NULL ? "\nPlayer template" : "");
+			label, "%s%s", 
+			c->PlayerTemplateName != NULL ? "*" : "",
+			c->Gun->name);
 		if (nk_select_label(
 				ctx, label, NK_TEXT_ALIGN_BOTTOM | NK_TEXT_ALIGN_CENTERED,
 				selected))

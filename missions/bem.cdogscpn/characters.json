@@ -1,7 +1,9 @@
 {
-	"Version": 12,
+	"Version": 13,
 	"Characters": [{
-		"Class": "WarBaby",
+		"Class": "Jones",
+		"PlayerTemplateName": "Soldier",
+		"HairType": "beret",
 		"Skin": "d25106ff",
 		"Arms": "149c14ff",
 		"Body": "149c14ff",
@@ -17,7 +19,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "WarBaby",
+		"Class": "Jones",
+		"HairType": "beret",
 		"Skin": "882800ff",
 		"Arms": "149c14ff",
 		"Body": "149c14ff",
@@ -33,7 +36,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "WarBaby",
+		"Class": "Jones",
+		"HairType": "beret",
 		"Skin": "ff8136ff",
 		"Arms": "149c14ff",
 		"Body": "149c14ff",
@@ -49,7 +53,9 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Smith",
+		"Class": "Jones",
+		"PlayerTemplateName": "Concerned citizen",
+		"HairType": "flattop",
 		"Skin": "d25106ff",
 		"Arms": "ffffffff",
 		"Body": "ffffffff",
@@ -65,7 +71,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Smith",
+		"Class": "Jones",
+		"HairType": "flattop",
 		"Skin": "882800ff",
 		"Arms": "ffffffff",
 		"Body": "ffffffff",
@@ -81,7 +88,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Dragon",
+		"Class": "Jones",
+		"HairType": "hogan",
 		"Skin": "ff8136ff",
 		"Arms": "ffffffff",
 		"Body": "9c9c9cff",
@@ -97,7 +105,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Bob",
+		"Class": "Jones",
+		"HairType": "beard",
 		"Skin": "d25106ff",
 		"Arms": "ffffffff",
 		"Body": "ff8136ff",
@@ -114,6 +123,8 @@
 	},
 	{
 		"Class": "Lady",
+		"PlayerTemplateName": "Innocent bystander",
+		"HairType": "ponytail",
 		"Skin": "d25106ff",
 		"Arms": "363636ff",
 		"Body": "9c0000ff",
@@ -129,7 +140,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Smith",
+		"Class": "Jones",
+		"HairType": "flattop",
 		"Skin": "d25106ff",
 		"Arms": "ffffffff",
 		"Body": "ff8136ff",
@@ -145,7 +157,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Smith",
+		"Class": "Jones",
+		"HairType": "flattop",
 		"Skin": "d25106ff",
 		"Arms": "ffffffff",
 		"Body": "58589cff",
@@ -369,7 +382,9 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Professor",
+		"Class": "Jones",
+		"PlayerTemplateName": "Scientist",
+		"HairType": "professor",
 		"Skin": "882800ff",
 		"Arms": "ffffffff",
 		"Body": "ffffffff",
@@ -385,7 +400,8 @@
 		"actionDelay": 20
 	},
 	{
-		"Class": "Professor",
+		"Class": "Jones",
+		"HairType": "professor",
 		"Skin": "ff8136ff",
 		"Arms": "ffffffff",
 		"Body": "ffffffff",
@@ -401,7 +417,8 @@
 		"actionDelay": 20
 	},
 	{
-		"Class": "Wolf",
+		"Class": "Jones",
+		"HairType": "dutch",
 		"Skin": "d25106ff",
 		"Arms": "ffffffff",
 		"Body": "ffffffff",
@@ -417,7 +434,8 @@
 		"actionDelay": 20
 	},
 	{
-		"Class": "Bob",
+		"Class": "Jones",
+		"HairType": "beard",
 		"Skin": "d25106ff",
 		"Arms": "ffffffff",
 		"Body": "ffffffff",
@@ -434,6 +452,7 @@
 	},
 	{
 		"Class": "Lady",
+		"HairType": "ponytail",
 		"Skin": "ff8136ff",
 		"Arms": "ffffffff",
 		"Body": "ffffffff",
