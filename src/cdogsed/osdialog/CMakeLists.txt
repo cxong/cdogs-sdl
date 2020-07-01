@@ -13,7 +13,7 @@ else()
     message(FATAL_ERROR "Cannot detect your system")
 endif()
 
-add_library(osdialog "${SOURCES}")
+add_library(osdialog STATIC "${SOURCES}")
 add_executable(osdialog_test ${SOURCES} test.c)
 
 if(MSVC)
