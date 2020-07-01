@@ -228,7 +228,7 @@ INSTALL(FILES
 	DESTINATION ${DATA_INSTALL_DIR})
 IF(UNIX AND NOT APPLE AND NOT BEOS AND NOT HAIKU)
 	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/io.github.cxong.cdogs-sdl.desktop DESTINATION ${INSTALL_PREFIX}/share/applications)
-	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/io.github.cxong.cdogs-sdl.appdata.xml DESTINATION ${INSTALL_PREFIX}/share/appdata)
+	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/io.github.cxong.cdogs-sdl.appdata.xml DESTINATION ${INSTALL_PREFIX}/share/metainfo)
 	foreach(RES 16 22 32 48 128)
 		INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-icon.${RES}.png
 			DESTINATION ${INSTALL_PREFIX}/share/icons/hicolor/${RES}x${RES}/apps
