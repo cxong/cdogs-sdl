@@ -448,17 +448,23 @@ static bool TryCompleteNearbyObjective(
 	}
 
 	// First, check if mission complete;
-	// if so (and there's a path) go to exit
-	const struct vec2 exitPos = MapGetExitPos(&gMap);
-	if (CanCompleteMission(&gMission) &&
-		CanGetObjective(
-			exitPos, actor->Pos, closestPlayer, distanceTooFarFromPlayer))
+	// if so (and there's a path) go to an exit
+	if (CanCompleteMission(&gMission))
 	{
-		ActorSetAIState(actor, AI_STATE_NEXT_OBJECTIVE);
-		objState->Type = AI_OBJECTIVE_TYPE_EXIT;
-		objState->Goal = exitPos;
-		*cmdOut = GotoObjective(actor, 0);
-		return true;
+		for (int i = 0; i < gMap.exits.size; i++)
+		{
+			const struct vec2 exitPos = MapGetExitPos(&gMap, i);
+			if (CanGetObjective(
+					exitPos, actor->Pos, closestPlayer,
+					distanceTooFarFromPlayer))
+			{
+				ActorSetAIState(actor, AI_STATE_NEXT_OBJECTIVE);
+				objState->Type = AI_OBJECTIVE_TYPE_EXIT;
+				objState->Goal = exitPos;
+				*cmdOut = GotoObjective(actor, 0);
+				return true;
+			}
+		}
 	}
 
 	// Find all the objective/key locations, sort according to distance

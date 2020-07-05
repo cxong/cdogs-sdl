@@ -368,7 +368,7 @@ void MissionSetMessageIfComplete(struct MissionOptions *options)
 		if (CanCompleteMission(options))
 		{
 			GameEvent msg = GameEventNew(GAME_EVENT_MISSION_COMPLETE);
-			msg.u.MissionComplete = NMakeMissionComplete(options, &gMap);
+			msg.u.MissionComplete = NMakeMissionComplete(options);
 			GameEventsEnqueue(&gGameEvents, msg);
 		}
 		else if (options->HasBegun && gCampaign.Entry.Mode == GAME_MODE_NORMAL)
@@ -498,8 +498,8 @@ bool MissionAllObjectivesComplete(const struct MissionOptions *mo)
 	return true;
 }
 
-static bool AllSurvivingPlayersInExit(void);
-static bool MoreRescuesNeeded(const struct MissionOptions *mo);
+static int AllSurvivingPlayersInSameExit(void);
+static bool MoreRescuesNeeded(const struct MissionOptions *mo, const int exit);
 
 bool IsMissionComplete(const struct MissionOptions *mo)
 {
@@ -524,12 +524,13 @@ bool IsMissionComplete(const struct MissionOptions *mo)
 		}
 	}
 
-	if (!AllSurvivingPlayersInExit())
+	const int exit = AllSurvivingPlayersInSameExit();
+	if (exit == -1)
 	{
 		return false;
 	}
 
-	if (MoreRescuesNeeded(mo))
+	if (MoreRescuesNeeded(mo, exit))
 	{
 		return false;
 	}
@@ -539,26 +540,30 @@ bool IsMissionComplete(const struct MissionOptions *mo)
 
 bool MissionNeedsMoreRescuesInExit(const struct MissionOptions *mo)
 {
-	return CanCompleteMission(mo) && AllSurvivingPlayersInExit() &&
-		   MoreRescuesNeeded(mo);
+	const int exit = AllSurvivingPlayersInSameExit();
+	return CanCompleteMission(mo) && exit != -1 && MoreRescuesNeeded(mo, exit);
 }
 
-static bool AllSurvivingPlayersInExit(void)
+static int AllSurvivingPlayersInSameExit(void)
 {
-	// Check that all surviving players are in exit zone
+	// Check that all surviving players are in same exit, and return that exit
+	// Return -1 otherwise
 	// Note: players are still in the exit area if they are dying there;
 	// this is the basis for the "resurrection penalty"
+	int exit = -1;
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 	if (!IsPlayerAliveOrDying(p))
 		continue;
 	const TActor *player = ActorGetByUID(p->ActorUID);
-	if (!MapIsTileInExit(&gMap, &player->thing))
+	const int playerExit = MapIsTileInExit(&gMap, &player->thing, exit);
+	if (playerExit == -1)
 		return false;
+	exit = playerExit;
 	CA_FOREACH_END()
 	return true;
 }
 
-static bool MoreRescuesNeeded(const struct MissionOptions *mo)
+static bool MoreRescuesNeeded(const struct MissionOptions *mo, const int exit)
 {
 	int rescuesRequired = 0;
 	// Find number of rescues required
@@ -579,7 +584,7 @@ static bool MoreRescuesNeeded(const struct MissionOptions *mo)
 			continue;
 		if (CharacterIsPrisoner(
 				&gCampaign.Setting.characters, ActorGetCharacter(a)) &&
-			MapIsTileInExit(&gMap, &a->thing))
+			MapIsTileInExit(&gMap, &a->thing, exit) == exit)
 		{
 			prisonersRescued++;
 		}

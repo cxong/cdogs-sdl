@@ -130,11 +130,25 @@ static bool MapIsPosIn(const Map *map, const struct vec2 pos)
 	return pos.x >= 0 && pos.y >= 0 && MapIsTileIn(map, Vec2ToTile(pos));
 }
 
-bool MapIsTileInExit(const Map *map, const Thing *ti)
+// If thing is in the exit-index exit
+// If exit = -1 then check any exit
+// Returns the exit index or -1 if not in any exit
+int MapIsTileInExit(const Map *map, const Thing *ti, const int exit)
 {
+	if (exit < 0)
+	{
+		for (int i = 0; i < map->exits.size; i++)
+		{
+			if (MapIsTileInExit(map, ti, i) != -1)
+			{
+				return i;
+			}
+		}
+		return -1;
+	}
 	const struct vec2i tilePos = Vec2ToTile(ti->Pos);
-	return tilePos.x >= map->ExitStart.x && tilePos.x <= map->ExitEnd.x &&
-		   tilePos.y >= map->ExitStart.y && tilePos.y <= map->ExitEnd.y;
+	const Exit *e = CArrayGet(&map->exits, exit);
+	return Rect2iIsInside(e->R, tilePos) ? exit : -1;
 }
 
 static Tile *MapGetTileOfItem(Map *map, Thing *t)
@@ -242,13 +256,13 @@ static void MapChangeFloor(
 }
 
 // Change the perimeter of tiles around the exit area
-void MapShowExitArea(
-	Map *map, const struct vec2i exitStart, const struct vec2i exitEnd)
+void MapShowExitArea(Map *map, const int i)
 {
-	const int left = exitStart.x;
-	const int right = exitEnd.x;
-	const int top = exitStart.y;
-	const int bottom = exitEnd.y;
+	const Exit *exit = CArrayGet(&map->exits, i);
+	const int left = exit->R.Pos.x;
+	const int right = left + exit->R.Size.x;
+	const int top = exit->R.Pos.y;
+	const int bottom = top + exit->R.Size.y;
 
 	const TileClass *exitClass = TileClassesGetExit(
 		&gTileClasses, &gPicManager, gMission.missionData->ExitStyle, false);
@@ -278,10 +292,10 @@ void MapShowExitArea(
 	}
 }
 
-struct vec2 MapGetExitPos(const Map *m)
+struct vec2 MapGetExitPos(const Map *m, const int i)
 {
-	return svec2_assign_vec2i(Vec2iCenterOfTile(
-		svec2i_scale_divide(svec2i_add(m->ExitStart, m->ExitEnd), 2)));
+	const Exit *exit = CArrayGet(&m->exits, i);
+	return svec2_assign_vec2i(Vec2iCenterOfTile(Rect2iCenter(exit->R)));
 }
 
 bool MapHasLockedRooms(const Map *map)
@@ -438,6 +452,7 @@ void MapTerminate(Map *map)
 	TriggerTerminate(*t);
 	CA_FOREACH_END()
 	CArrayTerminate(&map->triggers);
+	CArrayTerminate(&map->exits);
 	struct vec2i v;
 	for (v.y = 0; v.y < map->Size.y; v.y++)
 	{
@@ -466,6 +481,7 @@ void MapInit(Map *map, const struct vec2i size)
 	CArrayResize(&map->access, size.x * size.y, NULL);
 	CArrayFillZero(&map->access);
 	CArrayInit(&map->triggers, sizeof(Trigger *));
+	CArrayInit(&map->exits, sizeof(Exit));
 	PathCacheInit(&gPathCache, map);
 
 	struct vec2i v;

@@ -38,7 +38,7 @@
 #include "net_util.h"
 
 static int AddTileClass(any_t data, any_t item);
-void MapStaticLoad(MapBuilder *mb)
+void MapStaticLoad(MapBuilder *mb, const int mission)
 {
 	// Tile classes
 	if (hashmap_iterate(
@@ -56,8 +56,15 @@ void MapStaticLoad(MapBuilder *mb)
 	if (!svec2i_is_zero(mb->mission->u.Static.Exit.Start) &&
 		!svec2i_is_zero(mb->mission->u.Static.Exit.End))
 	{
-		mb->Map->ExitStart = mb->mission->u.Static.Exit.Start;
-		mb->Map->ExitEnd = mb->mission->u.Static.Exit.End;
+		Exit exit;
+		exit.Mission = mission + 1;
+		exit.Hidden = false;
+		exit.R = Rect2iNew(
+			mb->mission->u.Static.Exit.Start,
+			svec2i_subtract(
+				mb->mission->u.Static.Exit.End,
+				mb->mission->u.Static.Exit.Start));
+		CArrayPushBack(&mb->Map->exits, &exit);
 	}
 }
 static int AddTileClass(any_t data, any_t item)
@@ -198,13 +205,14 @@ static void AddObjective(MapBuilder *mb, const ObjectivePositions *op)
 		break;
 	case OBJECTIVE_DESTROY:
 		MapTryPlaceOneObject(
-			mb, pi->Position, o->u.MapObject, ObjectiveToThing(op->Index), false);
+			mb, pi->Position, o->u.MapObject, ObjectiveToThing(op->Index),
+			false);
 		break;
 	case OBJECTIVE_RESCUE: {
 		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 		e.u.ActorAdd.UID = ActorsGetNextUID();
-		e.u.ActorAdd.CharId =
-			CharacterStoreGetPrisonerId(&mb->co->Setting.characters, pi->Index);
+		e.u.ActorAdd.CharId = CharacterStoreGetPrisonerId(
+			&mb->co->Setting.characters, pi->Index);
 		e.u.ActorAdd.ThingFlags = ObjectiveToThing(op->Index);
 		const Character *c = CArrayGet(
 			&gCampaign.Setting.characters.OtherChars, e.u.ActorAdd.CharId);

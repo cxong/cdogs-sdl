@@ -52,8 +52,7 @@ bool NetDecode(ENetPacket *packet, void *dest, const pb_msgdesc_t *fields);
 
 NPlayerData NMakePlayerData(const PlayerData *p);
 NCampaignDef NMakeCampaignDef(const Campaign *co);
-NMissionComplete NMakeMissionComplete(
-	const struct MissionOptions *mo, const Map *map);
+NMissionComplete NMakeMissionComplete(const struct MissionOptions *mo);
 
 struct vec2i Net2Vec2i(const NVec2i v);
 NVec2i Vec2i2Net(const struct vec2i v);

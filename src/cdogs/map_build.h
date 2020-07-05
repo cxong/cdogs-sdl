@@ -63,7 +63,9 @@ typedef struct
 	CArray leaveFree; // of bool
 } MapBuilder;
 
-void MapBuild(Map *m, const Mission *mission, const Campaign *co);
+void MapBuild(
+	Map *m, const Mission *mission, const Campaign *co,
+	const int missionIndex);
 void MapBuilderInit(
 	MapBuilder *mb, Map *m, const Mission *mission, const Campaign *co);
 void MapBuilderTerminate(MapBuilder *mb);
@@ -134,7 +136,6 @@ void MapBuildTile(
 	MapBuilder *mb, const struct vec2i pos, const TileClass *tile);
 
 uint16_t GenerateAccessMask(int *accessLevel);
-void MapGenerateRandomExitArea(Map *map);
 
 void SetupWallTileClasses(PicManager *pm, const TileClass *base);
 void SetupFloorTileClasses(PicManager *pm, const TileClass *base);

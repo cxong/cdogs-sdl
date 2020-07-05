@@ -415,14 +415,15 @@ void LoadMissionTileClasses(
 	}
 	else
 	{
+		const json_t *class = json_find_first_label(node, "TileClasses")->child;
 		MissionLoadTileClass(
-			&mtc->Wall, json_find_first_label(node, "Wall")->child);
+			&mtc->Wall, json_find_first_label(class, "Wall")->child);
 		MissionLoadTileClass(
-			&mtc->Floor, json_find_first_label(node, "Floor")->child);
+			&mtc->Floor, json_find_first_label(class, "Floor")->child);
 		MissionLoadTileClass(
-			&mtc->Room, json_find_first_label(node, "Room")->child);
+			&mtc->Room, json_find_first_label(class, "Room")->child);
 		MissionLoadTileClass(
-			&mtc->Door, json_find_first_label(node, "Door")->child);
+			&mtc->Door, json_find_first_label(class, "Door")->child);
 	}
 }
 static void LoadMissionObjectives(

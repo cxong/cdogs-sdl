@@ -648,11 +648,16 @@ static void DrawObjectiveCompass(
 	GraphicsDevice *g, const struct vec2 playerPos, const Rect2i r,
 	const bool showExit)
 {
-	// Draw exit position
+	// Draw exit positions
 	if (showExit)
 	{
+		CA_FOREACH(const Exit, e, gMap.exits)
+		if (e->Hidden)
+			continue;
 		DrawCompassArrow(
-			g, r, MapGetExitPos(&gMap), playerPos, colorGreen, "Exit");
+			g, r, MapGetExitPos(&gMap, _ca_index), playerPos, colorGreen,
+			"Exit");
+		CA_FOREACH_END()
 	}
 
 	// Draw objectives

@@ -483,9 +483,9 @@ static void MissionDrawDoorStyle(
 							  ? &m->u.Classic.TileClasses.Door
 							  : &m->u.Cave.TileClasses.Door;
 	const int idx = PicManagerGetDoorStyleIndex(&gPicManager, tc->Style);
-	DrawStyleArea(
-		svec2i_add(pos, o->Pos), "Doors", tc->Pic, idx,
-		(int)gPicManager.doorStyleNames.size, UIObjectIsHighlighted(o));
+	DrawTileStyle(
+		o, pos, tc, "Doors", TileClassBaseStyleType(TILE_CLASS_DOOR), idx,
+		(int)gPicManager.doorStyleNames.size);
 }
 static void MissionDrawKeyStyle(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
@@ -890,7 +890,7 @@ static EditorResult MissionChangeType(void *data, int d)
 	memset(&map, 0, sizeof map);
 	MissionOptionsTerminate(&gMission);
 	CampaignAndMissionSetup(mct->C, &gMission);
-	MapBuild(&map, gMission.missionData, mct->C);
+	MapBuild(&map, gMission.missionData, mct->C, gMission.index);
 	MissionConvertToType(gMission.missionData, &map, mct->Type);
 	MapTerminate(&map);
 	return EDITOR_RESULT_CHANGED;

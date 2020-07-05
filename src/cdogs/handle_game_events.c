@@ -300,7 +300,8 @@ static void HandleGameEvent(
 		TActor *a = ActorGetByUID(e.u.UseAmmo.UID);
 		if (!a->isInUse || a->dead)
 			break;
-		const int ammoBefore = *(int *)CArrayGet(&a->ammo, e.u.UseAmmo.Ammo.Id);
+		const int ammoBefore =
+			*(int *)CArrayGet(&a->ammo, e.u.UseAmmo.Ammo.Id);
 		const Ammo *ammo = AmmoGetById(&gAmmo, e.u.UseAmmo.Ammo.Id);
 		const bool wasAmmoLow = AmmoIsLow(ammo, ammoBefore);
 		ActorAddAmmo(a, e.u.UseAmmo.Ammo.Id, -(int)e.u.UseAmmo.Ammo.Amount);
@@ -571,9 +572,10 @@ static void HandleGameEvent(
 			{
 				camera->HUD.showExit = true;
 			}
-			MapShowExitArea(
-				&gMap, Net2Vec2i(e.u.MissionComplete.ExitStart),
-				Net2Vec2i(e.u.MissionComplete.ExitEnd));
+			for (int i = 0; i < gMap.exits.size; i++)
+			{
+				MapShowExitArea(&gMap, i);
+			}
 		}
 		break;
 	case GAME_EVENT_MISSION_INCOMPLETE:

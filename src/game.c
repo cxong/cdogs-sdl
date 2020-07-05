@@ -1,50 +1,50 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin
-    Copyright (C) 2003-2007 Lucas Martin-King
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (C) 1995 Ronny Wester
+	Copyright (C) 2003 Jeremy Chin
+	Copyright (C) 2003-2007 Lucas Martin-King
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-    This file incorporates work covered by the following copyright and
-    permission notice:
+	This file incorporates work covered by the following copyright and
+	permission notice:
 
-    Copyright (c) 2013-2019 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "game.h"
 
@@ -73,22 +73,22 @@
 #include "hiscores.h"
 #include "screens_end.h"
 
-
 static void PlayerSpecialCommands(TActor *actor, const int cmd)
 {
 	if ((cmd & CMD_BUTTON2) && CMD_HAS_DIRECTION(cmd))
 	{
-		if (ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") == SWITCHMOVE_SLIDE)
+		if (ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") ==
+			SWITCHMOVE_SLIDE)
 		{
 			SlideActor(actor, cmd);
 		}
 	}
 	else if (
-		(actor->lastCmd & CMD_BUTTON2) &&
-		!(cmd & CMD_BUTTON2) &&
-		!actor->specialCmdDir &&
-		!actor->CanPickupSpecial &&
-		!(ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") == SWITCHMOVE_SLIDE && CMD_HAS_DIRECTION(cmd)))
+		(actor->lastCmd & CMD_BUTTON2) && !(cmd & CMD_BUTTON2) &&
+		!actor->specialCmdDir && !actor->CanPickupSpecial &&
+		!(ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") ==
+			  SWITCHMOVE_SLIDE &&
+		  CMD_HAS_DIRECTION(cmd)))
 	{
 		const PlayerData *p = PlayerDataGetByUID(actor->PlayerUID);
 		const bool allGuns = p == NULL || !PlayerHasGrenadeButton(p);
@@ -96,11 +96,10 @@ static void PlayerSpecialCommands(TActor *actor, const int cmd)
 	}
 }
 
-
 // TODO: reimplement in camera
 struct vec2i GetPlayerCenter(
-	GraphicsDevice *device, const Camera *camera,
-	const PlayerData *pData, const int playerIdx)
+	GraphicsDevice *device, const Camera *camera, const PlayerData *pData,
+	const int playerIdx)
 {
 	if (pData->ActorUID < 0)
 	{
@@ -112,8 +111,7 @@ struct vec2i GetPlayerCenter(
 	int h = device->cachedConfig.Res.y;
 
 	if (GetNumPlayers(PLAYER_ANY, true, true) == 1 ||
-		GetNumPlayers(PLAYER_ANY, false , true) == 1 ||
-		CameraIsSingleScreen())
+		GetNumPlayers(PLAYER_ANY, false, true) == 1 || CameraIsSingleScreen())
 	{
 		const struct vec2 pCenter = camera->lastPosition;
 		const struct vec2i screenCenter =
@@ -152,7 +150,7 @@ typedef struct
 	Camera Camera;
 	int frames;
 	// TODO: turn the following into a screen system?
-	input_device_e pausingDevice;	// INPUT_DEVICE_UNSET if not paused
+	input_device_e pausingDevice; // INPUT_DEVICE_UNSET if not paused
 	bool controllerUnplugged;
 	bool isMap;
 	int cmds[MAX_LOCAL_PLAYERS];
@@ -160,7 +158,7 @@ typedef struct
 	// Only update AI every 4 ticks
 	int aiUpdateCounter;
 	PowerupSpawner healthSpawner;
-	CArray ammoSpawners;	// of PowerupSpawner
+	CArray ammoSpawners; // of PowerupSpawner
 } RunGameData;
 static void RunGameTerminate(GameLoopData *data);
 static void RunGameOnEnter(GameLoopData *data);
@@ -168,8 +166,7 @@ static void RunGameOnExit(GameLoopData *data);
 static void RunGameInput(GameLoopData *data);
 static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l);
 static void RunGameDraw(GameLoopData *data);
-GameLoopData *RunGame(
-	const Campaign *co, struct MissionOptions *m, Map *map)
+GameLoopData *RunGame(const Campaign *co, struct MissionOptions *m, Map *map)
 {
 	RunGameData *data;
 	CCALLOC(data, sizeof *data);
@@ -177,8 +174,8 @@ GameLoopData *RunGame(
 	data->m = m;
 	data->map = map;
 	GameLoopData *g = GameLoopDataNew(
-		data, RunGameTerminate, RunGameOnEnter, RunGameOnExit,
-		RunGameInput, RunGameUpdate, RunGameDraw);
+		data, RunGameTerminate, RunGameOnEnter, RunGameOnExit, RunGameInput,
+		RunGameUpdate, RunGameDraw);
 	g->FPS = ConfigGetInt(&gConfig, "Game.FPS");
 	g->SuperhotMode = ConfigGetBool(&gConfig, "Game.Superhot(tm)Mode");
 	g->InputEverySecondFrame = true;
@@ -203,7 +200,7 @@ static void RunGameOnEnter(GameLoopData *data)
 
 	RunGameReset(rData);
 
-	MapBuild(rData->map, rData->m->missionData, rData->co);
+	MapBuild(rData->map, rData->m->missionData, rData->co, rData->m->index);
 
 	// Seed random if PVP mode (otherwise players will always spawn in same
 	// position)
@@ -222,12 +219,13 @@ static void RunGameOnEnter(GameLoopData *data)
 
 		// Reset players for the mission
 		CA_FOREACH(const PlayerData, p, gPlayerDatas)
-			// Only reset for local players; for remote ones wait for the
-			// client ready message
-			if (!p->IsLocal) continue;
-			GameEvent e = GameEventNew(GAME_EVENT_PLAYER_DATA);
-			e.u.PlayerData = PlayerDataMissionReset(p);
-			GameEventsEnqueue(&gGameEvents, e);
+		// Only reset for local players; for remote ones wait for the
+		// client ready message
+		if (!p->IsLocal)
+			continue;
+		GameEvent e = GameEventNew(GAME_EVENT_PLAYER_DATA);
+		e.u.PlayerData = PlayerDataMissionReset(p);
+		GameEventsEnqueue(&gGameEvents, e);
 		CA_FOREACH_END()
 		// Process the events to force add the players
 		HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
@@ -236,8 +234,9 @@ static void RunGameOnEnter(GameLoopData *data)
 		// as bad guys are placed away from players
 		struct vec2 firstPos = svec2_zero();
 		CA_FOREACH(const PlayerData, p, gPlayerDatas)
-			if (!p->Ready) continue;
-			firstPos = PlacePlayer(&gMap, p, firstPos, true);
+		if (!p->Ready)
+			continue;
+		firstPos = PlacePlayer(&gMap, p, firstPos, true);
 		CA_FOREACH_END()
 		if (!IsPVP(rData->co->Entry.Mode))
 		{
@@ -289,7 +288,7 @@ static void RunGameOnExit(GameLoopData *data)
 
 	PowerupSpawnerTerminate(&rData->healthSpawner);
 	CA_FOREACH(PowerupSpawner, a, rData->ammoSpawners)
-		PowerupSpawnerTerminate(a);
+	PowerupSpawnerTerminate(a);
 	CA_FOREACH_END()
 	CArrayTerminate(&rData->ammoSpawners);
 	CameraTerminate(&rData->Camera);
@@ -306,18 +305,18 @@ static void RunGameOnExit(GameLoopData *data)
 
 	// Unready all the players
 	CA_FOREACH(PlayerData, p, gPlayerDatas)
-		p->Ready = false;
+	p->Ready = false;
 	CA_FOREACH_END()
 	gNetClient.Ready = false;
 
 	// Calculate remaining health and survived
 	CA_FOREACH(PlayerData, p, gPlayerDatas)
-		p->survived = IsPlayerAlive(p);
-		if (IsPlayerAlive(p))
-		{
-			const TActor *player = ActorGetByUID(p->ActorUID);
-			p->hp = player->health;
-		}
+	p->survived = IsPlayerAlive(p);
+	if (IsPlayerAlive(p))
+	{
+		const TActor *player = ActorGetByUID(p->ActorUID);
+		p->hp = player->health;
+	}
 	CA_FOREACH_END()
 }
 static void RunGameInput(GameLoopData *data)
@@ -346,8 +345,7 @@ static void RunGameInput(GameLoopData *data)
 	if (GetNumPlayers(PLAYER_ANY, false, true) == 0)
 	{
 		// If no players, allow default keyboard to control camera
-		rData->cmds[0] = GetKeyboardCmd(
-			&gEventHandlers.keyboard, 0, false);
+		rData->cmds[0] = GetKeyboardCmd(&gEventHandlers.keyboard, 0, false);
 		firstPausingDevice = INPUT_DEVICE_KEYBOARD;
 	}
 	else
@@ -365,15 +363,14 @@ static void RunGameInput(GameLoopData *data)
 				firstPausingDevice = p->inputDevice;
 			}
 			rData->cmds[idx] = GetGameCmd(
-				&gEventHandlers,
-				p,
+				&gEventHandlers, p,
 				GetPlayerCenter(&gGraphicsDevice, &rData->Camera, p, idx));
 			cmdAll |= rData->cmds[idx];
 
 			// Only allow the first player to escape
 			// Use keypress otherwise the player will quit immediately
-			if (idx == 0 &&
-				(rData->cmds[idx] & CMD_ESC) && !(rData->lastCmds[idx] & CMD_ESC))
+			if (idx == 0 && (rData->cmds[idx] & CMD_ESC) &&
+				!(rData->lastCmds[idx] & CMD_ESC))
 			{
 				pausingDevice = p->inputDevice;
 			}
@@ -387,11 +384,11 @@ static void RunGameInput(GameLoopData *data)
 	// Check if any controllers are unplugged
 	rData->controllerUnplugged = false;
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-		if (p->inputDevice == INPUT_DEVICE_UNSET && p->IsLocal)
-		{
-			rData->controllerUnplugged = true;
-			break;
-		}
+	if (p->inputDevice == INPUT_DEVICE_UNSET && p->IsLocal)
+	{
+		rData->controllerUnplugged = true;
+		break;
+	}
 	CA_FOREACH_END()
 
 	// If in Superhot(tm) Mode, don't update unless there was an input in this
@@ -405,8 +402,8 @@ static void RunGameInput(GameLoopData *data)
 	// If the game is paused, unpause if a button is released
 	// If the game was not paused, enter pause mode
 	// If the game was paused and escape was pressed, exit the game
-	if (rData->pausingDevice != INPUT_DEVICE_UNSET
-	    && AnyButton(lastCmdAll) && !AnyButton(cmdAll))
+	if (rData->pausingDevice != INPUT_DEVICE_UNSET && AnyButton(lastCmdAll) &&
+		!AnyButton(cmdAll))
 	{
 		rData->pausingDevice = INPUT_DEVICE_UNSET;
 	}
@@ -438,16 +435,17 @@ static void RunGameInput(GameLoopData *data)
 		}
 	}
 
-	const bool paused =
-		rData->pausingDevice != INPUT_DEVICE_UNSET ||
-		rData->controllerUnplugged;
+	const bool paused = rData->pausingDevice != INPUT_DEVICE_UNSET ||
+						rData->controllerUnplugged;
 	if (!paused)
 	{
 		// Check if automap key is pressed by any player
 		// Toggle
 		if (IsAutoMapEnabled(gCampaign.Entry.Mode) &&
-			(KeyIsPressed(&gEventHandlers.keyboard, ConfigGetInt(&gConfig, "Input.PlayerCodes0.map")) ||
-			((cmdAll & CMD_MAP) && !(lastCmdAll & CMD_MAP))))
+			(KeyIsPressed(
+				 &gEventHandlers.keyboard,
+				 ConfigGetInt(&gConfig, "Input.PlayerCodes0.map")) ||
+			 ((cmdAll & CMD_MAP) && !(lastCmdAll & CMD_MAP))))
 		{
 			rData->isMap = !rData->isMap;
 			SoundPlay(
@@ -493,14 +491,10 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 	// If we're not hosting a net game,
 	// don't update if the game has paused or has automap shown
 	// Important: don't consider paused if we are trying to quit
-	const bool paused =
-		rData->pausingDevice != INPUT_DEVICE_UNSET ||
-		rData->controllerUnplugged ||
-		rData->isMap;
-	if (!gCampaign.IsClient &&
-		!ConfigGetBool(&gConfig, "StartServer") &&
-		paused &&
-		!gEventHandlers.HasQuit)
+	const bool paused = rData->pausingDevice != INPUT_DEVICE_UNSET ||
+						rData->controllerUnplugged || rData->isMap;
+	if (!gCampaign.IsClient && !ConfigGetBool(&gConfig, "StartServer") &&
+		paused && !gEventHandlers.HasQuit)
 	{
 		return UPDATE_RESULT_DRAW;
 	}
@@ -519,14 +513,17 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 		for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
 		{
 			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-			if (p->ActorUID == -1) continue;
+			if (p->ActorUID == -1)
+				continue;
 			TActor *player = ActorGetByUID(p->ActorUID);
-			if (player->dead > DEATH_MAX) continue;
+			if (player->dead > DEATH_MAX)
+				continue;
 			// Calculate LOS for all players alive or dying
 			LOSCalcFrom(
 				&gMap, Vec2ToTile(player->thing.Pos), !gCampaign.IsClient);
 
-			if (player->dead) continue;
+			if (player->dead)
+				continue;
 
 			// Only handle inputs/commands for local players
 			if (!p->IsLocal)
@@ -560,7 +557,8 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 
 	// If split screen never and players are too close to the
 	// edge of the screen, forcefully pull them towards the center
-	if (ConfigGetEnum(&gConfig, "Interface.Splitscreen") == SPLITSCREEN_NEVER &&
+	if (ConfigGetEnum(&gConfig, "Interface.Splitscreen") ==
+			SPLITSCREEN_NEVER &&
 		GetNumPlayers(PLAYER_ALIVE_OR_DYING, true, true) > 1 &&
 		!IsPVP(gCampaign.Entry.Mode))
 	{
@@ -569,44 +567,41 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 		const struct vec2i screen = svec2i_add(
 			svec2i_assign_vec2(PlayersGetMidpoint()), svec2i(-w / 2, -h / 2));
 		CA_FOREACH(const PlayerData, pd, gPlayerDatas)
-			if (!pd->IsLocal || !IsPlayerAlive(pd))
-			{
-				continue;
-			}
-			const TActor *p = ActorGetByUID(pd->ActorUID);
-			const int pad = CAMERA_SPLIT_PADDING;
-			struct vec2 vel = svec2_zero();
-			if (screen.x + pad > p->thing.Pos.x && p->thing.Vel.x < 1)
-			{
-				vel.x = screen.x + pad - p->thing.Pos.x;
-			}
-			else if (screen.x + w - pad < p->thing.Pos.x &&
-				p->thing.Vel.x > -1)
-			{
-				vel.x = screen.x + w - pad - p->thing.Pos.x;
-			}
-			if (screen.y + pad > p->thing.Pos.y && p->thing.Vel.y < 1)
-			{
-				vel.y = screen.y + pad - p->thing.Pos.y;
-			}
-			else if (screen.y + h - pad < p->thing.Pos.y &&
-				p->thing.Vel.y > -1)
-			{
-				vel.y = screen.y + h - pad - p->thing.Pos.y;
-			}
-			if (!svec2_is_zero(vel))
-			{
-				GameEvent ei = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
-				ei.u.ActorImpulse.UID = p->uid;
-				ei.u.ActorImpulse.Vel = Vec2ToNet(svec2_scale(vel, 0.25f));
-				ei.u.ActorImpulse.Pos = Vec2ToNet(svec2_zero());
-				GameEventsEnqueue(&gGameEvents, ei);
-				LOG(LM_MAIN, LL_TRACE,
-					"playerUID(%d) pos(%f, %f) screen(%d, %d) impulse(%f, %f)",
-					p->uid, p->thing.Pos.x, p->thing.Pos.y,
-					screen.x, screen.y,
-					ei.u.ActorImpulse.Vel.x, ei.u.ActorImpulse.Vel.y);
-			}
+		if (!pd->IsLocal || !IsPlayerAlive(pd))
+		{
+			continue;
+		}
+		const TActor *p = ActorGetByUID(pd->ActorUID);
+		const int pad = CAMERA_SPLIT_PADDING;
+		struct vec2 vel = svec2_zero();
+		if (screen.x + pad > p->thing.Pos.x && p->thing.Vel.x < 1)
+		{
+			vel.x = screen.x + pad - p->thing.Pos.x;
+		}
+		else if (screen.x + w - pad < p->thing.Pos.x && p->thing.Vel.x > -1)
+		{
+			vel.x = screen.x + w - pad - p->thing.Pos.x;
+		}
+		if (screen.y + pad > p->thing.Pos.y && p->thing.Vel.y < 1)
+		{
+			vel.y = screen.y + pad - p->thing.Pos.y;
+		}
+		else if (screen.y + h - pad < p->thing.Pos.y && p->thing.Vel.y > -1)
+		{
+			vel.y = screen.y + h - pad - p->thing.Pos.y;
+		}
+		if (!svec2_is_zero(vel))
+		{
+			GameEvent ei = GameEventNew(GAME_EVENT_ACTOR_IMPULSE);
+			ei.u.ActorImpulse.UID = p->uid;
+			ei.u.ActorImpulse.Vel = Vec2ToNet(svec2_scale(vel, 0.25f));
+			ei.u.ActorImpulse.Pos = Vec2ToNet(svec2_zero());
+			GameEventsEnqueue(&gGameEvents, ei);
+			LOG(LM_MAIN, LL_TRACE,
+				"playerUID(%d) pos(%f, %f) screen(%d, %d) impulse(%f, %f)",
+				p->uid, p->thing.Pos.x, p->thing.Pos.y, screen.x, screen.y,
+				ei.u.ActorImpulse.Vel.x, ei.u.ActorImpulse.Vel.y);
+		}
 		CA_FOREACH_END()
 	}
 
@@ -620,7 +615,7 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 
 	PowerupSpawnerUpdate(&rData->healthSpawner, ticksPerFrame);
 	CA_FOREACH(PowerupSpawner, a, rData->ammoSpawners)
-		PowerupSpawnerUpdate(a, ticksPerFrame);
+	PowerupSpawnerUpdate(a, ticksPerFrame);
 	CA_FOREACH_END()
 
 	if (!gCampaign.IsClient)
@@ -635,8 +630,8 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 	}
 
 	HandleGameEvents(
-		&gGameEvents, &rData->Camera,
-		&rData->healthSpawner, &rData->ammoSpawners);
+		&gGameEvents, &rData->Camera, &rData->healthSpawner,
+		&rData->ammoSpawners);
 
 	rData->m->time += ticksPerFrame;
 
@@ -653,8 +648,7 @@ static void NextLoop(RunGameData *rData, LoopRunner *l)
 {
 	// Find the next screen to switch to
 	const bool hasLocalPlayers = GetNumPlayers(PLAYER_ANY, false, true) > 0;
-	const int survivingPlayers =
-		GetNumPlayers(PLAYER_ALIVE, false, false);
+	const int survivingPlayers = GetNumPlayers(PLAYER_ALIVE, false, false);
 	const bool survivedAndCompletedObjectives =
 		survivingPlayers > 0 && MissionAllObjectivesComplete(&gMission);
 	// Persist player weapons/ammo
@@ -679,8 +673,9 @@ static void NextLoop(RunGameData *rData, LoopRunner *l)
 			break;
 		default:
 			// In co-op (non-PVP) modes, at least one player must survive
-			LoopRunnerChange(l, ScreenMissionSummary(
-				rData->co, &gMission, survivedAndCompletedObjectives));
+			LoopRunnerChange(
+				l, ScreenMissionSummary(
+					   rData->co, &gMission, survivedAndCompletedObjectives));
 			break;
 		}
 	}
@@ -704,19 +699,21 @@ static void CheckMissionCompletion(const struct MissionOptions *mo)
 {
 	// Check if we need to update explore objectives
 	CA_FOREACH(const Objective, o, mo->missionData->Objectives)
-		if (o->Type != OBJECTIVE_INVESTIGATE) continue;
-		const int update = MapGetExploredPercentage(&gMap) - o->done;
-		if (update > 0 && !gCampaign.IsClient)
-		{
-			GameEvent e = GameEventNew(GAME_EVENT_OBJECTIVE_UPDATE);
-			e.u.ObjectiveUpdate.ObjectiveId = _ca_index;
-			e.u.ObjectiveUpdate.Count = update;
-			GameEventsEnqueue(&gGameEvents, e);
-		}
+	if (o->Type != OBJECTIVE_INVESTIGATE)
+		continue;
+	const int update = MapGetExploredPercentage(&gMap) - o->done;
+	if (update > 0 && !gCampaign.IsClient)
+	{
+		GameEvent e = GameEventNew(GAME_EVENT_OBJECTIVE_UPDATE);
+		e.u.ObjectiveUpdate.ObjectiveId = _ca_index;
+		e.u.ObjectiveUpdate.Count = update;
+		GameEventsEnqueue(&gGameEvents, e);
+	}
 	CA_FOREACH_END()
 
 	const bool isMissionComplete =
-		GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) > 0 && IsMissionComplete(mo);
+		GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) > 0 &&
+		IsMissionComplete(mo);
 	if (mo->state == MISSION_STATE_PLAY && isMissionComplete)
 	{
 		GameEvent e = GameEventNew(GAME_EVENT_MISSION_PICKUP);
@@ -742,11 +739,11 @@ static void CheckMissionCompletion(const struct MissionOptions *mo)
 		// Wait until after this period before ending the game
 		bool allPlayersDestroyed = true;
 		CA_FOREACH(const PlayerData, p, gPlayerDatas)
-			if (p->ActorUID != -1)
-			{
-				allPlayersDestroyed = false;
-				break;
-			}
+		if (p->ActorUID != -1)
+		{
+			allPlayersDestroyed = false;
+			break;
+		}
 		CA_FOREACH_END()
 		if (allPlayersDestroyed && AreAllPlayersDeadAndNoLives())
 		{

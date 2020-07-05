@@ -65,7 +65,9 @@
 static void MapSetupTilesAndWalls(MapBuilder *mb);
 static void MapSetupDoors(MapBuilder *mb);
 static void MapAddDrains(MapBuilder *mb);
-void MapBuild(Map *m, const Mission *mission, const Campaign *co)
+static void MapGenerateRandomExitArea(Map *map, const int mission);
+void MapBuild(
+	Map *m, const Mission *mission, const Campaign *co, const int missionIndex)
 {
 	MapBuilder mb;
 	MapBuilderInit(&mb, m, mission, co);
@@ -77,7 +79,7 @@ void MapBuild(Map *m, const Mission *mission, const Campaign *co)
 		MapClassicLoad(&mb);
 		break;
 	case MAPTYPE_STATIC:
-		MapStaticLoad(&mb);
+		MapStaticLoad(&mb, missionIndex);
 		break;
 	case MAPTYPE_CAVE:
 		MapCaveLoad(&mb);
@@ -98,9 +100,9 @@ void MapBuild(Map *m, const Mission *mission, const Campaign *co)
 	}
 
 	// Set exit now since we have set up all the tiles
-	if (svec2i_is_zero(mb.Map->ExitStart) && svec2i_is_zero(mb.Map->ExitEnd))
+	if (mb.Map->exits.size == 0)
 	{
-		MapGenerateRandomExitArea(mb.Map);
+		MapGenerateRandomExitArea(mb.Map, missionIndex);
 	}
 
 	// Count total number of reachable tiles, for explored %
@@ -1430,21 +1432,22 @@ uint16_t GenerateAccessMask(int *accessLevel)
 	return accessMask;
 }
 
-void MapGenerateRandomExitArea(Map *map)
+static void MapGenerateRandomExitArea(Map *map, const int mission)
 {
 	const Tile *t = NULL;
+	Exit exit;
+	exit.Mission = mission + 1;
+	exit.Hidden = false;
 	for (int i = 0; i < 10000 && (t == NULL || !TileCanWalk(t)); i++)
 	{
-		map->ExitStart.x = (rand() % (abs(map->Size.x) - EXIT_WIDTH - 1));
-		map->ExitEnd.x = map->ExitStart.x + EXIT_WIDTH + 1;
-		map->ExitStart.y = (rand() % (abs(map->Size.y) - EXIT_HEIGHT - 1));
-		map->ExitEnd.y = map->ExitStart.y + EXIT_HEIGHT + 1;
+		exit.R.Pos.x = (rand() % (abs(map->Size.x) - EXIT_WIDTH - 1));
+		exit.R.Size.x = EXIT_WIDTH + 1;
+		exit.R.Pos.y = (rand() % (abs(map->Size.y) - EXIT_HEIGHT - 1));
+		exit.R.Size.y = EXIT_HEIGHT + 1;
 		// Check that the exit area is walkable
-		const struct vec2i center = svec2i(
-			(map->ExitStart.x + map->ExitEnd.x) / 2,
-			(map->ExitStart.y + map->ExitEnd.y) / 2);
-		t = MapGetTile(map, center);
+		t = MapGetTile(map, Rect2iCenter(exit.R));
 	}
+	CArrayPushBack(&map->exits, &exit);
 }
 
 static void MapAddDrains(MapBuilder *mb)

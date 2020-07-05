@@ -1,30 +1,30 @@
 /*
- C-Dogs SDL
- A port of the legendary (and fun) action/arcade cdogs.
- 
- Copyright (c) 2014-2017 Cong Xu
- All rights reserved.
- 
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
- 
- Redistributions of source code must retain the above copyright notice, this
- list of conditions and the following disclaimer.
- Redistributions in binary form must reproduce the above copyright notice,
- this list of conditions and the following disclaimer in the documentation
- and/or other materials provided with the distribution.
- 
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
- LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- POSSIBILITY OF SUCH DAMAGE.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+
+	Copyright (c) 2014-2017, 2020 Cong Xu
+	All rights reserved.
+
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
+
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
+
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
  */
 #include "actor_placement.h"
 
@@ -33,7 +33,6 @@
 #include "game_events.h"
 #include "gamedata.h"
 #include "handle_game_events.h"
-
 
 static NVec2 PlaceActor(Map *map)
 {
@@ -44,16 +43,19 @@ static NVec2 PlaceActor(Map *map)
 		// First, try to place at least half the map away from the exit
 		const int halfMap =
 			MAX(map->Size.x * TILE_WIDTH, map->Size.y * TILE_HEIGHT) / 2;
-		const struct vec2 exitPos = MapGetExitPos(map);
 		// Don't try forever trying to place
 		for (int i = 0; i < 100; i++)
 		{
-			pos = MapGetRandomPos(map);
-			if (fabsf(pos.x - exitPos.x) > halfMap &&
-				fabsf(pos.y - exitPos.y) > halfMap &&
-				MapIsTileAreaClear(map, pos, svec2i(ACTOR_W, ACTOR_H)))
+			for (int j = 0; j < map->exits.size; j++)
 			{
-				return Vec2ToNet(pos);
+				const struct vec2 exitPos = MapGetExitPos(map, j);
+				pos = MapGetRandomPos(map);
+				if (fabsf(pos.x - exitPos.x) > halfMap &&
+					fabsf(pos.y - exitPos.y) > halfMap &&
+					MapIsTileAreaClear(map, pos, svec2i(ACTOR_W, ACTOR_H)))
+				{
+					return Vec2ToNet(pos);
+				}
 			}
 		}
 	}
@@ -63,7 +65,7 @@ static NVec2 PlaceActor(Map *map)
 	{
 		pos = MapGetRandomPos(map);
 	} while (!MapIsPosOKForPlayer(map, pos, false) ||
-		!MapIsTileAreaClear(map, pos, svec2i(ACTOR_W, ACTOR_H)));
+			 !MapIsTileAreaClear(map, pos, svec2i(ACTOR_W, ACTOR_H)));
 	return Vec2ToNet(pos);
 }
 
@@ -78,12 +80,12 @@ static NVec2 PlaceActorNear(
 	//  9 3 S 1 5
 	//    8 2 6
 	//      7
-#define TRY_LOCATION()\
-	pos = svec2_add(nearPos, svec2(dx, dy));\
-	if (MapIsPosOKForPlayer(map, pos, allowAllTiles) && \
-		MapIsTileAreaClear(map, pos, svec2i(ACTOR_W, ACTOR_H)))\
-	{\
-		return Vec2ToNet(pos);\
+#define TRY_LOCATION()                                                        \
+	pos = svec2_add(nearPos, svec2(dx, dy));                                  \
+	if (MapIsPosOKForPlayer(map, pos, allowAllTiles) &&                       \
+		MapIsTileAreaClear(map, pos, svec2i(ACTOR_W, ACTOR_H)))               \
+	{                                                                         \
+		return Vec2ToNet(pos);                                                \
 	}
 	float dx = 0;
 	float dy = 0;
@@ -151,8 +153,8 @@ static bool TryPlaceOneAwayFromPlayers(
 
 	const TActor *closestPlayer = AIGetClosestPlayer(pos);
 	if ((closestPlayer == NULL || CHEBYSHEV_DISTANCE(
-			pos.x, pos.y,
-			closestPlayer->Pos.x, closestPlayer->Pos.y) >= 150) &&
+									  pos.x, pos.y, closestPlayer->Pos.x,
+									  closestPlayer->Pos.y) >= 150) &&
 		MapIsTileAreaClear(map, pos, svec2i(ACTOR_W, ACTOR_H)))
 	{
 		*out = Vec2ToNet(pos);
@@ -191,18 +193,20 @@ struct vec2 PlacePlayer(
 			PlaceAwayFromPlayers(&gMap, false, PLACEMENT_ACCESS_ANY);
 	}
 	else if (
-		ConfigGetEnum(&gConfig, "Interface.Splitscreen") == SPLITSCREEN_NEVER &&
+		ConfigGetEnum(&gConfig, "Interface.Splitscreen") ==
+			SPLITSCREEN_NEVER &&
 		!svec2_is_zero(firstPos))
 	{
 		// If never split screen, try to place players near the first player
 		e.u.ActorAdd.Pos = PlaceActorNear(map, firstPos, true);
 	}
-	else if (gMission.missionData->Type == MAPTYPE_STATIC &&
+	else if (
+		gMission.missionData->Type == MAPTYPE_STATIC &&
 		!svec2i_is_zero(gMission.missionData->u.Static.Start))
 	{
 		// place players near the start point
-		const struct vec2 startPoint = Vec2CenterOfTile(
-			gMission.missionData->u.Static.Start);
+		const struct vec2 startPoint =
+			Vec2CenterOfTile(gMission.missionData->u.Static.Start);
 		e.u.ActorAdd.Pos = PlaceActorNear(map, startPoint, true);
 	}
 	else

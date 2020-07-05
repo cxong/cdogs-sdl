@@ -311,8 +311,6 @@ message NAddKeys {
 
 message NMissionComplete {
 	bool ShowMsg = 1;
-	NVec2i ExitStart = 2;
-	NVec2i ExitEnd = 3;
 }
 
 message NMissionEnd {

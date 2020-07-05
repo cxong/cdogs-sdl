@@ -99,6 +99,10 @@ typedef struct _NMapObjectRemove {
     uint32_t Flags;
 } NMapObjectRemove;
 
+typedef struct _NMissionComplete {
+    bool ShowMsg;
+} NMissionComplete;
+
 typedef struct _NMissionEnd {
     int32_t Delay;
     bool IsQuit;
@@ -302,14 +306,6 @@ typedef struct _NMapObjectAdd {
     NColor Mask;
 } NMapObjectAdd;
 
-typedef struct _NMissionComplete {
-    bool ShowMsg;
-    bool has_ExitStart;
-    NVec2i ExitStart;
-    bool has_ExitEnd;
-    NVec2i ExitEnd;
-} NMissionComplete;
-
 typedef struct _NSound {
     char Sound[128];
     bool has_Pos;
@@ -417,7 +413,7 @@ typedef struct _NPlayerData {
 #define NRescueCharacter_init_default            {0}
 #define NObjectiveUpdate_init_default            {0, 0}
 #define NAddKeys_init_default                    {0, false, NVec2_init_default}
-#define NMissionComplete_init_default            {0, false, NVec2i_init_default, false, NVec2i_init_default}
+#define NMissionComplete_init_default            {0}
 #define NMissionEnd_init_default                 {0, 0, ""}
 #define NServerInfo_init_zero                    {0, 0, "", 0, "", 0, 0, 0}
 #define NClientId_init_zero                      {0, 0}
@@ -466,7 +462,7 @@ typedef struct _NPlayerData {
 #define NRescueCharacter_init_zero               {0}
 #define NObjectiveUpdate_init_zero               {0, 0}
 #define NAddKeys_init_zero                       {0, false, NVec2_init_zero}
-#define NMissionComplete_init_zero               {0, false, NVec2i_init_zero, false, NVec2i_init_zero}
+#define NMissionComplete_init_zero               {0}
 #define NMissionEnd_init_zero                    {0, 0, ""}
 
 /* Field tags (for use in manual encoding/decoding) */
@@ -507,6 +503,7 @@ typedef struct _NPlayerData {
 #define NMapObjectRemove_UID_tag                 1
 #define NMapObjectRemove_ActorUID_tag            2
 #define NMapObjectRemove_Flags_tag               3
+#define NMissionComplete_ShowMsg_tag             1
 #define NMissionEnd_Delay_tag                    1
 #define NMissionEnd_IsQuit_tag                   2
 #define NMissionEnd_Msg_tag                      3
@@ -607,9 +604,6 @@ typedef struct _NPlayerData {
 #define NMapObjectAdd_ThingFlags_tag             4
 #define NMapObjectAdd_Health_tag                 5
 #define NMapObjectAdd_Mask_tag                   6
-#define NMissionComplete_ShowMsg_tag             1
-#define NMissionComplete_ExitStart_tag           2
-#define NMissionComplete_ExitEnd_tag             3
 #define NSound_Sound_tag                         1
 #define NSound_Pos_tag                           2
 #define NSound_IsHit_tag                         3
@@ -1029,13 +1023,9 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  Pos,               2)
 #define NAddKeys_Pos_MSGTYPE NVec2
 
 #define NMissionComplete_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, BOOL,     ShowMsg,           1) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  ExitStart,         2) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  ExitEnd,           3)
+X(a, STATIC,   SINGULAR, BOOL,     ShowMsg,           1)
 #define NMissionComplete_CALLBACK NULL
 #define NMissionComplete_DEFAULT NULL
-#define NMissionComplete_ExitStart_MSGTYPE NVec2i
-#define NMissionComplete_ExitEnd_MSGTYPE NVec2i
 
 #define NMissionEnd_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, INT32,    Delay,             1) \
@@ -1193,7 +1183,7 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 #define NRescueCharacter_size                    6
 #define NObjectiveUpdate_size                    17
 #define NAddKeys_size                            18
-#define NMissionComplete_size                    50
+#define NMissionComplete_size                    2
 #define NMissionEnd_size                         143
 
 #ifdef __cplusplus

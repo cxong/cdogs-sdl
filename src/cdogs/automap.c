@@ -112,25 +112,25 @@ static void DisplayObjective(
 
 static void DisplayExit(struct vec2i pos, int scale, int flags)
 {
-	struct vec2i exitPos = gMap.ExitStart;
-	struct vec2i exitSize =
-		svec2i_add(svec2i_subtract(gMap.ExitEnd, exitPos), svec2i_one());
-	color_t color = colorExit;
-
 	if (!HasExit(gCampaign.Entry.Mode))
 	{
 		return;
 	}
 
-	exitPos = svec2i_scale(exitPos, (float)scale);
-	exitSize = svec2i_scale(exitSize, (float)scale);
-	exitPos = svec2i_add(exitPos, pos);
+	CA_FOREACH(const Exit, e, gMap.exits)
+	if (e->Hidden)
+		continue;
+	const struct vec2i exitPos =
+		svec2i_add(svec2i_scale(e->R.Pos, (float)scale), pos);
+	const struct vec2i exitSize = svec2i_scale(e->R.Size, (float)scale);
 
+	color_t color = colorExit;
 	if (flags & AUTOMAP_FLAGS_MASK)
 	{
 		color.a = MASK_ALPHA;
 	}
 	DrawRectangle(&gGraphicsDevice, exitPos, exitSize, color, false);
+	CA_FOREACH_END()
 }
 
 static void DisplaySummary(void)

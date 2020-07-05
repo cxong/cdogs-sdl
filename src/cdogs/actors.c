@@ -448,7 +448,7 @@ static void CheckRescue(const TActor *a);
 static void OnMove(TActor *a)
 {
 	MapTryMoveThing(&gMap, &a->thing, a->Pos);
-	if (MapIsTileInExit(&gMap, &a->thing))
+	if (MapIsTileInExit(&gMap, &a->thing, -1) != -1)
 	{
 		a->action = ACTORACTION_EXITING;
 	}
