@@ -137,7 +137,7 @@ int MapIsTileInExit(const Map *map, const Thing *ti, const int exit)
 {
 	if (exit < 0)
 	{
-		for (int i = 0; i < map->exits.size; i++)
+		for (int i = 0; i < (int)map->exits.size; i++)
 		{
 			if (MapIsTileInExit(map, ti, i) != -1)
 			{

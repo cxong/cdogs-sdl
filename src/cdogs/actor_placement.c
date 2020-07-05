@@ -46,7 +46,7 @@ static NVec2 PlaceActor(Map *map)
 		// Don't try forever trying to place
 		for (int i = 0; i < 100; i++)
 		{
-			for (int j = 0; j < map->exits.size; j++)
+			for (int j = 0; j < (int)map->exits.size; j++)
 			{
 				const struct vec2 exitPos = MapGetExitPos(map, j);
 				pos = MapGetRandomPos(map);

@@ -143,7 +143,7 @@ void GrafxMakeBackground(
 	MapMarkAllAsVisited(map);
 	if (isEditor)
 	{
-		for (int i = 0; i < map->exits.size; i++)
+		for (int i = 0; i < (int)map->exits.size; i++)
 		{
 			MapShowExitArea(map, i);
 		}

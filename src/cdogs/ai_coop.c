@@ -451,7 +451,7 @@ static bool TryCompleteNearbyObjective(
 	// if so (and there's a path) go to an exit
 	if (CanCompleteMission(&gMission))
 	{
-		for (int i = 0; i < gMap.exits.size; i++)
+		for (int i = 0; i < (int)gMap.exits.size; i++)
 		{
 			const struct vec2 exitPos = MapGetExitPos(&gMap, i);
 			if (CanGetObjective(

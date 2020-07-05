@@ -572,7 +572,7 @@ static void HandleGameEvent(
 			{
 				camera->HUD.showExit = true;
 			}
-			for (int i = 0; i < gMap.exits.size; i++)
+			for (int i = 0; i < (int)gMap.exits.size; i++)
 			{
 				MapShowExitArea(&gMap, i);
 			}
