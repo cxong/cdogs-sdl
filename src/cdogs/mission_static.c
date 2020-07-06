@@ -46,6 +46,7 @@ static void MissionStaticInit(MissionStatic *m)
 	CArrayInit(&m->Characters, sizeof(CharacterPositions));
 	CArrayInit(&m->Objectives, sizeof(ObjectivePositions));
 	CArrayInit(&m->Keys, sizeof(KeyPositions));
+	CArrayInit(&m->Exits, sizeof(Exit));
 }
 
 static void LoadTileClasses(map_t tileClasses, const json_t *node);
@@ -61,9 +62,13 @@ static void LoadStaticCharacters(MissionStatic *m, json_t *node, char *name);
 static void LoadStaticObjectives(
 	MissionStatic *m, const struct vec2i size, json_t *node, char *name);
 static void LoadStaticKeys(MissionStatic *m, json_t *node, char *name);
-static void LoadStaticExit(MissionStatic *m, json_t *node, char *name);
+static void LoadStaticExit(
+	MissionStatic *m, const json_t *node, const char *name, const int mission);
+static void LoadStaticExits(
+	MissionStatic *m, const json_t *node, const char *name);
 bool MissionStaticTryLoadJSON(
-	MissionStatic *m, json_t *node, const struct vec2i size, const int version)
+	MissionStatic *m, json_t *node, const struct vec2i size, const int version,
+	const int mission)
 {
 	MissionStaticInit(m);
 	if (version <= 14)
@@ -154,7 +159,14 @@ bool MissionStaticTryLoadJSON(
 	LoadStaticKeys(m, node, "StaticKeys");
 
 	LoadVec2i(&m->Start, node, "Start");
-	LoadStaticExit(m, node, "Exit");
+	if (version < 16)
+	{
+		LoadStaticExit(m, node, "Exit", mission);
+	}
+	else
+	{
+		LoadStaticExits(m, node, "Exits");
+	}
 
 	return true;
 }
@@ -474,7 +486,8 @@ static void LoadStaticKeys(MissionStatic *m, json_t *node, char *name)
 		CArrayPushBack(&m->Keys, &kp);
 	}
 }
-static void LoadStaticExit(MissionStatic *m, json_t *node, char *name)
+static void LoadStaticExit(
+	MissionStatic *m, const json_t *node, const char *name, const int mission)
 {
 	json_t *exitNode = json_find_first_label(node, name);
 	if (!exitNode || !exitNode->child)
@@ -482,8 +495,33 @@ static void LoadStaticExit(MissionStatic *m, json_t *node, char *name)
 		return;
 	}
 	exitNode = exitNode->child;
-	LoadVec2i(&m->Exit.Start, exitNode, "Start");
-	LoadVec2i(&m->Exit.End, exitNode, "End");
+	Exit exit;
+	memset(&exit, 0, sizeof exit);
+	LoadVec2i(&exit.R.Pos, exitNode, "Start");
+	struct vec2i end;
+	LoadVec2i(&end, exitNode, "End");
+	exit.R.Size = svec2i_subtract(end, exit.R.Pos);
+	exit.Mission = mission + 1;
+	CArrayPushBack(&m->Exits, &exit);
+}
+static void LoadStaticExits(
+	MissionStatic *m, const json_t *node, const char *name)
+{
+	json_t *exits = json_find_first_label(node, name);
+	if (!exits || !exits->child)
+	{
+		return;
+	}
+	exits = exits->child;
+	for (exits = exits->child; exits; exits = exits->next)
+	{
+		Exit exit;
+		memset(&exit, 0, sizeof exit);
+		LoadRect2i(&exit.R, exits, "Rect");
+		LoadInt(&exit.Mission, exits, "Mission");
+		LoadBool(&exit.Hidden, exits, "Hidden");
+		CArrayPushBack(&m->Exits, &exit);
+	}
 }
 
 void MissionStaticFromMap(MissionStatic *m, const Map *map)
@@ -530,6 +568,7 @@ void MissionStaticTerminate(MissionStatic *m)
 	CArrayTerminate(&m->Characters);
 	CArrayTerminate(&m->Objectives);
 	CArrayTerminate(&m->Keys);
+	CArrayTerminate(&m->Exits);
 }
 
 static json_t *SaveStaticTileClasses(const MissionStatic *m);
@@ -538,6 +577,7 @@ static json_t *SaveStaticItems(const MissionStatic *m);
 static json_t *SaveStaticCharacters(const MissionStatic *m);
 static json_t *SaveStaticObjectives(const MissionStatic *m);
 static json_t *SaveStaticKeys(const MissionStatic *m);
+static json_t *SaveExits(const MissionStatic *m);
 static json_t *SaveVec2i(struct vec2i v);
 void MissionStaticSaveJSON(
 	const MissionStatic *m, const struct vec2i size, json_t *node)
@@ -556,10 +596,7 @@ void MissionStaticSaveJSON(
 	json_insert_pair_into_object(node, "StaticKeys", SaveStaticKeys(m));
 
 	json_insert_pair_into_object(node, "Start", SaveVec2i(m->Start));
-	json_t *exitNode = json_new_object();
-	json_insert_pair_into_object(exitNode, "Start", SaveVec2i(m->Exit.Start));
-	json_insert_pair_into_object(exitNode, "End", SaveVec2i(m->Exit.End));
-	json_insert_pair_into_object(node, "Exit", exitNode);
+	json_insert_pair_into_object(node, "Exits", SaveExits(m));
 }
 typedef struct
 {
@@ -695,6 +732,18 @@ static json_t *SaveStaticKeys(const MissionStatic *m)
 	CA_FOREACH_END()
 	return keys;
 }
+static json_t *SaveExits(const MissionStatic *m)
+{
+	json_t *exits = json_new_array();
+	CA_FOREACH(const Exit, exit, m->Exits)
+	json_t *exitNode = json_new_object();
+	AddRect2iPair(exitNode, "Rect", exit->R);
+	AddIntPair(exitNode, "Index", exit->Mission);
+	AddBoolPair(exitNode, "Hidden", exit->Hidden);
+	json_insert_child(exits, exitNode);
+	CA_FOREACH_END()
+	return exits;
+}
 static json_t *SaveVec2i(struct vec2i v)
 {
 	json_t *node = json_new_array();
@@ -723,6 +772,8 @@ void MissionStaticCopy(MissionStatic *dst, const MissionStatic *src)
 	CharacterPositionsCopy(&dst->Characters, &src->Characters);
 	ObjectivePositionsCopy(&dst->Objectives, &src->Objectives);
 	KeyPositionsCopy(&dst->Keys, &src->Keys);
+	memset(&dst->Exits, 0, sizeof dst->Exits);
+	CArrayCopy(&dst->Exits, &src->Exits);
 }
 static any_t TileClassCopyHashMap(any_t in)
 {

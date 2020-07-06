@@ -29,6 +29,6 @@
 
 #include "map_build.h"
 
-void MapStaticLoad(MapBuilder *mb, const int mission);
+void MapStaticLoad(MapBuilder *mb);
 void MapStaticLoadTile(MapBuilder *mb, const struct vec2i v);
 void MapStaticLoadDynamic(MapBuilder *mb);

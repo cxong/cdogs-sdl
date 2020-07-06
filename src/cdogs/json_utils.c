@@ -1,31 +1,31 @@
 /*
- C-Dogs SDL
- A port of the legendary (and fun) action/arcade cdogs.
- 
- Copyright (c) 2013-2019 Cong Xu
- All rights reserved.
- 
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
- 
- Redistributions of source code must retain the above copyright notice, this
- list of conditions and the following disclaimer.
- Redistributions in binary form must reproduce the above copyright notice,
- this list of conditions and the following disclaimer in the documentation
- and/or other materials provided with the distribution.
- 
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
- LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- POSSIBILITY OF SUCH DAMAGE.
- */
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+
+	Copyright (c) 2013-2020 Cong Xu
+	All rights reserved.
+
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
+
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
+
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
+*/
 #include "json_utils.h"
 
 #include <errno.h>
@@ -33,10 +33,9 @@
 
 #include "config.h"
 #include "log.h"
-#include "weapon.h"
 #include "pic_manager.h"
 #include "sys_config.h"
-
+#include "weapon.h"
 
 void AddIntPair(json_t *parent, const char *name, int number)
 {
@@ -66,14 +65,28 @@ void AddColorPair(json_t *parent, const char *name, const color_t c)
 	ColorStr(buf, c);
 	AddStringPair(parent, name, buf);
 }
+void AddRect2iPair(json_t *parent, const char *name, const Rect2i r)
+{
+	json_t *node = json_new_array();
+	char buf[32];
+	sprintf(buf, "%d", r.Pos.x);
+	json_insert_child(node, json_new_number(buf));
+	sprintf(buf, "%d", r.Pos.y);
+	json_insert_child(node, json_new_number(buf));
+	sprintf(buf, "%d", r.Size.x);
+	json_insert_child(node, json_new_number(buf));
+	sprintf(buf, "%d", r.Size.y);
+	json_insert_child(node, json_new_number(buf));
+	json_insert_pair_into_object(parent, name, node);
+}
 void AddIntArray(json_t *parent, const char *name, const CArray *a)
 {
 	json_t *node = json_new_array();
 	CA_FOREACH(int, i, *a)
-		char buf[32];
-		sprintf(buf, "%d", *i);
-		json_insert_child(node, json_new_number(buf));
-	}
+	char buf[32];
+	sprintf(buf, "%d", *i);
+	json_insert_child(node, json_new_number(buf));
+	CA_FOREACH_END()
 	json_insert_pair_into_object(parent, name, node);
 }
 
@@ -157,6 +170,21 @@ void LoadVec2(struct vec2 *value, json_t *node, const char *name)
 	value->x = strtof(node->text, NULL);
 	node = node->next;
 	value->y = strtof(node->text, NULL);
+}
+void LoadRect2i(Rect2i *value, json_t *node, const char *name)
+{
+	if (!TryLoadValue(&node, name))
+	{
+		return;
+	}
+	node = node->child;
+	value->Pos.x = atoi(node->text);
+	node = node->next;
+	value->Pos.y = atoi(node->text);
+	node = node->next;
+	value->Size.x = atoi(node->text);
+	node = node->next;
+	value->Size.y = atoi(node->text);
 }
 void LoadIntArray(CArray *a, const json_t *node, const char *name)
 {
@@ -275,8 +303,8 @@ bool TrySaveJSONFile(json_t *node, const char *filename)
 	const size_t rc = fwrite(ftext, 1, writeLen, f);
 	if (rc != writeLen)
 	{
-		LOG(LM_MAIN, LL_ERROR, "Wrote (%d) of (%d) bytes: %s",
-			(int)rc, (int)writeLen, strerror(errno));
+		LOG(LM_MAIN, LL_ERROR, "Wrote (%d) of (%d) bytes: %s", (int)rc,
+			(int)writeLen, strerror(errno));
 		res = false;
 		goto bail;
 	}
@@ -284,6 +312,7 @@ bool TrySaveJSONFile(json_t *node, const char *filename)
 bail:
 	CFREE(text);
 	CFREE(ftext);
-	if (f != NULL) fclose(f);
+	if (f != NULL)
+		fclose(f);
 	return res;
 }

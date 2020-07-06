@@ -603,19 +603,21 @@ EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 				exitEnd, svec2i_zero(),
 				svec2i_subtract(m->Size, svec2i_one()));
 			// Check that size is big enough
-			struct vec2i size =
-				svec2i_add(svec2i_subtract(exitEnd, exitStart), svec2i_one());
-			if (size.x >= 3 && size.y >= 3)
+			const struct vec2i size = svec2i_subtract(exitEnd, exitStart);
+			if (size.x < 2 || size.y < 2)
 			{
-				// Check that exit area has changed
-				if (!svec2i_is_equal(exitStart, m->u.Static.Exit.Start) ||
-					!svec2i_is_equal(exitEnd, m->u.Static.Exit.End))
-				{
-					m->u.Static.Exit.Start = exitStart;
-					m->u.Static.Exit.End = exitEnd;
-					result = EDITOR_RESULT_CHANGED_AND_RELOAD;
-				}
+				break;
 			}
+			// Check that exit area has changed
+			Exit *exit = CArrayGet(&m->u.Static.Exits, 0);
+			if (svec2i_is_equal(exitStart, exit->R.Pos) &&
+				svec2i_is_equal(size, exit->R.Size))
+			{
+				break;
+			}
+			exit->R.Pos = exitStart;
+			exit->R.Size = exitEnd;
+			result = EDITOR_RESULT_CHANGED_AND_RELOAD;
 		}
 		break;
 		default:

@@ -38,7 +38,7 @@
 #include "net_util.h"
 
 static int AddTileClass(any_t data, any_t item);
-void MapStaticLoad(MapBuilder *mb, const int mission)
+void MapStaticLoad(MapBuilder *mb)
 {
 	// Tile classes
 	if (hashmap_iterate(
@@ -52,20 +52,8 @@ void MapStaticLoad(MapBuilder *mb, const int mission)
 	MapStaticLoadTile(mb, _v);
 	RECT_FOREACH_END()
 
-	// Exit area
-	if (!svec2i_is_zero(mb->mission->u.Static.Exit.Start) &&
-		!svec2i_is_zero(mb->mission->u.Static.Exit.End))
-	{
-		Exit exit;
-		exit.Mission = mission + 1;
-		exit.Hidden = false;
-		exit.R = Rect2iNew(
-			mb->mission->u.Static.Exit.Start,
-			svec2i_subtract(
-				mb->mission->u.Static.Exit.End,
-				mb->mission->u.Static.Exit.Start));
-		CArrayPushBack(&mb->Map->exits, &exit);
-	}
+	// Exit areas
+	CArrayCopy(&mb->Map->exits, &mb->mission->u.Static.Exits);
 }
 static int AddTileClass(any_t data, any_t item)
 {

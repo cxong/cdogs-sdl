@@ -192,7 +192,8 @@ static void LoadClassicPillars(Mission *m, json_t *node, char *name);
 void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 {
 	json_t *child;
-	for (child = missionsNode->child; child; child = child->next)
+	int mission = 0;
+	for (child = missionsNode->child; child; child = child->next, mission++)
 	{
 		Mission m;
 		MissionInit(&m);
@@ -284,7 +285,8 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 			LoadClassicPillars(&m, child, "Pillars");
 			break;
 		case MAPTYPE_STATIC:
-			if (!MissionStaticTryLoadJSON(&m.u.Static, child, m.Size, version))
+			if (!MissionStaticTryLoadJSON(
+					&m.u.Static, child, m.Size, version, mission))
 			{
 				continue;
 			}
@@ -415,7 +417,8 @@ void LoadMissionTileClasses(
 	}
 	else
 	{
-		const json_t *class = json_find_first_label(node, "TileClasses")->child;
+		const json_t *class =
+			json_find_first_label(node, "TileClasses")->child;
 		MissionLoadTileClass(
 			&mtc->Wall, json_find_first_label(class, "Wall")->child);
 		MissionLoadTileClass(

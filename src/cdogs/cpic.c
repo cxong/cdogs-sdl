@@ -61,8 +61,8 @@ CPicDrawContext CPicDrawContextNew(void)
 
 void NamedPicFree(NamedPic *n)
 {
-	PicFree(&n->pic);
 	CFREE(n->name);
+	PicFree(&n->pic);
 }
 
 

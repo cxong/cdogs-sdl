@@ -79,7 +79,7 @@ void MapBuild(
 		MapClassicLoad(&mb);
 		break;
 	case MAPTYPE_STATIC:
-		MapStaticLoad(&mb, missionIndex);
+		MapStaticLoad(&mb);
 		break;
 	case MAPTYPE_CAVE:
 		MapCaveLoad(&mb);
