@@ -241,7 +241,7 @@ static void MapChangeFloor(
 	const Tile *tAbove = MapGetTile(map, svec2i(pos.x, pos.y - 1));
 	const int canSeeTileAbove = !(pos.y > 0 && TileIsOpaque(tAbove));
 	Tile *t = MapGetTile(map, pos);
-	if (t->Class->Type != TILE_CLASS_FLOOR)
+	if (t == NULL || t->Class->Type != TILE_CLASS_FLOOR)
 	{
 		return;
 	}

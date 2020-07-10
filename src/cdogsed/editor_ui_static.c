@@ -37,6 +37,7 @@
 
 #include "editor_ui_common.h"
 #include "editor_ui_static_additem.h"
+#include "exit_brush.h"
 #include "tile_brush.h"
 
 MISSION_CHECK_TYPE_FUNC(MAPTYPE_STATIC)
@@ -257,11 +258,13 @@ static EditorResult BrushSetBrushTypeSetExit(void *data, int d)
 {
 	UNUSED(d);
 	EditorBrush *b = data;
+	const EditorResult result =
+		ExitBrush(&gEventHandlers, &gCampaign, &b->u.ItemIndex);
 	b->Type = BRUSHTYPE_SET_EXIT;
 	MouseSetPicCursor(
 		&gEventHandlers.mouse,
 		PicManagerGetPic(&gPicManager, "editor/cursors/set_exit"), NULL);
-	return EDITOR_RESULT_NONE;
+	return result;
 }
 static EditorResult BrushSetBrushTypeSetKey(void *data, int d)
 {
@@ -395,7 +398,7 @@ UIObject *CreateStaticMapObjs(
 	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "editor/set_exit"));
 	o2->u.Button.IsDownFunc = BrushIsBrushTypeSetExit;
 	o2->ChangeFunc = BrushSetBrushTypeSetExit;
-	CSTRDUP(o2->Tooltip, "Set exit area (box drag)");
+	CSTRDUP(o2->Tooltip, "Set exit areas (box drag)");
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 

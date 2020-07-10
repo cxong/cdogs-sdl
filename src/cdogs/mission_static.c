@@ -738,7 +738,7 @@ static json_t *SaveExits(const MissionStatic *m)
 	CA_FOREACH(const Exit, exit, m->Exits)
 	json_t *exitNode = json_new_object();
 	AddRect2iPair(exitNode, "Rect", exit->R);
-	AddIntPair(exitNode, "Index", exit->Mission);
+	AddIntPair(exitNode, "Mission", exit->Mission);
 	AddBoolPair(exitNode, "Hidden", exit->Hidden);
 	json_insert_child(exits, exitNode);
 	CA_FOREACH_END()

@@ -15,6 +15,7 @@ set(CDOGSED_SOURCES
 	editor_ui_static.c
 	editor_ui_static_additem.c
 	editor_ui_weapons.c
+	exit_brush.c
 	nk_window.c
 	tile_brush.c
 	ui_object.c)
@@ -30,6 +31,7 @@ set(CDOGSED_HEADERS
 	editor_ui_static.h
 	editor_ui_static_additem.h
 	editor_ui_weapons.h
+	exit_brush.h
 	nk_window.h
 	tile_brush.h
 	ui_object.h)

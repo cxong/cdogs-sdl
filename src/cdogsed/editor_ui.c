@@ -1131,7 +1131,7 @@ static UIObject *CreateEditorObjs(Campaign *co, EditorBrush *brush)
 		svec2i(FontStrW("Mission 99/99"), th));
 	o->u.LabelFunc = CampaignGetMissionIndexStr;
 	o->ChangeFunc = CampaignChangeMission;
-	o->Data = &gCampaign;
+	o->Data = co;
 	UIObjectAddChild(cc, o);
 	o = UIObjectCreate(
 		UITYPE_LABEL, 0, svec2i(o->Pos.x, pos.y), svec2i(0, th));
@@ -1139,7 +1139,7 @@ static UIObject *CreateEditorObjs(Campaign *co, EditorBrush *brush)
 	o->Size.x = FontStrW(o->Label);
 	o->Pos.x -= o->Size.x + 10;
 	o->ChangeFunc = MissionInsertNew;
-	o->Data = &gCampaign;
+	o->Data = co;
 	UIObjectAddChild(cc, o);
 	o = UIObjectCreate(
 		UITYPE_LABEL, 0, svec2i(o->Pos.x, pos.y), svec2i(0, th));
@@ -1147,7 +1147,7 @@ static UIObject *CreateEditorObjs(Campaign *co, EditorBrush *brush)
 	o->Size.x = FontStrW(o->Label);
 	o->Pos.x -= o->Size.x + 10;
 	o->ChangeFunc = MissionDelete;
-	o->Data = &gCampaign;
+	o->Data = co;
 	UIObjectAddChild(cc, o);
 
 	pos.y = 2 * th;

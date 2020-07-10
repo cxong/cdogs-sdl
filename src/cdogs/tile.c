@@ -73,10 +73,10 @@ void TileDestroy(Tile *t)
 // t->ClassAlt->Name == NULL for nothing tiles
 bool TileIsOpaque(const Tile *t)
 {
-	return (t->Class->Type == TILE_CLASS_DOOR && t->ClassAlt &&
-			t->ClassAlt->Name)
-			   ? t->ClassAlt->isOpaque
-			   : t->Class->isOpaque;
+	return t != NULL && ((t->Class->Type == TILE_CLASS_DOOR && t->ClassAlt &&
+						  t->ClassAlt->Name)
+							 ? t->ClassAlt->isOpaque
+							 : t->Class->isOpaque);
 }
 
 bool TileIsShootable(const Tile *t)

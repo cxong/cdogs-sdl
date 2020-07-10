@@ -609,14 +609,14 @@ EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 				break;
 			}
 			// Check that exit area has changed
-			Exit *exit = CArrayGet(&m->u.Static.Exits, 0);
+			Exit *exit = CArrayGet(&m->u.Static.Exits, b->u.ItemIndex);
 			if (svec2i_is_equal(exitStart, exit->R.Pos) &&
 				svec2i_is_equal(size, exit->R.Size))
 			{
 				break;
 			}
 			exit->R.Pos = exitStart;
-			exit->R.Size = exitEnd;
+			exit->R.Size = size;
 			result = EDITOR_RESULT_CHANGED_AND_RELOAD;
 		}
 		break;
