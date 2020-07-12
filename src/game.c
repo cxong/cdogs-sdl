@@ -144,7 +144,7 @@ struct vec2i GetPlayerCenter(
 
 typedef struct
 {
-	const Campaign *co;
+	Campaign *co;
 	struct MissionOptions *m;
 	Map *map;
 	Camera Camera;
@@ -166,7 +166,7 @@ static void RunGameOnExit(GameLoopData *data);
 static void RunGameInput(GameLoopData *data);
 static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l);
 static void RunGameDraw(GameLoopData *data);
-GameLoopData *RunGame(const Campaign *co, struct MissionOptions *m, Map *map)
+GameLoopData *RunGame(Campaign *co, struct MissionOptions *m, Map *map)
 {
 	RunGameData *data;
 	CCALLOC(data, sizeof *data);
@@ -660,7 +660,7 @@ static void NextLoop(RunGameData *rData, LoopRunner *l)
 	}
 
 	// Switch to a score screen if there are local players and we haven't quit
-	const bool showScores = !gMission.IsQuit && hasLocalPlayers;
+	const bool showScores = !rData->m->IsQuit && hasLocalPlayers;
 	if (showScores)
 	{
 		switch (rData->co->Entry.Mode)
@@ -675,13 +675,17 @@ static void NextLoop(RunGameData *rData, LoopRunner *l)
 			// In co-op (non-PVP) modes, at least one player must survive
 			LoopRunnerChange(
 				l, ScreenMissionSummary(
-					   rData->co, &gMission, survivedAndCompletedObjectives));
+					   rData->co, rData->m, survivedAndCompletedObjectives));
 			break;
 		}
 	}
 	else
 	{
-		LoopRunnerChange(l, HighScoresScreen(&gCampaign, &gGraphicsDevice));
+		LoopRunnerChange(l, HighScoresScreen(rData->co, &gGraphicsDevice));
+	}
+	if (!HasRounds(rData->co->Entry.Mode) && !rData->co->IsComplete)
+	{
+		rData->co->MissionIndex = rData->m->NextMission;
 	}
 }
 static void PersistPlayerWeaponsAndAmmo(PlayerData *p)
@@ -711,15 +715,16 @@ static void CheckMissionCompletion(const struct MissionOptions *mo)
 	}
 	CA_FOREACH_END()
 
-	const bool isMissionComplete =
-		GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) > 0 &&
-		IsMissionComplete(mo);
-	if (mo->state == MISSION_STATE_PLAY && isMissionComplete)
+	const int exitIndex =
+		GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) > 0
+			? IsMissionComplete(mo)
+			: -1;
+	if (mo->state == MISSION_STATE_PLAY && exitIndex >= 0)
 	{
 		GameEvent e = GameEventNew(GAME_EVENT_MISSION_PICKUP);
 		GameEventsEnqueue(&gGameEvents, e);
 	}
-	if (mo->state == MISSION_STATE_PICKUP && !isMissionComplete)
+	if (mo->state == MISSION_STATE_PICKUP && exitIndex == -1)
 	{
 		GameEvent e = GameEventNew(GAME_EVENT_MISSION_INCOMPLETE);
 		GameEventsEnqueue(&gGameEvents, e);
@@ -728,6 +733,8 @@ static void CheckMissionCompletion(const struct MissionOptions *mo)
 		mo->pickupTime + PICKUP_LIMIT <= mo->time)
 	{
 		GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
+		const Exit *exit = CArrayGet(&gMap.exits, exitIndex);
+		e.u.MissionEnd.Mission = exit->Mission;
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 
@@ -749,6 +756,7 @@ static void CheckMissionCompletion(const struct MissionOptions *mo)
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
 			e.u.MissionEnd.Delay = GAME_OVER_DELAY;
+			e.u.MissionEnd.Mission = mo->index;
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 	}

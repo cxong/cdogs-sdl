@@ -64,6 +64,7 @@ EditorResult ExitBrush(EventHandlers *handlers, Campaign *co, int *exitIdx)
 	data.co = co;
 	data.m = CampaignGetCurrentMission(co);
 	CASSERT(data.m->Type == MAPTYPE_STATIC, "unexpected map type");
+	*exitIdx = CLAMP(*exitIdx, 0, (int)data.m->u.Static.Exits.size - 1);
 	data.exitIdx = exitIdx;
 	cfg.DrawData = &data;
 	data.ctx = cfg.ctx;
@@ -83,7 +84,11 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 	UNUSED(win);
 	bool result = true;
 	ExitBrushData *eData = data;
-	Exit *selectedExit = CArrayGet(&eData->m->u.Static.Exits, *eData->exitIdx);
+	Exit *selectedExit = NULL;
+	if (*eData->exitIdx < (int)eData->m->u.Static.Exits.size)
+	{
+		selectedExit = CArrayGet(&eData->m->u.Static.Exits, *eData->exitIdx);
+	}
 
 	if (nk_begin(
 			ctx, "Properties", nk_rect(0, 0, SIDE_WIDTH, HEIGHT),
@@ -158,12 +163,14 @@ static void DrawPropsSidebar(
 	// Mission
 	bounds = nk_widget_bounds(ctx);
 	const int mission = selectedExit->Mission;
+	// Note: show 1-indexed mission
 	nk_property_int(
-		ctx, "Mission", 0, &selectedExit->Mission,
-		(int)eData->co->Setting.Missions.size - 1, 1, 1.f);
+		ctx, "Mission", 1, &selectedExit->Mission,
+		(int)eData->co->Setting.Missions.size + 1, 1, 1.f);
+	selectedExit->Mission--;
 	if (nk_input_is_mouse_hovering_rect(&ctx->input, bounds))
 	{
-		sprintf(buf, "Current mission: %d", eData->co->MissionIndex);
+		sprintf(buf, "Current mission: %d", eData->co->MissionIndex + 1);
 		nk_tooltip(ctx, buf);
 	}
 	if (mission != selectedExit->Mission)

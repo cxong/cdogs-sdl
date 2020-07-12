@@ -135,10 +135,6 @@ static GameLoopResult HighScoresScreenUpdate(
 			LoopRunnerPush(l, DisplayAllTimeHighScores(hData->g));
 		}
 	}
-	if (!HasRounds(hData->co->Entry.Mode) && !hData->co->IsComplete)
-	{
-		hData->co->MissionIndex++;
-	}
 
 	return UPDATE_RESULT_OK;
 }

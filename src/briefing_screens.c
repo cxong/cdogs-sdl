@@ -1,27 +1,27 @@
 /*
-    Copyright (c) 2013-2019 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "briefing_screens.h"
 
@@ -43,7 +43,6 @@
 #include "prep_equip.h"
 #include "screens_end.h"
 
-
 static void DrawObjectiveInfo(const Objective *o, const struct vec2i pos);
 
 typedef struct
@@ -63,8 +62,9 @@ GameLoopData *ScreenCampaignIntro(CampaignSetting *c)
 	CMALLOC(data, sizeof *data);
 	data->c = c;
 	return GameLoopDataNew(
-		data, CampaignIntroTerminate, CampaignIntroOnEnter, CampaignIntroOnExit,
-		CampaignIntroInput, CampaignIntroUpdate, CampaignIntroDraw);
+		data, CampaignIntroTerminate, CampaignIntroOnEnter,
+		CampaignIntroOnExit, CampaignIntroInput, CampaignIntroUpdate,
+		CampaignIntroDraw);
 }
 static void CampaignIntroTerminate(GameLoopData *data)
 {
@@ -144,7 +144,6 @@ static void CampaignIntroDraw(GameLoopData *data)
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 }
 
-
 typedef struct
 {
 	char *Title;
@@ -179,8 +178,9 @@ GameLoopData *ScreenMissionBriefing(const struct MissionOptions *m)
 	if (m->missionData->Title)
 	{
 		CMALLOC(mData->Title, strlen(m->missionData->Title) + 32);
-		sprintf(mData->Title, "Mission %d: %s",
-			m->index + 1, m->missionData->Title);
+		sprintf(
+			mData->Title, "Mission %d: %s", m->index + 1,
+			m->missionData->Title);
 		mData->TitleOpts = FontOptsNew();
 		mData->TitleOpts.HAlign = ALIGN_CENTER;
 		mData->TitleOpts.Area = gGraphicsDevice.cachedConfig.Res;
@@ -332,17 +332,17 @@ static void MissionBriefingDraw(GameLoopData *data)
 	// Display objectives
 	CA_FOREACH(
 		const Objective, o, mData->MissionOptions->missionData->Objectives)
-		// Do not brief optional objectives
-		if (o->Required == 0)
-		{
-			continue;
-		}
-		struct vec2i offset = svec2i(0, _ca_index * mData->ObjectiveHeight);
-		FontStr(o->Description, svec2i_add(mData->ObjectiveDescPos, offset));
-		// Draw the icons slightly offset so that tall icons don't overlap each
-		// other
-		offset.x = -16 * (_ca_index & 1);
-		DrawObjectiveInfo(o, svec2i_add(mData->ObjectiveInfoPos, offset));
+	// Do not brief optional objectives
+	if (o->Required == 0)
+	{
+		continue;
+	}
+	struct vec2i offset = svec2i(0, _ca_index * mData->ObjectiveHeight);
+	FontStr(o->Description, svec2i_add(mData->ObjectiveDescPos, offset));
+	// Draw the icons slightly offset so that tall icons don't overlap each
+	// other
+	offset.x = -16 * (_ca_index & 1);
+	DrawObjectiveInfo(o, svec2i_add(mData->ObjectiveInfoPos, offset));
 	CA_FOREACH_END()
 
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
@@ -373,8 +373,8 @@ static void MissionSummaryOnEnter(GameLoopData *data);
 static GameLoopResult MissionSummaryUpdate(GameLoopData *data, LoopRunner *l);
 static void MissionSummaryDraw(GameLoopData *data);
 static void MissionSummaryMenuDraw(
-	const menu_t *menu, GraphicsDevice *g,
-	const struct vec2i p, const struct vec2i size, const void *data);
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i p,
+	const struct vec2i size, const void *data);
 GameLoopData *ScreenMissionSummary(
 	const Campaign *c, struct MissionOptions *m, const bool completed)
 {
@@ -407,8 +407,8 @@ GameLoopData *ScreenMissionSummary(
 	mData->completed = completed;
 
 	return GameLoopDataNew(
-		mData, MissionSummaryTerminate, MissionSummaryOnEnter, NULL,
-		NULL, MissionSummaryUpdate, MissionSummaryDraw);
+		mData, MissionSummaryTerminate, MissionSummaryOnEnter, NULL, NULL,
+		MissionSummaryUpdate, MissionSummaryDraw);
 }
 static void MissionSummaryTerminate(GameLoopData *data)
 {
@@ -467,16 +467,16 @@ static void MissionSummaryOnEnter(GameLoopData *data)
 		int bonus = 0;
 		// Objective bonuses
 		CA_FOREACH(const Objective, o, mData->m->missionData->Objectives)
-			if (ObjectiveIsPerfect(o))
-			{
-				bonus += PERFECT_BONUS;
-			}
+		if (ObjectiveIsPerfect(o))
+		{
+			bonus += PERFECT_BONUS;
+		}
 		CA_FOREACH_END()
 		bonus += accessBonus;
 		bonus += GetTimeBonus(mData->m, NULL);
 
 		CA_FOREACH(PlayerData, p, gPlayerDatas)
-			ApplyBonuses(p, bonus);
+		ApplyBonuses(p, bonus);
 		CA_FOREACH_END()
 	}
 
@@ -498,45 +498,48 @@ static void MissionSummaryOnEnter(GameLoopData *data)
 	// Init per-player summaries
 	int idx = 0;
 	CA_FOREACH(PlayerData, pd, gPlayerDatas)
-		if (!pd->IsLocal)
+	if (!pd->IsLocal)
+	{
+		continue;
+	}
+	mData->pDatas[idx].Pd = pd;
+	mData->pDatas[idx].Score = AnimatedCounterNew("Score: ", pd->Stats.Score);
+	mData->pDatas[idx].Total = AnimatedCounterNew("Total: ", pd->Totals.Score);
+	if (pd->survived)
+	{
+		const int healthBonus = GetHealthBonus(pd);
+		if (healthBonus != 0)
 		{
-			continue;
+			mData->pDatas[idx].HealthResurrection =
+				AnimatedCounterNew("Health bonus: ", healthBonus);
 		}
-		mData->pDatas[idx].Pd = pd;
-		mData->pDatas[idx].Score =
-			AnimatedCounterNew("Score: ", pd->Stats.Score);
-		mData->pDatas[idx].Total =
-			AnimatedCounterNew("Total: ", pd->Totals.Score);
-		if (pd->survived)
+		const int resurrectionFee = GetResurrectionFee(pd);
+		if (resurrectionFee != 0)
 		{
-			const int healthBonus = GetHealthBonus(pd);
-			if (healthBonus != 0)
-			{
-				mData->pDatas[idx].HealthResurrection = AnimatedCounterNew("Health bonus: ", healthBonus);
-			}
-			const int resurrectionFee = GetResurrectionFee(pd);
-			if (resurrectionFee != 0)
-			{
-				mData->pDatas[idx].HealthResurrection = AnimatedCounterNew("Resurrection fee: ", resurrectionFee);
-			}
+			mData->pDatas[idx].HealthResurrection =
+				AnimatedCounterNew("Resurrection fee: ", resurrectionFee);
+		}
 
-			const int butcherPenalty = GetButcherPenalty(pd);
-			if (butcherPenalty != 0)
-			{
-				mData->pDatas[idx].ButcherNinjaFriendly = AnimatedCounterNew("Butcher penalty: ", butcherPenalty);
-			}
-			const int ninjaBonus = GetNinjaBonus(pd);
-			if (ninjaBonus != 0)
-			{
-				mData->pDatas[idx].ButcherNinjaFriendly = AnimatedCounterNew("Ninja bonus: ", ninjaBonus);
-			}
-			const int friendlyBonus = GetFriendlyBonus(pd);
-			if (friendlyBonus != 0)
-			{
-				mData->pDatas[idx].ButcherNinjaFriendly = AnimatedCounterNew("Friendly bonus: ", friendlyBonus);
-			}
+		const int butcherPenalty = GetButcherPenalty(pd);
+		if (butcherPenalty != 0)
+		{
+			mData->pDatas[idx].ButcherNinjaFriendly =
+				AnimatedCounterNew("Butcher penalty: ", butcherPenalty);
 		}
-		idx++;
+		const int ninjaBonus = GetNinjaBonus(pd);
+		if (ninjaBonus != 0)
+		{
+			mData->pDatas[idx].ButcherNinjaFriendly =
+				AnimatedCounterNew("Ninja bonus: ", ninjaBonus);
+		}
+		const int friendlyBonus = GetFriendlyBonus(pd);
+		if (friendlyBonus != 0)
+		{
+			mData->pDatas[idx].ButcherNinjaFriendly =
+				AnimatedCounterNew("Friendly bonus: ", friendlyBonus);
+		}
+	}
+	idx++;
 	CA_FOREACH_END()
 }
 static GameLoopResult MissionSummaryUpdate(GameLoopData *data, LoopRunner *l)
@@ -546,8 +549,9 @@ static GameLoopResult MissionSummaryUpdate(GameLoopData *data, LoopRunner *l)
 	const GameLoopResult result = MenuUpdate(&mData->ms);
 	if (result == UPDATE_RESULT_OK)
 	{
-		gCampaign.IsComplete = mData->completed &&
-			gCampaign.MissionIndex == (int)gCampaign.Setting.Missions.size - 1;
+		gCampaign.IsComplete =
+			mData->completed &&
+			mData->m->NextMission == (int)gCampaign.Setting.Missions.size;
 		if (gCampaign.IsComplete)
 		{
 			LoopRunnerChange(l, ScreenVictory(&gCampaign));
@@ -587,10 +591,10 @@ static void MissionSummaryDraw(GameLoopData *data)
 static bool AreAnySurvived(void)
 {
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-		if (p->survived)
-		{
-			return true;
-		}
+	if (p->survived)
+	{
+		return true;
+	}
 	CA_FOREACH_END()
 	return false;
 }
@@ -600,10 +604,8 @@ static int GetAccessBonus(const struct MissionOptions *m)
 }
 static int GetTimeBonus(const struct MissionOptions *m, int *secondsOut)
 {
-	int seconds =
-		60 +
-		(int)m->missionData->Objectives.size * 30 -
-		m->time / FPS_FRAMELIMIT;
+	int seconds = 60 + (int)m->missionData->Objectives.size * 30 -
+				  m->time / FPS_FRAMELIMIT;
 	if (seconds < 0)
 	{
 		seconds = 0;
@@ -678,8 +680,8 @@ static void DrawPlayerSummary(
 	const struct vec2i pos, const struct vec2i size,
 	const PlayerSummaryDrawData *data);
 static void MissionSummaryMenuDraw(
-	const menu_t *menu, GraphicsDevice *g,
-	const struct vec2i p, const struct vec2i size, const void *data)
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i p,
+	const struct vec2i size, const void *data)
 {
 	UNUSED(menu);
 	UNUSED(p);
@@ -706,57 +708,58 @@ static void MissionSummaryMenuDraw(
 	struct vec2i pos = svec2i(w / 6, h / 2 + h / 10);
 	int idx = 1;
 	CA_FOREACH(const Objective, o, mData->m->missionData->Objectives)
-		// Do not mention optional objectives with none completed
-		if (o->done == 0 && !ObjectiveIsRequired(o))
-		{
-			continue;
-		}
+	// Do not mention optional objectives with none completed
+	if (o->done == 0 && !ObjectiveIsRequired(o))
+	{
+		continue;
+	}
 
-		// Objective icon
-		DrawObjectiveInfo(o, svec2i_add(pos, svec2i(-26, FontH())));
+	// Objective icon
+	DrawObjectiveInfo(o, svec2i_add(pos, svec2i(-26, FontH())));
 
-		// Objective completion text
-		char s[100];
-		sprintf(s, "Objective %d: %d of %d, %d required",
-			idx, o->done, o->Count, o->Required);
-		FontOpts opts = FontOptsNew();
-		opts.Area = gGraphicsDevice.cachedConfig.Res;
-		opts.Pad = pos;
-		if (!ObjectiveIsRequired(o))
-		{
-			// Show optional objectives in purple
-			opts.Mask = colorPurple;
-		}
-		FontStrOpt(s, svec2i_zero(), opts);
+	// Objective completion text
+	char s[100];
+	sprintf(
+		s, "Objective %d: %d of %d, %d required", idx, o->done, o->Count,
+		o->Required);
+	FontOpts opts = FontOptsNew();
+	opts.Area = gGraphicsDevice.cachedConfig.Res;
+	opts.Pad = pos;
+	if (!ObjectiveIsRequired(o))
+	{
+		// Show optional objectives in purple
+		opts.Mask = colorPurple;
+	}
+	FontStrOpt(s, svec2i_zero(), opts);
 
-		// Objective status text
-		opts = FontOptsNew();
-		opts.HAlign = ALIGN_END;
-		opts.Area = gGraphicsDevice.cachedConfig.Res;
-		opts.Pad = pos;
-		if (!ObjectiveIsComplete(o))
-		{
-			opts.Mask = colorRed;
-			FontStrOpt("Failed", svec2i_zero(), opts);
-		}
-		else if (ObjectiveIsPerfect(o) && AreAnySurvived())
-		{
-			opts.Mask = colorGreen;
-			char buf[16];
-			sprintf(buf, "Perfect: %d", PERFECT_BONUS);
-			FontStrOpt(buf, svec2i_zero(), opts);
-		}
-		else if (ObjectiveIsRequired(o))
-		{
-			FontStrOpt("Done", svec2i_zero(), opts);
-		}
-		else
-		{
-			FontStrOpt("Bonus!", svec2i_zero(), opts);
-		}
+	// Objective status text
+	opts = FontOptsNew();
+	opts.HAlign = ALIGN_END;
+	opts.Area = gGraphicsDevice.cachedConfig.Res;
+	opts.Pad = pos;
+	if (!ObjectiveIsComplete(o))
+	{
+		opts.Mask = colorRed;
+		FontStrOpt("Failed", svec2i_zero(), opts);
+	}
+	else if (ObjectiveIsPerfect(o) && AreAnySurvived())
+	{
+		opts.Mask = colorGreen;
+		char buf[16];
+		sprintf(buf, "Perfect: %d", PERFECT_BONUS);
+		FontStrOpt(buf, svec2i_zero(), opts);
+	}
+	else if (ObjectiveIsRequired(o))
+	{
+		FontStrOpt("Done", svec2i_zero(), opts);
+	}
+	else
+	{
+		FontStrOpt("Bonus!", svec2i_zero(), opts);
+	}
 
-		pos.y += 15;
-		idx++;
+	pos.y += 15;
+	idx++;
 	CA_FOREACH_END()
 
 	// Draw other bonuses
@@ -784,7 +787,7 @@ static void MissionSummaryMenuDraw(
 		DrawPlayerSummary(svec2i_zero(), playerSize, &mData->pDatas[0]);
 		DrawPlayerSummary(svec2i(w / 2, 0), playerSize, &mData->pDatas[1]);
 		break;
-	case 3:	// fallthrough
+	case 3: // fallthrough
 	case 4:
 		// 2x2
 		playerSize = svec2i(w / 2, h / 4);
@@ -811,12 +814,12 @@ static void DrawPlayerSummary(
 	char s[50];
 	const int totalTextHeight = FontH() * 7;
 	// display text on right half
-	struct vec2i textPos = svec2i(
-		pos.x + size.x / 2, CENTER_Y(pos, size, totalTextHeight));
+	struct vec2i textPos =
+		svec2i(pos.x + size.x / 2, CENTER_Y(pos, size, totalTextHeight));
 
 	DisplayCharacterAndName(
-		svec2i_add(pos, svec2i(size.x / 4, size.y / 2)),
-		&data->Pd->Char, DIRECTION_DOWN, data->Pd->name, colorWhite);
+		svec2i_add(pos, svec2i(size.x / 4, size.y / 2)), &data->Pd->Char,
+		DIRECTION_DOWN, data->Pd->name, colorWhite);
 
 	if (data->Pd->survived)
 	{
@@ -854,37 +857,31 @@ static void DrawObjectiveInfo(const Objective *o, const struct vec2i pos)
 
 	switch (o->Type)
 	{
-	case OBJECTIVE_KILL:
-		{
-			const Character *cd = CArrayGet(
-				&store->OtherChars, CharacterStoreGetSpecialId(store, 0));
-			DrawHead(
-				gGraphicsDevice.gameWindow.renderer, cd, DIRECTION_DOWN, pos);
-		}
-		break;
-	case OBJECTIVE_RESCUE:
-		{
-			const Character *cd = CArrayGet(
-				&store->OtherChars, CharacterStoreGetPrisonerId(store, 0));
-			DrawHead(
-				gGraphicsDevice.gameWindow.renderer, cd, DIRECTION_DOWN, pos);
-		}
-		break;
+	case OBJECTIVE_KILL: {
+		const Character *cd = CArrayGet(
+			&store->OtherChars, CharacterStoreGetSpecialId(store, 0));
+		DrawHead(gGraphicsDevice.gameWindow.renderer, cd, DIRECTION_DOWN, pos);
+	}
+	break;
+	case OBJECTIVE_RESCUE: {
+		const Character *cd = CArrayGet(
+			&store->OtherChars, CharacterStoreGetPrisonerId(store, 0));
+		DrawHead(gGraphicsDevice.gameWindow.renderer, cd, DIRECTION_DOWN, pos);
+	}
+	break;
 	case OBJECTIVE_COLLECT:
 		CPicDraw(
 			&gGraphicsDevice, &o->u.Pickup->Pic,
 			svec2i_subtract(pos, svec2i(-4, -4)), NULL);
 		break;
-	case OBJECTIVE_DESTROY:
-		{
-			struct vec2i picOffset;
-			const Pic *p = MapObjectGetPic(o->u.MapObject, &picOffset);
-			PicRender(
-				p, gGraphicsDevice.gameWindow.renderer,
-				svec2i_add(pos, picOffset), colorWhite, 0, svec2_one(),
-				SDL_FLIP_NONE, Rect2iZero());
-		}
-		break;
+	case OBJECTIVE_DESTROY: {
+		struct vec2i picOffset;
+		const Pic *p = MapObjectGetPic(o->u.MapObject, &picOffset);
+		PicRender(
+			p, gGraphicsDevice.gameWindow.renderer, svec2i_add(pos, picOffset),
+			colorWhite, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
+	}
+	break;
 	case OBJECTIVE_INVESTIGATE:
 		// Don't draw
 		return;

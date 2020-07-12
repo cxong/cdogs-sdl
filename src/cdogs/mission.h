@@ -192,6 +192,7 @@ struct MissionOptions
 	bool isDone;
 	int DoneCounter;
 	bool IsQuit;
+	int NextMission;
 	bool HasPlayedCompleteSound;
 };
 
@@ -217,7 +218,8 @@ bool MissionCanBegin(void);
 void MissionBegin(struct MissionOptions *m, const NGameBegin gb);
 bool CanCompleteMission(const struct MissionOptions *options);
 bool MissionAllObjectivesComplete(const struct MissionOptions *mo);
-bool IsMissionComplete(const struct MissionOptions *options);
+// Returns exit index or -1 if incomplete
+int IsMissionComplete(const struct MissionOptions *options);
 bool MissionNeedsMoreRescuesInExit(const struct MissionOptions *mo);
 bool MissionHasRequiredObjectives(const struct MissionOptions *mo);
 void MissionDone(struct MissionOptions *mo, const NMissionEnd end);

@@ -107,6 +107,7 @@ typedef struct _NMissionEnd {
     int32_t Delay;
     bool IsQuit;
     char Msg[128];
+    uint32_t Mission;
 } NMissionEnd;
 
 typedef struct _NObjectiveUpdate {
@@ -414,7 +415,7 @@ typedef struct _NPlayerData {
 #define NObjectiveUpdate_init_default            {0, 0}
 #define NAddKeys_init_default                    {0, false, NVec2_init_default}
 #define NMissionComplete_init_default            {0}
-#define NMissionEnd_init_default                 {0, 0, ""}
+#define NMissionEnd_init_default                 {0, 0, "", 0}
 #define NServerInfo_init_zero                    {0, 0, "", 0, "", 0, 0, 0}
 #define NClientId_init_zero                      {0, 0}
 #define NCampaignDef_init_zero                   {"", 0, 0}
@@ -463,7 +464,7 @@ typedef struct _NPlayerData {
 #define NObjectiveUpdate_init_zero               {0, 0}
 #define NAddKeys_init_zero                       {0, false, NVec2_init_zero}
 #define NMissionComplete_init_zero               {0}
-#define NMissionEnd_init_zero                    {0, 0, ""}
+#define NMissionEnd_init_zero                    {0, 0, "", 0}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define NActorDie_UID_tag                        1
@@ -507,6 +508,7 @@ typedef struct _NPlayerData {
 #define NMissionEnd_Delay_tag                    1
 #define NMissionEnd_IsQuit_tag                   2
 #define NMissionEnd_Msg_tag                      3
+#define NMissionEnd_Mission_tag                  4
 #define NObjectiveUpdate_ObjectiveId_tag         1
 #define NObjectiveUpdate_Count_tag               2
 #define NPlayerRemove_UID_tag                    1
@@ -1030,7 +1032,8 @@ X(a, STATIC,   SINGULAR, BOOL,     ShowMsg,           1)
 #define NMissionEnd_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, INT32,    Delay,             1) \
 X(a, STATIC,   SINGULAR, BOOL,     IsQuit,            2) \
-X(a, STATIC,   SINGULAR, STRING,   Msg,               3)
+X(a, STATIC,   SINGULAR, STRING,   Msg,               3) \
+X(a, STATIC,   SINGULAR, UINT32,   Mission,           4)
 #define NMissionEnd_CALLBACK NULL
 #define NMissionEnd_DEFAULT NULL
 
@@ -1184,7 +1187,7 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 #define NObjectiveUpdate_size                    17
 #define NAddKeys_size                            18
 #define NMissionComplete_size                    2
-#define NMissionEnd_size                         143
+#define NMissionEnd_size                         149
 
 #ifdef __cplusplus
 } /* extern "C" */

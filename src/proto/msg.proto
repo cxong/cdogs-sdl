@@ -317,4 +317,5 @@ message NMissionEnd {
 	int32 Delay = 1;
 	bool IsQuit = 2;
 	string Msg = 3;
+	uint32 Mission = 4;
 }

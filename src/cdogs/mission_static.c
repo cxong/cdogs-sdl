@@ -41,7 +41,7 @@ static void MissionStaticInit(MissionStatic *m)
 	memset(m, 0, sizeof *m);
 	m->TileClasses = hashmap_new();
 	CArrayInit(&m->Tiles, sizeof(int));
-	CArrayInit(&m->Access, sizeof(int));
+	CArrayInit(&m->Access, sizeof(uint16_t));
 	CArrayInit(&m->Items, sizeof(MapObjectPositions));
 	CArrayInit(&m->Characters, sizeof(CharacterPositions));
 	CArrayInit(&m->Objectives, sizeof(ObjectivePositions));
@@ -557,6 +557,7 @@ void MissionStaticFromMap(MissionStatic *m, const Map *map)
 	CArrayPushBack(&m->Access, &access);
 	RECT_FOREACH_END()
 	hashmap_free(tileClassMap);
+	CArrayCopy(&m->Exits, &map->exits);
 }
 
 void MissionStaticTerminate(MissionStatic *m)
@@ -937,7 +938,7 @@ void MissionStaticLayout(
 	const int firstTile = MissionStaticGetTile(m, oldSize, svec2i_zero());
 	CArrayResize(&m->Tiles, size.x * size.y, &firstTile);
 	CArrayFillZero(&m->Tiles);
-	const int noAccess = 0;
+	const uint16_t noAccess = 0;
 	CArrayResize(&m->Access, size.x * size.y, &noAccess);
 	CArrayFillZero(&m->Access);
 
@@ -952,7 +953,7 @@ void MissionStaticLayout(
 		const int idx = _v.y * oldSize.x + _v.x;
 		const int *tile = CArrayGet(&oldTiles, idx);
 		MissionStaticTrySetTile(m, size, _v, *tile);
-		const int *a = CArrayGet(&oldAccess, idx);
+		const uint16_t *a = CArrayGet(&oldAccess, idx);
 		CArraySet(&m->Access, _v.y * size.x + _v.x, a);
 	}
 	RECT_FOREACH_END()
@@ -1139,7 +1140,7 @@ typedef struct
 {
 	MissionStatic *m;
 	struct vec2i size;
-	int tileAccess;
+	uint16_t tileAccess;
 } MissionFloodFillData;
 static void FloodFillSetAccess(void *data, const struct vec2i v);
 static bool FloodFillIsAccessSame(void *data, const struct vec2i v);
@@ -1166,8 +1167,8 @@ static void FloodFillSetAccess(void *data, const struct vec2i v)
 static bool FloodFillIsAccessSame(void *data, const struct vec2i v)
 {
 	MissionFloodFillData *mData = data;
-	const int tileAccess =
-		*(int *)CArrayGet(&mData->m->Access, mData->size.x * v.y + v.x);
+	const uint16_t tileAccess =
+		*(uint16_t *)CArrayGet(&mData->m->Access, mData->size.x * v.y + v.x);
 	const TileClass *tc = MissionStaticGetTileClass(mData->m, mData->size, v);
 	return tc->Type == TILE_CLASS_DOOR && tileAccess != mData->tileAccess;
 }

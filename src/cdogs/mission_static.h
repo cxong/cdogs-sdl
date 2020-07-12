@@ -65,7 +65,7 @@ typedef struct
 {
 	map_t TileClasses; // of TileClass
 	CArray Tiles;	   // of int (tile ids)
-	CArray Access;	   // of int
+	CArray Access;	   // of uint16_t
 	CArray Items;	   // of MapObjectPositions
 	CArray Characters; // of CharacterPositions
 	CArray Objectives; // of ObjectivePositions

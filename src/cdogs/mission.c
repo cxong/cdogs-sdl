@@ -501,11 +501,11 @@ bool MissionAllObjectivesComplete(const struct MissionOptions *mo)
 static int AllSurvivingPlayersInSameExit(void);
 static bool MoreRescuesNeeded(const struct MissionOptions *mo, const int exit);
 
-bool IsMissionComplete(const struct MissionOptions *mo)
+int IsMissionComplete(const struct MissionOptions *mo)
 {
 	if (!CanCompleteMission(mo))
 	{
-		return false;
+		return -1;
 	}
 
 	// Check if dogfight is complete
@@ -520,22 +520,22 @@ bool IsMissionComplete(const struct MissionOptions *mo)
 		CA_FOREACH_END()
 		if (numPlayersWithLives <= 1)
 		{
-			return true;
+			return 0;
 		}
 	}
 
 	const int exit = AllSurvivingPlayersInSameExit();
 	if (exit == -1)
 	{
-		return false;
+		return -1;
 	}
 
 	if (MoreRescuesNeeded(mo, exit))
 	{
-		return false;
+		return -1;
 	}
 
-	return true;
+	return exit;
 }
 
 bool MissionNeedsMoreRescuesInExit(const struct MissionOptions *mo)
@@ -557,10 +557,10 @@ static int AllSurvivingPlayersInSameExit(void)
 	const TActor *player = ActorGetByUID(p->ActorUID);
 	const int playerExit = MapIsTileInExit(&gMap, &player->thing, exit);
 	if (playerExit == -1)
-		return false;
+		return -1;
 	exit = playerExit;
 	CA_FOREACH_END()
-	return true;
+	return exit;
 }
 
 static bool MoreRescuesNeeded(const struct MissionOptions *mo, const int exit)
@@ -602,6 +602,7 @@ void MissionDone(struct MissionOptions *mo, const NMissionEnd end)
 	mo->isDone = true;
 	mo->DoneCounter = end.Delay;
 	mo->IsQuit = end.IsQuit;
+	mo->NextMission = end.Mission;
 }
 
 int KeycardCount(int flags)
