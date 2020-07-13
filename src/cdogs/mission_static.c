@@ -102,7 +102,7 @@ bool MissionStaticTryLoadJSON(
 		}
 		// Convert old tiles to new
 		CA_FOREACH(uint16_t, t, oldTiles)
-		const int tileAccess = *t & MAP_ACCESSBITS;
+		const uint16_t tileAccess = *t & MAP_ACCESSBITS;
 		CArrayPushBack(&m->Access, &tileAccess);
 		*t &= MAP_MASKACCESS;
 		switch (*t)
@@ -144,7 +144,14 @@ bool MissionStaticTryLoadJSON(
 		const json_t *a = json_find_first_label(node, "Access")->child->child;
 		while (a)
 		{
-			LoadStaticTileCSV(&m->Access, a->text);
+			CArray mAccess;
+			CArrayInit(&mAccess, sizeof(int));
+			LoadStaticTileCSV(&mAccess, a->text);
+			CA_FOREACH(const int, aInt, mAccess)
+			const uint16_t a16 = (uint16_t)*aInt;
+			CArrayPushBack(&m->Access, &a16);
+			CA_FOREACH_END()
+			CArrayTerminate(&mAccess);
 			a = a->next;
 		}
 	}
@@ -587,8 +594,15 @@ void MissionStaticSaveJSON(
 		node, "TileClasses", SaveStaticTileClasses(m));
 	json_insert_pair_into_object(
 		node, "Tiles", SaveStaticCSV(&m->Tiles, size));
+	CArray mAccess;
+	CArrayInit(&mAccess, sizeof(int));
+	CA_FOREACH(const uint16_t, a, m->Access)
+	const int aInt = (int)*a;
+	CArrayPushBack(&mAccess, &aInt);
+	CA_FOREACH_END()
 	json_insert_pair_into_object(
-		node, "Access", SaveStaticCSV(&m->Access, size));
+		node, "Access", SaveStaticCSV(&mAccess, size));
+	CArrayTerminate(&mAccess);
 	json_insert_pair_into_object(node, "StaticItems", SaveStaticItems(m));
 	json_insert_pair_into_object(
 		node, "StaticCharacters", SaveStaticCharacters(m));

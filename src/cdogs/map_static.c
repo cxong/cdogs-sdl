@@ -86,7 +86,8 @@ void MapStaticLoadTile(MapBuilder *mb, const struct vec2i v)
 	if (!MapIsTileIn(mb->Map, v))
 		return;
 	const int idx = v.y * mb->Map->Size.x + v.x;
-	int tileAccess = *(int *)CArrayGet(&mb->mission->u.Static.Access, idx);
+	uint16_t tileAccess =
+		*(uint16_t *)CArrayGet(&mb->mission->u.Static.Access, idx);
 	if (!AreKeysAllowed(gCampaign.Entry.Mode))
 	{
 		tileAccess = 0;
@@ -94,7 +95,7 @@ void MapStaticLoadTile(MapBuilder *mb, const struct vec2i v)
 	const TileClass *tc =
 		MissionStaticGetTileClass(&mb->mission->u.Static, mb->Map->Size, v);
 	MapBuilderSetTile(mb, v, tc);
-	MapBuildSetAccess(mb, v, (uint16_t)tileAccess);
+	MapBuildSetAccess(mb, v, tileAccess);
 }
 
 static void AddCharacters(const CArray *characters);

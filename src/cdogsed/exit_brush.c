@@ -162,12 +162,13 @@ static void DrawPropsSidebar(
 
 	// Mission
 	bounds = nk_widget_bounds(ctx);
-	const int mission = selectedExit->Mission;
 	// Note: show 1-indexed mission
+	int mission = selectedExit->Mission;
+	mission++;
 	nk_property_int(
-		ctx, "Mission", 1, &selectedExit->Mission,
+		ctx, "Mission", 1, &mission,
 		(int)eData->co->Setting.Missions.size + 1, 1, 1.f);
-	selectedExit->Mission--;
+	selectedExit->Mission = mission - 1;
 	if (nk_input_is_mouse_hovering_rect(&ctx->input, bounds))
 	{
 		sprintf(buf, "Current mission: %d", eData->co->MissionIndex + 1);
