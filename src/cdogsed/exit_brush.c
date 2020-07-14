@@ -192,7 +192,7 @@ static void DrawExit(ExitBrushData *eData, Exit *e, const int idx)
 {
 	char buf[256];
 	sprintf(
-		buf, "%d: mission %d (%d,%d %dx%d)", idx, e->Mission, e->R.Pos.x,
+		buf, "%d: mission %d (%d,%d %dx%d)", idx, e->Mission + 1, e->R.Pos.x,
 		e->R.Pos.y, e->R.Size.x, e->R.Size.y);
 	const int selected = *eData->exitIdx == idx;
 	if (nk_select_label(

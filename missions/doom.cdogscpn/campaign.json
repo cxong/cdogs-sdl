@@ -1,10 +1,10 @@
 {
-	"Version": 15,
+	"Version": 16,
 	"Title": "Doom",
 	"Author": "Cong",
 	"Description": "Stuck on Mars for insubordination, you are a marine who has just arrived at the dullest assignment in the system. They say your employer, UAC, are performing secret experiments to do with teleportation, but what could go wrong with that?",
 	"Ammo": true,
 	"WeaponPersist": true,
 	"SkipWeaponMenu": true,
-	"Missions": 8
+	"Missions": 9
 }

@@ -65,6 +65,17 @@
       "Size": [8, 5],
       "Offset": [-6, -28],
       "Health": 40
+    },
+    {
+      "Name": "candle",
+      "Pic": {
+        "Type": "AnimatedRandom",
+        "Sprites": "candle",
+        "TicksPerFrame": 6
+      },
+      "Size": [8, 5],
+      "Offset": [-5, -12],
+      "Health": 0
     }
   ]
 }
