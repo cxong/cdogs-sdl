@@ -475,6 +475,7 @@ static void DrawExtra(
 
 static void DrawEditorTiles(DrawBuffer *b, const struct vec2i offset)
 {
+	const color_t exitColor = colorDarker;
 	struct vec2i pos;
 	pos.y = b->dy + offset.y;
 	for (int y = 0; y < Y_TILES; y++, pos.y += TILE_HEIGHT)
@@ -482,12 +483,11 @@ static void DrawEditorTiles(DrawBuffer *b, const struct vec2i offset)
 		pos.x = b->dx + offset.x;
 		for (int x = 0; x < b->Size.x; x++, pos.x += TILE_WIDTH)
 		{
+			const struct vec2i tilePos = svec2i(x + b->xStart, y + b->yStart);
 			if (gMission.missionData->Type == MAPTYPE_STATIC)
 			{
 				struct vec2i start = gMission.missionData->u.Static.Start;
-				if (!svec2i_is_zero(start) &&
-					svec2i_is_equal(
-						start, svec2i(x + b->xStart, y + b->yStart)))
+				if (!svec2i_is_zero(start) && svec2i_is_equal(start, tilePos))
 				{
 					// mission start
 					PicRender(
@@ -496,6 +496,54 @@ static void DrawEditorTiles(DrawBuffer *b, const struct vec2i offset)
 						svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 				}
 			}
+			CA_FOREACH(const Exit, e, gMap.exits)
+			Rect2i exitR = e->R;
+			exitR.Size = svec2i_add(exitR.Size, svec2i_one());
+			if (!Rect2iIsInside(exitR, tilePos))
+			{
+				continue;
+			}
+			if (tilePos.x == e->R.Pos.x)
+			{
+				// Left edge
+				DrawLine(
+					pos, svec2i_add(pos, svec2i(0, TILE_HEIGHT - 1)),
+					exitColor);
+			}
+			else if (tilePos.x == e->R.Pos.x + e->R.Size.x)
+			{
+				// Right edge
+				DrawLine(
+					svec2i_add(pos, svec2i(TILE_WIDTH - 1, 0)),
+					svec2i_add(pos, svec2i(TILE_WIDTH - 1, TILE_HEIGHT - 1)),
+					exitColor);
+			}
+			if (tilePos.y == e->R.Pos.y)
+			{
+				// Top edge
+				DrawLine(
+					pos, svec2i_add(pos, svec2i(TILE_WIDTH - 1, 0)),
+					exitColor);
+			}
+			else if (tilePos.y == e->R.Pos.y + e->R.Size.y)
+			{
+				// Bottom edge
+				DrawLine(
+					svec2i_add(pos, svec2i(0, TILE_HEIGHT - 1)),
+					svec2i_add(pos, svec2i(TILE_WIDTH - 1, TILE_HEIGHT - 1)),
+					exitColor);
+			}
+			if (svec2i_is_equal(tilePos, e->R.Pos))
+			{
+				// Label the exit
+				char buf[256];
+				sprintf(
+					buf, "Exit %d\nMission %d\n(%d,%d)\n(%dx%d)", _ca_index,
+					e->Mission + 1, e->R.Pos.x, e->R.Pos.y, e->R.Size.x,
+					e->R.Size.y);
+				FontStrMask(buf, svec2i_add(pos, svec2i(3, 3)), exitColor);
+			}
+			CA_FOREACH_END()
 		}
 	}
 }
