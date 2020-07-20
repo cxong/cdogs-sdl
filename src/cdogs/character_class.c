@@ -202,7 +202,7 @@ int CharacterClassIndex(const CharacterClass *c)
 Mix_Chunk *CharacterClassGetSound(const CharacterClass *c, const char *sound)
 {
 	char buf[CDOGS_PATH_MAX];
-	sprintf(buf, "%s/%s", c->Sounds, sound);
+	sprintf(buf, "%s/%s", sound, c->Sounds);
 	return StrSound(buf);
 }
 

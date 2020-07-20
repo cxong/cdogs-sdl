@@ -10,7 +10,7 @@
 		"speed": 0,
 		"Gun": "Confusion bombs",
 		"maxHealth": 40,
-		"flags": 8389632,
+		"flags": 8389760,
 		"probabilityToMove": 50,
 		"probabilityToTrack": 25,
 		"probabilityToShoot": 0,

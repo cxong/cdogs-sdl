@@ -43,17 +43,6 @@
 				"Shootable": false,
 				"IsRoom": false
 			},
-			"2": {
-				"Name": "door",
-				"Type": "Door",
-				"Style": "alien",
-				"Mask": "ffffffff",
-				"MaskAlt": "ffffffff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": true
-			},
 			"7": {
 				"Name": "wall",
 				"Type": "Wall",
@@ -64,6 +53,17 @@
 				"IsOpaque": false,
 				"Shootable": true,
 				"IsRoom": false
+			},
+			"2": {
+				"Name": "door",
+				"Type": "Door",
+				"Style": "alien",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": true
 			},
 			"1": {
 				"Name": "wall",
@@ -76,14 +76,14 @@
 				"Shootable": true,
 				"IsRoom": false
 			},
-			"4": {
+			"5": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "carbon",
-				"Mask": "e376f7ff",
+				"Style": "plasteel",
+				"Mask": "f6ff6cff",
 				"MaskAlt": "008400ff",
 				"CanWalk": true,
-				"IsOpaque": true,
+				"IsOpaque": false,
 				"Shootable": true,
 				"IsRoom": false
 			},
@@ -98,17 +98,6 @@
 				"Shootable": false,
 				"IsRoom": false
 			},
-			"5": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "plasteel",
-				"Mask": "f6ff6cff",
-				"MaskAlt": "008400ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": true,
-				"IsRoom": false
-			},
 			"0": {
 				"Name": "tile",
 				"Type": "Floor",
@@ -118,6 +107,17 @@
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
+				"IsRoom": false
+			},
+			"4": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "carbon",
+				"Mask": "e376f7ff",
+				"MaskAlt": "008400ff",
+				"CanWalk": true,
+				"IsOpaque": true,
+				"Shootable": true,
 				"IsRoom": false
 			}
 		},
@@ -618,17 +618,6 @@
 				"Shootable": true,
 				"IsRoom": false
 			},
-			"4": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "water",
-				"Mask": "7292fcff",
-				"MaskAlt": "808080ff",
-				"CanWalk": false,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
 			"3": {
 				"Name": "tile",
 				"Type": "Floor",
@@ -647,6 +636,17 @@
 				"Mask": "007000ff",
 				"MaskAlt": "840000ff",
 				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"4": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "water",
+				"Mask": "7292fcff",
+				"MaskAlt": "808080ff",
+				"CanWalk": false,
 				"IsOpaque": false,
 				"Shootable": false,
 				"IsRoom": false
