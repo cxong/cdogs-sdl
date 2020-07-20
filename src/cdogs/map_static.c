@@ -128,7 +128,7 @@ void MapStaticLoadDynamic(MapBuilder *mb)
 	}
 
 	// Process the events to place dynamic objects
-	HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
+	HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
 }
 static void AddCharacter(const CharacterPositions *cp);
 static void AddCharacters(const CArray *characters)

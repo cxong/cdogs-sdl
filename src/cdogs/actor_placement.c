@@ -219,7 +219,7 @@ struct vec2 PlacePlayer(
 	if (pumpEvents)
 	{
 		// Process the events that actually place the players
-		HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
+		HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
 	}
 
 	return NetToVec2(e.u.ActorAdd.Pos);

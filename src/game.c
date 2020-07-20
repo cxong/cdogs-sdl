@@ -148,7 +148,6 @@ typedef struct
 	struct MissionOptions *m;
 	Map *map;
 	Camera Camera;
-	int frames;
 	// TODO: turn the following into a screen system?
 	input_device_e pausingDevice; // INPUT_DEVICE_UNSET if not paused
 	bool controllerUnplugged;
@@ -228,7 +227,7 @@ static void RunGameOnEnter(GameLoopData *data)
 		GameEventsEnqueue(&gGameEvents, e);
 		CA_FOREACH_END()
 		// Process the events to force add the players
-		HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
+		HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
 
 		// Note: place players first,
 		// as bad guys are placed away from players
@@ -284,7 +283,7 @@ static void RunGameOnExit(GameLoopData *data)
 	LOG(LM_MAIN, LL_INFO, "Game finished");
 
 	// Flush events
-	HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
+	HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
 
 	PowerupSpawnerTerminate(&rData->healthSpawner);
 	CA_FOREACH(PowerupSpawner, a, rData->ammoSpawners)
@@ -629,9 +628,11 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 		MissionDone(&gMission, me);
 	}
 
+	// Disable sounds on the first frame
+	SoundDevice *sd = data->Frames == 0 ? NULL : &gSoundDevice;
 	HandleGameEvents(
 		&gGameEvents, &rData->Camera, &rData->healthSpawner,
-		&rData->ammoSpawners);
+		&rData->ammoSpawners, sd);
 
 	rData->m->time += ticksPerFrame;
 

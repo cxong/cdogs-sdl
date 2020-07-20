@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014-2015, Cong Xu
+    Copyright (c) 2014-2015, 2020 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -36,4 +36,4 @@ void HandleGameEvents(
 	CArray *store,
 	Camera *camera,
 	PowerupSpawner *healthSpawner,
-	CArray *ammoSpawners);
+	CArray *ammoSpawners, SoundDevice *sd);

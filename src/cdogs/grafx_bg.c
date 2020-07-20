@@ -153,7 +153,7 @@ void GrafxMakeBackground(
 		pos = Vec2CenterOfTile(svec2i_scale_divide(map->Size, 2));
 	}
 	// Process the events that place dynamic objects
-	HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
+	HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
 	GrafxDrawBackground(device, buffer, tint, pos, extra);
 	GameEventsTerminate(&gGameEvents);
 }

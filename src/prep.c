@@ -238,7 +238,7 @@ static GameLoopResult NumPlayersUpdate(GameLoopData *data, LoopRunner *l)
 				GameEventsEnqueue(&gGameEvents, e);
 			}
 			// Process the events to force add the players
-			HandleGameEvents(&gGameEvents, NULL, NULL, NULL);
+			HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
 			// This also causes the client to send player data to the server
 
 			// Switch to player selection

@@ -1161,339 +1161,334 @@ static void ActorAddAmmoPickup(const TActor *actor)
 				(float)RAND_INT(-TILE_HEIGHT, TILE_HEIGHT) / 2);
 			e.u.AddPickup.Pos = Vec2ToNet(svec2_add(actor->Pos, offset));
 			GameEventsEnqueue(&gGameEvents, e);
-			CA_FOREACH_END()
 		}
 	}
-	static void ActorAddGunPickup(const TActor *actor)
+}
+static void ActorAddGunPickup(const TActor *actor)
+{
+	if (IsUnarmedBot(actor))
 	{
-		if (IsUnarmedBot(actor))
-		{
-			return;
-		}
+		return;
+	}
 
-		// Select a gun at random to drop
-		if (!gCampaign.IsClient)
+	// Select a gun at random to drop
+	if (!gCampaign.IsClient)
+	{
+		const Weapon *w;
+		for (;;)
 		{
-			const Weapon *w;
-			for (;;)
+			const int gunIndex = RAND_INT(0, MAX_WEAPONS - 1);
+			w = &actor->guns[gunIndex];
+			if (w->Gun != NULL)
 			{
-				const int gunIndex = RAND_INT(0, MAX_WEAPONS - 1);
-				w = &actor->guns[gunIndex];
-				if (w->Gun != NULL)
-				{
-					break;
-				}
-			}
-			PickupAddGun(w->Gun, actor->Pos);
-		}
-	}
-	static bool IsUnarmedBot(const TActor *actor)
-	{
-		// Note: if the actor is AI with no shooting time,
-		// then it's an unarmed actor
-		const Character *c = ActorGetCharacter(actor);
-		return c->bot != NULL && c->bot->probabilityToShoot == 0;
-	}
-
-	void ActorsInit(void)
-	{
-		CArrayInit(&gActors, sizeof(TActor));
-		CArrayReserve(&gActors, 64);
-		sActorUIDs = 0;
-	}
-	void ActorsTerminate(void)
-	{
-		CA_FOREACH(TActor, a, gActors)
-		if (!a->isInUse)
-			continue;
-		ActorDestroy(a);
-		CA_FOREACH_END()
-		CArrayTerminate(&gActors);
-	}
-	int ActorsGetNextUID(void)
-	{
-		return sActorUIDs++;
-	}
-	int ActorsGetFreeIndex(void)
-	{
-		// Find an empty slot in actor list
-		// actors.size if no slot found (i.e. add to end)
-		CA_FOREACH(const TActor, a, gActors)
-		if (!a->isInUse)
-		{
-			return _ca_index;
-		}
-		CA_FOREACH_END()
-		return (int)gActors.size;
-	}
-
-	static void GoreEmitterInit(Emitter * em, const char *particleClassName);
-	TActor *ActorAdd(NActorAdd aa)
-	{
-		// Don't add if UID exists
-		if (ActorGetByUID(aa.UID) != NULL)
-		{
-			LOG(LM_ACTOR, LL_DEBUG, "actor uid(%d) already exists; not adding",
-				(int)aa.UID);
-			return NULL;
-		}
-		const int id = ActorsGetFreeIndex();
-		while (id >= (int)gActors.size)
-		{
-			TActor a;
-			memset(&a, 0, sizeof a);
-			CArrayPushBack(&gActors, &a);
-		}
-		TActor *actor = CArrayGet(&gActors, id);
-		memset(actor, 0, sizeof *actor);
-		actor->uid = aa.UID;
-		LOG(LM_ACTOR, LL_DEBUG, "add actor uid(%d) playerUID(%d)", actor->uid,
-			aa.PlayerUID);
-		CArrayInit(&actor->ammo, sizeof(int));
-		for (int i = 0; i < AmmoGetNumClasses(&gAmmo); i++)
-		{
-			// Initialise with twice the standard ammo amount
-			const int amount =
-				AmmoGetById(&gAmmo, i)->Amount * AMMO_STARTING_MULTIPLE;
-			CArrayPushBack(&actor->ammo, &amount);
-		}
-		if (gCampaign.Setting.WeaponPersist)
-		{
-			for (int i = 0; i < aa.Ammo_count; i++)
-			{
-				// Use persisted ammo amount if it is greater
-				if ((int)aa.Ammo[i].Amount >
-					AmmoGetById(&gAmmo, aa.Ammo[i].Id)->Amount *
-						AMMO_STARTING_MULTIPLE)
-				{
-					CArraySet(&actor->ammo, aa.Ammo[i].Id, &aa.Ammo[i].Amount);
-				}
+				break;
 			}
 		}
-		actor->PlayerUID = aa.PlayerUID;
-		actor->charId = aa.CharId;
-		const Character *c = ActorGetCharacter(actor);
-		if (aa.PlayerUID >= 0)
-		{
-			// Add all player weapons
-			PlayerData *p = PlayerDataGetByUID(aa.PlayerUID);
-			for (int i = 0; i < MAX_WEAPONS; i++)
-			{
-				Weapon gun = WeaponCreate(p->guns[i]);
-				actor->guns[i] = gun;
-				if (i < MAX_GUNS && ACTOR_GET_GUN(actor)->Gun == NULL)
-				{
-					actor->gunIndex = i;
-				}
-				if (i >= MAX_GUNS && ACTOR_GET_GRENADE(actor)->Gun == NULL)
-				{
-					actor->grenadeIndex = i - MAX_GUNS;
-				}
-			}
-			p->ActorUID = aa.UID;
-		}
-		else
-		{
-			// Add sole weapon from character type
-			Weapon gun = WeaponCreate(c->Gun);
-			actor->guns[0] = gun;
-			actor->gunIndex = 0;
-		}
-		actor->health = aa.Health;
-		actor->action = ACTORACTION_MOVING;
-		actor->thing.Pos.x = actor->thing.Pos.y = -1;
-		actor->thing.kind = KIND_CHARACTER;
-		actor->thing.drawFunc = NULL;
-		actor->thing.size = svec2i(ACTOR_W, ACTOR_H);
-		actor->thing.flags =
-			THING_IMPASSABLE | THING_CAN_BE_SHOT | aa.ThingFlags;
-		actor->thing.id = id;
-		actor->isInUse = true;
-
-		actor->flags = FLAGS_SLEEPING | c->flags;
-		// Flag corrections
-		if (actor->flags & FLAGS_AWAKEALWAYS)
-		{
-			actor->flags &= ~FLAGS_SLEEPING;
-		}
-		// Rescue objectives always have follower flag on
-		if (actor->thing.flags & THING_OBJECTIVE)
-		{
-			const Objective *o = CArrayGet(
-				&gMission.missionData->Objectives,
-				ObjectiveFromThing(actor->thing.flags));
-			if (o->Type == OBJECTIVE_RESCUE)
-			{
-				// If they don't have prisoner flag set, automatically rescue
-				// them
-				if (!(actor->flags & FLAGS_PRISONER) && !gCampaign.IsClient)
-				{
-					GameEvent e = GameEventNew(GAME_EVENT_RESCUE_CHARACTER);
-					e.u.Rescue.UID = aa.UID;
-					GameEventsEnqueue(&gGameEvents, e);
-					UpdateMissionObjective(
-						&gMission, actor->thing.flags, OBJECTIVE_RESCUE, 1);
-				}
-			}
-		}
-
-		actor->direction = aa.Direction;
-		actor->DrawRadians = (float)dir2radians[actor->direction];
-		actor->anim = AnimationGetActorAnimation(ACTORANIMATION_IDLE);
-		actor->slideLock = 0;
-		if (c->bot)
-		{
-			actor->aiContext = AIContextNew();
-			ActorSetAIState(actor, AI_STATE_IDLE);
-		}
-
-		EmitterInit(
-			&actor->barrelSmoke, StrParticleClass(&gParticleClasses, "smoke"),
-			svec2_zero(), -0.05f, 0.05f, 3, 3, 0, 0, 10);
-		EmitterInit(
-			&actor->healEffect,
-			StrParticleClass(&gParticleClasses, "health_plus"), svec2_zero(),
-			-0.1f, 0.1f, 0, 0, 0, 0, 0);
-		GoreEmitterInit(&actor->blood1, "blood1");
-		GoreEmitterInit(&actor->blood2, "blood2");
-		GoreEmitterInit(&actor->blood3, "blood3");
-
-		TryMoveActor(actor, NetToVec2(aa.Pos));
-
-		// Spawn sound for player actors
-		if (aa.PlayerUID >= 0)
-		{
-			SoundPlayAt(&gSoundDevice, StrSound("spawn"), actor->Pos);
-		}
-		return actor;
+		PickupAddGun(w->Gun, actor->Pos);
 	}
-	static void GoreEmitterInit(Emitter * em, const char *particleClassName)
-	{
-		EmitterInit(
-			em, StrParticleClass(&gParticleClasses, particleClassName),
-			svec2_zero(), 0, GORE_EMITTER_MAX_SPEED, 6, 12, -0.1, 0.1, 0);
-	}
+}
+static bool IsUnarmedBot(const TActor *actor)
+{
+	// Note: if the actor is AI with no shooting time,
+	// then it's an unarmed actor
+	const Character *c = ActorGetCharacter(actor);
+	return c->bot != NULL && c->bot->probabilityToShoot == 0;
+}
 
-	void ActorDestroy(TActor * a)
+void ActorsInit(void)
+{
+	CArrayInit(&gActors, sizeof(TActor));
+	CArrayReserve(&gActors, 64);
+	sActorUIDs = 0;
+}
+void ActorsTerminate(void)
+{
+	CA_FOREACH(TActor, a, gActors)
+	if (!a->isInUse)
+		continue;
+	ActorDestroy(a);
+	CA_FOREACH_END()
+	CArrayTerminate(&gActors);
+}
+int ActorsGetNextUID(void)
+{
+	return sActorUIDs++;
+}
+int ActorsGetFreeIndex(void)
+{
+	// Find an empty slot in actor list
+	// actors.size if no slot found (i.e. add to end)
+	CA_FOREACH(const TActor, a, gActors)
+	if (!a->isInUse)
 	{
-		CASSERT(a->isInUse, "Destroying in-use actor");
-		CArrayTerminate(&a->ammo);
-		MapRemoveThing(&gMap, &a->thing);
-		// Set PlayerData's ActorUID to -1 to signify actor destruction
-		PlayerData *p = PlayerDataGetByUID(a->PlayerUID);
-		if (p != NULL)
-			p->ActorUID = -1;
-		AIContextDestroy(a->aiContext);
-		a->isInUse = false;
+		return _ca_index;
 	}
+	CA_FOREACH_END()
+	return (int)gActors.size;
+}
 
-	TActor *ActorGetByUID(const int uid)
+static void GoreEmitterInit(Emitter * em, const char *particleClassName);
+TActor *ActorAdd(NActorAdd aa)
+{
+	// Don't add if UID exists
+	if (ActorGetByUID(aa.UID) != NULL)
 	{
-		CA_FOREACH(TActor, a, gActors)
-		if (a->uid == uid)
-		{
-			return a;
-		}
-		CA_FOREACH_END()
+		LOG(LM_ACTOR, LL_DEBUG, "actor uid(%d) already exists; not adding",
+			(int)aa.UID);
 		return NULL;
 	}
+	const int id = ActorsGetFreeIndex();
+	while (id >= (int)gActors.size)
+	{
+		TActor a;
+		memset(&a, 0, sizeof a);
+		CArrayPushBack(&gActors, &a);
+	}
+	TActor *actor = CArrayGet(&gActors, id);
+	memset(actor, 0, sizeof *actor);
+	actor->uid = aa.UID;
+	LOG(LM_ACTOR, LL_DEBUG, "add actor uid(%d) playerUID(%d)", actor->uid,
+		aa.PlayerUID);
+	CArrayInit(&actor->ammo, sizeof(int));
+	for (int i = 0; i < AmmoGetNumClasses(&gAmmo); i++)
+	{
+		// Initialise with twice the standard ammo amount
+		const int amount =
+			AmmoGetById(&gAmmo, i)->Amount * AMMO_STARTING_MULTIPLE;
+		CArrayPushBack(&actor->ammo, &amount);
+	}
+	if (gCampaign.Setting.WeaponPersist)
+	{
+		for (int i = 0; i < aa.Ammo_count; i++)
+		{
+			// Use persisted ammo amount if it is greater
+			if ((int)aa.Ammo[i].Amount >
+				AmmoGetById(&gAmmo, aa.Ammo[i].Id)->Amount *
+					AMMO_STARTING_MULTIPLE)
+			{
+				CArraySet(&actor->ammo, aa.Ammo[i].Id, &aa.Ammo[i].Amount);
+			}
+		}
+	}
+	actor->PlayerUID = aa.PlayerUID;
+	actor->charId = aa.CharId;
+	const Character *c = ActorGetCharacter(actor);
+	if (aa.PlayerUID >= 0)
+	{
+		// Add all player weapons
+		PlayerData *p = PlayerDataGetByUID(aa.PlayerUID);
+		for (int i = 0; i < MAX_WEAPONS; i++)
+		{
+			Weapon gun = WeaponCreate(p->guns[i]);
+			actor->guns[i] = gun;
+			if (i < MAX_GUNS && ACTOR_GET_GUN(actor)->Gun == NULL)
+			{
+				actor->gunIndex = i;
+			}
+			if (i >= MAX_GUNS && ACTOR_GET_GRENADE(actor)->Gun == NULL)
+			{
+				actor->grenadeIndex = i - MAX_GUNS;
+			}
+		}
+		p->ActorUID = aa.UID;
+	}
+	else
+	{
+		// Add sole weapon from character type
+		Weapon gun = WeaponCreate(c->Gun);
+		actor->guns[0] = gun;
+		actor->gunIndex = 0;
+	}
+	actor->health = aa.Health;
+	actor->action = ACTORACTION_MOVING;
+	actor->thing.Pos.x = actor->thing.Pos.y = -1;
+	actor->thing.kind = KIND_CHARACTER;
+	actor->thing.drawFunc = NULL;
+	actor->thing.size = svec2i(ACTOR_W, ACTOR_H);
+	actor->thing.flags =
+		THING_IMPASSABLE | THING_CAN_BE_SHOT | aa.ThingFlags;
+	actor->thing.id = id;
+	actor->isInUse = true;
 
-	const Character *ActorGetCharacter(const TActor *a)
+	actor->flags = FLAGS_SLEEPING | c->flags;
+	// Flag corrections
+	if (actor->flags & FLAGS_AWAKEALWAYS)
 	{
-		if (a->PlayerUID >= 0)
+		actor->flags &= ~FLAGS_SLEEPING;
+	}
+	// Rescue objectives always have follower flag on
+	if (actor->thing.flags & THING_OBJECTIVE)
+	{
+		const Objective *o = CArrayGet(
+			&gMission.missionData->Objectives,
+			ObjectiveFromThing(actor->thing.flags));
+		if (o->Type == OBJECTIVE_RESCUE)
 		{
-			return &PlayerDataGetByUID(a->PlayerUID)->Char;
+			// If they don't have prisoner flag set, automatically rescue
+			// them
+			if (!(actor->flags & FLAGS_PRISONER) && !gCampaign.IsClient)
+			{
+				GameEvent e = GameEventNew(GAME_EVENT_RESCUE_CHARACTER);
+				e.u.Rescue.UID = aa.UID;
+				GameEventsEnqueue(&gGameEvents, e);
+				UpdateMissionObjective(
+					&gMission, actor->thing.flags, OBJECTIVE_RESCUE, 1);
+			}
 		}
-		return CArrayGet(&gCampaign.Setting.characters.OtherChars, a->charId);
 	}
 
-	struct vec2 ActorGetWeaponMuzzleOffset(const TActor *a)
+	actor->direction = aa.Direction;
+	actor->DrawRadians = (float)dir2radians[actor->direction];
+	actor->anim = AnimationGetActorAnimation(ACTORANIMATION_IDLE);
+	actor->slideLock = 0;
+	if (c->bot)
 	{
-		return ActorGetMuzzleOffset(a, ACTOR_GET_WEAPON(a));
-	}
-	struct vec2 ActorGetMuzzleOffset(const TActor *a, const Weapon *w)
-	{
-		const Character *c = ActorGetCharacter(a);
-		const CharSprites *cs = c->Class->Sprites;
-		return WeaponClassGetMuzzleOffset(w->Gun, cs, a->direction, w->state);
-	}
-	int ActorWeaponGetAmmo(const TActor *a, const WeaponClass *wc)
-	{
-		if (wc->AmmoId == -1)
-		{
-			return -1;
-		}
-		return *(int *)CArrayGet(&a->ammo, wc->AmmoId);
-	}
-	bool ActorCanFireWeapon(const TActor *a, const Weapon *w)
-	{
-		if (w->Gun == NULL)
-		{
-			return false;
-		}
-		const bool hasAmmo = ActorWeaponGetAmmo(a, w->Gun) != 0;
-		return !WeaponIsLocked(w) && (!gCampaign.Setting.Ammo || hasAmmo);
-	}
-	bool ActorTrySwitchWeapon(const TActor *a, const bool allGuns)
-	{
-		// Find the next weapon to switch to
-		// If the player does not have a grenade key set, allow switching to
-		// grenades (classic style)
-		const int switchCount = allGuns ? MAX_WEAPONS : MAX_GUNS;
-		const int startIndex =
-			ActorGetNumGuns(a) > 0 ? a->gunIndex : a->grenadeIndex + MAX_GUNS;
-		int weaponIndex = startIndex;
-		do
-		{
-			weaponIndex = (weaponIndex + 1) % switchCount;
-		} while (a->guns[weaponIndex].Gun == NULL);
-		if (weaponIndex == startIndex)
-		{
-			// No other weapon to switch to
-			return false;
-		}
-
-		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_SWITCH_GUN);
-		e.u.ActorSwitchGun.UID = a->uid;
-		e.u.ActorSwitchGun.GunIdx = weaponIndex;
-		GameEventsEnqueue(&gGameEvents, e);
-		return true;
-	}
-	void ActorSwitchGun(const NActorSwitchGun sg)
-	{
-		TActor *a = ActorGetByUID(sg.UID);
-		if (a == NULL || !a->isInUse)
-			return;
-		a->gunIndex = sg.GunIdx;
-		const WeaponClass *gun = ACTOR_GET_WEAPON(a)->Gun;
-		SoundPlayAt(&gSoundDevice, gun->SwitchSound, a->thing.Pos);
-		ActorSetChatter(a, gun->name, CHATTER_SWITCH_GUN);
+		actor->aiContext = AIContextNew();
+		ActorSetAIState(actor, AI_STATE_IDLE);
 	}
 
-	bool ActorIsImmune(const TActor *actor, const special_damage_e damage)
+	EmitterInit(
+		&actor->barrelSmoke, StrParticleClass(&gParticleClasses, "smoke"),
+		svec2_zero(), -0.05f, 0.05f, 3, 3, 0, 0, 10);
+	EmitterInit(
+		&actor->healEffect,
+		StrParticleClass(&gParticleClasses, "health_plus"), svec2_zero(),
+		-0.1f, 0.1f, 0, 0, 0, 0, 0);
+	GoreEmitterInit(&actor->blood1, "blood1");
+	GoreEmitterInit(&actor->blood2, "blood2");
+	GoreEmitterInit(&actor->blood3, "blood3");
+
+	TryMoveActor(actor, NetToVec2(aa.Pos));
+
+	return actor;
+}
+static void GoreEmitterInit(Emitter * em, const char *particleClassName)
+{
+	EmitterInit(
+		em, StrParticleClass(&gParticleClasses, particleClassName),
+		svec2_zero(), 0, GORE_EMITTER_MAX_SPEED, 6, 12, -0.1, 0.1, 0);
+}
+
+void ActorDestroy(TActor * a)
+{
+	CASSERT(a->isInUse, "Destroying in-use actor");
+	CArrayTerminate(&a->ammo);
+	MapRemoveThing(&gMap, &a->thing);
+	// Set PlayerData's ActorUID to -1 to signify actor destruction
+	PlayerData *p = PlayerDataGetByUID(a->PlayerUID);
+	if (p != NULL)
+		p->ActorUID = -1;
+	AIContextDestroy(a->aiContext);
+	a->isInUse = false;
+}
+
+TActor *ActorGetByUID(const int uid)
+{
+	CA_FOREACH(TActor, a, gActors)
+	if (a->uid == uid)
 	{
-		// Fire immunity
-		if (damage == SPECIAL_FLAME && (actor->flags & FLAGS_ASBESTOS))
-		{
-			return 1;
-		}
-		// Poison immunity
-		if (damage == SPECIAL_POISON && (actor->flags & FLAGS_IMMUNITY))
-		{
-			return 1;
-		}
-		// Confuse immunity
-		if (damage == SPECIAL_CONFUSE && (actor->flags & FLAGS_IMMUNITY))
-		{
-			return 1;
-		}
-		// Don't bother if health already 0 or less
-		if (actor->health <= 0)
-		{
-			return 1;
-		}
-		return 0;
+		return a;
 	}
+	CA_FOREACH_END()
+	return NULL;
+}
+
+const Character *ActorGetCharacter(const TActor *a)
+{
+	if (a->PlayerUID >= 0)
+	{
+		return &PlayerDataGetByUID(a->PlayerUID)->Char;
+	}
+	return CArrayGet(&gCampaign.Setting.characters.OtherChars, a->charId);
+}
+
+struct vec2 ActorGetWeaponMuzzleOffset(const TActor *a)
+{
+	return ActorGetMuzzleOffset(a, ACTOR_GET_WEAPON(a));
+}
+struct vec2 ActorGetMuzzleOffset(const TActor *a, const Weapon *w)
+{
+	const Character *c = ActorGetCharacter(a);
+	const CharSprites *cs = c->Class->Sprites;
+	return WeaponClassGetMuzzleOffset(w->Gun, cs, a->direction, w->state);
+}
+int ActorWeaponGetAmmo(const TActor *a, const WeaponClass *wc)
+{
+	if (wc->AmmoId == -1)
+	{
+		return -1;
+	}
+	return *(int *)CArrayGet(&a->ammo, wc->AmmoId);
+}
+bool ActorCanFireWeapon(const TActor *a, const Weapon *w)
+{
+	if (w->Gun == NULL)
+	{
+		return false;
+	}
+	const bool hasAmmo = ActorWeaponGetAmmo(a, w->Gun) != 0;
+	return !WeaponIsLocked(w) && (!gCampaign.Setting.Ammo || hasAmmo);
+}
+bool ActorTrySwitchWeapon(const TActor *a, const bool allGuns)
+{
+	// Find the next weapon to switch to
+	// If the player does not have a grenade key set, allow switching to
+	// grenades (classic style)
+	const int switchCount = allGuns ? MAX_WEAPONS : MAX_GUNS;
+	const int startIndex =
+		ActorGetNumGuns(a) > 0 ? a->gunIndex : a->grenadeIndex + MAX_GUNS;
+	int weaponIndex = startIndex;
+	do
+	{
+		weaponIndex = (weaponIndex + 1) % switchCount;
+	} while (a->guns[weaponIndex].Gun == NULL);
+	if (weaponIndex == startIndex)
+	{
+		// No other weapon to switch to
+		return false;
+	}
+
+	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_SWITCH_GUN);
+	e.u.ActorSwitchGun.UID = a->uid;
+	e.u.ActorSwitchGun.GunIdx = weaponIndex;
+	GameEventsEnqueue(&gGameEvents, e);
+	return true;
+}
+void ActorSwitchGun(const NActorSwitchGun sg)
+{
+	TActor *a = ActorGetByUID(sg.UID);
+	if (a == NULL || !a->isInUse)
+		return;
+	a->gunIndex = sg.GunIdx;
+	const WeaponClass *gun = ACTOR_GET_WEAPON(a)->Gun;
+	SoundPlayAt(&gSoundDevice, gun->SwitchSound, a->thing.Pos);
+	ActorSetChatter(a, gun->name, CHATTER_SWITCH_GUN);
+}
+
+bool ActorIsImmune(const TActor *actor, const special_damage_e damage)
+{
+	// Fire immunity
+	if (damage == SPECIAL_FLAME && (actor->flags & FLAGS_ASBESTOS))
+	{
+		return 1;
+	}
+	// Poison immunity
+	if (damage == SPECIAL_POISON && (actor->flags & FLAGS_IMMUNITY))
+	{
+		return 1;
+	}
+	// Confuse immunity
+	if (damage == SPECIAL_CONFUSE && (actor->flags & FLAGS_IMMUNITY))
+	{
+		return 1;
+	}
+	// Don't bother if health already 0 or less
+	if (actor->health <= 0)
+	{
+		return 1;
+	}
+	return 0;
+}
 
 // Special damage durations
 #define FLAMED_COUNT 10
@@ -1502,221 +1497,221 @@ static void ActorAddAmmoPickup(const TActor *actor)
 #define PETRIFIED_COUNT 95
 #define CONFUSED_COUNT 700
 
-	void ActorTakeSpecialDamage(TActor * actor, special_damage_e damage)
+void ActorTakeSpecialDamage(TActor * actor, special_damage_e damage)
+{
+	switch (damage)
 	{
-		switch (damage)
+	case SPECIAL_FLAME:
+		actor->flamed = FLAMED_COUNT;
+		break;
+	case SPECIAL_POISON:
+		if (actor->poisoned < MAX_POISONED_COUNT)
 		{
-		case SPECIAL_FLAME:
-			actor->flamed = FLAMED_COUNT;
+			actor->poisoned += POISONED_COUNT;
+		}
+		break;
+	case SPECIAL_PETRIFY:
+		if (!actor->petrified)
+		{
+			actor->petrified = PETRIFIED_COUNT;
+		}
+		break;
+	case SPECIAL_CONFUSE:
+		actor->confused = CONFUSED_COUNT;
+		break;
+	default:
+		// do nothing
+		break;
+	}
+}
+
+static void ActorTakeHit(TActor * actor, const special_damage_e damage);
+void ActorHit(const NThingDamage d)
+{
+	TActor *a = ActorGetByUID(d.UID);
+	if (!a->isInUse)
+		return;
+	ActorTakeHit(a, d.Special);
+	if (d.Power > 0)
+	{
+		DamageActor(a, d.Power, d.SourceActorUID);
+
+		// Add damage text
+		// See if there is one already; if so remove it and add a new one,
+		// combining the damage numbers
+		int damage = (int)d.Power;
+		struct vec2 pos =
+			svec2_add(a->Pos, svec2(RAND_FLOAT(-3, 3), RAND_FLOAT(-3, 3)));
+		CA_FOREACH(const Particle, p, gParticles)
+		if (p->isInUse && p->ActorUID == a->uid)
+		{
+			damage += a->accumulatedDamage;
+			pos = p->Pos;
+			GameEvent e = GameEventNew(GAME_EVENT_PARTICLE_REMOVE);
+			e.u.ParticleRemoveId = _ca_index;
+			GameEventsEnqueue(&gGameEvents, e);
 			break;
-		case SPECIAL_POISON:
-			if (actor->poisoned < MAX_POISONED_COUNT)
+		}
+		CA_FOREACH_END()
+		a->accumulatedDamage = damage;
+
+		GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+		s.u.AddParticle.Class =
+			StrParticleClass(&gParticleClasses, "damage_text");
+		s.u.AddParticle.ActorUID = a->uid;
+		s.u.AddParticle.Pos = pos;
+		s.u.AddParticle.Z = BULLET_Z * Z_FACTOR;
+		s.u.AddParticle.DZ = 3;
+		sprintf(s.u.AddParticle.Text, "-%d", damage);
+		GameEventsEnqueue(&gGameEvents, s);
+
+		ActorAddBloodSplatters(a, d.Power, d.Mass, NetToVec2(d.Vel));
+
+		// Rumble if taking hit
+		if (a->PlayerUID >= 0)
+		{
+			const PlayerData *p = PlayerDataGetByUID(a->PlayerUID);
+			if (p->inputDevice == INPUT_DEVICE_JOYSTICK)
 			{
-				actor->poisoned += POISONED_COUNT;
+				JoyImpact(p->deviceIndex);
 			}
-			break;
-		case SPECIAL_PETRIFY:
-			if (!actor->petrified)
-			{
-				actor->petrified = PETRIFIED_COUNT;
-			}
-			break;
-		case SPECIAL_CONFUSE:
-			actor->confused = CONFUSED_COUNT;
-			break;
-		default:
-			// do nothing
-			break;
 		}
 	}
+}
 
-	static void ActorTakeHit(TActor * actor, const special_damage_e damage);
-	void ActorHit(const NThingDamage d)
+static void ActorTakeHit(TActor * actor, const special_damage_e damage)
+{
+	// Wake up if this is an AI
+	if (!gCampaign.IsClient && actor->aiContext)
 	{
-		TActor *a = ActorGetByUID(d.UID);
-		if (!a->isInUse)
-			return;
-		ActorTakeHit(a, d.Special);
-		if (d.Power > 0)
-		{
-			DamageActor(a, d.Power, d.SourceActorUID);
+		actor->flags &= ~FLAGS_SLEEPING;
+		ActorSetAIState(actor, AI_STATE_NONE);
+	}
+	// Check immune again
+	// This can happen if multiple damage events overkill this actor,
+	// need to ignore the overkill scores
+	if (ActorIsImmune(actor, damage))
+	{
+		return;
+	}
+	ActorTakeSpecialDamage(actor, damage);
+}
 
-			// Add damage text
-			// See if there is one already; if so remove it and add a new one,
-			// combining the damage numbers
-			int damage = (int)d.Power;
-			struct vec2 pos =
-				svec2_add(a->Pos, svec2(RAND_FLOAT(-3, 3), RAND_FLOAT(-3, 3)));
-			CA_FOREACH(const Particle, p, gParticles)
-			if (p->isInUse && p->ActorUID == a->uid)
-			{
-				damage += a->accumulatedDamage;
-				pos = p->Pos;
-				GameEvent e = GameEventNew(GAME_EVENT_PARTICLE_REMOVE);
-				e.u.ParticleRemoveId = _ca_index;
-				GameEventsEnqueue(&gGameEvents, e);
-				break;
-			}
-			CA_FOREACH_END()
-			a->accumulatedDamage = damage;
-
-			GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
-			s.u.AddParticle.Class =
-				StrParticleClass(&gParticleClasses, "damage_text");
-			s.u.AddParticle.ActorUID = a->uid;
-			s.u.AddParticle.Pos = pos;
-			s.u.AddParticle.Z = BULLET_Z * Z_FACTOR;
-			s.u.AddParticle.DZ = 3;
-			sprintf(s.u.AddParticle.Text, "-%d", damage);
-			GameEventsEnqueue(&gGameEvents, s);
-
-			ActorAddBloodSplatters(a, d.Power, d.Mass, NetToVec2(d.Vel));
-
-			// Rumble if taking hit
-			if (a->PlayerUID >= 0)
-			{
-				const PlayerData *p = PlayerDataGetByUID(a->PlayerUID);
-				if (p->inputDevice == INPUT_DEVICE_JOYSTICK)
-				{
-					JoyImpact(p->deviceIndex);
-				}
-			}
-		}
+bool ActorIsInvulnerable(
+	const TActor *actor, const int flags, const int playerUID,
+	const GameMode mode)
+{
+	if (actor->flags & FLAGS_INVULNERABLE)
+	{
+		return 1;
 	}
 
-	static void ActorTakeHit(TActor * actor, const special_damage_e damage)
+	if (!(flags & FLAGS_HURTALWAYS) && !(actor->flags & FLAGS_VICTIM))
 	{
-		// Wake up if this is an AI
-		if (!gCampaign.IsClient && actor->aiContext)
-		{
-			actor->flags &= ~FLAGS_SLEEPING;
-			ActorSetAIState(actor, AI_STATE_NONE);
-		}
-		// Check immune again
-		// This can happen if multiple damage events overkill this actor,
-		// need to ignore the overkill scores
-		if (ActorIsImmune(actor, damage))
-		{
-			return;
-		}
-		ActorTakeSpecialDamage(actor, damage);
-	}
-
-	bool ActorIsInvulnerable(
-		const TActor *actor, const int flags, const int playerUID,
-		const GameMode mode)
-	{
-		if (actor->flags & FLAGS_INVULNERABLE)
+		// Same player hits
+		if (playerUID >= 0 && playerUID == actor->PlayerUID)
 		{
 			return 1;
 		}
-
-		if (!(flags & FLAGS_HURTALWAYS) && !(actor->flags & FLAGS_VICTIM))
+		const bool isGood = playerUID >= 0 || (flags & FLAGS_GOOD_GUY);
+		const bool isTargetGood =
+			actor->PlayerUID >= 0 || (actor->flags & FLAGS_GOOD_GUY);
+		// Friendly fire (NPCs)
+		if (!IsPVP(mode) &&
+			!ConfigGetBool(&gConfig, "Game.FriendlyFire") && isGood &&
+			isTargetGood)
 		{
-			// Same player hits
-			if (playerUID >= 0 && playerUID == actor->PlayerUID)
-			{
-				return 1;
-			}
-			const bool isGood = playerUID >= 0 || (flags & FLAGS_GOOD_GUY);
-			const bool isTargetGood =
-				actor->PlayerUID >= 0 || (actor->flags & FLAGS_GOOD_GUY);
-			// Friendly fire (NPCs)
-			if (!IsPVP(mode) &&
-				!ConfigGetBool(&gConfig, "Game.FriendlyFire") && isGood &&
-				isTargetGood)
-			{
-				return 1;
-			}
-			// Enemies don't hurt each other
-			if (!isGood && !isTargetGood)
-			{
-				return 1;
-			}
+			return 1;
 		}
-
-		return 0;
-	}
-
-	static void ActorAddBloodSplatters(
-		TActor * a, const int power, const float mass,
-		const struct vec2 hitVector)
-	{
-		const GoreAmount ga = ConfigGetEnum(&gConfig, "Graphics.Gore");
-		if (ga == GORE_NONE)
-			return;
-
-		// Emit blood based on power and gore setting
-		int bloodPower = power * 2;
-		// Randomly cycle through the blood types
-		int bloodSize = 1;
-		const struct vec2 hitVNorm = svec2_normalize(hitVector);
-		const float speedBase = MAX(1.0f, mass) * SHOT_IMPULSE_FACTOR;
-		while (bloodPower > 0)
+		// Enemies don't hurt each other
+		if (!isGood && !isTargetGood)
 		{
-			Emitter *em = NULL;
-			switch (bloodSize)
-			{
-			case 1:
-				em = &a->blood1;
-				break;
-			case 2:
-				em = &a->blood2;
-				break;
-			default:
-				em = &a->blood3;
-				break;
-			}
-			bloodSize++;
-			if (bloodSize > 3)
-			{
-				bloodSize = 1;
-			}
-			const struct vec2 vel =
-				svec2_scale(hitVNorm, speedBase * RAND_FLOAT(0.5f, 1));
-			AddParticle ap;
-			memset(&ap, 0, sizeof ap);
-			ap.Pos = a->Pos;
-			ap.Angle = NAN;
-			ap.Z = 10;
-			ap.Vel = vel;
-			ap.Mask = ActorGetCharacter(a)->Class->BloodColor;
-			EmitterStart(em, &ap);
-			switch (ga)
-			{
-			case GORE_LOW:
-				bloodPower /= 8;
-				break;
-			case GORE_MEDIUM:
-				bloodPower /= 2;
-				break;
-			default:
-				bloodPower = bloodPower * 7 / 8;
-				break;
-			}
+			return 1;
 		}
 	}
 
-	int ActorGetHealthPercent(const TActor *a)
-	{
-		const int maxHealth = ActorGetCharacter(a)->maxHealth;
-		return a->health * 100 / maxHealth;
-	}
+	return 0;
+}
 
-	bool ActorIsLowHealth(const TActor *a)
-	{
-		return ActorGetHealthPercent(a) < LOW_HEALTH_PERCENTAGE;
-	}
+static void ActorAddBloodSplatters(
+	TActor * a, const int power, const float mass,
+	const struct vec2 hitVector)
+{
+	const GoreAmount ga = ConfigGetEnum(&gConfig, "Graphics.Gore");
+	if (ga == GORE_NONE)
+		return;
 
-	bool ActorIsLocalPlayer(const int uid)
+	// Emit blood based on power and gore setting
+	int bloodPower = power * 2;
+	// Randomly cycle through the blood types
+	int bloodSize = 1;
+	const struct vec2 hitVNorm = svec2_normalize(hitVector);
+	const float speedBase = MAX(1.0f, mass) * SHOT_IMPULSE_FACTOR;
+	while (bloodPower > 0)
 	{
-		const TActor *a = ActorGetByUID(uid);
-		// Don't accept updates if actor doesn't exist
-		// This can happen in the very first frame, where we haven't yet
-		// processed an actor add message
-		// Otherwise this shouldn't happen
-		if (a == NULL)
-			return true;
-
-		return PlayerIsLocal(a->PlayerUID);
+		Emitter *em = NULL;
+		switch (bloodSize)
+		{
+		case 1:
+			em = &a->blood1;
+			break;
+		case 2:
+			em = &a->blood2;
+			break;
+		default:
+			em = &a->blood3;
+			break;
+		}
+		bloodSize++;
+		if (bloodSize > 3)
+		{
+			bloodSize = 1;
+		}
+		const struct vec2 vel =
+			svec2_scale(hitVNorm, speedBase * RAND_FLOAT(0.5f, 1));
+		AddParticle ap;
+		memset(&ap, 0, sizeof ap);
+		ap.Pos = a->Pos;
+		ap.Angle = NAN;
+		ap.Z = 10;
+		ap.Vel = vel;
+		ap.Mask = ActorGetCharacter(a)->Class->BloodColor;
+		EmitterStart(em, &ap);
+		switch (ga)
+		{
+		case GORE_LOW:
+			bloodPower /= 8;
+			break;
+		case GORE_MEDIUM:
+			bloodPower /= 2;
+			break;
+		default:
+			bloodPower = bloodPower * 7 / 8;
+			break;
+		}
 	}
+}
+
+int ActorGetHealthPercent(const TActor *a)
+{
+	const int maxHealth = ActorGetCharacter(a)->maxHealth;
+	return a->health * 100 / maxHealth;
+}
+
+bool ActorIsLowHealth(const TActor *a)
+{
+	return ActorGetHealthPercent(a) < LOW_HEALTH_PERCENTAGE;
+}
+
+bool ActorIsLocalPlayer(const int uid)
+{
+	const TActor *a = ActorGetByUID(uid);
+	// Don't accept updates if actor doesn't exist
+	// This can happen in the very first frame, where we haven't yet
+	// processed an actor add message
+	// Otherwise this shouldn't happen
+	if (a == NULL)
+		return true;
+
+	return PlayerIsLocal(a->PlayerUID);
+}

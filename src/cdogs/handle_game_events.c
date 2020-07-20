@@ -46,10 +46,10 @@
 
 static void HandleGameEvent(
 	const GameEvent e, Camera *camera, PowerupSpawner *healthSpawner,
-	CArray *ammoSpawners);
+	CArray *ammoSpawners, SoundDevice *sd);
 void HandleGameEvents(
 	CArray *store, Camera *camera, PowerupSpawner *healthSpawner,
-	CArray *ammoSpawners)
+	CArray *ammoSpawners, SoundDevice *sd)
 {
 	for (int i = 0; i < (int)store->size; i++)
 	{
@@ -59,13 +59,13 @@ void HandleGameEvents(
 		{
 			continue;
 		}
-		HandleGameEvent(*e, camera, healthSpawner, ammoSpawners);
+		HandleGameEvent(*e, camera, healthSpawner, ammoSpawners, sd);
 	}
 	GameEventsClear(store);
 }
 static void HandleGameEvent(
 	const GameEvent e, Camera *camera, PowerupSpawner *healthSpawner,
-	CArray *ammoSpawners)
+	CArray *ammoSpawners, SoundDevice *sd)
 {
 	switch (e.Type)
 	{
@@ -154,7 +154,7 @@ static void HandleGameEvent(
 		if (!e.u.SoundAt.IsHit || ConfigGetBool(&gConfig, "Sound.Hits"))
 		{
 			SoundPlayAt(
-				&gSoundDevice, StrSound(e.u.SoundAt.Sound),
+				sd, StrSound(e.u.SoundAt.Sound),
 				NetToVec2(e.u.SoundAt.Pos));
 		}
 		break;
@@ -183,9 +183,16 @@ static void HandleGameEvent(
 	case GAME_EVENT_GAME_BEGIN:
 		MissionBegin(&gMission, e.u.GameBegin);
 		break;
-	case GAME_EVENT_ACTOR_ADD:
+	case GAME_EVENT_ACTOR_ADD: {
 		ActorAdd(e.u.ActorAdd);
-		break;
+		const TActor *a = ActorGetByUID(e.u.ActorState.UID);
+		// Spawn sound for player actors
+		if (e.u.ActorAdd.PlayerUID >= 0)
+		{
+			SoundPlayAt(sd, StrSound("spawn"), a->Pos);
+		}
+	}
+	break;
 	case GAME_EVENT_ACTOR_MOVE:
 		ActorMove(e.u.ActorMove);
 		break;
@@ -212,7 +219,7 @@ static void HandleGameEvent(
 		// Slide sound
 		if (ConfigGetBool(&gConfig, "Sound.Footsteps"))
 		{
-			SoundPlayAt(&gSoundDevice, StrSound("slide"), a->thing.Pos);
+			SoundPlayAt(sd, StrSound("slide"), a->thing.Pos);
 		}
 	}
 	break;
@@ -248,7 +255,7 @@ static void HandleGameEvent(
 			break;
 		ActorHeal(a, e.u.Heal.Amount);
 		// Sound of healing
-		SoundPlayAt(&gSoundDevice, StrSound("health"), a->Pos);
+		SoundPlayAt(sd, StrSound("health"), a->Pos);
 		// Tell the spawner that we took a health so we can
 		// spawn more (but only if we're the server)
 		if (e.u.Heal.IsRandomSpawned && !gCampaign.IsClient)
@@ -315,12 +322,12 @@ static void HandleGameEvent(
 			if (ammoAfter == 0)
 			{
 				// No ammo
-				SoundPlay(&gSoundDevice, StrSound("ammo_none"));
+				SoundPlay(sd, StrSound("ammo_none"));
 			}
 			else if (!wasAmmoLow && isAmmoLow)
 			{
 				// Low ammo
-				SoundPlay(&gSoundDevice, StrSound("ammo_low"));
+				SoundPlay(sd, StrSound("ammo_low"));
 			}
 		}
 	}
@@ -358,7 +365,7 @@ static void HandleGameEvent(
 		PickupAdd(e.u.AddPickup);
 		// Play a spawn sound
 		SoundPlayAt(
-			&gSoundDevice, StrSound("spawn_item"),
+			sd, StrSound("spawn_item"),
 			NetToVec2(e.u.AddPickup.Pos));
 		break;
 	case GAME_EVENT_REMOVE_PICKUP:
@@ -427,7 +434,7 @@ static void HandleGameEvent(
 		// Sound
 		if (e.u.GunFire.Sound && wc->Sound)
 		{
-			SoundPlayAt(&gSoundDevice, wc->Sound, pos);
+			SoundPlayAt(sd, wc->Sound, pos);
 		}
 		// Screen shake
 		if (wc->Shake.Amount > 0)
@@ -451,7 +458,7 @@ static void HandleGameEvent(
 		const WeaponClass *wc = StrWeaponClass(e.u.GunReload.Gun);
 		const struct vec2 pos = NetToVec2(e.u.GunReload.Pos);
 		SoundPlayAtPlusDistance(
-			&gSoundDevice, wc->ReloadSound, pos, RELOAD_DISTANCE_PLUS);
+			sd, wc->ReloadSound, pos, RELOAD_DISTANCE_PLUS);
 		// Brass shells
 		if (wc->Brass)
 		{
@@ -511,7 +518,7 @@ static void HandleGameEvent(
 		{
 			a->flags |= FLAGS_RESCUED;
 		}
-		SoundPlayAt(&gSoundDevice, StrSound("rescue"), a->Pos);
+		SoundPlayAt(sd, StrSound("rescue"), a->Pos);
 	}
 	break;
 	case GAME_EVENT_OBJECTIVE_UPDATE: {
@@ -536,7 +543,7 @@ static void HandleGameEvent(
 
 		if (!svec2_is_zero(pos))
 		{
-			SoundPlayAt(&gSoundDevice, StrSound("key"), pos);
+			SoundPlayAt(sd, StrSound("key"), pos);
 
 			GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 			s.u.AddParticle.Class =
@@ -557,7 +564,7 @@ static void HandleGameEvent(
 		{
 			if (!gMission.HasPlayedCompleteSound)
 			{
-				SoundPlay(&gSoundDevice, StrSound("mission_complete"));
+				SoundPlay(sd, StrSound("mission_complete"));
 				gMission.HasPlayedCompleteSound = true;
 			}
 			if (camera != NULL)
@@ -584,7 +591,7 @@ static void HandleGameEvent(
 	case GAME_EVENT_MISSION_PICKUP:
 		gMission.state = MISSION_STATE_PICKUP;
 		gMission.pickupTime = gMission.time;
-		SoundPlay(&gSoundDevice, StrSound("whistle"));
+		SoundPlay(sd, StrSound("whistle"));
 		break;
 	case GAME_EVENT_MISSION_END:
 		MissionDone(&gMission, e.u.MissionEnd);

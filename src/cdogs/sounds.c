@@ -585,7 +585,7 @@ void SoundPlayAtPlusDistance(
 	SoundDevice *device, Mix_Chunk *data, const struct vec2 pos,
 	const int plusDistance)
 {
-	if (!device->isInitialised)
+	if (device == NULL || !device->isInitialised)
 	{
 		return;
 	}
