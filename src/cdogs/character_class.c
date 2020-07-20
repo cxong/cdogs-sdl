@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2016-2017, 2019 Cong Xu
+	Copyright (c) 2016-2017, 2019-2020 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -31,50 +31,32 @@
 #include "json_utils.h"
 #include "log.h"
 
-
 #define VERSION 2
 
 CharacterClasses gCharacterClasses;
-
 
 // TODO: use map structure?
 const CharacterClass *StrCharacterClass(const char *s)
 {
 	CA_FOREACH(const CharacterClass, c, gCharacterClasses.CustomClasses)
-		if (strcmp(s, c->Name) == 0)
-		{
-			return c;
-		}
+	if (strcmp(s, c->Name) == 0)
+	{
+		return c;
+	}
 	CA_FOREACH_END()
 	CA_FOREACH(const CharacterClass, c, gCharacterClasses.Classes)
-		if (strcmp(s, c->Name) == 0)
-		{
-			return c;
-		}
+	if (strcmp(s, c->Name) == 0)
+	{
+		return c;
+	}
 	CA_FOREACH_END()
 	LOG(LM_MAIN, LL_ERROR, "Cannot find character name: %s", s);
 	return NULL;
 }
-static const char *characterNames[] =
-{
-	"Jones",
-	"Ice",
-	"Ogre",
-	"Dragon",
-	"WarBaby",
-	"Bug-eye",
-	"Smith",
-	"Ogre Boss",
-	"Grunt",
-	"Professor",
-	"Snake",
-	"Wolf",
-	"Bob",
-	"Mad bug-eye",
-	"Cyborg",
-	"Robot",
-	"Lady"
-};
+static const char *characterNames[] = {
+	"Jones", "Ice",			"Ogre",	  "Dragon",	   "WarBaby", "Bug-eye",
+	"Smith", "Ogre Boss",	"Grunt",  "Professor", "Snake",	  "Wolf",
+	"Bob",	 "Mad bug-eye", "Cyborg", "Robot",	   "Lady"};
 const char *IntCharacterFace(const int face)
 {
 	return characterNames[face];
@@ -185,9 +167,8 @@ void CharacterOldFaceToHair(const char *face, char **newFace, char **hair)
 const CharacterClass *IndexCharacterClass(const int i)
 {
 	CASSERT(
-		i >= 0 &&
-		i < (int)gCharacterClasses.Classes.size +
-			(int)gCharacterClasses.CustomClasses.size,
+		i >= 0 && i < (int)gCharacterClasses.Classes.size +
+						  (int)gCharacterClasses.CustomClasses.size,
 		"Character class index out of bounds");
 	if (i < (int)gCharacterClasses.Classes.size)
 	{
@@ -203,19 +184,26 @@ int CharacterClassIndex(const CharacterClass *c)
 		return 0;
 	}
 	CA_FOREACH(const CharacterClass, cc, gCharacterClasses.Classes)
-		if (cc == c)
-		{
-			return _ca_index;
-		}
+	if (cc == c)
+	{
+		return _ca_index;
+	}
 	CA_FOREACH_END()
 	CA_FOREACH(const CharacterClass, cc, gCharacterClasses.CustomClasses)
-		if (cc == c)
-		{
-			return _ca_index + (int)gCharacterClasses.Classes.size;
-		}
+	if (cc == c)
+	{
+		return _ca_index + (int)gCharacterClasses.Classes.size;
+	}
 	CA_FOREACH_END()
 	CASSERT(false, "cannot find character class");
 	return -1;
+}
+
+Mix_Chunk *CharacterClassGetSound(const CharacterClass *c, const char *sound)
+{
+	char buf[CDOGS_PATH_MAX];
+	sprintf(buf, "%s/%s", c->Sounds, sound);
+	return StrSound(buf);
 }
 
 void CharacterClassesInitialize(CharacterClasses *c, const char *filename)
@@ -255,8 +243,8 @@ void CharacterClassesLoadJSON(CArray *classes, json_t *root)
 	LoadInt(&version, root, "Version");
 	if (version > VERSION || version <= 0)
 	{
-		LOG(LM_MAIN, LL_ERROR,
-			"Cannot read character file version: %d", version);
+		LOG(LM_MAIN, LL_ERROR, "Cannot read character file version: %d",
+			version);
 		return;
 	}
 
@@ -278,23 +266,7 @@ static void LoadCharacterClass(CharacterClass *c, json_t *node)
 	// TODO: custom character sprites
 	c->Sprites = StrCharSpriteClass("base");
 
-	// Default man sounds
-	CSTRDUP(c->Sounds.Aargh, "aargh/man");
-	json_t *sounds = json_find_first_label(node, "Sounds");
-	if (sounds != NULL && sounds->child != NULL)
-	{
-		char *tmp = NULL;
-		LoadStr(&tmp, sounds->child, "Aargh");
-		if (tmp != NULL)
-		{
-			CFREE(c->Sounds.Aargh);
-			c->Sounds.Aargh = tmp;
-		}
-		else
-		{
-			CFREE(tmp);
-		}
-	}
+	c->Sounds = GetString(node, "Sounds");
 
 	c->BloodColor = colorRed;
 	LoadColor(&c->BloodColor, node, "BloodColor");
@@ -314,7 +286,7 @@ void CharacterClassesClear(CArray *classes)
 static void CharacterClassFree(CharacterClass *c)
 {
 	CFREE(c->Name);
-	CFREE(c->Sounds.Aargh);
+	CFREE(c->Sounds);
 }
 void CharacterClassesTerminate(CharacterClasses *c)
 {

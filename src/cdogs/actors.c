@@ -571,7 +571,7 @@ void InjureActor(TActor *actor, int injury)
 		actor->stateCounter = 0;
 		SoundPlayAt(
 			&gSoundDevice,
-			StrSound(ActorGetCharacter(actor)->Class->Sounds.Aargh),
+			CharacterClassGetSound(ActorGetCharacter(actor)->Class, "aargh"),
 			actor->thing.Pos);
 		if (actor->PlayerUID >= 0)
 		{

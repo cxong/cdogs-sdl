@@ -325,6 +325,7 @@ int AICommand(const int ticks)
 	CA_FOREACH_END()
 	return count;
 }
+static void Wake(TActor *a);
 static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 {
 	const CharBot *bot = ActorGetCharacter(actor)->bot;
@@ -336,8 +337,7 @@ static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 	{
 		if (CanSeeAPlayer(actor))
 		{
-			actor->flags &= ~FLAGS_SLEEPING;
-			ActorSetAIState(actor, AI_STATE_NONE);
+			Wake(actor);
 		}
 		actor->aiContext->Delay = bot->actionDelay * delayModifier;
 		// Randomly change direction
@@ -468,6 +468,15 @@ static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 		}
 	}
 	return cmd;
+}
+static void Wake(TActor *a)
+{
+	a->flags &= ~FLAGS_SLEEPING;
+	ActorSetAIState(a, AI_STATE_NONE);
+	SoundPlayAt(
+		&gSoundDevice,
+		CharacterClassGetSound(ActorGetCharacter(a)->Class, "alert"),
+		a->thing.Pos);
 }
 static int Follow(TActor *a)
 {

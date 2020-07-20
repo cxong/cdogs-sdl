@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2016-2019 Cong Xu
+	Copyright (c) 2016-2020 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -28,28 +28,26 @@
 */
 #pragma once
 
+#include <SDL_mixer.h>
+
 #include "cpic.h"
 #include "defs.h"
 #include "draw/char_sprites.h"
 #include "json/json.h"
-
 
 typedef struct
 {
 	char *Name;
 	char *HeadSprites;
 	const CharSprites *Sprites;
-	struct
-	{
-		char *Aargh;
-	} Sounds;
+	char *Sounds;
 	color_t BloodColor;
 	bool HasHair;
 } CharacterClass;
 typedef struct
 {
-	CArray Classes;	// of CharacterClass
-	CArray CustomClasses;	// of CharacterClass
+	CArray Classes;		  // of CharacterClass
+	CArray CustomClasses; // of CharacterClass
 } CharacterClasses;
 extern CharacterClasses gCharacterClasses;
 
@@ -59,6 +57,7 @@ const char *IntCharacterFace(const int face);
 void CharacterOldFaceToHair(const char *face, char **newFace, char **hair);
 const CharacterClass *IndexCharacterClass(const int i);
 int CharacterClassIndex(const CharacterClass *c);
+Mix_Chunk *CharacterClassGetSound(const CharacterClass *c, const char *sound);
 
 void CharacterClassesInitialize(CharacterClasses *c, const char *filename);
 void CharacterClassesLoadJSON(CArray *classes, json_t *root);

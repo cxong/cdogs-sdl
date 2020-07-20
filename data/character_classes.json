@@ -6,7 +6,8 @@
       "HeadPics": {
         "Type": "Directional",
         "Sprites": "chars/heads/jones"
-      }
+      },
+      "Sounds": "man"
     },
     {
       "Name": "Ogre",
@@ -14,9 +15,7 @@
         "Type": "Directional",
         "Sprites": "chars/heads/ogre"
       },
-      "Sounds": {
-        "Aargh": "aargh/ogre"
-      },
+      "Sounds": "ogre",
       "BloodColor": "333333"
     },
     {
@@ -25,9 +24,7 @@
         "Type": "Directional",
         "Sprites": "chars/heads/bugeye"
       },
-      "Sounds": {
-        "Aargh": "aargh/alien"
-      },
+      "Sounds": "alien",
       "BloodColor": "00ff00",
       "HasHair": false
     },
@@ -37,9 +34,7 @@
         "Type": "Directional",
         "Sprites": "chars/heads/madbugeye"
       },
-      "Sounds": {
-        "Aargh": "aargh/alien"
-      },
+      "Sounds": "alien",
       "BloodColor": "00ff00",
       "HasHair": false
     },
@@ -49,9 +44,7 @@
         "Type": "Directional",
         "Sprites": "chars/heads/robot"
       },
-      "Sounds": {
-        "Aargh": "aargh/alien"
-      },
+      "Sounds": "alien",
       "BloodColor": "0000ff",
       "HasHair": false
     },
@@ -61,9 +54,7 @@
         "Type": "Directional",
         "Sprites": "chars/heads/lady"
       },
-      "Sounds": {
-        "Aargh": "aargh/woman"
-      }
+      "Sounds": "woman"
     },
     {
       "Name": "Cyborg",
@@ -71,9 +62,7 @@
         "Type": "Directional",
         "Sprites": "chars/heads/cyborg"
       },
-      "Sounds": {
-        "Aargh": "aargh/zombie"
-      },
+      "Sounds": "zombie",
       "BloodColor": "ff00ff"
     },
     {
@@ -82,9 +71,7 @@
         "Type": "Directional",
         "Sprites": "chars/heads/skull"
       },
-      "Sounds": {
-        "Aargh": "aargh/zombie"
-      },
+      "Sounds": "zombie",
       "BloodColor": "ffffff"
     },
     {
@@ -93,9 +80,7 @@
         "Type": "Directional",
         "Sprites": "chars/heads/skull_big"
       },
-      "Sounds": {
-        "Aargh": "aargh/zombie"
-      },
+      "Sounds": "zombie",
       "BloodColor": "ffffff",
       "HasHair": false
     }

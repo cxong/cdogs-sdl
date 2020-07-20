@@ -5,7 +5,8 @@
       "Name": "music_note",
       "Sprites": "music_note",
       "Range": 100,
-      "GravityFactor": 0
+      "GravityFactor": 0,
+      "TicksPerFrame": 10
     }
   ]
 }
