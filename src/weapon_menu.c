@@ -87,11 +87,12 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 	}
 }
 
-static void AddEquippedMenuItem(
+static menu_t *AddEquippedMenuItem(
 	menu_t *menu, const PlayerData *p, const int slot);
 static void CreateEquippedWeaponsMenu(
 	MenuSystem *ms, EventHandlers *handlers, GraphicsDevice *g,
-	const struct vec2i pos, const struct vec2i size, const PlayerData *p)
+	const struct vec2i pos, const struct vec2i size, const PlayerData *p,
+	const CArray *weapons)
 {
 	const struct vec2i maxTextSize = FontStrSize("LongestWeaponName");
 	struct vec2i dPos = pos;
@@ -106,15 +107,37 @@ static void CreateEquippedWeaponsMenu(
 	ms->align = MENU_ALIGN_LEFT;
 	ms->root = ms->current = MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
 	MenuAddExitType(ms, MENU_TYPE_RETURN);
+
+	// Count number of guns/grenades, and disable extra menu items
+	int numGuns = 0;
+	int numGrenades = 0;
+	CA_FOREACH(const WeaponClass *, wc, *weapons)
+	if ((*wc)->IsGrenade)
+	{
+		numGrenades++;
+	}
+	else
+	{
+		numGuns++;
+	}
+	CA_FOREACH_END()
 	int i;
 	for (i = 0; i < MAX_GUNS; i++)
 	{
-		AddEquippedMenuItem(ms->root, p, i);
+		menu_t *submenu = AddEquippedMenuItem(ms->root, p, i);
+		if (i >= numGuns)
+		{
+			submenu->isDisabled = true;
+		}
 	}
 	MenuAddSubmenu(ms->root, MenuCreateSeparator("--Grenades--"));
 	for (; i < MAX_GUNS + MAX_GRENADES; i++)
 	{
-		AddEquippedMenuItem(ms->root, p, i);
+		menu_t *submenu = AddEquippedMenuItem(ms->root, p, i);
+		if (i - MAX_GUNS >= numGrenades)
+		{
+			submenu->isDisabled = true;
+		}
 	}
 	MenuAddSubmenu(
 		ms->root, MenuCreateNormal(END_MENU_LABEL, "", MENU_TYPE_NORMAL, 0));
@@ -135,12 +158,12 @@ static void SetEquippedMenuItemName(
 		CSTRDUP(menu->name, NO_GUN_LABEL);
 	}
 }
-static void AddEquippedMenuItem(
+static menu_t *AddEquippedMenuItem(
 	menu_t *menu, const PlayerData *p, const int slot)
 {
 	menu_t *submenu = MenuCreateReturn("", slot);
 	SetEquippedMenuItemName(submenu, p, slot);
-	MenuAddSubmenu(menu, submenu);
+	return MenuAddSubmenu(menu, submenu);
 }
 
 static menu_t *CreateGunMenu(
@@ -203,7 +226,7 @@ void WeaponMenuCreate(
 
 	// Create equipped weapons menu
 	CreateEquippedWeaponsMenu(
-		&menu->msEquip, handlers, graphics, pos, size, pData);
+		&menu->msEquip, handlers, graphics, pos, size, pData, weapons);
 
 	// For AI players, pre-pick their weapons and go straight to menu end
 	if (pData->inputDevice == INPUT_DEVICE_AI)

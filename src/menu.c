@@ -355,7 +355,7 @@ static void UpdateSubmenuParentPtrs(menu_t *menu)
 	}
 	CA_FOREACH_END()
 }
-void MenuAddSubmenu(menu_t *menu, menu_t *subMenu)
+menu_t *MenuAddSubmenu(menu_t *menu, menu_t *subMenu)
 {
 	CArrayPushBack(&menu->u.normal.subMenus, subMenu);
 	if (subMenu->type == MENU_TYPE_QUIT)
@@ -369,6 +369,9 @@ void MenuAddSubmenu(menu_t *menu, menu_t *subMenu)
 
 	// move cursor in case first menu item(s) are disabled
 	MoveIndexToNextEnabledSubmenu(menu, true);
+
+	return CArrayGet(
+		&menu->u.normal.subMenus, menu->u.normal.subMenus.size - 1);
 }
 
 void MenuSetPostInputFunc(menu_t *menu, MenuPostInputFunc func, void *data)
