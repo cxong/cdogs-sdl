@@ -154,33 +154,33 @@ static void PicManagerAdd(
 					else if ((c.g < 5 && c.b < 5) ||
 						(abs((int)c.g - c.b) < 5 && c.r > 250))
 					{
-						// Skin
+						// Skin (R)
 						c.r = c.g = c.b = value;
 						c.a = 254;
 					}
 					else if ((c.r < 5 && c.b < 5) ||
 						(abs((int)c.r - c.b) < 5 && c.g > 250))
 					{
-						// Hair
+						// Hair (G)
 						c.r = c.g = c.b = value;
 						c.a = 250;
 					}
 					else if ((c.r < 5 && c.g < 5) ||
 						(abs((int)c.r - c.g) < 5 && c.b > 250))
 					{
-						// Arms
+						// Arms (B)
 						c.r = c.g = c.b = value;
 						c.a = 253;
 					}
 					else if (c.b < 5 || (c.r > 250 && c.g > 250))
 					{
-						// Body
+						// Body (RG)
 						c.r = c.g = c.b = value;
 						c.a = 252;
 					}
 					else if (c.r < 5 || (c.g > 250 && c.b > 250))
 					{
-						// Legs
+						// Legs (GB)
 						c.r = c.g = c.b = value;
 						c.a = 251;
 					}

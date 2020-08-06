@@ -2,15 +2,20 @@
 #
 # Create character spritesheet and join all the rendered images
 #
+set -e
 if [ "$#" -ne 1 ]; then
     echo "Usage: make_spritesheet.sh body"
     exit 1
 fi
 
-# TODO: linux path
-BLENDER=/Applications/blender.app/Contents/MacOS/blender
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+  BLENDER=blender
+else
+  # macos
+  BLENDER=/Applications/blender.app/Contents/MacOS/blender
+fi
 INFILE=$1/src.blend
-# Render separate body parts (in layers)
+# Render separate body parts (in collections)
 parts=(legs upper)
 # Render separate actions
 actions_legs=(idle run)
@@ -21,11 +26,14 @@ len_i=${#parts[*]}
 for (( i=0; i<len_i; i++ ))
 do
     part=${parts[$i]}
+    collections=base
     if [[ $part == *"legs"* ]]
     then
       actions=${actions_legs[@]}
+      collections=$collections,legs
     else
       actions=${actions_upper[@]}
+      collections=$collections,upper
     fi
     for action in $actions
     do
@@ -35,14 +43,13 @@ do
       else
         frames=$idle_frames
       fi
-      # Include right hand layer if the part is "upper" and action doesn't have
+      # Include right hand collection if the part is "upper" and action doesn't have
       # "handgun"
-      layers=$i
       if [[ $part == *"upper"* ]] && [[ $action != *"handgun"* ]]
       then
-        layers=$i,2
+        collections=$collections,hand_right
       fi
-      $BLENDER -b $INFILE -P render.py -- $layers $action $frames $part
+      $BLENDER -b $INFILE -P render.py -- $collections $action $frames $part
 
       DIMENSIONS=`identify -format "%wx%h" out/${part}_${action}_0_00.png`
       OUTFILE=$1/${part}_${action}_${DIMENSIONS}.png
