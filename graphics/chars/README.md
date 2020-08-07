@@ -9,4 +9,5 @@
   - Blue (240 hue): arms
   - Yellow (60 hue): body
   - Cyan (180 hue): legs
+  - Magenta (300 hue): feet
   - Any other shade: as is (recommend R, G, and B between 5 and 250)

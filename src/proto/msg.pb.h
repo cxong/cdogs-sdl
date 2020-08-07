@@ -268,6 +268,8 @@ typedef struct _NCharColors {
     NColor Legs;
     bool has_Hair;
     NColor Hair;
+    bool has_Feet;
+    NColor Feet;
 } NCharColors;
 
 typedef struct _NExploreTiles_Run {
@@ -371,7 +373,7 @@ typedef struct _NPlayerData {
 #define NClientId_init_default                   {0, 0}
 #define NCampaignDef_init_default                {"", 0, 0}
 #define NColor_init_default                      {0}
-#define NCharColors_init_default                 {false, NColor_init_default, false, NColor_init_default, false, NColor_init_default, false, NColor_init_default, false, NColor_init_default}
+#define NCharColors_init_default                 {false, NColor_init_default, false, NColor_init_default, false, NColor_init_default, false, NColor_init_default, false, NColor_init_default, false, NColor_init_default}
 #define NPlayerStats_init_default                {0, 0, 0, 0}
 #define NPlayerData_init_default                 {"", "", "", false, NCharColors_init_default, 0, {"", "", ""}, 0, false, NPlayerStats_init_default, false, NPlayerStats_init_default, 0, 0, 0, 0, {NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default}}
 #define NPlayerRemove_init_default               {0}
@@ -420,7 +422,7 @@ typedef struct _NPlayerData {
 #define NClientId_init_zero                      {0, 0}
 #define NCampaignDef_init_zero                   {"", 0, 0}
 #define NColor_init_zero                         {0}
-#define NCharColors_init_zero                    {false, NColor_init_zero, false, NColor_init_zero, false, NColor_init_zero, false, NColor_init_zero, false, NColor_init_zero}
+#define NCharColors_init_zero                    {false, NColor_init_zero, false, NColor_init_zero, false, NColor_init_zero, false, NColor_init_zero, false, NColor_init_zero, false, NColor_init_zero}
 #define NPlayerStats_init_zero                   {0, 0, 0, 0}
 #define NPlayerData_init_zero                    {"", "", "", false, NCharColors_init_zero, 0, {"", "", ""}, 0, false, NPlayerStats_init_zero, false, NPlayerStats_init_zero, 0, 0, 0, 0, {NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero}}
 #define NPlayerRemove_init_zero                  {0}
@@ -586,6 +588,7 @@ typedef struct _NPlayerData {
 #define NCharColors_Body_tag                     3
 #define NCharColors_Legs_tag                     4
 #define NCharColors_Hair_tag                     5
+#define NCharColors_Feet_tag                     6
 #define NExploreTiles_Run_Tile_tag               1
 #define NExploreTiles_Run_Run_tag                2
 #define NGunFire_ActorUID_tag                    1
@@ -673,7 +676,8 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  Skin,              1) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  Arms,              2) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  Body,              3) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  Legs,              4) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  Hair,              5)
+X(a, STATIC,   OPTIONAL, MESSAGE,  Hair,              5) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Feet,              6)
 #define NCharColors_CALLBACK NULL
 #define NCharColors_DEFAULT NULL
 #define NCharColors_Skin_MSGTYPE NColor
@@ -681,6 +685,7 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  Hair,              5)
 #define NCharColors_Body_MSGTYPE NColor
 #define NCharColors_Legs_MSGTYPE NColor
 #define NCharColors_Hair_MSGTYPE NColor
+#define NCharColors_Feet_MSGTYPE NColor
 
 #define NPlayerStats_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, INT32,    Score,             1) \
@@ -1143,9 +1148,9 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 #define NClientId_size                           12
 #define NCampaignDef_size                        4115
 #define NColor_size                              11
-#define NCharColors_size                         65
+#define NCharColors_size                         78
 #define NPlayerStats_size                        44
-#define NPlayerData_size                         2646
+#define NPlayerData_size                         2659
 #define NPlayerRemove_size                       6
 #define NConfig_size                             260
 #define NTileSet_size                            295

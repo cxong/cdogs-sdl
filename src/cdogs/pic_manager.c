@@ -1,29 +1,29 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2019 Cong Xu
-    All rights reserved.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (c) 2013-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "pic_manager.h"
 
@@ -41,7 +41,6 @@
 #define GRAPHICS_DIR "graphics"
 
 PicManager gPicManager;
-
 
 void PicManagerInit(PicManager *pm)
 {
@@ -88,8 +87,8 @@ static void PicManagerAdd(
 	bool isSpritesheet = false;
 	char *underscore = strrchr(buf, '_');
 	const char *x = strrchr(buf, 'x');
-	if (underscore != NULL && x != NULL &&
-		underscore + 1 < x && x + 1 < buf + strlen(buf))
+	if (underscore != NULL && x != NULL && underscore + 1 < x &&
+		x + 1 < buf + strlen(buf))
 	{
 		if (sscanf(underscore, "_%dx%d", &size.x, &size.y) != 2)
 		{
@@ -112,8 +111,8 @@ static void PicManagerAdd(
 		np = AddNamedPic(pics, buf, NULL);
 	}
 	// Use 32-bit image
-	SDL_Surface *image = SDL_ConvertSurfaceFormat(
-		imageIn, SDL_PIXELFORMAT_RGBA8888, 0);
+	SDL_Surface *image =
+		SDL_ConvertSurfaceFormat(imageIn, SDL_PIXELFORMAT_RGBA8888, 0);
 	SDL_FreeSurface(imageIn);
 	SDL_LockSurface(image);
 	struct vec2i offset;
@@ -146,45 +145,12 @@ static void PicManagerAdd(
 					{
 						continue;
 					}
+					// Convert character color keyed color to
+					// greyscale + special alpha
 					const uint8_t value = MAX(MAX(c.r, c.g), c.b);
-					if (abs((int)c.r - c.g) < 5 && abs((int)c.g - c.b) < 5)
-					{
-						// don't convert greyscale colours
-					}
-					else if ((c.g < 5 && c.b < 5) ||
-						(abs((int)c.g - c.b) < 5 && c.r > 250))
-					{
-						// Skin (R)
-						c.r = c.g = c.b = value;
-						c.a = 254;
-					}
-					else if ((c.r < 5 && c.b < 5) ||
-						(abs((int)c.r - c.b) < 5 && c.g > 250))
-					{
-						// Hair (G)
-						c.r = c.g = c.b = value;
-						c.a = 250;
-					}
-					else if ((c.r < 5 && c.g < 5) ||
-						(abs((int)c.r - c.g) < 5 && c.b > 250))
-					{
-						// Arms (B)
-						c.r = c.g = c.b = value;
-						c.a = 253;
-					}
-					else if (c.b < 5 || (c.r > 250 && c.g > 250))
-					{
-						// Body (RG)
-						c.r = c.g = c.b = value;
-						c.a = 252;
-					}
-					else if (c.r < 5 || (c.g > 250 && c.b > 250))
-					{
-						// Legs (GB)
-						c.r = c.g = c.b = value;
-						c.a = 251;
-					}
-					pic->Data[i] = COLOR2PIXEL(c);
+					const color_t converted = {
+						value, value, value, CharColorToAlpha(c)};
+					pic->Data[i] = COLOR2PIXEL(converted);
 				}
 			}
 		}
@@ -196,16 +162,16 @@ static void PicManagerAdd(
 }
 
 void PicManagerLoadDir(
-	PicManager *pm, const char *path, const char *prefix,
-	map_t pics, map_t sprites)
+	PicManager *pm, const char *path, const char *prefix, map_t pics,
+	map_t sprites)
 {
 	tinydir_dir dir;
 	if (tinydir_open(&dir, path) == -1)
 	{
 		if (errno != ENOENT)
 		{
-			LOG(LM_MAIN, LL_ERROR, "Error opening image dir '%s': %s",
-				path, strerror(errno));
+			LOG(LM_MAIN, LL_ERROR, "Error opening image dir '%s': %s", path,
+				strerror(errno));
 		}
 		goto bail;
 	}
@@ -215,8 +181,8 @@ void PicManagerLoadDir(
 		tinydir_file file;
 		if (tinydir_readfile(&dir, &file) == -1)
 		{
-			LOG(LM_MAIN, LL_ERROR, "Cannot read file '%s': %s",
-				file.path, strerror(errno));
+			LOG(LM_MAIN, LL_ERROR, "Cannot read file '%s': %s", file.path,
+				strerror(errno));
 			goto bail;
 		}
 		if (file.is_reg)
@@ -259,8 +225,7 @@ void PicManagerLoadDir(
 			}
 			else
 			{
-				PicManagerLoadDir(
-					pm, file.path, file.name, pics, sprites);
+				PicManagerLoadDir(pm, file.path, file.name, pics, sprites);
 			}
 		}
 	}
@@ -274,7 +239,6 @@ void PicManagerLoad(PicManager *pm)
 	GetDataFilePath(buf, GRAPHICS_DIR);
 	PicManagerLoadDir(pm, buf, NULL, pm->pics, pm->sprites);
 }
-
 
 static void FindStylePics(
 	PicManager *pm, CArray *styleNames, PFany hashmapFunc);
@@ -299,7 +263,7 @@ static int CompareStyleNames(const void *v1, const void *v2);
 static void StylesClear(CArray *styles)
 {
 	CA_FOREACH(char *, styleName, *styles)
-		CFREE(*styleName);
+	CFREE(*styleName);
 	CA_FOREACH_END()
 	CArrayClear(styles);
 }
@@ -322,8 +286,8 @@ static void FindStylePics(
 }
 static int CompareStyleNames(const void *v1, const void *v2)
 {
-	const char * const *s1 = v1;
-	const char * const *s2 = v2;
+	const char *const *s1 = v1;
+	const char *const *s2 = v2;
 	return strcmp(*s1, *s2);
 }
 static void FindStyleSprites(
@@ -365,10 +329,10 @@ static void MaybeAddStyleName(
 	// Check if we already have the style name
 	// This can happen if a custom pic uses the same name as a built in one
 	CA_FOREACH(char *, styleName, *styleNames)
-		if (strcmp(*styleName, buf) == 0)
-		{
-			return;
-		}
+	if (strcmp(*styleName, buf) == 0)
+	{
+		return;
+	}
 	CA_FOREACH_END()
 
 	char *s;
@@ -379,7 +343,8 @@ static int MaybeAdHairSpriteName(any_t data, any_t item)
 {
 	PicManager *pm = data;
 	MaybeAddStyleName(
-		((const NamedSprites *)item)->name, "chars/hairs/", &pm->hairstyleNames);
+		((const NamedSprites *)item)->name, "chars/hairs/",
+		&pm->hairstyleNames);
 	return MAP_OK;
 }
 static int MaybeAddExitPicName(any_t data, any_t item)
@@ -457,7 +422,7 @@ static void PicManagerUnload(PicManager *pm)
 static void StyleNamesDestroy(CArray *a)
 {
 	CA_FOREACH(char, n, *a)
-		CFREE(n);
+	CFREE(n);
 	CA_FOREACH_END()
 	CArrayTerminate(a);
 }
@@ -509,11 +474,11 @@ static int ReloadSpriteTexture(any_t data, any_t item)
 	UNUSED(data);
 	NamedSprites *n = item;
 	CA_FOREACH(Pic, op, n->pics)
-		if (!PicTryMakeTex(op))
-		{
-			LOG(LM_MAIN, LL_ERROR, "failed to reload pic texture");
-			op->Tex = NULL;
-		}
+	if (!PicTryMakeTex(op))
+	{
+		LOG(LM_MAIN, LL_ERROR, "failed to reload pic texture");
+		op->Tex = NULL;
+	}
 	CA_FOREACH_END()
 	return MAP_OK;
 }
@@ -536,7 +501,8 @@ NamedPic *PicManagerGetNamedPic(const PicManager *pm, const char *name)
 Pic *PicManagerGetPic(const PicManager *pm, const char *name)
 {
 	NamedPic *n = PicManagerGetNamedPic(pm, name);
-	if (n != NULL) return &n->pic;
+	if (n != NULL)
+		return &n->pic;
 	return NULL;
 }
 const NamedSprites *PicManagerGetSprites(
@@ -563,17 +529,16 @@ static void GetMaskedName(
 // The name of the pic will be <name>/<mask>/<maskAlt>
 // Used for dynamic map tile pic colours
 static NamedPic *PicManagerGetMaskedPic(
-	const PicManager *pm, const char *name,
-	const color_t mask, const color_t maskAlt)
+	const PicManager *pm, const char *name, const color_t mask,
+	const color_t maskAlt)
 {
 	char maskedName[256];
 	GetMaskedName(maskedName, name, mask, maskAlt);
 	return PicManagerGetNamedPic(pm, maskedName);
 }
 NamedPic *PicManagerGetMaskedStylePic(
-	const PicManager *pm,
-	const char *name, const char *style, const char *type,
-	const color_t mask, const color_t maskAlt)
+	const PicManager *pm, const char *name, const char *style,
+	const char *type, const color_t mask, const color_t maskAlt)
 {
 	char buf[256];
 	sprintf(buf, "%s/%s/%s", name, style, type);
@@ -581,13 +546,14 @@ NamedPic *PicManagerGetMaskedStylePic(
 }
 
 static void PicManagerGenerateMaskedPic(
-	PicManager *pm, const char *name,
-	const color_t mask, const color_t maskAlt, const bool noAltMask)
+	PicManager *pm, const char *name, const color_t mask,
+	const color_t maskAlt, const bool noAltMask)
 {
 	char maskedName[256];
 	GetMaskedName(maskedName, name, mask, maskAlt);
 	// Check if the masked pic already exists
-	if (PicManagerGetPic(pm, maskedName) != NULL) return;
+	if (PicManagerGetPic(pm, maskedName) != NULL)
+		return;
 
 	// Check if the original pic is available; if not then it's impossible to
 	// create the masked version
@@ -649,24 +615,23 @@ const NamedSprites *PicManagerGetCharSprites(
 	}
 	NamedSprites *nsp = AddNamedSprites(pm->customSprites, buf);
 	CA_FOREACH(Pic, op, ons->pics)
-		Pic p = PicCopy(op);
+	Pic p = PicCopy(op);
+	p.Tex = NULL;
+	for (int i = 0; i < p.size.x * p.size.y; i++)
+	{
+		if (op->Data[i] == 0)
+		{
+			continue;
+		}
+		const color_t c = PIXEL2COLOR(op->Data[i]);
+		p.Data[i] =
+			COLOR2PIXEL(ColorMult(c, CharColorsGetChannelMask(colors, c.a)));
+	}
+	if (!PicTryMakeTex(&p))
+	{
 		p.Tex = NULL;
-		for (int i = 0; i < p.size.x * p.size.y; i++)
-		{
-			if (op->Data[i] == 0)
-			{
-				continue;
-			}
-			const color_t c = PIXEL2COLOR(op->Data[i]);
-			p.Data[i] = COLOR2PIXEL(ColorMult(
-				c, CharColorsGetChannelMask(colors, c.a)
-			));
-		}
-		if (!PicTryMakeTex(&p))
-		{
-			p.Tex = NULL;
-		}
-		CArrayPushBack(&nsp->pics, &p);
+	}
+	CArrayPushBack(&nsp->pics, &p);
 	CA_FOREACH_END()
 	AfterAdd(pm);
 	return nsp;
@@ -686,7 +651,8 @@ static NamedPic *AddNamedPic(map_t pics, const char *name, const Pic *p)
 {
 	NamedPic *n;
 	CMALLOC(n, sizeof *n);
-	if (p != NULL) n->pic = *p;
+	if (p != NULL)
+		n->pic = *p;
 	CSTRDUP(n->name, name);
 	const int error = hashmap_put(pics, name, n);
 	if (error != MAP_OK)
@@ -705,8 +671,8 @@ static NamedSprites *AddNamedSprites(map_t sprites, const char *name)
 	const int error = hashmap_put(sprites, name, ns);
 	if (error != MAP_OK)
 	{
-		LOG(LM_MAIN, LL_ERROR, "failed to add named sprites %s: %d",
-			name, error);
+		LOG(LM_MAIN, LL_ERROR, "failed to add named sprites %s: %d", name,
+			error);
 		CFREE(ns);
 		return NULL;
 	}
@@ -716,50 +682,50 @@ static NamedSprites *AddNamedSprites(map_t sprites, const char *name)
 int PicManagerGetWallStyleIndex(PicManager *pm, const char *style)
 {
 	CA_FOREACH(const char *, styleName, pm->wallStyleNames)
-		if (strcmp(style, *styleName) == 0)
-		{
-			return _ca_index;
-		}
+	if (strcmp(style, *styleName) == 0)
+	{
+		return _ca_index;
+	}
 	CA_FOREACH_END()
 	return 0;
 }
 int PicManagerGetTileStyleIndex(PicManager *pm, const char *style)
 {
 	CA_FOREACH(const char *, styleName, pm->tileStyleNames)
-		if (strcmp(style, *styleName) == 0)
-		{
-			return _ca_index;
-		}
+	if (strcmp(style, *styleName) == 0)
+	{
+		return _ca_index;
+	}
 	CA_FOREACH_END()
 	return 0;
 }
 int PicManagerGetExitStyleIndex(PicManager *pm, const char *style)
 {
 	CA_FOREACH(const char *, styleName, pm->exitStyleNames)
-		if (strcmp(style, *styleName) == 0)
-		{
-			return _ca_index;
-		}
+	if (strcmp(style, *styleName) == 0)
+	{
+		return _ca_index;
+	}
 	CA_FOREACH_END()
 	return 0;
 }
 int PicManagerGetDoorStyleIndex(PicManager *pm, const char *style)
 {
 	CA_FOREACH(const char *, doorStyleName, pm->doorStyleNames)
-		if (strcmp(style, *doorStyleName) == 0)
-		{
-			return _ca_index;
-		}
+	if (strcmp(style, *doorStyleName) == 0)
+	{
+		return _ca_index;
+	}
 	CA_FOREACH_END()
 	return 0;
 }
 int PicManagerGetKeyStyleIndex(PicManager *pm, const char *style)
 {
 	CA_FOREACH(const char *, keyStyleName, pm->keyStyleNames)
-		if (strcmp(style, *keyStyleName) == 0)
-		{
-			return _ca_index;
-		}
+	if (strcmp(style, *keyStyleName) == 0)
+	{
+		return _ca_index;
+	}
 	CA_FOREACH_END()
 	return 0;
 }

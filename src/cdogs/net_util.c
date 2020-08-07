@@ -145,6 +145,7 @@ NCharColors CharColors2Net(const CharColors c)
 	co.Body = Color2Net(c.Body);
 	co.Legs = Color2Net(c.Legs);
 	co.Hair = Color2Net(c.Hair);
+	co.Feet = Color2Net(c.Feet);
 	return co;
 }
 CharColors Net2CharColors(const NCharColors c)
@@ -155,6 +156,7 @@ CharColors Net2CharColors(const NCharColors c)
 	co.Body = Net2Color(c.Body);
 	co.Legs = Net2Color(c.Legs);
 	co.Hair = Net2Color(c.Hair);
+	co.Feet = Net2Color(c.Feet);
 	return co;
 }
 void Ammo2Net(pb_size_t *ammoCount, NAmmo *ammo, const CArray *a)

@@ -140,6 +140,11 @@ void CharacterLoadJSON(
 			LoadColor(&ch->Colors.Legs, child, "Legs");
 			LoadColor(&ch->Colors.Hair, child, "Hair");
 		}
+		ch->Colors.Feet = ch->Colors.Legs;
+		if (version >= 13)
+		{
+			LoadColor(&ch->Colors.Feet, child, "Feet");
+		}
 		if (version < 12)
 		{
 			ConvertHairColors(ch);
@@ -190,6 +195,7 @@ bool CharacterSave(CharacterStore *s, const char *path)
 	AddColorPair(node, "Body", c->Colors.Body);
 	AddColorPair(node, "Legs", c->Colors.Legs);
 	AddColorPair(node, "Hair", c->Colors.Hair);
+	AddColorPair(node, "Feet", c->Colors.Feet);
 	AddIntPair(node, "speed", (int)(c->speed * 256));
 	json_insert_pair_into_object(node, "Gun", json_new_string(c->Gun->name));
 	AddIntPair(node, "maxHealth", c->maxHealth);
@@ -326,6 +332,7 @@ void CharacterShuffleAppearance(Character *c)
 	c->Colors.Body = RandomColor();
 	c->Colors.Legs = RandomColor();
 	c->Colors.Hair = RandomColor();
+	c->Colors.Feet = RandomColor();
 }
 static color_t RandomColor(void)
 {

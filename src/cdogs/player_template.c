@@ -84,6 +84,11 @@ static void LoadPlayerTemplate(
 		LoadColor(&t.Colors.Legs, node, "Legs");
 		LoadColor(&t.Colors.Hair, node, "Hair");
 	}
+	t.Colors.Feet = t.Colors.Legs;
+	if (version >= 3)
+	{
+		LoadColor(&t.Colors.Feet, node, "Feet");
+	}
 	CArrayPushBack(templates, &t);
 	LOG(LM_MAIN, LL_DEBUG, "loaded player template %s (%s)", t.name,
 		t.CharClassName);
@@ -183,6 +188,7 @@ static void SavePlayerTemplate(const PlayerTemplate *t, json_t *templates)
 	AddColorPair(template, "Legs", t->Colors.Legs);
 	AddColorPair(template, "Skin", t->Colors.Skin);
 	AddColorPair(template, "Hair", t->Colors.Hair);
+	AddColorPair(template, "Feet", t->Colors.Feet);
 	json_insert_child(templates, template);
 }
 void PlayerTemplatesSave(const PlayerTemplates *pt)

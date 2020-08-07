@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2016, Cong Xu
+	Copyright (c) 2013-2016, 2020 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,7 @@ typedef struct
 	ColorMenuData armsData;
 	ColorMenuData bodyData;
 	ColorMenuData legsData;
+	ColorMenuData feetData;
 	const NameGen *nameGenerator;
 } PlayerSelectMenuData;
 typedef struct
@@ -59,7 +60,5 @@ typedef struct
 } PlayerSelectMenu;
 
 void PlayerSelectMenusCreate(
-	PlayerSelectMenu *menu,
-	int numPlayers, int player, const int playerUID,
-	EventHandlers *handlers, GraphicsDevice *graphics,
-	const NameGen *ng);
+	PlayerSelectMenu *menu, int numPlayers, int player, const int playerUID,
+	EventHandlers *handlers, GraphicsDevice *graphics, const NameGen *ng);

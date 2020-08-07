@@ -34,6 +34,7 @@ message NCharColors {
 	NColor Body = 3;
 	NColor Legs = 4;
 	NColor Hair = 5;
+	NColor Feet = 6;
 }
 
 message NPlayerStats {

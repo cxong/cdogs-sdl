@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2016, 2018-2019 Cong Xu
+	Copyright (c) 2013-2016, 2018-2020 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -37,18 +37,17 @@
 #include <cdogs/font.h>
 #include <cdogs/player_template.h>
 
-
 static char letters[] = "1234567890-QWERTYUIOP!ASDFGHJKL:#ZXCVBNM  .?";
 static char smallLetters[] = "1234567890-qwertyuiop!asdfghjkl:#zxcvbnm  .?";
 
 static void DrawNameMenu(
-	const menu_t *menu, GraphicsDevice *g,
-	const struct vec2i pos, const struct vec2i size, const void *data)
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
+	const struct vec2i size, const void *data)
 {
 	const PlayerSelectMenuData *d = data;
 
-#define ENTRY_COLS	11
-#define	ENTRY_SPACING	7
+#define ENTRY_COLS 11
+#define ENTRY_SPACING 7
 
 	int x = pos.x;
 	int y = CENTER_Y(
@@ -169,10 +168,10 @@ static menu_t *CreateFaceMenu(MenuDisplayPlayerData *data)
 	menu_t *menu = MenuCreateNormal("Face", "", MENU_TYPE_NORMAL, 0);
 	menu->u.normal.maxItems = 11;
 	CA_FOREACH(const CharacterClass, c, gCharacterClasses.Classes)
-		MenuAddSubmenu(menu, MenuCreateBack(c->Name));
+	MenuAddSubmenu(menu, MenuCreateBack(c->Name));
 	CA_FOREACH_END()
 	CA_FOREACH(const CharacterClass, c, gCharacterClasses.CustomClasses)
-		MenuAddSubmenu(menu, MenuCreateBack(c->Name));
+	MenuAddSubmenu(menu, MenuCreateBack(c->Name));
 	CA_FOREACH_END()
 	MenuSetPostInputFunc(menu, PostInputFaceMenu, data);
 	return menu;
@@ -203,7 +202,7 @@ static menu_t *CreateHairMenu(MenuDisplayPlayerData *data)
 	menu->u.normal.maxItems = 11;
 	MenuAddSubmenu(menu, MenuCreateBack("(None)"));
 	CA_FOREACH(const char *, h, gPicManager.hairstyleNames)
-		MenuAddSubmenu(menu, MenuCreateBack(*h));
+	MenuAddSubmenu(menu, MenuCreateBack(*h));
 	CA_FOREACH_END()
 	MenuSetPostInputFunc(menu, PostInputHairMenu, data);
 	return menu;
@@ -226,12 +225,12 @@ static void PostInputHairMenu(menu_t *menu, int cmd, void *data)
 }
 
 static void DrawColorMenu(
-	const menu_t *menu, GraphicsDevice *g,
-	const struct vec2i pos, const struct vec2i size, const void *data);
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
+	const struct vec2i size, const void *data);
 static int HandleInputColorMenu(int cmd, void *data);
 static menu_t *CreateColorMenu(
-	const char *name, ColorMenuData *data,
-	const CharColorType type, const int playerUID)
+	const char *name, ColorMenuData *data, const CharColorType type,
+	const int playerUID)
 {
 	data->Type = type;
 	data->PlayerUID = playerUID;
@@ -255,7 +254,7 @@ static menu_t *CreateColorMenu(
 			const int er = (int)colour.r - currentColour.r;
 			const int eg = (int)colour.g - currentColour.g;
 			const int eb = (int)colour.b - currentColour.b;
-			const int error = er*er + eg*eg + eb*eb;
+			const int error = er * er + eg * eg + eb * eb;
 			if (errorLowest == -1 || error < errorLowest)
 			{
 				errorLowest = error;
@@ -266,22 +265,22 @@ static menu_t *CreateColorMenu(
 	return MenuCreateCustom(name, DrawColorMenu, HandleInputColorMenu, data);
 }
 static void DrawColorMenu(
-	const menu_t *menu, GraphicsDevice *g,
-	const struct vec2i pos, const struct vec2i size, const void *data)
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
+	const struct vec2i size, const void *data)
 {
 	UNUSED(menu);
 	const ColorMenuData *d = data;
 	// Draw colour squares from the palette
 	const struct vec2i swatchSize = svec2i(4, 4);
-	const struct vec2i drawPos = svec2i(
-		pos.x, CENTER_Y(pos, size, d->palette->size.y * swatchSize.y));
+	const struct vec2i drawPos =
+		svec2i(pos.x, CENTER_Y(pos, size, d->palette->size.y * swatchSize.y));
 	struct vec2i v;
 	for (v.y = 0; v.y < d->palette->size.y; v.y++)
 	{
 		for (v.x = 0; v.x < d->palette->size.x; v.x++)
 		{
-			const color_t colour = PIXEL2COLOR(
-				d->palette->Data[v.x + v.y * d->palette->size.x]);
+			const color_t colour =
+				PIXEL2COLOR(d->palette->Data[v.x + v.y * d->palette->size.x]);
 			if (colour.a == 0)
 			{
 				continue;
@@ -298,8 +297,7 @@ static void DrawColorMenu(
 			drawPos,
 			svec2i_subtract(
 				svec2i_multiply(d->selectedColor, swatchSize), svec2i(1, 1))),
-		svec2i_add(swatchSize, svec2i(2, 2)),
-		colorWhite, false);
+		svec2i_add(swatchSize, svec2i(2, 2)), colorWhite, false);
 }
 static int HandleInputColorMenu(int cmd, void *data)
 {
@@ -307,12 +305,20 @@ static int HandleInputColorMenu(int cmd, void *data)
 	struct vec2i selected = d->selectedColor;
 	switch (cmd)
 	{
-	case CMD_LEFT: selected.x--; break;
-	case CMD_RIGHT: selected.x++; break;
-	case CMD_UP: selected.y--; break;
-	case CMD_DOWN: selected.y++; break;
+	case CMD_LEFT:
+		selected.x--;
+		break;
+	case CMD_RIGHT:
+		selected.x++;
+		break;
+	case CMD_UP:
+		selected.y--;
+		break;
+	case CMD_DOWN:
+		selected.y++;
+		break;
 	case CMD_BUTTON1:
-	case CMD_BUTTON2:	// fallthrough
+	case CMD_BUTTON2: // fallthrough
 		MenuPlaySound(MENU_SOUND_ENTER);
 		return cmd;
 	default:
@@ -364,7 +370,7 @@ static void PostEnterLoadTemplateNames(menu_t *menu, void *data)
 {
 	bool *isSave = (bool *)data;
 	MenuClearSubmenus(menu);
-	for (int i = 0; ; i++)
+	for (int i = 0;; i++)
 	{
 		const PlayerTemplate *pt = PlayerTemplateGetById(&gPlayerTemplates, i);
 		if (pt == NULL)
@@ -419,8 +425,8 @@ static void PostInputSaveTemplate(menu_t *menu, int cmd, void *data)
 }
 
 static void SaveTemplateDisplayTitle(
-	const menu_t *menu, GraphicsDevice *g,
-	const struct vec2i pos, const struct vec2i size, const void *data)
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
+	const struct vec2i size, const void *data)
 {
 	UNUSED(g);
 	const PlayerSelectMenuData *d = data;
@@ -457,10 +463,8 @@ static menu_t *CreateCustomizeMenu(
 	const char *name, PlayerSelectMenuData *data);
 static void ShuffleAppearance(void *data);
 void PlayerSelectMenusCreate(
-	PlayerSelectMenu *menu,
-	int numPlayers, int player, const int playerUID,
-	EventHandlers *handlers, GraphicsDevice *graphics,
-	const NameGen *ng)
+	PlayerSelectMenu *menu, int numPlayers, int player, const int playerUID,
+	EventHandlers *handlers, GraphicsDevice *graphics, const NameGen *ng)
 {
 	MenuSystem *ms = &menu->ms;
 	PlayerSelectMenuData *data = &menu->data;
@@ -500,19 +504,15 @@ void PlayerSelectMenusCreate(
 	}
 	MenuSystemInit(ms, handlers, graphics, pos, size);
 	ms->align = MENU_ALIGN_LEFT;
-	ms->root = ms->current = MenuCreateNormal(
-		"",
-		"",
-		MENU_TYPE_NORMAL,
-		0);
+	ms->root = ms->current = MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
 	MenuSetPostInputFunc(ms->root, PostInputRotatePlayer, &data->display);
-	MenuAddSubmenu(ms->root, MenuCreateCustom(
-		"Name", DrawNameMenu, HandleInputNameMenu, data));
+	MenuAddSubmenu(
+		ms->root,
+		MenuCreateCustom("Name", DrawNameMenu, HandleInputNameMenu, data));
 
 	MenuAddSubmenu(ms->root, CreateCustomizeMenu("Customize...", data));
 	MenuAddSubmenu(
-		ms->root,
-		MenuCreateVoidFunc("Shuffle", ShuffleAppearance, data));
+		ms->root, MenuCreateVoidFunc("Shuffle", ShuffleAppearance, data));
 
 	MenuAddSubmenu(ms->root, CreateUseTemplateMenu("Load", data));
 	MenuAddSubmenu(ms->root, CreateSaveTemplateMenu("Save", data));
@@ -540,22 +540,37 @@ static menu_t *CreateCustomizeMenu(
 	MenuAddSubmenu(menu, CreateFaceMenu(&data->display));
 	MenuAddSubmenu(menu, CreateHairMenu(&data->display));
 
-	MenuAddSubmenu(menu, CreateColorMenu(
-		"Skin", &data->skinData, CHAR_COLOR_SKIN, data->display.PlayerUID));
-	MenuAddSubmenu(menu, CreateColorMenu(
-		"Hair", &data->hairData, CHAR_COLOR_HAIR, data->display.PlayerUID));
-	MenuAddSubmenu(menu, CreateColorMenu(
-		"Arms", &data->armsData, CHAR_COLOR_ARMS, data->display.PlayerUID));
-	MenuAddSubmenu(menu, CreateColorMenu(
-		"Body", &data->bodyData, CHAR_COLOR_BODY, data->display.PlayerUID));
-	MenuAddSubmenu(menu, CreateColorMenu(
-		"Legs", &data->legsData, CHAR_COLOR_LEGS, data->display.PlayerUID));
+	MenuAddSubmenu(
+		menu, CreateColorMenu(
+				  "Skin", &data->skinData, CHAR_COLOR_SKIN,
+				  data->display.PlayerUID));
+	MenuAddSubmenu(
+		menu, CreateColorMenu(
+				  "Hair", &data->hairData, CHAR_COLOR_HAIR,
+				  data->display.PlayerUID));
+	MenuAddSubmenu(
+		menu, CreateColorMenu(
+				  "Arms", &data->armsData, CHAR_COLOR_ARMS,
+				  data->display.PlayerUID));
+	MenuAddSubmenu(
+		menu, CreateColorMenu(
+				  "Body", &data->bodyData, CHAR_COLOR_BODY,
+				  data->display.PlayerUID));
+	MenuAddSubmenu(
+		menu, CreateColorMenu(
+				  "Legs", &data->legsData, CHAR_COLOR_LEGS,
+				  data->display.PlayerUID));
+	MenuAddSubmenu(
+		menu, CreateColorMenu(
+				  "Feet", &data->feetData, CHAR_COLOR_FEET,
+				  data->display.PlayerUID));
 
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Back"));
 
 	MenuSetPostInputFunc(menu, PostInputRotatePlayer, &data->display);
-	MenuSetPostEnterFunc(menu, CheckReenableHairHatMenu, &data->display, false);
+	MenuSetPostEnterFunc(
+		menu, CheckReenableHairHatMenu, &data->display, false);
 
 	return menu;
 }

@@ -33,7 +33,7 @@
 
 #define ROW_HEIGHT 25
 const float colRatios[] = {0.25f, 0.75f};
-#define CHAR_STORE_BOTTOM 470
+#define CHAR_STORE_BOTTOM 490
 #define PAD 10.0f
 
 typedef struct
@@ -416,6 +416,10 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 			{
 				*ec->FileChanged = true;
 			}
+			if (ColorPicker(ctx, ROW_HEIGHT, "Feet:", &ec->Char->Colors.Feet))
+			{
+				*ec->FileChanged = true;
+			}
 		}
 		nk_end(ctx);
 
@@ -553,6 +557,7 @@ static void AddCharacter(EditorContext *ec, const int cloneIdx)
 		ec->Char->Colors.Body = darkGray;
 		ec->Char->Colors.Legs = darkGray;
 		ec->Char->Colors.Hair = colorBlack;
+		ec->Char->Colors.Feet = darkGray;
 		ec->Char->speed = 1;
 		ec->Char->Gun = StrWeaponClass("Machine gun");
 		ec->Char->maxHealth = 40;

@@ -169,6 +169,7 @@ NPlayerData PlayerDataDefault(const int idx)
 			pd.Colors.Body = Color2Net(colorLightBlue);
 			pd.Colors.Legs = Color2Net(colorLightBlue);
 			pd.Colors.Hair = Color2Net(colorLightBlue);
+			pd.Colors.Feet = Color2Net(colorLightBlue);
 			break;
 		case 1:
 			strcpy(pd.Name, "Ice");
@@ -179,6 +180,7 @@ NPlayerData PlayerDataDefault(const int idx)
 			pd.Colors.Body = Color2Net(colorRed);
 			pd.Colors.Legs = Color2Net(colorRed);
 			pd.Colors.Hair = Color2Net(colorBlack);
+			pd.Colors.Feet = Color2Net(colorRed);
 			break;
 		case 2:
 			strcpy(pd.Name, "Warbaby");
@@ -189,6 +191,7 @@ NPlayerData PlayerDataDefault(const int idx)
 			pd.Colors.Body = Color2Net(colorGreen);
 			pd.Colors.Legs = Color2Net(colorGreen);
 			pd.Colors.Hair = Color2Net(colorRed);
+			pd.Colors.Feet = Color2Net(colorGreen);
 			break;
 		case 3:
 			strcpy(pd.Name, "Han");
@@ -199,6 +202,7 @@ NPlayerData PlayerDataDefault(const int idx)
 			pd.Colors.Body = Color2Net(colorYellow);
 			pd.Colors.Legs = Color2Net(colorYellow);
 			pd.Colors.Hair = Color2Net(colorYellow);
+			pd.Colors.Feet = Color2Net(colorYellow);
 			break;
 		default:
 			// Set up player N template
@@ -209,6 +213,7 @@ NPlayerData PlayerDataDefault(const int idx)
 			pd.Colors.Body = Color2Net(colorLightBlue);
 			pd.Colors.Legs = Color2Net(colorLightBlue);
 			pd.Colors.Hair = Color2Net(colorLightBlue);
+			pd.Colors.Feet = Color2Net(colorLightBlue);
 			break;
 		}
 	}
