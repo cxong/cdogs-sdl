@@ -147,9 +147,14 @@ static void PicManagerAdd(
 					}
 					// Convert character color keyed color to
 					// greyscale + special alpha
-					const uint8_t value = MAX(MAX(c.r, c.g), c.b);
-					const color_t converted = {
-						value, value, value, CharColorToAlpha(c)};
+					const CharColorType colorType = CharColorTypeFromColor(c);
+					color_t converted = c;
+					if (colorType != CHAR_COLOR_COUNT)
+					{
+						const uint8_t value = MAX(MAX(c.r, c.g), c.b);
+						converted.r = converted.g = converted.b = value;
+						converted.a = CharColorTypeAlpha(colorType);
+					}
 					pic->Data[i] = COLOR2PIXEL(converted);
 				}
 			}

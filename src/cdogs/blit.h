@@ -58,7 +58,8 @@ void BlitClearBuf(GraphicsDevice *g);
 void BlitFillBuf(GraphicsDevice *g, const color_t c);
 void BlitUpdateFromBuf(GraphicsDevice *g, SDL_Texture *t);
 
-uint8_t CharColorToAlpha(const color_t c);
+uint8_t CharColorTypeAlpha(const CharColorType t);
+CharColorType CharColorTypeFromColor(const color_t c);
 CharColors CharColorsFromOneColor(const color_t color);
 color_t CharColorsGetChannelMask(const CharColors *c, const uint8_t alpha);
 void CharColorsGetMaskedName(char *buf, const char *base, const CharColors *c);

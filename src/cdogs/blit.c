@@ -73,7 +73,7 @@ color_t *CharColorGetByType(CharColors *c, const CharColorType t)
 // with special alpha values and masks with the associated character color.
 // Otherwise a plain mask is performed.
 
-static uint8_t CharColorTypeAlpha(const CharColorType t)
+uint8_t CharColorTypeAlpha(const CharColorType t)
 {
 	static uint8_t alphas[] = {254, 253, 252, 251, 250, 249};
 	if (t < CHAR_COLOR_COUNT)
@@ -83,7 +83,7 @@ static uint8_t CharColorTypeAlpha(const CharColorType t)
 	return 255;
 }
 #define CHAR_COLOR_THRESHOLD 5
-static CharColorType CharColorTypeFromColor(const color_t c)
+CharColorType CharColorTypeFromColor(const color_t c)
 {
 	if (abs((int)c.r - c.g) < CHAR_COLOR_THRESHOLD &&
 		abs((int)c.g - c.b) < CHAR_COLOR_THRESHOLD &&
@@ -129,11 +129,6 @@ CharColors CharColorsFromOneColor(const color_t color)
 {
 	CharColors c = {color, color, color, color, color, color};
 	return c;
-}
-uint8_t CharColorToAlpha(const color_t c)
-{
-	const CharColorType colorType = CharColorTypeFromColor(c);
-	return CharColorTypeAlpha(colorType);
 }
 color_t CharColorsGetChannelMask(const CharColors *c, const uint8_t alpha)
 {
