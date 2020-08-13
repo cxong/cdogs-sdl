@@ -20,6 +20,7 @@ The following are derived from original C-Dogs/cyberdogs heads. Please still att
 
 The following are original and licensed as CC0
 
+- combat_helmet
 - hazmat
 - helmet
 - horns
