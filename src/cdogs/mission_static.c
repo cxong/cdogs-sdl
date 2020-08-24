@@ -46,6 +46,7 @@ static void MissionStaticInit(MissionStatic *m)
 	CArrayInit(&m->Characters, sizeof(CharacterPositions));
 	CArrayInit(&m->Objectives, sizeof(ObjectivePositions));
 	CArrayInit(&m->Keys, sizeof(KeyPositions));
+	CArrayInit(&m->Pickups, sizeof(PickupPositions));
 	CArrayInit(&m->Exits, sizeof(Exit));
 }
 
@@ -62,6 +63,7 @@ static void LoadStaticCharacters(MissionStatic *m, json_t *node, char *name);
 static void LoadStaticObjectives(
 	MissionStatic *m, const struct vec2i size, json_t *node, char *name);
 static void LoadStaticKeys(MissionStatic *m, json_t *node, char *name);
+static void LoadStaticPickups(MissionStatic *m, json_t *node, char *name);
 static void LoadStaticExit(
 	MissionStatic *m, const json_t *node, const char *name, const int mission);
 static void LoadStaticExits(
@@ -164,6 +166,7 @@ bool MissionStaticTryLoadJSON(
 	LoadStaticCharacters(m, node, "StaticCharacters");
 	LoadStaticObjectives(m, size, node, "StaticObjectives");
 	LoadStaticKeys(m, node, "StaticKeys");
+	LoadStaticPickups(m, node, "StaticPickups");
 
 	LoadVec2i(&m->Start, node, "Start");
 	if (version < 16)
@@ -243,6 +246,7 @@ static void ConvertOldTile(
 	const int tile = (int)t;
 	CArrayPushBack(&m->Tiles, &tile);
 }
+static bool TryLoadPositions(CArray *a, const json_t *node);
 static const MapObject *LoadMapObjectRef(json_t *node, const int version);
 static const MapObject *LoadMapObjectWreckRef(
 	json_t *itemNode, const int version);
@@ -263,22 +267,9 @@ static void LoadStaticItems(
 		{
 			continue;
 		}
-		CArrayInit(&mop.Positions, sizeof(struct vec2i));
-		json_t *positions = json_find_first_label(items, "Positions");
-		if (!positions || !positions->child)
+		if (!TryLoadPositions(&mop.Positions, items))
 		{
 			continue;
-		}
-		positions = positions->child;
-		for (positions = positions->child; positions;
-			 positions = positions->next)
-		{
-			struct vec2i pos;
-			json_t *position = positions->child;
-			pos.x = atoi(position->text);
-			position = position->next;
-			pos.y = atoi(position->text);
-			CArrayPushBack(&mop.Positions, &pos);
 		}
 		CArrayPushBack(&m->Items, &mop);
 	}
@@ -300,22 +291,9 @@ static void LoadStaticWrecks(
 		{
 			continue;
 		}
-		CArrayInit(&mop.Positions, sizeof(struct vec2i));
-		json_t *positions = json_find_first_label(items, "Positions");
-		if (!positions || !positions->child)
+		if (!TryLoadPositions(&mop.Positions, items))
 		{
 			continue;
-		}
-		positions = positions->child;
-		for (positions = positions->child; positions;
-			 positions = positions->next)
-		{
-			struct vec2i pos;
-			json_t *position = positions->child;
-			pos.x = atoi(position->text);
-			position = position->next;
-			pos.y = atoi(position->text);
-			CArrayPushBack(&mop.Positions, &pos);
 		}
 		CArrayPushBack(&m->Items, &mop);
 	}
@@ -382,22 +360,9 @@ static void LoadStaticCharacters(MissionStatic *m, json_t *node, char *name)
 	{
 		CharacterPositions cp;
 		LoadInt(&cp.Index, chars, "Index");
-		CArrayInit(&cp.Positions, sizeof(struct vec2i));
-		json_t *positions = json_find_first_label(chars, "Positions");
-		if (!positions || !positions->child)
+		if (!TryLoadPositions(&cp.Positions, chars))
 		{
 			continue;
-		}
-		positions = positions->child;
-		for (positions = positions->child; positions;
-			 positions = positions->next)
-		{
-			struct vec2i pos;
-			json_t *position = positions->child;
-			pos.x = atoi(position->text);
-			position = position->next;
-			pos.y = atoi(position->text);
-			CArrayPushBack(&cp.Positions, &pos);
 		}
 		CArrayPushBack(&m->Characters, &cp);
 	}
@@ -473,25 +438,67 @@ static void LoadStaticKeys(MissionStatic *m, json_t *node, char *name)
 	{
 		KeyPositions kp;
 		LoadInt(&kp.Index, keys, "Index");
-		CArrayInit(&kp.Positions, sizeof(struct vec2i));
-		json_t *positions = json_find_first_label(keys, "Positions");
-		if (!positions || !positions->child)
+		if (!TryLoadPositions(&kp.Positions, keys))
 		{
 			continue;
 		}
-		positions = positions->child;
-		for (positions = positions->child; positions;
-			 positions = positions->next)
-		{
-			struct vec2i pos;
-			json_t *position = positions->child;
-			pos.x = atoi(position->text);
-			position = position->next;
-			pos.y = atoi(position->text);
-			CArrayPushBack(&kp.Positions, &pos);
-		}
 		CArrayPushBack(&m->Keys, &kp);
 	}
+}
+static const PickupClass *LoadPickupRef(const json_t *itemNode);
+static void LoadStaticPickups(MissionStatic *m, json_t *node, char *name)
+{
+	json_t *pickups = json_find_first_label(node, name);
+	if (!pickups || !pickups->child)
+	{
+		return;
+	}
+	pickups = pickups->child;
+	for (pickups = pickups->child; pickups; pickups = pickups->next)
+	{
+		PickupPositions pp;
+		pp.P = LoadPickupRef(pickups);
+		if (pp.P == NULL)
+		{
+			continue;
+		}
+		if (!TryLoadPositions(&pp.Positions, pickups))
+		{
+			continue;
+		}
+		CArrayPushBack(&m->Pickups, &pp);
+	}
+}
+static const PickupClass *LoadPickupRef(const json_t *itemNode)
+{
+	const char *pName =
+		json_find_first_label(itemNode, "Pickup")->child->text;
+	const PickupClass *p = StrPickupClass(pName);
+	if (p == NULL)
+	{
+		LOG(LM_MAP, LL_ERROR, "Failed to load pickup (%s)", pName);
+	}
+	return p;
+}
+static bool TryLoadPositions(CArray *a, const json_t *node)
+{
+	json_t *positions = json_find_first_label(node, "Positions");
+	if (!positions || !positions->child)
+	{
+		return false;
+	}
+	positions = positions->child;
+	CArrayInit(a, sizeof(struct vec2i));
+	for (positions = positions->child; positions; positions = positions->next)
+	{
+		struct vec2i pos;
+		json_t *position = positions->child;
+		pos.x = atoi(position->text);
+		position = position->next;
+		pos.y = atoi(position->text);
+		CArrayPushBack(a, &pos);
+	}
+	return true;
 }
 static void LoadStaticExit(
 	MissionStatic *m, const json_t *node, const char *name, const int mission)
@@ -576,6 +583,7 @@ void MissionStaticTerminate(MissionStatic *m)
 	CArrayTerminate(&m->Characters);
 	CArrayTerminate(&m->Objectives);
 	CArrayTerminate(&m->Keys);
+	CArrayTerminate(&m->Pickups);
 	CArrayTerminate(&m->Exits);
 }
 
@@ -585,6 +593,7 @@ static json_t *SaveStaticItems(const MissionStatic *m);
 static json_t *SaveStaticCharacters(const MissionStatic *m);
 static json_t *SaveStaticObjectives(const MissionStatic *m);
 static json_t *SaveStaticKeys(const MissionStatic *m);
+static json_t *SaveStaticPickups(const MissionStatic *m);
 static json_t *SaveExits(const MissionStatic *m);
 static json_t *SaveVec2i(struct vec2i v);
 void MissionStaticSaveJSON(
@@ -609,6 +618,7 @@ void MissionStaticSaveJSON(
 	json_insert_pair_into_object(
 		node, "StaticObjectives", SaveStaticObjectives(m));
 	json_insert_pair_into_object(node, "StaticKeys", SaveStaticKeys(m));
+	json_insert_pair_into_object(node, "StaticPickups", SaveStaticPickups(m));
 
 	json_insert_pair_into_object(node, "Start", SaveVec2i(m->Start));
 	json_insert_pair_into_object(node, "Exits", SaveExits(m));
@@ -674,19 +684,14 @@ static json_t *SaveStaticCSV(const CArray *values, const struct vec2i size)
 	CFREE(rowBuf);
 	return rows;
 }
+static void SavePositions(json_t *node, const CArray *positions);
 static json_t *SaveStaticItems(const MissionStatic *m)
 {
 	json_t *items = json_new_array();
 	CA_FOREACH(MapObjectPositions, mop, m->Items)
 	json_t *itemNode = json_new_object();
 	AddStringPair(itemNode, "MapObject", mop->M->Name);
-	json_t *positions = json_new_array();
-	for (int j = 0; j < (int)mop->Positions.size; j++)
-	{
-		struct vec2i *pos = CArrayGet(&mop->Positions, j);
-		json_insert_child(positions, SaveVec2i(*pos));
-	}
-	json_insert_pair_into_object(itemNode, "Positions", positions);
+	SavePositions(itemNode, &mop->Positions);
 	json_insert_child(items, itemNode);
 	CA_FOREACH_END()
 	return items;
@@ -697,13 +702,7 @@ static json_t *SaveStaticCharacters(const MissionStatic *m)
 	CA_FOREACH(CharacterPositions, cp, m->Characters)
 	json_t *charNode = json_new_object();
 	AddIntPair(charNode, "Index", cp->Index);
-	json_t *positions = json_new_array();
-	for (int j = 0; j < (int)cp->Positions.size; j++)
-	{
-		struct vec2i *pos = CArrayGet(&cp->Positions, j);
-		json_insert_child(positions, SaveVec2i(*pos));
-	}
-	json_insert_pair_into_object(charNode, "Positions", positions);
+	SavePositions(charNode, &cp->Positions);
 	json_insert_child(chars, charNode);
 	CA_FOREACH_END()
 	return chars;
@@ -736,19 +735,32 @@ static json_t *SaveStaticKeys(const MissionStatic *m)
 	CA_FOREACH(KeyPositions, kp, m->Keys)
 	json_t *keyNode = json_new_object();
 	AddIntPair(keyNode, "Index", kp->Index);
-	json_t *positions = json_new_array();
-	for (int j = 0; j < (int)kp->Positions.size; j++)
-	{
-		struct vec2i *pos = CArrayGet(&kp->Positions, j);
-		json_insert_child(positions, SaveVec2i(*pos));
-	}
-	json_insert_pair_into_object(keyNode, "Positions", positions);
+	SavePositions(keyNode, &kp->Positions);
 	json_insert_child(keys, keyNode);
 	CA_FOREACH_END()
 	return keys;
 }
-static json_t *SaveExits(const MissionStatic *m)
+static json_t *SaveStaticPickups(const MissionStatic *m)
 {
+	json_t *pickups = json_new_array();
+	CA_FOREACH(const PickupPositions, pp, m->Pickups)
+	json_t *pNode = json_new_object();
+	AddStringPair(pNode, "Pickup", pp->P->Name);
+	SavePositions(pNode, &pp->Positions);
+	json_insert_child(pickups, pNode);
+	CA_FOREACH_END()
+	return pickups;
+}
+static void SavePositions(json_t *node, const CArray *positions)
+{
+	json_t *a = json_new_array();
+	CA_FOREACH(const struct vec2i, pos, *positions)
+		json_insert_child(a, SaveVec2i(*pos));
+	CA_FOREACH_END()
+	json_insert_pair_into_object(node, "Positions", a);
+}
+static json_t *SaveExits(const MissionStatic *m)
+	{
 	json_t *exits = json_new_array();
 	CA_FOREACH(const Exit, exit, m->Exits)
 	json_t *exitNode = json_new_object();
@@ -775,6 +787,7 @@ static void MapObjectPositionsCopy(CArray *dst, const CArray *src);
 static void CharacterPositionsCopy(CArray *dst, const CArray *src);
 static void ObjectivePositionsCopy(CArray *dst, const CArray *src);
 static void KeyPositionsCopy(CArray *dst, const CArray *src);
+static void PickupPositionsCopy(CArray *dst, const CArray *src);
 void MissionStaticCopy(MissionStatic *dst, const MissionStatic *src)
 {
 	memcpy(dst, src, sizeof *dst);
@@ -787,6 +800,7 @@ void MissionStaticCopy(MissionStatic *dst, const MissionStatic *src)
 	CharacterPositionsCopy(&dst->Characters, &src->Characters);
 	ObjectivePositionsCopy(&dst->Objectives, &src->Objectives);
 	KeyPositionsCopy(&dst->Keys, &src->Keys);
+	PickupPositionsCopy(&dst->Pickups, &src->Pickups);
 	memset(&dst->Exits, 0, sizeof dst->Exits);
 	CArrayCopy(&dst->Exits, &src->Exits);
 }
@@ -837,6 +851,17 @@ static void KeyPositionsCopy(CArray *dst, const CArray *src)
 	KeyPositions pCopy;
 	memset(&pCopy, 0, sizeof pCopy);
 	pCopy.Index = p->Index;
+	CArrayCopy(&pCopy.Positions, &p->Positions);
+	CArrayPushBack(dst, &pCopy);
+	CA_FOREACH_END()
+}
+static void PickupPositionsCopy(CArray *dst, const CArray *src)
+{
+	CArrayInit(dst, src->elemSize);
+	CA_FOREACH(const PickupPositions, p, *src)
+	PickupPositions pCopy;
+	memset(&pCopy, 0, sizeof pCopy);
+	pCopy.P = p->P;
 	CArrayCopy(&pCopy.Positions, &p->Positions);
 	CArrayPushBack(dst, &pCopy);
 	CA_FOREACH_END()
@@ -978,20 +1003,10 @@ void MissionStaticLayout(
 		m->Start, svec2i_zero(), svec2i_subtract(size, svec2i_one()));
 }
 
-static bool TryAddMapObject(
-	const MapObject *mo, const struct vec2i pos, CArray *objs);
-static bool TryRemoveMapObjectAt(const struct vec2i pos, CArray *objs);
+static bool TryRemovePosition(CArray *positions, const struct vec2i pos);
+
 bool MissionStaticTryAddItem(
 	MissionStatic *m, const MapObject *mo, const struct vec2i pos)
-{
-	return TryAddMapObject(mo, pos, &m->Items);
-}
-bool MissionStaticTryRemoveItemAt(MissionStatic *m, const struct vec2i pos)
-{
-	return TryRemoveMapObjectAt(pos, &m->Items);
-}
-static bool TryAddMapObject(
-	const MapObject *mo, const struct vec2i pos, CArray *objs)
 {
 	const Tile *tile = MapGetTile(&gMap, pos);
 	const Tile *tileAbove = MapGetTile(&gMap, svec2i(pos.x, pos.y - 1));
@@ -1001,9 +1016,9 @@ static bool TryAddMapObject(
 		// Check if the item already has an entry, and add to its list
 		// of positions
 		bool hasAdded = false;
-		for (int i = 0; i < (int)objs->size; i++)
+		for (int i = 0; i < (int)m->Items.size; i++)
 		{
-			MapObjectPositions *mop = CArrayGet(objs, i);
+			MapObjectPositions *mop = CArrayGet(&m->Items, i);
 			if (mop->M == mo)
 			{
 				CArrayPushBack(&mop->Positions, &pos);
@@ -1018,32 +1033,24 @@ static bool TryAddMapObject(
 			mop.M = mo;
 			CArrayInit(&mop.Positions, sizeof(struct vec2i));
 			CArrayPushBack(&mop.Positions, &pos);
-			CArrayPushBack(objs, &mop);
+			CArrayPushBack(&m->Items, &mop);
 		}
 		return true;
 	}
 	return false;
 }
-static bool TryRemoveMapObjectAt(const struct vec2i pos, CArray *objs)
+bool MissionStaticTryRemoveItemAt(MissionStatic *m, const struct vec2i pos)
 {
-	for (int i = 0; i < (int)objs->size; i++)
+	CA_FOREACH(MapObjectPositions, mop, m->Items)
+	if (TryRemovePosition(&mop->Positions, pos))
 	{
-		MapObjectPositions *mop = CArrayGet(objs, i);
-		for (int j = 0; j < (int)mop->Positions.size; j++)
+		if (mop->Positions.size == 0)
 		{
-			const struct vec2i *mopPos = CArrayGet(&mop->Positions, j);
-			if (svec2i_is_equal(*mopPos, pos))
-			{
-				CArrayDelete(&mop->Positions, j);
-				if (mop->Positions.size == 0)
-				{
-					CArrayTerminate(&mop->Positions);
-					CArrayDelete(objs, i);
-				}
-				return true;
-			}
+			CArrayDelete(&m->Items, _ca_index);
 		}
+		return true;
 	}
+	CA_FOREACH_END()
 	return false;
 }
 
@@ -1081,19 +1088,13 @@ bool MissionStaticTryRemoveCharacterAt(
 	MissionStatic *m, const struct vec2i pos)
 {
 	CA_FOREACH(CharacterPositions, cp, m->Characters)
-	for (int j = 0; j < (int)cp->Positions.size; j++)
+	if (TryRemovePosition(&cp->Positions, pos))
 	{
-		struct vec2i *cpPos = CArrayGet(&cp->Positions, j);
-		if (svec2i_is_equal(*cpPos, pos))
+		if (cp->Positions.size == 0)
 		{
-			CArrayDelete(&cp->Positions, j);
-			if (cp->Positions.size == 0)
-			{
-				CArrayTerminate(&cp->Positions);
-				CArrayDelete(&m->Characters, _ca_index);
-			}
-			return true;
+			CArrayDelete(&m->Characters, _ca_index);
 		}
+		return true;
 	}
 	CA_FOREACH_END()
 	return false;
@@ -1132,19 +1133,69 @@ bool MissionStaticTryAddKey(
 bool MissionStaticTryRemoveKeyAt(MissionStatic *m, const struct vec2i pos)
 {
 	CA_FOREACH(KeyPositions, kp, m->Keys)
-	for (int j = 0; j < (int)kp->Positions.size; j++)
+	if (TryRemovePosition(&kp->Positions, pos))
 	{
-		struct vec2i *kpPos = CArrayGet(&kp->Positions, j);
-		if (svec2i_is_equal(*kpPos, pos))
+		if (kp->Positions.size == 0)
 		{
-			CArrayDelete(&kp->Positions, j);
-			if (kp->Positions.size == 0)
-			{
-				CArrayTerminate(&kp->Positions);
-				CArrayDelete(&m->Keys, _ca_index);
-			}
-			return true;
+			CArrayDelete(&m->Keys, _ca_index);
 		}
+		return true;
+	}
+	CA_FOREACH_END()
+	return false;
+}
+
+bool MissionStaticTryAddPickup(
+	MissionStatic *m, const PickupClass *p, const struct vec2i pos)
+{
+	const Tile *tile = MapGetTile(&gMap, pos);
+	if (!TileIsClear(tile))
+	{
+		return false;
+	}
+	// Check if the item already has an entry, and add to its list
+	// of positions
+	CA_FOREACH(PickupPositions, pp, m->Pickups)
+	if (pp->P == p)
+	{
+		CArrayPushBack(&pp->Positions, &pos);
+		return true;
+	}
+	CA_FOREACH_END()
+	// If not, create a new entry
+	PickupPositions pp;
+	pp.P = p;
+	CArrayInit(&pp.Positions, sizeof(struct vec2i));
+	CArrayPushBack(&pp.Positions, &pos);
+	CArrayPushBack(&m->Pickups, &pp);
+	return true;
+}
+bool MissionStaticTryRemovePickupAt(MissionStatic *m, const struct vec2i pos)
+{
+	CA_FOREACH(PickupPositions, pp, m->Pickups)
+	if (TryRemovePosition(&pp->Positions, pos))
+	{
+		if (pp->Positions.size == 0)
+		{
+			CArrayDelete(&m->Pickups, _ca_index);
+		}
+		return true;
+	}
+	CA_FOREACH_END()
+	return false;
+}
+
+static bool TryRemovePosition(CArray *positions, const struct vec2i pos)
+{
+	CA_FOREACH(const struct vec2i, aPos, *positions)
+	if (svec2i_is_equal(*aPos, pos))
+	{
+		CArrayDelete(positions, _ca_index);
+		if (positions->size == 0)
+		{
+			CArrayTerminate(positions);
+		}
+		return true;
 	}
 	CA_FOREACH_END()
 	return false;

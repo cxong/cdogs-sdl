@@ -101,6 +101,7 @@ void MapStaticLoadTile(MapBuilder *mb, const struct vec2i v)
 static void AddCharacters(const CArray *characters);
 static void AddObjectives(MapBuilder *mb, const CArray *objectives);
 static void AddKeys(MapBuilder *mb, const CArray *keys);
+static void AddPickups(const CArray *pickups);
 void MapStaticLoadDynamic(MapBuilder *mb)
 {
 	// Map objects
@@ -126,6 +127,8 @@ void MapStaticLoadDynamic(MapBuilder *mb)
 	{
 		AddKeys(mb, &mb->mission->u.Static.Keys);
 	}
+
+	AddPickups(&mb->mission->u.Static.Pickups);
 
 	// Process the events to place dynamic objects
 	HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
@@ -228,5 +231,21 @@ static void AddKey(MapBuilder *mb, const KeyPositions *kp)
 {
 	CA_FOREACH(const struct vec2i, pos, kp->Positions)
 	MapPlaceKey(mb, *pos, kp->Index);
+	CA_FOREACH_END()
+}
+static void AddPickup(const PickupPositions *pp);
+static void AddPickups(const CArray *pickups)
+{
+	CA_FOREACH(const PickupPositions, pp, *pickups)
+	AddPickup(pp);
+	CA_FOREACH_END()
+}
+static void AddPickup(const PickupPositions *pp)
+{
+	CA_FOREACH(const struct vec2i, pos, pp->Positions)
+	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
+	e.u.AddPickup.Pos = Vec2ToNet(Vec2CenterOfTile(*pos));
+	strcpy(e.u.AddPickup.PickupClass, pp->P->Name);
+	GameEventsEnqueue(&gGameEvents, e);
 	CA_FOREACH_END()
 }

@@ -60,6 +60,11 @@ typedef struct
 	int Index;
 	CArray Positions; // of struct vec2i
 } KeyPositions;
+typedef struct
+{
+	const PickupClass *P;
+	CArray Positions; // of struct vec2i
+} PickupPositions;
 
 typedef struct
 {
@@ -70,6 +75,7 @@ typedef struct
 	CArray Characters; // of CharacterPositions
 	CArray Objectives; // of ObjectivePositions
 	CArray Keys;	   // of KeyPositions
+	CArray Pickups;    // of PickupPositions
 	struct vec2i Start;
 	CArray Exits; // of Exit
 } MissionStatic;
@@ -109,6 +115,9 @@ bool MissionStaticTryRemoveCharacterAt(
 bool MissionStaticTryAddKey(
 	MissionStatic *m, const int k, const struct vec2i pos);
 bool MissionStaticTryRemoveKeyAt(MissionStatic *m, const struct vec2i pos);
+bool MissionStaticTryAddPickup(
+	MissionStatic *m, const PickupClass *p, const struct vec2i pos);
+bool MissionStaticTryRemovePickupAt(MissionStatic *m, const struct vec2i pos);
 bool MissionStaticTrySetKey(
 	MissionStatic *m, const int k, const struct vec2i size,
 	const struct vec2i pos);

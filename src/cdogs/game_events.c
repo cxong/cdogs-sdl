@@ -33,6 +33,7 @@
 #include "actors.h"
 #include "net_client.h"
 #include "net_server.h"
+#include "pickup.h"
 #include "utils.h"
 
 CArray gGameEvents;
@@ -210,7 +211,7 @@ GameEvent GameEventNew(GameEventType type)
 	switch (type)
 	{
 	case GAME_EVENT_ADD_PICKUP:
-		e.u.AddParticle.ActorUID = -1;
+		e.u.AddPickup.UID = PickupsGetNextUID();
 		e.u.AddPickup.SpawnerUID = -1;
 		break;
 	case GAME_EVENT_ACTOR_ADD:

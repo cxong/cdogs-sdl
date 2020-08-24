@@ -172,7 +172,8 @@ static int BrushIsBrushTypeAddItem(void *data)
 	EditorBrush *b = data;
 	return b->Type == BRUSHTYPE_SET_PLAYER_START ||
 		   b->Type == BRUSHTYPE_ADD_ITEM ||
-		   b->Type == BRUSHTYPE_ADD_CHARACTER || b->Type == BRUSHTYPE_ADD_KEY;
+		   b->Type == BRUSHTYPE_ADD_CHARACTER ||
+		   b->Type == BRUSHTYPE_ADD_KEY || b->Type == BRUSHTYPE_ADD_PICKUP;
 }
 static int BrushIsBrushTypeSetKey(void *data)
 {
@@ -371,6 +372,7 @@ UIObject *CreateStaticMapObjs(
 	UIButtonSetPic(o2, PicManagerGetPic(&gPicManager, "editor/bucket"));
 	o2->u.Button.IsDownFunc = BrushIsBrushTypeFill;
 	o2->ChangeFunc = BrushSetBrushTypeFill;
+	CSTRDUP(o2->Tooltip, "Flood fill");
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 	pos.x += o2->Size.x;

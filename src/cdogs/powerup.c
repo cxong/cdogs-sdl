@@ -163,7 +163,6 @@ static void HealthPlace(const struct vec2 pos, void *data)
 {
 	UNUSED(data);
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
-	e.u.AddPickup.UID = PickupsGetNextUID();
 	e.u.AddPickup.Pos = Vec2ToNet(pos);
 	strcpy(e.u.AddPickup.PickupClass, "health");
 	e.u.AddPickup.IsRandomSpawned = true;
@@ -218,7 +217,6 @@ static void AmmoPlace(const struct vec2 pos, void *data)
 {
 	const int ammoId = *(int *)data;
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
-	e.u.AddPickup.UID = PickupsGetNextUID();
 	e.u.AddPickup.Pos = Vec2ToNet(pos);
 	const Ammo *a = AmmoGetById(&gAmmo, ammoId);
 	sprintf(e.u.AddPickup.PickupClass, "ammo_%s", a->Name);

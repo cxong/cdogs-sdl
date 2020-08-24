@@ -37,6 +37,7 @@
 #include <cdogs/font.h>
 #include <cdogs/map.h>
 
+#include "add_pickup_dialog.h"
 #include "editor_ui_common.h"
 
 static EditorResult BrushSetBrushTypeSetPlayerStart(void *data, int d)
@@ -50,6 +51,10 @@ static EditorResult BrushSetBrushTypeAddMapItem(void *data, int d)
 {
 	UNUSED(d);
 	IndexedEditorBrush *b = data;
+	if (b->Brush->Type != BRUSHTYPE_ADD_ITEM)
+	{
+		b->Brush->u.MapObject = NULL;
+	}
 	b->Brush->Type = BRUSHTYPE_ADD_ITEM;
 	b->Brush->u.MapObject = b->u.MapObject;
 	MouseSetPicCursor(
@@ -63,6 +68,9 @@ static EditorResult BrushSetBrushTypeAddCharacter(void *data, int d)
 	IndexedEditorBrush *b = data;
 	b->Brush->Type = BRUSHTYPE_ADD_CHARACTER;
 	b->Brush->u.ItemIndex = b->u.ItemIndex;
+	MouseSetPicCursor(
+		&gEventHandlers.mouse,
+		PicManagerGetPic(&gPicManager, "editor/cursors/add"), NULL);
 	return EDITOR_RESULT_CHANGE_TOOL;
 }
 static EditorResult BrushSetBrushTypeAddObjective(void *data, int d)
@@ -72,6 +80,9 @@ static EditorResult BrushSetBrushTypeAddObjective(void *data, int d)
 	b->Brush->Type = BRUSHTYPE_ADD_OBJECTIVE;
 	b->Brush->u.ItemIndex = b->u.ItemIndex;
 	b->Brush->Index2 = b->Index2;
+	MouseSetPicCursor(
+		&gEventHandlers.mouse,
+		PicManagerGetPic(&gPicManager, "editor/cursors/add"), NULL);
 	return EDITOR_RESULT_CHANGE_TOOL;
 }
 static EditorResult BrushSetBrushTypeAddKey(void *data, int d)
@@ -80,7 +91,24 @@ static EditorResult BrushSetBrushTypeAddKey(void *data, int d)
 	IndexedEditorBrush *b = data;
 	b->Brush->Type = BRUSHTYPE_ADD_KEY;
 	b->Brush->u.ItemIndex = b->u.ItemIndex;
+	MouseSetPicCursor(
+		&gEventHandlers.mouse,
+		PicManagerGetPic(&gPicManager, "editor/cursors/add"), NULL);
 	return EDITOR_RESULT_CHANGE_TOOL;
+}
+static EditorResult BrushSetBrushTypeAddPickup(void *data, int d)
+{
+	UNUSED(d);
+	EditorBrush *b = data;
+	if (b->Type != BRUSHTYPE_ADD_PICKUP)
+	{
+		b->u.Pickup = NULL;
+	}
+	b->Type = BRUSHTYPE_ADD_PICKUP;
+	MouseSetPicCursor(
+		&gEventHandlers.mouse,
+		PicManagerGetPic(&gPicManager, "editor/cursors/add"), NULL);
+	return AddPickupDialog(&gPicManager, &gEventHandlers, &b->u.Pickup);
 }
 
 static void DrawPickupSpawner(
@@ -200,8 +228,7 @@ static UIObject *CreateAddCharacterObjs(
 static UIObject *CreateAddObjectiveObjs(
 	struct vec2i pos, EditorBrush *brush, Campaign *co);
 static UIObject *CreateAddKeyObjs(struct vec2i pos, EditorBrush *brush);
-UIObject *CreateAddItemObjs(
-	struct vec2i pos, EditorBrush *brush, Campaign *co)
+UIObject *CreateAddItemObjs(struct vec2i pos, EditorBrush *brush, Campaign *co)
 {
 	const int th = FontH();
 	UIObject *o2;
@@ -256,6 +283,15 @@ UIObject *CreateAddItemObjs(
 	o2->Label = "Key \x10";
 	o2->Pos = pos;
 	UIObjectAddChild(o2, CreateAddKeyObjs(o2->Size, brush));
+	UIObjectAddChild(c, o2);
+	pos.y += th;
+	o2 = UIObjectCopy(o);
+	o2->Label = "Pickup...";
+	o2->Pos = pos;
+	o2->OnFocusFunc = ActivateBrush;
+	o2->OnUnfocusFunc = DeactivateBrush;
+	o2->ChangeFunc = BrushSetBrushTypeAddPickup;
+	o2->Data = brush;
 	UIObjectAddChild(c, o2);
 
 	UIObjectDestroy(o);

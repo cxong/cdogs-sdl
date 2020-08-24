@@ -4,6 +4,7 @@ include_directories(
 	${SDL2_IMAGE_INCLUDE_DIRS}
 	${SDL2_MIXER_INCLUDE_DIRS})
 set(CDOGSED_SOURCES
+	add_pickup_dialog.c
 	char_editor.c
 	editor_brush.c
 	editor_ui.c
@@ -20,6 +21,7 @@ set(CDOGSED_SOURCES
 	tile_brush.c
 	ui_object.c)
 set(CDOGSED_HEADERS
+	add_pickup_dialog.h
 	char_editor.h
 	editor_brush.h
 	editor_ui.h

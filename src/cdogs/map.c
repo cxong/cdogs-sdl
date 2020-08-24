@@ -326,7 +326,6 @@ void MapPlaceCollectible(
 {
 	const Objective *o = CArrayGet(&m->Objectives, objective);
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
-	e.u.AddPickup.UID = PickupsGetNextUID();
 	strcpy(e.u.AddPickup.PickupClass, o->u.Pickup->Name);
 	e.u.AddPickup.ThingFlags = ObjectiveToThing(objective);
 	e.u.AddPickup.Pos = Vec2ToNet(pos);
@@ -350,7 +349,6 @@ void MapPlaceKey(
 	MapBuilder *mb, const struct vec2i tilePos, const int keyIndex)
 {
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
-	e.u.AddPickup.UID = PickupsGetNextUID();
 	strcpy(
 		e.u.AddPickup.PickupClass,
 		KeyPickupClass(mb->mission->KeyStyle, keyIndex)->Name);

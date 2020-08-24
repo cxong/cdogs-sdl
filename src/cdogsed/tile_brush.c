@@ -43,7 +43,6 @@ typedef struct
 	Mission *m;
 	int *brushIdx;
 	CArray texIdsTileClasses; // of GLuint
-	int tileIdx;
 	char *tcTypes;
 	char *floorStyles;
 	char *wallStyles;
@@ -145,8 +144,9 @@ static void DrawTileOpsRow(
 	bool *result);
 static void DrawTilePropsSidebar(
 	struct nk_context *ctx, TileBrushData *tbData, TileClass *selectedTC);
-static int DrawTileType(
-	TileBrushData *tbData, TileClass *tc, const int tileId);
+static void DrawTileType(
+	TileBrushData *tbData, TileClass *tc, const int tileId,
+	const int tilesDrawn);
 static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 {
 	UNUSED(win);
@@ -157,12 +157,14 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 
 	if (nk_begin(
 			ctx, "Properties", nk_rect(0, 0, SIDE_WIDTH, HEIGHT),
-			NK_WINDOW_BORDER | NK_WINDOW_TITLE) &&
-		selectedTC != NULL)
+			NK_WINDOW_BORDER | NK_WINDOW_TITLE))
 	{
-		DrawTilePropsSidebar(ctx, tbData, selectedTC);
+		if (selectedTC != NULL)
+		{
+			DrawTilePropsSidebar(ctx, tbData, selectedTC);
+		}
+		nk_end(ctx);
 	}
-	nk_end(ctx);
 
 	if (nk_begin(
 			ctx, "", nk_rect(SIDE_WIDTH, 0, MAIN_WIDTH, HEIGHT),
@@ -171,7 +173,6 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		DrawTileOpsRow(ctx, tbData, selectedTC, &result);
 
 		nk_layout_row_dynamic(ctx, 40 * PIC_SCALE, MAIN_WIDTH / 120);
-		tbData->tileIdx = 0;
 		int tilesDrawn = 0;
 		for (int i = 0;
 			 tilesDrawn < hashmap_length(tbData->m->u.Static.TileClasses); i++)
@@ -179,12 +180,12 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 			TileClass *tc = MissionStaticIdTileClass(&tbData->m->u.Static, i);
 			if (tc != NULL)
 			{
-				DrawTileType(tbData, tc, i);
+				DrawTileType(tbData, tc, i, tilesDrawn);
 				tilesDrawn++;
 			}
 		}
+		nk_end(ctx);
 	}
-	nk_end(ctx);
 	return result;
 }
 static void DrawTileOpsRow(
@@ -370,7 +371,9 @@ static void DrawTileStyleSelect(
 static void DrawTileClass(
 	struct nk_context *ctx, PicManager *pm, TileClass *tc,
 	const struct vec2i pos, const GLuint texid);
-static int DrawTileType(TileBrushData *tbData, TileClass *tc, const int tileId)
+static void DrawTileType(
+	TileBrushData *tbData, TileClass *tc, const int tileId,
+	const int tilesDrawn)
 {
 	char name[256];
 	TileClassGetBrushName(name, tc);
@@ -381,11 +384,8 @@ static int DrawTileType(TileBrushData *tbData, TileClass *tc, const int tileId)
 	{
 		*tbData->brushIdx = tileId;
 	}
-	const GLuint *texid =
-		CArrayGet(&tbData->texIdsTileClasses, tbData->tileIdx);
+	const GLuint *texid = CArrayGet(&tbData->texIdsTileClasses, tilesDrawn);
 	DrawTileClass(tbData->ctx, tbData->pm, tc, svec2i(-40, 5), *texid);
-	tbData->tileIdx++;
-	return MAP_OK;
 }
 static void DrawTileClass(
 	struct nk_context *ctx, PicManager *pm, TileClass *tc,

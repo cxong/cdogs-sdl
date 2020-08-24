@@ -304,8 +304,8 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 			ctx, c, CArrayGet(&ec->texidsChars, _ca_index), svec2i(-34, 5),
 			&ec->animSelection, DIRECTION_DOWN);
 		CA_FOREACH_END()
+		nk_end(ctx);
 	}
-	nk_end(ctx);
 
 	if (ec->Char != NULL)
 	{
@@ -348,8 +348,8 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 			{
 				ec->anim = AnimationGetActorAnimation(ACTORANIMATION_IDLE);
 			}
+			nk_end(ctx);
 		}
-		nk_end(ctx);
 
 		if (nk_begin(
 				ctx, "Appearance",
@@ -420,12 +420,12 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 			{
 				*ec->FileChanged = true;
 			}
+			nk_end(ctx);
 		}
-		nk_end(ctx);
 
 		if (nk_begin(
 				ctx, "Attributes",
-				nk_rect(280, (float)charStoreSize.y + PAD, 250, 225),
+				nk_rect(280, (float)charStoreSize.y + PAD, 250, 250),
 				NK_WINDOW_BORDER | NK_WINDOW_TITLE))
 		{
 			// Speed (256 = 100%)
@@ -477,8 +477,8 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 				"Large score penalty when shot");
 			DrawFlag(
 				ctx, ec, "Victim", FLAGS_VICTIM, "Takes damage from everyone");
+			nk_end(ctx);
 		}
-		nk_end(ctx);
 
 		if (nk_begin(
 				ctx, "AI",
@@ -520,8 +520,8 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 			DrawFlag(
 				ctx, ec, "Awake", FLAGS_AWAKEALWAYS,
 				"Don't go to sleep after players leave");
+			nk_end(ctx);
 		}
-		nk_end(ctx);
 	}
 
 	AnimationUpdate(&ec->anim, 1);

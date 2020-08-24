@@ -44,6 +44,7 @@ typedef enum
 	PICKUP_GUN
 } PickupType;
 PickupType StrPickupType(const char *s);
+const char *PickupTypeStr(const PickupType pt);
 
 typedef struct
 {
@@ -88,6 +89,7 @@ void PickupClassesLoadGuns(CArray *classes, const CArray *gunClasses);
 void PickupClassesLoadKeys(CArray *classes);
 void PickupClassesClear(CArray *classes);
 void PickupClassesTerminate(PickupClasses *classes);
+int PickupClassesCount(const PickupClasses *classes);
 
 int PickupClassesGetScoreIdx(const PickupClass *p);
 // Count the number of "Score" type pickups

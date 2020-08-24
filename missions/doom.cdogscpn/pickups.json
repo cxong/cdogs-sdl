@@ -1,0 +1,23 @@
+{
+  "Version": 1,
+  "Pickups": [
+    {
+      "Name": "health_bonus",
+      "Pic": "health_bonus",
+      "Type": "Health",
+      "Health": 2
+    },
+    {
+      "Name": "stimpack",
+      "Pic": "stimpack",
+      "Type": "Health",
+      "Health": 20
+    },
+    {
+      "Name": "armor_bonus",
+      "Pic": "armor_bonus",
+      "Type": "Health",
+      "Health": 2
+    }
+  ]
+}

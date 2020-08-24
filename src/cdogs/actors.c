@@ -1152,7 +1152,6 @@ static void ActorAddAmmoPickup(const TActor *actor)
 			}
 
 			GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
-			e.u.AddPickup.UID = PickupsGetNextUID();
 			const Ammo *a = AmmoGetById(&gAmmo, w->Gun->AmmoId);
 			sprintf(e.u.AddPickup.PickupClass, "ammo_%s", a->Name);
 			// Add a little random offset so the pickups aren't all together

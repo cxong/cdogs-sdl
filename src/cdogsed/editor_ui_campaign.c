@@ -122,11 +122,11 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		{
 			changed = true;
 		}
+		nk_end(ctx);
 	}
 	if (changed)
 	{
 		cData->result = EDITOR_RESULT_CHANGED;
 	}
-	nk_end(ctx);
 	return true;
 }

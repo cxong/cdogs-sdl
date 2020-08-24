@@ -45,6 +45,19 @@ PickupType StrPickupType(const char *s)
 	S2T(PICKUP_GUN, "Gun");
 	return PICKUP_NONE;
 }
+const char *PickupTypeStr(const PickupType pt)
+{
+	switch (pt)
+	{
+		T2S(PICKUP_JEWEL, "Score");
+		T2S(PICKUP_HEALTH, "Health");
+		T2S(PICKUP_AMMO, "Ammo");
+		T2S(PICKUP_KEYCARD, "Key");
+		T2S(PICKUP_GUN, "Gun");
+	default:
+		return "";
+	}
+}
 
 PickupClass *StrPickupClass(const char *s)
 {
@@ -321,6 +334,11 @@ void PickupClassesTerminate(PickupClasses *classes)
 	CArrayTerminate(&classes->CustomClasses);
 	PickupClassesClear(&classes->KeyClasses);
 	CArrayTerminate(&classes->KeyClasses);
+}
+
+int PickupClassesCount(const PickupClasses *classes)
+{
+	return (int)classes->Classes.size + (int)classes->CustomClasses.size;
 }
 
 int PickupClassesGetScoreIdx(const PickupClass *p)

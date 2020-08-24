@@ -407,6 +407,23 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 			}
 		}
 		break;
+	case BRUSHTYPE_ADD_PICKUP:
+		if (isMain)
+		{
+			if (MissionStaticTryAddPickup(
+					&m->u.Static, b->u.Pickup, b->Pos))
+			{
+				return EDITOR_RESULT_CHANGED_AND_RELOAD;
+			}
+		}
+		else
+		{
+			if (MissionStaticTryRemovePickupAt(&m->u.Static, b->Pos))
+			{
+				return EDITOR_RESULT_CHANGED_AND_RELOAD;
+			}
+		}
+		break;
 	case BRUSHTYPE_SET_KEY:
 		if (isMain || b->u.ItemIndex > 0)
 		{

@@ -92,12 +92,14 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 
 	if (nk_begin(
 			ctx, "Properties", nk_rect(0, 0, SIDE_WIDTH, HEIGHT),
-			NK_WINDOW_BORDER | NK_WINDOW_TITLE) &&
-		selectedExit != NULL)
+			NK_WINDOW_BORDER | NK_WINDOW_TITLE))
 	{
-		DrawPropsSidebar(ctx, eData, selectedExit);
+		if (selectedExit != NULL)
+		{
+			DrawPropsSidebar(ctx, eData, selectedExit);
+		}
+		nk_end(ctx);
 	}
-	nk_end(ctx);
 
 	if (nk_begin(
 			ctx, "", nk_rect(SIDE_WIDTH, 0, MAIN_WIDTH, HEIGHT),
@@ -109,8 +111,8 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		CA_FOREACH(Exit, e, eData->m->u.Static.Exits)
 		DrawExit(eData, e, _ca_index);
 		CA_FOREACH_END()
+		nk_end(ctx);
 	}
-	nk_end(ctx);
 	return result;
 }
 static void DrawOpsRow(

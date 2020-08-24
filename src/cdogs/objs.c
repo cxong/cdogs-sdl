@@ -177,7 +177,6 @@ static void AddPickupAtObject(const TObject *o, const PickupType type)
 		CASSERT(false, "unexpected pickup type");
 		break;
 	}
-	e.u.AddPickup.UID = PickupsGetNextUID();
 	e.u.AddPickup.Pos = Vec2ToNet(o->thing.Pos);
 	e.u.AddPickup.IsRandomSpawned = true;
 	GameEventsEnqueue(&gGameEvents, e);
@@ -552,7 +551,6 @@ void UpdateObjects(const int ticks)
 			// Spawner reactivated only when ammo taken
 			obj->counter = -1;
 			GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
-			e.u.AddPickup.UID = PickupsGetNextUID();
 			strcpy(e.u.AddPickup.PickupClass, obj->Class->u.PickupClass->Name);
 			e.u.AddPickup.SpawnerUID = obj->uid;
 			e.u.AddPickup.Pos = Vec2ToNet(obj->thing.Pos);

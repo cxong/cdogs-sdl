@@ -56,6 +56,7 @@ typedef enum
 	BRUSHTYPE_ADD_CHARACTER,
 	BRUSHTYPE_ADD_OBJECTIVE,
 	BRUSHTYPE_ADD_KEY,
+	BRUSHTYPE_ADD_PICKUP,
 	BRUSHTYPE_SET_KEY,
 	BRUSHTYPE_SET_EXIT
 } BrushType;
@@ -70,7 +71,8 @@ typedef struct
 	BrushType Type;
 	union {
 		int ItemIndex;
-		MapObject *MapObject;
+		const MapObject *MapObject;
+		const PickupClass *Pickup;
 	} u;
 	int Index2;
 	int MainType;
