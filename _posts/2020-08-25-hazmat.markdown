@@ -1,0 +1,12 @@
+---
+layout: post
+title:  "Hazmat"
+date:   2020-08-25
+categories: progress
+---
+
+A teaser for a new hat for the next version: hazmat!
+
+![hazmat](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/hazmat.gif)
+
+Stay safe everybody!
