@@ -7,30 +7,7 @@
 		"Height": 95,
 		"ExitStyle": "hazard",
 		"KeyStyle": "chip",
-		"Objectives": [{
-			"Description": "Extras",
-			"Type": "Collect",
-			"Pickup": "bottle",
-			"Count": 14,
-			"Required": 0,
-			"Flags": 1
-		},
-		{
-			"Description": "Extras",
-			"Type": "Collect",
-			"Pickup": "disk2",
-			"Count": 23,
-			"Required": 0,
-			"Flags": 1
-		},
-		{
-			"Description": "Extras",
-			"Type": "Collect",
-			"Pickup": "folder",
-			"Count": 8,
-			"Required": 0,
-			"Flags": 1
-		}],
+		"Objectives": [],
 		"Enemies": [],
 		"SpecialChars": [],
 		"MapObjectDensities": [],
@@ -503,10 +480,6 @@
 			"Positions": [[54, 41]]
 		},
 		{
-			"MapObject": "Marine Shotgun spawner",
-			"Positions": [[88, 61]]
-		},
-		{
 			"MapObject": "Chaingun spawner",
 			"Positions": [[85, 70]]
 		},
@@ -543,6 +516,14 @@
 			"MapObject": "candelabra",
 			"Positions": [[79, 82],
 			[82, 82]]
+		},
+		{
+			"MapObject": "blood1",
+			"Positions": [[28, 43]]
+		},
+		{
+			"MapObject": "Marine Shotgun spawner",
+			"Positions": [[88, 61]]
 		}],
 		"StaticCharacters": [{
 			"Index": 0,
@@ -578,8 +559,13 @@
 			[80, 78],
 			[81, 92]]
 		}],
-		"StaticObjectives": [{
+		"StaticObjectives": [],
+		"StaticKeys": [{
 			"Index": 0,
+			"Positions": [[66, 15]]
+		}],
+		"StaticPickups": [{
+			"Pickup": "health_bonus",
 			"Positions": [[22, 42],
 			[21, 34],
 			[22, 37],
@@ -591,26 +577,10 @@
 			[75, 72],
 			[86, 79],
 			[21, 44],
-			[34, 48],
-			[58, 41],
-			[67, 66]],
-			"Indices": [0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0]
+			[34, 48]]
 		},
 		{
-			"Index": 1,
+			"Pickup": "armor_bonus",
 			"Positions": [[17, 39],
 			[19, 39],
 			[55, 5],
@@ -629,57 +599,54 @@
 			[80, 92],
 			[82, 92],
 			[34, 32],
-			[61, 41],
-			[60, 54],
-			[66, 54],
-			[68, 64],
-			[72, 61]],
-			"Indices": [0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0]
+			[39, 30]]
 		},
 		{
-			"Index": 2,
-			"Positions": [[48, 52],
-			[48, 43],
-			[48, 48],
-			[63, 64],
-			[86, 57],
-			[88, 59],
+			"Pickup": "armor",
+			"Positions": [[14, 39]]
+		},
+		{
+			"Pickup": "ammo_Shells",
+			"Positions": [[76, 31],
+			[77, 51],
 			[94, 51],
-			[76, 31]],
-			"Indices": [0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0]
-		}],
-		"StaticKeys": [{
-			"Index": 0,
-			"Positions": [[66, 15]]
+			[88, 59],
+			[80, 65],
+			[63, 64],
+			[48, 52],
+			[48, 48],
+			[48, 43]]
+		},
+		{
+			"Pickup": "medikit",
+			"Positions": [[86, 57],
+			[67, 66],
+			[78, 78]]
+		},
+		{
+			"Pickup": "ammo_Bullets",
+			"Positions": [[89, 50],
+			[72, 61],
+			[68, 64],
+			[86, 71],
+			[85, 71],
+			[75, 71],
+			[76, 72],
+			[81, 90]]
+		},
+		{
+			"Pickup": "ammo_Rockets",
+			"Positions": [[61, 41],
+			[60, 54],
+			[66, 54]]
+		},
+		{
+			"Pickup": "megaarmor",
+			"Positions": [[58, 41]]
+		},
+		{
+			"Pickup": "stimpack",
+			"Positions": [[82, 90]]
 		}],
 		"Start": [40, 52],
 		"Exits": [{
@@ -1650,6 +1617,7 @@
 			"Index": 1,
 			"Positions": [[36, 37]]
 		}],
+		"StaticPickups": [],
 		"Start": [45, 67],
 		"Exits": [{
 			"Rect": [36,
@@ -2764,6 +2732,7 @@
 			"Index": 3,
 			"Positions": [[51, 34]]
 		}],
+		"StaticPickups": [],
 		"Start": [41, 95],
 		"Exits": [{
 			"Rect": [91,
@@ -3774,6 +3743,7 @@
 			"Positions": [[26, 19],
 			[34, 7]]
 		}],
+		"StaticPickups": [],
 		"Start": [86, 31],
 		"Exits": [{
 			"Rect": [0,
@@ -4804,6 +4774,7 @@
 			"Index": 1,
 			"Positions": [[68, 64]]
 		}],
+		"StaticPickups": [],
 		"Start": [44, 93],
 		"Exits": [{
 			"Rect": [41,
@@ -6043,6 +6014,7 @@
 			"Positions": [[82, 103],
 			[37, 1]]
 		}],
+		"StaticPickups": [],
 		"Start": [38, 83],
 		"Exits": [{
 			"Rect": [3,
@@ -7077,6 +7049,7 @@
 			"Index": 1,
 			"Positions": [[46, 67]]
 		}],
+		"StaticPickups": [],
 		"Start": [41, 2],
 		"Exits": [{
 			"Rect": [76,
@@ -7891,6 +7864,7 @@
 			"Index": 2,
 			"Positions": [[83, 105]]
 		}],
+		"StaticPickups": [],
 		"Start": [65, 192],
 		"Exits": [{
 			"Rect": [77,
@@ -8676,6 +8650,7 @@
 			"Index": 2,
 			"Positions": [[29, 55]]
 		}],
+		"StaticPickups": [],
 		"Start": [15, 41],
 		"Exits": [{
 			"Rect": [21,
