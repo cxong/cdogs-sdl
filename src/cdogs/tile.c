@@ -106,9 +106,9 @@ bool TileIsClear(const Tile *t)
 	{
 		return false;
 	}
-	// Check if tile has no things on it, excluding particles
+	// Check if tile has no things on it, excluding particles and pickups
 	CA_FOREACH(const ThingId, tid, t->things)
-	if (tid->Kind != KIND_PARTICLE)
+	if (tid->Kind != KIND_PARTICLE && tid->Kind != KIND_PICKUP)
 		return false;
 	CA_FOREACH_END()
 	return true;

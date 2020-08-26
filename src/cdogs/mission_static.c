@@ -1149,7 +1149,7 @@ bool MissionStaticTryAddPickup(
 	MissionStatic *m, const PickupClass *p, const struct vec2i pos)
 {
 	const Tile *tile = MapGetTile(&gMap, pos);
-	if (!TileIsClear(tile))
+	if (!TileCanWalk(tile))
 	{
 		return false;
 	}
