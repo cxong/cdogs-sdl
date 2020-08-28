@@ -6370,22 +6370,6 @@
 		"ExitStyle": "hazard",
 		"KeyStyle": "chip",
 		"Objectives": [{
-			"Description": "Bonus",
-			"Type": "Collect",
-			"Pickup": "disk2",
-			"Count": 14,
-			"Required": 0,
-			"Flags": 1
-		},
-		{
-			"Description": "Bonus",
-			"Type": "Collect",
-			"Pickup": "disk1",
-			"Count": 18,
-			"Required": 0,
-			"Flags": 1
-		},
-		{
 			"Description": "Kill the Barons",
 			"Type": "Kill",
 			"Index": 0,
@@ -7079,7 +7063,12 @@
 			[78, 195],
 			[76, 195]]
 		}],
-		"StaticObjectives": [],
+		"StaticObjectives": [{
+			"Index": 0,
+			"Positions": [[76, 105],
+			[81, 105]],
+			"Indices": [0, 0]
+		}],
 		"StaticKeys": [{
 			"Index": 0,
 			"Positions": [[91, 192]]
@@ -7093,46 +7082,55 @@
 			"Positions": [[83, 105]]
 		}],
 		"StaticPickups": [{
-			"Pickup": "health_bonus",
-			"Positions": [[64, 192],
+			"Pickup": "stimpack",
+			"Positions": [[90, 195],
+			[89, 195],
+			[89, 194],
+			[89, 194],
+			[89, 194],
+			[89, 193],
+			[89, 192],
+			[89, 191],
+			[89, 190],
+			[90, 190],
 			[90, 191],
+			[90, 192],
+			[90, 193],
+			[55, 92]]
+		},
+		{
+			"Pickup": "ammo_Bullets",
+			"Positions": [[64, 192],
 			[90, 194],
-			[90, 159],
 			[88, 159],
-			[88, 163],
+			[90, 159],
 			[90, 163],
-			[79, 160],
+			[88, 163],
+			[63, 127],
+			[93, 122],
 			[76, 106],
 			[81, 106],
-			[63, 127],
-			[58, 93],
-			[93, 122]]
+			[58, 93]]
 		},
 		{
-			"Pickup": "armor_bonus",
-			"Positions": [[89, 190],
-			[89, 191],
-			[89, 192],
-			[89, 193],
-			[89, 194],
-			[89, 195],
-			[90, 195],
-			[90, 193],
-			[90, 192],
-			[90, 190],
-			[82, 175],
-			[67, 159],
+			"Pickup": "supercharge",
+			"Positions": [[82, 175]]
+		},
+		{
+			"Pickup": "armor",
+			"Positions": [[79, 160]]
+		},
+		{
+			"Pickup": "medikit",
+			"Positions": [[79, 164]]
+		},
+		{
+			"Pickup": "ammo_Shells",
+			"Positions": [[67, 159],
 			[69, 161],
 			[67, 163],
-			[79, 164],
-			[55, 92],
-			[79, 72],
-			[79, 76]]
-		},
-		{
-			"Pickup": "stimpack",
-			"Positions": [[81, 107],
-			[76, 107]]
+			[79, 76],
+			[79, 72]]
 		}],
 		"Start": [65, 192],
 		"Exits": [{
@@ -7152,38 +7150,7 @@
 		"Height": 68,
 		"ExitStyle": "hazard",
 		"KeyStyle": "chip",
-		"Objectives": [{
-			"Description": "Bonus",
-			"Type": "Collect",
-			"Pickup": "disk1",
-			"Count": 32,
-			"Required": 0,
-			"Flags": 1
-		},
-		{
-			"Description": "Bonus",
-			"Type": "Collect",
-			"Pickup": "bag",
-			"Count": 4,
-			"Required": 0,
-			"Flags": 1
-		},
-		{
-			"Description": "Bonus",
-			"Type": "Collect",
-			"Pickup": "chip2",
-			"Count": 34,
-			"Required": 0,
-			"Flags": 1
-		},
-		{
-			"Description": "Bonus",
-			"Type": "Collect",
-			"Pickup": "chip3",
-			"Count": 1,
-			"Required": 0,
-			"Flags": 1
-		}],
+		"Objectives": [],
 		"Enemies": [],
 		"SpecialChars": [],
 		"MapObjectDensities": [],
@@ -7768,45 +7735,32 @@
 		}],
 		"StaticPickups": [{
 			"Pickup": "health_bonus",
-			"Positions": [[16, 40],
-			[16, 42],
-			[8, 13],
-			[9, 14],
-			[56, 24],
+			"Positions": [[56, 24],
 			[61, 23],
 			[61, 25],
 			[62, 23],
 			[62, 25],
-			[44, 50],
-			[42, 50],
-			[53, 61],
-			[42, 60],
-			[50, 55],
 			[39, 44],
 			[37, 46],
 			[3, 50],
 			[4, 50],
 			[5, 50],
-			[23, 63],
 			[21, 63],
 			[21, 64],
-			[12, 63],
 			[33, 17],
 			[32, 17],
 			[31, 17],
 			[33, 8],
 			[33, 9],
-			[33, 10],
-			[23, 9],
-			[18, 16],
-			[18, 17]]
+			[33, 10]]
 		},
 		{
 			"Pickup": "stimpack",
-			"Positions": [[9, 13],
-			[49, 11],
-			[46, 9],
-			[45, 15]]
+			"Positions": [[45, 15],
+			[42, 50],
+			[50, 55],
+			[18, 16],
+			[18, 17]]
 		},
 		{
 			"Pickup": "armor_bonus",
@@ -7822,7 +7776,6 @@
 			[57, 25],
 			[58, 23],
 			[58, 25],
-			[60, 24],
 			[22, 51],
 			[23, 51],
 			[24, 51],
@@ -7838,16 +7791,42 @@
 			[38, 44],
 			[38, 46],
 			[39, 45],
-			[9, 63],
 			[22, 16],
 			[23, 17],
 			[24, 17],
-			[25, 17],
-			[51, 14]]
+			[25, 17]]
 		},
 		{
 			"Pickup": "medikit",
-			"Positions": [[52, 50]]
+			"Positions": [[8, 13],
+			[9, 14],
+			[53, 61],
+			[23, 63],
+			[23, 9]]
+		},
+		{
+			"Pickup": "ammo_Bullets",
+			"Positions": [[16, 40],
+			[16, 42],
+			[44, 50],
+			[42, 60],
+			[9, 63],
+			[51, 14]]
+		},
+		{
+			"Pickup": "ammo_Rockets",
+			"Positions": [[9, 13],
+			[49, 11]]
+		},
+		{
+			"Pickup": "armor",
+			"Positions": [[60, 24]]
+		},
+		{
+			"Pickup": "ammo_Shells",
+			"Positions": [[52, 50],
+			[12, 63],
+			[46, 9]]
 		}],
 		"Start": [15, 41],
 		"Exits": [{

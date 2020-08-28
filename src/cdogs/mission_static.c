@@ -471,8 +471,7 @@ static void LoadStaticPickups(MissionStatic *m, json_t *node, char *name)
 }
 static const PickupClass *LoadPickupRef(const json_t *itemNode)
 {
-	const char *pName =
-		json_find_first_label(itemNode, "Pickup")->child->text;
+	const char *pName = json_find_first_label(itemNode, "Pickup")->child->text;
 	const PickupClass *p = StrPickupClass(pName);
 	if (p == NULL)
 	{
@@ -755,12 +754,12 @@ static void SavePositions(json_t *node, const CArray *positions)
 {
 	json_t *a = json_new_array();
 	CA_FOREACH(const struct vec2i, pos, *positions)
-		json_insert_child(a, SaveVec2i(*pos));
+	json_insert_child(a, SaveVec2i(*pos));
 	CA_FOREACH_END()
 	json_insert_pair_into_object(node, "Positions", a);
 }
 static json_t *SaveExits(const MissionStatic *m)
-	{
+{
 	json_t *exits = json_new_array();
 	CA_FOREACH(const Exit, exit, m->Exits)
 	json_t *exitNode = json_new_object();
@@ -1153,6 +1152,17 @@ bool MissionStaticTryAddPickup(
 	{
 		return false;
 	}
+	// Check if there are existing pickups here
+	CA_FOREACH(PickupPositions, pp, m->Pickups)
+	for (int i = 0; i < pp->Positions.size; i++)
+	{
+		const struct vec2i *aPos = CArrayGet(&pp->Positions, i);
+		if (svec2i_is_equal(*aPos, pos))
+		{
+			return false;
+		}
+	}
+	CA_FOREACH_END()
 	// Check if the item already has an entry, and add to its list
 	// of positions
 	CA_FOREACH(PickupPositions, pp, m->Pickups)
