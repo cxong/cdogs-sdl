@@ -1153,8 +1153,8 @@ bool MissionStaticTryAddPickup(
 		return false;
 	}
 	// Check if there are existing pickups here
-	CA_FOREACH(PickupPositions, pp, m->Pickups)
-	for (int i = 0; i < pp->Positions.size; i++)
+	CA_FOREACH(const PickupPositions, pp, m->Pickups)
+	for (int i = 0; i < (int)pp->Positions.size; i++)
 	{
 		const struct vec2i *aPos = CArrayGet(&pp->Positions, i);
 		if (svec2i_is_equal(*aPos, pos))
