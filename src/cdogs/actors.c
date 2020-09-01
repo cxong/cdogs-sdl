@@ -1072,6 +1072,7 @@ static bool CheckManualPickupFunc(
 		strcpy(buttonName, "");
 		InputGetButtonName(
 			pData->inputDevice, pData->deviceIndex, CMD_BUTTON2, buttonName);
+		// TODO: PickupGetName
 		const char *pickupName;
 		switch (p->class->Type)
 		{

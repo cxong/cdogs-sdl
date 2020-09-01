@@ -244,8 +244,10 @@ static bool TryLoadPickupclass(PickupClass *c, json_t *node, const int version)
 		tmp = GetString(node, "Ammo");
 		c->u.Ammo.Id = StrAmmoId(tmp);
 		CFREE(tmp);
-		int amount = 0;
-		LoadInt(&amount, node, "AmmoAmount");
+		const Ammo *ammo = AmmoGetById(&gAmmo, c->u.Ammo.Id);
+		// Set default ammo amount
+		int amount = ammo->Amount;
+		LoadInt(&amount, node, "Amount");
 		c->u.Ammo.Amount = amount;
 		break;
 	}
@@ -272,6 +274,7 @@ static bool TryLoadPickupclass(PickupClass *c, json_t *node, const int version)
 	return true;
 }
 
+// TODO: move ammo pickups to pickups file; remove "ammo_"
 void PickupClassesLoadAmmo(CArray *classes, const CArray *ammoClasses)
 {
 	CA_FOREACH(const Ammo, a, *ammoClasses)

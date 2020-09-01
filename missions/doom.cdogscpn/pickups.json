@@ -42,6 +42,27 @@
       "Pic": "megaarmor",
       "Type": "Health",
       "Health": 200
+    },
+    {
+      "Name": "bullet_pickup2",
+      "Pic": "bullet_pickup2",
+      "Type": "Ammo",
+      "Ammo": "Bullets",
+      "Amount": 50
+    },
+    {
+      "Name": "shells2",
+      "Pic": "shells2",
+      "Type": "Ammo",
+      "Ammo": "Shells",
+      "Amount": 20
+    },
+    {
+      "Name": "rockets2",
+      "Pic": "rockets2",
+      "Type": "Ammo",
+      "Ammo": "Rockets",
+      "Amount": 10
     }
   ]
 }
