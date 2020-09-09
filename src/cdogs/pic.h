@@ -37,8 +37,6 @@ typedef struct
 	SDL_Texture *Tex;
 } Pic;
 
-extern Pic picNone;
-
 color_t PixelToColor(
 	const SDL_PixelFormat *f, const Uint8 aShift, const Uint32 pixel);
 Uint32 ColorToPixel(

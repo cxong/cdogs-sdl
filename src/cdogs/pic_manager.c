@@ -124,6 +124,7 @@ static void PicManagerAdd(
 			if (isSpritesheet)
 			{
 				Pic p;
+				memset(&p, 0, sizeof p);
 				CArrayPushBack(&nsp->pics, &p);
 				pic = CArrayGet(&nsp->pics, nsp->pics.size - 1);
 			}

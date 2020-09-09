@@ -1,29 +1,29 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2019 Cong Xu
-    All rights reserved.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (c) 2013-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "weapon_class.h"
 
@@ -33,7 +33,6 @@
 #include "log.h"
 #include "net_util.h"
 #include "utils.h"
-
 
 WeaponClasses gWeaponClasses;
 
@@ -113,9 +112,8 @@ void WeaponClassesLoadJSON(WeaponClasses *wcs, CArray *classes, json_t *root)
 	json_t *pseudoGunsNode = json_find_first_label(root, "PseudoGuns");
 	if (pseudoGunsNode != NULL)
 	{
-		for (json_t *child = pseudoGunsNode->child->child;
-			child;
-			child = child->next)
+		for (json_t *child = pseudoGunsNode->child->child; child;
+			 child = child->next)
 		{
 			WeaponClass gd;
 			LoadGunDescription(&gd, child, defaultDesc, version);
@@ -287,12 +285,12 @@ static void LoadGunDescription(
 
 	LOG(LM_MAP, LL_DEBUG,
 		"loaded %s name(%s) bullet(%s) ammo(%d) cost(%d) lock(%d)...",
-		wc->IsGrenade ? "grenade" : "gun",
-		wc->name, wc->Bullet != NULL ? wc->Bullet->Name : "", wc->AmmoId,
-		wc->Cost, wc->Lock);
+		wc->IsGrenade ? "grenade" : "gun", wc->name,
+		wc->Bullet != NULL ? wc->Bullet->Name : "", wc->AmmoId, wc->Cost,
+		wc->Lock);
 	LOG(LM_MAP, LL_DEBUG,
-		"...reloadLead(%d) soundLockLength(%d) recoil(%f)...",
-		wc->ReloadLead, wc->SoundLockLength, wc->Recoil);
+		"...reloadLead(%d) soundLockLength(%d) recoil(%f)...", wc->ReloadLead,
+		wc->SoundLockLength, wc->Recoil);
 	LOG(LM_MAP, LL_DEBUG,
 		"...spread(%frad x%d) angleOffset(%f) muzzleHeight(%d)...",
 		wc->Spread.Width, wc->Spread.Count, wc->AngleOffset, wc->MuzzleHeight);
@@ -318,7 +316,7 @@ void WeaponClassesTerminate(WeaponClasses *wcs)
 void WeaponClassesClear(CArray *classes)
 {
 	CA_FOREACH(WeaponClass, g, *classes)
-		GunDescriptionTerminate(g);
+	GunDescriptionTerminate(g);
 	CA_FOREACH_END()
 	CArrayClear(classes);
 }
@@ -334,16 +332,16 @@ static void GunDescriptionTerminate(WeaponClass *wc)
 const WeaponClass *StrWeaponClass(const char *s)
 {
 	CA_FOREACH(const WeaponClass, gd, gWeaponClasses.CustomGuns)
-		if (strcmp(s, gd->name) == 0)
-		{
-			return gd;
-		}
+	if (strcmp(s, gd->name) == 0)
+	{
+		return gd;
+	}
 	CA_FOREACH_END()
 	CA_FOREACH(const WeaponClass, gd, gWeaponClasses.Guns)
-		if (strcmp(s, gd->name) == 0)
-		{
-			return gd;
-		}
+	if (strcmp(s, gd->name) == 0)
+	{
+		return gd;
+	}
 	CA_FOREACH_END()
 	fprintf(stderr, "Cannot parse gun name: %s\n", s);
 	return NULL;
@@ -351,16 +349,14 @@ const WeaponClass *StrWeaponClass(const char *s)
 WeaponClass *IdWeaponClass(const int i)
 {
 	CASSERT(
-		i >= 0 &&
-		i < (int)gWeaponClasses.Guns.size +
-		(int)gWeaponClasses.CustomGuns.size,
+		i >= 0 && i < (int)gWeaponClasses.Guns.size +
+						  (int)gWeaponClasses.CustomGuns.size,
 		"Gun index out of bounds");
 	if (i < (int)gWeaponClasses.Guns.size)
 	{
 		return CArrayGet(&gWeaponClasses.Guns, i);
 	}
-	return CArrayGet(
-		&gWeaponClasses.CustomGuns, i - gWeaponClasses.Guns.size);
+	return CArrayGet(&gWeaponClasses.CustomGuns, i - gWeaponClasses.Guns.size);
 }
 int WeaponClassId(const WeaponClass *wc)
 {
@@ -388,26 +384,26 @@ WeaponClass *IndexWeaponClassReal(const int i)
 {
 	int j = 0;
 	CA_FOREACH(WeaponClass, wc, gWeaponClasses.Guns)
-		if (!wc->IsRealGun)
-		{
-			continue;
-		}
-		if (j == i)
-		{
-			return wc;
-		}
-		j++;
+	if (!wc->IsRealGun)
+	{
+		continue;
+	}
+	if (j == i)
+	{
+		return wc;
+	}
+	j++;
 	CA_FOREACH_END()
 	CA_FOREACH(WeaponClass, wc, gWeaponClasses.CustomGuns)
-		if (!wc->IsRealGun)
-		{
-			continue;
-		}
-		if (j == i)
-		{
-			return wc;
-		}
-		j++;
+	if (!wc->IsRealGun)
+	{
+		continue;
+	}
+	if (j == i)
+	{
+		return wc;
+	}
+	j++;
 	CA_FOREACH_END()
 	CASSERT(false, "cannot find gun");
 	return NULL;
@@ -415,8 +411,7 @@ WeaponClass *IndexWeaponClassReal(const int i)
 
 void WeaponClassFire(
 	const WeaponClass *wc, const struct vec2 pos, const float z,
-	const double radians,
-	const int flags, const int actorUID,
+	const double radians, const int flags, const int actorUID,
 	const bool playSound, const bool isGun)
 {
 	GameEvent e = GameEventNew(GAME_EVENT_GUN_FIRE);
@@ -440,16 +435,16 @@ void WeaponClassAddBrass(
 	{
 		return;
 	}
-	CASSERT(wc->Brass, "Cannot create brass for no-brass weapon");
+	CASSERT(wc->Brass != NULL, "Cannot create brass for no-brass weapon");
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 	e.u.AddParticle.Class = wc->Brass;
 	const float radians = dir2radians[d];
-	const struct vec2 ejectionPortOffset = svec2_scale(
-		Vec2FromRadiansScaled(radians), 7);
+	const struct vec2 ejectionPortOffset =
+		svec2_scale(Vec2FromRadiansScaled(radians), 7);
 	e.u.AddParticle.Pos = svec2_subtract(pos, ejectionPortOffset);
 	e.u.AddParticle.Z = (float)wc->MuzzleHeight;
-	e.u.AddParticle.Vel = svec2_scale(
-		Vec2FromRadians(radians + MPI_2), 0.333333f);
+	e.u.AddParticle.Vel =
+		svec2_scale(Vec2FromRadians(radians + MPI_2), 0.333333f);
 	e.u.AddParticle.Vel.x += RAND_FLOAT(-0.25f, 0.25f);
 	e.u.AddParticle.Vel.y += RAND_FLOAT(-0.25f, 0.25f);
 	e.u.AddParticle.Angle = RAND_DOUBLE(0, MPI * 2);
@@ -458,10 +453,11 @@ void WeaponClassAddBrass(
 	GameEventsEnqueue(&gGameEvents, e);
 }
 
-static struct vec2 GetMuzzleOffset(const direction_e d, const gunstate_e state);
+static struct vec2 GetMuzzleOffset(
+	const direction_e d, const gunstate_e state);
 struct vec2 WeaponClassGetMuzzleOffset(
-	const WeaponClass *desc, const CharSprites *cs,
-	const direction_e dir, const gunstate_e state)
+	const WeaponClass *desc, const CharSprites *cs, const direction_e dir,
+	const gunstate_e state)
 {
 	if (!WeaponClassHasMuzzle(desc))
 	{
@@ -473,9 +469,9 @@ struct vec2 WeaponClassGetMuzzleOffset(
 }
 static struct vec2 GetMuzzleOffset(const direction_e d, const gunstate_e state)
 {
-	// TODO: gun-specific muzzle offsets
-	#define BARREL_LENGTH 10
-	#define BARREL_LENGTH_READY 7
+// TODO: gun-specific muzzle offsets
+#define BARREL_LENGTH 10
+#define BARREL_LENGTH_READY 7
 	// Barrel slightly shortened when not firing
 	const double barrelLength =
 		state == GUNSTATE_FIRING ? BARREL_LENGTH : BARREL_LENGTH_READY;
@@ -485,7 +481,8 @@ float WeaponClassGetMuzzleHeight(const WeaponClass *wc, const gunstate_e state)
 {
 	// Muzzle slightly higher when not firing
 	// TODO: convert MuzzleHeight to float
-	return (float)(wc->MuzzleHeight + (state == GUNSTATE_FIRING ? 0 : 4 * Z_FACTOR));
+	return (
+		float)(wc->MuzzleHeight + (state == GUNSTATE_FIRING ? 0 : 4 * Z_FACTOR));
 }
 
 bool WeaponClassHasMuzzle(const WeaponClass *wc)
@@ -499,10 +496,8 @@ bool WeaponClassIsHighDPS(const WeaponClass *wc)
 		return false;
 	}
 	// TODO: generalised way of determining explosive bullets
-	return
-		wc->Bullet->Falling.DropGuns.size > 0 ||
-		wc->Bullet->OutOfRangeGuns.size > 0 ||
-		wc->Bullet->HitGuns.size > 0;
+	return wc->Bullet->Falling.DropGuns.size > 0 ||
+		   wc->Bullet->OutOfRangeGuns.size > 0 || wc->Bullet->HitGuns.size > 0;
 }
 float WeaponClassGetRange(const WeaponClass *wc)
 {
@@ -559,8 +554,8 @@ void BulletAndWeaponInitialize(
 	e = json_stream_parse(bf, &broot);
 	if (e != JSON_OK)
 	{
-		LOG(LM_MAP, LL_ERROR, "Error parsing bullets file %s [error %d]",
-			buf, (int)e);
+		LOG(LM_MAP, LL_ERROR, "Error parsing bullets file %s [error %d]", buf,
+			(int)e);
 		goto bail;
 	}
 	BulletLoadJSON(b, &b->Classes, broot);
@@ -576,8 +571,8 @@ void BulletAndWeaponInitialize(
 	e = json_stream_parse(gf, &groot);
 	if (e != JSON_OK)
 	{
-		LOG(LM_MAP, LL_ERROR, "Error parsing guns file %s [error %d]",
-			buf, (int)e);
+		LOG(LM_MAP, LL_ERROR, "Error parsing guns file %s [error %d]", buf,
+			(int)e);
 		goto bail;
 	}
 	WeaponClassesLoadJSON(wcs, &wcs->Guns, groot);
