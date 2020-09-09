@@ -181,6 +181,9 @@ void MapNewLoadCampaignJSON(json_t *root, CampaignSetting *c)
 	LoadBool(&c->Ammo, root, "Ammo");
 	LoadBool(&c->WeaponPersist, root, "WeaponPersist");
 	LoadBool(&c->SkipWeaponMenu, root, "SkipWeaponMenu");
+	// Default enable random pickups
+	c->RandomPickups = true;
+	LoadBool(&c->RandomPickups, root, "RandomPickups");
 }
 
 static void LoadMissionObjectives(

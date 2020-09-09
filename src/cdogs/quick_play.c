@@ -258,6 +258,7 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 	CFREE(setting->Description);
 	CSTRDUP(setting->Description, "");
 	setting->WeaponPersist = true;
+	setting->RandomPickups = true;
 	for (int i = 0; i < NUM_MISSIONS; i++)
 	{
 		AddMission(&setting->Missions, &gPicManager, &setting->characters, i);

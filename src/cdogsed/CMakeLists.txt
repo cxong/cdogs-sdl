@@ -5,10 +5,10 @@ include_directories(
 	${SDL2_MIXER_INCLUDE_DIRS})
 set(CDOGSED_SOURCES
 	add_pickup_dialog.c
+	campaign_options.c
 	char_editor.c
 	editor_brush.c
 	editor_ui.c
-	editor_ui_campaign.c
 	editor_ui_cave.c
 	editor_ui_color.c
 	editor_ui_common.c
@@ -22,10 +22,10 @@ set(CDOGSED_SOURCES
 	ui_object.c)
 set(CDOGSED_HEADERS
 	add_pickup_dialog.h
+	campaign_options.h
 	char_editor.h
 	editor_brush.h
 	editor_ui.h
-	editor_ui_campaign.h
 	editor_ui_cave.h
 	editor_ui_color.h
 	editor_ui_common.h

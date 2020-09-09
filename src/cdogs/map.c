@@ -148,7 +148,9 @@ int MapIsTileInExit(const Map *map, const Thing *ti, const int exit)
 	}
 	const struct vec2i tilePos = Vec2ToTile(ti->Pos);
 	const Exit *e = CArrayGet(&map->exits, exit);
-	return Rect2iIsInside(e->R, tilePos) ? exit : -1;
+	// Outer edge is also in exit
+	const Rect2i r = Rect2iNew(e->R.Pos, svec2i_add(e->R.Size, svec2i_one()));
+	return Rect2iIsInside(r, tilePos) ? exit : -1;
 }
 
 static Tile *MapGetTileOfItem(Map *map, Thing *t)

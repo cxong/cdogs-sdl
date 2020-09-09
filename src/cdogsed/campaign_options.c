@@ -25,7 +25,7 @@
 	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 	POSSIBILITY OF SUCH DAMAGE.
 */
-#include "editor_ui_campaign.h"
+#include "campaign_options.h"
 
 #include "nk_window.h"
 
@@ -119,6 +119,12 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		if (DrawCheckbox(
 				ctx, "Skip weapon menu", "Skip weapon menu before missions",
 				&cData->c->Setting.SkipWeaponMenu))
+		{
+			changed = true;
+		}
+		if (DrawCheckbox(
+				ctx, "Random Pickups", "Enable randomly spawned ammo/health pickups",
+				&cData->c->Setting.RandomPickups))
 		{
 			changed = true;
 		}

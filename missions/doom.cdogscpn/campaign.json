@@ -6,5 +6,6 @@
 	"Ammo": true,
 	"WeaponPersist": true,
 	"SkipWeaponMenu": true,
+	"RandomPickups": false,
 	"Missions": 9
 }

@@ -40,7 +40,7 @@
 #include <cdogs/mission_convert.h>
 #include <cdogs/pic_manager.h>
 
-#include "editor_ui_campaign.h"
+#include "campaign_options.h"
 #include "editor_ui_cave.h"
 #include "editor_ui_color.h"
 #include "editor_ui_common.h"

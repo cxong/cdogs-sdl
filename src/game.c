@@ -253,13 +253,16 @@ static void RunGameOnEnter(GameLoopData *data)
 			Vec2CenterOfTile(svec2i_scale_divide(rData->map->Size, 2));
 		rData->Camera.FollowNextPlayer = true;
 	}
-	HealthSpawnerInit(&rData->healthSpawner, rData->map);
-	CArrayInit(&rData->ammoSpawners, sizeof(PowerupSpawner));
-	for (int i = 0; i < AmmoGetNumClasses(&gAmmo); i++)
+	if (rData->co->Setting.RandomPickups)
 	{
-		PowerupSpawner ps;
-		AmmoSpawnerInit(&ps, rData->map, i);
-		CArrayPushBack(&rData->ammoSpawners, &ps);
+		HealthSpawnerInit(&rData->healthSpawner, rData->map);
+		CArrayInit(&rData->ammoSpawners, sizeof(PowerupSpawner));
+		for (int i = 0; i < AmmoGetNumClasses(&gAmmo); i++)
+		{
+			PowerupSpawner ps;
+			AmmoSpawnerInit(&ps, rData->map, i);
+			CArrayPushBack(&rData->ammoSpawners, &ps);
+		}
 	}
 
 	rData->m->state = MISSION_STATE_WAITING;
