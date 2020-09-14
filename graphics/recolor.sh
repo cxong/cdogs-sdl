@@ -4,5 +4,5 @@
 # TODO: force RGB, don't use grayscale
 #
 for image in *.png; do
-  convert $image +depth +dither -remap palette.png ${image}
+  convert "$image" +depth +dither -remap palette.png "$image"
 done

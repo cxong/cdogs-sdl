@@ -10,10 +10,10 @@ This is a simple guide to making sprites that will fit in the style of C-Dogs. C
 
 C-Dogs sprites are:
 
-- Pixel art
-- Somewhat limited palette
-- Lit from the top-left, with a secondary light from the bottom-left
-- Some objects, like pickups, cast a 1px full black shadow along its bottom-right
+  - Pixel art
+  - Somewhat limited palette
+  - Lit from the top-left, with a secondary light from the bottom-left
+  - Some objects, like pickups, cast a 1px full black shadow along its bottom-right
 
 ### Colours
 
@@ -22,17 +22,17 @@ Try to use the limited palette that original C-Dogs uses. Not all current sprite
 ![](https://github.com/cxong/cdogs-sdl/blob/master/graphics/palette.png)
 
 If you use GIMP, you can also import this palette using
-- Windows > Palettes
-- Right click the list > Import Palette... > find palette.png
-- Open an image you want to palettise
-- Image > Mode > Indexed... > Use custom palette > select the imported C-Dogs palette
+  - Windows > Palettes
+  - Right click the list > Import Palette... > find palette.png
+  - Open an image you want to palettise
+  - Image > Mode > Indexed... > Use custom palette > select the imported C-Dogs palette
 
 ### Lighting
 
 The primary light is from the top-left. This means that:
 
-- Top and left edges are brightest
-- The top surface is brighter than the front surface
+  - Top and left edges are brightest
+  - The top surface is brighter than the front surface
 
 Take these examples:
 

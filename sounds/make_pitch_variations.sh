@@ -15,11 +15,11 @@ if [ "$#" -eq 3 ]; then
 fi
 FILENAME_PREFIX=${1%%0.*}
 EXTENSION=${1##*.}
-for i in $(seq 1 $2)
+for i in $(seq 1 "$2")
 do
-  FILENAME="${FILENAME_PREFIX}$((($i - 1) * 2 + 1)).${EXTENSION}"
-  SHIFT=$(($SHIFT_RANGE * $i / $2))
-  sox -G $1 $FILENAME pitch $SHIFT
-  FILENAME="${FILENAME_PREFIX}$(($i * 2)).${EXTENSION}"
-  sox -G $1 $FILENAME pitch -$SHIFT
+  FILENAME="${FILENAME_PREFIX}$(((i - 1) * 2 + 1)).${EXTENSION}"
+  SHIFT=$((SHIFT_RANGE * i / $2))
+  sox -G "$1" "$FILENAME" pitch "$SHIFT"
+  FILENAME="${FILENAME_PREFIX}$((i * 2)).${EXTENSION}"
+  sox -G "$1" "$FILENAME" pitch "-$SHIFT"
 done

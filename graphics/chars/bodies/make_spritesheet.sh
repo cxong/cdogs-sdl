@@ -49,15 +49,15 @@ do
       then
         collections=$collections,hand_right
       fi
-      $BLENDER -b $INFILE -P render.py -- $collections $action $frames $part
+      "$BLENDER" -b "$INFILE" -P render.py -- "$collections" "$action" "$frames" "$part"
 
-      DIMENSIONS=`identify -format "%wx%h" out/${part}_${action}_0_00.png`
+      DIMENSIONS=`identify -format "%wx%h" "out/${part}_${action}_0_00.png"`
       OUTFILE=$1/${part}_${action}_${DIMENSIONS}.png
-      rm $OUTFILE
-      montage -geometry +0+0 -background none -tile x8 out/${part}_${action}_*.png -channel A tmpimage
-      convert tmpimage -dither None -colors 32 -level 25%,60% $OUTFILE
+      rm "$OUTFILE"
+      montage -geometry +0+0 -background none -tile x8 "out/${part}_${action}_*.png" -channel A tmpimage
+      convert tmpimage -dither None -colors 32 -level 25%,60% "$OUTFILE"
       rm tmpimage
-      chmod 644 $OUTFILE
+      chmod 644 "$OUTFILE"
       echo "Created $OUTFILE"
     done
 done
