@@ -268,7 +268,7 @@ if(WIN32)
 elseif(APPLE)
 	set(CPACK_GENERATOR "DragNDrop")
 	set(CPACK_DMG_FORMAT "UDBZ")
-	set(CPACK_DMG_VOLUME_NAME "C-Dogs SDL")
+	set(CPACK_DMG_VOLUME_NAME "C-Dogs.SDL")
 	set(CPACK_SYSTEM_NAME "OSX")
 	set(CPACK_PACKAGE_ICON
 		"${CMAKE_SOURCE_DIR}/build/macosx/cdogs-icon.icns")
