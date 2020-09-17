@@ -1,0 +1,15 @@
+---
+layout: post
+title:  "C-Dogs 0.9 Released!"
+date:   2020-09-17
+categories: release
+published: true
+---
+
+C-Dogs SDL 0.9 released! This release contains a further revamped Doom campaign with support for secret levels, ammo/gun persistence, and a few new hats!
+
+![Doom secret](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/doom_secret.png)
+
+![Helmet](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/helmet.gif)
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.9.0>
