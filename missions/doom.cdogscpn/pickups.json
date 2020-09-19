@@ -1,68 +1,107 @@
 {
-  "Version": 1,
+  "Version": 2,
   "Pickups": [
     {
       "Name": "health_bonus",
-      "Pic": "health_bonus",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "health_bonus"
+      },
       "Type": "Health",
       "Health": 1
     },
     {
       "Name": "stimpack",
-      "Pic": "stimpack",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "stimpack"
+      },
       "Type": "Health",
       "Health": 10
     },
     {
       "Name": "medikit",
-      "Pic": "health",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "health"
+      },
       "Type": "Health",
       "Health": 25
     },
     {
       "Name": "supercharge",
-      "Pic": "supercharge",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "supercharge"
+      },
       "Type": "Health",
       "Health": 100
     },
     {
       "Name": "armor_bonus",
-      "Pic": "armor_bonus",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "armor_bonus"
+      },
       "Type": "Health",
       "Health": 1
     },
     {
       "Name": "armor",
-      "Pic": "armor",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "armor"
+      },
       "Type": "Health",
       "Health": 100
     },
     {
       "Name": "megaarmor",
-      "Pic": "megaarmor",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "megaarmor"
+      },
       "Type": "Health",
       "Health": 200
     },
     {
       "Name": "bullet_pickup2",
-      "Pic": "bullet_pickup2",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "bullet_pickup2"
+      },
       "Type": "Ammo",
       "Ammo": "Bullets",
       "Amount": 50
     },
     {
       "Name": "shells2",
-      "Pic": "shells2",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "shells2"
+      },
       "Type": "Ammo",
       "Ammo": "Shells",
       "Amount": 20
     },
     {
       "Name": "rockets2",
-      "Pic": "rockets2",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "rockets2"
+      },
       "Type": "Ammo",
       "Ammo": "Rockets",
       "Amount": 10
+    },
+    {
+      "Name": "computer_map",
+      "Pic": {
+        "Type": "AnimatedRandom",
+        "Sprites": "computer_map",
+        "TicksPerFrame": 10
+      },
+      "Type": "ShowMap"
     }
   ]
 }

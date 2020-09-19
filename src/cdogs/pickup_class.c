@@ -43,6 +43,7 @@ PickupType StrPickupType(const char *s)
 	S2T(PICKUP_AMMO, "Ammo");
 	S2T(PICKUP_KEYCARD, "Key");
 	S2T(PICKUP_GUN, "Gun");
+	S2T(PICKUP_SHOW_MAP, "ShowMap");
 	return PICKUP_NONE;
 }
 const char *PickupTypeStr(const PickupType pt)
@@ -54,6 +55,7 @@ const char *PickupTypeStr(const PickupType pt)
 		T2S(PICKUP_AMMO, "Ammo");
 		T2S(PICKUP_KEYCARD, "Key");
 		T2S(PICKUP_GUN, "Gun");
+		T2S(PICKUP_SHOW_MAP, "ShowMap");
 	default:
 		return "";
 	}
@@ -256,6 +258,9 @@ static bool TryLoadPickupclass(PickupClass *c, json_t *node, const int version)
 		return false;
 	case PICKUP_GUN:
 		CASSERT(false, "unimplemented");
+		break;
+	case PICKUP_SHOW_MAP:
+		// do nothing
 		break;
 	default:
 		CASSERT(false, "Unknown pickup type");

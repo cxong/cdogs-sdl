@@ -140,9 +140,6 @@ static void AddPickupAtObject(const TObject *o, const PickupType type)
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
 	switch (type)
 	{
-	case PICKUP_JEWEL:
-		CASSERT(false, "unexpected pickup type");
-		break;
 	case PICKUP_HEALTH:
 		if (!ConfigGetBool(&gConfig, "Game.HealthPickups"))
 		{
@@ -161,9 +158,6 @@ static void AddPickupAtObject(const TObject *o, const PickupType type)
 			const Ammo *a = AmmoGetById(&gAmmo, ammoId);
 			sprintf(e.u.AddPickup.PickupClass, "ammo_%s", a->Name);
 		}
-		break;
-	case PICKUP_KEYCARD:
-		CASSERT(false, "unexpected pickup type");
 		break;
 	case PICKUP_GUN:
 		// Pick a random mission gun type and spawn it

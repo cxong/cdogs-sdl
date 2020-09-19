@@ -581,6 +581,8 @@ static void FindObjectivesSortedByDistance(
 			continue;
 		}
 		break;
+	case PICKUP_SHOW_MAP:
+		break;
 	default:
 		// Not something we want to pick up
 		continue;

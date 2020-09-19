@@ -158,6 +158,8 @@ static void DrawPropsSidebar(struct nk_context *ctx, const PickupClass *pc)
 		sprintf(buf, "Weapon: %s", wc->name);
 		nk_label(ctx, buf, NK_TEXT_LEFT);
 	}
+	case PICKUP_SHOW_MAP:
+		break;
 	break;
 	default:
 		CASSERT(false, "Unknown pickup type");

@@ -41,7 +41,8 @@ typedef enum
 	PICKUP_HEALTH,
 	PICKUP_AMMO,
 	PICKUP_KEYCARD,
-	PICKUP_GUN
+	PICKUP_GUN,
+	PICKUP_SHOW_MAP
 } PickupType;
 PickupType StrPickupType(const char *s);
 const char *PickupTypeStr(const PickupType pt);

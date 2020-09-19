@@ -190,6 +190,15 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 	}
 	break;
 
+	case PICKUP_SHOW_MAP: {
+		GameEvent e = GameEventNew(GAME_EVENT_EXPLORE_TILES);
+		e.u.ExploreTiles.Runs_count = 1;
+		e.u.ExploreTiles.Runs[0].Run = gMap.Size.x * gMap.Size.y;
+		GameEventsEnqueue(&gGameEvents, e);
+		sound = "show_map";
+	}
+	break;
+
 	default:
 		CASSERT(false, "unexpected pickup type");
 		break;
