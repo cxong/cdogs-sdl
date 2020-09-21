@@ -484,18 +484,36 @@ static void DrawEditorTiles(DrawBuffer *b, const struct vec2i offset)
 		for (int x = 0; x < b->Size.x; x++, pos.x += TILE_WIDTH)
 		{
 			const struct vec2i tilePos = svec2i(x + b->xStart, y + b->yStart);
+			if (!MapIsTileIn(&gMap, tilePos))
+			{
+				continue;
+			}
+
+			// Access highlight
+			const uint16_t al = MapGetAccessLevel(&gMap, tilePos);
+			if (al != 0)
+			{
+				color_t highlight = KeyColor(al);
+				highlight.a = 64;
+				DrawRectangle(
+					b->g, pos, svec2i(TILE_WIDTH, TILE_HEIGHT), highlight,
+					true);
+			}
+
+			// mission start
 			if (gMission.missionData->Type == MAPTYPE_STATIC)
 			{
 				struct vec2i start = gMission.missionData->u.Static.Start;
 				if (!svec2i_is_zero(start) && svec2i_is_equal(start, tilePos))
 				{
-					// mission start
 					PicRender(
 						PicManagerGetPic(&gPicManager, "editor/start"),
 						b->g->gameWindow.renderer, pos, colorWhite, 0,
 						svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 				}
 			}
+
+			// exit tiles
 			CA_FOREACH(const Exit, e, gMap.exits)
 			Rect2i exitR = e->R;
 			exitR.Size = svec2i_add(exitR.Size, svec2i_one());

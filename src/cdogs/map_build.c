@@ -979,18 +979,14 @@ void MapSetRoomAccessMask(
 	MapBuilder *mb, const struct vec2i pos, const struct vec2i size,
 	const uint16_t accessMask)
 {
-	struct vec2i v;
-	for (v.y = pos.y + 1; v.y < pos.y + size.y - 1; v.y++)
+	const Rect2i room = Rect2iNew(pos, size);
+	RECT_FOREACH(room)
+	const TileClass *t = MapBuilderGetTile(mb, _v);
+	if (t != NULL)
 	{
-		for (v.x = pos.x + 1; v.x < pos.x + size.x - 1; v.x++)
-		{
-			const TileClass *t = MapBuilderGetTile(mb, v);
-			if (t != NULL && t->IsRoom)
-			{
-				MapBuildSetAccess(mb, v, accessMask);
-			}
-		}
+		MapBuildSetAccess(mb, _v, accessMask);
 	}
+	RECT_FOREACH_END()
 }
 
 static void AddOverlapRooms(
