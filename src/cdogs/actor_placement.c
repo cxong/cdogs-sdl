@@ -34,7 +34,7 @@
 #include "gamedata.h"
 #include "handle_game_events.h"
 
-static NVec2 PlaceActor(Map *map)
+static NVec2 PlacePlayerSimple(Map *map)
 {
 	struct vec2 pos;
 
@@ -52,7 +52,7 @@ static NVec2 PlaceActor(Map *map)
 				pos = MapGetRandomPos(map);
 				if (fabsf(pos.x - exitPos.x) > halfMap &&
 					fabsf(pos.y - exitPos.y) > halfMap &&
-					MapIsTileAreaClear(map, pos, svec2i(ACTOR_W, ACTOR_H)))
+					MapIsPosOKForPlayer(map, pos, false))
 				{
 					return Vec2ToNet(pos);
 				}
@@ -64,8 +64,7 @@ static NVec2 PlaceActor(Map *map)
 	do
 	{
 		pos = MapGetRandomPos(map);
-	} while (!MapIsPosOKForPlayer(map, pos, false) ||
-			 !MapIsTileAreaClear(map, pos, svec2i(ACTOR_W, ACTOR_H)));
+	} while (!MapIsPosOKForPlayer(map, pos, false));
 	return Vec2ToNet(pos);
 }
 
@@ -82,8 +81,7 @@ static NVec2 PlaceActorNear(
 	//      7
 #define TRY_LOCATION()                                                        \
 	pos = svec2_add(nearPos, svec2(dx, dy));                                  \
-	if (MapIsPosOKForPlayer(map, pos, allowAllTiles) &&                       \
-		MapIsTileAreaClear(map, pos, svec2i(ACTOR_W, ACTOR_H)))               \
+	if (MapIsPosOKForPlayer(map, pos, allowAllTiles))               \
 	{                                                                         \
 		return Vec2ToNet(pos);                                                \
 	}
@@ -211,7 +209,7 @@ struct vec2 PlacePlayer(
 	}
 	else
 	{
-		e.u.ActorAdd.Pos = PlaceActor(map);
+		e.u.ActorAdd.Pos = PlacePlayerSimple(map);
 	}
 	Ammo2Net(&e.u.ActorAdd.Ammo_count, e.u.ActorAdd.Ammo, &p->ammo);
 	GameEventsEnqueue(&gGameEvents, e);

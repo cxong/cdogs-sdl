@@ -190,7 +190,7 @@ static EditorResult CampaignChangeSeed(void *data, int d)
 	ConfigSetInt(
 		&gConfig, "Game.RandomSeed",
 		ConfigGetInt(&gConfig, "Game.RandomSeed") + d);
-	return EDITOR_RESULT_CHANGED;
+	return EDITOR_RESULT_RELOAD;
 }
 
 typedef struct

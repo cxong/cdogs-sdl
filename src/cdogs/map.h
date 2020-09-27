@@ -139,7 +139,7 @@ void MapPrintDebug(const Map *m);
 bool MapIsPosOKForPlayer(
 	const Map *map, const struct vec2 pos, const bool allowAllTiles);
 bool MapIsTileAreaClear(
-	Map *map, const struct vec2 pos, const struct vec2i size);
+	const Map *map, const struct vec2 pos, const struct vec2i size);
 void MapShowExitArea(Map *map, const int i);
 // Returns the center of the tile that's the middle of the exit area
 struct vec2 MapGetExitPos(const Map *m, const int i);

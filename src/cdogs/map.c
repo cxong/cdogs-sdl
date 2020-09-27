@@ -541,6 +541,10 @@ void MapPrintDebug(const Map *m)
 bool MapIsPosOKForPlayer(
 	const Map *map, const struct vec2 pos, const bool allowAllTiles)
 {
+	if (!MapIsTileAreaClear(map, pos, svec2i(ACTOR_W, ACTOR_H)))
+	{
+		return false;
+	}
 	// Don't put players in locked rooms
 	if (MapPosIsInLockedRoom(map, pos))
 	{
@@ -564,7 +568,7 @@ bool MapIsPosOKForPlayer(
 // But it also includes item collisions, whether or not the collisions
 // are legal, e.g. item pickups, friendly collisions
 bool MapIsTileAreaClear(
-	Map *map, const struct vec2 pos, const struct vec2i size)
+	const Map *map, const struct vec2 pos, const struct vec2i size)
 {
 	// Wall collision
 	if (IsCollisionWithWall(pos, size))
