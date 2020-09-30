@@ -60,7 +60,7 @@ void LogModuleSetLevel(const LogModule m, const LogLevel l);
 const char *LogLevelName(const LogLevel l);
 LogLevel StrLogLevel(const char *s);
 
-FILE *gLogFile;
+extern FILE *gLogFile;
 void LogInit(void);
 void LogOpenFile(const char *filename);
 void LogTerminate(void);

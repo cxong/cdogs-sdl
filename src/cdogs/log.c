@@ -32,6 +32,7 @@
 #include "rlutil/rlutil.h"
 #include "utils.h"
 
+FILE *gLogFile;
 
 typedef struct
 {
