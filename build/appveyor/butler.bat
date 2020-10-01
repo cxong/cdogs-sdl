@@ -13,6 +13,6 @@ curl -L -o butler.zip https://broth.itch.ovh/butler/windows-amd64/LATEST/archive
 7z x -y butler.zip
 butler -V
 
-for %%f in (C-Dogs*) do (
+for %%f in (C-Dogs*.zip) do (
   butler push --userversion !VERSION! %%f !PROJECT!:win
 )
