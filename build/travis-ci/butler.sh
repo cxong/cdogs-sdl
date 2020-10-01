@@ -9,20 +9,28 @@ if [[ -z "${BUTLER_API_KEY}" ]]; then
 fi
 
 PROJECT="congusbongus/cdogs-sdl"
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  BUTLER_URL=https://broth.itch.ovh/butler/darwin-amd64/LATEST/archive/default
+  BUTLER_CHANNEL=mac
+  FILE_SUFFIX=OSX.dmg
+else
+  BUTLER_URL=https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+  BUTLER_CHANNEL=linux
+  FILE_SUFFIX=Linux.tar.gz
+fi
 
 echo "Preparing butler..."
-curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+curl -L -o butler.zip "$BUTLER_URL"
 unzip butler.zip
 chmod +x butler
 ./butler -V
 
 prepare_and_push() {
-    echo "./butler push \"$1\" $PROJECT:$2 --userversion $VERSION"
-    ./butler push "$1" $PROJECT:$2 --userversion $VERSION
+  echo "./butler push \"$1\" $PROJECT:$2 --userversion $VERSION"
+  ./butler push "$1" $PROJECT:$2 --userversion $VERSION
 }
 
-prepare_and_push $TRAVIS_BUILD_DIR/C-Dogs*SDL-*-Linux.tar.gz linux
-prepare_and_push $TRAVIS_BUILD_DIR/C-Dogs*SDL-*-OSX.dmg mac
+prepare_and_push $TRAVIS_BUILD_DIR/C-Dogs*SDL-*-"$FILE_SUFFIX" "$BUTLER_CHANNEL"
 
 echo "Done."
 exit 0
