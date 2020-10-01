@@ -1,0 +1,15 @@
+---
+layout: post
+title:  "C-Dogs 0.9.1 Released!"
+date:   2020-10-01
+categories: release
+published: true
+---
+
+C-Dogs SDL 0.9.1 released! This release fixes a few bugs that would spawn players inside locked rooms, making them unwinnable (unless you restart the level). Oops! 😂
+
+Thanks to the people who reported bugs and contributed patches for this release - [@chack05](https://github.com/chack05), [@Wuzzy](https://github.com/Wuzzy2) and [@susnux](https://github.com/susnux) 🎉
+
+Happy October, and friendly reminder that [Hacktoberfest](https://hacktoberfest.digitalocean.com) is happening!
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.9.1>
