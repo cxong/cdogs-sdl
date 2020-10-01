@@ -1,5 +1,4 @@
 language: c
-dist: eoan
 osx_image: xcode10.3
 
 compiler:
