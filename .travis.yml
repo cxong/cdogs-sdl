@@ -1,4 +1,5 @@
 language: c
+dist: focal
 osx_image: xcode10.3
 
 compiler:
