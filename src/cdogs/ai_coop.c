@@ -582,6 +582,8 @@ static void FindObjectivesSortedByDistance(
 		}
 		break;
 	case PICKUP_SHOW_MAP:
+		co.Type = AI_OBJECTIVE_TYPE_PICKUP;
+		co.u.UID = p->UID;
 		break;
 	default:
 		// Not something we want to pick up
