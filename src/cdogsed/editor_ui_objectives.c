@@ -99,6 +99,13 @@ static char **MissionGetObjectiveDescriptionSrc(void *data)
 	}
 	return &((Objective *)CArrayGet(&m->Objectives, i))->Description;
 }
+static EditorResult MissionChangeObjectiveDescription(void *data, int d)
+{
+	// Dummy change func to return result file changed
+	UNUSED(data);
+	UNUSED(d);
+	return EDITOR_RESULT_CHANGED;
+}
 typedef struct
 {
 	Campaign *co;
@@ -281,7 +288,8 @@ void CreateObjectivesObjs(Campaign *co, UIObject *c, struct vec2i pos)
 		o2->Type = UITYPE_TEXTBOX;
 		o2->u.Textbox.TextLinkFunc = MissionGetObjectiveDescription;
 		o2->u.Textbox.TextSourceFunc = MissionGetObjectiveDescriptionSrc;
-		o2->IsDynamicData = 1;
+		o2->IsDynamicData = true;
+		o2->ChangeFunc = MissionChangeObjectiveDescription;
 		CMALLOC(o2->Data, sizeof(MissionObjectiveData));
 		((MissionObjectiveData *)o2->Data)->Campaign = co;
 		((MissionObjectiveData *)o2->Data)->MissionObjectiveIndex = i;
