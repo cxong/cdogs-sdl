@@ -112,6 +112,7 @@
 			"WallPad": 0
 		},
 		"Squares": 3,
+		"ExitEnabled": false,
 		"DoorsEnabled": true
 	},
 	{
@@ -258,6 +259,7 @@
 			"WallPad": 2
 		},
 		"Squares": 0,
+		"ExitEnabled": true,
 		"Doors": {
 			"Enabled": true,
 			"Min": 2,
@@ -396,6 +398,7 @@
 			"WallPad": 2
 		},
 		"Squares": 3,
+		"ExitEnabled": false,
 		"Doors": {
 			"Enabled": true,
 			"Min": 2,
@@ -491,7 +494,7 @@
 			"Door": {
 				"Name": "door",
 				"Type": "Door",
-				"Style": "office",
+				"Style": "dungeon",
 				"Mask": "ffffffff",
 				"MaskAlt": "ffffffff",
 				"CanWalk": false,
@@ -515,6 +518,7 @@
 			"WallPad": 1
 		},
 		"Squares": 1,
+		"ExitEnabled": false,
 		"DoorsEnabled": true
 	},
 	{
@@ -624,6 +628,7 @@
 			"WallPad": 0
 		},
 		"Squares": 1,
+		"ExitEnabled": false,
 		"Doors": {
 			"Enabled": false,
 			"Min": 0,
@@ -724,6 +729,7 @@
 			"WallPad": 0
 		},
 		"Squares": 0,
+		"ExitEnabled": false,
 		"DoorsEnabled": true
 	},
 	{
@@ -830,6 +836,7 @@
 			"WallPad": 0
 		},
 		"Squares": 3,
+		"ExitEnabled": true,
 		"DoorsEnabled": true
 	},
 	{
@@ -954,6 +961,7 @@
 			"WallPad": 0
 		},
 		"Squares": 0,
+		"ExitEnabled": false,
 		"Doors": {
 			"Enabled": true,
 			"Min": 1,
@@ -1084,6 +1092,7 @@
 			"WallPad": 2
 		},
 		"Squares": 0,
+		"ExitEnabled": true,
 		"Doors": {
 			"Enabled": true,
 			"Min": 1,
@@ -1223,6 +1232,7 @@
 			"WallPad": 2
 		},
 		"Squares": 0,
+		"ExitEnabled": false,
 		"Doors": {
 			"Enabled": false,
 			"Min": 2,

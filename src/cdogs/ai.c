@@ -395,15 +395,18 @@ static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 	else if (actor->flags & FLAGS_RESCUED)
 	{
 		// If we haven't completed all objectives, act as follower
-		if (!CanCompleteMission(&gMission) || gMap.exits.size <= 1)
+		if (!CanCompleteMission(&gMission) || gMap.exits.size > 1)
 		{
 			cmd = Follow(actor);
 		}
 		else
 		{
-			// Run towards the only exit
-			const struct vec2 exitPos = MapGetExitPos(&gMap, 0);
-			cmd = AIGoto(actor, exitPos, false);
+			// Run towards the exit if there is one
+			if (gMap.exits.size == 1)
+			{
+				const struct vec2 exitPos = MapGetExitPos(&gMap, 0);
+				cmd = AIGoto(actor, exitPos, false);
+			}
 		}
 	}
 	else if (actor->aiContext->Delay > 0)

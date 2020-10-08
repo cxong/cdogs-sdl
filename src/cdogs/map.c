@@ -257,6 +257,11 @@ static void MapChangeFloor(
 	}
 }
 
+bool MapHasExits(const Map *m)
+{
+	return m->exits.size > 0;
+}
+
 // Change the perimeter of tiles around the exit area
 void MapShowExitArea(Map *map, const int i)
 {

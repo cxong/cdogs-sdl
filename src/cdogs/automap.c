@@ -110,14 +110,10 @@ static void DisplayObjective(
 	}
 }
 
-static void DisplayExit(struct vec2i pos, int scale, int flags)
+static void DisplayExits(
+	const Map *m, const struct vec2i pos, const int scale, const int flags)
 {
-	if (!HasExit(gCampaign.Entry.Mode))
-	{
-		return;
-	}
-
-	CA_FOREACH(const Exit, e, gMap.exits)
+	CA_FOREACH(const Exit, e, m->exits)
 	if (e->Hidden)
 		continue;
 	const struct vec2i exitPos =
@@ -319,7 +315,7 @@ void AutomapDraw(SDL_Renderer *renderer, const int flags, const bool showExit)
 
 	if (showExit)
 	{
-		DisplayExit(pos, MAP_FACTOR, flags);
+		DisplayExits(&gMap, pos, MAP_FACTOR, flags);
 	}
 	DisplaySummary();
 }
@@ -348,7 +344,7 @@ void AutomapDrawRegion(
 	DrawObjectivesAndKeys(&gMap, centerOn, scale, flags);
 	if (showExit)
 	{
-		DisplayExit(centerOn, scale, flags);
+		DisplayExits(map, centerOn, scale, flags);
 	}
 	GraphicsSetClip(renderer, oldClip);
 }

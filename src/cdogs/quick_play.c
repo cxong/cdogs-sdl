@@ -293,6 +293,7 @@ static void AddMission(
 		m.u.Classic.Rooms = RandomRoomParams();
 		m.u.Classic.Squares = GenerateQuickPlayParam(
 			ConfigGetEnum(&gConfig, "QuickPlay.SquareCount"), 0, 1, 3, 6);
+		m.u.Classic.ExitEnabled = rand() % 2;
 		m.u.Classic.Doors.Enabled = rand() % 2;
 		m.u.Classic.Doors.Min = 1;
 		m.u.Classic.Doors.Max = 6;
@@ -311,6 +312,7 @@ static void AddMission(
 		m.u.Cave.Rooms = RandomRoomParams();
 		m.u.Cave.Squares = GenerateQuickPlayParam(
 			ConfigGetEnum(&gConfig, "QuickPlay.SquareCount"), 0, 1, 3, 6);
+		m.u.Cave.ExitEnabled = rand() % 2;
 		m.u.Cave.DoorsEnabled = rand() % 2;
 		break;
 	default:

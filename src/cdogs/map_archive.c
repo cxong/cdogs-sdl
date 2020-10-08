@@ -368,6 +368,7 @@ static json_t *SaveMissions(CArray *a)
 			json_insert_pair_into_object(
 				node, "Rooms", SaveRooms(mission->u.Classic.Rooms));
 			AddIntPair(node, "Squares", mission->u.Classic.Squares);
+			AddBoolPair(node, "ExitEnabled", mission->u.Classic.ExitEnabled);
 			json_insert_pair_into_object(
 				node, "Doors", SaveClassicDoors(mission));
 			json_insert_pair_into_object(
@@ -387,6 +388,7 @@ static json_t *SaveMissions(CArray *a)
 			json_insert_pair_into_object(
 				node, "Rooms", SaveRooms(mission->u.Cave.Rooms));
 			AddIntPair(node, "Squares", mission->u.Cave.Squares);
+			AddBoolPair(node, "ExitEnabled", mission->u.Cave.ExitEnabled);
 			AddBoolPair(node, "DoorsEnabled", mission->u.Cave.DoorsEnabled);
 			break;
 		default:

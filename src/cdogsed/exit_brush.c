@@ -85,7 +85,8 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 	bool result = true;
 	ExitBrushData *eData = data;
 	Exit *selectedExit = NULL;
-	if (*eData->exitIdx < (int)eData->m->u.Static.Exits.size)
+	if (*eData->exitIdx > 0 &&
+		*eData->exitIdx < (int)eData->m->u.Static.Exits.size)
 	{
 		selectedExit = CArrayGet(&eData->m->u.Static.Exits, *eData->exitIdx);
 	}
@@ -168,8 +169,8 @@ static void DrawPropsSidebar(
 	int mission = selectedExit->Mission;
 	mission++;
 	nk_property_int(
-		ctx, "Mission", 1, &mission,
-		(int)eData->co->Setting.Missions.size + 1, 1, 1.f);
+		ctx, "Mission", 1, &mission, (int)eData->co->Setting.Missions.size + 1,
+		1, 1.f);
 	selectedExit->Mission = mission - 1;
 	if (nk_input_is_mouse_hovering_rect(&ctx->input, bounds))
 	{

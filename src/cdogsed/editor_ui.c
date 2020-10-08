@@ -312,6 +312,19 @@ static const char *MissionGetSquareCountStr(UIObject *o, void *data)
 	sprintf(s, "Sqr: %d", CampaignGetCurrentMission(co)->u.Classic.Squares);
 	return s;
 }
+static void MissionDrawExitEnabled(
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
+{
+	UNUSED(o);
+	UNUSED(g);
+	Campaign *co = data;
+	if (!CampaignGetCurrentMission(co))
+		return;
+	DisplayFlag(
+		svec2i_add(pos, o->Pos), "Exit",
+		CampaignGetCurrentMission(co)->u.Classic.ExitEnabled,
+		UIObjectIsHighlighted(o));
+}
 static void MissionDrawDoorEnabled(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
 {
@@ -809,6 +822,14 @@ static EditorResult MissionChangeSquareCount(void *data, int d)
 	Campaign *co = data;
 	CampaignGetCurrentMission(co)->u.Classic.Squares =
 		CLAMP(CampaignGetCurrentMission(co)->u.Classic.Squares + d, 0, 100);
+	return EDITOR_RESULT_CHANGED;
+}
+static EditorResult MissionChangeExitEnabled(void *data, int d)
+{
+	UNUSED(d);
+	Campaign *co = data;
+	CampaignGetCurrentMission(co)->u.Classic.ExitEnabled =
+		!CampaignGetCurrentMission(co)->u.Classic.ExitEnabled;
 	return EDITOR_RESULT_CHANGED;
 }
 static EditorResult MissionChangeDoorEnabled(void *data, int d)
@@ -1502,6 +1523,13 @@ static UIObject *CreateClassicMapObjs(struct vec2i pos, Campaign *co)
 	o2->u.LabelFunc = MissionGetSquareCountStr;
 	o2->Data = co;
 	o2->ChangeFunc = MissionChangeSquareCount;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCreate(UITYPE_CUSTOM, 0, pos, o->Size);
+	o2->u.CustomDrawFunc = MissionDrawExitEnabled;
+	o2->Data = co;
+	o2->ChangeFunc = MissionChangeExitEnabled;
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 

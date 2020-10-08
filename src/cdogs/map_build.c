@@ -94,15 +94,27 @@ void MapBuild(
 	MapSetupDoors(&mb);
 	MapPrintDebug(mb.Map);
 
-	if (mb.mission->Type == MAPTYPE_CLASSIC)
-	{
-		MapAddDrains(&mb);
-	}
-
 	// Set exit now since we have set up all the tiles
-	if (mb.Map->exits.size == 0)
+	switch (mb.mission->Type)
 	{
-		MapGenerateRandomExitArea(mb.Map, missionIndex);
+	case MAPTYPE_CLASSIC:
+		MapAddDrains(&mb);
+		if (HasExit(gCampaign.Entry.Mode) && mb.mission->u.Classic.ExitEnabled)
+		{
+			MapGenerateRandomExitArea(mb.Map, missionIndex);
+		}
+		break;
+	case MAPTYPE_STATIC:
+		break;
+	case MAPTYPE_CAVE:
+		if (HasExit(gCampaign.Entry.Mode) && mb.mission->u.Cave.ExitEnabled)
+		{
+			MapGenerateRandomExitArea(mb.Map, missionIndex);
+		}
+		break;
+	default:
+		CASSERT(false, "unknown map type");
+		break;
 	}
 
 	// Count total number of reachable tiles, for explored %

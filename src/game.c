@@ -719,16 +719,17 @@ static void CheckMissionCompletion(const struct MissionOptions *mo)
 	}
 	CA_FOREACH_END()
 
-	const int exitIndex =
-		GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) > 0
-			? IsMissionComplete(mo)
-			: -1;
-	if (mo->state == MISSION_STATE_PLAY && exitIndex >= 0)
+	const bool complete =
+		GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) > 0 &&
+		IsMissionComplete(mo);
+	const int exitIndex = AllSurvivingPlayersInSameExit();
+	const bool canExit = complete && (!MapHasExits(&gMap) || exitIndex >= 0);
+	if (mo->state == MISSION_STATE_PLAY && canExit)
 	{
 		GameEvent e = GameEventNew(GAME_EVENT_MISSION_PICKUP);
 		GameEventsEnqueue(&gGameEvents, e);
 	}
-	if (mo->state == MISSION_STATE_PICKUP && exitIndex == -1)
+	if (mo->state == MISSION_STATE_PICKUP && !canExit)
 	{
 		GameEvent e = GameEventNew(GAME_EVENT_MISSION_INCOMPLETE);
 		GameEventsEnqueue(&gGameEvents, e);
@@ -737,8 +738,15 @@ static void CheckMissionCompletion(const struct MissionOptions *mo)
 		mo->pickupTime + PICKUP_LIMIT <= mo->time)
 	{
 		GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
-		const Exit *exit = CArrayGet(&gMap.exits, exitIndex);
-		e.u.MissionEnd.Mission = exit->Mission;
+		if (exitIndex >= 0)
+		{
+			const Exit *exit = CArrayGet(&gMap.exits, exitIndex);
+			e.u.MissionEnd.Mission = exit->Mission;
+		}
+		else
+		{
+			e.u.MissionEnd.Mission = mo->index + 1;
+		}
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 

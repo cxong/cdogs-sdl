@@ -136,6 +136,7 @@ typedef struct
 			int CorridorWidth;
 			RoomParams Rooms;
 			int Squares;
+			bool ExitEnabled;
 			struct
 			{
 				bool Enabled;
@@ -162,6 +163,7 @@ typedef struct
 			int CorridorWidth;
 			RoomParams Rooms;
 			int Squares;
+			bool ExitEnabled;
 			bool DoorsEnabled;
 		} Cave;
 	} u;
@@ -218,8 +220,9 @@ bool MissionCanBegin(void);
 void MissionBegin(struct MissionOptions *m, const NGameBegin gb);
 bool CanCompleteMission(const struct MissionOptions *options);
 bool MissionAllObjectivesComplete(const struct MissionOptions *mo);
-// Returns exit index or -1 if incomplete
-int IsMissionComplete(const struct MissionOptions *options);
+bool IsMissionComplete(const struct MissionOptions *mo);
+// Returns exit index or -1 if not all players in same exit
+int AllSurvivingPlayersInSameExit(void);
 bool MissionNeedsMoreRescuesInExit(const struct MissionOptions *mo);
 bool MissionHasRequiredObjectives(const struct MissionOptions *mo);
 void MissionDone(struct MissionOptions *mo, const NMissionEnd end);

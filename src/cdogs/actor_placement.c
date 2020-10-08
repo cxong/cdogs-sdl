@@ -34,37 +34,36 @@
 #include "gamedata.h"
 #include "handle_game_events.h"
 
-static NVec2 PlacePlayerSimple(Map *map)
+static NVec2 PlacePlayerSimple(const Map *map)
 {
+	const int halfMap =
+		MAX(map->Size.x * TILE_WIDTH, map->Size.y * TILE_HEIGHT) / 2;
+	int attemptsAwayFromExits = 0;
+
 	struct vec2 pos;
-
-	if (HasExit(gCampaign.Entry.Mode))
-	{
-		// First, try to place at least half the map away from the exit
-		const int halfMap =
-			MAX(map->Size.x * TILE_WIDTH, map->Size.y * TILE_HEIGHT) / 2;
-		// Don't try forever trying to place
-		for (int i = 0; i < 100; i++)
-		{
-			for (int j = 0; j < (int)map->exits.size; j++)
-			{
-				const struct vec2 exitPos = MapGetExitPos(map, j);
-				pos = MapGetRandomPos(map);
-				if (fabsf(pos.x - exitPos.x) > halfMap &&
-					fabsf(pos.y - exitPos.y) > halfMap &&
-					MapIsPosOKForPlayer(map, pos, false))
-				{
-					return Vec2ToNet(pos);
-				}
-			}
-		}
-	}
-
-	// Try to place randomly
+	bool ok = false;
 	do
 	{
 		pos = MapGetRandomPos(map);
-	} while (!MapIsPosOKForPlayer(map, pos, false));
+		ok = MapIsPosOKForPlayer(map, pos, false);
+		if (!ok)
+			continue;
+		if (attemptsAwayFromExits < 100)
+		{
+			attemptsAwayFromExits++;
+			// Try to place at least half the map away from any exits
+			for (int i = 0; i < (int)map->exits.size; i++)
+			{
+				const struct vec2 exitPos = MapGetExitPos(map, i);
+				if (fabsf(pos.x - exitPos.x) > halfMap &&
+					fabsf(pos.y - exitPos.y) > halfMap)
+				{
+					ok = false;
+					break;
+				}
+			}
+		}
+	} while (!ok);
 	return Vec2ToNet(pos);
 }
 
@@ -81,7 +80,7 @@ static NVec2 PlaceActorNear(
 	//      7
 #define TRY_LOCATION()                                                        \
 	pos = svec2_add(nearPos, svec2(dx, dy));                                  \
-	if (MapIsPosOKForPlayer(map, pos, allowAllTiles))               \
+	if (MapIsPosOKForPlayer(map, pos, allowAllTiles))                         \
 	{                                                                         \
 		return Vec2ToNet(pos);                                                \
 	}

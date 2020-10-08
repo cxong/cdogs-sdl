@@ -284,6 +284,8 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 				&m.u.Classic.Rooms,
 				json_find_first_label(child, "Rooms")->child);
 			LoadInt(&m.u.Classic.Squares, child, "Squares");
+			m.u.Classic.ExitEnabled = true;
+			LoadBool(&m.u.Classic.ExitEnabled, child, "ExitEnabled");
 			LoadClassicDoors(&m, child, "Doors");
 			LoadClassicPillars(&m, child, "Pillars");
 			break;
@@ -306,6 +308,8 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 				LoadRooms(&m.u.Cave.Rooms, roomsNode->child);
 			}
 			LoadInt(&m.u.Cave.Squares, child, "Squares");
+			m.u.Cave.ExitEnabled = true;
+			LoadBool(&m.u.Cave.ExitEnabled, child, "ExitEnabled");
 			if (version < 14)
 			{
 				m.u.Cave.DoorsEnabled = true;

@@ -498,14 +498,13 @@ bool MissionAllObjectivesComplete(const struct MissionOptions *mo)
 	return true;
 }
 
-static int AllSurvivingPlayersInSameExit(void);
 static bool MoreRescuesNeeded(const struct MissionOptions *mo, const int exit);
 
-int IsMissionComplete(const struct MissionOptions *mo)
+bool IsMissionComplete(const struct MissionOptions *mo)
 {
 	if (!CanCompleteMission(mo))
 	{
-		return -1;
+		return false;
 	}
 
 	// Check if dogfight is complete
@@ -520,22 +519,17 @@ int IsMissionComplete(const struct MissionOptions *mo)
 		CA_FOREACH_END()
 		if (numPlayersWithLives <= 1)
 		{
-			return 0;
+			return true;
 		}
 	}
 
 	const int exit = AllSurvivingPlayersInSameExit();
-	if (exit == -1)
-	{
-		return -1;
-	}
-
 	if (MoreRescuesNeeded(mo, exit))
 	{
-		return -1;
+		return false;
 	}
 
-	return exit;
+	return true;
 }
 
 bool MissionNeedsMoreRescuesInExit(const struct MissionOptions *mo)
@@ -544,7 +538,7 @@ bool MissionNeedsMoreRescuesInExit(const struct MissionOptions *mo)
 	return CanCompleteMission(mo) && exit != -1 && MoreRescuesNeeded(mo, exit);
 }
 
-static int AllSurvivingPlayersInSameExit(void)
+int AllSurvivingPlayersInSameExit(void)
 {
 	// Check that all surviving players are in same exit, and return that exit
 	// Return -1 otherwise

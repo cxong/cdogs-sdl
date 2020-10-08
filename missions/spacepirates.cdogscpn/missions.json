@@ -542,11 +542,16 @@
 			"Index": 0,
 			"Positions": [[30, 38]]
 		}],
+		"StaticPickups": [],
 		"Start": [10, 5],
-		"Exit": {
-			"Start": [24, 4],
-			"End": [28, 8]
-		}
+		"Exits": [{
+			"Rect": [24,
+			4,
+			4,
+			4],
+			"Mission": 1,
+			"Hidden": false
+		}]
 	},
 	{
 		"Title": "Pirate ship beaming deck",
@@ -666,6 +671,7 @@
 			"WallPad": 0
 		},
 		"Squares": 2,
+		"ExitEnabled": true,
 		"Doors": {
 			"Enabled": true,
 			"Min": 1,
@@ -801,6 +807,7 @@
 			"WallPad": 0
 		},
 		"Squares": 1,
+		"ExitEnabled": true,
 		"Doors": {
 			"Enabled": true,
 			"Min": 1,
@@ -1038,11 +1045,16 @@
 			"Indices": [0]
 		}],
 		"StaticKeys": [],
+		"StaticPickups": [],
 		"Start": [16, 24],
-		"Exit": {
-			"Start": [14, 2],
-			"End": [18, 5]
-		}
+		"Exits": [{
+			"Rect": [14,
+			2,
+			4,
+			3],
+			"Mission": 4,
+			"Hidden": false
+		}]
 	},
 	{
 		"Title": "To the rescue",
@@ -1447,11 +1459,16 @@
 			"Index": 0,
 			"Positions": [[10, 27]]
 		}],
+		"StaticPickups": [],
 		"Start": [24, 26],
-		"Exit": {
-			"Start": [33, 2],
-			"End": [39, 9]
-		}
+		"Exits": [{
+			"Rect": [33,
+			2,
+			6,
+			7],
+			"Mission": 5,
+			"Hidden": false
+		}]
 	},
 	{
 		"Title": "The escape",
@@ -1548,6 +1565,7 @@
 			"WallPad": 0
 		},
 		"Squares": 1,
+		"ExitEnabled": true,
 		"Doors": {
 			"Enabled": true,
 			"Min": 1,
@@ -1689,6 +1707,7 @@
 			"WallPad": 1
 		},
 		"Squares": 0,
+		"ExitEnabled": false,
 		"Doors": {
 			"Enabled": false,
 			"Min": 4,
@@ -1844,6 +1863,7 @@
 			"WallPad": 0
 		},
 		"Squares": 0,
+		"ExitEnabled": true,
 		"Doors": {
 			"Enabled": true,
 			"Min": 2,
@@ -2137,11 +2157,16 @@
 			"Index": 1,
 			"Positions": [[3, 18]]
 		}],
+		"StaticPickups": [],
 		"Start": [39, 3],
-		"Exit": {
-			"Start": [37, 2],
-			"End": [42, 5]
-		}
+		"Exits": [{
+			"Rect": [37,
+			2,
+			5,
+			3],
+			"Mission": 9,
+			"Hidden": false
+		}]
 	},
 	{
 		"Title": "Till you drop",
@@ -2594,10 +2619,15 @@
 			"Index": 0,
 			"Positions": [[30, 38]]
 		}],
+		"StaticPickups": [],
 		"Start": [10, 5],
-		"Exit": {
-			"Start": [24, 4],
-			"End": [28, 8]
-		}
+		"Exits": [{
+			"Rect": [24,
+			4,
+			4,
+			4],
+			"Mission": 10,
+			"Hidden": false
+		}]
 	}]
 }
