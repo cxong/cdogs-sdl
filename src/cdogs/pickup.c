@@ -317,40 +317,43 @@ static bool TryPickupGun(
 					  *(int *)CArrayGet(&a->ammo, ammoId);
 	}
 
-	// Pickup gun
-	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_REPLACE_GUN);
-	e.u.ActorReplaceGun.UID = a->uid;
-	// Replace the current gun, unless there's a free slot, in which case pick
-	// up into the free spot
-	const int weaponIndexStart = wc->IsGrenade ? MAX_GUNS : 0;
-	const int weaponIndexEnd = wc->IsGrenade ? MAX_WEAPONS : MAX_GUNS;
-	e.u.ActorReplaceGun.GunIdx =
-		wc->IsGrenade ? a->grenadeIndex + MAX_GUNS : a->gunIndex;
-	int replaceGunIndex = e.u.ActorReplaceGun.GunIdx;
-	for (int i = weaponIndexStart; i < weaponIndexEnd; i++)
+	if (!ActorHasGun(a, wc))
 	{
-		if (a->guns[i].Gun == NULL)
+		// Pickup gun
+		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_REPLACE_GUN);
+		e.u.ActorReplaceGun.UID = a->uid;
+		// Replace the current gun, unless there's a free slot, in which case
+		// pick up into the free spot
+		const int weaponIndexStart = wc->IsGrenade ? MAX_GUNS : 0;
+		const int weaponIndexEnd = wc->IsGrenade ? MAX_WEAPONS : MAX_GUNS;
+		e.u.ActorReplaceGun.GunIdx =
+			wc->IsGrenade ? a->grenadeIndex + MAX_GUNS : a->gunIndex;
+		int replaceGunIndex = e.u.ActorReplaceGun.GunIdx;
+		for (int i = weaponIndexStart; i < weaponIndexEnd; i++)
 		{
-			e.u.ActorReplaceGun.GunIdx = i;
-			replaceGunIndex = -1;
-			break;
+			if (a->guns[i].Gun == NULL)
+			{
+				e.u.ActorReplaceGun.GunIdx = i;
+				replaceGunIndex = -1;
+				break;
+			}
 		}
-	}
-	strcpy(e.u.ActorReplaceGun.Gun, wc->name);
-	GameEventsEnqueue(&gGameEvents, e);
+		strcpy(e.u.ActorReplaceGun.Gun, wc->name);
+		GameEventsEnqueue(&gGameEvents, e);
 
-	// If replacing a gun, "drop" the gun being replaced (i.e. create a gun
-	// pickup)
-	if (replaceGunIndex >= 0)
-	{
-		PickupAddGun(a->guns[replaceGunIndex].Gun, a->Pos);
+		// If replacing a gun, "drop" the gun being replaced (i.e. create a gun
+		// pickup)
+		if (replaceGunIndex >= 0)
+		{
+			PickupAddGun(a->guns[replaceGunIndex].Gun, a->Pos);
+		}
 	}
 
 	// If the player has less ammo than the default amount,
 	// replenish up to this amount
 	if (ammoDeficit > 0)
 	{
-		e = GameEventNew(GAME_EVENT_ACTOR_ADD_AMMO);
+		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD_AMMO);
 		e.u.AddAmmo.UID = a->uid;
 		e.u.AddAmmo.PlayerUID = a->PlayerUID;
 		e.u.AddAmmo.Ammo.Id = ammoId;
