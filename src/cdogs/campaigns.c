@@ -53,6 +53,9 @@ void CampaignTerminate(Campaign *campaign)
 void CampaignSettingInit(CampaignSetting *setting)
 {
 	memset(setting, 0, sizeof *setting);
+	CSTRDUP(setting->Title, "");
+	CSTRDUP(setting->Author, "");
+	CSTRDUP(setting->Description, "");
 	CArrayInit(&setting->Missions, sizeof(Mission));
 	CharacterStoreInit(&setting->characters);
 

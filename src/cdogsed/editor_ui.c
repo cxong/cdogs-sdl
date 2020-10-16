@@ -58,6 +58,10 @@ static const char *CampaignGetTitle(UIObject *o, void *data)
 {
 	UNUSED(o);
 	Campaign *co = data;
+	if (strlen(co->Setting.Title) == 0)
+	{
+		return "(Untitled Campaign)";
+	}
 	return co->Setting.Title;
 }
 static EditorResult CampaignEdit(void *data, int d)
