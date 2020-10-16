@@ -132,6 +132,7 @@ void MissionInit(Mission *m)
 	CArrayInit(&m->MapObjectDensities, sizeof(MapObjectDensity));
 	CArrayInit(&m->Weapons, sizeof(const WeaponClass *));
 	m->Type = MAPTYPE_CLASSIC;
+	m->u.Classic.ExitEnabled = true;
 	MissionTileClassesInitDefault(&m->u.Classic.TileClasses);
 }
 
