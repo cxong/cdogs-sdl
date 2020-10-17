@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2015, 2017-2018 Cong Xu
+	Copyright (c) 2014-2015, 2017-2020 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -307,16 +307,6 @@ static bool TryPickupGun(
 			: StrWeaponClass(
 				  AmmoGetById(&gAmmo, p->class->u.Ammo.Id)->DefaultGun);
 
-	int ammoDeficit = 0;
-	const Ammo *ammo = NULL;
-	const int ammoId = wc->AmmoId;
-	if (ammoId >= 0)
-	{
-		ammo = AmmoGetById(&gAmmo, ammoId);
-		ammoDeficit = ammo->Amount * AMMO_STARTING_MULTIPLE -
-					  *(int *)CArrayGet(&a->ammo, ammoId);
-	}
-
 	if (!ActorHasGun(a, wc))
 	{
 		// Pickup gun
@@ -351,18 +341,24 @@ static bool TryPickupGun(
 
 	// If the player has less ammo than the default amount,
 	// replenish up to this amount
-	if (ammoDeficit > 0)
+	if (wc->AmmoId >= 0)
 	{
-		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD_AMMO);
-		e.u.AddAmmo.UID = a->uid;
-		e.u.AddAmmo.PlayerUID = a->PlayerUID;
-		e.u.AddAmmo.Ammo.Id = ammoId;
-		e.u.AddAmmo.Ammo.Amount = ammoDeficit;
-		e.u.AddAmmo.IsRandomSpawned = false;
-		GameEventsEnqueue(&gGameEvents, e);
+		const Ammo *ammo = AmmoGetById(&gAmmo, wc->AmmoId);
+		const int ammoDeficit = ammo->Amount * AMMO_STARTING_MULTIPLE -
+								*(int *)CArrayGet(&a->ammo, wc->AmmoId);
+		if (ammoDeficit > 0)
+		{
+			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD_AMMO);
+			e.u.AddAmmo.UID = a->uid;
+			e.u.AddAmmo.PlayerUID = a->PlayerUID;
+			e.u.AddAmmo.Ammo.Id = wc->AmmoId;
+			e.u.AddAmmo.Ammo.Amount = ammoDeficit;
+			e.u.AddAmmo.IsRandomSpawned = false;
+			GameEventsEnqueue(&gGameEvents, e);
 
-		// Also play an ammo pickup sound
-		*sound = ammo->Sound;
+			// Also play an ammo pickup sound
+			*sound = ammo->Sound;
+		}
 	}
 
 	return true;
