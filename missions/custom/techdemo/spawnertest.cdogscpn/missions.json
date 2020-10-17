@@ -5,12 +5,8 @@
 		"Type": "Static",
 		"Width": 16,
 		"Height": 16,
-		"WallStyle": 2,
-		"FloorStyle": 9,
-		"RoomStyle": 9,
-		"ExitStyle": 1,
-		"KeyStyle": 0,
-		"DoorStyle": 0,
+		"ExitStyle": "plate",
+		"KeyStyle": "office",
 		"Objectives": [],
 		"Enemies": [],
 		"SpecialChars": [],
@@ -38,64 +34,115 @@
 		"Launcher",
 		"Pistol"],
 		"Song": "",
-		"WallColor": 8,
-		"FloorColor": 12,
-		"RoomColor": 8,
-		"AltColor": 9,
-		"Tiles": "1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1",
+		"TileClasses": {
+			"1": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "carbon",
+				"Mask": "000048ff",
+				"MaskAlt": "840084ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"0": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "grid",
+				"Mask": "848484ff",
+				"MaskAlt": "840084ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			}
+		},
+		"Tiles": ["1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1",
+		"1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1",
+		"1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1",
+		"1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1",
+		"1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1",
+		"1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1",
+		"1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1",
+		"1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1",
+		"1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1",
+		"1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1",
+		"1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1",
+		"1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1",
+		"1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1",
+		"1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1",
+		"1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1",
+		"1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1"],
+		"Access": ["0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"],
 		"StaticItems": [{
-			"MapObject": "Bullets spawner",
-			"Positions": [[2,
-			2]]
+			"MapObject": "Bullets ammo spawner",
+			"Positions": [[2, 2]]
 		},
 		{
 			"MapObject": "Grenades spawner",
-			"Positions": [[4,
-			2]]
+			"Positions": [[4, 2]]
 		},
 		{
-			"MapObject": "Gas tank spawner",
-			"Positions": [[6,
-			2]]
+			"MapObject": "Gas tank ammo spawner",
+			"Positions": [[6, 2]]
 		},
 		{
-			"MapObject": "Shells spawner",
-			"Positions": [[8,
-			2]]
+			"MapObject": "Shells ammo spawner",
+			"Positions": [[8, 2]]
 		},
 		{
-			"MapObject": "Cells spawner",
-			"Positions": [[10,
-			2]]
+			"MapObject": "Cells ammo spawner",
+			"Positions": [[10, 2]]
 		},
 		{
-			"MapObject": "Frag grenades spawner",
-			"Positions": [[12,
-			2]]
+			"MapObject": "Frag grenades ammo spawner",
+			"Positions": [[12, 2]]
 		},
 		{
 			"MapObject": "Molotovs spawner",
-			"Positions": [[2,
-			4]]
+			"Positions": [[2, 4]]
 		},
 		{
-			"MapObject": "Mines spawner",
-			"Positions": [[4,
-			4],
-			[10,
-			4]]
+			"MapObject": "Mines ammo spawner",
+			"Positions": [[4, 4],
+			[10, 4]]
+		},
+		{
+			"MapObject": "Machine gun spawner",
+			"Positions": [[2, 6]]
+		},
+		{
+			"MapObject": "Shotgun spawner",
+			"Positions": [[4, 6]]
 		}],
-		"StaticWrecks": [],
 		"StaticCharacters": [],
 		"StaticObjectives": [],
 		"StaticKeys": [],
-		"Start": [0,
-		0],
-		"Exit": {
-			"Start": [0,
-			0],
-			"End": [0,
-			0]
-		}
+		"StaticPickups": [],
+		"Start": [0, 0],
+		"Exits": [{
+			"Rect": [10,
+			11,
+			5,
+			4],
+			"Mission": 1,
+			"Hidden": false
+		}]
 	}]
 }
