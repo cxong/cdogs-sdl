@@ -396,7 +396,7 @@ static void AddTrail(TMobileObject *obj, const int ticks)
 	ap.Pos = svec2_scale(svec2_add(obj->thing.Pos, obj->thing.LastPos), 0.5f);
 	ap.Z = obj->z / Z_FACTOR;
 	ap.Angle = svec2_angle(vel) + MPI_2;
-	ap.Mask = colorWhite;
+	ap.Mask = colorTransparent;
 	if (obj->bulletClass->Trail.P->Type == PARTICLE_PIC)
 	{
 		const CPic *cpic = &obj->bulletClass->Trail.P->u.Pic;
@@ -409,6 +409,7 @@ static void AddTrail(TMobileObject *obj, const int ticks)
 			ap.DrawScale = svec2_divide(
 				trailSize, svec2_assign_vec2i(pic->size));
 		}
+		ap.Mask = cpic->Mask;
 	}
 	if (obj->trail.ticksPerEmit > 0 && ticks > 0)
 	{
