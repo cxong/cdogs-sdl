@@ -71,6 +71,7 @@
         "Type": "Directional",
         "Sprites": "chars/heads/skull"
       },
+      "Body": "skinny",
       "Sounds": "zombie",
       "BloodColor": "ffffff"
     },

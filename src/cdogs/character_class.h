@@ -39,6 +39,7 @@ typedef struct
 {
 	char *Name;
 	char *HeadSprites;
+	char *Body;
 	const CharSprites *Sprites;
 	char *Sounds;
 	color_t BloodColor;

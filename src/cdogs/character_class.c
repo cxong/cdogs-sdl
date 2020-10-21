@@ -263,8 +263,12 @@ static void LoadCharacterClass(CharacterClass *c, json_t *node)
 	// TODO: allow non-directional head sprites?
 	json_t *headPics = json_find_first_label(node, "HeadPics")->child;
 	c->HeadSprites = GetString(headPics, "Sprites");
-	// TODO: custom character sprites
-	c->Sprites = StrCharSpriteClass("base");
+	LoadStr(&c->Body, node, "Body");
+	if (c->Body == NULL)
+	{
+		CSTRDUP(c->Body, "base");
+	}
+	c->Sprites = StrCharSpriteClass(c->Body);
 
 	c->Sounds = GetString(node, "Sounds");
 
@@ -286,6 +290,7 @@ void CharacterClassesClear(CArray *classes)
 static void CharacterClassFree(CharacterClass *c)
 {
 	CFREE(c->Name);
+	CFREE(c->Body);
 	CFREE(c->Sounds);
 }
 void CharacterClassesTerminate(CharacterClasses *c)
