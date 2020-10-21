@@ -74,16 +74,6 @@
       "Body": "skinny",
       "Sounds": "zombie",
       "BloodColor": "ffffff"
-    },
-    {
-      "Name": "Big Bones",
-      "HeadPics": {
-        "Type": "Directional",
-        "Sprites": "chars/heads/skull_big"
-      },
-      "Sounds": "zombie",
-      "BloodColor": "ffffff",
-      "HasHair": false
     }
   ]
 }

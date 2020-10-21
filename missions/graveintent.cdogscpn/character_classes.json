@@ -1,0 +1,16 @@
+{
+  "Version": 2,
+  "Characters": [
+    {
+      "Name": "Big Bones",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/skull_big"
+      },
+      "Body": "big_skinny",
+      "Sounds": "zombie",
+      "BloodColor": "ffffff",
+      "HasHair": false
+    }
+  ]
+}
