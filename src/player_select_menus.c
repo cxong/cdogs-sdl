@@ -408,6 +408,7 @@ static void PostInputSaveTemplate(menu_t *menu, int cmd, void *data)
 	if (t == NULL)
 	{
 		PlayerTemplate nt;
+		memset(&nt, 0, sizeof nt);
 		CArrayPushBack(&gPlayerTemplates.Classes, &nt);
 		t = CArrayGet(
 			&gPlayerTemplates.Classes, gPlayerTemplates.Classes.size - 1);
@@ -418,6 +419,7 @@ static void PostInputSaveTemplate(menu_t *menu, int cmd, void *data)
 	CSTRDUP(t->CharClassName, p->Char.Class->Name);
 	if (p->Char.Hair)
 	{
+		CFREE(t->Hair);
 		CSTRDUP(t->Hair, p->Char.Hair);
 	}
 	t->Colors = p->Char.Colors;
