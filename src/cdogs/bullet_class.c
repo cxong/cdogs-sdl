@@ -1,50 +1,50 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin
-    Copyright (C) 2003-2007 Lucas Martin-King
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (C) 1995 Ronny Wester
+	Copyright (C) 2003 Jeremy Chin
+	Copyright (C) 2003-2007 Lucas Martin-King
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-    This file incorporates work covered by the following copyright and
-    permission notice:
+	This file incorporates work covered by the following copyright and
+	permission notice:
 
-    Copyright (c) 2013-2019 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2019 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "bullet_class.h"
 
@@ -66,7 +66,6 @@ BulletClasses gBulletClasses;
 #define SPECIAL_LOCK 12
 #define WALL_MARK_Z 5
 
-
 // TODO: use map structure?
 BulletClass *StrBulletClass(const char *s)
 {
@@ -75,16 +74,16 @@ BulletClass *StrBulletClass(const char *s)
 		return NULL;
 	}
 	CA_FOREACH(BulletClass, b, gBulletClasses.CustomClasses)
-		if (strcmp(s, b->Name) == 0)
-		{
-			return b;
-		}
+	if (strcmp(s, b->Name) == 0)
+	{
+		return b;
+	}
 	CA_FOREACH_END()
 	CA_FOREACH(BulletClass, b, gBulletClasses.Classes)
-		if (strcmp(s, b->Name) == 0)
-		{
-			return b;
-		}
+	if (strcmp(s, b->Name) == 0)
+	{
+		return b;
+	}
 	CA_FOREACH_END()
 	CASSERT(false, "cannot parse bullet name");
 	return NULL;
@@ -96,7 +95,8 @@ static void BulletDraw(GraphicsDevice *g, const int id, const struct vec2i pos)
 {
 	const TMobileObject *obj = CArrayGet(&gMobObjs, id);
 	CASSERT(obj->isInUse, "Cannot draw non-existent mobobj");
-	struct vec2i drawPos = svec2i_subtract(pos, svec2i(0, (int)(obj->z / Z_FACTOR)));
+	struct vec2i drawPos =
+		svec2i_subtract(pos, svec2i(0, (int)(obj->z / Z_FACTOR)));
 
 	CPicDrawContext c = CPicDrawContextNew();
 	// Calculate direction based on velocity
@@ -108,7 +108,6 @@ static void BulletDraw(GraphicsDevice *g, const int id, const struct vec2i pos)
 	}
 	CPicDraw(g, &obj->thing.CPic, drawPos, &c);
 }
-
 
 static struct vec2 SeekTowards(
 	const struct vec2 pos, const struct vec2 vel, const float speedMin,
@@ -134,9 +133,10 @@ static struct vec2 SeekTowards(
 		combinedY * magnitude / (seekFactor + 1));
 }
 
-
 static void FireGuns(const TMobileObject *obj, const CArray *guns);
-static void AddTrail(TMobileObject *obj, const int ticks);
+static void AddTrail(
+	TMobileObject *obj, const struct vec2 from, const struct vec2 to,
+	const int ticks);
 typedef struct
 {
 	HitType Type;
@@ -144,7 +144,8 @@ typedef struct
 	struct vec2 Normal;
 } HitResult;
 static HitResult HitItem(
-	TMobileObject *obj, const struct vec2 pos, const bool multipleHits);
+	TMobileObject *obj, const struct vec2 pos, const struct vec2 vel,
+	const bool multipleHits);
 bool BulletUpdate(struct MobileObject *obj, const int ticks)
 {
 	ThingUpdate(&obj->thing, ticks);
@@ -172,8 +173,6 @@ bool BulletUpdate(struct MobileObject *obj, const int ticks)
 		return false;
 	}
 
-	const struct vec2 posStart = obj->thing.Pos;
-
 	if (obj->bulletClass->SeekFactor > 0)
 	{
 		// Find the closest target to this bullet and steer towards it
@@ -182,75 +181,106 @@ bool BulletUpdate(struct MobileObject *obj, const int ticks)
 		{
 			return false;
 		}
-		const TActor *target = AIGetClosestEnemy(posStart, owner, obj->flags);
+		const TActor *target =
+			AIGetClosestEnemy(obj->thing.Pos, owner, obj->flags);
 		if (target && !target->dead)
 		{
 			for (int i = 0; i < ticks; i++)
 			{
 				obj->thing.Vel = SeekTowards(
-					posStart, obj->thing.Vel,
-					obj->bulletClass->SpeedLow, target->Pos,
-					obj->bulletClass->SeekFactor);
+					obj->thing.Pos, obj->thing.Vel, obj->bulletClass->SpeedLow,
+					target->Pos, obj->bulletClass->SeekFactor);
 			}
 		}
 	}
 
-	HitResult hit = { HIT_NONE, svec2_zero(), svec2_zero() };
-	if (!gCampaign.IsClient)
-	{
-		hit = HitItem(obj, posStart, obj->bulletClass->Persists);
-	}
+	// Bullet travel, including bouncing, and trails
 	struct vec2 pos =
-		svec2_add(posStart, svec2_scale(obj->thing.Vel, (float)ticks));
-
-	if (hit.Type != HIT_NONE)
+		svec2_add(obj->thing.Pos, svec2_scale(obj->thing.Vel, (float)ticks));
+	// Loop over multiple bounces
+	struct vec2 posStart = obj->thing.Pos;
+	struct vec2 vel = svec2_subtract(pos, obj->thing.Pos);
+	bool alive = true;
+	bool bounced = false;
+	bool hasHit = false;
+	do
 	{
-		GameEvent b = GameEventNew(GAME_EVENT_BULLET_BOUNCE);
-		b.u.BulletBounce.UID = obj->UID;
-		b.u.BulletBounce.HitType = (int)hit.Type;
-		bool alive = true;
-		if ((hit.Type == HIT_WALL && !obj->bulletClass->WallBounces) ||
-			((hit.Type == HIT_OBJECT || hit.Type == HIT_FLESH) &&
-				obj->bulletClass->HitsObjects))
+		const HitResult hit =
+			HitItem(obj, posStart, vel, obj->bulletClass->Persists);
+		if (hit.Type == HIT_NONE)
 		{
-			b.u.BulletBounce.Spark = true;
-			CASSERT(!gCampaign.IsClient, "Cannot process bounces as client");
-			FireGuns(obj, &obj->bulletClass->HitGuns);
-			if (hit.Type == HIT_WALL || !obj->bulletClass->Persists)
-			{
-				alive = false;
-			}
-			// Leave a wall mark if hitting a south-facing wall
-			if (hit.Type == HIT_WALL && obj->thing.Vel.y < 0 &&
-				!TileIsOpaque(MapGetTile(
-					&gMap, Vec2ToTile(svec2(hit.Pos.x, hit.Pos.y + 1))
-				)))
-			{
-				b.u.BulletBounce.WallMark = true;
-			}
+			break;
 		}
+		hasHit = true;
+		bounced = hit.Type == HIT_WALL && !svec2_is_zero(obj->thing.Vel) &&
+				  alive && !svec2_is_nearly_equal(posStart, hit.Pos, EPSILON_POS);
 		const struct vec2 hitPos = hit.Type != HIT_NONE ? hit.Pos : pos;
-		b.u.BulletBounce.Pos = b.u.BulletBounce.BouncePos = Vec2ToNet(hitPos);
-		b.u.BulletBounce.Vel = Vec2ToNet(obj->thing.Vel);
-		if (hit.Type == HIT_WALL && !svec2_is_zero(obj->thing.Vel) && alive)
+		if (bounced)
 		{
 			// Bouncing
 			GetWallBouncePosVel(
-				posStart, obj->thing.Vel, hit.Pos, hit.Normal,
-				&pos, &obj->thing.Vel);
-			b.u.BulletBounce.Pos = Vec2ToNet(pos);
+				posStart, obj->thing.Vel, hit.Pos, hit.Normal, &pos,
+				&obj->thing.Vel);
+		}
+
+		if (!gCampaign.IsClient)
+		{
+			GameEvent b = GameEventNew(GAME_EVENT_BULLET_BOUNCE);
+			b.u.BulletBounce.UID = obj->UID;
+			b.u.BulletBounce.HitType = (int)hit.Type;
+			if ((hit.Type == HIT_WALL && !obj->bulletClass->WallBounces) ||
+				((hit.Type == HIT_OBJECT || hit.Type == HIT_FLESH) &&
+				 obj->bulletClass->HitsObjects))
+			{
+				b.u.BulletBounce.Spark = true;
+				CASSERT(
+					!gCampaign.IsClient, "Cannot process bounces as client");
+				FireGuns(obj, &obj->bulletClass->HitGuns);
+				if (hit.Type == HIT_WALL || !obj->bulletClass->Persists)
+				{
+					alive = false;
+				}
+				// Leave a wall mark if hitting a south-facing wall
+				if (hit.Type == HIT_WALL && obj->thing.Vel.y < 0 &&
+					!TileIsOpaque(MapGetTile(
+						&gMap, Vec2ToTile(svec2(hit.Pos.x, hit.Pos.y + 1)))))
+				{
+					b.u.BulletBounce.WallMark = true;
+				}
+			}
+			b.u.BulletBounce.Pos = b.u.BulletBounce.BouncePos =
+				Vec2ToNet(hitPos);
 			b.u.BulletBounce.Vel = Vec2ToNet(obj->thing.Vel);
+			if (bounced)
+			{
+				b.u.BulletBounce.Pos = Vec2ToNet(pos);
+			}
+			b.u.BulletBounce.HitSound = obj->thing.SoundLock == 0;
+			GameEventsEnqueue(&gGameEvents, b);
 		}
-		b.u.BulletBounce.HitSound = obj->thing.SoundLock == 0;
-		if (obj->thing.SoundLock == 0)
+
+		AddTrail(obj, posStart, (bounced || !alive) ? hit.Pos : pos, ticks);
+		if (bounced)
 		{
-			obj->thing.SoundLock += SOUND_LOCK_THING;
+			// Get the remaining length of travel after the bounce
+			const float preBounceLen =
+				svec2_length(svec2_subtract(hit.Pos, posStart));
+			const float fullLen = svec2_length(vel);
+			const struct vec2 velNorm = svec2_normalize(obj->thing.Vel);
+			// Move bullet slightly in direction of bounce so that it doesn't
+			// bounce against the same wall
+			posStart = svec2_add(hit.Pos, velNorm);
+			vel = svec2_scale(velNorm, fullLen - preBounceLen - 1);
 		}
-		GameEventsEnqueue(&gGameEvents, b);
-		if (!alive)
-		{
-			return false;
-		}
+	} while (alive && bounced);
+	if (!alive)
+	{
+		return false;
+	}
+	AddTrail(obj, posStart, svec2_add(posStart, vel), ticks);
+	if (hasHit && obj->thing.SoundLock == 0)
+	{
+		obj->thing.SoundLock += SOUND_LOCK_THING;
 	}
 
 	// Falling (grenades)
@@ -284,8 +314,8 @@ bool BulletUpdate(struct MobileObject *obj, const int ticks)
 					return false;
 				}
 				SoundPlayAt(
-					&gSoundDevice,
-					StrSound(obj->bulletClass->HitSound.Wall), pos);
+					&gSoundDevice, StrSound(obj->bulletClass->HitSound.Wall),
+					pos);
 			}
 			else
 			{
@@ -299,11 +329,11 @@ bool BulletUpdate(struct MobileObject *obj, const int ticks)
 	}
 
 	// Friction
-	const bool isDiagonal =
-		fabsf(obj->thing.Vel.x) < FLT_EPSILON &&
-		fabsf(obj->thing.Vel.y) < FLT_EPSILON;
-	const float frictionComponent = isDiagonal ?
-		obj->bulletClass->Friction / sqrtf(2) : obj->bulletClass->Friction;
+	const bool isDiagonal = fabsf(obj->thing.Vel.x) < FLT_EPSILON &&
+							fabsf(obj->thing.Vel.y) < FLT_EPSILON;
+	const float frictionComponent = isDiagonal
+										? obj->bulletClass->Friction / sqrtf(2)
+										: obj->bulletClass->Friction;
 	for (int i = 0; i < ticks; i++)
 	{
 		if (obj->thing.Vel.x > FLT_EPSILON)
@@ -336,8 +366,9 @@ bool BulletUpdate(struct MobileObject *obj, const int ticks)
 		{
 			obj->thing.Vel = svec2_add(
 				obj->thing.Vel,
-				svec2_scale(svec2(
-					(float)(rand() % 3) - 1, (float)(rand() % 3) - 1), 0.5f));
+				svec2_scale(
+					svec2((float)(rand() % 3) - 1, (float)(rand() % 3) - 1),
+					0.5f));
 		}
 	}
 
@@ -369,8 +400,6 @@ bool BulletUpdate(struct MobileObject *obj, const int ticks)
 		}
 	}
 
-	AddTrail(obj, ticks);
-
 	return true;
 }
 static void FireGuns(const TMobileObject *obj, const CArray *guns)
@@ -384,16 +413,18 @@ static void FireGuns(const TMobileObject *obj, const CArray *guns)
 			true, false);
 	}
 }
-static void AddTrail(TMobileObject *obj, const int ticks)
+static void AddTrail(
+	TMobileObject *obj, const struct vec2 from, const struct vec2 to,
+	const int ticks)
 {
-	const struct vec2 vel = svec2_subtract(obj->thing.Pos, obj->thing.LastPos);
 	if (obj->bulletClass->Trail.P == NULL)
 	{
 		return;
 	}
+	const struct vec2 vel = svec2_subtract(to, from);
 	AddParticle ap;
 	memset(&ap, 0, sizeof ap);
-	ap.Pos = svec2_scale(svec2_add(obj->thing.Pos, obj->thing.LastPos), 0.5f);
+	ap.Pos = svec2_scale(svec2_add(to, from), 0.5f);
 	ap.Z = obj->z / Z_FACTOR;
 	ap.Angle = svec2_angle(vel) + MPI_2;
 	ap.Mask = colorTransparent;
@@ -403,11 +434,10 @@ static void AddTrail(TMobileObject *obj, const int ticks)
 		const Pic *pic = CPicGetPic(cpic, 0);
 		if (obj->bulletClass->Trail.Width > 0)
 		{
-			const struct vec2 trailSize = svec2(
-				obj->bulletClass->Trail.Width, svec2_length(vel)
-			);
-			ap.DrawScale = svec2_divide(
-				trailSize, svec2_assign_vec2i(pic->size));
+			const struct vec2 trailSize =
+				svec2(obj->bulletClass->Trail.Width, svec2_length(vel));
+			ap.DrawScale =
+				svec2_divide(trailSize, svec2_assign_vec2i(pic->size));
 		}
 		ap.Mask = cpic->Mask;
 	}
@@ -425,8 +455,7 @@ typedef struct
 	HitType HitType;
 	bool MultipleHits;
 	TMobileObject *Obj;
-	union
-	{
+	union {
 		Thing *Target;
 		struct vec2i TilePos;
 	} u;
@@ -439,11 +468,12 @@ static bool HitItemFunc(
 	const struct vec2 normal);
 static bool CheckWall(const struct vec2i tilePos);
 static bool HitWallFunc(
-	const struct vec2i tilePos, void *data,
-	const struct vec2 col, const struct vec2 normal);
+	const struct vec2i tilePos, void *data, const struct vec2 col,
+	const struct vec2 normal);
 static void OnHit(HitItemData *data, Thing *target);
 static HitResult HitItem(
-	TMobileObject *obj, const struct vec2 pos, const bool multipleHits)
+	TMobileObject *obj, const struct vec2 pos, const struct vec2 vel,
+	const bool multipleHits)
 {
 	// Get all items that collide
 	HitItemData data;
@@ -453,13 +483,10 @@ static HitResult HitItem(
 	data.ColPos = pos;
 	data.ColNormal = svec2_zero();
 	data.ColPosDist2 = -1;
-	const CollisionParams params =
-	{
-		THING_CAN_BE_SHOT, COLLISIONTEAM_NONE, IsPVP(gCampaign.Entry.Mode)
-	};
+	const CollisionParams params = {
+		THING_CAN_BE_SHOT, COLLISIONTEAM_NONE, IsPVP(gCampaign.Entry.Mode)};
 	OverlapThings(
-		&obj->thing, pos,
-		obj->thing.size, params, HitItemFunc, &data,
+		&obj->thing, pos, vel, obj->thing.size, params, HitItemFunc, &data,
 		CheckWall, HitWallFunc, &data);
 	if (!multipleHits && data.ColPosDist2 >= 0)
 	{
@@ -468,7 +495,7 @@ static HitResult HitItem(
 			OnHit(&data, data.u.Target);
 		}
 	}
-	HitResult hit = { data.HitType, data.ColPos, data.ColNormal };
+	HitResult hit = {data.HitType, data.ColPos, data.ColNormal};
 	return hit;
 }
 static HitType GetHitType(
@@ -499,8 +526,8 @@ static bool HitItemFunc(
 	else
 	{
 		SetClosestCollision(
-			hData, colA, normal, GetHitType(ti, hData->Obj, NULL),
-			ti, svec2i_zero());
+			hData, colA, normal, GetHitType(ti, hData->Obj, NULL), ti,
+			svec2i_zero());
 	}
 
 bail:
@@ -545,8 +572,8 @@ static bool CheckWall(const struct vec2i tilePos)
 	return t == NULL || TileIsShootable(t);
 }
 static bool HitWallFunc(
-	const struct vec2i tilePos, void *data,
-	const struct vec2 col, const struct vec2 normal)
+	const struct vec2i tilePos, void *data, const struct vec2 col,
+	const struct vec2 normal)
 {
 	HitItemData *hData = data;
 
@@ -582,11 +609,9 @@ static void OnHit(HitItemData *data, Thing *target)
 	data->HitType = GetHitType(target, data->Obj, &targetUID);
 	const TActor *source = ActorGetByUID(data->Obj->ActorUID);
 	Damage(
-		data->Obj->thing.Vel,
-		data->Obj->bulletClass->Power, data->Obj->bulletClass->Mass,
-		data->Obj->flags, source,
-		target->kind, targetUID,
-		data->Obj->bulletClass->Special);
+		data->Obj->thing.Vel, data->Obj->bulletClass->Power,
+		data->Obj->bulletClass->Mass, data->Obj->flags, source, target->kind,
+		targetUID, data->Obj->bulletClass->Special);
 	if (data->Obj->thing.SoundLock <= 0)
 	{
 		data->Obj->thing.SoundLock += SOUND_LOCK_THING;
@@ -600,7 +625,6 @@ static void OnHit(HitItemData *data, Thing *target)
 		data->Obj->specialLock += SPECIAL_LOCK;
 	}
 }
-
 
 #define VERSION 3
 static void LoadBullet(
@@ -780,16 +804,14 @@ static void LoadBullet(
 		b->Delay, b->SpeedLow, b->SpeedHigh);
 	LOG(LM_MAP, LL_DEBUG,
 		"...speedScale(%s) friction(%f) range(%d-%d) power(%d)...",
-		b->SpeedScale ? "true" : "false", b->Friction,
-		b->RangeLow, b->RangeHigh, b->Power);
+		b->SpeedScale ? "true" : "false", b->Friction, b->RangeLow,
+		b->RangeHigh, b->Power);
 	LOG(LM_MAP, LL_DEBUG,
 		"...size(%d, %d) hurtAlways(%s) persists(%s) spark(%s, %s)...",
 		b->Size.x, b->Size.y, b->HurtAlways ? "true" : "false",
-		b->Persists ? "true" : "false",
-		b->Spark != NULL ? b->Spark->Name : "",
+		b->Persists ? "true" : "false", b->Spark != NULL ? b->Spark->Name : "",
 		b->OutOfRangeSpark != NULL ? b->OutOfRangeSpark->Name : "");
-	LOG(LM_MAP, LL_DEBUG,
-		"...wallMark(%s)...",
+	LOG(LM_MAP, LL_DEBUG, "...wallMark(%s)...",
 		b->WallMark != NULL ? b->WallMark->Name : "");
 	LOG(LM_MAP, LL_DEBUG,
 		"...hitSounds(object(%s), flesh(%s), wall(%s)) wallBounces(%s)...",
@@ -810,8 +832,7 @@ static void LoadBullet(
 		b->Trail.TicksPerEmit);
 	LOG(LM_MAP, LL_DEBUG,
 		"...outOfRangeGuns(%d) hitGuns(%d) proximityGuns(%d)",
-		(int)b->OutOfRangeGuns.size,
-		(int)b->HitGuns.size,
+		(int)b->OutOfRangeGuns.size, (int)b->HitGuns.size,
 		(int)b->ProximityGuns.size);
 }
 static void LoadHitsound(
@@ -875,8 +896,7 @@ static void BulletClassesLoadWeapons(CArray *classes)
 		{
 			LoadBulletGuns(
 				&b->Falling.DropGuns,
-				json_find_first_label(b->node, "Falling")->child,
-				"DropGuns");
+				json_find_first_label(b->node, "Falling")->child, "DropGuns");
 		}
 		LoadBulletGuns(&b->OutOfRangeGuns, b->node, "OutOfRangeGuns");
 		LoadBulletGuns(&b->HitGuns, b->node, "HitGuns");
@@ -940,14 +960,13 @@ void BulletAdd(const NAddBullet add)
 	memset(obj, 0, sizeof *obj);
 	obj->UID = add.UID;
 	obj->bulletClass = StrBulletClass(add.BulletClass);
-	ThingInit(
-		&obj->thing, i, KIND_MOBILEOBJECT, obj->bulletClass->Size, 0);
+	ThingInit(&obj->thing, i, KIND_MOBILEOBJECT, obj->bulletClass->Size, 0);
 	obj->z = (float)add.MuzzleHeight;
 	obj->dz = (float)add.Elevation;
 
 	EmitterInit(
-		&obj->trail, obj->bulletClass->Trail.P,
-		svec2_zero(), 0, 0, 0, 0, 0, 0, obj->bulletClass->Trail.TicksPerEmit);
+		&obj->trail, obj->bulletClass->Trail.P, svec2_zero(), 0, 0, 0, 0, 0, 0,
+		obj->bulletClass->Trail.TicksPerEmit);
 
 	obj->thing.Vel = svec2_scale(
 		Vec2FromRadians(add.Angle),
@@ -958,8 +977,8 @@ void BulletAdd(const NAddBullet add)
 	}
 
 	obj->ActorUID = add.ActorUID;
-	obj->range = RAND_INT(
-		obj->bulletClass->RangeLow, obj->bulletClass->RangeHigh);
+	obj->range =
+		RAND_INT(obj->bulletClass->RangeLow, obj->bulletClass->RangeHigh);
 
 	obj->flags = add.Flags;
 	if (obj->bulletClass->HurtAlways)
@@ -979,11 +998,13 @@ void BulletAdd(const NAddBullet add)
 void BulletBounce(const NBulletBounce bb)
 {
 	TMobileObject *o = MobObjGetByUID(bb.UID);
-	if (o == NULL || !o->isInUse) return;
+	if (o == NULL || !o->isInUse)
+		return;
 	const struct vec2 bouncePos = NetToVec2(bb.BouncePos);
 	if (bb.HitSound)
 	{
-		PlayHitSound(&o->bulletClass->HitSound, (HitType)bb.HitType, bouncePos);
+		PlayHitSound(
+			&o->bulletClass->HitSound, (HitType)bb.HitType, bouncePos);
 	}
 	if (bb.Spark && o->bulletClass->Spark != NULL)
 	{
@@ -999,8 +1020,7 @@ void BulletBounce(const NBulletBounce bb)
 		s.u.AddParticle.Class = o->bulletClass->WallMark;
 		s.u.AddParticle.Pos = bouncePos;
 		// Randomise Z on the wall
-		s.u.AddParticle.Z =
-			o->z + (int)RAND_FLOAT(-WALL_MARK_Z, WALL_MARK_Z);
+		s.u.AddParticle.Z = o->z + (int)RAND_FLOAT(-WALL_MARK_Z, WALL_MARK_Z);
 		GameEventsEnqueue(&gGameEvents, s);
 	}
 	MapTryMoveThing(&gMap, &o->thing, NetToVec2(bb.Pos));
@@ -1025,14 +1045,13 @@ void PlayHitSound(const HitSounds *h, const HitType t, const struct vec2 pos)
 		break;
 	default:
 		CASSERT(false, "unknown hit type")
-			break;
+		break;
 	}
 }
 
 void BulletDestroy(TMobileObject *obj)
 {
 	CASSERT(obj->isInUse, "Destroying not-in-use bullet");
-	AddTrail(obj, 0);
 	MapRemoveThing(&gMap, &obj->thing);
 	obj->isInUse = false;
 }

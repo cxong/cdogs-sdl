@@ -329,12 +329,12 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 	// Wall collision, bounce off walls
 	if (!svec2_is_zero(p->thing.Vel) && p->Class->HitsWalls)
 	{
-		const CollisionParams params = {0, COLLISIONTEAM_NONE,
-										IsPVP(gCampaign.Entry.Mode)};
+		const CollisionParams params = {
+			0, COLLISIONTEAM_NONE, IsPVP(gCampaign.Entry.Mode)};
 		HitWallData data = {&p->thing, svec2_zero(), svec2_zero(), -1};
 		OverlapThings(
-			&p->thing, startPos, p->thing.size, params, NULL, NULL, CheckWall,
-			HitWallFunc, &data);
+			&p->thing, startPos, p->thing.Vel, p->thing.size, params, NULL,
+			NULL, CheckWall, HitWallFunc, &data);
 		if (data.ColPosDist2 >= 0)
 		{
 			if (p->Class->WallBounces)

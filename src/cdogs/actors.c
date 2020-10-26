@@ -498,8 +498,8 @@ static void CheckPickups(TActor *actor)
 	const CollisionParams params = {
 		0, CalcCollisionTeam(true, actor), IsPVP(gCampaign.Entry.Mode)};
 	OverlapThings(
-		&actor->thing, actor->Pos, actor->thing.size, params, CheckPickupFunc,
-		actor, NULL, NULL, NULL);
+		&actor->thing, actor->Pos, actor->thing.Vel, actor->thing.size, params,
+		CheckPickupFunc, actor, NULL, NULL, NULL);
 }
 static bool CheckPickupFunc(
 	Thing *ti, void *data, const struct vec2 colA, const struct vec2 colB,
@@ -1048,8 +1048,8 @@ static void CheckManualPickups(TActor *a)
 	const CollisionParams params = {
 		0, CalcCollisionTeam(true, a), IsPVP(gCampaign.Entry.Mode)};
 	OverlapThings(
-		&a->thing, a->Pos, a->thing.size, params, CheckManualPickupFunc, a,
-		NULL, NULL, NULL);
+		&a->thing, a->Pos, a->thing.Vel, a->thing.size, params,
+		CheckManualPickupFunc, a, NULL, NULL, NULL);
 }
 static bool CheckManualPickupFunc(
 	Thing *ti, void *data, const struct vec2 colA, const struct vec2 colB,
@@ -1227,7 +1227,7 @@ int ActorsGetFreeIndex(void)
 	return (int)gActors.size;
 }
 
-static void GoreEmitterInit(Emitter * em, const char *particleClassName);
+static void GoreEmitterInit(Emitter *em, const char *particleClassName);
 TActor *ActorAdd(NActorAdd aa)
 {
 	// Don't add if UID exists
@@ -1305,8 +1305,7 @@ TActor *ActorAdd(NActorAdd aa)
 	actor->thing.kind = KIND_CHARACTER;
 	actor->thing.drawFunc = NULL;
 	actor->thing.size = svec2i(ACTOR_W, ACTOR_H);
-	actor->thing.flags =
-		THING_IMPASSABLE | THING_CAN_BE_SHOT | aa.ThingFlags;
+	actor->thing.flags = THING_IMPASSABLE | THING_CAN_BE_SHOT | aa.ThingFlags;
 	actor->thing.id = id;
 	actor->isInUse = true;
 
@@ -1351,9 +1350,8 @@ TActor *ActorAdd(NActorAdd aa)
 		&actor->barrelSmoke, StrParticleClass(&gParticleClasses, "smoke"),
 		svec2_zero(), -0.05f, 0.05f, 3, 3, 0, 0, 10);
 	EmitterInit(
-		&actor->healEffect,
-		StrParticleClass(&gParticleClasses, "health_plus"), svec2_zero(),
-		-0.1f, 0.1f, 0, 0, 0, 0, 0);
+		&actor->healEffect, StrParticleClass(&gParticleClasses, "health_plus"),
+		svec2_zero(), -0.1f, 0.1f, 0, 0, 0, 0, 0);
 	GoreEmitterInit(&actor->blood1, "blood1");
 	GoreEmitterInit(&actor->blood2, "blood2");
 	GoreEmitterInit(&actor->blood3, "blood3");
@@ -1362,14 +1360,14 @@ TActor *ActorAdd(NActorAdd aa)
 
 	return actor;
 }
-static void GoreEmitterInit(Emitter * em, const char *particleClassName)
+static void GoreEmitterInit(Emitter *em, const char *particleClassName)
 {
 	EmitterInit(
 		em, StrParticleClass(&gParticleClasses, particleClassName),
 		svec2_zero(), 0, GORE_EMITTER_MAX_SPEED, 6, 12, -0.1, 0.1, 0);
 }
 
-void ActorDestroy(TActor * a)
+void ActorDestroy(TActor *a)
 {
 	CASSERT(a->isInUse, "Destroying in-use actor");
 	CArrayTerminate(&a->ammo);
@@ -1497,7 +1495,7 @@ bool ActorIsImmune(const TActor *actor, const special_damage_e damage)
 #define PETRIFIED_COUNT 95
 #define CONFUSED_COUNT 700
 
-void ActorTakeSpecialDamage(TActor * actor, special_damage_e damage)
+void ActorTakeSpecialDamage(TActor *actor, special_damage_e damage)
 {
 	switch (damage)
 	{
@@ -1525,7 +1523,7 @@ void ActorTakeSpecialDamage(TActor * actor, special_damage_e damage)
 	}
 }
 
-static void ActorTakeHit(TActor * actor, const special_damage_e damage);
+static void ActorTakeHit(TActor *actor, const special_damage_e damage);
 void ActorHit(const NThingDamage d)
 {
 	TActor *a = ActorGetByUID(d.UID);
@@ -1579,7 +1577,7 @@ void ActorHit(const NThingDamage d)
 	}
 }
 
-static void ActorTakeHit(TActor * actor, const special_damage_e damage)
+static void ActorTakeHit(TActor *actor, const special_damage_e damage)
 {
 	// Wake up if this is an AI
 	if (!gCampaign.IsClient && actor->aiContext)
@@ -1617,9 +1615,8 @@ bool ActorIsInvulnerable(
 		const bool isTargetGood =
 			actor->PlayerUID >= 0 || (actor->flags & FLAGS_GOOD_GUY);
 		// Friendly fire (NPCs)
-		if (!IsPVP(mode) &&
-			!ConfigGetBool(&gConfig, "Game.FriendlyFire") && isGood &&
-			isTargetGood)
+		if (!IsPVP(mode) && !ConfigGetBool(&gConfig, "Game.FriendlyFire") &&
+			isGood && isTargetGood)
 		{
 			return 1;
 		}
@@ -1634,8 +1631,7 @@ bool ActorIsInvulnerable(
 }
 
 static void ActorAddBloodSplatters(
-	TActor * a, const int power, const float mass,
-	const struct vec2 hitVector)
+	TActor *a, const int power, const float mass, const struct vec2 hitVector)
 {
 	const GoreAmount ga = ConfigGetEnum(&gConfig, "Graphics.Gore");
 	if (ga == GORE_NONE)
