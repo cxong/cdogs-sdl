@@ -212,7 +212,7 @@ static int AICoopGetCmdNormal(TActor *actor)
 	if (actor->aiContext->OnGunId != -1)
 	{
 		const WeaponClass *wc = IdWeaponClass(actor->aiContext->OnGunId);
-		if ((lowAmmoGun != -1 && !ActorHasGun(actor, wc)) ||
+		if ((lowAmmoGun != -1 && ActorFindGun(actor, wc) < 0) ||
 			(wc->IsGrenade ? ActorGetNumGrenades(actor) < MAX_GRENADES
 						   : ActorGetNumGuns(actor) < MAX_GUNS))
 		{
@@ -739,7 +739,7 @@ static bool OnClosestPickupGun(
 		return false;
 	}
 
-	if (ActorHasGun(actor, IdWeaponClass(p->class->u.GunId)))
+	if (ActorFindGun(actor, IdWeaponClass(p->class->u.GunId)) >= 0)
 	{
 		return false;
 	}

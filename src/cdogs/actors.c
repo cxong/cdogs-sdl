@@ -620,7 +620,7 @@ void ActorReplaceGun(const NActorReplaceGun rg)
 	const WeaponClass *wc = StrWeaponClass(rg.Gun);
 	CASSERT(wc != NULL, "cannot find gun");
 	// If player already has gun, don't do anything
-	if (ActorHasGun(a, wc))
+	if (ActorFindGun(a, wc) >= 0)
 	{
 		return;
 	}
@@ -642,16 +642,16 @@ void ActorReplaceGun(const NActorReplaceGun rg)
 	SoundPlayAt(&gSoundDevice, wc->SwitchSound, a->Pos);
 }
 
-bool ActorHasGun(const TActor *a, const WeaponClass *wc)
+int ActorFindGun(const TActor *a, const WeaponClass *wc)
 {
 	for (int i = 0; i < MAX_WEAPONS; i++)
 	{
 		if (a->guns[i].Gun == wc)
 		{
-			return true;
+			return i;
 		}
 	}
-	return false;
+	return -1;
 }
 
 int ActorGetNumWeapons(const TActor *a)

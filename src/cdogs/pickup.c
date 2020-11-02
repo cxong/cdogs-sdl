@@ -301,21 +301,45 @@ static bool TryPickupGun(
 	{
 		return false;
 	}
+
+	// When picking up a gun, the actor always ends up with it equipped, but:
+	// - If the player already has the gun:
+	//   - Switch to the same gun and drop the same gun
+	// - If the player doesn't have the gun:
+	//   - If the player has an empty slot, pickup the gun into that slot
+	//   - If the player doesn't have an empty slot, replace the current gun,
+	//     dropping it in the process
+
 	const WeaponClass *wc =
 		p->class->Type == PICKUP_GUN
 			? IdWeaponClass(p->class->u.GunId)
 			: StrWeaponClass(
 				  AmmoGetById(&gAmmo, p->class->u.Ammo.Id)->DefaultGun);
+	const int actorsGunIdx = ActorFindGun(a, wc);
 
-	if (!ActorHasGun(a, wc))
+	if (actorsGunIdx >= 0)
+	{
+		// Actor already has gun
+
+		// Switch to the same gun
+		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_SWITCH_GUN);
+		e.u.ActorSwitchGun.UID = a->uid;
+		e.u.ActorSwitchGun.GunIdx = actorsGunIdx;
+		GameEventsEnqueue(&gGameEvents, e);
+
+		// Drop the same gun
+		PickupAddGun(wc, a->Pos);
+	}
+	else
 	{
 		// Pickup gun
-		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_REPLACE_GUN);
-		e.u.ActorReplaceGun.UID = a->uid;
 		// Replace the current gun, unless there's a free slot, in which case
 		// pick up into the free spot
 		const int weaponIndexStart = wc->IsGrenade ? MAX_GUNS : 0;
 		const int weaponIndexEnd = wc->IsGrenade ? MAX_WEAPONS : MAX_GUNS;
+		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_REPLACE_GUN);
+		e.u.ActorReplaceGun.UID = a->uid;
+		strcpy(e.u.ActorReplaceGun.Gun, wc->name);
 		e.u.ActorReplaceGun.GunIdx =
 			wc->IsGrenade ? a->grenadeIndex + MAX_GUNS : a->gunIndex;
 		int replaceGunIndex = e.u.ActorReplaceGun.GunIdx;
@@ -328,7 +352,6 @@ static bool TryPickupGun(
 				break;
 			}
 		}
-		strcpy(e.u.ActorReplaceGun.Gun, wc->name);
 		GameEventsEnqueue(&gGameEvents, e);
 
 		// If replacing a gun, "drop" the gun being replaced (i.e. create a gun
