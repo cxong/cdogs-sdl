@@ -53,7 +53,7 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Ogre",
+		"Class": "Demon",
 		"HairType": "horns",
 		"Skin": "ff76f5ff",
 		"Arms": "ff76f5ff",
@@ -71,7 +71,7 @@
 		"actionDelay": 13
 	},
 	{
-		"Class": "Ogre",
+		"Class": "Demon",
 		"HairType": "horns",
 		"Skin": "93458dff",
 		"Arms": "91418bff",
