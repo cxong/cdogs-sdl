@@ -1,6 +1,5 @@
 # ![C-Dogs SDL](http://cxong.github.io/cdogs-sdl/images/title.png)
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/6b607b26b4dd43468519e1da6c619384)](https://app.codacy.com/manual/cxong/cdogs-sdl?utm_source=github.com&utm_medium=referral&utm_content=cxong/cdogs-sdl&utm_campaign=Badge_Grade_Dashboard)
 [![Build Status](https://travis-ci.org/cxong/cdogs-sdl.svg?branch=master)](https://travis-ci.org/cxong/cdogs-sdl)
 [![Build Status (Windows)](https://ci.appveyor.com/api/projects/status/github/cxong/cdogs-sdl?svg=true)](https://ci.appveyor.com/project/cxong/cdogs-sdl)
 [![Github All Releases](https://img.shields.io/github/downloads/cxong/cdogs-sdl/total.svg)](https://github.com/cxong/cdogs-sdl/releases)
