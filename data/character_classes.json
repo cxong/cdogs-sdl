@@ -74,6 +74,14 @@
       "Body": "skinny",
       "Sounds": "zombie",
       "BloodColor": "ffffff"
+    },
+    {
+      "Name": "Dog",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/dog"
+      },
+      "Sounds": "dog"
     }
   ]
 }
