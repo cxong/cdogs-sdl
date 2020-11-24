@@ -1,6 +1,6 @@
 language: c
 dist: focal
-osx_image: xcode10.3
+osx_image: xcode12.2
 
 compiler:
   - gcc
