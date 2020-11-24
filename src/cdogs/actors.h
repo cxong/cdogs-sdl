@@ -146,6 +146,8 @@ typedef struct Actor
 	int slideLock;
 	// For damage text
 	int accumulatedDamage;
+	// Facial expression when melee or taking damage
+	int grimaceCounter;
 
 	// What to say (text label appears above actor) and how long to say it
 	char Chatter[256];
@@ -226,5 +228,6 @@ bool ActorIsInvulnerable(
 
 int ActorGetHealthPercent(const TActor *a);
 bool ActorIsLowHealth(const TActor *a);
+bool ActorIsGrimacing(const TActor *a);
 
 bool ActorIsLocalPlayer(const int uid);

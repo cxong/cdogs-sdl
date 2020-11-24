@@ -95,6 +95,9 @@
 #define CHATTER_SHOW_SECONDS 2
 #define CHATTER_SWITCH_GUN                                                    \
 	45 // TODO: based on clock time instead of game ticks
+#define GRIMACE_PERIOD 20
+#define GRIMACE_HIT_TICKS 39
+#define GRIMACE_MELEE_TICKS 19
 
 CArray gPlayerIds;
 
@@ -209,6 +212,8 @@ void UpdateActorState(TActor *actor, int ticks)
 		// Stop chatting
 		strcpy(actor->Chatter, "");
 	}
+
+	actor->grimaceCounter = MAX(0, actor->grimaceCounter - ticks);
 }
 static void ActorUpdateWeapon(TActor *a, Weapon *w, const int ticks)
 {
@@ -304,6 +309,13 @@ bool TryMoveActor(TActor *actor, struct vec2 pos)
 						e.u.Melee.HitType = (int)HIT_NONE;
 					}
 					GameEventsEnqueue(&gGameEvents, e);
+
+					// Only set grimace when counter 0 so that the actor
+					// alternates their grimace
+					if (actor->grimaceCounter == 0)
+					{
+						actor->grimaceCounter = GRIMACE_MELEE_TICKS;
+					}
 				}
 				return false;
 			}
@@ -1574,6 +1586,8 @@ void ActorHit(const NThingDamage d)
 				JoyImpact(p->deviceIndex);
 			}
 		}
+
+		a->grimaceCounter = GRIMACE_HIT_TICKS;
 	}
 }
 
@@ -1697,6 +1711,16 @@ int ActorGetHealthPercent(const TActor *a)
 bool ActorIsLowHealth(const TActor *a)
 {
 	return ActorGetHealthPercent(a) < LOW_HEALTH_PERCENTAGE;
+}
+
+bool ActorIsGrimacing(const TActor *a)
+{
+	const Weapon *gun = ACTOR_GET_WEAPON(a);
+	if (gun->state == GUNSTATE_FIRING || gun->state == GUNSTATE_RECOIL)
+	{
+		return true;
+	}
+	return (a->grimaceCounter % GRIMACE_PERIOD) > GRIMACE_PERIOD / 2;
 }
 
 bool ActorIsLocalPlayer(const int uid)

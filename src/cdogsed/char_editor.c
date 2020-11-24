@@ -105,14 +105,13 @@ void CharEditor(
 	TexArrayInit(&ec.texIdsCharClasses, NumCharacterClasses());
 	CA_FOREACH(const GLuint, texid, ec.texIdsCharClasses)
 	const CharacterClass *c = IndexCharacterClass(_ca_index);
-	LoadTexFromPic(*texid, GetHeadPic(c, DIRECTION_DOWN, GUNSTATE_READY, &cc));
+	LoadTexFromPic(*texid, GetHeadPic(c, DIRECTION_DOWN, false, &cc));
 	CA_FOREACH_END()
 
 	TexArrayInit(&ec.texIdsHairs, gPicManager.hairstyleNames.size);
 	CA_FOREACH(const GLuint, texid, ec.texIdsHairs)
 	const char *hair = IndexHairName(_ca_index);
-	LoadTexFromPic(
-		*texid, GetHairPic(hair, DIRECTION_DOWN, GUNSTATE_READY, &cc));
+	LoadTexFromPic(*texid, GetHairPic(hair, DIRECTION_DOWN, false, &cc));
 	CA_FOREACH_END()
 
 	TexArrayInit(&ec.texIdsGuns, NumGuns());
@@ -291,8 +290,7 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		// show both label and full character
 		char label[256];
 		sprintf(
-			label, "%s%s", 
-			c->PlayerTemplateName != NULL ? "*" : "",
+			label, "%s%s", c->PlayerTemplateName != NULL ? "*" : "",
 			c->Gun->name);
 		if (nk_select_label(
 				ctx, label, NK_TEXT_ALIGN_BOTTOM | NK_TEXT_ALIGN_CENTERED,
@@ -671,7 +669,7 @@ static void DrawCharacter(
 {
 	const int frame = AnimationGetFrame(anim);
 	ActorPics pics = GetCharacterPics(
-		c, d, d, anim->Type, frame, c->Gun->Sprites, GUNSTATE_READY,
+		c, d, d, anim->Type, frame, c->Gun->Sprites, GUNSTATE_READY, false,
 		colorTransparent, NULL, NULL, 0);
 	for (int i = 0; i < BODY_PART_COUNT; i++)
 	{

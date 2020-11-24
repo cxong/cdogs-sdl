@@ -152,8 +152,8 @@ ActorPics GetCharacterPicsFromActor(TActor *a)
 	const direction_e legDir = GetLegDirAndFrame(a, dir, &frame);
 	return GetCharacterPics(
 		c, dir, legDir, a->anim.Type, frame,
-		gun->Gun != NULL ? gun->Gun->Sprites : NULL, gun->state, shadowMask,
-		maskP, colors, a->dead);
+		gun->Gun != NULL ? gun->Gun->Sprites : NULL, gun->state,
+		ActorIsGrimacing(a), shadowMask, maskP, colors, a->dead);
 }
 static const Pic *GetBodyPic(
 	PicManager *pm, const CharSprites *cs, const direction_e dir,
@@ -169,8 +169,9 @@ static const Pic *GetDeathPic(PicManager *pm, const int frame);
 ActorPics GetCharacterPics(
 	const Character *c, const direction_e dir, const direction_e legDir,
 	const ActorAnimation anim, const int frame, const char *gunSprites,
-	const gunstate_e gunState, const color_t shadowMask, const color_t *mask,
-	const CharColors *colors, const int deadPic)
+	const gunstate_e gunState, const bool isGrimacing,
+	const color_t shadowMask, const color_t *mask, const CharColors *colors,
+	const int deadPic)
 {
 	ActorPics pics;
 	memset(&pics, 0, sizeof pics);
@@ -223,13 +224,15 @@ ActorPics GetCharacterPics(
 		else if (frame == IDLEHEAD_RIGHT)
 			headDir = (dir + 1) % 8;
 	}
-	pics.Head = GetHeadPic(c->Class, headDir, gunState, colors);
+	const bool grimace = gunState == GUNSTATE_FIRING ||
+						 gunState == GUNSTATE_RECOIL || isGrimacing;
+	pics.Head = GetHeadPic(c->Class, headDir, grimace, colors);
 	pics.HeadOffset = GetActorDrawOffset(
 		pics.Head, BODY_PART_HEAD, c->Class->Sprites, anim, frame, dir,
 		gunState);
 	if (c->Class->HasHair)
 	{
-		pics.Hair = GetHairPic(c->Hair, headDir, gunState, colors);
+		pics.Hair = GetHairPic(c->Hair, headDir, grimace, colors);
 	}
 	pics.HairOffset = GetActorDrawOffset(
 		pics.Hair, BODY_PART_HAIR, c->Class->Sprites, anim, frame, dir,
@@ -414,12 +417,11 @@ static void DrawLaserSightSingle(
 }
 
 const Pic *GetHeadPic(
-	const CharacterClass *c, const direction_e dir, const gunstate_e gunState,
+	const CharacterClass *c, const direction_e dir, const bool isGrimacing,
 	const CharColors *colors)
 {
 	// If firing, draw the firing head pic
-	const int row =
-		(gunState == GUNSTATE_FIRING || gunState == GUNSTATE_RECOIL) ? 1 : 0;
+	const int row = isGrimacing ? 1 : 0;
 	const int idx = (int)dir + row * 8;
 	// Get or generate masked sprites
 	const NamedSprites *ns =
@@ -427,15 +429,14 @@ const Pic *GetHeadPic(
 	return CArrayGet(&ns->pics, idx);
 }
 const Pic *GetHairPic(
-	const char *hair, const direction_e dir, const gunstate_e gunState,
+	const char *hair, const direction_e dir, const bool isGrimacing,
 	const CharColors *colors)
 {
 	if (hair == NULL)
 	{
 		return NULL;
 	}
-	const int row =
-		(gunState == GUNSTATE_FIRING || gunState == GUNSTATE_RECOIL) ? 1 : 0;
+	const int row = isGrimacing ? 1 : 0;
 	const int idx = (int)dir + row * 8;
 	// Get or generate masked sprites
 	char buf[CDOGS_PATH_MAX];
@@ -501,8 +502,8 @@ void DrawCharacterSimple(
 	const bool hilite, const bool showGun)
 {
 	ActorPics pics = GetCharacterPics(
-		c, d, d, ACTORANIMATION_IDLE, 0, NULL, GUNSTATE_READY, colorBlack,
-		NULL, NULL, 0);
+		c, d, d, ACTORANIMATION_IDLE, 0, NULL, GUNSTATE_READY, false,
+		colorBlack, NULL, NULL, 0);
 	DrawActorPics(&pics, pos, Rect2iZero());
 	if (hilite)
 	{
@@ -518,8 +519,8 @@ void DrawHead(
 	SDL_Renderer *renderer, const Character *c, const direction_e dir,
 	const struct vec2i pos)
 {
-	const gunstate_e g = GUNSTATE_READY;
-	const Pic *head = GetHeadPic(c->Class, dir, g, &c->Colors);
+	const bool isGrimacing = false;
+	const Pic *head = GetHeadPic(c->Class, dir, isGrimacing, &c->Colors);
 	const struct vec2i drawPos =
 		svec2i_subtract(pos, svec2i(head->size.x / 2, head->size.y / 2));
 	const color_t mask = colorWhite;
@@ -528,7 +529,7 @@ void DrawHead(
 		Rect2iZero());
 	if (c->Class->HasHair)
 	{
-		const Pic *hair = GetHairPic(c->Hair, dir, g, &c->Colors);
+		const Pic *hair = GetHairPic(c->Hair, dir, isGrimacing, &c->Colors);
 		if (hair)
 		{
 			PicRender(
