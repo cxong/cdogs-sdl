@@ -71,7 +71,7 @@ static void DrawNameMenu(
 		svec2i(
 			x + (i % ENTRY_COLS) * ENTRY_SPACING,
 			y + (i / ENTRY_COLS) * FontH()),
-		"(End)", i == d->nameMenuSelection, 0, colorBlack);
+		"(End)", i == d->nameMenuSelection, 0, colorWhite);
 }
 
 static int HandleInputNameMenu(int cmd, void *data)
