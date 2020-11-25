@@ -1,0 +1,17 @@
+---
+layout: post
+title:  "C-Dogs 0.10.0 Released!"
+date:   2020-11-25
+categories: release
+published: true
+---
+
+C-Dogs SDL 0.10.0 released! This release adds a new dog character, adds some custom character bodies, and includes miscellaneous enhancements and fixes.
+
+![Dog](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/dog.gif)
+
+Thanks to [@chack05](https://github.com/chack05) for reporting many bugs and [@JonDegn](https://github.com/JonDegn) for contributing a patch 🎉
+
+This will most likely be the last non-bugfix release for this year - rest assured major features are in the pipeline! So until then, happy gaming!
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.10.0>
