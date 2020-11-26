@@ -226,6 +226,7 @@ IF(NOT USE_SHARED_ENET)
 ENDIF()
 
 add_subdirectory(c_hashmap)
+add_subdirectory(cwolfmap)
 add_subdirectory(SDL_JoystickButtonNames)
 add_subdirectory(yajl)
 
@@ -234,6 +235,7 @@ add_library(cdogs STATIC
 
 target_link_libraries(cdogs
 	c_hashmap
+	cwolfmap
 	json
 	SDL_joystickbuttonnames
 	yajl_s

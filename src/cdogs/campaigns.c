@@ -1,30 +1,30 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2018 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2018, 2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "campaigns.h"
 
@@ -38,7 +38,6 @@
 #include <cdogs/mission.h>
 #include <cdogs/player_template.h>
 #include <cdogs/utils.h>
-
 
 void CampaignInit(Campaign *campaign)
 {
@@ -67,7 +66,7 @@ void CampaignSettingTerminate(CampaignSetting *setting)
 	CFREE(setting->Author);
 	CFREE(setting->Description);
 	CA_FOREACH(Mission, m, setting->Missions)
-		MissionTerminate(m);
+	MissionTerminate(m);
 	CA_FOREACH_END()
 	CArrayTerminate(&setting->Missions);
 	CharacterStoreTerminate(&setting->characters);
@@ -105,18 +104,12 @@ void LoadAllCampaigns(custom_campaigns_t *campaigns)
 	GetDataFilePath(buf, CDOGS_CAMPAIGN_DIR);
 	LOG(LM_MAIN, LL_INFO, "Load campaigns from dir %s...", buf);
 	LoadCampaignsFromFolder(
-		&campaigns->campaignList,
-		"",
-		buf,
-		GAME_MODE_NORMAL);
+		&campaigns->campaignList, "", buf, GAME_MODE_NORMAL);
 
 	GetDataFilePath(buf, CDOGS_DOGFIGHT_DIR);
 	LOG(LM_MAIN, LL_INFO, "Load dogfights from dir %s...", buf);
 	LoadCampaignsFromFolder(
-		&campaigns->dogfightList,
-		"",
-		buf,
-		GAME_MODE_DOGFIGHT);
+		&campaigns->dogfightList, "", buf, GAME_MODE_DOGFIGHT);
 
 	LOG(LM_MAIN, LL_INFO, "Load quick play...");
 	LoadQuickPlayEntry(&campaigns->quickPlayEntry);
@@ -141,11 +134,11 @@ static void CampaignListTerminate(campaign_list_t *list)
 {
 	CFREE(list->Name);
 	CA_FOREACH(campaign_list_t, sublist, list->subFolders)
-		CampaignListTerminate(sublist);
+	CampaignListTerminate(sublist);
 	CA_FOREACH_END()
 	CArrayTerminate(&list->subFolders);
 	CA_FOREACH(CampaignEntry, e, list->list)
-		CampaignEntryTerminate(e);
+	CampaignEntryTerminate(e);
 	CA_FOREACH_END()
 	CArrayTerminate(&list->list);
 }
@@ -176,28 +169,26 @@ static void LoadCampaignsFromFolder(
 	{
 		tinydir_file file;
 		tinydir_readfile_n(&dir, &file, i);
-
-		// Ignore campaigns that start with a ~
-		// These are autosaved
-
-		const bool isArchive =
-			strcmp(file.extension, "cdogscpn") == 0 ||
-			strcmp(file.extension, "CDOGSCPN") == 0;
-		if (file.is_dir && !isArchive &&
-			strcmp(file.name, ".") != 0 && strcmp(file.name, "..") != 0)
+		// Ignore campaigns that start with a ~; these are autosaved
+		// Also ignore special folders
+		if (file.name[0] == '~' || strcmp(file.name, ".") == 0 ||
+			strcmp(file.name, "..") == 0)
+		{
+			continue;
+		}
+		const bool isArchive = strcmp(file.extension, "cdogscpn") == 0 ||
+							   strcmp(file.extension, "CDOGSCPN") == 0;
+		if (file.is_dir && !isArchive)
 		{
 			campaign_list_t subFolder;
 			CampaignListInit(&subFolder);
 			LoadCampaignsFromFolder(&subFolder, file.name, file.path, mode);
 			CArrayPushBack(&list->subFolders, &subFolder);
 		}
-		else if ((file.is_reg || isArchive) && file.name[0] != '~')
+		CampaignEntry entry;
+		if (CampaignEntryTryLoad(&entry, file.path, mode))
 		{
-			CampaignEntry entry;
-			if (CampaignEntryTryLoad(&entry, file.path, mode))
-			{
-				CArrayPushBack(&list->list, &entry);
-			}
+			CArrayPushBack(&list->list, &entry);
 		}
 	}
 
@@ -215,14 +206,13 @@ Mission *CampaignGetCurrentMission(Campaign *campaign)
 
 void CampaignSeedRandom(const Campaign *campaign)
 {
-	const int seed =
-		10 * campaign->MissionIndex + ConfigGetInt(&gConfig, "Game.RandomSeed");
+	const int seed = 10 * campaign->MissionIndex +
+					 ConfigGetInt(&gConfig, "Game.RandomSeed");
 	LOG(LM_MAIN, LL_INFO, "Seeding with %d", seed);
 	srand((unsigned int)seed);
 }
 
-void CampaignAndMissionSetup(
-	Campaign *campaign, struct MissionOptions *mo)
+void CampaignAndMissionSetup(Campaign *campaign, struct MissionOptions *mo)
 {
 	Mission *m = CampaignGetCurrentMission(campaign);
 	if (m == NULL)

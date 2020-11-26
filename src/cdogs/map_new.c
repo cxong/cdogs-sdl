@@ -31,6 +31,7 @@
 #include <locale.h>
 #include <stdio.h>
 
+#include "cwolfmap/cwolfmap.h"
 #include "door.h"
 #include "files.h"
 #include "json_utils.h"
@@ -53,6 +54,11 @@ int MapNewScan(const char *filename, char **title, int *numMissions)
 	if (IsCampaignOldFile(filename))
 	{
 		return ScanCampaignOld(filename, title, numMissions);
+	}
+	if (CWIsMap(filename))
+	{
+		printf("Is a wolf map %s\n", filename);
+		return -1;
 	}
 	f = fopen(filename, "r");
 	if (f == NULL)
