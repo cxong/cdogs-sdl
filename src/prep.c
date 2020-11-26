@@ -1,57 +1,57 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin
-    Copyright (C) 2003-2007 Lucas Martin-King
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (C) 1995 Ronny Wester
+	Copyright (C) 2003 Jeremy Chin
+	Copyright (C) 2003-2007 Lucas Martin-King
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-    This file incorporates work covered by the following copyright and
-    permission notice:
+	This file incorporates work covered by the following copyright and
+	permission notice:
 
-    Copyright (c) 2013-2018 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2018, 2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "prep.h"
 
 #include <assert.h>
-#include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <SDL_mouse.h>
 
@@ -76,10 +76,9 @@
 #include "autosave.h"
 #include "briefing_screens.h"
 #include "game.h"
+#include "namegen.h"
 #include "password.h"
 #include "player_select_menus.h"
-#include "namegen.h"
-
 
 typedef struct
 {
@@ -97,8 +96,7 @@ static GameLoopData *ScreenWait(
 	ScreenWaitData *swData;
 	CMALLOC(swData, sizeof *swData);
 	MenuSystemInit(
-		&swData->ms, &gEventHandlers, &gGraphicsDevice,
-		svec2i_zero(),
+		&swData->ms, &gEventHandlers, &gGraphicsDevice, svec2i_zero(),
 		gGraphicsDevice.cachedConfig.Res);
 	swData->ms.allowAborts = true;
 	swData->ms.root = swData->ms.current =
@@ -108,8 +106,8 @@ static GameLoopData *ScreenWait(
 	swData->data = data;
 
 	return GameLoopDataNew(
-		swData, ScreenWaitTerminate, NULL, NULL,
-		NULL, ScreenWaitUpdate, ScreenWaitDraw);
+		swData, ScreenWaitTerminate, NULL, NULL, NULL, ScreenWaitUpdate,
+		ScreenWaitDraw);
 }
 static void ScreenWaitTerminate(GameLoopData *data)
 {
@@ -148,8 +146,8 @@ GameLoopData *ScreenWaitForCampaignDef(void)
 	char buf[256];
 	char ipbuf[64];
 	enet_address_get_host_ip(&gNetClient.peer->address, ipbuf, sizeof ipbuf);
-	sprintf(buf, "Connecting to %s:%u...",
-		ipbuf, gNetClient.peer->address.port);
+	sprintf(
+		buf, "Connecting to %s:%u...", ipbuf, gNetClient.peer->address.port);
 	return ScreenWait(buf, CheckCampaignDefComplete, NULL);
 }
 static GameLoopResult CheckCampaignDefComplete(void *data, LoopRunner *l)
@@ -172,7 +170,6 @@ static GameLoopResult CheckCampaignDefComplete(void *data, LoopRunner *l)
 	return UPDATE_RESULT_DRAW;
 }
 
-
 static void NumPlayersTerminate(GameLoopData *data);
 static GameLoopResult NumPlayersUpdate(GameLoopData *data, LoopRunner *l);
 static void NumPlayersDraw(GameLoopData *data);
@@ -182,15 +179,10 @@ GameLoopData *NumPlayersSelection(
 	MenuSystem *ms;
 	CMALLOC(ms, sizeof *ms);
 	MenuSystemInit(
-		ms, handlers, graphics,
-		svec2i_zero(),
-		graphics->cachedConfig.Res);
+		ms, handlers, graphics, svec2i_zero(), graphics->cachedConfig.Res);
 	ms->allowAborts = true;
-	ms->root = ms->current = MenuCreateNormal(
-		"",
-		"Select number of players",
-		MENU_TYPE_NORMAL,
-		0);
+	ms->root = ms->current =
+		MenuCreateNormal("", "Select number of players", MENU_TYPE_NORMAL, 0);
 	MenuAddSubmenu(ms->current, MenuCreateReturn("(No local players)", 0));
 	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 	{
@@ -203,8 +195,8 @@ GameLoopData *NumPlayersSelection(
 	ms->current->u.normal.index = 1;
 
 	return GameLoopDataNew(
-		ms, NumPlayersTerminate, NULL, NULL,
-		NULL, NumPlayersUpdate, NumPlayersDraw);
+		ms, NumPlayersTerminate, NULL, NULL, NULL, NumPlayersUpdate,
+		NumPlayersDraw);
 }
 static void NumPlayersTerminate(GameLoopData *data)
 {
@@ -227,7 +219,7 @@ static GameLoopResult NumPlayersUpdate(GameLoopData *data, LoopRunner *l)
 		{
 			const int numPlayers = ms->current->u.returnCode;
 			CA_FOREACH(const PlayerData, p, gPlayerDatas)
-				CASSERT(!p->IsLocal, "unexpected local player");
+			CASSERT(!p->IsLocal, "unexpected local player");
 			CA_FOREACH_END()
 			// Add the players
 			for (int i = 0; i < numPlayers; i++)
@@ -252,45 +244,44 @@ static void NumPlayersDraw(GameLoopData *data)
 	MenuDraw(data->Data);
 }
 
-
 static void AssignPlayerInputDevices(EventHandlers *handlers)
 {
 	CA_FOREACH(PlayerData, p, gPlayerDatas)
-		if (!p->IsLocal)
-		{
-			continue;
-		}
+	if (!p->IsLocal)
+	{
+		continue;
+	}
 
-		// Try to assign devices to players
-		// For each unassigned player, check if any device has button 1 pressed
-		// If so, and that input device wasn't used, assign it to that player
-		for (int j = 0; j < MAX_KEYBOARD_CONFIGS; j++)
-		{
-			char buf[256];
-			sprintf(buf, "Input.PlayerCodes%d.button1", j);
-			if (KeyIsPressed(&handlers->keyboard, ConfigGetInt(&gConfig, buf)) &&
-				PlayerTrySetUnusedInputDevice(p, INPUT_DEVICE_KEYBOARD, j))
-			{
-				SoundPlay(&gSoundDevice, StrSound("hahaha"));
-				break;
-			}
-		}
-		if (MouseIsPressed(&handlers->mouse, SDL_BUTTON_LEFT) &&
-			PlayerTrySetUnusedInputDevice(p, INPUT_DEVICE_MOUSE, 0))
+	// Try to assign devices to players
+	// For each unassigned player, check if any device has button 1 pressed
+	// If so, and that input device wasn't used, assign it to that player
+	for (int j = 0; j < MAX_KEYBOARD_CONFIGS; j++)
+	{
+		char buf[256];
+		sprintf(buf, "Input.PlayerCodes%d.button1", j);
+		if (KeyIsPressed(&handlers->keyboard, ConfigGetInt(&gConfig, buf)) &&
+			PlayerTrySetUnusedInputDevice(p, INPUT_DEVICE_KEYBOARD, j))
 		{
 			SoundPlay(&gSoundDevice, StrSound("hahaha"));
-			continue;
+			break;
 		}
-		for (int j = 0; j < (int)handlers->joysticks.size; j++)
+	}
+	if (MouseIsPressed(&handlers->mouse, SDL_BUTTON_LEFT) &&
+		PlayerTrySetUnusedInputDevice(p, INPUT_DEVICE_MOUSE, 0))
+	{
+		SoundPlay(&gSoundDevice, StrSound("hahaha"));
+		continue;
+	}
+	for (int j = 0; j < (int)handlers->joysticks.size; j++)
+	{
+		const Joystick *joy = CArrayGet(&handlers->joysticks, j);
+		if (JoyIsPressed(joy->id, CMD_BUTTON1) &&
+			PlayerTrySetUnusedInputDevice(p, INPUT_DEVICE_JOYSTICK, joy->id))
 		{
-			const Joystick *joy = CArrayGet(&handlers->joysticks, j);
-			if (JoyIsPressed(joy->id, CMD_BUTTON1) &&
-				PlayerTrySetUnusedInputDevice(p, INPUT_DEVICE_JOYSTICK, joy->id))
-			{
-				SoundPlay(&gSoundDevice, StrSound("hahaha"));
-				break;
-			}
+			SoundPlay(&gSoundDevice, StrSound("hahaha"));
+			break;
 		}
+	}
 	CA_FOREACH_END()
 }
 
@@ -327,14 +318,13 @@ GameLoopData *PlayerSelection(void)
 			continue;
 		}
 		PlayerSelectMenusCreate(
-			&data->menus[idx], GetNumPlayers(PLAYER_ANY, false, true),
-			idx, p->UID,
-			&gEventHandlers, &gGraphicsDevice, &data->g);
+			&data->menus[idx], GetNumPlayers(PLAYER_ANY, false, true), idx,
+			p->UID, &gEventHandlers, &gGraphicsDevice, &data->g);
 	}
 
 	return GameLoopDataNew(
-		data, PlayerSelectionTerminate, NULL, PlayerSelectionOnExit,
-		NULL, PlayerSelectionUpdate, PlayerSelectionDraw);
+		data, PlayerSelectionTerminate, NULL, PlayerSelectionOnExit, NULL,
+		PlayerSelectionUpdate, PlayerSelectionDraw);
 }
 static void PlayerSelectionTerminate(GameLoopData *data)
 {
@@ -482,7 +472,8 @@ static void PlayerSelectionDraw(GameLoopData *data)
 		{
 			struct vec2i center = svec2i_zero();
 			const char *prompt = "Press Fire to join...";
-			const struct vec2i offset = svec2i_scale_divide(FontStrSize(prompt), -2);
+			const struct vec2i offset =
+				svec2i_scale_divide(FontStrSize(prompt), -2);
 			switch (GetNumPlayers(false, false, true))
 			{
 			case 1:
@@ -514,7 +505,7 @@ typedef struct
 {
 	MenuSystem ms;
 	const CArray *weapons;
-	CArray allowed;	// of bool
+	CArray allowed; // of bool
 } GameOptionsData;
 static menu_t *MenuCreateAllowedWeapons(
 	const char *name, GameOptionsData *data);
@@ -541,12 +532,8 @@ GameLoopData *GameOptions(const GameMode gm)
 		ms, &gEventHandlers, &gGraphicsDevice, svec2i_zero(), svec2i(w, h));
 	ms->align = MENU_ALIGN_CENTER;
 	ms->allowAborts = true;
-	ms->root = MenuCreateNormal(
-		"",
-		"",
-		MENU_TYPE_OPTIONS,
-		0);
-#define I(_config)\
+	ms->root = MenuCreateNormal("", "", MENU_TYPE_OPTIONS, 0);
+#define I(_config)                                                            \
 	MenuAddConfigOptionsItem(ms->root, ConfigGet(&gConfig, _config));
 	switch (gm)
 	{
@@ -566,8 +553,7 @@ GameLoopData *GameOptions(const GameMode gm)
 		I("Dogfight.FirstTo");
 		I("Game.HealthPickups");
 		I("Game.RandomSeed");
-		MenuAddSubmenu(ms->root,
-			MenuCreateAllowedWeapons("Weapons...", data));
+		MenuAddSubmenu(ms->root, MenuCreateAllowedWeapons("Weapons...", data));
 		MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
 		I("StartServer");
 		break;
@@ -576,8 +562,7 @@ GameLoopData *GameOptions(const GameMode gm)
 		I("Deathmatch.Lives");
 		I("Game.HealthPickups");
 		I("Game.RandomSeed");
-		MenuAddSubmenu(ms->root,
-			MenuCreateAllowedWeapons("Weapons...", data));
+		MenuAddSubmenu(ms->root, MenuCreateAllowedWeapons("Weapons...", data));
 		MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
 		I("StartServer");
 		break;
@@ -605,8 +590,8 @@ GameLoopData *GameOptions(const GameMode gm)
 	MenuAddExitType(ms, MENU_TYPE_RETURN);
 
 	return GameLoopDataNew(
-		ms, GameOptionsTerminate, GameOptionsOnEnter, NULL,
-		NULL, GameOptionsUpdate, GameOptionsDraw);
+		ms, GameOptionsTerminate, GameOptionsOnEnter, NULL, NULL,
+		GameOptionsUpdate, GameOptionsDraw);
 }
 static void GameOptionsTerminate(GameLoopData *data)
 {
@@ -642,12 +627,11 @@ static GameLoopResult GameOptionsUpdate(GameLoopData *data, LoopRunner *l)
 	// - No options needed
 	// - Menu complete
 	const GameLoopResult result = MenuUpdate(&gData->ms);
-	const bool isQuit =
-		!gCampaign.IsLoaded || gCampaign.IsComplete || gMission.IsQuit ||
-		gData->ms.hasAbort;
-	const bool isDone =
-		!IsGameOptionsNeeded(gCampaign.Entry.Mode) ||
-		result == UPDATE_RESULT_OK;
+	const bool isQuit = !gCampaign.IsLoaded || gCampaign.IsComplete ||
+						gMission.IsQuit || gData->ms.hasAbort ||
+						gMission.missionData == NULL;
+	const bool isDone = !IsGameOptionsNeeded(gCampaign.Entry.Mode) ||
+						result == UPDATE_RESULT_OK;
 	if (isQuit || isDone)
 	{
 		if (isQuit)
@@ -728,8 +712,7 @@ static menu_t *MenuCreateAllowedWeapons(
 		const WeaponClass **wc = CArrayGet(data->weapons, i);
 		MenuAddSubmenu(
 			m,
-			MenuCreateOptionToggle(
-				(*wc)->name, CArrayGet(&data->allowed, i)));
+			MenuCreateOptionToggle((*wc)->name, CArrayGet(&data->allowed, i)));
 	}
 	MenuAddSubmenu(m, MenuCreateSeparator(""));
 	MenuAddSubmenu(m, MenuCreateBack("Done"));

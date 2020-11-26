@@ -87,14 +87,19 @@ void CampaignSettingTerminate(CampaignSetting *setting)
 	MapObjectsClear(&gMapObjects.CustomClasses);
 }
 
-static void CampaignListInit(campaign_list_t *list);
-static void CampaignListTerminate(campaign_list_t *list);
+bool CampaignListIsEmpty(const CampaignList *c)
+{
+	return c->list.size == 0 && c->subFolders.size == 0;
+}
+
+static void CampaignListInit(CampaignList *list);
+static void CampaignListTerminate(CampaignList *list);
 static void LoadCampaignsFromFolder(
-	campaign_list_t *list, const char *name, const char *path,
+	CampaignList *list, const char *name, const char *path,
 	const GameMode mode);
 static void LoadQuickPlayEntry(CampaignEntry *entry);
 
-void LoadAllCampaigns(custom_campaigns_t *campaigns)
+void LoadAllCampaigns(CustomCampaigns *campaigns)
 {
 	char buf[CDOGS_PATH_MAX];
 
@@ -115,7 +120,7 @@ void LoadAllCampaigns(custom_campaigns_t *campaigns)
 	LoadQuickPlayEntry(&campaigns->quickPlayEntry);
 }
 
-void UnloadAllCampaigns(custom_campaigns_t *campaigns)
+void UnloadAllCampaigns(CustomCampaigns *campaigns)
 {
 	if (campaigns)
 	{
@@ -124,16 +129,16 @@ void UnloadAllCampaigns(custom_campaigns_t *campaigns)
 	}
 }
 
-static void CampaignListInit(campaign_list_t *list)
+static void CampaignListInit(CampaignList *list)
 {
 	list->Name = NULL;
-	CArrayInit(&list->subFolders, sizeof(campaign_list_t));
+	CArrayInit(&list->subFolders, sizeof(CampaignList));
 	CArrayInit(&list->list, sizeof(CampaignEntry));
 }
-static void CampaignListTerminate(campaign_list_t *list)
+static void CampaignListTerminate(CampaignList *list)
 {
 	CFREE(list->Name);
-	CA_FOREACH(campaign_list_t, sublist, list->subFolders)
+	CA_FOREACH(CampaignList, sublist, list->subFolders)
 	CampaignListTerminate(sublist);
 	CA_FOREACH_END()
 	CArrayTerminate(&list->subFolders);
@@ -152,7 +157,7 @@ static void LoadQuickPlayEntry(CampaignEntry *entry)
 }
 
 static void LoadCampaignsFromFolder(
-	campaign_list_t *list, const char *name, const char *path,
+	CampaignList *list, const char *name, const char *path,
 	const GameMode mode)
 {
 	tinydir_dir dir;
@@ -180,10 +185,17 @@ static void LoadCampaignsFromFolder(
 							   strcmp(file.extension, "CDOGSCPN") == 0;
 		if (file.is_dir && !isArchive)
 		{
-			campaign_list_t subFolder;
+			CampaignList subFolder;
 			CampaignListInit(&subFolder);
 			LoadCampaignsFromFolder(&subFolder, file.name, file.path, mode);
-			CArrayPushBack(&list->subFolders, &subFolder);
+			if (CampaignListIsEmpty(&subFolder))
+			{
+				CampaignListTerminate(&subFolder);
+			}
+			else
+			{
+				CArrayPushBack(&list->subFolders, &subFolder);
+			}
 		}
 		CampaignEntry entry;
 		if (CampaignEntryTryLoad(&entry, file.path, mode))

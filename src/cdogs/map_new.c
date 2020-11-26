@@ -37,6 +37,7 @@
 #include "json_utils.h"
 #include "log.h"
 #include "map_archive.h"
+#include "map_wolf.h"
 #include "mission.h"
 #include "player_template.h"
 
@@ -57,8 +58,7 @@ int MapNewScan(const char *filename, char **title, int *numMissions)
 	}
 	if (CWIsMap(filename))
 	{
-		printf("Is a wolf map %s\n", filename);
-		return -1;
+		return MapWolfScan(filename, title, numMissions);
 	}
 	f = fopen(filename, "r");
 	if (f == NULL)
@@ -137,6 +137,11 @@ int MapNewLoad(const char *filename, CampaignSetting *c)
 		strcmp(StrGetFileExt(filename), "CDOGSCPN") == 0)
 	{
 		return MapNewLoadArchive(filename, c);
+	}
+
+	if (CWIsMap(filename))
+	{
+		return MapWolfLoad(filename, c);
 	}
 
 	// try to load the new map format

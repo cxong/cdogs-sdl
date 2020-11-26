@@ -46,12 +46,12 @@ typedef struct
 	MenuSystem ms;
 	GraphicsDevice *graphics;
 	credits_displayer_t creditsDisplayer;
-	custom_campaigns_t campaigns;
+	CustomCampaigns campaigns;
 	GameMode lastGameMode;
 	bool wasClient;
 } MainMenuData;
 static void MenuCreateAll(
-	MenuSystem *ms, LoopRunner *l, custom_campaigns_t *campaigns,
+	MenuSystem *ms, LoopRunner *l, CustomCampaigns *campaigns,
 	EventHandlers *handlers, GraphicsDevice *graphics);
 static void MainMenuTerminate(GameLoopData *data);
 static void MainMenuOnEnter(GameLoopData *data);
@@ -195,12 +195,12 @@ static void MainMenuDraw(GameLoopData *data)
 
 static menu_t *MenuCreateStart(
 	const char *name, MenuSystem *ms, LoopRunner *l,
-	custom_campaigns_t *campaigns);
+	CustomCampaigns *campaigns);
 static menu_t *MenuCreateOptions(const char *name, MenuSystem *ms);
 menu_t *MenuCreateQuit(const char *name);
 
 static void MenuCreateAll(
-	MenuSystem *ms, LoopRunner *l, custom_campaigns_t *campaigns,
+	MenuSystem *ms, LoopRunner *l, CustomCampaigns *campaigns,
 	EventHandlers *handlers, GraphicsDevice *graphics)
 {
 	MenuSystemInit(
@@ -227,14 +227,14 @@ typedef struct
 static menu_t *MenuCreateContinue(const char *name, CampaignEntry *entry);
 static menu_t *MenuCreateQuickPlay(const char *name, CampaignEntry *entry);
 static menu_t *MenuCreateCampaigns(
-	const char *name, const char *title, campaign_list_t *list,
+	const char *name, const char *title, CampaignList *list,
 	const GameMode mode);
 static menu_t *CreateJoinLANGame(
 	const char *name, const char *title, MenuSystem *ms, LoopRunner *l);
 static void CheckLANServers(menu_t *menu, void *data);
 static menu_t *MenuCreateStart(
 	const char *name, MenuSystem *ms, LoopRunner *l,
-	custom_campaigns_t *campaigns)
+	CustomCampaigns *campaigns)
 {
 	menu_t *menu = MenuCreateNormal(name, "Start:", MENU_TYPE_NORMAL, 0);
 	MenuAddSubmenu(
@@ -347,13 +347,13 @@ static void CampaignsDisplayFilename(
 	FontStrOpt(s, pos, opts);
 }
 static menu_t *MenuCreateCampaigns(
-	const char *name, const char *title, campaign_list_t *list,
+	const char *name, const char *title, CampaignList *list,
 	const GameMode mode)
 {
 	menu_t *menu = MenuCreateNormal(name, title, MENU_TYPE_NORMAL, 0);
 	menu->u.normal.maxItems = 20;
 	menu->u.normal.align = MENU_ALIGN_CENTER;
-	CA_FOREACH(campaign_list_t, subList, list->subFolders)
+	CA_FOREACH(CampaignList, subList, list->subFolders)
 	char folderName[CDOGS_FILENAME_MAX];
 	sprintf(folderName, "%s/", subList->Name);
 	MenuAddSubmenu(

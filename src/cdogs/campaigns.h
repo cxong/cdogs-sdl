@@ -34,19 +34,19 @@
 #include "mission.h"
 #include "sys_config.h"
 
-typedef struct campaign_list
+typedef struct
 {
 	char *Name;
-	CArray subFolders; // of campaign_list_t
+	CArray subFolders; // of CampaignList
 	CArray list;	   // of CampaignEntry
-} campaign_list_t;
+} CampaignList;
 
 typedef struct
 {
-	campaign_list_t campaignList;
-	campaign_list_t dogfightList;
+	CampaignList campaignList;
+	CampaignList dogfightList;
 	CampaignEntry quickPlayEntry;
-} custom_campaigns_t;
+} CustomCampaigns;
 
 typedef struct
 {
@@ -81,8 +81,10 @@ void CampaignTerminate(Campaign *campaign);
 void CampaignSettingInit(CampaignSetting *setting);
 void CampaignSettingTerminate(CampaignSetting *setting);
 
-void LoadAllCampaigns(custom_campaigns_t *campaigns);
-void UnloadAllCampaigns(custom_campaigns_t *campaigns);
+bool CampaignListIsEmpty(const CampaignList *c);
+
+void LoadAllCampaigns(CustomCampaigns *campaigns);
+void UnloadAllCampaigns(CustomCampaigns *campaigns);
 
 Mission *CampaignGetCurrentMission(Campaign *campaign);
 void CampaignSeedRandom(const Campaign *campaign);
