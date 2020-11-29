@@ -272,7 +272,8 @@ bool BulletUpdate(struct MobileObject *obj, const int ticks)
 			posStart = svec2_add(hit.Pos, velNorm);
 			vel = svec2_scale(velNorm, fullLen - preBounceLen - 1);
 		}
-	} while (alive && bounced);
+		// Don't allow slow moving bullets to bounce forever
+	} while (alive && bounced && svec2_length_squared(vel) > 2);
 	if (!alive)
 	{
 		return false;
