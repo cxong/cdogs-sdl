@@ -28,20 +28,23 @@
 #include "map_wolf.h"
 
 #include "cwolfmap/cwolfmap.h"
+#include "map_archive.h"
 
-static const char *GetTitle(const CWMapType type)
+static void GetCampaignPath(const CWMapType type, char *buf)
 {
 	switch (type)
 	{
 	case CWMAPTYPE_WL1:
-		return "Wolfenstein 2D (shareware)";
+		GetDataFilePath(buf, "missions/.wolf3d/WL1.cdogscpn");
 	case CWMAPTYPE_WL6:
-		return "Wolfenstein 2D";
+		GetDataFilePath(buf, "missions/.wolf3d/WL6.cdogscpn");
+		break;
 	case CWMAPTYPE_SOD:
-		return "Spear of Destiny";
+		GetDataFilePath(buf, "missions/.wolf3d/SOD.cdogscpn");
+		break;
 	default:
 		CASSERT(false, "unknown map type");
-		return "Unknown";
+		break;
 	}
 }
 
@@ -52,7 +55,12 @@ int MapWolfScan(const char *filename, char **title, int *numMissions)
 	{
 		return -1;
 	}
-	CSTRDUP(*title, GetTitle(map.type));
+	char buf[CDOGS_PATH_MAX];
+	GetCampaignPath(map.type, buf);
+	if (MapNewScanArchive(buf, title, NULL) != 0)
+	{
+		return -1;
+	}
 	*numMissions = map.nLevels;
 	return 0;
 }
@@ -66,53 +74,12 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 		return -1;
 	}
 
-	LoadCampaign(&map, c);
+	char buf[CDOGS_PATH_MAX];
+	GetCampaignPath(map.type, buf);
+	if (MapNewLoadArchive(buf, c) != 0)
+	{
+		return -1;
+	}
 
 	return 0;
-}
-static const char *GetDescription(const CWMapType type);
-static void LoadCampaign(const CWolfMap *map, CampaignSetting *c)
-{
-	CFREE(c->Title);
-	CSTRDUP(c->Title, GetTitle(map->type));
-	CFREE(c->Author);
-	CSTRDUP(c->Author, "id Software");
-	CFREE(c->Description);
-	CSTRDUP(c->Description, GetDescription(map->type));
-	c->Ammo = true;
-	c->WeaponPersist = true;
-	c->SkipWeaponMenu = true;
-}
-static const char *GetDescription(const CWMapType type)
-{
-	switch (type)
-	{
-	case CWMAPTYPE_WL1: // fallthrough
-	case CWMAPTYPE_WL6:
-		return "You're William J. \"B.J.\" Blazkowicz, the Allies' bad boy of "
-			   "espionage and a terminal action seeker. Your mission was to "
-			   "infiltrate the Nazi fortress Castle Hollehammer and find the "
-			   "plans for Operation Eisenfaust, the Nazi's blueprint for "
-			   "building the perfect army. Rumors are that deep within the "
-			   "castle the diabolical Dr. Schabbs has perfected a technique "
-			   "for building a fierce army from the bodies of the dead. It's "
-			   "so far removed from reality that it would seem silly if it "
-			   "wasn't so sick. But what if it were true?";
-	case CWMAPTYPE_SOD:
-		return "It's World War II and you are B.J. Blazkowicz, the Allies' "
-			   "most valuable agent. In the midst of the German Blitzkrieg, "
-			   "the Spear that pierced the side of Christ is taken from "
-			   "Versailles by the Nazis and secured in the impregnable Castle "
-			   "Wolfenstein. According to legend, no man can be defeated when "
-			   "he has the Spear. Hitler believes himself to be invincible "
-			   "with the power of the Spear as his brutal army sweeps across "
-			   "Europe.\n\nYour mission is to infiltrate the heavily guarded "
-			   "Nazi stronghold and recapture the Spear from an already "
-			   "unbalanced Hitler. The loss of his most coveted weapon could "
-			   "push him over the edge. It could also get you ripped to "
-			   "pieces.";
-	default:
-		CASSERT(false, "unknown map type");
-		return "Unknown";
-	}
 }

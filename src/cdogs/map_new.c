@@ -96,19 +96,22 @@ int MapNewScanJSON(json_t *root, char **title, int *numMissions)
 		goto bail;
 	}
 	*title = GetString(root, "Title");
-	*numMissions = 0;
-	if (version < 3)
+	if (numMissions != NULL)
 	{
-		for (json_t *missionNode =
-				 json_find_first_label(root, "Missions")->child->child;
-			 missionNode; missionNode = missionNode->next)
+		*numMissions = 0;
+		if (version < 3)
 		{
-			(*numMissions)++;
+			for (json_t *missionNode =
+					 json_find_first_label(root, "Missions")->child->child;
+				 missionNode; missionNode = missionNode->next)
+			{
+				(*numMissions)++;
+			}
 		}
-	}
-	else
-	{
-		LoadInt(numMissions, root, "Missions");
+		else
+		{
+			LoadInt(numMissions, root, "Missions");
+		}
 	}
 
 bail:

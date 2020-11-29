@@ -30,7 +30,7 @@
 #include "nk_window.h"
 
 #define WIDTH 800
-#define HEIGHT 250
+#define HEIGHT 300
 #define ROW_HEIGHT 25
 
 typedef struct
@@ -96,7 +96,7 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		nk_layout_row_dynamic(ctx, ROW_HEIGHT, 1);
 		DrawTextbox(ctx, cData->Title, 256, "Title", NK_EDIT_FIELD);
 		DrawTextbox(ctx, cData->Author, 256, "Author", NK_EDIT_FIELD);
-		// TODO: text area? Nuklear doesn't support it yet
+		nk_layout_row_dynamic(ctx, ROW_HEIGHT * 3, 1);
 		DrawTextbox(ctx, cData->Description, 1024, "Description", NK_EDIT_BOX);
 		nk_layout_row_dynamic(ctx, ROW_HEIGHT, 1);
 		if (DrawCheckbox(

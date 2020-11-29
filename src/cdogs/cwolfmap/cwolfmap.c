@@ -118,7 +118,7 @@ static int LoadMapHead(CWolfMap *map, const char *path)
 	}
 	const size_t size = sizeof map->mapHead;
 	// Read as many maps as we can; some versions of the game (SOD MP) truncate the headers
-	(void)fread((void *)&map->mapHead, 1, size, f);
+	(void)!fread((void *)&map->mapHead, 1, size, f);
 	if (map->mapHead.magic != MAGIC)
 	{
 		err = -1;

@@ -176,8 +176,7 @@ static void LoadCampaignsFromFolder(
 		tinydir_readfile_n(&dir, &file, i);
 		// Ignore campaigns that start with a ~; these are autosaved
 		// Also ignore special folders
-		if (file.name[0] == '~' || strcmp(file.name, ".") == 0 ||
-			strcmp(file.name, "..") == 0)
+		if (file.name[0] == '~' || file.name[0] == '.')
 		{
 			continue;
 		}
