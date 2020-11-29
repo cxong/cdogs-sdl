@@ -65,7 +65,6 @@ int MapWolfScan(const char *filename, char **title, int *numMissions)
 	return 0;
 }
 
-static void LoadCampaign(const CWolfMap *map, CampaignSetting *c);
 int MapWolfLoad(const char *filename, CampaignSetting *c)
 {
 	CWolfMap map;
