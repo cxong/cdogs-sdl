@@ -1,0 +1,13 @@
+---
+layout: post
+title:  "C-Dogs 0.10.1 Released!"
+date:   2020-11-30
+categories: release
+published: true
+---
+
+C-Dogs SDL 0.10.1 released! This is a bug fix release to fix the game freezing when slow-moving clouds bounce against walls (e.g. exploding barrels, smoke grenades).
+
+Thanks to [@STRRRRR](https://github.com/STRRRRR) and [@karjonas](https://github.com/karjonas) for reporting 🎉
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.10.1>
