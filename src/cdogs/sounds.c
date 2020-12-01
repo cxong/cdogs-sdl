@@ -95,7 +95,6 @@ int OpenAudio(int frequency, Uint16 format, int channels, int chunkSize)
 }
 
 static Mix_Chunk *LoadSound(const char *path);
-static void AddSound(map_t sounds, const char *name, SoundData *sound);
 static void SoundLoad(map_t sounds, const char *name, const char *path)
 {
 	// If the sound basename is a number, it is part of a group of random
@@ -144,7 +143,7 @@ static void SoundLoad(map_t sounds, const char *name, const char *path)
 		}
 		// Remove "/0" from name and add
 		*strrchr(nameNoExt, '/') = '\0';
-		AddSound(sounds, nameNoExt, sound);
+		SoundAdd(sounds, nameNoExt, sound);
 	}
 	else
 	{
@@ -155,7 +154,7 @@ static void SoundLoad(map_t sounds, const char *name, const char *path)
 			CMALLOC(sound, sizeof *sound);
 			sound->Type = SOUND_NORMAL;
 			sound->u.normal = data;
-			AddSound(sounds, nameNoExt, sound);
+			SoundAdd(sounds, nameNoExt, sound);
 		}
 	}
 }
@@ -173,7 +172,7 @@ static Mix_Chunk *LoadSound(const char *path)
 	return Mix_LoadWAV(path);
 }
 static void SoundDataTerminate(any_t data);
-static void AddSound(map_t sounds, const char *name, SoundData *sound)
+void SoundAdd(map_t sounds, const char *name, SoundData *sound)
 {
 	const int error = hashmap_put(sounds, name, sound);
 	if (error != MAP_OK)
@@ -335,7 +334,8 @@ void SoundReconfigure(SoundDevice *s)
 void SoundReopen(SoundDevice *s)
 {
 	SoundClose(s, false);
-	if (OpenAudio(44100, AUDIO_S16, 2, 1024) != 0)
+	if (OpenAudio(CDOGS_SND_RATE, CDOGS_SND_FMT, CDOGS_SND_CHANNELS, 1024) !=
+		0)
 	{
 		return;
 	}

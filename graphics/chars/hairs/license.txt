@@ -24,3 +24,4 @@ The following are original and licensed as CC0
 - hazmat
 - helmet
 - horns
+- peak_cap

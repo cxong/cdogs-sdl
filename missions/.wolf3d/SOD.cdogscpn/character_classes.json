@@ -1,0 +1,96 @@
+{
+  "Version": 2,
+  "Characters": [
+    {
+      "Name": "Guard",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      },
+      "Sounds": "guard"
+    },
+    {
+      "Name": "Dog",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/dog"
+      },
+      "Body": "dog",
+      "Sounds": "dog"
+    },
+    {
+      "Name": "SS",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      },
+      "Sounds": "ss"
+    },
+    {
+      "Name": "Trans Grosse",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      },
+      "Body": "big",
+      "Sounds": "trans"
+    },
+    {
+      "Name": "Mutant",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/cyborg"
+      },
+      "Sounds": "mutant",
+      "BloodColor": "ff00ff"
+    },
+    {
+      "Name": "Officer",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      },
+      "Sounds": "officer"
+    },
+    {
+      "Name": "Barnacle Wilhelm",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      },
+      "Body": "big",
+      "Sounds": "bill"
+    },
+    {
+      "Name": "Ubermutant",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/cyborg"
+      },
+      "Body": "ubermutant",
+      "Sounds": "ubermutant"
+    },
+    {
+      "Name": "Death Knight",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      },
+      "Body": "knight",
+      "Sounds": "knight"
+    },
+    {
+      "Name": "Angel of Death",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/skull"
+      },
+      "Body": "angel",
+      "Sounds": "angel"
+    },
+    {
+      "Name": "Ghost",
+      "Body": "ghost"
+    }
+  ]
+}

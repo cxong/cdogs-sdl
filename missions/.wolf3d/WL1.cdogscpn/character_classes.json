@@ -1,0 +1,39 @@
+{
+  "Version": 2,
+  "Characters": [
+    {
+      "Name": "Guard",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      },
+      "Sounds": "guard"
+    },
+    {
+      "Name": "Dog",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/dog"
+      },
+      "Body": "dog",
+      "Sounds": "dog"
+    },
+    {
+      "Name": "SS",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      },
+      "Sounds": "ss"
+    },
+    {
+      "Name": "Hans Grosse",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      },
+      "Body": "big",
+      "Sounds": "hans"
+    }
+  ]
+}
