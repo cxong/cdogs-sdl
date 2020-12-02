@@ -1,33 +1,32 @@
 /*
- Copyright (c) 2017-2019 Cong Xu
- All rights reserved.
- 
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
- 
- Redistributions of source code must retain the above copyright notice, this
- list of conditions and the following disclaimer.
- Redistributions in binary form must reproduce the above copyright notice,
- this list of conditions and the following disclaimer in the documentation
- and/or other materials provided with the distribution.
- 
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
- LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- POSSIBILITY OF SUCH DAMAGE.
+	Copyright (c) 2017-2020 Cong Xu
+	All rights reserved.
+
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
+
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
+
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
  */
 #include "window_context.h"
 
 #include "log.h"
 #include "texture.h"
-
 
 bool WindowContextCreate(
 	WindowContext *wc, const Rect2i windowDim, const int windowFlags,
@@ -39,8 +38,8 @@ bool WindowContextCreate(
 		windowFlags);
 	wc->bkgMask = colorWhite;
 	wc->window = SDL_CreateWindow(
-		title, windowDim.Pos.x, windowDim.Pos.y,
-		windowDim.Size.x, windowDim.Size.y, windowFlags);
+		title, windowDim.Pos.x, windowDim.Pos.y, windowDim.Size.x,
+		windowDim.Size.y, windowFlags);
 	if (wc->window == NULL)
 	{
 		LOG(LM_GFX, LL_ERROR, "cannot create window: %s", SDL_GetError());
@@ -65,11 +64,16 @@ bool WindowContextCreate(
 bool WindowContextInitTextures(
 	WindowContext *wc, const struct vec2i rendererLogicalSize)
 {
+	if (wc->renderer == NULL)
+	{
+		return true;
+	}
+
 	CArrayInit(&wc->texturesBkg, sizeof(SDL_Texture *));
 	CArrayInit(&wc->textures, sizeof(SDL_Texture *));
 
 	if (SDL_RenderSetLogicalSize(
-		wc->renderer, rendererLogicalSize.x, rendererLogicalSize.y) != 0)
+			wc->renderer, rendererLogicalSize.x, rendererLogicalSize.y) != 0)
 	{
 		LOG(LM_GFX, LL_ERROR, "cannot set renderer logical size: %s",
 			SDL_GetError());
@@ -86,11 +90,11 @@ void WindowContextDestroy(WindowContext *wc)
 void WindowContextDestroyTextures(WindowContext *wc)
 {
 	CA_FOREACH(SDL_Texture *, t, wc->texturesBkg)
-		SDL_DestroyTexture(*t);
+	SDL_DestroyTexture(*t);
 	CA_FOREACH_END()
 	CArrayTerminate(&wc->texturesBkg);
 	CA_FOREACH(SDL_Texture *, t, wc->textures)
-		SDL_DestroyTexture(*t);
+	SDL_DestroyTexture(*t);
 	CA_FOREACH_END()
 	CArrayTerminate(&wc->textures);
 }
@@ -129,18 +133,18 @@ void WindowContextPreRender(WindowContext *wc)
 		return;
 	}
 	CA_FOREACH(SDL_Texture *, t, wc->texturesBkg)
-		TextureRender(
-			*t, wc->renderer, Rect2iZero(), Rect2iZero(), wc->bkgMask, 0,
-			SDL_FLIP_NONE);
+	TextureRender(
+		*t, wc->renderer, Rect2iZero(), Rect2iZero(), wc->bkgMask, 0,
+		SDL_FLIP_NONE);
 	CA_FOREACH_END()
 }
 
 void WindowContextPostRender(WindowContext *wc)
 {
 	CA_FOREACH(SDL_Texture *, t, wc->textures)
-		TextureRender(
-			*t, wc->renderer, Rect2iZero(), Rect2iZero(), colorWhite, 0,
-			SDL_FLIP_NONE);
+	TextureRender(
+		*t, wc->renderer, Rect2iZero(), Rect2iZero(), colorWhite, 0,
+		SDL_FLIP_NONE);
 	CA_FOREACH_END()
 
 	SDL_RenderPresent(wc->renderer);

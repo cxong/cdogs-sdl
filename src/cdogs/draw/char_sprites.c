@@ -1,29 +1,29 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2017, 2019 Cong Xu
-    All rights reserved.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (c) 2017, 2019-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "char_sprites.h"
 
@@ -34,20 +34,21 @@
 #include "sys_config.h"
 #include "yajl_utils.h"
 
-
 #define VERSION 2
 
 CharSpriteClasses gCharSpriteClasses;
-
 
 const CharSprites *StrCharSpriteClass(const char *s)
 {
 	CharSprites *c;
 	int error = hashmap_get(gCharSpriteClasses.customClasses, s, (any_t *)&c);
-	if (error == MAP_OK) return c;
+	if (error == MAP_OK)
+		return c;
 	error = hashmap_get(gCharSpriteClasses.classes, s, (any_t *)&c);
-	if (error == MAP_OK) return c;
-	return NULL;
+	if (error == MAP_OK)
+		return c;
+	LOG(LM_MAIN, LL_ERROR, "char sprite class %s not found; using default", s);
+	return StrCharSpriteClass("base");
 }
 
 void CharSpriteClassesInit(CharSpriteClasses *c)
@@ -76,8 +77,8 @@ void CharSpriteClassesLoadDir(map_t classes, const char *path)
 		tinydir_file file;
 		if (tinydir_readfile(&dir, &file) == -1)
 		{
-			LOG(LM_MAIN, LL_ERROR, "Cannot read file '%s': %s",
-				file.path, strerror(errno));
+			LOG(LM_MAIN, LL_ERROR, "Cannot read file '%s': %s", file.path,
+				strerror(errno));
 			goto bail;
 		}
 		if (!file.is_dir || file.name[0] == '.')
@@ -131,20 +132,20 @@ static CharSprites *CharSpritesLoadJSON(const char *name, const char *path)
 		const yajl_array orderDir = YAJL_GET_ARRAY(order->values[d]);
 		for (BodyPart bp = BODY_PART_HEAD; bp < BODY_PART_COUNT; bp++)
 		{
-			c->Order[d][bp] = StrBodyPart(
-				YAJL_GET_STRING(orderDir->values[bp]));
+			c->Order[d][bp] =
+				StrBodyPart(YAJL_GET_STRING(orderDir->values[bp]));
 		}
 	}
-	c->Offsets.Frame[BODY_PART_HEAD] = LoadFrameOffsets(
-		node, "Offsets/Frame/Head");
-	c->Offsets.Frame[BODY_PART_HAIR] = LoadFrameOffsets(
-		node, "Offsets/Frame/Hair");
-	c->Offsets.Frame[BODY_PART_BODY] = LoadFrameOffsets(
-		node, "Offsets/Frame/Body");
-	c->Offsets.Frame[BODY_PART_LEGS] = LoadFrameOffsets(
-		node, "Offsets/Frame/Legs");
-	c->Offsets.Frame[BODY_PART_GUN] = LoadFrameOffsets(
-		node, "Offsets/Frame/Gun");
+	c->Offsets.Frame[BODY_PART_HEAD] =
+		LoadFrameOffsets(node, "Offsets/Frame/Head");
+	c->Offsets.Frame[BODY_PART_HAIR] =
+		LoadFrameOffsets(node, "Offsets/Frame/Hair");
+	c->Offsets.Frame[BODY_PART_BODY] =
+		LoadFrameOffsets(node, "Offsets/Frame/Body");
+	c->Offsets.Frame[BODY_PART_LEGS] =
+		LoadFrameOffsets(node, "Offsets/Frame/Legs");
+	c->Offsets.Frame[BODY_PART_GUN] =
+		LoadFrameOffsets(node, "Offsets/Frame/Gun");
 	LoadDirOffsets(c->Offsets.Dir[BODY_PART_HEAD], node, "Offsets/Dir/Head");
 	LoadDirOffsets(c->Offsets.Dir[BODY_PART_HAIR], node, "Offsets/Dir/Hair");
 	LoadDirOffsets(c->Offsets.Dir[BODY_PART_BODY], node, "Offsets/Dir/Body");
@@ -168,7 +169,8 @@ static map_t LoadFrameOffsets(yajl_val node, const char *path)
 		const yajl_array offsetsArray = YAJL_GET_ARRAY(obj->values[i]);
 		for (int j = 0; j < (int)offsetsArray->len; j++)
 		{
-			const struct vec2i offset = YAJL_GET_VEC2I(offsetsArray->values[j]);
+			const struct vec2i offset =
+				YAJL_GET_VEC2I(offsetsArray->values[j]);
 			CArrayPushBack(offsetVals, &offset);
 		}
 		const int error = hashmap_put(offsets, key, offsetVals);
@@ -191,7 +193,8 @@ static void LoadDirOffsets(
 	}
 	for (direction_e d = DIRECTION_UP; d < DIRECTION_COUNT; d++)
 	{
-		offsets[d] = svec2_assign_vec2i(YAJL_GET_VEC2I(offsetsArray->values[d]));
+		offsets[d] =
+			svec2_assign_vec2i(YAJL_GET_VEC2I(offsetsArray->values[d]));
 	}
 }
 
