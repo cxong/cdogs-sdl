@@ -20,7 +20,7 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Jones",
+		"Class": "Guard",
 		"HairType": "combat_helmet",
 		"Skin": "ff9e40ff",
 		"Arms": "db9642ff",
@@ -38,7 +38,7 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Jones",
+		"Class": "SS",
 		"HairType": "beret",
 		"Skin": "ffa83bff",
 		"Arms": "0b2effff",
@@ -56,7 +56,7 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Dog",
+		"Class": "Killer Dog",
 		"Skin": "d9822dff",
 		"Arms": "404040ff",
 		"Body": "404040ff",
@@ -73,7 +73,7 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Jones",
+		"Class": "Hans Grosse",
 		"HairType": "flattop",
 		"Skin": "ffa73dff",
 		"Arms": "0c08f0ff",
