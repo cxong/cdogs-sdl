@@ -227,6 +227,19 @@ static bool write_repeated_emptymsg(pb_ostream_t *stream, const pb_field_t *fiel
            pb_encode_submessage(stream, EmptyMessage_fields, &emptymsg);
 }
 
+static bool write_farray2(pb_ostream_t *stream, const pb_field_t *field, void * const *arg)
+{
+    uint32_t dummy = 0;
+    uint32_t value = (uint32_t)(intptr_t)*arg;
+
+    /* Make it a packed field */
+    return pb_encode_tag(stream, PB_WT_STRING, field->tag) &&
+           pb_encode_varint(stream, 3 * 4) && /* Number of bytes */
+           pb_encode_fixed32(stream, &dummy) &&
+           pb_encode_fixed32(stream, &dummy) &&
+           pb_encode_fixed32(stream, &value);
+}
+
 int main(int argc, char **argv)
 {
     int mode = (argc > 1) ? atoi(argv[1]) : 0;
@@ -380,6 +393,9 @@ int main(int argc, char **argv)
     alltypes.rep_farray.funcs.encode = &write_repeated_varint;
     alltypes.rep_farray.arg = (void*)2040;
 
+    alltypes.rep_farray2.funcs.encode = &write_farray2;
+    alltypes.rep_farray2.arg = (void*)2095;
+
     alltypes.req_limits.funcs.encode = &write_limits;
     
     alltypes.req_ds8.funcs.encode = &write_ds8;
@@ -447,6 +463,9 @@ int main(int argc, char **argv)
 
         alltypes.oneof_msg1.funcs.encode = &write_submsg;
         alltypes.oneof_msg1.arg = &oneof_msg1;
+
+        alltypes.opt_non_zero_based_enum.funcs.encode = &write_varint;
+        alltypes.opt_non_zero_based_enum.arg = (void *)NonZeroBasedEnum_Three;
     }
     
     alltypes.end.funcs.encode = &write_varint;

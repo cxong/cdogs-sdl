@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.12)
 
 project(nanopb C)
 
-set(nanopb_VERSION_STRING nanopb-0.4.1)
+set(nanopb_VERSION_STRING nanopb-0.4.4)
 set(nanopb_SOVERSION 0)
 
 string(REPLACE "nanopb-" "" nanopb_VERSION ${nanopb_VERSION_STRING})
@@ -41,9 +41,9 @@ endif()
 if(nanopb_BUILD_GENERATOR)
     set(generator_protos nanopb)
 
-    find_package(PythonInterp 2.7 REQUIRED)
+    find_package(Python REQUIRED)
     execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} -c
+        COMMAND ${Python_EXECUTABLE} -c
             "from distutils import sysconfig; print(sysconfig.get_python_lib(prefix=''))"
         OUTPUT_VARIABLE PYTHON_INSTDIR
         OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -60,9 +60,27 @@ if(nanopb_BUILD_GENERATOR)
         add_custom_target("generate_${generator_proto_py_file}" ALL DEPENDS ${generator_proto_py_file})
         install(
             FILES ${PROJECT_BINARY_DIR}/${generator_proto_py_file}
-			DESTINATION ${PYTHON_INSTDIR}
+                  ${generator_proto_file}
+            DESTINATION ${PYTHON_INSTDIR}/proto/
         )
     endforeach()
+endif()
+
+install( FILES generator/proto/_utils.py
+         DESTINATION ${PYTHON_INSTDIR}/proto/ )
+
+if( WIN32 )
+        install(
+            PROGRAMS generator/nanopb_generator.py
+                     generator/protoc-gen-nanopb.bat
+            DESTINATION ${CMAKE_INSTALL_BINDIR}
+        )
+else()
+        install(
+            PROGRAMS generator/nanopb_generator.py
+                     generator/protoc-gen-nanopb
+            DESTINATION ${CMAKE_INSTALL_BINDIR}
+        )
 endif()
 
 if(nanopb_BUILD_RUNTIME)

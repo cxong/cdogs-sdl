@@ -1,7 +1,7 @@
 Nanopb - Protocol Buffers for Embedded Systems
 ==============================================
 
-[![Build Status](https://travis-ci.org/nanopb/nanopb.svg?branch=master)](https://travis-ci.org/nanopb/nanopb)
+[![Build Status](https://travis-ci.com/nanopb/nanopb.svg?branch=master)](https://travis-ci.com/nanopb/nanopb)
 
 Nanopb is a small code-size Protocol Buffers implementation in ansi C. It is
 especially suitable for use in microcontrollers, but fits any memory
@@ -11,7 +11,7 @@ restricted system.
 * **Documentation:** https://jpa.kapsi.fi/nanopb/docs/
 * **Downloads:** https://jpa.kapsi.fi/nanopb/download/
 * **Forum:** https://groups.google.com/forum/#!forum/nanopb
-
+* **Nightly builds:** https://jpa.kapsi.fi/jenkins/job/nanopb/
 
 
 Using the nanopb library
@@ -27,44 +27,26 @@ However, for any other kind of build system, see the manual steps in
 README.txt in that folder.
 
 
+Generating the headers
+----------------------
+Protocol Buffers messages are defined in a `.proto` file, which follows a standard
+format that is compatible with all Protocol Buffers libraries. To use it with nanopb,
+you need to generate `.pb.c` and `.pb.h` files from it:
 
-Using the Protocol Buffers compiler (protoc)
---------------------------------------------
-The nanopb generator is implemented as a plugin for the Google's own `protoc`
-compiler. This has the advantage that there is no need to reimplement the
-basic parsing of .proto files. However, it does mean that you need the
-Google's protobuf library in order to run the generator.
+    python generator/nanopb_generator.py myprotocol.proto  # For source checkout
+    generator-bin/nanopb_generator myprotocol.proto        # For binary package
 
-If you have downloaded a binary package for nanopb (either Windows, Linux or
-Mac OS X version), the `protoc` binary is included in the 'generator-bin'
-folder. In this case, you are ready to go. Simply run this command:
+(Note: For instructions for nanopb-0.3.9.x and older, see the documentation
+of that particular version [here](https://github.com/nanopb/nanopb/blob/maintenance_0.3/README.md))
 
-    generator-bin/protoc --nanopb_out=. myprotocol.proto
+The binary packages for Windows, Linux and Mac OS X should contain all necessary
+dependencies, including Python, python-protobuf library and protoc. If you are
+using a git checkout or a plain source distribution, you will need to install
+Python separately. Once you have Python, you can install the other dependencies
+with `pip install protobuf grpcio-tools`.
 
-However, if you are using a git checkout or a plain source distribution, you
-need to provide your own version of `protoc` and the Google's protobuf library.
-On Linux, the necessary packages are `protobuf-compiler` and `python-protobuf`.
-On Windows, you can either build Google's protobuf library from source (see section below) or use
-one of the binary distributions of it. In either case, if you use a separate
-`protoc`, you need to manually give the path to the nanopb generator to the `protoc-gen-nanopb` 
-plugin, as follows:
-
-    protoc --plugin=protoc-gen-nanopb=nanopb/generator/protoc-gen-nanopb --nanopb_out=. myprotocol.proto
-
-Note that the above `protoc`-based commands are the 1-command versions of a 2-command process, as described in the ["Nanopb: Basic concepts" document under the section "Compiling .proto files for nanopb"](https://jpa.kapsi.fi/nanopb/docs/concepts.html#compiling-proto-files-for-nanopb). Here is the 2-command process:
-
-    protoc -omyprotocol.pb myprotocol.proto
-    python nanopb/generator/nanopb_generator.py myprotocol.pb
-
-
-
-Building [Google's protobuf library](https://github.com/protocolbuffers/protobuf) from source
----------------------------------------------------------------------------------------------
-When building Google's protobuf library from source, be sure to follow both the C++ installation instructions *and* the Python installation instructions, as *both* are required:
-1. [Protobuf's C++ build & installation instructions](https://github.com/protocolbuffers/protobuf/tree/master/src)
-2. [Protobuf's Python build & installation instructions](https://github.com/protocolbuffers/protobuf/tree/master/python)  
-- See additional reading [here](https://github.com/nanopb/nanopb/issues/417#issuecomment-517619517) and [here](https://stackoverflow.com/questions/57367265/how-to-compile-nanopb-proto-file-into-h-and-c-files-using-nanopb-and-protobuf/57367543#57367543).
-
+You can further customize the header generation by creating an `.options` file.
+See [documentation](https://jpa.kapsi.fi/nanopb/docs/concepts.html#modifying-generator-behaviour) for details.
 
 
 Running the tests
@@ -72,7 +54,8 @@ Running the tests
 If you want to perform further development of the nanopb core, or to verify
 its functionality using your compiler and platform, you'll want to run the
 test suite. The build rules for the test suite are implemented using Scons,
-so you need to have that installed (ex: `sudo apt install scons` on Ubuntu). To run the tests:
+so you need to have that installed (ex: `sudo apt install scons` or `pip install scons`).
+To run the tests:
 
     cd tests
     scons
@@ -110,3 +93,16 @@ There exist build rules for several systems:
 And also integration to platform interfaces:
 
 * **Arduino**: http://platformio.org/lib/show/1385/nanopb-arduino
+
+Building nanopb - Using vcpkg
+-----------------------------
+
+You can download and install nanopb using the [vcpkg](https://github.com/Microsoft/vcpkg) dependency manager:
+
+    git clone https://github.com/Microsoft/vcpkg.git
+    cd vcpkg
+    ./bootstrap-vcpkg.sh
+    ./vcpkg integrate install
+    ./vcpkg install nanopb
+
+The nanopb port in vcpkg is kept up to date by Microsoft team members and community contributors. If the version is out of date, please [create an issue or pull request](https://github.com/Microsoft/vcpkg) on the vcpkg repository.

@@ -77,6 +77,7 @@ int main(int argc, char **argv)
         memcpy(alltypes.rep_fbytes[4], "2019", 4);
         
         alltypes.rep_farray[4] = 2040;
+        alltypes.rep_farray2[2] = 2095;
 
         alltypes.req_limits.int32_min  = INT32_MIN;
         alltypes.req_limits.int32_max  = INT32_MAX;
@@ -150,6 +151,9 @@ int main(int argc, char **argv)
         alltypes.which_oneof = AllTypes_oneof_msg1_tag;
         strcpy(alltypes.oneof.oneof_msg1.substuff1, "4059");
         alltypes.oneof.oneof_msg1.substuff2 = 4059;
+
+        alltypes.has_opt_non_zero_based_enum = true;
+        alltypes.opt_non_zero_based_enum = NonZeroBasedEnum_Three;
     }
     
     alltypes.end = 1099;

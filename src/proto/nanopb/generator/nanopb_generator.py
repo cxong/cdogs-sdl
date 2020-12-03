@@ -1,16 +1,18 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # kate: replace-tabs on; indent-width 4;
 
 from __future__ import unicode_literals
 
 '''Generate header file for nanopb from a ProtoBuf FileDescriptorSet.'''
-nanopb_version = "nanopb-0.4.1"
+nanopb_version = "nanopb-0.4.4"
 
 import sys
 import re
 import codecs
 import copy
+import itertools
 import tempfile
+import shutil
 import os
 from functools import reduce
 
@@ -19,8 +21,15 @@ try:
     import google, distutils.util # bbfreeze seems to need these
     import pkg_resources # pyinstaller / protobuf 2.5 seem to need these
     import proto.nanopb_pb2 as nanopb_pb2 # pyinstaller seems to need this
+    import pkg_resources.py2_warn
 except:
     # Don't care, we will error out later if it is actually important.
+    pass
+
+try:
+    # Make sure grpc_tools gets included in binary package if it is available
+    import grpc_tools.protoc
+except:
     pass
 
 try:
@@ -33,7 +42,7 @@ except:
     sys.stderr.write('''
          *************************************************************
          *** Could not import the Google protobuf Python libraries ***
-         *** Try installing package 'python-protobuf' or similar.  ***
+         *** Try installing package 'python3-protobuf' or similar.  ***
          *************************************************************
     ''' + '\n')
     raise
@@ -51,7 +60,7 @@ except TypeError:
          *** Please check the output of the following commands:                   ***
          *** which protoc                                                         ***
          *** protoc --version                                                     ***
-         *** python -c 'import google.protobuf; print(google.protobuf.__file__)'  ***
+         *** python3 -c 'import google.protobuf; print(google.protobuf.__file__)'  ***
          *** If you are not able to find the python protobuf version using the    ***
          *** above command, use this command.                                     ***
          *** pip freeze | grep -i protobuf                                        ***
@@ -70,6 +79,18 @@ except:
          ********************************************************************
     ''' + '\n')
     raise
+
+try:
+    from tempfile import TemporaryDirectory
+except ImportError:
+    class TemporaryDirectory:
+        '''TemporaryDirectory fallback for Python 2'''
+        def __enter__(self):
+            self.dir = tempfile.mkdtemp()
+            return self.dir
+
+        def __exit__(self, *args):
+            shutil.rmtree(self.dir)
 
 # ---------------------------------------------------------------------------
 #                     Generation of single fields
@@ -163,6 +184,11 @@ class Names:
     def __eq__(self, other):
         return isinstance(other, Names) and self.parts == other.parts
 
+    def __lt__(self, other):
+        if not isinstance(other, Names):
+            return NotImplemented
+        return str(self) < str(other)
+
 def names_from_type_name(type_name):
     '''Parse Names() from FieldDescriptorProto type_name'''
     if type_name[0] != '.':
@@ -186,30 +212,38 @@ assert varint_max_size(128) == 2
 class EncodedSize:
     '''Class used to represent the encoded size of a field or a message.
     Consists of a combination of symbolic sizes and integer sizes.'''
-    def __init__(self, value = 0, symbols = []):
+    def __init__(self, value = 0, symbols = [], declarations = [], required_defines = []):
         if isinstance(value, EncodedSize):
             self.value = value.value
             self.symbols = value.symbols
+            self.declarations = value.declarations
+            self.required_defines = value.required_defines
         elif isinstance(value, strtypes + (Names,)):
             self.symbols = [str(value)]
             self.value = 0
+            self.declarations = []
+            self.required_defines = [str(value)]
         else:
             self.value = value
             self.symbols = symbols
+            self.declarations = declarations
+            self.required_defines = required_defines
 
     def __add__(self, other):
         if isinstance(other, int):
-            return EncodedSize(self.value + other, self.symbols)
+            return EncodedSize(self.value + other, self.symbols, self.declarations, self.required_defines)
         elif isinstance(other, strtypes + (Names,)):
-            return EncodedSize(self.value, self.symbols + [str(other)])
+            return EncodedSize(self.value, self.symbols + [str(other)], self.declarations, self.required_defines + [str(other)])
         elif isinstance(other, EncodedSize):
-            return EncodedSize(self.value + other.value, self.symbols + other.symbols)
+            return EncodedSize(self.value + other.value, self.symbols + other.symbols,
+                               self.declarations + other.declarations, self.required_defines + other.required_defines)
         else:
             raise ValueError("Cannot add size: " + repr(other))
 
     def __mul__(self, other):
         if isinstance(other, int):
-            return EncodedSize(self.value * other, [str(other) + '*' + s for s in self.symbols])
+            return EncodedSize(self.value * other, [str(other) + '*' + s for s in self.symbols],
+                               self.declarations, self.required_defines)
         else:
             raise ValueError("Cannot multiply size: " + repr(other))
 
@@ -218,6 +252,19 @@ class EncodedSize:
             return str(self.value)
         else:
             return '(' + str(self.value) + ' + ' + ' + '.join(self.symbols) + ')'
+
+    def get_declarations(self):
+        '''Get any declarations that must appear alongside this encoded size definition,
+        such as helper union {} types.'''
+        return '\n'.join(self.declarations)
+
+    def get_cpp_guard(self, local_defines):
+        '''Get an #if preprocessor statement listing all defines that are required for this definition.'''
+        needed = [x for x in self.required_defines if x not in local_defines]
+        if needed:
+            return '#if ' + ' && '.join(['defined(%s)' % x for x in needed]) + "\n"
+        else:
+            return ''
 
     def upperlimit(self):
         if not self.symbols:
@@ -318,6 +365,9 @@ class FieldMaxSize:
         self.checks.extend(extend.checks)
 
 class Field:
+    macro_x_param = 'X'
+    macro_a_param = 'a'
+
     def __init__(self, struct_name, desc, field_options):
         '''desc is FieldDescriptorProto'''
         self.tag = desc.number
@@ -333,6 +383,8 @@ class Field:
         self.ctype = None
         self.fixed_count = False
         self.callback_datatype = field_options.callback_datatype
+        self.math_include_required = False
+        self.sort_by_tag = field_options.sort_by_tag
 
         if field_options.type == nanopb_pb2.FT_INLINE:
             # Before nanopb-0.3.8, fixed length bytes arrays were specified
@@ -373,7 +425,11 @@ class Field:
                 # In most other protobuf libraries proto3 submessages have
                 # "null" status. For nanopb, that is implemented as has_ field.
                 self.rules = 'OPTIONAL'
+            elif hasattr(desc, "proto3_optional") and desc.proto3_optional:
+                # Protobuf 3.12 introduced optional fields for proto3 syntax
+                self.rules = 'OPTIONAL'
             else:
+                # Proto3 singular fields (without has_field)
                 self.rules = 'SINGULAR'
         elif desc.label == FieldD.LABEL_REQUIRED:
             self.rules = 'REQUIRED'
@@ -413,6 +469,9 @@ class Field:
             self.allocation = 'CALLBACK'
         else:
             raise NotImplementedError(field_options.type)
+
+        if field_options.HasField("type_override"):
+            desc.type = field_options.type_override
 
         # Decide the C data type to use in the struct.
         if desc.type in datatypes:
@@ -462,6 +521,10 @@ class Field:
                 self.pbtype = 'MSG_W_CB'
         else:
             raise NotImplementedError(desc.type)
+
+        if self.default and self.pbtype in ['FLOAT', 'DOUBLE']:
+            if 'inf' in self.default or 'nan' in self.default:
+                self.math_include_required = True
 
     def __lt__(self, other):
         return self.tag < other.tag
@@ -560,11 +623,15 @@ class Field:
                 inner_init = str(self.default) + 'ull'
             elif self.pbtype in ['SFIXED64', 'INT64']:
                 inner_init = str(self.default) + 'll'
-            elif self.pbtype == 'FLOAT':
+            elif self.pbtype in ['FLOAT', 'DOUBLE']:
                 inner_init = str(self.default)
-                if not '.' in inner_init:
+                if 'inf' in inner_init:
+                    inner_init = inner_init.replace('inf', 'INFINITY')
+                elif 'nan' in inner_init:
+                    inner_init = inner_init.replace('nan', 'NAN')
+                elif (not '.' in inner_init) and self.pbtype == 'FLOAT':
                     inner_init += '.0f'
-                else:
+                elif self.pbtype == 'FLOAT':
                     inner_init += 'f'
             else:
                 inner_init = str(self.default)
@@ -620,7 +687,13 @@ class Field:
           else:
             name = '(%s,%s,%s)' % (self.union_name, self.name, self.name)
 
-        return 'X(a, %-9s %-9s %-9s %-16s %3d)' % (self.allocation + ',', self.rules + ',', self.pbtype + ',', name + ',', self.tag)
+        return '%s(%s, %-9s %-9s %-9s %-16s %3d)' % (self.macro_x_param,
+                                                     self.macro_a_param,
+                                                     self.allocation + ',',
+                                                     self.rules + ',',
+                                                     self.pbtype + ',',
+                                                     name + ',',
+                                                     self.tag)
 
     def data_size(self, dependencies):
         '''Return estimated size of this field in the C struct.
@@ -634,9 +707,13 @@ class Field:
             size = 16
         elif self.pbtype in ['MESSAGE', 'MSG_W_CB']:
             if str(self.submsgname) in dependencies:
-                size = dependencies[str(self.submsgname)].data_size(dependencies)
+                other_dependencies = dict(x for x in dependencies.items() if x[0] != str(self.struct_name))
+                size = dependencies[str(self.submsgname)].data_size(other_dependencies)
             else:
                 size = 256 # Message is in other file, this is reasonable guess for most cases
+
+            if self.pbtype == 'MSG_W_CB':
+                size += 16
         elif self.pbtype in ['STRING', 'FIXED_LENGTH_BYTES']:
             size = self.max_size
         elif self.pbtype == 'BYTES':
@@ -670,7 +747,8 @@ class Field:
             encsize = None
             if str(self.submsgname) in dependencies:
                 submsg = dependencies[str(self.submsgname)]
-                encsize = submsg.encoded_size(dependencies)
+                other_dependencies = dict(x for x in dependencies.items() if x[0] != str(self.struct_name))
+                encsize = submsg.encoded_size(other_dependencies)
                 if encsize is not None:
                     # Include submessage length prefix
                     encsize += varint_max_size(encsize.upperlimit())
@@ -822,7 +900,7 @@ class ExtensionField(Field):
 # ---------------------------------------------------------------------------
 
 class OneOf(Field):
-    def __init__(self, struct_name, oneof_desc):
+    def __init__(self, struct_name, oneof_desc, oneof_options):
         self.struct_name = struct_name
         self.name = oneof_desc.name
         self.ctype = 'union'
@@ -831,7 +909,8 @@ class OneOf(Field):
         self.allocation = 'ONEOF'
         self.default = None
         self.rules = 'ONEOF'
-        self.anonymous = False
+        self.anonymous = oneof_options.anonymous_oneof
+        self.sort_by_tag = oneof_options.sort_by_tag
         self.has_msg_cb = False
 
     def add_field(self, field):
@@ -839,7 +918,9 @@ class OneOf(Field):
         field.rules = 'ONEOF'
         field.anonymous = self.anonymous
         self.fields.append(field)
-        self.fields.sort(key = lambda f: f.tag)
+
+        if self.sort_by_tag:
+            self.fields.sort()
 
         if field.pbtype == 'MSG_W_CB':
             self.has_msg_cb = True
@@ -890,32 +971,36 @@ class OneOf(Field):
     def encoded_size(self, dependencies):
         '''Returns the size of the largest oneof field.'''
         largest = 0
-        symbols = []
+        dynamic_sizes = {}
         for f in self.fields:
             size = EncodedSize(f.encoded_size(dependencies))
             if size is None or size.value is None:
                 return None
             elif size.symbols:
-                symbols.append((f.tag, size.symbols[0]))
+                dynamic_sizes[f.tag] = size
             elif size.value > largest:
                 largest = size.value
 
-        if not symbols:
+        if not dynamic_sizes:
             # Simple case, all sizes were known at generator time
-            return largest
+            return EncodedSize(largest)
 
         if largest > 0:
             # Some sizes were known, some were not
-            symbols.insert(0, (0, largest))
+            dynamic_sizes[0] = EncodedSize(largest)
 
-        if len(symbols) == 1:
+        # Couldn't find size for submessage at generation time,
+        # have to rely on macro resolution at compile time.
+        if len(dynamic_sizes) == 1:
             # Only one symbol was needed
-            return EncodedSize(5, [symbols[0][1]])
+            return list(dynamic_sizes.values())[0]
         else:
             # Use sizeof(union{}) construct to find the maximum size of
             # submessages.
-            union_def = ' '.join('char f%d[%s];' % s for s in symbols)
-            return EncodedSize(5, ['sizeof(union{%s})' % union_def])
+            union_name = "%s_%s_size_union" % (self.struct_name, self.name)
+            union_def = 'union %s {%s};\n' % (union_name, ' '.join('char f%d[%s];' % (k, s) for k,s in dynamic_sizes.items()))
+            required_defs = list(itertools.chain.from_iterable(s.required_defines for k,s in dynamic_sizes.items()))
+            return EncodedSize(0, ['sizeof(%s)' % union_name], [union_def], required_defs)
 
     def has_callbacks(self):
         return bool([f for f in self.fields if f.has_callbacks()])
@@ -934,6 +1019,9 @@ class Message:
         self.fields = []
         self.oneofs = {}
         self.desc = desc
+        self.math_include_required = False
+        self.packed = message_options.packed_struct
+        self.descriptorsize = message_options.descriptorsize
 
         if message_options.msgid:
             self.msgid = message_options.msgid
@@ -950,9 +1038,6 @@ class Message:
                     self.callback_function = "%s_callback" % self.name
                     break
 
-        self.packed = message_options.packed_struct
-        self.descriptorsize = message_options.descriptorsize
-
     def load_fields(self, desc, message_options):
         '''Load field list from DescriptorProto'''
 
@@ -966,11 +1051,8 @@ class Message:
                 elif oneof_options.type == nanopb_pb2.FT_IGNORE:
                     pass # No union and skip fields also
                 else:
-                    oneof = OneOf(self.name, f)
-                    if oneof_options.anonymous_oneof:
-                        oneof.anonymous = True
+                    oneof = OneOf(self.name, f, oneof_options)
                     self.oneofs[i] = oneof
-                    self.fields.append(oneof)
         else:
             sys.stderr.write('Note: This Python protobuf library has no OneOf support\n')
 
@@ -979,20 +1061,35 @@ class Message:
             if field_options.type == nanopb_pb2.FT_IGNORE:
                 continue
 
+            if field_options.descriptorsize > self.descriptorsize:
+                self.descriptorsize = field_options.descriptorsize
+
             field = Field(self.name, f, field_options)
-            if (hasattr(f, 'oneof_index') and
-                f.HasField('oneof_index') and
-                f.oneof_index not in no_unions):
-                if f.oneof_index in self.oneofs:
+            if hasattr(f, 'oneof_index') and f.HasField('oneof_index'):
+                if hasattr(f, 'proto3_optional') and f.proto3_optional:
+                    no_unions.append(f.oneof_index)
+
+                if f.oneof_index in no_unions:
+                    self.fields.append(field)
+                elif f.oneof_index in self.oneofs:
                     self.oneofs[f.oneof_index].add_field(field)
+
+                    if self.oneofs[f.oneof_index] not in self.fields:
+                        self.fields.append(self.oneofs[f.oneof_index])
             else:
                 self.fields.append(field)
+
+            if field.math_include_required:
+                self.math_include_required = True
 
         if len(desc.extension_range) > 0:
             field_options = get_nanopb_suboptions(desc, message_options, self.name + 'extensions')
             range_start = min([r.start for r in desc.extension_range])
             if field_options.type != nanopb_pb2.FT_IGNORE:
                 self.fields.append(ExtensionRange(self.name, range_start, field_options))
+
+        if message_options.sort_by_tag:
+            self.fields.sort()
 
     def get_dependencies(self):
         '''Get list of type names that this structure refers to.'''
@@ -1009,7 +1106,7 @@ class Message:
             # Therefore add a dummy field if an empty message occurs.
             result += '    char dummy_field;'
 
-        result += '\n'.join([str(f) for f in sorted(self.fields)])
+        result += '\n'.join([str(f) for f in self.fields])
 
         if Globals.protoc_insertion_points:
             result += '\n/* @@protoc_insertion_point(struct:%s) */' % self.name
@@ -1035,7 +1132,7 @@ class Message:
             return '{0}'
 
         parts = []
-        for field in sorted(self.fields):
+        for field in self.fields:
             parts.append(field.get_initializer(null_init))
         return '{' + ', '.join(parts) + '}'
 
@@ -1077,7 +1174,16 @@ class Message:
 
     def fields_declaration(self, dependencies):
         '''Return X-macro declaration of all fields in this message.'''
-        result = '#define %s_FIELDLIST(X, a) \\\n' % (self.name)
+        Field.macro_x_param = 'X'
+        Field.macro_a_param = 'a'
+        while any(field.name == Field.macro_x_param for field in self.all_fields()):
+            Field.macro_x_param += '_'
+        while any(field.name == Field.macro_a_param for field in self.all_fields()):
+            Field.macro_a_param += '_'
+
+        result = '#define %s_FIELDLIST(%s, %s) \\\n' % (self.name,
+                                                        Field.macro_x_param,
+                                                        Field.macro_a_param)
         result += ' \\\n'.join(field.fieldlist() for field in sorted(self.fields))
         result += '\n'
 
@@ -1180,32 +1286,50 @@ class Message:
             return b''
 
         optional_only = copy.deepcopy(self.desc)
-        enums = {}
 
         # Remove fields without default values
         # The iteration is done in reverse order to avoid remove() messing up iteration.
         for field in reversed(list(optional_only.field)):
+            field.ClearField(str('extendee'))
             parsed_field = self.field_for_tag(field.number)
             if parsed_field is None or parsed_field.allocation != 'STATIC':
                 optional_only.field.remove(field)
             elif (field.label == FieldD.LABEL_REPEATED or
-                  field.type == FieldD.TYPE_MESSAGE or
-                  not field.HasField('default_value')):
+                  field.type == FieldD.TYPE_MESSAGE):
                 optional_only.field.remove(field)
             elif hasattr(field, 'oneof_index') and field.HasField('oneof_index'):
                 optional_only.field.remove(field)
             elif field.type == FieldD.TYPE_ENUM:
                 # The partial descriptor doesn't include the enum type
                 # so we fake it with int64.
-                enums[field.name] = (names_from_type_name(field.type_name), field.default_value)
-                field.type = FieldD.TYPE_INT64
-                field.ClearField(str('default_value'))
-                field.ClearField(str('type_name'))
+                enumname = names_from_type_name(field.type_name)
+                try:
+                    enumtype = dependencies[str(enumname)]
+                except KeyError:
+                    raise Exception("Could not find enum type %s while generating default values for %s.\n" % (enumname, self.name)
+                                    + "Try passing all source files to generator at once, or use -I option.")
+
+                if field.HasField('default_value'):
+                    defvals = [v for n,v in enumtype.values if n.parts[-1] == field.default_value]
+                else:
+                    # If no default is specified, the default is the first value.
+                    defvals = [v for n,v in enumtype.values]
+                if defvals and defvals[0] != 0:
+                    field.type = FieldD.TYPE_INT64
+                    field.default_value = str(defvals[0])
+                    field.ClearField(str('type_name'))
+                else:
+                    optional_only.field.remove(field)
+            elif not field.HasField('default_value'):
+                optional_only.field.remove(field)
 
         if len(optional_only.field) == 0:
             return b''
 
         optional_only.ClearField(str('oneof_decl'))
+        optional_only.ClearField(str('nested_type'))
+        optional_only.ClearField(str('extension'))
+        optional_only.ClearField(str('enum_type'))
         desc = google.protobuf.descriptor.MakeDescriptor(optional_only)
         msg = reflection.MakeClass(desc)()
 
@@ -1218,14 +1342,6 @@ class Message:
                 setattr(msg, field.name, float(field.default_value))
             elif field.type == FieldD.TYPE_BOOL:
                 setattr(msg, field.name, field.default_value == 'true')
-            elif field.name in enums:
-                # Lookup the enum default value
-                enumname = enums[field.name][0]
-                defval = enums[field.name][1]
-                enumtype = dependencies[str(enumname)]
-                defvals = [v for n,v in enumtype.values if n.parts[-1] == defval]
-                if defvals:
-                    setattr(msg, field.name, defvals[0])
             else:
                 setattr(msg, field.name, int(field.default_value))
 
@@ -1311,7 +1427,12 @@ class ProtoFile:
         self.fdesc = fdesc
         self.file_options = file_options
         self.dependencies = {}
+        self.math_include_required = False
         self.parse()
+        for message in self.messages:
+            if message.math_include_required:
+                self.math_include_required = True
+                break
 
         # Some of types used in this file probably come from the file itself.
         # Thus it has implicit dependency on itself.
@@ -1339,28 +1460,26 @@ class ProtoFile:
 
 
         def create_name(names):
-            if mangle_names == nanopb_pb2.M_NONE or mangle_names == nanopb_pb2.M_PACKAGE_INITIALS:
+            if mangle_names in (nanopb_pb2.M_NONE, nanopb_pb2.M_PACKAGE_INITIALS):
                 return base_name + names
-            elif mangle_names == nanopb_pb2.M_STRIP_PACKAGE:
+            if mangle_names == nanopb_pb2.M_STRIP_PACKAGE:
                 return Names(names)
-            else:
-                single_name = names
-                if isinstance(names, Names):
-                    single_name = names.parts[-1]
-                return Names(single_name)
+            single_name = names
+            if isinstance(names, Names):
+                single_name = names.parts[-1]
+            return Names(single_name)
 
         def mangle_field_typename(typename):
             if mangle_names == nanopb_pb2.M_FLATTEN:
                 return "." + typename.split(".")[-1]
-            elif strip_prefix is not None and typename.startswith(strip_prefix):
+            if strip_prefix is not None and typename.startswith(strip_prefix):
                 if replacement_prefix is not None:
                     return "." + replacement_prefix + typename[len(strip_prefix):]
                 else:
                     return typename[len(strip_prefix):]
-            elif self.file_options.package:
+            if self.file_options.package:
                 return "." + replacement_prefix + typename
-            else:
-                return typename
+            return typename
 
         if replacement_prefix is not None:
             base_name = Names(replacement_prefix.split('.'))
@@ -1416,7 +1535,7 @@ class ProtoFile:
         for enum in other.enums:
             if not enum.options.long_names:
                 for message in self.messages:
-                    for field in message.fields:
+                    for field in message.all_fields():
                         if field.default in enum.value_longnames:
                             idx = enum.value_longnames.index(field.default)
                             field.default = enum.values[idx][0]
@@ -1425,7 +1544,7 @@ class ProtoFile:
         for enum in other.enums:
             if not enum.has_negative():
                 for message in self.messages:
-                    for field in message.fields:
+                    for field in message.all_fields():
                         if field.pbtype == 'ENUM' and field.ctype == enum.names:
                             field.pbtype = 'UENUM'
 
@@ -1446,6 +1565,8 @@ class ProtoFile:
             symbol = make_identifier(headername)
         yield '#ifndef PB_%s_INCLUDED\n' % symbol
         yield '#define PB_%s_INCLUDED\n' % symbol
+        if self.math_include_required:
+            yield '#include <math.h>\n'
         try:
             yield options.libformat % ('pb.h')
         except TypeError:
@@ -1454,8 +1575,12 @@ class ProtoFile:
         yield '\n'
 
         for incfile in self.file_options.include:
-            yield options.genformat % incfile
-            yield '\n'
+            # allow including system headers
+            if (incfile.startswith('<')):
+                yield '#include %s\n' % incfile
+            else:
+                yield options.genformat % incfile
+                yield '\n'
 
         for incfile in includes:
             noext = os.path.splitext(incfile)[0]
@@ -1471,10 +1596,6 @@ class ProtoFile:
         yield '#error Regenerate this file with the current version of nanopb generator.\n'
         yield '#endif\n'
         yield '\n'
-
-        yield '#ifdef __cplusplus\n'
-        yield 'extern "C" {\n'
-        yield '#endif\n\n'
 
         if self.enums:
             yield '/* Enum definitions */\n'
@@ -1499,6 +1620,10 @@ class ProtoFile:
                 for enum in self.enums:
                     yield enum.auxiliary_defines() + '\n'
                 yield '\n'
+
+        yield '#ifdef __cplusplus\n'
+        yield 'extern "C" {\n'
+        yield '#endif\n\n'
 
         if self.messages:
             yield '/* Initializer values for message structs */\n'
@@ -1531,11 +1656,21 @@ class ProtoFile:
             yield '\n'
 
             yield '/* Maximum encoded size of messages (where known) */\n'
+            messagesizes = []
             for msg in self.messages:
-                msize = msg.encoded_size(self.dependencies)
                 identifier = '%s_size' % msg.name
+                messagesizes.append((identifier, msg.encoded_size(self.dependencies)))
+
+            # If we require a symbol from another file, put a preprocessor if statement
+            # around it to prevent compilation errors if the symbol is not actually available.
+            local_defines = [identifier for identifier, msize in messagesizes if msize is not None]
+            for identifier, msize in messagesizes:
                 if msize is not None:
+                    cpp_guard = msize.get_cpp_guard(local_defines)
+                    yield cpp_guard
+                    yield msize.get_declarations()
                     yield '#define %-40s %s\n' % (identifier, msize)
+                    if cpp_guard: yield "#endif\n"
                 else:
                     yield '/* %s depends on runtime parameters */\n' % identifier
             yield '\n'
@@ -1628,7 +1763,7 @@ class ProtoFile:
         # Add check for sizeof(double)
         has_double = False
         for msg in self.messages:
-            for field in msg.fields:
+            for field in msg.all_fields():
                 if field.ctype == 'double':
                     has_double = True
 
@@ -1673,7 +1808,7 @@ def read_options_file(infile):
             sys.stderr.write("%s:%d: " % (infile.name, i + 1) +
                              "Option lines should have space between field name and options. " +
                              "Skipping line: '%s'\n" % line)
-            continue
+            sys.exit(1)
 
         opts = nanopb_pb2.NanoPBOptions()
 
@@ -1683,7 +1818,7 @@ def read_options_file(infile):
             sys.stderr.write("%s:%d: " % (infile.name, i + 1) +
                              "Unparseable option line: '%s'. " % line +
                              "Error: %s\n" % str(e))
-            continue
+            sys.exit(1)
         results.append((parts[0], opts))
 
     return results
@@ -1738,6 +1873,8 @@ optparser = OptionParser(
     usage = "Usage: nanopb_generator.py [options] file.pb ...",
     epilog = "Compile file.pb from file.proto by: 'protoc -ofile.pb file.proto'. " +
              "Output will be written to file.pb.h and file.pb.c.")
+optparser.add_option("--version", dest="version", action="store_true",
+    help="Show version info and exit")
 optparser.add_option("-x", dest="exclude", metavar="FILE", action="append", default=[],
     help="Exclude file from generated #include list.")
 optparser.add_option("-e", "--extension", dest="extension", metavar="EXTENSION", default=".pb",
@@ -1754,7 +1891,7 @@ optparser.add_option("-I", "--options-path", dest="options_path", metavar="DIR",
 optparser.add_option("--error-on-unmatched", dest="error_on_unmatched", action="store_true", default=False,
                      help ="Stop generation if there are unmatched fields in options file")
 optparser.add_option("--no-error-on-unmatched", dest="error_on_unmatched", action="store_false", default=False,
-                     help ="Continue generation if there are unmatched fields in options file")
+                     help ="Continue generation if there are unmatched fields in options file (default)")
 optparser.add_option("-D", "--output-dir", dest="output_dir",
                      metavar="OUTPUTDIR", default=None,
                      help="Output directory of .pb.h and .pb.c files")
@@ -1887,6 +2024,10 @@ def main_cli():
 
     options, filenames = optparser.parse_args()
 
+    if options.version:
+        print(nanopb_version)
+        sys.exit(0)
+
     if not filenames:
         optparser.print_help()
         sys.exit(1)
@@ -1900,6 +2041,7 @@ def main_cli():
         sys.exit(1)
 
     if options.verbose:
+        sys.stderr.write("Nanopb version %s\n" % nanopb_version)
         sys.stderr.write('Google Python protobuf library imported from %s, version %s\n'
                          % (google.protobuf.__file__, google.protobuf.__version__))
 
@@ -1908,13 +2050,15 @@ def main_cli():
     include_path = ['-I%s' % p for p in options.options_path]
     for filename in filenames:
         if filename.endswith(".proto"):
-            with tempfile.NamedTemporaryFile(suffix = ".pb") as tmp:
-                invoke_protoc(["protoc"] + include_path + ['-o' + tmp.name, filename])
-                data = tmp.read()
+            with TemporaryDirectory() as tmpdir:
+                tmpname = os.path.join(tmpdir, os.path.basename(filename) + ".pb")
+                status = invoke_protoc(["protoc"] + include_path + ['--include_imports', '-o' + tmpname, filename])
+                if status != 0: sys.exit(status)
+                data = open(tmpname, 'rb').read()
         else:
             data = open(filename, 'rb').read()
 
-        fdesc = descriptor.FileDescriptorSet.FromString(data).file[0]
+        fdesc = descriptor.FileDescriptorSet.FromString(data).file[-1]
         fdescs[fdesc.name] = fdesc
 
     # Process any include files first, in order to have them
@@ -1939,6 +2083,10 @@ def main_cli():
             sys.stderr.write("Writing to %s\n" % paths)
 
         for path, data in to_write:
+            dirname = os.path.dirname(path)
+            if dirname and not os.path.exists(dirname):
+                os.makedirs(dirname)
+
             with open(path, 'w') as f:
                 f.write(data)
 
@@ -1986,9 +2134,14 @@ def main_plugin():
 
     options, dummy = optparser.parse_args(args)
 
+    if options.version:
+        sys.stderr.write('%s\n' % (nanopb_version))
+        sys.exit(0)
+
     Globals.verbose_options = options.verbose
 
     if options.verbose:
+        sys.stderr.write("Nanopb version %s\n" % nanopb_version)
         sys.stderr.write('Google Python protobuf library imported from %s, version %s\n'
                          % (google.protobuf.__file__, google.protobuf.__version__))
 
@@ -2018,6 +2171,9 @@ def main_plugin():
                 f = response.file.add()
                 f.name = results['sourcename']
                 f.content = results['sourcedata']
+
+    if hasattr(plugin_pb2.CodeGeneratorResponse, "FEATURE_PROTO3_OPTIONAL"):
+        response.supported_features = plugin_pb2.CodeGeneratorResponse.FEATURE_PROTO3_OPTIONAL
 
     io.open(sys.stdout.fileno(), "wb").write(response.SerializeToString())
 

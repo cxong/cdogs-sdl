@@ -65,6 +65,7 @@ int main(int argc, char **argv)
     EmptyMessage rep_emptymsg[5]  = {{0}, {0}, {0}, {0}, {0}};
     pb_byte_t   rep_fbytes[5][4]  = {{0}, {0}, {0}, {0}, {'2', '0', '1', '9'}};
     int32_t     rep_farray[5]     = {0, 0, 0, 0, 2040};
+    uint32_t    rep_farray2[3]    = {0, 0, 2095};
 
     /* Values for optional fields */
     int32_t     opt_int32         = 3041;
@@ -90,6 +91,8 @@ int main(int argc, char **argv)
 
     static int32_t oneof_substuff = 4059;
     SubMessage  oneof_msg1        = {"4059", &oneof_substuff};
+
+    NonZeroBasedEnum opt_non_zero_based_enum = NonZeroBasedEnum_Three;
 
     /* Values for the Limits message. */
     static int32_t  int32_min  = INT32_MIN;
@@ -171,6 +174,7 @@ int main(int argc, char **argv)
     alltypes.rep_emptymsg_count = 5; alltypes.rep_emptymsg  = rep_emptymsg;
     alltypes.rep_fbytes_count   = 5; alltypes.rep_fbytes    = rep_fbytes;
     alltypes.rep_farray = &rep_farray;
+    alltypes.rep_farray2 = &rep_farray2;
     
     if (mode != 0)
     {
@@ -197,6 +201,8 @@ int main(int argc, char **argv)
 
         alltypes.which_oneof = AllTypes_oneof_msg1_tag;
         alltypes.oneof.oneof_msg1 = &oneof_msg1;
+
+        alltypes.opt_non_zero_based_enum = &opt_non_zero_based_enum;
     }
     
     alltypes.end = &end;

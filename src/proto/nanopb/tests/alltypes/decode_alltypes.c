@@ -86,6 +86,7 @@ bool check_alltypes(pb_istream_t *stream, int mode)
         TEST(memcmp(alltypes.rep_fbytes[4], "2019", 4) == 0);
 
         TEST(alltypes.rep_farray[0] == 0 && alltypes.rep_farray[4] == 2040);
+        TEST(alltypes.rep_farray2[0] == 0 && alltypes.rep_farray2[2] == 2095);
 
         TEST(alltypes.req_limits.int32_min  == INT32_MIN);
         TEST(alltypes.req_limits.int32_max  == INT32_MAX);
@@ -158,6 +159,9 @@ bool check_alltypes(pb_istream_t *stream, int mode)
         TEST(memcmp(alltypes.opt_fbytes, "4059", 4) == 0);
 
         TEST(alltypes.which_oneof == 0);
+
+        TEST(alltypes.has_opt_non_zero_based_enum == false);
+        TEST(alltypes.opt_non_zero_based_enum == NonZeroBasedEnum_Two);
     }
     else if (mode == 1)
     {
@@ -209,6 +213,9 @@ bool check_alltypes(pb_istream_t *stream, int mode)
         TEST(alltypes.which_oneof == AllTypes_oneof_msg1_tag);
         TEST(strcmp(alltypes.oneof.oneof_msg1.substuff1, "4059") == 0);
         TEST(alltypes.oneof.oneof_msg1.substuff2 == 4059);
+
+        TEST(alltypes.has_opt_non_zero_based_enum == true);
+        TEST(alltypes.opt_non_zero_based_enum == NonZeroBasedEnum_Three);
     }
     else if (mode == 2)
     {
@@ -285,6 +292,8 @@ bool check_alltypes(pb_istream_t *stream, int mode)
         TEST(alltypes.has_opt_fbytes == false);
 
         TEST(alltypes.which_oneof == 0);
+
+        TEST(alltypes.has_opt_non_zero_based_enum == false);
     }
     
     TEST(alltypes.end == 1099);
