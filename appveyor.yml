@@ -13,6 +13,7 @@ matrix:
   fast_finish: true
 environment:
   CTEST_OUTPUT_ON_FAILURE: 1
+  PYTHON: "C:\\Python39-x64"
   SDL2_VERSION: 2.0.10
   SDL2_IMAGE_VERSION: 2.0.5
   SDL2_MIXER_VERSION: 2.0.4
@@ -20,6 +21,7 @@ environment:
   VERSION: 0.10.1
 
 install:
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - cd C:\Tools\vcpkg
   - git pull
   - .\bootstrap-vcpkg.bat

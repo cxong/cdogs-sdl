@@ -4,6 +4,7 @@ It will automatically detect your platform and C compiler and
 build appropriately.
 
 You can modify the behavious using following options:
+BUILDDIR    Directory to build into (default "build")
 CC          Name of C compiler
 CXX         Name of C++ compiler
 CCFLAGS     Flags to pass to the C compiler
@@ -14,20 +15,40 @@ LINKLIBS    Flags to pass to linker after object files
 PROTOC      Path to protoc binary
 PROTOCFLAGS Arguments to pass protoc
 NODEFARGS   Do not add the default CCFLAGS
+NOVALGRIND  Do not use valgrind for memory checks
 
 For example, for a clang build, use:
 scons CC=clang CXX=clang++
 ''')
 
 import os
-env = Environment(ENV = os.environ, tools = ['default', 'nanopb'])
-env.SConsignFile("build/sconsign")
-env.Replace(CONFIGUREDIR = "build/config")
+import platform
+env = Environment(ENV = os.environ)
 
-if ARGUMENTS.get('PLATFORM') == 'STM32':
-    set_stm32_platform(env)
-elif ARGUMENTS.get('PLATFORM') == 'AVR':
-    set_avr_platform(env)
+# Allow giving environment flags on command line.
+list_vars = ['CCFLAGS', 'CXXFLAGS', 'LINKFLAGS', 'LINKLIBS', 'PROTOCFLAGS']
+for var,val in ARGUMENTS.items():
+    if var in list_vars:
+        env.Append(**{var: val})
+    else:
+        env.Replace(**{var: val})
+
+env.SetDefault(BUILDDIR = "build")
+env.SConsignFile(env['BUILDDIR'] + "/sconsign")
+env.Replace(CONFIGUREDIR = env['BUILDDIR'] + "/config")
+
+# If a cross compilation platform is given, apply the environment settings
+# from site_scons/platforms/X/X.py
+if ARGUMENTS.get('PLATFORM'):
+    platform_func = platforms.get(ARGUMENTS.get('PLATFORM'))
+    if not platform_func:
+        print("Supported platforms: " + str(platforms.keys()))
+        raise Exception("Unsupported platform: " + ARGUMENTS.get('PLATFORM'))
+    else:
+        platform_func(env)
+
+# Load nanopb generator build rules from site_scons/site_tools/nanopb.py
+env.Tool("nanopb")
 
 # Limit memory usage. This is to catch problems like issue #338
 try:
@@ -37,17 +58,10 @@ try:
 except:
     pass
 
-# Allow overriding the compiler with scons CC=???
-if 'CC' in ARGUMENTS: env.Replace(CC = ARGUMENTS['CC'])
-if 'CXX' in ARGUMENTS: env.Replace(CXX = ARGUMENTS['CXX'])
-if 'LINK' in ARGUMENTS: env.Replace(LINK = ARGUMENTS['LINK'])
-if 'CCFLAGS' in ARGUMENTS: env.Append(CCFLAGS = ARGUMENTS['CCFLAGS'])
-if 'CXXFLAGS' in ARGUMENTS: env.Append(CXXFLAGS = ARGUMENTS['CXXFLAGS'])
-if 'LINKFLAGS' in ARGUMENTS: env.Append(LINKFLAGS = ARGUMENTS['LINKFLAGS'])
-if 'LINKLIBS' in ARGUMENTS: env.Append(LINKLIBS = ARGUMENTS['LINKLIBS'])
-if 'PROTOC' in ARGUMENTS: env.Replace(PROTOC = ARGUMENTS['PROTOC'])
-if 'PROTOCFLAGS' in ARGUMENTS: env.Replace(PROTOCFLAGS = ARGUMENTS['PROTOCFLAGS'])
-if 'NODEFARGS' in ARGUMENTS: env.Replace(NODEFARGS = ARGUMENTS['NODEFARGS'])
+# On Mac OS X, gcc is usually alias for clang.
+# To avoid problem with default options, use clang directly.
+if platform.system() == "Darwin" and 'CC' not in ARGUMENTS:
+    env.Replace(CC = "clang", CXX = "clang++")
 
 # Add the builders defined in site_init.py
 add_nanopb_builders(env)
@@ -78,10 +92,12 @@ if not env.GetOption('clean'):
         status, output = context.TryAction('$PROTOC --version > $TARGET')
         if status:
             context.Result(str(output.strip()))
+            return str(output.strip())
         else:
             context.Display("error: %s\n" % output.strip())
             context.did_show_result = 1
-            context.Result("3.6.1") # Assumption
+            context.Result("unknown, assuming 3.6.1")
+            return "3.6.1"
 
     conf = Configure(env, custom_tests =
                      {'CheckCCFLAGS': check_ccflags,
@@ -193,7 +209,7 @@ if not env.get('NODEFARGS'):
 
 env.SetDefault(CORECFLAGS = '')
 
-if not env.get("EMBEDDED"):
+if not env.get("EMBEDDED") and not env.get("NOVALGRIND"):
     valgrind = env.WhereIs('valgrind')
     if valgrind:
         env.SetDefault(VALGRIND = valgrind)
@@ -204,7 +220,7 @@ env.Replace(LINKCOM = env['LINKCOM'] + " $LINKLIBS")
 
 # Place build files under separate folder
 import os.path
-env['VARIANT_DIR'] = 'build'
+env['VARIANT_DIR'] = env['BUILDDIR']
 env['BUILD'] = '#' + env['VARIANT_DIR']
 env['COMMON'] = '#' + env['VARIANT_DIR'] + '/common'
 

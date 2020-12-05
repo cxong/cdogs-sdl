@@ -33,11 +33,26 @@
 #endif
 static size_t g_bufsize = FUZZTEST_BUFSIZE;
 
+/* Focusing on a single test case at a time improves fuzzing performance.
+ * If no test case is specified, enable all tests.
+ */
+#if !defined(FUZZTEST_PROTO2_STATIC) && \
+    !defined(FUZZTEST_PROTO3_STATIC) && \
+    !defined(FUZZTEST_PROTO2_POINTER) && \
+    !defined(FUZZTEST_PROTO3_POINTER) && \
+    !defined(FUZZTEST_IO_ERRORS)
+#define FUZZTEST_PROTO2_STATIC
+#define FUZZTEST_PROTO3_STATIC
+#define FUZZTEST_PROTO2_POINTER
+#define FUZZTEST_PROTO3_POINTER
+#define FUZZTEST_IO_ERRORS
+#endif
+
 static uint32_t xor32_checksum(const void *data, size_t len)
 {
     const uint8_t *buf = (const uint8_t*)data;
     uint32_t checksum = 1234;
-    while (len--)
+    for (; len > 0; len--)
     {
         checksum ^= checksum << 13;
         checksum ^= checksum >> 17;
@@ -56,6 +71,7 @@ static bool do_decode(const uint8_t *buffer, size_t msglen, size_t structsize, c
     void *msg = malloc_with_check(structsize);
     alltypes_static_TestExtension extmsg = alltypes_static_TestExtension_init_zero;
     pb_extension_t ext = pb_extension_init_zero;
+    assert(msg);
 
     memset(msg, 0, structsize);
     ext.type = &alltypes_static_TestExtension_testextension;
@@ -99,6 +115,7 @@ static bool do_stream_decode(const uint8_t *buffer, size_t msglen, size_t fail_a
     flakystream_t stream;
     size_t initial_alloc_count = get_alloc_count();
     void *msg = malloc_with_check(structsize);
+    assert(msg);
 
     memset(msg, 0, structsize);
     flakystream_init(&stream, buffer, msglen, fail_after);
@@ -126,22 +143,27 @@ static int g_sentinel;
 
 static bool field_callback(pb_istream_t *stream, const pb_field_t *field, void **arg)
 {
+    assert(stream);
+    assert(field);
     assert(*arg == &g_sentinel);
     return pb_read(stream, NULL, stream->bytes_left);
 }
 
 static bool submsg_callback(pb_istream_t *stream, const pb_field_t *field, void **arg)
 {
+    assert(stream);
+    assert(field);
     assert(*arg == &g_sentinel);
     return true;
 }
 
-static bool do_callback_decode(const uint8_t *buffer, size_t msglen, bool assert_success)
+bool do_callback_decode(const uint8_t *buffer, size_t msglen, bool assert_success)
 {
     bool status;
     pb_istream_t stream;
     size_t initial_alloc_count = get_alloc_count();
     alltypes_callback_AllTypes *msg = malloc_with_check(sizeof(alltypes_callback_AllTypes));
+    assert(msg);
 
     memset(msg, 0, sizeof(alltypes_callback_AllTypes));
     stream = pb_istream_from_buffer(buffer, msglen);
@@ -173,7 +195,7 @@ static bool do_callback_decode(const uint8_t *buffer, size_t msglen, bool assert
 }
 
 /* Do a decode -> encode -> decode -> encode roundtrip */
-static void do_roundtrip(const uint8_t *buffer, size_t msglen, size_t structsize, const pb_msgdesc_t *msgtype)
+void do_roundtrip(const uint8_t *buffer, size_t msglen, size_t structsize, const pb_msgdesc_t *msgtype)
 {
     bool status;
     uint32_t checksum2, checksum3;
@@ -188,6 +210,8 @@ static void do_roundtrip(const uint8_t *buffer, size_t msglen, size_t structsize
     ext.type = &alltypes_static_TestExtension_testextension;
     ext.dest = &extmsg;
     ext.next = NULL;
+
+    assert(buf2 && msg);
 
     if (msgtype == alltypes_static_AllTypes_fields)
     {
@@ -215,8 +239,15 @@ static void do_roundtrip(const uint8_t *buffer, size_t msglen, size_t structsize
     {
         pb_ostream_t stream = pb_ostream_from_buffer(buf2, g_bufsize);
         status = pb_encode(&stream, msgtype, msg);
-        if (!status) fprintf(stderr, "pb_encode: %s\n", PB_GET_ERROR(&stream));
-        assert(status);
+
+        /* Some messages expand when re-encoding and might no longer fit
+         * in the buffer. */
+        if (!status && strcmp(PB_GET_ERROR(&stream), "stream full") != 0)
+        {
+            fprintf(stderr, "pb_encode: %s\n", PB_GET_ERROR(&stream));
+            assert(status);
+        }
+
         msglen2 = stream.bytes_written;
         checksum2 = xor32_checksum(buf2, msglen2);
     }
@@ -224,6 +255,7 @@ static void do_roundtrip(const uint8_t *buffer, size_t msglen, size_t structsize
     pb_release(msgtype, msg);
 
     /* Then decode from canonical format and re-encode. Result should remain the same. */
+    if (status)
     {
         pb_istream_t stream = pb_istream_from_buffer(buf2, msglen2);
         memset(msg, 0, structsize);
@@ -235,6 +267,7 @@ static void do_roundtrip(const uint8_t *buffer, size_t msglen, size_t structsize
         validate_message(msg, structsize, msgtype);
     }
     
+    if (status)
     {
         pb_ostream_t stream = pb_ostream_from_buffer(buf2, g_bufsize);
         status = pb_encode(&stream, msgtype, msg);
@@ -242,74 +275,75 @@ static void do_roundtrip(const uint8_t *buffer, size_t msglen, size_t structsize
         assert(status);
         msglen3 = stream.bytes_written;
         checksum3 = xor32_checksum(buf2, msglen3);
+
+        assert(msglen2 == msglen3);
+        assert(checksum2 == checksum3);
     }
-    
-    assert(msglen2 == msglen3);
-    assert(checksum2 == checksum3);
     
     pb_release(msgtype, msg);
     free_with_check(msg);
     free_with_check(buf2);
 }
 
+/* Run all enabled test cases for a given input */
 void do_roundtrips(const uint8_t *data, size_t size, bool expect_valid)
 {
     size_t initial_alloc_count = get_alloc_count();
-    size_t orig_max_alloc_bytes = get_max_alloc_bytes();
+    PB_UNUSED(expect_valid); /* Potentially unused depending on configuration */
 
-    /* Check decoding as static fields */
+#ifdef FUZZTEST_PROTO2_STATIC
     if (do_decode(data, size, sizeof(alltypes_static_AllTypes), alltypes_static_AllTypes_fields, 0, expect_valid))
     {
-        /* Any message that is decodeable as proto2 should be decodeable as proto3 */
         do_roundtrip(data, size, sizeof(alltypes_static_AllTypes), alltypes_static_AllTypes_fields);
-        do_roundtrip(data, size, sizeof(alltypes_proto3_static_AllTypes), alltypes_proto3_static_AllTypes_fields);
-
-        /* Test successful decoding also when using a stream */
         do_stream_decode(data, size, SIZE_MAX, sizeof(alltypes_static_AllTypes), alltypes_static_AllTypes_fields, true);
-        do_stream_decode(data, size, SIZE_MAX, sizeof(alltypes_proto3_static_AllTypes), alltypes_proto3_static_AllTypes_fields, true);
-
-        /* Test callbacks */
         do_callback_decode(data, size, true);
     }
-    else if (do_decode(data, size, sizeof(alltypes_proto3_static_AllTypes), alltypes_proto3_static_AllTypes_fields, 0, expect_valid))
+#endif
+
+#ifdef FUZZTEST_PROTO3_STATIC
+    if (do_decode(data, size, sizeof(alltypes_proto3_static_AllTypes), alltypes_proto3_static_AllTypes_fields, 0, expect_valid))
     {
         do_roundtrip(data, size, sizeof(alltypes_proto3_static_AllTypes), alltypes_proto3_static_AllTypes_fields);
+        do_stream_decode(data, size, SIZE_MAX, sizeof(alltypes_proto3_static_AllTypes), alltypes_proto3_static_AllTypes_fields, true);
     }
+#endif
 
-    /* Check decoding as pointer fields */
+#ifdef FUZZTEST_PROTO2_POINTER
     if (do_decode(data, size, sizeof(alltypes_pointer_AllTypes), alltypes_pointer_AllTypes_fields, 0, expect_valid))
     {
         do_roundtrip(data, size, sizeof(alltypes_pointer_AllTypes), alltypes_pointer_AllTypes_fields);
-        do_roundtrip(data, size, sizeof(alltypes_proto3_pointer_AllTypes), alltypes_proto3_pointer_AllTypes_fields);
-
-        /* Test successful decoding also when using a stream */
         do_stream_decode(data, size, SIZE_MAX, sizeof(alltypes_pointer_AllTypes), alltypes_pointer_AllTypes_fields, true);
-        do_stream_decode(data, size, SIZE_MAX, sizeof(alltypes_proto3_pointer_AllTypes), alltypes_proto3_pointer_AllTypes_fields, true);
     }
-    else if (do_decode(data, size, sizeof(alltypes_proto3_pointer_AllTypes), alltypes_proto3_pointer_AllTypes_fields, 0, expect_valid))
+#endif
+
+#ifdef FUZZTEST_PROTO3_POINTER
+    if (do_decode(data, size, sizeof(alltypes_proto3_pointer_AllTypes), alltypes_proto3_pointer_AllTypes_fields, 0, expect_valid))
     {
         do_roundtrip(data, size, sizeof(alltypes_proto3_pointer_AllTypes), alltypes_proto3_pointer_AllTypes_fields);
+        do_stream_decode(data, size, SIZE_MAX, sizeof(alltypes_proto3_pointer_AllTypes), alltypes_proto3_pointer_AllTypes_fields, true);
     }
-    
-    /* Test decoding when memory size is limited */
-    set_max_alloc_bytes(get_alloc_bytes() + 1024);
-    do_decode(data, size, sizeof(alltypes_pointer_AllTypes), alltypes_pointer_AllTypes_fields, 0, false);
-    do_decode(data, size, sizeof(alltypes_proto3_pointer_AllTypes), alltypes_proto3_pointer_AllTypes_fields, 0, false);
-    set_max_alloc_bytes(orig_max_alloc_bytes);
+#endif
 
-    /* Test decoding on a failing stream */
-    do_stream_decode(data, size, size - 16, sizeof(alltypes_static_AllTypes), alltypes_static_AllTypes_fields, false);
-    do_stream_decode(data, size, size - 16, sizeof(alltypes_proto3_static_AllTypes), alltypes_proto3_static_AllTypes_fields, false);
-    do_stream_decode(data, size, size - 16, sizeof(alltypes_pointer_AllTypes), alltypes_pointer_AllTypes_fields, false);
-    do_stream_decode(data, size, size - 16, sizeof(alltypes_proto3_pointer_AllTypes), alltypes_proto3_pointer_AllTypes_fields, false);
+#ifdef FUZZTEST_IO_ERRORS
+    {
+        size_t orig_max_alloc_bytes = get_max_alloc_bytes();
+        /* Test decoding when error conditions occur.
+         * The decoding will end either when running out of memory or when stream returns IO error.
+         * Testing proto2 is enough for good coverage here, as it has a superset of the field types of proto3.
+         */
+        set_max_alloc_bytes(get_alloc_bytes() + 4096);
+        do_stream_decode(data, size, size - 16, sizeof(alltypes_static_AllTypes), alltypes_static_AllTypes_fields, false);
+        do_stream_decode(data, size, size - 16, sizeof(alltypes_pointer_AllTypes), alltypes_pointer_AllTypes_fields, false);
+        set_max_alloc_bytes(orig_max_alloc_bytes);
+    }
 
     /* Test pb_decode_ex() modes */
-    do_decode(data, size, sizeof(alltypes_static_AllTypes), alltypes_static_AllTypes_fields, PB_DECODE_NOINIT, false);
-    do_decode(data, size, sizeof(alltypes_static_AllTypes), alltypes_static_AllTypes_fields, PB_DECODE_DELIMITED, false);
+    do_decode(data, size, sizeof(alltypes_static_AllTypes), alltypes_static_AllTypes_fields, PB_DECODE_NOINIT | PB_DECODE_DELIMITED, false);
     do_decode(data, size, sizeof(alltypes_static_AllTypes), alltypes_static_AllTypes_fields, PB_DECODE_NULLTERMINATED, false);
 
     /* Test callbacks also when message is not valid */
     do_callback_decode(data, size, false);
+#endif
 
     assert(get_alloc_count() == initial_alloc_count);
 }
@@ -317,12 +351,7 @@ void do_roundtrips(const uint8_t *data, size_t size, bool expect_valid)
 /* Fuzzer stub for Google OSSFuzz integration */
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-    /* In some cases, when we re-encode input it can expand close to 2x.
-     * This is because 0xFFFFFFFF in int32 is decoded as -1, but the
-     * canonical encoding for it is 0xFFFFFFFFFFFFFFFF.
-     * Thus we reserve double the space for intermediate buffers.
-     */
-    if (size > g_bufsize / 2)
+    if (size > g_bufsize)
         return 0;
 
     do_roundtrips(data, size, false);
@@ -421,7 +450,7 @@ int main(int argc, char **argv)
         buffer = malloc_with_check(g_bufsize);
 
         SET_BINARY_MODE(stdin);
-        msglen = fread(buffer, 1, g_bufsize/2, stdin);
+        msglen = fread(buffer, 1, g_bufsize, stdin);
         LLVMFuzzerTestOneInput(buffer, msglen);
 
         if (!feof(stdin))

@@ -11,6 +11,10 @@
 #include "alltypes_static.pb.h"
 #include "random_data.h"
 
+#ifndef FUZZTEST_BUFSIZE
+#define FUZZTEST_BUFSIZE 4096
+#endif
+
 /* Check that size/count fields do not exceed their max size.
  * Otherwise we would have to loop pretty long in generate_message().
  * Note that there may still be a few encoding errors from submessages.
@@ -48,7 +52,7 @@ static void generate_message()
     alltypes_static_TestExtension extmsg = alltypes_static_TestExtension_init_zero;
     pb_extension_t ext = pb_extension_init_zero;
 
-    uint8_t buf[4096];
+    static uint8_t buf[FUZZTEST_BUFSIZE];
     pb_ostream_t stream = {0};
     
     do {
@@ -77,8 +81,6 @@ int main(int argc, char **argv)
 
     random_set_seed(atol(argv[1]));
 
-    fprintf(stderr, "Random seed: %u\n", (unsigned)random_get_seed());
-    
     generate_message();
     
     return 0;

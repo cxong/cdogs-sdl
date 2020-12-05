@@ -20,7 +20,7 @@ before_install:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then unzip protoc-3.12.3-linux-x86_64.zip; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo mv bin/protoc /usr/bin; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo mv include/* /usr/local/include; fi
-- pip install protobuf
+- python3 -m pip install protobuf
 
 install:
 # /usr/bin/gcc points to an older compiler on both Linux and macOS.

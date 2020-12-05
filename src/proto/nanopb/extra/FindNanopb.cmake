@@ -21,6 +21,9 @@
 #
 #   NANOPB_GENERATE_CPP_APPEND_PATH - By default -I will be passed to protoc
 #                                     for each directory where a proto file is referenced.
+#                                     This causes all output files to go directly
+#                                     under build directory, instead of mirroring
+#                                     relative paths of source directories.
 #                                     Set to FALSE if you want to disable this behaviour.
 #
 # Defines the following variables:
@@ -146,7 +149,7 @@ function(NANOPB_GENERATE_CPP SRCS HDRS)
 
   list(REMOVE_DUPLICATES _nanopb_include_path)
 
-  set(GENERATOR_PATH ${CMAKE_BINARY_DIR}/nanopb/generator)
+  set(GENERATOR_PATH ${CMAKE_CURRENT_BINARY_DIR}/nanopb/generator)
 
   set(NANOPB_GENERATOR_EXECUTABLE ${GENERATOR_PATH}/nanopb_generator.py)
   if (CMAKE_HOST_WIN32)
@@ -216,15 +219,15 @@ function(NANOPB_GENERATE_CPP SRCS HDRS)
     set(NANOPB_OPTIONS_DIRS)
 
     # If there an options file in the same working directory, set it as a dependency
-    set(NANOPB_OPTIONS_FILE ${CMAKE_CURRENT_SOURCE_DIR}/${FIL_DIR}/${FIL_WE}.options)
-    if(EXISTS ${NANOPB_OPTIONS_FILE})
+    get_filename_component(ABS_OPT_FIL ${FIL_DIR}/${FIL_WE}.options ABSOLUTE)
+    if(EXISTS ${ABS_OPT_FIL})
         # Get directory as lookups for dependency options fail if an options
         # file is used. The options is still set as a dependency of the
         # generated source and header.
-        get_filename_component(options_dir ${NANOPB_OPTIONS_FILE} DIRECTORY)
+        get_filename_component(options_dir ${ABS_OPT_FIL} DIRECTORY)
         list(APPEND NANOPB_OPTIONS_DIRS ${options_dir})
     else()
-        set(NANOPB_OPTIONS_FILE)
+        set(ABS_OPT_FIL)
     endif()
 
     # If the dependencies are options files, we need to pass the directories
@@ -249,6 +252,27 @@ function(NANOPB_GENERATE_CPP SRCS HDRS)
         set(NANOPB_PLUGIN_OPTIONS "${NANOPB_PLUGIN_OPTIONS} ${NANOPB_OPTIONS}")
     endif()
 
+    # based on the version of protoc it might be necessary to add "/${FIL_PATH_REL}" currently dealt with in #516
+    set(NANOPB_OUT "${CMAKE_CURRENT_BINARY_DIR}")
+
+    # We need to pass the path to the option files to the nanopb plugin. There are two ways to do it.
+    # - An older hacky one using ':' as option separator in protoc args preventing the ':' to be used in path.
+    # - Or a newer one, using --nanopb_opt which requires a version of protoc >= 3.6
+    # So we will determine which version of protoc we have available and choose accordingly.
+    execute_process(COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} --version OUTPUT_VARIABLE PROTOC_VERSION_STRING OUTPUT_STRIP_TRAILING_WHITESPACE)
+    string(REGEX MATCH "[(0-9)].*.[(0-9)].*.[(0-9)].*" PROTOC_VERSION ${PROTOC_VERSION_STRING})
+
+    if(PROTOC_VERSION VERSION_LESS "3.6.0")
+        #try to use the older way
+        string(REGEX MATCH ":" HAS_COLON_IN_PATH ${NANOPB_PLUGIN_OPTIONS} ${NANOPB_OUT})
+        if(HAS_COLON_IN_PATH)
+          message(FATAL_ERROR "Your path includes a ':' character used as an option separator for nanopb. Upgrade to protoc version >= 3.6.0 or use a different path.")
+        endif()
+        set(NANOPB_OPT_STRING "--nanopb_out=${NANOPB_PLUGIN_OPTIONS}:${NANOPB_OUT}")
+    else()
+      set(NANOPB_OPT_STRING "--nanopb_opt=${NANOPB_PLUGIN_OPTIONS}" "--nanopb_out=${NANOPB_OUT}")
+    endif()
+
     add_custom_command(
       OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${FIL_PATH_REL}/${FIL_WE}.pb.c"
              "${CMAKE_CURRENT_BINARY_DIR}/${FIL_PATH_REL}/${FIL_WE}.pb.h"
@@ -256,10 +280,10 @@ function(NANOPB_GENERATE_CPP SRCS HDRS)
       ARGS -I${GENERATOR_PATH} -I${GENERATOR_CORE_DIR}
            -I${CMAKE_CURRENT_BINARY_DIR} ${_nanopb_include_path}
            --plugin=protoc-gen-nanopb=${NANOPB_GENERATOR_PLUGIN}
-           "--nanopb_opt=${NANOPB_PLUGIN_OPTIONS}"
-           "--nanopb_out=${CMAKE_CURRENT_BINARY_DIR}" ${ABS_FIL}
+           ${NANOPB_OPT_STRING}
+           ${ABS_FIL}
       DEPENDS ${ABS_FIL} ${GENERATOR_CORE_PYTHON_SRC}
-           ${NANOPB_OPTIONS_FILE} ${NANOPB_DEPENDS}
+           ${ABS_OPT_FIL} ${NANOPB_DEPENDS}
       COMMENT "Running C++ protocol buffer compiler using nanopb plugin on ${FIL}"
       VERBATIM )
 
@@ -322,6 +346,8 @@ find_program(PROTOBUF_PROTOC_EXECUTABLE
     PATHS
     ${PROTOBUF_SRC_ROOT_FOLDER}/vsprojects/Release
     ${PROTOBUF_SRC_ROOT_FOLDER}/vsprojects/Debug
+    ${NANOPB_SRC_ROOT_FOLDER}/generator-bin
+    ${NANOPB_SRC_ROOT_FOLDER}/generator
 )
 mark_as_advanced(PROTOBUF_PROTOC_EXECUTABLE)
 
@@ -335,10 +361,8 @@ find_path(NANOPB_GENERATOR_SOURCE_DIR
 )
 mark_as_advanced(NANOPB_GENERATOR_SOURCE_DIR)
 
-find_package(PythonInterp REQUIRED)
-
 include(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(NANOPB DEFAULT_MSG
+find_package_handle_standard_args(Nanopb DEFAULT_MSG
   NANOPB_INCLUDE_DIRS
   NANOPB_SRCS NANOPB_HDRS
   NANOPB_GENERATOR_SOURCE_DIR
