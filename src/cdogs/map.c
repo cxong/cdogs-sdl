@@ -259,7 +259,7 @@ static void MapChangeFloor(
 
 bool MapHasExits(const Map *m)
 {
-	return m->exits.size > 0;
+	return m->exits.size > 0 && !IsPVP(gCampaign.Entry.Mode);
 }
 
 // Change the perimeter of tiles around the exit area
