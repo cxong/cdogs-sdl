@@ -36,6 +36,7 @@ static void GetCampaignPath(const CWMapType type, char *buf)
 	{
 	case CWMAPTYPE_WL1:
 		GetDataFilePath(buf, "missions/.wolf3d/WL1.cdogscpn");
+		break;
 	case CWMAPTYPE_WL6:
 		GetDataFilePath(buf, "missions/.wolf3d/WL6.cdogscpn");
 		break;
@@ -135,7 +136,10 @@ int MapWolfScan(const char *filename, char **title, int *numMissions)
 	{
 		goto bail;
 	}
-	*numMissions = map.nLevels;
+	if (numMissions)
+	{
+		*numMissions = map.nLevels;
+	}
 
 bail:
 	CWFree(&map);
@@ -187,6 +191,10 @@ bail:
 
 static void LoadSounds(const SoundDevice *s, const CWolfMap *map)
 {
+	if (!s->isInitialised)
+	{
+		return;
+	}
 	// TODO: load ad lib sounds
 	int err = 0;
 	for (int i = 0; i < map->vswap.nSounds; i++)

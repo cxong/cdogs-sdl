@@ -44,3 +44,5 @@ void CampaignEntryCopy(CampaignEntry *dst, CampaignEntry *src);
 bool CampaignEntryTryLoad(
 	CampaignEntry *entry, const char *path, GameMode mode);
 void CampaignEntryTerminate(CampaignEntry *entry);
+
+bool IsCampaignOK(const char *path, char **buf, int *numMissions);

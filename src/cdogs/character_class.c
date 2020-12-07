@@ -270,7 +270,7 @@ static void LoadCharacterClass(CharacterClass *c, json_t *node)
 	}
 	c->Sprites = StrCharSpriteClass(c->Body);
 
-	c->Sounds = GetString(node, "Sounds");
+	LoadStr(&c->Sounds, node, "Sounds");
 
 	c->BloodColor = colorRed;
 	LoadColor(&c->BloodColor, node, "BloodColor");

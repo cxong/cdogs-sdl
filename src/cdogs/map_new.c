@@ -95,7 +95,10 @@ int MapNewScanJSON(json_t *root, char **title, int *numMissions)
 		err = -1;
 		goto bail;
 	}
-	*title = GetString(root, "Title");
+	if (title)
+	{
+		*title = GetString(root, "Title");
+	}
 	if (numMissions != NULL)
 	{
 		*numMissions = 0;
