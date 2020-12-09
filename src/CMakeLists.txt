@@ -4,12 +4,12 @@ include_directories(
 	${SDL2_INCLUDE_DIRS}
 	${SDL2_IMAGE_INCLUDE_DIRS}
 	${SDL2_MIXER_INCLUDE_DIRS})
-if(NOT "${GCW0}")
+if(BUILD_EDITOR)
 	include_directories(${OPENGL_INCLUDE_DIRS})
 endif()
 
 add_subdirectory(cdogs)
-if(NOT "${GCW0}")
+if(BUILD_EDITOR)
 	add_subdirectory(cdogsed)
 endif()
 add_subdirectory(json)
@@ -82,7 +82,7 @@ if(GCW0)
 	)
 endif()
 
-if(NOT "${GCW0}")
+if(BUILD_EDITOR)
   add_executable(cdogs-sdl-editor cdogsed/cdogsed.c ${CDOGS_SDL_EXTRA})
   if(APPLE)
   	set_target_properties(cdogs-sdl-editor PROPERTIES
