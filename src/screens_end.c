@@ -1,27 +1,27 @@
 /*
-    Copyright (c) 2013-2017 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2017, 2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "screens_end.h"
 
@@ -31,7 +31,6 @@
 
 #include "hiscores.h"
 #include "menu_utils.h"
-
 
 // All ending screens will be drawn in a table/list format, with each player
 // on a row. This is to support any number of players, since there could be
@@ -54,13 +53,13 @@ typedef struct
 	bool showWinners;
 	bool showLastMan;
 	// Store player UIDs so we can display the list in a certain order
-	CArray playerUIDs;	// of int
+	CArray playerUIDs; // of int
 } PlayerList;
 static int ComparePlayerScores(const void *v1, const void *v2);
 static PlayerList *PlayerListNew(
 	GameLoopResult (*updateFunc)(GameLoopData *, LoopRunner *),
-	void (*drawFunc)(void *), void *data,
-	const bool hasMenu, const bool showWinners)
+	void (*drawFunc)(void *), void *data, const bool hasMenu,
+	const bool showWinners)
 {
 	PlayerList *pl;
 	CMALLOC(pl, sizeof *pl);
@@ -76,16 +75,14 @@ static PlayerList *PlayerListNew(
 	// Collect all players, then order by score descending
 	int playersAlive = 0;
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-		CArrayPushBack(&pl->playerUIDs, &p->UID);
-		if (p->Lives > 0)
-		{
-			playersAlive++;
-		}
+	CArrayPushBack(&pl->playerUIDs, &p->UID);
+	if (p->Lives > 0)
+	{
+		playersAlive++;
+	}
 	CA_FOREACH_END()
 	qsort(
-		pl->playerUIDs.data,
-		pl->playerUIDs.size,
-		pl->playerUIDs.elemSize,
+		pl->playerUIDs.data, pl->playerUIDs.size, pl->playerUIDs.elemSize,
 		ComparePlayerScores);
 	pl->showLastMan = playersAlive == 1;
 	return pl;
@@ -116,8 +113,8 @@ static int ComparePlayerScores(const void *v1, const void *v2)
 	return 0;
 }
 static void PlayerListCustomDraw(
-	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos, const struct vec2i size,
-	const void *data);
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
+	const struct vec2i size, const void *data);
 static int PlayerListInput(int cmd, void *data);
 static void PlayerListTerminate(GameLoopData *data);
 static void PlayerListOnEnter(GameLoopData *data);
@@ -125,7 +122,8 @@ static void PlayerListOnExit(GameLoopData *data);
 static void PlayerListDraw(GameLoopData *data);
 static GameLoopData *PlayerListLoop(PlayerList *pl)
 {
-	MenuSystemInit(&pl->ms, &gEventHandlers, &gGraphicsDevice, pl->pos, pl->size);
+	MenuSystemInit(
+		&pl->ms, &gEventHandlers, &gGraphicsDevice, pl->pos, pl->size);
 	menu_t *menuScores = MenuCreateCustom(
 		"View Scores", PlayerListCustomDraw, PlayerListInput, pl);
 	if (pl->hasMenu)
@@ -141,8 +139,8 @@ static GameLoopData *PlayerListLoop(PlayerList *pl)
 	pl->ms.allowAborts = true;
 	MenuAddExitType(&pl->ms, MENU_TYPE_RETURN);
 	return GameLoopDataNew(
-		pl, PlayerListTerminate, PlayerListOnEnter, PlayerListOnExit,
-		NULL, pl->updateFunc, PlayerListDraw);
+		pl, PlayerListTerminate, PlayerListOnEnter, PlayerListOnExit, NULL,
+		pl->updateFunc, PlayerListDraw);
 }
 static void PlayerListTerminate(GameLoopData *data)
 {
@@ -178,8 +176,7 @@ static GameLoopResult PlayerListUpdate(GameLoopData *data, LoopRunner *l)
 	const GameLoopResult result = MenuUpdate(&pl->ms);
 	if (result == UPDATE_RESULT_OK)
 	{
-		LoopRunnerChange(
-			l, HighScoresScreen(&gCampaign, &gGraphicsDevice));
+		LoopRunnerChange(l, HighScoresScreen(&gCampaign, &gGraphicsDevice));
 	}
 	return result;
 }
@@ -192,8 +189,8 @@ static void PlayerListDraw(GameLoopData *data)
 static int PlayerListMaxScroll(const PlayerList *pl);
 static int PlayerListMaxRows(const PlayerList *pl);
 static void PlayerListCustomDraw(
-	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos, const struct vec2i size,
-	const void *data)
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
+	const struct vec2i size, const void *data)
 {
 	UNUSED(menu);
 	UNUSED(g);
@@ -214,8 +211,8 @@ static void PlayerListCustomDraw(
 	// Then draw the player list
 	int maxScore = -1;
 	for (int i = pl->scroll;
-		i < MIN((int)pl->playerUIDs.size, pl->scroll + PlayerListMaxRows(pl));
-		i++)
+		 i < MIN((int)pl->playerUIDs.size, pl->scroll + PlayerListMaxRows(pl));
+		 i++)
 	{
 		const int *playerUID = CArrayGet(&pl->playerUIDs, i);
 		PlayerData *p = PlayerDataGetByUID(*playerUID);
@@ -234,8 +231,8 @@ static void PlayerListCustomDraw(
 
 		// Draw the players offset on alternate rows
 		DisplayCharacterAndName(
-			svec2i(x + (i & 1) * 16, y + 4), &p->Char, DIRECTION_DOWN,
-			p->name, textColor);
+			svec2i(x + (i & 1) * 16, y + 4), &p->Char, DIRECTION_DOWN, p->name,
+			textColor);
 
 		// Draw score
 		x += 100;
@@ -254,7 +251,8 @@ static void PlayerListCustomDraw(
 		{
 			FontStrMask("Winner!", svec2i(x, y), colorGreen);
 		}
-		else if (pl->showLastMan && p->Lives > 0 &&
+		else if (
+			pl->showLastMan && p->Lives > 0 &&
 			gCampaign.Entry.Mode == GAME_MODE_DEATHMATCH)
 		{
 			// Only show last man standing on deathmatch mode
@@ -267,13 +265,15 @@ static void PlayerListCustomDraw(
 	// Draw indicator arrows if there's enough to scroll
 	if (pl->scroll > 0)
 	{
-		FontStr("^", svec2i(
-			CENTER_X(pos, size, FontStrW("^")), pos.y + FontH()));
+		FontStr(
+			"^", svec2i(CENTER_X(pos, size, FontStrW("^")), pos.y + FontH()));
 	}
 	if (pl->scroll < PlayerListMaxScroll(pl))
 	{
-		FontStr("v", svec2i(
-			CENTER_X(pos, size, FontStrW("v")), pos.y + size.y - FontH()));
+		FontStr(
+			"v",
+			svec2i(
+				CENTER_X(pos, size, FontStrW("v")), pos.y + size.y - FontH()));
 	}
 
 	// Finally draw any custom stuff
@@ -291,12 +291,12 @@ static int PlayerListInput(int cmd, void *data)
 	// Note: players can leave due to network disconnection
 	// Update our lists
 	CA_FOREACH(const int, playerUID, pl->playerUIDs)
-		const PlayerData *p = PlayerDataGetByUID(*playerUID);
-		if (p == NULL)
-		{
-			CArrayDelete(&pl->playerUIDs, _ca_index);
-			_ca_index--;
-		}
+	const PlayerData *p = PlayerDataGetByUID(*playerUID);
+	if (p == NULL)
+	{
+		CArrayDelete(&pl->playerUIDs, _ca_index);
+		_ca_index--;
+	}
 	CA_FOREACH_END()
 
 	if (cmd == CMD_DOWN)
@@ -327,7 +327,6 @@ static int PlayerListMaxRows(const PlayerList *pl)
 	return (pl->size.y - FontH() * 3) / PLAYER_LIST_ROW_HEIGHT - 2;
 }
 
-
 typedef struct
 {
 	const Campaign *Campaign;
@@ -351,8 +350,7 @@ GameLoopData *ScreenVictory(Campaign *c)
 		"Rambo? Who's Rambo?",
 		"<in Austrian accent:> I'll be back",
 		"Gee, my trigger finger is sore",
-		"I need more practice. I think I missed a few shots at times"
-	};
+		"I need more practice. I think I missed a few shots at times"};
 	const char *finalWordsMulti[] = {
 		"United we stand, divided we conquer",
 		"Nothing like good teamwork, is there?",
@@ -370,8 +368,8 @@ GameLoopData *ScreenVictory(Campaign *c)
 		const int numWords = sizeof finalWordsMulti / sizeof(char *);
 		data->FinalWords = finalWordsMulti[rand() % numWords];
 	}
-	PlayerList *pl = PlayerListNew(
-		PlayerListUpdate, VictoryDraw, data, true, false);
+	PlayerList *pl =
+		PlayerListNew(PlayerListUpdate, VictoryDraw, data, true, false);
 	pl->pos.y = 75;
 	pl->size.y -= pl->pos.y;
 	return PlayerListLoop(pl);
@@ -404,8 +402,22 @@ static void VictoryDraw(void *data)
 static GameLoopResult DogfightScoresUpdate(GameLoopData *data, LoopRunner *l);
 GameLoopData *ScreenDogfightScores(void)
 {
-	PlayerList *pl = PlayerListNew(
-		DogfightScoresUpdate, NULL, NULL, false, false);
+	// Calculate PVP rounds won
+	int maxScore = 0;
+	CA_FOREACH(PlayerData, p, gPlayerDatas)
+	if (IsPlayerAlive(p))
+	{
+		p->Totals.Score++;
+		maxScore = MAX(maxScore, p->Totals.Score);
+	}
+	CA_FOREACH_END()
+	gCampaign.IsComplete = maxScore == ModeMaxRoundsWon(gCampaign.Entry.Mode);
+	CASSERT(
+		maxScore <= ModeMaxRoundsWon(gCampaign.Entry.Mode),
+		"score exceeds max rounds won");
+
+	PlayerList *pl =
+		PlayerListNew(DogfightScoresUpdate, NULL, NULL, false, false);
 	pl->pos.y = 24;
 	pl->size.y -= pl->pos.y;
 	return PlayerListLoop(pl);
@@ -417,19 +429,6 @@ static GameLoopResult DogfightScoresUpdate(GameLoopData *data, LoopRunner *l)
 	const GameLoopResult result = MenuUpdate(&pl->ms);
 	if (result == UPDATE_RESULT_OK)
 	{
-		// Calculate PVP rounds won
-		int maxScore = 0;
-		CA_FOREACH(PlayerData, p, gPlayerDatas)
-			if (IsPlayerAlive(p))
-			{
-				p->Totals.Score++;
-				maxScore = MAX(maxScore, p->Totals.Score);
-			}
-		CA_FOREACH_END()
-		gCampaign.IsComplete =
-			maxScore == ModeMaxRoundsWon(gCampaign.Entry.Mode);
-		CASSERT(maxScore <= ModeMaxRoundsWon(gCampaign.Entry.Mode),
-			"score exceeds max rounds won");
 		if (gCampaign.IsComplete)
 		{
 			LoopRunnerChange(l, ScreenDogfightFinalScores());
