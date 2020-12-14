@@ -34,6 +34,7 @@
 #include "blit.h"
 #include "config.h"
 #include "defs.h"
+#include "log.h"
 
 #define MOUSE_REPEAT_TICKS 150
 #define MOUSE_MOVE_DEAD_ZONE 12
@@ -217,8 +218,7 @@ void MouseSetCursor(Mouse *m, const SDL_SystemCursor sc)
 	SDL_SetCursor(m->cursors[sc]);
 	SDL_ShowCursor(SDL_ENABLE);
 }
-void MouseSetPicCursor(
-	Mouse *m, const Pic *cursor, const Pic *trail)
+void MouseSetPicCursor(Mouse *m, const Pic *cursor, const Pic *trail)
 {
 	if (cursor)
 	{
@@ -229,13 +229,24 @@ void MouseSetPicCursor(
 			gGraphicsDevice.Format->Gmask, gGraphicsDevice.Format->Bmask,
 			0xff000000);
 		m->cursor =
-			SDL_CreateColorCursor(surf, cursor->offset.x, cursor->offset.y);
+			SDL_CreateColorCursor(surf, -cursor->offset.x, -cursor->offset.y);
 		SDL_FreeSurface(surf);
-		SDL_SetCursor(m->cursor);
+		if (m->cursor == NULL)
+		{
+			LOG(LM_MAIN, LL_WARN, "cannot load mouse cursor: %s",
+				SDL_GetError());
+		}
+		else
+		{
+			SDL_SetCursor(m->cursor);
+		}
 	}
 	else
 	{
-		SDL_FreeCursor(m->cursor);
+		if (m->cursor != NULL)
+		{
+			SDL_FreeCursor(m->cursor);
+		}
 		m->cursor = NULL;
 	}
 	m->trail = trail;
