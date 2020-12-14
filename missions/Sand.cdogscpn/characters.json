@@ -54,8 +54,8 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Jones",
-		"HairType": "beret",
+		"Class": "Soldier",
+		"HairType": "peak_cap",
 		"Skin": "ff8136ff",
 		"Arms": "b79536ff",
 		"Body": "b79536ff",

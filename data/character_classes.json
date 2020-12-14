@@ -10,6 +10,15 @@
       "Sounds": "man"
     },
     {
+      "Name": "Soldier",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      },
+      "Body": "soldier",
+      "Sounds": "man"
+    },
+    {
       "Name": "Ogre",
       "HeadPics": {
         "Type": "Directional",
