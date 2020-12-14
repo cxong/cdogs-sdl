@@ -84,6 +84,9 @@ gcw0-toolchain/
 # Appveyor
 dll/
 
+# Mission pack
+missionpack/
+
 # Other
 *.lnk
 *.log

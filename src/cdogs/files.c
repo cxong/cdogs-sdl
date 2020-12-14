@@ -1,61 +1,61 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin
-    Copyright (C) 2003-2007 Lucas Martin-King
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (C) 1995 Ronny Wester
+	Copyright (C) 2003 Jeremy Chin
+	Copyright (C) 2003-2007 Lucas Martin-King
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-    This file incorporates work covered by the following copyright and
-    permission notice:
+	This file incorporates work covered by the following copyright and
+	permission notice:
 
-    Copyright (c) 2013-2016, 2018-2019 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2016, 2018-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "files.h"
 
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <SDL.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "door.h"
 #include "log.h"
@@ -66,8 +66,8 @@
 
 #define MAX_STRING_LEN 1000
 
-#define CAMPAIGN_MAGIC    690304
-#define CAMPAIGN_VERSION  6
+#define CAMPAIGN_MAGIC 690304
+#define CAMPAIGN_VERSION 6
 
 #if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
 static const int bendian = 1;
@@ -75,7 +75,7 @@ static const int bendian = 1;
 static const int bendian = 0;
 #endif
 
-void swap32 (void *d)
+void swap32(void *d)
 {
 	if (bendian)
 	{
@@ -91,14 +91,15 @@ size_t f_read(FILE *f, void *buf, size_t size)
 size_t f_read32(FILE *f, void *buf, size_t size)
 {
 	size_t ret = 0;
-	if (buf) {
+	if (buf)
+	{
 		ret = f_read(f, buf, size);
 		swap32((int *)buf);
 	}
 	return ret;
 }
 
-void swap16 (void *d)
+void swap16(void *d)
 {
 	if (bendian)
 	{
@@ -127,7 +128,6 @@ int fwrite32(FILE *f, void *buf)
 	return 1;
 }
 
-
 int IsCampaignOldFile(const char *filename)
 {
 	int32_t i;
@@ -152,13 +152,15 @@ int ScanCampaignOld(const char *filename, char **title, int *missions)
 	{
 		f_read32(f, &i, sizeof(i));
 
-		if (i != CAMPAIGN_MAGIC) {
+		if (i != CAMPAIGN_MAGIC)
+		{
 			fclose(f);
 			return -1;
 		}
 
 		f_read32(f, &i, sizeof(i));
-		if (i != CAMPAIGN_VERSION) {
+		if (i != CAMPAIGN_VERSION)
+		{
 			fclose(f);
 			return -1;
 		}
@@ -178,7 +180,12 @@ int ScanCampaignOld(const char *filename, char **title, int *missions)
 	return -1;
 }
 
-#define R32(v) { int32_t _n; f_read32(f, &_n, sizeof _n); (v) = _n; }
+#define R32(v)                                                                \
+	{                                                                         \
+		int32_t _n;                                                           \
+		f_read32(f, &_n, sizeof _n);                                          \
+		(v) = _n;                                                             \
+	}
 
 static void load_mission_objective(FILE *f, struct MissionObjectiveOld *o)
 {
@@ -204,34 +211,44 @@ static void load_mission(FILE *f, struct MissionOld *m)
 	R32(m->keyStyle);
 	R32(m->doorStyle);
 
-	R32(m->mapWidth); R32(m->mapHeight);
-	R32(m->wallCount); R32(m->wallLength);
+	R32(m->mapWidth);
+	R32(m->mapHeight);
+	R32(m->wallCount);
+	R32(m->wallLength);
 	R32(m->roomCount);
 	R32(m->squareCount);
 
-	R32(m->exitLeft); R32(m->exitTop); R32(m->exitRight); R32(m->exitBottom);
+	R32(m->exitLeft);
+	R32(m->exitTop);
+	R32(m->exitRight);
+	R32(m->exitBottom);
 
 	R32(m->objectiveCount);
 
-	for (i = 0; i < OBJECTIVE_MAX; i++) {
+	for (i = 0; i < OBJECTIVE_MAX; i++)
+	{
 		load_mission_objective(f, &m->objectives[i]);
 	}
 
 	R32(m->baddieCount);
-	for (i = 0; i < BADDIE_MAX; i++) {
+	for (i = 0; i < BADDIE_MAX; i++)
+	{
 		f_read32(f, &m->baddies[i], sizeof(int));
 	}
 
 	R32(m->specialCount);
-	for (i = 0; i < SPECIAL_MAX; i++) {
+	for (i = 0; i < SPECIAL_MAX; i++)
+	{
 		f_read32(f, &m->specials[i], sizeof(int));
 	}
 
 	R32(m->itemCount);
-	for (i = 0; i < ITEMS_MAX; i++) {
+	for (i = 0; i < ITEMS_MAX; i++)
+	{
 		f_read32(f, &m->items[i], sizeof(int));
 	}
-	for (i = 0; i < ITEMS_MAX; i++) {
+	for (i = 0; i < ITEMS_MAX; i++)
+	{
 		f_read32(f, &m->itemDensity[i], sizeof(int));
 	}
 
@@ -247,26 +264,10 @@ static void load_mission(FILE *f, struct MissionOld *m)
 	R32(m->altRange);
 }
 
-
 // Taken from the 5th colour in the old ColorShades
 // See original character.c
-static unsigned char cShadePalettes[] =
-{
-	56,
-	6,
-	72,
-	88,
-	104,
-	120,
-	136,
-	36,
-	40,
-	45,
-	148,
-	8,
-	1,
-	20
-};
+static unsigned char cShadePalettes[] = {56, 6,	 72, 88,  104, 120, 136,
+										 36, 40, 45, 148, 8,   1,	20};
 void ConvertCharacterColors(
 	const int skin, const int arm, const int body, const int leg,
 	const int hair, CharColors *c)
@@ -285,7 +286,7 @@ void ConvertCharacterColors(
 // default "hair" colour based on the head type
 void ConvertHairColors(Character *ch)
 {
-	const color_t darkRed = { 0xC0, 0, 0, 0xFF };
+	const color_t darkRed = {0xC0, 0, 0, 0xFF};
 	if (strcmp(ch->Class->Name, "Cyborg") == 0)
 	{
 		// eye
@@ -352,8 +353,7 @@ void ConvertCharacter(Character *c, TBadGuy *b)
 	c->maxHealth = b->health;
 	c->flags = b->flags;
 }
-static void ConvertObjective(
-	Objective *dest, struct MissionObjectiveOld *src)
+static void ConvertObjective(Objective *dest, struct MissionObjectiveOld *src)
 {
 	CSTRDUP(dest->Description, src->description);
 	dest->Type = src->type;
@@ -428,23 +428,26 @@ static void ConvertMission(
 		}
 	}
 	strcpy(dest->Song, src->song);
-	const color_t maskAlt = RangeToColor(abs(src->altRange) % COLORRANGE_COUNT);
+	const color_t maskAlt =
+		RangeToColor(abs(src->altRange) % COLORRANGE_COUNT);
 
 	TileClassInit(
 		&dest->u.Classic.TileClasses.Wall, &gPicManager, &gTileWall,
-		IntWallStyle(src->wallStyle), NULL,
+		IntWallStyle(src->wallStyle), TileClassBaseStyleType(TILE_CLASS_WALL),
 		RangeToColor(abs(src->wallRange) % COLORRANGE_COUNT), maskAlt);
 	TileClassInit(
 		&dest->u.Classic.TileClasses.Floor, &gPicManager, &gTileFloor,
-		IntFloorStyle(src->floorStyle), NULL,
+		IntFloorStyle(src->floorStyle),
+		TileClassBaseStyleType(TILE_CLASS_FLOOR),
 		RangeToColor(abs(src->floorRange) % COLORRANGE_COUNT), maskAlt);
 	TileClassInit(
 		&dest->u.Classic.TileClasses.Room, &gPicManager, &gTileRoom,
-		IntRoomStyle(src->roomStyle), NULL,
+		IntRoomStyle(src->roomStyle), TileClassBaseStyleType(TILE_CLASS_FLOOR),
 		RangeToColor(abs(src->roomRange) % COLORRANGE_COUNT), maskAlt);
 	TileClassInit(
 		&dest->u.Classic.TileClasses.Door, &gPicManager, &gTileDoor,
-		IntDoorStyle(src->doorStyle), NULL, colorWhite, colorWhite);
+		IntDoorStyle(src->doorStyle), TileClassBaseStyleType(TILE_CLASS_DOOR),
+		colorWhite, colorWhite);
 	dest->u.Classic.Walls = src->wallCount;
 	dest->u.Classic.WallLength = src->wallLength;
 	dest->u.Classic.CorridorWidth = 1;
@@ -517,8 +520,7 @@ int LoadCampaignOld(const char *filename, CampaignSettingOld *setting)
 
 	f_read32(f, &setting->missionCount, sizeof(int32_t));
 	CCALLOC(
-		setting->missions,
-		setting->missionCount * sizeof *setting->missions);
+		setting->missions, setting->missionCount * sizeof *setting->missions);
 	for (i = 0; i < setting->missionCount; i++)
 	{
 		load_mission(f, &setting->missions[i]);
@@ -552,7 +554,7 @@ char *cdogs_homepath = NULL;
 const char *GetHomeDirectory(void)
 {
 #ifdef __EMSCRIPTEN__
-    return "/persistent_data/";
+	return "/persistent_data/";
 #endif
 
 	const char *p;
@@ -578,14 +580,14 @@ const char *GetHomeDirectory(void)
 		return cdogs_homepath;
 	}
 
-	fprintf(stderr,"%s%s%s%s",
-	"##############################################################\n",
-	"# You don't have the environment variables HOME or USER set. #\n",
-	"# It is suggested you get a better shell. :D                 #\n",
-	"##############################################################\n");
+	fprintf(
+		stderr, "%s%s%s%s",
+		"##############################################################\n",
+		"# You don't have the environment variables HOME or USER set. #\n",
+		"# It is suggested you get a better shell. :D                 #\n",
+		"##############################################################\n");
 	return "";
 }
-
 
 /* GetConfigFilePath()
  *
@@ -616,16 +618,14 @@ static bool doMkdir(const char *path)
 	(void)e;
 	// Mac OS X 10.4 returns EISDIR instead of EEXIST
 	// if a dir already exists...
-	return
-		errno == EEXIST ||
-		errno == EISDIR ||
-		errno == EACCES;
+	return errno == EEXIST || errno == EISDIR || errno == EACCES;
 }
 bool mkdir_deep(const char *path)
 {
 	for (int i = 0; i < (int)strlen(path); i++)
 	{
-		if (path[i] == '\0') break;
+		if (path[i] == '\0')
+			break;
 		if (path[i] == '/')
 		{
 			char buf[CDOGS_PATH_MAX];
@@ -652,57 +652,85 @@ void SetupConfigDir(void)
 
 	if (mkdir_deep(cfg_p))
 	{
-		if (errno != EEXIST) LOG(LM_MAIN, LL_INFO, "Config dir created.");
-		else LOG(LM_MAIN, LL_INFO, "Config dir already exists.");
+		if (errno != EEXIST)
+			LOG(LM_MAIN, LL_INFO, "Config dir created.");
+		else
+			LOG(LM_MAIN, LL_INFO, "Config dir already exists.");
 	}
 	else
 	{
 		switch (errno)
 		{
-			case EACCES:
-				LOG(LM_MAIN, LL_WARN, "Permission denied");
-				break;
-			default:
-				perror("Error creating config directory:");
-				break;
+		case EACCES:
+			LOG(LM_MAIN, LL_WARN, "Permission denied");
+			break;
+		default:
+			perror("Error creating config directory:");
+			break;
 		}
 	}
 
 	return;
 }
 
-
 color_t RangeToColor(const int range)
 {
 	switch (range)
 	{
-	case 0: return colorMaroon;
-	case 1: return colorLonestar;
-	case 2: return colorRusticRed;
-	case 3: return colorOfficeGreen;
-	case 4: return colorPakistanGreen;
-	case 5: return colorDarkFern;
-	case 6: return colorNavyBlue;
-	case 7: return colorArapawa;
-	case 8: return colorStratos;
-	case 9: return colorPatriarch;
-	case 10: return colorPompadour;
-	case 11: return colorLoulou;
-	case 12: return colorBattleshipGrey;
-	case 13: return colorDoveGray;
-	case 14: return colorGravel;
-	case 15: return colorComet;
-	case 16: return colorFiord;
-	case 17: return colorTuna;
-	case 18: return colorHacienda;
-	case 19: return colorKumera;
-	case 20: return colorHimalaya;
-	case 21: return colorChocolate;
-	case 22: return colorNutmeg;
-	case 23: return colorBracken;
-	case 24: return colorTeal;
-	case 25: return colorSkobeloff;
-	case 26: return colorDeepJungleGreen;
+	case 0:
+		return colorMaroon;
+	case 1:
+		return colorLonestar;
+	case 2:
+		return colorRusticRed;
+	case 3:
+		return colorOfficeGreen;
+	case 4:
+		return colorPakistanGreen;
+	case 5:
+		return colorDarkFern;
+	case 6:
+		return colorNavyBlue;
+	case 7:
+		return colorArapawa;
+	case 8:
+		return colorStratos;
+	case 9:
+		return colorPatriarch;
+	case 10:
+		return colorPompadour;
+	case 11:
+		return colorLoulou;
+	case 12:
+		return colorBattleshipGrey;
+	case 13:
+		return colorDoveGray;
+	case 14:
+		return colorGravel;
+	case 15:
+		return colorComet;
+	case 16:
+		return colorFiord;
+	case 17:
+		return colorTuna;
+	case 18:
+		return colorHacienda;
+	case 19:
+		return colorKumera;
+	case 20:
+		return colorHimalaya;
+	case 21:
+		return colorChocolate;
+	case 22:
+		return colorNutmeg;
+	case 23:
+		return colorBracken;
+	case 24:
+		return colorTeal;
+	case 25:
+		return colorSkobeloff;
+	case 26:
+		return colorDeepJungleGreen;
 	default:
 		CASSERT(false, "unknown colour range");
 		return colorBlack;
