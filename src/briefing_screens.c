@@ -283,7 +283,7 @@ static GameLoopResult MissionBriefingUpdate(GameLoopData *data, LoopRunner *l)
 {
 	MissionBriefingData *mData = data->Data;
 
-	if (!IsMissionBriefingNeeded(gCampaign.Entry.Mode))
+	if (!IsMissionBriefingNeeded(gCampaign.Entry.Mode, mData->Description))
 	{
 		mData->waitResult = EVENT_WAIT_OK;
 		goto bail;

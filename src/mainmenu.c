@@ -248,12 +248,12 @@ static menu_t *MenuCreateStart(
 		menu, MenuCreateQuickPlay("Quick Play", &campaigns->quickPlayEntry));
 	MenuAddSubmenu(
 		menu, MenuCreateCampaigns(
-				  "Dogfight", "Select a scenario:", &campaigns->dogfightList,
-				  GAME_MODE_DOGFIGHT));
+				  "Dogfight", "Select a dogfight scenario:",
+				  &campaigns->dogfightList, GAME_MODE_DOGFIGHT));
 	MenuAddSubmenu(
 		menu, MenuCreateCampaigns(
-				  "Deathmatch", "Select a scenario:", &campaigns->dogfightList,
-				  GAME_MODE_DEATHMATCH));
+				  "Deathmatch", "Select a deathmatch scenario:",
+				  &campaigns->dogfightList, GAME_MODE_DEATHMATCH));
 	MenuAddSubmenu(
 		menu, CreateJoinLANGame("Join LAN game", "Choose LAN server", ms, l));
 	CheckLANServerData *cdata;

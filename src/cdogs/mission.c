@@ -462,7 +462,7 @@ void MissionBegin(struct MissionOptions *m, const NGameBegin gb)
 		strncat(
 			e.u.SetMessage.Message, musicErrorMsg,
 			sizeof e.u.SetMessage.Message - 1);
-		e.u.SetMessage.Ticks = FPS_FRAMELIMIT * 2;
+		e.u.SetMessage.Ticks = 2000;
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 	m->time = gb.MissionTime;

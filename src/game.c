@@ -278,6 +278,31 @@ static void RunGameOnEnter(GameLoopData *data)
 	NetServerSendGameStartMessages(&gNetServer, NET_SERVER_BCAST);
 	GameEvent start = GameEventNew(GAME_EVENT_GAME_START);
 	GameEventsEnqueue(&gGameEvents, start);
+
+	// Start of mission message
+	GameEvent e = GameEventNew(GAME_EVENT_SET_MESSAGE);
+	if (HasRounds(rData->co->Entry.Mode))
+	{
+		// Display which round it is
+		int totalScores = 0;
+		CA_FOREACH(const PlayerData, p, gPlayerDatas)
+		totalScores += p->Totals.Score;
+		CA_FOREACH_END()
+		sprintf(e.u.SetMessage.Message, "Round %d", totalScores + 1);
+	}
+	else if (IsPVP(rData->co->Entry.Mode))
+	{
+		strcpy(e.u.SetMessage.Message, "Fight!");
+	}
+	else
+	{
+		// Show title of mission
+		strncat(
+			e.u.SetMessage.Message, rData->m->missionData->Title,
+			sizeof e.u.SetMessage.Message - 1);
+	}
+	e.u.SetMessage.Ticks = 3000;
+	GameEventsEnqueue(&gGameEvents, e);
 }
 static void RunGameOnExit(GameLoopData *data)
 {
