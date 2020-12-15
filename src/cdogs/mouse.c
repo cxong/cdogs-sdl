@@ -43,8 +43,6 @@
 void MouseInit(Mouse *mouse)
 {
 	memset(mouse, 0, sizeof *mouse);
-	mouse->ticks = 0;
-	mouse->repeatedTicks = 0;
 	for (SDL_SystemCursor i = SDL_SYSTEM_CURSOR_ARROW;
 		 i < SDL_NUM_SYSTEM_CURSORS; i++)
 	{
@@ -59,6 +57,18 @@ void MouseTerminate(Mouse *m)
 	{
 		SDL_FreeCursor(m->cursors[i]);
 	}
+}
+void MouseReset(Mouse *m)
+{
+	memset(m->previousButtons, 0, sizeof m->previousButtons);
+	memset(m->currentButtons, 0, sizeof m->currentButtons);
+	memset(m->pressedButtons, 0, sizeof m->pressedButtons);
+	m->previousPos = svec2i_zero();
+	m->currentPos = svec2i_zero();
+	m->wheel = svec2i_zero();
+	m->ticks = 0;
+	m->repeatedTicks = 0;
+	m->mouseMovePos = svec2i_zero();
 }
 
 void MousePrePoll(Mouse *mouse)
@@ -250,7 +260,7 @@ void MouseSetPicCursor(Mouse *m, const Pic *cursor, const Pic *trail)
 		m->cursor = NULL;
 	}
 	m->trail = trail;
-	SDL_ShowCursor(cursor != NULL);
+	SDL_ShowCursor(cursor != NULL ? SDL_ENABLE : SDL_DISABLE);
 }
 
 void MouseDraw(const Mouse *mouse)

@@ -57,7 +57,7 @@ void EventReset(EventHandlers *handlers)
 {
 	KeyInit(&handlers->keyboard);
 	JoyReset(&handlers->joysticks);
-	MouseInit(&handlers->mouse);
+	MouseReset(&handlers->mouse);
 }
 
 void EventPoll(

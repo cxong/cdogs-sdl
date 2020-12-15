@@ -54,6 +54,7 @@ typedef struct
 
 void MouseInit(Mouse *mouse);
 void MouseTerminate(Mouse *m);
+void MouseReset(Mouse *m);
 void MousePrePoll(Mouse *mouse);
 void MouseOnButtonDown(Mouse *mouse, Uint8 button);
 void MouseOnButtonUp(Mouse *mouse, Uint8 button);
@@ -70,6 +71,5 @@ struct vec2i MouseWheel(const Mouse *m);
 // Note: also sets whether the mouse trail is drawn, and from where
 int MouseGetMove(Mouse *mouse, const struct vec2i pos);
 void MouseSetCursor(Mouse *m, const SDL_SystemCursor sc);
-void MouseSetPicCursor(
-	Mouse *m, const Pic *cursor, const Pic *trail);
+void MouseSetPicCursor(Mouse *m, const Pic *cursor, const Pic *trail);
 void MouseDraw(const Mouse *mouse);

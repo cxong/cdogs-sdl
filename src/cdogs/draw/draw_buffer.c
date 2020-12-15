@@ -123,17 +123,18 @@ void DrawBufferSetFromMap(
 // Set visibility and draw order for wall/door columns
 void DrawBufferFix(DrawBuffer *buffer)
 {
-	Tile **tile = CArrayGet(&buffer->tiles, 0);
+	int tileIdx = 0;
 	for (int y = 0; y < Y_TILES; y++)
 	{
-		for (int x = 0; x < buffer->Size.x; x++, tile++)
+		for (int x = 0; x < buffer->Size.x; x++, tileIdx++)
 		{
+			Tile **tile = CArrayGet(&buffer->tiles, tileIdx);
 			if (*tile == NULL) continue;
 			const struct vec2i mapTile =
 				svec2i(x + buffer->xStart, y + buffer->yStart);
 			(*tile)->outOfSight = !LOSTileIsVisible(&gMap, mapTile);
 		}
-		tile += X_TILES - buffer->Size.x;
+		tileIdx += X_TILES - buffer->Size.x;
 	}
 }
 
