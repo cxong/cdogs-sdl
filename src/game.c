@@ -814,7 +814,6 @@ static void RunGameDraw(GameLoopData *data)
 		&rData->Camera.HUD, rData->pausingDevice, rData->controllerUnplugged,
 		rData->Camera.NumViews);
 	const bool isMouse = GameIsMouseUsed();
-	SDL_SetRelativeMouseMode(isMouse);
 	if (isMouse)
 	{
 		MouseDraw(&gEventHandlers.mouse);

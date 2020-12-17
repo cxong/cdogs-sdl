@@ -280,7 +280,7 @@ static void DoBuffer(
 	const struct vec2i offset);
 void CameraDraw(Camera *camera, const HUDDrawData drawData)
 {
-	struct vec2i centerOffset = svec2i_zero();
+	const struct vec2i centerOffset = svec2i(-4, -8);
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
 
@@ -346,7 +346,7 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 				GraphicsSetClip(gGraphicsDevice.gameWindow.renderer, clip);
 				if (i == 1)
 				{
-					centerOffsetPlayer.x += w / 2;
+					centerOffsetPlayer.x += w / 2 - centerOffset.x;
 				}
 
 				LOSCalcFrom(&gMap, Vec2ToTile(camera->lastPosition), false);
@@ -381,15 +381,15 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 				GraphicsSetClip(gGraphicsDevice.gameWindow.renderer, clip);
 				if (i & 1)
 				{
-					centerOffsetPlayer.x += w / 2;
+					centerOffsetPlayer.x += w / 2 - centerOffset.x;
 				}
 				if (i < 2)
 				{
-					centerOffsetPlayer.y -= h / 4;
+					centerOffsetPlayer.y -= h / 4 + centerOffset.y;
 				}
 				else
 				{
-					centerOffsetPlayer.y += h / 4;
+					centerOffsetPlayer.y += h / 4 - centerOffset.y;
 				}
 				LOSCalcFrom(&gMap, Vec2ToTile(camera->lastPosition), false);
 				DoBuffer(
