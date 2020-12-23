@@ -274,9 +274,9 @@ menu_t *MenuGetSubmenuByName(menu_t *menu, const char *name)
 int MenuGetNumMenuItemsShown(const menu_t *menu)
 {
 	CASSERT(menu->type == MENU_TYPE_NORMAL, "invalid menu type");
-	return (int)(menu->u.normal.maxItems > 0
-			? MIN(menu->u.normal.maxItems, menu->u.normal.subMenus.size)
-			: menu->u.normal.subMenus.size);
+	return menu->u.normal.maxItems > 0 ? MIN(menu->u.normal.maxItems,
+											 (int)menu->u.normal.subMenus.size)
+									   : (int)menu->u.normal.subMenus.size;
 }
 
 void ShowControls(void)
