@@ -127,6 +127,13 @@ extern bool gFalse;
 	((v) > (_max) ? (_min) : ((v) < (_min) ? (_max) : (v)))
 #define SIGN(x) ((x) != 0 ? (x) / abs(x) : 1)
 #define SQUARED(x) ((x) * (x))
+#define SWAP(x, y, T)                                                         \
+	do                                                                        \
+	{                                                                         \
+		T _tmp = x;                                                           \
+		x = y;                                                                \
+		y = _tmp;                                                             \
+	} while (0)
 
 const char *StrGetFileExt(const char *filename);
 

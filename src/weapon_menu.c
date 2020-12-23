@@ -36,8 +36,8 @@
 #define NO_GUN_LABEL "(None)"
 #define END_MENU_LABEL "(End)"
 
-static void WeaponSetEnabled(
-	menu_t *menu, const WeaponClass *wc, const bool enable)
+static void WeaponSetSelected(
+	menu_t *menu, const WeaponClass *wc, const bool selected)
 {
 	if (wc == NULL)
 	{
@@ -46,7 +46,7 @@ static void WeaponSetEnabled(
 	CA_FOREACH(menu_t, subMenu, menu->u.normal.subMenus)
 	if (strcmp(subMenu->name, wc->name) == 0)
 	{
-		MenuSetDisabled(subMenu, !enable);
+		subMenu->color = selected ? colorYellow : colorWhite;
 		break;
 	}
 	CA_FOREACH_END()
@@ -323,35 +323,36 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 	if (menu->equipping)
 	{
 		MenuProcessCmd(&menu->ms, cmd);
+		menu_t *equipMenu = menu->data.EquipSlot < MAX_GUNS
+								? menu->gunMenu
+								: menu->grenadeMenu;
 		switch (menu->data.SelectResult)
 		{
 		case WEAPON_MENU_NONE:
 			break;
 		case WEAPON_MENU_SELECT:
-			// Enable menu items due to changed equipment
-			if (menu->data.SelectedGun == NULL)
+			// Deselect menu items due to changed equipment
+			WeaponSetSelected(equipMenu, p->guns[menu->data.EquipSlot], false);
+			// See if the selected gun is already equipped; if so swap it with
+			// the current slot
+			for (int i = 0; i < MAX_WEAPONS; i++)
 			{
-				WeaponSetEnabled(
-					menu->data.EquipSlot < MAX_GUNS ? menu->gunMenu
-													: menu->grenadeMenu,
-					menu->data.SelectedGun, true);
+				if (p->guns[i] == menu->data.SelectedGun)
+				{
+					p->guns[i] = p->guns[menu->data.EquipSlot];
+					break;
+				}
 			}
-			WeaponSetEnabled(
-				menu->data.EquipSlot < MAX_GUNS ? menu->gunMenu
-												: menu->grenadeMenu,
-				p->guns[menu->data.EquipSlot], true);
 			p->guns[menu->data.EquipSlot] = menu->data.SelectedGun;
 			// fallthrough
 		case WEAPON_MENU_CANCEL:
 			// Switch back to equip menu
 			menu->equipping = false;
-			// Update menu name based on new weapon equipped
+			// Update menu names based on weapons
 			CA_FOREACH(menu_t, submenu, menu->msEquip.root->u.normal.subMenus)
-			if (submenu->type == MENU_TYPE_RETURN &&
-				submenu->u.returnCode == menu->data.EquipSlot)
+			if (submenu->type == MENU_TYPE_RETURN)
 			{
-				SetEquippedMenuItemName(submenu, p, menu->data.EquipSlot);
-				break;
+				SetEquippedMenuItemName(submenu, p, submenu->u.returnCode);
 			}
 			CA_FOREACH_END()
 			break;
@@ -359,13 +360,10 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 			CASSERT(false, "unhandled case");
 			break;
 		}
-		// Disable menu items where the player already has the weapon
+		// Select menu items where the player already has the weapon
 		for (int i = 0; i < MAX_WEAPONS; i++)
 		{
-			WeaponSetEnabled(
-				menu->data.EquipSlot < MAX_GUNS ? menu->gunMenu
-												: menu->grenadeMenu,
-				p->guns[i], false);
+			WeaponSetSelected(equipMenu, p->guns[i], true);
 		}
 	}
 	else
@@ -383,19 +381,21 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 	}
 
 	// Display the gun/grenade menu based on which submenu is hovered
-	const menu_t *hoveredEquipMenu = CArrayGet(
-		&menu->msEquip.root->u.normal.subMenus,
-		menu->msEquip.root->u.normal.index);
-	if (hoveredEquipMenu->type == MENU_TYPE_RETURN)
+	if (!menu->equipping)
 	{
-		const int equipSlot = hoveredEquipMenu->u.returnCode;
-		menu->ms.current =
-			equipSlot < MAX_GUNS ? menu->gunMenu : menu->grenadeMenu;
-	}
-	else
-	{
-		CASSERT(!menu->equipping, "invalid equip menu state");
-		menu->ms.current = NULL;
+		const menu_t *hoveredEquipMenu = CArrayGet(
+			&menu->msEquip.root->u.normal.subMenus,
+			menu->msEquip.root->u.normal.index);
+		if (hoveredEquipMenu->type == MENU_TYPE_RETURN)
+		{
+			const int equipSlot = hoveredEquipMenu->u.returnCode;
+			menu->ms.current =
+				equipSlot < MAX_GUNS ? menu->gunMenu : menu->grenadeMenu;
+		}
+		else
+		{
+			menu->ms.current = NULL;
+		}
 	}
 
 	// Disable the equip/weapon menus based on equipping state
