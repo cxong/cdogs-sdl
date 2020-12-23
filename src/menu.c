@@ -271,6 +271,14 @@ menu_t *MenuGetSubmenuByName(menu_t *menu, const char *name)
 	return NULL;
 }
 
+int MenuGetNumMenuItemsShown(const menu_t *menu)
+{
+	CASSERT(menu->type == MENU_TYPE_NORMAL, "invalid menu type");
+	return (int)(menu->u.normal.maxItems > 0
+			? MIN(menu->u.normal.maxItems, menu->u.normal.subMenus.size)
+			: menu->u.normal.subMenus.size);
+}
+
 void ShowControls(void)
 {
 	FontOpts opts = FontOptsNew();
@@ -292,23 +300,20 @@ struct vec2i DisplayMenuItem(
 	struct vec2i pos, const char *s, int selected, int isDisabled,
 	color_t color)
 {
-	if (selected)
-	{
-		return FontStrMask(s, pos, colorRed);
-	}
-	else if (isDisabled)
+	if (isDisabled)
 	{
 		color_t dark = {64, 64, 64, 255};
 		return FontStrMask(s, pos, dark);
 	}
-	else if (!ColorEquals(color, colorTransparent))
+	if (selected)
+	{
+		return FontStrMask(s, pos, colorRed);
+	}
+	if (!ColorEquals(color, colorTransparent))
 	{
 		return FontStrMask(s, pos, color);
 	}
-	else
-	{
-		return FontStr(s, pos);
-	}
+	return FontStr(s, pos);
 }
 
 int MenuTypeHasSubMenus(menu_type_e type)
@@ -736,7 +741,9 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 			if (subMenu->type == MENU_TYPE_NORMAL &&
 				subMenu->u.normal.isSubmenusAlt)
 			{
-				snprintf(nameBuf, sizeof(nameBuf), "%s \x10", subMenu->name);
+				snprintf(
+					nameBuf, sizeof(nameBuf), "%s " ARROW_RIGHT,
+					subMenu->name);
 			}
 			else
 			{
@@ -756,11 +763,12 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 				break;
 			}
 
-			const int yNext = DisplayMenuItem(
-								  pos, nameBuf, i == menu->u.normal.index,
-								  subMenu->isDisabled, subMenu->color)
-								  .y +
-							  FontH();
+			const int yNext =
+				DisplayMenuItem(
+					pos, nameBuf, i == menu->u.normal.index,
+					menu->isDisabled || subMenu->isDisabled, subMenu->color)
+					.y +
+				FontH();
 
 			// display option value
 			const int optionInt = MenuOptionGetIntValue(subMenu);
@@ -832,7 +840,7 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 				keyName = SDL_GetScancodeName(sc);
 				if (sc == SDL_SCANCODE_UNKNOWN || keyName == NULL)
 				{
-					keyName = "\x11Unset\x10";
+					keyName = ARROW_LEFT "Unset" ARROW_RIGHT;
 				}
 			}
 			DisplayMenuItem(
@@ -1176,11 +1184,11 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 		MoveIndexToNextEnabledSubmenu(menu, true);
 		MenuPlaySound(MENU_SOUND_SWITCH);
 	}
+	const int nMenuItems = MenuGetNumMenuItemsShown(menu);
 	menu->u.normal.scroll = CLAMP(
-		menu->u.normal.scroll,
-		MAX(0, menu->u.normal.index - menu->u.normal.maxItems + 1),
+		menu->u.normal.scroll, MAX(0, menu->u.normal.index - nMenuItems + 1),
 		MIN((int)menu->u.normal.subMenus.size - 1,
-			menu->u.normal.index + menu->u.normal.maxItems - 1));
+			menu->u.normal.index + nMenuItems - 1));
 	if (menu->u.normal.index < menu->u.normal.scroll)
 	{
 		menu->u.normal.scroll = menu->u.normal.index;

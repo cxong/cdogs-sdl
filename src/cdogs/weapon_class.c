@@ -343,7 +343,6 @@ const WeaponClass *StrWeaponClass(const char *s)
 		return gd;
 	}
 	CA_FOREACH_END()
-	fprintf(stderr, "Cannot parse gun name: %s\n", s);
 	return NULL;
 }
 WeaponClass *IdWeaponClass(const int i)

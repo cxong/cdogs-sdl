@@ -250,7 +250,7 @@ UIObject *CreateAddItemObjs(struct vec2i pos, EditorBrush *brush, Campaign *co)
 	UIObjectAddChild(c, o2);
 	pos.y += th;
 	o2 = UIObjectCopy(o);
-	o2->Label = "Map item \x10";
+	o2->Label = "Map item " ARROW_RIGHT;
 	o2->Pos = pos;
 	UIObjectAddChild(
 		o2, CreateAddMapItemObjs(
@@ -259,7 +259,7 @@ UIObject *CreateAddItemObjs(struct vec2i pos, EditorBrush *brush, Campaign *co)
 	UIObjectAddChild(c, o2);
 	pos.y += th;
 	o2 = UIObjectCopy(o);
-	o2->Label = "Pickup spawner \x10";
+	o2->Label = "Pickup spawner " ARROW_RIGHT;
 	o2->Pos = pos;
 	UIObjectAddChild(
 		o2, CreateAddPickupSpawnerObjs(
@@ -268,19 +268,19 @@ UIObject *CreateAddItemObjs(struct vec2i pos, EditorBrush *brush, Campaign *co)
 	UIObjectAddChild(c, o2);
 	pos.y += th;
 	o2 = UIObjectCopy(o);
-	o2->Label = "Character \x10";
+	o2->Label = "Character " ARROW_RIGHT;
 	o2->Pos = pos;
 	UIObjectAddChild(o2, CreateAddCharacterObjs(o2->Size, brush, co));
 	UIObjectAddChild(c, o2);
 	pos.y += th;
 	o2 = UIObjectCopy(o);
-	o2->Label = "Objective \x10";
+	o2->Label = "Objective " ARROW_RIGHT;
 	o2->Pos = pos;
 	UIObjectAddChild(o2, CreateAddObjectiveObjs(o2->Size, brush, co));
 	UIObjectAddChild(c, o2);
 	pos.y += th;
 	o2 = UIObjectCopy(o);
-	o2->Label = "Key \x10";
+	o2->Label = "Key " ARROW_RIGHT;
 	o2->Pos = pos;
 	UIObjectAddChild(o2, CreateAddKeyObjs(o2->Size, brush));
 	UIObjectAddChild(c, o2);

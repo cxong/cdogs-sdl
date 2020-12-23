@@ -264,6 +264,7 @@ void MenuDisableSubmenu(menu_t *menu, int index);
 void MenuEnableSubmenu(menu_t *menu, int index);
 void MenuSetDisabled(menu_t *menu, const bool isDisabled);
 menu_t *MenuGetSubmenuByName(menu_t *menu, const char *name);
+int MenuGetNumMenuItemsShown(const menu_t *menu);
 
 void ShowControls(void);
 struct vec2i DisplayMenuItem(

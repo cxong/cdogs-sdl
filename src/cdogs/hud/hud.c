@@ -1,29 +1,29 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2017, 2019 Cong Xu
-    All rights reserved.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (c) 2013-2017, 2019-2020 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "hud.h"
 
@@ -45,11 +45,7 @@
 #include "player.h"
 #include "player_hud.h"
 
-
-void HUDInit(
-	HUD *hud,
-	GraphicsDevice *device,
-	struct MissionOptions *mission)
+void HUDInit(HUD *hud, GraphicsDevice *device, struct MissionOptions *mission)
 {
 	memset(hud, 0, sizeof *hud);
 	hud->mission = mission;
@@ -102,16 +98,15 @@ HUDDrawData HUDGetDrawData(void)
 	HUDDrawData drawData;
 	memset(&drawData, 0, sizeof drawData);
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-		if (!IsPlayerScreen(p))
-		{
-			continue;
-		}
-		drawData.Players[drawData.NumScreens] = p;
-		drawData.NumScreens++;
+	if (!IsPlayerScreen(p))
+	{
+		continue;
 	}
-	return drawData;
+	drawData.Players[drawData.NumScreens] = p;
+	drawData.NumScreens++;
 }
-
+return drawData;
+}
 
 static void DrawSharedRadar(GraphicsDevice *device, bool showExit)
 {
@@ -119,12 +114,8 @@ static void DrawSharedRadar(GraphicsDevice *device, bool showExit)
 	struct vec2i pos = svec2i(w / 2 - AUTOMAP_SIZE / 2, AUTOMAP_PADDING);
 	const struct vec2i playerMidpoint = Vec2ToTile(PlayersGetMidpoint());
 	AutomapDrawRegion(
-		device->gameWindow.renderer,
-		&gMap,
-		pos,
-		svec2i(AUTOMAP_SIZE, AUTOMAP_SIZE),
-		playerMidpoint,
-		AUTOMAP_FLAGS_MASK,
+		device->gameWindow.renderer, &gMap, pos,
+		svec2i(AUTOMAP_SIZE, AUTOMAP_SIZE), playerMidpoint, AUTOMAP_FLAGS_MASK,
 		showExit);
 }
 
@@ -193,7 +184,8 @@ static void DrawPlayerAreas(HUD *hud, const int numViews)
 	{
 		// Do nothing
 	}
-	else if (hud->DrawData.NumScreens > 1 &&
+	else if (
+		hud->DrawData.NumScreens > 1 &&
 		ConfigGetEnum(&gConfig, "Interface.Splitscreen") == SPLITSCREEN_NEVER)
 	{
 		flags |= HUDFLAGS_SHARE_SCREEN;
@@ -266,28 +258,28 @@ static void DrawDeathmatchScores(HUD *hud)
 	int maxLives = 0;
 	int maxKills = 0;
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-		maxLives = MAX(maxLives, p->Lives);
-		maxKills = MAX(maxKills, p->Stats.Kills);
+	maxLives = MAX(maxLives, p->Lives);
+	maxKills = MAX(maxKills, p->Stats.Kills);
 	CA_FOREACH_END()
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-		// Player name; red if dead
-		opts.Mask = p->Lives > 0 ? colorWhite : colorRed;
-		opts.Pad.x = nameColumn;
-		FontStrOpt(p->name, svec2i(0, y), opts);
+	// Player name; red if dead
+	opts.Mask = p->Lives > 0 ? colorWhite : colorRed;
+	opts.Pad.x = nameColumn;
+	FontStrOpt(p->name, svec2i(0, y), opts);
 
-		// lives; cyan if most lives
-		opts.Mask = p->Lives == maxLives ? colorCyan : colorWhite;
-		opts.Pad.x = livesColumn;
-		char buf[32];
-		sprintf(buf, "%d", p->Lives);
-		FontStrOpt(buf, svec2i(0, y), opts);
+	// lives; cyan if most lives
+	opts.Mask = p->Lives == maxLives ? colorCyan : colorWhite;
+	opts.Pad.x = livesColumn;
+	char buf[32];
+	sprintf(buf, "%d", p->Lives);
+	FontStrOpt(buf, svec2i(0, y), opts);
 
-		// kills; cyan if most kills
-		opts.Mask = p->Stats.Kills == maxKills ? colorCyan : colorWhite;
-		opts.Pad.x = killsColumn;
-		sprintf(buf, "%d", p->Stats.Kills);
-		FontStrOpt(buf, svec2i(0, y), opts);
-		y += FontH();
+	// kills; cyan if most kills
+	opts.Mask = p->Stats.Kills == maxKills ? colorCyan : colorWhite;
+	opts.Pad.x = killsColumn;
+	sprintf(buf, "%d", p->Stats.Kills);
+	FontStrOpt(buf, svec2i(0, y), opts);
+	y += FontH();
 	CA_FOREACH_END()
 }
 
@@ -301,15 +293,21 @@ static void DrawStateMessage(
 		// Draw a background overlay
 		color_t overlay = colorBlack;
 		overlay.a = 128;
-		DrawRectangle(hud->device, svec2i_zero(), hud->device->cachedConfig.Res, overlay, true);
+		DrawRectangle(
+			hud->device, svec2i_zero(), hud->device->cachedConfig.Res, overlay,
+			true);
 	}
 	if (controllerUnplugged)
 	{
-		struct vec2i pos = svec2i_scale_divide(svec2i_subtract(
-			gGraphicsDevice.cachedConfig.Res,
-			FontStrSize("\x11Paused\x10\nFoobar\nPlease reconnect controller")), 2);
+		struct vec2i pos = svec2i_scale_divide(
+			svec2i_subtract(
+				gGraphicsDevice.cachedConfig.Res,
+				FontStrSize(ARROW_LEFT
+							"Paused" ARROW_RIGHT
+							"\nFoobar\nPlease reconnect controller")),
+			2);
 		const int x = pos.x;
-		FontStr("\x11Paused\x10", pos);
+		FontStr(ARROW_LEFT "Paused" ARROW_RIGHT, pos);
 
 		pos.y += FontH();
 		pos = FontStr("Press ", pos);
@@ -325,11 +323,13 @@ static void DrawStateMessage(
 	}
 	else if (pausingDevice != INPUT_DEVICE_UNSET)
 	{
-		struct vec2i pos = svec2i_scale_divide(svec2i_subtract(
-			gGraphicsDevice.cachedConfig.Res,
-			FontStrSize("Foo\nPress foo or bar to unpause\nBaz")), 2);
+		struct vec2i pos = svec2i_scale_divide(
+			svec2i_subtract(
+				gGraphicsDevice.cachedConfig.Res,
+				FontStrSize("Foo\nPress foo or bar to unpause\nBaz")),
+			2);
 		const int x = pos.x;
-		FontStr("\x11Paused\x10", pos);
+		FontStr(ARROW_LEFT "Paused" ARROW_RIGHT, pos);
 
 		pos.y += FontH();
 		pos = FontStr("Press ", pos);
@@ -388,10 +388,10 @@ static void DrawMissionState(HUD *hud)
 			FontStrCenter("More rescues needed");
 		}
 		break;
-	case MISSION_STATE_PICKUP:
-	{
+	case MISSION_STATE_PICKUP: {
 		int timeLeft = gMission.pickupTime + PICKUP_LIMIT - gMission.time;
-		sprintf(s, "Pickup in %d seconds\n",
+		sprintf(
+			s, "Pickup in %d seconds\n",
 			(timeLeft + (FPS_FRAMELIMIT - 1)) / FPS_FRAMELIMIT);
 		FontStrCenter(s);
 	}
@@ -408,10 +408,9 @@ static void DrawHUDMessage(HUD *hud)
 	{
 		// Draw the message centered, and just below the automap
 		struct vec2i pos = svec2i(
-			(hud->device->cachedConfig.Res.x -
-				FontStrW(hud->message)) / 2,
+			(hud->device->cachedConfig.Res.x - FontStrW(hud->message)) / 2,
 			AUTOMAP_SIZE + AUTOMAP_PADDING + AUTOMAP_PADDING);
-		const HSV tint = { -1.0, 1.0, Pulse256(hud->mission->time) / 256.0};
+		const HSV tint = {-1.0, 1.0, Pulse256(hud->mission->time) / 256.0};
 		const color_t mask = ColorTint(colorCyan, tint);
 		FontStrMask(hud->message, pos, mask);
 	}
@@ -419,13 +418,9 @@ static void DrawHUDMessage(HUD *hud)
 
 static void DrawKeycards(HUD *hud)
 {
-	int keyFlags[] =
-	{
-		FLAGS_KEYCARD_YELLOW,
-		FLAGS_KEYCARD_GREEN,
-		FLAGS_KEYCARD_BLUE,
-		FLAGS_KEYCARD_RED
-	};
+	int keyFlags[] = {
+		FLAGS_KEYCARD_YELLOW, FLAGS_KEYCARD_GREEN, FLAGS_KEYCARD_BLUE,
+		FLAGS_KEYCARD_RED};
 	int i;
 	int xOffset = -30;
 	int xOffsetIncr = 20;
@@ -448,8 +443,7 @@ static void DrawMissionTime(HUD *hud)
 	char s[50];
 	// Draw elapsed mission time as MM:SS
 	int missionTimeSeconds = gMission.time / FPS_FRAMELIMIT;
-	sprintf(s, "%d:%02d",
-		missionTimeSeconds / 60, missionTimeSeconds % 60);
+	sprintf(s, "%d:%02d", missionTimeSeconds / 60, missionTimeSeconds % 60);
 
 	FontOpts opts = FontOptsNew();
 	opts.HAlign = ALIGN_CENTER;
@@ -463,39 +457,39 @@ static void DrawObjectiveCounts(HUD *hud)
 	int x = 45;
 	int y = hud->device->cachedConfig.Res.y - 22;
 	CA_FOREACH(const Objective, o, hud->mission->missionData->Objectives)
-		// Don't draw anything for optional objectives
-		if (!ObjectiveIsRequired(o))
-		{
-			continue;
-		}
+	// Don't draw anything for optional objectives
+	if (!ObjectiveIsRequired(o))
+	{
+		continue;
+	}
 
-		// Objective color dot
-		DrawRectangle(
-			hud->device, svec2i(x, y + 3), svec2i(2, 2), o->color, false);
+	// Objective color dot
+	DrawRectangle(
+		hud->device, svec2i(x, y + 3), svec2i(2, 2), o->color, false);
 
-		x += 5;
-		char s[32];
-		const int itemsLeft = o->Required - o->done;
-		if (itemsLeft > 0)
+	x += 5;
+	char s[32];
+	const int itemsLeft = o->Required - o->done;
+	if (itemsLeft > 0)
+	{
+		if (!(o->Flags & OBJECTIVE_UNKNOWNCOUNT))
 		{
-			if (!(o->Flags & OBJECTIVE_UNKNOWNCOUNT))
-			{
-				sprintf(s, "%s: %d", ObjectiveTypeStr(o->Type), itemsLeft);
-			}
-			else
-			{
-				sprintf(s, "%s: ?", ObjectiveTypeStr(o->Type));
-			}
+			sprintf(s, "%s: %d", ObjectiveTypeStr(o->Type), itemsLeft);
 		}
 		else
 		{
-			strcpy(s, "Done");
+			sprintf(s, "%s: ?", ObjectiveTypeStr(o->Type));
 		}
-		FontStr(s, svec2i(x, y));
+	}
+	else
+	{
+		strcpy(s, "Done");
+	}
+	FontStr(s, svec2i(x, y));
 
-		HUDNumPopupsDrawObjective(
-			&hud->numPopups, _ca_index, svec2i(x + FontStrW(s) - 8, y));
+	HUDNumPopupsDrawObjective(
+		&hud->numPopups, _ca_index, svec2i(x + FontStrW(s) - 8, y));
 
-		x += 40;
+	x += 40;
 	CA_FOREACH_END()
 }

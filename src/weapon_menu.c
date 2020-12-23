@@ -87,8 +87,11 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 	}
 }
 
-static menu_t *AddEquippedMenuItem(
-	menu_t *menu, const PlayerData *p, const int slot);
+static void DisplayGunIcon(
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
+	const struct vec2i size, const void *data);
+static void AddEquippedMenuItem(
+	menu_t *menu, const PlayerData *p, const int slot, const bool enabled);
 static void CreateEquippedWeaponsMenu(
 	MenuSystem *ms, EventHandlers *handlers, GraphicsDevice *g,
 	const struct vec2i pos, const struct vec2i size, const PlayerData *p,
@@ -124,23 +127,19 @@ static void CreateEquippedWeaponsMenu(
 	int i;
 	for (i = 0; i < MAX_GUNS; i++)
 	{
-		menu_t *submenu = AddEquippedMenuItem(ms->root, p, i);
-		if (i >= numGuns)
-		{
-			submenu->isDisabled = true;
-		}
+		const bool submenuEnabled = i < numGuns;
+		AddEquippedMenuItem(ms->root, p, i, submenuEnabled);
 	}
 	MenuAddSubmenu(ms->root, MenuCreateSeparator("--Grenades--"));
 	for (; i < MAX_GUNS + MAX_GRENADES; i++)
 	{
-		menu_t *submenu = AddEquippedMenuItem(ms->root, p, i);
-		if (i - MAX_GUNS >= numGrenades)
-		{
-			submenu->isDisabled = true;
-		}
+		const bool submenuEnabled = i - MAX_GUNS < numGrenades;
+		AddEquippedMenuItem(ms->root, p, i, submenuEnabled);
 	}
 	MenuAddSubmenu(
 		ms->root, MenuCreateNormal(END_MENU_LABEL, "", MENU_TYPE_NORMAL, 0));
+
+	MenuSetCustomDisplay(ms->root, DisplayGunIcon, NULL);
 
 	// Pre-select the End menu
 	ms->root->u.normal.index = (int)(ms->root->u.normal.subMenus.size - 1);
@@ -158,20 +157,18 @@ static void SetEquippedMenuItemName(
 		CSTRDUP(menu->name, NO_GUN_LABEL);
 	}
 }
-static menu_t *AddEquippedMenuItem(
-	menu_t *menu, const PlayerData *p, const int slot)
+static void AddEquippedMenuItem(
+	menu_t *menu, const PlayerData *p, const int slot, const bool enabled)
 {
 	menu_t *submenu = MenuCreateReturn("", slot);
 	SetEquippedMenuItemName(submenu, p, slot);
-	return MenuAddSubmenu(menu, submenu);
+	menu_t *addedMenu = MenuAddSubmenu(menu, submenu);
+	addedMenu->isDisabled = !enabled;
 }
 
 static menu_t *CreateGunMenu(
 	const CArray *weapons, const struct vec2i menuSize, const bool isGrenade,
 	MenuDisplayPlayerData *display);
-static void DisplayGunIcon(
-	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
-	const struct vec2i size, const void *data);
 static void DisplayDescriptionGunIcon(
 	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
 	const struct vec2i size, const void *data);
@@ -279,14 +276,17 @@ static void DisplayGunIcon(
 	const struct vec2i size, const void *data)
 {
 	UNUSED(data);
+	if (menu->isDisabled)
+	{
+		return;
+	}
 	// Display a gun icon next to the currently selected weapon
 	const WeaponClass *wc = GetSelectedGun(menu);
 	if (wc == NULL)
 	{
 		return;
 	}
-	const int menuItems =
-		MIN(menu->u.normal.maxItems, (int)menu->u.normal.subMenus.size);
+	const int menuItems = MenuGetNumMenuItemsShown(menu);
 	const int textScroll =
 		-menuItems * FontH() / 2 +
 		(menu->u.normal.index - menu->u.normal.scroll) * FontH();
@@ -345,7 +345,6 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 		case WEAPON_MENU_CANCEL:
 			// Switch back to equip menu
 			menu->equipping = false;
-			menu->ms.current = NULL;
 			// Update menu name based on new weapon equipped
 			CA_FOREACH(menu_t, submenu, menu->msEquip.root->u.normal.subMenus)
 			if (submenu->type == MENU_TYPE_RETURN &&
@@ -378,12 +377,32 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 			// Open weapon selection menu
 			menu->equipping = true;
 			menu->data.EquipSlot = menu->msEquip.current->u.returnCode;
-			menu->ms.current = menu->data.EquipSlot < MAX_GUNS
-								   ? menu->gunMenu
-								   : menu->grenadeMenu;
 			menu->msEquip.current = menu->msEquip.root;
 			menu->data.SelectResult = WEAPON_MENU_NONE;
 		}
+	}
+
+	// Display the gun/grenade menu based on which submenu is hovered
+	const menu_t *hoveredEquipMenu = CArrayGet(
+		&menu->msEquip.root->u.normal.subMenus,
+		menu->msEquip.root->u.normal.index);
+	if (hoveredEquipMenu->type == MENU_TYPE_RETURN)
+	{
+		const int equipSlot = hoveredEquipMenu->u.returnCode;
+		menu->ms.current =
+			equipSlot < MAX_GUNS ? menu->gunMenu : menu->grenadeMenu;
+	}
+	else
+	{
+		CASSERT(!menu->equipping, "invalid equip menu state");
+		menu->ms.current = NULL;
+	}
+
+	// Disable the equip/weapon menus based on equipping state
+	MenuSetDisabled(menu->msEquip.root, menu->equipping);
+	if (menu->ms.current)
+	{
+		MenuSetDisabled(menu->ms.current, !menu->equipping);
 	}
 
 	// Disable "Done" if no weapons selected
