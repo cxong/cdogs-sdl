@@ -29,6 +29,7 @@
     <screenshot>https://i.imgur.com/30KUS8O.png</screenshot>
   </screenshots>
   <releases>
+    <release version="0.10.2" date="2021-01-04"/>
     <release version="0.10.1" date="2020-11-30"/>
     <release version="0.10.0" date="2020-11-25"/>
     <release version="0.9.1" date="2020-10-01"/>

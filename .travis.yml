@@ -9,7 +9,7 @@ os:
   - linux
   - osx
 env:
-  - VERSION=0.10.1
+  - VERSION=0.10.2
 
 before_install:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
