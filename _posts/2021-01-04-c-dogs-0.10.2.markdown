@@ -1,0 +1,19 @@
+---
+layout: post
+title:  "C-Dogs 0.10.2 Released!"
+date:   2021-01-04
+categories: release
+published: true
+---
+
+New year, new release! 🎊 This is a bug fix release to fix not being able to run the mission pack, some PVP game mode fixes, and some miscellaneous enhancements, like:
+
+Being able to see available weapons in the wepaon menu, and swapping weapons:
+
+![Weapon menu](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/weapon_menu.gif)
+
+A peaked cap:
+
+![Peaked cap](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/peaked_cap.gif)
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.10.2>
