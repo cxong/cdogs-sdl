@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.1)
 cmake_policy(SET CMP0054 NEW)
-set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
+set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
+set(CMAKE_OSX_ARCHITECTURES x86_64)
 project(cdogs-sdl C)
 
 SET(VERSION_MAJOR "0")

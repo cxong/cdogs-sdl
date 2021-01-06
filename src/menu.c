@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2014, 2016-2020 Cong Xu
+	Copyright (c) 2013-2014, 2016-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -273,7 +273,7 @@ menu_t *MenuGetSubmenuByName(menu_t *menu, const char *name)
 
 int MenuGetNumMenuItemsShown(const menu_t *menu)
 {
-	CASSERT(menu->type == MENU_TYPE_NORMAL, "invalid menu type");
+	CASSERT(menu->type == MENU_TYPE_NORMAL || menu->type == MENU_TYPE_OPTIONS, "invalid menu type");
 	return menu->u.normal.maxItems > 0 ? MIN(menu->u.normal.maxItems,
 											 (int)menu->u.normal.subMenus.size)
 									   : (int)menu->u.normal.subMenus.size;
