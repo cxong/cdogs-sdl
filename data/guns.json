@@ -36,6 +36,18 @@
       "CanShoot": false
     },
     {
+      "Pic": "",
+      "Icon": "fist",
+      "Name": "Fists",
+      "Description": "A melee weapon of last resort",
+      "Bullet": "fist",
+      "Cost": 0,
+      "Lock": 30,
+      "Sound": "",
+      "SwitchSound": "knuckles",
+      "CanShoot": false
+    },
+    {
       "Index": 1,
       "Name": "Machine gun",
       "Icon": "machine_gun",

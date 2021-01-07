@@ -1,5 +1,5 @@
 {
-  "Version": 2,
+  "Version": 3,
   "DefaultBullet": {
     "Pic": {
       "Type": "Directional",
@@ -7,8 +7,8 @@
     },
     "Spark": "spark",
     "HitSounds": {
-      "Object": "hit_hard",
-      "Flesh": "hit_flesh",
+      "Object": "hits/hard",
+      "Flesh": "hits/flesh",
       "Wall": "ricochet"
     },
     "HitsObjects": true,
@@ -23,8 +23,17 @@
       "Name": "knife",
       "Power": 2,
       "HitSounds": {
-        "Object": "knife_hard",
-        "Flesh": "knife_flesh"
+        "Object": "hits/knife_hard",
+        "Flesh": "hits/knife_flesh"
+      }
+    },
+    {
+      "Name": "fist",
+      "Power": 10,
+      "Mass": 1.5,
+      "HitSounds": {
+        "Object": "hits/knife_hard",
+        "Flesh": "hits/fist_flesh"
       }
     },
     {
@@ -62,9 +71,9 @@
       "Special": "Flame",
       "Spark": "",
       "HitSounds": {
-        "Object": "hit_fire",
-        "Flesh": "hit_fire",
-        "Wall": "hit_fire"
+        "Object": "hits/fire",
+        "Flesh": "hits/fire",
+        "Wall": "hits/fire"
       },
       "WallBounces": true
     },
@@ -255,8 +264,8 @@
       "Spark": "",
       "HitSounds": {
         "Object": "",
-        "Flesh": "hit_gas",
-        "Wall": "hit_gas"
+        "Flesh": "hits/gas",
+        "Wall": "hits/gas"
       },
       "WallBounces": true
     },
@@ -322,8 +331,8 @@
       "Size": [10, 10],
       "Special": "Petrify",
       "HitSounds": {
-        "Object": "hit_petrify",
-        "Flesh": "hit_petrify",
+        "Object": "hits/petrify",
+        "Flesh": "hits/petrify",
         "Wall": ""
       }
     },
@@ -419,8 +428,8 @@
       "WallBounces": true,
       "Spark": "",
       "HitSounds": {
-        "Object": "hit_gas",
-        "Flesh": "hit_gas",
+        "Object": "hits/gas",
+        "Flesh": "hits/gas",
         "Wall": ""
       },
       "Falling": {
@@ -447,8 +456,8 @@
       "WallBounces": true,
       "Spark": "",
       "HitSounds": {
-        "Object": "hit_gas",
-        "Flesh": "hit_gas",
+        "Object": "hits/gas",
+        "Flesh": "hits/gas",
         "Wall": ""
       },
       "Falling": {
@@ -475,8 +484,8 @@
       "WallBounces": true,
       "Spark": "",
       "HitSounds": {
-        "Object": "hit_gas",
-        "Flesh": "hit_gas",
+        "Object": "hits/gas",
+        "Flesh": "hits/gas",
         "Wall": ""
       },
       "Falling": {
@@ -505,8 +514,8 @@
       "WallBounces": true,
       "Spark": "",
       "HitSounds": {
-        "Object": "hit_fire",
-        "Flesh": "hit_fire",
+        "Object": "hits/fire",
+        "Flesh": "hits/fire",
         "Wall": ""
       },
       "Falling": {
@@ -535,7 +544,7 @@
       "Spark": "",
       "HitSounds": {
         "Object": "",
-        "Flesh": "hit_gas",
+        "Flesh": "hits/gas",
         "Wall": ""
       }
     },
@@ -559,7 +568,7 @@
       "Spark": "",
       "HitSounds": {
         "Object": "",
-        "Flesh": "hit_gas",
+        "Flesh": "hits/gas",
         "Wall": ""
       }
     },
@@ -608,8 +617,8 @@
       "Persists": true,
       "Spark": "",
       "HitSounds": {
-        "Object": "hit_gas",
-        "Flesh": "hit_gas",
+        "Object": "hits/gas",
+        "Flesh": "hits/gas",
         "Wall": ""
       }
     },
