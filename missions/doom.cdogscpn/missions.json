@@ -12,7 +12,7 @@
 		"SpecialChars": [],
 		"MapObjectDensities": [],
 		"EnemyDensity": 0,
-		"Weapons": ["Knife", "Marine Pistol"],
+		"Weapons": ["Fists", "Marine Pistol"],
 		"Song": "",
 		"TileClasses": {
 			"13": {
@@ -677,7 +677,7 @@
 		"SpecialChars": [],
 		"MapObjectDensities": [],
 		"EnemyDensity": 0,
-		"Weapons": ["Knife", "Marine Pistol"],
+		"Weapons": ["Fists", "Marine Pistol"],
 		"Song": "",
 		"TileClasses": {
 			"24": {
@@ -1584,7 +1584,7 @@
 		"SpecialChars": [],
 		"MapObjectDensities": [],
 		"EnemyDensity": 0,
-		"Weapons": ["Knife", "Marine Pistol"],
+		"Weapons": ["Fists", "Marine Pistol"],
 		"Song": "",
 		"TileClasses": {
 			"13": {
@@ -2558,7 +2558,7 @@
 		"SpecialChars": [],
 		"MapObjectDensities": [],
 		"EnemyDensity": 0,
-		"Weapons": ["Knife", "Marine Pistol"],
+		"Weapons": ["Fists", "Marine Pistol"],
 		"Song": "",
 		"TileClasses": {
 			"24": {
@@ -3500,7 +3500,7 @@
 		"SpecialChars": [],
 		"MapObjectDensities": [],
 		"EnemyDensity": 0,
-		"Weapons": ["Knife", "Marine Pistol"],
+		"Weapons": ["Fists", "Marine Pistol"],
 		"Song": "",
 		"TileClasses": {
 			"24": {
@@ -4444,7 +4444,7 @@
 		"SpecialChars": [],
 		"MapObjectDensities": [],
 		"EnemyDensity": 0,
-		"Weapons": ["Knife", "Marine Pistol"],
+		"Weapons": ["Fists", "Marine Pistol"],
 		"Song": "",
 		"TileClasses": {
 			"13": {
@@ -5490,7 +5490,7 @@
 		"SpecialChars": [],
 		"MapObjectDensities": [],
 		"EnemyDensity": 0,
-		"Weapons": ["Knife", "Marine Pistol"],
+		"Weapons": ["Fists", "Marine Pistol"],
 		"Song": "",
 		"TileClasses": {
 			"13": {
@@ -6425,7 +6425,7 @@
 		"SpecialChars": [5],
 		"MapObjectDensities": [],
 		"EnemyDensity": 0,
-		"Weapons": ["Knife", "Marine Pistol"],
+		"Weapons": ["Fists", "Marine Pistol"],
 		"Song": "",
 		"TileClasses": {
 			"13": {
@@ -7199,7 +7199,7 @@
 		"SpecialChars": [],
 		"MapObjectDensities": [],
 		"EnemyDensity": 0,
-		"Weapons": ["Knife", "Marine Pistol"],
+		"Weapons": ["Fists", "Marine Pistol"],
 		"Song": "",
 		"TileClasses": {
 			"13": {

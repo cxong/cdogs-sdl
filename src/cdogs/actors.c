@@ -1080,7 +1080,7 @@ static bool CheckManualPickupFunc(
 	const PlayerData *pData = PlayerDataGetByUID(a->PlayerUID);
 	if (pData->IsLocal && IsPlayerHuman(pData))
 	{
-		char buttonName[256];
+		char buttonName[64];
 		strcpy(buttonName, "");
 		InputGetButtonName(
 			pData->inputDevice, pData->deviceIndex, CMD_BUTTON2, buttonName);

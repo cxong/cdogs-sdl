@@ -46,7 +46,7 @@ static const char *BrushGetTypeStr(EditorBrush *brush, int isMain)
 {
 	static char s[128];
 	const int idx = isMain ? brush->MainType : brush->SecondaryType;
-	char tcName[256];
+	char tcName[64];
 	sprintf(tcName, "%d", idx);
 	TileClass *tc;
 	if (hashmap_get(
