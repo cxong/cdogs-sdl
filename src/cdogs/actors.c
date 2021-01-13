@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2020 Cong Xu
+	Copyright (c) 2013-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -98,6 +98,7 @@
 #define GRIMACE_PERIOD 20
 #define GRIMACE_HIT_TICKS 39
 #define GRIMACE_MELEE_TICKS 19
+#define DAMAGE_TEXT_DISTANCE_RESET_THRESHOLD (ACTOR_W / 2)
 
 CArray gPlayerIds;
 
@@ -1556,7 +1557,11 @@ void ActorHit(const NThingDamage d)
 		if (p->isInUse && p->ActorUID == a->uid)
 		{
 			damage += a->accumulatedDamage;
-			pos = p->Pos;
+			if (svec2_distance(pos, p->Pos) <
+				DAMAGE_TEXT_DISTANCE_RESET_THRESHOLD)
+			{
+				pos = p->Pos;
+			}
 			GameEvent e = GameEventNew(GAME_EVENT_PARTICLE_REMOVE);
 			e.u.ParticleRemoveId = _ca_index;
 			GameEventsEnqueue(&gGameEvents, e);
