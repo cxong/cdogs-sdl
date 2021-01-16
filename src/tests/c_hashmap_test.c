@@ -117,5 +117,5 @@ CBEHAVE_RUN(
 	TEST_FEATURE(hashmap_put),
 	TEST_FEATURE(hashmap_get),
 	TEST_FEATURE(hashmap_remove),
-    TEST_FEATURE(hashmap_sort)
+    TEST_FEATURE(hashmap_iterate_keys_sorted)
 )
