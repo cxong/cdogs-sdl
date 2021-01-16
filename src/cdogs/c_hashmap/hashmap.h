@@ -48,6 +48,7 @@ map_t hashmap_copy(const map_t in, any_t (*callback)(any_t));
  */
 int hashmap_iterate(map_t in, PFany f, any_t item);
 int hashmap_iterate_keys(map_t in, PFany f, any_t item);
+int hashmap_iterate_keys_sorted(map_t in, PFany f, any_t item);
 
 /*
  * Add an element to the hashmap. Return MAP_OK or MAP_OMEM.

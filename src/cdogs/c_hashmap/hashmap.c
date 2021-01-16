@@ -78,7 +78,11 @@ static int copy_key(any_t data, any_t key)
 	{
 		return error;
 	}
-	any_t copy = hData->callback(value);
+    any_t copy = value;
+    if (hData->callback != NULL)
+    {
+        copy = hData->callback(value);
+    }
 	return hashmap_put(hData->dst, key, copy);
 }
 
@@ -387,23 +391,55 @@ static int iterate_key(hashmap_element elem, PFany f, any_t item)
 	return f(item, elem.key);
 }
 static int iterate(
-	map_t m, PFany f, any_t item, int (*func)(hashmap_element, PFany, any_t))
+    map_t m, PFany f, any_t item, int (*func)(hashmap_element, PFany, any_t))
 {
-	/* On empty hashmap, return immediately */
-	if (hashmap_length(m) <= 0)
-		return MAP_MISSING;
+    /* On empty hashmap, return immediately */
+    if (hashmap_length(m) <= 0)
+        return MAP_MISSING;
 
-	for (int i = 0; i < m->table_size; i++)
-		if (m->data[i].in_use)
-		{
-			const int status = func(m->data[i], f, item);
-			if (status != MAP_OK)
-			{
-				return status;
-			}
-		}
+    for (int i = 0; i < m->table_size; i++)
+        if (m->data[i].in_use)
+        {
+            const int status = func(m->data[i], f, item);
+            if (status != MAP_OK)
+            {
+                return status;
+            }
+        }
 
-	return MAP_OK;
+    return MAP_OK;
+}
+
+static int key_comp(const void *v1, const void *v2);
+int hashmap_iterate_keys_sorted(map_t m, PFany f, any_t item)
+{
+    if (hashmap_length(m) <= 0) return MAP_MISSING;
+    map_t sorted_map = hashmap_copy(m, NULL);
+    qsort(sorted_map->data, sorted_map->table_size, sizeof sorted_map->data[0], key_comp);
+    for (int i = 0; i < sorted_map->table_size; i++)
+    {
+        const hashmap_element elem = sorted_map->data[i];
+        if (elem.in_use)
+        {
+            any_t data;
+            const int status = hashmap_get(m, elem.key, &data);
+            if (status != MAP_OK)
+            {
+                return status;
+            }
+            f(item, elem.key);
+        }
+    }
+    hashmap_destroy(sorted_map, NULL);
+    return MAP_OK;
+}
+static int key_comp(const void *v1, const void *v2)
+{
+    const hashmap_element *c1 = v1;
+    const hashmap_element *c2 = v2;
+    if (!c1->in_use) return 1;
+    if (!c2->in_use) return -1;
+    return strcmp(c1->key, c2->key);
 }
 
 static int hashmap_return_first(any_t data, any_t item);

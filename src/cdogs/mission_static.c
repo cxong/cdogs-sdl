@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2020 Cong Xu
+	Copyright (c) 2014-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -632,7 +632,7 @@ static json_t *SaveStaticTileClasses(const MissionStatic *m)
 {
 	json_t *items = json_new_object();
 	SaveStaticTileClassData data = {items, m->TileClasses};
-	if (hashmap_iterate_keys(m->TileClasses, SaveStaticTileClass, &data) !=
+	if (hashmap_iterate_keys_sorted(m->TileClasses, SaveStaticTileClass, &data) !=
 		MAP_OK)
 	{
 		CASSERT(false, "Failed to save static tile classes");

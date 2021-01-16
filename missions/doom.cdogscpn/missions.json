@@ -15,144 +15,12 @@
 		"Weapons": ["Fists", "Marine Pistol"],
 		"Song": "",
 		"TileClasses": {
-			"13": {
+			"0": {
 				"Name": "tile",
 				"Type": "Floor",
-				"Style": "hex",
-				"Mask": "aa7b45ff",
+				"Style": "dirt",
+				"Mask": "806020ff",
 				"MaskAlt": "840000ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"12": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "hex",
-				"Mask": "959595ff",
-				"MaskAlt": "840000ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"20": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "hex",
-				"Mask": "62523cff",
-				"MaskAlt": "840000ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"6": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "smallsquare",
-				"Mask": "808080ff",
-				"MaskAlt": "808080ff",
-				"CanWalk": false,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"8": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "panel",
-				"Mask": "c6c5c5ff",
-				"MaskAlt": "507e46ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"18": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "colony",
-				"Mask": "484848ff",
-				"MaskAlt": "0000afff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"16": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "greenstain",
-				"Mask": "ffca44ff",
-				"MaskAlt": "cbad4cff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"2": {
-				"Name": "door",
-				"Type": "Door",
-				"Style": "doom",
-				"Mask": "fcfcfcff",
-				"MaskAlt": "ffffffff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": true
-			},
-			"14": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "hex",
-				"Mask": "7b5c32ff",
-				"MaskAlt": "840000ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"11": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "biggrid",
-				"Mask": "808080ff",
-				"MaskAlt": "808080ff",
-				"CanWalk": false,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"7": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "panel",
-				"Mask": "c6c5c5ff",
-				"MaskAlt": "b68614ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"19": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "greenstain",
-				"Mask": "a3a3a3ff",
-				"MaskAlt": "7e7141ff",
-				"CanWalk": true,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"15": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "water",
-				"Mask": "55ad61ff",
-				"MaskAlt": "808080ff",
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
@@ -180,12 +48,67 @@
 				"Shootable": false,
 				"IsRoom": false
 			},
-			"9": {
+			"11": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "biggrid",
+				"Mask": "808080ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": false,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"12": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "hex",
+				"Mask": "959595ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"13": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "hex",
+				"Mask": "aa7b45ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"14": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "hex",
+				"Mask": "7b5c32ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"15": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "water",
+				"Mask": "55ad61ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"16": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "panel",
-				"Mask": "c6c5c5ff",
-				"MaskAlt": "797878ff",
+				"Style": "greenstain",
+				"Mask": "ffca44ff",
+				"MaskAlt": "cbad4cff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -202,16 +125,49 @@
 				"Shootable": false,
 				"IsRoom": false
 			},
-			"4": {
-				"Name": "",
-				"Type": "",
-				"Style": "",
-				"Mask": "ffffffff",
+			"18": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "colony",
+				"Mask": "484848ff",
+				"MaskAlt": "0000afff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"19": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "greenstain",
+				"Mask": "a3a3a3ff",
+				"MaskAlt": "7e7141ff",
+				"CanWalk": true,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"2": {
+				"Name": "door",
+				"Type": "Door",
+				"Style": "doom",
+				"Mask": "fcfcfcff",
 				"MaskAlt": "ffffffff",
 				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": true
+			},
+			"20": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "hex",
+				"Mask": "62523cff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": false
+				"IsRoom": true
 			},
 			"3": {
 				"Name": "tile",
@@ -224,6 +180,17 @@
 				"Shootable": false,
 				"IsRoom": true
 			},
+			"4": {
+				"Name": "",
+				"Type": "",
+				"Style": "",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
+				"CanWalk": false,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
 			"5": {
 				"Name": "tile",
 				"Type": "Floor",
@@ -235,15 +202,48 @@
 				"Shootable": false,
 				"IsRoom": true
 			},
-			"0": {
+			"6": {
 				"Name": "tile",
 				"Type": "Floor",
-				"Style": "dirt",
-				"Mask": "806020ff",
-				"MaskAlt": "840000ff",
-				"CanWalk": true,
+				"Style": "smallsquare",
+				"Mask": "808080ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": false,
 				"IsOpaque": false,
 				"Shootable": false,
+				"IsRoom": false
+			},
+			"7": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "panel",
+				"Mask": "c6c5c5ff",
+				"MaskAlt": "b68614ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"8": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "panel",
+				"Mask": "c6c5c5ff",
+				"MaskAlt": "507e46ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"9": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "panel",
+				"Mask": "c6c5c5ff",
+				"MaskAlt": "797878ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
 				"IsRoom": false
 			}
 		},
@@ -680,170 +680,16 @@
 		"Weapons": ["Fists", "Marine Pistol"],
 		"Song": "",
 		"TileClasses": {
-			"24": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "station",
-				"Mask": "bdb8b8ff",
-				"MaskAlt": "777474ff",
-				"CanWalk": true,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"13": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "water",
-				"Mask": "20b100ff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"12": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "wood",
-				"Mask": "a18052ff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"20": {
+			"0": {
 				"Name": "tile",
 				"Type": "Floor",
 				"Style": "hex",
-				"Mask": "72644fff",
+				"Mask": "404040ff",
 				"MaskAlt": "840000ff",
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
 				"IsRoom": true
-			},
-			"6": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "station",
-				"Mask": "808080ff",
-				"MaskAlt": "5b5a5aff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"8": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "hightech",
-				"Mask": "d9a82dff",
-				"MaskAlt": "008400ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"18": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "techwall",
-				"Mask": "3a3a3aff",
-				"MaskAlt": "ffe880ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"21": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "hex",
-				"Mask": "bb955eff",
-				"MaskAlt": "840000ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"16": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "brick",
-				"Mask": "3c3c3cff",
-				"MaskAlt": "008400ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"2": {
-				"Name": "door",
-				"Type": "Door",
-				"Style": "doom",
-				"Mask": "ffffffff",
-				"MaskAlt": "ffffffff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": true
-			},
-			"14": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "panel",
-				"Mask": "f0b76fff",
-				"MaskAlt": "9c9a98ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"11": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "smallsquare",
-				"Mask": "7e7e7eff",
-				"MaskAlt": "808080ff",
-				"CanWalk": false,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"23": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "panel",
-				"Mask": "bfa688ff",
-				"MaskAlt": "9c8667ff",
-				"CanWalk": true,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"7": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "metal",
-				"Mask": "ffffffff",
-				"MaskAlt": "808080ff",
-				"CanWalk": false,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"15": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "greenstain",
-				"Mask": "426241ff",
-				"MaskAlt": "354635ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
 			},
 			"1": {
 				"Name": "wall",
@@ -867,23 +713,67 @@
 				"Shootable": false,
 				"IsRoom": false
 			},
-			"25": {
+			"11": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "smallsquare",
+				"Mask": "7e7e7eff",
+				"MaskAlt": "808080ff",
+				"CanWalk": false,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"12": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "wood",
+				"Mask": "a18052ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"13": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "water",
+				"Mask": "20b100ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"14": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "greenstain",
-				"Mask": "5b875aff",
-				"MaskAlt": "4e644eff",
-				"CanWalk": true,
+				"Style": "panel",
+				"Mask": "f0b76fff",
+				"MaskAlt": "9c9a98ff",
+				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
 				"IsRoom": false
 			},
-			"9": {
+			"15": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "panel",
-				"Mask": "ccfca6ff",
-				"MaskAlt": "9c9a98ff",
+				"Style": "greenstain",
+				"Mask": "426241ff",
+				"MaskAlt": "354635ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"16": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "brick",
+				"Mask": "3c3c3cff",
+				"MaskAlt": "008400ff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -900,15 +790,92 @@
 				"Shootable": true,
 				"IsRoom": false
 			},
-			"4": {
-				"Name": "",
-				"Type": "",
-				"Style": "",
+			"18": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "techwall",
+				"Mask": "3a3a3aff",
+				"MaskAlt": "ffe880ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"2": {
+				"Name": "door",
+				"Type": "Door",
+				"Style": "doom",
 				"Mask": "ffffffff",
 				"MaskAlt": "ffffffff",
 				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": true
+			},
+			"20": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "hex",
+				"Mask": "72644fff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
+				"IsRoom": true
+			},
+			"21": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "hex",
+				"Mask": "bb955eff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"22": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "support",
+				"Mask": "8e6820ff",
+				"MaskAlt": "5aa65aff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"23": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "panel",
+				"Mask": "bfa688ff",
+				"MaskAlt": "9c8667ff",
+				"CanWalk": true,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"24": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "station",
+				"Mask": "bdb8b8ff",
+				"MaskAlt": "777474ff",
+				"CanWalk": true,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"25": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "greenstain",
+				"Mask": "5b875aff",
+				"MaskAlt": "4e644eff",
+				"CanWalk": true,
+				"IsOpaque": true,
+				"Shootable": true,
 				"IsRoom": false
 			},
 			"3": {
@@ -922,6 +889,17 @@
 				"Shootable": false,
 				"IsRoom": true
 			},
+			"4": {
+				"Name": "",
+				"Type": "",
+				"Style": "",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
+				"CanWalk": false,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
 			"5": {
 				"Name": "wall",
 				"Type": "Wall",
@@ -933,27 +911,49 @@
 				"Shootable": true,
 				"IsRoom": false
 			},
-			"22": {
+			"6": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "support",
-				"Mask": "8e6820ff",
-				"MaskAlt": "5aa65aff",
+				"Style": "station",
+				"Mask": "808080ff",
+				"MaskAlt": "5b5a5aff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
 				"IsRoom": false
 			},
-			"0": {
+			"7": {
 				"Name": "tile",
 				"Type": "Floor",
-				"Style": "hex",
-				"Mask": "404040ff",
-				"MaskAlt": "840000ff",
-				"CanWalk": true,
+				"Style": "metal",
+				"Mask": "ffffffff",
+				"MaskAlt": "808080ff",
+				"CanWalk": false,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": true
+				"IsRoom": false
+			},
+			"8": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "hightech",
+				"Mask": "d9a82dff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"9": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "panel",
+				"Mask": "ccfca6ff",
+				"MaskAlt": "9c9a98ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
 			}
 		},
 		"Tiles": ["4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,17,10,10,10,10,10,10,10,10,10,10,10,10,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -1587,166 +1587,12 @@
 		"Weapons": ["Fists", "Marine Pistol"],
 		"Song": "",
 		"TileClasses": {
-			"13": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "station",
-				"Mask": "808080ff",
-				"MaskAlt": "008400ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"12": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "hex",
-				"Mask": "515151ff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"20": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "panel",
-				"Mask": "bdbdbdff",
-				"MaskAlt": "807f7fff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"6": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "greenstain",
-				"Mask": "c99e4bff",
-				"MaskAlt": "aa8423ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"8": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "panel",
-				"Mask": "d7a442ff",
-				"MaskAlt": "95762eff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"18": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "panel",
-				"Mask": "bdbdbdff",
-				"MaskAlt": "8e9f7cff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"21": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "station",
-				"Mask": "9f9f9fff",
-				"MaskAlt": "008400ff",
-				"CanWalk": true,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"16": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "wood",
-				"Mask": "cda774ff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"2": {
-				"Name": "door",
-				"Type": "Door",
-				"Style": "doom",
-				"Mask": "ffffffff",
-				"MaskAlt": "ffffffff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": true
-			},
-			"14": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "greenstain",
-				"Mask": "939393ff",
-				"MaskAlt": "587b53ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"11": {
+			"0": {
 				"Name": "tile",
 				"Type": "Floor",
 				"Style": "dirt",
-				"Mask": "797878ff",
+				"Mask": "60491fff",
 				"MaskAlt": "840000ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"23": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "panel",
-				"Mask": "d2d2d2ff",
-				"MaskAlt": "999f92ff",
-				"CanWalk": true,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"7": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "water",
-				"Mask": "42b629ff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"19": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "hightech",
-				"Mask": "b1b0b0ff",
-				"MaskAlt": "008400ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"15": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "wood",
-				"Mask": "808080ff",
-				"MaskAlt": "808080ff",
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
@@ -1774,16 +1620,71 @@
 				"Shootable": false,
 				"IsRoom": true
 			},
-			"9": {
+			"11": {
 				"Name": "tile",
 				"Type": "Floor",
 				"Style": "dirt",
-				"Mask": "ad8a58ff",
+				"Mask": "797878ff",
 				"MaskAlt": "840000ff",
-				"CanWalk": false,
+				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
+				"IsRoom": true
+			},
+			"12": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "hex",
+				"Mask": "515151ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"13": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "station",
+				"Mask": "808080ff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
 				"IsRoom": false
+			},
+			"14": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "greenstain",
+				"Mask": "939393ff",
+				"MaskAlt": "587b53ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"15": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "wood",
+				"Mask": "808080ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"16": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "wood",
+				"Mask": "cda774ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
 			},
 			"17": {
 				"Name": "wall",
@@ -1796,35 +1697,57 @@
 				"Shootable": true,
 				"IsRoom": false
 			},
-			"4": {
-				"Name": "",
-				"Type": "",
-				"Style": "",
-				"Mask": "ffffffff",
-				"MaskAlt": "ffffffff",
-				"CanWalk": false,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"3": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "stone",
-				"Mask": "204020ff",
-				"MaskAlt": "840000ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"5": {
+			"18": {
 				"Name": "wall",
 				"Type": "Wall",
 				"Style": "panel",
 				"Mask": "bdbdbdff",
-				"MaskAlt": "a68448ff",
+				"MaskAlt": "8e9f7cff",
 				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"19": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "hightech",
+				"Mask": "b1b0b0ff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"2": {
+				"Name": "door",
+				"Type": "Door",
+				"Style": "doom",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": true
+			},
+			"20": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "panel",
+				"Mask": "bdbdbdff",
+				"MaskAlt": "807f7fff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"21": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "station",
+				"Mask": "9f9f9fff",
+				"MaskAlt": "008400ff",
+				"CanWalk": true,
 				"IsOpaque": true,
 				"Shootable": true,
 				"IsRoom": false
@@ -1840,16 +1763,93 @@
 				"Shootable": true,
 				"IsRoom": false
 			},
-			"0": {
+			"23": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "panel",
+				"Mask": "d2d2d2ff",
+				"MaskAlt": "999f92ff",
+				"CanWalk": true,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"3": {
 				"Name": "tile",
 				"Type": "Floor",
-				"Style": "dirt",
-				"Mask": "60491fff",
+				"Style": "stone",
+				"Mask": "204020ff",
 				"MaskAlt": "840000ff",
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
 				"IsRoom": true
+			},
+			"4": {
+				"Name": "",
+				"Type": "",
+				"Style": "",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
+				"CanWalk": false,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"5": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "panel",
+				"Mask": "bdbdbdff",
+				"MaskAlt": "a68448ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"6": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "greenstain",
+				"Mask": "c99e4bff",
+				"MaskAlt": "aa8423ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"7": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "water",
+				"Mask": "42b629ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"8": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "panel",
+				"Mask": "d7a442ff",
+				"MaskAlt": "95762eff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"9": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "dirt",
+				"Mask": "ad8a58ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": false,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
 			}
 		},
 		"Tiles": ["4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,18,18,18,18,18,18,18,18,18,18,18,18,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -2561,224 +2561,15 @@
 		"Weapons": ["Fists", "Marine Pistol"],
 		"Song": "",
 		"TileClasses": {
-			"24": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "dirt",
-				"Mask": "a3805fff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"31": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "support",
-				"Mask": "515151ff",
-				"MaskAlt": "3768f5ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"13": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "metal",
-				"Mask": "808080ff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"26": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "panel",
-				"Mask": "b6b4b4ff",
-				"MaskAlt": "8a8a8aff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"12": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "dirt",
-				"Mask": "1a0c72ff",
-				"MaskAlt": "808080ff",
-				"CanWalk": false,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"20": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "hex",
-				"Mask": "b47640ff",
-				"MaskAlt": "840000ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"6": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "panel",
-				"Mask": "b6b4b4ff",
-				"MaskAlt": "875e36ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"8": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "plasteel",
-				"Mask": "696969ff",
+			"0": {
+				"Name": "door",
+				"Type": "Door",
+				"Style": "doom",
+				"Mask": "fffafaff",
 				"MaskAlt": "008400ff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
-			},
-			"18": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "wood",
-				"Mask": "513e2bff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"30": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "cobble",
-				"Mask": "536448ff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"21": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "hex",
-				"Mask": "563920ff",
-				"MaskAlt": "840000ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"16": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "water",
-				"Mask": "48a638ff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"32": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "hex",
-				"Mask": "8e8e8eff",
-				"MaskAlt": "840000ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"2": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "tile",
-				"Mask": "808080ff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"14": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "greenstain",
-				"Mask": "deb462ff",
-				"MaskAlt": "c49c50ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"11": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "hightech",
-				"Mask": "808080ff",
-				"MaskAlt": "008400ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"23": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "wood",
-				"Mask": "725637ff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"7": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "dirt",
-				"Mask": "290ceeff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"19": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "colony",
-				"Mask": "434343ff",
-				"MaskAlt": "666565ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"15": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "hex",
-				"Mask": "5d4f44ff",
-				"MaskAlt": "840000ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
 				"IsRoom": true
 			},
 			"1": {
@@ -2803,26 +2594,70 @@
 				"Shootable": true,
 				"IsRoom": false
 			},
-			"25": {
+			"11": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "hightech",
+				"Mask": "808080ff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"12": {
 				"Name": "tile",
 				"Type": "Floor",
 				"Style": "dirt",
-				"Mask": "626262ff",
+				"Mask": "1a0c72ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": false,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"13": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "metal",
+				"Mask": "808080ff",
 				"MaskAlt": "808080ff",
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
 				"IsRoom": true
 			},
-			"9": {
+			"14": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "panel",
-				"Mask": "b6b4b4ff",
-				"MaskAlt": "727e5fff",
-				"CanWalk": true,
+				"Style": "greenstain",
+				"Mask": "deb462ff",
+				"MaskAlt": "c49c50ff",
+				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
+				"IsRoom": false
+			},
+			"15": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "hex",
+				"Mask": "5d4f44ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"16": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "water",
+				"Mask": "48a638ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
 				"IsRoom": false
 			},
 			"17": {
@@ -2836,49 +2671,60 @@
 				"Shootable": false,
 				"IsRoom": true
 			},
-			"28": {
+			"18": {
 				"Name": "tile",
 				"Type": "Floor",
-				"Style": "wood2",
-				"Mask": "705c48ff",
-				"MaskAlt": "008400ff",
+				"Style": "wood",
+				"Mask": "513e2bff",
+				"MaskAlt": "808080ff",
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
 				"IsRoom": true
 			},
-			"4": {
-				"Name": "",
-				"Type": "",
-				"Style": "",
-				"Mask": "ffffffff",
-				"MaskAlt": "ffffffff",
+			"19": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "colony",
+				"Mask": "434343ff",
+				"MaskAlt": "666565ff",
 				"CanWalk": false,
-				"IsOpaque": false,
-				"Shootable": false,
+				"IsOpaque": true,
+				"Shootable": true,
 				"IsRoom": false
 			},
-			"3": {
+			"2": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "tile",
+				"Mask": "808080ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"20": {
 				"Name": "tile",
 				"Type": "Floor",
 				"Style": "hex",
-				"Mask": "805732ff",
+				"Mask": "b47640ff",
 				"MaskAlt": "840000ff",
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
 				"IsRoom": true
 			},
-			"5": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "panel",
-				"Mask": "b6b4b4ff",
-				"MaskAlt": "6c8a44ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
+			"21": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "hex",
+				"Mask": "563920ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
 			},
 			"22": {
 				"Name": "wall",
@@ -2886,6 +2732,50 @@
 				"Style": "brick",
 				"Mask": "4a4a4aff",
 				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"23": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "wood",
+				"Mask": "725637ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"24": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "dirt",
+				"Mask": "a3805fff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"25": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "dirt",
+				"Mask": "626262ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"26": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "panel",
+				"Mask": "b6b4b4ff",
+				"MaskAlt": "8a8a8aff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -2902,15 +2792,15 @@
 				"Shootable": true,
 				"IsRoom": false
 			},
-			"0": {
-				"Name": "door",
-				"Type": "Door",
-				"Style": "doom",
-				"Mask": "fffafaff",
+			"28": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "wood2",
+				"Mask": "705c48ff",
 				"MaskAlt": "008400ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
 				"IsRoom": true
 			},
 			"29": {
@@ -2923,6 +2813,116 @@
 				"IsOpaque": false,
 				"Shootable": false,
 				"IsRoom": true
+			},
+			"3": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "hex",
+				"Mask": "805732ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"30": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "cobble",
+				"Mask": "536448ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"31": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "support",
+				"Mask": "515151ff",
+				"MaskAlt": "3768f5ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"32": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "hex",
+				"Mask": "8e8e8eff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"4": {
+				"Name": "",
+				"Type": "",
+				"Style": "",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
+				"CanWalk": false,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"5": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "panel",
+				"Mask": "b6b4b4ff",
+				"MaskAlt": "6c8a44ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"6": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "panel",
+				"Mask": "b6b4b4ff",
+				"MaskAlt": "875e36ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"7": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "dirt",
+				"Mask": "290ceeff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"8": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "plasteel",
+				"Mask": "696969ff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"9": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "panel",
+				"Mask": "b6b4b4ff",
+				"MaskAlt": "727e5fff",
+				"CanWalk": true,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
 			}
 		},
 		"Tiles": ["4,4,4,4,4,4,4,4,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -3503,191 +3503,15 @@
 		"Weapons": ["Fists", "Marine Pistol"],
 		"Song": "",
 		"TileClasses": {
-			"24": {
+			"0": {
 				"Name": "tile",
 				"Type": "Floor",
-				"Style": "dirt",
-				"Mask": "5d5d5dff",
-				"MaskAlt": "808080ff",
+				"Style": "water",
+				"Mask": "208c20ff",
+				"MaskAlt": "840000ff",
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": true
-			},
-			"13": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "dirt",
-				"Mask": "08068cff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"26": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "brick",
-				"Mask": "858585ff",
-				"MaskAlt": "008400ff",
-				"CanWalk": true,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"12": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "panel",
-				"Mask": "b6b3b3ff",
-				"MaskAlt": "5d5d5dff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"20": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "metal",
-				"Mask": "8e6b3eff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"6": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "panel",
-				"Mask": "808080ff",
-				"MaskAlt": "695236ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"8": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "panel",
-				"Mask": "96a88fff",
-				"MaskAlt": "5f6b43ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"18": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "metal",
-				"Mask": "7b7b7bff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"21": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "brick2",
-				"Mask": "4b4b4bff",
-				"MaskAlt": "008400ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"16": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "brick",
-				"Mask": "696868ff",
-				"MaskAlt": "008400ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"2": {
-				"Name": "door",
-				"Type": "Door",
-				"Style": "doom",
-				"Mask": "ffffffff",
-				"MaskAlt": "ffffffff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": true
-			},
-			"14": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "techwall",
-				"Mask": "808080ff",
-				"MaskAlt": "008400ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"11": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "hex",
-				"Mask": "8e6b3eff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"23": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "wood",
-				"Mask": "a37845ff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"7": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "dirt",
-				"Mask": "85673eff",
-				"MaskAlt": "008400ff",
-				"CanWalk": false,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"19": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "hex",
-				"Mask": "626961ff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"15": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "greenstain",
-				"Mask": "c29d40ff",
-				"MaskAlt": "a88023ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
 				"IsRoom": false
 			},
 			"1": {
@@ -3712,22 +3536,66 @@
 				"Shootable": false,
 				"IsRoom": true
 			},
-			"25": {
+			"11": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "hex",
+				"Mask": "8e6b3eff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"12": {
 				"Name": "wall",
 				"Type": "Wall",
 				"Style": "panel",
-				"Mask": "a7afa4ff",
-				"MaskAlt": "636956ff",
-				"CanWalk": true,
+				"Mask": "b6b3b3ff",
+				"MaskAlt": "5d5d5dff",
+				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
 				"IsRoom": false
 			},
-			"9": {
+			"13": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "dirt",
+				"Mask": "08068cff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"14": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "plasteel2",
+				"Style": "techwall",
 				"Mask": "808080ff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"15": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "greenstain",
+				"Mask": "c29d40ff",
+				"MaskAlt": "a88023ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"16": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "brick",
+				"Mask": "696868ff",
 				"MaskAlt": "008400ff",
 				"CanWalk": false,
 				"IsOpaque": true,
@@ -3745,34 +3613,56 @@
 				"Shootable": false,
 				"IsRoom": true
 			},
-			"4": {
-				"Name": "",
-				"Type": "",
-				"Style": "",
-				"Mask": "ffffffff",
-				"MaskAlt": "ffffffff",
-				"CanWalk": false,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"3": {
+			"18": {
 				"Name": "tile",
 				"Type": "Floor",
-				"Style": "tile",
-				"Mask": "808060ff",
-				"MaskAlt": "840000ff",
+				"Style": "metal",
+				"Mask": "7b7b7bff",
+				"MaskAlt": "808080ff",
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
 				"IsRoom": true
 			},
-			"5": {
+			"19": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "hex",
+				"Mask": "626961ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"2": {
+				"Name": "door",
+				"Type": "Door",
+				"Style": "doom",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": true
+			},
+			"20": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "metal",
+				"Mask": "8e6b3eff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"21": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "greenstain",
-				"Mask": "777575ff",
-				"MaskAlt": "235d23ff",
+				"Style": "brick2",
+				"Mask": "4b4b4bff",
+				"MaskAlt": "008400ff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -3789,6 +3679,50 @@
 				"Shootable": false,
 				"IsRoom": true
 			},
+			"23": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "wood",
+				"Mask": "a37845ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"24": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "dirt",
+				"Mask": "5d5d5dff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"25": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "panel",
+				"Mask": "a7afa4ff",
+				"MaskAlt": "636956ff",
+				"CanWalk": true,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"26": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "brick",
+				"Mask": "858585ff",
+				"MaskAlt": "008400ff",
+				"CanWalk": true,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
 			"27": {
 				"Name": "wall",
 				"Type": "Wall",
@@ -3800,15 +3734,81 @@
 				"Shootable": true,
 				"IsRoom": false
 			},
-			"0": {
+			"3": {
 				"Name": "tile",
 				"Type": "Floor",
-				"Style": "water",
-				"Mask": "208c20ff",
+				"Style": "tile",
+				"Mask": "808060ff",
 				"MaskAlt": "840000ff",
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
+				"IsRoom": true
+			},
+			"4": {
+				"Name": "",
+				"Type": "",
+				"Style": "",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
+				"CanWalk": false,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"5": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "greenstain",
+				"Mask": "777575ff",
+				"MaskAlt": "235d23ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"6": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "panel",
+				"Mask": "808080ff",
+				"MaskAlt": "695236ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"7": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "dirt",
+				"Mask": "85673eff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"8": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "panel",
+				"Mask": "96a88fff",
+				"MaskAlt": "5f6b43ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"9": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "plasteel2",
+				"Mask": "808080ff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
 				"IsRoom": false
 			}
 		},
@@ -4447,166 +4447,12 @@
 		"Weapons": ["Fists", "Marine Pistol"],
 		"Song": "",
 		"TileClasses": {
-			"13": {
+			"0": {
 				"Name": "tile",
 				"Type": "Floor",
-				"Style": "dirt",
-				"Mask": "001291ff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"12": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "panel",
-				"Mask": "a6a6a6ff",
-				"MaskAlt": "4a5842ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"20": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "dirt",
-				"Mask": "9a6b24ff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"6": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "greenstain",
-				"Mask": "5b745fff",
-				"MaskAlt": "596455ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"8": {
-				"Name": "door",
-				"Type": "Door",
-				"Style": "tech",
-				"Mask": "e7d9d9ff",
-				"MaskAlt": "008400ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": true
-			},
-			"18": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "tile",
-				"Mask": "5f5f5fff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"21": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "dirt",
-				"Mask": "543c15ff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"16": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "hex",
-				"Mask": "515151ff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"2": {
-				"Name": "door",
-				"Type": "Door",
-				"Style": "doom",
-				"Mask": "ffffffff",
-				"MaskAlt": "ffffffff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": true
-			},
-			"14": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "station",
+				"Style": "metal",
 				"Mask": "808080ff",
-				"MaskAlt": "008400ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"11": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "hex",
-				"Mask": "8c5c2fff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"23": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "techwall",
-				"Mask": "808080ff",
-				"MaskAlt": "587258ff",
-				"CanWalk": true,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"7": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "techwall",
-				"Mask": "808080ff",
-				"MaskAlt": "008400ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"19": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "hex",
-				"Mask": "645640ff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"15": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "hex",
-				"Mask": "808080ff",
-				"MaskAlt": "808080ff",
+				"MaskAlt": "840000ff",
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
@@ -4634,16 +4480,71 @@
 				"Shootable": true,
 				"IsRoom": false
 			},
-			"9": {
+			"11": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "hex",
+				"Mask": "8c5c2fff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"12": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "hightech",
+				"Style": "panel",
+				"Mask": "a6a6a6ff",
+				"MaskAlt": "4a5842ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"13": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "dirt",
+				"Mask": "001291ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"14": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "station",
 				"Mask": "808080ff",
 				"MaskAlt": "008400ff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
 				"IsRoom": false
+			},
+			"15": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "hex",
+				"Mask": "808080ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"16": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "hex",
+				"Mask": "515151ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
 			},
 			"17": {
 				"Name": "tile",
@@ -4652,6 +4553,94 @@
 				"Mask": "bf945dff",
 				"MaskAlt": "808080ff",
 				"CanWalk": false,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"18": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "tile",
+				"Mask": "5f5f5fff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"19": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "hex",
+				"Mask": "645640ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"2": {
+				"Name": "door",
+				"Type": "Door",
+				"Style": "doom",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": true
+			},
+			"20": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "dirt",
+				"Mask": "9a6b24ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"21": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "dirt",
+				"Mask": "543c15ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"22": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "greenstain",
+				"Mask": "557b40ff",
+				"MaskAlt": "275b2fff",
+				"CanWalk": true,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"23": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "techwall",
+				"Mask": "808080ff",
+				"MaskAlt": "587258ff",
+				"CanWalk": true,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"3": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "water",
+				"Mask": "00a100ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
 				"IsRoom": false
@@ -4667,17 +4656,6 @@
 				"Shootable": false,
 				"IsRoom": false
 			},
-			"3": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "water",
-				"Mask": "00a100ff",
-				"MaskAlt": "840000ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
 			"5": {
 				"Name": "tile",
 				"Type": "Floor",
@@ -4689,27 +4667,49 @@
 				"Shootable": false,
 				"IsRoom": true
 			},
-			"22": {
+			"6": {
 				"Name": "wall",
 				"Type": "Wall",
 				"Style": "greenstain",
-				"Mask": "557b40ff",
-				"MaskAlt": "275b2fff",
-				"CanWalk": true,
+				"Mask": "5b745fff",
+				"MaskAlt": "596455ff",
+				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
 				"IsRoom": false
 			},
-			"0": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "metal",
+			"7": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "techwall",
 				"Mask": "808080ff",
-				"MaskAlt": "840000ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"8": {
+				"Name": "door",
+				"Type": "Door",
+				"Style": "tech",
+				"Mask": "e7d9d9ff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
 				"IsRoom": true
+			},
+			"9": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "hightech",
+				"Mask": "808080ff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
 			}
 		},
 		"Tiles": ["4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,1,1,1,1,1,1,1,1,1,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -5493,126 +5493,16 @@
 		"Weapons": ["Fists", "Marine Pistol"],
 		"Song": "",
 		"TileClasses": {
-			"13": {
+			"0": {
 				"Name": "tile",
 				"Type": "Floor",
-				"Style": "dirt",
-				"Mask": "a36f25ff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"12": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "panel",
-				"Mask": "959594ff",
-				"MaskAlt": "5d7e3bff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"6": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "water",
-				"Mask": "329331ff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"8": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "techwall",
+				"Style": "metal",
 				"Mask": "808080ff",
-				"MaskAlt": "008400ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"18": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "panel",
-				"Mask": "959594ff",
-				"MaskAlt": "788765ff",
-				"CanWalk": true,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"16": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "techwall",
-				"Mask": "808080ff",
-				"MaskAlt": "697b69ff",
-				"CanWalk": true,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"2": {
-				"Name": "door",
-				"Type": "Door",
-				"Style": "doom",
-				"Mask": "ffffffff",
-				"MaskAlt": "ffffffff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": true
-			},
-			"14": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "dirt",
-				"Mask": "4a391fff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"11": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "grate",
-				"Mask": "6b5234ff",
 				"MaskAlt": "808080ff",
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
 				"IsRoom": true
-			},
-			"7": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "smallsquare",
-				"Mask": "706f6fff",
-				"MaskAlt": "808080ff",
-				"CanWalk": false,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"15": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "greenstain",
-				"Mask": "ecbd91ff",
-				"MaskAlt": "cd9f66ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
 			},
 			"1": {
 				"Name": "wall",
@@ -5636,13 +5526,68 @@
 				"Shootable": false,
 				"IsRoom": true
 			},
-			"9": {
+			"11": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "grate",
+				"Mask": "6b5234ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"12": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "hightech",
-				"Mask": "808080ff",
-				"MaskAlt": "008400ff",
+				"Style": "panel",
+				"Mask": "959594ff",
+				"MaskAlt": "5d7e3bff",
 				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"13": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "dirt",
+				"Mask": "a36f25ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"14": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "dirt",
+				"Mask": "4a391fff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"15": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "greenstain",
+				"Mask": "ecbd91ff",
+				"MaskAlt": "cd9f66ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"16": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "techwall",
+				"Mask": "808080ff",
+				"MaskAlt": "697b69ff",
+				"CanWalk": true,
 				"IsOpaque": true,
 				"Shootable": true,
 				"IsRoom": false
@@ -5658,16 +5603,27 @@
 				"Shootable": true,
 				"IsRoom": false
 			},
-			"4": {
-				"Name": "",
-				"Type": "",
-				"Style": "",
+			"18": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "panel",
+				"Mask": "959594ff",
+				"MaskAlt": "788765ff",
+				"CanWalk": true,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"2": {
+				"Name": "door",
+				"Type": "Door",
+				"Style": "doom",
 				"Mask": "ffffffff",
 				"MaskAlt": "ffffffff",
 				"CanWalk": false,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": true
 			},
 			"3": {
 				"Name": "tile",
@@ -5680,6 +5636,17 @@
 				"Shootable": false,
 				"IsRoom": true
 			},
+			"4": {
+				"Name": "",
+				"Type": "",
+				"Style": "",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
+				"CanWalk": false,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
 			"5": {
 				"Name": "tile",
 				"Type": "Floor",
@@ -5691,16 +5658,49 @@
 				"Shootable": false,
 				"IsRoom": true
 			},
-			"0": {
+			"6": {
 				"Name": "tile",
 				"Type": "Floor",
-				"Style": "metal",
-				"Mask": "808080ff",
+				"Style": "water",
+				"Mask": "329331ff",
 				"MaskAlt": "808080ff",
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": true
+				"IsRoom": false
+			},
+			"7": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "smallsquare",
+				"Mask": "706f6fff",
+				"MaskAlt": "808080ff",
+				"CanWalk": false,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"8": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "techwall",
+				"Mask": "808080ff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"9": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "hightech",
+				"Mask": "808080ff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
 			}
 		},
 		"Tiles": ["4,4,4,4,4,4,4,4,4,4,4,4,17,17,17,17,17,17,17,17,17,17,17,17,17,17,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,1,1,1,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -6428,114 +6428,15 @@
 		"Weapons": ["Fists", "Marine Pistol"],
 		"Song": "",
 		"TileClasses": {
-			"13": {
+			"0": {
 				"Name": "tile",
 				"Type": "Floor",
 				"Style": "dirt",
-				"Mask": "d4a97fff",
+				"Mask": "802020ff",
 				"MaskAlt": "840000ff",
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": false
-			},
-			"12": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "greenstain",
-				"Mask": "c4925aff",
-				"MaskAlt": "7e6438ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"6": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "grate",
-				"Mask": "4d2f1eff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"8": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "brick",
-				"Mask": "353535ff",
-				"MaskAlt": "840000ff",
-				"CanWalk": true,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"16": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "wood",
-				"Mask": "5d5d5dff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"2": {
-				"Name": "door",
-				"Type": "Door",
-				"Style": "doom",
-				"Mask": "ffffffff",
-				"MaskAlt": "ffffffff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": true
-			},
-			"14": {
-				"Name": "door",
-				"Type": "Door",
-				"Style": "dungeon",
-				"Mask": "ffffffff",
-				"MaskAlt": "ffffffff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": true
-			},
-			"11": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "dirt",
-				"Mask": "4f4e4eff",
-				"MaskAlt": "840000ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true
-			},
-			"7": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "water",
-				"Mask": "279a15ff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"15": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "greenstain",
-				"Mask": "a87f52ff",
-				"MaskAlt": "5f4c2aff",
-				"CanWalk": true,
-				"IsOpaque": true,
-				"Shootable": true,
 				"IsRoom": false
 			},
 			"1": {
@@ -6560,16 +6461,71 @@
 				"Shootable": true,
 				"IsRoom": false
 			},
-			"9": {
+			"11": {
 				"Name": "tile",
 				"Type": "Floor",
-				"Style": "hex",
-				"Mask": "51433bff",
+				"Style": "dirt",
+				"Mask": "4f4e4eff",
 				"MaskAlt": "840000ff",
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
 				"IsRoom": true
+			},
+			"12": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "greenstain",
+				"Mask": "c4925aff",
+				"MaskAlt": "7e6438ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"13": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "dirt",
+				"Mask": "d4a97fff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"14": {
+				"Name": "door",
+				"Type": "Door",
+				"Style": "dungeon",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": true
+			},
+			"15": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "greenstain",
+				"Mask": "a87f52ff",
+				"MaskAlt": "5f4c2aff",
+				"CanWalk": true,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"16": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "wood",
+				"Mask": "5d5d5dff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
 			},
 			"17": {
 				"Name": "tile",
@@ -6582,16 +6538,16 @@
 				"Shootable": false,
 				"IsRoom": false
 			},
-			"4": {
-				"Name": "",
-				"Type": "",
-				"Style": "",
+			"2": {
+				"Name": "door",
+				"Type": "Door",
+				"Style": "doom",
 				"Mask": "ffffffff",
 				"MaskAlt": "ffffffff",
 				"CanWalk": false,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": true
 			},
 			"3": {
 				"Name": "tile",
@@ -6604,6 +6560,17 @@
 				"Shootable": false,
 				"IsRoom": true
 			},
+			"4": {
+				"Name": "",
+				"Type": "",
+				"Style": "",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
+				"CanWalk": false,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
 			"5": {
 				"Name": "tile",
 				"Type": "Floor",
@@ -6615,16 +6582,49 @@
 				"Shootable": false,
 				"IsRoom": false
 			},
-			"0": {
+			"6": {
 				"Name": "tile",
 				"Type": "Floor",
-				"Style": "dirt",
-				"Mask": "802020ff",
-				"MaskAlt": "840000ff",
+				"Style": "grate",
+				"Mask": "4d2f1eff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"7": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "water",
+				"Mask": "279a15ff",
+				"MaskAlt": "808080ff",
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
 				"IsRoom": false
+			},
+			"8": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "brick",
+				"Mask": "353535ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"9": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "hex",
+				"Mask": "51433bff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
 			}
 		},
 		"Tiles": ["5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5",
@@ -7202,145 +7202,13 @@
 		"Weapons": ["Fists", "Marine Pistol"],
 		"Song": "",
 		"TileClasses": {
-			"13": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "wood",
-				"Mask": "724d2eff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"12": {
-				"Name": "",
-				"Type": "",
-				"Style": "recessed",
-				"Mask": "808080ff",
-				"MaskAlt": "008400ff",
-				"CanWalk": false,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"20": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "hex",
-				"Mask": "986e26ff",
-				"MaskAlt": "008400ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"6": {
+			"0": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "panel",
-				"Mask": "9f775bff",
-				"MaskAlt": "695339ff",
+				"Style": "greenstain",
+				"Mask": "e9b16bff",
+				"MaskAlt": "d2a259ff",
 				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"8": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "panel",
-				"Mask": "c99775ff",
-				"MaskAlt": "9c7d58ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"18": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "hex",
-				"Mask": "cb9433ff",
-				"MaskAlt": "008400ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"16": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "water",
-				"Mask": "5ad001ff",
-				"MaskAlt": "808080ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"2": {
-				"Name": "",
-				"Type": "",
-				"Style": "recessed",
-				"Mask": "808080ff",
-				"MaskAlt": "008400ff",
-				"CanWalk": false,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"14": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "panel",
-				"Mask": "d9ac8dff",
-				"MaskAlt": "9c7d58ff",
-				"CanWalk": true,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"11": {
-				"Name": "door",
-				"Type": "Door",
-				"Style": "doom",
-				"Mask": "ffffffff",
-				"MaskAlt": "008400ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": true
-			},
-			"7": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "grate",
-				"Mask": "7b6036ff",
-				"MaskAlt": "808080ff",
-				"CanWalk": false,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
-			},
-			"19": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "panel",
-				"Mask": "88bd78ff",
-				"MaskAlt": "446939ff",
-				"CanWalk": true,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false
-			},
-			"15": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "panel",
-				"Mask": "b89176ff",
-				"MaskAlt": "695339ff",
-				"CanWalk": true,
 				"IsOpaque": true,
 				"Shootable": true,
 				"IsRoom": false
@@ -7367,11 +7235,66 @@
 				"Shootable": false,
 				"IsRoom": false
 			},
-			"9": {
+			"11": {
+				"Name": "door",
+				"Type": "Door",
+				"Style": "doom",
+				"Mask": "ffffffff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": true
+			},
+			"12": {
+				"Name": "",
+				"Type": "",
+				"Style": "recessed",
+				"Mask": "808080ff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"13": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "wood",
+				"Mask": "724d2eff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"14": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "panel",
+				"Mask": "d9ac8dff",
+				"MaskAlt": "9c7d58ff",
+				"CanWalk": true,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"15": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "panel",
+				"Mask": "b89176ff",
+				"MaskAlt": "695339ff",
+				"CanWalk": true,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"16": {
 				"Name": "tile",
 				"Type": "Floor",
 				"Style": "water",
-				"Mask": "398500ff",
+				"Mask": "5ad001ff",
 				"MaskAlt": "808080ff",
 				"CanWalk": true,
 				"IsOpaque": false,
@@ -7389,11 +7312,44 @@
 				"Shootable": true,
 				"IsRoom": false
 			},
-			"4": {
+			"18": {
 				"Name": "tile",
 				"Type": "Floor",
 				"Style": "hex",
-				"Mask": "51493eff",
+				"Mask": "cb9433ff",
+				"MaskAlt": "008400ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"19": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "panel",
+				"Mask": "88bd78ff",
+				"MaskAlt": "446939ff",
+				"CanWalk": true,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"2": {
+				"Name": "",
+				"Type": "",
+				"Style": "recessed",
+				"Mask": "808080ff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"20": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "hex",
+				"Mask": "986e26ff",
 				"MaskAlt": "008400ff",
 				"CanWalk": true,
 				"IsOpaque": false,
@@ -7411,6 +7367,17 @@
 				"Shootable": true,
 				"IsRoom": false
 			},
+			"4": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "hex",
+				"Mask": "51493eff",
+				"MaskAlt": "008400ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
 			"5": {
 				"Name": "wall",
 				"Type": "Wall",
@@ -7422,15 +7389,48 @@
 				"Shootable": true,
 				"IsRoom": false
 			},
-			"0": {
+			"6": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "greenstain",
-				"Mask": "e9b16bff",
-				"MaskAlt": "d2a259ff",
+				"Style": "panel",
+				"Mask": "9f775bff",
+				"MaskAlt": "695339ff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
+				"IsRoom": false
+			},
+			"7": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "grate",
+				"Mask": "7b6036ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": false,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"8": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "panel",
+				"Mask": "c99775ff",
+				"MaskAlt": "9c7d58ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"9": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "water",
+				"Mask": "398500ff",
+				"MaskAlt": "808080ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
 				"IsRoom": false
 			}
 		},
