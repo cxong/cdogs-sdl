@@ -12,6 +12,8 @@ env:
     - VERSION=@VERSION@
     - CTEST_EXT_COLOR_OUTPUT=TRUE
     - CTEST_BUILD_FLAGS=-j4
+    - SDL_AUDIODRIVER=dummy
+    - SDL_VIDEODRIVER=dummy
 
 matrix:
   include:
@@ -56,7 +58,7 @@ script:
   - cmake -DCMAKE_INSTALL_PREFIX=. -DDATA_INSTALL_DIR=. -Wno-dev .
   - make -j2
   - ctest -VV -S
-  - cd src && valgrind ./cdogs-sdl --demo
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cd src && valgrind ./cdogs-sdl --demo; fi
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
