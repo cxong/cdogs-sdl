@@ -56,6 +56,7 @@ script:
   - cmake -DCMAKE_INSTALL_PREFIX=. -DDATA_INSTALL_DIR=. -Wno-dev .
   - make -j2
   - ctest -VV -S
+  - cd src && valgrind ./cdogs-sdl --demo
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

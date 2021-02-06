@@ -66,7 +66,6 @@ void MouseReset(Mouse *m)
 	m->previousPos = svec2i_zero();
 	m->currentPos = svec2i_zero();
 	m->wheel = svec2i_zero();
-	m->ticks = 0;
 	m->repeatedTicks = 0;
 	m->mouseMovePos = svec2i_zero();
 }
