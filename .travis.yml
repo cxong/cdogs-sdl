@@ -8,8 +8,8 @@ addons:
       - valgrind
 
 env:
-  - VERSION=0.10.2
   global:
+    - VERSION=0.10.2
     - CTEST_EXT_COLOR_OUTPUT=TRUE
     - CTEST_BUILD_FLAGS=-j4
 
@@ -58,7 +58,7 @@ script:
 
   # Tests are broken on osx. Hope this will be fixed some day
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make test ; fi
-  - ctest -VV -S ./project_test.cmake
+  - ctest -VV -S
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

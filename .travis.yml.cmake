@@ -8,8 +8,8 @@ addons:
       - valgrind
 
 env:
-  - VERSION=@VERSION@
   global:
+    - VERSION=@VERSION@
     - CTEST_EXT_COLOR_OUTPUT=TRUE
     - CTEST_BUILD_FLAGS=-j4
 
