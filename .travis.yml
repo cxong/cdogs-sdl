@@ -2,14 +2,25 @@ language: c
 dist: focal
 osx_image: xcode12.2
 
-compiler:
-  - gcc
-  - clang
-os:
-  - linux
-  - osx
+addons:
+  apt:
+    packages:
+      - valgrind
+
 env:
-  - VERSION=0.10.2
+  global:
+    - VERSION=0.10.2
+    - CTEST_EXT_COLOR_OUTPUT=TRUE
+    - CTEST_BUILD_FLAGS=-j4
+
+matrix:
+  include:
+    - os: linux
+      compiler: gcc
+      env: CTEST_TARGET_SYSTEM=Linux-gcc    CTEST_MODEL=Nightly
+    - os: osx
+      compiler: clang
+      env: CTEST_TARGET_SYSTEM=MacOS-clang  CTEST_MODEL=Nightly
 
 before_install:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
@@ -47,6 +58,7 @@ script:
 
   # Tests are broken on osx. Hope this will be fixed some day
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make test ; fi
+  - ctest -VV -S
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
