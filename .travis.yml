@@ -55,9 +55,6 @@ script:
   # Match install prefix with data dir so that package contains everything required
   - cmake -DCMAKE_INSTALL_PREFIX=. -DDATA_INSTALL_DIR=. -Wno-dev .
   - make -j2
-
-  # Tests are broken on osx. Hope this will be fixed some day
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make test ; fi
   - ctest -VV -S
 
 after_success:

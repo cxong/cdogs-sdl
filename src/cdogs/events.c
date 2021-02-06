@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2016, 2018-2020 Cong Xu
+	Copyright (c) 2013-2016, 2018-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -248,6 +248,17 @@ void EventPoll(
 		GraphicsConfigSetFromConfig(&gGraphicsDevice.cachedConfig, &gConfig);
 		GraphicsInitialize(&gGraphicsDevice);
 	}
+    
+    // Auto quit on timer
+    if (handlers->DemoQuitTimer > 0)
+    {
+        handlers->DemoQuitTimer -= ticks;
+        if (handlers->DemoQuitTimer <= 0)
+        {
+            LOG(LM_MAIN, LL_INFO, "Auto-quitting");
+            handlers->HasQuit = true;
+        }
+    }
 }
 
 int GetKeyboardCmd(

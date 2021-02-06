@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2016, 2019-2020 Cong Xu
+	Copyright (c) 2013-2016, 2019-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -89,15 +89,16 @@ void PrintHelp(void)
 		else
 			printf("\n");
 	}
-	printf("    --log=M,L        Enable logging for module M at level L.\n\n");
 	printf(
-		"    --log=L          Enable logging for all modules at level L.\n\n");
-	printf("    --logfile=F      Log to file by filename\n\n");
+        "    --log=M,L        Enable logging for module M at level L.\n\n"
+		"    --log=L          Enable logging for all modules at level L.\n\n"
+        "    --logfile=F      Log to file by filename\n\n");
 
 	printf(
 		"%s\n",
 		"Other:\n"
-		"    --connect=host   (Experimental) connect to a game server\n");
+		"    --connect=host   (Experimental) connect to a game server\n"
+        "    --demo           (Experimental) run game for 30 seconds\n");
 }
 
 void ProcessCommandLine(char *buf, const int argc, char *argv[])
@@ -121,7 +122,7 @@ void ProcessCommandLine(char *buf, const int argc, char *argv[])
 static void PrintConfig(const Config *c, const int indent);
 bool ParseArgs(
 	const int argc, char *argv[], ENetAddress *connectAddr,
-	const char **loadCampaign)
+	const char **loadCampaign, int *demoQuitTimer)
 {
 	struct option longopts[] = {
 		{"fullscreen", no_argument, NULL, 'f'},
@@ -131,6 +132,7 @@ bool ParseArgs(
 		{"config", optional_argument, NULL, 'C'},
 		{"log", required_argument, NULL, 1000},
 		{"logfile", required_argument, NULL, 1001},
+        {"demo", no_argument, NULL, 1002},
 		{"help", no_argument, NULL, 'h'},
 		{0, 0, NULL, 0}};
 	int opt = 0;
@@ -192,6 +194,10 @@ bool ParseArgs(
 		case 1001:
 			LogOpenFile(optarg);
 			break;
+        case 1002:
+            *demoQuitTimer = 30 * 1000;
+            printf("Entering demo mode; will auto-quit in 30 seconds\n");
+            break;
 		case 'x':
 			if (enet_address_set_host(connectAddr, optarg) != 0)
 			{

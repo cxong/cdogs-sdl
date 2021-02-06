@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2014, 2016-2018 Cong Xu
+	Copyright (c) 2014, 2016-2018, 2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -210,7 +210,7 @@ bool LoopRunnerRunInner(LoopRunInnerData *ctx)
 	// Input
 	if ((ctx->data->Frames & 1) || !ctx->data->InputEverySecondFrame)
 	{
-		EventPoll(&gEventHandlers, ctx->p.TicksNow, NULL);
+		EventPoll(&gEventHandlers, ctx->p.TicksElapsed, NULL);
 		if (ctx->data->InputFunc)
 		{
 			ctx->data->InputFunc(ctx->data);

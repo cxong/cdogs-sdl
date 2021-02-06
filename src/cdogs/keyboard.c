@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2015, 2018 Cong Xu, davidrgmcb
+    Copyright (c) 2013-2015, 2018, 2021 Cong Xu, davidrgmcb
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -59,7 +59,6 @@ void KeyInit(keyboard_t *keyboard)
 {
 	memset(keyboard, 0, sizeof *keyboard);
 	keyboard->modState = KMOD_NONE;
-	keyboard->ticks = 0;
 	keyboard->repeatedTicks = 0;
 	keyboard->isFirstRepeat = 1;
 	for (int i = 0; i < MAX_KEYBOARD_CONFIGS; i++)
@@ -189,7 +188,7 @@ void DiagonalHold(keyboard_t *keyboard, int currentPlayer)
     //Propogates all changes to the keyboard state, when these are removed the function ceases to do anything.
 }
 
-void KeyPostPoll(keyboard_t *keyboard, Uint32 ticks)
+void KeyPostPoll(keyboard_t *keyboard, const Uint32 ticks)
 {
 	int isRepeating = 0;
 	int areSameKeysPressed = 1;
@@ -205,8 +204,7 @@ void KeyPostPoll(keyboard_t *keyboard, Uint32 ticks)
 	// If same keys have been pressed, remember how long they have been pressed
 	if (areSameKeysPressed)
 	{
-		Uint32 ticksElapsed = ticks - keyboard->ticks;
-		keyboard->repeatedTicks += ticksElapsed;
+        keyboard->repeatedTicks += ticks;
 	}
 	else
 	{
@@ -248,7 +246,6 @@ void KeyPostPoll(keyboard_t *keyboard, Uint32 ticks)
 				!keyboard->previousKeys[i].isPressed;
 		}
 	}
-	keyboard->ticks = ticks;
     
     for (int currentPlayer = 0; currentPlayer < MAX_KEYBOARD_CONFIGS; ++currentPlayer)
         {

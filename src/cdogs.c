@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2017, 2019-2020 Cong Xu
+	Copyright (c) 2013-2017, 2019-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -152,7 +152,8 @@ int main(int argc, char *argv[])
 	char buf[CDOGS_PATH_MAX];
 	ProcessCommandLine(buf, argc, argv);
 	LOG(LM_MAIN, LL_INFO, "Command line (%d args):%s", argc, buf);
-	if (!ParseArgs(argc, argv, &connectAddr, &loadCampaign))
+    int demoQuitTimer = 0;
+	if (!ParseArgs(argc, argv, &connectAddr, &loadCampaign, &demoQuitTimer))
 	{
 		goto bail;
 	}
@@ -189,6 +190,7 @@ int main(int argc, char *argv[])
 	}
 
 	EventInit(&gEventHandlers);
+    gEventHandlers.DemoQuitTimer = demoQuitTimer;
 	NetServerInit(&gNetServer);
 	PicManagerInit(&gPicManager);
 	TileClassesInit(&gTileClasses);

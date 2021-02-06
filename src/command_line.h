@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, Cong Xu
+    Copyright (c) 2013-2016, 2021 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -41,4 +41,4 @@ void ProcessCommandLine(char *buf, const int argc, char *argv[]);
 // Parse command-line arguments and set config. Returns whether to run the game
 bool ParseArgs(
 	const int argc, char *argv[],
-	ENetAddress *connectAddr, const char **loadCampaign);
+	ENetAddress *connectAddr, const char **loadCampaign, int *demoQuitTimer);

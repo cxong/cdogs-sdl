@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2015, 2019-2020 Cong Xu
+	Copyright (c) 2013-2015, 2019-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -108,7 +108,7 @@ void MouseOnWheel(Mouse *m, const Sint32 x, const Sint32 y)
 	m->wheel = svec2i(x, y);
 }
 
-void MousePostPoll(Mouse *mouse, Uint32 ticks)
+void MousePostPoll(Mouse *mouse, const Uint32 ticks)
 {
 	int areSameButtonsPressed = 1;
 	int i;
@@ -124,8 +124,7 @@ void MousePostPoll(Mouse *mouse, Uint32 ticks)
 	// pressed
 	if (areSameButtonsPressed)
 	{
-		Uint32 ticksElapsed = ticks - mouse->ticks;
-		mouse->repeatedTicks += ticksElapsed;
+		mouse->repeatedTicks += ticks;
 	}
 	else
 	{
@@ -151,7 +150,6 @@ void MousePostPoll(Mouse *mouse, Uint32 ticks)
 				mouse->currentButtons[i] && !mouse->previousButtons[i];
 		}
 	}
-	mouse->ticks = ticks;
 }
 
 bool MouseHasMoved(const Mouse *m)

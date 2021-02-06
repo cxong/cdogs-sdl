@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2015, 2018 Cong Xu
+    Copyright (c) 2013-2015, 2018, 2021 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -89,7 +89,6 @@ typedef struct
 	KeyPress pressedKeys[SDL_NUM_SCANCODES];
 	SDL_Keymod modState;
 	char Typed[32];
-	Uint32 ticks;
 	Uint32 repeatedTicks;
 	bool isFirstRepeat;
 	InputKeys PlayerKeys[MAX_KEYBOARD_CONFIGS];
@@ -101,7 +100,7 @@ InputKeys KeyLoadPlayerKeys(Config *c);
 void KeyPrePoll(keyboard_t *keyboard);
 void KeyOnKeyDown(keyboard_t *keyboard, const SDL_Keysym s);
 void KeyOnKeyUp(keyboard_t *keyboard, const SDL_Keysym s);
-void KeyPostPoll(keyboard_t *keyboard, Uint32 ticks);
+void KeyPostPoll(keyboard_t *keyboard, const Uint32 ticks);
 bool KeyIsDown(const keyboard_t *k, const int key);
 bool KeyIsPressed(const keyboard_t *k, const int key);
 bool KeyIsReleased(const keyboard_t *k, const int key);

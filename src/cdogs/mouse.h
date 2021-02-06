@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2015, 2019-2020 Cong Xu
+	Copyright (c) 2013-2015, 2019-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -44,7 +44,6 @@ typedef struct
 	struct vec2i wheel;
 	SDL_Cursor *cursor;
 	const Pic *trail;
-	Uint32 ticks;
 	Uint32 repeatedTicks;
 
 	struct vec2i mouseMovePos;
@@ -59,7 +58,7 @@ void MousePrePoll(Mouse *mouse);
 void MouseOnButtonDown(Mouse *mouse, Uint8 button);
 void MouseOnButtonUp(Mouse *mouse, Uint8 button);
 void MouseOnWheel(Mouse *m, const Sint32 x, const Sint32 y);
-void MousePostPoll(Mouse *mouse, Uint32 ticks);
+void MousePostPoll(Mouse *mouse, const Uint32 ticks);
 bool MouseHasMoved(const Mouse *m);
 int MouseGetPressed(const Mouse *m);
 bool MouseIsDown(const Mouse *m, const int button);
