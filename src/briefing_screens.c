@@ -304,7 +304,14 @@ static GameLoopResult MissionBriefingUpdate(GameLoopData *data, LoopRunner *l)
 		return UPDATE_RESULT_DRAW;
 	}
 
-	return UPDATE_RESULT_OK;
+    // Auto skip if on demo mode
+    if (gEventHandlers.DemoQuitTimer > 0)
+    {
+        mData->waitResult = EVENT_WAIT_OK;
+        goto bail;
+    }
+
+    return UPDATE_RESULT_OK;
 
 bail:
 	if (mData->waitResult == EVENT_WAIT_OK)
@@ -546,9 +553,29 @@ static GameLoopResult MissionSummaryUpdate(GameLoopData *data, LoopRunner *l)
 {
 	MissionSummaryData *mData = data->Data;
 
-	const GameLoopResult result = MenuUpdate(&mData->ms);
-	if (result == UPDATE_RESULT_OK)
+    GameLoopResult result = MenuUpdate(&mData->ms);
+	if (result == UPDATE_RESULT_DRAW)
 	{
+        bool done = true;
+        done = AnimatedCounterUpdate(&mData->AccessBonus, 1) && done;
+        done = AnimatedCounterUpdate(&mData->TimeBonus, 1) && done;
+        for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
+        {
+            done = AnimatedCounterUpdate(&mData->pDatas[i].Score, 1) && done;
+            done = AnimatedCounterUpdate(&mData->pDatas[i].Total, 1) && done;
+            done = AnimatedCounterUpdate(&mData->pDatas[i].HealthResurrection, 1) && done;
+            done = AnimatedCounterUpdate(&mData->pDatas[i].ButcherNinjaFriendly, 1) && done;
+        }
+
+        // Skip after animations are done if in demo mode
+        if (done && gEventHandlers.DemoQuitTimer > 0)
+        {
+            result = UPDATE_RESULT_OK;
+        }
+    }
+
+    if (result == UPDATE_RESULT_OK)
+    {
 		gCampaign.IsComplete =
 			mData->completed &&
 			mData->m->NextMission == (int)gCampaign.Setting.Missions.size;
@@ -566,18 +593,6 @@ static GameLoopResult MissionSummaryUpdate(GameLoopData *data, LoopRunner *l)
 		{
 			LoopRunnerChange(
 				l, HighScoresScreen(&gCampaign, &gGraphicsDevice));
-		}
-	}
-	else
-	{
-		AnimatedCounterUpdate(&mData->AccessBonus, 1);
-		AnimatedCounterUpdate(&mData->TimeBonus, 1);
-		for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
-		{
-			AnimatedCounterUpdate(&mData->pDatas[i].Score, 1);
-			AnimatedCounterUpdate(&mData->pDatas[i].Total, 1);
-			AnimatedCounterUpdate(&mData->pDatas[i].HealthResurrection, 1);
-			AnimatedCounterUpdate(&mData->pDatas[i].ButcherNinjaFriendly, 1);
 		}
 	}
 	return result;

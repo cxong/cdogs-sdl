@@ -42,11 +42,11 @@ void AnimatedCounterTerminate(AnimatedCounter *a)
 	CFREE(a->prefix);
 }
 
-void AnimatedCounterUpdate(AnimatedCounter *a, const int ticks)
+bool AnimatedCounterUpdate(AnimatedCounter *a, const int ticks)
 {
-	if (a->max == 0)
+	if (a->max == 0 || a->current == a->max)
 	{
-		return;
+		return true;
 	}
 	float inc = a->max * INC_RATIO;
 	for (int i = 0; i < ticks; i++)
@@ -58,6 +58,7 @@ void AnimatedCounterUpdate(AnimatedCounter *a, const int ticks)
 		}
 		a->current += (int)(a->max > 0 ? ceil(inc) : floor(inc));
 	}
+    return false;
 }
 void AnimatedCounterDraw(const AnimatedCounter *a, const struct vec2i pos)
 {

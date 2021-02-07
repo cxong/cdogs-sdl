@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2018, 2020 Cong Xu
+	Copyright (c) 2013-2018, 2020-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -206,37 +206,51 @@ static void NumPlayersTerminate(GameLoopData *data)
 }
 static GameLoopResult NumPlayersUpdate(GameLoopData *data, LoopRunner *l)
 {
-	MenuSystem *ms = data->Data;
-	const GameLoopResult result = MenuUpdate(ms);
-	if (result == UPDATE_RESULT_OK)
-	{
-		if (ms->hasAbort)
-		{
-			CampaignUnload(&gCampaign);
-			LoopRunnerPop(l);
-		}
-		else
-		{
-			const int numPlayers = ms->current->u.returnCode;
-			CA_FOREACH(const PlayerData, p, gPlayerDatas)
-			CASSERT(!p->IsLocal, "unexpected local player");
-			CA_FOREACH_END()
-			// Add the players
-			for (int i = 0; i < numPlayers; i++)
-			{
-				GameEvent e = GameEventNew(GAME_EVENT_PLAYER_DATA);
-				e.u.PlayerData = PlayerDataDefault(i);
-				e.u.PlayerData.UID = gNetClient.FirstPlayerUID + i;
-				GameEventsEnqueue(&gGameEvents, e);
-			}
-			// Process the events to force add the players
-			HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
-			// This also causes the client to send player data to the server
+    int numPlayers = 0;
+    GameLoopResult result = UPDATE_RESULT_DRAW;
+    bool hasAbort = false;
+    if (gEventHandlers.DemoQuitTimer > 0)
+    {
+        // Select random number of players for demo
+        numPlayers = RAND_INT(1, 5);
+        result = UPDATE_RESULT_OK;
+    }
+    else
+    {
+        MenuSystem *ms = data->Data;
+        result = MenuUpdate(ms);
+        numPlayers = ms->current->u.returnCode;
+        hasAbort = ms->hasAbort;
+    }
 
-			// Switch to player selection
-			LoopRunnerChange(l, PlayerSelection());
-		}
-	}
+    if (result == UPDATE_RESULT_OK)
+    {
+        if (hasAbort)
+        {
+            CampaignUnload(&gCampaign);
+            LoopRunnerPop(l);
+        }
+        else
+        {
+            CA_FOREACH(const PlayerData, p, gPlayerDatas)
+            CASSERT(!p->IsLocal, "unexpected local player");
+            CA_FOREACH_END()
+            // Add the players
+            for (int i = 0; i < numPlayers; i++)
+            {
+                GameEvent e = GameEventNew(GAME_EVENT_PLAYER_DATA);
+                e.u.PlayerData = PlayerDataDefault(i);
+                e.u.PlayerData.UID = gNetClient.FirstPlayerUID + i;
+                GameEventsEnqueue(&gGameEvents, e);
+            }
+            // Process the events to force add the players
+            HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
+            // This also causes the client to send player data to the server
+
+            // Switch to player selection
+            LoopRunnerChange(l, PlayerSelection());
+        }
+    }
 	return result;
 }
 static void NumPlayersDraw(GameLoopData *data)
@@ -410,7 +424,8 @@ static GameLoopResult PlayerSelectionUpdate(GameLoopData *data, LoopRunner *l)
 	// Conditions for exit: at least one player has selected "Done",
 	// and no other players, if any, are still selecting their player
 	// The "players" with no input device are turned into AIs
-	bool hasAtLeastOneInput = false;
+    // If in demo mode, all players are AI
+	bool hasAtLeastOneInput = gEventHandlers.DemoQuitTimer > 0;
 	bool isDone = true;
 	idx = 0;
 	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
@@ -625,13 +640,15 @@ static GameLoopResult GameOptionsUpdate(GameLoopData *data, LoopRunner *l)
 	// - Campaign complete
 	// - Mission quit
 	// - No options needed
+    // - Demo mode
 	// - Menu complete
 	const GameLoopResult result = MenuUpdate(&gData->ms);
 	const bool isQuit = !gCampaign.IsLoaded || gCampaign.IsComplete ||
 						gMission.IsQuit || gData->ms.hasAbort ||
 						gMission.missionData == NULL;
 	const bool isDone = !IsGameOptionsNeeded(gCampaign.Entry.Mode) ||
-						result == UPDATE_RESULT_OK;
+						result == UPDATE_RESULT_OK ||
+                        gEventHandlers.DemoQuitTimer > 0;
 	if (isQuit || isDone)
 	{
 		if (isQuit)

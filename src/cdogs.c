@@ -251,6 +251,17 @@ int main(int argc, char *argv[])
 			LOG(LM_MAIN, LL_ERROR, "Failed to load campaign %s", loadCampaign);
 		}
 	}
+    else if (gEventHandlers.DemoQuitTimer > 0)
+    {
+        GrafxMakeRandomBackground(
+            &gGraphicsDevice, &gCampaign, &gMission, &gMap);
+        LOG(LM_MAIN, LL_INFO, "Loading demo...");
+        gCampaign.Entry.Mode = GAME_MODE_QUICK_PLAY;
+        if (!CampaignLoad(&gCampaign, &gCampaign.Entry))
+        {
+            LOG(LM_MAIN, LL_ERROR, "Failed to load demo campaign");
+        }
+    }
 	else if (connectAddr.host != 0)
 	{
 		if (NetClientTryScanAndConnect(&gNetClient, connectAddr.host))
