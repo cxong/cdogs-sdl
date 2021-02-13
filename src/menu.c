@@ -684,6 +684,7 @@ static struct vec2i SubmenuGetSize(
 			}
 			break;
 		case MENU_TYPE_SET_OPTION_TOGGLE:
+		case MENU_TYPE_SET_OPTION_CHANGE_KEY:	// fallthrough
 			maxWidth += 80;
 			break;
 		default:
@@ -802,20 +803,6 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 		snprintf(nameBuf, sizeof(nameBuf), "%s", subMenu->name);
 	}
 
-	struct vec2i pos = bounds.Pos;
-	switch (menu->u.normal.align)
-	{
-	case MENU_ALIGN_CENTER:
-		pos.x = MS_CENTER_X(*ms, FontStrW(nameBuf));
-		break;
-	case MENU_ALIGN_LEFT:
-		// Do nothing
-		break;
-	default:
-		CASSERT(false, "unknown alignment");
-		break;
-	}
-
 	const bool isSelected = _ca_index == menu->u.normal.index;
 	DisplayMenuItem(
 		ms->graphics, bounds, nameBuf, isSelected,
@@ -823,7 +810,7 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 
 	// display option value
 	const int optionInt = MenuOptionGetIntValue(subMenu);
-	const struct vec2i valuePos = svec2i(xOptions, pos.y);
+	const struct vec2i valuePos = svec2i(xOptions, bounds.Pos.y);
 	const char *option = NULL;
 	if (subMenu->type == MENU_TYPE_SET_OPTION_RANGE ||
 		subMenu->type == MENU_TYPE_SET_OPTION_SEED ||
