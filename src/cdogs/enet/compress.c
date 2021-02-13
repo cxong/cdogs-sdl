@@ -317,7 +317,6 @@ enet_range_coder_compress (void * context, const ENetBuffer * inBuffers, size_t 
 
         ENET_CONTEXT_ENCODE (root, symbol, value, under, count, ENET_CONTEXT_SYMBOL_DELTA, ENET_CONTEXT_SYMBOL_MINIMUM);
         * parent = symbol - rangeCoder -> symbols;
-        parent = & symbol -> parent;
         total = root -> total;
 #ifdef ENET_CONTEXT_EXCLUSION
         if (childContext -> total > ENET_SUBCONTEXT_SYMBOL_DELTA + ENET_SUBCONTEXT_ESCAPE_DELTA)

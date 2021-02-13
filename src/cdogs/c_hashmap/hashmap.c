@@ -37,6 +37,7 @@ map_t hashmap_new(void)
 	if (!m)
 		goto err;
 
+	m->table_size = 0;
 	m->data = (hashmap_element *)calloc(INITIAL_SIZE, sizeof(hashmap_element));
 	if (!m->data)
 		goto err;
@@ -521,7 +522,7 @@ void hashmap_clear(map_t m, void (*callback)(any_t))
 void hashmap_free(map_t m)
 {
 	// Deallocate keys
-	if (m != NULL)
+	if (m != NULL && m->data != NULL)
 	{
 		for (int i = 0; i < m->table_size; i++)
 			if (m->data[i].in_use)
