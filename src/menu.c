@@ -653,22 +653,9 @@ static struct vec2i SubmenuGetSize(
 	const MenuSystem *ms, const menu_t *menu, const int idx)
 {
     const menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, idx);
-    char nameBuf[512];
-    if (subMenu->type == MENU_TYPE_NORMAL &&
-        subMenu->u.normal.isSubmenusAlt)
-    {
-        snprintf(
-            nameBuf, sizeof(nameBuf), "%s " ARROW_RIGHT,
-            subMenu->name);
-    }
-    else
-    {
-        snprintf(nameBuf, sizeof(nameBuf), "%s", subMenu->name);
-    }
-
     int maxWidth = 0;
-    CA_FOREACH(const menu_t, subMenu, menu->u.normal.subMenus)
-    const int width = FontStrW(subMenu->name);
+    CA_FOREACH(const menu_t, subMenu2, menu->u.normal.subMenus)
+    const int width = FontStrW(subMenu2->name);
     if (width > maxWidth)
     {
         maxWidth = width;
@@ -690,7 +677,7 @@ static struct vec2i SubmenuGetSize(
 				break;
 			case MENU_OPTION_DISPLAY_STYLE_STR_FUNC:
 			case MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC:	// fallthrough
-				maxWidth += 50;
+				maxWidth += 80;
 				break;
 			default:
 				CASSERT(false, "unknown menu display type");
@@ -698,14 +685,14 @@ static struct vec2i SubmenuGetSize(
 			}
 			break;
 		case MENU_TYPE_SET_OPTION_TOGGLE:
-			maxWidth += 50;
+			maxWidth += 80;
 			break;
 		default:
 			// do nothing
 			break;
 	}
 
-	return svec2i(maxWidth, FontStrH(nameBuf));
+	return svec2i(maxWidth, FontStrH(subMenu->name));
 }
 static Rect2i MenuGetSubmenuBounds(const MenuSystem *ms, const int idx)
 {
@@ -769,7 +756,6 @@ static Rect2i MenuGetSubmenuBounds(const MenuSystem *ms, const int idx)
 		return Rect2iZero();
 	}
 
-    // Display normal menu items
     pos.y = MS_CENTER_Y(*ms, numMenuLines * FontH());
     for (int i = iStart; i < idx; i++)
     {
@@ -833,13 +819,15 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 			break;
 		}
 
+		const bool isSelected = _ca_index == menu->u.normal.index;
 		DisplayMenuItem(
-			ms->graphics, bounds, nameBuf, _ca_index == menu->u.normal.index,
+			ms->graphics, bounds, nameBuf, isSelected,
 			menu->isDisabled || subMenu->isDisabled, subMenu->color);
 
 		// display option value
 		const int optionInt = MenuOptionGetIntValue(subMenu);
 		const struct vec2i valuePos = svec2i(xOptions, pos.y);
+		const char *option = NULL;
 		if (subMenu->type == MENU_TYPE_SET_OPTION_RANGE ||
 			subMenu->type == MENU_TYPE_SET_OPTION_SEED ||
 			subMenu->type == MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID ||
@@ -851,11 +839,10 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 				// Do nothing
 				break;
 			case MENU_OPTION_DISPLAY_STYLE_STR_FUNC:
-				FontStr(subMenu->u.option.uFunc.str(), valuePos);
+				option = subMenu->u.option.uFunc.str();
 				break;
 			case MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC:
-				FontStr(
-					subMenu->u.option.uFunc.intToStr(optionInt), valuePos);
+				option = subMenu->u.option.uFunc.intToStr(optionInt);
 				break;
 			default:
 				CASSERT(false, "unknown menu display type");
@@ -864,7 +851,20 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 		}
 		else if (subMenu->type == MENU_TYPE_SET_OPTION_TOGGLE)
 		{
-			FontStr(optionInt ? "Yes" : "No", valuePos);
+			option = optionInt ? "Yes" : "No";
+		}
+		if (option != NULL)
+		{
+			char buf[256];
+			if (isSelected)
+			{
+				sprintf(buf, ARROW_LEFT " %s " ARROW_RIGHT, option);
+			}
+			else
+			{
+				strcpy(buf, option);
+			}
+			FontStr(buf, valuePos);
 		}
 		CA_FOREACH_END()
 	}
@@ -898,12 +898,22 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 				keyName = SDL_GetScancodeName(sc);
 				if (sc == SDL_SCANCODE_UNKNOWN || keyName == NULL)
 				{
-					keyName = ARROW_LEFT "Unset" ARROW_RIGHT;
+					keyName = "Unset";
 				}
 			}
+			char buf[256];
+			if (isSelected)
+			{
+				sprintf(buf, ARROW_LEFT " %s " ARROW_RIGHT, keyName);
+			}
+			else
+			{
+				strcpy(buf, keyName);
+			}
+			// Size of longest scancode name
 			DisplayMenuItem(
 				ms->graphics,
-				Rect2iNew(svec2i(xKeys, y), FontStrSize(keyName)), keyName, isSelected, 0, colorWhite);
+				Rect2iNew(svec2i(xKeys, y), FontStrSize("Keypad Hexadecimal")), buf, isSelected, 0, colorWhite);
 		}
 		CA_FOREACH_END()
 	}
