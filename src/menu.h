@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2018, 2020 Cong Xu
+	Copyright (c) 2013-2018, 2020-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -268,8 +268,9 @@ int MenuGetNumMenuItemsShown(const menu_t *menu);
 
 void ShowControls(void);
 struct vec2i DisplayMenuItem(
-	struct vec2i pos, const char *s, int selected, int isDisabled,
-	color_t color);
+	GraphicsDevice *g, const Rect2i bounds, const char *s,
+	const bool selected, const bool isDisabled,
+	const color_t color);
 
 menu_t *MenuCreate(const char *name, menu_type_e type);
 menu_t *MenuCreateNormal(

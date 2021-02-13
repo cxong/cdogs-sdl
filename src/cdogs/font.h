@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2014-2015, 2019-2020 Cong Xu
+	Copyright (c) 2014-2015, 2019-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -76,6 +76,7 @@ void FontTerminate(Font *f);
 
 int FontW(const char c);
 int FontH(void);
+struct vec2i FontChSize(const char c);
 int FontStrW(const char *s);
 int FontSubstrW(const char *s, int len);
 int FontStrH(const char *s);

@@ -37,8 +37,8 @@
 #include <cdogs/font.h>
 #include <cdogs/player_template.h>
 
-static char letters[] = "1234567890-QWERTYUIOP!ASDFGHJKL:#ZXCVBNM  .?";
-static char smallLetters[] = "1234567890-qwertyuiop!asdfghjkl:#zxcvbnm  .?";
+static char letters[] = "1234567890-QWERTYUIOP!ASDFGHJKL:'ZXCVBNM, .?";
+static char smallLetters[] = "1234567890-qwertyuiop!asdfghjkl:'zxcvbnm, .?";
 
 static void DrawNameMenu(
 	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
@@ -50,28 +50,34 @@ static void DrawNameMenu(
 #define ENTRY_SPACING 7
 
 	int x = pos.x;
+	const int dy = FontH();
 	int y = CENTER_Y(
-		pos, size, FontH() * (((int)strlen(letters) - 1) / ENTRY_COLS));
+		pos, size, dy * (((int)strlen(letters) - 1) / ENTRY_COLS));
 
 	UNUSED(menu);
-	UNUSED(g);
 
 	int i;
 	for (i = 0; i < (int)strlen(letters); i++)
 	{
 		struct vec2i menuPos = svec2i(
 			x + (i % ENTRY_COLS) * ENTRY_SPACING,
-			y + (i / ENTRY_COLS) * FontH());
-		FontChMask(
-			letters[i], menuPos,
-			i == d->nameMenuSelection ? colorRed : colorWhite);
+			y + (i / ENTRY_COLS) * dy);
+		char buf[2];
+		sprintf(buf, "%c", letters[i]);
+		DisplayMenuItem(
+			g,
+			Rect2iNew(menuPos, svec2i(ENTRY_SPACING, dy)),
+			buf, i == d->nameMenuSelection, false, colorWhite);
 	}
 
+	const char *label = "(End)";
 	DisplayMenuItem(
-		svec2i(
+		g,
+		Rect2iNew(svec2i(
 			x + (i % ENTRY_COLS) * ENTRY_SPACING,
 			y + (i / ENTRY_COLS) * FontH()),
-		"(End)", i == d->nameMenuSelection, 0, colorWhite);
+			FontStrSize(label)),
+		label, i == d->nameMenuSelection, false, colorWhite);
 }
 
 static int HandleInputNameMenu(int cmd, void *data)

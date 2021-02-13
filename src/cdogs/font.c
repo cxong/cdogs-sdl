@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2014-2017, 2019 Cong Xu
+	Copyright (c) 2014-2017, 2019, 2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -143,6 +143,10 @@ int FontW(const char c)
 int FontH(void)
 {
 	return gFont.Size.y + gFont.Gap.y;
+}
+struct vec2i FontChSize(const char c)
+{
+	return svec2i(FontW(c), FontH());
 }
 int FontStrW(const char *s)
 {

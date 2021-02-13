@@ -51,6 +51,7 @@
 #include <assert.h>
 
 #include <cdogs/config_io.h>
+#include <cdogs/draw/drawtools.h>
 #include <cdogs/files.h>
 #include <cdogs/font.h>
 #include <cdogs/gamedata.h>
@@ -271,9 +272,15 @@ menu_t *MenuGetSubmenuByName(menu_t *menu, const char *name)
 	return NULL;
 }
 
+static bool MenuTypeHasSubMenus(const menu_type_e type)
+{
+	return type == MENU_TYPE_NORMAL || type == MENU_TYPE_OPTIONS ||
+		   type == MENU_TYPE_KEYS;
+}
+
 int MenuGetNumMenuItemsShown(const menu_t *menu)
 {
-	CASSERT(menu->type == MENU_TYPE_NORMAL || menu->type == MENU_TYPE_OPTIONS, "invalid menu type");
+	CASSERT(MenuTypeHasSubMenus(menu->type), "invalid menu type");
 	return menu->u.normal.maxItems > 0 ? MIN(menu->u.normal.maxItems,
 											 (int)menu->u.normal.subMenus.size)
 									   : (int)menu->u.normal.subMenus.size;
@@ -297,29 +304,29 @@ void ShowControls(void)
 }
 
 struct vec2i DisplayMenuItem(
-	struct vec2i pos, const char *s, int selected, int isDisabled,
-	color_t color)
+	GraphicsDevice *g, const Rect2i bounds, const char *s,
+	const bool selected, const bool isDisabled,
+	const color_t color)
 {
 	if (isDisabled)
 	{
 		color_t dark = {64, 64, 64, 255};
-		return FontStrMask(s, pos, dark);
+		return FontStrMask(s, bounds.Pos, dark);
 	}
 	if (selected)
 	{
-		return FontStrMask(s, pos, colorRed);
+		const color_t bg = { 0, 255, 255, 64 };
+		// Add 1px padding
+		const struct vec2i bgPos = svec2i_subtract(bounds.Pos, svec2i_one());
+		const struct vec2i bgSize = svec2i_add(bounds.Size, svec2i(2, 2));
+		DrawRectangle(g, bgPos, bgSize, bg, true);
+		return FontStrMask(s, bounds.Pos, colorRed);
 	}
 	if (!ColorEquals(color, colorTransparent))
 	{
-		return FontStrMask(s, pos, color);
+		return FontStrMask(s, bounds.Pos, color);
 	}
-	return FontStr(s, pos);
-}
-
-int MenuTypeHasSubMenus(menu_type_e type)
-{
-	return type == MENU_TYPE_NORMAL || type == MENU_TYPE_OPTIONS ||
-		   type == MENU_TYPE_KEYS;
+	return FontStr(s, bounds.Pos);
 }
 
 menu_t *MenuCreate(const char *name, menu_type_e type)
@@ -782,7 +789,7 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 	// TODO: refactor the menu types (normal, options) into one
 	case MENU_TYPE_NORMAL:
 	case MENU_TYPE_OPTIONS: {
-		int maxWidth;
+		int maxWidth = 0;
 		CA_FOREACH(const menu_t, subMenu, menu->u.normal.subMenus)
 		const int width = FontStrW(subMenu->name);
 		if (width > maxWidth)
@@ -827,7 +834,7 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 		}
 
 		DisplayMenuItem(
-			pos, nameBuf, _ca_index == menu->u.normal.index,
+			ms->graphics, bounds, nameBuf, _ca_index == menu->u.normal.index,
 			menu->isDisabled || subMenu->isDisabled, subMenu->color);
 
 		// display option value
@@ -868,18 +875,11 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 		yStart = (gGraphicsDevice.cachedConfig.Res.y / 2) - (FontH() * 10);
 
 		CA_FOREACH(const menu_t, subMenu, menu->u.normal.subMenus)
-		int y = yStart + _ca_index * FontH();
-		bool isSelected = _ca_index == menu->u.normal.index;
+		const int y = yStart + _ca_index * FontH();
+		const bool isSelected = _ca_index == menu->u.normal.index;
 
 		const char *name = subMenu->name;
-		if (isSelected && subMenu->type != MENU_TYPE_SET_OPTION_CHANGE_KEY)
-		{
-			FontStrMask(name, svec2i(x, y), colorRed);
-		}
-		else
-		{
-			FontStr(name, svec2i(x, y));
-		}
+		DisplayMenuItem(ms->graphics, Rect2iNew(svec2i(x, y), svec2i(xKeys - x - 2, FontH())), name, isSelected, false, colorWhite);
 
 		if (subMenu->type == MENU_TYPE_SET_OPTION_CHANGE_KEY)
 		{
@@ -902,7 +902,8 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 				}
 			}
 			DisplayMenuItem(
-				svec2i(xKeys, y), keyName, isSelected, 0, colorBlack);
+				ms->graphics,
+				Rect2iNew(svec2i(xKeys, y), FontStrSize(keyName)), keyName, isSelected, 0, colorWhite);
 		}
 		CA_FOREACH_END()
 	}
