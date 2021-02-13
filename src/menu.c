@@ -167,10 +167,10 @@ GameLoopResult MenuUpdate(MenuSystem *ms)
 	// Check if anyone pressed escape, or we need a hard exit
 	int cmds[MAX_LOCAL_PLAYERS];
 	memset(cmds, 0, sizeof cmds);
-	GetPlayerCmds(&gEventHandlers, &cmds);
+	GetPlayerCmds(ms->handlers, &cmds);
 	const bool aborted =
 		ms->allowAborts &&
-		EventIsEscape(&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers));
+		EventIsEscape(ms->handlers, cmds, GetMenuCmd(ms->handlers));
 	if (aborted || ms->handlers->HasQuit)
 	{
 		ms->hasAbort = true;
@@ -642,6 +642,135 @@ static void MenuDisplayItems(const MenuSystem *ms)
 		FontStrOpt("Version: " CDOGS_SDL_VERSION, ms->pos, opts);
 	}
 }
+static struct vec2i SubmenuGetSize(
+	const MenuSystem *ms, const menu_t *menu, const int idx)
+{
+    const menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, idx);
+    char nameBuf[512];
+    if (subMenu->type == MENU_TYPE_NORMAL &&
+        subMenu->u.normal.isSubmenusAlt)
+    {
+        snprintf(
+            nameBuf, sizeof(nameBuf), "%s " ARROW_RIGHT,
+            subMenu->name);
+    }
+    else
+    {
+        snprintf(nameBuf, sizeof(nameBuf), "%s", subMenu->name);
+    }
+
+    int maxWidth = 0;
+    CA_FOREACH(const menu_t, subMenu, menu->u.normal.subMenus)
+    const int width = FontStrW(subMenu->name);
+    if (width > maxWidth)
+    {
+        maxWidth = width;
+    }
+    CA_FOREACH_END()
+    // Limit max width if it is larger than the menu system size
+    maxWidth = MIN(ms->size.x, maxWidth);
+	// Add extra width for options menus
+	switch (subMenu->type)
+	{
+		case MENU_TYPE_SET_OPTION_RANGE:
+		case MENU_TYPE_SET_OPTION_SEED:	// fallthrough
+		case MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID:	// fallthrough
+		case MENU_TYPE_SET_OPTION_RANGE_GET_SET:	// fallthrough
+			switch (subMenu->u.option.displayStyle)
+			{
+			case MENU_OPTION_DISPLAY_STYLE_NONE:
+				// Do nothing
+				break;
+			case MENU_OPTION_DISPLAY_STYLE_STR_FUNC:
+			case MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC:	// fallthrough
+				maxWidth += 50;
+				break;
+			default:
+				CASSERT(false, "unknown menu display type");
+				break;
+			}
+			break;
+		case MENU_TYPE_SET_OPTION_TOGGLE:
+			maxWidth += 50;
+			break;
+		default:
+			// do nothing
+			break;
+	}
+
+	return svec2i(maxWidth, FontStrH(nameBuf));
+}
+static Rect2i MenuGetSubmenuBounds(const MenuSystem *ms, const int idx)
+{
+    const menu_t *menu = ms->current;
+    // Calculate first/last indices
+    const int maxItems = menu->u.normal.maxItems;
+    const int iStart = maxItems > 0 ? menu->u.normal.scroll : 0;
+    if (idx < iStart)
+    {
+        return Rect2iZero();
+    }
+    const int maxIEnd =
+        MIN(maxItems > 0 ? iStart + maxItems : 99,  (int)menu->u.normal.subMenus.size);
+    int numMenuLines = 0;
+    // Count the number of menu items that can fit
+    // This is to account for multi-line items
+    int iEnd;
+    for (iEnd = iStart; iEnd < maxIEnd; iEnd++)
+    {
+        const menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, iEnd);
+        const int numLines = FontStrNumLines(subMenu->name);
+        if (menu->u.normal.maxItems != 0 &&
+            numMenuLines + numLines > menu->u.normal.maxItems)
+        {
+            break;
+        }
+        numMenuLines += numLines;
+    }
+    if (iEnd <= idx)
+    {
+        return Rect2iZero();
+    }
+
+    int maxWidth = 0;
+    CA_FOREACH(const menu_t, subMenu, menu->u.normal.subMenus)
+    const int width = FontStrW(subMenu->name);
+    if (width > maxWidth)
+    {
+        maxWidth = width;
+    }
+    CA_FOREACH_END()
+    // Limit max width if it is larger than the menu system size
+    maxWidth = MIN(ms->size.x, maxWidth);
+
+	struct vec2i pos;
+	const bool isCentered = menu->type == MENU_TYPE_NORMAL;
+	switch (ms->align)
+	{
+	case MENU_ALIGN_CENTER:
+		pos.x = MS_CENTER_X(*ms, maxWidth);
+		if (!isCentered)
+		{
+			pos.x -= 20;
+		}
+		break;
+	case MENU_ALIGN_LEFT:
+		pos.x = ms->pos.x;
+		break;
+	default:
+		CASSERT(false, "unknown alignment");
+		return Rect2iZero();
+	}
+
+    // Display normal menu items
+    pos.y = MS_CENTER_Y(*ms, numMenuLines * FontH());
+    for (int i = iStart; i < idx; i++)
+    {
+        const struct vec2i size = SubmenuGetSize(ms, menu, i);
+        pos.y += size.y;
+    }
+    return Rect2iNew(pos, SubmenuGetSize(ms, menu, idx));
+}
 static int MenuOptionGetIntValue(const menu_t *menu);
 static void MenuDisplaySubmenus(const MenuSystem *ms)
 {
@@ -650,39 +779,10 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 
 	switch (menu->type)
 	{
-	// TODO: refactor the three menu types (normal, options, campaign) into one
+	// TODO: refactor the menu types (normal, options) into one
 	case MENU_TYPE_NORMAL:
 	case MENU_TYPE_OPTIONS: {
-		int iStart = 0;
-		int iEnd;
-		int numMenuLines = 0;
-		int maxIEnd = (int)menu->u.normal.subMenus.size;
-		if (menu->u.normal.maxItems > 0)
-		{
-			// Calculate first/last indices
-			if (menu->u.normal.scroll != 0)
-			{
-				iStart = menu->u.normal.scroll;
-			}
-			maxIEnd = iStart + menu->u.normal.maxItems;
-		}
-		// Count the number of menu items that can fit
-		// This is to account for multi-line items
-		for (iEnd = iStart;
-			 iEnd < maxIEnd && iEnd < (int)menu->u.normal.subMenus.size;
-			 iEnd++)
-		{
-			const menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, iEnd);
-			const int numLines = FontStrNumLines(subMenu->name);
-			if (menu->u.normal.maxItems > 0 &&
-				numMenuLines + numLines > menu->u.normal.maxItems)
-			{
-				break;
-			}
-			numMenuLines += numLines;
-		}
-
-		int maxWidth = 0;
+		int maxWidth;
 		CA_FOREACH(const menu_t, subMenu, menu->u.normal.subMenus)
 		const int width = FontStrW(subMenu->name);
 		if (width > maxWidth)
@@ -690,118 +790,76 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 			maxWidth = width;
 		}
 		CA_FOREACH_END()
-		// Limit max width if it is larger than the menu system size
-		maxWidth = MIN(ms->size.x, maxWidth);
-		const bool isCentered = menu->type == MENU_TYPE_NORMAL;
-		switch (ms->align)
+
+		CA_FOREACH(const menu_t, subMenu, menu->u.normal.subMenus)
+		const Rect2i bounds = MenuGetSubmenuBounds(ms, _ca_index);
+		if (Rect2iIsZero(bounds))
+		{
+			continue;
+		}
+
+		const int xOptions = bounds.Pos.x + maxWidth + 10;
+		char nameBuf[512];
+		if (subMenu->type == MENU_TYPE_NORMAL &&
+			subMenu->u.normal.isSubmenusAlt)
+		{
+			snprintf(
+				nameBuf, sizeof(nameBuf), "%s " ARROW_RIGHT,
+				subMenu->name);
+		}
+		else
+		{
+			snprintf(nameBuf, sizeof(nameBuf), "%s", subMenu->name);
+		}
+
+		struct vec2i pos = bounds.Pos;
+		switch (menu->u.normal.align)
 		{
 		case MENU_ALIGN_CENTER:
-			x = MS_CENTER_X(*ms, maxWidth);
-			if (!isCentered)
-			{
-				x -= 20;
-			}
+			pos.x = MS_CENTER_X(*ms, FontStrW(nameBuf));
 			break;
 		case MENU_ALIGN_LEFT:
-			x = ms->pos.x;
+			// Do nothing
 			break;
 		default:
-			assert(0 && "unknown alignment");
+			CASSERT(false, "unknown alignment");
 			break;
 		}
 
-		yStart = MS_CENTER_Y(*ms, numMenuLines * FontH());
-		if (menu->u.normal.maxItems > 0)
-		{
-			// Display scroll arrows
-			if (menu->u.normal.scroll != 0)
-			{
-				DisplayMenuItem(
-					svec2i(
-						MS_CENTER_X(*ms, FontW('\x1e')), yStart - 2 - FontH()),
-					"\x1e", 0, 0, colorWhite);
-			}
-			if (iEnd < (int)menu->u.normal.subMenus.size - 1)
-			{
-				DisplayMenuItem(
-					svec2i(
-						MS_CENTER_X(*ms, FontW('\x1f')),
-						yStart + numMenuLines * FontH() + 2),
-					"\x1f", 0, 0, colorWhite);
-			}
-		}
-		const int xOptions = x + maxWidth + 10;
+		DisplayMenuItem(
+			pos, nameBuf, _ca_index == menu->u.normal.index,
+			menu->isDisabled || subMenu->isDisabled, subMenu->color);
 
-		// Display normal menu items
-		struct vec2i pos = svec2i(x, yStart);
-		for (int i = iStart; i < iEnd; i++)
+		// display option value
+		const int optionInt = MenuOptionGetIntValue(subMenu);
+		const struct vec2i valuePos = svec2i(xOptions, pos.y);
+		if (subMenu->type == MENU_TYPE_SET_OPTION_RANGE ||
+			subMenu->type == MENU_TYPE_SET_OPTION_SEED ||
+			subMenu->type == MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID ||
+			subMenu->type == MENU_TYPE_SET_OPTION_RANGE_GET_SET)
 		{
-			const menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
-			char nameBuf[512];
-			if (subMenu->type == MENU_TYPE_NORMAL &&
-				subMenu->u.normal.isSubmenusAlt)
+			switch (subMenu->u.option.displayStyle)
 			{
-				snprintf(
-					nameBuf, sizeof(nameBuf), "%s " ARROW_RIGHT,
-					subMenu->name);
-			}
-			else
-			{
-				snprintf(nameBuf, sizeof(nameBuf), "%s", subMenu->name);
-			}
-
-			switch (menu->u.normal.align)
-			{
-			case MENU_ALIGN_CENTER:
-				pos.x = MS_CENTER_X(*ms, FontStrW(nameBuf));
-				break;
-			case MENU_ALIGN_LEFT:
+			case MENU_OPTION_DISPLAY_STYLE_NONE:
 				// Do nothing
 				break;
+			case MENU_OPTION_DISPLAY_STYLE_STR_FUNC:
+				FontStr(subMenu->u.option.uFunc.str(), valuePos);
+				break;
+			case MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC:
+				FontStr(
+					subMenu->u.option.uFunc.intToStr(optionInt), valuePos);
+				break;
 			default:
-				assert(0 && "unknown alignment");
+				CASSERT(false, "unknown menu display type");
 				break;
 			}
-
-			const int yNext =
-				DisplayMenuItem(
-					pos, nameBuf, i == menu->u.normal.index,
-					menu->isDisabled || subMenu->isDisabled, subMenu->color)
-					.y +
-				FontH();
-
-			// display option value
-			const int optionInt = MenuOptionGetIntValue(subMenu);
-			const struct vec2i valuePos = svec2i(xOptions, pos.y);
-			if (subMenu->type == MENU_TYPE_SET_OPTION_RANGE ||
-				subMenu->type == MENU_TYPE_SET_OPTION_SEED ||
-				subMenu->type == MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID ||
-				subMenu->type == MENU_TYPE_SET_OPTION_RANGE_GET_SET)
-			{
-				switch (subMenu->u.option.displayStyle)
-				{
-				case MENU_OPTION_DISPLAY_STYLE_NONE:
-					// Do nothing
-					break;
-				case MENU_OPTION_DISPLAY_STYLE_STR_FUNC:
-					FontStr(subMenu->u.option.uFunc.str(), valuePos);
-					break;
-				case MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC:
-					FontStr(
-						subMenu->u.option.uFunc.intToStr(optionInt), valuePos);
-					break;
-				default:
-					CASSERT(false, "unknown menu display type");
-					break;
-				}
-			}
-			else if (subMenu->type == MENU_TYPE_SET_OPTION_TOGGLE)
-			{
-				FontStr(optionInt ? "Yes" : "No", valuePos);
-			}
-
-			pos.y = yNext;
 		}
+		else if (subMenu->type == MENU_TYPE_SET_OPTION_TOGGLE)
+		{
+			FontStr(optionInt ? "Yes" : "No", valuePos);
+		}
+		CA_FOREACH_END()
 	}
 	break;
 	case MENU_TYPE_KEYS: {
@@ -834,7 +892,7 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 			{
 				const int pi = subMenu->u.changeKey.playerIndex;
 				const InputKeys *keys =
-					&gEventHandlers.keyboard.PlayerKeys[pi];
+                    &ms->handlers->keyboard.PlayerKeys[pi];
 				const SDL_Scancode sc =
 					KeyGet(keys, subMenu->u.changeKey.code);
 				keyName = SDL_GetScancodeName(sc);
