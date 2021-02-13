@@ -582,7 +582,7 @@ static menu_t *MenuCreateOptionChangeKey(
 
 menu_t *MenuCreateKeys(const char *name, MenuSystem *ms)
 {
-	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_KEYS, 0);
+	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_OPTIONS, 0);
 	MenuCreateKeysSingleSection(menu, "Keyboard 1", 0);
 	MenuCreateKeysSingleSection(menu, "Keyboard 2", 1);
 	MenuAddSubmenu(menu, MenuCreateOptionChangeKey(KEY_CODE_MAP, 0, true));

@@ -152,7 +152,7 @@ static void DefaultMenuDraw(GameLoopData *data)
 }
 GameLoopResult MenuUpdate(MenuSystem *ms)
 {
-	if (ms->current->type == MENU_TYPE_KEYS &&
+	if (ms->current->type == MENU_TYPE_OPTIONS &&
 		ms->current->u.normal.changeKeyMenu != NULL)
 	{
 		MenuProcessChangeKey(ms->current);
@@ -274,8 +274,7 @@ menu_t *MenuGetSubmenuByName(menu_t *menu, const char *name)
 
 static bool MenuTypeHasSubMenus(const menu_type_e type)
 {
-	return type == MENU_TYPE_NORMAL || type == MENU_TYPE_OPTIONS ||
-		   type == MENU_TYPE_KEYS;
+	return type == MENU_TYPE_NORMAL || type == MENU_TYPE_OPTIONS;
 }
 
 int MenuGetNumMenuItemsShown(const menu_t *menu)
@@ -767,161 +766,124 @@ static Rect2i MenuGetSubmenuBounds(const MenuSystem *ms, const int idx)
 static int MenuOptionGetIntValue(const menu_t *menu);
 static void MenuDisplaySubmenus(const MenuSystem *ms)
 {
-	int x = 0, yStart = 0;
 	const menu_t *menu = ms->current;
-
-	switch (menu->type)
+	if (!MenuTypeHasSubMenus(menu->type))
 	{
-	// TODO: refactor the menu types (normal, options) into one
-	case MENU_TYPE_NORMAL:
-	case MENU_TYPE_OPTIONS: {
-		int maxWidth = 0;
-		CA_FOREACH(const menu_t, subMenu, menu->u.normal.subMenus)
-		const int width = FontStrW(subMenu->name);
-		if (width > maxWidth)
-		{
-			maxWidth = width;
-		}
-		CA_FOREACH_END()
+		return;
+	}
 
-		CA_FOREACH(const menu_t, subMenu, menu->u.normal.subMenus)
-		const Rect2i bounds = MenuGetSubmenuBounds(ms, _ca_index);
-		if (Rect2iIsZero(bounds))
-		{
-			continue;
-		}
+	int maxWidth = 0;
+	CA_FOREACH(const menu_t, subMenu, menu->u.normal.subMenus)
+	const int width = FontStrW(subMenu->name);
+	if (width > maxWidth)
+	{
+		maxWidth = width;
+	}
+	CA_FOREACH_END()
 
-		const int xOptions = bounds.Pos.x + maxWidth + 10;
-		char nameBuf[512];
-		if (subMenu->type == MENU_TYPE_NORMAL &&
-			subMenu->u.normal.isSubmenusAlt)
+	CA_FOREACH(const menu_t, subMenu, menu->u.normal.subMenus)
+	const Rect2i bounds = MenuGetSubmenuBounds(ms, _ca_index);
+	if (Rect2iIsZero(bounds))
+	{
+		continue;
+	}
+
+	const int xOptions = bounds.Pos.x + maxWidth + 10;
+	char nameBuf[512];
+	if (subMenu->type == MENU_TYPE_NORMAL &&
+		subMenu->u.normal.isSubmenusAlt)
+	{
+		snprintf(
+			nameBuf, sizeof(nameBuf), "%s " ARROW_RIGHT,
+			subMenu->name);
+	}
+	else
+	{
+		snprintf(nameBuf, sizeof(nameBuf), "%s", subMenu->name);
+	}
+
+	struct vec2i pos = bounds.Pos;
+	switch (menu->u.normal.align)
+	{
+	case MENU_ALIGN_CENTER:
+		pos.x = MS_CENTER_X(*ms, FontStrW(nameBuf));
+		break;
+	case MENU_ALIGN_LEFT:
+		// Do nothing
+		break;
+	default:
+		CASSERT(false, "unknown alignment");
+		break;
+	}
+
+	const bool isSelected = _ca_index == menu->u.normal.index;
+	DisplayMenuItem(
+		ms->graphics, bounds, nameBuf, isSelected,
+		menu->isDisabled || subMenu->isDisabled, subMenu->color);
+
+	// display option value
+	const int optionInt = MenuOptionGetIntValue(subMenu);
+	const struct vec2i valuePos = svec2i(xOptions, pos.y);
+	const char *option = NULL;
+	if (subMenu->type == MENU_TYPE_SET_OPTION_RANGE ||
+		subMenu->type == MENU_TYPE_SET_OPTION_SEED ||
+		subMenu->type == MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID ||
+		subMenu->type == MENU_TYPE_SET_OPTION_RANGE_GET_SET)
+	{
+		switch (subMenu->u.option.displayStyle)
 		{
-			snprintf(
-				nameBuf, sizeof(nameBuf), "%s " ARROW_RIGHT,
-				subMenu->name);
+		case MENU_OPTION_DISPLAY_STYLE_NONE:
+			// Do nothing
+			break;
+		case MENU_OPTION_DISPLAY_STYLE_STR_FUNC:
+			option = subMenu->u.option.uFunc.str();
+			break;
+		case MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC:
+			option = subMenu->u.option.uFunc.intToStr(optionInt);
+			break;
+		default:
+			CASSERT(false, "unknown menu display type");
+			break;
+		}
+	}
+	else if (subMenu->type == MENU_TYPE_SET_OPTION_TOGGLE)
+	{
+		option = optionInt ? "Yes" : "No";
+	}
+	else if (subMenu->type == MENU_TYPE_SET_OPTION_CHANGE_KEY)
+	{
+		if (menu->u.normal.changeKeyMenu == subMenu)
+		{
+			option = "Press a key";
 		}
 		else
 		{
-			snprintf(nameBuf, sizeof(nameBuf), "%s", subMenu->name);
-		}
-
-		struct vec2i pos = bounds.Pos;
-		switch (menu->u.normal.align)
-		{
-		case MENU_ALIGN_CENTER:
-			pos.x = MS_CENTER_X(*ms, FontStrW(nameBuf));
-			break;
-		case MENU_ALIGN_LEFT:
-			// Do nothing
-			break;
-		default:
-			CASSERT(false, "unknown alignment");
-			break;
-		}
-
-		const bool isSelected = _ca_index == menu->u.normal.index;
-		DisplayMenuItem(
-			ms->graphics, bounds, nameBuf, isSelected,
-			menu->isDisabled || subMenu->isDisabled, subMenu->color);
-
-		// display option value
-		const int optionInt = MenuOptionGetIntValue(subMenu);
-		const struct vec2i valuePos = svec2i(xOptions, pos.y);
-		const char *option = NULL;
-		if (subMenu->type == MENU_TYPE_SET_OPTION_RANGE ||
-			subMenu->type == MENU_TYPE_SET_OPTION_SEED ||
-			subMenu->type == MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID ||
-			subMenu->type == MENU_TYPE_SET_OPTION_RANGE_GET_SET)
-		{
-			switch (subMenu->u.option.displayStyle)
+			const int pi = subMenu->u.changeKey.playerIndex;
+			const InputKeys *keys =
+				&ms->handlers->keyboard.PlayerKeys[pi];
+			const SDL_Scancode sc =
+				KeyGet(keys, subMenu->u.changeKey.code);
+			option = SDL_GetScancodeName(sc);
+			if (sc == SDL_SCANCODE_UNKNOWN || option == NULL)
 			{
-			case MENU_OPTION_DISPLAY_STYLE_NONE:
-				// Do nothing
-				break;
-			case MENU_OPTION_DISPLAY_STYLE_STR_FUNC:
-				option = subMenu->u.option.uFunc.str();
-				break;
-			case MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC:
-				option = subMenu->u.option.uFunc.intToStr(optionInt);
-				break;
-			default:
-				CASSERT(false, "unknown menu display type");
-				break;
+				option = "Unset";
 			}
 		}
-		else if (subMenu->type == MENU_TYPE_SET_OPTION_TOGGLE)
-		{
-			option = optionInt ? "Yes" : "No";
-		}
-		if (option != NULL)
-		{
-			char buf[256];
-			if (isSelected)
-			{
-				sprintf(buf, ARROW_LEFT " %s " ARROW_RIGHT, option);
-			}
-			else
-			{
-				strcpy(buf, option);
-			}
-			FontStr(buf, valuePos);
-		}
-		CA_FOREACH_END()
 	}
-	break;
-	case MENU_TYPE_KEYS: {
-		x = MS_CENTER_X(*ms, (FontW('a') * 10)) / 2;
-		const int xKeys = x * 3;
-		yStart = (gGraphicsDevice.cachedConfig.Res.y / 2) - (FontH() * 10);
-
-		CA_FOREACH(const menu_t, subMenu, menu->u.normal.subMenus)
-		const int y = yStart + _ca_index * FontH();
-		const bool isSelected = _ca_index == menu->u.normal.index;
-
-		const char *name = subMenu->name;
-		DisplayMenuItem(ms->graphics, Rect2iNew(svec2i(x, y), svec2i(xKeys - x - 2, FontH())), name, isSelected, false, colorWhite);
-
-		if (subMenu->type == MENU_TYPE_SET_OPTION_CHANGE_KEY)
+	if (option != NULL)
+	{
+		char buf[256];
+		if (isSelected)
 		{
-			const char *keyName;
-			if (menu->u.normal.changeKeyMenu == subMenu)
-			{
-				keyName = "Press a key";
-			}
-			else
-			{
-				const int pi = subMenu->u.changeKey.playerIndex;
-				const InputKeys *keys =
-                    &ms->handlers->keyboard.PlayerKeys[pi];
-				const SDL_Scancode sc =
-					KeyGet(keys, subMenu->u.changeKey.code);
-				keyName = SDL_GetScancodeName(sc);
-				if (sc == SDL_SCANCODE_UNKNOWN || keyName == NULL)
-				{
-					keyName = "Unset";
-				}
-			}
-			char buf[256];
-			if (isSelected)
-			{
-				sprintf(buf, ARROW_LEFT " %s " ARROW_RIGHT, keyName);
-			}
-			else
-			{
-				strcpy(buf, keyName);
-			}
-			// Size of longest scancode name
-			DisplayMenuItem(
-				ms->graphics,
-				Rect2iNew(svec2i(xKeys, y), FontStrSize("Keypad Hexadecimal")), buf, isSelected, 0, colorWhite);
+			sprintf(buf, ARROW_LEFT " %s " ARROW_RIGHT, option);
 		}
-		CA_FOREACH_END()
+		else
+		{
+			strcpy(buf, option);
+		}
+		FontStr(buf, valuePos);
 	}
-	break;
-	default:
-		// No submenus, don't display anything
-		break;
-	}
+	CA_FOREACH_END()
 }
 
 void MenuPlaySound(MenuSound s)
@@ -1101,7 +1063,6 @@ menu_t *MenuProcessButtonCmd(MenuSystem *ms, menu_t *menu, int cmd)
 		{
 		case MENU_TYPE_NORMAL:
 		case MENU_TYPE_OPTIONS:
-		case MENU_TYPE_KEYS:
 		case MENU_TYPE_CUSTOM:
 			if (subMenu->u.normal.isSubmenusAlt ? (cmd & CMD_RIGHT)
 												: (cmd & CMD_BUTTON1))

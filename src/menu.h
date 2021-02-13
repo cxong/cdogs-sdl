@@ -62,7 +62,6 @@ typedef enum
 	MENU_TYPE_NORMAL,  // normal menu with items, up/down/left/right moves
 					   // cursor
 	MENU_TYPE_OPTIONS, // menu with items, only up/down moves
-	MENU_TYPE_KEYS,	   // extra wide option menu
 	MENU_TYPE_BASIC,   // no items, does nothing (use custom callbacks)
 	MENU_TYPE_SET_OPTION_TOGGLE, // no items, sets option on/off
 	MENU_TYPE_SET_OPTION_RANGE,	 // no items, sets option range low-high
