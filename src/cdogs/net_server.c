@@ -370,8 +370,8 @@ static void OnConnect(NetServer *n, ENetEvent event)
 	LOG(LM_NET, LL_DEBUG, "NetServer: sending campaign entry");
 	NCampaignDef def = NMakeCampaignDef(&gCampaign);
 	NetServerSendMsg(n, peerId, GAME_EVENT_CAMPAIGN_DEF, &def);
-
-	SoundPlay(&gSoundDevice, StrSound("hahaha"));
+	
+	SoundPlay(&gSoundDevice, StrSound("menu_start"));
 	LOG(LM_NET, LL_DEBUG, "NetServer: client connection complete");
 
 	NetServerFlush(n);

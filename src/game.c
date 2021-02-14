@@ -439,6 +439,7 @@ static void RunGameInput(GameLoopData *data)
 		// Pause the game
 		rData->pausingDevice = firstPausingDevice;
 		rData->isMap = false;
+		SoundPlay(&gSoundDevice, StrSound("menu_error"));
 	}
 	else if (pausingDevice != INPUT_DEVICE_UNSET)
 	{
@@ -453,12 +454,14 @@ static void RunGameInput(GameLoopData *data)
 			rData->controllerUnplugged = false;
 			// Don't skip exiting the game
 			data->SkipNextFrame = false;
+			SoundPlay(&gSoundDevice, StrSound("menu_back"));
 		}
 		else
 		{
 			// Pause the game
 			rData->pausingDevice = pausingDevice;
 			rData->isMap = false;
+			SoundPlay(&gSoundDevice, StrSound("menu_back"));
 		}
 	}
 

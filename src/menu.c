@@ -301,8 +301,11 @@ GameLoopResult MenuUpdate(MenuSystem *ms)
 					const Rect2i bounds = MenuGetSubmenuBounds(ms, i);
 					if (Rect2iIsInside(bounds, ms->handlers->mouse.currentPos))
 					{
-						menu->u.normal.index = i;
-						MenuPlaySound(MENU_SOUND_SWITCH);
+						if (menu->u.normal.index != i)
+						{
+							menu->u.normal.index = i;
+							MenuPlaySound(MENU_SOUND_SWITCH);
+						}
 						break;
 					}
 				}
@@ -901,19 +904,19 @@ void MenuPlaySound(MenuSound s)
 	switch (s)
 	{
 	case MENU_SOUND_ENTER:
-		SoundPlay(&gSoundDevice, StrSound("mg"));
+		SoundPlay(&gSoundDevice, StrSound("menu_enter"));
 		break;
 	case MENU_SOUND_BACK:
-		SoundPlay(&gSoundDevice, StrSound("pickup"));
+		SoundPlay(&gSoundDevice, StrSound("menu_back"));
 		break;
 	case MENU_SOUND_SWITCH:
-		SoundPlay(&gSoundDevice, StrSound("door"));
+		SoundPlay(&gSoundDevice, StrSound("menu_switch"));
 		break;
 	case MENU_SOUND_START:
-		SoundPlay(&gSoundDevice, StrSound("hahaha"));
+		SoundPlay(&gSoundDevice, StrSound("menu_start"));
 		break;
 	case MENU_SOUND_ERROR:
-		SoundPlay(&gSoundDevice, StrSound("aargh/man"));
+		SoundPlay(&gSoundDevice, StrSound("menu_error"));
 		break;
 	default:
 		break;

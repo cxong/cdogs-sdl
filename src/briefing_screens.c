@@ -81,7 +81,7 @@ static void CampaignIntroOnExit(GameLoopData *data)
 	const ScreenCampaignIntroData *sData = data->Data;
 	if (sData->waitResult != EVENT_WAIT_CANCEL)
 	{
-		SoundPlay(&gSoundDevice, StrSound("mg"));
+		MenuPlaySound(MENU_SOUND_ENTER);
 	}
 	else
 	{
@@ -240,7 +240,7 @@ static void MissionBriefingOnExit(GameLoopData *data)
 
 	if (mData->waitResult == EVENT_WAIT_OK)
 	{
-		SoundPlay(&gSoundDevice, StrSound("mg"));
+		MenuPlaySound(MENU_SOUND_ENTER);
 	}
 	else
 	{

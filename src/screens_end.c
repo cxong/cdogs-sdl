@@ -167,7 +167,7 @@ static void PlayerListOnEnter(GameLoopData *data)
 static void PlayerListOnExit(GameLoopData *data)
 {
 	UNUSED(data);
-	SoundPlay(&gSoundDevice, StrSound("mg"));
+	MenuPlaySound(MENU_SOUND_SWITCH);
 }
 static GameLoopResult PlayerListUpdate(GameLoopData *data, LoopRunner *l)
 {
@@ -301,17 +301,17 @@ static int PlayerListInput(int cmd, void *data)
 
 	if (cmd == CMD_DOWN)
 	{
-		SoundPlay(&gSoundDevice, StrSound("door"));
+		MenuPlaySound(MENU_SOUND_SWITCH);
 		pl->scroll++;
 	}
 	else if (cmd == CMD_UP)
 	{
-		SoundPlay(&gSoundDevice, StrSound("door"));
+		MenuPlaySound(MENU_SOUND_SWITCH);
 		pl->scroll--;
 	}
 	else if (AnyButton(cmd))
 	{
-		SoundPlay(&gSoundDevice, StrSound("pickup"));
+		MenuPlaySound(MENU_SOUND_BACK);
 		return 1;
 	}
 	// Scroll wrap-around

@@ -276,14 +276,14 @@ static void AssignPlayerInputDevices(EventHandlers *handlers)
 		if (KeyIsPressed(&handlers->keyboard, ConfigGetInt(&gConfig, buf)) &&
 			PlayerTrySetUnusedInputDevice(p, INPUT_DEVICE_KEYBOARD, j))
 		{
-			SoundPlay(&gSoundDevice, StrSound("hahaha"));
+			MenuPlaySound(MENU_SOUND_START);
 			break;
 		}
 	}
 	if (MouseIsPressed(&handlers->mouse, SDL_BUTTON_LEFT) &&
 		PlayerTrySetUnusedInputDevice(p, INPUT_DEVICE_MOUSE, 0))
 	{
-		SoundPlay(&gSoundDevice, StrSound("hahaha"));
+		MenuPlaySound(MENU_SOUND_START);
 		continue;
 	}
 	for (int j = 0; j < (int)handlers->joysticks.size; j++)
@@ -292,7 +292,7 @@ static void AssignPlayerInputDevices(EventHandlers *handlers)
 		if (JoyIsPressed(joy->id, CMD_BUTTON1) &&
 			PlayerTrySetUnusedInputDevice(p, INPUT_DEVICE_JOYSTICK, joy->id))
 		{
-			SoundPlay(&gSoundDevice, StrSound("hahaha"));
+			MenuPlaySound(MENU_SOUND_START);
 			break;
 		}
 	}

@@ -154,11 +154,11 @@ static void EnterCodeScreenOnExit(GameLoopData *data)
 	if (eData->Mission > 0)
 	{
 		gCampaign.MissionIndex = eData->Mission;
-		SoundPlay(&gSoundDevice, StrSound("mg"));
+		MenuPlaySound(MENU_SOUND_ENTER);
 	}
 	else
 	{
-		SoundPlay(&gSoundDevice, StrSound("switch"));
+		MenuPlaySound(MENU_SOUND_SWITCH);
 	}
 }
 #define PASSWORD_ENTRY_COLS	10
@@ -198,7 +198,7 @@ static GameLoopResult EnterCodeScreenUpdate(GameLoopData *data, LoopRunner *l)
 	if (eData->Mission == 0)
 	{
 		// Password doesn't work; play a bad sound
-		SoundPlay(&gSoundDevice, StrSound("aargh/man"));
+		MenuPlaySound(MENU_SOUND_ERROR);
 		return UPDATE_RESULT_OK;
 	}
 
@@ -226,12 +226,12 @@ static bool PasswordEntry(EnterCodeScreenData *data, const int cmd)
 			// enter a letter
 			data->Buffer[strlen(data->Buffer)] =
 				PASSWORD_LETTERS[data->Selection];
-			SoundPlay(&gSoundDevice, StrSound("mg"));
+			MenuPlaySound(MENU_SOUND_ENTER);
 		}
 		else
 		{
 			// Too many letters entered
-			SoundPlay(&gSoundDevice, StrSound("aargh/man"));
+			MenuPlaySound(MENU_SOUND_ERROR);
 		}
 	}
 	else if (cmd & CMD_BUTTON2)
@@ -240,12 +240,12 @@ static bool PasswordEntry(EnterCodeScreenData *data, const int cmd)
 		{
 			// Delete a letter
 			data->Buffer[strlen(data->Buffer) - 1] = 0;
-			SoundPlay(&gSoundDevice, StrSound("bang"));
+			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 		else
 		{
 			// No letters to delete
-			SoundPlay(&gSoundDevice, StrSound("aargh/man"));
+			MenuPlaySound(MENU_SOUND_ERROR);
 		}
 	}
 	else if (cmd & CMD_LEFT)
@@ -253,7 +253,7 @@ static bool PasswordEntry(EnterCodeScreenData *data, const int cmd)
 		if (data->Selection > 0)
 		{
 			data->Selection--;
-			SoundPlay(&gSoundDevice, StrSound("door"));
+			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}
 	else if (cmd & CMD_RIGHT)
@@ -261,7 +261,7 @@ static bool PasswordEntry(EnterCodeScreenData *data, const int cmd)
 		if (data->Selection < (int)strlen(PASSWORD_LETTERS))
 		{
 			data->Selection++;
-			SoundPlay(&gSoundDevice, StrSound("door"));
+			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}
 	else if (cmd & CMD_UP)
@@ -269,7 +269,7 @@ static bool PasswordEntry(EnterCodeScreenData *data, const int cmd)
 		if (data->Selection >= PASSWORD_ENTRY_COLS)
 		{
 			data->Selection -= PASSWORD_ENTRY_COLS;
-			SoundPlay(&gSoundDevice, StrSound("door"));
+			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}
 	else if (cmd & CMD_DOWN)
@@ -278,7 +278,7 @@ static bool PasswordEntry(EnterCodeScreenData *data, const int cmd)
 			(int)strlen(PASSWORD_LETTERS) - PASSWORD_ENTRY_COLS)
 		{
 			data->Selection += PASSWORD_ENTRY_COLS;
-			SoundPlay(&gSoundDevice, StrSound("door"));
+			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}
 
