@@ -35,10 +35,6 @@
 
 #define Y_ABS 200
 
-static void DrawStyleArea(
-	struct vec2i pos, const char *name, const Pic *pic, int idx, int count,
-	int isHighlighted);
-
 MISSION_CHECK_TYPE_FUNC(MAPTYPE_CLASSIC)
 static const char *MissionGetWallCountStr(UIObject *o, void *data)
 {
@@ -416,13 +412,6 @@ static EditorResult MissionChangePillarMax(void *data, int d)
 	CampaignGetCurrentMission(co)->u.Classic.Pillars.Min =
 		MIN(CampaignGetCurrentMission(co)->u.Classic.Pillars.Min,
 			CampaignGetCurrentMission(co)->u.Classic.Pillars.Max);
-	return EDITOR_RESULT_CHANGED;
-}
-static EditorResult MissionChangeDensity(void *data, int d)
-{
-	Campaign *co = data;
-	CampaignGetCurrentMission(co)->EnemyDensity =
-		CLAMP(CampaignGetCurrentMission(co)->EnemyDensity + d, 0, 100);
 	return EDITOR_RESULT_CHANGED;
 }
 
