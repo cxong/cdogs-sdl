@@ -99,7 +99,7 @@ static bool AdjacencyIsConnected(const Adjacency *am, const int i, const int j)
 }
 static bool AdjacencyHasConnections(const Adjacency *am, const int i)
 {
-	for (int j = 0; j < am->dim; j++)
+	for (int j = 0; j < (int)am->dim; j++)
 	{
 		if (AdjacencyIsConnected(am, i, j))
 		{
