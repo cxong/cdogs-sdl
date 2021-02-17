@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2017, 2019-2020 Cong Xu
+	Copyright (c) 2013-2017, 2019-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -108,6 +108,7 @@ const char *MapTypeStr(MapType t)
 		T2S(MAPTYPE_CLASSIC, "Classic");
 		T2S(MAPTYPE_STATIC, "Static");
 		T2S(MAPTYPE_CAVE, "Cave");
+		T2S(MAPTYPE_INTERIOR, "Interior");
 	default:
 		return "";
 	}
@@ -117,6 +118,7 @@ MapType StrMapType(const char *s)
 	S2T(MAPTYPE_CLASSIC, "Classic");
 	S2T(MAPTYPE_STATIC, "Static");
 	S2T(MAPTYPE_CAVE, "Cave");
+	S2T(MAPTYPE_INTERIOR, "Interior");
 	return MAPTYPE_CLASSIC;
 }
 
@@ -146,6 +148,8 @@ static const MissionTileClasses *MissionGetTileClassesC(const Mission *m)
 		return NULL;
 	case MAPTYPE_CAVE:
 		return &m->u.Cave.TileClasses;
+	case MAPTYPE_INTERIOR:
+		return &m->u.Interior.TileClasses;
 	default:
 		return NULL;
 	}
@@ -192,16 +196,17 @@ void MissionCopy(Mission *dst, const Mission *src)
 		MissionTileClassesCopy(
 			MissionGetTileClasses(dst), MissionGetTileClassesC(src));
 		break;
-
 	case MAPTYPE_STATIC:
 		MissionStaticCopy(&dst->u.Static, &src->u.Static);
 		break;
-
 	case MAPTYPE_CAVE:
 		MissionTileClassesCopy(
 			MissionGetTileClasses(dst), MissionGetTileClassesC(src));
 		break;
-
+	case MAPTYPE_INTERIOR:
+		MissionTileClassesCopy(
+			MissionGetTileClasses(dst), MissionGetTileClassesC(src));
+		break;
 	default:
 		break;
 	}
@@ -227,13 +232,16 @@ void MissionTerminate(Mission *m)
 	switch (m->Type)
 	{
 	case MAPTYPE_CLASSIC:
-		MissionTileClassesTerminate(&m->u.Classic.TileClasses);
+		MissionTileClassesTerminate(MissionGetTileClasses(m));
 		break;
 	case MAPTYPE_STATIC:
 		MissionStaticTerminate(&m->u.Static);
 		break;
 	case MAPTYPE_CAVE:
-		MissionTileClassesTerminate(&m->u.Cave.TileClasses);
+		MissionTileClassesTerminate(MissionGetTileClasses(m));
+		break;
+	case MAPTYPE_INTERIOR:
+		MissionTileClassesTerminate(MissionGetTileClasses(m));
 		break;
 	default:
 		CASSERT(false, "unknown map type");
@@ -252,6 +260,8 @@ MissionTileClasses *MissionGetTileClasses(Mission *m)
 		return NULL;
 	case MAPTYPE_CAVE:
 		return &m->u.Cave.TileClasses;
+	case MAPTYPE_INTERIOR:
+		return &m->u.Interior.TileClasses;
 	default:
 		return NULL;
 	}

@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2017, 2019-2020 Cong Xu
+	Copyright (c) 2013-2017, 2019-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -84,9 +84,11 @@ extern bool gFalse;
 		}                                                                     \
 	}
 
+// Even though malloc(0) may return NULL, we don't account for it for
+// simplicity and to allow code linters to work better
 #define _CCHECKALLOC(_func, _var, _size)                                      \
 	{                                                                         \
-		if (_var == NULL && _size > 0)                                        \
+		if (_var == NULL)                                                     \
 		{                                                                     \
 			exit(1);                                                          \
 		}                                                                     \

@@ -55,8 +55,7 @@ void PlayerDataAddOrUpdate(const NPlayerData pd)
 		p->IsLocal =
 			(int)pd.UID >= gNetClient.FirstPlayerUID &&
 			(int)pd.UID < gNetClient.FirstPlayerUID + MAX_LOCAL_PLAYERS;
-		CArrayInit(&p->ammo, sizeof(int));
-		CArrayFillZero(&p->ammo);
+		CArrayInitFillZero(&p->ammo, sizeof(int), pd.Ammo_count);
 		p->inputDevice = INPUT_DEVICE_UNSET;
 
 		p->Char.speed = 1;

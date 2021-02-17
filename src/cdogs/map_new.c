@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2017, 2019-2020 Cong Xu
+	Copyright (c) 2014-2017, 2019-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -337,6 +337,16 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 			}
 		}
 		break;
+		case MAPTYPE_INTERIOR:
+			LoadMissionTileClasses(&m.u.Interior.TileClasses, child, version);
+			LoadInt(&m.u.Interior.CorridorWidth, child, "CorridorWidth");
+			LoadRooms(
+				&m.u.Interior.Rooms,
+				json_find_first_label(child, "Rooms")->child);
+			m.u.Interior.ExitEnabled = true;
+			LoadBool(&m.u.Interior.ExitEnabled, child, "ExitEnabled");
+			LoadBool(&m.u.Interior.DoorsEnabled, child, "DoorsEnabled");
+			break;
 		default:
 			assert(0 && "unknown map type");
 			continue;

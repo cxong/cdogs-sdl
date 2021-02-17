@@ -71,6 +71,7 @@ set(CDOGS_SOURCES
 	map_build.c
 	map_cave.c
 	map_classic.c
+	map_interior.c
 	map_new.c
 	map_object.c
 	map_static.c
@@ -179,6 +180,7 @@ set(CDOGS_HEADERS
 	map_build.h
 	map_cave.h
 	map_classic.h
+	map_interior.h
 	map_new.h
 	map_object.h
 	map_static.h

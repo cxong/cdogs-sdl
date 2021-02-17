@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2014, 2017-2020 Cong Xu
+	Copyright (c) 2013-2014, 2017-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -53,6 +53,7 @@
 #include "log.h"
 #include "map_cave.h"
 #include "map_classic.h"
+#include "map_interior.h"
 #include "map_static.h"
 #include "net_util.h"
 #include "objs.h"
@@ -73,6 +74,9 @@ void MapBuild(
 	MapBuilderInit(&mb, m, mission, co);
 	MapInit(mb.Map, mb.mission->Size);
 
+	// Re-seed RNG so results are consistent
+	CampaignSeedRandom(co);
+
 	switch (mb.mission->Type)
 	{
 	case MAPTYPE_CLASSIC:
@@ -83,6 +87,9 @@ void MapBuild(
 		break;
 	case MAPTYPE_CAVE:
 		MapCaveLoad(&mb);
+		break;
+	case MAPTYPE_INTERIOR:
+		MapInteriorLoad(&mb, missionIndex);
 		break;
 	default:
 		CASSERT(false, "unknown map type");
@@ -111,6 +118,9 @@ void MapBuild(
 		{
 			MapGenerateRandomExitArea(mb.Map, missionIndex);
 		}
+		break;
+	case MAPTYPE_INTERIOR:
+		MapAddDrains(&mb);
 		break;
 	default:
 		CASSERT(false, "unknown map type");
@@ -217,13 +227,9 @@ void MapBuilderInit(
 	mb->co = co;
 
 	const int mapSize = mission->Size.x * mission->Size.y;
-	CArrayInit(&mb->access, sizeof(uint16_t));
-	CArrayResize(&mb->access, mapSize, NULL);
-	CArrayFillZero(&mb->access);
-	CArrayInit(&mb->tiles, sizeof(TileClass));
-	CArrayResize(&mb->tiles, mapSize, &gTileNothing);
-	CArrayInit(&mb->leaveFree, sizeof(bool));
-	CArrayResize(&mb->leaveFree, mapSize, &gFalse);
+	CArrayInitFillZero(&mb->access, sizeof(uint16_t), mapSize);
+	CArrayInitFill(&mb->tiles, sizeof(TileClass), mapSize, &gTileNothing);
+	CArrayInitFillZero(&mb->leaveFree, sizeof(bool), mapSize);
 }
 void MapBuilderTerminate(MapBuilder *mb)
 {
@@ -256,7 +262,11 @@ const TileClass *MapBuilderGetTile(
 }
 void MapBuilderSetTile(MapBuilder *mb, struct vec2i pos, const TileClass *t)
 {
-	*(TileClass *)CArrayGet(&mb->tiles, pos.y * mb->Map->Size.x + pos.x) = *t;
+	if (t != NULL)
+	{
+		*(TileClass *)CArrayGet(&mb->tiles, pos.y * mb->Map->Size.x + pos.x) =
+			*t;
+	}
 }
 
 static bool IsTileOKStrict(
@@ -790,7 +800,8 @@ struct vec2i MapGetRoomSize(const RoomParams r, const int doorMin)
 static bool MapBuilderGetIsRoom(const MapBuilder *mb, const struct vec2i pos);
 void MapMakeRoom(
 	MapBuilder *mb, const struct vec2i pos, const struct vec2i size,
-	const bool walls, const TileClass *wall, const TileClass *room)
+	const bool walls, const TileClass *wall, const TileClass *room,
+	const bool removeInterRoomWalls)
 {
 	struct vec2i v;
 	// Set the perimeter walls and interior
@@ -815,21 +826,25 @@ void MapMakeRoom(
 			}
 		}
 	}
-	// Check perimeter again; if there are walls where both sides contain
-	// rooms, remove the wall as the rooms have merged
-	for (v.y = pos.y; v.y < pos.y + size.y; v.y++)
+	if (removeInterRoomWalls)
 	{
-		for (v.x = pos.x; v.x < pos.x + size.x; v.x++)
+
+		// Check perimeter again; if there are walls where both sides contain
+		// rooms, remove the wall as the rooms have merged
+		for (v.y = pos.y; v.y < pos.y + size.y; v.y++)
 		{
-			if (v.y == pos.y || v.y == pos.y + size.y - 1 || v.x == pos.x ||
-				v.x == pos.x + size.x - 1)
+			for (v.x = pos.x; v.x < pos.x + size.x; v.x++)
 			{
-				if ((MapBuilderGetIsRoom(mb, svec2i(v.x + 1, v.y)) &&
-					 MapBuilderGetIsRoom(mb, svec2i(v.x - 1, v.y))) ||
-					(MapBuilderGetIsRoom(mb, svec2i(v.x, v.y + 1)) &&
-					 MapBuilderGetIsRoom(mb, svec2i(v.x, v.y - 1))))
+				if (v.y == pos.y || v.y == pos.y + size.y - 1 ||
+					v.x == pos.x || v.x == pos.x + size.x - 1)
 				{
-					MapBuilderSetTile(mb, v, room);
+					if ((MapBuilderGetIsRoom(mb, svec2i(v.x + 1, v.y)) &&
+						 MapBuilderGetIsRoom(mb, svec2i(v.x - 1, v.y))) ||
+						(MapBuilderGetIsRoom(mb, svec2i(v.x, v.y + 1)) &&
+						 MapBuilderGetIsRoom(mb, svec2i(v.x, v.y - 1))))
+					{
+						MapBuilderSetTile(mb, v, room);
+					}
 				}
 			}
 		}
@@ -1436,6 +1451,10 @@ uint16_t GenerateAccessMask(int *accessLevel)
 			}
 		}
 		break;
+	}
+	if (*accessLevel < 1)
+	{
+		*accessLevel = 1;
 	}
 	return accessMask;
 }

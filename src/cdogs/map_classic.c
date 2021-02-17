@@ -1,56 +1,55 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin
-    Copyright (C) 2003-2007 Lucas Martin-King
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (C) 1995 Ronny Wester
+	Copyright (C) 2003 Jeremy Chin
+	Copyright (C) 2003-2007 Lucas Martin-King
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-    This file incorporates work covered by the following copyright and
-    permission notice:
+	This file incorporates work covered by the following copyright and
+	permission notice:
 
-    Copyright (c) 2013-2014, 2018-2019 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2014, 2018-2019, 2021 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "map_classic.h"
 
 #include "campaigns.h"
 #include "map_build.h"
-
 
 static void MapSetupPerimeter(MapBuilder *mb);
 static int MapTryBuildSquare(MapBuilder *mb);
@@ -84,9 +83,6 @@ void MapClassicLoad(MapBuilder *mb)
 	// TODO: multiple tile types
 	MissionSetupTileClasses(&gPicManager, &mb->mission->u.Classic.TileClasses);
 
-	// Re-seed RNG so results are consistent
-	CampaignSeedRandom(mb->co);
-
 	MapMakeSquare(
 		mb, Rect2iNew(svec2i_zero(), mb->mission->Size),
 		&mb->mission->u.Classic.TileClasses.Floor);
@@ -112,19 +108,21 @@ void MapClassicLoad(MapBuilder *mb)
 	{
 		const struct vec2i v = MapGetRandomTile(mb->Map);
 		const int doorMin = CLAMP(mb->mission->u.Classic.Doors.Min, 1, 6);
-		const int doorMax = CLAMP(mb->mission->u.Classic.Doors.Max, doorMin, 6);
+		const int doorMax =
+			CLAMP(mb->mission->u.Classic.Doors.Max, doorMin, 6);
 		const struct vec2i size =
 			MapGetRoomSize(mb->mission->u.Classic.Rooms, doorMin);
 		bool isOverlapRoom;
 		uint16_t overlapAccess;
 		if (!MapIsAreaClearForClassicRoom(
-			mb, v, size, pad, &isOverlapRoom, &overlapAccess))
+				mb, v, size, pad, &isOverlapRoom, &overlapAccess))
 		{
 			continue;
 		}
 		MapBuildRoom(
 			mb, v, size, doorMin, doorMax,
-			AreKeysAllowed(gCampaign.Entry.Mode), isOverlapRoom, overlapAccess);
+			AreKeysAllowed(gCampaign.Entry.Mode), isOverlapRoom,
+			overlapAccess);
 		count++;
 	}
 
@@ -146,8 +144,8 @@ void MapClassicLoad(MapBuilder *mb)
 	while (i < 1000 && count < mb->mission->u.Classic.Walls)
 	{
 		if (MapTryBuildWall(
-			mb, false, pad, mb->mission->u.Classic.WallLength,
-			&mb->mission->u.Classic.TileClasses.Wall))
+				mb, false, pad, mb->mission->u.Classic.WallLength,
+				&mb->mission->u.Classic.TileClasses.Wall))
 		{
 			count++;
 		}
@@ -158,12 +156,12 @@ void MapClassicLoad(MapBuilder *mb)
 static void MapSetupPerimeter(MapBuilder *mb)
 {
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), mb->Map->Size))
-		if (_v.x != 0 && _v.x != mb->Map->Size.x - 1 &&
-			_v.y != 0 && _v.y != mb->Map->Size.y - 1)
-		{
-			continue;
-		}
-		MapBuilderSetTile(mb, _v, &mb->mission->u.Classic.TileClasses.Wall);
+	if (_v.x != 0 && _v.x != mb->Map->Size.x - 1 && _v.y != 0 &&
+		_v.y != mb->Map->Size.y - 1)
+	{
+		continue;
+	}
+	MapBuilderSetTile(mb, _v, &mb->mission->u.Classic.TileClasses.Wall);
 	RECT_FOREACH_END()
 }
 
@@ -200,8 +198,9 @@ static bool MapIsAreaClearForClassicRoom(
 			clearSize.x -= dx;
 			isEdgeRoom = true;
 		}
-		else if (pos.x + size.x == mb->Map->Size.x - 2 ||
-				 pos.x + size.x == mb->Map->Size.x - 1)
+		else if (
+			pos.x + size.x == mb->Map->Size.x - 2 ||
+			pos.x + size.x == mb->Map->Size.x - 1)
 		{
 			clearSize.x = mb->Map->Size.x - 1 - pos.x;
 			isEdgeRoom = true;
@@ -213,8 +212,9 @@ static bool MapIsAreaClearForClassicRoom(
 			clearSize.y -= dy;
 			isEdgeRoom = true;
 		}
-		else if (pos.y + size.y == mb->Map->Size.y - 2 ||
-				 pos.y + size.y == mb->Map->Size.y - 1)
+		else if (
+			pos.y + size.y == mb->Map->Size.y - 2 ||
+			pos.y + size.y == mb->Map->Size.y - 1)
 		{
 			clearSize.y = mb->Map->Size.y - 1 - pos.y;
 			isEdgeRoom = true;
@@ -226,16 +226,14 @@ static bool MapIsAreaClearForClassicRoom(
 	if (!isClear && !isEdgeRoom)
 	{
 		// If room overlap is enabled, check if it overlaps with a room
-		const bool isOverlap =
-			mb->mission->u.Classic.Rooms.Overlap &&
-			MapIsAreaClearOrRoom(mb, clearPos, clearSize);
+		const bool isOverlap = mb->mission->u.Classic.Rooms.Overlap &&
+							   MapIsAreaClearOrRoom(mb, clearPos, clearSize);
 		// Now check if the overlapping rooms will create a passage
 		// large enough
-		const int roomOverlapSize = MapGetRoomOverlapSize(
-			mb, Rect2iNew(pos, size), overlapAccess);
-		isClear =
-			isOverlap &&
-			roomOverlapSize >= mb->mission->u.Classic.CorridorWidth;
+		const int roomOverlapSize =
+			MapGetRoomOverlapSize(mb, Rect2iNew(pos, size), overlapAccess);
+		isClear = isOverlap &&
+				  roomOverlapSize >= mb->mission->u.Classic.CorridorWidth;
 		*isOverlapRoom = true;
 	}
 	return isClear;
@@ -257,9 +255,8 @@ static void MapBuildRoom(
 	uint16_t accessMask = 0;
 
 	MapMakeRoom(
-		mb, pos, size, true,
-		&mb->mission->u.Classic.TileClasses.Wall,
-		&mb->mission->u.Classic.TileClasses.Room);
+		mb, pos, size, true, &mb->mission->u.Classic.TileClasses.Wall,
+		&mb->mission->u.Classic.TileClasses.Room, true);
 	// Check which walls we can place doors
 	// If we cannot place doors, remember this and try to place them
 	// on other walls
@@ -307,17 +304,11 @@ static void MapBuildRoom(
 		{
 			// Otherwise, generate an access level for this room
 			accessMask = GenerateAccessMask(&mb->Map->keyAccessCount);
-			if (mb->Map->keyAccessCount < 1)
-			{
-				mb->Map->keyAccessCount = 1;
-			}
 		}
 	}
 	MapPlaceDoors(
-		mb, Rect2iNew(pos, size),
-		mb->mission->u.Classic.Doors.Enabled, doors, doorMin, doorMax,
-		accessMask,
-		&mb->mission->u.Classic.TileClasses.Door,
+		mb, Rect2iNew(pos, size), mb->mission->u.Classic.Doors.Enabled, doors,
+		doorMin, doorMax, accessMask, &mb->mission->u.Classic.TileClasses.Door,
 		&mb->mission->u.Classic.TileClasses.Floor);
 
 	MapMakeRoomWalls(
@@ -346,7 +337,8 @@ static bool MapTryBuildPillar(MapBuilder *mb, const int pad)
 		clearSize.x -= dx;
 		isEdge = 1;
 	}
-	else if (pos.x + size.x == mb->Map->Size.x - 2 ||
+	else if (
+		pos.x + size.x == mb->Map->Size.x - 2 ||
 		pos.x + size.x == mb->Map->Size.x - 1)
 	{
 		clearSize.x = mb->Map->Size.x - 1 - pos.x;
@@ -359,7 +351,8 @@ static bool MapTryBuildPillar(MapBuilder *mb, const int pad)
 		clearSize.y -= dy;
 		isEdge = 1;
 	}
-	else if (pos.y + size.y == mb->Map->Size.y - 2 ||
+	else if (
+		pos.y + size.y == mb->Map->Size.y - 2 ||
 		pos.y + size.y == mb->Map->Size.y - 1)
 	{
 		clearSize.y = mb->Map->Size.y - 1 - pos.y;
@@ -371,8 +364,7 @@ static bool MapTryBuildPillar(MapBuilder *mb, const int pad)
 	// non-room wall
 	// This is to prevent dead pockets
 	isClear = MapIsAreaClear(mb, clearPos, clearSize);
-	if (!isClear && !isEdge &&
-		MapIsAreaClearOrWall(mb, clearPos, clearSize))
+	if (!isClear && !isEdge && MapIsAreaClearOrWall(mb, clearPos, clearSize))
 	{
 		// Also check that the pillar does not overlap two pillars
 		isClear = MapIsLessThanTwoWallOverlaps(mb, clearPos, clearSize);
@@ -380,7 +372,8 @@ static bool MapTryBuildPillar(MapBuilder *mb, const int pad)
 	if (isClear)
 	{
 		MapMakeSquare(
-			mb, Rect2iNew(pos, size), &mb->mission->u.Classic.TileClasses.Wall);
+			mb, Rect2iNew(pos, size),
+			&mb->mission->u.Classic.TileClasses.Wall);
 		return true;
 	}
 	return false;
@@ -403,11 +396,10 @@ static void MapFindAvailableDoors(
 	{
 		doors[0] = false;
 	}
-	else if (FindWallRun(
-		mb,
-		svec2i(pos.x, pos.y + size.y / 2),
-		svec2i(0, 1),
-		size.y - 2) < doorMin)
+	else if (
+		FindWallRun(
+			mb, svec2i(pos.x, pos.y + size.y / 2), svec2i(0, 1), size.y - 2) <
+		doorMin)
 	{
 		doors[0] = false;
 	}
@@ -416,11 +408,10 @@ static void MapFindAvailableDoors(
 	{
 		doors[1] = false;
 	}
-	else if (FindWallRun(
-		mb,
-		svec2i(pos.x + size.x - 1, pos.y + size.y / 2),
-		svec2i(0, 1),
-		size.y - 2) < doorMin)
+	else if (
+		FindWallRun(
+			mb, svec2i(pos.x + size.x - 1, pos.y + size.y / 2), svec2i(0, 1),
+			size.y - 2) < doorMin)
 	{
 		doors[1] = false;
 	}
@@ -429,11 +420,10 @@ static void MapFindAvailableDoors(
 	{
 		doors[2] = false;
 	}
-	else if (FindWallRun(
-		mb,
-		svec2i(pos.x + size.x / 2, pos.y),
-		svec2i(1, 0),
-		size.x - 2) < doorMin)
+	else if (
+		FindWallRun(
+			mb, svec2i(pos.x + size.x / 2, pos.y), svec2i(1, 0), size.x - 2) <
+		doorMin)
 	{
 		doors[2] = false;
 	}
@@ -442,11 +432,10 @@ static void MapFindAvailableDoors(
 	{
 		doors[3] = false;
 	}
-	else if (FindWallRun(
-		mb,
-		svec2i(pos.x + size.x / 2, pos.y + size.y - 1),
-		svec2i(1, 0),
-		size.x - 2) < doorMin)
+	else if (
+		FindWallRun(
+			mb, svec2i(pos.x + size.x / 2, pos.y + size.y - 1), svec2i(1, 0),
+			size.x - 2) < doorMin)
 	{
 		doors[3] = false;
 	}
@@ -479,8 +468,10 @@ static int FindWallRun(
 		plus = !plus;
 
 		if (MapBuilderGetTile(mb, v)->Type != TILE_CLASS_WALL ||
-			MapBuilderGetTile(mb, svec2i(v.x + d.y, v.y + d.x))->Type == TILE_CLASS_WALL ||
-			MapBuilderGetTile(mb, svec2i(v.x - d.y, v.y - d.x))->Type == TILE_CLASS_WALL)
+			MapBuilderGetTile(mb, svec2i(v.x + d.y, v.y + d.x))->Type ==
+				TILE_CLASS_WALL ||
+			MapBuilderGetTile(mb, svec2i(v.x - d.y, v.y - d.x))->Type ==
+				TILE_CLASS_WALL)
 		{
 			break;
 		}

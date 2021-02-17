@@ -973,12 +973,10 @@ void MissionStaticLayout(
 	CArrayInit(&oldAccess, m->Access.elemSize);
 	CArrayCopy(&oldTiles, &m->Tiles);
 	CArrayCopy(&oldAccess, &m->Access);
-	const int firstTile = MissionStaticGetTile(m, oldSize, svec2i_zero());
-	CArrayResize(&m->Tiles, size.x * size.y, &firstTile);
+	CArrayResize(&m->Tiles, size.x * size.y, NULL);
 	CArrayFillZero(&m->Tiles);
 	const uint16_t noAccess = 0;
 	CArrayResize(&m->Access, size.x * size.y, &noAccess);
-	CArrayFillZero(&m->Access);
 
 	// Paint the old tiles back
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), size))

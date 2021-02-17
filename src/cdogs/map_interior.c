@@ -1,0 +1,775 @@
+/*
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (c) 2021 Cong Xu
+	All rights reserved.
+
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
+
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
+
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
+*/
+#include "map_interior.h"
+
+#include "algorithms.h"
+#include "log.h"
+#include "map_build.h"
+
+#define CORRIDOR_LEVEL_DIFF_BLOCK 1
+
+// Which side of the critical path this area is on
+// This is important for key placement, as the start is placed on the left,
+// and exit on the right.
+typedef enum
+{
+	CRIT_PATH_NONE,
+	CRIT_PATH_LEFT,
+	CRIT_PATH_RIGHT,
+} CriticalPath;
+
+typedef struct
+{
+	Rect2i r;
+	int level;
+	int parent;
+	int child1;
+	int child2;
+	bool horizontal;
+	bool isCorridor;
+	CriticalPath criticalPath;
+} BSPArea;
+
+static BSPArea BSPAreaRoot(const struct vec2i size)
+{
+	BSPArea b;
+	memset(&b, 0, sizeof b);
+	b.r = Rect2iNew(svec2i_zero(), size);
+	b.parent = -1;
+	b.child1 = -1;
+	b.child2 = -1;
+	return b;
+}
+static bool BSPAreaIsLeaf(const BSPArea *b)
+{
+	return b->child1 == -1 && b->child2 == -1;
+}
+
+typedef struct
+{
+	CArray a;
+	size_t dim;
+} Adjacency;
+
+static Adjacency AdjacencyNew(const size_t dim)
+{
+	Adjacency am;
+	CArrayInitFillZero(&am.a, sizeof(bool), dim * dim);
+	am.dim = dim;
+	return am;
+}
+static void AdjacencyTerminate(Adjacency *am)
+{
+	CArrayTerminate(&am->a);
+}
+static void AdjacencyConnect(Adjacency *am, const int i, const int j)
+{
+	CArraySet(&am->a, i + j * am->dim, &gTrue);
+	CArraySet(&am->a, j + i * am->dim, &gTrue);
+}
+static bool AdjacencyIsConnected(const Adjacency *am, const int i, const int j)
+{
+	const bool *isAdjacent = CArrayGet(&am->a, i + j * am->dim);
+	return *isAdjacent;
+}
+static bool AdjacencyHasConnections(const Adjacency *am, const int i)
+{
+	for (int j = 0; j < am->dim; j++)
+	{
+		if (AdjacencyIsConnected(am, i, j))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+static void SplitAreas(MapBuilder *mb, CArray *areas);
+static void SplitLeafRooms(MapBuilder *mb, CArray *areas);
+static void FillRooms(MapBuilder *mb, const CArray *areas);
+static Adjacency SetupAdjacencyMatrix(const CArray *areas);
+static void AddDoorsToClosestCorridors(
+	MapBuilder *mb, CArray *areas, Adjacency *am);
+static void ConnectUnconnectedRooms(
+	MapBuilder *mb, CArray *areas, Adjacency *am);
+static void FindAndMarkCriticalPath(
+	MapBuilder *mb, const CArray *areas, const int missionIndex);
+static void FillCorridors(MapBuilder *mb, const CArray *areas);
+static CArray CalcDistanceToCriticalPath(
+	const CArray *areas, const Adjacency *am);
+static void PlaceKeys(
+	MapBuilder *mb, const CArray *areas, const Adjacency *am,
+	const CArray *dCriticalPath);
+void MapInteriorLoad(MapBuilder *mb, const int missionIndex)
+{
+	// TODO: multiple tile types
+	MissionSetupTileClasses(
+		&gPicManager, &mb->mission->u.Interior.TileClasses);
+
+	CArray areas;
+	CArrayInit(&areas, sizeof(BSPArea));
+	BSPArea a = BSPAreaRoot(mb->Map->Size);
+
+	// Split the map for a number of iterations, choosing alternating axis and
+	// random location
+	CArrayPushBack(&areas, &a);
+	SplitAreas(mb, &areas);
+
+	// Try to split leaf rooms into more rooms, by longest axis
+	SplitLeafRooms(mb, &areas);
+
+	FillRooms(mb, &areas);
+
+	Adjacency am = SetupAdjacencyMatrix(&areas);
+
+	// Add doors leading to the closest corridor in the hierarchy
+	AddDoorsToClosestCorridors(mb, &areas, &am);
+
+	// For every room, connect it to a random shallower room
+	// Keep going until all rooms are connected
+	ConnectUnconnectedRooms(mb, &areas, &am);
+
+	// Find deepest leaf going down both branches; place start/end
+	// This represents longest/critical path
+	FindAndMarkCriticalPath(mb, &areas, missionIndex);
+
+	FillCorridors(mb, &areas);
+
+	CArray dCriticalPath = CalcDistanceToCriticalPath(&areas, &am);
+
+	if (mb->mission->u.Interior.DoorsEnabled)
+	{
+		// For each locked street (street on critical path), place a key in a
+		// non-critical leaf Do so by following a child away from the critical
+		// path
+		PlaceKeys(mb, &areas, &am, &dCriticalPath);
+	}
+
+	CArrayTerminate(&dCriticalPath);
+	AdjacencyTerminate(&am);
+	CArrayTerminate(&areas);
+}
+
+static bool BSPAreaTrySplit(
+	const CArray *areas, const bool horizontal, const int idx,
+	const int minSize, BSPArea *r1, BSPArea *r2);
+static void SplitAreas(MapBuilder *mb, CArray *areas)
+{
+	const int hcount = RAND_INT(0, 2);
+
+	CA_FOREACH(BSPArea, a, *areas)
+	// Alternate splitting direction per level
+	const bool horizontal = ((hcount + a->level) % 2) == 1;
+	BSPArea a1 = BSPAreaRoot(svec2i_zero());
+	BSPArea a2 = BSPAreaRoot(svec2i_zero());
+	if (BSPAreaTrySplit(
+			areas, horizontal, _ca_index,
+			mb->mission->u.Interior.Rooms.Min +
+				mb->mission->u.Interior.CorridorWidth / 2,
+			&a1, &a2))
+	{
+		// Resize rooms to allow space for street
+		for (int i = 0; i < mb->mission->u.Interior.CorridorWidth; i++)
+		{
+			if (horizontal)
+			{
+				if ((i % 2) == 0)
+				{
+					a1.r.Size.x--;
+				}
+				else
+				{
+					a2.r.Pos.x++;
+					a2.r.Size.x--;
+				}
+			}
+			else
+			{
+				if ((i % 2) == 0)
+				{
+					a1.r.Size.y--;
+				}
+				else
+				{
+					a2.r.Pos.y++;
+					a2.r.Size.y--;
+				}
+			}
+		}
+		// Replace current area with a corridor
+		a->isCorridor = true;
+		if (horizontal)
+		{
+			a->r = Rect2iNew(
+				svec2i(a1.r.Pos.x + a1.r.Size.x, a1.r.Pos.y),
+				svec2i(mb->mission->u.Interior.CorridorWidth, a1.r.Size.y));
+		}
+		else
+		{
+			a->r = Rect2iNew(
+				svec2i(a1.r.Pos.x, a1.r.Pos.y + a1.r.Size.y),
+				svec2i(a1.r.Size.x, mb->mission->u.Interior.CorridorWidth));
+		}
+		a->horizontal = !horizontal;
+
+		// Add children
+		a->child1 = (int)areas->size;
+		a->child2 = (int)areas->size + 1;
+		CArrayPushBack(areas, &a1);
+		CArrayPushBack(areas, &a2);
+	}
+	CA_FOREACH_END()
+}
+static bool BSPAreaTrySplit(
+	const CArray *areas, const bool horizontal, const int idx,
+	const int minSize, BSPArea *a1, BSPArea *a2)
+{
+	const BSPArea *area = CArrayGet(areas, idx);
+	const int r = horizontal ? area->r.Size.x - minSize * 2
+							 : area->r.Size.y - minSize * 2;
+	if (r < 0)
+	{
+		// Too small; can't split
+		return false;
+	}
+	a1->level = a2->level = area->level + 1;
+	a1->parent = a2->parent = idx;
+	a1->horizontal = a2->horizontal = horizontal;
+	if (horizontal)
+	{
+		// Left/right children
+		const int x = RAND_INT(0, r) + minSize;
+		a1->r = Rect2iNew(area->r.Pos, svec2i(x, area->r.Size.y));
+		a2->r = Rect2iNew(
+			svec2i(area->r.Pos.x + x, area->r.Pos.y),
+			svec2i(area->r.Size.x - x, area->r.Size.y));
+	}
+	else
+	{
+		// Top/bottom children
+		const int y = RAND_INT(0, r) + minSize;
+		a1->r = Rect2iNew(area->r.Pos, svec2i(area->r.Size.x, y));
+		a2->r = Rect2iNew(
+			svec2i(area->r.Pos.x, area->r.Pos.y + y),
+			svec2i(area->r.Size.x, area->r.Size.y - y));
+	}
+	return true;
+}
+
+static void SplitLeafRooms(MapBuilder *mb, CArray *areas)
+{
+	CA_FOREACH(BSPArea, a, *areas)
+	if (a->isCorridor)
+	{
+		continue;
+	}
+	const bool horizontal = a->r.Size.x > a->r.Size.y;
+	BSPArea a1 = BSPAreaRoot(svec2i_zero());
+	BSPArea a2 = BSPAreaRoot(svec2i_zero());
+	if (BSPAreaTrySplit(
+			areas, horizontal, _ca_index, mb->mission->u.Interior.Rooms.Min,
+			&a1, &a2))
+	{
+		// Resize rooms so they share a splitting wall
+		if (a1.horizontal)
+		{
+			a1.r.Size.x++;
+		}
+		else
+		{
+			a1.r.Size.y++;
+		}
+
+		// Add children
+		a->child1 = (int)areas->size;
+		CArrayPushBack(areas, &a1);
+		a->child2 = (int)areas->size;
+		CArrayPushBack(areas, &a2);
+	}
+	CA_FOREACH_END()
+}
+
+static void FillRooms(MapBuilder *mb, const CArray *areas)
+{
+
+	CA_FOREACH(BSPArea, a, *areas)
+	// Skip non-leaves
+	if (!BSPAreaIsLeaf(a))
+	{
+		continue;
+	}
+	MapMakeRoom(
+		mb, a->r.Pos, a->r.Size, true,
+		&mb->mission->u.Interior.TileClasses.Wall,
+		&mb->mission->u.Interior.TileClasses.Room, false);
+	CA_FOREACH_END()
+}
+
+static Adjacency SetupAdjacencyMatrix(const CArray *areas)
+{
+	Adjacency am = AdjacencyNew(areas->size);
+	CA_FOREACH(const BSPArea, a, *areas)
+	if (!a->isCorridor || a->parent == -1)
+	{
+		continue;
+	}
+	AdjacencyConnect(&am, _ca_index, a->parent);
+	CA_FOREACH_END()
+	return am;
+}
+
+static void AddDoorsToClosestCorridors(
+	MapBuilder *mb, CArray *areas, Adjacency *am)
+{
+	CA_FOREACH(BSPArea, a, *areas)
+	// Skip non-leaves
+	if (!BSPAreaIsLeaf(a))
+	{
+		continue;
+	}
+	// Add doors leading to corridors
+	const BSPArea *corridor = a;
+	int corridorI = _ca_index;
+	for (; !corridor->isCorridor;)
+	{
+		corridorI = corridor->parent;
+		corridor = CArrayGet(areas, corridorI);
+	}
+	// Four walls/directions
+	for (int i = 0; i < 4; i++)
+	{
+		struct vec2i doorPos =
+			svec2i(a->r.Pos.x + a->r.Size.x / 2, a->r.Pos.y + a->r.Size.y / 2);
+		struct vec2i outsideDoor = doorPos;
+		switch (i)
+		{
+		case 0:
+			// top
+			doorPos.y = a->r.Pos.y;
+			outsideDoor = svec2i(doorPos.x, doorPos.y - 1);
+			break;
+		case 1:
+			// right
+			doorPos.x = a->r.Pos.x + a->r.Size.x - 1;
+			outsideDoor = svec2i(doorPos.x + 1, doorPos.y);
+			break;
+		case 2:
+			// bottom
+			doorPos.y = a->r.Pos.y + a->r.Size.y - 1;
+			outsideDoor = svec2i(doorPos.x, doorPos.y + 1);
+			break;
+		case 3:
+			// left
+			doorPos.x = a->r.Pos.x;
+			outsideDoor = svec2i(doorPos.x - 1, doorPos.y);
+			break;
+		default:
+			CASSERT(false, "unexpected");
+			break;
+		}
+		if (Rect2iIsInside(corridor->r, outsideDoor))
+		{
+			MapBuilderSetTile(
+				mb, doorPos, &mb->mission->u.Interior.TileClasses.Door);
+			AdjacencyConnect(am, _ca_index, corridorI);
+			// Change parentage
+			a->parent = corridorI;
+			break;
+		}
+	}
+	CA_FOREACH_END()
+}
+
+static bool TryConnectRooms(
+	MapBuilder *mb, CArray *areas, Adjacency *am, BSPArea *a1, const int aIdx);
+static void ConnectUnconnectedRooms(
+	MapBuilder *mb, CArray *areas, Adjacency *am)
+{
+	int numUnconnected = 0;
+	do
+	{
+		numUnconnected = 0;
+		CA_FOREACH(BSPArea, a, *areas)
+		if (AdjacencyHasConnections(am, _ca_index) || a->isCorridor ||
+			!BSPAreaIsLeaf(a))
+		{
+			continue;
+		}
+		if (!TryConnectRooms(mb, areas, am, a, _ca_index))
+		{
+			numUnconnected++;
+		}
+		CA_FOREACH_END()
+	} while (numUnconnected > 0);
+}
+static bool RectIsAdjacent(
+	const Rect2i r1, const Rect2i r2, const int overlapSize);
+static bool TryConnectRooms(
+	MapBuilder *mb, CArray *areas, Adjacency *am, BSPArea *a1, const int aIdx)
+{
+	CA_FOREACH(BSPArea, a2, *areas)
+	// Only connect to a room that is also connected
+	if (!BSPAreaIsLeaf(a2) || a1 == a2 ||
+		!AdjacencyHasConnections(am, _ca_index))
+	{
+		continue;
+	}
+	// Shrink rectangles by 1 to determine
+	// overlap
+	Rect2i r1 = a1->r;
+	r1.Size.x--;
+	r1.Size.y--;
+	Rect2i r2 = a2->r;
+	r2.Size.x--;
+	r2.Size.y--;
+	const int overlapSize = 1;
+	if (!RectIsAdjacent(r1, r2, overlapSize))
+	{
+		continue;
+	}
+	// Rooms are adjacent; pick the cell that's in
+	// the middle of the adjacent area and turn
+	// into a door
+	const int minOverlapX =
+		MIN(a1->r.Pos.x + a1->r.Size.x, a2->r.Pos.x + a2->r.Size.x);
+	const int maxOverlapX = MAX(a1->r.Pos.x, a2->r.Pos.x);
+	const int minOverlapY =
+		MIN(a1->r.Pos.y + a1->r.Size.y, a2->r.Pos.y + a2->r.Size.y);
+	const int maxOverlapY = MAX(a1->r.Pos.y, a2->r.Pos.y);
+	const struct vec2i doorPos = svec2i(
+		(minOverlapX + maxOverlapX) / 2, (minOverlapY + maxOverlapY) / 2);
+	MapBuilderSetTile(mb, doorPos, &mb->mission->u.Interior.TileClasses.Door);
+	AdjacencyConnect(am, aIdx, _ca_index);
+	// Change parentage
+	a1->parent = _ca_index;
+	return true;
+	CA_FOREACH_END()
+	return false;
+}
+static bool RectIsAdjacent(
+	const Rect2i r1, const Rect2i r2, const int overlapSize)
+{
+	// If left/right edges adjacent
+	if (r1.Pos.x - (r2.Pos.x + r2.Size.x) == 0 ||
+		r2.Pos.x - (r1.Pos.x + r1.Size.x) == 0)
+	{
+		return r1.Pos.y + overlapSize < r2.Pos.y + r2.Size.y &&
+			   r2.Pos.y + overlapSize < r1.Pos.y + r1.Size.y;
+	}
+	if (r1.Pos.y - (r2.Pos.y + r2.Size.y) == 0 ||
+		r2.Pos.y - (r1.Pos.y + r1.Size.y) == 0)
+	{
+		return r1.Pos.x + overlapSize < r2.Pos.x + r2.Size.x &&
+			   r2.Pos.x + overlapSize < r1.Pos.x + r1.Size.x;
+	}
+	return false;
+}
+
+static int FindDeepestRoomFrom(const CArray *areas, const int idx);
+static void MarkParentCorridors(
+	const CArray *areas, const int idx, const CriticalPath cp);
+static void FindAndMarkCriticalPath(
+	MapBuilder *mb, const CArray *areas, const int missionIndex)
+{
+	const BSPArea *root = CArrayGet(areas, 0);
+	const int deepestRoom1 = FindDeepestRoomFrom(areas, root->child1);
+	const BSPArea *a1 = CArrayGet(areas, deepestRoom1);
+	mb->Map->start =
+		svec2i_add(a1->r.Pos, svec2i_divide(a1->r.Size, svec2i(2, 2)));
+	const int deepestRoom2 = FindDeepestRoomFrom(areas, root->child2);
+	const BSPArea *a2 = CArrayGet(areas, deepestRoom2);
+	if (mb->mission->u.Interior.ExitEnabled)
+	{
+		Exit exit;
+		exit.Mission = missionIndex + 1;
+		exit.Hidden = false;
+		exit.R.Pos = svec2i_add(a2->r.Pos, svec2i_one());
+		exit.R.Size = svec2i_subtract(a2->r.Size, svec2i(3, 3));
+		CArrayPushBack(&mb->Map->exits, &exit);
+	}
+	MarkParentCorridors(areas, deepestRoom1, CRIT_PATH_LEFT);
+	MarkParentCorridors(areas, deepestRoom2, CRIT_PATH_RIGHT);
+}
+static int FindDeepestRoomFrom(const CArray *areas, const int idx)
+{
+	CArray pathStack;
+	CArrayInit(&pathStack, sizeof(int));
+	CArrayPushBack(&pathStack, &idx);
+	int deepestChild = -1;
+	int maxDepth = 0;
+	while (pathStack.size > 0)
+	{
+		const int i = *(int *)CArrayGet(&pathStack, pathStack.size - 1);
+		const BSPArea *a = CArrayGet(areas, i);
+		CArrayPopBack(&pathStack);
+		if (BSPAreaIsLeaf(a))
+		{
+			if (a->level > maxDepth)
+			{
+				maxDepth = a->level;
+				deepestChild = i;
+			}
+		}
+		if (a->child1 >= 0)
+		{
+			CArrayPushBack(&pathStack, &a->child1);
+		}
+		if (a->child2 >= 0)
+		{
+			CArrayPushBack(&pathStack, &a->child2);
+		}
+	}
+	CArrayTerminate(&pathStack);
+	return deepestChild;
+}
+static void MarkParentCorridors(
+	const CArray *areas, const int idx, const CriticalPath cp)
+{
+	for (int i = idx; i >= 0;)
+	{
+		BSPArea *corridor = CArrayGet(areas, i);
+		corridor->criticalPath = cp;
+		i = corridor->parent;
+	}
+}
+
+static void CapCorridor(
+	MapBuilder *mb, const CArray *areas, const BSPArea *a,
+	const struct vec2i end, const struct vec2i dAcross,
+	const struct vec2i dAlong);
+static struct vec2i CorridorDAlong(const BSPArea *a);
+static struct vec2i CorridorDAcross(const BSPArea *a);
+static void FillCorridors(MapBuilder *mb, const CArray *areas)
+{
+	CA_FOREACH(const BSPArea, a, *areas)
+	if (!a->isCorridor)
+	{
+		continue;
+	}
+	RECT_FOREACH(a->r)
+	MapBuilderSetTile(mb, _v, &mb->mission->u.Interior.TileClasses.Floor);
+	RECT_FOREACH_END()
+	// Check ends of corridors - cap or place door
+	const struct vec2i end1 = a->r.Pos;
+	const struct vec2i end2 =
+		svec2i_add(end1, svec2i_subtract(a->r.Size, svec2i_one()));
+	CapCorridor(mb, areas, a, end1, CorridorDAcross(a), CorridorDAlong(a));
+	CapCorridor(
+		mb, areas, a, end2, svec2i_scale(CorridorDAcross(a), -1),
+		svec2i_scale(CorridorDAlong(a), -1));
+	CA_FOREACH_END()
+}
+static void CapCorridor(
+	MapBuilder *mb, const CArray *areas, const BSPArea *a,
+	const struct vec2i end, const struct vec2i dAcross,
+	const struct vec2i dAlong)
+{
+	// Check ends of corridor - if outside map, or next to much older corridor,
+	// block off with wall
+	const struct vec2i outside = svec2i_subtract(end, dAlong);
+	const TileClass *capTile = &mb->mission->u.Interior.TileClasses.Floor;
+	if (!MapIsTileIn(mb->Map, outside))
+	{
+		capTile = &mb->mission->u.Interior.TileClasses.Wall;
+	}
+	else
+	{
+		CA_FOREACH(const BSPArea, a2, *areas)
+		if (Rect2iIsInside(a2->r, outside))
+		{
+			if (a->level - a2->level > CORRIDOR_LEVEL_DIFF_BLOCK)
+			{
+				capTile = &mb->mission->u.Interior.TileClasses.Wall;
+			}
+			else if (mb->mission->u.Interior.DoorsEnabled)
+			{
+				capTile = &mb->mission->u.Interior.TileClasses.Door;
+			}
+			break;
+		}
+		CA_FOREACH_END()
+	}
+	for (int i = 0; i < mb->mission->u.Interior.CorridorWidth; i++)
+	{
+		MapBuilderSetTile(
+			mb, svec2i_add(end, svec2i_multiply(dAcross, svec2i(i, i))),
+			capTile);
+	}
+}
+static struct vec2i CorridorDAlong(const BSPArea *a)
+{
+	// Unit vector going along the corridor
+	return a->horizontal ? svec2i(1, 0) : svec2i(0, 1);
+}
+static struct vec2i CorridorDAcross(const BSPArea *a)
+{
+	// Unit vector going across the corridor
+	return a->horizontal ? svec2i(0, 1) : svec2i(1, 0);
+}
+
+static int FindAdjacentCriticalPath(
+	const CArray *areas, const Adjacency *am, const CArray *dCriticalPath,
+	const int idx);
+static CArray CalcDistanceToCriticalPath(
+	const CArray *areas, const Adjacency *am)
+{
+	CArray dCriticalPath;
+	CArrayInitFillZero(&dCriticalPath, sizeof(int), areas->size);
+	CA_FOREACH(const BSPArea, a, *areas)
+	if (a->criticalPath != CRIT_PATH_NONE)
+	{
+		const int d = 1;
+		CArraySet(&dCriticalPath, _ca_index, &d);
+	}
+	CA_FOREACH_END()
+	int newConnections;
+	do
+	{
+		newConnections = 0;
+		CA_FOREACH(const BSPArea, a, *areas)
+		if (*(int *)CArrayGet(&dCriticalPath, _ca_index) > 0)
+		{
+			continue;
+		}
+		if (!a->isCorridor && !BSPAreaIsLeaf(a))
+		{
+			continue;
+		}
+		const int d =
+			FindAdjacentCriticalPath(areas, am, &dCriticalPath, _ca_index);
+		if (d > 0)
+		{
+			CArraySet(&dCriticalPath, _ca_index, &d);
+			newConnections++;
+		}
+		CA_FOREACH_END()
+	} while (newConnections > 0);
+	return dCriticalPath;
+}
+static int FindAdjacentCriticalPath(
+	const CArray *areas, const Adjacency *am, const CArray *dCriticalPath,
+	const int idx)
+{
+	for (int i = 0; i < (int)areas->size; i++)
+	{
+		const int *d = CArrayGet(dCriticalPath, i);
+		if (*d == 0)
+		{
+			continue;
+		}
+		if (AdjacencyIsConnected(am, idx, i))
+		{
+			return *d + 1;
+		}
+	}
+	return 0;
+}
+
+static int FindRoomFurtherFromCriticalPath(
+	const CArray *areas, const Adjacency *am, const CArray *dCriticalPath,
+	const int fromIdx);
+static void PlaceKeys(
+	MapBuilder *mb, const CArray *areas, const Adjacency *am,
+	const CArray *dCriticalPath)
+{
+	int keyIndex = 0;
+	CA_FOREACH(const BSPArea, a, *areas)
+	if (!a->isCorridor || a->criticalPath == CRIT_PATH_NONE || _ca_index == 0)
+	{
+		continue;
+	}
+
+	// If we're on the right critical path, we need to lock the child corridor
+	// that is on the critical path instead
+	if (a->criticalPath == CRIT_PATH_RIGHT)
+	{
+		const BSPArea *child1 = CArrayGet(areas, a->child1);
+		const BSPArea *child2 = CArrayGet(areas, a->child2);
+		a = child1->criticalPath != CRIT_PATH_NONE ? child1 : child2;
+		if (!a->isCorridor)
+		{
+			continue;
+		}
+	}
+
+	// Lock corridor
+	const uint16_t accessMask = GetAccessMask(keyIndex);
+	const struct vec2i end1 = a->r.Pos;
+	const struct vec2i end2 =
+		svec2i_add(end1, svec2i_subtract(a->r.Size, svec2i_one()));
+	for (int i = 0; i < mb->mission->u.Interior.CorridorWidth; i++)
+	{
+		MapSetRoomAccessMask(
+			mb,
+			svec2i_add(
+				end1, svec2i_multiply(CorridorDAcross(a), svec2i(i, i))),
+			svec2i_one(), accessMask);
+		MapSetRoomAccessMask(
+			mb,
+			svec2i_add(
+				end2, svec2i_multiply(CorridorDAcross(a), svec2i(-i, -i))),
+			svec2i_one(), accessMask);
+	}
+
+	// Place key in a child room before the locked corridor, but far away
+	int child = _ca_index;
+	for (;;)
+	{
+		const int nextChild =
+			FindRoomFurtherFromCriticalPath(areas, am, dCriticalPath, child);
+		if (nextChild == -1)
+		{
+			break;
+		}
+		child = nextChild;
+	}
+	CASSERT(child >= 0, "Cannot find child for locked street");
+	const BSPArea *room = CArrayGet(areas, child);
+	MapPlaceKey(
+		mb, svec2i_add(room->r.Pos, svec2i_divide(room->r.Size, svec2i(2, 2))),
+		keyIndex);
+
+	keyIndex = (keyIndex + 1) % 4;
+	CA_FOREACH_END()
+}
+static int FindRoomFurtherFromCriticalPath(
+	const CArray *areas, const Adjacency *am, const CArray *dCriticalPath,
+	const int fromIdx)
+{
+	for (int i = 0; i < (int)areas->size; i++)
+	{
+		if (i == fromIdx || !AdjacencyIsConnected(am, fromIdx, i) ||
+			*(int *)CArrayGet(dCriticalPath, i) <=
+				*(int *)CArrayGet(dCriticalPath, fromIdx))
+		{
+			continue;
+		}
+		return i;
+	}
+	return -1;
+}

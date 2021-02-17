@@ -1,30 +1,30 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2017, 2019 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2017, 2019, 2021 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "hud_num_popup.h"
 
@@ -34,20 +34,17 @@
 #include "hud_defs.h"
 #include "player_hud.h"
 
-
 // Total number of milliseconds that the numeric popup lasts for
 #define TIMER_MS 1000
 #define TIMER_OBJECTIVE_MS 2000
-
 
 void HUDNumPopupsInit(
 	HUDNumPopups *popups, const struct MissionOptions *mission)
 {
 	memset(popups, 0, sizeof *popups);
-	CArrayInit(&popups->objective, sizeof(HUDNumPopup));
-	CArrayResize(
-		&popups->objective, mission->missionData->Objectives.size, NULL);
-	CArrayFillZero(&popups->objective);
+	CArrayInitFillZero(
+		&popups->objective, sizeof(HUDNumPopup),
+		mission->missionData->Objectives.size);
 }
 
 void HUDNumPopupsTerminate(HUDNumPopups *popups)
@@ -57,8 +54,8 @@ void HUDNumPopupsTerminate(HUDNumPopups *popups)
 
 static void MergePopups(HUDNumPopup *dst, const HUDNumPopup src);
 void HUDNumPopupsAdd(
-	HUDNumPopups *popups, const HUDNumPopupType type,
-	const int idxOrUID, const int amount)
+	HUDNumPopups *popups, const HUDNumPopupType type, const int idxOrUID,
+	const int amount)
 {
 	HUDNumPopup s;
 	memset(&s, 0, sizeof s);
@@ -142,7 +139,7 @@ void HUDPopupsUpdate(HUDNumPopups *popups, const int ms)
 		NumPopupUpdate(&popups->score[i], ms);
 	}
 	CA_FOREACH(HUDNumPopup, p, popups->objective)
-		NumPopupUpdate(p, ms);
+	NumPopupUpdate(p, ms);
 	CA_FOREACH_END()
 }
 static void NumPopupUpdate(HUDNumPopup *p, const int ms)
@@ -169,7 +166,8 @@ void HUDNumPopupsDrawPlayer(
 		return;
 	}
 	const PlayerData *p = PlayerDataGetByUID(u->u.PlayerUID);
-	if (!IsPlayerAlive(p)) return;
+	if (!IsPlayerAlive(p))
+		return;
 	const FontOpts opts = PlayerHUDGetScorePos(drawFlags, r);
 	DrawNumUpdate(u, opts);
 }
@@ -214,15 +212,16 @@ static void DrawNumUpdate(const HUDNumPopup *p, FontOpts opts)
 			timer * NUM_UPDATE_POP_UP_HEIGHT / NUM_UPDATE_POP_UP_DURATION_MS;
 		opts.Pad.y -= popupHeight;
 	}
-	else if (timer <
+	else if (
+		timer <
 		NUM_UPDATE_POP_UP_DURATION_MS + NUM_UPDATE_FALL_DOWN_DURATION_MS)
 	{
 		// popup is falling down
 		// calculate height
 		timer -= NUM_UPDATE_POP_UP_DURATION_MS;
 		timer = NUM_UPDATE_FALL_DOWN_DURATION_MS - timer;
-		int popupHeight =
-			timer * NUM_UPDATE_POP_UP_HEIGHT / NUM_UPDATE_FALL_DOWN_DURATION_MS;
+		int popupHeight = timer * NUM_UPDATE_POP_UP_HEIGHT /
+						  NUM_UPDATE_FALL_DOWN_DURATION_MS;
 		opts.Pad.y -= popupHeight;
 	}
 	else

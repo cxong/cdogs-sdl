@@ -1,36 +1,35 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2016-2019 Cong Xu
-    All rights reserved.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (c) 2016-2019, 2021 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "map_cave.h"
 
 #include "algorithms.h"
 #include "log.h"
 #include "map_build.h"
-
 
 static void CaveRep(MapBuilder *mb, const int r1, const int r2);
 static void LinkDisconnectedAreas(MapBuilder *mb);
@@ -42,16 +41,10 @@ void MapCaveLoad(MapBuilder *mb)
 	// TODO: multiple tile types
 	MissionSetupTileClasses(&gPicManager, &mb->mission->u.Cave.TileClasses);
 
-	// Re-seed RNG so results are consistent
-	CampaignSeedRandom(mb->co);
-
 	// Randomly set a percentage of the tiles as walls
-	for (int i = 0;
-		i < mb->mission->u.Cave.FillPercent *
-			mb->Map->Size.x *
-			mb->Map->Size.y /
-			100;
-		i++)
+	for (int i = 0; i < mb->mission->u.Cave.FillPercent * mb->Map->Size.x *
+							mb->Map->Size.y / 100;
+		 i++)
 	{
 		const struct vec2i pos =
 			svec2i(i % mb->Map->Size.x, i / mb->Map->Size.x);
@@ -83,22 +76,22 @@ static int CountWallsAround(
 static void CaveRep(MapBuilder *mb, const int r1, const int r2)
 {
 	CArray buf;
-	CArrayInit(&buf, mb->tiles.elemSize);
-	CArrayResize(&buf, mb->tiles.size, &mb->mission->u.Cave.TileClasses.Floor);
+	CArrayInitFill(
+		&buf, mb->tiles.elemSize, mb->tiles.size,
+		&mb->mission->u.Cave.TileClasses.Floor);
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), mb->Map->Size))
-		TileClass *tile = CArrayGet(&buf, _i);
-		if (CountWallsAround(mb, _v, 1) >= r1 ||
-			CountWallsAround(mb, _v, 2) <= r2)
-		{
-			*tile = mb->mission->u.Cave.TileClasses.Wall;
-		}
-		else
-		{
-			*tile = mb->mission->u.Cave.TileClasses.Floor;
-		}
+	TileClass *tile = CArrayGet(&buf, _i);
+	if (CountWallsAround(mb, _v, 1) >= r1 || CountWallsAround(mb, _v, 2) <= r2)
+	{
+		*tile = mb->mission->u.Cave.TileClasses.Wall;
+	}
+	else
+	{
+		*tile = mb->mission->u.Cave.TileClasses.Floor;
+	}
 	RECT_FOREACH_END()
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), mb->Map->Size))
-		MapBuilderSetTile(mb, _v, CArrayGet(&buf, _i));
+	MapBuilderSetTile(mb, _v, CArrayGet(&buf, _i));
 	RECT_FOREACH_END()
 	CArrayTerminate(&buf);
 }
@@ -106,14 +99,14 @@ static int CountWallsAround(
 	const MapBuilder *mb, const struct vec2i pos, const int d)
 {
 	int c = 0;
-	RECT_FOREACH(
-		Rect2iNew(svec2i_subtract(pos, svec2i(d, d)), svec2i(2*d+1, 2*d+1)))
-		// Also count edge of maps
-		if (!MapIsTileIn(mb->Map, _v) ||
-			MapBuilderGetTile(mb, _v)->Type == TILE_CLASS_WALL)
-		{
-			c++;
-		}
+	RECT_FOREACH(Rect2iNew(
+		svec2i_subtract(pos, svec2i(d, d)), svec2i(2 * d + 1, 2 * d + 1)))
+	// Also count edge of maps
+	if (!MapIsTileIn(mb->Map, _v) ||
+		MapBuilderGetTile(mb, _v)->Type == TILE_CLASS_WALL)
+	{
+		c++;
+	}
 	RECT_FOREACH_END()
 	return c;
 }
@@ -127,25 +120,23 @@ static void LinkDisconnectedAreas(MapBuilder *mb)
 {
 	// Use flood fill to identify disconnected areas
 	CArray fl;
-	CArrayInit(&fl, sizeof(int));
-	const int zero = 0;
-	CArrayResize(&fl, mb->tiles.size, &zero);
+	CArrayInitFillZero(&fl, sizeof(int), mb->tiles.size);
 	// First copy across the wall tiles (as -1)
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), mb->Map->Size))
-		const TileClass *tile = MapBuilderGetTile(mb, _v);
-		if (tile->Type == TILE_CLASS_WALL)
-		{
-			*(int *)CArrayGet(&fl, _i) = -1;
-		}
+	const TileClass *tile = MapBuilderGetTile(mb, _v);
+	if (tile->Type == TILE_CLASS_WALL)
+	{
+		*(int *)CArrayGet(&fl, _i) = -1;
+	}
 	RECT_FOREACH_END()
 	// Then perform flood fill conditionally on the flood layer
 	int idx = 1;
 	CA_FOREACH(int, i, fl)
-		if (*i == 0)
-		{
-			MapFloodFill(&fl, mb->Map->Size, _ca_index, idx);
-			idx++;
-		}
+	if (*i == 0)
+	{
+		MapFloodFill(&fl, mb->Map->Size, _ca_index, idx);
+		idx++;
+	}
 	CA_FOREACH_END()
 
 	const int numAreas = idx - 1;
@@ -154,23 +145,22 @@ static void LinkDisconnectedAreas(MapBuilder *mb)
 	CArray areaTiles;
 	CArrayInit(&areaTiles, sizeof(int));
 	CA_FOREACH(int, i, fl)
-		UNUSED(i);
-		CArrayPushBack(&areaTiles, &_ca_index);
+	UNUSED(i);
+	CArrayPushBack(&areaTiles, &_ca_index);
 	CA_FOREACH_END()
 	CArrayShuffle(&areaTiles);
 	CArray areaStarts;
-	CArrayInit(&areaStarts, sizeof(int));
-	CArrayResize(&areaStarts, numAreas, &zero);
+	CArrayInitFillZero(&areaStarts, sizeof(int), numAreas);
 	CA_FOREACH(int, areaIdx, areaTiles)
-		const int tile = *(int *)CArrayGet(&fl, *areaIdx) - 1;
-		if (tile >= 0 && tile < numAreas)
+	const int tile = *(int *)CArrayGet(&fl, *areaIdx) - 1;
+	if (tile >= 0 && tile < numAreas)
+	{
+		int *areaStart = CArrayGet(&areaStarts, tile);
+		if (*areaStart == 0)
 		{
-			int *areaStart = CArrayGet(&areaStarts, tile);
-			if (*areaStart == 0)
-			{
-				*areaStart = *areaIdx;
-			}
+			*areaStart = *areaIdx;
 		}
+	}
 	CA_FOREACH_END()
 	CArrayTerminate(&fl);
 	CArrayTerminate(&areaTiles);
@@ -187,7 +177,8 @@ static void LinkDisconnectedAreas(MapBuilder *mb)
 		const int dx = delta.x > delta.y ? 1 : 0;
 		const int dy = 1 - dx;
 		AddCorridor(
-			mb, v1, v2, svec2i(dx, dy), &mb->mission->u.Cave.TileClasses.Floor);
+			mb, v1, v2, svec2i(dx, dy),
+			&mb->mission->u.Cave.TileClasses.Floor);
 	}
 	CArrayTerminate(&areaStarts);
 }
@@ -201,37 +192,37 @@ static void MapFloodFill(
 	const int floodTile = *(int *)CArrayGet(fl, idx);
 	*(int *)CArrayGet(fl, idx) = elem;
 	CA_FOREACH(int, i, indices)
-		const int x = *i % size.x;
-		const int y = *i / size.x;
-		int next;
-		// top
-		next = (y - 1)*size.x + x;
-		if (y > 0 && *(int *)CArrayGet(fl, next) == floodTile)
-		{
-			CArrayPushBack(&indices, &next);
-			*(int *)CArrayGet(fl, next) = elem;
-		}
-		// bottom
-		next = (y + 1)*size.x + x;
-		if (y < size.y - 1 && *(int *)CArrayGet(fl, next) == floodTile)
-		{
-			CArrayPushBack(&indices, &next);
-			*(int *)CArrayGet(fl, next) = elem;
-		}
-		// left
-		next = y*size.x + x - 1;
-		if (x > 0 && *(int *)CArrayGet(fl, next) == floodTile)
-		{
-			CArrayPushBack(&indices, &next);
-			*(int *)CArrayGet(fl, next) = elem;
-		}
-		// right
-		next = y*size.x + x + 1;
-		if (x < size.x - 1 && *(int *)CArrayGet(fl, next) == floodTile)
-		{
-			CArrayPushBack(&indices, &next);
-			*(int *)CArrayGet(fl, next) = elem;
-		}
+	const int x = *i % size.x;
+	const int y = *i / size.x;
+	int next;
+	// top
+	next = (y - 1) * size.x + x;
+	if (y > 0 && *(int *)CArrayGet(fl, next) == floodTile)
+	{
+		CArrayPushBack(&indices, &next);
+		*(int *)CArrayGet(fl, next) = elem;
+	}
+	// bottom
+	next = (y + 1) * size.x + x;
+	if (y < size.y - 1 && *(int *)CArrayGet(fl, next) == floodTile)
+	{
+		CArrayPushBack(&indices, &next);
+		*(int *)CArrayGet(fl, next) = elem;
+	}
+	// left
+	next = y * size.x + x - 1;
+	if (x > 0 && *(int *)CArrayGet(fl, next) == floodTile)
+	{
+		CArrayPushBack(&indices, &next);
+		*(int *)CArrayGet(fl, next) = elem;
+	}
+	// right
+	next = y * size.x + x + 1;
+	if (x < size.x - 1 && *(int *)CArrayGet(fl, next) == floodTile)
+	{
+		CArrayPushBack(&indices, &next);
+		*(int *)CArrayGet(fl, next) = elem;
+	}
 	CA_FOREACH_END()
 	CArrayTerminate(&indices);
 }
@@ -437,14 +428,14 @@ static bool MapIsAreaClearForCaveSquare(
 			const TileClass *tile = MapBuilderGetTile(mb, v);
 			switch (tile->Type)
 			{
-				case TILE_CLASS_FLOOR:
-					hasFloor = true;
-					break;
-				case TILE_CLASS_WALL:
-					break;
-				default:
-					// Any other tile type is disallowed
-					return false;
+			case TILE_CLASS_FLOOR:
+				hasFloor = true;
+				break;
+			case TILE_CLASS_WALL:
+				break;
+			default:
+				// Any other tile type is disallowed
+				return false;
 			}
 		}
 	}
@@ -455,11 +446,10 @@ static bool MapIsAreaClearForCaveRoom(const MapBuilder *mb, const Rect2i room);
 static void MapBuildRoom(MapBuilder *mb, const Rect2i room);
 static void PlaceRooms(MapBuilder *mb)
 {
-	CArray rooms;	// of Rect2i
+	CArray rooms; // of Rect2i
 	CArrayInit(&rooms, sizeof(Rect2i));
 	for (int i = 0;
-		i < 1000 && (int)rooms.size < mb->mission->u.Cave.Rooms.Count;
-		i++)
+		 i < 1000 && (int)rooms.size < mb->mission->u.Cave.Rooms.Count; i++)
 	{
 		Rect2i room;
 		room.Pos = MapGetRandomTile(mb->Map);
@@ -470,8 +460,8 @@ static void PlaceRooms(MapBuilder *mb)
 		}
 		MapBuildRoom(mb, room);
 		CArrayPushBack(&rooms, &room);
-		LOG(LM_MAP, LL_TRACE, "Room %d, %d (%dx%d)",
-			room.Pos.x, room.Pos.y, room.Size.x, room.Size.y);
+		LOG(LM_MAP, LL_TRACE, "Room %d, %d (%dx%d)", room.Pos.x, room.Pos.y,
+			room.Size.x, room.Size.y);
 	}
 	// Set keys for rooms
 	if (AreKeysAllowed(gCampaign.Entry.Mode) &&
@@ -482,10 +472,6 @@ static void PlaceRooms(MapBuilder *mb)
 			// generate an access level for this room
 			const uint16_t accessMask =
 				GenerateAccessMask(&mb->Map->keyAccessCount);
-			if (mb->Map->keyAccessCount < 1)
-			{
-				mb->Map->keyAccessCount = 1;
-			}
 			MapSetRoomAccessMaskOverlap(mb, &rooms, accessMask);
 		}
 	}
@@ -509,24 +495,24 @@ static bool MapIsAreaClearForCaveRoom(const MapBuilder *mb, const Rect2i room)
 	bool hasFloorAroundEdge = false;
 	bool isOverlapRoom = false;
 	RECT_FOREACH(room)
-		const TileClass *tile = MapBuilderGetTile(mb, _v);
-		if (tile->Type == TILE_CLASS_FLOOR && !tile->IsRoom)
+	const TileClass *tile = MapBuilderGetTile(mb, _v);
+	if (tile->Type == TILE_CLASS_FLOOR && !tile->IsRoom)
+	{
+		hasFloor = true;
+		if (Rect2iIsAtEdge(room, _v))
 		{
-			hasFloor = true;
-			if (Rect2iIsAtEdge(room, _v))
-			{
-				hasFloorAroundEdge = true;
-			}
+			hasFloorAroundEdge = true;
 		}
-		else if (tile->IsRoom || tile->Type == TILE_CLASS_DOOR)
-		{
-			isOverlapRoom = true;
-		}
-		else if (tile->Type != TILE_CLASS_WALL)
-		{
-			// Any other tile type is disallowed
-			return false;
-		}
+	}
+	else if (tile->IsRoom || tile->Type == TILE_CLASS_DOOR)
+	{
+		isOverlapRoom = true;
+	}
+	else if (tile->Type != TILE_CLASS_WALL)
+	{
+		// Any other tile type is disallowed
+		return false;
+	}
 	RECT_FOREACH_END()
 	if (!hasFloor || !hasFloorAroundEdge)
 	{
@@ -538,50 +524,47 @@ static bool MapIsAreaClearForCaveRoom(const MapBuilder *mb, const Rect2i room)
 	// - Edge is floor/room, and outside is floor/room/square
 	// This is to prevent rooms from cutting off areas of the map
 	RECT_FOREACH(room)
-		if (!Rect2iIsAtEdge(room, _v))
+	if (!Rect2iIsAtEdge(room, _v))
+	{
+		continue;
+	}
+	const bool isTop = _v.y == room.Pos.y;
+	const bool isBottom = _v.y == room.Pos.y + room.Size.y - 1;
+	const bool isLeft = _v.x == room.Pos.x;
+	const bool isRight = _v.x == room.Pos.x + room.Size.x - 1;
+	const struct vec2i outside = svec2i(
+		isLeft ? room.Pos.x - 1 : (isRight ? room.Pos.x + room.Size.x : _v.x),
+		isTop ? room.Pos.y - 1 : (isBottom ? room.Pos.y + room.Size.y : _v.y));
+	const struct vec2i outsideX =
+		svec2i((isLeft || isRight) ? outside.x : _v.x, _v.y);
+	const struct vec2i outsideY =
+		svec2i(_v.x, (isTop || isBottom) ? outside.y : _v.y);
+	const TileClass *tile = MapBuilderGetTile(mb, _v);
+	switch (tile->Type)
+	{
+	case TILE_CLASS_DOOR:
+	case TILE_CLASS_WALL: // fallthrough
+		// Note: also need to check outside to see if we overlap
+		// but just along the edge
+		if (CaveRoomInsideOk(mb, outside) || CaveRoomInsideOk(mb, outsideX) ||
+			CaveRoomInsideOk(mb, outsideY))
 		{
-			continue;
+			isOverlapRoom = true;
 		}
-		const bool isTop = _v.y == room.Pos.y;
-		const bool isBottom = _v.y == room.Pos.y + room.Size.y - 1;
-		const bool isLeft = _v.x == room.Pos.x;
-		const bool isRight = _v.x == room.Pos.x + room.Size.x - 1;
-		const struct vec2i outside = svec2i(
-			isLeft ? room.Pos.x - 1 :
-			(isRight ? room.Pos.x + room.Size.x : _v.x),
-			isTop ? room.Pos.y - 1 :
-			(isBottom ? room.Pos.y + room.Size.y : _v.y));
-		const struct vec2i outsideX = svec2i(
-			(isLeft || isRight) ? outside.x : _v.x, _v.y);
-		const struct vec2i outsideY = svec2i(
-			_v.x, (isTop || isBottom) ? outside.y : _v.y);
-		const TileClass *tile = MapBuilderGetTile(mb, _v);
-		switch (tile->Type)
+		break;
+	case TILE_CLASS_FLOOR:
+		// Check outside tiles
+		if (!CaveRoomOutsideOk(mb, outside) ||
+			!CaveRoomOutsideOk(mb, outsideX) ||
+			!CaveRoomOutsideOk(mb, outsideY))
 		{
-			case TILE_CLASS_DOOR:
-			case TILE_CLASS_WALL: // fallthrough
-				// Note: also need to check outside to see if we overlap
-				// but just along the edge
-				if (CaveRoomInsideOk(mb, outside) ||
-					CaveRoomInsideOk(mb, outsideX) ||
-					CaveRoomInsideOk(mb, outsideY))
-				{
-					isOverlapRoom = true;
-				}
-				break;
-			case TILE_CLASS_FLOOR:
-				// Check outside tiles
-				if (!CaveRoomOutsideOk(mb, outside) ||
-					!CaveRoomOutsideOk(mb, outsideX) ||
-					!CaveRoomOutsideOk(mb, outsideY))
-				{
-					return false;
-				}
-				break;
-			default:
-				CASSERT(false, "unexpected tile type");
-				return false;
+			return false;
 		}
+		break;
+	default:
+		CASSERT(false, "unexpected tile type");
+		return false;
+	}
 	RECT_FOREACH_END()
 
 	// Check if room overlaps with another room and the overlap is valid
@@ -623,76 +606,76 @@ static void MapBuildRoom(MapBuilder *mb, const Rect2i room)
 	// TODO: if this is a locked room, can still cause the level to be
 	// blocked off
 	RECT_FOREACH(room)
-		if (!Rect2iIsAtEdge(room, _v))
-		{
-			continue;
-		}
+	if (!Rect2iIsAtEdge(room, _v))
+	{
+		continue;
+	}
 
-		const bool isTop = _v.y == room.Pos.y;
-		const bool isBottom = _v.y == room.Pos.y + room.Size.y - 1;
-		const bool isLeft = _v.x == room.Pos.x;
-		const bool isRight = _v.x == room.Pos.x + room.Size.x - 1;
-		const bool leftOrRightEdge = isLeft || isRight;
-		const bool topOrBottomEdge = isTop || isBottom;
-		if (leftOrRightEdge && topOrBottomEdge)
+	const bool isTop = _v.y == room.Pos.y;
+	const bool isBottom = _v.y == room.Pos.y + room.Size.y - 1;
+	const bool isLeft = _v.x == room.Pos.x;
+	const bool isRight = _v.x == room.Pos.x + room.Size.x - 1;
+	const bool leftOrRightEdge = isLeft || isRight;
+	const bool topOrBottomEdge = isTop || isBottom;
+	if (leftOrRightEdge && topOrBottomEdge)
+	{
+		// corner
+		MapBuilderSetTile(mb, _v, &mb->mission->u.Cave.TileClasses.Wall);
+	}
+	else
+	{
+		const struct vec2i outside = svec2i(
+			isLeft ? room.Pos.x - 1
+				   : (isRight ? room.Pos.x + room.Size.x : _v.x),
+			isTop ? room.Pos.y - 1
+				  : (isBottom ? room.Pos.y + room.Size.y : _v.y));
+		const struct vec2i outsideX =
+			svec2i((isLeft || isRight) ? outside.x : _v.x, _v.y);
+		const struct vec2i outsideY =
+			svec2i(_v.x, (isTop || isBottom) ? outside.y : _v.y);
+		const bool atEdgeOfMap = _v.y == 0 || _v.y == mb->Map->Size.y - 1 ||
+								 _v.x == 0 || _v.x == mb->Map->Size.x - 1;
+		const TileClass *tile = MapBuilderGetTile(mb, _v);
+		if (tile->Type == TILE_CLASS_DOOR)
 		{
-			// corner
-			MapBuilderSetTile(mb, _v, &mb->mission->u.Cave.TileClasses.Wall);
+			if (!CaveRoomOutsideOk(mb, outside) &&
+				!CaveRoomOutsideOk(mb, outsideX) &&
+				!CaveRoomOutsideOk(mb, outsideY))
+			{
+				// This door would become a corner
+				MapBuilderSetTile(
+					mb, _v, &mb->mission->u.Cave.TileClasses.Wall);
+			}
 		}
 		else
 		{
-			const struct vec2i outside = svec2i(
-				isLeft ? room.Pos.x - 1 :
-				(isRight ? room.Pos.x + room.Size.x : _v.x),
-				isTop ? room.Pos.y - 1 :
-				(isBottom ? room.Pos.y + room.Size.y : _v.y));
-			const struct vec2i outsideX = svec2i(
-				(isLeft || isRight) ? outside.x : _v.x, _v.y);
-			const struct vec2i outsideY = svec2i(
-				_v.x, (isTop || isBottom) ? outside.y : _v.y);
-			const bool atEdgeOfMap =
-				_v.y == 0 || _v.y == mb->Map->Size.y - 1 ||
-				_v.x == 0 || _v.x == mb->Map->Size.x - 1;
-			const TileClass *tile = MapBuilderGetTile(mb, _v);
-			if (tile->Type == TILE_CLASS_DOOR)
+			// Check outside tiles
+			if (!atEdgeOfMap &&
+				(svec2i_is_equal(outside, _v) ||
+				 CaveRoomOutsideOk(mb, outside)) &&
+				(svec2i_is_equal(outsideX, _v) ||
+				 CaveRoomOutsideOk(mb, outsideX)) &&
+				(svec2i_is_equal(outsideY, _v) ||
+				 CaveRoomOutsideOk(mb, outsideY)))
 			{
-				if (!CaveRoomOutsideOk(mb, outside) &&
-					!CaveRoomOutsideOk(mb, outsideX) &&
-					!CaveRoomOutsideOk(mb, outsideY))
-				{
-					// This door would become a corner
-					MapBuilderSetTile(
-						mb, _v, &mb->mission->u.Cave.TileClasses.Wall);
-				}
+				MapBuilderSetTile(
+					mb, _v,
+					mb->mission->u.Cave.DoorsEnabled
+						? &mb->mission->u.Cave.TileClasses.Door
+						: &mb->mission->u.Cave.TileClasses.Room);
 			}
 			else
 			{
-				// Check outside tiles
-				if (!atEdgeOfMap &&
-					(svec2i_is_equal(outside, _v) || CaveRoomOutsideOk(mb, outside)) &&
-					(svec2i_is_equal(outsideX, _v) || CaveRoomOutsideOk(mb, outsideX)) &&
-					(svec2i_is_equal(outsideY, _v) || CaveRoomOutsideOk(mb, outsideY)))
-				{
-					MapBuilderSetTile(
-						mb, _v,
-						mb->mission->u.Cave.DoorsEnabled ?
-						&mb->mission->u.Cave.TileClasses.Door :
-						&mb->mission->u.Cave.TileClasses.Room
-					);
-				}
-				else
-				{
-					MapBuilderSetTile(
-						mb, _v, &mb->mission->u.Cave.TileClasses.Wall);
-				}
+				MapBuilderSetTile(
+					mb, _v, &mb->mission->u.Cave.TileClasses.Wall);
 			}
 		}
+	}
 	RECT_FOREACH_END()
 
 	MapMakeRoom(
-		mb, room.Pos, room.Size, false,
-		&mb->mission->u.Cave.TileClasses.Wall,
-		&mb->mission->u.Cave.TileClasses.Room);
+		mb, room.Pos, room.Size, false, &mb->mission->u.Cave.TileClasses.Wall,
+		&mb->mission->u.Cave.TileClasses.Room, true);
 
 	MapMakeRoomWalls(
 		mb, mb->mission->u.Cave.Rooms, &mb->mission->u.Cave.TileClasses.Wall);

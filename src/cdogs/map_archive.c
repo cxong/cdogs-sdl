@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2020 Cong Xu
+	Copyright (c) 2014-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -391,8 +391,20 @@ static json_t *SaveMissions(CArray *a)
 			AddBoolPair(node, "ExitEnabled", mission->u.Cave.ExitEnabled);
 			AddBoolPair(node, "DoorsEnabled", mission->u.Cave.DoorsEnabled);
 			break;
+		case MAPTYPE_INTERIOR:
+			json_insert_pair_into_object(
+				node, "TileClasses",
+				SaveMissionTileClasses(&mission->u.Interior.TileClasses));
+			AddIntPair(
+				node, "CorridorWidth", mission->u.Interior.CorridorWidth);
+			json_insert_pair_into_object(
+				node, "Rooms", SaveRooms(mission->u.Interior.Rooms));
+			AddBoolPair(node, "ExitEnabled", mission->u.Interior.ExitEnabled);
+			AddBoolPair(
+				node, "DoorsEnabled", mission->u.Interior.DoorsEnabled);
+			break;
 		default:
-			assert(0 && "unknown map type");
+			CASSERT(false, "unknown map type");
 			break;
 		}
 

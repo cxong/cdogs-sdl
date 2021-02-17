@@ -501,16 +501,13 @@ static void DrawEditorTiles(DrawBuffer *b, const struct vec2i offset)
 			}
 
 			// mission start
-			if (gMission.missionData->Type == MAPTYPE_STATIC)
+			if (!svec2i_is_zero(gMap.start) &&
+				svec2i_is_equal(gMap.start, tilePos))
 			{
-				struct vec2i start = gMission.missionData->u.Static.Start;
-				if (!svec2i_is_zero(start) && svec2i_is_equal(start, tilePos))
-				{
-					PicRender(
-						PicManagerGetPic(&gPicManager, "editor/start"),
-						b->g->gameWindow.renderer, pos, colorWhite, 0,
-						svec2_one(), SDL_FLIP_NONE, Rect2iZero());
-				}
+				PicRender(
+					PicManagerGetPic(&gPicManager, "editor/start"),
+					b->g->gameWindow.renderer, pos, colorWhite, 0, svec2_one(),
+					SDL_FLIP_NONE, Rect2iZero());
 			}
 
 			// exit tiles

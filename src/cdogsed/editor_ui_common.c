@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014, 2016-2017, 2019-2020 Cong Xu
+	Copyright (c) 2014, 2016-2017, 2019-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -478,8 +478,7 @@ char *GetClassNames(const size_t len, const char *(*indexNameFunc)(const int))
 
 void TexArrayInit(CArray *arr, const size_t count)
 {
-	CArrayInit(arr, sizeof(GLuint));
-	CArrayResize(arr, count, NULL);
+	CArrayInitFill(arr, sizeof(GLuint), count, NULL);
 	glGenTextures((GLsizei)count, (GLuint *)arr->data);
 }
 void TexArrayTerminate(CArray *arr)

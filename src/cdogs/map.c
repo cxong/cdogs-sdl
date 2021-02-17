@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2020 Cong Xu
+	Copyright (c) 2013-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -482,9 +482,7 @@ void MapInit(Map *map, const struct vec2i size)
 	CArrayInit(&map->Tiles, sizeof(Tile));
 	map->Size = size;
 	LOSInit(map);
-	CArrayInit(&map->access, sizeof(uint16_t));
-	CArrayResize(&map->access, size.x * size.y, NULL);
-	CArrayFillZero(&map->access);
+	CArrayInitFillZero(&map->access, sizeof(uint16_t), size.x * size.y);
 	CArrayInit(&map->triggers, sizeof(Trigger *));
 	CArrayInit(&map->exits, sizeof(Exit));
 	PathCacheInit(&gPathCache, map);

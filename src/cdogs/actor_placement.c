@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2014-2017, 2020 Cong Xu
+	Copyright (c) 2014-2017, 2020-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -187,7 +187,7 @@ struct vec2 PlacePlayer(
 	{
 		// In a PVP mode, always place players apart
 		e.u.ActorAdd.Pos =
-			PlaceAwayFromPlayers(&gMap, false, PLACEMENT_ACCESS_ANY);
+			PlaceAwayFromPlayers(map, false, PLACEMENT_ACCESS_ANY);
 	}
 	else if (
 		ConfigGetEnum(&gConfig, "Interface.Splitscreen") ==
@@ -197,13 +197,10 @@ struct vec2 PlacePlayer(
 		// If never split screen, try to place players near the first player
 		e.u.ActorAdd.Pos = PlaceActorNear(map, firstPos, true);
 	}
-	else if (
-		gMission.missionData->Type == MAPTYPE_STATIC &&
-		!svec2i_is_zero(gMission.missionData->u.Static.Start))
+	else if (!svec2i_is_zero(map->start))
 	{
 		// place players near the start point
-		const struct vec2 startPoint =
-			Vec2CenterOfTile(gMission.missionData->u.Static.Start);
+		const struct vec2 startPoint = Vec2CenterOfTile(map->start);
 		e.u.ActorAdd.Pos = PlaceActorNear(map, startPoint, true);
 	}
 	else

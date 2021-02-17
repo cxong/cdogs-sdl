@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2017, 2019-2020 Cong Xu
+	Copyright (c) 2013-2017, 2019-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -67,6 +67,7 @@ typedef enum
 	MAPTYPE_CLASSIC,
 	MAPTYPE_STATIC,
 	MAPTYPE_CAVE,
+	MAPTYPE_INTERIOR,
 	MAPTYPE_COUNT
 } MapType;
 const char *MapTypeStr(MapType t);
@@ -166,6 +167,18 @@ typedef struct
 			bool ExitEnabled;
 			bool DoorsEnabled;
 		} Cave;
+		struct
+		{
+			// TODO: multiple tile classes
+			MissionTileClasses TileClasses;
+			int CorridorWidth;
+			// TODO: implement room max, walls
+			RoomParams Rooms;
+			bool ExitEnabled;
+			bool DoorsEnabled;
+			// TODO: implement door size
+			// TODO: implement pillars (filled rooms)
+		} Interior;
 	} u;
 } Mission;
 

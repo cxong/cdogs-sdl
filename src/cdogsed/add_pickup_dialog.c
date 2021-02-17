@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2020 Cong Xu
+	Copyright (c) 2020-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -63,9 +63,9 @@ EditorResult AddPickupDialog(
 	memset(&data, 0, sizeof data);
 	data.pm = pm;
 	data.pc = pc;
-	CArrayInit(&data.texIdsPickupClasses, sizeof(GLuint));
-	CArrayResize(
-		&data.texIdsPickupClasses, PickupClassesCount(&gPickupClasses), NULL);
+	CArrayInitFill(
+		&data.texIdsPickupClasses, sizeof(GLuint),
+		PickupClassesCount(&gPickupClasses), NULL);
 	glGenTextures(
 		PickupClassesCount(&gPickupClasses),
 		(GLuint *)data.texIdsPickupClasses.data);
@@ -109,7 +109,8 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 	}
 
 	if (nk_begin(
-			ctx, "Properties", nk_rect(mainWidth, 0, SIDE_WIDTH, (float)windowSize.y),
+			ctx, "Properties",
+			nk_rect(mainWidth, 0, SIDE_WIDTH, (float)windowSize.y),
 			NK_WINDOW_BORDER | NK_WINDOW_TITLE))
 	{
 		if (*aData->pc != NULL)
@@ -160,7 +161,7 @@ static void DrawPropsSidebar(struct nk_context *ctx, const PickupClass *pc)
 	}
 	case PICKUP_SHOW_MAP:
 		break;
-	break;
+		break;
 	default:
 		CASSERT(false, "Unknown pickup type");
 		break;

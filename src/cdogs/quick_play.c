@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2017, 2019-2020 Cong Xu
+	Copyright (c) 2013-2017, 2019-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -315,8 +315,16 @@ static void AddMission(
 		m.u.Cave.ExitEnabled = rand() % 2;
 		m.u.Cave.DoorsEnabled = rand() % 2;
 		break;
+	case MAPTYPE_INTERIOR:
+		// TODO: quickplay configs for interior type
+		RandomMissionTileClasses(&m.u.Interior.TileClasses, pm);
+		m.u.Interior.CorridorWidth = rand() % 3 + 1;
+		m.u.Interior.Rooms = RandomRoomParams();
+		m.u.Interior.ExitEnabled = rand() % 2;
+		m.u.Interior.DoorsEnabled = rand() % 2;
+		break;
 	default:
-		assert(0 && "unknown map type");
+		CASSERT(false, "unknown map type");
 		break;
 	}
 

@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014, 2016, 2018-2020 Cong Xu
+	Copyright (c) 2014, 2016, 2018-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -48,11 +48,13 @@ void MapStaticLoad(MapBuilder *mb)
 	}
 
 	// Tiles
-	RECT_FOREACH(Rect2iNew(svec2i_zero(), mb->Map->Size))
+	const Rect2i r = Rect2iNew(svec2i_zero(), mb->Map->Size);
+	RECT_FOREACH(r)
 	MapStaticLoadTile(mb, _v);
 	RECT_FOREACH_END()
 
-	// Exit areas
+	// Start/exit areas
+	mb->Map->start = mb->mission->u.Static.Start;
 	CArrayCopy(&mb->Map->exits, &mb->mission->u.Static.Exits);
 }
 static int AddTileClass(any_t data, any_t item)

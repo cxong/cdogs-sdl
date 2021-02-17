@@ -10,8 +10,10 @@ set(CDOGSED_SOURCES
 	editor_brush.c
 	editor_ui.c
 	editor_ui_cave.c
+	editor_ui_classic.c
 	editor_ui_color.c
 	editor_ui_common.c
+	editor_ui_interior.c
 	editor_ui_objectives.c
 	editor_ui_static.c
 	editor_ui_static_additem.c
@@ -27,8 +29,10 @@ set(CDOGSED_HEADERS
 	editor_brush.h
 	editor_ui.h
 	editor_ui_cave.h
+	editor_ui_classic.h
 	editor_ui_color.h
 	editor_ui_common.h
+	editor_ui_interior.h
 	editor_ui_objectives.h
 	editor_ui_static.h
 	editor_ui_static_additem.h

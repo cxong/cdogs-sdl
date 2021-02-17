@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2020 Cong Xu
+	Copyright (c) 2014-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,8 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 	switch (m->Type)
 	{
 	case MAPTYPE_CLASSIC:
-	case MAPTYPE_CAVE: // fallthrough
+	case MAPTYPE_CAVE:	   // fallthrough
+	case MAPTYPE_INTERIOR: // fallthrough
 	{
 		MissionTileClasses *mtcOrig = MissionGetTileClasses(m);
 		MissionTileClassesCopy(&mtc, mtcOrig);
@@ -61,7 +62,6 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 		m->u.Classic.Rooms.Count = 10;
 		m->u.Classic.Rooms.Min = 5;
 		m->u.Classic.Rooms.Max = 8;
-		;
 		m->u.Classic.Rooms.Edge = true;
 		m->u.Classic.Rooms.Overlap = true;
 		m->u.Classic.Rooms.Walls = 1;
@@ -90,7 +90,6 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 		m->u.Cave.Rooms.Count = 10;
 		m->u.Cave.Rooms.Min = 5;
 		m->u.Cave.Rooms.Max = 8;
-		;
 		m->u.Cave.Rooms.Edge = true;
 		m->u.Cave.Rooms.Overlap = true;
 		m->u.Cave.Rooms.Walls = 1;
@@ -99,6 +98,14 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 		m->u.Cave.Squares = 1;
 		m->u.Cave.ExitEnabled = true;
 		memcpy(&m->u.Cave.TileClasses, &mtc, sizeof mtc);
+		break;
+	case MAPTYPE_INTERIOR:
+		// Setup default parameters
+		m->u.Interior.CorridorWidth = 2;
+		m->u.Interior.Rooms.Min = 5;
+		m->u.Interior.ExitEnabled = true;
+		m->u.Interior.DoorsEnabled = true;
+		memcpy(&m->u.Interior.TileClasses, &mtc, sizeof mtc);
 		break;
 	default:
 		CASSERT(false, "unknown map type");

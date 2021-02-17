@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2015, 2017-2020 Cong Xu
+	Copyright (c) 2013-2015, 2017-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,7 @@
 
 #include "campaigns.h"
 #include "map.h"
+#include "mission.h"
 
 typedef struct
 {
@@ -116,7 +117,8 @@ void MapMakeSquare(MapBuilder *mb, const Rect2i r, const TileClass *tc);
 struct vec2i MapGetRoomSize(const RoomParams r, const int doorMin);
 void MapMakeRoom(
 	MapBuilder *mb, const struct vec2i pos, const struct vec2i size,
-	const bool walls, const TileClass *wall, const TileClass *room);
+	const bool walls, const TileClass *wall, const TileClass *room,
+	const bool removeInterRoomWalls);
 void MapMakeRoomWalls(
 	MapBuilder *mb, const RoomParams r, const TileClass *wall);
 bool MapTryBuildWall(
