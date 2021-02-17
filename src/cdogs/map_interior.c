@@ -697,7 +697,8 @@ static void PlaceKeys(
 	MapBuilder *mb, const CArray *areas, const Adjacency *am,
 	const CArray *dCriticalPath)
 {
-	int keyIndex = 0;
+	CArray lockedRoomCandidates;
+	CArrayInit(&lockedRoomCandidates, sizeof(int));
 	CA_FOREACH(const BSPArea, a, *areas)
 	if (!a->isCorridor || a->criticalPath == CRIT_PATH_NONE || _ca_index == 0)
 	{
@@ -716,9 +717,26 @@ static void PlaceKeys(
 			continue;
 		}
 	}
+	CArrayPushBack(&lockedRoomCandidates, &_ca_index);
+	CA_FOREACH_END()
 
+	// Randomly choose rooms to lock
+	while (lockedRoomCandidates.size > KEY_COUNT)
+	{
+		CArrayDelete(
+			&lockedRoomCandidates, RAND_INT(0, lockedRoomCandidates.size));
+	}
+
+	CA_FOREACH(const int, idx, lockedRoomCandidates)
+	const BSPArea *a = CArrayGet(areas, *idx);
+	if (a->criticalPath == CRIT_PATH_RIGHT)
+	{
+		const BSPArea *child1 = CArrayGet(areas, a->child1);
+		const BSPArea *child2 = CArrayGet(areas, a->child2);
+		a = child1->criticalPath != CRIT_PATH_NONE ? child1 : child2;
+	}
 	// Lock corridor
-	const uint16_t accessMask = GetAccessMask(keyIndex);
+	const uint16_t accessMask = GetAccessMask(_ca_index);
 	const struct vec2i end1 = a->r.Pos;
 	const struct vec2i end2 =
 		svec2i_add(end1, svec2i_subtract(a->r.Size, svec2i_one()));
@@ -737,7 +755,7 @@ static void PlaceKeys(
 	}
 
 	// Place key in a child room before the locked corridor, but far away
-	int child = _ca_index;
+	int child = *idx;
 	for (;;)
 	{
 		const int nextChild =
@@ -752,9 +770,7 @@ static void PlaceKeys(
 	const BSPArea *room = CArrayGet(areas, child);
 	MapPlaceKey(
 		mb, svec2i_add(room->r.Pos, svec2i_divide(room->r.Size, svec2i(2, 2))),
-		keyIndex);
-
-	keyIndex = (keyIndex + 1) % 4;
+		_ca_index);
 	CA_FOREACH_END()
 }
 static int FindRoomFurtherFromCriticalPath(
