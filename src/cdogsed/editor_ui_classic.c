@@ -363,28 +363,26 @@ static EditorResult MissionChangeDoorEnabled(void *data, int d)
 {
 	UNUSED(d);
 	Campaign *co = data;
-	CampaignGetCurrentMission(co)->u.Classic.Doors.Enabled =
-		!CampaignGetCurrentMission(co)->u.Classic.Doors.Enabled;
+	Mission *m = CampaignGetCurrentMission(co);
+	m->u.Classic.Doors.Enabled = !m->u.Classic.Doors.Enabled;
 	return EDITOR_RESULT_CHANGED;
 }
 static EditorResult MissionChangeDoorMin(void *data, int d)
 {
 	Campaign *co = data;
-	CampaignGetCurrentMission(co)->u.Classic.Doors.Min =
-		CLAMP(CampaignGetCurrentMission(co)->u.Classic.Doors.Min + d, 1, 6);
-	CampaignGetCurrentMission(co)->u.Classic.Doors.Max =
-		MAX(CampaignGetCurrentMission(co)->u.Classic.Doors.Min,
-			CampaignGetCurrentMission(co)->u.Classic.Doors.Max);
+	Mission *m = CampaignGetCurrentMission(co);
+	m->u.Classic.Doors.Min = CLAMP(m->u.Classic.Doors.Min + d, 1, 6);
+	m->u.Classic.Doors.Max =
+		MAX(m->u.Classic.Doors.Min, m->u.Classic.Doors.Max);
 	return EDITOR_RESULT_CHANGED;
 }
 static EditorResult MissionChangeDoorMax(void *data, int d)
 {
 	Campaign *co = data;
-	CampaignGetCurrentMission(co)->u.Classic.Doors.Max =
-		CLAMP(CampaignGetCurrentMission(co)->u.Classic.Doors.Max + d, 1, 6);
-	CampaignGetCurrentMission(co)->u.Classic.Doors.Min =
-		MIN(CampaignGetCurrentMission(co)->u.Classic.Doors.Min,
-			CampaignGetCurrentMission(co)->u.Classic.Doors.Max);
+	Mission *m = CampaignGetCurrentMission(co);
+	m->u.Classic.Doors.Max = CLAMP(m->u.Classic.Doors.Max + d, 1, 6);
+	m->u.Classic.Doors.Min =
+		MIN(m->u.Classic.Doors.Min, m->u.Classic.Doors.Max);
 	return EDITOR_RESULT_CHANGED;
 }
 static EditorResult MissionChangePillarCount(void *data, int d)

@@ -293,8 +293,8 @@ static void AddMission(
 		m.u.Classic.Rooms = RandomRoomParams();
 		m.u.Classic.Squares = GenerateQuickPlayParam(
 			ConfigGetEnum(&gConfig, "QuickPlay.SquareCount"), 0, 1, 3, 6);
-		m.u.Classic.ExitEnabled = rand() % 2;
-		m.u.Classic.Doors.Enabled = rand() % 2;
+		m.u.Classic.ExitEnabled = RAND_BOOL();
+		m.u.Classic.Doors.Enabled = RAND_BOOL();
 		m.u.Classic.Doors.Min = 1;
 		m.u.Classic.Doors.Max = 6;
 		m.u.Classic.Pillars.Count = rand() % 5;
@@ -312,16 +312,18 @@ static void AddMission(
 		m.u.Cave.Rooms = RandomRoomParams();
 		m.u.Cave.Squares = GenerateQuickPlayParam(
 			ConfigGetEnum(&gConfig, "QuickPlay.SquareCount"), 0, 1, 3, 6);
-		m.u.Cave.ExitEnabled = rand() % 2;
-		m.u.Cave.DoorsEnabled = rand() % 2;
+		m.u.Cave.ExitEnabled = RAND_BOOL();
+		m.u.Cave.DoorsEnabled = RAND_BOOL();
 		break;
 	case MAPTYPE_INTERIOR:
 		// TODO: quickplay configs for interior type
 		RandomMissionTileClasses(&m.u.Interior.TileClasses, pm);
 		m.u.Interior.CorridorWidth = rand() % 3 + 1;
 		m.u.Interior.Rooms = RandomRoomParams();
-		m.u.Interior.ExitEnabled = rand() % 2;
-		m.u.Interior.DoorsEnabled = rand() % 2;
+		m.u.Interior.ExitEnabled = RAND_BOOL();
+		m.u.Interior.Doors.Enabled = RAND_BOOL();
+		m.u.Interior.Doors.Min = 1;
+		m.u.Interior.Doors.Max = 6;
 		break;
 	default:
 		CASSERT(false, "unknown map type");

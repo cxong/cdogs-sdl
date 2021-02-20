@@ -90,8 +90,30 @@ static void MissionDrawDoorEnabled(
 		return;
 	DisplayFlag(
 		svec2i_add(pos, o->Pos), "Doors",
-		CampaignGetCurrentMission(co)->u.Interior.DoorsEnabled,
+		CampaignGetCurrentMission(co)->u.Interior.Doors.Enabled,
 		UIObjectIsHighlighted(o));
+}
+static const char *MissionGetDoorMinStr(UIObject *o, void *data)
+{
+	static char s[128];
+	UNUSED(o);
+	Campaign *co = data;
+	if (!CampaignGetCurrentMission(co))
+		return NULL;
+	sprintf(
+		s, "DoorMin: %d", CampaignGetCurrentMission(co)->u.Interior.Doors.Min);
+	return s;
+}
+static const char *MissionGetDoorMaxStr(UIObject *o, void *data)
+{
+	static char s[128];
+	UNUSED(o);
+	Campaign *co = data;
+	if (!CampaignGetCurrentMission(co))
+		return NULL;
+	sprintf(
+		s, "DoorMax: %d", CampaignGetCurrentMission(co)->u.Interior.Doors.Max);
+	return s;
 }
 
 static EditorResult MissionChangeCorridorWidth(void *data, int d)
@@ -123,16 +145,34 @@ static EditorResult MissionChangeExitEnabled(void *data, int d)
 {
 	UNUSED(d);
 	Campaign *co = data;
-	CampaignGetCurrentMission(co)->u.Interior.ExitEnabled =
-		!CampaignGetCurrentMission(co)->u.Interior.ExitEnabled;
+	Mission *m = CampaignGetCurrentMission(co);
+	m->u.Interior.ExitEnabled = !m->u.Interior.ExitEnabled;
 	return EDITOR_RESULT_CHANGED;
 }
 static EditorResult MissionChangeDoorEnabled(void *data, int d)
 {
 	UNUSED(d);
 	Campaign *co = data;
-	CampaignGetCurrentMission(co)->u.Interior.DoorsEnabled =
-		!CampaignGetCurrentMission(co)->u.Interior.DoorsEnabled;
+	Mission *m = CampaignGetCurrentMission(co);
+	m->u.Interior.Doors.Enabled = !m->u.Interior.Doors.Enabled;
+	return EDITOR_RESULT_CHANGED;
+}
+static EditorResult MissionChangeDoorMin(void *data, int d)
+{
+	Campaign *co = data;
+	Mission *m = CampaignGetCurrentMission(co);
+	m->u.Interior.Doors.Min = CLAMP(m->u.Interior.Doors.Min + d, 1, 6);
+	m->u.Interior.Doors.Max =
+		MAX(m->u.Interior.Doors.Min, m->u.Interior.Doors.Max);
+	return EDITOR_RESULT_CHANGED;
+}
+static EditorResult MissionChangeDoorMax(void *data, int d)
+{
+	Campaign *co = data;
+	Mission *m = CampaignGetCurrentMission(co);
+	m->u.Interior.Doors.Max = CLAMP(m->u.Interior.Doors.Max + d, 1, 6);
+	m->u.Interior.Doors.Min =
+		MIN(m->u.Interior.Doors.Min, m->u.Interior.Doors.Max);
 	return EDITOR_RESULT_CHANGED;
 }
 
@@ -190,6 +230,20 @@ UIObject *CreateInteriorMapObjs(struct vec2i pos, Campaign *co)
 	o2->u.CustomDrawFunc = MissionDrawDoorEnabled;
 	o2->Data = co;
 	o2->ChangeFunc = MissionChangeDoorEnabled;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetDoorMinStr;
+	o2->Data = co;
+	o2->ChangeFunc = MissionChangeDoorMin;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetDoorMaxStr;
+	o2->Data = co;
+	o2->ChangeFunc = MissionChangeDoorMax;
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 

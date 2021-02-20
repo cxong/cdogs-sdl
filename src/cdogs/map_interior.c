@@ -162,7 +162,7 @@ void MapInteriorLoad(MapBuilder *mb, const int missionIndex)
 
 	CArray dCriticalPath = CalcDistanceToCriticalPath(&areas, &am);
 
-	if (mb->mission->u.Interior.DoorsEnabled)
+	if (mb->mission->u.Interior.Doors.Enabled)
 	{
 		// For each locked street (street on critical path), place a key in a
 		// non-critical leaf Do so by following a child away from the critical
@@ -352,10 +352,6 @@ static Adjacency SetupAdjacencyMatrix(const CArray *areas)
 static void AddDoorsToClosestCorridors(
 	MapBuilder *mb, CArray *areas, Adjacency *am)
 {
-	const TileClass *doorTile =
-		mb->mission->u.Interior.DoorsEnabled ?
-		&mb->mission->u.Interior.TileClasses.Door :
-		&mb->mission->u.Interior.TileClasses.Room;
 	CA_FOREACH(BSPArea, a, *areas)
 	// Skip non-leaves
 	if (!BSPAreaIsLeaf(a))
@@ -379,9 +375,9 @@ static void AddDoorsToClosestCorridors(
 		switch (i)
 		{
 		case 0:
-			// top
-			doorPos.y = a->r.Pos.y;
-			outsideDoor = svec2i(doorPos.x, doorPos.y - 1);
+			// left
+			doorPos.x = a->r.Pos.x;
+			outsideDoor = svec2i(doorPos.x - 1, doorPos.y);
 			break;
 		case 1:
 			// right
@@ -389,14 +385,14 @@ static void AddDoorsToClosestCorridors(
 			outsideDoor = svec2i(doorPos.x + 1, doorPos.y);
 			break;
 		case 2:
+			// top
+			doorPos.y = a->r.Pos.y;
+			outsideDoor = svec2i(doorPos.x, doorPos.y - 1);
+			break;
+		case 3:
 			// bottom
 			doorPos.y = a->r.Pos.y + a->r.Size.y - 1;
 			outsideDoor = svec2i(doorPos.x, doorPos.y + 1);
-			break;
-		case 3:
-			// left
-			doorPos.x = a->r.Pos.x;
-			outsideDoor = svec2i(doorPos.x - 1, doorPos.y);
 			break;
 		default:
 			CASSERT(false, "unexpected");
@@ -404,7 +400,18 @@ static void AddDoorsToClosestCorridors(
 		}
 		if (Rect2iIsInside(corridor->r, outsideDoor))
 		{
-			MapBuilderSetTile(mb, doorPos, doorTile);
+			bool doors[4];
+			memset(&doors, 0, sizeof doors);
+			doors[i] = true;
+			MapPlaceDoors(
+				mb,
+				a->r, mb->mission->u.Interior.Doors.Enabled,
+				doors,
+				mb->mission->u.Interior.Doors.Min,
+				mb->mission->u.Interior.Doors.Max,
+				0,
+				&mb->mission->u.Interior.TileClasses.Door,
+				&mb->mission->u.Interior.TileClasses.Room);
 			AdjacencyConnect(am, _ca_index, corridorI);
 			// Change parentage
 			a->parent = corridorI;
@@ -441,10 +448,6 @@ static bool RectIsAdjacent(
 static bool TryConnectRooms(
 	MapBuilder *mb, CArray *areas, Adjacency *am, BSPArea *a1, const int aIdx)
 {
-	const TileClass *doorTile =
-		mb->mission->u.Interior.DoorsEnabled ?
-		&mb->mission->u.Interior.TileClasses.Door :
-		&mb->mission->u.Interior.TileClasses.Room;
 	CA_FOREACH(BSPArea, a2, *areas)
 	// Only connect to a room that is also connected
 	if (!BSPAreaIsLeaf(a2) || a1 == a2 ||
@@ -465,18 +468,38 @@ static bool TryConnectRooms(
 	{
 		continue;
 	}
-	// Rooms are adjacent; pick the cell that's in
-	// the middle of the adjacent area and turn
-	// into a door
-	const int minOverlapX =
-		MIN(a1->r.Pos.x + a1->r.Size.x, a2->r.Pos.x + a2->r.Size.x);
-	const int maxOverlapX = MAX(a1->r.Pos.x, a2->r.Pos.x);
-	const int minOverlapY =
-		MIN(a1->r.Pos.y + a1->r.Size.y, a2->r.Pos.y + a2->r.Size.y);
-	const int maxOverlapY = MAX(a1->r.Pos.y, a2->r.Pos.y);
-	const struct vec2i doorPos = svec2i(
-		(minOverlapX + maxOverlapX) / 2, (minOverlapY + maxOverlapY) / 2);
-	MapBuilderSetTile(mb, doorPos, doorTile);
+	// Rooms are adjacent; add a door in the adjacent area
+	bool doors[4];
+	memset(&doors, 0, sizeof doors);
+	if (a1->r.Pos.x > a2->r.Pos.x)
+	{
+		// left
+		doors[0] = true;
+	}
+	else if (a1->r.Pos.x < a2->r.Pos.x)
+	{
+		// right
+		doors[1] = true;
+	}
+	else if (a1->r.Pos.y > a2->r.Pos.y)
+	{
+		// top
+		doors[2] = true;
+	}
+	else
+	{
+		// botttom
+		doors[3] = true;
+	}
+	MapPlaceDoors(
+		mb,
+		a1->r, mb->mission->u.Interior.Doors.Enabled,
+		doors,
+		mb->mission->u.Interior.Doors.Min,
+		mb->mission->u.Interior.Doors.Max,
+		0,
+		&mb->mission->u.Interior.TileClasses.Door,
+		&mb->mission->u.Interior.TileClasses.Room);
 	AdjacencyConnect(am, aIdx, _ca_index);
 	// Change parentage
 	a1->parent = _ca_index;
@@ -619,7 +642,7 @@ static void CapCorridor(
 			{
 				capTile = &mb->mission->u.Interior.TileClasses.Wall;
 			}
-			else if (mb->mission->u.Interior.DoorsEnabled)
+			else if (mb->mission->u.Interior.Doors.Enabled)
 			{
 				capTile = &mb->mission->u.Interior.TileClasses.Door;
 			}

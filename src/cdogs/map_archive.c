@@ -314,7 +314,7 @@ static json_t *SaveObjectives(CArray *a);
 static json_t *SaveWeapons(const CArray *weapons);
 static json_t *SaveMissionTileClasses(const MissionTileClasses *mtc);
 static json_t *SaveRooms(const RoomParams r);
-static json_t *SaveClassicDoors(Mission *m);
+static json_t *SaveDoors(const DoorParams d);
 static json_t *SaveClassicPillars(Mission *m);
 static json_t *SaveMissions(CArray *a)
 {
@@ -370,7 +370,7 @@ static json_t *SaveMissions(CArray *a)
 			AddIntPair(node, "Squares", mission->u.Classic.Squares);
 			AddBoolPair(node, "ExitEnabled", mission->u.Classic.ExitEnabled);
 			json_insert_pair_into_object(
-				node, "Doors", SaveClassicDoors(mission));
+				node, "Doors", SaveDoors(mission->u.Classic.Doors));
 			json_insert_pair_into_object(
 				node, "Pillars", SaveClassicPillars(mission));
 			break;
@@ -400,8 +400,8 @@ static json_t *SaveMissions(CArray *a)
 			json_insert_pair_into_object(
 				node, "Rooms", SaveRooms(mission->u.Interior.Rooms));
 			AddBoolPair(node, "ExitEnabled", mission->u.Interior.ExitEnabled);
-			AddBoolPair(
-				node, "DoorsEnabled", mission->u.Interior.DoorsEnabled);
+			json_insert_pair_into_object(
+				node, "Doors", SaveDoors(mission->u.Interior.Doors));
 			break;
 		default:
 			CASSERT(false, "unknown map type");
@@ -456,12 +456,12 @@ static json_t *SaveClassicPillars(Mission *m)
 	AddIntPair(node, "Max", m->u.Classic.Pillars.Max);
 	return node;
 }
-static json_t *SaveClassicDoors(Mission *m)
+static json_t *SaveDoors(const DoorParams d)
 {
 	json_t *node = json_new_object();
-	AddBoolPair(node, "Enabled", m->u.Classic.Doors.Enabled);
-	AddIntPair(node, "Min", m->u.Classic.Doors.Min);
-	AddIntPair(node, "Max", m->u.Classic.Doors.Max);
+	AddBoolPair(node, "Enabled", d.Enabled);
+	AddIntPair(node, "Min", d.Min);
+	AddIntPair(node, "Max", d.Max);
 	return node;
 }
 

@@ -105,7 +105,9 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 		m->u.Interior.Rooms.Min = 5;
 		m->u.Interior.Rooms.Max = 10;
 		m->u.Interior.ExitEnabled = true;
-		m->u.Interior.DoorsEnabled = true;
+		m->u.Interior.Doors.Enabled = true;
+		m->u.Interior.Doors.Min = 1;
+		m->u.Interior.Doors.Max = 2;
 		memcpy(&m->u.Interior.TileClasses, &mtc, sizeof mtc);
 		break;
 	default:

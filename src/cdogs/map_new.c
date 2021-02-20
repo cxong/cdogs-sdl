@@ -207,7 +207,7 @@ static void LoadMissionObjectives(
 	CArray *objectives, json_t *objectivesNode, const int version);
 static void LoadWeapons(CArray *weapons, json_t *weaponsNode);
 static void LoadRooms(RoomParams *r, json_t *roomsNode);
-static void LoadClassicDoors(Mission *m, json_t *node, char *name);
+static void LoadDoors(DoorParams *d, json_t *doorsNode);
 static void LoadClassicPillars(Mission *m, json_t *node, char *name);
 void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 {
@@ -303,7 +303,9 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 			LoadInt(&m.u.Classic.Squares, child, "Squares");
 			m.u.Classic.ExitEnabled = true;
 			LoadBool(&m.u.Classic.ExitEnabled, child, "ExitEnabled");
-			LoadClassicDoors(&m, child, "Doors");
+			LoadDoors(
+				&m.u.Classic.Doors,
+				json_find_first_label(child, "Doors")->child);
 			LoadClassicPillars(&m, child, "Pillars");
 			break;
 		case MAPTYPE_STATIC:
@@ -345,7 +347,9 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 				json_find_first_label(child, "Rooms")->child);
 			m.u.Interior.ExitEnabled = true;
 			LoadBool(&m.u.Interior.ExitEnabled, child, "ExitEnabled");
-			LoadBool(&m.u.Interior.DoorsEnabled, child, "DoorsEnabled");
+			LoadDoors(
+				&m.u.Interior.Doors,
+				json_find_first_label(child, "Doors")->child);
 			break;
 		default:
 			assert(0 && "unknown map type");
@@ -530,15 +534,9 @@ static void LoadClassicPillars(Mission *m, json_t *node, char *name)
 	LoadInt(&m->u.Classic.Pillars.Min, child, "Min");
 	LoadInt(&m->u.Classic.Pillars.Max, child, "Max");
 }
-static void LoadClassicDoors(Mission *m, json_t *node, char *name)
+static void LoadDoors(DoorParams *d, json_t *doorsNode)
 {
-	json_t *child = json_find_first_label(node, name);
-	if (!child || !child->child)
-	{
-		return;
-	}
-	child = child->child;
-	LoadBool(&m->u.Classic.Doors.Enabled, child, "Enabled");
-	LoadInt(&m->u.Classic.Doors.Min, child, "Min");
-	LoadInt(&m->u.Classic.Doors.Max, child, "Max");
+	LoadBool(&d->Enabled, doorsNode, "Enabled");
+	LoadInt(&d->Min, doorsNode, "Min");
+	LoadInt(&d->Max, doorsNode, "Max");
 }
