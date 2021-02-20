@@ -307,7 +307,13 @@ struct vec2 MapGetExitPos(const Map *m, const int i)
 
 bool MapHasLockedRooms(const Map *map)
 {
-	return map->keyAccessCount > 1;
+	CA_FOREACH(const uint16_t, a, map->access)
+	if (*a != 0)
+	{
+		return true;
+	}
+	CA_FOREACH_END()
+	return false;
 }
 
 uint16_t MapGetAccessLevel(const Map *map, const struct vec2i pos)

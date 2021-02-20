@@ -758,15 +758,13 @@ static void PlaceKeys(
 	// Place key in a child room before the locked corridor, but far away
 	CArray furthestChildren = FindRoomsFurthestFromCriticalPath(areas, am, dCriticalPath, *idx);
 	CArrayShuffle(&furthestChildren);
-	CASSERT(furthestChildren.size >= 0, "Cannot find child for locked street");
+	CASSERT(furthestChildren.size > 0, "Cannot find child for locked street");
 
 	const int child = *(int *)CArrayGet(&furthestChildren, 0);
 	const BSPArea *room = CArrayGet(areas, child);
 	MapPlaceKey(
 		mb, svec2i_add(room->r.Pos, svec2i_divide(room->r.Size, svec2i(2, 2))),
 		_ca_index);
-	// Update access count for high access objective placement
-	mb->Map->keyAccessCount++;
 
 	// If there are more children, mark some of them as locked rooms
 	// So that special objective items can be placed there
