@@ -51,8 +51,8 @@ const char *KeycodeStr(int k)
 	}
 }
 
-#define KEYBOARD_REPEAT_DELAY 500
-#define KEYBOARD_REPEAT_TICKS 100
+#define KEYBOARD_REPEAT_DELAY 1500
+#define KEYBOARD_REPEAT_TICKS 300
 #define DIAGONAL_RELEASE_DELAY 50
 
 void KeyInit(keyboard_t *keyboard)

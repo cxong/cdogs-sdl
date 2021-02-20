@@ -1137,7 +1137,7 @@ static void EditCampaign(void)
 			continue;
 		}
 
-		EventPoll(&gEventHandlers, SDL_GetTicks(), NULL);
+		EventPoll(&gEventHandlers, sTicksElapsed, NULL);
 		const SDL_Scancode sc = KeyGetPressed(&gEventHandlers.keyboard);
 		const int m = MouseGetPressed(&gEventHandlers.mouse);
 

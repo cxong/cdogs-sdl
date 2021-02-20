@@ -693,7 +693,7 @@ static int FindAdjacentCriticalPath(
 static CArray FindRoomsFurthestFromCriticalPath(
 	const CArray *areas, const Adjacency *am, const CArray *dCriticalPath,
 	const int fromIdx);
-static void AddLockedRooms(MapBuilder *mb, const CArray *areas, const CArray *rooms, const int accessMask);
+static void AddLockedRooms(MapBuilder *mb, const CArray *areas, const CArray *rooms, const uint16_t accessMask);
 static void PlaceKeys(
 	MapBuilder *mb, const CArray *areas, const Adjacency *am,
 	const CArray *dCriticalPath)
@@ -802,7 +802,7 @@ static CArray FindRoomsFurthestFromCriticalPath(
 	CA_FOREACH_END()
 	return furthest;
 }
-static void AddLockedRooms(MapBuilder *mb, const CArray *areas, const CArray *rooms, const int accessMask)
+static void AddLockedRooms(MapBuilder *mb, const CArray *areas, const CArray *rooms, const uint16_t accessMask)
 {
 	CA_FOREACH(const int, idx, *rooms)
 	if (_ca_index == 0)
