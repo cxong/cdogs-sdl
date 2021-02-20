@@ -288,6 +288,12 @@ static void SplitLeafRooms(MapBuilder *mb, CArray *areas)
 	{
 		continue;
 	}
+	// Don't split if we're under max size
+	if (a->r.Size.x <= mb->mission->u.Interior.Rooms.Max &&
+		a->r.Size.y <= mb->mission->u.Interior.Rooms.Max)
+	{
+		continue;
+	}
 	const bool horizontal = a->r.Size.x > a->r.Size.y;
 	BSPArea a1 = BSPAreaRoot(svec2i_zero());
 	BSPArea a2 = BSPAreaRoot(svec2i_zero());

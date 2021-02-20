@@ -336,21 +336,18 @@ static EditorResult MissionChangeRoomCount(void *data, int d)
 static EditorResult MissionChangeRoomMin(void *data, int d)
 {
 	Campaign *co = data;
-	CampaignGetCurrentMission(co)->u.Cave.Rooms.Min =
-		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Rooms.Min + d, 5, 50);
-	CampaignGetCurrentMission(co)->u.Cave.Rooms.Max =
-		MAX(CampaignGetCurrentMission(co)->u.Cave.Rooms.Min,
-			CampaignGetCurrentMission(co)->u.Cave.Rooms.Max);
+	Mission *m = CampaignGetCurrentMission(co);
+	m->u.Cave.Rooms.Min = CLAMP(m->u.Cave.Rooms.Min + d, 5, 50);
+	m->u.Cave.Rooms.Max = MAX(m->u.Cave.Rooms.Min, m->u.Cave.Rooms.Max);
 	return EDITOR_RESULT_CHANGED;
 }
 static EditorResult MissionChangeRoomMax(void *data, int d)
 {
 	Campaign *co = data;
-	CampaignGetCurrentMission(co)->u.Cave.Rooms.Max =
-		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Rooms.Max + d, 5, 50);
-	CampaignGetCurrentMission(co)->u.Cave.Rooms.Min =
-		MIN(CampaignGetCurrentMission(co)->u.Cave.Rooms.Min,
-			CampaignGetCurrentMission(co)->u.Cave.Rooms.Max);
+	Mission *m = CampaignGetCurrentMission(co);
+	m->u.Cave.Rooms.Max = CLAMP(m->u.Cave.Rooms.Max + d, 5, 50);
+	m->u.Cave.Rooms.Min =
+		MIN(m->u.Cave.Rooms.Min, m->u.Cave.Rooms.Max);
 	return EDITOR_RESULT_CHANGED;
 }
 static void MissionDrawRoomsOverlap(

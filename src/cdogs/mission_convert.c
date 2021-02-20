@@ -103,6 +103,7 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 		// Setup default parameters
 		m->u.Interior.CorridorWidth = 2;
 		m->u.Interior.Rooms.Min = 5;
+		m->u.Interior.Rooms.Max = 10;
 		m->u.Interior.ExitEnabled = true;
 		m->u.Interior.DoorsEnabled = true;
 		memcpy(&m->u.Interior.TileClasses, &mtc, sizeof mtc);

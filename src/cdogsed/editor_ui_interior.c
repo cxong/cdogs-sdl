@@ -57,6 +57,16 @@ static const char *MissionGetRoomMinStr(UIObject *o, void *data)
 		s, "RoomMin: %d", CampaignGetCurrentMission(co)->u.Interior.Rooms.Min);
 	return s;
 }
+static const char *MissionGetRoomMaxStr(UIObject *o, void *data)
+{
+	static char s[128];
+	UNUSED(o);
+	Campaign *co = data;
+	if (!CampaignGetCurrentMission(co))
+		return NULL;
+	sprintf(s, "RoomMax: %d", CampaignGetCurrentMission(co)->u.Interior.Rooms.Max);
+	return s;
+}
 static void MissionDrawExitEnabled(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
 {
@@ -94,11 +104,19 @@ static EditorResult MissionChangeCorridorWidth(void *data, int d)
 static EditorResult MissionChangeRoomMin(void *data, int d)
 {
 	Campaign *co = data;
-	CampaignGetCurrentMission(co)->u.Interior.Rooms.Min =
-		CLAMP(CampaignGetCurrentMission(co)->u.Interior.Rooms.Min + d, 5, 50);
-	CampaignGetCurrentMission(co)->u.Interior.Rooms.Max =
-		MAX(CampaignGetCurrentMission(co)->u.Interior.Rooms.Min,
-			CampaignGetCurrentMission(co)->u.Interior.Rooms.Max);
+	Mission *m = CampaignGetCurrentMission(co);
+	m->u.Interior.Rooms.Min = CLAMP(m->u.Interior.Rooms.Min + d, 5, 25);
+	m->u.Interior.Rooms.Max =
+		MAX(m->u.Interior.Rooms.Min * 2, m->u.Interior.Rooms.Max);
+	return EDITOR_RESULT_CHANGED;
+}
+static EditorResult MissionChangeRoomMax(void *data, int d)
+{
+	Campaign *co = data;
+	Mission *m = CampaignGetCurrentMission(co);
+	m->u.Interior.Rooms.Max = CLAMP(m->u.Interior.Rooms.Max + d, 10, 50);
+	m->u.Interior.Rooms.Min =
+		MIN(m->u.Interior.Rooms.Min, m->u.Interior.Rooms.Max / 2);
 	return EDITOR_RESULT_CHANGED;
 }
 static EditorResult MissionChangeExitEnabled(void *data, int d)
@@ -147,6 +165,13 @@ UIObject *CreateInteriorMapObjs(struct vec2i pos, Campaign *co)
 	o2->u.LabelFunc = MissionGetRoomMinStr;
 	o2->Data = co;
 	o2->ChangeFunc = MissionChangeRoomMin;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetRoomMaxStr;
+	o2->Data = co;
+	o2->ChangeFunc = MissionChangeRoomMax;
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 
