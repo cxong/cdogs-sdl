@@ -104,6 +104,9 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 		m->u.Interior.CorridorWidth = 2;
 		m->u.Interior.Rooms.Min = 5;
 		m->u.Interior.Rooms.Max = 10;
+		m->u.Interior.Rooms.Walls = 1;
+		m->u.Interior.Rooms.WallLength = 1;
+		m->u.Interior.Rooms.WallPad = 1;
 		m->u.Interior.ExitEnabled = true;
 		m->u.Interior.Doors.Enabled = true;
 		m->u.Interior.Doors.Min = 1;

@@ -80,6 +80,41 @@ static void MissionDrawExitEnabled(
 		CampaignGetCurrentMission(co)->u.Interior.ExitEnabled,
 		UIObjectIsHighlighted(o));
 }
+static const char *MissionGetRoomWallCountStr(UIObject *o, void *data)
+{
+	static char s[128];
+	UNUSED(o);
+	Campaign *co = data;
+	if (!CampaignGetCurrentMission(co))
+		return NULL;
+	sprintf(
+		s, "RoomWalls: %d", CampaignGetCurrentMission(co)->u.Interior.Rooms.Walls);
+	return s;
+}
+static const char *MissionGetRoomWallLenStr(UIObject *o, void *data)
+{
+	static char s[128];
+	UNUSED(o);
+	Campaign *co = data;
+	if (!CampaignGetCurrentMission(co))
+		return NULL;
+	sprintf(
+		s, "RoomWallLen: %d",
+		CampaignGetCurrentMission(co)->u.Interior.Rooms.WallLength);
+	return s;
+}
+static const char *MissionGetRoomWallPadStr(UIObject *o, void *data)
+{
+	static char s[128];
+	UNUSED(o);
+	Campaign *co = data;
+	if (!CampaignGetCurrentMission(co))
+		return NULL;
+	sprintf(
+		s, "RoomWallPad: %d",
+		CampaignGetCurrentMission(co)->u.Interior.Rooms.WallPad);
+	return s;
+}
 static void MissionDrawDoorEnabled(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
 {
@@ -147,6 +182,27 @@ static EditorResult MissionChangeExitEnabled(void *data, int d)
 	Campaign *co = data;
 	Mission *m = CampaignGetCurrentMission(co);
 	m->u.Interior.ExitEnabled = !m->u.Interior.ExitEnabled;
+	return EDITOR_RESULT_CHANGED;
+}
+static EditorResult MissionChangeRoomWallCount(void *data, int d)
+{
+	Campaign *co = data;
+	Mission *m = CampaignGetCurrentMission(co);
+	m->u.Interior.Rooms.Walls = CLAMP(m->u.Interior.Rooms.Walls + d, 0, 50);
+	return EDITOR_RESULT_CHANGED;
+}
+static EditorResult MissionChangeRoomWallLen(void *data, int d)
+{
+	Campaign *co = data;
+	Mission *m = CampaignGetCurrentMission(co);
+	m->u.Interior.Rooms.WallLength = CLAMP(m->u.Interior.Rooms.WallLength + d, 1, 50);
+	return EDITOR_RESULT_CHANGED;
+}
+static EditorResult MissionChangeRoomWallPad(void *data, int d)
+{
+	Campaign *co = data;
+	Mission *m = CampaignGetCurrentMission(co);
+	m->u.Interior.Rooms.WallPad = CLAMP(m->u.Interior.Rooms.WallPad + d, 1, 10);
 	return EDITOR_RESULT_CHANGED;
 }
 static EditorResult MissionChangeDoorEnabled(void *data, int d)
@@ -222,6 +278,31 @@ UIObject *CreateInteriorMapObjs(struct vec2i pos, Campaign *co)
 	o2->Data = co;
 	o2->ChangeFunc = MissionChangeExitEnabled;
 	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	
+	pos.x = x;
+	pos.y += th;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetRoomWallCountStr;
+	o2->Data = co;
+	o2->ChangeFunc = MissionChangeRoomWallCount;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetRoomWallLenStr;
+	o2->Data = co;
+	o2->ChangeFunc = MissionChangeRoomWallLen;
+	o2->Pos = pos;
+	o2->Size.x = 60;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetRoomWallPadStr;
+	o2->Data = co;
+	o2->ChangeFunc = MissionChangeRoomWallPad;
+	o2->Pos = pos;
+	o2->Size.x = 60;
 	UIObjectAddChild(c, o2);
 
 	pos.x = x;

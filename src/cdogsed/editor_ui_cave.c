@@ -410,22 +410,22 @@ static const char *MissionGetRoomWallPadStr(UIObject *o, void *data)
 static EditorResult MissionChangeRoomWallCount(void *data, int d)
 {
 	Campaign *co = data;
-	CampaignGetCurrentMission(co)->u.Cave.Rooms.Walls =
-		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Rooms.Walls + d, 0, 50);
+	Mission *m = CampaignGetCurrentMission(co);
+	m->u.Cave.Rooms.Walls = CLAMP(m->u.Cave.Rooms.Walls + d, 0, 50);
 	return EDITOR_RESULT_CHANGED;
 }
 static EditorResult MissionChangeRoomWallLen(void *data, int d)
 {
 	Campaign *co = data;
-	CampaignGetCurrentMission(co)->u.Cave.Rooms.WallLength = CLAMP(
-		CampaignGetCurrentMission(co)->u.Cave.Rooms.WallLength + d, 1, 50);
+	Mission *m = CampaignGetCurrentMission(co);
+	m->u.Cave.Rooms.WallLength = CLAMP(m->u.Cave.Rooms.WallLength + d, 1, 50);
 	return EDITOR_RESULT_CHANGED;
 }
 static EditorResult MissionChangeRoomWallPad(void *data, int d)
 {
 	Campaign *co = data;
-	CampaignGetCurrentMission(co)->u.Cave.Rooms.WallPad =
-		CLAMP(CampaignGetCurrentMission(co)->u.Cave.Rooms.WallPad + d, 1, 10);
+	Mission *m = CampaignGetCurrentMission(co);
+	m->u.Cave.Rooms.WallPad = CLAMP(m->u.Cave.Rooms.WallPad + d, 1, 10);
 	return EDITOR_RESULT_CHANGED;
 }
 static const char *MissionGetSquareCountStr(UIObject *o, void *data)

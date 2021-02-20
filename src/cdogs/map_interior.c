@@ -322,7 +322,6 @@ static void SplitLeafRooms(MapBuilder *mb, CArray *areas)
 
 static void FillRooms(MapBuilder *mb, const CArray *areas)
 {
-
 	CA_FOREACH(BSPArea, a, *areas)
 	// Skip non-leaves
 	if (!BSPAreaIsLeaf(a))
@@ -333,6 +332,9 @@ static void FillRooms(MapBuilder *mb, const CArray *areas)
 		mb, a->r.Pos, a->r.Size, true,
 		&mb->mission->u.Interior.TileClasses.Wall,
 		&mb->mission->u.Interior.TileClasses.Room, false);
+	
+	MapMakeRoomWalls(
+		mb, mb->mission->u.Interior.Rooms, &mb->mission->u.Interior.TileClasses.Wall);
 	CA_FOREACH_END()
 }
 
