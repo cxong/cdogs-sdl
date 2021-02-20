@@ -205,6 +205,7 @@ int Stricmp(const char *a, const char *b);
 	((_low) + ((float)rand() / RAND_MAX * ((_high) - (_low))))
 #define RAND_DOUBLE(_low, _high)                                              \
 	((_low) + ((double)rand() / RAND_MAX * ((_high) - (_low))))
+#define RAND_BOOL() (RAND_INT(0, 1) == 0)
 
 typedef enum
 {

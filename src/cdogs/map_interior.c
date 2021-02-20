@@ -690,9 +690,10 @@ static int FindAdjacentCriticalPath(
 	return 0;
 }
 
-static int FindRoomFurtherFromCriticalPath(
+static CArray FindRoomsFurthestFromCriticalPath(
 	const CArray *areas, const Adjacency *am, const CArray *dCriticalPath,
 	const int fromIdx);
+static void AddLockedRooms(MapBuilder *mb, const CArray *areas, const CArray *rooms, const int accessMask);
 static void PlaceKeys(
 	MapBuilder *mb, const CArray *areas, const Adjacency *am,
 	const CArray *dCriticalPath)
@@ -755,37 +756,67 @@ static void PlaceKeys(
 	}
 
 	// Place key in a child room before the locked corridor, but far away
-	int child = *idx;
-	for (;;)
-	{
-		const int nextChild =
-			FindRoomFurtherFromCriticalPath(areas, am, dCriticalPath, child);
-		if (nextChild == -1)
-		{
-			break;
-		}
-		child = nextChild;
-	}
-	CASSERT(child >= 0, "Cannot find child for locked street");
+	CArray furthestChildren = FindRoomsFurthestFromCriticalPath(areas, am, dCriticalPath, *idx);
+	CArrayShuffle(&furthestChildren);
+	CASSERT(furthestChildren.size >= 0, "Cannot find child for locked street");
+
+	const int child = *(int *)CArrayGet(&furthestChildren, 0);
 	const BSPArea *room = CArrayGet(areas, child);
 	MapPlaceKey(
 		mb, svec2i_add(room->r.Pos, svec2i_divide(room->r.Size, svec2i(2, 2))),
 		_ca_index);
+	// Update access count for high access objective placement
+	mb->Map->keyAccessCount++;
+
+	// If there are more children, mark some of them as locked rooms
+	// So that special objective items can be placed there
+	AddLockedRooms(mb, areas, &furthestChildren, accessMask);
+
+	CArrayTerminate(&furthestChildren);
 	CA_FOREACH_END()
 }
-static int FindRoomFurtherFromCriticalPath(
+static CArray FindRoomsFurthestFromCriticalPath(
 	const CArray *areas, const Adjacency *am, const CArray *dCriticalPath,
 	const int fromIdx)
 {
+	CArray furthest;
+	CArrayInit(&furthest, sizeof(int));
+	CArrayPushBack(&furthest, &fromIdx);
+	CA_FOREACH(const int, idxp, furthest)
+	const int idx = *idxp;
+	bool hasChildren = false;
 	for (int i = 0; i < (int)areas->size; i++)
 	{
-		if (i == fromIdx || !AdjacencyIsConnected(am, fromIdx, i) ||
+		if (i == idx || !AdjacencyIsConnected(am, idx, i) ||
 			*(int *)CArrayGet(dCriticalPath, i) <=
-				*(int *)CArrayGet(dCriticalPath, fromIdx))
+				*(int *)CArrayGet(dCriticalPath, idx))
 		{
 			continue;
 		}
-		return i;
+		CArrayPushBack(&furthest, &i);
+		hasChildren = true;
 	}
-	return -1;
+	if (hasChildren)
+	{
+		CArrayDelete(&furthest, _ca_index);
+		_ca_index--;
+	}
+	CA_FOREACH_END()
+	return furthest;
+}
+static void AddLockedRooms(MapBuilder *mb, const CArray *areas, const CArray *rooms, const int accessMask)
+{
+	CA_FOREACH(const int, idx, *rooms)
+	if (_ca_index == 0)
+	{
+		continue;
+	}
+	if (RAND_BOOL())
+	{
+		const BSPArea *room = CArrayGet(areas, *idx);
+		MapSetRoomAccessMask(
+		    mb, svec2i_add(room->r.Pos, svec2i_one()),
+			svec2i_subtract(room->r.Size, svec2i(2, 2)), accessMask);
+	}
+	CA_FOREACH_END()
 }
