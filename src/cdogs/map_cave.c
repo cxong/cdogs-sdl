@@ -678,5 +678,5 @@ static void MapBuildRoom(MapBuilder *mb, const Rect2i room)
 		&mb->mission->u.Cave.TileClasses.Room, true);
 
 	MapMakeRoomWalls(
-		mb, mb->mission->u.Cave.Rooms, &mb->mission->u.Cave.TileClasses.Wall);
+		mb, mb->mission->u.Cave.Rooms, &mb->mission->u.Cave.TileClasses.Wall, room);
 }

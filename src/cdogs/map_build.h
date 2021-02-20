@@ -120,10 +120,10 @@ void MapMakeRoom(
 	const bool walls, const TileClass *wall, const TileClass *room,
 	const bool removeInterRoomWalls);
 void MapMakeRoomWalls(
-	MapBuilder *mb, const RoomParams r, const TileClass *wall);
+	MapBuilder *mb, const RoomParams r, const TileClass *wall, const Rect2i room);
 bool MapTryBuildWall(
 	MapBuilder *mb, const bool isRoom, const int pad, const int wallLength,
-	const TileClass *wall);
+	const TileClass *wall, const Rect2i r);
 void MapSetRoomAccessMask(
 	MapBuilder *mb, const struct vec2i pos, const struct vec2i size,
 	const uint16_t accessMask);

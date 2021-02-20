@@ -145,7 +145,7 @@ void MapClassicLoad(MapBuilder *mb)
 	{
 		if (MapTryBuildWall(
 				mb, false, pad, mb->mission->u.Classic.WallLength,
-				&mb->mission->u.Classic.TileClasses.Wall))
+				&mb->mission->u.Classic.TileClasses.Wall, Rect2iZero()))
 		{
 			count++;
 		}
@@ -306,14 +306,16 @@ static void MapBuildRoom(
 			accessMask = GenerateAccessMask(&mb->Map->keyAccessCount);
 		}
 	}
+	
+	const Rect2i r = Rect2iNew(pos, size);
 	MapPlaceDoors(
-		mb, Rect2iNew(pos, size), mb->mission->u.Classic.Doors.Enabled, doors,
+		mb, r, mb->mission->u.Classic.Doors.Enabled, doors,
 		doorMin, doorMax, accessMask, &mb->mission->u.Classic.TileClasses.Door,
 		&mb->mission->u.Classic.TileClasses.Floor);
 
 	MapMakeRoomWalls(
 		mb, mb->mission->u.Classic.Rooms,
-		&mb->mission->u.Classic.TileClasses.Wall);
+		&mb->mission->u.Classic.TileClasses.Wall, r);
 }
 
 static bool MapTryBuildPillar(MapBuilder *mb, const int pad)

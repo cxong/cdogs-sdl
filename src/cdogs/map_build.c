@@ -857,12 +857,12 @@ static bool MapBuilderGetIsRoom(const MapBuilder *mb, const struct vec2i pos)
 }
 
 void MapMakeRoomWalls(
-	MapBuilder *mb, const RoomParams r, const TileClass *wall)
+	MapBuilder *mb, const RoomParams r, const TileClass *wall, const Rect2i room)
 {
 	int count = 0;
 	for (int i = 0; i < 100 && count < r.Walls; i++)
 	{
-		if (!MapTryBuildWall(mb, true, MAX(r.WallPad, 1), r.WallLength, wall))
+		if (!MapTryBuildWall(mb, true, MAX(r.WallPad, 1), r.WallLength, wall, room))
 		{
 			continue;
 		}
@@ -875,9 +875,12 @@ static void MapGrowWall(
 	const int d, int length, const TileClass *wall);
 bool MapTryBuildWall(
 	MapBuilder *mb, const bool isRoom, const int pad, const int wallLength,
-	const TileClass *wall)
+	const TileClass *wall, const Rect2i r)
 {
-	const struct vec2i v = MapGetRandomTile(mb->Map);
+	const struct vec2i v =
+		Rect2iIsZero(r) ?
+		MapGetRandomTile(mb->Map) :
+		svec2i_add(r.Pos, svec2i(rand() % r.Size.x, rand() % r.Size.y));
 	if (MapIsValidStartForWall(mb, v, isRoom, pad))
 	{
 		MapBuilderSetTile(mb, v, wall);

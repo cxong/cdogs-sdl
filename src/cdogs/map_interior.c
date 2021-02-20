@@ -125,6 +125,7 @@ static CArray CalcDistanceToCriticalPath(
 static void PlaceKeys(
 	MapBuilder *mb, const CArray *areas, const Adjacency *am,
 	const CArray *dCriticalPath);
+static void AddRoomWalls(MapBuilder *mb, const CArray *areas);
 void MapInteriorLoad(MapBuilder *mb, const int missionIndex)
 {
 	// TODO: multiple tile types
@@ -169,6 +170,9 @@ void MapInteriorLoad(MapBuilder *mb, const int missionIndex)
 		// path
 		PlaceKeys(mb, &areas, &am, &dCriticalPath);
 	}
+
+	// Add rooms after placing keys to avoid overlaps
+	AddRoomWalls(mb, &areas);
 
 	CArrayTerminate(&dCriticalPath);
 	AdjacencyTerminate(&am);
@@ -332,9 +336,6 @@ static void FillRooms(MapBuilder *mb, const CArray *areas)
 		mb, a->r.Pos, a->r.Size, true,
 		&mb->mission->u.Interior.TileClasses.Wall,
 		&mb->mission->u.Interior.TileClasses.Room, false);
-	
-	MapMakeRoomWalls(
-		mb, mb->mission->u.Interior.Rooms, &mb->mission->u.Interior.TileClasses.Wall);
 	CA_FOREACH_END()
 }
 
@@ -799,10 +800,12 @@ static void PlaceKeys(
 	CASSERT(furthestChildren.size > 0, "Cannot find child for locked street");
 
 	const int child = *(int *)CArrayGet(&furthestChildren, 0);
-	const BSPArea *room = CArrayGet(areas, child);
+	BSPArea *room = CArrayGet(areas, child);
 	MapPlaceKey(
 		mb, svec2i_add(room->r.Pos, svec2i_divide(room->r.Size, svec2i(2, 2))),
 		_ca_index);
+	// Add room to critical path to avoid room walls here
+	room->criticalPath = a->criticalPath;
 
 	// If there are more children, mark some of them as locked rooms
 	// So that special objective items can be placed there
@@ -853,6 +856,23 @@ static void AddLockedRooms(MapBuilder *mb, const CArray *areas, const CArray *ro
 		MapSetRoomAccessMask(
 		    mb, svec2i_add(room->r.Pos, svec2i_one()),
 			svec2i_subtract(room->r.Size, svec2i(2, 2)), accessMask);
+	}
+	CA_FOREACH_END()
+}
+
+static void AddRoomWalls(MapBuilder *mb, const CArray *areas)
+{
+	CA_FOREACH(const BSPArea, a, *areas)
+	// Skip non-leaves
+	if (!BSPAreaIsLeaf(a))
+	{
+		continue;
+	}
+
+	if (a->criticalPath == CRIT_PATH_NONE)
+	{
+		MapMakeRoomWalls(
+			mb, mb->mission->u.Interior.Rooms, &mb->mission->u.Interior.TileClasses.Wall, a->r);
 	}
 	CA_FOREACH_END()
 }
