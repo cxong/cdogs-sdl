@@ -346,6 +346,10 @@ static Adjacency SetupAdjacencyMatrix(const CArray *areas)
 static void AddDoorsToClosestCorridors(
 	MapBuilder *mb, CArray *areas, Adjacency *am)
 {
+	const TileClass *doorTile =
+		mb->mission->u.Interior.DoorsEnabled ?
+		&mb->mission->u.Interior.TileClasses.Door :
+		&mb->mission->u.Interior.TileClasses.Room;
 	CA_FOREACH(BSPArea, a, *areas)
 	// Skip non-leaves
 	if (!BSPAreaIsLeaf(a))
@@ -394,8 +398,7 @@ static void AddDoorsToClosestCorridors(
 		}
 		if (Rect2iIsInside(corridor->r, outsideDoor))
 		{
-			MapBuilderSetTile(
-				mb, doorPos, &mb->mission->u.Interior.TileClasses.Door);
+			MapBuilderSetTile(mb, doorPos, doorTile);
 			AdjacencyConnect(am, _ca_index, corridorI);
 			// Change parentage
 			a->parent = corridorI;
@@ -432,6 +435,10 @@ static bool RectIsAdjacent(
 static bool TryConnectRooms(
 	MapBuilder *mb, CArray *areas, Adjacency *am, BSPArea *a1, const int aIdx)
 {
+	const TileClass *doorTile =
+		mb->mission->u.Interior.DoorsEnabled ?
+		&mb->mission->u.Interior.TileClasses.Door :
+		&mb->mission->u.Interior.TileClasses.Room;
 	CA_FOREACH(BSPArea, a2, *areas)
 	// Only connect to a room that is also connected
 	if (!BSPAreaIsLeaf(a2) || a1 == a2 ||
@@ -463,7 +470,7 @@ static bool TryConnectRooms(
 	const int maxOverlapY = MAX(a1->r.Pos.y, a2->r.Pos.y);
 	const struct vec2i doorPos = svec2i(
 		(minOverlapX + maxOverlapX) / 2, (minOverlapY + maxOverlapY) / 2);
-	MapBuilderSetTile(mb, doorPos, &mb->mission->u.Interior.TileClasses.Door);
+	MapBuilderSetTile(mb, doorPos, doorTile);
 	AdjacencyConnect(am, aIdx, _ca_index);
 	// Change parentage
 	a1->parent = _ca_index;
