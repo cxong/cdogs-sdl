@@ -403,8 +403,8 @@ static void PlaceSquares(MapBuilder *mb, const int squares)
 		{
 			continue;
 		}
-		MapMakeSquare(
-			mb, Rect2iNew(v, size), &mb->mission->u.Cave.TileClasses.Floor);
+		MapFillRect(
+			mb, Rect2iNew(v, size), &mb->mission->u.Cave.TileClasses.Floor, &mb->mission->u.Cave.TileClasses.Floor);
 		count++;
 	}
 }

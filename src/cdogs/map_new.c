@@ -208,7 +208,7 @@ static void LoadMissionObjectives(
 static void LoadWeapons(CArray *weapons, json_t *weaponsNode);
 static void LoadRooms(RoomParams *r, json_t *roomsNode);
 static void LoadDoors(DoorParams *d, json_t *doorsNode);
-static void LoadClassicPillars(Mission *m, json_t *node, char *name);
+static void LoadPillars(PillarParams *p, json_t *pillarsNode);
 void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 {
 	json_t *child;
@@ -306,7 +306,7 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 			LoadDoors(
 				&m.u.Classic.Doors,
 				json_find_first_label(child, "Doors")->child);
-			LoadClassicPillars(&m, child, "Pillars");
+			LoadPillars(&m.u.Classic.Pillars, json_find_first_label(child, "Pillars")->child);
 			break;
 		case MAPTYPE_STATIC:
 			if (!MissionStaticTryLoadJSON(
@@ -350,6 +350,7 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 			LoadDoors(
 				&m.u.Interior.Doors,
 				json_find_first_label(child, "Doors")->child);
+			LoadPillars(&m.u.Interior.Pillars, json_find_first_label(child, "Pillars")->child);
 			break;
 		default:
 			assert(0 && "unknown map type");
@@ -522,21 +523,15 @@ static void LoadRooms(RoomParams *r, json_t *roomsNode)
 	LoadInt(&r->WallLength, roomsNode, "WallLength");
 	LoadInt(&r->WallPad, roomsNode, "WallPad");
 }
-static void LoadClassicPillars(Mission *m, json_t *node, char *name)
-{
-	json_t *child = json_find_first_label(node, name);
-	if (!child || !child->child)
-	{
-		return;
-	}
-	child = child->child;
-	LoadInt(&m->u.Classic.Pillars.Count, child, "Count");
-	LoadInt(&m->u.Classic.Pillars.Min, child, "Min");
-	LoadInt(&m->u.Classic.Pillars.Max, child, "Max");
-}
 static void LoadDoors(DoorParams *d, json_t *doorsNode)
 {
 	LoadBool(&d->Enabled, doorsNode, "Enabled");
 	LoadInt(&d->Min, doorsNode, "Min");
 	LoadInt(&d->Max, doorsNode, "Max");
+}
+static void LoadPillars(PillarParams *p, json_t *pillarsNode)
+{
+	LoadInt(&p->Count, pillarsNode, "Count");
+	LoadInt(&p->Min, pillarsNode, "Min");
+	LoadInt(&p->Max, pillarsNode, "Max");
 }

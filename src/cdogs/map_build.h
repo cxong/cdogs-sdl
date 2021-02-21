@@ -113,7 +113,7 @@ bool MapGetRoomOverlapSize(
 	const MapBuilder *mb, const Rect2i r, uint16_t *overlapAccess);
 bool MapIsLessThanTwoWallOverlaps(
 	const MapBuilder *mb, struct vec2i pos, struct vec2i size);
-void MapMakeSquare(MapBuilder *mb, const Rect2i r, const TileClass *tc);
+void MapFillRect(MapBuilder *mb, const Rect2i r, const TileClass *edge, const TileClass *fill);
 struct vec2i MapGetRoomSize(const RoomParams r, const int doorMin);
 void MapMakeRoom(
 	MapBuilder *mb, const struct vec2i pos, const struct vec2i size,
@@ -125,8 +125,7 @@ bool MapTryBuildWall(
 	MapBuilder *mb, const bool isRoom, const int pad, const int wallLength,
 	const TileClass *wall, const Rect2i r);
 void MapSetRoomAccessMask(
-	MapBuilder *mb, const struct vec2i pos, const struct vec2i size,
-	const uint16_t accessMask);
+	MapBuilder *mb, const Rect2i r, const uint16_t accessMask);
 void MapSetRoomAccessMaskOverlap(
 	MapBuilder *mb, CArray *rooms, const uint16_t accessMask);
 void MapPlaceDoors(

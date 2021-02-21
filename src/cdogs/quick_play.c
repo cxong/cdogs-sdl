@@ -324,6 +324,9 @@ static void AddMission(
 		m.u.Interior.Doors.Enabled = RAND_BOOL();
 		m.u.Interior.Doors.Min = 1;
 		m.u.Interior.Doors.Max = 6;
+		m.u.Interior.Pillars.Count = rand() % 5;
+		m.u.Interior.Pillars.Min = rand() % 3 + 1;
+		m.u.Interior.Pillars.Max = rand() % 3 + m.u.Interior.Pillars.Min;
 		break;
 	default:
 		CASSERT(false, "unknown map type");

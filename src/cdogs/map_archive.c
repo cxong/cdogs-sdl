@@ -315,7 +315,7 @@ static json_t *SaveWeapons(const CArray *weapons);
 static json_t *SaveMissionTileClasses(const MissionTileClasses *mtc);
 static json_t *SaveRooms(const RoomParams r);
 static json_t *SaveDoors(const DoorParams d);
-static json_t *SaveClassicPillars(Mission *m);
+static json_t *SavePillars(const PillarParams p);
 static json_t *SaveMissions(CArray *a)
 {
 	json_t *missionsNode = json_new_array();
@@ -372,7 +372,7 @@ static json_t *SaveMissions(CArray *a)
 			json_insert_pair_into_object(
 				node, "Doors", SaveDoors(mission->u.Classic.Doors));
 			json_insert_pair_into_object(
-				node, "Pillars", SaveClassicPillars(mission));
+				node, "Pillars", SavePillars(mission->u.Classic.Pillars));
 			break;
 		case MAPTYPE_STATIC:
 			MissionStaticSaveJSON(&mission->u.Static, mission->Size, node);
@@ -402,6 +402,8 @@ static json_t *SaveMissions(CArray *a)
 			AddBoolPair(node, "ExitEnabled", mission->u.Interior.ExitEnabled);
 			json_insert_pair_into_object(
 				node, "Doors", SaveDoors(mission->u.Interior.Doors));
+				json_insert_pair_into_object(
+				 node, "Pillars", SavePillars(mission->u.Interior.Pillars));
 			break;
 		default:
 			CASSERT(false, "unknown map type");
@@ -448,12 +450,12 @@ static json_t *SaveMissionTileClasses(const MissionTileClasses *mtc)
 		node, "Door", MissionSaveTileClass(&mtc->Door));
 	return node;
 }
-static json_t *SaveClassicPillars(Mission *m)
+static json_t *SavePillars(const PillarParams p)
 {
 	json_t *node = json_new_object();
-	AddIntPair(node, "Count", m->u.Classic.Pillars.Count);
-	AddIntPair(node, "Min", m->u.Classic.Pillars.Min);
-	AddIntPair(node, "Max", m->u.Classic.Pillars.Max);
+	AddIntPair(node, "Count", p.Count);
+	AddIntPair(node, "Min", p.Min);
+	AddIntPair(node, "Max", p.Max);
 	return node;
 }
 static json_t *SaveDoors(const DoorParams d)

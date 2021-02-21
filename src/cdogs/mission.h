@@ -113,6 +113,12 @@ typedef struct
 } DoorParams;
 typedef struct
 {
+	int Count;
+	int Min;
+	int Max;
+} PillarParams;
+typedef struct
+{
 	char *Title;
 	char *Description;
 	MapType Type;
@@ -145,12 +151,7 @@ typedef struct
 			int Squares;
 			bool ExitEnabled;
 			DoorParams Doors;
-			struct
-			{
-				int Count;
-				int Min;
-				int Max;
-			} Pillars;
+			PillarParams Pillars;
 		} Classic;
 		MissionStatic Static;
 		// Cave
@@ -173,11 +174,10 @@ typedef struct
 			// TODO: multiple tile classes
 			MissionTileClasses TileClasses;
 			int CorridorWidth;
-			// TODO: implement walls
 			RoomParams Rooms;
 			bool ExitEnabled;
 			DoorParams Doors;
-			// TODO: implement pillars (filled rooms)
+			PillarParams Pillars;
 		} Interior;
 	} u;
 } Mission;

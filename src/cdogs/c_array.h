@@ -54,7 +54,10 @@ void CArrayClear(CArray *a);
 void CArrayRemoveIf(CArray *a, bool (*removeIf)(const void *));
 void CArrayFill(CArray *a, const void *elem);
 void CArrayFillZero(CArray *a);
+void CArrayConcat(CArray *a, const CArray *a2);
 void CArrayShuffle(CArray *a);
+// Remove consecutive duplicates
+void CArrayUnique(CArray *a, bool (*isEqual)(const void *, const void *));
 void CArrayTerminate(CArray *a);
 
 // Convenience macro for looping through a CArray

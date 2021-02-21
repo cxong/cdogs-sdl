@@ -108,6 +108,14 @@ static bool AdjacencyHasConnections(const Adjacency *am, const int i)
 	}
 	return false;
 }
+static void AdjacencyDisconnectAll(Adjacency *am, const int i)
+{
+	for (int j = 0; j < (int)am->dim; j++)
+	{
+		CArraySet(&am->a, i + j * am->dim, &gFalse);
+		CArraySet(&am->a, j + i * am->dim, &gFalse);
+	}
+}
 
 static void SplitAreas(MapBuilder *mb, CArray *areas);
 static void SplitLeafRooms(MapBuilder *mb, CArray *areas);
@@ -124,7 +132,8 @@ static CArray CalcDistanceToCriticalPath(
 	const CArray *areas, const Adjacency *am);
 static void PlaceKeys(
 	MapBuilder *mb, const CArray *areas, const Adjacency *am,
-	const CArray *dCriticalPath);
+	CArray *dCriticalPath);
+static void AddPillars(MapBuilder *mb, const CArray *areas, Adjacency *am, const CArray *dCriticalPath);
 static void AddRoomWalls(MapBuilder *mb, const CArray *areas);
 void MapInteriorLoad(MapBuilder *mb, const int missionIndex)
 {
@@ -170,6 +179,9 @@ void MapInteriorLoad(MapBuilder *mb, const int missionIndex)
 		// path
 		PlaceKeys(mb, &areas, &am, &dCriticalPath);
 	}
+	
+	// Fill random leaf rooms
+	AddPillars(mb, &areas, &am, &dCriticalPath);
 
 	// Add rooms after placing keys to avoid overlaps
 	AddRoomWalls(mb, &areas);
@@ -733,9 +745,10 @@ static CArray FindRoomsFurthestFromCriticalPath(
 	const CArray *areas, const Adjacency *am, const CArray *dCriticalPath,
 	const int fromIdx);
 static void AddLockedRooms(MapBuilder *mb, const CArray *areas, const CArray *rooms, const uint16_t accessMask);
+static void PlaceKey(MapBuilder *mb, const CArray *areas, const Adjacency *am, CArray *dCriticalPath, const int idx, const int keyIndex, const CriticalPath cp);
 static void PlaceKeys(
 	MapBuilder *mb, const CArray *areas, const Adjacency *am,
-	const CArray *dCriticalPath)
+	CArray *dCriticalPath)
 {
 	CArray lockedRoomCandidates;
 	CArrayInit(&lockedRoomCandidates, sizeof(int));
@@ -782,16 +795,23 @@ static void PlaceKeys(
 		svec2i_add(end1, svec2i_subtract(a->r.Size, svec2i_one()));
 	for (int i = 0; i < mb->mission->u.Interior.CorridorWidth; i++)
 	{
-		MapSetRoomAccessMask(
-			mb,
-			svec2i_add(
-				end1, svec2i_multiply(CorridorDAcross(a), svec2i(i, i))),
-			svec2i_one(), accessMask);
-		MapSetRoomAccessMask(
-			mb,
-			svec2i_add(
-				end2, svec2i_multiply(CorridorDAcross(a), svec2i(-i, -i))),
-			svec2i_one(), accessMask);
+		if (MapBuilderGetTile(mb, end1)->Type != TILE_CLASS_WALL)
+		{
+			MapSetRoomAccessMask(
+				mb,
+				Rect2iNew(
+				svec2i_add(
+					end1, svec2i_multiply(CorridorDAcross(a), svec2i(i, i))),
+				svec2i_one()), accessMask);
+		}
+		if (MapBuilderGetTile(mb, end2)->Type != TILE_CLASS_WALL)
+		{
+			MapSetRoomAccessMask(
+				mb,
+				Rect2iNew(svec2i_add(
+					end2, svec2i_multiply(CorridorDAcross(a), svec2i(-i, -i))),
+				svec2i_one()), accessMask);
+		}
 	}
 
 	// Place key in a child room before the locked corridor, but far away
@@ -800,12 +820,7 @@ static void PlaceKeys(
 	CASSERT(furthestChildren.size > 0, "Cannot find child for locked street");
 
 	const int child = *(int *)CArrayGet(&furthestChildren, 0);
-	BSPArea *room = CArrayGet(areas, child);
-	MapPlaceKey(
-		mb, svec2i_add(room->r.Pos, svec2i_divide(room->r.Size, svec2i(2, 2))),
-		_ca_index);
-	// Add room to critical path to avoid room walls here
-	room->criticalPath = a->criticalPath;
+	PlaceKey(mb, areas, am, dCriticalPath, child, _ca_index, a->criticalPath);
 
 	// If there are more children, mark some of them as locked rooms
 	// So that special objective items can be placed there
@@ -835,7 +850,8 @@ static CArray FindRoomsFurthestFromCriticalPath(
 		CArrayPushBack(&furthest, &i);
 		hasChildren = true;
 	}
-	if (hasChildren)
+	const BSPArea *a = CArrayGet(areas, idx);
+	if (hasChildren || a->criticalPath != CRIT_PATH_NONE)
 	{
 		CArrayDelete(&furthest, _ca_index);
 		_ca_index--;
@@ -854,10 +870,120 @@ static void AddLockedRooms(MapBuilder *mb, const CArray *areas, const CArray *ro
 	{
 		const BSPArea *room = CArrayGet(areas, *idx);
 		MapSetRoomAccessMask(
-		    mb, svec2i_add(room->r.Pos, svec2i_one()),
-			svec2i_subtract(room->r.Size, svec2i(2, 2)), accessMask);
+		    mb, Rect2iNew(svec2i_add(room->r.Pos, svec2i_one()),
+			svec2i_subtract(room->r.Size, svec2i(2, 2))), accessMask);
 	}
 	CA_FOREACH_END()
+}
+static void PlaceKey(MapBuilder *mb, const CArray *areas, const Adjacency *am, CArray *dCriticalPath, const int idx, const int keyIndex, const CriticalPath cp)
+{
+	BSPArea *room = CArrayGet(areas, idx);
+	MapPlaceKey(
+		mb, svec2i_add(room->r.Pos, svec2i_divide(room->r.Size, svec2i(2, 2))),
+		keyIndex);
+	// Add room to critical path to avoid room walls here
+	room->criticalPath = cp;
+	int dNext = *(int *)CArrayGet(dCriticalPath, idx);
+	int d = 1;
+	CArraySet(dCriticalPath, idx, &d);
+	// Path find until we're back on the critical path, marking the path
+	// as critical too
+	int idxNext = idx;
+	for (dNext--; dNext > 1; dNext--)
+	{
+		CA_FOREACH(BSPArea, a, *areas)
+		if (AdjacencyIsConnected(am, _ca_index, idxNext) &&
+			*(int *)CArrayGet(dCriticalPath, _ca_index) == dNext)
+		{
+			idxNext = _ca_index;
+			a->criticalPath = cp;
+			CArraySet(dCriticalPath, idxNext, &d);
+			break;
+		}
+		CA_FOREACH_END()
+	}
+}
+
+static int CompareInts(const void *v1, const void *v2)
+{
+	const int i1 = *(const int *)v1;
+	const int i2 = *(const int *)v2;
+	if (i1 > i2)
+	{
+		return -1;
+	}
+	else if (i1 < i2)
+	{
+		return 1;
+	}
+	return 0;
+}
+static bool IntsEqual(const void *v1, const void *v2)
+{
+	return CompareInts(v1, v2) == 0;
+}
+static bool AllTilesAroundUnwalkable(const MapBuilder *mb, const struct vec2i v)
+{
+	RECT_FOREACH(Rect2iNew(svec2i_subtract(v, svec2i_one()), svec2i(3, 3)))
+	const TileClass *tc = MapBuilderGetTile(mb, _v);
+	if (tc != NULL && tc->canWalk)
+	{
+		return false;
+	}
+	RECT_FOREACH_END()
+	return true;
+}
+static void AddPillars(MapBuilder *mb, const CArray *areas, Adjacency *am, const CArray *dCriticalPath)
+{
+	// Repeatedly add pillars because more candidates can be found
+	// after placing some
+	for (int count = 0; count < mb->mission->u.Interior.Pillars.Count;)
+	{
+		// Find all the children furthest away from the critical path
+		CArray allChildren;
+		memset(&allChildren, 0, sizeof allChildren);
+		CA_FOREACH(const int, d, *dCriticalPath)
+		if (*d == 1)
+		{
+			// Is on critical path; find furthest children
+			CArray furthestChildren =
+				FindRoomsFurthestFromCriticalPath(areas, am, dCriticalPath, _ca_index);
+			CArrayConcat(&allChildren, &furthestChildren);
+			CArrayTerminate(&furthestChildren);
+			// Sort and remove duplicates
+			qsort(
+				allChildren.data, allChildren.size, allChildren.elemSize,
+				CompareInts);
+			CArrayUnique(&allChildren, IntsEqual);
+		}
+		CA_FOREACH_END()
+		if (allChildren.size == 0)
+		{
+			break;
+		}
+		CArrayShuffle(&allChildren);
+		CA_FOREACH(const int, idx, allChildren)
+		if (count == mb->mission->u.Interior.Pillars.Count)
+		{
+			break;
+		}
+		const BSPArea *a = CArrayGet(areas, *idx);
+		MapFillRect(
+			mb, a->r, &mb->mission->u.Interior.TileClasses.Wall, &gTileNothing);
+		MapSetRoomAccessMask(mb, a->r, 0);
+		AdjacencyDisconnectAll(am, *idx);
+		count++;
+		CA_FOREACH_END()
+		CArrayTerminate(&allChildren);
+	}
+	
+	// Clean up orphaned walls (walls with no surrounding walkable tiles)
+	RECT_FOREACH(Rect2iNew(svec2i_zero(), mb->Map->Size))
+	if (AllTilesAroundUnwalkable(mb, _v))
+	{
+		MapBuilderSetTile(mb, _v, &gTileNothing);
+	}
+	RECT_FOREACH_END()
 }
 
 static void AddRoomWalls(MapBuilder *mb, const CArray *areas)

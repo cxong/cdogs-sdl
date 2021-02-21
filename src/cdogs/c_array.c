@@ -182,6 +182,21 @@ void CArrayFillZero(CArray *a)
 	memset(a->data, 0, a->size * a->elemSize);
 }
 
+void CArrayConcat(CArray *a, const CArray *a2)
+{
+	if (a->size == 0)
+	{
+		CArrayInit(a, a2->elemSize);
+	}
+	else
+	{
+		CASSERT(a->elemSize == a2->elemSize, "cannot concat arrays with different sized elements");
+	}
+	CArrayReserve(a, a->size + a2->size);
+	memcpy((char *)a->data + a->size * a->elemSize, a2->data, a2->elemSize * a2->size);
+	a->size += a2->size;
+}
+
 void CArrayShuffle(CArray *a)
 {
 	void *buf;
@@ -195,6 +210,28 @@ void CArrayShuffle(CArray *a)
 	memcpy(je, buf, a->elemSize);
 	CA_FOREACH_END()
 	CFREE(buf);
+}
+
+void CArrayUnique(CArray *a, bool (*isEqual)(const void *, const void *))
+{
+	if (a->size == 0)
+	{
+		return;
+	}
+	void *dst = a->data;
+	size_t shrunkSize = 0;
+	CA_FOREACH(void, elem, *a)
+	if (!isEqual(dst, elem))
+	{
+		dst = (char *)dst + a->elemSize;
+		memmove(dst, elem, a->elemSize);
+		shrunkSize++;
+	}
+	CA_FOREACH_END()
+	shrunkSize++;
+	
+	// Shrink the array to fit
+	a->size = shrunkSize;
 }
 
 void CArrayTerminate(CArray *a)

@@ -1006,16 +1006,10 @@ static bool MapGrowWallCheck(
 }
 
 void MapSetRoomAccessMask(
-	MapBuilder *mb, const struct vec2i pos, const struct vec2i size,
-	const uint16_t accessMask)
+	MapBuilder *mb, const Rect2i r, const uint16_t accessMask)
 {
-	const Rect2i room = Rect2iNew(pos, size);
-	RECT_FOREACH(room)
-	const TileClass *t = MapBuilderGetTile(mb, _v);
-	if (t != NULL)
-	{
-		MapBuildSetAccess(mb, _v, accessMask);
-	}
+	RECT_FOREACH(r)
+	MapBuildSetAccess(mb, _v, accessMask);
 	RECT_FOREACH_END()
 }
 
@@ -1046,7 +1040,7 @@ static void AddOverlapRooms(
 			"Room overlap {%d, %d (%dx%d)} {%d, %d (%dx%d)} access(%d)",
 			room.Pos.x, room.Pos.y, room.Size.x, room.Size.y, r->Pos.x,
 			r->Pos.y, r->Size.x, r->Size.y, accessMask);
-		MapSetRoomAccessMask(mb, r->Pos, r->Size, accessMask);
+		MapSetRoomAccessMask(mb, *r, accessMask);
 		CArrayPushBack(overlapRooms, r);
 		CArrayDelete(rooms, _ca_index);
 		_ca_index--;
@@ -1064,8 +1058,7 @@ void MapPlaceDoors(
 {
 	const TileClass *tile = hasDoors ? door : floor;
 
-	// Set access mask
-	MapSetRoomAccessMask(mb, r.Pos, r.Size, accessMask);
+	MapSetRoomAccessMask(mb, r, accessMask);
 
 	// Set the doors
 	if (doors[0])
@@ -1399,9 +1392,10 @@ bool MapIsLessThanTwoWallOverlaps(
 	return true;
 }
 
-void MapMakeSquare(MapBuilder *mb, const Rect2i r, const TileClass *tc)
+void MapFillRect(MapBuilder *mb, const Rect2i r, const TileClass *edge, const TileClass *fill)
 {
 	RECT_FOREACH(r)
+	const TileClass *tc = Rect2iIsAtEdge(r, _v) ? edge : fill;
 	MapBuilderSetTile(mb, _v, tc);
 	RECT_FOREACH_END()
 }

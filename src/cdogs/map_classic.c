@@ -51,7 +51,6 @@
 #include "campaigns.h"
 #include "map_build.h"
 
-static void MapSetupPerimeter(MapBuilder *mb);
 static int MapTryBuildSquare(MapBuilder *mb);
 static bool MapIsAreaClearForClassicRoom(
 	const MapBuilder *mb, const struct vec2i pos, const struct vec2i size,
@@ -83,10 +82,9 @@ void MapClassicLoad(MapBuilder *mb)
 	// TODO: multiple tile types
 	MissionSetupTileClasses(&gPicManager, &mb->mission->u.Classic.TileClasses);
 
-	MapMakeSquare(
+	MapFillRect(
 		mb, Rect2iNew(svec2i_zero(), mb->mission->Size),
-		&mb->mission->u.Classic.TileClasses.Floor);
-	MapSetupPerimeter(mb);
+				&mb->mission->u.Classic.TileClasses.Wall, &mb->mission->u.Classic.TileClasses.Floor);
 
 	const int pad = MAX(mb->mission->u.Classic.CorridorWidth, 1);
 
@@ -153,26 +151,14 @@ void MapClassicLoad(MapBuilder *mb)
 	}
 }
 
-static void MapSetupPerimeter(MapBuilder *mb)
-{
-	RECT_FOREACH(Rect2iNew(svec2i_zero(), mb->Map->Size))
-	if (_v.x != 0 && _v.x != mb->Map->Size.x - 1 && _v.y != 0 &&
-		_v.y != mb->Map->Size.y - 1)
-	{
-		continue;
-	}
-	MapBuilderSetTile(mb, _v, &mb->mission->u.Classic.TileClasses.Wall);
-	RECT_FOREACH_END()
-}
-
 static int MapTryBuildSquare(MapBuilder *mb)
 {
 	const struct vec2i v = MapGetRandomTile(mb->Map);
 	struct vec2i size = svec2i(rand() % 9 + 8, rand() % 9 + 8);
 	if (MapIsAreaClear(mb, v, size))
 	{
-		MapMakeSquare(
-			mb, Rect2iNew(v, size), &mb->mission->u.Cave.TileClasses.Floor);
+		MapFillRect(
+			mb, Rect2iNew(v, size), &mb->mission->u.Cave.TileClasses.Floor, &mb->mission->u.Cave.TileClasses.Floor);
 		return 1;
 	}
 	return 0;
@@ -373,9 +359,9 @@ static bool MapTryBuildPillar(MapBuilder *mb, const int pad)
 	}
 	if (isClear)
 	{
-		MapMakeSquare(
+		MapFillRect(
 			mb, Rect2iNew(pos, size),
-			&mb->mission->u.Classic.TileClasses.Wall);
+			&mb->mission->u.Classic.TileClasses.Wall, &gTileNothing);
 		return true;
 	}
 	return false;

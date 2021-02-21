@@ -150,6 +150,18 @@ static const char *MissionGetDoorMaxStr(UIObject *o, void *data)
 		s, "DoorMax: %d", CampaignGetCurrentMission(co)->u.Interior.Doors.Max);
 	return s;
 }
+static const char *MissionGetPillarCountStr(UIObject *o, void *data)
+{
+	static char s[128];
+	UNUSED(o);
+	Campaign *co = data;
+	if (!CampaignGetCurrentMission(co))
+		return NULL;
+	sprintf(
+		s, "Pillars: %d",
+		CampaignGetCurrentMission(co)->u.Interior.Pillars.Count);
+	return s;
+}
 
 static EditorResult MissionChangeCorridorWidth(void *data, int d)
 {
@@ -229,6 +241,13 @@ static EditorResult MissionChangeDoorMax(void *data, int d)
 	m->u.Interior.Doors.Max = CLAMP(m->u.Interior.Doors.Max + d, 1, 6);
 	m->u.Interior.Doors.Min =
 		MIN(m->u.Interior.Doors.Min, m->u.Interior.Doors.Max);
+	return EDITOR_RESULT_CHANGED;
+}
+static EditorResult MissionChangePillarCount(void *data, int d)
+{
+	Campaign *co = data;
+	Mission *m = CampaignGetCurrentMission(co);
+	m->u.Interior.Pillars.Count = CLAMP(m->u.Interior.Pillars.Count + d, 0, 50);
 	return EDITOR_RESULT_CHANGED;
 }
 
@@ -325,6 +344,15 @@ UIObject *CreateInteriorMapObjs(struct vec2i pos, Campaign *co)
 	o2->u.LabelFunc = MissionGetDoorMaxStr;
 	o2->Data = co;
 	o2->ChangeFunc = MissionChangeDoorMax;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	
+	pos.x = x;
+	pos.y += th;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = MissionGetPillarCountStr;
+	o2->Data = co;
+	o2->ChangeFunc = MissionChangePillarCount;
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 

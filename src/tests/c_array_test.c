@@ -113,6 +113,34 @@ FEATURE(CArrayRemoveIf, "Array remove if")
 	SCENARIO_END
 FEATURE_END
 
+static bool IsEqual(const void *e1, const void *e2)
+{
+	return *(const int *)e1 == *(const int *)e2;
+}
+
+FEATURE(CArrayUnique, "Array unique")
+	SCENARIO("Remove consecutive numbers")
+		GIVEN("an array with numbers 0, 1, 1, 2")
+			CArray a;
+			CArrayInit(&a, sizeof(int));
+			int numbers[] = {0, 1, 1, 2};
+			for (int i = 0; i < 4; i++)
+			{
+				CArrayPushBack(&a, &numbers[i]);
+			}
+
+		WHEN("I remove non-unique elements")
+			CArrayUnique(&a, IsEqual);
+
+		THEN("the array should contain the numbers 1, 2, 3")
+			SHOULD_INT_EQUAL((int)a.size, 3);
+			int expected[] = {0, 1, 2};
+			CA_FOREACH(const int, v, a)
+				SHOULD_INT_EQUAL(*v, expected[_ca_index]);
+			CA_FOREACH_END()
+	SCENARIO_END
+FEATURE_END
+
 FEATURE(CArrayCopy, "Array copy")
 	SCENARIO("Copy")
 		GIVEN("an array with numbers 0-4")
@@ -140,5 +168,6 @@ CBEHAVE_RUN(
 	TEST_FEATURE(CArrayInsert),
 	TEST_FEATURE(CArrayDelete),
 	TEST_FEATURE(CArrayRemoveIf),
+	TEST_FEATURE(CArrayUnique),
 	TEST_FEATURE(CArrayCopy)
 )
