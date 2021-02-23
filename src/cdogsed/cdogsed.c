@@ -1124,20 +1124,21 @@ static void EditCampaign(void)
 
 	Uint32 ticksNow = SDL_GetTicks();
 	sTicksElapsed = 0;
+	Uint32 ticksElapsed = 0;
 	ticksAutosave = AUTOSAVE_INTERVAL_SECONDS * 1000;
 	SDL_StartTextInput();
 	for (;;)
 	{
 		Uint32 ticksThen = ticksNow;
 		ticksNow = SDL_GetTicks();
-		sTicksElapsed += ticksNow - ticksThen;
-		if (sTicksElapsed < 1000 / FPS_FRAMELIMIT * 2)
+		ticksElapsed += ticksNow - ticksThen;
+		if (ticksElapsed < 1000 / FPS_FRAMELIMIT * 2)
 		{
 			SDL_Delay(1);
 			continue;
 		}
 
-		EventPoll(&gEventHandlers, sTicksElapsed, NULL);
+		EventPoll(&gEventHandlers, ticksElapsed, NULL);
 		const SDL_Scancode sc = KeyGetPressed(&gEventHandlers.keyboard);
 		const int m = MouseGetPressed(&gEventHandlers.mouse);
 
@@ -1157,7 +1158,8 @@ static void EditCampaign(void)
 				GetKey(&gEventHandlers);
 			}
 		}
-		sTicksElapsed -= 1000 / (FPS_FRAMELIMIT * 2);
+		sTicksElapsed += ticksElapsed;
+		ticksElapsed = 0;
 	}
 	SDL_StopTextInput();
 }

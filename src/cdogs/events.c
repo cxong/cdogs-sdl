@@ -654,9 +654,13 @@ bool InputHasGrenadeButton(const input_device_e d, const int dIndex)
 SDL_Scancode GetKey(EventHandlers *handlers)
 {
 	SDL_Scancode k = SDL_SCANCODE_UNKNOWN;
+	Uint32 ticksNow = SDL_GetTicks();
 	do
 	{
-		EventPoll(handlers, SDL_GetTicks(), NULL);
+		const Uint32 ticksThen = ticksNow;
+		ticksNow = SDL_GetTicks();
+		const Uint32 ticksElapsed = ticksNow - ticksThen;
+		EventPoll(handlers, ticksElapsed, NULL);
 		k = KeyGetPressed(&handlers->keyboard);
 		SDL_Delay(10);
 	} while (k == SDL_SCANCODE_UNKNOWN);
@@ -665,7 +669,7 @@ SDL_Scancode GetKey(EventHandlers *handlers)
 
 SDL_Scancode EventWaitKeyOrText(EventHandlers *handlers)
 {
-	EventPoll(handlers, SDL_GetTicks(), NULL);
+	EventPoll(handlers, 0, NULL);
 	const SDL_Scancode k = KeyGetPressed(&handlers->keyboard);
 	SDL_Delay(10);
 	return k;
