@@ -40,10 +40,10 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 	memset(&rooms, 0, sizeof rooms);
 	bool copyRooms = false;
 	DoorParams doors;
-	memset(&rooms, 0, sizeof doors);
+	memset(&doors, 0, sizeof doors);
 	bool copyDoors = false;
 	PillarParams pillars;
-	memset(&rooms, 0, sizeof pillars);
+	memset(&pillars, 0, sizeof pillars);
 	bool copyPillars = false;
 	switch (m->Type)
 	{
