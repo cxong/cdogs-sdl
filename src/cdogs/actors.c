@@ -1538,13 +1538,13 @@ void ActorTakeSpecialDamage(TActor *actor, special_damage_e damage)
 	}
 }
 
-static void ActorTakeHit(TActor *actor, const special_damage_e damage);
+static void ActorTakeHit(TActor *actor, const int flags, const int playerUID, const special_damage_e damage);
 void ActorHit(const NThingDamage d)
 {
 	TActor *a = ActorGetByUID(d.UID);
 	if (!a->isInUse)
 		return;
-	ActorTakeHit(a, d.Special);
+	ActorTakeHit(a, d.Flags, d.SourceActorUID, d.Special);
 	if (d.Power > 0)
 	{
 		DamageActor(a, d.Power, d.SourceActorUID);
@@ -1598,7 +1598,7 @@ void ActorHit(const NThingDamage d)
 	}
 }
 
-static void ActorTakeHit(TActor *actor, const special_damage_e damage)
+static void ActorTakeHit(TActor *actor, const int flags, const int playerUID, const special_damage_e damage)
 {
 	// Wake up if this is an AI
 	if (!gCampaign.IsClient && actor->aiContext)
@@ -1606,10 +1606,7 @@ static void ActorTakeHit(TActor *actor, const special_damage_e damage)
 		actor->flags &= ~FLAGS_SLEEPING;
 		ActorSetAIState(actor, AI_STATE_NONE);
 	}
-	// Check immune again
-	// This can happen if multiple damage events overkill this actor,
-	// need to ignore the overkill scores
-	if (ActorIsImmune(actor, damage))
+	if (ActorIsInvulnerable(actor, flags, playerUID, gCampaign.Entry.Mode, damage))
 	{
 		return;
 	}
@@ -1618,11 +1615,11 @@ static void ActorTakeHit(TActor *actor, const special_damage_e damage)
 
 bool ActorIsInvulnerable(
 	const TActor *actor, const int flags, const int playerUID,
-	const GameMode mode)
+	const GameMode mode, const special_damage_e special)
 {
 	if (actor->flags & FLAGS_INVULNERABLE)
 	{
-		return 1;
+		return true;
 	}
 
 	if (!(flags & FLAGS_HURTALWAYS) && !(actor->flags & FLAGS_VICTIM))
@@ -1630,7 +1627,7 @@ bool ActorIsInvulnerable(
 		// Same player hits
 		if (playerUID >= 0 && playerUID == actor->PlayerUID)
 		{
-			return 1;
+			return true;
 		}
 		const bool isGood = playerUID >= 0 || (flags & FLAGS_GOOD_GUY);
 		const bool isTargetGood =
@@ -1639,16 +1636,20 @@ bool ActorIsInvulnerable(
 		if (!IsPVP(mode) && !ConfigGetBool(&gConfig, "Game.FriendlyFire") &&
 			isGood && isTargetGood)
 		{
-			return 1;
+			return true;
 		}
 		// Enemies don't hurt each other
 		if (!isGood && !isTargetGood)
 		{
-			return 1;
+			return true;
+		}
+		if (ActorIsImmune(actor, special))
+		{
+			return true;
 		}
 	}
 
-	return 0;
+	return false;
 }
 
 static void ActorAddBloodSplatters(

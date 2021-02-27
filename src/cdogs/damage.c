@@ -77,12 +77,8 @@ bool CanDamageCharacter(
 	{
 		return false;
 	}
-	if (ActorIsImmune(target, special))
-	{
-		return false;
-	}
 	return !ActorIsInvulnerable(
-		target, flags, source ? source->PlayerUID : -1, gCampaign.Entry.Mode);
+		target, flags, source ? source->PlayerUID : -1, gCampaign.Entry.Mode, special);
 }
 
 static void TrackKills(PlayerData *pd, const TActor *victim);

@@ -282,10 +282,9 @@ bool HasHitSound(
 	{
 	case KIND_CHARACTER: {
 		const TActor *a = ActorGetByUID(targetUID);
-		return !ActorIsImmune(a, special) &&
-			   (allowFriendlyHitSound ||
+		return allowFriendlyHitSound ||
 				!ActorIsInvulnerable(
-					a, flags, playerUID, gCampaign.Entry.Mode));
+					a, flags, playerUID, gCampaign.Entry.Mode, special);
 	}
 	case KIND_OBJECT:
 		return true;

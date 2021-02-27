@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2020 Cong Xu
+	Copyright (c) 2013-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -224,7 +224,7 @@ bool ActorIsImmune(const TActor *actor, const special_damage_e damage);
 void ActorHit(const NThingDamage d);
 bool ActorIsInvulnerable(
 	const TActor *a, const int flags, const int playerUID,
-	const GameMode mode);
+	const GameMode mode, const special_damage_e special);
 
 int ActorGetHealthPercent(const TActor *a);
 bool ActorIsLowHealth(const TActor *a);

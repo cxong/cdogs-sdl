@@ -376,7 +376,7 @@ static void AddDoorsToClosestCorridors(
 	// Add doors leading to corridors
 	const BSPArea *corridor = a;
 	int corridorI = _ca_index;
-	for (; !corridor->isCorridor;)
+	for (; !corridor->isCorridor && corridor->parent >= 0;)
 	{
 		corridorI = corridor->parent;
 		corridor = CArrayGet(areas, corridorI);
