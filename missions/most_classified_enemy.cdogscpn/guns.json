@@ -33,7 +33,7 @@
       "Pic":"",
       "Icon": "",
       "Lock": 50,
-      "Sound": "hit_petrify",
+      "Sound": "hits/petrify",
       "HitsObjects": false,
       "Falling": {
         "FallsDown": true,

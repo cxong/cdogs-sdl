@@ -12,8 +12,8 @@
       "Range": 100,
       "Power": 50,
       "HitSounds": {
-        "Object": "knife_hard",
-        "Flesh": "knife_flesh"
+        "Object": "hits/knife_hard",
+        "Flesh": "hits/knife_flesh"
       },
       "ShadowSize": [7, 2]
     },
@@ -100,9 +100,9 @@
       "Special": "Flame",
       "Spark": "",
       "HitSounds": {
-        "Object": "hit_fire",
-        "Flesh": "hit_fire",
-        "Wall": "hit_fire"
+        "Object": "hits/fire",
+        "Flesh": "hits/fire",
+        "Wall": "hits/fire"
       },
       "WallBounces": true
     },
@@ -131,8 +131,8 @@
       },
       "Range": 78,
       "HitSounds": {
-        "Object": "knife_hard",
-        "Flesh": "knife_flesh"
+        "Object": "hits/knife_hard",
+        "Flesh": "hits/knife_flesh"
       },
       "Power": 25,
       "WallBounces": true

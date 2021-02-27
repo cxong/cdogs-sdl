@@ -17,9 +17,9 @@
       "Special": "Flame",
       "Spark": "",
       "HitSounds": {
-        "Object": "hit_fire",
-        "Flesh": "hit_fire",
-        "Wall": "hit_fire"
+        "Object": "hits/fire",
+        "Flesh": "hits/fire",
+        "Wall": "hits/fire"
       },
       "WallBounces": true
     },
@@ -49,8 +49,8 @@
       "Size": [10, 10],
       "Special": "Petrify",
       "HitSounds": {
-        "Object": "hit_petrify",
-        "Flesh": "hit_petrify",
+        "Object": "hits/petrify",
+        "Flesh": "hits/petrify",
         "Wall": ""
       }
     },

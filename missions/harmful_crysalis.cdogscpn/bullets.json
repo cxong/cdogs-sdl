@@ -68,7 +68,7 @@
       "Name": "monster_bite",
       "Power": 1,
       "HitSounds": {
-        "Object": "knife_hard",
+        "Object": "hits/knife_hard",
         "Flesh": "monster-2"
       }
     },
@@ -89,9 +89,9 @@
       "Power" : 1,
       "Spark" :  "",
       "HitSounds": {
-        "Object": "hit_gas",
-        "Flesh": "hit_gas",
-        "Wall": "hit_gas"
+        "Object": "hits/gas",
+        "Flesh": "hits/gas",
+        "Wall": "hits/gas"
       },
       "WallBounces": true
     },
@@ -112,9 +112,9 @@
       "Power" : 1,
       "Spark" :  "",
       "HitSounds": {
-        "Object": "hit_gas",
-        "Flesh": "hit_gas",
-        "Wall": "hit_gas"
+        "Object": "hits/gas",
+        "Flesh": "hits/gas",
+        "Wall": "hits/gas"
       },
       "WallBounces": true
     },

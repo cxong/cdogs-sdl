@@ -56,9 +56,9 @@
       "Special": "Flame",
       "Spark": "fireball_hit",
       "HitSounds": {
-        "Object": "hit_fire",
-        "Flesh": "hit_fire",
-        "Wall": "hit_fire"
+        "Object": "hits/fire",
+        "Flesh": "hits/fire",
+        "Wall": "hits/fire"
       }
     },
     {
@@ -76,16 +76,16 @@
       "Special": "Flame",
       "Spark": "fireball_green_hit",
       "HitSounds": {
-        "Object": "hit_fire",
-        "Flesh": "hit_fire",
-        "Wall": "hit_fire"
+        "Object": "hits/fire",
+        "Flesh": "hits/fire",
+        "Wall": "hits/fire"
       }
     },
     {
       "Name": "monster_bite",
       "Power": 10,
       "HitSounds": {
-        "Object": "knife_hard",
+        "Object": "hits/knife_hard",
         "Flesh": "monster-2"
       }
     }

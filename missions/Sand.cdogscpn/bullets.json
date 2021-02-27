@@ -6,8 +6,8 @@
       "Power": 20,
       "Mass": 0,
       "HitSounds": {
-        "Object": "knife_hard",
-        "Flesh": "knife_flesh"
+        "Object": "hits/knife_hard",
+        "Flesh": "hits/knife_flesh"
       }
     },
     {
@@ -15,7 +15,7 @@
       "Power": 15,
       "Mass": 0,
       "HitSounds": {
-        "Object": "knife_hard",
+        "Object": "hits/knife_hard",
         "Flesh": "wurmtooth_flesh"
       }
     },
@@ -24,7 +24,7 @@
       "Power": 10,
       "Mass": 0,
       "HitSounds": {
-        "Object": "knife_hard",
+        "Object": "hits/knife_hard",
         "Flesh": "monster-2"
       }
     },
@@ -104,7 +104,7 @@
       "Spark": "",
       "HitSounds": {
         "Object": "",
-        "Flesh": "hit_gas",
+        "Flesh": "hits/gas",
         "Wall": ""
       }
     },

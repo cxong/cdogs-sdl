@@ -89,7 +89,7 @@
       "Pic": "",
       "Name": "particle_explosion",
       "Bullet": "yellow_particle",
-      "Sound": "hit_petrify",
+      "Sound": "hits/petrify",
       "SpreadCount": 60,
       "SpreadWidth": 0.1,
       "AngleOffset": 0.05,
