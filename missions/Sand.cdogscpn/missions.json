@@ -118,7 +118,7 @@
 	{
 		"Title": "Sabotage of Clan Tantalus Armory",
 		"Description": "The foolish Tantalus know nothing, and are walking into our trap. Sabotage their Clan shields! Find their armory, rumored to house secret projector weapons, and destroy them as well.",
-		"Type": "Classic",
+		"Type": "Interior",
 		"Width": 45,
 		"Height": 44,
 		"ExitStyle": "plate",
@@ -245,20 +245,17 @@
 				"IsRoom": true
 			}
 		},
-		"Walls": 0,
-		"WallLength": 1,
 		"CorridorWidth": 2,
 		"Rooms": {
 			"Count": 14,
-			"Min": 7,
-			"Max": 9,
+			"Min": 6,
+			"Max": 12,
 			"Edge": true,
 			"Overlap": true,
 			"Walls": 5,
 			"WallLength": 10,
 			"WallPad": 2
 		},
-		"Squares": 0,
 		"ExitEnabled": true,
 		"Doors": {
 			"Enabled": true,
@@ -266,7 +263,7 @@
 			"Max": 2
 		},
 		"Pillars": {
-			"Count": 12,
+			"Count": 2,
 			"Min": 2,
 			"Max": 2
 		}
@@ -274,7 +271,7 @@
 	{
 		"Title": "Fortress Raid",
 		"Description": "The time has come to annihilate Clan Tantalus! Our armies have gathered, ready to crush the defenseless fortress. Spearhead the charge, and leave none alive.",
-		"Type": "Classic",
+		"Type": "Interior",
 		"Width": 57,
 		"Height": 53,
 		"ExitStyle": "plate",
@@ -384,20 +381,17 @@
 				"IsRoom": true
 			}
 		},
-		"Walls": 9,
-		"WallLength": 11,
 		"CorridorWidth": 2,
 		"Rooms": {
 			"Count": 20,
-			"Min": 7,
-			"Max": 10,
+			"Min": 6,
+			"Max": 12,
 			"Edge": true,
 			"Overlap": true,
 			"Walls": 3,
 			"WallLength": 6,
 			"WallPad": 2
 		},
-		"Squares": 3,
 		"ExitEnabled": false,
 		"Doors": {
 			"Enabled": true,
@@ -405,7 +399,7 @@
 			"Max": 2
 		},
 		"Pillars": {
-			"Count": 13,
+			"Count": 20,
 			"Min": 2,
 			"Max": 3
 		}

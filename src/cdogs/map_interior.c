@@ -878,9 +878,10 @@ static void AddLockedRooms(MapBuilder *mb, const CArray *areas, const CArray *ro
 static void PlaceKey(MapBuilder *mb, const CArray *areas, const Adjacency *am, CArray *dCriticalPath, const int idx, const int keyIndex, const CriticalPath cp)
 {
 	BSPArea *room = CArrayGet(areas, idx);
-	MapPlaceKey(
-		mb, svec2i_add(room->r.Pos, svec2i_divide(room->r.Size, svec2i(2, 2))),
-		keyIndex);
+	const struct vec2i keyPos = svec2i_add(room->r.Pos, svec2i_divide(room->r.Size, svec2i(2, 2)));
+	MapPlaceKey(mb, keyPos, keyIndex);
+	// Prevent items being placed over the key
+	MapBuilderSetLeaveFree(mb, keyPos, true);
 	// Add room to critical path to avoid room walls here
 	room->criticalPath = cp;
 	int dNext = *(int *)CArrayGet(dCriticalPath, idx);
