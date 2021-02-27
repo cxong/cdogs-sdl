@@ -603,7 +603,10 @@ static void PostInputRotatePlayer(menu_t *menu, int cmd, void *data)
 	{
 		d->Dir = (direction_e)CLAMP_OPPOSITE(
 			(int)d->Dir + dx, DIRECTION_UP, DIRECTION_UPLEFT);
-		SoundPlay(&gSoundDevice, StrSound("footsteps"));
+		char buf[CDOGS_PATH_MAX];
+		const PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
+		sprintf(buf, "footsteps/%s", p->Char.Class->Footsteps);
+		SoundPlay(&gSoundDevice, StrSound(buf));
 	}
 }
 static void CheckReenableHairHatMenu(menu_t *menu, void *data)

@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2016-2020 Cong Xu
+	Copyright (c) 2016-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -42,6 +42,7 @@ typedef struct
 	char *Body;
 	const CharSprites *Sprites;
 	char *Sounds;
+	char *Footsteps;
 	color_t BloodColor;
 	bool HasHair;
 } CharacterClass;

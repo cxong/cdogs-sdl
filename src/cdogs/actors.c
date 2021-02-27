@@ -189,8 +189,10 @@ void UpdateActorState(TActor *actor, int ticks)
 		 AnimationGetFrame(&actor->anim) == 6) &&
 		actor->anim.newFrame)
 	{
+		char buf[CDOGS_PATH_MAX];
+		sprintf(buf, "footsteps/%s", ActorGetCharacter(actor)->Class->Footsteps);
 		SoundPlayAtPlusDistance(
-			&gSoundDevice, StrSound("footsteps"), actor->thing.Pos,
+			&gSoundDevice, StrSound(buf), actor->thing.Pos,
 			FOOTSTEP_DISTANCE_PLUS);
 	}
 

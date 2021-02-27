@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2016-2017, 2019-2020 Cong Xu
+	Copyright (c) 2016-2017, 2019-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -271,6 +271,8 @@ static void LoadCharacterClass(CharacterClass *c, json_t *node)
 	c->Sprites = StrCharSpriteClass(c->Body);
 
 	LoadStr(&c->Sounds, node, "Sounds");
+	
+	LoadStr(&c->Footsteps, node, "Footsteps");
 
 	c->BloodColor = colorRed;
 	LoadColor(&c->BloodColor, node, "BloodColor");
@@ -292,6 +294,7 @@ static void CharacterClassFree(CharacterClass *c)
 	CFREE(c->Name);
 	CFREE(c->Body);
 	CFREE(c->Sounds);
+	CFREE(c->Footsteps);
 }
 void CharacterClassesTerminate(CharacterClasses *c)
 {
