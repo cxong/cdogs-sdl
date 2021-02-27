@@ -7,8 +7,7 @@
         "Type": "Directional",
         "Sprites": "chars/heads/jones"
       },
-      "Sounds": "man",
-      "Footsteps": "boots"
+      "Sounds": "man"
     },
     {
       "Name": "Soldier",
@@ -17,8 +16,7 @@
         "Sprites": "chars/heads/jones"
       },
       "Body": "soldier",
-      "Sounds": "man",
-      "Footsteps": "boots"
+      "Sounds": "man"
     },
     {
       "Name": "Ogre",
@@ -27,7 +25,6 @@
         "Sprites": "chars/heads/ogre"
       },
       "Sounds": "ogre",
-      "Footsteps": "boots",
       "BloodColor": "333333"
     },
     {
@@ -37,7 +34,6 @@
         "Sprites": "chars/heads/bugeye"
       },
       "Sounds": "alien",
-      "Footsteps": "boots",
       "BloodColor": "00ff00",
       "HasHair": false
     },
@@ -48,7 +44,6 @@
         "Sprites": "chars/heads/madbugeye"
       },
       "Sounds": "alien",
-      "Footsteps": "boots",
       "BloodColor": "00ff00",
       "HasHair": false
     },
@@ -59,7 +54,6 @@
         "Sprites": "chars/heads/robot"
       },
       "Sounds": "alien",
-      "Footsteps": "boots",
       "BloodColor": "0000ff",
       "HasHair": false
     },
@@ -69,8 +63,7 @@
         "Type": "Directional",
         "Sprites": "chars/heads/lady"
       },
-      "Sounds": "woman",
-      "Footsteps": "boots"
+      "Sounds": "woman"
     },
     {
       "Name": "Cyborg",
@@ -79,7 +72,6 @@
         "Sprites": "chars/heads/cyborg"
       },
       "Sounds": "zombie",
-      "Footsteps": "boots",
       "BloodColor": "ff00ff"
     },
     {
@@ -99,8 +91,7 @@
         "Type": "Directional",
         "Sprites": "chars/heads/dog"
       },
-      "Sounds": "dog",
-      "Footsteps": "boots"
+      "Sounds": "dog"
     }
   ]
 }

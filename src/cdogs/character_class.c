@@ -273,6 +273,10 @@ static void LoadCharacterClass(CharacterClass *c, json_t *node)
 	LoadStr(&c->Sounds, node, "Sounds");
 	
 	LoadStr(&c->Footsteps, node, "Footsteps");
+	if (c->Footsteps == NULL)
+	{
+		CSTRDUP(c->Footsteps, "boots");
+	}
 
 	c->BloodColor = colorRed;
 	LoadColor(&c->BloodColor, node, "BloodColor");
