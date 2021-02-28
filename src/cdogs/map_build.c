@@ -1112,15 +1112,15 @@ static void PlaceDoors(MapBuilder *mb, const int doorSize, const int roomDim, co
 	struct vec2i start = doorStart;
 	if (randomPos)
 	{
-		start = svec2i_add(start, svec2i_scale(dAcross, RAND_INT(1, roomDim - size - 1)));
+		start = svec2i_add(start, svec2i_scale(dAcross, (float)RAND_INT(1, roomDim - size - 1)));
 	}
 	else
 	{
-		start = svec2i_add(start, svec2i_scale(dAcross, (roomDim - size) / 2));
+		start = svec2i_add(start, svec2i_scale(dAcross, (float)((roomDim - size) / 2)));
 	}
 	for (int i = 0; i < size; i++)
 	{
-		const struct vec2i v = svec2i_add(start, svec2i_scale(dAcross, i));
+		const struct vec2i v = svec2i_add(start, svec2i_scale(dAcross, (float)i));
 		if (!TryPlaceDoorTile(mb, v, d, tile))
 		{
 			break;

@@ -442,7 +442,7 @@ static int FindWallRun(
 		// Also check if the two tiles aside are not walls
 
 		// Note: we must look for runs
-		const struct vec2i v = svec2i_add(mid, svec2i_scale(d, i));
+		const struct vec2i v = svec2i_add(mid, svec2i_scale(d, (float)i));
 
 		if (MapBuilderGetTile(mb, v)->Type != TILE_CLASS_WALL ||
 			MapBuilderGetTile(mb, svec2i(v.x + d.y, v.y + d.x))->Type ==
