@@ -533,6 +533,7 @@ static void MapPlaceCard(
 		const Tile *t = MapGetTile(mb->Map, v);
 		if (t->Class->IsRoom && TileIsClear(t) && TileCanWalk(t) &&
 			MapBuildGetAccess(mb, v) == mapAccess &&
+			// Ensure keys are visible, not hidden behind walls
 			TileIsClear(MapGetTile(mb->Map, svec2i(v.x, v.y + 1))))
 		{
 			MapPlaceKey(mb, v, keyIndex);
@@ -791,10 +792,9 @@ struct vec2i MapGetRoomSize(const RoomParams r, const int doorMin)
 {
 	// Work out dimensions of room
 	// make sure room is large enough to accommodate doors
-	const int roomMin = MAX(r.Min, doorMin + 4);
-	const int roomMax = MAX(r.Max, doorMin + 4);
-	return svec2i(
-		RAND_INT(roomMin, roomMax + 1), RAND_INT(roomMin, roomMax + 1));
+	const int roomMin = MAX(r.Min, doorMin + 2);
+	const int roomMax = MAX(r.Max, doorMin + 2);
+	return svec2i(RAND_INT(roomMin, roomMax), RAND_INT(roomMin, roomMax));
 }
 
 static bool MapBuilderGetIsRoom(const MapBuilder *mb, const struct vec2i pos);
@@ -1048,12 +1048,10 @@ static void AddOverlapRooms(
 	CA_FOREACH_END()
 }
 
-static bool TryPlaceDoorTile(
-	MapBuilder *mb, const struct vec2i v, const struct vec2i d,
-	const TileClass *tile);
+static void PlaceDoors(MapBuilder *mb, const int doorSize, const int roomDim, const struct vec2i doorStart, const struct vec2i d, const bool randomPos, const TileClass *tile);
 void MapPlaceDoors(
 	MapBuilder *mb, const Rect2i r, const bool hasDoors, const bool doors[4],
-	const int doorMin, const int doorMax, const uint16_t accessMask,
+	const int doorMin, const int doorMax, const uint16_t accessMask, const bool randomPos,
 	const TileClass *door, const TileClass *floor)
 {
 	const TileClass *tile = hasDoors ? door : floor;
@@ -1061,66 +1059,71 @@ void MapPlaceDoors(
 	MapSetRoomAccessMask(mb, r, accessMask);
 
 	// Set the doors
-	if (doors[0])
+	for (int i = 0; i < 4; i++)
 	{
-		int doorSize =
-			MIN((doorMax > doorMin ? (rand() % (doorMax - doorMin + 1)) : 0) +
-					doorMin,
-				r.Size.y - 4);
-		for (int i = -doorSize / 2; i < (doorSize + 1) / 2; i++)
+		if (!doors[i])
 		{
-			const struct vec2i v = svec2i(r.Pos.x, r.Pos.y + r.Size.y / 2 + i);
-			if (!TryPlaceDoorTile(mb, v, svec2i(1, 0), tile))
-			{
-				break;
-			}
+			continue;
 		}
-	}
-	if (doors[1])
-	{
-		int doorSize =
-			MIN((doorMax > doorMin ? (rand() % (doorMax - doorMin + 1)) : 0) +
-					doorMin,
-				r.Size.y - 4);
-		for (int i = -doorSize / 2; i < (doorSize + 1) / 2; i++)
+		const int doorSize = doorMax > doorMin ? RAND_INT(doorMin, doorMax) : doorMin;
+		int roomDim;
+		struct vec2i d;
+		struct vec2i doorStart;
+		switch (i)
 		{
-			const struct vec2i v =
-				svec2i(r.Pos.x + r.Size.x - 1, r.Pos.y + r.Size.y / 2 + i);
-			if (!TryPlaceDoorTile(mb, v, svec2i(1, 0), tile))
-			{
+			case 0:
+				// left
+				roomDim = r.Size.y;
+				d = svec2i(1, 0);
+				doorStart = r.Pos;
 				break;
-			}
+			case 1:
+				// right
+				roomDim = r.Size.y;
+				d = svec2i(1, 0);
+				doorStart = svec2i(r.Pos.x + r.Size.x - 1, r.Pos.y);
+				break;
+			case 2:
+				// top
+				roomDim = r.Size.x;
+				d = svec2i(0, 1);
+				doorStart = r.Pos;
+				break;
+			case 3:
+				// bottom:
+				roomDim = r.Size.x;
+				d = svec2i(0, 1);
+				doorStart = svec2i(r.Pos.x, r.Pos.y + r.Size.y - 1);
+				break;
+			default:
+				CASSERT(false, "unexpected side index");
+				return;
 		}
+		PlaceDoors(mb, doorSize, roomDim, doorStart, d, randomPos, tile);
 	}
-	if (doors[2])
+}
+static bool TryPlaceDoorTile(
+	MapBuilder *mb, const struct vec2i v, const struct vec2i d,
+	const TileClass *tile);
+static void PlaceDoors(MapBuilder *mb, const int doorSize, const int roomDim, const struct vec2i doorStart, const struct vec2i d, const bool randomPos, const TileClass *tile)
+{
+	const struct vec2i dAcross = svec2i_subtract(svec2i_one(), d);
+	const int size = MIN(doorSize, roomDim - 2);
+	struct vec2i start = doorStart;
+	if (randomPos)
 	{
-		int doorSize =
-			MIN((doorMax > doorMin ? (rand() % (doorMax - doorMin + 1)) : 0) +
-					doorMin,
-				r.Size.x - 4);
-		for (int i = -doorSize / 2; i < (doorSize + 1) / 2; i++)
-		{
-			const struct vec2i v = svec2i(r.Pos.x + r.Size.x / 2 + i, r.Pos.y);
-			if (!TryPlaceDoorTile(mb, v, svec2i(0, 1), tile))
-			{
-				break;
-			}
-		}
+		start = svec2i_add(start, svec2i_scale(dAcross, RAND_INT(1, roomDim - size - 1)));
 	}
-	if (doors[3])
+	else
 	{
-		int doorSize =
-			MIN((doorMax > doorMin ? (rand() % (doorMax - doorMin + 1)) : 0) +
-					doorMin,
-				r.Size.x - 4);
-		for (int i = -doorSize / 2; i < (doorSize + 1) / 2; i++)
+		start = svec2i_add(start, svec2i_scale(dAcross, (roomDim - size) / 2));
+	}
+	for (int i = 0; i < size; i++)
+	{
+		const struct vec2i v = svec2i_add(start, svec2i_scale(dAcross, i));
+		if (!TryPlaceDoorTile(mb, v, d, tile))
 		{
-			const struct vec2i v =
-				svec2i(r.Pos.x + r.Size.x / 2 + i, r.Pos.y + r.Size.y - 1);
-			if (!TryPlaceDoorTile(mb, v, svec2i(0, 1), tile))
-			{
-				break;
-			}
+			break;
 		}
 	}
 }

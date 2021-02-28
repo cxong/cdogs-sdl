@@ -131,6 +131,7 @@ void MapSetRoomAccessMaskOverlap(
 void MapPlaceDoors(
 	MapBuilder *mb, const Rect2i r, const bool hasDoors, const bool doors[4],
 	const int doorMin, const int doorMax, const uint16_t accessMask,
+	const bool randomPos,
 	const TileClass *door, const TileClass *floor);
 
 void MapBuildTile(

@@ -453,7 +453,7 @@ static void PlaceRooms(MapBuilder *mb)
 	{
 		Rect2i room;
 		room.Pos = MapGetRandomTile(mb->Map);
-		room.Size = MapGetRoomSize(mb->mission->u.Cave.Rooms, 0);
+		room.Size = MapGetRoomSize(mb->mission->u.Cave.Rooms, 1);
 		if (!MapIsAreaClearForCaveRoom(mb, room))
 		{
 			continue;

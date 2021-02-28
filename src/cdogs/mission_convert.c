@@ -141,6 +141,8 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 		if (copyRooms)
 		{
 			memcpy(&m->u.Cave.Rooms, &rooms, sizeof rooms);
+			m->u.Cave.Rooms.Min = MAX(5, m->u.Cave.Rooms.Min);
+			m->u.Cave.Rooms.Max = MAX(m->u.Cave.Rooms.Min, m->u.Cave.Rooms.Max);
 		}
 		else
 		{
@@ -163,7 +165,7 @@ void MissionConvertToType(Mission *m, Map *map, MapType type)
 		if (copyRooms)
 		{
 			memcpy(&m->u.Interior.Rooms, &rooms, sizeof rooms);
-			m->u.Interior.Rooms.Min = MAX(1, m->u.Interior.Rooms.Min);
+			m->u.Interior.Rooms.Min = MAX(5, m->u.Interior.Rooms.Min);
 			m->u.Interior.Rooms.Max = MAX(2 * m->u.Interior.Rooms.Min, m->u.Interior.Rooms.Max);
 		}
 		else

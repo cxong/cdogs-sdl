@@ -425,6 +425,7 @@ static void AddDoorsToClosestCorridors(
 				mb->mission->u.Interior.Doors.Min,
 				mb->mission->u.Interior.Doors.Max,
 				0,
+				mb->mission->u.Interior.Doors.RandomPos,
 				&mb->mission->u.Interior.TileClasses.Door,
 				&mb->mission->u.Interior.TileClasses.Room);
 			AdjacencyConnect(am, _ca_index, corridorI);
@@ -513,6 +514,7 @@ static bool TryConnectRooms(
 		mb->mission->u.Interior.Doors.Min,
 		mb->mission->u.Interior.Doors.Max,
 		0,
+		mb->mission->u.Interior.Doors.RandomPos,
 		&mb->mission->u.Interior.TileClasses.Door,
 		&mb->mission->u.Interior.TileClasses.Room);
 	AdjacencyConnect(am, aIdx, _ca_index);

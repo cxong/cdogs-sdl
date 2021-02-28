@@ -464,6 +464,7 @@ static json_t *SaveDoors(const DoorParams d)
 	AddBoolPair(node, "Enabled", d.Enabled);
 	AddIntPair(node, "Min", d.Min);
 	AddIntPair(node, "Max", d.Max);
+	AddBoolPair(node, "RandomPos", d.RandomPos);
 	return node;
 }
 

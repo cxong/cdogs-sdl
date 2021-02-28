@@ -528,6 +528,7 @@ static void LoadDoors(DoorParams *d, json_t *doorsNode)
 	LoadBool(&d->Enabled, doorsNode, "Enabled");
 	LoadInt(&d->Min, doorsNode, "Min");
 	LoadInt(&d->Max, doorsNode, "Max");
+	LoadBool(&d->RandomPos, doorsNode, "RandomPos");
 }
 static void LoadPillars(PillarParams *p, json_t *pillarsNode)
 {

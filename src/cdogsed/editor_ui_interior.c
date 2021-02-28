@@ -121,11 +121,12 @@ static void MissionDrawDoorEnabled(
 	UNUSED(o);
 	UNUSED(g);
 	Campaign *co = data;
-	if (!CampaignGetCurrentMission(co))
+	Mission *m = CampaignGetCurrentMission(co);
+	if (!m)
 		return;
 	DisplayFlag(
 		svec2i_add(pos, o->Pos), "Doors",
-		CampaignGetCurrentMission(co)->u.Interior.Doors.Enabled,
+		m->u.Interior.Doors.Enabled,
 		UIObjectIsHighlighted(o));
 }
 static const char *MissionGetDoorMinStr(UIObject *o, void *data)
@@ -149,6 +150,20 @@ static const char *MissionGetDoorMaxStr(UIObject *o, void *data)
 	sprintf(
 		s, "DoorMax: %d", CampaignGetCurrentMission(co)->u.Interior.Doors.Max);
 	return s;
+}
+static void MissionDrawDoorRandomPos(
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
+{
+	UNUSED(o);
+	UNUSED(g);
+	Campaign *co = data;
+	Mission *m = CampaignGetCurrentMission(co);
+	if (!m)
+		return;
+	DisplayFlag(
+		svec2i_add(pos, o->Pos), "DoorRandomPos",
+		m->u.Interior.Doors.RandomPos,
+		UIObjectIsHighlighted(o));
 }
 static const char *MissionGetPillarCountStr(UIObject *o, void *data)
 {
@@ -241,6 +256,14 @@ static EditorResult MissionChangeDoorMax(void *data, int d)
 	m->u.Interior.Doors.Max = CLAMP(m->u.Interior.Doors.Max + d, 1, 6);
 	m->u.Interior.Doors.Min =
 		MIN(m->u.Interior.Doors.Min, m->u.Interior.Doors.Max);
+	return EDITOR_RESULT_CHANGED;
+}
+static EditorResult MissionChangeDoorRandomPos(void *data, int d)
+{
+	UNUSED(d);
+	Campaign *co = data;
+	Mission *m = CampaignGetCurrentMission(co);
+	m->u.Interior.Doors.RandomPos = !m->u.Interior.Doors.RandomPos;
 	return EDITOR_RESULT_CHANGED;
 }
 static EditorResult MissionChangePillarCount(void *data, int d)
@@ -344,6 +367,13 @@ UIObject *CreateInteriorMapObjs(struct vec2i pos, Campaign *co)
 	o2->u.LabelFunc = MissionGetDoorMaxStr;
 	o2->Data = co;
 	o2->ChangeFunc = MissionChangeDoorMax;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCreate(UITYPE_CUSTOM, 0, pos, o->Size);
+	o2->u.CustomDrawFunc = MissionDrawDoorRandomPos;
+	o2->Data = co;
+	o2->ChangeFunc = MissionChangeDoorRandomPos;
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 	

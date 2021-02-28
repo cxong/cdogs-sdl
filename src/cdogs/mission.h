@@ -110,6 +110,7 @@ typedef struct
 	bool Enabled;
 	int Min;
 	int Max;
+	bool RandomPos;
 } DoorParams;
 typedef struct
 {

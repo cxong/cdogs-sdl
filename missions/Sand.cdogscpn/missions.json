@@ -260,7 +260,8 @@
 		"Doors": {
 			"Enabled": true,
 			"Min": 2,
-			"Max": 2
+			"Max": 2,
+			"RandomPos": true
 		},
 		"Pillars": {
 			"Count": 2,
@@ -396,7 +397,8 @@
 		"Doors": {
 			"Enabled": true,
 			"Min": 2,
-			"Max": 2
+			"Max": 2,
+			"RandomPos": true
 		},
 		"Pillars": {
 			"Count": 20,
@@ -626,7 +628,8 @@
 		"Doors": {
 			"Enabled": false,
 			"Min": 0,
-			"Max": 0
+			"Max": 0,
+			"RandomPos": false
 		},
 		"Pillars": {
 			"Count": 2,
@@ -959,7 +962,8 @@
 		"Doors": {
 			"Enabled": true,
 			"Min": 1,
-			"Max": 2
+			"Max": 2,
+			"RandomPos": false
 		},
 		"Pillars": {
 			"Count": 19,
@@ -1090,7 +1094,8 @@
 		"Doors": {
 			"Enabled": true,
 			"Min": 1,
-			"Max": 2
+			"Max": 2,
+			"RandomPos": false
 		},
 		"Pillars": {
 			"Count": 13,
@@ -1230,7 +1235,8 @@
 		"Doors": {
 			"Enabled": false,
 			"Min": 2,
-			"Max": 3
+			"Max": 3,
+			"RandomPos": false
 		},
 		"Pillars": {
 			"Count": 3,

@@ -193,11 +193,12 @@ static void MissionDrawDoorEnabled(
 	UNUSED(o);
 	UNUSED(g);
 	Campaign *co = data;
-	if (!CampaignGetCurrentMission(co))
+	Mission *m = CampaignGetCurrentMission(co);
+	if (!m)
 		return;
 	DisplayFlag(
 		svec2i_add(pos, o->Pos), "Doors",
-		CampaignGetCurrentMission(co)->u.Classic.Doors.Enabled,
+		m->u.Classic.Doors.Enabled,
 		UIObjectIsHighlighted(o));
 }
 static const char *MissionGetDoorMinStr(UIObject *o, void *data)
@@ -221,6 +222,20 @@ static const char *MissionGetDoorMaxStr(UIObject *o, void *data)
 	sprintf(
 		s, "DoorMax: %d", CampaignGetCurrentMission(co)->u.Classic.Doors.Max);
 	return s;
+}
+static void MissionDrawDoorRandomPos(
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
+{
+	UNUSED(o);
+	UNUSED(g);
+	Campaign *co = data;
+	Mission *m = CampaignGetCurrentMission(co);
+	if (!m)
+		return;
+	DisplayFlag(
+		svec2i_add(pos, o->Pos), "DoorRandomPos",
+		m->u.Classic.Doors.RandomPos,
+		UIObjectIsHighlighted(o));
 }
 static const char *MissionGetPillarCountStr(UIObject *o, void *data)
 {
@@ -385,6 +400,14 @@ static EditorResult MissionChangeDoorMax(void *data, int d)
 		MIN(m->u.Classic.Doors.Min, m->u.Classic.Doors.Max);
 	return EDITOR_RESULT_CHANGED;
 }
+static EditorResult MissionChangeDoorRandomPos(void *data, int d)
+{
+	UNUSED(d);
+	Campaign *co = data;
+	Mission *m = CampaignGetCurrentMission(co);
+	m->u.Classic.Doors.RandomPos = !m->u.Classic.Doors.RandomPos;
+	return EDITOR_RESULT_CHANGED;
+}
 static EditorResult MissionChangePillarCount(void *data, int d)
 {
 	Campaign *co = data;
@@ -544,6 +567,13 @@ UIObject *CreateClassicMapObjs(struct vec2i pos, Campaign *co)
 	o2->u.LabelFunc = MissionGetDoorMaxStr;
 	o2->Data = co;
 	o2->ChangeFunc = MissionChangeDoorMax;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+	pos.x += o2->Size.x;
+	o2 = UIObjectCreate(UITYPE_CUSTOM, 0, pos, o->Size);
+	o2->u.CustomDrawFunc = MissionDrawDoorRandomPos;
+	o2->Data = co;
+	o2->ChangeFunc = MissionChangeDoorRandomPos;
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 

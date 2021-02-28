@@ -296,7 +296,9 @@ static void MapBuildRoom(
 	const Rect2i r = Rect2iNew(pos, size);
 	MapPlaceDoors(
 		mb, r, mb->mission->u.Classic.Doors.Enabled, doors,
-		doorMin, doorMax, accessMask, &mb->mission->u.Classic.TileClasses.Door,
+		doorMin, doorMax, accessMask,
+		mb->mission->u.Classic.Doors.RandomPos,
+		&mb->mission->u.Classic.TileClasses.Door,
 		&mb->mission->u.Classic.TileClasses.Floor);
 
 	MapMakeRoomWalls(
@@ -386,7 +388,7 @@ static void MapFindAvailableDoors(
 	}
 	else if (
 		FindWallRun(
-			mb, svec2i(pos.x, pos.y + size.y / 2), svec2i(0, 1), size.y - 2) <
+			mb, svec2i(pos.x, pos.y + 1), svec2i(0, 1), size.y - 2) <
 		doorMin)
 	{
 		doors[0] = false;
@@ -398,7 +400,7 @@ static void MapFindAvailableDoors(
 	}
 	else if (
 		FindWallRun(
-			mb, svec2i(pos.x + size.x - 1, pos.y + size.y / 2), svec2i(0, 1),
+			mb, svec2i(pos.x + size.x - 1, pos.y + 1), svec2i(0, 1),
 			size.y - 2) < doorMin)
 	{
 		doors[1] = false;
@@ -410,7 +412,7 @@ static void MapFindAvailableDoors(
 	}
 	else if (
 		FindWallRun(
-			mb, svec2i(pos.x + size.x / 2, pos.y), svec2i(1, 0), size.x - 2) <
+			mb, svec2i(pos.x + 1, pos.y), svec2i(1, 0), size.x - 2) <
 		doorMin)
 	{
 		doors[2] = false;
@@ -422,7 +424,7 @@ static void MapFindAvailableDoors(
 	}
 	else if (
 		FindWallRun(
-			mb, svec2i(pos.x + size.x / 2, pos.y + size.y - 1), svec2i(1, 0),
+			mb, svec2i(pos.x + 1, pos.y + size.y - 1), svec2i(1, 0),
 			size.x - 2) < doorMin)
 	{
 		doors[3] = false;
@@ -432,28 +434,15 @@ static int FindWallRun(
 	const MapBuilder *mb, const struct vec2i mid, const struct vec2i d,
 	const int len)
 {
+	int maxRun = 0;
 	int run = 0;
-	int next = 0;
-	bool plus = false;
-	// Find the wall run by starting from a midpoint and expanding outwards in
-	// both directions, in a series 0, 1, -1, 2, -2...
 	for (int i = 0; i < len; i++, run++)
 	{
 		// Check if this is a wall so we can add a door here
 		// Also check if the two tiles aside are not walls
 
 		// Note: we must look for runs
-
-		if (plus)
-		{
-			next += i;
-		}
-		else
-		{
-			next -= i;
-		}
-		const struct vec2i v = svec2i_add(mid, svec2i_scale(d, (float)next));
-		plus = !plus;
+		const struct vec2i v = svec2i_add(mid, svec2i_scale(d, i));
 
 		if (MapBuilderGetTile(mb, v)->Type != TILE_CLASS_WALL ||
 			MapBuilderGetTile(mb, svec2i(v.x + d.y, v.y + d.x))->Type ==
@@ -461,8 +450,12 @@ static int FindWallRun(
 			MapBuilderGetTile(mb, svec2i(v.x - d.y, v.y - d.x))->Type ==
 				TILE_CLASS_WALL)
 		{
-			break;
+			if (maxRun < run)
+			{
+				maxRun = run;
+			}
+			run = 0;
 		}
 	}
-	return run;
+	return MAX(run, maxRun);
 }
