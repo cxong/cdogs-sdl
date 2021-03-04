@@ -1,0 +1,13 @@
+{
+  "Version": 2,
+  "Bullets": [
+    {
+      "Name": "dog_bite",
+      "Power": 10,
+      "HitSounds": {
+        "Object": "hits/knife_hard",
+        "Flesh": "bark"
+      }
+    }
+  ]
+}

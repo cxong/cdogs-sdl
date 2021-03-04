@@ -1,0 +1,15 @@
+{
+  "Version": 2,
+  "Guns": [
+    {
+      "Pic": "",
+      "Name": "Dog Bite",
+      "Bullet": "dog_bite",
+      "Cost": 0,
+      "Lock": 20,
+      "Sound": "",
+      "CanShoot": false,
+      "CanDrop": false
+    }
+  ]
+}

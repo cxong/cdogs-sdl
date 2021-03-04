@@ -64,7 +64,7 @@
 		"Hair": "565555ff",
 		"Feet": "404040ff",
 		"speed": 256,
-		"Gun": "Machine gun",
+		"Gun": "Dog Bite",
 		"maxHealth": 40,
 		"flags": 1024,
 		"probabilityToMove": 50,
