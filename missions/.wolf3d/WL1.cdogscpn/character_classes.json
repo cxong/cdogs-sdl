@@ -17,7 +17,8 @@
         "Sprites": "chars/heads/dog"
       },
       "Body": "dog",
-      "Sounds": "dog"
+      "Sounds": "dog",
+	  "Footsteps": "dog"
     },
     {
       "Name": "SS",

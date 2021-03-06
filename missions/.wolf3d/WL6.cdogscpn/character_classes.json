@@ -10,13 +10,14 @@
       "Sounds": "guard"
     },
     {
-      "Name": "Dog",
+      "Name": "Killer Dog",
       "HeadPics": {
         "Type": "Directional",
         "Sprites": "chars/heads/dog"
       },
       "Body": "dog",
-      "Sounds": "dog"
+      "Sounds": "dog",
+      "Footsteps": "dog"
     },
     {
       "Name": "SS",
