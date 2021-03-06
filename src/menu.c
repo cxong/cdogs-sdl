@@ -303,8 +303,12 @@ GameLoopResult MenuUpdate(MenuSystem *ms)
 					{
 						if (menu->u.normal.index != i)
 						{
-							menu->u.normal.index = i;
-							MenuPlaySound(MENU_SOUND_SWITCH);
+							const menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
+							if (!subMenu->isDisabled)
+							{
+								menu->u.normal.index = i;
+								MenuPlaySound(MENU_SOUND_SWITCH);
+							}
 						}
 						break;
 					}
