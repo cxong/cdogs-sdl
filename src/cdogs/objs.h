@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2016, 2018-2019 Cong Xu
+    Copyright (c) 2013-2016, 2018-2019, 2021 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -98,7 +98,6 @@ extern CArray gObjs;	// of TObject
 
 bool CanHit(const int flags, const int uid, const Thing *target);
 bool HasHitSound(
-	const int flags, const int playerUID,
 	const ThingKind targetKind, const int targetUID,
 	const special_damage_e special, const bool allowFriendlyHitSound);
 void Damage(

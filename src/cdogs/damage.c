@@ -120,8 +120,7 @@ void DamageMelee(const NActorMelee m)
 	if (!a->isInUse) return;
 	const BulletClass *b = StrBulletClass(m.BulletClass);
 	if ((HitType)m.HitType != HIT_NONE &&
-		HasHitSound(a->flags, a->PlayerUID,
-		(ThingKind)m.TargetKind, m.TargetUID,
+		HasHitSound((ThingKind)m.TargetKind, m.TargetUID,
 		SPECIAL_NONE, false))
 	{
 		PlayHitSound(&b->HitSound, (HitType)m.HitType, a->Pos);

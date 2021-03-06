@@ -553,11 +553,8 @@ static HitType GetHitType(
 		CASSERT(false, "cannot damage target kind");
 		break;
 	}
-	const TActor *bulletActor = ActorGetByUID(bullet->ActorUID);
 	if (bullet->thing.SoundLock > 0 ||
-		!HasHitSound(
-			bullet->flags, bulletActor ? bulletActor->PlayerUID : -1, ti->kind,
-			tUID, bullet->bulletClass->Special, true))
+		!HasHitSound(ti->kind, tUID, bullet->bulletClass->Special, true))
 	{
 		ht = HIT_NONE;
 	}

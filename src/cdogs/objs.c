@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2020 Cong Xu
+	Copyright (c) 2013-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -274,7 +274,7 @@ bool CanHit(const int flags, const int uid, const Thing *target)
 	return false;
 }
 bool HasHitSound(
-	const int flags, const int playerUID, const ThingKind targetKind,
+	const ThingKind targetKind,
 	const int targetUID, const special_damage_e special,
 	const bool allowFriendlyHitSound)
 {
@@ -282,9 +282,7 @@ bool HasHitSound(
 	{
 	case KIND_CHARACTER: {
 		const TActor *a = ActorGetByUID(targetUID);
-		return allowFriendlyHitSound ||
-				!ActorIsInvulnerable(
-					a, flags, playerUID, gCampaign.Entry.Mode, special);
+		return allowFriendlyHitSound || !ActorIsImmune(a, special);
 	}
 	case KIND_OBJECT:
 		return true;
