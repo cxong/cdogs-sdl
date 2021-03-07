@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2020 Cong Xu
+	Copyright (c) 2013-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -223,6 +223,7 @@ static void LoadGunDescription(
 	LoadSoundFromNode(&wc->ReloadSound, node, "ReloadSound");
 	LoadSoundFromNode(&wc->SwitchSound, node, "SwitchSound");
 
+	wc->SoundLockLength = wc->Lock;
 	LoadInt(&wc->SoundLockLength, node, "SoundLockLength");
 
 	LoadFloat(&wc->Recoil, node, "Recoil");

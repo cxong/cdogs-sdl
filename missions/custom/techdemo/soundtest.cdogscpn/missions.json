@@ -12,7 +12,9 @@
 		"SpecialChars": [],
 		"MapObjectDensities": [],
 		"EnemyDensity": 0,
-		"Weapons": ["Fists", "Pistol"],
+		"Weapons": ["Fists",
+		"Pistol",
+		"Dog Bite"],
 		"Song": "",
 		"TileClasses": {
 			"0": {

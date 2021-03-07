@@ -1,5 +1,5 @@
 {
-  "Version": 1,
+  "Version": 3,
   "Guns": [
     {
       "Name": "Loop 1",
@@ -24,6 +24,16 @@
       "Lock": 105,
       "Sound": "loop4",
       "Brass": "music_note"
+    },
+    {
+      "Pic": "",
+      "Name": "Dog Bite",
+      "Bullet": "dog_bite",
+      "Cost": 0,
+      "Lock": 80,
+      "Sound": "",
+      "CanShoot": false,
+      "CanDrop": false
     }
   ]
 }

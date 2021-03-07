@@ -45,7 +45,8 @@
       "Lock": 30,
       "Sound": "",
       "SwitchSound": "knuckles",
-      "CanShoot": false
+      "CanShoot": false,
+      "CanDrop": false
     },
     {
       "Index": 1,
