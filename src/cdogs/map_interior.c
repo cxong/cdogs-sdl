@@ -620,6 +620,9 @@ static struct vec2i CorridorDAcross(const BSPArea *a);
 static void FillCorridors(MapBuilder *mb, const CArray *areas)
 {
 	CA_FOREACH(const BSPArea, a, *areas)
+	// Iterate in reverse order so we cap child corridors first,
+	// to correctly shrink corridor ends
+	a = CArrayGet(areas, areas->size - _ca_index - 1);
 	if (!a->isCorridor)
 	{
 		continue;
@@ -667,11 +670,26 @@ static void CapCorridor(
 		}
 		CA_FOREACH_END()
 	}
-	for (int i = 0; i < mb->mission->u.Interior.CorridorWidth; i++)
+	for (int j = 0; ; j++)
 	{
-		MapBuilderSetTile(
-			mb, svec2i_add(end, svec2i_multiply(dAcross, svec2i(i, i))),
-			capTile);
+		const struct vec2i endJ = svec2i_add(end, svec2i_multiply(dAlong, svec2i(j, j)));
+		// Keep filling the end of the corridor unless there's
+		// a door in the way
+		if (MapBuilderGetTile(mb, svec2i_add(endJ, svec2i_multiply(dAcross, svec2i(-1, -1))))->Type != TILE_CLASS_WALL ||
+			MapBuilderGetTile(mb, svec2i_add(endJ, svec2i_multiply(dAcross, svec2i(mb->mission->u.Interior.CorridorWidth, mb->mission->u.Interior.CorridorWidth))))->Type != TILE_CLASS_WALL)
+		{
+			break;
+		}
+		for (int i = 0; i < mb->mission->u.Interior.CorridorWidth; i++)
+		{
+			MapBuilderSetTile(
+				mb, svec2i_add(endJ, svec2i_multiply(dAcross, svec2i(i, i))),
+				capTile);
+		}
+		if (capTile->Type != TILE_CLASS_WALL)
+		{
+			break;
+		}
 	}
 }
 static struct vec2i CorridorDAlong(const BSPArea *a)
