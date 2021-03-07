@@ -290,7 +290,7 @@ GameLoopResult MenuUpdate(MenuSystem *ms)
 		{
 			MenuProcessCmd(ms, cmd);
 		}
-		else
+		else if (MouseHasMoved(&ms->handlers->mouse))
 		{
 			// Get mouse position and change menu
 			menu_t *menu = ms->current;
