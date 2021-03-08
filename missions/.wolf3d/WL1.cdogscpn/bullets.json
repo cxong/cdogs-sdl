@@ -2,6 +2,31 @@
   "Version": 2,
   "Bullets": [
     {
+      "Name": "knife",
+      "Power": 8,
+      "HitSounds": {
+        "Object": "hits/knife_hard",
+        "Flesh": "hits/knife_flesh"
+      }
+    },
+    {
+      "Name": "bullet",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": ""
+      },
+      "Trail": {
+        "Particle": "trail",
+        "Width": 1.0
+      },
+      "OutOfRangeSpark": "spark",
+      "WallMark": "bullet_hole",
+      "Speed": 35000,
+      "Range": 1,
+      "Power": 13,
+      "Mass": 0.2
+    },
+    {
       "Name": "dog_bite",
       "Power": 10,
       "Mass": 1.0,

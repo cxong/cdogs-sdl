@@ -2,6 +2,83 @@
   "Version": 3,
   "Guns": [
     {
+      "Pic": "knife",
+      "Icon": "knife",
+      "Name": "Knife",
+      "Bullet": "knife",
+      "Cost": 0,
+      "Lock": 18,
+      "Sound": "",
+      "SwitchSound": "knife_switch",
+      "CanShoot": false
+    },
+    {
+      "Name": "Pistol",
+      "Icon": "pistol",
+      "Bullet": "bullet",
+      "Cost": 1,
+      "Lock": 18,
+      "Sound": "pistol",
+      "SwitchSound": "pistol_switch",
+      "Recoil": 0.1,
+      "Brass": "brass"
+    },
+    {
+      "Name": "Machine Gun",
+      "Icon": "assault_rifle",
+      "Bullet": "bullet",
+      "Cost": 1,
+      "Lock": 6,
+      "Sound": "machine_gun",
+      "SwitchSound": "shotgun_r",
+      "Recoil": 0.17,
+      "Brass": "brass"
+    },
+    {
+      "Name": "Chain Gun",
+      "Icon": "machine_gun",
+      "Bullet": "bullet",
+      "Cost": 1,
+      "Lock": 4,
+      "Sound": "chain_gun",
+      "SwitchSound": "mg_switch",
+      "Recoil": 0.23,
+      "Brass": "brass"
+    },
+    {
+      "Name": "Guard Pistol",
+      "Icon": "pistol",
+      "Bullet": "bullet",
+      "Cost": 1,
+      "Lock": 70,
+      "Sound": "pistol_guard",
+      "SwitchSound": "pistol_switch",
+      "Recoil": 0.3,
+      "Brass": "brass"
+    },
+    {
+      "Name": "SS Machine Gun",
+      "Icon": "assault_rifle",
+      "Bullet": "bullet",
+      "Cost": 1,
+      "Lock": 6,
+      "Sound": "machine_gun_burst",
+      "SwitchSound": "shotgun_r",
+      "Recoil": 0.3,
+      "Brass": "brass"
+    },
+    {
+      "Name": "Dual Chain Gun",
+      "Icon": "machine_gun",
+      "Bullet": "bullet",
+      "Cost": 1,
+      "Lock": 4,
+      "Sound": "dual_chain_gun",
+      "SwitchSound": "mg_switch",
+      "Recoil": 0.3,
+      "Brass": "brass"
+    },
+    {
       "Pic": "",
       "Name": "Dog Bite",
       "Bullet": "dog_bite",

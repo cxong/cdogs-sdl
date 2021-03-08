@@ -36,7 +36,7 @@
 #include "mission.h"
 #include "utils.h"
 
-static void MissionStaticInit(MissionStatic *m)
+void MissionStaticInit(MissionStatic *m)
 {
 	memset(m, 0, sizeof *m);
 	m->TileClasses = hashmap_new();
@@ -632,8 +632,8 @@ static json_t *SaveStaticTileClasses(const MissionStatic *m)
 {
 	json_t *items = json_new_object();
 	SaveStaticTileClassData data = {items, m->TileClasses};
-	if (hashmap_iterate_keys_sorted(m->TileClasses, SaveStaticTileClass, &data) !=
-		MAP_OK)
+	if (hashmap_iterate_keys_sorted(
+			m->TileClasses, SaveStaticTileClass, &data) != MAP_OK)
 	{
 		CASSERT(false, "Failed to save static tile classes");
 	}

@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2017, 2019-2020 Cong Xu
+	Copyright (c) 2013-2017, 2019-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -75,11 +75,12 @@ typedef struct
 	CArray Characters; // of CharacterPositions
 	CArray Objectives; // of ObjectivePositions
 	CArray Keys;	   // of KeyPositions
-	CArray Pickups;    // of PickupPositions
+	CArray Pickups;	   // of PickupPositions
 	struct vec2i Start;
 	CArray Exits; // of Exit
 } MissionStatic;
 
+void MissionStaticInit(MissionStatic *m);
 bool MissionStaticTryLoadJSON(
 	MissionStatic *m, json_t *node, const struct vec2i size, const int version,
 	const int mission);

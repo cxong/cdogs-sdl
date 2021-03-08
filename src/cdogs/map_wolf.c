@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2020 Cong Xu
+	Copyright (c) 2020-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -147,6 +147,8 @@ bail:
 }
 
 static void LoadSounds(const SoundDevice *s, const CWolfMap *map);
+static void LoadMission(
+	CArray *missions, const CWLevel *level, const CWMapType type);
 
 int MapWolfLoad(const char *filename, CampaignSetting *c)
 {
@@ -167,21 +169,12 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 	}
 
 	LoadSounds(&gSoundDevice, &map);
+	// TODO: Load music
 
 	const CWLevel *level = map.levels;
 	for (int i = 0; i < map.nLevels; i++, level++)
 	{
-		printf(
-			"Level %d: %s (%dx%d)\n", i + 1, level->header.name,
-			level->header.width, level->header.height);
-		/*for (int x = 0; x < level->header.width; x++)
-		{
-			for (int y = 0; y < level->header.height; y++)
-			{
-				//PrintCh(level, x, y, map.type);
-			}
-			printf(" \n");
-		}*/
+		LoadMission(&c->Missions, level, map.type);
 	}
 
 bail:
@@ -224,4 +217,26 @@ static void LoadSounds(const SoundDevice *s, const CWolfMap *map)
 		sound->u.normal = Mix_QuickLoad_RAW(cvt.buf, cvt.len_cvt);
 		SoundAdd(s->customSounds, GetSound(map->type, i), sound);
 	}
+}
+
+static void LoadMission(
+	CArray *missions, const CWLevel *level, const CWMapType type)
+{
+	Mission m;
+	MissionInit(&m);
+	CSTRDUP(m.Title, level->header.name);
+	m.Size = svec2i(level->header.width, level->header.height);
+	m.Type = MAPTYPE_STATIC;
+	strcpy(m.ExitStyle, "plate");
+	strcpy(m.KeyStyle, "dungeon");
+	// TODO: objectives for treasure, kills (multiple items per obj)
+	const WeaponClass *wc = StrWeaponClass("Pistol");
+	CArrayPushBack(&m.Weapons, &wc);
+	wc = StrWeaponClass("Pistol");
+	CArrayPushBack(&m.Weapons, &wc);
+	// TODO: song
+	MissionStaticInit(&m.u.Static);
+	RECT_FOREACH(Rect2iNew(svec2i_zero(), m.Size))
+
+	RECT_FOREACH_END()
 }
