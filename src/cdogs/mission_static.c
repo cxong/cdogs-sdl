@@ -950,6 +950,10 @@ bool MissionStaticRemoveTileClass(MissionStatic *m, const int tile)
 		CASSERT(false, "cannot remove tile id");
 		return false;
 	}
+	if (hashmap_length(m->TileClasses) == 0)
+	{
+		return true;
+	}
 	// Set all tiles using this to the first one
 	int i;
 	for (i = 0; MissionStaticIdTileClass(m, i) == NULL; i++)

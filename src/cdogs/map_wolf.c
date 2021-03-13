@@ -336,12 +336,10 @@ static void LoadTile(
 
 static int LoadWall(const uint16_t ch, const struct vec2i v)
 {
-	// TODO: load wall type
 	UNUSED(ch);
-	UNUSED(v);
-	return 1;
-	/*const CWWall wall = CWChToWall(ch);
-	switch (wall)
+	const CWWall wall = CWChToWall(ch);
+	return 1 + (int)wall;
+	/*switch (wall)
 	{
 	case CWWALL_GREY_BRICK_1:
 		setBackgroundColor(DARKGREY);

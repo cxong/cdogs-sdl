@@ -724,7 +724,7 @@ static HandleInputResult HandleInput(
 		!sIgnoreMouse)
 	{
 		result.Redraw = true;
-		if (brush.IsActive && mission->Type == MAPTYPE_STATIC)
+		if (brush.IsActive && mission && mission->Type == MAPTYPE_STATIC)
 		{
 			// Draw a tile
 			if (Rect2iIsInside(
