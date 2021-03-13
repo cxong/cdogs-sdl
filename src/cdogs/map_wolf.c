@@ -285,14 +285,14 @@ static void LoadMission(
 	CArrayPushBack(missions, &m);
 }
 
-static uint16_t LoadWall(const uint16_t ch, const struct vec2i v);
+static int LoadWall(const uint16_t ch, const struct vec2i v);
 
 static void LoadTile(
 	MissionStatic *m, const uint16_t ch, const struct vec2i v,
 	const int missionIndex)
 {
 	const CWTile tile = CWChToTile(ch);
-	uint16_t staticTile = 0;
+	int staticTile = 0;
 	uint16_t staticAccess = 0;
 	switch (tile)
 	{
@@ -320,7 +320,7 @@ static void LoadTile(
 		e.Hidden = true;
 		e.Mission = missionIndex + 1;
 		e.R.Pos = v;
-		e.R.Size = svec2i(-1, -1);
+		e.R.Size = svec2i_zero();
 		CArrayPushBack(&m->Exits, &e);
 	}
 	break;
@@ -334,7 +334,7 @@ static void LoadTile(
 	CArrayPushBack(&m->Access, &staticAccess);
 }
 
-static uint16_t LoadWall(const uint16_t ch, const struct vec2i v)
+static int LoadWall(const uint16_t ch, const struct vec2i v)
 {
 	// TODO: load wall type
 	UNUSED(ch);
@@ -1101,9 +1101,9 @@ static void LoadEntity(
 		case CWENT_PACMAN_GHOST_BLUE:
 			setColor(LIGHTBLUE);
 			c = 'G';
-			break;
-		default:
-			c = '?';
 			break;*/
+		default:
+			// CASSERT(false, "unknown entity");
+			break;
 	}
 }
