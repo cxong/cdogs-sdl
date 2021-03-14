@@ -587,6 +587,7 @@ static void Delete(int xc, int yc)
 	Setup(changedMission);
 }
 
+static UIObject *OnUIInput(HandleInputResult *result, const EventHandlers *event, const int m, int *xc, int *yc, int *xcOld, int *ycOld, SDL_Scancode *sc, const Mission *mission);
 static void InputInsert(int *xc, const int yc, Mission *mission);
 static void InputDelete(const int xc, const int yc);
 static HandleInputResult HandleInput(
@@ -646,73 +647,7 @@ static HandleInputResult HandleInput(
 	if (m && (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT ||
 			  MouseWheel(&gEventHandlers.mouse).y != 0))
 	{
-		result.Redraw = true;
-		if (sLastHighlightedObj && !sLastHighlightedObj->IsBackground)
-		{
-			UITryGetObject(sLastHighlightedObj, mousePos, &o);
-		}
-		if (o == NULL)
-		{
-			UITryGetObject(sObjs, mousePos, &o);
-		}
-		if (o != NULL)
-		{
-			if (!o->DoNotHighlight)
-			{
-				if (sLastHighlightedObj)
-				{
-					if (UIObjectUnhighlight(sLastHighlightedObj, true))
-					{
-						Setup(false);
-					}
-				}
-				sLastHighlightedObj = o;
-				UIObjectHighlight(o, shift);
-				sIgnoreMouse = true;
-			}
-			CArrayTerminate(&sDrawObjs);
-			*xcOld = *xc;
-			*ycOld = *yc;
-			// Only change selection on left/right click
-			if (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT)
-			{
-				if (!(o->Flags & UI_LEAVE_YC))
-				{
-					*yc = o->Id;
-					AdjustYC(yc);
-				}
-				if (!(o->Flags & UI_LEAVE_XC))
-				{
-					*xc = o->Id2;
-					AdjustXC(*yc, xc);
-				}
-			}
-			if (!(o->Flags & UI_SELECT_ONLY) &&
-				(!(o->Flags & UI_SELECT_ONLY_FIRST) ||
-				 (*xc == *xcOld && *yc == *ycOld)))
-			{
-				if (m == SDL_BUTTON_LEFT ||
-					MouseWheel(&gEventHandlers.mouse).y > 0)
-				{
-					sc = SDL_SCANCODE_PAGEUP;
-				}
-				else if (
-					m == SDL_BUTTON_RIGHT ||
-					MouseWheel(&gEventHandlers.mouse).y < 0)
-				{
-					sc = SDL_SCANCODE_PAGEDOWN;
-				}
-			}
-		}
-		else
-		{
-			if (!(brush.IsActive && mission))
-			{
-				UIObjectUnhighlight(sObjs, true);
-				CArrayTerminate(&sDrawObjs);
-				sLastHighlightedObj = NULL;
-			}
-		}
+		o = OnUIInput(&result, &gEventHandlers, m, xc, yc, xcOld, ycOld, &sc, mission);
 	}
 	if (!brush.IsActive)
 	{
@@ -975,6 +910,11 @@ static HandleInputResult HandleInput(
 			hasQuit = true;
 			break;
 
+		case SDL_SCANCODE_GRAVE:
+			ToggleCollapse(sObjs->Data, 0);
+			OnUIInput(&result, &gEventHandlers, m, xc, yc, xcOld, ycOld, &sc, mission);
+			break;
+
 		case SDL_SCANCODE_BACKSPACE:
 			fileChanged = UIObjectDelChar(sObjs) || fileChanged;
 			break;
@@ -1054,6 +994,80 @@ static HandleInputResult HandleInput(
 		sIgnoreMouse = false;
 	}
 	return result;
+}
+UIObject *OnUIInput(HandleInputResult *result, const EventHandlers *event, const int m, int *xc, int *yc, int *xcOld, int *ycOld, SDL_Scancode *sc, const Mission *mission)
+{
+	result->Redraw = true;
+	UIObject *o = NULL;
+	const struct vec2i mousePos = event->mouse.currentPos;
+	const bool shift = event->keyboard.modState & KMOD_SHIFT;
+	if (sLastHighlightedObj && !sLastHighlightedObj->IsBackground)
+	{
+		UITryGetObject(sLastHighlightedObj, mousePos, &o);
+	}
+	if (o == NULL)
+	{
+		UITryGetObject(sObjs, mousePos, &o);
+	}
+	if (o != NULL)
+	{
+		if (!o->DoNotHighlight)
+		{
+			if (sLastHighlightedObj)
+			{
+				if (UIObjectUnhighlight(sLastHighlightedObj, true))
+				{
+					Setup(false);
+				}
+			}
+			sLastHighlightedObj = o;
+			UIObjectHighlight(o, shift);
+			sIgnoreMouse = true;
+		}
+		CArrayTerminate(&sDrawObjs);
+		*xcOld = *xc;
+		*ycOld = *yc;
+		// Only change selection on left/right click
+		if (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT)
+		{
+			if (!(o->Flags & UI_LEAVE_YC))
+			{
+				*yc = o->Id;
+				AdjustYC(yc);
+			}
+			if (!(o->Flags & UI_LEAVE_XC))
+			{
+				*xc = o->Id2;
+				AdjustXC(*yc, xc);
+			}
+		}
+		if (!(o->Flags & UI_SELECT_ONLY) &&
+			(!(o->Flags & UI_SELECT_ONLY_FIRST) ||
+			 (*xc == *xcOld && *yc == *ycOld)))
+		{
+			if (m == SDL_BUTTON_LEFT ||
+				MouseWheel(&gEventHandlers.mouse).y > 0)
+			{
+				*sc = SDL_SCANCODE_PAGEUP;
+			}
+			else if (
+				m == SDL_BUTTON_RIGHT ||
+				MouseWheel(&gEventHandlers.mouse).y < 0)
+			{
+				*sc = SDL_SCANCODE_PAGEDOWN;
+			}
+		}
+	}
+	else
+	{
+		if (!(brush.IsActive && mission))
+		{
+			UIObjectUnhighlight(sObjs, true);
+			CArrayTerminate(&sDrawObjs);
+			sLastHighlightedObj = NULL;
+		}
+	}
+	return o;
 }
 static void InputInsert(int *xc, const int yc, Mission *mission)
 {

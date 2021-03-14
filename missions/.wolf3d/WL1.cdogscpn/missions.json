@@ -66,6 +66,39 @@
 				"Shootable": true,
 				"IsRoom": false
 			},
+			"10": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "steelwood",
+				"Mask": "bb8e37ff",
+				"MaskAlt": "9c682aff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"11": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "steelwood",
+				"Mask": "bb8e37ff",
+				"MaskAlt": "9c682aff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"12": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "steelwood",
+				"Mask": "bb8e37ff",
+				"MaskAlt": "9c682aff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
 			"2": {
 				"Name": "wall",
 				"Type": "Wall",
@@ -76,12 +109,89 @@
 				"IsOpaque": true,
 				"Shootable": true,
 				"IsRoom": false
+			},
+			"3": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "cobble",
+				"Mask": "ffffffff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"4": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "cobble",
+				"Mask": "ffffffff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"5": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "cobble",
+				"Mask": "060effff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"6": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "cobble",
+				"Mask": "ffffffff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"7": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "cobble",
+				"Mask": "060effff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"8": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "cobble",
+				"Mask": "060effff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"9": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "cobble",
+				"Mask": "060effff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
 			}
 		},
 		"Tiles": ["0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0",
+		"0,1,0,1,0,3,0,4,0,5,0,6,0,7,0,8",
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+		"0,9,0,10,0,11,0,12,0,0,0,0,0,0,0,0",
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
@@ -110,7 +220,21 @@
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"],
-		"StaticItems": [],
+		"StaticItems": [{
+			"MapObject": "jail_cell",
+			"Positions": [[9, 2],
+			[9, 2],
+			[9, 2],
+			[9, 2],
+			[9, 2]]
+		},
+		{
+			"MapObject": "jail_cell_skeleton",
+			"Positions": [[13, 2],
+			[13, 2],
+			[13, 2],
+			[13, 2]]
+		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],
 		"StaticKeys": [],

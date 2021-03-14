@@ -673,7 +673,6 @@ typedef struct
 	UIObject *child;
 	UIObject *background;
 } CollapsedData;
-static EditorResult ToggleCollapse(void *data, int d);
 static void DrawBackground(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data);
 static UIObject *CreateEditorObjs(Campaign *co, EditorBrush *brush);
@@ -700,7 +699,7 @@ UIObject *CreateMainObjs(Campaign *co, EditorBrush *brush, struct vec2i size)
 	o->DoNotHighlight = true;
 	o->ChangeFunc = ToggleCollapse;
 	o->Data = cData;
-	CSTRDUP(o->Tooltip, "Collapse/expand");
+	CSTRDUP(o->Tooltip, "Collapse/expand (`)");
 	UIObjectAddChild(cc, o);
 	cData->collapseButton = o;
 
@@ -720,7 +719,7 @@ UIObject *CreateMainObjs(Campaign *co, EditorBrush *brush, struct vec2i size)
 
 	return cc;
 }
-static EditorResult ToggleCollapse(void *data, int d)
+EditorResult ToggleCollapse(void *data, int d)
 {
 	UNUSED(d);
 	CollapsedData *cData = data;
