@@ -165,12 +165,34 @@
 				"Shootable": true,
 				"IsRoom": false
 			},
+			"19": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "rock",
+				"Mask": "b801b6ff",
+				"MaskAlt": "9c682aff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
 			"2": {
 				"Name": "wall",
 				"Type": "Wall",
 				"Style": "cobble",
 				"Mask": "ffffffff",
 				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"20": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "brick2",
+				"Mask": "fc2c04ff",
+				"MaskAlt": "9c682aff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -259,7 +281,7 @@
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,9,0,10,0,11,0,12,0,13,0,14,0,15,0,16",
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,17,0,18,0,0,0,0,0,0,0,0,0,0,0,0",
+		"0,17,0,18,0,19,0,20,0,0,0,0,0,0,0,0",
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
