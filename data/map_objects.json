@@ -1432,6 +1432,26 @@
       "Flags": ["OnWall"]
     },
     {
+      "Name": "jail_cell",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "jail_cell"
+      },
+      "Offset": [-6, -10],
+      "Health": 0,
+      "Flags": ["Inside", "OnWall"]
+    },
+    {
+      "Name": "jail_cell_skeleton",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "jail_cell_skeleton"
+      },
+      "Offset": [-6, -10],
+      "Health": 0,
+      "Flags": ["Inside", "OnWall"]
+    },
+    {
       "Name": "bone_blood",
       "Pic": {
         "Type": "Normal",

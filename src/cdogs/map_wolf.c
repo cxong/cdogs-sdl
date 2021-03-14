@@ -337,6 +337,7 @@ static void LoadTile(
 static int LoadWall(const uint16_t ch, const struct vec2i v)
 {
 	UNUSED(ch);
+	UNUSED(v);
 	const CWWall wall = CWChToWall(ch);
 	return 1 + (int)wall;
 	/*switch (wall)
