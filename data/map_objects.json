@@ -1452,6 +1452,16 @@
       "Flags": ["Inside", "OnWall"]
     },
     {
+      "Name": "no_sign",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "no_sign"
+      },
+      "Offset": [-5, -9],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
       "Name": "bone_blood",
       "Pic": {
         "Type": "Normal",

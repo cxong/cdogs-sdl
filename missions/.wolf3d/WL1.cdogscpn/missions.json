@@ -99,6 +99,39 @@
 				"Shootable": true,
 				"IsRoom": false
 			},
+			"13": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "bunker",
+				"Mask": "d2d1ceff",
+				"MaskAlt": "9c682aff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"14": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "steel",
+				"Mask": "06e9fcff",
+				"MaskAlt": "9c682aff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"15": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "steel",
+				"Mask": "06e9fcff",
+				"MaskAlt": "9c682aff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
 			"2": {
 				"Name": "wall",
 				"Type": "Wall",
@@ -191,7 +224,7 @@
 		"Tiles": ["0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,1,0,1,0,3,0,4,0,5,0,6,0,7,0,8",
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,9,0,10,0,11,0,12,0,0,0,0,0,0,0,0",
+		"0,9,0,10,0,11,0,12,0,13,0,14,0,15,0,0",
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
