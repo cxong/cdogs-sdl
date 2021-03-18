@@ -1022,6 +1022,15 @@ bool MissionStaticTryAddItem(
 			MapObjectPositions *mop = CArrayGet(&m->Items, i);
 			if (mop->M == mo)
 			{
+				// Check if map object already added at same position
+				// This can happen for wall map items that don't take up
+				// any space
+				CA_FOREACH(const struct vec2i, mpos, mop->Positions)
+				if (svec2i_is_equal(pos, *mpos))
+				{
+					return false;
+				}
+				CA_FOREACH_END()
 				CArrayPushBack(&mop->Positions, &pos);
 				hasAdded = true;
 				break;
