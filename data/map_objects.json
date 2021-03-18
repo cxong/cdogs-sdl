@@ -1352,6 +1352,16 @@
       "Flags": ["OnWall"]
     },
     {
+      "Name": "bloodstain1",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "bloodstain1"
+      },
+      "Offset": [-6, -11],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
       "Name": "bloodstain2",
       "Pic": {
         "Type": "Normal",
