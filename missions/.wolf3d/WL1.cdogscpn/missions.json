@@ -352,6 +352,50 @@
 				"Shootable": true,
 				"IsRoom": false
 			},
+			"34": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "brick",
+				"Mask": "060effff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"35": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "brick",
+				"Mask": "ffffffff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"36": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "brick",
+				"Mask": "060effff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"37": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "brick",
+				"Mask": "ffffffff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
 			"4": {
 				"Name": "wall",
 				"Type": "Wall",
@@ -428,7 +472,7 @@
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,25,0,26,0,27,0,28,0,29,0,30,0,31,0,32",
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,33,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+		"0,33,0,34,0,35,0,36,0,37,0,0,0,0,0,0",
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
