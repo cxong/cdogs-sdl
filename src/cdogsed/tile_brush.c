@@ -35,6 +35,7 @@
 #define MAIN_WIDTH 400
 #define SIDE_WIDTH (WIDTH - MAIN_WIDTH)
 #define ROW_HEIGHT 25
+#define OPS_HEIGHT 35
 
 typedef struct
 {
@@ -167,11 +168,17 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 	}
 
 	if (nk_begin(
-			ctx, "", nk_rect(SIDE_WIDTH, 0, MAIN_WIDTH, HEIGHT),
-			NK_WINDOW_BORDER))
+			ctx, "Ops", nk_rect(SIDE_WIDTH, 0, MAIN_WIDTH, OPS_HEIGHT),
+			NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
 	{
 		DrawTileOpsRow(ctx, tbData, selectedTC, &result);
+		nk_end(ctx);
+	}
 
+	if (nk_begin(
+		 ctx, "Tiles", nk_rect(SIDE_WIDTH, OPS_HEIGHT, MAIN_WIDTH, HEIGHT - OPS_HEIGHT),
+		 NK_WINDOW_BORDER))
+	{
 		nk_layout_row_dynamic(ctx, 40 * PIC_SCALE, MAIN_WIDTH / 120);
 		int tilesDrawn = 0;
 		for (int i = 0;
@@ -186,6 +193,7 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		}
 		nk_end(ctx);
 	}
+
 	return result;
 }
 static void DrawTileOpsRow(
