@@ -396,11 +396,55 @@
 				"Shootable": true,
 				"IsRoom": false
 			},
+			"38": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "brick2",
+				"Mask": "fc2c04ff",
+				"MaskAlt": "9c682aff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"39": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "brick",
+				"Mask": "ffffffff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
 			"4": {
 				"Name": "wall",
 				"Type": "Wall",
 				"Style": "cobble",
 				"Mask": "ffffffff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"40": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "brick",
+				"Mask": "060effff",
+				"MaskAlt": "008400ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"41": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "brick",
+				"Mask": "060effff",
 				"MaskAlt": "008400ff",
 				"CanWalk": false,
 				"IsOpaque": true,
@@ -472,9 +516,9 @@
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,25,0,26,0,27,0,28,0,29,0,30,0,31,0,32",
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,33,0,34,0,35,0,36,0,37,0,0,0,0,0,0",
+		"0,33,0,34,0,35,0,36,0,37,0,38,0,39,0,40",
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+		"0,41,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
@@ -506,7 +550,8 @@
 		{
 			"MapObject": "no_sign",
 			"Positions": [[13, 4],
-			[7, 8]]
+			[7, 8],
+			[1, 12]]
 		},
 		{
 			"MapObject": "bloodstain2",
@@ -520,6 +565,10 @@
 		{
 			"MapObject": "bloodstain1",
 			"Positions": [[15, 8]]
+		},
+		{
+			"MapObject": "scratch",
+			"Positions": [[13, 10]]
 		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],
