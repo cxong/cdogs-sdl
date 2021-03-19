@@ -89,5 +89,23 @@
 		"probabilityToTrack": 25,
 		"probabilityToShoot": 2,
 		"actionDelay": 15
+	},
+	{
+		"Class": "Jones",
+		"HairType": "hitler",
+		"Skin": "e2a870ff",
+		"Arms": "404040ff",
+		"Body": "404040ff",
+		"Legs": "404040ff",
+		"Hair": "000000ff",
+		"Feet": "404040ff",
+		"speed": 256,
+		"Gun": "Fists",
+		"maxHealth": 40,
+		"flags": 1024,
+		"probabilityToMove": 50,
+		"probabilityToTrack": 25,
+		"probabilityToShoot": 2,
+		"actionDelay": 15
 	}]
 }

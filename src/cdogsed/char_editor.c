@@ -51,6 +51,7 @@ typedef struct
 	CArray texIdsGuns;		  // of GLuint
 	Animation anim;
 	direction_e previewDir;
+	gunstate_e gunState;
 	Animation animSelection;
 } EditorContext;
 
@@ -219,7 +220,7 @@ static void DrawFlag(
 	const int flag, const char *tooltip);
 static void DrawCharacter(
 	struct nk_context *ctx, Character *c, GLuint *texids,
-	const struct vec2i pos, const Animation *anim, const direction_e d);
+	const struct vec2i pos, const Animation *anim, const direction_e d, const gunstate_e gunState);
 static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 {
 	EditorContext *ec = data;
@@ -300,7 +301,7 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		}
 		DrawCharacter(
 			ctx, c, CArrayGet(&ec->texidsChars, _ca_index), svec2i(-34, 5),
-			&ec->animSelection, DIRECTION_DOWN);
+			&ec->animSelection, DIRECTION_DOWN, GUNSTATE_READY);
 		CA_FOREACH_END()
 		nk_end(ctx);
 	}
@@ -331,7 +332,7 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 			nk_layout_row_dynamic(ctx, 32 * PIC_SCALE, 1);
 			DrawCharacter(
 				ctx, ec->Char, ec->texidsPreview, svec2i(0, 5), &ec->anim,
-				ec->previewDir);
+				ec->previewDir, ec->gunState);
 			// Animation
 			nk_layout_row_dynamic(ctx, ROW_HEIGHT, 1);
 			const int isWalking = ec->anim.Type == ACTORANIMATION_WALKING;
@@ -346,6 +347,9 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 			{
 				ec->anim = AnimationGetActorAnimation(ACTORANIMATION_IDLE);
 			}
+			int isFiring = ec->gunState == GUNSTATE_FIRING;
+			nk_checkbox_label(ctx, "Firing", &isFiring);
+			ec->gunState = isFiring ? GUNSTATE_FIRING : GUNSTATE_READY;
 			nk_end(ctx);
 		}
 
@@ -665,11 +669,11 @@ static void DrawFlag(
 
 static void DrawCharacter(
 	struct nk_context *ctx, Character *c, GLuint *texids,
-	const struct vec2i pos, const Animation *anim, const direction_e d)
+	const struct vec2i pos, const Animation *anim, const direction_e d, const gunstate_e gunState)
 {
 	const int frame = AnimationGetFrame(anim);
 	ActorPics pics = GetCharacterPics(
-		c, d, d, anim->Type, frame, c->Gun->Sprites, GUNSTATE_READY, false,
+		c, d, d, anim->Type, frame, c->Gun->Sprites, gunState, false,
 		colorTransparent, NULL, NULL, 0);
 	for (int i = 0; i < BODY_PART_COUNT; i++)
 	{
