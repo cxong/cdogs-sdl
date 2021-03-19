@@ -1472,6 +1472,26 @@
       "Flags": ["OnWall"]
     },
     {
+      "Name": "map",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "map"
+      },
+      "Offset": [-6, -10],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "wall_vent",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "wall_vent"
+      },
+      "Offset": [-4, -3],
+      "Health": 0,
+      "Flags": ["OnWall", "Outside"]
+    },
+    {
       "Name": "bone_blood",
       "Pic": {
         "Type": "Normal",

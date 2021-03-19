@@ -591,6 +591,14 @@
 		{
 			"MapObject": "scratch",
 			"Positions": [[13, 10]]
+		},
+		{
+			"MapObject": "map",
+			"Positions": [[5, 12]]
+		},
+		{
+			"MapObject": "wall_vent",
+			"Positions": [[9, 10]]
 		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],
