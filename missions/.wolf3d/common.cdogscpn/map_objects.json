@@ -1,0 +1,175 @@
+{
+  "Version": 3,
+  "MapObjects": [
+    {
+      "Name": "heer_flag",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "heer_flag"
+      },
+      "Offset": [-7, -11],
+      "Health": 0,
+      "Flags": ["Inside", "OnWall"]
+    },
+    {
+      "Name": "hitler_portrait",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "hitler_portrait"
+      },
+      "Offset": [-5, -10],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "brick_eagle",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "brick_eagle"
+      },
+      "Offset": [-8, -11],
+      "Health": 0,
+      "Flags": ["Outside", "OnWall"]
+    },
+    {
+      "Name": "eagle_portrait",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "eagle_portrait"
+      },
+      "Offset": [-7, -10],
+      "Health": 0,
+      "Flags": ["Inside", "OnWall"]
+    },
+    {
+      "Name": "elevator_entrance",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "elevator_entrance"
+      },
+      "Offset": [-5, -9],
+      "Health": 0,
+      "Flags": ["Inside", "OnWall"]
+    },
+    {
+      "Name": "swastika_wreath",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "swastika_wreath"
+      },
+      "Offset": [-5, -11],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "coat_of_arms_flag",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "coat_of_arms_flag"
+      },
+      "Offset": [-7, -11],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "elevator_interior",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "elevator_interior"
+      },
+      "Offset": [-6, -11],
+      "Health": 0,
+      "Flags": ["Inside", "OnWall"]
+    },
+    {
+      "Name": "iron_cross",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "iron_cross"
+      },
+      "Offset": [-7, -11],
+      "Health": 0,
+      "Flags": ["Inside", "OnWall"]
+    },
+    {
+      "Name": "cobble_moss",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "cobble_moss"
+      },
+      "Offset": [-8, -23],
+      "Health": 0,
+      "Flags": ["Outside", "OnWall"]
+    },
+    {
+      "Name": "hitler_glass",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "hitler_glass"
+      },
+      "Offset": [-6, -11],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "skull_blue",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "skull_blue"
+      },
+      "Offset": [-3, -9],
+      "Health": 0,
+      "Flags": ["Inside", "OnWall"]
+    },
+    {
+      "Name": "swastika_blue",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "swastika_blue"
+      },
+      "Offset": [-3, -8],
+      "Health": 0,
+      "Flags": ["Inside", "OnWall"]
+    },
+    {
+      "Name": "brick_color",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "brick_color"
+      },
+      "Offset": [-8, -11],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "panel",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "panel"
+      },
+      "Offset": [-6, -10],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "hitler_poster",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "hitler_poster"
+      },
+      "Offset": [-5, -10],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "stone_color",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "stone_color"
+      },
+      "Offset": [-8, -11],
+      "Health": 0,
+      "Flags": ["Inside", "OnWall"]
+    }
+  ]
+}
