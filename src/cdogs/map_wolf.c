@@ -148,20 +148,35 @@ bail:
 
 static void LoadSounds(const SoundDevice *s, const CWolfMap *map);
 static void LoadMission(
-	CArray *missions, PicManager *pm, const CWLevel *level,
+	CArray *missions, const map_t tileClasses, const CWLevel *level,
 	const CWMapType type, const int missionIndex);
 
-int MapWolfLoad(const char *filename, CampaignSetting *c, PicManager *pm)
+int MapWolfLoad(const char *filename, CampaignSetting *c)
 {
 	int err = 0;
 	CWolfMap map;
+	map_t tileClasses = NULL;
 	err = CWLoad(&map, filename);
 	if (err != 0)
 	{
 		goto bail;
 	}
-
+	
 	char buf[CDOGS_PATH_MAX];
+	// Copy tile classes from common campaign
+	// and use them for every mission
+	GetDataFilePath(buf, "missions/.wolf3d/common.cdogscpn");
+	CampaignSetting cCommon;
+	CampaignSettingInit(&cCommon);
+	err = MapNewLoadArchive(buf, &cCommon);
+	if (err != 0)
+	{
+		goto bail;
+	}
+	Mission *m = CArrayGet(&cCommon.Missions, 0);
+	tileClasses = hashmap_copy(m->u.Static.TileClasses, TileClassCopyHashMap);
+	CampaignSettingTerminate(&cCommon);
+	
 	GetCampaignPath(map.type, buf);
 	err = MapNewLoadArchive(buf, c);
 	if (err != 0)
@@ -175,10 +190,11 @@ int MapWolfLoad(const char *filename, CampaignSetting *c, PicManager *pm)
 	const CWLevel *level = map.levels;
 	for (int i = 0; i < map.nLevels; i++, level++)
 	{
-		LoadMission(&c->Missions, pm, level, map.type, i);
+		LoadMission(&c->Missions, tileClasses, level, map.type, i);
 	}
 
 bail:
+	hashmap_destroy(tileClasses, TileClassDestroy);
 	CWFree(&map);
 	return err;
 }
@@ -223,12 +239,13 @@ static void LoadSounds(const SoundDevice *s, const CWolfMap *map)
 static void LoadTile(
 	MissionStatic *m, const uint16_t ch, const struct vec2i v,
 	const int missionIndex);
+static void TryLoadWallObject(MissionStatic *m, const uint16_t ch, const struct vec2i v);
 static void LoadEntity(
 	MissionStatic *m, const uint16_t ch, const struct vec2i v,
 	const int missionIndex);
 
 static void LoadMission(
-	CArray *missions, PicManager *pm, const CWLevel *level,
+	CArray *missions, const map_t tileClasses, const CWLevel *level,
 	const CWMapType type, const int missionIndex)
 {
 	Mission m;
@@ -237,7 +254,7 @@ static void LoadMission(
 	m.Size = svec2i(level->header.width, level->header.height);
 	m.Type = MAPTYPE_STATIC;
 	strcpy(m.ExitStyle, "plate");
-	strcpy(m.KeyStyle, "dungeon");
+	strcpy(m.KeyStyle, "plain2");
 	// TODO: objectives for treasure, kills (multiple items per obj)
 	const WeaponClass *wc = StrWeaponClass("Pistol");
 	CArrayPushBack(&m.Weapons, &wc);
@@ -246,38 +263,13 @@ static void LoadMission(
 	// TODO: song
 	MissionStaticInit(&m.u.Static);
 
-	// Add default tile classes
-	// TODO: load tile classes
-	TileClass *tc;
-	CMALLOC(tc, sizeof *tc);
-	TileClassInit(
-		tc, pm, &gTileWall, "brick", TileClassBaseStyleType(TILE_CLASS_WALL),
-		colorGray, colorWhite);
-	if (hashmap_put(m.u.Static.TileClasses, "1", (any_t *)tc) != MAP_OK)
-	{
-		CASSERT(false, "cannot add tile class");
-	}
-	CMALLOC(tc, sizeof *tc);
-	TileClassInit(
-		tc, pm, &gTileFloor, "flat", TileClassBaseStyleType(TILE_CLASS_FLOOR),
-		colorGray, colorWhite);
-	if (hashmap_put(m.u.Static.TileClasses, "0", (any_t *)tc) != MAP_OK)
-	{
-		CASSERT(false, "cannot add tile class");
-	}
-	CMALLOC(tc, sizeof *tc);
-	TileClassInit(
-		tc, pm, &gTileDoor, "dungeon", TileClassBaseStyleType(TILE_CLASS_DOOR),
-		colorCyan, colorWhite);
-	if (hashmap_put(m.u.Static.TileClasses, "2", (any_t *)tc) != MAP_OK)
-	{
-		CASSERT(false, "cannot add tile class");
-	}
+	m.u.Static.TileClasses = hashmap_copy(tileClasses, TileClassCopyHashMap);
 
 	UNUSED(type);
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), m.Size))
 	const uint16_t ch = CWLevelGetCh(level, 0, _v.x, _v.y);
 	LoadTile(&m.u.Static, ch, _v, missionIndex);
+	TryLoadWallObject(&m.u.Static, ch, _v);
 	const uint16_t ech = CWLevelGetCh(level, 1, _v.x, _v.y);
 	LoadEntity(&m.u.Static, ech, _v, missionIndex);
 	RECT_FOREACH_END()
@@ -285,7 +277,7 @@ static void LoadMission(
 	CArrayPushBack(missions, &m);
 }
 
-static int LoadWall(const uint16_t ch, const struct vec2i v);
+static int LoadWall(const uint16_t ch);
 
 static void LoadTile(
 	MissionStatic *m, const uint16_t ch, const struct vec2i v,
@@ -297,20 +289,20 @@ static void LoadTile(
 	switch (tile)
 	{
 	case CWTILE_WALL:
-		staticTile = LoadWall(ch, v);
+		staticTile = LoadWall(ch);
 		break;
 	case CWTILE_DOOR_H:
 	case CWTILE_DOOR_V:
-		staticTile = 2;
+		staticTile = 1;
 		break;
 	case CWTILE_DOOR_GOLD_H:
 	case CWTILE_DOOR_GOLD_V:
-		staticTile = 2;
+		staticTile = 1;
 		staticAccess = MAP_ACCESS_YELLOW;
 		break;
 	case CWTILE_DOOR_SILVER_H:
 	case CWTILE_DOOR_SILVER_V:
-		staticTile = 2;
+		staticTile = 1;
 		staticAccess = MAP_ACCESS_BLUE;
 		break;
 	case CWTILE_ELEVATOR_H:
@@ -334,306 +326,128 @@ static void LoadTile(
 	CArrayPushBack(&m->Access, &staticAccess);
 }
 
-static int LoadWall(const uint16_t ch, const struct vec2i v)
+static int LoadWall(const uint16_t ch)
 {
-	UNUSED(ch);
-	UNUSED(v);
 	const CWWall wall = CWChToWall(ch);
-	return 1 + (int)wall;
-	/*switch (wall)
+	return (int)wall + 2;
+}
+
+static void TryLoadWallObject(MissionStatic *m, const uint16_t ch, const struct vec2i v)
+{
+	const CWWall wall = CWChToWall(ch);
+	const char *moName = NULL;
+	switch (wall)
 	{
-	case CWWALL_GREY_BRICK_1:
-		setBackgroundColor(DARKGREY);
-		break;
-	case CWWALL_GREY_BRICK_2:
-		setBackgroundColor(DARKGREY);
-		setColor(BLACK);
-		c = '#';
-		break;
 	case CWWALL_GREY_BRICK_FLAG:
-		setBackgroundColor(DARKGREY);
-		setColor(RED);
-		c = '=';
+		moName = "heer_flag";
 		break;
 	case CWWALL_GREY_BRICK_HITLER:
-		setBackgroundColor(DARKGREY);
-		setColor(YELLOW);
-		c = '=';
+		moName = "hitler_portrait";
 		break;
 	case CWWALL_CELL:
-		setBackgroundColor(BLUE);
-		setColor(BLACK);
-		c = '=';
+		moName = "jail_cell";
 		break;
 	case CWWALL_GREY_BRICK_EAGLE:
-		setBackgroundColor(DARKGREY);
-		setColor(LIGHTCYAN);
-		c = '=';
+		moName = "brick_eagle";
 		break;
 	case CWWALL_CELL_SKELETON:
-		setBackgroundColor(BLUE);
-		setColor(WHITE);
-		c = '=';
-		break;
-	case CWWALL_BLUE_BRICK_1:
-		setBackgroundColor(BLUE);
-		break;
-	case CWWALL_BLUE_BRICK_2:
-		setBackgroundColor(BLUE);
-		setColor(BLACK);
-		c = '#';
+		moName = "jail_cell_skeleton";
 		break;
 	case CWWALL_WOOD_EAGLE:
-		setBackgroundColor(RED);
-		setColor(LIGHTCYAN);
-		c = '=';
+		moName = "eagle_portrait";
 		break;
 	case CWWALL_WOOD_HITLER:
-		setBackgroundColor(RED);
-		setColor(YELLOW);
-		c = '=';
-		break;
-	case CWWALL_WOOD:
-		setBackgroundColor(RED);
+		moName = "hitler_portrait";
 		break;
 	case CWWALL_ENTRANCE:
-		setBackgroundColor(LIGHTGREEN);
+		moName = "elevator_entrance";
 		break;
 	case CWWALL_STEEL_SIGN:
-		setBackgroundColor(LIGHTCYAN);
-		setColor(BLACK);
-		c = '=';
-		break;
-	case CWWALL_STEEL:
-		setBackgroundColor(LIGHTCYAN);
-		break;
-	case CWWALL_LANDSCAPE:
-		setBackgroundColor(LIGHTCYAN);
-		setColor(LIGHTGREEN);
-		c = '_';
-		break;
-	case CWWALL_RED_BRICK:
-		setBackgroundColor(LIGHTRED);
+		moName = "no_sign";
 		break;
 	case CWWALL_RED_BRICK_SWASTIKA:
-		setBackgroundColor(LIGHTRED);
-		setColor(YELLOW);
-		c = '=';
-		break;
-	case CWWALL_PURPLE:
-		setBackgroundColor(LIGHTMAGENTA);
+		moName = "swastika_wreath";
 		break;
 	case CWWALL_RED_BRICK_FLAG:
-		setBackgroundColor(LIGHTRED);
-		setColor(LIGHTCYAN);
-		c = '=';
+		moName = "coat_of_arms_flag";
 		break;
 	case CWWALL_ELEVATOR:
-		setBackgroundColor(YELLOW);
-		break;
-	case CWWALL_DEAD_ELEVATOR:
-		setBackgroundColor(YELLOW);
-		setColor(LIGHTRED);
-		c = '=';
+	case CWWALL_DEAD_ELEVATOR:	// fallthrough
+		moName = "elevator_interior";
 		break;
 	case CWWALL_WOOD_IRON_CROSS:
-		setBackgroundColor(RED);
-		setColor(DARKGREY);
-		c = '=';
+		moName = "iron_cross";
 		break;
 	case CWWALL_DIRTY_BRICK_1:
-		setBackgroundColor(DARKGREY);
-		setColor(GREEN);
-		c = '=';
-		break;
-	case CWWALL_DIRTY_BRICK_2:
-		setBackgroundColor(DARKGREY);
-		setColor(GREEN);
-		c = '#';
-		break;
-	case CWWALL_GREY_BRICK_3:
-		setBackgroundColor(DARKGREY);
-		setColor(GREY);
-		c = '=';
+	case CWWALL_DIRTY_BRICK_2:	// fallthrough
+		moName = "cobble_moss";
 		break;
 	case CWWALL_PURPLE_BLOOD:
-		setBackgroundColor(LIGHTMAGENTA);
-		setColor(LIGHTRED);
-		c = '#';
+		moName = "bloodstain";
 		break;
 	case CWWALL_GREY_BRICK_SIGN:
-		setBackgroundColor(GREY);
-		setColor(BLACK);
-		c = '#';
-		break;
-	case CWWALL_BROWN_WEAVE:
-		setBackgroundColor(BROWN);
+		moName = "no_sign";
 		break;
 	case CWWALL_BROWN_WEAVE_BLOOD_2:
-		setBackgroundColor(BROWN);
-		setColor(MAGENTA);
-		c = '=';
+		moName = "bloodstain";
 		break;
 	case CWWALL_BROWN_WEAVE_BLOOD_3:
-		setBackgroundColor(BROWN);
-		setColor(LIGHTMAGENTA);
-		c = '=';
+		moName = "bloodstain1";
 		break;
 	case CWWALL_BROWN_WEAVE_BLOOD_1:
-		setBackgroundColor(BROWN);
-		setColor(LIGHTRED);
-		c = '=';
+		moName = "bloodstain2";
 		break;
 	case CWWALL_STAINED_GLASS:
-		setBackgroundColor(GREY);
-		setColor(LIGHTGREEN);
-		c = '=';
+		moName = "hitler_glass";
 		break;
 	case CWWALL_BLUE_WALL_SKULL:
-		setBackgroundColor(LIGHTBLUE);
-		setColor(BLACK);
-		c = '=';
-		break;
-	case CWWALL_GREY_WALL_1:
-		setBackgroundColor(GREY);
+		moName = "skull_blue";
 		break;
 	case CWWALL_BLUE_WALL_SWASTIKA:
-		setBackgroundColor(LIGHTBLUE);
-		setColor(LIGHTRED);
-		c = '=';
+		moName = "swastika_blue";
 		break;
 	case CWWALL_GREY_WALL_VENT:
-		setBackgroundColor(GREY);
-		setColor(BLACK);
-		c = '=';
+		moName = "wall_vent";
 		break;
 	case CWWALL_MULTICOLOR_BRICK:
-		setBackgroundColor(LIGHTRED);
-		setColor(LIGHTBLUE);
-		c = '=';
-		break;
-	case CWWALL_GREY_WALL_2:
-		setBackgroundColor(GREY);
-		setColor(BLACK);
-		c = '#';
-		break;
-	case CWWALL_BLUE_WALL:
-		setBackgroundColor(LIGHTBLUE);
+		moName = "brick_color";
 		break;
 	case CWWALL_BLUE_BRICK_SIGN:
-		setBackgroundColor(BLUE);
-		setColor(YELLOW);
-		c = '=';
-		break;
-	case CWWALL_BROWN_MARBLE_1:
-		setBackgroundColor(RED);
-		setColor(BROWN);
-		c = '_';
+		moName = "no_sign";
 		break;
 	case CWWALL_GREY_WALL_MAP:
-		setBackgroundColor(GREY);
-		setColor(LIGHTBLUE);
-		c = '=';
-		break;
-	case CWWALL_BROWN_STONE_1:
-		setBackgroundColor(BROWN);
-		setColor(BLACK);
-		c = '#';
-		break;
-	case CWWALL_BROWN_STONE_2:
-		setBackgroundColor(BROWN);
-		setColor(RED);
-		c = '#';
-		break;
-	case CWWALL_BROWN_MARBLE_2:
-		setBackgroundColor(GREEN);
-		setColor(RED);
-		c = '_';
+		moName = "map";
 		break;
 	case CWWALL_BROWN_MARBLE_FLAG:
-		setBackgroundColor(LIGHTCYAN);
-		setColor(RED);
-		c = '_';
+		moName = "heer_flag";
 		break;
 	case CWWALL_WOOD_PANEL:
-		setBackgroundColor(RED);
-		setColor(YELLOW);
-		c = '#';
+		moName = "panel";
 		break;
 	case CWWALL_GREY_WALL_HITLER:
-		setBackgroundColor(GREY);
-		setColor(YELLOW);
-		c = '=';
-		break;
-	case CWWALL_STONE_WALL_1:
-		setBackgroundColor(RED);
-		setColor(GREEN);
-		c = '#';
-		break;
-	case CWWALL_STONE_WALL_2:
-		setBackgroundColor(RED);
-		setColor(BROWN);
-		c = '#';
+		moName = "hitler_poster";
 		break;
 	case CWWALL_STONE_WALL_FLAG:
-		setBackgroundColor(RED);
-		setColor(LIGHTGREEN);
-		c = '#';
+		moName = "heer_flag";
 		break;
 	case CWWALL_STONE_WALL_WREATH:
-		setBackgroundColor(RED);
-		setColor(LIGHTRED);
-		c = '#';
-		break;
-	case CWWALL_GREY_CONCRETE_LIGHT:
-		setBackgroundColor(DARKGREY);
-		setColor(RED);
-		c = '#';
-		break;
-	case CWWALL_GREY_CONCRETE_DARK:
-		setBackgroundColor(DARKGREY);
-		setColor(BROWN);
-		c = '#';
-		break;
-	case CWWALL_BLOOD_WALL:
-		setBackgroundColor(LIGHTRED);
-		setColor(BLACK);
-		c = '#';
-		break;
-	case CWWALL_CONCRETE:
-		setBackgroundColor(GREY);
-		setColor(DARKGREY);
-		c = '#';
+		moName = "swastika_wreath";
 		break;
 	case CWWALL_RAMPART_STONE_1:
-		setBackgroundColor(CYAN);
-		setColor(GREY);
-		c = '#';
-		break;
-	case CWWALL_RAMPART_STONE_2:
-		setBackgroundColor(CYAN);
-		setColor(DARKGREY);
-		c = '#';
+	case CWWALL_RAMPART_STONE_2:	// fallthrough
+		moName = "stone_color";
 		break;
 	case CWWALL_ELEVATOR_WALL:
-		setBackgroundColor(YELLOW);
-		setColor(LIGHTMAGENTA);
-		c = '#';
-		break;
-	case CWWALL_BROWN_CONCRETE:
-		setBackgroundColor(BROWN);
-		setColor(GREY);
-		c = '#';
-		break;
-	case CWWALL_PURPLE_BRICK:
-		setBackgroundColor(LIGHTMAGENTA);
-		setColor(BLACK);
-		c = '#';
+		moName = "elevator_interior";
 		break;
 	default:
-		c = '?';
 		break;
-	}*/
+	}
+	if (moName != NULL)
+	{
+		const struct vec2i wv = svec2i_add(v, svec2i(0, 1));
+		MissionStaticTryAddItem(m, StrMapObject(moName), wv);
+	}
 }
 
 static void LoadEntity(

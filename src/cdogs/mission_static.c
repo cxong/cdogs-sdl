@@ -781,7 +781,6 @@ static json_t *SaveVec2i(struct vec2i v)
 	return node;
 }
 
-static any_t TileClassCopyHashMap(any_t in);
 static void MapObjectPositionsCopy(CArray *dst, const CArray *src);
 static void CharacterPositionsCopy(CArray *dst, const CArray *src);
 static void ObjectivePositionsCopy(CArray *dst, const CArray *src);
@@ -803,7 +802,7 @@ void MissionStaticCopy(MissionStatic *dst, const MissionStatic *src)
 	memset(&dst->Exits, 0, sizeof dst->Exits);
 	CArrayCopy(&dst->Exits, &src->Exits);
 }
-static any_t TileClassCopyHashMap(any_t in)
+any_t TileClassCopyHashMap(any_t in)
 {
 	TileClass *tc;
 	CMALLOC(tc, sizeof *tc);
@@ -1255,8 +1254,7 @@ static bool FloodFillIsAccessSame(void *data, const struct vec2i v)
 	MissionFloodFillData *mData = data;
 	const uint16_t tileAccess =
 		*(uint16_t *)CArrayGet(&mData->m->Access, mData->size.x * v.y + v.x);
-	const TileClass *tc = MissionStaticGetTileClass(mData->m, mData->size, v);
-	return tc->Type == TILE_CLASS_DOOR && tileAccess != mData->tileAccess;
+	return tileAccess != mData->tileAccess;
 }
 
 bool MissionStaticTryUnsetKeyAt(

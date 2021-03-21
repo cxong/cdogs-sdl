@@ -1,8 +1,8 @@
 {
 	"Version": 16,
-	"Title": "Wolfenstein 2D (episode 1)",
+	"Title": "",
 	"Author": "id Software",
-	"Description": "You're William J. \"B.J.\" Blazkowicz, the Allies' bad boy of espionage and a terminal action seeker. Your mission was to infiltrate the Nazi fortress Castle Hollehammer and find the plans for Operation Eisenfaust (Iron Fist), the Nazi's blueprint for building the perfect army. Rumors are that deep within Castle Hollehammer the diabolical Dr. Schabbs has perfected a technique for building a fierce army from the bodies of the dead. It's so far removed from reality that it would seem silly if it wasn't so sick. But what if it were true?",
+	"Description": "",
 	"Ammo": true,
 	"WeaponPersist": true,
 	"SkipWeaponMenu": true,

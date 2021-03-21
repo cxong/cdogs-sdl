@@ -147,7 +147,7 @@ int MapNewLoad(const char *filename, CampaignSetting *c)
 
 	if (CWIsMap(filename))
 	{
-		return MapWolfLoad(filename, c, &gPicManager);
+		return MapWolfLoad(filename, c);
 	}
 
 	// try to load the new map format

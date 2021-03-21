@@ -233,3 +233,15 @@ void CampaignAndMissionSetup(Campaign *campaign, struct MissionOptions *mo)
 	CampaignSeedRandom(campaign);
 	SetupMission(m, mo, campaign->MissionIndex);
 }
+
+void CampaignDeleteMission(Campaign *c, const size_t idx)
+{
+	CASSERT(idx < c->Setting.Missions.size, "invalid mission index");
+	Mission *m = CArrayGet(&c->Setting.Missions, idx);
+	MissionTerminate(m);
+	CArrayDelete(&c->Setting.Missions, idx);
+	if (c->MissionIndex >= (int)c->Setting.Missions.size)
+	{
+		c->MissionIndex = MAX(0, (int)c->Setting.Missions.size - 1);
+	}
+}

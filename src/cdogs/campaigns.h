@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2014, 2016-2017, 2020 Cong Xu
+	Copyright (c) 2013-2014, 2016-2017, 2020-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -90,3 +90,4 @@ Mission *CampaignGetCurrentMission(Campaign *campaign);
 void CampaignSeedRandom(const Campaign *campaign);
 
 void CampaignAndMissionSetup(Campaign *campaign, struct MissionOptions *mo);
+void CampaignDeleteMission(Campaign *c, const size_t idx);

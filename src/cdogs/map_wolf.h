@@ -31,4 +31,4 @@
 
 // allocates title
 int MapWolfScan(const char *filename, char **title, int *numMissions);
-int MapWolfLoad(const char *filename, CampaignSetting *c, PicManager *pm);
+int MapWolfLoad(const char *filename, CampaignSetting *c);
