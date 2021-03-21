@@ -579,7 +579,7 @@ static void PicManagerGenerateMaskedPic(
 			c.b = c.r;
 			c = ColorMult(c, maskAlt);
 		}
-		else
+		else if (c.r == c.g && c.g == c.b)
 		{
 			c = ColorMult(c, mask);
 		}

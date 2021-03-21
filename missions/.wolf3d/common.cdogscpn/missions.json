@@ -709,7 +709,7 @@
 				"Type": "Door",
 				"Style": "prison",
 				"Mask": "00ffffff",
-				"MaskAlt": "008400ff",
+				"MaskAlt": "ffe72aff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
