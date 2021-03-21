@@ -42,6 +42,26 @@
       "Flags": ["Outside", "OneWall"]
     },
     {
+      "Name": "barrel_green",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "barrel_green"
+      },
+      "Wreck": "barrel_green_wreck",
+      "Health": 40,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
+      "Name": "barrel_green_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "barrel_green_wreck"
+      },
+      "Health": 0,
+      "DrawBelow": true,
+      "Flags": ["Outside", "OneWall"]
+    },
+    {
       "Name": "box",
       "Pic": {
         "Type": "Normal",
@@ -1634,6 +1654,16 @@
       "DamageSmoke": {
         "HealthThreshold": 1.0
       }
+    },
+    {
+      "Name": "pool_water",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "pool_water"
+      },
+      "Offset": [-8, -6],
+      "Health": 0,
+      "DrawBelow": true
     },
     {
       "Name": "health spawner",

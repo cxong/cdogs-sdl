@@ -608,8 +608,8 @@
 			"55": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "plasteel2",
-				"Mask": "ffffffff",
+				"Style": "stone2",
+				"Mask": "adadadff",
 				"MaskAlt": "008400ff",
 				"CanWalk": false,
 				"IsOpaque": true,
@@ -619,7 +619,7 @@
 			"56": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "plasteel2",
+				"Style": "stone2",
 				"Mask": "b4b4b4ff",
 				"MaskAlt": "008400ff",
 				"CanWalk": false,
@@ -641,8 +641,8 @@
 			"58": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "plasteel2",
-				"Mask": "ffffffff",
+				"Style": "stone",
+				"Mask": "9c9c9cff",
 				"MaskAlt": "008400ff",
 				"CanWalk": false,
 				"IsOpaque": true,
@@ -888,7 +888,9 @@
 		{
 			"MapObject": "stone_color",
 			"Positions": [[3, 16],
-			[5, 16]]
+			[5, 16],
+			[3, 14],
+			[5, 14]]
 		},
 		{
 			"MapObject": "panel",
@@ -919,6 +921,7 @@
 			9],
 			"Mission": 1,
 			"Hidden": false
-		}]
+		}],
+		"AltFloorsEnabled": true
 	}]
 }
