@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2016, 2018-2020 Cong Xu
+	Copyright (c) 2013-2016, 2018-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -66,8 +66,6 @@ typedef enum
 
 void MapAddDoorGroup(MapBuilder *mb, const struct vec2i v, const int keyFlags);
 
-const TileClass *DoorGetClass(
-	const char *style, const char *key, const DoorType type);
 void DoorAddClass(
 	TileClasses *c, PicManager *pm, const TileClass *base, const char *key,
 	const DoorType type);

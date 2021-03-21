@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2015, 2018-2020 Cong Xu
+	Copyright (c) 2013-2015, 2018-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -101,7 +101,7 @@ static bool DoorTypeIsHorizontal(const DoorType type)
 }
 
 static void DoorGetClassName(
-	char *buf, const char *style, const char *key, const DoorType dType);
+	char *buf, const TileClass *door, const char *key, const DoorType dType);
 static int GetDoorCountInGroup(
 	const MapBuilder *mb, const struct vec2i v, const bool isHorizontal);
 static TWatch *CreateCloseDoorWatch(
@@ -155,10 +155,10 @@ void MapAddDoorGroup(MapBuilder *mb, const struct vec2i v, const int keyFlags)
 	{
 		char doorClassName[CDOGS_FILENAME_MAX];
 		const DoorType type = GetDoorType(isHorizontal, i, doorGroupCount);
-		DoorGetClassName(doorClassName, door->Style, doorKey, type);
+		DoorGetClassName(doorClassName, door, doorKey, type);
 		const TileClass *doorClass = StrTileClass(doorClassName);
-		const TileClass *doorClassOpen =
-			DoorGetClass(door->Style, "open", type);
+		DoorGetClassName(doorClassName, door, "open", type);
+		const TileClass *doorClassOpen = StrTileClass(doorClassName);
 		const struct vec2i vI = svec2i_add(v, svec2i_scale(dv, (float)i));
 		Tile *tile = MapGetTile(mb->Map, vI);
 		tile->ClassAlt = doorClass;
@@ -278,10 +278,10 @@ static TWatch *CreateCloseDoorWatch(
 		a->a.Event.u.TileSet.Pos = Vec2i2Net(vI);
 		const DoorType type = GetDoorType(isHorizontal, i, doorGroupCount);
 		DoorGetClassName(
-			a->a.Event.u.TileSet.ClassName, door->Style, "open", type);
+			a->a.Event.u.TileSet.ClassName, door, "open", type);
 
 		char doorClassName[CDOGS_FILENAME_MAX];
-		DoorGetClassName(doorClassName, door->Style, doorKey, type);
+		DoorGetClassName(doorClassName, door, doorKey, type);
 		strcpy(a->a.Event.u.TileSet.ClassAltName, doorClassName);
 	}
 
@@ -334,12 +334,12 @@ static Trigger *CreateOpenDoorTrigger(
 		a->a.Event.u.TileSet.Pos = Vec2i2Net(vI);
 		const DoorType type = GetDoorType(isHorizontal, i, doorGroupCount);
 		DoorGetClassName(
-			a->a.Event.u.TileSet.ClassName, door->Style, "open", type);
+			a->a.Event.u.TileSet.ClassName, door, "open", type);
 		if (type == DOORTYPE_TOP || type == DOORTYPE_V)
 		{
 			// special door cavity picture
 			DoorGetClassName(
-				a->a.Event.u.TileSet.ClassAltName, door->Style, "wall", type);
+				a->a.Event.u.TileSet.ClassAltName, door, "wall", type);
 		}
 	}
 
@@ -389,13 +389,6 @@ static void TileAddTrigger(Tile *t, Trigger *tr)
 // Get the tile class of a door; if it doesn't exist create it
 // style: office/dungeon/blast/alien, or custom
 // key: normal/yellow/green/blue/red/wall/open
-const TileClass *DoorGetClass(
-	const char *style, const char *key, const DoorType type)
-{
-	char buf[CDOGS_FILENAME_MAX];
-	DoorGetClassName(buf, style, key, type);
-	return StrTileClass(buf);
-}
 static void DoorGetTypeName(char *buf, const char *key, const DoorType type)
 {
 	const char *typeStr = "";
@@ -443,12 +436,14 @@ static void DoorGetTypeName(char *buf, const char *key, const DoorType type)
 	sprintf(buf, "%s%s", key, typeStr);
 }
 static void DoorGetClassName(
-	char *buf, const char *style, const char *key, const DoorType dType)
+	char *buf, const TileClass *door, const char *key, const DoorType dType)
 {
 	char type[256];
 	DoorGetTypeName(type, key, dType);
+	const color_t mask = strcmp(key, "normal") == 0 ? door->Mask : colorWhite;
+	const color_t maskAlt = strcmp(key, "normal") == 0 ? door->MaskAlt : colorWhite;
 	// If the key is "wall", it doesn't include orientation
-	TileClassGetName(buf, &gTileDoor, style, type, colorWhite, colorWhite);
+	TileClassGetName(buf, door, door->Style, type, mask, maskAlt);
 }
 void DoorAddClass(
 	TileClasses *c, PicManager *pm, const TileClass *base, const char *key,
@@ -456,10 +451,12 @@ void DoorAddClass(
 {
 	char buf[CDOGS_FILENAME_MAX];
 	DoorGetTypeName(buf, key, type);
+	const color_t mask = strcmp(key, "normal") == 0 ? base->Mask : colorWhite;
+	const color_t maskAlt = strcmp(key, "normal") == 0 ? base->MaskAlt : colorWhite;
 	PicManagerGenerateMaskedStylePic(
-		pm, "door", base->Style, buf, colorWhite, colorWhite, true);
+		pm, "door", base->Style, buf, mask, maskAlt, true);
 	TileClass *t =
-		TileClassesAdd(c, pm, base, base->Style, buf, colorWhite, colorWhite);
+		TileClassesAdd(c, pm, base, base->Style, buf, mask, maskAlt);
 	CASSERT(t != NULL, "cannot add door class");
 	const bool isOpenOrWallCavity =
 		strcmp(key, "open") == 0 || strcmp(key, "wall") == 0;
