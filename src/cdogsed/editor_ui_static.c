@@ -94,6 +94,20 @@ static const char *BrushGetGuideImageAlphaStr(UIObject *o, void *data)
 	sprintf(s, "Guide Alpha: %d%%", (int)brush->GuideImageAlpha * 100 / 255);
 	return s;
 }
+static void MissionDrawAltFloorsEnabled(
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *data)
+{
+	UNUSED(o);
+	UNUSED(g);
+	Campaign *co = data;
+	Mission *m = CampaignGetCurrentMission(co);
+	if (!m)
+		return;
+	DisplayFlag(
+		svec2i_add(pos, o->Pos), "AltFloors",
+		m->u.Static.AltFloorsEnabled,
+		UIObjectIsHighlighted(o));
+}
 
 static EditorResult BrushChangeMainType(void *data, int d)
 {
@@ -131,6 +145,14 @@ static EditorResult BrushChangeGuideImageAlpha(void *data, int d)
 	}
 	b->GuideImageAlpha = (Uint8)CLAMP((int)b->GuideImageAlpha + d, 0, 255);
 	return EDITOR_RESULT_NONE;
+}
+static EditorResult MissionChangeAltFloorsEnabled(void *data, int d)
+{
+	UNUSED(d);
+	Campaign *co = data;
+	Mission *m = CampaignGetCurrentMission(co);
+	m->u.Static.AltFloorsEnabled = !m->u.Static.AltFloorsEnabled;
+	return EDITOR_RESULT_CHANGED;
 }
 static int BrushIsBrushTypePoint(void *data)
 {
@@ -460,6 +482,15 @@ UIObject *CreateStaticMapObjs(
 	o2->u.LabelFunc = BrushGetGuideImageAlphaStr;
 	o2->Data = brush;
 	o2->ChangeFunc = BrushChangeGuideImageAlpha;
+	o2->Pos = pos;
+	UIObjectAddChild(c, o2);
+
+	pos.x = x;
+	pos.y += th;
+	o2 = UIObjectCreate(UITYPE_CUSTOM, 0, pos, o->Size);
+	o2->u.CustomDrawFunc = MissionDrawAltFloorsEnabled;
+	o2->Data = co;
+	o2->ChangeFunc = MissionChangeAltFloorsEnabled;
 	o2->Pos = pos;
 	UIObjectAddChild(c, o2);
 

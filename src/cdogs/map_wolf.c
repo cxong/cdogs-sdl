@@ -273,6 +273,8 @@ static void LoadMission(
 	const uint16_t ech = CWLevelGetCh(level, 1, _v.x, _v.y);
 	LoadEntity(&m.u.Static, ech, _v, missionIndex);
 	RECT_FOREACH_END()
+	
+	m.u.Static.AltFloorsEnabled = false;
 
 	CArrayPushBack(missions, &m);
 }
@@ -307,6 +309,7 @@ static void LoadTile(
 		break;
 	case CWTILE_ELEVATOR_H:
 	case CWTILE_ELEVATOR_V: {
+		staticTile = 1;
 		// TODO: mission index for exit
 		Exit e;
 		e.Hidden = true;

@@ -48,6 +48,7 @@ void MissionStaticInit(MissionStatic *m)
 	CArrayInit(&m->Keys, sizeof(KeyPositions));
 	CArrayInit(&m->Pickups, sizeof(PickupPositions));
 	CArrayInit(&m->Exits, sizeof(Exit));
+	m->AltFloorsEnabled = true;
 }
 
 static void LoadTileClasses(map_t tileClasses, const json_t *node);
@@ -177,6 +178,9 @@ bool MissionStaticTryLoadJSON(
 	{
 		LoadStaticExits(m, node, "Exits");
 	}
+
+	m->AltFloorsEnabled = true;
+	LoadBool(&m->AltFloorsEnabled, node, "AltFloorsEnabled");
 
 	return true;
 }
@@ -621,6 +625,8 @@ void MissionStaticSaveJSON(
 
 	json_insert_pair_into_object(node, "Start", SaveVec2i(m->Start));
 	json_insert_pair_into_object(node, "Exits", SaveExits(m));
+
+	AddBoolPair(node, "AltFloorsEnabled", m->AltFloorsEnabled);
 }
 typedef struct
 {

@@ -623,27 +623,30 @@ static void MapSetupTilesAndWalls(MapBuilder *mb)
 	MapSetupTile(mb, _v);
 	RECT_FOREACH_END()
 
-	// Randomly change normal floor tiles to alternative floor tiles
-	for (int i = 0; i < mb->Map->Size.x * mb->Map->Size.y / 22; i++)
+	if (mb->mission->Type != MAPTYPE_STATIC || mb->mission->u.Static.AltFloorsEnabled)
 	{
-		const struct vec2i pos = MapGetRandomTile(mb->Map);
-		if (MapTileIsNormalFloor(mb, pos))
+		// Randomly change normal floor tiles to alternative floor tiles
+		for (int i = 0; i < mb->Map->Size.x * mb->Map->Size.y / 22; i++)
 		{
-			Tile *t = MapGetTile(mb->Map, pos);
-			t->Class = TileClassesGetMaskedTile(
-				t->Class, t->Class->Style, "alt1", t->Class->Mask,
-				t->Class->MaskAlt);
+			const struct vec2i pos = MapGetRandomTile(mb->Map);
+			if (MapTileIsNormalFloor(mb, pos))
+			{
+				Tile *t = MapGetTile(mb->Map, pos);
+				t->Class = TileClassesGetMaskedTile(
+					t->Class, t->Class->Style, "alt1", t->Class->Mask,
+					t->Class->MaskAlt);
+			}
 		}
-	}
-	for (int i = 0; i < mb->Map->Size.x * mb->Map->Size.y / 16; i++)
-	{
-		const struct vec2i pos = MapGetRandomTile(mb->Map);
-		if (MapTileIsNormalFloor(mb, pos))
+		for (int i = 0; i < mb->Map->Size.x * mb->Map->Size.y / 16; i++)
 		{
-			Tile *t = MapGetTile(mb->Map, pos);
-			t->Class = TileClassesGetMaskedTile(
-				t->Class, t->Class->Style, "alt2", t->Class->Mask,
-				t->Class->MaskAlt);
+			const struct vec2i pos = MapGetRandomTile(mb->Map);
+			if (MapTileIsNormalFloor(mb, pos))
+			{
+				Tile *t = MapGetTile(mb->Map, pos);
+				t->Class = TileClassesGetMaskedTile(
+					t->Class, t->Class->Style, "alt2", t->Class->Mask,
+					t->Class->MaskAlt);
+			}
 		}
 	}
 }

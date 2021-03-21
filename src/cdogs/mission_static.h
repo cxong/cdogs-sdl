@@ -78,6 +78,7 @@ typedef struct
 	CArray Pickups;	   // of PickupPositions
 	struct vec2i Start;
 	CArray Exits; // of Exit
+	bool AltFloorsEnabled;
 } MissionStatic;
 
 void MissionStaticInit(MissionStatic *m);
