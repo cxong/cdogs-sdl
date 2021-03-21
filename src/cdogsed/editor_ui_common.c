@@ -98,18 +98,6 @@ void InsertMission(Campaign *co, Mission *mission, int idx)
 	}
 	CArrayInsert(&co->Setting.Missions, idx, &m);
 }
-void DeleteMission(Campaign *co)
-{
-	CASSERT(
-		co->MissionIndex < (int)co->Setting.Missions.size,
-		"invalid mission index");
-	MissionTerminate(CampaignGetCurrentMission(co));
-	CArrayDelete(&co->Setting.Missions, co->MissionIndex);
-	if (co->MissionIndex >= (int)co->Setting.Missions.size)
-	{
-		co->MissionIndex = MAX(0, (int)co->Setting.Missions.size - 1);
-	}
-}
 
 bool ConfirmScreen(const char *info, const char *msg)
 {

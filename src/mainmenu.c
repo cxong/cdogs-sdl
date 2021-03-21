@@ -109,7 +109,7 @@ static void MainMenuOnEnter(GameLoopData *data)
 	GameEventsTerminate(&gGameEvents);
 	// Reset config - could have been set to other values by server
 	ConfigResetChanged(&gConfig);
-	CampaignSettingTerminate(&gCampaign.Setting);
+	CampaignSettingTerminateAll(&gCampaign.Setting);
 
 	// Auto-enter the submenu corresponding to the last game mode
 	menu_t *startMenu = FindSubmenuByName(mData->ms.root, "Start");

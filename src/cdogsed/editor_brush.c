@@ -346,7 +346,11 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	case BRUSHTYPE_ADD_ITEM:
 		if (isMain)
 		{
-			if (MissionStaticTryAddItem(&m->u.Static, b->u.MapObject, b->Pos))
+			const Tile *tile = MapGetTile(&gMap, b->Pos);
+			const Tile *tileAbove = MapGetTile(&gMap, svec2i(b->Pos.x, b->Pos.y - 1));
+
+			if (MapObjectIsTileOK(b->u.MapObject, tile, tileAbove) &&
+				MissionStaticTryAddItem(&m->u.Static, b->u.MapObject, b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}

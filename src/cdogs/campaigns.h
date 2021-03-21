@@ -79,7 +79,8 @@ extern Campaign gCampaign;
 void CampaignInit(Campaign *campaign);
 void CampaignTerminate(Campaign *campaign);
 void CampaignSettingInit(CampaignSetting *setting);
-void CampaignSettingTerminate(CampaignSetting *setting);
+void CampaignSettingTerminate(CampaignSetting *c);
+void CampaignSettingTerminateAll(CampaignSetting *setting);
 
 bool CampaignListIsEmpty(const CampaignList *c);
 

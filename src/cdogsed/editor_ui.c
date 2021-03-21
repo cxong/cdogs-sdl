@@ -478,7 +478,7 @@ static EditorResult MissionDelete(void *data, int d)
 	if (co->Setting.Missions.size > 0 &&
 		ConfirmScreen("", "Delete mission? (Y/N)"))
 	{
-		DeleteMission(co);
+		CampaignDeleteMission(co, co->MissionIndex);
 		return EDITOR_RESULT_CHANGED;
 	}
 	return EDITOR_RESULT_NONE;

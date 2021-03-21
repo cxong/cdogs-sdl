@@ -56,7 +56,6 @@ void DisplayMapItemWithDensity(
 void DrawKey(UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData);
 
 void InsertMission(Campaign *co, Mission *mission, int idx);
-void DeleteMission(Campaign *co);
 
 bool ConfirmScreen(const char *info, const char *msg);
 void ClearScreen(GraphicsDevice *g);

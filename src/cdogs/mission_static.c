@@ -1008,45 +1008,38 @@ static bool TryRemovePosition(CArray *positions, const struct vec2i pos);
 bool MissionStaticTryAddItem(
 	MissionStatic *m, const MapObject *mo, const struct vec2i pos)
 {
-	const Tile *tile = MapGetTile(&gMap, pos);
-	const Tile *tileAbove = MapGetTile(&gMap, svec2i(pos.x, pos.y - 1));
-
-	if (MapObjectIsTileOK(mo, tile, tileAbove))
+	// Check if the item already has an entry, and add to its list
+	// of positions
+	bool hasAdded = false;
+	for (int i = 0; i < (int)m->Items.size; i++)
 	{
-		// Check if the item already has an entry, and add to its list
-		// of positions
-		bool hasAdded = false;
-		for (int i = 0; i < (int)m->Items.size; i++)
+		MapObjectPositions *mop = CArrayGet(&m->Items, i);
+		if (mop->M == mo)
 		{
-			MapObjectPositions *mop = CArrayGet(&m->Items, i);
-			if (mop->M == mo)
+			// Check if map object already added at same position
+			// This can happen for wall map items that don't take up
+			// any space
+			CA_FOREACH(const struct vec2i, mpos, mop->Positions)
+			if (svec2i_is_equal(pos, *mpos))
 			{
-				// Check if map object already added at same position
-				// This can happen for wall map items that don't take up
-				// any space
-				CA_FOREACH(const struct vec2i, mpos, mop->Positions)
-				if (svec2i_is_equal(pos, *mpos))
-				{
-					return false;
-				}
-				CA_FOREACH_END()
-				CArrayPushBack(&mop->Positions, &pos);
-				hasAdded = true;
-				break;
+				return false;
 			}
+			CA_FOREACH_END()
+			CArrayPushBack(&mop->Positions, &pos);
+			hasAdded = true;
+			break;
 		}
-		// If not, create a new entry
-		if (!hasAdded)
-		{
-			MapObjectPositions mop;
-			mop.M = mo;
-			CArrayInit(&mop.Positions, sizeof(struct vec2i));
-			CArrayPushBack(&mop.Positions, &pos);
-			CArrayPushBack(&m->Items, &mop);
-		}
-		return true;
 	}
-	return false;
+	// If not, create a new entry
+	if (!hasAdded)
+	{
+		MapObjectPositions mop;
+		mop.M = mo;
+		CArrayInit(&mop.Positions, sizeof(struct vec2i));
+		CArrayPushBack(&mop.Positions, &pos);
+		CArrayPushBack(&m->Items, &mop);
+	}
+	return true;
 }
 bool MissionStaticTryRemoveItemAt(MissionStatic *m, const struct vec2i pos)
 {

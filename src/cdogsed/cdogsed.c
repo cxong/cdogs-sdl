@@ -441,7 +441,7 @@ static void Open(void)
 static bool TryOpen(const char *filename)
 {
 	// Try opening a campaign
-	CampaignSettingTerminate(&gCampaign.Setting);
+	CampaignSettingTerminateAll(&gCampaign.Setting);
 	CampaignSettingInit(&gCampaign.Setting);
 	char buf[CDOGS_PATH_MAX];
 	RealPath(filename, buf);
@@ -577,7 +577,7 @@ static void Delete(int xc, int yc)
 				// Nothing to delete; do nothing
 				return;
 			}
-			DeleteMission(&gCampaign);
+			CampaignDeleteMission(&gCampaign, gCampaign.MissionIndex);
 			changedMission = true;
 		}
 		AdjustYC(&yc);
@@ -1294,7 +1294,7 @@ int main(int argc, char *argv[])
 	DrawBufferInit(&sDrawBuffer, svec2i(X_TILES, Y_TILES), &gGraphicsDevice);
 
 	// Reset campaign (graphics init may have created dummy campaigns)
-	CampaignSettingTerminate(&gCampaign.Setting);
+	CampaignSettingTerminateAll(&gCampaign.Setting);
 	CampaignSettingInit(&gCampaign.Setting);
 
 	EventInit(&gEventHandlers);

@@ -47,7 +47,7 @@ void CampaignInit(Campaign *campaign)
 void CampaignTerminate(Campaign *campaign)
 {
 	CampaignUnload(&gCampaign);
-	CampaignSettingTerminate(&campaign->Setting);
+	CampaignSettingTerminateAll(&campaign->Setting);
 }
 void CampaignSettingInit(CampaignSetting *setting)
 {
@@ -60,17 +60,21 @@ void CampaignSettingInit(CampaignSetting *setting)
 
 	PickupClassesLoadKeys(&gPickupClasses.KeyClasses);
 }
-void CampaignSettingTerminate(CampaignSetting *setting)
+void CampaignSettingTerminate(CampaignSetting *c)
 {
-	CFREE(setting->Title);
-	CFREE(setting->Author);
-	CFREE(setting->Description);
-	CA_FOREACH(Mission, m, setting->Missions)
+	CFREE(c->Title);
+	CFREE(c->Author);
+	CFREE(c->Description);
+	CA_FOREACH(Mission, m, c->Missions)
 	MissionTerminate(m);
 	CA_FOREACH_END()
-	CArrayTerminate(&setting->Missions);
-	CharacterStoreTerminate(&setting->characters);
-	memset(setting, 0, sizeof *setting);
+	CArrayTerminate(&c->Missions);
+	CharacterStoreTerminate(&c->characters);
+	memset(c, 0, sizeof *c);
+}
+void CampaignSettingTerminateAll(CampaignSetting *setting)
+{
+	CampaignSettingTerminate(setting);
 
 	// Unload previous custom data
 	SoundClear(gSoundDevice.customSounds);

@@ -134,8 +134,6 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 		&gPickupClasses.CustomClasses, &gWeaponClasses.CustomGuns);
 	PickupClassesLoadKeys(&gPickupClasses.KeyClasses);
 
-	// Reset custom map objects
-	MapObjectsClear(&gMapObjects.CustomClasses);
 	root = ReadArchiveJSON(filename, "map_objects.json");
 	if (root != NULL)
 	{

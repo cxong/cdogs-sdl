@@ -57,7 +57,7 @@ void GrafxMakeRandomBackground(
 	ConfigResetChanged(showHud);
 	DrawBufferTerminate(&buffer);
 	MissionOptionsTerminate(mo);
-	CampaignSettingTerminate(&co->Setting);
+	CampaignSettingTerminateAll(&co->Setting);
 }
 
 static void DrawBackgroundWithRenderer(
