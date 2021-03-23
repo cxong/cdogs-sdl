@@ -907,6 +907,10 @@
 		{
 			"MapObject": "table_and_chairs",
 			"Positions": [[21, 1]]
+		},
+		{
+			"MapObject": "rod_light",
+			"Positions": [[23, 1]]
 		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],

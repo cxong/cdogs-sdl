@@ -450,6 +450,14 @@
 			"MapObject": "chair_dining_right",
 			"Positions": [[12, 21],
 			[12, 22]]
+		},
+		{
+			"MapObject": "rod_light",
+			"Positions": [[14, 21],
+			[14, 22],
+			[14, 23],
+			[15, 21],
+			[16, 21]]
 		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],

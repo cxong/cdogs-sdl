@@ -611,6 +611,40 @@
       "Flags": ["Outside", "NoWalls"]
     },
     {
+      "Name": "rod_light",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "rod_light"
+      },
+      "Wreck": "rod_light_wreck",
+      "Size": [8, 6],
+      "Health": 60,
+      "Flags": ["Outside", "NoWalls"],
+      "DestroySpawn": [
+        {
+          "Type": "Ammo",
+          "SpawnChance": 0.1
+        },
+        {
+          "Type": "Health",
+          "SpawnChance": 0.2
+        }
+      ],
+      "DamageSmoke": {
+        "HealthThreshold": 0.5
+      }
+    },
+    {
+      "Name": "rod_light_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "rod_light_wreck"
+      },
+      "Health": 0,
+      "DrawBelow": true,
+      "Flags": ["Outside", "NoWalls"]
+    },
+    {
       "Name": "barrel_wood",
       "Pic": {
         "Type": "Normal",
