@@ -920,6 +920,14 @@
 		{
 			"MapObject": "chandelier",
 			"Positions": [[25, 1]]
+		},
+		{
+			"MapObject": "hanging_skeleton",
+			"Positions": [[27, 1]]
+		},
+		{
+			"MapObject": "shadow",
+			"Positions": [[27, 1]]
 		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],
