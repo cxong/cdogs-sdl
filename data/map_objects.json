@@ -618,6 +618,7 @@
       },
       "Wreck": "rod_light_wreck",
       "Size": [8, 6],
+      "Offset": [-4, -18],
       "Health": 60,
       "Flags": ["Outside", "NoWalls"],
       "DestroySpawn": [

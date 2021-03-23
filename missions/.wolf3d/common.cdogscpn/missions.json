@@ -911,6 +911,15 @@
 		{
 			"MapObject": "rod_light",
 			"Positions": [[23, 1]]
+		},
+		{
+			"MapObject": "spotlight",
+			"Positions": [[25, 1],
+			[23, 1]]
+		},
+		{
+			"MapObject": "chandelier",
+			"Positions": [[25, 1]]
 		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],

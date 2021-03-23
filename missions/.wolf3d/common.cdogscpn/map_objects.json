@@ -2,6 +2,27 @@
   "Version": 3,
   "MapObjects": [
     {
+      "Name": "chandelier",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "chandelier"
+      },
+      "Offset": [-8, -24],
+      "Health": 0,
+      "DrawAbove": true,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "spotlight",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "spotlight"
+      },
+      "Health": 0,
+      "DrawBelow": true,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
       "Name": "heer_flag",
       "Pic": {
         "Type": "Normal",

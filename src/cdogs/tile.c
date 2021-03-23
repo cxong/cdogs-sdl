@@ -101,8 +101,7 @@ bool TileIsClear(const Tile *t)
 	{
 		return false;
 	}
-	if (t->Class->Type != TILE_CLASS_FLOOR &&
-		t->Class->Type != TILE_CLASS_DOOR)
+	if (!TileCanWalk(t))
 	{
 		return false;
 	}

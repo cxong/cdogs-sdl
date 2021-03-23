@@ -574,7 +574,25 @@ const Pic *MapObjectGetPic(const MapObject *mo, struct vec2i *offset)
 bool MapObjectIsTileOK(
 	const MapObject *obj, const Tile *tile, const Tile *tileAbove)
 {
-	if (!TileIsClear(tile))
+	if (obj->DrawAbove)
+	{
+		// Check there are no draw above objects
+		CA_FOREACH(const ThingId, tid, tile->things)
+		if (tid->Kind == KIND_OBJECT &&
+			((TObject *)CArrayGet(&gObjs, tid->Id))->Class->DrawAbove)
+			return false;
+		CA_FOREACH_END()
+	}
+	else if (obj->DrawBelow)
+	{
+		// Check there are no draw below objects
+		CA_FOREACH(const ThingId, tid, tile->things)
+		if (tid->Kind == KIND_OBJECT &&
+			((TObject *)CArrayGet(&gObjs, tid->Id))->Class->DrawBelow)
+			return false;
+		CA_FOREACH_END()
+	}
+	else if (!TileCanWalk(tile))
 	{
 		return false;
 	}
