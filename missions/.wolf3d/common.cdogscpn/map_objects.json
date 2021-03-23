@@ -2,15 +2,6 @@
   "Version": 3,
   "MapObjects": [
     {
-      "Name": "oil_drum",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "barrel_green"
-      },
-      "Health": 9999,
-      "Flags": ["Outside", "OneWall"]
-    },
-    {
       "Name": "heer_flag",
       "Pic": {
         "Type": "Normal",

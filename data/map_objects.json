@@ -425,6 +425,16 @@
       "Flags": ["Inside", "NoWalls"]
     },
     {
+      "Name": "table_and_chairs",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "table_and_chairs"
+      },
+      "Wreck": "table_wood_round_wreck",
+      "Health": 30,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
       "Name": "table_steel",
       "Pic": {
         "Type": "Normal",
@@ -473,6 +483,42 @@
       },
       "Health": 0,
       "DrawBelow": true,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "chair_dining_left",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "chair_dining_left"
+      },
+      "Wreck": "table_wood_round_wreck",
+      "Size": [8, 6],
+      "Offset": [-4, -10],
+      "Health": 20,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "chair_dining_right",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "chair_dining_right"
+      },
+      "Wreck": "table_wood_round_wreck",
+      "Size": [8, 6],
+      "Offset": [-4, -10],
+      "Health": 20,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "chair_dining_top",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "chair_dining_top"
+      },
+      "Wreck": "table_wood_round_wreck",
+      "Size": [8, 6],
+      "Offset": [-4, -10],
+      "Health": 20,
       "Flags": ["Inside", "NoWalls"]
     },
     {

@@ -1251,6 +1251,10 @@ static void FloodFillSetAccess(void *data, const struct vec2i v)
 static bool FloodFillIsAccessSame(void *data, const struct vec2i v)
 {
 	MissionFloodFillData *mData = data;
+	if (!Rect2iIsInside(Rect2iNew(svec2i_zero(), mData->size), v))
+	{
+		return false;
+	}
 	const uint16_t tileAccess =
 		*(uint16_t *)CArrayGet(&mData->m->Access, mData->size.x * v.y + v.x);
 	return tileAccess != mData->tileAccess;
