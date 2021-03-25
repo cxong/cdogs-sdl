@@ -1,0 +1,14 @@
+{
+  "Version": 2,
+  "Pickups": [
+    {
+      "Name": "dogfood",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "dogfood"
+      },
+      "Type": "Health",
+      "Health": 4
+    }
+  ]
+}

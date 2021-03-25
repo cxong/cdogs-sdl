@@ -949,7 +949,10 @@
 			[6, 2],
 			[6, 2]]
 		}],
-		"StaticPickups": [],
+		"StaticPickups": [{
+			"Pickup": "dogfood",
+			"Positions": [[31, 1]]
+		}],
 		"Start": [0, 0],
 		"Exits": [{
 			"Rect": [28,
