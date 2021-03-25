@@ -948,6 +948,10 @@
 		{
 			"MapObject": "skull_pillar",
 			"Positions": [[21, 3]]
+		},
+		{
+			"MapObject": "plant_brown",
+			"Positions": [[23, 3]]
 		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],

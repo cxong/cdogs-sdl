@@ -236,7 +236,13 @@
       "Wreck": "plant_wreck",
       "Size": [8, 6],
       "Health": 20,
-      "Flags": ["Inside", "OneOrMoreWalls"]
+      "Flags": ["Inside", "OneOrMoreWalls"],
+      "DestroySpawn": [
+        {
+          "Type": "Health",
+          "SpawnChance": 0.2
+        }
+      ]
     },
     {
       "Name": "plant_wreck",
@@ -246,13 +252,7 @@
       },
       "Health": 0,
       "DrawBelow": true,
-      "Flags": ["Inside", "OneOrMoreWalls"],
-      "DestroySpawn": [
-        {
-          "Type": "Health",
-          "SpawnChance": 0.2
-        }
-      ]
+      "Flags": ["Inside", "OneOrMoreWalls"]
     },
     {
       "Name": "flower",
@@ -276,6 +276,34 @@
       "Pic": {
         "Type": "Normal",
         "Pic": "flower_wreck"
+      },
+      "Health": 0,
+      "DrawBelow": true,
+      "Flags": ["Inside", "OneOrMoreWalls"]
+    },
+    {
+      "Name": "plant_brown",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "plant_brown"
+      },
+      "Wreck": "plant_brown_wreck",
+      "Size": [8, 6],
+      "Offset": [-4, -12],
+      "Health": 20,
+      "Flags": ["Inside", "OneOrMoreWalls"],
+      "DestroySpawn": [
+        {
+          "Type": "Health",
+          "SpawnChance": 0.2
+        }
+      ]
+    },
+    {
+      "Name": "plant_brown_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "plant_brown_wreck"
       },
       "Health": 0,
       "DrawBelow": true,
