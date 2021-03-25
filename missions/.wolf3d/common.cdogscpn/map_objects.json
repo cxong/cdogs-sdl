@@ -42,6 +42,17 @@
       "Flags": ["Inside", "OnWall"]
     },
     {
+      "Name": "skull_pillar",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "skull_pillar"
+      },
+      "Size": [8, 6],
+      "Offset": [-8, -14],
+      "Health": 20,
+      "Flags": ["NoWalls"]
+    },
+    {
       "Name": "spotlight",
       "Pic": {
         "Type": "Normal",

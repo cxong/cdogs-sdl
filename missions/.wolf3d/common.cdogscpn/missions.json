@@ -944,6 +944,10 @@
 		{
 			"MapObject": "sink",
 			"Positions": [[20, 3]]
+		},
+		{
+			"MapObject": "skull_pillar",
+			"Positions": [[21, 3]]
 		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],
