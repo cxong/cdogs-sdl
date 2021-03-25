@@ -23,6 +23,15 @@
       "Flags": ["Inside", "NoWalls"]
     },
     {
+      "Name": "pillar",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "pillar"
+      },
+      "Health": 80,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
       "Name": "spotlight",
       "Pic": {
         "Type": "Normal",

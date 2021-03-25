@@ -928,6 +928,10 @@
 		{
 			"MapObject": "shadow",
 			"Positions": [[27, 1]]
+		},
+		{
+			"MapObject": "pillar",
+			"Positions": [[29, 1]]
 		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],
