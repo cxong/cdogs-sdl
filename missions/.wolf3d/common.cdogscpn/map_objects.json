@@ -32,6 +32,16 @@
       "Flags": ["Inside", "NoWalls"]
     },
     {
+      "Name": "sink",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "sink"
+      },
+      "Size": [8, 6],
+      "Health": 50,
+      "Flags": ["Inside", "OnWall"]
+    },
+    {
       "Name": "spotlight",
       "Pic": {
         "Type": "Normal",
