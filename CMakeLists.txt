@@ -5,8 +5,8 @@ set(CMAKE_OSX_ARCHITECTURES x86_64)
 project(cdogs-sdl C)
 
 SET(VERSION_MAJOR "0")
-SET(VERSION_MINOR "10")
-SET(VERSION_PATCH "2")
+SET(VERSION_MINOR "11")
+SET(VERSION_PATCH "0")
 SET(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
 # Optionally configure CI files since they are excluded in source archives
