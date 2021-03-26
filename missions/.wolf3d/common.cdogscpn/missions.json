@@ -952,6 +952,10 @@
 		{
 			"MapObject": "plant_brown",
 			"Positions": [[23, 3]]
+		},
+		{
+			"MapObject": "urn",
+			"Positions": [[25, 3]]
 		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],

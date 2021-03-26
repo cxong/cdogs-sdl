@@ -53,6 +53,17 @@
       "Flags": ["NoWalls"]
     },
     {
+      "Name": "urn",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "urn"
+      },
+      "Size": [10, 8],
+      "Offset": [-5, -8],
+      "Health": 30,
+      "Flags": ["Inside", "OneOrMoreWalls"]
+    },
+    {
       "Name": "spotlight",
       "Pic": {
         "Type": "Normal",
