@@ -80,7 +80,6 @@ deploy:
     - "$TRAVIS_BUILD_DIR/C-Dogs*SDL-*-{Linux,OSX}.{tar.gz,dmg}"
   on:
     tags: true
-    condition: $CC = gcc
 
 after_deploy:
   - bash build/travis-ci/butler.sh
