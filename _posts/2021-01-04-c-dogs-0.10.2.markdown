@@ -8,7 +8,7 @@ published: true
 
 New year, new release! 🎊 This is a bug fix release to fix not being able to run the mission pack, some PVP game mode fixes, and some miscellaneous enhancements, like:
 
-Being able to see available weapons in the wepaon menu, and swapping weapons:
+Being able to see available weapons in the weapon menu, and swapping weapons:
 
 ![Weapon menu](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/weapon_menu.gif)
 

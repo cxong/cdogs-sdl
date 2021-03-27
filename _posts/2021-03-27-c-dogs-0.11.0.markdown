@@ -1,0 +1,25 @@
+---
+layout: post
+title:  "C-Dogs 0.11.0 Released!"
+date:   2021-03-27
+categories: release
+published: true
+---
+
+Here comes another release of C-Dogs SDL with new features and fixes!
+
+This release adds a new map type: interiors!
+
+![Interior map](https://user-images.githubusercontent.com/1083215/108699978-154ff480-755a-11eb-9ea4-184aeab888ed.gif)
+
+Based off BSP/L-system map generators and with Zelda-style lock-and-key placement, this map type simulates the cramped environments of a building interior, with plenty of straight corridors and rooms branching off them. Collect all the keys to make it through from one end of the level to the other!
+
+This map type has been included in the Sand campaign, and is also available in the campaign editor. For a more detailed writeup of this new map type, see the blog post: <http://cxong.github.io/2021/02/bsp-lock-and-key>
+
+Also included in this release are some minor features and bug fixes, like bone-rattle footstep sounds for skeletons, mouse-driven menus, and a nasty crash when changing game options (thanks to [**@viki-t-s**](https://github.com/viki-t-s) for reporting!)
+
+![Mouse driven menus](https://user-images.githubusercontent.com/1083215/107849762-8f44f700-6e51-11eb-9826-a0f072eb25d7.gif)
+
+Stay tuned as exciting releases are planned ahead!
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.11.0>
