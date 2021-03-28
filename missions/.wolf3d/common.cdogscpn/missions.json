@@ -930,7 +930,8 @@
 			"Positions": [[27, 1],
 			[28, 3],
 			[30, 3],
-			[17, 5]]
+			[17, 5],
+			[26, 5]]
 		},
 		{
 			"MapObject": "pillar",
@@ -985,8 +986,12 @@
 			"Positions": [[19, 5]]
 		},
 		{
+			"MapObject": "gibbet_skulls",
+			"Positions": [[26, 5]]
+		},
+		{
 			"MapObject": "bed",
-			"Positions": [[24, 5]]
+			"Positions": [[25, 5]]
 		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],

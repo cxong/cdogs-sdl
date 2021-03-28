@@ -114,6 +114,16 @@
       "Flags": ["Inside", "NoWalls"]
     },
     {
+      "Name": "gibbet_skulls",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "gibbet_skulls"
+      },
+      "Offset": [-7, -33],
+      "Health": 40,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
       "Name": "spotlight",
       "Pic": {
         "Type": "Normal",
