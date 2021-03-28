@@ -64,6 +64,16 @@
       "Flags": ["Inside", "OneOrMoreWalls"]
     },
     {
+      "Name": "knives",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "knives"
+      },
+      "Offset": [-5, -13],
+      "Health": 0,
+      "Flags": ["Inside", "OneOrMoreWalls"]
+    },
+    {
       "Name": "spotlight",
       "Pic": {
         "Type": "Normal",

@@ -956,6 +956,10 @@
 		{
 			"MapObject": "urn",
 			"Positions": [[25, 3]]
+		},
+		{
+			"MapObject": "knives",
+			"Positions": [[27, 3]]
 		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],
