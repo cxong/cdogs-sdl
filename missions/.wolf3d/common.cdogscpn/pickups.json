@@ -45,6 +45,15 @@
       },
       "Type": "Score",
       "Score": 1000
+    },
+    {
+      "Name": "crown",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "crown"
+      },
+      "Type": "Score",
+      "Score": 5000
     }
   ]
 }

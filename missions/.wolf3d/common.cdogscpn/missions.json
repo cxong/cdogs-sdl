@@ -1053,6 +1053,10 @@
 		{
 			"Pickup": "chest",
 			"Positions": [[27, 7]]
+		},
+		{
+			"Pickup": "crown",
+			"Positions": [[29, 7]]
 		}],
 		"Start": [0, 0],
 		"Exits": [{
