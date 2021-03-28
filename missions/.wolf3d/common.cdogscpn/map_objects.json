@@ -61,7 +61,7 @@
       "Size": [10, 8],
       "Offset": [-5, -8],
       "Health": 30,
-      "Flags": ["Inside", "OneOrMoreWalls"]
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
     },
     {
       "Name": "knives",
@@ -122,6 +122,17 @@
       "Offset": [-7, -33],
       "Health": 40,
       "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "basket",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "basket"
+      },
+      "Size": [10, 8],
+      "Offset": [-3, -8],
+      "Health": 20,
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
     },
     {
       "Name": "spotlight",

@@ -992,6 +992,10 @@
 		{
 			"MapObject": "bed",
 			"Positions": [[25, 5]]
+		},
+		{
+			"MapObject": "basket",
+			"Positions": [[27, 5]]
 		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],
