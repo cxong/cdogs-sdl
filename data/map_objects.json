@@ -571,6 +571,16 @@
       "Flags": ["Inside", "NoWalls"]
     },
     {
+      "Name": "bed",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "bed"
+      },
+      "Wreck": "safe_wreck",
+      "Health": 50,
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
+    },
+    {
       "Name": "column",
       "Pic": {
         "Type": "Normal",

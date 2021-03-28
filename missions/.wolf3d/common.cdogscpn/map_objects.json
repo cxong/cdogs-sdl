@@ -91,7 +91,7 @@
       },
       "Offset": [-7, -20],
       "Health": 60,
-      "Flags": ["Inside", "OneOrMoreWalls"]
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
     },
     {
       "Name": "gibbet",
