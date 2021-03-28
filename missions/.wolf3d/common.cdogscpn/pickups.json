@@ -18,6 +18,15 @@
       },
       "Type": "Health",
       "Health": 10
+    },
+    {
+      "Name": "cross",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "cross"
+      },
+      "Type": "Score",
+      "Score": 100
     }
   ]
 }

@@ -1033,6 +1033,18 @@
 		{
 			"Pickup": "ammo_Bullets",
 			"Positions": [[17, 7]]
+		},
+		{
+			"Pickup": "gun_Machine Gun",
+			"Positions": [[19, 7]]
+		},
+		{
+			"Pickup": "gun_Chain Gun",
+			"Positions": [[21, 7]]
+		},
+		{
+			"Pickup": "cross",
+			"Positions": [[23, 7]]
 		}],
 		"Start": [0, 0],
 		"Exits": [{
