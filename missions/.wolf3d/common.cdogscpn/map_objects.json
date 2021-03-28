@@ -84,6 +84,16 @@
       "Flags": ["Inside", "NoWalls"]
     },
     {
+      "Name": "suit_of_armor",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "suit_of_armor"
+      },
+      "Offset": [-7, -20],
+      "Health": 60,
+      "Flags": ["Inside", "OneOrMoreWalls"]
+    },
+    {
       "Name": "gibbet",
       "Pic": {
         "Type": "Normal",

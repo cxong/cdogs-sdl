@@ -975,6 +975,10 @@
 		{
 			"MapObject": "gibbet_skeleton",
 			"Positions": [[17, 5]]
+		},
+		{
+			"MapObject": "suit_of_armor",
+			"Positions": [[29, 3]]
 		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],
