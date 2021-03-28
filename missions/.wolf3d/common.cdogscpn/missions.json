@@ -1025,6 +1025,14 @@
 		{
 			"Pickup": "meal",
 			"Positions": [[29, 5]]
+		},
+		{
+			"Pickup": "health",
+			"Positions": [[31, 5]]
+		},
+		{
+			"Pickup": "ammo_Bullets",
+			"Positions": [[17, 7]]
 		}],
 		"Start": [0, 0],
 		"Exits": [{

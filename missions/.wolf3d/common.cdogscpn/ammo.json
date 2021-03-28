@@ -1,0 +1,15 @@
+{
+  "Version": 2,
+  "Ammo": [
+    {
+      "Name": "Bullets",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "ammo_clip"
+      },
+      "Sound": "bullet_pickup",
+      "Amount": 8,
+      "Max": 100
+    }
+  ]
+}
