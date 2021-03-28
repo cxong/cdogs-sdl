@@ -1021,6 +1021,10 @@
 		"StaticPickups": [{
 			"Pickup": "dogfood",
 			"Positions": [[31, 1]]
+		},
+		{
+			"Pickup": "meal",
+			"Positions": [[29, 5]]
 		}],
 		"Start": [0, 0],
 		"Exits": [{

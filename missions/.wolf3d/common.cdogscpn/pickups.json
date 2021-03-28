@@ -9,6 +9,15 @@
       },
       "Type": "Health",
       "Health": 4
+    },
+    {
+      "Name": "meal",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "meal"
+      },
+      "Type": "Health",
+      "Health": 10
     }
   ]
 }

@@ -129,7 +129,7 @@
         "Type": "Normal",
         "Pic": "basket"
       },
-      "Size": [10, 8],
+      "Size": [6, 6],
       "Offset": [-3, -8],
       "Health": 20,
       "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
