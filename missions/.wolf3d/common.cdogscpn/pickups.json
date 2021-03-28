@@ -36,6 +36,15 @@
       },
       "Type": "Score",
       "Score": 500
+    },
+    {
+      "Name": "chest",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "chest"
+      },
+      "Type": "Score",
+      "Score": 1000
     }
   ]
 }
