@@ -74,6 +74,36 @@
       "Flags": ["Inside", "OneOrMoreWalls"]
     },
     {
+      "Name": "gibbet_bloody",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "gibbet_bloody"
+      },
+      "Offset": [-7, -33],
+      "Health": 40,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "gibbet",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "gibbet"
+      },
+      "Offset": [-7, -33],
+      "Health": 40,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
+      "Name": "gibbet_skeleton",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "gibbet_skeleton"
+      },
+      "Offset": [-7, -33],
+      "Health": 40,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
       "Name": "spotlight",
       "Pic": {
         "Type": "Normal",
