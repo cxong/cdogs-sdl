@@ -27,6 +27,15 @@
       },
       "Type": "Score",
       "Score": 100
+    },
+    {
+      "Name": "chalice",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "chalice"
+      },
+      "Type": "Score",
+      "Score": 500
     }
   ]
 }

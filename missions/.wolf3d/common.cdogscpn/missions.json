@@ -1045,6 +1045,10 @@
 		{
 			"Pickup": "cross",
 			"Positions": [[23, 7]]
+		},
+		{
+			"Pickup": "chalice",
+			"Positions": [[25, 7]]
 		}],
 		"Start": [0, 0],
 		"Exits": [{
