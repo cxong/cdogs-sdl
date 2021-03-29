@@ -131,7 +131,7 @@
       },
       "Size": [6, 6],
       "Offset": [-3, -8],
-      "Health": 20,
+      "Health": 0,
       "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
     },
     {
