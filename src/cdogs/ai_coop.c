@@ -549,6 +549,8 @@ static void FindObjectivesSortedByDistance(
 		co.Type = AI_OBJECTIVE_TYPE_KEY;
 		break;
 	case PICKUP_JEWEL:
+		co.Type = AI_OBJECTIVE_TYPE_PICKUP;
+		co.u.UID = p->UID;
 		break;
 	case PICKUP_HEALTH:
 		// Pick up if we are on low health, and lower than lead player

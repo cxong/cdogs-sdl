@@ -20,6 +20,15 @@
       "Health": 10
     },
     {
+      "Name": "heart",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "heart"
+      },
+      "Type": "Health",
+      "Health": 100
+    },
+    {
       "Name": "cross",
       "Pic": {
         "Type": "Normal",

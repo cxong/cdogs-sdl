@@ -1057,6 +1057,10 @@
 		{
 			"Pickup": "crown",
 			"Positions": [[29, 7]]
+		},
+		{
+			"Pickup": "heart",
+			"Positions": [[31, 7]]
 		}],
 		"Start": [0, 0],
 		"Exits": [{
