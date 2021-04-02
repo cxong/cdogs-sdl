@@ -135,6 +135,33 @@
       "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
     },
     {
+      "Name": "well",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "well"
+      },
+      "Health": 80,
+      "Flags": ["Outside", "NoWalls"]
+    },
+    {
+      "Name": "well_water",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "well_water"
+      },
+      "Health": 80,
+      "Flags": ["Outside", "NoWalls"]
+    },
+    {
+      "Name": "well_blood",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "well_blood"
+      },
+      "Health": 80,
+      "Flags": ["Outside", "NoWalls"]
+    },
+    {
       "Name": "spotlight",
       "Pic": {
         "Type": "Normal",

@@ -781,7 +781,7 @@ static HandleInputResult HandleInput(
 			{
 				MissionCopy(&lastMission, mission); // B,A,Z -> B,A,B
 			}
-			else
+			else if (mission != NULL)
 			{
 				MissionCopy(mission, &lastMission);			// B,B,A -> A,B,A
 				MissionCopy(&lastMission, &currentMission); // A,B,A -> A,B,B

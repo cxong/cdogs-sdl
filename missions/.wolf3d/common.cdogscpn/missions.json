@@ -996,6 +996,22 @@
 		{
 			"MapObject": "basket",
 			"Positions": [[27, 5]]
+		},
+		{
+			"MapObject": "gibs",
+			"Positions": [[17, 9]]
+		},
+		{
+			"MapObject": "barrel_wood2",
+			"Positions": [[19, 9]]
+		},
+		{
+			"MapObject": "well_water",
+			"Positions": [[21, 9]]
+		},
+		{
+			"MapObject": "well",
+			"Positions": [[23, 9]]
 		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],
