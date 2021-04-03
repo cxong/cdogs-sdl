@@ -1650,6 +1650,15 @@
       "DrawBelow": true
     },
     {
+      "Name": "bones2",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "bones2"
+      },
+      "Health": 0,
+      "DrawBelow": true
+    },
+    {
       "Name": "gibs",
       "Pic": {
         "Type": "Normal",
