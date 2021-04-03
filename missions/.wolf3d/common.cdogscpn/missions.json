@@ -915,7 +915,8 @@
 		{
 			"MapObject": "spotlight",
 			"Positions": [[25, 1],
-			[23, 1]]
+			[23, 1],
+			[30, 9]]
 		},
 		{
 			"MapObject": "chandelier",
@@ -1020,6 +1021,14 @@
 		{
 			"MapObject": "flag",
 			"Positions": [[27, 9]]
+		},
+		{
+			"MapObject": "skull2",
+			"Positions": [[29, 9]]
+		},
+		{
+			"MapObject": "bones",
+			"Positions": [[31, 9]]
 		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],
