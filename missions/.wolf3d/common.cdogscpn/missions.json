@@ -1037,6 +1037,10 @@
 		{
 			"MapObject": "bones3",
 			"Positions": [[19, 11]]
+		},
+		{
+			"MapObject": "pots",
+			"Positions": [[21, 11]]
 		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],

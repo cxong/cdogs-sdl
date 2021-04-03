@@ -74,6 +74,16 @@
       "Flags": ["Inside", "OneOrMoreWalls"]
     },
     {
+      "Name": "pots",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "pots"
+      },
+      "Offset": [-8, -13],
+      "Health": 0,
+      "Flags": ["Inside", "OneOrMoreWalls"]
+    },
+    {
       "Name": "gibbet_bloody",
       "Pic": {
         "Type": "Normal",
