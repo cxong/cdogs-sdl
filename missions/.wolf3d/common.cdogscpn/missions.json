@@ -1033,6 +1033,10 @@
 		{
 			"MapObject": "bones2",
 			"Positions": [[17, 11]]
+		},
+		{
+			"MapObject": "bones3",
+			"Positions": [[19, 11]]
 		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],
