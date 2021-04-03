@@ -1012,6 +1012,14 @@
 		{
 			"MapObject": "well",
 			"Positions": [[23, 9]]
+		},
+		{
+			"MapObject": "pool_blood",
+			"Positions": [[25, 9]]
+		},
+		{
+			"MapObject": "flag",
+			"Positions": [[27, 9]]
 		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],

@@ -162,6 +162,27 @@
       "Flags": ["Outside", "NoWalls"]
     },
     {
+      "Name": "pool_blood",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "pool_blood"
+      },
+      "Offset": [-8, -6],
+      "Health": 0,
+      "DrawBelow": true
+    },
+    {
+      "Name": "flag",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "flag"
+      },
+      "Size": [6, 4],
+      "Offset": [-4, -21],
+      "Health": 40,
+      "Flags": ["Inside", "OneOrMoreWalls"]
+    },
+    {
       "Name": "spotlight",
       "Pic": {
         "Type": "Normal",
