@@ -204,6 +204,16 @@
       "Flags": ["Inside", "OneOrMoreWalls"]
     },
     {
+      "Name": "stove",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "stove"
+      },
+      "Offset": [-8, -21],
+      "Health": 60,
+      "Flags": ["Inside", "OnWall", "FreeInFront"]
+    },
+    {
       "Name": "spotlight",
       "Pic": {
         "Type": "Normal",
