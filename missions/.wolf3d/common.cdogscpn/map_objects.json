@@ -53,6 +53,17 @@
       "Flags": ["NoWalls"]
     },
     {
+      "Name": "cowskull_pillar",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "cowskull_pillar"
+      },
+      "Size": [8, 6],
+      "Offset": [-8, -14],
+      "Health": 20,
+      "Flags": ["NoWalls"]
+    },
+    {
       "Name": "urn",
       "Pic": {
         "Type": "Normal",

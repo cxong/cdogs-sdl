@@ -1041,6 +1041,10 @@
 		{
 			"MapObject": "pots",
 			"Positions": [[21, 11]]
+		},
+		{
+			"MapObject": "cowskull_pillar",
+			"Positions": [[23, 11]]
 		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],
