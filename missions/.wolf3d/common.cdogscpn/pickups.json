@@ -63,6 +63,16 @@
       },
       "Type": "Score",
       "Score": 5000
+    },
+    {
+      "Name": "ammo_box",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "ammo_box"
+      },
+      "Type": "Ammo",
+      "Ammo": "Bullets",
+      "Amount": 25
     }
   ]
 }

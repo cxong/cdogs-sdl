@@ -1134,6 +1134,10 @@
 		{
 			"Pickup": "heart",
 			"Positions": [[31, 7]]
+		},
+		{
+			"Pickup": "ammo_box",
+			"Positions": [[31, 11]]
 		}],
 		"Start": [0, 0],
 		"Exits": [{
