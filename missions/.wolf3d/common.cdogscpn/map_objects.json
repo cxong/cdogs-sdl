@@ -233,6 +233,15 @@
       "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
     },
     {
+      "Name": "truck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "truck"
+      },
+      "Health": 100,
+      "Flags": ["Outside"]
+    },
+    {
       "Name": "grass",
       "Pic": {
         "Type": "Normal",

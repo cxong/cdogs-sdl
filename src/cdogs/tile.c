@@ -89,6 +89,10 @@ bool TileIsShootable(const Tile *t)
 
 bool TileCanWalk(const Tile *t)
 {
+	if (t == NULL)
+	{
+		return false;
+	}
 	return (t->Class->Type == TILE_CLASS_DOOR && t->ClassAlt &&
 			t->ClassAlt->Name)
 			   ? t->ClassAlt->canWalk
