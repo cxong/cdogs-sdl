@@ -1053,6 +1053,14 @@
 		{
 			"MapObject": "well_blood",
 			"Positions": [[23, 11]]
+		},
+		{
+			"MapObject": "spears",
+			"Positions": [[25, 11]]
+		},
+		{
+			"MapObject": "statue_behemoth",
+			"Positions": [[26, 11]]
 		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],

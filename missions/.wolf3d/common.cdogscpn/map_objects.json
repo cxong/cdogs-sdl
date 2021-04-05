@@ -214,6 +214,16 @@
       "Flags": ["Inside", "OnWall", "FreeInFront"]
     },
     {
+      "Name": "spears",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "spears"
+      },
+      "Offset": [-7, -20],
+      "Health": 40,
+      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
+    },
+    {
       "Name": "spotlight",
       "Pic": {
         "Type": "Normal",
