@@ -1061,6 +1061,10 @@
 		{
 			"MapObject": "statue_behemoth",
 			"Positions": [[26, 11]]
+		},
+		{
+			"MapObject": "grass",
+			"Positions": [[27, 11]]
 		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],

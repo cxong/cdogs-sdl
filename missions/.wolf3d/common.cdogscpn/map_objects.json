@@ -224,6 +224,15 @@
       "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
     },
     {
+      "Name": "grass",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "grass"
+      },
+      "Health": 0,
+      "Flags": ["Outside"]
+    },
+    {
       "Name": "spotlight",
       "Pic": {
         "Type": "Normal",
