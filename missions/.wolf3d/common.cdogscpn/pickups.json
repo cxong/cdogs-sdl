@@ -73,6 +73,14 @@
       "Type": "Ammo",
       "Ammo": "Bullets",
       "Amount": 25
+    },
+    {
+      "Name": "spear",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "spear"
+      },
+      "Type": "Score"
     }
   ]
 }

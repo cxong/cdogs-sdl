@@ -1069,6 +1069,10 @@
 		{
 			"MapObject": "pillar_brown",
 			"Positions": [[28, 11]]
+		},
+		{
+			"MapObject": "truck",
+			"Positions": [[17, 13]]
 		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],
@@ -1138,6 +1142,10 @@
 		{
 			"Pickup": "ammo_box",
 			"Positions": [[31, 11]]
+		},
+		{
+			"Pickup": "spear",
+			"Positions": [[19, 13]]
 		}],
 		"Start": [0, 0],
 		"Exits": [{
