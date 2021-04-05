@@ -32,6 +32,15 @@
       "Flags": ["Inside", "NoWalls"]
     },
     {
+      "Name": "pillar_brown",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "pillar_brown"
+      },
+      "Health": 80,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
       "Name": "sink",
       "Pic": {
         "Type": "Normal",

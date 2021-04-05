@@ -1065,6 +1065,10 @@
 		{
 			"MapObject": "grass",
 			"Positions": [[27, 11]]
+		},
+		{
+			"MapObject": "pillar_brown",
+			"Positions": [[28, 11]]
 		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],
