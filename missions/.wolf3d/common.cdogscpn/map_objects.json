@@ -251,6 +251,15 @@
       "Flags": ["Outside"]
     },
     {
+      "Name": "dead_guard",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "dead_guard"
+      },
+      "Health": 0,
+      "DrawBelow": true
+    },
+    {
       "Name": "spotlight",
       "Pic": {
         "Type": "Normal",

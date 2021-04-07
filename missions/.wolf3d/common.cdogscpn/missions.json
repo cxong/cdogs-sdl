@@ -1073,6 +1073,10 @@
 		{
 			"MapObject": "truck",
 			"Positions": [[17, 13]]
+		},
+		{
+			"MapObject": "dead_guard",
+			"Positions": [[21, 13]]
 		}],
 		"StaticCharacters": [],
 		"StaticObjectives": [],
