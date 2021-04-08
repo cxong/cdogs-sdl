@@ -1,30 +1,30 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2014, Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2014, 2021 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #pragma once
 
@@ -137,54 +137,53 @@ typedef struct
 {
 	char *Name;
 	ConfigType Type;
-	union
-	{
-#define VALUES(_name, _type) \
-		struct \
-		{ \
-			_type Value; \
-			_type Last; \
-			_type Default; \
-			_type Min; \
-			_type Max; \
-			_type Increment; \
-		} _name
+	union {
+#define VALUES(_name, _type)                                                  \
+	struct                                                                    \
+	{                                                                         \
+		_type Value;                                                          \
+		_type Last;                                                           \
+		_type Default;                                                        \
+		_type Min;                                                            \
+		_type Max;                                                            \
+		_type Increment;                                                      \
+	} _name
 		VALUES(String, char *);
 		VALUES(Float, double);
 		VALUES(Bool, bool);
 #undef VALUES
-#define FORMATTED_VALUES(_name, _type, _toStrType) \
-		struct \
-		{ \
-			_type Value; \
-			_type Last; \
-			_type Default; \
-			_type Min; \
-			_type Max; \
-			_type Increment; \
-			_type (*StrTo##_name)(const char *); \
-			_toStrType *(*_name##ToStr)(_type); \
-		} _name
+#define FORMATTED_VALUES(_name, _type, _toStrType)                            \
+	struct                                                                    \
+	{                                                                         \
+		_type Value;                                                          \
+		_type Last;                                                           \
+		_type Default;                                                        \
+		_type Min;                                                            \
+		_type Max;                                                            \
+		_type Increment;                                                      \
+		_type (*StrTo##_name)(const char *);                                  \
+		_toStrType *(*_name##ToStr)(_type);                                   \
+	} _name
 		FORMATTED_VALUES(Int, int, char);
 		FORMATTED_VALUES(Enum, int, const char);
 #undef FORMATTED_VALUES
-		CArray Group;	// of Config
+		CArray Group; // of Config
 	} u;
 } Config;
 
 Config ConfigNewString(const char *name, const char *defaultValue);
 Config ConfigNewInt(
-	const char *name, const int defaultValue,
-	const int minValue, const int maxValue, const int increment,
-	int (*strToInt)(const char *), char *(*intToStr)(int));
+	const char *name, const int defaultValue, const int minValue,
+	const int maxValue, const int increment, int (*strToInt)(const char *),
+	char *(*intToStr)(int));
 Config ConfigNewFloat(
-	const char *name, const double defaultValue,
-	const double minValue, const double maxValue, const double increment);
+	const char *name, const double defaultValue, const double minValue,
+	const double maxValue, const double increment);
 Config ConfigNewBool(const char *name, const bool defaultValue);
 Config ConfigNewEnum(
-	const char *name, const int defaultValue,
-	const int minValue, const int maxValue,
-	int (*strToEnum)(const char *), const char *(*enumToStr)(int));
+	const char *name, const int defaultValue, const int minValue,
+	const int maxValue, int (*strToEnum)(const char *),
+	const char *(*enumToStr)(int));
 Config ConfigNewGroup(const char *name);
 void ConfigDestroy(Config *c);
 bool ConfigChangedAndApply(Config *c);
@@ -231,5 +230,5 @@ void ConfigSetFloat(Config *c, const char *name, const double value);
 // Try to set config value from a string; return success
 bool ConfigTrySetFromString(Config *c, const char *name, const char *value);
 
-bool ConfigApply(Config *config);
+bool ConfigApply(Config *config, bool *resetBg);
 int ConfigGetVersion(FILE *f);

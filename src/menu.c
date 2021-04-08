@@ -50,9 +50,7 @@
 
 #include <assert.h>
 
-#include <cdogs/config_io.h>
 #include <cdogs/draw/drawtools.h>
-#include <cdogs/files.h>
 #include <cdogs/font.h>
 #include <cdogs/gamedata.h>
 #include <cdogs/grafx_bg.h>
@@ -156,31 +154,31 @@ static struct vec2i SubmenuGetSize(
 	// Add extra width for options menus
 	switch (subMenu->type)
 	{
-		case MENU_TYPE_SET_OPTION_RANGE:
-		case MENU_TYPE_SET_OPTION_SEED:	// fallthrough
-		case MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID:	// fallthrough
-		case MENU_TYPE_SET_OPTION_RANGE_GET_SET:	// fallthrough
-			switch (subMenu->u.option.displayStyle)
-			{
-			case MENU_OPTION_DISPLAY_STYLE_NONE:
-				// Do nothing
-				break;
-			case MENU_OPTION_DISPLAY_STYLE_STR_FUNC:
-			case MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC:	// fallthrough
-				maxWidth += 80;
-				break;
-			default:
-				CASSERT(false, "unknown menu display type");
-				break;
-			}
+	case MENU_TYPE_SET_OPTION_RANGE:
+	case MENU_TYPE_SET_OPTION_SEED:					  // fallthrough
+	case MENU_TYPE_SET_OPTION_UP_DOWN_VOID_FUNC_VOID: // fallthrough
+	case MENU_TYPE_SET_OPTION_RANGE_GET_SET:		  // fallthrough
+		switch (subMenu->u.option.displayStyle)
+		{
+		case MENU_OPTION_DISPLAY_STYLE_NONE:
+			// Do nothing
 			break;
-		case MENU_TYPE_SET_OPTION_TOGGLE:
-		case MENU_TYPE_SET_OPTION_CHANGE_KEY:	// fallthrough
+		case MENU_OPTION_DISPLAY_STYLE_STR_FUNC:
+		case MENU_OPTION_DISPLAY_STYLE_INT_TO_STR_FUNC: // fallthrough
 			maxWidth += 80;
 			break;
 		default:
-			// do nothing
+			CASSERT(false, "unknown menu display type");
 			break;
+		}
+		break;
+	case MENU_TYPE_SET_OPTION_TOGGLE:
+	case MENU_TYPE_SET_OPTION_CHANGE_KEY: // fallthrough
+		maxWidth += 80;
+		break;
+	default:
+		// do nothing
+		break;
 	}
 
 	return svec2i(maxWidth, FontStrH(subMenu->name));
@@ -200,7 +198,8 @@ static Rect2i MenuGetSubmenuBounds(const MenuSystem *ms, const int idx)
 		return Rect2iZero();
 	}
 	const int maxIEnd =
-		MIN(maxItems > 0 ? iStart + maxItems : 99,  (int)menu->u.normal.subMenus.size);
+		MIN(maxItems > 0 ? iStart + maxItems : 99,
+			(int)menu->u.normal.subMenus.size);
 	int numMenuLines = 0;
 	// Count the number of menu items that can fit
 	// This is to account for multi-line items
@@ -303,7 +302,8 @@ GameLoopResult MenuUpdate(MenuSystem *ms)
 					{
 						if (menu->u.normal.index != i)
 						{
-							const menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
+							const menu_t *subMenu =
+								CArrayGet(&menu->u.normal.subMenus, i);
 							if (!subMenu->isDisabled)
 							{
 								menu->u.normal.index = i;
@@ -449,9 +449,8 @@ void ShowControls(void)
 }
 
 struct vec2i DisplayMenuItem(
-	GraphicsDevice *g, const Rect2i bounds, const char *s,
-	const bool selected, const bool isDisabled,
-	const color_t color)
+	GraphicsDevice *g, const Rect2i bounds, const char *s, const bool selected,
+	const bool isDisabled, const color_t color)
 {
 	if (isDisabled)
 	{
@@ -460,7 +459,7 @@ struct vec2i DisplayMenuItem(
 	}
 	if (selected)
 	{
-		const color_t bg = { 0, 255, 255, 64 };
+		const color_t bg = {0, 255, 255, 64};
 		// Add 1px padding
 		const struct vec2i bgPos = svec2i_subtract(bounds.Pos, svec2i_one());
 		const struct vec2i bgSize = svec2i_add(bounds.Size, svec2i(2, 2));
@@ -559,29 +558,6 @@ void MenuSetCustomDisplay(menu_t *menu, MenuDisplayFunc func, const void *data)
 	menu->customDisplayData = data;
 }
 
-menu_t *MenuCreateConfigOptions(
-	const char *name, const char *title, const Config *c, MenuSystem *ms,
-	const bool backOrReturn)
-{
-	menu_t *menu = MenuCreateNormal(name, title, MENU_TYPE_OPTIONS, 0);
-	CASSERT(
-		c->Type == CONFIG_TYPE_GROUP,
-		"Cannot make menu from non-group config");
-	CA_FOREACH(Config, child, c->u.Group)
-	MenuAddConfigOptionsItem(menu, child);
-	CA_FOREACH_END()
-	MenuAddSubmenu(menu, MenuCreateSeparator(""));
-	if (backOrReturn)
-	{
-		MenuAddSubmenu(menu, MenuCreateBack("Done"));
-	}
-	else
-	{
-		MenuAddSubmenu(menu, MenuCreateReturn("Done", 0));
-	}
-	MenuSetPostInputFunc(menu, PostInputConfigApply, ms);
-	return menu;
-}
 void MenuAddConfigOptionsItem(menu_t *menu, Config *c)
 {
 	char nameBuf[256];
@@ -821,12 +797,9 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 
 	const int xOptions = bounds.Pos.x + maxWidth + 10;
 	char nameBuf[512];
-	if (subMenu->type == MENU_TYPE_NORMAL &&
-		subMenu->u.normal.isSubmenusAlt)
+	if (subMenu->type == MENU_TYPE_NORMAL && subMenu->u.normal.isSubmenusAlt)
 	{
-		snprintf(
-			nameBuf, sizeof(nameBuf), "%s " ARROW_RIGHT,
-			subMenu->name);
+		snprintf(nameBuf, sizeof(nameBuf), "%s " ARROW_RIGHT, subMenu->name);
 	}
 	else
 	{
@@ -876,10 +849,8 @@ static void MenuDisplaySubmenus(const MenuSystem *ms)
 		else
 		{
 			const int pi = subMenu->u.changeKey.playerIndex;
-			const InputKeys *keys =
-				&ms->handlers->keyboard.PlayerKeys[pi];
-			const SDL_Scancode sc =
-				KeyGet(keys, subMenu->u.changeKey.code);
+			const InputKeys *keys = &ms->handlers->keyboard.PlayerKeys[pi];
+			const SDL_Scancode sc = KeyGet(keys, subMenu->u.changeKey.code);
 			option = SDL_GetScancodeName(sc);
 			if (sc == SDL_SCANCODE_UNKNOWN || option == NULL)
 			{
@@ -1384,31 +1355,4 @@ void MenuActivate(MenuSystem *ms, menu_t *menu, int cmd)
 		assert(0);
 		break;
 	}
-}
-
-void PostInputConfigApply(menu_t *menu, int cmd, void *data)
-{
-	UNUSED(menu);
-	UNUSED(cmd);
-	if (!ConfigApply(&gConfig))
-	{
-		LOG(LM_MAIN, LL_ERROR, "Failed to apply config; reset to last used");
-		ConfigResetChanged(&gConfig);
-	}
-	else
-	{
-		// Save config immediately
-		ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
-	}
-
-	MenuResetSize(data);
-}
-
-void MenuResetSize(MenuSystem *ms)
-{
-	// Update menu system so that resolution changes don't
-	// affect menu positions
-	ms->pos = svec2i_zero();
-	ms->size = svec2i(
-		ms->graphics->cachedConfig.Res.x, ms->graphics->cachedConfig.Res.y);
 }

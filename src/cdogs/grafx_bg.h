@@ -45,7 +45,3 @@ void GrafxMakeBackground(
 	GraphicsDevice *device, DrawBuffer *buffer, Campaign *co,
 	struct MissionOptions *mo, Map *map, HSV tint, const bool isEditor,
 	struct vec2 pos, GrafxDrawExtra *extra);
-
-void GrafxMakeRandomBackground(
-	GraphicsDevice *device, Campaign *co, struct MissionOptions *mo,
-	Map *map);

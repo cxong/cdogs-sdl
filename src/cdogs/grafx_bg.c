@@ -41,25 +41,6 @@
 #include "texture.h"
 #include "triggers.h"
 
-void GrafxMakeRandomBackground(
-	GraphicsDevice *device, Campaign *co, struct MissionOptions *mo, Map *map)
-{
-	CampaignSettingInit(&co->Setting);
-	SetupQuickPlayCampaign(&co->Setting);
-	const HSV tint = {rand() * 360.0 / RAND_MAX, rand() * 1.0 / RAND_MAX, 0.5};
-	DrawBuffer buffer;
-	DrawBufferInit(&buffer, svec2i(X_TILES, Y_TILES), device);
-	co->MissionIndex = 0;
-	Config *showHud = ConfigGet(&gConfig, "Graphics.ShowHUD");
-	showHud->u.Bool.Value = false;
-	GrafxMakeBackground(
-		device, &buffer, co, mo, map, tint, false, svec2_zero(), NULL);
-	ConfigResetChanged(showHud);
-	DrawBufferTerminate(&buffer);
-	MissionOptionsTerminate(mo);
-	CampaignSettingTerminateAll(&co->Setting);
-}
-
 static void DrawBackgroundWithRenderer(
 	GraphicsDevice *g, WindowContext *wc, SDL_Texture *target,
 	SDL_Texture *src, DrawBuffer *buffer, const HSV tint,

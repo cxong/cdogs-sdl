@@ -267,9 +267,8 @@ int MenuGetNumMenuItemsShown(const menu_t *menu);
 
 void ShowControls(void);
 struct vec2i DisplayMenuItem(
-	GraphicsDevice *g, const Rect2i bounds, const char *s,
-	const bool selected, const bool isDisabled,
-	const color_t color);
+	GraphicsDevice *g, const Rect2i bounds, const char *s, const bool selected,
+	const bool isDisabled, const color_t color);
 
 menu_t *MenuCreate(const char *name, menu_type_e type);
 menu_t *MenuCreateNormal(
@@ -283,10 +282,6 @@ void MenuSetPostInputFunc(menu_t *menu, MenuPostInputFunc func, void *data);
 void MenuSetCustomDisplay(
 	menu_t *menu, MenuDisplayFunc func, const void *data);
 
-// Make an options menu using a group of configs
-menu_t *MenuCreateConfigOptions(
-	const char *name, const char *title, const Config *c, MenuSystem *ms,
-	const bool backOrReturn);
 void MenuAddConfigOptionsItem(menu_t *menu, Config *c);
 menu_t *MenuCreateOptionToggle(const char *name, bool *config);
 menu_t *MenuCreateOptionRange(
@@ -314,6 +309,3 @@ menu_t *MenuCreateCustom(
 void MenuPlaySound(MenuSound s);
 
 void MenuClearSubmenus(menu_t *menu);
-
-void PostInputConfigApply(menu_t *menu, int cmd, void *data);
-void MenuResetSize(MenuSystem *ms);

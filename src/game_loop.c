@@ -56,7 +56,7 @@ void emscriptenLoadFiles()
 	{
 		fclose(file_options);
 		ConfigLoadJSON(&gConfig, GetConfigFilePath(CONFIG_FILE));
-		ConfigApply(&gConfig);
+		ConfigApply(&gConfig, NULL);
 	}
 	else
 	{

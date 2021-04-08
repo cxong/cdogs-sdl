@@ -30,6 +30,8 @@
 
 #include <cdogs/ai.h>
 #include <cdogs/config.h>
+#include <cdogs/config_io.h>
+#include <cdogs/files.h>
 #include <cdogs/font.h>
 #include <cdogs/grafx_bg.h>
 #include <cdogs/log.h>
@@ -57,9 +59,10 @@ typedef struct
 	HSV bgTint;
 	RunGameData rData;
 } MainMenuData;
+static void MenuResetSize(MenuSystem *ms);
 static void MenuCreateAll(
-	MenuSystem *ms, LoopRunner *l, CustomCampaigns *campaigns,
-	EventHandlers *handlers, GraphicsDevice *graphics);
+	MainMenuData *data, LoopRunner *l, EventHandlers *handlers);
+static void MainMenuReset(MainMenuData *data);
 static void MainMenuTerminate(GameLoopData *data);
 static void MainMenuOnEnter(GameLoopData *data);
 static void MainMenuOnExit(GameLoopData *data);
@@ -76,32 +79,17 @@ GameLoopData *MainMenu(GraphicsDevice *graphics, LoopRunner *l)
 	LoadAllCampaigns(&data->campaigns);
 	data->lastGameMode = GAME_MODE_QUICK_PLAY;
 	data->wasClient = false;
-	MenuCreateAll(
-		&data->ms, l, &data->campaigns, &gEventHandlers, data->graphics);
+	MenuCreateAll(data, l, &gEventHandlers);
 	MenuSetCreditsDisplayer(&data->ms, &data->creditsDisplayer);
 
-	// Initialise background game
-	CampaignSettingInit(&gCampaign.Setting);
-	SetupQuickPlayCampaign(&gCampaign.Setting);
-	const HSV tint = {rand() * 360.0 / RAND_MAX, rand() * 1.0 / RAND_MAX, 0.5};
-	data->bgTint = tint;
-	DrawBufferInit(&data->buffer, svec2i(X_TILES, Y_TILES), graphics);
-	gCampaign.MissionIndex = 0;
-	CampaignAndMissionSetup(&gCampaign, &gMission);
-	GameEventsInit(&gGameEvents);
-	MapBuild(&gMap, gMission.missionData, &gCampaign, gMission.index);
-	InitializeBadGuys();
-	CreateEnemies();
-	MapMarkAllAsVisited(&gMap);
-	GameInit(&data->rData, &gCampaign, &gMission, &gMap);
+	MainMenuReset(data);
 
 	return GameLoopDataNew(
 		data, MainMenuTerminate, MainMenuOnEnter, MainMenuOnExit, NULL,
 		MainMenuUpdate, MainMenuDraw);
 }
-static void MainMenuReset(MainMenuData *data)
+static void GenerateLiveBackground(MainMenuData *data)
 {
-	// Initialise background game
 	CampaignSettingInit(&gCampaign.Setting);
 	SetupQuickPlayCampaign(&gCampaign.Setting);
 	const HSV tint = {rand() * 360.0 / RAND_MAX, rand() * 1.0 / RAND_MAX, 0.5};
@@ -115,6 +103,10 @@ static void MainMenuReset(MainMenuData *data)
 	CreateEnemies();
 	MapMarkAllAsVisited(&gMap);
 	GameInit(&data->rData, &gCampaign, &gMission, &gMap);
+}
+static void MainMenuReset(MainMenuData *data)
+{
+	GenerateLiveBackground(data);
 
 	MenuResetSize(&data->ms);
 }
@@ -230,33 +222,36 @@ static void MainMenuDraw(GameLoopData *data)
 {
 	MainMenuData *mData = data->Data;
 	MenuDraw(&mData->ms);
-	const struct vec2 pos = Vec2CenterOfTile(svec2i_scale_divide(gMap.Size, 2));
-	GrafxDrawBackground(mData->graphics, &mData->buffer, mData->bgTint, pos, NULL);
+	const struct vec2 pos =
+		Vec2CenterOfTile(svec2i_scale_divide(gMap.Size, 2));
+	GrafxDrawBackground(
+		mData->graphics, &mData->buffer, mData->bgTint, pos, NULL);
 }
 
 static menu_t *MenuCreateStart(
 	const char *name, MenuSystem *ms, LoopRunner *l,
 	CustomCampaigns *campaigns);
-static menu_t *MenuCreateOptions(const char *name, MenuSystem *ms);
+static menu_t *MenuCreateOptions(const char *name, MainMenuData *data);
 menu_t *MenuCreateQuit(const char *name);
 
 static void MenuCreateAll(
-	MenuSystem *ms, LoopRunner *l, CustomCampaigns *campaigns,
-	EventHandlers *handlers, GraphicsDevice *graphics)
+	MainMenuData *data, LoopRunner *l, EventHandlers *handlers)
 {
 	MenuSystemInit(
-		ms, handlers, graphics, svec2i_zero(),
-		svec2i(graphics->cachedConfig.Res.x, graphics->cachedConfig.Res.y));
-	ms->root = ms->current = MenuCreateNormal(
+		&data->ms, handlers, data->graphics, svec2i_zero(),
+		data->graphics->cachedConfig.Res);
+	data->ms.root = data->ms.current = MenuCreateNormal(
 		"", "", MENU_TYPE_NORMAL,
 		MENU_DISPLAY_ITEMS_CREDITS | MENU_DISPLAY_ITEMS_AUTHORS);
-	MenuAddSubmenu(ms->root, MenuCreateStart("Start", ms, l, campaigns));
-	MenuAddSubmenu(ms->root, MenuCreateOptions("Options...", ms));
+	MenuAddSubmenu(
+		data->ms.root,
+		MenuCreateStart("Start", &data->ms, l, &data->campaigns));
+	MenuAddSubmenu(data->ms.root, MenuCreateOptions("Options...", data));
 #ifndef __EMSCRIPTEN__
-	MenuAddSubmenu(ms->root, MenuCreateQuit("Quit"));
-	MenuAddExitType(ms, MENU_TYPE_QUIT);
+	MenuAddSubmenu(data->ms.root, MenuCreateQuit("Quit"));
+	MenuAddExitType(&data->ms, MENU_TYPE_QUIT);
 #endif
-	MenuAddExitType(ms, MENU_TYPE_RETURN);
+	MenuAddExitType(&data->ms, MENU_TYPE_RETURN);
 }
 
 typedef struct
@@ -537,40 +532,88 @@ static void CheckLANServers(menu_t *menu, void *data)
 	}
 }
 
-static menu_t *MenuCreateOptionsGraphics(const char *name, MenuSystem *ms);
+static void PostInputConfigApply(menu_t *menu, int cmd, void *data)
+{
+	UNUSED(menu);
+	UNUSED(cmd);
+	MainMenuData *mData = data;
+	bool resetBg = false;
+	if (!ConfigApply(&gConfig, &resetBg))
+	{
+		LOG(LM_MAIN, LL_ERROR, "Failed to apply config; reset to last used");
+		ConfigResetChanged(&gConfig);
+	}
+	else
+	{
+		// Save config immediately
+		ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
+		if (resetBg)
+		{
+			GenerateLiveBackground(mData);
+		}
+	}
+
+	MenuResetSize(&mData->ms);
+}
+
+static menu_t *MenuCreateConfigOptions(
+	const char *name, const char *title, const Config *c, MainMenuData *data,
+	const bool backOrReturn)
+{
+	menu_t *menu = MenuCreateNormal(name, title, MENU_TYPE_OPTIONS, 0);
+	CASSERT(
+		c->Type == CONFIG_TYPE_GROUP,
+		"Cannot make menu from non-group config");
+	CA_FOREACH(Config, child, c->u.Group)
+	MenuAddConfigOptionsItem(menu, child);
+	CA_FOREACH_END()
+	MenuAddSubmenu(menu, MenuCreateSeparator(""));
+	if (backOrReturn)
+	{
+		MenuAddSubmenu(menu, MenuCreateBack("Done"));
+	}
+	else
+	{
+		MenuAddSubmenu(menu, MenuCreateReturn("Done", 0));
+	}
+	MenuSetPostInputFunc(menu, PostInputConfigApply, data);
+	return menu;
+}
+
+static menu_t *MenuCreateOptionsGraphics(const char *name, MainMenuData *data);
 #if !defined(__ANDROID__) && !defined(__GCWZERO__)
-static menu_t *MenuCreateOptionsControls(const char *name, MenuSystem *ms);
+static menu_t *MenuCreateOptionsControls(const char *name, MainMenuData *data);
 #endif
 
-static menu_t *MenuCreateOptions(const char *name, MenuSystem *ms)
+static menu_t *MenuCreateOptions(const char *name, MainMenuData *data)
 {
 	menu_t *menu = MenuCreateNormal(name, "Options:", MENU_TYPE_NORMAL, 0);
 	MenuAddSubmenu(
 		menu, MenuCreateConfigOptions(
-				  "Game...", "Game Options:", ConfigGet(&gConfig, "Game"), ms,
-				  true));
-	MenuAddSubmenu(menu, MenuCreateOptionsGraphics("Graphics...", ms));
+				  "Game...", "Game Options:", ConfigGet(&gConfig, "Game"),
+				  data, true));
+	MenuAddSubmenu(menu, MenuCreateOptionsGraphics("Graphics...", data));
 	MenuAddSubmenu(
 		menu, MenuCreateConfigOptions(
 				  "Interface...", "Interface Options:",
-				  ConfigGet(&gConfig, "Interface"), ms, true));
+				  ConfigGet(&gConfig, "Interface"), data, true));
 #if !defined(__ANDROID__) && !defined(__GCWZERO__)
-	MenuAddSubmenu(menu, MenuCreateOptionsControls("Controls...", ms));
+	MenuAddSubmenu(menu, MenuCreateOptionsControls("Controls...", data));
 #endif
 	MenuAddSubmenu(
 		menu, MenuCreateConfigOptions(
 				  "Sound...", "Configure Sound:", ConfigGet(&gConfig, "Sound"),
-				  ms, true));
+				  data, true));
 	MenuAddSubmenu(
 		menu, MenuCreateConfigOptions(
 				  "Quick Play...", "Quick Play Options:",
-				  ConfigGet(&gConfig, "QuickPlay"), ms, true));
+				  ConfigGet(&gConfig, "QuickPlay"), data, true));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Back"));
 	return menu;
 }
 
-menu_t *MenuCreateOptionsGraphics(const char *name, MenuSystem *ms)
+static menu_t *MenuCreateOptionsGraphics(const char *name, MainMenuData *data)
 {
 	menu_t *menu =
 		MenuCreateNormal(name, "Graphics Options:", MENU_TYPE_OPTIONS, 0);
@@ -592,21 +635,21 @@ menu_t *MenuCreateOptionsGraphics(const char *name, MenuSystem *ms)
 	MenuAddConfigOptionsItem(menu, ConfigGet(&gConfig, "Graphics.Brass"));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
-	MenuSetPostInputFunc(menu, PostInputConfigApply, ms);
+	MenuSetPostInputFunc(menu, PostInputConfigApply, data);
 	return menu;
 }
 
-menu_t *MenuCreateKeys(const char *name, MenuSystem *ms);
+static menu_t *MenuCreateKeys(const char *name, MainMenuData *data);
 
 #if !defined(__ANDROID__) && !defined(__GCWZERO__)
-menu_t *MenuCreateOptionsControls(const char *name, MenuSystem *ms)
+static menu_t *MenuCreateOptionsControls(const char *name, MainMenuData *data)
 {
 	menu_t *menu =
 		MenuCreateNormal(name, "Configure Controls:", MENU_TYPE_OPTIONS, 0);
-	MenuAddSubmenu(menu, MenuCreateKeys("Redefine keys...", ms));
+	MenuAddSubmenu(menu, MenuCreateKeys("Redefine keys...", data));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
-	MenuSetPostInputFunc(menu, PostInputConfigApply, ms);
+	MenuSetPostInputFunc(menu, PostInputConfigApply, data);
 	return menu;
 }
 #endif
@@ -621,7 +664,7 @@ static void MenuCreateKeysSingleSection(
 static menu_t *MenuCreateOptionChangeKey(
 	const key_code_e code, const int playerIndex, const bool isOptional);
 
-menu_t *MenuCreateKeys(const char *name, MenuSystem *ms)
+static menu_t *MenuCreateKeys(const char *name, MainMenuData *data)
 {
 	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_OPTIONS, 0);
 	MenuCreateKeysSingleSection(menu, "Keyboard 1", 0);
@@ -629,7 +672,7 @@ menu_t *MenuCreateKeys(const char *name, MenuSystem *ms)
 	MenuAddSubmenu(menu, MenuCreateOptionChangeKey(KEY_CODE_MAP, 0, true));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Done"));
-	MenuSetPostInputFunc(menu, PostInputConfigApply, ms);
+	MenuSetPostInputFunc(menu, PostInputConfigApply, data);
 	return menu;
 }
 
@@ -663,4 +706,13 @@ static menu_t *MenuCreateOptionChangeKey(
 	menu->u.changeKey.playerIndex = playerIndex;
 	menu->u.changeKey.isOptional = isOptional;
 	return menu;
+}
+
+static void MenuResetSize(MenuSystem *ms)
+{
+	// Update menu system so that resolution changes don't
+	// affect menu positions
+	ms->pos = svec2i_zero();
+	ms->size = svec2i(
+		ms->graphics->cachedConfig.Res.x, ms->graphics->cachedConfig.Res.y);
 }

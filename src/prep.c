@@ -659,7 +659,7 @@ static GameLoopResult GameOptionsUpdate(GameLoopData *data, LoopRunner *l)
 		}
 		else
 		{
-			if (!ConfigApply(&gConfig))
+			if (!ConfigApply(&gConfig, NULL))
 			{
 				LOG(LM_MAIN, LL_ERROR,
 					"Failed to apply config; reset to last used");
