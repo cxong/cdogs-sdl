@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2020 Cong Xu
+	Copyright (c) 2013-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -55,7 +55,6 @@
 #include <cdogs/ai.h>
 #include <cdogs/ai_coop.h>
 #include <cdogs/automap.h>
-#include <cdogs/camera.h>
 #include <cdogs/draw/drawtools.h>
 #include <cdogs/events.h>
 #include <cdogs/grafx_bg.h>
@@ -142,23 +141,6 @@ struct vec2i GetPlayerCenter(
 	return center;
 }
 
-typedef struct
-{
-	Campaign *co;
-	struct MissionOptions *m;
-	Map *map;
-	Camera Camera;
-	// TODO: turn the following into a screen system?
-	input_device_e pausingDevice; // INPUT_DEVICE_UNSET if not paused
-	bool controllerUnplugged;
-	bool isMap;
-	int cmds[MAX_LOCAL_PLAYERS];
-	int lastCmds[MAX_LOCAL_PLAYERS];
-	// Only update AI every 4 ticks
-	int aiUpdateCounter;
-	PowerupSpawner healthSpawner;
-	CArray ammoSpawners; // of PowerupSpawner
-} RunGameData;
 static void RunGameTerminate(GameLoopData *data);
 static void RunGameOnEnter(GameLoopData *data);
 static void RunGameOnExit(GameLoopData *data);
@@ -168,10 +150,8 @@ static void RunGameDraw(GameLoopData *data);
 GameLoopData *RunGame(Campaign *co, struct MissionOptions *m, Map *map)
 {
 	RunGameData *data;
-	CCALLOC(data, sizeof *data);
-	data->co = co;
-	data->m = m;
-	data->map = map;
+	CMALLOC(data, sizeof *data);
+	GameInit(data, co, m, map);
 	GameLoopData *g = GameLoopDataNew(
 		data, RunGameTerminate, RunGameOnEnter, RunGameOnExit, RunGameInput,
 		RunGameUpdate, RunGameDraw);
@@ -534,57 +514,6 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 		return UPDATE_RESULT_DRAW;
 	}
 
-	// Update all the things in the game
-	const int ticksPerFrame = 1;
-
-	if (gPlayerDatas.size > 0)
-	{
-		LOSReset(&gMap.LOS);
-		for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
-		{
-			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-			if (p->ActorUID == -1)
-				continue;
-			TActor *player = ActorGetByUID(p->ActorUID);
-			if (player->dead > DEATH_MAX)
-				continue;
-			// Calculate LOS for all players alive or dying
-			LOSCalcFrom(
-				&gMap, Vec2ToTile(player->thing.Pos), !gCampaign.IsClient);
-
-			if (player->dead)
-				continue;
-
-			// Only handle inputs/commands for local players
-			if (!p->IsLocal)
-			{
-				idx--;
-				continue;
-			}
-			if (p->inputDevice == INPUT_DEVICE_AI)
-			{
-				rData->cmds[idx] = AICoopGetCmd(player, ticksPerFrame);
-			}
-			PlayerSpecialCommands(player, rData->cmds[idx]);
-			CommandActor(player, rData->cmds[idx], ticksPerFrame);
-		}
-	}
-
-	if (!gCampaign.IsClient)
-	{
-		rData->aiUpdateCounter -= ticksPerFrame;
-		if (rData->aiUpdateCounter <= 0)
-		{
-			const int enemies = AICommand(ticksPerFrame);
-			AIAddRandomEnemies(enemies, rData->m->missionData);
-			rData->aiUpdateCounter = 4;
-		}
-		else
-		{
-			AICommandLast(ticksPerFrame);
-		}
-	}
-
 	// If split screen never and players are too close to the
 	// edge of the screen, forcefully pull them towards the center
 	if (ConfigGetEnum(&gConfig, "Interface.Splitscreen") ==
@@ -635,42 +564,43 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 		CA_FOREACH_END()
 	}
 
-	UpdateAllActors(ticksPerFrame);
-	UpdateObjects(ticksPerFrame);
-	UpdateMobileObjects(ticksPerFrame);
-	PickupsUpdate(&gPickups, ticksPerFrame);
-	ParticlesUpdate(&gParticles, ticksPerFrame);
+	const int ticksPerFrame = 1;
 
-	UpdateWatches(&rData->map->triggers, ticksPerFrame);
-
-	PowerupSpawnerUpdate(&rData->healthSpawner, ticksPerFrame);
-	CA_FOREACH(PowerupSpawner, a, rData->ammoSpawners)
-	PowerupSpawnerUpdate(a, ticksPerFrame);
-	CA_FOREACH_END()
-
-	if (!gCampaign.IsClient)
+	if (gPlayerDatas.size > 0)
 	{
-		CheckMissionCompletion(rData->m);
-	}
-	else if (!NetClientIsConnected(&gNetClient))
-	{
-		// Check if disconnected from server; end mission
-		const NMissionEnd me = NMissionEnd_init_zero;
-		MissionDone(&gMission, me);
+		LOSReset(&gMap.LOS);
+		for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
+		{
+			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+			if (p->ActorUID == -1)
+				continue;
+			TActor *player = ActorGetByUID(p->ActorUID);
+			if (player->dead > DEATH_MAX)
+				continue;
+			// Calculate LOS for all players alive or dying
+			LOSCalcFrom(
+				&gMap, Vec2ToTile(player->thing.Pos), !gCampaign.IsClient);
+
+			if (player->dead)
+				continue;
+
+			// Only handle inputs/commands for local players
+			if (!p->IsLocal)
+			{
+				idx--;
+				continue;
+			}
+			if (p->inputDevice == INPUT_DEVICE_AI)
+			{
+				rData->cmds[idx] = AICoopGetCmd(player, ticksPerFrame);
+			}
+			PlayerSpecialCommands(player, rData->cmds[idx]);
+			CommandActor(player, rData->cmds[idx], ticksPerFrame);
+		}
 	}
 
-	// Disable sounds on the first frame
-	SoundDevice *sd = data->Frames == 0 ? NULL : &gSoundDevice;
-	HandleGameEvents(
-		&gGameEvents, &rData->Camera, &rData->healthSpawner,
-		&rData->ammoSpawners, sd);
+	GameUpdate(rData, ticksPerFrame, data->Frames == 0 ? NULL : &gSoundDevice);
 
-	rData->m->time += ticksPerFrame;
-
-	if (gEventHandlers.HasResolutionChanged)
-	{
-		RunGameReset(rData);
-	}
 	CameraUpdate(&rData->Camera, ticksPerFrame, 1000 / data->FPS);
 
 	return UPDATE_RESULT_DRAW;
@@ -840,5 +770,70 @@ static void RunGameDraw(GameLoopData *data)
 				rData->Camera.HUD.showExit);
 		}
 		BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.hud2);
+	}
+}
+
+void GameInit(
+	RunGameData *data, Campaign *co, struct MissionOptions *m, Map *map)
+{
+	memset(data, 0, sizeof *data);
+	data->co = co;
+	data->m = m;
+	data->map = map;
+}
+
+void GameUpdate(RunGameData *data, const int ticksPerFrame, SoundDevice *sd)
+{
+	// Update all the things in the game
+
+	if (!gCampaign.IsClient)
+	{
+		data->aiUpdateCounter -= ticksPerFrame;
+		if (data->aiUpdateCounter <= 0)
+		{
+			const int enemies = AICommand(ticksPerFrame);
+			AIAddRandomEnemies(enemies, data->m->missionData);
+			data->aiUpdateCounter = 4;
+		}
+		else
+		{
+			AICommandLast(ticksPerFrame);
+		}
+	}
+
+	UpdateAllActors(ticksPerFrame);
+	UpdateObjects(ticksPerFrame);
+	UpdateMobileObjects(ticksPerFrame);
+	PickupsUpdate(&gPickups, ticksPerFrame);
+	ParticlesUpdate(&gParticles, ticksPerFrame);
+
+	UpdateWatches(&data->map->triggers, ticksPerFrame);
+
+	PowerupSpawnerUpdate(&data->healthSpawner, ticksPerFrame);
+	CA_FOREACH(PowerupSpawner, a, data->ammoSpawners)
+	PowerupSpawnerUpdate(a, ticksPerFrame);
+	CA_FOREACH_END()
+
+	if (!gCampaign.IsClient)
+	{
+		CheckMissionCompletion(data->m);
+	}
+	else if (!NetClientIsConnected(&gNetClient))
+	{
+		// Check if disconnected from server; end mission
+		const NMissionEnd me = NMissionEnd_init_zero;
+		MissionDone(&gMission, me);
+	}
+
+	// Disable sounds on the first frame
+	HandleGameEvents(
+		&gGameEvents, &data->Camera, &data->healthSpawner, &data->ammoSpawners,
+		sd);
+
+	data->m->time += ticksPerFrame;
+
+	if (gEventHandlers.HasResolutionChanged)
+	{
+		RunGameReset(data);
 	}
 }

@@ -234,35 +234,7 @@ int main(int argc, char *argv[])
 
 	LoopRunner l = LoopRunnerNew(NULL);
 	LoopRunnerPush(&l, MainMenu(&gGraphicsDevice, &l));
-	// Attempt to pre-load campaign if requested
-	if (loadCampaign != NULL)
-	{
-		GrafxMakeRandomBackground(
-			&gGraphicsDevice, &gCampaign, &gMission, &gMap);
-		LOG(LM_MAIN, LL_INFO, "Loading campaign %s...", loadCampaign);
-		gCampaign.Entry.Mode =
-			strstr(loadCampaign, "/" CDOGS_DOGFIGHT_DIR "/") != NULL
-				? GAME_MODE_DOGFIGHT
-				: GAME_MODE_NORMAL;
-		CampaignEntry entry;
-		if (!CampaignEntryTryLoad(&entry, loadCampaign, GAME_MODE_NORMAL) ||
-			!CampaignLoad(&gCampaign, &entry))
-		{
-			LOG(LM_MAIN, LL_ERROR, "Failed to load campaign %s", loadCampaign);
-		}
-	}
-    else if (gEventHandlers.DemoQuitTimer > 0)
-    {
-        GrafxMakeRandomBackground(
-            &gGraphicsDevice, &gCampaign, &gMission, &gMap);
-        LOG(LM_MAIN, LL_INFO, "Loading demo...");
-        gCampaign.Entry.Mode = GAME_MODE_QUICK_PLAY;
-        if (!CampaignLoad(&gCampaign, &gCampaign.Entry))
-        {
-            LOG(LM_MAIN, LL_ERROR, "Failed to load demo campaign");
-        }
-    }
-	else if (connectAddr.host != 0)
+	if (connectAddr.host != 0)
 	{
 		if (NetClientTryScanAndConnect(&gNetClient, connectAddr.host))
 		{
@@ -271,6 +243,35 @@ int main(int argc, char *argv[])
 		else
 		{
 			printf("Failed to connect\n");
+		}
+	}
+	else
+	{
+		// Attempt to pre-load campaign if requested
+		if (loadCampaign != NULL)
+		{
+			LOG(LM_MAIN, LL_INFO, "Loading campaign %s...", loadCampaign);
+			gCampaign.Entry.Mode =
+				strstr(loadCampaign, "/" CDOGS_DOGFIGHT_DIR "/") != NULL
+					? GAME_MODE_DOGFIGHT
+					: GAME_MODE_NORMAL;
+			CampaignEntry entry;
+			if (!CampaignEntryTryLoad(
+					&entry, loadCampaign, GAME_MODE_NORMAL) ||
+				!CampaignLoad(&gCampaign, &entry))
+			{
+				LOG(LM_MAIN, LL_ERROR, "Failed to load campaign %s",
+					loadCampaign);
+			}
+		}
+		else if (gEventHandlers.DemoQuitTimer > 0)
+		{
+			LOG(LM_MAIN, LL_INFO, "Loading demo...");
+			gCampaign.Entry.Mode = GAME_MODE_QUICK_PLAY;
+			if (!CampaignLoad(&gCampaign, &gCampaign.Entry))
+			{
+				LOG(LM_MAIN, LL_ERROR, "Failed to load demo campaign");
+			}
 		}
 	}
 	LOG(LM_MAIN, LL_INFO, "Starting game");

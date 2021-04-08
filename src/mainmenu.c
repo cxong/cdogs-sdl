@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2013-2020 Cong Xu
+	Copyright (c) 2013-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -28,16 +28,20 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <cdogs/ai.h>
 #include <cdogs/config.h>
 #include <cdogs/font.h>
 #include <cdogs/grafx_bg.h>
 #include <cdogs/log.h>
+#include <cdogs/map_build.h>
 #include <cdogs/music.h>
 #include <cdogs/net_client.h>
 #include <cdogs/net_server.h>
+#include <cdogs/quick_play.h>
 
 #include "autosave.h"
 #include "briefing_screens.h"
+#include "game.h"
 #include "menu.h"
 #include "prep.h"
 
@@ -49,6 +53,9 @@ typedef struct
 	CustomCampaigns campaigns;
 	GameMode lastGameMode;
 	bool wasClient;
+	DrawBuffer buffer;
+	HSV bgTint;
+	RunGameData rData;
 } MainMenuData;
 static void MenuCreateAll(
 	MenuSystem *ms, LoopRunner *l, CustomCampaigns *campaigns,
@@ -72,14 +79,44 @@ GameLoopData *MainMenu(GraphicsDevice *graphics, LoopRunner *l)
 	MenuCreateAll(
 		&data->ms, l, &data->campaigns, &gEventHandlers, data->graphics);
 	MenuSetCreditsDisplayer(&data->ms, &data->creditsDisplayer);
+
+	// Initialise background game
+	CampaignSettingInit(&gCampaign.Setting);
+	SetupQuickPlayCampaign(&gCampaign.Setting);
+	const HSV tint = {rand() * 360.0 / RAND_MAX, rand() * 1.0 / RAND_MAX, 0.5};
+	data->bgTint = tint;
+	DrawBufferInit(&data->buffer, svec2i(X_TILES, Y_TILES), graphics);
+	gCampaign.MissionIndex = 0;
+	CampaignAndMissionSetup(&gCampaign, &gMission);
+	GameEventsInit(&gGameEvents);
+	MapBuild(&gMap, gMission.missionData, &gCampaign, gMission.index);
+	InitializeBadGuys();
+	CreateEnemies();
+	MapMarkAllAsVisited(&gMap);
+	GameInit(&data->rData, &gCampaign, &gMission, &gMap);
+
 	return GameLoopDataNew(
 		data, MainMenuTerminate, MainMenuOnEnter, MainMenuOnExit, NULL,
 		MainMenuUpdate, MainMenuDraw);
 }
-static void MainMenuReset(MenuSystem *ms)
+static void MainMenuReset(MainMenuData *data)
 {
-	GrafxMakeRandomBackground(ms->graphics, &gCampaign, &gMission, &gMap);
-	MenuResetSize(ms);
+	// Initialise background game
+	CampaignSettingInit(&gCampaign.Setting);
+	SetupQuickPlayCampaign(&gCampaign.Setting);
+	const HSV tint = {rand() * 360.0 / RAND_MAX, rand() * 1.0 / RAND_MAX, 0.5};
+	data->bgTint = tint;
+	DrawBufferInit(&data->buffer, svec2i(X_TILES, Y_TILES), data->graphics);
+	gCampaign.MissionIndex = 0;
+	CampaignAndMissionSetup(&gCampaign, &gMission);
+	GameEventsInit(&gGameEvents);
+	MapBuild(&gMap, gMission.missionData, &gCampaign, gMission.index);
+	InitializeBadGuys();
+	CreateEnemies();
+	MapMarkAllAsVisited(&gMap);
+	GameInit(&data->rData, &gCampaign, &gMission, &gMap);
+
+	MenuResetSize(&data->ms);
 }
 static void MainMenuTerminate(GameLoopData *data)
 {
@@ -102,14 +139,14 @@ static void MainMenuOnEnter(GameLoopData *data)
 	}
 
 	MusicPlay(&gSoundDevice, MUSIC_MENU, NULL, NULL);
-
-	MainMenuReset(&mData->ms);
-	NetClientDisconnect(&gNetClient);
-	NetServerClose(&gNetServer);
-	GameEventsTerminate(&gGameEvents);
 	// Reset config - could have been set to other values by server
 	ConfigResetChanged(&gConfig);
 	CampaignSettingTerminateAll(&gCampaign.Setting);
+
+	MainMenuReset(mData);
+	NetClientDisconnect(&gNetClient);
+	NetServerClose(&gNetServer);
+	GameEventsTerminate(&gGameEvents);
 
 	// Auto-enter the submenu corresponding to the last game mode
 	menu_t *startMenu = FindSubmenuByName(mData->ms.root, "Start");
@@ -162,6 +199,8 @@ static GameLoopResult MainMenuUpdate(GameLoopData *data, LoopRunner *l)
 {
 	MainMenuData *mData = data->Data;
 
+	GameUpdate(&mData->rData, 1, NULL);
+
 	if (gCampaign.IsLoaded)
 	{
 		// Loaded game already; skip menus and go straight to game
@@ -183,7 +222,7 @@ static GameLoopResult MainMenuUpdate(GameLoopData *data, LoopRunner *l)
 	}
 	if (gEventHandlers.HasResolutionChanged)
 	{
-		MainMenuReset(&mData->ms);
+		MainMenuReset(mData);
 	}
 	return result;
 }
@@ -191,6 +230,8 @@ static void MainMenuDraw(GameLoopData *data)
 {
 	MainMenuData *mData = data->Data;
 	MenuDraw(&mData->ms);
+	const struct vec2 pos = Vec2CenterOfTile(svec2i_scale_divide(gMap.Size, 2));
+	GrafxDrawBackground(mData->graphics, &mData->buffer, mData->bgTint, pos, NULL);
 }
 
 static menu_t *MenuCreateStart(

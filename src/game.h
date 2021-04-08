@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2015, 2017, 2020 Cong Xu
+	Copyright (c) 2015, 2017, 2020-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -50,10 +50,34 @@
 
 #include <stdbool.h>
 
+#include <cdogs/camera.h>
 #include <cdogs/campaigns.h>
 #include <cdogs/map.h>
 #include <cdogs/mission.h>
+#include <cdogs/player.h>
+#include <cdogs/powerup.h>
 
 #include "game_loop.h"
 
 GameLoopData *RunGame(Campaign *co, struct MissionOptions *m, Map *map);
+
+typedef struct
+{
+	Campaign *co;
+	struct MissionOptions *m;
+	Map *map;
+	Camera Camera;
+	// TODO: turn the following into a screen system?
+	input_device_e pausingDevice; // INPUT_DEVICE_UNSET if not paused
+	bool controllerUnplugged;
+	bool isMap;
+	int cmds[MAX_LOCAL_PLAYERS];
+	int lastCmds[MAX_LOCAL_PLAYERS];
+	// Only update AI every 4 ticks
+	int aiUpdateCounter;
+	PowerupSpawner healthSpawner;
+	CArray ammoSpawners; // of PowerupSpawner
+} RunGameData;
+void GameInit(
+	RunGameData *data, Campaign *co, struct MissionOptions *m, Map *map);
+void GameUpdate(RunGameData *data, const int ticksPerFrame, SoundDevice *sd);
