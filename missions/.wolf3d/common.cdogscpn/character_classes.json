@@ -30,6 +30,23 @@
       "Sounds": "ss"
     },
     {
+      "Name": "Officer",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      },
+      "Body": "soldier",
+      "Sounds": "officer"
+    },
+    {
+      "Name": "Mutant",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/cyborg"
+      },
+      "Sounds": "mutant"
+    },
+    {
       "Name": "Hans Grosse",
       "HeadPics": {
         "Type": "Directional",
@@ -37,6 +54,127 @@
       },
       "Body": "big",
       "Sounds": "hans"
+    },
+    {
+      "Name": "Dr Schabbs",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      },
+      "Body": "big",
+      "Sounds": "schabbs"
+    },
+    {
+      "Name": "Fake Hitler",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      },
+      "Sounds": "fake_hitler"
+    },
+    {
+      "Name": "Mecha Hitler",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      },
+      "Body": "big",
+      "Sounds": "mecha_hitler"
+    },
+    {
+      "Name": "Hitler",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      },
+      "Body": "soldier",
+      "Sounds": "hitler"
+    },
+    {
+      "Name": "Otto Giftmacher",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      },
+      "Body": "big",
+      "Sounds": "otto"
+    },
+    {
+      "Name": "Gretel Grosse",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      },
+      "Body": "big",
+      "Sounds": "gretel"
+    },
+    {
+      "Name": "General Fettgesicht",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      },
+      "Body": "big",
+      "Sounds": "fettgesicht"
+    },
+    {
+      "Name": "Pacman Ghost",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      }
+    },
+    {
+      "Name": "Trans Grosse",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      },
+      "Body": "big",
+      "Sounds": "trans"
+    },
+    {
+      "Name": "Barnacle Wilhelm",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      },
+      "Body": "big",
+      "Sounds": "bill"
+    },
+    {
+      "Name": "Ubermutant",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      },
+      "Body": "big",
+      "Sounds": "ubermutant"
+    },
+    {
+      "Name": "Death Knight",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      },
+      "Body": "big",
+      "Sounds": "death_knight"
+    },
+    {
+      "Name": "Ghost",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      }
+    },
+    {
+      "Name": "Angel of Death",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      },
+      "Body": "big",
+      "Sounds": "angel"
     }
   ]
 }
