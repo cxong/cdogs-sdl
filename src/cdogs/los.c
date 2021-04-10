@@ -60,12 +60,6 @@ void LOSReset(LineOfSight *los)
 	CArrayFillZero(&los->LOS);
 	CArrayFillZero(&los->Explored);
 }
-void LOSSetAllVisible(LineOfSight *los)
-{
-	CA_FOREACH(bool, l, los->LOS)
-		*l = true;
-	CA_FOREACH_END()
-}
 
 typedef struct
 {
@@ -80,6 +74,17 @@ static void SetLOSVisible(Map *map, const struct vec2i pos, const bool explore);
 static bool IsNextTileBlockedAndSetVisibility(void *data, struct vec2i pos);
 static void SetObstructionVisible(
 	Map *map, const struct vec2i pos, const bool explore);
+
+void LOSSetAllVisible(LineOfSight *los)
+{
+	CA_FOREACH(bool, l, los->LOS)
+		*l = true;
+	CA_FOREACH_END()
+	RECT_FOREACH(Rect2iNew(svec2i_zero(), gMap.Size))
+	SetLOSVisible(&gMap, _v, false);
+	RECT_FOREACH_END()
+}
+
 void LOSCalcFrom(Map *map, const struct vec2i pos, const bool explore)
 {
 	// Perform LOS by casting rays from the centre to the edges, terminating

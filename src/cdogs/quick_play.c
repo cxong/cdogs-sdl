@@ -155,7 +155,7 @@ static float GenerateQuickPlayParamFloat(
 	}
 }
 
-static void SetupQuickPlayEnemy(Character *enemy, const WeaponClass *wc)
+static void SetupQuickPlayEnemy(Character *enemy, const WeaponClass *wc, const bool isBg)
 {
 	CharacterShuffleAppearance(enemy);
 	enemy->Gun = wc;
@@ -190,9 +190,17 @@ static void SetupQuickPlayEnemy(Character *enemy, const WeaponClass *wc)
 	enemy->maxHealth = GenerateQuickPlayParam(
 		ConfigGetEnum(&gConfig, "QuickPlay.EnemyHealth"), 10, 20, 40, 60);
 	enemy->flags = 0;
+	if (isBg)
+	{
+		enemy->flags |= FLAGS_AWAKEALWAYS;
+		if (RAND_BOOL())
+		{
+			enemy->flags |= FLAGS_GOOD_GUY;
+		}
+	}
 }
 
-static void SetupQuickPlayEnemies(const int numEnemies, CharacterStore *store)
+static void SetupQuickPlayEnemies(const int numEnemies, CharacterStore *store, const bool isBg)
 {
 	for (int i = 0; i < numEnemies; i++)
 	{
@@ -234,22 +242,22 @@ static void SetupQuickPlayEnemies(const int numEnemies, CharacterStore *store)
 			break;
 		}
 		Character *ch = CharacterStoreAddOther(store);
-		SetupQuickPlayEnemy(ch, wc);
+		SetupQuickPlayEnemy(ch, wc, isBg);
 	}
 }
 
 static void AddMission(
-	CArray *missions, PicManager *pm, const CharacterStore *cs, const int idx);
+	CArray *missions, PicManager *pm, const CharacterStore *cs, const int idx, const bool isBg);
 static void RandomMissionTileClasses(MissionTileClasses *mtc, PicManager *pm);
 static RoomParams RandomRoomParams(void);
 static color_t RandomBGColor(void);
-void SetupQuickPlayCampaign(CampaignSetting *setting)
+void SetupQuickPlayCampaign(CampaignSetting *setting, const bool isBg)
 {
 	CharacterStoreTerminate(&setting->characters);
 	CharacterStoreInit(&setting->characters);
 	int c = GenerateQuickPlayParam(
 		ConfigGetEnum(&gConfig, "QuickPlay.EnemyCount"), 3, 5, 8, 12);
-	SetupQuickPlayEnemies(c, &setting->characters);
+	SetupQuickPlayEnemies(c, &setting->characters, isBg);
 
 	CFREE(setting->Title);
 	CSTRDUP(setting->Title, "Quick play");
@@ -261,12 +269,12 @@ void SetupQuickPlayCampaign(CampaignSetting *setting)
 	setting->RandomPickups = true;
 	for (int i = 0; i < NUM_MISSIONS; i++)
 	{
-		AddMission(&setting->Missions, &gPicManager, &setting->characters, i);
+		AddMission(&setting->Missions, &gPicManager, &setting->characters, i, isBg);
 	}
 }
 static void RandomStyle(char *style, const CArray *styleNames);
 static void AddMission(
-	CArray *missions, PicManager *pm, const CharacterStore *cs, const int idx)
+	CArray *missions, PicManager *pm, const CharacterStore *cs, const int idx, const bool isBg)
 {
 	Mission m;
 	MissionInit(&m);
@@ -338,26 +346,37 @@ static void AddMission(
 		// TODO: select enemies
 		CArrayPushBack(&m.Enemies, &i);
 	}
-
+	
 	int c = 0;
-	CArrayPushBack(&m.SpecialChars, &c);
-	Objective o;
-	CSTRDUP(o.Description, "Kill the enemies");
-	o.Type = OBJECTIVE_KILL;
-	o.u.Index = 0;
-	o.Count = RAND_INT(missionKillCountMin[idx], missionKillCountMin[idx] * 3 / 2);
-	o.Required = RAND_INT(MAX(1, o.Count / 2), o.Count);
-	o.Flags = OBJECTIVE_POSKNOWN;
-	CArrayPushBack(&m.Objectives, &o);
+
+	if (!isBg)
+	{
+		CArrayPushBack(&m.SpecialChars, &c);
+		Objective o;
+		CSTRDUP(o.Description, "Kill the enemies");
+		o.Type = OBJECTIVE_KILL;
+		o.u.Index = 0;
+		o.Count = RAND_INT(missionKillCountMin[idx], missionKillCountMin[idx] * 3 / 2);
+		o.Required = RAND_INT(MAX(1, o.Count / 2), o.Count);
+		o.Flags = OBJECTIVE_POSKNOWN;
+		CArrayPushBack(&m.Objectives, &o);
+	}
 
 	c = GenerateQuickPlayParam(
-		ConfigGetEnum(&gConfig, "QuickPlay.ItemCount"), 0, 2, 5, 10);
+		ConfigGetEnum(&gConfig, "QuickPlay.ItemCount"), 0, 10, 20, 40);
 	for (int i = 0; i < c; i++)
 	{
 		MapObjectDensity mop;
 		mop.M = IndexMapObject(rand() % MapObjectsCount(&gMapObjects));
-		mop.Density = GenerateQuickPlayParam(
-			ConfigGetEnum(&gConfig, "QuickPlay.ItemCount"), 0, 5, 10, 20);
+		if (mop.M->Type == MAP_OBJECT_TYPE_PICKUP_SPAWNER)
+		{
+			mop.Density = 1;
+		}
+		else
+		{
+			mop.Density = GenerateQuickPlayParam(
+				ConfigGetEnum(&gConfig, "QuickPlay.ItemCount"), 0, 5, 10, 20);
+		}
 		CArrayPushBack(&m.MapObjectDensities, &mop);
 	}
 	m.EnemyDensity = 10 / (int)m.Enemies.size;

@@ -280,7 +280,6 @@ int main(int argc, char *argv[])
 
 bail:
 	NetServerTerminate(&gNetServer);
-	MapTerminate(&gMap);
 	PlayerDataTerminate(&gPlayerDatas);
 	MapObjectsTerminate(&gMapObjects);
 	PickupClassesTerminate(&gPickupClasses);
@@ -290,6 +289,7 @@ bail:
 	BulletTerminate(&gBulletClasses);
 	CharacterClassesTerminate(&gCharacterClasses);
 	MissionOptionsTerminate(&gMission);
+	MapTerminate(&gMap);
 	NetClientTerminate(&gNetClient);
 	atexit(enet_deinitialize);
 	EventTerminate(&gEventHandlers);

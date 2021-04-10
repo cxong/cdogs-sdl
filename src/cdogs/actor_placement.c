@@ -42,7 +42,7 @@ static NVec2 PlacePlayerSimple(const Map *map)
 
 	struct vec2 pos;
 	bool ok = false;
-	do
+	for (int j = 0; j < 10000 && !ok; j++)
 	{
 		pos = MapGetRandomPos(map);
 		ok = MapIsPosOKForPlayer(map, pos, false);
@@ -63,7 +63,7 @@ static NVec2 PlacePlayerSimple(const Map *map)
 				}
 			}
 		}
-	} while (!ok);
+	}
 	return Vec2ToNet(pos);
 }
 

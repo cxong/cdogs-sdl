@@ -28,13 +28,16 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <cdogs/actor_placement.h>
 #include <cdogs/ai.h>
 #include <cdogs/config.h>
 #include <cdogs/config_io.h>
 #include <cdogs/files.h>
 #include <cdogs/font.h>
 #include <cdogs/grafx_bg.h>
+#include <cdogs/handle_game_events.h>
 #include <cdogs/log.h>
+#include <cdogs/los.h>
 #include <cdogs/map_build.h>
 #include <cdogs/music.h>
 #include <cdogs/net_client.h>
@@ -82,26 +85,41 @@ GameLoopData *MainMenu(GraphicsDevice *graphics, LoopRunner *l)
 	MenuCreateAll(data, l, &gEventHandlers);
 	MenuSetCreditsDisplayer(&data->ms, &data->creditsDisplayer);
 
-	MainMenuReset(data);
-
 	return GameLoopDataNew(
 		data, MainMenuTerminate, MainMenuOnEnter, MainMenuOnExit, NULL,
 		MainMenuUpdate, MainMenuDraw);
 }
 static void GenerateLiveBackground(MainMenuData *data)
 {
+	MissionOptionsTerminate(&gMission);
+	CampaignTerminate(&gCampaign);
+
 	CampaignSettingInit(&gCampaign.Setting);
-	SetupQuickPlayCampaign(&gCampaign.Setting);
+	SetupQuickPlayCampaign(&gCampaign.Setting, true);
+	CampaignAndMissionSetup(&gCampaign, &gMission);
+	GameEventsInit(&gGameEvents);
+	gCampaign.MissionIndex = 0;
+	
+	MapBuild(&gMap, gMission.missionData, &gCampaign, gMission.index);
+
+	// Add AI player
+	GameEvent e = GameEventNew(GAME_EVENT_PLAYER_DATA);
+	e.u.PlayerData = PlayerDataDefault(0);
+	e.u.PlayerData.UID = gNetClient.FirstPlayerUID;
+	GameEventsEnqueue(&gGameEvents, e);
+	HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
+	CA_FOREACH(PlayerData, p, gPlayerDatas)
+	p->inputDevice = INPUT_DEVICE_AI;
+	PlacePlayer(&gMap, p, svec2_zero(), true);
+	CA_FOREACH_END()
+
 	const HSV tint = {rand() * 360.0 / RAND_MAX, rand() * 1.0 / RAND_MAX, 0.5};
 	data->bgTint = tint;
 	DrawBufferInit(&data->buffer, svec2i(X_TILES, Y_TILES), data->graphics);
-	gCampaign.MissionIndex = 0;
-	CampaignAndMissionSetup(&gCampaign, &gMission);
-	GameEventsInit(&gGameEvents);
-	MapBuild(&gMap, gMission.missionData, &gCampaign, gMission.index);
 	InitializeBadGuys();
 	CreateEnemies();
 	MapMarkAllAsVisited(&gMap);
+
 	GameInit(&data->rData, &gCampaign, &gMission, &gMap);
 }
 static void MainMenuReset(MainMenuData *data)
@@ -191,6 +209,7 @@ static GameLoopResult MainMenuUpdate(GameLoopData *data, LoopRunner *l)
 {
 	MainMenuData *mData = data->Data;
 
+	LOSSetAllVisible(&mData->rData.map->LOS);
 	GameUpdate(&mData->rData, 1, NULL);
 
 	if (gCampaign.IsLoaded)

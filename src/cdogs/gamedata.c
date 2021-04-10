@@ -87,7 +87,7 @@ bool CampaignLoad(Campaign *co, CampaignEntry *entry)
 	CampaignSettingInit(&co->Setting);
 	if (entry->Mode == GAME_MODE_QUICK_PLAY)
 	{
-		SetupQuickPlayCampaign(&co->Setting);
+		SetupQuickPlayCampaign(&co->Setting, false);
 		co->IsLoaded = true;
 	}
 	else
