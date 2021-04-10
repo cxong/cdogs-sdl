@@ -149,9 +149,9 @@
       "Name": "Ubermutant",
       "HeadPics": {
         "Type": "Directional",
-        "Sprites": "chars/heads/jones"
+        "Sprites": "chars/heads/cyborg"
       },
-      "Body": "big",
+      "Body": "big_mutant",
       "Sounds": "ubermutant"
     },
     {
@@ -168,7 +168,8 @@
       "HeadPics": {
         "Type": "Directional",
         "Sprites": "chars/heads/jones"
-      }
+      },
+      "Body": "none"
     },
     {
       "Name": "Angel of Death",
