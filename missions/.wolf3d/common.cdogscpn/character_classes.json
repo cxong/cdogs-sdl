@@ -71,6 +71,7 @@
         "Type": "Directional",
         "Sprites": "chars/heads/jones"
       },
+      "Body": "fake_hitler",
       "Sounds": "fake_hitler"
     },
     {
@@ -97,7 +98,7 @@
         "Type": "Directional",
         "Sprites": "chars/heads/jones"
       },
-      "Body": "big",
+      "Body": "big_soldier",
       "Sounds": "otto"
     },
     {
