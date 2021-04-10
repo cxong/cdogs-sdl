@@ -116,7 +116,7 @@
         "Type": "Directional",
         "Sprites": "chars/heads/jones"
       },
-      "Body": "big",
+      "Body": "big_soldier",
       "Sounds": "fettgesicht"
     },
     {
