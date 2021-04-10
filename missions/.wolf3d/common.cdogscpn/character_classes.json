@@ -175,7 +175,7 @@
       "Name": "Angel of Death",
       "HeadPics": {
         "Type": "Directional",
-        "Sprites": "chars/heads/jones"
+        "Sprites": "chars/heads/ogre"
       },
       "Body": "big",
       "Sounds": "angel"

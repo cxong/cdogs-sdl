@@ -1014,6 +1014,7 @@ static bool TryRemovePosition(CArray *positions, const struct vec2i pos);
 bool MissionStaticTryAddItem(
 	MissionStatic *m, const MapObject *mo, const struct vec2i pos)
 {
+	CASSERT(mo != NULL, "adding NULL map object");
 	// Check if the item already has an entry, and add to its list
 	// of positions
 	bool hasAdded = false;

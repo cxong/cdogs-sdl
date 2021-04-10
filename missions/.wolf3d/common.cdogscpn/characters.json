@@ -413,5 +413,22 @@
 		"probabilityToTrack": 25,
 		"probabilityToShoot": 2,
 		"actionDelay": 15
+	},
+	{
+		"Class": "Angel of Death",
+		"Skin": "ff0000ff",
+		"Arms": "ff0000ff",
+		"Body": "e90a0aff",
+		"Legs": "f70000ff",
+		"Hair": "000000ff",
+		"Feet": "ee0000ff",
+		"speed": 256,
+		"Gun": "Dog Bite",
+		"maxHealth": 40,
+		"flags": 1024,
+		"probabilityToMove": 50,
+		"probabilityToTrack": 25,
+		"probabilityToShoot": 2,
+		"actionDelay": 15
 	}]
 }

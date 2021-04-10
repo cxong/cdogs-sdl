@@ -176,7 +176,7 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 	Mission *m = CArrayGet(&cCommon.Missions, 0);
 	tileClasses = hashmap_copy(m->u.Static.TileClasses, TileClassCopyHashMap);
 	CampaignSettingTerminate(&cCommon);
-	
+
 	GetCampaignPath(map.type, buf);
 	err = MapNewLoadArchive(buf, c);
 	if (err != 0)
@@ -241,7 +241,7 @@ static void LoadTile(
 	const int missionIndex);
 static void TryLoadWallObject(MissionStatic *m, const uint16_t ch, const struct vec2i v);
 static void LoadEntity(
-	MissionStatic *m, const uint16_t ch, const struct vec2i v,
+	MissionStatic *m, const uint16_t ch, const CWMapType type, const struct vec2i v,
 	const int missionIndex);
 
 static void LoadMission(
@@ -271,7 +271,7 @@ static void LoadMission(
 	LoadTile(&m.u.Static, ch, _v, missionIndex);
 	TryLoadWallObject(&m.u.Static, ch, _v);
 	const uint16_t ech = CWLevelGetCh(level, 1, _v.x, _v.y);
-	LoadEntity(&m.u.Static, ech, _v, missionIndex);
+	LoadEntity(&m.u.Static, ech, type, _v, missionIndex);
 	RECT_FOREACH_END()
 	
 	m.u.Static.AltFloorsEnabled = false;
@@ -430,15 +430,17 @@ static void TryLoadWallObject(MissionStatic *m, const uint16_t ch, const struct 
 	case CWWALL_GREY_WALL_HITLER:
 		moName = "hitler_poster";
 		break;
+	case CWWALL_STONE_WALL_1:
+	case CWWALL_STONE_WALL_2:	// fallthrough
+	case CWWALL_RAMPART_STONE_1:	// fallthrough
+	case CWWALL_RAMPART_STONE_2:	// fallthrough
+		moName = "stone_color";
+		break;
 	case CWWALL_STONE_WALL_FLAG:
 		moName = "heer_flag";
 		break;
 	case CWWALL_STONE_WALL_WREATH:
 		moName = "swastika_wreath";
-		break;
-	case CWWALL_RAMPART_STONE_1:
-	case CWWALL_RAMPART_STONE_2:	// fallthrough
-		moName = "stone_color";
 		break;
 	case CWWALL_ELEVATOR_WALL:
 		moName = "elevator_interior";
@@ -453,8 +455,35 @@ static void TryLoadWallObject(MissionStatic *m, const uint16_t ch, const struct 
 	}
 }
 
+typedef enum
+{
+	CHAR_GUARD = 1,
+	CHAR_DOG,
+	CHAR_SS,
+	CHAR_MUTANT,
+	CHAR_OFFICER,
+	CHAR_PACMAN_GHOST_RED,
+	CHAR_PACMAN_GHOST_YELLOW,
+	CHAR_PACMAN_GHOST_ROSE,
+	CHAR_PACMAN_GHOST_BLUE,
+	CHAR_HANS,
+	CHAR_SCHABBS,
+	CHAR_FAKE_HITLER,
+	CHAR_MECHA_HITLER,
+	CHAR_HITLER,
+	CHAR_OTTO,
+	CHAR_GRETEL,
+	CHAR_FETTGESICHT,
+	CHAR_TRANS,
+	CHAR_WILHELM,
+	CHAR_UBERMUTANT,
+	CHAR_DEATH_KNIGHT,
+	CHAR_GHOST,
+	CHAR_ANGEL
+} WolfChar;
+
 static void LoadEntity(
-	MissionStatic *m, const uint16_t ch, const struct vec2i v,
+	MissionStatic *m, const uint16_t ch, const CWMapType type, const struct vec2i v,
 	const int missionIndex)
 {
 	UNUSED(missionIndex);
@@ -469,457 +498,320 @@ static void LoadEntity(
 	case CWENT_PLAYER_SPAWN_W:
 		m->Start = v;
 		break;
-		/*case CWENT_WATER:
-			setColor(LIGHTBLUE);
-			c = 'O';
-			break;
-		case CWENT_OIL_DRUM:
-			setColor(LIGHTGREEN);
-			c = '|';
-			break;
-		case CWENT_TABLE_WITH_CHAIRS:
-			setColor(RED);
-			c = '#';
-			break;
-		case CWENT_FLOOR_LAMP:
-			setColor(MAGENTA);
-			c = '|';
-			break;
-		case CWENT_CHANDELIER:
-			setBackgroundColor(GREY);
-			setColor(YELLOW);
-			c = '+';
-			break;
-		case CWENT_HANGING_SKELETON:
-			setColor(LIGHTCYAN);
-			c = '#';
-			break;
-		case CWENT_WHITE_COLUMN:
-			setColor(WHITE);
-			c = '|';
-			break;
-		case CWENT_DOG_FOOD:
-			setColor(RED);
-			c = '=';
-			break;
-		case CWENT_GREEN_PLANT:
-			setBackgroundColor(GREEN);
-			setColor(LIGHTGREEN);
-			c = '+';
-			break;
-		case CWENT_SKELETON:
-			setColor(WHITE);
-			c = '#';
-			break;
-		case CWENT_SINK_SKULLS_ON_STICK:
-			if (type == CWMAPTYPE_SOD)
-			{
-				setColor(LIGHTMAGENTA);
-				c = '#';
-			}
-			else
-			{
-				setBackgroundColor(WHITE);
-				setColor(BLACK);
-				c = '+';
-			}
-			break;
-		case CWENT_BROWN_PLANT:
-			setBackgroundColor(GREEN);
-			setColor(RED);
-			c = '+';
-			break;
-		case CWENT_VASE:
-			setColor(BLUE);
-			c = 'O';
-			break;
-		case CWENT_TABLE:
-			setColor(BROWN);
-			c = '#';
-			break;
-		case CWENT_CEILING_LIGHT_GREEN:
-			setBackgroundColor(GREY);
-			setColor(GREEN);
-			c = '+';
-			break;
-		case CWENT_UTENSILS_BROWN_CAGE_BLOODY_BONES:
-			if (type == CWMAPTYPE_SOD)
-			{
-				setBackgroundColor(LIGHTMAGENTA);
-				setColor(LIGHTRED);
-				c = '+';
-			}
-			else
-			{
-				setBackgroundColor(CYAN);
-				setColor(RED);
-				c = '+';
-			}
-			break;
-		case CWENT_ARMOR:
-			setColor(BLUE);
-			c = '|';
-			break;
-		case CWENT_CAGE:
-			setBackgroundColor(LIGHTMAGENTA);
-			setColor(BLACK);
-			c = '+';
-			break;
-		case CWENT_CAGE_SKELETON:
-			setBackgroundColor(LIGHTMAGENTA);
-			setColor(WHITE);
-			c = '+';
-			break;
-		case CWENT_BONES1:
-			setColor(BROWN);
-			c = 'H';
-			break;
-		case CWENT_KEY_GOLD:
-			setColor(YELLOW);
-			c = 'X';
-			break;
-		case CWENT_KEY_SILVER:
-			setColor(LIGHTCYAN);
-			c = 'X';
-			break;
-		case CWENT_BED_CAGE_SKULLS:
-			if (type == CWMAPTYPE_SOD)
-			{
-				setBackgroundColor(LIGHTMAGENTA);
-				setColor(RED);
-				c = '+';
-			}
-			else
-			{
-				setColor(RED);
-				c = '~';
-			}
-			break;
-		case CWENT_BASKET:
-			setBackgroundColor(RED);
-			setColor(BLACK);
-			c = '+';
-			break;
-		case CWENT_FOOD:
-			setColor(LIGHTGREEN);
-			c = '=';
-			break;
-		case CWENT_MEDKIT:
-			setColor(LIGHTRED);
-			c = '=';
-			break;
-		case CWENT_AMMO:
-			setColor(CYAN);
-			c = '=';
-			break;
-		case CWENT_MACHINE_GUN:
-			setColor(CYAN);
-			c = 'O';
-			break;
-		case CWENT_CHAIN_GUN:
-			setColor(LIGHTCYAN);
-			c = 'O';
-			break;
-		case CWENT_CROSS:
-			setColor(LIGHTBLUE);
-			c = '*';
-			break;
-		case CWENT_CHALICE:
-			setColor(LIGHTMAGENTA);
-			c = '*';
-			break;
-		case CWENT_CHEST:
-			setColor(LIGHTCYAN);
-			c = '*';
-			break;
-		case CWENT_CROWN:
-			setColor(WHITE);
-			c = '*';
-			break;
-		case CWENT_LIFE:
-			setColor(LIGHTBLUE);
-			c = '=';
-			break;
-		case CWENT_BONES_BLOOD:
-			setColor(LIGHTRED);
-			c = 'H';
-			break;
-		case CWENT_BARREL:
-			setColor(RED);
-			c = '|';
-			break;
-		case CWENT_WELL_WATER:
-			setBackgroundColor(GREY);
-			setColor(LIGHTBLUE);
-			c = '+';
-			break;
-		case CWENT_WELL:
-			setBackgroundColor(GREY);
-			setColor(BLACK);
-			c = '+';
-			break;
-		case CWENT_POOL_OF_BLOOD:
-			setColor(LIGHTRED);
-			c = 'O';
-			break;
-		case CWENT_FLAG:
-			setColor(LIGHTRED);
-			c = '|';
-			break;
-		case CWENT_CEILING_LIGHT_RED_AARDWOLF:
-			if (type == CWMAPTYPE_WL6)
-			{
-				setBackgroundColor(LIGHTGREEN);
-			}
-			else
-			{
-				setBackgroundColor(GREY);
-				setColor(LIGHTRED);
-				c = '+';
-				break;
-			}
-			break;
-		case CWENT_BONES2:
-			setColor(GREY);
-			c = 'H';
-			break;
-		case CWENT_BONES3:
-			setColor(YELLOW);
-			c = 'H';
-			break;
-		case CWENT_BONES4:
-			setColor(WHITE);
-			c = 'H';
-			break;
-		case CWENT_UTENSILS_BLUE_COW_SKULL:
-			if (type == CWMAPTYPE_SOD)
-			{
-				setColor(MAGENTA);
-				c = '#';
-			}
-			else
-			{
-				setBackgroundColor(CYAN);
-				setColor(LIGHTBLUE);
-				c = '+';
-			}
-			break;
-		case CWENT_STOVE_WELL_BLOOD:
-			if (type == CWMAPTYPE_SOD)
-			{
-				setBackgroundColor(GREY);
-				setColor(RED);
-				c = '+';
-			}
-			else
-			{
-				setColor(GREY);
-				c = '#';
-			}
-			break;
-		case CWENT_RACK_ANGEL_STATUE:
-			if (type == CWMAPTYPE_SOD)
-			{
-				setColor(CYAN);
-				c = '#';
-			}
-			else
-			{
-				setBackgroundColor(RED);
-				setColor(BLACK);
-				c = '#';
-			}
-			break;
-		case CWENT_VINES:
-			setColor(GREEN);
-			c = '#';
-			break;
-		case CWENT_BROWN_COLUMN:
-			setColor(CYAN);
-			c = '|';
-			break;
-		case CWENT_AMMO_BOX:
-			setColor(CYAN);
-			c = 'H';
-			break;
-		case CWENT_TRUCK_REAR:
-			setColor(BLUE);
-			c = '#';
-			break;
-		case CWENT_SPEAR:
-			setColor(YELLOW);
-			c = '$';
-			break;
-		case CWENT_PUSHWALL:
-			setBackgroundColor(WHITE);
-			break;
-		case CWENT_ENDGAME:
-			setColor(RED);
-			c = '$';
-			break;
-		case CWENT_GHOST:
-			setColor(LIGHTCYAN);
-			c = '$';
-			break;
-		case CWENT_ANGEL:
-			setColor(LIGHTRED);
-			c = '$';
-			break;
-		case CWENT_DEAD_GUARD:
-			setColor(MAGENTA);
-			c = 'X';
-			break;
-		case CWENT_DOG_E:
-			setColor(BROWN);
-			c = '>';
-			break;
-		case CWENT_DOG_N:
-			setColor(BROWN);
-			c = '^';
-			break;
-		case CWENT_DOG_W:
-			setColor(BROWN);
-			c = '<';
-			break;
-		case CWENT_DOG_S:
-			setColor(BROWN);
-			c = 'v';
-			break;
-		case CWENT_GUARD_E:
-			setColor(RED);
-			c = '>';
-			break;
-		case CWENT_GUARD_N:
-			setColor(RED);
-			c = '^';
-			break;
-		case CWENT_GUARD_W:
-			setColor(RED);
-			c = '<';
-			break;
-		case CWENT_GUARD_S:
-			setColor(RED);
-			c = 'v';
-			break;
-		case CWENT_SS_E:
-			setColor(BLUE);
-			c = '>';
-			break;
-		case CWENT_SS_N:
-			setColor(BLUE);
-			c = '^';
-			break;
-		case CWENT_SS_W:
-			setColor(BLUE);
-			c = '<';
-			break;
-		case CWENT_SS_S:
-			setColor(BLUE);
-			c = 'v';
-			break;
-		case CWENT_MUTANT_E:
-			setColor(GREEN);
-			c = '>';
-			break;
-		case CWENT_MUTANT_N:
-			setColor(GREEN);
-			c = '^';
-			break;
-		case CWENT_MUTANT_W:
-			setColor(GREEN);
-			c = '<';
-			break;
-		case CWENT_MUTANT_S:
-			setColor(GREEN);
-			c = 'v';
-			break;
-		case CWENT_OFFICER_E:
-			setColor(GREY);
-			c = '>';
-			break;
-		case CWENT_OFFICER_N:
-			setColor(GREY);
-			c = '^';
-			break;
-		case CWENT_OFFICER_W:
-			setColor(GREY);
-			c = '<';
-			break;
-		case CWENT_OFFICER_S:
-			setColor(GREY);
-			c = 'v';
-			break;
-		case CWENT_TURN_E:
-		case CWENT_TURN_NE:
-		case CWENT_TURN_N:
-		case CWENT_TURN_NW:
-		case CWENT_TURN_W:
-		case CWENT_TURN_SW:
-		case CWENT_TURN_S:
-		case CWENT_TURN_SE:
-			break;
-		case CWENT_TRANS:
-			setColor(GREEN);
-			c = '$';
-			break;
-		case CWENT_UBER_MUTANT:
-			setColor(LIGHTGREEN);
-			c = '$';
-			break;
-		case CWENT_BARNACLE_WILHELM:
-			setColor(LIGHTBLUE);
-			c = '$';
-			break;
-		case CWENT_ROBED_HITLER:
-			setColor(DARKGREY);
-			c = '$';
-			break;
-		case CWENT_DEATH_KNIGHT:
-			setColor(DARKGREY);
-			c = '$';
-			break;
-		case CWENT_HITLER:
-			setColor(LIGHTCYAN);
-			c = '$';
-			break;
-		case CWENT_FETTGESICHT:
-			setColor(LIGHTGREEN);
-			c = '$';
-			break;
-		case CWENT_SCHABBS:
-			setColor(LIGHTMAGENTA);
-			c = '$';
-			break;
-		case CWENT_GRETEL:
-			setColor(YELLOW);
-			c = '$';
-			break;
-		case CWENT_HANS:
-			setColor(LIGHTBLUE);
-			c = '$';
-			break;
-		case CWENT_OTTO:
-			setColor(WHITE);
-			c = '$';
-			break;
-		case CWENT_PACMAN_GHOST_RED:
-			setColor(LIGHTRED);
-			c = 'G';
-			break;
-		case CWENT_PACMAN_GHOST_YELLOW:
-			setColor(YELLOW);
-			c = 'G';
-			break;
-		case CWENT_PACMAN_GHOST_ROSE:
-			setColor(LIGHTMAGENTA);
-			c = 'G';
-			break;
-		case CWENT_PACMAN_GHOST_BLUE:
-			setColor(LIGHTBLUE);
-			c = 'G';
-			break;*/
-		default:
-			// CASSERT(false, "unknown entity");
-			break;
+	case CWENT_WATER:
+		MissionStaticTryAddItem(m, StrMapObject("pool_water"), v);
+		break;
+	case CWENT_OIL_DRUM:
+		MissionStaticTryAddItem(m, StrMapObject("barrel_green"), v);
+		break;
+	case CWENT_TABLE_WITH_CHAIRS:
+		MissionStaticTryAddItem(m, StrMapObject("table_and_chairs"), v);
+		break;
+	case CWENT_FLOOR_LAMP:
+		MissionStaticTryAddItem(m, StrMapObject("rod_light"), v);
+		MissionStaticTryAddItem(m, StrMapObject("spotlight"), v);
+		break;
+	case CWENT_CHANDELIER:
+		MissionStaticTryAddItem(m, StrMapObject("chandelier"), v);
+		MissionStaticTryAddItem(m, StrMapObject("spotlight"), v);
+		break;
+	case CWENT_HANGING_SKELETON:
+		MissionStaticTryAddItem(m, StrMapObject("hanging_skeleton"), v);
+		MissionStaticTryAddItem(m, StrMapObject("shadow"), v);
+		break;
+	case CWENT_DOG_FOOD:
+		MissionStaticTryAddPickup(m, StrPickupClass("dogfood"), v);
+		break;
+	case CWENT_WHITE_COLUMN:
+		MissionStaticTryAddItem(m, StrMapObject("pillar"), v);
+		break;
+	case CWENT_GREEN_PLANT:
+		MissionStaticTryAddItem(m, StrMapObject("plant"), v);
+		break;
+	case CWENT_SKELETON:
+		MissionStaticTryAddItem(m, StrMapObject("bone_blood"), v);
+		break;
+	case CWENT_SINK_SKULLS_ON_STICK:
+		if (type == CWMAPTYPE_SOD)
+		{
+			MissionStaticTryAddItem(m, StrMapObject("skull_pillar"), v);
+		}
+		else
+		{
+			MissionStaticTryAddItem(m, StrMapObject("sink"), v);
+		}
+		break;
+	case CWENT_BROWN_PLANT:
+		MissionStaticTryAddItem(m, StrMapObject("plant_brown"), v);
+		break;
+	case CWENT_VASE:
+		MissionStaticTryAddItem(m, StrMapObject("urn"), v);
+		break;
+	case CWENT_TABLE:
+		MissionStaticTryAddItem(m, StrMapObject("table_wood_round"), v);
+		break;
+	case CWENT_CEILING_LIGHT_GREEN:
+		MissionStaticTryAddItem(m, StrMapObject("spotlight"), v);
+		break;
+	case CWENT_UTENSILS_BROWN_CAGE_BLOODY_BONES:
+		if (type == CWMAPTYPE_SOD)
+		{
+			MissionStaticTryAddItem(m, StrMapObject("gibbet_bloody"), v);
+			MissionStaticTryAddItem(m, StrMapObject("shadow"), v);
+		}
+		else
+		{
+			MissionStaticTryAddItem(m, StrMapObject("knives"), v);
+		}
+		break;
+	case CWENT_ARMOR:
+		MissionStaticTryAddItem(m, StrMapObject("suit_of_armor"), v);
+		break;
+	case CWENT_CAGE:
+		MissionStaticTryAddItem(m, StrMapObject("gibbet"), v);
+		MissionStaticTryAddItem(m, StrMapObject("shadow"), v);
+		break;
+	case CWENT_CAGE_SKELETON:
+		MissionStaticTryAddItem(m, StrMapObject("gibbet_skeleton"), v);
+		MissionStaticTryAddItem(m, StrMapObject("shadow"), v);
+		break;
+	case CWENT_BONES1:
+		MissionStaticTryAddItem(m, StrMapObject("skull"), v);
+		break;
+	case CWENT_KEY_GOLD:
+		MissionStaticTryAddKey(m, StrKeycard("yellow"), v);
+		break;
+	case CWENT_KEY_SILVER:
+		MissionStaticTryAddKey(m, StrKeycard("blue"), v);
+		break;
+	case CWENT_BED_CAGE_SKULLS:
+		if (type == CWMAPTYPE_SOD)
+		{
+			MissionStaticTryAddItem(m, StrMapObject("gibbet_skulls"), v);
+			MissionStaticTryAddItem(m, StrMapObject("shadow"), v);
+		}
+		else
+		{
+			MissionStaticTryAddItem(m, StrMapObject("bed"), v);
+		}
+		break;
+	case CWENT_BASKET:
+		MissionStaticTryAddItem(m, StrMapObject("basket"), v);
+		break;
+	case CWENT_FOOD:
+		MissionStaticTryAddPickup(m, StrPickupClass("meal"), v);
+		break;
+	case CWENT_MEDKIT:
+		MissionStaticTryAddPickup(m, StrPickupClass("health"), v);
+		break;
+	case CWENT_AMMO:
+		MissionStaticTryAddPickup(m, StrPickupClass("ammo_Bullets"), v);
+		break;
+	case CWENT_MACHINE_GUN:
+		MissionStaticTryAddPickup(m, StrPickupClass("gun_Machine Gun"), v);
+		break;
+	case CWENT_CHAIN_GUN:
+		MissionStaticTryAddPickup(m, StrPickupClass("gun_Chain Gun"), v);
+		break;
+	case CWENT_CROSS:
+		MissionStaticTryAddPickup(m, StrPickupClass("cross"), v);
+		break;
+	case CWENT_CHALICE:
+		MissionStaticTryAddPickup(m, StrPickupClass("chalice"), v);
+		break;
+	case CWENT_CHEST:
+		MissionStaticTryAddPickup(m, StrPickupClass("chest"), v);
+		break;
+	case CWENT_CROWN:
+		MissionStaticTryAddPickup(m, StrPickupClass("crown"), v);
+		break;
+	case CWENT_LIFE:
+		MissionStaticTryAddPickup(m, StrPickupClass("heart"), v);
+		break;
+	case CWENT_BONES_BLOOD:
+		MissionStaticTryAddItem(m, StrMapObject("gibs"), v);
+		break;
+	case CWENT_BARREL:
+		MissionStaticTryAddItem(m, StrMapObject("barrel_wood2"), v);
+		break;
+	case CWENT_WELL_WATER:
+		MissionStaticTryAddItem(m, StrMapObject("well_water"), v);
+		break;
+	case CWENT_WELL:
+		MissionStaticTryAddItem(m, StrMapObject("well"), v);
+		break;
+	case CWENT_POOL_OF_BLOOD:
+		MissionStaticTryAddItem(m, StrMapObject("pool_blood"), v);
+		break;
+	case CWENT_FLAG:
+		MissionStaticTryAddItem(m, StrMapObject("flag"), v);
+		break;
+	case CWENT_CEILING_LIGHT_RED_AARDWOLF:
+		if (type == CWMAPTYPE_WL6)
+		{
+			MissionStaticTryAddItem(m, StrMapObject("spotlight"), v);
+		}
+		else
+		{
+			MissionStaticTryAddItem(m, StrMapObject("skull2"), v);
+			break;
+		}
+		break;
+	case CWENT_BONES2:
+		MissionStaticTryAddItem(m, StrMapObject("bones"), v);
+		break;
+	case CWENT_BONES3:
+		MissionStaticTryAddItem(m, StrMapObject("bones2"), v);
+		break;
+	case CWENT_BONES4:
+		MissionStaticTryAddItem(m, StrMapObject("bones3"), v);
+		break;
+	case CWENT_UTENSILS_BLUE_COW_SKULL:
+		if (type == CWMAPTYPE_SOD)
+		{
+			MissionStaticTryAddItem(m, StrMapObject("cowskull_pillar"), v);
+		}
+		else
+		{
+			MissionStaticTryAddItem(m, StrMapObject("pots"), v);
+		}
+		break;
+	case CWENT_STOVE_WELL_BLOOD:
+		if (type == CWMAPTYPE_SOD)
+		{
+			MissionStaticTryAddItem(m, StrMapObject("well_blood"), v);
+		}
+		else
+		{
+			MissionStaticTryAddItem(m, StrMapObject("stove"), v);
+		}
+		break;
+	case CWENT_RACK_ANGEL_STATUE:
+		if (type == CWMAPTYPE_SOD)
+		{
+			MissionStaticTryAddItem(m, StrMapObject("statue_behemoth"), v);
+		}
+		else
+		{
+			MissionStaticTryAddItem(m, StrMapObject("spears"), v);
+		}
+		break;
+	case CWENT_VINES:
+		MissionStaticTryAddItem(m, StrMapObject("grass"), v);
+		break;
+	case CWENT_BROWN_COLUMN:
+		MissionStaticTryAddItem(m, StrMapObject("pillar_brown"), v);
+		break;
+	case CWENT_AMMO_BOX:
+		MissionStaticTryAddPickup(m, StrPickupClass("ammo_box"), v);
+		break;
+	case CWENT_TRUCK_REAR:
+		MissionStaticTryAddItem(m, StrMapObject("truck"), v);
+		break;
+	case CWENT_SPEAR:
+		MissionStaticTryAddPickup(m, StrPickupClass("spear"), v);
+		break;
+	case CWENT_PUSHWALL:
+		//CASSERT(false, "TODO: pushwall");
+		break;
+	case CWENT_ENDGAME:
+		//CASSERT(false, "TODO: endgame");
+		break;
+	case CWENT_GHOST:
+		MissionStaticTryAddCharacter(m, (int)CHAR_GHOST, v);
+		break;
+	case CWENT_ANGEL:
+		MissionStaticTryAddCharacter(m, (int)CHAR_ANGEL, v);
+		break;
+	case CWENT_DEAD_GUARD:
+		MissionStaticTryAddItem(m, StrMapObject("dead_guard"), v);
+		break;
+	case CWENT_DOG_E:
+	case CWENT_DOG_N:	// fallthrough
+	case CWENT_DOG_W:	// fallthrough
+	case CWENT_DOG_S:	// fallthrough
+		MissionStaticTryAddCharacter(m, (int)CHAR_DOG, v);
+		break;
+	case CWENT_GUARD_E:
+	case CWENT_GUARD_N:	// fallthrough
+	case CWENT_GUARD_W:	// fallthrough
+	case CWENT_GUARD_S:	// fallthrough
+		MissionStaticTryAddCharacter(m, (int)CHAR_GUARD, v);
+		break;
+	case CWENT_SS_E:
+	case CWENT_SS_N:	// fallthrough
+	case CWENT_SS_W:	// fallthrough
+	case CWENT_SS_S:	// fallthrough
+		MissionStaticTryAddCharacter(m, (int)CHAR_SS, v);
+		break;
+	case CWENT_MUTANT_E:
+	case CWENT_MUTANT_N:	// fallthrough
+	case CWENT_MUTANT_W:	// fallthrough
+	case CWENT_MUTANT_S:	// fallthrough
+		MissionStaticTryAddCharacter(m, (int)CHAR_MUTANT, v);
+		break;
+	case CWENT_OFFICER_E:
+	case CWENT_OFFICER_N:	// fallthrough
+	case CWENT_OFFICER_W:	// fallthrough
+	case CWENT_OFFICER_S:	// fallthrough
+		MissionStaticTryAddCharacter(m, (int)CHAR_OFFICER, v);
+		break;
+	case CWENT_TURN_E:
+	case CWENT_TURN_NE:
+	case CWENT_TURN_N:
+	case CWENT_TURN_NW:
+	case CWENT_TURN_W:
+	case CWENT_TURN_SW:
+	case CWENT_TURN_S:
+	case CWENT_TURN_SE:
+		break;
+	case CWENT_TRANS:
+		MissionStaticTryAddCharacter(m, (int)CHAR_TRANS, v);
+		break;
+	case CWENT_UBER_MUTANT:
+		MissionStaticTryAddCharacter(m, (int)CHAR_UBERMUTANT, v);
+		break;
+	case CWENT_BARNACLE_WILHELM:
+		MissionStaticTryAddCharacter(m, (int)CHAR_WILHELM, v);
+		break;
+	case CWENT_ROBED_HITLER:
+		MissionStaticTryAddCharacter(m, (int)CHAR_FAKE_HITLER, v);
+		break;
+	case CWENT_DEATH_KNIGHT:
+		MissionStaticTryAddCharacter(m, (int)CHAR_DEATH_KNIGHT, v);
+		break;
+	case CWENT_HITLER:
+		MissionStaticTryAddCharacter(m, (int)CHAR_MECHA_HITLER, v);
+		break;
+	case CWENT_FETTGESICHT:
+		MissionStaticTryAddCharacter(m, (int)CHAR_FETTGESICHT, v);
+		break;
+	case CWENT_SCHABBS:
+		MissionStaticTryAddCharacter(m, (int)CHAR_SCHABBS, v);
+		break;
+	case CWENT_GRETEL:
+		MissionStaticTryAddCharacter(m, (int)CHAR_GRETEL, v);
+		break;
+	case CWENT_HANS:
+		MissionStaticTryAddCharacter(m, (int)CHAR_HANS, v);
+		break;
+	case CWENT_OTTO:
+		MissionStaticTryAddCharacter(m, (int)CHAR_OTTO, v);
+		break;
+	case CWENT_PACMAN_GHOST_RED:
+		MissionStaticTryAddCharacter(m, (int)CHAR_PACMAN_GHOST_RED, v);
+		break;
+	case CWENT_PACMAN_GHOST_YELLOW:
+		MissionStaticTryAddCharacter(m, (int)CHAR_PACMAN_GHOST_YELLOW, v);
+		break;
+	case CWENT_PACMAN_GHOST_ROSE:
+		MissionStaticTryAddCharacter(m, (int)CHAR_PACMAN_GHOST_ROSE, v);
+		break;
+	case CWENT_PACMAN_GHOST_BLUE:
+		MissionStaticTryAddCharacter(m, (int)CHAR_PACMAN_GHOST_BLUE, v);
+		break;
+	default:
+		CASSERT(false, "unknown entity");
+		break;
 	}
 }
