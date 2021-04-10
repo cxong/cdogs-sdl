@@ -122,7 +122,8 @@
       "HeadPics": {
         "Type": "Directional",
         "Sprites": "chars/heads/jones"
-      }
+      },
+      "Body": "none"
     },
     {
       "Name": "Trans Grosse",
