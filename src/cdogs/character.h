@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2014, 2016, 2019-2020 Cong Xu
+	Copyright (c) 2013-2014, 2016, 2019-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -65,6 +65,7 @@ typedef struct
 
 void CharacterStoreInit(CharacterStore *store);
 void CharacterStoreTerminate(CharacterStore *store);
+void CharacterStoreCopy(CharacterStore *dst, const CharacterStore *src);
 void CharacterStoreResetOthers(CharacterStore *store);
 void CharacterLoadJSON(
 	CharacterStore *c, CArray *playerTemplates, json_t *root, int version);

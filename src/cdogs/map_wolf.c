@@ -163,8 +163,7 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 	}
 	
 	char buf[CDOGS_PATH_MAX];
-	// Copy tile classes from common campaign
-	// and use them for every mission
+	// Copy data from common campaign and use them for every mission
 	GetDataFilePath(buf, "missions/.wolf3d/common.cdogscpn");
 	CampaignSetting cCommon;
 	CampaignSettingInit(&cCommon);
@@ -175,6 +174,9 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 	}
 	Mission *m = CArrayGet(&cCommon.Missions, 0);
 	tileClasses = hashmap_copy(m->u.Static.TileClasses, TileClassCopyHashMap);
+	CharacterStore cs;
+	memset(&cs, 0, sizeof cs);
+	CharacterStoreCopy(&cs, &cCommon.characters);
 	CampaignSettingTerminate(&cCommon);
 
 	GetCampaignPath(map.type, buf);
@@ -193,8 +195,11 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 		LoadMission(&c->Missions, tileClasses, level, map.type, i);
 	}
 
+	CharacterStoreCopy(&c->characters, &cs);
+
 bail:
 	hashmap_destroy(tileClasses, TileClassDestroy);
+	CharacterStoreTerminate(&cs);
 	CWFree(&map);
 	return err;
 }

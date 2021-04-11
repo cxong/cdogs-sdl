@@ -69,6 +69,26 @@ void CharacterStoreTerminate(CharacterStore *store)
 	memset(store, 0, sizeof *store);
 }
 
+void CharacterStoreCopy(CharacterStore *dst, const CharacterStore *src)
+{
+	CharacterStoreTerminate(dst);
+	CharacterStoreInit(dst);
+	CArrayCopy(&dst->OtherChars, &src->OtherChars);
+	CA_FOREACH(Character, c, dst->OtherChars)
+	const CharBot *cb = c->bot;
+	CMALLOC(c->bot, sizeof *c->bot);
+	memcpy(c->bot, cb, sizeof *cb);
+	const char *hair = c->Hair;
+	if (hair != NULL)
+	{
+		CSTRDUP(c->Hair, hair);
+	}
+	CA_FOREACH_END()
+	CArrayCopy(&dst->prisonerIds, &src->prisonerIds);
+	CArrayCopy(&dst->baddieIds, &src->baddieIds);
+	CArrayCopy(&dst->specialIds, &src->specialIds);
+}
+
 void CharacterStoreResetOthers(CharacterStore *store)
 {
 	CArrayClear(&store->prisonerIds);
