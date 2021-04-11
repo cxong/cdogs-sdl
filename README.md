@@ -63,4 +63,4 @@ Data is licensed under various free terms, including CC0, CC-BY and CC-BY-SA. [T
 If you have any questions, comments, bug reports, patches or anything else related to C-Dogs SDL:
 
 - [Raise an issue](https://github.com/cxong/cdogs-sdl/issues)
-- Email: Cong <mailto:congusbongus@gmail.com>
+- Email: [Cong](<mailto:congusbongus@gmail.com>)
