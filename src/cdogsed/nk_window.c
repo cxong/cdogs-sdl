@@ -248,6 +248,10 @@ int nk_combo_separator_image(
 static Pic PadEven(const Pic *pic);
 void LoadTexFromPic(const GLuint texid, const Pic *pic)
 {
+	if (pic == NULL)
+	{
+		return;
+	}
 	glBindTexture(GL_TEXTURE_2D, texid);
 	Pic padded = PadEven(pic);
 	glTexImage2D(

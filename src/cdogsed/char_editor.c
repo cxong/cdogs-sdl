@@ -467,7 +467,7 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 
 			nk_layout_row_dynamic(ctx, ROW_HEIGHT, 1);
 			nk_property_int(
-				ctx, "Max Health:", 10, &ec->Char->maxHealth, 1000, 10, 1);
+				ctx, "Max Health:", 10, &ec->Char->maxHealth, 2000, 10, 1);
 
 			nk_layout_row_dynamic(ctx, ROW_HEIGHT, 2);
 			DrawFlag(ctx, ec, "Asbestos", FLAGS_ASBESTOS, "Immune to fire");
