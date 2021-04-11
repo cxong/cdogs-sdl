@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, 2017 Cong Xu
+    Copyright (c) 2013-2015, 2017, 2021 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -67,8 +67,7 @@ typedef enum
 	ACTION_CLEARTRIGGER,
 	ACTION_EVENT,
 	ACTION_ACTIVATEWATCH,
-	ACTION_DEACTIVATEWATCH,
-	ACTION_SOUND
+	ACTION_DEACTIVATEWATCH
 } ActionType;
 
 
@@ -80,12 +79,8 @@ typedef struct
 	{
 		struct vec2 pos;
 		int index;
-	} u;
-	union
-	{
 		GameEvent Event;
-		Mix_Chunk *Sound;
-	} a;
+	} u;
 } Action;
 
 

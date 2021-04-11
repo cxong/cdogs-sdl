@@ -314,9 +314,10 @@ bool BulletUpdate(struct MobileObject *obj, const int ticks)
 				{
 					return false;
 				}
-				SoundPlayAt(
-					&gSoundDevice, StrSound(obj->bulletClass->HitSound.Wall),
-					pos);
+				GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
+				strcpy(es.u.SoundAt.Sound, obj->bulletClass->HitSound.Wall);
+				es.u.SoundAt.Pos = Vec2ToNet(pos);
+				GameEventsEnqueue(&gGameEvents, es);
 			}
 			else
 			{
@@ -1027,24 +1028,27 @@ void BulletBounce(const NBulletBounce bb)
 
 void PlayHitSound(const HitSounds *h, const HitType t, const struct vec2 pos)
 {
+	GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
 	switch (t)
 	{
 	case HIT_NONE:
 		// Do nothing
-		break;
+		return;
 	case HIT_WALL:
-		SoundPlayAt(&gSoundDevice, StrSound(h->Wall), pos);
+		strcpy(es.u.SoundAt.Sound, h->Wall);
 		break;
 	case HIT_OBJECT:
-		SoundPlayAt(&gSoundDevice, StrSound(h->Object), pos);
+		strcpy(es.u.SoundAt.Sound, h->Object);
 		break;
 	case HIT_FLESH:
-		SoundPlayAt(&gSoundDevice, StrSound(h->Flesh), pos);
+		strcpy(es.u.SoundAt.Sound, h->Flesh);
 		break;
 	default:
 		CASSERT(false, "unknown hit type")
-		break;
+		return;
 	}
+	es.u.SoundAt.Pos = Vec2ToNet(pos);
+	GameEventsEnqueue(&gGameEvents, es);
 }
 
 void BulletDestroy(TMobileObject *obj)

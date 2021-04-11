@@ -40,7 +40,7 @@ static NVec2 PlacePlayerSimple(const Map *map)
 		MAX(map->Size.x * TILE_WIDTH, map->Size.y * TILE_HEIGHT) / 2;
 	int attemptsAwayFromExits = 0;
 
-	struct vec2 pos;
+	struct vec2 pos = svec2_zero();
 	bool ok = false;
 	for (int j = 0; j < 10000 && !ok; j++)
 	{

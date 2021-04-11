@@ -695,7 +695,6 @@ Config ConfigDefault(void)
 	ConfigGroupAdd(&snd,
 		ConfigNewInt("SoundVolume", 64, 0, 64, 8, NULL, Div8Str));
 	ConfigGroupAdd(&snd, ConfigNewBool("Footsteps", true));
-	ConfigGroupAdd(&snd, ConfigNewBool("Hits", true));
 	ConfigGroupAdd(&snd, ConfigNewBool("Reloads", true));
 	ConfigGroupAdd(&root, snd);
 

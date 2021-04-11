@@ -151,12 +151,9 @@ static void HandleGameEvent(
 		}
 		break;
 	case GAME_EVENT_SOUND_AT:
-		if (!e.u.SoundAt.IsHit || ConfigGetBool(&gConfig, "Sound.Hits"))
-		{
-			SoundPlayAt(
-				sd, StrSound(e.u.SoundAt.Sound),
-				NetToVec2(e.u.SoundAt.Pos));
-		}
+		SoundPlayAtPlusDistance(
+			sd, StrSound(e.u.SoundAt.Sound),
+			NetToVec2(e.u.SoundAt.Pos), e.u.SoundAt.Distance);
 		break;
 	case GAME_EVENT_SCREEN_SHAKE:
 		if (e.u.Shake.CameraSubjectOnly &&

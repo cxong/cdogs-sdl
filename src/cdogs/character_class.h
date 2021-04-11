@@ -28,8 +28,6 @@
 */
 #pragma once
 
-#include <SDL_mixer.h>
-
 #include "cpic.h"
 #include "defs.h"
 #include "draw/char_sprites.h"
@@ -59,7 +57,7 @@ const char *IntCharacterFace(const int face);
 void CharacterOldFaceToHair(const char *face, char **newFace, char **hair);
 const CharacterClass *IndexCharacterClass(const int i);
 int CharacterClassIndex(const CharacterClass *c);
-Mix_Chunk *CharacterClassGetSound(const CharacterClass *c, const char *sound);
+void CharacterClassGetSound(const CharacterClass *c, char *out, const char *sound);
 
 void CharacterClassesInitialize(CharacterClasses *c, const char *filename);
 void CharacterClassesLoadJSON(CArray *classes, json_t *root);

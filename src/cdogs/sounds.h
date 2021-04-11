@@ -117,15 +117,6 @@ typedef struct
 
 extern SoundDevice gSoundDevice;
 
-typedef struct
-{
-	int SoundVolume;
-	int MusicVolume;
-	bool Footsteps;
-	bool Hits;
-	bool Reloads;
-} SoundConfig;
-
 // DTO for playing certain sounds associated with collision
 // for a bullet or weapon type
 typedef struct

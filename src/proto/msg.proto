@@ -109,7 +109,7 @@ message NScore {
 message NSound {
 	string Sound = 1;
 	NVec2 Pos = 2;
-	bool IsHit = 3;
+	uint32 Distance = 3;
 }
 
 message NVec2i {

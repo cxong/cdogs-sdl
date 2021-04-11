@@ -226,7 +226,10 @@ void ObjRemove(const NMapObjectRemove mor)
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 
-	SoundPlayAt(&gSoundDevice, StrSound("bang"), o->thing.Pos);
+	GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
+	strcpy(es.u.SoundAt.Sound, "bang");
+	es.u.SoundAt.Pos = Vec2ToNet(o->thing.Pos);
+	GameEventsEnqueue(&gGameEvents, es);
 
 	// If wreck is available spawn it in the exact same position
 	PlaceWreck(o->Class->Wreck, &o->thing);

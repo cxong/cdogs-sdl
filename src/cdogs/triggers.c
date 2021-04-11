@@ -191,7 +191,7 @@ static void ActionRun(Action *a, CArray *mapTriggers)
 		break;
 
 	case ACTION_EVENT:
-		GameEventsEnqueue(&gGameEvents, a->a.Event);
+		GameEventsEnqueue(&gGameEvents, a->u.Event);
 		break;
 
 	case ACTION_ACTIVATEWATCH:
@@ -200,10 +200,6 @@ static void ActionRun(Action *a, CArray *mapTriggers)
 
 	case ACTION_DEACTIVATEWATCH:
 		DeactivateWatch(a->u.index);
-		break;
-
-	case ACTION_SOUND:
-		SoundPlayAt(&gSoundDevice, a->a.Sound, a->u.pos);
 		break;
 	}
 }

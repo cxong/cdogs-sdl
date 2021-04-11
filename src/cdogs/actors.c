@@ -189,11 +189,11 @@ void UpdateActorState(TActor *actor, int ticks)
 		 AnimationGetFrame(&actor->anim) == 6) &&
 		actor->anim.newFrame)
 	{
-		char buf[CDOGS_PATH_MAX];
-		sprintf(buf, "footsteps/%s", ActorGetCharacter(actor)->Class->Footsteps);
-		SoundPlayAtPlusDistance(
-			&gSoundDevice, StrSound(buf), actor->thing.Pos,
-			FOOTSTEP_DISTANCE_PLUS);
+		GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
+		sprintf(es.u.SoundAt.Sound, "footsteps/%s", ActorGetCharacter(actor)->Class->Footsteps);
+		es.u.SoundAt.Pos = Vec2ToNet(actor->thing.Pos);
+		es.u.SoundAt.Distance = FOOTSTEP_DISTANCE_PLUS;
+		GameEventsEnqueue(&gGameEvents, es);
 	}
 
 	// Animation
@@ -584,13 +584,16 @@ void InjureActor(TActor *actor, int injury)
 	if (lastHealth > 0 && actor->health <= 0)
 	{
 		actor->stateCounter = 0;
-		SoundPlayAt(
-			&gSoundDevice,
-			CharacterClassGetSound(ActorGetCharacter(actor)->Class, "die"),
-			actor->thing.Pos);
+		GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
+		CharacterClassGetSound(ActorGetCharacter(actor)->Class, es.u.SoundAt.Sound, "die");
+		es.u.SoundAt.Pos = Vec2ToNet(actor->thing.Pos);
+		GameEventsEnqueue(&gGameEvents, es);
 		if (actor->PlayerUID >= 0)
 		{
-			SoundPlayAt(&gSoundDevice, StrSound("hahaha"), actor->thing.Pos);
+			es = GameEventNew(GAME_EVENT_SOUND_AT);
+			strcpy(es.u.SoundAt.Sound, "hahaha");
+			es.u.SoundAt.Pos = Vec2ToNet(actor->thing.Pos);
+			GameEventsEnqueue(&gGameEvents, es);
 		}
 		if (actor->thing.flags & THING_OBJECTIVE)
 		{
@@ -739,7 +742,10 @@ static void FireWeapon(TActor *a, Weapon *w)
 			// Play a clicking sound if this weapon is out of ammo
 			if (w->clickLock <= 0)
 			{
-				SoundPlayAt(&gSoundDevice, StrSound("click"), a->Pos);
+				GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
+				strcpy(es.u.SoundAt.Sound, "click");
+				es.u.SoundAt.Pos = Vec2ToNet(a->Pos);
+				GameEventsEnqueue(&gGameEvents, es);
 				w->clickLock = SOUND_LOCK_WEAPON_CLICK;
 			}
 		}

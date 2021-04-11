@@ -261,10 +261,10 @@ static TWatch *CreateCloseDoorWatch(
 	a->u.index = w->index;
 	// play close sound at the center of the door group
 	a = WatchAddAction(w);
-	a->Type = ACTION_SOUND;
-	a->u.pos = Vec2CenterOfTile(
-		svec2i_add(v, svec2i_scale(dv, (float)doorGroupCount / 2)));
-	a->a.Sound = StrSound("door_close");
+	a->Type = ACTION_EVENT;
+	a->u.Event = GameEventNew(GAME_EVENT_SOUND_AT);
+	strcpy(a->u.Event.u.SoundAt.Sound, "door_close");
+	a->u.Event.u.SoundAt.Pos = Vec2ToNet(Vec2CenterOfTile(svec2i_add(v, svec2i_scale(dv, (float)doorGroupCount / 2))));
 
 	// Close doors
 	const TileClass *door = MapBuilderGetTile(mb, v);
@@ -274,15 +274,15 @@ static TWatch *CreateCloseDoorWatch(
 
 		a = WatchAddAction(w);
 		a->Type = ACTION_EVENT;
-		a->a.Event = GameEventNew(GAME_EVENT_TILE_SET);
-		a->a.Event.u.TileSet.Pos = Vec2i2Net(vI);
+		a->u.Event = GameEventNew(GAME_EVENT_TILE_SET);
+		a->u.Event.u.TileSet.Pos = Vec2i2Net(vI);
 		const DoorType type = GetDoorType(isHorizontal, i, doorGroupCount);
 		DoorGetClassName(
-			a->a.Event.u.TileSet.ClassName, door, "open", type);
+			a->u.Event.u.TileSet.ClassName, door, "open", type);
 
 		char doorClassName[CDOGS_FILENAME_MAX];
 		DoorGetClassName(doorClassName, door, doorKey, type);
-		strcpy(a->a.Event.u.TileSet.ClassAltName, doorClassName);
+		strcpy(a->u.Event.u.TileSet.ClassAltName, doorClassName);
 	}
 
 	// Add shadows below doors
@@ -294,12 +294,12 @@ static TWatch *CreateCloseDoorWatch(
 
 			a = WatchAddAction(w);
 			a->Type = ACTION_EVENT;
-			a->a.Event = GameEventNew(GAME_EVENT_TILE_SET);
+			a->u.Event = GameEventNew(GAME_EVENT_TILE_SET);
 			const struct vec2i vI2 = svec2i(vI.x + dAside.x, vI.y + dAside.y);
-			a->a.Event.u.TileSet.Pos = Vec2i2Net(vI2);
+			a->u.Event.u.TileSet.Pos = Vec2i2Net(vI2);
 			const TileClass *t = MapBuilderGetTile(mb, vI2);
 			TileClassGetName(
-				a->a.Event.u.TileSet.ClassName, t, t->Style, "shadow", t->Mask,
+				a->u.Event.u.TileSet.ClassName, t, t->Style, "shadow", t->Mask,
 				t->MaskAlt);
 		}
 	}
@@ -330,16 +330,16 @@ static Trigger *CreateOpenDoorTrigger(
 		const struct vec2i vI = svec2i_add(v, svec2i_scale(dv, (float)i));
 		a = TriggerAddAction(t);
 		a->Type = ACTION_EVENT;
-		a->a.Event = GameEventNew(GAME_EVENT_TILE_SET);
-		a->a.Event.u.TileSet.Pos = Vec2i2Net(vI);
+		a->u.Event = GameEventNew(GAME_EVENT_TILE_SET);
+		a->u.Event.u.TileSet.Pos = Vec2i2Net(vI);
 		const DoorType type = GetDoorType(isHorizontal, i, doorGroupCount);
 		DoorGetClassName(
-			a->a.Event.u.TileSet.ClassName, door, "open", type);
+			a->u.Event.u.TileSet.ClassName, door, "open", type);
 		if (type == DOORTYPE_TOP || type == DOORTYPE_V)
 		{
 			// special door cavity picture
 			DoorGetClassName(
-				a->a.Event.u.TileSet.ClassAltName, door, "wall", type);
+				a->u.Event.u.TileSet.ClassAltName, door, "wall", type);
 		}
 	}
 
@@ -353,11 +353,11 @@ static Trigger *CreateOpenDoorTrigger(
 			a = TriggerAddAction(t);
 			// Remove shadows below doors
 			a->Type = ACTION_EVENT;
-			a->a.Event = GameEventNew(GAME_EVENT_TILE_SET);
+			a->u.Event = GameEventNew(GAME_EVENT_TILE_SET);
 			const TileClass *tc = MapBuilderGetTile(mb, vIAside);
-			a->a.Event.u.TileSet.Pos = Vec2i2Net(vIAside);
+			a->u.Event.u.TileSet.Pos = Vec2i2Net(vIAside);
 			TileClassGetName(
-				a->a.Event.u.TileSet.ClassName, tc, tc->Style, "normal",
+				a->u.Event.u.TileSet.ClassName, tc, tc->Style, "normal",
 				tc->Mask, tc->MaskAlt);
 		}
 	}
@@ -374,10 +374,10 @@ static Trigger *CreateOpenDoorTrigger(
 
 	/// play sound at the center of the door group
 	a = TriggerAddAction(t);
-	a->Type = ACTION_SOUND;
-	a->u.pos = Vec2CenterOfTile(
-		svec2i_add(v, svec2i_scale(dv, (float)doorGroupCount / 2)));
-	a->a.Sound = StrSound("door");
+	a->Type = ACTION_EVENT;
+	a->u.Event = GameEventNew(GAME_EVENT_SOUND_AT);
+	strcpy(a->u.Event.u.SoundAt.Sound, "door");
+	a->u.Event.u.SoundAt.Pos = Vec2ToNet(Vec2CenterOfTile(svec2i_add(v, svec2i_scale(dv, (float)doorGroupCount / 2))));
 
 	return t;
 }
