@@ -420,6 +420,10 @@ const Pic *GetHeadPic(
 	const CharacterClass *c, const direction_e dir, const bool isGrimacing,
 	const CharColors *colors)
 {
+	if (strlen(c->HeadSprites) == 0)
+	{
+		return NULL;
+	}
 	// If firing, draw the firing head pic
 	const int row = isGrimacing ? 1 : 0;
 	const int idx = (int)dir + row * 8;

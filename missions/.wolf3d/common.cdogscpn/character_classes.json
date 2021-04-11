@@ -167,7 +167,7 @@
       "Name": "Ghost",
       "HeadPics": {
         "Type": "Directional",
-        "Sprites": "chars/heads/jones"
+        "Sprites": ""
       },
       "Body": "none"
     },
