@@ -476,10 +476,15 @@ static void Wake(TActor *a)
 {
 	a->flags &= ~FLAGS_SLEEPING;
 	ActorSetAIState(a, AI_STATE_NONE);
-	GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
-	CharacterClassGetSound(ActorGetCharacter(a)->Class, es.u.SoundAt.Sound, "alert");
-	es.u.SoundAt.Pos = Vec2ToNet(a->thing.Pos);
-	GameEventsEnqueue(&gGameEvents, es);
+	
+	// Don't play alert sound for invisible enemies
+	if (!(a->flags & FLAGS_SEETHROUGH))
+	{
+		GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
+		CharacterClassGetSound(ActorGetCharacter(a)->Class, es.u.SoundAt.Sound, "alert");
+		es.u.SoundAt.Pos = Vec2ToNet(a->thing.Pos);
+		GameEventsEnqueue(&gGameEvents, es);
+	}
 }
 static int Follow(TActor *a)
 {
