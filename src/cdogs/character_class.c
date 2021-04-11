@@ -201,7 +201,7 @@ int CharacterClassIndex(const CharacterClass *c)
 
 void CharacterClassGetSound(const CharacterClass *c, char *out, const char *sound)
 {
-	sprintf(out, "out/%s/%s", sound, c->Sounds);
+	sprintf(out, "chars/%s/%s", sound, c->Sounds);
 }
 
 void CharacterClassesInitialize(CharacterClasses *c, const char *filename)

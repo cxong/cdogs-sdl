@@ -309,7 +309,6 @@ typedef struct _NSound {
     char Sound[128];
     bool has_Pos;
     NVec2 Pos;
-    bool IsHit;
     uint32_t Distance;
 } NSound;
 
@@ -384,7 +383,7 @@ extern "C" {
 #define NMapObjectAdd_init_default               {0, "", false, NVec2_init_default, 0, 0, false, NColor_init_default}
 #define NMapObjectRemove_init_default            {0, 0, 0}
 #define NScore_init_default                      {0, 0}
-#define NSound_init_default                      {"", false, NVec2_init_default, 0, 0}
+#define NSound_init_default                      {"", false, NVec2_init_default, 0}
 #define NVec2i_init_default                      {0, 0}
 #define NVec2_init_default                       {0, 0}
 #define NGameBegin_init_default                  {0}
@@ -433,7 +432,7 @@ extern "C" {
 #define NMapObjectAdd_init_zero                  {0, "", false, NVec2_init_zero, 0, 0, false, NColor_init_zero}
 #define NMapObjectRemove_init_zero               {0, 0, 0}
 #define NScore_init_zero                         {0, 0}
-#define NSound_init_zero                         {"", false, NVec2_init_zero, 0, 0}
+#define NSound_init_zero                         {"", false, NVec2_init_zero, 0}
 #define NVec2i_init_zero                         {0, 0}
 #define NVec2_init_zero                          {0, 0}
 #define NGameBegin_init_zero                     {0}
@@ -612,8 +611,7 @@ extern "C" {
 #define NMapObjectAdd_Mask_tag                   6
 #define NSound_Sound_tag                         1
 #define NSound_Pos_tag                           2
-#define NSound_IsHit_tag                         3
-#define NSound_Distance_tag                      4
+#define NSound_Distance_tag                      3
 #define NThingDamage_UID_tag                     1
 #define NThingDamage_Kind_tag                    2
 #define NThingDamage_SourceActorUID_tag          3
@@ -778,8 +776,7 @@ X(a, STATIC,   SINGULAR, INT32,    Score,             2)
 #define NSound_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, STRING,   Sound,             1) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  Pos,               2) \
-X(a, STATIC,   SINGULAR, BOOL,     IsHit,             3) \
-X(a, STATIC,   SINGULAR, UINT32,   Distance,          4)
+X(a, STATIC,   SINGULAR, UINT32,   Distance,          3)
 #define NSound_CALLBACK NULL
 #define NSound_DEFAULT NULL
 #define NSound_Pos_MSGTYPE NVec2
@@ -1161,7 +1158,7 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 #define NMapObjectAdd_size                       178
 #define NMapObjectRemove_size                    23
 #define NScore_size                              17
-#define NSound_size                              150
+#define NSound_size                              148
 #define NVec2i_size                              22
 #define NVec2_size                               10
 #define NGameBegin_size                          11
