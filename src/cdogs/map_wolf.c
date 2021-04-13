@@ -723,10 +723,10 @@ static void LoadEntity(
 		//CASSERT(false, "TODO: endgame");
 		break;
 	case CWENT_GHOST:
-		MissionStaticTryAddCharacter(m, (int)CHAR_GHOST, v);
+		MissionStaticAddCharacter(m, (int)CHAR_GHOST, v);
 		break;
 	case CWENT_ANGEL:
-		MissionStaticTryAddCharacter(m, (int)CHAR_ANGEL, v);
+		MissionStaticAddCharacter(m, (int)CHAR_ANGEL, v);
 		break;
 	case CWENT_DEAD_GUARD:
 		MissionStaticTryAddItem(m, StrMapObject("dead_guard"), v);
@@ -735,31 +735,31 @@ static void LoadEntity(
 	case CWENT_DOG_N:	// fallthrough
 	case CWENT_DOG_W:	// fallthrough
 	case CWENT_DOG_S:	// fallthrough
-		MissionStaticTryAddCharacter(m, (int)CHAR_DOG, v);
+		MissionStaticAddCharacter(m, (int)CHAR_DOG, v);
 		break;
 	case CWENT_GUARD_E:
 	case CWENT_GUARD_N:	// fallthrough
 	case CWENT_GUARD_W:	// fallthrough
 	case CWENT_GUARD_S:	// fallthrough
-		MissionStaticTryAddCharacter(m, (int)CHAR_GUARD, v);
+		MissionStaticAddCharacter(m, (int)CHAR_GUARD, v);
 		break;
 	case CWENT_SS_E:
 	case CWENT_SS_N:	// fallthrough
 	case CWENT_SS_W:	// fallthrough
 	case CWENT_SS_S:	// fallthrough
-		MissionStaticTryAddCharacter(m, (int)CHAR_SS, v);
+		MissionStaticAddCharacter(m, (int)CHAR_SS, v);
 		break;
 	case CWENT_MUTANT_E:
 	case CWENT_MUTANT_N:	// fallthrough
 	case CWENT_MUTANT_W:	// fallthrough
 	case CWENT_MUTANT_S:	// fallthrough
-		MissionStaticTryAddCharacter(m, (int)CHAR_MUTANT, v);
+		MissionStaticAddCharacter(m, (int)CHAR_MUTANT, v);
 		break;
 	case CWENT_OFFICER_E:
 	case CWENT_OFFICER_N:	// fallthrough
 	case CWENT_OFFICER_W:	// fallthrough
 	case CWENT_OFFICER_S:	// fallthrough
-		MissionStaticTryAddCharacter(m, (int)CHAR_OFFICER, v);
+		MissionStaticAddCharacter(m, (int)CHAR_OFFICER, v);
 		break;
 	case CWENT_TURN_E:
 	case CWENT_TURN_NE:
@@ -771,49 +771,49 @@ static void LoadEntity(
 	case CWENT_TURN_SE:
 		break;
 	case CWENT_TRANS:
-		MissionStaticTryAddCharacter(m, (int)CHAR_TRANS, v);
+		MissionStaticAddCharacter(m, (int)CHAR_TRANS, v);
 		break;
 	case CWENT_UBER_MUTANT:
-		MissionStaticTryAddCharacter(m, (int)CHAR_UBERMUTANT, v);
+		MissionStaticAddCharacter(m, (int)CHAR_UBERMUTANT, v);
 		break;
 	case CWENT_BARNACLE_WILHELM:
-		MissionStaticTryAddCharacter(m, (int)CHAR_WILHELM, v);
+		MissionStaticAddCharacter(m, (int)CHAR_WILHELM, v);
 		break;
 	case CWENT_ROBED_HITLER:
-		MissionStaticTryAddCharacter(m, (int)CHAR_FAKE_HITLER, v);
+		MissionStaticAddCharacter(m, (int)CHAR_FAKE_HITLER, v);
 		break;
 	case CWENT_DEATH_KNIGHT:
-		MissionStaticTryAddCharacter(m, (int)CHAR_DEATH_KNIGHT, v);
+		MissionStaticAddCharacter(m, (int)CHAR_DEATH_KNIGHT, v);
 		break;
 	case CWENT_HITLER:
-		MissionStaticTryAddCharacter(m, (int)CHAR_MECHA_HITLER, v);
+		MissionStaticAddCharacter(m, (int)CHAR_MECHA_HITLER, v);
 		break;
 	case CWENT_FETTGESICHT:
-		MissionStaticTryAddCharacter(m, (int)CHAR_FETTGESICHT, v);
+		MissionStaticAddCharacter(m, (int)CHAR_FETTGESICHT, v);
 		break;
 	case CWENT_SCHABBS:
-		MissionStaticTryAddCharacter(m, (int)CHAR_SCHABBS, v);
+		MissionStaticAddCharacter(m, (int)CHAR_SCHABBS, v);
 		break;
 	case CWENT_GRETEL:
-		MissionStaticTryAddCharacter(m, (int)CHAR_GRETEL, v);
+		MissionStaticAddCharacter(m, (int)CHAR_GRETEL, v);
 		break;
 	case CWENT_HANS:
-		MissionStaticTryAddCharacter(m, (int)CHAR_HANS, v);
+		MissionStaticAddCharacter(m, (int)CHAR_HANS, v);
 		break;
 	case CWENT_OTTO:
-		MissionStaticTryAddCharacter(m, (int)CHAR_OTTO, v);
+		MissionStaticAddCharacter(m, (int)CHAR_OTTO, v);
 		break;
 	case CWENT_PACMAN_GHOST_RED:
-		MissionStaticTryAddCharacter(m, (int)CHAR_PACMAN_GHOST_RED, v);
+		MissionStaticAddCharacter(m, (int)CHAR_PACMAN_GHOST_RED, v);
 		break;
 	case CWENT_PACMAN_GHOST_YELLOW:
-		MissionStaticTryAddCharacter(m, (int)CHAR_PACMAN_GHOST_YELLOW, v);
+		MissionStaticAddCharacter(m, (int)CHAR_PACMAN_GHOST_YELLOW, v);
 		break;
 	case CWENT_PACMAN_GHOST_ROSE:
-		MissionStaticTryAddCharacter(m, (int)CHAR_PACMAN_GHOST_ROSE, v);
+		MissionStaticAddCharacter(m, (int)CHAR_PACMAN_GHOST_ROSE, v);
 		break;
 	case CWENT_PACMAN_GHOST_BLUE:
-		MissionStaticTryAddCharacter(m, (int)CHAR_PACMAN_GHOST_BLUE, v);
+		MissionStaticAddCharacter(m, (int)CHAR_PACMAN_GHOST_BLUE, v);
 		break;
 	default:
 		CASSERT(false, "unknown entity");

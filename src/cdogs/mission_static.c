@@ -1069,30 +1069,34 @@ bool MissionStaticTryAddCharacter(
 	const Tile *tile = MapGetTile(&gMap, pos);
 	if (TileIsClear(tile))
 	{
-		// Check if the character already has an entry, and add to its list
-		// of positions
-		bool hasAdded = false;
-		CA_FOREACH(CharacterPositions, cp, m->Characters)
-		if (cp->Index == ch)
-		{
-			CArrayPushBack(&cp->Positions, &pos);
-			hasAdded = true;
-			break;
-		}
-		CA_FOREACH_END()
-		// If not, create a new entry
-		if (!hasAdded)
-		{
-			CharacterPositions cp;
-			cp.Index = ch;
-			CArrayInit(&cp.Positions, sizeof(struct vec2i));
-			CArrayPushBack(&cp.Positions, &pos);
-			CArrayPushBack(&m->Characters, &cp);
-		}
+		MissionStaticAddCharacter(m, ch, pos);
 		return true;
 	}
 	return false;
 }
+void MissionStaticAddCharacter(MissionStatic *m, const int ch, const struct vec2i pos)
+ {
+	 // Check if the character already has an entry, and add to its list
+	 // of positions
+	 bool hasAdded = false;
+	 CA_FOREACH(CharacterPositions, cp, m->Characters)
+	 if (cp->Index == ch)
+	 {
+		 CArrayPushBack(&cp->Positions, &pos);
+		 hasAdded = true;
+		 break;
+	 }
+	 CA_FOREACH_END()
+	 // If not, create a new entry
+	 if (!hasAdded)
+	 {
+		 CharacterPositions cp;
+		 cp.Index = ch;
+		 CArrayInit(&cp.Positions, sizeof(struct vec2i));
+		 CArrayPushBack(&cp.Positions, &pos);
+		 CArrayPushBack(&m->Characters, &cp);
+	 }
+ }
 bool MissionStaticTryRemoveCharacterAt(
 	MissionStatic *m, const struct vec2i pos)
 {
