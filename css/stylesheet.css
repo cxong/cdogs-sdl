@@ -621,6 +621,6 @@ footer .owner p a {
 .highlight .vi { color: #008080 } /* Name.Variable.Instance */
 .highlight .il { color: #009999 } /* Literal.Number.Integer.Long */
 
-#galleria {
-  margin: 20px 0;
+video {
+  max-width: 100%;
 }
