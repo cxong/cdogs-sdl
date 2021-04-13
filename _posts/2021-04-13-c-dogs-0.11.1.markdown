@@ -8,7 +8,9 @@ published: true
 
 This is a bug fix release to fix frequent hangs at game startup. We also managed to squeeze in a neat feature: live backgrounds!
 
-![Live background](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/livebg.mp4)
+<video muted autoplay controls>
+    <source src="https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/livebg.mp4" type="video/mp4">
+</video>
 
 Happy gaming! 🥳
 
