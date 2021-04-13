@@ -1,0 +1,15 @@
+---
+layout: post
+title:  "C-Dogs 0.11.1 Released!"
+date:   2021-04-13
+categories: release
+published: true
+---
+
+This is a bug fix release to fix frequent hangs at game startup. We also managed to squeeze in a neat feature: live backgrounds!
+
+![Live background](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/livebg.mp4)
+
+Happy gaming! 🥳
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.11.1>
