@@ -144,6 +144,8 @@ NPlayerData PlayerDataDefault(const int idx)
 {
 	NPlayerData pd = NPlayerData_init_default;
 
+	pd.has_Colors = pd.has_Stats = pd.has_Totals = true;
+
 	// load from template if available
 	const PlayerTemplate *t = PlayerTemplateGetById(&gPlayerTemplates, idx);
 	if (t != NULL)

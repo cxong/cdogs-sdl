@@ -209,15 +209,15 @@ static GameLoopResult MainMenuUpdate(GameLoopData *data, LoopRunner *l)
 {
 	MainMenuData *mData = data->Data;
 
-	LOSSetAllVisible(&mData->rData.map->LOS);
-	GameUpdate(&mData->rData, 1, NULL);
-
 	if (gCampaign.IsLoaded)
 	{
 		// Loaded game already; skip menus and go straight to game
 		LoopRunnerPush(l, ScreenCampaignIntro(&gCampaign.Setting));
 		return UPDATE_RESULT_OK;
 	}
+
+	LOSSetAllVisible(&mData->rData.map->LOS);
+	GameUpdate(&mData->rData, 1, NULL);
 
 	const GameLoopResult result = MenuUpdate(&mData->ms);
 	if (result == UPDATE_RESULT_OK)

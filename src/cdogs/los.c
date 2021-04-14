@@ -264,6 +264,7 @@ bool LOSAddRun(
 			runs->Runs[runs->Runs_count - 1].Tile = Vec2i2Net(tile);
 			runs->Runs[runs->Runs_count - 1].Run = 0;
 		}
+		runs->Runs[runs->Runs_count - 1].has_Tile = true;
 		runs->Runs[runs->Runs_count - 1].Run++;
 		*run = true;
 	}

@@ -300,6 +300,7 @@ void NetClientPoll(NetClient *n)
 		{
 			LOG(LM_NET, LL_ERROR, "connection error(%d)", check);
 			NetClientTerminate(n);
+			NetClientInit(n);
 			return;
 		}
 		else if (check > 0)

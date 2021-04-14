@@ -213,13 +213,68 @@ GameEvent GameEventNew(GameEventType type)
 	case GAME_EVENT_ADD_PICKUP:
 		e.u.AddPickup.UID = PickupsGetNextUID();
 		e.u.AddPickup.SpawnerUID = -1;
+		e.u.AddPickup.has_Pos = true;
 		break;
 	case GAME_EVENT_ACTOR_ADD:
 		e.u.ActorAdd.PlayerUID = -1;
 		e.u.ActorAdd.Direction = rand() % DIRECTION_COUNT;
+		e.u.ActorAdd.has_Pos = true;
+		break;
+	case GAME_EVENT_ACTOR_ADD_AMMO:
+		e.u.AddAmmo.has_Ammo = true;
+		break;
+	case GAME_EVENT_ACTOR_IMPULSE:
+		e.u.ActorImpulse.has_Vel = true;
+		e.u.ActorImpulse.has_Pos = true;
+		break;
+	case GAME_EVENT_ACTOR_MOVE:
+		e.u.ActorMove.has_Pos = true;
+		e.u.ActorMove.has_MoveVel = true;
+		break;
+	case GAME_EVENT_ACTOR_SLIDE:
+		e.u.ActorSlide.has_Vel = true;
+		break;
+	case GAME_EVENT_ACTOR_USE_AMMO:
+		e.u.UseAmmo.has_Ammo = true;
 		break;
 	case GAME_EVENT_ADD_BULLET:
 		e.u.AddBullet.ActorUID = -1;
+		e.u.AddBullet.has_MuzzlePos = true;
+		break;
+	case GAME_EVENT_ADD_KEYS:
+		e.u.AddKeys.has_Pos = true;
+		break;
+	case GAME_EVENT_BULLET_BOUNCE:
+		e.u.BulletBounce.has_Vel = true;
+		e.u.BulletBounce.has_Pos = true;
+		e.u.BulletBounce.has_BouncePos = true;
+		break;
+	case GAME_EVENT_GUN_FIRE:
+		e.u.GunFire.has_MuzzlePos = true;
+		break;
+	case GAME_EVENT_GUN_RELOAD:
+		e.u.GunReload.has_Pos = true;
+		break;
+	case GAME_EVENT_MAP_OBJECT_ADD:
+		e.u.MapObjectAdd.has_Pos = true;
+		e.u.MapObjectAdd.has_Mask = true;
+		break;
+	case GAME_EVENT_SOUND_AT:
+		e.u.SoundAt.has_Pos = true;
+		break;
+	case GAME_EVENT_THING_DAMAGE:
+		e.u.ThingDamage.has_Vel = true;
+		break;
+	case GAME_EVENT_TILE_SET:
+		e.u.TileSet.has_Pos = true;
+		break;
+	case GAME_EVENT_TRIGGER:
+		e.u.TriggerEvent.has_Tile = true;
+		break;
+	case GAME_EVENT_PLAYER_DATA:
+		e.u.PlayerData.has_Colors = true;
+		e.u.PlayerData.has_Stats = true;
+		e.u.PlayerData.has_Totals = true;
 		break;
 	default:
 		break;

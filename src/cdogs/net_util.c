@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2014-2016, 2020 Cong Xu
+	Copyright (c) 2014-2016, 2020-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -59,6 +59,7 @@ bool NetDecode(ENetPacket *packet, void *dest, const pb_msgdesc_t *fields)
 NPlayerData NMakePlayerData(const PlayerData *p)
 {
 	NPlayerData d = NPlayerData_init_default;
+	d.has_Colors = d.has_Stats = d.has_Totals = true;
 	const Character *c = &p->Char;
 	strcpy(d.Name, p->name);
 	strcpy(d.CharacterClass, p->Char.Class->Name);
@@ -140,6 +141,8 @@ NColor Color2Net(const color_t c)
 NCharColors CharColors2Net(const CharColors c)
 {
 	NCharColors co;
+	co.has_Skin = co.has_Arms = co.has_Body = co.has_Legs = co.has_Hair =
+		co.has_Feet = true;
 	co.Skin = Color2Net(c.Skin);
 	co.Arms = Color2Net(c.Arms);
 	co.Body = Color2Net(c.Body);

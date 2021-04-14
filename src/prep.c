@@ -739,17 +739,17 @@ static menu_t *MenuCreateAllowedWeapons(
 static GameLoopResult CheckGameStart(void *data, LoopRunner *l);
 GameLoopData *ScreenWaitForGameStart(void)
 {
-	gNetClient.Ready = true;
-	if (!gMission.HasStarted)
-	{
-		// Tell server we're ready
-		NetClientSendMsg(&gNetClient, GAME_EVENT_CLIENT_READY, NULL);
-	}
 	return ScreenWait("Waiting for game start...", CheckGameStart, NULL);
 }
 static GameLoopResult CheckGameStart(void *data, LoopRunner *l)
 {
 	UNUSED(data);
+	if (!gNetClient.Ready)
+	{
+		// Tell server we're ready
+		NetClientSendMsg(&gNetClient, GAME_EVENT_CLIENT_READY, NULL);
+	}
+	gNetClient.Ready = true;
 	if (!gCampaign.IsClient || gMission.HasStarted)
 	{
 		goto bail;

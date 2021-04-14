@@ -304,7 +304,10 @@ static void DrawWeaponStatus(
 
 	const Weapon *weapon = ACTOR_GET_WEAPON(actor);
 	const WeaponClass *wc = weapon->Gun;
-	CASSERT(wc != NULL, "weapon has no class");
+	if (wc == NULL)
+	{
+		return;
+	}
 
 	// Draw gauge and ammo counter if ammo used
 	if (gCampaign.Setting.Ammo && wc->AmmoId >= 0)
@@ -379,7 +382,10 @@ static void DrawGunIcons(
 
 	const Weapon *weapon = ACTOR_GET_WEAPON(actor);
 	const WeaponClass *wc = weapon->Gun;
-	CASSERT(wc != NULL, "weapon has no class");
+	if (wc == NULL)
+	{
+		return;
+	}
 
 	// Aligned right
 	const int right =

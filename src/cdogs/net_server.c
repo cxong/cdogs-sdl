@@ -432,17 +432,17 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 		{
 			continue;
 		}
-		NActorAdd aa = NActorAdd_init_default;
-		aa.UID = a->uid;
-		aa.CharId = a->charId;
-		aa.Health = a->health;
-		aa.Direction = (int32_t)a->direction;
-		aa.PlayerUID = a->PlayerUID;
-		aa.ThingFlags = a->thing.flags;
-		aa.Pos = Vec2ToNet(a->Pos);
+		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
+		e.u.ActorAdd.UID = a->uid;
+		e.u.ActorAdd.CharId = a->charId;
+		e.u.ActorAdd.Health = a->health;
+		e.u.ActorAdd.Direction = (int32_t)a->direction;
+		e.u.ActorAdd.PlayerUID = a->PlayerUID;
+		e.u.ActorAdd.ThingFlags = a->thing.flags;
+		e.u.ActorAdd.Pos = Vec2ToNet(a->Pos);
 		LOG(LM_NET, LL_DEBUG, "send add actor UID(%d) playerUID(%d)",
-			(int)aa.UID, (int)aa.PlayerUID);
-		NetServerSendMsg(n, peerId, GAME_EVENT_ACTOR_ADD, &aa);
+			(int)e.u.ActorAdd.UID, (int)e.u.ActorAdd.PlayerUID);
+		NetServerSendMsg(n, peerId, GAME_EVENT_ACTOR_ADD, &e.u.ActorAdd);
 	CA_FOREACH_END()
 
 	// Send key state
