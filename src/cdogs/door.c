@@ -383,6 +383,7 @@ static Trigger *CreateOpenDoorTrigger(
 }
 static void TileAddTrigger(Tile *t, Trigger *tr)
 {
+	if (t == NULL) return;
 	CArrayPushBack(&t->triggers, &tr);
 }
 

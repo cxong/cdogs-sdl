@@ -314,7 +314,7 @@ static void LoadTile(
 		break;
 	case CWTILE_ELEVATOR_H:
 	case CWTILE_ELEVATOR_V: {
-		staticTile = 1;
+		staticTile = 2;
 		// TODO: mission index for exit
 		Exit e;
 		e.Hidden = true;
@@ -337,7 +337,7 @@ static void LoadTile(
 static int LoadWall(const uint16_t ch)
 {
 	const CWWall wall = CWChToWall(ch);
-	return (int)wall + 2;
+	return (int)wall + 3;
 }
 
 static void TryLoadWallObject(MissionStatic *m, const uint16_t ch, const struct vec2i v)
