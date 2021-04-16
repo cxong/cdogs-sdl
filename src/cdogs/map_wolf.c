@@ -27,8 +27,12 @@
 */
 #include "map_wolf.h"
 
+#include "log.h"
+
 #include "cwolfmap/cwolfmap.h"
 #include "map_archive.h"
+
+#define TILE_CLASS_WALL_OFFSET 62
 
 static void GetCampaignPath(const CWMapType type, char *buf)
 {
@@ -177,6 +181,28 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 	memset(&cs, 0, sizeof cs);
 	CharacterStoreCopy(&cs, &cCommon.characters);
 	CampaignSettingTerminate(&cCommon);
+	// Create walk-through copies of all the walls
+	for (int i = 3; i <= 64; i++)
+	{
+		TileClass *orig;
+		char buf[256];
+		sprintf(buf, "%d", i);
+		if (hashmap_get(tileClasses, buf, (any_t *)&orig) != MAP_OK)
+		{
+			LOG(LM_MAP, LL_ERROR, "failed to get tile class for copying");
+			break;
+		}
+		TileClass *tc;
+		CMALLOC(tc, sizeof *tc);
+		TileClassCopy(tc, orig);
+		tc->canWalk = true;
+		sprintf(buf, "%d", i + TILE_CLASS_WALL_OFFSET);
+		if (hashmap_put(tileClasses, buf, tc) != MAP_OK)
+		{
+			LOG(LM_MAP, LL_ERROR, "failed to save tile class copy");
+			break;
+		}
+	}
 
 	GetCampaignPath(map.type, buf);
 	err = MapNewLoadArchive(buf, c);
@@ -707,9 +733,12 @@ static void LoadEntity(
 	case CWENT_SPEAR:
 		MissionStaticTryAddPickup(m, StrPickupClass("spear"), v);
 		break;
-	case CWENT_PUSHWALL:
-		//CASSERT(false, "TODO: pushwall");
-		break;
+	case CWENT_PUSHWALL: {
+		const CWLevel *level = &map->levels[missionIndex];
+		int *tile = CArrayGet(&m->Tiles, v.x + v.y * level->header.width);
+		*tile += TILE_CLASS_WALL_OFFSET;
+	}
+	break;
 	case CWENT_ENDGAME: {
 		Exit e;
 		e.Hidden = true;
