@@ -148,8 +148,7 @@ bail:
 
 static void LoadSounds(const SoundDevice *s, const CWolfMap *map);
 static void LoadMission(
-	CArray *missions, const map_t tileClasses, const CWLevel *level,
-	const CWMapType type, const int missionIndex);
+	CArray *missions, const map_t tileClasses, const CWolfMap *map, const int missionIndex);
 
 int MapWolfLoad(const char *filename, CampaignSetting *c)
 {
@@ -189,10 +188,9 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 	LoadSounds(&gSoundDevice, &map);
 	// TODO: Load music
 
-	const CWLevel *level = map.levels;
-	for (int i = 0; i < map.nLevels; i++, level++)
+	for (int i = 0; i < map.nLevels; i++)
 	{
-		LoadMission(&c->Missions, tileClasses, level, map.type, i);
+		LoadMission(&c->Missions, tileClasses, &map, i);
 	}
 
 	CharacterStoreCopy(&c->characters, &cs);
@@ -246,13 +244,13 @@ static void LoadTile(
 	const int missionIndex);
 static void TryLoadWallObject(MissionStatic *m, const uint16_t ch, const struct vec2i v);
 static void LoadEntity(
-	MissionStatic *m, const uint16_t ch, const CWMapType type, const struct vec2i v,
+	MissionStatic *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v,
 	const int missionIndex);
 
 static void LoadMission(
-	CArray *missions, const map_t tileClasses, const CWLevel *level,
-	const CWMapType type, const int missionIndex)
+	CArray *missions, const map_t tileClasses, const CWolfMap *map, const int missionIndex)
 {
+	const CWLevel *level = &map->levels[missionIndex];
 	Mission m;
 	MissionInit(&m);
 	CSTRDUP(m.Title, level->header.name);
@@ -270,13 +268,12 @@ static void LoadMission(
 
 	m.u.Static.TileClasses = hashmap_copy(tileClasses, TileClassCopyHashMap);
 
-	UNUSED(type);
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), m.Size))
 	const uint16_t ch = CWLevelGetCh(level, 0, _v.x, _v.y);
 	LoadTile(&m.u.Static, ch, _v, missionIndex);
 	TryLoadWallObject(&m.u.Static, ch, _v);
 	const uint16_t ech = CWLevelGetCh(level, 1, _v.x, _v.y);
-	LoadEntity(&m.u.Static, ech, type, _v, missionIndex);
+	LoadEntity(&m.u.Static, ech, map, _v, missionIndex);
 	RECT_FOREACH_END()
 	
 	m.u.Static.AltFloorsEnabled = false;
@@ -290,6 +287,8 @@ static void LoadTile(
 	MissionStatic *m, const uint16_t ch, const struct vec2i v,
 	const int missionIndex)
 {
+	UNUSED(v);
+	UNUSED(missionIndex);
 	const CWTile tile = CWChToTile(ch);
 	int staticTile = 0;
 	uint16_t staticAccess = 0;
@@ -313,17 +312,9 @@ static void LoadTile(
 		staticAccess = MAP_ACCESS_BLUE;
 		break;
 	case CWTILE_ELEVATOR_H:
-	case CWTILE_ELEVATOR_V: {
+	case CWTILE_ELEVATOR_V:
 		staticTile = 2;
-		// TODO: mission index for exit
-		Exit e;
-		e.Hidden = true;
-		e.Mission = missionIndex + 1;
-		e.R.Pos = v;
-		e.R.Size = svec2i_zero();
-		CArrayPushBack(&m->Exits, &e);
-	}
-	break;
+		break;
 	case CWTILE_AREA:
 		break;
 	default:
@@ -488,7 +479,7 @@ typedef enum
 } WolfChar;
 
 static void LoadEntity(
-	MissionStatic *m, const uint16_t ch, const CWMapType type, const struct vec2i v,
+	MissionStatic *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v,
 	const int missionIndex)
 {
 	UNUSED(missionIndex);
@@ -537,7 +528,7 @@ static void LoadEntity(
 		MissionStaticTryAddItem(m, StrMapObject("bone_blood"), v);
 		break;
 	case CWENT_SINK_SKULLS_ON_STICK:
-		if (type == CWMAPTYPE_SOD)
+		if (map->type == CWMAPTYPE_SOD)
 		{
 			MissionStaticTryAddItem(m, StrMapObject("skull_pillar"), v);
 		}
@@ -559,7 +550,7 @@ static void LoadEntity(
 		MissionStaticTryAddItem(m, StrMapObject("spotlight"), v);
 		break;
 	case CWENT_UTENSILS_BROWN_CAGE_BLOODY_BONES:
-		if (type == CWMAPTYPE_SOD)
+		if (map->type == CWMAPTYPE_SOD)
 		{
 			MissionStaticTryAddItem(m, StrMapObject("gibbet_bloody"), v);
 			MissionStaticTryAddItem(m, StrMapObject("shadow"), v);
@@ -590,7 +581,7 @@ static void LoadEntity(
 		MissionStaticTryAddKey(m, StrKeycard("blue"), v);
 		break;
 	case CWENT_BED_CAGE_SKULLS:
-		if (type == CWMAPTYPE_SOD)
+		if (map->type == CWMAPTYPE_SOD)
 		{
 			MissionStaticTryAddItem(m, StrMapObject("gibbet_skulls"), v);
 			MissionStaticTryAddItem(m, StrMapObject("shadow"), v);
@@ -652,7 +643,7 @@ static void LoadEntity(
 		MissionStaticTryAddItem(m, StrMapObject("flag"), v);
 		break;
 	case CWENT_CEILING_LIGHT_RED_AARDWOLF:
-		if (type == CWMAPTYPE_WL6)
+		if (map->type == CWMAPTYPE_WL6)
 		{
 			MissionStaticTryAddItem(m, StrMapObject("spotlight"), v);
 		}
@@ -672,7 +663,7 @@ static void LoadEntity(
 		MissionStaticTryAddItem(m, StrMapObject("bones3"), v);
 		break;
 	case CWENT_UTENSILS_BLUE_COW_SKULL:
-		if (type == CWMAPTYPE_SOD)
+		if (map->type == CWMAPTYPE_SOD)
 		{
 			MissionStaticTryAddItem(m, StrMapObject("cowskull_pillar"), v);
 		}
@@ -682,7 +673,7 @@ static void LoadEntity(
 		}
 		break;
 	case CWENT_STOVE_WELL_BLOOD:
-		if (type == CWMAPTYPE_SOD)
+		if (map->type == CWMAPTYPE_SOD)
 		{
 			MissionStaticTryAddItem(m, StrMapObject("well_blood"), v);
 		}
@@ -692,7 +683,7 @@ static void LoadEntity(
 		}
 		break;
 	case CWENT_RACK_ANGEL_STATUE:
-		if (type == CWMAPTYPE_SOD)
+		if (map->type == CWMAPTYPE_SOD)
 		{
 			MissionStaticTryAddItem(m, StrMapObject("statue_behemoth"), v);
 		}
@@ -719,9 +710,15 @@ static void LoadEntity(
 	case CWENT_PUSHWALL:
 		//CASSERT(false, "TODO: pushwall");
 		break;
-	case CWENT_ENDGAME:
-		//CASSERT(false, "TODO: endgame");
-		break;
+	case CWENT_ENDGAME: {
+		Exit e;
+		e.Hidden = true;
+		e.Mission = map->nLevels;
+		e.R.Pos = v;
+		e.R.Size = svec2i_zero();
+		CArrayPushBack(&m->Exits, &e);
+	}
+	break;
 	case CWENT_GHOST:
 		MissionStaticAddCharacter(m, (int)CHAR_GHOST, v);
 		break;
