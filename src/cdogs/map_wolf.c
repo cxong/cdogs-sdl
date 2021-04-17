@@ -303,7 +303,7 @@ static void LoadMission(
 	const uint16_t ech = CWLevelGetCh(level, 1, _v.x, _v.y);
 	LoadEntity(&m.u.Static, ech, map, _v, missionIndex);
 	RECT_FOREACH_END()
-	
+
 	m.u.Static.AltFloorsEnabled = false;
 
 	CArrayPushBack(missions, &m);
@@ -346,13 +346,32 @@ static void LoadTile(
 	case CWTILE_SECRET_EXIT: {
 		Exit e;
 		e.Hidden = true;
-		// TODO: for SOD, missions 19/20 are always the secret ones
-		e.Mission = map->nLevels;
+		if (map->type == CWMAPTYPE_SOD)
+		{
+			// For SOD, missions 19/20 are always the secret ones
+			if (missionIndex == 3)
+			{
+				e.Mission = 18;
+			}
+			else
+			{
+				e.Mission = 19;
+			}
+		}
+		else
+		{
+			// Last map of the episode
+			e.Mission = 9;
+			while (e.Mission < missionIndex)
+			{
+				e.Mission += 10;
+			}
+		}
 		e.R.Pos = v;
 		e.R.Size = svec2i_zero();
-		CArrayPushBack(&m->Exits, &e);
+		MissionStaticTryAddExit(m, &e);
 	}
-		break;
+	break;
 	default:
 		CASSERT(false, "unknown tile");
 		break;
@@ -370,6 +389,7 @@ static int LoadWall(const uint16_t ch)
 static void TryLoadWallObject(MissionStatic *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v, const int missionIndex)
 {
 	const CWLevel *level = &map->levels[missionIndex];
+	const struct vec2i levelSize = svec2i(level->header.width, level->header.height);
 	const struct vec2i vBelow = svec2i_add(v, svec2i(0, 1));
 	const CWWall wall = CWChToWall(ch);
 	const char *moName = NULL;
@@ -409,15 +429,62 @@ static void TryLoadWallObject(MissionStatic *m, const uint16_t ch, const CWolfMa
 		moName = "coat_of_arms_flag";
 		break;
 	case CWWALL_ELEVATOR:
-		if (MissionStaticGetTileClass(m, svec2i(level->header.width, level->header.height), vBelow)->Type == TILE_CLASS_FLOOR)
+		if (MissionStaticGetTileClass(m, levelSize, vBelow)->Type == TILE_CLASS_FLOOR)
 		{
 			moName = "elevator_interior";
-			Exit e;
-			e.Hidden = true;
-			e.Mission = missionIndex + 1;
-			e.R.Pos = vBelow;
-			e.R.Size = svec2i_zero();
-			CArrayPushBack(&m->Exits, &e);
+		}
+		// Elevators only occur on east/west tiles
+		for (int dx = -1; dx <= 1; dx += 2)
+		{
+			const struct vec2i exitV = svec2i(v.x + dx, v.y);
+			const TileClass *tc = MissionStaticGetTileClass(m, levelSize, exitV);
+			if (tc != NULL && tc->Type == TILE_CLASS_FLOOR)
+			{
+				Exit e;
+				e.Hidden = true;
+				e.Mission = missionIndex + 1;
+				// Check if coming back from secret level
+				if (map->type == CWMAPTYPE_SOD)
+				{
+					if (missionIndex == 19)
+					{
+						e.Mission = 4;
+					}
+					else
+					{
+						e.Mission = 12;
+					}
+				}
+				else
+				{
+					switch (missionIndex)
+					{
+						case 9:
+							e.Mission = 1;
+							break;
+						case 19:
+							e.Mission = 11;
+							break;
+						case 29:
+							e.Mission = 27;
+							break;
+						case 39:
+							e.Mission = 33;
+							break;
+						case 49:
+							e.Mission = 45;
+							break;
+						case 59:
+							e.Mission = 53;
+							break;
+						default:
+							break;
+					}
+				}
+				e.R.Pos = exitV;
+				e.R.Size = svec2i_zero();
+				MissionStaticTryAddExit(m, &e);
+			}
 		}
 		break;
 	case CWWALL_DEAD_ELEVATOR:
@@ -533,7 +600,6 @@ static void LoadEntity(
 	MissionStatic *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v,
 	const int missionIndex)
 {
-	UNUSED(missionIndex);
 	const CWEntity entity = CWChToEntity(ch);
 	switch (entity)
 	{
@@ -544,6 +610,16 @@ static void LoadEntity(
 	case CWENT_PLAYER_SPAWN_S:
 	case CWENT_PLAYER_SPAWN_W:
 		m->Start = v;
+		// Remove any exits that overlap with start
+		// SOD starts the player in elevators
+		CA_FOREACH(const Exit, e, m->Exits)
+			const Rect2i er = Rect2iNew(e->R.Pos, svec2i_add(e->R.Size, svec2i_one()));
+			if (Rect2iIsInside(er, v))
+			{
+				CArrayDelete(&m->Exits, _ca_index);
+				_ca_index--;
+			}
+		CA_FOREACH_END()
 		break;
 	case CWENT_WATER:
 		MissionStaticTryAddItem(m, StrMapObject("pool_water"), v);

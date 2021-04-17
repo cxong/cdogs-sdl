@@ -877,15 +877,20 @@ int MissionStaticGetTile(
 	CASSERT(
 		(int)m->Tiles.size == size.x * size.y,
 		"static mission tiles size mismatch");
-	CASSERT(
-		Rect2iIsInside(Rect2iNew(svec2i_zero(), size), pos),
-		"position outside static map");
+	if (!Rect2iIsInside(Rect2iNew(svec2i_zero(), size), pos))
+	{
+		return -1;
+	}
 	return *(int *)CArrayGet(&m->Tiles, size.x * pos.y + pos.x);
 }
 const TileClass *MissionStaticGetTileClass(
 	const MissionStatic *m, const struct vec2i size, const struct vec2i pos)
 {
 	const int tile = MissionStaticGetTile(m, size, pos);
+	if (tile < 0)
+	{
+		return NULL;
+	}
 	return MissionStaticIdTileClass(m, tile);
 }
 TileClass *MissionStaticIdTileClass(const MissionStatic *m, const int tile)
@@ -1270,4 +1275,19 @@ bool MissionStaticTryUnsetKeyAt(
 {
 	// -1 for no access level
 	return MissionStaticTrySetKey(m, -1, size, pos);
+}
+
+bool MissionStaticTryAddExit(MissionStatic *m, const Exit *exit)
+{
+	// Exits are sized 1, 1 larger than they are stored
+	const Rect2i exitR = Rect2iNew(exit->R.Pos, svec2i_add(exit->R.Size, svec2i_one()));
+	CA_FOREACH(const Exit, e, m->Exits)
+	const Rect2i er = Rect2iNew(e->R.Pos, svec2i_add(e->R.Size, svec2i_one()));
+	if (Rect2iOverlap(er, exitR))
+	{
+		return false;
+	}
+	CA_FOREACH_END()
+	CArrayPushBack(&m->Exits, exit);
+	return true;
 }

@@ -127,4 +127,6 @@ bool MissionStaticTrySetKey(
 bool MissionStaticTryUnsetKeyAt(
 	MissionStatic *m, const struct vec2i size, const struct vec2i pos);
 
+bool MissionStaticTryAddExit(MissionStatic *m, const Exit *exit);
+
 any_t TileClassCopyHashMap(any_t in);
