@@ -185,7 +185,6 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 	for (int i = 3; i <= 64; i++)
 	{
 		TileClass *orig;
-		char buf[256];
 		sprintf(buf, "%d", i);
 		if (hashmap_get(tileClasses, buf, (any_t *)&orig) != MAP_OK)
 		{
@@ -268,7 +267,7 @@ static void LoadSounds(const SoundDevice *s, const CWolfMap *map)
 static void LoadTile(
 	MissionStatic *m, const uint16_t ch, const struct vec2i v,
 	const int missionIndex);
-static void TryLoadWallObject(MissionStatic *m, const uint16_t ch, const struct vec2i v);
+static void TryLoadWallObject(MissionStatic *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v, const int missionIndex);
 static void LoadEntity(
 	MissionStatic *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v,
 	const int missionIndex);
@@ -297,7 +296,11 @@ static void LoadMission(
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), m.Size))
 	const uint16_t ch = CWLevelGetCh(level, 0, _v.x, _v.y);
 	LoadTile(&m.u.Static, ch, _v, missionIndex);
-	TryLoadWallObject(&m.u.Static, ch, _v);
+	RECT_FOREACH_END()
+	// Load objects after all tiles are loaded
+	RECT_FOREACH(Rect2iNew(svec2i_zero(), m.Size))
+	const uint16_t ch = CWLevelGetCh(level, 0, _v.x, _v.y);
+	TryLoadWallObject(&m.u.Static, ch, map, _v, missionIndex);
 	const uint16_t ech = CWLevelGetCh(level, 1, _v.x, _v.y);
 	LoadEntity(&m.u.Static, ech, map, _v, missionIndex);
 	RECT_FOREACH_END()
@@ -357,8 +360,10 @@ static int LoadWall(const uint16_t ch)
 	return (int)wall + 3;
 }
 
-static void TryLoadWallObject(MissionStatic *m, const uint16_t ch, const struct vec2i v)
+static void TryLoadWallObject(MissionStatic *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v, const int missionIndex)
 {
+	const CWLevel *level = &map->levels[missionIndex];
+	const struct vec2i vBelow = svec2i_add(v, svec2i(0, 1));
 	const CWWall wall = CWChToWall(ch);
 	const char *moName = NULL;
 	switch (wall)
@@ -397,8 +402,28 @@ static void TryLoadWallObject(MissionStatic *m, const uint16_t ch, const struct 
 		moName = "coat_of_arms_flag";
 		break;
 	case CWWALL_ELEVATOR:
-	case CWWALL_DEAD_ELEVATOR:	// fallthrough
-		moName = "elevator_interior";
+		if (MissionStaticGetTileClass(m, svec2i(level->header.width, level->header.height), vBelow)->Type == TILE_CLASS_FLOOR)
+		{
+			moName = "elevator_interior";
+			Exit e;
+			e.Hidden = true;
+			e.Mission = missionIndex + 1;
+			e.R.Pos = vBelow;
+			e.R.Size = svec2i_zero();
+			CArrayPushBack(&m->Exits, &e);
+		}
+		break;
+	case CWWALL_DEAD_ELEVATOR:
+		if (MissionStaticGetTileClass(m, svec2i(level->header.width, level->header.height), vBelow)->Type == TILE_CLASS_FLOOR)
+		{
+			moName = "elevator_interior";
+			Exit e;
+			e.Hidden = true;
+			e.Mission = map->nLevels;
+			e.R.Pos = vBelow;
+			e.R.Size = svec2i_zero();
+			CArrayPushBack(&m->Exits, &e);
+		}
 		break;
 	case CWWALL_WOOD_IRON_CROSS:
 		moName = "iron_cross";
@@ -472,8 +497,7 @@ static void TryLoadWallObject(MissionStatic *m, const uint16_t ch, const struct 
 	}
 	if (moName != NULL)
 	{
-		const struct vec2i wv = svec2i_add(v, svec2i(0, 1));
-		MissionStaticTryAddItem(m, StrMapObject(moName), wv);
+		MissionStaticTryAddItem(m, StrMapObject(moName), vBelow);
 	}
 }
 
