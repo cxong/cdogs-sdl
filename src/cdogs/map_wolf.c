@@ -265,8 +265,7 @@ static void LoadSounds(const SoundDevice *s, const CWolfMap *map)
 }
 
 static void LoadTile(
-	MissionStatic *m, const uint16_t ch, const struct vec2i v,
-	const int missionIndex);
+	MissionStatic *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v, const int missionIndex);
 static void TryLoadWallObject(MissionStatic *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v, const int missionIndex);
 static void LoadEntity(
 	MissionStatic *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v,
@@ -295,7 +294,7 @@ static void LoadMission(
 
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), m.Size))
 	const uint16_t ch = CWLevelGetCh(level, 0, _v.x, _v.y);
-	LoadTile(&m.u.Static, ch, _v, missionIndex);
+	LoadTile(&m.u.Static, ch, map, _v, missionIndex);
 	RECT_FOREACH_END()
 	// Load objects after all tiles are loaded
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), m.Size))
@@ -313,10 +312,8 @@ static void LoadMission(
 static int LoadWall(const uint16_t ch);
 
 static void LoadTile(
-	MissionStatic *m, const uint16_t ch, const struct vec2i v,
-	const int missionIndex)
+	MissionStatic *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v, const int missionIndex)
 {
-	UNUSED(v);
 	UNUSED(missionIndex);
 	const CWTile tile = CWChToTile(ch);
 	int staticTile = 0;
@@ -345,6 +342,16 @@ static void LoadTile(
 		staticTile = 2;
 		break;
 	case CWTILE_AREA:
+		break;
+	case CWTILE_SECRET_EXIT: {
+		Exit e;
+		e.Hidden = true;
+		// TODO: for SOD, missions 19/20 are always the secret ones
+		e.Mission = map->nLevels;
+		e.R.Pos = v;
+		e.R.Size = svec2i_zero();
+		CArrayPushBack(&m->Exits, &e);
+	}
 		break;
 	default:
 		CASSERT(false, "unknown tile");
@@ -417,12 +424,6 @@ static void TryLoadWallObject(MissionStatic *m, const uint16_t ch, const CWolfMa
 		if (MissionStaticGetTileClass(m, svec2i(level->header.width, level->header.height), vBelow)->Type == TILE_CLASS_FLOOR)
 		{
 			moName = "elevator_interior";
-			Exit e;
-			e.Hidden = true;
-			e.Mission = map->nLevels;
-			e.R.Pos = vBelow;
-			e.R.Size = svec2i_zero();
-			CArrayPushBack(&m->Exits, &e);
 		}
 		break;
 	case CWWALL_WOOD_IRON_CROSS:
