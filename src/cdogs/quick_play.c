@@ -267,6 +267,7 @@ void SetupQuickPlayCampaign(CampaignSetting *setting, const bool isBg)
 	CSTRDUP(setting->Description, "");
 	setting->WeaponPersist = true;
 	setting->RandomPickups = true;
+	setting->DoorOpenTicks = FPS_FRAMELIMIT;
 	for (int i = 0; i < NUM_MISSIONS; i++)
 	{
 		AddMission(&setting->Missions, &gPicManager, &setting->characters, i, isBg);

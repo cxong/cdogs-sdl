@@ -57,6 +57,7 @@ typedef struct
 	bool WeaponPersist;
 	bool SkipWeaponMenu;
 	bool RandomPickups;
+	int DoorOpenTicks;
 	CArray Missions; // of Mission
 	CharacterStore characters;
 } CampaignSetting;

@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2019-2020 Cong Xu
+	Copyright (c) 2019-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -90,5 +90,6 @@ void DrawPic(
 void DrawTextbox(
 	struct nk_context *ctx, char *value, const int len, const char *tooltip,
 	const nk_flags flags);
+bool DrawNumberSlider(struct nk_context *ctx, const char *label, const char *tooltip, const int min, const int max, const float step, int *value);
 bool ColorPicker(
 	struct nk_context *ctx, const float height, const char *label, color_t *c);

@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2020 Cong Xu
+	Copyright (c) 2020-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,7 @@
 #include "nk_window.h"
 
 #define WIDTH 800
-#define HEIGHT 300
+#define HEIGHT 350
 #define ROW_HEIGHT 25
 
 typedef struct
@@ -123,8 +123,12 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 			changed = true;
 		}
 		if (DrawCheckbox(
-				ctx, "Random Pickups", "Enable randomly spawned ammo/health pickups",
+				ctx, "Random pickups", "Enable randomly spawned ammo/health pickups",
 				&cData->c->Setting.RandomPickups))
+		{
+			changed = true;
+		}
+		if (DrawNumberSlider(ctx, "Door open ticks", "Number of ticks that doors stay open (" TOSTRING(FPS_FRAMELIMIT) " = 1 second)", 0, 700, 10, &cData->c->Setting.DoorOpenTicks))
 		{
 			changed = true;
 		}

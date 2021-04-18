@@ -201,6 +201,9 @@ void MapNewLoadCampaignJSON(json_t *root, CampaignSetting *c)
 	// Default enable random pickups
 	c->RandomPickups = true;
 	LoadBool(&c->RandomPickups, root, "RandomPickups");
+	// Default one second door close
+	c->DoorOpenTicks = FPS_FRAMELIMIT;
+	LoadInt(&c->DoorOpenTicks, root, "DoorOpenTicks");
 }
 
 static void LoadMissionObjectives(

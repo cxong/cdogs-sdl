@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2019-2020 Cong Xu
+	Copyright (c) 2019-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -290,6 +290,18 @@ bool DrawCheckbox(
 		nk_tooltip(ctx, tooltip);
 	}
 	return changed;
+}
+
+bool DrawNumberSlider(struct nk_context *ctx, const char *label, const char *tooltip, const int min, const int max, const float step, int *value)
+{
+	struct nk_rect bounds = nk_widget_bounds(ctx);
+	const int origValue = *value;
+	nk_property_int(ctx, label, min, value, max, step, 1.0f);
+	if (tooltip && nk_input_is_mouse_hovering_rect(&ctx->input, bounds))
+	{
+		nk_tooltip(ctx, tooltip);
+	}
+	return origValue != *value;
 }
 
 void DrawPic(

@@ -228,8 +228,6 @@ static int GetDoorCountInGroup(
 	}
 	return count;
 }
-// 1 second to close doors
-#define CLOSE_DOOR_TICKS FPS_FRAMELIMIT
 // Create the watch responsible for closing the door
 static TWatch *CreateCloseDoorWatch(
 	MapBuilder *mb, const struct vec2i v, const bool isHorizontal,
@@ -244,12 +242,12 @@ static TWatch *CreateCloseDoorWatch(
 	{
 		const struct vec2i vI = svec2i_add(v, svec2i_scale(dv, (float)i));
 
-		WatchAddCondition(
-			w, CONDITION_TILECLEAR, CLOSE_DOOR_TICKS,
-			svec2i_subtract(vI, dAside));
-		WatchAddCondition(w, CONDITION_TILECLEAR, CLOSE_DOOR_TICKS, vI);
-		WatchAddCondition(
-			w, CONDITION_TILECLEAR, CLOSE_DOOR_TICKS, svec2i_add(vI, dAside));
+		for (int j = -1; j <= 1; j++)
+		{
+			WatchAddCondition(
+				w, CONDITION_TILECLEAR, gCampaign.Setting.DoorOpenTicks,
+				svec2i_add(vI, svec2i_scale(dAside, (float)j)));
+		}
 	}
 
 	// Now the actions of the watch once it's triggered

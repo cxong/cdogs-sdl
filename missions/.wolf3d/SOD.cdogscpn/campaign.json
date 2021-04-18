@@ -7,5 +7,6 @@
 	"WeaponPersist": true,
 	"SkipWeaponMenu": true,
 	"RandomPickups": false,
+	"DoorOpenTicks": 210,
 	"Missions": 0
 }
