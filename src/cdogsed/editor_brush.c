@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014, 2019-2020 Cong Xu
+	Copyright (c) 2014, 2019-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -366,9 +366,10 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	case BRUSHTYPE_ADD_CHARACTER:
 		if (isMain)
 		{
-			if (MissionStaticTryAddCharacter(
-					&m->u.Static, b->u.ItemIndex, b->Pos))
+			const Tile *tile = MapGetTile(&gMap, b->Pos);
+			if (TileIsClear(tile))
 			{
+				MissionStaticAddCharacter(&m->u.Static, b->u.ItemIndex, b->Pos);
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}
 		}
@@ -414,7 +415,8 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	case BRUSHTYPE_ADD_PICKUP:
 		if (isMain)
 		{
-			if (MissionStaticTryAddPickup(
+			const Tile *tile = MapGetTile(&gMap, b->Pos);
+			if (TileCanWalk(tile) && MissionStaticTryAddPickup(
 					&m->u.Static, b->u.Pickup, b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;

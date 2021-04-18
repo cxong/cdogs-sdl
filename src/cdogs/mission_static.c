@@ -1068,17 +1068,6 @@ bool MissionStaticTryRemoveItemAt(MissionStatic *m, const struct vec2i pos)
 	return false;
 }
 
-bool MissionStaticTryAddCharacter(
-	MissionStatic *m, const int ch, const struct vec2i pos)
-{
-	const Tile *tile = MapGetTile(&gMap, pos);
-	if (TileIsClear(tile))
-	{
-		MissionStaticAddCharacter(m, ch, pos);
-		return true;
-	}
-	return false;
-}
 void MissionStaticAddCharacter(MissionStatic *m, const int ch, const struct vec2i pos)
  {
 	 // Check if the character already has an entry, and add to its list
@@ -1166,11 +1155,6 @@ bool MissionStaticTryRemoveKeyAt(MissionStatic *m, const struct vec2i pos)
 bool MissionStaticTryAddPickup(
 	MissionStatic *m, const PickupClass *p, const struct vec2i pos)
 {
-	const Tile *tile = MapGetTile(&gMap, pos);
-	if (!TileCanWalk(tile))
-	{
-		return false;
-	}
 	// Check if there are existing pickups here
 	CA_FOREACH(const PickupPositions, pp, m->Pickups)
 	for (int i = 0; i < (int)pp->Positions.size; i++)

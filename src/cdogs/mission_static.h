@@ -110,8 +110,6 @@ void MissionStaticLayout(
 bool MissionStaticTryAddItem(
 	MissionStatic *m, const MapObject *mo, const struct vec2i pos);
 bool MissionStaticTryRemoveItemAt(MissionStatic *m, const struct vec2i pos);
-bool MissionStaticTryAddCharacter(
-	MissionStatic *m, const int ch, const struct vec2i pos);
 void MissionStaticAddCharacter(MissionStatic *m, const int ch, const struct vec2i pos);
 bool MissionStaticTryRemoveCharacterAt(
 	MissionStatic *m, const struct vec2i pos);
