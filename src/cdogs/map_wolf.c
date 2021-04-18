@@ -165,6 +165,9 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 		goto bail;
 	}
 	
+	LoadSounds(&gSoundDevice, &map);
+	// TODO: Load music
+	
 	char buf[CDOGS_PATH_MAX];
 	// Copy data from common campaign and use them for every mission
 	GetDataFilePath(buf, "missions/.wolf3d/common.cdogscpn");
@@ -211,9 +214,6 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 	{
 		goto bail;
 	}
-
-	LoadSounds(&gSoundDevice, &map);
-	// TODO: Load music
 
 	for (int i = 0; i < map.nLevels; i++)
 	{

@@ -21,6 +21,7 @@
       },
       "OutOfRangeSpark": "spark",
       "WallMark": "bullet_hole",
+      "HitsObjects": false,
       "Speed": 35000,
       "Range": 1,
       "Power": 13,
