@@ -1107,35 +1107,29 @@ bool MissionStaticTryRemoveCharacterAt(
 	return false;
 }
 
-bool MissionStaticTryAddKey(
+void MissionStaticAddKey(
 	MissionStatic *m, const int k, const struct vec2i pos)
 {
-	const Tile *tile = MapGetTile(&gMap, pos);
-	if (TileIsClear(tile))
+	// Check if the item already has an entry, and add to its list
+	// of positions
+	bool hasAdded = false;
+	CA_FOREACH(KeyPositions, kp, m->Keys)
+	if (kp->Index == k)
 	{
-		// Check if the item already has an entry, and add to its list
-		// of positions
-		bool hasAdded = false;
-		CA_FOREACH(KeyPositions, kp, m->Keys)
-		if (kp->Index == k)
-		{
-			CArrayPushBack(&kp->Positions, &pos);
-			hasAdded = true;
-			break;
-		}
-		CA_FOREACH_END()
-		// If not, create a new entry
-		if (!hasAdded)
-		{
-			KeyPositions kp;
-			kp.Index = k;
-			CArrayInit(&kp.Positions, sizeof(struct vec2i));
-			CArrayPushBack(&kp.Positions, &pos);
-			CArrayPushBack(&m->Keys, &kp);
-		}
-		return true;
+		CArrayPushBack(&kp->Positions, &pos);
+		hasAdded = true;
+		break;
 	}
-	return false;
+	CA_FOREACH_END()
+	// If not, create a new entry
+	if (!hasAdded)
+	{
+		KeyPositions kp;
+		kp.Index = k;
+		CArrayInit(&kp.Positions, sizeof(struct vec2i));
+		CArrayPushBack(&kp.Positions, &pos);
+		CArrayPushBack(&m->Keys, &kp);
+	}
 }
 bool MissionStaticTryRemoveKeyAt(MissionStatic *m, const struct vec2i pos)
 {

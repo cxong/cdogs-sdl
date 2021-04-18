@@ -42,6 +42,7 @@ typedef struct
 	char *Sounds;
 	char *Footsteps;
 	color_t BloodColor;
+	char *Corpse;
 	bool HasHair;
 } CharacterClass;
 typedef struct

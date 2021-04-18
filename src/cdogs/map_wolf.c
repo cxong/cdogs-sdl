@@ -704,10 +704,10 @@ static void LoadEntity(
 		MissionStaticTryAddItem(m, StrMapObject("skull"), v);
 		break;
 	case CWENT_KEY_GOLD:
-		MissionStaticTryAddKey(m, StrKeycard("yellow"), v);
+		MissionStaticAddKey(m, StrKeycard("yellow"), v);
 		break;
 	case CWENT_KEY_SILVER:
-		MissionStaticTryAddKey(m, StrKeycard("blue"), v);
+		MissionStaticAddKey(m, StrKeycard("blue"), v);
 		break;
 	case CWENT_BED_CAGE_SKULLS:
 		if (map->type == CWMAPTYPE_SOD)

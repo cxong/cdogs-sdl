@@ -8,7 +8,8 @@
         "Sprites": "chars/heads/jones"
       },
       "Body": "soldier",
-      "Sounds": "guard"
+      "Sounds": "guard",
+      "Corpse": "dead_guard"
     },
     {
       "Name": "Killer Dog",

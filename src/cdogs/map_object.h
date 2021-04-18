@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2019 Cong Xu
+    Copyright (c) 2013-2019, 2021 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -127,7 +127,7 @@ MapObject *IntMapObject(const int m);
 MapObject *IndexMapObject(const int i);
 // Get index of destructible map object; used by editor
 int DestructibleMapObjectIndex(const MapObject *mo);
-void AddRandomBloodPool(const struct vec2 pos, const color_t mask);
+const MapObject *GetRandomBloodPool(void);
 int MapObjectGetFlags(const MapObject *mo);
 
 void MapObjectsInit(

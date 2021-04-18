@@ -399,8 +399,10 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 	case BRUSHTYPE_ADD_KEY:
 		if (isMain)
 		{
-			if (MissionStaticTryAddKey(&m->u.Static, b->u.ItemIndex, b->Pos))
+			const Tile *tile = MapGetTile(&gMap, pos);
+			if (TileIsClear(tile))
 			{
+				MissionStaticAddKey(&m->u.Static, b->u.ItemIndex, b->Pos);
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}
 		}

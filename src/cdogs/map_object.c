@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2014, 2016-2017, 2019 Cong Xu
+    Copyright (c) 2014, 2016-2017, 2019, 2021 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -195,20 +195,11 @@ int DestructibleMapObjectIndex(const MapObject *mo)
 	CASSERT(false, "cannot find destructible map object");
 	return -1;
 }
-void AddRandomBloodPool(const struct vec2 pos, const color_t mask)
+const MapObject *GetRandomBloodPool(void)
 {
 	const int idx = rand() % (int)gMapObjects.Bloods.size;
 	const char **name = CArrayGet(&gMapObjects.Bloods, idx);
-	const MapObject *mo = StrMapObject(*name);
-
-	GameEvent e = GameEventNew(GAME_EVENT_MAP_OBJECT_ADD);
-	e.u.MapObjectAdd.UID = ObjsGetNextUID();
-	strcpy(e.u.MapObjectAdd.MapObjectClass, mo->Name);
-	e.u.MapObjectAdd.Pos = Vec2ToNet(pos);
-	e.u.MapObjectAdd.ThingFlags = MapObjectGetFlags(mo);
-	e.u.MapObjectAdd.Health = mo->Health;
-	e.u.MapObjectAdd.Mask = Color2Net(mask);
-	GameEventsEnqueue(&gGameEvents, e);
+	return StrMapObject(*name);
 }
 int MapObjectGetFlags(const MapObject *mo)
 {

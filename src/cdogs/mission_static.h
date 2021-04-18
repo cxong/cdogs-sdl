@@ -113,7 +113,7 @@ bool MissionStaticTryRemoveItemAt(MissionStatic *m, const struct vec2i pos);
 void MissionStaticAddCharacter(MissionStatic *m, const int ch, const struct vec2i pos);
 bool MissionStaticTryRemoveCharacterAt(
 	MissionStatic *m, const struct vec2i pos);
-bool MissionStaticTryAddKey(
+void MissionStaticAddKey(
 	MissionStatic *m, const int k, const struct vec2i pos);
 bool MissionStaticTryRemoveKeyAt(MissionStatic *m, const struct vec2i pos);
 bool MissionStaticTryAddPickup(

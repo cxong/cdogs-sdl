@@ -58,7 +58,8 @@
       "SwitchSound": "pistol_switch",
       "Recoil": 0.3,
       "Brass": "brass",
-      "Ammo": "Ammo"
+      "Ammo": "Ammo",
+      "CanDrop": false
     },
     {
       "Name": "SS Machine Gun",
@@ -70,7 +71,8 @@
       "SwitchSound": "shotgun_r",
       "Recoil": 0.3,
       "Brass": "brass",
-      "Ammo": "Ammo"
+      "Ammo": "Ammo",
+      "CanDrop": false
     },
     {
       "Name": "Dual Chain Gun",
@@ -81,7 +83,8 @@
       "Sound": "dual_chain_gun",
       "SwitchSound": "mg_switch",
       "Recoil": 0.3,
-      "Brass": "brass"
+      "Brass": "brass",
+      "CanDrop": false
     },
     {
       "Pic": "",

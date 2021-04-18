@@ -1136,11 +1136,23 @@ static void ActorDie(TActor *actor)
 		ActorAddGunPickup(actor);
 	}
 
+	// Add corpse
 	if (ConfigGetEnum(&gConfig, "Graphics.Gore") != GORE_NONE)
 	{
-		// Add blood pool
-		AddRandomBloodPool(
-			actor->Pos, ActorGetCharacter(actor)->Class->BloodColor);
+		GameEvent ea = GameEventNew(GAME_EVENT_MAP_OBJECT_ADD);
+		ea.u.MapObjectAdd.UID = ObjsGetNextUID();
+		const CharacterClass *c = ActorGetCharacter(actor)->Class;
+		const MapObject *corpse = StrMapObject(c->Corpse);
+		if (!corpse)
+		{
+			corpse = GetRandomBloodPool();
+			ea.u.MapObjectAdd.Mask = Color2Net(c->BloodColor);
+		}
+		strcpy(ea.u.MapObjectAdd.MapObjectClass, corpse->Name);
+		ea.u.MapObjectAdd.Pos = Vec2ToNet(actor->Pos);
+		ea.u.MapObjectAdd.ThingFlags = MapObjectGetFlags(corpse);
+		ea.u.MapObjectAdd.Health = corpse->Health;
+		GameEventsEnqueue(&gGameEvents, ea);
 	}
 
 	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_DIE);

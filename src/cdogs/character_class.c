@@ -281,6 +281,8 @@ static void LoadCharacterClass(CharacterClass *c, json_t *node)
 
 	c->HasHair = true;
 	LoadBool(&c->HasHair, node, "HasHair");
+	
+	LoadStr(&c->Corpse, node, "Corpse");
 }
 static void CharacterClassFree(CharacterClass *c);
 void CharacterClassesClear(CArray *classes)
@@ -297,6 +299,7 @@ static void CharacterClassFree(CharacterClass *c)
 	CFREE(c->Body);
 	CFREE(c->Sounds);
 	CFREE(c->Footsteps);
+	CFREE(c->Corpse);
 }
 void CharacterClassesTerminate(CharacterClasses *c)
 {
