@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2017, 2019-2020 Cong Xu
+	Copyright (c) 2013-2017, 2019-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -94,7 +94,7 @@ bool IsPasswordAllowed(const GameMode mode)
 
 bool IsMissionBriefingNeeded(const GameMode mode, const char *missionBriefing)
 {
-	return HasObjectives(mode) && GetNumPlayers(PLAYER_ANY, false, true) > 0 &&
+	return HasObjectives(mode) && GetNumPlayers(PLAYER_ANY, false, true) > 0 && missionBriefing != NULL &&
 		   strlen(missionBriefing) > 0;
 }
 

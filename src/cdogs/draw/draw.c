@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2016, 2018-2020 Cong Xu
+	Copyright (c) 2013-2016, 2018-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -457,7 +457,7 @@ static void DrawThing(DrawBuffer *b, const Thing *t, const struct vec2i offset)
 #endif
 }
 
-static void DrawEditorTiles(DrawBuffer *b, const struct vec2i offset);
+static void DrawEditorTiles(DrawBuffer *b, const Map *map, const struct vec2i offset);
 static void DrawGuideImage(
 	const DrawBuffer *b, const Pic *guideImage, const uint8_t alpha);
 static void DrawObjectNames(DrawBuffer *b, const struct vec2i offset);
@@ -469,11 +469,11 @@ static void DrawExtra(
 	{
 		DrawGuideImage(b, extra->guideImage, extra->guideImageAlpha);
 	}
-	DrawEditorTiles(b, offset);
+	DrawEditorTiles(b, &gMap, offset);
 	DrawObjectNames(b, offset);
 }
 
-static void DrawEditorTiles(DrawBuffer *b, const struct vec2i offset)
+static void DrawEditorTiles(DrawBuffer *b, const Map *map, const struct vec2i offset)
 {
 	const color_t exitColor = colorDarker;
 	struct vec2i pos;
@@ -484,13 +484,13 @@ static void DrawEditorTiles(DrawBuffer *b, const struct vec2i offset)
 		for (int x = 0; x < b->Size.x; x++, pos.x += TILE_WIDTH)
 		{
 			const struct vec2i tilePos = svec2i(x + b->xStart, y + b->yStart);
-			if (!MapIsTileIn(&gMap, tilePos))
+			if (!MapIsTileIn(map, tilePos))
 			{
 				continue;
 			}
 
 			// Access highlight
-			const uint16_t al = MapGetAccessLevel(&gMap, tilePos);
+			const uint16_t al = MapGetAccessLevel(map, tilePos);
 			if (al != 0)
 			{
 				color_t highlight = KeyColor(al);
@@ -501,8 +501,8 @@ static void DrawEditorTiles(DrawBuffer *b, const struct vec2i offset)
 			}
 
 			// mission start
-			if (!svec2i_is_zero(gMap.start) &&
-				svec2i_is_equal(gMap.start, tilePos))
+			if (!svec2i_is_zero(map->start) &&
+				svec2i_is_equal(map->start, tilePos))
 			{
 				PicRender(
 					PicManagerGetPic(&gPicManager, "editor/start"),
@@ -511,7 +511,7 @@ static void DrawEditorTiles(DrawBuffer *b, const struct vec2i offset)
 			}
 
 			// exit tiles
-			CA_FOREACH(const Exit, e, gMap.exits)
+			CA_FOREACH(const Exit, e, map->exits)
 			Rect2i exitR = e->R;
 			exitR.Size = svec2i_add(exitR.Size, svec2i_one());
 			if (!Rect2iIsInside(exitR, tilePos))
@@ -559,6 +559,15 @@ static void DrawEditorTiles(DrawBuffer *b, const struct vec2i offset)
 				FontStrMask(buf, svec2i_add(pos, svec2i(3, 3)), exitColor);
 			}
 			CA_FOREACH_END()
+			
+			// Walk-through walls
+			const Tile *tile = MapGetTile(map, tilePos);
+			if (tile->Class->Type == TILE_CLASS_WALL && tile->Class->canWalk)
+			{
+				DrawRectangle(
+					b->g, pos, svec2i(TILE_WIDTH, TILE_HEIGHT), colorGreen,
+					false);
+			}
 		}
 	}
 }

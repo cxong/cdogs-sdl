@@ -2,7 +2,7 @@
   "Version": 2,
   "Ammo": [
     {
-      "Name": "Bullets",
+      "Name": "Ammo",
       "Pic": {
         "Type": "Normal",
         "Pic": "ammo_clip"
