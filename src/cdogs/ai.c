@@ -333,24 +333,9 @@ static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 	int cmd = 0;
 
 	// Wake up if it can see a player
-	if ((actor->flags & FLAGS_SLEEPING) && actor->aiContext->Delay == 0)
+	if ((actor->flags & FLAGS_SLEEPING) && actor->aiContext->Delay == 0 && CanSeeAPlayer(actor))
 	{
-		if (CanSeeAPlayer(actor))
-		{
-			Wake(actor);
-		}
-		actor->aiContext->Delay = bot->actionDelay * delayModifier;
-		// Randomly change direction
-		int newDir = (int)actor->direction + ((rand() % 2) * 2 - 1);
-		if (newDir < (int)DIRECTION_UP)
-		{
-			newDir = (int)DIRECTION_UPLEFT;
-		}
-		if (newDir == (int)DIRECTION_COUNT)
-		{
-			newDir = (int)DIRECTION_UP;
-		}
-		cmd = DirectionToCmd((int)newDir);
+		Wake(actor);
 	}
 	// Go to sleep if the player's too far away
 	if (!(actor->flags & FLAGS_SLEEPING) && actor->aiContext->Delay == 0 &&
