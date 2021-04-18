@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2016, 2019 Cong Xu
+    Copyright (c) 2013-2016, 2019, 2021 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -181,7 +181,7 @@ void MusicResume(SoundDevice *device)
 	{
 		Mix_ResumeMusic();
 	}
-	else
+	else if (!Mix_PlayingMusic())
 	{
 		Mix_PlayMusic(device->music, -1);
 	}
