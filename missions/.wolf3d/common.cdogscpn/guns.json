@@ -7,7 +7,7 @@
       "Name": "Knife",
       "Bullet": "knife",
       "Cost": 0,
-      "Lock": 18,
+      "Lock": 30,
       "Sound": "",
       "SwitchSound": "knife_switch",
       "CanShoot": false

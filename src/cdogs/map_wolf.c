@@ -287,7 +287,7 @@ static void LoadMission(
 	// TODO: objectives for treasure, kills (multiple items per obj)
 	const WeaponClass *wc = StrWeaponClass("Pistol");
 	CArrayPushBack(&m.Weapons, &wc);
-	wc = StrWeaponClass("Pistol");
+	wc = StrWeaponClass("Knife");
 	CArrayPushBack(&m.Weapons, &wc);
 	// TODO: song
 	MissionStaticInit(&m.u.Static);
