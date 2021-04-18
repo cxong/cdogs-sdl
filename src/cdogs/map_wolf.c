@@ -195,6 +195,8 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 		CMALLOC(tc, sizeof *tc);
 		TileClassCopy(tc, orig);
 		tc->canWalk = true;
+		// Slightly modify tile color because they are referenced by mask
+		tc->Mask.a--;
 		sprintf(buf, "%d", i + TILE_CLASS_WALL_OFFSET);
 		if (hashmap_put(tileClasses, buf, tc) != MAP_OK)
 		{
