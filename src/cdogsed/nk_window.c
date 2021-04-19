@@ -292,7 +292,9 @@ bool DrawCheckbox(
 	return changed;
 }
 
-bool DrawNumberSlider(struct nk_context *ctx, const char *label, const char *tooltip, const int min, const int max, const float step, int *value)
+bool DrawNumberSlider(
+	struct nk_context *ctx, const char *label, const char *tooltip,
+	const int min, const int max, const int step, int *value)
 {
 	struct nk_rect bounds = nk_widget_bounds(ctx);
 	const int origValue = *value;
