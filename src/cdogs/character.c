@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2014, 2016, 2019-2020 Cong Xu
+	Copyright (c) 2013-2014, 2016, 2019-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -69,9 +69,11 @@ void CharacterStoreTerminate(CharacterStore *store)
 	memset(store, 0, sizeof *store);
 }
 
-void CharacterStoreCopy(CharacterStore *dst, const CharacterStore *src)
+void CharacterStoreCopy(
+	CharacterStore *dst, const CharacterStore *src, CArray *playerTemplates)
 {
 	CharacterStoreTerminate(dst);
+	PlayerTemplatesClear(playerTemplates);
 	CharacterStoreInit(dst);
 	CArrayCopy(&dst->OtherChars, &src->OtherChars);
 	CA_FOREACH(Character, c, dst->OtherChars)
@@ -82,6 +84,10 @@ void CharacterStoreCopy(CharacterStore *dst, const CharacterStore *src)
 	if (hair != NULL)
 	{
 		CSTRDUP(c->Hair, hair);
+	}
+	if (c->PlayerTemplateName != NULL)
+	{
+		PlayerTemplateAddCharacter(playerTemplates, c);
 	}
 	CA_FOREACH_END()
 	CArrayCopy(&dst->prisonerIds, &src->prisonerIds);

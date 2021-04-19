@@ -65,7 +65,8 @@ typedef struct
 
 void CharacterStoreInit(CharacterStore *store);
 void CharacterStoreTerminate(CharacterStore *store);
-void CharacterStoreCopy(CharacterStore *dst, const CharacterStore *src);
+void CharacterStoreCopy(
+	CharacterStore *dst, const CharacterStore *src, CArray *playerTemplates);
 void CharacterStoreResetOthers(CharacterStore *store);
 void CharacterLoadJSON(
 	CharacterStore *c, CArray *playerTemplates, json_t *root, int version);

@@ -31,6 +31,7 @@
 
 #include "cwolfmap/cwolfmap.h"
 #include "map_archive.h"
+#include "player_template.h"
 
 #define TILE_CLASS_WALL_OFFSET 62
 
@@ -152,7 +153,8 @@ bail:
 
 static void LoadSounds(const SoundDevice *s, const CWolfMap *map);
 static void LoadMission(
-	CArray *missions, const map_t tileClasses, const CWolfMap *map, const int missionIndex);
+	CArray *missions, const map_t tileClasses, const CWolfMap *map,
+	const int missionIndex);
 
 int MapWolfLoad(const char *filename, CampaignSetting *c)
 {
@@ -164,10 +166,10 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 	{
 		goto bail;
 	}
-	
+
 	LoadSounds(&gSoundDevice, &map);
 	// TODO: Load music
-	
+
 	char buf[CDOGS_PATH_MAX];
 	// Copy data from common campaign and use them for every mission
 	GetDataFilePath(buf, "missions/.wolf3d/common.cdogscpn");
@@ -182,7 +184,8 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 	tileClasses = hashmap_copy(m->u.Static.TileClasses, TileClassCopyHashMap);
 	CharacterStore cs;
 	memset(&cs, 0, sizeof cs);
-	CharacterStoreCopy(&cs, &cCommon.characters);
+	CharacterStoreCopy(
+		&cs, &cCommon.characters, &gPlayerTemplates.CustomClasses);
 	CampaignSettingTerminate(&cCommon);
 	// Create walk-through copies of all the walls
 	for (int i = 3; i <= 64; i++)
@@ -220,7 +223,7 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 		LoadMission(&c->Missions, tileClasses, &map, i);
 	}
 
-	CharacterStoreCopy(&c->characters, &cs);
+	CharacterStoreCopy(&c->characters, &cs, &gPlayerTemplates.CustomClasses);
 
 bail:
 	hashmap_destroy(tileClasses, TileClassDestroy);
@@ -267,14 +270,18 @@ static void LoadSounds(const SoundDevice *s, const CWolfMap *map)
 }
 
 static void LoadTile(
-	MissionStatic *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v, const int missionIndex);
-static void TryLoadWallObject(MissionStatic *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v, const int missionIndex);
+	MissionStatic *m, const uint16_t ch, const CWolfMap *map,
+	const struct vec2i v, const int missionIndex);
+static void TryLoadWallObject(
+	MissionStatic *m, const uint16_t ch, const CWolfMap *map,
+	const struct vec2i v, const int missionIndex);
 static void LoadEntity(
-	MissionStatic *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v,
-	const int missionIndex);
+	MissionStatic *m, const uint16_t ch, const CWolfMap *map,
+	const struct vec2i v, const int missionIndex);
 
 static void LoadMission(
-	CArray *missions, const map_t tileClasses, const CWolfMap *map, const int missionIndex)
+	CArray *missions, const map_t tileClasses, const CWolfMap *map,
+	const int missionIndex)
 {
 	const CWLevel *level = &map->levels[missionIndex];
 	Mission m;
@@ -314,7 +321,8 @@ static void LoadMission(
 static int LoadWall(const uint16_t ch);
 
 static void LoadTile(
-	MissionStatic *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v, const int missionIndex)
+	MissionStatic *m, const uint16_t ch, const CWolfMap *map,
+	const struct vec2i v, const int missionIndex)
 {
 	UNUSED(missionIndex);
 	const CWTile tile = CWChToTile(ch);
@@ -388,10 +396,13 @@ static int LoadWall(const uint16_t ch)
 	return (int)wall + 3;
 }
 
-static void TryLoadWallObject(MissionStatic *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v, const int missionIndex)
+static void TryLoadWallObject(
+	MissionStatic *m, const uint16_t ch, const CWolfMap *map,
+	const struct vec2i v, const int missionIndex)
 {
 	const CWLevel *level = &map->levels[missionIndex];
-	const struct vec2i levelSize = svec2i(level->header.width, level->header.height);
+	const struct vec2i levelSize =
+		svec2i(level->header.width, level->header.height);
 	const struct vec2i vBelow = svec2i_add(v, svec2i(0, 1));
 	const CWWall wall = CWChToWall(ch);
 	const char *moName = NULL;
@@ -431,7 +442,8 @@ static void TryLoadWallObject(MissionStatic *m, const uint16_t ch, const CWolfMa
 		moName = "coat_of_arms_flag";
 		break;
 	case CWWALL_ELEVATOR:
-		if (MissionStaticGetTileClass(m, levelSize, vBelow)->Type == TILE_CLASS_FLOOR)
+		if (MissionStaticGetTileClass(m, levelSize, vBelow)->Type ==
+			TILE_CLASS_FLOOR)
 		{
 			moName = "elevator_interior";
 		}
@@ -439,7 +451,8 @@ static void TryLoadWallObject(MissionStatic *m, const uint16_t ch, const CWolfMa
 		for (int dx = -1; dx <= 1; dx += 2)
 		{
 			const struct vec2i exitV = svec2i(v.x + dx, v.y);
-			const TileClass *tc = MissionStaticGetTileClass(m, levelSize, exitV);
+			const TileClass *tc =
+				MissionStaticGetTileClass(m, levelSize, exitV);
 			if (tc != NULL && tc->Type == TILE_CLASS_FLOOR)
 			{
 				Exit e;
@@ -461,26 +474,26 @@ static void TryLoadWallObject(MissionStatic *m, const uint16_t ch, const CWolfMa
 				{
 					switch (missionIndex)
 					{
-						case 9:
-							e.Mission = 1;
-							break;
-						case 19:
-							e.Mission = 11;
-							break;
-						case 29:
-							e.Mission = 27;
-							break;
-						case 39:
-							e.Mission = 33;
-							break;
-						case 49:
-							e.Mission = 45;
-							break;
-						case 59:
-							e.Mission = 53;
-							break;
-						default:
-							break;
+					case 9:
+						e.Mission = 1;
+						break;
+					case 19:
+						e.Mission = 11;
+						break;
+					case 29:
+						e.Mission = 27;
+						break;
+					case 39:
+						e.Mission = 33;
+						break;
+					case 49:
+						e.Mission = 45;
+						break;
+					case 59:
+						e.Mission = 53;
+						break;
+					default:
+						break;
 					}
 				}
 				e.R.Pos = exitV;
@@ -490,7 +503,9 @@ static void TryLoadWallObject(MissionStatic *m, const uint16_t ch, const CWolfMa
 		}
 		break;
 	case CWWALL_DEAD_ELEVATOR:
-		if (MissionStaticGetTileClass(m, svec2i(level->header.width, level->header.height), vBelow)->Type == TILE_CLASS_FLOOR)
+		if (MissionStaticGetTileClass(
+				m, svec2i(level->header.width, level->header.height), vBelow)
+				->Type == TILE_CLASS_FLOOR)
 		{
 			moName = "elevator_interior";
 		}
@@ -499,7 +514,7 @@ static void TryLoadWallObject(MissionStatic *m, const uint16_t ch, const CWolfMa
 		moName = "iron_cross";
 		break;
 	case CWWALL_DIRTY_BRICK_1:
-	case CWWALL_DIRTY_BRICK_2:	// fallthrough
+	case CWWALL_DIRTY_BRICK_2: // fallthrough
 		moName = "cobble_moss";
 		break;
 	case CWWALL_PURPLE_BLOOD:
@@ -548,9 +563,9 @@ static void TryLoadWallObject(MissionStatic *m, const uint16_t ch, const CWolfMa
 		moName = "hitler_poster";
 		break;
 	case CWWALL_STONE_WALL_1:
-	case CWWALL_STONE_WALL_2:	// fallthrough
-	case CWWALL_RAMPART_STONE_1:	// fallthrough
-	case CWWALL_RAMPART_STONE_2:	// fallthrough
+	case CWWALL_STONE_WALL_2:	 // fallthrough
+	case CWWALL_RAMPART_STONE_1: // fallthrough
+	case CWWALL_RAMPART_STONE_2: // fallthrough
 		moName = "stone_color";
 		break;
 	case CWWALL_STONE_WALL_FLAG:
@@ -599,8 +614,8 @@ typedef enum
 } WolfChar;
 
 static void LoadEntity(
-	MissionStatic *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v,
-	const int missionIndex)
+	MissionStatic *m, const uint16_t ch, const CWolfMap *map,
+	const struct vec2i v, const int missionIndex)
 {
 	const CWEntity entity = CWChToEntity(ch);
 	switch (entity)
@@ -615,12 +630,13 @@ static void LoadEntity(
 		// Remove any exits that overlap with start
 		// SOD starts the player in elevators
 		CA_FOREACH(const Exit, e, m->Exits)
-			const Rect2i er = Rect2iNew(e->R.Pos, svec2i_add(e->R.Size, svec2i_one()));
-			if (Rect2iIsInside(er, v))
-			{
-				CArrayDelete(&m->Exits, _ca_index);
-				_ca_index--;
-			}
+		const Rect2i er =
+			Rect2iNew(e->R.Pos, svec2i_add(e->R.Size, svec2i_one()));
+		if (Rect2iIsInside(er, v))
+		{
+			CArrayDelete(&m->Exits, _ca_index);
+			_ca_index--;
+		}
 		CA_FOREACH_END()
 		break;
 	case CWENT_WATER:
@@ -704,10 +720,10 @@ static void LoadEntity(
 		MissionStaticTryAddItem(m, StrMapObject("skull"), v);
 		break;
 	case CWENT_KEY_GOLD:
-		MissionStaticAddKey(m, StrKeycard("yellow"), v);
+		MissionStaticAddKey(m, 0, v);
 		break;
 	case CWENT_KEY_SILVER:
-		MissionStaticAddKey(m, StrKeycard("blue"), v);
+		MissionStaticAddKey(m, 2, v);
 		break;
 	case CWENT_BED_CAGE_SKULLS:
 		if (map->type == CWMAPTYPE_SOD)
@@ -861,33 +877,33 @@ static void LoadEntity(
 		MissionStaticTryAddItem(m, StrMapObject("dead_guard"), v);
 		break;
 	case CWENT_DOG_E:
-	case CWENT_DOG_N:	// fallthrough
-	case CWENT_DOG_W:	// fallthrough
-	case CWENT_DOG_S:	// fallthrough
+	case CWENT_DOG_N: // fallthrough
+	case CWENT_DOG_W: // fallthrough
+	case CWENT_DOG_S: // fallthrough
 		MissionStaticAddCharacter(m, (int)CHAR_DOG, v);
 		break;
 	case CWENT_GUARD_E:
-	case CWENT_GUARD_N:	// fallthrough
-	case CWENT_GUARD_W:	// fallthrough
-	case CWENT_GUARD_S:	// fallthrough
+	case CWENT_GUARD_N: // fallthrough
+	case CWENT_GUARD_W: // fallthrough
+	case CWENT_GUARD_S: // fallthrough
 		MissionStaticAddCharacter(m, (int)CHAR_GUARD, v);
 		break;
 	case CWENT_SS_E:
-	case CWENT_SS_N:	// fallthrough
-	case CWENT_SS_W:	// fallthrough
-	case CWENT_SS_S:	// fallthrough
+	case CWENT_SS_N: // fallthrough
+	case CWENT_SS_W: // fallthrough
+	case CWENT_SS_S: // fallthrough
 		MissionStaticAddCharacter(m, (int)CHAR_SS, v);
 		break;
 	case CWENT_MUTANT_E:
-	case CWENT_MUTANT_N:	// fallthrough
-	case CWENT_MUTANT_W:	// fallthrough
-	case CWENT_MUTANT_S:	// fallthrough
+	case CWENT_MUTANT_N: // fallthrough
+	case CWENT_MUTANT_W: // fallthrough
+	case CWENT_MUTANT_S: // fallthrough
 		MissionStaticAddCharacter(m, (int)CHAR_MUTANT, v);
 		break;
 	case CWENT_OFFICER_E:
-	case CWENT_OFFICER_N:	// fallthrough
-	case CWENT_OFFICER_W:	// fallthrough
-	case CWENT_OFFICER_S:	// fallthrough
+	case CWENT_OFFICER_N: // fallthrough
+	case CWENT_OFFICER_W: // fallthrough
+	case CWENT_OFFICER_S: // fallthrough
 		MissionStaticAddCharacter(m, (int)CHAR_OFFICER, v);
 		break;
 	case CWENT_TURN_E:
