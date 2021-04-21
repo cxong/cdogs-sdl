@@ -465,7 +465,7 @@ static void TryLoadWallObject(
 					{
 						e.Mission = 4;
 					}
-					else
+					else if (missionIndex == 20)
 					{
 						e.Mission = 12;
 					}
