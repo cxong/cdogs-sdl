@@ -190,7 +190,9 @@ void UpdateActorState(TActor *actor, int ticks)
 		actor->anim.newFrame)
 	{
 		GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
-		sprintf(es.u.SoundAt.Sound, "footsteps/%s", ActorGetCharacter(actor)->Class->Footsteps);
+		sprintf(
+			es.u.SoundAt.Sound, "footsteps/%s",
+			ActorGetCharacter(actor)->Class->Footsteps);
 		es.u.SoundAt.Pos = Vec2ToNet(actor->thing.Pos);
 		es.u.SoundAt.Distance = FOOTSTEP_DISTANCE_PLUS;
 		GameEventsEnqueue(&gGameEvents, es);
@@ -275,7 +277,9 @@ bool TryMoveActor(TActor *actor, struct vec2 pos)
 										? CArrayGet(&gObjs, target->id)
 										: NULL;
 			if (ActorCanFireWeapon(actor, gun) && !gun->Gun->CanShoot &&
-				actor->health > 0 && (!object || !ObjIsDangerous(object)))
+				actor->health > 0 &&
+				(!object ||
+				 (gun->Gun->Bullet->HitsObjects && !ObjIsDangerous(object))))
 			{
 				if (CanHit(actor->flags, actor->uid, target))
 				{
@@ -585,7 +589,8 @@ void InjureActor(TActor *actor, int injury)
 	{
 		actor->stateCounter = 0;
 		GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
-		CharacterClassGetSound(ActorGetCharacter(actor)->Class, es.u.SoundAt.Sound, "die");
+		CharacterClassGetSound(
+			ActorGetCharacter(actor)->Class, es.u.SoundAt.Sound, "die");
 		es.u.SoundAt.Pos = Vec2ToNet(actor->thing.Pos);
 		GameEventsEnqueue(&gGameEvents, es);
 		if (actor->PlayerUID >= 0)
@@ -1556,7 +1561,9 @@ void ActorTakeSpecialDamage(TActor *actor, special_damage_e damage)
 	}
 }
 
-static void ActorTakeHit(TActor *actor, const int flags, const int playerUID, const special_damage_e damage);
+static void ActorTakeHit(
+	TActor *actor, const int flags, const int playerUID,
+	const special_damage_e damage);
 void ActorHit(const NThingDamage d)
 {
 	TActor *a = ActorGetByUID(d.UID);
@@ -1616,7 +1623,9 @@ void ActorHit(const NThingDamage d)
 	}
 }
 
-static void ActorTakeHit(TActor *actor, const int flags, const int playerUID, const special_damage_e damage)
+static void ActorTakeHit(
+	TActor *actor, const int flags, const int playerUID,
+	const special_damage_e damage)
 {
 	// Wake up if this is an AI
 	if (!gCampaign.IsClient && actor->aiContext)
@@ -1624,7 +1633,8 @@ static void ActorTakeHit(TActor *actor, const int flags, const int playerUID, co
 		actor->flags &= ~FLAGS_SLEEPING;
 		ActorSetAIState(actor, AI_STATE_NONE);
 	}
-	if (ActorIsInvulnerable(actor, flags, playerUID, gCampaign.Entry.Mode, damage))
+	if (ActorIsInvulnerable(
+			actor, flags, playerUID, gCampaign.Entry.Mode, damage))
 	{
 		return;
 	}
