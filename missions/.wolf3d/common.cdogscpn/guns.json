@@ -29,7 +29,7 @@
       "Icon": "assault_rifle",
       "Bullet": "bullet",
       "Cost": 1,
-      "Lock": 10,
+      "Lock": 12,
       "Sound": "machine_gun",
       "SwitchSound": "shotgun_r",
       "Recoil": 0.17,
