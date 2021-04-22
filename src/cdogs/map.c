@@ -608,6 +608,14 @@ bool MapIsTileAreaClear(
 				const Thing *ti = ThingIdGetThing(CArrayGet(tileThings, i));
 				if (AABBOverlap(pos, ti->Pos, size, ti->size))
 				{
+					if (ti->kind == KIND_OBJECT)
+					{
+						const TObject *tobj = CArrayGet(&gObjs, ti->id);
+						if (tobj->Health <= 0)
+						{
+							continue;
+						}
+					}
 					return false;
 				}
 			}
