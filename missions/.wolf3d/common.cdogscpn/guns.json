@@ -51,7 +51,7 @@
     {
       "Name": "Guard Pistol",
       "Icon": "pistol",
-      "Bullet": "bullet",
+      "Bullet": "bullet_enemy",
       "Cost": 1,
       "Lock": 70,
       "Sound": "pistol_guard",
@@ -64,7 +64,7 @@
     {
       "Name": "SS Machine Gun",
       "Icon": "assault_rifle",
-      "Bullet": "bullet",
+      "Bullet": "bullet_boss",
       "Cost": 1,
       "Lock": 6,
       "Sound": "machine_gun_burst",
@@ -77,7 +77,7 @@
     {
       "Name": "Dual Chain Gun",
       "Icon": "machine_gun",
-      "Bullet": "bullet",
+      "Bullet": "bullet_boss",
       "Cost": 1,
       "Lock": 4,
       "Sound": "dual_chain_gun",

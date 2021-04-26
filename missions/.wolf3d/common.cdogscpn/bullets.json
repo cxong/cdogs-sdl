@@ -25,12 +25,48 @@
       "HitsObjects": false,
       "Speed": 35000,
       "Range": 1,
-      "Power": 13,
+      "Power": 21,
+      "Mass": 0.2
+    },
+    {
+      "Name": "bullet_enemy",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": ""
+      },
+      "Trail": {
+        "Particle": "trail",
+        "Width": 1.0
+      },
+      "OutOfRangeSpark": "spark",
+      "WallMark": "bullet_hole",
+      "HitsObjects": false,
+      "Speed": 35000,
+      "Range": 1,
+      "Power": 16,
+      "Mass": 0.2
+    },
+    {
+      "Name": "bullet_boss",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": ""
+      },
+      "Trail": {
+        "Particle": "trail",
+        "Width": 1.0
+      },
+      "OutOfRangeSpark": "spark",
+      "WallMark": "bullet_hole",
+      "HitsObjects": false,
+      "Speed": 35000,
+      "Range": 1,
+      "Power": 24,
       "Mass": 0.2
     },
     {
       "Name": "dog_bite",
-      "Power": 10,
+      "Power": 11,
       "Mass": 1.0,
       "HitSounds": {
         "Object": "hits/dog_growl",
