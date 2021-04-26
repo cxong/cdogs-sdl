@@ -95,6 +95,16 @@
       "Sound": "",
       "CanShoot": false,
       "CanDrop": false
+    },
+    {
+      "Pic": "",
+      "Name": "Ghost Drain",
+      "Bullet": "ghost_drain",
+      "Cost": 0,
+      "Sound": "",
+      "SoundLockLength": 10,
+      "CanShoot": false,
+      "CanDrop": false
     }
   ]
 }

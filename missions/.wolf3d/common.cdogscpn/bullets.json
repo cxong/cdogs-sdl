@@ -72,6 +72,15 @@
         "Object": "hits/dog_growl",
         "Flesh": "hits/dog_growl"
       }
+    },
+    {
+      "Name": "ghost_drain",
+      "Power": 3,
+      "Mass": 0,
+      "HitSounds": {
+        "Object": "hits/knife_hard",
+        "Flesh": "hits/knife_flesh"
+      }
     }
   ]
 }
