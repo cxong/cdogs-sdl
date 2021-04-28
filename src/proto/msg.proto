@@ -268,7 +268,8 @@ message NGunFire {
 
 message NGunState {
 	uint32 ActorUID = 1;
-	int32 State = 2;
+	int32 Barrel = 2;
+	int32 State = 3;
 }
 
 message NAddBullet {

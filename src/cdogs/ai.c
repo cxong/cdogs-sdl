@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2014, 2016-2017, 2020 Cong Xu
+	Copyright (c) 2013-2014, 2016-2017, 2020-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -229,7 +229,7 @@ static int WillFire(TActor *actor, int roll)
 {
 	const CharBot *bot = ActorGetCharacter(actor)->bot;
 	if ((actor->flags & FLAGS_VISIBLE) != 0 &&
-		ActorCanFireWeapon(actor, ACTOR_GET_WEAPON(actor)) &&
+		ActorGetCanFireBarrel(actor, ACTOR_GET_WEAPON(actor)) >= 0 &&
 		roll < bot->probabilityToShoot)
 	{
 		if ((actor->flags & FLAGS_GOOD_GUY) != 0)
@@ -333,7 +333,8 @@ static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 	int cmd = 0;
 
 	// Wake up if it can see a player
-	if ((actor->flags & FLAGS_SLEEPING) && actor->aiContext->Delay == 0 && CanSeeAPlayer(actor))
+	if ((actor->flags & FLAGS_SLEEPING) && actor->aiContext->Delay == 0 &&
+		CanSeeAPlayer(actor))
 	{
 		Wake(actor);
 	}
@@ -444,7 +445,11 @@ static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 			{
 				// I think this is some hack to make sure invisible enemies
 				// don't fire so much
-				ACTOR_GET_WEAPON(actor)->lock = 40;
+				Weapon *w = ACTOR_GET_WEAPON(actor);
+				for (int i = 0; i < w->Gun->Barrel.Count; i++)
+				{
+					w->barrels[i].lock = 40;
+				}
 			}
 			if (cmd && !IsDirectionOK(actor, CmdToDirection(cmd)) &&
 				(actor->flags & FLAGS_DETOURING) == 0)
@@ -461,12 +466,13 @@ static void Wake(TActor *a)
 {
 	a->flags &= ~FLAGS_SLEEPING;
 	ActorSetAIState(a, AI_STATE_NONE);
-	
+
 	// Don't play alert sound for invisible enemies
 	if (!(a->flags & FLAGS_SEETHROUGH))
 	{
 		GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
-		CharacterClassGetSound(ActorGetCharacter(a)->Class, es.u.SoundAt.Sound, "alert");
+		CharacterClassGetSound(
+			ActorGetCharacter(a)->Class, es.u.SoundAt.Sound, "alert");
 		es.u.SoundAt.Pos = Vec2ToNet(a->thing.Pos);
 		GameEventsEnqueue(&gGameEvents, es);
 	}

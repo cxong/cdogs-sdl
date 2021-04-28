@@ -1,50 +1,50 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin
-    Copyright (C) 2003-2007 Lucas Martin-King
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (C) 1995 Ronny Wester
+	Copyright (C) 2003 Jeremy Chin
+	Copyright (C) 2003-2007 Lucas Martin-King
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-    This file incorporates work covered by the following copyright and
-    permission notice:
+	This file incorporates work covered by the following copyright and
+	permission notice:
 
-    Copyright (c) 2013-2015, 2017 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2015, 2017, 2021 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "ai_utils.h"
 
@@ -58,23 +58,22 @@
 #include "path_cache.h"
 #include "weapon.h"
 
-
 TActor *AIGetClosestPlayer(const struct vec2 pos)
 {
 	float minDistance2 = -1;
 	TActor *closestPlayer = NULL;
 	CA_FOREACH(const PlayerData, pd, gPlayerDatas)
-		if (!IsPlayerAlive(pd))
-		{
-			continue;
-		}
-		TActor *p = ActorGetByUID(pd->ActorUID);
-		const float distance2 = svec2_distance_squared(pos, p->Pos);
-		if (!closestPlayer || distance2 < minDistance2)
-		{
-			closestPlayer = p;
-			minDistance2 = distance2;
-		}
+	if (!IsPlayerAlive(pd))
+	{
+		continue;
+	}
+	TActor *p = ActorGetByUID(pd->ActorUID);
+	const float distance2 = svec2_distance_squared(pos, p->Pos);
+	if (!closestPlayer || distance2 < minDistance2)
+	{
+		closestPlayer = p;
+		minDistance2 = distance2;
+	}
 	CA_FOREACH_END()
 	return closestPlayer;
 }
@@ -88,25 +87,24 @@ static TActor *AIGetClosestActor(
 	TActor *closest = NULL;
 	float minDistance2 = -1;
 	CA_FOREACH(TActor, a, gActors)
-		if (!a->isInUse || a->dead)
+	if (!a->isInUse || a->dead)
+	{
+		continue;
+	}
+	// Never target invulnerables or civilians
+	if (a->flags & (FLAGS_INVULNERABLE | FLAGS_PENALTY))
+	{
+		continue;
+	}
+	if (compFunc(a, from))
+	{
+		const float distance2 = svec2_distance_squared(fromPos, a->Pos);
+		if (!closest || distance2 < minDistance2)
 		{
-			continue;
+			minDistance2 = distance2;
+			closest = a;
 		}
-		// Never target invulnerables or civilians
-		if (a->flags & (FLAGS_INVULNERABLE | FLAGS_PENALTY))
-		{
-			continue;
-		}
-		if (compFunc(a, from))
-		{
-			const float distance2 =
-				svec2_distance_squared(fromPos, a->Pos);
-			if (!closest || distance2 < minDistance2)
-			{
-				minDistance2 = distance2;
-				closest = a;
-			}
-		}
+	}
 	CA_FOREACH_END()
 	return closest;
 }
@@ -152,8 +150,7 @@ static bool IsBadAndVisible(const TActor *a, const TActor *b)
 {
 	return IsBad(a, b) && (a->flags & FLAGS_VISIBLE);
 }
-const TActor *AIGetClosestVisibleEnemy(
-	const TActor *from, const bool isPlayer)
+const TActor *AIGetClosestVisibleEnemy(const TActor *from, const bool isPlayer)
 {
 	if (IsPVP(gCampaign.Entry.Mode))
 	{
@@ -230,16 +227,16 @@ bool IsTileWalkable(Map *map, const struct vec2i pos)
 	// For AI, we don't want to shoot it, so just walk around
 	Tile *t = MapGetTile(map, pos);
 	CA_FOREACH(ThingId, tid, t->things)
-		// Only look for explosive objects
-		if (tid->Kind != KIND_OBJECT)
-		{
-			continue;
-		}
-		const TObject *o = CArrayGet(&gObjs, tid->Id);
-		if (ObjIsDangerous(o))
-		{
-			return false;
-		}
+	// Only look for explosive objects
+	if (tid->Kind != KIND_OBJECT)
+	{
+		continue;
+	}
+	const TObject *o = CArrayGet(&gObjs, tid->Id);
+	if (ObjIsDangerous(o))
+	{
+		return false;
+	}
 	CA_FOREACH_END()
 	return true;
 }
@@ -256,33 +253,33 @@ bool IsTileWalkableAroundObjects(Map *map, const struct vec2i pos)
 	// Check if tile has any item on it
 	Tile *t = MapGetTile(map, pos);
 	CA_FOREACH(ThingId, tid, t->things)
-		if (tid->Kind == KIND_OBJECT)
+	if (tid->Kind == KIND_OBJECT)
+	{
+		// Check that the object has hitbox - i.e. health > 0
+		const TObject *o = CArrayGet(&gObjs, tid->Id);
+		if (o->Health > 0)
 		{
-			// Check that the object has hitbox - i.e. health > 0
-			const TObject *o = CArrayGet(&gObjs, tid->Id);
-			if (o->Health > 0)
-			{
-				return false;
-			}
+			return false;
 		}
-		else if (tid->Kind == KIND_CHARACTER)
+	}
+	else if (tid->Kind == KIND_CHARACTER)
+	{
+		switch (gCollisionSystem.allyCollision)
 		{
-			switch (gCollisionSystem.allyCollision)
-			{
-			case ALLYCOLLISION_NORMAL:
-				return false;
-			case ALLYCOLLISION_REPEL:
-				// TODO: implement
-				// Need to know collision team of player
-				// to know if collision will result in repelling
-				break;
-			case ALLYCOLLISION_NONE:
-				continue;
-			default:
-				CASSERT(false, "unknown collision type");
-				break;
-			}
+		case ALLYCOLLISION_NORMAL:
+			return false;
+		case ALLYCOLLISION_REPEL:
+			// TODO: implement
+			// Need to know collision team of player
+			// to know if collision will result in repelling
+			break;
+		case ALLYCOLLISION_NONE:
+			continue;
+		default:
+			CASSERT(false, "unknown collision type");
+			break;
 		}
+	}
 	CA_FOREACH_END()
 	return true;
 }
@@ -325,26 +322,34 @@ bool AIHasClearShot(const struct vec2 from, const struct vec2 to)
 	const int pad = 2;
 	fromOffset.x = from.x - (ACTOR_W + pad) / 2;
 	if (Vec2ToTile(fromOffset).x >= 0 &&
-		!AIHasClearLine(svec2i_assign_vec2(fromOffset), svec2i_assign_vec2(to), IsPosNoSee))
+		!AIHasClearLine(
+			svec2i_assign_vec2(fromOffset), svec2i_assign_vec2(to),
+			IsPosNoSee))
 	{
 		return false;
 	}
 	fromOffset.x = from.x + (ACTOR_W + pad) / 2;
 	if (Vec2ToTile(fromOffset).x < gMap.Size.x &&
-		!AIHasClearLine(svec2i_assign_vec2(fromOffset), svec2i_assign_vec2(to), IsPosNoSee))
+		!AIHasClearLine(
+			svec2i_assign_vec2(fromOffset), svec2i_assign_vec2(to),
+			IsPosNoSee))
 	{
 		return false;
 	}
 	fromOffset.x = from.x;
 	fromOffset.y = from.y - (ACTOR_H + pad) / 2;
 	if (Vec2ToTile(fromOffset).y >= 0 &&
-		!AIHasClearLine(svec2i_assign_vec2(fromOffset), svec2i_assign_vec2(to), IsPosNoSee))
+		!AIHasClearLine(
+			svec2i_assign_vec2(fromOffset), svec2i_assign_vec2(to),
+			IsPosNoSee))
 	{
 		return false;
 	}
 	fromOffset.y = from.y + (ACTOR_H + pad) / 2;
 	if (Vec2ToTile(fromOffset).y < gMap.Size.y &&
-		!AIHasClearLine(svec2i_assign_vec2(fromOffset), svec2i_assign_vec2(to), IsPosNoSee))
+		!AIHasClearLine(
+			svec2i_assign_vec2(fromOffset), svec2i_assign_vec2(to),
+			IsPosNoSee))
 	{
 		return false;
 	}
@@ -377,13 +382,10 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd)
 	{
 		frontPos.y++;
 	}
-	const CollisionParams params =
-	{
+	const CollisionParams params = {
 		THING_IMPASSABLE, CalcCollisionTeam(true, a),
-		IsPVP(gCampaign.Entry.Mode)
-	};
-	item = OverlapGetFirstItem(
-		&a->thing, frontPos, a->thing.size, params);
+		IsPVP(gCampaign.Entry.Mode)};
+	item = OverlapGetFirstItem(&a->thing, frontPos, a->thing.size, params);
 	if (!item || item->kind != KIND_OBJECT)
 	{
 		return NULL;
@@ -391,8 +393,7 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd)
 	return CArrayGet(&gObjs, item->id);
 }
 
-bool AIIsFacing(
-	const TActor *a, const struct vec2 target, const direction_e d)
+bool AIIsFacing(const TActor *a, const struct vec2 target, const direction_e d)
 {
 	const bool isUpperOrLowerOctants =
 		fabsf(a->Pos.x - target.x) < fabsf(a->Pos.y - target.y);
@@ -455,32 +456,34 @@ static bool AIHasFriendliesInLine(const TActor *a, const direction_e dir)
 static bool FindFriendliesInTile(void *data, const struct vec2i tile)
 {
 	const Tile *t = MapGetTile(&gMap, tile);
-	if (t == NULL) return true;
+	if (t == NULL)
+		return true;
 	FindFriendliesInTileData *tData = data;
 	CA_FOREACH(const ThingId, tid, t->things)
-		if (tid->Kind != KIND_CHARACTER) continue;
-		const TActor *other = CArrayGet(&gActors, tid->Id);
-		// Don't worry about self
-		if (tData->ActorUID == other->uid) continue;
-		// Never shoot prisoners/victims... it's not nice ;)
-		if (other->flags & (FLAGS_PRISONER | FLAGS_VICTIM))
-		{
-			tData->HasFriendly = true;
-			return true;
-		}
-		const CollisionTeam ctOther = CalcCollisionTeam(true, other);
-		if (tData->CT != COLLISIONTEAM_NONE && ctOther != COLLISIONTEAM_NONE &&
-			tData->CT == ctOther)
-		{
-			tData->HasFriendly = true;
-			return true;
-		}
-		// If it's an enemy, do shoot!
+	if (tid->Kind != KIND_CHARACTER)
+		continue;
+	const TActor *other = CArrayGet(&gActors, tid->Id);
+	// Don't worry about self
+	if (tData->ActorUID == other->uid)
+		continue;
+	// Never shoot prisoners/victims... it's not nice ;)
+	if (other->flags & (FLAGS_PRISONER | FLAGS_VICTIM))
+	{
+		tData->HasFriendly = true;
 		return true;
+	}
+	const CollisionTeam ctOther = CalcCollisionTeam(true, other);
+	if (tData->CT != COLLISIONTEAM_NONE && ctOther != COLLISIONTEAM_NONE &&
+		tData->CT == ctOther)
+	{
+		tData->HasFriendly = true;
+		return true;
+	}
+	// If it's an enemy, do shoot!
+	return true;
 	CA_FOREACH_END()
 	return false;
 }
-
 
 // Use pathfinding to check that there is a path between
 // source and destination tiles
@@ -497,8 +500,8 @@ bool AIHasPath(
 	const struct vec2i toTile = MapSearchTileAround(
 		&gMap, Vec2ToTile(to),
 		ignoreObjects ? IsTileWalkable : IsTileWalkableAroundObjects);
-	CachedPath path = PathCacheCreate(
-		&gPathCache, fromTile, toTile, ignoreObjects, true);
+	CachedPath path =
+		PathCacheCreate(&gPathCache, fromTile, toTile, ignoreObjects, true);
 	const size_t pathCount = ASPathGetCount(path.Path);
 	CachedPathDestroy(&path);
 	return pathCount >= 1;
@@ -508,11 +511,15 @@ int AIGotoDirect(const struct vec2 a, const struct vec2 p)
 {
 	int cmd = 0;
 
-	if (a.x + 1 < p.x)		cmd |= CMD_RIGHT;
-	else if (a.x > p.x + 1)	cmd |= CMD_LEFT;
+	if (a.x + 1 < p.x)
+		cmd |= CMD_RIGHT;
+	else if (a.x > p.x + 1)
+		cmd |= CMD_LEFT;
 
-	if (a.y + 1 < p.y)		cmd |= CMD_DOWN;
-	else if (a.y > p.y + 1)	cmd |= CMD_UP;
+	if (a.y + 1 < p.y)
+		cmd |= CMD_DOWN;
+	else if (a.y > p.y + 1)
+		cmd |= CMD_UP;
 
 	return cmd;
 }
@@ -543,20 +550,22 @@ static int AStarCloseToPath(
 {
 	struct vec2i *pathTile;
 	struct vec2i *pathEnd;
-	if (!c ||
-		c->PathIndex >= (int)ASPathGetCount(c->Path.Path) - 1) // at end of path
+	if (!c || c->PathIndex >=
+				  (int)ASPathGetCount(c->Path.Path) - 1) // at end of path
 	{
 		return 0;
 	}
 	// Check if we're too far from the current start of the path
 	pathTile = ASPathGetNode(c->Path.Path, c->PathIndex);
-	if ((int)svec2i_distance_squared(currentTile, svec2i(pathTile->x, pathTile->y)) > 4)
+	if ((int)svec2i_distance_squared(
+			currentTile, svec2i(pathTile->x, pathTile->y)) > 4)
 	{
 		return 0;
 	}
 	// Check if we're too far from the end of the path
 	pathEnd = ASPathGetNode(c->Path.Path, ASPathGetCount(c->Path.Path) - 1);
-	if ((int)svec2i_distance_squared(goalTile, svec2i(pathEnd->x, pathEnd->y)) > 0)
+	if ((int)svec2i_distance_squared(
+			goalTile, svec2i(pathEnd->x, pathEnd->y)) > 0)
 	{
 		return 0;
 	}
@@ -601,7 +610,7 @@ int AIGoto(const TActor *actor, const struct vec2 p, const bool ignoreObjects)
 			&gMap, goalTile,
 			ignoreObjects ? IsTileWalkable : IsTileWalkableAroundObjects);
 
-		c->PathIndex = 1;	// start navigating to the next path node
+		c->PathIndex = 1; // start navigating to the next path node
 		CachedPathDestroy(&c->Path);
 		c->Path = PathCacheCreate(
 			&gPathCache, currentTile, c->Goal, ignoreObjects, true);
@@ -628,21 +637,25 @@ int AIGoto(const TActor *actor, const struct vec2 p, const bool ignoreObjects)
 // Those in slice A will move down-left and those in slice B will move left.
 int AIHunt(const TActor *actor, const struct vec2 targetPos)
 {
-	const struct vec2 pos = svec2_add(
-		actor->Pos, ActorGetWeaponMuzzleOffset(actor));
+	const struct vec2 pos =
+		svec2_add(actor->Pos, ActorGetAverageWeaponMuzzleOffset(actor));
 	const float dx = fabsf(targetPos.x - pos.x);
 	const float dy = fabsf(targetPos.y - pos.y);
 
 	int cmd = 0;
 	if (2 * dx > dy)
 	{
-		if (pos.x < targetPos.x)		cmd |= CMD_RIGHT;
-		else if (pos.x > targetPos.x)	cmd |= CMD_LEFT;
+		if (pos.x < targetPos.x)
+			cmd |= CMD_RIGHT;
+		else if (pos.x > targetPos.x)
+			cmd |= CMD_LEFT;
 	}
 	if (2 * dy > dx)
 	{
-		if (pos.y < targetPos.y)		cmd |= CMD_DOWN;
-		else if (pos.y > targetPos.y)	cmd |= CMD_UP;
+		if (pos.y < targetPos.y)
+			cmd |= CMD_DOWN;
+		else if (pos.y > targetPos.y)
+			cmd |= CMD_UP;
 	}
 	// If it's a coward, reverse directions...
 	if (actor->flags & FLAGS_RUNS_AWAY)
@@ -684,11 +697,10 @@ int AIAttack(const TActor *a, const struct vec2 targetPos)
 	const Weapon *w = ACTOR_GET_WEAPON(a);
 	const WeaponClass *wc = w->Gun;
 	const float gunRange = WeaponClassGetRange(wc);
-	const float distanceSquared = svec2_distance_squared(
-		a->Pos, targetPos);
-	const bool canFire = wc->CanShoot && w->lock <= 0;
+	const float distanceSquared = svec2_distance_squared(a->Pos, targetPos);
+	const bool canFire = wc->CanShoot && WeaponGetUnlockedBarrel(w) >= 0;
 	if ((double)distanceSquared <
-		SQUARED(gunRange * 3) * a->aiContext->GunRangeScalar &&
+			SQUARED(gunRange * 3) * a->aiContext->GunRangeScalar &&
 		!canFire)
 	{
 		// Move away from the enemy because we're too close
@@ -707,10 +719,10 @@ int AIAttack(const TActor *a, const struct vec2 targetPos)
 		}
 		else
 		{
-		#define MINIMUM_GUN_DISTANCE 30
-			const bool willFire = canFire &&
-				(distanceSquared < SQUARED(gunRange * 2) ||
-				distanceSquared > SQUARED(MINIMUM_GUN_DISTANCE));
+#define MINIMUM_GUN_DISTANCE 30
+			const bool willFire =
+				canFire && (distanceSquared < SQUARED(gunRange * 2) ||
+							distanceSquared > SQUARED(MINIMUM_GUN_DISTANCE));
 			if (willFire)
 			{
 				// Hunt; this is the best direction to attack in
@@ -751,8 +763,8 @@ int AIRetreatFrom(const TActor *actor, const struct vec2 from)
 // Those in slice A will move left and those in slice B will move down-left.
 int AITrack(const TActor *actor, const struct vec2 targetPos)
 {
-	const struct vec2 pos = svec2_add(
-		actor->Pos, ActorGetWeaponMuzzleOffset(actor));
+	const struct vec2 pos =
+		svec2_add(actor->Pos, ActorGetAverageWeaponMuzzleOffset(actor));
 	const float dx = fabsf(targetPos.x - pos.x);
 	const float dy = fabsf(targetPos.y - pos.y);
 
@@ -771,39 +783,44 @@ int AITrack(const TActor *actor, const struct vec2 targetPos)
 	const bool xException = dy < 2 * dx && dy > dx * 1.1f;
 	if (!xException)
 	{
-		if (pos.x - targetPos.x < dy * 0.1f)		cmd |= CMD_RIGHT;
-		else if (pos.x - targetPos.x > -dy * 0.1f)	cmd |= CMD_LEFT;
+		if (pos.x - targetPos.x < dy * 0.1f)
+			cmd |= CMD_RIGHT;
+		else if (pos.x - targetPos.x > -dy * 0.1f)
+			cmd |= CMD_LEFT;
 	}
 	const bool yException = dx < 2 * dy && dx > dy * 1.1f;
 	if (!yException)
 	{
-		if (pos.y - targetPos.y < dx * 0.1f)		cmd |= CMD_DOWN;
-		else if (pos.y - targetPos.y > -dx * 0.1f)	cmd |= CMD_UP;
+		if (pos.y - targetPos.y < dx * 0.1f)
+			cmd |= CMD_DOWN;
+		else if (pos.y - targetPos.y > -dx * 0.1f)
+			cmd |= CMD_UP;
 	}
 
 	return cmd;
 }
 
 int AIMoveAwayFromLine(
-	const struct vec2 pos, const struct vec2 lineStart, const direction_e lineD)
+	const struct vec2 pos, const struct vec2 lineStart,
+	const direction_e lineD)
 {
 	const struct vec2 dv = svec2_subtract(pos, lineStart);
 	switch (lineD)
 	{
-		case DIRECTION_UP:
-		case DIRECTION_DOWN:	// fallthrough
-			return dv.x < 0 ? CMD_LEFT : CMD_RIGHT;
-		case DIRECTION_UPLEFT:
-		case DIRECTION_DOWNRIGHT:	// fallthrough
-			return dv.x > dv.y ? (CMD_RIGHT | CMD_UP) : (CMD_LEFT | CMD_DOWN);
-		case DIRECTION_LEFT:
-		case DIRECTION_RIGHT:	// fallthrough
-			return dv.y < 0 ? CMD_UP : CMD_DOWN;
-		case DIRECTION_DOWNLEFT:
-		case DIRECTION_UPRIGHT:	// fallthrough
-			return dv.x < -dv.y ? (CMD_LEFT | CMD_UP) : (CMD_RIGHT | CMD_DOWN);
-		default:
-			CASSERT(false, "unknown direction");
-			return 0;
+	case DIRECTION_UP:
+	case DIRECTION_DOWN: // fallthrough
+		return dv.x < 0 ? CMD_LEFT : CMD_RIGHT;
+	case DIRECTION_UPLEFT:
+	case DIRECTION_DOWNRIGHT: // fallthrough
+		return dv.x > dv.y ? (CMD_RIGHT | CMD_UP) : (CMD_LEFT | CMD_DOWN);
+	case DIRECTION_LEFT:
+	case DIRECTION_RIGHT: // fallthrough
+		return dv.y < 0 ? CMD_UP : CMD_DOWN;
+	case DIRECTION_DOWNLEFT:
+	case DIRECTION_UPRIGHT: // fallthrough
+		return dv.x < -dv.y ? (CMD_LEFT | CMD_UP) : (CMD_RIGHT | CMD_DOWN);
+	default:
+		CASSERT(false, "unknown direction");
+		return 0;
 	}
 }

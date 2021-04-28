@@ -208,11 +208,13 @@ const Character *ActorGetCharacter(const TActor *a);
 #define ACTOR_GET_GRENADE(a) (&(a)->guns[(a)->grenadeIndex + MAX_GUNS])
 #define ACTOR_GET_WEAPON(a)                                                   \
 	(ACTOR_GET_GUN(a)->Gun != NULL ? ACTOR_GET_GUN(a) : ACTOR_GET_GRENADE(a))
-struct vec2 ActorGetWeaponMuzzleOffset(const TActor *a);
-struct vec2 ActorGetMuzzleOffset(const TActor *a, const Weapon *w);
+struct vec2 ActorGetAverageWeaponMuzzleOffset(const TActor *a);
+struct vec2 ActorGetMuzzleOffset(
+	const TActor *a, const Weapon *w, const int barrel);
 // Returns -1 if gun does not use ammo
 int ActorWeaponGetAmmo(const TActor *a, const WeaponClass *wc);
-bool ActorCanFireWeapon(const TActor *a, const Weapon *w);
+// Returns -1 if no barrels can fire
+int ActorGetCanFireBarrel(const TActor *a, const Weapon *w);
 bool ActorTrySwitchWeapon(const TActor *a, const bool allGuns);
 // Returns -1 if actor doesn't have gun
 int ActorFindGun(const TActor *a, const WeaponClass *wc);
@@ -223,8 +225,8 @@ void ActorSwitchGun(const NActorSwitchGun sg);
 bool ActorIsImmune(const TActor *actor, const special_damage_e damage);
 void ActorHit(const NThingDamage d);
 bool ActorIsInvulnerable(
-	const TActor *a, const int flags, const int playerUID,
-	const GameMode mode, const special_damage_e special);
+	const TActor *a, const int flags, const int playerUID, const GameMode mode,
+	const special_damage_e special);
 
 int ActorGetHealthPercent(const TActor *a);
 bool ActorIsLowHealth(const TActor *a);

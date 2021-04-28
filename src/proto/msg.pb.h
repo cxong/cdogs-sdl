@@ -86,6 +86,7 @@ typedef struct _NGameBegin {
 
 typedef struct _NGunState {
     uint32_t ActorUID;
+    int32_t Barrel;
     int32_t State;
 } NGunState;
 
@@ -408,7 +409,7 @@ extern "C" {
 #define NRemoveBullet_init_default               {0}
 #define NGunReload_init_default                  {0, "", false, NVec2_init_default, 0}
 #define NGunFire_init_default                    {0, "", false, NVec2_init_default, 0, 0, 0, 0, 0}
-#define NGunState_init_default                   {0, 0}
+#define NGunState_init_default                   {0, 0, 0}
 #define NAddBullet_init_default                  {0, "", false, NVec2_init_default, 0, 0, 0, 0, 0}
 #define NTrigger_init_default                    {0, false, NVec2i_init_default}
 #define NExploreTiles_init_default               {0, {NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default}}
@@ -457,7 +458,7 @@ extern "C" {
 #define NRemoveBullet_init_zero                  {0}
 #define NGunReload_init_zero                     {0, "", false, NVec2_init_zero, 0}
 #define NGunFire_init_zero                       {0, "", false, NVec2_init_zero, 0, 0, 0, 0, 0}
-#define NGunState_init_zero                      {0, 0}
+#define NGunState_init_zero                      {0, 0, 0}
 #define NAddBullet_init_zero                     {0, "", false, NVec2_init_zero, 0, 0, 0, 0, 0}
 #define NTrigger_init_zero                       {0, false, NVec2i_init_zero}
 #define NExploreTiles_init_zero                  {0, {NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero}}
@@ -502,7 +503,8 @@ extern "C" {
 #define NConfig_Value_tag                        2
 #define NGameBegin_MissionTime_tag               1
 #define NGunState_ActorUID_tag                   1
-#define NGunState_State_tag                      2
+#define NGunState_Barrel_tag                     2
+#define NGunState_State_tag                      3
 #define NMapObjectRemove_UID_tag                 1
 #define NMapObjectRemove_ActorUID_tag            2
 #define NMapObjectRemove_Flags_tag               3
@@ -974,7 +976,8 @@ X(a, STATIC,   SINGULAR, BOOL,     IsGun,             8)
 
 #define NGunState_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UINT32,   ActorUID,          1) \
-X(a, STATIC,   SINGULAR, INT32,    State,             2)
+X(a, STATIC,   SINGULAR, INT32,    Barrel,            2) \
+X(a, STATIC,   SINGULAR, INT32,    State,             3)
 #define NGunState_CALLBACK NULL
 #define NGunState_DEFAULT NULL
 
@@ -1183,7 +1186,7 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 #define NRemoveBullet_size                       6
 #define NGunReload_size                          164
 #define NGunFire_size                            179
-#define NGunState_size                           17
+#define NGunState_size                           28
 #define NAddBullet_size                          192
 #define NTrigger_size                            30
 #define NExploreTiles_size                       592

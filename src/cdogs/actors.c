@@ -228,14 +228,18 @@ static void ActorUpdateWeapon(TActor *a, Weapon *w, const int ticks)
 	}
 	WeaponUpdate(w, ticks);
 	ActorFireUpdate(w, a, ticks);
-	if (WeaponClassHasMuzzle(w->Gun) && WeaponIsOverheating(w))
+	for (int i = 0; i < w->Gun->Barrel.Count; i++)
 	{
-		AddParticle ap;
-		memset(&ap, 0, sizeof ap);
-		ap.Pos = svec2_add(a->Pos, ActorGetMuzzleOffset(a, w));
-		ap.Z = WeaponClassGetMuzzleHeight(w->Gun, w->state) / Z_FACTOR;
-		ap.Mask = colorWhite;
-		EmitterUpdate(&a->barrelSmoke, &ap, ticks);
+		if (WeaponBarrelIsOverheating(w, i))
+		{
+			AddParticle ap;
+			memset(&ap, 0, sizeof ap);
+			ap.Pos = svec2_add(a->Pos, ActorGetMuzzleOffset(a, w, i));
+			ap.Z = WeaponClassGetMuzzleHeight(w->Gun, w->barrels[i].state) /
+				   Z_FACTOR;
+			ap.Mask = colorWhite;
+			EmitterUpdate(&a->barrelSmoke, &ap, ticks);
+		}
 	}
 }
 
@@ -276,8 +280,8 @@ bool TryMoveActor(TActor *actor, struct vec2 pos)
 			const TObject *object = target->kind == KIND_OBJECT
 										? CArrayGet(&gObjs, target->id)
 										: NULL;
-			if (ActorCanFireWeapon(actor, gun) && !gun->Gun->CanShoot &&
-				actor->health > 0 &&
+			const int barrel = ActorGetCanFireBarrel(actor, gun);
+			if (barrel >= 0 && !gun->Gun->CanShoot && actor->health > 0 &&
 				(!object ||
 				 (gun->Gun->Bullet->HitsObjects && !ObjIsDangerous(object))))
 			{
@@ -306,16 +310,12 @@ bool TryMoveActor(TActor *actor, struct vec2 pos)
 						CASSERT(false, "cannot damage target kind");
 						break;
 					}
-					gun->lock = gun->Gun->Lock;
-					if (gun->soundLock <= 0)
-					{
-						gun->soundLock += gun->Gun->SoundLockLength;
-					}
-					else
+					if (gun->barrels[barrel].soundLock > 0)
 					{
 						e.u.Melee.HitType = (int)HIT_NONE;
 					}
 					GameEventsEnqueue(&gGameEvents, e);
+					WeaponBarrelOnFire(gun, barrel);
 
 					// Only set grimace when counter 0 so that the actor
 					// alternates their grimace
@@ -738,9 +738,10 @@ static void FireWeapon(TActor *a, Weapon *w)
 	{
 		return;
 	}
-	if (!ActorCanFireWeapon(a, w))
+	const int barrel = ActorGetCanFireBarrel(a, w);
+	if (barrel == -1)
 	{
-		if (!WeaponIsLocked(w) && gCampaign.Setting.Ammo)
+		if (WeaponGetUnlockedBarrel(w) >= 0 && gCampaign.Setting.Ammo)
 		{
 			CASSERT(
 				ActorWeaponGetAmmo(a, w->Gun) == 0, "should be out of ammo");
@@ -756,7 +757,7 @@ static void FireWeapon(TActor *a, Weapon *w)
 		}
 		return;
 	}
-	ActorFire(w, a);
+	ActorFireBarrel(w, a, barrel);
 	if (a->PlayerUID >= 0)
 	{
 		if (gCampaign.Setting.Ammo && w->Gun->AmmoId >= 0)
@@ -809,12 +810,21 @@ static bool ActorTryShoot(TActor *actor, const int cmd)
 	{
 		FireWeapon(actor, ACTOR_GET_GUN(actor));
 	}
-	else if (ACTOR_GET_GUN(actor)->state != GUNSTATE_READY)
+	else
 	{
-		GameEvent e = GameEventNew(GAME_EVENT_GUN_STATE);
-		e.u.GunState.ActorUID = actor->uid;
-		e.u.GunState.State = GUNSTATE_READY;
-		GameEventsEnqueue(&gGameEvents, e);
+		// Stop firing barrel and restore ready state
+		const Weapon *w = ACTOR_GET_GUN(actor);
+		for (int i = 0; i < w->Gun->Barrel.Count; i++)
+		{
+			if (w->barrels[i].state == GUNSTATE_FIRING)
+			{
+				GameEvent e = GameEventNew(GAME_EVENT_GUN_STATE);
+				e.u.GunState.ActorUID = actor->uid;
+				e.u.GunState.Barrel = i;
+				e.u.GunState.State = GUNSTATE_READY;
+				GameEventsEnqueue(&gGameEvents, e);
+			}
+		}
 	}
 	return willShoot;
 }
@@ -1438,15 +1448,23 @@ const Character *ActorGetCharacter(const TActor *a)
 	return CArrayGet(&gCampaign.Setting.characters.OtherChars, a->charId);
 }
 
-struct vec2 ActorGetWeaponMuzzleOffset(const TActor *a)
+struct vec2 ActorGetAverageWeaponMuzzleOffset(const TActor *a)
 {
-	return ActorGetMuzzleOffset(a, ACTOR_GET_WEAPON(a));
+	const Weapon *w = ACTOR_GET_WEAPON(a);
+	struct vec2 offset = svec2_zero();
+	for (int i = 0; i < w->Gun->Barrel.Count; i++)
+	{
+		offset = svec2_add(offset, ActorGetMuzzleOffset(a, w, i));
+	}
+	return svec2_scale(offset, 1.0f / (float)w->Gun->Barrel.Count);
 }
-struct vec2 ActorGetMuzzleOffset(const TActor *a, const Weapon *w)
+struct vec2 ActorGetMuzzleOffset(
+	const TActor *a, const Weapon *w, const int barrel)
 {
 	const Character *c = ActorGetCharacter(a);
 	const CharSprites *cs = c->Class->Sprites;
-	return WeaponClassGetMuzzleOffset(w->Gun, cs, a->direction, w->state);
+	return WeaponClassGetBarrelMuzzleOffset(
+		w->Gun, cs, barrel, a->direction, w->barrels[barrel].state);
 }
 int ActorWeaponGetAmmo(const TActor *a, const WeaponClass *wc)
 {
@@ -1456,14 +1474,18 @@ int ActorWeaponGetAmmo(const TActor *a, const WeaponClass *wc)
 	}
 	return *(int *)CArrayGet(&a->ammo, wc->AmmoId);
 }
-bool ActorCanFireWeapon(const TActor *a, const Weapon *w)
+int ActorGetCanFireBarrel(const TActor *a, const Weapon *w)
 {
 	if (w->Gun == NULL)
 	{
-		return false;
+		return -1;
 	}
 	const bool hasAmmo = ActorWeaponGetAmmo(a, w->Gun) != 0;
-	return !WeaponIsLocked(w) && (!gCampaign.Setting.Ammo || hasAmmo);
+	if (gCampaign.Setting.Ammo && !hasAmmo)
+	{
+		return -1;
+	}
+	return WeaponGetUnlockedBarrel(w);
 }
 bool ActorTrySwitchWeapon(const TActor *a, const bool allGuns)
 {
@@ -1752,9 +1774,16 @@ bool ActorIsLowHealth(const TActor *a)
 bool ActorIsGrimacing(const TActor *a)
 {
 	const Weapon *gun = ACTOR_GET_WEAPON(a);
-	if (gun->state == GUNSTATE_FIRING || gun->state == GUNSTATE_RECOIL)
+	if (gun->Gun)
 	{
-		return true;
+		for (int i = 0; i < gun->Gun->Barrel.Count; i++)
+		{
+			if (gun->barrels[i].state == GUNSTATE_FIRING ||
+				gun->barrels[i].state == GUNSTATE_RECOIL)
+			{
+				return true;
+			}
+		}
 	}
 	return (a->grimaceCounter % GRIMACE_PERIOD) > GRIMACE_PERIOD / 2;
 }

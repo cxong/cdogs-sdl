@@ -357,18 +357,23 @@ static void DrawWeaponStatus(
 		FontStrOpt(buf, svec2i_zero(), opts);
 	}
 
-	// Draw reload ball
-	if (weapon->lock > 0)
+	// Draw reload balls
+	for (int i = 0; i < weapon->Gun->Barrel.Count; i++)
 	{
-		const int maxLock = weapon->Gun->Lock;
-		const Pic *ballPic = PicManagerGetPic(pm, "hud/gauge_small_ball");
-		const int ballAreaWidth = AMMO_WIDTH - 6;
-		const struct vec2i ballPos = svec2i(
-			pos.x + MAX(0, ballAreaWidth * (maxLock - weapon->lock) / maxLock),
-			pos.y + 1);
-		PicRender(
-			ballPic, g->gameWindow.renderer, ballPos, colorWhite, 0.0,
-			svec2_one(), SDL_FLIP_NONE, Rect2iZero());
+		if (weapon->barrels[i].lock > 0)
+		{
+			const int maxLock = weapon->Gun->Lock;
+			const Pic *ballPic = PicManagerGetPic(pm, "hud/gauge_small_ball");
+			const int ballAreaWidth = AMMO_WIDTH - 6;
+			const struct vec2i ballPos = svec2i(
+				pos.x +
+					MAX(0, ballAreaWidth *
+							   (maxLock - weapon->barrels[i].lock) / maxLock),
+				pos.y + 1);
+			PicRender(
+				ballPic, g->gameWindow.renderer, ballPos, colorWhite, 0.0,
+				svec2_one(), SDL_FLIP_NONE, Rect2iZero());
+		}
 	}
 }
 

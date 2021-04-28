@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2020 Cong Xu
+	Copyright (c) 2013-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -150,9 +150,10 @@ ActorPics GetCharacterPicsFromActor(TActor *a)
 	const direction_e dir = RadiansToDirection(a->DrawRadians);
 	int frame;
 	const direction_e legDir = GetLegDirAndFrame(a, dir, &frame);
+	// TODO: both barrel states
 	return GetCharacterPics(
 		c, dir, legDir, a->anim.Type, frame,
-		gun->Gun != NULL ? gun->Gun->Sprites : NULL, gun->state,
+		gun->Gun != NULL ? gun->Gun->Sprites : NULL, gun->barrels[0].state,
 		ActorIsGrimacing(a), shadowMask, maskP, colors, a->dead);
 }
 static const Pic *GetBodyPic(
@@ -387,23 +388,28 @@ void DrawLaserSight(
 	// Draw weapon indicators
 	const Weapon *w = ACTOR_GET_WEAPON(a);
 	const WeaponClass *wc = w->Gun;
-	struct vec2i muzzlePos =
-		svec2i_add(picPos, svec2i_assign_vec2(ActorGetMuzzleOffset(a, w)));
-	muzzlePos.y -= wc->MuzzleHeight / Z_FACTOR;
-	const float radians = dir2radians[a->direction] + wc->AngleOffset;
-	const int range = (int)WeaponClassGetRange(wc);
-	color_t color = colorCyan;
-	color.a = 64;
-	const float spreadHalf =
-		(wc->Spread.Count - 1) * wc->Spread.Width / 2 + wc->Recoil / 2;
-	if (spreadHalf > 0)
+	for (int i = 0; i < wc->Barrel.Count; i++)
 	{
-		DrawLaserSightSingle(muzzlePos, radians - spreadHalf, range, color);
-		DrawLaserSightSingle(muzzlePos, radians + spreadHalf, range, color);
-	}
-	else
-	{
-		DrawLaserSightSingle(muzzlePos, radians, range, color);
+		struct vec2i muzzlePos = svec2i_add(
+			picPos, svec2i_assign_vec2(ActorGetMuzzleOffset(a, w, i)));
+		muzzlePos.y -= wc->MuzzleHeight / Z_FACTOR;
+		const float radians = dir2radians[a->direction] + wc->AngleOffset;
+		const int range = (int)WeaponClassGetRange(wc);
+		color_t color = colorCyan;
+		color.a = 64;
+		const float spreadHalf =
+			(wc->Spread.Count - 1) * wc->Spread.Width / 2 + wc->Recoil / 2;
+		if (spreadHalf > 0)
+		{
+			DrawLaserSightSingle(
+				muzzlePos, radians - spreadHalf, range, color);
+			DrawLaserSightSingle(
+				muzzlePos, radians + spreadHalf, range, color);
+		}
+		else
+		{
+			DrawLaserSightSingle(muzzlePos, radians, range, color);
+		}
 	}
 }
 static void DrawLaserSightSingle(

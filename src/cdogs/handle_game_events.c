@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2020 Cong Xu
+	Copyright (c) 2014-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -152,8 +152,8 @@ static void HandleGameEvent(
 		break;
 	case GAME_EVENT_SOUND_AT:
 		SoundPlayAtPlusDistance(
-			sd, StrSound(e.u.SoundAt.Sound),
-			NetToVec2(e.u.SoundAt.Pos), e.u.SoundAt.Distance);
+			sd, StrSound(e.u.SoundAt.Sound), NetToVec2(e.u.SoundAt.Pos),
+			e.u.SoundAt.Distance);
 		break;
 	case GAME_EVENT_SCREEN_SHAKE:
 		if (e.u.Shake.CameraSubjectOnly &&
@@ -361,9 +361,7 @@ static void HandleGameEvent(
 	case GAME_EVENT_ADD_PICKUP:
 		PickupAdd(e.u.AddPickup);
 		// Play a spawn sound
-		SoundPlayAt(
-			sd, StrSound("spawn_item"),
-			NetToVec2(e.u.AddPickup.Pos));
+		SoundPlayAt(sd, StrSound("spawn_item"), NetToVec2(e.u.AddPickup.Pos));
 		break;
 	case GAME_EVENT_REMOVE_PICKUP:
 		PickupDestroy(e.u.RemovePickup.UID);
@@ -467,7 +465,9 @@ static void HandleGameEvent(
 		TActor *a = ActorGetByUID(e.u.GunState.ActorUID);
 		if (!a->isInUse)
 			break;
-		WeaponSetState(ACTOR_GET_WEAPON(a), (gunstate_e)e.u.GunState.State);
+		WeaponBarrelSetState(
+			ACTOR_GET_WEAPON(a), e.u.GunState.Barrel,
+			(gunstate_e)e.u.GunState.State);
 	}
 	break;
 	case GAME_EVENT_ADD_BULLET:

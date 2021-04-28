@@ -1,29 +1,29 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2019 Cong Xu
-    All rights reserved.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (c) 2013-2019, 2021 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #pragma once
 
@@ -71,19 +71,19 @@ typedef struct
 	char *name;
 	char *Description;
 	const BulletClass *Bullet;
-	int AmmoId;			// -1 if the gun does not consume ammo
-	int Cost;			// Cost in score to fire weapon
+	int AmmoId; // -1 if the gun does not consume ammo
+	int Cost;	// Cost in score to fire weapon
 	int Lock;
 	int ReloadLead;
 	Mix_Chunk *Sound;
 	Mix_Chunk *ReloadSound;
 	Mix_Chunk *SwitchSound;
 	int SoundLockLength;
-	float Recoil;		// Random recoil for inaccurate weapons, in radians
+	float Recoil; // Random recoil for inaccurate weapons, in radians
 	struct
 	{
-		int Count;		// Number of bullets in spread
-		float Width;	// Width of individual spread, in radians
+		int Count;	 // Number of bullets in spread
+		float Width; // Width of individual spread, in radians
 	} Spread;
 	float AngleOffset;
 	int MuzzleHeight;
@@ -92,41 +92,45 @@ typedef struct
 	const ParticleClass *MuzzleFlash;
 	const ParticleClass *Brass;
 	bool CanShoot;
-	bool CanDrop;	// whether this gun can be dropped to be picked up
+	bool CanDrop; // whether this gun can be dropped to be picked up
 	struct
 	{
-		int Amount;	// Amount of screen shake to produce
-		bool CameraSubjectOnly;	// Only shake if gun held by camera subject
+		int Amount;				// Amount of screen shake to produce
+		bool CameraSubjectOnly; // Only shake if gun held by camera subject
 	} Shake;
-	bool IsRealGun;	// whether this gun can be used as is by players
+	struct
+	{
+		int Count;
+		int Lock;
+	} Barrel;
+	bool IsRealGun; // whether this gun can be used as is by players
 } WeaponClass;
 typedef struct
 {
-	CArray Guns;	// of WeaponClass
+	CArray Guns; // of WeaponClass
 	WeaponClass Default;
-	CArray CustomGuns;	// of WeaponClass
+	CArray CustomGuns; // of WeaponClass
 } WeaponClasses;
 
 extern WeaponClasses gWeaponClasses;
 
 void WeaponClassesInitialize(WeaponClasses *wcs);
-void WeaponClassesLoadJSON(
-	WeaponClasses *wcs, CArray *classes, json_t *root);
+void WeaponClassesLoadJSON(WeaponClasses *wcs, CArray *classes, json_t *root);
 void WeaponClassesClear(CArray *classes);
 void WeaponClassesTerminate(WeaponClasses *wcs);
 const WeaponClass *StrWeaponClass(const char *s);
 WeaponClass *IdWeaponClass(const int i);
 int WeaponClassId(const WeaponClass *wc);
 WeaponClass *IndexWeaponClassReal(const int i);
-struct vec2 WeaponClassGetMuzzleOffset(
-	const WeaponClass *desc, const CharSprites *cs,
-	const direction_e dir, const gunstate_e state);
-float WeaponClassGetMuzzleHeight(const WeaponClass *wc, const gunstate_e state);
+struct vec2 WeaponClassGetBarrelMuzzleOffset(
+	const WeaponClass *wc, const CharSprites *cs, const int barrel,
+	direction_e dir, const gunstate_e state);
+float WeaponClassGetMuzzleHeight(
+	const WeaponClass *wc, const gunstate_e state);
 
 void WeaponClassFire(
 	const WeaponClass *wc, const struct vec2 pos, const float z,
-	const double radians,
-	const int flags, const int actorUID,
+	const double radians, const int flags, const int actorUID,
 	const bool playSound, const bool isGun);
 void WeaponClassAddBrass(
 	const WeaponClass *wc, const direction_e d, const struct vec2 pos);
@@ -140,4 +144,5 @@ const Pic *WeaponClassGetIcon(const WeaponClass *wc);
 
 // Initialise bullets and weapons in one go
 void BulletAndWeaponInitialize(
-	BulletClasses *b, WeaponClasses *wcs, const char *bpath, const char *gpath);
+	BulletClasses *b, WeaponClasses *wcs, const char *bpath,
+	const char *gpath);

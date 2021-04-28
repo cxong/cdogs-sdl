@@ -1,5 +1,5 @@
 {
-  "Version": 1,
+  "Version": 3,
   "Guns": [
 	{
 	  "Name": "Spread Gun",
@@ -77,6 +77,21 @@
       "Lock": 1,
       "Sound": "",
       "MuzzleFlashParticle": ""
+    },
+    {
+      "Name": "Akimbo Pistols",
+      "Icon": "akimbo_pistols",
+      "Bullet": "9mm",
+      "Cost": 1,
+      "Lock": 18,
+      "Sound": "pistol",
+      "SwitchSound": "pistol_switch",
+      "Recoil": 0.15,
+      "Brass": "brass",
+	  "Barrel": {
+		  "Count": 2,
+		  "Lock": 9
+	  }
     }
   ],
   "PseudoGuns" : [

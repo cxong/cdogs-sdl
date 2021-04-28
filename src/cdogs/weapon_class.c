@@ -274,6 +274,15 @@ static void LoadGunDescription(
 		LoadBool(&wc->Shake.CameraSubjectOnly, shake, "CameraSubjectOnly");
 	}
 
+	wc->Barrel.Count = 1;
+	wc->Barrel.Lock = 0;
+	if (json_find_first_label(node, "Barrel"))
+	{
+		json_t *barrel = json_find_first_label(node, "Barrel")->child;
+		LoadInt(&wc->Barrel.Count, barrel, "Count");
+		LoadInt(&wc->Barrel.Lock, barrel, "Lock");
+	}
+
 	wc->IsRealGun = true;
 
 	if (version < 2)
@@ -443,8 +452,7 @@ void WeaponClassAddBrass(
 		svec2_scale(Vec2FromRadiansScaled(radians), 7);
 	e.u.AddParticle.Pos = svec2_subtract(pos, ejectionPortOffset);
 	e.u.AddParticle.Z = (float)wc->MuzzleHeight;
-	e.u.AddParticle.Vel =
-		svec2_scale(Vec2FromRadians(radians + MPI_2), 0.333333f);
+	e.u.AddParticle.Vel = svec2_scale(Vec2FromRadians(radians), 0.333333f);
 	e.u.AddParticle.Vel.x += RAND_FLOAT(-0.25f, 0.25f);
 	e.u.AddParticle.Vel.y += RAND_FLOAT(-0.25f, 0.25f);
 	e.u.AddParticle.Angle = RAND_DOUBLE(0, MPI * 2);
@@ -455,17 +463,29 @@ void WeaponClassAddBrass(
 
 static struct vec2 GetMuzzleOffset(
 	const direction_e d, const gunstate_e state);
-struct vec2 WeaponClassGetMuzzleOffset(
-	const WeaponClass *desc, const CharSprites *cs, const direction_e dir,
-	const gunstate_e state)
+struct vec2 WeaponClassGetBarrelMuzzleOffset(
+	const WeaponClass *wc, const CharSprites *cs, const int barrel,
+	direction_e dir, const gunstate_e state)
 {
-	if (!WeaponClassHasMuzzle(desc))
+	if (!WeaponClassHasMuzzle(wc))
 	{
 		return svec2_zero();
 	}
-	CASSERT(desc->Sprites != NULL, "Gun has no pic");
+	CASSERT(wc->Sprites != NULL, "Gun has no pic");
+	CASSERT(barrel < 2, "up to two barrels supported");
+	// For the other barrel, mirror dir and offset along X axis
+	if (barrel == 1)
+	{
+		dir = DirectionMirrorX(dir);
+	}
 	const struct vec2 gunOffset = cs->Offsets.Dir[BODY_PART_GUN][dir];
-	return svec2_add(gunOffset, GetMuzzleOffset(dir, state));
+	const struct vec2 offset =
+		svec2_add(gunOffset, GetMuzzleOffset(dir, state));
+	if (barrel == 1)
+	{
+		return svec2(-offset.x, offset.y);
+	}
+	return offset;
 }
 static struct vec2 GetMuzzleOffset(const direction_e d, const gunstate_e state)
 {

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2019 Cong Xu
+    Copyright (c) 2013-2019, 2021 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -54,98 +54,125 @@ Weapon WeaponCreate(const WeaponClass *wc)
 	Weapon w;
 	memset(&w, 0, sizeof w);
 	w.Gun = wc;
-	w.state = GUNSTATE_READY;
-	w.lock = 0;
-	w.soundLock = 0;
-	w.stateCounter = -1;
+	if (wc != NULL)
+	{
+		for (int i = 0; i < wc->Barrel.Count; i++)
+		{
+			w.barrels[i].state = GUNSTATE_READY;
+			w.barrels[i].stateCounter = -1;
+		}
+	}
 	return w;
 }
 
 void WeaponUpdate(Weapon *w, const int ticks)
 {
-	w->lock -= ticks;
-	if (w->lock < 0)
-	{
-		w->lock = 0;
-	}
-	w->soundLock -= ticks;
-	if (w->soundLock < 0)
-	{
-		w->soundLock = 0;
-	}
 	w->clickLock -= ticks;
 	if (w->clickLock < 0)
 	{
 		w->clickLock = 0;
 	}
-	if (w->stateCounter >= 0)
+	for (int i = 0; i < w->Gun->Barrel.Count; i++)
 	{
-		w->stateCounter = MAX(0, w->stateCounter - ticks);
-		if (w->stateCounter == 0)
+		w->barrels[i].lock -= ticks;
+		if (w->barrels[i].lock < 0)
 		{
-			switch (w->state)
+			w->barrels[i].lock = 0;
+		}
+		w->barrels[i].soundLock -= ticks;
+		if (w->barrels[i].soundLock < 0)
+		{
+			w->barrels[i].soundLock = 0;
+		}
+		if (w->barrels[i].stateCounter >= 0)
+		{
+			w->barrels[i].stateCounter =
+				MAX(0, w->barrels[i].stateCounter - ticks);
+			if (w->barrels[i].stateCounter == 0)
 			{
-			case GUNSTATE_FIRING:
-				WeaponSetState(w, GUNSTATE_RECOIL);
-				break;
-			case GUNSTATE_RECOIL:
-				WeaponSetState(w, GUNSTATE_FIRING);
-				break;
-			default:
-				// do nothing
-				break;
+				switch (w->barrels[i].state)
+				{
+				case GUNSTATE_FIRING:
+					WeaponBarrelSetState(w, i, GUNSTATE_RECOIL);
+					break;
+				case GUNSTATE_RECOIL:
+					WeaponBarrelSetState(w, i, GUNSTATE_FIRING);
+					break;
+				default:
+					// do nothing
+					break;
+				}
 			}
 		}
+		w->barrels[i].heatCounter -= ticks;
+		if (w->barrels[i].heatCounter < 0)
+		{
+			w->barrels[i].heatCounter = 0;
+		}
 	}
-	w->heatCounter -= ticks;
-	if (w->heatCounter < 0)
+}
+
+int WeaponGetUnlockedBarrel(const Weapon *w)
+{
+	// To fire:
+	// One barrel has lock == 0
+	// No other barrel has lock > (gun lock - barrel lock)
+	int unlockedBarrel = -1;
+	for (int i = 0; i < w->Gun->Barrel.Count; i++)
 	{
-		w->heatCounter = 0;
+		if (w->barrels[i].lock == 0)
+		{
+			unlockedBarrel = i;
+		}
+		else if (w->barrels[i].lock > (w->Gun->Lock - w->Gun->Barrel.Lock))
+		{
+			return -1;
+		}
 	}
+	return unlockedBarrel;
 }
 
-bool WeaponIsLocked(const Weapon *w)
+void WeaponBarrelSetState(Weapon *w, const int barrel, const gunstate_e state)
 {
-	return w->lock > 0;
-}
-
-void WeaponSetState(Weapon *w, const gunstate_e state)
-{
-	w->state = state;
+	w->barrels[barrel].state = state;
 	switch (state)
 	{
 	case GUNSTATE_FIRING:
-		w->stateCounter = 4;
+		w->barrels[barrel].stateCounter = 4;
 		break;
 	case GUNSTATE_RECOIL:
 		// This is to make sure the gun stays recoiled as long as the gun is
 		// "locked", i.e. cannot fire
-		w->stateCounter = MAX(1, w->lock - 3);
+		w->barrels[barrel].stateCounter = MAX(1, w->barrels[barrel].lock - 3);
 		break;
 	default:
-		w->stateCounter = -1;
+		w->barrels[barrel].stateCounter = -1;
 		break;
 	}
 }
 
-void WeaponOnFire(Weapon *w)
+void WeaponBarrelOnFire(Weapon *w, const int barrel)
 {
-	if (w->soundLock <= 0)
+	if (w->barrels[barrel].soundLock <= 0)
 	{
-		w->soundLock = w->Gun->SoundLockLength;
+		w->barrels[barrel].soundLock = w->Gun->SoundLockLength;
 	}
 
-	w->heatCounter += w->Gun->Lock * 2;
+	w->barrels[barrel].heatCounter += w->Gun->Lock * 2;
 	// 2 seconds of overheating max
-	if (w->heatCounter > FPS_FRAMELIMIT * 3)
+	if (w->barrels[barrel].heatCounter > FPS_FRAMELIMIT * 3)
 	{
-		w->heatCounter = FPS_FRAMELIMIT * 3;
+		w->barrels[barrel].heatCounter = FPS_FRAMELIMIT * 3;
 	}
-	w->lock = w->Gun->Lock;
+	w->barrels[barrel].lock = w->Gun->Lock;
 }
 
-bool WeaponIsOverheating(const Weapon *w)
+bool WeaponBarrelIsOverheating(const Weapon *w, const int idx)
 {
+	if (!WeaponClassHasMuzzle(w->Gun))
+	{
+		return false;
+	}
 	// Overheat after 1 second of continuous firing
-	return w->heatCounter > FPS_FRAMELIMIT;
+	return w->barrels[idx].heatCounter > FPS_FRAMELIMIT;
 }

@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2015, 2017-2018, 2020 Cong Xu
+	Copyright (c) 2013-2015, 2017-2018, 2020-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -345,7 +345,7 @@ static int SmartGoto(
 		svec2i_is_equal(tilePos, actor->aiContext->LastTile))
 	{
 		cmd = AIGoto(actor, o->thing.Pos, true);
-		if (ACTOR_GET_WEAPON(actor)->lock <= 0)
+		if (ActorGetCanFireBarrel(actor, ACTOR_GET_WEAPON(actor)) >= 0)
 		{
 			cmd |= CMD_BUTTON1;
 		}
@@ -816,7 +816,9 @@ static int GotoObjective(TActor *actor, const float objDistance2)
 	{
 		cmd = SmartGoto(actor, goal, objDistance2);
 	}
-	else if (isDestruction && ACTOR_GET_WEAPON(actor)->lock <= 0)
+	else if (
+		isDestruction &&
+		ActorGetCanFireBarrel(actor, ACTOR_GET_WEAPON(actor)) >= 0)
 	{
 		cmd = AIHunt(actor, goal);
 		if (AIHasClearShot(actor->Pos, goal))
