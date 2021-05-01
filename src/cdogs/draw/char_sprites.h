@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2017 Cong Xu
+    Copyright (c) 2017, 2021 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -35,12 +35,12 @@
 typedef struct
 {
 	char *Name;
-	BodyPart Order[DIRECTION_COUNT][BODY_PART_COUNT];
+	BodyPart Order[DIRECTION_COUNT][BODY_PART_COUNT + MAX_BARRELS - 1];
 	struct
 	{
 		// Offsets by animation frame
 		// of CArray of struct vec2i, mapped by animation and indexed by frame
-		map_t Frame[BODY_PART_COUNT];
+		map_t Frame[BODY_PART_COUNT + MAX_BARRELS - 1];
 		// Offsets by direction
 		struct vec2 Dir[BODY_PART_COUNT][DIRECTION_COUNT];
 	} Offsets;

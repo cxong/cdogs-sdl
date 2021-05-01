@@ -83,7 +83,8 @@ static struct vec2i GetActorDrawOffset(
 					cs->Offsets.Frame[part],
 					anim == ACTORANIMATION_WALKING ? "run" : "idle", frame));
 	offset = svec2i_add(offset, svec2i_assign_vec2(cs->Offsets.Dir[part][d]));
-	if (part == BODY_PART_GUN && state == GUNSTATE_RECOIL)
+	if ((part == BODY_PART_GUN_R || part == BODY_PART_GUN_L) &&
+		state == GUNSTATE_RECOIL)
 	{
 		// Offset the gun pic towards the player
 		const struct vec2i recoilOffsets[DIRECTION_COUNT] = {
@@ -150,10 +151,14 @@ ActorPics GetCharacterPicsFromActor(TActor *a)
 	const direction_e dir = RadiansToDirection(a->DrawRadians);
 	int frame;
 	const direction_e legDir = GetLegDirAndFrame(a, dir, &frame);
-	// TODO: both barrel states
+	gunstate_e gunStates[MAX_BARRELS];
+	for (int i = 0; gun->Gun != NULL && i < gun->Gun->Barrel.Count; i++)
+	{
+		gunStates[i] = gun->barrels[i].state;
+	}
 	return GetCharacterPics(
 		c, dir, legDir, a->anim.Type, frame,
-		gun->Gun != NULL ? gun->Gun->Sprites : NULL, gun->barrels[0].state,
+		gun->Gun, gunStates,
 		ActorIsGrimacing(a), shadowMask, maskP, colors, a->dead);
 }
 static const Pic *GetBodyPic(
@@ -169,8 +174,8 @@ static const Pic *GetGunPic(
 static const Pic *GetDeathPic(PicManager *pm, const int frame);
 ActorPics GetCharacterPics(
 	const Character *c, const direction_e dir, const direction_e legDir,
-	const ActorAnimation anim, const int frame, const char *gunSprites,
-	const gunstate_e gunState, const bool isGrimacing,
+	const ActorAnimation anim, const int frame, const WeaponClass *gun,
+	const gunstate_e barrelStates[MAX_BARRELS], const bool isGrimacing,
 	const color_t shadowMask, const color_t *mask, const CharColors *colors,
 	const int deadPic)
 {
@@ -225,50 +230,60 @@ ActorPics GetCharacterPics(
 		else if (frame == IDLEHEAD_RIGHT)
 			headDir = (dir + 1) % 8;
 	}
-	const bool grimace = gunState == GUNSTATE_FIRING ||
-						 gunState == GUNSTATE_RECOIL || isGrimacing;
+	bool grimace = isGrimacing;
+	for (int i = 0; barrelStates != NULL && c->Gun && i < c->Gun->Barrel.Count; i++)
+	{
+		if (barrelStates[i] == GUNSTATE_FIRING || barrelStates[i] == GUNSTATE_RECOIL)
+		{
+			grimace = true;
+			break;
+		}
+	}
 	pics.Head = GetHeadPic(c->Class, headDir, grimace, colors);
 	pics.HeadOffset = GetActorDrawOffset(
 		pics.Head, BODY_PART_HEAD, c->Class->Sprites, anim, frame, dir,
-		gunState);
+		GUNSTATE_READY);
 	if (c->Class->HasHair)
 	{
 		pics.Hair = GetHairPic(c->Hair, headDir, grimace, colors);
 	}
 	pics.HairOffset = GetActorDrawOffset(
-		pics.Hair, BODY_PART_HAIR, c->Class->Sprites, anim, frame, dir,
-		gunState);
+		pics.Hair, BODY_PART_HAIR, c->Class->Sprites, anim, frame, dir, GUNSTATE_READY);
 
 	// Gun
-	pics.Gun = NULL;
-	if (gunSprites != NULL)
+	bool isArmed = false;
+	for (int i = 0; gun && gun->Sprites && i < gun->Barrel.Count; i++)
 	{
-		pics.Gun = GetGunPic(&gPicManager, gunSprites, dir, gunState, colors);
-		if (pics.Gun != NULL)
+		pics.Guns[i] = GetGunPic(&gPicManager, gun->Sprites, dir, barrelStates[i], colors);
+		if (pics.Guns[i] != NULL)
 		{
-			pics.GunOffset = GetActorDrawOffset(
-				pics.Gun, BODY_PART_GUN, c->Class->Sprites, anim, frame, dir,
-				gunState);
+			pics.GunOffsets[i] = GetActorDrawOffset(pics.Guns[i], i == 0 ? BODY_PART_GUN_R : BODY_PART_GUN_L, c->Class->Sprites, anim, frame, i == 0 ? dir : DirectionMirrorX(dir), barrelStates[i]);
+			if (i == 1)
+			{
+				const int xHalf = pics.Guns[i]->size.x / 2;
+				const int xOffsetOrig = pics.GunOffsets[i].x + xHalf;
+				pics.GunOffsets[i].x = -xOffsetOrig - xHalf;
+			}
+			isArmed = true;
 		}
 	}
-	const bool isArmed = pics.Gun != NULL;
 
 	// Body
 	pics.Body = GetBodyPic(
 		&gPicManager, c->Class->Sprites, dir, anim, frame, isArmed, colors);
 	pics.BodyOffset = GetActorDrawOffset(
 		pics.Body, BODY_PART_BODY, c->Class->Sprites, anim, frame, dir,
-		gunState);
+		GUNSTATE_READY);
 
 	// Legs
 	pics.Legs = GetLegsPic(
 		&gPicManager, c->Class->Sprites, legDir, anim, frame, colors);
 	pics.LegsOffset = GetActorDrawOffset(
 		pics.Legs, BODY_PART_LEGS, c->Class->Sprites, anim, frame, legDir,
-		gunState);
+		GUNSTATE_READY);
 
 	// Determine draw order based on the direction the player is facing
-	for (BodyPart bp = BODY_PART_HEAD; bp < BODY_PART_COUNT; bp++)
+	for (int bp = 0; bp < BODY_PART_COUNT; bp++)
 	{
 		const BodyPart drawOrder = c->Class->Sprites->Order[dir][bp];
 		switch (drawOrder)
@@ -289,9 +304,13 @@ ActorPics GetCharacterPics(
 			pics.OrderedPics[bp] = pics.Legs;
 			pics.OrderedOffsets[bp] = pics.LegsOffset;
 			break;
-		case BODY_PART_GUN:
-			pics.OrderedPics[bp] = pics.Gun;
-			pics.OrderedOffsets[bp] = pics.GunOffset;
+		case BODY_PART_GUN_R:
+			pics.OrderedPics[bp] = pics.Guns[0];
+			pics.OrderedOffsets[bp] = pics.GunOffsets[0];
+			break;
+		case BODY_PART_GUN_L:
+			pics.OrderedPics[bp] = pics.Guns[1];
+			pics.OrderedOffsets[bp] = pics.GunOffsets[1];
 			break;
 		default:
 			break;

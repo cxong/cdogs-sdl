@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2017, 2019-2020 Cong Xu
+	Copyright (c) 2013-2017, 2019-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -545,7 +545,8 @@ BodyPart StrBodyPart(const char *s)
 	S2T(BODY_PART_HAIR, "hair");
 	S2T(BODY_PART_BODY, "body");
 	S2T(BODY_PART_LEGS, "legs");
-	S2T(BODY_PART_GUN, "gun");
+	S2T(BODY_PART_GUN_R, "gun_r");
+	S2T(BODY_PART_GUN_L, "gun_l");
 	return BODY_PART_HEAD;
 }
 

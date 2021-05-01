@@ -75,19 +75,7 @@ void ActorFireUpdate(Weapon *w, const TActor *a, const int ticks)
 				const struct vec2 muzzlePosition =
 					svec2_add(a->Pos, muzzleOffset);
 				e.u.GunReload.Pos = Vec2ToNet(muzzlePosition);
-				CASSERT(i < 2, "up to two barrels supported");
-				if (i == 0)
-				{
-					// Right barrel, eject to the right
-					e.u.GunReload.Direction =
-						(int)DirectionRotate(a->direction, 2);
-				}
-				else
-				{
-					// Left barrel, eject to the left
-					e.u.GunReload.Direction =
-						(int)DirectionRotate(a->direction, -2);
-				}
+				e.u.GunReload.Direction = a->direction;
 				GameEventsEnqueue(&gGameEvents, e);
 			}
 		}

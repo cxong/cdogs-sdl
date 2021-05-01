@@ -144,13 +144,16 @@ static CharSprites *CharSpritesLoadJSON(const char *name, const char *path)
 		LoadFrameOffsets(node, "Offsets/Frame/Body");
 	c->Offsets.Frame[BODY_PART_LEGS] =
 		LoadFrameOffsets(node, "Offsets/Frame/Legs");
-	c->Offsets.Frame[BODY_PART_GUN] =
+	c->Offsets.Frame[BODY_PART_GUN_R] =
+		LoadFrameOffsets(node, "Offsets/Frame/Gun");
+	c->Offsets.Frame[BODY_PART_GUN_L] =
 		LoadFrameOffsets(node, "Offsets/Frame/Gun");
 	LoadDirOffsets(c->Offsets.Dir[BODY_PART_HEAD], node, "Offsets/Dir/Head");
 	LoadDirOffsets(c->Offsets.Dir[BODY_PART_HAIR], node, "Offsets/Dir/Hair");
 	LoadDirOffsets(c->Offsets.Dir[BODY_PART_BODY], node, "Offsets/Dir/Body");
 	LoadDirOffsets(c->Offsets.Dir[BODY_PART_LEGS], node, "Offsets/Dir/Legs");
-	LoadDirOffsets(c->Offsets.Dir[BODY_PART_GUN], node, "Offsets/Dir/Gun");
+	LoadDirOffsets(c->Offsets.Dir[BODY_PART_GUN_R], node, "Offsets/Dir/Gun");
+	LoadDirOffsets(c->Offsets.Dir[BODY_PART_GUN_L], node, "Offsets/Dir/Gun");
 
 bail:
 	yajl_tree_free(node);

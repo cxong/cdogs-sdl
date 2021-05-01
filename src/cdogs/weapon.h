@@ -50,8 +50,6 @@
 
 #include "weapon_class.h"
 
-#define MAX_BARRELS 2
-
 typedef struct
 {
 	gunstate_e state;

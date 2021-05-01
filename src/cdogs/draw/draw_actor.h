@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2014, 2016-2020 Cong Xu
+	Copyright (c) 2013-2014, 2016-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -63,11 +63,11 @@ typedef struct
 	struct vec2i BodyOffset;
 	const Pic *Legs;
 	struct vec2i LegsOffset;
-	const Pic *Gun;
-	struct vec2i GunOffset;
+	const Pic *Guns[MAX_BARRELS];
+	struct vec2i GunOffsets[MAX_BARRELS];
 	// In draw order
-	const Pic *OrderedPics[BODY_PART_COUNT];
-	struct vec2i OrderedOffsets[BODY_PART_COUNT];
+	const Pic *OrderedPics[BODY_PART_COUNT + MAX_BARRELS - 1];
+	struct vec2i OrderedOffsets[BODY_PART_COUNT + MAX_BARRELS - 1];
 	bool IsDead;
 	bool IsDying;
 	color_t ShadowMask;
@@ -90,8 +90,8 @@ const Pic *GetHairPic(
 	const CharColors *colors);
 ActorPics GetCharacterPics(
 	const Character *c, const direction_e dir, const direction_e legDir,
-	const ActorAnimation anim, const int frame, const char *gunSprites,
-	const gunstate_e gunState, const bool isGrimacing,
+	const ActorAnimation anim, const int frame, const WeaponClass *gun,
+	const gunstate_e barrelStates[MAX_BARRELS], const bool isGrimacing,
 	const color_t shadowMask, const color_t *mask, const CharColors *colors,
 	const int deadPic);
 ActorPics GetCharacterPicsFromActor(TActor *a);

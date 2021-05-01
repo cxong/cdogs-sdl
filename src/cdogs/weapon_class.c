@@ -311,9 +311,12 @@ static void LoadGunDescription(
 		wc->Brass != NULL ? wc->Brass->Name : "",
 		wc->CanShoot ? "true" : "false");
 	LOG(LM_MAP, LL_DEBUG,
-		"...canDrop(%s) shake{amount(%d), cameraSubjectOnly(%s)",
+		"...canDrop(%s) shake{amount(%d), cameraSubjectOnly(%s)}",
 		wc->CanDrop ? "true" : "false", wc->Shake.Amount,
 		wc->Shake.CameraSubjectOnly ? "true" : "false");
+	LOG(LM_MAP, LL_DEBUG,
+		"...barrel{count(%d), lock(%d)}",
+		wc->Barrel.Count, wc->Barrel.Lock);
 }
 void WeaponClassesTerminate(WeaponClasses *wcs)
 {
@@ -452,7 +455,7 @@ void WeaponClassAddBrass(
 		svec2_scale(Vec2FromRadiansScaled(radians), 7);
 	e.u.AddParticle.Pos = svec2_subtract(pos, ejectionPortOffset);
 	e.u.AddParticle.Z = (float)wc->MuzzleHeight;
-	e.u.AddParticle.Vel = svec2_scale(Vec2FromRadians(radians), 0.333333f);
+	e.u.AddParticle.Vel = svec2_scale(Vec2FromRadians(radians + MPI_2), 0.333333f);
 	e.u.AddParticle.Vel.x += RAND_FLOAT(-0.25f, 0.25f);
 	e.u.AddParticle.Vel.y += RAND_FLOAT(-0.25f, 0.25f);
 	e.u.AddParticle.Angle = RAND_DOUBLE(0, MPI * 2);
@@ -478,7 +481,7 @@ struct vec2 WeaponClassGetBarrelMuzzleOffset(
 	{
 		dir = DirectionMirrorX(dir);
 	}
-	const struct vec2 gunOffset = cs->Offsets.Dir[BODY_PART_GUN][dir];
+	const struct vec2 gunOffset = cs->Offsets.Dir[barrel == 0 ? BODY_PART_GUN_R : BODY_PART_GUN_L][dir];
 	const struct vec2 offset =
 		svec2_add(gunOffset, GetMuzzleOffset(dir, state));
 	if (barrel == 1)

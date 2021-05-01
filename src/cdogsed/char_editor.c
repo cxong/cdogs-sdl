@@ -220,7 +220,7 @@ static void DrawFlag(
 	const int flag, const char *tooltip);
 static void DrawCharacter(
 	struct nk_context *ctx, Character *c, GLuint *texids,
-	const struct vec2i pos, const Animation *anim, const direction_e d, const gunstate_e gunState);
+	const struct vec2i pos, const Animation *anim, const direction_e d, const gunstate_e gunStates[MAX_BARRELS]);
 static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 {
 	EditorContext *ec = data;
@@ -299,9 +299,14 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		{
 			ec->Char = c;
 		}
+		gunstate_e gunStates[MAX_BARRELS];
+		for (int i = 0; i < c->Gun->Barrel.Count; i++)
+		{
+			gunStates[i] = GUNSTATE_READY;
+		}
 		DrawCharacter(
 			ctx, c, CArrayGet(&ec->texidsChars, _ca_index), svec2i(-34, 5),
-			&ec->animSelection, DIRECTION_DOWN, GUNSTATE_READY);
+			&ec->animSelection, DIRECTION_DOWN, gunStates);
 		CA_FOREACH_END()
 		nk_end(ctx);
 	}
@@ -330,9 +335,14 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 			}
 			// Preview
 			nk_layout_row_dynamic(ctx, 32 * PIC_SCALE, 1);
+			gunstate_e gunStates[MAX_BARRELS];
+			for (int i = 0; i < ec->Char->Gun->Barrel.Count; i++)
+			{
+				gunStates[i] = ec->gunState;
+			}
 			DrawCharacter(
 				ctx, ec->Char, ec->texidsPreview, svec2i(0, 5), &ec->anim,
-				ec->previewDir, ec->gunState);
+				ec->previewDir, gunStates);
 			// Animation
 			nk_layout_row_dynamic(ctx, ROW_HEIGHT, 1);
 			const int isWalking = ec->anim.Type == ACTORANIMATION_WALKING;
@@ -669,11 +679,11 @@ static void DrawFlag(
 
 static void DrawCharacter(
 	struct nk_context *ctx, Character *c, GLuint *texids,
-	const struct vec2i pos, const Animation *anim, const direction_e d, const gunstate_e gunState)
+	const struct vec2i pos, const Animation *anim, const direction_e d, const gunstate_e gunStates[MAX_BARRELS])
 {
 	const int frame = AnimationGetFrame(anim);
 	ActorPics pics = GetCharacterPics(
-		c, d, d, anim->Type, frame, c->Gun->Sprites, gunState, false,
+		c, d, d, anim->Type, frame, c->Gun, gunStates, false,
 		colorTransparent, NULL, NULL, 0);
 	for (int i = 0; i < BODY_PART_COUNT; i++)
 	{

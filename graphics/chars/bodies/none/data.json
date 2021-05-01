@@ -1,14 +1,14 @@
 {
   "Version": 2,
   "Order": [
-    ["gun", "legs", "body", "head", "hair"],
-    ["gun", "legs", "body", "head", "hair"],
-    ["legs", "body", "head", "hair", "gun"],
-    ["legs", "body", "head", "hair", "gun"],
-    ["legs", "body", "head", "hair", "gun"],
-    ["legs", "body", "head", "hair", "gun"],
-    ["legs", "gun", "body", "head", "hair"],
-    ["gun", "legs", "body", "head", "hair"]
+    ["gun_r", "gun_l", "legs", "body", "head", "hair"],
+    ["gun_r", "gun_l", "legs", "body", "head", "hair"],
+    ["gun_l", "legs", "body", "head", "hair", "gun_r"],
+    ["legs", "body", "head", "hair", "gun_r", "gun_l"],
+    ["legs", "body", "head", "hair", "gun_r", "gun_l"],
+    ["legs", "body", "head", "hair", "gun_r", "gun_l"],
+    ["legs", "gun_r", "body", "head", "hair", "gun_l"],
+    ["gun_r", "gun_l", "legs", "body", "head", "hair"]
   ],
   "Offsets": {
     "Frame": {

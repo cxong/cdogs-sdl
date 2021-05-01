@@ -55,6 +55,8 @@
 #define BODY_ARMED 1
 #define BODY_COUNT 2
 
+#define MAX_BARRELS 2
+
 // Commands
 #define CMD_LEFT 1
 #define CMD_RIGHT 2
