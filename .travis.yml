@@ -2,12 +2,11 @@ language: c
 dist: focal
 osx_image: xcode12.2
 
-addons:
-  apt:
-    packages:
-      # required for valgrind
-      - libc6-dbg
-      - valgrind
+# disable for now
+# addons:
+#   apt:
+#     packages:
+#       - valgrind
 
 env:
   global:
