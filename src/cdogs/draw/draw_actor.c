@@ -543,8 +543,9 @@ void DrawCharacterSimple(
 	const Character *c, const struct vec2i pos, const direction_e d,
 	const bool hilite, const bool showGun)
 {
+	const gunstate_e barrelStates[MAX_BARRELS] = { GUNSTATE_READY, GUNSTATE_READY };
 	ActorPics pics = GetCharacterPics(
-		c, d, d, ACTORANIMATION_IDLE, 0, NULL, GUNSTATE_READY, false,
+		c, d, d, ACTORANIMATION_IDLE, 0, NULL, barrelStates, false,
 		colorBlack, NULL, NULL, 0);
 	DrawActorPics(&pics, pos, Rect2iZero());
 	if (hilite)
