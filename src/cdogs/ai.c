@@ -229,8 +229,8 @@ static int WillFire(TActor *actor, int roll)
 {
 	const CharBot *bot = ActorGetCharacter(actor)->bot;
 	if ((actor->flags & FLAGS_VISIBLE) != 0 &&
-		ActorGetCanFireBarrel(actor, ACTOR_GET_WEAPON(actor)) >= 0 &&
-		roll < bot->probabilityToShoot)
+		roll < bot->probabilityToShoot &&
+		ActorGetCanFireBarrel(actor, ACTOR_GET_WEAPON(actor)) >= 0)
 	{
 		if ((actor->flags & FLAGS_GOOD_GUY) != 0)
 			return 1; //! FacingPlayer( actor);

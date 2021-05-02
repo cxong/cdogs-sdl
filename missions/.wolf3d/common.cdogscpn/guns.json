@@ -79,12 +79,16 @@
       "Icon": "machine_gun",
       "Bullet": "bullet_boss",
       "Cost": 1,
-      "Lock": 4,
+      "Lock": 6,
       "Sound": "dual_chain_gun",
       "SwitchSound": "mg_switch",
       "Recoil": 0.3,
       "Brass": "brass",
-      "CanDrop": false
+      "CanDrop": false,
+      "Barrel": {
+        "Count": 2,
+        "Lock": 3
+      }
     },
     {
       "Pic": "",

@@ -120,7 +120,7 @@ int WeaponGetUnlockedBarrel(const Weapon *w)
 	int unlockedBarrel = -1;
 	for (int i = 0; i < w->Gun->Barrel.Count; i++)
 	{
-		if (w->barrels[i].lock == 0)
+		if (w->barrels[i].lock == 0 && unlockedBarrel < 0)
 		{
 			unlockedBarrel = i;
 		}

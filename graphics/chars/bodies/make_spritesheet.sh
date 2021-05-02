@@ -19,7 +19,7 @@ INFILE=$1/src.blend
 parts=(legs upper)
 # Render separate actions
 actions_legs=(idle run)
-actions_upper=(idle idle_handgun run run_handgun)
+actions_upper=(idle idle_handgun idle_dualgun run run_handgun run_dualgun)
 idle_frames=1
 run_frames=80
 len_i=${#parts[*]}
@@ -44,8 +44,8 @@ do
         frames=$idle_frames
       fi
       # Include right hand collection if the part is "upper" and action doesn't have
-      # "handgun"
-      if [[ $part == *"upper"* ]] && [[ $action != *"handgun"* ]]
+      # "handgun" or "dualgun"
+      if [[ $part == *"upper"* ]] && [[ $action != *"handgun"* ]] && [[ $action != *"dualgun"* ]]
       then
         collections=$collections,hand_right
       fi
@@ -53,7 +53,7 @@ do
 
       DIMENSIONS=`identify -format "%wx%h" "out/${part}_${action}_0_00.png"`
       OUTFILE=$1/${part}_${action}_${DIMENSIONS}.png
-      rm "$OUTFILE"
+      rm -f "$OUTFILE"
       montage -geometry +0+0 -background none -tile x8 "out/${part}_${action}_*.png" -channel A tmpimage
       convert tmpimage -dither None -colors 32 -level 25%,60% "$OUTFILE"
       rm tmpimage

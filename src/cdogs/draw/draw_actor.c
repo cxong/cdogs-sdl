@@ -163,7 +163,7 @@ ActorPics GetCharacterPicsFromActor(TActor *a)
 }
 static const Pic *GetBodyPic(
 	PicManager *pm, const CharSprites *cs, const direction_e dir,
-	const ActorAnimation anim, const int frame, const bool isArmed,
+	const ActorAnimation anim, const int frame, const int numBarrels,
 	const CharColors *colors);
 static const Pic *GetLegsPic(
 	PicManager *pm, const CharSprites *cs, const direction_e dir,
@@ -231,7 +231,8 @@ ActorPics GetCharacterPics(
 			headDir = (dir + 1) % 8;
 	}
 	bool grimace = isGrimacing;
-	for (int i = 0; barrelStates != NULL && c->Gun && i < c->Gun->Barrel.Count; i++)
+	const int numBarrels = (barrelStates == NULL || gun == NULL || gun->Sprites == NULL) ? 0 : gun->Barrel.Count;
+	for (int i = 0; i < numBarrels; i++)
 	{
 		if (barrelStates[i] == GUNSTATE_FIRING || barrelStates[i] == GUNSTATE_RECOIL)
 		{
@@ -251,8 +252,7 @@ ActorPics GetCharacterPics(
 		pics.Hair, BODY_PART_HAIR, c->Class->Sprites, anim, frame, dir, GUNSTATE_READY);
 
 	// Gun
-	bool isArmed = false;
-	for (int i = 0; gun && gun->Sprites && i < gun->Barrel.Count; i++)
+	for (int i = 0; i < numBarrels; i++)
 	{
 		pics.Guns[i] = GetGunPic(&gPicManager, gun->Sprites, dir, barrelStates[i], colors);
 		if (pics.Guns[i] != NULL)
@@ -264,13 +264,12 @@ ActorPics GetCharacterPics(
 				const int xOffsetOrig = pics.GunOffsets[i].x + xHalf;
 				pics.GunOffsets[i].x = -xOffsetOrig - xHalf;
 			}
-			isArmed = true;
 		}
 	}
 
 	// Body
 	pics.Body = GetBodyPic(
-		&gPicManager, c->Class->Sprites, dir, anim, frame, isArmed, colors);
+		&gPicManager, c->Class->Sprites, dir, anim, frame, numBarrels, colors);
 	pics.BodyOffset = GetActorDrawOffset(
 		pics.Body, BODY_PART_BODY, c->Class->Sprites, anim, frame, dir,
 		GUNSTATE_READY);
@@ -407,6 +406,10 @@ void DrawLaserSight(
 	// Draw weapon indicators
 	const Weapon *w = ACTOR_GET_WEAPON(a);
 	const WeaponClass *wc = w->Gun;
+	if (wc == NULL)
+	{
+		return;
+	}
 	for (int i = 0; i < wc->Barrel.Count; i++)
 	{
 		struct vec2i muzzlePos = svec2i_add(
@@ -476,7 +479,7 @@ const Pic *GetHairPic(
 }
 static const Pic *GetBodyPic(
 	PicManager *pm, const CharSprites *cs, const direction_e dir,
-	const ActorAnimation anim, const int frame, const bool isArmed,
+	const ActorAnimation anim, const int frame, const int numBarrels,
 	const CharColors *colors)
 {
 	const int stride = anim == ACTORANIMATION_WALKING ? 8 : 1;
@@ -484,10 +487,20 @@ static const Pic *GetBodyPic(
 	const int row = (int)dir;
 	const int idx = col + row * stride;
 	char buf[CDOGS_PATH_MAX];
+	CASSERT(numBarrels <= 2, "up to 2 barrels supported");
+	const char *upperPose = "";
+	if (numBarrels == 1)
+	{
+		upperPose = "_handgun";
+	}
+	else if (numBarrels == 2)
+	{
+		upperPose = "_dualgun";
+	}
 	sprintf(
 		buf, "chars/bodies/%s/upper_%s%s", cs->Name,
 		anim == ACTORANIMATION_WALKING ? "run" : "idle",
-		isArmed ? "_handgun" : ""); // TODO: other gun holding poses
+			upperPose); // TODO: other gun holding poses
 	// Get or generate masked sprites
 	const NamedSprites *ns = PicManagerGetCharSprites(pm, buf, colors);
 	return CArrayGet(&ns->pics, idx);
