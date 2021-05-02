@@ -2,11 +2,20 @@ language: c
 dist: focal
 osx_image: xcode12.2
 
-# disable for now
-# addons:
-#   apt:
-#     packages:
-#       - valgrind
+addons:
+  apt:
+    packages:
+      # disable for now
+      # - valgrind
+      - libsdl2-dev
+      - libsdl2-image-dev
+      - libsdl2-mixer-dev
+      - clang-9
+      - gcc-10
+      - g++-10
+      - libgtk-3-dev
+      - ninja-build
+      - python3-pip
 
 env:
   global:
@@ -28,7 +37,6 @@ matrix:
 before_install:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get -q update; fi
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get -y install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev clang-9 gcc-10 g++-10 libgtk-3-dev ninja-build python3-pip; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo snap install cmake --classic; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then wget https://github.com/protocolbuffers/protobuf/releases/download/v3.12.3/protoc-3.12.3-linux-x86_64.zip; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then unzip protoc-3.12.3-linux-x86_64.zip; fi
