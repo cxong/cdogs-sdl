@@ -114,6 +114,7 @@ bool CampaignLoad(Campaign *co, CampaignEntry *entry)
 }
 void CampaignUnload(Campaign *co)
 {
+	co->MissionIndex = 0;
 	co->IsLoaded = false;
 	co->IsClient = false;	// TODO: select is client from menu
 	co->OptionsSet = false;

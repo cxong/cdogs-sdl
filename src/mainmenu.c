@@ -99,7 +99,7 @@ static void GenerateLiveBackground(MainMenuData *data)
 	CampaignAndMissionSetup(&gCampaign, &gMission);
 	GameEventsInit(&gGameEvents);
 	gCampaign.MissionIndex = 0;
-	
+
 	MapBuild(&gMap, gMission.missionData, &gCampaign, gMission.index);
 
 	// Add AI player
