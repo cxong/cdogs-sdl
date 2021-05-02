@@ -5,6 +5,8 @@ osx_image: xcode12.2
 addons:
   apt:
     packages:
+      # required for valgrind
+      - libc6-dbg
       - valgrind
 
 env:
