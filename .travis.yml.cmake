@@ -1,21 +1,5 @@
 language: c
 dist: focal
-osx_image: xcode12.2
-
-addons:
-  apt:
-    packages:
-      # disable for now
-      # - valgrind
-      - libsdl2-dev
-      - libsdl2-image-dev
-      - libsdl2-mixer-dev
-      - clang-9
-      - gcc-10
-      - g++-10
-      - libgtk-3-dev
-      - ninja-build
-      - python3-pip
 
 env:
   global:
@@ -28,16 +12,33 @@ env:
 matrix:
   include:
     - os: linux
+      osx_image: xcode12.2
       compiler: gcc
       env: CTEST_TARGET_SYSTEM=Linux-gcc    CTEST_MODEL=Nightly
+      addons:
+        apt:
+          packages:
+            # disable for now
+            # - valgrind
+            - libsdl2-dev
+            - libsdl2-image-dev
+            - libsdl2-mixer-dev
+            - gcc-10
+            - g++-10
+            - libgtk-3-dev
+            - ninja-build
+            - python3-pip
     - os: osx
       compiler: clang
       env: CTEST_TARGET_SYSTEM=MacOS-clang  CTEST_MODEL=Nightly
+      addons:
+        apt:
+          packages:
+            - clang-9
 
 before_install:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get -q update; fi
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo snap install cmake --classic; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then wget https://github.com/protocolbuffers/protobuf/releases/download/v3.12.3/protoc-3.12.3-linux-x86_64.zip; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then unzip protoc-3.12.3-linux-x86_64.zip; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo mv bin/protoc /usr/bin; fi
@@ -47,14 +48,6 @@ before_install:
 install:
 # /usr/bin/gcc points to an older compiler on both Linux and macOS.
 - if [ "$CXX" = "g++" ]; then export CXX="g++-10" CC="gcc-10"; fi
-# /usr/bin/clang points to an older compiler on both Linux and macOS.
-#
-# Homebrew's llvm package doesn't ship a versioned clang++ binary, so the values
-# below don't work on macOS. Fortunately, the path change above makes the
-# default values (clang and clang++) resolve to the correct compiler on macOS.
-- if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-    if [ "$CXX" = "clang++" ]; then export CXX="clang++-9" CC="clang-9"; fi;
-  fi
 - echo ${CC}
 - protoc --version
 
