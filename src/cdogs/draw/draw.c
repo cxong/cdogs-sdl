@@ -345,9 +345,9 @@ static void DrawObjectiveHighlights(
 		{
 			continue;
 		}
-		// Gun pickup
+		// Gun pickup or keycard
 		const Pickup *p = CArrayGet(&gPickups, ti->id);
-		if (!PickupIsManual(p))
+		if (p->class->Type != PICKUP_KEYCARD && !PickupIsManual(p))
 		{
 			continue;
 		}

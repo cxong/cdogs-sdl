@@ -50,6 +50,7 @@
     },
     {
       "Index": 1,
+      "Pic": "chaingun",
       "Name": "Machine gun",
       "Icon": "machine_gun",
       "Description": "A rapidly firing bullet hose. Its bullets have a medium range, and the gun has a slight spread.\n\nDamage: 10\nRate of fire: 700 round/min\nLifespan: 0.85s\nSpeed: 768\nCost: 1",

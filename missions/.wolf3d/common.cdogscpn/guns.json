@@ -37,6 +37,7 @@
       "Ammo": "Ammo"
     },
     {
+      "Pic": "chaingun",
       "Name": "Chain Gun",
       "Icon": "machine_gun",
       "Bullet": "bullet",
@@ -75,6 +76,7 @@
       "CanDrop": false
     },
     {
+      "Pic": "chaingun",
       "Name": "Dual Chain Gun",
       "Icon": "machine_gun",
       "Bullet": "bullet_boss",
