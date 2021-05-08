@@ -86,6 +86,17 @@
       "BloodColor": "ffffff"
     },
     {
+      "Name": "Big Bones",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/skull_big"
+      },
+      "Body": "big_skinny",
+      "Sounds": "zombie",
+      "BloodColor": "ffffff",
+      "HasHair": false
+    },
+    {
       "Name": "Dog",
       "HeadPics": {
         "Type": "Directional",
