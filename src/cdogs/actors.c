@@ -585,6 +585,8 @@ void InjureActor(TActor *actor, int injury)
 {
 	const int lastHealth = actor->health;
 	actor->health -= injury;
+	LOG(LM_ACTOR, LL_DEBUG, "actor uid(%d) injured %d -(%d)-> %d", actor->uid,
+		lastHealth, injury, actor->health);
 	if (lastHealth > 0 && actor->health <= 0)
 	{
 		actor->stateCounter = 0;

@@ -536,6 +536,9 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 		NMapObjectAdd amo = NMapObjectAdd_init_default;
 		amo.UID = o->uid;
 		strcpy(amo.MapObjectClass, o->Class->Name);
+		amo.has_Mask = true;
+		amo.Mask = Color2Net(o->thing.CPic.Mask);
+		amo.has_Pos = true;
 		amo.Pos = Vec2ToNet(o->thing.Pos);
 		amo.ThingFlags = o->thing.flags;
 		amo.Health = o->Health;
