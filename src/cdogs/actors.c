@@ -264,93 +264,89 @@ bool TryMoveActor(TActor *actor, struct vec2 pos)
 	}
 
 	// Check for object collisions
-	// Only do this if we are the owner of the actor, since this may lead to
-	// melee damage
-	if ((!gCampaign.IsClient && actor->PlayerUID < 0) ||
-		ActorIsLocalPlayer(actor->uid))
+	const CollisionParams params = {
+		THING_IMPASSABLE, CalcCollisionTeam(true, actor),
+		IsPVP(gCampaign.Entry.Mode)};
+	Thing *target =
+		OverlapGetFirstItem(&actor->thing, pos, actor->thing.size, params);
+	if (target)
 	{
-		const CollisionParams params = {
-			THING_IMPASSABLE, CalcCollisionTeam(true, actor),
-			IsPVP(gCampaign.Entry.Mode)};
-		Thing *target =
-			OverlapGetFirstItem(&actor->thing, pos, actor->thing.size, params);
-		if (target)
+		Weapon *gun = ACTOR_GET_WEAPON(actor);
+		const TObject *object =
+			target->kind == KIND_OBJECT ? CArrayGet(&gObjs, target->id) : NULL;
+		const int barrel = ActorGetCanFireBarrel(actor, gun);
+		// Check for melee damage if we are the owner of the actor
+		const bool checkMelee =
+			(!gCampaign.IsClient && actor->PlayerUID < 0) ||
+			ActorIsLocalPlayer(actor->uid);
+		if (checkMelee && barrel >= 0 && !gun->Gun->CanShoot &&
+			actor->health > 0 &&
+			(!object ||
+			 (gun->Gun->Bullet->HitsObjects && !ObjIsDangerous(object))))
 		{
-			Weapon *gun = ACTOR_GET_WEAPON(actor);
-			const TObject *object = target->kind == KIND_OBJECT
-										? CArrayGet(&gObjs, target->id)
-										: NULL;
-			const int barrel = ActorGetCanFireBarrel(actor, gun);
-			if (barrel >= 0 && !gun->Gun->CanShoot && actor->health > 0 &&
-				(!object ||
-				 (gun->Gun->Bullet->HitsObjects && !ObjIsDangerous(object))))
+			if (CanHit(actor->flags, actor->uid, target))
 			{
-				if (CanHit(actor->flags, actor->uid, target))
+				// Tell the server that we want to melee something
+				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_MELEE);
+				e.u.Melee.UID = actor->uid;
+				strcpy(e.u.Melee.BulletClass, gun->Gun->Bullet->Name);
+				e.u.Melee.TargetKind = target->kind;
+				switch (target->kind)
 				{
-					// Tell the server that we want to melee something
-					GameEvent e = GameEventNew(GAME_EVENT_ACTOR_MELEE);
-					e.u.Melee.UID = actor->uid;
-					strcpy(e.u.Melee.BulletClass, gun->Gun->Bullet->Name);
-					e.u.Melee.TargetKind = target->kind;
-					switch (target->kind)
-					{
-					case KIND_CHARACTER:
-						e.u.Melee.TargetUID =
-							((const TActor *)CArrayGet(&gActors, target->id))
-								->uid;
-						e.u.Melee.HitType = HIT_FLESH;
-						break;
-					case KIND_OBJECT:
-						e.u.Melee.TargetUID =
-							((const TObject *)CArrayGet(&gObjs, target->id))
-								->uid;
-						e.u.Melee.HitType = HIT_OBJECT;
-						break;
-					default:
-						CASSERT(false, "cannot damage target kind");
-						break;
-					}
-					if (gun->barrels[barrel].soundLock > 0)
-					{
-						e.u.Melee.HitType = (int)HIT_NONE;
-					}
-					GameEventsEnqueue(&gGameEvents, e);
-					WeaponBarrelOnFire(gun, barrel);
-
-					// Only set grimace when counter 0 so that the actor
-					// alternates their grimace
-					if (actor->grimaceCounter == 0)
-					{
-						actor->grimaceCounter = GRIMACE_MELEE_TICKS;
-					}
+				case KIND_CHARACTER:
+					e.u.Melee.TargetUID =
+						((const TActor *)CArrayGet(&gActors, target->id))->uid;
+					e.u.Melee.HitType = HIT_FLESH;
+					break;
+				case KIND_OBJECT:
+					e.u.Melee.TargetUID =
+						((const TObject *)CArrayGet(&gObjs, target->id))->uid;
+					e.u.Melee.HitType = HIT_OBJECT;
+					break;
+				default:
+					CASSERT(false, "cannot damage target kind");
+					break;
 				}
-				return false;
-			}
+				if (gun->barrels[barrel].soundLock > 0)
+				{
+					e.u.Melee.HitType = (int)HIT_NONE;
+				}
+				GameEventsEnqueue(&gGameEvents, e);
+				WeaponBarrelOnFire(gun, barrel);
 
-			const struct vec2 yPos = svec2(actor->Pos.x, pos.y);
-			if (OverlapGetFirstItem(
-					&actor->thing, yPos, actor->thing.size, params))
-			{
-				pos.y = actor->Pos.y;
+				// Only set grimace when counter 0 so that the actor
+				// alternates their grimace
+				if (actor->grimaceCounter == 0)
+				{
+					actor->grimaceCounter = GRIMACE_MELEE_TICKS;
+				}
 			}
-			const struct vec2 xPos = svec2(pos.x, actor->Pos.y);
-			if (OverlapGetFirstItem(
-					&actor->thing, xPos, actor->thing.size, params))
-			{
-				pos.x = actor->Pos.x;
-			}
-			if (pos.x != actor->Pos.x && pos.y != actor->Pos.y)
-			{
-				// Both x-only or y-only movement are viable,
-				// i.e. we are colliding corner vs corner
-				// Arbitrarily choose x-only movement
-				pos.y = actor->Pos.y;
-			}
-			if ((pos.x == actor->Pos.x && pos.y == actor->Pos.y) ||
-				IsCollisionWithWall(pos, actor->thing.size))
-			{
-				return false;
-			}
+			return false;
+		}
+
+		const struct vec2 yPos = svec2(actor->Pos.x, pos.y);
+		if (OverlapGetFirstItem(
+				&actor->thing, yPos, actor->thing.size, params))
+		{
+			pos.y = actor->Pos.y;
+		}
+		const struct vec2 xPos = svec2(pos.x, actor->Pos.y);
+		if (OverlapGetFirstItem(
+				&actor->thing, xPos, actor->thing.size, params))
+		{
+			pos.x = actor->Pos.x;
+		}
+		if (pos.x != actor->Pos.x && pos.y != actor->Pos.y)
+		{
+			// Both x-only or y-only movement are viable,
+			// i.e. we are colliding corner vs corner
+			// Arbitrarily choose x-only movement
+			pos.y = actor->Pos.y;
+		}
+		if ((pos.x == actor->Pos.x && pos.y == actor->Pos.y) ||
+			IsCollisionWithWall(pos, actor->thing.size))
+		{
+			return false;
 		}
 	}
 
