@@ -513,7 +513,7 @@ static bool HitItemFunc(
 	HitItemData *hData = data;
 
 	// Check bullet-to-other collisions
-	if (!CanHit(hData->Obj->flags, hData->Obj->ActorUID, ti))
+	if (!CanHit(hData->Obj->flags, hData->Obj->ActorUID, ti, hData->Obj->bulletClass->HitsObjects))
 	{
 		goto bail;
 	}

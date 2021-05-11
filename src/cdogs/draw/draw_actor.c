@@ -489,20 +489,30 @@ static const Pic *GetBodyPic(
 	char buf[CDOGS_PATH_MAX];
 	CASSERT(numBarrels <= 2, "up to 2 barrels supported");
 	const char *upperPose = "";
-	if (numBarrels == 1)
+	const NamedSprites *ns = NULL;
+	do
 	{
-		upperPose = "_handgun";
-	}
-	else if (numBarrels == 2)
-	{
-		upperPose = "_dualgun";
-	}
-	sprintf(
-		buf, "chars/bodies/%s/upper_%s%s", cs->Name,
-		anim == ACTORANIMATION_WALKING ? "run" : "idle",
-			upperPose); // TODO: other gun holding poses
-	// Get or generate masked sprites
-	const NamedSprites *ns = PicManagerGetCharSprites(pm, buf, colors);
+		if (numBarrels == 1)
+		{
+			upperPose = "_handgun";
+		}
+		else if (numBarrels == 2)
+		{
+			upperPose = "_dualgun";
+		}
+		sprintf(
+			buf, "chars/bodies/%s/upper_%s%s", cs->Name,
+			anim == ACTORANIMATION_WALKING ? "run" : "idle",
+				upperPose); // TODO: other gun holding poses
+		// Get or generate masked sprites
+		ns = PicManagerGetCharSprites(pm, buf, colors);
+		// TODO: provide dualgun sprites for all body types
+		if (ns == NULL && numBarrels == 2)
+		{
+			upperPose = "_handgun";
+			continue;
+		}
+	} while(0);
 	return CArrayGet(&ns->pics, idx);
 }
 static const Pic *GetLegsPic(

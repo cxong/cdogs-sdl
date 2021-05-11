@@ -96,7 +96,7 @@ extern CArray gMobObjs;	// of TMobileObject
 extern CArray gObjs;	// of TObject
 
 
-bool CanHit(const int flags, const int uid, const Thing *target);
+bool CanHit(const int flags, const int uid, const Thing *target, const bool canHitObjects);
 bool HasHitSound(
 	const ThingKind targetKind, const int targetUID,
 	const special_damage_e special, const bool allowFriendlyHitSound);

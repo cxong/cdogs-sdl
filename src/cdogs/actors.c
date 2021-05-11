@@ -284,7 +284,7 @@ bool TryMoveActor(TActor *actor, struct vec2 pos)
 			(!object ||
 			 (gun->Gun->Bullet->HitsObjects && !ObjIsDangerous(object))))
 		{
-			if (CanHit(actor->flags, actor->uid, target))
+			if (CanHit(actor->flags, actor->uid, target, gun->Gun->Bullet->HitsObjects))
 			{
 				// Tell the server that we want to melee something
 				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_MELEE);

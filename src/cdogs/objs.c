@@ -262,14 +262,14 @@ static void PlaceWreck(const char *wreckClass, const Thing *ti)
 	GameEventsEnqueue(&gGameEvents, e);
 }
 
-bool CanHit(const int flags, const int uid, const Thing *target)
+bool CanHit(const int flags, const int uid, const Thing *target, const bool canHitObjects)
 {
 	switch (target->kind)
 	{
 	case KIND_CHARACTER:
 		return CanHitCharacter(flags, uid, CArrayGet(&gActors, target->id));
 	case KIND_OBJECT:
-		return true;
+		return canHitObjects;
 	default:
 		CASSERT(false, "cannot damage tile item kind");
 		break;
