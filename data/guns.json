@@ -333,6 +333,7 @@
       }
     },
     {
+      "Pic": "pistol",
       "Name": "Pistol",
       "Icon": "pistol",
       "Description": "A short range, medium rate of fire weapon, the pistol has fast moving bullets for hit-and-run tactics.\nIts 0-cost-per-shot makes this a versatile yet economical weapon, great for picking off lone targets.\n\nDamage: 12\nRate of fire: 232 round/min\nLifespan: 0.38s\nSpeed: 1100\nCost: 0",
@@ -345,6 +346,7 @@
       "Brass": "brass"
     },
     {
+      "Pic": "pistol",
       "Name": "Akimbo Pistols",
       "Icon": "akimbo_pistols",
       "Bullet": "9mm",

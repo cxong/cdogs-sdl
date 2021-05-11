@@ -14,6 +14,7 @@
       "CanShoot": false
     },
     {
+      "Pic": "pistol",
       "Name": "Marine Pistol",
       "Icon": "pistol",
       "Description": "Standard issue sidearm, low rate of fire and damage. Recommend engaging at a distance.",
@@ -42,6 +43,7 @@
       "Ammo": "Shells"
     },
     {
+      "Pic": "chaingun",
       "Name": "Chaingun",
       "Icon": "machine_gun",
       "Bullet": "10mm",

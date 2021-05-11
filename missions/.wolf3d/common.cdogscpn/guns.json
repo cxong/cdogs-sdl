@@ -13,6 +13,7 @@
       "CanShoot": false
     },
     {
+      "Pic": "pistol",
       "Name": "Pistol",
       "Icon": "pistol",
       "Bullet": "bullet",
