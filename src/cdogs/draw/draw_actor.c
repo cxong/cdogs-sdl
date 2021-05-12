@@ -490,7 +490,7 @@ static const Pic *GetBodyPic(
 	CASSERT(numBarrels <= 2, "up to 2 barrels supported");
 	const char *upperPose = "";
 	const NamedSprites *ns = NULL;
-	do
+	for (;;)
 	{
 		if (numBarrels == 1)
 		{
@@ -512,7 +512,8 @@ static const Pic *GetBodyPic(
 			upperPose = "_handgun";
 			continue;
 		}
-	} while(0);
+		break;
+	}
 	return CArrayGet(&ns->pics, idx);
 }
 static const Pic *GetLegsPic(
