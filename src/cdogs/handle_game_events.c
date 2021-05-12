@@ -82,6 +82,9 @@ static void HandleGameEvent(
 		break;
 	case GAME_EVENT_TILE_SET: {
 		struct vec2i pos = Net2Vec2i(e.u.TileSet.Pos);
+		LOG(LM_MAP, LL_DEBUG, "set tile %s/%s pos(%d, %d) x%d",
+			e.u.TileSet.ClassName, e.u.TileSet.ClassAltName, pos.x,
+			pos.y, e.u.TileSet.RunLength);
 		const TileClass *tileClass = StrTileClass(e.u.TileSet.ClassName);
 		const TileClass *tileClassAlt = StrTileClass(e.u.TileSet.ClassAltName);
 		for (int i = 0; i <= e.u.TileSet.RunLength; i++)

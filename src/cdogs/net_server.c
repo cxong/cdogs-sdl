@@ -1,30 +1,30 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014-2017, Cong Xu
-    All rights reserved.
+	Copyright (c) 2014-2017, 2021 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "net_server.h"
 
@@ -48,7 +48,6 @@
 
 NetServer gNetServer;
 
-
 void NetServerInit(NetServer *n)
 {
 	memset(n, 0, sizeof *n);
@@ -70,7 +69,7 @@ void NetServerOpen(NetServer *n)
 	{
 		return;
 	}
-	
+
 	n->server = HostOpen();
 	if (n->server == NULL)
 	{
@@ -86,7 +85,7 @@ void NetServerOpen(NetServer *n)
 	// Save limited length hostname for LAN scanners
 	// This is because getting hostname locally is much faster
 	if (enet_address_get_host(
-		&n->server->address, n->hostname, sizeof n->hostname) != 0)
+			&n->server->address, n->hostname, sizeof n->hostname) != 0)
 	{
 		LOG(LM_NET, LL_WARN, "Failed to get hostname");
 		n->hostname[0] = '\0';
@@ -97,7 +96,8 @@ static ENetHost *HostOpen(void)
 	ENetAddress address;
 	address.host = ENET_HOST_ANY;
 	address.port = ENET_PORT_ANY;
-	ENetHost *host = enet_host_create(&address, NET_SERVER_MAX_CLIENTS, 2, 0, 0);
+	ENetHost *host =
+		enet_host_create(&address, NET_SERVER_MAX_CLIENTS, 2, 0, 0);
 	if (host == NULL)
 	{
 		LOG(LM_NET, LL_ERROR, "cannot create server host");
@@ -107,8 +107,8 @@ static ENetHost *HostOpen(void)
 	{
 		char buf[256];
 		enet_address_get_host_ip(&host->address, buf, sizeof buf);
-		LOG(LM_NET, LL_INFO, "starting server on %s:%u",
-			buf, host->address.port);
+		LOG(LM_NET, LL_INFO, "starting server on %s:%u", buf,
+			host->address.port);
 	}
 	return host;
 }
@@ -187,15 +187,14 @@ void NetServerPoll(NetServer *n)
 		{
 			switch (event.type)
 			{
-			case ENET_EVENT_TYPE_CONNECT:
-				{
-					char buf[256];
-					enet_address_get_host_ip(
-						&event.peer->address, buf, sizeof buf);
-					LOG(LM_NET, LL_INFO, "client connection from %s:%u",
-						buf, event.peer->address.port);
-				}
-				break;
+			case ENET_EVENT_TYPE_CONNECT: {
+				char buf[256];
+				enet_address_get_host_ip(
+					&event.peer->address, buf, sizeof buf);
+				LOG(LM_NET, LL_INFO, "client connection from %s:%u", buf,
+					event.peer->address.port);
+			}
+			break;
 			case ENET_EVENT_TYPE_RECEIVE:
 				OnReceive(n, event);
 				break;
@@ -242,13 +241,13 @@ static void PollListener(NetServer *n)
 	strcpy(sinfo.Hostname, n->hostname);
 	sinfo.GameMode = gCampaign.Entry.Mode;
 	sinfo.CampaignName[0] = '\0';
-	strncat(sinfo.CampaignName, gCampaign.Setting.Title,
+	strncat(
+		sinfo.CampaignName, gCampaign.Setting.Title,
 		sizeof sinfo.CampaignName - 1);
 	sinfo.MissionNumber = gCampaign.MissionIndex + 1;
 	sinfo.NumPlayers = GetNumPlayers(PLAYER_ANY, false, false);
-	sinfo.MaxPlayers =
-		NET_SERVER_MAX_CLIENTS * MAX_LOCAL_PLAYERS +
-		GetNumPlayers(PLAYER_ANY, false, true);
+	sinfo.MaxPlayers = NET_SERVER_MAX_CLIENTS * MAX_LOCAL_PLAYERS +
+					   GetNumPlayers(PLAYER_ANY, false, true);
 	// Encode our packet
 	uint8_t encbuf[1024];
 	pb_ostream_t stream = pb_ostream_from_buffer(encbuf, sizeof encbuf);
@@ -256,7 +255,8 @@ static void PollListener(NetServer *n)
 	CASSERT(status, "Failed to encode pb");
 	recvbuf.data = encbuf;
 	recvbuf.dataLength = stream.bytes_written;
-	if (enet_socket_send(n->listen, &addr, &recvbuf, 1) != (int)recvbuf.dataLength)
+	if (enet_socket_send(n->listen, &addr, &recvbuf, 1) !=
+		(int)recvbuf.dataLength)
 	{
 		LOG(LM_NET, LL_ERROR, "Failed to reply to scanner");
 	}
@@ -264,14 +264,14 @@ static void PollListener(NetServer *n)
 static void OnConnect(NetServer *n, ENetEvent event);
 static void OnReceive(NetServer *n, ENetEvent event)
 {
-	const GameEventType msg = (GameEventType)*(uint32_t *)event.packet->data;
+	const GameEventType msg = (GameEventType) * (uint32_t *)event.packet->data;
 	int peerId = -1;
 	if (event.peer->data != NULL)
 	{
 		// We may not have assigned peer ID
 		peerId = ((NetPeerData *)event.peer->data)->Id;
-		LOG(LM_NET, LL_TRACE, "recv message from peerId(%d) msg(%d)",
-			peerId, (int)msg);
+		LOG(LM_NET, LL_TRACE, "recv message from peerId(%d) msg(%d)", peerId,
+			(int)msg);
 	}
 	const GameEventEntry gee = GameEventGetEntry(msg);
 	if (gee.Enqueue)
@@ -298,7 +298,8 @@ static void OnReceive(NetServer *n, ENetEvent event)
 			{
 				const int cid = (peerId + 1) * MAX_LOCAL_PLAYERS + i;
 				const PlayerData *pData = PlayerDataGetByUID(cid);
-				if (pData == NULL) continue;
+				if (pData == NULL)
+					continue;
 				GameEvent e = GameEventNew(GAME_EVENT_PLAYER_DATA);
 				e.u.PlayerData = PlayerDataMissionReset(pData);
 				GameEventsEnqueue(&gGameEvents, e);
@@ -351,8 +352,8 @@ static void OnConnect(NetServer *n, ENetEvent event)
 {
 	char buf[256];
 	enet_address_get_host_ip(&event.peer->address, buf, sizeof buf);
-	LOG(LM_NET, LL_INFO, "new client connected from %s:%u",
-		buf, event.peer->address.port);
+	LOG(LM_NET, LL_INFO, "new client connected from %s:%u", buf,
+		event.peer->address.port);
 	/* Store any relevant client information here. */
 	CMALLOC(event.peer->data, sizeof(NetPeerData));
 	const int peerId = n->peerId;
@@ -370,7 +371,7 @@ static void OnConnect(NetServer *n, ENetEvent event)
 	LOG(LM_NET, LL_DEBUG, "NetServer: sending campaign entry");
 	NCampaignDef def = NMakeCampaignDef(&gCampaign);
 	NetServerSendMsg(n, peerId, GAME_EVENT_CAMPAIGN_DEF, &def);
-	
+
 	SoundPlay(&gSoundDevice, StrSound("menu_start"));
 	LOG(LM_NET, LL_DEBUG, "NetServer: client connection complete");
 
@@ -388,8 +389,8 @@ static void OnDisconnect(const ENetEvent event)
 	CASSERT(peerId >= 0, "Cannot find disconnected peer id");
 	char buf[256];
 	enet_address_get_host_ip(&event.peer->address, buf, sizeof buf);
-	LOG(LM_NET, LL_INFO, "peerId(%d) disconnected %s:%u",
-		peerId, buf, event.peer->address.port);
+	LOG(LM_NET, LL_INFO, "peerId(%d) disconnected %s:%u", peerId, buf,
+		event.peer->address.port);
 	// Remove client's players
 	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 	{
@@ -401,7 +402,8 @@ static void OnDisconnect(const ENetEvent event)
 
 void NetServerFlush(NetServer *n)
 {
-	if (n->server == NULL) return;
+	if (n->server == NULL)
+		return;
 	enet_host_flush(n->server);
 }
 
@@ -409,12 +411,14 @@ static void SendConfig(
 	Config *config, const char *name, NetServer *n, const int peerId);
 void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 {
+	if (!n->server)
+		return;
 	// Send details of all current players
 	CA_FOREACH(const PlayerData, pOther, gPlayerDatas)
-		NPlayerData pd = NMakePlayerData(pOther);
-		NetServerSendMsg(n, peerId, GAME_EVENT_PLAYER_DATA, &pd);
-		LOG(LM_NET, LL_DEBUG, "send player data uid(%d) maxHealth(%d)",
-			(int)pd.UID, (int)pd.MaxHealth);
+	NPlayerData pd = NMakePlayerData(pOther);
+	NetServerSendMsg(n, peerId, GAME_EVENT_PLAYER_DATA, &pd);
+	LOG(LM_NET, LL_DEBUG, "send player data uid(%d) maxHealth(%d)",
+		(int)pd.UID, (int)pd.MaxHealth);
 	CA_FOREACH_END()
 
 	// Send all game-specific config values
@@ -428,21 +432,21 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 
 	// Send all actors
 	CA_FOREACH(const TActor, a, gActors)
-		if (!a->isInUse)
-		{
-			continue;
-		}
-		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-		e.u.ActorAdd.UID = a->uid;
-		e.u.ActorAdd.CharId = a->charId;
-		e.u.ActorAdd.Health = a->health;
-		e.u.ActorAdd.Direction = (int32_t)a->direction;
-		e.u.ActorAdd.PlayerUID = a->PlayerUID;
-		e.u.ActorAdd.ThingFlags = a->thing.flags;
-		e.u.ActorAdd.Pos = Vec2ToNet(a->Pos);
-		LOG(LM_NET, LL_DEBUG, "send add actor UID(%d) playerUID(%d)",
-			(int)e.u.ActorAdd.UID, (int)e.u.ActorAdd.PlayerUID);
-		NetServerSendMsg(n, peerId, GAME_EVENT_ACTOR_ADD, &e.u.ActorAdd);
+	if (!a->isInUse)
+	{
+		continue;
+	}
+	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
+	e.u.ActorAdd.UID = a->uid;
+	e.u.ActorAdd.CharId = a->charId;
+	e.u.ActorAdd.Health = a->health;
+	e.u.ActorAdd.Direction = (int32_t)a->direction;
+	e.u.ActorAdd.PlayerUID = a->PlayerUID;
+	e.u.ActorAdd.ThingFlags = a->thing.flags;
+	e.u.ActorAdd.Pos = Vec2ToNet(a->Pos);
+	LOG(LM_NET, LL_DEBUG, "send add actor UID(%d) playerUID(%d)",
+		(int)e.u.ActorAdd.UID, (int)e.u.ActorAdd.PlayerUID);
+	NetServerSendMsg(n, peerId, GAME_EVENT_ACTOR_ADD, &e.u.ActorAdd);
 	CA_FOREACH_END()
 
 	// Send key state
@@ -452,15 +456,16 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 
 	// Send objective counts
 	CA_FOREACH(const Objective, o, gMission.missionData->Objectives)
-		NObjectiveUpdate ou = NObjectiveUpdate_init_default;
-		ou.ObjectiveId = _ca_index;
-		ou.Count = o->done;
-		NetServerSendMsg(n, peerId, GAME_EVENT_OBJECTIVE_UPDATE, &ou);
+	NObjectiveUpdate ou = NObjectiveUpdate_init_default;
+	ou.ObjectiveId = _ca_index;
+	ou.Count = o->done;
+	NetServerSendMsg(n, peerId, GAME_EVENT_OBJECTIVE_UPDATE, &ou);
 	CA_FOREACH_END()
 
 	// Send all tiles, RLE
 	const Tile *tLast = NULL;
 	NTileSet ts = NTileSet_init_default;
+	ts.has_Pos = true;
 	struct vec2i pos;
 	for (pos.y = 0; pos.y < gMap.Size.y; pos.y++)
 	{
@@ -481,10 +486,20 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 				}
 				// Begin the next run
 				memset(&ts, 0, sizeof ts);
+				ts.has_Pos = true;
 				ts.Pos = Vec2i2Net(pos);
-				if (t->Class != NULL && t->Class->Name)
+				if (t->Class != NULL)
 				{
-					strcpy(ts.ClassName, t->Class->Name);
+					TileClassGetName(
+						ts.ClassName, t->Class, t->Class->Style,
+						t->Class->StyleType, t->Class->Mask, t->Class->MaskAlt);
+				}
+				if (t->ClassAlt != NULL)
+				{
+					TileClassGetName(
+						ts.ClassAltName, t->ClassAlt, t->ClassAlt->Style,
+						t->ClassAlt->StyleType, t->ClassAlt->Mask,
+						t->ClassAlt->MaskAlt);
 				}
 				ts.RunLength = 0;
 			}
@@ -519,33 +534,35 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 
 	// Send all pickups
 	CA_FOREACH(const Pickup, p, gPickups)
-		if (!p->isInUse) continue;
-		NAddPickup api = NAddPickup_init_default;
-		api.UID = p->UID;
-		strcpy(api.PickupClass, p->class->Name);
-		api.IsRandomSpawned = p->IsRandomSpawned;
-		api.SpawnerUID = p->SpawnerUID;
-		api.ThingFlags = p->thing.flags;
-		api.Pos = Vec2ToNet(p->thing.Pos);
-		NetServerSendMsg(n, peerId, GAME_EVENT_ADD_PICKUP, &api);
+	if (!p->isInUse)
+		continue;
+	NAddPickup api = NAddPickup_init_default;
+	api.UID = p->UID;
+	strcpy(api.PickupClass, p->class->Name);
+	api.IsRandomSpawned = p->IsRandomSpawned;
+	api.SpawnerUID = p->SpawnerUID;
+	api.ThingFlags = p->thing.flags;
+	api.Pos = Vec2ToNet(p->thing.Pos);
+	NetServerSendMsg(n, peerId, GAME_EVENT_ADD_PICKUP, &api);
 	CA_FOREACH_END()
 
 	// Send all map objects
 	CA_FOREACH(const TObject, o, gObjs)
-		if (!o->isInUse) continue;
-		NMapObjectAdd amo = NMapObjectAdd_init_default;
-		amo.UID = o->uid;
-		strcpy(amo.MapObjectClass, o->Class->Name);
-		amo.has_Mask = true;
-		amo.Mask = Color2Net(o->thing.CPic.Mask);
-		amo.has_Pos = true;
-		amo.Pos = Vec2ToNet(o->thing.Pos);
-		amo.ThingFlags = o->thing.flags;
-		amo.Health = o->Health;
-		LOG(LM_NET, LL_DEBUG,
-			"send add map object UID(%d) pos(%d, %d) flags(%x) health(%d)",
-			(int)amo.UID, amo.Pos.x, amo.Pos.y, amo.ThingFlags, amo.Health);
-		NetServerSendMsg(n, peerId, GAME_EVENT_MAP_OBJECT_ADD, &amo);
+	if (!o->isInUse)
+		continue;
+	NMapObjectAdd amo = NMapObjectAdd_init_default;
+	amo.UID = o->uid;
+	strcpy(amo.MapObjectClass, o->Class->Name);
+	amo.has_Mask = true;
+	amo.Mask = Color2Net(o->thing.CPic.Mask);
+	amo.has_Pos = true;
+	amo.Pos = Vec2ToNet(o->thing.Pos);
+	amo.ThingFlags = o->thing.flags;
+	amo.Health = o->Health;
+	LOG(LM_NET, LL_DEBUG,
+		"send add map object UID(%d) pos(%d, %d) flags(%x) health(%d)",
+		(int)amo.UID, amo.Pos.x, amo.Pos.y, amo.ThingFlags, amo.Health);
+	NetServerSendMsg(n, peerId, GAME_EVENT_MAP_OBJECT_ADD, &amo);
 	CA_FOREACH_END()
 
 	// If mission complete already, send message
@@ -591,12 +608,13 @@ static void SendConfig(
 void NetServerSendMsg(
 	NetServer *n, const int peerId, const GameEventType e, const void *data)
 {
-	if (!n->server) return;
+	if (!n->server)
+		return;
 
 	if (peerId >= 0)
 	{
-		LOG(LM_NET, LL_TRACE, "send msg(%d) to peers(%d)",
-			(int)e, (int)n->server->connectedPeers);
+		LOG(LM_NET, LL_TRACE, "send msg(%d) to peers(%d)", (int)e,
+			(int)n->server->connectedPeers);
 		// Find the peer and send
 		for (int i = 0; i < (int)n->server->peerCount; i++)
 		{
@@ -612,8 +630,8 @@ void NetServerSendMsg(
 	}
 	else
 	{
-		LOG(LM_NET, LL_TRACE, "bcast msg(%d) to peers(%d)",
-			(int)e, (int)n->server->connectedPeers);
+		LOG(LM_NET, LL_TRACE, "bcast msg(%d) to peers(%d)", (int)e,
+			(int)n->server->connectedPeers);
 		enet_host_broadcast(n->server, 0, NetEncode(e, data));
 	}
 }

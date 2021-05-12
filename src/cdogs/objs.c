@@ -483,7 +483,7 @@ void ObjAdd(const NMapObjectAdd amo)
 	o->isInUse = true;
 	LOG(LM_MAIN, LL_DEBUG,
 		"added object uid(%d) class(%s) health(%d) pos(%d, %d)", (int)amo.UID,
-		amo.MapObjectClass, amo.Health, amo.Pos.x, amo.Pos.y);
+		amo.MapObjectClass, amo.Health, (int)amo.Pos.x, (int)amo.Pos.y);
 
 	// Update pathfinding cache since this object could block a path
 	PathCacheClear(&gPathCache);
