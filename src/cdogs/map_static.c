@@ -135,23 +135,24 @@ void MapStaticLoadDynamic(MapBuilder *mb)
 	// Process the events to place dynamic objects
 	HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
 }
-static void AddCharacter(const CharacterPositions *cp);
+static void AddCharacter(const CharacterPlaces *cps);
 static void AddCharacters(const CArray *characters)
 {
-	CA_FOREACH(const CharacterPositions, cp, *characters)
-	AddCharacter(cp);
+	CA_FOREACH(const CharacterPlaces, cps, *characters)
+	AddCharacter(cps);
 	CA_FOREACH_END()
 }
-static void AddCharacter(const CharacterPositions *cp)
+static void AddCharacter(const CharacterPlaces *cps)
 {
 	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-	e.u.ActorAdd.CharId = cp->Index;
+	e.u.ActorAdd.CharId = cps->Index;
 	const Character *c = CArrayGet(
 		&gCampaign.Setting.characters.OtherChars, e.u.ActorAdd.CharId);
 	e.u.ActorAdd.Health = CharacterGetStartingHealth(c, true);
-	CA_FOREACH(const struct vec2i, pos, cp->Positions)
+	CA_FOREACH(const CharacterPlace, cp, cps->Places)
 	e.u.ActorAdd.UID = ActorsGetNextUID();
-	e.u.ActorAdd.Pos = Vec2ToNet(Vec2CenterOfTile(*pos));
+	e.u.ActorAdd.Pos = Vec2ToNet(Vec2CenterOfTile(cp->Pos));
+	e.u.ActorAdd.Direction = cp->Dir;
 	GameEventsEnqueue(&gGameEvents, e);
 	CA_FOREACH_END()
 }

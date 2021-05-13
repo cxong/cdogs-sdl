@@ -42,9 +42,14 @@ typedef struct
 } MapObjectPositions;
 typedef struct
 {
+	struct vec2i Pos;
+	direction_e Dir;
+} CharacterPlace;
+typedef struct
+{
 	int Index;
-	CArray Positions; // of struct vec2i
-} CharacterPositions;
+	CArray Places; // of CharacterPlace
+} CharacterPlaces;
 typedef struct
 {
 	struct vec2i Position;
@@ -110,8 +115,10 @@ void MissionStaticLayout(
 bool MissionStaticTryAddItem(
 	MissionStatic *m, const MapObject *mo, const struct vec2i pos);
 bool MissionStaticTryRemoveItemAt(MissionStatic *m, const struct vec2i pos);
-void MissionStaticAddCharacter(MissionStatic *m, const int ch, const struct vec2i pos);
+void MissionStaticAddCharacter(MissionStatic *m, const int ch, const CharacterPlace cp);
 bool MissionStaticTryRemoveCharacterAt(
+	MissionStatic *m, const struct vec2i pos);
+bool MissionStaticTryRotateCharacterAt(
 	MissionStatic *m, const struct vec2i pos);
 void MissionStaticAddKey(
 	MissionStatic *m, const int k, const struct vec2i pos);

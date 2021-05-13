@@ -43,7 +43,7 @@ void MissionStaticInit(MissionStatic *m)
 	CArrayInit(&m->Tiles, sizeof(int));
 	CArrayInit(&m->Access, sizeof(uint16_t));
 	CArrayInit(&m->Items, sizeof(MapObjectPositions));
-	CArrayInit(&m->Characters, sizeof(CharacterPositions));
+	CArrayInit(&m->Characters, sizeof(CharacterPlaces));
 	CArrayInit(&m->Objectives, sizeof(ObjectivePositions));
 	CArrayInit(&m->Keys, sizeof(KeyPositions));
 	CArrayInit(&m->Pickups, sizeof(PickupPositions));
@@ -251,6 +251,7 @@ static void ConvertOldTile(
 	CArrayPushBack(&m->Tiles, &tile);
 }
 static bool TryLoadPositions(CArray *a, const json_t *node);
+static bool TryLoadPlaces(CArray *a, const json_t *node);
 static const MapObject *LoadMapObjectRef(json_t *node, const int version);
 static const MapObject *LoadMapObjectWreckRef(
 	json_t *itemNode, const int version);
@@ -362,13 +363,27 @@ static void LoadStaticCharacters(MissionStatic *m, json_t *node, char *name)
 	chars = chars->child;
 	for (chars = chars->child; chars; chars = chars->next)
 	{
-		CharacterPositions cp;
-		LoadInt(&cp.Index, chars, "Index");
-		if (!TryLoadPositions(&cp.Positions, chars))
+		CharacterPlaces cps;
+		LoadInt(&cps.Index, chars, "Index");
+		CArrayInit(&cps.Places, sizeof(CharacterPlace));
+
+		// Try loading positions
+		CArray positions;
+		memset(&positions, 0, sizeof positions);
+		if (TryLoadPositions(&positions, chars))
 		{
-			continue;
+			CA_FOREACH(const struct vec2i, pos, positions)
+			CharacterPlace cp;
+			cp.Pos = *pos;
+			cp.Dir = rand() % DIRECTION_COUNT;
+			CArrayPushBack(&cps.Places, &cp);
+			CA_FOREACH_END()
 		}
-		CArrayPushBack(&m->Characters, &cp);
+		CArrayTerminate(&positions);
+		
+		TryLoadPlaces(&cps.Places, chars);
+
+		CArrayPushBack(&m->Characters, &cps);
 	}
 }
 static void LoadStaticObjectives(
@@ -500,6 +515,25 @@ static bool TryLoadPositions(CArray *a, const json_t *node)
 		position = position->next;
 		pos.y = atoi(position->text);
 		CArrayPushBack(a, &pos);
+	}
+	return true;
+}
+static bool TryLoadPlaces(CArray *a, const json_t *node)
+{
+	json_t *places = json_find_first_label(node, "Places");
+	if (!places || !places->child)
+	{
+		return false;
+	}
+	places = places->child;
+	for (places = places->child; places; places = places->next)
+	{
+		CharacterPlace cp;
+		LoadVec2i(&cp.Pos, places, "Pos");
+		int d;
+		LoadInt(&d, places, "Dir");
+		cp.Dir = (direction_e)d;
+		CArrayPushBack(a, &cp);
 	}
 	return true;
 }
@@ -690,6 +724,7 @@ static json_t *SaveStaticCSV(const CArray *values, const struct vec2i size)
 	return rows;
 }
 static void SavePositions(json_t *node, const CArray *positions);
+static void SaveCharacterPlaces(json_t *node, const CArray *cps);
 static json_t *SaveStaticItems(const MissionStatic *m)
 {
 	json_t *items = json_new_array();
@@ -704,10 +739,10 @@ static json_t *SaveStaticItems(const MissionStatic *m)
 static json_t *SaveStaticCharacters(const MissionStatic *m)
 {
 	json_t *chars = json_new_array();
-	CA_FOREACH(CharacterPositions, cp, m->Characters)
+	CA_FOREACH(const CharacterPlaces, cp, m->Characters)
 	json_t *charNode = json_new_object();
 	AddIntPair(charNode, "Index", cp->Index);
-	SavePositions(charNode, &cp->Positions);
+	SaveCharacterPlaces(charNode, &cp->Places);
 	json_insert_child(chars, charNode);
 	CA_FOREACH_END()
 	return chars;
@@ -761,6 +796,17 @@ static void SavePositions(json_t *node, const CArray *positions)
 	json_t *a = json_new_array();
 	CA_FOREACH(const struct vec2i, pos, *positions)
 	json_insert_child(a, SaveVec2i(*pos));
+	CA_FOREACH_END()
+	json_insert_pair_into_object(node, "Positions", a);
+}
+static void SaveCharacterPlaces(json_t *node, const CArray *cps)
+{
+	json_t *a = json_new_array();
+	CA_FOREACH(const CharacterPlace, cp, *cps)
+	json_t *cpNode = json_new_object();
+	AddVec2iPair(cpNode, "Pos", cp->Pos);
+	AddIntPair(cpNode, "Dir", (int)cp->Dir);
+	json_insert_child(a, cpNode);
 	CA_FOREACH_END()
 	json_insert_pair_into_object(node, "Positions", a);
 }
@@ -829,12 +875,12 @@ static void MapObjectPositionsCopy(CArray *dst, const CArray *src)
 static void CharacterPositionsCopy(CArray *dst, const CArray *src)
 {
 	CArrayInit(dst, src->elemSize);
-	CA_FOREACH(const CharacterPositions, p, *src)
-	CharacterPositions pCopy;
-	memset(&pCopy, 0, sizeof pCopy);
-	pCopy.Index = p->Index;
-	CArrayCopy(&pCopy.Positions, &p->Positions);
-	CArrayPushBack(dst, &pCopy);
+	CA_FOREACH(const CharacterPlaces, cp, *src)
+	CharacterPlaces cpCopy;
+	memset(&cpCopy, 0, sizeof cpCopy);
+	cpCopy.Index = cp->Index;
+	CArrayCopy(&cpCopy.Places, &cp->Places);
+	CArrayPushBack(dst, &cpCopy);
 	CA_FOREACH_END()
 }
 static void ObjectivePositionsCopy(CArray *dst, const CArray *src)
@@ -1015,6 +1061,8 @@ void MissionStaticLayout(
 }
 
 static bool TryRemovePosition(CArray *positions, const struct vec2i pos);
+static bool TryRemoveCharacterPlace(CArray *cps, const struct vec2i pos);
+static bool TryRotateCharacterPlace(CArray *cps, const struct vec2i pos);
 
 bool MissionStaticTryAddItem(
 	MissionStatic *m, const MapObject *mo, const struct vec2i pos)
@@ -1068,15 +1116,15 @@ bool MissionStaticTryRemoveItemAt(MissionStatic *m, const struct vec2i pos)
 	return false;
 }
 
-void MissionStaticAddCharacter(MissionStatic *m, const int ch, const struct vec2i pos)
+void MissionStaticAddCharacter(MissionStatic *m, const int ch, const CharacterPlace cp)
  {
 	 // Check if the character already has an entry, and add to its list
 	 // of positions
 	 bool hasAdded = false;
-	 CA_FOREACH(CharacterPositions, cp, m->Characters)
-	 if (cp->Index == ch)
+	 CA_FOREACH(CharacterPlaces, cps, m->Characters)
+	 if (cps->Index == ch)
 	 {
-		 CArrayPushBack(&cp->Positions, &pos);
+		 CArrayPushBack(&cps->Places, &cp);
 		 hasAdded = true;
 		 break;
 	 }
@@ -1084,23 +1132,34 @@ void MissionStaticAddCharacter(MissionStatic *m, const int ch, const struct vec2
 	 // If not, create a new entry
 	 if (!hasAdded)
 	 {
-		 CharacterPositions cp;
-		 cp.Index = ch;
-		 CArrayInit(&cp.Positions, sizeof(struct vec2i));
-		 CArrayPushBack(&cp.Positions, &pos);
-		 CArrayPushBack(&m->Characters, &cp);
+		 CharacterPlaces cps;
+		 cps.Index = ch;
+		 CArrayInit(&cps.Places, sizeof(CharacterPlace));
+		 CArrayPushBack(&cps.Places, &cp);
+		 CArrayPushBack(&m->Characters, &cps);
 	 }
- }
+}
 bool MissionStaticTryRemoveCharacterAt(
 	MissionStatic *m, const struct vec2i pos)
 {
-	CA_FOREACH(CharacterPositions, cp, m->Characters)
-	if (TryRemovePosition(&cp->Positions, pos))
+	CA_FOREACH(CharacterPlaces, cps, m->Characters)
+	if (TryRemoveCharacterPlace(&cps->Places, pos))
 	{
-		if (cp->Positions.size == 0)
+		if (cps->Places.size == 0)
 		{
 			CArrayDelete(&m->Characters, _ca_index);
 		}
+		return true;
+	}
+	CA_FOREACH_END()
+	return false;
+}
+bool MissionStaticTryRotateCharacterAt(
+	MissionStatic *m, const struct vec2i pos)
+{
+	CA_FOREACH(CharacterPlaces, cps, m->Characters)
+	if (TryRotateCharacterPlace(&cps->Places, pos))
+	{
 		return true;
 	}
 	CA_FOREACH_END()
@@ -1202,6 +1261,32 @@ static bool TryRemovePosition(CArray *positions, const struct vec2i pos)
 		{
 			CArrayTerminate(positions);
 		}
+		return true;
+	}
+	CA_FOREACH_END()
+	return false;
+}
+static bool TryRemoveCharacterPlace(CArray *cps, const struct vec2i pos)
+{
+	CA_FOREACH(const CharacterPlace, cp, *cps)
+	if (svec2i_is_equal(cp->Pos, pos))
+	{
+		CArrayDelete(cps, _ca_index);
+		if (cps->size == 0)
+		{
+			CArrayTerminate(cps);
+		}
+		return true;
+	}
+	CA_FOREACH_END()
+	return false;
+}
+static bool TryRotateCharacterPlace(CArray *cps, const struct vec2i pos)
+{
+	CA_FOREACH(CharacterPlace, cp, *cps)
+	if (svec2i_is_equal(cp->Pos, pos))
+	{
+		cp->Dir = DirectionRotate(cp->Dir, 1);
 		return true;
 	}
 	CA_FOREACH_END()

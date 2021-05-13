@@ -369,7 +369,12 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 			const Tile *tile = MapGetTile(&gMap, b->Pos);
 			if (TileIsClear(tile))
 			{
-				MissionStaticAddCharacter(&m->u.Static, b->u.ItemIndex, b->Pos);
+				CharacterPlace cp = {b->Pos, DIRECTION_DOWN};
+				MissionStaticAddCharacter(&m->u.Static, b->u.ItemIndex, cp);
+				return EDITOR_RESULT_CHANGED_AND_RELOAD;
+			}
+			else if (MissionStaticTryRotateCharacterAt(&m->u.Static, b->Pos))
+			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}
 		}

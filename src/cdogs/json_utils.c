@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2020 Cong Xu
+	Copyright (c) 2013-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -64,6 +64,16 @@ void AddColorPair(json_t *parent, const char *name, const color_t c)
 	char buf[COLOR_STR_BUF];
 	ColorStr(buf, c);
 	AddStringPair(parent, name, buf);
+}
+void AddVec2iPair(json_t *parent, const char *name, const struct vec2i v)
+{
+	json_t *node = json_new_array();
+	char buf[32];
+	sprintf(buf, "%d", v.x);
+	json_insert_child(node, json_new_number(buf));
+	sprintf(buf, "%d", v.y);
+	json_insert_child(node, json_new_number(buf));
+	json_insert_pair_into_object(parent, name, node);
 }
 void AddRect2iPair(json_t *parent, const char *name, const Rect2i r)
 {

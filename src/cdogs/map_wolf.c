@@ -618,6 +618,7 @@ static void LoadEntity(
 	const struct vec2i v, const int missionIndex)
 {
 	const CWEntity entity = CWChToEntity(ch);
+	CharacterPlace cp = {v, DIRECTION_DOWN};
 	switch (entity)
 	{
 	case CWENT_NONE:
@@ -868,43 +869,93 @@ static void LoadEntity(
 	}
 	break;
 	case CWENT_GHOST:
-		MissionStaticAddCharacter(m, (int)CHAR_GHOST, v);
+		MissionStaticAddCharacter(m, (int)CHAR_GHOST, cp);
 		break;
 	case CWENT_ANGEL:
-		MissionStaticAddCharacter(m, (int)CHAR_ANGEL, v);
+		MissionStaticAddCharacter(m, (int)CHAR_ANGEL, cp);
 		break;
 	case CWENT_DEAD_GUARD:
 		MissionStaticTryAddItem(m, StrMapObject("dead_guard"), v);
 		break;
 	case CWENT_DOG_E:
-	case CWENT_DOG_N: // fallthrough
-	case CWENT_DOG_W: // fallthrough
-	case CWENT_DOG_S: // fallthrough
-		MissionStaticAddCharacter(m, (int)CHAR_DOG, v);
+		cp.Dir = DIRECTION_RIGHT;
+		MissionStaticAddCharacter(m, (int)CHAR_DOG, cp);
+		break;
+	case CWENT_DOG_N:
+		cp.Dir = DIRECTION_UP;
+		MissionStaticAddCharacter(m, (int)CHAR_DOG, cp);
+		break;
+	case CWENT_DOG_W:
+		cp.Dir = DIRECTION_LEFT;
+		MissionStaticAddCharacter(m, (int)CHAR_DOG, cp);
+		break;
+	case CWENT_DOG_S:
+		cp.Dir = DIRECTION_DOWN;
+		MissionStaticAddCharacter(m, (int)CHAR_DOG, cp);
 		break;
 	case CWENT_GUARD_E:
-	case CWENT_GUARD_N: // fallthrough
-	case CWENT_GUARD_W: // fallthrough
-	case CWENT_GUARD_S: // fallthrough
-		MissionStaticAddCharacter(m, (int)CHAR_GUARD, v);
+		cp.Dir = DIRECTION_RIGHT;
+		MissionStaticAddCharacter(m, (int)CHAR_GUARD, cp);
+		break;
+	case CWENT_GUARD_N:
+		cp.Dir = DIRECTION_UP;
+		MissionStaticAddCharacter(m, (int)CHAR_GUARD, cp);
+		break;
+	case CWENT_GUARD_W:
+		cp.Dir = DIRECTION_LEFT;
+		MissionStaticAddCharacter(m, (int)CHAR_GUARD, cp);
+		break;
+	case CWENT_GUARD_S:
+		cp.Dir = DIRECTION_DOWN;
+		MissionStaticAddCharacter(m, (int)CHAR_GUARD, cp);
 		break;
 	case CWENT_SS_E:
-	case CWENT_SS_N: // fallthrough
-	case CWENT_SS_W: // fallthrough
-	case CWENT_SS_S: // fallthrough
-		MissionStaticAddCharacter(m, (int)CHAR_SS, v);
+		cp.Dir = DIRECTION_RIGHT;
+		MissionStaticAddCharacter(m, (int)CHAR_SS, cp);
+		break;
+	case CWENT_SS_N:
+		cp.Dir = DIRECTION_UP;
+		MissionStaticAddCharacter(m, (int)CHAR_SS, cp);
+		break;
+	case CWENT_SS_W:
+		cp.Dir = DIRECTION_LEFT;
+		MissionStaticAddCharacter(m, (int)CHAR_SS, cp);
+		break;
+	case CWENT_SS_S:
+		cp.Dir = DIRECTION_DOWN;
+		MissionStaticAddCharacter(m, (int)CHAR_SS, cp);
 		break;
 	case CWENT_MUTANT_E:
-	case CWENT_MUTANT_N: // fallthrough
-	case CWENT_MUTANT_W: // fallthrough
-	case CWENT_MUTANT_S: // fallthrough
-		MissionStaticAddCharacter(m, (int)CHAR_MUTANT, v);
+		cp.Dir = DIRECTION_RIGHT;
+		MissionStaticAddCharacter(m, (int)CHAR_MUTANT, cp);
+		break;
+	case CWENT_MUTANT_N:
+		cp.Dir = DIRECTION_UP;
+		MissionStaticAddCharacter(m, (int)CHAR_MUTANT, cp);
+		break;
+	case CWENT_MUTANT_W:
+		cp.Dir = DIRECTION_LEFT;
+		MissionStaticAddCharacter(m, (int)CHAR_MUTANT, cp);
+		break;
+	case CWENT_MUTANT_S:
+		cp.Dir = DIRECTION_DOWN;
+		MissionStaticAddCharacter(m, (int)CHAR_MUTANT, cp);
 		break;
 	case CWENT_OFFICER_E:
-	case CWENT_OFFICER_N: // fallthrough
-	case CWENT_OFFICER_W: // fallthrough
-	case CWENT_OFFICER_S: // fallthrough
-		MissionStaticAddCharacter(m, (int)CHAR_OFFICER, v);
+		cp.Dir = DIRECTION_RIGHT;
+		MissionStaticAddCharacter(m, (int)CHAR_OFFICER, cp);
+		break;
+	case CWENT_OFFICER_N:
+		cp.Dir = DIRECTION_UP;
+		MissionStaticAddCharacter(m, (int)CHAR_OFFICER, cp);
+		break;
+	case CWENT_OFFICER_W:
+		cp.Dir = DIRECTION_LEFT;
+		MissionStaticAddCharacter(m, (int)CHAR_OFFICER, cp);
+		break;
+	case CWENT_OFFICER_S:
+		cp.Dir = DIRECTION_DOWN;
+		MissionStaticAddCharacter(m, (int)CHAR_OFFICER, cp);
 		break;
 	case CWENT_TURN_E:
 	case CWENT_TURN_NE:
@@ -916,49 +967,49 @@ static void LoadEntity(
 	case CWENT_TURN_SE:
 		break;
 	case CWENT_TRANS:
-		MissionStaticAddCharacter(m, (int)CHAR_TRANS, v);
+		MissionStaticAddCharacter(m, (int)CHAR_TRANS, cp);
 		break;
 	case CWENT_UBER_MUTANT:
-		MissionStaticAddCharacter(m, (int)CHAR_UBERMUTANT, v);
+		MissionStaticAddCharacter(m, (int)CHAR_UBERMUTANT, cp);
 		break;
 	case CWENT_BARNACLE_WILHELM:
-		MissionStaticAddCharacter(m, (int)CHAR_WILHELM, v);
+		MissionStaticAddCharacter(m, (int)CHAR_WILHELM, cp);
 		break;
 	case CWENT_ROBED_HITLER:
-		MissionStaticAddCharacter(m, (int)CHAR_FAKE_HITLER, v);
+		MissionStaticAddCharacter(m, (int)CHAR_FAKE_HITLER, cp);
 		break;
 	case CWENT_DEATH_KNIGHT:
-		MissionStaticAddCharacter(m, (int)CHAR_DEATH_KNIGHT, v);
+		MissionStaticAddCharacter(m, (int)CHAR_DEATH_KNIGHT, cp);
 		break;
 	case CWENT_HITLER:
-		MissionStaticAddCharacter(m, (int)CHAR_MECHA_HITLER, v);
+		MissionStaticAddCharacter(m, (int)CHAR_MECHA_HITLER, cp);
 		break;
 	case CWENT_FETTGESICHT:
-		MissionStaticAddCharacter(m, (int)CHAR_FETTGESICHT, v);
+		MissionStaticAddCharacter(m, (int)CHAR_FETTGESICHT, cp);
 		break;
 	case CWENT_SCHABBS:
-		MissionStaticAddCharacter(m, (int)CHAR_SCHABBS, v);
+		MissionStaticAddCharacter(m, (int)CHAR_SCHABBS, cp);
 		break;
 	case CWENT_GRETEL:
-		MissionStaticAddCharacter(m, (int)CHAR_GRETEL, v);
+		MissionStaticAddCharacter(m, (int)CHAR_GRETEL, cp);
 		break;
 	case CWENT_HANS:
-		MissionStaticAddCharacter(m, (int)CHAR_HANS, v);
+		MissionStaticAddCharacter(m, (int)CHAR_HANS, cp);
 		break;
 	case CWENT_OTTO:
-		MissionStaticAddCharacter(m, (int)CHAR_OTTO, v);
+		MissionStaticAddCharacter(m, (int)CHAR_OTTO, cp);
 		break;
 	case CWENT_PACMAN_GHOST_RED:
-		MissionStaticAddCharacter(m, (int)CHAR_PACMAN_GHOST_RED, v);
+		MissionStaticAddCharacter(m, (int)CHAR_PACMAN_GHOST_RED, cp);
 		break;
 	case CWENT_PACMAN_GHOST_YELLOW:
-		MissionStaticAddCharacter(m, (int)CHAR_PACMAN_GHOST_YELLOW, v);
+		MissionStaticAddCharacter(m, (int)CHAR_PACMAN_GHOST_YELLOW, cp);
 		break;
 	case CWENT_PACMAN_GHOST_ROSE:
-		MissionStaticAddCharacter(m, (int)CHAR_PACMAN_GHOST_ROSE, v);
+		MissionStaticAddCharacter(m, (int)CHAR_PACMAN_GHOST_ROSE, cp);
 		break;
 	case CWENT_PACMAN_GHOST_BLUE:
-		MissionStaticAddCharacter(m, (int)CHAR_PACMAN_GHOST_BLUE, v);
+		MissionStaticAddCharacter(m, (int)CHAR_PACMAN_GHOST_BLUE, cp);
 		break;
 	default:
 		CASSERT(false, "unknown entity");

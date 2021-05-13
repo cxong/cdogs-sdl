@@ -157,5 +157,5 @@ direction_e DirectionRotate(const direction_e d, const int dClockwise)
 	{
 		di -= DIRECTION_COUNT;
 	}
-	return (direction_e)d;
+	return (direction_e)di;
 }
