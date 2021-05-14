@@ -332,8 +332,7 @@ static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 	int cmd = 0;
 
 	// Wake up if it can see a player
-	if ((actor->flags & FLAGS_SLEEPING) && actor->aiContext->Delay == 0 &&
-		CanSeeAPlayer(actor))
+	if (actor->aiContext->Delay == 0 && CanSeeAPlayer(actor))
 	{
 		AIWake(actor);
 	}

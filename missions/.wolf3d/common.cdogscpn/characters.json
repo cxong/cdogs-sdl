@@ -28,13 +28,13 @@
 		"Legs": "e2964dff",
 		"Hair": "9a9a9aff",
 		"Feet": "353787ff",
-		"speed": 256,
+		"speed": 258,
 		"Gun": "Guard Pistol",
 		"maxHealth": 25,
 		"flags": 128,
-		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
+		"probabilityToMove": 52,
+		"probabilityToTrack": 42,
+		"probabilityToShoot": 13,
 		"actionDelay": 15
 	},
 	{
@@ -48,9 +48,9 @@
 		"speed": 256,
 		"Gun": "Dog Bite",
 		"maxHealth": 1,
-		"flags": 128,
+		"flags": 0,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
+		"probabilityToTrack": 68,
 		"probabilityToShoot": 0,
 		"actionDelay": 15
 	},
@@ -68,8 +68,8 @@
 		"maxHealth": 100,
 		"flags": 128,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
+		"probabilityToTrack": 41,
+		"probabilityToShoot": 12,
 		"actionDelay": 15
 	},
 	{
@@ -86,8 +86,8 @@
 		"maxHealth": 55,
 		"flags": 1152,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
+		"probabilityToTrack": 42,
+		"probabilityToShoot": 12,
 		"actionDelay": 15
 	},
 	{
@@ -104,8 +104,8 @@
 		"maxHealth": 50,
 		"flags": 128,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
+		"probabilityToTrack": 40,
+		"probabilityToShoot": 12,
 		"actionDelay": 15
 	},
 	{
@@ -122,8 +122,8 @@
 		"maxHealth": 40,
 		"flags": 525440,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
+		"probabilityToTrack": 40,
+		"probabilityToShoot": 0,
 		"actionDelay": 15
 	},
 	{
@@ -140,8 +140,8 @@
 		"maxHealth": 40,
 		"flags": 525440,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
+		"probabilityToTrack": 40,
+		"probabilityToShoot": 0,
 		"actionDelay": 15
 	},
 	{
@@ -158,8 +158,8 @@
 		"maxHealth": 40,
 		"flags": 525440,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
+		"probabilityToTrack": 40,
+		"probabilityToShoot": 0,
 		"actionDelay": 15
 	},
 	{
@@ -176,8 +176,8 @@
 		"maxHealth": 40,
 		"flags": 525440,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
+		"probabilityToTrack": 40,
+		"probabilityToShoot": 0,
 		"actionDelay": 15
 	},
 	{
@@ -194,8 +194,8 @@
 		"maxHealth": 1000,
 		"flags": 128,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
+		"probabilityToTrack": 40,
+		"probabilityToShoot": 12,
 		"actionDelay": 15
 	},
 	{
@@ -212,8 +212,8 @@
 		"maxHealth": 1250,
 		"flags": 1152,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
+		"probabilityToTrack": 40,
+		"probabilityToShoot": 12,
 		"actionDelay": 15
 	},
 	{
@@ -230,8 +230,8 @@
 		"maxHealth": 350,
 		"flags": 1152,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
+		"probabilityToTrack": 40,
+		"probabilityToShoot": 12,
 		"actionDelay": 15
 	},
 	{
@@ -248,8 +248,8 @@
 		"maxHealth": 1000,
 		"flags": 1152,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
+		"probabilityToTrack": 40,
+		"probabilityToShoot": 12,
 		"actionDelay": 15
 	},
 	{
@@ -266,8 +266,8 @@
 		"maxHealth": 750,
 		"flags": 1152,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
+		"probabilityToTrack": 40,
+		"probabilityToShoot": 12,
 		"actionDelay": 15
 	},
 	{
@@ -284,8 +284,8 @@
 		"maxHealth": 1000,
 		"flags": 128,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
+		"probabilityToTrack": 40,
+		"probabilityToShoot": 12,
 		"actionDelay": 15
 	},
 	{
@@ -302,8 +302,8 @@
 		"maxHealth": 1000,
 		"flags": 128,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
+		"probabilityToTrack": 40,
+		"probabilityToShoot": 12,
 		"actionDelay": 15
 	},
 	{
@@ -320,8 +320,8 @@
 		"maxHealth": 1000,
 		"flags": 128,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
+		"probabilityToTrack": 40,
+		"probabilityToShoot": 12,
 		"actionDelay": 15
 	},
 	{
@@ -338,8 +338,8 @@
 		"maxHealth": 1000,
 		"flags": 128,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
+		"probabilityToTrack": 40,
+		"probabilityToShoot": 12,
 		"actionDelay": 15
 	},
 	{
@@ -356,8 +356,8 @@
 		"maxHealth": 1100,
 		"flags": 128,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
+		"probabilityToTrack": 40,
+		"probabilityToShoot": 12,
 		"actionDelay": 15
 	},
 	{
@@ -374,8 +374,8 @@
 		"maxHealth": 1200,
 		"flags": 1152,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
+		"probabilityToTrack": 40,
+		"probabilityToShoot": 12,
 		"actionDelay": 15
 	},
 	{
@@ -392,8 +392,8 @@
 		"maxHealth": 1400,
 		"flags": 128,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
+		"probabilityToTrack": 40,
+		"probabilityToShoot": 12,
 		"actionDelay": 15
 	},
 	{
@@ -410,7 +410,7 @@
 		"maxHealth": 12,
 		"flags": 3200,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
+		"probabilityToTrack": 60,
 		"probabilityToShoot": 2,
 		"actionDelay": 15
 	},
@@ -427,8 +427,8 @@
 		"maxHealth": 1600,
 		"flags": 1152,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
+		"probabilityToTrack": 40,
+		"probabilityToShoot": 12,
 		"actionDelay": 15
 	}]
 }
