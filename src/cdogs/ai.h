@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013, 2017 Cong Xu
+    Copyright (c) 2013, 2017, 2021 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -57,3 +57,5 @@ void CreateEnemies(void);
 int AICommand(const int ticks);
 void AICommandLast(const int ticks);
 void AIAddRandomEnemies(const int enemies, const Mission *m);
+
+void AIWake(TActor *a);

@@ -56,6 +56,7 @@
 
 #include "actor_fire.h"
 #include "actor_placement.h"
+#include "ai.h"
 #include "ai_coop.h"
 #include "ai_utils.h"
 #include "ammo.h"
@@ -1648,10 +1649,9 @@ static void ActorTakeHit(
 	const special_damage_e damage)
 {
 	// Wake up if this is an AI
-	if (!gCampaign.IsClient && actor->aiContext)
+	if (!gCampaign.IsClient)
 	{
-		actor->flags &= ~FLAGS_SLEEPING;
-		ActorSetAIState(actor, AI_STATE_NONE);
+		AIWake(actor);
 	}
 	if (ActorIsInvulnerable(
 			actor, flags, playerUID, gCampaign.Entry.Mode, damage))

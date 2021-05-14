@@ -325,7 +325,6 @@ int AICommand(const int ticks)
 	CA_FOREACH_END()
 	return count;
 }
-static void Wake(TActor *a);
 static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 {
 	const CharBot *bot = ActorGetCharacter(actor)->bot;
@@ -336,7 +335,7 @@ static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 	if ((actor->flags & FLAGS_SLEEPING) && actor->aiContext->Delay == 0 &&
 		CanSeeAPlayer(actor))
 	{
-		Wake(actor);
+		AIWake(actor);
 	}
 	// Go to sleep if the player's too far away
 	if (!(actor->flags & FLAGS_SLEEPING) && actor->aiContext->Delay == 0 &&
@@ -462,8 +461,9 @@ static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 	}
 	return cmd;
 }
-static void Wake(TActor *a)
+void AIWake(TActor *a)
 {
+	if (!a->aiContext || !(a->flags & FLAGS_SLEEPING)) return;
 	a->flags &= ~FLAGS_SLEEPING;
 	ActorSetAIState(a, AI_STATE_NONE);
 
