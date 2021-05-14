@@ -104,6 +104,12 @@ Uint32 ticksAutosave;
 Uint32 sTicksElapsed;
 bool fileChanged = false;
 
+#ifdef __APPLE__
+#define KMOD_CMD KMOD_GUI
+#else
+#define KMOD_CMD KMOD_CTRL
+#endif
+
 static struct vec2i GetMouseTile(EventHandlers *e)
 {
 	Mission *m = CampaignGetCurrentMission(&gCampaign);
@@ -517,7 +523,7 @@ static void HelpScreen(void)
 		"==============\n"
 		"Escape:                         Back or quit\n"
 		"Ctrl+E:                         Go to character editor\n"
-		"Ctrl+N:                         New mission or character\n"
+		"Ctrl+N:                         New mission\n"
 		"Ctrl+O:                         Open file\n"
 		"Ctrl+S:                         Save file\n"
 		"Ctrl+X, C, V:                   Cut/copy/paste\n"
@@ -754,7 +760,7 @@ static HandleInputResult HandleInput(
 	{
 		result.Redraw = true;
 	}
-	if (gEventHandlers.keyboard.modState & (KMOD_ALT | KMOD_CTRL))
+	if (gEventHandlers.keyboard.modState & KMOD_CMD)
 	{
 		const SDL_Keycode kc = SDL_GetKeyFromScancode(sc);
 		switch (kc)
