@@ -149,6 +149,23 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 		e.u.Score.PlayerUID = a->PlayerUID;
 		e.u.Score.Score = p->class->u.Score;
 		GameEventsEnqueue(&gGameEvents, e);
+		
+		e = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+		e.u.AddParticle.Class =
+			StrParticleClass(&gParticleClasses, "score_text");
+		e.u.AddParticle.ActorUID = a->uid;
+		e.u.AddParticle.Pos = p->thing.Pos;
+		e.u.AddParticle.DZ = 3;
+		if (gCampaign.Setting.Ammo)
+		{
+			sprintf(e.u.AddParticle.Text, "$%d", p->class->u.Score);
+		}
+		else
+		{
+			sprintf(e.u.AddParticle.Text, "+%d", p->class->u.Score);
+		}
+		GameEventsEnqueue(&gGameEvents, e);
+
 		sound = "pickup";
 		UpdateMissionObjective(
 			&gMission, p->thing.flags, OBJECTIVE_COLLECT, 1);

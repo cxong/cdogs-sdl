@@ -359,6 +359,13 @@
       "GravityFactor": 0
     },
     {
+      "Name": "score_text",
+      "Type": "Text",
+      "TextMask": "ffff00",
+      "Range": 40,
+      "GravityFactor": 0
+    },
+    {
       "Name": "trail",
       "Pic": {
         "Type": "Animated",
