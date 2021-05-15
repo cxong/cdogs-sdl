@@ -808,7 +808,7 @@ static void SaveCharacterPlaces(json_t *node, const CArray *cps)
 	AddIntPair(cpNode, "Dir", (int)cp->Dir);
 	json_insert_child(a, cpNode);
 	CA_FOREACH_END()
-	json_insert_pair_into_object(node, "Positions", a);
+	json_insert_pair_into_object(node, "Places", a);
 }
 static json_t *SaveExits(const MissionStatic *m)
 {

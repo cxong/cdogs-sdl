@@ -1111,168 +1111,168 @@
 		}],
 		"StaticCharacters": [{
 			"Index": 0,
-			"Positions": [{
+			"Places": [{
 				"Pos": [1, 17],
 				"Dir": 2
 			}]
 		},
 		{
 			"Index": 1,
-			"Positions": [{
+			"Places": [{
 				"Pos": [3, 17],
 				"Dir": 1
 			}]
 		},
 		{
 			"Index": 2,
-			"Positions": [{
+			"Places": [{
 				"Pos": [5, 17],
 				"Dir": 7
 			}]
 		},
 		{
 			"Index": 3,
-			"Positions": [{
+			"Places": [{
 				"Pos": [7, 17],
 				"Dir": 6
 			}]
 		},
 		{
 			"Index": 4,
-			"Positions": [{
+			"Places": [{
 				"Pos": [9, 17],
 				"Dir": 0
 			}]
 		},
 		{
 			"Index": 5,
-			"Positions": [{
+			"Places": [{
 				"Pos": [11, 17],
 				"Dir": 6
 			}]
 		},
 		{
 			"Index": 6,
-			"Positions": [{
+			"Places": [{
 				"Pos": [13, 17],
 				"Dir": 0
 			}]
 		},
 		{
 			"Index": 7,
-			"Positions": [{
+			"Places": [{
 				"Pos": [15, 17],
 				"Dir": 7
 			}]
 		},
 		{
 			"Index": 8,
-			"Positions": [{
+			"Places": [{
 				"Pos": [1, 19],
 				"Dir": 5
 			}]
 		},
 		{
 			"Index": 9,
-			"Positions": [{
+			"Places": [{
 				"Pos": [3, 19],
 				"Dir": 6
 			}]
 		},
 		{
 			"Index": 10,
-			"Positions": [{
+			"Places": [{
 				"Pos": [5, 19],
 				"Dir": 0
 			}]
 		},
 		{
 			"Index": 11,
-			"Positions": [{
+			"Places": [{
 				"Pos": [7, 19],
 				"Dir": 0
 			}]
 		},
 		{
 			"Index": 12,
-			"Positions": [{
+			"Places": [{
 				"Pos": [9, 19],
 				"Dir": 2
 			}]
 		},
 		{
 			"Index": 13,
-			"Positions": [{
+			"Places": [{
 				"Pos": [11, 19],
 				"Dir": 0
 			}]
 		},
 		{
 			"Index": 14,
-			"Positions": [{
+			"Places": [{
 				"Pos": [13, 19],
 				"Dir": 5
 			}]
 		},
 		{
 			"Index": 15,
-			"Positions": [{
+			"Places": [{
 				"Pos": [15, 19],
 				"Dir": 1
 			}]
 		},
 		{
 			"Index": 16,
-			"Positions": [{
+			"Places": [{
 				"Pos": [1, 21],
 				"Dir": 5
 			}]
 		},
 		{
 			"Index": 17,
-			"Positions": [{
+			"Places": [{
 				"Pos": [3, 21],
 				"Dir": 1
 			}]
 		},
 		{
 			"Index": 18,
-			"Positions": [{
+			"Places": [{
 				"Pos": [5, 21],
 				"Dir": 7
 			}]
 		},
 		{
 			"Index": 19,
-			"Positions": [{
+			"Places": [{
 				"Pos": [7, 21],
 				"Dir": 0
 			}]
 		},
 		{
 			"Index": 20,
-			"Positions": [{
+			"Places": [{
 				"Pos": [9, 21],
 				"Dir": 3
 			}]
 		},
 		{
 			"Index": 21,
-			"Positions": [{
+			"Places": [{
 				"Pos": [11, 21],
 				"Dir": 0
 			}]
 		},
 		{
 			"Index": 22,
-			"Positions": [{
+			"Places": [{
 				"Pos": [13, 21],
 				"Dir": 6
 			}]
 		},
 		{
 			"Index": 23,
-			"Positions": [{
+			"Places": [{
 				"Pos": [15, 21],
 				"Dir": 7
 			}]
