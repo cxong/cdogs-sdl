@@ -323,6 +323,7 @@ typedef struct _NThingDamage {
     float Mass;
     uint32_t Flags;
     int32_t Special;
+    int32_t SpecialTicks;
 } NThingDamage;
 
 typedef struct _NTileSet {
@@ -380,7 +381,7 @@ extern "C" {
 #define NPlayerRemove_init_default               {0}
 #define NConfig_init_default                     {"", ""}
 #define NTileSet_init_default                    {false, NVec2i_init_default, "", "", 0}
-#define NThingDamage_init_default                {0, 0, 0, 0, false, NVec2_init_default, 0, 0, 0}
+#define NThingDamage_init_default                {0, 0, 0, 0, false, NVec2_init_default, 0, 0, 0, 0}
 #define NMapObjectAdd_init_default               {0, "", false, NVec2_init_default, 0, 0, false, NColor_init_default}
 #define NMapObjectRemove_init_default            {0, 0, 0}
 #define NScore_init_default                      {0, 0}
@@ -429,7 +430,7 @@ extern "C" {
 #define NPlayerRemove_init_zero                  {0}
 #define NConfig_init_zero                        {"", ""}
 #define NTileSet_init_zero                       {false, NVec2i_init_zero, "", "", 0}
-#define NThingDamage_init_zero                   {0, 0, 0, 0, false, NVec2_init_zero, 0, 0, 0}
+#define NThingDamage_init_zero                   {0, 0, 0, 0, false, NVec2_init_zero, 0, 0, 0, 0}
 #define NMapObjectAdd_init_zero                  {0, "", false, NVec2_init_zero, 0, 0, false, NColor_init_zero}
 #define NMapObjectRemove_init_zero               {0, 0, 0}
 #define NScore_init_zero                         {0, 0}
@@ -622,6 +623,7 @@ extern "C" {
 #define NThingDamage_Mass_tag                    6
 #define NThingDamage_Flags_tag                   7
 #define NThingDamage_Special_tag                 8
+#define NThingDamage_SpecialTicks_tag            9
 #define NTileSet_Pos_tag                         1
 #define NTileSet_ClassName_tag                   2
 #define NTileSet_ClassAltName_tag                3
@@ -745,7 +747,8 @@ X(a, STATIC,   SINGULAR, INT32,    Power,             4) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  Vel,               5) \
 X(a, STATIC,   SINGULAR, FLOAT,    Mass,              6) \
 X(a, STATIC,   SINGULAR, UINT32,   Flags,             7) \
-X(a, STATIC,   SINGULAR, INT32,    Special,           8)
+X(a, STATIC,   SINGULAR, INT32,    Special,           8) \
+X(a, STATIC,   SINGULAR, INT32,    SpecialTicks,      9)
 #define NThingDamage_CALLBACK NULL
 #define NThingDamage_DEFAULT NULL
 #define NThingDamage_Vel_MSGTYPE NVec2
@@ -1157,7 +1160,7 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 #define NPlayerRemove_size                       6
 #define NConfig_size                             260
 #define NTileSet_size                            295
-#define NThingDamage_size                        73
+#define NThingDamage_size                        84
 #define NMapObjectAdd_size                       178
 #define NMapObjectRemove_size                    23
 #define NScore_size                              17

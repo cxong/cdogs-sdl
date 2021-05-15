@@ -137,10 +137,6 @@ void DamageMelee(const NActorMelee m)
 					RAND_FLOAT(-MELEE_SPREAD_FACTOR, MELEE_SPREAD_FACTOR))),
 			MELEE_VEL_SCALE);
 		Damage(
-			vel,
-			b->Power, b->Mass,
-			a->flags, a,
-			(ThingKind)m.TargetKind, m.TargetUID,
-			SPECIAL_NONE);
+			vel, b, a->flags, a, (ThingKind)m.TargetKind, m.TargetUID);
 	}
 }

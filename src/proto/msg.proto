@@ -84,6 +84,7 @@ message NThingDamage {
     float Mass = 6;
 	uint32 Flags = 7;
 	int32 Special = 8;
+	int32 SpecialTicks = 9;
 }
 
 message NMapObjectAdd {

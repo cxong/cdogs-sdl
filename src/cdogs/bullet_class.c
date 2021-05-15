@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2019 Cong Xu
+	Copyright (c) 2013-2019, 2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -65,6 +65,12 @@ BulletClasses gBulletClasses;
 
 #define SPECIAL_LOCK 12
 #define WALL_MARK_Z 5
+// Special damage durations
+#define FLAMED_COUNT 10
+#define POISONED_COUNT 8
+#define MAX_POISONED_COUNT 140
+#define PETRIFIED_COUNT 95
+#define CONFUSED_COUNT 700
 
 // TODO: use map structure?
 BulletClass *StrBulletClass(const char *s)
@@ -555,7 +561,7 @@ static HitType GetHitType(
 		break;
 	}
 	if (bullet->thing.SoundLock > 0 ||
-		!HasHitSound(ti->kind, tUID, bullet->bulletClass->Special, true))
+		!HasHitSound(ti->kind, tUID, bullet->bulletClass->Special.Effect, true))
 	{
 		ht = HIT_NONE;
 	}
@@ -608,9 +614,8 @@ static void OnHit(HitItemData *data, Thing *target)
 	data->HitType = GetHitType(target, data->Obj, &targetUID);
 	const TActor *source = ActorGetByUID(data->Obj->ActorUID);
 	Damage(
-		data->Obj->thing.Vel, data->Obj->bulletClass->Power,
-		data->Obj->bulletClass->Mass, data->Obj->flags, source, target->kind,
-		targetUID, data->Obj->bulletClass->Special);
+		data->Obj->thing.Vel, data->Obj->bulletClass, data->Obj->flags, source, target->kind,
+		targetUID);
 	if (data->Obj->thing.SoundLock <= 0)
 	{
 		data->Obj->thing.SoundLock += SOUND_LOCK_THING;
@@ -625,7 +630,7 @@ static void OnHit(HitItemData *data, Thing *target)
 	}
 }
 
-#define VERSION 3
+#define VERSION 4
 static void LoadBullet(
 	BulletClass *b, json_t *node, const BulletClass *defaultBullet,
 	const int version);
@@ -763,13 +768,54 @@ static void LoadBullet(
 	}
 
 	LoadVec2i(&b->Size, node, "Size");
+
 	tmp = NULL;
-	LoadStr(&tmp, node, "Special");
-	if (tmp != NULL)
+	if (version < 4)
 	{
-		b->Special = StrSpecialDamage(tmp);
-		CFREE(tmp);
+		LoadStr(&tmp, node, "Special");
+		if (tmp != NULL)
+		{
+			b->Special.Effect = StrSpecialDamage(tmp);
+			CFREE(tmp);
+		}
 	}
+	else
+	{
+		if (json_find_first_label(node, "Special"))
+		{
+			json_t *special = json_find_first_label(node, "Special")->child;
+			LoadStr(&tmp, special, "Effect");
+			if (tmp != NULL)
+			{
+				b->Special.Effect = StrSpecialDamage(tmp);
+				CFREE(tmp);
+			}
+			LoadInt(&b->Special.Ticks, special, "Ticks");
+		}
+	}
+	if (b->Special.Effect != SPECIAL_NONE && b->Special.Ticks == 0)
+	{
+		// Default special damage ticks
+		switch (b->Special.Effect)
+		{
+		case SPECIAL_FLAME:
+			b->Special.Ticks = FLAMED_COUNT;
+			break;
+		case SPECIAL_POISON:
+			b->Special.Ticks = POISONED_COUNT;
+			break;
+		case SPECIAL_PETRIFY:
+			b->Special.Ticks = PETRIFIED_COUNT;
+			break;
+		case SPECIAL_CONFUSE:
+			b->Special.Ticks = CONFUSED_COUNT;
+			break;
+		default:
+			CASSERT(false, "unknown special damage");
+			break;
+		}
+	}
+
 	LoadBool(&b->HurtAlways, node, "HurtAlways");
 	LoadBool(&b->Persists, node, "Persists");
 	LoadParticle(&b->Spark, node, "Spark");

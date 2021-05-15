@@ -1547,34 +1547,26 @@ bool ActorIsImmune(const TActor *actor, const special_damage_e damage)
 	return 0;
 }
 
-// Special damage durations
-#define FLAMED_COUNT 10
-#define POISONED_COUNT 8
 #define MAX_POISONED_COUNT 140
-#define PETRIFIED_COUNT 95
-#define CONFUSED_COUNT 700
 
-void ActorTakeSpecialDamage(TActor *actor, special_damage_e damage)
+static void ActorTakeSpecialDamage(TActor *actor, const special_damage_e damage, const int ticks)
 {
 	switch (damage)
 	{
 	case SPECIAL_FLAME:
-		actor->flamed = FLAMED_COUNT;
+		actor->flamed = ticks;
 		break;
 	case SPECIAL_POISON:
-		if (actor->poisoned < MAX_POISONED_COUNT)
-		{
-			actor->poisoned += POISONED_COUNT;
-		}
+		actor->poisoned = MAX(actor->poisoned + ticks, MAX_POISONED_COUNT);
 		break;
 	case SPECIAL_PETRIFY:
 		if (!actor->petrified)
 		{
-			actor->petrified = PETRIFIED_COUNT;
+			actor->petrified = ticks;
 		}
 		break;
 	case SPECIAL_CONFUSE:
-		actor->confused = CONFUSED_COUNT;
+		actor->confused = ticks;
 		break;
 	default:
 		// do nothing
@@ -1584,13 +1576,13 @@ void ActorTakeSpecialDamage(TActor *actor, special_damage_e damage)
 
 static void ActorTakeHit(
 	TActor *actor, const int flags, const int playerUID,
-	const special_damage_e damage);
+	const special_damage_e damage, const int specialTicks);
 void ActorHit(const NThingDamage d)
 {
 	TActor *a = ActorGetByUID(d.UID);
 	if (!a->isInUse)
 		return;
-	ActorTakeHit(a, d.Flags, d.SourceActorUID, d.Special);
+	ActorTakeHit(a, d.Flags, d.SourceActorUID, d.Special, d.SpecialTicks);
 	if (d.Power > 0)
 	{
 		DamageActor(a, d.Power, d.SourceActorUID);
@@ -1646,7 +1638,7 @@ void ActorHit(const NThingDamage d)
 
 static void ActorTakeHit(
 	TActor *actor, const int flags, const int playerUID,
-	const special_damage_e damage)
+	const special_damage_e damage, const int specialTicks)
 {
 	// Wake up if this is an AI
 	if (!gCampaign.IsClient)
@@ -1658,7 +1650,7 @@ static void ActorTakeHit(
 	{
 		return;
 	}
-	ActorTakeSpecialDamage(actor, damage);
+	ActorTakeSpecialDamage(actor, damage, specialTicks);
 }
 
 bool ActorIsInvulnerable(

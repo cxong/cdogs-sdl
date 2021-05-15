@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, 2018-2019 Cong Xu
+    Copyright (c) 2013-2015, 2018-2019, 2021 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -79,7 +79,11 @@ typedef struct
 	int Power;
 	float Mass;
 	struct vec2i Size;
-	special_damage_e Special;
+	struct
+	{
+		special_damage_e Effect;
+		int Ticks;
+	} Special;
 	bool HurtAlways;
 	bool Persists;	// remains even after hitting walls/items
 	const ParticleClass *Spark;

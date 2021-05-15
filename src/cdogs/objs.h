@@ -102,12 +102,10 @@ bool HasHitSound(
 	const special_damage_e special, const bool allowFriendlyHitSound);
 void Damage(
 	const struct vec2 hitVector,
-	const int power,
-	const float mass,
+	const BulletClass *bullet,
 	const int flags,
 	const TActor *source,
-	const ThingKind targetKind, const int targetUID,
-	const special_damage_e special);
+	const ThingKind targetKind, const int targetUID);
 
 void ObjsInit(void);
 void ObjsTerminate(void);
