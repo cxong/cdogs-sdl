@@ -112,6 +112,16 @@
       "SoundLockLength": 10,
       "CanShoot": false,
       "CanDrop": false
+    },
+    {
+      "Name": "Flamethrower",
+      "Pic": "",
+      "Bullet": "fireball",
+      "Cost": 1,
+      "Lock": 30,
+      "Sound": "fireball",
+      "MuzzleFlashParticle": "",
+      "CanDrop": false
     }
   ]
 }
