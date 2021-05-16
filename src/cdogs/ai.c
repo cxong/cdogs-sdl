@@ -332,9 +332,15 @@ static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 	int cmd = 0;
 
 	// Wake up if it can see a player
-	if (actor->aiContext->Delay == 0 && CanSeeAPlayer(actor))
+	if ((actor->flags & FLAGS_SLEEPING) &&
+		actor->aiContext->Delay == 0 && CanSeeAPlayer(actor))
 	{
 		AIWake(actor);
+	}
+	// Fully wake up
+	if ((actor->flags & FLAGS_WAKING) && actor->aiContext->Delay == 0)
+	{
+		actor->flags &= ~FLAGS_WAKING;
 	}
 	// Go to sleep if the player's too far away
 	if (!(actor->flags & FLAGS_SLEEPING) && actor->aiContext->Delay == 0 &&
@@ -343,11 +349,13 @@ static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 		if (!IsCloseToPlayer(actor->Pos, 40 * 16))
 		{
 			actor->flags |= FLAGS_SLEEPING;
+			actor->flags &= ~FLAGS_WAKING;
 			ActorSetAIState(actor, AI_STATE_IDLE);
 		}
 	}
 
-	if (actor->flags & FLAGS_SLEEPING)
+	// Don't do anything if the AI is sleeping or waking
+	if (actor->flags & (FLAGS_SLEEPING | FLAGS_WAKING))
 	{
 		return cmd;
 	}
@@ -464,6 +472,7 @@ void AIWake(TActor *a)
 {
 	if (!a->aiContext || !(a->flags & FLAGS_SLEEPING)) return;
 	a->flags &= ~FLAGS_SLEEPING;
+	a->flags |= FLAGS_WAKING;
 	ActorSetAIState(a, AI_STATE_NONE);
 
 	// Don't play alert sound for invisible enemies
