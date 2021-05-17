@@ -63,7 +63,6 @@
 
 BulletClasses gBulletClasses;
 
-#define SPECIAL_LOCK 12
 #define WALL_MARK_Z 5
 // Special damage durations
 #define FLAMED_COUNT 10
@@ -156,7 +155,6 @@ bool BulletUpdate(struct MobileObject *obj, const int ticks)
 {
 	ThingUpdate(&obj->thing, ticks);
 	obj->count += ticks;
-	obj->specialLock = MAX(0, obj->specialLock - ticks);
 	if (obj->count < obj->bulletClass->Delay)
 	{
 		return true;
@@ -610,6 +608,10 @@ static void SetClosestCollision(
 }
 static void OnHit(HitItemData *data, Thing *target)
 {
+	if (gCampaign.IsClient)
+	{
+		return;
+	}
 	int targetUID = -1;
 	data->HitType = GetHitType(target, data->Obj, &targetUID);
 	const TActor *source = ActorGetByUID(data->Obj->ActorUID);
@@ -623,10 +625,6 @@ static void OnHit(HitItemData *data, Thing *target)
 	if (target->SoundLock <= 0)
 	{
 		target->SoundLock += SOUND_LOCK_THING;
-	}
-	if (data->Obj->specialLock <= 0)
-	{
-		data->Obj->specialLock += SPECIAL_LOCK;
 	}
 }
 

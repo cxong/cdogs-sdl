@@ -490,16 +490,16 @@ static const Pic *GetBodyPic(
 	CASSERT(numBarrels <= 2, "up to 2 barrels supported");
 	const char *upperPose = "";
 	const NamedSprites *ns = NULL;
+	if (numBarrels == 1)
+	{
+		upperPose = "_handgun";
+	}
+	else if (numBarrels == 2)
+	{
+		upperPose = "_dualgun";
+	}
 	for (;;)
 	{
-		if (numBarrels == 1)
-		{
-			upperPose = "_handgun";
-		}
-		else if (numBarrels == 2)
-		{
-			upperPose = "_dualgun";
-		}
 		sprintf(
 			buf, "chars/bodies/%s/upper_%s%s", cs->Name,
 			anim == ACTORANIMATION_WALKING ? "run" : "idle",

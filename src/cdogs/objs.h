@@ -85,8 +85,6 @@ typedef struct MobileObject
 	int count;
 	int range;
 	int flags;
-	// Don't trigger special effects too frequently
-	int specialLock;
 	Thing thing;
 	Emitter trail;
 	bool isInUse;
