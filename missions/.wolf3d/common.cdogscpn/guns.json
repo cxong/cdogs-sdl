@@ -51,6 +51,7 @@
       "Ammo": "Ammo"
     },
     {
+      "Pic": "pistol",
       "Name": "Guard Pistol",
       "Icon": "pistol",
       "Bullet": "bullet_enemy",
