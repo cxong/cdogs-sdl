@@ -178,7 +178,7 @@
         "Type": "Directional",
         "Sprites": "chars/heads/madbugeye"
       },
-      "Body": "big",
+      "Body": "angel",
       "Sounds": "angel"
     }
   ]

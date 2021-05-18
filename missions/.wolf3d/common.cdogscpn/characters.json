@@ -423,7 +423,7 @@
 		"Hair": "000000ff",
 		"Feet": "ee0000ff",
 		"speed": 192,
-		"Gun": "Dual Chain Gun",
+		"Gun": "Fists",
 		"maxHealth": 1600,
 		"flags": 1152,
 		"probabilityToMove": 50,

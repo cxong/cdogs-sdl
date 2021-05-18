@@ -25,7 +25,11 @@ angle = -45
 axis = 2 # z-axis
 platform = bpy.data.objects["armature"]
 scene = bpy.data.scenes[0]
-platform.animation_data.action = bpy.data.actions[action]
+try:
+    platform.animation_data.action = bpy.data.actions[action]
+except KeyError:
+    print(f"action {action} not found")
+    sys.exit(1)
 for collection in bpy.data.collections.keys():
     bpy.data.collections[collection].hide_render = collection not in collections
 render = scene.render
