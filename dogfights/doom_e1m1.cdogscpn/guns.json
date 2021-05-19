@@ -30,6 +30,7 @@
       "Ammo": "Shells"
     },
     {
+      "Pic": "chaingun",
       "Name": "Chaingun",
       "Icon": "machine_gun",
       "Bullet": "10mm",
