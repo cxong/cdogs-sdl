@@ -649,6 +649,7 @@ static void NextLoop(RunGameData *rData, LoopRunner *l)
 	{
 		rData->co->MissionIndex = rData->m->NextMission;
 	}
+	MissionOptionsTerminate(rData->m);
 }
 static void PersistPlayerWeaponsAndAmmo(PlayerData *p)
 {
