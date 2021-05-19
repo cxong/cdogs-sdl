@@ -87,6 +87,7 @@
       "CanShoot": false
     },
     {
+      "Pic": "pistol",
       "Name": "Machine Pistol",
       "Icon": "pistol",
       "Bullet": "9mm",

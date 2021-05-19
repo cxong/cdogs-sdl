@@ -63,6 +63,7 @@
       "Ammo": "Mini cells"
     },
     {
+      "Pic": "pistol",
       "Name": "Laser Pistol",
       "Icon": "pistol",
       "Bullet": "red_laser",

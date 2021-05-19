@@ -39,6 +39,7 @@
       "Ammo": "Mini cells"
     },
     {
+      "Pic": "pistol",
       "Name": "Laser Pistol",
       "Icon": "pistol",
       "Bullet": "red_laser",
@@ -83,6 +84,7 @@
       "Ammo": "N Bottle"
     },
     {
+      "Pic": "pistol",
       "Name": "Machine pistol",
       "Icon": "pistol",
       "Bullet": "9mm",

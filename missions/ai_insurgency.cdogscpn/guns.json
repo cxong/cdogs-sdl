@@ -4,6 +4,7 @@
   "Guns": [
 
     {
+	  "Pic": "pistol",
       "Name": "Machine Pistol",
       "Icon": "pistol",
       "Bullet": "9mm",

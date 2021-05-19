@@ -2,6 +2,7 @@
   "Version": 2,
   "Guns": [
     {
+      "Pic": "pistol",
       "Name": "Marine Pistol",
       "Icon": "pistol",
       "Description": "Standard issue sidearm, low rate of fire and damage. Recommend engaging at a distance.",
