@@ -310,6 +310,7 @@ bool MapTryPlaceOneObject(
 	NMapObjectAdd amo = NMapObjectAdd_init_default;
 	amo.UID = ObjsGetNextUID();
 	strcpy(amo.MapObjectClass, mo->Name);
+	amo.has_Pos = true;
 	amo.Pos = Vec2ToNet(MapObjectGetPlacementPos(mo, v));
 	amo.ThingFlags = MapObjectGetFlags(mo) | extraFlags;
 	amo.Health = mo->Health;

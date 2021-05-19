@@ -334,9 +334,10 @@ static void OnReceive(NetServer *n, ENetEvent event)
 			}
 			if (gMission.HasBegun)
 			{
-				NGameBegin gb = NGameBegin_init_default;
-				gb.MissionTime = gMission.time;
-				NetServerSendMsg(n, peerId, GAME_EVENT_GAME_BEGIN, &gb);
+				GameEvent e = GameEventNew(GAME_EVENT_GAME_BEGIN);
+				e.u.GameBegin.MissionTime = gMission.time;
+				NetServerSendMsg(
+					n, peerId, GAME_EVENT_GAME_BEGIN, &e.u.GameBegin);
 			}
 
 			NetServerFlush(n);
@@ -413,6 +414,7 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 {
 	if (!n->server)
 		return;
+	GameEvent e;
 	// Send details of all current players
 	CA_FOREACH(const PlayerData, pOther, gPlayerDatas)
 	NPlayerData pd = NMakePlayerData(pOther);
@@ -436,7 +438,7 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 	{
 		continue;
 	}
-	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
+	e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 	e.u.ActorAdd.UID = a->uid;
 	e.u.ActorAdd.CharId = a->charId;
 	e.u.ActorAdd.Health = a->health;
@@ -450,22 +452,22 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 	CA_FOREACH_END()
 
 	// Send key state
-	NAddKeys ak = NAddKeys_init_default;
-	ak.KeyFlags = gMission.KeyFlags;
-	NetServerSendMsg(n, peerId, GAME_EVENT_ADD_KEYS, &ak);
+	e = GameEventNew(GAME_EVENT_ADD_KEYS);
+	e.u.AddKeys.KeyFlags = gMission.KeyFlags;
+	NetServerSendMsg(n, peerId, GAME_EVENT_ADD_KEYS, &e.u.AddKeys);
 
 	// Send objective counts
 	CA_FOREACH(const Objective, o, gMission.missionData->Objectives)
-	NObjectiveUpdate ou = NObjectiveUpdate_init_default;
-	ou.ObjectiveId = _ca_index;
-	ou.Count = o->done;
-	NetServerSendMsg(n, peerId, GAME_EVENT_OBJECTIVE_UPDATE, &ou);
+	e = GameEventNew(GAME_EVENT_OBJECTIVE_UPDATE);
+	e.u.ObjectiveUpdate.ObjectiveId = _ca_index;
+	e.u.ObjectiveUpdate.Count = o->done;
+	NetServerSendMsg(
+		n, peerId, GAME_EVENT_OBJECTIVE_UPDATE, &e.u.ObjectiveUpdate);
 	CA_FOREACH_END()
 
 	// Send all tiles, RLE
 	const Tile *tLast = NULL;
-	NTileSet ts = NTileSet_init_default;
-	ts.has_Pos = true;
+	e = GameEventNew(GAME_EVENT_TILE_SET);
 	struct vec2i pos;
 	for (pos.y = 0; pos.y < gMap.Size.y; pos.y++)
 	{
@@ -475,94 +477,94 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 			// Use RLE, so check if the current tile is the same as the last
 			if (tLast != NULL && t->Class == tLast->Class)
 			{
-				ts.RunLength++;
+				e.u.TileSet.RunLength++;
 			}
 			else
 			{
 				// Send the last run
 				if (tLast != NULL)
 				{
-					NetServerSendMsg(n, peerId, GAME_EVENT_TILE_SET, &ts);
+					NetServerSendMsg(
+						n, peerId, GAME_EVENT_TILE_SET, &e.u.TileSet);
 				}
 				// Begin the next run
-				memset(&ts, 0, sizeof ts);
-				ts.has_Pos = true;
-				ts.Pos = Vec2i2Net(pos);
+				e = GameEventNew(GAME_EVENT_TILE_SET);
+				e.u.TileSet.Pos = Vec2i2Net(pos);
 				if (t->Class != NULL)
 				{
 					TileClassGetName(
-						ts.ClassName, t->Class, t->Class->Style,
-						t->Class->StyleType, t->Class->Mask, t->Class->MaskAlt);
+						e.u.TileSet.ClassName, t->Class, t->Class->Style,
+						t->Class->StyleType, t->Class->Mask,
+						t->Class->MaskAlt);
 				}
 				if (t->ClassAlt != NULL)
 				{
 					TileClassGetName(
-						ts.ClassAltName, t->ClassAlt, t->ClassAlt->Style,
-						t->ClassAlt->StyleType, t->ClassAlt->Mask,
-						t->ClassAlt->MaskAlt);
+						e.u.TileSet.ClassAltName, t->ClassAlt,
+						t->ClassAlt->Style, t->ClassAlt->StyleType,
+						t->ClassAlt->Mask, t->ClassAlt->MaskAlt);
 				}
-				ts.RunLength = 0;
+				e.u.TileSet.RunLength = 0;
 			}
 			tLast = t;
 		}
 	}
-	NetServerSendMsg(n, peerId, GAME_EVENT_TILE_SET, &ts);
+	NetServerSendMsg(n, peerId, GAME_EVENT_TILE_SET, &e.u.TileSet);
 
 	// Send all the tiles visited so far
-	NExploreTiles et = NExploreTiles_init_default;
-	et.Runs_count = 0;
-	et.Runs[0].Run = 0;
+	e = GameEventNew(GAME_EVENT_EXPLORE_TILES);
 	bool run = false;
 	for (pos.y = 0; pos.y < gMap.Size.y; pos.y++)
 	{
 		for (pos.x = 0; pos.x < gMap.Size.x; pos.x++)
 		{
 			const Tile *t = MapGetTile(&gMap, pos);
-			if (LOSAddRun(&et, &run, pos, t->isVisited))
+			if (LOSAddRun(&e.u.ExploreTiles, &run, pos, t->isVisited))
 			{
-				NetServerSendMsg(n, peerId, GAME_EVENT_EXPLORE_TILES, &et);
-				et.Runs_count = 0;
-				et.Runs[0].Run = 0;
+				NetServerSendMsg(
+					n, peerId, GAME_EVENT_EXPLORE_TILES, &e.u.ExploreTiles);
+				e = GameEventNew(GAME_EVENT_EXPLORE_TILES);
 				run = false;
 			}
 		}
 	}
-	if (et.Runs_count > 0)
+	if (e.u.ExploreTiles.Runs_count > 0)
 	{
-		NetServerSendMsg(n, peerId, GAME_EVENT_EXPLORE_TILES, &et);
+		NetServerSendMsg(
+			n, peerId, GAME_EVENT_EXPLORE_TILES, &e.u.ExploreTiles);
 	}
 
 	// Send all pickups
 	CA_FOREACH(const Pickup, p, gPickups)
 	if (!p->isInUse)
 		continue;
-	NAddPickup api = NAddPickup_init_default;
-	api.UID = p->UID;
-	strcpy(api.PickupClass, p->class->Name);
-	api.IsRandomSpawned = p->IsRandomSpawned;
-	api.SpawnerUID = p->SpawnerUID;
-	api.ThingFlags = p->thing.flags;
-	api.Pos = Vec2ToNet(p->thing.Pos);
-	NetServerSendMsg(n, peerId, GAME_EVENT_ADD_PICKUP, &api);
+	e = GameEventNew(GAME_EVENT_ADD_PICKUP);
+	e.u.AddPickup.UID = p->UID;
+	strcpy(e.u.AddPickup.PickupClass, p->class->Name);
+	e.u.AddPickup.IsRandomSpawned = p->IsRandomSpawned;
+	e.u.AddPickup.SpawnerUID = p->SpawnerUID;
+	e.u.AddPickup.ThingFlags = p->thing.flags;
+	e.u.AddPickup.Pos = Vec2ToNet(p->thing.Pos);
+	NetServerSendMsg(n, peerId, GAME_EVENT_ADD_PICKUP, &e.u.AddPickup);
 	CA_FOREACH_END()
 
 	// Send all map objects
 	CA_FOREACH(const TObject, o, gObjs)
 	if (!o->isInUse)
 		continue;
-	NMapObjectAdd amo = NMapObjectAdd_init_default;
-	amo.UID = o->uid;
-	strcpy(amo.MapObjectClass, o->Class->Name);
-	amo.has_Mask = true;
-	amo.Mask = Color2Net(o->thing.CPic.Mask);
-	amo.has_Pos = true;
-	amo.Pos = Vec2ToNet(o->thing.Pos);
-	amo.ThingFlags = o->thing.flags;
-	amo.Health = o->Health;
+	e = GameEventNew(GAME_EVENT_MAP_OBJECT_ADD);
+	e.u.MapObjectAdd.UID = o->uid;
+	strcpy(e.u.MapObjectAdd.MapObjectClass, o->Class->Name);
+	e.u.MapObjectAdd.Mask = Color2Net(o->thing.CPic.Mask);
+	e.u.MapObjectAdd.Pos = Vec2ToNet(o->thing.Pos);
+	e.u.MapObjectAdd.ThingFlags = o->thing.flags;
+	e.u.MapObjectAdd.Health = o->Health;
 	LOG(LM_NET, LL_DEBUG,
 		"send add map object UID(%d) pos(%d, %d) flags(%x) health(%d)",
-		(int)amo.UID, amo.Pos.x, amo.Pos.y, amo.ThingFlags, amo.Health);
-	NetServerSendMsg(n, peerId, GAME_EVENT_MAP_OBJECT_ADD, &amo);
+		(int)e.u.MapObjectAdd.UID, e.u.MapObjectAdd.Pos.x,
+		e.u.MapObjectAdd.Pos.y, e.u.MapObjectAdd.ThingFlags,
+		e.u.MapObjectAdd.Health);
+	NetServerSendMsg(n, peerId, GAME_EVENT_MAP_OBJECT_ADD, &e.u.MapObjectAdd);
 	CA_FOREACH_END()
 
 	// If mission complete already, send message
@@ -575,25 +577,25 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 static void SendConfig(
 	Config *config, const char *name, NetServer *n, const int peerId)
 {
-	NConfig msg = NConfig_init_default;
+	GameEvent e = GameEventNew(GAME_EVENT_CONFIG);
 	const Config *c = ConfigGet(config, name);
-	strcpy(msg.Name, name);
+	strcpy(e.u.Config.Name, name);
 	switch (c->Type)
 	{
 	case CONFIG_TYPE_STRING:
 		CASSERT(false, "unimplemented");
 		break;
 	case CONFIG_TYPE_INT:
-		sprintf(msg.Value, "%d", c->u.Int.Value);
+		sprintf(e.u.Config.Value, "%d", c->u.Int.Value);
 		break;
 	case CONFIG_TYPE_FLOAT:
-		sprintf(msg.Value, "%f", c->u.Float.Value);
+		sprintf(e.u.Config.Value, "%f", c->u.Float.Value);
 		break;
 	case CONFIG_TYPE_BOOL:
-		strcpy(msg.Value, c->u.Bool.Value ? "true" : "false");
+		strcpy(e.u.Config.Value, c->u.Bool.Value ? "true" : "false");
 		break;
 	case CONFIG_TYPE_ENUM:
-		sprintf(msg.Value, "%d", (int)c->u.Enum.Value);
+		sprintf(e.u.Config.Value, "%d", (int)c->u.Enum.Value);
 		break;
 	case CONFIG_TYPE_GROUP:
 		CASSERT(false, "Cannot send groups over net");
@@ -602,7 +604,7 @@ static void SendConfig(
 		CASSERT(false, "Unknown config type");
 		break;
 	}
-	NetServerSendMsg(n, peerId, GAME_EVENT_CONFIG, &msg);
+	NetServerSendMsg(n, peerId, GAME_EVENT_CONFIG, &e.u.Config);
 }
 
 void NetServerSendMsg(
