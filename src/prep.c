@@ -620,7 +620,7 @@ static void GameOptionsOnEnter(GameLoopData *data)
 {
 	GameOptionsData *gData = data->Data;
 
-	if (!gMission.IsQuit)
+	if (!gCampaign.IsQuit)
 	{
 		MissionOptionsTerminate(&gMission);
 		CampaignAndMissionSetup(&gCampaign, &gMission);
@@ -644,7 +644,7 @@ static GameLoopResult GameOptionsUpdate(GameLoopData *data, LoopRunner *l)
 	// - Menu complete
 	const GameLoopResult result = MenuUpdate(&gData->ms);
 	const bool isQuit = !gCampaign.IsLoaded || gCampaign.IsComplete ||
-						gMission.IsQuit || gData->ms.hasAbort ||
+						gCampaign.IsQuit || gData->ms.hasAbort ||
 						gMission.missionData == NULL;
 	const bool isDone = !IsGameOptionsNeeded(gCampaign.Entry.Mode) ||
 						result == UPDATE_RESULT_OK ||

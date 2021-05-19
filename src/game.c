@@ -622,7 +622,7 @@ static void NextLoop(RunGameData *rData, LoopRunner *l)
 	}
 
 	// Switch to a score screen if there are local players and we haven't quit
-	const bool showScores = !rData->m->IsQuit && hasLocalPlayers;
+	const bool showScores = !rData->co->IsQuit && hasLocalPlayers;
 	if (showScores)
 	{
 		switch (rData->co->Entry.Mode)
@@ -649,7 +649,6 @@ static void NextLoop(RunGameData *rData, LoopRunner *l)
 	{
 		rData->co->MissionIndex = rData->m->NextMission;
 	}
-	MissionOptionsTerminate(rData->m);
 }
 static void PersistPlayerWeaponsAndAmmo(PlayerData *p)
 {

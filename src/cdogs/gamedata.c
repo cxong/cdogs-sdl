@@ -119,6 +119,7 @@ void CampaignUnload(Campaign *co)
 	co->IsClient = false;	// TODO: select is client from menu
 	co->OptionsSet = false;
 	co->IsComplete = false;
+	gCampaign.IsQuit = false;
 	CampaignEntryTerminate(&co->Entry);
 }
 

@@ -606,7 +606,7 @@ void MissionDone(struct MissionOptions *mo, const NMissionEnd end)
 {
 	mo->isDone = true;
 	mo->DoneCounter = end.Delay;
-	mo->IsQuit = end.IsQuit;
+	gCampaign.IsQuit = end.IsQuit;
 	mo->NextMission = end.Mission;
 }
 

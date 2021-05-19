@@ -207,7 +207,6 @@ struct MissionOptions
 	bool HasBegun;
 	bool isDone;
 	int DoneCounter;
-	bool IsQuit;
 	int NextMission;
 	bool HasPlayedCompleteSound;
 };

@@ -74,6 +74,7 @@ typedef struct
 	bool IsError;
 	bool OptionsSet;
 	bool IsComplete;
+	bool IsQuit;
 } Campaign;
 extern Campaign gCampaign;
 
