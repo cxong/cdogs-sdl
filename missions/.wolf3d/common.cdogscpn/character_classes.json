@@ -46,7 +46,8 @@
         "Sprites": "chars/heads/cyborg"
       },
       "Body": "mutant",
-      "Sounds": "mutant"
+      "Sounds": "mutant",
+      "BloodColor": "ff00ff"
     },
     {
       "Name": "Hans Grosse",
@@ -73,7 +74,8 @@
         "Sprites": "chars/heads/jones"
       },
       "Body": "fake_hitler",
-      "Sounds": "fake_hitler"
+      "Sounds": "fake_hitler",
+      "BloodColor": "000000"
     },
     {
       "Name": "Mecha Hitler",
@@ -82,7 +84,8 @@
         "Sprites": "chars/heads/jones"
       },
       "Body": "big",
-      "Sounds": "mecha_hitler"
+      "Sounds": "mecha_hitler",
+      "BloodColor": "00ffff"
     },
     {
       "Name": "Hitler",
@@ -153,7 +156,8 @@
         "Sprites": "chars/heads/cyborg"
       },
       "Body": "big_mutant",
-      "Sounds": "ubermutant"
+      "Sounds": "ubermutant",
+      "BloodColor": "ff00ff"
     },
     {
       "Name": "Death Knight",
@@ -170,7 +174,8 @@
         "Type": "Directional",
         "Sprites": ""
       },
-      "Body": "none"
+      "Body": "none",
+      "BloodColor": "999999"
     },
     {
       "Name": "Angel of Death",
@@ -179,7 +184,8 @@
         "Sprites": "chars/heads/madbugeye"
       },
       "Body": "angel",
-      "Sounds": "angel"
+      "Sounds": "angel",
+      "BloodColor": "ffff00"
     }
   ]
 }
