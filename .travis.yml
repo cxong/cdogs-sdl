@@ -3,7 +3,7 @@ dist: focal
 
 env:
   global:
-    - VERSION=0.11.1
+    - VERSION=0.12.0
     - CTEST_EXT_COLOR_OUTPUT=TRUE
     - CTEST_BUILD_FLAGS=-j4
     - SDL_AUDIODRIVER=dummy
