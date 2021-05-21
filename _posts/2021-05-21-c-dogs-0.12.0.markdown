@@ -1,0 +1,28 @@
+---
+layout: post
+title:  "C-Dogs 0.12.0 Released!"
+date:   2021-05-21
+categories: release
+published: true
+---
+
+A new release is ready! This release fixes a bunch of bugs, including LAN multiplayer which was broken in recent releases, but we also manage to pack in a bunch of little features and enhancements, like...
+
+Dual-wielded pistols!
+
+<video muted autoplay controls>
+    <source src="https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/akimbo_pistols.webm" type="video/webm">
+</video>
+
+Chaingun and pistol in-game sprites!
+
+<video muted autoplay controls>
+    <source src="https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/chaingun.webm" type="video/webm">
+</video>
+![Pistol](https://user-images.githubusercontent.com/1083215/117796467-769e7e80-b292-11eb-9d78-132336bd8577.gif)
+
+...and more. Thanks to [**@nixinator**](https://github.com/nixinator), [**@sumater**](https://github.com/sumater), [**@viki-t-s**](https://github.com/viki-t-s) and [**@chack05**](https://github.com/chack05) for reporting bugs and suggesting features.
+
+As always, happy gaming! 🥳
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.12.0>
