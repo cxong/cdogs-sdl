@@ -312,7 +312,20 @@ static bool IsTileWalkableOrOpenable(Map *map, struct vec2i pos)
 	// Otherwise, we cannot walk over this tile
 	return false;
 }
-static bool IsPosNoSee(void *data, struct vec2i pos);
+
+static bool IsPosNoSee(void *data, struct vec2i pos)
+{
+	return TileIsOpaque(MapGetTile(data, Vec2iToTile(pos)));
+}
+bool AICanSee(const struct vec2 from, const struct vec2 to)
+{
+	return AIHasClearLine(svec2i_assign_vec2(from), svec2i_assign_vec2(to), IsPosNoSee);
+}
+
+static bool IsPosNotShootable(void *data, const struct vec2i pos)
+{
+	return !TileIsShootable(MapGetTile(data, Vec2iToTile(pos)));
+}
 bool AIHasClearShot(const struct vec2 from, const struct vec2 to)
 {
 	// Perform 4 line tests - above, below, left and right
@@ -324,7 +337,7 @@ bool AIHasClearShot(const struct vec2 from, const struct vec2 to)
 	if (Vec2ToTile(fromOffset).x >= 0 &&
 		!AIHasClearLine(
 			svec2i_assign_vec2(fromOffset), svec2i_assign_vec2(to),
-			IsPosNoSee))
+			IsPosNotShootable))
 	{
 		return false;
 	}
@@ -332,7 +345,7 @@ bool AIHasClearShot(const struct vec2 from, const struct vec2 to)
 	if (Vec2ToTile(fromOffset).x < gMap.Size.x &&
 		!AIHasClearLine(
 			svec2i_assign_vec2(fromOffset), svec2i_assign_vec2(to),
-			IsPosNoSee))
+			IsPosNotShootable))
 	{
 		return false;
 	}
@@ -341,7 +354,7 @@ bool AIHasClearShot(const struct vec2 from, const struct vec2 to)
 	if (Vec2ToTile(fromOffset).y >= 0 &&
 		!AIHasClearLine(
 			svec2i_assign_vec2(fromOffset), svec2i_assign_vec2(to),
-			IsPosNoSee))
+			IsPosNotShootable))
 	{
 		return false;
 	}
@@ -349,15 +362,11 @@ bool AIHasClearShot(const struct vec2 from, const struct vec2 to)
 	if (Vec2ToTile(fromOffset).y < gMap.Size.y &&
 		!AIHasClearLine(
 			svec2i_assign_vec2(fromOffset), svec2i_assign_vec2(to),
-			IsPosNoSee))
+			IsPosNotShootable))
 	{
 		return false;
 	}
 	return true;
-}
-static bool IsPosNoSee(void *data, struct vec2i pos)
-{
-	return TileIsOpaque(MapGetTile(data, Vec2iToTile(pos)));
 }
 
 TObject *AIGetObjectRunningInto(TActor *a, int cmd)

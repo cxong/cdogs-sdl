@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2015, 2017 Cong Xu
+    Copyright (c) 2013-2015, 2017, 2021 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -60,6 +60,7 @@ const TActor *AIGetClosestVisibleEnemy(
 	const TActor *from, const bool isPlayer);
 struct vec2 AIGetClosestPlayerPos(const struct vec2 pos);
 int AIReverseDirection(int cmd);
+bool AICanSee(const struct vec2 from, const struct vec2 to);
 bool AIHasClearShot(const struct vec2 from, const struct vec2 to);
 bool AIHasClearPath(
 	const struct vec2 from, const struct vec2 to, const bool ignoreObjects);
