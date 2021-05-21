@@ -111,6 +111,26 @@
         "Flesh": "hits/fire",
         "Wall": "hits/fire"
       }
+    },
+    {
+      "Name": "energy_ball",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "fireball_green",
+        "TicksPerFrame": 4
+      },
+      "Speed": 625,
+      "Range": 200,
+      "Power": 46,
+      "Mass": 40.0,
+      "Size": [3, 3],
+      "Special": "Flame",
+      "Spark": "fireball_green_hit",
+      "HitSounds": {
+        "Object": "hits/fire",
+        "Flesh": "hits/fire",
+        "Wall": "hits/fire"
+      }
     }
   ]
 }

@@ -123,6 +123,16 @@
       "Sound": "fireball",
       "MuzzleFlashParticle": "",
       "CanDrop": false
+    },
+    {
+      "Name": "Energy Ball",
+      "Pic": "",
+      "Bullet": "energy_ball",
+      "Cost": 5,
+      "Lock": 50,
+      "Sound": "fireball",
+      "MuzzleFlashParticle": "",
+      "CanDrop": false
     }
   ]
 }
