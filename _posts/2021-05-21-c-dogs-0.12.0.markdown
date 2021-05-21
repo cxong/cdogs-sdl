@@ -10,13 +10,13 @@ A new release is ready! This release fixes a bunch of bugs, including LAN multip
 
 Dual-wielded pistols!
 
-<video muted autoplay controls>
+<video muted autoplay loop>
     <source src="https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/akimbo_pistols.webm" type="video/webm">
 </video>
 
 Chaingun and pistol in-game sprites!
 
-<video muted autoplay controls>
+<video muted autoplay loop>
     <source src="https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/chaingun.webm" type="video/webm">
 </video>
 ![Pistol](https://user-images.githubusercontent.com/1083215/117796467-769e7e80-b292-11eb-9d78-132336bd8577.gif)
