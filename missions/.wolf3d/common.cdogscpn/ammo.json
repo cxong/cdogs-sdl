@@ -8,7 +8,7 @@
         "Pic": "ammo_clip"
       },
       "Sound": "bullet_pickup",
-      "Amount": 8,
+      "Amount": 4,
       "Max": 100
     }
   ]

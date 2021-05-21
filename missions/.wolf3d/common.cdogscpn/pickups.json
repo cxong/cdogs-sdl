@@ -65,6 +65,16 @@
       "Score": 5000
     },
     {
+      "Name": "ammo_clip",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "ammo_clip"
+      },
+      "Type": "Ammo",
+      "Ammo": "Ammo",
+      "Amount": 8
+    },
+    {
       "Name": "ammo_box",
       "Pic": {
         "Type": "Normal",

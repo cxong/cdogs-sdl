@@ -747,7 +747,7 @@ static void LoadEntity(
 		MissionStaticTryAddPickup(m, StrPickupClass("health"), v);
 		break;
 	case CWENT_AMMO:
-		MissionStaticTryAddPickup(m, StrPickupClass("ammo_Ammo"), v);
+		MissionStaticTryAddPickup(m, StrPickupClass("ammo_clip"), v);
 		break;
 	case CWENT_MACHINE_GUN:
 		MissionStaticTryAddPickup(m, StrPickupClass("gun_Machine Gun"), v);
