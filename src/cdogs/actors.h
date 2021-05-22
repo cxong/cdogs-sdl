@@ -224,6 +224,7 @@ int ActorGetNumGuns(const TActor *a);
 int ActorGetNumGrenades(const TActor *a);
 void ActorSwitchGun(const NActorSwitchGun sg);
 bool ActorIsImmune(const TActor *actor, const special_damage_e damage);
+bool ActorTakesDamage(const TActor *actor, const special_damage_e damage);
 void ActorHit(const NThingDamage d);
 bool ActorIsInvulnerable(
 	const TActor *a, const int flags, const int playerUID, const GameMode mode,

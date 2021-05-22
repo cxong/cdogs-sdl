@@ -30,7 +30,7 @@
       "Speed": 35000,
       "Range": 1,
       "Power": 21,
-      "Mass": 0.2,
+      "Mass": 0.1,
       "Special": {
         "Effect": "Petrify",
         "Ticks": 30
@@ -52,7 +52,7 @@
       "Speed": 35000,
       "Range": 1,
       "Power": 16,
-      "Mass": 0.2
+      "Mass": 0.1
     },
     {
       "Name": "bullet_boss",
@@ -70,7 +70,7 @@
       "Speed": 35000,
       "Range": 1,
       "Power": 24,
-      "Mass": 0.2
+      "Mass": 0.1
     },
     {
       "Name": "dog_bite",

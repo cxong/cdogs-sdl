@@ -285,7 +285,7 @@ bool HasHitSound(
 	{
 	case KIND_CHARACTER: {
 		const TActor *a = ActorGetByUID(targetUID);
-		return allowFriendlyHitSound || !ActorIsImmune(a, special);
+		return allowFriendlyHitSound || ActorTakesDamage(a, special);
 	}
 	case KIND_OBJECT:
 		return true;

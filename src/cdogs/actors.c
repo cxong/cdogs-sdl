@@ -1524,20 +1524,17 @@ void ActorSwitchGun(const NActorSwitchGun sg)
 
 bool ActorIsImmune(const TActor *actor, const special_damage_e damage)
 {
-	// Fire immunity
-	if (damage == SPECIAL_FLAME && (actor->flags & FLAGS_ASBESTOS))
+	switch (damage)
 	{
-		return 1;
-	}
-	// Poison immunity
-	if (damage == SPECIAL_POISON && (actor->flags & FLAGS_IMMUNITY))
-	{
-		return 1;
-	}
-	// Confuse immunity
-	if (damage == SPECIAL_CONFUSE && (actor->flags & FLAGS_IMMUNITY))
-	{
-		return 1;
+		case SPECIAL_FLAME:
+			return actor->flags & FLAGS_ASBESTOS;
+		case SPECIAL_POISON:
+		case SPECIAL_PETRIFY:	// fallthrough
+			return actor->flags & FLAGS_IMMUNITY;
+		case SPECIAL_CONFUSE:
+			return actor->flags & FLAGS_IMMUNITY;
+		default:
+			break;
 	}
 	// Don't bother if health already 0 or less
 	if (actor->health <= 0)
@@ -1547,10 +1544,25 @@ bool ActorIsImmune(const TActor *actor, const special_damage_e damage)
 	return 0;
 }
 
+bool ActorTakesDamage(const TActor *actor, const special_damage_e damage)
+{
+	switch (damage)
+	{
+		case SPECIAL_FLAME:
+			return !(actor->flags & FLAGS_ASBESTOS);
+		default:
+			return true;
+	}
+}
+
 #define MAX_POISONED_COUNT 140
 
 static void ActorTakeSpecialDamage(TActor *actor, const special_damage_e damage, const int ticks)
 {
+	if (ActorIsImmune(actor, damage))
+	{
+		return;
+	}
 	switch (damage)
 	{
 	case SPECIAL_FLAME:
@@ -1683,7 +1695,7 @@ bool ActorIsInvulnerable(
 		{
 			return true;
 		}
-		if (ActorIsImmune(actor, special))
+		if (!ActorTakesDamage(actor, special))
 		{
 			return true;
 		}
