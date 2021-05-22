@@ -317,9 +317,18 @@ static bool IsPosNoSee(void *data, struct vec2i pos)
 {
 	return TileIsOpaque(MapGetTile(data, Vec2iToTile(pos)));
 }
-bool AICanSee(const struct vec2 from, const struct vec2 to)
+bool AICanSee(const TActor *a, const struct vec2 to)
 {
-	return AIHasClearLine(svec2i_assign_vec2(from), svec2i_assign_vec2(to), IsPosNoSee);
+	if (!(a->flags | FLAGS_VISIBLE))
+	{
+		return false;
+	}
+	const int sightRange = ConfigGetInt(&gConfig, "Game.SightRange") * TILE_WIDTH / 2;
+	if (svec2_distance_squared(a->Pos, to) > sightRange*sightRange)
+	{
+		return false;
+	}
+	return AIHasClearLine(svec2i_assign_vec2(a->Pos), svec2i_assign_vec2(to), IsPosNoSee);
 }
 
 static bool IsPosNotShootable(void *data, const struct vec2i pos)

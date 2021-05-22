@@ -106,7 +106,7 @@ static bool CanSeeAPlayer(const TActor *a)
 	// Can see player if:
 	// - Clear line of sight, and
 	// - If they are close, or if facing and they are not too far
-	if (!AICanSee(a->Pos, player->Pos))
+	if (!AICanSee(a, player->Pos))
 	{
 		continue;
 	}

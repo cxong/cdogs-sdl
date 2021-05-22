@@ -62,7 +62,7 @@
       },
       "Trail": {
         "Particle": "trail",
-        "Width": 1.0
+        "Width": 1.5
       },
       "OutOfRangeSpark": "spark",
       "WallMark": "bullet_hole",
