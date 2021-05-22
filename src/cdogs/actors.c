@@ -459,7 +459,7 @@ void ActorMove(const NActorMove am)
 	a->MoveVel = NetToVec2(am.MoveVel);
 	OnMove(a);
 }
-static void CheckTrigger(const struct vec2i tilePos, const bool showLocked);
+static void CheckTrigger(const TActor *a, const Map *map);
 static void CheckRescue(const TActor *a);
 static void OnMove(TActor *a)
 {
@@ -475,16 +475,23 @@ static void OnMove(TActor *a)
 
 	if (!gCampaign.IsClient)
 	{
-		CheckTrigger(Vec2ToTile(a->Pos), ActorIsLocalPlayer(a->uid));
+		CheckTrigger(a, &gMap);
 
 		CheckPickups(a);
 
 		CheckRescue(a);
 	}
 }
-static void CheckTrigger(const struct vec2i tilePos, const bool showLocked)
+static void CheckTrigger(const TActor *a, const Map *map)
 {
-	const Tile *t = MapGetTile(&gMap, tilePos);
+	// Don't let sleeping AI actors trigger tiles
+	if (a->PlayerUID < 0 && a->flags & FLAGS_SLEEPING)
+	{
+		return;
+	}
+	const struct vec2i tilePos = Vec2ToTile(a->Pos);
+	const bool showLocked = ActorIsLocalPlayer(a->uid);
+	const Tile *t = MapGetTile(map, tilePos);
 	CA_FOREACH(Trigger *, tp, t->triggers)
 	if (!TriggerTryActivate(*tp, gMission.KeyFlags, tilePos) &&
 		(*tp)->isActive && TriggerCannotActivate(*tp) && showLocked)
