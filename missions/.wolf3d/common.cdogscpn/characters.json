@@ -193,10 +193,10 @@
 		"Gun": "Dual Chain Gun",
 		"maxHealth": 1000,
 		"flags": 1152,
-		"probabilityToMove": 50,
-		"probabilityToTrack": 40,
-		"probabilityToShoot": 12,
-		"actionDelay": 15
+		"probabilityToMove": 30,
+		"probabilityToTrack": 20,
+		"probabilityToShoot": 42,
+		"actionDelay": 40
 	},
 	{
 		"Class": "Dr Schabbs",
@@ -211,10 +211,10 @@
 		"Gun": "Dual Chain Gun",
 		"maxHealth": 1250,
 		"flags": 1152,
-		"probabilityToMove": 50,
-		"probabilityToTrack": 40,
-		"probabilityToShoot": 12,
-		"actionDelay": 15
+		"probabilityToMove": 30,
+		"probabilityToTrack": 20,
+		"probabilityToShoot": 42,
+		"actionDelay": 40
 	},
 	{
 		"Class": "Fake Hitler",
@@ -247,10 +247,10 @@
 		"Gun": "Dual Chain Gun",
 		"maxHealth": 1000,
 		"flags": 1152,
-		"probabilityToMove": 50,
-		"probabilityToTrack": 40,
-		"probabilityToShoot": 12,
-		"actionDelay": 15
+		"probabilityToMove": 30,
+		"probabilityToTrack": 20,
+		"probabilityToShoot": 42,
+		"actionDelay": 40
 	},
 	{
 		"Class": "Hitler",
@@ -265,10 +265,10 @@
 		"Gun": "Dual Chain Gun",
 		"maxHealth": 750,
 		"flags": 1152,
-		"probabilityToMove": 50,
-		"probabilityToTrack": 40,
-		"probabilityToShoot": 12,
-		"actionDelay": 15
+		"probabilityToMove": 30,
+		"probabilityToTrack": 20,
+		"probabilityToShoot": 42,
+		"actionDelay": 40
 	},
 	{
 		"Class": "Otto Giftmacher",
@@ -283,10 +283,10 @@
 		"Gun": "Dual Chain Gun",
 		"maxHealth": 1000,
 		"flags": 1152,
-		"probabilityToMove": 50,
-		"probabilityToTrack": 40,
-		"probabilityToShoot": 12,
-		"actionDelay": 15
+		"probabilityToMove": 30,
+		"probabilityToTrack": 20,
+		"probabilityToShoot": 42,
+		"actionDelay": 40
 	},
 	{
 		"Class": "Gretel Grosse",
@@ -301,10 +301,10 @@
 		"Gun": "Dual Chain Gun",
 		"maxHealth": 1000,
 		"flags": 1152,
-		"probabilityToMove": 50,
-		"probabilityToTrack": 40,
-		"probabilityToShoot": 12,
-		"actionDelay": 15
+		"probabilityToMove": 30,
+		"probabilityToTrack": 20,
+		"probabilityToShoot": 42,
+		"actionDelay": 40
 	},
 	{
 		"Class": "General Fettgesicht",
@@ -319,10 +319,10 @@
 		"Gun": "Dual Chain Gun",
 		"maxHealth": 1000,
 		"flags": 1152,
-		"probabilityToMove": 50,
-		"probabilityToTrack": 40,
-		"probabilityToShoot": 12,
-		"actionDelay": 15
+		"probabilityToMove": 30,
+		"probabilityToTrack": 20,
+		"probabilityToShoot": 42,
+		"actionDelay": 40
 	},
 	{
 		"Class": "Trans Grosse",
@@ -337,10 +337,10 @@
 		"Gun": "Dual Chain Gun",
 		"maxHealth": 1000,
 		"flags": 1152,
-		"probabilityToMove": 50,
-		"probabilityToTrack": 40,
-		"probabilityToShoot": 12,
-		"actionDelay": 15
+		"probabilityToMove": 30,
+		"probabilityToTrack": 20,
+		"probabilityToShoot": 42,
+		"actionDelay": 40
 	},
 	{
 		"Class": "Barnacle Wilhelm",
@@ -355,10 +355,10 @@
 		"Gun": "Dual Chain Gun",
 		"maxHealth": 1100,
 		"flags": 1152,
-		"probabilityToMove": 50,
-		"probabilityToTrack": 40,
-		"probabilityToShoot": 12,
-		"actionDelay": 15
+		"probabilityToMove": 30,
+		"probabilityToTrack": 20,
+		"probabilityToShoot": 42,
+		"actionDelay": 40
 	},
 	{
 		"Class": "Ubermutant",
@@ -373,10 +373,10 @@
 		"Gun": "Dual Chain Gun",
 		"maxHealth": 1200,
 		"flags": 1152,
-		"probabilityToMove": 50,
-		"probabilityToTrack": 40,
-		"probabilityToShoot": 12,
-		"actionDelay": 15
+		"probabilityToMove": 30,
+		"probabilityToTrack": 20,
+		"probabilityToShoot": 42,
+		"actionDelay": 40
 	},
 	{
 		"Class": "Death Knight",
@@ -391,10 +391,10 @@
 		"Gun": "Dual Chain Gun",
 		"maxHealth": 1400,
 		"flags": 1152,
-		"probabilityToMove": 50,
-		"probabilityToTrack": 40,
-		"probabilityToShoot": 12,
-		"actionDelay": 15
+		"probabilityToMove": 30,
+		"probabilityToTrack": 20,
+		"probabilityToShoot": 42,
+		"actionDelay": 40
 	},
 	{
 		"Class": "Ghost",
@@ -426,9 +426,9 @@
 		"Gun": "Energy Ball",
 		"maxHealth": 1600,
 		"flags": 1152,
-		"probabilityToMove": 50,
-		"probabilityToTrack": 40,
-		"probabilityToShoot": 12,
-		"actionDelay": 15
+		"probabilityToMove": 30,
+		"probabilityToTrack": 20,
+		"probabilityToShoot": 42,
+		"actionDelay": 40
 	}]
 }

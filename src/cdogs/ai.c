@@ -335,7 +335,7 @@ static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 	if ((actor->flags & FLAGS_SLEEPING) &&
 		actor->aiContext->Delay == 0 && CanSeeAPlayer(actor))
 	{
-		AIWake(actor);
+		AIWake(actor, delayModifier);
 	}
 	// Fully wake up
 	if ((actor->flags & FLAGS_WAKING) && actor->aiContext->Delay == 0)
@@ -468,12 +468,14 @@ static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 	}
 	return cmd;
 }
-void AIWake(TActor *a)
+void AIWake(TActor *a, const int delayModifier)
 {
 	if (!a->aiContext || !(a->flags & FLAGS_SLEEPING)) return;
 	a->flags &= ~FLAGS_SLEEPING;
 	a->flags |= FLAGS_WAKING;
 	ActorSetAIState(a, AI_STATE_NONE);
+	const CharBot *bot = ActorGetCharacter(a)->bot;
+	a->aiContext->Delay = bot->actionDelay * delayModifier;
 
 	// Don't play alert sound for invisible enemies
 	if (!(a->flags & FLAGS_SEETHROUGH))

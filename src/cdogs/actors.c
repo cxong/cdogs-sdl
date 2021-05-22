@@ -1662,7 +1662,7 @@ static void ActorTakeHit(
 	// Wake up if this is an AI
 	if (!gCampaign.IsClient)
 	{
-		AIWake(actor);
+		AIWake(actor, 1);
 	}
 	if (ActorIsInvulnerable(
 			actor, flags, playerUID, gCampaign.Entry.Mode, damage))

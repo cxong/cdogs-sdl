@@ -58,4 +58,4 @@ int AICommand(const int ticks);
 void AICommandLast(const int ticks);
 void AIAddRandomEnemies(const int enemies, const Mission *m);
 
-void AIWake(TActor *a);
+void AIWake(TActor *a, const int delayModifier);
