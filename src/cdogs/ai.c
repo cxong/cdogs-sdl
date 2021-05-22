@@ -111,7 +111,7 @@ static bool CanSeeAPlayer(const TActor *a)
 		continue;
 	}
 	const float distance2 = svec2_distance_squared(a->Pos, player->Pos);
-	const bool isClose = distance2 < SQUARED(16 * 4);
+	const bool isClose = distance2 < SQUARED(16 * 2);
 	const bool isNotTooFar = distance2 < SQUARED(16 * 30);
 	if (isClose || (isNotTooFar && AIIsFacing(a, player->Pos, a->direction)))
 	{
