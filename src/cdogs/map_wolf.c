@@ -279,8 +279,8 @@ static void LoadSounds(const SoundDevice *s, const CWolfMap *map)
 		// Strip trailing slash and find the sound
 		SoundData *sound;
 		char nameBuf[CDOGS_PATH_MAX];
-		strncpy(nameBuf, name, strlen(name) - 1);
-		nameBuf[strlen(name) - 1] = '\0';
+		strcpy(nameBuf, name);
+		nameBuf[strlen(nameBuf) - 1] = '\0';
 		if (StrSound(nameBuf) != NULL)
 		{
 			const int err = hashmap_get(s->customSounds, nameBuf, (any_t *)&sound);
