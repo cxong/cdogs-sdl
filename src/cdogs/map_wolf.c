@@ -59,8 +59,8 @@ static const char *soundsW1[] = {
 	"machine_gun", "pistol", "chain_gun", "chars/alert/ss", "chars/alert/hans",
 	"chars/die/hans",
 	// 10-15
-	"dual_chain_gun", "machine_gun_burst", "chars/die/guard/0",
-	"chars/die/guard/1", "chars/die/guard/2", "secret_door", NULL, NULL, NULL,
+	"dual_chain_gun", "machine_gun_burst", "chars/die/guard/",
+	"chars/die/guard/", "chars/die/guard/", "secret_door", NULL, NULL, NULL,
 	NULL,
 	// 20-29
 	NULL, NULL, NULL, NULL, NULL, NULL, "chars/die/ss", "pistol_guard",
@@ -73,37 +73,37 @@ static const char *soundsW1[] = {
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, "victory"};
 static const char *soundsW6[] = {
 	// 0-9
-	"chars/alert/guard", "chars/alert/dog/0", "door_close", "door",
+	"chars/alert/guard", "chars/alert/dog/", "door_close", "door",
 	"machine_gun", "pistol", "chain_gun", "chars/alert/ss", "chars/alert/hans",
 	"chars/die/hans",
 	// 10-19
-	"dual_chain_gun", "machine_gun_burst", "chars/die/guard/0",
-	"chars/die/guard/1", "chars/die/guard/2", "secret_door", "chars/die/dog",
+	"dual_chain_gun", "machine_gun_burst", "chars/die/guard/",
+	"chars/die/guard/", "chars/die/guard/", "secret_door", "chars/die/dog",
 	"chars/die/mutant", "chars/alert/mecha_hitler", "chars/die/hitler",
 	// 20-29
 	"chars/die/ss", "pistol_guard", "gurgle", "chars/alert/fake_hitler",
 	"chars/die/schabbs", "chars/alert/schabbs", "chars/die/fake_hitler",
-	"chars/alert/officer", "chars/die/officer", "chars/alert/dog/1",
+	"chars/alert/officer", "chars/die/officer", "chars/alert/dog/",
 	// 30-39
 	"level_end", "mecha_step", "victory", "chars/die/mecha_hitler",
-	"chars/die/guard/3", "chars/die/guard/4", "chars/die/otto",
+	"chars/die/guard/", "chars/die/guard/", "chars/die/otto",
 	"chars/alert/otto", "chars/alert/fettgesicht", "fart",
 	// 40-49
-	"chars/die/guard/5", "chars/die/guard/6", "chars/die/guard/7",
+	"chars/die/guard/", "chars/die/guard/", "chars/die/guard/",
 	"chars/alert/gretel", "chars/die/gretel", "chars/die/fettgesicht"};
 static const char *soundsSOD[] = {
 	// 0-9
-	"chars/alert/guard", "chars/alert/dog/0", "door_close", "door",
+	"chars/alert/guard", "chars/alert/dog/", "door_close", "door",
 	"machine_gun", "pistol", "chain_gun", "chars/alert/ss", "dual_chain_gun",
 	"machine_gun_burst",
 	// 10-19
-	"chars/die/guard/0", "chars/die/guard/1", "chars/die/guard/2",
+	"chars/die/guard/", "chars/die/guard/", "chars/die/guard/",
 	"secret_door", "chars/die/dog", "chars/die/mutant", "chars/die/ss",
 	"pistol_guard", "gurgle", "chars/alert/officer",
 	// 20-29
-	"chars/die/officer", "chars/alert/dog/1", "level_end", "chars/die/guard/3",
-	"chars/die/guard/4", "fart", "chars/die/guard/5", "chars/die/guard/6",
-	"chars/die/guard/7", "chars/alert/trans",
+	"chars/die/officer", "chars/alert/dog/", "level_end", "chars/die/guard/",
+	"chars/die/guard/", "fart", "chars/die/guard/", "chars/die/guard/",
+	"chars/die/guard/", "chars/alert/trans",
 	// 30-39
 	"chars/die/trans", "chars/alert/bill", "chars/die/bill",
 	"chars/die/ubermutant", "chars/alert/knight", "chars/die/knight",
@@ -232,6 +232,7 @@ bail:
 	return err;
 }
 
+static Mix_Chunk *LoadSoundData(const CWolfMap *map, const int i);
 static void LoadSounds(const SoundDevice *s, const CWolfMap *map)
 {
 	if (!s->isInitialised)
@@ -239,34 +240,87 @@ static void LoadSounds(const SoundDevice *s, const CWolfMap *map)
 		return;
 	}
 	// TODO: load ad lib sounds
-	int err = 0;
+	
+	// Load single sounds
 	for (int i = 0; i < map->vswap.nSounds; i++)
 	{
-		const char *data;
-		size_t len;
-		err = CWVSwapGetSound(&map->vswap, i, &data, &len);
-		if (err != 0)
+		const char *name = GetSound(map->type, i);
+		if (name == NULL)
 		{
 			continue;
 		}
-		if (len == 0)
+		if (name[strlen(name) - 1] == '/') continue;
+		Mix_Chunk *soundData = LoadSoundData(map, i);
+		if (soundData == NULL)
 		{
 			continue;
 		}
-		SDL_AudioCVT cvt;
-		SDL_BuildAudioCVT(
-			&cvt, AUDIO_U8, 1, SND_RATE, CDOGS_SND_FMT, CDOGS_SND_CHANNELS,
-			CDOGS_SND_RATE);
-		cvt.len = (int)len;
-		cvt.buf = (Uint8 *)SDL_malloc(cvt.len * cvt.len_mult);
-		memcpy(cvt.buf, data, len);
-		SDL_ConvertAudio(&cvt);
 		SoundData *sound;
 		CMALLOC(sound, sizeof *sound);
 		sound->Type = SOUND_NORMAL;
-		sound->u.normal = Mix_QuickLoad_RAW(cvt.buf, cvt.len_cvt);
-		SoundAdd(s->customSounds, GetSound(map->type, i), sound);
+		sound->u.normal = soundData;
+		SoundAdd(s->customSounds, name, sound);
 	}
+	
+	// Load random sounds
+	for (int i = 0; i < map->vswap.nSounds; i++)
+	{
+		const char *name = GetSound(map->type, i);
+		if (name == NULL)
+		{
+			continue;
+		}
+		if (name[strlen(name) - 1] != '/') continue;
+		const Mix_Chunk *soundData = LoadSoundData(map, i);
+		if (soundData == NULL)
+		{
+			continue;
+		}
+		// Strip trailing slash and find the sound
+		SoundData *sound;
+		char nameBuf[CDOGS_PATH_MAX];
+		strncpy(nameBuf, name, strlen(name) - 1);
+		nameBuf[strlen(name) - 1] = '\0';
+		if (StrSound(nameBuf) != NULL)
+		{
+			const int err = hashmap_get(s->customSounds, nameBuf, (any_t *)&sound);
+			CASSERT(err == MAP_OK, "unexpected failure to get sound");
+			CArrayPushBack(&sound->u.random.sounds, &soundData);
+		}
+		else
+		{
+			CMALLOC(sound, sizeof *sound);
+			sound->Type = SOUND_RANDOM;
+			CArrayInit(&sound->u.random.sounds, sizeof(Mix_Chunk *));
+			CArrayPushBack(&sound->u.random.sounds, &soundData);
+			SoundAdd(s->customSounds, nameBuf, sound);
+		}
+	}
+}
+static Mix_Chunk *LoadSoundData(const CWolfMap *map, const int i)
+{
+	const char *data;
+	size_t len;
+	const int err = CWVSwapGetSound(&map->vswap, i, &data, &len);
+	if (err != 0)
+	{
+		LOG(LM_MAP, LL_ERROR, "Failed to load wolf sound %d: %d\n", i, err);
+		return NULL;
+	}
+	if (len == 0)
+	{
+		LOG(LM_MAP, LL_ERROR, "Wolf sound %d has 0 len\n", i);
+		return NULL;
+	}
+	SDL_AudioCVT cvt;
+	SDL_BuildAudioCVT(
+		&cvt, AUDIO_U8, 1, SND_RATE, CDOGS_SND_FMT, CDOGS_SND_CHANNELS,
+		CDOGS_SND_RATE);
+	cvt.len = (int)len;
+	cvt.buf = (Uint8 *)SDL_malloc(cvt.len * cvt.len_mult);
+	memcpy(cvt.buf, data, len);
+	SDL_ConvertAudio(&cvt);
+	return Mix_QuickLoad_RAW(cvt.buf, cvt.len_cvt);
 }
 
 static void LoadTile(

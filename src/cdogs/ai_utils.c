@@ -323,7 +323,7 @@ bool AICanSee(const TActor *a, const struct vec2 to)
 	{
 		return false;
 	}
-	const int sightRange = ConfigGetInt(&gConfig, "Game.SightRange") * TILE_WIDTH / 2;
+	const int sightRange = ConfigGetInt(&gConfig, "Game.SightRange") * TILE_WIDTH * 3 / 2;
 	if (svec2_distance_squared(a->Pos, to) > sightRange*sightRange)
 	{
 		return false;
