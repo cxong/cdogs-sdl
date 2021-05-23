@@ -95,6 +95,16 @@ static bool IsCloseToPlayer(const struct vec2 pos, const float distance)
 		   svec2_distance_squared(pos, closestPlayer->Pos) < distance2;
 }
 
+static bool CanSeeActor(const TActor *a, const TActor *target)
+{
+	// Can see if:
+	// - They are close
+	// - Or if they can see them with line of sight
+	const float distance2 = svec2_distance_squared(a->Pos, target->Pos);
+	const bool isClose = distance2 < SQUARED(16 * 2);
+	return isClose || AICanSee(a, target->Pos, a->direction);
+}
+
 static bool CanSeeAPlayer(const TActor *a)
 {
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
@@ -103,17 +113,27 @@ static bool CanSeeAPlayer(const TActor *a)
 		continue;
 	}
 	const TActor *player = ActorGetByUID(p->ActorUID);
-	// Can see player if:
-	// - Clear line of sight, and
-	// - If they are close, or if facing
-	const int sightRange = ConfigGetInt(&gConfig, "Game.SightRange") * TILE_WIDTH * 2 / 3;
-	if (!AIHasClearView(a, player->Pos, sightRange))
+	if (CanSeeActor(a, player))
+	{
+		return true;
+	}
+	CA_FOREACH_END()
+	return false;
+}
+
+static bool CanSeeActorBeingAttacked(const TActor *a)
+{
+	CA_FOREACH(const TActor, target, gActors)
+	if (!target->isInUse)
 	{
 		continue;
 	}
-	const float distance2 = svec2_distance_squared(a->Pos, player->Pos);
-	const bool isClose = distance2 < SQUARED(16 * 2);
-	if (isClose || AICanSee(a, player->Pos, a->direction))
+	// Use grimacing as a proxy to being attacked / being aggressive
+	if (!ActorIsGrimacing(target) && target->dead == 0)
+	{
+		continue;
+	}
+	if (CanSeeActor(a, target))
 	{
 		return true;
 	}
@@ -331,9 +351,9 @@ static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 
 	int cmd = 0;
 
-	// Wake up if it can see a player
+	// Wake up if it can see a player or someone dying
 	if ((actor->flags & FLAGS_SLEEPING) && (actor->flags & FLAGS_VISIBLE) &&
-		actor->aiContext->Delay == 0 && CanSeeAPlayer(actor))
+		actor->aiContext->Delay == 0 && (CanSeeAPlayer(actor) || CanSeeActorBeingAttacked(actor)))
 	{
 		AIWake(actor, delayModifier);
 	}
