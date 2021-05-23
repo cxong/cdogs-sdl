@@ -60,15 +60,17 @@ const TActor *AIGetClosestVisibleEnemy(
 	const TActor *from, const bool isPlayer);
 struct vec2 AIGetClosestPlayerPos(const struct vec2 pos);
 int AIReverseDirection(int cmd);
-bool AICanSee(const TActor *a, const struct vec2 to);
+bool AIHasClearView(const TActor *a, const struct vec2 to, const int sightRange);
 bool AIHasClearShot(const struct vec2 from, const struct vec2 to);
 bool AIHasClearPath(
 	const struct vec2 from, const struct vec2 to, const bool ignoreObjects);
 bool AIHasPath(
 	const struct vec2 from, const struct vec2 to, const bool ignoreObjects);
 TObject *AIGetObjectRunningInto(TActor *a, int cmd);
+// AI is facing something within a 90 degree arc
 bool AIIsFacing(const TActor *a, const struct vec2 target, const direction_e d);
-bool AIIsInLine(const struct vec2i tile, const struct vec2i tileStart, const struct vec2i tileEnd);
+// AI can see something in view or in periphery
+bool AICanSee(const TActor *a, const struct vec2 target, const direction_e d);
 
 // Find path to target
 // destroyObjects - if true, ignore obstructing objects

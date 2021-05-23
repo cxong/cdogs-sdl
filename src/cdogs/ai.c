@@ -105,15 +105,15 @@ static bool CanSeeAPlayer(const TActor *a)
 	const TActor *player = ActorGetByUID(p->ActorUID);
 	// Can see player if:
 	// - Clear line of sight, and
-	// - If they are close, or if facing and they are not too far
-	if (!AICanSee(a, player->Pos))
+	// - If they are close, or if facing
+	const int sightRange = ConfigGetInt(&gConfig, "Game.SightRange") * TILE_WIDTH * 2 / 3;
+	if (!AIHasClearView(a, player->Pos, sightRange))
 	{
 		continue;
 	}
 	const float distance2 = svec2_distance_squared(a->Pos, player->Pos);
 	const bool isClose = distance2 < SQUARED(16 * 2);
-	const bool isNotTooFar = distance2 < SQUARED(16 * 30);
-	if (isClose || (isNotTooFar && AIIsFacing(a, player->Pos, a->direction)))
+	if (isClose || AICanSee(a, player->Pos, a->direction))
 	{
 		return true;
 	}
@@ -332,7 +332,7 @@ static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 	int cmd = 0;
 
 	// Wake up if it can see a player
-	if ((actor->flags & FLAGS_SLEEPING) &&
+	if ((actor->flags & FLAGS_SLEEPING) && (actor->flags & FLAGS_VISIBLE) &&
 		actor->aiContext->Delay == 0 && CanSeeAPlayer(actor))
 	{
 		AIWake(actor, delayModifier);

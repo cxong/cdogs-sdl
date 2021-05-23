@@ -317,18 +317,27 @@ static bool IsPosNoSee(void *data, struct vec2i pos)
 {
 	return TileIsOpaque(MapGetTile(data, Vec2iToTile(pos)));
 }
-bool AICanSee(const TActor *a, const struct vec2 to)
+bool AIHasClearView(const TActor *a, const struct vec2 to, const int sightRange)
 {
-	if (!(a->flags | FLAGS_VISIBLE))
-	{
-		return false;
-	}
-	const int sightRange = ConfigGetInt(&gConfig, "Game.SightRange") * TILE_WIDTH * 3 / 2;
-	if (svec2_distance_squared(a->Pos, to) > sightRange*sightRange)
+	if (svec2_distance_squared(a->Pos, to) > SQUARED(sightRange))
 	{
 		return false;
 	}
 	return AIHasClearLine(svec2i_assign_vec2(a->Pos), svec2i_assign_vec2(to), IsPosNoSee);
+}
+bool AICanSee(const TActor *a, const struct vec2 target, const direction_e d)
+{
+	const int sightRange = ConfigGetInt(&gConfig, "Game.SightRange") * TILE_WIDTH;
+	if (AIIsFacing(a, target, d))
+	{
+		return AIHasClearView(a, target, sightRange * 2 / 3);
+	}
+	else if (AIIsFacing(a, target, DirectionRotate(d, 1)) || AIIsFacing(a, target, DirectionRotate(d, -1)))
+	{
+		const int peripheralRange = sightRange / 3;
+		return AIHasClearView(a, target, peripheralRange);
+	}
+	return false;
 }
 
 static bool IsPosNotShootable(void *data, const struct vec2i pos)

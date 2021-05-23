@@ -812,7 +812,7 @@ static int GotoObjective(TActor *actor, const float objDistance2)
 		objState->Type == AI_OBJECTIVE_TYPE_NORMAL && objState->IsDestructible;
 	if (!isDestruction ||
 		svec2_distance_squared(actor->Pos, goal) > SQUARED(3 * 16) ||
-		!AICanSee(actor, goal))
+		!AIHasClearView(actor, goal, 10 * 16))
 	{
 		cmd = SmartGoto(actor, goal, objDistance2);
 	}
