@@ -289,7 +289,7 @@ static void LoadSounds(const SoundDevice *s, const CWolfMap *map)
 		}
 		else
 		{
-			CMALLOC(sound, sizeof *sound);
+			CCALLOC(sound, sizeof *sound);
 			sound->Type = SOUND_RANDOM;
 			CArrayInit(&sound->u.random.sounds, sizeof(Mix_Chunk *));
 			CArrayPushBack(&sound->u.random.sounds, &soundData);

@@ -245,7 +245,7 @@ bool BulletUpdate(struct MobileObject *obj, const int ticks)
 					alive = false;
 				}
 				// Leave a wall mark if hitting a south-facing wall
-				if (hit.Type == HIT_WALL && obj->thing.Vel.y < 0 &&
+				if (hit.Type == HIT_WALL && vel.y < 0 &&
 					!TileIsOpaque(MapGetTile(
 						&gMap, Vec2ToTile(svec2(hit.Pos.x, hit.Pos.y + 1)))))
 				{
