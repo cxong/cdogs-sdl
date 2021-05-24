@@ -35,20 +35,15 @@ So what are you waiting for? Download C-Dogs SDL today and have a blast!
 
 ## ![](https://github.com/cxong/cdogs-sdl/blob/master/graphics/barrel_blue.png) Platforms
 
-<a href="https://repology.org/metapackage/cdogs-sdl/versions">
-    <img src="https://repology.org/badge/vertical-allrepos/cdogs-sdl.svg" alt="Packaging status" align="right">
-</a>
+[![Packaging status](https://repology.org/badge/tiny-repos/cdogs-sdl.svg)](https://repology.org/project/cdogs-sdl/versions)
 
-C-Dogs SDL is built using the SDL2 API.
-See the SDL website - <http://www.libsdl.org> for more about SDL itself.
-
-C-Dogs SDL runs on Linux, \*BSD, Windows, Mac OS X, Pandora and GCW-Zero. There are a few other unsupported and outdated ports too.
+C-Dogs SDL runs on Windows, Linux and macOS. Other platforms and ports are also available, but may be outdated.
 
 ## ![](https://github.com/cxong/cdogs-sdl/blob/master/graphics/cd.png) Installation
 
-Please use the installers for your platform for installing.
+The easiest way is to [download from **itch.io**](https://congusbongus.itch.io/cdogs-sdl). If you use the itch.io app, your game installation will be updated automatically.
 
-Follow the [getting started wiki](https://github.com/cxong/cdogs-sdl/wiki#getting-started) to build on your platform. You will need the SDL2 development libraries installed.
+For building on your platform, follow the [getting started wiki](https://github.com/cxong/cdogs-sdl/wiki#getting-started). You will need the SDL2 development libraries installed.
 
 ## ![](https://github.com/cxong/cdogs-sdl/blob/master/graphics/barrel_skull.png) License
 
