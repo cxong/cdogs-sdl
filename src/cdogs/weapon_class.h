@@ -121,7 +121,6 @@ void WeaponClassesTerminate(WeaponClasses *wcs);
 const WeaponClass *StrWeaponClass(const char *s);
 WeaponClass *IdWeaponClass(const int i);
 int WeaponClassId(const WeaponClass *wc);
-WeaponClass *IndexWeaponClassReal(const int i);
 struct vec2 WeaponClassGetBarrelMuzzleOffset(
 	const WeaponClass *wc, const CharSprites *cs, const int barrel,
 	direction_e dir, const gunstate_e state);

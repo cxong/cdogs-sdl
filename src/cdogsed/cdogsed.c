@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2020 Cong Xu
+	Copyright (c) 2013-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -106,8 +106,10 @@ bool fileChanged = false;
 
 #ifdef __APPLE__
 #define KMOD_CMD KMOD_GUI
+#define KMOD_CMD_NAME "Cmd"
 #else
 #define KMOD_CMD KMOD_CTRL
+#define KMOD_CMD_NAME "Ctrl"
 #endif
 
 static struct vec2i GetMouseTile(EventHandlers *e)
@@ -225,7 +227,7 @@ static void Display(HandleInputResult result)
 	}
 
 	FontStr(
-		"Press Ctrl+E to edit characters", svec2i(20, h - 20 - FontH() * 2));
+		"Press " KMOD_CMD_NAME "+E to edit characters", svec2i(20, h - 20 - FontH() * 2));
 	FontStr("Press F1 for help", svec2i(20, h - 20 - FontH()));
 
 	UIObjectDraw(

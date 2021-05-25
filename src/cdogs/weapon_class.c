@@ -392,34 +392,6 @@ int WeaponClassId(const WeaponClass *wc)
 	CASSERT(false, "cannot find gun");
 	return -1;
 }
-WeaponClass *IndexWeaponClassReal(const int i)
-{
-	int j = 0;
-	CA_FOREACH(WeaponClass, wc, gWeaponClasses.Guns)
-	if (!wc->IsRealGun)
-	{
-		continue;
-	}
-	if (j == i)
-	{
-		return wc;
-	}
-	j++;
-	CA_FOREACH_END()
-	CA_FOREACH(WeaponClass, wc, gWeaponClasses.CustomGuns)
-	if (!wc->IsRealGun)
-	{
-		continue;
-	}
-	if (j == i)
-	{
-		return wc;
-	}
-	j++;
-	CA_FOREACH_END()
-	CASSERT(false, "cannot find gun");
-	return NULL;
-}
 
 void WeaponClassFire(
 	const WeaponClass *wc, const struct vec2 pos, const float z,

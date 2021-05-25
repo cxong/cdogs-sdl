@@ -30,6 +30,7 @@
 
 #include "c_array.h"
 #include "character_class.h"
+#include "pickup_class.h"
 #include "weapon.h"
 
 typedef struct
@@ -50,6 +51,7 @@ typedef struct
 	int maxHealth;
 	unsigned int flags;
 	CharColors Colors;
+	const PickupClass *Drop;
 	CharBot *bot;
 } Character;
 

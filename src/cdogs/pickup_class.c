@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2015-2016, 2018, 2020 Cong Xu
+	Copyright (c) 2015-2016, 2018, 2020-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -85,7 +85,6 @@ PickupClass *StrPickupClass(const char *s)
 		return c;
 	}
 	CA_FOREACH_END()
-	CASSERT(false, "cannot parse pickup class");
 	return NULL;
 }
 PickupClass *IntPickupClass(const int i)
@@ -314,10 +313,14 @@ void PickupClassesLoadKeys(CArray *classes)
 	CA_FOREACH(const char *, keyStyleName, gPicManager.keyStyleNames)
 	for (int i = 0; i < KEY_COUNT; i++)
 	{
-		PickupClass c;
-		memset(&c, 0, sizeof c);
 		char buf[CDOGS_FILENAME_MAX];
 		sprintf(buf, "keys/%s/%s", *keyStyleName, keyColors[i]);
+		if (StrPickupClass(buf) != NULL)
+		{
+			continue;
+		}
+		PickupClass c;
+		memset(&c, 0, sizeof c);
 		CSTRDUP(c.Name, buf);
 		CPicInitNormalFromName(&c.Pic, c.Name);
 		c.Type = PICKUP_KEYCARD;

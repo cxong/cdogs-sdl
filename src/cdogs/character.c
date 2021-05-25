@@ -184,6 +184,15 @@ void CharacterLoadJSON(
 		int flags;
 		LoadInt(&flags, child, "flags");
 		ch->flags = flags;
+
+		tmp = NULL;
+		LoadStr(&tmp, child, "Drop");
+		if (tmp != NULL)
+		{
+			ch->Drop = StrPickupClass(tmp);
+			CFREE(tmp);
+		}
+
 		LoadInt(&ch->bot->probabilityToMove, child, "probabilityToMove");
 		LoadInt(&ch->bot->probabilityToTrack, child, "probabilityToTrack");
 		LoadInt(&ch->bot->probabilityToShoot, child, "probabilityToShoot");
@@ -226,6 +235,10 @@ bool CharacterSave(CharacterStore *s, const char *path)
 	json_insert_pair_into_object(node, "Gun", json_new_string(c->Gun->name));
 	AddIntPair(node, "maxHealth", c->maxHealth);
 	AddIntPair(node, "flags", c->flags);
+	if (c->Drop != NULL)
+	{
+		json_insert_pair_into_object(node, "Drop", json_new_string(c->Drop->Name));
+	}
 	AddIntPair(node, "probabilityToMove", c->bot->probabilityToMove);
 	AddIntPair(node, "probabilityToTrack", c->bot->probabilityToTrack);
 	AddIntPair(node, "probabilityToShoot", c->bot->probabilityToShoot);

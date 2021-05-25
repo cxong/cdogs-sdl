@@ -107,19 +107,23 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 		BulletLoadJSON(&gBulletClasses, &gBulletClasses.CustomClasses, root);
 	}
 
+	bool hasCustomAmmo = false;
 	root = ReadArchiveJSON(filename, "ammo.json");
 	if (root != NULL)
 	{
 		AmmoLoadJSON(&gAmmo.CustomAmmo, root);
 		json_free_value(&root);
+		hasCustomAmmo = true;
 	}
 
+	bool hasCustomGuns = false;
 	root = ReadArchiveJSON(filename, "guns.json");
 	if (root != NULL)
 	{
 		WeaponClassesLoadJSON(
 			&gWeaponClasses, &gWeaponClasses.CustomGuns, root);
 		json_free_value(&root);
+		hasCustomGuns = true;
 	}
 
 	BulletLoadWeapons(&gBulletClasses);
@@ -129,9 +133,15 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	{
 		PickupClassesLoadJSON(&gPickupClasses.CustomClasses, root);
 	}
-	PickupClassesLoadAmmo(&gPickupClasses.CustomClasses, &gAmmo.CustomAmmo);
-	PickupClassesLoadGuns(
+	if (hasCustomAmmo)
+	{
+		PickupClassesLoadAmmo(&gPickupClasses.CustomClasses, &gAmmo.CustomAmmo);
+	}
+	if (hasCustomGuns)
+	{
+		PickupClassesLoadGuns(
 		&gPickupClasses.CustomClasses, &gWeaponClasses.CustomGuns);
+	}
 	PickupClassesLoadKeys(&gPickupClasses.KeyClasses);
 
 	root = ReadArchiveJSON(filename, "map_objects.json");

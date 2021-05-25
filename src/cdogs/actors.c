@@ -1145,16 +1145,31 @@ static void ActorAddAmmoPickup(const TActor *actor);
 static void ActorAddGunPickup(const TActor *actor);
 static void ActorDie(TActor *actor)
 {
-	// Add an ammo pickup of the actor's gun
-	if (gCampaign.Setting.Ammo)
+	const Character *c = ActorGetCharacter(actor);
+	GameEvent e;
+	if (!gCampaign.IsClient)
 	{
-		ActorAddAmmoPickup(actor);
-	}
+		if (c->Drop)
+		{
+			e = GameEventNew(GAME_EVENT_ADD_PICKUP);
+			strcpy(e.u.AddPickup.PickupClass, c->Drop->Name);
+			e.u.AddPickup.Pos = Vec2ToNet(actor->Pos);
+			GameEventsEnqueue(&gGameEvents, e);
+		}
+		else
+		{
+			// Add an ammo pickup of the actor's gun
+			if (gCampaign.Setting.Ammo)
+			{
+				ActorAddAmmoPickup(actor);
+			}
 
-	// Random chance to add gun pickup
-	if ((float)rand() / RAND_MAX < DROP_GUN_CHANCE)
-	{
-		ActorAddGunPickup(actor);
+			// Random chance to add gun pickup
+			if ((float)rand() / RAND_MAX < DROP_GUN_CHANCE)
+			{
+				ActorAddGunPickup(actor);
+			}
+		}
 	}
 
 	// Add corpse
@@ -1162,12 +1177,11 @@ static void ActorDie(TActor *actor)
 	{
 		GameEvent ea = GameEventNew(GAME_EVENT_MAP_OBJECT_ADD);
 		ea.u.MapObjectAdd.UID = ObjsGetNextUID();
-		const CharacterClass *c = ActorGetCharacter(actor)->Class;
-		const MapObject *corpse = StrMapObject(c->Corpse);
+		const MapObject *corpse = StrMapObject(c->Class->Corpse);
 		if (!corpse)
 		{
 			corpse = GetRandomBloodPool();
-			ea.u.MapObjectAdd.Mask = Color2Net(c->BloodColor);
+			ea.u.MapObjectAdd.Mask = Color2Net(c->Class->BloodColor);
 		}
 		strcpy(ea.u.MapObjectAdd.MapObjectClass, corpse->Name);
 		ea.u.MapObjectAdd.Pos = Vec2ToNet(actor->Pos);
@@ -1176,7 +1190,7 @@ static void ActorDie(TActor *actor)
 		GameEventsEnqueue(&gGameEvents, ea);
 	}
 
-	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_DIE);
+	e = GameEventNew(GAME_EVENT_ACTOR_DIE);
 	e.u.ActorDie.UID = actor->uid;
 	GameEventsEnqueue(&gGameEvents, e);
 }
@@ -1189,33 +1203,30 @@ static void ActorAddAmmoPickup(const TActor *actor)
 	}
 
 	// Add ammo pickups for each of the actor's guns
-	if (!gCampaign.IsClient)
+	for (int i = 0; i < MAX_WEAPONS; i++)
 	{
-		for (int i = 0; i < MAX_WEAPONS; i++)
+		const Weapon *w = &actor->guns[i];
+		// Check if the actor's gun has ammo at all
+		if (w->Gun == NULL || w->Gun->AmmoId < 0)
 		{
-			const Weapon *w = &actor->guns[i];
-			// Check if the actor's gun has ammo at all
-			if (w->Gun == NULL || w->Gun->AmmoId < 0)
-			{
-				continue;
-			}
-
-			// Don't spawn ammo if no players use it
-			if (PlayersNumUseAmmo(w->Gun->AmmoId) == 0)
-			{
-				continue;
-			}
-
-			GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
-			const Ammo *a = AmmoGetById(&gAmmo, w->Gun->AmmoId);
-			sprintf(e.u.AddPickup.PickupClass, "ammo_%s", a->Name);
-			// Add a little random offset so the pickups aren't all together
-			const struct vec2 offset = svec2(
-				(float)RAND_INT(-TILE_WIDTH, TILE_WIDTH) / 2,
-				(float)RAND_INT(-TILE_HEIGHT, TILE_HEIGHT) / 2);
-			e.u.AddPickup.Pos = Vec2ToNet(svec2_add(actor->Pos, offset));
-			GameEventsEnqueue(&gGameEvents, e);
+			continue;
 		}
+
+		// Don't spawn ammo if no players use it
+		if (PlayersNumUseAmmo(w->Gun->AmmoId) == 0)
+		{
+			continue;
+		}
+
+		GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
+		const Ammo *a = AmmoGetById(&gAmmo, w->Gun->AmmoId);
+		sprintf(e.u.AddPickup.PickupClass, "ammo_%s", a->Name);
+		// Add a little random offset so the pickups aren't all together
+		const struct vec2 offset = svec2(
+			(float)RAND_INT(-TILE_WIDTH, TILE_WIDTH) / 2,
+			(float)RAND_INT(-TILE_HEIGHT, TILE_HEIGHT) / 2);
+		e.u.AddPickup.Pos = Vec2ToNet(svec2_add(actor->Pos, offset));
+		GameEventsEnqueue(&gGameEvents, e);
 	}
 }
 static void ActorAddGunPickup(const TActor *actor)
@@ -1226,20 +1237,17 @@ static void ActorAddGunPickup(const TActor *actor)
 	}
 
 	// Select a gun at random to drop
-	if (!gCampaign.IsClient)
+	const Weapon *w;
+	for (;;)
 	{
-		const Weapon *w;
-		for (;;)
+		const int gunIndex = RAND_INT(0, MAX_WEAPONS - 1);
+		w = &actor->guns[gunIndex];
+		if (w->Gun != NULL)
 		{
-			const int gunIndex = RAND_INT(0, MAX_WEAPONS - 1);
-			w = &actor->guns[gunIndex];
-			if (w->Gun != NULL)
-			{
-				break;
-			}
+			break;
 		}
-		PickupAddGun(w->Gun, actor->Pos);
 	}
+	PickupAddGun(w->Gun, actor->Pos);
 }
 static bool IsUnarmedBot(const TActor *actor)
 {

@@ -44,11 +44,13 @@ typedef struct
 	char *CharacterClassNames;
 	char *HairNames;
 	char *GunNames;
+	char *PickupNames;
 	CArray texidsChars; // of GLuint[BODY_PART_COUNT]
 	GLuint texidsPreview[BODY_PART_COUNT];
 	CArray texIdsCharClasses; // of GLuint
 	CArray texIdsHairs;		  // of GLuint
 	CArray texIdsGuns;		  // of GLuint
+	CArray texIdsPickups;	  // of GLuint
 	Animation anim;
 	direction_e previewDir;
 	gunstate_e gunState;
@@ -57,10 +59,13 @@ typedef struct
 
 static const char *IndexCharacterClassName(const int i);
 static const char *IndexHairName(const int i);
-static int NumCharacterClasses(void);
 static const char *IndexGunName(const int i);
+static const char *IndexPickupName(const int i);
+static const WeaponClass *IndexWeaponClassReal(const int i);
+static const PickupClass *IndexPickupClass(const int i);
+static int NumCharacterClasses(void);
 static int NumGuns(void);
-static int GunIndex(const WeaponClass *wc);
+static int NumPickups(void);
 static void AddCharacterTextures(EditorContext *ec);
 static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data);
 void CharEditor(
@@ -91,6 +96,7 @@ void CharEditor(
 	ec.HairNames =
 		GetClassNames(gPicManager.hairstyleNames.size, IndexHairName);
 	ec.GunNames = GetClassNames(NumGuns(), IndexGunName);
+	ec.PickupNames = GetClassNames(NumPickups(), IndexPickupName);
 
 	CArrayInit(&ec.texidsChars, sizeof(GLuint) * BODY_PART_COUNT);
 	for (int i = 0; i < (int)setting->characters.OtherChars.size; i++)
@@ -120,6 +126,13 @@ void CharEditor(
 	const WeaponClass *wc = IndexWeaponClassReal(_ca_index);
 	LoadTexFromPic(*texid, wc->Icon);
 	CA_FOREACH_END()
+	
+	TexArrayInit(&ec.texIdsPickups, NumPickups());
+	CA_FOREACH(const GLuint, texid, ec.texIdsPickups)
+	const PickupClass *pc = IndexPickupClass(_ca_index);
+	if (pc == NULL) continue;
+	LoadTexFromPic(*texid, CPicGetPic(&pc->Pic, 0));
+	CA_FOREACH_END()
 
 	ec.anim = AnimationGetActorAnimation(ACTORANIMATION_WALKING);
 	ec.previewDir = DIRECTION_DOWN;
@@ -132,13 +145,19 @@ void CharEditor(
 	CFREE(ec.CharacterClassNames);
 	CFREE(ec.HairNames);
 	CFREE(ec.GunNames);
+	CFREE(ec.PickupNames);
 	glDeleteTextures(
 		(GLsizei)(BODY_PART_COUNT * ec.texidsChars.size), ec.texidsChars.data);
 	CArrayTerminate(&ec.texidsChars);
 	glDeleteTextures(BODY_PART_COUNT, ec.texidsPreview);
+	glDeleteTextures(ec.texIdsCharClasses.size, ec.texIdsCharClasses.data);
 	TexArrayTerminate(&ec.texIdsCharClasses);
+	glDeleteTextures(ec.texIdsHairs.size, ec.texIdsHairs.data);
 	TexArrayTerminate(&ec.texIdsHairs);
+	glDeleteTextures(ec.texIdsGuns.size, ec.texIdsGuns.data);
 	TexArrayTerminate(&ec.texIdsGuns);
+	glDeleteTextures(ec.texIdsPickups.size, ec.texIdsPickups.data);
+	TexArrayTerminate(&ec.texIdsPickups);
 }
 
 static const char *IndexCharacterClassName(const int i)
@@ -160,22 +179,90 @@ static const char *IndexGunName(const int i)
 	const WeaponClass *wc = IndexWeaponClassReal(i);
 	return wc ? wc->name : NULL;
 }
+static const char *IndexPickupName(const int i)
+{
+	const PickupClass *pc = IndexPickupClass(i);
+	return pc ? pc->Name : "(None)";
+}
+static const WeaponClass *IndexWeaponClassReal(const int i)
+{
+	int j = 0;
+	CA_FOREACH(WeaponClass, wc, gWeaponClasses.Guns)
+	if (!wc->IsRealGun)
+	{
+		continue;
+	}
+	if (j == i)
+	{
+		return wc;
+	}
+	j++;
+	CA_FOREACH_END()
+	CA_FOREACH(WeaponClass, wc, gWeaponClasses.CustomGuns)
+	if (!wc->IsRealGun)
+	{
+		continue;
+	}
+	if (j == i)
+	{
+		return wc;
+	}
+	j++;
+	CA_FOREACH_END()
+	CASSERT(false, "cannot find gun");
+	return NULL;
+}
+static const PickupClass *IndexPickupClass(const int i)
+{
+	if (i == 0)
+	{
+		return NULL;
+	}
+	int j = 1;
+	CA_FOREACH(const PickupClass, pc, gPickupClasses.Classes)
+	if (j == i)
+	{
+		return pc;
+	}
+	j++;
+	CA_FOREACH_END()
+	CA_FOREACH(const PickupClass, pc, gPickupClasses.CustomClasses)
+	if (j == i)
+	{
+		return pc;
+	}
+	j++;
+	CA_FOREACH_END()
+	CA_FOREACH(const PickupClass, pc, gPickupClasses.KeyClasses)
+	if (j == i)
+	{
+		return pc;
+	}
+	j++;
+	CA_FOREACH_END()
+	CASSERT(false, "cannot find pickup");
+	return NULL;
+}
 static int NumGuns(void)
 {
-	int totalWeapons = 0;
+	int total = 0;
 	CA_FOREACH(const WeaponClass, wc, gWeaponClasses.Guns)
 	if (wc->IsRealGun)
 	{
-		totalWeapons++;
+		total++;
 	}
 	CA_FOREACH_END()
 	CA_FOREACH(const WeaponClass, wc, gWeaponClasses.CustomGuns)
 	if (wc->IsRealGun)
 	{
-		totalWeapons++;
+		total++;
 	}
 	CA_FOREACH_END()
-	return totalWeapons;
+	return total;
+}
+static int NumPickups(void)
+{
+	return gPickupClasses.Classes.size + gPickupClasses.CustomClasses.size + gPickupClasses.KeyClasses.size + 1;
 }
 static int GunIndex(const WeaponClass *wc)
 {
@@ -203,6 +290,36 @@ static int GunIndex(const WeaponClass *wc)
 	j++;
 	CA_FOREACH_END()
 	CASSERT(false, "cannot find gun");
+	return -1;
+}
+static int PickupIndex(const PickupClass *pc)
+{
+	if (pc == NULL)
+	{
+		return 0;
+	}
+	int j = 1;
+	CA_FOREACH(const PickupClass, pc2, gPickupClasses.Classes)
+	if (pc == pc2)
+	{
+		return j;
+	}
+	j++;
+	CA_FOREACH_END()
+	CA_FOREACH(const PickupClass, pc2, gPickupClasses.CustomClasses)
+	if (pc == pc2)
+	{
+		return j;
+	}
+	j++;
+	CA_FOREACH_END()
+	CA_FOREACH(const PickupClass, pc2, gPickupClasses.KeyClasses)
+	if (pc == pc2)
+	{
+		return j;
+	}
+	j++;
+	CA_FOREACH_END()
 	return -1;
 }
 
@@ -437,7 +554,7 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 
 		if (nk_begin(
 				ctx, "Attributes",
-				nk_rect(280, (float)charStoreSize.y + PAD, 250, 250),
+				nk_rect(280, (float)charStoreSize.y + PAD, 250, 280),
 				NK_WINDOW_BORDER | NK_WINDOW_TITLE))
 		{
 			// Speed (256 = 100%)
@@ -489,6 +606,12 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 				"Large score penalty when shot");
 			DrawFlag(
 				ctx, ec, "Victim", FLAGS_VICTIM, "Takes damage from everyone");
+
+			const int selectedPickup = DrawClassSelection(
+				ctx, ec, "Drop:", ec->texIdsPickups.data, ec->PickupNames,
+				PickupIndex(ec->Char->Drop), NumPickups());
+			ec->Char->Drop = IndexPickupClass(selectedPickup);
+
 			nk_end(ctx);
 		}
 
