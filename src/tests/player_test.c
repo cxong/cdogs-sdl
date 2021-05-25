@@ -11,12 +11,6 @@
 #include <player_template.h>
 #include <utils.h>
 
-// Stubs
-Campaign gCampaign;
-NetClient gNetClient;
-PlayerTemplates gPlayerTemplates;
-Config gConfig;
-
 
 FEATURE(assign_unused, "Assign unused input device")
 	// This feature is used to assign input devices to players, before the game

@@ -35,7 +35,6 @@ bool ConfigIsOld(FILE *f)
 }
 int PicManagerGetPic(void) { return 0; }
 int StrWeaponClass(void) { return 0; }
-Config gConfig;
 int gPicManager;
 
 
