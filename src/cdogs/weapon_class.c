@@ -263,6 +263,8 @@ static void LoadGunDescription(
 
 	LoadBool(&wc->CanDrop, node, "CanDrop");
 
+	LoadStr(&wc->DropGun, node, "DropGun");
+
 	if (version < 3)
 	{
 		LoadInt(&wc->Shake.Amount, node, "ShakeAmount");
@@ -338,6 +340,7 @@ static void GunDescriptionTerminate(WeaponClass *wc)
 	CFREE(wc->name);
 	CFREE(wc->Sprites);
 	CFREE(wc->Description);
+	CFREE(wc->DropGun);
 	memset(wc, 0, sizeof *wc);
 }
 

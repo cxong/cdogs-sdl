@@ -93,6 +93,7 @@ typedef struct
 	const ParticleClass *Brass;
 	bool CanShoot;
 	bool CanDrop; // whether this gun can be dropped to be picked up
+	char *DropGun;	// Gun to drop if an actor with this gun dies
 	struct
 	{
 		int Amount;				// Amount of screen shake to produce

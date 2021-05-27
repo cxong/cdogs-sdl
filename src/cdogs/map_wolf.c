@@ -281,10 +281,9 @@ static void LoadSounds(const SoundDevice *s, const CWolfMap *map)
 		char nameBuf[CDOGS_PATH_MAX];
 		strcpy(nameBuf, name);
 		nameBuf[strlen(nameBuf) - 1] = '\0';
-		if (StrSound(nameBuf) != NULL)
+		const int err = hashmap_get(s->customSounds, nameBuf, (any_t *)&sound);
+		if (err == MAP_OK && sound->Type == SOUND_RANDOM)
 		{
-			const int err = hashmap_get(s->customSounds, nameBuf, (any_t *)&sound);
-			CASSERT(err == MAP_OK, "unexpected failure to get sound");
 			CArrayPushBack(&sound->u.random.sounds, &soundData);
 		}
 		else

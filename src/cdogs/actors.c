@@ -88,7 +88,6 @@
 #define VEL_DECAY_X (TILE_WIDTH * 2 / 256.0f)
 #define VEL_DECAY_Y (TILE_WIDTH * 2 / 256.0f) // Note: deliberately tile width
 #define SOUND_LOCK_WEAPON_CLICK 20
-#define DROP_GUN_CHANCE 0.2
 #define DRAW_RADIAN_SPEED (MPI / 16)
 // Percent of health considered low; bleed and flash HUD if low
 #define LOW_HEALTH_PERCENTAGE 25
@@ -1164,11 +1163,7 @@ static void ActorDie(TActor *actor)
 				ActorAddAmmoPickup(actor);
 			}
 
-			// Random chance to add gun pickup
-			if ((float)rand() / RAND_MAX < DROP_GUN_CHANCE)
-			{
-				ActorAddGunPickup(actor);
-			}
+			ActorAddGunPickup(actor);
 		}
 	}
 
@@ -1229,6 +1224,7 @@ static void ActorAddAmmoPickup(const TActor *actor)
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 }
+static bool HasGunPickups(const WeaponClass *wc, const int n);
 static void ActorAddGunPickup(const TActor *actor)
 {
 	if (IsUnarmedBot(actor))
@@ -1236,18 +1232,42 @@ static void ActorAddGunPickup(const TActor *actor)
 		return;
 	}
 
-	// Select a gun at random to drop
-	const Weapon *w;
-	for (;;)
+	// Select a valid gun to drop
+	for (int i = 0; i < MAX_WEAPONS; i++)
 	{
-		const int gunIndex = RAND_INT(0, MAX_WEAPONS - 1);
-		w = &actor->guns[gunIndex];
-		if (w->Gun != NULL)
+		const WeaponClass *wc = actor->guns[i].Gun;
+		if (wc == NULL) continue;
+		if (!wc->CanDrop) continue;
+		if (wc->DropGun)
 		{
-			break;
+			wc = StrWeaponClass(wc->DropGun);
+			CASSERT(wc != NULL, "Cannot find gun to drop");
+		}
+		// Don't drop gun if there's gun pickups for this already
+		if (HasGunPickups(wc, 2)) continue;
+		PickupAddGun(wc, actor->Pos);
+		break;
+	}
+}
+static bool HasGunPickups(const WeaponClass *wc, const int n)
+{
+	const int wcId = WeaponClassId(wc);
+	int count = 0;
+	CA_FOREACH(const Pickup, p, gPickups)
+	if (!p->isInUse)
+	{
+		continue;
+	}
+	if (p->class->Type == PICKUP_GUN && p->class->u.GunId == wcId)
+	{
+		count++;
+		if (count >= n)
+		{
+			return true;
 		}
 	}
-	PickupAddGun(w->Gun, actor->Pos);
+	CA_FOREACH_END()
+	return false;
 }
 static bool IsUnarmedBot(const TActor *actor)
 {

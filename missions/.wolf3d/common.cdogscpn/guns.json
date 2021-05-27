@@ -75,7 +75,7 @@
       "Recoil": 0.3,
       "Brass": "brass",
       "Ammo": "Ammo",
-      "CanDrop": false
+      "DropGun": "Machine Gun"
     },
     {
       "Pic": "chaingun",
