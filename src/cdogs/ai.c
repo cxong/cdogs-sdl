@@ -66,6 +66,9 @@
 #include "sys_specifics.h"
 #include "utils.h"
 
+#define AI_WAKE_SOUND_RANGE (8*TILE_WIDTH)
+#define AI_WAKE_SOUND_RANGE_INDIRECT (4*TILE_WIDTH)
+
 static int gBaddieCount = 0;
 static bool sAreGoodGuysPresent = false;
 
@@ -557,6 +560,27 @@ void AICommandLast(const int ticks)
 	const int cmd = actor->aiContext->LastCmd;
 	actor->aiContext->Delay = MAX(0, actor->aiContext->Delay - ticks);
 	CommandActor(actor, cmd, ticks);
+	CA_FOREACH_END()
+}
+
+void AIWakeOnSoundAt(const struct vec2 pos)
+{
+	CA_FOREACH(TActor, actor, gActors)
+	if (!actor->isInUse || actor->PlayerUID >= 0 || actor->dead ||
+		!(actor->flags & FLAGS_SLEEPING))
+	{
+		continue;
+	}
+	const float d = CHEBYSHEV_DISTANCE(pos.x, pos.y, actor->Pos.x, actor->Pos.y);
+	if (d > AI_WAKE_SOUND_RANGE)
+	{
+		continue;
+	}
+	if (d > AI_WAKE_SOUND_RANGE_INDIRECT && !AIHasClearView(actor, pos, AI_WAKE_SOUND_RANGE_INDIRECT))
+	{
+		continue;
+	}
+	AIWake(actor, 1);
 	CA_FOREACH_END()
 }
 

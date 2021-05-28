@@ -56,6 +56,7 @@ void CreateEnemies(void);
 // Returns number of random enemies
 int AICommand(const int ticks);
 void AICommandLast(const int ticks);
+void AIWakeOnSoundAt(const struct vec2 pos);
 void AIAddRandomEnemies(const int enemies, const Mission *m);
 
 void AIWake(TActor *a, const int delayModifier);

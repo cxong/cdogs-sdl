@@ -32,3 +32,4 @@
 
 void ActorFireBarrel(Weapon *w, const TActor *a, const int barrel);
 void ActorFireUpdate(Weapon *w, const TActor *a, const int ticks);
+void OnGunFire(const NGunFire gf, SoundDevice *sd);
