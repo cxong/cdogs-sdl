@@ -73,7 +73,7 @@
         "Type": "Directional",
         "Sprites": "chars/heads/jones"
       },
-      "Body": "fake_hitler",
+      "Body": "wizard",
       "Sounds": "fake_hitler",
       "BloodColor": "000000"
     },
