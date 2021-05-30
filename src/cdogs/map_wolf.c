@@ -915,7 +915,8 @@ static void LoadEntity(
 	case CWENT_ENDGAME: {
 		Exit e;
 		e.Hidden = true;
-		e.Mission = map->nLevels;
+		// Skip over the secret level to the next episode
+		e.Mission = missionIndex + 2;
 		e.R.Pos = v;
 		e.R.Size = svec2i_zero();
 		CArrayPushBack(&m->Exits, &e);
