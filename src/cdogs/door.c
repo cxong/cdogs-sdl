@@ -100,6 +100,7 @@ static bool DoorTypeIsHorizontal(const DoorType type)
 		   type == DOORTYPE_HMID || type == DOORTYPE_RIGHT;
 }
 
+static bool DoorGroupIsHorizontal(const MapBuilder *mb, const struct vec2i v);
 static void DoorGetClassName(
 	char *buf, const TileClass *door, const char *key, const DoorType dType);
 static int GetDoorCountInGroup(
@@ -113,19 +114,7 @@ static Trigger *CreateOpenDoorTrigger(
 void MapAddDoorGroup(MapBuilder *mb, const struct vec2i v, const int keyFlags)
 {
 	const TileClass *door = MapBuilderGetTile(mb, v);
-	const TileClass *tileLeftType =
-		MapBuilderGetTile(mb, svec2i(v.x - 1, v.y));
-	const bool tileLeftCanWalk = tileLeftType != NULL && tileLeftType->canWalk;
-	const bool tileLeftIsDoor =
-		tileLeftType != NULL && tileLeftType->Type == TILE_CLASS_DOOR;
-	const TileClass *tileRightType =
-		MapBuilderGetTile(mb, svec2i(v.x + 1, v.y));
-	const bool tileRightCanWalk =
-		tileRightType != NULL && tileRightType->canWalk;
-	const bool tileRightIsDoor =
-		tileRightType != NULL && tileRightType->Type == TILE_CLASS_DOOR;
-	const bool isHorizontal = !tileLeftCanWalk || !tileRightCanWalk ||
-							  tileLeftIsDoor || tileRightIsDoor;
+	const bool isHorizontal = DoorGroupIsHorizontal(mb, v);
 	const int doorGroupCount = GetDoorCountInGroup(mb, v, isHorizontal);
 	const struct vec2i dv = svec2i(isHorizontal ? 1 : 0, isHorizontal ? 0 : 1);
 	const struct vec2i dAside = svec2i(dv.y, dv.x);
@@ -210,6 +199,59 @@ void MapAddDoorGroup(MapBuilder *mb, const struct vec2i v, const int keyFlags)
 		const struct vec2i vI2 = svec2i_subtract(vI, dAside);
 		MapBuilderSetLeaveFree(mb, vI2, true);
 	}
+}
+static bool DoorGroupIsHorizontal(const MapBuilder *mb, const struct vec2i v)
+{
+	const TileClass *tileLeftType =
+		MapBuilderGetTile(mb, svec2i(v.x - 1, v.y));
+	const TileClass *tileRightType =
+		MapBuilderGetTile(mb, svec2i(v.x + 1, v.y));
+	const TileClass *tileAboveType =
+		MapBuilderGetTile(mb, svec2i(v.x, v.y - 1));
+	const TileClass *tileBelowType =
+		MapBuilderGetTile(mb, svec2i(v.x, v.y + 1));
+	const bool tileLeftIsDoor =
+		tileLeftType != NULL && tileLeftType->Type == TILE_CLASS_DOOR;
+	const bool tileRightIsDoor =
+		tileRightType != NULL && tileRightType->Type == TILE_CLASS_DOOR;
+	const bool tileAboveIsDoor =
+		tileAboveType != NULL && tileAboveType->Type == TILE_CLASS_DOOR;
+	const bool tileBelowIsDoor =
+		tileBelowType != NULL && tileBelowType->Type == TILE_CLASS_DOOR;
+	const bool tileLeftCanWalk = tileLeftType != NULL && tileLeftType->canWalk;
+	const bool tileRightCanWalk =
+		tileRightType != NULL && tileRightType->canWalk;
+	const bool tileAboveCanWalk = tileAboveType != NULL && tileAboveType->canWalk;
+	const bool tileBelowCanWalk =
+		tileBelowType != NULL && tileBelowType->canWalk;
+	// If door is free all around, follow doors
+	if (tileAboveCanWalk && tileBelowCanWalk && tileLeftCanWalk && tileRightCanWalk)
+	{
+		if (tileLeftIsDoor && tileRightIsDoor)
+		{
+			return true;
+		}
+		if (tileAboveIsDoor && tileBelowIsDoor)
+		{
+			return false;
+		}
+		return tileLeftIsDoor || tileRightIsDoor;
+	}
+	// If door is free both above/below or both left/right
+	if (tileAboveCanWalk && tileBelowCanWalk)
+	{
+		return true;
+	}
+	if (tileLeftCanWalk && tileRightCanWalk)
+	{
+		return false;
+	}
+	// If door is free only one of above/below/left/right
+	if (tileAboveCanWalk || tileBelowCanWalk)
+	{
+		return true;
+	}
+	return false;
 }
 
 // Count the number of doors that are in the same group as this door

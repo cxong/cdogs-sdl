@@ -552,7 +552,7 @@ BodyPart StrBodyPart(const char *s)
 
 int Pulse256(const int t)
 {
-	const int pulsePeriod = ConfigGetInt(&gConfig, "Game.FPS");
+	const int pulsePeriod = ConfigGetInt(&gConfig, "Game.FPS") / 2;
 	int alphaUnscaled = (t % pulsePeriod) * 255 / (pulsePeriod / 2);
 	if (alphaUnscaled > 255)
 	{
