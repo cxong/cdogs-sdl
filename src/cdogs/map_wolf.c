@@ -153,7 +153,7 @@ bail:
 
 static void LoadSounds(const SoundDevice *s, const CWolfMap *map);
 static void LoadMission(
-	CArray *missions, const map_t tileClasses, const CWolfMap *map,
+	CampaignSetting *c, const map_t tileClasses, const CWolfMap *map,
 	const int missionIndex);
 
 int MapWolfLoad(const char *filename, CampaignSetting *c)
@@ -217,13 +217,13 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 	{
 		goto bail;
 	}
+	
+	CharacterStoreCopy(&c->characters, &cs, &gPlayerTemplates.CustomClasses);
 
 	for (int i = 0; i < map.nLevels; i++)
 	{
-		LoadMission(&c->Missions, tileClasses, &map, i);
+		LoadMission(c, tileClasses, &map, i);
 	}
-
-	CharacterStoreCopy(&c->characters, &cs, &gPlayerTemplates.CustomClasses);
 
 bail:
 	hashmap_destroy(tileClasses, TileClassDestroy);
@@ -329,11 +329,11 @@ static void TryLoadWallObject(
 	MissionStatic *m, const uint16_t ch, const CWolfMap *map,
 	const struct vec2i v, const int missionIndex);
 static void LoadEntity(
-	MissionStatic *m, const uint16_t ch, const CWolfMap *map,
-	const struct vec2i v, const int missionIndex);
+	Mission *m, const uint16_t ch, const CWolfMap *map,
+	const struct vec2i v, const int missionIndex, int *bossObjIdx);
 
 static void LoadMission(
-	CArray *missions, const map_t tileClasses, const CWolfMap *map,
+	CampaignSetting *c, const map_t tileClasses, const CWolfMap *map,
 	const int missionIndex)
 {
 	const CWLevel *level = &map->levels[missionIndex];
@@ -344,7 +344,10 @@ static void LoadMission(
 	m.Type = MAPTYPE_STATIC;
 	strcpy(m.ExitStyle, "plate");
 	strcpy(m.KeyStyle, "plain2");
+	
 	// TODO: objectives for treasure, kills (multiple items per obj)
+	int bossObjIdx = -1;
+	
 	const WeaponClass *wc = StrWeaponClass("Pistol");
 	CArrayPushBack(&m.Weapons, &wc);
 	wc = StrWeaponClass("Knife");
@@ -363,12 +366,12 @@ static void LoadMission(
 	const uint16_t ch = CWLevelGetCh(level, 0, _v.x, _v.y);
 	TryLoadWallObject(&m.u.Static, ch, map, _v, missionIndex);
 	const uint16_t ech = CWLevelGetCh(level, 1, _v.x, _v.y);
-	LoadEntity(&m.u.Static, ech, map, _v, missionIndex);
+	LoadEntity(&m, ech, map, _v, missionIndex, &bossObjIdx);
 	RECT_FOREACH_END()
 
 	m.u.Static.AltFloorsEnabled = false;
 
-	CArrayPushBack(missions, &m);
+	CArrayPushBack(&c->Missions, &m);
 }
 
 static int LoadWall(const uint16_t ch);
@@ -666,12 +669,12 @@ typedef enum
 	CHAR_ANGEL
 } WolfChar;
 
+static void LoadChar(Mission *m, const struct vec2i v, const direction_e d, const int charId, int *bossObjIdx);
 static void LoadEntity(
-	MissionStatic *m, const uint16_t ch, const CWolfMap *map,
-	const struct vec2i v, const int missionIndex)
+	Mission *m, const uint16_t ch, const CWolfMap *map,
+	const struct vec2i v, const int missionIndex, int *bossObjIdx)
 {
 	const CWEntity entity = CWChToEntity(ch);
-	CharacterPlace cp = {v, DIRECTION_DOWN};
 	switch (entity)
 	{
 	case CWENT_NONE:
@@ -680,235 +683,235 @@ static void LoadEntity(
 	case CWENT_PLAYER_SPAWN_E:
 	case CWENT_PLAYER_SPAWN_S:
 	case CWENT_PLAYER_SPAWN_W:
-		m->Start = v;
+		m->u.Static.Start = v;
 		// Remove any exits that overlap with start
 		// SOD starts the player in elevators
-		CA_FOREACH(const Exit, e, m->Exits)
+		CA_FOREACH(const Exit, e, m->u.Static.Exits)
 		const Rect2i er =
 			Rect2iNew(e->R.Pos, svec2i_add(e->R.Size, svec2i_one()));
 		if (Rect2iIsInside(er, v))
 		{
-			CArrayDelete(&m->Exits, _ca_index);
+			CArrayDelete(&m->u.Static.Exits, _ca_index);
 			_ca_index--;
 		}
 		CA_FOREACH_END()
 		break;
 	case CWENT_WATER:
-		MissionStaticTryAddItem(m, StrMapObject("pool_water"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("pool_water"), v);
 		break;
 	case CWENT_OIL_DRUM:
-		MissionStaticTryAddItem(m, StrMapObject("barrel_green"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("barrel_green"), v);
 		break;
 	case CWENT_TABLE_WITH_CHAIRS:
-		MissionStaticTryAddItem(m, StrMapObject("table_and_chairs"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("table_and_chairs"), v);
 		break;
 	case CWENT_FLOOR_LAMP:
-		MissionStaticTryAddItem(m, StrMapObject("rod_light"), v);
-		MissionStaticTryAddItem(m, StrMapObject("spotlight"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("rod_light"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("spotlight"), v);
 		break;
 	case CWENT_CHANDELIER:
-		MissionStaticTryAddItem(m, StrMapObject("chandelier"), v);
-		MissionStaticTryAddItem(m, StrMapObject("spotlight"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("chandelier"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("spotlight"), v);
 		break;
 	case CWENT_HANGING_SKELETON:
-		MissionStaticTryAddItem(m, StrMapObject("hanging_skeleton"), v);
-		MissionStaticTryAddItem(m, StrMapObject("shadow"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("hanging_skeleton"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("shadow"), v);
 		break;
 	case CWENT_DOG_FOOD:
-		MissionStaticTryAddPickup(m, StrPickupClass("dogfood"), v);
+		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("dogfood"), v);
 		break;
 	case CWENT_WHITE_COLUMN:
-		MissionStaticTryAddItem(m, StrMapObject("pillar"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("pillar"), v);
 		break;
 	case CWENT_GREEN_PLANT:
-		MissionStaticTryAddItem(m, StrMapObject("plant"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("plant"), v);
 		break;
 	case CWENT_SKELETON:
-		MissionStaticTryAddItem(m, StrMapObject("bone_blood"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("bone_blood"), v);
 		break;
 	case CWENT_SINK_SKULLS_ON_STICK:
 		if (map->type == CWMAPTYPE_SOD)
 		{
-			MissionStaticTryAddItem(m, StrMapObject("skull_pillar"), v);
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("skull_pillar"), v);
 		}
 		else
 		{
-			MissionStaticTryAddItem(m, StrMapObject("sink"), v);
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("sink"), v);
 		}
 		break;
 	case CWENT_BROWN_PLANT:
-		MissionStaticTryAddItem(m, StrMapObject("plant_brown"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("plant_brown"), v);
 		break;
 	case CWENT_VASE:
-		MissionStaticTryAddItem(m, StrMapObject("urn"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("urn"), v);
 		break;
 	case CWENT_TABLE:
-		MissionStaticTryAddItem(m, StrMapObject("table_wood_round"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("table_wood_round"), v);
 		break;
 	case CWENT_CEILING_LIGHT_GREEN:
-		MissionStaticTryAddItem(m, StrMapObject("spotlight"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("spotlight"), v);
 		break;
 	case CWENT_UTENSILS_BROWN_CAGE_BLOODY_BONES:
 		if (map->type == CWMAPTYPE_SOD)
 		{
-			MissionStaticTryAddItem(m, StrMapObject("gibbet_bloody"), v);
-			MissionStaticTryAddItem(m, StrMapObject("shadow"), v);
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("gibbet_bloody"), v);
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("shadow"), v);
 		}
 		else
 		{
-			MissionStaticTryAddItem(m, StrMapObject("knives"), v);
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("knives"), v);
 		}
 		break;
 	case CWENT_ARMOR:
-		MissionStaticTryAddItem(m, StrMapObject("suit_of_armor"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("suit_of_armor"), v);
 		break;
 	case CWENT_CAGE:
-		MissionStaticTryAddItem(m, StrMapObject("gibbet"), v);
-		MissionStaticTryAddItem(m, StrMapObject("shadow"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("gibbet"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("shadow"), v);
 		break;
 	case CWENT_CAGE_SKELETON:
-		MissionStaticTryAddItem(m, StrMapObject("gibbet_skeleton"), v);
-		MissionStaticTryAddItem(m, StrMapObject("shadow"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("gibbet_skeleton"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("shadow"), v);
 		break;
 	case CWENT_BONES1:
-		MissionStaticTryAddItem(m, StrMapObject("skull"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("skull"), v);
 		break;
 	case CWENT_KEY_GOLD:
-		MissionStaticAddKey(m, 0, v);
+		MissionStaticAddKey(&m->u.Static, 0, v);
 		break;
 	case CWENT_KEY_SILVER:
-		MissionStaticAddKey(m, 2, v);
+		MissionStaticAddKey(&m->u.Static, 2, v);
 		break;
 	case CWENT_BED_CAGE_SKULLS:
 		if (map->type == CWMAPTYPE_SOD)
 		{
-			MissionStaticTryAddItem(m, StrMapObject("gibbet_skulls"), v);
-			MissionStaticTryAddItem(m, StrMapObject("shadow"), v);
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("gibbet_skulls"), v);
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("shadow"), v);
 		}
 		else
 		{
-			MissionStaticTryAddItem(m, StrMapObject("bed"), v);
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("bed"), v);
 		}
 		break;
 	case CWENT_BASKET:
-		MissionStaticTryAddItem(m, StrMapObject("basket"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("basket"), v);
 		break;
 	case CWENT_FOOD:
-		MissionStaticTryAddPickup(m, StrPickupClass("meal"), v);
+		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("meal"), v);
 		break;
 	case CWENT_MEDKIT:
-		MissionStaticTryAddPickup(m, StrPickupClass("health"), v);
+		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("health"), v);
 		break;
 	case CWENT_AMMO:
-		MissionStaticTryAddPickup(m, StrPickupClass("ammo_clip"), v);
+		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("ammo_clip"), v);
 		break;
 	case CWENT_MACHINE_GUN:
-		MissionStaticTryAddPickup(m, StrPickupClass("gun_Machine Gun"), v);
+		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("gun_Machine Gun"), v);
 		break;
 	case CWENT_CHAIN_GUN:
-		MissionStaticTryAddPickup(m, StrPickupClass("gun_Chain Gun"), v);
+		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("gun_Chain Gun"), v);
 		break;
 	case CWENT_CROSS:
-		MissionStaticTryAddPickup(m, StrPickupClass("cross"), v);
+		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("cross"), v);
 		break;
 	case CWENT_CHALICE:
-		MissionStaticTryAddPickup(m, StrPickupClass("chalice"), v);
+		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("chalice"), v);
 		break;
 	case CWENT_CHEST:
-		MissionStaticTryAddPickup(m, StrPickupClass("chest"), v);
+		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("chest"), v);
 		break;
 	case CWENT_CROWN:
-		MissionStaticTryAddPickup(m, StrPickupClass("crown"), v);
+		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("crown"), v);
 		break;
 	case CWENT_LIFE:
-		MissionStaticTryAddPickup(m, StrPickupClass("heart"), v);
+		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("heart"), v);
 		break;
 	case CWENT_BONES_BLOOD:
-		MissionStaticTryAddItem(m, StrMapObject("gibs"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("gibs"), v);
 		break;
 	case CWENT_BARREL:
-		MissionStaticTryAddItem(m, StrMapObject("barrel_wood2"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("barrel_wood2"), v);
 		break;
 	case CWENT_WELL_WATER:
-		MissionStaticTryAddItem(m, StrMapObject("well_water"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("well_water"), v);
 		break;
 	case CWENT_WELL:
-		MissionStaticTryAddItem(m, StrMapObject("well"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("well"), v);
 		break;
 	case CWENT_POOL_OF_BLOOD:
-		MissionStaticTryAddItem(m, StrMapObject("pool_blood"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("pool_blood"), v);
 		break;
 	case CWENT_FLAG:
-		MissionStaticTryAddItem(m, StrMapObject("flag"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("flag"), v);
 		break;
 	case CWENT_CEILING_LIGHT_RED_AARDWOLF:
 		if (map->type == CWMAPTYPE_WL6)
 		{
-			MissionStaticTryAddItem(m, StrMapObject("spotlight"), v);
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("spotlight"), v);
 		}
 		else
 		{
-			MissionStaticTryAddItem(m, StrMapObject("skull2"), v);
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("skull2"), v);
 			break;
 		}
 		break;
 	case CWENT_BONES2:
-		MissionStaticTryAddItem(m, StrMapObject("bones"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("bones"), v);
 		break;
 	case CWENT_BONES3:
-		MissionStaticTryAddItem(m, StrMapObject("bones2"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("bones2"), v);
 		break;
 	case CWENT_BONES4:
-		MissionStaticTryAddItem(m, StrMapObject("bones3"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("bones3"), v);
 		break;
 	case CWENT_UTENSILS_BLUE_COW_SKULL:
 		if (map->type == CWMAPTYPE_SOD)
 		{
-			MissionStaticTryAddItem(m, StrMapObject("cowskull_pillar"), v);
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("cowskull_pillar"), v);
 		}
 		else
 		{
-			MissionStaticTryAddItem(m, StrMapObject("pots"), v);
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("pots"), v);
 		}
 		break;
 	case CWENT_STOVE_WELL_BLOOD:
 		if (map->type == CWMAPTYPE_SOD)
 		{
-			MissionStaticTryAddItem(m, StrMapObject("well_blood"), v);
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("well_blood"), v);
 		}
 		else
 		{
-			MissionStaticTryAddItem(m, StrMapObject("stove"), v);
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("stove"), v);
 		}
 		break;
 	case CWENT_RACK_ANGEL_STATUE:
 		if (map->type == CWMAPTYPE_SOD)
 		{
-			MissionStaticTryAddItem(m, StrMapObject("statue_behemoth"), v);
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("statue_behemoth"), v);
 		}
 		else
 		{
-			MissionStaticTryAddItem(m, StrMapObject("spears"), v);
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("spears"), v);
 		}
 		break;
 	case CWENT_VINES:
-		MissionStaticTryAddItem(m, StrMapObject("grass"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("grass"), v);
 		break;
 	case CWENT_BROWN_COLUMN:
-		MissionStaticTryAddItem(m, StrMapObject("pillar_brown"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("pillar_brown"), v);
 		break;
 	case CWENT_AMMO_BOX:
-		MissionStaticTryAddPickup(m, StrPickupClass("ammo_box"), v);
+		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("ammo_box"), v);
 		break;
 	case CWENT_TRUCK_REAR:
-		MissionStaticTryAddItem(m, StrMapObject("truck"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("truck"), v);
 		break;
 	case CWENT_SPEAR:
-		MissionStaticTryAddPickup(m, StrPickupClass("spear"), v);
+		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("spear"), v);
 		break;
 	case CWENT_PUSHWALL: {
 		const CWLevel *level = &map->levels[missionIndex];
-		int *tile = CArrayGet(&m->Tiles, v.x + v.y * level->header.width);
+		int *tile = CArrayGet(&m->u.Static.Tiles, v.x + v.y * level->header.width);
 		*tile += TILE_CLASS_WALL_OFFSET;
 	}
 	break;
@@ -919,97 +922,77 @@ static void LoadEntity(
 		e.Mission = missionIndex + 2;
 		e.R.Pos = v;
 		e.R.Size = svec2i_zero();
-		CArrayPushBack(&m->Exits, &e);
+		CArrayPushBack(&m->u.Static.Exits, &e);
 	}
 	break;
 	case CWENT_GHOST:
-		MissionStaticAddCharacter(m, (int)CHAR_GHOST, cp);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_GHOST, bossObjIdx);
 		break;
 	case CWENT_ANGEL:
-		MissionStaticAddCharacter(m, (int)CHAR_ANGEL, cp);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_ANGEL, bossObjIdx);
 		break;
 	case CWENT_DEAD_GUARD:
-		MissionStaticTryAddItem(m, StrMapObject("dead_guard"), v);
+		MissionStaticTryAddItem(&m->u.Static, StrMapObject("dead_guard"), v);
 		break;
 	case CWENT_DOG_E:
-		cp.Dir = DIRECTION_RIGHT;
-		MissionStaticAddCharacter(m, (int)CHAR_DOG, cp);
+		LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_DOG, bossObjIdx);
 		break;
 	case CWENT_DOG_N:
-		cp.Dir = DIRECTION_UP;
-		MissionStaticAddCharacter(m, (int)CHAR_DOG, cp);
+		LoadChar(m, v, DIRECTION_UP, (int)CHAR_DOG, bossObjIdx);
 		break;
 	case CWENT_DOG_W:
-		cp.Dir = DIRECTION_LEFT;
-		MissionStaticAddCharacter(m, (int)CHAR_DOG, cp);
+		LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_DOG, bossObjIdx);
 		break;
 	case CWENT_DOG_S:
-		cp.Dir = DIRECTION_DOWN;
-		MissionStaticAddCharacter(m, (int)CHAR_DOG, cp);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_DOG, bossObjIdx);
 		break;
 	case CWENT_GUARD_E:
-		cp.Dir = DIRECTION_RIGHT;
-		MissionStaticAddCharacter(m, (int)CHAR_GUARD, cp);
+		LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_GUARD, bossObjIdx);
 		break;
 	case CWENT_GUARD_N:
-		cp.Dir = DIRECTION_UP;
-		MissionStaticAddCharacter(m, (int)CHAR_GUARD, cp);
+		LoadChar(m, v, DIRECTION_UP, (int)CHAR_GUARD, bossObjIdx);
 		break;
 	case CWENT_GUARD_W:
-		cp.Dir = DIRECTION_LEFT;
-		MissionStaticAddCharacter(m, (int)CHAR_GUARD, cp);
+		LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_GUARD, bossObjIdx);
 		break;
 	case CWENT_GUARD_S:
-		cp.Dir = DIRECTION_DOWN;
-		MissionStaticAddCharacter(m, (int)CHAR_GUARD, cp);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_GUARD, bossObjIdx);
 		break;
 	case CWENT_SS_E:
-		cp.Dir = DIRECTION_RIGHT;
-		MissionStaticAddCharacter(m, (int)CHAR_SS, cp);
+		LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_SS, bossObjIdx);
 		break;
 	case CWENT_SS_N:
-		cp.Dir = DIRECTION_UP;
-		MissionStaticAddCharacter(m, (int)CHAR_SS, cp);
+		LoadChar(m, v, DIRECTION_UP, (int)CHAR_SS, bossObjIdx);
 		break;
 	case CWENT_SS_W:
-		cp.Dir = DIRECTION_LEFT;
-		MissionStaticAddCharacter(m, (int)CHAR_SS, cp);
+		LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_SS, bossObjIdx);
 		break;
 	case CWENT_SS_S:
-		cp.Dir = DIRECTION_DOWN;
-		MissionStaticAddCharacter(m, (int)CHAR_SS, cp);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_SS, bossObjIdx);
 		break;
 	case CWENT_MUTANT_E:
-		cp.Dir = DIRECTION_RIGHT;
-		MissionStaticAddCharacter(m, (int)CHAR_MUTANT, cp);
+		LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_MUTANT, bossObjIdx);
 		break;
 	case CWENT_MUTANT_N:
-		cp.Dir = DIRECTION_UP;
-		MissionStaticAddCharacter(m, (int)CHAR_MUTANT, cp);
+		LoadChar(m, v, DIRECTION_UP, (int)CHAR_MUTANT, bossObjIdx);
 		break;
 	case CWENT_MUTANT_W:
-		cp.Dir = DIRECTION_LEFT;
-		MissionStaticAddCharacter(m, (int)CHAR_MUTANT, cp);
+		LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_MUTANT, bossObjIdx);
 		break;
 	case CWENT_MUTANT_S:
-		cp.Dir = DIRECTION_DOWN;
-		MissionStaticAddCharacter(m, (int)CHAR_MUTANT, cp);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_MUTANT, bossObjIdx);
 		break;
 	case CWENT_OFFICER_E:
-		cp.Dir = DIRECTION_RIGHT;
-		MissionStaticAddCharacter(m, (int)CHAR_OFFICER, cp);
+		LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_OFFICER, bossObjIdx);
 		break;
 	case CWENT_OFFICER_N:
-		cp.Dir = DIRECTION_UP;
-		MissionStaticAddCharacter(m, (int)CHAR_OFFICER, cp);
+		LoadChar(m, v, DIRECTION_UP, (int)CHAR_OFFICER, bossObjIdx);
 		break;
 	case CWENT_OFFICER_W:
-		cp.Dir = DIRECTION_LEFT;
-		MissionStaticAddCharacter(m, (int)CHAR_OFFICER, cp);
+		LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_OFFICER, bossObjIdx);
 		break;
 	case CWENT_OFFICER_S:
-		cp.Dir = DIRECTION_DOWN;
-		MissionStaticAddCharacter(m, (int)CHAR_OFFICER, cp);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_OFFICER, bossObjIdx);
 		break;
 	case CWENT_TURN_E:
 	case CWENT_TURN_NE:
@@ -1021,52 +1004,82 @@ static void LoadEntity(
 	case CWENT_TURN_SE:
 		break;
 	case CWENT_TRANS:
-		MissionStaticAddCharacter(m, (int)CHAR_TRANS, cp);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_TRANS, bossObjIdx);
 		break;
 	case CWENT_UBER_MUTANT:
-		MissionStaticAddCharacter(m, (int)CHAR_UBERMUTANT, cp);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_UBERMUTANT, bossObjIdx);
 		break;
 	case CWENT_BARNACLE_WILHELM:
-		MissionStaticAddCharacter(m, (int)CHAR_WILHELM, cp);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_WILHELM, bossObjIdx);
 		break;
 	case CWENT_ROBED_HITLER:
-		MissionStaticAddCharacter(m, (int)CHAR_FAKE_HITLER, cp);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_FAKE_HITLER, bossObjIdx);
 		break;
 	case CWENT_DEATH_KNIGHT:
-		MissionStaticAddCharacter(m, (int)CHAR_DEATH_KNIGHT, cp);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_DEATH_KNIGHT, bossObjIdx);
 		break;
 	case CWENT_HITLER:
-		MissionStaticAddCharacter(m, (int)CHAR_MECHA_HITLER, cp);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_MECHA_HITLER, bossObjIdx);
 		break;
 	case CWENT_FETTGESICHT:
-		MissionStaticAddCharacter(m, (int)CHAR_FETTGESICHT, cp);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_FETTGESICHT, bossObjIdx);
 		break;
 	case CWENT_SCHABBS:
-		MissionStaticAddCharacter(m, (int)CHAR_SCHABBS, cp);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_SCHABBS, bossObjIdx);
 		break;
 	case CWENT_GRETEL:
-		MissionStaticAddCharacter(m, (int)CHAR_GRETEL, cp);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_GRETEL, bossObjIdx);
 		break;
 	case CWENT_HANS:
-		MissionStaticAddCharacter(m, (int)CHAR_HANS, cp);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_HANS, bossObjIdx);
 		break;
 	case CWENT_OTTO:
-		MissionStaticAddCharacter(m, (int)CHAR_OTTO, cp);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_OTTO, bossObjIdx);
 		break;
 	case CWENT_PACMAN_GHOST_RED:
-		MissionStaticAddCharacter(m, (int)CHAR_PACMAN_GHOST_RED, cp);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_PACMAN_GHOST_RED, bossObjIdx);
 		break;
 	case CWENT_PACMAN_GHOST_YELLOW:
-		MissionStaticAddCharacter(m, (int)CHAR_PACMAN_GHOST_YELLOW, cp);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_PACMAN_GHOST_YELLOW, bossObjIdx);
 		break;
 	case CWENT_PACMAN_GHOST_ROSE:
-		MissionStaticAddCharacter(m, (int)CHAR_PACMAN_GHOST_ROSE, cp);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_PACMAN_GHOST_ROSE, bossObjIdx);
 		break;
 	case CWENT_PACMAN_GHOST_BLUE:
-		MissionStaticAddCharacter(m, (int)CHAR_PACMAN_GHOST_BLUE, cp);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_PACMAN_GHOST_BLUE, bossObjIdx);
 		break;
 	default:
 		CASSERT(false, "unknown entity");
 		break;
+	}
+}
+static void LoadChar(Mission *m, const struct vec2i v, const direction_e d, const int charId, int *bossObjIdx)
+{
+	CharacterPlace cp = {v, d};
+	switch (charId)
+	{
+		case CHAR_SCHABBS:
+		case CHAR_HITLER:
+		case CHAR_OTTO:
+		case CHAR_FETTGESICHT:
+		case CHAR_ANGEL: {
+			CArrayPushBack(&m->SpecialChars, &charId);
+			if (*bossObjIdx < 0)
+			{
+				Objective o;
+				memset(&o, 0, sizeof o);
+				o.Type = OBJECTIVE_KILL;
+				CSTRDUP(o.Description, "Kill boss");
+				CArrayPushBack(&m->Objectives, &o);
+				*bossObjIdx = m->Objectives.size - 1;
+			}
+			Objective *bossObj = CArrayGet(&m->Objectives, *bossObjIdx);
+			bossObj->Required++;
+			MissionStaticAddObjective(m, &m->u.Static, m->SpecialChars.size - 1, 0, v);
+		}
+		break;
+		default:
+			MissionStaticAddCharacter(&m->u.Static, charId, cp);
+			break;
 	}
 }
