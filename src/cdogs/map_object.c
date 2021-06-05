@@ -563,9 +563,9 @@ const Pic *MapObjectGetPic(const MapObject *mo, struct vec2i *offset)
 
 
 bool MapObjectIsTileOK(
-	const MapObject *obj, const Tile *tile, const Tile *tileAbove)
+	const MapObject *mo, const Tile *tile, const Tile *tileAbove)
 {
-	if (obj->DrawAbove)
+	if (mo->DrawAbove)
 	{
 		// Check there are no draw above objects
 		CA_FOREACH(const ThingId, tid, tile->things)
@@ -574,7 +574,7 @@ bool MapObjectIsTileOK(
 			return false;
 		CA_FOREACH_END()
 	}
-	else if (obj->DrawBelow)
+	else if (mo->DrawBelow)
 	{
 		// Check there are no draw below objects
 		CA_FOREACH(const ThingId, tid, tile->things)
@@ -603,7 +603,7 @@ bool MapObjectIsTileOK(
 			return false;
 		CA_FOREACH_END()
 	}
-	if (MapObjectIsOnWall(obj) &&
+	if (MapObjectIsOnWall(mo) &&
 		(tileAbove == NULL || tileAbove->Class->Type != TILE_CLASS_WALL))
 	{
 		return false;
