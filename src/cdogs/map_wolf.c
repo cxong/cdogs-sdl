@@ -368,6 +368,19 @@ static void LoadMission(
 	const uint16_t ech = CWLevelGetCh(level, 1, _v.x, _v.y);
 	LoadEntity(&m, ech, map, _v, missionIndex, &bossObjIdx);
 	RECT_FOREACH_END()
+	
+	if (m.u.Static.Exits.size == 0)
+	{
+		// This is a boss level where killing the boss ends the level
+		// Make sure to skip over the secret level
+		Exit e;
+		e.Hidden = true;
+		// Skip over the secret level to the next episode
+		e.Mission = missionIndex + 2;
+		e.R.Pos = svec2i_zero();
+		e.R.Size = m.Size;
+		CArrayPushBack(&m.u.Static.Exits, &e);
+	}
 
 	m.u.Static.AltFloorsEnabled = false;
 
