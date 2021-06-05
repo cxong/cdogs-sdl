@@ -123,7 +123,7 @@ void DamageMelee(const NActorMelee m)
 		HasHitSound((ThingKind)m.TargetKind, m.TargetUID,
 		SPECIAL_NONE, false))
 	{
-		PlayHitSound(&b->HitSound, (HitType)m.HitType, a->Pos);
+		PlayHitSound(b, (HitType)m.HitType, a->Pos);
 	}
 	if (!gCampaign.IsClient)
 	{

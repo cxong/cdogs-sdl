@@ -233,8 +233,8 @@ bool BulletUpdate(struct MobileObject *obj, const int ticks)
 			b.u.BulletBounce.UID = obj->UID;
 			b.u.BulletBounce.HitType = (int)hit.Type;
 			if ((hit.Type == HIT_WALL && !obj->bulletClass->WallBounces) ||
-				((hit.Type == HIT_OBJECT || hit.Type == HIT_FLESH) &&
-				 obj->bulletClass->HitsObjects))
+				(hit.Type == HIT_OBJECT && obj->bulletClass->Hit.Object.Hit) ||
+				(hit.Type == HIT_FLESH && obj->bulletClass->Hit.Flesh.Hit))
 			{
 				b.u.BulletBounce.Spark = true;
 				CASSERT(
@@ -319,7 +319,7 @@ bool BulletUpdate(struct MobileObject *obj, const int ticks)
 					return false;
 				}
 				GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
-				strcpy(es.u.SoundAt.Sound, obj->bulletClass->HitSound.Wall);
+				strcpy(es.u.SoundAt.Sound, obj->bulletClass->Hit.Wall.Sound);
 				es.u.SoundAt.Pos = Vec2ToNet(pos);
 				GameEventsEnqueue(&gGameEvents, es);
 			}
@@ -517,7 +517,7 @@ static bool HitItemFunc(
 	HitItemData *hData = data;
 
 	// Check bullet-to-other collisions
-	if (!CanHit(hData->Obj->flags, hData->Obj->ActorUID, ti, hData->Obj->bulletClass->HitsObjects))
+	if (!CanHit(hData->Obj->bulletClass, hData->Obj->flags, hData->Obj->ActorUID, ti))
 	{
 		goto bail;
 	}
@@ -628,7 +628,7 @@ static void OnHit(HitItemData *data, Thing *target)
 	}
 }
 
-#define VERSION 4
+#define VERSION 5
 static void LoadBullet(
 	BulletClass *b, json_t *node, const BulletClass *defaultBullet,
 	const int version);
@@ -685,17 +685,17 @@ static void LoadBullet(
 		{
 			CSTRDUP(b->Name, defaultBullet->Name);
 		}
-		if (defaultBullet->HitSound.Object != NULL)
+		if (defaultBullet->Hit.Object.Sound != NULL)
 		{
-			CSTRDUP(b->HitSound.Object, defaultBullet->HitSound.Object);
+			CSTRDUP(b->Hit.Object.Sound, defaultBullet->Hit.Object.Sound);
 		}
-		if (defaultBullet->HitSound.Flesh != NULL)
+		if (defaultBullet->Hit.Flesh.Sound != NULL)
 		{
-			CSTRDUP(b->HitSound.Flesh, defaultBullet->HitSound.Flesh);
+			CSTRDUP(b->Hit.Flesh.Sound, defaultBullet->Hit.Flesh.Sound);
 		}
-		if (defaultBullet->HitSound.Wall != NULL)
+		if (defaultBullet->Hit.Wall.Sound != NULL)
 		{
-			CSTRDUP(b->HitSound.Wall, defaultBullet->HitSound.Wall);
+			CSTRDUP(b->Hit.Wall.Sound, defaultBullet->Hit.Wall.Sound);
 		}
 		// TODO: enable default bullet guns?
 		memset(&b->Falling.DropGuns, 0, sizeof b->Falling.DropGuns);
@@ -819,15 +819,42 @@ static void LoadBullet(
 	LoadParticle(&b->Spark, node, "Spark");
 	LoadParticle(&b->OutOfRangeSpark, node, "OutOfRangeSpark");
 	LoadParticle(&b->WallMark, node, "WallMark");
-	if (json_find_first_label(node, "HitSounds"))
+	if (version < 5)
 	{
-		json_t *hitSounds = json_find_first_label(node, "HitSounds")->child;
-		LoadHitsound(&b->HitSound.Object, hitSounds, "Object", version);
-		LoadHitsound(&b->HitSound.Flesh, hitSounds, "Flesh", version);
-		LoadHitsound(&b->HitSound.Wall, hitSounds, "Wall", version);
+		if (json_find_first_label(node, "HitSounds"))
+		{
+			json_t *hitSounds = json_find_first_label(node, "HitSounds")->child;
+			LoadHitsound(&b->Hit.Object.Sound, hitSounds, "Object", version);
+			LoadHitsound(&b->Hit.Flesh.Sound, hitSounds, "Flesh", version);
+			LoadHitsound(&b->Hit.Wall.Sound, hitSounds, "Wall", version);
+		}
+		// Version < 5 HitsObjects represents both object and flesh hits
+		bool hitsObjectsAndFlesh = true;
+		LoadBool(&hitsObjectsAndFlesh, node, "HitsObjects");
+		b->Hit.Object.Hit = b->Hit.Flesh.Hit = hitsObjectsAndFlesh;
+	}
+	else if (json_find_first_label(node, "Hit"))
+	{
+		const json_t *hits = json_find_first_label(node, "Hit")->child;
+		const char *hitNodes[] = {"Object", "Flesh", "Wall"};
+		HitProps *hps[] = {&b->Hit.Object, &b->Hit.Flesh, &b->Hit.Wall};
+		for (int i = 0; i < 3; i++)
+		{
+			HitProps *hp = hps[i];
+			hp->Hit = false;
+			if (json_find_first_label(hits, hitNodes[i]))
+			{
+				json_t *hit = json_find_first_label(hits, hitNodes[i])->child;
+				hp->Hit = true;
+				if (json_find_first_label(hit, "Sound"))
+				{
+					CFREE(hp->Sound);
+					hp->Sound = GetString(hit, "Sound");
+				}
+			}
+		}
 	}
 	LoadBool(&b->WallBounces, node, "WallBounces");
-	LoadBool(&b->HitsObjects, node, "HitsObjects");
 	if (json_find_first_label(node, "Falling"))
 	{
 		json_t *falling = json_find_first_label(node, "Falling")->child;
@@ -857,14 +884,17 @@ static void LoadBullet(
 	LOG(LM_MAP, LL_DEBUG, "...wallMark(%s)...",
 		b->WallMark != NULL ? b->WallMark->Name : "");
 	LOG(LM_MAP, LL_DEBUG,
-		"...hitSounds(object(%s), flesh(%s), wall(%s)) wallBounces(%s)...",
-		b->HitSound.Object != NULL ? b->HitSound.Object : "",
-		b->HitSound.Flesh != NULL ? b->HitSound.Flesh : "",
-		b->HitSound.Wall != NULL ? b->HitSound.Wall : "",
+		"...hit(object(%s, %s), flesh(%s, %s), wall(%s, %s)) wallBounces(%s)...",
+		b->Hit.Object.Hit ? "true" : "false",
+		b->Hit.Object.Sound != NULL ? b->Hit.Object.Sound : "",
+		b->Hit.Flesh.Hit ? "true" : "false",
+		b->Hit.Flesh.Sound != NULL ? b->Hit.Flesh.Sound : "",
+		b->Hit.Wall.Hit ? "true" : "false",
+		b->Hit.Wall.Sound != NULL ? b->Hit.Wall.Sound : "",
 		b->WallBounces ? "true" : "false");
 	LOG(LM_MAP, LL_DEBUG,
-		"...hitsObjects(%s) gravity(%f) fallsDown(%s) destroyOnDrop(%s)...",
-		b->HitsObjects ? "true" : "false", b->Falling.GravityFactor,
+		"...gravity(%f) fallsDown(%s) destroyOnDrop(%s)...",
+		b->Falling.GravityFactor,
 		b->Falling.FallsDown ? "true" : "false",
 		b->Falling.DestroyOnDrop ? "true" : "false");
 	LOG(LM_MAP, LL_DEBUG,
@@ -967,9 +997,9 @@ void BulletClassesClear(CArray *classes)
 static void BulletClassFree(BulletClass *b)
 {
 	CFREE(b->Name);
-	CFREE(b->HitSound.Object);
-	CFREE(b->HitSound.Flesh);
-	CFREE(b->HitSound.Wall);
+	CFREE(b->Hit.Object.Sound);
+	CFREE(b->Hit.Flesh.Sound);
+	CFREE(b->Hit.Wall.Sound);
 	CArrayTerminate(&b->OutOfRangeGuns);
 	CArrayTerminate(&b->HitGuns);
 	CArrayTerminate(&b->Falling.DropGuns);
@@ -1046,8 +1076,7 @@ void BulletBounce(const NBulletBounce bb)
 	const struct vec2 bouncePos = NetToVec2(bb.BouncePos);
 	if (bb.HitSound)
 	{
-		PlayHitSound(
-			&o->bulletClass->HitSound, (HitType)bb.HitType, bouncePos);
+		PlayHitSound(o->bulletClass, (HitType)bb.HitType, bouncePos);
 	}
 	if (bb.Spark && o->bulletClass->Spark != NULL)
 	{
@@ -1070,7 +1099,7 @@ void BulletBounce(const NBulletBounce bb)
 	o->thing.Vel = NetToVec2(bb.Vel);
 }
 
-void PlayHitSound(const HitSounds *h, const HitType t, const struct vec2 pos)
+void PlayHitSound(const BulletClass *b, const HitType t, const struct vec2 pos)
 {
 	GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
 	switch (t)
@@ -1079,13 +1108,13 @@ void PlayHitSound(const HitSounds *h, const HitType t, const struct vec2 pos)
 		// Do nothing
 		return;
 	case HIT_WALL:
-		strcpy(es.u.SoundAt.Sound, h->Wall);
+		strcpy(es.u.SoundAt.Sound, b->Hit.Wall.Sound);
 		break;
 	case HIT_OBJECT:
-		strcpy(es.u.SoundAt.Sound, h->Object);
+		strcpy(es.u.SoundAt.Sound, b->Hit.Object.Sound);
 		break;
 	case HIT_FLESH:
-		strcpy(es.u.SoundAt.Sound, h->Flesh);
+		strcpy(es.u.SoundAt.Sound, b->Hit.Flesh.Sound);
 		break;
 	default:
 		CASSERT(false, "unknown hit type")

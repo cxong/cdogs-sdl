@@ -1,14 +1,14 @@
 {
-  "Version": 4,
+  "Version": 5,
   "Bullets": [
     {
       "Name": "knife",
       "Power": 8,
-      "HitSounds": {
-        "Object": "hits/knife_hard",
-        "Flesh": "hits/knife_flesh"
+      "Hit": {
+        "Flesh": {
+          "Sound": "hits/knife_flesh"
+        }
       },
-      "HitsObjects": false,
       "Special": {
         "Effect": "Petrify",
         "Ticks": 30
@@ -26,7 +26,9 @@
       },
       "OutOfRangeSpark": "spark",
       "WallMark": "bullet_hole",
-      "HitsObjects": false,
+      "Hit": {
+        "Flesh": {}
+      },
       "Speed": 35000,
       "Range": 1,
       "Power": 21,
@@ -48,7 +50,9 @@
       },
       "OutOfRangeSpark": "spark",
       "WallMark": "bullet_hole",
-      "HitsObjects": false,
+      "Hit": {
+        "Flesh": {}
+      },
       "Speed": 35000,
       "Range": 1,
       "Power": 16,
@@ -66,28 +70,58 @@
       },
       "OutOfRangeSpark": "spark",
       "WallMark": "bullet_hole",
-      "HitsObjects": false,
+      "Hit": {
+        "Flesh": {}
+      },
       "Speed": 35000,
       "Range": 1,
       "Power": 24,
       "Mass": 0.1
     },
     {
+      "Name": "syringe",
+      "Pic": {
+        "Type": "Directional",
+        "Sprites": "syringe"
+      },
+      "ShadowSize": [2, 2],
+      "Hit": {
+        "Flesh": {
+          "Sound": "hits/knife_flesh"
+        },
+        "Wall": {
+          "Sound": "glass_break"
+        }
+      },
+      "Speed": 800,
+      "Range": 70,
+      "Power": 20,
+      "Mass": 1,
+      "Size": [4, 4],
+      "Spark": "",
+      "Special": {
+        "Effect": "Poison",
+        "Ticks": 15
+      }
+    },
+    {
       "Name": "dog_bite",
       "Power": 11,
       "Mass": 1.0,
-      "HitSounds": {
-        "Object": "hits/dog_growl",
-        "Flesh": "hits/dog_growl"
+      "Hit": {
+        "Flesh": {
+          "Sound": "hits/dog_growl"
+        }
       }
     },
     {
       "Name": "ghost_drain",
       "Power": 3,
       "Mass": 0,
-      "HitSounds": {
-        "Object": "hits/knife_hard",
-        "Flesh": "hits/knife_flesh"
+      "Hit": {
+        "Flesh": {
+          "Sound": "hits/gas"
+        }
       }
     },
     {
@@ -105,12 +139,15 @@
       "Special": {
         "Effect": "Flame"
       },
-      "Spark": "fireball_hit",
-      "HitSounds": {
-        "Object": "hits/fire",
-        "Flesh": "hits/fire",
-        "Wall": "hits/fire"
-      }
+      "Hit": {
+        "Flesh": {
+          "Sound": "hits/fire"
+        },
+        "Wall": {
+          "Sound": "hits/fire"
+        }
+      },
+      "Spark": "fireball_hit"
     },
     {
       "Name": "energy_ball",
@@ -126,10 +163,13 @@
       "Size": [3, 3],
       "Special": "Flame",
       "Spark": "fireball_green_hit",
-      "HitSounds": {
-        "Object": "hits/fire",
-        "Flesh": "hits/fire",
-        "Wall": "hits/fire"
+      "Hit": {
+        "Flesh": {
+          "Sound": "hits/fire"
+        },
+        "Wall": {
+          "Sound": "hits/fire"
+        }
       }
     }
   ]

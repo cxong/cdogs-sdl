@@ -106,6 +106,16 @@
     },
     {
       "Pic": "",
+      "Name": "Syringes",
+      "Bullet": "syringe",
+      "Cost": 7,
+      "Lock": 30,
+      "Sound": "launch",
+      "SwitchSound": "molotov_pickup",
+      "CanDrop": false
+    },
+    {
+      "Pic": "",
       "Name": "Ghost Drain",
       "Bullet": "ghost_drain",
       "Cost": 0,

@@ -56,6 +56,12 @@
 #include "sounds.h"
 #include "tile.h"
 
+typedef struct
+{
+	bool Hit;
+	char *Sound;
+} HitProps;
+
 struct MobileObject;
 typedef struct
 {
@@ -89,9 +95,14 @@ typedef struct
 	const ParticleClass *Spark;
 	const ParticleClass *OutOfRangeSpark;
 	const ParticleClass *WallMark;
-	HitSounds HitSound;
 	bool WallBounces;
-	bool HitsObjects;
+	struct
+	{
+		HitProps Object;
+		HitProps Flesh;
+		HitProps Wall;
+		// TODO: haven't defined what hit wall false means
+	} Hit;
 	struct
 	{
 		float GravityFactor;	// 0 for non-falling bullets
@@ -144,4 +155,4 @@ typedef enum
 	HIT_OBJECT,
 	HIT_FLESH
 } HitType;
-void PlayHitSound(const HitSounds *h, const HitType t, const struct vec2 pos);
+void PlayHitSound(const BulletClass *b, const HitType t, const struct vec2 pos);

@@ -279,17 +279,18 @@ bool TryMoveActor(TActor *actor, struct vec2 pos)
 		const bool checkMelee =
 			(!gCampaign.IsClient && actor->PlayerUID < 0) ||
 			ActorIsLocalPlayer(actor->uid);
+		const BulletClass *b = gun->Gun->Bullet;
 		if (checkMelee && barrel >= 0 && !gun->Gun->CanShoot &&
 			actor->health > 0 &&
 			(!object ||
-			 (gun->Gun->Bullet->HitsObjects && !ObjIsDangerous(object))))
+			 ((b->Hit.Object.Hit || b->Hit.Flesh.Hit) && !ObjIsDangerous(object))))
 		{
-			if (CanHit(actor->flags, actor->uid, target, gun->Gun->Bullet->HitsObjects))
+			if (CanHit(b, actor->flags, actor->uid, target))
 			{
 				// Tell the server that we want to melee something
 				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_MELEE);
 				e.u.Melee.UID = actor->uid;
-				strcpy(e.u.Melee.BulletClass, gun->Gun->Bullet->Name);
+				strcpy(e.u.Melee.BulletClass, b->Name);
 				e.u.Melee.TargetKind = target->kind;
 				switch (target->kind)
 				{

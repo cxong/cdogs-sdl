@@ -117,15 +117,6 @@ typedef struct
 
 extern SoundDevice gSoundDevice;
 
-// DTO for playing certain sounds associated with collision
-// for a bullet or weapon type
-typedef struct
-{
-	char *Object;
-	char *Flesh;
-	char *Wall;
-} HitSounds;
-
 void SoundInitialize(SoundDevice *device, const char *path);
 void SoundLoadDir(map_t sounds, const char *path, const char *prefix);
 void SoundAdd(map_t sounds, const char *name, SoundData *sound);
