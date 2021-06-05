@@ -374,6 +374,16 @@
     },
     {
       "Pic": "",
+      "Name": "molotov_explosion",
+      "Bullet": "molotov_flame",
+      "Sound": "glass_break",
+      "Recoil": 6.28,
+      "SpreadCount": 16,
+      "ElevationLow": 22,
+      "ElevationHigh": 30
+    },
+    {
+      "Pic": "",
       "Name": "gas_poison_explosion",
       "Bullet": "gas_cloud_poison",
       "Recoil": 6.28,

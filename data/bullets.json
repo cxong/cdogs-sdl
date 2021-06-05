@@ -185,14 +185,14 @@
         "GravityFactor": 1,
         "DestroyOnDrop": true,
         "DropGuns": [
-          "fire_explosion"
+          "molotov_explosion"
         ]
       },
       "OutOfRangeGuns": [
-        "fire_explosion"
+        "molotov_explosion"
       ],
       "HitGuns": [
-        "fire_explosion"
+        "molotov_explosion"
       ]
     },
     {
