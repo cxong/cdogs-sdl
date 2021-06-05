@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2017-2020 Cong Xu
+	Copyright (c) 2017-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -655,6 +655,7 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 			DrawFlag(
 				ctx, ec, "Awake", FLAGS_AWAKEALWAYS,
 				"Don't go to sleep after players leave");
+			DrawFlag(ctx, ec, "Deaf", FLAGS_DEAF, "Doesn't wake to guns nearby");
 			nk_end(ctx);
 		}
 	}

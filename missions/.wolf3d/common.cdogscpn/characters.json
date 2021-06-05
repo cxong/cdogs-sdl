@@ -211,10 +211,10 @@
 		"speed": 192,
 		"Gun": "Syringes",
 		"maxHealth": 1250,
-		"flags": 1152,
-		"probabilityToMove": 30,
-		"probabilityToTrack": 20,
-		"probabilityToShoot": 42,
+		"flags": 5248,
+		"probabilityToMove": 40,
+		"probabilityToTrack": 30,
+		"probabilityToShoot": 52,
 		"actionDelay": 40
 	},
 	{

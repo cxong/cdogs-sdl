@@ -567,7 +567,7 @@ void AIWakeOnSoundAt(const struct vec2 pos)
 {
 	CA_FOREACH(TActor, actor, gActors)
 	if (!actor->isInUse || actor->PlayerUID >= 0 || actor->dead ||
-		!(actor->flags & FLAGS_SLEEPING))
+		!(actor->flags & FLAGS_SLEEPING) || (actor->flags & FLAGS_DEAF))
 	{
 		continue;
 	}
