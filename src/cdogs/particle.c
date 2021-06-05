@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2017, 2019-2020 Cong Xu
+	Copyright (c) 2014-2017, 2019-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -206,6 +206,8 @@ static void LoadParticleClass(
 	c->WallBounces = true;
 	LoadBool(&c->WallBounces, node, "WallBounces");
 	LoadBool(&c->ZDarken, node, "ZDarken");
+	LoadBool(&c->DrawBelow, node, "DrawBelow");
+	LoadBool(&c->DrawAbove, node, "DrawAbove");
 }
 
 const ParticleClass *StrParticleClass(
@@ -454,6 +456,14 @@ int ParticleAdd(CArray *particles, const AddParticle add)
 	if (!ColorEquals(add.Mask, colorTransparent))
 	{
 		p->u.Pic.Mask = add.Mask;
+	}
+	if (p->Class->DrawBelow)
+	{
+		p->thing.flags |= THING_DRAW_BELOW;
+	}
+	if (p->Class->DrawAbove)
+	{
+		p->thing.flags |= THING_DRAW_ABOVE;
 	}
 	MapTryMoveThing(&gMap, &p->thing, add.Pos);
 	return i;

@@ -346,42 +346,48 @@
       "TextMask": "ffff00",
       "Range": 100,
       "GravityFactor": 2,
-      "Bounces": true
+      "Bounces": true,
+      "DrawAbove": true
     },
     {
       "Name": "key_text",
       "Type": "Text",
       "Range": 140,
       "GravityFactor": 2,
-      "Bounces": true
+      "Bounces": true,
+      "DrawAbove": true
     },
     {
       "Name": "locked_text",
       "Type": "Text",
       "TextMask": "ff0000",
       "Range": 40,
-      "GravityFactor": 0
+      "GravityFactor": 0,
+      "DrawAbove": true
     },
     {
       "Name": "heal_text",
       "Type": "Text",
       "TextMask": "00ff00",
       "Range": 40,
-      "GravityFactor": 0
+      "GravityFactor": 0,
+      "DrawAbove": true
     },
     {
       "Name": "damage_text",
       "Type": "Text",
       "TextMask": "ff0000",
       "Range": 40,
-      "GravityFactor": 0
+      "GravityFactor": 0,
+      "DrawAbove": true
     },
     {
       "Name": "score_text",
       "Type": "Text",
       "TextMask": "ffff00",
       "Range": 40,
-      "GravityFactor": 0
+      "GravityFactor": 0,
+      "DrawAbove": true
     },
     {
       "Name": "trail",
