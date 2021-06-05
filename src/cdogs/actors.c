@@ -268,7 +268,7 @@ bool TryMoveActor(TActor *actor, struct vec2 pos)
 		THING_IMPASSABLE, CalcCollisionTeam(true, actor),
 		IsPVP(gCampaign.Entry.Mode)};
 	Thing *target =
-		OverlapGetFirstItem(&actor->thing, pos, actor->thing.size, params);
+		OverlapGetFirstItem(&actor->thing, pos, actor->thing.size, actor->thing.Vel, params);
 	if (target)
 	{
 		Weapon *gun = ACTOR_GET_WEAPON(actor);
@@ -327,13 +327,13 @@ bool TryMoveActor(TActor *actor, struct vec2 pos)
 
 		const struct vec2 yPos = svec2(actor->Pos.x, pos.y);
 		if (OverlapGetFirstItem(
-				&actor->thing, yPos, actor->thing.size, params))
+				&actor->thing, yPos, actor->thing.size, svec2_zero(), params))
 		{
 			pos.y = actor->Pos.y;
 		}
 		const struct vec2 xPos = svec2(pos.x, actor->Pos.y);
 		if (OverlapGetFirstItem(
-				&actor->thing, xPos, actor->thing.size, params))
+				&actor->thing, xPos, actor->thing.size, svec2_zero(), params))
 		{
 			pos.x = actor->Pos.x;
 		}
@@ -552,7 +552,7 @@ static void CheckRescue(const TActor *a)
 		IsPVP(gCampaign.Entry.Mode)};
 	const Thing *target = OverlapGetFirstItem(
 		&a->thing, a->Pos,
-		svec2i_add(a->thing.size, svec2i(RESCUE_CHECK_PAD, RESCUE_CHECK_PAD)),
+		svec2i_add(a->thing.size, svec2i(RESCUE_CHECK_PAD, RESCUE_CHECK_PAD)), a->thing.Vel,
 		params);
 	if (target != NULL && target->kind == KIND_CHARACTER)
 	{
@@ -1003,7 +1003,7 @@ void UpdateAllActors(int ticks)
 		const CollisionParams params = {
 			THING_IMPASSABLE, COLLISIONTEAM_NONE, IsPVP(gCampaign.Entry.Mode)};
 		const Thing *collidingItem = OverlapGetFirstItem(
-			&actor->thing, actor->Pos, actor->thing.size, params);
+			&actor->thing, actor->Pos, actor->thing.size, actor->thing.Vel, params);
 		if (collidingItem && collidingItem->kind == KIND_CHARACTER)
 		{
 			TActor *collidingActor = CArrayGet(&gActors, collidingItem->id);

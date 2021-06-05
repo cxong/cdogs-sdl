@@ -153,7 +153,7 @@ static bool IsPosOK(const TActor *actor, const struct vec2 pos)
 	const CollisionParams params = {
 		THING_IMPASSABLE, CalcCollisionTeam(true, actor),
 		IsPVP(gCampaign.Entry.Mode)};
-	if (OverlapGetFirstItem(&actor->thing, pos, actor->thing.size, params))
+	if (OverlapGetFirstItem(&actor->thing, pos, actor->thing.size, actor->thing.Vel, params))
 	{
 		return false;
 	}

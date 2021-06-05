@@ -372,11 +372,11 @@ static bool OverlapGetFirstItemCallback(
 	const struct vec2 normal);
 Thing *OverlapGetFirstItem(
 	const Thing *item, const struct vec2 pos, const struct vec2i size,
-	const CollisionParams params)
+	const struct vec2 vel, const CollisionParams params)
 {
 	Thing *firstItem = NULL;
 	OverlapThings(
-		item, pos, item->Vel, size, params, OverlapGetFirstItemCallback,
+		item, pos, vel, size, params, OverlapGetFirstItemCallback,
 		&firstItem, NULL, NULL, NULL);
 	return firstItem;
 }

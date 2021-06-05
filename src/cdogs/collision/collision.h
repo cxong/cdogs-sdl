@@ -108,7 +108,7 @@ void OverlapThings(
 // Get the first Thing that overlaps
 Thing *OverlapGetFirstItem(
 	const Thing *item, const struct vec2 pos, const struct vec2i size,
-	const CollisionParams params);
+	const struct vec2 vel, const CollisionParams params);
 
 bool AABBOverlap(
 	const struct vec2 pos1, const struct vec2 pos2, const struct vec2i size1,

@@ -412,7 +412,7 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd)
 	const CollisionParams params = {
 		THING_IMPASSABLE, CalcCollisionTeam(true, a),
 		IsPVP(gCampaign.Entry.Mode)};
-	item = OverlapGetFirstItem(&a->thing, frontPos, a->thing.size, params);
+	item = OverlapGetFirstItem(&a->thing, frontPos, a->thing.size, a->thing.Vel, params);
 	if (!item || item->kind != KIND_OBJECT)
 	{
 		return NULL;
