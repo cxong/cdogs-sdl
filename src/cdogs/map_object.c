@@ -583,9 +583,25 @@ bool MapObjectIsTileOK(
 			return false;
 		CA_FOREACH_END()
 	}
-	else if (!TileCanWalk(tile))
+	else
 	{
-		return false;
+		if (!TileCanWalk(tile))
+		{
+			return false;
+		}
+		// Check if tile has no things on it, excluding particles and pickups and non-draw-above/below objects
+		CA_FOREACH(const ThingId, tid, tile->things)
+		if (tid->Kind == KIND_OBJECT)
+		{
+			const TObject *obj = CArrayGet(&gObjs, tid->Id);
+			if (!obj->Class->DrawAbove && !obj->Class->DrawBelow)
+			{
+				return false;
+			}
+		}
+		if (tid->Kind != KIND_PARTICLE && tid->Kind != KIND_PICKUP)
+			return false;
+		CA_FOREACH_END()
 	}
 	if (MapObjectIsOnWall(obj) &&
 		(tileAbove == NULL || tileAbove->Class->Type != TILE_CLASS_WALL))
