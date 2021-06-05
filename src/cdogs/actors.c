@@ -1623,13 +1623,14 @@ static void ActorTakeSpecialDamage(TActor *actor, const special_damage_e damage,
 }
 
 static void ActorTakeHit(
-	TActor *actor, const int flags, const int playerUID,
+	TActor *actor, const int flags, const int sourceUID,
 	const special_damage_e damage, const int specialTicks);
 void ActorHit(const NThingDamage d)
 {
 	TActor *a = ActorGetByUID(d.UID);
 	if (!a->isInUse)
 		return;
+	
 	ActorTakeHit(a, d.Flags, d.SourceActorUID, d.Special, d.SpecialTicks);
 	if (d.Power > 0)
 	{
@@ -1685,7 +1686,7 @@ void ActorHit(const NThingDamage d)
 }
 
 static void ActorTakeHit(
-	TActor *actor, const int flags, const int playerUID,
+	TActor *actor, const int flags, const int sourceUID,
 	const special_damage_e damage, const int specialTicks)
 {
 	// Wake up if this is an AI
@@ -1693,6 +1694,8 @@ static void ActorTakeHit(
 	{
 		AIWake(actor, 1);
 	}
+	const TActor *source = ActorGetByUID(sourceUID);
+	const int playerUID = source != NULL ? source->PlayerUID : -1;
 	if (ActorIsInvulnerable(
 			actor, flags, playerUID, gCampaign.Entry.Mode, damage))
 	{
