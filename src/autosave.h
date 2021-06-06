@@ -38,11 +38,6 @@
 
 typedef struct
 {
-	char *Guns[MAX_WEAPONS];
-	CArray ammo; // of int
-} PlayerSave;
-typedef struct
-{
 	CampaignEntry Campaign;
 	bool IsValid;
 	int NextMission;
@@ -65,6 +60,7 @@ void AutosaveInit(Autosave *autosave);
 void AutosaveTerminate(Autosave *autosave);
 void AutosaveLoad(Autosave *autosave, const char *filename);
 void AutosaveSave(Autosave *autosave, const char *filename);
+void AutosaveAdd(Autosave *a, const CampaignEntry *ce, const int missionIndex, const int nextMission, const CArray *playerDatas);
 void AutosaveAddCampaign(Autosave *autosave, CampaignSave *cs);
 const CampaignSave *AutosaveGetCampaign(
 	Autosave *autosave, const char *path);

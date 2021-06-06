@@ -48,6 +48,33 @@
 Autosave gAutosave;
 
 
+typedef struct
+{
+	char *Guns[MAX_WEAPONS];
+	CArray ammo; // of int
+} PlayerSave;
+static void PlayerSaveInit(PlayerSave *ps)
+{
+	memset(ps, 0, sizeof *ps);
+	CArrayInit(&ps->ammo, sizeof(int));
+}
+static void PlayerSaveTerminate(PlayerSave *ps)
+{
+	for (int i = 0; i < MAX_WEAPONS; i++)
+	{
+		CFREE(ps->Guns[i]);
+	}
+	CArrayTerminate(&ps->ammo);
+}
+static void PlayerSavesTerminate(CArray *a)
+{
+	CA_FOREACH(PlayerSave, ps, *a)
+	PlayerSaveTerminate(ps);
+	CA_FOREACH_END()
+	CArrayTerminate(a);
+}
+
+
 void CampaignSaveInit(CampaignSave *ms)
 {
 	memset(ms, 0, sizeof *ms);
@@ -73,7 +100,7 @@ void AutosaveTerminate(Autosave *autosave)
 	CA_FOREACH(CampaignSave, m, autosave->Campaigns)
 		CampaignEntryTerminate(&m->Campaign);
 		CArrayTerminate(&m->MissionsCompleted);
-		CArrayTerminate(&m->Players);
+		PlayerSavesTerminate(&m->Players);
 	CA_FOREACH_END()
 	CArrayTerminate(&autosave->Campaigns);
 }
@@ -96,6 +123,70 @@ static void AddCampaignNode(CampaignEntry *c, json_t *root)
 	json_insert_pair_into_object(
 		subConfig, "Path", json_new_string(path));
 	json_insert_pair_into_object(root, "Campaign", subConfig);
+}
+
+static void LoadPlayersNode(CArray *players, json_t *node)
+{
+	json_t *playersNode = json_find_first_label(node, "Players");
+	if (playersNode == NULL)
+	{
+		return;
+	}
+	for (json_t *child = playersNode->child->child; child; child = child->next)
+	{
+		PlayerSave ps;
+		PlayerSaveInit(&ps);
+
+		json_t *gunsNode = json_find_first_label(child, "Guns")->child;
+		int i = 0;
+		for (json_t *gunNode = gunsNode->child;
+			 gunNode != NULL && i < MAX_WEAPONS;
+			 gunNode = gunNode->next, i++)
+		{
+			char *gun = json_unescape(gunNode->text);
+			if (strlen(gun) > 0)
+			{
+				ps.Guns[i] = gun;
+			}
+			else
+			{
+				CFREE(gun);
+			}
+		}
+
+		LoadIntArray(&ps.ammo, child, "Ammo");
+		
+		CArrayPushBack(players, &ps);
+	}
+}
+static void AddPlayersNode(CArray *players, json_t *root)
+{
+	json_t *playersNode = json_new_array();
+
+	CA_FOREACH(const PlayerSave, ps, *players)
+	json_t *playerNode = json_new_object();
+
+	json_t *gunsNode = json_new_array();
+	for (int i = 0; i < MAX_WEAPONS; i++)
+	{
+		json_insert_child(gunsNode, json_new_string(ps->Guns[i] != NULL ? ps->Guns[i] : ""));
+	}
+	json_insert_pair_into_object(playerNode, "Guns", gunsNode);
+
+	json_t *ammoNode = json_new_array();
+	for (int i = 0; i < (int)ps->ammo.size; i++)
+	{
+		const int *ammop = CArrayGet(&ps->ammo, i);
+		char buf[256];
+		sprintf(buf, "%d", *ammop);
+		json_insert_child(ammoNode, json_new_string(buf));
+	}
+	json_insert_pair_into_object(playerNode, "Ammo", ammoNode);
+	
+	json_insert_child(playersNode, playerNode);
+	CA_FOREACH_END()
+
+	json_insert_pair_into_object(root, "Players", playersNode);
 }
 
 static void LoadMissionNode(CampaignSave *m, json_t *node, const int version)
@@ -121,6 +212,7 @@ static void LoadMissionNode(CampaignSave *m, json_t *node, const int version)
 	char buf[CDOGS_PATH_MAX];
 	GetDataFilePath(buf, m->Campaign.Path);
 	m->IsValid = access(buf, F_OK | R_OK) != -1;
+	LoadPlayersNode(&m->Players, node);
 }
 static json_t *CreateMissionNode(CampaignSave *m)
 {
@@ -128,6 +220,7 @@ static json_t *CreateMissionNode(CampaignSave *m)
 	AddCampaignNode(&m->Campaign, subConfig);
 	AddIntPair(subConfig, "NextMission", m->NextMission);
 	AddIntArray(subConfig, "MissionsCompleted", &m->MissionsCompleted);
+	AddPlayersNode(&m->Players, subConfig);
 	return subConfig;
 }
 
@@ -268,6 +361,29 @@ static CampaignSave *FindCampaign(Autosave *autosave, const char *path, int *mis
 	return NULL;
 }
 
+void AutosaveAdd(Autosave *a, const CampaignEntry *ce, const int missionIndex, const int nextMission, const CArray *playerDatas)
+{
+	CampaignSave ms;
+	CampaignSaveInit(&ms);
+	CampaignEntryCopy(&ms.Campaign, ce);
+	CArrayPushBack(&ms.MissionsCompleted, &missionIndex);
+	ms.NextMission = nextMission;
+	CA_FOREACH(const PlayerData, pd, *playerDatas)
+	PlayerSave ps;
+	PlayerSaveInit(&ps);
+	for (int i = 0; i < MAX_WEAPONS; i++)
+	{
+		if (pd->guns[i])
+		{
+			CSTRDUP(ps.Guns[i], pd->guns[i]->name);
+		}
+	}
+	CArrayCopy(&ps.ammo, &pd->ammo);
+	CArrayPushBack(&ms.Players, &ps);
+	CA_FOREACH_END()
+	AutosaveAddCampaign(a, &ms);
+}
+
 void AutosaveAddCampaign(Autosave *autosave, CampaignSave *cs)
 {
 	CampaignSave *existing = FindCampaign(
@@ -307,6 +423,10 @@ void AutosaveAddCampaign(Autosave *autosave, CampaignSave *cs)
 		existing->MissionsCompleted.data, existing->MissionsCompleted.size, existing->MissionsCompleted.elemSize,
 		CompareIntsAsc);
 	CArrayUnique(&existing->MissionsCompleted, IntsEqual);
+	CArrayTerminate(&cs->MissionsCompleted);
+	
+	PlayerSavesTerminate(&existing->Players);
+	memcpy(&existing->Players, &cs->Players, sizeof cs->Players);
 
 	CampaignEntryCopy(&existing->Campaign, &cs->Campaign);
 }

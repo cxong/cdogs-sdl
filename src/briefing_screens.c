@@ -439,13 +439,7 @@ static void MissionSummaryOnEnter(GameLoopData *data)
 
 	if (mData->completed && CanLevelSelect(mData->c->Entry.Mode))
 	{
-		// Save password
-		CampaignSave ms;
-		CampaignSaveInit(&ms);
-		ms.Campaign = mData->c->Entry;
-		CArrayPushBack(&ms.MissionsCompleted, &mData->m->index);
-		ms.NextMission = mData->m->NextMission;
-		AutosaveAddCampaign(&gAutosave, &ms);
+		AutosaveAdd(&gAutosave, &mData->c->Entry, mData->m->index, mData->m->NextMission, &gPlayerDatas);
 		AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 	}
 
