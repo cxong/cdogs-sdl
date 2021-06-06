@@ -53,4 +53,4 @@
 #include "game_loop.h"
 
 const char *MakePassword(int mission, int isTwoPlayers);
-GameLoopData *EnterPassword(GraphicsDevice *graphics);
+GameLoopData *LevelSelection(GraphicsDevice *graphics);

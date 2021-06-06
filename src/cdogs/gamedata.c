@@ -77,7 +77,7 @@ struct SongDef *gGameSongs = NULL;
 struct SongDef *gMenuSongs = NULL;
 
 
-bool CampaignLoad(Campaign *co, CampaignEntry *entry)
+bool CampaignLoad(Campaign *co, const CampaignEntry *entry)
 {
 	CASSERT(!co->IsLoaded, "loading campaign without unloading last one");
 	// Note: use the mode already set by the menus

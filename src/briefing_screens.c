@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2013-2020 Cong Xu
+	Copyright (c) 2013-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -185,17 +185,6 @@ GameLoopData *ScreenMissionBriefing(const struct MissionOptions *m)
 		mData->TitleOpts.HAlign = ALIGN_CENTER;
 		mData->TitleOpts.Area = gGraphicsDevice.cachedConfig.Res;
 		mData->TitleOpts.Pad.y = y - 25;
-	}
-
-	// Password
-	if (m->index > 0)
-	{
-		sprintf(
-			mData->Password, "Password: %s", gAutosave.LastMission.Password);
-		mData->PasswordOpts = FontOptsNew();
-		mData->PasswordOpts.HAlign = ALIGN_CENTER;
-		mData->PasswordOpts.Area = gGraphicsDevice.cachedConfig.Res;
-		mData->PasswordOpts.Pad.y = y - 15;
 	}
 
 	// Description
@@ -448,21 +437,15 @@ static void MissionSummaryOnEnter(GameLoopData *data)
 
 	MusicPlay(&gSoundDevice, MUSIC_BRIEFING, NULL, NULL);
 
-	if (mData->completed && IsPasswordAllowed(mData->c->Entry.Mode))
+	if (mData->completed && CanLevelSelect(mData->c->Entry.Mode))
 	{
 		// Save password
-		MissionSave ms;
-		MissionSaveInit(&ms);
+		CampaignSave ms;
+		CampaignSaveInit(&ms);
 		ms.Campaign = mData->c->Entry;
-		// Don't make password for next level if there is none
-		int passwordIndex = mData->m->index + 1;
-		if (passwordIndex == mData->c->Entry.NumMissions)
-		{
-			passwordIndex--;
-		}
-		strcpy(ms.Password, MakePassword(passwordIndex, 0));
-		ms.MissionsCompleted = mData->m->index + 1;
-		AutosaveAddMission(&gAutosave, &ms);
+		CArrayPushBack(&ms.MissionsCompleted, &mData->m->index);
+		ms.NextMission = mData->m->NextMission;
+		AutosaveAddCampaign(&gAutosave, &ms);
 		AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 	}
 
@@ -706,19 +689,6 @@ static void MissionSummaryMenuDraw(
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
 
-	// Display password
-	if (strlen(gAutosave.LastMission.Password) > 0)
-	{
-		char s[64];
-		sprintf(s, "Last password: %s", gAutosave.LastMission.Password);
-		FontOpts opts = FontOptsNew();
-		opts.HAlign = ALIGN_CENTER;
-		opts.VAlign = ALIGN_END;
-		opts.Area = g->cachedConfig.Res;
-		opts.Pad.y = opts.Area.y / 12;
-		FontStrOpt(s, svec2i_zero(), opts);
-	}
-
 	// Display objectives and bonuses
 	struct vec2i pos = svec2i(w / 6, h / 2 + h / 10);
 	int idx = 1;
@@ -738,7 +708,7 @@ static void MissionSummaryMenuDraw(
 		s, "Objective %d: %d of %d, %d required", idx, o->done, o->Count,
 		o->Required);
 	FontOpts opts = FontOptsNew();
-	opts.Area = gGraphicsDevice.cachedConfig.Res;
+	opts.Area = g->cachedConfig.Res;
 	opts.Pad = pos;
 	if (!ObjectiveIsRequired(o))
 	{
@@ -750,7 +720,7 @@ static void MissionSummaryMenuDraw(
 	// Objective status text
 	opts = FontOptsNew();
 	opts.HAlign = ALIGN_END;
-	opts.Area = gGraphicsDevice.cachedConfig.Res;
+	opts.Area = g->cachedConfig.Res;
 	opts.Pad = pos;
 	if (!ObjectiveIsComplete(o))
 	{

@@ -61,22 +61,16 @@ PicManager gPicManager;
 
 FEATURE(AutosaveInit, "Initialise autosave")
 	SCENARIO("Initialise autosave")
-		GIVEN("two autosaves")
-			Autosave autosave1, autosave2;
+		GIVEN("an autosave")
+			Autosave autosave;
 
-		WHEN("I initialise both")
-			AutosaveInit(&autosave1);
-			AutosaveInit(&autosave2);
+		WHEN("I initialise it")
+			AutosaveInit(&autosave);
 
-		THEN("their campaign entries should equal each other")
-			SHOULD_MEM_EQUAL(
-				&autosave1.LastMission.Campaign,
-				&autosave2.LastMission.Campaign,
-				sizeof autosave1.LastMission.Campaign);
-		AND("their passwords should equal each other")
-			SHOULD_STR_EQUAL(
-				autosave1.LastMission.Password,
-				autosave2.LastMission.Password);
+		THEN("the last campaign index should be -1")
+			SHOULD_INT_EQUAL(autosave.LastCampaignIndex, -1);
+		AND("the campaigns should be empty")
+			SHOULD_INT_EQUAL(autosave.Campaigns.size, 0);
 	SCENARIO_END
 FEATURE_END
 
@@ -85,116 +79,107 @@ FEATURE(save_and_load, "Save and load")
 		GIVEN("an autosave with some values")
 			Autosave autosave1;
 			AutosaveInit(&autosave1);
-			MissionSave mission1;
-			memset(&mission1, 0, sizeof mission1);
-			CSTRDUP(mission1.Campaign.Path, "mission.cdogscpn");
-			strcpy(mission1.Password, "password");
-			AutosaveAddMission(&autosave1, &mission1);
+			CampaignSave cs1;
+			CampaignSaveInit(&cs1);
+			CSTRDUP(cs1.Campaign.Path, "campaign.cdogscpn");
+			cs1.NextMission = 1;
+			AutosaveAddCampaign(&autosave1, &cs1);
 		AND("I save it to file")
 			AutosaveSave(&autosave1, "tmp");
-		
+
 		WHEN("I initialise and load a second autosave from that file")
 			Autosave autosave2;
 			AutosaveInit(&autosave2);
 			AutosaveLoad(&autosave2, "tmp");
-		
-		THEN("their last mission paths should equal")
-			SHOULD_STR_EQUAL(
-				autosave2.LastMission.Campaign.Path,
-				autosave1.LastMission.Campaign.Path);
-		AND("their last mission passwords should equal")
-			SHOULD_STR_EQUAL(
-				autosave2.LastMission.Password,
-				autosave1.LastMission.Password);
-		AND("their mission paths should equal")
-			MissionSave mission2;
-			AutosaveLoadMission(&autosave2, &mission2, mission1.Campaign.Path);
-			SHOULD_STR_EQUAL(
-				mission2.Campaign.Path, mission1.Campaign.Path);
-		AND("their mission passwords should equal")
-			SHOULD_STR_EQUAL(mission2.Password, mission1.Password);
+			CampaignSave *cs2 = CArrayGet(&autosave2.Campaigns, 0);
+
+		THEN("their mission paths should equal")
+			SHOULD_STR_EQUAL(cs2->Campaign.Path, cs1.Campaign.Path);
+		AND("their next missions should equal")
+			SHOULD_STR_EQUAL(cs2->NextMission, cs1.NextMission);
 	SCENARIO_END
 FEATURE_END
 
-FEATURE(mission_autosaves, "Mission autosaves")
-	SCENARIO("Load non-existing mission autosave")
+FEATURE(campaign_autosaves, "Campaign autosaves")
+	SCENARIO("Load non-existing campaign autosave")
 		GIVEN("an empty autosave")
 			Autosave autosave;
 			AutosaveInit(&autosave);
 
 		WHEN("I attempt to load a non-existing mission from it")
-			MissionSave mission;
-			AutosaveLoadMission(&autosave, &mission, "mission.cdogscpn");
+			const CampaignSave *cs = AutosaveGetCampaign(&autosave, "mission.cdogscpn");
 		
-		THEN("the mission should be empty")
-			SHOULD_BE_TRUE(mission.Campaign.Path == NULL);
-		AND("the password should be empty")
-			SHOULD_STR_EQUAL(mission.Password, "");
+		THEN("the result should be null")
+			SHOULD_BE_TRUE(cs == NULL);
 	SCENARIO_END
 
-	SCENARIO("Add new mission autosave")
-		GIVEN("an autosave and a mission")
+	SCENARIO("Add new campaign autosave")
+		GIVEN("an autosave and a campaign")
 			Autosave autosave;
 			AutosaveInit(&autosave);
-			MissionSave mission1;
-			memset(&mission1, 0, sizeof mission1);
-			CSTRDUP(mission1.Campaign.Path, "mission.cdogscpn");
-			strcpy(mission1.Password, "password");
+			CampaignSave cs1;
+			CampaignSaveInit(&cs1);
+			CSTRDUP(cs1.Campaign.Path, "campaign.cdogscpn");
+			cs1.NextMission = 1;
 
-		WHEN("I add a new mission autosave to it")
-			AutosaveAddMission(&autosave, &mission1);
+		WHEN("I add a new campaign autosave to it")
+			AutosaveAddCampaign(&autosave, &cs1);
 		
 		THEN("I should be able to find the mission in the autosave")
-			MissionSave mission2;
-			AutosaveLoadMission(&autosave, &mission2, mission1.Campaign.Path);
-			SHOULD_STR_EQUAL(mission2.Campaign.Path, mission1.Campaign.Path);
-			SHOULD_STR_EQUAL(mission2.Password, mission1.Password);
+			const CampaignSave *cs2 = AutosaveGetCampaign(&autosave, cs1.Campaign.Path);
+			SHOULD_STR_EQUAL(cs2->Campaign.Path, cs1.Campaign.Path);
+			SHOULD_INT_EQUAL(cs2->NextMission, cs1.NextMission);
 	SCENARIO_END
 
-	SCENARIO("Add existing mission autosave")
-		GIVEN("an autosave and a mission")
+	SCENARIO("Add existing campaign autosave")
+		GIVEN("an autosave and a campaign")
 			Autosave autosave;
 			AutosaveInit(&autosave);
-			MissionSave mission1;
-			memset(&mission1, 0, sizeof mission1);
-			CSTRDUP(mission1.Campaign.Path, "mission.cdogscpn");
-			strcpy(mission1.Password, "password");
-			mission1.MissionsCompleted = 3;
-		AND("I add the mission to the autosave")
-			AutosaveAddMission(&autosave, &mission1);
+			CampaignSave cs1;
+			CampaignSaveInit(&cs1);
+			CSTRDUP(cs1.Campaign.Path, "campaign.cdogscpn");
+			cs1.NextMission = 1;
+			int mission = 0;
+			CArrayPushBack(&cs1.MissionsCompleted, &mission);
+		AND("I add the campaign to the autosave")
+			AutosaveAddCampaign(&autosave, &cs1);
 
-		WHEN("I add the same mission but with new password")
-			strcpy(mission1.Password, "new password");
-		AND("and less missions completed")
-			mission1.MissionsCompleted = 2;
-			AutosaveAddMission(&autosave, &mission1);
-		
+		WHEN("I add the same campaign but with different next mission")
+			cs1.NextMission = 2;
+		AND("and differeiont missions completed")
+			CArrayClear(&cs1.MissionsCompleted);
+			mission = 1;
+			CArrayPushBack(&cs1.MissionsCompleted, &mission);
+			AutosaveAddCampaign(&autosave, &cs1);
+
 		THEN("I should be able to find the mission in the autosave")
-			MissionSave mission2;
-			AutosaveLoadMission(&autosave, &mission2, mission1.Campaign.Path);
+			const CampaignSave *cs2 = AutosaveGetCampaign(&autosave, cs1.Campaign.Path);
 		AND("with the new details")
-			SHOULD_STR_EQUAL(mission2.Campaign.Path, mission1.Campaign.Path);
-			SHOULD_STR_EQUAL(mission2.Password, mission1.Password);
-		BUT("the greatest missions completed")
-			SHOULD_INT_EQUAL(mission2.MissionsCompleted, 3);
+			SHOULD_STR_EQUAL(cs2->Campaign.Path, cs1.Campaign.Path);
+		BUT("the greatest next mission")
+			SHOULD_INT_EQUAL(cs2->NextMission, 2);
+		AND("the union of completed missions")
+			SHOULD_INT_EQUAL(*(int *)CArrayGet(&cs2->MissionsCompleted, 0), 0);
+			SHOULD_INT_EQUAL(*(int *)CArrayGet(&cs2->MissionsCompleted, 1), 1);
 	SCENARIO_END
 
-	SCENARIO("Adding autosave updates last mission")
-		GIVEN("an autosave and a mission")
+	SCENARIO("Adding autosave updates last campaign")
+		GIVEN("an autosave and a campaign")
 			Autosave autosave;
 			AutosaveInit(&autosave);
-			MissionSave mission;
-			memset(&mission, 0, sizeof mission);
-			CSTRDUP(mission.Campaign.Path, "mission.cdogscpn");
-			strcpy(mission.Password, "password");
+			CampaignSave cs1;
+			CampaignSaveInit(&cs1);
+			CSTRDUP(cs1.Campaign.Path, "campaign.cdogscpn");
+			cs1.NextMission = 1;
 
-		WHEN("I add a new mission autosave to it")
-			AutosaveAddMission(&autosave, &mission);
+		WHEN("I add a new campaign autosave to it")
+			AutosaveAddCampaign(&autosave, &cs1);
 		
-		THEN("the last mission will be the same as the new mission")
+		THEN("the last campaign will be the same")
+			const CampaignSave *cs2 = AutosaveGetLastCampaign(&autosave);
 			SHOULD_STR_EQUAL(
-				autosave.LastMission.Campaign.Path, mission.Campaign.Path);
-			SHOULD_STR_EQUAL(autosave.LastMission.Password, mission.Password);
+				cs2->Campaign.Path, cs1.Campaign.Path);
+			SHOULD_INT_EQUAL(cs2->NextMission, cs1.NextMission);
 	SCENARIO_END
 FEATURE_END
 
@@ -202,5 +187,5 @@ CBEHAVE_RUN(
 	"Autosave features are:",
 	TEST_FEATURE(AutosaveInit),
 	TEST_FEATURE(save_and_load),
-	TEST_FEATURE(mission_autosaves)
+	TEST_FEATURE(campaign_autosaves)
 )

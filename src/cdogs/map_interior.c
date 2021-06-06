@@ -958,25 +958,6 @@ static void PlaceKey(
 		CA_FOREACH_END()
 	}
 }
-
-static int CompareInts(const void *v1, const void *v2)
-{
-	const int i1 = *(const int *)v1;
-	const int i2 = *(const int *)v2;
-	if (i1 > i2)
-	{
-		return -1;
-	}
-	else if (i1 < i2)
-	{
-		return 1;
-	}
-	return 0;
-}
-static bool IntsEqual(const void *v1, const void *v2)
-{
-	return CompareInts(v1, v2) == 0;
-}
 static bool AllTilesAroundUnwalkable(
 	const MapBuilder *mb, const struct vec2i v)
 {
@@ -1011,7 +992,7 @@ static void AddPillars(
 			// Sort and remove duplicates
 			qsort(
 				allChildren.data, allChildren.size, allChildren.elemSize,
-				CompareInts);
+				CompareIntsDesc);
 			CArrayUnique(&allChildren, IntsEqual);
 		}
 		CA_FOREACH_END()

@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2013-2016, 2019 Cong Xu
+ Copyright (c) 2013-2016, 2019, 2021 Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -43,29 +43,39 @@
 #include <emscripten.h>
 #endif
 
+#define VERSION 3
+
 Autosave gAutosave;
 
 
-void MissionSaveInit(MissionSave *ms)
+void CampaignSaveInit(CampaignSave *ms)
 {
 	memset(ms, 0, sizeof *ms);
-	ms->IsValid = 1;
+	ms->IsValid = true;
+	CArrayInit(&ms->MissionsCompleted, sizeof(int));
+	CArrayInit(&ms->Players, sizeof(PlayerSave));
+}
+
+bool CampaignSaveIsValid(const CampaignSave *cs)
+{
+	return cs != NULL && cs->IsValid && strlen(cs->Campaign.Path) > 0;
 }
 
 
 void AutosaveInit(Autosave *autosave)
 {
-	memset(&autosave->LastMission.Campaign, 0, sizeof autosave->LastMission.Campaign);
-	autosave->LastMission.Campaign.Mode = GAME_MODE_NORMAL;
-	strcpy(autosave->LastMission.Password, "");
-	CArrayInit(&autosave->Missions, sizeof(MissionSave));
+	memset(autosave, 0, sizeof *autosave);
+	autosave->LastCampaignIndex = -1;
+	CArrayInit(&autosave->Campaigns, sizeof(CampaignSave));
 }
 void AutosaveTerminate(Autosave *autosave)
 {
-	CA_FOREACH(MissionSave, m, autosave->Missions)
+	CA_FOREACH(CampaignSave, m, autosave->Campaigns)
 		CampaignEntryTerminate(&m->Campaign);
+		CArrayTerminate(&m->MissionsCompleted);
+		CArrayTerminate(&m->Players);
 	CA_FOREACH_END()
-	CArrayTerminate(&autosave->Missions);
+	CArrayTerminate(&autosave->Campaigns);
 }
 
 static void LoadCampaignNode(CampaignEntry *c, json_t *node)
@@ -88,27 +98,40 @@ static void AddCampaignNode(CampaignEntry *c, json_t *root)
 	json_insert_pair_into_object(root, "Campaign", subConfig);
 }
 
-static void LoadMissionNode(MissionSave *m, json_t *node)
+static void LoadMissionNode(CampaignSave *m, json_t *node, const int version)
 {
-	MissionSaveInit(m);
+	CampaignSaveInit(m);
 	LoadCampaignNode(&m->Campaign, json_find_first_label(node, "Campaign")->child);
-	strcpy(m->Password, json_find_first_label(node, "Password")->child->text);
-	LoadInt(&m->MissionsCompleted, node, "MissionsCompleted");
+	LoadInt(&m->NextMission, node, "NextMission");
+	if (version < 3)
+	{
+		int missionsCompleted = 0;
+		LoadInt(&missionsCompleted, node, "MissionsCompleted");
+		for (int i = 0; i < missionsCompleted; i++)
+		{
+			CArrayPushBack(&m->MissionsCompleted, &i);
+		}
+		m->NextMission = missionsCompleted;
+	}
+	else
+	{
+		LoadIntArray(&m->MissionsCompleted, node, "MissionsCompleted");
+	}
 	// Check that file exists
 	char buf[CDOGS_PATH_MAX];
 	GetDataFilePath(buf, m->Campaign.Path);
 	m->IsValid = access(buf, F_OK | R_OK) != -1;
 }
-static json_t *CreateMissionNode(MissionSave *m)
+static json_t *CreateMissionNode(CampaignSave *m)
 {
 	json_t *subConfig = json_new_object();
 	AddCampaignNode(&m->Campaign, subConfig);
-	json_insert_pair_into_object(subConfig, "Password", json_new_string(m->Password));
-	AddIntPair(subConfig, "MissionsCompleted", m->MissionsCompleted);
+	AddIntPair(subConfig, "NextMission", m->NextMission);
+	AddIntArray(subConfig, "MissionsCompleted", &m->MissionsCompleted);
 	return subConfig;
 }
 
-static void LoadMissionNodes(Autosave *a, json_t *root, const char *nodeName)
+static void LoadMissionNodes(Autosave *a, json_t *root, const char *nodeName, const int version)
 {
 	json_t *child;
 	if (json_find_first_label(root, nodeName) == NULL)
@@ -118,20 +141,22 @@ static void LoadMissionNodes(Autosave *a, json_t *root, const char *nodeName)
 	child = json_find_first_label(root, nodeName)->child->child;
 	while (child != NULL)
 	{
-		MissionSave m;
-		LoadMissionNode(&m, child);
-		AutosaveAddMission(a, &m);
+		CampaignSave m;
+		LoadMissionNode(&m, child, version);
+		AutosaveAddCampaign(a, &m);
 		child = child->next;
 	}
 }
 static void AddMissionNodes(Autosave *a, json_t *root, const char *nodeName)
 {
 	json_t *missions = json_new_array();
-	CA_FOREACH(MissionSave, m, a->Missions)
+	CA_FOREACH(CampaignSave, m, a->Campaigns)
 		json_insert_child(missions, CreateMissionNode(m));
 	CA_FOREACH_END()
 	json_insert_pair_into_object(root, nodeName, missions);
 }
+
+static CampaignSave *FindCampaign(Autosave *autosave, const char *path, int *missionIndex);
 
 void AutosaveLoad(Autosave *autosave, const char *filename)
 {
@@ -149,15 +174,27 @@ void AutosaveLoad(Autosave *autosave, const char *filename)
 		printf("Error parsing autosave '%s'\n", filename);
 		goto bail;
 	}
-	// Note: need to load missions before LastMission because the former
-	// will overwrite the latter, since AutosaveAddMission also
-	// writes to LastMission
-	LoadMissionNodes(autosave, root, "Missions");
-	if (json_find_first_label(root, "LastMission"))
+	int version = 2;
+	LoadInt(&version, root, "Version");
+	LoadMissionNodes(autosave, root, "Missions", version);
+	if (version < 3)
+    {
+		if (json_find_first_label(root, "LastMission"))
+		{
+			json_t *lastMission = json_find_first_label(root, "LastMission")->child;
+			json_t *campaign = json_find_first_label(lastMission, "Campaign")->child;
+			char *path = NULL;
+			LoadStr(&path, campaign, "Path");
+			if (path != NULL)
+			{
+				FindCampaign(autosave, path, &autosave->LastCampaignIndex);
+				CFREE(path);
+			}
+		}
+	}
+	else
 	{
-		LoadMissionNode(
-			&autosave->LastMission,
-			json_find_first_label(root, "LastMission")->child);
+		LoadInt(&autosave->LastCampaignIndex, root, "LastCampaignIndex");
 	}
 
 bail:
@@ -181,9 +218,8 @@ void AutosaveSave(Autosave *autosave, const char *filename)
 	}
 	
 	root = json_new_object();
-	json_insert_pair_into_object(root, "Version", json_new_number("2"));
-	json_insert_pair_into_object(
-		root, "LastMission", CreateMissionNode(&autosave->LastMission));
+	AddIntPair(root, "Version", VERSION);
+	AddIntPair(root, "LastCampaignIndex", autosave->LastCampaignIndex);
 	AddMissionNodes(autosave, root, "Missions");
 
 	json_tree_to_string(root, &text);
@@ -191,8 +227,8 @@ void AutosaveSave(Autosave *autosave, const char *filename)
 	fputs(formatText, f);
 	
 	// clean up
-	free(formatText);
-	free(text);
+	CFREE(formatText);
+	CFREE(text);
 	json_free_value(&root);
 	
 	fclose(f);
@@ -207,7 +243,7 @@ void AutosaveSave(Autosave *autosave, const char *filename)
 #endif
 }
 
-MissionSave *AutosaveFindMission(Autosave *autosave, const char *path)
+static CampaignSave *FindCampaign(Autosave *autosave, const char *path, int *missionIndex)
 {
 	if (path == NULL || strlen(path) == 0)
 	{
@@ -218,49 +254,74 @@ MissionSave *AutosaveFindMission(Autosave *autosave, const char *path)
 	// in this form
 	char relPath[CDOGS_PATH_MAX] = "";
 	RelPathFromCWD(relPath, path);
-	CA_FOREACH(MissionSave, m, autosave->Missions)
+	CA_FOREACH(CampaignSave, m, autosave->Campaigns)
 		const char *campaignPath = m->Campaign.Path;
 		if (campaignPath != NULL && strcmp(campaignPath, relPath) == 0)
 		{
+			if (missionIndex != NULL)
+			{
+				*missionIndex = _ca_index;
+			}
 			return m;
 		}
 	CA_FOREACH_END()
 	return NULL;
 }
 
-void AutosaveAddMission(Autosave *autosave, MissionSave *mission)
+void AutosaveAddCampaign(Autosave *autosave, CampaignSave *cs)
 {
-	MissionSave *existingMission = AutosaveFindMission(
-		autosave, mission->Campaign.Path);
-	if (existingMission != NULL)
+	CampaignSave *existing = FindCampaign(
+		autosave, cs->Campaign.Path, &autosave->LastCampaignIndex);
+	if (existing != NULL)
 	{
-		CampaignEntryTerminate(&existingMission->Campaign);
+		CampaignEntryTerminate(&existing->Campaign);
 	}
 	else
 	{
-		CArrayPushBack(&autosave->Missions, mission);
-		existingMission =
-			CArrayGet(&autosave->Missions, autosave->Missions.size - 1);
-		memset(existingMission, 0, sizeof *existingMission);
+		CArrayPushBack(&autosave->Campaigns, cs);
+		autosave->LastCampaignIndex = autosave->Campaigns.size - 1;
+		existing =
+			CArrayGet(&autosave->Campaigns, autosave->LastCampaignIndex);
+		CampaignSaveInit(existing);
 	}
-	const int maxMissionsCompleted =
-		MAX(existingMission->MissionsCompleted, mission->MissionsCompleted);
-	memcpy(existingMission, mission, sizeof *existingMission);
-	existingMission->MissionsCompleted = maxMissionsCompleted;
-	CampaignEntryCopy(&existingMission->Campaign, &mission->Campaign);
-	CampaignEntryTerminate(&autosave->LastMission.Campaign);
-	memcpy(&autosave->LastMission, mission, sizeof autosave->LastMission);
-	CampaignEntryCopy(&autosave->LastMission.Campaign, &mission->Campaign);
+
+	existing->NextMission = cs->NextMission;
+	// Update missions completed
+	CA_FOREACH(const int, missionIndex, cs->MissionsCompleted)
+	bool found = false;
+	for (int i = 0; i < (int)existing->MissionsCompleted.size; i++)
+	{
+		if (*(int *)CArrayGet(&existing->MissionsCompleted, i) == *missionIndex)
+		{
+			found = true;
+			break;
+		}
+	}
+	if (!found)
+	{
+		CArrayPushBack(&existing->MissionsCompleted, missionIndex);
+	}
+	CA_FOREACH_END()
+	// Sort and remove duplicates
+	qsort(
+		existing->MissionsCompleted.data, existing->MissionsCompleted.size, existing->MissionsCompleted.elemSize,
+		CompareIntsAsc);
+	CArrayUnique(&existing->MissionsCompleted, IntsEqual);
+
+	CampaignEntryCopy(&existing->Campaign, &cs->Campaign);
 }
 
-void AutosaveLoadMission(
-	Autosave *autosave, MissionSave *mission, const char *path)
+const CampaignSave *AutosaveGetCampaign(
+	Autosave *autosave, const char *path)
 {
-	MissionSave *existingMission = AutosaveFindMission(autosave, path);
-	MissionSaveInit(mission);
-	if (existingMission != NULL)
+	return FindCampaign(autosave, path, NULL);
+}
+
+const CampaignSave *AutosaveGetLastCampaign(const Autosave *a)
+{
+	if (a->LastCampaignIndex < 0)
 	{
-		memcpy(mission, existingMission, sizeof *mission);
-		CampaignEntryCopy(&mission->Campaign, &existingMission->Campaign);
+		return NULL;
 	}
+	return CArrayGet(&a->Campaigns, a->LastCampaignIndex);
 }

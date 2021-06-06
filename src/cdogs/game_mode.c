@@ -87,7 +87,7 @@ bool IsAutoMapEnabled(const GameMode mode)
 	return mode != GAME_MODE_DOGFIGHT && mode != GAME_MODE_DEATHMATCH;
 }
 
-bool IsPasswordAllowed(const GameMode mode)
+bool CanLevelSelect(const GameMode mode)
 {
 	return mode == GAME_MODE_NORMAL;
 }

@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2013-2015, Cong Xu
+ Copyright (c) 2013-2015, 2021 Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -31,25 +31,32 @@
 #include <stddef.h>
 
 #include <cdogs/campaigns.h>
+#include <cdogs/player.h>
 #include <cdogs/sys_config.h>
 
-#define PASSWORD_MAX 16
 #define AUTOSAVE_FILE "autosave.json"
 
 typedef struct
 {
+	char *Guns[MAX_WEAPONS];
+	CArray ammo; // of int
+} PlayerSave;
+typedef struct
+{
 	CampaignEntry Campaign;
-	char Password[PASSWORD_MAX + 1];
-	int IsValid;
-	int MissionsCompleted;
-} MissionSave;
+	bool IsValid;
+	int NextMission;
+	CArray MissionsCompleted;	// of int
+	CArray Players;	// of PlayerSave
+} CampaignSave;
 
-void MissionSaveInit(MissionSave *ms);
+void CampaignSaveInit(CampaignSave *ms);
+bool CampaignSaveIsValid(const CampaignSave *cs);
 
 typedef struct
 {
-	MissionSave LastMission;
-	CArray Missions;	// of MissionSave
+	int LastCampaignIndex;
+	CArray Campaigns;	// of CampaignSave
 } Autosave;
 
 extern Autosave gAutosave;
@@ -58,6 +65,7 @@ void AutosaveInit(Autosave *autosave);
 void AutosaveTerminate(Autosave *autosave);
 void AutosaveLoad(Autosave *autosave, const char *filename);
 void AutosaveSave(Autosave *autosave, const char *filename);
-void AutosaveAddMission(Autosave *autosave, MissionSave *mission);
-void AutosaveLoadMission(
-	Autosave *autosave, MissionSave *mission, const char *path);
+void AutosaveAddCampaign(Autosave *autosave, CampaignSave *cs);
+const CampaignSave *AutosaveGetCampaign(
+	Autosave *autosave, const char *path);
+const CampaignSave *AutosaveGetLastCampaign(const Autosave *a);

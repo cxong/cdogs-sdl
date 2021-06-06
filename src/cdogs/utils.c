@@ -539,6 +539,40 @@ int Stricmp(const char *a, const char *b)
 	return ca - cb;
 }
 
+int CompareIntsAsc(const void *v1, const void *v2)
+{
+	const int i1 = *(const int *)v1;
+	const int i2 = *(const int *)v2;
+	if (i1 < i2)
+	{
+		return -1;
+	}
+	else if (i1 > i2)
+	{
+		return 1;
+	}
+	return 0;
+}
+int CompareIntsDesc(const void *v1, const void *v2)
+{
+	const int i1 = *(const int *)v1;
+	const int i2 = *(const int *)v2;
+	if (i1 > i2)
+	{
+		return -1;
+	}
+	else if (i1 < i2)
+	{
+		return 1;
+	}
+	return 0;
+}
+
+bool IntsEqual(const void *v1, const void *v2)
+{
+	return *(const int *)v1 == *(const int *)v2;
+}
+
 BodyPart StrBodyPart(const char *s)
 {
 	S2T(BODY_PART_HEAD, "head");

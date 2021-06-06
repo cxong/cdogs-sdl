@@ -46,7 +46,7 @@ void CampaignEntryInit(CampaignEntry *entry, const char *title, GameMode mode)
 	CSTRDUP(entry->Info, title);
 	entry->Mode = mode;
 }
-void CampaignEntryCopy(CampaignEntry *dst, CampaignEntry *src)
+void CampaignEntryCopy(CampaignEntry *dst, const CampaignEntry *src)
 {
 	memcpy(dst, src, sizeof *dst);
 	if (src->Filename)

@@ -279,8 +279,8 @@ typedef struct
 	// so we can enable it if LAN servers are found
 	int MenuJoinIndex;
 } CheckLANServerData;
-static menu_t *MenuCreateContinue(const char *name, CampaignEntry *entry);
-static menu_t *MenuCreateQuickPlay(const char *name, CampaignEntry *entry);
+static menu_t *MenuCreateContinue(const char *name, const CampaignEntry *entry);
+static menu_t *MenuCreateQuickPlay(const char *name, const CampaignEntry *entry);
 static menu_t *MenuCreateCampaigns(
 	const char *name, const char *title, CampaignList *list,
 	const GameMode mode);
@@ -292,8 +292,9 @@ static menu_t *MenuCreateStart(
 	CustomCampaigns *campaigns)
 {
 	menu_t *menu = MenuCreateNormal(name, "Start:", MENU_TYPE_NORMAL, 0);
+	const CampaignSave *cs = AutosaveGetLastCampaign(&gAutosave);
 	MenuAddSubmenu(
-		menu, MenuCreateContinue("Continue", &gAutosave.LastMission.Campaign));
+		menu, MenuCreateContinue("Continue", &cs->Campaign));
 	const int menuContinueIndex = (int)menu->u.normal.subMenus.size - 1;
 	MenuAddSubmenu(
 		menu, MenuCreateCampaigns(
@@ -317,9 +318,7 @@ static menu_t *MenuCreateStart(
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Back"));
 
-	if (strlen(gAutosave.LastMission.Password) == 0 ||
-		!gAutosave.LastMission.IsValid ||
-		strlen(gAutosave.LastMission.Campaign.Path) == 0)
+	if (!CampaignSaveIsValid(cs))
 	{
 		MenuDisableSubmenu(menu, menuContinueIndex);
 	}
@@ -334,12 +333,12 @@ static menu_t *MenuCreateStart(
 typedef struct
 {
 	GameMode GameMode;
-	CampaignEntry *Entry;
+	const CampaignEntry *Entry;
 } StartGameModeData;
 static void StartGameMode(menu_t *menu, void *data);
 
 static menu_t *CreateStartGameMode(
-	const char *name, GameMode mode, CampaignEntry *entry)
+	const char *name, GameMode mode, const CampaignEntry *entry)
 {
 	menu_t *menu = MenuCreate(name, MENU_TYPE_RETURN);
 	menu->enterSound = MENU_SOUND_START;
@@ -361,11 +360,11 @@ static void StartGameMode(menu_t *menu, void *data)
 		printf("Error: cannot load campaign %s\n", mData->Entry->Info);
 	}
 }
-static menu_t *MenuCreateContinue(const char *name, CampaignEntry *entry)
+static menu_t *MenuCreateContinue(const char *name, const CampaignEntry *entry)
 {
 	return CreateStartGameMode(name, GAME_MODE_NORMAL, entry);
 }
-static menu_t *MenuCreateQuickPlay(const char *name, CampaignEntry *entry)
+static menu_t *MenuCreateQuickPlay(const char *name, const CampaignEntry *entry)
 {
 	return CreateStartGameMode(name, GAME_MODE_QUICK_PLAY, entry);
 }
@@ -429,17 +428,19 @@ static menu_t *MenuCreateCampaignItem(
 	// - Green for new campaigns
 	// - White (normal) for in-progress campaigns
 	// - Grey for complete campaigns
-	MissionSave m;
-	AutosaveLoadMission(&gAutosave, &m, entry->Path);
-	if (m.MissionsCompleted == entry->NumMissions)
+	const CampaignSave *m = AutosaveGetCampaign(&gAutosave, entry->Path);
+	if (m != NULL)
 	{
-		// Completed campaign
-		menu->color = colorGray;
-	}
-	else if (m.MissionsCompleted > 0)
-	{
-		// Campaign in progress
-		menu->color = colorYellow;
+		if ((int)m->MissionsCompleted.size == entry->NumMissions)
+		{
+			// Completed campaign
+			menu->color = colorGray;
+		}
+		else if (m->MissionsCompleted.size > 0)
+		{
+			// Campaign in progress
+			menu->color = colorYellow;
+		}
 	}
 
 	return menu;

@@ -43,7 +43,7 @@ bool IsGameOptionsNeeded(const GameMode mode);
 bool IsScoreNeeded(const GameMode mode);
 bool HasObjectives(const GameMode mode);
 bool IsAutoMapEnabled(const GameMode mode);
-bool IsPasswordAllowed(const GameMode mode);
+bool CanLevelSelect(const GameMode mode);
 bool IsMissionBriefingNeeded(const GameMode mode, const char *missionBriefing);
 bool AreKeysAllowed(const GameMode mode);
 bool AreHealthPickupsAllowed(const GameMode mode);

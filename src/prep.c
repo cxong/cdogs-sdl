@@ -448,9 +448,9 @@ static GameLoopResult PlayerSelectionUpdate(GameLoopData *data, LoopRunner *l)
 	if (isDone && hasAtLeastOneInput)
 	{
 		pData->waitResult = EVENT_WAIT_OK;
-		if (!gCampaign.IsClient && IsPasswordAllowed(gCampaign.Entry.Mode))
+		if (!gCampaign.IsClient && CanLevelSelect(gCampaign.Entry.Mode))
 		{
-			LoopRunnerChange(l, EnterPassword(&gGraphicsDevice));
+			LoopRunnerChange(l, LevelSelection(&gGraphicsDevice));
 		}
 		else
 		{
