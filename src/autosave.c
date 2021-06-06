@@ -428,7 +428,7 @@ void AutosaveAddCampaign(Autosave *autosave, CampaignSave *cs)
 	PlayerSavesTerminate(&existing->Players);
 	memcpy(&existing->Players, &cs->Players, sizeof cs->Players);
 
-	CampaignEntryCopy(&existing->Campaign, &cs->Campaign);
+	memcpy(&existing->Campaign, &cs->Campaign, sizeof existing->Campaign);
 }
 
 const CampaignSave *AutosaveGetCampaign(

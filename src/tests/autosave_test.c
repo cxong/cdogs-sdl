@@ -145,9 +145,10 @@ FEATURE(campaign_autosaves, "Campaign autosaves")
 			AutosaveAddCampaign(&autosave, &cs1);
 
 		WHEN("I add the same campaign but with different next mission")
+			CampaignSaveInit(&cs1);
+			CSTRDUP(cs1.Campaign.Path, "campaign.cdogscpn");
 			cs1.NextMission = 2;
-		AND("and differeiont missions completed")
-			CArrayClear(&cs1.MissionsCompleted);
+		AND("and different missions completed")
 			mission = 1;
 			CArrayPushBack(&cs1.MissionsCompleted, &mission);
 			AutosaveAddCampaign(&autosave, &cs1);
