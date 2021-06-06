@@ -96,7 +96,7 @@ FEATURE(save_and_load, "Save and load")
 		THEN("their mission paths should equal")
 			SHOULD_STR_EQUAL(cs2->Campaign.Path, cs1.Campaign.Path);
 		AND("their next missions should equal")
-			SHOULD_STR_EQUAL(cs2->NextMission, cs1.NextMission);
+			SHOULD_INT_EQUAL(cs2->NextMission, cs1.NextMission);
 	SCENARIO_END
 FEATURE_END
 
