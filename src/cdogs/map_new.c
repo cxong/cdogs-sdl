@@ -292,7 +292,8 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 		LoadInt(&m.EnemyDensity, child, "EnemyDensity");
 		LoadWeapons(
 			&m.Weapons, json_find_first_label(child, "Weapons")->child);
-		strcpy(m.Song, json_find_first_label(child, "Song")->child->text);
+		m.Music.Type = MUSIC_SRC_DYNAMIC;
+		LoadStr(&m.Music.Data.Filename, child, "Song");
 		switch (m.Type)
 		{
 		case MAPTYPE_CLASSIC:
@@ -309,7 +310,9 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 			LoadDoors(
 				&m.u.Classic.Doors,
 				json_find_first_label(child, "Doors")->child);
-			LoadPillars(&m.u.Classic.Pillars, json_find_first_label(child, "Pillars")->child);
+			LoadPillars(
+				&m.u.Classic.Pillars,
+				json_find_first_label(child, "Pillars")->child);
 			break;
 		case MAPTYPE_STATIC:
 			if (!MissionStaticTryLoadJSON(
@@ -353,7 +356,9 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 			LoadDoors(
 				&m.u.Interior.Doors,
 				json_find_first_label(child, "Doors")->child);
-			LoadPillars(&m.u.Interior.Pillars, json_find_first_label(child, "Pillars")->child);
+			LoadPillars(
+				&m.u.Interior.Pillars,
+				json_find_first_label(child, "Pillars")->child);
 			break;
 		default:
 			assert(0 && "unknown map type");

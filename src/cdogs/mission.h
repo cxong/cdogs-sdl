@@ -137,7 +137,14 @@ typedef struct
 	int EnemyDensity;
 	CArray Weapons; // of WeaponClass *
 
-	char Song[CDOGS_PATH_MAX];
+	struct
+	{
+		MusicSourceType Type;
+		union {
+			char *Filename;
+			Mix_Chunk *Chunk;
+		} Data;
+	} Music;
 
 	union {
 		// Classic

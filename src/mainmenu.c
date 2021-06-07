@@ -148,7 +148,7 @@ static void MainMenuOnEnter(GameLoopData *data)
 		return;
 	}
 
-	MusicPlay(&gSoundDevice, MUSIC_MENU, NULL, NULL);
+	MusicPlayGeneral(&gSoundDevice.music, MUSIC_MENU);
 	// Reset config - could have been set to other values by server
 	ConfigResetChanged(&gConfig);
 	CampaignSettingTerminateAll(&gCampaign.Setting);

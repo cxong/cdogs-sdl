@@ -427,7 +427,11 @@ static void ConvertMission(
 			CArrayPushBack(&dest->Weapons, &wc);
 		}
 	}
-	strcpy(dest->Song, src->song);
+	if (strlen(src->song) > 0)
+	{
+		dest->Music.Type = MUSIC_SRC_DYNAMIC;
+		CSTRDUP(dest->Music.Data.Filename, src->song);
+	}
 	const color_t maskAlt =
 		RangeToColor(abs(src->altRange) % COLORRANGE_COUNT);
 

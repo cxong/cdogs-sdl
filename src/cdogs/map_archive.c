@@ -135,12 +135,13 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 	}
 	if (hasCustomAmmo)
 	{
-		PickupClassesLoadAmmo(&gPickupClasses.CustomClasses, &gAmmo.CustomAmmo);
+		PickupClassesLoadAmmo(
+			&gPickupClasses.CustomClasses, &gAmmo.CustomAmmo);
 	}
 	if (hasCustomGuns)
 	{
 		PickupClassesLoadGuns(
-		&gPickupClasses.CustomClasses, &gWeaponClasses.CustomGuns);
+			&gPickupClasses.CustomClasses, &gWeaponClasses.CustomGuns);
 	}
 	PickupClassesLoadKeys(&gPickupClasses.KeyClasses);
 
@@ -361,8 +362,12 @@ static json_t *SaveMissions(CArray *a)
 		json_insert_pair_into_object(
 			node, "Weapons", SaveWeapons(&mission->Weapons));
 
-		json_insert_pair_into_object(
-			node, "Song", json_new_string(mission->Song));
+		if (mission->Music.Type == MUSIC_SRC_DYNAMIC &&
+			strlen(mission->Music.Data.Filename) > 0)
+		{
+			json_insert_pair_into_object(
+				node, "Song", json_new_string(mission->Music.Data.Filename));
+		}
 
 		switch (mission->Type)
 		{
@@ -411,8 +416,8 @@ static json_t *SaveMissions(CArray *a)
 			AddBoolPair(node, "ExitEnabled", mission->u.Interior.ExitEnabled);
 			json_insert_pair_into_object(
 				node, "Doors", SaveDoors(mission->u.Interior.Doors));
-				json_insert_pair_into_object(
-				 node, "Pillars", SavePillars(mission->u.Interior.Pillars));
+			json_insert_pair_into_object(
+				node, "Pillars", SavePillars(mission->u.Interior.Pillars));
 			break;
 		default:
 			CASSERT(false, "unknown map type");

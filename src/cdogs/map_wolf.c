@@ -125,35 +125,107 @@ static const char *GetSound(const CWMapType type, const int i)
 	}
 }
 
-static const char *musicW[] = {
-	"corner",	   // 0
-	"dungeon",	   // 1
-	"warmarch",	   // 2
-	"getthem",	   // 3
-	"headache",	   // 4
-	"hitlerwaltz", // 5
-	"introcw3",	   // 6
-	"nazi_nor",	   // 7
-	"nazi_omi",	   // 8
-	"pow",		   // 9
-	"salute",	   // 10
-	"searchn",	   // 11
-	"suspense",	   // 12
-	"victors",	   // 13
-	"wonderin",	   // 14
-	"funkyou",	   // 15
-	"endlevel",	   // 16
-	"goingaft",	   // 17
-	"pregnant",	   // 18
-	"ultimate",	   // 19
-	"nazi_rap",	   // 20
-	"zerohour",	   // 21
-	"twelfth",	   // 22
-	"roster",	   // 23
-	"urahero",	   // 24
-	"vicmarch",	   // 25
-	"pacman",	   // 26
+typedef enum
+{
+	CORNER_MUS,	  // 0
+	DUNGEON_MUS,  // 1
+	WARMARCH_MUS, // 2
+	GETTHEM_MUS,  // 3
+	HEADACHE_MUS, // 4
+	HITLWLTZ_MUS, // 5
+	INTROCW3_MUS, // 6
+	NAZI_NOR_MUS, // 7
+	NAZI_OMI_MUS, // 8
+	POW_MUS,	  // 9
+	SALUTE_MUS,	  // 10
+	SEARCHN_MUS,  // 11
+	SUSPENSE_MUS, // 12
+	VICTORS_MUS,  // 13
+	WONDERIN_MUS, // 14
+	FUNKYOU_MUS,  // 15
+	ENDLEVEL_MUS, // 16
+	GOINGAFT_MUS, // 17
+	PREGNANT_MUS, // 18
+	ULTIMATE_MUS, // 19
+	NAZI_RAP_MUS, // 20
+	ZEROHOUR_MUS, // 21
+	TWELFTH_MUS,  // 22
+	ROSTER_MUS,	  // 23
+	URAHERO_MUS,  // 24
+	VICMARCH_MUS, // 25
+	PACMAN_MUS,	  // 26
+	LASTMUSIC
+} MusicWolf;
+static const int songsWolf[] = {
+	//
+	// Episode One
+	//
+	GETTHEM_MUS, SEARCHN_MUS, POW_MUS, SUSPENSE_MUS, GETTHEM_MUS, SEARCHN_MUS,
+	POW_MUS, SUSPENSE_MUS,
+
+	WARMARCH_MUS, // Boss level
+	CORNER_MUS,	  // Secret level
+
+	//
+	// Episode Two
+	//
+	NAZI_OMI_MUS, PREGNANT_MUS, GOINGAFT_MUS, HEADACHE_MUS, NAZI_OMI_MUS,
+	PREGNANT_MUS, HEADACHE_MUS, GOINGAFT_MUS,
+
+	WARMARCH_MUS, // Boss level
+	DUNGEON_MUS,  // Secret level
+
+	//
+	// Episode Three
+	//
+	INTROCW3_MUS, NAZI_RAP_MUS, TWELFTH_MUS, ZEROHOUR_MUS, INTROCW3_MUS,
+	NAZI_RAP_MUS, TWELFTH_MUS, ZEROHOUR_MUS,
+
+	ULTIMATE_MUS, // Boss level
+	PACMAN_MUS,	  // Secret level
+
+	//
+	// Episode Four
+	//
+	GETTHEM_MUS, SEARCHN_MUS, POW_MUS, SUSPENSE_MUS, GETTHEM_MUS, SEARCHN_MUS,
+	POW_MUS, SUSPENSE_MUS,
+
+	WARMARCH_MUS, // Boss level
+	CORNER_MUS,	  // Secret level
+
+	//
+	// Episode Five
+	//
+	NAZI_OMI_MUS, PREGNANT_MUS, GOINGAFT_MUS, HEADACHE_MUS, NAZI_OMI_MUS,
+	PREGNANT_MUS, HEADACHE_MUS, GOINGAFT_MUS,
+
+	WARMARCH_MUS, // Boss level
+	DUNGEON_MUS,  // Secret level
+
+	//
+	// Episode Six
+	//
+	INTROCW3_MUS, NAZI_RAP_MUS, TWELFTH_MUS, ZEROHOUR_MUS, INTROCW3_MUS,
+	NAZI_RAP_MUS, TWELFTH_MUS, ZEROHOUR_MUS,
+
+	ULTIMATE_MUS, // Boss level
+	FUNKYOU_MUS	  // Secret level
 };
+static Mix_Chunk *LoadMusic(const CWolfMap *map, const int i)
+{
+	// TODO: spear music
+	char *data;
+	size_t len;
+	const int err = CWAudioGetMusic(&map->audio, songsWolf[i], &data, &len);
+	if (err != 0)
+	{
+		goto bail;
+	}
+	return Mix_QuickLoad_RAW((Uint8 *)data, (Uint32)len);
+
+bail:
+	return NULL;
+}
 
 int MapWolfScan(const char *filename, char **title, int *numMissions)
 {
@@ -384,7 +456,8 @@ static void LoadMission(
 	CArrayPushBack(&m.Weapons, &wc);
 	wc = StrWeaponClass("Knife");
 	CArrayPushBack(&m.Weapons, &wc);
-	// TODO: song
+	m.Music.Type = MUSIC_SRC_CHUNK;
+	m.Music.Data.Chunk = LoadMusic(map, missionIndex);
 	MissionStaticInit(&m.u.Static);
 
 	m.u.Static.TileClasses = hashmap_copy(tileClasses, TileClassCopyHashMap);

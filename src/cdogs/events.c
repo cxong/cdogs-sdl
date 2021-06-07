@@ -171,13 +171,13 @@ void EventPoll(
 			{
 			case SDL_WINDOWEVENT_FOCUS_GAINED:
 				regainedFocus = true;
-				MusicSetPlaying(&gSoundDevice, true);
+				MusicSetPlaying(&gSoundDevice.music, true);
 				break;
 			case SDL_WINDOWEVENT_FOCUS_LOST:
 				if (!gCampaign.IsClient &&
 					!ConfigGetBool(&gConfig, "StartServer"))
 				{
-					MusicSetPlaying(&gSoundDevice, false);
+					MusicSetPlaying(&gSoundDevice.music, false);
 					handlers->HasLostFocus = true;
 				}
 				// Reset input handlers

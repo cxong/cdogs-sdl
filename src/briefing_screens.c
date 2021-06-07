@@ -74,7 +74,7 @@ static void CampaignIntroTerminate(GameLoopData *data)
 static void CampaignIntroOnEnter(GameLoopData *data)
 {
 	UNUSED(data);
-	MusicPlay(&gSoundDevice, MUSIC_BRIEFING, NULL, NULL);
+	MusicPlayGeneral(&gSoundDevice.music, MUSIC_BRIEFING);
 }
 static void CampaignIntroOnExit(GameLoopData *data)
 {
@@ -435,7 +435,7 @@ static void MissionSummaryOnEnter(GameLoopData *data)
 {
 	MissionSummaryData *mData = data->Data;
 
-	MusicPlay(&gSoundDevice, MUSIC_BRIEFING, NULL, NULL);
+	MusicPlayGeneral(&gSoundDevice.music, MUSIC_BRIEFING);
 
 	if (mData->completed && CanLevelSelect(mData->c->Entry.Mode))
 	{

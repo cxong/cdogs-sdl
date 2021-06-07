@@ -187,7 +187,20 @@ void MissionCopy(Mission *dst, const Mission *src)
 	dst->EnemyDensity = src->EnemyDensity;
 	CArrayCopy(&dst->Weapons, &src->Weapons);
 
-	memcpy(dst->Song, src->Song, sizeof dst->Song);
+	dst->Music = src->Music;
+	switch (src->Music.Type)
+	{
+	case MUSIC_SRC_DYNAMIC:
+		CSTRDUP(dst->Music.Data.Filename, src->Music.Data.Filename);
+		break;
+	case MUSIC_SRC_CHUNK:
+		// TODO: can't copy music chunks, only used by editor anyway
+		dst->Music.Data.Chunk = NULL;
+		break;
+	default:
+		CASSERT(false, "unsupported music type");
+		break;
+	}
 
 	memcpy(&dst->u, &src->u, sizeof dst->u);
 	switch (src->Type)
@@ -245,6 +258,17 @@ void MissionTerminate(Mission *m)
 		break;
 	default:
 		CASSERT(false, "unknown map type");
+		break;
+	}
+	switch (m->Music.Type)
+	{
+	case MUSIC_SRC_DYNAMIC:
+		CFREE(m->Music.Data.Filename);
+		break;
+	case MUSIC_SRC_CHUNK:
+		Mix_FreeChunk(m->Music.Data.Chunk);
+		break;
+	default:
 		break;
 	}
 	memset(m, 0, sizeof *m);
@@ -462,9 +486,22 @@ void MissionBegin(struct MissionOptions *m, const NGameBegin gb)
 {
 	m->HasBegun = true;
 	m->state = MISSION_STATE_PLAY;
-	MusicPlay(
-		&gSoundDevice, MUSIC_GAME, gCampaign.Entry.Path, m->missionData->Song);
-	const char *musicErrorMsg = MusicGetErrorMessage(&gSoundDevice);
+	switch (m->missionData->Music.Type)
+	{
+	case MUSIC_SRC_DYNAMIC:
+		MusicPlayFile(
+			&gSoundDevice.music, MUSIC_GAME, gCampaign.Entry.Path,
+			m->missionData->Music.Data.Filename);
+		break;
+	case MUSIC_SRC_CHUNK:
+		MusicPlayChunk(
+			&gSoundDevice.music, MUSIC_GAME, m->missionData->Music.Data.Chunk);
+		break;
+	default:
+		CASSERT(false, "unsupported music type");
+		break;
+	}
+	const char *musicErrorMsg = MusicGetErrorMessage(&gSoundDevice.music);
 	if (strlen(musicErrorMsg) > 0)
 	{
 		// Display music error message for 2 seconds

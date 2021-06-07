@@ -153,11 +153,22 @@ static char *MissionGetSong(UIObject *o, void *data)
 {
 	UNUSED(o);
 	Campaign *co = data;
-	if (!CampaignGetCurrentMission(co))
+	const Mission *m = CampaignGetCurrentMission(co);
+	if (!m || m->Music.Type != MUSIC_SRC_DYNAMIC)
 	{
 		return NULL;
 	}
-	return CampaignGetCurrentMission(co)->Song;
+	return m->Music.Data.Filename;
+}
+static char **MissionGetSongSrc(void *data)
+{
+	Campaign *co = data;
+	const Mission *m = CampaignGetCurrentMission(co);
+	if (!m || m->Music.Type != MUSIC_SRC_DYNAMIC)
+	{
+		return NULL;
+	}
+	return &m->Music.Data.Filename;
 }
 static const char *MissionGetWidthStr(UIObject *o, void *data)
 {
@@ -1037,9 +1048,9 @@ static UIObject *CreateMissionObjs(Campaign *co)
 	o = UIObjectCreate(
 		UITYPE_TEXTBOX, YC_MISSIONTITLE, svec2i(0, Y_ABS), svec2i(319, th));
 	o->u.Textbox.TextLinkFunc = MissionGetSong;
-	o->u.Textbox.MaxLen = sizeof((Mission *)0)->Song - 1;
+	o->u.Textbox.TextSourceFunc = MissionGetSongSrc;
 	o->Data = co;
-	CSTRDUP(o->u.Textbox.Hint, "(Mission song)");
+	CSTRDUP(o->u.Textbox.Hint, "(Mission song - enter filename without extension)");
 	o->Id2 = XC_MUSICFILE;
 	o->Flags = UI_SELECT_ONLY;
 	o->CheckVisible = MissionCheckVisible;

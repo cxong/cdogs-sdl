@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2017, 2019-2020 Cong Xu
+	Copyright (c) 2013-2017, 2019-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -61,6 +61,7 @@
 #include "c_hashmap/hashmap.h"
 #include "defs.h"
 #include "mathc/mathc.h"
+#include "music.h"
 #include "sys_config.h"
 #include "utils.h"
 #include "vector.h"
@@ -88,21 +89,10 @@ typedef struct
 	} u;
 } SoundData;
 
-typedef enum
-{
-	MUSIC_MENU,
-	MUSIC_BRIEFING,
-	MUSIC_GAME,
-	MUSIC_COUNT
-} MusicType;
-
 typedef struct
 {
-	int isInitialised;
-	Mix_Music *music;
-	bool musicIsDynamic;
-	CArray musicTracks[MUSIC_COUNT]; // of Mix_Music *
-	char musicErrorMessage[128];
+	MusicPlayer music;
+	bool isInitialised;
 	int channels;
 
 	// Two sets of ears for 4-player split screen
