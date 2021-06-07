@@ -395,7 +395,7 @@ void AutosaveAddCampaign(Autosave *autosave, CampaignSave *cs)
 	else
 	{
 		CArrayPushBack(&autosave->Campaigns, cs);
-		autosave->LastCampaignIndex = autosave->Campaigns.size - 1;
+		autosave->LastCampaignIndex = (int)autosave->Campaigns.size - 1;
 		existing =
 			CArrayGet(&autosave->Campaigns, autosave->LastCampaignIndex);
 		CampaignSaveInit(existing);

@@ -97,9 +97,9 @@ static const char *soundsSOD[] = {
 	"machine_gun", "pistol", "chain_gun", "chars/alert/ss", "dual_chain_gun",
 	"machine_gun_burst",
 	// 10-19
-	"chars/die/guard/", "chars/die/guard/", "chars/die/guard/",
-	"secret_door", "chars/die/dog", "chars/die/mutant", "chars/die/ss",
-	"pistol_guard", "gurgle", "chars/alert/officer",
+	"chars/die/guard/", "chars/die/guard/", "chars/die/guard/", "secret_door",
+	"chars/die/dog", "chars/die/mutant", "chars/die/ss", "pistol_guard",
+	"gurgle", "chars/alert/officer",
 	// 20-29
 	"chars/die/officer", "chars/alert/dog/", "level_end", "chars/die/guard/",
 	"chars/die/guard/", "fart", "chars/die/guard/", "chars/die/guard/",
@@ -124,6 +124,36 @@ static const char *GetSound(const CWMapType type, const int i)
 		return NULL;
 	}
 }
+
+static const char *musicW[] = {
+	"corner",	   // 0
+	"dungeon",	   // 1
+	"warmarch",	   // 2
+	"getthem",	   // 3
+	"headache",	   // 4
+	"hitlerwaltz", // 5
+	"introcw3",	   // 6
+	"nazi_nor",	   // 7
+	"nazi_omi",	   // 8
+	"pow",		   // 9
+	"salute",	   // 10
+	"searchn",	   // 11
+	"suspense",	   // 12
+	"victors",	   // 13
+	"wonderin",	   // 14
+	"funkyou",	   // 15
+	"endlevel",	   // 16
+	"goingaft",	   // 17
+	"pregnant",	   // 18
+	"ultimate",	   // 19
+	"nazi_rap",	   // 20
+	"zerohour",	   // 21
+	"twelfth",	   // 22
+	"roster",	   // 23
+	"urahero",	   // 24
+	"vicmarch",	   // 25
+	"pacman",	   // 26
+};
 
 int MapWolfScan(const char *filename, char **title, int *numMissions)
 {
@@ -217,7 +247,7 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 	{
 		goto bail;
 	}
-	
+
 	CharacterStoreCopy(&c->characters, &cs, &gPlayerTemplates.CustomClasses);
 
 	for (int i = 0; i < map.nLevels; i++)
@@ -240,7 +270,7 @@ static void LoadSounds(const SoundDevice *s, const CWolfMap *map)
 		return;
 	}
 	// TODO: load ad lib sounds
-	
+
 	// Load single sounds
 	for (int i = 0; i < map->vswap.nSounds; i++)
 	{
@@ -249,7 +279,8 @@ static void LoadSounds(const SoundDevice *s, const CWolfMap *map)
 		{
 			continue;
 		}
-		if (name[strlen(name) - 1] == '/') continue;
+		if (name[strlen(name) - 1] == '/')
+			continue;
 		Mix_Chunk *soundData = LoadSoundData(map, i);
 		if (soundData == NULL)
 		{
@@ -261,7 +292,7 @@ static void LoadSounds(const SoundDevice *s, const CWolfMap *map)
 		sound->u.normal = soundData;
 		SoundAdd(s->customSounds, name, sound);
 	}
-	
+
 	// Load random sounds
 	for (int i = 0; i < map->vswap.nSounds; i++)
 	{
@@ -270,7 +301,8 @@ static void LoadSounds(const SoundDevice *s, const CWolfMap *map)
 		{
 			continue;
 		}
-		if (name[strlen(name) - 1] != '/') continue;
+		if (name[strlen(name) - 1] != '/')
+			continue;
 		const Mix_Chunk *soundData = LoadSoundData(map, i);
 		if (soundData == NULL)
 		{
@@ -329,8 +361,8 @@ static void TryLoadWallObject(
 	MissionStatic *m, const uint16_t ch, const CWolfMap *map,
 	const struct vec2i v, const int missionIndex);
 static void LoadEntity(
-	Mission *m, const uint16_t ch, const CWolfMap *map,
-	const struct vec2i v, const int missionIndex, int *bossObjIdx);
+	Mission *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v,
+	const int missionIndex, int *bossObjIdx);
 
 static void LoadMission(
 	CampaignSetting *c, const map_t tileClasses, const CWolfMap *map,
@@ -344,10 +376,10 @@ static void LoadMission(
 	m.Type = MAPTYPE_STATIC;
 	strcpy(m.ExitStyle, "plate");
 	strcpy(m.KeyStyle, "plain2");
-	
+
 	// TODO: objectives for treasure, kills (multiple items per obj)
 	int bossObjIdx = -1;
-	
+
 	const WeaponClass *wc = StrWeaponClass("Pistol");
 	CArrayPushBack(&m.Weapons, &wc);
 	wc = StrWeaponClass("Knife");
@@ -368,7 +400,7 @@ static void LoadMission(
 	const uint16_t ech = CWLevelGetCh(level, 1, _v.x, _v.y);
 	LoadEntity(&m, ech, map, _v, missionIndex, &bossObjIdx);
 	RECT_FOREACH_END()
-	
+
 	if (m.u.Static.Exits.size == 0)
 	{
 		// This is a boss level where killing the boss ends the level
@@ -682,10 +714,12 @@ typedef enum
 	CHAR_ANGEL
 } WolfChar;
 
-static void LoadChar(Mission *m, const struct vec2i v, const direction_e d, const int charId, int *bossObjIdx);
+static void LoadChar(
+	Mission *m, const struct vec2i v, const direction_e d, const int charId,
+	int *bossObjIdx);
 static void LoadEntity(
-	Mission *m, const uint16_t ch, const CWolfMap *map,
-	const struct vec2i v, const int missionIndex, int *bossObjIdx)
+	Mission *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v,
+	const int missionIndex, int *bossObjIdx)
 {
 	const CWEntity entity = CWChToEntity(ch);
 	switch (entity)
@@ -716,7 +750,8 @@ static void LoadEntity(
 		MissionStaticTryAddItem(&m->u.Static, StrMapObject("barrel_green"), v);
 		break;
 	case CWENT_TABLE_WITH_CHAIRS:
-		MissionStaticTryAddItem(&m->u.Static, StrMapObject("table_and_chairs"), v);
+		MissionStaticTryAddItem(
+			&m->u.Static, StrMapObject("table_and_chairs"), v);
 		break;
 	case CWENT_FLOOR_LAMP:
 		MissionStaticTryAddItem(&m->u.Static, StrMapObject("rod_light"), v);
@@ -727,7 +762,8 @@ static void LoadEntity(
 		MissionStaticTryAddItem(&m->u.Static, StrMapObject("spotlight"), v);
 		break;
 	case CWENT_HANGING_SKELETON:
-		MissionStaticTryAddItem(&m->u.Static, StrMapObject("hanging_skeleton"), v);
+		MissionStaticTryAddItem(
+			&m->u.Static, StrMapObject("hanging_skeleton"), v);
 		MissionStaticTryAddItem(&m->u.Static, StrMapObject("shadow"), v);
 		break;
 	case CWENT_DOG_FOOD:
@@ -745,7 +781,8 @@ static void LoadEntity(
 	case CWENT_SINK_SKULLS_ON_STICK:
 		if (map->type == CWMAPTYPE_SOD)
 		{
-			MissionStaticTryAddItem(&m->u.Static, StrMapObject("skull_pillar"), v);
+			MissionStaticTryAddItem(
+				&m->u.Static, StrMapObject("skull_pillar"), v);
 		}
 		else
 		{
@@ -759,7 +796,8 @@ static void LoadEntity(
 		MissionStaticTryAddItem(&m->u.Static, StrMapObject("urn"), v);
 		break;
 	case CWENT_TABLE:
-		MissionStaticTryAddItem(&m->u.Static, StrMapObject("table_wood_round"), v);
+		MissionStaticTryAddItem(
+			&m->u.Static, StrMapObject("table_wood_round"), v);
 		break;
 	case CWENT_CEILING_LIGHT_GREEN:
 		MissionStaticTryAddItem(&m->u.Static, StrMapObject("spotlight"), v);
@@ -767,7 +805,8 @@ static void LoadEntity(
 	case CWENT_UTENSILS_BROWN_CAGE_BLOODY_BONES:
 		if (map->type == CWMAPTYPE_SOD)
 		{
-			MissionStaticTryAddItem(&m->u.Static, StrMapObject("gibbet_bloody"), v);
+			MissionStaticTryAddItem(
+				&m->u.Static, StrMapObject("gibbet_bloody"), v);
 			MissionStaticTryAddItem(&m->u.Static, StrMapObject("shadow"), v);
 		}
 		else
@@ -776,14 +815,16 @@ static void LoadEntity(
 		}
 		break;
 	case CWENT_ARMOR:
-		MissionStaticTryAddItem(&m->u.Static, StrMapObject("suit_of_armor"), v);
+		MissionStaticTryAddItem(
+			&m->u.Static, StrMapObject("suit_of_armor"), v);
 		break;
 	case CWENT_CAGE:
 		MissionStaticTryAddItem(&m->u.Static, StrMapObject("gibbet"), v);
 		MissionStaticTryAddItem(&m->u.Static, StrMapObject("shadow"), v);
 		break;
 	case CWENT_CAGE_SKELETON:
-		MissionStaticTryAddItem(&m->u.Static, StrMapObject("gibbet_skeleton"), v);
+		MissionStaticTryAddItem(
+			&m->u.Static, StrMapObject("gibbet_skeleton"), v);
 		MissionStaticTryAddItem(&m->u.Static, StrMapObject("shadow"), v);
 		break;
 	case CWENT_BONES1:
@@ -798,7 +839,8 @@ static void LoadEntity(
 	case CWENT_BED_CAGE_SKULLS:
 		if (map->type == CWMAPTYPE_SOD)
 		{
-			MissionStaticTryAddItem(&m->u.Static, StrMapObject("gibbet_skulls"), v);
+			MissionStaticTryAddItem(
+				&m->u.Static, StrMapObject("gibbet_skulls"), v);
 			MissionStaticTryAddItem(&m->u.Static, StrMapObject("shadow"), v);
 		}
 		else
@@ -816,13 +858,16 @@ static void LoadEntity(
 		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("health"), v);
 		break;
 	case CWENT_AMMO:
-		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("ammo_clip"), v);
+		MissionStaticTryAddPickup(
+			&m->u.Static, StrPickupClass("ammo_clip"), v);
 		break;
 	case CWENT_MACHINE_GUN:
-		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("gun_Machine Gun"), v);
+		MissionStaticTryAddPickup(
+			&m->u.Static, StrPickupClass("gun_Machine Gun"), v);
 		break;
 	case CWENT_CHAIN_GUN:
-		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("gun_Chain Gun"), v);
+		MissionStaticTryAddPickup(
+			&m->u.Static, StrPickupClass("gun_Chain Gun"), v);
 		break;
 	case CWENT_CROSS:
 		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("cross"), v);
@@ -860,7 +905,8 @@ static void LoadEntity(
 	case CWENT_CEILING_LIGHT_RED_AARDWOLF:
 		if (map->type == CWMAPTYPE_WL6)
 		{
-			MissionStaticTryAddItem(&m->u.Static, StrMapObject("spotlight"), v);
+			MissionStaticTryAddItem(
+				&m->u.Static, StrMapObject("spotlight"), v);
 		}
 		else
 		{
@@ -880,7 +926,8 @@ static void LoadEntity(
 	case CWENT_UTENSILS_BLUE_COW_SKULL:
 		if (map->type == CWMAPTYPE_SOD)
 		{
-			MissionStaticTryAddItem(&m->u.Static, StrMapObject("cowskull_pillar"), v);
+			MissionStaticTryAddItem(
+				&m->u.Static, StrMapObject("cowskull_pillar"), v);
 		}
 		else
 		{
@@ -890,7 +937,8 @@ static void LoadEntity(
 	case CWENT_STOVE_WELL_BLOOD:
 		if (map->type == CWMAPTYPE_SOD)
 		{
-			MissionStaticTryAddItem(&m->u.Static, StrMapObject("well_blood"), v);
+			MissionStaticTryAddItem(
+				&m->u.Static, StrMapObject("well_blood"), v);
 		}
 		else
 		{
@@ -900,7 +948,8 @@ static void LoadEntity(
 	case CWENT_RACK_ANGEL_STATUE:
 		if (map->type == CWMAPTYPE_SOD)
 		{
-			MissionStaticTryAddItem(&m->u.Static, StrMapObject("statue_behemoth"), v);
+			MissionStaticTryAddItem(
+				&m->u.Static, StrMapObject("statue_behemoth"), v);
 		}
 		else
 		{
@@ -924,7 +973,8 @@ static void LoadEntity(
 		break;
 	case CWENT_PUSHWALL: {
 		const CWLevel *level = &map->levels[missionIndex];
-		int *tile = CArrayGet(&m->u.Static.Tiles, v.x + v.y * level->header.width);
+		int *tile =
+			CArrayGet(&m->u.Static.Tiles, v.x + v.y * level->header.width);
 		*tile += TILE_CLASS_WALL_OFFSET;
 	}
 	break;
@@ -1053,46 +1103,52 @@ static void LoadEntity(
 		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_PACMAN_GHOST_RED, bossObjIdx);
 		break;
 	case CWENT_PACMAN_GHOST_YELLOW:
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_PACMAN_GHOST_YELLOW, bossObjIdx);
+		LoadChar(
+			m, v, DIRECTION_DOWN, (int)CHAR_PACMAN_GHOST_YELLOW, bossObjIdx);
 		break;
 	case CWENT_PACMAN_GHOST_ROSE:
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_PACMAN_GHOST_ROSE, bossObjIdx);
+		LoadChar(
+			m, v, DIRECTION_DOWN, (int)CHAR_PACMAN_GHOST_ROSE, bossObjIdx);
 		break;
 	case CWENT_PACMAN_GHOST_BLUE:
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_PACMAN_GHOST_BLUE, bossObjIdx);
+		LoadChar(
+			m, v, DIRECTION_DOWN, (int)CHAR_PACMAN_GHOST_BLUE, bossObjIdx);
 		break;
 	default:
 		CASSERT(false, "unknown entity");
 		break;
 	}
 }
-static void LoadChar(Mission *m, const struct vec2i v, const direction_e d, const int charId, int *bossObjIdx)
+static void LoadChar(
+	Mission *m, const struct vec2i v, const direction_e d, const int charId,
+	int *bossObjIdx)
 {
 	CharacterPlace cp = {v, d};
 	switch (charId)
 	{
-		case CHAR_SCHABBS:
-		case CHAR_HITLER:
-		case CHAR_OTTO:
-		case CHAR_FETTGESICHT:
-		case CHAR_ANGEL: {
-			CArrayPushBack(&m->SpecialChars, &charId);
-			if (*bossObjIdx < 0)
-			{
-				Objective o;
-				memset(&o, 0, sizeof o);
-				o.Type = OBJECTIVE_KILL;
-				CSTRDUP(o.Description, "Kill boss");
-				CArrayPushBack(&m->Objectives, &o);
-				*bossObjIdx = m->Objectives.size - 1;
-			}
-			Objective *bossObj = CArrayGet(&m->Objectives, *bossObjIdx);
-			bossObj->Required++;
-			MissionStaticAddObjective(m, &m->u.Static, m->SpecialChars.size - 1, 0, v);
+	case CHAR_SCHABBS:
+	case CHAR_HITLER:
+	case CHAR_OTTO:
+	case CHAR_FETTGESICHT:
+	case CHAR_ANGEL: {
+		CArrayPushBack(&m->SpecialChars, &charId);
+		if (*bossObjIdx < 0)
+		{
+			Objective o;
+			memset(&o, 0, sizeof o);
+			o.Type = OBJECTIVE_KILL;
+			CSTRDUP(o.Description, "Kill boss");
+			CArrayPushBack(&m->Objectives, &o);
+			*bossObjIdx = (int)m->Objectives.size - 1;
 		}
+		Objective *bossObj = CArrayGet(&m->Objectives, *bossObjIdx);
+		bossObj->Required++;
+		MissionStaticAddObjective(
+			m, &m->u.Static, (int)m->SpecialChars.size - 1, 0, v);
+	}
+	break;
+	default:
+		MissionStaticAddCharacter(&m->u.Static, charId, cp);
 		break;
-		default:
-			MissionStaticAddCharacter(&m->u.Static, charId, cp);
-			break;
 	}
 }

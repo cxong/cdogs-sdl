@@ -126,11 +126,12 @@ void CharEditor(
 	const WeaponClass *wc = IndexWeaponClassReal(_ca_index);
 	LoadTexFromPic(*texid, wc->Icon);
 	CA_FOREACH_END()
-	
+
 	TexArrayInit(&ec.texIdsPickups, NumPickups());
 	CA_FOREACH(const GLuint, texid, ec.texIdsPickups)
 	const PickupClass *pc = IndexPickupClass(_ca_index);
-	if (pc == NULL) continue;
+	if (pc == NULL)
+		continue;
 	LoadTexFromPic(*texid, CPicGetPic(&pc->Pic, 0));
 	CA_FOREACH_END()
 
@@ -150,13 +151,14 @@ void CharEditor(
 		(GLsizei)(BODY_PART_COUNT * ec.texidsChars.size), ec.texidsChars.data);
 	CArrayTerminate(&ec.texidsChars);
 	glDeleteTextures(BODY_PART_COUNT, ec.texidsPreview);
-	glDeleteTextures(ec.texIdsCharClasses.size, ec.texIdsCharClasses.data);
+	glDeleteTextures(
+		(GLsizei)ec.texIdsCharClasses.size, ec.texIdsCharClasses.data);
 	TexArrayTerminate(&ec.texIdsCharClasses);
-	glDeleteTextures(ec.texIdsHairs.size, ec.texIdsHairs.data);
+	glDeleteTextures((GLsizei)ec.texIdsHairs.size, ec.texIdsHairs.data);
 	TexArrayTerminate(&ec.texIdsHairs);
-	glDeleteTextures(ec.texIdsGuns.size, ec.texIdsGuns.data);
+	glDeleteTextures((GLsizei)ec.texIdsGuns.size, ec.texIdsGuns.data);
 	TexArrayTerminate(&ec.texIdsGuns);
-	glDeleteTextures(ec.texIdsPickups.size, ec.texIdsPickups.data);
+	glDeleteTextures((GLsizei)ec.texIdsPickups.size, ec.texIdsPickups.data);
 	TexArrayTerminate(&ec.texIdsPickups);
 }
 
@@ -262,7 +264,7 @@ static int NumGuns(void)
 }
 static int NumPickups(void)
 {
-	return gPickupClasses.Classes.size + gPickupClasses.CustomClasses.size + gPickupClasses.KeyClasses.size + 1;
+	return (int)(gPickupClasses.Classes.size + gPickupClasses.CustomClasses.size + gPickupClasses.KeyClasses.size + 1);
 }
 static int GunIndex(const WeaponClass *wc)
 {
@@ -337,7 +339,8 @@ static void DrawFlag(
 	const int flag, const char *tooltip);
 static void DrawCharacter(
 	struct nk_context *ctx, Character *c, GLuint *texids,
-	const struct vec2i pos, const Animation *anim, const direction_e d, const gunstate_e gunStates[MAX_BARRELS]);
+	const struct vec2i pos, const Animation *anim, const direction_e d,
+	const gunstate_e gunStates[MAX_BARRELS]);
 static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 {
 	EditorContext *ec = data;
@@ -598,7 +601,9 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 
 			nk_layout_row_dynamic(ctx, ROW_HEIGHT, 2);
 			DrawFlag(ctx, ec, "Asbestos", FLAGS_ASBESTOS, "Immune to fire");
-			DrawFlag(ctx, ec, "Immunity", FLAGS_IMMUNITY, "Immune to poison and petrify");
+			DrawFlag(
+				ctx, ec, "Immunity", FLAGS_IMMUNITY,
+				"Immune to poison and petrify");
 			DrawFlag(ctx, ec, "See-through", FLAGS_SEETHROUGH, NULL);
 			DrawFlag(ctx, ec, "Invulnerable", FLAGS_INVULNERABLE, NULL);
 			DrawFlag(
@@ -655,7 +660,8 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 			DrawFlag(
 				ctx, ec, "Awake", FLAGS_AWAKEALWAYS,
 				"Don't go to sleep after players leave");
-			DrawFlag(ctx, ec, "Deaf", FLAGS_DEAF, "Doesn't wake to guns nearby");
+			DrawFlag(
+				ctx, ec, "Deaf", FLAGS_DEAF, "Doesn't wake to guns nearby");
 			nk_end(ctx);
 		}
 	}
@@ -803,12 +809,13 @@ static void DrawFlag(
 
 static void DrawCharacter(
 	struct nk_context *ctx, Character *c, GLuint *texids,
-	const struct vec2i pos, const Animation *anim, const direction_e d, const gunstate_e gunStates[MAX_BARRELS])
+	const struct vec2i pos, const Animation *anim, const direction_e d,
+	const gunstate_e gunStates[MAX_BARRELS])
 {
 	const int frame = AnimationGetFrame(anim);
 	ActorPics pics = GetCharacterPics(
-		c, d, d, anim->Type, frame, c->Gun, gunStates, false,
-		colorTransparent, NULL, NULL, 0);
+		c, d, d, anim->Type, frame, c->Gun, gunStates, false, colorTransparent,
+		NULL, NULL, 0);
 	for (int i = 0; i < BODY_PART_COUNT; i++)
 	{
 		const Pic *pic = pics.OrderedPics[i];

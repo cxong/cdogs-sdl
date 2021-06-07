@@ -192,7 +192,7 @@
 		"speed": 192,
 		"Gun": "Dual Chain Gun",
 		"maxHealth": 1000,
-		"flags": 1152,
+		"flags": 5248,
 		"Drop": "keys/plain/yellow",
 		"probabilityToMove": 30,
 		"probabilityToTrack": 20,
