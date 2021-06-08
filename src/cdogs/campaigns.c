@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2018, 2020 Cong Xu
+	Copyright (c) 2013-2018, 2020-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -70,6 +70,10 @@ void CampaignSettingTerminate(CampaignSetting *c)
 	CA_FOREACH_END()
 	CArrayTerminate(&c->Missions);
 	CharacterStoreTerminate(&c->characters);
+	if (c->CustomDataTerminate)
+	{
+		c->CustomDataTerminate(c->CustomData);
+	}
 	memset(c, 0, sizeof *c);
 }
 void CampaignSettingTerminateAll(CampaignSetting *setting)

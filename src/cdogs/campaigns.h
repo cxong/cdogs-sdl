@@ -60,6 +60,8 @@ typedef struct
 	int DoorOpenTicks;
 	CArray Missions; // of Mission
 	CharacterStore characters;
+	void *CustomData;
+	void (*CustomDataTerminate)(void *);
 } CampaignSetting;
 
 typedef struct

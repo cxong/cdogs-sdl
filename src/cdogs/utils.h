@@ -122,8 +122,12 @@ extern bool gFalse;
 
 #define UNUSED(expr) (void)(expr);
 
+#ifndef MAX
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
+#endif
+#ifndef MIN
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
+#endif
 #define CLAMP(v, _min, _max) MAX((_min), MIN((_max), (v)))
 #define CLAMP_OPPOSITE(v, _min, _max)                                         \
 	((v) > (_max) ? (_min) : ((v) < (_min) ? (_max) : (v)))

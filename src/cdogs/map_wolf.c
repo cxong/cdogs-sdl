@@ -261,15 +261,18 @@ static void LoadMission(
 int MapWolfLoad(const char *filename, CampaignSetting *c)
 {
 	int err = 0;
-	CWolfMap map;
+	CWolfMap *map = NULL;
+	CMALLOC(map, sizeof *map);
+	c->CustomData = map;
+	c->CustomDataTerminate = (void (*)(void *))CWFree;
 	map_t tileClasses = NULL;
-	err = CWLoad(&map, filename);
+	err = CWLoad(map, filename);
 	if (err != 0)
 	{
 		goto bail;
 	}
 
-	LoadSounds(&gSoundDevice, &map);
+	LoadSounds(&gSoundDevice, map);
 	// TODO: Load music
 
 	char buf[CDOGS_PATH_MAX];
@@ -313,7 +316,7 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 		}
 	}
 
-	GetCampaignPath(map.type, buf);
+	GetCampaignPath(map->type, buf);
 	err = MapNewLoadArchive(buf, c);
 	if (err != 0)
 	{
@@ -322,15 +325,14 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 
 	CharacterStoreCopy(&c->characters, &cs, &gPlayerTemplates.CustomClasses);
 
-	for (int i = 0; i < map.nLevels; i++)
+	for (int i = 0; i < map->nLevels; i++)
 	{
-		LoadMission(c, tileClasses, &map, i);
+		LoadMission(c, tileClasses, map, i);
 	}
 
 bail:
 	hashmap_destroy(tileClasses, TileClassDestroy);
 	CharacterStoreTerminate(&cs);
-	CWFree(&map);
 	return err;
 }
 
@@ -436,6 +438,16 @@ static void LoadEntity(
 	Mission *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v,
 	const int missionIndex, int *bossObjIdx);
 
+typedef struct
+{
+	const CWolfMap *Map;
+	int MissionIndex;
+} MissionSongData;
+static Mix_Chunk *GetMissionSong(void *data)
+{
+	MissionSongData *msd = data;
+	return LoadMusic(msd->Map, msd->MissionIndex);
+}
 static void LoadMission(
 	CampaignSetting *c, const map_t tileClasses, const CWolfMap *map,
 	const int missionIndex)
@@ -456,8 +468,16 @@ static void LoadMission(
 	CArrayPushBack(&m.Weapons, &wc);
 	wc = StrWeaponClass("Knife");
 	CArrayPushBack(&m.Weapons, &wc);
+
 	m.Music.Type = MUSIC_SRC_CHUNK;
-	m.Music.Data.Chunk = LoadMusic(map, missionIndex);
+	MissionSongData *msd;
+	CMALLOC(msd, sizeof *msd);
+	msd->Map = map;
+	msd->MissionIndex = missionIndex;
+	m.Music.Data.Chunk.Data = msd;
+	m.Music.Data.Chunk.GetData = GetMissionSong;
+	m.Music.Data.Chunk.Chunk = NULL;
+
 	MissionStaticInit(&m.u.Static);
 
 	m.u.Static.TileClasses = hashmap_copy(tileClasses, TileClassCopyHashMap);

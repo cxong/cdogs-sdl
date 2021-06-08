@@ -195,7 +195,9 @@ void MissionCopy(Mission *dst, const Mission *src)
 		break;
 	case MUSIC_SRC_CHUNK:
 		// TODO: can't copy music chunks, only used by editor anyway
-		dst->Music.Data.Chunk = NULL;
+		dst->Music.Data.Chunk.Data = NULL;
+		dst->Music.Data.Chunk.GetData = NULL;
+		dst->Music.Data.Chunk.Chunk = NULL;
 		break;
 	default:
 		CASSERT(false, "unsupported music type");
@@ -266,7 +268,8 @@ void MissionTerminate(Mission *m)
 		CFREE(m->Music.Data.Filename);
 		break;
 	case MUSIC_SRC_CHUNK:
-		Mix_FreeChunk(m->Music.Data.Chunk);
+		Mix_FreeChunk(m->Music.Data.Chunk.Chunk);
+		CFREE(m->Music.Data.Chunk.Data);
 		break;
 	default:
 		break;
@@ -494,8 +497,16 @@ void MissionBegin(struct MissionOptions *m, const NGameBegin gb)
 			m->missionData->Music.Data.Filename);
 		break;
 	case MUSIC_SRC_CHUNK:
-		MusicPlayChunk(
-			&gSoundDevice.music, MUSIC_GAME, m->missionData->Music.Data.Chunk);
+		if (m->missionData->Music.Data.Chunk.Chunk == NULL)
+		{
+			m->missionData->Music.Data.Chunk.Chunk =
+			m->missionData->Music.Data.Chunk.GetData(m->missionData->Music.Data.Chunk.Data);
+			CFREE(m->missionData->Music.Data.Chunk.Data);
+			m->missionData->Music.Data.Chunk.Data = NULL;
+			m->missionData->Music.Data.Chunk.GetData = NULL;
+			MusicPlayChunk(
+				&gSoundDevice.music, MUSIC_GAME, m->missionData->Music.Data.Chunk.Chunk);
+		}
 		break;
 	default:
 		CASSERT(false, "unsupported music type");

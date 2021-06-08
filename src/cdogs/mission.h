@@ -142,7 +142,11 @@ typedef struct
 		MusicSourceType Type;
 		union {
 			char *Filename;
-			Mix_Chunk *Chunk;
+			struct {
+				void *Data;
+				Mix_Chunk *(*GetData)(void *);
+				Mix_Chunk *Chunk;
+			} Chunk;
 		} Data;
 	} Music;
 
