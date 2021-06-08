@@ -163,7 +163,7 @@ static char *MissionGetSong(UIObject *o, void *data)
 static char **MissionGetSongSrc(void *data)
 {
 	Campaign *co = data;
-	const Mission *m = CampaignGetCurrentMission(co);
+	Mission *m = CampaignGetCurrentMission(co);
 	if (!m || m->Music.Type != MUSIC_SRC_DYNAMIC)
 	{
 		return NULL;
