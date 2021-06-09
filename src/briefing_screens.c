@@ -231,9 +231,12 @@ static void MissionBriefingTerminate(GameLoopData *data)
 static void MissionBriefingOnEnter(GameLoopData *data)
 {
 	MissionBriefingData *mData = data->Data;
-	MusicPlayFromChunk(
-		&gSoundDevice.music, MUSIC_BRIEFING,
-		&mData->C->CustomSongs[MUSIC_BRIEFING]);
+	if (IsMissionBriefingNeeded(gCampaign.Entry.Mode, mData->Description))
+	{
+		MusicPlayFromChunk(
+			&gSoundDevice.music, MUSIC_BRIEFING,
+			&mData->C->CustomSongs[MUSIC_BRIEFING]);
+	}
 }
 static void MissionBriefingOnExit(GameLoopData *data)
 {

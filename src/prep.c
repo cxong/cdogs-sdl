@@ -194,6 +194,10 @@ GameLoopData *NumPlayersSelection(
 	// Select 1 player default
 	ms->current->u.normal.index = 1;
 
+	MusicPlayFromChunk(
+		&gSoundDevice.music, MUSIC_BRIEFING,
+		&gCampaign.Setting.CustomSongs[MUSIC_BRIEFING]);
+
 	return GameLoopDataNew(
 		ms, NumPlayersTerminate, NULL, NULL, NULL, NumPlayersUpdate,
 		NumPlayersDraw);
