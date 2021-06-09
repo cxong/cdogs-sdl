@@ -62,6 +62,9 @@ typedef enum
 	MUSIC_MENU,
 	MUSIC_BRIEFING,
 	MUSIC_GAME,
+	// TODO: end music
+	// TODO: lose music
+	// TODO: victory music
 	MUSIC_COUNT
 } MusicType;
 
@@ -89,6 +92,13 @@ typedef struct
 	char errorMessage[128];
 } MusicPlayer;
 
+typedef struct
+{
+	void *Data;
+	Mix_Chunk *(*GetData)(void *);
+	Mix_Chunk *Chunk;
+} MusicChunk;
+
 void MusicPlayerInit(MusicPlayer *mp);
 void MusicPlayerTerminate(MusicPlayer *mp);
 Mix_Music *MusicLoad(const char *path);
@@ -102,3 +112,7 @@ void MusicPause(MusicPlayer *mp);
 void MusicResume(MusicPlayer *mp);
 void MusicSetPlaying(MusicPlayer *mp, const bool isPlaying);
 const char *MusicGetErrorMessage(const MusicPlayer *mp);
+
+void MusicChunkTerminate(MusicChunk *chunk);
+void MusicPlayFromChunk(
+	MusicPlayer *mp, const MusicType type, MusicChunk *chunk);

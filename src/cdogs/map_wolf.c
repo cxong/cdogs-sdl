@@ -156,6 +156,14 @@ typedef enum
 	PACMAN_MUS,	  // 26
 	LASTMUSIC
 } MusicWolf;
+static const int songsCampaign[] = {
+	NAZI_NOR_MUS, // menu
+	WONDERIN_MUS, // briefing
+	0,			  // game
+	ENDLEVEL_MUS, // end
+	ROSTER_MUS,	  // lose
+	URAHERO_MUS,  // victory
+};
 static const int songsWolf[] = {
 	//
 	// Episode One
@@ -216,7 +224,7 @@ static Mix_Chunk *LoadMusic(const CWolfMap *map, const int i)
 	// TODO: spear music
 	char *data;
 	size_t len;
-	const int err = CWAudioGetMusic(&map->audio, songsWolf[i], &data, &len);
+	const int err = CWAudioGetMusic(&map->audio, i, &data, &len);
 	if (err != 0)
 	{
 		goto bail;
@@ -257,7 +265,17 @@ static void LoadSounds(const SoundDevice *s, const CWolfMap *map);
 static void LoadMission(
 	CampaignSetting *c, const map_t tileClasses, const CWolfMap *map,
 	const int missionIndex);
-
+typedef struct
+{
+	const CWolfMap *Map;
+	MusicType Type;
+} CampaignSongData;
+static Mix_Chunk *GetCampaignSong(void *data)
+{
+	CampaignSongData *csd = data;
+	const int songIndex = songsCampaign[csd->Type];
+	return LoadMusic(csd->Map, songIndex);
+}
 int MapWolfLoad(const char *filename, CampaignSetting *c)
 {
 	int err = 0;
@@ -273,7 +291,16 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 	}
 
 	LoadSounds(&gSoundDevice, map);
-	// TODO: Load music
+	for (int i = 0; i < MUSIC_COUNT; i++)
+	{
+		CampaignSongData *csd;
+		CMALLOC(csd, sizeof *csd);
+		csd->Map = map;
+		csd->Type = i;
+		c->CustomSongs[i].Data = csd;
+		c->CustomSongs[i].GetData = GetCampaignSong;
+		c->CustomSongs[i].Chunk = NULL;
+	}
 
 	char buf[CDOGS_PATH_MAX];
 	// Copy data from common campaign and use them for every mission
@@ -446,7 +473,7 @@ typedef struct
 static Mix_Chunk *GetMissionSong(void *data)
 {
 	MissionSongData *msd = data;
-	return LoadMusic(msd->Map, msd->MissionIndex);
+	return LoadMusic(msd->Map, songsWolf[msd->MissionIndex]);
 }
 static void LoadMission(
 	CampaignSetting *c, const map_t tileClasses, const CWolfMap *map,

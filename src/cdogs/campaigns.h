@@ -60,6 +60,7 @@ typedef struct
 	int DoorOpenTicks;
 	CArray Missions; // of Mission
 	CharacterStore characters;
+	MusicChunk CustomSongs[MUSIC_COUNT];
 	void *CustomData;
 	void (*CustomDataTerminate)(void *);
 } CampaignSetting;

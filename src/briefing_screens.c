@@ -48,7 +48,7 @@ static void DrawObjectiveInfo(const Objective *o, const struct vec2i pos);
 typedef struct
 {
 	EventWaitResult waitResult;
-	const CampaignSetting *c;
+	CampaignSetting *c;
 } ScreenCampaignIntroData;
 static void CampaignIntroTerminate(GameLoopData *data);
 static void CampaignIntroOnEnter(GameLoopData *data);
@@ -73,8 +73,9 @@ static void CampaignIntroTerminate(GameLoopData *data)
 }
 static void CampaignIntroOnEnter(GameLoopData *data)
 {
-	UNUSED(data);
-	MusicPlayGeneral(&gSoundDevice.music, MUSIC_BRIEFING);
+	ScreenCampaignIntroData *mData = data->Data;
+	MusicPlayFromChunk(
+		&gSoundDevice.music, MUSIC_MENU, &mData->c->CustomSongs[MUSIC_MENU]);
 }
 static void CampaignIntroOnExit(GameLoopData *data)
 {
@@ -157,15 +158,18 @@ typedef struct
 	struct vec2i ObjectiveDescPos;
 	struct vec2i ObjectiveInfoPos;
 	int ObjectiveHeight;
+	CampaignSetting *C; 
 	const struct MissionOptions *MissionOptions;
 	EventWaitResult waitResult;
 } MissionBriefingData;
 static void MissionBriefingTerminate(GameLoopData *data);
+static void MissionBriefingOnEnter(GameLoopData *data);
 static void MissionBriefingOnExit(GameLoopData *data);
 static void MissionBriefingInput(GameLoopData *data);
 static GameLoopResult MissionBriefingUpdate(GameLoopData *data, LoopRunner *l);
 static void MissionBriefingDraw(GameLoopData *data);
-GameLoopData *ScreenMissionBriefing(const struct MissionOptions *m)
+GameLoopData *ScreenMissionBriefing(
+	CampaignSetting *c, const struct MissionOptions *m)
 {
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
@@ -208,10 +212,11 @@ GameLoopData *ScreenMissionBriefing(const struct MissionOptions *m)
 			svec2i(w - (w / 6), mData->ObjectiveDescPos.y + FontH());
 		mData->ObjectiveHeight = h / 12;
 	}
+	mData->C = c;
 	mData->MissionOptions = m;
 
 	return GameLoopDataNew(
-		mData, MissionBriefingTerminate, NULL, MissionBriefingOnExit,
+		mData, MissionBriefingTerminate, MissionBriefingOnEnter, MissionBriefingOnExit,
 		MissionBriefingInput, MissionBriefingUpdate, MissionBriefingDraw);
 }
 static void MissionBriefingTerminate(GameLoopData *data)
@@ -222,6 +227,13 @@ static void MissionBriefingTerminate(GameLoopData *data)
 	CFREE(mData->Description);
 	CFREE(mData->TypewriterBuf);
 	CFREE(mData);
+}
+static void MissionBriefingOnEnter(GameLoopData *data)
+{
+	MissionBriefingData *mData = data->Data;
+	MusicPlayFromChunk(
+		&gSoundDevice.music, MUSIC_BRIEFING,
+		&mData->C->CustomSongs[MUSIC_BRIEFING]);
 }
 static void MissionBriefingOnExit(GameLoopData *data)
 {

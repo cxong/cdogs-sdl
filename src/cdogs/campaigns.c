@@ -70,6 +70,10 @@ void CampaignSettingTerminate(CampaignSetting *c)
 	CA_FOREACH_END()
 	CArrayTerminate(&c->Missions);
 	CharacterStoreTerminate(&c->characters);
+	for (int i = 0; i < MUSIC_COUNT; i++)
+	{
+		MusicChunkTerminate(&c->CustomSongs[i]);
+	}
 	if (c->CustomDataTerminate)
 	{
 		c->CustomDataTerminate(c->CustomData);

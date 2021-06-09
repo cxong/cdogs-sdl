@@ -206,51 +206,51 @@ static void NumPlayersTerminate(GameLoopData *data)
 }
 static GameLoopResult NumPlayersUpdate(GameLoopData *data, LoopRunner *l)
 {
-    int numPlayers = 0;
-    GameLoopResult result = UPDATE_RESULT_DRAW;
-    bool hasAbort = false;
-    if (gEventHandlers.DemoQuitTimer > 0)
-    {
-        // Select random number of players for demo
-        numPlayers = RAND_INT(1, 5);
-        result = UPDATE_RESULT_OK;
-    }
-    else
-    {
-        MenuSystem *ms = data->Data;
-        result = MenuUpdate(ms);
-        numPlayers = ms->current->u.returnCode;
-        hasAbort = ms->hasAbort;
-    }
+	int numPlayers = 0;
+	GameLoopResult result = UPDATE_RESULT_DRAW;
+	bool hasAbort = false;
+	if (gEventHandlers.DemoQuitTimer > 0)
+	{
+		// Select random number of players for demo
+		numPlayers = RAND_INT(1, 5);
+		result = UPDATE_RESULT_OK;
+	}
+	else
+	{
+		MenuSystem *ms = data->Data;
+		result = MenuUpdate(ms);
+		numPlayers = ms->current->u.returnCode;
+		hasAbort = ms->hasAbort;
+	}
 
-    if (result == UPDATE_RESULT_OK)
-    {
-        if (hasAbort)
-        {
-            CampaignUnload(&gCampaign);
-            LoopRunnerPop(l);
-        }
-        else
-        {
-            CA_FOREACH(const PlayerData, p, gPlayerDatas)
-            CASSERT(!p->IsLocal, "unexpected local player");
-            CA_FOREACH_END()
-            // Add the players
-            for (int i = 0; i < numPlayers; i++)
-            {
-                GameEvent e = GameEventNew(GAME_EVENT_PLAYER_DATA);
-                e.u.PlayerData = PlayerDataDefault(i);
-                e.u.PlayerData.UID = gNetClient.FirstPlayerUID + i;
-                GameEventsEnqueue(&gGameEvents, e);
-            }
-            // Process the events to force add the players
-            HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
-            // This also causes the client to send player data to the server
+	if (result == UPDATE_RESULT_OK)
+	{
+		if (hasAbort)
+		{
+			CampaignUnload(&gCampaign);
+			LoopRunnerPop(l);
+		}
+		else
+		{
+			CA_FOREACH(const PlayerData, p, gPlayerDatas)
+			CASSERT(!p->IsLocal, "unexpected local player");
+			CA_FOREACH_END()
+			// Add the players
+			for (int i = 0; i < numPlayers; i++)
+			{
+				GameEvent e = GameEventNew(GAME_EVENT_PLAYER_DATA);
+				e.u.PlayerData = PlayerDataDefault(i);
+				e.u.PlayerData.UID = gNetClient.FirstPlayerUID + i;
+				GameEventsEnqueue(&gGameEvents, e);
+			}
+			// Process the events to force add the players
+			HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
+			// This also causes the client to send player data to the server
 
-            // Switch to player selection
-            LoopRunnerChange(l, PlayerSelection());
-        }
-    }
+			// Switch to player selection
+			LoopRunnerChange(l, PlayerSelection());
+		}
+	}
 	return result;
 }
 static void NumPlayersDraw(GameLoopData *data)
@@ -424,7 +424,7 @@ static GameLoopResult PlayerSelectionUpdate(GameLoopData *data, LoopRunner *l)
 	// Conditions for exit: at least one player has selected "Done",
 	// and no other players, if any, are still selecting their player
 	// The "players" with no input device are turned into AIs
-    // If in demo mode, all players are AI
+	// If in demo mode, all players are AI
 	bool hasAtLeastOneInput = gEventHandlers.DemoQuitTimer > 0;
 	bool isDone = true;
 	idx = 0;
@@ -640,7 +640,7 @@ static GameLoopResult GameOptionsUpdate(GameLoopData *data, LoopRunner *l)
 	// - Campaign complete
 	// - Mission quit
 	// - No options needed
-    // - Demo mode
+	// - Demo mode
 	// - Menu complete
 	const GameLoopResult result = MenuUpdate(&gData->ms);
 	const bool isQuit = !gCampaign.IsLoaded || gCampaign.IsComplete ||
@@ -648,7 +648,7 @@ static GameLoopResult GameOptionsUpdate(GameLoopData *data, LoopRunner *l)
 						gMission.missionData == NULL;
 	const bool isDone = !IsGameOptionsNeeded(gCampaign.Entry.Mode) ||
 						result == UPDATE_RESULT_OK ||
-                        gEventHandlers.DemoQuitTimer > 0;
+						gEventHandlers.DemoQuitTimer > 0;
 	if (isQuit || isDone)
 	{
 		if (isQuit)
@@ -704,7 +704,8 @@ static GameLoopResult GameOptionsUpdate(GameLoopData *data, LoopRunner *l)
 			{
 				NetServerOpen(&gNetServer);
 			}
-			LoopRunnerPush(l, ScreenMissionBriefing(&gMission));
+			LoopRunnerPush(
+				l, ScreenMissionBriefing(&gCampaign.Setting, &gMission));
 		}
 		return UPDATE_RESULT_OK;
 	}

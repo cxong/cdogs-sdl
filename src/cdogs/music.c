@@ -316,3 +316,27 @@ const char *MusicGetErrorMessage(const MusicPlayer *mp)
 {
 	return mp->errorMessage;
 }
+
+void MusicChunkTerminate(MusicChunk *chunk)
+{
+	if (chunk->Chunk)
+	{
+		Mix_FreeChunk(chunk->Chunk);
+	}
+	CFREE(chunk->Data);
+	memset(chunk, 0, sizeof *chunk);
+}
+
+void MusicPlayFromChunk(
+	MusicPlayer *mp, const MusicType type, MusicChunk *chunk)
+{
+	if (chunk->Chunk == NULL && chunk->GetData)
+	{
+		chunk->Chunk =
+			chunk->GetData(chunk->Data);
+		CFREE(chunk->Data);
+		chunk->Data = NULL;
+		chunk->GetData = NULL;
+	}
+	MusicPlayChunk(mp, type, chunk->Chunk);
+}
