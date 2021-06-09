@@ -154,6 +154,7 @@ static bool Play(MusicPlayer *mp, const char *path)
 
 void MusicPlayGeneral(MusicPlayer *mp, const MusicType type)
 {
+	MusicStop(mp);
 	mp->type = MUSIC_SRC_GENERAL;
 	CArray *tracks = &mp->generalTracks[type];
 	if (tracks->size == 0)
