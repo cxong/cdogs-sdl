@@ -38,6 +38,11 @@
 
 typedef struct
 {
+	char *Guns[MAX_WEAPONS];
+	CArray ammo; // of int
+} PlayerSave;
+typedef struct
+{
 	CampaignEntry Campaign;
 	bool IsValid;
 	int NextMission;

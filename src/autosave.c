@@ -47,12 +47,6 @@
 
 Autosave gAutosave;
 
-
-typedef struct
-{
-	char *Guns[MAX_WEAPONS];
-	CArray ammo; // of int
-} PlayerSave;
 static void PlayerSaveInit(PlayerSave *ps)
 {
 	memset(ps, 0, sizeof *ps);
@@ -172,16 +166,7 @@ static void AddPlayersNode(CArray *players, json_t *root)
 		json_insert_child(gunsNode, json_new_string(ps->Guns[i] != NULL ? ps->Guns[i] : ""));
 	}
 	json_insert_pair_into_object(playerNode, "Guns", gunsNode);
-
-	json_t *ammoNode = json_new_array();
-	for (int i = 0; i < (int)ps->ammo.size; i++)
-	{
-		const int *ammop = CArrayGet(&ps->ammo, i);
-		char buf[256];
-		sprintf(buf, "%d", *ammop);
-		json_insert_child(ammoNode, json_new_string(buf));
-	}
-	json_insert_pair_into_object(playerNode, "Ammo", ammoNode);
+	AddIntArray(playerNode, "Ammo", &ps->ammo);
 	
 	json_insert_child(playersNode, playerNode);
 	CA_FOREACH_END()
