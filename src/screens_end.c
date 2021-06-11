@@ -372,6 +372,9 @@ GameLoopData *ScreenVictory(Campaign *c)
 		PlayerListNew(PlayerListUpdate, VictoryDraw, data, true, false);
 	pl->pos.y = 75;
 	pl->size.y -= pl->pos.y;
+	MusicPlayFromChunk(
+		&gSoundDevice.music, MUSIC_VICTORY,
+		&gCampaign.Setting.CustomSongs[MUSIC_VICTORY]);
 	return PlayerListLoop(pl);
 }
 static void VictoryDraw(void *data)

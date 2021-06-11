@@ -62,9 +62,9 @@ typedef enum
 	MUSIC_MENU,
 	MUSIC_BRIEFING,
 	MUSIC_GAME,
-	// TODO: end music
-	// TODO: lose music
-	// TODO: victory music
+	MUSIC_END,
+	MUSIC_LOSE,
+	MUSIC_VICTORY,
 	MUSIC_COUNT
 } MusicType;
 

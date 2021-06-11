@@ -190,6 +190,8 @@ void MissionCopy(Mission *dst, const Mission *src)
 	dst->Music = src->Music;
 	switch (src->Music.Type)
 	{
+	case MUSIC_SRC_GENERAL:
+		break;
 	case MUSIC_SRC_DYNAMIC:
 		CSTRDUP(dst->Music.Data.Filename, src->Music.Data.Filename);
 		break;
@@ -488,6 +490,9 @@ void MissionBegin(struct MissionOptions *m, const NGameBegin gb)
 	m->state = MISSION_STATE_PLAY;
 	switch (m->missionData->Music.Type)
 	{
+	case MUSIC_SRC_GENERAL:
+		MusicPlayGeneral(&gSoundDevice.music, MUSIC_GAME);
+		break;
 	case MUSIC_SRC_DYNAMIC:
 		MusicPlayFile(
 			&gSoundDevice.music, MUSIC_GAME, gCampaign.Entry.Path,

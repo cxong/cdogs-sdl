@@ -403,11 +403,19 @@ GameLoopData *ScreenMissionSummary(
 	if (completed)
 	{
 		MenuAddSubmenu(mData->ms.root, MenuCreateReturn("Continue", 0));
+
+		MusicPlayFromChunk(
+			&gSoundDevice.music, MUSIC_END,
+			&gCampaign.Setting.CustomSongs[MUSIC_END]);
 	}
 	else
 	{
 		MenuAddSubmenu(mData->ms.root, MenuCreateReturn("Replay mission", 0));
 		MenuAddSubmenu(mData->ms.root, MenuCreateReturn("Back to menu", 1));
+
+		MusicPlayFromChunk(
+			&gSoundDevice.music, MUSIC_LOSE,
+			&gCampaign.Setting.CustomSongs[MUSIC_LOSE]);
 	}
 	mData->ms.allowAborts = true;
 	MenuAddExitType(&mData->ms, MENU_TYPE_RETURN);
@@ -449,8 +457,6 @@ static int GetFriendlyBonus(const PlayerData *p);
 static void MissionSummaryOnEnter(GameLoopData *data)
 {
 	MissionSummaryData *mData = data->Data;
-
-	MusicPlayGeneral(&gSoundDevice.music, MUSIC_BRIEFING);
 
 	if (mData->completed && CanLevelSelect(mData->c->Entry.Mode))
 	{

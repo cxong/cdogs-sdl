@@ -45,6 +45,9 @@ void MusicPlayerInit(MusicPlayer *mp)
 	LoadMusic(&mp->generalTracks[MUSIC_MENU], "music/menu");
 	LoadMusic(&mp->generalTracks[MUSIC_BRIEFING], "music/briefing");
 	LoadMusic(&mp->generalTracks[MUSIC_GAME], "music/game");
+	LoadMusic(&mp->generalTracks[MUSIC_END], "music/end");
+	LoadMusic(&mp->generalTracks[MUSIC_LOSE], "music/lose");
+	LoadMusic(&mp->generalTracks[MUSIC_VICTORY], "music/victory");
 }
 static void LoadMusic(CArray *tracks, const char *path)
 {
