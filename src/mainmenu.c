@@ -318,7 +318,7 @@ static menu_t *MenuCreateStart(
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Back"));
 
-	if (!CampaignSaveIsValid(cs))
+	if (!CampaignSaveIsValid(cs) || cs->NextMission >= (int)gCampaign.Setting.Missions.size)
 	{
 		MenuDisableSubmenu(menu, menuContinueIndex);
 	}

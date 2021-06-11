@@ -45,7 +45,7 @@
       "Name": "fireball",
       "Pic": {
         "Type": "Animated",
-        "Sprites": "fireball",
+        "Sprites": "fireball_small",
         "TicksPerFrame": 4
       },
       "Speed": 350,

@@ -117,7 +117,10 @@ static void MenuCreateStart(
 			}
 			MenuCreateLevelSelect(levelSelect, &gCampaign, *missionIndex);
 		CA_FOREACH_END()
-		MenuCreateLevelSelect(levelSelect, &gCampaign, save->NextMission);
+		if (save->NextMission < (int)gCampaign.Setting.Missions.size)
+		{
+			MenuCreateLevelSelect(levelSelect, &gCampaign, save->NextMission);
+		}
 	}
 	levelSelect->isDisabled = save == NULL || save->MissionsCompleted.size == 0;
 	MenuAddSubmenu(ms->root, levelSelect);
