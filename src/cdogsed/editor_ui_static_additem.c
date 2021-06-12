@@ -132,11 +132,11 @@ static void DrawCharacter(
 	UNUSED(g);
 	EditorBrushAndCampaign *data = vData;
 	CharacterStore *store = &data->Campaign->Setting.characters;
-	Character *c = CArrayGet(&store->OtherChars, data->Brush.u.ItemIndex);
+	const Character *c = CArrayGet(&store->OtherChars, data->Brush.u.ItemIndex);
 	DrawCharacterSimple(
 		c,
 		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
-		DIRECTION_DOWN, false, false);
+		DIRECTION_DOWN, false, false, c->Gun);
 }
 static void DrawObjective(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
@@ -154,17 +154,17 @@ static void DrawObjective(
 	switch (obj->Type)
 	{
 	case OBJECTIVE_KILL: {
-		Character *c = CArrayGet(
+		const Character *c = CArrayGet(
 			&store->OtherChars,
 			CharacterStoreGetSpecialId(store, data->Brush.Index2));
-		DrawCharacterSimple(c, pos, DIRECTION_DOWN, false, false);
+		DrawCharacterSimple(c, pos, DIRECTION_DOWN, false, false, c->Gun);
 	}
 	break;
 	case OBJECTIVE_RESCUE: {
-		Character *c = CArrayGet(
+		const Character *c = CArrayGet(
 			&store->OtherChars,
 			CharacterStoreGetPrisonerId(store, data->Brush.Index2));
-		DrawCharacterSimple(c, pos, DIRECTION_DOWN, false, false);
+		DrawCharacterSimple(c, pos, DIRECTION_DOWN, false, false, c->Gun);
 	}
 	break;
 	case OBJECTIVE_COLLECT: {

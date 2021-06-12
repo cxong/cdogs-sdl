@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2016, Cong Xu
+	Copyright (c) 2013-2016, 2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@ typedef struct
 	int PlayerUID;
 	menu_t **currentMenu;
 	direction_e Dir;
+	int GunIdx;
 } MenuDisplayPlayerData;
 void MenuDisplayPlayer(
 	const menu_t *menu, GraphicsDevice *g,
@@ -49,4 +50,4 @@ void MenuDisplayPlayerControls(
 
 void DisplayCharacterAndName(
 	struct vec2i pos, const Character *c, const direction_e d,
-	const char *name, const color_t color);
+	const char *name, const color_t color, const WeaponClass *gun);

@@ -819,7 +819,7 @@ static void DrawPlayerSummary(
 
 	DisplayCharacterAndName(
 		svec2i_add(pos, svec2i(size.x / 4, size.y / 2)), &data->Pd->Char,
-		DIRECTION_DOWN, data->Pd->name, colorWhite);
+		DIRECTION_DOWN, data->Pd->name, colorWhite, data->Pd->guns[0]);
 
 	if (data->Pd->survived)
 	{

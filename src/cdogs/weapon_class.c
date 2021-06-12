@@ -161,6 +161,8 @@ static void LoadGunDescription(
 		}
 		CFREE(tmp);
 	}
+	wc->Grips = 1;
+	LoadInt(&wc->Grips, node, "Grips");
 
 	LoadBool(&wc->IsGrenade, node, "IsGrenade");
 

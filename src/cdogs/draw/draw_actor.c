@@ -164,7 +164,7 @@ ActorPics GetCharacterPicsFromActor(TActor *a)
 static const Pic *GetBodyPic(
 	PicManager *pm, const CharSprites *cs, const direction_e dir,
 	const ActorAnimation anim, const int frame, const int numBarrels,
-	const CharColors *colors);
+	const int grips, const CharColors *colors);
 static const Pic *GetLegsPic(
 	PicManager *pm, const CharSprites *cs, const direction_e dir,
 	const ActorAnimation anim, const int frame, const CharColors *colors);
@@ -240,6 +240,7 @@ ActorPics GetCharacterPics(
 			break;
 		}
 	}
+	const int grips = gun == NULL ? 0 : gun->Grips;
 	pics.Head = GetHeadPic(c->Class, headDir, grimace, colors);
 	pics.HeadOffset = GetActorDrawOffset(
 		pics.Head, BODY_PART_HEAD, c->Class->Sprites, anim, frame, dir,
@@ -269,7 +270,7 @@ ActorPics GetCharacterPics(
 
 	// Body
 	pics.Body = GetBodyPic(
-		&gPicManager, c->Class->Sprites, dir, anim, frame, numBarrels, colors);
+		&gPicManager, c->Class->Sprites, dir, anim, frame, numBarrels, grips, colors);
 	pics.BodyOffset = GetActorDrawOffset(
 		pics.Body, BODY_PART_BODY, c->Class->Sprites, anim, frame, dir,
 		GUNSTATE_READY);
@@ -480,7 +481,7 @@ const Pic *GetHairPic(
 static const Pic *GetBodyPic(
 	PicManager *pm, const CharSprites *cs, const direction_e dir,
 	const ActorAnimation anim, const int frame, const int numBarrels,
-	const CharColors *colors)
+	const int grips, const CharColors *colors)
 {
 	const int stride = anim == ACTORANIMATION_WALKING ? 8 : 1;
 	const int col = frame % stride;
@@ -488,13 +489,10 @@ static const Pic *GetBodyPic(
 	const int idx = col + row * stride;
 	char buf[CDOGS_PATH_MAX];
 	CASSERT(numBarrels <= 2, "up to 2 barrels supported");
-	const char *upperPose = "";
 	const NamedSprites *ns = NULL;
-	if (numBarrels == 1)
-	{
-		upperPose = "_handgun";
-	}
-	else if (numBarrels == 2)
+	const char *upperPose = "_handgun";
+	// TODO: 2 grip firing pic
+	if (numBarrels == 2 || grips == 2)
 	{
 		upperPose = "_dualgun";
 	}
@@ -507,7 +505,7 @@ static const Pic *GetBodyPic(
 		// Get or generate masked sprites
 		ns = PicManagerGetCharSprites(pm, buf, colors);
 		// TODO: provide dualgun sprites for all body types
-		if (ns == NULL && numBarrels == 2)
+		if (ns == NULL && strcmp(upperPose, "_dualgun") == 0)
 		{
 			upperPose = "_handgun";
 			continue;
@@ -552,11 +550,11 @@ static const Pic *GetDeathPic(PicManager *pm, const int frame)
 
 void DrawCharacterSimple(
 	const Character *c, const struct vec2i pos, const direction_e d,
-	const bool hilite, const bool showGun)
+	const bool hilite, const bool showGun, const WeaponClass *gun)
 {
 	const gunstate_e barrelStates[MAX_BARRELS] = { GUNSTATE_READY, GUNSTATE_READY };
 	ActorPics pics = GetCharacterPics(
-		c, d, d, ACTORANIMATION_IDLE, 0, NULL, barrelStates, false,
+		c, d, d, ACTORANIMATION_IDLE, 0, gun, barrelStates, false,
 		colorBlack, NULL, NULL, 0);
 	DrawActorPics(&pics, pos, Rect2iZero());
 	if (hilite)

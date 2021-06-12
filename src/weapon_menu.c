@@ -92,10 +92,10 @@ static void DisplayGunIcon(
 	const struct vec2i size, const void *data);
 static void AddEquippedMenuItem(
 	menu_t *menu, const PlayerData *p, const int slot, const bool enabled);
-static void PostInputRotatePlayer(menu_t *menu, int cmd, void *data)
+static void PostInputEquipMenu(menu_t *menu, int cmd, void *data)
 {
-	UNUSED(menu);
 	MenuDisplayPlayerData *d = data;
+
 	// Rotate player using left/right keys
 	const int dx = (cmd & CMD_LEFT) ? 1 : ((cmd & CMD_RIGHT) ? -1 : 0);
 	if (dx != 0)
@@ -107,6 +107,9 @@ static void PostInputRotatePlayer(menu_t *menu, int cmd, void *data)
 		sprintf(buf, "footsteps/%s", p->Char.Class->Footsteps);
 		SoundPlay(&gSoundDevice, StrSound(buf));
 	}
+	
+	// Display gun based on menu index
+	d->GunIdx = MIN(menu->u.normal.index, MAX_WEAPONS);
 }
 static void CreateEquippedWeaponsMenu(
 	MenuSystem *ms, EventHandlers *handlers, GraphicsDevice *g,
@@ -156,7 +159,7 @@ static void CreateEquippedWeaponsMenu(
 		ms->root, MenuCreateNormal(END_MENU_LABEL, "", MENU_TYPE_NORMAL, 0));
 
 	MenuSetCustomDisplay(ms->root, DisplayGunIcon, NULL);
-	MenuSetPostInputFunc(ms->root, PostInputRotatePlayer, display);
+	MenuSetPostInputFunc(ms->root, PostInputEquipMenu, display);
 
 	// Pre-select the End menu
 	ms->root->u.normal.index = (int)(ms->root->u.normal.subMenus.size - 1);

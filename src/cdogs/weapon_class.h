@@ -67,6 +67,7 @@ typedef struct
 {
 	char *Sprites;
 	const Pic *Icon;
+	int Grips;
 	bool IsGrenade;
 	char *name;
 	char *Description;

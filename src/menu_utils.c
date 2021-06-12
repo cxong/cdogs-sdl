@@ -39,13 +39,13 @@
 // centered around the target position
 void DisplayCharacterAndName(
 	struct vec2i pos, const Character *c, const direction_e d,
-	const char *name, const color_t color)
+	const char *name, const color_t color, const WeaponClass *gun)
 {
 	// Move the point down a bit since the default character draw point is at
 	// its feet
 	pos.y += 8;
 	struct vec2i namePos = svec2i_add(pos, svec2i(-FontStrW(name) / 2, -30));
-	DrawCharacterSimple(c, pos, d, false, false);
+	DrawCharacterSimple(c, pos, d, false, false, gun);
 	FontStrMask(name, namePos, color);
 }
 
@@ -72,8 +72,13 @@ void MenuDisplayPlayer(
 	{
 		strcpy(s, pData->name);
 	}
+	const WeaponClass *gun = NULL;
+	if (d->GunIdx >= 0)
+	{
+		gun = pData->guns[d->GunIdx];
+	}
 
-	DisplayCharacterAndName(playerPos, &pData->Char, d->Dir, s, colorWhite);
+	DisplayCharacterAndName(playerPos, &pData->Char, d->Dir, s, colorWhite, gun);
 }
 
 void MenuDisplayPlayerControls(

@@ -412,10 +412,11 @@ static void MissionDrawEnemy(
 	}
 	const CharacterStore *store = &data->co->Setting.characters;
 	const int charIndex = *(int *)CArrayGet(&store->baddieIds, data->index);
+	const Character *ch = CArrayGet(&store->OtherChars, charIndex);
 	DrawCharacterSimple(
-		CArrayGet(&store->OtherChars, charIndex),
+		ch,
 		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
-		DIRECTION_DOWN, UIObjectIsHighlighted(o), true);
+		DIRECTION_DOWN, UIObjectIsHighlighted(o), true, ch->Gun);
 }
 static void MissionDrawSpecialChar(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
@@ -431,10 +432,11 @@ static void MissionDrawSpecialChar(
 	}
 	const CharacterStore *store = &data->co->Setting.characters;
 	const int charIndex = CharacterStoreGetSpecialId(store, data->index);
+	const Character *ch = CArrayGet(&store->OtherChars, charIndex);
 	DrawCharacterSimple(
-		CArrayGet(&store->OtherChars, charIndex),
+						ch,
 		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
-		DIRECTION_DOWN, UIObjectIsHighlighted(o), true);
+		DIRECTION_DOWN, UIObjectIsHighlighted(o), true, ch->Gun);
 }
 static void MissionDrawMapItem(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)

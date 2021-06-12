@@ -232,7 +232,7 @@ static void PlayerListCustomDraw(
 		// Draw the players offset on alternate rows
 		DisplayCharacterAndName(
 			svec2i(x + (i & 1) * 16, y + 4), &p->Char, DIRECTION_DOWN, p->name,
-			textColor);
+			textColor, p->guns[0]);
 
 		// Draw score
 		x += 100;

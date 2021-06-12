@@ -490,11 +490,11 @@ static void MissionDrawKillObjective(
 	CharacterStore *store = &data->co->Setting.characters;
 	if (store->specialIds.size > 0)
 	{
-		Character *c = CArrayGet(
+		const Character *c = CArrayGet(
 			&store->OtherChars, CharacterStoreGetSpecialId(store, 0));
 		const struct vec2i drawPos = svec2i_add(
 			svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2));
-		DrawCharacterSimple(c, drawPos, DIRECTION_DOWN, false, true);
+		DrawCharacterSimple(c, drawPos, DIRECTION_DOWN, false, true, c->Gun);
 	}
 }
 static void MissionDrawCollectObjective(
@@ -551,11 +551,11 @@ static void MissionDrawRescueObjective(
 	CharacterStore *store = &data->co->Setting.characters;
 	if (store->prisonerIds.size > 0)
 	{
-		Character *c = CArrayGet(
+		const Character *c = CArrayGet(
 			&store->OtherChars, CharacterStoreGetPrisonerId(store, 0));
 		const struct vec2i drawPos = svec2i_add(
 			svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2));
-		DrawCharacterSimple(c, drawPos, DIRECTION_DOWN, false, true);
+		DrawCharacterSimple(c, drawPos, DIRECTION_DOWN, false, true, c->Gun);
 	}
 }
 
