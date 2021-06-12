@@ -9,7 +9,7 @@
       },
       "Sound": "bullet_pickup",
       "Amount": 4,
-      "Max": 100
+      "Max": 99
     }
   ]
 }

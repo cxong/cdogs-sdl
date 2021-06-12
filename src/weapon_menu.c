@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2015, 2018, 2020 Cong Xu
+	Copyright (c) 2013-2015, 2018, 2020-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -92,10 +92,26 @@ static void DisplayGunIcon(
 	const struct vec2i size, const void *data);
 static void AddEquippedMenuItem(
 	menu_t *menu, const PlayerData *p, const int slot, const bool enabled);
+static void PostInputRotatePlayer(menu_t *menu, int cmd, void *data)
+{
+	UNUSED(menu);
+	MenuDisplayPlayerData *d = data;
+	// Rotate player using left/right keys
+	const int dx = (cmd & CMD_LEFT) ? 1 : ((cmd & CMD_RIGHT) ? -1 : 0);
+	if (dx != 0)
+	{
+		d->Dir = (direction_e)CLAMP_OPPOSITE(
+			(int)d->Dir + dx, DIRECTION_UP, DIRECTION_UPLEFT);
+		char buf[CDOGS_PATH_MAX];
+		const PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
+		sprintf(buf, "footsteps/%s", p->Char.Class->Footsteps);
+		SoundPlay(&gSoundDevice, StrSound(buf));
+	}
+}
 static void CreateEquippedWeaponsMenu(
 	MenuSystem *ms, EventHandlers *handlers, GraphicsDevice *g,
 	const struct vec2i pos, const struct vec2i size, const PlayerData *p,
-	const CArray *weapons)
+	const CArray *weapons, MenuDisplayPlayerData *display)
 {
 	const struct vec2i maxTextSize = FontStrSize("LongestWeaponName");
 	struct vec2i dPos = pos;
@@ -140,6 +156,7 @@ static void CreateEquippedWeaponsMenu(
 		ms->root, MenuCreateNormal(END_MENU_LABEL, "", MENU_TYPE_NORMAL, 0));
 
 	MenuSetCustomDisplay(ms->root, DisplayGunIcon, NULL);
+	MenuSetPostInputFunc(ms->root, PostInputRotatePlayer, display);
 
 	// Pre-select the End menu
 	ms->root->u.normal.index = (int)(ms->root->u.normal.subMenus.size - 1);
@@ -167,8 +184,7 @@ static void AddEquippedMenuItem(
 }
 
 static menu_t *CreateGunMenu(
-	const CArray *weapons, const struct vec2i menuSize, const bool isGrenade,
-	MenuDisplayPlayerData *display);
+	const CArray *weapons, const struct vec2i menuSize, const bool isGrenade, WeaponMenuData *data);
 static void DisplayDescriptionGunIcon(
 	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
 	const struct vec2i size, const void *data);
@@ -215,15 +231,15 @@ void WeaponMenuCreate(
 	MenuSystemInit(ms, handlers, graphics, pos, size);
 	ms->align = MENU_ALIGN_LEFT;
 	PlayerData *pData = PlayerDataGetByUID(playerUID);
-	menu->gunMenu = CreateGunMenu(weapons, size, false, &data->display);
-	menu->grenadeMenu = CreateGunMenu(weapons, size, true, &data->display);
+	menu->gunMenu = CreateGunMenu(weapons, size, false, data);
+	menu->grenadeMenu = CreateGunMenu(weapons, size, true, data);
 	MenuSystemAddCustomDisplay(ms, MenuDisplayPlayer, &data->display);
 	MenuSystemAddCustomDisplay(
 		ms, MenuDisplayPlayerControls, &data->PlayerUID);
 
 	// Create equipped weapons menu
 	CreateEquippedWeaponsMenu(
-		&menu->msEquip, handlers, graphics, pos, size, pData, weapons);
+		&menu->msEquip, handlers, graphics, pos, size, pData, weapons, &data->display);
 
 	// For AI players, pre-pick their weapons and go straight to menu end
 	if (pData->inputDevice == INPUT_DEVICE_AI)
@@ -234,8 +250,7 @@ void WeaponMenuCreate(
 	}
 }
 static menu_t *CreateGunMenu(
-	const CArray *weapons, const struct vec2i menuSize, const bool isGrenade,
-	MenuDisplayPlayerData *display)
+	const CArray *weapons, const struct vec2i menuSize, const bool isGrenade, WeaponMenuData *data)
 {
 	menu_t *menu = MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
 	menu->u.normal.maxItems = 11;
@@ -265,7 +280,7 @@ static menu_t *CreateGunMenu(
 	MenuAddSubmenu(menu, gunMenu);
 	CA_FOREACH_END()
 
-	MenuSetPostInputFunc(menu, WeaponSelect, display);
+	MenuSetPostInputFunc(menu, WeaponSelect, data);
 
 	MenuSetCustomDisplay(menu, DisplayGunIcon, NULL);
 
