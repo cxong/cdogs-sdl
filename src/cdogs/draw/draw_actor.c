@@ -164,7 +164,7 @@ ActorPics GetCharacterPicsFromActor(TActor *a)
 static const Pic *GetBodyPic(
 	PicManager *pm, const CharSprites *cs, const direction_e dir,
 	const ActorAnimation anim, const int frame, const int numBarrels,
-	const int grips, const CharColors *colors);
+	const int grips, const gunstate_e barrelState, const CharColors *colors);
 static const Pic *GetLegsPic(
 	PicManager *pm, const CharSprites *cs, const direction_e dir,
 	const ActorAnimation anim, const int frame, const CharColors *colors);
@@ -270,7 +270,7 @@ ActorPics GetCharacterPics(
 
 	// Body
 	pics.Body = GetBodyPic(
-		&gPicManager, c->Class->Sprites, dir, anim, frame, numBarrels, grips, colors);
+		&gPicManager, c->Class->Sprites, dir, anim, frame, numBarrels, grips, barrelStates[0], colors);
 	pics.BodyOffset = GetActorDrawOffset(
 		pics.Body, BODY_PART_BODY, c->Class->Sprites, anim, frame, dir,
 		GUNSTATE_READY);
@@ -481,7 +481,7 @@ const Pic *GetHairPic(
 static const Pic *GetBodyPic(
 	PicManager *pm, const CharSprites *cs, const direction_e dir,
 	const ActorAnimation anim, const int frame, const int numBarrels,
-	const int grips, const CharColors *colors)
+	const int grips, const gunstate_e barrelState, const CharColors *colors)
 {
 	const int stride = anim == ACTORANIMATION_WALKING ? 8 : 1;
 	const int col = frame % stride;
@@ -490,11 +490,23 @@ static const Pic *GetBodyPic(
 	char buf[CDOGS_PATH_MAX];
 	CASSERT(numBarrels <= 2, "up to 2 barrels supported");
 	const NamedSprites *ns = NULL;
-	const char *upperPose = "_handgun";
+	const char *upperPose = "";
 	// TODO: 2 grip firing pic
-	if (numBarrels == 2 || grips == 2)
+	if (numBarrels == 1)
+	{
+		upperPose = "_handgun";
+	}
+	if (numBarrels == 2)
 	{
 		upperPose = "_dualgun";
+	}
+	if (grips == 2)
+	{
+		upperPose = "_rifle";
+		if (barrelState == GUNSTATE_FIRING || barrelState == GUNSTATE_RECOIL)
+		{
+			upperPose = "_riflefire";
+		}
 	}
 	for (;;)
 	{
@@ -505,7 +517,7 @@ static const Pic *GetBodyPic(
 		// Get or generate masked sprites
 		ns = PicManagerGetCharSprites(pm, buf, colors);
 		// TODO: provide dualgun sprites for all body types
-		if (ns == NULL && strcmp(upperPose, "_dualgun") == 0)
+		if (ns == NULL && strcmp(upperPose, "_handgun") != 0)
 		{
 			upperPose = "_handgun";
 			continue;

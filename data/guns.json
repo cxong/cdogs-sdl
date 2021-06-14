@@ -2,6 +2,7 @@
   "Version": 3,
   "DefaultGun": {
     "Pic": "blaster",
+    "Grips": 1,
     "Icon": "peashooter",
     "Name": "",
     "Bullet": "",
@@ -80,6 +81,8 @@
     },
     {
       "Index": 3,
+      "Pic": "rifle",
+      "Grips": 2,
       "Name": "Flamer",
       "Icon": "flamer",
       "Description": "This short-range tactical flamethrower releases flames which burn enemies, causing high damage. The flames can also be reflected by walls. The flamer can be a deadly weapon when used by a skilled close quarters fighter.\n\nDamage: 12\nRate of fire: 700 round/min\nLifespan: 0.42s\nSpeed: 1024\nCost: 1",
@@ -94,6 +97,8 @@
     },
     {
       "Index": 4,
+      "Pic": "rifle",
+      "Grips": 2,
       "Name": "Shotgun",
       "Icon": "shotgun",
       "Description": "The shotgun is slow and only has a short range, but it fires 5 bullets per shot in a large spread. The shotgun is most effective in close quarters combat but difficult to use in long range.\n\nDamage: 15 per bullet (max. 75)\nRate of fire: 84 round/min\nLifespan: 0.71s\nSpeed: 640\nCost: 5",
@@ -153,6 +158,8 @@
     },
     {
       "Index": 8,
+      "Pic": "rifle",
+      "Grips": 2,
       "Name": "Sniper rifle",
       "Icon": "sniper",
       "Description": "A tactical weapon which fires a strong long-range projectile which makes 50 damage on a hit. Its reload time is rather long. The sniper rifle always fires in a perfecly straight line.\n\nDamage: 50\nRate of fire: 42 round/min\nLifespan: 0.42s\nSpeed: 1024\nCost: 5",
@@ -220,6 +227,8 @@
     },
     {
       "Index": 12,
+      "Pic": "rifle",
+      "Grips": 2,
       "Name": "Petrify gun",
       "Icon": "petrifier",
       "Description": "This gun fires projectiles that turn enemies into stone for short time, making them unable to walk and shoot. This gun has no spread.\n\nDamage: 0\nRate of fire: 42 round/min\nLifespan: 0.64s\nSpeed: 768\nCost: 10",
@@ -262,6 +271,8 @@
     },
     {
       "Index": 15,
+      "Pic": "rifle",
+      "Grips": 2,
       "Name": "Chemo gun",
       "Icon": "chemo_gun",
       "Description": "This weapon releases a short line of poison gas clouds. Players which walk into poison clouds will be poisoned and start to constantly health for a short time.\n\nDamage: Poison\nRate of fire: 700 round/min\nLifespan: 0.5s\nSpeed: 384\nCost: 1",
@@ -276,6 +287,8 @@
     },
     {
       "Index": 16,
+      "Pic": "rifle",
+      "Grips": 2,
       "Name": "Pulse rifle",
       "Icon": "pulse_rifle",
       "Description": "The pulse rifle fires pulse balls with a stunningly high rate of fire, but in a rather short range and also with a large spread.\n\nDamage: 6\nRate of fire: 1050 round/min\nLifespan: 0.35s\nSpeed: 1280\nCost: 1",

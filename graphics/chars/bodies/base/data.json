@@ -2,7 +2,7 @@
   "Version": 2,
   "Order": [
     ["gun_r", "gun_l", "legs", "body", "head", "hair"],
-    ["gun_r", "gun_l", "legs", "body", "head", "hair"],
+    ["gun_l", "legs", "body", "head", "hair", "gun_r"],
     ["gun_l", "legs", "body", "head", "hair", "gun_r"],
     ["legs", "body", "head", "hair", "gun_r", "gun_l"],
     ["legs", "body", "head", "hair", "gun_r", "gun_l"],

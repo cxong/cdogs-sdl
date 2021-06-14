@@ -19,7 +19,7 @@ INFILE=$1/src.blend
 parts=(legs upper)
 # Render separate actions
 actions_legs=(idle run)
-actions_upper=(idle idle_handgun idle_dualgun run run_handgun run_dualgun)
+actions_upper=(idle run idle_handgun run_handgun idle_dualgun run_dualgun idle_rifle run_rifle idle_riflefire run_riflefire)
 idle_frames=1
 run_frames=80
 len_i=${#parts[*]}
@@ -43,9 +43,8 @@ do
       else
         frames=$idle_frames
       fi
-      # Include right hand collection if the part is "upper" and action doesn't have
-      # "handgun" or "dualgun"
-      if [[ $part == *"upper"* ]] && [[ $action != *"handgun"* ]] && [[ $action != *"dualgun"* ]]
+      # Include right hand collection if the part is "upper" and action doesn't have guns
+      if [[ $part == *"upper"* ]] && [[ $action != *"handgun"* ]] && [[ $action != *"dualgun"* ]] && [[ $action != *"rifle"* ]]
       then
         collections=$collections,hand_right
       fi
