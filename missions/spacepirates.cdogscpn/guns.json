@@ -37,6 +37,8 @@
       "Ammo": "Cells"
     },
     {
+      "Pic": "shotgun",
+      "Grips": 2,
       "Name": "Zeild Particle Shotgun V5",
       "Icon": "sniper",
       "Bullet": "shotgun_particle",

@@ -17,6 +17,8 @@ matrix:
       env: CTEST_TARGET_SYSTEM=Linux-gcc    CTEST_MODEL=Nightly
       addons:
         apt:
+          sources:
+            - ppa:ubuntu-toolchain-r/test
           packages:
             # disable for now
             # - valgrind
@@ -35,10 +37,9 @@ matrix:
         apt:
           packages:
             - clang-9
+            - ninja-build
 
 before_install:
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get -q update; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then wget https://github.com/protocolbuffers/protobuf/releases/download/v3.12.3/protoc-3.12.3-linux-x86_64.zip; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then unzip protoc-3.12.3-linux-x86_64.zip; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo mv bin/protoc /usr/bin; fi
@@ -57,8 +58,8 @@ before_script:
 script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then sh build/macosx/install-sdl2.sh ; fi
   # Match install prefix with data dir so that package contains everything required
-  - cmake -DCMAKE_INSTALL_PREFIX=. -DDATA_INSTALL_DIR=. -Wno-dev .
-  - make -j2
+  - cmake -GNinja -DCMAKE_INSTALL_PREFIX=. -DDATA_INSTALL_DIR=. -Wno-dev .
+  - ninja -v
   - ctest -VV -S
   # Disable valgrind for now; memory errors to be fixed
   # - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cd src && valgrind ./cdogs-sdl --demo; fi

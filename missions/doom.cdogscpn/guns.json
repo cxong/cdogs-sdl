@@ -27,6 +27,8 @@
       "Ammo": "Bullets"
     },
     {
+      "Pic": "shotgun",
+      "Grips": 2,
       "Name": "Marine Shotgun",
       "Icon": "shotgun",
       "Bullet": "pellet",
