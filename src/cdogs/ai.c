@@ -498,6 +498,7 @@ void AIWake(TActor *a, const int delayModifier)
 	a->flags |= FLAGS_WAKING;
 	ActorSetAIState(a, AI_STATE_NONE);
 	const CharBot *bot = ActorGetCharacter(a)->bot;
+	if (bot == NULL) return;
 	a->aiContext->Delay = bot->actionDelay * delayModifier;
 
 	// Don't play alert sound for invisible enemies

@@ -340,9 +340,9 @@ bool AICanSee(const TActor *a, const struct vec2 target, const direction_e d)
 	return false;
 }
 
-static bool IsPosNotShootable(void *data, const struct vec2i pos)
+static bool IsPosShootable(void *data, const struct vec2i pos)
 {
-	return !TileIsShootable(MapGetTile(data, Vec2iToTile(pos)));
+	return TileIsShootable(MapGetTile(data, Vec2iToTile(pos)));
 }
 bool AIHasClearShot(const struct vec2 from, const struct vec2 to)
 {
@@ -354,8 +354,7 @@ bool AIHasClearShot(const struct vec2 from, const struct vec2 to)
 	fromOffset.x = from.x - (ACTOR_W + pad) / 2;
 	if (Vec2ToTile(fromOffset).x >= 0 &&
 		!AIHasClearLine(
-			svec2i_assign_vec2(fromOffset), svec2i_assign_vec2(to),
-			IsPosNotShootable))
+			svec2i_assign_vec2(fromOffset), svec2i_assign_vec2(to), IsPosShootable))
 	{
 		return false;
 	}
@@ -363,7 +362,7 @@ bool AIHasClearShot(const struct vec2 from, const struct vec2 to)
 	if (Vec2ToTile(fromOffset).x < gMap.Size.x &&
 		!AIHasClearLine(
 			svec2i_assign_vec2(fromOffset), svec2i_assign_vec2(to),
-			IsPosNotShootable))
+			IsPosShootable))
 	{
 		return false;
 	}
@@ -372,7 +371,7 @@ bool AIHasClearShot(const struct vec2 from, const struct vec2 to)
 	if (Vec2ToTile(fromOffset).y >= 0 &&
 		!AIHasClearLine(
 			svec2i_assign_vec2(fromOffset), svec2i_assign_vec2(to),
-			IsPosNotShootable))
+			IsPosShootable))
 	{
 		return false;
 	}
@@ -380,7 +379,7 @@ bool AIHasClearShot(const struct vec2 from, const struct vec2 to)
 	if (Vec2ToTile(fromOffset).y < gMap.Size.y &&
 		!AIHasClearLine(
 			svec2i_assign_vec2(fromOffset), svec2i_assign_vec2(to),
-			IsPosNotShootable))
+			IsPosShootable))
 	{
 		return false;
 	}
