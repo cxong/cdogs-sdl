@@ -1,7 +1,8 @@
+#pragma once
 #include <stdbool.h>
-#include <stdint.h>
 
 #include "audio.h"
+#include "common.h"
 #include "vswap.h"
 
 #define CW_LEVELS 100
@@ -37,13 +38,6 @@ typedef struct
 	CWLevelHead header;
 	CWPlane planes[NUM_PLANES];
 } CWLevel;
-
-typedef enum
-{
-	CWMAPTYPE_WL1,
-	CWMAPTYPE_WL6,
-	CWMAPTYPE_SOD,
-} CWMapType;
 
 typedef struct
 {

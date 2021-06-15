@@ -29,6 +29,7 @@
 
 #include "log.h"
 
+#include "cwolfmap/audio.h"
 #include "cwolfmap/cwolfmap.h"
 #include "map_archive.h"
 #include "player_template.h"
@@ -125,103 +126,16 @@ static const char *GetSound(const CWMapType type, const int i)
 	}
 }
 
-typedef enum
-{
-	CORNER_MUS,	  // 0
-	DUNGEON_MUS,  // 1
-	WARMARCH_MUS, // 2
-	GETTHEM_MUS,  // 3
-	HEADACHE_MUS, // 4
-	HITLWLTZ_MUS, // 5
-	INTROCW3_MUS, // 6
-	NAZI_NOR_MUS, // 7
-	NAZI_OMI_MUS, // 8
-	POW_MUS,	  // 9
-	SALUTE_MUS,	  // 10
-	SEARCHN_MUS,  // 11
-	SUSPENSE_MUS, // 12
-	VICTORS_MUS,  // 13
-	WONDERIN_MUS, // 14
-	FUNKYOU_MUS,  // 15
-	ENDLEVEL_MUS, // 16
-	GOINGAFT_MUS, // 17
-	PREGNANT_MUS, // 18
-	ULTIMATE_MUS, // 19
-	NAZI_RAP_MUS, // 20
-	ZEROHOUR_MUS, // 21
-	TWELFTH_MUS,  // 22
-	ROSTER_MUS,	  // 23
-	URAHERO_MUS,  // 24
-	VICMARCH_MUS, // 25
-	PACMAN_MUS,	  // 26
-	LASTMUSIC
-} MusicWolf;
-static const int songsCampaign[] = {
-	NAZI_NOR_MUS, // menu
-	WONDERIN_MUS, // briefing
+static const CWSongType songsCampaign[] = {
+	SONG_INTRO,	  // menu
+	SONG_MENU,	  // briefing
 	0,			  // game
-	ENDLEVEL_MUS, // end
-	ROSTER_MUS,	  // lose
-	URAHERO_MUS,  // victory
-};
-static const int songsWolf[] = {
-	//
-	// Episode One
-	//
-	GETTHEM_MUS, SEARCHN_MUS, POW_MUS, SUSPENSE_MUS, GETTHEM_MUS, SEARCHN_MUS,
-	POW_MUS, SUSPENSE_MUS,
-
-	WARMARCH_MUS, // Boss level
-	CORNER_MUS,	  // Secret level
-
-	//
-	// Episode Two
-	//
-	NAZI_OMI_MUS, PREGNANT_MUS, GOINGAFT_MUS, HEADACHE_MUS, NAZI_OMI_MUS,
-	PREGNANT_MUS, HEADACHE_MUS, GOINGAFT_MUS,
-
-	WARMARCH_MUS, // Boss level
-	DUNGEON_MUS,  // Secret level
-
-	//
-	// Episode Three
-	//
-	INTROCW3_MUS, NAZI_RAP_MUS, TWELFTH_MUS, ZEROHOUR_MUS, INTROCW3_MUS,
-	NAZI_RAP_MUS, TWELFTH_MUS, ZEROHOUR_MUS,
-
-	ULTIMATE_MUS, // Boss level
-	PACMAN_MUS,	  // Secret level
-
-	//
-	// Episode Four
-	//
-	GETTHEM_MUS, SEARCHN_MUS, POW_MUS, SUSPENSE_MUS, GETTHEM_MUS, SEARCHN_MUS,
-	POW_MUS, SUSPENSE_MUS,
-
-	WARMARCH_MUS, // Boss level
-	CORNER_MUS,	  // Secret level
-
-	//
-	// Episode Five
-	//
-	NAZI_OMI_MUS, PREGNANT_MUS, GOINGAFT_MUS, HEADACHE_MUS, NAZI_OMI_MUS,
-	PREGNANT_MUS, HEADACHE_MUS, GOINGAFT_MUS,
-
-	WARMARCH_MUS, // Boss level
-	DUNGEON_MUS,  // Secret level
-
-	//
-	// Episode Six
-	//
-	INTROCW3_MUS, NAZI_RAP_MUS, TWELFTH_MUS, ZEROHOUR_MUS, INTROCW3_MUS,
-	NAZI_RAP_MUS, TWELFTH_MUS, ZEROHOUR_MUS,
-
-	ULTIMATE_MUS, // Boss level
-	FUNKYOU_MUS	  // Secret level
+	SONG_END,	 // end
+	SONG_ROSTER, // lose
+	SONG_VICTORY, // victory
 };
 static Mix_Chunk *LoadMusic(const CWolfMap *map, const int i)
 {
-	// TODO: spear music
 	char *data;
 	size_t len;
 	const int err = CWAudioGetMusic(&map->audio, i, &data, &len);
@@ -274,7 +188,7 @@ static Mix_Chunk *GetCampaignSong(void *data)
 {
 	CampaignSongData *csd = data;
 	const int songIndex = songsCampaign[csd->Type];
-	return LoadMusic(csd->Map, songIndex);
+	return LoadMusic(csd->Map, CWAudioGetSong(csd->Map->type, songIndex));
 }
 int MapWolfLoad(const char *filename, CampaignSetting *c)
 {
@@ -473,7 +387,7 @@ typedef struct
 static Mix_Chunk *GetMissionSong(void *data)
 {
 	MissionSongData *msd = data;
-	return LoadMusic(msd->Map, songsWolf[msd->MissionIndex]);
+	return LoadMusic(msd->Map, CWAudioGetLevelMusic(msd->Map->type, msd->MissionIndex));
 }
 static void LoadMission(
 	CampaignSetting *c, const map_t tileClasses, const CWolfMap *map,

@@ -1,21 +1,10 @@
+#pragma once
 #include <stdint.h>
 #include <string.h>
 
 #include <SDL_audio.h>
 
-typedef struct
-{
-	uint32_t *offsets;
-	size_t nOffsets;
-} CWAudioHead;
-
-typedef struct
-{
-	CWAudioHead head;
-	int nSound;
-	int nMusic;
-	char *data;
-} CWAudio;
+#include "common.h"
 
 #define MUSIC_SAMPLE_RATE 44100
 #define MUSIC_AUDIO_FMT AUDIO_S16
@@ -24,7 +13,7 @@ typedef struct
 int CWAudioLoadHead(CWAudioHead *head, const char *path);
 void CWAudioHeadFree(CWAudioHead *head);
 
-int CWAudioLoadAudioT(CWAudio *audio, const char *path);
+int CWAudioLoadAudioT(CWAudio *audio, const CWMapType type, const char *path);
 
 void CWAudioFree(CWAudio *audio);
 
@@ -35,3 +24,15 @@ int CWAudioGetMusicRaw(
 	const CWAudio *audio, const int i, const char **data, size_t *len);
 int CWAudioGetMusic(
 	const CWAudio *audio, const int i, char **data, size_t *len);
+
+typedef enum
+{
+	SONG_INTRO,
+	SONG_MENU,
+	SONG_END,
+	SONG_ROSTER,
+	SONG_VICTORY
+} CWSongType;
+
+int CWAudioGetLevelMusic(const CWMapType type, const int level);
+int CWAudioGetSong(const CWMapType type, const CWSongType song);

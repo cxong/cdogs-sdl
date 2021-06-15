@@ -3,12 +3,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "audiowl6.h"
+#include "audio_sod.h"
+#include "audio_wl1.h"
+#include "audio_wl6.h"
 #include "mame/fmopl.h"
 
 #define PATH_MAX 4096
 static int volume = 20;
-const int oplChip = 0;
+const static int oplChip = 0;
 #define OPL_CHANNELS 9
 #define MUSIC_RATE 700
 #define SAMPLES_PER_MUSIC_TICK (MUSIC_SAMPLE_RATE / MUSIC_RATE)
@@ -118,7 +120,7 @@ void CWAudioHeadFree(CWAudioHead *head)
 	free(head->offsets);
 }
 
-int CWAudioLoadAudioT(CWAudio *audio, const char *path)
+int CWAudioLoadAudioT(CWAudio *audio, const CWMapType type, const char *path)
 {
 	int err = 0;
 	FILE *f = fopen(path, "rb");
@@ -136,8 +138,18 @@ int CWAudioLoadAudioT(CWAudio *audio, const char *path)
 		fprintf(stderr, "Failed to read audio data");
 		goto bail;
 	}
-	audio->nSound = LASTSOUND;
-	audio->nMusic = LASTMUSIC;
+	switch (type)
+	{
+	case CWMAPTYPE_WL1:
+		CWAudioWL1LoadAudioT(audio);
+		break;
+	case CWMAPTYPE_WL6:
+		CWAudioWL6LoadAudioT(audio);
+		break;
+	case CWMAPTYPE_SOD:
+		CWAudioSODLoadAudioT(audio);
+		break;
+	}
 
 bail:
 	if (f)
@@ -158,8 +170,8 @@ int CWAudioGetAdlibSound(
 	const CWAudio *audio, const int i, const char **data, size_t *len)
 {
 	int err = 0;
-	const int off = audio->head.offsets[i + STARTADLIBSOUNDS];
-	*len = audio->head.offsets[i + STARTADLIBSOUNDS + 1] - off;
+	const int off = audio->head.offsets[i + audio->startAdlibSounds];
+	*len = audio->head.offsets[i + audio->startAdlibSounds + 1] - off;
 	if (*len == 0)
 	{
 		fprintf(stderr, "No audio len for track %d\n", i);
@@ -176,8 +188,8 @@ int CWAudioGetMusicRaw(
 	const CWAudio *audio, const int i, const char **data, size_t *len)
 {
 	int err = 0;
-	const int off = audio->head.offsets[i + STARTMUSIC];
-	*len = audio->head.offsets[i + STARTMUSIC + 1] - off;
+	const int off = audio->head.offsets[i + audio->startMusic];
+	*len = audio->head.offsets[i + audio->startMusic + 1] - off;
 	if (*len == 0)
 	{
 		fprintf(stderr, "No music len for track %d\n", i);
@@ -277,10 +289,9 @@ int CWAudioGetMusic(
 			sqHackLen -= 4;
 		} while (sqHackLen > 0);
 
-		const int numreadysamples = SAMPLES_PER_MUSIC_TICK;
-		YM3812UpdateOne(oplChip, stream16, numreadysamples);
+		YM3812UpdateOne(oplChip, stream16, SAMPLES_PER_MUSIC_TICK);
 
-		stream16 += numreadysamples * MUSIC_AUDIO_CHANNELS;
+		stream16 += SAMPLES_PER_MUSIC_TICK * MUSIC_AUDIO_CHANNELS;
 	}
 
 	return err;
@@ -292,4 +303,30 @@ bail:
 		*data = NULL;
 	}
 	return err;
+}
+
+int CWAudioGetLevelMusic(const CWMapType type, const int level)
+{
+	switch (type)
+	{
+	case CWMAPTYPE_WL1:
+	case CWMAPTYPE_WL6:
+		return CWAudioWL6GetLevelMusic(level);
+	case CWMAPTYPE_SOD:
+		return CWAudioSODGetLevelMusic(level);
+	}
+	return -1;
+}
+
+int CWAudioGetSong(const CWMapType type, const CWSongType song)
+{
+	switch (type)
+	{
+	case CWMAPTYPE_WL1:
+	case CWMAPTYPE_WL6:
+		return CWAudioWL6GetSong(song);
+	case CWMAPTYPE_SOD:
+		return CWAudioSODGetSong(song);
+	}
+	return -1;
 }

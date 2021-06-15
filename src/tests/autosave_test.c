@@ -70,7 +70,7 @@ FEATURE(AutosaveInit, "Initialise autosave")
 		THEN("the last campaign index should be -1")
 			SHOULD_INT_EQUAL(autosave.LastCampaignIndex, -1);
 		AND("the campaigns should be empty")
-			SHOULD_INT_EQUAL(autosave.Campaigns.size, 0);
+			SHOULD_INT_EQUAL((int)autosave.Campaigns.size, 0);
 	SCENARIO_END
 FEATURE_END
 

@@ -17,6 +17,7 @@
 #endif
 
 #include "expand.h"
+#include "audiowl6.h"
 
 #define MAGIC 0xABCD
 
@@ -89,7 +90,7 @@ int CWLoad(CWolfMap *map, const char *path)
 	}
 
 	sprintf(pathBuf, "%s/AUDIOT.%s", path, ext);
-	err = CWAudioLoadAudioT(&map->audio, pathBuf);
+	err = CWAudioLoadAudioT(&map->audio, map->type, pathBuf);
 	if (err != 0)
 	{
 		goto bail;
