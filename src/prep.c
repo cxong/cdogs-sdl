@@ -325,8 +325,9 @@ GameLoopData *PlayerSelection(void)
 	GetDataFilePath(data->suffixes, "data/suffixes.txt");
 	GetDataFilePath(data->suffixnames, "data/suffixnames.txt");
 	NameGenInit(&data->g, data->prefixes, data->suffixes, data->suffixnames);
-	
-	const CampaignSave *cs = AutosaveGetCampaign(&gAutosave, gCampaign.Entry.Path);
+
+	const CampaignSave *cs =
+		AutosaveGetCampaign(&gAutosave, gCampaign.Entry.Path);
 
 	// Create selection menus for each local player
 	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
@@ -338,7 +339,8 @@ GameLoopData *PlayerSelection(void)
 			continue;
 		}
 		// Load autosaved player guns/ammo at this point
-		if (cs != NULL && gCampaign.Setting.WeaponPersist && idx < (int)cs->Players.size)
+		if (cs != NULL && gCampaign.Setting.WeaponPersist &&
+			gCampaign.MissionIndex > 0 && idx < (int)cs->Players.size)
 		{
 			const PlayerSave *ps = CArrayGet(&cs->Players, idx);
 			for (int j = 0; j < MAX_WEAPONS; j++)

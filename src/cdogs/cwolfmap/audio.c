@@ -10,7 +10,7 @@
 
 #define PATH_MAX 4096
 static int volume = 20;
-const static int oplChip = 0;
+static const int oplChip = 0;
 #define OPL_CHANNELS 9
 #define MUSIC_RATE 700
 #define SAMPLES_PER_MUSIC_TICK (MUSIC_SAMPLE_RATE / MUSIC_RATE)
