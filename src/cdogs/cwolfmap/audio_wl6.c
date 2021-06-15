@@ -1,6 +1,6 @@
 #include "audio_wl6.h"
 
-#include "audiowl6.H"
+#include "audiowl6.h"
 
 void CWAudioWL6LoadAudioT(CWAudio *audio)
 {
