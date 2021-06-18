@@ -73,7 +73,7 @@ void MenuDisplayPlayer(
 		strcpy(s, pData->name);
 	}
 	const WeaponClass *gun = NULL;
-	if (d->GunIdx >= 0)
+	if (d->GunIdx >= 0 && d->GunIdx < MAX_WEAPONS)
 	{
 		gun = pData->guns[d->GunIdx];
 	}

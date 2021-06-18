@@ -39,6 +39,8 @@
       "Ammo": "Dynamite"
     },
     {
+      "Pic": "flamer",
+      "Grips": 2,
       "Name": "BBQ Incinerator",
       "Icon": "flamer",
       "Bullet": "bbq1",
@@ -54,6 +56,7 @@
       "Ammo": "Cells"
     },
     {
+      "Pic": "chaingun",
       "Name": "Flesh Mower",
       "Icon": "machine_gun",
       "Bullet": "gmg",

@@ -57,7 +57,7 @@ if [[ -d "$OSX_SDL2_PATH_FULL"  ]]; then
   then
     echo "SDL2 exists. Skip building..."
   else
-    echo "SDL2 dir exists buit it is empty..."
+    echo "SDL2 dir exists but it is empty..."
     getSdl2
   fi
 else
