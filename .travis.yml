@@ -37,15 +37,13 @@ matrix:
         apt:
           packages:
             - clang-9
-        homebrew:
-          packages:
-            - ninja
 
 before_install:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then wget https://github.com/protocolbuffers/protobuf/releases/download/v3.12.3/protoc-3.12.3-linux-x86_64.zip; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then unzip protoc-3.12.3-linux-x86_64.zip; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo mv bin/protoc /usr/bin; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo mv include/* /usr/local/include; fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ninja; fi
 - python3 -m pip install protobuf
 
 install:

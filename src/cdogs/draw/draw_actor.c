@@ -283,9 +283,12 @@ ActorPics GetCharacterPics(
 		GUNSTATE_READY);
 
 	// Determine draw order based on the direction the player is facing
+	// Rotate direction left for 2-grip guns, as the gun is held in front
+	// of the actor
+	const direction_e drawOrderDir = grips == 2 ? DirectionRotate(dir, -1) : dir;
 	for (int bp = 0; bp < BODY_PART_COUNT; bp++)
 	{
-		const BodyPart drawOrder = c->Class->Sprites->Order[dir][bp];
+		const BodyPart drawOrder = c->Class->Sprites->Order[drawOrderDir][bp];
 		switch (drawOrder)
 		{
 		case BODY_PART_HEAD:
