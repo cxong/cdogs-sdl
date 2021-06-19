@@ -26,8 +26,10 @@
       "Ammo": "Ammo"
     },
     {
+      "Pic": "smg",
+      "Grips": 2,
       "Name": "Machine Gun",
-      "Icon": "assault_rifle",
+      "Icon": "smg",
       "Bullet": "bullet",
       "Cost": 1,
       "Lock": 12,
@@ -65,6 +67,8 @@
       "CanDrop": false
     },
     {
+      "Pic": "smg",
+      "Grips": 2,
       "Name": "SS Machine Gun",
       "Icon": "assault_rifle",
       "Bullet": "bullet_boss",

@@ -37,7 +37,9 @@ matrix:
         apt:
           packages:
             - clang-9
-            - ninja-build
+        homebrew:
+          packages:
+            - ninja
 
 before_install:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then wget https://github.com/protocolbuffers/protobuf/releases/download/v3.12.3/protoc-3.12.3-linux-x86_64.zip; fi
@@ -59,7 +61,7 @@ script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then sh build/macosx/install-sdl2.sh ; fi
   # Match install prefix with data dir so that package contains everything required
   - cmake -GNinja -DCMAKE_INSTALL_PREFIX=. -DDATA_INSTALL_DIR=. -Wno-dev .
-  - ninja -v
+  - ninja
   - ctest -VV -S
   # Disable valgrind for now; memory errors to be fixed
   # - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cd src && valgrind ./cdogs-sdl --demo; fi
