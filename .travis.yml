@@ -28,7 +28,6 @@ matrix:
             - gcc-10
             - g++-10
             - libgtk-3-dev
-            - ninja-build
             - python3-pip
     - os: osx
       compiler: clang
@@ -43,13 +42,12 @@ before_install:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then unzip protoc-3.12.3-linux-x86_64.zip; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo mv bin/protoc /usr/bin; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo mv include/* /usr/local/include; fi
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ninja; fi
 - python3 -m pip install protobuf
 
 install:
 # /usr/bin/gcc points to an older compiler on both Linux and macOS.
 - if [ "$CXX" = "g++" ]; then export CXX="g++-10" CC="gcc-10"; fi
-- echo 
+- echo ${CC}
 - protoc --version
 
 before_script:
@@ -58,8 +56,8 @@ before_script:
 script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then sh build/macosx/install-sdl2.sh ; fi
   # Match install prefix with data dir so that package contains everything required
-  - cmake -GNinja -DCMAKE_INSTALL_PREFIX=. -DDATA_INSTALL_DIR=. -Wno-dev .
-  - ninja
+  - cmake -DCMAKE_INSTALL_PREFIX=. -DDATA_INSTALL_DIR=. -Wno-dev .
+  - make
   - ctest -VV -S
   # Disable valgrind for now; memory errors to be fixed
   # - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cd src && valgrind ./cdogs-sdl --demo; fi

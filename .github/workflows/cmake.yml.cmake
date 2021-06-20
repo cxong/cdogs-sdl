@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 env:
-  VERSION: 0.12.0
+  VERSION: @VERSION@
   CTEST_EXT_COLOR_OUTPUT: TRUE
   CTEST_OUTPUT_ON_FAILURE: 1
   CTEST_BUILD_FLAGS: -j4

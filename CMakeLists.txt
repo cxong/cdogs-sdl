@@ -10,16 +10,25 @@ SET(VERSION_PATCH "0")
 SET(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
 # Optionally configure CI files since they are excluded in source archives
+if(EXISTS ${CMAKE_SOURCE_DIR}/.github/workflows/cmake.yml.cmake)
+	CONFIGURE_FILE(
+		${CMAKE_SOURCE_DIR}/.github/workflows/cmake.yml.cmake
+		${CMAKE_SOURCE_DIR}/.github/workflows/cmake.yml
+		@ONLY
+	)
+endif()
 if(EXISTS ${CMAKE_SOURCE_DIR}/.travis.yml.cmake)
 	CONFIGURE_FILE(
 		${CMAKE_SOURCE_DIR}/.travis.yml.cmake
 		${CMAKE_SOURCE_DIR}/.travis.yml
+		@ONLY
 	)
 endif()
 if(EXISTS ${CMAKE_SOURCE_DIR}/appveyor.yml.cmake)
 	CONFIGURE_FILE(
 		${CMAKE_SOURCE_DIR}/appveyor.yml.cmake
 		${CMAKE_SOURCE_DIR}/appveyor.yml
+		@ONLY
 	)
 endif()
 
