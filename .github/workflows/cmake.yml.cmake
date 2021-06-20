@@ -38,7 +38,6 @@ jobs:
     - name: Install packages macOS
       if: matrix.os == 'macos-latest'
       run: |
-        sudo apt install clang-9
         brew install ninja
         python3 -m pip install protobuf
         build/macosx/install-sdl2.sh
