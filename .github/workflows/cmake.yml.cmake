@@ -34,17 +34,18 @@ jobs:
         sudo mv bin/protoc /usr/bin
         sudo mv include/* /usr/local/include
         python3 -m pip install protobuf
+        pip3 install --upgrade protobuf
 
     - name: Install packages macOS
       if: matrix.os == 'macos-latest'
       run: |
         brew install ninja
         python3 -m pip install protobuf
+        pip3 install --upgrade protobuf
         build/macosx/install-sdl2.sh
 
     - name: Check tools
       run: |
-        echo ${CC}
         protoc --version
 
     - name: Configure CMake
