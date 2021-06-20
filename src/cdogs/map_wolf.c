@@ -86,7 +86,7 @@ static const char *soundsW6[] = {
 	"chars/die/schabbs", "chars/alert/schabbs", "chars/die/fake_hitler",
 	"chars/alert/officer", "chars/die/officer", "chars/alert/dog/",
 	// 30-39
-	"level_end", "mecha_step", "victory", "chars/die/mecha_hitler",
+	"whistle", "mecha_step", "victory", "chars/die/mecha_hitler",
 	"chars/die/guard/", "chars/die/guard/", "chars/die/otto",
 	"chars/alert/otto", "chars/alert/fettgesicht", "fart",
 	// 40-49
@@ -126,12 +126,272 @@ static const char *GetSound(const CWMapType type, const int i)
 	}
 }
 
+static const char *adlibSoundsW1[] = {
+	NULL, // hit wall
+	NULL, // select weapon
+	NULL, // select item
+	NULL, // heartbeat
+	"menu_switch",
+	NULL, // move gun 1
+	"menu_error",
+	NULL, // nazi hit player
+	NULL, // nazi miss player
+	NULL, // player death (unused because of some corruption at end of sound)
+	NULL, // dog death (digi sound)
+	NULL, // gatling (digi sound)
+	"key",
+	NULL, // no item
+	NULL, // walk1
+	NULL, // walk2
+	NULL, // take damage
+	NULL, // game over
+	NULL, // open door (digi sound)
+	NULL, // close door (digi sound)
+	NULL, // do nothing (not used in C-Dogs)
+	NULL, // guard alert (digi sound)
+	NULL, // death 2 (digi sound)
+	"hits/knife_flesh/",
+	NULL, // pistol (digi sound)
+	NULL, // death 3 (digi sound)
+	NULL, // machine gun (digi sound)
+	NULL, // hit enemy
+	NULL, // shoot door
+	NULL, // death 1 (digi sound)
+	"machine_gun_switch",
+	"ammo_pickup",
+	"menu_enter",
+	"health_small",	  // TODO: pickup sound
+	"health_big",	  // TODO: pickup sound
+	"pickup_cross",	  // TODO: pickup sound
+	"pickup_chalice", // TODO: pickup sound
+	"pickup_chest",	  // TODO: pickup sound
+	"chain_gun_switch",
+	"menu_back",
+	"whistle",
+	NULL,			// dog alert (digi sound)
+	NULL,			// end bonus 1 (not used in C-Dogs)
+	NULL,			// end bonus 2 (not used in C-Dogs)
+	"1up",			// TODO: pickup sound
+	"pickup_crown", // TODO: pickup sound
+	NULL,			// push wall (digi sound)
+	NULL,			// no bonus (not used in C-Dogs)
+	NULL,			// 100% (not used in C-Dogs)
+	NULL,			// boss active
+	NULL,			// boss die
+	NULL,			// SS alert (digi sound)
+	NULL,			// aah (digi sound)
+	NULL,			// mecha hitler die (digi sound)
+	NULL,			// hitler die (digi sound)
+	NULL,			// hans alert (digi sound)
+	NULL,			// SS die (digi sound)
+	NULL,			// hans die (digi sound)
+	NULL,			// guard fire (digi sound)
+	NULL,			// boss chain gun (digi sound)
+	NULL,			// SS fire (digi sound)
+	NULL,			// slurpie (digi sound)
+	NULL,			// fake hitler alert (digi sound)
+	NULL,			// schabbs die (digi sound)
+	NULL,			// schabbs alert (digi sound)
+	NULL,			// hitler alert (digi sound)
+	NULL,			// officer alert (digi sound)
+	NULL,			// officer die (digi sound)
+	NULL,			// dog attack (digi sound)
+};
+static const char *adlibSoundsW6[] = {
+	NULL, // hit wall
+	NULL, // select weapon
+	NULL, // select item
+	NULL, // heartbeat
+	"menu_switch",
+	NULL, // move gun 1
+	"menu_error",
+	NULL, // nazi hit player
+	"syringe",
+	NULL, // player death (unused because of some corruption at end of sound)
+	NULL, // dog death (digi sound)
+	NULL, // gatling (digi sound)
+	"key",
+	NULL, // no item
+	NULL, // walk1
+	NULL, // walk2
+	NULL, // take damage
+	NULL, // game over
+	NULL, // open door (digi sound)
+	NULL, // close door (digi sound)
+	NULL, // do nothing (not used in C-Dogs)
+	NULL, // guard alert (digi sound)
+	NULL, // death 2 (digi sound)
+	"hits/knife_flesh/",
+	NULL, // pistol (digi sound)
+	NULL, // death 3 (digi sound)
+	NULL, // machine gun (digi sound)
+	NULL, // hit enemy
+	NULL, // shoot door
+	NULL, // death 1 (digi sound)
+	"machine_gun_switch",
+	"ammo_pickup",
+	"menu_enter",
+	"health_small",	  // TODO: pickup sound
+	"health_big",	  // TODO: pickup sound
+	"pickup_cross",	  // TODO: pickup sound
+	"pickup_chalice", // TODO: pickup sound
+	"pickup_chest",	  // TODO: pickup sound
+	"chain_gun_switch",
+	"menu_back",
+	"whistle",
+	NULL,			// dog alert (digi sound)
+	NULL,			// end bonus 1 (not used in C-Dogs)
+	NULL,			// end bonus 2 (not used in C-Dogs)
+	"1up",			// TODO: pickup sound
+	"pickup_crown", // TODO: pickup sound
+	NULL,			// push wall (digi sound)
+	NULL,			// no bonus (not used in C-Dogs)
+	NULL,			// 100% (not used in C-Dogs)
+	NULL,			// boss active
+	NULL,			// boss die
+	NULL,			// SS alert (digi sound)
+	NULL,			// aah (digi sound)
+	NULL,			// mecha hitler die (digi sound)
+	NULL,			// hitler die (digi sound)
+	NULL,			// hans alert (digi sound)
+	NULL,			// SS die (digi sound)
+	NULL,			// hans die (digi sound)
+	NULL,			// guard fire (digi sound)
+	NULL,			// boss chain gun (digi sound)
+	NULL,			// SS fire (digi sound)
+	NULL,			// slurpie (digi sound)
+	NULL,			// fake hitler alert (digi sound)
+	NULL,			// schabbs die (digi sound)
+	NULL,			// schabbs alert (digi sound)
+	NULL,			// hitler alert (digi sound)
+	NULL,			// officer alert (digi sound)
+	NULL,			// officer die (digi sound)
+	NULL,			// dog attack (digi sound)
+	"flamethrower",
+	NULL,		  // mech step (digi sound)
+	NULL,		  // goobs
+	NULL,		  // yeah (digi sound)
+	NULL,		  // guard die 4 (digi sound)
+	NULL,		  // guard die 5 (digi sound)
+	NULL,		  // guard die 6 (digi sound)
+	NULL,		  // guard die 7 (digi sound)
+	NULL,		  // guard die 8 (digi sound)
+	NULL,		  // guard die 9 (digi sound)
+	NULL,		  // otto die (digi sound)
+	NULL,		  // otto alert (digi sound)
+	NULL,		  // fettgesicht alert (digi sound)
+	NULL,		  // gretel alert (digi sound)
+	NULL,		  // gretel die (digi sound)
+	NULL,		  // fettgesicht die (digi sound)
+	"rocket",	  // TODO: weapon
+	"rocket_hit", // TODO: weapon
+};
+static const char *adlibSoundsSOD[] = {
+	NULL, // hit wall
+	"rocket_hit",
+	NULL, // select item
+	"chars/alert/ghost",
+	"menu_switch",
+	NULL, // move gun 1
+	"menu_error",
+	NULL, // nazi hit player
+	"rocket",
+	NULL, // player death (unused because of some corruption at end of sound)
+	NULL, // dog death (digi sound)
+	NULL, // gatling (digi sound)
+	"key",
+	NULL, // no item
+	NULL, // walk1
+	NULL, // walk2
+	NULL, // take damage
+	NULL, // game over
+	NULL, // open door (digi sound)
+	NULL, // close door (digi sound)
+	NULL, // do nothing (not used in C-Dogs)
+	NULL, // guard alert (digi sound)
+	NULL, // death 2 (digi sound)
+	"hits/knife_flesh/",
+	NULL, // pistol (digi sound)
+	NULL, // death 3 (digi sound)
+	NULL, // machine gun (digi sound)
+	NULL, // hit enemy
+	NULL, // shoot door
+	NULL, // death 1 (digi sound)
+	"machine_gun_switch",
+	"ammo_pickup",
+	"menu_enter",
+	"health_small",	  // TODO: pickup sound
+	"health_big",	  // TODO: pickup sound
+	"pickup_cross",	  // TODO: pickup sound
+	"pickup_chalice", // TODO: pickup sound
+	"pickup_chest",	  // TODO: pickup sound
+	"chain_gun_switch",
+	"menu_back",
+	"whistle",
+	NULL,			// dog alert (digi sound)
+	NULL,			// end bonus 1 (not used in C-Dogs)
+	NULL,			// end bonus 2 (not used in C-Dogs)
+	"1up",			// TODO: pickup sound
+	"pickup_crown", // TODO: pickup sound
+	NULL,			// push wall (digi sound)
+	NULL,			// no bonus (not used in C-Dogs)
+	NULL,			// 100% (not used in C-Dogs)
+	NULL,			// boss active
+	NULL,			// guard die 4 (digi sound)
+	NULL,			// SS alert (digi sound)
+	NULL,			// aah (digi sound)
+	NULL,			// guard die 5 (digi sound)
+	NULL,			// guard die 7 (digi sound)
+	NULL,			// guard die 8 (digi sound)
+	NULL,			// SS die (digi sound)
+	NULL,			// guard die 6 (digi sound)
+	NULL,			// guard fire (digi sound)
+	NULL,			// boss chain gun (digi sound)
+	NULL,			// SS fire (digi sound)
+	NULL,			// slurpie (digi sound)
+	"chars/ghost/die",
+	NULL,		// guard die 9 (digi sound)
+	"ammo_box", // TODO: pickup sound
+	NULL,		// angel alert (digi sound)
+	NULL,		// officer alert (digi sound)
+	NULL,		// officer die (digi sound)
+	NULL,		// dog attack (digi sound)
+	"flamethrower",
+	NULL,			 // trans alert (digi sound)
+	NULL,			 // trans die (digi sound)
+	NULL,			 // wilhelm alert (digi sound)
+	NULL,			 // wilhelm die (digi sound)
+	NULL,			 // uber die (digi sound)
+	NULL,			 // knight alert (digi sound)
+	NULL,			 // knight die (digi sound)
+	NULL,			 // angel die (digi sound)
+	"knight_rocket", // TODO: weapon
+	NULL,			 // spear (digi sound)
+	NULL,			 // angel tired (not used in C-Dogs)
+};
+static const char *GetAdlibSound(const CWMapType type, const int i)
+{
+	// Map sound index to string
+	switch (type)
+	{
+	case CWMAPTYPE_WL1:
+		return adlibSoundsW1[i];
+	case CWMAPTYPE_WL6:
+		return adlibSoundsW6[i];
+	case CWMAPTYPE_SOD:
+		return adlibSoundsSOD[i];
+	default:
+		CASSERT(false, "unknown map type");
+		return NULL;
+	}
+}
+
 static const CWSongType songsCampaign[] = {
 	SONG_INTRO,	  // menu
 	SONG_MENU,	  // briefing
 	0,			  // game
-	SONG_END,	 // end
-	SONG_ROSTER, // lose
+	SONG_END,	  // end
+	SONG_ROSTER,  // lose
 	SONG_VICTORY, // victory
 };
 static Mix_Chunk *LoadMusic(const CWolfMap *map, const int i)
@@ -278,15 +538,39 @@ bail:
 }
 
 static Mix_Chunk *LoadSoundData(const CWolfMap *map, const int i);
+static Mix_Chunk *LoadAdlibSoundData(const CWolfMap *map, const int i);
+static void AddNormalSound(
+	const SoundDevice *s, const char *name, Mix_Chunk *data);
+static void AddRandomSound(
+	const SoundDevice *s, const char *name, Mix_Chunk *data);
 static void LoadSounds(const SoundDevice *s, const CWolfMap *map)
 {
 	if (!s->isInitialised)
 	{
 		return;
 	}
-	// TODO: load ad lib sounds
 
-	// Load single sounds
+	// Load adlib sounds
+	for (int i = 0; i < map->audio.nSound; i++)
+	{
+		const char *name = GetAdlibSound(map->type, i);
+		if (name == NULL)
+		{
+			continue;
+		}
+		Mix_Chunk *data = LoadAdlibSoundData(map, i);
+		if (name[strlen(name) - 1] == '/')
+		{
+
+			AddRandomSound(s, name, data);
+		}
+		else
+		{
+			AddNormalSound(s, name, data);
+		}
+	}
+
+	// Load digi sounds
 	for (int i = 0; i < map->vswap.nSounds; i++)
 	{
 		const char *name = GetSound(map->type, i);
@@ -296,50 +580,19 @@ static void LoadSounds(const SoundDevice *s, const CWolfMap *map)
 		}
 		if (name[strlen(name) - 1] == '/')
 			continue;
-		Mix_Chunk *soundData = LoadSoundData(map, i);
-		if (soundData == NULL)
+		Mix_Chunk *data = LoadSoundData(map, i);
+		if (data == NULL)
 		{
 			continue;
 		}
-		SoundData *sound;
-		CMALLOC(sound, sizeof *sound);
-		sound->Type = SOUND_NORMAL;
-		sound->u.normal = soundData;
-		SoundAdd(s->customSounds, name, sound);
-	}
+		if (name[strlen(name) - 1] == '/')
+		{
 
-	// Load random sounds
-	for (int i = 0; i < map->vswap.nSounds; i++)
-	{
-		const char *name = GetSound(map->type, i);
-		if (name == NULL)
-		{
-			continue;
-		}
-		if (name[strlen(name) - 1] != '/')
-			continue;
-		const Mix_Chunk *soundData = LoadSoundData(map, i);
-		if (soundData == NULL)
-		{
-			continue;
-		}
-		// Strip trailing slash and find the sound
-		SoundData *sound;
-		char nameBuf[CDOGS_PATH_MAX];
-		strcpy(nameBuf, name);
-		nameBuf[strlen(nameBuf) - 1] = '\0';
-		const int err = hashmap_get(s->customSounds, nameBuf, (any_t *)&sound);
-		if (err == MAP_OK && sound->Type == SOUND_RANDOM)
-		{
-			CArrayPushBack(&sound->u.random.sounds, &soundData);
+			AddRandomSound(s, name, data);
 		}
 		else
 		{
-			CCALLOC(sound, sizeof *sound);
-			sound->Type = SOUND_RANDOM;
-			CArrayInit(&sound->u.random.sounds, sizeof(Mix_Chunk *));
-			CArrayPushBack(&sound->u.random.sounds, &soundData);
-			SoundAdd(s->customSounds, nameBuf, sound);
+			AddNormalSound(s, name, data);
 		}
 	}
 }
@@ -368,6 +621,54 @@ static Mix_Chunk *LoadSoundData(const CWolfMap *map, const int i)
 	SDL_ConvertAudio(&cvt);
 	return Mix_QuickLoad_RAW(cvt.buf, cvt.len_cvt);
 }
+static Mix_Chunk *LoadAdlibSoundData(const CWolfMap *map, const int i)
+{
+	char *data;
+	size_t len;
+	const int err = CWAudioGetAdlibSound(&map->audio, i, &data, &len);
+	if (err != 0)
+	{
+		LOG(LM_MAP, LL_ERROR, "Failed to load adlib wolf sound %d: %d\n", i, err);
+		return NULL;
+	}
+	if (len == 0)
+	{
+		LOG(LM_MAP, LL_ERROR, "Wolf sound %d has 0 len\n", i);
+		return NULL;
+	}
+	return Mix_QuickLoad_RAW((Uint8 *)data, (Uint32)len);
+}
+static void AddNormalSound(
+	const SoundDevice *s, const char *name, Mix_Chunk *data)
+{
+	SoundData *sound;
+	CMALLOC(sound, sizeof *sound);
+	sound->Type = SOUND_NORMAL;
+	sound->u.normal = data;
+	SoundAdd(s->customSounds, name, sound);
+}
+static void AddRandomSound(
+	const SoundDevice *s, const char *name, Mix_Chunk *data)
+{
+	// Strip trailing slash and find the sound
+	SoundData *sound;
+	char nameBuf[CDOGS_PATH_MAX];
+	strcpy(nameBuf, name);
+	nameBuf[strlen(nameBuf) - 1] = '\0';
+	const int err = hashmap_get(s->customSounds, nameBuf, (any_t *)&sound);
+	if (err == MAP_OK && sound->Type == SOUND_RANDOM)
+	{
+		CArrayPushBack(&sound->u.random.sounds, &data);
+	}
+	else
+	{
+		CCALLOC(sound, sizeof *sound);
+		sound->Type = SOUND_RANDOM;
+		CArrayInit(&sound->u.random.sounds, sizeof(Mix_Chunk *));
+		CArrayPushBack(&sound->u.random.sounds, &data);
+		SoundAdd(s->customSounds, nameBuf, sound);
+	}
+}
 
 static void LoadTile(
 	MissionStatic *m, const uint16_t ch, const CWolfMap *map,
@@ -387,7 +688,8 @@ typedef struct
 static Mix_Chunk *GetMissionSong(void *data)
 {
 	MissionSongData *msd = data;
-	return LoadMusic(msd->Map, CWAudioGetLevelMusic(msd->Map->type, msd->MissionIndex));
+	return LoadMusic(
+		msd->Map, CWAudioGetLevelMusic(msd->Map->type, msd->MissionIndex));
 }
 static void LoadMission(
 	CampaignSetting *c, const map_t tileClasses, const CWolfMap *map,

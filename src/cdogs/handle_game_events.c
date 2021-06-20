@@ -254,8 +254,6 @@ static void HandleGameEvent(
 		if (!a->isInUse || a->dead)
 			break;
 		ActorHeal(a, e.u.Heal.Amount);
-		// Sound of healing
-		SoundPlayAt(sd, StrSound("health"), a->Pos);
 		// Tell the spawner that we took a health so we can
 		// spawn more (but only if we're the server)
 		if (e.u.Heal.IsRandomSpawned && !gCampaign.IsClient)

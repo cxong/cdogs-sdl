@@ -18,8 +18,10 @@ int CWAudioLoadAudioT(CWAudio *audio, const CWMapType type, const char *path);
 void CWAudioFree(CWAudio *audio);
 
 // http://www.vgmpf.com/Wiki/index.php?title=IMF
-int CWAudioGetAdlibSound(
+int CWAudioGetAdlibSoundRaw(
 	const CWAudio *audio, const int i, const char **data, size_t *len);
+int CWAudioGetAdlibSound(
+	const CWAudio *audio, const int i, char **data, size_t *len);
 int CWAudioGetMusicRaw(
 	const CWAudio *audio, const int i, const char **data, size_t *len);
 int CWAudioGetMusic(

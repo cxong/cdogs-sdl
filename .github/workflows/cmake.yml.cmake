@@ -39,7 +39,10 @@ jobs:
     - name: Install packages macOS
       if: matrix.os == 'macos-latest'
       run: |
-        brew install ninja
+        wget https://github.com/protocolbuffers/protobuf/releases/download/v3.12.3/protoc-3.12.3-osx-x86_64.zip
+        unzip protoc-3.12.3-osx-x86_64.zip
+        sudo mv bin/protoc /usr/bin
+        sudo mv include/* /usr/local/include
         python3 -m pip install protobuf
         pip3 install --upgrade protobuf
         build/macosx/install-sdl2.sh

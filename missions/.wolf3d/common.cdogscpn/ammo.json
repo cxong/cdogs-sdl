@@ -7,7 +7,7 @@
         "Type": "Normal",
         "Pic": "ammo_clip"
       },
-      "Sound": "bullet_pickup",
+      "Sound": "ammo_pickup",
       "Amount": 4,
       "Max": 99
     }

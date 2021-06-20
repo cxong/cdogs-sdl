@@ -1,6 +1,6 @@
 # ![C-Dogs SDL](http://cxong.github.io/cdogs-sdl/images/title.png)
 
-[![Build Status](https://github.com/cxong/cdogs-sdl/workflows/Build/badge.svg)](https://github.com/cxong/cxong/actions)
+[![Build Status](https://github.com/cxong/cdogs-sdl/workflows/Build/badge.svg)](https://github.com/cxong/cdogs-sdl/actions)
 [![Build Status (Windows)](https://ci.appveyor.com/api/projects/status/github/cxong/cdogs-sdl?svg=true)](https://ci.appveyor.com/project/cxong/cdogs-sdl)
 [![Github All Releases](https://img.shields.io/github/downloads/cxong/cdogs-sdl/total.svg)](https://github.com/cxong/cdogs-sdl/releases)
 [![Release](http://img.shields.io/github/release/cxong/cdogs-sdl.svg)](https://github.com/cxong/cdogs-sdl/releases/latest)

@@ -34,7 +34,7 @@
       "Cost": 1,
       "Lock": 12,
       "Sound": "machine_gun",
-      "SwitchSound": "shotgun_r",
+      "SwitchSound": "machine_gun_switch",
       "Recoil": 0.17,
       "Brass": "brass",
       "Ammo": "Ammo"
@@ -47,7 +47,7 @@
       "Cost": 1,
       "Lock": 6,
       "Sound": "chain_gun",
-      "SwitchSound": "mg_switch",
+      "SwitchSound": "chain_gun_switch",
       "Recoil": 0.23,
       "Brass": "brass",
       "Ammo": "Ammo"
@@ -114,7 +114,7 @@
       "Bullet": "syringe",
       "Cost": 7,
       "Lock": 30,
-      "Sound": "launch",
+      "Sound": "syringe",
       "SwitchSound": "molotov_pickup",
       "CanDrop": false
     },
@@ -134,7 +134,7 @@
       "Bullet": "fireball",
       "Cost": 1,
       "Lock": 30,
-      "Sound": "fireball",
+      "Sound": "flamethrower",
       "MuzzleFlashParticle": "",
       "CanDrop": false
     },
@@ -144,7 +144,7 @@
       "Bullet": "energy_ball",
       "Cost": 5,
       "Lock": 50,
-      "Sound": "fireball",
+      "Sound": "flamethrower",
       "MuzzleFlashParticle": "",
       "CanDrop": false
     }

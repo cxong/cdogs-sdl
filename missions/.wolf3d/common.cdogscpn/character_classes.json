@@ -175,6 +175,7 @@
         "Sprites": ""
       },
       "Body": "none",
+      "Sounds": "ghost",
       "BloodColor": "999999"
     },
     {

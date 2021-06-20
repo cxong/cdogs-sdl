@@ -184,6 +184,7 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 			e.u.Heal.Amount = p->class->u.Health;
 			e.u.Heal.IsRandomSpawned = p->IsRandomSpawned;
 			GameEventsEnqueue(&gGameEvents, e);
+			sound = "health";
 		}
 		break;
 
