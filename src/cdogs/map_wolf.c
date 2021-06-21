@@ -108,7 +108,9 @@ static const char *soundsSOD[] = {
 	// 30-39
 	"chars/die/trans", "chars/alert/bill", "chars/die/bill",
 	"chars/die/ubermutant", "chars/alert/knight", "chars/die/knight",
-	"chars/alert/angel", "chars/die/angel", "chaingun_pickup", "spear"};
+	"chars/alert/angel", "chars/die/angel", "chaingun_pickup",
+	"spear" // TODO: pickup sound
+};
 static const char *GetSound(const CWMapType type, const int i)
 {
 	// Map sound index to string
@@ -165,7 +167,7 @@ static const char *adlibSoundsW1[] = {
 	"pickup_cross",	  // TODO: pickup sound
 	"pickup_chalice", // TODO: pickup sound
 	"pickup_chest",	  // TODO: pickup sound
-	"chain_gun_switch",
+	"chaingun_pickup",
 	"menu_back",
 	"whistle",
 	NULL,			// dog alert (digi sound)
@@ -236,7 +238,7 @@ static const char *adlibSoundsW6[] = {
 	"pickup_cross",	  // TODO: pickup sound
 	"pickup_chalice", // TODO: pickup sound
 	"pickup_chest",	  // TODO: pickup sound
-	"chain_gun_switch",
+	"chaingun_pickup",
 	"menu_back",
 	"whistle",
 	NULL,			// dog alert (digi sound)
@@ -325,7 +327,7 @@ static const char *adlibSoundsSOD[] = {
 	"pickup_cross",	  // TODO: pickup sound
 	"pickup_chalice", // TODO: pickup sound
 	"pickup_chest",	  // TODO: pickup sound
-	"chain_gun_switch",
+	NULL,			  // chain gun pickup (digi sound)
 	"menu_back",
 	"whistle",
 	NULL,			// dog alert (digi sound)
@@ -628,7 +630,8 @@ static Mix_Chunk *LoadAdlibSoundData(const CWolfMap *map, const int i)
 	const int err = CWAudioGetAdlibSound(&map->audio, i, &data, &len);
 	if (err != 0)
 	{
-		LOG(LM_MAP, LL_ERROR, "Failed to load adlib wolf sound %d: %d\n", i, err);
+		LOG(LM_MAP, LL_ERROR, "Failed to load adlib wolf sound %d: %d\n", i,
+			err);
 		return NULL;
 	}
 	if (len == 0)
