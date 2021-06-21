@@ -157,8 +157,7 @@ ActorPics GetCharacterPicsFromActor(TActor *a)
 		gunStates[i] = gun->barrels[i].state;
 	}
 	return GetCharacterPics(
-		c, dir, legDir, a->anim.Type, frame,
-		gun->Gun, gunStates,
+		c, dir, legDir, a->anim.Type, frame, gun->Gun, gunStates,
 		ActorIsGrimacing(a), shadowMask, maskP, colors, a->dead);
 }
 static const Pic *GetBodyPic(
@@ -231,10 +230,14 @@ ActorPics GetCharacterPics(
 			headDir = (dir + 1) % 8;
 	}
 	bool grimace = isGrimacing;
-	const int numBarrels = (barrelStates == NULL || gun == NULL || gun->Sprites == NULL) ? 0 : gun->Barrel.Count;
+	const int numBarrels =
+		(barrelStates == NULL || gun == NULL || gun->Sprites == NULL)
+			? 0
+			: gun->Barrel.Count;
 	for (int i = 0; i < numBarrels; i++)
 	{
-		if (barrelStates[i] == GUNSTATE_FIRING || barrelStates[i] == GUNSTATE_RECOIL)
+		if (barrelStates[i] == GUNSTATE_FIRING ||
+			barrelStates[i] == GUNSTATE_RECOIL)
 		{
 			grimace = true;
 			break;
@@ -250,15 +253,20 @@ ActorPics GetCharacterPics(
 		pics.Hair = GetHairPic(c->Hair, headDir, grimace, colors);
 	}
 	pics.HairOffset = GetActorDrawOffset(
-		pics.Hair, BODY_PART_HAIR, c->Class->Sprites, anim, frame, dir, GUNSTATE_READY);
+		pics.Hair, BODY_PART_HAIR, c->Class->Sprites, anim, frame, dir,
+		GUNSTATE_READY);
 
 	// Gun
 	for (int i = 0; i < numBarrels; i++)
 	{
-		pics.Guns[i] = GetGunPic(&gPicManager, gun->Sprites, dir, barrelStates[i], colors);
+		pics.Guns[i] = GetGunPic(
+			&gPicManager, gun->Sprites, dir, barrelStates[i], colors);
 		if (pics.Guns[i] != NULL)
 		{
-			pics.GunOffsets[i] = GetActorDrawOffset(pics.Guns[i], i == 0 ? BODY_PART_GUN_R : BODY_PART_GUN_L, c->Class->Sprites, anim, frame, i == 0 ? dir : DirectionMirrorX(dir), barrelStates[i]);
+			pics.GunOffsets[i] = GetActorDrawOffset(
+				pics.Guns[i], i == 0 ? BODY_PART_GUN_R : BODY_PART_GUN_L,
+				c->Class->Sprites, anim, frame,
+				i == 0 ? dir : DirectionMirrorX(dir), barrelStates[i]);
 			if (i == 1)
 			{
 				const int xHalf = pics.Guns[i]->size.x / 2;
@@ -270,7 +278,8 @@ ActorPics GetCharacterPics(
 
 	// Body
 	pics.Body = GetBodyPic(
-		&gPicManager, c->Class->Sprites, dir, anim, frame, numBarrels, grips, barrelStates[0], colors);
+		&gPicManager, c->Class->Sprites, dir, anim, frame, numBarrels, grips,
+		barrelStates[0], colors);
 	pics.BodyOffset = GetActorDrawOffset(
 		pics.Body, BODY_PART_BODY, c->Class->Sprites, anim, frame, dir,
 		GUNSTATE_READY);
@@ -285,7 +294,10 @@ ActorPics GetCharacterPics(
 	// Determine draw order based on the direction the player is facing
 	// Rotate direction left for 2-grip guns, as the gun is held in front
 	// of the actor
-	const direction_e drawOrderDir = grips == 2 ? DirectionRotate(dir, -1) : dir;
+	const direction_e drawOrderDir =
+		grips == 2 && barrelStates[0] == GUNSTATE_READY
+			? DirectionRotate(dir, -1)
+			: dir;
 	for (int bp = 0; bp < BODY_PART_COUNT; bp++)
 	{
 		const BodyPart drawOrder = c->Class->Sprites->Order[drawOrderDir][bp];
@@ -516,7 +528,7 @@ static const Pic *GetBodyPic(
 		sprintf(
 			buf, "chars/bodies/%s/upper_%s%s", cs->Name,
 			anim == ACTORANIMATION_WALKING ? "run" : "idle",
-				upperPose); // TODO: other gun holding poses
+			upperPose); // TODO: other gun holding poses
 		// Get or generate masked sprites
 		ns = PicManagerGetCharSprites(pm, buf, colors);
 		// TODO: provide dualgun sprites for all body types
@@ -567,10 +579,11 @@ void DrawCharacterSimple(
 	const Character *c, const struct vec2i pos, const direction_e d,
 	const bool hilite, const bool showGun, const WeaponClass *gun)
 {
-	const gunstate_e barrelStates[MAX_BARRELS] = { GUNSTATE_READY, GUNSTATE_READY };
+	const gunstate_e barrelStates[MAX_BARRELS] = {
+		GUNSTATE_READY, GUNSTATE_READY};
 	ActorPics pics = GetCharacterPics(
-		c, d, d, ACTORANIMATION_IDLE, 0, gun, barrelStates, false,
-		colorBlack, NULL, NULL, 0);
+		c, d, d, ACTORANIMATION_IDLE, 0, gun, barrelStates, false, colorBlack,
+		NULL, NULL, 0);
 	DrawActorPics(&pics, pos, Rect2iZero());
 	if (hilite)
 	{

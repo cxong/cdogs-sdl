@@ -24,32 +24,29 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v1
+      with:
+        version: '3.12.3'
+
+    - name: Check protoc
+      run: |
+        protoc --version
+
     - name: Install packages Linux
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
         sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev gcc-10 g++-10 libgtk-3-dev python3-pip
-        wget https://github.com/protocolbuffers/protobuf/releases/download/v3.12.3/protoc-3.12.3-linux-x86_64.zip
-        unzip protoc-3.12.3-linux-x86_64.zip
-        sudo mv bin/protoc /usr/bin
-        sudo mv include/* /usr/local/include
         python3 -m pip install protobuf
         pip3 install --upgrade protobuf
 
     - name: Install packages macOS
       if: matrix.os == 'macos-latest'
       run: |
-        PROTOC_ZIP=protoc-3.12.3-osx-x86_64.zip
-        curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.12.3/$PROTOC_ZIP
-        sudo unzip -o $PROTOC_ZIP -d /usr/local bin/protoc
-        sudo unzip -o $PROTOC_ZIP -d /usr/local 'include/*'
         python3 -m pip install protobuf
         pip3 install --upgrade protobuf
         build/macosx/install-sdl2.sh
-
-    - name: Check tools
-      run: |
-        protoc --version
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
