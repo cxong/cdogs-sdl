@@ -102,15 +102,13 @@ static const char *soundsSOD[] = {
 	"chars/die/dog", "chars/die/mutant", "chars/die/ss", "pistol_guard",
 	"gurgle", "chars/alert/officer",
 	// 20-29
-	"chars/die/officer", "chars/alert/dog/", "level_end", "chars/die/guard/",
+	"chars/die/officer", "chars/alert/dog/", "whistle", "chars/die/guard/",
 	"chars/die/guard/", "fart", "chars/die/guard/", "chars/die/guard/",
 	"chars/die/guard/", "chars/alert/trans",
 	// 30-39
 	"chars/die/trans", "chars/alert/bill", "chars/die/bill",
 	"chars/die/ubermutant", "chars/alert/knight", "chars/die/knight",
-	"chars/alert/angel", "chars/die/angel", "chaingun_pickup",
-	"spear" // TODO: pickup sound
-};
+	"chars/alert/angel", "chars/die/angel", "chaingun_pickup", "spear"};
 static const char *GetSound(const CWMapType type, const int i)
 {
 	// Map sound index to string
@@ -162,42 +160,42 @@ static const char *adlibSoundsW1[] = {
 	"machine_gun_switch",
 	"ammo_pickup",
 	"menu_enter",
-	"health_small",	  // TODO: pickup sound
-	"health_big",	  // TODO: pickup sound
-	"pickup_cross",	  // TODO: pickup sound
-	"pickup_chalice", // TODO: pickup sound
-	"pickup_chest",	  // TODO: pickup sound
+	"health_small",
+	"health_big",
+	"pickup_cross",
+	"pickup_chalice",
+	"pickup_chest",
 	"chaingun_pickup",
 	"menu_back",
 	"whistle",
-	NULL,			// dog alert (digi sound)
-	NULL,			// end bonus 1 (not used in C-Dogs)
-	NULL,			// end bonus 2 (not used in C-Dogs)
-	"1up",			// TODO: pickup sound
-	"pickup_crown", // TODO: pickup sound
-	NULL,			// push wall (digi sound)
-	NULL,			// no bonus (not used in C-Dogs)
-	NULL,			// 100% (not used in C-Dogs)
-	NULL,			// boss active
-	NULL,			// boss die
-	NULL,			// SS alert (digi sound)
-	NULL,			// aah (digi sound)
-	NULL,			// mecha hitler die (digi sound)
-	NULL,			// hitler die (digi sound)
-	NULL,			// hans alert (digi sound)
-	NULL,			// SS die (digi sound)
-	NULL,			// hans die (digi sound)
-	NULL,			// guard fire (digi sound)
-	NULL,			// boss chain gun (digi sound)
-	NULL,			// SS fire (digi sound)
-	NULL,			// slurpie (digi sound)
-	NULL,			// fake hitler alert (digi sound)
-	NULL,			// schabbs die (digi sound)
-	NULL,			// schabbs alert (digi sound)
-	NULL,			// hitler alert (digi sound)
-	NULL,			// officer alert (digi sound)
-	NULL,			// officer die (digi sound)
-	NULL,			// dog attack (digi sound)
+	NULL, // dog alert (digi sound)
+	NULL, // end bonus 1 (not used in C-Dogs)
+	NULL, // end bonus 2 (not used in C-Dogs)
+	"1up",
+	"pickup_crown",
+	NULL, // push wall (digi sound)
+	NULL, // no bonus (not used in C-Dogs)
+	NULL, // 100% (not used in C-Dogs)
+	NULL, // boss active
+	NULL, // boss die
+	NULL, // SS alert (digi sound)
+	NULL, // aah (digi sound)
+	NULL, // mecha hitler die (digi sound)
+	NULL, // hitler die (digi sound)
+	NULL, // hans alert (digi sound)
+	NULL, // SS die (digi sound)
+	NULL, // hans die (digi sound)
+	NULL, // guard fire (digi sound)
+	NULL, // boss chain gun (digi sound)
+	NULL, // SS fire (digi sound)
+	NULL, // slurpie (digi sound)
+	NULL, // fake hitler alert (digi sound)
+	NULL, // schabbs die (digi sound)
+	NULL, // schabbs alert (digi sound)
+	NULL, // hitler alert (digi sound)
+	NULL, // officer alert (digi sound)
+	NULL, // officer die (digi sound)
+	NULL, // dog attack (digi sound)
 };
 static const char *adlibSoundsW6[] = {
 	NULL, // hit wall
@@ -233,42 +231,42 @@ static const char *adlibSoundsW6[] = {
 	"machine_gun_switch",
 	"ammo_pickup",
 	"menu_enter",
-	"health_small",	  // TODO: pickup sound
-	"health_big",	  // TODO: pickup sound
-	"pickup_cross",	  // TODO: pickup sound
-	"pickup_chalice", // TODO: pickup sound
-	"pickup_chest",	  // TODO: pickup sound
+	"health_small",
+	"health_big",
+	"pickup_cross",
+	"pickup_chalice",
+	"pickup_chest",
 	"chaingun_pickup",
 	"menu_back",
-	"whistle",
-	NULL,			// dog alert (digi sound)
-	NULL,			// end bonus 1 (not used in C-Dogs)
-	NULL,			// end bonus 2 (not used in C-Dogs)
-	"1up",			// TODO: pickup sound
-	"pickup_crown", // TODO: pickup sound
-	NULL,			// push wall (digi sound)
-	NULL,			// no bonus (not used in C-Dogs)
-	NULL,			// 100% (not used in C-Dogs)
-	NULL,			// boss active
-	NULL,			// boss die
-	NULL,			// SS alert (digi sound)
-	NULL,			// aah (digi sound)
-	NULL,			// mecha hitler die (digi sound)
-	NULL,			// hitler die (digi sound)
-	NULL,			// hans alert (digi sound)
-	NULL,			// SS die (digi sound)
-	NULL,			// hans die (digi sound)
-	NULL,			// guard fire (digi sound)
-	NULL,			// boss chain gun (digi sound)
-	NULL,			// SS fire (digi sound)
-	NULL,			// slurpie (digi sound)
-	NULL,			// fake hitler alert (digi sound)
-	NULL,			// schabbs die (digi sound)
-	NULL,			// schabbs alert (digi sound)
-	NULL,			// hitler alert (digi sound)
-	NULL,			// officer alert (digi sound)
-	NULL,			// officer die (digi sound)
-	NULL,			// dog attack (digi sound)
+	NULL, // level end (digi sound)
+	NULL, // dog alert (digi sound)
+	NULL, // end bonus 1 (not used in C-Dogs)
+	NULL, // end bonus 2 (not used in C-Dogs)
+	"1up",
+	"pickup_crown",
+	NULL, // push wall (digi sound)
+	NULL, // no bonus (not used in C-Dogs)
+	NULL, // 100% (not used in C-Dogs)
+	NULL, // boss active
+	NULL, // boss die
+	NULL, // SS alert (digi sound)
+	NULL, // aah (digi sound)
+	NULL, // mecha hitler die (digi sound)
+	NULL, // hitler die (digi sound)
+	NULL, // hans alert (digi sound)
+	NULL, // SS die (digi sound)
+	NULL, // hans die (digi sound)
+	NULL, // guard fire (digi sound)
+	NULL, // boss chain gun (digi sound)
+	NULL, // SS fire (digi sound)
+	NULL, // slurpie (digi sound)
+	NULL, // fake hitler alert (digi sound)
+	NULL, // schabbs die (digi sound)
+	NULL, // schabbs alert (digi sound)
+	NULL, // hitler alert (digi sound)
+	NULL, // officer alert (digi sound)
+	NULL, // officer die (digi sound)
+	NULL, // dog attack (digi sound)
 	"flamethrower",
 	NULL,		  // mech step (digi sound)
 	NULL,		  // goobs
@@ -322,42 +320,42 @@ static const char *adlibSoundsSOD[] = {
 	"machine_gun_switch",
 	"ammo_pickup",
 	"menu_enter",
-	"health_small",	  // TODO: pickup sound
-	"health_big",	  // TODO: pickup sound
-	"pickup_cross",	  // TODO: pickup sound
-	"pickup_chalice", // TODO: pickup sound
-	"pickup_chest",	  // TODO: pickup sound
-	NULL,			  // chain gun pickup (digi sound)
+	"health_small",
+	"health_big",
+	"pickup_cross",
+	"pickup_chalice",
+	"pickup_chest",
+	NULL, // chain gun pickup (digi sound)
 	"menu_back",
-	"whistle",
-	NULL,			// dog alert (digi sound)
-	NULL,			// end bonus 1 (not used in C-Dogs)
-	NULL,			// end bonus 2 (not used in C-Dogs)
-	"1up",			// TODO: pickup sound
-	"pickup_crown", // TODO: pickup sound
-	NULL,			// push wall (digi sound)
-	NULL,			// no bonus (not used in C-Dogs)
-	NULL,			// 100% (not used in C-Dogs)
-	NULL,			// boss active
-	NULL,			// guard die 4 (digi sound)
-	NULL,			// SS alert (digi sound)
-	NULL,			// aah (digi sound)
-	NULL,			// guard die 5 (digi sound)
-	NULL,			// guard die 7 (digi sound)
-	NULL,			// guard die 8 (digi sound)
-	NULL,			// SS die (digi sound)
-	NULL,			// guard die 6 (digi sound)
-	NULL,			// guard fire (digi sound)
-	NULL,			// boss chain gun (digi sound)
-	NULL,			// SS fire (digi sound)
-	NULL,			// slurpie (digi sound)
+	NULL, // level end (digi sound)
+	NULL, // dog alert (digi sound)
+	NULL, // end bonus 1 (not used in C-Dogs)
+	NULL, // end bonus 2 (not used in C-Dogs)
+	"1up",
+	"pickup_crown",
+	NULL, // push wall (digi sound)
+	NULL, // no bonus (not used in C-Dogs)
+	NULL, // 100% (not used in C-Dogs)
+	NULL, // boss active
+	NULL, // guard die 4 (digi sound)
+	NULL, // SS alert (digi sound)
+	NULL, // aah (digi sound)
+	NULL, // guard die 5 (digi sound)
+	NULL, // guard die 7 (digi sound)
+	NULL, // guard die 8 (digi sound)
+	NULL, // SS die (digi sound)
+	NULL, // guard die 6 (digi sound)
+	NULL, // guard fire (digi sound)
+	NULL, // boss chain gun (digi sound)
+	NULL, // SS fire (digi sound)
+	NULL, // slurpie (digi sound)
 	"chars/ghost/die",
-	NULL,		// guard die 9 (digi sound)
-	"ammo_box", // TODO: pickup sound
-	NULL,		// angel alert (digi sound)
-	NULL,		// officer alert (digi sound)
-	NULL,		// officer die (digi sound)
-	NULL,		// dog attack (digi sound)
+	NULL, // guard die 9 (digi sound)
+	"ammo_box",
+	NULL, // angel alert (digi sound)
+	NULL, // officer alert (digi sound)
+	NULL, // officer die (digi sound)
+	NULL, // dog attack (digi sound)
 	"flamethrower",
 	NULL,			 // trans alert (digi sound)
 	NULL,			 // trans die (digi sound)
@@ -1194,7 +1192,7 @@ static void LoadEntity(
 		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("meal"), v);
 		break;
 	case CWENT_MEDKIT:
-		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("health"), v);
+		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("medkit"), v);
 		break;
 	case CWENT_AMMO:
 		MissionStaticTryAddPickup(

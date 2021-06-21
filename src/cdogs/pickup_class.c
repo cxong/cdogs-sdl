@@ -229,17 +229,26 @@ static bool TryLoadPickupclass(PickupClass *c, json_t *node, const int version)
 	char *tmp;
 
 	JSON_UTILS_LOAD_ENUM(c->Type, node, "Type", StrPickupType);
+	LoadStr(&c->Sound, node, "Sound");
 	switch (c->Type)
 	{
 	case PICKUP_JEWEL:
 		// Set default score
 		c->u.Score = PICKUP_SCORE;
 		LoadInt(&c->u.Score, node, "Score");
+		if (c->Sound == NULL)
+		{
+			CSTRDUP(c->Sound, "pickup");
+		}
 		break;
 	case PICKUP_HEALTH:
 		// Set default heal amount
 		c->u.Health = HEALTH_PICKUP_HEAL_AMOUNT;
 		LoadInt(&c->u.Health, node, "Health");
+		if (c->Sound == NULL)
+		{
+			CSTRDUP(c->Sound, "health");
+		}
 		break;
 	case PICKUP_AMMO: {
 		tmp = GetString(node, "Ammo");
@@ -250,6 +259,10 @@ static bool TryLoadPickupclass(PickupClass *c, json_t *node, const int version)
 		int amount = ammo->Amount;
 		LoadInt(&amount, node, "Amount");
 		c->u.Ammo.Amount = amount;
+		if (c->Sound == NULL && ammo->Sound)
+		{
+			CSTRDUP(c->Sound, ammo->Sound);
+		}
 		break;
 	}
 	case PICKUP_KEYCARD:
@@ -259,7 +272,10 @@ static bool TryLoadPickupclass(PickupClass *c, json_t *node, const int version)
 		CASSERT(false, "unimplemented");
 		break;
 	case PICKUP_SHOW_MAP:
-		// do nothing
+		if (c->Sound == NULL)
+		{
+			CSTRDUP(c->Sound, "show_map");
+		}
 		break;
 	default:
 		CASSERT(false, "Unknown pickup type");
@@ -283,6 +299,7 @@ void PickupClassesLoadAmmo(CArray *classes, const CArray *ammoClasses)
 {
 	CA_FOREACH(const Ammo, a, *ammoClasses)
 	PickupClass c;
+	memset(&c, 0, sizeof c);
 	char buf[256];
 	sprintf(buf, "ammo_%s", a->Name);
 	CSTRDUP(c.Name, buf);
@@ -290,6 +307,10 @@ void PickupClassesLoadAmmo(CArray *classes, const CArray *ammoClasses)
 	c.Type = PICKUP_AMMO;
 	c.u.Ammo.Id = StrAmmoId(a->Name);
 	c.u.Ammo.Amount = a->Amount;
+	if (a->Sound)
+	{
+		CSTRDUP(c.Sound, a->Sound);
+	}
 	CArrayPushBack(classes, &c);
 	CA_FOREACH_END()
 }
@@ -334,6 +355,7 @@ void PickupClassesClear(CArray *classes)
 {
 	CA_FOREACH(PickupClass, c, *classes)
 	CFREE(c->Name);
+	CFREE(c->Sound);
 	CA_FOREACH_END()
 	CArrayClear(classes);
 }

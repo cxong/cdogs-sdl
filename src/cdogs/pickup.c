@@ -131,7 +131,7 @@ void PickupsUpdate(CArray *pickups, const int ticks)
 }
 
 static bool TreatAsGunPickup(const Pickup *p, const TActor *a);
-static bool TryPickupAmmo(TActor *a, const Pickup *p, const char **sound);
+static bool TryPickupAmmo(TActor *a, const Pickup *p);
 static bool TryPickupGun(
 	TActor *a, const Pickup *p, const bool pickupAll, const char **sound);
 void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
@@ -140,7 +140,7 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 		return;
 	CASSERT(a->PlayerUID >= 0, "NPCs cannot pickup");
 	bool canPickup = true;
-	const char *sound = NULL;
+	const char *sound = p->class->Sound;
 	const struct vec2 actorPos = a->thing.Pos;
 	switch (p->class->Type)
 	{
@@ -149,7 +149,7 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 		e.u.Score.PlayerUID = a->PlayerUID;
 		e.u.Score.Score = p->class->u.Score;
 		GameEventsEnqueue(&gGameEvents, e);
-		
+
 		e = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 		e.u.AddParticle.Class =
 			StrParticleClass(&gParticleClasses, "score_text");
@@ -166,7 +166,6 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 		}
 		GameEventsEnqueue(&gGameEvents, e);
 
-		sound = "pickup";
 		UpdateMissionObjective(
 			&gMission, p->thing.flags, OBJECTIVE_COLLECT, 1);
 	}
@@ -184,7 +183,6 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 			e.u.Heal.Amount = p->class->u.Health;
 			e.u.Heal.IsRandomSpawned = p->IsRandomSpawned;
 			GameEventsEnqueue(&gGameEvents, e);
-			sound = "health";
 		}
 		break;
 
@@ -196,7 +194,7 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 		}
 		else
 		{
-			canPickup = TryPickupAmmo(a, p, &sound);
+			canPickup = TryPickupAmmo(a, p);
 		}
 		break;
 
@@ -205,6 +203,7 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 		e.u.AddKeys.KeyFlags = p->class->u.Keys;
 		e.u.AddKeys.Pos = Vec2ToNet(actorPos);
 		GameEventsEnqueue(&gGameEvents, e);
+		sound = "key";
 	}
 	break;
 
@@ -213,7 +212,6 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 		e.u.ExploreTiles.Runs_count = 1;
 		e.u.ExploreTiles.Runs[0].Run = gMap.Size.x * gMap.Size.y;
 		GameEventsEnqueue(&gGameEvents, e);
-		sound = "show_map";
 	}
 	break;
 
@@ -279,7 +277,7 @@ static bool HasGunUsingAmmo(const TActor *a, const int ammoId)
 	return false;
 }
 
-static bool TryPickupAmmo(TActor *a, const Pickup *p, const char **sound)
+static bool TryPickupAmmo(TActor *a, const Pickup *p)
 {
 	// Don't pickup if not using ammo
 	if (!gCampaign.Setting.Ammo)
@@ -306,8 +304,6 @@ static bool TryPickupAmmo(TActor *a, const Pickup *p, const char **sound)
 	e.u.AddAmmo.IsRandomSpawned = p->IsRandomSpawned;
 	// Note: receiving end will prevent ammo from exceeding max
 	GameEventsEnqueue(&gGameEvents, e);
-
-	*sound = ammo->Sound;
 	return true;
 }
 static bool TryPickupGun(

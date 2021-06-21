@@ -25,9 +25,10 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Install Protoc
-      uses: arduino/setup-protoc@v1
+      uses: arduino/setup-protoc@v1.1.2
       with:
         version: '3.12.3'
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Check protoc
       run: |

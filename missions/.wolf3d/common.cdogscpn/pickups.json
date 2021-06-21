@@ -8,7 +8,8 @@
         "Pic": "dogfood"
       },
       "Type": "Health",
-      "Health": 4
+      "Health": 4,
+      "Sound": "health_small"
     },
     {
       "Name": "meal",
@@ -17,7 +18,18 @@
         "Pic": "meal"
       },
       "Type": "Health",
-      "Health": 10
+      "Health": 10,
+      "Sound": "health_small"
+    },
+    {
+      "Name": "medkit",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "health"
+      },
+      "Type": "Health",
+      "Health": 25,
+      "Sound": "health_big"
     },
     {
       "Name": "heart",
@@ -26,7 +38,8 @@
         "Pic": "heart"
       },
       "Type": "Health",
-      "Health": 100
+      "Health": 100,
+      "Sound": "1up"
     },
     {
       "Name": "cross",
@@ -35,7 +48,8 @@
         "Pic": "cross"
       },
       "Type": "Score",
-      "Score": 100
+      "Score": 100,
+      "Sound": "pickup_cross"
     },
     {
       "Name": "chalice",
@@ -44,7 +58,8 @@
         "Pic": "chalice"
       },
       "Type": "Score",
-      "Score": 500
+      "Score": 500,
+      "Sound": "pickup_chalice"
     },
     {
       "Name": "chest",
@@ -53,7 +68,8 @@
         "Pic": "chest"
       },
       "Type": "Score",
-      "Score": 1000
+      "Score": 1000,
+      "Sound": "pickup_chest"
     },
     {
       "Name": "crown",
@@ -62,7 +78,8 @@
         "Pic": "crown"
       },
       "Type": "Score",
-      "Score": 5000
+      "Score": 5000,
+      "Sound": "pickup_crown"
     },
     {
       "Name": "ammo_clip",
@@ -72,7 +89,8 @@
       },
       "Type": "Ammo",
       "Ammo": "Ammo",
-      "Amount": 8
+      "Amount": 8,
+      "Sound": "ammo_pickup"
     },
     {
       "Name": "ammo_box",
@@ -82,7 +100,8 @@
       },
       "Type": "Ammo",
       "Ammo": "Ammo",
-      "Amount": 25
+      "Amount": 25,
+      "Sound": "ammo_box"
     },
     {
       "Name": "spear",
@@ -90,7 +109,8 @@
         "Type": "Normal",
         "Pic": "spear"
       },
-      "Type": "Score"
+      "Type": "Score",
+      "Sound": "spear"
     }
   ]
 }

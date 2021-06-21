@@ -479,8 +479,6 @@ static void HandleGameEvent(
 
 		if (!svec2_is_zero(pos))
 		{
-			SoundPlayAt(sd, StrSound("key"), pos);
-
 			GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 			s.u.AddParticle.Class =
 				StrParticleClass(&gParticleClasses, "key_text");
