@@ -319,6 +319,7 @@ void PickupClassesLoadGuns(CArray *classes, const CArray *gunClasses)
 {
 	CA_FOREACH(const WeaponClass, wc, *gunClasses)
 	PickupClass c;
+	memset(&c, 0, sizeof c);
 	char buf[256];
 	sprintf(buf, "gun_%s", wc->name);
 	CSTRDUP(c.Name, buf);
