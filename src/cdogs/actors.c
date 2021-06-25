@@ -267,8 +267,8 @@ bool TryMoveActor(TActor *actor, struct vec2 pos)
 	const CollisionParams params = {
 		THING_IMPASSABLE, CalcCollisionTeam(true, actor),
 		IsPVP(gCampaign.Entry.Mode)};
-	Thing *target =
-		OverlapGetFirstItem(&actor->thing, pos, actor->thing.size, actor->thing.Vel, params);
+	Thing *target = OverlapGetFirstItem(
+		&actor->thing, pos, actor->thing.size, actor->thing.Vel, params);
 	if (target)
 	{
 		Weapon *gun = ACTOR_GET_WEAPON(actor);
@@ -283,7 +283,9 @@ bool TryMoveActor(TActor *actor, struct vec2 pos)
 		if (checkMelee && barrel >= 0 && !gun->Gun->CanShoot &&
 			actor->health > 0 &&
 			(!object ||
-			 ((b->Hit.Object.Hit || b->Hit.Flesh.Hit) && !ObjIsDangerous(object))))
+			 (((b->Hit.Object.Hit && target->kind == KIND_OBJECT) ||
+			   (b->Hit.Flesh.Hit && target->kind == KIND_CHARACTER)) &&
+			  !ObjIsDangerous(object))))
 		{
 			if (CanHit(b, actor->flags, actor->uid, target))
 			{
@@ -552,8 +554,8 @@ static void CheckRescue(const TActor *a)
 		IsPVP(gCampaign.Entry.Mode)};
 	const Thing *target = OverlapGetFirstItem(
 		&a->thing, a->Pos,
-		svec2i_add(a->thing.size, svec2i(RESCUE_CHECK_PAD, RESCUE_CHECK_PAD)), a->thing.Vel,
-		params);
+		svec2i_add(a->thing.size, svec2i(RESCUE_CHECK_PAD, RESCUE_CHECK_PAD)),
+		a->thing.Vel, params);
 	if (target != NULL && target->kind == KIND_CHARACTER)
 	{
 		TActor *other = CArrayGet(&gActors, target->id);
@@ -1003,7 +1005,8 @@ void UpdateAllActors(int ticks)
 		const CollisionParams params = {
 			THING_IMPASSABLE, COLLISIONTEAM_NONE, IsPVP(gCampaign.Entry.Mode)};
 		const Thing *collidingItem = OverlapGetFirstItem(
-			&actor->thing, actor->Pos, actor->thing.size, actor->thing.Vel, params);
+			&actor->thing, actor->Pos, actor->thing.size, actor->thing.Vel,
+			params);
 		if (collidingItem && collidingItem->kind == KIND_CHARACTER)
 		{
 			TActor *collidingActor = CArrayGet(&gActors, collidingItem->id);
@@ -1237,15 +1240,18 @@ static void ActorAddGunPickup(const TActor *actor)
 	for (int i = 0; i < MAX_WEAPONS; i++)
 	{
 		const WeaponClass *wc = actor->guns[i].Gun;
-		if (wc == NULL) continue;
-		if (!wc->CanDrop) continue;
+		if (wc == NULL)
+			continue;
+		if (!wc->CanDrop)
+			continue;
 		if (wc->DropGun)
 		{
 			wc = StrWeaponClass(wc->DropGun);
 			CASSERT(wc != NULL, "Cannot find gun to drop");
 		}
 		// Don't drop gun if there's gun pickups for this already
-		if (HasGunPickups(wc, 2)) continue;
+		if (HasGunPickups(wc, 2))
+			continue;
 		PickupAddGun(wc, actor->Pos);
 		break;
 	}
@@ -1562,15 +1568,15 @@ bool ActorIsImmune(const TActor *actor, const special_damage_e damage)
 {
 	switch (damage)
 	{
-		case SPECIAL_FLAME:
-			return actor->flags & FLAGS_ASBESTOS;
-		case SPECIAL_POISON:
-		case SPECIAL_PETRIFY:	// fallthrough
-			return actor->flags & FLAGS_IMMUNITY;
-		case SPECIAL_CONFUSE:
-			return actor->flags & FLAGS_IMMUNITY;
-		default:
-			break;
+	case SPECIAL_FLAME:
+		return actor->flags & FLAGS_ASBESTOS;
+	case SPECIAL_POISON:
+	case SPECIAL_PETRIFY: // fallthrough
+		return actor->flags & FLAGS_IMMUNITY;
+	case SPECIAL_CONFUSE:
+		return actor->flags & FLAGS_IMMUNITY;
+	default:
+		break;
 	}
 	// Don't bother if health already 0 or less
 	if (actor->health <= 0)
@@ -1584,16 +1590,17 @@ bool ActorTakesDamage(const TActor *actor, const special_damage_e damage)
 {
 	switch (damage)
 	{
-		case SPECIAL_FLAME:
-			return !(actor->flags & FLAGS_ASBESTOS);
-		default:
-			return true;
+	case SPECIAL_FLAME:
+		return !(actor->flags & FLAGS_ASBESTOS);
+	default:
+		return true;
 	}
 }
 
 #define MAX_POISONED_COUNT 140
 
-static void ActorTakeSpecialDamage(TActor *actor, const special_damage_e damage, const int ticks)
+static void ActorTakeSpecialDamage(
+	TActor *actor, const special_damage_e damage, const int ticks)
 {
 	if (ActorIsImmune(actor, damage))
 	{
@@ -1630,7 +1637,7 @@ void ActorHit(const NThingDamage d)
 	TActor *a = ActorGetByUID(d.UID);
 	if (!a->isInUse)
 		return;
-	
+
 	ActorTakeHit(a, d.Flags, d.SourceActorUID, d.Special, d.SpecialTicks);
 	if (d.Power > 0)
 	{
