@@ -170,6 +170,7 @@ static GameLoopResult CheckCampaignDefComplete(void *data, LoopRunner *l)
 }
 
 static void NumPlayersTerminate(GameLoopData *data);
+static void NumPlayersOnEnter(GameLoopData *data);
 static GameLoopResult NumPlayersUpdate(GameLoopData *data, LoopRunner *l);
 static void NumPlayersDraw(GameLoopData *data);
 GameLoopData *NumPlayersSelection(
@@ -193,12 +194,8 @@ GameLoopData *NumPlayersSelection(
 	// Select 1 player default
 	ms->current->u.normal.index = 1;
 
-	MusicPlayFromChunk(
-		&gSoundDevice.music, MUSIC_BRIEFING,
-		&gCampaign.Setting.CustomSongs[MUSIC_BRIEFING]);
-
 	return GameLoopDataNew(
-		ms, NumPlayersTerminate, NULL, NULL, NULL, NumPlayersUpdate,
+		ms, NumPlayersTerminate, NumPlayersOnEnter, NULL, NULL, NumPlayersUpdate,
 		NumPlayersDraw);
 }
 static void NumPlayersTerminate(GameLoopData *data)
@@ -206,6 +203,13 @@ static void NumPlayersTerminate(GameLoopData *data)
 	MenuSystem *ms = data->Data;
 	MenuSystemTerminate(ms);
 	CFREE(data->Data);
+}
+static void NumPlayersOnEnter(GameLoopData *data)
+{
+	UNUSED(data);
+	MusicPlayFromChunk(
+		&gSoundDevice.music, MUSIC_BRIEFING,
+		&gCampaign.Setting.CustomSongs[MUSIC_BRIEFING]);
 }
 static GameLoopResult NumPlayersUpdate(GameLoopData *data, LoopRunner *l)
 {
