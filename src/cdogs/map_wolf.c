@@ -170,7 +170,7 @@ static const char *adlibSoundsW1[] = {
 	"whistle",
 	NULL, // dog alert (digi sound)
 	NULL, // end bonus 1 (not used in C-Dogs)
-	NULL, // end bonus 2 (not used in C-Dogs)
+	"mission_complete", // end bonus 2
 	"1up",
 	"pickup_crown",
 	NULL, // push wall (digi sound)
@@ -241,7 +241,7 @@ static const char *adlibSoundsW6[] = {
 	NULL, // level end (digi sound)
 	NULL, // dog alert (digi sound)
 	NULL, // end bonus 1 (not used in C-Dogs)
-	NULL, // end bonus 2 (not used in C-Dogs)
+	"mission_complete", // end bonus 2
 	"1up",
 	"pickup_crown",
 	NULL, // push wall (digi sound)
@@ -330,7 +330,7 @@ static const char *adlibSoundsSOD[] = {
 	NULL, // level end (digi sound)
 	NULL, // dog alert (digi sound)
 	NULL, // end bonus 1 (not used in C-Dogs)
-	NULL, // end bonus 2 (not used in C-Dogs)
+	"mission_complete", // end bonus 2
 	"1up",
 	"pickup_crown",
 	NULL, // push wall (digi sound)
