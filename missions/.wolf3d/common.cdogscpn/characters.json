@@ -248,7 +248,7 @@
 		"Gun": "Dual Chain Gun",
 		"maxHealth": 1000,
 		"flags": 1152,
-		"probabilityToMove": 30,
+		"probabilityToMove": 40,
 		"probabilityToTrack": 20,
 		"probabilityToShoot": 42,
 		"actionDelay": 40
@@ -266,7 +266,7 @@
 		"Gun": "Dual Chain Gun",
 		"maxHealth": 750,
 		"flags": 1152,
-		"probabilityToMove": 30,
+		"probabilityToMove": 40,
 		"probabilityToTrack": 20,
 		"probabilityToShoot": 42,
 		"actionDelay": 40
@@ -284,7 +284,7 @@
 		"Gun": "Dual Chain Gun",
 		"maxHealth": 1000,
 		"flags": 1152,
-		"probabilityToMove": 30,
+		"probabilityToMove": 40,
 		"probabilityToTrack": 20,
 		"probabilityToShoot": 42,
 		"actionDelay": 40
@@ -303,7 +303,7 @@
 		"maxHealth": 1000,
 		"flags": 1152,
 		"Drop": "keys/plain/yellow",
-		"probabilityToMove": 30,
+		"probabilityToMove": 40,
 		"probabilityToTrack": 20,
 		"probabilityToShoot": 42,
 		"actionDelay": 40
@@ -321,7 +321,7 @@
 		"Gun": "Dual Chain Gun",
 		"maxHealth": 1000,
 		"flags": 1152,
-		"probabilityToMove": 30,
+		"probabilityToMove": 40,
 		"probabilityToTrack": 20,
 		"probabilityToShoot": 42,
 		"actionDelay": 40
@@ -340,7 +340,7 @@
 		"maxHealth": 1000,
 		"flags": 1152,
 		"Drop": "keys/plain/yellow",
-		"probabilityToMove": 30,
+		"probabilityToMove": 40,
 		"probabilityToTrack": 20,
 		"probabilityToShoot": 42,
 		"actionDelay": 40
@@ -359,7 +359,7 @@
 		"maxHealth": 1100,
 		"flags": 1152,
 		"Drop": "keys/plain/yellow",
-		"probabilityToMove": 30,
+		"probabilityToMove": 40,
 		"probabilityToTrack": 20,
 		"probabilityToShoot": 42,
 		"actionDelay": 40
@@ -378,7 +378,7 @@
 		"maxHealth": 1200,
 		"flags": 1152,
 		"Drop": "keys/plain/yellow",
-		"probabilityToMove": 30,
+		"probabilityToMove": 40,
 		"probabilityToTrack": 20,
 		"probabilityToShoot": 42,
 		"actionDelay": 40
@@ -397,7 +397,7 @@
 		"maxHealth": 1400,
 		"flags": 1152,
 		"Drop": "keys/plain/yellow",
-		"probabilityToMove": 30,
+		"probabilityToMove": 40,
 		"probabilityToTrack": 20,
 		"probabilityToShoot": 42,
 		"actionDelay": 40
@@ -432,7 +432,7 @@
 		"Gun": "Energy Ball",
 		"maxHealth": 1600,
 		"flags": 1152,
-		"probabilityToMove": 30,
+		"probabilityToMove": 40,
 		"probabilityToTrack": 20,
 		"probabilityToShoot": 42,
 		"actionDelay": 40

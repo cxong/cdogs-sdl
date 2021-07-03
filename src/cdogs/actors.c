@@ -79,7 +79,6 @@
 #include "triggers.h"
 #include "utils.h"
 
-#define FOOTSTEP_DISTANCE_PLUS 250
 #define FOOTSTEP_MAX_ANIM_SPEED 2
 #define REPEL_STRENGTH 0.06f
 #define SLIDE_LOCK 50
@@ -190,11 +189,12 @@ void UpdateActorState(TActor *actor, int ticks)
 		actor->anim.newFrame)
 	{
 		GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
+		const CharacterClass *cc = ActorGetCharacter(actor)->Class;
 		sprintf(
 			es.u.SoundAt.Sound, "footsteps/%s",
-			ActorGetCharacter(actor)->Class->Footsteps);
+			cc->Footsteps);
 		es.u.SoundAt.Pos = Vec2ToNet(actor->thing.Pos);
-		es.u.SoundAt.Distance = FOOTSTEP_DISTANCE_PLUS;
+		es.u.SoundAt.Distance = cc->FootstepsDistancePlus;
 		GameEventsEnqueue(&gGameEvents, es);
 	}
 

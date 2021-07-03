@@ -83,9 +83,11 @@
         "Type": "Directional",
         "Sprites": "chars/heads/jones"
       },
-      "Body": "big",
+      "Body": "mech",
       "Sounds": "mecha_hitler",
-      "BloodColor": "00ffff"
+      "BloodColor": "00ffff",
+      "Footsteps": "mecha_step",
+      "FootstepsDistancePlus": 0
     },
     {
       "Name": "Hitler",

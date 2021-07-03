@@ -32,6 +32,7 @@
 #include "log.h"
 
 #define VERSION 2
+#define FOOTSTEP_DISTANCE_PLUS 250
 
 CharacterClasses gCharacterClasses;
 
@@ -275,6 +276,8 @@ static void LoadCharacterClass(CharacterClass *c, json_t *node)
 	{
 		CSTRDUP(c->Footsteps, "boots");
 	}
+	c->FootstepsDistancePlus = FOOTSTEP_DISTANCE_PLUS;
+	LoadInt(&c->FootstepsDistancePlus, node, "FootstepsDistancePlus");
 
 	c->BloodColor = colorRed;
 	LoadColor(&c->BloodColor, node, "BloodColor");

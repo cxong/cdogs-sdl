@@ -42,7 +42,6 @@
 		"SS Machine Gun",
 		"Dual Chain Gun",
 		"Dog Bite"],
-		"Song": "",
 		"TileClasses": {
 			"0": {
 				"Name": "tile",

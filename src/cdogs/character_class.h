@@ -41,6 +41,7 @@ typedef struct
 	const CharSprites *Sprites;
 	char *Sounds;
 	char *Footsteps;
+	int FootstepsDistancePlus;
 	color_t BloodColor;
 	char *Corpse;
 	bool HasHair;
