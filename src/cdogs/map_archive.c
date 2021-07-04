@@ -363,6 +363,7 @@ static json_t *SaveMissions(CArray *a)
 			node, "Weapons", SaveWeapons(&mission->Weapons));
 
 		if (mission->Music.Type == MUSIC_SRC_DYNAMIC &&
+			mission->Music.Data.Filename &&
 			strlen(mission->Music.Data.Filename) > 0)
 		{
 			json_insert_pair_into_object(

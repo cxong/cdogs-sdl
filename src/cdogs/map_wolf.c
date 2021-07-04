@@ -128,7 +128,7 @@ static const char *GetSound(const CWMapType type, const int i)
 
 static const char *adlibSoundsW1[] = {
 	NULL, // hit wall
-	NULL, // select weapon
+	"menu_start", // select weapon
 	NULL, // select item
 	NULL, // heartbeat
 	"menu_switch",
@@ -199,7 +199,7 @@ static const char *adlibSoundsW1[] = {
 };
 static const char *adlibSoundsW6[] = {
 	NULL, // hit wall
-	NULL, // select weapon
+	"menu_start", // select weapon
 	NULL, // select item
 	NULL, // heartbeat
 	"menu_switch",
@@ -289,7 +289,7 @@ static const char *adlibSoundsW6[] = {
 static const char *adlibSoundsSOD[] = {
 	NULL, // hit wall
 	"rocket_hit",
-	NULL, // select item
+	"menu_start", // select item
 	"chars/alert/ghost",
 	"menu_switch",
 	NULL, // move gun 1

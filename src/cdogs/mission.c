@@ -193,7 +193,10 @@ void MissionCopy(Mission *dst, const Mission *src)
 	case MUSIC_SRC_GENERAL:
 		break;
 	case MUSIC_SRC_DYNAMIC:
-		CSTRDUP(dst->Music.Data.Filename, src->Music.Data.Filename);
+		if (src->Music.Data.Filename)
+		{
+			CSTRDUP(dst->Music.Data.Filename, src->Music.Data.Filename);
+		}
 		break;
 	case MUSIC_SRC_CHUNK:
 		// TODO: can't copy music chunks, only used by editor anyway
