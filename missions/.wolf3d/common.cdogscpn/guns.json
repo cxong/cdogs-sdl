@@ -97,6 +97,23 @@
       }
     },
     {
+      "Pic": "quad_chaingun",
+      "Name": "Quad Chain Gun",
+      "Icon": "machine_gun",
+      "Bullet": "bullet_quad",
+      "Cost": 1,
+      "Lock": 70,
+      "Sound": "dual_chain_gun",
+      "SpreadCount": 2,
+      "Recoil": 0.3,
+      "Brass": "brass",
+      "CanDrop": false,
+      "Barrel": {
+        "Count": 2,
+        "Lock": 3
+      }
+    },
+    {
       "Pic": "",
       "Name": "Dog Bite",
       "Bullet": "dog_bite",

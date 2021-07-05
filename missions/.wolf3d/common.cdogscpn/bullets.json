@@ -79,6 +79,26 @@
       "Mass": 0.1
     },
     {
+      "Name": "bullet_quad",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": ""
+      },
+      "Trail": {
+        "Particle": "trail",
+        "Width": 1.25
+      },
+      "OutOfRangeSpark": "spark",
+      "WallMark": "bullet_hole",
+      "Hit": {
+        "Flesh": {}
+      },
+      "Speed": 35000,
+      "Range": 1,
+      "Power": 12,
+      "Mass": 0.1
+    },
+    {
       "Name": "syringe",
       "Pic": {
         "Type": "Directional",
