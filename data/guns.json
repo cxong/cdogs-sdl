@@ -227,8 +227,7 @@
     },
     {
       "Index": 12,
-      "Pic": "rifle",
-      "Grips": 2,
+      "Pic": "blaster_white",
       "Name": "Petrify gun",
       "Icon": "petrifier",
       "Description": "This gun fires projectiles that turn enemies into stone for short time, making them unable to walk and shoot. This gun has no spread.\n\nDamage: 0\nRate of fire: 42 round/min\nLifespan: 0.64s\nSpeed: 768\nCost: 10",
@@ -244,6 +243,7 @@
     },
     {
       "Index": 13,
+      "Pic": "zapper",
       "Name": "Browny gun",
       "Icon": "browny_gun",
       "Description": "A weapon of alien origins. As soon as you pull the trigger, a projectile will be released which will take a completely unpredictable path. Hitting something with this strange gun is largely luck-based. It is more likely to hit something when the browny gun is used in close quarters combat.\n\nDamage: 15\nRate of fire: 140 round/min\nLifespan: 0.64s\nSpeed: 768\nCost: 5",
@@ -271,7 +271,7 @@
     },
     {
       "Index": 15,
-      "Pic": "rifle",
+      "Pic": "chemogun",
       "Grips": 2,
       "Name": "Chemo gun",
       "Icon": "chemo_gun",
@@ -287,7 +287,7 @@
     },
     {
       "Index": 16,
-      "Pic": "rifle",
+      "Pic": "pulserifle",
       "Grips": 2,
       "Name": "Pulse rifle",
       "Icon": "pulse_rifle",
@@ -303,6 +303,7 @@
     },
     {
       "Index": 17,
+      "Pic": "rocket_red",
       "Name": "Heatseeker",
       "Icon": "heatseeker",
       "Description": "This is a rocket launcher which fires a slow heat-seeking rocket which will follow nearby enemies. The rocket can't make turns very quickly and may easily miss a target, so you still have to aim.\n\nDamage: 20\nRate of fire: 140 round/min\nLifespan: 0.85s\nSpeed: 512\nCost: 7",
@@ -316,6 +317,7 @@
     },
     {
       "Name": "Swarmer",
+      "Pic": "rocket_green",
       "Icon": "swarmer_gun",
       "Description": "The swarmer fires four fast heat-seeking rockets in one shot. They will follow enemies and cause direct damage on impact. The rockets are able to turn around quickly which may make it easier to hit targets.\n\nDamage: 12 per rocket (max. 48)\nRate of fire: 70 round/min\nLifespan: 1.00s\nSpeed: 700\nCost: 15",
       "Bullet": "swarmer",
@@ -331,6 +333,7 @@
     },
     {
       "Name": "Launcher",
+      "Pic": "rocket_blue",
       "Icon": "launcher",
       "Description": "A rocket launcher. It fires a single rocket which is slow at the beginning but it will accellerate rapidly. The rocket causes a small but highly damaging explosion on impact.\n\nDamage: Small explosion\nRate of fire: 60 round/min\nLifespan: 1.71s\nInitial speed: 120 (rocket will accellerate)\nCost: 15",
       "Bullet": "rocket",
