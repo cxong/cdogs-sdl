@@ -53,6 +53,7 @@
       "Ammo": "Cells"
     },
     {
+      "Pic": "zapper",
       "Name": "Prototype II",
       "Icon": "browny_gun",
       "Bullet": "rapid",

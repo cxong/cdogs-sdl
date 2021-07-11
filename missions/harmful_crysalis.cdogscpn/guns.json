@@ -26,6 +26,7 @@
       "CanShoot": false
     },
     {
+      "Pic": "blaster_white",
       "Name": "AArms Needler",
       "Icon": "petrifier",
       "Bullet": "yellow_needle",

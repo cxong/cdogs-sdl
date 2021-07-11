@@ -17,6 +17,7 @@
       "Ammo": "Bullets"
     },
     {
+      "Pic": "chaingun",
       "Name": "Grenade Machine Gun",
       "Icon": "machine_gun",
       "Bullet": "gmg",
