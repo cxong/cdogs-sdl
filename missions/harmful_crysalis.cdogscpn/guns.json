@@ -1,7 +1,6 @@
 {
   "Version": 1,
   "Guns": [
-
     {
       "Name": "Mining laser",
       "Bullet": "laser_point",
@@ -15,7 +14,7 @@
       "Description": "A laser that is strong enough to melt rocks."
     },
     {
-      "Pic": "knife",
+      "Pic": "chainsaw",
       "Icon": "chainsaw",
       "Name": "Rocksaw",
       "Description": "A chainsaw specialized to crack rocks.",
