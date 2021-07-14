@@ -12,7 +12,7 @@
       "CanDrop": false
     },
     {
-      "Pic": "knife",
+      "Pic": "knife_blue",
       "Icon": "khanjali",
       "Name": "Khanjali",
       "Bullet": "khanjali",
@@ -46,6 +46,7 @@
       "Ammo": "Cells"
     },
     {
+      "Pic": "blaster_yellow",
       "Name": "Lasergun",
       "Icon": "lasergun",
       "Bullet": "lase",
