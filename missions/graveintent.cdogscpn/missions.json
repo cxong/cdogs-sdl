@@ -162,7 +162,6 @@
 		}],
 		"EnemyDensity": 10,
 		"Weapons": ["Knife", "Pistol"],
-		"Song": "",
 		"TileClasses": {
 			"Wall": {
 				"Name": "wall",
@@ -302,7 +301,6 @@
 		}],
 		"EnemyDensity": 10,
 		"Weapons": ["Knife", "Pistol"],
-		"Song": "",
 		"TileClasses": {
 			"Wall": {
 				"Name": "wall",
@@ -367,7 +365,8 @@
 		"Doors": {
 			"Enabled": true,
 			"Min": 2,
-			"Max": 3
+			"Max": 3,
+			"RandomPos": false
 		},
 		"Pillars": {
 			"Count": 6,
@@ -437,7 +436,6 @@
 		"Weapons": ["Knife",
 		"Pistol",
 		"Shotgun"],
-		"Song": "",
 		"TileClasses": {
 			"Wall": {
 				"Name": "wall",
@@ -542,16 +540,16 @@
 		"Pistol"],
 		"Song": "graveintent1.xm",
 		"TileClasses": {
-			"2": {
-				"Name": "door",
-				"Type": "Door",
-				"Style": "blast",
-				"Mask": "ffffffff",
-				"MaskAlt": "ffffffff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": true
+			"0": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "cobble",
+				"Mask": "c0c0c0ff",
+				"MaskAlt": "008400ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
 			},
 			"1": {
 				"Name": "wall",
@@ -564,6 +562,17 @@
 				"Shootable": true,
 				"IsRoom": false
 			},
+			"2": {
+				"Name": "door",
+				"Type": "Door",
+				"Style": "blast",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": true
+			},
 			"3": {
 				"Name": "tile",
 				"Type": "Floor",
@@ -574,17 +583,6 @@
 				"IsOpaque": false,
 				"Shootable": false,
 				"IsRoom": true
-			},
-			"0": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "cobble",
-				"Mask": "c0c0c0ff",
-				"MaskAlt": "008400ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false
 			}
 		},
 		"Tiles": ["1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1",
@@ -846,50 +844,164 @@
 		}],
 		"StaticCharacters": [{
 			"Index": 0,
-			"Positions": [[14, 16],
-			[17, 12],
-			[18, 18],
-			[5, 14],
-			[1, 18],
-			[7, 37],
-			[10, 40],
-			[7, 42],
-			[13, 44],
-			[13, 62],
-			[7, 56],
-			[9, 58],
-			[3, 69],
-			[5, 71],
-			[14, 87],
-			[16, 82],
-			[17, 86],
-			[13, 84],
-			[3, 88],
-			[7, 91],
-			[2, 93],
-			[6, 96],
-			[17, 75],
-			[16, 76]]
+			"Places": [{
+				"Pos": [14, 16],
+				"Dir": 1
+			},
+			{
+				"Pos": [17, 12],
+				"Dir": 3
+			},
+			{
+				"Pos": [18, 18],
+				"Dir": 6
+			},
+			{
+				"Pos": [5, 14],
+				"Dir": 4
+			},
+			{
+				"Pos": [1, 18],
+				"Dir": 1
+			},
+			{
+				"Pos": [7, 37],
+				"Dir": 4
+			},
+			{
+				"Pos": [10, 40],
+				"Dir": 6
+			},
+			{
+				"Pos": [7, 42],
+				"Dir": 6
+			},
+			{
+				"Pos": [13, 44],
+				"Dir": 2
+			},
+			{
+				"Pos": [13, 62],
+				"Dir": 0
+			},
+			{
+				"Pos": [7, 56],
+				"Dir": 1
+			},
+			{
+				"Pos": [9, 58],
+				"Dir": 1
+			},
+			{
+				"Pos": [3, 69],
+				"Dir": 1
+			},
+			{
+				"Pos": [5, 71],
+				"Dir": 3
+			},
+			{
+				"Pos": [14, 87],
+				"Dir": 1
+			},
+			{
+				"Pos": [16, 82],
+				"Dir": 3
+			},
+			{
+				"Pos": [17, 86],
+				"Dir": 3
+			},
+			{
+				"Pos": [13, 84],
+				"Dir": 6
+			},
+			{
+				"Pos": [3, 88],
+				"Dir": 3
+			},
+			{
+				"Pos": [7, 91],
+				"Dir": 4
+			},
+			{
+				"Pos": [2, 93],
+				"Dir": 7
+			},
+			{
+				"Pos": [6, 96],
+				"Dir": 4
+			},
+			{
+				"Pos": [17, 75],
+				"Dir": 6
+			},
+			{
+				"Pos": [16, 76],
+				"Dir": 1
+			}]
 		},
 		{
 			"Index": 2,
-			"Positions": [[1, 35],
-			[7, 45],
-			[10, 44],
-			[2, 64],
-			[10, 71],
-			[12, 88],
-			[3, 97],
-			[8, 97]]
+			"Places": [{
+				"Pos": [1, 35],
+				"Dir": 4
+			},
+			{
+				"Pos": [7, 45],
+				"Dir": 6
+			},
+			{
+				"Pos": [10, 44],
+				"Dir": 5
+			},
+			{
+				"Pos": [2, 64],
+				"Dir": 4
+			},
+			{
+				"Pos": [10, 71],
+				"Dir": 6
+			},
+			{
+				"Pos": [12, 88],
+				"Dir": 7
+			},
+			{
+				"Pos": [3, 97],
+				"Dir": 7
+			},
+			{
+				"Pos": [8, 97],
+				"Dir": 6
+			}]
 		},
 		{
 			"Index": 4,
-			"Positions": [[18, 38],
-			[16, 65],
-			[14, 67],
-			[1, 79],
-			[2, 81],
-			[17, 73]]
+			"Places": [{
+				"Pos": [18, 38],
+				"Dir": 3
+			},
+			{
+				"Pos": [16, 65],
+				"Dir": 2
+			},
+			{
+				"Pos": [14, 67],
+				"Dir": 5
+			},
+			{
+				"Pos": [1, 79],
+				"Dir": 0
+			},
+			{
+				"Pos": [2, 81],
+				"Dir": 3
+			},
+			{
+				"Pos": [17, 73],
+				"Dir": 3
+			}]
 		}],
 		"StaticObjectives": [],
 		"StaticKeys": [{
@@ -905,7 +1017,8 @@
 			6],
 			"Mission": 5,
 			"Hidden": false
-		}]
+		}],
+		"AltFloorsEnabled": true
 	},
 	{
 		"Title": "Pandemonium",
@@ -991,7 +1104,6 @@
 		"Shotgun",
 		"Flamer",
 		"Pistol"],
-		"Song": "",
 		"TileClasses": {
 			"Wall": {
 				"Name": "wall",
@@ -1056,7 +1168,8 @@
 		"Doors": {
 			"Enabled": true,
 			"Min": 2,
-			"Max": 2
+			"Max": 2,
+			"RandomPos": false
 		},
 		"Pillars": {
 			"Count": 0,
@@ -1156,7 +1269,6 @@
 		"Flamer",
 		"Shotgun",
 		"Pistol"],
-		"Song": "",
 		"TileClasses": {
 			"Wall": {
 				"Name": "wall",
@@ -1221,7 +1333,8 @@
 		"Doors": {
 			"Enabled": true,
 			"Min": 3,
-			"Max": 3
+			"Max": 3,
+			"RandomPos": false
 		},
 		"Pillars": {
 			"Count": 10,

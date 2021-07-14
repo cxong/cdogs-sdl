@@ -173,7 +173,7 @@ void CharacterLoadJSON(
 		}
 		if (version < 12)
 		{
-			ConvertHairColors(ch);
+			ConvertHairColors(ch, ch->Class->Name);
 		}
 		LoadStr(&ch->PlayerTemplateName, child, "PlayerTemplateName");
 		LoadFullInt(&ch->speed, child, "speed");

@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2016, 2018-2020 Cong Xu
+	Copyright (c) 2013-2016, 2018-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -169,8 +169,14 @@ int ScanCampaignOld(const char *filename, char **title, int *missions)
 		f_read(f, setting.author, sizeof(setting.author));
 		f_read(f, setting.description, sizeof(setting.description));
 		f_read32(f, &setting.missionCount, sizeof(setting.missionCount));
-		CSTRDUP(*title, setting.title);
-		*missions = setting.missionCount;
+		if (title)
+		{
+			CSTRDUP(*title, setting.title);
+		}
+		if (missions)
+		{
+			*missions = setting.missionCount;
+		}
 
 		fclose(f);
 
@@ -279,35 +285,36 @@ void ConvertCharacterColors(
 	c->Body = ColorTint(PaletteToColor(cShadePalettes[body]), tint);
 	c->Legs = ColorTint(PaletteToColor(cShadePalettes[leg]), tint);
 	c->Hair = ColorTint(PaletteToColor(cShadePalettes[hair]), tint);
+	c->Feet = c->Legs;
 }
 
 // Hair colour correction; some characters had no hair but now with
 // specific parts of the head colourised using the hair colour; set
 // default "hair" colour based on the head type
-void ConvertHairColors(Character *ch)
+void ConvertHairColors(Character *ch, const char *face)
 {
 	const color_t darkRed = {0xC0, 0, 0, 0xFF};
-	if (strcmp(ch->Class->Name, "Cyborg") == 0)
+	if (strcmp(face, "Cyborg") == 0)
 	{
 		// eye
 		ch->Colors.Hair = colorRed;
 	}
-	else if (strcmp(ch->Class->Name, "Ice") == 0)
+	else if (strcmp(face, "Ice") == 0)
 	{
 		// shades
 		ch->Colors.Hair = colorBlack;
 	}
-	else if (strcmp(ch->Class->Name, "Ogre") == 0)
+	else if (strcmp(face, "Ogre") == 0)
 	{
 		// eyes
 		ch->Colors.Hair = darkRed;
 	}
-	else if (strcmp(ch->Class->Name, "Snake") == 0)
+	else if (strcmp(face, "Snake") == 0)
 	{
 		// eyepatch
 		ch->Colors.Hair = colorBlack;
 	}
-	else if (strcmp(ch->Class->Name, "WarBaby") == 0)
+	else if (strcmp(face, "WarBaby") == 0)
 	{
 		// beret
 		ch->Colors.Hair = colorRed;
@@ -349,7 +356,7 @@ void ConvertCharacter(Character *c, TBadGuy *b)
 	ConvertCharacterColors(
 		b->skinColor, b->armColor, b->bodyColor, b->legColor, b->hairColor,
 		&c->Colors);
-	ConvertHairColors(c);
+	ConvertHairColors(c, face);
 	c->maxHealth = b->health;
 	c->flags = b->flags;
 }

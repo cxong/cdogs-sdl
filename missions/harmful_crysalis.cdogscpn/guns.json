@@ -2,6 +2,7 @@
   "Version": 1,
   "Guns": [
     {
+      "Pic": "zapper",
       "Name": "Mining laser",
       "Bullet": "laser_point",
       "Icon": "browny_gun",
@@ -71,9 +72,9 @@
       "CanDrop": false
     },
     {
+      "Pic": "cryogun",
       "Name": "Cryo gun",
       "Icon": "cryo_gun",
-      "Pic": "blaster",
       "Bullet": "cryo_gas",
       "Cost": 1,
       "Lock": 6,

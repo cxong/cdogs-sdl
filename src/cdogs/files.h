@@ -204,7 +204,7 @@ void ConvertCampaignSetting(CampaignSetting *dest, CampaignSettingOld *src);
 void ConvertCharacterColors(
 	const int skin, const int arm, const int body, const int leg,
 	const int hair, CharColors *c);
-void ConvertHairColors(Character *ch);
+void ConvertHairColors(Character *ch, const char *face);
 
 int ScanCampaignOld(const char *filename, char **title, int *missions);
 int IsCampaignOldFile(const char *filename);

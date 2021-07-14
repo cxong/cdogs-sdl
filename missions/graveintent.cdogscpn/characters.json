@@ -9,7 +9,7 @@
 		"Hair": "ff0202ff",
 		"Feet": "3c5f56ff",
 		"speed": 240,
-		"Gun": "Knife",
+		"Gun": "Fists",
 		"maxHealth": 20,
 		"flags": 1024,
 		"probabilityToMove": 90,
