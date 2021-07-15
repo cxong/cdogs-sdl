@@ -23,7 +23,7 @@
       "CanShoot": false
     },
     {
-      "Pic": "knife",
+      "Pic": "knife_yellow",
       "Icon": "wurmtooth",
       "Name": "Wurmtooth",
       "Bullet": "wurmtooth",
@@ -60,6 +60,7 @@
       "Ammo": "Cells"
     },
     {
+      "Pic": "raygun",
       "Name": "Projector",
       "Icon": "projector",
       "Bullet": "projection",
