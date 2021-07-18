@@ -95,12 +95,29 @@ static struct vec2i GetActorDrawOffset(
 	return offset;
 }
 
-static Character *ActorGetCharacterMutable(TActor *a);
 static direction_e GetLegDirAndFrame(
 	const TActor *a, const direction_e bodyDir, int *frame);
-ActorPics GetCharacterPicsFromActor(TActor *a)
+static ActorPics GetUnorderedPics(
+	const Character *c, const direction_e dir, const direction_e legDir,
+	const ActorAnimation anim, const int frame, const WeaponClass *gun,
+	const gunstate_e barrelStates[MAX_BARRELS], const bool isGrimacing,
+	const color_t shadowMask, const color_t *mask, const CharColors *colors,
+	const int deadPic);
+static void UpdatePilotHeadPic(ActorPics *pics, const TActor *a, const direction_e dir);
+static void ReorderPics(
+	ActorPics *pics, const Character *c, const direction_e dir,
+	const WeaponClass *gun, const gunstate_e barrelStates[MAX_BARRELS]);
+ActorPics GetCharacterPicsFromActor(const TActor *a)
 {
-	Character *c = ActorGetCharacterMutable(a);
+	if (a->vehicleUID != -1)
+	{
+		// Don't draw if piloting a vehicle - this actor will be drawn
+		// when the vehicle is drawn
+		ActorPics p;
+		memset(&p, 0, sizeof p);
+		return p;
+	}
+	const Character *c = ActorGetCharacter(a);
 	const Weapon *gun = ACTOR_GET_WEAPON(a);
 
 	color_t mask;
@@ -156,9 +173,46 @@ ActorPics GetCharacterPicsFromActor(TActor *a)
 	{
 		gunStates[i] = gun->barrels[i].state;
 	}
-	return GetCharacterPics(
-		c, dir, legDir, a->anim.Type, frame, gun->Gun, gunStates,
-		ActorIsGrimacing(a), shadowMask, maskP, colors, a->dead);
+
+	ActorPics pics = GetUnorderedPics(c, dir, legDir, a->anim.Type, frame, gun->Gun, gunStates, ActorIsGrimacing(a), shadowMask, maskP, colors, a->dead);
+	UpdatePilotHeadPic(&pics, a, dir);
+	ReorderPics(&pics, c, dir, gun->Gun, gunStates);
+	return pics;
+}
+static void UpdatePilotHeadPic(ActorPics *pics, const TActor *a, const direction_e dir)
+{
+	if (a->pilotUID == a->uid)
+	{
+		return;
+	}
+	// If this is a vehicle, take the head/hair pic from the pilot
+	pics->Head = NULL;
+	pics->Hair = NULL;
+	const TActor *pilot = ActorGetByUID(a->pilotUID);
+	if (pilot == NULL)
+	{
+		return;
+	}
+	const Character *c = ActorGetCharacter(pilot);
+	const bool grimace = ActorIsGrimacing(a);
+	pics->Head = GetHeadPic(c->Class, dir, grimace, &c->Colors);
+	if (c->Class->HasHair)
+	{
+		pics->Hair = GetHairPic(c->Hair, dir, grimace, &c->Colors);
+	}
+}
+ActorPics GetCharacterPics(
+	const Character *c, const direction_e dir, const direction_e legDir,
+	const ActorAnimation anim, const int frame, const WeaponClass *gun,
+	const gunstate_e barrelStates[MAX_BARRELS], const bool isGrimacing,
+	const color_t shadowMask, const color_t *mask, const CharColors *colors,
+	const int deadPic)
+{
+	ActorPics pics = GetUnorderedPics(c, dir, legDir, anim, frame, gun, barrelStates, isGrimacing, shadowMask, mask, colors, deadPic);
+
+	ReorderPics(&pics, c, dir, gun, barrelStates);
+
+	return pics;
 }
 static const Pic *GetBodyPic(
 	PicManager *pm, const CharSprites *cs, const direction_e dir,
@@ -171,7 +225,7 @@ static const Pic *GetGunPic(
 	PicManager *pm, const char *gunSprites, const direction_e dir,
 	const int gunState, const CharColors *colors);
 static const Pic *GetDeathPic(PicManager *pm, const int frame);
-ActorPics GetCharacterPics(
+static ActorPics GetUnorderedPics(
 	const Character *c, const direction_e dir, const direction_e legDir,
 	const ActorAnimation anim, const int frame, const WeaponClass *gun,
 	const gunstate_e barrelStates[MAX_BARRELS], const bool isGrimacing,
@@ -180,6 +234,8 @@ ActorPics GetCharacterPics(
 {
 	ActorPics pics;
 	memset(&pics, 0, sizeof pics);
+	
+	pics.Sprites = c->Class->Sprites;
 
 	// Dummy return to handle invalid character class
 	if (c->Class == NULL)
@@ -290,59 +346,7 @@ ActorPics GetCharacterPics(
 	pics.LegsOffset = GetActorDrawOffset(
 		pics.Legs, BODY_PART_LEGS, c->Class->Sprites, anim, frame, legDir,
 		GUNSTATE_READY);
-
-	// Determine draw order based on the direction the player is facing
-	// Rotate direction left for 2-grip guns, as the gun is held in front
-	// of the actor
-	const direction_e drawOrderDir =
-		grips == 2 && barrelStates[0] == GUNSTATE_READY
-			? DirectionRotate(dir, -1)
-			: dir;
-	for (int bp = 0; bp < BODY_PART_COUNT; bp++)
-	{
-		const BodyPart drawOrder = c->Class->Sprites->Order[drawOrderDir][bp];
-		switch (drawOrder)
-		{
-		case BODY_PART_HEAD:
-			pics.OrderedPics[bp] = pics.Head;
-			pics.OrderedOffsets[bp] = pics.HeadOffset;
-			break;
-		case BODY_PART_HAIR:
-			pics.OrderedPics[bp] = pics.Hair;
-			pics.OrderedOffsets[bp] = pics.HairOffset;
-			break;
-		case BODY_PART_BODY:
-			pics.OrderedPics[bp] = pics.Body;
-			pics.OrderedOffsets[bp] = pics.BodyOffset;
-			break;
-		case BODY_PART_LEGS:
-			pics.OrderedPics[bp] = pics.Legs;
-			pics.OrderedOffsets[bp] = pics.LegsOffset;
-			break;
-		case BODY_PART_GUN_R:
-			pics.OrderedPics[bp] = pics.Guns[0];
-			pics.OrderedOffsets[bp] = pics.GunOffsets[0];
-			break;
-		case BODY_PART_GUN_L:
-			pics.OrderedPics[bp] = pics.Guns[1];
-			pics.OrderedOffsets[bp] = pics.GunOffsets[1];
-			break;
-		default:
-			break;
-		}
-	}
-
-	pics.Sprites = c->Class->Sprites;
-
 	return pics;
-}
-static Character *ActorGetCharacterMutable(TActor *a)
-{
-	if (a->PlayerUID >= 0)
-	{
-		return &PlayerDataGetByUID(a->PlayerUID)->Char;
-	}
-	return CArrayGet(&gCampaign.Setting.characters.OtherChars, a->charId);
 }
 static direction_e GetLegDirAndFrame(
 	const TActor *a, const direction_e bodyDir, int *frame)
@@ -363,6 +367,52 @@ static direction_e GetLegDirAndFrame(
 		return DirectionOpposite(legDir);
 	}
 	return legDir;
+}
+static void ReorderPics(
+	ActorPics *pics, const Character *c, const direction_e dir,
+	const WeaponClass *gun, const gunstate_e barrelStates[MAX_BARRELS])
+{
+	// Determine draw order based on the direction the player is facing
+	// Rotate direction left for 2-grip guns, as the gun is held in front
+	// of the actor
+	const int grips = gun == NULL ? 0 : gun->Grips;
+	const direction_e drawOrderDir =
+		grips == 2 && barrelStates[0] == GUNSTATE_READY
+			? DirectionRotate(dir, -1)
+			: dir;
+	for (int bp = 0; bp < BODY_PART_COUNT; bp++)
+	{
+		const BodyPart drawOrder = c->Class->Sprites->Order[drawOrderDir][bp];
+		switch (drawOrder)
+		{
+		case BODY_PART_HEAD:
+			pics->OrderedPics[bp] = pics->Head;
+			pics->OrderedOffsets[bp] = pics->HeadOffset;
+			break;
+		case BODY_PART_HAIR:
+			pics->OrderedPics[bp] = pics->Hair;
+			pics->OrderedOffsets[bp] = pics->HairOffset;
+			break;
+		case BODY_PART_BODY:
+			pics->OrderedPics[bp] = pics->Body;
+			pics->OrderedOffsets[bp] = pics->BodyOffset;
+			break;
+		case BODY_PART_LEGS:
+			pics->OrderedPics[bp] = pics->Legs;
+			pics->OrderedOffsets[bp] = pics->LegsOffset;
+			break;
+		case BODY_PART_GUN_R:
+			pics->OrderedPics[bp] = pics->Guns[0];
+			pics->OrderedOffsets[bp] = pics->GunOffsets[0];
+			break;
+		case BODY_PART_GUN_L:
+			pics->OrderedPics[bp] = pics->Guns[1];
+			pics->OrderedOffsets[bp] = pics->GunOffsets[1];
+			break;
+		default:
+			break;
+		}
+	}
 }
 
 static void DrawDyingBody(

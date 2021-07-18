@@ -599,6 +599,7 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 		}
 	}
 
+	// Disable sounds on the first frame
 	GameUpdate(rData, ticksPerFrame, data->Frames == 0 ? NULL : &gSoundDevice);
 
 	CameraUpdate(&rData->Camera, ticksPerFrame, 1000 / data->FPS);
@@ -825,7 +826,6 @@ void GameUpdate(RunGameData *data, const int ticksPerFrame, SoundDevice *sd)
 		MissionDone(&gMission, me);
 	}
 
-	// Disable sounds on the first frame
 	HandleGameEvents(
 		&gGameEvents, &data->Camera, &data->healthSpawner, &data->ammoSpawners,
 		sd);

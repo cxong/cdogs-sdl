@@ -48,6 +48,7 @@
 */
 #include "map_build.h"
 
+#include "actors.h"
 #include "collision/collision.h"
 #include "door.h"
 #include "log.h"
@@ -144,6 +145,7 @@ void MapBuild(
 	if (!co->IsClient)
 	{
 		MapLoadDynamic(&mb);
+		ActorsPilotVehicles();
 	}
 	MapBuilderTerminate(&mb);
 }

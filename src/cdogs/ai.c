@@ -328,7 +328,7 @@ int AICommand(const int ticks)
 	}
 
 	CA_FOREACH(TActor, actor, gActors)
-	if (!actor->isInUse || actor->PlayerUID >= 0 || actor->dead)
+	if (!actor->isInUse || actor->PlayerUID >= 0 || actor->dead || ActorGetCharacter(actor)->Class->Vehicle)
 	{
 		continue;
 	}
@@ -592,15 +592,11 @@ void AIAddRandomEnemies(const int enemies, const Mission *m)
 						  ConfigGetInt(&gConfig, "Game.EnemyDensity")) /
 							 100))
 	{
-		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-		e.u.ActorAdd.UID = ActorsGetNextUID();
-		e.u.ActorAdd.CharId =
-			CharacterStoreGetRandomBaddieId(&gCampaign.Setting.characters);
+		const int charId = CharacterStoreGetRandomBaddieId(&gCampaign.Setting.characters);
 		const Character *c = CArrayGet(
-			&gCampaign.Setting.characters.OtherChars, e.u.ActorAdd.CharId);
-		e.u.ActorAdd.Health = CharacterGetStartingHealth(c, true);
-		e.u.ActorAdd.Pos =
-			PlaceAwayFromPlayers(&gMap, true, PLACEMENT_ACCESS_ANY);
+			&gCampaign.Setting.characters.OtherChars, charId);
+		GameEvent e = GameEventNewActorAdd(PlaceAwayFromPlayers(&gMap, true, PLACEMENT_ACCESS_ANY), c, true);
+		e.u.ActorAdd.CharId = charId;
 		GameEventsEnqueue(&gGameEvents, e);
 		gBaddieCount++;
 	}
@@ -613,17 +609,15 @@ void InitializeBadGuys(void)
 	if (o->Type == OBJECTIVE_KILL &&
 		gMission.missionData->SpecialChars.size > 0)
 	{
+		const int charId = CharacterStoreGetRandomSpecialId(
+			   &gCampaign.Setting.characters);
+		const Character *c = CArrayGet(
+			   &gCampaign.Setting.characters.OtherChars, charId);
 		for (; o->placed < o->Count; o->placed++)
 		{
-			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-			e.u.ActorAdd.UID = ActorsGetNextUID();
-			e.u.ActorAdd.CharId = CharacterStoreGetRandomSpecialId(
-				&gCampaign.Setting.characters);
+			GameEvent e = GameEventNewActorAdd(PlaceAwayFromPlayers(&gMap, false, paFlags), c, true);
+			e.u.ActorAdd.CharId = charId;
 			e.u.ActorAdd.ThingFlags = ObjectiveToThing(_ca_index);
-			const Character *c = CArrayGet(
-				&gCampaign.Setting.characters.OtherChars, e.u.ActorAdd.CharId);
-			e.u.ActorAdd.Health = CharacterGetStartingHealth(c, true);
-			e.u.ActorAdd.Pos = PlaceAwayFromPlayers(&gMap, false, paFlags);
 			GameEventsEnqueue(&gGameEvents, e);
 
 			// Process the events that actually place the actors
@@ -632,24 +626,14 @@ void InitializeBadGuys(void)
 	}
 	else if (o->Type == OBJECTIVE_RESCUE)
 	{
+		const int charId = CharacterStoreGetPrisonerId(&gCampaign.Setting.characters, 0);
+		const Character *c = CArrayGet(
+			   &gCampaign.Setting.characters.OtherChars, charId);
 		for (; o->placed < o->Count; o->placed++)
 		{
-			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-			e.u.ActorAdd.UID = ActorsGetNextUID();
-			e.u.ActorAdd.CharId =
-				CharacterStoreGetPrisonerId(&gCampaign.Setting.characters, 0);
+			GameEvent e = GameEventNewActorAdd(MapHasLockedRooms(&gMap) ? PlacePrisoner(&gMap) : PlaceAwayFromPlayers(&gMap, false, paFlags), c, true);
+			e.u.ActorAdd.CharId = charId;
 			e.u.ActorAdd.ThingFlags = ObjectiveToThing(_ca_index);
-			const Character *c = CArrayGet(
-				&gCampaign.Setting.characters.OtherChars, e.u.ActorAdd.CharId);
-			e.u.ActorAdd.Health = CharacterGetStartingHealth(c, true);
-			if (MapHasLockedRooms(&gMap))
-			{
-				e.u.ActorAdd.Pos = PlacePrisoner(&gMap);
-			}
-			else
-			{
-				e.u.ActorAdd.Pos = PlaceAwayFromPlayers(&gMap, false, paFlags);
-			}
 			GameEventsEnqueue(&gGameEvents, e);
 
 			// Process the events that actually place the actors
@@ -673,15 +657,11 @@ void CreateEnemies(void)
 						ConfigGetInt(&gConfig, "Game.EnemyDensity");
 	for (int i = 0; i < density / 100; i++)
 	{
-		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-		e.u.ActorAdd.UID = ActorsGetNextUID();
-		e.u.ActorAdd.CharId =
-			CharacterStoreGetRandomBaddieId(&gCampaign.Setting.characters);
-		e.u.ActorAdd.Pos =
-			PlaceAwayFromPlayers(&gMap, true, PLACEMENT_ACCESS_ANY);
+		const int charId = CharacterStoreGetRandomBaddieId(&gCampaign.Setting.characters);
 		const Character *c = CArrayGet(
-			&gCampaign.Setting.characters.OtherChars, e.u.ActorAdd.CharId);
-		e.u.ActorAdd.Health = CharacterGetStartingHealth(c, true);
+			&gCampaign.Setting.characters.OtherChars, charId);
+		GameEvent e = GameEventNewActorAdd(PlaceAwayFromPlayers(&gMap, true, PLACEMENT_ACCESS_ANY), c, true);
+		e.u.ActorAdd.CharId = charId;
 		GameEventsEnqueue(&gGameEvents, e);
 		gBaddieCount++;
 

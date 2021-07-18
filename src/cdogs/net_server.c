@@ -440,6 +440,8 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 	}
 	e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 	e.u.ActorAdd.UID = a->uid;
+	e.u.ActorAdd.PilotUID = a->pilotUID;
+	e.u.ActorAdd.VehicleUID = a->vehicleUID;
 	e.u.ActorAdd.CharId = a->charId;
 	e.u.ActorAdd.Health = a->health;
 	e.u.ActorAdd.Direction = (int32_t)a->direction;

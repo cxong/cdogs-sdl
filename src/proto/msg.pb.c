@@ -105,6 +105,9 @@ PB_BIND(NActorDie, NActorDie, AUTO)
 PB_BIND(NActorMelee, NActorMelee, AUTO)
 
 
+PB_BIND(NActorPilot, NActorPilot, AUTO)
+
+
 PB_BIND(NAddPickup, NAddPickup, AUTO)
 
 

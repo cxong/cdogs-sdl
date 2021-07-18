@@ -252,6 +252,6 @@ int KeycardCount(int flags);
 
 void MissionStaticAddObjective(
 	Mission *m, MissionStatic *ms, const int idx, const int idx2,
-	const struct vec2i pos);
+	const struct vec2i pos, const bool force);
 bool MissionStaticTryRemoveObjective(
 	Mission *m, MissionStatic *ms, const struct vec2i pos);

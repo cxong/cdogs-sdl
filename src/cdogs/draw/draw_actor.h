@@ -94,7 +94,7 @@ ActorPics GetCharacterPics(
 	const gunstate_e barrelStates[MAX_BARRELS], const bool isGrimacing,
 	const color_t shadowMask, const color_t *mask, const CharColors *colors,
 	const int deadPic);
-ActorPics GetCharacterPicsFromActor(TActor *a);
+ActorPics GetCharacterPicsFromActor(const TActor *a);
 void DrawActorPics(
 	const ActorPics *pics, const struct vec2i pos, const Rect2i bounds);
 void DrawLaserSight(

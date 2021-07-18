@@ -144,14 +144,11 @@ static void AddCharacters(const CArray *characters)
 }
 static void AddCharacter(const CharacterPlaces *cps)
 {
-	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-	e.u.ActorAdd.CharId = cps->Index;
 	const Character *c = CArrayGet(
-		&gCampaign.Setting.characters.OtherChars, e.u.ActorAdd.CharId);
-	e.u.ActorAdd.Health = CharacterGetStartingHealth(c, true);
+		&gCampaign.Setting.characters.OtherChars, cps->Index);
 	CA_FOREACH(const CharacterPlace, cp, cps->Places)
-	e.u.ActorAdd.UID = ActorsGetNextUID();
-	e.u.ActorAdd.Pos = Vec2ToNet(Vec2CenterOfTile(cp->Pos));
+	GameEvent e = GameEventNewActorAdd(Vec2CenterOfTile(cp->Pos), c, true);
+	e.u.ActorAdd.CharId = cps->Index;
 	e.u.ActorAdd.Direction = cp->Dir;
 	GameEventsEnqueue(&gGameEvents, e);
 	CA_FOREACH_END()
@@ -183,15 +180,12 @@ static void AddObjective(MapBuilder *mb, const ObjectivePositions *op)
 	switch (o->Type)
 	{
 	case OBJECTIVE_KILL: {
-		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-		e.u.ActorAdd.UID = ActorsGetNextUID();
-		e.u.ActorAdd.CharId =
-			CharacterStoreGetSpecialId(&mb->co->Setting.characters, pi->Index);
-		e.u.ActorAdd.ThingFlags = ObjectiveToThing(op->Index);
+		const int charId = CharacterStoreGetSpecialId(&mb->co->Setting.characters, pi->Index);
 		const Character *c = CArrayGet(
-			&gCampaign.Setting.characters.OtherChars, e.u.ActorAdd.CharId);
-		e.u.ActorAdd.Health = CharacterGetStartingHealth(c, true);
-		e.u.ActorAdd.Pos = Vec2ToNet(pos);
+			&gCampaign.Setting.characters.OtherChars, charId);
+		GameEvent e = GameEventNewActorAdd(pos, c, true);
+		e.u.ActorAdd.CharId = charId;
+		e.u.ActorAdd.ThingFlags = ObjectiveToThing(op->Index);
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 	break;
@@ -204,15 +198,13 @@ static void AddObjective(MapBuilder *mb, const ObjectivePositions *op)
 			false);
 		break;
 	case OBJECTIVE_RESCUE: {
-		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-		e.u.ActorAdd.UID = ActorsGetNextUID();
-		e.u.ActorAdd.CharId = CharacterStoreGetPrisonerId(
+		const int charId = CharacterStoreGetPrisonerId(
 			&mb->co->Setting.characters, pi->Index);
-		e.u.ActorAdd.ThingFlags = ObjectiveToThing(op->Index);
 		const Character *c = CArrayGet(
-			&gCampaign.Setting.characters.OtherChars, e.u.ActorAdd.CharId);
-		e.u.ActorAdd.Health = CharacterGetStartingHealth(c, true);
-		e.u.ActorAdd.Pos = Vec2ToNet(pos);
+			&gCampaign.Setting.characters.OtherChars, charId);
+		GameEvent e = GameEventNewActorAdd(pos, c, true);
+		e.u.ActorAdd.CharId = charId;
+		e.u.ActorAdd.ThingFlags = ObjectiveToThing(op->Index);
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 	break;

@@ -79,6 +79,7 @@
     },
     {
       "Name": "Mecha Hitler",
+      "Vehicle": true,
       "HeadPics": {
         "Type": "Directional",
         "Sprites": "chars/heads/jones"

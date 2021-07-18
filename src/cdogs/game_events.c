@@ -91,6 +91,7 @@ static GameEventEntry sGameEventEntries[] = {
 	{GAME_EVENT_ACTOR_USE_AMMO, true, true, true, true, NActorUseAmmo_fields},
 	{GAME_EVENT_ACTOR_DIE, true, false, true, true, NActorDie_fields},
 	{GAME_EVENT_ACTOR_MELEE, true, true, true, true, NActorMelee_fields},
+	{GAME_EVENT_ACTOR_PILOT, true, true, true, true, NActorPilot_fields},
 
 	{GAME_EVENT_ADD_PICKUP, true, false, true, true, NAddPickup_fields},
 	{GAME_EVENT_REMOVE_PICKUP, true, false, true, true, NRemovePickup_fields},
@@ -166,6 +167,9 @@ void GameEventsEnqueue(CArray *store, GameEvent e)
 		case GAME_EVENT_ACTOR_MELEE:
 			actorUID = e.u.Melee.UID;
 			break;
+		case GAME_EVENT_ACTOR_PILOT:
+			actorUID = e.u.Pilot.UID;
+			break;
 		case GAME_EVENT_GUN_FIRE:
 			if (e.u.GunFire.IsGun)
 			{
@@ -216,6 +220,9 @@ GameEvent GameEventNew(GameEventType type)
 		e.u.AddPickup.has_Pos = true;
 		break;
 	case GAME_EVENT_ACTOR_ADD:
+		e.u.ActorAdd.UID = -1;
+		e.u.ActorAdd.PilotUID = -1;
+		e.u.ActorAdd.VehicleUID = -1;
 		e.u.ActorAdd.PlayerUID = -1;
 		e.u.ActorAdd.Direction = rand() % DIRECTION_COUNT;
 		e.u.ActorAdd.has_Pos = true;
@@ -279,5 +286,17 @@ GameEvent GameEventNew(GameEventType type)
 	default:
 		break;
 	}
+	return e;
+}
+GameEvent GameEventNewActorAdd(const struct vec2 pos, const Character *c, const bool isNPC)
+{
+	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
+	e.u.ActorAdd.Pos = Vec2ToNet(pos);
+	e.u.ActorAdd.UID = ActorsGetNextUID();
+	if (!c->Class->Vehicle)
+	{
+		e.u.ActorAdd.PilotUID = e.u.ActorAdd.UID;
+	}
+	e.u.ActorAdd.Health = CharacterGetStartingHealth(c, isNPC && !c->Class->Vehicle);
 	return e;
 }

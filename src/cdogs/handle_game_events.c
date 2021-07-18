@@ -359,6 +359,9 @@ static void HandleGameEvent(
 	case GAME_EVENT_ACTOR_MELEE:
 		DamageMelee(e.u.Melee);
 		break;
+	case GAME_EVENT_ACTOR_PILOT:
+		ActorPilot(e.u.Pilot);
+		break;
 	case GAME_EVENT_ADD_PICKUP:
 		PickupAdd(e.u.AddPickup);
 		// Play a spawn sound

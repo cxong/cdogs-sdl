@@ -1420,6 +1420,7 @@ static void LoadEntity(
 		break;
 	case CWENT_HITLER:
 		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_MECHA_HITLER, bossObjIdx);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_HITLER, bossObjIdx);
 		break;
 	case CWENT_FETTGESICHT:
 		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_FETTGESICHT, bossObjIdx);
@@ -1482,7 +1483,7 @@ static void LoadChar(
 		Objective *bossObj = CArrayGet(&m->Objectives, *bossObjIdx);
 		bossObj->Required++;
 		MissionStaticAddObjective(
-			m, &m->u.Static, (int)m->SpecialChars.size - 1, 0, v);
+			m, &m->u.Static, *bossObjIdx, (int)m->SpecialChars.size - 1, v, true);
 	}
 	break;
 	default:

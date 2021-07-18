@@ -39,6 +39,12 @@ typedef struct _NActorPickupAll {
     bool PickupAll;
 } NActorPickupAll;
 
+typedef struct _NActorPilot {
+    uint32_t UID;
+    int32_t VehicleUID;
+    bool On;
+} NActorPilot;
+
 typedef struct _NActorReplaceGun {
     uint32_t UID;
     uint32_t GunIdx;
@@ -164,6 +170,8 @@ typedef struct _NVec2i {
 
 typedef struct _NActorAdd {
     uint32_t UID;
+    int32_t PilotUID;
+    int32_t VehicleUID;
     uint32_t CharId;
     int32_t Direction;
     int32_t Health;
@@ -389,7 +397,7 @@ extern "C" {
 #define NVec2i_init_default                      {0, 0}
 #define NVec2_init_default                       {0, 0}
 #define NGameBegin_init_default                  {0}
-#define NActorAdd_init_default                   {0, 0, 0, 0, 0, 0, false, NVec2_init_default, 0, {NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default}}
+#define NActorAdd_init_default                   {0, 0, 0, 0, 0, 0, 0, 0, false, NVec2_init_default, 0, {NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default}}
 #define NActorMove_init_default                  {0, false, NVec2_init_default, false, NVec2_init_default}
 #define NActorState_init_default                 {0, 0}
 #define NActorDir_init_default                   {0, 0}
@@ -404,6 +412,7 @@ extern "C" {
 #define NActorUseAmmo_init_default               {0, 0, false, NAmmo_init_default}
 #define NActorDie_init_default                   {0}
 #define NActorMelee_init_default                 {0, "", 0, 0, 0}
+#define NActorPilot_init_default                 {0, 0, 0}
 #define NAddPickup_init_default                  {0, "", 0, 0, 0, false, NVec2_init_default}
 #define NRemovePickup_init_default               {0, 0}
 #define NBulletBounce_init_default               {0, 0, 0, false, NVec2_init_default, false, NVec2_init_default, false, NVec2_init_default, 0, 0}
@@ -438,7 +447,7 @@ extern "C" {
 #define NVec2i_init_zero                         {0, 0}
 #define NVec2_init_zero                          {0, 0}
 #define NGameBegin_init_zero                     {0}
-#define NActorAdd_init_zero                      {0, 0, 0, 0, 0, 0, false, NVec2_init_zero, 0, {NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero}}
+#define NActorAdd_init_zero                      {0, 0, 0, 0, 0, 0, 0, 0, false, NVec2_init_zero, 0, {NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero}}
 #define NActorMove_init_zero                     {0, false, NVec2_init_zero, false, NVec2_init_zero}
 #define NActorState_init_zero                    {0, 0}
 #define NActorDir_init_zero                      {0, 0}
@@ -453,6 +462,7 @@ extern "C" {
 #define NActorUseAmmo_init_zero                  {0, 0, false, NAmmo_init_zero}
 #define NActorDie_init_zero                      {0}
 #define NActorMelee_init_zero                    {0, "", 0, 0, 0}
+#define NActorPilot_init_zero                    {0, 0, 0}
 #define NAddPickup_init_zero                     {0, "", 0, 0, 0, false, NVec2_init_zero}
 #define NRemovePickup_init_zero                  {0, 0}
 #define NBulletBounce_init_zero                  {0, 0, 0, false, NVec2_init_zero, false, NVec2_init_zero, false, NVec2_init_zero, 0, 0}
@@ -485,6 +495,9 @@ extern "C" {
 #define NActorMelee_TargetUID_tag                5
 #define NActorPickupAll_UID_tag                  1
 #define NActorPickupAll_PickupAll_tag            2
+#define NActorPilot_UID_tag                      1
+#define NActorPilot_VehicleUID_tag               2
+#define NActorPilot_On_tag                       3
 #define NActorReplaceGun_UID_tag                 1
 #define NActorReplaceGun_GunIdx_tag              2
 #define NActorReplaceGun_Gun_tag                 3
@@ -540,13 +553,15 @@ extern "C" {
 #define NVec2i_x_tag                             1
 #define NVec2i_y_tag                             2
 #define NActorAdd_UID_tag                        1
-#define NActorAdd_CharId_tag                     2
-#define NActorAdd_Direction_tag                  3
-#define NActorAdd_Health_tag                     4
-#define NActorAdd_PlayerUID_tag                  5
-#define NActorAdd_ThingFlags_tag                 6
-#define NActorAdd_Pos_tag                        7
-#define NActorAdd_Ammo_tag                       8
+#define NActorAdd_PilotUID_tag                   2
+#define NActorAdd_VehicleUID_tag                 3
+#define NActorAdd_CharId_tag                     4
+#define NActorAdd_Direction_tag                  5
+#define NActorAdd_Health_tag                     6
+#define NActorAdd_PlayerUID_tag                  7
+#define NActorAdd_ThingFlags_tag                 8
+#define NActorAdd_Pos_tag                        9
+#define NActorAdd_Ammo_tag                       10
 #define NActorAddAmmo_UID_tag                    1
 #define NActorAddAmmo_PlayerUID_tag              2
 #define NActorAddAmmo_Ammo_tag                   3
@@ -805,13 +820,15 @@ X(a, STATIC,   SINGULAR, INT32,    MissionTime,       1)
 
 #define NActorAdd_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
-X(a, STATIC,   SINGULAR, UINT32,   CharId,            2) \
-X(a, STATIC,   SINGULAR, INT32,    Direction,         3) \
-X(a, STATIC,   SINGULAR, INT32,    Health,            4) \
-X(a, STATIC,   SINGULAR, INT32,    PlayerUID,         5) \
-X(a, STATIC,   SINGULAR, UINT32,   ThingFlags,        6) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  Pos,               7) \
-X(a, STATIC,   REPEATED, MESSAGE,  Ammo,              8)
+X(a, STATIC,   SINGULAR, INT32,    PilotUID,          2) \
+X(a, STATIC,   SINGULAR, INT32,    VehicleUID,        3) \
+X(a, STATIC,   SINGULAR, UINT32,   CharId,            4) \
+X(a, STATIC,   SINGULAR, INT32,    Direction,         5) \
+X(a, STATIC,   SINGULAR, INT32,    Health,            6) \
+X(a, STATIC,   SINGULAR, INT32,    PlayerUID,         7) \
+X(a, STATIC,   SINGULAR, UINT32,   ThingFlags,        8) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Pos,               9) \
+X(a, STATIC,   REPEATED, MESSAGE,  Ammo,             10)
 #define NActorAdd_CALLBACK NULL
 #define NActorAdd_DEFAULT NULL
 #define NActorAdd_Pos_MSGTYPE NVec2
@@ -917,6 +934,13 @@ X(a, STATIC,   SINGULAR, INT32,    TargetKind,        4) \
 X(a, STATIC,   SINGULAR, UINT32,   TargetUID,         5)
 #define NActorMelee_CALLBACK NULL
 #define NActorMelee_DEFAULT NULL
+
+#define NActorPilot_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+X(a, STATIC,   SINGULAR, INT32,    VehicleUID,        2) \
+X(a, STATIC,   SINGULAR, BOOL,     On,                3)
+#define NActorPilot_CALLBACK NULL
+#define NActorPilot_DEFAULT NULL
 
 #define NAddPickup_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
@@ -1081,6 +1105,7 @@ extern const pb_msgdesc_t NActorAddAmmo_msg;
 extern const pb_msgdesc_t NActorUseAmmo_msg;
 extern const pb_msgdesc_t NActorDie_msg;
 extern const pb_msgdesc_t NActorMelee_msg;
+extern const pb_msgdesc_t NActorPilot_msg;
 extern const pb_msgdesc_t NAddPickup_msg;
 extern const pb_msgdesc_t NRemovePickup_msg;
 extern const pb_msgdesc_t NBulletBounce_msg;
@@ -1132,6 +1157,7 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 #define NActorUseAmmo_fields &NActorUseAmmo_msg
 #define NActorDie_fields &NActorDie_msg
 #define NActorMelee_fields &NActorMelee_msg
+#define NActorPilot_fields &NActorPilot_msg
 #define NAddPickup_fields &NAddPickup_msg
 #define NRemovePickup_fields &NRemovePickup_msg
 #define NBulletBounce_fields &NBulletBounce_msg
@@ -1168,7 +1194,7 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 #define NVec2i_size                              22
 #define NVec2_size                               10
 #define NGameBegin_size                          11
-#define NActorAdd_size                           1855
+#define NActorAdd_size                           1877
 #define NActorMove_size                          30
 #define NActorState_size                         17
 #define NActorDir_size                           17
@@ -1183,6 +1209,7 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 #define NActorUseAmmo_size                       31
 #define NActorDie_size                           6
 #define NActorMelee_size                         164
+#define NActorPilot_size                         19
 #define NAddPickup_size                          167
 #define NRemovePickup_size                       17
 #define NBulletBounce_size                       59

@@ -740,6 +740,26 @@ void ActorSetAIState(TActor *actor, const AIState s)
 	}
 }
 
+void ActorPilot(const NActorPilot ap)
+{
+	TActor *pilot = ActorGetByUID(ap.UID);
+	TActor *vehicle = ActorGetByUID(ap.VehicleUID);
+	if (ap.On)
+	{
+		CASSERT(pilot->vehicleUID == -1, "already piloting");
+		pilot->vehicleUID = vehicle->uid;
+		CASSERT(vehicle->pilotUID == -1, "already has pilot");
+		vehicle->pilotUID = pilot->uid;
+	}
+	else
+	{
+		CASSERT(pilot->vehicleUID != -1, "not piloting");
+		pilot->vehicleUID = -1;
+		CASSERT(vehicle->pilotUID != -1, "doesn't have pilot");
+		vehicle->pilotUID = -1;
+	}
+}
+
 static void FireWeapon(TActor *a, Weapon *w)
 {
 	if (w->Gun == NULL)
@@ -850,6 +870,18 @@ static bool TryGrenade(TActor *a, const int cmd)
 static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks);
 void CommandActor(TActor *actor, int cmd, int ticks)
 {
+	// If this is a pilot, command the vehicle instead
+	if (actor->vehicleUID != -1)
+	{
+		TActor *vehicle = ActorGetByUID(actor->vehicleUID);
+		CommandActor(vehicle, cmd, ticks);
+		return;
+	}
+	// If this is a vehicle and there's no pilot, do nothing
+	if (actor->pilotUID == -1)
+	{
+		return;
+	}
 	if (actor->confused)
 	{
 		cmd = CmdGetReverse(cmd);
@@ -980,12 +1012,29 @@ static void ActorAddBloodSplatters(
 
 static void ActorUpdatePosition(TActor *actor, int ticks);
 static void ActorDie(TActor *actor);
-void UpdateAllActors(int ticks)
+void UpdateAllActors(const int ticks)
 {
 	CA_FOREACH(TActor, actor, gActors)
 	if (!actor->isInUse)
 	{
 		continue;
+	}
+	// Update pilot/vehicle statuses
+	if (actor->vehicleUID != -1)
+	{
+		const TActor *vehicle = ActorGetByUID(actor->vehicleUID);
+		if (vehicle->dead)
+		{
+			actor->vehicleUID = -1;
+		}
+	}
+	if (actor->pilotUID != -1 && actor->pilotUID != actor->uid)
+	{
+		const TActor *pilot = ActorGetByUID(actor->pilotUID);
+		if (pilot->dead)
+		{
+			actor->pilotUID = -1;
+		}
 	}
 	ActorUpdatePosition(actor, ticks);
 	UpdateActorState(actor, ticks);
@@ -1047,29 +1096,39 @@ void UpdateAllActors(int ticks)
 static void CheckManualPickups(TActor *a);
 static void ActorUpdatePosition(TActor *actor, int ticks)
 {
-	struct vec2 newPos = svec2_add(actor->Pos, actor->MoveVel);
-	if (!svec2_is_zero(actor->thing.Vel))
+	struct vec2 newPos;
+	// If piloting a vehicle, set position to that of vehicle
+	if (actor->vehicleUID != -1)
 	{
-		newPos =
-			svec2_add(newPos, svec2_scale(actor->thing.Vel, (float)ticks));
-
-		for (int i = 0; i < ticks; i++)
+		const TActor *vehicle = ActorGetByUID(actor->vehicleUID);
+		newPos = vehicle->Pos;
+	}
+	else
+	{
+		newPos = svec2_add(actor->Pos, actor->MoveVel);
+		if (!svec2_is_zero(actor->thing.Vel))
 		{
-			if (actor->thing.Vel.x > FLT_EPSILON)
+			newPos =
+				svec2_add(newPos, svec2_scale(actor->thing.Vel, (float)ticks));
+
+			for (int i = 0; i < ticks; i++)
 			{
-				actor->thing.Vel.x = MAX(0, actor->thing.Vel.x - VEL_DECAY_X);
-			}
-			else if (actor->thing.Vel.x < -FLT_EPSILON)
-			{
-				actor->thing.Vel.x = MIN(0, actor->thing.Vel.x + VEL_DECAY_X);
-			}
-			if (actor->thing.Vel.y > FLT_EPSILON)
-			{
-				actor->thing.Vel.y = MAX(0, actor->thing.Vel.y - VEL_DECAY_Y);
-			}
-			else if (actor->thing.Vel.y < FLT_EPSILON)
-			{
-				actor->thing.Vel.y = MIN(0, actor->thing.Vel.y + VEL_DECAY_Y);
+				if (actor->thing.Vel.x > FLT_EPSILON)
+				{
+					actor->thing.Vel.x = MAX(0, actor->thing.Vel.x - VEL_DECAY_X);
+				}
+				else if (actor->thing.Vel.x < -FLT_EPSILON)
+				{
+					actor->thing.Vel.x = MIN(0, actor->thing.Vel.x + VEL_DECAY_X);
+				}
+				if (actor->thing.Vel.y > FLT_EPSILON)
+				{
+					actor->thing.Vel.y = MAX(0, actor->thing.Vel.y - VEL_DECAY_Y);
+				}
+				else if (actor->thing.Vel.y < FLT_EPSILON)
+				{
+					actor->thing.Vel.y = MIN(0, actor->thing.Vel.y + VEL_DECAY_Y);
+				}
 			}
 		}
 	}
@@ -1284,6 +1343,43 @@ static bool IsUnarmedBot(const TActor *actor)
 	return c->bot != NULL && c->bot->probabilityToShoot == 0;
 }
 
+static void VehicleTakePilot(const TActor *vehicle);
+// Check whether actors are overlapping with unpiloted vehicles,
+// and automatically pilot them
+// Only called at start of mission
+void ActorsPilotVehicles(void)
+{
+	CA_FOREACH(const TActor, vehicle, gActors)
+	if (!vehicle->isInUse)
+	{
+		continue;
+	}
+	if (vehicle->pilotUID == -1)
+	{
+		VehicleTakePilot(vehicle);
+	}
+	CA_FOREACH_END()
+}
+static void VehicleTakePilot(const TActor *vehicle)
+{
+	CA_FOREACH(const TActor, pilot, gActors)
+	if (!pilot->isInUse)
+	{
+		continue;
+	}
+	if (pilot->pilotUID == pilot->uid &&
+		AABBOverlap(vehicle->Pos, pilot->Pos, vehicle->thing.size, pilot->thing.size))
+	{
+		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_PILOT);
+		e.u.Pilot.On = true;
+		e.u.Pilot.UID = pilot->uid;
+		e.u.Pilot.VehicleUID = vehicle->uid;
+		GameEventsEnqueue(&gGameEvents, e);
+		break;
+	}
+	CA_FOREACH_END()
+}
+
 void ActorsInit(void)
 {
 	CArrayInit(&gActors, sizeof(TActor));
@@ -1338,6 +1434,8 @@ TActor *ActorAdd(NActorAdd aa)
 	actor->uid = aa.UID;
 	LOG(LM_ACTOR, LL_DEBUG, "add actor uid(%d) playerUID(%d)", actor->uid,
 		aa.PlayerUID);
+	actor->pilotUID = aa.PilotUID;
+	actor->vehicleUID = aa.VehicleUID;
 	CArrayInit(&actor->ammo, sizeof(int));
 	for (int i = 0; i < AmmoGetNumClasses(&gAmmo); i++)
 	{

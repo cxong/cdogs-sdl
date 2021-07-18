@@ -36,6 +36,7 @@
 typedef struct
 {
 	char *Name;
+	bool Vehicle;
 	char *HeadSprites;
 	char *Body;
 	const CharSprites *Sprites;

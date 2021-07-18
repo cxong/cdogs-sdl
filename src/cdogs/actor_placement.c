@@ -34,7 +34,7 @@
 #include "gamedata.h"
 #include "handle_game_events.h"
 
-static NVec2 PlacePlayerSimple(const Map *map)
+static struct vec2 PlacePlayerSimple(const Map *map)
 {
 	const int halfMap =
 		MAX(map->Size.x * TILE_WIDTH, map->Size.y * TILE_HEIGHT) / 2;
@@ -64,11 +64,11 @@ static NVec2 PlacePlayerSimple(const Map *map)
 			}
 		}
 	}
-	return Vec2ToNet(pos);
+	return pos;
 }
 
-static NVec2 PlaceActorNear(
-	Map *map, const struct vec2 nearPos, const bool allowAllTiles)
+static struct vec2 PlaceActorNear(
+	const Map *map, const struct vec2 nearPos, const bool allowAllTiles)
 {
 	// Try a concentric rhombus pattern, clockwise from right
 	// That is, start by checking right, below, left, above,
@@ -82,7 +82,7 @@ static NVec2 PlaceActorNear(
 	pos = svec2_add(nearPos, svec2(dx, dy));                                  \
 	if (MapIsPosOKForPlayer(map, pos, allowAllTiles))                         \
 	{                                                                         \
-		return Vec2ToNet(pos);                                                \
+		return pos;                                                \
 	}
 	float dx = 0;
 	float dy = 0;
@@ -115,11 +115,11 @@ static NVec2 PlaceActorNear(
 }
 
 static bool TryPlaceOneAwayFromPlayers(
-	Map *map, const struct vec2 pos, void *data);
-NVec2 PlaceAwayFromPlayers(
-	Map *map, const bool giveUp, const PlacementAccessFlags paFlags)
+	const Map *map, const struct vec2 pos, void *data);
+struct vec2 PlaceAwayFromPlayers(
+	const Map *map, const bool giveUp, const PlacementAccessFlags paFlags)
 {
-	NVec2 out;
+	struct vec2 out;
 	if (MapPlaceRandomPos(map, paFlags, TryPlaceOneAwayFromPlayers, &out))
 	{
 		return out;
@@ -132,21 +132,20 @@ NVec2 PlaceAwayFromPlayers(
 		const struct vec2 pos = MapGetRandomPos(map);
 		if (MapIsTileAreaClear(map, pos, svec2i(ACTOR_W, ACTOR_H)))
 		{
-			out = Vec2ToNet(pos);
-			return out;
+			return pos;
 		}
 	}
 
 	// Uh oh
 	// TODO: scan map for a safe position, to use as default
-	return Vec2ToNet(svec2(TILE_WIDTH * 3 / 2, TILE_HEIGHT * 3 / 2));
+	return svec2(TILE_WIDTH * 3 / 2, TILE_HEIGHT * 3 / 2);
 }
 static bool TryPlaceOneAwayFromPlayers(
-	Map *map, const struct vec2 pos, void *data)
+	const Map *map, const struct vec2 pos, void *data)
 {
-	NVec2 *out = data;
+	struct vec2 *out = data;
 	// Try spawning out of players' sights
-	*out = Vec2ToNet(pos);
+	*out = pos;
 
 	const TActor *closestPlayer = AIGetClosestPlayer(pos);
 	if ((closestPlayer == NULL || CHEBYSHEV_DISTANCE(
@@ -154,13 +153,13 @@ static bool TryPlaceOneAwayFromPlayers(
 									  closestPlayer->Pos.y) >= 150) &&
 		MapIsTileAreaClear(map, pos, svec2i(ACTOR_W, ACTOR_H)))
 	{
-		*out = Vec2ToNet(pos);
+		*out = pos;
 		return true;
 	}
 	return false;
 }
 
-NVec2 PlacePrisoner(Map *map)
+struct vec2 PlacePrisoner(const Map *map)
 {
 	struct vec2 pos;
 	do
@@ -170,24 +169,18 @@ NVec2 PlacePrisoner(Map *map)
 			pos = MapGetRandomPos(map);
 		} while (!MapPosIsInLockedRoom(map, pos));
 	} while (!MapIsTileAreaClear(map, pos, svec2i(ACTOR_W, ACTOR_H)));
-	return Vec2ToNet(pos);
+	return pos;
 }
 
 struct vec2 PlacePlayer(
-	Map *map, const PlayerData *p, const struct vec2 firstPos,
+	const Map *map, const PlayerData *p, const struct vec2 firstPos,
 	const bool pumpEvents)
 {
-	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
-	e.u.ActorAdd.UID = ActorsGetNextUID();
-	e.u.ActorAdd.Direction = DIRECTION_DOWN;
-	e.u.ActorAdd.Health = p->Char.maxHealth;
-	e.u.ActorAdd.PlayerUID = p->UID;
-
+	struct vec2 pos;
 	if (IsPVP(gCampaign.Entry.Mode))
 	{
 		// In a PVP mode, always place players apart
-		e.u.ActorAdd.Pos =
-			PlaceAwayFromPlayers(map, false, PLACEMENT_ACCESS_ANY);
+		pos = PlaceAwayFromPlayers(map, false, PLACEMENT_ACCESS_ANY);
 	}
 	else if (
 		ConfigGetEnum(&gConfig, "Interface.Splitscreen") ==
@@ -195,18 +188,21 @@ struct vec2 PlacePlayer(
 		!svec2_is_zero(firstPos))
 	{
 		// If never split screen, try to place players near the first player
-		e.u.ActorAdd.Pos = PlaceActorNear(map, firstPos, true);
+		pos = PlaceActorNear(map, firstPos, true);
 	}
 	else if (!svec2i_is_zero(map->start))
 	{
 		// place players near the start point
 		const struct vec2 startPoint = Vec2CenterOfTile(map->start);
-		e.u.ActorAdd.Pos = PlaceActorNear(map, startPoint, true);
+		pos = PlaceActorNear(map, startPoint, true);
 	}
 	else
 	{
-		e.u.ActorAdd.Pos = PlacePlayerSimple(map);
+		pos = PlacePlayerSimple(map);
 	}
+	GameEvent e = GameEventNewActorAdd(pos, &p->Char, false);
+	e.u.ActorAdd.Direction = DIRECTION_DOWN;
+	e.u.ActorAdd.PlayerUID = p->UID;
 	Ammo2Net(&e.u.ActorAdd.Ammo_count, e.u.ActorAdd.Ammo, &p->ammo);
 	GameEventsEnqueue(&gGameEvents, e);
 

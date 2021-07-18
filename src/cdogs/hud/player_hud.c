@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2017, 2019-2020 Cong Xu
+	Copyright (c) 2013-2017, 2019-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -58,15 +58,27 @@ void HUDPlayerUpdate(HUDPlayer *h, const PlayerData *p, const int ms)
 }
 
 static void DrawPlayerStatus(
-	HUD *hud, const PlayerData *data, TActor *p, const int flags,
+	HUD *hud, const PlayerData *data, const TActor *p, const int flags,
 	const HUDPlayer *h, const Rect2i r);
 static void DrawPlayerObjectiveCompass(
-	const HUD *hud, TActor *a, const int hudPlayerIndex, const int numViews);
+	const HUD *hud, const TActor *a, const int hudPlayerIndex, const int numViews);
 void DrawPlayerHUD(
 	HUD *hud, const PlayerData *p, const int drawFlags,
 	const int hudPlayerIndex, const Rect2i r, const int numViews)
 {
-	TActor *a = IsPlayerAlive(p) ? ActorGetByUID(p->ActorUID) : NULL;
+	const TActor *a = NULL;
+	if (IsPlayerAlive(p))
+	{
+		a = ActorGetByUID(p->ActorUID);
+		if (a != NULL)
+		{
+			if (a->vehicleUID != -1)
+			{
+				// Draw HUD for vehicle if piloting
+				a = ActorGetByUID(a->vehicleUID);
+			}
+		}
+	}
 	DrawPlayerStatus(
 		hud, p, a, drawFlags, &hud->hudPlayers[hudPlayerIndex], r);
 	HUDNumPopupsDrawPlayer(&hud->numPopups, hudPlayerIndex, drawFlags, r);
@@ -74,7 +86,7 @@ void DrawPlayerHUD(
 }
 
 static void DrawPlayerIcon(
-	TActor *a, GraphicsDevice *g, const PicManager *pm, const int flags,
+	const TActor *a, GraphicsDevice *g, const PicManager *pm, const int flags,
 	const SDL_RendererFlip flip, const color_t mask);
 static void DrawScore(
 	GraphicsDevice *g, const PicManager *pm, const TActor *a, const int score,
@@ -97,7 +109,7 @@ static void DrawHealth(
 	const Rect2i r, const color_t mask);
 // Draw player's score, health etc.
 static void DrawPlayerStatus(
-	HUD *hud, const PlayerData *data, TActor *p, const int flags,
+	HUD *hud, const PlayerData *data, const TActor *p, const int flags,
 	const HUDPlayer *h, const Rect2i r)
 {
 	const color_t mask = data->Char.Colors.Body;
@@ -163,7 +175,7 @@ static void DrawPlayerStatus(
 	}
 }
 static void DrawPlayerIcon(
-	TActor *a, GraphicsDevice *g, const PicManager *pm, const int flags,
+	const TActor *a, GraphicsDevice *g, const PicManager *pm, const int flags,
 	const SDL_RendererFlip flip, const color_t mask)
 {
 	const Pic *framePic = PicManagerGetPic(pm, "hud/player_frame");
@@ -616,7 +628,7 @@ static void DrawObjectiveCompass(
 	GraphicsDevice *g, const struct vec2 playerPos, const Rect2i r,
 	const bool showExit);
 static void DrawPlayerObjectiveCompass(
-	const HUD *hud, TActor *a, const int hudPlayerIndex, const int numViews)
+	const HUD *hud, const TActor *a, const int hudPlayerIndex, const int numViews)
 {
 	// Draw objective compass
 	if (a == NULL)

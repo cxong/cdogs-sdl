@@ -672,11 +672,14 @@ int KeycardCount(int flags)
 
 void MissionStaticAddObjective(
 	Mission *m, MissionStatic *ms, const int idx, const int idx2,
-	const struct vec2i pos)
+	const struct vec2i pos, const bool force)
 {
 	CASSERT(m->Type == MAPTYPE_STATIC, "mission is not static type");
-	// Remove any objectives already there
-	MissionStaticTryRemoveObjective(m, ms, pos);
+	if (!force)
+	{
+		// Remove any objectives already there
+		MissionStaticTryRemoveObjective(m, ms, pos);
+	}
 
 	// Check if the objective already has an entry, and add to its list
 	// of positions

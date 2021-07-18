@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014-2016, 2019 Cong Xu
+    Copyright (c) 2014-2016, 2019, 2021 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -411,6 +411,8 @@ static void OnReceive(NetClient *n, ENetEvent event)
 			case GAME_EVENT_ACTOR_PICKUP_ALL: actorUID = e.u.ActorPickupAll.UID; break;
 			case GAME_EVENT_ACTOR_USE_AMMO: actorUID = e.u.UseAmmo.UID; break;
 			case GAME_EVENT_ACTOR_MELEE: actorUID = e.u.Melee.UID; break;
+			case GAME_EVENT_ACTOR_PILOT: actorUID = e.u.Pilot.UID;
+				break;
 			case GAME_EVENT_GUN_FIRE:
 				if (e.u.GunFire.IsGun)
 				{

@@ -148,8 +148,8 @@ struct vec2 MapGetExitPos(const Map *m, const int i);
 struct vec2i MapGetRandomTile(const Map *map);
 struct vec2 MapGetRandomPos(const Map *map);
 bool MapPlaceRandomPos(
-	Map *map, const PlacementAccessFlags paFlags,
-	bool (*tryPlaceFunc)(Map *, const struct vec2, void *), void *data);
+	const Map *map, const PlacementAccessFlags paFlags,
+	bool (*tryPlaceFunc)(const Map *, const struct vec2, void *), void *data);
 
 void MapMarkAsVisited(Map *map, struct vec2i pos);
 void MapMarkAllAsVisited(Map *map);

@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2015, 2017-2018 Cong Xu
+	Copyright (c) 2013-2015, 2017-2018, 2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -273,7 +273,7 @@ static bool CollisionIsOnSameTeam(
 	if (i->kind == KIND_CHARACTER)
 	{
 		const TActor *a = CArrayGet(&gActors, i->id);
-		itemTeam = CalcCollisionTeam(1, a);
+		itemTeam = CalcCollisionTeam(true, a);
 	}
 	return team != COLLISIONTEAM_NONE && itemTeam != COLLISIONTEAM_NONE &&
 		   team == itemTeam && !isPVP;
@@ -404,6 +404,22 @@ static bool CheckParams(
 	// No same-item collision
 	if (a == b)
 		return false;
+	// Pilot / vehicle collision
+	if (a->kind == KIND_CHARACTER && b->kind == KIND_CHARACTER)
+	{
+		const TActor *aa = ActorGetByUID(a->id);
+		const TActor *ab = ActorGetByUID(b->id);
+		// Pilots never collide with anything
+		if (aa->vehicleUID != -1 || ab->vehicleUID != -1)
+		{
+			return false;
+		}
+		// Unpiloted vehicles don't collide with other actors
+		if (aa->pilotUID == -1 || ab->pilotUID == -1)
+		{
+			return false;
+		}
+	}
 	if (params.ThingMask != 0 && !(b->flags & params.ThingMask))
 	{
 		return false;

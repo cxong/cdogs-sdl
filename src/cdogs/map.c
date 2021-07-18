@@ -402,8 +402,8 @@ bool MapPlaceRandomTile(
 	return false;
 }
 bool MapPlaceRandomPos(
-	Map *map, const PlacementAccessFlags paFlags,
-	bool (*tryPlaceFunc)(Map *, const struct vec2, void *), void *data)
+	const Map *map, const PlacementAccessFlags paFlags,
+	bool (*tryPlaceFunc)(const Map *, const struct vec2, void *), void *data)
 {
 	// Try a bunch of times to place something at a random location
 	bool locked, unlocked;

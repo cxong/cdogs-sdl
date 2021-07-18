@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2014-2015, 2017 Cong Xu
+ Copyright (c) 2014-2015, 2017, 2021 Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -32,10 +32,10 @@
 #include "net_util.h"
 
 
-NVec2 PlaceAwayFromPlayers(
-	Map *map, const bool giveUp, const PlacementAccessFlags paFlags);
-NVec2 PlacePrisoner(Map *map);
+struct vec2 PlaceAwayFromPlayers(
+	const Map *map, const bool giveUp, const PlacementAccessFlags paFlags);
+struct vec2 PlacePrisoner(const Map *map);
 
 struct vec2 PlacePlayer(
-	Map *map, const PlayerData *p, const struct vec2 firstPos,
+	const Map *map, const PlayerData *p, const struct vec2 firstPos,
 	const bool pumpEvents);

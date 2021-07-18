@@ -129,13 +129,15 @@ message NGameBegin {
 
 message NActorAdd {
 	uint32 UID = 1;
-	uint32 CharId = 2;
-	int32 Direction = 3;
-	int32 Health = 4;
-	int32 PlayerUID = 5;
-	uint32 ThingFlags = 6;
-	NVec2 Pos = 7;
-	repeated NAmmo Ammo = 8;
+	int32 PilotUID = 2;
+	int32 VehicleUID = 3;
+	uint32 CharId = 4;
+	int32 Direction = 5;
+	int32 Health = 6;
+	int32 PlayerUID = 7;
+	uint32 ThingFlags = 8;
+	NVec2 Pos = 9;
+	repeated NAmmo Ammo = 10;
 }
 
 message NActorMove {
@@ -217,6 +219,12 @@ message NActorMelee {
 	int32 HitType = 3;
 	int32 TargetKind = 4;
 	uint32 TargetUID = 5;
+}
+
+message NActorPilot {
+	uint32 UID = 1;
+	int32 VehicleUID = 2;
+	bool On = 3;
 }
 
 message NAddPickup {

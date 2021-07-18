@@ -390,7 +390,7 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 		if (isMain)
 		{
 			MissionStaticAddObjective(
-				m, &m->u.Static, b->u.ItemIndex, b->Index2, b->Pos);
+				m, &m->u.Static, b->u.ItemIndex, b->Index2, b->Pos, false);
 			return EDITOR_RESULT_CHANGED_AND_RELOAD;
 		}
 		else

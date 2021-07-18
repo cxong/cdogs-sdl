@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2019 Cong Xu
+    Copyright (c) 2013-2019, 2021 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@
 #pragma once
 
 #include "c_array.h"
+#include "character.h"
 #include "particle.h"
 #include "proto/msg.pb.h"
 
@@ -80,6 +81,7 @@ typedef enum
 	GAME_EVENT_ACTOR_USE_AMMO,
 	GAME_EVENT_ACTOR_DIE,
 	GAME_EVENT_ACTOR_MELEE,
+	GAME_EVENT_ACTOR_PILOT,
 
 	GAME_EVENT_ADD_PICKUP,
 	GAME_EVENT_REMOVE_PICKUP,
@@ -165,6 +167,7 @@ typedef struct
 		NActorUseAmmo UseAmmo;
 		NActorDie ActorDie;
 		NActorMelee Melee;
+		NActorPilot Pilot;
 		NAddPickup AddPickup;
 		NRemovePickup RemovePickup;
 		struct
@@ -200,3 +203,4 @@ void GameEventsEnqueue(CArray *store, GameEvent e);
 void GameEventsClear(CArray *store);
 
 GameEvent GameEventNew(GameEventType type);
+GameEvent GameEventNewActorAdd(const struct vec2 pos, const Character *c, const bool isNPC);
