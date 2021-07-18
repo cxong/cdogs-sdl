@@ -55,6 +55,7 @@
       "Ammo": "Cells"
     },
     {
+      "Pic": "raygun",
       "Name": "The Mutilator!!!",
       "Icon": "powergun",
       "Bullet": "red_dot",

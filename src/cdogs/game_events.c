@@ -220,7 +220,6 @@ GameEvent GameEventNew(GameEventType type)
 		e.u.AddPickup.has_Pos = true;
 		break;
 	case GAME_EVENT_ACTOR_ADD:
-		e.u.ActorAdd.UID = -1;
 		e.u.ActorAdd.PilotUID = -1;
 		e.u.ActorAdd.VehicleUID = -1;
 		e.u.ActorAdd.PlayerUID = -1;

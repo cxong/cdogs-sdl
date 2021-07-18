@@ -409,15 +409,18 @@ static bool CheckParams(
 	{
 		const TActor *aa = ActorGetByUID(a->id);
 		const TActor *ab = ActorGetByUID(b->id);
-		// Pilots never collide with anything
-		if (aa->vehicleUID != -1 || ab->vehicleUID != -1)
+		if (aa != NULL && ab != NULL)
 		{
-			return false;
-		}
-		// Unpiloted vehicles don't collide with other actors
-		if (aa->pilotUID == -1 || ab->pilotUID == -1)
-		{
-			return false;
+			// Pilots never collide with anything
+			if (aa->vehicleUID != -1 || ab->vehicleUID != -1)
+			{
+				return false;
+			}
+			// Unpiloted vehicles don't collide with other actors
+			if (aa->pilotUID == -1 || ab->pilotUID == -1)
+			{
+				return false;
+			}
 		}
 	}
 	if (params.ThingMask != 0 && !(b->flags & params.ThingMask))
