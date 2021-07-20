@@ -1,0 +1,23 @@
+---
+layout: post
+title:  "C-Dogs 0.13.0 Released!"
+date:   2021-07-20
+categories: release
+published: true
+---
+
+This release brings a fresh new look to C-Dogs! Last release we added a chaingun sprite; this release adds weapon sprites for all weapons, which lets you see at a glance what guns the enemies are holding:
+
+<video muted autoplay loop>
+    <source src="https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/gun_models.webm" type="video/webm">
+</video>
+
+Pretty neat huh? There are also some AI enhancements, particularly around waking up:
+
+- Add peripheral vision
+- Wake on hearing gunfire nearby
+- Wake on seeing someone being attacked
+
+So you can do things like catch a sleeping enemy by sneaking around behind it! Try it out 🥳
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/0.13.0>
