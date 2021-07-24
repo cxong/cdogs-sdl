@@ -20,14 +20,17 @@ else
 fi
 
 echo "Preparing butler..."
-curl -L -o butler.zip "$BUTLER_URL"
-unzip butler.zip
-chmod +x butler
-./butler -V
+if ! command -v butler &> /dev/null
+then
+  curl -L -o butler.zip "$BUTLER_URL"
+  unzip butler.zip
+  chmod +x butler
+fi
+butler -V
 
 prepare_and_push() {
   echo "./butler push \"$1\" $PROJECT:$2 --userversion $VERSION"
-  ./butler push "$1" $PROJECT:$2 --userversion $VERSION
+  butler push "$1" $PROJECT:$2 --userversion $VERSION
 }
 
 prepare_and_push $TRAVIS_BUILD_DIR/C-Dogs*SDL-*-"$FILE_SUFFIX" "$BUTLER_CHANNEL"
