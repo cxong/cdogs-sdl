@@ -47,9 +47,27 @@ void HUDPlayerInit(HUDPlayer *h)
 	HealthGaugeInit(&h->healthGauge);
 }
 
+static const TActor *GetActor(const PlayerData *p)
+{
+	if (!IsPlayerAlive(p))
+	{
+		return NULL;
+	}
+	const TActor *a = ActorGetByUID(p->ActorUID);
+	if (a != NULL)
+	{
+		if (a->vehicleUID != -1)
+		{
+			// Draw HUD for vehicle if piloting
+			a = ActorGetByUID(a->vehicleUID);
+		}
+	}
+	return a;
+}
+
 void HUDPlayerUpdate(HUDPlayer *h, const PlayerData *p, const int ms)
 {
-	const TActor *a = ActorGetByUID(p->ActorUID);
+	const TActor *a = GetActor(p);
 	if (a == NULL)
 		return;
 
@@ -61,24 +79,13 @@ static void DrawPlayerStatus(
 	HUD *hud, const PlayerData *data, const TActor *p, const int flags,
 	const HUDPlayer *h, const Rect2i r);
 static void DrawPlayerObjectiveCompass(
-	const HUD *hud, const TActor *a, const int hudPlayerIndex, const int numViews);
+	const HUD *hud, const TActor *a, const int hudPlayerIndex,
+	const int numViews);
 void DrawPlayerHUD(
 	HUD *hud, const PlayerData *p, const int drawFlags,
 	const int hudPlayerIndex, const Rect2i r, const int numViews)
 {
-	const TActor *a = NULL;
-	if (IsPlayerAlive(p))
-	{
-		a = ActorGetByUID(p->ActorUID);
-		if (a != NULL)
-		{
-			if (a->vehicleUID != -1)
-			{
-				// Draw HUD for vehicle if piloting
-				a = ActorGetByUID(a->vehicleUID);
-			}
-		}
-	}
+	const TActor *a = GetActor(p);
 	DrawPlayerStatus(
 		hud, p, a, drawFlags, &hud->hudPlayers[hudPlayerIndex], r);
 	HUDNumPopupsDrawPlayer(&hud->numPopups, hudPlayerIndex, drawFlags, r);
@@ -628,7 +635,8 @@ static void DrawObjectiveCompass(
 	GraphicsDevice *g, const struct vec2 playerPos, const Rect2i r,
 	const bool showExit);
 static void DrawPlayerObjectiveCompass(
-	const HUD *hud, const TActor *a, const int hudPlayerIndex, const int numViews)
+	const HUD *hud, const TActor *a, const int hudPlayerIndex,
+	const int numViews)
 {
 	// Draw objective compass
 	if (a == NULL)

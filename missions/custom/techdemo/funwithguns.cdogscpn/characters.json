@@ -28,7 +28,7 @@
 		"Feet": "aabbaaff",
 		"speed": 128,
 		"Gun": "Quad Machine Gun",
-		"maxHealth": 40,
+		"maxHealth": 200,
 		"flags": 1024,
 		"probabilityToMove": 50,
 		"probabilityToTrack": 25,
