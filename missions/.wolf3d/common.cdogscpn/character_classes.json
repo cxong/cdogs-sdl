@@ -87,7 +87,7 @@
       "Body": "mech",
       "Sounds": "mecha_hitler",
       "BloodColor": "00ffff",
-      "Footsteps": "mecha_step",
+      "Footsteps": "mech",
       "FootstepsDistancePlus": 0
     },
     {

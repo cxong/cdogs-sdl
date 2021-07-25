@@ -86,7 +86,7 @@ static const char *soundsW6[] = {
 	"chars/die/schabbs", "chars/alert/schabbs", "chars/die/fake_hitler",
 	"chars/alert/officer", "chars/die/officer", "chars/alert/dog/",
 	// 30-39
-	"whistle", "footsteps/mecha_step", "victory", "chars/die/mecha_hitler",
+	"whistle", "footsteps/mech", "victory", "chars/die/mecha_hitler",
 	"chars/die/guard/", "chars/die/guard/", "chars/die/otto",
 	"chars/alert/otto", "chars/alert/fettgesicht", "fart",
 	// 40-49
