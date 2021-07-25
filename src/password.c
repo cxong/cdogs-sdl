@@ -97,7 +97,7 @@ static void MenuCreateStart(MenuSystem *ms, const CampaignSave *save)
 	// Note: mission can be -1
 	menuContinue->isDisabled =
 		save == NULL || save->NextMission <= 0 ||
-		save->NextMission == gCampaign.Setting.Missions.size;
+		save->NextMission == (int)gCampaign.Setting.Missions.size;
 	MenuAddSubmenu(ms->root, menuContinue);
 
 	// Create level select menus

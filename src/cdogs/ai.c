@@ -296,6 +296,12 @@ static bool DidPlayerShoot(void)
 	return false;
 }
 
+static bool IsAIEnabled(const TActor *a)
+{
+	return a->isInUse && a->PlayerUID < 0 && !a->dead &&
+		   !ActorGetCharacter(a)->Class->Vehicle;
+}
+
 static int Follow(TActor *a);
 static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit);
 int AICommand(const int ticks)
@@ -329,8 +335,7 @@ int AICommand(const int ticks)
 	}
 
 	CA_FOREACH(TActor, actor, gActors)
-	if (!actor->isInUse || actor->PlayerUID >= 0 || actor->dead ||
-		ActorGetCharacter(actor)->Class->Vehicle)
+	if (!IsAIEnabled(actor))
 	{
 		continue;
 	}
@@ -558,8 +563,7 @@ static int Follow(TActor *a)
 void AICommandLast(const int ticks)
 {
 	CA_FOREACH(TActor, actor, gActors)
-	if (!actor->isInUse || actor->PlayerUID >= 0 || actor->dead ||
-		(actor->flags & FLAGS_PRISONER))
+	if (!IsAIEnabled(actor))
 	{
 		continue;
 	}
