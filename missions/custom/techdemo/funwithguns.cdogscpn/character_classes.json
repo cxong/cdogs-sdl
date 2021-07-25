@@ -10,7 +10,7 @@
         },
         "Body": "mech",
         "Sounds": "mech",
-        "BloodColor": "9999cc",
+        "BloodColor": "aabbaa",
         "Footsteps": "mech",
         "FootstepsDistancePlus": 0
       }

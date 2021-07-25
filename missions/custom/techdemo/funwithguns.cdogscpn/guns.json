@@ -77,6 +77,24 @@
       "Lock": 1,
       "Sound": "",
       "MuzzleFlashParticle": ""
+    },
+    {
+      "Pic": "quad_chaingun",
+      "Name": "Quad Machine Gun",
+      "Icon": "machine_gun",
+      "Bullet": "mg",
+      "Cost": 4,
+      "Lock": 70,
+      "Sound": "mg",
+      "SpreadCount": 2,
+      "Recoil": 0.2,
+      "MuzzleFlashParticle": "muzzle_flash_mg",
+      "Brass": "brass_big",
+      "CanDrop": false,
+      "Barrel": {
+        "Count": 2,
+        "Lock": 6
+      }
     }
   ],
   "PseudoGuns" : [
