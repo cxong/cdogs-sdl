@@ -73,8 +73,9 @@ jobs:
         bash build/travis-ci/butler.sh
 
     - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v2.2.4
+      uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         path: C-Dogs*SDL-*-*.*
-
