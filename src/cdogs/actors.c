@@ -524,9 +524,12 @@ static void CheckPickups(TActor *actor)
 	OverlapThings(
 		&actor->thing, actor->Pos, actor->thing.Vel, actor->thing.size, params,
 		CheckPickupFunc, actor, NULL, NULL, NULL);
-	const CollisionParams paramsPilot = {
-		params.ThingMask, params.Team, params.IsPVP, true};
-	CheckPilot(actor, paramsPilot);
+	if (actor->PickupAll)
+	{
+		const CollisionParams paramsPilot = {
+			params.ThingMask, params.Team, params.IsPVP, true};
+		CheckPilot(actor, paramsPilot);
+	}
 }
 static bool CheckPickupFunc(
 	Thing *ti, void *data, const struct vec2 colA, const struct vec2 colB,

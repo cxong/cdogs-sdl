@@ -26,7 +26,7 @@
 		"Legs": "aabbaaff",
 		"Hair": "e0f0e0ff",
 		"Feet": "aabbaaff",
-		"speed": 256,
+		"speed": 128,
 		"Gun": "Quad Machine Gun",
 		"maxHealth": 40,
 		"flags": 1024,
