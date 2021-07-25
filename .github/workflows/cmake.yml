@@ -66,11 +66,32 @@ jobs:
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -VV -S
 
-    - name: Deploy on tags
+    - name: Make package on tags
       if: startsWith(github.ref, 'refs/tags/')
       run: |
         make package
-        bash build/travis-ci/butler.sh
+
+    - name: Publish to itch.io (Linux)
+      if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest'
+      uses: josephbmanley/butler-publish-itchio-action@master
+      env:
+        BUTLER_CREDENTIALS: ${{ secrets.BUTLER_API_KEY }}
+        CHANNEL: linux
+        ITCH_GAME: cdogs-sdl
+        ITCH_USER: congusbongus
+        PACKAGE: C-Dogs*SDL-*-*.*
+        VERSION: ${{ env.TAGVERSION }}
+
+    - name: Publish to itch.io (macos)
+      if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'macos-latest'
+      uses: josephbmanley/butler-publish-itchio-action@master
+      env:
+        BUTLER_CREDENTIALS: ${{ secrets.BUTLER_API_KEY }}
+        CHANNEL: mac
+        ITCH_GAME: cdogs-sdl
+        ITCH_USER: congusbongus
+        PACKAGE: C-Dogs*SDL-*-*.*
+        VERSION: ${{ env.TAGVERSION }}
 
     - name: Upload a Build Artifact
       uses: softprops/action-gh-release@v1
