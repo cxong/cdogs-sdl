@@ -5,14 +5,14 @@
 		"Type": "Classic",
 		"Width": 38,
 		"Height": 38,
-		"WallStyle": "plasteel",
-		"FloorStyle": "tile",
-		"RoomStyle": "recessed",
 		"ExitStyle": "hazard",
 		"KeyStyle": "office",
-		"DoorStyle": "office",
 		"Objectives": [],
-		"Enemies": [0],
+		"Enemies": [0,
+		1,
+		0,
+		0,
+		0],
 		"SpecialChars": [],
 		"MapObjectDensities": [{
 			"MapObject": "barrel_blue",
@@ -52,12 +52,53 @@
 		"Booby Trap",
 		"Scorpion Spear",
 		"Laser Pointer",
-	"Akimbo Pistols"],
-		"Song": "",
-		"WallMask": "343448",
-		"FloorMask": "5c5c84",
-		"RoomMask": "840000",
-		"AltMask": "840000",
+		"Akimbo Pistols"],
+		"TileClasses": {
+			"Wall": {
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "plasteel",
+				"Mask": "343448ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": false
+			},
+			"Floor": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "tile",
+				"Mask": "5c5c84ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": false
+			},
+			"Room": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "recessed",
+				"Mask": "840000ff",
+				"MaskAlt": "840000ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true
+			},
+			"Door": {
+				"Name": "door",
+				"Type": "Door",
+				"Style": "office",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": true
+			}
+		},
 		"Walls": 10,
 		"WallLength": 8,
 		"CorridorWidth": 2,
@@ -72,10 +113,12 @@
 			"WallPad": 0
 		},
 		"Squares": 0,
+		"ExitEnabled": true,
 		"Doors": {
 			"Enabled": false,
 			"Min": 0,
-			"Max": 0
+			"Max": 0,
+			"RandomPos": false
 		},
 		"Pillars": {
 			"Count": 0,

@@ -217,7 +217,8 @@ bool BulletUpdate(struct MobileObject *obj, const int ticks)
 		}
 		hasHit = true;
 		bounced = hit.Type == HIT_WALL && !svec2_is_zero(obj->thing.Vel) &&
-				  alive && !svec2_is_nearly_equal(posStart, hit.Pos, EPSILON_POS);
+				  alive &&
+				  !svec2_is_nearly_equal(posStart, hit.Pos, EPSILON_POS);
 		const struct vec2 hitPos = hit.Type != HIT_NONE ? hit.Pos : pos;
 		if (bounced)
 		{
@@ -490,7 +491,8 @@ static HitResult HitItem(
 	data.ColNormal = svec2_zero();
 	data.ColPosDist2 = -1;
 	const CollisionParams params = {
-		THING_CAN_BE_SHOT, COLLISIONTEAM_NONE, IsPVP(gCampaign.Entry.Mode)};
+		THING_CAN_BE_SHOT, COLLISIONTEAM_NONE, IsPVP(gCampaign.Entry.Mode),
+		false};
 	OverlapThings(
 		&obj->thing, pos, vel, obj->thing.size, params, HitItemFunc, &data,
 		CheckWall, HitWallFunc, &data);
@@ -517,7 +519,9 @@ static bool HitItemFunc(
 	HitItemData *hData = data;
 
 	// Check bullet-to-other collisions
-	if (!CanHit(hData->Obj->bulletClass, hData->Obj->flags, hData->Obj->ActorUID, ti))
+	if (!CanHit(
+			hData->Obj->bulletClass, hData->Obj->flags, hData->Obj->ActorUID,
+			ti))
 	{
 		goto bail;
 	}
@@ -559,7 +563,8 @@ static HitType GetHitType(
 		break;
 	}
 	if (bullet->thing.SoundLock > 0 ||
-		!HasHitSound(ti->kind, tUID, bullet->bulletClass->Special.Effect, true))
+		!HasHitSound(
+			ti->kind, tUID, bullet->bulletClass->Special.Effect, true))
 	{
 		ht = HIT_NONE;
 	}
@@ -616,8 +621,8 @@ static void OnHit(HitItemData *data, Thing *target)
 	data->HitType = GetHitType(target, data->Obj, &targetUID);
 	const TActor *source = ActorGetByUID(data->Obj->ActorUID);
 	Damage(
-		data->Obj->thing.Vel, data->Obj->bulletClass, data->Obj->flags, source, target->kind,
-		targetUID);
+		data->Obj->thing.Vel, data->Obj->bulletClass, data->Obj->flags, source,
+		target->kind, targetUID);
 	if (data->Obj->thing.SoundLock <= 0)
 	{
 		data->Obj->thing.SoundLock += SOUND_LOCK_THING;
@@ -823,7 +828,8 @@ static void LoadBullet(
 	{
 		if (json_find_first_label(node, "HitSounds"))
 		{
-			json_t *hitSounds = json_find_first_label(node, "HitSounds")->child;
+			json_t *hitSounds =
+				json_find_first_label(node, "HitSounds")->child;
 			LoadHitsound(&b->Hit.Object.Sound, hitSounds, "Object", version);
 			LoadHitsound(&b->Hit.Flesh.Sound, hitSounds, "Flesh", version);
 			LoadHitsound(&b->Hit.Wall.Sound, hitSounds, "Wall", version);
@@ -884,7 +890,8 @@ static void LoadBullet(
 	LOG(LM_MAP, LL_DEBUG, "...wallMark(%s)...",
 		b->WallMark != NULL ? b->WallMark->Name : "");
 	LOG(LM_MAP, LL_DEBUG,
-		"...hit(object(%s, %s), flesh(%s, %s), wall(%s, %s)) wallBounces(%s)...",
+		"...hit(object(%s, %s), flesh(%s, %s), wall(%s, %s)) "
+		"wallBounces(%s)...",
 		b->Hit.Object.Hit ? "true" : "false",
 		b->Hit.Object.Sound != NULL ? b->Hit.Object.Sound : "",
 		b->Hit.Flesh.Hit ? "true" : "false",
@@ -892,10 +899,8 @@ static void LoadBullet(
 		b->Hit.Wall.Hit ? "true" : "false",
 		b->Hit.Wall.Sound != NULL ? b->Hit.Wall.Sound : "",
 		b->WallBounces ? "true" : "false");
-	LOG(LM_MAP, LL_DEBUG,
-		"...gravity(%f) fallsDown(%s) destroyOnDrop(%s)...",
-		b->Falling.GravityFactor,
-		b->Falling.FallsDown ? "true" : "false",
+	LOG(LM_MAP, LL_DEBUG, "...gravity(%f) fallsDown(%s) destroyOnDrop(%s)...",
+		b->Falling.GravityFactor, b->Falling.FallsDown ? "true" : "false",
 		b->Falling.DestroyOnDrop ? "true" : "false");
 	LOG(LM_MAP, LL_DEBUG,
 		"...dropGuns(%d) seekFactor(%d) erratic(%s) trail(%s@%f per %d)...",

@@ -190,9 +190,7 @@ void UpdateActorState(TActor *actor, int ticks)
 	{
 		GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
 		const CharacterClass *cc = ActorGetCharacter(actor)->Class;
-		sprintf(
-			es.u.SoundAt.Sound, "footsteps/%s",
-			cc->Footsteps);
+		sprintf(es.u.SoundAt.Sound, "footsteps/%s", cc->Footsteps);
 		es.u.SoundAt.Pos = Vec2ToNet(actor->thing.Pos);
 		es.u.SoundAt.Distance = cc->FootstepsDistancePlus;
 		GameEventsEnqueue(&gGameEvents, es);
@@ -266,7 +264,7 @@ bool TryMoveActor(TActor *actor, struct vec2 pos)
 	// Check for object collisions
 	const CollisionParams params = {
 		THING_IMPASSABLE, CalcCollisionTeam(true, actor),
-		IsPVP(gCampaign.Entry.Mode)};
+		IsPVP(gCampaign.Entry.Mode), false};
 	Thing *target = OverlapGetFirstItem(
 		&actor->thing, pos, actor->thing.size, actor->thing.Vel, params);
 	if (target)
@@ -513,6 +511,7 @@ static void CheckTrigger(const TActor *a, const Map *map)
 static bool CheckPickupFunc(
 	Thing *ti, void *data, const struct vec2 colA, const struct vec2 colB,
 	const struct vec2 normal);
+static void CheckPilot(const TActor *a, const CollisionParams params);
 static void CheckPickups(TActor *actor)
 {
 	// NPCs can't pickup
@@ -521,10 +520,13 @@ static void CheckPickups(TActor *actor)
 		return;
 	}
 	const CollisionParams params = {
-		0, CalcCollisionTeam(true, actor), IsPVP(gCampaign.Entry.Mode)};
+		0, CalcCollisionTeam(true, actor), IsPVP(gCampaign.Entry.Mode), false};
 	OverlapThings(
 		&actor->thing, actor->Pos, actor->thing.Vel, actor->thing.size, params,
 		CheckPickupFunc, actor, NULL, NULL, NULL);
+	const CollisionParams paramsPilot = {
+		params.ThingMask, params.Team, params.IsPVP, true};
+	CheckPilot(actor, paramsPilot);
 }
 static bool CheckPickupFunc(
 	Thing *ti, void *data, const struct vec2 colA, const struct vec2 colB,
@@ -540,6 +542,22 @@ static bool CheckPickupFunc(
 	PickupPickup(a, CArrayGet(&gPickups, ti->id), a->PickupAll);
 	return true;
 }
+static void CheckPilot(const TActor *a, const CollisionParams params)
+{
+	const Thing *ti = OverlapGetFirstItem(
+		&a->thing, a->Pos, a->thing.size, a->thing.Vel, params);
+	if (ti == NULL || ti->kind != KIND_CHARACTER)
+		return;
+	const TActor *vehicle = ActorGetByUID(ti->id);
+	if (vehicle->pilotUID >= 0)
+		return;
+
+	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_PILOT);
+	e.u.Pilot.On = true;
+	e.u.Pilot.UID = a->uid;
+	e.u.Pilot.VehicleUID = vehicle->uid;
+	GameEventsEnqueue(&gGameEvents, e);
+}
 static void CheckRescue(const TActor *a)
 {
 	// NPCs can't rescue
@@ -551,7 +569,7 @@ static void CheckRescue(const TActor *a)
 #define RESCUE_CHECK_PAD 2
 	const CollisionParams params = {
 		THING_IMPASSABLE, CalcCollisionTeam(true, a),
-		IsPVP(gCampaign.Entry.Mode)};
+		IsPVP(gCampaign.Entry.Mode), false};
 	const Thing *target = OverlapGetFirstItem(
 		&a->thing, a->Pos,
 		svec2i_add(a->thing.size, svec2i(RESCUE_CHECK_PAD, RESCUE_CHECK_PAD)),
@@ -1052,7 +1070,8 @@ void UpdateAllActors(const int ticks)
 		gCollisionSystem.allyCollision == ALLYCOLLISION_REPEL)
 	{
 		const CollisionParams params = {
-			THING_IMPASSABLE, COLLISIONTEAM_NONE, IsPVP(gCampaign.Entry.Mode)};
+			THING_IMPASSABLE, COLLISIONTEAM_NONE, IsPVP(gCampaign.Entry.Mode),
+			false};
 		const Thing *collidingItem = OverlapGetFirstItem(
 			&actor->thing, actor->Pos, actor->thing.size, actor->thing.Vel,
 			params);
@@ -1115,19 +1134,23 @@ static void ActorUpdatePosition(TActor *actor, int ticks)
 			{
 				if (actor->thing.Vel.x > FLT_EPSILON)
 				{
-					actor->thing.Vel.x = MAX(0, actor->thing.Vel.x - VEL_DECAY_X);
+					actor->thing.Vel.x =
+						MAX(0, actor->thing.Vel.x - VEL_DECAY_X);
 				}
 				else if (actor->thing.Vel.x < -FLT_EPSILON)
 				{
-					actor->thing.Vel.x = MIN(0, actor->thing.Vel.x + VEL_DECAY_X);
+					actor->thing.Vel.x =
+						MIN(0, actor->thing.Vel.x + VEL_DECAY_X);
 				}
 				if (actor->thing.Vel.y > FLT_EPSILON)
 				{
-					actor->thing.Vel.y = MAX(0, actor->thing.Vel.y - VEL_DECAY_Y);
+					actor->thing.Vel.y =
+						MAX(0, actor->thing.Vel.y - VEL_DECAY_Y);
 				}
 				else if (actor->thing.Vel.y < FLT_EPSILON)
 				{
-					actor->thing.Vel.y = MIN(0, actor->thing.Vel.y + VEL_DECAY_Y);
+					actor->thing.Vel.y =
+						MIN(0, actor->thing.Vel.y + VEL_DECAY_Y);
 				}
 			}
 		}
@@ -1144,16 +1167,21 @@ static void ActorUpdatePosition(TActor *actor, int ticks)
 static bool CheckManualPickupFunc(
 	Thing *ti, void *data, const struct vec2 colA, const struct vec2 colB,
 	const struct vec2 normal);
+// Check if the actor is over any unpiloted vehicles
+static void CheckManualPilot(TActor *a, const CollisionParams params);
 static void CheckManualPickups(TActor *a)
 {
 	// NPCs can't pickup
 	if (a->PlayerUID < 0)
 		return;
 	const CollisionParams params = {
-		0, CalcCollisionTeam(true, a), IsPVP(gCampaign.Entry.Mode)};
+		0, CalcCollisionTeam(true, a), IsPVP(gCampaign.Entry.Mode), false};
 	OverlapThings(
 		&a->thing, a->Pos, a->thing.Vel, a->thing.size, params,
 		CheckManualPickupFunc, a, NULL, NULL, NULL);
+	const CollisionParams paramsPilot = {
+		params.ThingMask, params.Team, params.IsPVP, true};
+	CheckManualPilot(a, paramsPilot);
 }
 static bool CheckManualPickupFunc(
 	Thing *ti, void *data, const struct vec2 colA, const struct vec2 colB,
@@ -1202,6 +1230,31 @@ static bool CheckManualPickupFunc(
 	}
 	a->CanPickupSpecial = true;
 	return false;
+}
+static void CheckManualPilot(TActor *a, const CollisionParams params)
+{
+	const Thing *ti = OverlapGetFirstItem(
+		&a->thing, a->Pos, a->thing.size, a->thing.Vel, params);
+	if (ti == NULL || ti->kind != KIND_CHARACTER)
+		return;
+	const TActor *vehicle = ActorGetByUID(ti->id);
+	if (vehicle->pilotUID >= 0)
+		return;
+	// "Say" that we can pilot using a command
+	const PlayerData *pData = PlayerDataGetByUID(a->PlayerUID);
+	if (pData->IsLocal && IsPlayerHuman(pData))
+	{
+		char buttonName[64];
+		strcpy(buttonName, "");
+		InputGetButtonName(
+			pData->inputDevice, pData->deviceIndex, CMD_BUTTON2, buttonName);
+		const char *vehicleName = ActorGetCharacter(vehicle)->Class->Name;
+		char buf[256];
+		sprintf(buf, "%s to pilot\n%s", buttonName, vehicleName);
+		ActorSetChatter(a, buf, 2);
+	}
+	// TODO: co-op AI pilot
+	a->CanPickupSpecial = true;
 }
 static void ActorAddAmmoPickup(const TActor *actor);
 static void ActorAddGunPickup(const TActor *actor);
@@ -1368,7 +1421,8 @@ static void VehicleTakePilot(const TActor *vehicle)
 		continue;
 	}
 	if (pilot->pilotUID == pilot->uid &&
-		AABBOverlap(vehicle->Pos, pilot->Pos, vehicle->thing.size, pilot->thing.size))
+		AABBOverlap(
+			vehicle->Pos, pilot->Pos, vehicle->thing.size, pilot->thing.size))
 	{
 		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_PILOT);
 		e.u.Pilot.On = true;

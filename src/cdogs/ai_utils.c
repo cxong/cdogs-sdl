@@ -317,22 +317,27 @@ static bool IsPosNoSee(void *data, struct vec2i pos)
 {
 	return TileIsOpaque(MapGetTile(data, Vec2iToTile(pos)));
 }
-bool AIHasClearView(const TActor *a, const struct vec2 to, const int sightRange)
+bool AIHasClearView(
+	const TActor *a, const struct vec2 to, const int sightRange)
 {
 	if (svec2_distance_squared(a->Pos, to) > SQUARED(sightRange))
 	{
 		return false;
 	}
-	return AIHasClearLine(svec2i_assign_vec2(a->Pos), svec2i_assign_vec2(to), IsPosNoSee);
+	return AIHasClearLine(
+		svec2i_assign_vec2(a->Pos), svec2i_assign_vec2(to), IsPosNoSee);
 }
 bool AICanSee(const TActor *a, const struct vec2 target, const direction_e d)
 {
-	const int sightRange = ConfigGetInt(&gConfig, "Game.SightRange") * TILE_WIDTH;
+	const int sightRange =
+		ConfigGetInt(&gConfig, "Game.SightRange") * TILE_WIDTH;
 	if (AIIsFacing(a, target, d))
 	{
 		return AIHasClearView(a, target, sightRange * 2 / 3);
 	}
-	else if (AIIsFacing(a, target, DirectionRotate(d, 1)) || AIIsFacing(a, target, DirectionRotate(d, -1)))
+	else if (
+		AIIsFacing(a, target, DirectionRotate(d, 1)) ||
+		AIIsFacing(a, target, DirectionRotate(d, -1)))
 	{
 		const int peripheralRange = sightRange / 3;
 		return AIHasClearView(a, target, peripheralRange);
@@ -354,7 +359,8 @@ bool AIHasClearShot(const struct vec2 from, const struct vec2 to)
 	fromOffset.x = from.x - (ACTOR_W + pad) / 2;
 	if (Vec2ToTile(fromOffset).x >= 0 &&
 		!AIHasClearLine(
-			svec2i_assign_vec2(fromOffset), svec2i_assign_vec2(to), IsPosShootable))
+			svec2i_assign_vec2(fromOffset), svec2i_assign_vec2(to),
+			IsPosShootable))
 	{
 		return false;
 	}
@@ -410,8 +416,9 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd)
 	}
 	const CollisionParams params = {
 		THING_IMPASSABLE, CalcCollisionTeam(true, a),
-		IsPVP(gCampaign.Entry.Mode)};
-	item = OverlapGetFirstItem(&a->thing, frontPos, a->thing.size, a->thing.Vel, params);
+		IsPVP(gCampaign.Entry.Mode), false};
+	item = OverlapGetFirstItem(
+		&a->thing, frontPos, a->thing.size, a->thing.Vel, params);
 	if (!item || item->kind != KIND_OBJECT)
 	{
 		return NULL;

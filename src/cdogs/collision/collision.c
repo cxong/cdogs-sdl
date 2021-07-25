@@ -396,30 +396,33 @@ static bool OverlapGetFirstItemCallback(
 static bool CheckParams(
 	const CollisionParams params, const Thing *a, const Thing *b)
 {
-	// Don't collide if items are on the same team
-	if (CollisionIsOnSameTeam(b, params.Team, params.IsPVP))
-	{
-		return false;
-	}
 	// No same-item collision
 	if (a == b)
 		return false;
-	// Pilot / vehicle collision
-	if (a->kind == KIND_CHARACTER && b->kind == KIND_CHARACTER)
+	if (!params.AllActors)
 	{
-		const TActor *aa = ActorGetByUID(a->id);
-		const TActor *ab = ActorGetByUID(b->id);
-		if (aa != NULL && ab != NULL)
+		// Don't collide if items are on the same team
+		if (CollisionIsOnSameTeam(b, params.Team, params.IsPVP))
 		{
-			// Pilots never collide with anything
-			if (aa->vehicleUID != -1 || ab->vehicleUID != -1)
+			return false;
+		}
+		// Pilot / vehicle collision
+		if (a->kind == KIND_CHARACTER && b->kind == KIND_CHARACTER)
+		{
+			const TActor *aa = ActorGetByUID(a->id);
+			const TActor *ab = ActorGetByUID(b->id);
+			if (aa != NULL && ab != NULL)
 			{
-				return false;
-			}
-			// Unpiloted vehicles don't collide with other actors
-			if (aa->pilotUID == -1 || ab->pilotUID == -1)
-			{
-				return false;
+				// Pilots never collide with anything
+				if (aa->vehicleUID != -1 || ab->vehicleUID != -1)
+				{
+					return false;
+				}
+				// Unpiloted vehicles don't collide with other actors
+				if (aa->pilotUID == -1 || ab->pilotUID == -1)
+				{
+					return false;
+				}
 			}
 		}
 	}

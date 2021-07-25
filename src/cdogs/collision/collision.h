@@ -86,6 +86,7 @@ typedef struct
 	int ThingMask;
 	CollisionTeam Team;
 	bool IsPVP;
+	bool AllActors;
 } CollisionParams;
 
 bool IsCollisionWithWall(const struct vec2 pos, const struct vec2i size2);

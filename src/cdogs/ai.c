@@ -66,8 +66,8 @@
 #include "sys_specifics.h"
 #include "utils.h"
 
-#define AI_WAKE_SOUND_RANGE (8*TILE_WIDTH)
-#define AI_WAKE_SOUND_RANGE_INDIRECT (4*TILE_WIDTH)
+#define AI_WAKE_SOUND_RANGE (8 * TILE_WIDTH)
+#define AI_WAKE_SOUND_RANGE_INDIRECT (4 * TILE_WIDTH)
 
 static int gBaddieCount = 0;
 static bool sAreGoodGuysPresent = false;
@@ -152,8 +152,9 @@ static bool IsPosOK(const TActor *actor, const struct vec2 pos)
 	}
 	const CollisionParams params = {
 		THING_IMPASSABLE, CalcCollisionTeam(true, actor),
-		IsPVP(gCampaign.Entry.Mode)};
-	if (OverlapGetFirstItem(&actor->thing, pos, actor->thing.size, actor->thing.Vel, params))
+		IsPVP(gCampaign.Entry.Mode), false};
+	if (OverlapGetFirstItem(
+			&actor->thing, pos, actor->thing.size, actor->thing.Vel, params))
 	{
 		return false;
 	}
@@ -328,7 +329,8 @@ int AICommand(const int ticks)
 	}
 
 	CA_FOREACH(TActor, actor, gActors)
-	if (!actor->isInUse || actor->PlayerUID >= 0 || actor->dead || ActorGetCharacter(actor)->Class->Vehicle)
+	if (!actor->isInUse || actor->PlayerUID >= 0 || actor->dead ||
+		ActorGetCharacter(actor)->Class->Vehicle)
 	{
 		continue;
 	}
@@ -356,7 +358,8 @@ static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 
 	// Wake up if it can see a player or someone dying
 	if ((actor->flags & FLAGS_SLEEPING) && (actor->flags & FLAGS_VISIBLE) &&
-		actor->aiContext->Delay == 0 && (CanSeeAPlayer(actor) || CanSeeActorBeingAttacked(actor)))
+		actor->aiContext->Delay == 0 &&
+		(CanSeeAPlayer(actor) || CanSeeActorBeingAttacked(actor)))
 	{
 		AIWake(actor, delayModifier);
 	}
@@ -493,12 +496,14 @@ static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 }
 void AIWake(TActor *a, const int delayModifier)
 {
-	if (!a->aiContext || !(a->flags & FLAGS_SLEEPING)) return;
+	if (!a->aiContext || !(a->flags & FLAGS_SLEEPING))
+		return;
 	a->flags &= ~FLAGS_SLEEPING;
 	a->flags |= FLAGS_WAKING;
 	ActorSetAIState(a, AI_STATE_NONE);
 	const CharBot *bot = ActorGetCharacter(a)->bot;
-	if (bot == NULL) return;
+	if (bot == NULL)
+		return;
 	a->aiContext->Delay = bot->actionDelay * delayModifier;
 
 	// Don't play alert sound for invisible enemies
@@ -572,12 +577,14 @@ void AIWakeOnSoundAt(const struct vec2 pos)
 	{
 		continue;
 	}
-	const float d = CHEBYSHEV_DISTANCE(pos.x, pos.y, actor->Pos.x, actor->Pos.y);
+	const float d =
+		CHEBYSHEV_DISTANCE(pos.x, pos.y, actor->Pos.x, actor->Pos.y);
 	if (d > AI_WAKE_SOUND_RANGE)
 	{
 		continue;
 	}
-	if (d > AI_WAKE_SOUND_RANGE_INDIRECT && !AIHasClearView(actor, pos, AI_WAKE_SOUND_RANGE_INDIRECT))
+	if (d > AI_WAKE_SOUND_RANGE_INDIRECT &&
+		!AIHasClearView(actor, pos, AI_WAKE_SOUND_RANGE_INDIRECT))
 	{
 		continue;
 	}
@@ -592,10 +599,12 @@ void AIAddRandomEnemies(const int enemies, const Mission *m)
 						  ConfigGetInt(&gConfig, "Game.EnemyDensity")) /
 							 100))
 	{
-		const int charId = CharacterStoreGetRandomBaddieId(&gCampaign.Setting.characters);
-		const Character *c = CArrayGet(
-			&gCampaign.Setting.characters.OtherChars, charId);
-		GameEvent e = GameEventNewActorAdd(PlaceAwayFromPlayers(&gMap, true, PLACEMENT_ACCESS_ANY), c, true);
+		const int charId =
+			CharacterStoreGetRandomBaddieId(&gCampaign.Setting.characters);
+		const Character *c =
+			CArrayGet(&gCampaign.Setting.characters.OtherChars, charId);
+		GameEvent e = GameEventNewActorAdd(
+			PlaceAwayFromPlayers(&gMap, true, PLACEMENT_ACCESS_ANY), c, true);
 		e.u.ActorAdd.CharId = charId;
 		GameEventsEnqueue(&gGameEvents, e);
 		gBaddieCount++;
@@ -609,13 +618,14 @@ void InitializeBadGuys(void)
 	if (o->Type == OBJECTIVE_KILL &&
 		gMission.missionData->SpecialChars.size > 0)
 	{
-		const int charId = CharacterStoreGetRandomSpecialId(
-			   &gCampaign.Setting.characters);
-		const Character *c = CArrayGet(
-			   &gCampaign.Setting.characters.OtherChars, charId);
+		const int charId =
+			CharacterStoreGetRandomSpecialId(&gCampaign.Setting.characters);
+		const Character *c =
+			CArrayGet(&gCampaign.Setting.characters.OtherChars, charId);
 		for (; o->placed < o->Count; o->placed++)
 		{
-			GameEvent e = GameEventNewActorAdd(PlaceAwayFromPlayers(&gMap, false, paFlags), c, true);
+			GameEvent e = GameEventNewActorAdd(
+				PlaceAwayFromPlayers(&gMap, false, paFlags), c, true);
 			e.u.ActorAdd.CharId = charId;
 			e.u.ActorAdd.ThingFlags = ObjectiveToThing(_ca_index);
 			GameEventsEnqueue(&gGameEvents, e);
@@ -626,12 +636,17 @@ void InitializeBadGuys(void)
 	}
 	else if (o->Type == OBJECTIVE_RESCUE)
 	{
-		const int charId = CharacterStoreGetPrisonerId(&gCampaign.Setting.characters, 0);
-		const Character *c = CArrayGet(
-			   &gCampaign.Setting.characters.OtherChars, charId);
+		const int charId =
+			CharacterStoreGetPrisonerId(&gCampaign.Setting.characters, 0);
+		const Character *c =
+			CArrayGet(&gCampaign.Setting.characters.OtherChars, charId);
 		for (; o->placed < o->Count; o->placed++)
 		{
-			GameEvent e = GameEventNewActorAdd(MapHasLockedRooms(&gMap) ? PlacePrisoner(&gMap) : PlaceAwayFromPlayers(&gMap, false, paFlags), c, true);
+			GameEvent e = GameEventNewActorAdd(
+				MapHasLockedRooms(&gMap)
+					? PlacePrisoner(&gMap)
+					: PlaceAwayFromPlayers(&gMap, false, paFlags),
+				c, true);
 			e.u.ActorAdd.CharId = charId;
 			e.u.ActorAdd.ThingFlags = ObjectiveToThing(_ca_index);
 			GameEventsEnqueue(&gGameEvents, e);
@@ -657,10 +672,12 @@ void CreateEnemies(void)
 						ConfigGetInt(&gConfig, "Game.EnemyDensity");
 	for (int i = 0; i < density / 100; i++)
 	{
-		const int charId = CharacterStoreGetRandomBaddieId(&gCampaign.Setting.characters);
-		const Character *c = CArrayGet(
-			&gCampaign.Setting.characters.OtherChars, charId);
-		GameEvent e = GameEventNewActorAdd(PlaceAwayFromPlayers(&gMap, true, PLACEMENT_ACCESS_ANY), c, true);
+		const int charId =
+			CharacterStoreGetRandomBaddieId(&gCampaign.Setting.characters);
+		const Character *c =
+			CArrayGet(&gCampaign.Setting.characters.OtherChars, charId);
+		GameEvent e = GameEventNewActorAdd(
+			PlaceAwayFromPlayers(&gMap, true, PLACEMENT_ACCESS_ANY), c, true);
 		e.u.ActorAdd.CharId = charId;
 		GameEventsEnqueue(&gGameEvents, e);
 		gBaddieCount++;
