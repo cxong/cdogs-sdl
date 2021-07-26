@@ -9,6 +9,7 @@
           "Sprites": "chars/heads/jones"
         },
         "Body": "mech",
+        "Mass": 500,
         "Sounds": "mech",
         "BloodColor": "aabbaa",
         "Footsteps": "mech",

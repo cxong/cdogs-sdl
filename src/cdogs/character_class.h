@@ -39,6 +39,7 @@ typedef struct
 	bool Vehicle;
 	char *HeadSprites;
 	char *Body;
+	int Mass;
 	const CharSprites *Sprites;
 	char *Sounds;
 	char *Footsteps;
@@ -53,6 +54,8 @@ typedef struct
 	CArray CustomClasses; // of CharacterClass
 } CharacterClasses;
 extern CharacterClasses gCharacterClasses;
+
+#define CHARACTER_DEFAULT_MASS 100
 
 const CharacterClass *StrCharacterClass(const char *s);
 // Legacy character class from "face" index

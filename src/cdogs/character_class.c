@@ -268,6 +268,8 @@ static void LoadCharacterClass(CharacterClass *c, json_t *node)
 	{
 		CSTRDUP(c->Body, "base");
 	}
+	c->Mass = CHARACTER_DEFAULT_MASS;
+	LoadInt(&c->Mass, node, "Mass");
 	c->Sprites = StrCharSpriteClass(c->Body);
 
 	LoadStr(&c->Sounds, node, "Sounds");

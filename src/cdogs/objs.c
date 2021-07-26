@@ -262,12 +262,14 @@ static void PlaceWreck(const char *wreckClass, const Thing *ti)
 	GameEventsEnqueue(&gGameEvents, e);
 }
 
-bool CanHit(const BulletClass *b, const int flags, const int uid, const Thing *target)
+bool CanHit(
+	const BulletClass *b, const int flags, const int uid, const Thing *target)
 {
 	switch (target->kind)
 	{
 	case KIND_CHARACTER:
-		return b->Hit.Flesh.Hit && CanHitCharacter(flags, uid, CArrayGet(&gActors, target->id));
+		return b->Hit.Flesh.Hit &&
+			   CanHitCharacter(flags, uid, CArrayGet(&gActors, target->id));
 	case KIND_OBJECT:
 		return b->Hit.Object.Hit;
 	default:
@@ -277,9 +279,8 @@ bool CanHit(const BulletClass *b, const int flags, const int uid, const Thing *t
 	return false;
 }
 bool HasHitSound(
-	const ThingKind targetKind,
-	const int targetUID, const special_damage_e special,
-	const bool allowFriendlyHitSound)
+	const ThingKind targetKind, const int targetUID,
+	const special_damage_e special, const bool allowFriendlyHitSound)
 {
 	switch (targetKind)
 	{
@@ -298,14 +299,14 @@ bool HasHitSound(
 
 static void DoDamageThing(
 	const ThingKind targetKind, const int targetUID, const TActor *source,
-	const int flags, const BulletClass *bullet, const bool canDamage, const struct vec2 hitVector);
+	const int flags, const BulletClass *bullet, const bool canDamage,
+	const struct vec2 hitVector);
 static void DoDamageCharacter(
 	const TActor *actor, const TActor *source, const struct vec2 hitVector,
 	const BulletClass *bullet, const int flags);
 void Damage(
-	const struct vec2 hitVector, const BulletClass *bullet,
-	const int flags, const TActor *source, const ThingKind targetKind,
-	const int targetUID)
+	const struct vec2 hitVector, const BulletClass *bullet, const int flags,
+	const TActor *source, const ThingKind targetKind, const int targetUID)
 {
 	switch (targetKind)
 	{
@@ -316,8 +317,7 @@ void Damage(
 	break;
 	case KIND_OBJECT:
 		DoDamageThing(
-			targetKind, targetUID, source, flags, bullet, true,
-			hitVector);
+			targetKind, targetUID, source, flags, bullet, true, hitVector);
 		break;
 	default:
 		CASSERT(false, "cannot damage tile item kind");
@@ -352,7 +352,9 @@ static void DoDamageCharacter(
 		"damaging undamageable actor");
 
 	// Shot pushback, based on mass and velocity
-	const float impulseFactor = bullet->Mass * SHOT_IMPULSE_FACTOR;
+	const float impulseFactor = bullet->Mass * SHOT_IMPULSE_FACTOR *
+								CHARACTER_DEFAULT_MASS /
+								ActorGetCharacter(actor)->Class->Mass;
 	const struct vec2 vel = svec2_scale(hitVector, impulseFactor);
 	if (!svec2_is_zero(vel))
 	{
@@ -363,10 +365,12 @@ static void DoDamageCharacter(
 		GameEventsEnqueue(&gGameEvents, ei);
 	}
 
-	const bool canDamage = CanDamageCharacter(flags, source, actor, bullet->Special.Effect);
+	const bool canDamage =
+		CanDamageCharacter(flags, source, actor, bullet->Special.Effect);
 
 	DoDamageThing(
-		KIND_CHARACTER, actor->uid, source, flags, bullet, canDamage, hitVector);
+		KIND_CHARACTER, actor->uid, source, flags, bullet, canDamage,
+		hitVector);
 
 	if (canDamage)
 	{
@@ -374,7 +378,8 @@ static void DoDamageCharacter(
 		const bool isFriendly =
 			(actor->flags & FLAGS_GOOD_GUY) ||
 			(!IsPVP(gCampaign.Entry.Mode) && actor->PlayerUID >= 0);
-		if (source && source->PlayerUID >= 0 && bullet->Power != 0 && !isFriendly)
+		if (source && source->PlayerUID >= 0 && bullet->Power != 0 &&
+			!isFriendly)
 		{
 			// Calculate score based on
 			// if they hit a penalty character
