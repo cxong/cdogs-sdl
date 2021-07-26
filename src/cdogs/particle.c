@@ -37,6 +37,7 @@
 
 ParticleClasses gParticleClasses;
 CArray gParticles;
+#define MAX_PARTICLES 4096
 
 #define VERSION 2
 
@@ -254,19 +255,36 @@ void ParticlesTerminate(CArray *particles)
 static bool ParticleUpdate(Particle *p, const int ticks);
 void ParticlesUpdate(CArray *particles, const int ticks)
 {
-	for (int i = 0; i < (int)particles->size; i++)
+	int maxParticleAge = -1;
+	int maxParticleId = -1;
+	int numParticles = 0;
+	CA_FOREACH(Particle, p, *particles)
+	if (!p->isInUse)
 	{
-		Particle *p = CArrayGet(particles, i);
-		if (!p->isInUse)
+		continue;
+	}
+	if (!ParticleUpdate(p, ticks))
+	{
+		GameEvent e = GameEventNew(GAME_EVENT_PARTICLE_REMOVE);
+		e.u.ParticleRemoveId = _ca_index;
+		GameEventsEnqueue(&gGameEvents, e);
+	}
+	else
+	{
+		if (p->Count > maxParticleAge)
 		{
-			continue;
+			maxParticleAge = p->Count;
+			maxParticleId = _ca_index;
 		}
-		if (!ParticleUpdate(p, ticks))
-		{
-			GameEvent e = GameEventNew(GAME_EVENT_PARTICLE_REMOVE);
-			e.u.ParticleRemoveId = i;
-			GameEventsEnqueue(&gGameEvents, e);
-		}
+		numParticles++;
+	}
+	CA_FOREACH_END()
+	// Remove oldest particle if we have too many
+	if (numParticles > MAX_PARTICLES && maxParticleId >= 0)
+	{
+		GameEvent e = GameEventNew(GAME_EVENT_PARTICLE_REMOVE);
+		e.u.ParticleRemoveId = maxParticleId;
+		GameEventsEnqueue(&gGameEvents, e);
 	}
 }
 
