@@ -77,7 +77,8 @@ static void PlayerSpecialCommands(TActor *actor, const int cmd)
 	if ((cmd & CMD_BUTTON2) && CMD_HAS_DIRECTION(cmd))
 	{
 		if (ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") ==
-			SWITCHMOVE_SLIDE)
+				SWITCHMOVE_SLIDE &&
+			actor->vehicleUID == -1)
 		{
 			SlideActor(actor, cmd);
 		}
@@ -91,7 +92,9 @@ static void PlayerSpecialCommands(TActor *actor, const int cmd)
 	{
 		const PlayerData *p = PlayerDataGetByUID(actor->PlayerUID);
 		const bool allGuns = p == NULL || !PlayerHasGrenadeButton(p);
-		ActorTrySwitchWeapon(actor, allGuns);
+		ActorTrySwitchWeapon(
+			actor->vehicleUID >= 0 ? ActorGetByUID(actor->vehicleUID) : actor,
+			allGuns);
 	}
 }
 
