@@ -28,8 +28,8 @@
 #include "actor_fire.h"
 
 #include "ai.h"
-#include "objs.h"
 #include "net_util.h"
+#include "objs.h"
 
 void ActorFireBarrel(Weapon *w, const TActor *a, const int barrel)
 {
@@ -51,10 +51,11 @@ void ActorFireBarrel(Weapon *w, const TActor *a, const int barrel)
 	const struct vec2 muzzleOffset = ActorGetMuzzleOffset(a, w, barrel);
 	const struct vec2 muzzlePosition = svec2_add(a->Pos, muzzleOffset);
 	const bool playSound = w->barrels[barrel].soundLock <= 0;
+	const TActor *firingActor = ActorGetByUID(a->pilotUID);
 	WeaponClassFire(
 		w->Gun, muzzlePosition,
-		WeaponClassGetMuzzleHeight(w->Gun, GUNSTATE_FIRING), radians, a->flags,
-		a->uid, playSound, true);
+		WeaponClassGetMuzzleHeight(w->Gun, GUNSTATE_FIRING), radians,
+		firingActor->flags, firingActor->uid, playSound, true);
 	WeaponBarrelOnFire(w, barrel);
 }
 
@@ -96,13 +97,12 @@ void OnGunFire(const NGunFire gf, SoundDevice *sd)
 		// Keep in mind the fencepost problem, i.e. spread of 3 means a
 		// total spread angle of 2x width
 		const float spreadStartAngle =
-			wc->AngleOffset -
-			(wc->Spread.Count - 1) * wc->Spread.Width / 2;
+			wc->AngleOffset - (wc->Spread.Count - 1) * wc->Spread.Width / 2;
 		for (int i = 0; i < wc->Spread.Count; i++)
 		{
 			const float recoil = RAND_FLOAT(-0.5f, 0.5f) * wc->Recoil;
-			const float finalAngle = gf.Angle + spreadStartAngle +
-									 i * wc->Spread.Width + recoil;
+			const float finalAngle =
+				gf.Angle + spreadStartAngle + i * wc->Spread.Width + recoil;
 			GameEvent ab = GameEventNew(GAME_EVENT_ADD_BULLET);
 			ab.u.AddBullet.UID = MobObjsObjsGetNextUID();
 			strcpy(ab.u.AddBullet.BulletClass, wc->Bullet->Name);
@@ -131,7 +131,7 @@ void OnGunFire(const NGunFire gf, SoundDevice *sd)
 	if (gf.Sound && wc->Sound)
 	{
 		SoundPlayAt(sd, wc->Sound, pos);
-		
+
 		// Alert sleeping AI
 		AIWakeOnSoundAt(pos);
 	}
