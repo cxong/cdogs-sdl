@@ -1241,7 +1241,7 @@ static void CheckManualPilot(TActor *a, const CollisionParams params)
 	if (ti == NULL || ti->kind != KIND_CHARACTER)
 		return;
 	const TActor *vehicle = ActorGetByUID(ti->id);
-	if (vehicle->pilotUID >= 0)
+	if (vehicle == NULL || vehicle->pilotUID >= 0)
 		return;
 	// "Say" that we can pilot using a command
 	const PlayerData *pData = PlayerDataGetByUID(a->PlayerUID);

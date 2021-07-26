@@ -172,7 +172,17 @@ static void DrawPlayerStatus(
 	{
 		opts.Pad.y += 1;
 	}
-	FontStrOpt(data->name, svec2i_zero(), opts);
+	char buf[256];
+	if (p->pilotUID != p->uid)
+	{
+		// Actor is a vehicle
+		sprintf(buf, "%s (%s)", data->name, ActorGetCharacter(p)->Class->Name);
+	}
+	else
+	{
+		strcpy(buf, data->name);
+	}
+	FontStrOpt(buf, svec2i_zero(), opts);
 
 	if (ConfigGetBool(&gConfig, "Interface.ShowHUDMap") &&
 		!(flags & HUDFLAGS_SHARE_SCREEN) &&
