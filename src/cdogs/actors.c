@@ -527,7 +527,8 @@ static void CheckPickups(TActor *actor)
 	if (actor->PickupAll)
 	{
 		const CollisionParams paramsPilot = {
-			params.ThingMask, params.Team, params.IsPVP, true};
+			THING_IMPASSABLE | THING_CAN_BE_SHOT, params.Team, params.IsPVP,
+			true};
 		CheckPilot(actor, paramsPilot);
 	}
 }
@@ -896,45 +897,47 @@ void CommandActor(TActor *actor, int cmd, int ticks)
 	{
 		TActor *vehicle = ActorGetByUID(actor->vehicleUID);
 		CommandActor(vehicle, cmd, ticks);
-		return;
 	}
-	// If this is a vehicle and there's no pilot, do nothing
-	if (actor->pilotUID == -1)
+	else if (actor->pilotUID == -1)
 	{
-		return;
+		// If this is a vehicle and there's no pilot, do nothing
 	}
-	if (actor->confused)
+	else
 	{
-		cmd = CmdGetReverse(cmd);
-	}
 
-	if (actor->health > 0)
-	{
-		const bool hasChangedDirection =
-			ActorTryChangeDirection(actor, cmd, actor->lastCmd);
-		const bool hasShot = ActorTryShoot(actor, cmd);
-		const bool hasGrenaded = TryGrenade(actor, cmd);
-		const bool hasMoved = ActorTryMove(actor, cmd, hasShot, ticks);
-		ActorAnimation anim = actor->anim.Type;
-		// Idle if player hasn't done anything
-		if (!(hasChangedDirection || hasShot || hasGrenaded || hasMoved))
+		if (actor->confused)
 		{
-			anim = ACTORANIMATION_IDLE;
+			cmd = CmdGetReverse(cmd);
 		}
-		else if (hasMoved)
+
+		if (actor->health > 0)
 		{
-			anim = ACTORANIMATION_WALKING;
-		}
-		else
-		{
-			anim = ACTORANIMATION_STAND;
-		}
-		if (actor->anim.Type != anim)
-		{
-			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_STATE);
-			e.u.ActorState.UID = actor->uid;
-			e.u.ActorState.State = (int32_t)anim;
-			GameEventsEnqueue(&gGameEvents, e);
+			const bool hasChangedDirection =
+				ActorTryChangeDirection(actor, cmd, actor->lastCmd);
+			const bool hasShot = ActorTryShoot(actor, cmd);
+			const bool hasGrenaded = TryGrenade(actor, cmd);
+			const bool hasMoved = ActorTryMove(actor, cmd, hasShot, ticks);
+			ActorAnimation anim = actor->anim.Type;
+			// Idle if player hasn't done anything
+			if (!(hasChangedDirection || hasShot || hasGrenaded || hasMoved))
+			{
+				anim = ACTORANIMATION_IDLE;
+			}
+			else if (hasMoved)
+			{
+				anim = ACTORANIMATION_WALKING;
+			}
+			else
+			{
+				anim = ACTORANIMATION_STAND;
+			}
+			if (actor->anim.Type != anim)
+			{
+				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_STATE);
+				e.u.ActorState.UID = actor->uid;
+				e.u.ActorState.State = (int32_t)anim;
+				GameEventsEnqueue(&gGameEvents, e);
+			}
 		}
 	}
 
@@ -942,7 +945,8 @@ void CommandActor(TActor *actor, int cmd, int ticks)
 	if ((cmd & CMD_BUTTON2) && !actor->specialCmdDir)
 	{
 		// Special: pick up things that can only be picked up on demand
-		if (!actor->PickupAll && !(actor->lastCmd & CMD_BUTTON2))
+		if (!actor->PickupAll && !(actor->lastCmd & CMD_BUTTON2) &&
+			actor->vehicleUID == -1)
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_PICKUP_ALL);
 			e.u.ActorPickupAll.UID = actor->uid;
@@ -1183,7 +1187,7 @@ static void CheckManualPickups(TActor *a)
 		&a->thing, a->Pos, a->thing.Vel, a->thing.size, params,
 		CheckManualPickupFunc, a, NULL, NULL, NULL);
 	const CollisionParams paramsPilot = {
-		params.ThingMask, params.Team, params.IsPVP, true};
+		THING_IMPASSABLE | THING_CAN_BE_SHOT, params.Team, params.IsPVP, true};
 	CheckManualPilot(a, paramsPilot);
 }
 static bool CheckManualPickupFunc(
@@ -1236,6 +1240,10 @@ static bool CheckManualPickupFunc(
 }
 static void CheckManualPilot(TActor *a, const CollisionParams params)
 {
+	if (a->vehicleUID >= 0)
+	{
+		return;
+	}
 	const Thing *ti = OverlapGetFirstItem(
 		&a->thing, a->Pos, a->thing.size, a->thing.Vel, params);
 	if (ti == NULL || ti->kind != KIND_CHARACTER)

@@ -84,17 +84,27 @@ static void PlayerSpecialCommands(TActor *actor, const int cmd)
 		}
 	}
 	else if (
-		(actor->lastCmd & CMD_BUTTON2) && !(cmd & CMD_BUTTON2) &&
+		!(actor->lastCmd & CMD_BUTTON2) && (cmd & CMD_BUTTON2) &&
 		!actor->specialCmdDir && !actor->CanPickupSpecial &&
 		!(ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") ==
 			  SWITCHMOVE_SLIDE &&
 		  CMD_HAS_DIRECTION(cmd)))
 	{
-		const PlayerData *p = PlayerDataGetByUID(actor->PlayerUID);
-		const bool allGuns = p == NULL || !PlayerHasGrenadeButton(p);
-		ActorTrySwitchWeapon(
-			actor->vehicleUID >= 0 ? ActorGetByUID(actor->vehicleUID) : actor,
-			allGuns);
+		if (actor->vehicleUID >= 0)
+		{
+			// Dismount
+			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_PILOT);
+			e.u.Pilot.On = false;
+			e.u.Pilot.UID = actor->uid;
+			e.u.Pilot.VehicleUID = actor->vehicleUID;
+			GameEventsEnqueue(&gGameEvents, e);
+		}
+		else
+		{
+			const PlayerData *p = PlayerDataGetByUID(actor->PlayerUID);
+			const bool allGuns = p == NULL || !PlayerHasGrenadeButton(p);
+			ActorTrySwitchWeapon(actor, allGuns);
+		}
 	}
 }
 

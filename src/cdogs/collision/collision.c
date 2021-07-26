@@ -108,10 +108,6 @@ static void TileCacheAddImpl(
 					continue;
 				}
 				const struct vec2i dtv = svec2i_add(v, dv);
-				if (!MapIsTileIn(&gMap, dtv))
-				{
-					continue;
-				}
 				TileCacheAddImpl(tc, dtv, false);
 			}
 		}
