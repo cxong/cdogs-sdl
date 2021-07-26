@@ -405,7 +405,7 @@ void MissionSetMessageIfComplete(struct MissionOptions *options)
 {
 	if (!gCampaign.IsClient)
 	{
-		if (CanCompleteMission(options))
+		if (CanCompleteMission(options) && !gMission.MissionCompleted)
 		{
 			GameEvent msg = GameEventNew(GAME_EVENT_MISSION_COMPLETE);
 			msg.u.MissionComplete = NMakeMissionComplete(options);

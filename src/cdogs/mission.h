@@ -215,7 +215,7 @@ struct MissionOptions
 	bool isDone;
 	int DoneCounter;
 	int NextMission;
-	bool HasPlayedCompleteSound;
+	bool MissionCompleted;
 };
 
 void MissionInit(Mission *m);

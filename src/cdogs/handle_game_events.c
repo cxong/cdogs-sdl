@@ -499,16 +499,16 @@ static void HandleGameEvent(
 	case GAME_EVENT_MISSION_COMPLETE:
 		if (e.u.MissionComplete.ShowMsg)
 		{
-			if (!gMission.HasPlayedCompleteSound)
+			if (!gMission.MissionCompleted)
 			{
 				SoundPlay(sd, StrSound("mission_complete"));
-				gMission.HasPlayedCompleteSound = true;
 			}
 			if (camera != NULL)
 			{
 				HUDDisplayMessage(&camera->HUD, "Mission complete", -1);
 			}
 		}
+		gMission.MissionCompleted = true;
 		// Don't show exit area or arrow if PVP
 		if (!IsPVP(gCampaign.Entry.Mode))
 		{
