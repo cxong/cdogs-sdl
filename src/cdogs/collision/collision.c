@@ -144,6 +144,11 @@ CollisionTeam CalcCollisionTeam(const bool isActor, const TActor *actor)
 	{
 		return COLLISIONTEAM_NONE;
 	}
+	if (actor->pilotUID != actor->uid && actor->pilotUID >= 0)
+	{
+		// Vehicles use the collision of its pilot
+		actor = ActorGetByUID(actor->pilotUID);
+	}
 	if (actor->PlayerUID >= 0 || (actor->flags & FLAGS_GOOD_GUY))
 	{
 		return COLLISIONTEAM_GOOD;
