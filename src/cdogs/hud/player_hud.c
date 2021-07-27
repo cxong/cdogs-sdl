@@ -173,7 +173,7 @@ static void DrawPlayerStatus(
 		opts.Pad.y += 1;
 	}
 	char buf[256];
-	if (p->pilotUID != p->uid)
+	if (p != NULL && p->pilotUID != p->uid)
 	{
 		// Actor is a vehicle
 		sprintf(buf, "%s (%s)", data->name, ActorGetCharacter(p)->Class->Name);
