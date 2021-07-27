@@ -268,7 +268,7 @@
 		"flags": 1152,
 		"probabilityToMove": 40,
 		"probabilityToTrack": 20,
-		"probabilityToShoot": 42,
+		"probabilityToShoot": 80,
 		"actionDelay": 40
 	},
 	{
