@@ -281,7 +281,7 @@
 		"Hair": "ffededff",
 		"Feet": "404040ff",
 		"speed": 256,
-		"Gun": "Dual Chain Gun",
+		"Gun": "Rocket Launcher",
 		"maxHealth": 1000,
 		"flags": 1152,
 		"probabilityToMove": 40,

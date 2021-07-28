@@ -134,6 +134,18 @@
       "CanDrop": false
     },
     {
+      "Name": "Rocket Launcher",
+      "Pic": "rocket_blue",
+      "Icon": "launcher",
+      "Bullet": "rocket",
+      "Cost": 9,
+      "Lock": 40,
+      "Sound": "rocket",
+      "SwitchSound": "launcher_switch",
+      "MuzzleFlashParticle": "muzzle_flash_shotgun",
+      "CanDrop": false
+    },
+    {
       "Pic": "",
       "Name": "Ghost Drain",
       "Bullet": "ghost_drain",

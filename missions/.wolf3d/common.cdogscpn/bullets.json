@@ -125,6 +125,28 @@
       }
     },
     {
+      "Name": "rocket",
+      "Pic": {
+        "Type": "Directional",
+        "Sprites": "rocket"
+      },
+      "ShadowSize": [2, 2],
+      "Hit": {
+        "Flesh": {
+          "Sound": "hits/rocket"
+        },
+        "Wall": {
+          "Sound": "hits/rocket"
+        }
+      },
+      "Speed": 800,
+      "Range": 70,
+      "Power": 45,
+      "Mass": 2,
+      "Size": [4, 4],
+      "Spark": "boom"
+    },
+    {
       "Name": "dog_bite",
       "Power": 11,
       "Mass": 1.0,

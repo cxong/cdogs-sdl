@@ -283,12 +283,12 @@ static const char *adlibSoundsW6[] = {
 	NULL,		  // gretel alert (digi sound)
 	NULL,		  // gretel die (digi sound)
 	NULL,		  // fettgesicht die (digi sound)
-	"rocket",	  // TODO: weapon
-	"rocket_hit", // TODO: weapon
+	"rocket",
+	"hits/rocket/",
 };
 static const char *adlibSoundsSOD[] = {
 	NULL, // hit wall
-	"rocket_hit",
+	"hits/rocket/",
 	"menu_start", // select item
 	"chars/alert/ghost",
 	"menu_switch",
