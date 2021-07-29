@@ -130,6 +130,11 @@
         "Type": "Directional",
         "Sprites": "rocket"
       },
+      "Trail": {
+        "Particle": "smoke_trail_small",
+        "Width": 0,
+        "TicksPerEmit": 4
+      },
       "ShadowSize": [2, 2],
       "Hit": {
         "Flesh": {
@@ -142,7 +147,7 @@
       "Speed": 800,
       "Range": 70,
       "Power": 45,
-      "Mass": 2,
+      "Mass": 15.0,
       "Size": [4, 4],
       "Spark": "boom"
     },

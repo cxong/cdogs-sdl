@@ -456,6 +456,7 @@ static bool TryOpen(const char *filename)
 	if (!MapNewLoad(buf, &gCampaign.Setting))
 	{
 		fileChanged = false;
+		gCampaign.MissionIndex = 0;
 		Setup(true);
 		strcpy(lastFile, filename);
 		sAutosaveIndex = 0;
