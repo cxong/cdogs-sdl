@@ -261,6 +261,10 @@ bool BulletUpdate(struct MobileObject *obj, const int ticks)
 				b.u.BulletBounce.Pos = Vec2ToNet(pos);
 			}
 			b.u.BulletBounce.HitSound = obj->thing.SoundLock == 0;
+			if (obj->thing.SoundLock <= 0)
+			{
+				obj->thing.SoundLock += SOUND_LOCK_THING;
+			}
 			GameEventsEnqueue(&gGameEvents, b);
 		}
 
@@ -623,10 +627,6 @@ static void OnHit(HitItemData *data, Thing *target)
 	Damage(
 		data->Obj->thing.Vel, data->Obj->bulletClass, data->Obj->flags, source,
 		target->kind, targetUID);
-	if (data->Obj->thing.SoundLock <= 0)
-	{
-		data->Obj->thing.SoundLock += SOUND_LOCK_THING;
-	}
 	if (target->SoundLock <= 0)
 	{
 		target->SoundLock += SOUND_LOCK_THING;
