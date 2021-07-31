@@ -815,25 +815,23 @@ static void FireWeapon(TActor *a, Weapon *w)
 		return;
 	}
 	ActorFireBarrel(w, a, barrel);
-	if (a->PlayerUID >= 0)
+	if (a->PlayerUID >= 0 && gCampaign.Setting.Ammo && w->Gun->AmmoId >= 0)
 	{
-		if (gCampaign.Setting.Ammo && w->Gun->AmmoId >= 0)
-		{
-			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_USE_AMMO);
-			e.u.UseAmmo.UID = a->uid;
-			e.u.UseAmmo.PlayerUID = a->PlayerUID;
-			e.u.UseAmmo.Ammo.Id = w->Gun->AmmoId;
-			e.u.UseAmmo.Ammo.Amount = 1;
-			GameEventsEnqueue(&gGameEvents, e);
-		}
-		else if (w->Gun->Cost != 0)
-		{
-			// Classic C-Dogs score consumption
-			GameEvent e = GameEventNew(GAME_EVENT_SCORE);
-			e.u.Score.PlayerUID = a->PlayerUID;
-			e.u.Score.Score = -w->Gun->Cost;
-			GameEventsEnqueue(&gGameEvents, e);
-		}
+		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_USE_AMMO);
+		e.u.UseAmmo.UID = a->uid;
+		e.u.UseAmmo.PlayerUID = a->PlayerUID;
+		e.u.UseAmmo.Ammo.Id = w->Gun->AmmoId;
+		e.u.UseAmmo.Ammo.Amount = 1;
+		GameEventsEnqueue(&gGameEvents, e);
+	}
+	const TActor *firingActor = ActorGetByUID(a->pilotUID);
+	if (firingActor->PlayerUID >= 0 && w->Gun->Cost != 0)
+	{
+		// Classic C-Dogs score consumption
+		GameEvent e = GameEventNew(GAME_EVENT_SCORE);
+		e.u.Score.PlayerUID = firingActor->PlayerUID;
+		e.u.Score.Score = -w->Gun->Cost;
+		GameEventsEnqueue(&gGameEvents, e);
 	}
 }
 
