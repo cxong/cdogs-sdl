@@ -772,6 +772,10 @@ void ActorPilot(const NActorPilot ap)
 		pilot->vehicleUID = vehicle->uid;
 		CASSERT(vehicle->pilotUID == -1, "already has pilot");
 		vehicle->pilotUID = pilot->uid;
+		char buf[256];
+		CharacterClassGetSound(
+			ActorGetCharacter(vehicle)->Class, buf, "alert");
+		SoundPlayAt(&gSoundDevice, StrSound(buf), vehicle->Pos);
 	}
 	else
 	{
@@ -779,6 +783,9 @@ void ActorPilot(const NActorPilot ap)
 		pilot->vehicleUID = -1;
 		CASSERT(vehicle->pilotUID != -1, "doesn't have pilot");
 		vehicle->pilotUID = -1;
+		char buf[256];
+		sprintf(buf, "footsteps/%s", ActorGetCharacter(pilot)->Class->Footsteps);
+		SoundPlayAt(&gSoundDevice, StrSound(buf), vehicle->Pos);
 	}
 }
 

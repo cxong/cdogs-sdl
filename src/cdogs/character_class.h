@@ -42,6 +42,7 @@ typedef struct
 	int Mass;
 	const CharSprites *Sprites;
 	char *Sounds;
+	// TODO: refactor into Sounds
 	char *Footsteps;
 	int FootstepsDistancePlus;
 	color_t BloodColor;
