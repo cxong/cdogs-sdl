@@ -85,7 +85,7 @@
       "Bullet": "mg",
       "Cost": 4,
       "Lock": 6,
-      "Sound": "mg",
+      "Sound": "lmg",
       "SpreadCount": 2,
       "Recoil": 0.2,
       "MuzzleFlashParticle": "muzzle_flash_mg",

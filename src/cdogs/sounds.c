@@ -164,7 +164,8 @@ static Mix_Chunk *LoadSound(const char *path)
 	const char *ext = strrchr(path, '.');
 	if (ext == NULL ||
 		!(strcmp(ext, ".ogg") == 0 || strcmp(ext, ".OGG") == 0 ||
-		  strcmp(ext, ".wav") == 0 || strcmp(ext, ".WAV") == 0))
+		  strcmp(ext, ".wav") == 0 || strcmp(ext, ".WAV") == 0 ||
+		  strcmp(ext, ".mp3") == 0 || strcmp(ext, ".MP3") == 0))
 	{
 		return NULL;
 	}
