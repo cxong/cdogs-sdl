@@ -410,8 +410,8 @@ static bool CheckParams(
 		// Pilot / vehicle collision
 		if (a->kind == KIND_CHARACTER && b->kind == KIND_CHARACTER)
 		{
-			const TActor *aa = ActorGetByUID(a->id);
-			const TActor *ab = ActorGetByUID(b->id);
+			const TActor *aa = CArrayGet(&gActors, a->id);
+			const TActor *ab = CArrayGet(&gActors, b->id);
 			if (aa != NULL && ab != NULL)
 			{
 				// Pilots never collide with anything
