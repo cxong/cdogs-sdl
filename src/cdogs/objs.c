@@ -374,9 +374,10 @@ static void DoDamageCharacter(
 
 	if (canDamage)
 	{
-		// Don't score for friendly or player hits
+		// Don't score for friendly, unpiloted vehicle, or player hits
 		const bool isFriendly =
 			(actor->flags & FLAGS_GOOD_GUY) ||
+			actor->pilotUID == -1 ||
 			(!IsPVP(gCampaign.Entry.Mode) && actor->PlayerUID >= 0);
 		if (source && source->PlayerUID >= 0 && bullet->Power != 0 &&
 			!isFriendly)
