@@ -165,6 +165,13 @@ void CharacterOldFaceToHair(const char *face, char **newFace, char **hair)
 		CSTRDUP(*newFace, face);
 	}
 }
+
+const NamedSprites *CharacterClassGetDeathSprites(const CharacterClass *c, const PicManager *pm)
+{
+	char buf[256];
+	sprintf(buf, "chars/%s", c->DeathSprites);
+	return PicManagerGetSprites(pm, buf);
+}
 const CharacterClass *IndexCharacterClass(const int i)
 {
 	CASSERT(
@@ -268,6 +275,11 @@ static void LoadCharacterClass(CharacterClass *c, json_t *node)
 	{
 		CSTRDUP(c->Body, "base");
 	}
+	LoadStr(&c->DeathSprites, node, "DeathSprites");
+	if (c->DeathSprites == NULL)
+	{
+		CSTRDUP(c->DeathSprites, "death");
+	}
 	c->Mass = CHARACTER_DEFAULT_MASS;
 	LoadInt(&c->Mass, node, "Mass");
 	c->Sprites = StrCharSpriteClass(c->Body);
@@ -302,7 +314,9 @@ void CharacterClassesClear(CArray *classes)
 static void CharacterClassFree(CharacterClass *c)
 {
 	CFREE(c->Name);
+	CFREE(c->HeadSprites);
 	CFREE(c->Body);
+	CFREE(c->DeathSprites);
 	CFREE(c->Sounds);
 	CFREE(c->Footsteps);
 	CFREE(c->Corpse);

@@ -29,6 +29,7 @@
 
 #include "door.h"
 #include "log.h"
+#include "pics.h"
 #include "sys_config.h"
 
 

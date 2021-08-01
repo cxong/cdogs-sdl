@@ -27,9 +27,9 @@
 */
 #pragma once
 
+#include "blit.h"
 #include "c_hashmap/hashmap.h"
 #include "cpic.h"
-#include "pics.h"
 
 typedef struct
 {

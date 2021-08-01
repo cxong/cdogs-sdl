@@ -32,6 +32,7 @@
 #include "defs.h"
 #include "draw/char_sprites.h"
 #include "json/json.h"
+#include "pic_manager.h"
 
 typedef struct
 {
@@ -39,6 +40,7 @@ typedef struct
 	bool Vehicle;
 	char *HeadSprites;
 	char *Body;
+	char *DeathSprites;
 	int Mass;
 	const CharSprites *Sprites;
 	char *Sounds;
@@ -62,6 +64,7 @@ const CharacterClass *StrCharacterClass(const char *s);
 // Legacy character class from "face" index
 const char *IntCharacterFace(const int face);
 void CharacterOldFaceToHair(const char *face, char **newFace, char **hair);
+const NamedSprites *CharacterClassGetDeathSprites(const CharacterClass *c, const PicManager *pm);
 const CharacterClass *IndexCharacterClass(const int i);
 int CharacterClassIndex(const CharacterClass *c);
 void CharacterClassGetSound(const CharacterClass *c, char *out, const char *sound);

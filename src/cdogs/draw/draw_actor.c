@@ -224,7 +224,6 @@ static const Pic *GetLegsPic(
 static const Pic *GetGunPic(
 	PicManager *pm, const char *gunSprites, const direction_e dir,
 	const int gunState, const CharColors *colors);
-static const Pic *GetDeathPic(PicManager *pm, const int frame);
 static ActorPics GetUnorderedPics(
 	const Character *c, const direction_e dir, const direction_e legDir,
 	const ActorAnimation anim, const int frame, const WeaponClass *gun,
@@ -242,7 +241,7 @@ static ActorPics GetUnorderedPics(
 	{
 		pics.IsDead = true;
 		pics.IsDying = true;
-		pics.Body = GetDeathPic(&gPicManager, 0);
+		pics.Body = NULL;
 		pics.OrderedPics[0] = pics.Body;
 		return pics;
 	}
@@ -261,10 +260,11 @@ static ActorPics GetUnorderedPics(
 	pics.IsDead = deadPic > 0;
 	if (pics.IsDead)
 	{
-		if (deadPic < DEATH_MAX)
+		const NamedSprites *deathSprites = CharacterClassGetDeathSprites(c->Class, &gPicManager);
+		if (deadPic - 1 < (int)deathSprites->pics.size)
 		{
 			pics.IsDying = true;
-			pics.Body = GetDeathPic(&gPicManager, deadPic - 1);
+			pics.Body = CArrayGet(&deathSprites->pics, deadPic - 1);
 			pics.OrderedPics[0] = pics.Body;
 		}
 		return pics;
@@ -619,10 +619,6 @@ static const Pic *GetGunPic(
 		return NULL;
 	}
 	return CArrayGet(&ns->pics, idx);
-}
-static const Pic *GetDeathPic(PicManager *pm, const int frame)
-{
-	return CArrayGet(&PicManagerGetSprites(pm, "chars/death")->pics, frame);
 }
 
 void DrawCharacterSimple(

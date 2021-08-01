@@ -346,7 +346,8 @@ bool IsPlayerAliveOrDying(const PlayerData *player)
 		return false;
 	}
 	const TActor *p = ActorGetByUID(player->ActorUID);
-	return p->dead <= DEATH_MAX;
+	const NamedSprites *deathSprites = CharacterClassGetDeathSprites(ActorGetCharacter(p)->Class, &gPicManager);
+	return p->dead <= (int)deathSprites->pics.size;
 }
 bool IsPlayerScreen(const PlayerData *p)
 {

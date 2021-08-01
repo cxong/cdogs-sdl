@@ -588,8 +588,7 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 			if (p->ActorUID == -1)
 				continue;
 			TActor *player = ActorGetByUID(p->ActorUID);
-			if (player->dead > DEATH_MAX)
-				continue;
+
 			// Calculate LOS for all players alive or dying
 			LOSCalcFrom(
 				&gMap, Vec2ToTile(player->thing.Pos), !gCampaign.IsClient);

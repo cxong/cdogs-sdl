@@ -85,6 +85,7 @@
         "Sprites": "chars/heads/jones"
       },
       "Body": "mech",
+      "DeathSprites": "explosion",
       "Sounds": "mecha_hitler",
       "BloodColor": "00ffff",
       "Footsteps": "mech",

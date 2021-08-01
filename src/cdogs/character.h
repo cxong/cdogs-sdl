@@ -28,6 +28,7 @@
 */
 #pragma once
 
+#include "blit.h"
 #include "c_array.h"
 #include "character_class.h"
 #include "pickup_class.h"

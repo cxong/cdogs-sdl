@@ -1068,7 +1068,8 @@ void UpdateAllActors(const int ticks)
 	}
 	ActorUpdatePosition(actor, ticks);
 	UpdateActorState(actor, ticks);
-	if (actor->dead > DEATH_MAX)
+	const NamedSprites *deathSprites = CharacterClassGetDeathSprites(ActorGetCharacter(actor)->Class, &gPicManager);
+	if (actor->dead - 1 > (int)deathSprites->pics.size)
 	{
 		if (!gCampaign.IsClient)
 		{
