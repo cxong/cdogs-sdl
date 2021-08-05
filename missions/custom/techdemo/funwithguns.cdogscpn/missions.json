@@ -52,7 +52,8 @@
 		"Booby Trap",
 		"Scorpion Spear",
 		"Laser Pointer",
-		"Akimbo Pistols"],
+		"Akimbo Pistols",
+	"Pistol and Powergun"],
 		"TileClasses": {
 			"Wall": {
 				"Name": "wall",

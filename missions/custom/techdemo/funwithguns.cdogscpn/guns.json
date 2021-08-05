@@ -84,6 +84,13 @@
       "CanDrop": false,
 	  "Guns": ["quad_mg", "quad_mg"],
 	  "Lock": 3
+    },
+    {
+      "Name": "Pistol and Powergun",
+      "Icon": "powergun",
+      "CanDrop": false,
+	  "Guns": ["Powergun", "Pistol"],
+	  "Lock": 6
     }
   ],
   "PseudoGuns" : [
