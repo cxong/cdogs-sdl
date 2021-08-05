@@ -107,7 +107,7 @@ static void PostInputEquipMenu(menu_t *menu, int cmd, void *data)
 		sprintf(buf, "footsteps/%s", p->Char.Class->Footsteps);
 		SoundPlay(&gSoundDevice, StrSound(buf));
 	}
-	
+
 	// Display gun based on menu index
 	d->GunIdx = MIN(menu->u.normal.index, MAX_WEAPONS);
 }
@@ -134,7 +134,7 @@ static void CreateEquippedWeaponsMenu(
 	int numGuns = 0;
 	int numGrenades = 0;
 	CA_FOREACH(const WeaponClass *, wc, *weapons)
-	if ((*wc)->IsGrenade)
+	if ((*wc)->Type == GUNTYPE_GRENADE)
 	{
 		numGrenades++;
 	}
@@ -187,7 +187,8 @@ static void AddEquippedMenuItem(
 }
 
 static menu_t *CreateGunMenu(
-	const CArray *weapons, const struct vec2i menuSize, const bool isGrenade, WeaponMenuData *data);
+	const CArray *weapons, const struct vec2i menuSize, const bool isGrenade,
+	WeaponMenuData *data);
 static void DisplayDescriptionGunIcon(
 	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
 	const struct vec2i size, const void *data);
@@ -242,7 +243,8 @@ void WeaponMenuCreate(
 
 	// Create equipped weapons menu
 	CreateEquippedWeaponsMenu(
-		&menu->msEquip, handlers, graphics, pos, size, pData, weapons, &data->display);
+		&menu->msEquip, handlers, graphics, pos, size, pData, weapons,
+		&data->display);
 
 	// For AI players, pre-pick their weapons and go straight to menu end
 	if (pData->inputDevice == INPUT_DEVICE_AI)
@@ -253,13 +255,14 @@ void WeaponMenuCreate(
 	}
 }
 static menu_t *CreateGunMenu(
-	const CArray *weapons, const struct vec2i menuSize, const bool isGrenade, WeaponMenuData *data)
+	const CArray *weapons, const struct vec2i menuSize, const bool isGrenade,
+	WeaponMenuData *data)
 {
 	menu_t *menu = MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
 	menu->u.normal.maxItems = 11;
 	MenuAddSubmenu(menu, MenuCreate(NO_GUN_LABEL, MENU_TYPE_BASIC));
 	CA_FOREACH(const WeaponClass *, wc, *weapons)
-	if ((*wc)->IsGrenade != isGrenade)
+	if (((*wc)->Type == GUNTYPE_GRENADE) != isGrenade)
 	{
 		continue;
 	}

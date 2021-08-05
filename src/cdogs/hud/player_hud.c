@@ -337,12 +337,15 @@ static void DrawWeaponStatus(
 	{
 		return;
 	}
+	// TODO: support drawing multi weapons in HUD
+	const int barrel = 0;
+	wc = WeaponClassGetBarrel(wc, barrel);
 
 	// Draw gauge and ammo counter if ammo used
-	if (gCampaign.Setting.Ammo && wc->AmmoId >= 0)
+	if (gCampaign.Setting.Ammo && wc->u.Normal.AmmoId >= 0)
 	{
-		const Ammo *ammo = AmmoGetById(&gAmmo, wc->AmmoId);
-		const int amount = ActorWeaponGetAmmo(actor, wc);
+		const Ammo *ammo = AmmoGetById(&gAmmo, wc->u.Normal.AmmoId);
+		const int amount = ActorWeaponGetAmmo(actor, wc, barrel);
 		FontOpts opts = FontOptsNew();
 		opts.Area = g->cachedConfig.Res;
 		opts.Pad = svec2i(pos.x + AMMO_WIDTH / 2, pos.y);
@@ -387,7 +390,7 @@ static void DrawWeaponStatus(
 	}
 
 	// Draw reload balls
-	for (int i = 0; i < weapon->Gun->Barrel.Count; i++)
+	for (int i = 0; i < WeaponClassNumBarrels(weapon->Gun); i++)
 	{
 		if (weapon->barrels[i].lock > 0)
 		{
@@ -435,9 +438,11 @@ static void DrawGunIcons(
 	}
 
 	// Ammo icon
-	if (gCampaign.Setting.Ammo && wc->AmmoId >= 0)
+	// TODO: support multi ammo guns
+	const int ammoId = WC_BARREL_ATTR(*wc, AmmoId, 0);
+	if (gCampaign.Setting.Ammo && ammoId >= 0)
 	{
-		const Ammo *ammo = AmmoGetById(&gAmmo, wc->AmmoId);
+		const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
 		const struct vec2i ammoPos = svec2i_add(pos, svec2i(6, 5));
 		CPicDraw(g, &ammo->Pic, ammoPos, NULL);
 	}
@@ -465,6 +470,7 @@ static void DrawGrenadeStatus(
 	{
 		return;
 	}
+	CASSERT(wc->Type == GUNTYPE_GRENADE, "unexpected gun type");
 
 	// Aligned to the right
 	const int right = GRENADES_WIDTH + SCORE_WIDTH;
@@ -480,9 +486,9 @@ static void DrawGrenadeStatus(
 
 	// Draw number of grenade icons; if there are too many draw one with the
 	// amount as text
-	const bool useAmmo = gCampaign.Setting.Ammo && wc->AmmoId >= 0;
-	const int amount = useAmmo ? ActorWeaponGetAmmo(a, wc) : -1;
-	const Pic *icon = WeaponClassGetIcon(wc);
+	const bool useAmmo = gCampaign.Setting.Ammo && wc->u.Normal.AmmoId >= 0;
+	const int amount = useAmmo ? ActorWeaponGetAmmo(a, wc, 0) : -1;
+	const Pic *icon = wc->Icon;
 	if (useAmmo && amount > 0 && amount <= MAX_GRENADE_ICONS)
 	{
 		DrawGrenadeIcons(g, icon, pos, GRENADES_WIDTH, amount);

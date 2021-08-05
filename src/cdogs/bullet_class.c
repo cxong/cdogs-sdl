@@ -419,6 +419,7 @@ static void FireGuns(const TMobileObject *obj, const CArray *guns)
 	for (int i = 0; i < (int)guns->size; i++)
 	{
 		const WeaponClass **wc = CArrayGet(guns, i);
+		CASSERT((*wc)->Type != GUNTYPE_MULTI, "unexpected gun type");
 		WeaponClassFire(
 			*wc, obj->thing.Pos, obj->z, angle, obj->flags, obj->ActorUID,
 			true, false);

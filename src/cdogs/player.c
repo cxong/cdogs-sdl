@@ -346,7 +346,8 @@ bool IsPlayerAliveOrDying(const PlayerData *player)
 		return false;
 	}
 	const TActor *p = ActorGetByUID(player->ActorUID);
-	const NamedSprites *deathSprites = CharacterClassGetDeathSprites(ActorGetCharacter(p)->Class, &gPicManager);
+	const NamedSprites *deathSprites = CharacterClassGetDeathSprites(
+		ActorGetCharacter(p)->Class, &gPicManager);
 	return p->dead <= (int)deathSprites->pics.size;
 }
 bool IsPlayerScreen(const PlayerData *p)
@@ -410,9 +411,14 @@ int PlayersNumUseAmmo(const int ammoId)
 	for (int j = 0; j < MAX_WEAPONS; j++)
 	{
 		const Weapon *w = &player->guns[j];
-		if (w->Gun != NULL && w->Gun->AmmoId == ammoId)
+		if (w->Gun == NULL)
+			continue;
+		for (int i = 0; i < WeaponClassNumBarrels(w->Gun); i++)
 		{
-			numPlayersWithAmmo++;
+			if (WC_BARREL_ATTR(*(w->Gun), AmmoId, i) == ammoId)
+			{
+				numPlayersWithAmmo++;
+			}
 		}
 	}
 	CA_FOREACH_END()

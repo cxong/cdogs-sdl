@@ -174,7 +174,7 @@ static void SetupQuickPlayEnemy(Character *enemy, const WeaponClass *wc, const b
 		enemy->bot->probabilityToMove = 30 + (rand() % 30);
 	}
 	enemy->bot->probabilityToTrack = 10 + (rand() % 60);
-	if (!enemy->Gun->CanShoot)
+	if (!WeaponClassCanShoot(enemy->Gun))
 	{
 		enemy->bot->probabilityToShoot = 0;
 	}

@@ -200,6 +200,7 @@ void ObjRemove(const NMapObjectRemove mor)
 
 		// Weapons that go off when this object is destroyed
 		CA_FOREACH(const WeaponClass *, wc, o->Class->DestroyGuns)
+		CASSERT((*wc)->Type != GUNTYPE_MULTI, "unexpected gun type");
 		WeaponClassFire(
 			*wc, o->thing.Pos, 0, 0, mor.Flags, mor.ActorUID, true, false);
 		CA_FOREACH_END()

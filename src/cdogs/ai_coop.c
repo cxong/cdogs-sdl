@@ -173,11 +173,12 @@ static int AICoopGetCmdNormal(TActor *actor)
 		for (int i = 0; i < MAX_GUNS; i++)
 		{
 			const Weapon *w = &actor->guns[i];
-			if (w->Gun == NULL)
+			// TODO: support multi guns?
+			if (w->Gun == NULL || w->Gun->Type != GUNTYPE_NORMAL)
 			{
 				continue;
 			}
-			const int ammoAmount = ActorWeaponGetAmmo(actor, w->Gun);
+			const int ammoAmount = ActorWeaponGetAmmo(actor, w->Gun, 0);
 			if ((mostPreferredWeaponWithAmmo == -1 && ammoAmount != 0) ||
 				(!mostPreferredWeaponHasAmmo && ammoAmount > 0))
 			{
@@ -185,9 +186,10 @@ static int AICoopGetCmdNormal(TActor *actor)
 				mostPreferredWeaponWithAmmo = i;
 				mostPreferredWeaponHasAmmo = ammoAmount > 0;
 			}
-			if (w->Gun->AmmoId != -1)
+			if (w->Gun->u.Normal.AmmoId != -1)
 			{
-				const Ammo *ammo = AmmoGetById(&gAmmo, w->Gun->AmmoId);
+				const Ammo *ammo =
+					AmmoGetById(&gAmmo, w->Gun->u.Normal.AmmoId);
 				if (lowAmmoGun == -1 && ammoAmount < ammo->Amount)
 				{
 					lowAmmoGun = i;
@@ -213,8 +215,9 @@ static int AICoopGetCmdNormal(TActor *actor)
 	{
 		const WeaponClass *wc = IdWeaponClass(actor->aiContext->OnGunId);
 		if ((lowAmmoGun != -1 && ActorFindGun(actor, wc) < 0) ||
-			(wc->IsGrenade ? ActorGetNumGrenades(actor) < MAX_GRENADES
-						   : ActorGetNumGuns(actor) < MAX_GUNS))
+			(wc->Type == GUNTYPE_GRENADE
+				 ? ActorGetNumGrenades(actor) < MAX_GRENADES
+				 : ActorGetNumGuns(actor) < MAX_GUNS))
 		{
 			actor->aiContext->OnGunId = -1;
 			// Pick it up
@@ -705,8 +708,10 @@ static bool OnClosestPickupGun(
 		return false;
 	}
 	const WeaponClass *pickupGun = IdWeaponClass(p->class->u.GunId);
-	const int weaponIndexStart = pickupGun->IsGrenade ? MAX_GUNS : 0;
-	const int weaponIndexEnd = pickupGun->IsGrenade ? MAX_WEAPONS : MAX_GUNS;
+	const int weaponIndexStart =
+		pickupGun->Type == GUNTYPE_GRENADE ? MAX_GUNS : 0;
+	const int weaponIndexEnd =
+		pickupGun->Type == GUNTYPE_GRENADE ? MAX_WEAPONS : MAX_GUNS;
 	// Pick up if:
 	// - we have a gun with less ammo than starting,
 	// - and lower than lead player, who uses the ammo,
@@ -715,12 +720,18 @@ static bool OnClosestPickupGun(
 	bool hasGunLowOnAmmo = false;
 	for (int i = weaponIndexStart; i < weaponIndexEnd; i++)
 	{
-		if (actor->guns[i].Gun == NULL)
+		const WeaponClass *wc = actor->guns[i].Gun;
+		if (wc == NULL)
 		{
 			hasGunLowOnAmmo = true;
 			break;
 		}
-		const int ammoId = actor->guns[i].Gun->AmmoId;
+		// TODO: support multi guns
+		if (wc->Type != GUNTYPE_NORMAL)
+		{
+			continue;
+		}
+		const int ammoId = wc->u.Normal.AmmoId;
 		if (ammoId < 0)
 		{
 			continue;
@@ -847,7 +858,8 @@ void AICoopSelectWeapons(
 			break;
 		}
 		const WeaponClass **wc = CArrayGet(weapons, idx);
-		if ((*wc)->IsGrenade)
+		// TODO: support multi guns
+		if ((*wc)->Type != GUNTYPE_NORMAL)
 		{
 			continue;
 		}

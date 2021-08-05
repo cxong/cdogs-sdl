@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2018, 2020 Cong Xu
+	Copyright (c) 2013-2018, 2020-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -169,7 +169,7 @@ static void AddDefaultGuns(
 		{
 			const int missionGunIdx = ((idx * size) + j) % guns->size;
 			const WeaponClass **wc = CArrayGet(guns, missionGunIdx);
-			if ((*wc)->IsGrenade != isGrenade)
+			if (((*wc)->Type == GUNTYPE_GRENADE) != isGrenade)
 			{
 				continue;
 			}

@@ -420,7 +420,7 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 			ec->Char = c;
 		}
 		gunstate_e gunStates[MAX_BARRELS];
-		for (int i = 0; i < c->Gun->Barrel.Count; i++)
+		for (int i = 0; i < MAX_BARRELS; i++)
 		{
 			gunStates[i] = GUNSTATE_READY;
 		}
@@ -456,7 +456,7 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 			// Preview
 			nk_layout_row_dynamic(ctx, 32 * PIC_SCALE, 1);
 			gunstate_e gunStates[MAX_BARRELS];
-			for (int i = 0; i < ec->Char->Gun->Barrel.Count; i++)
+			for (int i = 0; i < MAX_BARRELS; i++)
 			{
 				gunStates[i] = ec->gunState;
 			}

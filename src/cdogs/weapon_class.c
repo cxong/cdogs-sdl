@@ -36,6 +36,18 @@
 
 WeaponClasses gWeaponClasses;
 
+static const char *GunTypeStr(const GunType t)
+{
+	switch (t)
+	{
+		T2S(GUNTYPE_NORMAL, "Normal");
+		T2S(GUNTYPE_GRENADE, "Grenade");
+		T2S(GUNTYPE_MULTI, "Multi");
+	default:
+		return "";
+	}
+}
+
 // Initialise all the static weapon data
 #define VERSION 3
 void WeaponClassesInitialize(WeaponClasses *wcs)
@@ -44,7 +56,7 @@ void WeaponClassesInitialize(WeaponClasses *wcs)
 	CArrayInit(&wcs->Guns, sizeof(WeaponClass));
 	CArrayInit(&wcs->CustomGuns, sizeof(WeaponClass));
 }
-static void LoadGunDescription(
+static void LoadWeaponClass(
 	WeaponClass *wc, json_t *node, const WeaponClass *defaultGun,
 	const int version);
 static void GunDescriptionTerminate(WeaponClass *wc);
@@ -66,7 +78,10 @@ void WeaponClassesLoadJSON(WeaponClasses *wcs, CArray *classes, json_t *root)
 		json_t *defaultNode = json_find_first_label(root, "DefaultGun");
 		if (defaultNode != NULL)
 		{
-			LoadGunDescription(defaultDesc, defaultNode->child, NULL, version);
+			LoadWeaponClass(defaultDesc, defaultNode->child, NULL, version);
+			CASSERT(
+				defaultDesc->Type == GUNTYPE_NORMAL,
+				"Default gun must be a normal gun");
 		}
 		else
 		{
@@ -78,7 +93,7 @@ void WeaponClassesLoadJSON(WeaponClasses *wcs, CArray *classes, json_t *root)
 			WeaponClass gd;
 			if (defaultNode != NULL)
 			{
-				LoadGunDescription(&gd, defaultNode->child, NULL, version);
+				LoadWeaponClass(&gd, defaultNode->child, NULL, version);
 			}
 			else
 			{
@@ -91,7 +106,7 @@ void WeaponClassesLoadJSON(WeaponClasses *wcs, CArray *classes, json_t *root)
 	for (json_t *child = gunsNode->child; child; child = child->next)
 	{
 		WeaponClass gd;
-		LoadGunDescription(&gd, child, defaultDesc, version);
+		LoadWeaponClass(&gd, child, defaultDesc, version);
 		int idx = -1;
 		// Only allow index for non-custom guns
 		if (classes == &wcs->Guns)
@@ -116,55 +131,61 @@ void WeaponClassesLoadJSON(WeaponClasses *wcs, CArray *classes, json_t *root)
 			 child = child->next)
 		{
 			WeaponClass gd;
-			LoadGunDescription(&gd, child, defaultDesc, version);
+			LoadWeaponClass(&gd, child, defaultDesc, version);
 			gd.IsRealGun = false;
 			CArrayPushBack(classes, &gd);
 		}
 	}
 }
-static void LoadGunDescription(
+static void LoadWeaponClass(
 	WeaponClass *wc, json_t *node, const WeaponClass *defaultGun,
 	const int version)
 {
 	memset(wc, 0, sizeof *wc);
-	wc->AmmoId = -1;
-	if (defaultGun)
+
+	const json_t *gunsNode = json_find_first_label(node, "Guns");
+	if (gunsNode)
 	{
-		memcpy(wc, defaultGun, sizeof *wc);
-		if (defaultGun->name)
-		{
-			CSTRDUP(wc->name, defaultGun->name);
-		}
-		if (defaultGun->Sprites)
-		{
-			CSTRDUP(wc->Sprites, defaultGun->Sprites);
-		}
-		if (defaultGun->Description)
-		{
-			CSTRDUP(wc->Description, defaultGun->Description);
-		}
-		wc->MuzzleHeight /= Z_FACTOR;
+		wc->Type = GUNTYPE_MULTI;
 	}
+	else
+	{
+		bool isGrenade = false;
+		LoadBool(&isGrenade, node, "IsGrenade");
+		if (isGrenade)
+		{
+			wc->Type = GUNTYPE_GRENADE;
+		}
+	}
+
+	if (wc->Type == GUNTYPE_NORMAL)
+	{
+		wc->u.Normal.AmmoId = -1;
+		wc->u.Normal.Grips = 1;
+
+		if (defaultGun)
+		{
+			memcpy(wc, defaultGun, sizeof *wc);
+			if (defaultGun->name)
+			{
+				CSTRDUP(wc->name, defaultGun->name);
+			}
+			if (defaultGun->Description)
+			{
+				CSTRDUP(wc->Description, defaultGun->Description);
+			}
+			if (defaultGun->DropGun)
+			{
+				CSTRDUP(wc->DropGun, defaultGun->DropGun);
+			}
+			if (defaultGun->u.Normal.Sprites)
+			{
+				CSTRDUP(wc->u.Normal.Sprites, defaultGun->u.Normal.Sprites);
+			}
+		}
+	}
+
 	char *tmp;
-
-	tmp = NULL;
-	LoadStr(&tmp, node, "Pic");
-	if (tmp != NULL)
-	{
-		CFREE(wc->Sprites);
-		wc->Sprites = NULL;
-		if (strlen(tmp) > 0)
-		{
-			char buf[CDOGS_PATH_MAX];
-			sprintf(buf, "chars/guns/%s", tmp);
-			CSTRDUP(wc->Sprites, buf);
-		}
-		CFREE(tmp);
-	}
-	wc->Grips = 1;
-	LoadInt(&wc->Grips, node, "Grips");
-
-	LoadBool(&wc->IsGrenade, node, "IsGrenade");
 
 	const Pic *icon = NULL;
 	LoadPic(&icon, node, "Icon");
@@ -189,138 +210,191 @@ static void LoadGunDescription(
 		wc->Description = tmp;
 	}
 
-	tmp = NULL;
-	LoadStr(&tmp, node, "Bullet");
-	if (tmp != NULL)
-	{
-		wc->Bullet = StrBulletClass(tmp);
-		CFREE(tmp);
-	}
-
-	tmp = NULL;
-	LoadStr(&tmp, node, "Ammo");
-	if (tmp != NULL)
-	{
-		wc->AmmoId = StrAmmoId(tmp);
-		if (wc->IsGrenade)
-		{
-			// Grenade weapons also allow the ammo pickups to act as gun
-			// pickups
-			Ammo *ammo = AmmoGetById(&gAmmo, wc->AmmoId);
-			CFREE(ammo->DefaultGun);
-			CSTRDUP(ammo->DefaultGun, wc->name);
-			// Replace icon with that of the ammo
-			wc->Icon = CPicGetPic(&ammo->Pic, 0);
-		}
-		CFREE(tmp);
-	}
-
-	LoadInt(&wc->Cost, node, "Cost");
-
 	LoadInt(&wc->Lock, node, "Lock");
 
-	LoadInt(&wc->ReloadLead, node, "ReloadLead");
-
-	LoadSoundFromNode(&wc->Sound, node, "Sound");
-	LoadSoundFromNode(&wc->ReloadSound, node, "ReloadSound");
 	LoadSoundFromNode(&wc->SwitchSound, node, "SwitchSound");
-
-	wc->SoundLockLength = wc->Lock;
-	LoadInt(&wc->SoundLockLength, node, "SoundLockLength");
-
-	LoadFloat(&wc->Recoil, node, "Recoil");
-
-	LoadInt(&wc->Spread.Count, node, "SpreadCount");
-	LoadFloat(&wc->Spread.Width, node, "SpreadWidth");
-	LoadFloat(&wc->AngleOffset, node, "AngleOffset");
-
-	LoadInt(&wc->MuzzleHeight, node, "MuzzleHeight");
-	wc->MuzzleHeight *= Z_FACTOR;
-	if (json_find_first_label(node, "Elevation"))
-	{
-		LoadInt(&wc->ElevationLow, node, "Elevation");
-		wc->ElevationHigh = wc->ElevationLow;
-	}
-	LoadInt(&wc->ElevationLow, node, "ElevationLow");
-	LoadInt(&wc->ElevationHigh, node, "ElevationHigh");
-	wc->ElevationLow = MIN(wc->ElevationLow, wc->ElevationHigh);
-	wc->ElevationHigh = MAX(wc->ElevationLow, wc->ElevationHigh);
-	tmp = NULL;
-	LoadStr(&tmp, node, "MuzzleFlashParticle");
-	if (tmp != NULL)
-	{
-		wc->MuzzleFlash = StrParticleClass(&gParticleClasses, tmp);
-		CFREE(tmp);
-	}
-
-	tmp = NULL;
-	LoadStr(&tmp, node, "Brass");
-	if (tmp != NULL)
-	{
-		wc->Brass = StrParticleClass(&gParticleClasses, tmp);
-		CFREE(tmp);
-	}
-
-	LoadBool(&wc->CanShoot, node, "CanShoot");
 
 	LoadBool(&wc->CanDrop, node, "CanDrop");
 
 	LoadStr(&wc->DropGun, node, "DropGun");
 
-	if (version < 3)
+	switch (wc->Type)
 	{
-		LoadInt(&wc->Shake.Amount, node, "ShakeAmount");
-	}
-	else if (json_find_first_label(node, "Shake"))
+	case GUNTYPE_NORMAL:
+	case GUNTYPE_GRENADE: // fallthrough
 	{
-		json_t *shake = json_find_first_label(node, "Shake")->child;
-		LoadInt(&wc->Shake.Amount, shake, "Amount");
-		LoadBool(&wc->Shake.CameraSubjectOnly, shake, "CameraSubjectOnly");
-	}
+		tmp = NULL;
+		LoadStr(&tmp, node, "Pic");
+		if (tmp != NULL)
+		{
+			CFREE(wc->u.Normal.Sprites);
+			wc->u.Normal.Sprites = NULL;
+			if (strlen(tmp) > 0)
+			{
+				char buf[CDOGS_PATH_MAX];
+				sprintf(buf, "chars/guns/%s", tmp);
+				CSTRDUP(wc->u.Normal.Sprites, buf);
+			}
+			CFREE(tmp);
+		}
 
-	wc->Barrel.Count = 1;
-	wc->Barrel.Lock = 0;
-	if (json_find_first_label(node, "Barrel"))
-	{
-		json_t *barrel = json_find_first_label(node, "Barrel")->child;
-		LoadInt(&wc->Barrel.Count, barrel, "Count");
-		LoadInt(&wc->Barrel.Lock, barrel, "Lock");
+		LoadInt(&wc->u.Normal.Grips, node, "Grips");
+
+		tmp = NULL;
+		LoadStr(&tmp, node, "Bullet");
+		if (tmp != NULL)
+		{
+			wc->u.Normal.Bullet = StrBulletClass(tmp);
+			CFREE(tmp);
+		}
+
+		tmp = NULL;
+		LoadStr(&tmp, node, "Ammo");
+		if (tmp != NULL)
+		{
+			wc->u.Normal.AmmoId = StrAmmoId(tmp);
+			if (wc->Type == GUNTYPE_GRENADE)
+			{
+				// Grenade weapons also allow the ammo pickups to act as gun
+				// pickups
+				Ammo *ammo = AmmoGetById(&gAmmo, wc->u.Normal.AmmoId);
+				CFREE(ammo->DefaultGun);
+				CSTRDUP(ammo->DefaultGun, wc->name);
+				// Replace icon with that of the ammo
+				wc->Icon = CPicGetPic(&ammo->Pic, 0);
+			}
+			CFREE(tmp);
+		}
+
+		LoadInt(&wc->u.Normal.Cost, node, "Cost");
+
+		LoadInt(&wc->u.Normal.ReloadLead, node, "ReloadLead");
+
+		LoadSoundFromNode(&wc->u.Normal.Sound, node, "Sound");
+		LoadSoundFromNode(&wc->u.Normal.ReloadSound, node, "ReloadSound");
+
+		wc->u.Normal.SoundLockLength = wc->Lock;
+		LoadInt(&wc->u.Normal.SoundLockLength, node, "SoundLockLength");
+
+		LoadFloat(&wc->u.Normal.Recoil, node, "Recoil");
+
+		LoadInt(&wc->u.Normal.Spread.Count, node, "SpreadCount");
+		LoadFloat(&wc->u.Normal.Spread.Width, node, "SpreadWidth");
+		LoadFloat(&wc->u.Normal.AngleOffset, node, "AngleOffset");
+
+		int muzzleHeight = 0;
+		LoadInt(&muzzleHeight, node, "MuzzleHeight");
+		if (muzzleHeight)
+		{
+			wc->u.Normal.MuzzleHeight = muzzleHeight * Z_FACTOR;
+		}
+		if (json_find_first_label(node, "Elevation"))
+		{
+			LoadInt(&wc->u.Normal.ElevationLow, node, "Elevation");
+			wc->u.Normal.ElevationHigh = wc->u.Normal.ElevationLow;
+		}
+		LoadInt(&wc->u.Normal.ElevationLow, node, "ElevationLow");
+		LoadInt(&wc->u.Normal.ElevationHigh, node, "ElevationHigh");
+		wc->u.Normal.ElevationLow =
+			MIN(wc->u.Normal.ElevationLow, wc->u.Normal.ElevationHigh);
+		wc->u.Normal.ElevationHigh =
+			MAX(wc->u.Normal.ElevationLow, wc->u.Normal.ElevationHigh);
+		tmp = NULL;
+		LoadStr(&tmp, node, "MuzzleFlashParticle");
+		if (tmp != NULL)
+		{
+			wc->u.Normal.MuzzleFlash =
+				StrParticleClass(&gParticleClasses, tmp);
+			CFREE(tmp);
+		}
+
+		tmp = NULL;
+		LoadStr(&tmp, node, "Brass");
+		if (tmp != NULL)
+		{
+			wc->u.Normal.Brass = StrParticleClass(&gParticleClasses, tmp);
+			CFREE(tmp);
+		}
+
+		LoadBool(&wc->u.Normal.CanShoot, node, "CanShoot");
+
+		if (version < 3)
+		{
+			LoadInt(&wc->u.Normal.Shake.Amount, node, "ShakeAmount");
+		}
+		else if (json_find_first_label(node, "Shake"))
+		{
+			json_t *shake = json_find_first_label(node, "Shake")->child;
+			LoadInt(&wc->u.Normal.Shake.Amount, shake, "Amount");
+			LoadBool(
+				&wc->u.Normal.Shake.CameraSubjectOnly, shake,
+				"CameraSubjectOnly");
+		}
+	}
+	break;
+	case GUNTYPE_MULTI: {
+		int i = 0;
+		for (const json_t *gunNode = gunsNode->child->child; gunNode;
+			 gunNode = gunNode->next, i++)
+		{
+			wc->u.Guns[i] = json_unescape(gunNode->text);
+		}
+	}
+	break;
+	default:
+		CASSERT(false, "unknown gun type");
+		break;
 	}
 
 	wc->IsRealGun = true;
 
 	if (version < 2)
 	{
-		if (!wc->CanShoot)
+		CASSERT(wc->Type == GUNTYPE_NORMAL, "unexpected gun type");
+		if (!wc->u.Normal.CanShoot)
 		{
 			wc->Lock = 0;
 		}
 	}
 
-	LOG(LM_MAP, LL_DEBUG,
-		"loaded %s name(%s) bullet(%s) ammo(%d) cost(%d) lock(%d)...",
-		wc->IsGrenade ? "grenade" : "gun", wc->name,
-		wc->Bullet != NULL ? wc->Bullet->Name : "", wc->AmmoId, wc->Cost,
-		wc->Lock);
-	LOG(LM_MAP, LL_DEBUG,
-		"...reloadLead(%d) soundLockLength(%d) recoil(%f)...", wc->ReloadLead,
-		wc->SoundLockLength, wc->Recoil);
-	LOG(LM_MAP, LL_DEBUG,
-		"...spread(%frad x%d) angleOffset(%f) muzzleHeight(%d)...",
-		wc->Spread.Width, wc->Spread.Count, wc->AngleOffset, wc->MuzzleHeight);
-	LOG(LM_MAP, LL_DEBUG,
-		"...elevation(%d-%d) muzzleFlash(%s) brass(%s) canShoot(%s)...",
-		wc->ElevationLow, wc->ElevationHigh,
-		wc->MuzzleFlash != NULL ? wc->MuzzleFlash->Name : "",
-		wc->Brass != NULL ? wc->Brass->Name : "",
-		wc->CanShoot ? "true" : "false");
-	LOG(LM_MAP, LL_DEBUG,
-		"...canDrop(%s) shake{amount(%d), cameraSubjectOnly(%s)}",
-		wc->CanDrop ? "true" : "false", wc->Shake.Amount,
-		wc->Shake.CameraSubjectOnly ? "true" : "false");
-	LOG(LM_MAP, LL_DEBUG,
-		"...barrel{count(%d), lock(%d)}",
-		wc->Barrel.Count, wc->Barrel.Lock);
+	LOG(LM_MAP, LL_DEBUG, "loaded %s name(%s) lock(%d)...",
+		GunTypeStr(wc->Type), wc->name, wc->Lock);
+	LOG(LM_MAP, LL_DEBUG, "...canDrop(%s)", wc->CanDrop ? "true" : "false");
+	switch (wc->Type)
+	{
+	case GUNTYPE_NORMAL:
+	case GUNTYPE_GRENADE: // fallthrough
+		LOG(LM_MAP, LL_DEBUG, "bullet(%s) ammo(%d) cost(%d)...",
+			wc->u.Normal.Bullet != NULL ? wc->u.Normal.Bullet->Name : "",
+			wc->u.Normal.AmmoId, wc->u.Normal.Cost);
+		LOG(LM_MAP, LL_DEBUG,
+			"...reloadLead(%d) soundLockLength(%d) recoil(%f)...",
+			wc->u.Normal.ReloadLead, wc->u.Normal.SoundLockLength,
+			wc->u.Normal.Recoil);
+		LOG(LM_MAP, LL_DEBUG,
+			"...spread(%frad x%d) angleOffset(%f) muzzleHeight(%d)...",
+			wc->u.Normal.Spread.Width, wc->u.Normal.Spread.Count,
+			wc->u.Normal.AngleOffset, wc->u.Normal.MuzzleHeight);
+		LOG(LM_MAP, LL_DEBUG,
+			"...elevation(%d-%d) muzzleFlash(%s) brass(%s) canShoot(%s)...",
+			wc->u.Normal.ElevationLow, wc->u.Normal.ElevationHigh,
+			wc->u.Normal.MuzzleFlash != NULL ? wc->u.Normal.MuzzleFlash->Name
+											 : "",
+			wc->u.Normal.Brass != NULL ? wc->u.Normal.Brass->Name : "",
+			wc->u.Normal.CanShoot ? "true" : "false");
+		LOG(LM_MAP, LL_DEBUG, "...shake{amount(%d), cameraSubjectOnly(%s)}",
+			wc->u.Normal.Shake.Amount,
+			wc->u.Normal.Shake.CameraSubjectOnly ? "true" : "false");
+		break;
+	case GUNTYPE_MULTI:
+		LOG(LM_MAP, LL_DEBUG, "...guns{%s, %s}",
+			wc->u.Guns[0] ? wc->u.Guns[0] : "",
+			wc->u.Guns[1] ? wc->u.Guns[1] : "");
+		break;
+	default:
+		CASSERT(false, "unknown gun type");
+		break;
+	}
 }
 void WeaponClassesTerminate(WeaponClasses *wcs)
 {
@@ -340,9 +414,24 @@ void WeaponClassesClear(CArray *classes)
 static void GunDescriptionTerminate(WeaponClass *wc)
 {
 	CFREE(wc->name);
-	CFREE(wc->Sprites);
 	CFREE(wc->Description);
 	CFREE(wc->DropGun);
+	switch (wc->Type)
+	{
+	case GUNTYPE_NORMAL:
+	case GUNTYPE_GRENADE: // fallthrough
+		CFREE(wc->u.Normal.Sprites);
+		break;
+	case GUNTYPE_MULTI:
+		for (int i = 0; i < MAX_BARRELS; i++)
+		{
+			CFREE(wc->u.Guns[i]);
+		}
+		break;
+	default:
+		CASSERT(false, "unknown gun type");
+		break;
+	}
 	memset(wc, 0, sizeof *wc);
 }
 
@@ -403,6 +492,7 @@ void WeaponClassFire(
 	const double radians, const int flags, const int actorUID,
 	const bool playSound, const bool isGun)
 {
+	CASSERT(wc->Type != GUNTYPE_MULTI, "unexpected gun type");
 	GameEvent e = GameEventNew(GAME_EVENT_GUN_FIRE);
 	e.u.GunFire.ActorUID = actorUID;
 	strcpy(e.u.GunFire.Gun, wc->name);
@@ -424,15 +514,18 @@ void WeaponClassAddBrass(
 	{
 		return;
 	}
-	CASSERT(wc->Brass != NULL, "Cannot create brass for no-brass weapon");
+	CASSERT(wc->Type == GUNTYPE_NORMAL, "gun type can't have brass");
+	CASSERT(
+		wc->u.Normal.Brass != NULL, "Cannot create brass for no-brass weapon");
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PARTICLE);
-	e.u.AddParticle.Class = wc->Brass;
+	e.u.AddParticle.Class = wc->u.Normal.Brass;
 	const float radians = dir2radians[d];
 	const struct vec2 ejectionPortOffset =
 		svec2_scale(Vec2FromRadiansScaled(radians), 7);
 	e.u.AddParticle.Pos = svec2_subtract(pos, ejectionPortOffset);
-	e.u.AddParticle.Z = (float)wc->MuzzleHeight;
-	e.u.AddParticle.Vel = svec2_scale(Vec2FromRadians(radians + MPI_2), 0.333333f);
+	e.u.AddParticle.Z = (float)wc->u.Normal.MuzzleHeight;
+	e.u.AddParticle.Vel =
+		svec2_scale(Vec2FromRadians(radians + MPI_2), 0.333333f);
 	e.u.AddParticle.Vel.x += RAND_FLOAT(-0.25f, 0.25f);
 	e.u.AddParticle.Vel.y += RAND_FLOAT(-0.25f, 0.25f);
 	e.u.AddParticle.Angle = RAND_DOUBLE(0, MPI * 2);
@@ -447,18 +540,28 @@ struct vec2 WeaponClassGetBarrelMuzzleOffset(
 	const WeaponClass *wc, const CharSprites *cs, const int barrel,
 	direction_e dir, const gunstate_e state)
 {
+	if (wc->Type == GUNTYPE_MULTI)
+	{
+		wc = StrWeaponClass(wc->u.Guns[barrel]);
+		CASSERT(wc != NULL, "cannot find gun");
+	}
+	else
+	{
+		CASSERT(barrel == 0, "unexpected barrel index");
+	}
 	if (!WeaponClassHasMuzzle(wc))
 	{
 		return svec2_zero();
 	}
-	CASSERT(wc->Sprites != NULL, "Gun has no pic");
+	CASSERT(wc->u.Normal.Sprites != NULL, "Gun has no pic");
 	CASSERT(barrel < 2, "up to two barrels supported");
 	// For the other barrel, mirror dir and offset along X axis
 	if (barrel == 1)
 	{
 		dir = DirectionMirrorX(dir);
 	}
-	const struct vec2 gunOffset = cs->Offsets.Dir[barrel == 0 ? BODY_PART_GUN_R : BODY_PART_GUN_L][dir];
+	const struct vec2 gunOffset =
+		cs->Offsets.Dir[barrel == 0 ? BODY_PART_GUN_R : BODY_PART_GUN_L][dir];
 	const struct vec2 offset =
 		svec2_add(gunOffset, GetMuzzleOffset(dir, state));
 	if (barrel == 1)
@@ -477,31 +580,46 @@ static struct vec2 GetMuzzleOffset(const direction_e d, const gunstate_e state)
 		state == GUNSTATE_FIRING ? BARREL_LENGTH : BARREL_LENGTH_READY;
 	return svec2_scale(Vec2FromRadians(dir2radians[d]), (float)barrelLength);
 }
-float WeaponClassGetMuzzleHeight(const WeaponClass *wc, const gunstate_e state)
+float WeaponClassGetMuzzleHeight(
+	const WeaponClass *wc, const gunstate_e state, const int barrel)
 {
 	// Muzzle slightly higher when not firing
 	// TODO: convert MuzzleHeight to float
+	const int muzzleHeight = WC_BARREL_ATTR(*wc, MuzzleHeight, barrel);
 	return (
-		float)(wc->MuzzleHeight + (state == GUNSTATE_FIRING ? 0 : 4 * Z_FACTOR));
+		float)(muzzleHeight + (state == GUNSTATE_FIRING ? 0 : 4 * Z_FACTOR));
 }
 
 bool WeaponClassHasMuzzle(const WeaponClass *wc)
 {
-	return wc->Sprites != NULL && wc->CanShoot;
+	return wc->Type == GUNTYPE_NORMAL && wc->u.Normal.Sprites != NULL &&
+		   wc->u.Normal.CanShoot;
 }
 bool WeaponClassIsHighDPS(const WeaponClass *wc)
 {
-	if (wc->Bullet == NULL)
+	if (wc->Type == GUNTYPE_MULTI)
+	{
+		return WeaponClassIsHighDPS(StrWeaponClass(wc->u.Guns[0])) ||
+			   WeaponClassIsHighDPS(StrWeaponClass(wc->u.Guns[1]));
+	}
+	if (wc->u.Normal.Bullet == NULL)
 	{
 		return false;
 	}
 	// TODO: generalised way of determining explosive bullets
-	return wc->Bullet->Falling.DropGuns.size > 0 ||
-		   wc->Bullet->OutOfRangeGuns.size > 0 || wc->Bullet->HitGuns.size > 0;
+	return wc->u.Normal.Bullet->Falling.DropGuns.size > 0 ||
+		   wc->u.Normal.Bullet->OutOfRangeGuns.size > 0 ||
+		   wc->u.Normal.Bullet->HitGuns.size > 0;
 }
 float WeaponClassGetRange(const WeaponClass *wc)
 {
-	const BulletClass *b = wc->Bullet;
+	if (wc->Type == GUNTYPE_MULTI)
+	{
+		return (WeaponClassGetRange(StrWeaponClass(wc->u.Guns[0])) +
+				WeaponClassGetRange(StrWeaponClass(wc->u.Guns[1]))) /
+			   2.0f;
+	}
+	const BulletClass *b = wc->u.Normal.Bullet;
 	if (b == NULL)
 	{
 		return 0;
@@ -525,9 +643,27 @@ bool WeaponClassIsShortRange(const WeaponClass *wc)
 {
 	return WeaponClassGetRange(wc) < 100;
 }
-const Pic *WeaponClassGetIcon(const WeaponClass *wc)
+bool WeaponClassCanShoot(const WeaponClass *wc)
 {
-	return wc->Icon;
+	if (wc->Type == GUNTYPE_MULTI)
+	{
+		return WeaponClassCanShoot(WeaponClassGetBarrel(wc, 0)) ||
+			   WeaponClassCanShoot(WeaponClassGetBarrel(wc, 1));
+	}
+	return wc->u.Normal.CanShoot;
+}
+int WeaponClassNumBarrels(const WeaponClass *wc)
+{
+	return wc->Type == GUNTYPE_MULTI ? 2 : 1;
+}
+const WeaponClass *WeaponClassGetBarrel(
+	const WeaponClass *wc, const int barrel)
+{
+	if (wc->Type == GUNTYPE_MULTI)
+	{
+		return StrWeaponClass(wc->u.Guns[barrel]);
+	}
+	return wc;
 }
 
 void BulletAndWeaponInitialize(

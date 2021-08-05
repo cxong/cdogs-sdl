@@ -103,7 +103,8 @@ static ActorPics GetUnorderedPics(
 	const gunstate_e barrelStates[MAX_BARRELS], const bool isGrimacing,
 	const color_t shadowMask, const color_t *mask, const CharColors *colors,
 	const int deadPic);
-static void UpdatePilotHeadPic(ActorPics *pics, const TActor *a, const direction_e dir);
+static void UpdatePilotHeadPic(
+	ActorPics *pics, const TActor *a, const direction_e dir);
 static void ReorderPics(
 	ActorPics *pics, const Character *c, const direction_e dir,
 	const WeaponClass *gun, const gunstate_e barrelStates[MAX_BARRELS]);
@@ -169,17 +170,21 @@ ActorPics GetCharacterPicsFromActor(const TActor *a)
 	int frame;
 	const direction_e legDir = GetLegDirAndFrame(a, dir, &frame);
 	gunstate_e gunStates[MAX_BARRELS];
-	for (int i = 0; gun->Gun != NULL && i < gun->Gun->Barrel.Count; i++)
+	for (int i = 0; gun->Gun != NULL && i < WeaponClassNumBarrels(gun->Gun);
+		 i++)
 	{
 		gunStates[i] = gun->barrels[i].state;
 	}
 
-	ActorPics pics = GetUnorderedPics(c, dir, legDir, a->anim.Type, frame, gun->Gun, gunStates, ActorIsGrimacing(a), shadowMask, maskP, colors, a->dead);
+	ActorPics pics = GetUnorderedPics(
+		c, dir, legDir, a->anim.Type, frame, gun->Gun, gunStates,
+		ActorIsGrimacing(a), shadowMask, maskP, colors, a->dead);
 	UpdatePilotHeadPic(&pics, a, dir);
 	ReorderPics(&pics, c, dir, gun->Gun, gunStates);
 	return pics;
 }
-static void UpdatePilotHeadPic(ActorPics *pics, const TActor *a, const direction_e dir)
+static void UpdatePilotHeadPic(
+	ActorPics *pics, const TActor *a, const direction_e dir)
 {
 	if (a->pilotUID == a->uid)
 	{
@@ -208,7 +213,9 @@ ActorPics GetCharacterPics(
 	const color_t shadowMask, const color_t *mask, const CharColors *colors,
 	const int deadPic)
 {
-	ActorPics pics = GetUnorderedPics(c, dir, legDir, anim, frame, gun, barrelStates, isGrimacing, shadowMask, mask, colors, deadPic);
+	ActorPics pics = GetUnorderedPics(
+		c, dir, legDir, anim, frame, gun, barrelStates, isGrimacing,
+		shadowMask, mask, colors, deadPic);
 
 	ReorderPics(&pics, c, dir, gun, barrelStates);
 
@@ -233,7 +240,7 @@ static ActorPics GetUnorderedPics(
 {
 	ActorPics pics;
 	memset(&pics, 0, sizeof pics);
-	
+
 	pics.Sprites = c->Class->Sprites;
 
 	// Dummy return to handle invalid character class
@@ -260,7 +267,8 @@ static ActorPics GetUnorderedPics(
 	pics.IsDead = deadPic > 0;
 	if (pics.IsDead)
 	{
-		const NamedSprites *deathSprites = CharacterClassGetDeathSprites(c->Class, &gPicManager);
+		const NamedSprites *deathSprites =
+			CharacterClassGetDeathSprites(c->Class, &gPicManager);
 		if (deadPic - 1 < (int)deathSprites->pics.size)
 		{
 			pics.IsDying = true;
@@ -286,10 +294,10 @@ static ActorPics GetUnorderedPics(
 			headDir = (dir + 1) % 8;
 	}
 	bool grimace = isGrimacing;
-	const int numBarrels =
-		(barrelStates == NULL || gun == NULL || gun->Sprites == NULL)
-			? 0
-			: gun->Barrel.Count;
+	const int numBarrels = (barrelStates == NULL || gun == NULL ||
+							WC_BARREL_ATTR(*gun, Sprites, 0) == NULL)
+							   ? 0
+							   : WeaponClassNumBarrels(gun);
 	for (int i = 0; i < numBarrels; i++)
 	{
 		if (barrelStates[i] == GUNSTATE_FIRING ||
@@ -299,7 +307,7 @@ static ActorPics GetUnorderedPics(
 			break;
 		}
 	}
-	const int grips = gun == NULL ? 0 : gun->Grips;
+	const int grips = gun == NULL ? 0 : WC_BARREL_ATTR(*gun, Grips, 0);
 	pics.Head = GetHeadPic(c->Class, headDir, grimace, colors);
 	pics.HeadOffset = GetActorDrawOffset(
 		pics.Head, BODY_PART_HEAD, c->Class->Sprites, anim, frame, dir,
@@ -316,7 +324,8 @@ static ActorPics GetUnorderedPics(
 	for (int i = 0; i < numBarrels; i++)
 	{
 		pics.Guns[i] = GetGunPic(
-			&gPicManager, gun->Sprites, dir, barrelStates[i], colors);
+			&gPicManager, WC_BARREL_ATTR(*gun, Sprites, i), dir,
+			barrelStates[i], colors);
 		if (pics.Guns[i] != NULL)
 		{
 			pics.GunOffsets[i] = GetActorDrawOffset(
@@ -375,7 +384,7 @@ static void ReorderPics(
 	// Determine draw order based on the direction the player is facing
 	// Rotate direction left for 2-grip guns, as the gun is held in front
 	// of the actor
-	const int grips = gun == NULL ? 0 : gun->Grips;
+	const int grips = gun == NULL ? 0 : WC_BARREL_ATTR(*gun, Grips, 0);
 	const direction_e drawOrderDir =
 		grips == 2 && barrelStates[0] == GUNSTATE_READY
 			? DirectionRotate(dir, -1)
@@ -476,17 +485,20 @@ void DrawLaserSight(
 	{
 		return;
 	}
-	for (int i = 0; i < wc->Barrel.Count; i++)
+	for (int i = 0; i < WeaponClassNumBarrels(wc); i++)
 	{
 		struct vec2i muzzlePos = svec2i_add(
 			picPos, svec2i_assign_vec2(ActorGetMuzzleOffset(a, w, i)));
-		muzzlePos.y -= wc->MuzzleHeight / Z_FACTOR;
-		const float radians = dir2radians[a->direction] + wc->AngleOffset;
-		const int range = (int)WeaponClassGetRange(wc);
+		const WeaponClass *wcb = WeaponClassGetBarrel(wc, i);
+		muzzlePos.y -= wcb->u.Normal.MuzzleHeight / Z_FACTOR;
+		const float radians =
+			dir2radians[a->direction] + wcb->u.Normal.AngleOffset;
+		const int range = (int)WeaponClassGetRange(wcb);
 		color_t color = colorCyan;
 		color.a = 64;
 		const float spreadHalf =
-			(wc->Spread.Count - 1) * wc->Spread.Width / 2 + wc->Recoil / 2;
+			(wcb->u.Normal.Spread.Count - 1) * wcb->u.Normal.Spread.Width / 2 +
+			wcb->u.Normal.Recoil / 2;
 		if (spreadHalf > 0)
 		{
 			DrawLaserSightSingle(

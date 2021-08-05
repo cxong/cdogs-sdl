@@ -483,7 +483,7 @@ static int GetCmd(TActor *actor, const int delayModifier, const int rollLimit)
 				// I think this is some hack to make sure invisible enemies
 				// don't fire so much
 				Weapon *w = ACTOR_GET_WEAPON(actor);
-				for (int i = 0; i < w->Gun->Barrel.Count; i++)
+				for (int i = 0; i < WeaponClassNumBarrels(w->Gun); i++)
 				{
 					w->barrels[i].lock = 40;
 				}

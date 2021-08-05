@@ -731,7 +731,8 @@ int AIAttack(const TActor *a, const struct vec2 targetPos)
 	const WeaponClass *wc = w->Gun;
 	const float gunRange = WeaponClassGetRange(wc);
 	const float distanceSquared = svec2_distance_squared(a->Pos, targetPos);
-	const bool canFire = wc->CanShoot && WeaponGetUnlockedBarrel(w) >= 0;
+	const bool canFire =
+		WeaponClassCanShoot(wc) && WeaponGetUnlockedBarrel(w) >= 0;
 	if ((double)distanceSquared <
 			SQUARED(gunRange * 3) * a->aiContext->GunRangeScalar &&
 		!canFire)

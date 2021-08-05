@@ -158,7 +158,7 @@ typedef struct
 	struct vec2i ObjectiveDescPos;
 	struct vec2i ObjectiveInfoPos;
 	int ObjectiveHeight;
-	CampaignSetting *C; 
+	CampaignSetting *C;
 	const struct MissionOptions *MissionOptions;
 	EventWaitResult waitResult;
 } MissionBriefingData;
@@ -216,8 +216,9 @@ GameLoopData *ScreenMissionBriefing(
 	mData->MissionOptions = m;
 
 	return GameLoopDataNew(
-		mData, MissionBriefingTerminate, MissionBriefingOnEnter, MissionBriefingOnExit,
-		MissionBriefingInput, MissionBriefingUpdate, MissionBriefingDraw);
+		mData, MissionBriefingTerminate, MissionBriefingOnEnter,
+		MissionBriefingOnExit, MissionBriefingInput, MissionBriefingUpdate,
+		MissionBriefingDraw);
 }
 static void MissionBriefingTerminate(GameLoopData *data)
 {
@@ -308,14 +309,14 @@ static GameLoopResult MissionBriefingUpdate(GameLoopData *data, LoopRunner *l)
 		return UPDATE_RESULT_DRAW;
 	}
 
-    // Auto skip if on demo mode
-    if (gEventHandlers.DemoQuitTimer > 0)
-    {
-        mData->waitResult = EVENT_WAIT_OK;
-        goto bail;
-    }
+	// Auto skip if on demo mode
+	if (gEventHandlers.DemoQuitTimer > 0)
+	{
+		mData->waitResult = EVENT_WAIT_OK;
+		goto bail;
+	}
 
-    return UPDATE_RESULT_OK;
+	return UPDATE_RESULT_OK;
 
 bail:
 	if (mData->waitResult == EVENT_WAIT_OK)
@@ -460,7 +461,9 @@ static void MissionSummaryOnEnter(GameLoopData *data)
 
 	if (mData->completed && CanLevelSelect(mData->c->Entry.Mode))
 	{
-		AutosaveAdd(&gAutosave, &mData->c->Entry, mData->m->index, mData->m->NextMission, &gPlayerDatas);
+		AutosaveAdd(
+			&gAutosave, &mData->c->Entry, mData->m->index,
+			mData->m->NextMission, &gPlayerDatas);
 		AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 	}
 
@@ -551,29 +554,33 @@ static GameLoopResult MissionSummaryUpdate(GameLoopData *data, LoopRunner *l)
 {
 	MissionSummaryData *mData = data->Data;
 
-    GameLoopResult result = MenuUpdate(&mData->ms);
+	GameLoopResult result = MenuUpdate(&mData->ms);
 	if (result == UPDATE_RESULT_DRAW)
 	{
-        bool done = true;
-        done = AnimatedCounterUpdate(&mData->AccessBonus, 1) && done;
-        done = AnimatedCounterUpdate(&mData->TimeBonus, 1) && done;
-        for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
-        {
-            done = AnimatedCounterUpdate(&mData->pDatas[i].Score, 1) && done;
-            done = AnimatedCounterUpdate(&mData->pDatas[i].Total, 1) && done;
-            done = AnimatedCounterUpdate(&mData->pDatas[i].HealthResurrection, 1) && done;
-            done = AnimatedCounterUpdate(&mData->pDatas[i].ButcherNinjaFriendly, 1) && done;
-        }
+		bool done = true;
+		done = AnimatedCounterUpdate(&mData->AccessBonus, 1) && done;
+		done = AnimatedCounterUpdate(&mData->TimeBonus, 1) && done;
+		for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
+		{
+			done = AnimatedCounterUpdate(&mData->pDatas[i].Score, 1) && done;
+			done = AnimatedCounterUpdate(&mData->pDatas[i].Total, 1) && done;
+			done = AnimatedCounterUpdate(
+					   &mData->pDatas[i].HealthResurrection, 1) &&
+				   done;
+			done = AnimatedCounterUpdate(
+					   &mData->pDatas[i].ButcherNinjaFriendly, 1) &&
+				   done;
+		}
 
-        // Skip after animations are done if in demo mode
-        if (done && gEventHandlers.DemoQuitTimer > 0)
-        {
-            result = UPDATE_RESULT_OK;
-        }
-    }
+		// Skip after animations are done if in demo mode
+		if (done && gEventHandlers.DemoQuitTimer > 0)
+		{
+			result = UPDATE_RESULT_OK;
+		}
+	}
 
-    if (result == UPDATE_RESULT_OK)
-    {
+	if (result == UPDATE_RESULT_OK)
+	{
 		gCampaign.IsComplete =
 			mData->completed &&
 			mData->m->NextMission == (int)gCampaign.Setting.Missions.size;
@@ -677,8 +684,8 @@ static int GetNinjaBonus(const PlayerData *p)
 				break;
 			}
 		}
-		if (wc != NULL && !wc->CanShoot && p->Stats.Friendlies == 0 &&
-			p->Stats.Kills > 5)
+		if (wc != NULL && !WeaponClassCanShoot(wc) &&
+			p->Stats.Friendlies == 0 && p->Stats.Kills > 5)
 		{
 			return 50 * p->Stats.Kills;
 		}

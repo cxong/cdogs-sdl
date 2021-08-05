@@ -226,14 +226,14 @@ static void ActorUpdateWeapon(TActor *a, Weapon *w, const int ticks)
 	}
 	WeaponUpdate(w, ticks);
 	ActorFireUpdate(w, a, ticks);
-	for (int i = 0; i < w->Gun->Barrel.Count; i++)
+	for (int i = 0; i < WeaponClassNumBarrels(w->Gun); i++)
 	{
 		if (WeaponBarrelIsOverheating(w, i))
 		{
 			AddParticle ap;
 			memset(&ap, 0, sizeof ap);
 			ap.Pos = svec2_add(a->Pos, ActorGetMuzzleOffset(a, w, i));
-			ap.Z = WeaponClassGetMuzzleHeight(w->Gun, w->barrels[i].state) /
+			ap.Z = WeaponClassGetMuzzleHeight(w->Gun, w->barrels[i].state, i) /
 				   Z_FACTOR;
 			ap.Mask = colorWhite;
 			EmitterUpdate(&a->barrelSmoke, &ap, ticks);
@@ -277,8 +277,10 @@ bool TryMoveActor(TActor *actor, struct vec2 pos)
 		const bool checkMelee =
 			(!gCampaign.IsClient && actor->PlayerUID < 0) ||
 			ActorIsLocalPlayer(actor->uid);
-		const BulletClass *b = gun->Gun->Bullet;
-		if (checkMelee && barrel >= 0 && !gun->Gun->CanShoot &&
+		// TODO: support melee weapons on multi guns
+		const BulletClass *b =
+			barrel >= 0 ? WC_BARREL_ATTR(*(gun->Gun), Bullet, barrel) : NULL;
+		if (checkMelee && barrel >= 0 && !WeaponClassCanShoot(gun->Gun) &&
 			actor->health > 0 &&
 			(!object ||
 			 (((b->Hit.Object.Hit && target->kind == KIND_OBJECT) ||
@@ -657,9 +659,17 @@ bool ActorUsesAmmo(const TActor *actor, const int ammoId)
 {
 	for (int i = 0; i < MAX_WEAPONS; i++)
 	{
-		if (actor->guns[i].Gun != NULL && actor->guns[i].Gun->AmmoId == ammoId)
+		const WeaponClass *wc = actor->guns[i].Gun;
+		if (wc == NULL)
 		{
-			return true;
+			continue;
+		}
+		for (int j = 0; j < WeaponClassNumBarrels(wc); j++)
+		{
+			if (WC_BARREL_ATTR(*wc, AmmoId, j) == ammoId)
+			{
+				return true;
+			}
 		}
 	}
 	return false;
@@ -683,7 +693,7 @@ void ActorReplaceGun(const NActorReplaceGun rg)
 	memcpy(&a->guns[rg.GunIdx], &w, sizeof w);
 	// Switch immediately to picked up gun
 	const PlayerData *p = PlayerDataGetByUID(a->PlayerUID);
-	if (wc->IsGrenade && PlayerHasGrenadeButton(p))
+	if (wc->Type == GUNTYPE_GRENADE && PlayerHasGrenadeButton(p))
 	{
 		a->grenadeIndex = rg.GunIdx - MAX_GUNS;
 	}
@@ -784,7 +794,8 @@ void ActorPilot(const NActorPilot ap)
 		CASSERT(vehicle->pilotUID != -1, "doesn't have pilot");
 		vehicle->pilotUID = -1;
 		char buf[256];
-		sprintf(buf, "footsteps/%s", ActorGetCharacter(pilot)->Class->Footsteps);
+		sprintf(
+			buf, "footsteps/%s", ActorGetCharacter(pilot)->Class->Footsteps);
 		SoundPlayAt(&gSoundDevice, StrSound(buf), vehicle->Pos);
 	}
 }
@@ -801,7 +812,8 @@ static void FireWeapon(TActor *a, Weapon *w)
 		if (WeaponGetUnlockedBarrel(w) >= 0 && gCampaign.Setting.Ammo)
 		{
 			CASSERT(
-				ActorWeaponGetAmmo(a, w->Gun) == 0, "should be out of ammo");
+				ActorWeaponGetAmmo(a, w->Gun, barrel) == 0,
+				"should be out of ammo");
 			// Play a clicking sound if this weapon is out of ammo
 			if (w->clickLock <= 0)
 			{
@@ -815,22 +827,24 @@ static void FireWeapon(TActor *a, Weapon *w)
 		return;
 	}
 	ActorFireBarrel(w, a, barrel);
-	if (a->PlayerUID >= 0 && gCampaign.Setting.Ammo && w->Gun->AmmoId >= 0)
+	const int ammoId = WC_BARREL_ATTR(*(w->Gun), AmmoId, barrel);
+	if (a->PlayerUID >= 0 && gCampaign.Setting.Ammo && ammoId >= 0)
 	{
 		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_USE_AMMO);
 		e.u.UseAmmo.UID = a->uid;
 		e.u.UseAmmo.PlayerUID = a->PlayerUID;
-		e.u.UseAmmo.Ammo.Id = w->Gun->AmmoId;
+		e.u.UseAmmo.Ammo.Id = ammoId;
 		e.u.UseAmmo.Ammo.Amount = 1;
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 	const TActor *firingActor = ActorGetByUID(a->pilotUID);
-	if (firingActor->PlayerUID >= 0 && w->Gun->Cost != 0)
+	const int cost = WC_BARREL_ATTR(*(w->Gun), Cost, barrel);
+	if (firingActor->PlayerUID >= 0 && cost != 0)
 	{
 		// Classic C-Dogs score consumption
 		GameEvent e = GameEventNew(GAME_EVENT_SCORE);
 		e.u.Score.PlayerUID = firingActor->PlayerUID;
-		e.u.Score.Score = -w->Gun->Cost;
+		e.u.Score.Score = -cost;
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 }
@@ -869,7 +883,7 @@ static bool ActorTryShoot(TActor *actor, const int cmd)
 	{
 		// Stop firing barrel and restore ready state
 		const Weapon *w = ACTOR_GET_GUN(actor);
-		for (int i = 0; i < w->Gun->Barrel.Count; i++)
+		for (int i = 0; i < WeaponClassNumBarrels(w->Gun); i++)
 		{
 			if (w->barrels[i].state == GUNSTATE_FIRING)
 			{
@@ -1068,7 +1082,8 @@ void UpdateAllActors(const int ticks)
 	}
 	ActorUpdatePosition(actor, ticks);
 	UpdateActorState(actor, ticks);
-	const NamedSprites *deathSprites = CharacterClassGetDeathSprites(ActorGetCharacter(actor)->Class, &gPicManager);
+	const NamedSprites *deathSprites = CharacterClassGetDeathSprites(
+		ActorGetCharacter(actor)->Class, &gPicManager);
 	if (actor->dead - 1 > (int)deathSprites->pics.size)
 	{
 		if (!gCampaign.IsClient)
@@ -1334,27 +1349,35 @@ static void ActorAddAmmoPickup(const TActor *actor)
 	for (int i = 0; i < MAX_WEAPONS; i++)
 	{
 		const Weapon *w = &actor->guns[i];
-		// Check if the actor's gun has ammo at all
-		if (w->Gun == NULL || w->Gun->AmmoId < 0)
+		if (w->Gun == NULL)
 		{
 			continue;
 		}
 
-		// Don't spawn ammo if no players use it
-		if (PlayersNumUseAmmo(w->Gun->AmmoId) == 0)
+		for (int j = 0; j < WeaponClassNumBarrels(w->Gun); j++)
 		{
-			continue;
-		}
+			const int ammoId = WC_BARREL_ATTR(*(w->Gun), AmmoId, j);
+			// Check if the actor's gun has ammo at all
+			if (ammoId < 0)
+			{
+				continue;
+			}
+			// Don't spawn ammo if no players use it
+			if (PlayersNumUseAmmo(ammoId) == 0)
+			{
+				continue;
+			}
 
-		GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
-		const Ammo *a = AmmoGetById(&gAmmo, w->Gun->AmmoId);
-		sprintf(e.u.AddPickup.PickupClass, "ammo_%s", a->Name);
-		// Add a little random offset so the pickups aren't all together
-		const struct vec2 offset = svec2(
-			(float)RAND_INT(-TILE_WIDTH, TILE_WIDTH) / 2,
-			(float)RAND_INT(-TILE_HEIGHT, TILE_HEIGHT) / 2);
-		e.u.AddPickup.Pos = Vec2ToNet(svec2_add(actor->Pos, offset));
-		GameEventsEnqueue(&gGameEvents, e);
+			GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
+			const Ammo *a = AmmoGetById(&gAmmo, ammoId);
+			sprintf(e.u.AddPickup.PickupClass, "ammo_%s", a->Name);
+			// Add a little random offset so the pickups aren't all together
+			const struct vec2 offset = svec2(
+				(float)RAND_INT(-TILE_WIDTH, TILE_WIDTH) / 2,
+				(float)RAND_INT(-TILE_HEIGHT, TILE_HEIGHT) / 2);
+			e.u.AddPickup.Pos = Vec2ToNet(svec2_add(actor->Pos, offset));
+			GameEventsEnqueue(&gGameEvents, e);
+		}
 	}
 }
 static bool HasGunPickups(const WeaponClass *wc, const int n);
@@ -1662,11 +1685,11 @@ struct vec2 ActorGetAverageWeaponMuzzleOffset(const TActor *a)
 {
 	const Weapon *w = ACTOR_GET_WEAPON(a);
 	struct vec2 offset = svec2_zero();
-	for (int i = 0; i < w->Gun->Barrel.Count; i++)
+	for (int i = 0; i < WeaponClassNumBarrels(w->Gun); i++)
 	{
 		offset = svec2_add(offset, ActorGetMuzzleOffset(a, w, i));
 	}
-	return svec2_scale(offset, 1.0f / (float)w->Gun->Barrel.Count);
+	return svec2_scale(offset, 1.0f / (float)WeaponClassNumBarrels(w->Gun));
 }
 struct vec2 ActorGetMuzzleOffset(
 	const TActor *a, const Weapon *w, const int barrel)
@@ -1676,13 +1699,15 @@ struct vec2 ActorGetMuzzleOffset(
 	return WeaponClassGetBarrelMuzzleOffset(
 		w->Gun, cs, barrel, a->direction, w->barrels[barrel].state);
 }
-int ActorWeaponGetAmmo(const TActor *a, const WeaponClass *wc)
+int ActorWeaponGetAmmo(
+	const TActor *a, const WeaponClass *wc, const int barrel)
 {
-	if (wc->AmmoId == -1)
+	const int ammoId = WC_BARREL_ATTR(*wc, AmmoId, barrel);
+	if (ammoId == -1)
 	{
 		return -1;
 	}
-	return *(int *)CArrayGet(&a->ammo, wc->AmmoId);
+	return *(int *)CArrayGet(&a->ammo, ammoId);
 }
 int ActorGetCanFireBarrel(const TActor *a, const Weapon *w)
 {
@@ -1690,12 +1715,18 @@ int ActorGetCanFireBarrel(const TActor *a, const Weapon *w)
 	{
 		return -1;
 	}
-	const bool hasAmmo = ActorWeaponGetAmmo(a, w->Gun) != 0;
-	if (gCampaign.Setting.Ammo && !hasAmmo)
+	const int barrel = WeaponGetUnlockedBarrel(w);
+	if (barrel == -1)
 	{
 		return -1;
 	}
-	return WeaponGetUnlockedBarrel(w);
+	const bool hasAmmo = ActorWeaponGetAmmo(a, w->Gun, barrel) != 0;
+	if (gCampaign.Setting.Ammo && !hasAmmo)
+	{
+		// TODO: multi guns not firing if the first gun is out of ammo
+		return -1;
+	}
+	return barrel;
 }
 bool ActorTrySwitchWeapon(const TActor *a, const bool allGuns)
 {
@@ -1993,7 +2024,7 @@ bool ActorIsGrimacing(const TActor *a)
 	const Weapon *gun = ACTOR_GET_WEAPON(a);
 	if (gun->Gun)
 	{
-		for (int i = 0; i < gun->Gun->Barrel.Count; i++)
+		for (int i = 0; i < WeaponClassNumBarrels(gun->Gun); i++)
 		{
 			if (gun->barrels[i].state == GUNSTATE_FIRING ||
 				gun->barrels[i].state == GUNSTATE_RECOIL)

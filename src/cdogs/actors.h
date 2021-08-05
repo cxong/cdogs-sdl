@@ -123,11 +123,11 @@ typedef struct Actor
 	// -1 if human character (get from player data), otherwise index into
 	// CharacterStore OtherChars
 	int charId;
-	int PlayerUID; 	// -1 unless a human player
-	int uid;	   	// unique ID across all actors
-	int pilotUID;  	// the actor that controls this
-					// (same as uid for normal actors)
-	int vehicleUID;	// -1 unless piloting a vehicle
+	int PlayerUID; // -1 unless a human player
+	int uid;	   // unique ID across all actors
+	int pilotUID;  // the actor that controls this
+				  // (same as uid for normal actors)
+	int vehicleUID; // -1 unless piloting a vehicle
 	Weapon guns[MAX_WEAPONS];
 	CArray ammo; // of int
 	int gunIndex;
@@ -219,7 +219,8 @@ struct vec2 ActorGetAverageWeaponMuzzleOffset(const TActor *a);
 struct vec2 ActorGetMuzzleOffset(
 	const TActor *a, const Weapon *w, const int barrel);
 // Returns -1 if gun does not use ammo
-int ActorWeaponGetAmmo(const TActor *a, const WeaponClass *wc);
+int ActorWeaponGetAmmo(
+	const TActor *a, const WeaponClass *wc, const int barrel);
 // Returns -1 if no barrels can fire
 int ActorGetCanFireBarrel(const TActor *a, const Weapon *w);
 bool ActorTrySwitchWeapon(const TActor *a, const bool allGuns);

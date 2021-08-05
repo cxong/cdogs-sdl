@@ -79,22 +79,11 @@
       "MuzzleFlashParticle": ""
     },
     {
-      "Pic": "quad_chaingun",
       "Name": "Quad Machine Gun",
       "Icon": "machine_gun",
-      "Bullet": "mg",
-      "Cost": 4,
-      "Lock": 6,
-      "Sound": "lmg",
-      "SpreadCount": 2,
-      "Recoil": 0.2,
-      "MuzzleFlashParticle": "muzzle_flash_mg",
-      "Brass": "brass_big",
       "CanDrop": false,
-      "Barrel": {
-        "Count": 2,
-        "Lock": 3
-      }
+	  "Guns": ["quad_mg", "quad_mg"],
+	  "Lock": 3
     }
   ],
   "PseudoGuns" : [
@@ -163,6 +152,19 @@
       "Bullet": "booby_trap",
       "Sound": "puff",
       "MuzzleHeight": 0
+    },
+    {
+      "Pic": "quad_chaingun",
+      "Name": "quad_mg",
+      "Bullet": "mg",
+      "Cost": 4,
+      "Lock": 6,
+      "Sound": "lmg",
+      "SpreadCount": 2,
+      "Recoil": 0.2,
+      "MuzzleHeight": 12,
+      "MuzzleFlashParticle": "muzzle_flash_mg",
+      "Brass": "brass_big"
     }
   ]
 }

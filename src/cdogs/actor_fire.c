@@ -42,7 +42,7 @@ void ActorFireBarrel(Weapon *w, const TActor *a, const int barrel)
 		e.u.GunState.State = GUNSTATE_FIRING;
 		GameEventsEnqueue(&gGameEvents, e);
 	}
-	if (!w->Gun->CanShoot)
+	if (!WeaponClassCanShoot(w->Gun))
 	{
 		return;
 	}
@@ -53,8 +53,8 @@ void ActorFireBarrel(Weapon *w, const TActor *a, const int barrel)
 	const bool playSound = w->barrels[barrel].soundLock <= 0;
 	const TActor *firingActor = ActorGetByUID(a->pilotUID);
 	WeaponClassFire(
-		w->Gun, muzzlePosition,
-		WeaponClassGetMuzzleHeight(w->Gun, GUNSTATE_FIRING), radians,
+		WeaponClassGetBarrel(w->Gun, barrel), muzzlePosition,
+		WeaponClassGetMuzzleHeight(w->Gun, GUNSTATE_FIRING, barrel), radians,
 		firingActor->flags, firingActor->uid, playSound, true);
 	WeaponBarrelOnFire(w, barrel);
 }
@@ -62,18 +62,19 @@ void ActorFireBarrel(Weapon *w, const TActor *a, const int barrel)
 void ActorFireUpdate(Weapon *w, const TActor *a, const int ticks)
 {
 	// Reload sound
-	if (ConfigGetBool(&gConfig, "Sound.Reloads") &&
-		w->Gun->ReloadSound != NULL)
+	if (!ConfigGetBool(&gConfig, "Sound.Reloads"))
 	{
-		for (int i = 0; i < w->Gun->Barrel.Count; i++)
+		for (int i = 0; i < WeaponClassNumBarrels(w->Gun); i++)
 		{
-			if (w->barrels[i].lock > w->Gun->ReloadLead &&
-				w->barrels[i].lock - ticks <= w->Gun->ReloadLead &&
+			const int reloadLead = WC_BARREL_ATTR(*(w->Gun), ReloadLead, i);
+			if (w->barrels[i].lock > reloadLead &&
+				w->barrels[i].lock - ticks <= reloadLead &&
 				w->barrels[i].lock > 0)
 			{
 				GameEvent e = GameEventNew(GAME_EVENT_GUN_RELOAD);
 				e.u.GunReload.PlayerUID = a->PlayerUID;
-				strcpy(e.u.GunReload.Gun, w->Gun->name);
+				strcpy(
+					e.u.GunReload.Gun, WeaponClassGetBarrel(w->Gun, i)->name);
 				const struct vec2 muzzleOffset = ActorGetMuzzleOffset(a, w, i);
 				const struct vec2 muzzlePosition =
 					svec2_add(a->Pos, muzzleOffset);
@@ -88,29 +89,31 @@ void ActorFireUpdate(Weapon *w, const TActor *a, const int ticks)
 void OnGunFire(const NGunFire gf, SoundDevice *sd)
 {
 	const WeaponClass *wc = StrWeaponClass(gf.Gun);
+	CASSERT(wc->Type != GUNTYPE_MULTI, "unexpected gun type");
 	const struct vec2 pos = NetToVec2(gf.MuzzlePos);
 
 	// Add bullets
-	if (wc->Bullet && !gCampaign.IsClient)
+	if (wc->u.Normal.Bullet && !gCampaign.IsClient)
 	{
 		// Find the starting angle of the spread (clockwise)
 		// Keep in mind the fencepost problem, i.e. spread of 3 means a
 		// total spread angle of 2x width
 		const float spreadStartAngle =
-			wc->AngleOffset - (wc->Spread.Count - 1) * wc->Spread.Width / 2;
-		for (int i = 0; i < wc->Spread.Count; i++)
+			wc->u.Normal.AngleOffset -
+			(wc->u.Normal.Spread.Count - 1) * wc->u.Normal.Spread.Width / 2;
+		for (int i = 0; i < wc->u.Normal.Spread.Count; i++)
 		{
-			const float recoil = RAND_FLOAT(-0.5f, 0.5f) * wc->Recoil;
-			const float finalAngle =
-				gf.Angle + spreadStartAngle + i * wc->Spread.Width + recoil;
+			const float recoil = RAND_FLOAT(-0.5f, 0.5f) * wc->u.Normal.Recoil;
+			const float finalAngle = gf.Angle + spreadStartAngle +
+									 i * wc->u.Normal.Spread.Width + recoil;
 			GameEvent ab = GameEventNew(GAME_EVENT_ADD_BULLET);
 			ab.u.AddBullet.UID = MobObjsObjsGetNextUID();
-			strcpy(ab.u.AddBullet.BulletClass, wc->Bullet->Name);
+			strcpy(ab.u.AddBullet.BulletClass, wc->u.Normal.Bullet->Name);
 			ab.u.AddBullet.MuzzlePos = Vec2ToNet(pos);
 			ab.u.AddBullet.MuzzleHeight = gf.Z;
 			ab.u.AddBullet.Angle = finalAngle;
-			ab.u.AddBullet.Elevation =
-				RAND_INT(wc->ElevationLow, wc->ElevationHigh);
+			ab.u.AddBullet.Elevation = RAND_INT(
+				wc->u.Normal.ElevationLow, wc->u.Normal.ElevationHigh);
 			ab.u.AddBullet.Flags = gf.Flags;
 			ab.u.AddBullet.ActorUID = gf.ActorUID;
 			GameEventsEnqueue(&gGameEvents, ab);
@@ -118,35 +121,35 @@ void OnGunFire(const NGunFire gf, SoundDevice *sd)
 	}
 
 	// Add muzzle flash
-	if (WeaponClassHasMuzzle(wc) && wc->MuzzleFlash != NULL)
+	if (WeaponClassHasMuzzle(wc) && wc->u.Normal.MuzzleFlash != NULL)
 	{
 		GameEvent ap = GameEventNew(GAME_EVENT_ADD_PARTICLE);
-		ap.u.AddParticle.Class = wc->MuzzleFlash;
+		ap.u.AddParticle.Class = wc->u.Normal.MuzzleFlash;
 		ap.u.AddParticle.Pos = pos;
 		ap.u.AddParticle.Z = (float)gf.Z;
 		ap.u.AddParticle.Angle = gf.Angle;
 		GameEventsEnqueue(&gGameEvents, ap);
 	}
 	// Sound
-	if (gf.Sound && wc->Sound)
+	if (gf.Sound && wc->u.Normal.Sound)
 	{
-		SoundPlayAt(sd, wc->Sound, pos);
+		SoundPlayAt(sd, wc->u.Normal.Sound, pos);
 
 		// Alert sleeping AI
 		AIWakeOnSoundAt(pos);
 	}
 	// Screen shake
-	if (wc->Shake.Amount > 0)
+	if (wc->u.Normal.Shake.Amount > 0)
 	{
 		GameEvent s = GameEventNew(GAME_EVENT_SCREEN_SHAKE);
-		s.u.Shake.Amount = wc->Shake.Amount;
-		s.u.Shake.CameraSubjectOnly = wc->Shake.CameraSubjectOnly;
+		s.u.Shake.Amount = wc->u.Normal.Shake.Amount;
+		s.u.Shake.CameraSubjectOnly = wc->u.Normal.Shake.CameraSubjectOnly;
 		s.u.Shake.ActorUID = gf.ActorUID;
 		GameEventsEnqueue(&gGameEvents, s);
 	}
 	// Brass shells
 	// If we have a reload lead, defer the creation of shells until then
-	if (wc->Brass && wc->ReloadLead == 0)
+	if (wc->u.Normal.Brass && wc->u.Normal.ReloadLead == 0)
 	{
 		const direction_e d = RadiansToDirection(gf.Angle);
 		WeaponClassAddBrass(wc, d, pos);

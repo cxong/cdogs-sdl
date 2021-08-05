@@ -54,6 +54,14 @@ typedef enum
 	GUN_COUNT
 } gun_e;
 
+typedef enum
+{
+	GUNTYPE_NORMAL,
+	GUNTYPE_GRENADE,
+	GUNTYPE_MULTI
+} GunType;
+GunType StrGunType(const char *s);
+
 // Gun states
 typedef enum
 {
@@ -65,46 +73,48 @@ typedef enum
 
 typedef struct
 {
-	char *Sprites;
 	const Pic *Icon;
-	int Grips;
-	bool IsGrenade;
+	GunType Type;
+	union {
+		struct
+		{
+			char *Sprites;
+			int Grips;
+			const BulletClass *Bullet;
+			int AmmoId; // -1 if the gun does not consume ammo
+			int Cost;	// Cost in score to fire weapon
+			int ReloadLead;
+			Mix_Chunk *Sound;
+			Mix_Chunk *ReloadSound;
+			int SoundLockLength;
+			float Recoil; // Random recoil for inaccurate weapons, in radians
+			struct
+			{
+				int Count;	 // Number of bullets in spread
+				float Width; // Width of individual spread, in radians
+			} Spread;
+			float AngleOffset;
+			int MuzzleHeight;
+			int ElevationLow;
+			int ElevationHigh;
+			const ParticleClass *MuzzleFlash;
+			const ParticleClass *Brass;
+			bool CanShoot;
+			struct
+			{
+				int Amount;				// Amount of screen shake to produce
+				bool CameraSubjectOnly; // Only shake if gun held by camera
+										// subject
+			} Shake;
+		} Normal;
+		char *Guns[MAX_BARRELS];
+	} u;
 	char *name;
 	char *Description;
-	const BulletClass *Bullet;
-	int AmmoId; // -1 if the gun does not consume ammo
-	int Cost;	// Cost in score to fire weapon
 	int Lock;
-	int ReloadLead;
-	Mix_Chunk *Sound;
-	Mix_Chunk *ReloadSound;
 	Mix_Chunk *SwitchSound;
-	int SoundLockLength;
-	float Recoil; // Random recoil for inaccurate weapons, in radians
-	struct
-	{
-		int Count;	 // Number of bullets in spread
-		float Width; // Width of individual spread, in radians
-	} Spread;
-	float AngleOffset;
-	int MuzzleHeight;
-	int ElevationLow;
-	int ElevationHigh;
-	const ParticleClass *MuzzleFlash;
-	const ParticleClass *Brass;
-	bool CanShoot;
-	bool CanDrop; // whether this gun can be dropped to be picked up
+	bool CanDrop;	// whether this gun can be dropped to be picked up
 	char *DropGun;	// Gun to drop if an actor with this gun dies
-	struct
-	{
-		int Amount;				// Amount of screen shake to produce
-		bool CameraSubjectOnly; // Only shake if gun held by camera subject
-	} Shake;
-	struct
-	{
-		int Count;
-		int Lock;
-	} Barrel;
 	bool IsRealGun; // whether this gun can be used as is by players
 } WeaponClass;
 typedef struct
@@ -127,7 +137,7 @@ struct vec2 WeaponClassGetBarrelMuzzleOffset(
 	const WeaponClass *wc, const CharSprites *cs, const int barrel,
 	direction_e dir, const gunstate_e state);
 float WeaponClassGetMuzzleHeight(
-	const WeaponClass *wc, const gunstate_e state);
+	const WeaponClass *wc, const gunstate_e state, const int barrel);
 
 void WeaponClassFire(
 	const WeaponClass *wc, const struct vec2 pos, const float z,
@@ -141,7 +151,15 @@ bool WeaponClassHasMuzzle(const WeaponClass *wc);
 bool WeaponClassIsHighDPS(const WeaponClass *wc);
 bool WeaponClassIsLongRange(const WeaponClass *wc);
 bool WeaponClassIsShortRange(const WeaponClass *wc);
-const Pic *WeaponClassGetIcon(const WeaponClass *wc);
+bool WeaponClassCanShoot(const WeaponClass *wc);
+int WeaponClassNumBarrels(const WeaponClass *wc);
+const WeaponClass *WeaponClassGetBarrel(
+	const WeaponClass *wc, const int barrel);
+
+#define WC_BARREL_ATTR(_wc, _attr, _barrel)                                   \
+	((_wc).Type == GUNTYPE_MULTI                                              \
+		 ? StrWeaponClass((_wc).u.Guns[_barrel])->u.Normal.##_attr            \
+		 : (_wc).u.Normal.##_attr)
 
 // Initialise bullets and weapons in one go
 void BulletAndWeaponInitialize(

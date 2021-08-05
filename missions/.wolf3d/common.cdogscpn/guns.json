@@ -81,37 +81,18 @@
       "DropGun": "Machine Gun"
     },
     {
-      "Pic": "chaingun",
       "Name": "Dual Chain Gun",
       "Icon": "machine_gun",
-      "Bullet": "bullet_boss",
-      "Cost": 1,
-      "Lock": 70,
-      "Sound": "dual_chain_gun",
-      "Recoil": 0.3,
-      "Brass": "brass",
       "CanDrop": false,
-      "Barrel": {
-        "Count": 2,
-        "Lock": 3
-      }
+      "Guns": ["boss_chaingun1", "boss_chaingun2"],
+      "Lock": 9
     },
     {
-      "Pic": "quad_chaingun",
       "Name": "Quad Chain Gun",
       "Icon": "machine_gun",
-      "Bullet": "bullet_quad",
-      "Cost": 1,
-      "Lock": 70,
-      "Sound": "dual_chain_gun",
-      "SpreadCount": 2,
-      "Recoil": 0.3,
-      "Brass": "brass",
       "CanDrop": false,
-      "Barrel": {
-        "Count": 2,
-        "Lock": 3
-      }
+      "Guns": ["boss_double_chaingun1", "boss_double_chaingun2"],
+      "Lock": 9
     },
     {
       "Pic": "",
@@ -174,6 +155,48 @@
       "Sound": "flamethrower",
       "MuzzleFlashParticle": "",
       "CanDrop": false
+    }
+  ],
+  "PseudoGuns" : [
+    {
+      "Pic": "chaingun",
+      "Name": "boss_chaingun1",
+      "Bullet": "bullet_boss",
+      "Lock": 70,
+      "Sound": "dual_chain_gun",
+      "Recoil": 0.3,
+      "Brass": "brass"
+    },
+    {
+      "Pic": "chaingun",
+      "Name": "boss_chaingun2",
+      "Bullet": "bullet_boss",
+      "Lock": 70,
+      "Sound": "",
+      "Recoil": 0.3,
+      "Brass": "brass"
+    },
+    {
+      "Pic": "quad_chaingun",
+      "Name": "boss_double_chaingun1",
+      "Bullet": "bullet_quad",
+      "Lock": 70,
+      "Sound": "dual_chain_gun",
+      "SpreadCount": 2,
+      "Recoil": 0.3,
+      "MuzzleHeight": 12,
+      "Brass": "brass"
+    },
+    {
+      "Pic": "quad_chaingun",
+      "Name": "boss_double_chaingun2",
+      "Bullet": "bullet_quad",
+      "Lock": 70,
+      "Sound": "",
+      "SpreadCount": 2,
+      "Recoil": 0.3,
+      "MuzzleHeight": 12,
+      "Brass": "brass"
     }
   ]
 }

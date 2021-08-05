@@ -258,7 +258,10 @@ static bool TreatAsGunPickup(const Pickup *p, const TActor *a)
 		return false;
 	case PICKUP_GUN: {
 		const WeaponClass *wc = IdWeaponClass(p->class->u.GunId);
-		return !wc->IsGrenade || !HasGunUsingAmmo(a, wc->AmmoId);
+		// TODO: support picking up multi guns?
+		return wc->Type == GUNTYPE_NORMAL ||
+			   (wc->Type == GUNTYPE_GRENADE &&
+				!HasGunUsingAmmo(a, wc->u.Normal.AmmoId));
 	}
 	default:
 		CASSERT(false, "unexpected pickup type");
@@ -269,9 +272,15 @@ static bool HasGunUsingAmmo(const TActor *a, const int ammoId)
 {
 	for (int i = 0; i < MAX_WEAPONS; i++)
 	{
-		if (a->guns[i].Gun != NULL && a->guns[i].Gun->AmmoId == ammoId)
+		const WeaponClass *wc = a->guns[i].Gun;
+		if (wc == NULL)
+			continue;
+		for (int j = 0; j < WeaponClassNumBarrels(wc); j++)
 		{
-			return true;
+			if (WC_BARREL_ATTR(*wc, AmmoId, j) == ammoId)
+			{
+				return true;
+			}
 		}
 	}
 	return false;
@@ -288,7 +297,7 @@ static bool TryPickupAmmo(TActor *a, const Pickup *p)
 	const Ammo *ammo = AmmoGetById(
 		&gAmmo, p->class->Type == PICKUP_AMMO
 					? (int)p->class->u.Ammo.Id
-					: IdWeaponClass(p->class->u.GunId)->AmmoId);
+					: IdWeaponClass(p->class->u.GunId)->u.Normal.AmmoId);
 	const int current = *(int *)CArrayGet(&a->ammo, p->class->u.Ammo.Id);
 	if (current >= ammo->Max)
 	{
@@ -348,13 +357,16 @@ static bool TryPickupGun(
 		// Pickup gun
 		// Replace the current gun, unless there's a free slot, in which case
 		// pick up into the free spot
-		const int weaponIndexStart = wc->IsGrenade ? MAX_GUNS : 0;
-		const int weaponIndexEnd = wc->IsGrenade ? MAX_WEAPONS : MAX_GUNS;
+		const int weaponIndexStart =
+			wc->Type == GUNTYPE_GRENADE ? MAX_GUNS : 0;
+		const int weaponIndexEnd =
+			wc->Type == GUNTYPE_GRENADE ? MAX_WEAPONS : MAX_GUNS;
 		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_REPLACE_GUN);
 		e.u.ActorReplaceGun.UID = a->uid;
 		strcpy(e.u.ActorReplaceGun.Gun, wc->name);
-		e.u.ActorReplaceGun.GunIdx =
-			wc->IsGrenade ? a->grenadeIndex + MAX_GUNS : a->gunIndex;
+		e.u.ActorReplaceGun.GunIdx = wc->Type == GUNTYPE_GRENADE
+										 ? a->grenadeIndex + MAX_GUNS
+										 : a->gunIndex;
 		int replaceGunIndex = e.u.ActorReplaceGun.GunIdx;
 		for (int i = weaponIndexStart; i < weaponIndexEnd; i++)
 		{
@@ -377,17 +389,19 @@ static bool TryPickupGun(
 
 	// If the player has less ammo than the default amount,
 	// replenish up to this amount
-	if (wc->AmmoId >= 0)
+	// TODO: support multi gun
+	const int ammoId = WC_BARREL_ATTR(*wc, AmmoId, 0);
+	if (ammoId >= 0)
 	{
-		const Ammo *ammo = AmmoGetById(&gAmmo, wc->AmmoId);
+		const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
 		const int ammoDeficit = ammo->Amount * AMMO_STARTING_MULTIPLE -
-								*(int *)CArrayGet(&a->ammo, wc->AmmoId);
+								*(int *)CArrayGet(&a->ammo, ammoId);
 		if (ammoDeficit > 0)
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD_AMMO);
 			e.u.AddAmmo.UID = a->uid;
 			e.u.AddAmmo.PlayerUID = a->PlayerUID;
-			e.u.AddAmmo.Ammo.Id = wc->AmmoId;
+			e.u.AddAmmo.Ammo.Id = ammoId;
 			e.u.AddAmmo.Ammo.Amount = ammoDeficit;
 			e.u.AddAmmo.IsRandomSpawned = false;
 			GameEventsEnqueue(&gGameEvents, e);
