@@ -8,6 +8,7 @@
 	  "Cost": 2,
 	  "Lock": 10,
 	  "Sound": "spreadgun",
+	  "SwitchSound": "switch",
 	  "SpreadCount": 5,
 	  "SpreadWidth": 0.25
 	},
@@ -18,6 +19,7 @@
 	  "Cost": 5,
 	  "Lock": 8,
 	  "Sound": "vulcan",
+	  "SwitchSound": "switch",
 	  "SpreadCount": 7,
 	  "SpreadWidth": 0.23
 	},
@@ -28,6 +30,7 @@
 	  "Cost": 2,
 	  "Lock": 5,
 	  "Sound": "chaser2",
+	  "SwitchSound": "switch",
 	  "Recoil": 0.8,
 	  "MuzzleFlashParticle": "muzzle_flash_chaser2"
 	},
@@ -39,6 +42,7 @@
 	  "Cost": 5,
 	  "Lock": 20,
 	  "Sound": "",
+	  "SwitchSound": "grenade_pickup",
 	  "Elevation": 24
 	},
 	{
@@ -48,6 +52,7 @@
 	  "Cost": 50,
 	  "Lock": 500,
 	  "Sound": "laser_designator",
+	  "SwitchSound": "switch",
 	  "MuzzleFlashParticle": "muzzle_flash_laser_beam"
 	},
 	{
@@ -58,6 +63,7 @@
       "Lock": 100,
       "Sound": "bottle_pop",
       "ReloadSound": "package_r",
+      "SwitchSound": "package_r",
       "ReloadLead": 15,
       "Recoil": 0.4,
       "Elevation": 20,
@@ -68,7 +74,8 @@
       "Bullet": "spearhead",
       "Cost": 15,
       "Lock": 100,
-      "Sound": "swoosh_echo"
+      "Sound": "swoosh_echo",
+	  "SwitchSound": "switch"
     },
     {
       "Name": "Laser Pointer",
@@ -76,6 +83,7 @@
       "Cost": 0,
       "Lock": 1,
       "Sound": "",
+	  "SwitchSound": "switch",
       "MuzzleFlashParticle": ""
     },
     {
@@ -83,6 +91,7 @@
       "Icon": "machine_gun",
       "CanDrop": false,
 	  "Guns": ["quad_mg", "quad_mg"],
+	  "SwitchSound": "switch",
 	  "Lock": 3
     },
     {
@@ -90,6 +99,7 @@
       "Icon": "powergun",
       "CanDrop": false,
 	  "Guns": ["Powergun", "Pistol"],
+	  "SwitchSound": "switch",
 	  "Lock": 6
     }
   ],

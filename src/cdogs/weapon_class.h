@@ -158,8 +158,8 @@ const WeaponClass *WeaponClassGetBarrel(
 
 #define WC_BARREL_ATTR(_wc, _attr, _barrel)                                   \
 	((_wc).Type == GUNTYPE_MULTI                                              \
-		 ? StrWeaponClass((_wc).u.Guns[_barrel])->u.Normal.##_attr            \
-		 : (_wc).u.Normal.##_attr)
+		 ? StrWeaponClass((_wc).u.Guns[_barrel])->u.Normal. _attr            \
+		 : (_wc).u.Normal. _attr)
 
 // Initialise bullets and weapons in one go
 void BulletAndWeaponInitialize(
