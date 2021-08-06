@@ -393,7 +393,7 @@ static void HandleGameEvent(
 		break;
 	case GAME_EVENT_GUN_RELOAD: {
 		const WeaponClass *wc = StrWeaponClass(e.u.GunReload.Gun);
-		CASSERT(wc->Type == GUNTYPE_NORMAL, "unexpected gun type");
+		CASSERT(wc->Type != GUNTYPE_MULTI, "unexpected gun type");
 		const struct vec2 pos = NetToVec2(e.u.GunReload.Pos);
 		SoundPlayAtPlusDistance(
 			sd, wc->u.Normal.ReloadSound, pos, RELOAD_DISTANCE_PLUS);

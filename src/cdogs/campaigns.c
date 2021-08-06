@@ -93,7 +93,9 @@ void CampaignSettingTerminateAll(CampaignSetting *setting)
 	PlayerTemplatesClear(&gPlayerTemplates.CustomClasses);
 	CharacterClassesClear(&gCharacterClasses.CustomClasses);
 	BulletClassesClear(&gBulletClasses.CustomClasses);
-	WeaponClassesClear(&gWeaponClasses.CustomGuns);
+	// HACK: assign temp variable for custom guns to avoid aliasing
+	CArray *customGuns = &gWeaponClasses.CustomGuns;
+	WeaponClassesClear(customGuns);
 	PickupClassesClear(&gPickupClasses.CustomClasses);
 	PickupClassesClear(&gPickupClasses.KeyClasses);
 	MapObjectsClear(&gMapObjects.CustomClasses);

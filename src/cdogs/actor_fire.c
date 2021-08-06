@@ -62,7 +62,7 @@ void ActorFireBarrel(Weapon *w, const TActor *a, const int barrel)
 void ActorFireUpdate(Weapon *w, const TActor *a, const int ticks)
 {
 	// Reload sound
-	if (!ConfigGetBool(&gConfig, "Sound.Reloads"))
+	if (ConfigGetBool(&gConfig, "Sound.Reloads"))
 	{
 		for (int i = 0; i < WeaponClassNumBarrels(w->Gun); i++)
 		{

@@ -158,14 +158,16 @@ static void LoadWeaponClass(
 		}
 	}
 
-	if (wc->Type == GUNTYPE_NORMAL)
+	if (wc->Type != GUNTYPE_MULTI)
 	{
 		wc->u.Normal.AmmoId = -1;
 		wc->u.Normal.Grips = 1;
 
 		if (defaultGun)
 		{
+			const GunType type = wc->Type;
 			memcpy(wc, defaultGun, sizeof *wc);
+			wc->Type = type;
 			if (defaultGun->name)
 			{
 				CSTRDUP(wc->name, defaultGun->name);
