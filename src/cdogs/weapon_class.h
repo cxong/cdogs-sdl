@@ -120,7 +120,6 @@ typedef struct
 typedef struct
 {
 	CArray Guns; // of WeaponClass
-	WeaponClass Default;
 	CArray CustomGuns; // of WeaponClass
 } WeaponClasses;
 

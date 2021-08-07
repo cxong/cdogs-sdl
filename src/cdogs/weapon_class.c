@@ -57,8 +57,7 @@ void WeaponClassesInitialize(WeaponClasses *wcs)
 	CArrayInit(&wcs->CustomGuns, sizeof(WeaponClass));
 }
 static void LoadWeaponClass(
-	WeaponClass *wc, json_t *node, const WeaponClass *defaultGun,
-	const int version);
+	WeaponClass *wc, json_t *node, const int version);
 static void GunDescriptionTerminate(WeaponClass *wc);
 void WeaponClassesLoadJSON(WeaponClasses *wcs, CArray *classes, json_t *root)
 {
@@ -71,34 +70,13 @@ void WeaponClassesLoadJSON(WeaponClasses *wcs, CArray *classes, json_t *root)
 		return;
 	}
 
-	WeaponClass *defaultDesc = &wcs->Default;
-	// Only load default gun from main game data
 	if (classes == &wcs->Guns)
 	{
-		json_t *defaultNode = json_find_first_label(root, "DefaultGun");
-		if (defaultNode != NULL)
-		{
-			LoadWeaponClass(defaultDesc, defaultNode->child, NULL, version);
-			CASSERT(
-				defaultDesc->Type == GUNTYPE_NORMAL,
-				"Default gun must be a normal gun");
-		}
-		else
-		{
-			memset(defaultDesc, 0, sizeof *defaultDesc);
-		}
 		CASSERT(wcs->Guns.size == 0, "guns not empty");
 		for (int i = 0; i < GUN_COUNT; i++)
 		{
 			WeaponClass gd;
-			if (defaultNode != NULL)
-			{
-				LoadWeaponClass(&gd, defaultNode->child, NULL, version);
-			}
-			else
-			{
-				memset(&gd, 0, sizeof gd);
-			}
+			memset(&gd, 0, sizeof gd);
 			CArrayPushBack(&wcs->Guns, &gd);
 		}
 	}
@@ -106,7 +84,7 @@ void WeaponClassesLoadJSON(WeaponClasses *wcs, CArray *classes, json_t *root)
 	for (json_t *child = gunsNode->child; child; child = child->next)
 	{
 		WeaponClass gd;
-		LoadWeaponClass(&gd, child, defaultDesc, version);
+		LoadWeaponClass(&gd, child, version);
 		int idx = -1;
 		// Only allow index for non-custom guns
 		if (classes == &wcs->Guns)
@@ -131,15 +109,14 @@ void WeaponClassesLoadJSON(WeaponClasses *wcs, CArray *classes, json_t *root)
 			 child = child->next)
 		{
 			WeaponClass gd;
-			LoadWeaponClass(&gd, child, defaultDesc, version);
+			LoadWeaponClass(&gd, child, version);
 			gd.IsRealGun = false;
 			CArrayPushBack(classes, &gd);
 		}
 	}
 }
 static void LoadWeaponClass(
-	WeaponClass *wc, json_t *node, const WeaponClass *defaultGun,
-	const int version)
+	WeaponClass *wc, json_t *node, const int version)
 {
 	memset(wc, 0, sizeof *wc);
 
@@ -157,37 +134,25 @@ static void LoadWeaponClass(
 			wc->Type = GUNTYPE_GRENADE;
 		}
 	}
+	
+	char *tmp;
 
 	if (wc->Type != GUNTYPE_MULTI)
 	{
-		wc->u.Normal.AmmoId = -1;
+		// Initialise default gun values
+		CSTRDUP(wc->u.Normal.Sprites, "chars/guns/blaster");
 		wc->u.Normal.Grips = 1;
-
-		if (defaultGun)
-		{
-			const GunType type = wc->Type;
-			memcpy(wc, defaultGun, sizeof *wc);
-			wc->Type = type;
-			if (defaultGun->name)
-			{
-				CSTRDUP(wc->name, defaultGun->name);
-			}
-			if (defaultGun->Description)
-			{
-				CSTRDUP(wc->Description, defaultGun->Description);
-			}
-			if (defaultGun->DropGun)
-			{
-				CSTRDUP(wc->DropGun, defaultGun->DropGun);
-			}
-			if (defaultGun->u.Normal.Sprites)
-			{
-				CSTRDUP(wc->u.Normal.Sprites, defaultGun->u.Normal.Sprites);
-			}
-		}
+		wc->Icon = PicManagerGetPic(&gPicManager, "peashooter");
+		wc->u.Normal.Sound = StrSound("bang");
+		wc->SwitchSound = StrSound("switch");
+		wc->u.Normal.Spread.Count = 1;
+		wc->u.Normal.MuzzleHeight = 10 * Z_FACTOR;
+		wc->u.Normal.MuzzleFlash =
+			StrParticleClass(&gParticleClasses, "muzzle_flash_default");
+		wc->u.Normal.AmmoId = -1;
+		wc->u.Normal.CanShoot = true;
+		wc->CanDrop = true;
 	}
-
-	char *tmp;
 
 	const Pic *icon = NULL;
 	LoadPic(&icon, node, "Icon");
@@ -404,7 +369,6 @@ void WeaponClassesTerminate(WeaponClasses *wcs)
 	CArrayTerminate(&wcs->Guns);
 	WeaponClassesClear(&wcs->CustomGuns);
 	CArrayTerminate(&wcs->CustomGuns);
-	GunDescriptionTerminate(&wcs->Default);
 }
 void WeaponClassesClear(CArray *classes)
 {
