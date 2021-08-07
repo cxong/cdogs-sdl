@@ -147,6 +147,12 @@
       "CanDrop": false
     },
     {
+      "Name": "Chaingun and Rocket Launcher",
+      "Icon": "akimbo_pistols",
+      "Guns": ["Rocket Launcher", "boss_chaingun1"],
+      "CanDrop": false
+    },
+    {
       "Name": "Energy Ball",
       "Pic": "",
       "Bullet": "energy_ball",

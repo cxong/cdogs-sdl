@@ -103,6 +103,7 @@ static void MenuCreateStart(MenuSystem *ms, const CampaignSave *save)
 	// Create level select menus
 	menu_t *levelSelect = MenuCreateNormal(
 		"Level select...", "Select Level", MENU_TYPE_NORMAL, 0);
+	levelSelect->u.normal.maxItems = 20;
 	if (save)
 	{
 		CA_FOREACH(const int, missionIndex, save->MissionsCompleted)
