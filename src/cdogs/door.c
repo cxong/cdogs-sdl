@@ -111,7 +111,7 @@ static TWatch *CreateCloseDoorWatch(
 static Trigger *CreateOpenDoorTrigger(
 	MapBuilder *mb, const struct vec2i v, const bool isHorizontal,
 	const int doorGroupCount, const int keyFlags);
-void MapAddDoorGroup(MapBuilder *mb, const struct vec2i v, const int keyFlags)
+struct vec2i MapAddDoorGroup(MapBuilder *mb, const struct vec2i v, const int keyFlags)
 {
 	const TileClass *door = MapBuilderGetTile(mb, v);
 	const bool isHorizontal = DoorGroupIsHorizontal(mb, v);
@@ -199,6 +199,8 @@ void MapAddDoorGroup(MapBuilder *mb, const struct vec2i v, const int keyFlags)
 		const struct vec2i vI2 = svec2i_subtract(vI, dAside);
 		MapBuilderSetLeaveFree(mb, vI2, true);
 	}
+	
+	return isHorizontal ? svec2i(doorGroupCount, 1) : svec2i(1, doorGroupCount);
 }
 static bool DoorGroupIsHorizontal(const MapBuilder *mb, const struct vec2i v)
 {
@@ -248,6 +250,11 @@ static bool DoorGroupIsHorizontal(const MapBuilder *mb, const struct vec2i v)
 	}
 	// If door is free only one of above/below/left/right
 	if (tileAboveCanWalk || tileBelowCanWalk)
+	{
+		return true;
+	}
+	// If there are doors, don't follow them - door layers
+	if (tileAboveIsDoor || tileBelowIsDoor)
 	{
 		return true;
 	}

@@ -517,7 +517,7 @@ static void HelpScreen(void)
 		"Common commands\n"
 		"===============\n"
 		"left/right click, page up/down: Increase/decrease value\n"
-		"shift + left/right click:       Increase/decrease number of items\n"
+		"shift + left/right click:          Increase/decrease number of items\n"
 		"insert:                         Add new item\n"
 		"delete:                         Delete selected item\n"
 		"arrow keys:                     Move camera\n"
@@ -525,13 +525,13 @@ static void HelpScreen(void)
 		"Other commands\n"
 		"==============\n"
 		"Escape:                         Back or quit\n"
-		"Ctrl+E:                         Go to character editor\n"
-		"Ctrl+N:                         New mission\n"
-		"Ctrl+O:                         Open file\n"
-		"Ctrl+S:                         Save file\n"
-		"Ctrl+X, C, V:                   Cut/copy/paste\n"
-		"Ctrl+M:                         Preview automap\n"
-		"F1:                             This screen\n";
+		KMOD_CMD_NAME "+E:                         Go to character editor\n"
+		KMOD_CMD_NAME"+N:                         New mission\n"
+		KMOD_CMD_NAME"+O:                         Open file\n"
+		KMOD_CMD_NAME"+S:                         Save file\n"
+		KMOD_CMD_NAME"+X, C, V:                   Cut/copy/paste\n"
+		"tab:                              Preview automap\n"
+		"F1:                               This screen\n";
 	WindowContextPreRender(&gGraphicsDevice.gameWindow);
 	ClearScreen(&gGraphicsDevice);
 	FontStr(helpText, pos);
@@ -858,10 +858,6 @@ static HandleInputResult HandleInput(
 			Save();
 			break;
 
-		case 'm':
-			result.WillDisplayAutomap = true;
-			break;
-
 		case 'e':
 			CharEditor(
 				ec.g, &gCampaign.Setting, &gEventHandlers, &fileChanged);
@@ -940,6 +936,10 @@ static HandleInputResult HandleInput(
 			{
 				InputDelete(*xc, *yc);
 			}
+			break;
+		
+		case SDL_SCANCODE_TAB:
+			result.WillDisplayAutomap = true;
 			break;
 
 		default:

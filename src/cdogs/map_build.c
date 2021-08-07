@@ -189,16 +189,28 @@ static bool MapBuilderIsDoor(const MapBuilder *mb, const struct vec2i v);
 static int MapGetAccessFlags(const MapBuilder *mb, const struct vec2i v);
 static void MapSetupDoors(MapBuilder *mb)
 {
+	// Mark doors as set up as we go
+	CArray doorsSetup;
+	CArrayInitFillZero(&doorsSetup, sizeof(bool), mb->Map->Size.x * mb->Map->Size.y);
+	
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), mb->Map->Size))
-	// Check if this is the start of a door group
-	// Top or left-most door
-	if (MapBuilderIsDoor(mb, _v) &&
-		!MapBuilderIsDoor(mb, svec2i(_v.x - 1, _v.y)) &&
-		!MapBuilderIsDoor(mb, svec2i(_v.x, _v.y - 1)))
+	// Check if this door tile hasn't been set up yet
+	const int idx = _v.x + _v.y * mb->Map->Size.x;
+	if (MapBuilderIsDoor(mb, _v) && !*(bool *)CArrayGet(&doorsSetup, idx))
 	{
-		MapAddDoorGroup(mb, _v, MapGetAccessFlags(mb, _v));
+		const struct vec2i groupSize = MapAddDoorGroup(mb, _v, MapGetAccessFlags(mb, _v));
+		for (int dx = 0; dx < groupSize.x; dx++)
+		{
+			for (int dy = 0; dy < groupSize.y; dy++)
+			{
+				const int idx2 = _v.x + dx + (_v.y + dy) * mb->Map->Size.x;
+				CArraySet(&doorsSetup, idx2, &gTrue);
+			}
+		}
 	}
 	RECT_FOREACH_END()
+	
+	CArrayTerminate(&doorsSetup);
 }
 static bool MapBuilderIsDoor(const MapBuilder *mb, const struct vec2i v)
 {
