@@ -265,7 +265,6 @@ void SetupQuickPlayCampaign(CampaignSetting *setting, const bool isBg)
 	CSTRDUP(setting->Author, "");
 	CFREE(setting->Description);
 	CSTRDUP(setting->Description, "");
-	setting->WeaponPersist = true;
 	setting->RandomPickups = true;
 	setting->DoorOpenTicks = FPS_FRAMELIMIT;
 	for (int i = 0; i < NUM_MISSIONS; i++)
@@ -387,6 +386,7 @@ static void AddMission(
 			CArrayPushBack(&m.Weapons, &wc);
 		}
 	CA_FOREACH_END()
+	m.WeaponPersist = true;
 
 	CArrayPushBack(missions, &m);
 }

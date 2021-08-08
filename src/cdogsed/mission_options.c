@@ -25,31 +25,31 @@
 	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 	POSSIBILITY OF SUCH DAMAGE.
 */
-#include "campaign_options.h"
+#include "mission_options.h"
 
 #include "nk_window.h"
 
 #define WIDTH 800
-#define HEIGHT 350
+#define HEIGHT 200
 #define ROW_HEIGHT 25
 
 typedef struct
 {
-	Campaign *c;
+	Mission *m;
 	char Title[256];
-	char Author[256];
 	char Description[1024];
+	char MusicFilename[256];
 	EditorResult result;
-} CampaignOptionsData;
+} MissionOptionsData;
 
 static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data);
 static void CheckTextChanged(
 	char **dst, const char *src, EditorResult *result);
-EditorResult EditCampaignOptions(EventHandlers *handlers, Campaign *c)
+EditorResult EditMissionOptions(EventHandlers *handlers, Mission *m)
 {
 	NKWindowConfig cfg;
 	memset(&cfg, 0, sizeof cfg);
-	cfg.Title = "Campaign Options";
+	cfg.Title = "Mission Options";
 	cfg.Size = svec2i(WIDTH, HEIGHT);
 	color_t bg = {41, 26, 26, 255};
 	cfg.BG = bg;
@@ -58,24 +58,38 @@ EditorResult EditCampaignOptions(EventHandlers *handlers, Campaign *c)
 
 	NKWindowInit(&cfg);
 
-	CampaignOptionsData data;
+	MissionOptionsData data;
 	memset(&data, 0, sizeof data);
-	data.c = c;
-	strcpy(data.Title, c->Setting.Title);
-	strcpy(data.Author, c->Setting.Author);
-	strcpy(data.Description, c->Setting.Description);
+	data.m = m;
+	strcpy(data.Title, m->Title);
+	if (m->Description)
+	{
+		strcpy(data.Description, m->Description);
+	}
+	if (m->Music.Type == MUSIC_SRC_DYNAMIC)
+	{
+		strcpy(data.MusicFilename, m->Music.Data.Filename);
+	}
 	cfg.DrawData = &data;
 
 	NKWindow(cfg);
 
-	CheckTextChanged(&c->Setting.Title, data.Title, &data.result);
-	CheckTextChanged(&c->Setting.Author, data.Author, &data.result);
-	CheckTextChanged(&c->Setting.Description, data.Description, &data.result);
+	CheckTextChanged(&m->Title, data.Title, &data.result);
+	CheckTextChanged(&m->Description, data.Description, &data.result);
+	if (m->Music.Type == MUSIC_SRC_DYNAMIC)
+	{
+		CheckTextChanged(&m->Music.Data.Filename, data.MusicFilename, &data.result);
+	}
+	else
+	{
+		CFREE(m->Music.Data.Filename);
+		CSTRDUP(m->Music.Data.Filename, "");
+	}
 	return data.result;
 }
 static void CheckTextChanged(char **dst, const char *src, EditorResult *result)
 {
-	if (strcmp(src, *dst) != 0)
+	if (*dst == NULL || strcmp(src, *dst) != 0)
 	{
 		CFREE(*dst);
 		CSTRDUP(*dst, src);
@@ -87,39 +101,32 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 {
 	UNUSED(win);
 	bool changed = false;
-	CampaignOptionsData *cData = data;
+	MissionOptionsData *mData = data;
 
 	if (nk_begin(
-			ctx, "Campaign Options", nk_rect(0, 0, WIDTH, HEIGHT),
-			NK_WINDOW_BORDER | NK_WINDOW_TITLE))
+			ctx, "", nk_rect(0, 0, WIDTH, HEIGHT),
+			NK_WINDOW_BORDER))
 	{
 		nk_layout_row_dynamic(ctx, ROW_HEIGHT, 1);
-		DrawTextbox(ctx, cData->Title, 256, "Title", NK_EDIT_FIELD);
-		DrawTextbox(ctx, cData->Author, 256, "Author", NK_EDIT_FIELD);
+		DrawTextbox(ctx, mData->Title, 256, "Title", NK_EDIT_FIELD);
 		nk_layout_row_dynamic(ctx, ROW_HEIGHT * 3, 1);
-		DrawTextbox(ctx, cData->Description, 1024, "Description", NK_EDIT_BOX);
+		DrawTextbox(ctx, mData->Description, 1024, "Description", NK_EDIT_BOX);
 		nk_layout_row_dynamic(ctx, ROW_HEIGHT, 1);
-		if (DrawCheckbox(
-				ctx, "Ammo",
-				"Enable ammo; if disabled all weapons have infinite ammo and "
-				"use up score instead",
-				&cData->c->Setting.Ammo))
+		bool dynamicMusic = mData->m->Music.Type == MUSIC_SRC_DYNAMIC;
+		if (DrawCheckbox(ctx, "Custom Music", "", &dynamicMusic))
 		{
 			changed = true;
+			mData->m->Music.Type = dynamicMusic ? MUSIC_SRC_DYNAMIC : MUSIC_SRC_GENERAL;
+		}
+		if (dynamicMusic)
+		{
+			DrawTextbox(ctx, mData->MusicFilename, 256, "Music Filename", NK_EDIT_FIELD);
 		}
 		if (DrawCheckbox(
-				ctx, "Skip weapon menu", "Skip weapon menu before missions",
-				&cData->c->Setting.SkipWeaponMenu))
-		{
-			changed = true;
-		}
-		if (DrawCheckbox(
-				ctx, "Random pickups", "Enable randomly spawned ammo/health pickups",
-				&cData->c->Setting.RandomPickups))
-		{
-			changed = true;
-		}
-		if (DrawNumberSlider(ctx, "Door open ticks", "Number of ticks that doors stay open (" TOSTRING(FPS_FRAMELIMIT) " = 1 second)", 0, 700, 10, &cData->c->Setting.DoorOpenTicks))
+				ctx, "Persist weapons & ammo",
+				"Whether weapons picked up and extra ammo are "
+				"available in this mission",
+				&mData->m->WeaponPersist))
 		{
 			changed = true;
 		}
@@ -127,7 +134,7 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 	}
 	if (changed)
 	{
-		cData->result = EDITOR_RESULT_CHANGED;
+		mData->result = EDITOR_RESULT_CHANGED;
 	}
 	return true;
 }

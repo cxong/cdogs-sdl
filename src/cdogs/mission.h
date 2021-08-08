@@ -145,6 +145,8 @@ typedef struct
 			MusicChunk Chunk;
 		} Data;
 	} Music;
+	
+	bool WeaponPersist;
 
 	union {
 		// Classic

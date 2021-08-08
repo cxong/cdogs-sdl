@@ -176,7 +176,8 @@ static GameLoopResult LevelSelectionUpdate(GameLoopData *data, LoopRunner *l)
 			}
 
 			// Load autosaved player guns/ammo
-			if (pData->save != NULL && gCampaign.Setting.WeaponPersist &&
+			const Mission *m = CampaignGetCurrentMission(&gCampaign);
+			if (pData->save != NULL && m->WeaponPersist &&
 				gCampaign.MissionIndex > 0)
 			{
 				for (int i = 0, idx = 0; i < (int)gPlayerDatas.size &&

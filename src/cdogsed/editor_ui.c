@@ -49,6 +49,7 @@
 #include "editor_ui_objectives.h"
 #include "editor_ui_static.h"
 #include "editor_ui_weapons.h"
+#include "mission_options.h"
 
 #define Y_ABS 200
 
@@ -94,6 +95,17 @@ static const char *CampaignGetMissionIndexStr(UIObject *o, void *data)
 	}
 	return s;
 }
+static EditorResult MissionEdit(void *data, int d)
+{
+	UNUSED(d);
+	Campaign *co = data;
+	Mission *m = CampaignGetCurrentMission(co);
+	if (!m)
+	{
+		return EDITOR_RESULT_NONE;
+	}
+	return EditMissionOptions(&gEventHandlers, m);
+}
 static void CheckMission(UIObject *o, void *data)
 {
 	Campaign *co = data;
@@ -106,7 +118,7 @@ static void CheckMission(UIObject *o, void *data)
 	}
 	o->IsVisible = true;
 }
-static char *MissionGetTitle(UIObject *o, void *data)
+static const char *MissionGetTitle(UIObject *o, void *data)
 {
 	UNUSED(o);
 	Campaign *co = data;
@@ -120,55 +132,6 @@ static void MissionCheckVisible(UIObject *o, void *data)
 {
 	Campaign *co = data;
 	o->IsVisible = CampaignGetCurrentMission(co) != NULL;
-}
-static char **MissionGetTitleSrc(void *data)
-{
-	Campaign *co = data;
-	if (!CampaignGetCurrentMission(co))
-	{
-		return NULL;
-	}
-	return &CampaignGetCurrentMission(co)->Title;
-}
-static char *MissionGetDescription(UIObject *o, void *data)
-{
-	UNUSED(o);
-	Campaign *co = data;
-	if (!CampaignGetCurrentMission(co))
-	{
-		return NULL;
-	}
-	return CampaignGetCurrentMission(co)->Description;
-}
-static char **MissionGetDescriptionSrc(void *data)
-{
-	Campaign *co = data;
-	if (!CampaignGetCurrentMission(co))
-	{
-		return NULL;
-	}
-	return &CampaignGetCurrentMission(co)->Description;
-}
-static char *MissionGetSong(UIObject *o, void *data)
-{
-	UNUSED(o);
-	Campaign *co = data;
-	const Mission *m = CampaignGetCurrentMission(co);
-	if (!m || m->Music.Type != MUSIC_SRC_DYNAMIC)
-	{
-		return NULL;
-	}
-	return m->Music.Data.Filename;
-}
-static char **MissionGetSongSrc(void *data)
-{
-	Campaign *co = data;
-	Mission *m = CampaignGetCurrentMission(co);
-	if (!m || m->Music.Type != MUSIC_SRC_DYNAMIC)
-	{
-		return NULL;
-	}
-	return &m->Music.Data.Filename;
 }
 static const char *MissionGetWidthStr(UIObject *o, void *data)
 {
@@ -671,7 +634,6 @@ static void DeactivateBrush(UIObject *o, void *data)
 	b->IsActive = false;
 }
 
-static UIObject *CreateMissionObjs(Campaign *co);
 static UIObject *CreateMapItemObjs(Campaign *co, int dy);
 static UIObject *CreateCharacterObjs(Campaign *co, int dy);
 static UIObject *CreateSpecialCharacterObjs(Campaign *co, int dy);
@@ -767,7 +729,6 @@ static UIObject *CreateEditorObjs(Campaign *co, EditorBrush *brush)
 	UIObject *c;
 	UIObject *o;
 	UIObject *o2;
-	UIObject *oc;
 	struct vec2i pos = svec2i_zero();
 	UIObject *cc =
 		UIObjectCreate(UITYPE_NONE, 0, svec2i_zero(), svec2i_zero());
@@ -820,14 +781,13 @@ static UIObject *CreateEditorObjs(Campaign *co, EditorBrush *brush)
 	UIObjectAddChild(cc, c);
 
 	o = UIObjectCreate(
-		UITYPE_TEXTBOX, YC_MISSIONTITLE, svec2i(25, pos.y), svec2i(175, th));
+		UITYPE_LABEL, YC_MISSIONTITLE, svec2i(25, pos.y), svec2i(175, th));
 	o->Id2 = XC_MISSIONTITLE;
-	o->u.Textbox.TextLinkFunc = MissionGetTitle;
-	o->u.Textbox.TextSourceFunc = MissionGetTitleSrc;
+	o->u.LabelFunc = MissionGetTitle;
+	CSTRDUP(o->Tooltip, "Click to edit mission options");
+	o->ChangeFunc = MissionEdit;
 	o->Data = co;
-	CSTRDUP(o->u.Textbox.Hint, "(Mission title)");
 	o->CheckVisible = MissionCheckVisible;
-	UIObjectAddChild(o, CreateMissionObjs(co));
 	UIObjectAddChild(c, o);
 
 	// mission properties
@@ -971,27 +931,6 @@ static UIObject *CreateEditorObjs(Campaign *co, EditorBrush *brush)
 	pos.x = 20;
 	pos.y += th + 5;
 
-	UIObjectDestroy(o);
-	o = UIObjectCreate(UITYPE_LABEL, 0, svec2i_zero(), svec2i(189, th));
-	o->Flags = UI_SELECT_ONLY;
-
-	o2 = UIObjectCopy(o);
-	o2->Label = "Mission description";
-	o2->Id = YC_MISSIONDESC;
-	o2->Pos = pos;
-	o2->Size = FontStrSize(o2->Label);
-	oc = UIObjectCreate(
-		UITYPE_TEXTBOX, YC_MISSIONDESC, svec2i(0, Y_ABS - pos.y),
-		svec2i(295, 5 * th));
-	oc->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
-	oc->u.Textbox.TextLinkFunc = MissionGetDescription;
-	oc->u.Textbox.TextSourceFunc = MissionGetDescriptionSrc;
-	oc->Data = co;
-	CSTRDUP(oc->u.Textbox.Hint, "(Mission description)");
-	oc->CheckVisible = MissionCheckVisible;
-	UIObjectAddChild(o2, oc);
-	UIObjectAddChild(c, o2);
-
 	pos.y += th;
 	o2 = UIObjectCopy(o);
 	o2->u.LabelFunc = MissionGetCharacterCountStr;
@@ -1038,27 +977,6 @@ static UIObject *CreateEditorObjs(Campaign *co, EditorBrush *brush)
 	CreateObjectivesObjs(co, c, pos);
 
 	return cc;
-}
-static UIObject *CreateMissionObjs(Campaign *co)
-{
-	const int th = FontH();
-	UIObject *c;
-	UIObject *o;
-	c = UIObjectCreate(UITYPE_NONE, 0, svec2i_zero(), svec2i_zero());
-	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
-
-	o = UIObjectCreate(
-		UITYPE_TEXTBOX, YC_MISSIONTITLE, svec2i(0, Y_ABS), svec2i(319, th));
-	o->u.Textbox.TextLinkFunc = MissionGetSong;
-	o->u.Textbox.TextSourceFunc = MissionGetSongSrc;
-	o->Data = co;
-	CSTRDUP(o->u.Textbox.Hint, "(Mission song - enter filename without extension)");
-	o->Id2 = XC_MUSICFILE;
-	o->Flags = UI_SELECT_ONLY;
-	o->CheckVisible = MissionCheckVisible;
-	UIObjectAddChild(c, o);
-
-	return c;
 }
 
 typedef struct

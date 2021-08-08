@@ -627,7 +627,7 @@ static void NextLoop(RunGameData *rData, LoopRunner *l)
 	const bool survivedAndCompletedObjectives =
 		survivingPlayers > 0 && MissionAllObjectivesComplete(&gMission);
 	// Persist player weapons/ammo
-	if (rData->co->Setting.WeaponPersist)
+	if (gMission.missionData->WeaponPersist)
 	{
 		CA_FOREACH(PlayerData, p, gPlayerDatas)
 		PersistPlayerWeaponsAndAmmo(p);

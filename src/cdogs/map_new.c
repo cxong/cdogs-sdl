@@ -196,7 +196,6 @@ void MapNewLoadCampaignJSON(json_t *root, CampaignSetting *c)
 	CFREE(c->Description);
 	c->Description = GetString(root, "Description");
 	LoadBool(&c->Ammo, root, "Ammo");
-	LoadBool(&c->WeaponPersist, root, "WeaponPersist");
 	LoadBool(&c->SkipWeaponMenu, root, "SkipWeaponMenu");
 	// Default enable random pickups
 	c->RandomPickups = true;
@@ -292,6 +291,7 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 		LoadInt(&m.EnemyDensity, child, "EnemyDensity");
 		LoadWeapons(
 			&m.Weapons, json_find_first_label(child, "Weapons")->child);
+		LoadBool(&m.WeaponPersist, child, "WeaponPersist");
 		m.Music.Type = MUSIC_SRC_DYNAMIC;
 		LoadStr(&m.Music.Data.Filename, child, "Song");
 		switch (m.Type)

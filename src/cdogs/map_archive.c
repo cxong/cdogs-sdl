@@ -286,7 +286,6 @@ int MapArchiveSave(const char *filename, CampaignSetting *c)
 	AddStringPair(root, "Author", c->Author);
 	AddStringPair(root, "Description", c->Description);
 	AddBoolPair(root, "Ammo", c->Ammo);
-	AddBoolPair(root, "WeaponPersist", c->WeaponPersist);
 	AddBoolPair(root, "SkipWeaponMenu", c->SkipWeaponMenu);
 	AddBoolPair(root, "RandomPickups", c->RandomPickups);
 	AddIntPair(root, "DoorOpenTicks", c->DoorOpenTicks);
@@ -361,6 +360,7 @@ static json_t *SaveMissions(CArray *a)
 		AddIntPair(node, "EnemyDensity", mission->EnemyDensity);
 		json_insert_pair_into_object(
 			node, "Weapons", SaveWeapons(&mission->Weapons));
+		AddBoolPair(node, "WeaponPersist", mission->WeaponPersist);
 
 		if (mission->Music.Type == MUSIC_SRC_DYNAMIC &&
 			mission->Music.Data.Filename &&

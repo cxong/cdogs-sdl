@@ -1542,7 +1542,7 @@ TActor *ActorAdd(NActorAdd aa)
 			AmmoGetById(&gAmmo, i)->Amount * AMMO_STARTING_MULTIPLE;
 		CArrayPushBack(&actor->ammo, &amount);
 	}
-	if (gCampaign.Setting.WeaponPersist)
+	if (gMission.missionData->WeaponPersist)
 	{
 		for (int i = 0; i < aa.Ammo_count; i++)
 		{

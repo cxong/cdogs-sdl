@@ -54,7 +54,6 @@ typedef struct
 	char *Author;
 	char *Description;
 	bool Ammo;
-	bool WeaponPersist;
 	bool SkipWeaponMenu;
 	bool RandomPickups;
 	int DoorOpenTicks;
