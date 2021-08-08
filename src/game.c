@@ -627,12 +627,9 @@ static void NextLoop(RunGameData *rData, LoopRunner *l)
 	const bool survivedAndCompletedObjectives =
 		survivingPlayers > 0 && MissionAllObjectivesComplete(&gMission);
 	// Persist player weapons/ammo
-	if (gMission.missionData->WeaponPersist)
-	{
-		CA_FOREACH(PlayerData, p, gPlayerDatas)
-		PersistPlayerWeaponsAndAmmo(p);
-		CA_FOREACH_END()
-	}
+	CA_FOREACH(PlayerData, p, gPlayerDatas)
+	PersistPlayerWeaponsAndAmmo(p);
+	CA_FOREACH_END()
 
 	// Switch to a score screen if there are local players and we haven't quit
 	const bool showScores = !rData->co->IsQuit && hasLocalPlayers;
