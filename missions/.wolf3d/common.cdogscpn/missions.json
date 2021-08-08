@@ -42,6 +42,7 @@
 		"SS Machine Gun",
 		"Dual Chain Gun",
 		"Dog Bite"],
+		"WeaponPersist": false,
 		"TileClasses": {
 			"0": {
 				"Name": "tile",

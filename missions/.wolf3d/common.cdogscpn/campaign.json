@@ -4,7 +4,6 @@
 	"Author": "id Software",
 	"Description": "",
 	"Ammo": true,
-	"WeaponPersist": true,
 	"SkipWeaponMenu": true,
 	"RandomPickups": false,
 	"DoorOpenTicks": 210,

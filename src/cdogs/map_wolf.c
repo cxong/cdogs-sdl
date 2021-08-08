@@ -713,7 +713,14 @@ static void LoadMission(
 	wc = StrWeaponClass("Knife");
 	CArrayPushBack(&m.Weapons, &wc);
 	// Reset weapons at start of episodes
-	m.WeaponPersist = (missionIndex % 10) != 0;
+	if (map->type != CWMAPTYPE_SOD)
+	{
+		m.WeaponPersist = (missionIndex % 10) != 0;
+	}
+	else
+	{
+		m.WeaponPersist = true;
+	}
 
 	m.Music.Type = MUSIC_SRC_CHUNK;
 	MissionSongData *msd;

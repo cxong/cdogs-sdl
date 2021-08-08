@@ -81,6 +81,15 @@
       "DropGun": "Machine Gun"
     },
     {
+      "Pic": "chaingun",
+      "Name": "boss_chaingun1",
+      "Bullet": "bullet_boss",
+      "Lock": 70,
+      "Sound": "dual_chain_gun",
+      "Recoil": 0.3,
+      "Brass": "brass"
+    },
+    {
       "Name": "Dual Chain Gun",
       "Icon": "machine_gun",
       "CanDrop": false,
@@ -164,15 +173,6 @@
     }
   ],
   "PseudoGuns" : [
-    {
-      "Pic": "chaingun",
-      "Name": "boss_chaingun1",
-      "Bullet": "bullet_boss",
-      "Lock": 70,
-      "Sound": "dual_chain_gun",
-      "Recoil": 0.3,
-      "Brass": "brass"
-    },
     {
       "Pic": "chaingun",
       "Name": "boss_chaingun2",
