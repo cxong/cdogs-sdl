@@ -754,10 +754,17 @@ static void LoadMission(
 		// Make sure to skip over the secret level
 		Exit e;
 		e.Hidden = true;
-		if (map->type == CWMAPTYPE_SOD && missionIndex == 17)
+		if (map->type == CWMAPTYPE_SOD)
 		{
-			// Skip over the two secret levels
-			e.Mission = missionIndex + 3;
+			if (missionIndex == 17)
+			{
+				// Skip over the two secret levels
+				e.Mission = missionIndex + 3;
+			}
+			else
+			{
+				e.Mission = missionIndex + 1;
+			}
 		}
 		else
 		{
@@ -767,6 +774,11 @@ static void LoadMission(
 		e.R.Pos = svec2i_zero();
 		e.R.Size = m.Size;
 		CArrayPushBack(&m.u.Static.Exits, &e);
+	}
+	if (map->type == CWMAPTYPE_SOD && missionIndex == 17)
+	{
+		// Skip debrief and cut directly to angel boss level
+		m.SkipDebrief = true;
 	}
 
 	m.u.Static.AltFloorsEnabled = false;
@@ -1097,6 +1109,11 @@ static void LoadEntity(
 			_ca_index--;
 		}
 		CA_FOREACH_END()
+		if (map->type == CWMAPTYPE_SOD && missionIndex == 20)
+		{
+			// Start the mission with a yellow key
+			MissionStaticAddKey(&m->u.Static, 0, v);
+		}
 		break;
 	case CWENT_WATER:
 		MissionStaticTryAddItem(&m->u.Static, StrMapObject("pool_water"), v);

@@ -147,6 +147,7 @@ typedef struct
 	} Music;
 	
 	bool WeaponPersist;
+	bool SkipDebrief;
 
 	union {
 		// Classic

@@ -130,6 +130,13 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		{
 			changed = true;
 		}
+		if (DrawCheckbox(
+				ctx, "Skip debrief",
+				"Skip the end-of-mission summary screen",
+				&mData->m->SkipDebrief))
+		{
+			changed = true;
+		}
 		nk_end(ctx);
 	}
 	if (changed)

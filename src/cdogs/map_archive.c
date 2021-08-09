@@ -361,6 +361,7 @@ static json_t *SaveMissions(CArray *a)
 		json_insert_pair_into_object(
 			node, "Weapons", SaveWeapons(&mission->Weapons));
 		AddBoolPair(node, "WeaponPersist", mission->WeaponPersist);
+		AddBoolPair(node, "SkipDebrief", mission->SkipDebrief);
 
 		if (mission->Music.Type == MUSIC_SRC_DYNAMIC &&
 			mission->Music.Data.Filename &&

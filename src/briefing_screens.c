@@ -404,19 +404,11 @@ GameLoopData *ScreenMissionSummary(
 	if (completed)
 	{
 		MenuAddSubmenu(mData->ms.root, MenuCreateReturn("Continue", 0));
-
-		MusicPlayFromChunk(
-			&gSoundDevice.music, MUSIC_END,
-			&gCampaign.Setting.CustomSongs[MUSIC_END]);
 	}
 	else
 	{
 		MenuAddSubmenu(mData->ms.root, MenuCreateReturn("Replay mission", 0));
 		MenuAddSubmenu(mData->ms.root, MenuCreateReturn("Back to menu", 1));
-
-		MusicPlayFromChunk(
-			&gSoundDevice.music, MUSIC_LOSE,
-			&gCampaign.Setting.CustomSongs[MUSIC_LOSE]);
 	}
 	mData->ms.allowAborts = true;
 	MenuAddExitType(&mData->ms, MENU_TYPE_RETURN);
@@ -486,6 +478,25 @@ static void MissionSummaryOnEnter(GameLoopData *data)
 		CA_FOREACH(PlayerData, p, gPlayerDatas)
 		ApplyBonuses(p, bonus);
 		CA_FOREACH_END()
+	}
+
+	// Skip menu
+	if (mData->m->missionData->SkipDebrief)
+	{
+		return;
+	}
+
+	if (mData->completed)
+	{
+		MusicPlayFromChunk(
+			&gSoundDevice.music, MUSIC_END,
+			&gCampaign.Setting.CustomSongs[MUSIC_END]);
+	}
+	else
+	{
+		MusicPlayFromChunk(
+			&gSoundDevice.music, MUSIC_LOSE,
+			&gCampaign.Setting.CustomSongs[MUSIC_LOSE]);
 	}
 
 	// Init mission bonuses
@@ -579,7 +590,7 @@ static GameLoopResult MissionSummaryUpdate(GameLoopData *data, LoopRunner *l)
 		}
 	}
 
-	if (result == UPDATE_RESULT_OK)
+	if (result == UPDATE_RESULT_OK || mData->m->missionData->SkipDebrief)
 	{
 		gCampaign.IsComplete =
 			mData->completed &&
