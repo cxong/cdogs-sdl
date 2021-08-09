@@ -127,10 +127,10 @@ static const char *GetSound(const CWMapType type, const int i)
 }
 
 static const char *adlibSoundsW1[] = {
-	NULL, // hit wall
+	NULL,		  // hit wall
 	"menu_start", // select weapon
-	NULL, // select item
-	NULL, // heartbeat
+	NULL,		  // select item
+	NULL,		  // heartbeat
 	"menu_switch",
 	NULL, // move gun 1
 	"menu_error",
@@ -168,8 +168,8 @@ static const char *adlibSoundsW1[] = {
 	"chaingun_pickup",
 	"menu_back",
 	"whistle",
-	NULL, // dog alert (digi sound)
-	NULL, // end bonus 1 (not used in C-Dogs)
+	NULL,				// dog alert (digi sound)
+	NULL,				// end bonus 1 (not used in C-Dogs)
 	"mission_complete", // end bonus 2
 	"1up",
 	"pickup_crown",
@@ -198,10 +198,10 @@ static const char *adlibSoundsW1[] = {
 	NULL, // dog attack (digi sound)
 };
 static const char *adlibSoundsW6[] = {
-	NULL, // hit wall
+	NULL,		  // hit wall
 	"menu_start", // select weapon
-	NULL, // select item
-	NULL, // heartbeat
+	NULL,		  // select item
+	NULL,		  // heartbeat
 	"menu_switch",
 	NULL, // move gun 1
 	"menu_error",
@@ -238,9 +238,9 @@ static const char *adlibSoundsW6[] = {
 	"pickup_chest",
 	"chaingun_pickup",
 	"menu_back",
-	NULL, // level end (digi sound)
-	NULL, // dog alert (digi sound)
-	NULL, // end bonus 1 (not used in C-Dogs)
+	NULL,				// level end (digi sound)
+	NULL,				// dog alert (digi sound)
+	NULL,				// end bonus 1 (not used in C-Dogs)
 	"mission_complete", // end bonus 2
 	"1up",
 	"pickup_crown",
@@ -268,21 +268,21 @@ static const char *adlibSoundsW6[] = {
 	NULL, // officer die (digi sound)
 	NULL, // dog attack (digi sound)
 	"flamethrower",
-	NULL,		  // mech step (digi sound)
-	NULL,		  // goobs
-	NULL,		  // yeah (digi sound)
-	NULL,		  // guard die 4 (digi sound)
-	NULL,		  // guard die 5 (digi sound)
-	NULL,		  // guard die 6 (digi sound)
-	NULL,		  // guard die 7 (digi sound)
-	NULL,		  // guard die 8 (digi sound)
-	NULL,		  // guard die 9 (digi sound)
-	NULL,		  // otto die (digi sound)
-	NULL,		  // otto alert (digi sound)
-	NULL,		  // fettgesicht alert (digi sound)
-	NULL,		  // gretel alert (digi sound)
-	NULL,		  // gretel die (digi sound)
-	NULL,		  // fettgesicht die (digi sound)
+	NULL, // mech step (digi sound)
+	NULL, // goobs
+	NULL, // yeah (digi sound)
+	NULL, // guard die 4 (digi sound)
+	NULL, // guard die 5 (digi sound)
+	NULL, // guard die 6 (digi sound)
+	NULL, // guard die 7 (digi sound)
+	NULL, // guard die 8 (digi sound)
+	NULL, // guard die 9 (digi sound)
+	NULL, // otto die (digi sound)
+	NULL, // otto alert (digi sound)
+	NULL, // fettgesicht alert (digi sound)
+	NULL, // gretel alert (digi sound)
+	NULL, // gretel die (digi sound)
+	NULL, // fettgesicht die (digi sound)
 	"rocket",
 	"hits/rocket/",
 };
@@ -327,9 +327,9 @@ static const char *adlibSoundsSOD[] = {
 	"pickup_chest",
 	NULL, // chain gun pickup (digi sound)
 	"menu_back",
-	NULL, // level end (digi sound)
-	NULL, // dog alert (digi sound)
-	NULL, // end bonus 1 (not used in C-Dogs)
+	NULL,				// level end (digi sound)
+	NULL,				// dog alert (digi sound)
+	NULL,				// end bonus 1 (not used in C-Dogs)
 	"mission_complete", // end bonus 2
 	"1up",
 	"pickup_crown",
@@ -679,7 +679,7 @@ static void TryLoadWallObject(
 	const struct vec2i v, const int missionIndex);
 static void LoadEntity(
 	Mission *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v,
-	const int missionIndex, int *bossObjIdx);
+	const int missionIndex, int *bossObjIdx, int *spearObjIdx);
 
 typedef struct
 {
@@ -707,6 +707,7 @@ static void LoadMission(
 
 	// TODO: objectives for treasure, kills (multiple items per obj)
 	int bossObjIdx = -1;
+	int spearObjIdx = -1;
 
 	const WeaponClass *wc = StrWeaponClass("Pistol");
 	CArrayPushBack(&m.Weapons, &wc);
@@ -744,7 +745,7 @@ static void LoadMission(
 	const uint16_t ch = CWLevelGetCh(level, 0, _v.x, _v.y);
 	TryLoadWallObject(&m.u.Static, ch, map, _v, missionIndex);
 	const uint16_t ech = CWLevelGetCh(level, 1, _v.x, _v.y);
-	LoadEntity(&m, ech, map, _v, missionIndex, &bossObjIdx);
+	LoadEntity(&m, ech, map, _v, missionIndex, &bossObjIdx, &spearObjIdx);
 	RECT_FOREACH_END()
 
 	if (m.u.Static.Exits.size == 0)
@@ -753,8 +754,16 @@ static void LoadMission(
 		// Make sure to skip over the secret level
 		Exit e;
 		e.Hidden = true;
-		// Skip over the secret level to the next episode
-		e.Mission = missionIndex + 2;
+		if (map->type == CWMAPTYPE_SOD && missionIndex == 17)
+		{
+			// Skip over the two secret levels
+			e.Mission = missionIndex + 3;
+		}
+		else
+		{
+			// Skip over the secret level to the next episode
+			e.Mission = missionIndex + 2;
+		}
 		e.R.Pos = svec2i_zero();
 		e.R.Size = m.Size;
 		CArrayPushBack(&m.u.Static.Exits, &e);
@@ -1065,7 +1074,7 @@ static void LoadChar(
 	int *bossObjIdx);
 static void LoadEntity(
 	Mission *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v,
-	const int missionIndex, int *bossObjIdx)
+	const int missionIndex, int *bossObjIdx, int *spearObjIdx)
 {
 	const CWEntity entity = CWChToEntity(ch);
 	switch (entity)
@@ -1315,7 +1324,19 @@ static void LoadEntity(
 		MissionStaticTryAddItem(&m->u.Static, StrMapObject("truck"), v);
 		break;
 	case CWENT_SPEAR:
-		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("spear"), v);
+		if (*spearObjIdx < 0)
+		{
+			Objective o;
+			memset(&o, 0, sizeof o);
+			o.Type = OBJECTIVE_COLLECT;
+			o.u.Pickup = StrPickupClass("spear");
+			CSTRDUP(o.Description, "Collect spear");
+			CArrayPushBack(&m->Objectives, &o);
+			*spearObjIdx = (int)m->Objectives.size - 1;
+		}
+		Objective *spearObj = CArrayGet(&m->Objectives, *spearObjIdx);
+		spearObj->Required++;
+		MissionStaticAddObjective(m, &m->u.Static, *spearObjIdx, 0, v, false);
 		break;
 	case CWENT_PUSHWALL: {
 		const CWLevel *level = &map->levels[missionIndex];
@@ -1492,7 +1513,8 @@ static void LoadChar(
 		Objective *bossObj = CArrayGet(&m->Objectives, *bossObjIdx);
 		bossObj->Required++;
 		MissionStaticAddObjective(
-			m, &m->u.Static, *bossObjIdx, (int)m->SpecialChars.size - 1, v, true);
+			m, &m->u.Static, *bossObjIdx, (int)m->SpecialChars.size - 1, v,
+			true);
 	}
 	break;
 	default:
