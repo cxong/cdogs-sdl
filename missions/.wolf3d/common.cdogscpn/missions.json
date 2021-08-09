@@ -43,6 +43,7 @@
 		"Dual Chain Gun",
 		"Dog Bite"],
 		"WeaponPersist": false,
+		"SkipDebrief": false,
 		"TileClasses": {
 			"0": {
 				"Name": "tile",

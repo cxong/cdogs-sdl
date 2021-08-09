@@ -169,8 +169,8 @@
         "Type": "Directional",
         "Sprites": "chars/heads/jones"
       },
-      "Body": "big",
-      "Sounds": "death_knight"
+      "Body": "mech",
+      "Sounds": "knight"
     },
     {
       "Name": "Ghost",

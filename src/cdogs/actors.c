@@ -273,18 +273,18 @@ bool TryMoveActor(TActor *actor, struct vec2 pos)
 		if (target)
 		{
 			Weapon *gun = ACTOR_GET_WEAPON(actor);
-			const TObject *object =
-				target->kind == KIND_OBJECT ? CArrayGet(&gObjs, target->id) : NULL;
+			const TObject *object = target->kind == KIND_OBJECT
+										? CArrayGet(&gObjs, target->id)
+										: NULL;
 			const int barrel = ActorGetCanFireBarrel(actor, gun);
 			// Check for melee damage if we are the owner of the actor
 			const bool checkMelee =
 				(!gCampaign.IsClient && actor->PlayerUID < 0) ||
 				ActorIsLocalPlayer(actor->uid);
 			// TODO: support melee weapons on multi guns
-			const BulletClass *b =
-				barrel >= 0 ? WC_BARREL_ATTR(*(gun->Gun), Bullet, barrel) : NULL;
+			const BulletClass *b = WeaponClassGetBullet(gun->Gun, barrel);
 			if (checkMelee && barrel >= 0 && !WeaponClassCanShoot(gun->Gun) &&
-				actor->health > 0 &&
+				actor->health > 0 && b &&
 				(!object ||
 				 (((b->Hit.Object.Hit && target->kind == KIND_OBJECT) ||
 				   (b->Hit.Flesh.Hit && target->kind == KIND_CHARACTER)) &&
@@ -301,12 +301,14 @@ bool TryMoveActor(TActor *actor, struct vec2 pos)
 					{
 					case KIND_CHARACTER:
 						e.u.Melee.TargetUID =
-							((const TActor *)CArrayGet(&gActors, target->id))->uid;
+							((const TActor *)CArrayGet(&gActors, target->id))
+								->uid;
 						e.u.Melee.HitType = HIT_FLESH;
 						break;
 					case KIND_OBJECT:
 						e.u.Melee.TargetUID =
-							((const TObject *)CArrayGet(&gObjs, target->id))->uid;
+							((const TObject *)CArrayGet(&gObjs, target->id))
+								->uid;
 						e.u.Melee.HitType = HIT_OBJECT;
 						break;
 					default:
@@ -332,13 +334,15 @@ bool TryMoveActor(TActor *actor, struct vec2 pos)
 
 			const struct vec2 yPos = svec2(actor->Pos.x, pos.y);
 			if (OverlapGetFirstItem(
-					&actor->thing, yPos, actor->thing.size, svec2_zero(), params))
+					&actor->thing, yPos, actor->thing.size, svec2_zero(),
+					params))
 			{
 				pos.y = actor->Pos.y;
 			}
 			const struct vec2 xPos = svec2(pos.x, actor->Pos.y);
 			if (OverlapGetFirstItem(
-					&actor->thing, xPos, actor->thing.size, svec2_zero(), params))
+					&actor->thing, xPos, actor->thing.size, svec2_zero(),
+					params))
 			{
 				pos.x = actor->Pos.x;
 			}

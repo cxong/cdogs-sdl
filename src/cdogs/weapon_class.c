@@ -56,9 +56,8 @@ void WeaponClassesInitialize(WeaponClasses *wcs)
 	CArrayInit(&wcs->Guns, sizeof(WeaponClass));
 	CArrayInit(&wcs->CustomGuns, sizeof(WeaponClass));
 }
-static void LoadWeaponClass(
-	WeaponClass *wc, json_t *node, const int version);
-static void GunDescriptionTerminate(WeaponClass *wc);
+static void LoadWeaponClass(WeaponClass *wc, json_t *node, const int version);
+static void WeaponClassTerminate(WeaponClass *wc);
 void WeaponClassesLoadJSON(WeaponClasses *wcs, CArray *classes, json_t *root)
 {
 	LOG(LM_MAP, LL_DEBUG, "loading weapons");
@@ -94,7 +93,7 @@ void WeaponClassesLoadJSON(WeaponClasses *wcs, CArray *classes, json_t *root)
 		if (idx >= 0 && idx < GUN_COUNT)
 		{
 			WeaponClass *gExisting = CArrayGet(&wcs->Guns, idx);
-			GunDescriptionTerminate(gExisting);
+			WeaponClassTerminate(gExisting);
 			memcpy(gExisting, &gd, sizeof gd);
 		}
 		else
@@ -115,8 +114,7 @@ void WeaponClassesLoadJSON(WeaponClasses *wcs, CArray *classes, json_t *root)
 		}
 	}
 }
-static void LoadWeaponClass(
-	WeaponClass *wc, json_t *node, const int version)
+static void LoadWeaponClass(WeaponClass *wc, json_t *node, const int version)
 {
 	memset(wc, 0, sizeof *wc);
 
@@ -134,7 +132,7 @@ static void LoadWeaponClass(
 			wc->Type = GUNTYPE_GRENADE;
 		}
 	}
-	
+
 	char *tmp;
 
 	if (wc->Type != GUNTYPE_MULTI)
@@ -207,12 +205,24 @@ static void LoadWeaponClass(
 
 		LoadInt(&wc->u.Normal.Grips, node, "Grips");
 
+		CArrayInit(&wc->u.Normal.Bullets, sizeof(const BulletClass *));
 		tmp = NULL;
 		LoadStr(&tmp, node, "Bullet");
 		if (tmp != NULL)
 		{
-			wc->u.Normal.Bullet = StrBulletClass(tmp);
+			const BulletClass *bullet = StrBulletClass(tmp);
+			CArrayPushBack(&wc->u.Normal.Bullets, &bullet);
 			CFREE(tmp);
+		}
+		const json_t *bulletsNode = json_find_first_label(node, "Bullets");
+		if (bulletsNode)
+		{
+			for (const json_t *bulletNode = bulletsNode->child->child;
+				 bulletNode; bulletNode = bulletNode->next)
+			{
+				const BulletClass *bullet = StrBulletClass(bulletNode->text);
+				CArrayPushBack(&wc->u.Normal.Bullets, &bullet);
+			}
 		}
 
 		tmp = NULL;
@@ -331,9 +341,16 @@ static void LoadWeaponClass(
 	{
 	case GUNTYPE_NORMAL:
 	case GUNTYPE_GRENADE: // fallthrough
-		LOG(LM_MAP, LL_DEBUG, "bullet(%s) ammo(%d) cost(%d)...",
-			wc->u.Normal.Bullet != NULL ? wc->u.Normal.Bullet->Name : "",
-			wc->u.Normal.AmmoId, wc->u.Normal.Cost);
+		LOG(LM_MAP, LL_DEBUG, "bullets(");
+		CA_FOREACH(const BulletClass *, bc, wc->u.Normal.Bullets)
+		if (_ca_index > 0)
+		{
+			LOG(LM_MAP, LL_DEBUG, ", ");
+		}
+		LOG(LM_MAP, LL_DEBUG, "%s", (*bc)->Name);
+		CA_FOREACH_END()
+		LOG(LM_MAP, LL_DEBUG, ") ammo(%d) cost(%d)...", wc->u.Normal.AmmoId,
+			wc->u.Normal.Cost);
 		LOG(LM_MAP, LL_DEBUG,
 			"...reloadLead(%d) soundLockLength(%d) recoil(%f)...",
 			wc->u.Normal.ReloadLead, wc->u.Normal.SoundLockLength,
@@ -373,11 +390,11 @@ void WeaponClassesTerminate(WeaponClasses *wcs)
 void WeaponClassesClear(CArray *classes)
 {
 	CA_FOREACH(WeaponClass, g, *classes)
-	GunDescriptionTerminate(g);
+	WeaponClassTerminate(g);
 	CA_FOREACH_END()
 	CArrayClear(classes);
 }
-static void GunDescriptionTerminate(WeaponClass *wc)
+static void WeaponClassTerminate(WeaponClass *wc)
 {
 	CFREE(wc->name);
 	CFREE(wc->Description);
@@ -387,6 +404,7 @@ static void GunDescriptionTerminate(WeaponClass *wc)
 	case GUNTYPE_NORMAL:
 	case GUNTYPE_GRENADE: // fallthrough
 		CFREE(wc->u.Normal.Sprites);
+		CArrayTerminate(&wc->u.Normal.Bullets);
 		break;
 	case GUNTYPE_MULTI:
 		for (int i = 0; i < MAX_BARRELS; i++)
@@ -568,14 +586,15 @@ bool WeaponClassIsHighDPS(const WeaponClass *wc)
 		return WeaponClassIsHighDPS(StrWeaponClass(wc->u.Guns[0])) ||
 			   WeaponClassIsHighDPS(StrWeaponClass(wc->u.Guns[1]));
 	}
-	if (wc->u.Normal.Bullet == NULL)
-	{
-		return false;
-	}
+	CA_FOREACH(const BulletClass *, bc, wc->u.Normal.Bullets)
 	// TODO: generalised way of determining explosive bullets
-	return wc->u.Normal.Bullet->Falling.DropGuns.size > 0 ||
-		   wc->u.Normal.Bullet->OutOfRangeGuns.size > 0 ||
-		   wc->u.Normal.Bullet->HitGuns.size > 0;
+	if ((*bc)->Falling.DropGuns.size > 0 || (*bc)->OutOfRangeGuns.size > 0 ||
+		(*bc)->HitGuns.size > 0)
+	{
+		return true;
+	}
+	CA_FOREACH_END()
+	return false;
 }
 float WeaponClassGetRange(const WeaponClass *wc)
 {
@@ -585,21 +604,20 @@ float WeaponClassGetRange(const WeaponClass *wc)
 				WeaponClassGetRange(StrWeaponClass(wc->u.Guns[1]))) /
 			   2.0f;
 	}
-	const BulletClass *b = wc->u.Normal.Bullet;
-	if (b == NULL)
-	{
-		return 0;
-	}
-	const float speed = (b->SpeedLow + b->SpeedHigh) / 2;
-	const int range = (b->RangeLow + b->RangeHigh) / 2;
+	float maxRange = 0;
+	CA_FOREACH(const BulletClass *, bc, wc->u.Normal.Bullets)
+	const float speed = ((*bc)->SpeedLow + (*bc)->SpeedHigh) / 2;
+	const int range = ((*bc)->RangeLow + (*bc)->RangeHigh) / 2;
 	float effectiveRange = speed * range;
-	if (b->Falling.GravityFactor != 0 && b->Falling.DestroyOnDrop)
+	if ((*bc)->Falling.GravityFactor != 0 && (*bc)->Falling.DestroyOnDrop)
 	{
 		// Halve effective range
 		// TODO: this assumes a certain bouncing range
 		effectiveRange *= 0.5f;
 	}
-	return effectiveRange;
+	maxRange = MAX(maxRange, effectiveRange);
+	CA_FOREACH_END()
+	return maxRange;
 }
 bool WeaponClassIsLongRange(const WeaponClass *wc)
 {
@@ -630,6 +648,20 @@ const WeaponClass *WeaponClassGetBarrel(
 		return StrWeaponClass(wc->u.Guns[barrel]);
 	}
 	return wc;
+}
+const BulletClass *WeaponClassGetBullet(
+	const WeaponClass *wc, const int barrel)
+{
+	if (barrel == -1)
+	{
+		return NULL;
+	}
+	wc = WeaponClassGetBarrel(wc, barrel);
+	CA_FOREACH(const BulletClass *, bc, wc->u.Normal.Bullets)
+	if (*bc)
+		return *bc;
+	CA_FOREACH_END()
+	return NULL;
 }
 
 void BulletAndWeaponInitialize(

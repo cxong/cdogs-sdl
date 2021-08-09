@@ -162,6 +162,12 @@
       "CanDrop": false
     },
     {
+      "Name": "Dual Chaingun and Rocket Launcher",
+      "Icon": "akimbo_pistols",
+      "Guns": ["dual_chaingun_rocket_launcher1", "dual_chaingun_rocket_launcher2"],
+      "CanDrop": false
+    },
+    {
       "Name": "Energy Ball",
       "Pic": "",
       "Bullet": "energy_ball",
@@ -202,6 +208,24 @@
       "SpreadCount": 2,
       "Recoil": 0.3,
       "MuzzleHeight": 12,
+      "Brass": "brass"
+    },
+    {
+      "Pic": "chaingun",
+      "Name": "dual_chaingun_rocket_launcher1",
+      "Bullets": ["bullet_boss", "rocket"],
+      "Lock": 70,
+      "Sound": "rocket",
+      "Recoil": 0.3,
+      "Brass": "brass"
+    },
+    {
+      "Pic": "chaingun",
+      "Name": "dual_chaingun_rocket_launcher2",
+      "Bullets": ["bullet_boss", "rocket"],
+      "Lock": 70,
+      "Sound": "dual_chaingun",
+      "Recoil": 0.3,
       "Brass": "brass"
     }
   ]

@@ -60,7 +60,6 @@ typedef enum
 	GUNTYPE_GRENADE,
 	GUNTYPE_MULTI
 } GunType;
-GunType StrGunType(const char *s);
 
 // Gun states
 typedef enum
@@ -80,9 +79,9 @@ typedef struct
 		{
 			char *Sprites;
 			int Grips;
-			const BulletClass *Bullet;
-			int AmmoId; // -1 if the gun does not consume ammo
-			int Cost;	// Cost in score to fire weapon
+			CArray Bullets; // of const BulletClass *
+			int AmmoId;		// -1 if the gun does not consume ammo
+			int Cost;		// Cost in score to fire weapon
 			int ReloadLead;
 			Mix_Chunk *Sound;
 			Mix_Chunk *ReloadSound;
@@ -119,7 +118,7 @@ typedef struct
 } WeaponClass;
 typedef struct
 {
-	CArray Guns; // of WeaponClass
+	CArray Guns;	   // of WeaponClass
 	CArray CustomGuns; // of WeaponClass
 } WeaponClasses;
 
@@ -154,11 +153,13 @@ bool WeaponClassCanShoot(const WeaponClass *wc);
 int WeaponClassNumBarrels(const WeaponClass *wc);
 const WeaponClass *WeaponClassGetBarrel(
 	const WeaponClass *wc, const int barrel);
+const BulletClass *WeaponClassGetBullet(
+	const WeaponClass *wc, const int barrel);
 
 #define WC_BARREL_ATTR(_wc, _attr, _barrel)                                   \
 	((_wc).Type == GUNTYPE_MULTI                                              \
-		 ? StrWeaponClass((_wc).u.Guns[_barrel])->u.Normal. _attr            \
-		 : (_wc).u.Normal. _attr)
+		 ? StrWeaponClass((_wc).u.Guns[_barrel])->u.Normal._attr              \
+		 : (_wc).u.Normal._attr)
 
 // Initialise bullets and weapons in one go
 void BulletAndWeaponInitialize(

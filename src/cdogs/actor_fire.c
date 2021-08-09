@@ -93,7 +93,7 @@ void OnGunFire(const NGunFire gf, SoundDevice *sd)
 	const struct vec2 pos = NetToVec2(gf.MuzzlePos);
 
 	// Add bullets
-	if (wc->u.Normal.Bullet && !gCampaign.IsClient)
+	if (!gCampaign.IsClient)
 	{
 		// Find the starting angle of the spread (clockwise)
 		// Keep in mind the fencepost problem, i.e. spread of 3 means a
@@ -107,8 +107,6 @@ void OnGunFire(const NGunFire gf, SoundDevice *sd)
 			const float finalAngle = gf.Angle + spreadStartAngle +
 									 i * wc->u.Normal.Spread.Width + recoil;
 			GameEvent ab = GameEventNew(GAME_EVENT_ADD_BULLET);
-			ab.u.AddBullet.UID = MobObjsObjsGetNextUID();
-			strcpy(ab.u.AddBullet.BulletClass, wc->u.Normal.Bullet->Name);
 			ab.u.AddBullet.MuzzlePos = Vec2ToNet(pos);
 			ab.u.AddBullet.MuzzleHeight = gf.Z;
 			ab.u.AddBullet.Angle = finalAngle;
@@ -116,7 +114,12 @@ void OnGunFire(const NGunFire gf, SoundDevice *sd)
 				wc->u.Normal.ElevationLow, wc->u.Normal.ElevationHigh);
 			ab.u.AddBullet.Flags = gf.Flags;
 			ab.u.AddBullet.ActorUID = gf.ActorUID;
+
+			CA_FOREACH(const BulletClass *, bc, wc->u.Normal.Bullets)
+			ab.u.AddBullet.UID = MobObjsObjsGetNextUID();
+			strcpy(ab.u.AddBullet.BulletClass, (*bc)->Name);
 			GameEventsEnqueue(&gGameEvents, ab);
+			CA_FOREACH_END()
 		}
 	}
 
