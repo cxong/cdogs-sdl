@@ -97,6 +97,7 @@ extern "C"
 			return;
 		}
 #endif
+		(void)name;
 	}
 
 	_FSG_FUNC
@@ -108,6 +109,7 @@ extern "C"
 		sprintf(buf, "Software\\Wow6432Node\\GOG.com\\Games\\%s", app_id);
 		_query_reg_key(out, HKEY_LOCAL_MACHINE, buf, "Path");
 #endif
+		(void)app_id;
 	}
 
 #ifdef __cplusplus
