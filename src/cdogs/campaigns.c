@@ -35,6 +35,7 @@
 #include <cdogs/files.h>
 #include <cdogs/log.h>
 #include <cdogs/map_new.h>
+#include <cdogs/map_wolf.h>
 #include <cdogs/mission.h>
 #include <cdogs/player_template.h>
 #include <cdogs/utils.h>
@@ -124,6 +125,9 @@ void LoadAllCampaigns(CustomCampaigns *campaigns)
 	LOG(LM_MAIN, LL_INFO, "Load campaigns from dir %s...", buf);
 	LoadCampaignsFromFolder(
 		&campaigns->campaignList, "", buf, GAME_MODE_NORMAL);
+
+	LOG(LM_MAIN, LL_INFO, "Load campaigns from system...");
+	MapWolfLoadCampaignsFromSystem(&campaigns->campaignList);
 
 	GetDataFilePath(buf, CDOGS_DOGFIGHT_DIR);
 	LOG(LM_MAIN, LL_INFO, "Load dogfights from dir %s...", buf);
