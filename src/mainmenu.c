@@ -225,7 +225,6 @@ typedef struct
 	int MenuJoinIndex;
 } CheckLANServerData;
 static menu_t *MenuCreateContinue(const char *name, CampaignEntry *entry);
-static menu_t *MenuCreateQuickPlay(const char *name, CampaignEntry *entry);
 static menu_t *MenuCreateCampaigns(
 	const char *name, const char *title, CampaignList *list,
 	const GameMode mode);
@@ -244,8 +243,6 @@ static menu_t *MenuCreateStart(
 		menu, MenuCreateCampaigns(
 				  "Campaign", "Select a campaign:", &campaigns->campaignList,
 				  GAME_MODE_NORMAL));
-	MenuAddSubmenu(
-		menu, MenuCreateQuickPlay("Quick Play", &campaigns->quickPlayEntry));
 	MenuAddSubmenu(
 		menu, MenuCreateCampaigns(
 				  "Dogfight", "Select a dogfight scenario:",
@@ -309,10 +306,6 @@ static void StartGameMode(menu_t *menu, void *data)
 static menu_t *MenuCreateContinue(const char *name, CampaignEntry *entry)
 {
 	return CreateStartGameMode(name, GAME_MODE_NORMAL, entry);
-}
-static menu_t *MenuCreateQuickPlay(const char *name, CampaignEntry *entry)
-{
-	return CreateStartGameMode(name, GAME_MODE_QUICK_PLAY, entry);
 }
 
 static menu_t *MenuCreateCampaignItem(
@@ -520,10 +513,6 @@ static menu_t *MenuCreateOptions(const char *name, MenuSystem *ms)
 		menu, MenuCreateConfigOptions(
 				  "Sound...", "Configure Sound:", ConfigGet(&gConfig, "Sound"),
 				  ms, true));
-	MenuAddSubmenu(
-		menu, MenuCreateConfigOptions(
-				  "Quick Play...", "Quick Play Options:",
-				  ConfigGet(&gConfig, "QuickPlay"), ms, true));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Back"));
 	return menu;
