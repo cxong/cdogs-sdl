@@ -1,50 +1,50 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin
-    Copyright (C) 2003-2007 Lucas Martin-King
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (C) 1995 Ronny Wester
+	Copyright (C) 2003 Jeremy Chin
+	Copyright (C) 2003-2007 Lucas Martin-King
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-    This file incorporates work covered by the following copyright and
-    permission notice:
+	This file incorporates work covered by the following copyright and
+	permission notice:
 
-    Copyright (c) 2014, 2016-2017, 2019, 2021 Cong Xu
-    All rights reserved.
+	Copyright (c) 2014, 2016-2017, 2019, 2021 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "map_object.h"
 
@@ -55,9 +55,7 @@
 #include "objs.h"
 #include "pics.h"
 
-
 MapObjects gMapObjects;
-
 
 const char *PlacementFlagStr(const int i)
 {
@@ -101,24 +99,23 @@ MapObject *StrMapObject(const char *s)
 		return NULL;
 	}
 	CA_FOREACH(MapObject, c, gMapObjects.CustomClasses)
-		if (strcmp(s, c->Name) == 0)
-		{
-			return c;
-		}
+	if (strcmp(s, c->Name) == 0)
+	{
+		return c;
+	}
 	CA_FOREACH_END()
 	CA_FOREACH(MapObject, c, gMapObjects.Classes)
-		if (strcmp(s, c->Name) == 0)
-		{
-			return c;
-		}
+	if (strcmp(s, c->Name) == 0)
+	{
+		return c;
+	}
 	CA_FOREACH_END()
 	return NULL;
 }
 MapObject *IntMapObject(const int m)
 {
 	// Note: do not edit; legacy integer mapping
-	static const char *oldMapObjects[] =
-	{
+	static const char *oldMapObjects[] = {
 		"barrel_blue",
 		"box",
 		"box2",
@@ -158,8 +155,7 @@ MapObject *IntMapObject(const int m)
 		"scratch",
 		"wall_stuff",
 		"wall_goo",
-		"goo"
-	};
+		"goo"};
 	if (m < 0 || m > (int)(sizeof oldMapObjects / sizeof oldMapObjects[0]))
 	{
 		LOG(LM_MAIN, LL_ERROR, "cannot find map object %d", m);
@@ -170,8 +166,8 @@ MapObject *IntMapObject(const int m)
 MapObject *IndexMapObject(const int i)
 {
 	CASSERT(
-		i >= 0 &&
-		i < (int)gMapObjects.Classes.size + (int)gMapObjects.CustomClasses.size,
+		i >= 0 && i < (int)gMapObjects.Classes.size +
+						  (int)gMapObjects.CustomClasses.size,
 		"Map object index out of bounds");
 	if (i < (int)gMapObjects.Classes.size)
 	{
@@ -186,11 +182,11 @@ int DestructibleMapObjectIndex(const MapObject *mo)
 		return 0;
 	}
 	CA_FOREACH(const char *, name, gMapObjects.Destructibles)
-		const MapObject *d = StrMapObject(*name);
-		if (d == mo)
-		{
-			return _ca_index;
-		}
+	const MapObject *d = StrMapObject(*name);
+	if (d == mo)
+	{
+		return _ca_index;
+	}
 	CA_FOREACH_END()
 	CASSERT(false, "cannot find destructible map object");
 	return -1;
@@ -223,8 +219,8 @@ int MapObjectGetFlags(const MapObject *mo)
 #define VERSION 3
 
 void MapObjectsInit(
-	MapObjects *classes, const char *filename,
-	const AmmoClasses *ammo, const WeaponClasses *guns)
+	MapObjects *classes, const char *filename, const AmmoClasses *ammo,
+	const WeaponClasses *guns)
 {
 	CArrayInit(&classes->Classes, sizeof(MapObject));
 	CArrayInit(&classes->CustomClasses, sizeof(MapObject));
@@ -317,7 +313,8 @@ static bool TryLoadMapObject(MapObject *m, json_t *node, const int version)
 		// Pic required for map object
 		if (!CPicIsLoaded(&m->Pic))
 		{
-			LOG(LM_MAIN, LL_ERROR, "pic not found for map object(%s)", m->Name);
+			LOG(LM_MAIN, LL_ERROR, "pic not found for map object(%s)",
+				m->Name);
 			goto bail;
 		}
 	}
@@ -362,9 +359,8 @@ static bool TryLoadMapObject(MapObject *m, json_t *node, const int version)
 	json_t *flagsNode = json_find_first_label(node, "Flags");
 	if (flagsNode != NULL && flagsNode->child != NULL)
 	{
-		for (json_t *flagNode = flagsNode->child->child;
-			flagNode;
-			flagNode = flagNode->next)
+		for (json_t *flagNode = flagsNode->child->child; flagNode;
+			 flagNode = flagNode->next)
 		{
 			m->Flags |= 1 << StrPlacementFlag(flagNode->text);
 		}
@@ -380,13 +376,12 @@ static bool TryLoadMapObject(MapObject *m, json_t *node, const int version)
 	case MAP_OBJECT_TYPE_NORMAL:
 		// Do nothing
 		break;
-	case MAP_OBJECT_TYPE_PICKUP_SPAWNER:
-		{
-			char *tmp = GetString(node, "Pickup");
-			m->u.PickupClass = StrPickupClass(tmp);
-			CFREE(tmp);
-		}
-		break;
+	case MAP_OBJECT_TYPE_PICKUP_SPAWNER: {
+		char *tmp = GetString(node, "Pickup");
+		m->u.PickupClass = StrPickupClass(tmp);
+		CFREE(tmp);
+	}
+	break;
 	default:
 		CASSERT(false, "unknown error");
 		break;
@@ -397,9 +392,8 @@ static bool TryLoadMapObject(MapObject *m, json_t *node, const int version)
 	if (destroySpawnNode != NULL && destroySpawnNode->child != NULL)
 	{
 		CArrayInit(&m->DestroySpawn, sizeof(MapObjectDestroySpawn));
-		for (json_t *dsNode = destroySpawnNode->child->child;
-			dsNode;
-			dsNode = dsNode->next)
+		for (json_t *dsNode = destroySpawnNode->child->child; dsNode;
+			 dsNode = dsNode->next)
 		{
 			MapObjectDestroySpawn mods;
 			memset(&mods, 0, sizeof mods);
@@ -428,7 +422,7 @@ static void AddDestructibles(MapObjects *mo, const CArray *classes);
 static void ReloadDestructibles(MapObjects *mo)
 {
 	CA_FOREACH(char *, s, mo->Destructibles)
-		CFREE(*s);
+	CFREE(*s);
 	CA_FOREACH_END()
 	CArrayClear(&mo->Destructibles);
 	AddDestructibles(mo, &mo->Classes);
@@ -540,11 +534,11 @@ void MapObjectsTerminate(MapObjects *classes)
 	MapObjectsClear(&classes->CustomClasses);
 	CArrayTerminate(&classes->CustomClasses);
 	CA_FOREACH(char *, s, classes->Destructibles)
-		CFREE(*s);
+	CFREE(*s);
 	CA_FOREACH_END()
 	CArrayTerminate(&classes->Destructibles);
 	CA_FOREACH(char *, s, classes->Bloods)
-		CFREE(*s);
+	CFREE(*s);
 	CA_FOREACH_END()
 	CArrayTerminate(&classes->Bloods);
 }
@@ -554,13 +548,11 @@ int MapObjectsCount(const MapObjects *classes)
 	return (int)classes->Classes.size + (int)classes->CustomClasses.size;
 }
 
-
 const Pic *MapObjectGetPic(const MapObject *mo, struct vec2i *offset)
 {
 	*offset = mo->Offset;
 	return CPicGetPic(&mo->Pic, 0);
 }
-
 
 bool MapObjectIsTileOK(
 	const MapObject *mo, const Tile *tile, const Tile *tileAbove)
@@ -589,7 +581,8 @@ bool MapObjectIsTileOK(
 		{
 			return false;
 		}
-		// Check if tile has no things on it, excluding particles and pickups and non-draw-above/below objects
+		// Check if tile has no things on it, excluding particles and pickups
+		// and non-draw-above/below objects
 		CA_FOREACH(const ThingId, tid, tile->things)
 		if (tid->Kind == KIND_OBJECT)
 		{
@@ -599,7 +592,7 @@ bool MapObjectIsTileOK(
 				return false;
 			}
 		}
-		if (tid->Kind != KIND_PARTICLE && tid->Kind != KIND_PICKUP)
+		else if (tid->Kind != KIND_PARTICLE && tid->Kind != KIND_PICKUP)
 			return false;
 		CA_FOREACH_END()
 	}
@@ -610,7 +603,8 @@ bool MapObjectIsTileOK(
 	}
 	return true;
 }
-struct vec2 MapObjectGetPlacementPos(const MapObject *mo, const struct vec2i tilePos)
+struct vec2 MapObjectGetPlacementPos(
+	const MapObject *mo, const struct vec2i tilePos)
 {
 	struct vec2 pos = Vec2CenterOfTile(tilePos);
 	pos = svec2_add(pos, mo->PosOffset);

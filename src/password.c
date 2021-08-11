@@ -106,17 +106,23 @@ static void MenuCreateStart(MenuSystem *ms, const CampaignSave *save)
 	levelSelect->u.normal.maxItems = 20;
 	if (save)
 	{
+		CArray levels;
+		CArrayInitFillZero(
+			&levels, sizeof(bool), gCampaign.Setting.Missions.size);
 		CA_FOREACH(const int, missionIndex, save->MissionsCompleted)
 		if (*missionIndex >= (int)gCampaign.Setting.Missions.size)
 		{
 			continue;
 		}
 		MenuCreateLevelSelect(levelSelect, &gCampaign, *missionIndex);
+		CArraySet(&levels, *missionIndex, &gTrue);
 		CA_FOREACH_END()
-		if (save->NextMission < (int)gCampaign.Setting.Missions.size)
+		if (save->NextMission < (int)gCampaign.Setting.Missions.size &&
+			!*(bool *)CArrayGet(&levels, save->NextMission))
 		{
 			MenuCreateLevelSelect(levelSelect, &gCampaign, save->NextMission);
 		}
+		CArrayTerminate(&levels);
 	}
 	levelSelect->isDisabled =
 		save == NULL || save->MissionsCompleted.size == 0;
