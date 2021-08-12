@@ -303,7 +303,7 @@ static void DrawMapItem(
 static char *MakeMapObjectTooltip(const MapObject *mo);
 static bool AddMapItemBrushObjFunc(UIObject *o, MapObject *mo, void *vData)
 {
-	if (mo->Type != MAP_OBJECT_TYPE_NORMAL)
+	if (mo->Type == MAP_OBJECT_TYPE_PICKUP_SPAWNER)
 	{
 		return false;
 	}

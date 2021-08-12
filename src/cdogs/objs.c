@@ -470,6 +470,21 @@ void ObjAdd(const NMapObjectAdd amo)
 	memset(o, 0, sizeof *o);
 	o->uid = amo.UID;
 	o->Class = StrMapObject(amo.MapObjectClass);
+	switch (o->Class->Type)
+	{
+	case MAP_OBJECT_TYPE_NORMAL:
+		// do nothing
+		break;
+	case MAP_OBJECT_TYPE_PICKUP_SPAWNER:
+		// do nothing
+		break;
+	case MAP_OBJECT_TYPE_ACTOR_SPAWNER:
+		o->counter = o->Class->u.Character.Counter;
+		break;
+	default:
+		CASSERT(false, "unknown map object type");
+		break;
+	}
 	ThingInit(&o->thing, i, KIND_OBJECT, o->Class->Size, amo.ThingFlags);
 	o->Health = amo.Health;
 	o->thing.CPic = o->Class->Pic;
@@ -536,7 +551,7 @@ void UpdateObjects(const int ticks)
 	case MAP_OBJECT_TYPE_PICKUP_SPAWNER:
 		if (gCampaign.IsClient)
 			break;
-		// If counter -1, it is inactive i.e. already spawned pickup
+		// If counter -1, it is inactive i.e. already spawned
 		if (obj->counter == -1)
 		{
 			break;
@@ -551,6 +566,35 @@ void UpdateObjects(const int ticks)
 			strcpy(e.u.AddPickup.PickupClass, obj->Class->u.PickupClass->Name);
 			e.u.AddPickup.SpawnerUID = obj->uid;
 			e.u.AddPickup.Pos = Vec2ToNet(obj->thing.Pos);
+			GameEventsEnqueue(&gGameEvents, e);
+		}
+		break;
+	case MAP_OBJECT_TYPE_ACTOR_SPAWNER:
+		if (gCampaign.IsClient)
+			break;
+		// If counter -1, it is inactive i.e. already spawned
+		if (obj->counter == -1)
+		{
+			break;
+		}
+		obj->counter -= ticks;
+		if (obj->counter <= 0)
+		{
+			// Deactivate spawner by setting counter to -1
+			obj->counter = -1;
+			GameEvent e = GameEventNewActorAdd(
+				obj->thing.Pos,
+				CArrayGet(
+					&gCampaign.Setting.characters.OtherChars,
+					obj->Class->u.Character.CharId),
+				true);
+			e.u.ActorAdd.CharId = obj->Class->u.Character.CharId;
+			GameEventsEnqueue(&gGameEvents, e);
+
+			// Destroy object
+			// TODO: persistent actor spawners
+			e = GameEventNew(GAME_EVENT_MAP_OBJECT_REMOVE);
+			e.u.MapObjectRemove.UID = obj->uid;
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 		break;

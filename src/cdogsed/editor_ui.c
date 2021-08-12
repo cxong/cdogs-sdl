@@ -397,7 +397,7 @@ static void MissionDrawSpecialChar(
 	const int charIndex = CharacterStoreGetSpecialId(store, data->index);
 	const Character *ch = CArrayGet(&store->OtherChars, charIndex);
 	DrawCharacterSimple(
-						ch,
+		ch,
 		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
 		DIRECTION_DOWN, UIObjectIsHighlighted(o), true, ch->Gun);
 }
@@ -1067,17 +1067,35 @@ static void DrawMapItem(
 	DisplayMapItem(
 		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
 		data->M);
-	if (data->M->Type != MAP_OBJECT_TYPE_PICKUP_SPAWNER)
+	switch (data->M->Type)
 	{
-		return;
+	case MAP_OBJECT_TYPE_NORMAL:
+		// do nothing
+		break;
+	case MAP_OBJECT_TYPE_PICKUP_SPAWNER: {
+		// Also draw the pickup spawned by this spawner
+		const Pic *pic = CPicGetPic(&data->M->u.PickupClass->Pic, 0);
+		pos = svec2i_subtract(pos, svec2i_scale_divide(pic->size, 2));
+		PicRender(
+			pic, g->gameWindow.renderer,
+			svec2i_add(
+				svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
+			colorWhite, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 	}
-	// Also draw the pickup object spawned by this spawner
-	const Pic *pic = CPicGetPic(&data->M->u.PickupClass->Pic, 0);
-	pos = svec2i_subtract(pos, svec2i_scale_divide(pic->size, 2));
-	PicRender(
-		pic, g->gameWindow.renderer,
-		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
-		colorWhite, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
+	break;
+	case MAP_OBJECT_TYPE_ACTOR_SPAWNER: {
+		// Also draw the actor spawned by this spawner
+		const Character *c = CArrayGet(
+			&gCampaign.Setting.characters.OtherChars,
+			data->M->u.Character.CharId);
+		DrawCharacterSimple(
+			c, svec2i_add(pos, o->Pos), DIRECTION_DOWN, false, false, c->Gun);
+	}
+	break;
+	default:
+		CASSERT(false, "unknown map object type");
+		break;
+	}
 }
 
 static UIObject *CreateCharacterObjs(Campaign *co, int dy)

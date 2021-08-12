@@ -457,7 +457,8 @@ static void DrawThing(DrawBuffer *b, const Thing *t, const struct vec2i offset)
 #endif
 }
 
-static void DrawEditorTiles(DrawBuffer *b, const Map *map, const struct vec2i offset);
+static void DrawEditorTiles(
+	DrawBuffer *b, const Map *map, const struct vec2i offset);
 static void DrawGuideImage(
 	const DrawBuffer *b, const Pic *guideImage, const uint8_t alpha);
 static void DrawObjectNames(DrawBuffer *b, const struct vec2i offset);
@@ -473,7 +474,8 @@ static void DrawExtra(
 	DrawObjectNames(b, offset);
 }
 
-static void DrawEditorTiles(DrawBuffer *b, const Map *map, const struct vec2i offset)
+static void DrawEditorTiles(
+	DrawBuffer *b, const Map *map, const struct vec2i offset)
 {
 	const color_t exitColor = colorDarker;
 	struct vec2i pos;
@@ -559,7 +561,7 @@ static void DrawEditorTiles(DrawBuffer *b, const Map *map, const struct vec2i of
 				FontStrMask(buf, svec2i_add(pos, svec2i(3, 3)), exitColor);
 			}
 			CA_FOREACH_END()
-			
+
 			// Walk-through walls
 			const Tile *tile = MapGetTile(map, tilePos);
 			if (tile->Class->Type == TILE_CLASS_WALL && tile->Class->canWalk)
@@ -595,7 +597,8 @@ static void DrawGuideImage(
 static void DrawObjectiveName(
 	const Thing *ti, DrawBuffer *b, const struct vec2i offset);
 static void DrawSpawnerName(
-	const TObject *obj, DrawBuffer *b, const struct vec2i offset);
+	const TObject *obj, DrawBuffer *b, const struct vec2i offset,
+	const char *name);
 static void DrawKeyName(
 	const Pickup *p, DrawBuffer *b, const struct vec2i offset);
 static void DrawObjectNames(DrawBuffer *b, const struct vec2i offset)
@@ -616,9 +619,21 @@ static void DrawObjectNames(DrawBuffer *b, const struct vec2i offset)
 			else if (ti->kind == KIND_OBJECT)
 			{
 				const TObject *obj = CArrayGet(&gObjs, ti->id);
-				if (obj->Class->Type == MAP_OBJECT_TYPE_PICKUP_SPAWNER)
+				switch (obj->Class->Type)
 				{
-					DrawSpawnerName(obj, b, offset);
+				case MAP_OBJECT_TYPE_PICKUP_SPAWNER:
+					DrawSpawnerName(
+						obj, b, offset, obj->Class->u.PickupClass->Name);
+					break;
+				case MAP_OBJECT_TYPE_ACTOR_SPAWNER: {
+					const Character *c = CArrayGet(
+						&gCampaign.Setting.characters.OtherChars,
+						obj->Class->u.Character.CharId);
+					DrawSpawnerName(obj, b, offset, c->Class->Name);
+				}
+				break;
+				default:
+					break;
 				}
 			}
 			else if (ti->kind == KIND_PICKUP)
@@ -647,9 +662,9 @@ static void DrawObjectiveName(
 	FontStr(typeName, textPos);
 }
 static void DrawSpawnerName(
-	const TObject *obj, DrawBuffer *b, const struct vec2i offset)
+	const TObject *obj, DrawBuffer *b, const struct vec2i offset,
+	const char *name)
 {
-	const char *name = obj->Class->u.PickupClass->Name;
 	const struct vec2i textPos = svec2i(
 		(int)obj->thing.Pos.x - b->xTop + offset.x - FontStrW(name) / 2,
 		(int)obj->thing.Pos.y - b->yTop + offset.y);

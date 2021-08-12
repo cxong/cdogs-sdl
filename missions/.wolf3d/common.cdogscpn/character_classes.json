@@ -180,7 +180,8 @@
       },
       "Body": "none",
       "Sounds": "ghost",
-      "BloodColor": "999999"
+      "BloodColor": "999999",
+      "Corpse": "ghost_corpse"
     },
     {
       "Name": "Angel of Death",

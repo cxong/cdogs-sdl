@@ -214,6 +214,9 @@ GameEvent GameEventNew(GameEventType type)
 	e.Type = type;
 	switch (type)
 	{
+	case GAME_EVENT_MAP_OBJECT_REMOVE:
+		e.u.MapObjectRemove.ActorUID = -1;
+		break;
 	case GAME_EVENT_ADD_PICKUP:
 		e.u.AddPickup.UID = PickupsGetNextUID();
 		e.u.AddPickup.SpawnerUID = -1;

@@ -88,6 +88,7 @@ static MapObjectType StrMapObjectType(const char *s)
 {
 	S2T(MAP_OBJECT_TYPE_NORMAL, "Normal");
 	S2T(MAP_OBJECT_TYPE_PICKUP_SPAWNER, "PickupSpawner");
+	S2T(MAP_OBJECT_TYPE_ACTOR_SPAWNER, "ActorSpawner");
 	CASSERT(false, "unknown map object name");
 	return MAP_OBJECT_TYPE_NORMAL;
 }
@@ -382,6 +383,10 @@ static bool TryLoadMapObject(MapObject *m, json_t *node, const int version)
 		CFREE(tmp);
 	}
 	break;
+	case MAP_OBJECT_TYPE_ACTOR_SPAWNER:
+		LoadInt(&m->u.Character.CharId, node, "CharId");
+		LoadInt(&m->u.Character.Counter, node, "Counter");
+		break;
 	default:
 		CASSERT(false, "unknown error");
 		break;

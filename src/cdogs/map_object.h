@@ -50,6 +50,7 @@
 
 #include <json/json.h>
 #include "ammo.h"
+#include "character.h"
 #include "pic_manager.h"
 #include "pickup_class.h"
 
@@ -71,7 +72,8 @@ const char *PlacementFlagStr(const int i);
 typedef enum
 {
 	MAP_OBJECT_TYPE_NORMAL,
-	MAP_OBJECT_TYPE_PICKUP_SPAWNER
+	MAP_OBJECT_TYPE_PICKUP_SPAWNER,
+	MAP_OBJECT_TYPE_ACTOR_SPAWNER
 } MapObjectType;
 
 // Pickups to spawn when map objects are destroyed
@@ -102,6 +104,11 @@ typedef struct
 	union
 	{
 		const PickupClass *PickupClass;
+		struct
+		{
+			int CharId;
+			int Counter;
+		} Character;
 	} u;
 	CArray DestroySpawn;	// of MapObjectDestroySpawn
 	struct {

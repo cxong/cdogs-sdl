@@ -1109,6 +1109,10 @@
 		{
 			"MapObject": "dead_guard",
 			"Positions": [[21, 13]]
+		},
+		{
+			"MapObject": "ghost_corpse",
+			"Positions": [[14, 21]]
 		}],
 		"StaticCharacters": [{
 			"Index": 0,
