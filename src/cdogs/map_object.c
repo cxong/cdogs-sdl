@@ -217,7 +217,7 @@ int MapObjectGetFlags(const MapObject *mo)
 	return flags;
 }
 
-#define VERSION 3
+#define VERSION 4
 
 void MapObjectsInit(
 	MapObjects *classes, const char *filename, const AmmoClasses *ammo,
@@ -328,25 +328,50 @@ static bool TryLoadMapObject(MapObject *m, json_t *node, const int version)
 	}
 
 	// Wreck
-	if (version < 3)
+	m->Wreck.Sound = StrSound("bang");
+	if (version < 4)
 	{
-		// Assume old wreck pic is wreck
-		json_t *wreckNode = json_find_first_label(node, "WreckPic");
-		if (wreckNode != NULL && wreckNode->child != NULL)
+		if (version < 3)
 		{
-			if (version < 2)
+			// Assume old wreck pic is wreck
+			json_t *wreckNode = json_find_first_label(node, "WreckPic");
+			if (wreckNode != NULL && wreckNode->child != NULL)
 			{
-				LoadStr(&m->Wreck, node, "WreckPic");
+				if (version < 2)
+				{
+					LoadStr(&m->Wreck.MO, node, "WreckPic");
+				}
+				else
+				{
+					LoadStr(&m->Wreck.MO, wreckNode, "Pic");
+				}
 			}
-			else
-			{
-				LoadStr(&m->Wreck, wreckNode, "Pic");
-			}
+		}
+		else
+		{
+			LoadStr(&m->Wreck.MO, node, "Wreck");
 		}
 	}
 	else
 	{
-		LoadStr(&m->Wreck, node, "Wreck");
+		json_t *wreckNode = json_find_first_label(node, "Wreck");
+		if (wreckNode != NULL && wreckNode->child != NULL)
+		{
+			char *tmp = NULL;
+			LoadStr(&m->Wreck.MO, wreckNode->child, "MapObject");
+			tmp = NULL;
+			LoadStr(&tmp, wreckNode->child, "Sound");
+			if (tmp != NULL)
+			{
+				m->Wreck.Sound = StrSound(tmp);
+				CFREE(tmp);
+			}
+			LoadStr(&m->Wreck.Bullet, wreckNode->child, "Bullet");
+		}
+	}
+	if (m->Wreck.Bullet == NULL)
+	{
+		CSTRDUP(m->Wreck.Bullet, "fireball_wreck");
 	}
 
 	// Default tile size
@@ -527,6 +552,8 @@ void MapObjectsClear(CArray *classes)
 	{
 		MapObject *c = CArrayGet(classes, i);
 		CFREE(c->Name);
+		CFREE(c->Wreck.MO);
+		CFREE(c->Wreck.Bullet);
 		CArrayTerminate(&c->DestroyGuns);
 		CArrayTerminate(&c->DestroySpawn);
 	}

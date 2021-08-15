@@ -218,28 +218,30 @@ void ObjRemove(const NMapObjectRemove mor)
 			CA_FOREACH_END()
 		}
 
-		// A wreck left after the destruction of this object
-		// TODO: doesn't need to be network event
-		GameEvent e = GameEventNew(GAME_EVENT_ADD_BULLET);
-		e.u.AddBullet.UID = MobObjsObjsGetNextUID();
-		strcpy(e.u.AddBullet.BulletClass, "fireball_wreck");
-		e.u.AddBullet.MuzzlePos = Vec2ToNet(o->thing.Pos);
-		GameEventsEnqueue(&gGameEvents, e);
+		if (strlen(o->Class->Wreck.Bullet) > 0)
+		{
+			// A wreck left after the destruction of this object
+			// TODO: doesn't need to be network event
+			GameEvent e = GameEventNew(GAME_EVENT_ADD_BULLET);
+			e.u.AddBullet.UID = MobObjsObjsGetNextUID();
+			strcpy(e.u.AddBullet.BulletClass, o->Class->Wreck.Bullet);
+			e.u.AddBullet.MuzzlePos = Vec2ToNet(o->thing.Pos);
+			GameEventsEnqueue(&gGameEvents, e);
+		}
 	}
 
-	GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
-	strcpy(es.u.SoundAt.Sound, "bang");
-	es.u.SoundAt.Pos = Vec2ToNet(o->thing.Pos);
-	GameEventsEnqueue(&gGameEvents, es);
+	SoundPlayAt(&gSoundDevice, o->Class->Wreck.Sound, o->thing.Pos);
 
 	// If wreck is available spawn it in the exact same position
-	PlaceWreck(o->Class->Wreck, &o->thing);
+	PlaceWreck(o->Class->Wreck.MO, &o->thing);
 
 	ObjDestroy(o);
 
-	// Update pathfinding cache since this object could have blocked a path
-	// before
-	PathCacheClear(&gPathCache);
+	if (o->thing.flags & THING_IMPASSABLE)
+	{
+		// Update pathfinding cache if this object blocked a path before
+		PathCacheClear(&gPathCache);
+	}
 }
 static void PlaceWreck(const char *wreckClass, const Thing *ti)
 {
@@ -503,8 +505,11 @@ void ObjAdd(const NMapObjectAdd amo)
 		"added object uid(%d) class(%s) health(%d) pos(%d, %d)", (int)amo.UID,
 		amo.MapObjectClass, amo.Health, (int)amo.Pos.x, (int)amo.Pos.y);
 
-	// Update pathfinding cache since this object could block a path
-	PathCacheClear(&gPathCache);
+	if (o->thing.flags & THING_IMPASSABLE)
+	{
+		// Update pathfinding cache if this object blocked a path before
+		PathCacheClear(&gPathCache);
+	}
 }
 
 void ObjDestroy(TObject *o)

@@ -89,7 +89,12 @@ typedef struct
 	char *Name;
 	CPic Pic;
 	struct vec2i Offset;
-	char *Wreck;
+	struct
+	{
+		char *MO;
+		Mix_Chunk *Sound;
+		char *Bullet;
+	} Wreck;
 	struct vec2i Size;
 	struct vec2 PosOffset;
 	int Health;

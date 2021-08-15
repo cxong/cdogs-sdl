@@ -1,5 +1,5 @@
 {
-  "Version": 3,
+  "Version": 4,
   "MapObjects": [
     {
       "Name": "chandelier",
@@ -455,6 +455,10 @@
       "Pic": {
         "Type": "Normal",
         "Pic": "ghost_corpse"
+      },
+      "Wreck": {
+        "Sound": "",
+        "Bullet": ""
       },
       "Offset": [-7, -21],
       "Health": 0,

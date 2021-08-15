@@ -350,7 +350,7 @@ static const MapObject *LoadMapObjectWreckRef(
 		LOG(LM_MAP, LL_ERROR, "Failed to load map object (%s)", moName);
 		return NULL;
 	}
-	const MapObject *wreck = StrMapObject(mo->Wreck);
+	const MapObject *wreck = StrMapObject(mo->Wreck.MO);
 	return wreck;
 }
 static void LoadStaticCharacters(MissionStatic *m, json_t *node, char *name)
