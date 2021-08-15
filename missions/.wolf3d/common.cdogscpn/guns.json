@@ -215,7 +215,7 @@
       "Name": "dual_chaingun_rocket_launcher1",
       "Bullets": ["bullet_boss", "rocket"],
       "Lock": 70,
-      "Sound": "rocket",
+      "Sound": "knight_rocket",
       "Recoil": 0.3,
       "Brass": "brass"
     },

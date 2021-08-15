@@ -372,7 +372,7 @@ static const char *adlibSoundsSOD[] = {
 	NULL,			 // knight alert (digi sound)
 	NULL,			 // knight die (digi sound)
 	NULL,			 // angel die (digi sound)
-	"knight_rocket", // TODO: weapon
+	"knight_rocket",
 	NULL,			 // spear (digi sound)
 	NULL,			 // angel tired (not used in C-Dogs)
 };
