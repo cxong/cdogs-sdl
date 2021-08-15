@@ -179,6 +179,7 @@
         "Sprites": ""
       },
       "Body": "none",
+      "DeathSprites": "",
       "Sounds": "ghost",
       "BloodColor": "999999",
       "Corpse": "ghost_corpse"
