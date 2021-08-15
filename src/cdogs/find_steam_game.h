@@ -27,8 +27,9 @@ extern "C"
 #endif
 
 #include <stdbool.h>
-#include <sys/types.h>
+#include <stdio.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 
 #ifdef _MSC_VER
 #define _FSG_FUNC static __inline
@@ -72,30 +73,105 @@ extern "C"
 	}
 #endif
 
+#if (defined _MSC_VER || defined __MINGW32__)
+#define _FSG_PATH_MAX MAX_PATH
+#elif defined __linux__
+#include <limits.h>
+#ifdef PATH_MAX
+#define _FSG_PATH_MAX PATH_MAX
+#endif
+#elif defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
+#include <sys/param.h>
+#if defined(BSD)
+#include <limits.h>
+#ifdef PATH_MAX
+#define _FSG_PATH_MAX PATH_MAX
+#endif
+#endif
+#endif
+
+#ifndef _FSG_PATH_MAX
+#define _FSG_PATH_MAX 4096
+#endif
+
 	_FSG_FUNC
 	void fsg_get_steam_game_path(char *out, const char *name)
 	{
 		out[0] = '\0';
 #ifdef _MSC_VER
+		char steam_path[_FSG_PATH_MAX];
+		char buf[_FSG_PATH_MAX];
 		_query_reg_key(
-			out, HKEY_CURRENT_USER, "Software\\Valve\\Steam", "SteamPath");
-		if (strlen(out) == 0)
+			steam_path, HKEY_CURRENT_USER, "Software\\Valve\\Steam",
+			"SteamPath");
+		if (strlen(steam_path) == 0)
 		{
 			_query_reg_key(
-				out, HKEY_LOCAL_MACHINE, "Software\\Valve\\Steam",
+				steam_path, HKEY_LOCAL_MACHINE, "Software\\Valve\\Steam",
 				"InstallPath");
-			if (strlen(out) == 0)
+			if (strlen(steam_path) == 0)
 				return;
 		}
-		strcat(out, "/SteamApps/common/");
-		strcat(out, name);
+		strcat(steam_path, "\\steamapps\\");
+
+		// Check for game in common
+		sprintf(out, "%scommon\\%s", steam_path, name);
 
 		struct stat info;
-		if (stat(out, &info) != 0 || !(info.st_mode & S_IFDIR))
+		if (stat(out, &info) == 0 && (info.st_mode & S_IFDIR))
 		{
-			out[0] = '\0';
 			return;
 		}
+		out[0] = '\0';
+
+		// Try reading library paths described by libraryfolders.vdf
+		sprintf(buf, "%s\\libraryfolders.vdf", steam_path);
+		FILE *f = fopen(buf, "r");
+		if (f)
+		{
+			char line_buf[256];
+			while (fgets(line_buf, 256, f))
+			{
+				// Look for a line with "path"		"<library path>"
+				const char *path_p = strstr(line_buf, "\"path\"");
+				if (path_p == NULL)
+				{
+					continue;
+				}
+				const char *value_start =
+					strchr(path_p + strlen("\"path\"") + 1, '"');
+				if (value_start == NULL)
+				{
+					continue;
+				}
+				value_start++;
+				const char *value_end = strchr(value_start, '"');
+				const char *value_p = value_start;
+				char *out_p = out;
+				while (value_p < value_end)
+				{
+					// Copy value to output, skipping double backslashes
+					*out_p++ = *value_p++;
+					if (*value_p == '\\' && value_p > value_start &&
+						*(value_p - 1) == '\\')
+					{
+						out_p--;
+					}
+				}
+				*out_p = '\0';
+				strcat(out, "\\steamapps\\common\\");
+				strcat(out, name);
+				if (stat(out, &info) == 0 && (info.st_mode & S_IFDIR))
+				{
+					fclose(f);
+					return;
+				}
+			}
+			fclose(f);
+			out[0] = '\0';
+		}
+
+
 #endif
 		(void)name;
 	}

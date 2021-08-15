@@ -1554,6 +1554,11 @@ void MapWolfLoadCampaignsFromSystem(CampaignList *list)
 
 	// Wolf
 	fsg_get_steam_game_path(buf, WOLF_STEAM_NAME);
+	if (strlen(buf) > 0)
+	{
+		// Steam installs to /base
+		strcat(buf, "/base");
+	}
 	if (!TryLoadCampaign(list, buf))
 	{
 		fsg_get_gog_game_path(buf, WOLF_GOG_ID);
@@ -1564,7 +1569,8 @@ void MapWolfLoadCampaignsFromSystem(CampaignList *list)
 	fsg_get_steam_game_path(buf, SPEAR_STEAM_NAME);
 	if (strlen(buf) > 0)
 	{
-		strcat(buf, "/M1"); // Only support original spear
+		// Steam installs to /base
+		strcat(buf, "/base");
 	}
 	if (!TryLoadCampaign(list, buf))
 	{

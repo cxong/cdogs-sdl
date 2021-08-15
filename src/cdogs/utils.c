@@ -241,6 +241,15 @@ void RealPath(const char *src, char *dest)
 static void TrimSlashes(char *s);
 void RelPath(char *buf, const char *to, const char *from)
 {
+#ifdef _WIN32
+	// If path is on a different Windows drive, just return the path
+	if (strlen(from) >= 2 && strlen(to) >= 2 && IsAbsolutePath(from) &&
+		IsAbsolutePath(to) && toupper(from[0]) != toupper(to[0]))
+	{
+		strcpy(buf, to);
+		return;
+	}
+#endif
 	// Make sure both to/from paths were generated using RealPath,
 	// so that common substring means they share part of their paths,
 	// and not due to alternate renderings of the same path like
@@ -371,6 +380,11 @@ void RelPathFromCWD(char *buf, const char *to)
 
 void GetDataFilePath(char *buf, const char *path)
 {
+	if (IsAbsolutePath(path))
+	{
+		strcpy(buf, path);
+		return;
+	}
 	char relbuf[CDOGS_PATH_MAX];
 	// Don't bother prepending CWD if data dir already an absolute path
 	if (IsAbsolutePath(CDOGS_DATA_DIR))

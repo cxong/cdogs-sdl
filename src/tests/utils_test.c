@@ -37,7 +37,22 @@ FEATURE(path_funcs, "Path functions")
 		THEN("the result should be a relative path from one to the other")
 			char rel[CDOGS_PATH_MAX];
 			RelPath(rel, to, from);
-			SHOULD_STR_EQUAL(rel, "../to");
+		SHOULD_STR_EQUAL(rel, "../to");
+	SCENARIO_END
+
+	SCENARIO("Relative path to a different Windows drive")
+		GIVEN("a path to a drive")
+			char to[CDOGS_PATH_MAX];
+			strcpy(to, "D:\\foo");
+
+		WHEN("I get the relative path from a different drive")
+			char from[CDOGS_PATH_MAX];
+			strcpy(from, "C:\\foo");
+
+		THEN("the result should be an absolute path")
+			char rel[CDOGS_PATH_MAX];
+			RelPath(rel, to, from);
+			SHOULD_STR_EQUAL(rel, "D:\\foo");
 	SCENARIO_END
 FEATURE_END
 
