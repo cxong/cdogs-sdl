@@ -16,8 +16,8 @@
 #include <unistd.h>
 #endif
 
-#include "expand.h"
 #include "audiowl6.h"
+#include "expand.h"
 
 #define MAGIC 0xABCD
 
@@ -33,6 +33,11 @@ bool CWIsMap(const char *path)
 		return true;
 	}
 	sprintf(pathBuf, "%s/MAPHEAD.WL6", path);
+	if (access(pathBuf, F_OK) != -1)
+	{
+		return true;
+	}
+	sprintf(pathBuf, "%s/MAPHEAD.SD1", path);
 	if (access(pathBuf, F_OK) != -1)
 	{
 		return true;
@@ -54,54 +59,54 @@ int CWLoad(CWolfMap *map, const char *path)
 	int err;
 
 	const char *ext = "WL1";
+	const char *ext1 = "WL1";
 	map->type = CWMAPTYPE_WL1;
 	sprintf(pathBuf, "%s/MAPHEAD.WL6", path);
 	if (access(pathBuf, F_OK) != -1)
 	{
-		ext = "WL6";
+		ext = ext1 = "WL6";
 		map->type = CWMAPTYPE_WL6;
 	}
-	sprintf(pathBuf, "%s/MAPHEAD.SOD", path);
+	sprintf(pathBuf, "%s/MAPHEAD.SD1", path);
 	if (access(pathBuf, F_OK) != -1)
 	{
-		ext = "SOD";
+		// Steam keeps common files as .SOD extension,
+		// but original SoD as .SD1 extension
+		ext = "SD1";
+		ext1 = "SOD";
 		map->type = CWMAPTYPE_SOD;
 	}
-
-	sprintf(pathBuf, "%s/MAPHEAD.%s", path, ext);
-	err = LoadMapHead(map, pathBuf);
-	if (err != 0)
+	else
 	{
-		goto bail;
+		sprintf(pathBuf, "%s/MAPHEAD.SOD", path);
+		if (access(pathBuf, F_OK) != -1)
+		{
+			ext = ext1 = "SOD";
+			map->type = CWMAPTYPE_SOD;
+		}
 	}
 
-	sprintf(pathBuf, "%s/GAMEMAPS.%s", path, ext);
-	err = LoadMapData(map, pathBuf);
-	if (err != 0)
-	{
-		goto bail;
+#define _TRY_LOAD(_fn, _loadFunc, ...)                                        \
+	sprintf(pathBuf, "%s/" _fn ".%s", path, ext);                             \
+	err = _loadFunc(__VA_ARGS__);                                             \
+	if (err != 0)                                                             \
+	{                                                                         \
+		sprintf(pathBuf, "%s/" _fn ".%s", path, ext1);                        \
+		err = _loadFunc(__VA_ARGS__);                                         \
+		if (err != 0)                                                         \
+		{                                                                     \
+			goto bail;                                                        \
+		}                                                                     \
 	}
+	_TRY_LOAD("MAPHEAD", LoadMapHead, map, pathBuf);
 
-	sprintf(pathBuf, "%s/AUDIOHED.%s", path, ext);
-	err = CWAudioLoadHead(&map->audio.head, pathBuf);
-	if (err != 0)
-	{
-		goto bail;
-	}
+	_TRY_LOAD("GAMEMAPS", LoadMapData, map, pathBuf);
 
-	sprintf(pathBuf, "%s/AUDIOT.%s", path, ext);
-	err = CWAudioLoadAudioT(&map->audio, map->type, pathBuf);
-	if (err != 0)
-	{
-		goto bail;
-	}
+	_TRY_LOAD("AUDIOHED", CWAudioLoadHead, &map->audio.head, pathBuf);
 
-	sprintf(pathBuf, "%s/VSWAP.%s", path, ext);
-	err = CWVSwapLoad(&map->vswap, pathBuf);
-	if (err != 0)
-	{
-		goto bail;
-	}
+	_TRY_LOAD("AUDIOT", CWAudioLoadAudioT, &map->audio, map->type, pathBuf);
+
+	_TRY_LOAD("VSWAP", CWVSwapLoad, &map->vswap, pathBuf);
 
 bail:
 	return err;
@@ -118,7 +123,8 @@ static int LoadMapHead(CWolfMap *map, const char *path)
 		goto bail;
 	}
 	const size_t size = sizeof map->mapHead;
-	// Read as many maps as we can; some versions of the game (SOD MP) truncate the headers
+	// Read as many maps as we can; some versions of the game (SOD MP) truncate
+	// the headers
 	(void)!fread((void *)&map->mapHead, 1, size, f);
 	if (map->mapHead.magic != MAGIC)
 	{
