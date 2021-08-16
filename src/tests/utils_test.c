@@ -40,6 +40,7 @@ FEATURE(path_funcs, "Path functions")
 		SHOULD_STR_EQUAL(rel, "../to");
 	SCENARIO_END
 
+#ifdef _MSC_VER
 	SCENARIO("Relative path to a different Windows drive")
 		GIVEN("a path to a drive")
 			char to[CDOGS_PATH_MAX];
@@ -54,6 +55,7 @@ FEATURE(path_funcs, "Path functions")
 			RelPath(rel, to, from);
 			SHOULD_STR_EQUAL(rel, "D:\\foo");
 	SCENARIO_END
+#endif
 FEATURE_END
 
 CBEHAVE_RUN("Pic features are:", TEST_FEATURE(path_funcs))
