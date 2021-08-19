@@ -90,7 +90,7 @@ typedef enum {
 #define STARTPCSOUNDS		0
 #define STARTADLIBSOUNDS (NUMSOUNDS + 18)  // Some reason sounds are offset by 18
 #define STARTDIGISOUNDS		(NUMSOUNDS*2)
-#define STARTMUSIC		(NUMSOUNDS*3)
+#define STARTMUSIC		261
 
 //
 // Music names & indexes
