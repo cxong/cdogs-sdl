@@ -1,4 +1,4 @@
-version: 0.13.0.{build}
+version: 1.0.0.{build}
 
 branches:
   except:
@@ -18,7 +18,7 @@ environment:
   SDL2_IMAGE_VERSION: 2.0.5
   SDL2_MIXER_VERSION: 2.0.4
   SDLDIR: C:\projects\cdogs-sdl
-  VERSION: 0.13.0
+  VERSION: 1.0.0
 
 install:
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
