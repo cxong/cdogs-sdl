@@ -92,8 +92,8 @@ jobs:
         curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
         unzip butler.zip
         chmod +x butler
-        butler -V
-        butler push C-Dogs*SDL-*-Linux.tar.gz congusbongus/cdogs-sdl:linux --userversion $VERSION
+        ./butler -V
+        ./butler push C-Dogs*SDL-*-Linux.tar.gz congusbongus/cdogs-sdl:linux --userversion $VERSION
 
     - name: Publish to itch.io (macos)
       if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'macos-latest'
@@ -104,5 +104,5 @@ jobs:
         curl -L -o butler.zip https://broth.itch.ovh/butler/darwin-amd64/LATEST/archive/default
         unzip butler.zip
         chmod +x butler
-        butler -V
-        butler push C-Dogs*SDL-*-OSX.dmg congusbongus/cdogs-sdl:mac --userversion $VERSION
+        ./butler -V
+        ./butler push C-Dogs*SDL-*-OSX.dmg congusbongus/cdogs-sdl:mac --userversion $VERSION
