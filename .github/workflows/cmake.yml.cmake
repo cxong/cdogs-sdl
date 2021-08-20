@@ -73,6 +73,14 @@ jobs:
       run: |
         make package
 
+    - name: Upload a Build Artifact
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        path: ${{ github.workspace }}/C-Dogs*SDL-*-*.*
+
     - name: Publish to itch.io (Linux)
       if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest'
       uses: josephbmanley/butler-publish-itchio-action@master
@@ -81,7 +89,7 @@ jobs:
         CHANNEL: linux
         ITCH_GAME: cdogs-sdl
         ITCH_USER: congusbongus
-        PACKAGE: C-Dogs*SDL-*-*.*.*
+        PACKAGE: ${{ github.workspace }}/C-Dogs*SDL-*-*.*
         VERSION: ${{ env.TAGVERSION }}
 
     - name: Publish to itch.io (macos)
@@ -92,13 +100,5 @@ jobs:
         CHANNEL: mac
         ITCH_GAME: cdogs-sdl
         ITCH_USER: congusbongus
-        PACKAGE: C-Dogs*SDL-*-*.*.*
+        PACKAGE: ${{ github.workspace }}/C-Dogs*SDL-*-*.*
         VERSION: ${{ env.TAGVERSION }}
-
-    - name: Upload a Build Artifact
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        path: C-Dogs*SDL-*-*.*
