@@ -29,9 +29,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Verify the workspace context
-      run: echo 'Workspace directory is ${{ github.workspace }}'
-
     - name: Install Protoc
       uses: arduino/setup-protoc@v1.1.2
       with:
@@ -88,22 +85,24 @@ jobs:
 
     - name: Publish to itch.io (Linux)
       if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest'
-      uses: josephbmanley/butler-publish-itchio-action@master
       env:
-        BUTLER_CREDENTIALS: ${{ secrets.BUTLER_API_KEY }}
-        CHANNEL: linux
-        ITCH_GAME: cdogs-sdl
-        ITCH_USER: congusbongus
-        PACKAGE: C-Dogs*SDL-*-Linux.tar.gz
+        BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
         VERSION: ${{ env.TAGVERSION }}
+      run: |
+        curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+        unzip butler.zip
+        chmod +x butler
+        butler -V
+        butler push C-Dogs*SDL-*-Linux.tar.gz congusbongus/cdogs-sdl:linux --userversion $VERSION
 
     - name: Publish to itch.io (macos)
       if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'macos-latest'
-      uses: josephbmanley/butler-publish-itchio-action@master
       env:
-        BUTLER_CREDENTIALS: ${{ secrets.BUTLER_API_KEY }}
-        CHANNEL: mac
-        ITCH_GAME: cdogs-sdl
-        ITCH_USER: congusbongus
-        PACKAGE: C-Dogs*SDL-*-OSX.dmg
+        BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
         VERSION: ${{ env.TAGVERSION }}
+      run: |
+        curl -L -o butler.zip https://broth.itch.ovh/butler/darwin-amd64/LATEST/archive/default
+        unzip butler.zip
+        chmod +x butler
+        butler -V
+        butler push C-Dogs*SDL-*-OSX.dmg congusbongus/cdogs-sdl:mac --userversion $VERSION
