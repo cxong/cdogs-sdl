@@ -26,7 +26,11 @@ jobs:
         os: [ ubuntu-latest, macos-latest ]
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Verify the workspace context
+      run: echo 'Workspace directory is ${{ github.workspace }}'
 
     - name: Install Protoc
       uses: arduino/setup-protoc@v1.1.2
@@ -90,7 +94,7 @@ jobs:
         CHANNEL: linux
         ITCH_GAME: cdogs-sdl
         ITCH_USER: congusbongus
-        PACKAGE: ${{ github.workspace }}/C-Dogs*SDL-*-*.*
+        PACKAGE: C-Dogs*SDL-*-Linux.tar.gz
         VERSION: ${{ env.TAGVERSION }}
 
     - name: Publish to itch.io (macos)
@@ -101,5 +105,5 @@ jobs:
         CHANNEL: mac
         ITCH_GAME: cdogs-sdl
         ITCH_USER: congusbongus
-        PACKAGE: ${{ github.workspace }}/C-Dogs*SDL-*-*.*
+        PACKAGE: C-Dogs*SDL-*-OSX.dmg
         VERSION: ${{ env.TAGVERSION }}
