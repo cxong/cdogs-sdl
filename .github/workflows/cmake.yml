@@ -79,7 +79,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        path: ${{ github.workspace }}/C-Dogs*SDL-*-*.*
+        files: ${{ github.workspace }}/C-Dogs*SDL-*-*.*
+        fail_on_unmatched_files: true
 
     - name: Publish to itch.io (Linux)
       if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest'
