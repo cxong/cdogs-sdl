@@ -81,7 +81,7 @@ jobs:
         CHANNEL: linux
         ITCH_GAME: cdogs-sdl
         ITCH_USER: congusbongus
-        PACKAGE: C-Dogs*SDL-*-*.*
+        PACKAGE: C-Dogs*SDL-*-*.*.*
         VERSION: ${{ env.TAGVERSION }}
 
     - name: Publish to itch.io (macos)
@@ -92,7 +92,7 @@ jobs:
         CHANNEL: mac
         ITCH_GAME: cdogs-sdl
         ITCH_USER: congusbongus
-        PACKAGE: C-Dogs*SDL-*-*.*
+        PACKAGE: C-Dogs*SDL-*-*.*.*
         VERSION: ${{ env.TAGVERSION }}
 
     - name: Upload a Build Artifact
