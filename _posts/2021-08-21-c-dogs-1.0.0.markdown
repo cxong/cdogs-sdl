@@ -1,0 +1,33 @@
+---
+layout: post
+title:  "C-Dogs 1.0.0 Released!"
+date:   2021-08-21
+categories: release
+published: true
+---
+
+This is a special release, including a built-in mod that allows C-Dogs to play Wolfenstein 3D and Spear of Destiny!
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/gnZX0IJV4oo" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+If you have Wolfenstein 3D or Spear of Destiny installed from Steam or GOG, they will show up in C-Dogs SDL as campaigns!
+
+<video muted autoplay loop>
+    <source src="https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/sod.webm" type="video/webm">
+</video>
+
+Alternately you can get the mission pack from the [Downloads page](https://cxong.github.io/cdogs-sdl/downloads.html), which includes the shareware Wolfenstein 3D episode 1.
+
+This mod has been in the making for over a year, and along the way lots of features have been added, including vehicles!
+
+<video muted autoplay loop>
+    <source src="https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/mech.webm" type="video/webm">
+</video>
+
+C-Dogs SDL should have been version 1.0 long ago, but this big release was the excuse to finally do it 🍾
+
+Which brings me to sad news; C-Dogs SDL is going into hiatus 😔 While it's been really fun working on this game since 2013, I'm ready to move onto different projects. This doesn't mean a complete stop; there will be occasional bug fixes and the like.
+
+Happy gaming!
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/1.0.0>
