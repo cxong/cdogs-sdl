@@ -87,7 +87,6 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest'
       env:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
-        VERSION: ${{ env.TAGVERSION }}
       run: |
         curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
         unzip butler.zip
@@ -99,7 +98,6 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'macos-latest'
       env:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
-        VERSION: ${{ env.TAGVERSION }}
       run: |
         curl -L -o butler.zip https://broth.itch.ovh/butler/darwin-amd64/LATEST/archive/default
         unzip butler.zip
