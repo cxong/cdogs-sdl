@@ -28,6 +28,7 @@ extern "C"
 
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -45,7 +46,8 @@ extern "C"
 #include <winerror.h>
 #include <winreg.h>
 
-	static void _query_reg_key(
+	_FSG_FUNC
+	void _fsg_query_reg_key(
 		char *out, const HKEY key, const char *keypath, const char *valname)
 	{
 		HKEY pathkey;
@@ -71,6 +73,11 @@ extern "C"
 			RegCloseKey(pathkey);
 		}
 	}
+#else
+
+#include <pwd.h>
+#include <unistd.h>
+
 #endif
 
 #if (defined _MSC_VER || defined __MINGW32__)
@@ -95,18 +102,25 @@ extern "C"
 #endif
 
 	_FSG_FUNC
+	bool _fsg_dir_exists(const char *dir)
+	{
+		struct stat info;
+		return stat(dir, &info) == 0 && (info.st_mode & S_IFDIR);
+	}
+
+	_FSG_FUNC
 	void fsg_get_steam_game_path(char *out, const char *name)
 	{
 		out[0] = '\0';
 #ifdef _MSC_VER
 		char steam_path[_FSG_PATH_MAX];
 		char buf[_FSG_PATH_MAX];
-		_query_reg_key(
+		_fsg_query_reg_key(
 			steam_path, HKEY_CURRENT_USER, "Software\\Valve\\Steam",
 			"SteamPath");
 		if (strlen(steam_path) == 0)
 		{
-			_query_reg_key(
+			_fsg_query_reg_key(
 				steam_path, HKEY_LOCAL_MACHINE, "Software\\Valve\\Steam",
 				"InstallPath");
 			if (strlen(steam_path) == 0)
@@ -117,8 +131,7 @@ extern "C"
 		// Check for game in common
 		sprintf(out, "%scommon\\%s", steam_path, name);
 
-		struct stat info;
-		if (stat(out, &info) == 0 && (info.st_mode & S_IFDIR))
+		if (_fsg_dir_exists(out))
 		{
 			return;
 		}
@@ -161,7 +174,7 @@ extern "C"
 				*out_p = '\0';
 				strcat(out, "\\steamapps\\common\\");
 				strcat(out, name);
-				if (stat(out, &info) == 0 && (info.st_mode & S_IFDIR))
+				if (_fsg_dir_exists(out))
 				{
 					fclose(f);
 					return;
@@ -170,10 +183,66 @@ extern "C"
 			fclose(f);
 			out[0] = '\0';
 		}
+#else
+		// Look at $HOME/.local/share/Steam/steamapps/common/
+		struct passwd *pw = getpwuid(getuid());
+		const char *homedir = pw->pw_dir;
+		sprintf(out, "%s/.local/share/Steam/steamapps/common/%s", homedir, name);
+		if (_fsg_dir_exists(out))
+		{
+			return;
+		}
 
-
+		// Try reading library paths described by libraryfolders.vdf
+		// TODO: steam installed at different location
+		char buf[_FSG_PATH_MAX];
+		const int ret = snprintf(
+			buf, _FSG_PATH_MAX,
+			"%s/.local/share/Steam/steamapps/libraryfolders.vdf", homedir);
+		if (ret >= 0)
+		{
+			FILE *f = fopen(buf, "r");
+			if (f)
+			{
+				char line_buf[256];
+				while (fgets(line_buf, 256, f))
+				{
+					// Look for a line with "path"		"<library path>"
+					const char *path_p = strstr(line_buf, "\"path\"");
+					if (path_p == NULL)
+					{
+						continue;
+					}
+					const char *value_start =
+						strchr(path_p + strlen("\"path\"") + 1, '"');
+					if (value_start == NULL)
+					{
+						continue;
+					}
+					value_start++;
+					const char *value_end = strchr(value_start, '"');
+					const char *value_p = value_start;
+					char *out_p = out;
+					while (value_p < value_end)
+					{
+						// Copy value to output
+						*out_p++ = *value_p++;
+					}
+					*out_p = '\0';
+					strcat(out, "/steamapps/common/");
+					strcat(out, name);
+					if (_fsg_dir_exists(out))
+					{
+						fclose(f);
+						return;
+					}
+				}
+				fclose(f);
+			}
+		}
 #endif
-		(void)name;
+
+		out[0] = '\0';
 	}
 
 	_FSG_FUNC
@@ -181,9 +250,9 @@ extern "C"
 	{
 		out[0] = '\0';
 #ifdef _MSC_VER
-		char buf[4096];
+		char buf[_FSG_PATH_MAX];
 		sprintf(buf, "Software\\Wow6432Node\\GOG.com\\Games\\%s", app_id);
-		_query_reg_key(out, HKEY_LOCAL_MACHINE, buf, "Path");
+		_fsg_query_reg_key(out, HKEY_LOCAL_MACHINE, buf, "Path");
 #endif
 		(void)app_id;
 	}
