@@ -226,17 +226,19 @@ void RealPath(const char *src, char *dest)
 		// Default to relative path
 		strcpy(dest, src);
 	}
-	// Convert \'s to /'s (for consistency) and chars to upper
+	// Convert \'s to /'s (for consistency)
 	for (char *c = dest; *c != '\0'; c++)
 	{
 		if (*c == '\\')
 		{
 			*c = '/';
 		}
+#ifdef _WIN32
 		else
 		{
 			*c = (char)toupper(*c);
 		}
+#endif
 	}
 }
 
