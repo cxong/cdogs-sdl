@@ -19,9 +19,11 @@ title: C-Dogs SDL
   <h3>News</h3>
   <ul class="posts">
     {% for post in paginator.posts %}
+    <div class="section">
       <h5><span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title | markdownify | strip_html | trim }}</a></h5>
       {{ post.content }}<br />
       <a href="{{ site.baseurl }}{{ post.url }}#disqus_thread" data-disqus-identifier="post-{{ post.title | handleize | remove: ' ' | remove: '.' | remove: '!' }}">Add a comment</a><br /><br />
+    </div>
     {% endfor %}
   </ul>
 

@@ -182,50 +182,6 @@ p.tagline {
   filter:alpha(opacity=1);
 }
 
-.current-section {
-  position: fixed;
-  top: 0;
-  left: 50%;
-  width: 693px;
-  margin-left: -352px;
-  background: #222;
-  border: 5px solid #444;
-  color: #fff;
-  opacity: 0;
-  visibility: hidden;
-  -webkit-transition: opacity ease-in-out 0.3s;
-}
-
-.current-section p {
-  padding: 5px 27px;
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.current-section a {
-  float: right;
-  text-indent: -10000px;
-  background: transparent url(../images/top.png) no-repeat 0 0;
-  width: 20px;
-  height: 20px;
-  opacity: 0.8;
-  margin-right: 12px;
-  margin-top: 12px;
-  -moz-opacity: 0.8;
-  filter:alpha(opacity=8);
-  -webkit-transition: opacity ease-in-out 0.3s;
-}
-
-.current-section a:hover {
-  opacity: 1;
-  -moz-opacity: 1;
-  filter:alpha(opacity=1);
-}
-
-.current-section a.zip {
-  margin-right: 8px;
-}
-
 a.zip,
 a.zip span {
   background: transparent url(../images/zip.png) no-repeat 0 0;
@@ -291,6 +247,16 @@ a.downloads span {
   -webkit-transition: opacity ease-in-out 0.3s;
 }
 
+a.campaigns,
+a.campaigns span {
+  background: transparent url(../images/link.png) no-repeat 0 0;
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+  text-indent: -10000px;
+  -webkit-transition: opacity ease-in-out 0.3s;
+}
+
 a.gcw0,
 a.gcw0 span {
   background: transparent url(../images/gcwzero.png) no-repeat 0 0;
@@ -324,7 +290,6 @@ a.code:hover {
 a.download-button {
   border: 1px solid black;
   border-radius: 3px;
-  display: inline-block;
   text-indent: 0!important;
   width: auto;
   float: right;
@@ -623,4 +588,8 @@ footer .owner p a {
 
 video {
   max-width: 100%;
+}
+
+.section {
+  background-color: #222;
 }
