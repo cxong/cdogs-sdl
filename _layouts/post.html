@@ -2,12 +2,14 @@
 layout: default
 ---
 <article class="markdown-body">
+  <div class="section">
     <h2>{{ page.title }}</h2>
     <p class="meta">{{ page.date | date_to_string }}</p>
 
     <div class="post">
     {{ content }}
     </div>
+  </div>
 </article>
 <div id="disqus_thread"></div>
 <script type="text/javascript">
