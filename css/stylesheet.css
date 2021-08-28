@@ -182,61 +182,6 @@ p.tagline {
   filter:alpha(opacity=1);
 }
 
-a.zip,
-a.zip span {
-  background: transparent url(../images/zip.png) no-repeat 0 0;
-  width: 30px;
-  height: 21px;
-  display: inline-block;
-  text-indent: -10000px;
-}
-
-a.tar,
-a.tar span {
-  background: transparent url(../images/tar.png) no-repeat 0 0;
-  width: 30px;
-  height: 21px;
-  display: inline-block;
-  text-indent: -10000px;
-}
-
-a.windows,
-a.windows span {
-  background: transparent url(../images/windows.png) no-repeat 0 0;
-  width: 24px;
-  height: 24px;
-  display: inline-block;
-  text-indent: -10000px;
-}
-
-a.osx,
-a.osx span {
-  background: transparent url(../images/osx.png) no-repeat 0 0;
-  width: 24px;
-  height: 24px;
-  display: inline-block;
-  text-indent: -10000px;
-}
-
-a.android,
-a.android span {
-  background: transparent url(../images/android.png) no-repeat 0 0;
-  width: 24px;
-  height: 24px;
-  display: inline-block;
-  text-indent: -10000px;
-}
-
-a.tgz,
-a.tgz span {
-  background: transparent url(../images/tgz.png) no-repeat 0 0;
-  width: 24px;
-  height: 24px;
-  display: inline-block;
-  text-indent: -10000px;
-  -webkit-transition: opacity ease-in-out 0.3s;
-}
-
 a.downloads,
 a.downloads span {
   background: transparent url(../images/download.png) no-repeat 0 0;
@@ -257,15 +202,6 @@ a.campaigns span {
   -webkit-transition: opacity ease-in-out 0.3s;
 }
 
-a.gcw0,
-a.gcw0 span {
-  background: transparent url(../images/gcwzero.png) no-repeat 0 0;
-  width: 24px;
-  height: 24px;
-  display: inline-block;
-  text-indent: -10000px;
-}
-
 a.code {
   background: transparent url(../images/code.png) no-repeat 0 2px;
   width: 30px;
@@ -279,8 +215,6 @@ a.code {
   -webkit-transition: opacity ease-in-out 0.3s;
 }
 
-a.zip:hover,
-a.tar:hover,
 a.code:hover {
   opacity: 1;
   -moz-opacity: 1;

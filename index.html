@@ -17,7 +17,7 @@ title: C-Dogs SDL
 </script>
 <div id="home">
   <h3>News</h3>
-  <ul class="posts">
+  <article class="markdown-body">
     {% for post in paginator.posts %}
     <div class="section">
       <h5><span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title | markdownify | strip_html | trim }}</a></h5>
@@ -25,7 +25,7 @@ title: C-Dogs SDL
       <a href="{{ site.baseurl }}{{ post.url }}#disqus_thread" data-disqus-identifier="post-{{ post.title | handleize | remove: ' ' | remove: '.' | remove: '!' }}">Add a comment</a><br /><br />
     </div>
     {% endfor %}
-  </ul>
+  </article>
 
   <!-- Pagination links -->
   {% if paginator.total_pages > 1 %}
