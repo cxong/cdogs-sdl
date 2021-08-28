@@ -1,0 +1,21 @@
+---
+layout: post
+title:  "C-Dogs 1.0.1 Released, and Campaign Site!"
+date:   2021-08-28
+categories: release
+published: true
+---
+
+We've had an amazing response to the 1.0 release last week! Thanks to all new and returning players for checking out C-Dogs 👏
+
+As a few folks pointed out, attempting to run Wolfenstein from Windows Steam can crash the game. This release fixes that bug, as well as adding support for Linux Steam.
+
+Last but not least, **Zombie** has set up a [website for sharing C-Dogs campaigns, "Campaign Dogs"](http://cdogs.morezombies.net)!
+
+![Campaign Dogs](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/campaign_dogs.jpg)
+
+Here you can download, rate and share custom campaigns, as well as upload high score or speed runs!
+
+**Zombie** runs the [WolfSource / Wolf3D.net community](http://wolf3d.net), a big resource for Wolf3D modding. Please do check it out, especially considering that since C-Dogs SDL supports Wolf3D / Spear of Destiny, it also implicitly supports custom levels made for these games, so who knows ... you might find a whole lot of new content available there!
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/1.0.1>
