@@ -18,4 +18,8 @@ Here you can download, rate and share custom campaigns, as well as upload high s
 
 **Zombie** runs the [WolfSource / Wolf3D.net community](http://wolf3d.net), a big resource for Wolf3D modding. Please do check it out, especially considering that since C-Dogs SDL supports Wolf3D / Spear of Destiny, it also implicitly supports custom levels made for these games, so who knows ... you might find a whole lot of new content available there!
 
+If you want to be kept up to date, you can follow:
+- [@CDogsSDL](https://twitter.com/CDogsSDL) for C-Dogs mapping and modding, and
+- [@wolf3dnews](https://twitter.com/wolf3dnews) for Wolf3D related news
+
 Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/1.0.1>
