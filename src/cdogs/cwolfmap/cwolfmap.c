@@ -141,8 +141,6 @@ bail:
 	return err;
 }
 
-#define GAMEMAPS_MAGIC "TED5v1.0"
-
 static int LoadLevel(CWLevel *level, const unsigned char *data, const int off);
 static int LoadMapData(CWolfMap *map, const char *path)
 {
@@ -163,13 +161,6 @@ static int LoadMapData(CWolfMap *map, const char *path)
 	{
 		err = -1;
 		fprintf(stderr, "Failed to read file");
-		goto bail;
-	}
-	if (strncmp((char *)buf, GAMEMAPS_MAGIC, strlen(GAMEMAPS_MAGIC)) != 0)
-	{
-		err = -1;
-		fprintf(
-			stderr, "Gamemaps does not contain magic string " GAMEMAPS_MAGIC);
 		goto bail;
 	}
 
@@ -208,12 +199,6 @@ static int LoadLevel(CWLevel *level, const unsigned char *data, const int off)
 	int err = 0;
 	unsigned char *buf = NULL;
 	memcpy(&level->header, data + off, sizeof(level->header));
-	if (strncmp(level->header.signature, "!ID!", 4) != 0)
-	{
-		err = -1;
-		fprintf(stderr, "Level does not contain signature");
-		goto bail;
-	}
 
 	const int bufSize =
 		level->header.width * level->header.height * sizeof(uint16_t);

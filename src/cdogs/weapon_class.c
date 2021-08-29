@@ -327,7 +327,7 @@ static void LoadWeaponClass(WeaponClass *wc, json_t *node, const int version)
 
 	if (version < 2)
 	{
-		CASSERT(wc->Type == GUNTYPE_NORMAL, "unexpected gun type");
+		CASSERT(wc->Type != GUNTYPE_MULTI, "unexpected gun type");
 		if (!wc->u.Normal.CanShoot)
 		{
 			wc->Lock = 0;
