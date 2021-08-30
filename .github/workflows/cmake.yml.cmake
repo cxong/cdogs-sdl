@@ -84,7 +84,7 @@ jobs:
         fail_on_unmatched_files: true
 
     - name: Publish to itch.io (Linux)
-      if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && "!github.event.release.prerelease"
+      if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && !github.event.release.prerelease
       env:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       run: |
@@ -95,7 +95,7 @@ jobs:
         ./butler push C-Dogs*SDL-*-Linux.tar.gz congusbongus/cdogs-sdl:linux --userversion $VERSION
 
     - name: Publish to itch.io (macos)
-      if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'macos-latest' && "!github.event.release.prerelease"
+      if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'macos-latest' && !github.event.release.prerelease
       env:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       run: |
