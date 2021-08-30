@@ -364,17 +364,17 @@ static const char *adlibSoundsSOD[] = {
 	NULL, // officer die (digi sound)
 	NULL, // dog attack (digi sound)
 	"flamethrower",
-	NULL,			 // trans alert (digi sound)
-	NULL,			 // trans die (digi sound)
-	NULL,			 // wilhelm alert (digi sound)
-	NULL,			 // wilhelm die (digi sound)
-	NULL,			 // uber die (digi sound)
-	NULL,			 // knight alert (digi sound)
-	NULL,			 // knight die (digi sound)
-	NULL,			 // angel die (digi sound)
+	NULL, // trans alert (digi sound)
+	NULL, // trans die (digi sound)
+	NULL, // wilhelm alert (digi sound)
+	NULL, // wilhelm die (digi sound)
+	NULL, // uber die (digi sound)
+	NULL, // knight alert (digi sound)
+	NULL, // knight die (digi sound)
+	NULL, // angel die (digi sound)
 	"knight_rocket",
-	NULL,			 // spear (digi sound)
-	NULL,			 // angel tired (not used in C-Dogs)
+	NULL, // spear (digi sound)
+	NULL, // angel tired (not used in C-Dogs)
 };
 static const char *GetAdlibSound(const CWMapType type, const int i)
 {
@@ -706,7 +706,10 @@ static void LoadMission(
 	const CWLevel *level = &map->levels[missionIndex];
 	Mission m;
 	MissionInit(&m);
-	CSTRDUP(m.Title, level->header.name);
+	char titleBuf[17];
+	titleBuf[16] = '\0';
+	strncpy(titleBuf, level->header.name, 16);
+	CSTRDUP(m.Title, titleBuf);
 	m.Size = svec2i(level->header.width, level->header.height);
 	m.Type = MAPTYPE_STATIC;
 	strcpy(m.ExitStyle, "plate");
@@ -794,6 +797,17 @@ static void LoadMission(
 }
 
 static int LoadWall(const uint16_t ch);
+static bool IsElevator(const CWLevel *level, const struct vec2i v)
+{
+	if (v.x < 0 || v.x >= level->header.width ||
+		v.y < 0 || v.y >= level->header.height)
+	{
+		return false;
+	}
+	const uint16_t ch = CWLevelGetCh(level, 0, v.x, v.y);
+	const CWWall wall = CWChToWall(ch);
+	return wall == CWWALL_ELEVATOR;
+}
 
 static void LoadTile(
 	MissionStatic *m, const uint16_t ch, const CWolfMap *map,
@@ -829,6 +843,14 @@ static void LoadTile(
 	case CWTILE_AREA:
 		break;
 	case CWTILE_SECRET_EXIT: {
+		// Secret exits need an elevator tile on the left or right
+		const struct vec2i vLeft = svec2i(v.x - 1, v.y);
+		const struct vec2i vRight = svec2i(v.x + 1, v.y);
+		const CWLevel *level = &map->levels[missionIndex];
+		if (!IsElevator(level, vLeft) && !IsElevator(level, vRight))
+		{
+			break;
+		}
 		Exit e;
 		e.Hidden = true;
 		if (map->type == CWMAPTYPE_SOD)
@@ -858,7 +880,6 @@ static void LoadTile(
 	}
 	break;
 	default:
-		CASSERT(false, "unknown tile");
 		break;
 	}
 	CArrayPushBack(&m->Tiles, &staticTile);
@@ -916,9 +937,14 @@ static void TryLoadWallObject(
 	case CWWALL_RED_BRICK_FLAG:
 		moName = "coat_of_arms_flag";
 		break;
-	case CWWALL_ELEVATOR:
-		if (MissionStaticGetTileClass(m, levelSize, vBelow)->Type ==
-			TILE_CLASS_FLOOR)
+	case CWWALL_ELEVATOR: {
+		const TileClass *tcBelow =
+			MissionStaticGetTileClass(m, levelSize, vBelow);
+		if (tcBelow == NULL)
+		{
+			break;
+		}
+		if (tcBelow->Type == TILE_CLASS_FLOOR)
 		{
 			moName = "elevator_interior";
 		}
@@ -976,7 +1002,8 @@ static void TryLoadWallObject(
 				MissionStaticTryAddExit(m, &e);
 			}
 		}
-		break;
+	}
+	break;
 	case CWWALL_DEAD_ELEVATOR:
 		if (MissionStaticGetTileClass(
 				m, svec2i(level->header.width, level->header.height), vBelow)
@@ -1507,7 +1534,6 @@ static void LoadEntity(
 			m, v, DIRECTION_DOWN, (int)CHAR_PACMAN_GHOST_BLUE, bossObjIdx);
 		break;
 	default:
-		CASSERT(false, "unknown entity");
 		break;
 	}
 }
