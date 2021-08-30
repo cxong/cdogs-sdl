@@ -889,6 +889,10 @@ static void LoadTile(
 static int LoadWall(const uint16_t ch)
 {
 	const CWWall wall = CWChToWall(ch);
+	if (wall == CWWALL_UNKNOWN)
+	{
+		return 0;
+	}
 	return (int)wall + 3;
 }
 
