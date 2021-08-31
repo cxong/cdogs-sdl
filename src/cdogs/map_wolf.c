@@ -416,6 +416,24 @@ bail:
 	return NULL;
 }
 
+static void AdjustCampaignTitle(const char *filename, char **title)
+{
+	char buf[CDOGS_PATH_MAX];
+	RealPath(filename, buf);
+	// Add folder name to campaign if this is a custom map
+	if (strchr(buf, '/') != NULL && !StrEndsWith(buf, "WOLFENSTEIN 3D") &&
+		!StrEndsWith(buf, "SPEAR OF DESTINY/M1") &&
+		!StrEndsWith(buf, "WOLFENSTEIN 3D/BASE") &&
+		!StrEndsWith(buf, "SPEAR OF DESTINY/BASE"))
+	{
+		const char *basename = strrchr(buf, '/') + 1;
+		char titleBuf[CDOGS_PATH_MAX];
+		sprintf(titleBuf, "%s (%s)", *title, basename);
+		CFREE(*title);
+		CSTRDUP(*title, titleBuf);
+	}
+}
+
 int MapWolfScan(const char *filename, char **title, int *numMissions)
 {
 	int err = 0;
@@ -432,6 +450,7 @@ int MapWolfScan(const char *filename, char **title, int *numMissions)
 	{
 		goto bail;
 	}
+	AdjustCampaignTitle(filename, title);
 	if (numMissions)
 	{
 		*numMissions = map.nLevels;
@@ -530,6 +549,7 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 	{
 		goto bail;
 	}
+	AdjustCampaignTitle(filename, &c->Title);
 
 	CharacterStoreCopy(&c->characters, &cs, &gPlayerTemplates.CustomClasses);
 
@@ -799,8 +819,8 @@ static void LoadMission(
 static int LoadWall(const uint16_t ch);
 static bool IsElevator(const CWLevel *level, const struct vec2i v)
 {
-	if (v.x < 0 || v.x >= level->header.width ||
-		v.y < 0 || v.y >= level->header.height)
+	if (v.x < 0 || v.x >= level->header.width || v.y < 0 ||
+		v.y >= level->header.height)
 	{
 		return false;
 	}
