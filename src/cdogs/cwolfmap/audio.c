@@ -177,7 +177,7 @@ int CWAudioLoadAudioT(CWAudio *audio, const CWMapType type, const char *path)
 		CWAudioSODLoadAudioT(audio);
 		break;
 	default:
-		CASSERT(false, "unknown map type");
+		fprintf(stderr, "Unknown map type\n");
 		err = -1;
 		goto bail;
 	}
