@@ -63,6 +63,7 @@
 #include <cdogs/files.h>
 #include <cdogs/font_utils.h>
 #include <cdogs/log.h>
+#include <cdogs/map_wolf.h>
 #include <cdogs/player_template.h>
 
 #include <tinydir/tinydir.h>
@@ -1292,6 +1293,7 @@ int main(int argc, char *argv[])
 	MapObjectsInit(
 		&gMapObjects, "data/map_objects.json", &gAmmo, &gWeaponClasses);
 	CollisionSystemInit(&gCollisionSystem);
+	MapWolfInit();
 	CampaignInit(&gCampaign);
 	MissionInit(&lastMission);
 	MissionInit(&currentMission);
@@ -1341,6 +1343,7 @@ int main(int argc, char *argv[])
 	WeaponClassesTerminate(&gWeaponClasses);
 	BulletTerminate(&gBulletClasses);
 	CharacterClassesTerminate(&gCharacterClasses);
+	MapWolfTerminate();
 	CampaignTerminate(&gCampaign);
 	MissionTerminate(&lastMission);
 	MissionTerminate(&currentMission);

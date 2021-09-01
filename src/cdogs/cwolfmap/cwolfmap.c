@@ -23,79 +23,76 @@
 
 #define PATH_MAX 4096
 
-// Just check for presence of MAPHEAD
-bool CWIsMap(const char *path)
+CWMapType CWGetType(const char *path, const char **ext, const char **ext1)
 {
 	char pathBuf[PATH_MAX];
 	sprintf(pathBuf, "%s/MAPHEAD.WL1", path);
 	if (access(pathBuf, F_OK) != -1)
 	{
-		return true;
+		if (ext && ext1)
+			*ext = *ext1 = "WL1";
+		return CWMAPTYPE_WL1;
 	}
 	sprintf(pathBuf, "%s/MAPHEAD.WL6", path);
 	if (access(pathBuf, F_OK) != -1)
 	{
-		return true;
+		if (ext && ext1)
+			*ext = *ext1 = "WL6";
+		return CWMAPTYPE_WL6;
 	}
 	sprintf(pathBuf, "%s/MAPHEAD.SD1", path);
 	if (access(pathBuf, F_OK) != -1)
 	{
-		return true;
-	}
-	sprintf(pathBuf, "%s/MAPHEAD.SOD", path);
-	if (access(pathBuf, F_OK) != -1)
-	{
-		return true;
-	}
-	return false;
-}
-
-static int LoadMapHead(CWolfMap *map, const char *path);
-static int LoadMapData(CWolfMap *map, const char *path);
-int CWLoad(CWolfMap *map, const char *path)
-{
-	memset(map, 0, sizeof *map);
-	char pathBuf[PATH_MAX];
-	int err;
-
-	const char *ext = "WL1";
-	const char *ext1 = "WL1";
-	map->type = CWMAPTYPE_WL1;
-	sprintf(pathBuf, "%s/MAPHEAD.WL6", path);
-	if (access(pathBuf, F_OK) != -1)
-	{
-		ext = ext1 = "WL6";
-		map->type = CWMAPTYPE_WL6;
-	}
-	sprintf(pathBuf, "%s/MAPHEAD.SD1", path);
-	if (access(pathBuf, F_OK) != -1)
-	{
-		// Steam keeps common files as .SOD extension,
-		// but original SoD as .SD1 extension
-		ext = "SD1";
-		ext1 = "SOD";
-		map->type = CWMAPTYPE_SOD;
+		if (ext && ext1)
+		{
+			// Steam keeps common files as .SOD extension,
+			// but original SoD as .SD1 extension
+			*ext = "SD1";
+			*ext1 = "SOD";
+		}
+		return CWMAPTYPE_SOD;
 	}
 	else
 	{
 		sprintf(pathBuf, "%s/MAPHEAD.SOD", path);
 		if (access(pathBuf, F_OK) != -1)
 		{
-			ext = ext1 = "SOD";
-			map->type = CWMAPTYPE_SOD;
+			if (ext && ext1)
+				*ext = *ext1 = "SOD";
+			return CWMAPTYPE_SOD;
 		}
+	}
+	return CWMAPTYPE_UNKNOWN;
+}
+
+static int LoadMapHead(CWolfMap *map, const char *path);
+static int LoadMapData(CWolfMap *map, const char *path);
+int CWLoad(CWolfMap *map, const char *path)
+{
+	char pathBuf[PATH_MAX];
+	int err = 0;
+	int loadErr = 0;
+
+	const char *ext = "WL1";
+	const char *ext1 = "WL1";
+	map->type = CWGetType(path, &ext, &ext1);
+	if (map->type == CWMAPTYPE_UNKNOWN)
+	{
+		err = -1;
+		fprintf(stderr, "Cannot find map at %s\n", path);
+		goto bail;
 	}
 
 #define _TRY_LOAD(_fn, _loadFunc, ...)                                        \
 	sprintf(pathBuf, "%s/" _fn ".%s", path, ext);                             \
-	err = _loadFunc(__VA_ARGS__);                                             \
-	if (err != 0)                                                             \
+	loadErr = _loadFunc(__VA_ARGS__);                                         \
+	if (loadErr != 0)                                                         \
 	{                                                                         \
 		sprintf(pathBuf, "%s/" _fn ".%s", path, ext1);                        \
-		err = _loadFunc(__VA_ARGS__);                                         \
-		if (err != 0)                                                         \
+		loadErr = _loadFunc(__VA_ARGS__);                                     \
+		if (loadErr != 0)                                                     \
 		{                                                                     \
-			goto bail;                                                        \
+			err = loadErr;                                                    \
 		}                                                                     \
 	}
 	_TRY_LOAD("MAPHEAD", LoadMapHead, map, pathBuf);
@@ -119,7 +116,7 @@ static int LoadMapHead(CWolfMap *map, const char *path)
 	if (!f)
 	{
 		err = -1;
-		fprintf(stderr, "Failed to read %s", path);
+		fprintf(stderr, "Failed to read %s\n", path);
 		goto bail;
 	}
 	const size_t size = sizeof map->mapHead;
@@ -129,7 +126,7 @@ static int LoadMapHead(CWolfMap *map, const char *path)
 	if (map->mapHead.magic != MAGIC)
 	{
 		err = -1;
-		fprintf(stderr, "Unpexpected magic value: %x", map->mapHead.magic);
+		fprintf(stderr, "Unexpected magic value: %x\n", map->mapHead.magic);
 		goto bail;
 	}
 
@@ -141,6 +138,8 @@ bail:
 	return err;
 }
 
+static void LevelsFree(CWolfMap *map);
+
 static int LoadLevel(CWLevel *level, const unsigned char *data, const int off);
 static int LoadMapData(CWolfMap *map, const char *path)
 {
@@ -150,7 +149,7 @@ static int LoadMapData(CWolfMap *map, const char *path)
 	if (!f)
 	{
 		err = -1;
-		fprintf(stderr, "Failed to read %s", path);
+		fprintf(stderr, "Failed to read %s\n", path);
 		goto bail;
 	}
 	fseek(f, 0, SEEK_END);
@@ -160,9 +159,11 @@ static int LoadMapData(CWolfMap *map, const char *path)
 	if (fread(buf, 1, fsize, f) != (size_t)fsize)
 	{
 		err = -1;
-		fprintf(stderr, "Failed to read file");
+		fprintf(stderr, "Failed to read file\n");
 		goto bail;
 	}
+
+	LevelsFree(map);
 
 	for (const int32_t *ptr = &map->mapHead.ptr[0]; *ptr > 0; ptr++)
 	{
@@ -237,17 +238,53 @@ bail:
 	return err;
 }
 
-static void LevelFree(CWLevel *level);
+void CWCopy(CWolfMap *dst, const CWolfMap *src)
+{
+	memcpy(dst, src, sizeof *dst);
+	const size_t levelsSize = sizeof(CWLevel) * dst->nLevels;
+	dst->levels = malloc(levelsSize);
+	memcpy(dst->levels, src->levels, levelsSize);
+	for (int i = 0; i < dst->nLevels; i++)
+	{
+		for (int j = 0; j < NUM_PLANES; j++)
+		{
+			const int len = dst->levels[i].planes[j].len;
+			dst->levels[i].planes[j].plane = malloc(len);
+			memcpy(
+				dst->levels[i].planes[j].plane, src->levels[i].planes[j].plane,
+				len);
+		}
+	}
+	const size_t audioHeadLen = dst->audio.head.nOffsets * sizeof(uint32_t);
+	dst->audio.head.offsets = malloc(audioHeadLen);
+	memcpy(dst->audio.head.offsets, src->audio.head.offsets, audioHeadLen);
+	const uint32_t audioDataLen =
+		dst->audio.head.offsets[dst->audio.head.nOffsets - 1];
+	dst->audio.data = malloc(audioDataLen);
+	memcpy(dst->audio.data, src->audio.data, audioDataLen);
+	dst->vswap.data = malloc(dst->vswap.dataLen);
+	memcpy(dst->vswap.data, src->vswap.data, dst->vswap.dataLen);
+	const size_t vswapSoundsLen = dst->vswap.nSounds * sizeof(CWVSwapSound);
+	dst->vswap.sounds = malloc(vswapSoundsLen);
+	memcpy(dst->vswap.sounds, src->vswap.sounds, vswapSoundsLen);
+}
+
 void CWFree(CWolfMap *map)
+{
+	LevelsFree(map);
+	CWAudioFree(&map->audio);
+	CWVSwapFree(&map->vswap);
+	memset(map, 0, sizeof *map);
+}
+static void LevelFree(CWLevel *level);
+static void LevelsFree(CWolfMap *map)
 {
 	for (int i = 0; i < map->nLevels; i++)
 	{
 		LevelFree(&map->levels[i]);
 	}
 	free(map->levels);
-	CWAudioFree(&map->audio);
-	CWVSwapFree(&map->vswap);
-	memset(map, 0, sizeof *map);
+	map->nLevels = 0;
 }
 static void LevelFree(CWLevel *level)
 {

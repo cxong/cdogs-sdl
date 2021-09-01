@@ -83,6 +83,21 @@ static void AlSetChanInst(const AlInstrument *inst, unsigned int chan)
 	alOut(chan + alFeedCon, 0);
 }
 
+bool CWAudioInit(void)
+{
+	// Init adlib
+	if (YM3812Init(1, 3579545, MUSIC_SAMPLE_RATE))
+	{
+		fprintf(stderr, "Unable to create virtual OPL\n");
+		return false;
+	}
+	return true;
+}
+void CWAudioTerminate(void)
+{
+	YM3812Shutdown();
+}
+
 int CWAudioLoadHead(CWAudioHead *head, const char *path)
 {
 	int err = 0;
@@ -90,9 +105,12 @@ int CWAudioLoadHead(CWAudioHead *head, const char *path)
 	if (!f)
 	{
 		err = -1;
-		fprintf(stderr, "Failed to read %s", path);
+		fprintf(stderr, "Failed to read %s\n", path);
 		goto bail;
 	}
+
+	CWAudioHeadFree(head);
+
 	fseek(f, 0, SEEK_END);
 	const long fsize = ftell(f);
 	fseek(f, 0, SEEK_SET);
@@ -106,12 +124,6 @@ int CWAudioLoadHead(CWAudioHead *head, const char *path)
 		goto bail;
 	}
 
-	// Init adlib
-	if (YM3812Init(1, 3579545, MUSIC_SAMPLE_RATE))
-	{
-		fprintf(stderr, "Unable to create virtual OPL\n");
-		goto bail;
-	}
 	for (int i = 1; i < 0xf6; i++)
 	{
 		YM3812Write(oplChip, i, 0, &volume);
@@ -129,6 +141,7 @@ bail:
 void CWAudioHeadFree(CWAudioHead *head)
 {
 	free(head->offsets);
+	head->nOffsets = 0;
 }
 
 int CWAudioLoadAudioT(CWAudio *audio, const CWMapType type, const char *path)
@@ -138,15 +151,18 @@ int CWAudioLoadAudioT(CWAudio *audio, const CWMapType type, const char *path)
 	if (!f)
 	{
 		err = -1;
-		fprintf(stderr, "Failed to read %s", path);
+		fprintf(stderr, "Failed to read %s\n", path);
 		goto bail;
 	}
+
+	free(audio->data);
+
 	const uint32_t len = audio->head.offsets[audio->head.nOffsets - 1];
 	audio->data = malloc(len);
 	if (fread(audio->data, 1, len, f) != len)
 	{
 		err = -1;
-		fprintf(stderr, "Failed to read audio data");
+		fprintf(stderr, "Failed to read audio data\n");
 		goto bail;
 	}
 	switch (type)
@@ -173,7 +189,6 @@ bail:
 void CWAudioFree(CWAudio *audio)
 {
 	CWAudioHeadFree(&audio->head);
-	YM3812Shutdown();
 	free(audio->data);
 }
 

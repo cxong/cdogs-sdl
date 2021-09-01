@@ -26,6 +26,7 @@ typedef struct
 	uint32_t *chunkOffset;
 	uint16_t *chunkLength;
 	char *data;
+	size_t dataLen;
 	CWVSwapSound *sounds;
 	int nSounds;
 } CWVSwap;

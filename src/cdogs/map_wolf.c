@@ -36,12 +36,33 @@
 #include "map_archive.h"
 #include "player_template.h"
 
+CWolfMap *defaultWolfMap = NULL;
+CWolfMap *defaultSpearMap = NULL;
+
 #define WOLF_STEAM_NAME "Wolfenstein 3D"
 #define SPEAR_STEAM_NAME "Spear of Destiny"
 #define WOLF_GOG_ID "1441705046"
 #define SPEAR_GOG_ID "1441705126"
 
 #define TILE_CLASS_WALL_OFFSET 62
+
+void MapWolfInit(void)
+{
+	defaultWolfMap = NULL;
+	defaultSpearMap = NULL;
+	if (!CWAudioInit())
+	{
+		CASSERT(false, "failed to init wolf audio!");
+	}
+}
+void MapWolfTerminate(void)
+{
+	CWFree(defaultWolfMap);
+	defaultWolfMap = NULL;
+	CWFree(defaultSpearMap);
+	defaultSpearMap = NULL;
+	CWAudioTerminate();
+}
 
 static void GetCampaignPath(const CWMapType type, char *buf)
 {
@@ -416,16 +437,30 @@ bail:
 	return NULL;
 }
 
-static void AdjustCampaignTitle(const char *filename, char **title)
+static bool IsDefaultMap(const char *filename)
 {
 	char buf[CDOGS_PATH_MAX];
 	RealPath(filename, buf);
+	return strchr(buf, '/') != NULL &&
+		   (
+			   // GOG Windows
+			   StrEndsWith(buf, "WOLFENSTEIN 3D") ||
+			   StrEndsWith(buf, "SPEAR OF DESTINY/M1") ||
+			   // Steam Windows
+			   StrEndsWith(buf, "WOLFENSTEIN 3D/BASE") ||
+			   StrEndsWith(buf, "SPEAR OF DESTINY/BASE") ||
+			   // Steam Linux
+			   StrEndsWith(buf, "Wolfenstein 3D/base") ||
+			   StrEndsWith(buf, "Spear of Destiny/base"));
+}
+
+static void AdjustCampaignTitle(const char *filename, char **title)
+{
 	// Add folder name to campaign if this is a custom map
-	if (strchr(buf, '/') != NULL && !StrEndsWith(buf, "WOLFENSTEIN 3D") &&
-		!StrEndsWith(buf, "SPEAR OF DESTINY/M1") &&
-		!StrEndsWith(buf, "WOLFENSTEIN 3D/BASE") &&
-		!StrEndsWith(buf, "SPEAR OF DESTINY/BASE"))
+	if (!IsDefaultMap(filename) && title)
 	{
+		char buf[CDOGS_PATH_MAX];
+		RealPath(filename, buf);
 		const char *basename = strrchr(buf, '/') + 1;
 		char titleBuf[CDOGS_PATH_MAX];
 		sprintf(titleBuf, "%s (%s)", *title, basename);
@@ -434,12 +469,45 @@ static void AdjustCampaignTitle(const char *filename, char **title)
 	}
 }
 
+static bool LoadDefault(CWolfMap *map, const char *filename)
+{
+	memset(map, 0, sizeof *map);
+	map->type = CWGetType(filename, NULL, NULL);
+	switch (map->type)
+	{
+	case CWMAPTYPE_WL6:
+		if (defaultWolfMap != NULL)
+		{
+			CWCopy(map, defaultWolfMap);
+			return true;
+		}
+		break;
+	case CWMAPTYPE_SOD:
+		if (defaultSpearMap != NULL)
+		{
+			CWCopy(map, defaultSpearMap);
+			return true;
+		}
+		break;
+	default:
+		break;
+	}
+	return false;
+}
+
 int MapWolfScan(const char *filename, char **title, int *numMissions)
 {
 	int err = 0;
+	bool usedAsDefault = false;
 	CWolfMap map;
+	memset(&map, 0, sizeof map);
+	const bool loadedFromDefault = LoadDefault(&map, filename);
 	err = CWLoad(&map, filename);
-	if (err != 0)
+	if (loadedFromDefault)
+	{
+		err = 0;
+	}
+	else if (err != 0)
 	{
 		goto bail;
 	}
@@ -457,7 +525,38 @@ int MapWolfScan(const char *filename, char **title, int *numMissions)
 	}
 
 bail:
-	CWFree(&map);
+	if (err == 0 && IsDefaultMap(filename))
+	{
+		switch (map.type)
+		{
+		case CWMAPTYPE_WL6:
+			if (defaultWolfMap == NULL)
+			{
+				LOG(LM_MAP, LL_INFO, "Using %s as default wolf map\n",
+					filename);
+				CMALLOC(defaultWolfMap, sizeof map);
+				memcpy(defaultWolfMap, &map, sizeof map);
+				usedAsDefault = true;
+			}
+			break;
+		case CWMAPTYPE_SOD:
+			if (defaultSpearMap == NULL)
+			{
+				LOG(LM_MAP, LL_INFO, "Using %s as default spear map\n",
+					filename);
+				CMALLOC(defaultSpearMap, sizeof map);
+				memcpy(defaultSpearMap, &map, sizeof map);
+				usedAsDefault = true;
+			}
+			break;
+		default:
+			break;
+		}
+	}
+	if (!usedAsDefault)
+	{
+		CWFree(&map);
+	}
 	return err;
 }
 
@@ -484,8 +583,16 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 	c->CustomData = map;
 	c->CustomDataTerminate = (void (*)(void *))CWFree;
 	map_t tileClasses = NULL;
+	CharacterStore cs;
+	memset(&cs, 0, sizeof cs);
+
+	const bool loadedFromDefault = LoadDefault(map, filename);
 	err = CWLoad(map, filename);
-	if (err != 0)
+	if (loadedFromDefault)
+	{
+		err = 0;
+	}
+	else if (err != 0)
 	{
 		goto bail;
 	}
@@ -514,8 +621,6 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 	}
 	Mission *m = CArrayGet(&cCommon.Missions, 0);
 	tileClasses = hashmap_copy(m->u.Static.TileClasses, TileClassCopyHashMap);
-	CharacterStore cs;
-	memset(&cs, 0, sizeof cs);
 	CharacterStoreCopy(
 		&cs, &cCommon.characters, &gPlayerTemplates.CustomClasses);
 	CampaignSettingTerminate(&cCommon);
@@ -559,6 +664,10 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 	}
 
 bail:
+	if (err != 0)
+	{
+		CWFree(map);
+	}
 	hashmap_destroy(tileClasses, TileClassDestroy);
 	CharacterStoreTerminate(&cs);
 	return err;

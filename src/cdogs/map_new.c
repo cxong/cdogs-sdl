@@ -56,7 +56,7 @@ int MapNewScan(const char *filename, char **title, int *numMissions)
 	{
 		return ScanCampaignOld(filename, title, numMissions);
 	}
-	if (CWIsMap(filename))
+	if (CWGetType(filename, NULL, NULL) != CWMAPTYPE_UNKNOWN)
 	{
 		return MapWolfScan(filename, title, numMissions);
 	}
@@ -145,7 +145,7 @@ int MapNewLoad(const char *filename, CampaignSetting *c)
 		return MapNewLoadArchive(filename, c);
 	}
 
-	if (CWIsMap(filename))
+	if (CWGetType(filename, NULL, NULL) != CWMAPTYPE_UNKNOWN)
 	{
 		return MapWolfLoad(filename, c);
 	}

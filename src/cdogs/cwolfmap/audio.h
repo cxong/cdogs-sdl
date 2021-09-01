@@ -1,4 +1,5 @@
 #pragma once
+#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -9,6 +10,9 @@
 #define MUSIC_SAMPLE_RATE 44100
 #define MUSIC_AUDIO_FMT AUDIO_S16
 #define MUSIC_AUDIO_CHANNELS 2
+
+bool CWAudioInit(void);
+void CWAudioTerminate(void);
 
 int CWAudioLoadHead(CWAudioHead *head, const char *path);
 void CWAudioHeadFree(CWAudioHead *head);

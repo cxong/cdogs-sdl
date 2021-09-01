@@ -16,17 +16,20 @@ int CWVSwapLoad(CWVSwap *vswap, const char *path)
 	if (!f)
 	{
 		err = -1;
-		fprintf(stderr, "Failed to read %s", path);
+		fprintf(stderr, "Failed to read %s\n", path);
 		goto bail;
 	}
+
+	CWVSwapFree(vswap);
+
 	fseek(f, 0, SEEK_END);
-	const long fsize = ftell(f);
+	vswap->dataLen = (size_t)ftell(f);
 	fseek(f, 0, SEEK_SET);
-	vswap->data = malloc(fsize);
-	if (fread(vswap->data, 1, fsize, f) != (size_t)fsize)
+	vswap->data = malloc(vswap->dataLen);
+	if (fread(vswap->data, 1, vswap->dataLen, f) != vswap->dataLen)
 	{
 		err = -1;
-		fprintf(stderr, "Failed to read chunk data");
+		fprintf(stderr, "Failed to read chunk data\n");
 		goto bail;
 	}
 	memcpy(&vswap->head, vswap->data, sizeof vswap->head);
@@ -71,6 +74,7 @@ void CWVSwapFree(CWVSwap *vswap)
 {
 	free(vswap->data);
 	free(vswap->sounds);
+	vswap->nSounds = 0;
 }
 
 int CWVSwapGetNumSounds(const CWVSwap *vswap)

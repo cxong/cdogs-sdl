@@ -116,18 +116,20 @@ static void LoadQuickPlayEntry(CampaignEntry *entry);
 
 void LoadAllCampaigns(CustomCampaigns *campaigns)
 {
+	MapWolfInit();
+
 	char buf[CDOGS_PATH_MAX];
 
 	CampaignListInit(&campaigns->campaignList);
 	CampaignListInit(&campaigns->dogfightList);
 
+	LOG(LM_MAIN, LL_INFO, "Load campaigns from system...");
+	MapWolfLoadCampaignsFromSystem(&campaigns->campaignList);
+
 	GetDataFilePath(buf, CDOGS_CAMPAIGN_DIR);
 	LOG(LM_MAIN, LL_INFO, "Load campaigns from dir %s...", buf);
 	LoadCampaignsFromFolder(
 		&campaigns->campaignList, "", buf, GAME_MODE_NORMAL);
-
-	LOG(LM_MAIN, LL_INFO, "Load campaigns from system...");
-	MapWolfLoadCampaignsFromSystem(&campaigns->campaignList);
 
 	GetDataFilePath(buf, CDOGS_DOGFIGHT_DIR);
 	LOG(LM_MAIN, LL_INFO, "Load dogfights from dir %s...", buf);
@@ -140,6 +142,7 @@ void LoadAllCampaigns(CustomCampaigns *campaigns)
 
 void UnloadAllCampaigns(CustomCampaigns *campaigns)
 {
+	MapWolfTerminate();
 	if (campaigns)
 	{
 		CampaignListTerminate(&campaigns->campaignList);

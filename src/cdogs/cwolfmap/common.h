@@ -7,6 +7,7 @@ typedef enum
 	CWMAPTYPE_WL1,
 	CWMAPTYPE_WL6,
 	CWMAPTYPE_SOD,
+	CWMAPTYPE_UNKNOWN,
 } CWMapType;
 
 typedef struct
