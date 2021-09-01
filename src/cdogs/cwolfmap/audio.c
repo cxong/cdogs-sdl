@@ -176,6 +176,10 @@ int CWAudioLoadAudioT(CWAudio *audio, const CWMapType type, const char *path)
 	case CWMAPTYPE_SOD:
 		CWAudioSODLoadAudioT(audio);
 		break;
+	default:
+		CASSERT(false, "unknown map type");
+		err = -1;
+		goto bail;
 	}
 
 bail:
@@ -394,8 +398,9 @@ int CWAudioGetLevelMusic(const CWMapType type, const int level)
 		return CWAudioWL6GetLevelMusic(level);
 	case CWMAPTYPE_SOD:
 		return CWAudioSODGetLevelMusic(level);
+	default:
+		return -1;
 	}
-	return -1;
 }
 
 int CWAudioGetSong(const CWMapType type, const CWSongType song)
@@ -407,6 +412,7 @@ int CWAudioGetSong(const CWMapType type, const CWSongType song)
 		return CWAudioWL6GetSong(song);
 	case CWMAPTYPE_SOD:
 		return CWAudioSODGetSong(song);
+	default:
+		return -1;
 	}
-	return -1;
 }
