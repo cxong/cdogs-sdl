@@ -271,6 +271,10 @@ void CWCopy(CWolfMap *dst, const CWolfMap *src)
 
 void CWFree(CWolfMap *map)
 {
+	if (map == NULL)
+	{
+		return;
+	}
 	LevelsFree(map);
 	CWAudioFree(&map->audio);
 	CWVSwapFree(&map->vswap);

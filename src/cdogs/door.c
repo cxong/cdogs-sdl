@@ -164,10 +164,13 @@ struct vec2i MapAddDoorGroup(MapBuilder *mb, const struct vec2i v, const int key
 			}
 			if (TileCanWalk(tileB))
 			{
-				// Change the tile below to shadow, cast by this door
-				tileB->Class = TileClassesGetMaskedTile(
-					tileB->Class, tileB->Class->Style, "shadow",
-					tileB->Class->Mask, tileB->Class->MaskAlt);
+				if (tileB->Class->Type == TILE_CLASS_FLOOR)
+				{
+					// Change the tile below to shadow, cast by this door
+					tileB->Class = TileClassesGetMaskedTile(
+						tileB->Class, tileB->Class->Style, "shadow",
+						tileB->Class->Mask, tileB->Class->MaskAlt);
+				}
 			}
 			else
 			{
