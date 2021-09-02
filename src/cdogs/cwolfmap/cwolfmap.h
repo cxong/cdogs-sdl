@@ -37,6 +37,7 @@ typedef struct
 {
 	CWLevelHead header;
 	CWPlane planes[NUM_PLANES];
+	bool hasPlayerSpawn;
 } CWLevel;
 
 typedef struct

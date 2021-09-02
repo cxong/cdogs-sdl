@@ -521,7 +521,16 @@ int MapWolfScan(const char *filename, char **title, int *numMissions)
 	AdjustCampaignTitle(filename, title);
 	if (numMissions)
 	{
-		*numMissions = map.nLevels;
+		// Count the number of valid levels
+		*numMissions = 0;
+		for (int i = 0; i < map.nLevels; i++)
+		{
+			const CWLevel *level = &map.levels[i];
+			if (level->hasPlayerSpawn)
+			{
+				(*numMissions)++;
+			}
+		}
 	}
 
 bail:
@@ -835,92 +844,98 @@ static void LoadMission(
 	const CWLevel *level = &map->levels[missionIndex];
 	Mission m;
 	MissionInit(&m);
-	char titleBuf[17];
-	titleBuf[16] = '\0';
-	strncpy(titleBuf, level->header.name, 16);
-	CSTRDUP(m.Title, titleBuf);
-	m.Size = svec2i(level->header.width, level->header.height);
-	m.Type = MAPTYPE_STATIC;
-	strcpy(m.ExitStyle, "plate");
-	strcpy(m.KeyStyle, "plain2");
 
-	// TODO: objectives for treasure, kills (multiple items per obj)
-	int bossObjIdx = -1;
-	int spearObjIdx = -1;
-
-	const WeaponClass *wc = StrWeaponClass("Pistol");
-	CArrayPushBack(&m.Weapons, &wc);
-	wc = StrWeaponClass("Knife");
-	CArrayPushBack(&m.Weapons, &wc);
-	// Reset weapons at start of episodes
-	if (map->type != CWMAPTYPE_SOD)
+	// If level has no player spawn it is a blank level, don't bother loading
+	if (level->hasPlayerSpawn)
 	{
-		m.WeaponPersist = (missionIndex % 10) != 0;
-	}
-	else
-	{
-		m.WeaponPersist = true;
-	}
+		char titleBuf[17];
+		titleBuf[16] = '\0';
+		strncpy(titleBuf, level->header.name, 16);
+		CSTRDUP(m.Title, titleBuf);
+		m.Size = svec2i(level->header.width, level->header.height);
+		m.Type = MAPTYPE_STATIC;
+		strcpy(m.ExitStyle, "plate");
+		strcpy(m.KeyStyle, "plain2");
 
-	m.Music.Type = MUSIC_SRC_CHUNK;
-	MissionSongData *msd;
-	CMALLOC(msd, sizeof *msd);
-	msd->Map = map;
-	msd->MissionIndex = missionIndex;
-	m.Music.Data.Chunk.Data = msd;
-	m.Music.Data.Chunk.GetData = GetMissionSong;
-	m.Music.Data.Chunk.Chunk = NULL;
+		// TODO: objectives for treasure, kills (multiple items per obj)
+		int bossObjIdx = -1;
+		int spearObjIdx = -1;
 
-	MissionStaticInit(&m.u.Static);
-
-	m.u.Static.TileClasses = hashmap_copy(tileClasses, TileClassCopyHashMap);
-
-	RECT_FOREACH(Rect2iNew(svec2i_zero(), m.Size))
-	const uint16_t ch = CWLevelGetCh(level, 0, _v.x, _v.y);
-	LoadTile(&m.u.Static, ch, map, _v, missionIndex);
-	RECT_FOREACH_END()
-	// Load objects after all tiles are loaded
-	RECT_FOREACH(Rect2iNew(svec2i_zero(), m.Size))
-	const uint16_t ch = CWLevelGetCh(level, 0, _v.x, _v.y);
-	TryLoadWallObject(&m.u.Static, ch, map, _v, missionIndex);
-	const uint16_t ech = CWLevelGetCh(level, 1, _v.x, _v.y);
-	LoadEntity(&m, ech, map, _v, missionIndex, &bossObjIdx, &spearObjIdx);
-	RECT_FOREACH_END()
-
-	if (m.u.Static.Exits.size == 0)
-	{
-		// This is a boss level where killing the boss ends the level
-		// Make sure to skip over the secret level
-		Exit e;
-		e.Hidden = true;
-		if (map->type == CWMAPTYPE_SOD)
+		const WeaponClass *wc = StrWeaponClass("Pistol");
+		CArrayPushBack(&m.Weapons, &wc);
+		wc = StrWeaponClass("Knife");
+		CArrayPushBack(&m.Weapons, &wc);
+		// Reset weapons at start of episodes
+		if (map->type != CWMAPTYPE_SOD)
 		{
-			if (missionIndex == 17)
-			{
-				// Skip over the two secret levels
-				e.Mission = missionIndex + 3;
-			}
-			else
-			{
-				e.Mission = missionIndex + 1;
-			}
+			m.WeaponPersist = (missionIndex % 10) != 0;
 		}
 		else
 		{
-			// Skip over the secret level to the next episode
-			e.Mission = missionIndex + 2;
+			m.WeaponPersist = true;
 		}
-		e.R.Pos = svec2i_zero();
-		e.R.Size = m.Size;
-		CArrayPushBack(&m.u.Static.Exits, &e);
-	}
-	if (map->type == CWMAPTYPE_SOD && missionIndex == 17)
-	{
-		// Skip debrief and cut directly to angel boss level
-		m.SkipDebrief = true;
-	}
 
-	m.u.Static.AltFloorsEnabled = false;
+		m.Music.Type = MUSIC_SRC_CHUNK;
+		MissionSongData *msd;
+		CMALLOC(msd, sizeof *msd);
+		msd->Map = map;
+		msd->MissionIndex = missionIndex;
+		m.Music.Data.Chunk.Data = msd;
+		m.Music.Data.Chunk.GetData = GetMissionSong;
+		m.Music.Data.Chunk.Chunk = NULL;
+
+		MissionStaticInit(&m.u.Static);
+
+		m.u.Static.TileClasses =
+			hashmap_copy(tileClasses, TileClassCopyHashMap);
+
+		RECT_FOREACH(Rect2iNew(svec2i_zero(), m.Size))
+		const uint16_t ch = CWLevelGetCh(level, 0, _v.x, _v.y);
+		LoadTile(&m.u.Static, ch, map, _v, missionIndex);
+		RECT_FOREACH_END()
+		// Load objects after all tiles are loaded
+		RECT_FOREACH(Rect2iNew(svec2i_zero(), m.Size))
+		const uint16_t ch = CWLevelGetCh(level, 0, _v.x, _v.y);
+		TryLoadWallObject(&m.u.Static, ch, map, _v, missionIndex);
+		const uint16_t ech = CWLevelGetCh(level, 1, _v.x, _v.y);
+		LoadEntity(&m, ech, map, _v, missionIndex, &bossObjIdx, &spearObjIdx);
+		RECT_FOREACH_END()
+
+		if (m.u.Static.Exits.size == 0)
+		{
+			// This is a boss level where killing the boss ends the level
+			// Make sure to skip over the secret level
+			Exit e;
+			e.Hidden = true;
+			if (map->type == CWMAPTYPE_SOD)
+			{
+				if (missionIndex == 17)
+				{
+					// Skip over the two secret levels
+					e.Mission = missionIndex + 3;
+				}
+				else
+				{
+					e.Mission = missionIndex + 1;
+				}
+			}
+			else
+			{
+				// Skip over the secret level to the next episode
+				e.Mission = missionIndex + 2;
+			}
+			e.R.Pos = svec2i_zero();
+			e.R.Size = m.Size;
+			CArrayPushBack(&m.u.Static.Exits, &e);
+		}
+		if (map->type == CWMAPTYPE_SOD && missionIndex == 17)
+		{
+			// Skip debrief and cut directly to angel boss level
+			m.SkipDebrief = true;
+		}
+
+		m.u.Static.AltFloorsEnabled = false;
+	}
 
 	CArrayPushBack(&c->Missions, &m);
 }

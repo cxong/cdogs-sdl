@@ -214,6 +214,24 @@ static int LoadLevel(CWLevel *level, const unsigned char *data, const int off)
 		}
 	}
 
+	// Check if level has any player spawns
+	level->hasPlayerSpawn = false;
+	for (int y = 0; y < level->header.height && !level->hasPlayerSpawn; y++)
+	{
+		for (int x = 0; x < level->header.width && !level->hasPlayerSpawn; x++)
+		{
+			const uint16_t ch = CWLevelGetCh(level, 1, x, y);
+			const CWEntity entity = CWChToEntity(ch);
+			if (entity == CWENT_PLAYER_SPAWN_N ||
+				entity == CWENT_PLAYER_SPAWN_E ||
+				entity == CWENT_PLAYER_SPAWN_S ||
+				entity == CWENT_PLAYER_SPAWN_W)
+			{
+				level->hasPlayerSpawn = true;
+			}
+		}
+	}
+
 bail:
 	free(buf);
 	return err;
