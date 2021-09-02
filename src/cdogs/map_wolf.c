@@ -1251,6 +1251,7 @@ typedef enum
 static void LoadChar(
 	Mission *m, const struct vec2i v, const direction_e d, const int charId,
 	int *bossObjIdx);
+static void AdjustTurningPoint(Mission *m, const struct vec2i v);
 static void LoadEntity(
 	Mission *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v,
 	const int missionIndex, int *bossObjIdx, int *spearObjIdx)
@@ -1609,13 +1610,16 @@ static void LoadEntity(
 		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_OFFICER, bossObjIdx);
 		break;
 	case CWENT_TURN_E:
-	case CWENT_TURN_NE:
+		AdjustTurningPoint(m, svec2i(v.x + 1, v.y));
+		break;
 	case CWENT_TURN_N:
-	case CWENT_TURN_NW:
+		AdjustTurningPoint(m, svec2i(v.x, v.y - 1));
+		break;
 	case CWENT_TURN_W:
-	case CWENT_TURN_SW:
+		AdjustTurningPoint(m, svec2i(v.x - 1, v.y));
+		break;
 	case CWENT_TURN_S:
-	case CWENT_TURN_SE:
+		AdjustTurningPoint(m, svec2i(v.x, v.y + 1));
 		break;
 	case CWENT_TRANS:
 		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_TRANS, bossObjIdx);
@@ -1704,6 +1708,17 @@ static void LoadChar(
 		MissionStaticAddCharacter(&m->u.Static, charId, cp);
 		break;
 	}
+}
+static void AdjustTurningPoint(Mission *m, const struct vec2i v)
+{
+	if (!Rect2iIsInside(Rect2iNew(svec2i_zero(), m->Size), v))
+	{
+		return;
+	}
+	// HACK: locked doors can be opened by patrolling enemies walking into them
+	// Therefore unlock any locked doors directly in front of a turning point
+	const uint16_t unlockedAccess = 0;
+	CArraySet(&m->u.Static.Access, v.x + v.y * m->Size.y, &unlockedAccess);
 }
 
 static bool TryLoadCampaign(CampaignList *list, const char *path);
