@@ -6,50 +6,6 @@
 #include <string.h>
 
 
-// Stubs
-Mix_Chunk *StrSound(const char *s)
-{
-	UNUSED(s);
-	return NULL;
-}
-bool ConfigGetBool(Config *c, const char *name)
-{
-	UNUSED(c); UNUSED(name); return false;
-}
-int ConfigGetInt(Config *c, const char *name)
-{
-	UNUSED(c); UNUSED(name); return 0;
-}
-int ConfigGetJSONVersion(FILE *f)
-{
-	UNUSED(f);
-	return 0;
-}
-bool ConfigIsOld(FILE *f)
-{
-	UNUSED(f);
-	return false;
-}
-Pic *PicManagerGetPic(const PicManager *pm, const char *name)
-{
-	UNUSED(pm);
-	UNUSED(name);
-	return NULL;
-}
-const WeaponClass *StrWeaponClass(const char *s)
-{
-	UNUSED(s);
-	return NULL;
-}
-const char *JoyName(const int deviceIndex)
-{
-	UNUSED(deviceIndex);
-	return NULL;
-}
-Config gConfig;
-PicManager gPicManager;
-
-
 FEATURE(AutosaveInit, "Initialise autosave")
 	SCENARIO("Initialise autosave")
 		GIVEN("an autosave")
