@@ -41,50 +41,6 @@
 #include "mission.h"
 #include "player_template.h"
 
-int MapNewScan(const char *filename, char **title, int *numMissions)
-{
-	int err = 0;
-	json_t *root = NULL;
-	FILE *f = NULL;
-
-	if (strcmp(StrGetFileExt(filename), "cdogscpn") == 0 ||
-		strcmp(StrGetFileExt(filename), "CDOGSCPN") == 0)
-	{
-		return MapNewScanArchive(filename, title, numMissions);
-	}
-	if (IsCampaignOldFile(filename))
-	{
-		return ScanCampaignOld(filename, title, numMissions);
-	}
-	if (CWGetType(filename, NULL, NULL) != CWMAPTYPE_UNKNOWN)
-	{
-		return MapWolfScan(filename, title, numMissions);
-	}
-	f = fopen(filename, "r");
-	if (f == NULL)
-	{
-		err = -1;
-		goto bail;
-	}
-	if (json_stream_parse(f, &root) != JSON_OK)
-	{
-		err = -1;
-		goto bail;
-	}
-	err = MapNewScanJSON(root, title, numMissions);
-	if (err < 0)
-	{
-		goto bail;
-	}
-
-bail:
-	if (f)
-	{
-		fclose(f);
-	}
-	json_free_value(&root);
-	return err;
-}
 int MapNewScanJSON(json_t *root, char **title, int *numMissions)
 {
 	int err = 0;

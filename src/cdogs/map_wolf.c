@@ -511,6 +511,13 @@ int MapWolfScan(const char *filename, char **title, int *numMissions)
 	{
 		goto bail;
 	}
+	
+	// Look for a campaign.json in the folder and use that if available
+	if (MapNewScanArchive(filename, title, numMissions) == 0)
+	{
+		goto bail;
+	}
+	
 	char buf[CDOGS_PATH_MAX];
 	GetCampaignPath(map.type, buf);
 	err = MapNewScanArchive(buf, title, NULL);
@@ -663,7 +670,11 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 	{
 		goto bail;
 	}
-	AdjustCampaignTitle(filename, &c->Title);
+	// Try to load campaign.json if available
+	if (MapLoadCampaignJSON(filename, c, NULL) != 0)
+	{
+		AdjustCampaignTitle(filename, &c->Title);
+	}
 
 	CharacterStoreCopy(&c->characters, &cs, &gPlayerTemplates.CustomClasses);
 

@@ -61,12 +61,8 @@ bail:
 	return err;
 }
 
-static void LoadArchiveSounds(
-	SoundDevice *device, const char *archive, const char *dirname);
-static void LoadArchivePics(PicManager *pm, map_t cc, const char *archive);
-int MapNewLoadArchive(const char *filename, CampaignSetting *c)
+int MapLoadCampaignJSON(const char *filename, CampaignSetting *c, int *version)
 {
-	LOG(LM_MAP, LL_DEBUG, "Loading archive map %s", filename);
 	int err = 0;
 	json_t *root = ReadArchiveJSON(filename, "campaign.json");
 	if (root == NULL)
@@ -74,15 +70,36 @@ int MapNewLoadArchive(const char *filename, CampaignSetting *c)
 		err = -1;
 		goto bail;
 	}
-	int version;
-	LoadInt(&version, root, "Version");
-	if (version > MAP_VERSION || version <= 2)
+	if (version)
 	{
-		err = -1;
-		goto bail;
+		LoadInt(version, root, "Version");
+		if (*version > MAP_VERSION || *version <= 2)
+		{
+			err = -1;
+			goto bail;
+		}
 	}
 	MapNewLoadCampaignJSON(root, c);
+	
+bail:
 	json_free_value(&root);
+	return err;
+}
+
+static void LoadArchiveSounds(
+	SoundDevice *device, const char *archive, const char *dirname);
+static void LoadArchivePics(PicManager *pm, map_t cc, const char *archive);
+int MapNewLoadArchive(const char *filename, CampaignSetting *c)
+{
+	LOG(LM_MAP, LL_DEBUG, "Loading archive map %s", filename);
+	int err = 0;
+	json_t *root = NULL;
+	int version = 0;
+	err = MapLoadCampaignJSON(filename, c, &version);
+	if (err != 0)
+	{
+		goto bail;
+	}
 
 	// Load any custom data
 	LoadArchiveSounds(&gSoundDevice, filename, "sounds");

@@ -7,15 +7,6 @@
 
 
 // Stubs
-int MapNewScan(
-	const char *filename, const bool isArchive, char **title, int *numMissions)
-{
-	UNUSED(filename);
-	UNUSED(isArchive);
-	UNUSED(title);
-	UNUSED(numMissions);
-	return 0;
-}
 Mix_Chunk *StrSound(const char *s)
 {
 	UNUSED(s);

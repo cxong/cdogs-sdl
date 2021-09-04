@@ -32,8 +32,6 @@
 #include "c_array.h"
 #include "map_archive.h"
 
-// allocates title
-int MapNewScan(const char *filename, char **title, int *numMissions);
 int MapNewLoad(const char *filename, CampaignSetting *c);
 
 // Helper methods for loading JSON maps

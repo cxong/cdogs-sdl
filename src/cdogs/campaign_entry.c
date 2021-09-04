@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2014, 2020 Cong Xu
+	Copyright (c) 2013-2014, 2020-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -30,14 +30,30 @@
 
 #include <stdio.h>
 
+#include <cdogs/cwolfmap/cwolfmap.h>
 #include <cdogs/files.h>
 #include <cdogs/map_new.h>
+#include <cdogs/map_wolf.h>
 #include <cdogs/mission.h>
 #include <cdogs/utils.h>
 
-bool IsCampaignOK(const char *path, char **buf, int *numMissions)
+bool IsCampaignOK(const char *path, char **title, int *numMissions)
 {
-	return MapNewScan(path, buf, numMissions) == 0;
+	if (strcmp(StrGetFileExt(path), "cdogscpn") == 0 ||
+		strcmp(StrGetFileExt(path), "CDOGSCPN") == 0)
+	{
+		return MapNewScanArchive(path, title, numMissions) == 0;
+	}
+	if (IsCampaignOldFile(path))
+	{
+		return ScanCampaignOld(path, title, numMissions) == 0;
+	}
+	if (CWGetType(path, NULL, NULL) != CWMAPTYPE_UNKNOWN)
+	{
+		return MapWolfScan(path, title, numMissions) == 0;
+	}
+	
+	return false;
 }
 
 void CampaignEntryInit(CampaignEntry *entry, const char *title, GameMode mode)

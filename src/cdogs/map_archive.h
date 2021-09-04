@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2015, 2019-2020 Cong Xu
+	Copyright (c) 2014-2015, 2019-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@
 #define MAP_VERSION 16
 
 int MapNewScanArchive(const char *filename, char **title, int *numMissions);
+int MapLoadCampaignJSON(const char *filename, CampaignSetting *c, int *version);
 int MapNewLoadArchive(const char *filename, CampaignSetting *c);
 int MapArchiveSave(const char *filename, CampaignSetting *c);
 
