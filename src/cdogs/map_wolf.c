@@ -1113,7 +1113,7 @@ static void TryLoadWallObject(
 			const struct vec2i exitV = svec2i(v.x + dx, v.y);
 			const TileClass *tc =
 				MissionStaticGetTileClass(m, levelSize, exitV);
-			if (tc != NULL && tc->Type == TILE_CLASS_FLOOR)
+			if (tc != NULL && (tc->Type == TILE_CLASS_FLOOR || tc->Type == TILE_CLASS_DOOR))
 			{
 				Exit e;
 				e.Hidden = true;
