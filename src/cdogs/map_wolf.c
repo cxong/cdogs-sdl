@@ -1274,6 +1274,7 @@ typedef enum
 	CHAR_ANGEL
 } WolfChar;
 
+static bool MakeWallWalkable(Mission *m, const struct vec2i v);
 static void LoadChar(
 	Mission *m, const struct vec2i v, const direction_e d, const int charId,
 	int *bossObjIdx);
@@ -1549,13 +1550,9 @@ static void LoadEntity(
 		spearObj->Required++;
 		MissionStaticAddObjective(m, &m->u.Static, *spearObjIdx, 0, v, false);
 		break;
-	case CWENT_PUSHWALL: {
-		const CWLevel *level = &map->levels[missionIndex];
-		int *tile =
-			CArrayGet(&m->u.Static.Tiles, v.x + v.y * level->header.width);
-		*tile += TILE_CLASS_WALL_OFFSET;
-	}
-	break;
+	case CWENT_PUSHWALL:
+		MakeWallWalkable(m, v);
+		break;
 	case CWENT_ENDGAME: {
 		Exit e;
 		e.Hidden = true;
@@ -1579,6 +1576,8 @@ static void LoadEntity(
 		break;
 	case CWENT_DEAD_GUARD:
 		MissionStaticTryAddItem(&m->u.Static, StrMapObject("dead_guard"), v);
+		// holowall
+		MakeWallWalkable(m, v);
 		break;
 	case CWENT_DOG_E:
 		LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_DOG, bossObjIdx);
@@ -1705,6 +1704,18 @@ static void LoadEntity(
 		break;
 	}
 }
+static bool MakeWallWalkable(Mission *m, const struct vec2i v)
+{
+	int *tile =
+		CArrayGet(&m->u.Static.Tiles, v.x + v.y * m->Size.x);
+	const TileClass *tc = MissionStaticGetTileClass(&m->u.Static, m->Size, v);
+	if (tc->Type == TILE_CLASS_WALL)
+	{
+		*tile += TILE_CLASS_WALL_OFFSET;
+		return true;
+	}
+	return false;
+}
 static void LoadChar(
 	Mission *m, const struct vec2i v, const direction_e d, const int charId,
 	int *bossObjIdx)
@@ -1738,6 +1749,12 @@ static void LoadChar(
 	default:
 		MissionStaticAddCharacter(&m->u.Static, charId, cp);
 		break;
+	}
+	// holowall
+	if (MakeWallWalkable(m, v))
+	{
+		// Also make the wall in front of it holowall
+		MakeWallWalkable(m, svec2i_add(v, Vec2iFromDirection(d)));
 	}
 }
 static void AdjustTurningPoint(Mission *m, const struct vec2i v)

@@ -115,6 +115,31 @@ struct vec2 Vec2FromRadians(const float radians)
 	v.y *= (float)TILE_HEIGHT / TILE_WIDTH;
 	return v;
 }
+struct vec2i Vec2iFromDirection(const direction_e d)
+{
+	switch (d)
+	{
+		case DIRECTION_UP:
+			return svec2i(0, -1);
+		case DIRECTION_UPRIGHT:
+			return svec2i(1, -1);
+		case DIRECTION_RIGHT:
+			return svec2i(1, 0);
+		case DIRECTION_DOWNRIGHT:
+			return svec2i(1, 1);
+		case DIRECTION_DOWN:
+			return svec2i(0, 1);
+		case DIRECTION_DOWNLEFT:
+			return svec2i(-1, 1);
+		case DIRECTION_LEFT:
+			return svec2i(-1, 0);
+		case DIRECTION_UPLEFT:
+			return svec2i(-1, -1);
+		default:
+			CASSERT(false, "unknown direction");
+			return svec2i_zero();
+	}
+}
 direction_e RadiansToDirection(const double r)
 {
 	// constrain to range [0, 2PI)
