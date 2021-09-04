@@ -1560,7 +1560,12 @@ static void LoadEntity(
 		Exit e;
 		e.Hidden = true;
 		// Skip over the secret level to the next episode
-		e.Mission = missionIndex + 2;
+		e.Mission = (missionIndex + 10) / 10 * 10;
+		// Skip to end of game if the next episode is blank
+		if (e.Mission < map->nLevels && !map->levels[e.Mission].hasPlayerSpawn)
+		{
+			e.Mission = map->nLevels;
+		}
 		e.R.Pos = v;
 		e.R.Size = svec2i_zero();
 		CArrayPushBack(&m->u.Static.Exits, &e);
