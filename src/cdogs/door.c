@@ -341,16 +341,18 @@ static TWatch *CreateCloseDoorWatch(
 		for (int i = 0; i < doorGroupCount; i++)
 		{
 			const struct vec2i vI = svec2i_add(v, svec2i_scale(dv, (float)i));
-
-			a = WatchAddAction(w);
-			a->Type = ACTION_EVENT;
-			a->u.Event = GameEventNew(GAME_EVENT_TILE_SET);
 			const struct vec2i vI2 = svec2i(vI.x + dAside.x, vI.y + dAside.y);
-			a->u.Event.u.TileSet.Pos = Vec2i2Net(vI2);
 			const TileClass *t = MapBuilderGetTile(mb, vI2);
-			TileClassGetName(
-				a->u.Event.u.TileSet.ClassName, t, t->Style, "shadow", t->Mask,
-				t->MaskAlt);
+			if (t->Type == TILE_CLASS_FLOOR)
+			{
+				a = WatchAddAction(w);
+				a->Type = ACTION_EVENT;
+				a->u.Event = GameEventNew(GAME_EVENT_TILE_SET);
+				a->u.Event.u.TileSet.Pos = Vec2i2Net(vI2);
+					TileClassGetName(
+						a->u.Event.u.TileSet.ClassName, t, t->Style, "shadow", t->Mask,
+						t->MaskAlt);
+			}
 		}
 	}
 
@@ -400,15 +402,18 @@ static Trigger *CreateOpenDoorTrigger(
 		{
 			const struct vec2i vI = svec2i_add(v, svec2i_scale(dv, (float)i));
 			const struct vec2i vIAside = svec2i_add(vI, dAside);
-			a = TriggerAddAction(t);
-			// Remove shadows below doors
-			a->Type = ACTION_EVENT;
-			a->u.Event = GameEventNew(GAME_EVENT_TILE_SET);
 			const TileClass *tc = MapBuilderGetTile(mb, vIAside);
-			a->u.Event.u.TileSet.Pos = Vec2i2Net(vIAside);
-			TileClassGetName(
-				a->u.Event.u.TileSet.ClassName, tc, tc->Style, "normal",
-				tc->Mask, tc->MaskAlt);
+			if (tc->Type == TILE_CLASS_FLOOR)
+			{
+				a = TriggerAddAction(t);
+				// Remove shadows below doors
+				a->Type = ACTION_EVENT;
+				a->u.Event = GameEventNew(GAME_EVENT_TILE_SET);
+				a->u.Event.u.TileSet.Pos = Vec2i2Net(vIAside);
+				TileClassGetName(
+					a->u.Event.u.TileSet.ClassName, tc, tc->Style, "normal",
+					tc->Mask, tc->MaskAlt);
+			}
 		}
 	}
 

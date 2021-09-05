@@ -318,6 +318,10 @@ bool MapHasLockedRooms(const Map *map)
 
 uint16_t MapGetAccessLevel(const Map *map, const struct vec2i pos)
 {
+	if (!MapIsTileIn(map, pos))
+	{
+		return 0;
+	}
 	const uint16_t t =
 		*(uint16_t *)CArrayGet(&map->access, pos.y * map->Size.x + pos.x);
 	return AccessCodeToFlags(t);
