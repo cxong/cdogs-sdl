@@ -579,7 +579,7 @@ bail:
 static void LoadSounds(const SoundDevice *s, const CWolfMap *map);
 static void LoadMission(
 	CampaignSetting *c, const map_t tileClasses, const CWolfMap *map,
-	const int missionIndex);
+	const int missionIndex, const int numMissions);
 typedef struct
 {
 	const CWolfMap *Map;
@@ -671,16 +671,18 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 		goto bail;
 	}
 	// Try to load campaign.json if available
-	if (MapLoadCampaignJSON(filename, c, NULL) != 0)
+	int numMissions = map->nLevels;
+	if (MapLoadCampaignJSON(filename, c, NULL) == 0)
 	{
 		AdjustCampaignTitle(filename, &c->Title);
+		MapNewScanArchive(filename, NULL, &numMissions);
 	}
 
 	CharacterStoreCopy(&c->characters, &cs, &gPlayerTemplates.CustomClasses);
 
 	for (int i = 0; i < map->nLevels; i++)
 	{
-		LoadMission(c, tileClasses, map, i);
+		LoadMission(c, tileClasses, map, i, numMissions);
 	}
 
 bail:
@@ -835,7 +837,7 @@ static void TryLoadWallObject(
 	const struct vec2i v, const int missionIndex);
 static void LoadEntity(
 	Mission *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v,
-	const int missionIndex, int *bossObjIdx, int *spearObjIdx);
+	const int missionIndex, const int numMissions, int *bossObjIdx, int *spearObjIdx);
 
 typedef struct
 {
@@ -850,7 +852,7 @@ static Mix_Chunk *GetMissionSong(void *data)
 }
 static void LoadMission(
 	CampaignSetting *c, const map_t tileClasses, const CWolfMap *map,
-	const int missionIndex)
+	const int missionIndex, const int numMissions)
 {
 	const CWLevel *level = &map->levels[missionIndex];
 	Mission m;
@@ -909,7 +911,7 @@ static void LoadMission(
 		const uint16_t ch = CWLevelGetCh(level, 0, _v.x, _v.y);
 		TryLoadWallObject(&m.u.Static, ch, map, _v, missionIndex);
 		const uint16_t ech = CWLevelGetCh(level, 1, _v.x, _v.y);
-		LoadEntity(&m, ech, map, _v, missionIndex, &bossObjIdx, &spearObjIdx);
+		LoadEntity(&m, ech, map, _v, missionIndex, numMissions, &bossObjIdx, &spearObjIdx);
 		RECT_FOREACH_END()
 
 		if (m.u.Static.Exits.size == 0)
@@ -1281,7 +1283,7 @@ static void LoadChar(
 static void AdjustTurningPoint(Mission *m, const struct vec2i v);
 static void LoadEntity(
 	Mission *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v,
-	const int missionIndex, int *bossObjIdx, int *spearObjIdx)
+	const int missionIndex, const int numMissions, int *bossObjIdx, int *spearObjIdx)
 {
 	const CWEntity entity = CWChToEntity(ch);
 	switch (entity)
@@ -1558,8 +1560,9 @@ static void LoadEntity(
 		e.Hidden = true;
 		// Skip over the secret level to the next episode
 		e.Mission = (missionIndex + 10) / 10 * 10;
-		// Skip to end of game if the next episode is blank
-		if (e.Mission < map->nLevels && !map->levels[e.Mission].hasPlayerSpawn)
+		// Skip to end of game if the next episode is blank, or if the
+		// campaign should have less levels
+		if ((e.Mission < map->nLevels && !map->levels[e.Mission].hasPlayerSpawn) || e.Mission >= numMissions)
 		{
 			e.Mission = map->nLevels;
 		}
