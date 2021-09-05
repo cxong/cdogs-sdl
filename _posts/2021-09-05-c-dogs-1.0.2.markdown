@@ -1,0 +1,17 @@
+---
+layout: post
+title:  "C-Dogs 1.0.2 Released!"
+date:   2021-09-05
+categories: release
+published: true
+---
+
+The Wolfenstein 3D related goodies keep coming! We've gone through and tested a bunch of custom Wolf3D and Spear of Destiny mapsets, and fixed support for them. You can grab them all from the [Campaign Dogs site](http://cdogs.morezombies.net)!
+
+![Custom campaigns](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/wolf3dcustom.png)
+
+Wolf3D has a long and lively modding community, so this is a significant amount of additional content. Quite a few custom mapsets span the whole 6-episode / 60-map limit, so it will take dozens of hours just to play through them all! Some modders got quite creative and stretched the Wolfenstein 3D engine to its limit, using tricks like "holowalls" in their maps, so some tweaking was necessary to get them working in C-Dogs SDL as well.
+
+We hope you enjoy these new campaigns!
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/1.0.2>
