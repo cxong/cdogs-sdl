@@ -259,7 +259,7 @@ static void DrawDeathmatchScores(HUD *hud)
 	int maxKills = 0;
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 	maxLives = MAX(maxLives, p->Lives);
-	maxKills = MAX(maxKills, p->Stats.Kills);
+	maxKills = MAX(maxKills, (int)p->Stats.Kills);
 	CA_FOREACH_END()
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 	// Player name; red if dead
@@ -275,7 +275,7 @@ static void DrawDeathmatchScores(HUD *hud)
 	FontStrOpt(buf, svec2i(0, y), opts);
 
 	// kills; cyan if most kills
-	opts.Mask = p->Stats.Kills == maxKills ? colorCyan : colorWhite;
+	opts.Mask = (int)p->Stats.Kills == maxKills ? colorCyan : colorWhite;
 	opts.Pad.x = killsColumn;
 	sprintf(buf, "%d", p->Stats.Kills);
 	FontStrOpt(buf, svec2i(0, y), opts);

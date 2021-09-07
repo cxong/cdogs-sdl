@@ -67,3 +67,10 @@ void AnimatedCounterDraw(const AnimatedCounter *a, const struct vec2i pos)
 	sprintf(buf, "%d", a->current);
 	FontStr(buf, pos2);
 }
+void AnimatedCounterTimeDraw(const AnimatedCounter *a, const struct vec2i pos)
+{
+	const struct vec2i pos2 = FontStr(a->prefix, pos);
+	char buf[256];
+	sprintf(buf, "%d:%02d", a->current / 60, a->current % 60);
+	FontStr(buf, pos2);
+}

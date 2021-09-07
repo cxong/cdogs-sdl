@@ -1,65 +1,66 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin
-    Copyright (C) 2003-2007 Lucas Martin-King
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (C) 1995 Ronny Wester
+	Copyright (C) 2003 Jeremy Chin
+	Copyright (C) 2003-2007 Lucas Martin-King
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-    This file incorporates work covered by the following copyright and
-    permission notice:
+	This file incorporates work covered by the following copyright and
+	permission notice:
 
-    Copyright (c) 2013-2014, 2017 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2014, 2017, 2021 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "hiscores.h"
 
-#include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include <cdogs/events.h>
 #include <cdogs/files.h>
 #include <cdogs/font.h>
+#include <cdogs/log.h>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -82,16 +83,15 @@ GameLoopData *HighScoresScreen(Campaign *co, GraphicsDevice *g)
 	data->co = co;
 	data->g = g;
 	return GameLoopDataNew(
-		data, HighScoresScreenTerminate, NULL, NULL,
-		NULL, HighScoresScreenUpdate, NULL);
+		data, HighScoresScreenTerminate, NULL, NULL, NULL,
+		HighScoresScreenUpdate, NULL);
 }
 static void HighScoresScreenTerminate(GameLoopData *data)
 {
 	HighScoresScreenData *hData = data->Data;
 	CFREE(hData);
 }
-static GameLoopResult HighScoresScreenUpdate(
-	GameLoopData *data, LoopRunner *l)
+static GameLoopResult HighScoresScreenUpdate(GameLoopData *data, LoopRunner *l)
 {
 	HighScoresScreenData *hData = data->Data;
 	LoopRunnerPop(l);
@@ -102,26 +102,26 @@ static GameLoopResult HighScoresScreenUpdate(
 		bool allTime = false;
 		bool todays = false;
 		CA_FOREACH(PlayerData, p, gPlayerDatas)
-			const bool isPlayerComplete =
-				(!hData->co->IsQuit && !p->survived) || hData->co->IsComplete;
-			if (isPlayerComplete && p->IsLocal && IsPlayerHuman(p))
-			{
-				EnterHighScore(p);
-				allTime |= p->allTime >= 0;
-				todays |= p->today >= 0;
-			}
+		const bool isPlayerComplete =
+			(!hData->co->IsQuit && !p->survived) || hData->co->IsComplete;
+		if (isPlayerComplete && p->IsLocal && IsPlayerHuman(p))
+		{
+			EnterHighScore(p);
+			allTime |= p->allTime >= 0;
+			todays |= p->today >= 0;
+		}
 
-			if (!p->survived)
-			{
-				// Reset scores because we died :(
-				memset(&p->Totals, 0, sizeof p->Totals);
-				p->missions = 0;
-			}
-			else
-			{
-				p->missions++;
-			}
-			p->lastMission = hData->co->MissionIndex;
+		if (!p->survived)
+		{
+			// Reset scores because we died :(
+			memset(&p->Totals, 0, sizeof p->Totals);
+			p->missions = 0;
+		}
+		else
+		{
+			p->missions++;
+		}
+		p->lastMission = hData->co->MissionIndex;
 		CA_FOREACH_END()
 		SaveHighScores();
 
@@ -139,12 +139,15 @@ static GameLoopResult HighScoresScreenUpdate(
 	return UPDATE_RESULT_OK;
 }
 
-
 // Warning: written as-is to file
-struct Entry {
+#ifdef _MSC_VER
+#pragma pack(push, 1)
+#endif
+typedef struct
+{
 	char name[20];
-	int32_t unused1;
-	int32_t unused2;
+	int32_t timeTicks;
+	int32_t kills;
 	int32_t unused3;
 	int32_t unused4;
 	int32_t unused5;
@@ -152,19 +155,25 @@ struct Entry {
 	int32_t score;
 	int32_t missions;
 	int32_t lastMission;
-};
+}
+#ifndef _MSC_VER
+__attribute__((packed))
+#endif
+HighScoreEntry;
+#ifdef _MSC_VER
+#pragma pack(pop)
+#endif
 
 #define MAX_ENTRY 20
 
-static struct Entry allTimeHigh[MAX_ENTRY];
-static struct Entry todaysHigh[MAX_ENTRY];
+static HighScoreEntry allTimeHigh[MAX_ENTRY];
+static HighScoreEntry todaysHigh[MAX_ENTRY];
 
-
-static int EnterTable(struct Entry *table, PlayerData *data)
+static int EnterTable(HighScoreEntry *table, PlayerData *data)
 {
 	for (int i = 0; i < MAX_ENTRY; i++)
 	{
-		if (data->Totals.Score > table[i].score)
+		if ((int)data->Totals.Score > table[i].score)
 		{
 			for (int j = MAX_ENTRY - 1; j > i; j--)
 			{
@@ -172,6 +181,8 @@ static int EnterTable(struct Entry *table, PlayerData *data)
 			}
 
 			strcpy(table[i].name, data->name);
+			table[i].timeTicks = data->Totals.TimeTicks;
+			table[i].kills = data->Totals.Kills;
 			table[i].score = data->Totals.Score;
 			table[i].missions = data->missions;
 			table[i].lastMission = data->lastMission;
@@ -195,16 +206,16 @@ static void DisplayAt(int x, int y, const char *s, int hilite)
 }
 
 static int DisplayEntry(
-	const int x, const int y, const int idx, const struct Entry *e,
+	const int x, const int y, const int idx, const HighScoreEntry *e,
 	const bool hilite)
 {
 	char s[10];
 
-#define INDEX_OFFSET     15
-#define SCORE_OFFSET     40
-#define MISSIONS_OFFSET  60
-#define MISSION_OFFSET   80
-#define NAME_OFFSET      85
+#define INDEX_OFFSET 15
+#define SCORE_OFFSET 40
+#define MISSIONS_OFFSET 60
+#define MISSION_OFFSET 80
+#define NAME_OFFSET 85
 
 	sprintf(s, "%d.", idx + 1);
 	DisplayAt(x + INDEX_OFFSET - FontStrW(s), y, s, hilite);
@@ -220,7 +231,7 @@ static int DisplayEntry(
 }
 
 static int DisplayPage(
-	const char *title, const int idxStart, const struct Entry *e,
+	const char *title, const int idxStart, const HighScoreEntry *e,
 	const int highlights[MAX_LOCAL_PLAYERS])
 {
 	int x = 80;
@@ -253,7 +264,7 @@ typedef struct
 {
 	GraphicsDevice *g;
 	const char *title;
-	const struct Entry *scores;
+	const HighScoreEntry *scores;
 	int highlights[MAX_LOCAL_PLAYERS];
 	int scoreIdx;
 } HighScoresData;
@@ -280,8 +291,8 @@ GameLoopData *DisplayAllTimeHighScores(GraphicsDevice *graphics)
 	data->title = "All time high scores:";
 	data->scores = allTimeHigh;
 	return GameLoopDataNew(
-		data, HighScoreTerminate, NULL, NULL,
-		NULL, HighScoreUpdate, HighScoreDraw);
+		data, HighScoreTerminate, NULL, NULL, NULL, HighScoreUpdate,
+		HighScoreDraw);
 }
 GameLoopData *DisplayTodaysHighScores(GraphicsDevice *graphics)
 {
@@ -303,8 +314,8 @@ GameLoopData *DisplayTodaysHighScores(GraphicsDevice *graphics)
 	data->title = "Today's highest score:";
 	data->scores = todaysHigh;
 	return GameLoopDataNew(
-		data, HighScoreTerminate, NULL, NULL,
-		NULL, HighScoreUpdate, HighScoreDraw);
+		data, HighScoreTerminate, NULL, NULL, NULL, HighScoreUpdate,
+		HighScoreDraw);
 }
 static void HighScoreTerminate(GameLoopData *data)
 {
@@ -333,8 +344,7 @@ static GameLoopResult HighScoreUpdate(GameLoopData *data, LoopRunner *l)
 	return UPDATE_RESULT_OK;
 }
 
-
-#define MAGIC        4711
+#define MAGIC 4711
 
 void SaveHighScores(void)
 {
@@ -344,7 +354,8 @@ void SaveHighScores(void)
 	struct tm *tp;
 
 	f = fopen(GetConfigFilePath(SCORES_FILE), "wb");
-	if (f != NULL) {
+	if (f != NULL)
+	{
 		magic = MAGIC;
 
 		fwrite(&magic, sizeof(magic), 1, f);
@@ -365,14 +376,13 @@ void SaveHighScores(void)
 		fclose(f);
 
 #ifdef __EMSCRIPTEN__
-        EM_ASM(
-            //persist changes
-            FS.syncfs(false,function (err) {
-                              assert(!err);
-            });
-        );
+		EM_ASM(
+			// persist changes
+			FS.syncfs(
+				false, function(err) { assert(!err); }););
 #endif
-	} else
+	}
+	else
 		printf("Unable to open %s\n", SCORES_FILE);
 }
 
@@ -387,25 +397,27 @@ void LoadHighScores(void)
 	memset(allTimeHigh, 0, sizeof(allTimeHigh));
 	memset(todaysHigh, 0, sizeof(todaysHigh));
 
-	f = fopen(GetConfigFilePath(SCORES_FILE), "rb");
-	if (f != NULL) {
+	const char *path = GetConfigFilePath(SCORES_FILE);
+	f = fopen(path, "rb");
+	if (f != NULL)
+	{
 		size_t elementsRead;
-	#define CHECK_FREAD(count)\
-		if (elementsRead != count) {\
-			fclose(f);\
-			return;\
-		}
+#define CHECK_FREAD(count)                                                    \
+	if (elementsRead != count)                                                \
+	{                                                                         \
+		fclose(f);                                                            \
+		return;                                                               \
+	}
 		elementsRead = fread(&magic, sizeof(magic), 1, f);
 		CHECK_FREAD(1)
-		if (magic != MAGIC) {
+		if (magic != MAGIC)
+		{
 			fclose(f);
 			return;
 		}
 
-		//for (i = 0; i < MAX_ENTRY; i++) {
 		elementsRead = fread(allTimeHigh, sizeof(allTimeHigh), 1, f);
 		CHECK_FREAD(1)
-		//}
 
 		t = time(NULL);
 		tp = localtime(&t);
@@ -416,13 +428,16 @@ void LoadHighScores(void)
 		elementsRead = fread(&d, sizeof(d), 1, f);
 		CHECK_FREAD(1)
 
-		if (tp->tm_year == y && tp->tm_mon == m && tp->tm_mday == d) {
+		if (tp->tm_year == y && tp->tm_mon == m && tp->tm_mday == d)
+		{
 			elementsRead = fread(todaysHigh, sizeof(todaysHigh), 1, f);
 			CHECK_FREAD(1)
 		}
 
 		fclose(f);
-	} else {
-		printf("Unable to open %s\n", SCORES_FILE);
+	}
+	else
+	{
+		LOG(LM_MAIN, LL_WARN, "Unable to open %s\n", path);
 	}
 }

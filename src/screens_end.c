@@ -203,10 +203,12 @@ static void PlayerListCustomDraw(
 	int x = xStart;
 	int y = pos.y;
 	FontStrMask("Player", svec2i(x, y), colorPurple);
-	x += 100;
+	x += 68;
 	FontStrMask("Score", svec2i(x, y), colorPurple);
 	x += 32;
 	FontStrMask("Kills", svec2i(x, y), colorPurple);
+	x += 32;
+	FontStrMask("Time", svec2i(x, y), colorPurple);
 	y += FontH() * 2 + PLAYER_LIST_ROW_HEIGHT + 4;
 	// Then draw the player list
 	int maxScore = -1;
@@ -235,7 +237,7 @@ static void PlayerListCustomDraw(
 			textColor, p->guns[0]);
 
 		// Draw score
-		x += 100;
+		x += 68;
 		char buf[256];
 		sprintf(buf, "%d", p->Totals.Score);
 		FontStrMask(buf, svec2i(x, y), textColor);
@@ -243,6 +245,12 @@ static void PlayerListCustomDraw(
 		// Draw kills
 		x += 32;
 		sprintf(buf, "%d", p->Totals.Kills);
+		FontStrMask(buf, svec2i(x, y), textColor);
+
+		// Draw time
+		x += 32;
+		const int timeSeconds = p->Totals.TimeTicks / FPS_FRAMELIMIT;
+		sprintf(buf, "%d:%02d", timeSeconds / 60, timeSeconds % 60);
 		FontStrMask(buf, svec2i(x, y), textColor);
 
 		// Draw winner/award text
@@ -411,7 +419,7 @@ GameLoopData *ScreenDogfightScores(void)
 	if (IsPlayerAlive(p))
 	{
 		p->Totals.Score++;
-		maxScore = MAX(maxScore, p->Totals.Score);
+		maxScore = MAX(maxScore, (int)p->Totals.Score);
 	}
 	CA_FOREACH_END()
 	gCampaign.IsComplete = maxScore == ModeMaxRoundsWon(gCampaign.Entry.Mode);

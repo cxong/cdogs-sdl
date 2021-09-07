@@ -367,6 +367,8 @@ typedef struct
 	const PlayerData *Pd;
 	AnimatedCounter Score;
 	AnimatedCounter Total;
+	AnimatedCounter Time;
+	AnimatedCounter TimeTotal;
 	AnimatedCounter HealthResurrection;
 	AnimatedCounter ButcherNinjaFriendly;
 } PlayerSummaryDrawData;
@@ -477,6 +479,7 @@ static void MissionSummaryOnEnter(GameLoopData *data)
 
 		CA_FOREACH(PlayerData, p, gPlayerDatas)
 		ApplyBonuses(p, bonus);
+		p->Totals.TimeTicks += mData->m->time;
 		CA_FOREACH_END()
 	}
 
@@ -524,6 +527,10 @@ static void MissionSummaryOnEnter(GameLoopData *data)
 	mData->pDatas[idx].Pd = pd;
 	mData->pDatas[idx].Score = AnimatedCounterNew("Score: ", pd->Stats.Score);
 	mData->pDatas[idx].Total = AnimatedCounterNew("Total: ", pd->Totals.Score);
+	mData->pDatas[idx].Time =
+		AnimatedCounterNew("Time: ", mData->m->time / FPS_FRAMELIMIT);
+	mData->pDatas[idx].TimeTotal = AnimatedCounterNew(
+		"Total Time: ", pd->Totals.TimeTicks / FPS_FRAMELIMIT);
 	if (pd->survived)
 	{
 		const int healthBonus = GetHealthBonus(pd);
@@ -575,6 +582,8 @@ static GameLoopResult MissionSummaryUpdate(GameLoopData *data, LoopRunner *l)
 		{
 			done = AnimatedCounterUpdate(&mData->pDatas[i].Score, 1) && done;
 			done = AnimatedCounterUpdate(&mData->pDatas[i].Total, 1) && done;
+			done = AnimatedCounterUpdate(&mData->pDatas[i].Time, 1) && done;
+			done = AnimatedCounterUpdate(&mData->pDatas[i].TimeTotal, 1) && done;
 			done = AnimatedCounterUpdate(
 					   &mData->pDatas[i].HealthResurrection, 1) &&
 				   done;
@@ -852,6 +861,10 @@ static void DrawPlayerSummary(
 	AnimatedCounterDraw(&data->Score, textPos);
 	textPos.y += FontH();
 	AnimatedCounterDraw(&data->Total, textPos);
+	textPos.y += FontH();
+	AnimatedCounterTimeDraw(&data->Time, textPos);
+	textPos.y += FontH();
+	AnimatedCounterTimeDraw(&data->TimeTotal, textPos);
 	textPos.y += FontH();
 	sprintf(
 		s, "Missions: %d", data->Pd->missions + (data->Pd->survived ? 1 : 0));
