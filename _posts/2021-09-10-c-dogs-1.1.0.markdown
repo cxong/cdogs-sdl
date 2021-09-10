@@ -8,8 +8,8 @@ published: true
 
 We're running a [C-Dogs SDL / Wolfenstein 3D leaderboard contest!](http://cdogs.morezombies.net/forum/CDogs%20SDL/145) Record your run of Wolfenstein 2D Episode 1, get a high score or speed run for a chance to win some prizes! 🎁🎁🎁
 
-![Corridor 7](http://cdogs.morezombies.net/sites/default/files/inline-images/corridor7.png)
-![Shadow Warrior](http://cdogs.morezombies.net/sites/default/files/inline-images/shadowwarrior.png)
+![Corridor 7](https://cdn.cloudflare.steamstatic.com/steam/apps/1341890/header.jpg)
+![Shadow Warrior](https://cdn.cloudflare.steamstatic.com/steam/apps/233130/header.jpg)
 
 The competition ends at the end of September. For more details visit the [competition page](http://cdogs.morezombies.net/forum/CDogs%20SDL/145).
 
