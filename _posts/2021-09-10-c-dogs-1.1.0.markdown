@@ -1,0 +1,18 @@
+---
+layout: post
+title:  "C-Dogs 1.1.0 Released and a Leaderboard Contest!"
+date:   2021-09-10
+categories: release
+published: true
+---
+
+We're running a [C-Dogs SDL / Wolfenstein 3D leaderboard contest!](http://cdogs.morezombies.net/forum/CDogs%20SDL/145) Record your run of Wolfenstein 2D Episode 1, get a high score or speed run for a chance to win some prizes! 🎁🎁🎁
+
+![Corridor 7](http://cdogs.morezombies.net/sites/default/files/inline-images/corridor7.png)
+![Shadow Warrior](http://cdogs.morezombies.net/sites/default/files/inline-images/shadowwarrior.png)
+
+The competition ends at the end of September. For more details visit the [competition page](http://cdogs.morezombies.net/forum/CDogs%20SDL/145).
+
+We also have a minor C-Dogs SDL release, which adds time taken to the end screens.
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/1.1.0>
