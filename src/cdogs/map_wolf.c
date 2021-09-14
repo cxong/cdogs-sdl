@@ -1279,7 +1279,7 @@ typedef enum
 static bool MakeWallWalkable(Mission *m, const struct vec2i v);
 static void LoadChar(
 	Mission *m, const struct vec2i v, const direction_e d, const int charId,
-	int *bossObjIdx);
+	const bool moving, int *bossObjIdx);
 static void AdjustTurningPoint(Mission *m, const struct vec2i v);
 static void LoadEntity(
 	Mission *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v,
@@ -1572,10 +1572,10 @@ static void LoadEntity(
 	}
 	break;
 	case CWENT_GHOST:
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_GHOST, bossObjIdx);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_GHOST, false, bossObjIdx);
 		break;
 	case CWENT_ANGEL:
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_ANGEL, bossObjIdx);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_ANGEL, false, bossObjIdx);
 		break;
 	case CWENT_DEAD_GUARD:
 		MissionStaticTryAddItem(&m->u.Static, StrMapObject("dead_guard"), v);
@@ -1583,64 +1583,112 @@ static void LoadEntity(
 		MakeWallWalkable(m, v);
 		break;
 	case CWENT_DOG_E:
-		LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_DOG, bossObjIdx);
+		LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_DOG, false, bossObjIdx);
 		break;
 	case CWENT_DOG_N:
-		LoadChar(m, v, DIRECTION_UP, (int)CHAR_DOG, bossObjIdx);
+		LoadChar(m, v, DIRECTION_UP, (int)CHAR_DOG, false, bossObjIdx);
 		break;
 	case CWENT_DOG_W:
-		LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_DOG, bossObjIdx);
+		LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_DOG, false, bossObjIdx);
 		break;
 	case CWENT_DOG_S:
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_DOG, bossObjIdx);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_DOG, false, bossObjIdx);
 		break;
 	case CWENT_GUARD_E:
-		LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_GUARD, bossObjIdx);
+		LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_GUARD, false, bossObjIdx);
 		break;
 	case CWENT_GUARD_N:
-		LoadChar(m, v, DIRECTION_UP, (int)CHAR_GUARD, bossObjIdx);
+		LoadChar(m, v, DIRECTION_UP, (int)CHAR_GUARD, false, bossObjIdx);
 		break;
 	case CWENT_GUARD_W:
-		LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_GUARD, bossObjIdx);
+		LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_GUARD, false, bossObjIdx);
 		break;
 	case CWENT_GUARD_S:
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_GUARD, bossObjIdx);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_GUARD, false, bossObjIdx);
 		break;
 	case CWENT_SS_E:
-		LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_SS, bossObjIdx);
+		LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_SS, false, bossObjIdx);
 		break;
 	case CWENT_SS_N:
-		LoadChar(m, v, DIRECTION_UP, (int)CHAR_SS, bossObjIdx);
+		LoadChar(m, v, DIRECTION_UP, (int)CHAR_SS, false, bossObjIdx);
 		break;
 	case CWENT_SS_W:
-		LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_SS, bossObjIdx);
+		LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_SS, false, bossObjIdx);
 		break;
 	case CWENT_SS_S:
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_SS, bossObjIdx);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_SS, false, bossObjIdx);
 		break;
 	case CWENT_MUTANT_E:
-		LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_MUTANT, bossObjIdx);
+		LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_MUTANT, false, bossObjIdx);
 		break;
 	case CWENT_MUTANT_N:
-		LoadChar(m, v, DIRECTION_UP, (int)CHAR_MUTANT, bossObjIdx);
+		LoadChar(m, v, DIRECTION_UP, (int)CHAR_MUTANT, false, bossObjIdx);
 		break;
 	case CWENT_MUTANT_W:
-		LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_MUTANT, bossObjIdx);
+		LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_MUTANT, false, bossObjIdx);
 		break;
 	case CWENT_MUTANT_S:
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_MUTANT, bossObjIdx);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_MUTANT, false, bossObjIdx);
 		break;
 	case CWENT_OFFICER_E:
-		LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_OFFICER, bossObjIdx);
+		LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_OFFICER, false, bossObjIdx);
 		break;
 	case CWENT_OFFICER_N:
-		LoadChar(m, v, DIRECTION_UP, (int)CHAR_OFFICER, bossObjIdx);
+		LoadChar(m, v, DIRECTION_UP, (int)CHAR_OFFICER, false, bossObjIdx);
 		break;
 	case CWENT_OFFICER_W:
-		LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_OFFICER, bossObjIdx);
+		LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_OFFICER, false, bossObjIdx);
 		break;
 	case CWENT_OFFICER_S:
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_OFFICER, bossObjIdx);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_OFFICER, false, bossObjIdx);
+		break;
+	case CWENT_GUARD_MOVING_E:
+		LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_GUARD, true, bossObjIdx);
+		break;
+	case CWENT_GUARD_MOVING_N:
+		LoadChar(m, v, DIRECTION_UP, (int)CHAR_GUARD, true, bossObjIdx);
+		break;
+	case CWENT_GUARD_MOVING_W:
+		LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_GUARD, true, bossObjIdx);
+		break;
+	case CWENT_GUARD_MOVING_S:
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_GUARD, true, bossObjIdx);
+		break;
+	case CWENT_SS_MOVING_E:
+		LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_SS, true, bossObjIdx);
+		break;
+	case CWENT_SS_MOVING_N:
+		LoadChar(m, v, DIRECTION_UP, (int)CHAR_SS, true, bossObjIdx);
+		break;
+	case CWENT_SS_MOVING_W:
+		LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_SS, true, bossObjIdx);
+		break;
+	case CWENT_SS_MOVING_S:
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_SS, true, bossObjIdx);
+		break;
+	case CWENT_MUTANT_MOVING_E:
+		LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_MUTANT, true, bossObjIdx);
+		break;
+	case CWENT_MUTANT_MOVING_N:
+		LoadChar(m, v, DIRECTION_UP, (int)CHAR_MUTANT, true, bossObjIdx);
+		break;
+	case CWENT_MUTANT_MOVING_W:
+		LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_MUTANT, true, bossObjIdx);
+		break;
+	case CWENT_MUTANT_MOVING_S:
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_MUTANT, true, bossObjIdx);
+		break;
+	case CWENT_OFFICER_MOVING_E:
+		LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_OFFICER, true, bossObjIdx);
+		break;
+	case CWENT_OFFICER_MOVING_N:
+		LoadChar(m, v, DIRECTION_UP, (int)CHAR_OFFICER, true, bossObjIdx);
+		break;
+	case CWENT_OFFICER_MOVING_W:
+		LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_OFFICER, true, bossObjIdx);
+		break;
+	case CWENT_OFFICER_MOVING_S:
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_OFFICER, true, bossObjIdx);
 		break;
 	case CWENT_TURN_E:
 		AdjustTurningPoint(m, svec2i(v.x + 1, v.y));
@@ -1655,53 +1703,63 @@ static void LoadEntity(
 		AdjustTurningPoint(m, svec2i(v.x, v.y + 1));
 		break;
 	case CWENT_TRANS:
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_TRANS, bossObjIdx);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_TRANS, false, bossObjIdx);
 		break;
 	case CWENT_UBER_MUTANT:
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_UBERMUTANT, bossObjIdx);
+		LoadChar(
+			m, v, DIRECTION_DOWN, (int)CHAR_UBERMUTANT, false, bossObjIdx);
 		break;
 	case CWENT_BARNACLE_WILHELM:
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_WILHELM, bossObjIdx);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_WILHELM, false, bossObjIdx);
 		break;
 	case CWENT_ROBED_HITLER:
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_FAKE_HITLER, bossObjIdx);
+		LoadChar(
+			m, v, DIRECTION_DOWN, (int)CHAR_FAKE_HITLER, false, bossObjIdx);
 		break;
 	case CWENT_DEATH_KNIGHT:
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_DEATH_KNIGHT, bossObjIdx);
+		LoadChar(
+			m, v, DIRECTION_DOWN, (int)CHAR_DEATH_KNIGHT, false, bossObjIdx);
 		break;
 	case CWENT_HITLER:
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_MECHA_HITLER, bossObjIdx);
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_HITLER, bossObjIdx);
+		LoadChar(
+			m, v, DIRECTION_DOWN, (int)CHAR_MECHA_HITLER, false, bossObjIdx);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_HITLER, false, bossObjIdx);
 		break;
 	case CWENT_FETTGESICHT:
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_FETTGESICHT, bossObjIdx);
+		LoadChar(
+			m, v, DIRECTION_DOWN, (int)CHAR_FETTGESICHT, false, bossObjIdx);
 		break;
 	case CWENT_SCHABBS:
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_SCHABBS, bossObjIdx);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_SCHABBS, false, bossObjIdx);
 		break;
 	case CWENT_GRETEL:
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_GRETEL, bossObjIdx);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_GRETEL, false, bossObjIdx);
 		break;
 	case CWENT_HANS:
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_HANS, bossObjIdx);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_HANS, false, bossObjIdx);
 		break;
 	case CWENT_OTTO:
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_OTTO, bossObjIdx);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_OTTO, false, bossObjIdx);
 		break;
 	case CWENT_PACMAN_GHOST_RED:
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_PACMAN_GHOST_RED, bossObjIdx);
+		LoadChar(
+			m, v, DIRECTION_DOWN, (int)CHAR_PACMAN_GHOST_RED, false,
+			bossObjIdx);
 		break;
 	case CWENT_PACMAN_GHOST_YELLOW:
 		LoadChar(
-			m, v, DIRECTION_DOWN, (int)CHAR_PACMAN_GHOST_YELLOW, bossObjIdx);
+			m, v, DIRECTION_DOWN, (int)CHAR_PACMAN_GHOST_YELLOW, false,
+			bossObjIdx);
 		break;
 	case CWENT_PACMAN_GHOST_ROSE:
 		LoadChar(
-			m, v, DIRECTION_DOWN, (int)CHAR_PACMAN_GHOST_ROSE, bossObjIdx);
+			m, v, DIRECTION_DOWN, (int)CHAR_PACMAN_GHOST_ROSE, false,
+			bossObjIdx);
 		break;
 	case CWENT_PACMAN_GHOST_BLUE:
 		LoadChar(
-			m, v, DIRECTION_DOWN, (int)CHAR_PACMAN_GHOST_BLUE, bossObjIdx);
+			m, v, DIRECTION_DOWN, (int)CHAR_PACMAN_GHOST_BLUE, false,
+			bossObjIdx);
 		break;
 	default:
 		break;
@@ -1721,7 +1779,7 @@ static bool MakeWallWalkable(Mission *m, const struct vec2i v)
 }
 static void LoadChar(
 	Mission *m, const struct vec2i v, const direction_e d, const int charId,
-	int *bossObjIdx)
+	const bool moving, int *bossObjIdx)
 {
 	CharacterPlace cp = {v, d};
 	switch (charId)
@@ -1754,9 +1812,9 @@ static void LoadChar(
 		break;
 	}
 	// holowall
-	if (MakeWallWalkable(m, v))
+	if (MakeWallWalkable(m, v) || moving)
 	{
-		// Also make the wall in front of it holowall
+		// Make the wall in front of it holowall
 		MakeWallWalkable(m, svec2i_add(v, Vec2iFromDirection(d)));
 	}
 }
