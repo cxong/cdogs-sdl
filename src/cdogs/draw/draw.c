@@ -457,6 +457,8 @@ static void DrawThing(DrawBuffer *b, const Thing *t, const struct vec2i offset)
 #endif
 }
 
+static void DrawPickups(
+	DrawBuffer *b, const Map *map, const struct vec2i offset);
 static void DrawEditorTiles(
 	DrawBuffer *b, const Map *map, const struct vec2i offset);
 static void DrawGuideImage(
@@ -470,10 +472,39 @@ static void DrawExtra(
 	{
 		DrawGuideImage(b, extra->guideImage, extra->guideImageAlpha);
 	}
+	// Draw pickups, in case they are obscured by walls
+	DrawPickups(b, &gMap, offset);
 	DrawEditorTiles(b, &gMap, offset);
 	DrawObjectNames(b, offset);
 }
 
+static void DrawPickups(
+	DrawBuffer *b, const Map *map, const struct vec2i offset)
+{
+	struct vec2i pos;
+	pos.y = b->dy + offset.y;
+	for (int y = 0; y < Y_TILES; y++, pos.y += TILE_HEIGHT)
+	{
+		pos.x = b->dx + offset.x;
+		for (int x = 0; x < b->Size.x; x++, pos.x += TILE_WIDTH)
+		{
+			const struct vec2i tilePos = svec2i(x + b->xStart, y + b->yStart);
+			if (!MapIsTileIn(map, tilePos))
+			{
+				continue;
+			}
+
+			const Tile *t = MapGetTile(map, tilePos);
+			CA_FOREACH(const ThingId, tid, t->things)
+			const Thing *ti = ThingIdGetThing(tid);
+			if (ti->kind == KIND_PICKUP)
+			{
+				DrawThing(b, ti, offset);
+			}
+			CA_FOREACH_END()
+		}
+	}
+}
 static void DrawEditorTiles(
 	DrawBuffer *b, const Map *map, const struct vec2i offset)
 {
