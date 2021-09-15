@@ -156,14 +156,14 @@
 				"IsRoom": false
 			},
 			"18": {
-				"Name": "",
-				"Type": "",
-				"Style": "recessed",
-				"Mask": "808080ff",
-				"MaskAlt": "008400ff",
+				"Name": "wall",
+				"Type": "Wall",
+				"Style": "landscape",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
 				"CanWalk": false,
-				"IsOpaque": false,
-				"Shootable": false,
+				"IsOpaque": true,
+				"Shootable": true,
 				"IsRoom": false
 			},
 			"19": {
