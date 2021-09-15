@@ -662,6 +662,8 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 				"Don't go to sleep after players leave");
 			DrawFlag(
 				ctx, ec, "Deaf", FLAGS_DEAF, "Doesn't wake to guns nearby");
+			DrawFlag(
+				ctx, ec, "All-Seeing", FLAGS_ALL_SEEING, "Has full 360-degree vision");
 			nk_end(ctx);
 		}
 	}

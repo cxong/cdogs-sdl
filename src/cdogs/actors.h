@@ -72,7 +72,8 @@
 #define FLAGS_IMMUNITY (1 << 10)   // Immune to poison
 #define FLAGS_SEETHROUGH (1 << 11) // Almost transparent
 #define FLAGS_DEAF (1 << 12)
-#define FLAGS_WAKING (1 << 13)
+#define FLAGS_ALL_SEEING (1 << 13)
+#define FLAGS_WAKING (1 << 14)
 
 // Special flags
 #define FLAGS_RUNS_AWAY (1 << 16) // Move directly away from player

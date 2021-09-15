@@ -331,7 +331,7 @@ bool AICanSee(const TActor *a, const struct vec2 target, const direction_e d)
 {
 	const int sightRange =
 		ConfigGetInt(&gConfig, "Game.SightRange") * TILE_WIDTH;
-	if (AIIsFacing(a, target, d))
+	if ((a->flags & FLAGS_ALL_SEEING) || AIIsFacing(a, target, d))
 	{
 		return AIHasClearView(a, target, sightRange * 2 / 3);
 	}
