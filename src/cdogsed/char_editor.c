@@ -663,7 +663,11 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 			DrawFlag(
 				ctx, ec, "Deaf", FLAGS_DEAF, "Doesn't wake to guns nearby");
 			DrawFlag(
-				ctx, ec, "All-Seeing", FLAGS_ALL_SEEING, "Has full 360-degree vision");
+				ctx, ec, "All-Seeing", FLAGS_ALL_SEEING,
+				"Has full 360-degree vision");
+			DrawFlag(
+				ctx, ec, "Unlock Doors", FLAGS_UNLOCK_DOORS,
+				"Can open any locked door");
 			nk_end(ctx);
 		}
 	}

@@ -1115,7 +1115,13 @@ static void TryLoadWallObject(
 			const struct vec2i exitV = svec2i(v.x + dx, v.y);
 			const TileClass *tc =
 				MissionStaticGetTileClass(m, levelSize, exitV);
-			if (tc != NULL && (tc->Type == TILE_CLASS_FLOOR || tc->Type == TILE_CLASS_DOOR))
+			// Tile can be a vertical door
+			const uint16_t chd = CWLevelGetCh(level, 0, exitV.x, exitV.y);
+			const CWTile tile = CWChToTile(chd);
+			const bool isVerticalDoor =
+				tile == CWTILE_ELEVATOR_V || tile == CWTILE_DOOR_V ||
+				tile == CWTILE_DOOR_GOLD_V || tile == CWTILE_DOOR_SILVER_V;
+			if (tc != NULL && (tc->Type == TILE_CLASS_FLOOR || isVerticalDoor))
 			{
 				Exit e;
 				e.Hidden = true;

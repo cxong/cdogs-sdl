@@ -502,8 +502,10 @@ static void CheckTrigger(const TActor *a, const Map *map)
 	const struct vec2i tilePos = Vec2ToTile(a->Pos);
 	const bool showLocked = ActorIsLocalPlayer(a->uid);
 	const Tile *t = MapGetTile(map, tilePos);
+	const int keyFlags =
+		(a->flags & FLAGS_UNLOCK_DOORS) ? -1 : gMission.KeyFlags;
 	CA_FOREACH(Trigger *, tp, t->triggers)
-	if (!TriggerTryActivate(*tp, gMission.KeyFlags, tilePos) &&
+	if (!TriggerTryActivate(*tp, keyFlags, tilePos) &&
 		(*tp)->isActive && TriggerCannotActivate(*tp) && showLocked)
 	{
 		TriggerSetCannotActivate(*tp);
@@ -1092,7 +1094,8 @@ void UpdateAllActors(const int ticks)
 	UpdateActorState(actor, ticks);
 	const NamedSprites *deathSprites = CharacterClassGetDeathSprites(
 		ActorGetCharacter(actor)->Class, &gPicManager);
-	if (actor->dead && (deathSprites == NULL || actor->dead - 1 > (int)deathSprites->pics.size))
+	if (actor->dead && (deathSprites == NULL ||
+						actor->dead - 1 > (int)deathSprites->pics.size))
 	{
 		if (!gCampaign.IsClient)
 		{
