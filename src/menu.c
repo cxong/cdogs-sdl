@@ -132,7 +132,7 @@ int MenuIsExit(MenuSystem *ms)
 
 void MenuProcessChangeKey(menu_t *menu);
 
-static bool MenuTypeHasSubMenus(const menu_type_e type)
+bool MenuTypeHasSubMenus(const menu_type_e type)
 {
 	return type == MENU_TYPE_NORMAL || type == MENU_TYPE_OPTIONS;
 }
@@ -275,6 +275,40 @@ static void DefaultMenuDraw(GameLoopData *data)
 {
 	MenuDraw(data->Data);
 }
+void MenuUpdateMouse(MenuSystem *ms)
+{
+	if (!MouseHasMoved(&ms->handlers->mouse))
+	{
+		return;
+	}
+	menu_t *menu = ms->current;
+	if (menu == NULL || !MenuTypeHasSubMenus(menu->type))
+	{
+		return;
+	}
+	// Get mouse position and change menu
+	menu->u.normal.mouseHover = false;
+	for (int i = 0; i < (int)menu->u.normal.subMenus.size; i++)
+	{
+		const Rect2i bounds = MenuGetSubmenuBounds(ms, i);
+		if (!Rect2iIsInside(bounds, ms->handlers->mouse.currentPos))
+		{
+			continue;
+		}
+		menu->u.normal.mouseHover = true;
+		if (menu->u.normal.index != i)
+		{
+			const menu_t *subMenu =
+				CArrayGet(&menu->u.normal.subMenus, i);
+			if (!subMenu->isDisabled)
+			{
+				menu->u.normal.index = i;
+				MenuPlaySound(MENU_SOUND_SWITCH);
+			}
+		}
+		break;
+	}
+}
 GameLoopResult MenuUpdate(MenuSystem *ms)
 {
 	if (ms->current->type == MENU_TYPE_OPTIONS &&
@@ -284,36 +318,14 @@ GameLoopResult MenuUpdate(MenuSystem *ms)
 	}
 	else
 	{
-		const int cmd = GetMenuCmd(ms->handlers);
+		const int cmd = GetMenuCmd(ms->handlers, MenuTypeHasSubMenus(ms->current->type) && ms->current->u.normal.mouseHover);
 		if (cmd)
 		{
 			MenuProcessCmd(ms, cmd);
 		}
-		else if (MouseHasMoved(&ms->handlers->mouse))
+		else
 		{
-			// Get mouse position and change menu
-			menu_t *menu = ms->current;
-			if (menu != NULL && MenuTypeHasSubMenus(menu->type))
-			{
-				for (int i = 0; i < (int)menu->u.normal.subMenus.size; i++)
-				{
-					const Rect2i bounds = MenuGetSubmenuBounds(ms, i);
-					if (Rect2iIsInside(bounds, ms->handlers->mouse.currentPos))
-					{
-						if (menu->u.normal.index != i)
-						{
-							const menu_t *subMenu =
-								CArrayGet(&menu->u.normal.subMenus, i);
-							if (!subMenu->isDisabled)
-							{
-								menu->u.normal.index = i;
-								MenuPlaySound(MENU_SOUND_SWITCH);
-							}
-						}
-						break;
-					}
-				}
-			}
+			MenuUpdateMouse(ms);
 		}
 	}
 	// Check if anyone pressed escape, or we need a hard exit
@@ -322,7 +334,7 @@ GameLoopResult MenuUpdate(MenuSystem *ms)
 	GetPlayerCmds(ms->handlers, &cmds);
 	const bool aborted =
 		ms->allowAborts &&
-		EventIsEscape(ms->handlers, cmds, GetMenuCmd(ms->handlers));
+		EventIsEscape(ms->handlers, cmds, GetMenuCmd(ms->handlers, false));
 	if (aborted || ms->handlers->HasQuit)
 	{
 		ms->hasAbort = true;

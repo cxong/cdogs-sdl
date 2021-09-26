@@ -398,7 +398,7 @@ static GameLoopResult PlayerSelectionUpdate(GameLoopData *data, LoopRunner *l)
 	int cmds[MAX_LOCAL_PLAYERS];
 	memset(cmds, 0, sizeof cmds);
 	GetPlayerCmds(&gEventHandlers, &cmds);
-	if (EventIsEscape(&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers)))
+	if (EventIsEscape(&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers, false)))
 	{
 		pData->waitResult = EVENT_WAIT_CANCEL;
 		LoopRunnerPop(l);
@@ -407,6 +407,7 @@ static GameLoopResult PlayerSelectionUpdate(GameLoopData *data, LoopRunner *l)
 
 	// Menu input
 	int idx = 0;
+	const bool useMenuCmd = GetNumPlayers(PLAYER_ANY, true, true);
 	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
 		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
@@ -415,10 +416,18 @@ static GameLoopResult PlayerSelectionUpdate(GameLoopData *data, LoopRunner *l)
 			idx--;
 			continue;
 		}
-		if (p->inputDevice != INPUT_DEVICE_UNSET &&
-			!MenuIsExit(&pData->menus[idx].ms) && cmds[idx])
+		if (p->inputDevice != INPUT_DEVICE_UNSET)
 		{
-			MenuProcessCmd(&pData->menus[idx].ms, cmds[idx]);
+			MenuSystem *ms = &pData->menus[idx].ms;
+			MenuUpdateMouse(ms);
+			if (useMenuCmd)
+			{
+				cmds[idx] |= GetMenuCmd(&gEventHandlers, MenuTypeHasSubMenus(ms->current->type) && ms->current->u.normal.mouseHover);
+			}
+			if (!MenuIsExit(ms) && cmds[idx])
+			{
+				MenuProcessCmd(ms, cmds[idx]);
+			}
 		}
 	}
 

@@ -74,7 +74,7 @@ typedef enum
 } EventWaitResult;
 EventWaitResult EventWaitForAnyKeyOrButton(void);
 void GetPlayerCmds(EventHandlers *handlers, int (*cmds)[MAX_LOCAL_PLAYERS]);
-int GetMenuCmd(EventHandlers *handlers);
+int GetMenuCmd(EventHandlers *handlers, const bool useMouse);
 void InputGetButtonNameColor(
 	const input_device_e d, const int dIndex, const int cmd, char *buf,
 	color_t *color);

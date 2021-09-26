@@ -359,7 +359,7 @@ void CharacterShuffleAppearance(Character *c)
 	else
 	{
 		c->Class = CArrayGet(
-			&gCharacterClasses.Classes,
+			&gCharacterClasses.CustomClasses,
 			charClass - gCharacterClasses.Classes.size);
 	}
 	CFREE(c->Hair);

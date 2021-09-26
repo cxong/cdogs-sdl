@@ -381,7 +381,7 @@ void GetPlayerCmds(EventHandlers *handlers, int (*cmds)[MAX_LOCAL_PLAYERS])
 	}
 }
 
-int GetMenuCmd(EventHandlers *handlers)
+int GetMenuCmd(EventHandlers *handlers, const bool useMouse)
 {
 	keyboard_t *kb = &handlers->keyboard;
 	bool firstJoyPressedEsc = false;
@@ -427,8 +427,10 @@ int GetMenuCmd(EventHandlers *handlers)
 	if (!cmd)
 	{
 		// Check mouse
-		if (MouseIsPressed(&handlers->mouse, SDL_BUTTON_LEFT))
+		if (MouseIsPressed(&handlers->mouse, SDL_BUTTON_LEFT) && useMouse)
 			cmd |= CMD_BUTTON1;
+		else if (MouseIsPressed(&handlers->mouse, SDL_BUTTON_RIGHT))
+			cmd |= CMD_BUTTON2;
 	}
 
 	return cmd;
@@ -617,7 +619,7 @@ EventWaitResult EventWaitForAnyKeyOrButton(void)
 	}
 
 	// Check menu commands
-	const int menuCmd = GetMenuCmd(&gEventHandlers);
+	const int menuCmd = GetMenuCmd(&gEventHandlers, true);
 	if (menuCmd & (CMD_BUTTON1 | CMD_BUTTON2 | CMD_GRENADE))
 	{
 		// Interpret anything other than CMD_BUTTON1 as cancel

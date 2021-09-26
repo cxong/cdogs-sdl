@@ -171,7 +171,7 @@ static void CheckReenableHairHatMenu(menu_t *menu, void *data);
 static void PostInputFaceMenu(menu_t *menu, int cmd, void *data);
 static menu_t *CreateFaceMenu(MenuDisplayPlayerData *data)
 {
-	menu_t *menu = MenuCreateNormal("Face", "", MENU_TYPE_NORMAL, 0);
+	menu_t *menu = MenuCreateNormal("Face / Body", "", MENU_TYPE_NORMAL, 0);
 	menu->u.normal.maxItems = 11;
 	CA_FOREACH(const CharacterClass, c, gCharacterClasses.Classes)
 	MenuAddSubmenu(menu, MenuCreateBack(c->Name));
@@ -550,27 +550,27 @@ static menu_t *CreateCustomizeMenu(
 
 	MenuAddSubmenu(
 		menu, CreateColorMenu(
-				  "Skin", &data->skinData, CHAR_COLOR_SKIN,
+				  "Skin Color", &data->skinData, CHAR_COLOR_SKIN,
 				  data->display.PlayerUID));
 	MenuAddSubmenu(
 		menu, CreateColorMenu(
-				  "Hair", &data->hairData, CHAR_COLOR_HAIR,
+				  "Hair Color", &data->hairData, CHAR_COLOR_HAIR,
 				  data->display.PlayerUID));
 	MenuAddSubmenu(
 		menu, CreateColorMenu(
-				  "Arms", &data->armsData, CHAR_COLOR_ARMS,
+				  "Arms Color", &data->armsData, CHAR_COLOR_ARMS,
 				  data->display.PlayerUID));
 	MenuAddSubmenu(
 		menu, CreateColorMenu(
-				  "Body", &data->bodyData, CHAR_COLOR_BODY,
+				  "Body Color", &data->bodyData, CHAR_COLOR_BODY,
 				  data->display.PlayerUID));
 	MenuAddSubmenu(
 		menu, CreateColorMenu(
-				  "Legs", &data->legsData, CHAR_COLOR_LEGS,
+				  "Legs Color", &data->legsData, CHAR_COLOR_LEGS,
 				  data->display.PlayerUID));
 	MenuAddSubmenu(
 		menu, CreateColorMenu(
-				  "Feet", &data->feetData, CHAR_COLOR_FEET,
+				  "Feet Color", &data->feetData, CHAR_COLOR_FEET,
 				  data->display.PlayerUID));
 
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));

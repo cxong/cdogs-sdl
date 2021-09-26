@@ -248,7 +248,7 @@ static GameLoopResult PlayerEquipUpdate(GameLoopData *data, LoopRunner *l)
 	int cmds[MAX_LOCAL_PLAYERS];
 	memset(cmds, 0, sizeof cmds);
 	GetPlayerCmds(&gEventHandlers, &cmds);
-	if (EventIsEscape(&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers)))
+	if (EventIsEscape(&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers, false)))
 	{
 		pData->waitResult = EVENT_WAIT_CANCEL;
 		goto bail;

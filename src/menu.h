@@ -159,6 +159,7 @@ struct menu
 			int setOptions;
 			struct menu
 				*changeKeyMenu; // if in change key mode, and which item
+			bool mouseHover;  // whether mouse is hovered over a submenu
 		} normal;
 		// menu item only
 		struct
@@ -253,7 +254,9 @@ void MenuAddExitType(MenuSystem *menu, menu_type_e exitType);
 void MenuSystemAddCustomDisplay(
 	MenuSystem *ms, MenuDisplayFunc func, void *data);
 int MenuIsExit(MenuSystem *ms);
+bool MenuTypeHasSubMenus(const menu_type_e type);
 GameLoopData *MenuLoop(MenuSystem *menu);
+void MenuUpdateMouse(MenuSystem *ms);
 GameLoopResult MenuUpdate(MenuSystem *ms);
 void MenuDraw(const MenuSystem *ms);
 void MenuDisplay(const MenuSystem *ms);

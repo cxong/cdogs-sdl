@@ -279,7 +279,7 @@ static void MissionBriefingInput(GameLoopData *data)
 		}
 	}
 	// Check if anyone pressed escape
-	if (EventIsEscape(&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers)))
+	if (EventIsEscape(&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers, false)))
 	{
 		mData->waitResult = EVENT_WAIT_CANCEL;
 	}
