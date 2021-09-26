@@ -109,10 +109,6 @@ void MenuDisplayPlayerControls(
 			FontStr(s, svec2i(pos.x - FontStrW(s) / 2, y - FontH()));
 		}
 		break;
-	case INPUT_DEVICE_MOUSE:
-		sprintf(s, "(%s to scroll,\nleft and right click)", directionNames);
-		FontStr(s, svec2i(pos.x - FontStrW(s) / 2, y - FontH()));
-		break;
 	case INPUT_DEVICE_JOYSTICK:
 		{
 			sprintf(s, "(%s,",

@@ -145,18 +145,3 @@ void MissionOptionsTerminate(struct MissionOptions *mo)
 
 	memset(mo, 0, sizeof *mo);
 }
-
-
-bool GameIsMouseUsed(void)
-{
-	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-		if (p->IsLocal && p->inputDevice == INPUT_DEVICE_MOUSE)
-		{
-			const TActor *a = ActorGetByUID(p->ActorUID);
-			if (a == NULL) continue;
-			if (a->dead) continue;
-			return true;
-		}
-	CA_FOREACH_END()
-	return false;
-}

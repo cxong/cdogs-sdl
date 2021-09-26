@@ -288,36 +288,6 @@ int GetKeyboardCmd(
 
 	return cmd;
 }
-static int GetMouseCmd(
-	Mouse *mouse, bool isPressed, int useMouseMove, struct vec2i pos)
-{
-	int cmd = 0;
-	bool (*mouseFunc)(const Mouse *, const int) =
-		isPressed ? MouseIsPressed : MouseIsDown;
-
-	if (useMouseMove)
-	{
-		cmd |= MouseGetMove(mouse, pos);
-	}
-	else
-	{
-		if (MouseWheel(mouse).y > 0)
-			cmd |= CMD_UP;
-		else if (MouseWheel(mouse).y < 0)
-			cmd |= CMD_DOWN;
-	}
-
-	if (mouseFunc(mouse, SDL_BUTTON_LEFT))
-		cmd |= CMD_BUTTON1;
-	if (mouseFunc(mouse, SDL_BUTTON_RIGHT))
-		cmd |= CMD_BUTTON2;
-	if (mouseFunc(mouse, SDL_BUTTON_MIDDLE))
-		cmd |= CMD_GRENADE;
-	if (mouseFunc(mouse, SDL_BUTTON_X1))
-		cmd |= CMD_MAP;
-
-	return cmd;
-}
 
 static int GetJoystickCmd(const SDL_JoystickID id, bool isPressed)
 {
@@ -351,9 +321,7 @@ static int GetJoystickCmd(const SDL_JoystickID id, bool isPressed)
 	return cmd;
 }
 
-int GetGameCmd(
-	EventHandlers *handlers, const PlayerData *playerData,
-	const struct vec2i playerPos)
+int GetGameCmd(EventHandlers *handlers, const PlayerData *playerData)
 {
 	int cmd = 0;
 
@@ -362,9 +330,6 @@ int GetGameCmd(
 	case INPUT_DEVICE_KEYBOARD:
 		cmd = GetKeyboardCmd(
 			&handlers->keyboard, playerData->deviceIndex, false);
-		break;
-	case INPUT_DEVICE_MOUSE:
-		cmd = GetMouseCmd(&handlers->mouse, false, 1, playerPos);
 		break;
 	case INPUT_DEVICE_JOYSTICK:
 		cmd = GetJoystickCmd(playerData->deviceIndex, false);
@@ -386,9 +351,6 @@ int GetOnePlayerCmd(
 	{
 	case INPUT_DEVICE_KEYBOARD:
 		cmd = GetKeyboardCmd(&handlers->keyboard, deviceIndex, isPressed);
-		break;
-	case INPUT_DEVICE_MOUSE:
-		cmd = GetMouseCmd(&handlers->mouse, isPressed, 0, svec2i_zero());
 		break;
 	case INPUT_DEVICE_JOYSTICK:
 		cmd = GetJoystickCmd(deviceIndex, isPressed);
@@ -465,7 +427,8 @@ int GetMenuCmd(EventHandlers *handlers)
 	if (!cmd)
 	{
 		// Check mouse
-		cmd = GetOnePlayerCmd(handlers, true, INPUT_DEVICE_MOUSE, 0);
+		if (MouseIsPressed(&handlers->mouse, SDL_BUTTON_LEFT))
+			cmd |= CMD_BUTTON1;
 	}
 
 	return cmd;
@@ -557,38 +520,6 @@ void InputGetButtonNameColor(
 	}
 #endif
 		break;
-	case INPUT_DEVICE_MOUSE:
-		switch (cmd)
-		{
-		case CMD_LEFT:
-			strcpy(buf, "left");
-			return;
-		case CMD_RIGHT:
-			strcpy(buf, "right");
-			return;
-		case CMD_UP:
-			strcpy(buf, "up");
-			return;
-		case CMD_DOWN:
-			strcpy(buf, "down");
-			return;
-		case CMD_BUTTON1:
-			strcpy(buf, "left click");
-			return;
-		case CMD_BUTTON2:
-			strcpy(buf, "right click");
-			return;
-		case CMD_MAP:
-			strcpy(buf, "middle click");
-			return;
-		case CMD_ESC:
-			strcpy(buf, "");
-			return;
-		default:
-			CASSERT(false, "unknown button");
-			return;
-		}
-		break;
 	case INPUT_DEVICE_JOYSTICK:
 		JoyButtonNameColor(dIndex, cmd, buf, color);
 		return;
@@ -614,9 +545,6 @@ void InputGetDirectionNames(
 		sprintf(buf, "%s, %s, %s, %s", left, right, up, down);
 	}
 	break;
-	case INPUT_DEVICE_MOUSE:
-		strcpy(buf, "mouse wheel");
-		break;
 	case INPUT_DEVICE_JOYSTICK:
 		strcpy(buf, "directions");
 		break;
@@ -639,8 +567,6 @@ bool InputHasGrenadeButton(const input_device_e d, const int dIndex)
 		return KeyGet(
 				   &gEventHandlers.keyboard.PlayerKeys[dIndex],
 				   KEY_CODE_GRENADE) != SDL_SCANCODE_UNKNOWN;
-	case INPUT_DEVICE_MOUSE:
-		return true;
 	case INPUT_DEVICE_JOYSTICK:
 		return true;
 	case INPUT_DEVICE_AI:

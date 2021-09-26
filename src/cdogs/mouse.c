@@ -225,7 +225,7 @@ void MouseSetCursor(Mouse *m, const SDL_SystemCursor sc)
 	SDL_SetCursor(m->cursors[sc]);
 	SDL_ShowCursor(SDL_ENABLE);
 }
-void MouseSetPicCursor(Mouse *m, const Pic *cursor, const Pic *trail)
+void MouseSetPicCursor(Mouse *m, const Pic *cursor)
 {
 	if (cursor)
 	{
@@ -256,34 +256,5 @@ void MouseSetPicCursor(Mouse *m, const Pic *cursor, const Pic *trail)
 		}
 		m->cursor = NULL;
 	}
-	m->trail = trail;
 	SDL_ShowCursor(cursor != NULL ? SDL_ENABLE : SDL_DISABLE);
-}
-
-void MouseDraw(const Mouse *mouse)
-{
-	if (mouse->trail)
-	{
-		const int dx = abs(mouse->currentPos.x - mouse->mouseMovePos.x);
-		const int dy = abs(mouse->currentPos.y - mouse->mouseMovePos.y);
-		const bool isInDeadZone =
-			dx <= MOUSE_MOVE_DEAD_ZONE && dy <= MOUSE_MOVE_DEAD_ZONE;
-		if (!isInDeadZone)
-		{
-			// Draw a trail between the mouse move pos and mouse pos
-			// The trail is made up of a fixed number of dots
-			const struct vec2i d =
-				svec2i_subtract(mouse->currentPos, mouse->mouseMovePos);
-			for (int i = 1; i <= TRAIL_NUM_DOTS; i++)
-			{
-				const struct vec2i pos = svec2i_add(
-					mouse->mouseMovePos,
-					svec2i_scale_divide(
-						svec2i_scale(d, (float)i), TRAIL_NUM_DOTS + 1));
-				PicRender(
-					mouse->trail, gGraphicsDevice.gameWindow.renderer, pos,
-					colorWhite, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
-			}
-		}
-	}
 }

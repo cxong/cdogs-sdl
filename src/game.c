@@ -108,52 +108,6 @@ static void PlayerSpecialCommands(TActor *actor, const int cmd)
 	}
 }
 
-// TODO: reimplement in camera
-struct vec2i GetPlayerCenter(
-	GraphicsDevice *device, const Camera *camera, const PlayerData *pData,
-	const int playerIdx)
-{
-	if (pData->ActorUID < 0)
-	{
-		// Player is dead
-		return svec2i_zero();
-	}
-	struct vec2i center = svec2i_zero();
-	int w = device->cachedConfig.Res.x;
-	int h = device->cachedConfig.Res.y;
-
-	if (GetNumPlayers(PLAYER_ANY, true, true) == 1 ||
-		GetNumPlayers(PLAYER_ANY, false, true) == 1 || CameraIsSingleScreen())
-	{
-		const struct vec2 pCenter = camera->lastPosition;
-		const struct vec2i screenCenter =
-			svec2i(w / 2, device->cachedConfig.Res.y / 2);
-		const TActor *actor = ActorGetByUID(pData->ActorUID);
-		const struct vec2 p = actor->thing.Pos;
-		center = svec2i_add(
-			svec2i_assign_vec2(svec2_subtract(p, pCenter)), screenCenter);
-	}
-	else
-	{
-		const int numLocalPlayers = GetNumPlayers(PLAYER_ANY, false, true);
-		if (numLocalPlayers == 2)
-		{
-			center.x = playerIdx == 0 ? w / 4 : w * 3 / 4;
-			center.y = h / 2;
-		}
-		else if (numLocalPlayers >= 3 && numLocalPlayers <= 4)
-		{
-			center.x = (playerIdx & 1) ? w * 3 / 4 : w / 4;
-			center.y = (playerIdx >= 2) ? h * 3 / 4 : h / 4;
-		}
-		else
-		{
-			CASSERT(false, "invalid number of players");
-		}
-	}
-	return center;
-}
-
 static void RunGameTerminate(GameLoopData *data);
 static void RunGameOnEnter(GameLoopData *data);
 static void RunGameOnExit(GameLoopData *data);
@@ -264,9 +218,7 @@ static void RunGameOnEnter(GameLoopData *data)
 	Pic *crosshair = PicManagerGetPic(&gPicManager, "crosshair");
 	crosshair->offset.x = -crosshair->size.x / 2;
 	crosshair->offset.y = -crosshair->size.y / 2;
-	MouseSetPicCursor(
-		&gEventHandlers.mouse, crosshair,
-		PicManagerGetPic(&gPicManager, "crosshair_trail"));
+	MouseSetPicCursor(&gEventHandlers.mouse, crosshair);
 
 	NetServerSendGameStartMessages(&gNetServer, NET_SERVER_BCAST);
 	GameEvent start = GameEventNew(GAME_EVENT_GAME_START);
@@ -382,9 +334,7 @@ static void RunGameInput(GameLoopData *data)
 			{
 				firstPausingDevice = p->inputDevice;
 			}
-			rData->cmds[idx] = GetGameCmd(
-				&gEventHandlers, p,
-				GetPlayerCenter(&gGraphicsDevice, &rData->Camera, p, idx));
+			rData->cmds[idx] = GetGameCmd(&gEventHandlers, p);
 			cmdAll |= rData->cmds[idx];
 
 			// Only allow the first player to escape
@@ -756,11 +706,6 @@ static void RunGameDraw(GameLoopData *data)
 	HUDDraw(
 		&rData->Camera.HUD, rData->pausingDevice, rData->controllerUnplugged,
 		rData->Camera.NumViews);
-	const bool isMouse = GameIsMouseUsed();
-	if (isMouse)
-	{
-		MouseDraw(&gEventHandlers.mouse);
-	}
 	// Draw automap if enabled
 	if (rData->isMap)
 	{

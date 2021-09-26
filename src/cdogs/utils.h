@@ -166,7 +166,6 @@ typedef enum
 {
 	INPUT_DEVICE_UNSET,
 	INPUT_DEVICE_KEYBOARD,
-	INPUT_DEVICE_MOUSE,
 	INPUT_DEVICE_JOYSTICK,
 
 	// Fake device used for co-op AI

@@ -457,8 +457,6 @@ const char *InputDeviceName(const int d, const int deviceIndex)
 	{
 	case INPUT_DEVICE_KEYBOARD:
 		return "Keyboard";
-	case INPUT_DEVICE_MOUSE:
-		return "Mouse";
 	case INPUT_DEVICE_JOYSTICK:
 		return JoyName(deviceIndex);
 	case INPUT_DEVICE_AI:

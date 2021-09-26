@@ -287,12 +287,6 @@ static void AssignPlayerInputDevices(EventHandlers *handlers)
 			break;
 		}
 	}
-	if (MouseIsPressed(&handlers->mouse, SDL_BUTTON_LEFT) &&
-		PlayerTrySetUnusedInputDevice(p, INPUT_DEVICE_MOUSE, 0))
-	{
-		MenuPlaySound(MENU_SOUND_START);
-		continue;
-	}
 	for (int j = 0; j < (int)handlers->joysticks.size; j++)
 	{
 		const Joystick *joy = CArrayGet(&handlers->joysticks, j);
@@ -493,7 +487,7 @@ static void PlayerSelectionDraw(GameLoopData *data)
 		else
 		{
 			struct vec2i center = svec2i_zero();
-			const char *prompt = "Press Fire to join...";
+			const char *prompt = "Press Fire to choose input device and join...";
 			const struct vec2i offset =
 				svec2i_scale_divide(FontStrSize(prompt), -2);
 			switch (GetNumPlayers(false, false, true))

@@ -72,5 +72,3 @@ void CampaignUnload(Campaign *co);
 
 void MissionOptionsInit(struct MissionOptions *mo);
 void MissionOptionsTerminate(struct MissionOptions *mo);
-
-bool GameIsMouseUsed(void);

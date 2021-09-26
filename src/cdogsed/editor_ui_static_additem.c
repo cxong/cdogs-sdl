@@ -59,7 +59,7 @@ static EditorResult BrushSetBrushTypeAddMapItem(void *data, int d)
 	b->Brush->u.MapObject = b->u.MapObject;
 	MouseSetPicCursor(
 		&gEventHandlers.mouse,
-		PicManagerGetPic(&gPicManager, "editor/cursors/add"), NULL);
+		PicManagerGetPic(&gPicManager, "editor/cursors/add"));
 	return EDITOR_RESULT_CHANGE_TOOL;
 }
 static EditorResult BrushSetBrushTypeAddCharacter(void *data, int d)
@@ -70,7 +70,7 @@ static EditorResult BrushSetBrushTypeAddCharacter(void *data, int d)
 	b->Brush->u.ItemIndex = b->u.ItemIndex;
 	MouseSetPicCursor(
 		&gEventHandlers.mouse,
-		PicManagerGetPic(&gPicManager, "editor/cursors/add"), NULL);
+		PicManagerGetPic(&gPicManager, "editor/cursors/add"));
 	return EDITOR_RESULT_CHANGE_TOOL;
 }
 static EditorResult BrushSetBrushTypeAddObjective(void *data, int d)
@@ -82,7 +82,7 @@ static EditorResult BrushSetBrushTypeAddObjective(void *data, int d)
 	b->Brush->Index2 = b->Index2;
 	MouseSetPicCursor(
 		&gEventHandlers.mouse,
-		PicManagerGetPic(&gPicManager, "editor/cursors/add"), NULL);
+		PicManagerGetPic(&gPicManager, "editor/cursors/add"));
 	return EDITOR_RESULT_CHANGE_TOOL;
 }
 static EditorResult BrushSetBrushTypeAddKey(void *data, int d)
@@ -93,7 +93,7 @@ static EditorResult BrushSetBrushTypeAddKey(void *data, int d)
 	b->Brush->u.ItemIndex = b->u.ItemIndex;
 	MouseSetPicCursor(
 		&gEventHandlers.mouse,
-		PicManagerGetPic(&gPicManager, "editor/cursors/add"), NULL);
+		PicManagerGetPic(&gPicManager, "editor/cursors/add"));
 	return EDITOR_RESULT_CHANGE_TOOL;
 }
 static EditorResult BrushSetBrushTypeAddPickup(void *data, int d)
@@ -107,7 +107,7 @@ static EditorResult BrushSetBrushTypeAddPickup(void *data, int d)
 	b->Type = BRUSHTYPE_ADD_PICKUP;
 	MouseSetPicCursor(
 		&gEventHandlers.mouse,
-		PicManagerGetPic(&gPicManager, "editor/cursors/add"), NULL);
+		PicManagerGetPic(&gPicManager, "editor/cursors/add"));
 	return AddPickupDialog(&gPicManager, &gEventHandlers, &b->u.Pickup);
 }
 

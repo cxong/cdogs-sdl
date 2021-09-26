@@ -45,7 +45,7 @@ FEATURE(assign_unused, "Assign unused input device")
 			const int idx = 0;
 			p->deviceIndex = idx;
 		WHEN("I assign it with a different input device")
-			bool res = PlayerTrySetUnusedInputDevice(p, INPUT_DEVICE_MOUSE, 0);
+			bool res = PlayerTrySetUnusedInputDevice(p, INPUT_DEVICE_JOYSTICK, 0);
 		THEN("the assignment should fail")
 			SHOULD_BE_FALSE(res);
 		AND("the player's input device should be unchanged")

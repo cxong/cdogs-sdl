@@ -247,7 +247,6 @@ static void Display(HandleInputResult result)
 			UITooltipDraw(
 				ec.g, gEventHandlers.mouse.currentPos, sTooltipObj->Tooltip);
 		}
-		MouseDraw(&gEventHandlers.mouse);
 	}
 	BlitUpdateFromBuf(ec.g, ec.g->screen);
 	WindowContextPostRender(&ec.g->gameWindow);

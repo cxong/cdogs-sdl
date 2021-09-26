@@ -43,7 +43,6 @@ typedef struct
 	struct vec2i currentPos;
 	struct vec2i wheel;
 	SDL_Cursor *cursor;
-	const Pic *trail;
 	Uint32 repeatedTicks;
 
 	struct vec2i mouseMovePos;
@@ -67,8 +66,6 @@ bool MouseIsReleased(const Mouse *m, const int button);
 // Get wheel movement since last poll
 struct vec2i MouseWheel(const Mouse *m);
 // Get mouse movement from a screen position
-// Note: also sets whether the mouse trail is drawn, and from where
 int MouseGetMove(Mouse *mouse, const struct vec2i pos);
 void MouseSetCursor(Mouse *m, const SDL_SystemCursor sc);
-void MouseSetPicCursor(Mouse *m, const Pic *cursor, const Pic *trail);
-void MouseDraw(const Mouse *mouse);
+void MouseSetPicCursor(Mouse *m, const Pic *cursor);
