@@ -64,7 +64,8 @@ void MapWolfTerminate(void)
 	CWAudioTerminate();
 }
 
-static void GetCampaignPath(const CWMapType type, char *buf)
+static void GetCampaignPath(
+	const CWMapType type, const int spearMission, char *buf)
 {
 	switch (type)
 	{
@@ -75,7 +76,22 @@ static void GetCampaignPath(const CWMapType type, char *buf)
 		GetDataFilePath(buf, "missions/.wolf3d/WL6.cdogscpn");
 		break;
 	case CWMAPTYPE_SOD:
-		GetDataFilePath(buf, "missions/.wolf3d/SOD.cdogscpn");
+		switch (spearMission)
+		{
+		case 1:
+			GetDataFilePath(buf, "missions/.wolf3d/SOD.cdogscpn");
+			break;
+		case 2:
+			GetDataFilePath(buf, "missions/.wolf3d/SD2.cdogscpn");
+			break;
+		case 3:
+			GetDataFilePath(buf, "missions/.wolf3d/SD3.cdogscpn");
+			break;
+		default:
+			CASSERT(false, "Unknown spear mission");
+			GetDataFilePath(buf, "missions/.wolf3d/SOD.cdogscpn");
+			break;
+		}
 		break;
 	default:
 		CASSERT(false, "unknown map type");
@@ -446,6 +462,8 @@ static bool IsDefaultMap(const char *filename)
 			   // GOG Windows
 			   StrEndsWith(buf, "WOLFENSTEIN 3D") ||
 			   StrEndsWith(buf, "SPEAR OF DESTINY/M1") ||
+			   StrEndsWith(buf, "SPEAR OF DESTINY/M2") ||
+			   StrEndsWith(buf, "SPEAR OF DESTINY/M3") ||
 			   // Steam Windows
 			   StrEndsWith(buf, "WOLFENSTEIN 3D/BASE") ||
 			   StrEndsWith(buf, "SPEAR OF DESTINY/BASE") ||
@@ -472,7 +490,7 @@ static void AdjustCampaignTitle(const char *filename, char **title)
 static bool LoadDefault(CWolfMap *map, const char *filename)
 {
 	memset(map, 0, sizeof *map);
-	map->type = CWGetType(filename, NULL, NULL);
+	map->type = CWGetType(filename, NULL, NULL, 1);
 	switch (map->type)
 	{
 	case CWMAPTYPE_WL6:
@@ -495,14 +513,16 @@ static bool LoadDefault(CWolfMap *map, const char *filename)
 	return false;
 }
 
-int MapWolfScan(const char *filename, char **title, int *numMissions)
+int MapWolfScan(
+	const char *filename, const int spearMission, char **title,
+	int *numMissions)
 {
 	int err = 0;
 	bool usedAsDefault = false;
 	CWolfMap map;
 	memset(&map, 0, sizeof map);
 	const bool loadedFromDefault = LoadDefault(&map, filename);
-	err = CWLoad(&map, filename);
+	err = CWLoad(&map, filename, spearMission);
 	if (loadedFromDefault)
 	{
 		err = 0;
@@ -511,15 +531,15 @@ int MapWolfScan(const char *filename, char **title, int *numMissions)
 	{
 		goto bail;
 	}
-	
+
 	// Look for a campaign.json in the folder and use that if available
 	if (MapNewScanArchive(filename, title, numMissions) == 0)
 	{
 		goto bail;
 	}
-	
+
 	char buf[CDOGS_PATH_MAX];
-	GetCampaignPath(map.type, buf);
+	GetCampaignPath(map.type, spearMission, buf);
 	err = MapNewScanArchive(buf, title, NULL);
 	if (err != 0)
 	{
@@ -591,7 +611,8 @@ static Mix_Chunk *GetCampaignSong(void *data)
 	const int songIndex = songsCampaign[csd->Type];
 	return LoadMusic(csd->Map, CWAudioGetSong(csd->Map->type, songIndex));
 }
-int MapWolfLoad(const char *filename, CampaignSetting *c)
+int MapWolfLoad(
+	const char *filename, const int spearMission, CampaignSetting *c)
 {
 	int err = 0;
 	CWolfMap *map = NULL;
@@ -603,7 +624,7 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 	memset(&cs, 0, sizeof cs);
 
 	const bool loadedFromDefault = LoadDefault(map, filename);
-	err = CWLoad(map, filename);
+	err = CWLoad(map, filename, spearMission);
 	if (loadedFromDefault)
 	{
 		err = 0;
@@ -664,7 +685,7 @@ int MapWolfLoad(const char *filename, CampaignSetting *c)
 		}
 	}
 
-	GetCampaignPath(map->type, buf);
+	GetCampaignPath(map->type, spearMission, buf);
 	err = MapNewLoadArchive(buf, c);
 	if (err != 0)
 	{
@@ -837,7 +858,8 @@ static void TryLoadWallObject(
 	const struct vec2i v, const int missionIndex);
 static void LoadEntity(
 	Mission *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v,
-	const int missionIndex, const int numMissions, int *bossObjIdx, int *spearObjIdx);
+	const int missionIndex, const int numMissions, int *bossObjIdx,
+	int *spearObjIdx);
 
 typedef struct
 {
@@ -911,7 +933,9 @@ static void LoadMission(
 		const uint16_t ch = CWLevelGetCh(level, 0, _v.x, _v.y);
 		TryLoadWallObject(&m.u.Static, ch, map, _v, missionIndex);
 		const uint16_t ech = CWLevelGetCh(level, 1, _v.x, _v.y);
-		LoadEntity(&m, ech, map, _v, missionIndex, numMissions, &bossObjIdx, &spearObjIdx);
+		LoadEntity(
+			&m, ech, map, _v, missionIndex, numMissions, &bossObjIdx,
+			&spearObjIdx);
 		RECT_FOREACH_END()
 
 		if (m.u.Static.Exits.size == 0)
@@ -1289,7 +1313,8 @@ static void LoadChar(
 static void AdjustTurningPoint(Mission *m, const struct vec2i v);
 static void LoadEntity(
 	Mission *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v,
-	const int missionIndex, const int numMissions, int *bossObjIdx, int *spearObjIdx)
+	const int missionIndex, const int numMissions, int *bossObjIdx,
+	int *spearObjIdx)
 {
 	const CWEntity entity = CWChToEntity(ch);
 	switch (entity)
@@ -1568,7 +1593,9 @@ static void LoadEntity(
 		e.Mission = (missionIndex + 10) / 10 * 10;
 		// Skip to end of game if the next episode is blank, or if the
 		// campaign should have less levels
-		if ((e.Mission < map->nLevels && !map->levels[e.Mission].hasPlayerSpawn) || e.Mission >= numMissions)
+		if ((e.Mission < map->nLevels &&
+			 !map->levels[e.Mission].hasPlayerSpawn) ||
+			e.Mission >= numMissions)
 		{
 			e.Mission = map->nLevels;
 		}
@@ -1773,8 +1800,7 @@ static void LoadEntity(
 }
 static bool MakeWallWalkable(Mission *m, const struct vec2i v)
 {
-	int *tile =
-		CArrayGet(&m->u.Static.Tiles, v.x + v.y * m->Size.x);
+	int *tile = CArrayGet(&m->u.Static.Tiles, v.x + v.y * m->Size.x);
 	const TileClass *tc = MissionStaticGetTileClass(&m->u.Static, m->Size, v);
 	if (tc->Type == TILE_CLASS_WALL)
 	{
@@ -1837,6 +1863,7 @@ static void AdjustTurningPoint(Mission *m, const struct vec2i v)
 }
 
 static bool TryLoadCampaign(CampaignList *list, const char *path);
+static bool TryLoadSpearSteam(CampaignList *list);
 void MapWolfLoadCampaignsFromSystem(CampaignList *list)
 {
 	char buf[CDOGS_PATH_MAX];
@@ -1855,21 +1882,42 @@ void MapWolfLoadCampaignsFromSystem(CampaignList *list)
 	}
 
 	// Spear
-	fsg_get_steam_game_path(buf, SPEAR_STEAM_NAME);
-	if (strlen(buf) > 0)
-	{
-		// Steam installs to /base
-		strcat(buf, "/base");
-	}
-	if (!TryLoadCampaign(list, buf))
+	if (!TryLoadSpearSteam(list))
 	{
 		fsg_get_gog_game_path(buf, SPEAR_GOG_ID);
 		if (strlen(buf) > 0)
 		{
-			strcat(buf, "/M1"); // Only support original spear
+			char buf2[CDOGS_PATH_MAX];
+			sprintf(buf2, "%s/M1?1", buf);
+			TryLoadCampaign(list, buf2);
+			sprintf(buf2, "%s/M2?2", buf);
+			TryLoadCampaign(list, buf2);
+			sprintf(buf2, "%s/M3?3", buf);
+			TryLoadCampaign(list, buf2);
 		}
-		TryLoadCampaign(list, buf);
 	}
+}
+static bool TryLoadSpearSteam(CampaignList *list)
+{
+	char buf[CDOGS_PATH_MAX];
+	fsg_get_steam_game_path(buf, SPEAR_STEAM_NAME);
+	if (strlen(buf) == 0)
+	{
+		return false;
+	}
+	// Steam installs to /base
+	strcat(buf, "/base");
+	for (int i = 1; i <= 3; i++)
+	{
+		char buf2[CDOGS_PATH_MAX];
+		// Append spear mission pack to path - we will handle this later
+		sprintf(buf2, "%s?%d", buf, i);
+		if (!TryLoadCampaign(list, buf2))
+		{
+			return false;
+		}
+	}
+	return true;
 }
 static bool TryLoadCampaign(CampaignList *list, const char *path)
 {

@@ -101,9 +101,18 @@ int MapNewLoad(const char *filename, CampaignSetting *c)
 		return MapNewLoadArchive(filename, c);
 	}
 
-	if (CWGetType(filename, NULL, NULL) != CWMAPTYPE_UNKNOWN)
+	int spearMission = 1;
+	char buf[CDOGS_PATH_MAX];
+	if (filename[strlen(filename) - 2] == '?')
 	{
-		return MapWolfLoad(filename, c);
+		spearMission = atoi(&filename[strlen(filename) - 1]);
+		strcpy(buf, filename);
+		buf[strlen(buf) - 2] = '\0';
+		filename = buf;
+	}
+	if (CWGetType(filename, NULL, NULL, spearMission) != CWMAPTYPE_UNKNOWN)
+	{
+		return MapWolfLoad(filename, spearMission, c);
 	}
 
 	// try to load the new map format

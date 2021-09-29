@@ -48,9 +48,18 @@ bool IsCampaignOK(const char *path, char **title, int *numMissions)
 	{
 		return ScanCampaignOld(path, title, numMissions) == 0;
 	}
-	if (CWGetType(path, NULL, NULL) != CWMAPTYPE_UNKNOWN)
+	int spearMission = 1;
+	char buf[CDOGS_PATH_MAX];
+	if (path[strlen(path)-2] == '?')
 	{
-		return MapWolfScan(path, title, numMissions) == 0;
+		spearMission = atoi(&path[strlen(path) - 1]);
+		strcpy(buf, path);
+		buf[strlen(buf) - 2] = '\0';
+		path = buf;
+	}
+	if (CWGetType(path, NULL, NULL, spearMission) != CWMAPTYPE_UNKNOWN)
+	{
+		return MapWolfScan(path, spearMission, title, numMissions) == 0;
 	}
 	
 	return false;

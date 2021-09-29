@@ -33,7 +33,10 @@ void MapWolfInit(void);
 void MapWolfTerminate(void);
 
 // allocates title
-int MapWolfScan(const char *filename, char **title, int *numMissions);
-int MapWolfLoad(const char *filename, CampaignSetting *c);
+int MapWolfScan(
+	const char *filename, const int spearMission, char **title,
+	int *numMissions);
+int MapWolfLoad(
+	const char *filename, const int spearMission, CampaignSetting *c);
 
 void MapWolfLoadCampaignsFromSystem(CampaignList *list);

@@ -23,7 +23,9 @@
 
 #define PATH_MAX 4096
 
-CWMapType CWGetType(const char *path, const char **ext, const char **ext1)
+CWMapType CWGetType(
+	const char *path, const char **ext, const char **ext1,
+	const int spearMission)
 {
 	char pathBuf[PATH_MAX];
 	sprintf(pathBuf, "%s/MAPHEAD.WL1", path);
@@ -40,14 +42,25 @@ CWMapType CWGetType(const char *path, const char **ext, const char **ext1)
 			*ext = *ext1 = "WL6";
 		return CWMAPTYPE_WL6;
 	}
-	sprintf(pathBuf, "%s/MAPHEAD.SD1", path);
+	sprintf(pathBuf, "%s/MAPHEAD.SD%d", path, spearMission);
 	if (access(pathBuf, F_OK) != -1)
 	{
 		if (ext && ext1)
 		{
 			// Steam keeps common files as .SOD extension,
-			// but original SoD as .SD1 extension
-			*ext = "SD1";
+			// but specific files as .SD1/.SD2/.SD3 extension
+			switch (spearMission)
+			{
+			case 1:
+				*ext = "SD1";
+				break;
+			case 2:
+				*ext = "SD2";
+				break;
+			case 3:
+				*ext = "SD3";
+				break;
+			}
 			*ext1 = "SOD";
 		}
 		return CWMAPTYPE_SOD;
@@ -67,7 +80,7 @@ CWMapType CWGetType(const char *path, const char **ext, const char **ext1)
 
 static int LoadMapHead(CWolfMap *map, const char *path);
 static int LoadMapData(CWolfMap *map, const char *path);
-int CWLoad(CWolfMap *map, const char *path)
+int CWLoad(CWolfMap *map, const char *path, const int spearMission)
 {
 	char pathBuf[PATH_MAX];
 	int err = 0;
@@ -75,7 +88,7 @@ int CWLoad(CWolfMap *map, const char *path)
 
 	const char *ext = "WL1";
 	const char *ext1 = "WL1";
-	map->type = CWGetType(path, &ext, &ext1);
+	map->type = CWGetType(path, &ext, &ext1, spearMission);
 	if (map->type == CWMAPTYPE_UNKNOWN)
 	{
 		err = -1;

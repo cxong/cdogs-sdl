@@ -39,6 +39,7 @@ bin/
 enc_temp_folder/
 Debug/
 Release/
+RelWithDebInfo/
 out/
 Win32/
 *.opensdf

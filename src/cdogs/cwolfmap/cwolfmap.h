@@ -50,8 +50,10 @@ typedef struct
 	CWMapType type;
 } CWolfMap;
 
-CWMapType CWGetType(const char *path, const char **ext, const char **ext1);
-int CWLoad(CWolfMap *map, const char *path);
+CWMapType CWGetType(
+	const char *path, const char **ext, const char **ext1,
+	const int spearMission);
+int CWLoad(CWolfMap *map, const char *path, const int spearMission);
 void CWCopy(CWolfMap *dst, const CWolfMap *src);
 void CWFree(CWolfMap *map);
 
