@@ -647,8 +647,15 @@ int MapWolfLoad(
 	}
 
 	char buf[CDOGS_PATH_MAX];
-	// Copy data from common campaign and use them for every mission
-	GetDataFilePath(buf, "missions/.wolf3d/common.cdogscpn");
+	// Copy data from common campaign
+	if (spearMission > 1)
+	{
+		GetDataFilePath(buf, "missions/.wolf3d/lost.cdogscpn");
+	}
+	else
+	{
+		GetDataFilePath(buf, "missions/.wolf3d/common.cdogscpn");
+	}
 	CampaignSetting cCommon;
 	CampaignSettingInit(&cCommon);
 	err = MapNewLoadArchive(buf, &cCommon);

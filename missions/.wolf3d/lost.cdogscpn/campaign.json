@@ -1,0 +1,11 @@
+{
+	"Version": 16,
+	"Title": "",
+	"Author": "id Software",
+	"Description": "",
+	"Ammo": true,
+	"SkipWeaponMenu": true,
+	"RandomPickups": false,
+	"DoorOpenTicks": 210,
+	"Missions": 1
+}
