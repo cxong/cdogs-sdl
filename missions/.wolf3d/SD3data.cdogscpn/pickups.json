@@ -1,0 +1,116 @@
+{
+  "Version": 2,
+  "Pickups": [
+    {
+      "Name": "dogfood",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "dogfood"
+      },
+      "Type": "Health",
+      "Health": 4,
+      "Sound": "health_small"
+    },
+    {
+      "Name": "meal",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "meal"
+      },
+      "Type": "Health",
+      "Health": 10,
+      "Sound": "health_small"
+    },
+    {
+      "Name": "medkit",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "health"
+      },
+      "Type": "Health",
+      "Health": 25,
+      "Sound": "health_big"
+    },
+    {
+      "Name": "heart",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "heart"
+      },
+      "Type": "Health",
+      "Health": 100,
+      "Sound": "1up"
+    },
+    {
+      "Name": "cross",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "cross"
+      },
+      "Type": "Score",
+      "Score": 100,
+      "Sound": "pickup_cross"
+    },
+    {
+      "Name": "chalice",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "chalice"
+      },
+      "Type": "Score",
+      "Score": 500,
+      "Sound": "pickup_chalice"
+    },
+    {
+      "Name": "chest",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "chest"
+      },
+      "Type": "Score",
+      "Score": 1000,
+      "Sound": "pickup_chest"
+    },
+    {
+      "Name": "crown",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "crown"
+      },
+      "Type": "Score",
+      "Score": 5000,
+      "Sound": "pickup_crown"
+    },
+    {
+      "Name": "ammo_clip",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "ammo_clip"
+      },
+      "Type": "Ammo",
+      "Ammo": "Ammo",
+      "Amount": 8,
+      "Sound": "ammo_pickup"
+    },
+    {
+      "Name": "ammo_box",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "ammo_box"
+      },
+      "Type": "Ammo",
+      "Ammo": "Ammo",
+      "Amount": 25,
+      "Sound": "ammo_box"
+    },
+    {
+      "Name": "spear",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "spear"
+      },
+      "Type": "Score",
+      "Sound": "spear"
+    }
+  ]
+}
