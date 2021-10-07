@@ -287,7 +287,7 @@ void MenuUpdateMouse(MenuSystem *ms)
 		return;
 	}
 	// Get mouse position and change menu
-	menu->u.normal.mouseHover = false;
+	menu->mouseHover = false;
 	for (int i = 0; i < (int)menu->u.normal.subMenus.size; i++)
 	{
 		const Rect2i bounds = MenuGetSubmenuBounds(ms, i);
@@ -295,11 +295,10 @@ void MenuUpdateMouse(MenuSystem *ms)
 		{
 			continue;
 		}
-		menu->u.normal.mouseHover = true;
+		menu->mouseHover = true;
 		if (menu->u.normal.index != i)
 		{
-			const menu_t *subMenu =
-				CArrayGet(&menu->u.normal.subMenus, i);
+			const menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
 			if (!subMenu->isDisabled)
 			{
 				menu->u.normal.index = i;
@@ -318,7 +317,7 @@ GameLoopResult MenuUpdate(MenuSystem *ms)
 	}
 	else
 	{
-		const int cmd = GetMenuCmd(ms->handlers, MenuTypeHasSubMenus(ms->current->type) && ms->current->u.normal.mouseHover);
+		const int cmd = GetMenuCmd(ms->handlers, ms->current->mouseHover);
 		if (cmd)
 		{
 			MenuProcessCmd(ms, cmd);

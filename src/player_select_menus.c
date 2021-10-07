@@ -87,6 +87,7 @@ static void NameMenuPostUpdate(menu_t *menu, void *data)
 	// Change mouse selection
 	if (MouseHasMoved(&gEventHandlers.mouse))
 	{
+		menu->mouseHover = false;
 		Rect2i itemBounds;
 		int i;
 		for (i = 0; i < (int)strlen(letters); i++)
@@ -99,6 +100,7 @@ static void NameMenuPostUpdate(menu_t *menu, void *data)
 			{
 				continue;
 			}
+			menu->mouseHover = true;
 			if (d->nameMenuSelection != i)
 			{
 				d->nameMenuSelection = i;
@@ -110,11 +112,14 @@ static void NameMenuPostUpdate(menu_t *menu, void *data)
 		const char *label = "(End)";
 		itemBounds =
 			NameMenuItemBounds(Rect2iNew(d->ms->pos, d->ms->size), i, label);
-		if (Rect2iIsInside(itemBounds, gEventHandlers.mouse.currentPos) &&
-			d->nameMenuSelection != i)
+		if (Rect2iIsInside(itemBounds, gEventHandlers.mouse.currentPos))
 		{
-			d->nameMenuSelection = i;
-			MenuPlaySound(MENU_SOUND_SWITCH);
+			menu->mouseHover = true;
+			if (d->nameMenuSelection != i)
+			{
+				d->nameMenuSelection = i;
+				MenuPlaySound(MENU_SOUND_SWITCH);
+			}
 		}
 	}
 }

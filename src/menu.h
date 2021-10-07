@@ -142,6 +142,7 @@ struct menu
 	MenuDisplayFunc customDisplayFunc;
 	const void *customDisplayData;
 	MenuSound enterSound;
+	bool mouseHover; // whether mouse is hovered over a submenu
 	union {
 		// normal menu, with sub menus
 		struct
@@ -159,7 +160,6 @@ struct menu
 			int setOptions;
 			struct menu
 				*changeKeyMenu; // if in change key mode, and which item
-			bool mouseHover;  // whether mouse is hovered over a submenu
 		} normal;
 		// menu item only
 		struct

@@ -195,8 +195,8 @@ GameLoopData *NumPlayersSelection(
 	ms->current->u.normal.index = 1;
 
 	return GameLoopDataNew(
-		ms, NumPlayersTerminate, NumPlayersOnEnter, NULL, NULL, NumPlayersUpdate,
-		NumPlayersDraw);
+		ms, NumPlayersTerminate, NumPlayersOnEnter, NULL, NULL,
+		NumPlayersUpdate, NumPlayersDraw);
 }
 static void NumPlayersTerminate(GameLoopData *data)
 {
@@ -398,7 +398,8 @@ static GameLoopResult PlayerSelectionUpdate(GameLoopData *data, LoopRunner *l)
 	int cmds[MAX_LOCAL_PLAYERS];
 	memset(cmds, 0, sizeof cmds);
 	GetPlayerCmds(&gEventHandlers, &cmds);
-	if (EventIsEscape(&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers, false)))
+	if (EventIsEscape(
+			&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers, false)))
 	{
 		pData->waitResult = EVENT_WAIT_CANCEL;
 		LoopRunnerPop(l);
@@ -427,7 +428,8 @@ static GameLoopResult PlayerSelectionUpdate(GameLoopData *data, LoopRunner *l)
 			MenuUpdateMouse(ms);
 			if (useMenuCmd)
 			{
-				cmds[idx] |= GetMenuCmd(&gEventHandlers, MenuTypeHasSubMenus(ms->current->type) && ms->current->u.normal.mouseHover);
+				cmds[idx] |=
+					GetMenuCmd(&gEventHandlers, ms->current->mouseHover);
 			}
 			if (!MenuIsExit(ms) && cmds[idx])
 			{
@@ -501,7 +503,8 @@ static void PlayerSelectionDraw(GameLoopData *data)
 		else
 		{
 			struct vec2i center = svec2i_zero();
-			const char *prompt = "Press Fire to choose input device and join...";
+			const char *prompt =
+				"Press Fire to choose input device and join...";
 			const struct vec2i offset =
 				svec2i_scale_divide(FontStrSize(prompt), -2);
 			switch (GetNumPlayers(false, false, true))
