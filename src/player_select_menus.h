@@ -44,6 +44,7 @@ typedef struct
 typedef struct
 {
 	MenuDisplayPlayerData display;
+	const MenuSystem *ms;
 	int nameMenuSelection;
 	ColorMenuData skinData;
 	ColorMenuData hairData;

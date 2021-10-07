@@ -419,6 +419,11 @@ static GameLoopResult PlayerSelectionUpdate(GameLoopData *data, LoopRunner *l)
 		if (p->inputDevice != INPUT_DEVICE_UNSET)
 		{
 			MenuSystem *ms = &pData->menus[idx].ms;
+			if (ms->current->customPostUpdateFunc)
+			{
+				ms->current->customPostUpdateFunc(
+					ms->current, ms->current->customPostUpdateData);
+			}
 			MenuUpdateMouse(ms);
 			if (useMenuCmd)
 			{

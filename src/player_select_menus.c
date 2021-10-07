@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2016, 2018-2020 Cong Xu
+	Copyright (c) 2013-2016, 2018-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -40,44 +40,83 @@
 static char letters[] = "1234567890-QWERTYUIOP!ASDFGHJKL:'ZXCVBNM, .?";
 static char smallLetters[] = "1234567890-qwertyuiop!asdfghjkl:'zxcvbnm, .?";
 
+static Rect2i NameMenuItemBounds(
+	const Rect2i bounds, const int i, const char *label)
+{
+#define ENTRY_COLS 11
+#define ENTRY_SPACING 7
+	const int dy = FontH();
+	const int y = CENTER_Y(
+		bounds.Pos, bounds.Size,
+		dy * (((int)strlen(letters) - 1) / ENTRY_COLS));
+	const struct vec2i menuPos = svec2i(
+		bounds.Pos.x + (i % ENTRY_COLS) * ENTRY_SPACING,
+		y + (i / ENTRY_COLS) * dy);
+	const int w = MAX(FontStrW(label), ENTRY_SPACING);
+	return Rect2iNew(menuPos, svec2i(w, dy));
+}
 static void DrawNameMenu(
 	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
 	const struct vec2i size, const void *data)
 {
 	const PlayerSelectMenuData *d = data;
-
-#define ENTRY_COLS 11
-#define ENTRY_SPACING 7
-
-	int x = pos.x;
-	const int dy = FontH();
-	int y = CENTER_Y(
-		pos, size, dy * (((int)strlen(letters) - 1) / ENTRY_COLS));
-
 	UNUSED(menu);
 
+	Rect2i itemBounds;
 	int i;
 	for (i = 0; i < (int)strlen(letters); i++)
 	{
-		struct vec2i menuPos = svec2i(
-			x + (i % ENTRY_COLS) * ENTRY_SPACING,
-			y + (i / ENTRY_COLS) * dy);
 		char buf[2];
 		sprintf(buf, "%c", letters[i]);
+		itemBounds = NameMenuItemBounds(Rect2iNew(pos, size), i, buf);
 		DisplayMenuItem(
-			g,
-			Rect2iNew(menuPos, svec2i(ENTRY_SPACING, dy)),
-			buf, i == d->nameMenuSelection, false, colorWhite);
+			g, itemBounds, buf, i == d->nameMenuSelection, false, colorWhite);
 	}
 
 	const char *label = "(End)";
+	itemBounds = NameMenuItemBounds(Rect2iNew(pos, size), i, label);
 	DisplayMenuItem(
-		g,
-		Rect2iNew(svec2i(
-			x + (i % ENTRY_COLS) * ENTRY_SPACING,
-			y + (i / ENTRY_COLS) * FontH()),
-			FontStrSize(label)),
-		label, i == d->nameMenuSelection, false, colorWhite);
+		g, itemBounds, label, i == d->nameMenuSelection, false, colorWhite);
+}
+
+static void NameMenuPostUpdate(menu_t *menu, void *data)
+{
+	PlayerSelectMenuData *d = data;
+	UNUSED(menu);
+
+	// Change mouse selection
+	if (MouseHasMoved(&gEventHandlers.mouse))
+	{
+		Rect2i itemBounds;
+		int i;
+		for (i = 0; i < (int)strlen(letters); i++)
+		{
+			char buf[2];
+			sprintf(buf, "%c", letters[i]);
+			itemBounds =
+				NameMenuItemBounds(Rect2iNew(d->ms->pos, d->ms->size), i, buf);
+			if (!Rect2iIsInside(itemBounds, gEventHandlers.mouse.currentPos))
+			{
+				continue;
+			}
+			if (d->nameMenuSelection != i)
+			{
+				d->nameMenuSelection = i;
+				MenuPlaySound(MENU_SOUND_SWITCH);
+			}
+			break;
+		}
+
+		const char *label = "(End)";
+		itemBounds =
+			NameMenuItemBounds(Rect2iNew(d->ms->pos, d->ms->size), i, label);
+		if (Rect2iIsInside(itemBounds, gEventHandlers.mouse.currentPos) &&
+			d->nameMenuSelection != i)
+		{
+			d->nameMenuSelection = i;
+			MenuPlaySound(MENU_SOUND_SWITCH);
+		}
+	}
 }
 
 static int HandleInputNameMenu(int cmd, void *data)
@@ -480,6 +519,7 @@ void PlayerSelectMenusCreate(
 	int w = graphics->cachedConfig.Res.x;
 	int h = graphics->cachedConfig.Res.y;
 
+	data->ms = ms;
 	data->nameMenuSelection = (int)strlen(letters);
 	data->display.PlayerUID = playerUID;
 	data->display.currentMenu = &ms->current;
@@ -514,9 +554,10 @@ void PlayerSelectMenusCreate(
 	ms->align = MENU_ALIGN_LEFT;
 	ms->root = ms->current = MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
 	MenuSetPostInputFunc(ms->root, PostInputRotatePlayer, &data->display);
-	MenuAddSubmenu(
-		ms->root,
-		MenuCreateCustom("Name", DrawNameMenu, HandleInputNameMenu, data));
+	menu_t *nameMenu =
+		MenuCreateCustom("Name", DrawNameMenu, HandleInputNameMenu, data);
+	MenuSetPostUpdateFunc(nameMenu, NameMenuPostUpdate, data, false);
+	MenuAddSubmenu(ms->root, nameMenu);
 
 	MenuAddSubmenu(ms->root, CreateCustomizeMenu("Customize...", data));
 	MenuAddSubmenu(
