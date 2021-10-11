@@ -38,6 +38,7 @@ typedef struct
 {
 	CharColorType Type;
 	int PlayerUID;
+	const MenuSystem *ms;
 	const Pic *palette;
 	struct vec2i selectedColor;
 } ColorMenuData;

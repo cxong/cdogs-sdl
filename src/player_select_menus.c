@@ -277,12 +277,14 @@ static void PostInputHairMenu(menu_t *menu, int cmd, void *data)
 static void DrawColorMenu(
 	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
 	const struct vec2i size, const void *data);
+static void ColorMenuPostUpdate(menu_t *menu, void *data);
 static int HandleInputColorMenu(int cmd, void *data);
 static menu_t *CreateColorMenu(
-	const char *name, ColorMenuData *data, const CharColorType type,
+	const char *name, ColorMenuData *data, const MenuSystem *ms, const CharColorType type,
 	const int playerUID)
 {
 	data->Type = type;
+	data->ms = ms;
 	data->PlayerUID = playerUID;
 	data->palette = PicManagerGetPic(&gPicManager, "palette");
 	// Find the closest palette colour available, and select it
@@ -312,7 +314,16 @@ static menu_t *CreateColorMenu(
 			}
 		}
 	}
-	return MenuCreateCustom(name, DrawColorMenu, HandleInputColorMenu, data);
+	menu_t *menu = MenuCreateCustom(name, DrawColorMenu, HandleInputColorMenu, data);
+	MenuSetPostUpdateFunc(menu, ColorMenuPostUpdate, data, false);
+	return menu;
+}
+static Rect2i ColorSwatchBounds(const Rect2i bounds, const Pic *palette, const struct vec2i v)
+{
+	const struct vec2i swatchSize = svec2i(4, 4);
+	const struct vec2i drawPos =
+		svec2i(bounds.Pos.x, CENTER_Y(bounds.Pos, bounds.Size, palette->size.y * swatchSize.y));
+	return Rect2iNew(svec2i_add(drawPos, svec2i_multiply(v, swatchSize)), swatchSize);
 }
 static void DrawColorMenu(
 	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
@@ -320,34 +331,69 @@ static void DrawColorMenu(
 {
 	UNUSED(menu);
 	const ColorMenuData *d = data;
+	Rect2i itemBounds;
+
 	// Draw colour squares from the palette
-	const struct vec2i swatchSize = svec2i(4, 4);
-	const struct vec2i drawPos =
-		svec2i(pos.x, CENTER_Y(pos, size, d->palette->size.y * swatchSize.y));
-	struct vec2i v;
-	for (v.y = 0; v.y < d->palette->size.y; v.y++)
+	RECT_FOREACH(Rect2iNew(svec2i_zero(), d->palette->size))
+	const int idx = _v.x + _v.y * d->palette->size.x;
+	const color_t colour =
+		PIXEL2COLOR(d->palette->Data[idx]);
+	if (colour.a == 0)
 	{
-		for (v.x = 0; v.x < d->palette->size.x; v.x++)
-		{
-			const color_t colour =
-				PIXEL2COLOR(d->palette->Data[v.x + v.y * d->palette->size.x]);
-			if (colour.a == 0)
-			{
-				continue;
-			}
-			DrawRectangle(
-				g, svec2i_add(drawPos, svec2i_multiply(v, swatchSize)),
-				swatchSize, colour, true);
-		}
+		continue;
 	}
+	itemBounds = ColorSwatchBounds(Rect2iNew(pos, size), d->palette, _v);
+	DrawRectangle(g, itemBounds.Pos, itemBounds.Size, colour, true);
+	RECT_FOREACH_END()
+
 	// Draw a highlight around the selected colour
+	itemBounds = ColorSwatchBounds(Rect2iNew(pos, size), d->palette, d->selectedColor);
 	DrawRectangle(
 		g,
-		svec2i_add(
-			drawPos,
-			svec2i_subtract(
-				svec2i_multiply(d->selectedColor, swatchSize), svec2i(1, 1))),
-		svec2i_add(swatchSize, svec2i(2, 2)), colorWhite, false);
+		svec2i_subtract(itemBounds.Pos, svec2i(1, 1)),
+		svec2i_add(itemBounds.Size, svec2i(2, 2)), colorWhite, false);
+}
+static void ColorMenuOnChange(ColorMenuData *d, const struct vec2i v)
+{
+	if (!Rect2iIsInside(Rect2iNew(svec2i_zero(), d->palette->size), v))
+	{
+		return;
+	}
+	if (svec2i_is_equal(d->selectedColor, v))
+	{
+		return;
+	}
+	const color_t colour = PIXEL2COLOR(
+		d->palette->Data[v.x + v.y * d->palette->size.x]);
+	if (colour.a != 0)
+	{
+		d->selectedColor = v;
+		PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
+		*CharColorGetByType(&p->Char.Colors, d->Type) = colour;
+		MenuPlaySound(MENU_SOUND_SWITCH);
+	}
+}
+static void ColorMenuPostUpdate(menu_t *menu, void *data)
+{
+	ColorMenuData *d = data;
+	UNUSED(menu);
+
+	// Change mouse selection
+	if (MouseHasMoved(&gEventHandlers.mouse))
+	{
+		menu->mouseHover = false;
+		Rect2i itemBounds;
+		RECT_FOREACH(Rect2iNew(svec2i_zero(), d->palette->size))
+		itemBounds = ColorSwatchBounds(Rect2iNew(d->ms->pos, d->ms->size), d->palette, _v);
+		if (!Rect2iIsInside(itemBounds, gEventHandlers.mouse.currentPos))
+		{
+			continue;
+		}
+		menu->mouseHover = true;
+		ColorMenuOnChange(d, _v);
+		break;
+		RECT_FOREACH_END()
+	}
 }
 static int HandleInputColorMenu(int cmd, void *data)
 {
@@ -374,19 +420,7 @@ static int HandleInputColorMenu(int cmd, void *data)
 	default:
 		break;
 	}
-	if (selected.x >= 0 && selected.x < d->palette->size.x &&
-		selected.y >= 0 && selected.y < d->palette->size.y)
-	{
-		const color_t colour = PIXEL2COLOR(
-			d->palette->Data[selected.x + selected.y * d->palette->size.x]);
-		if (colour.a != 0)
-		{
-			d->selectedColor = selected;
-			PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
-			*CharColorGetByType(&p->Char.Colors, d->Type) = colour;
-			MenuPlaySound(MENU_SOUND_SWITCH);
-		}
-	}
+	ColorMenuOnChange(d, selected);
 	return 0;
 }
 
@@ -596,27 +630,27 @@ static menu_t *CreateCustomizeMenu(
 
 	MenuAddSubmenu(
 		menu, CreateColorMenu(
-				  "Skin Color", &data->skinData, CHAR_COLOR_SKIN,
+				  "Skin Color", &data->skinData, data->ms, CHAR_COLOR_SKIN,
 				  data->display.PlayerUID));
 	MenuAddSubmenu(
 		menu, CreateColorMenu(
-				  "Hair Color", &data->hairData, CHAR_COLOR_HAIR,
+				  "Hair Color", &data->hairData, data->ms, CHAR_COLOR_HAIR,
 				  data->display.PlayerUID));
 	MenuAddSubmenu(
 		menu, CreateColorMenu(
-				  "Arms Color", &data->armsData, CHAR_COLOR_ARMS,
+				  "Arms Color", &data->armsData, data->ms, CHAR_COLOR_ARMS,
 				  data->display.PlayerUID));
 	MenuAddSubmenu(
 		menu, CreateColorMenu(
-				  "Body Color", &data->bodyData, CHAR_COLOR_BODY,
+				  "Body Color", &data->bodyData, data->ms, CHAR_COLOR_BODY,
 				  data->display.PlayerUID));
 	MenuAddSubmenu(
 		menu, CreateColorMenu(
-				  "Legs Color", &data->legsData, CHAR_COLOR_LEGS,
+				  "Legs Color", &data->legsData, data->ms, CHAR_COLOR_LEGS,
 				  data->display.PlayerUID));
 	MenuAddSubmenu(
 		menu, CreateColorMenu(
-				  "Feet Color", &data->feetData, CHAR_COLOR_FEET,
+				  "Feet Color", &data->feetData, data->ms, CHAR_COLOR_FEET,
 				  data->display.PlayerUID));
 
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
