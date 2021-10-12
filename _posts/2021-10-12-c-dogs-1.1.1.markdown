@@ -1,0 +1,17 @@
+---
+layout: post
+title:  "C-Dogs 1.1.1 Released, Leaderboard Contest Extended!"
+date:   2021-10-12
+categories: release
+published: true
+---
+
+Here's a minor wolf3d-related release, which fixes support for some wolf3d mods as well as adding support for the Spear of Destiny mission packs!
+
+Spear of Destiny is often sold together with [two additional mission packs](https://wolfenstein.fandom.com/wiki/Spear_of_Destiny_mission_packs), which are supposed to be sequels to Spear of Destiny, but are not made by id Software and resembles fan modifications in quality. With this release, they are mostly* recreated in C-Dogs, so if you already own Spear of Destiny from Steam or GOG, you can try it out for free!
+
+`*` Note: the wall textures, sprites and bosses are not fully recreated in C-Dogs. They still look like plain Wolfenstein 3D / Spear of Destiny.
+
+In other news, the [C-Dogs SDL / Wolfenstein 3D leaderboard contest](http://cdogs.morezombies.net/forum/CDogs%20SDL/145) has been extended to October 24th! Get your entries in for a chance to win prizes!
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/1.1.1>
