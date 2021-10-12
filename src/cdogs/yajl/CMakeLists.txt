@@ -51,7 +51,6 @@ SET_TARGET_PROPERTIES(yajl PROPERTIES
 
 #### ensure a .dylib has correct absolute installation paths upon installation
 IF(APPLE)
-  MESSAGE("INSTALL_NAME_DIR: ${CMAKE_INSTALL_PREFIX}/lib")
   SET_TARGET_PROPERTIES(yajl PROPERTIES
                         INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
 ENDIF(APPLE)

@@ -22,6 +22,8 @@ install_manifest_Runtime.txt
 *.deb
 *.rpm
 __pycache__/
+.cmake/
+compile_commands.json
 
 # Generated files
 src/cdogs/sys_config.h
