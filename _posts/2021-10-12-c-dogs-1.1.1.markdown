@@ -14,4 +14,6 @@ Spear of Destiny is often sold together with [two additional mission packs](http
 
 In other news, the [C-Dogs SDL / Wolfenstein 3D leaderboard contest](http://cdogs.morezombies.net/forum/CDogs%20SDL/145) has been extended to October 24th! Get your entries in for a chance to win prizes!
 
+Finally, the WolfSource discord server has been kind enough to host a **#cdogs-sdl** channel! If you want to discuss anything C-Dogs and Wolf3D related, come on over: https://discord.gg/Fee7PBY
+
 Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/1.1.1>
