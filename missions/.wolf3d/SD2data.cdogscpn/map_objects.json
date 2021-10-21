@@ -280,6 +280,16 @@
       "Flags": ["Inside", "NoWalls"]
     },
     {
+      "Name": "wall_light",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "wall_light"
+      },
+      "Offset": [-7, -11],
+      "Health": 0,
+      "Flags": ["Inside", "OnWall"]
+    },
+    {
       "Name": "heer_flag",
       "Pic": {
         "Type": "Normal",
@@ -288,26 +298,6 @@
       "Offset": [-7, -11],
       "Health": 0,
       "Flags": ["Inside", "OnWall"]
-    },
-    {
-      "Name": "hitler_portrait",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "hitler_portrait"
-      },
-      "Offset": [-5, -10],
-      "Health": 0,
-      "Flags": ["OnWall"]
-    },
-    {
-      "Name": "brick_eagle",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "brick_eagle"
-      },
-      "Offset": [-8, -11],
-      "Health": 0,
-      "Flags": ["Outside", "OnWall"]
     },
     {
       "Name": "eagle_portrait",
@@ -330,22 +320,12 @@
       "Flags": ["Inside", "OnWall"]
     },
     {
-      "Name": "swastika_wreath",
+      "Name": "swastika_relief",
       "Pic": {
         "Type": "Normal",
-        "Pic": "swastika_wreath"
+        "Pic": "swastika_relief"
       },
-      "Offset": [-5, -11],
-      "Health": 0,
-      "Flags": ["OnWall"]
-    },
-    {
-      "Name": "coat_of_arms_flag",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "coat_of_arms_flag"
-      },
-      "Offset": [-7, -11],
+      "Offset": [-4, -9],
       "Health": 0,
       "Flags": ["OnWall"]
     },
@@ -370,26 +350,6 @@
       "Flags": ["Inside", "OnWall"]
     },
     {
-      "Name": "cobble_moss",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "cobble_moss"
-      },
-      "Offset": [-8, -23],
-      "Health": 0,
-      "Flags": ["Outside", "OnWall"]
-    },
-    {
-      "Name": "hitler_glass",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "hitler_glass"
-      },
-      "Offset": [-6, -11],
-      "Health": 0,
-      "Flags": ["OnWall"]
-    },
-    {
       "Name": "skull_blue",
       "Pic": {
         "Type": "Normal",
@@ -410,26 +370,6 @@
       "Flags": ["Inside", "OnWall"]
     },
     {
-      "Name": "brick_color",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "brick_color"
-      },
-      "Offset": [-8, -11],
-      "Health": 0,
-      "Flags": ["OnWall"]
-    },
-    {
-      "Name": "panel",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "panel"
-      },
-      "Offset": [-6, -10],
-      "Health": 0,
-      "Flags": ["OnWall"]
-    },
-    {
       "Name": "hitler_poster",
       "Pic": {
         "Type": "Normal",
@@ -438,16 +378,6 @@
       "Offset": [-5, -10],
       "Health": 0,
       "Flags": ["OnWall"]
-    },
-    {
-      "Name": "stone_color",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "stone_color"
-      },
-      "Offset": [-8, -11],
-      "Health": 0,
-      "Flags": ["Inside", "OnWall"]
     },
     {
       "Name": "ghost_corpse",

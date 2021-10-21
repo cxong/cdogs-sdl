@@ -1531,10 +1531,40 @@
       "Flags": ["OnWall"]
     },
     {
+      "Name": "ship_light",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "ship_light"
+      },
+      "Offset": [-2, -10],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "wall_chart",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "wall_chart"
+      },
+      "Offset": [-5, -11],
+      "Health": 0,
+      "Flags": ["Inside", "OnWall"]
+    },
+    {
+      "Name": "wall_nuke_sign",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "wall_nuke_sign"
+      },
+      "Offset": [-5, -11],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
       "Name": "bulletmarks",
       "Pic": {
         "Type": "Normal",
-        "Pic": "particles/bulletmarks"
+        "Pic": "bulletmarks"
       },
       "Offset": [-5, -10],
       "Health": 0,
@@ -1544,7 +1574,7 @@
       "Name": "scratch",
       "Pic": {
         "Type": "Normal",
-        "Pic": "particles/scratch"
+        "Pic": "scratch"
       },
       "Offset": [-5, -10],
       "Health": 0,
@@ -1615,6 +1645,26 @@
       "Pic": {
         "Type": "Normal",
         "Pic": "map"
+      },
+      "Offset": [-6, -10],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "ship_picture",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "ship_picture"
+      },
+      "Offset": [-6, -10],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "green_relief",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "green_relief"
       },
       "Offset": [-6, -10],
       "Health": 0,

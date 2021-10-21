@@ -599,7 +599,7 @@ bail:
 static void LoadSounds(const SoundDevice *s, const CWolfMap *map);
 static void LoadMission(
 	CampaignSetting *c, const map_t tileClasses, const CWolfMap *map,
-	const int missionIndex, const int numMissions);
+	const int spearMission, const int missionIndex, const int numMissions);
 typedef struct
 {
 	const CWolfMap *Map;
@@ -714,7 +714,7 @@ int MapWolfLoad(
 
 	for (int i = 0; i < map->nLevels; i++)
 	{
-		LoadMission(c, tileClasses, map, i, numMissions);
+		LoadMission(c, tileClasses, map, spearMission, i, numMissions);
 	}
 
 bail:
@@ -866,7 +866,7 @@ static void LoadTile(
 	const struct vec2i v, const int missionIndex);
 static void TryLoadWallObject(
 	MissionStatic *m, const uint16_t ch, const CWolfMap *map,
-	const struct vec2i v, const int missionIndex);
+	const int spearMission, const struct vec2i v, const int missionIndex);
 static void LoadEntity(
 	Mission *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v,
 	const int missionIndex, const int numMissions, int *bossObjIdx,
@@ -885,7 +885,7 @@ static Mix_Chunk *GetMissionSong(void *data)
 }
 static void LoadMission(
 	CampaignSetting *c, const map_t tileClasses, const CWolfMap *map,
-	const int missionIndex, const int numMissions)
+	const int spearMission, const int missionIndex, const int numMissions)
 {
 	const CWLevel *level = &map->levels[missionIndex];
 	Mission m;
@@ -942,7 +942,8 @@ static void LoadMission(
 		// Load objects after all tiles are loaded
 		RECT_FOREACH(Rect2iNew(svec2i_zero(), m.Size))
 		const uint16_t ch = CWLevelGetCh(level, 0, _v.x, _v.y);
-		TryLoadWallObject(&m.u.Static, ch, map, _v, missionIndex);
+		TryLoadWallObject(
+			&m.u.Static, ch, map, spearMission, _v, missionIndex);
 		const uint16_t ech = CWLevelGetCh(level, 1, _v.x, _v.y);
 		LoadEntity(
 			&m, ech, map, _v, missionIndex, numMissions, &bossObjIdx,
@@ -1090,7 +1091,7 @@ static int LoadWall(const uint16_t ch)
 
 static void TryLoadWallObject(
 	MissionStatic *m, const uint16_t ch, const CWolfMap *map,
-	const struct vec2i v, const int missionIndex)
+	const int spearMission, const struct vec2i v, const int missionIndex)
 {
 	const CWLevel *level = &map->levels[missionIndex];
 	const struct vec2i levelSize =
@@ -1101,37 +1102,191 @@ static void TryLoadWallObject(
 	switch (wall)
 	{
 	case CWWALL_GREY_BRICK_FLAG:
-		moName = "heer_flag";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "heer_flag";
+			break;
+		case 2:
+			moName = "wall_light";
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_GREY_BRICK_HITLER:
-		moName = "hitler_portrait";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "hitler_portrait";
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_CELL:
-		moName = "jail_cell";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "jail_cell";
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_GREY_BRICK_EAGLE:
-		moName = "brick_eagle";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "brick_eagle";
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_CELL_SKELETON:
-		moName = "jail_cell_skeleton";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "jail_cell_skeleton";
+			break;
+		case 2:
+			moName = "wall_light";
+			break;
+		case 3:
+			break;
+		}
+		break;
+	case CWWALL_BLUE_BRICK_1:
+		switch (spearMission)
+		{
+		case 1:
+			break;
+		case 2:
+			moName = "ship_light";
+			break;
+		case 3:
+			break;
+		}
+		break;
+	case CWWALL_BLUE_BRICK_2:
+		switch (spearMission)
+		{
+		case 1:
+			break;
+		case 2:
+			moName = "hitler_poster";
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_WOOD_EAGLE:
-		moName = "eagle_portrait";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "eagle_portrait";
+			break;
+		case 2:
+			moName = "swastika_relief";
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_WOOD_HITLER:
-		moName = "hitler_portrait";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "hitler_portrait";
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		}
+		break;
+	case CWWALL_WOOD:
+		switch (spearMission)
+		{
+		case 1:
+			break;
+		case 2:
+			moName = "wall_light";
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_ENTRANCE:
 		moName = "elevator_entrance";
 		break;
 	case CWWALL_STEEL_SIGN:
-		moName = "no_sign";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "no_sign";
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		}
+		break;
+	case CWWALL_RED_BRICK:
+		switch (spearMission)
+		{
+		case 1:
+			break;
+		case 2:
+			moName = "wall_chart";
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_RED_BRICK_SWASTIKA:
-		moName = "swastika_wreath";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "swastika_wreath";
+			break;
+		case 2:
+			moName = "wall_nuke_sign";
+			break;
+		case 3:
+			break;
+		}
+		break;
+	case CWWALL_PURPLE:
+		switch (spearMission)
+		{
+		case 1:
+			break;
+		case 2:
+			moName = "heer_flag";
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_RED_BRICK_FLAG:
-		moName = "coat_of_arms_flag";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "coat_of_arms_flag";
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_ELEVATOR: {
 		const TileClass *tcBelow =
@@ -1215,68 +1370,429 @@ static void TryLoadWallObject(
 		}
 		break;
 	case CWWALL_WOOD_IRON_CROSS:
-		moName = "iron_cross";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "iron_cross";
+			break;
+		case 2:
+			moName = "wall_chart";
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_DIRTY_BRICK_1:
-	case CWWALL_DIRTY_BRICK_2: // fallthrough
-		moName = "cobble_moss";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "cobble_moss";
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_PURPLE_BLOOD:
-		moName = "bloodstain";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "bloodstain";
+			break;
+		case 2:
+			moName = "no_sign";
+			break;
+		case 3:
+			break;
+		}
+		break;
+	case CWWALL_DIRTY_BRICK_2:
+		switch (spearMission)
+		{
+		case 1:
+			moName = "cobble_moss";
+			break;
+		case 2:
+			moName = "jail_cell";
+			break;
+		case 3:
+			break;
+		}
+		break;
+	case CWWALL_GREY_BRICK_3:
+		switch (spearMission)
+		{
+		case 1:
+			break;
+		case 2:
+			moName = "jail_cell_skeleton";
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_GREY_BRICK_SIGN:
-		moName = "no_sign";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "no_sign";
+			break;
+		case 2:
+			moName = "no_sign";
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_BROWN_WEAVE_BLOOD_2:
-		moName = "bloodstain";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "bloodstain";
+			break;
+		case 2:
+			moName = "skull_blue";
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_BROWN_WEAVE_BLOOD_3:
-		moName = "bloodstain1";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "bloodstain1";
+			break;
+		case 2:
+			moName = "swastika_blue";
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_BROWN_WEAVE_BLOOD_1:
-		moName = "bloodstain2";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "bloodstain2";
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_STAINED_GLASS:
-		moName = "hitler_glass";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "hitler_glass";
+			break;
+		case 2:
+			moName = "swastika_relief";
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_BLUE_WALL_SKULL:
-		moName = "skull_blue";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "skull_blue";
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		}
+		break;
+	case CWWALL_GREY_WALL_1:
+		switch (spearMission)
+		{
+		case 1:
+			break;
+		case 2:
+			moName = "map";
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_BLUE_WALL_SWASTIKA:
-		moName = "swastika_blue";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "swastika_blue";
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_GREY_WALL_VENT:
-		moName = "wall_vent";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "wall_vent";
+			break;
+		case 2:
+			moName = "no_sign";
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_MULTICOLOR_BRICK:
-		moName = "brick_color";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "brick_color";
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		}
+		break;
+	case CWWALL_GREY_WALL_2:
+		switch (spearMission)
+		{
+		case 1:
+			break;
+		case 2:
+			moName = "bulletholes";
+			break;
+		case 3:
+			break;
+		}
+		break;
+	case CWWALL_BLUE_WALL:
+		switch (spearMission)
+		{
+		case 1:
+			break;
+		case 2:
+			moName = "ship_picture";
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_BLUE_BRICK_SIGN:
-		moName = "no_sign";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "no_sign";
+			break;
+		case 2:
+			moName = "hitler_poster";
+			break;
+		case 3:
+			break;
+		}
+		break;
+	case CWWALL_BROWN_MARBLE_1:
+		switch (spearMission)
+		{
+		case 1:
+			break;
+		case 2:
+			moName = "wall_vent";
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_GREY_WALL_MAP:
-		moName = "map";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "map";
+			break;
+		case 2:
+			moName = "heer_flag";
+			break;
+		case 3:
+			break;
+		}
+		break;
+	case CWWALL_BROWN_STONE_2:
+		switch (spearMission)
+		{
+		case 1:
+			break;
+		case 2:
+			moName = "swastika_relief";
+			break;
+		case 3:
+			break;
+		}
+		break;
+	case CWWALL_BROWN_MARBLE_2:
+		switch (spearMission)
+		{
+		case 1:
+			break;
+		case 2:
+			moName = "eagle_portrait";
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_BROWN_MARBLE_FLAG:
-		moName = "heer_flag";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "heer_flag";
+			break;
+		case 2:
+			moName = "green_relief";
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_WOOD_PANEL:
-		moName = "panel";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "panel";
+			break;
+		case 2:
+			moName = "scratch";
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_GREY_WALL_HITLER:
-		moName = "hitler_poster";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "hitler_poster";
+			break;
+		case 2:
+			moName = "wall_goo2";
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_STONE_WALL_1:
-	case CWWALL_STONE_WALL_2:	 // fallthrough
-	case CWWALL_RAMPART_STONE_1: // fallthrough
-	case CWWALL_RAMPART_STONE_2: // fallthrough
-		moName = "stone_color";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "stone_color";
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		}
+		break;
+	case CWWALL_STONE_WALL_2:
+		switch (spearMission)
+		{
+		case 1:
+			moName = "stone_color";
+			break;
+		case 2:
+			moName = "scratch";
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_STONE_WALL_FLAG:
-		moName = "heer_flag";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "heer_flag";
+			break;
+		case 2:
+			moName = "iron_cross";
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_STONE_WALL_WREATH:
-		moName = "swastika_wreath";
+		switch (spearMission)
+		{
+		case 1:
+			moName = "swastika_wreath";
+			break;
+		case 2:
+			moName = "wall_goo2";
+			break;
+		case 3:
+			break;
+		}
+		break;
+	case CWWALL_GREY_CONCRETE_LIGHT:
+		switch (spearMission)
+		{
+		case 1:
+			break;
+		case 2:
+			moName = "wall_nuke_sign";
+			break;
+		case 3:
+			break;
+		}
+		break;
+	case CWWALL_GREY_CONCRETE_DARK:
+		switch (spearMission)
+		{
+		case 1:
+			break;
+		case 2:
+			moName = "wall_light";
+			break;
+		case 3:
+			break;
+		}
+		break;
+	case CWWALL_BLOOD_WALL:
+		switch (spearMission)
+		{
+		case 1:
+			break;
+		case 2:
+			moName = "scratch";
+			break;
+		case 3:
+			break;
+		}
+		break;
+	case CWWALL_RAMPART_STONE_1:
+		switch (spearMission)
+		{
+		case 1:
+			moName = "stone_color";
+			break;
+		case 2:
+			moName = "no_sign";
+			break;
+		case 3:
+			break;
+		}
+		break;
+	case CWWALL_RAMPART_STONE_2:
+		switch (spearMission)
+		{
+		case 1:
+			moName = "stone_color";
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWWALL_ELEVATOR_WALL:
 		moName = "elevator_interior";

@@ -29,6 +29,7 @@ box_red.png
 box_wood.png
 box_wreck.png
 box2.png
+bulletmarks.png
 bullet_ball.png
 cabinet.png
 cabinet_wreck.png
@@ -92,8 +93,6 @@ paper.png
 particles/blood0.png
 particles/blood1.png
 particles/blood2.png
-particles/bulletmarks.png
-particles/scratch.png
 particles/spark_classic.png
 pci_card.png
 plant.png
@@ -104,6 +103,7 @@ rocket_wreck.png
 sack.png
 safe.png
 safe_wreck.png
+scratch.png
 skull.png
 statue_ogre.png
 table_clothed.png
