@@ -325,7 +325,7 @@
         "Type": "Normal",
         "Pic": "swastika_relief"
       },
-      "Offset": [-4, -9],
+      "Offset": [-5, -10],
       "Health": 0,
       "Flags": ["OnWall"]
     },

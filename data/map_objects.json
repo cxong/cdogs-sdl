@@ -1556,7 +1556,7 @@
         "Type": "Normal",
         "Pic": "wall_nuke_sign"
       },
-      "Offset": [-5, -11],
+      "Offset": [-5, -10],
       "Health": 0,
       "Flags": ["OnWall"]
     },

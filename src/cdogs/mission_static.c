@@ -1330,7 +1330,8 @@ static bool FloodFillIsAccessSame(void *data, const struct vec2i v)
 	}
 	const uint16_t tileAccess =
 		*(uint16_t *)CArrayGet(&mData->m->Access, mData->size.x * v.y + v.x);
-	return tileAccess != mData->tileAccess;
+	const TileClass *tc = MissionStaticGetTileClass(mData->m, mData->size, v);
+	return tc->Type == TILE_CLASS_DOOR && tileAccess != mData->tileAccess;
 }
 
 bool MissionStaticTryUnsetKeyAt(
