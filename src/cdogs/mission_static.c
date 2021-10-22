@@ -380,7 +380,7 @@ static void LoadStaticCharacters(MissionStatic *m, json_t *node, char *name)
 			CA_FOREACH_END()
 		}
 		CArrayTerminate(&positions);
-		
+
 		TryLoadPlaces(&cps.Places, chars);
 
 		CArrayPushBack(&m->Characters, &cps);
@@ -1116,28 +1116,29 @@ bool MissionStaticTryRemoveItemAt(MissionStatic *m, const struct vec2i pos)
 	return false;
 }
 
-void MissionStaticAddCharacter(MissionStatic *m, const int ch, const CharacterPlace cp)
- {
-	 // Check if the character already has an entry, and add to its list
-	 // of positions
-	 bool hasAdded = false;
-	 CA_FOREACH(CharacterPlaces, cps, m->Characters)
-	 if (cps->Index == ch)
-	 {
-		 CArrayPushBack(&cps->Places, &cp);
-		 hasAdded = true;
-		 break;
-	 }
-	 CA_FOREACH_END()
-	 // If not, create a new entry
-	 if (!hasAdded)
-	 {
-		 CharacterPlaces cps;
-		 cps.Index = ch;
-		 CArrayInit(&cps.Places, sizeof(CharacterPlace));
-		 CArrayPushBack(&cps.Places, &cp);
-		 CArrayPushBack(&m->Characters, &cps);
-	 }
+void MissionStaticAddCharacter(
+	MissionStatic *m, const int ch, const CharacterPlace cp)
+{
+	// Check if the character already has an entry, and add to its list
+	// of positions
+	bool hasAdded = false;
+	CA_FOREACH(CharacterPlaces, cps, m->Characters)
+	if (cps->Index == ch)
+	{
+		CArrayPushBack(&cps->Places, &cp);
+		hasAdded = true;
+		break;
+	}
+	CA_FOREACH_END()
+	// If not, create a new entry
+	if (!hasAdded)
+	{
+		CharacterPlaces cps;
+		cps.Index = ch;
+		CArrayInit(&cps.Places, sizeof(CharacterPlace));
+		CArrayPushBack(&cps.Places, &cp);
+		CArrayPushBack(&m->Characters, &cps);
+	}
 }
 bool MissionStaticTryRemoveCharacterAt(
 	MissionStatic *m, const struct vec2i pos)
@@ -1166,8 +1167,7 @@ bool MissionStaticTryRotateCharacterAt(
 	return false;
 }
 
-void MissionStaticAddKey(
-	MissionStatic *m, const int k, const struct vec2i pos)
+void MissionStaticAddKey(MissionStatic *m, const int k, const struct vec2i pos)
 {
 	// Check if the item already has an entry, and add to its list
 	// of positions
@@ -1331,7 +1331,9 @@ static bool FloodFillIsAccessSame(void *data, const struct vec2i v)
 	const uint16_t tileAccess =
 		*(uint16_t *)CArrayGet(&mData->m->Access, mData->size.x * v.y + v.x);
 	const TileClass *tc = MissionStaticGetTileClass(mData->m, mData->size, v);
-	return tc->Type == TILE_CLASS_DOOR && tileAccess != mData->tileAccess;
+	const bool isDoor = tc->Type == TILE_CLASS_DOOR;
+	const bool changeToUnlocked = mData->tileAccess == 0;
+	return (!changeToUnlocked == isDoor) && tileAccess != mData->tileAccess;
 }
 
 bool MissionStaticTryUnsetKeyAt(
@@ -1344,7 +1346,8 @@ bool MissionStaticTryUnsetKeyAt(
 bool MissionStaticTryAddExit(MissionStatic *m, const Exit *exit)
 {
 	// Exits are sized 1, 1 larger than they are stored
-	const Rect2i exitR = Rect2iNew(exit->R.Pos, svec2i_add(exit->R.Size, svec2i_one()));
+	const Rect2i exitR =
+		Rect2iNew(exit->R.Pos, svec2i_add(exit->R.Size, svec2i_one()));
 	CA_FOREACH(const Exit, e, m->Exits)
 	const Rect2i er = Rect2iNew(e->R.Pos, svec2i_add(e->R.Size, svec2i_one()));
 	if (Rect2iOverlap(er, exitR))
