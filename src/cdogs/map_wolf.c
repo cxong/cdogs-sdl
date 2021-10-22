@@ -1234,6 +1234,7 @@ static void TryLoadWallObject(
 			moName = "no_sign";
 			break;
 		case 2:
+			moName = "wet_cobble";
 			break;
 		case 3:
 			break;
@@ -1563,7 +1564,7 @@ static void TryLoadWallObject(
 		case 1:
 			break;
 		case 2:
-			moName = "bulletholes";
+			moName = "bulletmarks";
 			break;
 		case 3:
 			break;

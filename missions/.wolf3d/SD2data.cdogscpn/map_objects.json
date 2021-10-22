@@ -330,6 +330,16 @@
       "Flags": ["OnWall"]
     },
     {
+      "Name": "wet_cobble",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "wet_cobble"
+      },
+      "Offset": [-8, -4],
+      "Health": 0,
+      "Flags": ["OnWall", "Outside"]
+    },
+    {
       "Name": "elevator_interior",
       "Pic": {
         "Type": "Normal",

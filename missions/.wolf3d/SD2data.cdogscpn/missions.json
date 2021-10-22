@@ -1120,6 +1120,10 @@
 		{
 			"MapObject": "iron_cross",
 			"Positions": [[7, 14]]
+		},
+		{
+			"MapObject": "wet_cobble",
+			"Positions": [[11, 4]]
 		}],
 		"StaticCharacters": [{
 			"Index": 0,
