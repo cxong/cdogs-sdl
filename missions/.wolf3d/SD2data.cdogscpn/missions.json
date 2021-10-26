@@ -1117,6 +1117,10 @@
 		{
 			"MapObject": "sprites",
 			"Positions": [[29, 11]]
+		},
+		{
+			"MapObject": "table_plastic",
+			"Positions": [[26, 3]]
 		}],
 		"StaticCharacters": [{
 			"Index": 0,

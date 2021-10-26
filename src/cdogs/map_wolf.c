@@ -1924,8 +1924,19 @@ static void LoadEntity(
 		MissionStaticTryAddItem(&m->u.Static, StrMapObject("urn"), v);
 		break;
 	case CWENT_TABLE:
-		MissionStaticTryAddItem(
-			&m->u.Static, StrMapObject("table_wood_round"), v);
+		switch (spearMission)
+		{
+		case 1:
+			MissionStaticTryAddItem(
+				&m->u.Static, StrMapObject("table_wood_round"), v);
+			break;
+		case 2:
+			MissionStaticTryAddItem(
+				&m->u.Static, StrMapObject("table_plastic"), v);
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWENT_CEILING_LIGHT_GREEN:
 		MissionStaticTryAddItem(&m->u.Static, StrMapObject("spotlight"), v);

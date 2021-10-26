@@ -1487,7 +1487,7 @@
         "Pic": "pillar_blue"
       },
       "Size": [10, 8],
-      "Offset": [-5, -11],
+      "Offset": [-5, -20],
       "Wreck": "cabinet_server_wreck",
       "Health": 100,
       "Flags": ["Outside", "NoWalls"]
