@@ -463,6 +463,16 @@
       "Flags": ["Inside", "NoWalls"]
     },
     {
+      "Name": "table_and_chairs_red",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "table_and_chairs_red"
+      },
+      "Wreck": "table_wood_round_wreck",
+      "Health": 30,
+      "Flags": ["Inside", "NoWalls"]
+    },
+    {
       "Name": "table_steel",
       "Pic": {
         "Type": "Normal",
@@ -1469,6 +1479,18 @@
       "DamageSmoke": {
         "HealthThreshold": 0.5
       }
+    },
+    {
+      "Name": "pillar_blue",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "pillar_blue"
+      },
+      "Size": [10, 8],
+      "Offset": [-5, -11],
+      "Wreck": "cabinet_server_wreck",
+      "Health": 100,
+      "Flags": ["Outside", "NoWalls"]
     },
     {
       "Name": "rocket_wreck",

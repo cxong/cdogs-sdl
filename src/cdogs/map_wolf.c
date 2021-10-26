@@ -868,9 +868,9 @@ static void TryLoadWallObject(
 	MissionStatic *m, const uint16_t ch, const CWolfMap *map,
 	const int spearMission, const struct vec2i v, const int missionIndex);
 static void LoadEntity(
-	Mission *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v,
-	const int missionIndex, const int numMissions, int *bossObjIdx,
-	int *spearObjIdx);
+	Mission *m, const uint16_t ch, const CWolfMap *map, const int spearMission,
+	const struct vec2i v, const int missionIndex, const int numMissions,
+	int *bossObjIdx, int *spearObjIdx);
 
 typedef struct
 {
@@ -946,8 +946,8 @@ static void LoadMission(
 			&m.u.Static, ch, map, spearMission, _v, missionIndex);
 		const uint16_t ech = CWLevelGetCh(level, 1, _v.x, _v.y);
 		LoadEntity(
-			&m, ech, map, _v, missionIndex, numMissions, &bossObjIdx,
-			&spearObjIdx);
+			&m, ech, map, spearMission, _v, missionIndex, numMissions,
+			&bossObjIdx, &spearObjIdx);
 		RECT_FOREACH_END()
 
 		if (m.u.Static.Exits.size == 0)
@@ -1840,9 +1840,9 @@ static void LoadChar(
 	const bool moving, int *bossObjIdx);
 static void AdjustTurningPoint(Mission *m, const struct vec2i v);
 static void LoadEntity(
-	Mission *m, const uint16_t ch, const CWolfMap *map, const struct vec2i v,
-	const int missionIndex, const int numMissions, int *bossObjIdx,
-	int *spearObjIdx)
+	Mission *m, const uint16_t ch, const CWolfMap *map, const int spearMission,
+	const struct vec2i v, const int missionIndex, const int numMissions,
+	int *bossObjIdx, int *spearObjIdx)
 {
 	const CWEntity entity = CWChToEntity(ch);
 	switch (entity)
@@ -2028,7 +2028,17 @@ static void LoadEntity(
 		MissionStaticTryAddItem(&m->u.Static, StrMapObject("pool_blood"), v);
 		break;
 	case CWENT_FLAG:
-		MissionStaticTryAddItem(&m->u.Static, StrMapObject("flag"), v);
+		switch (spearMission)
+		{
+		case 1:
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("flag"), v);
+			break;
+		case 2:
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("rod"), v);
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWENT_CEILING_LIGHT_RED_AARDWOLF:
 		if (map->type == CWMAPTYPE_WL6)
@@ -2038,8 +2048,19 @@ static void LoadEntity(
 		}
 		else
 		{
-			MissionStaticTryAddItem(&m->u.Static, StrMapObject("skull2"), v);
-			break;
+			switch (spearMission)
+			{
+			case 1:
+				MissionStaticTryAddItem(
+					&m->u.Static, StrMapObject("skull2"), v);
+				break;
+			case 2:
+				MissionStaticTryAddItem(
+					&m->u.Static, StrMapObject("spotlight"), v);
+				break;
+			case 3:
+				break;
+			}
 		}
 		break;
 	case CWENT_BONES2:
@@ -2049,13 +2070,34 @@ static void LoadEntity(
 		MissionStaticTryAddItem(&m->u.Static, StrMapObject("bones2"), v);
 		break;
 	case CWENT_BONES4:
-		MissionStaticTryAddItem(&m->u.Static, StrMapObject("bones3"), v);
+		switch (spearMission)
+		{
+		case 1:
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("bones3"), v);
+			break;
+		case 2:
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("goo"), v);
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWENT_UTENSILS_BLUE_COW_SKULL:
 		if (map->type == CWMAPTYPE_SOD)
 		{
-			MissionStaticTryAddItem(
-				&m->u.Static, StrMapObject("cowskull_pillar"), v);
+			switch (spearMission)
+			{
+			case 1:
+				MissionStaticTryAddItem(
+					&m->u.Static, StrMapObject("cowskull_pillar"), v);
+				break;
+			case 2:
+				MissionStaticTryAddItem(
+					&m->u.Static, StrMapObject("table_lab"), v);
+				break;
+			case 3:
+				break;
+			}
 		}
 		else
 		{
@@ -2065,8 +2107,19 @@ static void LoadEntity(
 	case CWENT_STOVE_WELL_BLOOD:
 		if (map->type == CWMAPTYPE_SOD)
 		{
-			MissionStaticTryAddItem(
-				&m->u.Static, StrMapObject("well_blood"), v);
+			switch (spearMission)
+			{
+			case 1:
+				MissionStaticTryAddItem(
+					&m->u.Static, StrMapObject("well_blood"), v);
+				break;
+			case 2:
+				MissionStaticTryAddItem(
+					&m->u.Static, StrMapObject("barrel"), v);
+				break;
+			case 3:
+				break;
+			}
 		}
 		else
 		{
@@ -2076,8 +2129,19 @@ static void LoadEntity(
 	case CWENT_RACK_ANGEL_STATUE:
 		if (map->type == CWMAPTYPE_SOD)
 		{
-			MissionStaticTryAddItem(
-				&m->u.Static, StrMapObject("statue_behemoth"), v);
+			switch (spearMission)
+			{
+			case 1:
+				MissionStaticTryAddItem(
+					&m->u.Static, StrMapObject("statue_behemoth"), v);
+				break;
+			case 2:
+				MissionStaticTryAddItem(
+					&m->u.Static, StrMapObject("pillar_blue"), v);
+				break;
+			case 3:
+				break;
+			}
 		}
 		else
 		{
@@ -2085,10 +2149,32 @@ static void LoadEntity(
 		}
 		break;
 	case CWENT_VINES:
-		MissionStaticTryAddItem(&m->u.Static, StrMapObject("grass"), v);
+		switch (spearMission)
+		{
+		case 1:
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("grass"), v);
+			break;
+		case 2:
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("sprites"), v);
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWENT_BROWN_COLUMN:
-		MissionStaticTryAddItem(&m->u.Static, StrMapObject("pillar_brown"), v);
+		switch (spearMission)
+		{
+		case 1:
+			MissionStaticTryAddItem(
+				&m->u.Static, StrMapObject("pillar_brown"), v);
+			break;
+		case 2:
+			MissionStaticTryAddItem(
+				&m->u.Static, StrMapObject("statue_behemoth"), v);
+			break;
+		case 3:
+			break;
+		}
 		break;
 	case CWENT_AMMO_BOX:
 		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("ammo_box"), v);

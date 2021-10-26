@@ -841,10 +841,6 @@
 			"Positions": [[19, 1]]
 		},
 		{
-			"MapObject": "table_and_chairs",
-			"Positions": [[21, 1]]
-		},
-		{
 			"MapObject": "rod_light",
 			"Positions": [[23, 1]]
 		},
@@ -852,7 +848,8 @@
 			"MapObject": "spotlight",
 			"Positions": [[25, 1],
 			[23, 1],
-			[30, 9]]
+			[30, 9],
+			[17, 11]]
 		},
 		{
 			"MapObject": "chandelier",
@@ -955,10 +952,6 @@
 			"Positions": [[25, 9]]
 		},
 		{
-			"MapObject": "flag",
-			"Positions": [[27, 9]]
-		},
-		{
 			"MapObject": "skull2",
 			"Positions": [[29, 9]]
 		},
@@ -967,28 +960,12 @@
 			"Positions": [[31, 9]]
 		},
 		{
-			"MapObject": "bones2",
-			"Positions": [[17, 11]]
-		},
-		{
-			"MapObject": "bones3",
-			"Positions": [[19, 11]]
-		},
-		{
 			"MapObject": "pots",
 			"Positions": [[20, 11]]
 		},
 		{
-			"MapObject": "cowskull_pillar",
-			"Positions": [[21, 11]]
-		},
-		{
 			"MapObject": "stove",
 			"Positions": [[22, 11]]
-		},
-		{
-			"MapObject": "well_blood",
-			"Positions": [[23, 11]]
 		},
 		{
 			"MapObject": "spears",
@@ -997,14 +974,6 @@
 		{
 			"MapObject": "statue_behemoth",
 			"Positions": [[26, 11]]
-		},
-		{
-			"MapObject": "grass",
-			"Positions": [[27, 11]]
-		},
-		{
-			"MapObject": "pillar_brown",
-			"Positions": [[28, 11]]
 		},
 		{
 			"MapObject": "truck",
@@ -1124,6 +1093,30 @@
 		{
 			"MapObject": "wet_cobble",
 			"Positions": [[11, 4]]
+		},
+		{
+			"MapObject": "rod",
+			"Positions": [[27, 9]]
+		},
+		{
+			"MapObject": "barrel",
+			"Positions": [[23, 11]]
+		},
+		{
+			"MapObject": "table_and_chairs_red",
+			"Positions": [[21, 1]]
+		},
+		{
+			"MapObject": "goo",
+			"Positions": [[19, 11]]
+		},
+		{
+			"MapObject": "pillar_blue",
+			"Positions": [[27, 11]]
+		},
+		{
+			"MapObject": "sprites",
+			"Positions": [[29, 11]]
 		}],
 		"StaticCharacters": [{
 			"Index": 0,
