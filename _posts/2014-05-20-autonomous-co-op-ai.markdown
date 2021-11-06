@@ -6,7 +6,11 @@ categories: progress
 ---
 More updates for upcoming features in [0.5.6](https://github.com/cxong/cdogs-sdl/issues?milestone=16&state=open). Improvements to the co-op AI means that even if all human players die, the AI will attempt to go around the map and complete all objectives.
 
-[![](http://img.youtube.com/vi/hKEtFBHULyM/0.jpg)](http://youtu.be/hKEtFBHULyM)
+<a
+    href="http://youtu.be/hKEtFBHULyM"
+    data-fancybox="gallery">
+![](http://img.youtube.com/vi/hKEtFBHULyM/0.jpg)
+</a>
 
 The AI still needs some optimisation; on large maps with long paths, the pathfinding can cause huge slowdowns in the game.
 

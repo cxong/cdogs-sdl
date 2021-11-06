@@ -12,7 +12,11 @@ This upcoming release will have some neat co-op AI enhancements. The co-op AI wi
 
 Instead, the AI has been improved to be alternately confused. It would alternate between performing some random, nonsensical action, and doing the right thing. Here's a video demonstrating this:
 
-[![](http://img.youtube.com/vi/Z5G8K5VGBVU/0.jpg)](http://www.youtube.com/watch?v=Z5G8K5VGBVU)
+<a
+    href="http://www.youtube.com/watch?v=Z5G8K5VGBVU"
+    data-fancybox="gallery">
+![](http://img.youtube.com/vi/Z5G8K5VGBVU/0.jpg)
+</a>
 
 The AI will still be handicapped by the confuse gas, but they will not simply run away.
 

@@ -8,4 +8,4 @@ categories: progress
 
 Added a highlight border around characters that are objectives (e.g. ones that you have to kill or rescue). This makes the game easier to understand.
 
-Part of: [https://github.com/cxong/cdogs-sdl/issues/90](https://github.com/cxong/cdogs-sdl/issues/90)
+Part of: <https://github.com/cxong/cdogs-sdl/issues/90>
