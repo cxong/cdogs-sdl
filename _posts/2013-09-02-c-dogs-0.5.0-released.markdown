@@ -9,6 +9,4 @@ Get the release here: <https://sourceforge.net/projects/c-dogs-sdl/files/>
 
 This release includes the restored and enhanced campaign editor, as well as a long list of additions made possible by recent rendering refactors.
 
-![](https://raw.github.com/cxong/cdogs-sdl/master/wiki/images/screenshots/editor.png)
-
 See the full release notes here: <https://github.com/cxong/cdogs-sdl/releases/tag/0.5.0>
