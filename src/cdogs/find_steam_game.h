@@ -36,8 +36,10 @@ extern "C"
 #define _FSG_FUNC static __inline
 #elif !defined __STDC_VERSION__ || __STDC_VERSION__ < 199901L
 #define _FSG_FUNC static __inline__
-#else
+#elif defined(__cplusplus)
 #define _FSG_FUNC static inline
+#else
+#define _FSG_FUNC static
 #endif
 
 #ifdef _MSC_VER
