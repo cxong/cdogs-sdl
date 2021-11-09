@@ -73,13 +73,12 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Mutant",
-		"HairType": "flattop",
-		"Skin": "e9e9e9ff",
-		"Arms": "093f00ff",
+		"Class": "Bat",
+		"Skin": "cd8f17ff",
+		"Arms": "352509ff",
 		"Body": "003f06ff",
 		"Legs": "003c08ff",
-		"Hair": "000000ff",
+		"Hair": "0e0d0dff",
 		"Feet": "404040ff",
 		"speed": 194,
 		"Gun": "Guard Pistol",

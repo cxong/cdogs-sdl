@@ -40,14 +40,14 @@
       "Sounds": "officer"
     },
     {
-      "Name": "Mutant",
+      "Name": "Bat",
       "HeadPics": {
         "Type": "Directional",
-        "Sprites": "chars/heads/cyborg"
+        "Sprites": "chars/heads/dog"
       },
-      "Body": "mutant",
+      "Body": "bat",
       "Sounds": "mutant",
-      "BloodColor": "ff00ff"
+      "BloodColor": "ff0000"
     },
     {
       "Name": "Hans Grosse",
