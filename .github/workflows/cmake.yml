@@ -23,7 +23,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-latest ]
+        include:
+          - os: ubuntu-latest
+            cc: /usr/bin/gcc-10
+          - os: macos-latest
+            cc: /usr/bin/clang
 
     steps:
     - name: Checkout
@@ -46,8 +50,6 @@ jobs:
         sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev gcc-10 g++-10 libgtk-3-dev python3-pip
         python3 -m pip install protobuf
         pip3 install --upgrade protobuf
-      env:
-        CC: gcc-10
 
     - name: Install packages macOS
       if: matrix.os == 'macos-latest'
@@ -57,6 +59,8 @@ jobs:
         build/macosx/install-sdl2.sh
 
     - name: Configure CMake
+      env:
+        CC: ${{ matrix.compiler }}
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INSTALL_PREFIX=. -DDATA_INSTALL_DIR=. -Wno-dev .
