@@ -46,6 +46,8 @@ jobs:
         sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev gcc-10 g++-10 libgtk-3-dev python3-pip
         python3 -m pip install protobuf
         pip3 install --upgrade protobuf
+      env:
+        CC: gcc-10
 
     - name: Install packages macOS
       if: matrix.os == 'macos-latest'
