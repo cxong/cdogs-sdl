@@ -1,8 +1,8 @@
 version: @VERSION@.{build}
 
 branches:
-  except:
-    - gh-pages
+  only:
+    - master
 
 clone_folder: c:\projects\cdogs-sdl
 image:
@@ -13,6 +13,7 @@ matrix:
   fast_finish: true
 environment:
   CTEST_OUTPUT_ON_FAILURE: 1
+  # https://www.appveyor.com/docs/windows-images-software/#python
   PYTHON: "C:\\Python37"
   SDL2_VERSION: 2.0.10
   SDL2_IMAGE_VERSION: 2.0.5
