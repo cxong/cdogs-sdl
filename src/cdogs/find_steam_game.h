@@ -32,16 +32,19 @@ extern "C"
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#ifdef _MSC_VER
+#if defined(_WIN64) || defined(_WIN32)
 #define _FSG_FUNC static __inline
 #elif !defined __STDC_VERSION__ || __STDC_VERSION__ < 199901L
 #define _FSG_FUNC static __inline__
-#else
+#elif defined(__cplusplus)
 #define _FSG_FUNC static inline
+#else
+#define _FSG_FUNC static
 #endif
 
-#ifdef _MSC_VER
+#if defined(_WIN64) || defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <windows.h>
 #include <winerror.h>
 #include <winreg.h>
@@ -80,7 +83,7 @@ extern "C"
 
 #endif
 
-#if (defined _MSC_VER || defined __MINGW32__)
+#if defined(_WIN64) || defined(_WIN32)
 #define _FSG_PATH_MAX MAX_PATH
 #elif defined __linux__
 #include <limits.h>
@@ -112,7 +115,7 @@ extern "C"
 	void fsg_get_steam_game_path(char *out, const char *name)
 	{
 		out[0] = '\0';
-#ifdef _MSC_VER
+#if defined(_WIN64) || defined(_WIN32)
 		char steam_path[_FSG_PATH_MAX];
 		char buf[_FSG_PATH_MAX];
 		_fsg_query_reg_key(
@@ -249,7 +252,7 @@ extern "C"
 	void fsg_get_gog_game_path(char *out, const char *app_id)
 	{
 		out[0] = '\0';
-#ifdef _MSC_VER
+#if defined(_WIN64) || defined(_WIN32)
 		char buf[_FSG_PATH_MAX];
 		sprintf(buf, "Software\\Wow6432Node\\GOG.com\\Games\\%s", app_id);
 		_fsg_query_reg_key(out, HKEY_LOCAL_MACHINE, buf, "Path");

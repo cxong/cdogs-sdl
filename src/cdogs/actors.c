@@ -819,10 +819,11 @@ static void FireWeapon(TActor *a, Weapon *w)
 	const int barrel = ActorGetCanFireBarrel(a, w);
 	if (barrel == -1)
 	{
-		if (WeaponGetUnlockedBarrel(w) >= 0 && gCampaign.Setting.Ammo)
+		const int unlockedBarrel = WeaponGetUnlockedBarrel(w);
+		if (unlockedBarrel >= 0 && gCampaign.Setting.Ammo)
 		{
 			CASSERT(
-				ActorWeaponGetAmmo(a, w->Gun, barrel) == 0,
+				ActorWeaponGetAmmo(a, w->Gun, unlockedBarrel) == 0,
 				"should be out of ammo");
 			// Play a clicking sound if this weapon is out of ammo
 			if (w->clickLock <= 0)
