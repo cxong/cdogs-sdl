@@ -26,16 +26,16 @@ jobs:
         include:
           - os: ubuntu-latest
             cc: gcc
-            gcc_version: latest
+            cc_version: latest
           - os: ubuntu-latest
             cc: gcc
-            gcc_version: 11
+            cc_version: 11
           - os: ubuntu-latest
             cc: clang
-            gcc_version: latest
+            cc_version: latest
           - os: ubuntu-latest
             cc: clang
-            gcc_version: 12
+            cc_version: 12
           - os: macos-latest
             cc: /usr/bin/clang
 
@@ -65,13 +65,13 @@ jobs:
       if: matrix.os == 'ubuntu-latest' && matrix.cc == 'gcc'
       uses: egor-tensin/setup-gcc@v1
       with:
-        version: ${{ matrix.gcc_version }}
+        version: ${{ matrix.cc_version }}
 
     - name: Set up Clang
       if: matrix.os == 'ubuntu-latest' && matrix.cc == 'clang'
       uses: egor-tensin/setup-clang@v1
       with:
-        version: ${{ matrix.clang_version }}
+        version: ${{ matrix.cc_version }}
 
     - name: Install packages macOS
       if: matrix.os == 'macos-latest'
@@ -112,7 +112,7 @@ jobs:
         fail_on_unmatched_files: true
 
     - name: Publish to itch.io (Linux)
-      if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && !github.event.release.prerelease
+      if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.cc == 'gcc' && matrix.cc_version == 'latest' && !github.event.release.prerelease
       env:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       run: |
