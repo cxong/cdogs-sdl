@@ -7,7 +7,7 @@ if(MSVC)
 	add_definitions(-wd"4127" -wd"4102" -wd"4996")
 else()
 	if(NOT BEOS AND NOT HAIKU)
-		add_definitions(-Wno-unused-label)
+		add_definitions(-Wno-unused-label -Wno-array-bounds)
 	endif()
 endif()
 
