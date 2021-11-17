@@ -25,7 +25,17 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            cc: /usr/bin/gcc-10
+            cc: gcc
+            gcc_version: latest
+          - os: ubuntu-latest
+            cc: gcc
+            gcc_version: 11
+          - os: ubuntu-latest
+            cc: clang
+            gcc_version: latest
+          - os: ubuntu-latest
+            cc: clang
+            gcc_version: 12
           - os: macos-latest
             cc: /usr/bin/clang
 
@@ -50,6 +60,18 @@ jobs:
         sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev gcc-10 g++-10 libgtk-3-dev python3-pip
         python3 -m pip install protobuf
         pip3 install --upgrade protobuf
+
+    - name: Set up GCC
+      if: matrix.os == 'ubuntu-latest' && matrix.cc == 'gcc'
+      uses: egor-tensin/setup-gcc@v1
+      with:
+        version: ${{ matrix.gcc_version }}
+
+    - name: Set up Clang
+      if: matrix.os == 'ubuntu-latest' && matrix.cc == 'clang'
+      uses: egor-tensin/setup-clang@v1
+      with:
+        version: ${{ matrix.clang_version }}
 
     - name: Install packages macOS
       if: matrix.os == 'macos-latest'
