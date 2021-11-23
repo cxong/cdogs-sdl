@@ -47,17 +47,17 @@ The game would have new enemy designs, in a sci-fi, cyberpunk theme. C-Dogs had 
 <a
     href="https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/concept_robot.jpg"
     data-fancybox="gallery-char"
-    data-caption="The multi-functional arm blades on this robot can grapple, cut and thrust. Note the totally-extreme spiky decorations.">
+    data-caption="The multi-functional arm blades on this robot can grapple, cut, thrust and open beer bottles. Note the totally-extreme spiky decorations.">
 ![Blade bot](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/concept_robot_th.jpg)
 </a>
 <a
     href="https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/concept_micro_copter.jpg"
     data-fancybox="gallery-char"
-    data-caption="Micro attack helicopter, with one pilot/gunner. Vehicles typically would have small - often single - crews, and not much more powerful than infantry. This copter's main advantage is mobility, granting the ability to fly over obstacles and buildings.">
+    data-caption="Micro attack helicopter, with one pilot/gunner. Vehicles typically would have small - often single - crews, and wouldn't be much more powerful than infantry. This copter's main advantage is mobility, granting the ability to fly over obstacles and buildings, and cause a huge racket.">
 ![Blade bot](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/concept_micro_copter_th.jpg)
 </a>
 
-Gun design would be an important consideration; as C-Dogs is a shooting game, the guns are pretty important, and should be fun and satisfying to use. C-Dogs had an eclectic arsenal, with standard shotguns and machine guns, to sci-fi powerguns, gaming favourites like flamers, and well... the less said about the browny gun, the better. Not so in the new game, which would be filled with futuristic, high powered [fish guns](https://i.imgur.com/XhMYOmZ.jpg) and pew-pew hand cannons. The [MC][mc]'s - who is definitely a cyborg - weapon of choice would be an unassuming SMG, but packed with high-velocity rounds that would shred non-military opponents like cloth. Basically I took lots of notes while watching *Ghost in the Shell*.
+Gun design would be an important consideration; as C-Dogs is a shooting game, the guns are pretty important, and should be fun and satisfying to use. C-Dogs had an eclectic arsenal, with standard shotguns and machine guns, to sci-fi powerguns, gaming favourites like flamers, and well... the less said about the browny gun, the better. Not so in the new game, which would be filled with futuristic, high powered [fish guns](https://i.imgur.com/XhMYOmZ.jpg) and pew-pew hand cannons. The MC's - who is definitely a cyborg - weapon of choice would be an unassuming SMG, but packed with high-velocity rounds that would shred non-military opponents like cloth. Basically I took lots of notes while watching *Ghost in the Shell*.
 
 <a
     href="https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/concept_guns.jpg"
@@ -118,4 +118,4 @@ Alas that's the end of the story. C-Dogs SDL was certainly fun to work on but it
 
 Anyway that's enough from me. C-Dogs SDL isn't quite dead - there's a small update coming up soon 😉 - but you can also follow me on my future game dev adventures on [my blog](http://cxong.github.io) or [itch.io](https://congusbongus.itch.io). Happy gaming as always! 🎉
 
-[mc]: ## "Main Character"
+*[MC]: Main Character
