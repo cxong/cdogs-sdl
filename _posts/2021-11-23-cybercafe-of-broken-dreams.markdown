@@ -21,7 +21,7 @@ C-Dogs was one of my favourite games, so when I got into game dev, it was one of
     href="https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/concept_iso.gif"
     data-fancybox="gallery-concept"
     data-caption="The new game would be isometric, which was totally cool in the late 90's. Also cool in the late 90's: female protagonist with purple hair, shooting lasers at enemy Guiles, in VBA-land. Truly the stuff of nightmares.">
-![Isometric concept](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/concept_iso.gif)
+![Isometric concept](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/concept_iso_th.gif)
 </a>
 <a
     href="https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/clay.jpg"
