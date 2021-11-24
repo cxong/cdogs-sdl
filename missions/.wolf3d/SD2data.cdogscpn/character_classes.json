@@ -136,16 +136,16 @@
       "Body": "none"
     },
     {
-      "Name": "Trans Grosse",
+      "Name": "Submarine Willy",
       "HeadPics": {
         "Type": "Directional",
         "Sprites": "chars/heads/jones"
       },
-      "Body": "big",
+      "Body": "big_soldier",
       "Sounds": "trans"
     },
     {
-      "Name": "Barnacle Wilhelm",
+      "Name": "Professor Quarkblitz",
       "HeadPics": {
         "Type": "Directional",
         "Sprites": "chars/heads/jones"
@@ -154,22 +154,22 @@
       "Sounds": "bill"
     },
     {
-      "Name": "Ubermutant",
+      "Name": "Hans von Schlieffen",
       "HeadPics": {
         "Type": "Directional",
-        "Sprites": "chars/heads/cyborg"
+        "Sprites": "chars/heads/skull_big"
       },
-      "Body": "big_mutant",
+      "Body": "big",
       "Sounds": "ubermutant",
       "BloodColor": "ff00ff"
     },
     {
-      "Name": "Death Knight",
+      "Name": "The Robot",
       "HeadPics": {
         "Type": "Directional",
-        "Sprites": "chars/heads/jones"
+        "Sprites": "chars/heads/robot"
       },
-      "Body": "mech",
+      "Body": "big",
       "Sounds": "knight"
     },
     {
@@ -185,7 +185,7 @@
       "Corpse": "ghost_corpse"
     },
     {
-      "Name": "Angel of Death",
+      "Name": "Devil Incarnate",
       "HeadPics": {
         "Type": "Directional",
         "Sprites": "chars/heads/madbugeye"

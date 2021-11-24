@@ -17,6 +17,7 @@ The following are original C-Dogs/Cyberdogs heads, by Ronny Wester CC-BY 3.0 (se
 
 The following are derived from original C-Dogs/cyberdogs heads. Please still attribute to Ronny Wester using CC-BY 3.0
 - donut
+- mad_doc
 
 The following are original and licensed as CC0
 
