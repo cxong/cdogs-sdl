@@ -82,6 +82,7 @@ static int LoadMapHead(CWolfMap *map, const char *path);
 static int LoadMapData(CWolfMap *map, const char *path);
 int CWLoad(CWolfMap *map, const char *path, const int spearMission)
 {
+	memset(map, 0, sizeof *map);
 	char pathBuf[PATH_MAX];
 	int err = 0;
 	int loadErr = 0;
@@ -404,7 +405,7 @@ static const CWTile tileMap[] = {
 	CWTILE_WALL,
 	CWTILE_WALL,
 	CWTILE_WALL,
-	// 64-89
+	// 64-79
 	CWTILE_UNKNOWN,
 	CWTILE_UNKNOWN,
 	CWTILE_UNKNOWN,
@@ -421,12 +422,13 @@ static const CWTile tileMap[] = {
 	CWTILE_UNKNOWN,
 	CWTILE_UNKNOWN,
 	CWTILE_UNKNOWN,
+	// 80
 	CWTILE_UNKNOWN,
 	CWTILE_UNKNOWN,
 	CWTILE_UNKNOWN,
 	CWTILE_UNKNOWN,
 	CWTILE_UNKNOWN,
-	CWTILE_UNKNOWN,
+	CWTILE_AREA,
 	CWTILE_UNKNOWN,
 	CWTILE_UNKNOWN,
 	CWTILE_UNKNOWN,
@@ -569,7 +571,7 @@ static const CWWall wallMap[] = {
 	CWWALL_RAMPART_STONE_2,
 	// 60
 	CWWALL_ELEVATOR_WALL,
-	CWWALL_UNKNOWN,
+	CWWALL_WHITE_PANEL,
 	CWWALL_BROWN_CONCRETE,
 	CWWALL_PURPLE_BRICK,
 	CWWALL_UNKNOWN,

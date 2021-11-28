@@ -44,7 +44,7 @@ CWolfMap *defaultSpearMap = NULL;
 #define WOLF_GOG_ID "1441705046"
 #define SPEAR_GOG_ID "1441705126"
 
-#define TILE_CLASS_WALL_OFFSET 62
+#define TILE_CLASS_WALL_OFFSET 63
 
 void MapWolfInit(void)
 {
@@ -520,7 +520,6 @@ int MapWolfScan(
 	int err = 0;
 	bool usedAsDefault = false;
 	CWolfMap map;
-	memset(&map, 0, sizeof map);
 	const bool loadedFromDefault = LoadDefault(&map, filename);
 	err = CWLoad(&map, filename, spearMission);
 	if (loadedFromDefault)
@@ -673,7 +672,7 @@ int MapWolfLoad(
 		&cs, &cCommon.characters, &gPlayerTemplates.CustomClasses);
 	CampaignSettingTerminate(&cCommon);
 	// Create walk-through copies of all the walls
-	for (int i = 3; i <= 64; i++)
+	for (int i = 3; i <= 65; i++)
 	{
 		TileClass *orig;
 		sprintf(buf, "%d", i);
