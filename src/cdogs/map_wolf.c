@@ -1321,11 +1321,11 @@ static void TryLoadWallObject(
 				// Check if coming back from secret level
 				if (map->type == CWMAPTYPE_SOD)
 				{
-					if (missionIndex == 19)
+					if (missionIndex == 18)
 					{
 						e.Mission = 4;
 					}
-					else if (missionIndex == 20)
+					else if (missionIndex == 19)
 					{
 						e.Mission = 12;
 					}
