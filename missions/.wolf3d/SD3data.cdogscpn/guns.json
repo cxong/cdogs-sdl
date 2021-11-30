@@ -42,7 +42,7 @@
     {
       "Pic": "chaingun_blue",
       "Name": "Chain Gun",
-      "Icon": "machine_gun",
+      "Icon": "machine_gun_blue",
       "Bullet": "bullet",
       "Cost": 1,
       "Lock": 6,
@@ -90,10 +90,10 @@
       "Brass": "brass"
     },
     {
-      "Name": "Dual Chain Gun",
+      "Name": "Chaingun and Machinegun",
       "Icon": "machine_gun",
       "CanDrop": false,
-      "Guns": ["boss_chaingun1", "boss_chaingun2"],
+      "Guns": ["boss_chaingun1", "boss_machinegun"],
       "Lock": 9
     },
     {
@@ -180,8 +180,8 @@
   ],
   "PseudoGuns" : [
     {
-      "Pic": "chaingun_blue",
-      "Name": "boss_chaingun2",
+      "Pic": "pistol",
+      "Name": "boss_machinegun",
       "Bullet": "bullet_boss",
       "Lock": 70,
       "Sound": "",

@@ -32,15 +32,6 @@
       "Flags": ["Inside", "NoWalls"]
     },
     {
-      "Name": "pillar_brown",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "pillar_brown"
-      },
-      "Health": 80,
-      "Flags": ["Inside", "NoWalls"]
-    },
-    {
       "Name": "sink",
       "Pic": {
         "Type": "Normal",
@@ -183,15 +174,6 @@
       "Flags": ["Outside", "NoWalls"]
     },
     {
-      "Name": "well_blood",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "well_blood"
-      },
-      "Health": 80,
-      "Flags": ["Outside", "NoWalls"]
-    },
-    {
       "Name": "pool_blood",
       "Pic": {
         "Type": "Normal",
@@ -242,10 +224,10 @@
       "Flags": ["Outside"]
     },
     {
-      "Name": "grass",
+      "Name": "sprites",
       "Pic": {
         "Type": "Normal",
-        "Pic": "grass"
+        "Pic": "sprites"
       },
       "Health": 0,
       "Flags": ["Outside"]
@@ -280,6 +262,16 @@
       "Flags": ["Inside", "NoWalls"]
     },
     {
+      "Name": "wall_light",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "wall_light"
+      },
+      "Offset": [-7, -11],
+      "Health": 0,
+      "Flags": ["Inside", "OnWall"]
+    },
+    {
       "Name": "heer_flag",
       "Pic": {
         "Type": "Normal",
@@ -288,26 +280,6 @@
       "Offset": [-7, -11],
       "Health": 0,
       "Flags": ["Inside", "OnWall"]
-    },
-    {
-      "Name": "hitler_portrait",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "hitler_portrait"
-      },
-      "Offset": [-5, -10],
-      "Health": 0,
-      "Flags": ["OnWall"]
-    },
-    {
-      "Name": "brick_eagle",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "brick_eagle"
-      },
-      "Offset": [-8, -11],
-      "Health": 0,
-      "Flags": ["Outside", "OnWall"]
     },
     {
       "Name": "eagle_portrait",
@@ -330,24 +302,24 @@
       "Flags": ["Inside", "OnWall"]
     },
     {
-      "Name": "swastika_wreath",
+      "Name": "swastika_relief",
       "Pic": {
         "Type": "Normal",
-        "Pic": "swastika_wreath"
+        "Pic": "swastika_relief"
       },
-      "Offset": [-5, -11],
+      "Offset": [-5, -10],
       "Health": 0,
       "Flags": ["OnWall"]
     },
     {
-      "Name": "coat_of_arms_flag",
+      "Name": "wet_cobble",
       "Pic": {
         "Type": "Normal",
-        "Pic": "coat_of_arms_flag"
+        "Pic": "wet_cobble"
       },
-      "Offset": [-7, -11],
+      "Offset": [-8, -4],
       "Health": 0,
-      "Flags": ["OnWall"]
+      "Flags": ["OnWall", "Outside"]
     },
     {
       "Name": "elevator_interior",
@@ -370,30 +342,20 @@
       "Flags": ["Inside", "OnWall"]
     },
     {
-      "Name": "cobble_moss",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "cobble_moss"
-      },
-      "Offset": [-8, -23],
-      "Health": 0,
-      "Flags": ["Outside", "OnWall"]
-    },
-    {
-      "Name": "hitler_glass",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "hitler_glass"
-      },
-      "Offset": [-6, -11],
-      "Health": 0,
-      "Flags": ["OnWall"]
-    },
-    {
       "Name": "skull_blue",
       "Pic": {
         "Type": "Normal",
         "Pic": "skull_blue"
+      },
+      "Offset": [-3, -9],
+      "Health": 0,
+      "Flags": ["Inside", "OnWall"]
+    },
+    {
+      "Name": "skull_wall",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "skull_wall"
       },
       "Offset": [-3, -9],
       "Health": 0,
@@ -410,24 +372,14 @@
       "Flags": ["Inside", "OnWall"]
     },
     {
-      "Name": "brick_color",
+      "Name": "swastika_wall",
       "Pic": {
         "Type": "Normal",
-        "Pic": "brick_color"
+        "Pic": "swastika_wall"
       },
-      "Offset": [-8, -11],
+      "Offset": [-3, -8],
       "Health": 0,
-      "Flags": ["OnWall"]
-    },
-    {
-      "Name": "panel",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "panel"
-      },
-      "Offset": [-6, -10],
-      "Health": 0,
-      "Flags": ["OnWall"]
+      "Flags": ["Inside", "OnWall"]
     },
     {
       "Name": "hitler_poster",
@@ -438,16 +390,6 @@
       "Offset": [-5, -10],
       "Health": 0,
       "Flags": ["OnWall"]
-    },
-    {
-      "Name": "stone_color",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "stone_color"
-      },
-      "Offset": [-8, -11],
-      "Health": 0,
-      "Flags": ["Inside", "OnWall"]
     },
     {
       "Name": "ghost_corpse",

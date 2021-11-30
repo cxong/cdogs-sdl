@@ -1693,6 +1693,26 @@
       "Flags": ["OnWall"]
     },
     {
+      "Name": "red_relief",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "red_relief"
+      },
+      "Offset": [-6, -10],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "blue_relief",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "blue_relief"
+      },
+      "Offset": [-6, -10],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
       "Name": "wall_vent",
       "Pic": {
         "Type": "Normal",
