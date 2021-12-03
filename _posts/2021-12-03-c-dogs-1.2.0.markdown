@@ -1,0 +1,13 @@
+---
+layout: post
+title:  "C-Dogs 1.2.0 Released!"
+date:   2021-12-03
+categories: release
+published: true
+---
+
+This release builds off the [1.0 release](https://cxong.github.io/cdogs-sdl/release/2021/08/21/c-dogs-1.0.0.html) and adds full support for the [Spear of Destiny mission packs](https://wolfenstein.fandom.com/wiki/Spear_of_Destiny_mission_packs). Grab your guns and blast through those green guards and wacky bosses!
+
+![Quarkblitz](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/quarkblitz.gif)
+
+Downloads and release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/1.2.0>
