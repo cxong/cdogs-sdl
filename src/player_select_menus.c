@@ -35,6 +35,7 @@
 #include <cdogs/draw/draw.h>
 #include <cdogs/draw/drawtools.h>
 #include <cdogs/font.h>
+#include <cdogs/material.h>
 #include <cdogs/player_template.h>
 
 static char letters[] = "1234567890-QWERTYUIOP!ASDFGHJKL:'ZXCVBNM, .?";
@@ -685,7 +686,7 @@ static void PostInputRotatePlayer(menu_t *menu, int cmd, void *data)
 			(int)d->Dir + dx, DIRECTION_UP, DIRECTION_UPLEFT);
 		char buf[CDOGS_PATH_MAX];
 		const PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
-		sprintf(buf, "footsteps/%s", p->Char.Class->Footsteps);
+		MatGetFootstepSound(p->Char.Class, NULL, buf);
 		SoundPlay(&gSoundDevice, StrSound(buf));
 	}
 }

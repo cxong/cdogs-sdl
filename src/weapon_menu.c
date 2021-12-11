@@ -33,6 +33,8 @@
 #include <cdogs/ai_coop.h>
 #include <cdogs/font.h>
 
+#include "material.h"
+
 #define NO_GUN_LABEL "(None)"
 #define END_MENU_LABEL "(End)"
 
@@ -104,7 +106,7 @@ static void PostInputEquipMenu(menu_t *menu, int cmd, void *data)
 			(int)d->Dir + dx, DIRECTION_UP, DIRECTION_UPLEFT);
 		char buf[CDOGS_PATH_MAX];
 		const PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
-		sprintf(buf, "footsteps/%s", p->Char.Class->Footsteps);
+		MatGetFootstepSound(p->Char.Class, NULL, buf);
 		SoundPlay(&gSoundDevice, StrSound(buf));
 	}
 

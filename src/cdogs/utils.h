@@ -189,6 +189,7 @@ char *IntStr(int i);
 char *PercentStr(int p);
 char *Div8Str(int i);
 void CamelToTitle(char *buf, const char *src);
+bool StrStartsWith(const char *str, const char *prefix);
 bool StrEndsWith(const char *str, const char *suffix);
 int Stricmp(const char *a, const char *b);
 int CompareIntsAsc(const void *v1, const void *v2);

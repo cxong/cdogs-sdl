@@ -71,6 +71,7 @@
 #include "game_events.h"
 #include "gamedata.h"
 #include "log.h"
+#include "material.h"
 #include "mission.h"
 #include "pic_manager.h"
 #include "pickup.h"
@@ -188,9 +189,11 @@ void UpdateActorState(TActor *actor, int ticks)
 		 AnimationGetFrame(&actor->anim) == 6) &&
 		actor->anim.newFrame)
 	{
+		const struct vec2i tilePos = Vec2ToTile(actor->Pos);
+		const Tile *t = MapGetTile(&gMap, tilePos);
 		GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
 		const CharacterClass *cc = ActorGetCharacter(actor)->Class;
-		sprintf(es.u.SoundAt.Sound, "footsteps/%s", cc->Footsteps);
+		MatGetFootstepSound(cc, t->Class, es.u.SoundAt.Sound);
 		es.u.SoundAt.Pos = Vec2ToNet(actor->thing.Pos);
 		es.u.SoundAt.Distance = cc->FootstepsDistancePlus;
 		GameEventsEnqueue(&gGameEvents, es);
@@ -804,8 +807,7 @@ void ActorPilot(const NActorPilot ap)
 		CASSERT(vehicle->pilotUID != -1, "doesn't have pilot");
 		vehicle->pilotUID = -1;
 		char buf[256];
-		sprintf(
-			buf, "footsteps/%s", ActorGetCharacter(pilot)->Class->Footsteps);
+		MatGetFootstepSound(ActorGetCharacter(pilot)->Class, NULL, buf);
 		SoundPlayAt(&gSoundDevice, StrSound(buf), vehicle->Pos);
 	}
 }

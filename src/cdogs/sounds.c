@@ -556,14 +556,19 @@ void SoundPlayAtPlusDistance(
 
 	const struct vec2 origin = CalcClosestPointOnLineSegmentToPoint(
 		closestLeftEar, closestRightEar, pos);
-	HasClearLineData lineData;
-	lineData.IsBlocked = IsPosNoSee;
-	lineData.data = &gMap;
 	bool isMuffled = false;
-	if (!HasClearLineJMRaytrace(
-			svec2i_assign_vec2(pos), svec2i_assign_vec2(origin), &lineData))
+	// Don't bother checking muffled if the distance is really close
+	// This is for player's own sounds like footsteps
+	if (svec2_distance_squared(pos, origin) > SQUARED(TILE_WIDTH))
 	{
-		isMuffled = true;
+		HasClearLineData lineData;
+		lineData.IsBlocked = IsPosNoSee;
+		lineData.data = &gMap;
+		if (!HasClearLineJMRaytrace(
+				svec2i_assign_vec2(pos), svec2i_assign_vec2(origin), &lineData))
+		{
+			isMuffled = true;
+		}
 	}
 	const struct vec2 dp = svec2_subtract(pos, origin);
 	SoundPlayAtPosition(

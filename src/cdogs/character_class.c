@@ -287,10 +287,6 @@ static void LoadCharacterClass(CharacterClass *c, json_t *node)
 	LoadStr(&c->Sounds, node, "Sounds");
 	
 	LoadStr(&c->Footsteps, node, "Footsteps");
-	if (c->Footsteps == NULL)
-	{
-		CSTRDUP(c->Footsteps, "boots");
-	}
 	c->FootstepsDistancePlus = FOOTSTEP_DISTANCE_PLUS;
 	LoadInt(&c->FootstepsDistancePlus, node, "FootstepsDistancePlus");
 

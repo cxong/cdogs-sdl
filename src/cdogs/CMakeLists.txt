@@ -76,6 +76,7 @@ set(CDOGS_SOURCES
 	map_object.c
 	map_static.c
 	map_wolf.c
+	material.c
 	mathc/mathc.c
 	mission.c
 	mission_convert.c
@@ -185,6 +186,7 @@ set(CDOGS_HEADERS
 	map_object.h
 	map_static.h
 	map_wolf.h
+	material.h
 	mathc/mathc.h
 	mission.h
 	mission_convert.h

@@ -522,6 +522,20 @@ void CamelToTitle(char *buf, const char *src)
 	}
 	*buf = '\0';
 }
+bool StrStartsWith(const char *str, const char *prefix)
+{
+	if (str == NULL || prefix == NULL)
+	{
+		return false;
+	}
+	const size_t lenStr = strlen(str);
+	const size_t lenPrefix = strlen(prefix);
+	if (lenPrefix > lenStr)
+	{
+		return false;
+	}
+	return strncmp(str, prefix, MIN(lenStr, lenPrefix)) == 0;
+}
 // From answer by plinth
 // http://stackoverflow.com/a/744822/2038264
 // License: http://creativecommons.org/licenses/by-sa/3.0/
