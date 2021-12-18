@@ -27,7 +27,10 @@
 */
 #include "material.h"
 
-void MatGetFootstepSound(const CharacterClass *c, const TileClass *tc, char *out)
+#include "objs.h"
+#include "thing.h"
+
+void MatGetFootstepSound(const CharacterClass *c, const Tile *t, char *out)
 {
 	if (c->Footsteps)
 	{
@@ -35,25 +38,48 @@ void MatGetFootstepSound(const CharacterClass *c, const TileClass *tc, char *out
 		return;
 	}
 
-	// Determine material type based on tile
-	if (tc != NULL && tc->Type == TILE_CLASS_FLOOR && tc->Style != NULL)
+	if (t != NULL && t->Class != NULL && t->Class->Type == TILE_CLASS_FLOOR && t->Class->Style != NULL)
 	{
-		if (StrStartsWith(tc->Style, "checker") || StrStartsWith(tc->Style, "tile"))
+		// Custom footstep sounds for objects that are stepped on
+		CA_FOREACH(const ThingId, tid, t->things)
+		if (tid->Kind == KIND_OBJECT)
+		{
+			const TObject *obj = CArrayGet(&gObjs, tid->Id);
+			if (obj && obj->Class->DrawBelow && obj->Class->FootstepSound)
+			{
+				strcpy(out, obj->Class->FootstepSound);
+				return;
+			}
+		}
+		CA_FOREACH_END()
+
+		// Determine material type based on tile
+		if (StrStartsWith(t->Class->Style, "checker") || StrStartsWith(t->Class->Style, "tile"))
 		{
 			strcpy(out, "footsteps/tile");
 			return;
 		}
-		if (StrStartsWith(tc->Style, "dirt"))
+		if (StrStartsWith(t->Class->Style, "cobble"))
+		{
+			strcpy(out, "footsteps/gravel");
+			return;
+		}
+		if (StrStartsWith(t->Class->Style, "dirt"))
 		{
 			strcpy(out, "footsteps/grass");
 			return;
 		}
-		if (StrStartsWith(tc->Style, "water"))
+		if (StrStartsWith(t->Class->Style, "grate"))
+		{
+			strcpy(out, "footsteps/metal");
+			return;
+		}
+		if (StrStartsWith(t->Class->Style, "water"))
 		{
 			strcpy(out, "footsteps/water");
 			return;
 		}
-		if (StrStartsWith(tc->Style, "wood"))
+		if (StrStartsWith(t->Class->Style, "wood"))
 		{
 			strcpy(out, "footsteps/wood");
 			return;

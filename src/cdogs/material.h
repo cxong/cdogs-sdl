@@ -28,6 +28,6 @@
 #pragma once
 
 #include "character_class.h"
-#include "tile_class.h"
+#include "tile.h"
 
-void MatGetFootstepSound(const CharacterClass *c, const TileClass *tc, char *out);
+void MatGetFootstepSound(const CharacterClass *c, const Tile *t, char *out);

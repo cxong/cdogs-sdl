@@ -4,7 +4,7 @@ Footsteps depend on the following:
 - Tile type
 - Map item
 
-The tile type determines footstep sound based on the tile sprite as well as the colours.
+The tile type determines footstep sound based on the tile sprite.
 
 Some map items also modify footstep sounds if actors walk over it, like grates.
 

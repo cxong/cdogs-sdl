@@ -193,7 +193,7 @@ void UpdateActorState(TActor *actor, int ticks)
 		const Tile *t = MapGetTile(&gMap, tilePos);
 		GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
 		const CharacterClass *cc = ActorGetCharacter(actor)->Class;
-		MatGetFootstepSound(cc, t->Class, es.u.SoundAt.Sound);
+		MatGetFootstepSound(cc, t, es.u.SoundAt.Sound);
 		es.u.SoundAt.Pos = Vec2ToNet(actor->thing.Pos);
 		es.u.SoundAt.Distance = cc->FootstepsDistancePlus;
 		GameEventsEnqueue(&gGameEvents, es);
