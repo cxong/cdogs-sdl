@@ -405,7 +405,7 @@ static bool TryLoadMapObject(MapObject *m, json_t *node, const int version)
 		// Do nothing
 		break;
 	case MAP_OBJECT_TYPE_PICKUP_SPAWNER: {
-		char *tmp = GetString(node, "Pickup");
+		tmp = GetString(node, "Pickup");
 		m->u.PickupClass = StrPickupClass(tmp);
 		CFREE(tmp);
 	}
