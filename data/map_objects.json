@@ -1102,7 +1102,8 @@
       },
       "Health": 0,
       "DrawBelow": true,
-      "FootstepSound": "footsteps/water"
+      "FootstepSound": "footsteps/water",
+      "FootprintMask": "00ac00"
     },
     {
       "Name": "egg2",
@@ -1128,7 +1129,8 @@
       },
       "Health": 0,
       "DrawBelow": true,
-      "FootstepSound": "footsteps/water"
+      "FootstepSound": "footsteps/water",
+      "FootprintMask": "6c5820"
     },
     {
       "Name": "tree",
@@ -1772,7 +1774,8 @@
       "Offset": [-6, -3],
       "Health": 0,
       "DrawBelow": true,
-      "FootstepSound": "footsteps/water"
+      "FootstepSound": "footsteps/water",
+      "FootprintMask": "340000"
     },
     {
       "Name": "bones",
@@ -1810,7 +1813,8 @@
       "Offset": [-6, -3],
       "Health": 0,
       "DrawBelow": true,
-      "FootstepSound": "footsteps/water"
+      "FootstepSound": "footsteps/water",
+      "FootprintMask": "ac0000"
     },
     {
       "Name": "skull",
@@ -1842,7 +1846,8 @@
       "Offset": [-8, -3],
       "Health": 0,
       "DrawBelow": true,
-      "FootstepSound": "footsteps/water"
+      "FootstepSound": "footsteps/water",
+      "FootprintMask": "330000"
     },
     {
       "Name": "blood1",
@@ -1854,7 +1859,8 @@
       "Offset": [-8, -3],
       "Health": 0,
       "DrawBelow": true,
-      "FootstepSound": "footsteps/water"
+      "FootstepSound": "footsteps/water",
+      "FootprintMask": "330000"
     },
     {
       "Name": "blood2",
@@ -1866,7 +1872,8 @@
       "Offset": [-8, -3],
       "Health": 0,
       "DrawBelow": true,
-      "FootstepSound": "footsteps/water"
+      "FootstepSound": "footsteps/water",
+      "FootprintMask": "330000"
     },
     {
       "Name": "blood3",
@@ -1878,7 +1885,8 @@
       "Offset": [-8, -3],
       "Health": 0,
       "DrawBelow": true,
-      "FootstepSound": "footsteps/water"
+      "FootstepSound": "footsteps/water",
+      "FootprintMask": "330000"
     },
     {
       "Name": "blood4",
@@ -1890,7 +1898,8 @@
       "Offset": [-8, -3],
       "Health": 0,
       "DrawBelow": true,
-      "FootstepSound": "footsteps/water"
+      "FootstepSound": "footsteps/water",
+      "FootprintMask": "330000"
     },
     {
       "Name": "goo",
@@ -1901,7 +1910,8 @@
       "Offset": [-8, -6],
       "Health": 0,
       "DrawBelow": true,
-      "FootstepSound": "footsteps/water"
+      "FootstepSound": "footsteps/water",
+      "FootprintMask": "207020"
     },
     {
       "Name": "drain0",
@@ -1954,7 +1964,8 @@
       "Offset": [-8, -6],
       "Health": 0,
       "DrawBelow": true,
-      "FootstepSound": "footsteps/water"
+      "FootstepSound": "footsteps/water",
+      "FootprintMask": "00000099"
     },
     {
       "Name": "health spawner",

@@ -396,6 +396,7 @@ static bool TryLoadMapObject(MapObject *m, json_t *node, const int version)
 	LoadBool(&m->DrawAbove, node, "DrawAbove");
 	
 	LoadStr(&m->FootstepSound, node, "FootstepSound");
+	LoadColor(&m->FootprintMask, node, "FootprintMask");
 
 	// Special types
 	JSON_UTILS_LOAD_ENUM(m->Type, node, "Type", StrMapObjectType);

@@ -38,7 +38,8 @@ void MatGetFootstepSound(const CharacterClass *c, const Tile *t, char *out)
 		return;
 	}
 
-	if (t != NULL && t->Class != NULL && t->Class->Type == TILE_CLASS_FLOOR && t->Class->Style != NULL)
+	if (t != NULL && t->Class != NULL && t->Class->Type == TILE_CLASS_FLOOR &&
+		t->Class->Style != NULL)
 	{
 		// Custom footstep sounds for objects that are stepped on
 		CA_FOREACH(const ThingId, tid, t->things)
@@ -54,7 +55,8 @@ void MatGetFootstepSound(const CharacterClass *c, const Tile *t, char *out)
 		CA_FOREACH_END()
 
 		// Determine material type based on tile
-		if (StrStartsWith(t->Class->Style, "checker") || StrStartsWith(t->Class->Style, "tile"))
+		if (StrStartsWith(t->Class->Style, "checker") ||
+			StrStartsWith(t->Class->Style, "tile"))
 		{
 			strcpy(out, "footsteps/tile");
 			return;
@@ -85,7 +87,47 @@ void MatGetFootstepSound(const CharacterClass *c, const Tile *t, char *out)
 			return;
 		}
 	}
-	
+
 	// Default footstep sound
 	strcpy(out, "footsteps/boots");
+}
+
+color_t MatGetFootprintMask(const Tile *t)
+{
+	if (t != NULL && t->Class != NULL && t->Class->Type == TILE_CLASS_FLOOR &&
+		t->Class->Style != NULL)
+	{
+		// Custom footstep sounds for objects that are stepped on
+		CA_FOREACH(const ThingId, tid, t->things)
+		if (tid->Kind == KIND_OBJECT)
+		{
+			const TObject *obj = CArrayGet(&gObjs, tid->Id);
+			if (obj && obj->Class->DrawBelow)
+			{
+				// For blood pools, which could have a custom color based on
+				// the character
+				color_t mask = obj->Class->FootprintMask;
+				if (!ColorEquals(obj->thing.CPic.Mask, colorWhite))
+				{
+					mask = obj->thing.CPic.Mask;
+					const color_t darken = {33, 33, 33, 255};
+					mask = ColorMult(mask, darken);
+				}
+				if (mask.a != 0)
+				{
+					return mask;
+				}
+			}
+		}
+		CA_FOREACH_END()
+
+		// Determine material type based on tile
+		if (StrStartsWith(t->Class->Style, "water"))
+		{
+			color_t mask = colorBlack;
+			mask.a = 0x99;
+			return mask;
+		}
+	}
+	return colorTransparent;
 }

@@ -99,6 +99,7 @@
 #define GRIMACE_HIT_TICKS 39
 #define GRIMACE_MELEE_TICKS 19
 #define DAMAGE_TEXT_DISTANCE_RESET_THRESHOLD (ACTOR_W / 2)
+#define FOOTPRINT_MAX 8
 
 CArray gPlayerIds;
 
@@ -183,20 +184,48 @@ void UpdateActorState(TActor *actor, int ticks)
 	// Footstep sounds
 	// Step on 2 and 6
 	// TODO: custom animation and footstep frames
+	const int frame = AnimationGetFrame(&actor->anim);
 	if (ConfigGetBool(&gConfig, "Sound.Footsteps") &&
 		actor->anim.Type == ACTORANIMATION_WALKING &&
-		(AnimationGetFrame(&actor->anim) == 2 ||
-		 AnimationGetFrame(&actor->anim) == 6) &&
-		actor->anim.newFrame)
+		(frame == 2 || frame == 6) && actor->anim.newFrame)
 	{
 		const struct vec2i tilePos = Vec2ToTile(actor->Pos);
 		const Tile *t = MapGetTile(&gMap, tilePos);
-		GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
+		GameEvent e = GameEventNew(GAME_EVENT_SOUND_AT);
 		const CharacterClass *cc = ActorGetCharacter(actor)->Class;
-		MatGetFootstepSound(cc, t, es.u.SoundAt.Sound);
-		es.u.SoundAt.Pos = Vec2ToNet(actor->thing.Pos);
-		es.u.SoundAt.Distance = cc->FootstepsDistancePlus;
-		GameEventsEnqueue(&gGameEvents, es);
+		MatGetFootstepSound(cc, t, e.u.SoundAt.Sound);
+		e.u.SoundAt.Pos = Vec2ToNet(actor->thing.Pos);
+		e.u.SoundAt.Distance = cc->FootstepsDistancePlus;
+		GameEventsEnqueue(&gGameEvents, e);
+
+		// See if we've stepped on something that leaves footprints
+		const color_t footprintMask = MatGetFootprintMask(t);
+		if (footprintMask.a != 0)
+		{
+			actor->footprintMask = footprintMask;
+			actor->footprintCounter = FOOTPRINT_MAX;
+		}
+
+		// Footprint particle
+		if (actor->footprintCounter > 0)
+		{
+			e = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+			e.u.AddParticle.Class =
+				StrParticleClass(&gParticleClasses, "footprint");
+			const struct vec2 footOffset = svec2_scale(
+				Vec2FromRadiansScaled(actor->DrawRadians + MPI_2),
+				frame == 2 ? 3.f : -3.f);
+			e.u.AddParticle.Pos = svec2_subtract(actor->thing.Pos, footOffset);
+			e.u.AddParticle.Angle = actor->DrawRadians;
+			e.u.AddParticle.Mask = actor->footprintMask;
+			// Fade footprint away gradually
+			e.u.AddParticle.Mask.a = (uint8_t)MIN(
+				actor->footprintCounter * e.u.AddParticle.Mask.a /
+					FOOTPRINT_MAX,
+				255);
+			GameEventsEnqueue(&gGameEvents, e);
+			actor->footprintCounter--;
+		}
 	}
 
 	// Animation
@@ -508,8 +537,8 @@ static void CheckTrigger(const TActor *a, const Map *map)
 	const int keyFlags =
 		(a->flags & FLAGS_UNLOCK_DOORS) ? -1 : gMission.KeyFlags;
 	CA_FOREACH(Trigger *, tp, t->triggers)
-	if (!TriggerTryActivate(*tp, keyFlags, tilePos) &&
-		(*tp)->isActive && TriggerCannotActivate(*tp) && showLocked)
+	if (!TriggerTryActivate(*tp, keyFlags, tilePos) && (*tp)->isActive &&
+		TriggerCannotActivate(*tp) && showLocked)
 	{
 		TriggerSetCannotActivate(*tp);
 		GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);

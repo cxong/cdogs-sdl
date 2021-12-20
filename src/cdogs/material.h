@@ -31,3 +31,4 @@
 #include "tile.h"
 
 void MatGetFootstepSound(const CharacterClass *c, const Tile *t, char *out);
+color_t MatGetFootprintMask(const Tile *t);

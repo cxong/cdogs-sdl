@@ -106,6 +106,7 @@ typedef struct
 	bool DrawBelow;
 	bool DrawAbove;
 	char *FootstepSound;
+	color_t FootprintMask;
 	MapObjectType Type;
 	union
 	{

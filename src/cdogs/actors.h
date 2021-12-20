@@ -169,6 +169,9 @@ typedef struct Actor
 	Emitter blood3;
 	int bleedCounter;
 
+	color_t footprintMask;
+	int footprintCounter;
+
 	// Signals to other AIs what this actor is doing
 	ActorAction action;
 	AIContext *aiContext;

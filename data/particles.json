@@ -397,6 +397,16 @@
         "TicksPerFrame": 2
       },
       "Range": 7
+    },
+    {
+      "Name": "footprint",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "particles/footprint"
+      },
+      "RangeLow": 10000,
+      "RangeHigh": 11000,
+      "DrawBelow": true
     }
   ]
 }
