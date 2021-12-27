@@ -27,8 +27,10 @@
 */
 #pragma once
 
+#include "bullet_class.h"
 #include "character_class.h"
 #include "tile.h"
 
 void MatGetFootstepSound(const CharacterClass *c, const Tile *t, char *out);
 color_t MatGetFootprintMask(const Tile *t);
+BulletClass *MatGetDamageBullet(const Tile *t);

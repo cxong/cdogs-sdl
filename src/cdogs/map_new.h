@@ -38,6 +38,5 @@ int MapNewLoad(const char *filename, CampaignSetting *c);
 int MapNewScanJSON(json_t *root, char **title, int *numMissions);
 void MapNewLoadCampaignJSON(json_t *root, CampaignSetting *c);
 void LoadMissions(CArray *missions, json_t *missionsNode, int version);
-void MissionLoadTileClass(TileClass *tc, json_t *node);
 void LoadMissionTileClasses(
 	MissionTileClasses *mtc, json_t *node, const int version);

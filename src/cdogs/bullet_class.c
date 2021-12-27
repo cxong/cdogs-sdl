@@ -71,6 +71,11 @@ BulletClasses gBulletClasses;
 #define PETRIFIED_COUNT 95
 #define CONFUSED_COUNT 700
 
+int BulletClassesCount(const BulletClasses *classes)
+{
+	return classes->Classes.size + classes->CustomClasses.size;
+}
+
 // TODO: use map structure?
 BulletClass *StrBulletClass(const char *s)
 {
@@ -92,6 +97,18 @@ BulletClass *StrBulletClass(const char *s)
 	CA_FOREACH_END()
 	CASSERT(false, "cannot parse bullet name");
 	return NULL;
+}
+BulletClass *IdBulletClass(const int i)
+{
+	CASSERT(
+		i >= 0 && i < (int)gBulletClasses.Classes.size +
+						  (int)gBulletClasses.CustomClasses.size,
+		"Bullet index out of bounds");
+	if (i < (int)gBulletClasses.Classes.size)
+	{
+		return CArrayGet(&gBulletClasses.Classes, i);
+	}
+	return CArrayGet(&gBulletClasses.CustomClasses, i - gBulletClasses.Classes.size);
 }
 
 // Draw functions

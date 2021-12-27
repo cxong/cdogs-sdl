@@ -131,6 +131,8 @@ typedef struct
 } BulletClasses;
 extern BulletClasses gBulletClasses;
 
+int BulletClassesCount(const BulletClasses *classes);
+
 BulletClass *StrBulletClass(const char *s);
 
 void BulletInitialize(BulletClasses *bullets);

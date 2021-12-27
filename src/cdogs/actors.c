@@ -180,23 +180,27 @@ void UpdateActorState(TActor *actor, int ticks)
 	{
 		actor->DrawRadians -= (float)MIN(DRAW_RADIAN_SPEED * ticks, dr);
 	}
+	
+	const struct vec2i tilePos = Vec2ToTile(actor->Pos);
+	const Tile *t = MapGetTile(&gMap, tilePos);
 
 	// Footstep sounds
 	// Step on 2 and 6
 	// TODO: custom animation and footstep frames
 	const int frame = AnimationGetFrame(&actor->anim);
-	if (ConfigGetBool(&gConfig, "Sound.Footsteps") &&
-		actor->anim.Type == ACTORANIMATION_WALKING &&
-		(frame == 2 || frame == 6) && actor->anim.newFrame)
+	const bool isFootstepFrame = actor->anim.Type == ACTORANIMATION_WALKING && (frame == 2 || frame == 6) && actor->anim.newFrame;
+	if (isFootstepFrame)
 	{
-		const struct vec2i tilePos = Vec2ToTile(actor->Pos);
-		const Tile *t = MapGetTile(&gMap, tilePos);
-		GameEvent e = GameEventNew(GAME_EVENT_SOUND_AT);
-		const CharacterClass *cc = ActorGetCharacter(actor)->Class;
-		MatGetFootstepSound(cc, t, e.u.SoundAt.Sound);
-		e.u.SoundAt.Pos = Vec2ToNet(actor->thing.Pos);
-		e.u.SoundAt.Distance = cc->FootstepsDistancePlus;
-		GameEventsEnqueue(&gGameEvents, e);
+
+		if (ConfigGetBool(&gConfig, "Sound.Footsteps"))
+		{
+			GameEvent e = GameEventNew(GAME_EVENT_SOUND_AT);
+			const CharacterClass *cc = ActorGetCharacter(actor)->Class;
+			MatGetFootstepSound(cc, t, e.u.SoundAt.Sound);
+			e.u.SoundAt.Pos = Vec2ToNet(actor->thing.Pos);
+			e.u.SoundAt.Distance = cc->FootstepsDistancePlus;
+			GameEventsEnqueue(&gGameEvents, e);
+		}
 
 		// See if we've stepped on something that leaves footprints
 		const color_t footprintMask = MatGetFootprintMask(t);
@@ -209,7 +213,7 @@ void UpdateActorState(TActor *actor, int ticks)
 		// Footprint particle
 		if (actor->footprintCounter > 0)
 		{
-			e = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+			GameEvent e = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 			e.u.AddParticle.Class =
 				StrParticleClass(&gParticleClasses, "footprint");
 			const struct vec2 footOffset = svec2_scale(
@@ -226,6 +230,21 @@ void UpdateActorState(TActor *actor, int ticks)
 			GameEventsEnqueue(&gGameEvents, e);
 			actor->footprintCounter--;
 		}
+	}
+
+	// Damage when on special tiles
+	if (!gCampaign.IsClient &&
+		actor->anim.Type == ACTORANIMATION_WALKING ? isFootstepFrame : (gMission.time % FPS_FRAMELIMIT) == 0)
+	{
+	   const BulletClass *b = MatGetDamageBullet(t);
+	   if (b != NULL)
+	   {
+		   GameEvent e = GameEventNew(GAME_EVENT_THING_DAMAGE);
+		   e.u.ThingDamage.UID = actor->uid;
+		   e.u.ThingDamage.Kind = KIND_CHARACTER;
+		   BulletToDamageEvent(b, &e);
+		   GameEventsEnqueue(&gGameEvents, e);
+	   }
 	}
 
 	// Animation

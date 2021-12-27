@@ -1,12 +1,16 @@
 {
-  "Version": 2,
+  "Version": 5,
   "Bullets": [
     {
       "Name": "chainsaw",
       "Power": 3,
-      "HitSounds": {
-        "Object": "chainsaw",
-        "Flesh": "chainsaw"
+      "Hit": {
+        "Object": {
+          "Sound": "chainsaw"
+        },
+        "Flesh": {
+          "Sound": "chainsaw"
+        }
       }
     },
     {
@@ -53,12 +57,20 @@
       "Power": 18,
       "Mass": 18.0,
       "Size": [3, 3],
-      "Special": "Flame",
+      "Special": {
+        "Effect": "Flame"
+      },
       "Spark": "fireball_hit",
-      "HitSounds": {
-        "Object": "hits/fire",
-        "Flesh": "hits/fire",
-        "Wall": "hits/fire"
+      "Hit": {
+        "Object": {
+          "Sound": "hits/fire"
+        },
+        "Flesh": {
+          "Sound": "hits/fire"
+        },
+        "Wall": {
+          "Sound": "hits/fire"
+        }
       }
     },
     {
@@ -73,20 +85,43 @@
       "Power": 40,
       "Mass": 40.0,
       "Size": [3, 3],
-      "Special": "Flame",
+      "Special": {
+        "Effect": "Flame"
+      },
       "Spark": "fireball_green_hit",
-      "HitSounds": {
-        "Object": "hits/fire",
-        "Flesh": "hits/fire",
-        "Wall": "hits/fire"
+      "Hit": {
+        "Object": {
+          "Sound": "hits/fire"
+        },
+        "Flesh": {
+          "Sound": "hits/fire"
+        },
+        "Wall": {
+          "Sound": "hits/fire"
+        }
       }
     },
     {
       "Name": "monster_bite",
       "Power": 10,
-      "HitSounds": {
-        "Object": "hits/knife_hard",
-        "Flesh": "monster-2"
+      "Hit": {
+        "Object": {
+          "Sound": "hits/knife_hard"
+        },
+        "Flesh": {
+          "Sound": "monster-2"
+        }
+      }
+    },
+    {
+      "Name": "nukage",
+      "Hit": {
+        "Flesh": {}
+      },
+      "Power": 1,
+      "Special": {
+        "Effect": "Poison",
+        "Ticks": 3
       }
     }
   ]

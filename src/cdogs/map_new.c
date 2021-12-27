@@ -334,20 +334,6 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 	}
 }
 
-void MissionLoadTileClass(TileClass *tc, json_t *node)
-{
-	memset(tc, 0, sizeof *tc);
-	LoadStr(&tc->Name, node, "Name");
-	JSON_UTILS_LOAD_ENUM(tc->Type, node, "Type", StrTileClassType);
-	LoadStr(&tc->Style, node, "Style");
-	LoadColor(&tc->Mask, node, "Mask");
-	LoadColor(&tc->MaskAlt, node, "MaskAlt");
-	LoadBool(&tc->canWalk, node, "CanWalk");
-	LoadBool(&tc->isOpaque, node, "IsOpaque");
-	LoadBool(&tc->shootable, node, "Shootable");
-	LoadBool(&tc->IsRoom, node, "IsRoom");
-}
-
 void LoadMissionTileClasses(
 	MissionTileClasses *mtc, json_t *node, const int version)
 {
@@ -432,13 +418,13 @@ void LoadMissionTileClasses(
 	{
 		const json_t *class =
 			json_find_first_label(node, "TileClasses")->child;
-		MissionLoadTileClass(
+		TileClassLoadJSON(
 			&mtc->Wall, json_find_first_label(class, "Wall")->child);
-		MissionLoadTileClass(
+		TileClassLoadJSON(
 			&mtc->Floor, json_find_first_label(class, "Floor")->child);
-		MissionLoadTileClass(
+		TileClassLoadJSON(
 			&mtc->Room, json_find_first_label(class, "Room")->child);
-		MissionLoadTileClass(
+		TileClassLoadJSON(
 			&mtc->Door, json_find_first_label(class, "Door")->child);
 	}
 }

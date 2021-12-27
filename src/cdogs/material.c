@@ -30,6 +30,11 @@
 #include "objs.h"
 #include "thing.h"
 
+static bool IsTileFloor(const Tile *t)
+{
+	return t != NULL && t->Class != NULL && t->Class->Type == TILE_CLASS_FLOOR;
+}
+
 void MatGetFootstepSound(const CharacterClass *c, const Tile *t, char *out)
 {
 	if (c->Footsteps)
@@ -38,8 +43,7 @@ void MatGetFootstepSound(const CharacterClass *c, const Tile *t, char *out)
 		return;
 	}
 
-	if (t != NULL && t->Class != NULL && t->Class->Type == TILE_CLASS_FLOOR &&
-		t->Class->Style != NULL)
+	if (IsTileFloor(t) && t->Class->Style != NULL)
 	{
 		// Custom footstep sounds for objects that are stepped on
 		CA_FOREACH(const ThingId, tid, t->things)
@@ -94,8 +98,7 @@ void MatGetFootstepSound(const CharacterClass *c, const Tile *t, char *out)
 
 color_t MatGetFootprintMask(const Tile *t)
 {
-	if (t != NULL && t->Class != NULL && t->Class->Type == TILE_CLASS_FLOOR &&
-		t->Class->Style != NULL)
+	if (IsTileFloor(t))
 	{
 		// Custom footstep sounds for objects that are stepped on
 		CA_FOREACH(const ThingId, tid, t->things)
@@ -130,4 +133,9 @@ color_t MatGetFootprintMask(const Tile *t)
 		}
 	}
 	return colorTransparent;
+}
+
+BulletClass *MatGetDamageBullet(const Tile *t)
+{
+	return IsTileFloor(t) ? StrBulletClass(t->Class->DamageBullet) : NULL;
 }

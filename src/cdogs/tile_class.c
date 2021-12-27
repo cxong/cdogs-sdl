@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2018-2020 Cong Xu
+	Copyright (c) 2018-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -36,27 +36,27 @@
 TileClasses gTileClasses;
 TileClass gTileFloor = {
 	"tile", NULL, NULL, NULL, { 255, 255, 255, 255 }, { 255, 255, 255, 255 },
-	true, false, false, false, TILE_CLASS_FLOOR,
+	true, false, false, false, TILE_CLASS_FLOOR, NULL,
 };
 TileClass gTileRoom = {
 	"tile", NULL, NULL, NULL, { 255, 255, 255, 255 }, { 255, 255, 255, 255 },
-	true, false, false, true, TILE_CLASS_FLOOR,
+	true, false, false, true, TILE_CLASS_FLOOR, NULL,
 };
 TileClass gTileWall = {
 	"wall", NULL, NULL, NULL, { 255, 255, 255, 255 }, { 255, 255, 255, 255 },
-	false, true, true, false, TILE_CLASS_WALL,
+	false, true, true, false, TILE_CLASS_WALL, NULL,
 };
 TileClass gTileNothing = {
 	NULL, NULL, NULL, NULL, { 255, 255, 255, 255 }, { 255, 255, 255, 255 },
-	false, false, false, false, TILE_CLASS_NOTHING,
+	false, false, false, false, TILE_CLASS_NOTHING, NULL,
 };
 TileClass gTileExit = {
 	"exits", NULL, NULL, NULL, { 255, 255, 255, 255 }, { 255, 255, 255, 255 },
-	true, false, false, false, TILE_CLASS_FLOOR,
+	true, false, false, false, TILE_CLASS_FLOOR, NULL,
 };
 TileClass gTileDoor = {
 	"door", NULL, NULL, NULL, { 255, 255, 255, 255 }, { 255, 255, 255, 255 },
-	false, true, true, true, TILE_CLASS_DOOR,
+	false, true, true, true, TILE_CLASS_DOOR, NULL,
 };
 
 const char *TileClassTypeStr(const TileClassType t)
@@ -110,6 +110,38 @@ void TileClassTerminate(TileClass *tc)
 	CFREE(tc->Name);
 	CFREE(tc->Style);
 	CFREE(tc->StyleType);
+	CFREE(tc->DamageBullet);
+}
+
+void TileClassLoadJSON(TileClass *tc, json_t *node)
+{
+	memset(tc, 0, sizeof *tc);
+	LoadStr(&tc->Name, node, "Name");
+	JSON_UTILS_LOAD_ENUM(tc->Type, node, "Type", StrTileClassType);
+	LoadStr(&tc->Style, node, "Style");
+	LoadColor(&tc->Mask, node, "Mask");
+	LoadColor(&tc->MaskAlt, node, "MaskAlt");
+	LoadBool(&tc->canWalk, node, "CanWalk");
+	LoadBool(&tc->isOpaque, node, "IsOpaque");
+	LoadBool(&tc->shootable, node, "Shootable");
+	LoadBool(&tc->IsRoom, node, "IsRoom");
+	LoadStr(&tc->DamageBullet, node, "DamageBullet");
+}
+
+json_t *TileClassSaveJSON(const TileClass *tc)
+{
+	json_t *itemNode = json_new_object();
+	AddStringPair(itemNode, "Name", tc->Name);
+	AddStringPair(itemNode, "Type", TileClassTypeStr(tc->Type));
+	AddStringPair(itemNode, "Style", tc->Style);
+	AddColorPair(itemNode, "Mask", tc->Mask);
+	AddColorPair(itemNode, "MaskAlt", tc->MaskAlt);
+	AddBoolPair(itemNode, "CanWalk", tc->canWalk);
+	AddBoolPair(itemNode, "IsOpaque", tc->isOpaque);
+	AddBoolPair(itemNode, "Shootable", tc->shootable);
+	AddBoolPair(itemNode, "IsRoom", tc->IsRoom);
+	AddStringPair(itemNode, "DamageBullet", tc->DamageBullet);
+	return itemNode;
 }
 
 const char *TileClassBaseStyleType(const TileClassType type)
@@ -133,6 +165,7 @@ void TileClassCopy(TileClass *dst, const TileClass *src)
 	if (src->Name) CSTRDUP(dst->Name, src->Name);
 	if (src->Style) CSTRDUP(dst->Style, src->Style);
 	if (src->StyleType) CSTRDUP(dst->StyleType, TileClassBaseStyleType(src->Type));
+	if (src->DamageBullet) CSTRDUP(dst->DamageBullet, src->DamageBullet);
 }
 const TileClass *StrTileClass(const char *name)
 {
@@ -169,6 +202,7 @@ void TileClassInit(
 	{
 		CSTRDUP(t->StyleType, type);
 	}
+	if (base->DamageBullet) CSTRDUP(t->DamageBullet, base->DamageBullet);
 	t->Mask = mask;
 	t->MaskAlt = maskAlt;
 	TileClassReloadPic(t, pm);

@@ -197,7 +197,7 @@ static void LoadTileClasses(map_t tileClasses, const json_t *node)
 		json_t *classNode = class->child;
 		TileClass *tc;
 		CMALLOC(tc, sizeof *tc);
-		MissionLoadTileClass(tc, classNode);
+		TileClassLoadJSON(tc, classNode);
 		if (hashmap_put(tileClasses, class->text, (any_t *)tc) != MAP_OK)
 		{
 			CASSERT(false, "cannot add tile class");
@@ -691,7 +691,7 @@ static int SaveStaticTileClass(any_t data, any_t key)
 		return error;
 	}
 	json_insert_pair_into_object(
-		sData->items, (const char *)key, MissionSaveTileClass(tc));
+		sData->items, (const char *)key, TileClassSaveJSON(tc));
 	return MAP_OK;
 }
 static json_t *SaveStaticCSV(const CArray *values, const struct vec2i size)

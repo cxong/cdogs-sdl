@@ -337,10 +337,11 @@ static void DoDamageThing(
 	e.u.ThingDamage.Kind = targetKind;
 	e.u.ThingDamage.SourceActorUID = source ? source->uid : -1;
 	e.u.ThingDamage.Flags = flags;
-	e.u.ThingDamage.Special = bullet->Special.Effect;
-	e.u.ThingDamage.SpecialTicks = bullet->Special.Ticks;
-	e.u.ThingDamage.Power = canDamage ? bullet->Power : 0;
-	e.u.ThingDamage.Mass = bullet->Mass;
+	BulletToDamageEvent(bullet, &e);
+	if (!canDamage)
+	{
+		e.u.ThingDamage.Power = 0;
+	}
 	e.u.ThingDamage.Vel = Vec2ToNet(hitVector);
 	GameEventsEnqueue(&gGameEvents, e);
 }
@@ -619,6 +620,14 @@ TObject *ObjGetByUID(const int uid)
 	}
 	CA_FOREACH_END()
 	return NULL;
+}
+
+void BulletToDamageEvent(const BulletClass *b, GameEvent *e)
+{
+	e->u.ThingDamage.Special = b->Special.Effect;
+	e->u.ThingDamage.SpecialTicks = b->Special.Ticks;
+	e->u.ThingDamage.Power = b->Power;
+	e->u.ThingDamage.Mass = b->Mass;
 }
 
 void MobObjsInit(void)

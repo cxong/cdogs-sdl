@@ -121,6 +121,8 @@ TObject *ObjGetByUID(const int uid);
 
 void DamageObject(const NThingDamage d);
 
+void BulletToDamageEvent(const BulletClass *b, GameEvent *e);
+
 void UpdateMobileObjects(int ticks);
 void MobObjsInit(void);
 void MobObjsTerminate(void);

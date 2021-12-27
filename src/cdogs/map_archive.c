@@ -474,13 +474,13 @@ static json_t *SaveMissionTileClasses(const MissionTileClasses *mtc)
 {
 	json_t *node = json_new_object();
 	json_insert_pair_into_object(
-		node, "Wall", MissionSaveTileClass(&mtc->Wall));
+		node, "Wall", TileClassSaveJSON(&mtc->Wall));
 	json_insert_pair_into_object(
-		node, "Floor", MissionSaveTileClass(&mtc->Floor));
+		node, "Floor", TileClassSaveJSON(&mtc->Floor));
 	json_insert_pair_into_object(
-		node, "Room", MissionSaveTileClass(&mtc->Room));
+		node, "Room", TileClassSaveJSON(&mtc->Room));
 	json_insert_pair_into_object(
-		node, "Door", MissionSaveTileClass(&mtc->Door));
+		node, "Door", TileClassSaveJSON(&mtc->Door));
 	return node;
 }
 static json_t *SavePillars(const PillarParams p)
@@ -526,19 +526,4 @@ static json_t *SaveObjectives(CArray *a)
 	json_insert_child(objectivesNode, objNode);
 	CA_FOREACH_END()
 	return objectivesNode;
-}
-
-json_t *MissionSaveTileClass(const TileClass *tc)
-{
-	json_t *itemNode = json_new_object();
-	AddStringPair(itemNode, "Name", tc->Name);
-	AddStringPair(itemNode, "Type", TileClassTypeStr(tc->Type));
-	AddStringPair(itemNode, "Style", tc->Style);
-	AddColorPair(itemNode, "Mask", tc->Mask);
-	AddColorPair(itemNode, "MaskAlt", tc->MaskAlt);
-	AddBoolPair(itemNode, "CanWalk", tc->canWalk);
-	AddBoolPair(itemNode, "IsOpaque", tc->isOpaque);
-	AddBoolPair(itemNode, "Shootable", tc->shootable);
-	AddBoolPair(itemNode, "IsRoom", tc->IsRoom);
-	return itemNode;
 }

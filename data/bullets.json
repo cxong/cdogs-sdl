@@ -1,17 +1,22 @@
 {
-  "Version": 3,
+  "Version": 5,
   "DefaultBullet": {
     "Pic": {
       "Type": "Directional",
       "Sprites": "bullet"
     },
     "Spark": "spark",
-    "HitSounds": {
-      "Object": "hits/hard",
-      "Flesh": "hits/flesh",
-      "Wall": "ricochet"
+    "Hit": {
+      "Object": {
+        "Sound": "hits/hard"
+      },
+      "Flesh": {
+        "Sound": "hits/flesh"
+      },
+      "Wall": {
+        "Sound": "ricochet"
+      }
     },
-    "HitsObjects": true,
     "Falling": {
       "FallsDown": true,
       "Bounces": true
@@ -22,18 +27,26 @@
     {
       "Name": "knife",
       "Power": 2,
-      "HitSounds": {
-        "Object": "hits/knife_hard",
-        "Flesh": "hits/knife_flesh"
+      "Hit": {
+        "Object": {
+          "Sound": "hits/knife_hard"
+        },
+        "Flesh": {
+          "Sound": "hits/knife_flesh"
+        }
       }
     },
     {
       "Name": "fist",
       "Power": 10,
       "Mass": 1.5,
-      "HitSounds": {
-        "Object": "hits/knife_hard",
-        "Flesh": "hits/fist_flesh"
+      "Hit": {
+        "Object": {
+          "Sound": "hits/knife_hard"
+        },
+        "Flesh": {
+          "Sound": "hits/fist_flesh"
+        }
       }
     },
     {
@@ -68,12 +81,20 @@
       "Power": 12,
       "Mass": 1.0,
       "Size": [10, 10],
-      "Special": "Flame",
+      "Special": {
+        "Effect": "Flame"
+      },
       "Spark": "",
-      "HitSounds": {
-        "Object": "hits/fire",
-        "Flesh": "hits/fire",
-        "Wall": "hits/fire"
+      "Hit": {
+        "Object": {
+          "Sound": "hits/fire"
+        },
+        "Flesh": {
+          "Sound": "hits/fire"
+        },
+        "Wall": {
+          "Sound": "hits/fire"
+        }
       },
       "WallBounces": true
     },
@@ -123,13 +144,12 @@
       "Speed": 384,
       "Range": 100,
       "Spark": "",
-      "HitSounds": {
-        "Object": "",
-        "Flesh": "",
-        "Wall": "bounce"
+      "Hit": {
+        "Wall": {
+          "Sound": "bounce"
+        }
       },
       "WallBounces": true,
-      "HitsObjects": false,
       "Falling": {
         "GravityFactor": 1
       },
@@ -151,13 +171,12 @@
       "Speed": 384,
       "Range": 100,
       "Spark": "",
-      "HitSounds": {
-        "Object": "",
-        "Flesh": "",
-        "Wall": "bounce"
+      "Hit": {
+        "Wall": {
+          "Sound": "bounce"
+        }
       },
       "WallBounces": true,
-      "HitsObjects": false,
       "Falling": {
         "GravityFactor": 1
       },
@@ -175,12 +194,11 @@
       "Speed": 384,
       "Range": 100,
       "Spark": "",
-      "HitSounds": {
-        "Object": "",
-        "Flesh": "",
-        "Wall": ""
+      "Hit": {
+        "Wall": {
+          "Sound": ""
+        }
       },
-      "HitsObjects": false,
       "Falling": {
         "GravityFactor": 1,
         "DestroyOnDrop": true,
@@ -207,13 +225,12 @@
       "Speed": 384,
       "Range": 100,
       "Spark": "",
-      "HitSounds": {
-        "Object": "",
-        "Flesh": "",
-        "Wall": "bounce"
+      "Hit": {
+        "Wall": {
+          "Sound": "bounce"
+        }
       },
       "WallBounces": true,
-      "HitsObjects": false,
       "Falling": {
         "GravityFactor": 1
       },
@@ -233,13 +250,12 @@
       "Speed": 384,
       "Range": 100,
       "Spark": "",
-      "HitSounds": {
-        "Object": "",
-        "Flesh": "",
-        "Wall": "bounce"
+      "Hit": {
+        "Wall": {
+          "Sound": "bounce"
+        }
       },
       "WallBounces": true,
-      "HitsObjects": false,
       "Falling": {
         "GravityFactor": 1
       },
@@ -259,13 +275,19 @@
       "Friction": 4,
       "Range": 35,
       "Size": [20, 20],
-      "Special": "Poison",
+      "Special": {
+        "Effect": "Poison"
+      },
       "Persists": true,
       "Spark": "",
-      "HitSounds": {
-        "Object": "",
-        "Flesh": "hits/gas",
-        "Wall": "hits/gas"
+      "Hit": {
+        "Object": {},
+        "Flesh": {
+          "Sound": "hits/gas"
+        },
+        "Wall": {
+          "Sound": "hits/gas"
+        }
       },
       "WallBounces": true
     },
@@ -298,10 +320,16 @@
       "Mass": 40.0,
       "Size": [6, 6],
       "Spark": "boom",
-      "HitSounds": {
-        "Object": "boom",
-        "Flesh": "boom",
-        "Wall": "boom"
+      "Hit": {
+        "Object": {
+          "Sound": "boom"
+        },
+        "Flesh": {
+          "Sound": "boom"
+        },
+        "Wall": {
+          "Sound": "boom"
+        }
       },
       "SeekFactor": 20
     },
@@ -329,11 +357,19 @@
       "Speed": 768,
       "Range": 45,
       "Size": [10, 10],
-      "Special": "Petrify",
-      "HitSounds": {
-        "Object": "hits/petrify",
-        "Flesh": "hits/petrify",
-        "Wall": ""
+      "Special": {
+        "Effect": "Petrify"
+      },
+      "Hit": {
+        "Object": {
+          "Sound": "hits/petrify"
+        },
+        "Flesh": {
+          "Sound": "hits/petrify"
+        },
+        "Wall": {
+          "Sound": ""
+        }
       }
     },
     {
@@ -345,7 +381,7 @@
       "Speed": 0,
       "Range": 140,
       "Persists": true,
-      "HitsObjects": false,
+      "Hit": {},
       "OutOfRangeGuns": [
         "activemine"
       ]
@@ -360,7 +396,7 @@
       "Speed": 0,
       "Range": 210,
       "Persists": true,
-      "HitsObjects": false,
+      "Hit": {},
       "OutOfRangeGuns": [
         "explosion1",
         "explosion2",
@@ -384,10 +420,16 @@
       "Mass": 15.0,
       "Size": [4, 4],
       "Spark": "boom",
-      "HitSounds": {
-        "Object": "boom",
-        "Flesh": "boom",
-        "Wall": "boom"
+      "Hit": {
+        "Object": {
+          "Sound": "boom"
+        },
+        "Flesh": {
+          "Sound": "boom"
+        },
+        "Wall": {
+          "Sound": "boom"
+        }
       },
       "SeekFactor": 30
     },
@@ -405,11 +447,7 @@
       "Size": [14, 10],
       "Persists": true,
       "Spark": "",
-      "HitSounds": {
-        "Object": "",
-        "Flesh": "",
-        "Wall": ""
-      }
+      "Hit": {}
     },
     {
       "Name": "fireball1",
@@ -427,10 +465,16 @@
       "Persists": true,
       "WallBounces": true,
       "Spark": "",
-      "HitSounds": {
-        "Object": "hits/gas",
-        "Flesh": "hits/gas",
-        "Wall": ""
+      "Hit": {
+        "Object": {
+          "Sound": "hits/gas"
+        },
+        "Flesh": {
+          "Sound": "hits/gas"
+        },
+        "Wall": {
+          "Sound": ""
+        }
       },
       "Falling": {
         "GravityFactor": 1,
@@ -455,10 +499,16 @@
       "Persists": true,
       "WallBounces": true,
       "Spark": "",
-      "HitSounds": {
-        "Object": "hits/gas",
-        "Flesh": "hits/gas",
-        "Wall": ""
+      "Hit": {
+        "Object": {
+          "Sound": "hits/gas"
+        },
+        "Flesh": {
+          "Sound": "hits/gas"
+        },
+        "Wall": {
+          "Sound": ""
+        }
       },
       "Falling": {
         "GravityFactor": 1,
@@ -483,10 +533,16 @@
       "Persists": true,
       "WallBounces": true,
       "Spark": "",
-      "HitSounds": {
-        "Object": "hits/gas",
-        "Flesh": "hits/gas",
-        "Wall": ""
+      "Hit": {
+        "Object": {
+          "Sound": "hits/gas"
+        },
+        "Flesh": {
+          "Sound": "hits/gas"
+        },
+        "Wall": {
+          "Sound": ""
+        }
       },
       "Falling": {
         "GravityFactor": 1,
@@ -508,15 +564,23 @@
       "RangeHigh": 148,
       "Power": 2,
       "Size": [10, 10],
-      "Special": "Flame",
+      "Special": {
+        "Effect": "Flame"
+      },
       "HurtAlways": true,
       "Persists": true,
       "WallBounces": true,
       "Spark": "",
-      "HitSounds": {
-        "Object": "hits/fire",
-        "Flesh": "hits/fire",
-        "Wall": ""
+      "Hit": {
+        "Object": {
+          "Sound": "hits/fire"
+        },
+        "Flesh": {
+          "Sound": "hits/fire"
+        },
+        "Wall": {
+          "Sound": ""
+        }
       },
       "Falling": {
         "GravityFactor": 4,
@@ -537,15 +601,21 @@
       "RangeLow": 155,
       "RangeHigh": 191,
       "Size": [20, 20],
-      "Special": "Poison",
+      "Special": {
+        "Effect": "Poison"
+      },
       "HurtAlways": true,
       "Persists": true,
       "WallBounces": true,
       "Spark": "",
-      "HitSounds": {
-        "Object": "",
-        "Flesh": "hits/gas",
-        "Wall": ""
+      "Hit": {
+        "Object": {},
+        "Flesh": {
+          "Sound": "hits/gas"
+        },
+        "Wall": {
+          "Sound": ""
+        }
       }
     },
     {
@@ -562,14 +632,20 @@
       "RangeLow": 155,
       "RangeHigh": 191,
       "Size": [20, 20],
-      "Special": "Confuse",
+      "Special": {
+        "Effect": "Confuse"
+      },
       "Persists": true,
       "WallBounces": true,
       "Spark": "",
-      "HitSounds": {
-        "Object": "",
-        "Flesh": "hits/gas",
-        "Wall": ""
+      "Hit": {
+        "Object": {},
+        "Flesh": {
+          "Sound": "hits/gas"
+        },
+        "Wall": {
+          "Sound": ""
+        }
       }
     },
     {
@@ -581,7 +657,7 @@
       "Speed": 0,
       "Range": -1,
       "Persists": true,
-      "HitsObjects": false,
+      "Hit": {},
       "ProximityGuns": [
         "triggeredmine"
       ]
@@ -595,7 +671,7 @@
       "Speed": 0,
       "Range": 5,
       "Persists": true,
-      "HitsObjects": false,
+      "Hit": {},
       "OutOfRangeGuns": [
         "explosion1",
         "explosion2",
@@ -616,10 +692,13 @@
       "Size": [64, 64],
       "Persists": true,
       "Spark": "",
-      "HitSounds": {
-        "Object": "hits/gas",
-        "Flesh": "hits/gas",
-        "Wall": ""
+      "Hit": {
+        "Object": {
+          "Sound": "hits/gas"
+        },
+        "Flesh": {
+          "Sound": "hits/gas"
+        }
       }
     },
     {
@@ -640,10 +719,16 @@
       "Power": 1,
       "Size": [16, 16],
       "Spark": "",
-      "HitSounds": {
-        "Object": "",
-        "Flesh": "",
-        "Wall": ""
+      "Hit": {
+        "Object": {
+          "Sound": ""
+        },
+        "Flesh": {
+          "Sound": ""
+        },
+        "Wall": {
+          "Sound": ""
+        }
       },
       "OutOfRangeGuns": [
         "explosion_small"

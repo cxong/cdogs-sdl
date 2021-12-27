@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2018-2020 Cong Xu
+	Copyright (c) 2018-2021 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -69,6 +69,7 @@ typedef struct
 	bool shootable;	// blocks bullets
 	bool IsRoom;	// affects random placement of indoor/outdoor map objects
 	TileClassType Type;
+	char *DamageBullet;
 } TileClass;
 
 typedef struct
@@ -89,6 +90,8 @@ void TileClassesClearCustom(TileClasses *c);
 void TileClassesTerminate(TileClasses *c);
 void TileClassDestroy(any_t data);
 void TileClassTerminate(TileClass *tc);
+void TileClassLoadJSON(TileClass *tc, json_t *node);
+json_t *TileClassSaveJSON(const TileClass *tc);
 
 void TileClassInit(
 	TileClass *t, PicManager *pm, const TileClass *base,

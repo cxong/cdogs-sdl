@@ -35,5 +35,3 @@ int MapNewScanArchive(const char *filename, char **title, int *numMissions);
 int MapLoadCampaignJSON(const char *filename, CampaignSetting *c, int *version);
 int MapNewLoadArchive(const char *filename, CampaignSetting *c);
 int MapArchiveSave(const char *filename, CampaignSetting *c);
-
-json_t *MissionSaveTileClass(const TileClass *tc);
