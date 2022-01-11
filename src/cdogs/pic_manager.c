@@ -113,7 +113,6 @@ static void PicManagerAdd(
 	// Use 32-bit image
 	SDL_Surface *image =
 		SDL_ConvertSurfaceFormat(imageIn, SDL_PIXELFORMAT_RGBA8888, 0);
-	SDL_FreeSurface(imageIn);
 	SDL_LockSurface(image);
 	struct vec2i offset;
 	for (offset.y = 0; offset.y < image->h; offset.y += size.y)

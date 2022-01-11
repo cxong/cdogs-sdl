@@ -297,7 +297,6 @@ void GraphicsInitialize(GraphicsDevice *g)
 
 void GraphicsTerminate(GraphicsDevice *g)
 {
-	SDL_FreeSurface(g->icon);
 	WindowContextDestroy(&g->gameWindow);
 	WindowContextDestroy(&g->secondWindow);
 	SDL_FreeFormat(g->Format);

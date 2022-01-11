@@ -72,8 +72,9 @@ message NConfig {
 message NTileSet {
 	NVec2i Pos = 1;
 	string ClassName = 2;
-	string ClassAltName = 3;
-	int32 RunLength = 4;
+	string DoorClassName = 3;
+	string DoorClass2Name = 4;
+	int32 RunLength = 5;
 }
 
 message NThingDamage {
@@ -319,6 +320,11 @@ message NObjectiveUpdate {
 message NAddKeys {
 	uint32 KeyFlags = 1;
 	NVec2 Pos = 2;
+}
+
+message NDoorToggle {
+	bool IsOpen = 1;
+	NVec2i Pos = 2;
 }
 
 message NMissionComplete {

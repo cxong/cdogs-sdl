@@ -10,8 +10,9 @@ NPlayerData.Weapons			max_size:128
 NPlayerData.Weapons			max_count:3
 NPlayerData.Ammo			max_count:128
 
-NTileSet.ClassName    max_size:128
-NTileSet.ClassAltName max_size:128
+NTileSet.ClassName		max_size:128
+NTileSet.DoorClassName	max_size:128
+NTileSet.DoorClass2Name	max_size:128
 
 NConfig.Name				max_size:128
 NConfig.Value				max_size:128

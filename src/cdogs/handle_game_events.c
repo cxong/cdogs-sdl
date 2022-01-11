@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2021 Cong Xu
+	Copyright (c) 2014-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -82,16 +82,19 @@ static void HandleGameEvent(
 		break;
 	case GAME_EVENT_TILE_SET: {
 		struct vec2i pos = Net2Vec2i(e.u.TileSet.Pos);
-		LOG(LM_MAP, LL_DEBUG, "set tile %s/%s pos(%d, %d) x%d",
-			e.u.TileSet.ClassName, e.u.TileSet.ClassAltName, pos.x, pos.y,
-			e.u.TileSet.RunLength);
+		LOG(LM_MAP, LL_DEBUG, "set tile %s/%s/%s pos(%d, %d) x%d",
+			e.u.TileSet.ClassName, e.u.TileSet.DoorClassName,
+			e.u.TileSet.DoorClass2Name, pos.x, pos.y, e.u.TileSet.RunLength);
 		const TileClass *tileClass = StrTileClass(e.u.TileSet.ClassName);
-		const TileClass *tileClassAlt = StrTileClass(e.u.TileSet.ClassAltName);
+		const TileClass *doorClass = StrTileClass(e.u.TileSet.DoorClassName);
+		const TileClass *doorClass2 = StrTileClass(e.u.TileSet.DoorClass2Name);
 		for (int i = 0; i <= e.u.TileSet.RunLength; i++)
 		{
 			Tile *t = MapGetTile(&gMap, pos);
 			t->Class = tileClass;
-			t->ClassAlt = tileClassAlt;
+			t->Door.Class = doorClass;
+			t->Door.Class2 = doorClass2;
+			DoorStateInit(&t->Door, false);
 			pos.x++;
 			if (pos.x == gMap.Size.x)
 			{
@@ -495,6 +498,11 @@ static void HandleGameEvent(
 
 		// Clear cache since we may now have new paths
 		PathCacheClear(&gPathCache);
+	}
+	break;
+	case GAME_EVENT_DOOR_TOGGLE: {
+		Tile *t = MapGetTile(&gMap, Net2Vec2i(e.u.DoorToggle.Pos));
+		DoorStateInit(&t->Door, e.u.DoorToggle.IsOpen);
 	}
 	break;
 	case GAME_EVENT_MISSION_COMPLETE:

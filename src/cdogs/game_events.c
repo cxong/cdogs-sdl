@@ -111,6 +111,7 @@ static GameEventEntry sGameEventEntries[] = {
 	{GAME_EVENT_OBJECTIVE_UPDATE, true, false, true, true,
 	 NObjectiveUpdate_fields},
 	{GAME_EVENT_ADD_KEYS, true, false, true, true, NAddKeys_fields},
+	{GAME_EVENT_DOOR_TOGGLE, true, false, true, true, NDoorToggle_fields},
 
 	{GAME_EVENT_MISSION_COMPLETE, true, false, true, true,
 	 NMissionComplete_fields},

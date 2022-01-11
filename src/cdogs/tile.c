@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2014, 2016-2020 Cong Xu
+	Copyright (c) 2013-2014, 2016-2020, 2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -51,6 +51,12 @@
 #include "thing.h"
 #include "triggers.h"
 
+void DoorStateInit(DoorState *d, const bool isOpen)
+{
+	d->Count = DOORSTATE_COUNT;
+	d->IsOpen = isOpen;
+}
+
 Tile TileNone(void)
 {
 	Tile t;
@@ -70,20 +76,28 @@ void TileDestroy(Tile *t)
 	CArrayTerminate(&t->things);
 }
 
+void TileUpdate(Tile *t)
+{
+	if (t->Door.Count > 0)
+	{
+		t->Door.Count--;
+	}
+}
+
 // t->ClassAlt->Name == NULL for nothing tiles
 bool TileIsOpaque(const Tile *t)
 {
-	return t != NULL && ((t->Class->Type == TILE_CLASS_DOOR && t->ClassAlt &&
-						  t->ClassAlt->Name)
-							 ? t->ClassAlt->isOpaque
+	return t != NULL && ((t->Class->Type == TILE_CLASS_DOOR && t->Door.Class &&
+						  !t->Door.IsOpen && t->Door.Class->Name)
+							 ? t->Door.Class->isOpaque
 							 : t->Class->isOpaque);
 }
 
 bool TileIsShootable(const Tile *t)
 {
-	return (t->Class->Type == TILE_CLASS_DOOR && t->ClassAlt &&
-			t->ClassAlt->Name)
-			   ? t->ClassAlt->shootable
+	return (t->Class->Type == TILE_CLASS_DOOR && t->Door.Class &&
+			!t->Door.IsOpen && t->Door.Class->Name)
+			   ? t->Door.Class->shootable
 			   : t->Class->shootable;
 }
 
@@ -93,9 +107,9 @@ bool TileCanWalk(const Tile *t)
 	{
 		return false;
 	}
-	return (t->Class->Type == TILE_CLASS_DOOR && t->ClassAlt &&
-			t->ClassAlt->Name)
-			   ? t->ClassAlt->canWalk
+	return (t->Class->Type == TILE_CLASS_DOOR && t->Door.Class &&
+			!t->Door.IsOpen && t->Door.Class->Name)
+			   ? t->Door.Class->canWalk
 			   : t->Class->canWalk;
 }
 

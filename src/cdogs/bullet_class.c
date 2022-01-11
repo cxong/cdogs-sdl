@@ -73,7 +73,7 @@ BulletClasses gBulletClasses;
 
 int BulletClassesCount(const BulletClasses *classes)
 {
-	return classes->Classes.size + classes->CustomClasses.size;
+	return (int)(classes->Classes.size + classes->CustomClasses.size);
 }
 
 // TODO: use map structure?

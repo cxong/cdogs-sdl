@@ -150,6 +150,9 @@ PB_BIND(NObjectiveUpdate, NObjectiveUpdate, AUTO)
 PB_BIND(NAddKeys, NAddKeys, AUTO)
 
 
+PB_BIND(NDoorToggle, NDoorToggle, AUTO)
+
+
 PB_BIND(NMissionComplete, NMissionComplete, AUTO)
 
 

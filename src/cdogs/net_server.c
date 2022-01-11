@@ -499,12 +499,19 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 						t->Class->StyleType, t->Class->Mask,
 						t->Class->MaskAlt);
 				}
-				if (t->ClassAlt != NULL)
+				if (t->Door.Class != NULL)
 				{
 					TileClassGetName(
-						e.u.TileSet.ClassAltName, t->ClassAlt,
-						t->ClassAlt->Style, t->ClassAlt->StyleType,
-						t->ClassAlt->Mask, t->ClassAlt->MaskAlt);
+						e.u.TileSet.DoorClassName, t->Door.Class,
+						t->Door.Class->Style, t->Door.Class->StyleType,
+						t->Door.Class->Mask, t->Door.Class->MaskAlt);
+				}
+				if (t->Door.Class2 != NULL)
+				{
+					TileClassGetName(
+						e.u.TileSet.DoorClass2Name, t->Door.Class2,
+						t->Door.Class2->Style, t->Door.Class2->StyleType,
+						t->Door.Class2->Mask, t->Door.Class2->MaskAlt);
 				}
 				e.u.TileSet.RunLength = 0;
 			}

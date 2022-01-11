@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2014-2017, 2019-2021 Cong Xu
+	Copyright (c) 2014-2017, 2019-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@
 
 #define NET_LISTEN_PORT 34219
 
-#define NET_PROTOCOL_VERSION 11
+#define NET_PROTOCOL_VERSION 12
 
 // Messages
 

@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2021 Cong Xu
+	Copyright (c) 2013-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -654,6 +654,13 @@ void MapMarkAllAsVisited(Map *map)
 int MapGetExploredPercentage(Map *map)
 {
 	return (100 * map->tilesSeen) / map->NumExplorableTiles;
+}
+
+void MapUpdate(Map *map)
+{
+	CA_FOREACH(Tile, t, map->Tiles)
+	TileUpdate(t);
+	CA_FOREACH_END()
 }
 
 struct vec2i MapSearchTileAround(

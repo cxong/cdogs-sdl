@@ -293,7 +293,6 @@ bail:
 	NetClientTerminate(&gNetClient);
 	atexit(enet_deinitialize);
 	EventTerminate(&gEventHandlers);
-	GraphicsTerminate(&gGraphicsDevice);
 	CampaignTerminate(&gCampaign);
 	CollisionSystemTerminate(&gCollisionSystem);
 
@@ -301,6 +300,7 @@ bail:
 	TileClassesTerminate(&gTileClasses);
 	PicManagerTerminate(&gPicManager);
 	FontTerminate(&gFont);
+	GraphicsTerminate(&gGraphicsDevice);
 	AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 	AutosaveTerminate(&gAutosave);
 	PlayerTemplatesTerminate(&gPlayerTemplates);

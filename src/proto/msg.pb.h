@@ -278,6 +278,12 @@ typedef struct _NCharColors {
     NColor Feet;
 } NCharColors;
 
+typedef struct _NDoorToggle {
+    bool IsOpen;
+    bool has_Pos;
+    NVec2i Pos;
+} NDoorToggle;
+
 typedef struct _NExploreTiles_Run {
     bool has_Tile;
     NVec2i Tile;
@@ -339,7 +345,8 @@ typedef struct _NTileSet {
     bool has_Pos;
     NVec2i Pos;
     char ClassName[128];
-    char ClassAltName[128];
+    char DoorClassName[128];
+    char DoorClass2Name[128];
     int32_t RunLength;
 } NTileSet;
 
@@ -389,7 +396,7 @@ extern "C" {
 #define NPlayerData_init_default                 {"", "", "", false, NCharColors_init_default, 0, {"", "", ""}, 0, false, NPlayerStats_init_default, false, NPlayerStats_init_default, 0, 0, 0, 0, {NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default}}
 #define NPlayerRemove_init_default               {0}
 #define NConfig_init_default                     {"", ""}
-#define NTileSet_init_default                    {false, NVec2i_init_default, "", "", 0}
+#define NTileSet_init_default                    {false, NVec2i_init_default, "", "", "", 0}
 #define NThingDamage_init_default                {0, 0, 0, 0, false, NVec2_init_default, 0, 0, 0, 0}
 #define NMapObjectAdd_init_default               {0, "", false, NVec2_init_default, 0, 0, false, NColor_init_default}
 #define NMapObjectRemove_init_default            {0, 0, 0}
@@ -428,6 +435,7 @@ extern "C" {
 #define NRescueCharacter_init_default            {0}
 #define NObjectiveUpdate_init_default            {0, 0}
 #define NAddKeys_init_default                    {0, false, NVec2_init_default}
+#define NDoorToggle_init_default                 {0, false, NVec2i_init_default}
 #define NMissionComplete_init_default            {0}
 #define NMissionEnd_init_default                 {0, 0, "", 0}
 #define NServerInfo_init_zero                    {0, 0, "", 0, "", 0, 0, 0}
@@ -439,7 +447,7 @@ extern "C" {
 #define NPlayerData_init_zero                    {"", "", "", false, NCharColors_init_zero, 0, {"", "", ""}, 0, false, NPlayerStats_init_zero, false, NPlayerStats_init_zero, 0, 0, 0, 0, {NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero}}
 #define NPlayerRemove_init_zero                  {0}
 #define NConfig_init_zero                        {"", ""}
-#define NTileSet_init_zero                       {false, NVec2i_init_zero, "", "", 0}
+#define NTileSet_init_zero                       {false, NVec2i_init_zero, "", "", "", 0}
 #define NThingDamage_init_zero                   {0, 0, 0, 0, false, NVec2_init_zero, 0, 0, 0, 0}
 #define NMapObjectAdd_init_zero                  {0, "", false, NVec2_init_zero, 0, 0, false, NColor_init_zero}
 #define NMapObjectRemove_init_zero               {0, 0, 0}
@@ -478,6 +486,7 @@ extern "C" {
 #define NRescueCharacter_init_zero               {0}
 #define NObjectiveUpdate_init_zero               {0, 0}
 #define NAddKeys_init_zero                       {0, false, NVec2_init_zero}
+#define NDoorToggle_init_zero                    {0, false, NVec2i_init_zero}
 #define NMissionComplete_init_zero               {0}
 #define NMissionEnd_init_zero                    {0, 0, "", 0}
 
@@ -609,6 +618,8 @@ extern "C" {
 #define NCharColors_Legs_tag                     4
 #define NCharColors_Hair_tag                     5
 #define NCharColors_Feet_tag                     6
+#define NDoorToggle_IsOpen_tag                   1
+#define NDoorToggle_Pos_tag                      2
 #define NExploreTiles_Run_Tile_tag               1
 #define NExploreTiles_Run_Run_tag                2
 #define NGunFire_ActorUID_tag                    1
@@ -643,8 +654,9 @@ extern "C" {
 #define NThingDamage_SpecialTicks_tag            9
 #define NTileSet_Pos_tag                         1
 #define NTileSet_ClassName_tag                   2
-#define NTileSet_ClassAltName_tag                3
-#define NTileSet_RunLength_tag                   4
+#define NTileSet_DoorClassName_tag               3
+#define NTileSet_DoorClass2Name_tag              4
+#define NTileSet_RunLength_tag                   5
 #define NTrigger_ID_tag                          1
 #define NTrigger_Tile_tag                        2
 #define NExploreTiles_Runs_tag                   1
@@ -751,8 +763,9 @@ X(a, STATIC,   SINGULAR, STRING,   Value,             2)
 #define NTileSet_FIELDLIST(X, a) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  Pos,               1) \
 X(a, STATIC,   SINGULAR, STRING,   ClassName,         2) \
-X(a, STATIC,   SINGULAR, STRING,   ClassAltName,      3) \
-X(a, STATIC,   SINGULAR, INT32,    RunLength,         4)
+X(a, STATIC,   SINGULAR, STRING,   DoorClassName,     3) \
+X(a, STATIC,   SINGULAR, STRING,   DoorClass2Name,    4) \
+X(a, STATIC,   SINGULAR, INT32,    RunLength,         5)
 #define NTileSet_CALLBACK NULL
 #define NTileSet_DEFAULT NULL
 #define NTileSet_Pos_MSGTYPE NVec2i
@@ -1062,6 +1075,13 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  Pos,               2)
 #define NAddKeys_DEFAULT NULL
 #define NAddKeys_Pos_MSGTYPE NVec2
 
+#define NDoorToggle_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, BOOL,     IsOpen,            1) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  Pos,               2)
+#define NDoorToggle_CALLBACK NULL
+#define NDoorToggle_DEFAULT NULL
+#define NDoorToggle_Pos_MSGTYPE NVec2i
+
 #define NMissionComplete_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, BOOL,     ShowMsg,           1)
 #define NMissionComplete_CALLBACK NULL
@@ -1123,6 +1143,7 @@ extern const pb_msgdesc_t NExploreTiles_Run_msg;
 extern const pb_msgdesc_t NRescueCharacter_msg;
 extern const pb_msgdesc_t NObjectiveUpdate_msg;
 extern const pb_msgdesc_t NAddKeys_msg;
+extern const pb_msgdesc_t NDoorToggle_msg;
 extern const pb_msgdesc_t NMissionComplete_msg;
 extern const pb_msgdesc_t NMissionEnd_msg;
 
@@ -1175,6 +1196,7 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 #define NRescueCharacter_fields &NRescueCharacter_msg
 #define NObjectiveUpdate_fields &NObjectiveUpdate_msg
 #define NAddKeys_fields &NAddKeys_msg
+#define NDoorToggle_fields &NDoorToggle_msg
 #define NMissionComplete_fields &NMissionComplete_msg
 #define NMissionEnd_fields &NMissionEnd_msg
 
@@ -1188,7 +1210,7 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 #define NPlayerData_size                         2631
 #define NPlayerRemove_size                       6
 #define NConfig_size                             260
-#define NTileSet_size                            295
+#define NTileSet_size                            425
 #define NThingDamage_size                        84
 #define NMapObjectAdd_size                       178
 #define NMapObjectRemove_size                    23
@@ -1227,6 +1249,7 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 #define NRescueCharacter_size                    6
 #define NObjectiveUpdate_size                    17
 #define NAddKeys_size                            18
+#define NDoorToggle_size                         26
 #define NMissionComplete_size                    2
 #define NMissionEnd_size                         149
 

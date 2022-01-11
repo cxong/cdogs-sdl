@@ -185,7 +185,6 @@ Pic PicCopy(const Pic *src)
 
 void PicFree(Pic *pic)
 {
-	pic->size = svec2i_zero();
 	if (pic->Tex != NULL)
 	{
 		LOG(LM_GFX, LL_TRACE, "freeing texture %p data(%p)", pic->Tex, pic->Data);
@@ -212,6 +211,7 @@ void PicFree(Pic *pic)
 			}
 		}
 	}
+	pic->size = svec2i_zero();
 	CFREE(pic->Data);
 	pic->Data = NULL;
 }

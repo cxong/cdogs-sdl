@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2016, 2018-2021 Cong Xu
+	Copyright (c) 2013-2016, 2018-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -55,6 +55,7 @@
 #include "algorithms.h"
 #include "blit.h"
 #include "config.h"
+#include "door.h"
 #include "draw/draw.h"
 #include "draw/draw_actor.h"
 #include "draw/drawtools.h"
@@ -228,7 +229,6 @@ static void DrawThingsBelow(
 	CA_FOREACH_END()
 }
 
-#define WALL_OFFSET_Y (-12)
 static void DrawWallsAndThings(
 	DrawBuffer *b, const struct vec2i offset, const Tile *t,
 	const struct vec2i pos, const bool useFog)
@@ -240,21 +240,13 @@ static void DrawWallsAndThings(
 			t, t->Class->Pic, svec2i_add(pos, svec2i(0, WALL_OFFSET_Y)),
 			useFog);
 	}
-	else if (
-		t->Class->Type == TILE_CLASS_DOOR && t->ClassAlt && t->ClassAlt->Pic)
+	else if (t->Class->Type == TILE_CLASS_DOOR)
 	{
-		// Drawing doors
-		// Doors may be offset; vertical doors are drawn centered
-		// horizontal doors are bottom aligned
-		struct vec2i doorPos = pos;
-		const Pic *pic = t->ClassAlt->Pic;
-		doorPos.x += (TILE_WIDTH - pic->size.x) / 2;
-		if (pic->size.y > 16)
+		const color_t mask = GetLOSMask(t, useFog);
+		if (!ColorEquals(mask, colorTransparent))
 		{
-			doorPos.y += TILE_HEIGHT - (pic->size.y % TILE_HEIGHT);
+			DoorDraw(&t->Door, pos, mask);
 		}
-		DrawLOSPic(
-			t, pic, svec2i_add(doorPos, svec2i(0, WALL_OFFSET_Y)), useFog);
 	}
 
 	// Draw the items that are in LOS

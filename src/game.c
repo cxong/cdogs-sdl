@@ -761,6 +761,7 @@ void GameUpdate(RunGameData *data, const int ticksPerFrame, SoundDevice *sd)
 	UpdateMobileObjects(ticksPerFrame);
 	PickupsUpdate(&gPickups, ticksPerFrame);
 	ParticlesUpdate(&gParticles, ticksPerFrame);
+	MapUpdate(data->map);
 
 	UpdateWatches(&data->map->triggers, ticksPerFrame);
 

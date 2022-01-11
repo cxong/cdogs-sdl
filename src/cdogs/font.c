@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2014-2017, 2019, 2021 Cong Xu
+	Copyright (c) 2014-2017, 2019, 2021-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@
 #endif
 
 #include "blit.h"
+#include "log.h"
 #include "pic.h"
 #include "sys_config.h"
 #include "utils.h"
@@ -66,14 +67,14 @@ void FontLoad(
 	rwops->close(rwops);
 	if (!image)
 	{
-		fprintf(stderr, "Cannot load font image: %s\n", IMG_GetError());
-		goto bail;
+		LOG(LM_GFX, LL_ERROR, "Cannot load font image: %s", IMG_GetError());
+		return;
 	}
 	if (image->format->BytesPerPixel != 4)
 	{
 		perror("Cannot load non-32-bit image");
-		fprintf(stderr, "Only 32-bit depth images supported\n");
-		goto bail;
+		LOG(LM_GFX, LL_ERROR, "Only 32-bit depth images supported");
+		return;
 	}
 
 	CArrayInit(&f->Chars, sizeof(Pic));
@@ -84,14 +85,14 @@ void FontLoad(
 		f->Size.y + f->Padding.Top + f->Padding.Bottom);
 	if (step.x * f->Stride > image->w || step.y > image->h)
 	{
-		fprintf(stderr,
+		LOG(LM_GFX, LL_ERROR,
 			"Error: font image not big enough for font data "
-			"Image %dx%d Size %dx%d Stride %d Padding %d,%d,%d,%d\n",
+			"Image %dx%d Size %dx%d Stride %d Padding %d,%d,%d,%d",
 			image->w, image->h,
 			f->Size.x, f->Size.y, f->Stride,
 			f->Padding.Left, f->Padding.Top,
 			f->Padding.Right, f->Padding.Bottom);
-		goto bail;
+		return;
 	}
 
 	// Load letters from image file
@@ -123,9 +124,6 @@ void FontLoad(
 		}
 	}
 	SDL_UnlockSurface(image);
-
-bail:
-	SDL_FreeSurface(image);
 }
 void FontTerminate(Font *f)
 {

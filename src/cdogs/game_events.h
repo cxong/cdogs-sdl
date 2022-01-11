@@ -99,6 +99,7 @@ typedef enum
 	GAME_EVENT_RESCUE_CHARACTER,
 	GAME_EVENT_OBJECTIVE_UPDATE,
 	GAME_EVENT_ADD_KEYS,
+	GAME_EVENT_DOOR_TOGGLE,
 
 	// Can complete mission
 	GAME_EVENT_MISSION_COMPLETE,
@@ -188,6 +189,7 @@ typedef struct
 		NRescueCharacter Rescue;
 		NObjectiveUpdate ObjectiveUpdate;
 		NAddKeys AddKeys;
+		NDoorToggle DoorToggle;
 		NMissionComplete MissionComplete;
 		NMissionEnd MissionEnd;
 	} u;

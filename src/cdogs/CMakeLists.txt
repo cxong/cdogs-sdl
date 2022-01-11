@@ -8,6 +8,7 @@ set(CDOGS_SOURCES
 	actor_fire.c
 	actor_placement.c
 	actors.c
+	aheasing/easing.c
 	ai.c
 	ai_context.c
 	ai_coop.c
@@ -118,6 +119,7 @@ set(CDOGS_HEADERS
 	actor_fire.h
 	actor_placement.h
 	actors.h
+	aheasing/easing.h
 	ai.h
 	ai_context.h
 	ai_coop.h
