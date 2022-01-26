@@ -182,18 +182,20 @@ int main(int argc, char *argv[])
 		goto bail;
 	}
 	FontLoadFromJSON(&gFont, "graphics/font.png", "graphics/font.json");
+	DrawGameLoadingScreen(&gGraphicsDevice, "Loading graphics...");
 	PicManagerLoad(&gPicManager);
-	DrawGameLoadingScreen(&gGraphicsDevice);
 
 	GetDataFilePath(buf, "");
 	LOG(LM_MAIN, LL_INFO, "data dir(%s)", buf);
 	LOG(LM_MAIN, LL_INFO, "config dir(%s)", GetConfigFilePath(""));
 
+	DrawGameLoadingScreen(&gGraphicsDevice, "Loading autosaves...");
 	AutosaveInit(&gAutosave);
 #ifndef __EMSCRIPTEN__
 	AutosaveLoad(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 #endif
 
+	DrawGameLoadingScreen(&gGraphicsDevice, "Initializing network client...");
 #ifndef __EMSCRIPTEN__
 	if (enet_initialize() != 0)
 	{
@@ -204,6 +206,7 @@ int main(int argc, char *argv[])
 	NetClientInit(&gNetClient);
 #endif
 
+	DrawGameLoadingScreen(&gGraphicsDevice, "Initializing sound device...");
 	SoundInitialize(&gSoundDevice, "sounds");
 	if (!gSoundDevice.isInitialised)
 	{
@@ -214,26 +217,35 @@ int main(int argc, char *argv[])
     gEventHandlers.DemoQuitTimer = demoQuitTimer;
 	NetServerInit(&gNetServer);
 	TileClassesInit(&gTileClasses);
+	DrawGameLoadingScreen(&gGraphicsDevice, "Loading character sprites...");
 	CharSpriteClassesInit(&gCharSpriteClasses);
 
+	DrawGameLoadingScreen(&gGraphicsDevice, "Loading particles...");
 	ParticleClassesInit(&gParticleClasses, "data/particles.json");
+	DrawGameLoadingScreen(&gGraphicsDevice, "Loading ammo...");
 	AmmoInitialize(&gAmmo, "data/ammo.json");
+	DrawGameLoadingScreen(&gGraphicsDevice, "Loading bullets and weapons...");
 	BulletAndWeaponInitialize(
 		&gBulletClasses, &gWeaponClasses, "data/bullets.json",
 		"data/guns.json");
+	DrawGameLoadingScreen(&gGraphicsDevice, "Loading character classes...");
 	CharacterClassesInitialize(
 		&gCharacterClasses, "data/character_classes.json");
 #ifndef __EMSCRIPTEN__
+	DrawGameLoadingScreen(&gGraphicsDevice, "Loading player templates...");
 	PlayerTemplatesLoad(&gPlayerTemplates, &gCharacterClasses);
 #endif
+	DrawGameLoadingScreen(&gGraphicsDevice, "Loading pickups...");
 	PickupClassesInit(
 		&gPickupClasses, "data/pickups.json", &gAmmo, &gWeaponClasses);
+	DrawGameLoadingScreen(&gGraphicsDevice, "Loading map objects...");
 	MapObjectsInit(
 		&gMapObjects, "data/map_objects.json", &gAmmo, &gWeaponClasses);
 	CollisionSystemInit(&gCollisionSystem);
 	CampaignInit(&gCampaign);
 	PlayerDataInit(&gPlayerDatas);
 
+	DrawGameLoadingScreen(&gGraphicsDevice, "Loading main menu...");
 	LoopRunner l = LoopRunnerNew(NULL);
 	LoopRunnerPush(&l, MainMenu(&gGraphicsDevice, &l));
 	if (connectAddr.host != 0)
