@@ -133,21 +133,6 @@ int main(int argc, char *argv[])
 	ConfigGet(&gConfig, "Graphics.ShowHUD")->u.Bool.Value = true;
 	ConfigGet(&gConfig, "Graphics.ShakeMultiplier")->u.Int.Value = 1;
 
-	AutosaveInit(&gAutosave);
-#ifndef __EMSCRIPTEN__
-	AutosaveLoad(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
-#endif
-
-#ifndef __EMSCRIPTEN__
-	if (enet_initialize() != 0)
-	{
-		LOG(LM_MAIN, LL_ERROR, "An error occurred while initializing ENet.");
-		err = EXIT_FAILURE;
-		goto bail;
-	}
-	NetClientInit(&gNetClient);
-#endif
-
 	// Print command line
 	char buf[CDOGS_PATH_MAX];
 	ProcessCommandLine(buf, argc, argv);
@@ -179,21 +164,7 @@ int main(int argc, char *argv[])
 	}
 	SDL_EventState(SDL_DROPFILE, SDL_DISABLE);
 
-	GetDataFilePath(buf, "");
-	LOG(LM_MAIN, LL_INFO, "data dir(%s)", buf);
-	LOG(LM_MAIN, LL_INFO, "config dir(%s)", GetConfigFilePath(""));
-
-	SoundInitialize(&gSoundDevice, "sounds");
-	if (!gSoundDevice.isInitialised)
-	{
-		LOG(LM_MAIN, LL_ERROR, "Sound initialization failed!");
-	}
-
-	EventInit(&gEventHandlers);
-    gEventHandlers.DemoQuitTimer = demoQuitTimer;
-	NetServerInit(&gNetServer);
 	PicManagerInit(&gPicManager);
-	TileClassesInit(&gTileClasses);
 	GraphicsInit(&gGraphicsDevice, &gConfig);
 	GraphicsInitialize(&gGraphicsDevice);
 	if (!gGraphicsDevice.IsInitialized)
@@ -212,6 +183,37 @@ int main(int argc, char *argv[])
 	}
 	FontLoadFromJSON(&gFont, "graphics/font.png", "graphics/font.json");
 	PicManagerLoad(&gPicManager);
+	DrawGameLoadingScreen(&gGraphicsDevice);
+
+	GetDataFilePath(buf, "");
+	LOG(LM_MAIN, LL_INFO, "data dir(%s)", buf);
+	LOG(LM_MAIN, LL_INFO, "config dir(%s)", GetConfigFilePath(""));
+
+	AutosaveInit(&gAutosave);
+#ifndef __EMSCRIPTEN__
+	AutosaveLoad(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
+#endif
+
+#ifndef __EMSCRIPTEN__
+	if (enet_initialize() != 0)
+	{
+		LOG(LM_MAIN, LL_ERROR, "An error occurred while initializing ENet.");
+		err = EXIT_FAILURE;
+		goto bail;
+	}
+	NetClientInit(&gNetClient);
+#endif
+
+	SoundInitialize(&gSoundDevice, "sounds");
+	if (!gSoundDevice.isInitialised)
+	{
+		LOG(LM_MAIN, LL_ERROR, "Sound initialization failed!");
+	}
+
+	EventInit(&gEventHandlers);
+    gEventHandlers.DemoQuitTimer = demoQuitTimer;
+	NetServerInit(&gNetServer);
+	TileClassesInit(&gTileClasses);
 	CharSpriteClassesInit(&gCharSpriteClasses);
 
 	ParticleClassesInit(&gParticleClasses, "data/particles.json");

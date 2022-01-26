@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2018, 2020-2021 Cong Xu
+	Copyright (c) 2013-2018, 2020-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -78,6 +78,29 @@
 #include "namegen.h"
 #include "password.h"
 #include "player_select_menus.h"
+
+void DrawGameLoadingScreen(GraphicsDevice *g)
+{
+	WindowContextPreRender(&g->gameWindow);
+
+	const Pic *logo = PicManagerGetPic(&gPicManager, "logo");
+	const struct vec2i pos = svec2i(
+		CENTER_X(svec2i_zero(), g->cachedConfig.Res, logo->size.x),
+		CENTER_Y(
+			svec2i_zero(), svec2i_scale_divide(g->cachedConfig.Res, 2),
+			logo->size.y));
+	PicRender(
+		logo, g->gameWindow.renderer, pos, colorWhite, 0, svec2_one(),
+		SDL_FLIP_NONE, Rect2iZero());
+
+	FontOpts opts = FontOptsNew();
+	opts.HAlign = ALIGN_CENTER;
+	opts.VAlign = ALIGN_CENTER;
+	opts.Area = svec2i(g->cachedConfig.Res.x, g->cachedConfig.Res.y / 2);
+	FontStrOpt("Loading...", svec2i(0, g->cachedConfig.Res.y / 2), opts);
+
+	WindowContextPostRender(&g->gameWindow);
+}
 
 typedef struct
 {
