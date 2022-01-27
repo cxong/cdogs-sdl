@@ -351,6 +351,7 @@ static menu_t *CreateStartGameMode(
 }
 static void StartGameMode(menu_t *menu, void *data)
 {
+	DrawGameLoadingScreen(&gGraphicsDevice, "Loading game...");
 	UNUSED(menu);
 	StartGameModeData *mData = data;
 	gCampaign.Entry.Mode = mData->GameMode;

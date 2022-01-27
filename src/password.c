@@ -49,8 +49,6 @@
 #include "menu.h"
 #include "prep.h"
 
-#define DONE "Done"
-
 typedef enum
 {
 	RETURN_CODE_CONTINUE = -1,

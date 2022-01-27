@@ -70,6 +70,7 @@
 
 #include "briefing_screens.h"
 #include "hiscores.h"
+#include "prep.h"
 #include "screens_end.h"
 
 static void PlayerSpecialCommands(TActor *actor, const int cmd)
@@ -142,6 +143,8 @@ static void RunGameTerminate(GameLoopData *data)
 }
 static void RunGameOnEnter(GameLoopData *data)
 {
+	DrawGameLoadingScreen(&gGraphicsDevice, "Starting game...");
+
 	RunGameData *rData = data->Data;
 
 	RunGameReset(rData);
