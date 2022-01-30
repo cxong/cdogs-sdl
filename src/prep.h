@@ -54,8 +54,6 @@
 
 #include "game_loop.h"
 
-void DrawGameLoadingScreen(GraphicsDevice *g, const char *loadingText);
-
 // Wait for the server to send us the current campaign
 GameLoopData *ScreenWaitForCampaignDef(void);
 

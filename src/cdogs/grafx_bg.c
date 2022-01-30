@@ -44,27 +44,27 @@
 static void DrawBackgroundWithRenderer(
 	GraphicsDevice *g, WindowContext *wc, SDL_Texture *target,
 	SDL_Texture *src, DrawBuffer *buffer, const HSV tint,
-	const struct vec2 pos, GrafxDrawExtra *extra);
+	const struct vec2 pos, const DrawBufferArgs *args);
 void GrafxDrawBackground(
 	GraphicsDevice *g, DrawBuffer *buffer, const HSV tint,
-	const struct vec2 pos, GrafxDrawExtra *extra)
+	const struct vec2 pos, const DrawBufferArgs *args)
 {
 	DrawBackgroundWithRenderer(
-		g, &g->gameWindow, g->bkgTgt, g->bkg, buffer, tint, pos, extra);
+		g, &g->gameWindow, g->bkgTgt, g->bkg, buffer, tint, pos, args);
 	if (g->cachedConfig.SecondWindow)
 	{
 		DrawBackgroundWithRenderer(
 			g, &g->secondWindow, g->bkgTgt2, g->bkg2, buffer, tint, pos,
-			extra);
+			args);
 	}
 }
 static void DrawBackground(
 	GraphicsDevice *g, SDL_Texture *t, DrawBuffer *buffer, Map *map,
-	const struct vec2 pos, GrafxDrawExtra *extra);
+	const struct vec2 pos, const DrawBufferArgs *args);
 static void DrawBackgroundWithRenderer(
 	GraphicsDevice *g, WindowContext *wc, SDL_Texture *target,
 	SDL_Texture *src, DrawBuffer *buffer, const HSV tint,
-	const struct vec2 pos, GrafxDrawExtra *extra)
+	const struct vec2 pos, const DrawBufferArgs *args)
 {
 	SDL_RendererInfo ri;
 	if (SDL_GetRendererInfo(wc->renderer, &ri) != 0)
@@ -84,7 +84,7 @@ static void DrawBackgroundWithRenderer(
 		LOG(LM_GFX, LL_ERROR, "cannot set render target: %s", SDL_GetError());
 	}
 	wc->bkgMask = ColorTint(colorWhite, tint);
-	DrawBackground(g, src, buffer, &gMap, pos, extra);
+	DrawBackground(g, src, buffer, &gMap, pos, args);
 	if (SDL_SetRenderTarget(wc->renderer, NULL) != 0)
 	{
 		LOG(LM_GFX, LL_ERROR, "cannot set render target: %s", SDL_GetError());
@@ -92,11 +92,11 @@ static void DrawBackgroundWithRenderer(
 }
 static void DrawBackground(
 	GraphicsDevice *g, SDL_Texture *t, DrawBuffer *buffer, Map *map,
-	const struct vec2 pos, GrafxDrawExtra *extra)
+	const struct vec2 pos, const DrawBufferArgs *args)
 {
 	BlitClearBuf(g);
 	DrawBufferSetFromMap(buffer, map, pos, X_TILES);
-	DrawBufferDraw(buffer, svec2i_zero(), extra);
+	DrawBufferDraw(buffer, svec2i_zero(), args);
 	BlitUpdateFromBuf(g, t);
 	BlitClearBuf(g);
 }
@@ -107,18 +107,20 @@ void GrafxRedrawBackground(GraphicsDevice *g, const struct vec2 pos)
 	DrawBuffer buffer;
 	DrawBufferInit(&buffer, svec2i(X_TILES, Y_TILES), g);
 	const HSV tint = {rand() * 360.0 / RAND_MAX, rand() * 1.0 / RAND_MAX, 0.5};
-	GrafxDrawBackground(g, &buffer, tint, pos, NULL);
+	DrawBufferArgs args;
+	memset(&args, 0, sizeof args);
+	GrafxDrawBackground(g, &buffer, tint, pos, &args);
 	DrawBufferTerminate(&buffer);
 }
 
 void GrafxMakeBackground(
 	GraphicsDevice *device, DrawBuffer *buffer, Campaign *co,
 	struct MissionOptions *mo, Map *map, HSV tint, const bool isEditor,
-	struct vec2 pos, GrafxDrawExtra *extra)
+	struct vec2 pos, const DrawBufferArgs *args)
 {
 	CampaignAndMissionSetup(co, mo);
 	GameEventsInit(&gGameEvents);
-	MapBuild(map, mo->missionData, co, mo->index);
+	MapBuild(map, mo->missionData, true, mo->index, GAME_MODE_NORMAL, &co->Setting.characters);
 	InitializeBadGuys();
 	CreateEnemies();
 	MapMarkAllAsVisited(map);
@@ -135,6 +137,6 @@ void GrafxMakeBackground(
 	}
 	// Process the events that place dynamic objects
 	HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
-	GrafxDrawBackground(device, buffer, tint, pos, extra);
+	GrafxDrawBackground(device, buffer, tint, pos, args);
 	GameEventsTerminate(&gGameEvents);
 }

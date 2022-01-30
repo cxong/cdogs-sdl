@@ -97,6 +97,7 @@ typedef struct
 
 typedef struct
 {
+	map_t TileClasses;
 	CArray Tiles; // of Tile
 	struct vec2i Size;
 

@@ -141,7 +141,7 @@ void MapInteriorLoad(MapBuilder *mb, const int missionIndex)
 {
 	// TODO: multiple tile types
 	MissionSetupTileClasses(
-		&gPicManager, &mb->mission->u.Interior.TileClasses);
+		mb->Map, &gPicManager, &mb->mission->u.Interior.TileClasses);
 
 	CArray areas;
 	CArrayInit(&areas, sizeof(BSPArea));

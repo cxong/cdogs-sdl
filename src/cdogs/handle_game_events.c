@@ -85,9 +85,9 @@ static void HandleGameEvent(
 		LOG(LM_MAP, LL_DEBUG, "set tile %s/%s/%s pos(%d, %d) x%d",
 			e.u.TileSet.ClassName, e.u.TileSet.DoorClassName,
 			e.u.TileSet.DoorClass2Name, pos.x, pos.y, e.u.TileSet.RunLength);
-		const TileClass *tileClass = StrTileClass(e.u.TileSet.ClassName);
-		const TileClass *doorClass = StrTileClass(e.u.TileSet.DoorClassName);
-		const TileClass *doorClass2 = StrTileClass(e.u.TileSet.DoorClass2Name);
+		const TileClass *tileClass = StrTileClass(gMap.TileClasses, e.u.TileSet.ClassName);
+		const TileClass *doorClass = StrTileClass(gMap.TileClasses, e.u.TileSet.DoorClassName);
+		const TileClass *doorClass2 = StrTileClass(gMap.TileClasses, e.u.TileSet.DoorClass2Name);
 		for (int i = 0; i <= e.u.TileSet.RunLength; i++)
 		{
 			Tile *t = MapGetTile(&gMap, pos);

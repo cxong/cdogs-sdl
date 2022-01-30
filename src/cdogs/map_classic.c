@@ -80,7 +80,7 @@ void MapClassicLoad(MapBuilder *mb)
 	// create inaccessible areas on the map.
 
 	// TODO: multiple tile types
-	MissionSetupTileClasses(&gPicManager, &mb->mission->u.Classic.TileClasses);
+	MissionSetupTileClasses(mb->Map, &gPicManager, &mb->mission->u.Classic.TileClasses);
 
 	MapFillRect(
 		mb, Rect2iNew(svec2i_zero(), mb->mission->Size),
@@ -119,7 +119,7 @@ void MapClassicLoad(MapBuilder *mb)
 		}
 		MapBuildRoom(
 			mb, v, size, doorMin, doorMax,
-			AreKeysAllowed(gCampaign.Entry.Mode), isOverlapRoom,
+			AreKeysAllowed(mb->mode), isOverlapRoom,
 			overlapAccess);
 		count++;
 	}

@@ -286,7 +286,7 @@ static void MissionDrawExitStyle(
 	const int idx = PicManagerGetExitStyleIndex(&gPicManager, m->ExitStyle);
 	DrawStyleArea(
 		svec2i_add(pos, o->Pos), "Exit",
-		TileClassesGetExit(&gTileClasses, &gPicManager, m->ExitStyle, false)
+		TileClassesGetExit(gMap.TileClasses, &gPicManager, m->ExitStyle, false)
 			->Pic,
 		idx, (int)gPicManager.exitStyleNames.size, UIObjectIsHighlighted(o));
 }
@@ -515,7 +515,8 @@ static EditorResult MissionChangeType(void *data, int d)
 	memset(&map, 0, sizeof map);
 	MissionOptionsTerminate(&gMission);
 	CampaignAndMissionSetup(mct->C, &gMission);
-	MapBuild(&map, gMission.missionData, mct->C, gMission.index);
+	CampaignSeedRandom(mct->C);
+	MapBuild(&map, gMission.missionData, true, gMission.index, GAME_MODE_NORMAL, &mct->C->Setting.characters);
 	MissionConvertToType(gMission.missionData, &map, mct->Type);
 	MapTerminate(&map);
 	return EDITOR_RESULT_CHANGED;

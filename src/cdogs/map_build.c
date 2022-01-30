@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2014, 2017-2021 Cong Xu
+	Copyright (c) 2013-2014, 2017-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -69,14 +69,11 @@ static void MapSetupDoors(MapBuilder *mb);
 static void MapAddDrains(MapBuilder *mb);
 static void MapGenerateRandomExitArea(Map *map, const int mission);
 void MapBuild(
-	Map *m, const Mission *mission, const Campaign *co, const int missionIndex)
+	Map *m, const Mission *mission, const bool loadDynamic, const int missionIndex, const GameMode mode, const CharacterStore *characters)
 {
 	MapBuilder mb;
-	MapBuilderInit(&mb, m, mission, co);
+	MapBuilderInit(&mb, m, mission, mode, characters);
 	MapInit(mb.Map, mb.mission->Size);
-
-	// Re-seed RNG so results are consistent
-	CampaignSeedRandom(co);
 
 	switch (mb.mission->Type)
 	{
@@ -142,14 +139,14 @@ void MapBuild(
 		}
 	}
 
-	if (!co->IsClient)
+	if (loadDynamic)
 	{
 		MapLoadDynamic(&mb);
 		ActorsPilotVehicles();
 	}
 	MapBuilderTerminate(&mb);
 }
-void SetupWallTileClasses(PicManager *pm, const TileClass *base)
+void SetupWallTileClasses(Map *m, PicManager *pm, const TileClass *base)
 {
 	for (int i = 0; i < WALL_TYPE_COUNT; i++)
 	{
@@ -157,11 +154,11 @@ void SetupWallTileClasses(PicManager *pm, const TileClass *base)
 			pm, "wall", base->Style, IntWallType(i), base->Mask, base->MaskAlt,
 			false);
 		TileClassesAdd(
-			&gTileClasses, pm, base, base->Style, IntWallType(i), base->Mask,
+			m->TileClasses, pm, base, base->Style, IntWallType(i), base->Mask,
 			base->MaskAlt);
 	}
 }
-void SetupFloorTileClasses(PicManager *pm, const TileClass *base)
+void SetupFloorTileClasses(Map *m, PicManager *pm, const TileClass *base)
 {
 	for (int i = 0; i < FLOOR_TYPES; i++)
 	{
@@ -169,11 +166,11 @@ void SetupFloorTileClasses(PicManager *pm, const TileClass *base)
 			pm, "tile", base->Style, IntTileType(i), base->Mask, base->MaskAlt,
 			false);
 		TileClassesAdd(
-			&gTileClasses, pm, base, base->Style, IntTileType(i), base->Mask,
+			m->TileClasses, pm, base, base->Style, IntTileType(i), base->Mask,
 			base->MaskAlt);
 	}
 }
-void SetupDoorTileClasses(PicManager *pm, const TileClass *base)
+void SetupDoorTileClasses(Map *m, PicManager *pm, const TileClass *base)
 {
 	const char *doorStyles[] = {"yellow", "green", "blue",	"red",
 								"open",	  "wall",  "normal"};
@@ -181,7 +178,7 @@ void SetupDoorTileClasses(PicManager *pm, const TileClass *base)
 	{
 		for (DoorType type = DOORTYPE_H; type < DOORTYPE_COUNT; type++)
 		{
-			DoorAddClass(&gTileClasses, pm, base, doorStyles[i], type);
+			DoorAddClass(m->TileClasses, pm, base, doorStyles[i], type);
 		}
 	}
 }
@@ -233,12 +230,13 @@ static int MapGetAccessFlags(const MapBuilder *mb, const struct vec2i v)
 }
 
 void MapBuilderInit(
-	MapBuilder *mb, Map *m, const Mission *mission, const Campaign *co)
+	MapBuilder *mb, Map *m, const Mission *mission, const GameMode mode, const CharacterStore *characters)
 {
 	memset(mb, 0, sizeof *mb);
 	mb->Map = m;
 	mb->mission = mission;
-	mb->co = co;
+	mb->mode = mode;
+	mb->characters = characters;
 
 	const int mapSize = mission->Size.x * mission->Size.y;
 	CArrayInitFillZero(&mb->access, sizeof(uint16_t), mapSize);
@@ -648,6 +646,7 @@ static void MapSetupTilesAndWalls(MapBuilder *mb)
 			{
 				Tile *t = MapGetTile(mb->Map, pos);
 				t->Class = TileClassesGetMaskedTile(
+					mb->Map->TileClasses,
 					t->Class, t->Class->Style, "alt1", t->Class->Mask,
 					t->Class->MaskAlt);
 			}
@@ -659,6 +658,7 @@ static void MapSetupTilesAndWalls(MapBuilder *mb)
 			{
 				Tile *t = MapGetTile(mb->Map, pos);
 				t->Class = TileClassesGetMaskedTile(
+					mb->Map->TileClasses,
 					t->Class, t->Class->Style, "alt2", t->Class->Mask,
 					t->Class->MaskAlt);
 			}
@@ -682,17 +682,20 @@ static void MapSetupTile(MapBuilder *mb, const struct vec2i pos)
 	if (tc->Type == TILE_CLASS_FLOOR)
 	{
 		t->Class = TileClassesGetMaskedTile(
+			mb->Map->TileClasses,
 			tc, tc->Style, canSeeTileAbove ? "normal" : "shadow", tc->Mask,
 			tc->MaskAlt);
 	}
 	else if (tc->Type == TILE_CLASS_WALL)
 	{
 		t->Class = TileClassesGetMaskedTile(
+			mb->Map->TileClasses,
 			tc, tc->Style, MapGetWallPic(mb, pos), tc->Mask, tc->MaskAlt);
 	}
 	else if (tc->Type == TILE_CLASS_DOOR)
 	{
 		t->Class = TileClassesGetMaskedTile(
+			mb->Map->TileClasses,
 			tc, tc->Style, "normal_h", tc->Mask, tc->MaskAlt);
 	}
 	else if (tc->Type == TILE_CLASS_NOTHING)
@@ -1500,6 +1503,10 @@ static void MapAddDrains(MapBuilder *mb)
 	// Randomly add drainage tiles for classic map type;
 	// For other map types drains are regular map objects
 	const MapObject *drain = StrMapObject("drain0");
+	if (drain == NULL)
+	{
+		return;
+	}
 	for (int i = 0; i < mb->Map->Size.x * mb->Map->Size.y / 45; i++)
 	{
 		// Make sure drain tiles aren't next to each other

@@ -149,9 +149,9 @@ struct vec2i MapAddDoorGroup(
 		char doorClassName[CDOGS_FILENAME_MAX];
 		const DoorType type = GetDoorType(isHorizontal, i, doorGroupCount);
 		DoorGetClassName(doorClassName, door, doorKey, type);
-		const TileClass *doorClass = StrTileClass(doorClassName);
+		const TileClass *doorClass = StrTileClass(mb->Map->TileClasses, doorClassName);
 		DoorGetClassName(doorClassName, door, "open", type);
-		const TileClass *doorClassOpen = StrTileClass(doorClassName);
+		const TileClass *doorClassOpen = StrTileClass(mb->Map->TileClasses, doorClassName);
 		const struct vec2i vI = svec2i_add(v, svec2i_scale(dv, (float)i));
 		Tile *tile = MapGetTile(mb->Map, vI);
 		tile->Door.Class = doorClass;
@@ -168,6 +168,7 @@ struct vec2i MapAddDoorGroup(
 				{
 					// Change the tile below to shadow, cast by this door
 					tileB->Class = TileClassesGetMaskedTile(
+						mb->Map->TileClasses,
 						tileB->Class, tileB->Class->Style, "shadow",
 						tileB->Class->Mask, tileB->Class->MaskAlt);
 				}
@@ -177,7 +178,7 @@ struct vec2i MapAddDoorGroup(
 		{
 			// special door cavity picture
 			DoorGetClassName(doorClassName, door, "wall", type);
-			tile->Door.Class2 = StrTileClass(doorClassName);
+			tile->Door.Class2 = StrTileClass(mb->Map->TileClasses, doorClassName);
 		}
 	}
 
@@ -493,7 +494,7 @@ static void DoorGetClassName(
 	TileClassGetName(buf, door, door->Style, type, mask, maskAlt);
 }
 void DoorAddClass(
-	TileClasses *c, PicManager *pm, const TileClass *base, const char *key,
+	map_t c, PicManager *pm, const TileClass *base, const char *key,
 	const DoorType type)
 {
 	char buf[CDOGS_FILENAME_MAX];

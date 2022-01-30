@@ -68,7 +68,7 @@ struct vec2i MapAddDoorGroup(
 	MapBuilder *mb, const struct vec2i v, const int keyFlags);
 
 void DoorAddClass(
-	TileClasses *c, PicManager *pm, const TileClass *base, const char *key,
+	map_t c, PicManager *pm, const TileClass *base, const char *key,
 	const DoorType type);
 
 // Legacy door style int to str

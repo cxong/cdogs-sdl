@@ -170,9 +170,9 @@ static void DrawChatters(
 	DrawBuffer *b, const struct vec2i offset, const Tile *t,
 	const struct vec2i pos, const bool useFog);
 static void DrawExtra(
-	DrawBuffer *b, struct vec2i offset, GrafxDrawExtra *extra);
+	DrawBuffer *b, struct vec2i offset, const DrawBufferArgs *args);
 
-void DrawBufferDraw(DrawBuffer *b, struct vec2i offset, GrafxDrawExtra *extra)
+void DrawBufferDraw(DrawBuffer *b, struct vec2i offset, const DrawBufferArgs *args)
 {
 	// First draw the floor tiles (which do not obstruct anything)
 	DrawTiles(b, offset, DrawFloor);
@@ -182,7 +182,7 @@ void DrawBufferDraw(DrawBuffer *b, struct vec2i offset, GrafxDrawExtra *extra)
 	DrawTiles(b, offset, DrawWallsAndThings);
 	// Draw things that are above everything
 	DrawTiles(b, offset, DrawThingsAbove);
-	if (ConfigGetBool(&gConfig, "Graphics.ShowHUD"))
+	if (args->HUD)
 	{
 		// Draw objective highlights, for visible and always-visible objectives
 		DrawTiles(b, offset, DrawObjectiveHighlights);
@@ -190,10 +190,7 @@ void DrawBufferDraw(DrawBuffer *b, struct vec2i offset, GrafxDrawExtra *extra)
 		DrawTiles(b, offset, DrawChatters);
 	}
 	// Draw editor-only things
-	if (extra)
-	{
-		DrawExtra(b, offset, extra);
-	}
+	DrawExtra(b, offset, args);
 }
 
 static void DrawFloor(
@@ -457,17 +454,20 @@ static void DrawGuideImage(
 	const DrawBuffer *b, const Pic *guideImage, const uint8_t alpha);
 static void DrawObjectNames(DrawBuffer *b, const struct vec2i offset);
 static void DrawExtra(
-	DrawBuffer *b, struct vec2i offset, GrafxDrawExtra *extra)
+	DrawBuffer *b, struct vec2i offset, const DrawBufferArgs *args)
 {
 	// Draw guide image
-	if (!PicIsNone(extra->guideImage) && extra->guideImageAlpha > 0)
+	if (args->GuideImage && !PicIsNone(args->GuideImage) && args->GuideImageAlpha > 0)
 	{
-		DrawGuideImage(b, extra->guideImage, extra->guideImageAlpha);
+		DrawGuideImage(b, args->GuideImage, args->GuideImageAlpha);
 	}
-	// Draw pickups, in case they are obscured by walls
-	DrawPickups(b, &gMap, offset);
-	DrawEditorTiles(b, &gMap, offset);
-	DrawObjectNames(b, offset);
+	if (args->Editor)
+	{
+		// Draw pickups, in case they are obscured by walls
+		DrawPickups(b, &gMap, offset);
+		DrawEditorTiles(b, &gMap, offset);
+		DrawObjectNames(b, offset);
+	}
 }
 
 static void DrawPickups(

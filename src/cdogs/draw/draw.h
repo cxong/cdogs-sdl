@@ -48,10 +48,9 @@
 */
 #pragma once
 
-#include "draw/draw_buffer.h"
 #include "gamedata.h"
 #include "grafx_bg.h"
 
 #define WALL_OFFSET_Y (-12)
 
-void DrawBufferDraw(DrawBuffer *b, struct vec2i offset, GrafxDrawExtra *extra);
+void DrawBufferDraw(DrawBuffer *b, struct vec2i offset, const DrawBufferArgs *args);

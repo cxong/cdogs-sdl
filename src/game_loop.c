@@ -177,7 +177,6 @@ void LoopRunnerTerminate(LoopRunner *l)
 
 static void GameLoopOnEnter(GameLoopData *data);
 static void GameLoopOnExit(GameLoopData *data);
-
 typedef struct
 {
 	GameLoopResult Result;

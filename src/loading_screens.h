@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2014, 2016-2017, 2020, 2022 Cong Xu
+	Copyright (c) 2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -27,23 +27,23 @@
 */
 #pragma once
 
-#include "campaigns.h"
-#include "draw/draw_buffer.h"
-#include "grafx.h"
+#include <cdogs/draw/draw_buffer.h>
+#include <cdogs/grafx.h>
+#include <cdogs/map.h>
+#include <cdogs/pic.h>
 
 typedef struct
 {
-	bool Editor;
-	const Pic *GuideImage;
-	uint8_t GuideImageAlpha;
-	bool HUD;
-} DrawBufferArgs;
+	const Pic *logo;
+	GraphicsDevice *g;
+	Map m;
+	DrawBuffer db;
+} LoadingScreen;
 
-void GrafxDrawBackground(
-	GraphicsDevice *g, DrawBuffer *buffer, const HSV tint,
-	const struct vec2 pos, const DrawBufferArgs *args);
-void GrafxRedrawBackground(GraphicsDevice *g, const struct vec2 pos);
-void GrafxMakeBackground(
-	GraphicsDevice *device, DrawBuffer *buffer, Campaign *co,
-	struct MissionOptions *mo, Map *map, HSV tint, const bool isEditor,
-	struct vec2 pos, const DrawBufferArgs *args);
+extern LoadingScreen gLoadingScreen;
+
+void LoadingScreenInit(LoadingScreen *l, GraphicsDevice *g);
+void LoadingScreenTerminate(LoadingScreen *l);
+
+void LoadingScreenReload(LoadingScreen *l);
+void LoadingScreenDraw(LoadingScreen *l, const char *loadingText);

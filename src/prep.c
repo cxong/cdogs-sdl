@@ -75,35 +75,10 @@
 
 #include "briefing_screens.h"
 #include "game.h"
+#include "loading_screens.h"
 #include "namegen.h"
 #include "password.h"
 #include "player_select_menus.h"
-
-void DrawGameLoadingScreen(GraphicsDevice *g, const char *loadingText)
-{
-	WindowContextPreRender(&g->gameWindow);
-
-	const Pic *logo = PicManagerGetPic(&gPicManager, "logo");
-	if (logo)
-	{
-		const struct vec2i pos = svec2i(
-			CENTER_X(svec2i_zero(), g->cachedConfig.Res, logo->size.x),
-			CENTER_Y(
-				svec2i_zero(), svec2i_scale_divide(g->cachedConfig.Res, 2),
-				logo->size.y));
-		PicRender(
-			logo, g->gameWindow.renderer, pos, colorWhite, 0, svec2_one(),
-			SDL_FLIP_NONE, Rect2iZero());
-	}
-
-	FontOpts opts = FontOptsNew();
-	opts.HAlign = ALIGN_CENTER;
-	opts.VAlign = ALIGN_CENTER;
-	opts.Area = svec2i(g->cachedConfig.Res.x, g->cachedConfig.Res.y / 2);
-	FontStrOpt(loadingText, svec2i(0, g->cachedConfig.Res.y / 2), opts);
-
-	WindowContextPostRender(&g->gameWindow);
-}
 
 typedef struct
 {
@@ -233,7 +208,7 @@ static void NumPlayersTerminate(GameLoopData *data)
 static void NumPlayersOnEnter(GameLoopData *data)
 {
 	UNUSED(data);
-	DrawGameLoadingScreen(&gGraphicsDevice, "Loading...");
+	LoadingScreenDraw(&gLoadingScreen, "Loading...");
 	MusicPlayFromChunk(
 		&gSoundDevice.music, MUSIC_BRIEFING,
 		&gCampaign.Setting.CustomSongs[MUSIC_BRIEFING]);

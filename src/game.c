@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2021 Cong Xu
+	Copyright (c) 2013-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -70,6 +70,7 @@
 
 #include "briefing_screens.h"
 #include "hiscores.h"
+#include "loading_screens.h"
 #include "prep.h"
 #include "screens_end.h"
 
@@ -143,13 +144,14 @@ static void RunGameTerminate(GameLoopData *data)
 }
 static void RunGameOnEnter(GameLoopData *data)
 {
-	DrawGameLoadingScreen(&gGraphicsDevice, "Starting game...");
+	LoadingScreenDraw(&gLoadingScreen, "Starting game...");
 
 	RunGameData *rData = data->Data;
 
 	RunGameReset(rData);
 
-	MapBuild(rData->map, rData->m->missionData, rData->co, rData->m->index);
+	CampaignSeedRandom(rData->co);
+	MapBuild(rData->map, rData->m->missionData, !rData->co->IsClient, rData->m->index, rData->co->Entry.Mode, &rData->co->Setting.characters);
 
 	// Seed random if PVP mode (otherwise players will always spawn in same
 	// position)
@@ -257,6 +259,8 @@ static void RunGameOnExit(GameLoopData *data)
 	RunGameData *rData = data->Data;
 
 	LOG(LM_MAIN, LL_INFO, "Game finished");
+
+	LoadingScreenDraw(&gLoadingScreen, "Debriefing...");
 
 	// Flush events
 	HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);

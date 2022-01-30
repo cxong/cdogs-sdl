@@ -26,6 +26,7 @@ set(CDOGS_SDL_SOURCES
 	game.c
 	game_loop.c
 	hiscores.c
+	loading_screens.c
 	mainmenu.c
 	menu.c
 	menu_utils.c
@@ -45,6 +46,7 @@ set(CDOGS_SDL_HEADERS
 	game.h
 	game_loop.h
 	hiscores.h
+	loading_screens.h
 	mainmenu.h
 	menu.h
 	menu_utils.h

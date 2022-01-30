@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2015, 2017-2021 Cong Xu
+	Copyright (c) 2013-2015, 2017-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -48,7 +48,7 @@
 */
 #pragma once
 
-#include "campaigns.h"
+#include "game_mode.h"
 #include "map.h"
 #include "mission.h"
 
@@ -56,7 +56,8 @@ typedef struct
 {
 	Map *Map;
 	const Mission *mission;
-	const Campaign *co;
+	GameMode mode;
+	const CharacterStore *characters;
 
 	// internal data structures to help build the map
 	CArray access;	  // of uint16_t
@@ -65,10 +66,9 @@ typedef struct
 } MapBuilder;
 
 void MapBuild(
-	Map *m, const Mission *mission, const Campaign *co,
-	const int missionIndex);
+	Map *m, const Mission *mission, const bool loadDynamic, const int missionIndex, const GameMode mode, const CharacterStore *characters);
 void MapBuilderInit(
-	MapBuilder *mb, Map *m, const Mission *mission, const Campaign *co);
+	MapBuilder *mb, Map *m, const Mission *mission, const GameMode mode, const CharacterStore *characters);
 void MapBuilderTerminate(MapBuilder *mb);
 
 void MapLoadDynamic(MapBuilder *mb);
@@ -139,6 +139,6 @@ void MapBuildTile(
 
 uint16_t GenerateAccessMask(int *accessLevel);
 
-void SetupWallTileClasses(PicManager *pm, const TileClass *base);
-void SetupFloorTileClasses(PicManager *pm, const TileClass *base);
-void SetupDoorTileClasses(PicManager *pm, const TileClass *base);
+void SetupWallTileClasses(Map *m, PicManager *pm, const TileClass *base);
+void SetupFloorTileClasses(Map *m, PicManager *pm, const TileClass *base);
+void SetupDoorTileClasses(Map *m, PicManager *pm, const TileClass *base);

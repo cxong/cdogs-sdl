@@ -418,7 +418,10 @@ static void DoBuffer(
 	{
 		DrawBufferFix(b);
 	}
-	DrawBufferDraw(b, offset, NULL);
+	DrawBufferArgs args;
+	memset(&args, 0, sizeof args);
+	args.HUD = ConfigGetBool(&gConfig, "Graphics.ShowHUD");
+	DrawBufferDraw(b, offset, &args);
 }
 
 void CameraDrawMode(const Camera *camera)

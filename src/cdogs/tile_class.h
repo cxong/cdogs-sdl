@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2018-2021 Cong Xu
+	Copyright (c) 2018-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -72,12 +72,6 @@ typedef struct
 	char *DamageBullet;
 } TileClass;
 
-typedef struct
-{
-	map_t classes;	// of TileClass *
-	map_t customClasses;	// of TileClass *
-} TileClasses;
-extern TileClasses gTileClasses;
 extern TileClass gTileFloor;
 extern TileClass gTileRoom;
 extern TileClass gTileWall;
@@ -85,9 +79,8 @@ extern TileClass gTileNothing;
 extern TileClass gTileExit;
 extern TileClass gTileDoor;
 
-void TileClassesInit(TileClasses *c);
-void TileClassesClearCustom(TileClasses *c);
-void TileClassesTerminate(TileClasses *c);
+map_t TileClassesNew(void);
+void TileClassesTerminate(map_t c);
 void TileClassDestroy(any_t data);
 void TileClassTerminate(TileClass *tc);
 void TileClassLoadJSON(TileClass *tc, json_t *node);
@@ -103,12 +96,12 @@ void TileClassInitDefault(
 void TileClassReloadPic(TileClass *t, PicManager *pm);
 const char *TileClassBaseStyleType(const TileClassType type);
 void TileClassCopy(TileClass *dst, const TileClass *src);
-const TileClass *StrTileClass(const char *name);
+const TileClass *StrTileClass(map_t c, const char *name);
 const TileClass *TileClassesGetMaskedTile(
-	const TileClass *baseClass, const char *style, const char *type,
+	map_t c, const TileClass *baseClass, const char *style, const char *type,
 	const color_t mask, const color_t maskAlt);
 TileClass *TileClassesAdd(
-	TileClasses *c, PicManager *pm, const TileClass *baseClass,
+	map_t c, PicManager *pm, const TileClass *baseClass,
 	const char *style, const char *type,
 	const color_t mask, const color_t maskAlt);
 const Pic *TileClassGetPic(const PicManager *pm, const TileClass *tc);
@@ -117,4 +110,4 @@ void TileClassGetName(
 	const color_t mask, const color_t maskAlt);
 void TileClassGetBaseName(char *buf, const TileClass *tc);
 const TileClass *TileClassesGetExit(
-	TileClasses *c, PicManager *pm,	const char *style, const bool isShadow);
+	map_t c, PicManager *pm, const char *style, const bool isShadow);

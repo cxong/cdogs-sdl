@@ -42,7 +42,7 @@ void MapStaticLoad(MapBuilder *mb)
 {
 	// Tile classes
 	if (hashmap_iterate(
-			mb->mission->u.Static.TileClasses, AddTileClass, NULL) != MAP_OK)
+			mb->mission->u.Static.TileClasses, AddTileClass, mb->Map) != MAP_OK)
 	{
 		CASSERT(false, "failed to add static tile classes");
 	}
@@ -59,23 +59,23 @@ void MapStaticLoad(MapBuilder *mb)
 }
 static int AddTileClass(any_t data, any_t item)
 {
-	UNUSED(data);
+	Map *m = data;
 	TileClass *t = item;
 	// Attach base style to tile class for convenience in editors etc
 	CSTRDUP(t->StyleType, TileClassBaseStyleType(t->Type));
 	TileClassesAdd(
-		&gTileClasses, &gPicManager, t, t->Style, t->StyleType, t->Mask,
+		m->TileClasses, &gPicManager, t, t->Style, t->StyleType, t->Mask,
 		t->MaskAlt);
 	switch (t->Type)
 	{
 	case TILE_CLASS_DOOR:
-		SetupDoorTileClasses(&gPicManager, t);
+		SetupDoorTileClasses(m, &gPicManager, t);
 		break;
 	case TILE_CLASS_WALL:
-		SetupWallTileClasses(&gPicManager, t);
+		SetupWallTileClasses(m, &gPicManager, t);
 		break;
 	case TILE_CLASS_FLOOR:
-		SetupFloorTileClasses(&gPicManager, t);
+		SetupFloorTileClasses(m, &gPicManager, t);
 		break;
 	default:
 		break;
@@ -90,7 +90,7 @@ void MapStaticLoadTile(MapBuilder *mb, const struct vec2i v)
 	const int idx = v.y * mb->Map->Size.x + v.x;
 	uint16_t tileAccess =
 		*(uint16_t *)CArrayGet(&mb->mission->u.Static.Access, idx);
-	if (!AreKeysAllowed(gCampaign.Entry.Mode))
+	if (!AreKeysAllowed(mb->mode))
 	{
 		tileAccess = 0;
 	}
@@ -100,7 +100,7 @@ void MapStaticLoadTile(MapBuilder *mb, const struct vec2i v)
 	MapBuildSetAccess(mb, v, tileAccess);
 }
 
-static void AddCharacters(const CArray *characters);
+static void AddCharacters(const MapBuilder *mb, const CArray *characters);
 static void AddObjectives(MapBuilder *mb, const CArray *objectives);
 static void AddKeys(MapBuilder *mb, const CArray *keys);
 static void AddPickups(const CArray *pickups);
@@ -115,17 +115,17 @@ void MapStaticLoadDynamic(MapBuilder *mb)
 	}
 	CA_FOREACH_END()
 
-	if (ModeHasNPCs(gCampaign.Entry.Mode))
+	if (ModeHasNPCs(mb->mode))
 	{
-		AddCharacters(&mb->mission->u.Static.Characters);
+		AddCharacters(mb, &mb->mission->u.Static.Characters);
 	}
 
-	if (HasObjectives(gCampaign.Entry.Mode))
+	if (HasObjectives(mb->mode))
 	{
 		AddObjectives(mb, &mb->mission->u.Static.Objectives);
 	}
 
-	if (AreKeysAllowed(gCampaign.Entry.Mode))
+	if (AreKeysAllowed(mb->mode))
 	{
 		AddKeys(mb, &mb->mission->u.Static.Keys);
 	}
@@ -135,17 +135,18 @@ void MapStaticLoadDynamic(MapBuilder *mb)
 	// Process the events to place dynamic objects
 	HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
 }
-static void AddCharacter(const CharacterPlaces *cps);
-static void AddCharacters(const CArray *characters)
+static void AddCharacter(const MapBuilder *mb, const CharacterPlaces *cps);
+static void AddCharacters(const MapBuilder *mb, const CArray *characters)
 {
 	CA_FOREACH(const CharacterPlaces, cps, *characters)
-	AddCharacter(cps);
+	AddCharacter(mb, cps);
 	CA_FOREACH_END()
 }
-static void AddCharacter(const CharacterPlaces *cps)
+static void AddCharacter(const MapBuilder *mb, const CharacterPlaces *cps)
 {
+	CASSERT(mb->characters != NULL, "cannot add characters");
 	const Character *c = CArrayGet(
-		&gCampaign.Setting.characters.OtherChars, cps->Index);
+		&mb->characters->OtherChars, cps->Index);
 	CA_FOREACH(const CharacterPlace, cp, cps->Places)
 	GameEvent e = GameEventNewActorAdd(Vec2CenterOfTile(cp->Pos), c, true);
 	e.u.ActorAdd.CharId = cps->Index;
@@ -180,9 +181,10 @@ static void AddObjective(MapBuilder *mb, const ObjectivePositions *op)
 	switch (o->Type)
 	{
 	case OBJECTIVE_KILL: {
-		const int charId = CharacterStoreGetSpecialId(&mb->co->Setting.characters, pi->Index);
+		CASSERT(mb->characters != NULL, "cannot add kill objective");
+		const int charId = CharacterStoreGetSpecialId(mb->characters, pi->Index);
 		const Character *c = CArrayGet(
-			&gCampaign.Setting.characters.OtherChars, charId);
+			&mb->characters->OtherChars, charId);
 		GameEvent e = GameEventNewActorAdd(pos, c, true);
 		e.u.ActorAdd.CharId = charId;
 		e.u.ActorAdd.ThingFlags = ObjectiveToThing(op->Index);
@@ -198,10 +200,11 @@ static void AddObjective(MapBuilder *mb, const ObjectivePositions *op)
 			false);
 		break;
 	case OBJECTIVE_RESCUE: {
+		CASSERT(mb->characters != NULL, "cannot add rescue objective");
 		const int charId = CharacterStoreGetPrisonerId(
-			&mb->co->Setting.characters, pi->Index);
+			mb->characters, pi->Index);
 		const Character *c = CArrayGet(
-			&gCampaign.Setting.characters.OtherChars, charId);
+			&mb->characters->OtherChars, charId);
 		GameEvent e = GameEventNewActorAdd(pos, c, true);
 		e.u.ActorAdd.CharId = charId;
 		e.u.ActorAdd.ThingFlags = ObjectiveToThing(op->Index);

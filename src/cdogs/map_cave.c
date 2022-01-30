@@ -39,7 +39,7 @@ static void PlaceRooms(MapBuilder *mb);
 void MapCaveLoad(MapBuilder *mb)
 {
 	// TODO: multiple tile types
-	MissionSetupTileClasses(&gPicManager, &mb->mission->u.Cave.TileClasses);
+	MissionSetupTileClasses(mb->Map, &gPicManager, &mb->mission->u.Cave.TileClasses);
 
 	// Randomly set a percentage of the tiles as walls
 	for (int i = 0; i < mb->mission->u.Cave.FillPercent * mb->Map->Size.x *
@@ -464,7 +464,7 @@ static void PlaceRooms(MapBuilder *mb)
 			room.Size.x, room.Size.y);
 	}
 	// Set keys for rooms
-	if (AreKeysAllowed(gCampaign.Entry.Mode) &&
+	if (AreKeysAllowed(mb->mode) &&
 		mb->mission->u.Cave.DoorsEnabled)
 	{
 		while (rooms.size > 0)

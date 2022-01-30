@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2018-2021 Cong Xu
+	Copyright (c) 2018-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,6 @@
 #include "sys_config.h"
 
 
-TileClasses gTileClasses;
 TileClass gTileFloor = {
 	"tile", NULL, NULL, NULL, { 255, 255, 255, 255 }, { 255, 255, 255, 255 },
 	true, false, false, false, TILE_CLASS_FLOOR, NULL,
@@ -80,20 +79,13 @@ TileClassType StrTileClassType(const char *s)
 	return TILE_CLASS_NOTHING;
 }
 
-void TileClassesInit(TileClasses *c)
+map_t TileClassesNew(void)
 {
-	c->classes = hashmap_new();
-	c->customClasses = hashmap_new();
+	return hashmap_new();
 }
-void TileClassesClearCustom(TileClasses *c)
+void TileClassesTerminate(map_t c)
 {
-	TileClassesTerminate(c);
-	TileClassesInit(c);
-}
-void TileClassesTerminate(TileClasses *c)
-{
-	hashmap_destroy(c->classes, TileClassDestroy);
-	hashmap_destroy(c->customClasses, TileClassDestroy);
+	hashmap_destroy(c, TileClassDestroy);
 }
 void TileClassDestroy(any_t data)
 {
@@ -167,7 +159,7 @@ void TileClassCopy(TileClass *dst, const TileClass *src)
 	if (src->StyleType) CSTRDUP(dst->StyleType, TileClassBaseStyleType(src->Type));
 	if (src->DamageBullet) CSTRDUP(dst->DamageBullet, src->DamageBullet);
 }
-const TileClass *StrTileClass(const char *name)
+const TileClass *StrTileClass(map_t c, const char *name)
 {
 	if (name == NULL || strlen(name) == 0)
 	{
@@ -175,12 +167,7 @@ const TileClass *StrTileClass(const char *name)
 	}
 	LOG(LM_MAIN, LL_TRACE, "get tile class %s", name);
 	TileClass *t;
-	int error = hashmap_get(gTileClasses.customClasses, name, (any_t *)&t);
-	if (error == MAP_OK)
-	{
-		return t;
-	}
-	error = hashmap_get(gTileClasses.classes, name, (any_t *)&t);
+	const int error = hashmap_get(c, name, (any_t *)&t);
 	if (error == MAP_OK)
 	{
 		return t;
@@ -256,15 +243,15 @@ void TileClassReloadPic(TileClass *t, PicManager *pm)
 	}
 }
 const TileClass *TileClassesGetMaskedTile(
-	const TileClass *baseClass, const char *style, const char *type,
+	map_t c, const TileClass *baseClass, const char *style, const char *type,
 	const color_t mask, const color_t maskAlt)
 {
 	char buf[256];
 	TileClassGetName(buf, baseClass, style, type, mask, maskAlt);
-	return StrTileClass(buf);
+	return StrTileClass(c, buf);
 }
 TileClass *TileClassesAdd(
-	TileClasses *c, PicManager *pm, const TileClass *baseClass,
+	map_t c, PicManager *pm, const TileClass *baseClass,
 	const char *style, const char *type,
 	const color_t mask, const color_t maskAlt)
 {
@@ -274,7 +261,7 @@ TileClass *TileClassesAdd(
 
 	char buf[CDOGS_PATH_MAX];
 	TileClassGetName(buf, t, style, type, mask, maskAlt);
-	const int error = hashmap_put(c->customClasses, buf, t);
+	const int error = hashmap_put(c, buf, t);
 	if (error != MAP_OK)
 	{
 		LOG(LM_MAIN, LL_ERROR, "failed to add tile class %s: %d", buf, error);
@@ -318,12 +305,12 @@ const Pic *TileClassGetPic(const PicManager *pm, const TileClass *tc)
 }
 
 const TileClass *TileClassesGetExit(
-	TileClasses *c, PicManager *pm, const char *style, const bool isShadow)
+	map_t c, PicManager *pm, const char *style, const bool isShadow)
 {
 	char buf[256];
 	const char *type = isShadow ? "shadow" : "normal";
 	TileClassGetName(buf, &gTileExit, style, type, colorWhite, colorWhite);
-	const TileClass *t = StrTileClass(buf);
+	const TileClass *t = StrTileClass(c, buf);
 	if (t != &gTileNothing)
 	{
 		return t;

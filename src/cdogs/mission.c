@@ -357,12 +357,12 @@ void SetupMission(Mission *m, struct MissionOptions *mo, int missionIndex)
 	SetupBadguysForMission(m);
 	SetupWeapons(&mo->Weapons, &m->Weapons);
 }
-void MissionSetupTileClasses(PicManager *pm, const MissionTileClasses *mtc)
+void MissionSetupTileClasses(Map *m, PicManager *pm, const MissionTileClasses *mtc)
 {
-	SetupWallTileClasses(pm, &mtc->Wall);
-	SetupFloorTileClasses(pm, &mtc->Floor);
-	SetupFloorTileClasses(pm, &mtc->Room);
-	SetupDoorTileClasses(pm, &mtc->Door);
+	SetupWallTileClasses(m, pm, &mtc->Wall);
+	SetupFloorTileClasses(m, pm, &mtc->Floor);
+	SetupFloorTileClasses(m, pm, &mtc->Room);
+	SetupDoorTileClasses(m, pm, &mtc->Door);
 }
 void MissionTileClassesInitDefault(MissionTileClasses *mtc)
 {

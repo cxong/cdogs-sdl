@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, 2018-2019 Cong Xu
+    Copyright (c) 2013-2014, 2018-2019, 2022 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -58,12 +58,7 @@
 void DrawBufferInit(DrawBuffer *b, struct vec2i size, GraphicsDevice *g)
 {
 	b->OrigSize = size;
-	CArrayInit(&b->tiles, sizeof(Tile *));
-	for (int i = 0; i < size.x * size.y; i++)
-	{
-		const Tile *t = NULL;
-		CArrayPushBack(&b->tiles, &t);
-	}
+	CArrayInitFillZero(&b->tiles, sizeof(Tile *), size.x * size.y);
 	b->g = g;
 	CArrayInit(&b->displaylist, sizeof(const Thing *));
 	CArrayReserve(&b->displaylist, 32);

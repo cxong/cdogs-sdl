@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2013-2021 Cong Xu
+	Copyright (c) 2013-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -47,6 +47,7 @@
 #include "autosave.h"
 #include "briefing_screens.h"
 #include "game.h"
+#include "loading_screens.h"
 #include "menu.h"
 #include "prep.h"
 
@@ -100,7 +101,7 @@ static void GenerateLiveBackground(MainMenuData *data)
 	GameEventsInit(&gGameEvents);
 	gCampaign.MissionIndex = 0;
 
-	MapBuild(&gMap, gMission.missionData, &gCampaign, gMission.index);
+	MapBuild(&gMap, gMission.missionData, true, gMission.index, GAME_MODE_NORMAL, &gCampaign.Setting.characters);
 
 	// Add AI player
 	GameEvent e = GameEventNew(GAME_EVENT_PLAYER_DATA);
@@ -243,8 +244,10 @@ static void MainMenuDraw(GameLoopData *data)
 	MenuDraw(&mData->ms);
 	const struct vec2 pos =
 		Vec2CenterOfTile(svec2i_scale_divide(gMap.Size, 2));
+	DrawBufferArgs args;
+	memset(&args, 0, sizeof args);
 	GrafxDrawBackground(
-		mData->graphics, &mData->buffer, mData->bgTint, pos, NULL);
+		mData->graphics, &mData->buffer, mData->bgTint, pos, &args);
 }
 
 static menu_t *MenuCreateStart(
@@ -351,7 +354,8 @@ static menu_t *CreateStartGameMode(
 }
 static void StartGameMode(menu_t *menu, void *data)
 {
-	DrawGameLoadingScreen(&gGraphicsDevice, "Loading game...");
+	LoadingScreenReload(&gLoadingScreen);
+	LoadingScreenDraw(&gLoadingScreen, "Loading game...");
 	UNUSED(menu);
 	StartGameModeData *mData = data;
 	gCampaign.Entry.Mode = mData->GameMode;

@@ -106,7 +106,7 @@ static int FloorStyleIndex(const char *style);
 static int WallStyleIndex(const char *style);
 static int DoorStyleIndex(const char *style);
 static const TileClass *GetOrAddTileClass(
-	const TileClass *base, PicManager *pm, const char *style,
+	map_t c, const TileClass *base, PicManager *pm, const char *style,
 	const color_t mask, const color_t maskAlt);
 static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data);
 EditorResult TileBrush(
@@ -150,21 +150,21 @@ EditorResult TileBrush(
 	CA_FOREACH(const GLuint, texid, data.texIdsFloorStyles)
 	const char *style = *(char **)CArrayGet(&pm->tileStyleNames, _ca_index);
 	const TileClass *styleClass = GetOrAddTileClass(
-		&gTileFloor, pm, style, colorBattleshipGrey, colorOfficeGreen);
+		gMap.TileClasses, &gTileFloor, pm, style, colorBattleshipGrey, colorOfficeGreen);
 	LoadTexFromPic(*texid, styleClass->Pic);
 	CA_FOREACH_END()
 	TexArrayInit(&data.texIdsWallStyles, pm->wallStyleNames.size);
 	CA_FOREACH(const GLuint, texid, data.texIdsWallStyles)
 	const char *style = *(char **)CArrayGet(&pm->wallStyleNames, _ca_index);
 	const TileClass *styleClass = GetOrAddTileClass(
-		&gTileWall, pm, style, colorGravel, colorOfficeGreen);
+		gMap.TileClasses, &gTileWall, pm, style, colorGravel, colorOfficeGreen);
 	LoadTexFromPic(*texid, styleClass->Pic);
 	CA_FOREACH_END()
 	TexArrayInit(&data.texIdsDoorStyles, pm->doorStyleNames.size);
 	CA_FOREACH(const GLuint, texid, data.texIdsDoorStyles)
 	const char *style = *(char **)CArrayGet(&pm->doorStyleNames, _ca_index);
 	const TileClass *styleClass =
-		GetOrAddTileClass(&gTileDoor, pm, style, colorWhite, colorOfficeGreen);
+		GetOrAddTileClass(gMap.TileClasses, &gTileDoor, pm, style, colorWhite, colorOfficeGreen);
 	LoadTexFromPic(*texid, styleClass->Pic);
 	CA_FOREACH_END()
 
@@ -568,15 +568,15 @@ static int DoorStyleIndex(const char *style)
 }
 
 static const TileClass *GetOrAddTileClass(
-	const TileClass *base, PicManager *pm, const char *style,
+	map_t c, const TileClass *base, PicManager *pm, const char *style,
 	const color_t mask, const color_t maskAlt)
 {
 	const TileClass *styleClass = TileClassesGetMaskedTile(
-		base, style, TileClassBaseStyleType(base->Type), mask, maskAlt);
+		c, base, style, TileClassBaseStyleType(base->Type), mask, maskAlt);
 	if (styleClass == &gTileNothing)
 	{
 		styleClass = TileClassesAdd(
-			&gTileClasses, pm, base, style, TileClassBaseStyleType(base->Type),
+			c, pm, base, style, TileClassBaseStyleType(base->Type),
 			mask, maskAlt);
 	}
 	return styleClass;

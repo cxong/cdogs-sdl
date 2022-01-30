@@ -272,9 +272,9 @@ void MapShowExitArea(Map *map, const int i)
 	const int bottom = top + exit->R.Size.y;
 
 	const TileClass *exitClass = TileClassesGetExit(
-		&gTileClasses, &gPicManager, gMission.missionData->ExitStyle, false);
+		map->TileClasses, &gPicManager, gMission.missionData->ExitStyle, false);
 	const TileClass *exitShadowClass = TileClassesGetExit(
-		&gTileClasses, &gPicManager, gMission.missionData->ExitStyle, true);
+		map->TileClasses, &gPicManager, gMission.missionData->ExitStyle, true);
 
 	struct vec2i v;
 	v.y = top;
@@ -478,6 +478,7 @@ void MapTerminate(Map *map)
 		}
 	}
 	CArrayTerminate(&map->Tiles);
+	TileClassesTerminate(map->TileClasses);
 	LOSTerminate(&map->LOS);
 	CArrayTerminate(&map->access);
 	PathCacheTerminate(&gPathCache);
@@ -489,6 +490,7 @@ void MapInit(Map *map, const struct vec2i size)
 
 	// Init map
 	memset(map, 0, sizeof *map);
+	map->TileClasses = TileClassesNew();
 	CArrayInit(&map->Tiles, sizeof(Tile));
 	map->Size = size;
 	LOSInit(map);
