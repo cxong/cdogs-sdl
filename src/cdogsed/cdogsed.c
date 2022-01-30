@@ -162,7 +162,7 @@ static void MakeBackground(const bool changedMission)
 	DrawBufferInit(&sDrawBuffer, svec2i(X_TILES, Y_TILES), ec.g);
 	GrafxMakeBackground(
 		ec.g, &sDrawBuffer, &gCampaign, &gMission, &gMap, tintNone, true,
-		ec.camera, &extra);
+		ec.camera, &args);
 }
 
 // Returns whether a redraw is required
@@ -1354,7 +1354,6 @@ int main(int argc, char *argv[])
 	DrawBufferTerminate(&sDrawBuffer);
 	GraphicsTerminate(ec.g);
 	CharSpriteClassesTerminate(&gCharSpriteClasses);
-	TileClassesTerminate(&gTileClasses);
 	PicManagerTerminate(&gPicManager);
 	FontTerminate(&gFont);
 	PlayerTemplatesTerminate(&gPlayerTemplates);

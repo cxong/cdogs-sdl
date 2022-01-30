@@ -227,7 +227,7 @@ static void EditorBrushPaintTilesAt(void *data, struct vec2i pos)
 	EditorBrush *b = paintData->brush;
 	Mission *m = paintData->mission;
 	MapBuilder mb;
-	MapBuilderInit(&mb, &gMap, m, NULL, GAME_MODE_NORMAL, NULL);
+	MapBuilderInit(&mb, &gMap, m, GAME_MODE_NORMAL, NULL);
 	for (v.y = 0; v.y < b->BrushSize; v.y++)
 	{
 		for (v.x = 0; v.x < b->BrushSize; v.x++)
@@ -323,7 +323,7 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 			data.Fill = MissionFillTile;
 			data.IsSame = MissionIsTileSame;
 			PaintFloodFillData pData;
-			MapBuilderInit(&pData.mb, &gMap, m, NULL, GAME_MODE_NORMAL, NULL);
+			MapBuilderInit(&pData.mb, &gMap, m, GAME_MODE_NORMAL, NULL);
 			pData.m = m;
 			pData.fromType = tile;
 			pData.toType = b->PaintType;
