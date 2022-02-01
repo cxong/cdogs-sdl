@@ -86,7 +86,7 @@ static void LazyLoad(LoadingScreen *l, const float showPct)
 	{
 		// Show a random percent of tiles
 		l->showPct = showPct;
-		if (mapSize.x * mapSize.y != l->tileIndices.size)
+		if (mapSize.x * mapSize.y != (int)l->tileIndices.size)
 		{
 			CArrayTerminate(&l->tileIndices);
 			CArrayInit(&l->tileIndices, sizeof(int));
