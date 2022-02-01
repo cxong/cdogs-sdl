@@ -37,6 +37,8 @@ typedef struct
 	const Pic *logo;
 	GraphicsDevice *g;
 	Map m;
+	float showPct;
+	CArray tileIndices;
 	DrawBuffer db;
 } LoadingScreen;
 
@@ -46,4 +48,5 @@ void LoadingScreenInit(LoadingScreen *l, GraphicsDevice *g);
 void LoadingScreenTerminate(LoadingScreen *l);
 
 void LoadingScreenReload(LoadingScreen *l);
-void LoadingScreenDraw(LoadingScreen *l, const char *loadingText);
+void LoadingScreenDraw(
+	LoadingScreen *l, const char *loadingText, const float showPct);

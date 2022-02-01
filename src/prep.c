@@ -208,7 +208,7 @@ static void NumPlayersTerminate(GameLoopData *data)
 static void NumPlayersOnEnter(GameLoopData *data)
 {
 	UNUSED(data);
-	LoadingScreenDraw(&gLoadingScreen, "Loading...");
+	LoadingScreenDraw(&gLoadingScreen, "Loading...", 1.0f);
 	MusicPlayFromChunk(
 		&gSoundDevice.music, MUSIC_BRIEFING,
 		&gCampaign.Setting.CustomSongs[MUSIC_BRIEFING]);

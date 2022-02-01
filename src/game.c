@@ -144,7 +144,7 @@ static void RunGameTerminate(GameLoopData *data)
 }
 static void RunGameOnEnter(GameLoopData *data)
 {
-	LoadingScreenDraw(&gLoadingScreen, "Starting game...");
+	LoadingScreenDraw(&gLoadingScreen, "Starting game...", 1.0f);
 
 	RunGameData *rData = data->Data;
 
@@ -260,7 +260,7 @@ static void RunGameOnExit(GameLoopData *data)
 
 	LOG(LM_MAIN, LL_INFO, "Game finished");
 
-	LoadingScreenDraw(&gLoadingScreen, "Debriefing...");
+	LoadingScreenDraw(&gLoadingScreen, "Debriefing...", 1.0f);
 
 	// Flush events
 	HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);

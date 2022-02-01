@@ -184,20 +184,20 @@ int main(int argc, char *argv[])
 	}
 	FontLoadFromJSON(&gFont, "graphics/font.png", "graphics/font.json");
 	LoadingScreenInit(&gLoadingScreen, &gGraphicsDevice);
-	LoadingScreenDraw(&gLoadingScreen, "Loading graphics...");
+	LoadingScreenDraw(&gLoadingScreen, "Loading graphics...", 0.0f);
 	PicManagerLoad(&gPicManager);
 
 	GetDataFilePath(buf, "");
 	LOG(LM_MAIN, LL_INFO, "data dir(%s)", buf);
 	LOG(LM_MAIN, LL_INFO, "config dir(%s)", GetConfigFilePath(""));
 
-	LoadingScreenDraw(&gLoadingScreen, "Loading autosaves...");
+	LoadingScreenDraw(&gLoadingScreen, "Loading autosaves...", 0.09f);
 	AutosaveInit(&gAutosave);
 #ifndef __EMSCRIPTEN__
 	AutosaveLoad(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 #endif
 
-	LoadingScreenDraw(&gLoadingScreen, "Initializing network client...");
+	LoadingScreenDraw(&gLoadingScreen, "Initializing network client...", 0.18f);
 #ifndef __EMSCRIPTEN__
 	if (enet_initialize() != 0)
 	{
@@ -208,7 +208,7 @@ int main(int argc, char *argv[])
 	NetClientInit(&gNetClient);
 #endif
 
-	LoadingScreenDraw(&gLoadingScreen, "Initializing sound device...");
+	LoadingScreenDraw(&gLoadingScreen, "Initializing sound device...", 0.25f);
 	SoundInitialize(&gSoundDevice, "sounds");
 	if (!gSoundDevice.isInitialised)
 	{
@@ -218,35 +218,35 @@ int main(int argc, char *argv[])
 	EventInit(&gEventHandlers);
     gEventHandlers.DemoQuitTimer = demoQuitTimer;
 	NetServerInit(&gNetServer);
-	LoadingScreenDraw(&gLoadingScreen, "Loading character sprites...");
+	LoadingScreenDraw(&gLoadingScreen, "Loading character sprites...", 0.34f);
 	CharSpriteClassesInit(&gCharSpriteClasses);
 
-	LoadingScreenDraw(&gLoadingScreen, "Loading particles...");
+	LoadingScreenDraw(&gLoadingScreen, "Loading particles...", 0.42f);
 	ParticleClassesInit(&gParticleClasses, "data/particles.json");
-	LoadingScreenDraw(&gLoadingScreen, "Loading ammo...");
+	LoadingScreenDraw(&gLoadingScreen, "Loading ammo...", 0.5f);
 	AmmoInitialize(&gAmmo, "data/ammo.json");
-	LoadingScreenDraw(&gLoadingScreen, "Loading bullets and weapons...");
+	LoadingScreenDraw(&gLoadingScreen, "Loading bullets and weapons...", 0.58f);
 	BulletAndWeaponInitialize(
 		&gBulletClasses, &gWeaponClasses, "data/bullets.json",
 		"data/guns.json");
-	LoadingScreenDraw(&gLoadingScreen, "Loading character classes...");
+	LoadingScreenDraw(&gLoadingScreen, "Loading character classes...", 0.66f);
 	CharacterClassesInitialize(
 		&gCharacterClasses, "data/character_classes.json");
 #ifndef __EMSCRIPTEN__
-	LoadingScreenDraw(&gLoadingScreen, "Loading player templates...");
+	LoadingScreenDraw(&gLoadingScreen, "Loading player templates...", 0.75f);
 	PlayerTemplatesLoad(&gPlayerTemplates, &gCharacterClasses);
 #endif
-	LoadingScreenDraw(&gLoadingScreen, "Loading pickups...");
+	LoadingScreenDraw(&gLoadingScreen, "Loading pickups...", 0.86f);
 	PickupClassesInit(
 		&gPickupClasses, "data/pickups.json", &gAmmo, &gWeaponClasses);
-	LoadingScreenDraw(&gLoadingScreen, "Loading map objects...");
+	LoadingScreenDraw(&gLoadingScreen, "Loading map objects...", 0.92f);
 	MapObjectsInit(
 		&gMapObjects, "data/map_objects.json", &gAmmo, &gWeaponClasses);
 	CollisionSystemInit(&gCollisionSystem);
 	CampaignInit(&gCampaign);
 	PlayerDataInit(&gPlayerDatas);
 
-	LoadingScreenDraw(&gLoadingScreen, "Loading main menu...");
+	LoadingScreenDraw(&gLoadingScreen, "Loading main menu...", 1.0f);
 	LoopRunner l = LoopRunnerNew(NULL);
 	LoopRunnerPush(&l, MainMenu(&gGraphicsDevice, &l));
 	if (connectAddr.host != 0)
@@ -295,7 +295,7 @@ int main(int argc, char *argv[])
 
 bail:
 	LoadingScreenReload(&gLoadingScreen);
-	LoadingScreenDraw(&gLoadingScreen, "Quitting...");
+	LoadingScreenDraw(&gLoadingScreen, "Quitting...", 1.0f);
 	NetServerTerminate(&gNetServer);
 	PlayerDataTerminate(&gPlayerDatas);
 	MapObjectsTerminate(&gMapObjects);

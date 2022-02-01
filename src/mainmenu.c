@@ -355,7 +355,7 @@ static menu_t *CreateStartGameMode(
 static void StartGameMode(menu_t *menu, void *data)
 {
 	LoadingScreenReload(&gLoadingScreen);
-	LoadingScreenDraw(&gLoadingScreen, "Loading game...");
+	LoadingScreenDraw(&gLoadingScreen, "Loading game...", 1.0f);
 	UNUSED(menu);
 	StartGameModeData *mData = data;
 	gCampaign.Entry.Mode = mData->GameMode;

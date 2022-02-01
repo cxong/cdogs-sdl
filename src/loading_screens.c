@@ -46,14 +46,16 @@ void LoadingScreenTerminate(LoadingScreen *l)
 {
 	MapTerminate(&l->m);
 	DrawBufferTerminate(&l->db);
+	CArrayTerminate(&l->tileIndices);
 }
 
-static void LazyLoad(LoadingScreen *l)
+static void LazyLoad(LoadingScreen *l, const float showPct)
 {
 	if (l->logo == NULL)
 	{
 		l->logo = PicManagerGetPic(&gPicManager, "logo");
 	}
+	bool mapCreated = false;
 	// Create map large enough to cover the entire screen
 	const struct vec2i mapSize = svec2i(X_TILES, Y_TILES);
 	if (gPicManager.tileStyleNames.size > 0 &&
@@ -62,18 +64,45 @@ static void LazyLoad(LoadingScreen *l)
 		// Map with floors only
 		Mission m;
 		MissionInit(&m);
-		m.Type = MAPTYPE_CLASSIC;
+		m.Type = MAPTYPE_CAVE;
 		m.Size = mapSize;
+		m.u.Cave.Repeat = 1;
+		m.u.Cave.R1 = 9;
+		m.u.Cave.R2 = -1;
 		TileClassInit(
-			&m.u.Classic.TileClasses.Floor, &gPicManager, &gTileFloor,
+			&m.u.Cave.TileClasses.Floor, &gPicManager, &gTileFloor,
 			IntFloorStyle(rand() % FLOOR_STYLE_COUNT),
 			TileClassBaseStyleType(TILE_CLASS_FLOOR),
 			RangeToColor(rand() % COLORRANGE_COUNT),
-					  RangeToColor(rand() % COLORRANGE_COUNT));
-		m.u.Classic.ExitEnabled = false;
+			RangeToColor(rand() % COLORRANGE_COUNT));
+		m.u.Cave.ExitEnabled = false;
 		MapBuild(&l->m, &m, false, 0, GAME_MODE_NORMAL, NULL);
 		MapMarkAllAsVisited(&l->m);
 		DrawBufferInit(&l->db, mapSize, l->g);
+		mapCreated = true;
+	}
+
+	if (mapCreated || l->showPct != showPct)
+	{
+		// Show a random percent of tiles
+		l->showPct = showPct;
+		if (mapSize.x * mapSize.y != l->tileIndices.size)
+		{
+			CArrayTerminate(&l->tileIndices);
+			CArrayInit(&l->tileIndices, sizeof(int));
+			for (int i = 0; i < mapSize.x * mapSize.y; i++)
+			{
+				CArrayPushBack(&l->tileIndices, &i);
+			}
+			CArrayShuffle(&l->tileIndices);
+		}
+		const int nTiles = (int)(mapSize.x * mapSize.y * showPct);
+		CA_FOREACH(const int, tileIdx, l->tileIndices)
+		const int y = *tileIdx / mapSize.x;
+		const int x = *tileIdx - y * mapSize.x;
+		Tile *t = MapGetTile(&l->m, svec2i(x, y));
+		t->isVisited = _ca_index < nTiles;
+		CA_FOREACH_END()
 	}
 }
 
@@ -86,36 +115,40 @@ static int ReloadTileClass(any_t data, any_t item)
 }
 void LoadingScreenReload(LoadingScreen *l)
 {
-	if (hashmap_iterate(l->m.TileClasses, ReloadTileClass, &gPicManager) != MAP_OK)
+	if (hashmap_iterate(l->m.TileClasses, ReloadTileClass, &gPicManager) !=
+		MAP_OK)
 	{
 		CASSERT(false, "failed to reload tile classes");
 	}
 }
 
-void LoadingScreenDraw(LoadingScreen *l, const char *loadingText)
+void LoadingScreenDraw(
+	LoadingScreen *l, const char *loadingText, const float showPct)
 {
 	WindowContextPreRender(&l->g->gameWindow);
 
-	LazyLoad(l);
-	
+	LazyLoad(l, showPct);
+
 	if (!svec2i_is_zero(l->m.Size))
 	{
-		DrawBufferSetFromMap(&l->db, &l->m, Vec2CenterOfTile(svec2i_scale_divide(l->m.Size, 2)), X_TILES);
+		DrawBufferSetFromMap(
+			&l->db, &l->m, Vec2CenterOfTile(svec2i_scale_divide(l->m.Size, 2)),
+			X_TILES);
 		DrawBufferArgs args;
 		memset(&args, 0, sizeof args);
 		DrawBufferDraw(&l->db, svec2i_zero(), &args);
 	}
-	
+
 	if (l->logo)
 	{
 		const struct vec2i pos = svec2i(
 			CENTER_X(svec2i_zero(), l->g->cachedConfig.Res, l->logo->size.x),
 			CENTER_Y(
 				svec2i_zero(), svec2i_scale_divide(l->g->cachedConfig.Res, 2),
-					 l->logo->size.y));
+				l->logo->size.y));
 		PicRender(
-				  l->logo, l->g->gameWindow.renderer, pos, colorWhite, 0, svec2_one(),
-			SDL_FLIP_NONE, Rect2iZero());
+			l->logo, l->g->gameWindow.renderer, pos, colorWhite, 0,
+			svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 	}
 
 	FontOpts opts = FontOptsNew();
@@ -125,4 +158,6 @@ void LoadingScreenDraw(LoadingScreen *l, const char *loadingText)
 	FontStrOpt(loadingText, svec2i(0, l->g->cachedConfig.Res.y / 2), opts);
 
 	WindowContextPostRender(&l->g->gameWindow);
+
+	SDL_Delay(50);
 }
