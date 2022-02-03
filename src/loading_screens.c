@@ -104,6 +104,12 @@ static void LazyLoad(LoadingScreen *l, const float showPct)
 		t->isVisited = _ca_index < nTiles;
 		CA_FOREACH_END()
 	}
+	
+	if (gSoundDevice.isInitialised && (l->sndTick == NULL || l->sndComplete == NULL))
+	{
+		l->sndTick = StrSound("click");
+		l->sndComplete = StrSound("explosion_small");
+	}
 }
 
 static int ReloadTileClass(any_t data, any_t item)
@@ -158,6 +164,12 @@ void LoadingScreenDraw(
 	FontStrOpt(loadingText, svec2i(0, l->g->cachedConfig.Res.y / 2), opts);
 
 	WindowContextPostRender(&l->g->gameWindow);
+	
+	Mix_Chunk *sound = showPct < 1.0f ? l->sndTick : l->sndComplete;
+	if (sound)
+	{
+		SoundPlay(&gSoundDevice, sound);
+	}
 
-	SDL_Delay(50);
+	SDL_Delay(70);
 }

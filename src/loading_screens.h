@@ -40,6 +40,8 @@ typedef struct
 	float showPct;
 	CArray tileIndices;
 	DrawBuffer db;
+	Mix_Chunk *sndTick;
+	Mix_Chunk *sndComplete;
 } LoadingScreen;
 
 extern LoadingScreen gLoadingScreen;
