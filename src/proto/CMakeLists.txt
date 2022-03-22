@@ -9,6 +9,4 @@ set(PROTO_SRCS "msg.pb.c" "nanopb/pb_decode.c" "nanopb/pb_encode.c" "nanopb/pb_c
 set(PROTO_HDRS "msg.pb.h" "nanopb/pb_decode.h" "nanopb/pb_encode.c" "nanopb/pb_common.c" "nanopb/pb.h")
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-set_source_files_properties(${PROTO_SRCS} ${PROTO_HDRS}
-    PROPERTIES GENERATED TRUE)
 add_library(cdogs_proto STATIC ${PROTO_SRCS} ${PROTO_HDRS} msg.options msg.proto)
