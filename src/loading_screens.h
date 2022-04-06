@@ -27,6 +27,7 @@
 */
 #pragma once
 
+#include "game_loop.h"
 #include <cdogs/draw/draw_buffer.h>
 #include <cdogs/grafx.h>
 #include <cdogs/map.h>
@@ -49,6 +50,10 @@ extern LoadingScreen gLoadingScreen;
 void LoadingScreenInit(LoadingScreen *l, GraphicsDevice *g);
 void LoadingScreenTerminate(LoadingScreen *l);
 
+// Reload tile textures, required when the map changes
 void LoadingScreenReload(LoadingScreen *l);
 void LoadingScreenDraw(
 	LoadingScreen *l, const char *loadingText, const float showPct);
+
+GameLoopData *ScreenLoading(
+	const char *loadingText, const bool ascending, GameLoopData *nextLoop);

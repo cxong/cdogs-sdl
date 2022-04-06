@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2013-2021 Cong Xu
+	Copyright (c) 2013-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@
 #include "animated_counter.h"
 #include "autosave.h"
 #include "hiscores.h"
+#include "loading_screens.h"
 #include "menu_utils.h"
 #include "password.h"
 #include "prep.h"
@@ -102,8 +103,10 @@ static GameLoopResult CampaignIntroUpdate(GameLoopData *data, LoopRunner *l)
 		sData->waitResult == EVENT_WAIT_OK)
 	{
 		// Switch to num players selection
-		LoopRunnerChange(
-			l, NumPlayersSelection(&gGraphicsDevice, &gEventHandlers));
+		LoopRunnerPush(
+			l, ScreenLoading(
+				   "Loading campaign...", true,
+				   NumPlayersSelection(&gGraphicsDevice, &gEventHandlers)));
 	}
 	else if (sData->waitResult == EVENT_WAIT_CANCEL)
 	{
@@ -279,7 +282,8 @@ static void MissionBriefingInput(GameLoopData *data)
 		}
 	}
 	// Check if anyone pressed escape
-	if (EventIsEscape(&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers, false)))
+	if (EventIsEscape(
+			&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers, false)))
 	{
 		mData->waitResult = EVENT_WAIT_CANCEL;
 	}
@@ -583,7 +587,8 @@ static GameLoopResult MissionSummaryUpdate(GameLoopData *data, LoopRunner *l)
 			done = AnimatedCounterUpdate(&mData->pDatas[i].Score, 1) && done;
 			done = AnimatedCounterUpdate(&mData->pDatas[i].Total, 1) && done;
 			done = AnimatedCounterUpdate(&mData->pDatas[i].Time, 1) && done;
-			done = AnimatedCounterUpdate(&mData->pDatas[i].TimeTotal, 1) && done;
+			done =
+				AnimatedCounterUpdate(&mData->pDatas[i].TimeTotal, 1) && done;
 			done = AnimatedCounterUpdate(
 					   &mData->pDatas[i].HealthResurrection, 1) &&
 				   done;

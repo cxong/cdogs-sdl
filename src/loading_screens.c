@@ -104,8 +104,9 @@ static void LazyLoad(LoadingScreen *l, const float showPct)
 		t->isVisited = _ca_index < nTiles;
 		CA_FOREACH_END()
 	}
-	
-	if (gSoundDevice.isInitialised && (l->sndTick == NULL || l->sndComplete == NULL))
+
+	if (gSoundDevice.isInitialised &&
+		(l->sndTick == NULL || l->sndComplete == NULL))
 	{
 		l->sndTick = StrSound("click");
 		l->sndComplete = StrSound("explosion_small");
@@ -128,11 +129,9 @@ void LoadingScreenReload(LoadingScreen *l)
 	}
 }
 
-void LoadingScreenDraw(
+static void LoadingScreenDrawInner(
 	LoadingScreen *l, const char *loadingText, const float showPct)
 {
-	WindowContextPreRender(&l->g->gameWindow);
-
 	LazyLoad(l, showPct);
 
 	if (!svec2i_is_zero(l->m.Size))
@@ -162,9 +161,16 @@ void LoadingScreenDraw(
 	opts.VAlign = ALIGN_CENTER;
 	opts.Area = svec2i(l->g->cachedConfig.Res.x, l->g->cachedConfig.Res.y / 2);
 	FontStrOpt(loadingText, svec2i(0, l->g->cachedConfig.Res.y / 2), opts);
+}
+void LoadingScreenDraw(
+	LoadingScreen *l, const char *loadingText, const float showPct)
+{
+	WindowContextPreRender(&l->g->gameWindow);
+
+	LoadingScreenDrawInner(l, loadingText, showPct);
 
 	WindowContextPostRender(&l->g->gameWindow);
-	
+
 	Mix_Chunk *sound = showPct < 1.0f ? l->sndTick : l->sndComplete;
 	if (sound)
 	{
@@ -172,4 +178,68 @@ void LoadingScreenDraw(
 	}
 
 	SDL_Delay(70);
+}
+
+typedef struct
+{
+	LoadingScreen *l;
+	bool ascending;
+	const char *loadingText;
+	float showPct;
+	GameLoopData *nextLoop;
+} ScreenLoadingData;
+static void LoopTerminate(GameLoopData *data);
+static GameLoopResult LoopUpdate(GameLoopData *data, LoopRunner *l);
+static void LoopDraw(GameLoopData *data);
+
+GameLoopData *ScreenLoading(
+	const char *loadingText, const bool ascending, GameLoopData *nextLoop)
+{
+	ScreenLoadingData *sData;
+	CCALLOC(sData, sizeof *sData);
+	sData->l = &gLoadingScreen;
+	sData->loadingText = loadingText;
+	sData->ascending = ascending;
+	sData->showPct = ascending ? 0.0f : 1.0f;
+	sData->nextLoop = nextLoop;
+	return GameLoopDataNew(
+		sData, LoopTerminate, NULL, NULL, NULL, LoopUpdate, LoopDraw);
+}
+
+static void LoopTerminate(GameLoopData *data)
+{
+	ScreenLoadingData *sData = data->Data;
+	CFREE(sData);
+}
+static GameLoopResult LoopUpdate(GameLoopData *data, LoopRunner *l)
+{
+	ScreenLoadingData *sData = data->Data;
+	const bool complete = sData->showPct == (sData->ascending ? 1.0f : 0.0f);
+	Mix_Chunk *sound = complete ? sData->l->sndTick : sData->l->sndComplete;
+	if (sound)
+	{
+		SoundPlay(&gSoundDevice, sound);
+	}
+	if (complete)
+	{
+		LoopRunnerPop(l);
+		if (sData->ascending)
+		{
+			if (sData->nextLoop)
+			{
+				LoopRunnerChange(l, sData->nextLoop);
+			}
+			// Show a loading screen with tiles animating out
+			LoopRunnerPush(l, ScreenLoading(sData->loadingText, false, NULL));
+		}
+		return UPDATE_RESULT_OK;
+	}
+	sData->showPct += sData->ascending ? 0.1f : -0.1f;
+	sData->showPct = CLAMP(sData->showPct, 0.0f, 1.0f);
+	return UPDATE_RESULT_DRAW;
+}
+static void LoopDraw(GameLoopData *data)
+{
+	ScreenLoadingData *sData = data->Data;
+	LoadingScreenDrawInner(sData->l, sData->loadingText, sData->showPct);
 }

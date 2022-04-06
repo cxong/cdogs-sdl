@@ -144,14 +144,15 @@ static void RunGameTerminate(GameLoopData *data)
 }
 static void RunGameOnEnter(GameLoopData *data)
 {
-	LoadingScreenDraw(&gLoadingScreen, "Starting game...", 1.0f);
-
 	RunGameData *rData = data->Data;
 
 	RunGameReset(rData);
 
 	CampaignSeedRandom(rData->co);
-	MapBuild(rData->map, rData->m->missionData, !rData->co->IsClient, rData->m->index, rData->co->Entry.Mode, &rData->co->Setting.characters);
+	MapBuild(
+		rData->map, rData->m->missionData, !rData->co->IsClient,
+		rData->m->index, rData->co->Entry.Mode,
+		&rData->co->Setting.characters);
 
 	// Seed random if PVP mode (otherwise players will always spawn in same
 	// position)
@@ -259,8 +260,6 @@ static void RunGameOnExit(GameLoopData *data)
 	RunGameData *rData = data->Data;
 
 	LOG(LM_MAIN, LL_INFO, "Game finished");
-
-	LoadingScreenDraw(&gLoadingScreen, "Debriefing...", 1.0f);
 
 	// Flush events
 	HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
@@ -589,29 +588,30 @@ static void NextLoop(RunGameData *rData, LoopRunner *l)
 	CA_FOREACH_END()
 
 	// Switch to a score screen if there are local players and we haven't quit
+	GameLoopData *nextScreen = NULL;
 	const bool showScores = !rData->co->IsQuit && hasLocalPlayers;
 	if (showScores)
 	{
 		switch (rData->co->Entry.Mode)
 		{
 		case GAME_MODE_DOGFIGHT:
-			LoopRunnerChange(l, ScreenDogfightScores());
+			nextScreen = ScreenDogfightScores();
 			break;
 		case GAME_MODE_DEATHMATCH:
-			LoopRunnerChange(l, ScreenDeathmatchFinalScores());
+			nextScreen = ScreenDeathmatchFinalScores();
 			break;
 		default:
 			// In co-op (non-PVP) modes, at least one player must survive
-			LoopRunnerChange(
-				l, ScreenMissionSummary(
-					   rData->co, rData->m, survivedAndCompletedObjectives));
+			nextScreen = ScreenMissionSummary(
+				rData->co, rData->m, survivedAndCompletedObjectives);
 			break;
 		}
 	}
 	else
 	{
-		LoopRunnerChange(l, HighScoresScreen(rData->co, &gGraphicsDevice));
+		nextScreen = HighScoresScreen(rData->co, &gGraphicsDevice);
 	}
+	LoopRunnerPush(l, ScreenLoading("Debriefing...", true, nextScreen));
 	if (!HasRounds(rData->co->Entry.Mode) && !rData->co->IsComplete)
 	{
 		rData->co->MissionIndex = rData->m->NextMission;

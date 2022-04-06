@@ -208,7 +208,6 @@ static void NumPlayersTerminate(GameLoopData *data)
 static void NumPlayersOnEnter(GameLoopData *data)
 {
 	UNUSED(data);
-	LoadingScreenDraw(&gLoadingScreen, "Loading...", 1.0f);
 	MusicPlayFromChunk(
 		&gSoundDevice.music, MUSIC_BRIEFING,
 		&gCampaign.Setting.CustomSongs[MUSIC_BRIEFING]);
@@ -790,7 +789,10 @@ bail:
 	}
 	else
 	{
-		LoopRunnerChange(l, RunGame(&gCampaign, &gMission, &gMap));
+		LoopRunnerPush(
+			l, ScreenLoading(
+				   "Starting game...", true,
+				   RunGame(&gCampaign, &gMission, &gMap)));
 	}
 	return UPDATE_RESULT_OK;
 }

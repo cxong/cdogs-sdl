@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2014, 2016-2018, 2021 Cong Xu
+	Copyright (c) 2014, 2016-2018, 2021-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -153,6 +153,7 @@ GameLoopData *GameLoopDataNew(
 }
 
 static GameLoopData *GetCurrentLoop(LoopRunner *l);
+static GameLoopData *GetParentLoop(LoopRunner *l);
 
 LoopRunner LoopRunnerNew(GameLoopData *newData)
 {
@@ -268,6 +269,14 @@ bool LoopRunnerRunInner(LoopRunInnerData *ctx)
 		if (gGraphicsDevice.cachedConfig.SecondWindow)
 		{
 			WindowContextPreRender(&gGraphicsDevice.secondWindow);
+		}
+		if (ctx->data->DrawParent)
+		{
+			GameLoopData *parent = GetParentLoop(ctx->l);
+			if (parent && parent->DrawFunc)
+			{
+				parent->DrawFunc(parent);
+			}
 		}
 		if (ctx->data->DrawFunc)
 		{
@@ -413,4 +422,12 @@ static GameLoopData *GetCurrentLoop(LoopRunner *l)
 		return NULL;
 	}
 	return *(GameLoopData **)CArrayGet(&l->Loops, l->Loops.size - 1);
+}
+static GameLoopData *GetParentLoop(LoopRunner *l)
+{
+	if (l->Loops.size <= 1)
+	{
+		return NULL;
+	}
+	return *(GameLoopData **)CArrayGet(&l->Loops, l->Loops.size - 2);
 }

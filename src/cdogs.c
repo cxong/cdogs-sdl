@@ -249,6 +249,7 @@ int main(int argc, char *argv[])
 	LoadingScreenDraw(&gLoadingScreen, "Loading main menu...", 1.0f);
 	LoopRunner l = LoopRunnerNew(NULL);
 	LoopRunnerPush(&l, MainMenu(&gGraphicsDevice, &l));
+	LoopRunnerPush(&l, ScreenLoading("Loading main menu...", false, NULL));
 	if (connectAddr.host != 0)
 	{
 		if (NetClientTryScanAndConnect(&gNetClient, connectAddr.host))
