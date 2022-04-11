@@ -792,7 +792,7 @@ bail:
 		LoopRunnerPush(
 			l, ScreenLoading(
 				   "Starting game...", true,
-				   RunGame(&gCampaign, &gMission, &gMap)));
+				   RunGame(&gCampaign, &gMission, &gMap), true));
 	}
 	return UPDATE_RESULT_OK;
 }

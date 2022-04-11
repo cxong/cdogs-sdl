@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2014-2017, 2021 Cong Xu
+	Copyright (c) 2014-2017, 2021-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@
 
 #include "game_loop.h"
 
-GameLoopData *ScreenCampaignIntro(CampaignSetting *c);
+GameLoopData *ScreenCampaignIntro(CampaignSetting *c, const GameMode gameMode, const CampaignEntry *entry);
 GameLoopData *ScreenMissionBriefing(
 	CampaignSetting *c, const struct MissionOptions *m);
 // Display a summary page at the end of a mission

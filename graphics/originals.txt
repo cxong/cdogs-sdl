@@ -14,6 +14,7 @@ beam_8x8.png
 beam_yellow_8x8.png
 bench.png
 bench_wreck.png
+bigpanel.png
 bloodstain.png
 blueprint.png
 bone_blood.png

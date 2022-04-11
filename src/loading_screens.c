@@ -44,104 +44,61 @@ void LoadingScreenInit(LoadingScreen *l, GraphicsDevice *g)
 }
 void LoadingScreenTerminate(LoadingScreen *l)
 {
-	MapTerminate(&l->m);
-	DrawBufferTerminate(&l->db);
-	CArrayTerminate(&l->tileIndices);
+	CArrayTerminate(&l->panelIndices);
 }
 
-static void LazyLoad(LoadingScreen *l, const float showPct)
+static void LazyLoad(LoadingScreen *l)
 {
 	if (l->logo == NULL)
 	{
 		l->logo = PicManagerGetPic(&gPicManager, "logo");
 	}
-	bool mapCreated = false;
-	// Create map large enough to cover the entire screen
-	const struct vec2i mapSize = svec2i(X_TILES, Y_TILES);
-	if (gPicManager.tileStyleNames.size > 0 &&
-		(l->m.Size.x < mapSize.x || l->m.Size.y < mapSize.y))
+	if (l->panel == NULL)
 	{
-		// Map with floors only
-		Mission m;
-		MissionInit(&m);
-		m.Type = MAPTYPE_CAVE;
-		m.Size = mapSize;
-		m.u.Cave.Repeat = 1;
-		m.u.Cave.R1 = 9;
-		m.u.Cave.R2 = -1;
-		TileClassInit(
-			&m.u.Cave.TileClasses.Floor, &gPicManager, &gTileFloor,
-			IntFloorStyle(rand() % FLOOR_STYLE_COUNT),
-			TileClassBaseStyleType(TILE_CLASS_FLOOR),
-			RangeToColor(rand() % COLORRANGE_COUNT),
-			RangeToColor(rand() % COLORRANGE_COUNT));
-		m.u.Cave.ExitEnabled = false;
-		MapBuild(&l->m, &m, false, 0, GAME_MODE_NORMAL, NULL);
-		MapMarkAllAsVisited(&l->m);
-		DrawBufferInit(&l->db, mapSize, l->g);
-		mapCreated = true;
+		l->panel = PicManagerGetPic(&gPicManager, "bigpanel");
 	}
 
-	if (mapCreated || l->showPct != showPct)
+	// Init panel array large enough to cover the entire screen
+	if (l->panel)
 	{
-		// Show a random percent of tiles
-		l->showPct = showPct;
-		if (mapSize.x * mapSize.y != (int)l->tileIndices.size)
+		const struct vec2i panelsSize = svec2i_add(svec2i_divide(l->g->cachedConfig.Res, l->panel->size), svec2i_one());
+		if (panelsSize.x * panelsSize.y != (int)l->panelIndices.size)
 		{
-			CArrayTerminate(&l->tileIndices);
-			CArrayInit(&l->tileIndices, sizeof(int));
-			for (int i = 0; i < mapSize.x * mapSize.y; i++)
+			CArrayTerminate(&l->panelIndices);
+			CArrayInit(&l->panelIndices, sizeof(int));
+			for (int i = 0; i < panelsSize.x * panelsSize.y; i++)
 			{
-				CArrayPushBack(&l->tileIndices, &i);
+				CArrayPushBack(&l->panelIndices, &i);
 			}
-			CArrayShuffle(&l->tileIndices);
+			CArrayShuffle(&l->panelIndices);
 		}
-		const int nTiles = (int)(mapSize.x * mapSize.y * showPct);
-		CA_FOREACH(const int, tileIdx, l->tileIndices)
-		const int y = *tileIdx / mapSize.x;
-		const int x = *tileIdx - y * mapSize.x;
-		Tile *t = MapGetTile(&l->m, svec2i(x, y));
-		t->isVisited = _ca_index < nTiles;
-		CA_FOREACH_END()
 	}
 
-	if (gSoundDevice.isInitialised &&
-		(l->sndTick == NULL || l->sndComplete == NULL))
+	if (gSoundDevice.isInitialised && l->sndTick == NULL)
 	{
 		l->sndTick = StrSound("click");
-		l->sndComplete = StrSound("explosion_small");
-	}
-}
-
-static int ReloadTileClass(any_t data, any_t item)
-{
-	PicManager *pm = data;
-	TileClass *t = item;
-	TileClassReloadPic(t, pm);
-	return MAP_OK;
-}
-void LoadingScreenReload(LoadingScreen *l)
-{
-	if (hashmap_iterate(l->m.TileClasses, ReloadTileClass, &gPicManager) !=
-		MAP_OK)
-	{
-		CASSERT(false, "failed to reload tile classes");
 	}
 }
 
 static void LoadingScreenDrawInner(
 	LoadingScreen *l, const char *loadingText, const float showPct)
 {
-	LazyLoad(l, showPct);
+	LazyLoad(l);
 
-	if (!svec2i_is_zero(l->m.Size))
+	if (l->panel)
 	{
-		DrawBufferSetFromMap(
-			&l->db, &l->m, Vec2CenterOfTile(svec2i_scale_divide(l->m.Size, 2)),
-			X_TILES);
-		DrawBufferArgs args;
-		memset(&args, 0, sizeof args);
-		DrawBufferDraw(&l->db, svec2i_zero(), &args);
+		const int stride = l->g->cachedConfig.Res.x / l->panel->size.x + 1;
+		CA_FOREACH(const int, panelIdx, l->panelIndices)
+		if (_ca_index > (int)(l->panelIndices.size * showPct))
+		{
+			break;
+		}
+		const int y = *panelIdx / stride;
+		const int x = *panelIdx - (y * stride);
+		PicRender(
+			l->panel, l->g->gameWindow.renderer, svec2i_multiply(svec2i(x, y), l->panel->size), colorWhite, 0,
+			svec2_one(), SDL_FLIP_NONE, Rect2iZero());
+		CA_FOREACH_END()
 	}
 
 	if (l->logo)
@@ -171,11 +128,7 @@ void LoadingScreenDraw(
 
 	WindowContextPostRender(&l->g->gameWindow);
 
-	Mix_Chunk *sound = showPct < 1.0f ? l->sndTick : l->sndComplete;
-	if (sound)
-	{
-		SoundPlay(&gSoundDevice, sound);
-	}
+	SoundPlayAtPlusDistance(&gSoundDevice, l->sndTick, gSoundDevice.earLeft1, 255);
 
 	SDL_Delay(70);
 }
@@ -187,23 +140,28 @@ typedef struct
 	const char *loadingText;
 	float showPct;
 	GameLoopData *nextLoop;
+	bool removeParent;
+	int count;
 } ScreenLoadingData;
 static void LoopTerminate(GameLoopData *data);
 static GameLoopResult LoopUpdate(GameLoopData *data, LoopRunner *l);
 static void LoopDraw(GameLoopData *data);
 
 GameLoopData *ScreenLoading(
-	const char *loadingText, const bool ascending, GameLoopData *nextLoop)
+	const char *loadingText, const bool ascending, GameLoopData *nextLoop, const bool removeParent)
 {
 	ScreenLoadingData *sData;
 	CCALLOC(sData, sizeof *sData);
 	sData->l = &gLoadingScreen;
 	sData->loadingText = loadingText;
 	sData->ascending = ascending;
+	sData->removeParent = removeParent;
 	sData->showPct = ascending ? 0.0f : 1.0f;
 	sData->nextLoop = nextLoop;
-	return GameLoopDataNew(
+	GameLoopData *data = GameLoopDataNew(
 		sData, LoopTerminate, NULL, NULL, NULL, LoopUpdate, LoopDraw);
+	data->DrawParent = true;
+	return data;
 }
 
 static void LoopTerminate(GameLoopData *data)
@@ -215,26 +173,30 @@ static GameLoopResult LoopUpdate(GameLoopData *data, LoopRunner *l)
 {
 	ScreenLoadingData *sData = data->Data;
 	const bool complete = sData->showPct == (sData->ascending ? 1.0f : 0.0f);
-	Mix_Chunk *sound = complete ? sData->l->sndTick : sData->l->sndComplete;
-	if (sound)
+	if ((sData->count % 2) == 0)
 	{
-		SoundPlay(&gSoundDevice, sound);
+		SoundPlayAtPlusDistance(&gSoundDevice, sData->l->sndTick, gSoundDevice.earLeft1, 255);
 	}
+	sData->count++;
 	if (complete)
 	{
 		LoopRunnerPop(l);
 		if (sData->ascending)
 		{
+			if (sData->removeParent)
+			{
+				LoopRunnerPop(l);
+			}
 			if (sData->nextLoop)
 			{
-				LoopRunnerChange(l, sData->nextLoop);
+				LoopRunnerPush(l, sData->nextLoop);
+				// Show a loading screen with tiles animating out
+				LoopRunnerPush(l, ScreenLoading(sData->loadingText, false, NULL, false));
 			}
-			// Show a loading screen with tiles animating out
-			LoopRunnerPush(l, ScreenLoading(sData->loadingText, false, NULL));
 		}
 		return UPDATE_RESULT_OK;
 	}
-	sData->showPct += sData->ascending ? 0.1f : -0.1f;
+	sData->showPct += sData->ascending ? 0.04f : -0.06f;
 	sData->showPct = CLAMP(sData->showPct, 0.0f, 1.0f);
 	return UPDATE_RESULT_DRAW;
 }

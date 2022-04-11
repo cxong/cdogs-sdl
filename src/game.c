@@ -611,7 +611,7 @@ static void NextLoop(RunGameData *rData, LoopRunner *l)
 	{
 		nextScreen = HighScoresScreen(rData->co, &gGraphicsDevice);
 	}
-	LoopRunnerPush(l, ScreenLoading("Debriefing...", true, nextScreen));
+	LoopRunnerPush(l, ScreenLoading("Debriefing...", true, nextScreen, true));
 	if (!HasRounds(rData->co->Entry.Mode) && !rData->co->IsComplete)
 	{
 		rData->co->MissionIndex = rData->m->NextMission;

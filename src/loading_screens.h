@@ -36,13 +36,10 @@
 typedef struct
 {
 	const Pic *logo;
+	const Pic *panel;
 	GraphicsDevice *g;
-	Map m;
-	float showPct;
-	CArray tileIndices;
-	DrawBuffer db;
+	CArray panelIndices;	// of int
 	Mix_Chunk *sndTick;
-	Mix_Chunk *sndComplete;
 } LoadingScreen;
 
 extern LoadingScreen gLoadingScreen;
@@ -50,10 +47,8 @@ extern LoadingScreen gLoadingScreen;
 void LoadingScreenInit(LoadingScreen *l, GraphicsDevice *g);
 void LoadingScreenTerminate(LoadingScreen *l);
 
-// Reload tile textures, required when the map changes
-void LoadingScreenReload(LoadingScreen *l);
 void LoadingScreenDraw(
 	LoadingScreen *l, const char *loadingText, const float showPct);
 
 GameLoopData *ScreenLoading(
-	const char *loadingText, const bool ascending, GameLoopData *nextLoop);
+	const char *loadingText, const bool ascending, GameLoopData *nextLoop, const bool removeParent);

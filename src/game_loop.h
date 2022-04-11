@@ -60,6 +60,8 @@ typedef struct sGameLoopData
 	bool InputEverySecondFrame;
 	bool SkipNextFrame;
 	int Frames; // total frames looped
+	bool HasEntered;
+	bool HasExited;
 	bool HasDrawnFirst;
 	bool IsUsed;
 	bool DrawParent;
@@ -72,7 +74,7 @@ GameLoopData *GameLoopDataNew(
 	GameLoopResult (*updateFunc)(GameLoopData *, LoopRunner *),
 	void (*drawFunc)(GameLoopData *));
 
-LoopRunner LoopRunnerNew(GameLoopData *newData);
+LoopRunner LoopRunnerNew(void);
 void LoopRunnerTerminate(LoopRunner *l);
 void LoopRunnerRun(LoopRunner *l);
 

@@ -31,6 +31,7 @@
 #include <cdogs/files.h>
 #include <cdogs/font.h>
 #include <cdogs/grafx_bg.h>
+#include <cdogs/log.h>
 #include <cdogs/music.h>
 #include <cdogs/objective.h>
 
@@ -50,6 +51,8 @@ typedef struct
 {
 	EventWaitResult waitResult;
 	CampaignSetting *c;
+	GameMode gameMode;
+	const CampaignEntry *entry;
 } ScreenCampaignIntroData;
 static void CampaignIntroTerminate(GameLoopData *data);
 static void CampaignIntroOnEnter(GameLoopData *data);
@@ -57,11 +60,13 @@ static void CampaignIntroOnExit(GameLoopData *data);
 static void CampaignIntroInput(GameLoopData *data);
 static GameLoopResult CampaignIntroUpdate(GameLoopData *data, LoopRunner *l);
 static void CampaignIntroDraw(GameLoopData *data);
-GameLoopData *ScreenCampaignIntro(CampaignSetting *c)
+GameLoopData *ScreenCampaignIntro(CampaignSetting *c, const GameMode gameMode, const CampaignEntry *entry)
 {
 	ScreenCampaignIntroData *data;
 	CMALLOC(data, sizeof *data);
 	data->c = c;
+	data->gameMode = gameMode;
+	data->entry = entry;
 	return GameLoopDataNew(
 		data, CampaignIntroTerminate, CampaignIntroOnEnter,
 		CampaignIntroOnExit, CampaignIntroInput, CampaignIntroUpdate,
@@ -74,18 +79,23 @@ static void CampaignIntroTerminate(GameLoopData *data)
 }
 static void CampaignIntroOnEnter(GameLoopData *data)
 {
-	ScreenCampaignIntroData *mData = data->Data;
-	MusicPlayFromChunk(
-		&gSoundDevice.music, MUSIC_MENU, &mData->c->CustomSongs[MUSIC_MENU]);
+	ScreenCampaignIntroData *sData = data->Data;
+	gCampaign.Entry.Mode = sData->gameMode;
+	if (!gCampaign.IsLoaded && !CampaignLoad(&gCampaign, sData->entry))
+	{
+		// Failed to load
+		LOG(LM_MAIN, LL_ERROR, "cannot load campaign %s", sData->entry->Info);
+	}
+	else
+	{
+		MusicPlayFromChunk(
+			&gSoundDevice.music, MUSIC_MENU, &sData->c->CustomSongs[MUSIC_MENU]);
+	}
 }
 static void CampaignIntroOnExit(GameLoopData *data)
 {
 	const ScreenCampaignIntroData *sData = data->Data;
-	if (sData->waitResult != EVENT_WAIT_CANCEL)
-	{
-		MenuPlaySound(MENU_SOUND_ENTER);
-	}
-	else
+	if (sData->waitResult == EVENT_WAIT_CANCEL)
 	{
 		CampaignUnload(&gCampaign);
 	}
@@ -94,23 +104,27 @@ static void CampaignIntroInput(GameLoopData *data)
 {
 	ScreenCampaignIntroData *sData = data->Data;
 	sData->waitResult = EventWaitForAnyKeyOrButton();
+	if (sData->waitResult == EVENT_WAIT_OK)
+	{
+		MenuPlaySound(MENU_SOUND_ENTER);
+	}
 }
 static GameLoopResult CampaignIntroUpdate(GameLoopData *data, LoopRunner *l)
 {
 	const ScreenCampaignIntroData *sData = data->Data;
 
-	if (!IsIntroNeeded(gCampaign.Entry.Mode) ||
+	if (!gCampaign.IsLoaded || sData->waitResult == EVENT_WAIT_CANCEL)
+	{
+		LoopRunnerPop(l);
+	}
+	else if (!IsIntroNeeded(gCampaign.Entry.Mode) ||
 		sData->waitResult == EVENT_WAIT_OK)
 	{
 		// Switch to num players selection
 		LoopRunnerPush(
 			l, ScreenLoading(
 				   "Loading campaign...", true,
-				   NumPlayersSelection(&gGraphicsDevice, &gEventHandlers)));
-	}
-	else if (sData->waitResult == EVENT_WAIT_CANCEL)
-	{
-		LoopRunnerPop(l);
+				   NumPlayersSelection(&gGraphicsDevice, &gEventHandlers), true));
 	}
 	return UPDATE_RESULT_OK;
 }
@@ -246,11 +260,7 @@ static void MissionBriefingOnExit(GameLoopData *data)
 {
 	const MissionBriefingData *mData = data->Data;
 
-	if (mData->waitResult == EVENT_WAIT_OK)
-	{
-		MenuPlaySound(MENU_SOUND_ENTER);
-	}
-	else
+	if (mData->waitResult != EVENT_WAIT_OK)
 	{
 		CampaignUnload(&gCampaign);
 	}
@@ -278,6 +288,7 @@ static void MissionBriefingInput(GameLoopData *data)
 				}
 				// Otherwise, exit out of loop
 				mData->waitResult = EVENT_WAIT_OK;
+				MenuPlaySound(MENU_SOUND_ENTER);
 			}
 		}
 	}

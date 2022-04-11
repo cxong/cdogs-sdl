@@ -247,9 +247,9 @@ int main(int argc, char *argv[])
 	PlayerDataInit(&gPlayerDatas);
 
 	LoadingScreenDraw(&gLoadingScreen, "Loading main menu...", 1.0f);
-	LoopRunner l = LoopRunnerNew(NULL);
+	LoopRunner l = LoopRunnerNew();
 	LoopRunnerPush(&l, MainMenu(&gGraphicsDevice, &l));
-	LoopRunnerPush(&l, ScreenLoading("Loading main menu...", false, NULL));
+	LoopRunnerPush(&l, ScreenLoading("Loading main menu...", false, NULL, false));
 	if (connectAddr.host != 0)
 	{
 		if (NetClientTryScanAndConnect(&gNetClient, connectAddr.host))
@@ -295,8 +295,6 @@ int main(int argc, char *argv[])
 	LoopRunnerTerminate(&l);
 
 bail:
-	LoadingScreenReload(&gLoadingScreen);
-	LoadingScreenDraw(&gLoadingScreen, "Quitting...", 1.0f);
 	NetServerTerminate(&gNetServer);
 	PlayerDataTerminate(&gPlayerDatas);
 	MapObjectsTerminate(&gMapObjects);

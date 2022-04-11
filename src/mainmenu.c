@@ -62,6 +62,8 @@ typedef struct
 	DrawBuffer buffer;
 	HSV bgTint;
 	RunGameData rData;
+	GameMode gameMode;
+	const CampaignEntry *entry;
 } MainMenuData;
 static void MenuResetSize(MenuSystem *ms);
 static void MenuCreateAll(
@@ -128,6 +130,8 @@ static void MainMenuReset(MainMenuData *data)
 	GenerateLiveBackground(data);
 
 	MenuResetSize(&data->ms);
+	
+	data->entry = NULL;
 }
 static void MainMenuTerminate(GameLoopData *data)
 {
@@ -213,7 +217,7 @@ static GameLoopResult MainMenuUpdate(GameLoopData *data, LoopRunner *l)
 	if (gCampaign.IsLoaded)
 	{
 		// Loaded game already; skip menus and go straight to game
-		LoopRunnerPush(l, ScreenCampaignIntro(&gCampaign.Setting));
+		LoopRunnerPush(l, ScreenCampaignIntro(&gCampaign.Setting, gCampaign.Entry.Mode, &gCampaign.Entry));
 		return UPDATE_RESULT_OK;
 	}
 
@@ -223,13 +227,13 @@ static GameLoopResult MainMenuUpdate(GameLoopData *data, LoopRunner *l)
 	const GameLoopResult result = MenuUpdate(&mData->ms);
 	if (result == UPDATE_RESULT_OK)
 	{
-		if (gCampaign.IsLoaded)
+		if (mData->entry)
 		{
-			LoopRunnerPush(l, ScreenCampaignIntro(&gCampaign.Setting));
+			LoopRunnerPush(l, ScreenLoading("Loading game...", true, ScreenCampaignIntro(&gCampaign.Setting, mData->gameMode, mData->entry), false));
 		}
 		else
 		{
-			LoopRunnerPop(l);
+			LoopRunnerPush(l, ScreenLoading("Quitting...", true, NULL, true));
 		}
 	}
 	if (gEventHandlers.HasResolutionChanged)
@@ -251,8 +255,7 @@ static void MainMenuDraw(GameLoopData *data)
 }
 
 static menu_t *MenuCreateStart(
-	const char *name, MenuSystem *ms, LoopRunner *l,
-	CustomCampaigns *campaigns);
+	const char *name, MainMenuData *mainMenu, LoopRunner *l);
 static menu_t *MenuCreateOptions(const char *name, MainMenuData *data);
 menu_t *MenuCreateQuit(const char *name);
 
@@ -267,7 +270,7 @@ static void MenuCreateAll(
 		MENU_DISPLAY_ITEMS_CREDITS | MENU_DISPLAY_ITEMS_AUTHORS);
 	MenuAddSubmenu(
 		data->ms.root,
-		MenuCreateStart("Start", &data->ms, l, &data->campaigns));
+		MenuCreateStart("Start", data, l));
 	MenuAddSubmenu(data->ms.root, MenuCreateOptions("Options...", data));
 #ifndef __EMSCRIPTEN__
 	MenuAddSubmenu(data->ms.root, MenuCreateQuit("Quit"));
@@ -282,39 +285,38 @@ typedef struct
 	// so we can enable it if LAN servers are found
 	int MenuJoinIndex;
 } CheckLANServerData;
-static menu_t *MenuCreateContinue(const char *name, const CampaignEntry *entry);
-static menu_t *MenuCreateQuickPlay(const char *name, const CampaignEntry *entry);
+static menu_t *MenuCreateContinue(const char *name, MainMenuData *mainMenu, const CampaignEntry *entry);
+static menu_t *MenuCreateQuickPlay(const char *name, MainMenuData *mainMenu);
 static menu_t *MenuCreateCampaigns(
-	const char *name, const char *title, CampaignList *list,
+	const char *name, const char *title, MainMenuData *mainMenu, CampaignList *list,
 	const GameMode mode);
 static menu_t *CreateJoinLANGame(
 	const char *name, const char *title, MenuSystem *ms, LoopRunner *l);
 static void CheckLANServers(menu_t *menu, void *data);
 static menu_t *MenuCreateStart(
-	const char *name, MenuSystem *ms, LoopRunner *l,
-	CustomCampaigns *campaigns)
+	const char *name, MainMenuData *mainMenu, LoopRunner *l)
 {
 	menu_t *menu = MenuCreateNormal(name, "Start:", MENU_TYPE_NORMAL, 0);
 	const CampaignSave *cs = AutosaveGetLastCampaign(&gAutosave);
 	MenuAddSubmenu(
-		menu, MenuCreateContinue("Continue", &cs->Campaign));
+		menu, MenuCreateContinue("Continue", mainMenu, &cs->Campaign));
 	const int menuContinueIndex = (int)menu->u.normal.subMenus.size - 1;
 	MenuAddSubmenu(
 		menu, MenuCreateCampaigns(
-				  "Campaign", "Select a campaign:", &campaigns->campaignList,
+				  "Campaign", "Select a campaign:", mainMenu, &mainMenu->campaigns.campaignList,
 				  GAME_MODE_NORMAL));
 	MenuAddSubmenu(
-		menu, MenuCreateQuickPlay("Quick Play", &campaigns->quickPlayEntry));
+		menu, MenuCreateQuickPlay("Quick Play", mainMenu));
 	MenuAddSubmenu(
 		menu, MenuCreateCampaigns(
 				  "Dogfight", "Select a dogfight scenario:",
-				  &campaigns->dogfightList, GAME_MODE_DOGFIGHT));
+				  mainMenu, &mainMenu->campaigns.dogfightList, GAME_MODE_DOGFIGHT));
 	MenuAddSubmenu(
 		menu, MenuCreateCampaigns(
 				  "Deathmatch", "Select a deathmatch scenario:",
-				  &campaigns->dogfightList, GAME_MODE_DEATHMATCH));
+				  mainMenu, &mainMenu->campaigns.dogfightList, GAME_MODE_DEATHMATCH));
 	MenuAddSubmenu(
-		menu, CreateJoinLANGame("Join LAN game", "Choose LAN server", ms, l));
+		menu, CreateJoinLANGame("Join LAN game", "Choose LAN server", &mainMenu->ms, l));
 	CheckLANServerData *cdata;
 	CMALLOC(cdata, sizeof *cdata);
 	cdata->MenuJoinIndex = (int)menu->u.normal.subMenus.size - 1;
@@ -337,11 +339,11 @@ typedef struct
 {
 	GameMode GameMode;
 	const CampaignEntry *Entry;
+	MainMenuData *MainMenu;
 } StartGameModeData;
 static void StartGameMode(menu_t *menu, void *data);
-
 static menu_t *CreateStartGameMode(
-	const char *name, GameMode mode, const CampaignEntry *entry)
+	const char *name, MainMenuData *mainMenu, GameMode mode, const CampaignEntry *entry)
 {
 	menu_t *menu = MenuCreate(name, MENU_TYPE_RETURN);
 	menu->enterSound = MENU_SOUND_START;
@@ -349,33 +351,27 @@ static menu_t *CreateStartGameMode(
 	CCALLOC(data, sizeof *data);
 	data->GameMode = mode;
 	data->Entry = entry;
+	data->MainMenu = mainMenu;
 	MenuSetPostEnterFunc(menu, StartGameMode, data, true);
 	return menu;
 }
 static void StartGameMode(menu_t *menu, void *data)
 {
-	LoadingScreenReload(&gLoadingScreen);
-	LoadingScreenDraw(&gLoadingScreen, "Loading game...", 1.0f);
 	UNUSED(menu);
 	StartGameModeData *mData = data;
-	gCampaign.Entry.Mode = mData->GameMode;
-	if (!CampaignLoad(&gCampaign, mData->Entry))
-	{
-		// Failed to load
-		printf("Error: cannot load campaign %s\n", mData->Entry->Info);
-	}
+	mData->MainMenu->gameMode = mData->GameMode;
+	mData->MainMenu->entry = mData->Entry;
 }
-static menu_t *MenuCreateContinue(const char *name, const CampaignEntry *entry)
+static menu_t *MenuCreateContinue(const char *name, MainMenuData *mainMenu, const CampaignEntry *entry)
 {
-	return CreateStartGameMode(name, GAME_MODE_NORMAL, entry);
+	return CreateStartGameMode(name, mainMenu, GAME_MODE_NORMAL, entry);
 }
-static menu_t *MenuCreateQuickPlay(const char *name, const CampaignEntry *entry)
+static menu_t *MenuCreateQuickPlay(const char *name, MainMenuData *mainMenu)
 {
-	return CreateStartGameMode(name, GAME_MODE_QUICK_PLAY, entry);
+	return CreateStartGameMode(name, mainMenu, GAME_MODE_QUICK_PLAY, &mainMenu->campaigns.quickPlayEntry);
 }
 
-static menu_t *MenuCreateCampaignItem(
-	CampaignEntry *entry, const GameMode mode);
+static menu_t *MenuCreateCampaignItem(MainMenuData *mainMenu, CampaignEntry *entry, const GameMode mode);
 
 static void CampaignsDisplayFilename(
 	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
@@ -406,7 +402,7 @@ static void CampaignsDisplayFilename(
 	FontStrOpt(s, pos, opts);
 }
 static menu_t *MenuCreateCampaigns(
-	const char *name, const char *title, CampaignList *list,
+	const char *name, const char *title, MainMenuData *mainMenu, CampaignList *list,
 	const GameMode mode)
 {
 	menu_t *menu = MenuCreateNormal(name, title, MENU_TYPE_NORMAL, 0);
@@ -416,19 +412,18 @@ static menu_t *MenuCreateCampaigns(
 	char folderName[CDOGS_FILENAME_MAX];
 	sprintf(folderName, "%s/", subList->Name);
 	MenuAddSubmenu(
-		menu, MenuCreateCampaigns(folderName, title, subList, mode));
+		menu, MenuCreateCampaigns(folderName, title, mainMenu, subList, mode));
 	CA_FOREACH_END()
 	CA_FOREACH(CampaignEntry, e, list->list)
-	MenuAddSubmenu(menu, MenuCreateCampaignItem(e, mode));
+	MenuAddSubmenu(menu, MenuCreateCampaignItem(mainMenu, e, mode));
 	CA_FOREACH_END()
 	MenuSetCustomDisplay(menu, CampaignsDisplayFilename, NULL);
 	return menu;
 }
 
-static menu_t *MenuCreateCampaignItem(
-	CampaignEntry *entry, const GameMode mode)
+static menu_t *MenuCreateCampaignItem(MainMenuData *mainMenu, CampaignEntry *entry, const GameMode mode)
 {
-	menu_t *menu = CreateStartGameMode(entry->Info, mode, entry);
+	menu_t *menu = CreateStartGameMode(entry->Info, mainMenu, mode, entry);
 	// Special colors:
 	// - Green for new campaigns
 	// - White (normal) for in-progress campaigns

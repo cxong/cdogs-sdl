@@ -155,14 +155,10 @@ GameLoopData *GameLoopDataNew(
 static GameLoopData *GetCurrentLoop(LoopRunner *l);
 static GameLoopData *GetParentLoop(LoopRunner *l);
 
-LoopRunner LoopRunnerNew(GameLoopData *newData)
+LoopRunner LoopRunnerNew(void)
 {
 	LoopRunner l;
 	CArrayInit(&l.Loops, sizeof(GameLoopData *));
-	if (newData != NULL)
-	{
-		LoopRunnerPush(&l, newData);
-	}
 	return l;
 }
 static void GameLoopTerminate(GameLoopData *data);
@@ -229,8 +225,19 @@ bool LoopRunnerRunInner(LoopRunInnerData *ctx)
 	}
 	else if (newData != ctx->data)
 	{
-		// State change; restart loop
-		GameLoopOnExit(ctx->data);
+		GameLoopData *parent = GetParentLoop(ctx->l);
+		CA_FOREACH(GameLoopData *, data, ctx->l->Loops)
+		if (*data == newData)
+		{
+			continue;
+		}
+		// Don't exit the parent yet if we need to draw it
+		if (*data == parent && newData->DrawParent && (*data)->DrawFunc)
+		{
+			continue;
+		}
+		GameLoopOnExit(*data);
+		CA_FOREACH_END()
 		ctx->data = newData;
 		GameLoopOnEnter(ctx->data);
 		ctx->p = LoopRunParamsNew(ctx->data);
@@ -275,6 +282,7 @@ bool LoopRunnerRunInner(LoopRunInnerData *ctx)
 			GameLoopData *parent = GetParentLoop(ctx->l);
 			if (parent && parent->DrawFunc)
 			{
+				GameLoopOnEnter(parent);
 				parent->DrawFunc(parent);
 			}
 		}
@@ -382,6 +390,7 @@ void LoopRunnerPush(LoopRunner *l, GameLoopData *newData)
 void LoopRunnerPop(LoopRunner *l)
 {
 	GameLoopData *data = GetCurrentLoop(l);
+	GameLoopOnExit(data);
 	data->IsUsed = false;
 	CArrayDelete(&l->Loops, l->Loops.size - 1);
 }
@@ -397,15 +406,17 @@ static void GameLoopTerminate(GameLoopData *data)
 
 static void GameLoopOnEnter(GameLoopData *data)
 {
-	if (data->OnEnter)
+	if (!data->HasEntered && data->OnEnter)
 	{
 		data->OnEnter(data);
 	}
 	EventReset(&gEventHandlers);
+	data->HasEntered = true;
+	data->HasExited = false;
 }
 static void GameLoopOnExit(GameLoopData *data)
 {
-	if (data->OnExit)
+	if (!data->HasExited && data->OnExit)
 	{
 		data->OnExit(data);
 	}
@@ -413,6 +424,8 @@ static void GameLoopOnExit(GameLoopData *data)
 	{
 		GameLoopTerminate(data);
 	}
+	data->HasExited = true;
+	data->HasEntered = false;
 }
 
 static GameLoopData *GetCurrentLoop(LoopRunner *l)
