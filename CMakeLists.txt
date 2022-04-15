@@ -113,9 +113,11 @@ else()
 	endif()
     if(CLANG)
 		add_definitions(-std=gnu99)
-		
-		# TODO: used by nuklear
-		add_definitions(-Wno-null-pointer-arithmetic -Wno-null-pointer-subtraction)
+
+		if(${CMAKE_C_COMPILER_VERSION} VERSION_GREATER_EQUAL 13)
+			# TODO: used by nuklear
+			add_definitions(-Wno-null-pointer-arithmetic -Wno-null-pointer-subtraction)
+		endif()
     else()
         # Probably GCC...
         add_definitions(-freg-struct-return -std=gnu99)
