@@ -113,6 +113,9 @@ else()
 	endif()
     if(CLANG)
 		add_definitions(-std=gnu99)
+		
+		# TODO: used by nuklear
+		add_definitions(-Wno-null-pointer-arithmetic -Wno-null-pointer-subtraction)
     else()
         # Probably GCC...
         add_definitions(-freg-struct-return -std=gnu99)
