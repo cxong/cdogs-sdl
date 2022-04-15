@@ -114,7 +114,7 @@ else()
     if(CLANG)
 		add_definitions(-std=gnu99)
 
-		if(${CMAKE_C_COMPILER_VERSION} VERSION_GREATER_EQUAL 13)
+		if(${CMAKE_C_COMPILER_VERSION} VERSION_GREATER_EQUAL 13.1)
 			# TODO: used by nuklear
 			add_definitions(-Wno-null-pointer-arithmetic -Wno-null-pointer-subtraction)
 		endif()
