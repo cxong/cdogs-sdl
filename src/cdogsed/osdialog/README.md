@@ -9,6 +9,6 @@ If you decide to use osdialog in your project, [please let me know](https://gith
 
 ## Using
 
-The Makefile is only for building the osdialog test binary---you don't need to use it for your application.
+The Makefile is only for building the osdialog test binary.
+You don't need to use it for your application, but it might be helpful for suggesting compiler flags.
 Simply add `osdialog.h` to your include directory, and add `osdialog.c` and the appropriate `osdialog_*.c/.m` file to your application's sources.
-See the Makefile for suggested linker flags.

@@ -10,15 +10,16 @@ extern "C" {
 
 
 #ifndef OSDIALOG_MALLOC
-	#define OSDIALOG_MALLOC malloc
+#define OSDIALOG_MALLOC malloc
 #endif
 
 #ifndef OSDIALOG_FREE
-	#define OSDIALOG_FREE free
+#define OSDIALOG_FREE free
 #endif
 
 
-char *osdialog_strndup(const char *s, size_t n);
+char* osdialog_strdup(const char* s);
+char* osdialog_strndup(const char* s, size_t n);
 
 
 typedef enum {
@@ -37,7 +38,7 @@ typedef enum {
 
 Returns 1 if the "OK" or "Yes" button was pressed.
 */
-int osdialog_message(osdialog_message_level level, osdialog_message_buttons buttons, const char *message);
+int osdialog_message(osdialog_message_level level, osdialog_message_buttons buttons, const char* message);
 
 /** Launches an input prompt with an "OK" and "Cancel" button.
 
@@ -48,7 +49,7 @@ If the returned result is not NULL, caller must free() it.
 
 TODO: Implement on Windows and GTK2.
 */
-char *osdialog_prompt(osdialog_message_level level, const char *message, const char *text);
+char* osdialog_prompt(osdialog_message_level level, const char* message, const char* text);
 
 typedef enum {
 	OSDIALOG_OPEN,
@@ -58,15 +59,15 @@ typedef enum {
 
 /** Linked list of patterns. */
 typedef struct osdialog_filter_patterns {
-	char *pattern;
-	struct osdialog_filter_patterns *next;
+	char* pattern;
+	struct osdialog_filter_patterns* next;
 } osdialog_filter_patterns;
 
 /** Linked list of file filters. */
 typedef struct osdialog_filters {
-	char *name;
-	osdialog_filter_patterns *patterns;
-	struct osdialog_filters *next;
+	char* name;
+	osdialog_filter_patterns* patterns;
+	struct osdialog_filters* next;
 } osdialog_filters;
 
 /** Launches a file dialog and returns the selected path or NULL if nothing was selected.
@@ -78,14 +79,14 @@ typedef struct osdialog_filters {
 Returns the selected file, or NULL if the dialog was cancelled.
 If the return result is not NULL, caller must free() it.
 */
-char *osdialog_file(osdialog_file_action action, const char *path, const char *filename, osdialog_filters *filters);
+char* osdialog_file(osdialog_file_action action, const char* path, const char* filename, osdialog_filters* filters);
 
 /** Parses a filter string.
 Example: "Source:c,cpp,m;Header:h,hpp"
 Caller must eventually free with osdialog_filters_free().
 */
-osdialog_filters *osdialog_filters_parse(const char *str);
-void osdialog_filters_free(osdialog_filters *filters);
+osdialog_filters* osdialog_filters_parse(const char* str);
+void osdialog_filters_free(osdialog_filters* filters);
 
 
 typedef struct {
@@ -100,7 +101,7 @@ Returns 1 if "OK" was pressed.
 
 TODO Implement on Mac.
 */
-int osdialog_color_picker(osdialog_color *color, int opacity);
+int osdialog_color_picker(osdialog_color* color, int opacity);
 
 
 #ifdef __cplusplus

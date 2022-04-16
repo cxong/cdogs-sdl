@@ -431,7 +431,12 @@ static void Open(void)
 	osdialog_filters *filters =
 		osdialog_filters_parse("C-Dogs SDL Campaign:cdogscpn");
 	char *filename = osdialog_file(
-		OSDIALOG_OPEN_DIR, dirname, PathGetBasename(lastFile), filters);
+#ifdef __APPLE__
+		OSDIALOG_OPEN
+#else
+		OSDIALOG_OPEN_DIR
+#endif
+	    , dirname, PathGetBasename(lastFile), filters);
 	// Try original filename
 	if (filename)
 	{

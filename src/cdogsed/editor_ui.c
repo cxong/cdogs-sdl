@@ -295,11 +295,10 @@ static const char *MissionGetCharacterCountStr(UIObject *o, void *data)
 	static char s[128];
 	UNUSED(o);
 	Campaign *co = data;
-	if (!CampaignGetCurrentMission(co))
+	const Mission *m = CampaignGetCurrentMission(co);
+	if (!m)
 		return NULL;
-	sprintf(
-		s, "Characters (%d)",
-		(int)CampaignGetCurrentMission(co)->Enemies.size);
+	sprintf(s, "Characters (%d)", (int)m->Enemies.size);
 	return s;
 }
 static const char *MissionGetSpecialCountStr(UIObject *o, void *data)
