@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2015, 2017-2020 Cong Xu
+	Copyright (c) 2014-2015, 2017-2020, 2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -299,7 +299,7 @@ static bool TryPickupAmmo(TActor *a, const Pickup *p)
 					? (int)p->class->u.Ammo.Id
 					: IdWeaponClass(p->class->u.GunId)->u.Normal.AmmoId);
 	const int current = *(int *)CArrayGet(&a->ammo, p->class->u.Ammo.Id);
-	if (current >= ammo->Max)
+	if (ammo->Max > 0 && current >= ammo->Max)
 	{
 		return false;
 	}

@@ -56,6 +56,7 @@ void CampaignSettingInit(CampaignSetting *setting)
 	CSTRDUP(setting->Title, "");
 	CSTRDUP(setting->Author, "");
 	CSTRDUP(setting->Description, "");
+	setting->DoorOpenTicks = FPS_FRAMELIMIT;
 	CArrayInit(&setting->Missions, sizeof(Mission));
 	CharacterStoreInit(&setting->characters);
 
