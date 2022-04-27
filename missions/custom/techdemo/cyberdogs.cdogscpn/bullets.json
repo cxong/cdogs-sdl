@@ -18,6 +18,15 @@
   },
   "Bullets": [
     {
+      "Name": "fist",
+      "Power": 1,
+      "Hit": {
+        "Flesh": {
+          "Sound": "hits/fist_flesh"
+        }
+      }
+    },
+    {
       "Name": "chainsaw",
       "Power": 2,
       "Hit": {
@@ -27,7 +36,7 @@
       }
     },
     {
-      "Name": "chainsaw x2",
+      "Name": "chainsaw_x2",
       "Power": 4,
       "Hit": {
         "Flesh": {
@@ -36,7 +45,7 @@
       }
     },
     {
-      "Name": "chainsaw x3",
+      "Name": "chainsaw_x3",
       "Power": 6,
       "Hit": {
         "Flesh": {
@@ -45,7 +54,7 @@
       }
     },
     {
-      "Name": "chainsaw x4",
+      "Name": "chainsaw_x4",
       "Power": 8,
       "Hit": {
         "Flesh": {
@@ -54,7 +63,7 @@
       }
     },
     {
-      "Name": "chainsaw x5",
+      "Name": "chainsaw_x5",
       "Power": 10,
       "Hit": {
         "Flesh": {
@@ -127,17 +136,6 @@
           "Sound": "hits/fire"
         }
       }
-    },
-    {
-      "Name": "laser",
-      "Pic": {
-        "Type": "Directional",
-        "Sprites": "particles/beam"
-      },
-      "Spark": "spark_red",
-      "Speed": 384,
-      "Range": 110,
-      "Power": 5
     },
     {
       "Name": "sniper",
@@ -226,6 +224,17 @@
       "Power": 10
     },
     {
+      "Name": "laser_dumb",
+      "Pic": {
+        "Type": "Directional",
+        "Sprites": "particles/beam"
+      },
+      "Spark": "spark_red",
+      "Speed": 384,
+      "Range": 110,
+      "Power": 5
+    },
+    {
       "Name": "pulse_green",
       "Pic": {
         "Type": "Directional",
@@ -301,7 +310,16 @@
       ]
     },
     {
-      "Name": "explosion",
+      "Name": "explosion_cast",
+      "SpeedLow": 0,
+      "SpeedHigh": 4096,
+      "Range": 1,
+      "OutOfRangeGuns": [
+        "explosion_ball"
+      ]
+    },
+    {
+      "Name": "explosion_ball",
       "Pic": {
         "Type": "Animated",
         "Sprites": "particles/explosion_small",

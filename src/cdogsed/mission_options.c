@@ -61,7 +61,10 @@ EditorResult EditMissionOptions(EventHandlers *handlers, Mission *m)
 	MissionOptionsData data;
 	memset(&data, 0, sizeof data);
 	data.m = m;
-	strcpy(data.Title, m->Title);
+	if (m->Title)
+	{
+		strcpy(data.Title, m->Title);
+	}
 	if (m->Description)
 	{
 		strcpy(data.Description, m->Description);
@@ -113,7 +116,7 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		DrawTextbox(ctx, mData->Description, 1024, "Description", NK_EDIT_BOX);
 		nk_layout_row_dynamic(ctx, ROW_HEIGHT, 1);
 		bool dynamicMusic = mData->m->Music.Type == MUSIC_SRC_DYNAMIC;
-		if (DrawCheckbox(ctx, "Custom Music", "", &dynamicMusic))
+		if (DrawCheckbox(ctx, "Custom Music", NULL, &dynamicMusic))
 		{
 			changed = true;
 			mData->m->Music.Type = dynamicMusic ? MUSIC_SRC_DYNAMIC : MUSIC_SRC_GENERAL;

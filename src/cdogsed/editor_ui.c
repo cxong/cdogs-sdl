@@ -293,8 +293,8 @@ static void MissionDrawExitStyle(
 static const char *MissionGetCharacterCountStr(UIObject *o, void *data)
 {
 	static char s[128];
-	UNUSED(o);
-	Campaign *co = data;
+	UNUSED(data);
+	Campaign *co = o->Data;
 	const Mission *m = CampaignGetCurrentMission(co);
 	if (!m)
 		return NULL;
@@ -304,8 +304,8 @@ static const char *MissionGetCharacterCountStr(UIObject *o, void *data)
 static const char *MissionGetSpecialCountStr(UIObject *o, void *data)
 {
 	static char s[128];
-	UNUSED(o);
-	Campaign *co = data;
+	UNUSED(data);
+	Campaign *co = o->Data;
 	if (!CampaignGetCurrentMission(co))
 		return NULL;
 	sprintf(

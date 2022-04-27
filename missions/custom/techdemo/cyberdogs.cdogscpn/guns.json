@@ -1,0 +1,195 @@
+{
+  "Version": 3,
+  "Guns": [
+    {
+      "Pic": "chainsaw",
+      "Icon": "chainsaw",
+      "Name": "Chainsaw",
+      "Bullet": "chainsaw",
+      "Cost": 0,
+      "Lock": 0,
+      "Sound": "",
+      "SoundLockLength": 50,
+      "CanShoot": false
+    },
+    {
+      "Pic": "chainsaw",
+      "Icon": "chainsaw",
+      "Name": "Chainsaw x2",
+      "Bullet": "chainsaw_x2",
+      "Cost": 0,
+      "Lock": 0,
+      "Sound": "",
+      "SoundLockLength": 50,
+      "CanShoot": false
+    },
+    {
+      "Pic": "chainsaw",
+      "Icon": "chainsaw",
+      "Name": "Chainsaw x3",
+      "Bullet": "chainsaw_x3",
+      "Cost": 0,
+      "Lock": 0,
+      "Sound": "",
+      "SoundLockLength": 50,
+      "CanShoot": false
+    },
+    {
+      "Pic": "chainsaw",
+      "Icon": "chainsaw",
+      "Name": "Chainsaw x4",
+      "Bullet": "chainsaw_x4",
+      "Cost": 0,
+      "Lock": 0,
+      "Sound": "",
+      "SoundLockLength": 50,
+      "CanShoot": false
+    },
+    {
+      "Pic": "chainsaw",
+      "Icon": "chainsaw",
+      "Name": "Chainsaw x5",
+      "Bullet": "chainsaw_x5",
+      "Cost": 0,
+      "Lock": 0,
+      "Sound": "",
+      "SoundLockLength": 50,
+      "CanShoot": false
+    },
+    {
+      "Pic": "",
+      "Icon": "fist",
+      "Name": "Fists",
+      "Description": "A melee weapon of last resort",
+      "Bullet": "fist",
+      "Cost": 0,
+      "Lock": 0,
+      "Sound": "",
+      "SoundLockLength": 50,
+      "SwitchSound": "knuckles",
+      "CanShoot": false,
+      "CanDrop": false
+    },
+    {
+      "Pic": "chaingun",
+      "Name": "MiniGun",
+      "Icon": "minigun",
+      "Bullet": "mg",
+      "Lock": 7,
+      "Sound": "lmg",
+      "SwitchSound": "mg_switch",
+      "MuzzleFlashParticle": "muzzle_flash_mg",
+      "Brass": "brass_big",
+      "Ammo": "Bullets"
+    },
+    {
+      "Pic": "launcher",
+      "Name": "Launcher",
+      "Icon": "launcher",
+      "Bullet": "grenade",
+      "Lock": 30,
+      "Sound": "bottle_pop",
+      "SwitchSound": "swarmer_switch",
+      "Elevation": 24,
+      "Ammo": "Grenades"
+    },
+    {
+      "Pic": "flamer",
+      "Grips": 2,
+      "Name": "Flamer",
+      "Icon": "flamer",
+      "Bullet": "flame",
+      "Lock": 7,
+      "Sound": "flamer",
+      "SwitchSound": "flamer_switch",
+      "SoundLockLength": 36,
+      "MuzzleFlashParticle": "muzzle_flash_flamer",
+      "Ammo": "Gas tank"
+    },
+    {
+      "Name": "Powergun",
+      "Icon": "powergun",
+      "Bullet": "sniper",
+      "Lock": 40,
+      "Sound": "fusion",
+      "SwitchSound": "powergun_switch",
+      "MuzzleFlashParticle": "muzzle_flash_powergun",
+      "Ammo": "Cells"
+    },
+    {
+      "Pic": "blaster_yellow",
+      "Name": "Lazer",
+      "Bullet": "laser",
+      "Lock": 65,
+      "Sound": "powergun",
+      "MuzzleFlashSprite": "muzzle_flash_big",
+      "MuzzleFlashColor": "ffff00",
+      "MuzzleFlashDuration": 5
+    },
+    {
+      "Pic": "blaster_yellow",
+      "Name": "TurboLazer",
+      "Bullet": "turbo_laser",
+      "Lock": 35,
+      "Sound": "powergun",
+      "MuzzleFlashSprite": "muzzle_flash_big",
+      "MuzzleFlashColor": "ffff00",
+      "MuzzleFlashDuration": 5
+    },
+    {
+      "Pic": "pistol",
+      "Name": "Blaster",
+      "Icon": "blaster",
+      "Bullet": "pulse",
+      "Lock": 12,
+      "Sound": "pulse",
+      "SwitchSound": "pulse_switch",
+      "MuzzleFlashParticle": "muzzle_flash_pulse",
+      "Ammo": "Mini cells"
+    },
+    {
+      "Pic": "rifle",
+      "Grips": 2,
+      "Name": "MegaGun",
+      "Icon": "megagun",
+      "Bullet": "megagrenade",
+      "Lock": 30,
+      "Sound": "swell",
+      "SwitchSound": "heatseeker_switch",
+      "MuzzleFlashParticle": "muzzle_flash_heatseeker",
+      "Ammo": "Rockets",
+      "Shake": {
+        "Amount": 8,
+        "CameraSubjectOnly": true
+      }
+    },
+    {
+      "Name": "DumbGun",
+      "Bullet": "laser_dumb",
+      "Lock": 40,
+      "Sound": "pistol"
+    },
+    {
+      "Pic": "zapper_green",
+      "Name": "Gun",
+      "Bullet": "pulse_green",
+      "Lock": 30,
+      "Sound": "pistol"
+    }
+  ],
+  "PseudoGuns" : [
+    {
+      "Name": "explosion",
+      "Bullet": "explosion_cast",
+      "Recoil": 6.28,
+      "SpreadCount": 5,
+      "Shake": {
+        "Amount": 10
+      }
+    },
+    {
+      "Name": "explosion_ball",
+      "Bullet": "explosion_ball"
+    }
+  ]
+}
