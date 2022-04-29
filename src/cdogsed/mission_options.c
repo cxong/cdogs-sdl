@@ -69,7 +69,7 @@ EditorResult EditMissionOptions(EventHandlers *handlers, Mission *m)
 	{
 		strcpy(data.Description, m->Description);
 	}
-	if (m->Music.Type == MUSIC_SRC_DYNAMIC)
+	if (m->Music.Type == MUSIC_SRC_DYNAMIC && m->Music.Data.Filename)
 	{
 		strcpy(data.MusicFilename, m->Music.Data.Filename);
 	}

@@ -58,7 +58,6 @@
 #define YC_CAMPAIGNTITLE    0
 #define YC_MISSIONTITLE     2
 #define YC_MISSIONLOOKS     4
-#define YC_MISSIONDESC      5
 #define YC_CHARACTERS       6
 #define YC_SPECIALS         7
 #define YC_ITEMS            9

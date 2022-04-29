@@ -296,7 +296,8 @@ void CreateObjectivesObjs(Campaign *co, UIObject *c, struct vec2i pos)
 		CSTRDUP(o2->u.Textbox.Hint, "(Objective description)");
 		o2->Pos = pos;
 		CSTRDUP(
-			o2->Tooltip, "Insert/CTRL-i, Delete/CTRL+d: add/remove objective");
+			o2->Tooltip,
+			"Insert/" KMOD_CMD_NAME "+i, Delete/" KMOD_CMD_NAME "+d: add/remove objective");
 		o2->CheckVisible = MissionCheckObjectiveDescription;
 		UIObjectAddChild(o2, CreateObjectiveObjs(objectivesPos, co, i));
 		UIObjectAddChild(c, o2);

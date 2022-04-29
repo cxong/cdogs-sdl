@@ -930,6 +930,10 @@ static UIObject *CreateEditorObjs(Campaign *co, EditorBrush *brush)
 
 	pos.x = 20;
 	pos.y += th + 5;
+	
+	UIObjectDestroy(o);
+		o = UIObjectCreate(UITYPE_LABEL, 0, svec2i_zero(), svec2i(189, th));
+		o->Flags = UI_SELECT_ONLY;
 
 	pos.y += th;
 	o2 = UIObjectCopy(o);
@@ -938,7 +942,8 @@ static UIObject *CreateEditorObjs(Campaign *co, EditorBrush *brush)
 	o2->Id = YC_CHARACTERS;
 	o2->Pos = pos;
 	CSTRDUP(
-		o2->Tooltip, "Use Insert/CTRL+i, Delete/CTRL+d and PageUp/PageDown");
+		o2->Tooltip,
+		"Use Insert/" KMOD_CMD_NAME "+i, Delete/" KMOD_CMD_NAME "+d and PageUp/PageDown");
 	UIObjectAddChild(o2, CreateCharacterObjs(co, pos.y));
 	UIObjectAddChild(c, o2);
 	pos.y += th;
@@ -948,7 +953,8 @@ static UIObject *CreateEditorObjs(Campaign *co, EditorBrush *brush)
 	o2->Id = YC_SPECIALS;
 	o2->Pos = pos;
 	CSTRDUP(
-		o2->Tooltip, "Use Insert/CTRL+i, Delete/CTRL+d and PageUp/PageDown");
+		o2->Tooltip,
+		"Use Insert/" KMOD_CMD_NAME "+i, Delete/" KMOD_CMD_NAME "+d and PageUp/PageDown");
 	UIObjectAddChild(o2, CreateSpecialCharacterObjs(co, pos.y));
 	UIObjectAddChild(c, o2);
 	pos.y += th;
@@ -965,7 +971,8 @@ static UIObject *CreateEditorObjs(Campaign *co, EditorBrush *brush)
 	o2->Id = YC_ITEMS;
 	o2->Pos = pos;
 	CSTRDUP(
-		o2->Tooltip, "Use Insert/CTRL+i, Delete/CTRL+d and PageUp/PageDown\n"
+		o2->Tooltip,
+		"Use Insert/" KMOD_CMD_NAME "+i, Delete/" KMOD_CMD_NAME "+d and PageUp/PageDown\n"
 					 "Shift+click to change amounts");
 	UIObjectAddChild(o2, CreateMapItemObjs(co, pos.y));
 	UIObjectAddChild(c, o2);

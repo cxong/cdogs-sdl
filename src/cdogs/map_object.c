@@ -593,6 +593,10 @@ const Pic *MapObjectGetPic(const MapObject *mo, struct vec2i *offset)
 bool MapObjectIsTileOK(
 	const MapObject *mo, const Tile *tile, const Tile *tileAbove)
 {
+	if (tile == NULL)
+	{
+		return false;
+	}
 	if (mo->DrawAbove)
 	{
 		// Check there are no draw above objects

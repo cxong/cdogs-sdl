@@ -105,14 +105,6 @@ Uint32 ticksAutosave;
 Uint32 sTicksElapsed;
 bool fileChanged = false;
 
-#ifdef __APPLE__
-#define KMOD_CMD KMOD_GUI
-#define KMOD_CMD_NAME "Cmd"
-#else
-#define KMOD_CMD KMOD_CTRL
-#define KMOD_CMD_NAME "Ctrl"
-#endif
-
 static struct vec2i GetMouseTile(EventHandlers *e)
 {
 	Mission *m = CampaignGetCurrentMission(&gCampaign);

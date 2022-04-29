@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014, 2016, 2020 Cong Xu
+	Copyright (c) 2014, 2016, 2020, 2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,14 @@
 
 #include "editor_brush.h"
 #include "ui_object.h"
+
+#ifdef __APPLE__
+#define KMOD_CMD KMOD_GUI
+#define KMOD_CMD_NAME "Cmd"
+#else
+#define KMOD_CMD KMOD_CTRL
+#define KMOD_CMD_NAME "Ctrl"
+#endif
 
 typedef struct
 {
