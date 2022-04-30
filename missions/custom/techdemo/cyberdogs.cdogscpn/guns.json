@@ -59,13 +59,12 @@
     {
       "Pic": "",
       "Icon": "fist",
-      "Name": "Fists",
-      "Description": "A melee weapon of last resort",
+      "Name": "Barehanded",
       "Bullet": "fist",
       "Cost": 0,
       "Lock": 0,
       "Sound": "",
-      "SoundLockLength": 50,
+      "SoundLockLength": 20,
       "SwitchSound": "knuckles",
       "CanShoot": false,
       "CanDrop": false
@@ -90,7 +89,7 @@
       "Lock": 30,
       "Sound": "bottle_pop",
       "SwitchSound": "swarmer_switch",
-      "Elevation": 24,
+      "Elevation": 12,
       "Ammo": "Grenades"
     },
     {
@@ -152,7 +151,7 @@
       "Grips": 2,
       "Name": "MegaGun",
       "Icon": "megagun",
-      "Bullet": "megagrenade",
+      "Bullet": "megarocket",
       "Lock": 30,
       "Sound": "swell",
       "SwitchSound": "heatseeker_switch",
@@ -179,8 +178,29 @@
   ],
   "PseudoGuns" : [
     {
+      "Name": "blast_weak",
+      "Bullet": "blast_weak",
+      "Sound": "explosion_small"
+    },
+    {
+      "Name": "demo_weak",
+      "Bullet": "demo_weak",
+      "Sound": ""
+    },
+    {
+      "Name": "blast_strong",
+      "Bullet": "blast_strong",
+      "Sound": "explosion"
+    },
+    {
+      "Name": "demo_strong",
+      "Bullet": "demo_strong",
+      "Sound": ""
+    },
+    {
       "Name": "explosion",
       "Bullet": "explosion_cast",
+      "Sound": "",
       "Recoil": 6.28,
       "SpreadCount": 5,
       "Shake": {
@@ -189,7 +209,8 @@
     },
     {
       "Name": "explosion_ball",
-      "Bullet": "explosion_ball"
+      "Bullet": "explosion_ball",
+      "Sound": ""
     }
   ]
 }

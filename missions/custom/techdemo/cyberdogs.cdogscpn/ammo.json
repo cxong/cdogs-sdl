@@ -17,7 +17,7 @@
         "Pic": "grenade_pickup"
       },
       "Sound": "grenade_pickup",
-      "Amount": 5
+      "Amount": 10
     },
     {
       "Name": "Cells",
@@ -46,6 +46,15 @@
         "Pic": "rockets"
       },
       "Sound": "grenade_pickup",
+      "Amount": 10
+    },
+    {
+      "Name": "Gas tank",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "gas_tank"
+      },
+      "Sound": "gas_tank_pickup",
       "Amount": 100
     }
   ]

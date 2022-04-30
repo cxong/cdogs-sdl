@@ -713,7 +713,10 @@ void ActorAddAmmo(TActor *actor, const int ammoId, const int amount)
 	int *ammo = CArrayGet(&actor->ammo, ammoId);
 	*ammo += amount;
 	const int ammoMax = AmmoGetById(&gAmmo, ammoId)->Max;
-	*ammo = CLAMP(*ammo, 0, ammoMax);
+	if (ammoMax > 0)
+	{
+		*ammo = CLAMP(*ammo, 0, ammoMax);
+	}
 }
 
 bool ActorUsesAmmo(const TActor *actor, const int ammoId)

@@ -31,7 +31,7 @@
       "Power": 2,
       "Hit": {
         "Flesh": {
-          "Sound": "hits/chainsaw"
+          "Sound": "chainsaw"
         }
       }
     },
@@ -40,7 +40,7 @@
       "Power": 4,
       "Hit": {
         "Flesh": {
-          "Sound": "hits/chainsaw"
+          "Sound": "chainsaw"
         }
       }
     },
@@ -49,7 +49,7 @@
       "Power": 6,
       "Hit": {
         "Flesh": {
-          "Sound": "hits/chainsaw"
+          "Sound": "chainsaw"
         }
       }
     },
@@ -58,7 +58,7 @@
       "Power": 8,
       "Hit": {
         "Flesh": {
-          "Sound": "hits/chainsaw"
+          "Sound": "chainsaw"
         }
       }
     },
@@ -67,7 +67,7 @@
       "Power": 10,
       "Hit": {
         "Flesh": {
-          "Sound": "hits/chainsaw"
+          "Sound": "chainsaw"
         }
       }
     },
@@ -170,23 +170,25 @@
       },
       "OutOfRangeGuns": [
         "blast_weak",
-        "demo_weak",
-        "explosion_spread"
+        "explosion"
       ],
       "HitGuns": [
         "blast_weak",
         "demo_weak",
-        "explosion_spread"
+        "explosion"
       ],
       "Size": [1, 1]
     },
     {
-      "Name": "megagrenade",
+      "Name": "megarocket",
       "Pic": {
-        "Type": "Animated",
-        "Sprites": "grenade",
-        "TicksPerFrame": 2,
-        "Mask": "808080"
+        "Type": "Directional",
+        "Sprites": "rocket"
+      },
+      "Trail": {
+        "Particle": "smoke_trail_small",
+        "Width": 0,
+        "TicksPerEmit": 4
       },
       "ShadowSize": [6, 4],
       "Speed": 384,
@@ -202,13 +204,12 @@
       },
       "OutOfRangeGuns": [
         "blast_strong",
-        "demo_strong",
-        "explosion_spread"
+        "explosion"
       ],
       "HitGuns": [
         "blast_strong",
         "demo_strong",
-        "explosion_spread"
+        "explosion"
       ],
       "Size": [1, 1]
     },
@@ -281,7 +282,7 @@
     {
       "Name": "blast_strong",
       "Range": 1,
-      "Power": 40,
+      "Power": 200,
       "Size": [32, 32],
       "Persists": true,
       "Spark": "",
@@ -293,27 +294,28 @@
       "Name": "demo_weak",
       "Range": 1,
       "Power": 40,
-      "Size": [1, 1],
+      "Size": [2, 2],
       "Spark": "",
       "Hit": {
         "Object": {}
       }
     },
     {
-      "Name": "explosion_spread",
-      "SpeedLow": -256,
-      "SpeedHigh": 256,
+      "Name": "demo_strong",
       "Range": 1,
-      "Hit": {},
-      "OutOfRangeGuns": [
-        "explosion"
-      ]
+      "Power": 200,
+      "Size": [2, 2],
+      "Spark": "",
+      "Hit": {
+        "Object": {}
+      }
     },
     {
       "Name": "explosion_cast",
-      "SpeedLow": 0,
-      "SpeedHigh": 4096,
+      "SpeedLow": 4096,
+      "SpeedHigh": 8192,
       "Range": 1,
+      "Hit": {},
       "OutOfRangeGuns": [
         "explosion_ball"
       ]

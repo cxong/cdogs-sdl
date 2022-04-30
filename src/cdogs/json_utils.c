@@ -255,7 +255,14 @@ void LoadBulletGuns(CArray *guns, json_t *node, const char *name)
 	for (json_t *gun = node->child->child; gun; gun = gun->next)
 	{
 		const WeaponClass *wc = StrWeaponClass(gun->text);
-		CArrayPushBack(guns, &wc);
+		if (wc == NULL)
+		{
+			CASSERT(false, "cannot find weapon class!");
+		}
+		else
+		{
+			CArrayPushBack(guns, &wc);
+		}
 	}
 }
 void LoadColor(color_t *c, json_t *node, const char *name)

@@ -141,7 +141,7 @@ static void LoadWeaponClass(WeaponClass *wc, json_t *node, const int version)
 		CSTRDUP(wc->u.Normal.Sprites, "chars/guns/blaster");
 		wc->u.Normal.Grips = 1;
 		wc->Icon = PicManagerGetPic(&gPicManager, "peashooter");
-		wc->u.Normal.Sound = StrSound("bang");
+		wc->u.Normal.Sound = StrSound("laserpew");
 		wc->SwitchSound = StrSound("switch");
 		wc->u.Normal.Spread.Count = 1;
 		wc->u.Normal.MuzzleHeight = 10 * Z_FACTOR;

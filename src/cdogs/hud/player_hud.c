@@ -354,8 +354,9 @@ static void DrawWeaponStatus(
 		if (amount > 0)
 		{
 			const Pic *fillPic = PicManagerGetPic(pm, "hud/gauge_small_inner");
+			const int ammoMax = ammo->Max ? ammo->Max : amount;
 			const struct vec2i fillPicSize = svec2i(
-				MAX(1, (AMMO_WIDTH - 1) * amount / ammo->Max),
+				MAX(1, (AMMO_WIDTH - 1) * amount / ammoMax),
 				fillPic->size.y);
 			Draw9Slice(
 				g, fillPic, Rect2iNew(svec2i(pos.x, pos.y), fillPicSize), 1, 1,

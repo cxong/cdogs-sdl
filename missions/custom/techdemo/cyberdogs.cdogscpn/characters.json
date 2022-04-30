@@ -1,0 +1,20 @@
+{
+	"Version": 13,
+	"Characters": [{
+		"Class": "Ogre",
+		"Skin": "00ff00ff",
+		"Arms": "404040ff",
+		"Body": "404040ff",
+		"Legs": "404040ff",
+		"Hair": "000000ff",
+		"Feet": "404040ff",
+		"speed": 256,
+		"Gun": "DumbGun",
+		"maxHealth": 40,
+		"flags": 1024,
+		"probabilityToMove": 50,
+		"probabilityToTrack": 25,
+		"probabilityToShoot": 0,
+		"actionDelay": 15
+	}]
+}
