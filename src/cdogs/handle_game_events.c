@@ -283,7 +283,8 @@ static void HandleGameEvent(
 		ActorAddAmmo(a, e.u.AddAmmo.Ammo.Id, e.u.AddAmmo.Ammo.Amount);
 		// Tell the spawner that we took ammo so we can
 		// spawn more (but only if we're the server)
-		if (e.u.AddAmmo.IsRandomSpawned && !gCampaign.IsClient)
+		if (e.u.AddAmmo.IsRandomSpawned &&
+			gCampaign.Setting.RandomPickups && !gCampaign.IsClient)
 		{
 			PowerupSpawnerRemoveOne(
 				CArrayGet(ammoSpawners, e.u.AddAmmo.Ammo.Id));

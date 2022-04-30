@@ -89,7 +89,7 @@
       "Lock": 30,
       "Sound": "bottle_pop",
       "SwitchSound": "swarmer_switch",
-      "Elevation": 12,
+      "Elevation": 14,
       "Ammo": "Grenades"
     },
     {
@@ -120,7 +120,7 @@
       "Name": "Lazer",
       "Bullet": "laser",
       "Lock": 65,
-      "Sound": "powergun",
+      "Sound": "pistol",
       "MuzzleFlashSprite": "muzzle_flash_big",
       "MuzzleFlashColor": "ffff00",
       "MuzzleFlashDuration": 5
@@ -130,7 +130,7 @@
       "Name": "TurboLazer",
       "Bullet": "turbo_laser",
       "Lock": 35,
-      "Sound": "powergun",
+      "Sound": "pistol",
       "MuzzleFlashSprite": "muzzle_flash_big",
       "MuzzleFlashColor": "ffff00",
       "MuzzleFlashDuration": 5
@@ -141,7 +141,7 @@
       "Icon": "blaster",
       "Bullet": "pulse",
       "Lock": 12,
-      "Sound": "pulse",
+      "Sound": "pistol",
       "SwitchSound": "pulse_switch",
       "MuzzleFlashParticle": "muzzle_flash_pulse",
       "Ammo": "Mini cells"

@@ -166,7 +166,8 @@
         "Wall": {}
       },
       "Falling": {
-        "GravityFactor": 0.3
+        "GravityFactor": 0.7,
+        "FallsDown": true
       },
       "OutOfRangeGuns": [
         "blast_weak",
@@ -294,7 +295,7 @@
       "Name": "demo_weak",
       "Range": 1,
       "Power": 40,
-      "Size": [2, 2],
+      "Size": [4, 4],
       "Spark": "",
       "Hit": {
         "Object": {}
@@ -304,7 +305,7 @@
       "Name": "demo_strong",
       "Range": 1,
       "Power": 200,
-      "Size": [2, 2],
+      "Size": [4, 4],
       "Spark": "",
       "Hit": {
         "Object": {}
