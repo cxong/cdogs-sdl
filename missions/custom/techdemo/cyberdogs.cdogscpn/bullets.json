@@ -273,7 +273,7 @@
       "Name": "blast_weak",
       "Range": 1,
       "Power": 40,
-      "Size": [32, 32],
+      "Size": [80, 80],
       "Persists": true,
       "Spark": "",
       "Hit": {
@@ -284,7 +284,7 @@
       "Name": "blast_strong",
       "Range": 1,
       "Power": 200,
-      "Size": [32, 32],
+      "Size": [80, 80],
       "Persists": true,
       "Spark": "",
       "Hit": {
@@ -295,7 +295,7 @@
       "Name": "demo_weak",
       "Range": 1,
       "Power": 40,
-      "Size": [4, 4],
+      "Size": [5, 5],
       "Spark": "",
       "Hit": {
         "Object": {}
@@ -305,7 +305,7 @@
       "Name": "demo_strong",
       "Range": 1,
       "Power": 200,
-      "Size": [4, 4],
+      "Size": [5, 5],
       "Spark": "",
       "Hit": {
         "Object": {}

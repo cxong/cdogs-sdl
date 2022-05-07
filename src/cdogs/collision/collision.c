@@ -296,6 +296,19 @@ void OverlapThings(
 	CollideWallFunc wallFunc, void *wallData)
 {
 	TileCacheReset(&gCollisionSystem.tileCache);
+	// Also search around the object if it is large
+	// TODO: doesn't work for objects in motion
+	const int dtx = (size.x + TILE_WIDTH - 1) / 2 / TILE_WIDTH;
+	const int dty = (size.y + TILE_HEIGHT - 1) / 2 / TILE_HEIGHT;
+	const struct vec2i tv = Vec2iToTile(svec2i_assign_vec2(pos));
+	for (int dy = -dty; dy < 2 * dty; dy++)
+	{
+		for (int dx = -dtx; dx < 2 * dtx; dx++)
+		{
+			const struct vec2i dtv = svec2i(tv.x + dx, tv.y + dy);
+			TileCacheAdd(&gCollisionSystem.tileCache, dtv);
+		}
+	}
 	// Add all the tiles along the motion path
 	AlgoLineDrawData drawData;
 	drawData.Draw = AddPosToTileCache;
