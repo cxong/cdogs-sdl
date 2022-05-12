@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
 
- Copyright (c) 2013-2016, 2019, 2021 Cong Xu
+ Copyright (c) 2013-2016, 2019, 2021-2022 Cong Xu
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -147,6 +147,8 @@ static void LoadPlayersNode(CArray *players, json_t *node)
 
 		LoadIntArray(&ps.ammo, child, "Ammo");
 
+		LoadInt(&ps.Lives, child, "Lives");
+
 		CArrayPushBack(players, &ps);
 	}
 }
@@ -165,6 +167,7 @@ static void AddPlayersNode(CArray *players, json_t *root)
 	}
 	json_insert_pair_into_object(playerNode, "Guns", gunsNode);
 	AddIntArray(playerNode, "Ammo", &ps->ammo);
+	AddIntPair(playerNode, "Lives", ps->Lives);
 
 	json_insert_child(playersNode, playerNode);
 	CA_FOREACH_END()
@@ -367,6 +370,7 @@ void AutosaveAdd(
 		}
 	}
 	CArrayCopy(&ps.ammo, &pd->ammo);
+	ps.Lives = pd->Lives;
 	CArrayPushBack(&ms.Players, &ps);
 	CA_FOREACH_END()
 	AutosaveAddCampaign(a, &ms);
@@ -432,4 +436,35 @@ const CampaignSave *AutosaveGetLastCampaign(const Autosave *a)
 		return NULL;
 	}
 	return CArrayGet(&a->Campaigns, a->LastCampaignIndex);
+}
+
+void PlayerSavesApply(const CArray *playerSaves, const bool weaponPersist)
+{
+	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size &&
+							 idx < (int)playerSaves->size;
+		 i++, idx++)
+	{
+		PlayerData *p = CArrayGet(&gPlayerDatas, i);
+		if (!p->IsLocal)
+		{
+			idx--;
+			continue;
+		}
+		const PlayerSave *ps = CArrayGet(playerSaves, idx);
+		if (weaponPersist)
+		{
+			for (int j = 0; j < MAX_WEAPONS; j++)
+			{
+				if (ps->Guns[j] != NULL)
+				{
+					p->guns[j] = StrWeaponClass(ps->Guns[j]);
+				}
+			}
+			CArrayCopy(&p->ammo, &ps->ammo);
+		}
+		if (ps->Lives > 0)
+		{
+			p->Lives = ps->Lives;
+		}
+	}
 }

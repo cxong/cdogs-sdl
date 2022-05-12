@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
  
- Copyright (c) 2013-2015, 2021 Cong Xu
+ Copyright (c) 2013-2015, 2021-2022 Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,7 @@ typedef struct
 {
 	char *Guns[MAX_WEAPONS];
 	CArray ammo; // of int
+	int Lives;
 } PlayerSave;
 typedef struct
 {
@@ -70,3 +71,4 @@ void AutosaveAddCampaign(Autosave *autosave, CampaignSave *cs);
 const CampaignSave *AutosaveGetCampaign(
 	Autosave *autosave, const char *path);
 const CampaignSave *AutosaveGetLastCampaign(const Autosave *a);
+void PlayerSavesApply(const CArray *playerSaves, const bool weaponPersist);

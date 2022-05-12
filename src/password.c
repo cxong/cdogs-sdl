@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2014, 2017, 2021 Cong Xu
+	Copyright (c) 2013-2014, 2017, 2021-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -179,32 +179,11 @@ static GameLoopResult LevelSelectionUpdate(GameLoopData *data, LoopRunner *l)
 				break;
 			}
 
-			// Load autosaved player guns/ammo
-			const Mission *m = CampaignGetCurrentMission(&gCampaign);
-			if (pData->save != NULL && m->WeaponPersist &&
-				gCampaign.MissionIndex > 0)
+			// Load autosaved player data
+			if (pData->save != NULL && gCampaign.MissionIndex > 0)
 			{
-				for (int i = 0, idx = 0; i < (int)gPlayerDatas.size &&
-										 idx < (int)pData->save->Players.size;
-					 i++, idx++)
-				{
-					PlayerData *p = CArrayGet(&gPlayerDatas, i);
-					if (!p->IsLocal)
-					{
-						idx--;
-						continue;
-					}
-					const PlayerSave *ps =
-						CArrayGet(&pData->save->Players, idx);
-					for (int j = 0; j < MAX_WEAPONS; j++)
-					{
-						if (ps->Guns[j] != NULL)
-						{
-							p->guns[j] = StrWeaponClass(ps->Guns[j]);
-						}
-					}
-					CArrayCopy(&p->ammo, &ps->ammo);
-				}
+				const Mission *m = CampaignGetCurrentMission(&gCampaign);
+				PlayerSavesApply(&pData->save->Players, m->WeaponPersist);
 			}
 		}
 	}
