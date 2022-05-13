@@ -360,6 +360,11 @@ static void HandleGameEvent(
 		ActorDestroy(a);
 	}
 	break;
+	case GAME_EVENT_PLAYER_ADD_LIVES: {
+		PlayerData *p = PlayerDataGetByUID(e.u.PlayerAddLives.UID);
+		p->Lives += e.u.PlayerAddLives.Lives;
+	}
+	break;
 	case GAME_EVENT_ACTOR_MELEE:
 		DamageMelee(e.u.Melee);
 		break;

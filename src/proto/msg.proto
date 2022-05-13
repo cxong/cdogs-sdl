@@ -215,6 +215,11 @@ message NActorDie {
 	uint32 UID = 1;
 }
 
+message NPlayerAddLives {
+	uint32 UID = 1;
+	uint32 Lives = 2;
+}
+
 message NActorMelee {
 	uint32 UID = 1;
 	string BulletClass = 2;

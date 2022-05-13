@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2015, 2017-2018, 2020-2021 Cong Xu
+	Copyright (c) 2013-2015, 2017-2018, 2020-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -557,7 +557,8 @@ static void FindObjectivesSortedByDistance(
 		break;
 	case PICKUP_HEALTH:
 		// Pick up if we are on low health, and lower than lead player
-		if (actor->health > ModeMaxHealth(gCampaign.Entry.Mode) / 4)
+		if (actor->health > ModeMaxHealth(gCampaign.Entry.Mode) / 4 ||
+			(closestPlayer != NULL && actor->health >= closestPlayer->health))
 		{
 			continue;
 		}
@@ -587,6 +588,15 @@ static void FindObjectivesSortedByDistance(
 		}
 		break;
 	case PICKUP_SHOW_MAP:
+		co.Type = AI_OBJECTIVE_TYPE_PICKUP;
+		co.u.UID = p->UID;
+		break;
+	case PICKUP_LIVES:
+		// Pick up if we have less lives than lead player
+		if (closestPlayer != NULL && PlayerDataGetByUID(actor->PlayerUID)->Lives >= PlayerDataGetByUID(closestPlayer->PlayerUID)->Lives)
+		{
+			continue;
+		}
 		co.Type = AI_OBJECTIVE_TYPE_PICKUP;
 		co.u.UID = p->UID;
 		break;

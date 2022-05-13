@@ -118,6 +118,11 @@ typedef struct _NObjectiveUpdate {
     int32_t Count;
 } NObjectiveUpdate;
 
+typedef struct _NPlayerAddLives {
+    uint32_t UID;
+    uint32_t Lives;
+} NPlayerAddLives;
+
 typedef struct _NPlayerRemove {
     uint32_t UID;
 } NPlayerRemove;
@@ -419,6 +424,7 @@ extern "C" {
 #define NActorAddAmmo_init_default               {0, 0, false, NAmmo_init_default, 0}
 #define NActorUseAmmo_init_default               {0, 0, false, NAmmo_init_default}
 #define NActorDie_init_default                   {0}
+#define NPlayerAddLives_init_default             {0, 0}
 #define NActorMelee_init_default                 {0, "", 0, 0, 0}
 #define NActorPilot_init_default                 {0, 0, 0}
 #define NAddPickup_init_default                  {0, "", 0, 0, 0, false, NVec2_init_default}
@@ -470,6 +476,7 @@ extern "C" {
 #define NActorAddAmmo_init_zero                  {0, 0, false, NAmmo_init_zero, 0}
 #define NActorUseAmmo_init_zero                  {0, 0, false, NAmmo_init_zero}
 #define NActorDie_init_zero                      {0}
+#define NPlayerAddLives_init_zero                {0, 0}
 #define NActorMelee_init_zero                    {0, "", 0, 0, 0}
 #define NActorPilot_init_zero                    {0, 0, 0}
 #define NAddPickup_init_zero                     {0, "", 0, 0, 0, false, NVec2_init_zero}
@@ -539,6 +546,8 @@ extern "C" {
 #define NMissionEnd_Mission_tag                  4
 #define NObjectiveUpdate_ObjectiveId_tag         1
 #define NObjectiveUpdate_Count_tag               2
+#define NPlayerAddLives_UID_tag                  1
+#define NPlayerAddLives_Lives_tag                2
 #define NPlayerRemove_UID_tag                    1
 #define NPlayerStats_Score_tag                   1
 #define NPlayerStats_Kills_tag                   2
@@ -942,6 +951,12 @@ X(a, STATIC,   SINGULAR, UINT32,   UID,               1)
 #define NActorDie_CALLBACK NULL
 #define NActorDie_DEFAULT NULL
 
+#define NPlayerAddLives_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+X(a, STATIC,   SINGULAR, UINT32,   Lives,             2)
+#define NPlayerAddLives_CALLBACK NULL
+#define NPlayerAddLives_DEFAULT NULL
+
 #define NActorMelee_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
 X(a, STATIC,   SINGULAR, STRING,   BulletClass,       2) \
@@ -1127,6 +1142,7 @@ extern const pb_msgdesc_t NAmmo_msg;
 extern const pb_msgdesc_t NActorAddAmmo_msg;
 extern const pb_msgdesc_t NActorUseAmmo_msg;
 extern const pb_msgdesc_t NActorDie_msg;
+extern const pb_msgdesc_t NPlayerAddLives_msg;
 extern const pb_msgdesc_t NActorMelee_msg;
 extern const pb_msgdesc_t NActorPilot_msg;
 extern const pb_msgdesc_t NAddPickup_msg;
@@ -1180,6 +1196,7 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 #define NActorAddAmmo_fields &NActorAddAmmo_msg
 #define NActorUseAmmo_fields &NActorUseAmmo_msg
 #define NActorDie_fields &NActorDie_msg
+#define NPlayerAddLives_fields &NPlayerAddLives_msg
 #define NActorMelee_fields &NActorMelee_msg
 #define NActorPilot_fields &NActorPilot_msg
 #define NAddPickup_fields &NAddPickup_msg
@@ -1233,6 +1250,7 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 #define NActorAddAmmo_size                       33
 #define NActorUseAmmo_size                       31
 #define NActorDie_size                           6
+#define NPlayerAddLives_size                     12
 #define NActorMelee_size                         164
 #define NActorPilot_size                         19
 #define NAddPickup_size                          167

@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2015-2016, 2018, 2020-2021 Cong Xu
+	Copyright (c) 2015-2016, 2018, 2020-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -44,6 +44,7 @@ PickupType StrPickupType(const char *s)
 	S2T(PICKUP_KEYCARD, "Key");
 	S2T(PICKUP_GUN, "Gun");
 	S2T(PICKUP_SHOW_MAP, "ShowMap");
+	S2T(PICKUP_LIVES, "Lives");
 	return PICKUP_NONE;
 }
 const char *PickupTypeStr(const PickupType pt)
@@ -56,6 +57,7 @@ const char *PickupTypeStr(const PickupType pt)
 		T2S(PICKUP_KEYCARD, "Key");
 		T2S(PICKUP_GUN, "Gun");
 		T2S(PICKUP_SHOW_MAP, "ShowMap");
+		T2S(PICKUP_LIVES, "Lives");
 	default:
 		return "";
 	}
@@ -276,6 +278,9 @@ static bool TryLoadPickupclass(PickupClass *c, json_t *node, const int version)
 		{
 			CSTRDUP(c->Sound, "show_map");
 		}
+		break;
+	case PICKUP_LIVES:
+		LoadInt(&c->u.Lives, node, "Lives");
 		break;
 	default:
 		CASSERT(false, "Unknown pickup type");

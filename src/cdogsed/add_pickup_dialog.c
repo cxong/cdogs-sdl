@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2020-2021 Cong Xu
+	Copyright (c) 2020-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -161,6 +161,9 @@ static void DrawPropsSidebar(struct nk_context *ctx, const PickupClass *pc)
 	}
 	case PICKUP_SHOW_MAP:
 		break;
+	case PICKUP_LIVES:
+		sprintf(buf, "Lives: %d", pc->u.Lives);
+		nk_label(ctx, buf, NK_TEXT_LEFT);
 		break;
 	default:
 		CASSERT(false, "Unknown pickup type");

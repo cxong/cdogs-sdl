@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2015-2016, 2018, 2020-2021 Cong Xu
+	Copyright (c) 2015-2016, 2018, 2020-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,8 @@ typedef enum
 	PICKUP_AMMO,
 	PICKUP_KEYCARD,
 	PICKUP_GUN,
-	PICKUP_SHOW_MAP
+	PICKUP_SHOW_MAP,
+	PICKUP_LIVES,
 } PickupType;
 PickupType StrPickupType(const char *s);
 const char *PickupTypeStr(const PickupType pt);
@@ -57,6 +58,7 @@ typedef struct
 		NAmmo Ammo;
 		int Keys; // Refer to flags in mission.h
 		int GunId;
+		int Lives;
 	} u;
 	CPic Pic;
 	char *Sound;

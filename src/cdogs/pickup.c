@@ -214,6 +214,14 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 	break;
+			
+	case PICKUP_LIVES: {
+		GameEvent e = GameEventNew(GAME_EVENT_PLAYER_ADD_LIVES);
+		e.u.PlayerAddLives.UID = a->PlayerUID;
+		e.u.PlayerAddLives.Lives = p->class->u.Lives;
+		GameEventsEnqueue(&gGameEvents, e);
+	}
+	break;
 
 	default:
 		CASSERT(false, "unexpected pickup type");

@@ -102,6 +102,9 @@ PB_BIND(NActorUseAmmo, NActorUseAmmo, AUTO)
 PB_BIND(NActorDie, NActorDie, AUTO)
 
 
+PB_BIND(NPlayerAddLives, NPlayerAddLives, AUTO)
+
+
 PB_BIND(NActorMelee, NActorMelee, AUTO)
 
 

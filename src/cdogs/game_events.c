@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2020 Cong Xu
+	Copyright (c) 2013-2020, 2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -90,6 +90,7 @@ static GameEventEntry sGameEventEntries[] = {
 	{GAME_EVENT_ACTOR_ADD_AMMO, true, false, true, true, NActorAddAmmo_fields},
 	{GAME_EVENT_ACTOR_USE_AMMO, true, true, true, true, NActorUseAmmo_fields},
 	{GAME_EVENT_ACTOR_DIE, true, false, true, true, NActorDie_fields},
+	{GAME_EVENT_PLAYER_ADD_LIVES, true, false, true, true, NPlayerAddLives_fields},
 	{GAME_EVENT_ACTOR_MELEE, true, true, true, true, NActorMelee_fields},
 	{GAME_EVENT_ACTOR_PILOT, true, true, true, true, NActorPilot_fields},
 
@@ -246,6 +247,12 @@ GameEvent GameEventNew(GameEventType type)
 		break;
 	case GAME_EVENT_ACTOR_USE_AMMO:
 		e.u.UseAmmo.has_Ammo = true;
+		break;
+	case GAME_EVENT_ACTOR_DIE:
+		e.u.ActorDie.UID = -1;
+		break;
+	case GAME_EVENT_PLAYER_ADD_LIVES:
+		e.u.PlayerAddLives.UID = -1;
 		break;
 	case GAME_EVENT_ADD_BULLET:
 		e.u.AddBullet.ActorUID = -1;

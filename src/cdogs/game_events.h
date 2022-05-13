@@ -80,6 +80,7 @@ typedef enum
 	GAME_EVENT_ACTOR_ADD_AMMO,
 	GAME_EVENT_ACTOR_USE_AMMO,
 	GAME_EVENT_ACTOR_DIE,
+	GAME_EVENT_PLAYER_ADD_LIVES,
 	GAME_EVENT_ACTOR_MELEE,
 	GAME_EVENT_ACTOR_PILOT,
 
@@ -167,6 +168,7 @@ typedef struct
 		NActorAddAmmo AddAmmo;
 		NActorUseAmmo UseAmmo;
 		NActorDie ActorDie;
+		NPlayerAddLives PlayerAddLives;
 		NActorMelee Melee;
 		NActorPilot Pilot;
 		NAddPickup AddPickup;
