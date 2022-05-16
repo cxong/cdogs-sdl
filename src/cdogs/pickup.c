@@ -130,24 +130,28 @@ void PickupsUpdate(CArray *pickups, const int ticks)
 	CA_FOREACH_END()
 }
 
-static bool TreatAsGunPickup(const Pickup *p, const TActor *a);
-static bool TryPickupAmmo(TActor *a, const Pickup *p);
+static bool TreatAsGunPickup(const PickupEffect *pe, const TActor *a);
+static bool TryPickupAmmo(TActor *a, const Pickup *p, const PickupEffect *pe);
 static bool TryPickupGun(
-	TActor *a, const Pickup *p, const bool pickupAll, const char **sound);
+	TActor *a, const PickupEffect *pe, const bool pickupAll, const char **sound);
 void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 {
 	if (p->PickedUp)
 		return;
 	CASSERT(a->PlayerUID >= 0, "NPCs cannot pickup");
-	bool canPickup = true;
+	// can always pickup effect-less pickups
+	bool canPickup = p->class->Effects.size == 0;
 	const char *sound = p->class->Sound;
 	const struct vec2 actorPos = a->thing.Pos;
-	switch (p->class->Type)
+
+	CA_FOREACH(const PickupEffect, pe, p->class->Effects)
+	switch (pe->Type)
 	{
 	case PICKUP_JEWEL: {
+		canPickup = true;
 		GameEvent e = GameEventNew(GAME_EVENT_SCORE);
 		e.u.Score.PlayerUID = a->PlayerUID;
-		e.u.Score.Score = p->class->u.Score;
+		e.u.Score.Score = pe->u.Score;
 		GameEventsEnqueue(&gGameEvents, e);
 
 		e = GameEventNew(GAME_EVENT_ADD_PARTICLE);
@@ -158,11 +162,11 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 		e.u.AddParticle.DZ = 3;
 		if (gCampaign.Setting.Ammo)
 		{
-			sprintf(e.u.AddParticle.Text, "$%d", p->class->u.Score);
+			sprintf(e.u.AddParticle.Text, "$%d", pe->u.Score);
 		}
 		else
 		{
-			sprintf(e.u.AddParticle.Text, "+%d", p->class->u.Score);
+			sprintf(e.u.AddParticle.Text, "+%d", pe->u.Score);
 		}
 		GameEventsEnqueue(&gGameEvents, e);
 
@@ -173,14 +177,13 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 
 	case PICKUP_HEALTH:
 		// Don't pick up unless taken damage
-		canPickup = false;
 		if (a->health < ActorGetCharacter(a)->maxHealth)
 		{
 			canPickup = true;
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_HEAL);
 			e.u.Heal.UID = a->uid;
 			e.u.Heal.PlayerUID = a->PlayerUID;
-			e.u.Heal.Amount = p->class->u.Health;
+			e.u.Heal.Amount = pe->u.Health;
 			e.u.Heal.IsRandomSpawned = p->IsRandomSpawned;
 			GameEventsEnqueue(&gGameEvents, e);
 		}
@@ -188,26 +191,31 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 
 	case PICKUP_AMMO: // fallthrough
 	case PICKUP_GUN:
-		if (TreatAsGunPickup(p, a))
+		if (TreatAsGunPickup(pe, a))
 		{
-			canPickup = TryPickupGun(a, p, pickupAll, &sound);
+			canPickup = canPickup || TryPickupGun(a, pe, pickupAll, &sound);
 		}
 		else
 		{
-			canPickup = TryPickupAmmo(a, p);
+			canPickup = canPickup || TryPickupAmmo(a, p, pe);
 		}
 		break;
 
 	case PICKUP_KEYCARD: {
+		canPickup = true;
 		GameEvent e = GameEventNew(GAME_EVENT_ADD_KEYS);
-		e.u.AddKeys.KeyFlags = p->class->u.Keys;
+		e.u.AddKeys.KeyFlags = pe->u.Keys;
 		e.u.AddKeys.Pos = Vec2ToNet(actorPos);
 		GameEventsEnqueue(&gGameEvents, e);
-		sound = "key";
+		if (sound == NULL)
+		{
+			sound = "key";
+		}
 	}
 	break;
 
 	case PICKUP_SHOW_MAP: {
+		canPickup = true;
 		GameEvent e = GameEventNew(GAME_EVENT_EXPLORE_TILES);
 		e.u.ExploreTiles.Runs_count = 1;
 		e.u.ExploreTiles.Runs[0].Run = gMap.Size.x * gMap.Size.y;
@@ -216,9 +224,10 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 	break;
 			
 	case PICKUP_LIVES: {
+		canPickup = true;
 		GameEvent e = GameEventNew(GAME_EVENT_PLAYER_ADD_LIVES);
 		e.u.PlayerAddLives.UID = a->PlayerUID;
-		e.u.PlayerAddLives.Lives = p->class->u.Lives;
+		e.u.PlayerAddLives.Lives = pe->u.Lives;
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 	break;
@@ -227,6 +236,8 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 		CASSERT(false, "unexpected pickup type");
 		break;
 	}
+	CA_FOREACH_END()
+
 	if (canPickup)
 	{
 		if (sound != NULL)
@@ -248,16 +259,16 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 }
 
 static bool HasGunUsingAmmo(const TActor *a, const int ammoId);
-static bool TreatAsGunPickup(const Pickup *p, const TActor *a)
+static bool TreatAsGunPickup(const PickupEffect *pe, const TActor *a)
 {
 	// Grenades can also be gun pickups; treat as gun pickup if the player
 	// doesn't have its ammo
-	switch (p->class->Type)
+	switch (pe->Type)
 	{
 	case PICKUP_AMMO:
-		if (!HasGunUsingAmmo(a, p->class->u.Ammo.Id))
+		if (!HasGunUsingAmmo(a, pe->u.Ammo.Id))
 		{
-			const Ammo *ammo = AmmoGetById(&gAmmo, p->class->u.Ammo.Id);
+			const Ammo *ammo = AmmoGetById(&gAmmo, pe->u.Ammo.Id);
 			if (ammo->DefaultGun)
 			{
 				return true;
@@ -265,7 +276,7 @@ static bool TreatAsGunPickup(const Pickup *p, const TActor *a)
 		}
 		return false;
 	case PICKUP_GUN: {
-		const WeaponClass *wc = IdWeaponClass(p->class->u.GunId);
+		const WeaponClass *wc = IdWeaponClass(pe->u.GunId);
 		// TODO: support picking up multi guns?
 		return wc->Type == GUNTYPE_NORMAL ||
 			   (wc->Type == GUNTYPE_GRENADE &&
@@ -294,7 +305,7 @@ static bool HasGunUsingAmmo(const TActor *a, const int ammoId)
 	return false;
 }
 
-static bool TryPickupAmmo(TActor *a, const Pickup *p)
+static bool TryPickupAmmo(TActor *a, const Pickup *p, const PickupEffect *pe)
 {
 	// Don't pickup if not using ammo
 	if (!gCampaign.Setting.Ammo)
@@ -303,10 +314,10 @@ static bool TryPickupAmmo(TActor *a, const Pickup *p)
 	}
 	// Don't pickup if ammo full
 	const Ammo *ammo = AmmoGetById(
-		&gAmmo, p->class->Type == PICKUP_AMMO
-					? (int)p->class->u.Ammo.Id
-					: IdWeaponClass(p->class->u.GunId)->u.Normal.AmmoId);
-	const int current = *(int *)CArrayGet(&a->ammo, p->class->u.Ammo.Id);
+		&gAmmo, pe->Type == PICKUP_AMMO
+					? (int)pe->u.Ammo.Id
+					: IdWeaponClass(pe->u.GunId)->u.Normal.AmmoId);
+	const int current = *(int *)CArrayGet(&a->ammo, pe->u.Ammo.Id);
 	if (ammo->Max > 0 && current >= ammo->Max)
 	{
 		return false;
@@ -316,15 +327,15 @@ static bool TryPickupAmmo(TActor *a, const Pickup *p)
 	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD_AMMO);
 	e.u.AddAmmo.UID = a->uid;
 	e.u.AddAmmo.PlayerUID = a->PlayerUID;
-	e.u.AddAmmo.Ammo.Id = p->class->u.Ammo.Id;
-	e.u.AddAmmo.Ammo.Amount = p->class->u.Ammo.Amount;
+	e.u.AddAmmo.Ammo.Id = pe->u.Ammo.Id;
+	e.u.AddAmmo.Ammo.Amount = pe->u.Ammo.Amount;
 	e.u.AddAmmo.IsRandomSpawned = p->IsRandomSpawned;
 	// Note: receiving end will prevent ammo from exceeding max
 	GameEventsEnqueue(&gGameEvents, e);
 	return true;
 }
 static bool TryPickupGun(
-	TActor *a, const Pickup *p, const bool pickupAll, const char **sound)
+	TActor *a, const PickupEffect *pe, const bool pickupAll, const char **sound)
 {
 	// Guns can only be picked up manually
 	if (!pickupAll)
@@ -341,10 +352,10 @@ static bool TryPickupGun(
 	//     dropping it in the process
 
 	const WeaponClass *wc =
-		p->class->Type == PICKUP_GUN
-			? IdWeaponClass(p->class->u.GunId)
+		pe->Type == PICKUP_GUN
+			? IdWeaponClass(pe->u.GunId)
 			: StrWeaponClass(
-				  AmmoGetById(&gAmmo, p->class->u.Ammo.Id)->DefaultGun);
+				  AmmoGetById(&gAmmo, pe->u.Ammo.Id)->DefaultGun);
 	const int actorsGunIdx = ActorFindGun(a, wc);
 
 	if (actorsGunIdx >= 0)
@@ -426,17 +437,24 @@ bool PickupIsManual(const Pickup *p)
 {
 	if (p->PickedUp)
 		return false;
-	switch (p->class->Type)
+	CA_FOREACH(const PickupEffect, pe, p->class->Effects)
+	switch (pe->Type)
 	{
 	case PICKUP_GUN:
 		return true;
 	case PICKUP_AMMO: {
-		const Ammo *ammo = AmmoGetById(&gAmmo, p->class->u.Ammo.Id);
-		return ammo->DefaultGun != NULL;
+		const Ammo *ammo = AmmoGetById(&gAmmo, pe->u.Ammo.Id);
+		if (ammo->DefaultGun != NULL)
+		{
+			return true;
+		}
 	}
+	break;
 	default:
-		return false;
+		break;
 	}
+	CA_FOREACH_END()
+	return false;
 }
 
 static void PickupDraw(GraphicsDevice *g, const int id, const struct vec2i pos)

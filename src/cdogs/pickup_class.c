@@ -166,7 +166,19 @@ int StrPickupClassId(const char *s)
 	return 0;
 }
 
-#define VERSION 2
+#define VERSION 3
+
+static void PickupClassInit(PickupClass *c)
+{
+	memset(c, 0, sizeof *c);
+	CArrayInit(&c->Effects, sizeof(PickupEffect));
+}
+static void PickupClassTerminate(PickupClass *c)
+{
+	CArrayTerminate(&c->Effects);
+	CFREE(c->Name);
+	CFREE(c->Sound);
+}
 
 void PickupClassesInit(
 	PickupClasses *classes, const char *filename, const AmmoClasses *ammo,
@@ -203,8 +215,7 @@ bail:
 	}
 	json_free_value(&root);
 }
-static bool TryLoadPickupclass(
-	PickupClass *c, json_t *node, const int version);
+static void LoadPickupclass(PickupClass *c, json_t *node, const int version);
 void PickupClassesLoadJSON(CArray *classes, json_t *root)
 {
 	int version = -1;
@@ -219,72 +230,63 @@ void PickupClassesLoadJSON(CArray *classes, json_t *root)
 	for (json_t *child = pickupsNode->child; child; child = child->next)
 	{
 		PickupClass c;
-		if (TryLoadPickupclass(&c, child, version))
-		{
-			CArrayPushBack(classes, &c);
-		}
+		LoadPickupclass(&c, child, version);
+		CArrayPushBack(classes, &c);
 	}
 }
-static bool TryLoadPickupclass(PickupClass *c, json_t *node, const int version)
+static void LoadPickupEffect(PickupClass *c, json_t *node, const int version);
+static void LoadPickupclass(PickupClass *c, json_t *node, const int version)
 {
-	memset(c, 0, sizeof *c);
-	char *tmp;
-
-	JSON_UTILS_LOAD_ENUM(c->Type, node, "Type", StrPickupType);
-	LoadStr(&c->Sound, node, "Sound");
-	switch (c->Type)
+	PickupClassInit(c);
+	
+	if (version < 3)
 	{
-	case PICKUP_JEWEL:
-		// Set default score
-		c->u.Score = PICKUP_SCORE;
-		LoadInt(&c->u.Score, node, "Score");
-		if (c->Sound == NULL)
+		LoadPickupEffect(c, node, version);
+	}
+	else
+	{
+		json_t *effectsNode = json_find_first_label(node, "Effects")->child;
+		for (json_t *child = effectsNode->child; child; child = child->next)
+		{
+			LoadPickupEffect(c, child, version);
+		}
+	}
+	
+	LoadStr(&c->Sound, node, "Sound");
+	// Add default pickup sounds
+	if (c->Sound == NULL)
+	{
+		if (c->Effects.size == 0)
 		{
 			CSTRDUP(c->Sound, "pickup");
 		}
-		break;
-	case PICKUP_HEALTH:
-		// Set default heal amount
-		c->u.Health = HEALTH_PICKUP_HEAL_AMOUNT;
-		LoadInt(&c->u.Health, node, "Health");
-		if (c->Sound == NULL)
+		else
 		{
-			CSTRDUP(c->Sound, "health");
+			const PickupEffect *effect = CArrayGet(&c->Effects, 0);
+			switch (effect->Type)
+			{
+			case PICKUP_HEALTH:
+				CSTRDUP(c->Sound, "health");
+				break;
+			case PICKUP_AMMO: {
+				const Ammo *ammo = AmmoGetById(&gAmmo, effect->u.Ammo.Id);
+				if (ammo->Sound)
+				{
+					CSTRDUP(c->Sound, ammo->Sound);
+				}
+				break;
+			}
+			case PICKUP_GUN:
+				CASSERT(false, "unimplemented");
+				break;
+			case PICKUP_SHOW_MAP:
+				CSTRDUP(c->Sound, "show_map");
+				break;
+			default:
+				CSTRDUP(c->Sound, "pickup");
+				break;
+			}
 		}
-		break;
-	case PICKUP_AMMO: {
-		tmp = GetString(node, "Ammo");
-		c->u.Ammo.Id = StrAmmoId(tmp);
-		CFREE(tmp);
-		const Ammo *ammo = AmmoGetById(&gAmmo, c->u.Ammo.Id);
-		// Set default ammo amount
-		int amount = ammo->Amount;
-		LoadInt(&amount, node, "Amount");
-		c->u.Ammo.Amount = amount;
-		if (c->Sound == NULL && ammo->Sound)
-		{
-			CSTRDUP(c->Sound, ammo->Sound);
-		}
-		break;
-	}
-	case PICKUP_KEYCARD:
-		// Do nothing; keys now loaded directly from graphics files
-		return false;
-	case PICKUP_GUN:
-		CASSERT(false, "unimplemented");
-		break;
-	case PICKUP_SHOW_MAP:
-		if (c->Sound == NULL)
-		{
-			CSTRDUP(c->Sound, "show_map");
-		}
-		break;
-	case PICKUP_LIVES:
-		LoadInt(&c->u.Lives, node, "Lives");
-		break;
-	default:
-		CASSERT(false, "Unknown pickup type");
-		break;
 	}
 	c->Name = GetString(node, "Name");
 	json_t *picNode = json_find_first_label(node, "Pic")->child;
@@ -296,7 +298,53 @@ static bool TryLoadPickupclass(PickupClass *c, json_t *node, const int version)
 	{
 		CPicLoadJSON(&c->Pic, picNode);
 	}
-	return true;
+}
+static void LoadPickupEffect(PickupClass *c, json_t *node, const int version)
+{
+	UNUSED(version);
+	char *tmp;
+	PickupEffect p;
+	memset(&p, 0, sizeof p);
+	JSON_UTILS_LOAD_ENUM(p.Type, node, "Type", StrPickupType);
+	switch (p.Type)
+	{
+	case PICKUP_JEWEL:
+		// Set default score
+		p.u.Score = PICKUP_SCORE;
+		LoadInt(&p.u.Score, node, "Score");
+		break;
+	case PICKUP_HEALTH:
+		// Set default heal amount
+		p.u.Health = HEALTH_PICKUP_HEAL_AMOUNT;
+		LoadInt(&p.u.Health, node, "Health");
+		break;
+	case PICKUP_AMMO: {
+		tmp = GetString(node, "Ammo");
+		p.u.Ammo.Id = StrAmmoId(tmp);
+		CFREE(tmp);
+		const Ammo *ammo = AmmoGetById(&gAmmo, p.u.Ammo.Id);
+		// Set default ammo amount
+		int amount = ammo->Amount;
+		LoadInt(&amount, node, "Amount");
+		p.u.Ammo.Amount = amount;
+		break;
+	}
+	case PICKUP_KEYCARD:
+		CASSERT(false, "keys now loaded directly from graphics files");
+		return;
+	case PICKUP_GUN:
+		CASSERT(false, "unimplemented");
+		break;
+	case PICKUP_SHOW_MAP:
+		break;
+	case PICKUP_LIVES:
+		LoadInt(&p.u.Lives, node, "Lives");
+		break;
+	default:
+		CASSERT(false, "Unknown pickup type");
+		break;
+	}
+	CArrayPushBack(&c->Effects, &p);
 }
 
 // TODO: move ammo pickups to pickups file; remove "ammo_"
@@ -304,14 +352,17 @@ void PickupClassesLoadAmmo(CArray *classes, const CArray *ammoClasses)
 {
 	CA_FOREACH(const Ammo, a, *ammoClasses)
 	PickupClass c;
-	memset(&c, 0, sizeof c);
+	PickupClassInit(&c);
 	char buf[256];
 	sprintf(buf, "ammo_%s", a->Name);
 	CSTRDUP(c.Name, buf);
 	CPicCopyPic(&c.Pic, &a->Pic);
-	c.Type = PICKUP_AMMO;
-	c.u.Ammo.Id = StrAmmoId(a->Name);
-	c.u.Ammo.Amount = a->Amount;
+	PickupEffect p;
+	memset(&p, 0, sizeof p);
+	p.Type = PICKUP_AMMO;
+	p.u.Ammo.Id = StrAmmoId(a->Name);
+	p.u.Ammo.Amount = a->Amount;
+	CArrayPushBack(&c.Effects, &p);
 	if (a->Sound)
 	{
 		CSTRDUP(c.Sound, a->Sound);
@@ -324,13 +375,15 @@ void PickupClassesLoadGuns(CArray *classes, const CArray *gunClasses)
 {
 	CA_FOREACH(const WeaponClass, wc, *gunClasses)
 	PickupClass c;
-	memset(&c, 0, sizeof c);
+	PickupClassInit(&c);
 	char buf[256];
 	sprintf(buf, "gun_%s", wc->name);
 	CSTRDUP(c.Name, buf);
 	CPicInitNormal(&c.Pic, wc->Icon);
-	c.Type = PICKUP_GUN;
-	c.u.GunId = WeaponClassId(wc);
+	PickupEffect p;
+	p.Type = PICKUP_GUN;
+	p.u.GunId = WeaponClassId(wc);
+	CArrayPushBack(&c.Effects, &p);
 	CArrayPushBack(classes, &c);
 	CA_FOREACH_END()
 }
@@ -347,11 +400,13 @@ void PickupClassesLoadKeys(CArray *classes)
 			continue;
 		}
 		PickupClass c;
-		memset(&c, 0, sizeof c);
+		PickupClassInit(&c);
 		CSTRDUP(c.Name, buf);
 		CPicInitNormalFromName(&c.Pic, c.Name);
-		c.Type = PICKUP_KEYCARD;
-		c.u.Keys = StrKeycard(keyColors[i]);
+		PickupEffect p;
+		p.Type = PICKUP_KEYCARD;
+		p.u.Keys = StrKeycard(keyColors[i]);
+		CArrayPushBack(&c.Effects, &p);
 		CArrayPushBack(classes, &c);
 	}
 	CA_FOREACH_END()
@@ -360,8 +415,7 @@ void PickupClassesLoadKeys(CArray *classes)
 void PickupClassesClear(CArray *classes)
 {
 	CA_FOREACH(PickupClass, c, *classes)
-	CFREE(c->Name);
-	CFREE(c->Sound);
+	PickupClassTerminate(c);
 	CA_FOREACH_END()
 	CArrayClear(classes);
 }
@@ -380,6 +434,16 @@ int PickupClassesCount(const PickupClasses *classes)
 	return (int)classes->Classes.size + (int)classes->CustomClasses.size;
 }
 
+static bool PickupClassHasScoreEffect(const PickupClass *c)
+{
+	CA_FOREACH(const PickupEffect, p, c->Effects)
+	if (p->Type == PICKUP_JEWEL)
+	{
+		return true;
+	}
+	CA_FOREACH_END()
+	return false;
+}
 int PickupClassesGetScoreIdx(const PickupClass *p)
 {
 	if (p == NULL)
@@ -388,7 +452,7 @@ int PickupClassesGetScoreIdx(const PickupClass *p)
 	}
 	int idx = -1;
 	CA_FOREACH(const PickupClass, c, gPickupClasses.Classes)
-	if (c->Type == PICKUP_JEWEL)
+	if (PickupClassHasScoreEffect(c))
 	{
 		idx++;
 		if (c == p)
@@ -398,7 +462,7 @@ int PickupClassesGetScoreIdx(const PickupClass *p)
 	}
 	CA_FOREACH_END()
 	CA_FOREACH(PickupClass, c, gPickupClasses.CustomClasses)
-	if (c->Type == PICKUP_JEWEL)
+	if (PickupClassHasScoreEffect(c))
 	{
 		idx++;
 		if (c == p)
@@ -413,13 +477,13 @@ int PickupClassesGetScoreCount(const PickupClasses *classes)
 {
 	int count = 0;
 	CA_FOREACH(const PickupClass, c, classes->Classes)
-	if (c->Type == PICKUP_JEWEL)
+	if (PickupClassHasScoreEffect(c))
 	{
 		count++;
 	}
 	CA_FOREACH_END()
 	CA_FOREACH(const PickupClass, c, classes->CustomClasses)
-	if (c->Type == PICKUP_JEWEL)
+	if (PickupClassHasScoreEffect(c))
 	{
 		count++;
 	}
@@ -430,7 +494,7 @@ PickupClass *IntScorePickupClass(const int i)
 {
 	int idx = -1;
 	CA_FOREACH(PickupClass, c, gPickupClasses.Classes)
-	if (c->Type == PICKUP_JEWEL)
+	if (PickupClassHasScoreEffect(c))
 	{
 		idx++;
 		if (idx == i)
@@ -440,7 +504,7 @@ PickupClass *IntScorePickupClass(const int i)
 	}
 	CA_FOREACH_END()
 	CA_FOREACH(PickupClass, c, gPickupClasses.CustomClasses)
-	if (c->Type == PICKUP_JEWEL)
+	if (PickupClassHasScoreEffect(c))
 	{
 		idx++;
 		if (idx == i)
@@ -450,4 +514,35 @@ PickupClass *IntScorePickupClass(const int i)
 	}
 	CA_FOREACH_END()
 	return NULL;
+}
+
+bool PickupClassHasAmmoEffect(const PickupClass *p)
+{
+	CA_FOREACH(const PickupEffect, pe, p->Effects)
+	if (pe->Type == PICKUP_AMMO)
+	{
+		return true;
+	}
+	CA_FOREACH_END()
+	return false;
+}
+bool PickupClassHasKeyEffect(const PickupClass *p)
+{
+	CA_FOREACH(const PickupEffect, pe, p->Effects)
+	if (pe->Type == PICKUP_KEYCARD)
+	{
+		return true;
+	}
+	CA_FOREACH_END()
+	return false;
+}
+int PickupClassGetKeys(const PickupClass *p)
+{
+	CA_FOREACH(const PickupEffect, pe, p->Effects)
+	if (pe->Type == PICKUP_KEYCARD)
+	{
+		return pe->u.Keys;
+	}
+	CA_FOREACH_END()
+	return 0;
 }

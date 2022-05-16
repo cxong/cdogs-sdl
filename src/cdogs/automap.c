@@ -277,10 +277,9 @@ static void DrawThing(
 	else if (t->kind == KIND_PICKUP && tile->isVisited)
 	{
 		const Pickup *p = CArrayGet(&gPickups, t->id);
-		if (p->class->Type == PICKUP_KEYCARD)
+		const int keyFlags = PickupClassGetKeys(p->class);
+		if (keyFlags != 0)
 		{
-			const int keyFlags =
-				((const Pickup *)CArrayGet(&gPickups, t->id))->class->u.Keys;
 			const color_t dotColor = KeyColor(keyFlags);
 			DrawDot(t, dotColor, pos, scale);
 		}

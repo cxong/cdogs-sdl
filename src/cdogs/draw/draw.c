@@ -336,7 +336,7 @@ static void DrawObjectiveHighlights(
 		}
 		// Gun pickup or keycard
 		const Pickup *p = CArrayGet(&gPickups, ti->id);
-		if (p->class->Type != PICKUP_KEYCARD && !PickupIsManual(p))
+		if (!PickupClassHasKeyEffect(p->class) && !PickupIsManual(p))
 		{
 			continue;
 		}
@@ -623,7 +623,7 @@ static void DrawSpawnerName(
 	const TObject *obj, DrawBuffer *b, const struct vec2i offset,
 	const char *name);
 static void DrawKeyName(
-	const Pickup *p, DrawBuffer *b, const struct vec2i offset);
+	const Pickup *p, const PickupEffect *pe, DrawBuffer *b, const struct vec2i offset);
 static void DrawObjectNames(DrawBuffer *b, const struct vec2i offset)
 {
 	const Tile **tile = DrawBufferGetFirstTile(b);
@@ -662,10 +662,13 @@ static void DrawObjectNames(DrawBuffer *b, const struct vec2i offset)
 			else if (ti->kind == KIND_PICKUP)
 			{
 				const Pickup *p = CArrayGet(&gPickups, ti->id);
-				if (p->class->Type == PICKUP_KEYCARD)
+				CA_FOREACH(const PickupEffect, pe, p->class->Effects)
+				if (pe->Type == PICKUP_KEYCARD)
 				{
-					DrawKeyName(p, b, offset);
+					DrawKeyName(p, pe, b, offset);
+					break;
 				}
+				CA_FOREACH_END()
 			}
 			CA_FOREACH_END()
 		}
@@ -694,10 +697,10 @@ static void DrawSpawnerName(
 	FontStr(name, textPos);
 }
 static void DrawKeyName(
-	const Pickup *p, DrawBuffer *b, const struct vec2i offset)
+	const Pickup *p, const PickupEffect *pe, DrawBuffer *b, const struct vec2i offset)
 {
 	const char *label = "key";
-	const color_t c = KeyColor(p->class->u.Keys);
+	const color_t c = KeyColor(pe->u.Keys);
 	const struct vec2i textPos = svec2i(
 		(int)p->thing.Pos.x - b->xTop + offset.x - FontStrW(label) / 2,
 		(int)p->thing.Pos.y - b->yTop + offset.y);

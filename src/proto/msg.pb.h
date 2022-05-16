@@ -11,7 +11,7 @@
 
 /* Struct definitions */
 typedef struct _NActorDie {
-    uint32_t UID;
+    int32_t UID;
 } NActorDie;
 
 typedef struct _NActorDir {
@@ -947,7 +947,7 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  Ammo,              3)
 #define NActorUseAmmo_Ammo_MSGTYPE NAmmo
 
 #define NActorDie_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, UINT32,   UID,               1)
+X(a, STATIC,   SINGULAR, INT32,    UID,               1)
 #define NActorDie_CALLBACK NULL
 #define NActorDie_DEFAULT NULL
 
@@ -1249,7 +1249,7 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 #define NAmmo_size                               12
 #define NActorAddAmmo_size                       33
 #define NActorUseAmmo_size                       31
-#define NActorDie_size                           6
+#define NActorDie_size                           11
 #define NPlayerAddLives_size                     12
 #define NActorMelee_size                         164
 #define NActorPilot_size                         19

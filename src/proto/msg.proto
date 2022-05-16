@@ -212,7 +212,7 @@ message NActorUseAmmo {
 }
 
 message NActorDie {
-	uint32 UID = 1;
+	int32 UID = 1;
 }
 
 message NPlayerAddLives {

@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2021 Cong Xu
+	Copyright (c) 2013-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -1298,20 +1298,25 @@ static bool CheckManualPickupFunc(
 		InputGetButtonName(
 			pData->inputDevice, pData->deviceIndex, CMD_BUTTON2, buttonName);
 		// TODO: PickupGetName
-		const char *pickupName;
-		switch (p->class->Type)
+		const char *pickupName = NULL;
+		CA_FOREACH(const PickupEffect, pe, p->class->Effects)
+		switch (pe->Type)
 		{
 		case PICKUP_AMMO:
-			pickupName = AmmoGetById(&gAmmo, p->class->u.Ammo.Id)->Name;
+			pickupName = AmmoGetById(&gAmmo, pe->u.Ammo.Id)->Name;
 			break;
 		case PICKUP_GUN:
-			pickupName = IdWeaponClass(p->class->u.GunId)->name;
+			pickupName = IdWeaponClass(pe->u.GunId)->name;
 			break;
 		default:
-			CASSERT(false, "unknown pickup type");
-			pickupName = "???";
 			break;
 		}
+		if (pickupName != NULL)
+		{
+			break;
+		}
+		CA_FOREACH_END()
+		CASSERT(pickupName != NULL, "unknown pickup name");
 		char buf[256];
 		sprintf(buf, "%s to pick up\n%s", buttonName, pickupName);
 		ActorSetChatter(a, buf, 2);
@@ -1319,7 +1324,16 @@ static bool CheckManualPickupFunc(
 	// If co-op AI, alert it so it can try to pick the gun up
 	if (a->aiContext != NULL)
 	{
-		AICoopOnPickupGun(a, p->class->u.GunId);
+		CA_FOREACH(const PickupEffect, pe, p->class->Effects)
+		switch (pe->Type)
+		{
+		case PICKUP_GUN:
+			AICoopOnPickupGun(a, pe->u.GunId);
+			break;
+		default:
+			break;
+		}
+		CA_FOREACH_END()
 	}
 	a->CanPickupSpecial = true;
 	return false;
@@ -1473,6 +1487,7 @@ static void ActorAddGunPickup(const TActor *actor)
 		break;
 	}
 }
+static bool HasGunPickup(const Pickup *p, const int wcId);
 static bool HasGunPickups(const WeaponClass *wc, const int n)
 {
 	const int wcId = WeaponClassId(wc);
@@ -1482,13 +1497,23 @@ static bool HasGunPickups(const WeaponClass *wc, const int n)
 	{
 		continue;
 	}
-	if (p->class->Type == PICKUP_GUN && p->class->u.GunId == wcId)
+	if (HasGunPickup(p, wcId))
 	{
 		count++;
 		if (count >= n)
 		{
 			return true;
 		}
+	}
+	CA_FOREACH_END()
+	return false;
+}
+static bool HasGunPickup(const Pickup *p, const int wcId)
+{
+	CA_FOREACH(const PickupEffect, pe, p->class->Effects)
+	if (pe->Type == PICKUP_GUN && pe->u.GunId == wcId)
+	{
+		return true;
 	}
 	CA_FOREACH_END()
 	return false;

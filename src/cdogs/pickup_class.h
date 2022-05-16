@@ -50,7 +50,6 @@ const char *PickupTypeStr(const PickupType pt);
 
 typedef struct
 {
-	char *Name;
 	PickupType Type;
 	union {
 		int Score;
@@ -60,6 +59,12 @@ typedef struct
 		int GunId;
 		int Lives;
 	} u;
+} PickupEffect;
+
+typedef struct
+{
+	char *Name;
+	CArray Effects;	// of PickupEffect
 	CPic Pic;
 	char *Sound;
 } PickupClass;
@@ -100,6 +105,10 @@ int PickupClassesGetScoreIdx(const PickupClass *p);
 int PickupClassesGetScoreCount(const PickupClasses *classes);
 // Get the ith "Score" type pickup
 PickupClass *IntScorePickupClass(const int i);
+
+bool PickupClassHasAmmoEffect(const PickupClass *p);
+bool PickupClassHasKeyEffect(const PickupClass *p);
+int PickupClassGetKeys(const PickupClass *p);
 
 // Score for picking up an objective
 #define PICKUP_SCORE 10

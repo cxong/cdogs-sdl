@@ -294,7 +294,7 @@ bool MapTryPlaceOneObject(
 	// Don't place ammo spawners if ammo is disabled
 	if (!gCampaign.Setting.Ammo &&
 		mo->Type == MAP_OBJECT_TYPE_PICKUP_SPAWNER &&
-		mo->u.PickupClass->Type == PICKUP_AMMO)
+		PickupClassHasAmmoEffect(mo->u.PickupClass))
 	{
 		return false;
 	}

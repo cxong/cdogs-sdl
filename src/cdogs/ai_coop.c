@@ -509,9 +509,67 @@ static bool TryCompleteNearbyObjective(
 	CA_FOREACH_END()
 	return false;
 }
-static bool OnClosestPickupGun(
-	ClosestObjective *co, const Pickup *p, const TActor *actor,
-	const TActor *closestPlayer);
+static bool ShouldPickupGun(const PickupEffect *pe, const TActor *actor,
+							const TActor *closestPlayer);
+static AIObjectiveType GetPickupObjectiveType(const Pickup *p, int *uid, const TActor *actor, const TActor *closestPlayer)
+{
+	CA_FOREACH(const PickupEffect, pe, p->class->Effects)
+	switch (pe->Type)
+	{
+	case PICKUP_KEYCARD:
+		return AI_OBJECTIVE_TYPE_KEY;
+	case PICKUP_JEWEL:
+		*uid = p->UID;
+		return AI_OBJECTIVE_TYPE_PICKUP;
+	case PICKUP_HEALTH:
+		// Pick up if we are on low health, and lower than lead player
+		if (actor->health > ModeMaxHealth(gCampaign.Entry.Mode) / 4 ||
+			(closestPlayer != NULL && actor->health >= closestPlayer->health))
+		{
+			continue;
+		}
+		*uid = p->UID;
+		return AI_OBJECTIVE_TYPE_PICKUP;
+	case PICKUP_AMMO: {
+		// Pick up if we use this ammo, have less ammo than starting,
+		// and lower than lead player, who uses the ammo
+		const int ammoId = pe->u.Ammo.Id;
+		const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
+		const int ammoAmount = *(int *)CArrayGet(&actor->ammo, ammoId);
+		if (!ActorUsesAmmo(actor, ammoId) || ammoAmount > ammo->Amount ||
+			(closestPlayer != NULL && ActorUsesAmmo(closestPlayer, ammoId) &&
+			 ammoAmount > *(int *)CArrayGet(&closestPlayer->ammo, ammoId)))
+		{
+			continue;
+		}
+		*uid = p->UID;
+		return AI_OBJECTIVE_TYPE_PICKUP;
+	}
+	case PICKUP_GUN:
+		if (ShouldPickupGun(pe, actor, closestPlayer))
+		{
+			*uid = p->UID;
+			return AI_OBJECTIVE_TYPE_PICKUP;
+		}
+		break;
+	case PICKUP_SHOW_MAP:
+		*uid = p->UID;
+		return AI_OBJECTIVE_TYPE_PICKUP;
+	case PICKUP_LIVES:
+		// Pick up if we have less lives than lead player
+		if (closestPlayer != NULL && PlayerDataGetByUID(actor->PlayerUID)->Lives >= PlayerDataGetByUID(closestPlayer->PlayerUID)->Lives)
+		{
+			continue;
+		}
+		*uid = p->UID;
+		return AI_OBJECTIVE_TYPE_PICKUP;
+	default:
+		// Not something we want to pick up
+		continue;
+	}
+	CA_FOREACH_END()
+	return AI_OBJECTIVE_TYPE_NORMAL;
+}
 static int CompareClosestObjective(const void *v1, const void *v2);
 static void FindObjectivesSortedByDistance(
 	CArray *objectives, const TActor *actor, const TActor *closestPlayer)
@@ -545,63 +603,9 @@ static void FindObjectivesSortedByDistance(
 	memset(&co, 0, sizeof co);
 	co.Pos = p->thing.Pos;
 	co.IsDestructible = false;
-	co.Type = AI_OBJECTIVE_TYPE_NORMAL;
-	switch (p->class->Type)
+	co.Type = GetPickupObjectiveType(p, &co.u.UID, actor, closestPlayer);
+	if (co.Type == AI_OBJECTIVE_TYPE_NORMAL)
 	{
-	case PICKUP_KEYCARD:
-		co.Type = AI_OBJECTIVE_TYPE_KEY;
-		break;
-	case PICKUP_JEWEL:
-		co.Type = AI_OBJECTIVE_TYPE_PICKUP;
-		co.u.UID = p->UID;
-		break;
-	case PICKUP_HEALTH:
-		// Pick up if we are on low health, and lower than lead player
-		if (actor->health > ModeMaxHealth(gCampaign.Entry.Mode) / 4 ||
-			(closestPlayer != NULL && actor->health >= closestPlayer->health))
-		{
-			continue;
-		}
-		co.Type = AI_OBJECTIVE_TYPE_PICKUP;
-		co.u.UID = p->UID;
-		break;
-	case PICKUP_AMMO: {
-		// Pick up if we use this ammo, have less ammo than starting,
-		// and lower than lead player, who uses the ammo
-		const int ammoId = p->class->u.Ammo.Id;
-		const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
-		const int ammoAmount = *(int *)CArrayGet(&actor->ammo, ammoId);
-		if (!ActorUsesAmmo(actor, ammoId) || ammoAmount > ammo->Amount ||
-			(closestPlayer != NULL && ActorUsesAmmo(closestPlayer, ammoId) &&
-			 ammoAmount > *(int *)CArrayGet(&closestPlayer->ammo, ammoId)))
-		{
-			continue;
-		}
-		co.Type = AI_OBJECTIVE_TYPE_PICKUP;
-		co.u.UID = p->UID;
-	}
-	break;
-	case PICKUP_GUN:
-		if (!OnClosestPickupGun(&co, p, actor, closestPlayer))
-		{
-			continue;
-		}
-		break;
-	case PICKUP_SHOW_MAP:
-		co.Type = AI_OBJECTIVE_TYPE_PICKUP;
-		co.u.UID = p->UID;
-		break;
-	case PICKUP_LIVES:
-		// Pick up if we have less lives than lead player
-		if (closestPlayer != NULL && PlayerDataGetByUID(actor->PlayerUID)->Lives >= PlayerDataGetByUID(closestPlayer->PlayerUID)->Lives)
-		{
-			continue;
-		}
-		co.Type = AI_OBJECTIVE_TYPE_PICKUP;
-		co.u.UID = p->UID;
-		break;
-	default:
-		// Not something we want to pick up
 		continue;
 	}
 	// Check if the pickup is actually accessible
@@ -709,15 +713,14 @@ static void FindObjectivesSortedByDistance(
 		objectives->data, objectives->size, objectives->elemSize,
 		CompareClosestObjective);
 }
-static bool OnClosestPickupGun(
-	ClosestObjective *co, const Pickup *p, const TActor *actor,
+static bool ShouldPickupGun(const PickupEffect *pe, const TActor *actor,
 	const TActor *closestPlayer)
 {
 	if (!gCampaign.Setting.Ammo)
 	{
 		return false;
 	}
-	const WeaponClass *pickupGun = IdWeaponClass(p->class->u.GunId);
+	const WeaponClass *pickupGun = IdWeaponClass(pe->u.GunId);
 	const int weaponIndexStart =
 		pickupGun->Type == GUNTYPE_GRENADE ? MAX_GUNS : 0;
 	const int weaponIndexEnd =
@@ -762,13 +765,10 @@ static bool OnClosestPickupGun(
 		return false;
 	}
 
-	if (ActorFindGun(actor, IdWeaponClass(p->class->u.GunId)) >= 0)
+	if (ActorFindGun(actor, IdWeaponClass(pe->u.GunId)) >= 0)
 	{
 		return false;
 	}
-
-	co->Type = AI_OBJECTIVE_TYPE_PICKUP;
-	co->u.UID = p->UID;
 	return true;
 }
 static int CompareClosestObjective(const void *v1, const void *v2)
