@@ -119,7 +119,7 @@ typedef struct _NObjectiveUpdate {
 } NObjectiveUpdate;
 
 typedef struct _NPlayerAddLives {
-    uint32_t UID;
+    int32_t UID;
     uint32_t Lives;
 } NPlayerAddLives;
 
@@ -952,7 +952,7 @@ X(a, STATIC,   SINGULAR, INT32,    UID,               1)
 #define NActorDie_DEFAULT NULL
 
 #define NPlayerAddLives_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+X(a, STATIC,   SINGULAR, INT32,    UID,               1) \
 X(a, STATIC,   SINGULAR, UINT32,   Lives,             2)
 #define NPlayerAddLives_CALLBACK NULL
 #define NPlayerAddLives_DEFAULT NULL
@@ -1250,7 +1250,7 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 #define NActorAddAmmo_size                       33
 #define NActorUseAmmo_size                       31
 #define NActorDie_size                           11
-#define NPlayerAddLives_size                     12
+#define NPlayerAddLives_size                     17
 #define NActorMelee_size                         164
 #define NActorPilot_size                         19
 #define NAddPickup_size                          167

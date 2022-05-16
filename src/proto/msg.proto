@@ -216,7 +216,7 @@ message NActorDie {
 }
 
 message NPlayerAddLives {
-	uint32 UID = 1;
+	int32 UID = 1;
 	uint32 Lives = 2;
 }
 

@@ -130,45 +130,48 @@ static void DrawPropsSidebar(struct nk_context *ctx, const PickupClass *pc)
 
 	nk_label(ctx, pc->Name, NK_TEXT_LEFT);
 
-	sprintf(buf, "Type: %s", PickupTypeStr(pc->Type));
+	CA_FOREACH(const PickupEffect, pe, pc->Effects)
+	nk_spacing(ctx, 1);
+	sprintf(buf, "Type: %s", PickupTypeStr(pe->Type));
 	nk_label(ctx, buf, NK_TEXT_LEFT);
-
-	switch (pc->Type)
+	switch (pe->Type)
 	{
 	case PICKUP_JEWEL:
-		sprintf(buf, "Score: %d", pc->u.Score);
+		sprintf(buf, "Score: %d", pe->u.Score);
 		nk_label(ctx, buf, NK_TEXT_LEFT);
 		break;
 	case PICKUP_HEALTH:
-		sprintf(buf, "Health: %d", pc->u.Health);
+		sprintf(buf, "Health: %d", pe->u.Health);
 		nk_label(ctx, buf, NK_TEXT_LEFT);
 		break;
 	case PICKUP_AMMO: {
-		const Ammo *a = AmmoGetById(&gAmmo, pc->u.Ammo.Id);
+		const Ammo *a = AmmoGetById(&gAmmo, pe->u.Ammo.Id);
 		sprintf(buf, "Ammo: %s", a->Name);
 		nk_label(ctx, buf, NK_TEXT_LEFT);
-		sprintf(buf, "Amount: %d", (int)pc->u.Ammo.Amount);
+		sprintf(buf, "Amount: %d", (int)pe->u.Ammo.Amount);
 		nk_label(ctx, buf, NK_TEXT_LEFT);
 	}
 	break;
 	case PICKUP_KEYCARD:
-		// TODO: draw colour square of key
+		sprintf(buf, "Key: %s", KeycardStr(pe->u.Keys));
+		nk_label(ctx, buf, NK_TEXT_LEFT);
 		break;
 	case PICKUP_GUN: {
-		const WeaponClass *wc = IdWeaponClass(pc->u.GunId);
+		const WeaponClass *wc = IdWeaponClass(pe->u.GunId);
 		sprintf(buf, "Weapon: %s", wc->name);
 		nk_label(ctx, buf, NK_TEXT_LEFT);
 	}
 	case PICKUP_SHOW_MAP:
 		break;
 	case PICKUP_LIVES:
-		sprintf(buf, "Lives: %d", pc->u.Lives);
+		sprintf(buf, "Lives: %d", pe->u.Lives);
 		nk_label(ctx, buf, NK_TEXT_LEFT);
 		break;
 	default:
 		CASSERT(false, "Unknown pickup type");
 		break;
 	}
+	CA_FOREACH_END()
 }
 static void DrawOpsRow(struct nk_context *ctx, bool *result)
 {

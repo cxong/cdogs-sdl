@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2017, 2019-2021 Cong Xu
+	Copyright (c) 2013-2017, 2019-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -83,6 +83,18 @@ int StrKeycard(const char *s)
 	S2T(FLAGS_KEYCARD_BLUE, "blue");
 	S2T(FLAGS_KEYCARD_RED, "red");
 	return 0;
+}
+const char *KeycardStr(const int d)
+{
+	switch (d)
+	{
+		T2S(FLAGS_KEYCARD_YELLOW, "yellow");
+		T2S(FLAGS_KEYCARD_GREEN, "green");
+		T2S(FLAGS_KEYCARD_BLUE, "blue");
+		T2S(FLAGS_KEYCARD_RED, "red");
+	default:
+		return "";
+	}
 }
 color_t KeyColor(const int flags)
 {
@@ -357,7 +369,8 @@ void SetupMission(Mission *m, struct MissionOptions *mo, int missionIndex)
 	SetupBadguysForMission(m);
 	SetupWeapons(&mo->Weapons, &m->Weapons);
 }
-void MissionSetupTileClasses(Map *m, PicManager *pm, const MissionTileClasses *mtc)
+void MissionSetupTileClasses(
+	Map *m, PicManager *pm, const MissionTileClasses *mtc)
 {
 	SetupWallTileClasses(m, pm, &mtc->Wall);
 	SetupFloorTileClasses(m, pm, &mtc->Floor);

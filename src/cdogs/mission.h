@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2017, 2019-2021 Cong Xu
+	Copyright (c) 2013-2017, 2019-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -80,6 +80,7 @@ MapType StrMapType(const char *s);
 #define FLAGS_KEYCARD_BLUE 0x4
 #define FLAGS_KEYCARD_RED 0x8
 int StrKeycard(const char *s);
+const char *KeycardStr(const int d);
 color_t KeyColor(const int flags);
 
 typedef struct
@@ -145,7 +146,7 @@ typedef struct
 			MusicChunk Chunk;
 		} Data;
 	} Music;
-	
+
 	bool WeaponPersist;
 	bool SkipDebrief;
 
@@ -228,7 +229,8 @@ void MissionTerminate(Mission *m);
 MissionTileClasses *MissionGetTileClasses(Mission *m);
 
 void SetupMission(Mission *m, struct MissionOptions *mo, int missionIndex);
-void MissionSetupTileClasses(Map *m, PicManager *pm, const MissionTileClasses *mtc);
+void MissionSetupTileClasses(
+	Map *m, PicManager *pm, const MissionTileClasses *mtc);
 void MissionTileClassesInitDefault(MissionTileClasses *mtc);
 void MissionTileClassesCopy(
 	MissionTileClasses *dst, const MissionTileClasses *src);

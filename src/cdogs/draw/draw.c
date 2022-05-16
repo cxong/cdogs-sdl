@@ -172,7 +172,8 @@ static void DrawChatters(
 static void DrawExtra(
 	DrawBuffer *b, struct vec2i offset, const DrawBufferArgs *args);
 
-void DrawBufferDraw(DrawBuffer *b, struct vec2i offset, const DrawBufferArgs *args)
+void DrawBufferDraw(
+	DrawBuffer *b, struct vec2i offset, const DrawBufferArgs *args)
 {
 	// First draw the floor tiles (which do not obstruct anything)
 	DrawTiles(b, offset, DrawFloor);
@@ -457,7 +458,8 @@ static void DrawExtra(
 	DrawBuffer *b, struct vec2i offset, const DrawBufferArgs *args)
 {
 	// Draw guide image
-	if (args->GuideImage && !PicIsNone(args->GuideImage) && args->GuideImageAlpha > 0)
+	if (args->GuideImage && !PicIsNone(args->GuideImage) &&
+		args->GuideImageAlpha > 0)
 	{
 		DrawGuideImage(b, args->GuideImage, args->GuideImageAlpha);
 	}
@@ -622,8 +624,8 @@ static void DrawObjectiveName(
 static void DrawSpawnerName(
 	const TObject *obj, DrawBuffer *b, const struct vec2i offset,
 	const char *name);
-static void DrawKeyName(
-	const Pickup *p, const PickupEffect *pe, DrawBuffer *b, const struct vec2i offset);
+static void DrawPickupName(
+	const Pickup *p, DrawBuffer *b, const struct vec2i offset);
 static void DrawObjectNames(DrawBuffer *b, const struct vec2i offset)
 {
 	const Tile **tile = DrawBufferGetFirstTile(b);
@@ -662,13 +664,7 @@ static void DrawObjectNames(DrawBuffer *b, const struct vec2i offset)
 			else if (ti->kind == KIND_PICKUP)
 			{
 				const Pickup *p = CArrayGet(&gPickups, ti->id);
-				CA_FOREACH(const PickupEffect, pe, p->class->Effects)
-				if (pe->Type == PICKUP_KEYCARD)
-				{
-					DrawKeyName(p, pe, b, offset);
-					break;
-				}
-				CA_FOREACH_END()
+				DrawPickupName(p, b, offset);
 			}
 			CA_FOREACH_END()
 		}
@@ -696,13 +692,19 @@ static void DrawSpawnerName(
 		(int)obj->thing.Pos.y - b->yTop + offset.y);
 	FontStr(name, textPos);
 }
-static void DrawKeyName(
-	const Pickup *p, const PickupEffect *pe, DrawBuffer *b, const struct vec2i offset)
+static void DrawPickupName(
+	const Pickup *p, DrawBuffer *b, const struct vec2i offset)
 {
-	const char *label = "key";
-	const color_t c = KeyColor(pe->u.Keys);
-	const struct vec2i textPos = svec2i(
-		(int)p->thing.Pos.x - b->xTop + offset.x - FontStrW(label) / 2,
-		(int)p->thing.Pos.y - b->yTop + offset.y);
-	FontStrMask(label, textPos, c);
+	CA_FOREACH(const PickupEffect, pe, p->class->Effects)
+	if (pe->Type == PICKUP_KEYCARD)
+	{
+		const char *label = "key";
+		const color_t c = KeyColor(pe->u.Keys);
+		const struct vec2i textPos = svec2i(
+			(int)p->thing.Pos.x - b->xTop + offset.x - FontStrW(label) / 2,
+			(int)p->thing.Pos.y - b->yTop + offset.y);
+		FontStrMask(label, textPos, c);
+		break;
+	}
+	CA_FOREACH_END()
 }

@@ -186,8 +186,7 @@ static INT_PTR CALLBACK promptProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
 		case WM_COMMAND: {
 			switch (wParam) {
 				case IDOK: {
-					int len = SendDlgItemMessageW(hDlg, 42, WM_GETTEXT, (WPARAM) LENGTHOF(promptBuffer), (LPARAM) promptBuffer);
-					(void) len;
+					SendDlgItemMessageW(hDlg, 42, WM_GETTEXT, (WPARAM) LENGTHOF(promptBuffer), (LPARAM) promptBuffer);
 					EndDialog(hDlg, 1);
 					return TRUE;
 				} break;
@@ -212,7 +211,7 @@ char* osdialog_prompt(osdialog_message_level level, const char* message, const c
 	}
 
 	HWND window = GetActiveWindow();
-	int res = DialogBoxIndirectParamW(NULL, (LPCDLGTEMPLATEW) &promptTemplate, window, promptProc, (LPARAM) NULL);
+	INT_PTR res = DialogBoxIndirectParamW(NULL, (LPCDLGTEMPLATEW) &promptTemplate, window, promptProc, (LPARAM) NULL);
 	if (res) {
 		return wchar_to_utf8(promptBuffer);
 	}
