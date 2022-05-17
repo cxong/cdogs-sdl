@@ -1,5 +1,5 @@
 {
-  "Version": 2,
+  "Version": 3,
   "Pickups": [
     {
       "Name": "dogfood",
@@ -7,8 +7,10 @@
         "Type": "Normal",
         "Pic": "dogfood"
       },
-      "Type": "Health",
-      "Health": 4,
+      "Effects": [{
+        "Type": "Health",
+        "Health": 4
+      }],
       "Sound": "health_small"
     },
     {
@@ -17,8 +19,10 @@
         "Type": "Normal",
         "Pic": "meal"
       },
-      "Type": "Health",
-      "Health": 10,
+      "Effects": [{
+        "Type": "Health",
+        "Health": 10
+      }],
       "Sound": "health_small"
     },
     {
@@ -27,8 +31,10 @@
         "Type": "Normal",
         "Pic": "health"
       },
-      "Type": "Health",
-      "Health": 25,
+      "Effects": [{
+        "Type": "Health",
+        "Health": 25
+      }],
       "Sound": "health_big"
     },
     {
@@ -37,8 +43,17 @@
         "Type": "Normal",
         "Pic": "heart"
       },
-      "Type": "Health",
-      "Health": 100,
+      "Effects": [{
+        "Type": "Health",
+        "Health": 100
+      }, {
+        "Type": "Ammo",
+        "Ammo": "Ammo",
+        "Amount": 25
+      }, {
+        "Type": "Lives",
+        "Lives": 1
+      }],
       "Sound": "1up"
     },
     {
@@ -48,8 +63,10 @@
         "Sprites": "radio2",
         "TicksPerFrame": 10
       },
-      "Type": "Score",
-      "Score": 100,
+      "Effects": [{
+        "Type": "Score",
+        "Score": 100
+      }],
       "Sound": "pickup_cross"
     },
     {
@@ -58,8 +75,10 @@
         "Type": "Normal",
         "Pic": "bottle2"
       },
-      "Type": "Score",
-      "Score": 500,
+      "Effects": [{
+        "Type": "Score",
+        "Score": 500
+      }],
       "Sound": "pickup_chalice"
     },
     {
@@ -68,8 +87,10 @@
         "Type": "Normal",
         "Pic": "dynamite_pickup"
       },
-      "Type": "Score",
-      "Score": 1000,
+      "Effects": [{
+        "Type": "Score",
+        "Score": 1000
+      }],
       "Sound": "pickup_chest"
     },
     {
@@ -78,8 +99,10 @@
         "Type": "Normal",
         "Pic": "rockets"
       },
-      "Type": "Score",
-      "Score": 5000,
+      "Effects": [{
+        "Type": "Score",
+        "Score": 5000
+      }],
       "Sound": "pickup_crown"
     },
     {
@@ -88,9 +111,11 @@
         "Type": "Normal",
         "Pic": "ammo_clip"
       },
-      "Type": "Ammo",
-      "Ammo": "Ammo",
-      "Amount": 8,
+      "Effects": [{
+        "Type": "Ammo",
+        "Ammo": "Ammo",
+        "Amount": 8
+      }],
       "Sound": "ammo_pickup"
     },
     {
@@ -99,9 +124,11 @@
         "Type": "Normal",
         "Pic": "ammo_box"
       },
-      "Type": "Ammo",
-      "Ammo": "Ammo",
-      "Amount": 25,
+      "Effects": [{
+        "Type": "Ammo",
+        "Ammo": "Ammo",
+        "Amount": 25
+      }],
       "Sound": "ammo_box"
     },
     {
@@ -110,7 +137,7 @@
         "Type": "Normal",
         "Pic": "spear"
       },
-      "Type": "Score",
+      "Effects": [],
       "Sound": "spear"
     }
   ]
