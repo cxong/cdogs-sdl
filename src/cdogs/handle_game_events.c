@@ -363,6 +363,20 @@ static void HandleGameEvent(
 	case GAME_EVENT_PLAYER_ADD_LIVES: {
 		PlayerData *p = PlayerDataGetByUID(e.u.PlayerAddLives.UID);
 		p->Lives += e.u.PlayerAddLives.Lives;
+		const TActor *a = ActorGetByUID(p->ActorUID);
+		if (a && a->isInUse && !a->dead)
+		{
+			GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
+			s.u.AddParticle.Class =
+				StrParticleClass(&gParticleClasses, "lives_text");
+			s.u.AddParticle.Pos = a->Pos;
+			s.u.AddParticle.Z = BULLET_Z * Z_FACTOR;
+			s.u.AddParticle.DZ = 4;
+			sprintf(
+				s.u.AddParticle.Text, "+%d %s", (int)e.u.PlayerAddLives.Lives,
+				e.u.PlayerAddLives.Lives > 1 ? "Lives" : "Life");
+			GameEventsEnqueue(&gGameEvents, s);
+		}
 	}
 	break;
 	case GAME_EVENT_ACTOR_MELEE:

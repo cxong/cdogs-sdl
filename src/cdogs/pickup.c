@@ -193,11 +193,11 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 	case PICKUP_GUN:
 		if (TreatAsGunPickup(pe, a))
 		{
-			canPickup = canPickup || TryPickupGun(a, pe, pickupAll, &sound);
+			canPickup = TryPickupGun(a, pe, pickupAll, &sound) || canPickup;
 		}
 		else
 		{
-			canPickup = canPickup || TryPickupAmmo(a, p, pe);
+			canPickup = TryPickupAmmo(a, p, pe) || canPickup;
 		}
 		break;
 

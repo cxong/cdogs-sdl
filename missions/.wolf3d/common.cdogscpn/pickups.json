@@ -45,7 +45,7 @@
       },
       "Effects": [{
         "Type": "Health",
-        "Health": 100
+        "Health": 200
       }, {
         "Type": "Ammo",
         "Ammo": "Ammo",

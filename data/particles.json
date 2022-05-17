@@ -390,6 +390,14 @@
       "DrawAbove": true
     },
     {
+      "Name": "lives_text",
+      "Type": "Text",
+      "TextMask": "00ffff",
+      "Range": 120,
+      "GravityFactor": 0,
+      "DrawAbove": true
+    },
+    {
       "Name": "trail",
       "Pic": {
         "Type": "Animated",
