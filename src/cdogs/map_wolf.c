@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2020-2021 Cong Xu
+	Copyright (c) 2020-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,7 @@ CWolfMap *defaultSpearMap = NULL;
 #define SPEAR_STEAM_NAME "Spear of Destiny"
 #define WOLF_GOG_ID "1441705046"
 #define SPEAR_GOG_ID "1441705126"
+#define WOLF_DATA_DIR "data/.wolf3d/"
 
 #define TILE_CLASS_WALL_OFFSET 63
 
@@ -70,26 +71,26 @@ static void GetCampaignPath(
 	switch (type)
 	{
 	case CWMAPTYPE_WL1:
-		GetDataFilePath(buf, "missions/.wolf3d/WL1.cdogscpn");
+		GetDataFilePath(buf, WOLF_DATA_DIR "WL1.cdogscpn");
 		break;
 	case CWMAPTYPE_WL6:
-		GetDataFilePath(buf, "missions/.wolf3d/WL6.cdogscpn");
+		GetDataFilePath(buf, WOLF_DATA_DIR "WL6.cdogscpn");
 		break;
 	case CWMAPTYPE_SOD:
 		switch (spearMission)
 		{
 		case 1:
-			GetDataFilePath(buf, "missions/.wolf3d/SOD.cdogscpn");
+			GetDataFilePath(buf, WOLF_DATA_DIR "SOD.cdogscpn");
 			break;
 		case 2:
-			GetDataFilePath(buf, "missions/.wolf3d/SD2.cdogscpn");
+			GetDataFilePath(buf, WOLF_DATA_DIR "SD2.cdogscpn");
 			break;
 		case 3:
-			GetDataFilePath(buf, "missions/.wolf3d/SD3.cdogscpn");
+			GetDataFilePath(buf, WOLF_DATA_DIR "SD3.cdogscpn");
 			break;
 		default:
 			CASSERT(false, "Unknown spear mission");
-			GetDataFilePath(buf, "missions/.wolf3d/SOD.cdogscpn");
+			GetDataFilePath(buf, WOLF_DATA_DIR "SOD.cdogscpn");
 			break;
 		}
 		break;
@@ -650,13 +651,13 @@ int MapWolfLoad(
 	switch (spearMission)
 	{
 	case 2:
-		GetDataFilePath(buf, "missions/.wolf3d/SD2data.cdogscpn");
+		GetDataFilePath(buf, WOLF_DATA_DIR "SD2data.cdogscpn");
 		break;
 	case 3:
-		GetDataFilePath(buf, "missions/.wolf3d/SD3data.cdogscpn");
+		GetDataFilePath(buf, WOLF_DATA_DIR "SD3data.cdogscpn");
 		break;
 	default:
-		GetDataFilePath(buf, "missions/.wolf3d/common.cdogscpn");
+		GetDataFilePath(buf, WOLF_DATA_DIR "common.cdogscpn");
 		break;
 	}
 	CampaignSetting cCommon;
