@@ -6,7 +6,7 @@
 [![Release](http://img.shields.io/github/release/cxong/cdogs-sdl.svg)](https://github.com/cxong/cdogs-sdl/releases/latest)
 [![Custom campaigns](https://img.shields.io/badge/%F0%9F%94%97-custom%20campaigns-brightgreen)](http://cdogs.morezombies.net/)
 
-## ![](https://github.com/cxong/cdogs-sdl/blob/master/graphics/radio.png) Introduction
+## ![](https://github.com/cxong/cdogs-sdl/blob/master/graphics/column.png) Introduction
 
 C-Dogs SDL is a classic overhead run-and-gun game, supporting up to 4 players
 in co-op and deathmatch modes. Customize your player, choose from many weapons,
