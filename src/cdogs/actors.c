@@ -1902,7 +1902,7 @@ static void ActorTakeSpecialDamage(
 		actor->flamed = ticks;
 		break;
 	case SPECIAL_POISON:
-		actor->poisoned = MAX(actor->poisoned + ticks, MAX_POISONED_COUNT);
+		actor->poisoned = MIN(actor->poisoned + ticks, MAX_POISONED_COUNT);
 		break;
 	case SPECIAL_PETRIFY:
 		if (!actor->petrified)
