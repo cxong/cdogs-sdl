@@ -1,5 +1,5 @@
 {
-  "Version": 2,
+  "Version": 3,
   "Pickups": [
     {
       "Name": "health_bonus",
@@ -7,8 +7,10 @@
         "Type": "Normal",
         "Pic": "health_bonus"
       },
-      "Type": "Health",
-      "Health": 1
+      "Effects": [{
+        "Type": "Health",
+        "Health": 1
+      }]
     },
     {
       "Name": "stimpack",
@@ -16,8 +18,10 @@
         "Type": "Normal",
         "Pic": "stimpack"
       },
-      "Type": "Health",
-      "Health": 10
+      "Effects": [{
+        "Type": "Health",
+        "Health": 10
+      }]
     },
     {
       "Name": "medikit",
@@ -25,8 +29,10 @@
         "Type": "Normal",
         "Pic": "health"
       },
-      "Type": "Health",
-      "Health": 25
+      "Effects": [{
+        "Type": "Health",
+        "Health": 25
+      }]
     },
     {
       "Name": "supercharge",
@@ -34,8 +40,10 @@
         "Type": "Normal",
         "Pic": "supercharge"
       },
-      "Type": "Health",
-      "Health": 100
+      "Effects": [{
+        "Type": "Health",
+        "Health": 100
+      }]
     },
     {
       "Name": "armor_bonus",
@@ -43,8 +51,10 @@
         "Type": "Normal",
         "Pic": "armor_bonus"
       },
-      "Type": "Health",
-      "Health": 1
+      "Effects": [{
+        "Type": "Health",
+        "Health": 1
+      }]
     },
     {
       "Name": "armor",
@@ -52,8 +62,10 @@
         "Type": "Normal",
         "Pic": "armor"
       },
-      "Type": "Health",
-      "Health": 100
+      "Effects": [{
+        "Type": "Health",
+        "Health": 100
+      }]
     },
     {
       "Name": "megaarmor",
@@ -61,8 +73,10 @@
         "Type": "Normal",
         "Pic": "megaarmor"
       },
-      "Type": "Health",
-      "Health": 200
+      "Effects": [{
+        "Type": "Health",
+        "Health": 200
+      }]
     },
     {
       "Name": "bullet_pickup2",
@@ -70,9 +84,11 @@
         "Type": "Normal",
         "Pic": "bullet_pickup2"
       },
-      "Type": "Ammo",
-      "Ammo": "Bullets",
-      "Amount": 50
+      "Effects": [{
+        "Type": "Ammo",
+        "Ammo": "Bullets",
+        "Amount": 50
+      }]
     },
     {
       "Name": "shells2",
@@ -80,9 +96,11 @@
         "Type": "Normal",
         "Pic": "shells2"
       },
-      "Type": "Ammo",
-      "Ammo": "Shells",
-      "Amount": 20
+      "Effects": [{
+        "Type": "Ammo",
+        "Ammo": "Shells",
+        "Amount": 20
+      }]
     },
     {
       "Name": "rockets2",
@@ -90,9 +108,11 @@
         "Type": "Normal",
         "Pic": "rockets2"
       },
-      "Type": "Ammo",
-      "Ammo": "Rockets",
-      "Amount": 10
+      "Effects": [{
+        "Type": "Ammo",
+        "Ammo": "Rockets",
+        "Amount": 10
+      }]
     },
     {
       "Name": "computer_map",
@@ -101,7 +121,29 @@
         "Sprites": "computer_map",
         "TicksPerFrame": 10
       },
-      "Type": "ShowMap"
+      "Effects": [{
+        "Type": "ShowMap"
+      }]
+    },
+    {
+      "Name": "backpack",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "bag"
+      },
+      "Effects": [{
+        "Type": "Ammo",
+        "Ammo": "Bullets",
+        "Amount": 10
+      }, {
+        "Type": "Ammo",
+        "Ammo": "Shells",
+        "Amount": 4
+      }, {
+        "Type": "Ammo",
+        "Ammo": "Rockets",
+        "Amount": 1
+      }]
     }
   ]
 }
