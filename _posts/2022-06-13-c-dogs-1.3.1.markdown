@@ -1,0 +1,20 @@
+---
+layout: post
+title:  "C-Dogs 1.3.1 Released!"
+date:   2022-06-13
+categories: release
+published: true
+---
+
+Small bugfix release, with a few minor enhancements:
+
+- Fix gas bomb poison effect lasting forever 😱
+- Add accurate 1up powerup for Wolf3D/SoD campaigns (1 life, 100 health, 25 ammo)
+- Add accurate backpack powerup for Doom campaign (small amounts of all ammo types)
+- Persistent lives
+
+The last one is a notable change; previously lives would reset every level, making it little more than a glorified extended life meter. Now it makes sense to try to stay alive and not waste lives, and collect those 1up powerups (in Wolf3D/SoD)!
+
+Download free from itch.io: <https://congusbongus.itch.io/cdogs-sdl/purchase>
+
+Release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/1.3.1>
