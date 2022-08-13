@@ -78,9 +78,11 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 		if (d->SelectedGun == NULL)
 		{
 			MenuPlaySound(MENU_SOUND_SWITCH);
-			return;
 		}
-		SoundPlay(&gSoundDevice, d->SelectedGun->SwitchSound);
+		else
+		{
+			SoundPlay(&gSoundDevice, d->SelectedGun->SwitchSound);
+		}
 	}
 	else if (cmd & CMD_BUTTON2)
 	{
@@ -199,8 +201,6 @@ static int HandleInputEquipMenu(int cmd, void *data)
 static void DisplayGunIcon(
 	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
 	const struct vec2i size, const void *data);
-static void AddEquippedMenuItem(
-	menu_t *menu, const PlayerData *p, const int slot, const bool enabled);
 static menu_t *CreateEquipMenu(
 	MenuSystem *ms, EventHandlers *handlers, GraphicsDevice *g,
 	const struct vec2i pos, const struct vec2i size, const CArray *weapons,
@@ -247,27 +247,6 @@ static menu_t *CreateEquipMenu(
 		MenuCreateCustom("", DrawEquipMenu, HandleInputEquipMenu, data);
 
 	return menu;
-}
-static void SetEquippedMenuItemName(
-	menu_t *menu, const PlayerData *p, const int slot)
-{
-	CFREE(menu->name);
-	if (p->guns[slot] != NULL)
-	{
-		CSTRDUP(menu->name, p->guns[slot]->name);
-	}
-	else
-	{
-		CSTRDUP(menu->name, NO_GUN_LABEL);
-	}
-}
-static void AddEquippedMenuItem(
-	menu_t *menu, const PlayerData *p, const int slot, const bool enabled)
-{
-	menu_t *submenu = MenuCreateReturn("", slot);
-	SetEquippedMenuItemName(submenu, p, slot);
-	menu_t *addedMenu = MenuAddSubmenu(menu, submenu);
-	addedMenu->isDisabled = !enabled;
 }
 
 static menu_t *CreateGunMenu(
@@ -452,13 +431,6 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 		case WEAPON_MENU_CANCEL:
 			// Switch back to equip menu
 			menu->equipping = false;
-			// Update menu names based on weapons
-			CA_FOREACH(menu_t, submenu, menu->msEquip.root->u.normal.subMenus)
-			if (submenu->type == MENU_TYPE_RETURN)
-			{
-				SetEquippedMenuItemName(submenu, p, submenu->u.returnCode);
-			}
-			CA_FOREACH_END()
 			break;
 		default:
 			CASSERT(false, "unhandled case");
@@ -474,11 +446,10 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 	{
 		MenuProcessCmd(&menu->msEquip, cmd);
 		if (MenuIsExit(&menu->msEquip) &&
-			strcmp(menu->msEquip.current->name, END_MENU_LABEL) != 0)
+			menu->data.EquipSlot < MAX_WEAPONS)
 		{
 			// Open weapon selection menu
 			menu->equipping = true;
-			menu->data.EquipSlot = menu->msEquip.current->u.returnCode;
 			menu->msEquip.current = menu->msEquip.root;
 			menu->data.SelectResult = WEAPON_MENU_NONE;
 		}
@@ -509,7 +480,7 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 
 bool WeaponMenuIsDone(const WeaponMenu *menu)
 {
-	return strcmp(menu->msEquip.current->name, END_MENU_LABEL) == 0;
+	return menu->msEquip.current == NULL && !menu->equipping && menu->data.EquipSlot == MAX_WEAPONS;
 }
 
 void WeaponMenuDraw(const WeaponMenu *menu)
