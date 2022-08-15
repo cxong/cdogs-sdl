@@ -976,6 +976,10 @@ void MenuProcessCmd(MenuSystem *ms, int cmd)
 {
 	menu_t *menu = ms->current;
 	menu_t *menuToChange = NULL;
+	if (menu == NULL)
+	{
+		goto bail;
+	}
 	if (cmd == CMD_ESC || (cmd & CMD_BUTTON2) ||
 		((cmd & CMD_LEFT) && menu->u.normal.isSubmenusAlt))
 	{
@@ -1008,7 +1012,7 @@ void MenuProcessCmd(MenuSystem *ms, int cmd)
 	}
 
 bail:
-	if (menu->customPostInputFunc)
+	if (menu && menu->customPostInputFunc)
 	{
 		menu->customPostInputFunc(menu, cmd, menu->customPostInputData);
 	}

@@ -37,7 +37,8 @@
 
 #define NO_GUN_LABEL "(None)"
 #define END_MENU_LABEL "(End)"
-#define WEAPON_MENU_WIDTH 100
+#define WEAPON_MENU_WIDTH 64
+#define EQUIP_MENU_SLOT_HEIGHT 32
 
 static void WeaponSetSelected(
 	menu_t *menu, const WeaponClass *wc, const bool selected)
@@ -99,8 +100,9 @@ static void DrawEquipSlot(
 	const bool selected = data->EquipSlot == slot;
 	const Pic *slotBG = PicManagerGetPic(
 		&gPicManager, selected ? "hud/gun_bg_selected" : "hud/gun_bg");
+	const struct vec2i bgPos = svec2i(pos.x, pos.y + FontH());
 	PicRender(
-		slotBG, g->gameWindow.renderer, pos, colorWhite, 0, svec2_one(),
+		slotBG, g->gameWindow.renderer, bgPos, colorWhite, 0, svec2_one(),
 		SDL_FLIP_NONE, Rect2iZero());
 	const PlayerData *pData = PlayerDataGetByUID(data->PlayerUID);
 	const char *gunName =
@@ -110,8 +112,10 @@ static void DrawEquipSlot(
 							 ? pData->guns[slot]->Icon
 							 : PicManagerGetPic(&gPicManager, "peashooter");
 	const color_t mask = pData->guns[slot] ? colorWhite : colorBlack;
+	// Draw icon at center of BG
+	const struct vec2i gunPos = svec2i_subtract(svec2i_add(bgPos, svec2i_scale_divide(slotBG->size, 2)), svec2i_scale_divide(gunIcon->size, 2));
 	PicRender(
-		gunIcon, g->gameWindow.renderer, pos, mask, 0, svec2_one(),
+		gunIcon, g->gameWindow.renderer, gunPos, mask, 0, svec2_one(),
 		SDL_FLIP_NONE, Rect2iZero());
 }
 static void DrawEquipMenu(
@@ -119,16 +123,16 @@ static void DrawEquipMenu(
 	const struct vec2i size, const void *data)
 {
 	UNUSED(menu);
-	UNUSED(size);
 	const WeaponMenuData *d = data;
 	const PlayerData *pData = PlayerDataGetByUID(d->PlayerUID);
 
-	DrawEquipSlot(d, g, 0, pos);
-	DrawEquipSlot(d, g, 1, svec2i_add(pos, svec2i(50, 0)));
-	DrawEquipSlot(d, g, 2, svec2i_add(pos, svec2i(0, 50)));
+	DrawEquipSlot(d, g, 0, svec2i(pos.x, pos.y));
+	DrawEquipSlot(d, g, 1, svec2i(pos.x + WEAPON_MENU_WIDTH / 2, pos.y));
+	DrawEquipSlot(d, g, 2, svec2i(pos.x, pos.y + EQUIP_MENU_SLOT_HEIGHT));
 
+	const struct vec2i endSize = FontStrSize(END_MENU_LABEL);
 	DisplayMenuItem(
-		g, Rect2iNew(pos, FontStrSize(END_MENU_LABEL)), END_MENU_LABEL,
+		g, Rect2iNew(svec2i(CENTER_X(pos, size, endSize.x), pos.y + EQUIP_MENU_SLOT_HEIGHT * 2), FontStrSize(END_MENU_LABEL)), END_MENU_LABEL,
 		d->EquipSlot == MAX_WEAPONS, PlayerGetNumWeapons(pData) == 0,
 		colorWhite);
 }
@@ -206,13 +210,10 @@ static menu_t *CreateEquipMenu(
 	const struct vec2i pos, const struct vec2i size, const CArray *weapons,
 	WeaponMenuData *data)
 {
-	struct vec2i dPos = pos;
-	dPos.x -= size.x; // move to left half of screen
+	UNUSED(size);
+	const struct vec2i weaponsSize = svec2i(WEAPON_MENU_WIDTH, EQUIP_MENU_SLOT_HEIGHT * 2 + FontH());
 	const struct vec2i weaponsPos = svec2i(
-		dPos.x + size.x * 3 / 4 - WEAPON_MENU_WIDTH,
-		CENTER_Y(dPos, size, 0) + 2);
-	const int numRows = MAX_GUNS + 1 + MAX_GRENADES + 1 + 1;
-	const struct vec2i weaponsSize = svec2i(size.x, FontH() * numRows);
+		pos.x - WEAPON_MENU_WIDTH, CENTER_Y(pos, size,  weaponsSize.y) - 12);
 
 	MenuSystemInit(ms, handlers, g, weaponsPos, weaponsSize);
 	ms->align = MENU_ALIGN_LEFT;
@@ -311,8 +312,9 @@ void WeaponMenuCreate(
 	// For AI players, pre-pick their weapons and go straight to menu end
 	if (pData->inputDevice == INPUT_DEVICE_AI)
 	{
-		menu->msEquip.current =
-			MenuGetSubmenuByName(menu->msEquip.root, END_MENU_LABEL);
+		menu->data.EquipSlot = MAX_WEAPONS;
+		menu->equipping = false;
+		menu->msEquip.current = NULL;
 		AICoopSelectWeapons(pData, player, weapons);
 	}
 }
