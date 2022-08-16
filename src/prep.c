@@ -505,7 +505,7 @@ static void PlayerSelectionDraw(GameLoopData *data)
 		{
 			struct vec2i center = svec2i_zero();
 			const char *prompt =
-				"Press Fire to choose input device and join...";
+				"Press Fire to choose input device\nand join...";
 			const struct vec2i offset =
 				svec2i_scale_divide(FontStrSize(prompt), -2);
 			switch (GetNumPlayers(false, false, true))

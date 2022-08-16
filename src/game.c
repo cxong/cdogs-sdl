@@ -221,10 +221,6 @@ static void RunGameOnEnter(GameLoopData *data)
 	rData->m->state = MISSION_STATE_WAITING;
 	rData->m->isDone = false;
 	rData->m->DoneCounter = 0;
-	Pic *crosshair = PicManagerGetPic(&gPicManager, "crosshair");
-	crosshair->offset.x = -crosshair->size.x / 2;
-	crosshair->offset.y = -crosshair->size.y / 2;
-	MouseSetPicCursor(&gEventHandlers.mouse, crosshair);
 
 	NetServerSendGameStartMessages(&gNetServer, NET_SERVER_BCAST);
 	GameEvent start = GameEventNew(GAME_EVENT_GAME_START);
