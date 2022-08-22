@@ -38,7 +38,7 @@
 
 #define NO_GUN_LABEL "(None)"
 #define END_MENU_LABEL "(End)"
-#define WEAPON_MENU_WIDTH 48
+#define WEAPON_MENU_WIDTH 64
 #define EQUIP_MENU_SLOT_HEIGHT 40
 
 static void WeaponSetSelected(
@@ -102,32 +102,37 @@ static void DrawEquipSlot(
 	const PlayerData *pData = PlayerDataGetByUID(data->PlayerUID);
 
 	int y = pos.y;
-	const FontOpts fopts = {
-		align, ALIGN_START, svec2i(WEAPON_MENU_WIDTH / 2, FontH()),
-		svec2i(2, 2), selected ? colorRed : colorGray};
-	FontStrOpt(label, pos, fopts);
 
-	y += FontH();
-	const Pic *slotBG = PicManagerGetPic(
-		&gPicManager, selected ? "hud/gun_bg_selected" : "hud/gun_bg");
+	const NamedSprites *slotBGSprites =
+		PicManagerGetSprites(&gPicManager, "hud/gun_bg");
+	const int bgSpriteIndex = (slot & 1) + (int)selected * 2;
+	const Pic *slotBG = CArrayGet(&slotBGSprites->pics, bgSpriteIndex);
 	const struct vec2i bgPos = svec2i(pos.x, y);
 	PicRender(
 		slotBG, g->gameWindow.renderer, bgPos, colorWhite, 0, svec2_one(),
 		SDL_FLIP_NONE, Rect2iZero());
 
+	const FontOpts fopts = {
+		align, ALIGN_START, svec2i(WEAPON_MENU_WIDTH / 2, FontH()),
+		svec2i(1, 0), selected ? colorRed : colorGray};
+	FontStrOpt(label, pos, fopts);
+
 	const Pic *gunIcon = pData->guns[slot]
 							 ? pData->guns[slot]->Icon
 							 : PicManagerGetPic(&gPicManager, "peashooter");
 	const color_t mask = pData->guns[slot] ? colorWhite : colorBlack;
-	// Draw icon at center of BG
+	// Draw icon at center of slot
 	const struct vec2i gunPos = svec2i_subtract(
-		svec2i_add(bgPos, svec2i_scale_divide(slotBG->size, 2)),
+		svec2i_add(
+			bgPos,
+			svec2i_scale_divide(
+				svec2i(WEAPON_MENU_WIDTH / 2, EQUIP_MENU_SLOT_HEIGHT), 2)),
 		svec2i_scale_divide(gunIcon->size, 2));
 	PicRender(
 		gunIcon, g->gameWindow.renderer, gunPos, mask, 0, svec2_one(),
 		SDL_FLIP_NONE, Rect2iZero());
 
-	y += slotBG->size.y;
+	y += EQUIP_MENU_SLOT_HEIGHT - FontH();
 	const char *gunName =
 		pData->guns[slot] ? pData->guns[slot]->name : NO_GUN_LABEL;
 	FontStrMask(gunName, svec2i(pos.x, y), selected ? colorRed : colorWhite);
@@ -155,7 +160,8 @@ static void DrawEquipMenu(
 	}
 	DrawCharacterSimple(
 		&pData->Char,
-		svec2i(pos.x + WEAPON_MENU_WIDTH / 2, pos.y + EQUIP_MENU_SLOT_HEIGHT + 8),
+		svec2i(
+			pos.x + WEAPON_MENU_WIDTH / 2, pos.y + EQUIP_MENU_SLOT_HEIGHT + 8),
 		DIRECTION_DOWN, false, false, gun);
 
 	const struct vec2i endSize = FontStrSize(END_MENU_LABEL);
