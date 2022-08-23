@@ -99,6 +99,18 @@ static void DrawEquipSlot(
 	const char *label, const struct vec2i pos, const FontAlign align)
 {
 	const bool selected = data->EquipSlot == slot;
+	color_t color = data->equipping ? colorGray : colorWhite;
+	if (selected)
+	{
+		if (data->equipping)
+		{
+			color = colorYellow;
+		}
+		else
+		{
+			color = colorRed;
+		}
+	}
 	const PlayerData *pData = PlayerDataGetByUID(data->PlayerUID);
 
 	int y = pos.y;
@@ -114,7 +126,7 @@ static void DrawEquipSlot(
 
 	const FontOpts fopts = {
 		align, ALIGN_START, svec2i(WEAPON_MENU_WIDTH / 2, FontH()),
-		svec2i(1, 0), selected ? colorRed : colorGray};
+		svec2i(2, 1), color};
 	FontStrOpt(label, pos, fopts);
 
 	const Pic *gunIcon = pData->guns[slot]
@@ -135,7 +147,7 @@ static void DrawEquipSlot(
 	y += EQUIP_MENU_SLOT_HEIGHT - FontH();
 	const char *gunName =
 		pData->guns[slot] ? pData->guns[slot]->name : NO_GUN_LABEL;
-	FontStrMask(gunName, svec2i(pos.x, y), selected ? colorRed : colorWhite);
+	FontStrMask(gunName, svec2i(pos.x, y), color);
 }
 static void DrawEquipMenu(
 	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
@@ -170,10 +182,11 @@ static void DrawEquipMenu(
 		Rect2iNew(
 			svec2i(
 				CENTER_X(pos, size, endSize.x),
-				pos.y + EQUIP_MENU_SLOT_HEIGHT * 2),
+				pos.y + EQUIP_MENU_SLOT_HEIGHT * 2 + FontH()),
 			FontStrSize(END_MENU_LABEL)),
 		END_MENU_LABEL, d->EquipSlot == MAX_WEAPONS,
-		PlayerGetNumWeapons(pData) == 0, colorWhite);
+		PlayerGetNumWeapons(pData) == 0,
+		d->equipping ? colorGray : colorWhite);
 }
 static int HandleInputEquipMenu(int cmd, void *data)
 {
@@ -352,7 +365,7 @@ void WeaponMenuCreate(
 	if (pData->inputDevice == INPUT_DEVICE_AI)
 	{
 		menu->data.EquipSlot = MAX_WEAPONS;
-		menu->equipping = false;
+		menu->data.equipping = false;
 		menu->msEquip.current = NULL;
 		AICoopSelectWeapons(pData, player, weapons);
 	}
@@ -444,7 +457,7 @@ void WeaponMenuTerminate(WeaponMenu *menu)
 void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 {
 	PlayerData *p = PlayerDataGetByUID(menu->data.PlayerUID);
-	if (menu->equipping)
+	if (menu->data.equipping)
 	{
 		MenuProcessCmd(&menu->ms, cmd);
 		menu_t *equipMenu = menu->data.EquipSlot < MAX_GUNS
@@ -471,7 +484,7 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 			// fallthrough
 		case WEAPON_MENU_CANCEL:
 			// Switch back to equip menu
-			menu->equipping = false;
+			menu->data.equipping = false;
 			break;
 		default:
 			CASSERT(false, "unhandled case");
@@ -489,14 +502,14 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 		if (MenuIsExit(&menu->msEquip) && menu->data.EquipSlot < MAX_WEAPONS)
 		{
 			// Open weapon selection menu
-			menu->equipping = true;
+			menu->data.equipping = true;
 			menu->msEquip.current = menu->msEquip.root;
 			menu->data.SelectResult = WEAPON_MENU_NONE;
 		}
 	}
 
 	// Display the gun/grenade menu based on which submenu is hovered
-	if (!menu->equipping)
+	if (!menu->data.equipping)
 	{
 		if (menu->data.EquipSlot < MAX_WEAPONS)
 		{
@@ -511,21 +524,21 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 	}
 
 	// Disable the equip/weapon menus based on equipping state
-	MenuSetDisabled(menu->msEquip.root, menu->equipping);
+	MenuSetDisabled(menu->msEquip.root, menu->data.equipping);
 	if (menu->ms.current)
 	{
-		MenuSetDisabled(menu->ms.current, !menu->equipping);
+		MenuSetDisabled(menu->ms.current, !menu->data.equipping);
 	}
 }
 
 bool WeaponMenuIsDone(const WeaponMenu *menu)
 {
-	return menu->msEquip.current == NULL && !menu->equipping &&
+	return menu->msEquip.current == NULL && !menu->data.equipping &&
 		   menu->data.EquipSlot == MAX_WEAPONS;
 }
 
 void WeaponMenuDraw(const WeaponMenu *menu)
 {
-	MenuDisplay(&menu->ms);
 	MenuDisplay(&menu->msEquip);
+	MenuDisplay(&menu->ms);
 }

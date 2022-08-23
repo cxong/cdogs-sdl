@@ -42,6 +42,7 @@ typedef struct
 	MenuDisplayPlayerData display;
 	int PlayerUID;
 	int EquipSlot;
+	bool equipping;
 	bool EquipEnabled[MAX_WEAPONS];
 	const WeaponClass *SelectedGun;
 	WeaponMenuResult SelectResult;
@@ -52,7 +53,6 @@ typedef struct
 	MenuSystem msEquip;
 	menu_t *gunMenu;
 	menu_t *grenadeMenu;
-	bool equipping;
 	WeaponMenuData data;
 } WeaponMenu;
 
