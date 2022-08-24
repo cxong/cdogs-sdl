@@ -32,6 +32,7 @@
 
 #include <cdogs/ai_coop.h>
 #include <cdogs/draw/draw_actor.h>
+#include <cdogs/draw/drawtools.h>
 #include <cdogs/font.h>
 
 #include "material.h"
@@ -41,54 +42,76 @@
 #define WEAPON_MENU_WIDTH 64
 #define EQUIP_MENU_SLOT_HEIGHT 40
 
-static void WeaponSetSelected(
-	menu_t *menu, const WeaponClass *wc, const bool selected)
+static const bool IsEquippingGrenade(const int slot)
 {
-	if (wc == NULL)
-	{
-		return;
-	}
-	CA_FOREACH(menu_t, subMenu, menu->u.normal.subMenus)
-	if (strcmp(subMenu->name, wc->name) == 0)
-	{
-		subMenu->color = selected ? colorYellow : colorWhite;
-		break;
-	}
-	CA_FOREACH_END()
+	return slot >= MAX_WEAPONS;
 }
 
-static const WeaponClass *GetSelectedGun(const menu_t *menu)
+static const WeaponClass *GetGun(
+	const CArray *weapons, const int idx, const int slot)
 {
-	const menu_t *subMenu =
-		CArrayGet(&menu->u.normal.subMenus, menu->u.normal.index);
-	if (strcmp(subMenu->name, NO_GUN_LABEL) == 0)
+	if (slot >= MAX_WEAPONS)
 	{
 		return NULL;
 	}
-	return StrWeaponClass(subMenu->name);
+	const bool isGrenade = IsEquippingGrenade(slot);
+	int idx2 = 0;
+	CA_FOREACH(const WeaponClass *, wc, *weapons)
+	if (((*wc)->Type == GUNTYPE_GRENADE) != isGrenade)
+	{
+		continue;
+	}
+	if (idx == idx2)
+	{
+		return *wc;
+	}
+	idx2++;
+	CA_FOREACH_END()
+	return NULL;
+}
+
+static const WeaponClass *GetSelectedGun(const WeaponMenuData *data)
+{
+	return GetGun(&data->weapons, data->gunIdx, data->EquipSlot);
+}
+
+static const bool IsGunEquipped(const PlayerData *pd, const WeaponClass *wc)
+{
+	if (wc == NULL)
+	{
+		return false;
+	}
+	for (int i = 0; i < MAX_WEAPONS; i++)
+	{
+		if (pd->guns[i] == wc)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 static void WeaponSelect(menu_t *menu, int cmd, void *data)
 {
+	UNUSED(menu);
 	WeaponMenuData *d = data;
 
 	if (cmd & CMD_BUTTON1)
 	{
 		// Add the selected weapon to the slot
-		d->SelectedGun = GetSelectedGun(menu);
+		const WeaponClass *selectedGun = GetSelectedGun(d);
 		d->SelectResult = WEAPON_MENU_SELECT;
-		if (d->SelectedGun == NULL)
+		if (selectedGun == NULL)
 		{
 			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 		else
 		{
-			SoundPlay(&gSoundDevice, d->SelectedGun->SwitchSound);
+			SoundPlay(&gSoundDevice, selectedGun->SwitchSound);
 		}
 	}
 	else if (cmd & CMD_BUTTON2)
 	{
-		d->SelectedGun = GetSelectedGun(menu);
 		d->SelectResult = WEAPON_MENU_CANCEL;
 		MenuPlaySound(MENU_SOUND_BACK);
 	}
@@ -108,6 +131,13 @@ static void DrawEquipSlot(
 		}
 		else
 		{
+			const color_t bg = {0, 255, 255, 64};
+			// Add 1px padding
+			const struct vec2i bgPos = svec2i_subtract(pos, svec2i_one());
+			const struct vec2i bgSize =
+				svec2i(WEAPON_MENU_WIDTH / 2 + 2, EQUIP_MENU_SLOT_HEIGHT + 2);
+			DrawRectangle(g, bgPos, bgSize, bg, true);
+
 			color = colorRed;
 		}
 	}
@@ -115,10 +145,8 @@ static void DrawEquipSlot(
 
 	int y = pos.y;
 
-	const NamedSprites *slotBGSprites =
-		PicManagerGetSprites(&gPicManager, "hud/gun_bg");
 	const int bgSpriteIndex = (slot & 1) + (int)selected * 2;
-	const Pic *slotBG = CArrayGet(&slotBGSprites->pics, bgSpriteIndex);
+	const Pic *slotBG = CArrayGet(&data->slotBGSprites->pics, bgSpriteIndex);
 	const struct vec2i bgPos = svec2i(pos.x, y);
 	PicRender(
 		slotBG, g->gameWindow.renderer, bgPos, colorWhite, 0, svec2_one(),
@@ -177,6 +205,7 @@ static void DrawEquipMenu(
 		DIRECTION_DOWN, false, false, gun);
 
 	const struct vec2i endSize = FontStrSize(END_MENU_LABEL);
+	const bool endDisabled = PlayerGetNumWeapons(pData) == 0 || d->equipping;
 	DisplayMenuItem(
 		g,
 		Rect2iNew(
@@ -184,9 +213,7 @@ static void DrawEquipMenu(
 				CENTER_X(pos, size, endSize.x),
 				pos.y + EQUIP_MENU_SLOT_HEIGHT * 2 + FontH()),
 			FontStrSize(END_MENU_LABEL)),
-		END_MENU_LABEL, d->EquipSlot == MAX_WEAPONS,
-		PlayerGetNumWeapons(pData) == 0,
-		d->equipping ? colorGray : colorWhite);
+		END_MENU_LABEL, d->EquipSlot == MAX_WEAPONS, endDisabled, colorWhite);
 }
 static int HandleInputEquipMenu(int cmd, void *data)
 {
@@ -254,13 +281,9 @@ static int HandleInputEquipMenu(int cmd, void *data)
 
 	return 0;
 }
-static void DisplayGunIcon(
-	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
-	const struct vec2i size, const void *data);
 static menu_t *CreateEquipMenu(
 	MenuSystem *ms, EventHandlers *handlers, GraphicsDevice *g,
-	const struct vec2i pos, const struct vec2i size, const CArray *weapons,
-	WeaponMenuData *data)
+	const struct vec2i pos, const struct vec2i size, WeaponMenuData *data)
 {
 	UNUSED(size);
 	const struct vec2i weaponsSize =
@@ -275,7 +298,7 @@ static menu_t *CreateEquipMenu(
 	// Count number of guns/grenades, and disable extra menu items
 	int numGuns = 0;
 	int numGrenades = 0;
-	CA_FOREACH(const WeaponClass *, wc, *weapons)
+	CA_FOREACH(const WeaponClass *, wc, data->weapons)
 	if ((*wc)->Type == GUNTYPE_GRENADE)
 	{
 		numGrenades++;
@@ -303,12 +326,7 @@ static menu_t *CreateEquipMenu(
 	return menu;
 }
 
-static menu_t *CreateGunMenu(
-	const CArray *weapons, const struct vec2i menuSize, const bool isGrenade,
-	WeaponMenuData *data);
-static void DisplayDescriptionGunIcon(
-	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
-	const struct vec2i size, const void *data);
+static menu_t *CreateGunMenu(WeaponMenuData *data);
 void WeaponMenuCreate(
 	WeaponMenu *menu, const CArray *weapons, const int numPlayers,
 	const int player, const int playerUID, EventHandlers *handlers,
@@ -324,6 +342,11 @@ void WeaponMenuCreate(
 	data->display.currentMenu = NULL;
 	data->display.Dir = DIRECTION_DOWN;
 	data->PlayerUID = playerUID;
+	data->slotBGSprites =
+		PicManagerGetSprites(&gPicManager, "hud/gun_slot_bg");
+	data->gunBGSprites = PicManagerGetSprites(&gPicManager, "hud/gun_bg");
+	data->gunIdx = -1;
+	CArrayCopy(&data->weapons, weapons);
 
 	switch (numPlayers)
 	{
@@ -352,14 +375,13 @@ void WeaponMenuCreate(
 	MenuSystemInit(ms, handlers, graphics, pos, size);
 	ms->align = MENU_ALIGN_LEFT;
 	PlayerData *pData = PlayerDataGetByUID(playerUID);
-	menu->gunMenu = CreateGunMenu(weapons, size, false, data);
-	menu->grenadeMenu = CreateGunMenu(weapons, size, true, data);
+	menu->ms.root = menu->ms.current = CreateGunMenu(data);
 	MenuSystemAddCustomDisplay(
 		ms, MenuDisplayPlayerControls, &data->PlayerUID);
 
 	// Create equipped weapons menu
-	menu->msEquip.root = menu->msEquip.current = CreateEquipMenu(
-		&menu->msEquip, handlers, graphics, pos, size, weapons, data);
+	menu->msEquip.root = menu->msEquip.current =
+		CreateEquipMenu(&menu->msEquip, handlers, graphics, pos, size, data);
 
 	// For AI players, pre-pick their weapons and go straight to menu end
 	if (pData->inputDevice == INPUT_DEVICE_AI)
@@ -370,88 +392,195 @@ void WeaponMenuCreate(
 		AICoopSelectWeapons(pData, player, weapons);
 	}
 }
-static menu_t *CreateGunMenu(
-	const CArray *weapons, const struct vec2i menuSize, const bool isGrenade,
-	WeaponMenuData *data)
+static void DrawGunMenu(
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
+	const struct vec2i size, const void *data);
+static int HandleInputGunMenu(int cmd, void *data);
+static menu_t *CreateGunMenu(WeaponMenuData *data)
 {
-	menu_t *menu = MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
-	menu->u.normal.maxItems = 11;
-	MenuAddSubmenu(menu, MenuCreate(NO_GUN_LABEL, MENU_TYPE_BASIC));
-	CA_FOREACH(const WeaponClass *, wc, *weapons)
-	if (((*wc)->Type == GUNTYPE_GRENADE) != isGrenade)
-	{
-		continue;
-	}
-	menu_t *gunMenu;
-	if ((*wc)->Description != NULL)
-	{
-		// Gun description menu
-		gunMenu = MenuCreateNormal((*wc)->name, "", MENU_TYPE_NORMAL, 0);
-		char *buf;
-		CMALLOC(buf, strlen((*wc)->Description) * 2);
-		FontSplitLines((*wc)->Description, buf, menuSize.x * 5 / 6);
-		MenuAddSubmenu(gunMenu, MenuCreateBack(buf));
-		CFREE(buf);
-		gunMenu->u.normal.isSubmenusAlt = true;
-		MenuSetCustomDisplay(gunMenu, DisplayDescriptionGunIcon, *wc);
-	}
-	else
-	{
-		gunMenu = MenuCreate((*wc)->name, MENU_TYPE_BASIC);
-	}
-	MenuAddSubmenu(menu, gunMenu);
-	CA_FOREACH_END()
+	menu_t *menu = MenuCreateCustom("", DrawGunMenu, HandleInputGunMenu, data);
 
 	MenuSetPostInputFunc(menu, WeaponSelect, data);
 
-	MenuSetCustomDisplay(menu, DisplayGunIcon, NULL);
-
 	return menu;
 }
-static void DisplayGunIcon(
-	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
-	const struct vec2i size, const void *data)
-{
-	UNUSED(data);
-	if (menu->isDisabled)
-	{
-		return;
-	}
-	// Display a gun icon next to the currently selected weapon
-	const WeaponClass *wc = GetSelectedGun(menu);
-	if (wc == NULL)
-	{
-		return;
-	}
-	const int menuItems = MenuGetNumMenuItemsShown(menu);
-	const int textScroll =
-		-menuItems * FontH() / 2 +
-		(menu->u.normal.index - menu->u.normal.scroll) * FontH();
-	const struct vec2i iconPos = svec2i(
-		pos.x - wc->Icon->size.x - 4,
-		pos.y + size.y / 2 + textScroll + (FontH() - wc->Icon->size.y) / 2);
-	PicRender(
-		wc->Icon, g->gameWindow.renderer, iconPos, colorWhite, 0, svec2_one(),
-		SDL_FLIP_NONE, Rect2iZero());
-}
-static void DisplayDescriptionGunIcon(
+static void DrawGun(
+	const WeaponMenuData *data, GraphicsDevice *g, const int idx,
+	const WeaponClass *wc, const struct vec2i pos);
+static void DrawGunMenu(
 	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
 	const struct vec2i size, const void *data)
 {
 	UNUSED(menu);
-	UNUSED(size);
-	const WeaponClass *wc = data;
-	// Display the gun just to the left of the description text
-	const struct vec2i iconPos =
-		svec2i(pos.x - wc->Icon->size.x - 4, pos.y + size.y / 2);
+	const WeaponMenuData *d = data;
+	if (d->EquipSlot >= MAX_WEAPONS)
+	{
+		return;
+	}
+	const PlayerData *pData = PlayerDataGetByUID(d->PlayerUID);
+
+	// Draw guns: red if selected, yellow if equipped
+	int idx = 0;
+	CA_FOREACH(const WeaponClass *, wc, d->weapons)
+	if (((*wc)->Type == GUNTYPE_GRENADE) != IsEquippingGrenade(d->EquipSlot))
+	{
+		continue;
+	}
+	DrawGun(d, g, idx, *wc, pos);
+	idx++;
+	CA_FOREACH_END()
+	DrawGun(d, g, idx, NULL, pos);
+
+	DrawEquipSlot(d, g, 0, "I", svec2i(pos.x, pos.y), ALIGN_START);
+	DrawEquipSlot(
+		d, g, 1, "II", svec2i(pos.x + WEAPON_MENU_WIDTH / 2, pos.y),
+		ALIGN_END);
+	DrawEquipSlot(
+		d, g, 2, "G", svec2i(pos.x, pos.y + EQUIP_MENU_SLOT_HEIGHT),
+		ALIGN_START);
+
+	const WeaponClass *gun = NULL;
+	if (d->display.GunIdx >= 0 && d->display.GunIdx < MAX_WEAPONS)
+	{
+		gun = pData->guns[d->display.GunIdx];
+	}
+	DrawCharacterSimple(
+		&pData->Char,
+		svec2i(
+			pos.x + WEAPON_MENU_WIDTH / 2, pos.y + EQUIP_MENU_SLOT_HEIGHT + 8),
+		DIRECTION_DOWN, false, false, gun);
+
+	const struct vec2i endSize = FontStrSize(END_MENU_LABEL);
+	const bool endDisabled = PlayerGetNumWeapons(pData) == 0 || d->equipping;
+	DisplayMenuItem(
+		g,
+		Rect2iNew(
+			svec2i(
+				CENTER_X(pos, size, endSize.x),
+				pos.y + EQUIP_MENU_SLOT_HEIGHT * 2 + FontH()),
+			FontStrSize(END_MENU_LABEL)),
+		END_MENU_LABEL, d->EquipSlot == MAX_WEAPONS, endDisabled, colorWhite);
+}
+static void DrawGun(
+	const WeaponMenuData *data, GraphicsDevice *g, const int idx,
+	const WeaponClass *wc, const struct vec2i pos)
+{
+	const bool selected = data->gunIdx == idx;
+	const PlayerData *pData = PlayerDataGetByUID(data->PlayerUID);
+	const bool equipped = IsGunEquipped(pData, wc);
+	const int bgSpriteIndex = (int)selected;
+	const Pic *gunBG = CArrayGet(&data->gunBGSprites->pics, bgSpriteIndex);
+	const struct vec2i bgSize = svec2i_add(gunBG->size, svec2i(2, 2));
+	const struct vec2i bgPos =
+		svec2i(pos.x + (idx & 1) * bgSize.x, pos.y + (idx / 2) * bgSize.y);
+	color_t color = data->equipping ? colorWhite : colorGray;
+	const color_t mask = color;
+	if (selected && data->equipping)
+	{
+		const color_t bg = {0, 255, 255, 64};
+		DrawRectangle(g, bgPos, bgSize, bg, true);
+		color = colorRed;
+	}
+	else if (equipped)
+	{
+		color = colorYellow;
+	}
+
 	PicRender(
-		wc->Icon, g->gameWindow.renderer, iconPos, colorWhite, 0, svec2_one(),
+		gunBG, g->gameWindow.renderer, bgPos, mask, 0, svec2_one(),
 		SDL_FLIP_NONE, Rect2iZero());
+
+	// Draw icon at center of slot
+	const Pic *gunIcon =
+		wc ? wc->Icon : PicManagerGetPic(&gPicManager, "peashooter");
+	const struct vec2i gunPos = svec2i_subtract(
+		svec2i_add(bgPos, svec2i_scale_divide(bgSize, 2)),
+		svec2i_scale_divide(gunIcon->size, 2));
+	PicRender(
+		gunIcon, g->gameWindow.renderer, gunPos, mask, 0, svec2_one(),
+		SDL_FLIP_NONE, Rect2iZero());
+
+	const FontOpts fopts = {
+		ALIGN_CENTER, ALIGN_END, bgSize, svec2i(2, 2), color};
+	const char *gunName = wc ? wc->name : NO_GUN_LABEL;
+	FontStrOpt(gunName, bgPos, fopts);
+}
+static int HandleInputGunMenu(int cmd, void *data)
+{
+	WeaponMenuData *d = data;
+	PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
+
+	if (d->gunIdx == -1)
+	{
+		// Pre-select the equipped gun for the slot
+		d->gunIdx = 0;
+		const bool isGrenade = IsEquippingGrenade(d->EquipSlot);
+		CA_FOREACH(const WeaponClass *, wc, d->weapons)
+		if (((*wc)->Type == GUNTYPE_GRENADE) != isGrenade)
+		{
+			continue;
+		}
+		if (*wc == p->guns[d->gunIdx])
+		{
+			break;
+		}
+		d->gunIdx++;
+		CA_FOREACH_END()
+	}
+
+	if (cmd & CMD_BUTTON1)
+	{
+		return 1;
+	}
+	else if (cmd & CMD_BUTTON2)
+	{
+		return 1;
+	}
+	else if (cmd & CMD_LEFT)
+	{
+		if ((d->gunIdx & 1) == 1)
+		{
+			d->gunIdx--;
+			MenuPlaySound(MENU_SOUND_SWITCH);
+		}
+	}
+	else if (cmd & CMD_RIGHT)
+	{
+		if ((d->gunIdx & 1) == 0 && d->gunIdx > 0)
+		{
+			d->gunIdx++;
+			if (d->gunIdx > d->weapons.size)
+			{
+				d->gunIdx = MAX(0, d->gunIdx - 2);
+			}
+			MenuPlaySound(MENU_SOUND_SWITCH);
+		}
+	}
+	else if (cmd & CMD_UP)
+	{
+		if (d->gunIdx >= 2)
+		{
+			d->gunIdx -= 2;
+			MenuPlaySound(MENU_SOUND_SWITCH);
+		}
+	}
+	else if (cmd & CMD_DOWN)
+	{
+		if (((d->gunIdx + 2) & ~1) <= d->weapons.size)
+		{
+			d->gunIdx = MIN((int)d->weapons.size, d->gunIdx + 2);
+			MenuPlaySound(MENU_SOUND_SWITCH);
+		}
+	}
+
+	return 0;
 }
 
 void WeaponMenuTerminate(WeaponMenu *menu)
 {
 	MenuSystemTerminate(&menu->ms);
+	MenuSystemTerminate(&menu->msEquip);
+	CArrayTerminate(&menu->data.weapons);
 }
 
 void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
@@ -460,16 +589,11 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 	if (menu->data.equipping)
 	{
 		MenuProcessCmd(&menu->ms, cmd);
-		menu_t *equipMenu = menu->data.EquipSlot < MAX_GUNS
-								? menu->gunMenu
-								: menu->grenadeMenu;
 		switch (menu->data.SelectResult)
 		{
 		case WEAPON_MENU_NONE:
 			break;
 		case WEAPON_MENU_SELECT:
-			// Deselect menu items due to changed equipment
-			WeaponSetSelected(equipMenu, p->guns[menu->data.EquipSlot], false);
 			// See if the selected gun is already equipped; if so swap it with
 			// the current slot
 			for (int i = 0; i < MAX_WEAPONS; i++)
@@ -485,15 +609,11 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 		case WEAPON_MENU_CANCEL:
 			// Switch back to equip menu
 			menu->data.equipping = false;
+			menu->data.gunIdx = -1;
 			break;
 		default:
 			CASSERT(false, "unhandled case");
 			break;
-		}
-		// Select menu items where the player already has the weapon
-		for (int i = 0; i < MAX_WEAPONS; i++)
-		{
-			WeaponSetSelected(equipMenu, p->guns[i], true);
 		}
 	}
 	else
@@ -505,21 +625,6 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 			menu->data.equipping = true;
 			menu->msEquip.current = menu->msEquip.root;
 			menu->data.SelectResult = WEAPON_MENU_NONE;
-		}
-	}
-
-	// Display the gun/grenade menu based on which submenu is hovered
-	if (!menu->data.equipping)
-	{
-		if (menu->data.EquipSlot < MAX_WEAPONS)
-		{
-			menu->ms.current = menu->data.EquipSlot < MAX_GUNS
-								   ? menu->gunMenu
-								   : menu->grenadeMenu;
-		}
-		else
-		{
-			menu->ms.current = NULL;
 		}
 	}
 

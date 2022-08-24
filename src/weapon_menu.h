@@ -46,13 +46,15 @@ typedef struct
 	bool EquipEnabled[MAX_WEAPONS];
 	const WeaponClass *SelectedGun;
 	WeaponMenuResult SelectResult;
+	const NamedSprites *slotBGSprites;
+	const NamedSprites *gunBGSprites;
+	int gunIdx;
+	CArray weapons;
 } WeaponMenuData;
 typedef struct
 {
 	MenuSystem ms;
 	MenuSystem msEquip;
-	menu_t *gunMenu;
-	menu_t *grenadeMenu;
 	WeaponMenuData data;
 } WeaponMenu;
 
