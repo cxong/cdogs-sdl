@@ -465,8 +465,7 @@ struct vec2i DisplayMenuItem(
 {
 	if (isDisabled)
 	{
-		color_t dark = {64, 64, 64, 255};
-		return FontStrMask(s, bounds.Pos, dark);
+		return FontStrMask(s, bounds.Pos, colorDarkGray);
 	}
 	if (selected)
 	{

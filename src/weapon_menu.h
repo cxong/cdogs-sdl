@@ -44,12 +44,12 @@ typedef struct
 	int EquipSlot;
 	bool equipping;
 	bool EquipEnabled[MAX_WEAPONS];
-	const WeaponClass *SelectedGun;
 	WeaponMenuResult SelectResult;
 	const NamedSprites *slotBGSprites;
 	const NamedSprites *gunBGSprites;
 	int gunIdx;
 	CArray weapons;
+	int cols;
 } WeaponMenuData;
 typedef struct
 {

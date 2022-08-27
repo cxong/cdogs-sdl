@@ -43,6 +43,7 @@ color_t colorBlack = { 0, 0, 0, 255 };
 color_t colorDarker = { 192, 192, 192, 255 };
 color_t colorPurple = { 192, 0, 192, 255 };
 color_t colorGray = { 128, 128, 128, 255 };
+color_t colorDarkGray = { 64, 64, 64, 255 };
 color_t colorYellow = { 255, 255, 128, 255 };
 color_t colorMagenta = { 255, 0, 255, 255 };
 color_t colorCyan = { 0, 255, 255, 255 };

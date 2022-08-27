@@ -700,12 +700,11 @@ static void AddCharacter(EditorContext *ec, const int cloneIdx)
 		// set up character template
 		ec->Char->Class = StrCharacterClass("Ogre");
 		ec->Char->Colors.Skin = colorGreen;
-		const color_t darkGray = {64, 64, 64, 255};
-		ec->Char->Colors.Arms = darkGray;
-		ec->Char->Colors.Body = darkGray;
-		ec->Char->Colors.Legs = darkGray;
+		ec->Char->Colors.Arms = colorDarkGray;
+		ec->Char->Colors.Body = colorDarkGray;
+		ec->Char->Colors.Legs = colorDarkGray;
 		ec->Char->Colors.Hair = colorBlack;
-		ec->Char->Colors.Feet = darkGray;
+		ec->Char->Colors.Feet = colorDarkGray;
 		ec->Char->speed = 1;
 		ec->Char->Gun = StrWeaponClass("Machine gun");
 		ec->Char->maxHealth = 40;

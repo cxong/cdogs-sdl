@@ -49,6 +49,7 @@ extern color_t colorBlack;
 extern color_t colorDarker;
 extern color_t colorPurple;
 extern color_t colorGray;
+extern color_t colorDarkGray;
 extern color_t colorYellow;
 extern color_t colorMagenta;
 extern color_t colorCyan;
