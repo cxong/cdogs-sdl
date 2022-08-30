@@ -33,6 +33,7 @@
 #include <cdogs/ai_coop.h>
 #include <cdogs/draw/draw_actor.h>
 #include <cdogs/draw/drawtools.h>
+#include <cdogs/draw/nine_slice.h>
 #include <cdogs/font.h>
 
 #include "material.h"
@@ -41,6 +42,10 @@
 #define END_MENU_LABEL "(End)"
 #define WEAPON_MENU_WIDTH 64
 #define EQUIP_MENU_SLOT_HEIGHT 40
+#define WEAPON_MENU_MAX_ROWS 4
+#define GUN_BG_W 32
+#define GUN_BG_H 25
+#define SCROLL_H 12
 
 static bool IsEquippingGrenade(const int slot)
 {
@@ -170,8 +175,9 @@ static void DrawEquipSlot(
 				svec2i(WEAPON_MENU_WIDTH / 2, EQUIP_MENU_SLOT_HEIGHT), 2)),
 		svec2i_scale_divide(gunIcon->size, 2));
 	PicRender(
-		gunIcon, g->gameWindow.renderer, gunPos, pData->guns[slot] ? mask : colorBlack, 0, svec2_one(),
-		SDL_FLIP_NONE, Rect2iZero());
+		gunIcon, g->gameWindow.renderer, gunPos,
+		pData->guns[slot] ? mask : colorBlack, 0, svec2_one(), SDL_FLIP_NONE,
+		Rect2iZero());
 
 	y += EQUIP_MENU_SLOT_HEIGHT - FontH();
 	const char *gunName =
@@ -286,7 +292,6 @@ static menu_t *CreateEquipMenu(
 	MenuSystem *ms, EventHandlers *handlers, GraphicsDevice *g,
 	const struct vec2i pos, const struct vec2i size, WeaponMenuData *data)
 {
-	UNUSED(size);
 	const struct vec2i weaponsSize =
 		svec2i(WEAPON_MENU_WIDTH, EQUIP_MENU_SLOT_HEIGHT * 2 + FontH());
 	const struct vec2i weaponsPos = svec2i(
@@ -375,6 +380,7 @@ void WeaponMenuCreate(
 	}
 	const Pic *gunBG = CArrayGet(&data->gunBGSprites->pics, 0);
 	data->cols = CLAMP(size.x * 3 / (gunBG->size.x + 2) / 4, 2, 4);
+
 	MenuSystemInit(ms, handlers, graphics, pos, size);
 	ms->align = MENU_ALIGN_LEFT;
 	PlayerData *pData = PlayerDataGetByUID(playerUID);
@@ -421,6 +427,11 @@ static void DrawGunMenu(
 	{
 		return;
 	}
+	const int weaponsHeight = EQUIP_MENU_SLOT_HEIGHT * 2 + FontH();
+	const int weaponsY = CENTER_Y(pos, size, weaponsHeight) - 12;
+	const color_t color = d->equipping ? colorWhite : colorGray;
+	const struct vec2i scrollSize = svec2i(d->cols * GUN_BG_W - 2, SCROLL_H);
+	bool scrollDown = false;
 
 	// Draw guns: red if selected, yellow if equipped
 	int idx = 0;
@@ -429,10 +440,55 @@ static void DrawGunMenu(
 	{
 		continue;
 	}
-	DrawGun(d, g, idx, *wc, pos);
+	const int row = idx / d->cols;
+	if (row >= d->scroll && row < d->scroll + WEAPON_MENU_MAX_ROWS)
+	{
+		DrawGun(d, g, idx, *wc, svec2i(pos.x, pos.y + weaponsY));
+	}
 	idx++;
+	if (idx / d->cols == d->scroll + WEAPON_MENU_MAX_ROWS)
+	{
+		scrollDown = true;
+		break;
+	}
 	CA_FOREACH_END()
-	DrawGun(d, g, idx, NULL, pos);
+
+	// Draw scroll buttons
+	if (d->scroll > 0)
+	{
+		const Pic *scrollPic = CArrayGet(&d->gunBGSprites->pics, 0);
+		const Rect2i scrollRect =
+			Rect2iNew(svec2i(pos.x + 3, pos.y + 1 + weaponsY), scrollSize);
+		Draw9Slice(
+			g, scrollPic, scrollRect, 3, 3, 3, 3, true, color, SDL_FLIP_NONE);
+		FontOpts fopts = FontOptsNew();
+		fopts.Area = scrollRect.Size;
+		fopts.HAlign = ALIGN_CENTER;
+		fopts.VAlign = ALIGN_CENTER;
+		fopts.Mask = color;
+		FontStrOpt(ARROW_UP, scrollRect.Pos, fopts);
+	}
+	if (scrollDown)
+	{
+		const Pic *scrollPic = CArrayGet(&d->gunBGSprites->pics, 0);
+		const Rect2i scrollRect = Rect2iNew(
+			svec2i(
+				pos.x + 3, pos.y - 1 + weaponsY +
+							   GUN_BG_H * WEAPON_MENU_MAX_ROWS - SCROLL_H),
+			scrollSize);
+		Draw9Slice(
+			g, scrollPic, scrollRect, 3, 3, 3, 3, true, color, SDL_FLIP_NONE);
+		FontOpts fopts = FontOptsNew();
+		fopts.Area = scrollRect.Size;
+		fopts.HAlign = ALIGN_CENTER;
+		fopts.VAlign = ALIGN_CENTER;
+		fopts.Mask = color;
+		FontStrOpt(ARROW_DOWN, scrollRect.Pos, fopts);
+	}
+	else
+	{
+		DrawGun(d, g, idx, NULL, svec2i(pos.x, pos.y + weaponsY));
+	}
 }
 static void DrawGun(
 	const WeaponMenuData *data, GraphicsDevice *g, const int idx,
@@ -443,9 +499,10 @@ static void DrawGun(
 	const bool equipped = IsGunEquipped(pData, wc);
 	const int bgSpriteIndex = (int)selected;
 	const Pic *gunBG = CArrayGet(&data->gunBGSprites->pics, bgSpriteIndex);
-	const struct vec2i bgSize = svec2i_add(gunBG->size, svec2i(2, 2));
-	const struct vec2i bgPos =
-		svec2i(pos.x + 2 + (idx % data->cols) * bgSize.x, pos.y + (idx / data->cols) * bgSize.y);
+	const struct vec2i bgSize = svec2i(GUN_BG_W, GUN_BG_H);
+	const struct vec2i bgPos = svec2i(
+		pos.x + 2 + (idx % data->cols) * GUN_BG_W,
+		pos.y + (idx / data->cols - data->scroll) * GUN_BG_H);
 	color_t color = data->equipping ? colorWhite : colorGray;
 	const color_t mask = color;
 	if (selected && data->equipping)
@@ -460,8 +517,8 @@ static void DrawGun(
 	}
 
 	PicRender(
-		gunBG, g->gameWindow.renderer, svec2i_add(bgPos, svec2i_one()), mask, 0, svec2_one(),
-		SDL_FLIP_NONE, Rect2iZero());
+		gunBG, g->gameWindow.renderer, svec2i_add(bgPos, svec2i_one()), mask,
+		0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 
 	// Draw icon at center of slot
 	const Pic *gunIcon =
@@ -470,8 +527,8 @@ static void DrawGun(
 		svec2i_add(bgPos, svec2i_scale_divide(bgSize, 2)),
 		svec2i_scale_divide(gunIcon->size, 2));
 	PicRender(
-		gunIcon, g->gameWindow.renderer, gunPos, wc ? mask : colorBlack, 0, svec2_one(),
-		SDL_FLIP_NONE, Rect2iZero());
+		gunIcon, g->gameWindow.renderer, gunPos, wc ? mask : colorBlack, 0,
+		svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 
 	const FontOpts fopts = {
 		ALIGN_CENTER, ALIGN_END, bgSize, svec2i(2, 2), color};
@@ -482,14 +539,14 @@ static int HandleInputGunMenu(int cmd, void *data)
 {
 	WeaponMenuData *d = data;
 	PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
-	
+
 	// Pre-select the equipped gun for the slot
 	bool hasSelected = d->gunIdx >= 0;
 	if (!hasSelected)
 	{
 		d->gunIdx = 0;
 	}
-	
+
 	// Count total guns
 	int numGuns = 0;
 	const bool isGrenade = IsEquippingGrenade(d->EquipSlot);
@@ -547,12 +604,21 @@ static int HandleInputGunMenu(int cmd, void *data)
 	}
 	else if (cmd & CMD_DOWN)
 	{
-		if ((d->gunIdx + d->cols) < (numGuns + d->cols) / d->cols * d->cols)
+		if ((d->gunIdx + d->cols) <
+			DIV_ROUND_UP(numGuns + 1, d->cols) * d->cols)
 		{
 			d->gunIdx = MIN(numGuns, d->gunIdx + d->cols);
 			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}
+
+	// Update menu scroll based on selected gun
+	const int selectedRow = d->gunIdx / d->cols;
+	const int minRow = MAX(0, selectedRow - WEAPON_MENU_MAX_ROWS + 1);
+	const int maxRow =
+		MIN(selectedRow,
+			MAX(0, DIV_ROUND_UP(numGuns, d->cols) - WEAPON_MENU_MAX_ROWS));
+	d->scroll = CLAMP(d->scroll, minRow, maxRow);
 
 	return 0;
 }
@@ -574,21 +640,20 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 		{
 		case WEAPON_MENU_NONE:
 			break;
-		case WEAPON_MENU_SELECT:
+		case WEAPON_MENU_SELECT: {
+			const WeaponClass *selectedGun = GetSelectedGun(&menu->data);
+			// See if the selected gun is already equipped; if so swap it with
+			// the current slot
+			for (int i = 0; i < MAX_WEAPONS; i++)
 			{
-				const WeaponClass *selectedGun = GetSelectedGun(&menu->data);
-				// See if the selected gun is already equipped; if so swap it with
-				// the current slot
-				for (int i = 0; i < MAX_WEAPONS; i++)
+				if (p->guns[i] == selectedGun)
 				{
-					if (p->guns[i] == selectedGun)
-					{
-						p->guns[i] = p->guns[menu->data.EquipSlot];
-						break;
-					}
+					p->guns[i] = p->guns[menu->data.EquipSlot];
+					break;
 				}
-				p->guns[menu->data.EquipSlot] = selectedGun;
 			}
+			p->guns[menu->data.EquipSlot] = selectedGun;
+		}
 			// fallthrough
 		case WEAPON_MENU_CANCEL:
 			// Switch back to equip menu

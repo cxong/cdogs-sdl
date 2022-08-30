@@ -50,6 +50,7 @@ typedef struct
 	int gunIdx;
 	CArray weapons;
 	int cols;
+	int scroll;
 } WeaponMenuData;
 typedef struct
 {

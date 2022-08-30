@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2014-2015, 2019-2021 Cong Xu
+	Copyright (c) 2014-2015, 2019-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,8 @@
 
 #define ARROW_LEFT "\x11"
 #define ARROW_RIGHT "\x10"
+#define ARROW_UP "\x1e"
+#define ARROW_DOWN "\x1f"
 
 // Defines interfaces for bitmap fonts
 
