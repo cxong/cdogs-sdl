@@ -122,6 +122,28 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 	}
 }
 
+static void ClampScroll(WeaponMenuData *data)
+{
+	// Count total guns
+	int numGuns = 0;
+	const bool isGrenade = IsEquippingGrenade(data->EquipSlot);
+	CA_FOREACH(const WeaponClass *, wc, data->weapons)
+	if (((*wc)->Type == GUNTYPE_GRENADE) != isGrenade)
+	{
+		continue;
+	}
+	numGuns++;
+	CA_FOREACH_END()
+
+	// Update menu scroll based on selected gun
+	const int selectedRow = data->gunIdx / data->cols;
+	const int minRow = MAX(0, selectedRow - WEAPON_MENU_MAX_ROWS + 1);
+	const int maxRow =
+		MIN(selectedRow,
+			MAX(0, DIV_ROUND_UP(numGuns + 1, data->cols) - WEAPON_MENU_MAX_ROWS));
+	data->scroll = CLAMP(data->scroll, minRow, maxRow);
+}
+
 static void DrawEquipSlot(
 	const WeaponMenuData *data, GraphicsDevice *g, const int slot,
 	const char *label, const struct vec2i pos, const FontAlign align)
@@ -285,6 +307,8 @@ static int HandleInputEquipMenu(int cmd, void *data)
 	{
 		d->display.GunIdx = d->EquipSlot;
 	}
+	
+	ClampScroll(d);
 
 	return 0;
 }
@@ -421,7 +445,6 @@ static void DrawGunMenu(
 	const struct vec2i size, const void *data)
 {
 	UNUSED(menu);
-	UNUSED(size);
 	const WeaponMenuData *d = data;
 	if (d->EquipSlot >= MAX_WEAPONS)
 	{
@@ -454,11 +477,13 @@ static void DrawGunMenu(
 	CA_FOREACH_END()
 
 	// Draw scroll buttons
+	const Pic *gradient = PicManagerGetPic(&gPicManager, "hud/gradient");
 	if (d->scroll > 0)
 	{
 		const Pic *scrollPic = CArrayGet(&d->gunBGSprites->pics, 0);
 		const Rect2i scrollRect =
 			Rect2iNew(svec2i(pos.x + 3, pos.y + 1 + weaponsY), scrollSize);
+		PicRender(gradient, g->gameWindow.renderer, svec2i(scrollRect.Pos.x + scrollSize.x / 2, pos.y + gradient->size.y / 2 + weaponsY + scrollSize.y - 1), colorBlack, 0, svec2(scrollSize.x, 1), SDL_FLIP_NONE, Rect2iZero());
 		Draw9Slice(
 			g, scrollPic, scrollRect, 3, 3, 3, 3, true, color, SDL_FLIP_NONE);
 		FontOpts fopts = FontOptsNew();
@@ -476,6 +501,8 @@ static void DrawGunMenu(
 				pos.x + 3, pos.y - 1 + weaponsY +
 							   GUN_BG_H * WEAPON_MENU_MAX_ROWS - SCROLL_H),
 			scrollSize);
+		PicRender(gradient, g->gameWindow.renderer, svec2i(scrollRect.Pos.x + scrollSize.x / 2, pos.y - gradient->size.y / 2 + weaponsY +
+														   GUN_BG_H * WEAPON_MENU_MAX_ROWS - SCROLL_H - gradient->size.y / 2 + 1), colorBlack, 0, svec2(scrollSize.x, 1), SDL_FLIP_VERTICAL, Rect2iZero());
 		Draw9Slice(
 			g, scrollPic, scrollRect, 3, 3, 3, 3, true, color, SDL_FLIP_NONE);
 		FontOpts fopts = FontOptsNew();
@@ -612,13 +639,7 @@ static int HandleInputGunMenu(int cmd, void *data)
 		}
 	}
 
-	// Update menu scroll based on selected gun
-	const int selectedRow = d->gunIdx / d->cols;
-	const int minRow = MAX(0, selectedRow - WEAPON_MENU_MAX_ROWS + 1);
-	const int maxRow =
-		MIN(selectedRow,
-			MAX(0, DIV_ROUND_UP(numGuns, d->cols) - WEAPON_MENU_MAX_ROWS));
-	d->scroll = CLAMP(d->scroll, minRow, maxRow);
+	ClampScroll(d);
 
 	return 0;
 }
