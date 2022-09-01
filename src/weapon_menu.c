@@ -122,8 +122,12 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 	}
 }
 
-static void ClampScroll(WeaponMenuData *data)
+static int CountNumGuns(const WeaponMenuData *data)
 {
+	if (data->EquipSlot >= MAX_WEAPONS)
+	{
+		return 0;
+	}
 	// Count total guns
 	int numGuns = 0;
 	const bool isGrenade = IsEquippingGrenade(data->EquipSlot);
@@ -134,13 +138,30 @@ static void ClampScroll(WeaponMenuData *data)
 	}
 	numGuns++;
 	CA_FOREACH_END()
+	return numGuns;
+}
 
+static void ClampScroll(WeaponMenuData *data)
+{
 	// Update menu scroll based on selected gun
+	const int numGuns = CountNumGuns(data);
 	const int selectedRow = data->gunIdx / data->cols;
-	const int minRow = MAX(0, selectedRow - WEAPON_MENU_MAX_ROWS + 1);
-	const int maxRow =
+	const int lastRow = numGuns / data->cols;
+	int minRow = MAX(0, selectedRow - WEAPON_MENU_MAX_ROWS + 1);
+	int maxRow =
 		MIN(selectedRow,
 			MAX(0, DIV_ROUND_UP(numGuns + 1, data->cols) - WEAPON_MENU_MAX_ROWS));
+	// If the selected row is the last row on screen, and we can still
+	// scroll down (i.e. show the scroll down button), scroll down
+	if (selectedRow - data->scroll == WEAPON_MENU_MAX_ROWS - 1 &&
+		selectedRow < lastRow)
+	{
+		minRow++;
+	}
+	else if (selectedRow == data->scroll && selectedRow > 0)
+	{
+		maxRow--;
+	}
 	data->scroll = CLAMP(data->scroll, minRow, maxRow);
 }
 
@@ -483,7 +504,7 @@ static void DrawGunMenu(
 		const Pic *scrollPic = CArrayGet(&d->gunBGSprites->pics, 0);
 		const Rect2i scrollRect =
 			Rect2iNew(svec2i(pos.x + 3, pos.y + 1 + weaponsY), scrollSize);
-		PicRender(gradient, g->gameWindow.renderer, svec2i(scrollRect.Pos.x + scrollSize.x / 2, pos.y + gradient->size.y / 2 + weaponsY + scrollSize.y - 1), colorBlack, 0, svec2(scrollSize.x, 1), SDL_FLIP_NONE, Rect2iZero());
+		PicRender(gradient, g->gameWindow.renderer, svec2i(scrollRect.Pos.x + scrollSize.x / 2, pos.y + gradient->size.y / 2 + weaponsY + scrollSize.y - 1), colorBlack, 0, svec2((float)scrollSize.x, 1), SDL_FLIP_NONE, Rect2iZero());
 		Draw9Slice(
 			g, scrollPic, scrollRect, 3, 3, 3, 3, true, color, SDL_FLIP_NONE);
 		FontOpts fopts = FontOptsNew();
@@ -502,7 +523,7 @@ static void DrawGunMenu(
 							   GUN_BG_H * WEAPON_MENU_MAX_ROWS - SCROLL_H),
 			scrollSize);
 		PicRender(gradient, g->gameWindow.renderer, svec2i(scrollRect.Pos.x + scrollSize.x / 2, pos.y - gradient->size.y / 2 + weaponsY +
-														   GUN_BG_H * WEAPON_MENU_MAX_ROWS - SCROLL_H - gradient->size.y / 2 + 1), colorBlack, 0, svec2(scrollSize.x, 1), SDL_FLIP_VERTICAL, Rect2iZero());
+														   GUN_BG_H * WEAPON_MENU_MAX_ROWS - SCROLL_H - gradient->size.y / 2 + 1), colorBlack, 0, svec2((float)scrollSize.x, 1), SDL_FLIP_VERTICAL, Rect2iZero());
 		Draw9Slice(
 			g, scrollPic, scrollRect, 3, 3, 3, 3, true, color, SDL_FLIP_NONE);
 		FontOpts fopts = FontOptsNew();
@@ -679,7 +700,6 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 		case WEAPON_MENU_CANCEL:
 			// Switch back to equip menu
 			menu->data.equipping = false;
-			menu->data.gunIdx = -1;
 			menu->ms.current = menu->ms.root;
 			break;
 		default:
@@ -690,12 +710,20 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 	else
 	{
 		MenuProcessCmd(&menu->msEquip, cmd);
-		if (MenuIsExit(&menu->msEquip) && menu->data.EquipSlot < MAX_WEAPONS)
+		if (menu->data.EquipSlot < MAX_WEAPONS)
 		{
-			// Open weapon selection menu
-			menu->data.equipping = true;
-			menu->msEquip.current = menu->msEquip.root;
-			menu->data.SelectResult = WEAPON_MENU_NONE;
+			if (MenuIsExit(&menu->msEquip))
+			{
+				// Open weapon selection menu
+				menu->data.equipping = true;
+				menu->data.gunIdx = -1;
+				menu->msEquip.current = menu->msEquip.root;
+				menu->data.SelectResult = WEAPON_MENU_NONE;
+			}
+			else if (menu->data.gunIdx > CountNumGuns(&menu->data))
+			{
+				menu->data.gunIdx = -1;
+			}
 		}
 	}
 
