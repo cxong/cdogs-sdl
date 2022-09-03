@@ -122,15 +122,15 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 	}
 }
 
-static int CountNumGuns(const WeaponMenuData *data)
+static int CountNumGuns(const WeaponMenuData *data, const int slot)
 {
-	if (data->EquipSlot >= MAX_WEAPONS)
+	if (slot >= MAX_WEAPONS)
 	{
 		return 0;
 	}
 	// Count total guns
 	int numGuns = 0;
-	const bool isGrenade = IsEquippingGrenade(data->EquipSlot);
+	const bool isGrenade = IsEquippingGrenade(slot);
 	CA_FOREACH(const WeaponClass *, wc, data->weapons)
 	if (((*wc)->Type == GUNTYPE_GRENADE) != isGrenade)
 	{
@@ -141,10 +141,25 @@ static int CountNumGuns(const WeaponMenuData *data)
 	return numGuns;
 }
 
+static bool IsSlotDisabled(const WeaponMenuData *data, const int slot)
+{
+	if (slot < 0 || slot > MAX_WEAPONS)
+	{
+		return true;
+	}
+	// Disable end option if nothing equipped
+	const PlayerData *pData = PlayerDataGetByUID(data->PlayerUID);
+	if (slot == MAX_WEAPONS)
+	{
+		return PlayerGetNumWeapons(pData) == 0;
+	}
+	return CountNumGuns(data, slot) == 0;
+}
+
 static void ClampScroll(WeaponMenuData *data)
 {
 	// Update menu scroll based on selected gun
-	const int numGuns = CountNumGuns(data);
+	const int numGuns = CountNumGuns(data, data->EquipSlot);
 	const int selectedRow = data->gunIdx / data->cols;
 	const int lastRow = numGuns / data->cols;
 	int minRow = MAX(0, selectedRow - WEAPON_MENU_MAX_ROWS + 1);
@@ -190,6 +205,10 @@ static void DrawEquipSlot(
 
 			color = colorRed;
 		}
+	}
+	if (IsSlotDisabled(data, slot))
+	{
+		color = mask = colorDarkGray;
 	}
 	const PlayerData *pData = PlayerDataGetByUID(data->PlayerUID);
 
@@ -255,7 +274,7 @@ static void DrawEquipMenu(
 		DIRECTION_DOWN, false, false, gun);
 
 	const struct vec2i endSize = FontStrSize(END_MENU_LABEL);
-	const bool endDisabled = PlayerGetNumWeapons(pData) == 0 || d->equipping;
+	const bool endDisabled = IsSlotDisabled(d, MAX_WEAPONS) || d->equipping;
 	DisplayMenuItem(
 		g,
 		Rect2iNew(
@@ -269,7 +288,8 @@ static int HandleInputEquipMenu(int cmd, void *data)
 {
 	WeaponMenuData *d = data;
 	PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
-
+	
+	int newSlot = d->EquipSlot;
 	if (cmd & CMD_BUTTON1)
 	{
 		MenuPlaySound(MENU_SOUND_ENTER);
@@ -284,43 +304,103 @@ static int HandleInputEquipMenu(int cmd, void *data)
 			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}
-	// TODO: disabled handling
 	else if (cmd & CMD_LEFT)
 	{
 		if (d->EquipSlot < MAX_WEAPONS && (d->EquipSlot & 1) == 1)
 		{
-			d->EquipSlot--;
-			MenuPlaySound(MENU_SOUND_SWITCH);
+			newSlot--;
+			if (IsSlotDisabled(data, newSlot))
+			{
+				// Try switching up-left or down-left
+				if (!IsSlotDisabled(data, newSlot - 2))
+				{
+					newSlot -= 2;
+				}
+				else if (!IsSlotDisabled(data, newSlot + 2))
+				{
+					newSlot += 2;
+				}
+			}
 		}
 	}
 	else if (cmd & CMD_RIGHT)
 	{
 		if (d->EquipSlot < MAX_WEAPONS && (d->EquipSlot & 1) == 0)
 		{
-			d->EquipSlot++;
-			MenuPlaySound(MENU_SOUND_SWITCH);
+			newSlot++;
+			if (IsSlotDisabled(data, newSlot))
+			{
+				// Try switching up-right or down-right
+				if (!IsSlotDisabled(data, newSlot - 2))
+				{
+					newSlot -= 2;
+				}
+				else if (!IsSlotDisabled(data, newSlot + 2))
+				{
+					newSlot += 2;
+				}
+			}
 		}
 	}
 	else if (cmd & CMD_UP)
 	{
 		if (d->EquipSlot >= MAX_WEAPONS)
 		{
-			d->EquipSlot--;
-			MenuPlaySound(MENU_SOUND_SWITCH);
+			// Keep going back until we find an enabled slot
+			do
+			{
+				newSlot--;
+			} while (newSlot > 0 && IsSlotDisabled(data, newSlot));
 		}
 		else if (d->EquipSlot >= 2)
 		{
-			d->EquipSlot -= 2;
-			MenuPlaySound(MENU_SOUND_SWITCH);
+			newSlot -= 2;
+			if (IsSlotDisabled(data, newSlot))
+			{
+				// Try switching to the other slot above (up-left or up-right),
+				// or skip the row and keep going back until an enabled slot
+				if (!IsSlotDisabled(data, newSlot ^ 1))
+				{
+					newSlot ^= 1;
+				}
+				else
+				{
+					do
+					{
+						newSlot--;
+					} while (newSlot > 0 && IsSlotDisabled(data, newSlot));
+				}
+			}
 		}
 	}
 	else if (cmd & CMD_DOWN)
 	{
 		if (d->EquipSlot < MAX_WEAPONS)
 		{
-			d->EquipSlot = MIN(MAX_WEAPONS, d->EquipSlot + 2);
-			MenuPlaySound(MENU_SOUND_SWITCH);
+			newSlot = MIN(MAX_WEAPONS, d->EquipSlot + 2);
+			if (IsSlotDisabled(data, newSlot))
+			{
+				// Try switching to the other slot below (down-left or down-right),
+				// or skip the row and keep going forward until an enabled slot
+				if (!IsSlotDisabled(data, newSlot ^ 1))
+				{
+					newSlot ^= 1;
+				}
+				else
+				{
+					do
+					{
+						newSlot++;
+					} while (newSlot < MAX_WEAPONS && IsSlotDisabled(data, newSlot));
+				}
+			}
 		}
+	}
+	
+	if (newSlot != d->EquipSlot && !IsSlotDisabled(d, newSlot))
+	{
+		d->EquipSlot = newSlot;
+		MenuPlaySound(MENU_SOUND_SWITCH);
 	}
 
 	// Display gun based on menu index
@@ -720,7 +800,7 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 				menu->msEquip.current = menu->msEquip.root;
 				menu->data.SelectResult = WEAPON_MENU_NONE;
 			}
-			else if (menu->data.gunIdx > CountNumGuns(&menu->data))
+			else if (menu->data.gunIdx > CountNumGuns(&menu->data, menu->data.EquipSlot))
 			{
 				menu->data.gunIdx = -1;
 			}
