@@ -40,7 +40,7 @@
 
 #define NO_GUN_LABEL "(None)"
 #define END_MENU_LABEL "(End)"
-#define WEAPON_MENU_WIDTH 64
+#define WEAPON_MENU_WIDTH 80
 #define EQUIP_MENU_SLOT_HEIGHT 40
 #define WEAPON_MENU_MAX_ROWS 4
 #define GUN_BG_W 40
@@ -217,9 +217,8 @@ static void DrawEquipSlot(
 	const int bgSpriteIndex = (slot & 1) + (int)selected * 2;
 	const Pic *slotBG = CArrayGet(&data->slotBGSprites->pics, bgSpriteIndex);
 	const struct vec2i bgPos = svec2i(pos.x, y);
-	PicRender(
-		slotBG, g->gameWindow.renderer, bgPos, mask, 0, svec2_one(),
-		SDL_FLIP_NONE, Rect2iZero());
+	Draw9Slice(
+			   g, slotBG, Rect2iNew(svec2i(bgPos.x + 1, bgPos.y + 1), svec2i(WEAPON_MENU_WIDTH / 2, EQUIP_MENU_SLOT_HEIGHT - 2)), 11, (slot & 1) ? 16 : 4, 12, (slot & 1) ? 4 : 16, true, mask, SDL_FLIP_NONE);
 
 	const FontOpts fopts = {
 		align, ALIGN_START, svec2i(WEAPON_MENU_WIDTH / 2, FontH()),
