@@ -43,7 +43,7 @@
 #define WEAPON_MENU_WIDTH 64
 #define EQUIP_MENU_SLOT_HEIGHT 40
 #define WEAPON_MENU_MAX_ROWS 4
-#define GUN_BG_W 32
+#define GUN_BG_W 40
 #define GUN_BG_H 25
 #define SCROLL_H 12
 
@@ -644,9 +644,8 @@ static void DrawGun(
 		color = colorYellow;
 	}
 
-	PicRender(
-		gunBG, g->gameWindow.renderer, svec2i_add(bgPos, svec2i_one()), mask,
-		0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
+	Draw9Slice(
+		g, gunBG, Rect2iNew(svec2i(bgPos.x + 1, bgPos.y + 1), svec2i(GUN_BG_W - 2, GUN_BG_H - 2)), 3, 3, 3, 3, true, mask, SDL_FLIP_NONE);
 
 	// Draw icon at center of slot
 	const Pic *gunIcon =
