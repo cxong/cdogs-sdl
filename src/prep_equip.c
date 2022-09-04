@@ -82,9 +82,17 @@ GameLoopData *PlayerEquip(void)
 			AddDefaultGuns(p, idx, &weapons, false);
 			AddDefaultGuns(p, idx, &weapons, true);
 		}
+		
+		// Get previous mission's weapons
+		const CArray *prevWeapons = NULL;
+		if (gCampaign.Entry.Mode == GAME_MODE_NORMAL && gCampaign.MissionIndex > 0)
+		{
+			const Mission *prevMission = CArrayGet(&gCampaign.Setting.Missions, gCampaign.MissionIndex - 1);
+			prevWeapons = &prevMission->Weapons;
+		}
 
 		WeaponMenuCreate(
-			&data->menus[idx], &weapons,
+			&data->menus[idx], &weapons, prevWeapons,
 			GetNumPlayers(PLAYER_ANY, false, true), idx, p->UID,
 			&gEventHandlers, &gGraphicsDevice);
 		CArrayTerminate(&weapons);

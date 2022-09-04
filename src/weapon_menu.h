@@ -48,7 +48,8 @@ typedef struct
 	const NamedSprites *slotBGSprites;
 	const NamedSprites *gunBGSprites;
 	int gunIdx;
-	CArray weapons;
+	CArray weapons;	// of const WeaponClass *
+	CArray weaponIsNew;	// of bool
 	int cols;
 	int scroll;
 } WeaponMenuData;
@@ -60,7 +61,7 @@ typedef struct
 } WeaponMenu;
 
 void WeaponMenuCreate(
-	WeaponMenu *menu, const CArray *weapons, const int numPlayers,
+	WeaponMenu *menu, const CArray *weapons, const CArray *prevWeapons, const int numPlayers,
 	const int player, const int playerUID, EventHandlers *handlers,
 	GraphicsDevice *graphics);
 void WeaponMenuTerminate(WeaponMenu *menu);

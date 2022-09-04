@@ -456,9 +456,10 @@ static menu_t *CreateEquipMenu(
 	return menu;
 }
 
+static bool HasWeapon(const CArray *weapons, const WeaponClass *wc);
 static menu_t *CreateGunMenu(WeaponMenuData *data);
 void WeaponMenuCreate(
-	WeaponMenu *menu, const CArray *weapons, const int numPlayers,
+	WeaponMenu *menu, const CArray *weapons, const CArray *prevWeapons, const int numPlayers,
 	const int player, const int playerUID, EventHandlers *handlers,
 	GraphicsDevice *graphics)
 {
@@ -477,6 +478,11 @@ void WeaponMenuCreate(
 	data->gunBGSprites = PicManagerGetSprites(&gPicManager, "hud/gun_bg");
 	data->gunIdx = -1;
 	CArrayCopy(&data->weapons, weapons);
+	CArrayInit(&data->weaponIsNew, sizeof(bool));
+	CA_FOREACH(const WeaponClass *, wc, data->weapons)
+	const bool isNew = !HasWeapon(prevWeapons, *wc);
+	CArrayPushBack(&data->weaponIsNew, &isNew);
+	CA_FOREACH_END()
 
 	switch (numPlayers)
 	{
@@ -525,6 +531,20 @@ void WeaponMenuCreate(
 		AICoopSelectWeapons(pData, player, weapons);
 	}
 }
+static bool HasWeapon(const CArray *weapons, const WeaponClass *wc)
+{
+	if (weapons == NULL)
+	{
+		return true;
+	}
+	CA_FOREACH(const WeaponClass *, wc2, *weapons)
+	if (*wc2 == wc)
+	{
+		return true;
+	}
+	CA_FOREACH_END()
+	return false;
+}
 static void DrawGunMenu(
 	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
 	const struct vec2i size, const void *data);
@@ -539,7 +559,7 @@ static menu_t *CreateGunMenu(WeaponMenuData *data)
 }
 static void DrawGun(
 	const WeaponMenuData *data, GraphicsDevice *g, const int idx,
-	const WeaponClass *wc, const struct vec2i pos);
+	const WeaponClass *wc, const bool isNew, const struct vec2i pos);
 static void DrawGunMenu(
 	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
 	const struct vec2i size, const void *data)
@@ -566,7 +586,8 @@ static void DrawGunMenu(
 	const int row = idx / d->cols;
 	if (row >= d->scroll && row < d->scroll + WEAPON_MENU_MAX_ROWS)
 	{
-		DrawGun(d, g, idx, *wc, svec2i(pos.x, pos.y + weaponsY));
+		const bool *isNew = CArrayGet(&d->weaponIsNew, _ca_index);
+		DrawGun(d, g, idx, *wc, *isNew, svec2i(pos.x, pos.y + weaponsY));
 	}
 	idx++;
 	if (idx / d->cols == d->scroll + WEAPON_MENU_MAX_ROWS)
@@ -614,12 +635,12 @@ static void DrawGunMenu(
 	}
 	else
 	{
-		DrawGun(d, g, idx, NULL, svec2i(pos.x, pos.y + weaponsY));
+		DrawGun(d, g, idx, NULL, false, svec2i(pos.x, pos.y + weaponsY));
 	}
 }
 static void DrawGun(
 	const WeaponMenuData *data, GraphicsDevice *g, const int idx,
-	const WeaponClass *wc, const struct vec2i pos)
+	const WeaponClass *wc, const bool isNew, const struct vec2i pos)
 {
 	const bool selected = data->gunIdx == idx;
 	const PlayerData *pData = PlayerDataGetByUID(data->PlayerUID);
@@ -655,6 +676,11 @@ static void DrawGun(
 	PicRender(
 		gunIcon, g->gameWindow.renderer, gunPos, wc ? mask : colorBlack, 0,
 		svec2_one(), SDL_FLIP_NONE, Rect2iZero());
+	
+	if (isNew)
+	{
+		DrawCross(g, svec2i(bgPos.x + GUN_BG_W - 6, bgPos.y + 5), colorGreen);
+	}
 
 	const FontOpts fopts = {
 		ALIGN_CENTER, ALIGN_END, bgSize, svec2i(2, 2), color};
@@ -748,6 +774,7 @@ void WeaponMenuTerminate(WeaponMenu *menu)
 	MenuSystemTerminate(&menu->ms);
 	MenuSystemTerminate(&menu->msEquip);
 	CArrayTerminate(&menu->data.weapons);
+	CArrayTerminate(&menu->data.weaponIsNew);
 }
 
 void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
