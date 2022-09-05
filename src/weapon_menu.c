@@ -164,8 +164,8 @@ static void ClampScroll(WeaponMenuData *data)
 	const int lastRow = numGuns / data->cols;
 	int minRow = MAX(0, selectedRow - WEAPON_MENU_MAX_ROWS + 1);
 	int maxRow =
-		MIN(selectedRow,
-			MAX(0, DIV_ROUND_UP(numGuns + 1, data->cols) - WEAPON_MENU_MAX_ROWS));
+		MIN(selectedRow, MAX(0, DIV_ROUND_UP(numGuns + 1, data->cols) -
+									WEAPON_MENU_MAX_ROWS));
 	// If the selected row is the last row on screen, and we can still
 	// scroll down (i.e. show the scroll down button), scroll down
 	if (selectedRow - data->scroll == WEAPON_MENU_MAX_ROWS - 1 &&
@@ -218,7 +218,12 @@ static void DrawEquipSlot(
 	const Pic *slotBG = CArrayGet(&data->slotBGSprites->pics, bgSpriteIndex);
 	const struct vec2i bgPos = svec2i(pos.x, y);
 	Draw9Slice(
-			   g, slotBG, Rect2iNew(svec2i(bgPos.x + 1, bgPos.y + 1), svec2i(WEAPON_MENU_WIDTH / 2, EQUIP_MENU_SLOT_HEIGHT - 2)), 11, (slot & 1) ? 16 : 4, 12, (slot & 1) ? 4 : 16, true, mask, SDL_FLIP_NONE);
+		g, slotBG,
+		Rect2iNew(
+			svec2i(bgPos.x + 1, bgPos.y + 1),
+			svec2i(WEAPON_MENU_WIDTH / 2, EQUIP_MENU_SLOT_HEIGHT - 2)),
+		11, (slot & 1) ? 16 : 4, 12, (slot & 1) ? 4 : 16, true, mask,
+		SDL_FLIP_NONE);
 
 	const FontOpts fopts = {
 		align, ALIGN_START, svec2i(WEAPON_MENU_WIDTH / 2, FontH()),
@@ -239,6 +244,12 @@ static void DrawEquipSlot(
 		gunIcon, g->gameWindow.renderer, gunPos,
 		pData->guns[slot] ? mask : colorBlack, 0, svec2_one(), SDL_FLIP_NONE,
 		Rect2iZero());
+
+	if (data->SlotHasNew[slot])
+	{
+		DrawCross(
+			g, svec2i(pos.x + WEAPON_MENU_WIDTH / 2 - 6, y + 13), colorGreen);
+	}
 
 	y += EQUIP_MENU_SLOT_HEIGHT - FontH();
 	const char *gunName =
@@ -287,7 +298,7 @@ static int HandleInputEquipMenu(int cmd, void *data)
 {
 	WeaponMenuData *d = data;
 	PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
-	
+
 	int newSlot = d->EquipSlot;
 	if (cmd & CMD_BUTTON1)
 	{
@@ -379,8 +390,9 @@ static int HandleInputEquipMenu(int cmd, void *data)
 			newSlot = MIN(MAX_WEAPONS, d->EquipSlot + 2);
 			if (IsSlotDisabled(data, newSlot))
 			{
-				// Try switching to the other slot below (down-left or down-right),
-				// or skip the row and keep going forward until an enabled slot
+				// Try switching to the other slot below (down-left or
+				// down-right), or skip the row and keep going forward until an
+				// enabled slot
 				if (!IsSlotDisabled(data, newSlot ^ 1))
 				{
 					newSlot ^= 1;
@@ -390,12 +402,13 @@ static int HandleInputEquipMenu(int cmd, void *data)
 					do
 					{
 						newSlot++;
-					} while (newSlot < MAX_WEAPONS && IsSlotDisabled(data, newSlot));
+					} while (newSlot < MAX_WEAPONS &&
+							 IsSlotDisabled(data, newSlot));
 				}
 			}
 		}
 	}
-	
+
 	if (newSlot != d->EquipSlot && !IsSlotDisabled(d, newSlot))
 	{
 		d->EquipSlot = newSlot;
@@ -407,7 +420,7 @@ static int HandleInputEquipMenu(int cmd, void *data)
 	{
 		d->display.GunIdx = d->EquipSlot;
 	}
-	
+
 	ClampScroll(d);
 
 	return 0;
@@ -459,9 +472,9 @@ static menu_t *CreateEquipMenu(
 static bool HasWeapon(const CArray *weapons, const WeaponClass *wc);
 static menu_t *CreateGunMenu(WeaponMenuData *data);
 void WeaponMenuCreate(
-	WeaponMenu *menu, const CArray *weapons, const CArray *prevWeapons, const int numPlayers,
-	const int player, const int playerUID, EventHandlers *handlers,
-	GraphicsDevice *graphics)
+	WeaponMenu *menu, const CArray *weapons, const CArray *prevWeapons,
+	const int numPlayers, const int player, const int playerUID,
+	EventHandlers *handlers, GraphicsDevice *graphics)
 {
 	MenuSystem *ms = &menu->ms;
 	WeaponMenuData *data = &menu->data;
@@ -482,6 +495,20 @@ void WeaponMenuCreate(
 	CA_FOREACH(const WeaponClass *, wc, data->weapons)
 	const bool isNew = !HasWeapon(prevWeapons, *wc);
 	CArrayPushBack(&data->weaponIsNew, &isNew);
+	if (isNew)
+	{
+		if ((*wc)->Type == GUNTYPE_GRENADE)
+		{
+			data->SlotHasNew[MAX_GUNS] = true;
+		}
+		else
+		{
+			for (int i = 0; i < MAX_GUNS; i++)
+			{
+				data->SlotHasNew[i] = true;
+			}
+		}
+	}
 	CA_FOREACH_END()
 
 	switch (numPlayers)
@@ -604,7 +631,13 @@ static void DrawGunMenu(
 		const Pic *scrollPic = CArrayGet(&d->gunBGSprites->pics, 0);
 		const Rect2i scrollRect =
 			Rect2iNew(svec2i(pos.x + 3, pos.y + 1 + weaponsY), scrollSize);
-		PicRender(gradient, g->gameWindow.renderer, svec2i(scrollRect.Pos.x + scrollSize.x / 2, pos.y + gradient->size.y / 2 + weaponsY + scrollSize.y - 1), colorBlack, 0, svec2((float)scrollSize.x, 1), SDL_FLIP_NONE, Rect2iZero());
+		PicRender(
+			gradient, g->gameWindow.renderer,
+			svec2i(
+				scrollRect.Pos.x + scrollSize.x / 2,
+				pos.y + gradient->size.y / 2 + weaponsY + scrollSize.y - 1),
+			colorBlack, 0, svec2((float)scrollSize.x, 1), SDL_FLIP_NONE,
+			Rect2iZero());
 		Draw9Slice(
 			g, scrollPic, scrollRect, 3, 3, 3, 3, true, color, SDL_FLIP_NONE);
 		FontOpts fopts = FontOptsNew();
@@ -622,8 +655,15 @@ static void DrawGunMenu(
 				pos.x + 3, pos.y - 1 + weaponsY +
 							   GUN_BG_H * WEAPON_MENU_MAX_ROWS - SCROLL_H),
 			scrollSize);
-		PicRender(gradient, g->gameWindow.renderer, svec2i(scrollRect.Pos.x + scrollSize.x / 2, pos.y - gradient->size.y / 2 + weaponsY +
-														   GUN_BG_H * WEAPON_MENU_MAX_ROWS - SCROLL_H - gradient->size.y / 2 + 1), colorBlack, 0, svec2((float)scrollSize.x, 1), SDL_FLIP_VERTICAL, Rect2iZero());
+		PicRender(
+			gradient, g->gameWindow.renderer,
+			svec2i(
+				scrollRect.Pos.x + scrollSize.x / 2,
+				pos.y - gradient->size.y / 2 + weaponsY +
+					GUN_BG_H * WEAPON_MENU_MAX_ROWS - SCROLL_H -
+					gradient->size.y / 2 + 1),
+			colorBlack, 0, svec2((float)scrollSize.x, 1), SDL_FLIP_VERTICAL,
+			Rect2iZero());
 		Draw9Slice(
 			g, scrollPic, scrollRect, 3, 3, 3, 3, true, color, SDL_FLIP_NONE);
 		FontOpts fopts = FontOptsNew();
@@ -665,7 +705,11 @@ static void DrawGun(
 	}
 
 	Draw9Slice(
-		g, gunBG, Rect2iNew(svec2i(bgPos.x + 1, bgPos.y + 1), svec2i(GUN_BG_W - 2, GUN_BG_H - 2)), 3, 3, 3, 3, true, mask, SDL_FLIP_NONE);
+		g, gunBG,
+		Rect2iNew(
+			svec2i(bgPos.x + 1, bgPos.y + 1),
+			svec2i(GUN_BG_W - 2, GUN_BG_H - 2)),
+		3, 3, 3, 3, true, mask, SDL_FLIP_NONE);
 
 	// Draw icon at center of slot
 	const Pic *gunIcon =
@@ -676,7 +720,7 @@ static void DrawGun(
 	PicRender(
 		gunIcon, g->gameWindow.renderer, gunPos, wc ? mask : colorBlack, 0,
 		svec2_one(), SDL_FLIP_NONE, Rect2iZero());
-	
+
 	if (isNew)
 	{
 		DrawCross(g, svec2i(bgPos.x + GUN_BG_W - 6, bgPos.y + 5), colorGreen);
@@ -825,7 +869,9 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 				menu->msEquip.current = menu->msEquip.root;
 				menu->data.SelectResult = WEAPON_MENU_NONE;
 			}
-			else if (menu->data.gunIdx > CountNumGuns(&menu->data, menu->data.EquipSlot))
+			else if (
+				menu->data.gunIdx >
+				CountNumGuns(&menu->data, menu->data.EquipSlot))
 			{
 				menu->data.gunIdx = -1;
 			}

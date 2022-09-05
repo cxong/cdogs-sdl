@@ -50,6 +50,7 @@ typedef struct
 	int gunIdx;
 	CArray weapons;	// of const WeaponClass *
 	CArray weaponIsNew;	// of bool
+	bool SlotHasNew[MAX_WEAPONS];
 	int cols;
 	int scroll;
 } WeaponMenuData;
