@@ -6,7 +6,7 @@ categories: release
 published: true
 ---
 
-C-Dogs SDL 0.7.3 released! This release fixes the broken windows build in 0.7.3.
+C-Dogs SDL 0.7.3 released! This release fixes the broken windows build in 0.7.2.
 
 Happy new year! 🎉
 
