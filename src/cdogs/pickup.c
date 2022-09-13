@@ -133,7 +133,8 @@ void PickupsUpdate(CArray *pickups, const int ticks)
 static bool TreatAsGunPickup(const PickupEffect *pe, const TActor *a);
 static bool TryPickupAmmo(TActor *a, const Pickup *p, const PickupEffect *pe);
 static bool TryPickupGun(
-	TActor *a, const PickupEffect *pe, const bool pickupAll, const char **sound);
+	TActor *a, const PickupEffect *pe, const bool pickupAll,
+	const char **sound);
 void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 {
 	if (p->PickedUp)
@@ -222,7 +223,7 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 		GameEventsEnqueue(&gGameEvents, e);
 	}
 	break;
-			
+
 	case PICKUP_LIVES: {
 		canPickup = true;
 		GameEvent e = GameEventNew(GAME_EVENT_PLAYER_ADD_LIVES);
@@ -277,10 +278,8 @@ static bool TreatAsGunPickup(const PickupEffect *pe, const TActor *a)
 		return false;
 	case PICKUP_GUN: {
 		const WeaponClass *wc = IdWeaponClass(pe->u.GunId);
-		// TODO: support picking up multi guns?
-		return wc->Type == GUNTYPE_NORMAL ||
-			   (wc->Type == GUNTYPE_GRENADE &&
-				!HasGunUsingAmmo(a, wc->u.Normal.AmmoId));
+		return wc->Type != GUNTYPE_GRENADE ||
+			   !HasGunUsingAmmo(a, wc->u.Normal.AmmoId);
 	}
 	default:
 		CASSERT(false, "unexpected pickup type");
@@ -335,7 +334,8 @@ static bool TryPickupAmmo(TActor *a, const Pickup *p, const PickupEffect *pe)
 	return true;
 }
 static bool TryPickupGun(
-	TActor *a, const PickupEffect *pe, const bool pickupAll, const char **sound)
+	TActor *a, const PickupEffect *pe, const bool pickupAll,
+	const char **sound)
 {
 	// Guns can only be picked up manually
 	if (!pickupAll)
@@ -354,8 +354,7 @@ static bool TryPickupGun(
 	const WeaponClass *wc =
 		pe->Type == PICKUP_GUN
 			? IdWeaponClass(pe->u.GunId)
-			: StrWeaponClass(
-				  AmmoGetById(&gAmmo, pe->u.Ammo.Id)->DefaultGun);
+			: StrWeaponClass(AmmoGetById(&gAmmo, pe->u.Ammo.Id)->DefaultGun);
 	const int actorsGunIdx = ActorFindGun(a, wc);
 
 	if (actorsGunIdx >= 0)
@@ -377,15 +376,20 @@ static bool TryPickupGun(
 		// Replace the current gun, unless there's a free slot, in which case
 		// pick up into the free spot
 		const int weaponIndexStart =
-			wc->Type == GUNTYPE_GRENADE ? MAX_GUNS : 0;
+			wc->Type == GUNTYPE_GRENADE
+				? MAX_GUNS
+				: (wc->Type == GUNTYPE_MELEE ? MELEE_SLOT : 0);
 		const int weaponIndexEnd =
-			wc->Type == GUNTYPE_GRENADE ? MAX_WEAPONS : MAX_GUNS;
+			wc->Type == GUNTYPE_GRENADE
+				? MAX_WEAPONS
+				: (wc->Type == GUNTYPE_MELEE ? MELEE_SLOT + 1 : MELEE_SLOT);
 		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_REPLACE_GUN);
 		e.u.ActorReplaceGun.UID = a->uid;
 		strcpy(e.u.ActorReplaceGun.Gun, wc->name);
-		e.u.ActorReplaceGun.GunIdx = wc->Type == GUNTYPE_GRENADE
-										 ? a->grenadeIndex + MAX_GUNS
-										 : a->gunIndex;
+		e.u.ActorReplaceGun.GunIdx =
+			wc->Type == GUNTYPE_GRENADE
+				? MAX_GUNS
+				: (wc->Type == GUNTYPE_MELEE ? MELEE_SLOT : a->gunIndex);
 		int replaceGunIndex = e.u.ActorReplaceGun.GunIdx;
 		for (int i = weaponIndexStart; i < weaponIndexEnd; i++)
 		{

@@ -180,7 +180,7 @@ void UpdateActorState(TActor *actor, int ticks)
 	{
 		actor->DrawRadians -= (float)MIN(DRAW_RADIAN_SPEED * ticks, dr);
 	}
-	
+
 	const struct vec2i tilePos = Vec2ToTile(actor->Pos);
 	const Tile *t = MapGetTile(&gMap, tilePos);
 
@@ -188,7 +188,9 @@ void UpdateActorState(TActor *actor, int ticks)
 	// Step on 2 and 6
 	// TODO: custom animation and footstep frames
 	const int frame = AnimationGetFrame(&actor->anim);
-	const bool isFootstepFrame = actor->anim.Type == ACTORANIMATION_WALKING && (frame == 2 || frame == 6) && actor->anim.newFrame;
+	const bool isFootstepFrame = actor->anim.Type == ACTORANIMATION_WALKING &&
+								 (frame == 2 || frame == 6) &&
+								 actor->anim.newFrame;
 	if (isFootstepFrame)
 	{
 
@@ -233,18 +235,19 @@ void UpdateActorState(TActor *actor, int ticks)
 	}
 
 	// Damage when on special tiles
-	if (!gCampaign.IsClient &&
-		actor->anim.Type == ACTORANIMATION_WALKING ? isFootstepFrame : (gMission.time % FPS_FRAMELIMIT) == 0)
+	if (!gCampaign.IsClient && actor->anim.Type == ACTORANIMATION_WALKING
+			? isFootstepFrame
+			: (gMission.time % FPS_FRAMELIMIT) == 0)
 	{
-	   const BulletClass *b = MatGetDamageBullet(t);
-	   if (b != NULL)
-	   {
-		   GameEvent e = GameEventNew(GAME_EVENT_THING_DAMAGE);
-		   e.u.ThingDamage.UID = actor->uid;
-		   e.u.ThingDamage.Kind = KIND_CHARACTER;
-		   BulletToDamageEvent(b, &e);
-		   GameEventsEnqueue(&gGameEvents, e);
-	   }
+		const BulletClass *b = MatGetDamageBullet(t);
+		if (b != NULL)
+		{
+			GameEvent e = GameEventNew(GAME_EVENT_THING_DAMAGE);
+			e.u.ThingDamage.UID = actor->uid;
+			e.u.ThingDamage.Kind = KIND_CHARACTER;
+			BulletToDamageEvent(b, &e);
+			GameEventsEnqueue(&gGameEvents, e);
+		}
 	}
 
 	// Animation
@@ -757,11 +760,7 @@ void ActorReplaceGun(const NActorReplaceGun rg)
 	memcpy(&a->guns[rg.GunIdx], &w, sizeof w);
 	// Switch immediately to picked up gun
 	const PlayerData *p = PlayerDataGetByUID(a->PlayerUID);
-	if (wc->Type == GUNTYPE_GRENADE && PlayerHasGrenadeButton(p))
-	{
-		a->grenadeIndex = rg.GunIdx - MAX_GUNS;
-	}
-	else
+	if (wc->Type != GUNTYPE_GRENADE || !PlayerHasGrenadeButton(p))
 	{
 		a->gunIndex = rg.GunIdx;
 	}
@@ -1656,10 +1655,6 @@ TActor *ActorAdd(NActorAdd aa)
 			{
 				actor->gunIndex = i;
 			}
-			if (i >= MAX_GUNS && ACTOR_GET_GRENADE(actor)->Gun == NULL)
-			{
-				actor->grenadeIndex = i - MAX_GUNS;
-			}
 		}
 		p->ActorUID = aa.UID;
 	}
@@ -1824,13 +1819,14 @@ bool ActorTrySwitchWeapon(const TActor *a, const bool allGuns)
 	// If the player does not have a grenade key set, allow switching to
 	// grenades (classic style)
 	const int switchCount = allGuns ? MAX_WEAPONS : MAX_GUNS;
-	const int startIndex =
-		ActorGetNumGuns(a) > 0 ? a->gunIndex : a->grenadeIndex + MAX_GUNS;
+	const int startIndex = ActorGetNumGuns(a) > 0 ? a->gunIndex : MAX_GUNS;
 	int weaponIndex = startIndex;
 	do
 	{
 		weaponIndex = (weaponIndex + 1) % switchCount;
-	} while (a->guns[weaponIndex].Gun == NULL);
+	} while (a->guns[weaponIndex].Gun ==
+			 NULL); // TODO: don't cycle to auto-melee or default melee unless
+					// it's the only gun
 	if (weaponIndex == startIndex)
 	{
 		// No other weapon to switch to

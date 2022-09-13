@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2021 Cong Xu
+	Copyright (c) 2013-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -125,16 +125,14 @@ typedef struct Actor
 	// -1 if human character (get from player data), otherwise index into
 	// CharacterStore OtherChars
 	int charId;
-	int PlayerUID; // -1 unless a human player
-	int uid;	   // unique ID across all actors
-	int pilotUID;  // the actor that controls this
-				  // (same as uid for normal actors)
+	int PlayerUID;	// -1 unless a human player
+	int uid;		// unique ID across all actors
+	int pilotUID;	// the actor that controls this
+					// (same as uid for normal actors)
 	int vehicleUID; // -1 unless piloting a vehicle
 	Weapon guns[MAX_WEAPONS];
 	CArray ammo; // of int
 	int gunIndex;
-	// TODO: multiple grenade slots?
-	int grenadeIndex;
 
 	int health;
 	// A counter for player death
@@ -217,7 +215,7 @@ void ActorDestroy(TActor *a);
 TActor *ActorGetByUID(const int uid);
 const Character *ActorGetCharacter(const TActor *a);
 #define ACTOR_GET_GUN(a) (&(a)->guns[(a)->gunIndex])
-#define ACTOR_GET_GRENADE(a) (&(a)->guns[(a)->grenadeIndex + MAX_GUNS])
+#define ACTOR_GET_GRENADE(a) (&(a)->guns[MAX_GUNS])
 #define ACTOR_GET_WEAPON(a)                                                   \
 	(ACTOR_GET_GUN(a)->Gun != NULL ? ACTOR_GET_GUN(a) : ACTOR_GET_GRENADE(a))
 struct vec2 ActorGetAverageWeaponMuzzleOffset(const TActor *a);

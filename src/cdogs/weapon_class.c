@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2021 Cong Xu
+	Copyright (c) 2013-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,7 @@ static const char *GunTypeStr(const GunType t)
 	switch (t)
 	{
 		T2S(GUNTYPE_NORMAL, "Normal");
+		T2S(GUNTYPE_MELEE, "Melee");
 		T2S(GUNTYPE_GRENADE, "Grenade");
 		T2S(GUNTYPE_MULTI, "Multi");
 	default:
@@ -125,11 +126,17 @@ static void LoadWeaponClass(WeaponClass *wc, json_t *node, const int version)
 	}
 	else
 	{
+		bool canShoot = true;
+		LoadBool(&canShoot, node, "CanShoot");
 		bool isGrenade = false;
 		LoadBool(&isGrenade, node, "IsGrenade");
 		if (isGrenade)
 		{
 			wc->Type = GUNTYPE_GRENADE;
+		}
+		else if (!canShoot)
+		{
+			wc->Type = GUNTYPE_MELEE;
 		}
 	}
 
@@ -148,7 +155,6 @@ static void LoadWeaponClass(WeaponClass *wc, json_t *node, const int version)
 		wc->u.Normal.MuzzleFlash =
 			StrParticleClass(&gParticleClasses, "muzzle_flash_default");
 		wc->u.Normal.AmmoId = -1;
-		wc->u.Normal.CanShoot = true;
 		wc->CanDrop = true;
 	}
 
@@ -183,10 +189,16 @@ static void LoadWeaponClass(WeaponClass *wc, json_t *node, const int version)
 
 	LoadStr(&wc->DropGun, node, "DropGun");
 
-	switch (wc->Type)
+	if (wc->Type == GUNTYPE_MULTI)
 	{
-	case GUNTYPE_NORMAL:
-	case GUNTYPE_GRENADE: // fallthrough
+		int i = 0;
+		for (const json_t *gunNode = gunsNode->child->child; gunNode;
+			 gunNode = gunNode->next, i++)
+		{
+			wc->u.Guns[i] = json_unescape(gunNode->text);
+		}
+	}
+	else
 	{
 		tmp = NULL;
 		LoadStr(&tmp, node, "Pic");
@@ -293,8 +305,6 @@ static void LoadWeaponClass(WeaponClass *wc, json_t *node, const int version)
 			CFREE(tmp);
 		}
 
-		LoadBool(&wc->u.Normal.CanShoot, node, "CanShoot");
-
 		if (version < 3)
 		{
 			LoadInt(&wc->u.Normal.Shake.Amount, node, "ShakeAmount");
@@ -308,27 +318,13 @@ static void LoadWeaponClass(WeaponClass *wc, json_t *node, const int version)
 				"CameraSubjectOnly");
 		}
 	}
-	break;
-	case GUNTYPE_MULTI: {
-		int i = 0;
-		for (const json_t *gunNode = gunsNode->child->child; gunNode;
-			 gunNode = gunNode->next, i++)
-		{
-			wc->u.Guns[i] = json_unescape(gunNode->text);
-		}
-	}
-	break;
-	default:
-		CASSERT(false, "unknown gun type");
-		break;
-	}
 
 	wc->IsRealGun = true;
 
 	if (version < 2)
 	{
 		CASSERT(wc->Type != GUNTYPE_MULTI, "unexpected gun type");
-		if (!wc->u.Normal.CanShoot)
+		if (wc->Type == GUNTYPE_MELEE)
 		{
 			wc->Lock = 0;
 		}
@@ -337,10 +333,14 @@ static void LoadWeaponClass(WeaponClass *wc, json_t *node, const int version)
 	LOG(LM_MAP, LL_DEBUG, "loaded %s name(%s) lock(%d)...",
 		GunTypeStr(wc->Type), wc->name, wc->Lock);
 	LOG(LM_MAP, LL_DEBUG, "...canDrop(%s)", wc->CanDrop ? "true" : "false");
-	switch (wc->Type)
+	if (wc->Type == GUNTYPE_MULTI)
 	{
-	case GUNTYPE_NORMAL:
-	case GUNTYPE_GRENADE: // fallthrough
+		LOG(LM_MAP, LL_DEBUG, "...guns{%s, %s}",
+			wc->u.Guns[0] ? wc->u.Guns[0] : "",
+			wc->u.Guns[1] ? wc->u.Guns[1] : "");
+	}
+	else
+	{
 		LOG(LM_MAP, LL_DEBUG, "bullets(");
 		CA_FOREACH(const BulletClass *, bc, wc->u.Normal.Bullets)
 		if (_ca_index > 0)
@@ -360,24 +360,14 @@ static void LoadWeaponClass(WeaponClass *wc, json_t *node, const int version)
 			wc->u.Normal.Spread.Width, wc->u.Normal.Spread.Count,
 			wc->u.Normal.AngleOffset, wc->u.Normal.MuzzleHeight);
 		LOG(LM_MAP, LL_DEBUG,
-			"...elevation(%d-%d) muzzleFlash(%s) brass(%s) canShoot(%s)...",
+			"...elevation(%d-%d) muzzleFlash(%s) brass(%s)...",
 			wc->u.Normal.ElevationLow, wc->u.Normal.ElevationHigh,
 			wc->u.Normal.MuzzleFlash != NULL ? wc->u.Normal.MuzzleFlash->Name
 											 : "",
-			wc->u.Normal.Brass != NULL ? wc->u.Normal.Brass->Name : "",
-			wc->u.Normal.CanShoot ? "true" : "false");
+			wc->u.Normal.Brass != NULL ? wc->u.Normal.Brass->Name : "");
 		LOG(LM_MAP, LL_DEBUG, "...shake{amount(%d), cameraSubjectOnly(%s)}",
 			wc->u.Normal.Shake.Amount,
 			wc->u.Normal.Shake.CameraSubjectOnly ? "true" : "false");
-		break;
-	case GUNTYPE_MULTI:
-		LOG(LM_MAP, LL_DEBUG, "...guns{%s, %s}",
-			wc->u.Guns[0] ? wc->u.Guns[0] : "",
-			wc->u.Guns[1] ? wc->u.Guns[1] : "");
-		break;
-	default:
-		CASSERT(false, "unknown gun type");
-		break;
 	}
 }
 void WeaponClassesTerminate(WeaponClasses *wcs)
@@ -399,22 +389,17 @@ static void WeaponClassTerminate(WeaponClass *wc)
 	CFREE(wc->name);
 	CFREE(wc->Description);
 	CFREE(wc->DropGun);
-	switch (wc->Type)
+	if (wc->Type == GUNTYPE_MULTI)
 	{
-	case GUNTYPE_NORMAL:
-	case GUNTYPE_GRENADE: // fallthrough
-		CFREE(wc->u.Normal.Sprites);
-		CArrayTerminate(&wc->u.Normal.Bullets);
-		break;
-	case GUNTYPE_MULTI:
 		for (int i = 0; i < MAX_BARRELS; i++)
 		{
 			CFREE(wc->u.Guns[i]);
 		}
-		break;
-	default:
-		CASSERT(false, "unknown gun type");
-		break;
+	}
+	else
+	{
+		CFREE(wc->u.Normal.Sprites);
+		CArrayTerminate(&wc->u.Normal.Bullets);
 	}
 	memset(wc, 0, sizeof *wc);
 }
@@ -576,8 +561,7 @@ float WeaponClassGetMuzzleHeight(
 
 bool WeaponClassHasMuzzle(const WeaponClass *wc)
 {
-	return wc->Type == GUNTYPE_NORMAL && wc->u.Normal.Sprites != NULL &&
-		   wc->u.Normal.CanShoot;
+	return wc->Type == GUNTYPE_NORMAL && wc->u.Normal.Sprites != NULL;
 }
 bool WeaponClassIsHighDPS(const WeaponClass *wc)
 {
@@ -634,7 +618,7 @@ bool WeaponClassCanShoot(const WeaponClass *wc)
 		return WeaponClassCanShoot(WeaponClassGetBarrel(wc, 0)) ||
 			   WeaponClassCanShoot(WeaponClassGetBarrel(wc, 1));
 	}
-	return wc->u.Normal.CanShoot;
+	return wc->Type != GUNTYPE_MELEE;
 }
 int WeaponClassNumBarrels(const WeaponClass *wc)
 {

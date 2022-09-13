@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2019, 2021 Cong Xu
+	Copyright (c) 2013-2019, 2021-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -57,6 +57,7 @@ typedef enum
 typedef enum
 {
 	GUNTYPE_NORMAL,
+	GUNTYPE_MELEE,
 	GUNTYPE_GRENADE,
 	GUNTYPE_MULTI
 } GunType;
@@ -98,7 +99,6 @@ typedef struct
 			int ElevationHigh;
 			const ParticleClass *MuzzleFlash;
 			const ParticleClass *Brass;
-			bool CanShoot;
 			struct
 			{
 				int Amount;				// Amount of screen shake to produce

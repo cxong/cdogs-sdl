@@ -47,9 +47,17 @@
 #define GUN_BG_H 25
 #define SCROLL_H 12
 
-static bool IsEquippingGrenade(const int slot)
+static GunType SlotType(const int slot)
 {
-	return slot >= MAX_GUNS;
+	if (slot < MELEE_SLOT)
+	{
+		return GUNTYPE_NORMAL;
+	}
+	else if (slot == MELEE_SLOT)
+	{
+		return GUNTYPE_MELEE;
+	}
+	return GUNTYPE_GRENADE;
 }
 
 static const WeaponClass *GetGun(
@@ -59,10 +67,9 @@ static const WeaponClass *GetGun(
 	{
 		return NULL;
 	}
-	const bool isGrenade = IsEquippingGrenade(slot);
 	int idx2 = 0;
 	CA_FOREACH(const WeaponClass *, wc, *weapons)
-	if (((*wc)->Type == GUNTYPE_GRENADE) != isGrenade)
+	if ((*wc)->Type != SlotType(slot))
 	{
 		continue;
 	}
@@ -130,9 +137,8 @@ static int CountNumGuns(const WeaponMenuData *data, const int slot)
 	}
 	// Count total guns
 	int numGuns = 0;
-	const bool isGrenade = IsEquippingGrenade(slot);
 	CA_FOREACH(const WeaponClass *, wc, data->weapons)
-	if (((*wc)->Type == GUNTYPE_GRENADE) != isGrenade)
+	if ((*wc)->Type != SlotType(slot))
 	{
 		continue;
 	}
@@ -222,12 +228,12 @@ static void DrawEquipSlot(
 		Rect2iNew(
 			svec2i(bgPos.x + 1, bgPos.y + 1),
 			svec2i(WEAPON_MENU_WIDTH / 2, EQUIP_MENU_SLOT_HEIGHT - 2)),
-		11, (slot & 1) ? 16 : 4, 12, (slot & 1) ? 4 : 16, true, mask,
+		11, (slot & 1) ? 4 : 13, 12, (slot & 1) ? 13 : 4, true, mask,
 		SDL_FLIP_NONE);
 
 	const FontOpts fopts = {
 		align, ALIGN_START, svec2i(WEAPON_MENU_WIDTH / 2, FontH()),
-		svec2i(2, 1), color};
+		svec2i(3, 1), color};
 	FontStrOpt(label, pos, fopts);
 
 	const Pic *gunIcon = pData->guns[slot]
@@ -251,10 +257,13 @@ static void DrawEquipSlot(
 			g, svec2i(pos.x + WEAPON_MENU_WIDTH / 2 - 6, y + 13), colorGreen);
 	}
 
-	y += EQUIP_MENU_SLOT_HEIGHT - FontH();
+	y += EQUIP_MENU_SLOT_HEIGHT - FontH() - 1;
 	const char *gunName =
 		pData->guns[slot] ? pData->guns[slot]->name : NO_GUN_LABEL;
-	FontStrMask(gunName, svec2i(pos.x, y), color);
+	const FontOpts fopts2 = {
+		align, ALIGN_START, svec2i(WEAPON_MENU_WIDTH / 2, FontH()),
+		svec2i(3, 0), color};
+	FontStrOpt(gunName, svec2i(pos.x, y), fopts2);
 }
 static void DrawEquipMenu(
 	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
@@ -269,8 +278,12 @@ static void DrawEquipMenu(
 		d, g, 1, "II", svec2i(pos.x + WEAPON_MENU_WIDTH / 2, pos.y),
 		ALIGN_END);
 	DrawEquipSlot(
-		d, g, 2, "G", svec2i(pos.x, pos.y + EQUIP_MENU_SLOT_HEIGHT),
-		ALIGN_START);
+		d, g, MELEE_SLOT, "Melee",
+		svec2i(pos.x, pos.y + EQUIP_MENU_SLOT_HEIGHT), ALIGN_START);
+	DrawEquipSlot(
+		d, g, 3, "Bombs",
+		svec2i(pos.x + WEAPON_MENU_WIDTH / 2, pos.y + EQUIP_MENU_SLOT_HEIGHT),
+		ALIGN_END);
 
 	const WeaponClass *gun = NULL;
 	if (d->display.GunIdx >= 0 && d->display.GunIdx < MAX_WEAPONS)
@@ -438,27 +451,32 @@ static menu_t *CreateEquipMenu(
 	ms->align = MENU_ALIGN_LEFT;
 	MenuAddExitType(ms, MENU_TYPE_RETURN);
 
-	// Count number of guns/grenades, and disable extra menu items
+	// Count number of each gun type, and disable extra menu items
 	int numGuns = 0;
+	int numMelee = 0;
 	int numGrenades = 0;
 	CA_FOREACH(const WeaponClass *, wc, data->weapons)
 	if ((*wc)->Type == GUNTYPE_GRENADE)
 	{
 		numGrenades++;
 	}
+	else if ((*wc)->Type == GUNTYPE_MELEE)
+	{
+		numMelee++;
+	}
 	else
 	{
 		numGuns++;
 	}
 	CA_FOREACH_END()
-	int i;
-	for (i = 0; i < MAX_GUNS; i++)
+	for (int i = 0; i < MELEE_SLOT; i++)
 	{
 		data->EquipEnabled[i] = i < numGuns;
 	}
-	for (; i < MAX_GUNS + MAX_GRENADES; i++)
+	data->EquipEnabled[MELEE_SLOT] = numMelee > 0;
+	for (int i = 0; i < MAX_GRENADES; i++)
 	{
-		data->EquipEnabled[i] = i - MAX_GUNS < numGrenades;
+		data->EquipEnabled[i + MAX_GUNS] = i < numGrenades;
 	}
 
 	// Pre-select the End menu
@@ -501,9 +519,13 @@ void WeaponMenuCreate(
 		{
 			data->SlotHasNew[MAX_GUNS] = true;
 		}
+		else if ((*wc)->Type == GUNTYPE_MELEE)
+		{
+			data->SlotHasNew[MELEE_SLOT] = true;
+		}
 		else
 		{
-			for (int i = 0; i < MAX_GUNS; i++)
+			for (int i = 0; i < MELEE_SLOT; i++)
 			{
 				data->SlotHasNew[i] = true;
 			}
@@ -606,7 +628,7 @@ static void DrawGunMenu(
 	// Draw guns: red if selected, yellow if equipped
 	int idx = 0;
 	CA_FOREACH(const WeaponClass *, wc, d->weapons)
-	if (((*wc)->Type == GUNTYPE_GRENADE) != IsEquippingGrenade(d->EquipSlot))
+	if ((*wc)->Type != SlotType(d->EquipSlot))
 	{
 		continue;
 	}
@@ -745,9 +767,8 @@ static int HandleInputGunMenu(int cmd, void *data)
 
 	// Count total guns
 	int numGuns = 0;
-	const bool isGrenade = IsEquippingGrenade(d->EquipSlot);
 	CA_FOREACH(const WeaponClass *, wc, d->weapons)
-	if (((*wc)->Type == GUNTYPE_GRENADE) != isGrenade)
+	if ((*wc)->Type != SlotType(d->EquipSlot))
 	{
 		continue;
 	}

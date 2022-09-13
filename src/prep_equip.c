@@ -128,10 +128,10 @@ static void AddDefaultGuns(
 	PlayerData *p, const int idx, const CArray *guns, const bool isGrenade)
 {
 	const char *defaultGuns[MAX_LOCAL_PLAYERS][MAX_GUNS] = {
-		{"Shotgun", "Machine gun"},
-		{"Powergun", "Flamer"},
-		{"Sniper rifle", "Knife"},
-		{"Machine gun", "Flamer"},
+		{"Shotgun", "Machine gun", "Knife"},
+		{"Powergun", "Flamer", "Knife"},
+		{"Sniper rifle", "Pulse rifle", "Knife"},
+		{"Machine gun", "Flamer", "Knife"},
 	};
 	const char *defaultGrenades[MAX_LOCAL_PLAYERS][MAX_GRENADES] = {
 		{"Shrapnel bombs"},
