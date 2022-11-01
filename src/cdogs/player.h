@@ -109,3 +109,8 @@ bool PlayerTrySetUnusedInputDevice(
 
 int PlayerGetNumWeapons(const PlayerData *p);
 bool PlayerHasGrenadeButton(const PlayerData *p);
+bool PlayerHasWeapon(const PlayerData *p, const WeaponClass *wc);
+void PlayerAddWeapon(PlayerData *p, const WeaponClass *wc);
+void PlayerAddWeaponToSlot(PlayerData *p, const WeaponClass *wc, const int slot);
+void PlayerRemoveWeapon(PlayerData *p, const int slot);
+void PlayerAddMinimalWeapons(PlayerData *p);

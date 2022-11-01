@@ -10,7 +10,8 @@
       "Lock": 30,
       "Sound": "",
       "SwitchSound": "knife_switch",
-      "CanShoot": false
+      "CanShoot": false,
+      "Auto": true
     },
     {
       "Pic": "pistol",

@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2016, 2018-2020 Cong Xu
+	Copyright (c) 2014-2016, 2018-2020, 2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -487,4 +487,72 @@ int PlayerGetNumWeapons(const PlayerData *p)
 bool PlayerHasGrenadeButton(const PlayerData *p)
 {
 	return InputHasGrenadeButton(p->inputDevice, p->deviceIndex);
+}
+
+bool PlayerHasWeapon(const PlayerData *p, const WeaponClass *wc)
+{
+	for (int i = 0; i < MAX_WEAPONS; i++)
+	{
+		if (p->guns[i] == wc)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+void PlayerAddWeaponToSlot(
+	PlayerData *p, const WeaponClass *wc, const int slot)
+{
+	// See if the weapon is already equipped; if so swap it with the slot
+	for (int i = 0; i < MAX_WEAPONS; i++)
+	{
+		if (p->guns[i] == wc)
+		{
+			p->guns[i] = p->guns[slot];
+			break;
+		}
+	}
+	p->guns[slot] = wc;
+}
+
+void PlayerAddWeapon(PlayerData *p, const WeaponClass *wc)
+{
+	if (PlayerHasWeapon(p, wc))
+	{
+		return;
+	}
+	// Add the weapon to the next empty slot, based on type
+	int first = 0;
+	int max = MELEE_SLOT;
+	if (wc->Type == GUNTYPE_MELEE)
+	{
+		first = MELEE_SLOT;
+		max = MELEE_SLOT + 1;
+	}
+	else if (wc->Type == GUNTYPE_GRENADE)
+	{
+		first = MAX_GUNS;
+		max = first + MAX_GRENADES;
+	}
+	for (int i = first; i < max; i++)
+	{
+		if (p->guns[i] == NULL)
+		{
+			p->guns[i] = wc;
+			break;
+		}
+	}
+}
+
+void PlayerRemoveWeapon(PlayerData *p, const int slot)
+{
+	p->guns[slot] = NULL;
+	PlayerAddMinimalWeapons(p);
+}
+
+void PlayerAddMinimalWeapons(PlayerData *p)
+{
+	// Always have fists
+	PlayerAddWeapon(p, StrWeaponClass("Fists"));
 }

@@ -324,66 +324,87 @@ bool TryMoveActor(TActor *actor, struct vec2 pos)
 			IsPVP(gCampaign.Entry.Mode), false};
 		Thing *target = OverlapGetFirstItem(
 			&actor->thing, pos, actor->thing.size, actor->thing.Vel, params);
-		if (target)
+		if (target && actor->health > 0)
 		{
-			Weapon *gun = ACTOR_GET_WEAPON(actor);
 			const TObject *object = target->kind == KIND_OBJECT
 										? CArrayGet(&gObjs, target->id)
 										: NULL;
-			const int barrel = ActorGetCanFireBarrel(actor, gun);
-			// Check for melee damage if we are the owner of the actor
-			const bool checkMelee =
-				(!gCampaign.IsClient && actor->PlayerUID < 0) ||
-				ActorIsLocalPlayer(actor->uid);
-			// TODO: support melee weapons on multi guns
-			const BulletClass *b = WeaponClassGetBullet(gun->Gun, barrel);
-			if (checkMelee && barrel >= 0 && !WeaponClassCanShoot(gun->Gun) &&
-				actor->health > 0 && b &&
-				(!object ||
-				 (((b->Hit.Object.Hit && target->kind == KIND_OBJECT) ||
-				   (b->Hit.Flesh.Hit && target->kind == KIND_CHARACTER)) &&
-				  !ObjIsDangerous(object))))
+			if ((object && !ObjIsDangerous(object)) ||
+				target->kind == KIND_CHARACTER)
 			{
-				if (CanHit(b, actor->flags, actor->uid, target))
+				// We are running into an object or actor
+				// If we have an auto-melee weapon, switch to it
+				const WeaponClass *meleeGun = actor->guns[MELEE_SLOT].Gun;
+				if (actor->gunIndex != MELEE_SLOT && meleeGun &&
+					meleeGun->Type == GUNTYPE_MELEE && meleeGun->u.Normal.Auto)
 				{
-					// Tell the server that we want to melee something
-					GameEvent e = GameEventNew(GAME_EVENT_ACTOR_MELEE);
-					e.u.Melee.UID = actor->uid;
-					strcpy(e.u.Melee.BulletClass, b->Name);
-					e.u.Melee.TargetKind = target->kind;
-					switch (target->kind)
-					{
-					case KIND_CHARACTER:
-						e.u.Melee.TargetUID =
-							((const TActor *)CArrayGet(&gActors, target->id))
-								->uid;
-						e.u.Melee.HitType = HIT_FLESH;
-						break;
-					case KIND_OBJECT:
-						e.u.Melee.TargetUID =
-							((const TObject *)CArrayGet(&gObjs, target->id))
-								->uid;
-						e.u.Melee.HitType = HIT_OBJECT;
-						break;
-					default:
-						CASSERT(false, "cannot damage target kind");
-						break;
-					}
-					if (gun->barrels[barrel].soundLock > 0)
-					{
-						e.u.Melee.HitType = (int)HIT_NONE;
-					}
+					GameEvent e = GameEventNew(GAME_EVENT_ACTOR_SWITCH_GUN);
+					e.u.ActorSwitchGun.UID = actor->uid;
+					e.u.ActorSwitchGun.GunIdx = MELEE_SLOT;
 					GameEventsEnqueue(&gGameEvents, e);
-					WeaponBarrelOnFire(gun, barrel);
-
-					// Only set grimace when counter 0 so that the actor
-					// alternates their grimace
-					if (actor->grimaceCounter == 0)
+				}
+				else
+				{
+					Weapon *gun = ACTOR_GET_WEAPON(actor);
+					const int barrel = ActorGetCanFireBarrel(actor, gun);
+					// Check for melee damage if we are the owner of the actor
+					const bool checkMelee =
+						(!gCampaign.IsClient && actor->PlayerUID < 0) ||
+						ActorIsLocalPlayer(actor->uid);
+					// TODO: support melee weapons on multi guns
+					const BulletClass *b =
+						WeaponClassGetBullet(gun->Gun, barrel);
+					if (checkMelee && barrel >= 0 &&
+						!WeaponClassCanShoot(gun->Gun) && b &&
+						(!object || (((b->Hit.Object.Hit &&
+									   target->kind == KIND_OBJECT) ||
+									  (b->Hit.Flesh.Hit &&
+									   target->kind == KIND_CHARACTER)))))
 					{
-						actor->grimaceCounter = GRIMACE_MELEE_TICKS;
+						if (CanHit(b, actor->flags, actor->uid, target))
+						{
+							// Tell the server that we want to melee something
+							GameEvent e = GameEventNew(GAME_EVENT_ACTOR_MELEE);
+							e.u.Melee.UID = actor->uid;
+							strcpy(e.u.Melee.BulletClass, b->Name);
+							e.u.Melee.TargetKind = target->kind;
+							switch (target->kind)
+							{
+							case KIND_CHARACTER:
+								e.u.Melee.TargetUID =
+									((const TActor *)CArrayGet(
+										 &gActors, target->id))
+										->uid;
+								e.u.Melee.HitType = HIT_FLESH;
+								break;
+							case KIND_OBJECT:
+								e.u.Melee.TargetUID =
+									((const TObject *)CArrayGet(
+										 &gObjs, target->id))
+										->uid;
+								e.u.Melee.HitType = HIT_OBJECT;
+								break;
+							default:
+								CASSERT(false, "cannot damage target kind");
+								break;
+							}
+							if (gun->barrels[barrel].soundLock > 0)
+							{
+								e.u.Melee.HitType = (int)HIT_NONE;
+							}
+							GameEventsEnqueue(&gGameEvents, e);
+							WeaponBarrelOnFire(gun, barrel);
+
+							// Only set grimace when counter 0 so that the
+							// actor alternates their grimace
+							if (actor->grimaceCounter == 0)
+							{
+								actor->grimaceCounter = GRIMACE_MELEE_TICKS;
+							}
+						}
+						return false;
 					}
 				}
-				return false;
 			}
 
 			const struct vec2 yPos = svec2(actor->Pos.x, pos.y);
@@ -866,6 +887,17 @@ static void FireWeapon(TActor *a, Weapon *w)
 {
 	if (w->Gun == NULL)
 	{
+		return;
+	}
+	// If currently equipping an auto-melee weapon,
+	// and if possible, switch to the last gun
+	if (w->Gun->Type == GUNTYPE_MELEE && w->Gun->u.Normal.Auto &&
+		a->guns[a->lastGunIdx].Gun != NULL)
+	{
+		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_SWITCH_GUN);
+		e.u.ActorSwitchGun.UID = a->uid;
+		e.u.ActorSwitchGun.GunIdx = a->lastGunIdx;
+		GameEventsEnqueue(&gGameEvents, e);
 		return;
 	}
 	const int barrel = ActorGetCanFireBarrel(a, w);
@@ -1813,6 +1845,37 @@ int ActorGetCanFireBarrel(const TActor *a, const Weapon *w)
 	}
 	return barrel;
 }
+static bool CanSwitchToWeapon(const TActor *a, const int slot)
+{
+	const WeaponClass *wc = a->guns[slot].Gun;
+	if (wc == NULL)
+	{
+		return false;
+	}
+	// Don't cycle to auto-melee or default melee unless there are no guns with ammo
+	if (slot == MELEE_SLOT && wc->u.Normal.Auto)
+	{
+		for (int i = 0; i < MELEE_SLOT; i++)
+		{
+			const WeaponClass *wc2 = a->guns[i].Gun;
+			if (wc2 != NULL)
+			{
+				if (!gCampaign.Setting.Ammo)
+				{
+					return false;
+				}
+				for (int j = 0; j < WeaponClassNumBarrels(wc2); j++)
+				{
+					if (ActorWeaponGetAmmo(a, wc2, j) != 0)
+					{
+						return false;
+					}
+				}
+			}
+		}
+	}
+	return true;
+}
 bool ActorTrySwitchWeapon(const TActor *a, const bool allGuns)
 {
 	// Find the next weapon to switch to
@@ -1824,9 +1887,7 @@ bool ActorTrySwitchWeapon(const TActor *a, const bool allGuns)
 	do
 	{
 		weaponIndex = (weaponIndex + 1) % switchCount;
-	} while (a->guns[weaponIndex].Gun ==
-			 NULL); // TODO: don't cycle to auto-melee or default melee unless
-					// it's the only gun
+	} while (!CanSwitchToWeapon(a, weaponIndex));
 	if (weaponIndex == startIndex)
 	{
 		// No other weapon to switch to
@@ -1845,6 +1906,10 @@ void ActorSwitchGun(const NActorSwitchGun sg)
 	if (a == NULL || !a->isInUse)
 		return;
 	a->gunIndex = sg.GunIdx;
+	if (sg.GunIdx < MELEE_SLOT)
+	{
+		a->lastGunIdx = sg.GunIdx;
+	}
 	const WeaponClass *gun = ACTOR_GET_WEAPON(a)->Gun;
 	SoundPlayAt(&gSoundDevice, gun->SwitchSound, a->thing.Pos);
 	ActorSetChatter(a, gun->name, CHATTER_SWITCH_GUN);

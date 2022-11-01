@@ -133,6 +133,7 @@ typedef struct Actor
 	Weapon guns[MAX_WEAPONS];
 	CArray ammo; // of int
 	int gunIndex;
+	int lastGunIdx;
 
 	int health;
 	// A counter for player death

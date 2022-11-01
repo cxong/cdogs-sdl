@@ -850,7 +850,6 @@ static int GotoObjective(TActor *actor, const float objDistance2)
 	return cmd;
 }
 
-static bool PlayerHasWeapon(const PlayerData *p, const WeaponClass *wc);
 void AICoopSelectWeapons(
 	PlayerData *p, const int player, const CArray *weapons)
 {
@@ -896,18 +895,6 @@ void AICoopSelectWeapons(
 			}
 		}
 	}
-}
-static bool PlayerHasWeapon(const PlayerData *p, const WeaponClass *wc)
-{
-	for (int i = 0; i < MAX_WEAPONS; i++)
-	{
-		const WeaponClass *wc2 = p->guns[i];
-		if (wc == wc2)
-		{
-			return true;
-		}
-	}
-	return false;
 }
 
 void AICoopOnPickupGun(TActor *a, const int gunId)

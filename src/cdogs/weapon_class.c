@@ -317,6 +317,8 @@ static void LoadWeaponClass(WeaponClass *wc, json_t *node, const int version)
 				&wc->u.Normal.Shake.CameraSubjectOnly, shake,
 				"CameraSubjectOnly");
 		}
+
+		LoadBool(&wc->u.Normal.Auto, node, "Auto");
 	}
 
 	wc->IsRealGun = true;
@@ -368,6 +370,8 @@ static void LoadWeaponClass(WeaponClass *wc, json_t *node, const int version)
 		LOG(LM_MAP, LL_DEBUG, "...shake{amount(%d), cameraSubjectOnly(%s)}",
 			wc->u.Normal.Shake.Amount,
 			wc->u.Normal.Shake.CameraSubjectOnly ? "true" : "false");
+		LOG(LM_MAP, LL_DEBUG, "...auto(%s)",
+			wc->u.Normal.Auto ? "true" : "false");
 	}
 }
 void WeaponClassesTerminate(WeaponClasses *wcs)

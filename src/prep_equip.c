@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2018, 2020-2021 Cong Xu
+	Copyright (c) 2013-2018, 2020-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -37,8 +37,7 @@
 static void AddPlayerWeapons(CArray *weapons, const WeaponClass **guns);
 static void RemoveUnavailableWeapons(
 	const WeaponClass **guns, const CArray *weapons);
-static void AddDefaultGuns(
-	PlayerData *p, const int idx, const CArray *guns, const bool isGrenade);
+static void AddDefaultGuns(PlayerData *p, const int idx, const CArray *guns);
 typedef struct
 {
 	WeaponMenu menus[MAX_LOCAL_PLAYERS];
@@ -79,15 +78,16 @@ GameLoopData *PlayerEquip(void)
 		// Add default guns if the player has no weapons
 		if (PlayerGetNumWeapons(p) == 0)
 		{
-			AddDefaultGuns(p, idx, &weapons, false);
-			AddDefaultGuns(p, idx, &weapons, true);
+			AddDefaultGuns(p, idx, &weapons);
 		}
-		
+
 		// Get previous mission's weapons
 		const CArray *prevWeapons = NULL;
-		if (gCampaign.Entry.Mode == GAME_MODE_NORMAL && gCampaign.MissionIndex > 0)
+		if (gCampaign.Entry.Mode == GAME_MODE_NORMAL &&
+			gCampaign.MissionIndex > 0)
 		{
-			const Mission *prevMission = CArrayGet(&gCampaign.Setting.Missions, gCampaign.MissionIndex - 1);
+			const Mission *prevMission = CArrayGet(
+				&gCampaign.Setting.Missions, gCampaign.MissionIndex - 1);
 			prevWeapons = &prevMission->Weapons;
 		}
 
@@ -124,36 +124,23 @@ static void AddPlayerWeapons(CArray *weapons, const WeaponClass **guns)
 		}
 	}
 }
-static void AddDefaultGuns(
-	PlayerData *p, const int idx, const CArray *guns, const bool isGrenade)
+static void AddDefaultGuns(PlayerData *p, const int idx, const CArray *guns)
 {
-	const char *defaultGuns[MAX_LOCAL_PLAYERS][MAX_GUNS] = {
-		{"Shotgun", "Machine gun", "Knife"},
-		{"Powergun", "Flamer", "Knife"},
-		{"Sniper rifle", "Pulse rifle", "Knife"},
-		{"Machine gun", "Flamer", "Knife"},
-	};
-	const char *defaultGrenades[MAX_LOCAL_PLAYERS][MAX_GRENADES] = {
-		{"Shrapnel bombs"},
-		{"Grenades"},
-		{"Molotovs"},
-		{"Dynamite"},
+	const char *defaultGuns[MAX_LOCAL_PLAYERS][MAX_WEAPONS] = {
+		{"Shotgun", "Machine gun", "Knife", "Shrapnel bombs"},
+		{"Powergun", "Flamer", "Knife", "Grenades"},
+		{"Sniper rifle", "Pulse rifle", "Knife", "Molotovs"},
+		{"Machine gun", "Flamer", "Knife", "Dynamite"},
 	};
 
-	const int first = isGrenade ? MAX_GUNS : 0;
-	const int max = isGrenade ? MAX_WEAPONS : MAX_GUNS;
-	const int size = isGrenade ? MAX_GRENADES : MAX_GUNS;
 	// Attempt to give the player default guns; if the guns are missing, find
 	// guns available in the mission
-	int defaultIdx = 0;
 	// Look for the default guns
-	int i;
-	for (i = first; i < max && defaultIdx < size; i++)
+	for (int i = 0; i < MAX_WEAPONS; i++)
 	{
 		const WeaponClass *defaultWC = NULL;
 		CA_FOREACH(const WeaponClass *, wc, *guns)
-		const char *gunName = isGrenade ? defaultGrenades[idx][defaultIdx]
-										: defaultGuns[idx][defaultIdx];
+		const char *gunName = defaultGuns[idx][i];
 		if (strcmp((*wc)->name, gunName) == 0)
 		{
 			defaultWC = *wc;
@@ -161,31 +148,14 @@ static void AddDefaultGuns(
 		CA_FOREACH_END()
 		if (defaultWC != NULL)
 		{
-			p->guns[i] = defaultWC;
+			PlayerAddWeapon(p, defaultWC);
 		}
-		else
-		{
-			i--;
-		}
-		defaultIdx++;
 	}
 	// Look for guns available in the mission
-	int j = 0;
-	for (; i < max; i++)
-	{
-		for (; j < (int)guns->size; j++)
-		{
-			const int missionGunIdx = ((idx * size) + j) % guns->size;
-			const WeaponClass **wc = CArrayGet(guns, missionGunIdx);
-			if (((*wc)->Type == GUNTYPE_GRENADE) != isGrenade)
-			{
-				continue;
-			}
-			p->guns[i] = *wc;
-			j++;
-			break;
-		}
-	}
+	CA_FOREACH(const WeaponClass *, wc, *guns)
+	PlayerAddWeapon(p, *wc);
+	CA_FOREACH_END()
+	PlayerAddMinimalWeapons(p);
 }
 static bool HasWeapon(const CArray *weapons, const WeaponClass *wc)
 {
@@ -256,7 +226,8 @@ static GameLoopResult PlayerEquipUpdate(GameLoopData *data, LoopRunner *l)
 	int cmds[MAX_LOCAL_PLAYERS];
 	memset(cmds, 0, sizeof cmds);
 	GetPlayerCmds(&gEventHandlers, &cmds);
-	if (EventIsEscape(&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers, false)))
+	if (EventIsEscape(
+			&gEventHandlers, cmds, GetMenuCmd(&gEventHandlers, false)))
 	{
 		pData->waitResult = EVENT_WAIT_CANCEL;
 		goto bail;

@@ -54,7 +54,8 @@
       "Cost": 0,
       "Sound": "",
       "SoundLockLength": 50,
-      "CanShoot": false
+      "CanShoot": false,
+      "Auto": true
     },
     {
       "Name": "Plasma gun",

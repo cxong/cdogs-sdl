@@ -2,6 +2,19 @@
   "Version": 2,
   "Guns": [
     {
+      "Pic": "",
+      "Icon": "fist",
+      "Name": "Fists",
+      "Bullet": "fist",
+      "Cost": 0,
+      "Lock": 30,
+      "Sound": "",
+      "SwitchSound": "knuckles",
+      "CanShoot": false,
+      "CanDrop": false,
+      "Auto": true
+    },
+    {
       "Pic": "chainsaw",
       "Icon": "chainsaw",
       "Name": "Chainsaw",
@@ -11,7 +24,8 @@
       "Lock": 0,
       "Sound": "",
       "SoundLockLength": 50,
-      "CanShoot": false
+      "CanShoot": false,
+      "Auto": true
     },
     {
       "Pic": "pistol",

@@ -457,9 +457,10 @@ void PlayerSavesApply(const CArray *playerSaves, const bool weaponPersist)
 			{
 				if (ps->Guns[j] != NULL)
 				{
-					p->guns[j] = StrWeaponClass(ps->Guns[j]);
+					PlayerAddWeapon(p, StrWeaponClass(ps->Guns[j]));
 				}
 			}
+			PlayerAddMinimalWeapons(p);
 			CArrayCopy(&p->ammo, &ps->ammo);
 		}
 		if (ps->Lives > 0)

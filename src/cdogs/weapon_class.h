@@ -105,6 +105,7 @@ typedef struct
 				bool CameraSubjectOnly; // Only shake if gun held by camera
 										// subject
 			} Shake;
+			bool Auto; // Auto melee
 		} Normal;
 		char *Guns[MAX_BARRELS];
 	} u;

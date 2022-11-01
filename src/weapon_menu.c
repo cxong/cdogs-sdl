@@ -322,8 +322,7 @@ static int HandleInputEquipMenu(int cmd, void *data)
 	{
 		if (d->EquipSlot < MAX_WEAPONS)
 		{
-			// Unequip
-			p->guns[d->EquipSlot] = NULL;
+			PlayerRemoveWeapon(p, d->EquipSlot);
 			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}
@@ -854,17 +853,7 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 			break;
 		case WEAPON_MENU_SELECT: {
 			const WeaponClass *selectedGun = GetSelectedGun(&menu->data);
-			// See if the selected gun is already equipped; if so swap it with
-			// the current slot
-			for (int i = 0; i < MAX_WEAPONS; i++)
-			{
-				if (p->guns[i] == selectedGun)
-				{
-					p->guns[i] = p->guns[menu->data.EquipSlot];
-					break;
-				}
-			}
-			p->guns[menu->data.EquipSlot] = selectedGun;
+			PlayerAddWeaponToSlot(p, selectedGun, menu->data.EquipSlot);
 		}
 			// fallthrough
 		case WEAPON_MENU_CANCEL:
