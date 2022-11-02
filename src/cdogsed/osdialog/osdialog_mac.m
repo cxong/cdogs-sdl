@@ -133,8 +133,10 @@ char* osdialog_file(osdialog_file_action action, const char* dir, const char* fi
 					[fileTypes addObject:fileType];
 				}
 			}
-
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 			[panel setAllowedFileTypes:fileTypes];
+#pragma clang diagnostic pop
 		}
 
 		if (action == OSDIALOG_OPEN || action == OSDIALOG_OPEN_DIR) {
