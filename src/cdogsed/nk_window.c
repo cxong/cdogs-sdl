@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2019-2021 Cong Xu
+	Copyright (c) 2019-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -49,6 +49,7 @@
 #pragma warning(pop)
 #endif
 #include <cdogs/draw/draw_actor.h>
+#include <cdogs/log.h>
 #include <cdogs/sys_config.h>
 #include <nuklear/nuklear_sdl_gl2.h>
 
@@ -96,6 +97,10 @@ void NKWindow(NKWindowConfig cfg)
 	CASSERT(cfg.ctx, "Error: did not initialise NK context");
 	EventReset(cfg.Handlers);
 	MouseSetCursor(&cfg.Handlers->mouse, SDL_SYSTEM_CURSOR_ARROW);
+	if (SDL_SetWindowModalFor(cfg.win, gGraphicsDevice.gameWindow.window) != 0)
+	{
+		LOG(LM_EDIT, LL_ERROR, "Failed to set modal parent: %s", SDL_GetError());
+	}
 	Uint32 ticksNow = SDL_GetTicks();
 	Uint32 ticksElapsed = 0;
 	for (;;)

@@ -1,4 +1,3 @@
-add_subdirectory(osdialog)
 include_directories(
 	${SDL2_INCLUDE_DIRS}
 	${SDL2_IMAGE_INCLUDE_DIRS}
@@ -19,6 +18,7 @@ set(CDOGSED_SOURCES
 	editor_ui_static_additem.c
 	editor_ui_weapons.c
 	exit_brush.c
+	file_dialog.c
 	mission_options.c
 	nk_window.c
 	tile_brush.c
@@ -39,10 +39,10 @@ set(CDOGSED_HEADERS
 	editor_ui_static_additem.h
 	editor_ui_weapons.h
 	exit_brush.h
+	file_dialog.h
 	mission_options.h
 	nk_window.h
 	tile_brush.h
 	ui_object.h)
 add_library(cdogsedlib STATIC ${CDOGSED_SOURCES} ${CDOGSED_HEADERS})
-target_link_libraries(cdogsedlib
-	${SDL2_LIBRARY} osdialog)
+target_link_libraries(cdogsedlib ${SDL2_LIBRARY})

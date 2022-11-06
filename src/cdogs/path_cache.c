@@ -153,7 +153,7 @@ CachedPath PathCacheCreate(
 		LOG(LM_PATH, LL_TRACE, "Cached %d paths", (int)pc->paths.size);
 	}
 	const clock_t diff = clock() - start;
-	const int ms = diff * 1000 / CLOCKS_PER_SEC;
+	const int ms = (int)(diff * 1000 / CLOCKS_PER_SEC);
 	LOG(LM_PATH, LL_DEBUG, "Pathfind time %dms", ms);
 	return cp;
 }

@@ -71,7 +71,7 @@
 #include <cdogsed/char_editor.h>
 #include <cdogsed/editor_ui.h>
 #include <cdogsed/editor_ui_common.h>
-#include <cdogsed/osdialog/osdialog.h>
+#include <cdogsed/file_dialog.h>
 
 // Mouse click areas:
 static UIObject *sObjs;
@@ -420,17 +420,8 @@ static void Open(void)
 	char buf[CDOGS_PATH_MAX];
 	RealPath(dirname, buf);
 	FixPathSeparator(dirname, buf);
-	osdialog_filters *filters =
-		osdialog_filters_parse("C-Dogs SDL Campaign:cdogscpn");
-	char *filename = osdialog_file(
-#ifdef __APPLE__
-		OSDIALOG_OPEN
-#else
-		OSDIALOG_OPEN_DIR
-#endif
-	    , dirname, PathGetBasename(lastFile), filters);
 	// Try original filename
-	if (filename)
+	if (TryOpenDir(buf, &gEventHandlers, dirname, PathGetBasename(lastFile)))
 	{
 		WindowContextPreRender(&gGraphicsDevice.gameWindow);
 		ClearScreen(&gGraphicsDevice);
@@ -439,13 +430,11 @@ static void Open(void)
 
 		BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 		WindowContextPostRender(&gGraphicsDevice.gameWindow);
-		if (!TryOpen(filename))
+		if (!TryOpen(buf))
 		{
-			ShowFailedToOpenMsg(filename);
+			ShowFailedToOpenMsg(buf);
 		}
 	}
-	free(filename);
-	osdialog_filters_free(filters);
 }
 static bool TryOpen(const char *filename)
 {
@@ -479,11 +468,8 @@ static void Save(void)
 {
 	char dirname[CDOGS_PATH_MAX];
 	PathGetDirname(dirname, lastFile);
-	osdialog_filters *filters =
-		osdialog_filters_parse("C-Dogs SDL Campaign:cdogscpn");
-	char *filename = osdialog_file(
-		OSDIALOG_SAVE, dirname, PathGetBasename(lastFile), filters);
-	if (filename)
+	char buf[CDOGS_PATH_MAX];
+	if (TrySaveFile(buf, &gEventHandlers,dirname, PathGetBasename(lastFile)))
 	{
 		WindowContextPreRender(&gGraphicsDevice.gameWindow);
 		ClearScreen(&gGraphicsDevice);
@@ -492,18 +478,16 @@ static void Save(void)
 
 		BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 		WindowContextPostRender(&gGraphicsDevice.gameWindow);
-		MapArchiveSave(filename, &gCampaign.Setting);
+		MapArchiveSave(buf, &gCampaign.Setting);
 		fileChanged = false;
-		strcpy(lastFile, filename);
+		strcpy(lastFile, buf);
 		sAutosaveIndex = 0;
 		char msgBuf[CDOGS_PATH_MAX];
-		sprintf(msgBuf, "Saved to %s", filename);
+		sprintf(msgBuf, "Saved to %s", buf);
 		SDL_ShowSimpleMessageBox(
 			SDL_MESSAGEBOX_INFORMATION, "Campaign Saved", msgBuf,
 			gGraphicsDevice.gameWindow.window);
 	}
-	free(filename);
-	osdialog_filters_free(filters);
 }
 
 static void HelpScreen(void)

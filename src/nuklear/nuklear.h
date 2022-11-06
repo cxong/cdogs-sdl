@@ -12736,6 +12736,7 @@ nk_font_bake_pack(struct nk_font_baker *baker,
     const struct nk_font_config *config_iter, *it;
     int total_glyph_count = 0;
     int total_range_count = 0;
+	(void)total_range_count;
     int range_count = 0;
     int i = 0;
 
