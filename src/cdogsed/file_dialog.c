@@ -154,8 +154,9 @@ static bool DrawDialog(SDL_Window *win, struct nk_context *ctx, void *data)
 	char buf[CDOGS_PATH_MAX];
 
 	bool done = false;
+	float y = 0;
 	if (nk_begin(
-			ctx, "Dir", nk_rect(0, 0, WIDTH, ROW_HEIGHT),
+			ctx, "Dir", nk_rect(0, y, WIDTH, ROW_HEIGHT),
 			NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
 	{
 		const float colRatios[] = {0.1f, 0.9f};
@@ -172,25 +173,25 @@ static bool DrawDialog(SDL_Window *win, struct nk_context *ctx, void *data)
 		}
 		nk_end(ctx);
 	}
+	y += ROW_HEIGHT;
 
 	if (nk_begin(
-			ctx, "Picker", nk_rect(0, ROW_HEIGHT, WIDTH, HEIGHT - ROW_HEIGHT),
+			ctx, "Picker", nk_rect(0, y, WIDTH, HEIGHT - y - ROW_HEIGHT),
 			NK_WINDOW_BORDER))
 	{
 		nk_layout_row_dynamic(ctx, ROW_HEIGHT_SMALL, 1);
 
 		CA_FOREACH(const char, filename, fData->files)
 		const bool selected = fData->selected == _ca_index;
-		struct nk_rect bounds = nk_widget_bounds(ctx);
 		nk_select_label(
 			fData->ctx, filename, NK_TEXT_ALIGN_CENTERED | NK_TEXT_ALIGN_LEFT,
 			selected);
-		if (nk_input_is_mouse_click_in_rect(
-				&ctx->input, NK_BUTTON_LEFT, bounds))
+		if (nk_widget_is_mouse_clicked(
+				ctx, NK_BUTTON_LEFT))
 		{
 			done = OnSelect(win, fData, filename);
 		}
-		else if (nk_input_is_mouse_hovering_rect(&ctx->input, bounds))
+		else if (nk_widget_is_hovered(ctx))
 		{
 			fData->selected = _ca_index;
 		}
@@ -213,21 +214,29 @@ static bool DrawDialog(SDL_Window *win, struct nk_context *ctx, void *data)
 			const char *filename = CArrayGet(&fData->files, fData->selected);
 			done = OnSelect(win, fData, filename);
 		}
-		/*
+
+		nk_end(ctx);
+	}
+	y = HEIGHT - ROW_HEIGHT;
+
+	if (nk_begin(
+			ctx, "Controls", nk_rect(0, y, WIDTH, ROW_HEIGHT),
+			NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
+	{
 		nk_layout_row_dynamic(ctx, ROW_HEIGHT, 2);
-		if (nk_button_label(ctx, "OK"))
+		if (nk_button_label(ctx, "OK") && fData->selected >= 0)
 		{
-			fData->result = true;
-			done = true;
+			const char *filename = CArrayGet(&fData->files, fData->selected);
+			done = OnSelect(win, fData, filename);
 		}
 		if (nk_button_label(ctx, "Cancel"))
 		{
 			fData->result = false;
 			done = true;
 		}
-		*/
 		nk_end(ctx);
 	}
+
 	return !done;
 }
 static bool OnSelect(SDL_Window *win, FileData *fData, const char *filename)

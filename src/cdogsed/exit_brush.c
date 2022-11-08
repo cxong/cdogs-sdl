@@ -149,11 +149,10 @@ static void DrawPropsSidebar(
 	char buf[256];
 
 	// Location
-	struct nk_rect bounds = nk_widget_bounds(ctx);
 	sprintf(
 		buf, "Location: %d, %d", selectedExit->R.Pos.x, selectedExit->R.Pos.y);
 	nk_label(ctx, buf, NK_TEXT_LEFT);
-	if (nk_input_is_mouse_hovering_rect(&ctx->input, bounds))
+	if (nk_widget_is_hovered(ctx))
 	{
 		nk_tooltip(ctx, "Click and drag location in main editor");
 	}
@@ -164,7 +163,6 @@ static void DrawPropsSidebar(
 	nk_label(ctx, buf, NK_TEXT_LEFT);
 
 	// Mission
-	bounds = nk_widget_bounds(ctx);
 	// Note: show 1-indexed mission
 	int mission = selectedExit->Mission;
 	mission++;
@@ -172,7 +170,7 @@ static void DrawPropsSidebar(
 		ctx, "Mission", 1, &mission, (int)eData->co->Setting.Missions.size + 1,
 		1, 1.f);
 	selectedExit->Mission = mission - 1;
-	if (nk_input_is_mouse_hovering_rect(&ctx->input, bounds))
+	if (nk_widget_is_hovered(ctx))
 	{
 		sprintf(buf, "Current mission: %d", eData->co->MissionIndex + 1);
 		nk_tooltip(ctx, buf);

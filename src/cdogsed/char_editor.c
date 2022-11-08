@@ -804,9 +804,8 @@ static void DrawFlag(
 	struct nk_context *ctx, EditorContext *ec, const char *label,
 	const int flag, const char *tooltip)
 {
-	struct nk_rect bounds = nk_widget_bounds(ctx);
 	nk_checkbox_flags_label(ctx, label, &ec->Char->flags, flag);
-	if (tooltip && nk_input_is_mouse_hovering_rect(&ctx->input, bounds))
+	if (tooltip && nk_widget_is_hovered(ctx))
 	{
 		nk_tooltip(ctx, tooltip);
 	}

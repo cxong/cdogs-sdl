@@ -99,7 +99,8 @@ void NKWindow(NKWindowConfig cfg)
 	MouseSetCursor(&cfg.Handlers->mouse, SDL_SYSTEM_CURSOR_ARROW);
 	if (SDL_SetWindowModalFor(cfg.win, gGraphicsDevice.gameWindow.window) != 0)
 	{
-		LOG(LM_EDIT, LL_ERROR, "Failed to set modal parent: %s", SDL_GetError());
+		LOG(LM_EDIT, LL_ERROR, "Failed to set modal parent: %s",
+			SDL_GetError());
 	}
 	Uint32 ticksNow = SDL_GetTicks();
 	Uint32 ticksElapsed = 0;
@@ -286,11 +287,10 @@ bool DrawCheckbox(
 	struct nk_context *ctx, const char *label, const char *tooltip,
 	bool *value)
 {
-	struct nk_rect bounds = nk_widget_bounds(ctx);
 	int iValue = (int)*value;
 	const bool changed = nk_checkbox_label(ctx, label, &iValue);
 	*value = (bool)iValue;
-	if (tooltip && nk_input_is_mouse_hovering_rect(&ctx->input, bounds))
+	if (tooltip && nk_widget_is_hovered(ctx))
 	{
 		nk_tooltip(ctx, tooltip);
 	}
@@ -301,10 +301,9 @@ bool DrawNumberSlider(
 	struct nk_context *ctx, const char *label, const char *tooltip,
 	const int min, const int max, const int step, int *value)
 {
-	struct nk_rect bounds = nk_widget_bounds(ctx);
 	const int origValue = *value;
 	nk_property_int(ctx, label, min, value, max, step, 1.0f);
-	if (tooltip && nk_input_is_mouse_hovering_rect(&ctx->input, bounds))
+	if (tooltip && nk_widget_is_hovered(ctx))
 	{
 		nk_tooltip(ctx, tooltip);
 	}
@@ -342,9 +341,8 @@ void DrawTextbox(
 	struct nk_context *ctx, char *value, const int len, const char *tooltip,
 	const nk_flags flags)
 {
-	struct nk_rect bounds = nk_widget_bounds(ctx);
 	nk_edit_string_zero_terminated(ctx, flags, value, len, nk_filter_default);
-	if (tooltip && nk_input_is_mouse_hovering_rect(&ctx->input, bounds))
+	if (tooltip && nk_widget_is_hovered(ctx))
 	{
 		nk_tooltip(ctx, tooltip);
 	}

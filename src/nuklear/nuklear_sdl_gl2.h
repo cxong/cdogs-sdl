@@ -234,6 +234,7 @@ NK_API int
 nk_sdl_handle_event(SDL_Event *evt)
 {
     struct nk_context *ctx = &sdl.ctx;
+	const Uint32 windowId = SDL_GetWindowID(sdl.win);
 
     /* optional grabbing behavior */
     if (ctx->input.mouse.grab) {
@@ -313,10 +314,12 @@ nk_sdl_handle_event(SDL_Event *evt)
         return 1;
     } else if (evt->type == SDL_MOUSEMOTION) {
         /* mouse motion */
-        if (ctx->input.mouse.grabbed) {
-            int x = (int)ctx->input.mouse.prev.x, y = (int)ctx->input.mouse.prev.y;
-            nk_input_motion(ctx, x + evt->motion.xrel, y + evt->motion.yrel);
-        } else nk_input_motion(ctx, evt->motion.x, evt->motion.y);
+		if (windowId == evt->motion.windowID) {
+            if (ctx->input.mouse.grabbed) {
+                int x = (int)ctx->input.mouse.prev.x, y = (int)ctx->input.mouse.prev.y;
+                nk_input_motion(ctx, x + evt->motion.xrel, y + evt->motion.yrel);
+            } else nk_input_motion(ctx, evt->motion.x, evt->motion.y);
+		}
         return 1;
     } else if (evt->type == SDL_TEXTINPUT) {
         /* text input */

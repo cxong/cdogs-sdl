@@ -50,7 +50,8 @@ static const char *IndexBulletClassName(const int i)
 	}
 	else
 	{
-		b = CArrayGet(&gBulletClasses.CustomClasses, i - gBulletClasses.Classes.size);
+		b = CArrayGet(
+			&gBulletClasses.CustomClasses, i - gBulletClasses.Classes.size);
 	}
 	return b->Name;
 }
@@ -110,8 +111,7 @@ static const TileClass *GetOrAddTileClass(
 	const color_t mask, const color_t maskAlt);
 static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data);
 EditorResult TileBrush(
-	PicManager *pm, EventHandlers *handlers, Campaign *co,
-	int *brushIdx)
+	PicManager *pm, EventHandlers *handlers, Campaign *co, int *brushIdx)
 {
 	NKWindowConfig cfg;
 	memset(&cfg, 0, sizeof cfg);
@@ -145,26 +145,29 @@ EditorResult TileBrush(
 	// TODO: tile previews show wrong icons; possibly due to clashes between
 	// SDL2 textures and OGL textures. Load SDL2 textures first and in a second
 	// run, load OGL textures
-	data.bullets = GetClassNames(BulletClassesCount(&gBulletClasses), IndexBulletClassName);
+	data.bullets = GetClassNames(
+		BulletClassesCount(&gBulletClasses), IndexBulletClassName);
 	TexArrayInit(&data.texIdsFloorStyles, pm->tileStyleNames.size);
 	CA_FOREACH(const GLuint, texid, data.texIdsFloorStyles)
 	const char *style = *(char **)CArrayGet(&pm->tileStyleNames, _ca_index);
 	const TileClass *styleClass = GetOrAddTileClass(
-		gMap.TileClasses, &gTileFloor, pm, style, colorBattleshipGrey, colorOfficeGreen);
+		gMap.TileClasses, &gTileFloor, pm, style, colorBattleshipGrey,
+		colorOfficeGreen);
 	LoadTexFromPic(*texid, styleClass->Pic);
 	CA_FOREACH_END()
 	TexArrayInit(&data.texIdsWallStyles, pm->wallStyleNames.size);
 	CA_FOREACH(const GLuint, texid, data.texIdsWallStyles)
 	const char *style = *(char **)CArrayGet(&pm->wallStyleNames, _ca_index);
 	const TileClass *styleClass = GetOrAddTileClass(
-		gMap.TileClasses, &gTileWall, pm, style, colorGravel, colorOfficeGreen);
+		gMap.TileClasses, &gTileWall, pm, style, colorGravel,
+		colorOfficeGreen);
 	LoadTexFromPic(*texid, styleClass->Pic);
 	CA_FOREACH_END()
 	TexArrayInit(&data.texIdsDoorStyles, pm->doorStyleNames.size);
 	CA_FOREACH(const GLuint, texid, data.texIdsDoorStyles)
 	const char *style = *(char **)CArrayGet(&pm->doorStyleNames, _ca_index);
-	const TileClass *styleClass =
-		GetOrAddTileClass(gMap.TileClasses, &gTileDoor, pm, style, colorWhite, colorOfficeGreen);
+	const TileClass *styleClass = GetOrAddTileClass(
+		gMap.TileClasses, &gTileDoor, pm, style, colorWhite, colorOfficeGreen);
 	LoadTexFromPic(*texid, styleClass->Pic);
 	CA_FOREACH_END()
 
@@ -221,8 +224,9 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 	}
 
 	if (nk_begin(
-		 ctx, "Tiles", nk_rect(SIDE_WIDTH, OPS_HEIGHT, MAIN_WIDTH, HEIGHT - OPS_HEIGHT),
-		 NK_WINDOW_BORDER))
+			ctx, "Tiles",
+			nk_rect(SIDE_WIDTH, OPS_HEIGHT, MAIN_WIDTH, HEIGHT - OPS_HEIGHT),
+			NK_WINDOW_BORDER))
 	{
 		nk_layout_row_dynamic(ctx, 40 * PIC_SCALE, MAIN_WIDTH / 120);
 		int tilesDrawn = 0;
@@ -312,8 +316,8 @@ static void DrawTilePropsSidebar(
 		{
 			bool hasDamage = StrBulletClass(selectedTC->DamageBullet) != NULL;
 			if (DrawCheckbox(
-				 ctx, "Damaging", "Whether actors take damage on this tile",
-				 &hasDamage))
+					ctx, "Damaging", "Whether actors take damage on this tile",
+					&hasDamage))
 			{
 				CFREE(selectedTC->DamageBullet);
 				if (hasDamage)
@@ -449,20 +453,20 @@ static void DrawTileStyleSelect(
 static void DrawTileBulletSelect(
 	struct nk_context *ctx, TileBrushData *tbData, TileClass *selectedTC)
 {
-	struct nk_rect bounds = nk_widget_bounds(ctx);
 	nk_label(ctx, "Damage Bullet:", NK_TEXT_LEFT);
-	const int selectedIndex = BulletClassIndex(StrBulletClass(selectedTC->DamageBullet));
+	const int selectedIndex =
+		BulletClassIndex(StrBulletClass(selectedTC->DamageBullet));
 	const int newBullet = nk_combo_separator(
-		ctx, tbData->bullets, '\0', selectedIndex, BulletClassesCount(&gBulletClasses),
-		ROW_HEIGHT, nk_vec2(nk_widget_width(ctx), 8 * ROW_HEIGHT));
+		ctx, tbData->bullets, '\0', selectedIndex,
+		BulletClassesCount(&gBulletClasses), ROW_HEIGHT,
+		nk_vec2(nk_widget_width(ctx), 8 * ROW_HEIGHT));
 	if (newBullet != selectedIndex)
 	{
 		CFREE(selectedTC->DamageBullet);
-		CSTRDUP(
-			selectedTC->DamageBullet, IndexBulletClassName(newBullet));
+		CSTRDUP(selectedTC->DamageBullet, IndexBulletClassName(newBullet));
 		tbData->result |= EDITOR_RESULT_CHANGED_AND_RELOAD;
 	}
-	if (nk_input_is_mouse_hovering_rect(&ctx->input, bounds))
+	if (nk_widget_is_hovered(ctx))
 	{
 		nk_tooltip(ctx, "Bullet type to hit player with when stepped on");
 	}
@@ -576,8 +580,8 @@ static const TileClass *GetOrAddTileClass(
 	if (styleClass == &gTileNothing)
 	{
 		styleClass = TileClassesAdd(
-			c, pm, base, style, TileClassBaseStyleType(base->Type),
-			mask, maskAlt);
+			c, pm, base, style, TileClassBaseStyleType(base->Type), mask,
+			maskAlt);
 	}
 	return styleClass;
 }
