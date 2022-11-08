@@ -443,14 +443,14 @@ static bool TryOpen(const char *filename)
 	CampaignSettingInit(&gCampaign.Setting);
 	char buf[CDOGS_PATH_MAX];
 	RealPath(filename, buf);
+	ReloadUI();
+	sAutosaveIndex = 0;
+	gCampaign.MissionIndex = 0;
+	fileChanged = false;
 	if (!MapNewLoad(buf, &gCampaign.Setting))
 	{
-		fileChanged = false;
-		gCampaign.MissionIndex = 0;
 		Setup(true);
 		strcpy(lastFile, filename);
-		sAutosaveIndex = 0;
-		ReloadUI();
 		return true;
 	}
 	return false;

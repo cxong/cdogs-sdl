@@ -36,13 +36,15 @@
 #define WIDTH 400
 #define HEIGHT 400
 #define ROW_HEIGHT_SMALL 18
-#define ROW_HEIGHT 25
+#define ROW_HEIGHT 35
+#define FILE_LIST_HEIGHT (HEIGHT - ROW_HEIGHT_SMALL - 2 * ROW_HEIGHT)
 
 typedef struct
 {
 	struct nk_context *ctx;
 	CArray files; // of char[CDOGS_FILENAME_MAX]
 	int selected;
+	char pathOrig[CDOGS_PATH_MAX];
 	char filename[CDOGS_FILENAME_MAX];
 	char dir[CDOGS_PATH_MAX];
 	bool mustExist;
@@ -74,6 +76,9 @@ bool TryFileDialog(
 	data.mustExist = mustExist;
 	OpenDir(NULL, &data, dir);
 	cfg.DrawData = &data;
+	char buf[CDOGS_PATH_MAX];
+	sprintf(buf, "%s/%s", dir, filename);
+	RealPath(buf, data.pathOrig);
 
 	NKWindow(cfg);
 
@@ -147,7 +152,8 @@ bool TrySaveFile(
 	return TryFileDialog(out, handlers, dir, filename, "Save File", false);
 }
 
-static bool OnSelect(SDL_Window *win, FileData *fData, const char *filename);
+static void OnSelectChange(FileData *fData, const int selected);
+static bool OnSelect(SDL_Window *win, FileData *fData);
 static bool DrawDialog(SDL_Window *win, struct nk_context *ctx, void *data)
 {
 	FileData *fData = data;
@@ -156,7 +162,7 @@ static bool DrawDialog(SDL_Window *win, struct nk_context *ctx, void *data)
 	bool done = false;
 	float y = 0;
 	if (nk_begin(
-			ctx, "Dir", nk_rect(0, y, WIDTH, ROW_HEIGHT),
+			ctx, "Dir", nk_rect(0, y, WIDTH, ROW_HEIGHT_SMALL),
 			NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
 	{
 		const float colRatios[] = {0.1f, 0.9f};
@@ -173,10 +179,10 @@ static bool DrawDialog(SDL_Window *win, struct nk_context *ctx, void *data)
 		}
 		nk_end(ctx);
 	}
-	y += ROW_HEIGHT;
+	y += ROW_HEIGHT_SMALL;
 
 	if (nk_begin(
-			ctx, "Picker", nk_rect(0, y, WIDTH, HEIGHT - y - ROW_HEIGHT),
+			ctx, "Picker", nk_rect(0, y, WIDTH, FILE_LIST_HEIGHT),
 			NK_WINDOW_BORDER))
 	{
 		nk_layout_row_dynamic(ctx, ROW_HEIGHT_SMALL, 1);
@@ -186,48 +192,61 @@ static bool DrawDialog(SDL_Window *win, struct nk_context *ctx, void *data)
 		nk_select_label(
 			fData->ctx, filename, NK_TEXT_ALIGN_CENTERED | NK_TEXT_ALIGN_LEFT,
 			selected);
-		if (nk_widget_is_mouse_clicked(
-				ctx, NK_BUTTON_LEFT))
+		if (nk_widget_is_mouse_clicked(ctx, NK_BUTTON_LEFT))
 		{
-			done = OnSelect(win, fData, filename);
+			OnSelectChange(fData, _ca_index);
+			done = OnSelect(win, fData);
 		}
 		else if (nk_widget_is_hovered(ctx))
 		{
-			fData->selected = _ca_index;
+			OnSelectChange(fData, _ca_index);
 		}
 		CA_FOREACH_END()
 
 		if (nk_input_is_key_pressed(&ctx->input, NK_KEY_DOWN))
 		{
-			fData->selected = CLAMP_OPPOSITE(
-				fData->selected + 1, 0, (int)fData->files.size - 1);
+			OnSelectChange(
+				fData,
+				CLAMP_OPPOSITE(
+					fData->selected + 1, 0, (int)fData->files.size - 1));
 		}
 		else if (nk_input_is_key_pressed(&ctx->input, NK_KEY_UP))
 		{
-			fData->selected = CLAMP_OPPOSITE(
-				fData->selected - 1, 0, (int)fData->files.size - 1);
+			OnSelectChange(
+				fData,
+				CLAMP_OPPOSITE(
+					fData->selected - 1, 0, (int)fData->files.size - 1));
 		}
 		else if (
 			nk_input_is_key_pressed(&ctx->input, NK_KEY_ENTER) &&
 			fData->selected >= 0)
 		{
-			const char *filename = CArrayGet(&fData->files, fData->selected);
-			done = OnSelect(win, fData, filename);
+			done = OnSelect(win, fData);
 		}
 
 		nk_end(ctx);
 	}
-	y = HEIGHT - ROW_HEIGHT;
+	y += FILE_LIST_HEIGHT;
+
+	if (nk_begin(
+			ctx, "Filename", nk_rect(0, y, WIDTH, ROW_HEIGHT),
+			NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
+	{
+		nk_layout_row_dynamic(ctx, ROW_HEIGHT - 10, 1);
+		DrawTextbox(
+			ctx, fData->filename, CDOGS_FILENAME_MAX, NULL, NK_EDIT_FIELD);
+		nk_end(ctx);
+	}
+	y += ROW_HEIGHT;
 
 	if (nk_begin(
 			ctx, "Controls", nk_rect(0, y, WIDTH, ROW_HEIGHT),
 			NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
 	{
-		nk_layout_row_dynamic(ctx, ROW_HEIGHT, 2);
+		nk_layout_row_dynamic(ctx, ROW_HEIGHT - 10, 2);
 		if (nk_button_label(ctx, "OK") && fData->selected >= 0)
 		{
-			const char *filename = CArrayGet(&fData->files, fData->selected);
-			done = OnSelect(win, fData, filename);
+			done = OnSelect(win, fData);
 		}
 		if (nk_button_label(ctx, "Cancel"))
 		{
@@ -239,23 +258,58 @@ static bool DrawDialog(SDL_Window *win, struct nk_context *ctx, void *data)
 
 	return !done;
 }
-static bool OnSelect(SDL_Window *win, FileData *fData, const char *filename)
+static void OnSelectChange(FileData *fData, const int selected)
 {
-	if (filename[strlen(filename) - 1] == '/')
+	if (fData->selected == selected || selected < 0 ||
+		selected >= (int)fData->files.size)
+		return;
+
+	const char *filename = CArrayGet(&fData->files, selected);
+	strcpy(fData->filename, filename);
+	fData->selected = selected;
+}
+static bool OnSelect(SDL_Window *win, FileData *fData)
+{
+	char buf[CDOGS_PATH_MAX];
+	sprintf(buf, "%s/%s", fData->dir, fData->filename);
+	char buf2[CDOGS_PATH_MAX];
+	RealPath(buf, buf2);
+	if (fData->filename[strlen(fData->filename) - 1] == '/')
 	{
-		char buf[CDOGS_PATH_MAX];
 		fData->selected = 0;
-		sprintf(buf, "%s/%s", fData->dir, filename);
-		char buf2[CDOGS_PATH_MAX];
-		RealPath(buf, buf2);
 		OpenDir(win, fData, buf2);
 		fData->filename[0] = '\0';
 		return false;
 	}
 	else
 	{
+		if (strcmp(buf2, fData->pathOrig) != 0 && !fData->mustExist)
+		{
+			// Overwriting file; confirm whether to overwrite
+			const SDL_MessageBoxButtonData buttons[] = {
+				{SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "OK"},
+				{SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 1, "Cancel"},
+			};
+			const SDL_MessageBoxData messageboxdata = {
+				SDL_MESSAGEBOX_INFORMATION | SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT,
+				win,
+				"Overwrite File", // title
+				"File already exists. Do you want to overwrite?",
+				SDL_arraysize(buttons),
+				buttons,
+				NULL,
+			};
+			int buttonid;
+			if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0)
+			{
+				LOG(LM_EDIT, LL_ERROR, "error displaying message box");
+			}
+			if (buttonid != 0)
+			{
+				return false;
+			}
+		}
 		fData->result = true;
-		strcpy(fData->filename, filename);
 		return true;
 	}
 }
