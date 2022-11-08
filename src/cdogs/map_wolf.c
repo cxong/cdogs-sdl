@@ -2482,7 +2482,7 @@ static void AdjustTurningPoint(Mission *m, const struct vec2i v)
 }
 
 static bool TryLoadCampaign(CampaignList *list, const char *path);
-static bool TryLoadSpearSteam(CampaignList *list);
+static int TryLoadSpearSteam(CampaignList *list);
 void MapWolfLoadCampaignsFromSystem(CampaignList *list)
 {
 	char buf[CDOGS_PATH_MAX];
@@ -2501,22 +2501,32 @@ void MapWolfLoadCampaignsFromSystem(CampaignList *list)
 	}
 
 	// Spear
-	if (!TryLoadSpearSteam(list))
+	const int numLoaded = TryLoadSpearSteam(list);
+	if (numLoaded < 3)
 	{
 		fsg_get_gog_game_path(buf, SPEAR_GOG_ID);
 		if (strlen(buf) > 0)
 		{
 			char buf2[CDOGS_PATH_MAX];
-			sprintf(buf2, "%s/M1?1", buf);
-			TryLoadCampaign(list, buf2);
-			sprintf(buf2, "%s/M2?2", buf);
-			TryLoadCampaign(list, buf2);
-			sprintf(buf2, "%s/M3?3", buf);
-			TryLoadCampaign(list, buf2);
+			for (int i = 1 + numLoaded; i <= 3; i++)
+			{
+				sprintf(buf2, "%s/M%d?%d", buf, i, i);
+				TryLoadCampaign(list, buf2);
+			}
 		}
 	}
 }
-static bool TryLoadSpearSteam(CampaignList *list)
+static bool TryLoadSpearSteamVanilla(CampaignList *list);
+static bool TryLoadSpearSteamInWolf3D(CampaignList *list);
+static int TryLoadSpearSteam(CampaignList *list)
+{
+	if (TryLoadSpearSteamVanilla(list))
+	{
+		return 3;
+	}
+	return TryLoadSpearSteamInWolf3D(list) ? 1 : 0;
+}
+static bool TryLoadSpearSteamVanilla(CampaignList *list)
 {
 	char buf[CDOGS_PATH_MAX];
 	fsg_get_steam_game_path(buf, SPEAR_STEAM_NAME);
@@ -2538,8 +2548,21 @@ static bool TryLoadSpearSteam(CampaignList *list)
 	}
 	return true;
 }
-static bool TryLoadCampaign(CampaignList *list, const char *path)
+static bool TryLoadSpearSteamInWolf3D(CampaignList *list)
 {
+	// Steam also includes spear ep1 in Wolf3D
+	char buf[CDOGS_PATH_MAX];
+	fsg_get_steam_game_path(buf, WOLF_STEAM_NAME);
+	if (strlen(buf) == 0)
+	{
+		return false;
+	}
+	// Steam installs to /base/m1
+	strcat(buf, "/base/m1?1");
+	return TryLoadCampaign(list, buf);
+}
+static bool TryLoadCampaign(CampaignList *list, const char *path)
+	{
 	if (strlen(path) > 0)
 	{
 		CampaignEntry entry;
