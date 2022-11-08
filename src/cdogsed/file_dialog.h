@@ -29,5 +29,7 @@
 
 #include <cdogs/events.h>
 
-bool TryOpenDir(char *out, EventHandlers *handlers, const char *dir, const char *filename);
-bool TrySaveFile(char *out, EventHandlers *handlers, const char *dir, const char *filename);
+bool TryOpenDir(
+	char *out, EventHandlers *handlers, const char *dir, const char *filename);
+bool TrySaveFile(
+	char *out, EventHandlers *handlers, const char *dir, const char *filename);

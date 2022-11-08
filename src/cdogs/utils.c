@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2017, 2019-2021 Cong Xu
+	Copyright (c) 2013-2017, 2019-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -130,6 +130,7 @@ void PathGetBasenameWithoutExtension(char *buf, const char *path)
 	PathGetWithoutExtension(buf, basename);
 }
 
+static void TrimSlashes(char *s);
 #ifdef _WIN32
 #include "sys_config.h"
 #define realpath(src, dst) _fullpath(dst, src, CDOGS_PATH_MAX)
@@ -240,11 +241,11 @@ void RealPath(const char *src, char *dest)
 		}
 #endif
 	}
+	TrimSlashes(dest);
 }
 
 // Convert an absolute path to a relative path
 // e.g. /a/path/from/here, /a/path/to -> ../to
-static void TrimSlashes(char *s);
 void RelPath(char *buf, const char *to, const char *from)
 {
 #ifdef _WIN32

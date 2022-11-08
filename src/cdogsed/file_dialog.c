@@ -41,7 +41,7 @@
 typedef struct
 {
 	struct nk_context *ctx;
-	CArray files;	// of char[CDOGS_FILENAME_MAX]
+	CArray files; // of char[CDOGS_FILENAME_MAX]
 	int selected;
 	char filename[CDOGS_FILENAME_MAX];
 	char dir[CDOGS_PATH_MAX];
@@ -52,7 +52,9 @@ typedef struct
 static void OpenDir(SDL_Window *win, FileData *data, const char *path);
 static bool DrawDialog(SDL_Window *win, struct nk_context *ctx, void *data);
 
-bool TryFileDialog(char *out, EventHandlers *handlers, const char *dir, const char *filename, const char *title, const bool mustExist)
+bool TryFileDialog(
+	char *out, EventHandlers *handlers, const char *dir, const char *filename,
+	const char *title, const bool mustExist)
 {
 	NKWindowConfig cfg;
 	memset(&cfg, 0, sizeof cfg);
@@ -86,7 +88,7 @@ static void OpenDir(SDL_Window *win, FileData *data, const char *path)
 {
 	// Fill FileData with the file listings of a dir
 	tinydir_dir dir;
-	
+
 	if (tinydir_open_sorted(&dir, path) == -1)
 	{
 		LOG(LM_EDIT, LL_ERROR, "Cannot load dir %s", path);
@@ -94,12 +96,13 @@ static void OpenDir(SDL_Window *win, FileData *data, const char *path)
 		{
 			char msgbuf[CDOGS_PATH_MAX];
 			sprintf(msgbuf, "Cannot open %s", path);
-			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Open Dir Error", msgbuf, win);
+			SDL_ShowSimpleMessageBox(
+				SDL_MESSAGEBOX_ERROR, "Open Dir Error", msgbuf, win);
 		}
 		return;
 	}
 
-	strcpy(data->dir, path);
+	RealPath(path, data->dir);
 
 	CArrayTerminate(&data->files);
 	CArrayInit(&data->files, CDOGS_FILENAME_MAX);
@@ -133,16 +136,18 @@ static void OpenDir(SDL_Window *win, FileData *data, const char *path)
 	tinydir_close(&dir);
 }
 
-bool TryOpenDir(char *out, EventHandlers *handlers, const char *dir, const char *filename)
+bool TryOpenDir(
+	char *out, EventHandlers *handlers, const char *dir, const char *filename)
 {
 	return TryFileDialog(out, handlers, dir, filename, "Open File", true);
 }
-bool TrySaveFile(char *out, EventHandlers *handlers, const char *dir, const char *filename)
+bool TrySaveFile(
+	char *out, EventHandlers *handlers, const char *dir, const char *filename)
 {
 	return TryFileDialog(out, handlers, dir, filename, "Save File", false);
 }
 
-
+static bool OnSelect(SDL_Window *win, FileData *fData, const char *filename);
 static bool DrawDialog(SDL_Window *win, struct nk_context *ctx, void *data)
 {
 	FileData *fData = data;
@@ -167,41 +172,47 @@ static bool DrawDialog(SDL_Window *win, struct nk_context *ctx, void *data)
 		}
 		nk_end(ctx);
 	}
-	
+
 	if (nk_begin(
 			ctx, "Picker", nk_rect(0, ROW_HEIGHT, WIDTH, HEIGHT - ROW_HEIGHT),
 			NK_WINDOW_BORDER))
 	{
 		nk_layout_row_dynamic(ctx, ROW_HEIGHT_SMALL, 1);
+
 		CA_FOREACH(const char, filename, fData->files)
 		const bool selected = fData->selected == _ca_index;
 		struct nk_rect bounds = nk_widget_bounds(ctx);
 		nk_select_label(
-							fData->ctx, filename, NK_TEXT_ALIGN_CENTERED | NK_TEXT_ALIGN_LEFT,
-						selected);
-		if (nk_input_is_mouse_click_in_rect(&ctx->input, NK_BUTTON_LEFT, bounds))
+			fData->ctx, filename, NK_TEXT_ALIGN_CENTERED | NK_TEXT_ALIGN_LEFT,
+			selected);
+		if (nk_input_is_mouse_click_in_rect(
+				&ctx->input, NK_BUTTON_LEFT, bounds))
 		{
-			if (filename[strlen(filename)-1] == '/')
-			{
-				fData->selected = 0;
-				sprintf(buf, "%s/%s", fData->dir, filename);
-				char buf2[CDOGS_PATH_MAX];
-				RealPath(buf, buf2);
-				OpenDir(win, fData, buf2);
-				fData->filename[0] = '\0';
-			}
-			else
-			{
-				fData->result = true;
-				done = true;
-				strcpy(fData->filename, filename);
-			}
+			done = OnSelect(win, fData, filename);
 		}
 		else if (nk_input_is_mouse_hovering_rect(&ctx->input, bounds))
 		{
 			fData->selected = _ca_index;
 		}
 		CA_FOREACH_END()
+
+		if (nk_input_is_key_pressed(&ctx->input, NK_KEY_DOWN))
+		{
+			fData->selected = CLAMP_OPPOSITE(
+				fData->selected + 1, 0, (int)fData->files.size - 1);
+		}
+		else if (nk_input_is_key_pressed(&ctx->input, NK_KEY_UP))
+		{
+			fData->selected = CLAMP_OPPOSITE(
+				fData->selected - 1, 0, (int)fData->files.size - 1);
+		}
+		else if (
+			nk_input_is_key_pressed(&ctx->input, NK_KEY_ENTER) &&
+			fData->selected >= 0)
+		{
+			const char *filename = CArrayGet(&fData->files, fData->selected);
+			done = OnSelect(win, fData, filename);
+		}
 		/*
 		nk_layout_row_dynamic(ctx, ROW_HEIGHT, 2);
 		if (nk_button_label(ctx, "OK"))
@@ -218,4 +229,24 @@ static bool DrawDialog(SDL_Window *win, struct nk_context *ctx, void *data)
 		nk_end(ctx);
 	}
 	return !done;
+}
+static bool OnSelect(SDL_Window *win, FileData *fData, const char *filename)
+{
+	if (filename[strlen(filename) - 1] == '/')
+	{
+		char buf[CDOGS_PATH_MAX];
+		fData->selected = 0;
+		sprintf(buf, "%s/%s", fData->dir, filename);
+		char buf2[CDOGS_PATH_MAX];
+		RealPath(buf, buf2);
+		OpenDir(win, fData, buf2);
+		fData->filename[0] = '\0';
+		return false;
+	}
+	else
+	{
+		fData->result = true;
+		strcpy(fData->filename, filename);
+		return true;
+	}
 }
