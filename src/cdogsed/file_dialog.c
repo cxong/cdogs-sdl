@@ -287,11 +287,11 @@ static bool OnSelect(SDL_Window *win, FileData *fData)
 		{
 			// Overwriting file; confirm whether to overwrite
 			const SDL_MessageBoxButtonData buttons[] = {
-				{SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "OK"},
 				{SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 1, "Cancel"},
+				{SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "OK"},
 			};
 			const SDL_MessageBoxData messageboxdata = {
-				SDL_MESSAGEBOX_INFORMATION | SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT,
+				SDL_MESSAGEBOX_INFORMATION,
 				win,
 				"Overwrite File", // title
 				"File already exists. Do you want to overwrite?",
