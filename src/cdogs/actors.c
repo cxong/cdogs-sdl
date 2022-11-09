@@ -295,6 +295,8 @@ static void ActorUpdateWeapon(TActor *a, Weapon *w, const int ticks)
 	}
 }
 
+static bool CanMeleeTarget(
+	const TActor *a, const Weapon *w, const Thing *target);
 static struct vec2 GetConstrainedPos(
 	const Map *map, const struct vec2 from, const struct vec2 to,
 	const struct vec2i size);
@@ -322,45 +324,34 @@ bool TryMoveActor(TActor *actor, struct vec2 pos)
 		const CollisionParams params = {
 			THING_IMPASSABLE, CalcCollisionTeam(true, actor),
 			IsPVP(gCampaign.Entry.Mode), false};
-		Thing *target = OverlapGetFirstItem(
+		const Thing *target = OverlapGetFirstItem(
 			&actor->thing, pos, actor->thing.size, actor->thing.Vel, params);
 		if (target && actor->health > 0)
 		{
-			const TObject *object = target->kind == KIND_OBJECT
-										? CArrayGet(&gObjs, target->id)
-										: NULL;
-			if ((object && !ObjIsDangerous(object)) ||
-				target->kind == KIND_CHARACTER)
+			// We are running into an object or actor
+			// If we have an auto-melee weapon, switch to it
+			const Weapon *meleeW = &actor->guns[MELEE_SLOT];
+			if (actor->gunIndex != MELEE_SLOT && meleeW->Gun &&
+				meleeW->Gun->Type == GUNTYPE_MELEE &&
+				meleeW->Gun->u.Normal.Auto &&
+				CanMeleeTarget(actor, meleeW, target))
 			{
-				// We are running into an object or actor
-				// If we have an auto-melee weapon, switch to it
-				const WeaponClass *meleeGun = actor->guns[MELEE_SLOT].Gun;
-				if (actor->gunIndex != MELEE_SLOT && meleeGun &&
-					meleeGun->Type == GUNTYPE_MELEE && meleeGun->u.Normal.Auto)
+				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_SWITCH_GUN);
+				e.u.ActorSwitchGun.UID = actor->uid;
+				e.u.ActorSwitchGun.GunIdx = MELEE_SLOT;
+				GameEventsEnqueue(&gGameEvents, e);
+			}
+			else
+			{
+				Weapon *gun = ACTOR_GET_WEAPON(actor);
+				if (CanMeleeTarget(actor, gun, target))
 				{
-					GameEvent e = GameEventNew(GAME_EVENT_ACTOR_SWITCH_GUN);
-					e.u.ActorSwitchGun.UID = actor->uid;
-					e.u.ActorSwitchGun.GunIdx = MELEE_SLOT;
-					GameEventsEnqueue(&gGameEvents, e);
-				}
-				else
-				{
-					Weapon *gun = ACTOR_GET_WEAPON(actor);
 					const int barrel = ActorGetCanFireBarrel(actor, gun);
-					// Check for melee damage if we are the owner of the actor
-					const bool checkMelee =
-						(!gCampaign.IsClient && actor->PlayerUID < 0) ||
-						ActorIsLocalPlayer(actor->uid);
-					// TODO: support melee weapons on multi guns
-					const BulletClass *b =
-						WeaponClassGetBullet(gun->Gun, barrel);
-					if (checkMelee && barrel >= 0 &&
-						!WeaponClassCanShoot(gun->Gun) && b &&
-						(!object || (((b->Hit.Object.Hit &&
-									   target->kind == KIND_OBJECT) ||
-									  (b->Hit.Flesh.Hit &&
-									   target->kind == KIND_CHARACTER)))))
+					if (barrel >= 0)
 					{
+						// TODO: support melee weapons on multi guns
+						const BulletClass *b =
+							WeaponClassGetBullet(gun->Gun, barrel);
 						if (CanHit(b, actor->flags, actor->uid, target))
 						{
 							// Tell the server that we want to melee something
@@ -402,8 +393,8 @@ bool TryMoveActor(TActor *actor, struct vec2 pos)
 								actor->grimaceCounter = GRIMACE_MELEE_TICKS;
 							}
 						}
-						return false;
 					}
+					return false;
 				}
 			}
 
@@ -441,6 +432,35 @@ bool TryMoveActor(TActor *actor, struct vec2 pos)
 
 	actor->hasCollided = false;
 	return true;
+}
+static bool CanMeleeTarget(
+	const TActor *a, const Weapon *w, const Thing *target)
+{
+	// Check valid melee weapon
+	if (!w->Gun || WeaponClassCanShoot(w->Gun))
+		return false;
+	// Check for melee damage if we are the owner of the actor
+	if ((gCampaign.IsClient || a->PlayerUID < 0) &&
+		!ActorIsLocalPlayer(a->uid))
+		return false;
+	// Check if any barrel can fire and melee
+	for (int barrel = 0; barrel < WeaponClassNumBarrels(w->Gun); barrel++)
+	{
+		const BulletClass *b = WeaponClassGetBullet(w->Gun, barrel);
+		if (b == NULL)
+			continue;
+		if (target->kind == KIND_OBJECT)
+		{
+			if (!b->Hit.Object.Hit)
+				continue;
+			const TObject *object = CArrayGet(&gObjs, target->id);
+			if (object && !ObjIsDangerous(object))
+				return true;
+		}
+		else if (b->Hit.Flesh.Hit && target->kind == KIND_CHARACTER)
+			return true;
+	}
+	return false;
 }
 // Get a movement position that is constrained by collisions
 // May return a position that is the same as the 'from', that is, we cannot
@@ -1852,7 +1872,8 @@ static bool CanSwitchToWeapon(const TActor *a, const int slot)
 	{
 		return false;
 	}
-	// Don't cycle to auto-melee or default melee unless there are no guns with ammo
+	// Don't cycle to auto-melee or default melee unless there are no guns with
+	// ammo
 	if (slot == MELEE_SLOT && wc->u.Normal.Auto)
 	{
 		for (int i = 0; i < MELEE_SLOT; i++)
