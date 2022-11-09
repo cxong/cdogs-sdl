@@ -171,6 +171,8 @@ typedef struct Actor
 	color_t footprintMask;
 	int footprintCounter;
 
+	bool hasShot;
+
 	// Signals to other AIs what this actor is doing
 	ActorAction action;
 	AIContext *aiContext;
@@ -190,7 +192,6 @@ extern CArray gActors; // of TActor
 
 void ActorSetState(TActor *actor, const ActorAnimation state);
 void UpdateActorState(TActor *actor, int ticks);
-bool TryMoveActor(TActor *actor, struct vec2 pos);
 void ActorMove(const NActorMove am);
 void CommandActor(TActor *actor, int cmd, int ticks);
 void SlideActor(TActor *actor, int cmd);

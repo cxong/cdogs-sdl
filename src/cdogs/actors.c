@@ -301,7 +301,7 @@ static struct vec2 GetConstrainedPos(
 	const Map *map, const struct vec2 from, const struct vec2 to,
 	const struct vec2i size);
 static void OnMove(TActor *a);
-bool TryMoveActor(TActor *actor, struct vec2 pos)
+static bool TryMoveActor(TActor *actor, struct vec2 pos)
 {
 	CASSERT(
 		!svec2_is_nearly_equal(actor->Pos, pos, EPSILON_POS),
@@ -329,11 +329,12 @@ bool TryMoveActor(TActor *actor, struct vec2 pos)
 		if (target && actor->health > 0)
 		{
 			// We are running into an object or actor
-			// If we have an auto-melee weapon, switch to it
+			// If we have an auto-melee weapon and aren't shooting, switch to it
 			const Weapon *meleeW = &actor->guns[MELEE_SLOT];
 			if (actor->gunIndex != MELEE_SLOT && meleeW->Gun &&
 				meleeW->Gun->Type == GUNTYPE_MELEE &&
 				meleeW->Gun->u.Normal.Auto &&
+				!actor->hasShot &&
 				CanMeleeTarget(actor, meleeW, target))
 			{
 				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_SWITCH_GUN);
@@ -1023,9 +1024,10 @@ static bool TryGrenade(TActor *a, const int cmd)
 	return willGrenade;
 }
 
-static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks);
+static bool ActorTryMove(TActor *actor, int cmd, int ticks);
 void CommandActor(TActor *actor, int cmd, int ticks)
 {
+	actor->hasShot = false;
 	// If this is a pilot, command the vehicle instead
 	if (actor->vehicleUID != -1)
 	{
@@ -1048,12 +1050,14 @@ void CommandActor(TActor *actor, int cmd, int ticks)
 		{
 			const bool hasChangedDirection =
 				ActorTryChangeDirection(actor, cmd, actor->lastCmd);
-			const bool hasShot = ActorTryShoot(actor, cmd);
+			actor->hasShot = ActorTryShoot(actor, cmd);
 			const bool hasGrenaded = TryGrenade(actor, cmd);
-			const bool hasMoved = ActorTryMove(actor, cmd, hasShot, ticks);
+			const bool hasMoved =
+				ActorTryMove(actor, cmd, ticks);
 			ActorAnimation anim = actor->anim.Type;
 			// Idle if player hasn't done anything
-			if (!(hasChangedDirection || hasShot || hasGrenaded || hasMoved))
+			if (!(hasChangedDirection || actor->hasShot || hasGrenaded ||
+				  hasMoved))
 			{
 				anim = ACTORANIMATION_IDLE;
 			}
@@ -1091,11 +1095,11 @@ void CommandActor(TActor *actor, int cmd, int ticks)
 
 	actor->lastCmd = cmd;
 }
-static bool ActorTryMove(TActor *actor, int cmd, int hasShot, int ticks)
+static bool ActorTryMove(TActor *actor, int cmd, int ticks)
 {
 	const bool canMoveWhenShooting =
 		ConfigGetEnum(&gConfig, "Game.FireMoveStyle") != FIREMOVE_STOP ||
-		!hasShot ||
+		!actor->hasShot ||
 		(ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") ==
 			 SWITCHMOVE_STRAFE &&
 		 (cmd & CMD_BUTTON2));
