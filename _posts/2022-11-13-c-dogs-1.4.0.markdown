@@ -1,0 +1,24 @@
+---
+layout: post
+title:  "C-Dogs 1.4.0 Released!"
+date:   2022-11-13
+categories: release
+---
+
+And now, another C-Dogs SDL release! As announced before, this release contains
+
+- a new equip menu, but also
+- a dedicated melee weapon slot, and also
+- some campaigns have auto-melee weapons! (Doom, Wolf3D + Spear of Destiny)
+
+![auto melee](https://user-images.githubusercontent.com/1083215/199222554-7989bca0-3c4d-44b8-ab10-cf01c3c1226d.gif)
+
+Some long time C-Dogs fans may recall that in classic C-Dogs, players could have up to 3 weapons. Way back in [version 0.6.7](https://cxong.github.io/cdogs-sdl/release/2018/05/20/c-dogs-0.6.7.html), we changed one of them to a dedicated grenade/explosives slot, in order to streamline the weapon switching controls and make grenades much more useful. But this would be bad for players who don't use explosives in the first place, but like playing with two guns and a backup melee weapon (i.e. the trusty knife).
+
+Well now you can do all that, because the redesigned equipment system allows 2 guns + melee + grenade, for a total of 4! And on the campaigns with auto-melee, you can pull off cool moves like finish weak enemies off by dashing into them and automatically hitting them with a melee weapon!
+
+![auto melee](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/automelee.gif)
+
+Download free from itch.io: <https://congusbongus.itch.io/cdogs-sdl/purchase>
+
+Release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/1.4.0>
