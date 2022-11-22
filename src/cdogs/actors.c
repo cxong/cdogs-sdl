@@ -113,6 +113,8 @@ void ActorSetState(TActor *actor, const ActorAnimation state)
 
 static void ActorUpdateWeapon(TActor *a, Weapon *w, const int ticks);
 static void CheckPickups(TActor *actor);
+static void ActorAddAmmoPickup(const TActor *actor);
+static void ActorAddGunPickup(const TActor *actor);
 void UpdateActorState(TActor *actor, int ticks)
 {
 	ActorUpdateWeapon(actor, ACTOR_GET_GUN(actor), ticks);
@@ -152,8 +154,32 @@ void UpdateActorState(TActor *actor, int ticks)
 		return;
 	}
 
+	const Character *c = ActorGetCharacter(actor);
+
 	if (actor->health <= 0)
 	{
+		if (actor->dead == 0 && !gCampaign.IsClient)
+		{
+			// Just entered dead state
+			// Drop weapon/ammo
+			if (c->Drop)
+			{
+				GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
+				strcpy(e.u.AddPickup.PickupClass, c->Drop->Name);
+				e.u.AddPickup.Pos = Vec2ToNet(actor->Pos);
+				GameEventsEnqueue(&gGameEvents, e);
+			}
+			else
+			{
+				// Add an ammo pickup of the actor's gun
+				if (gCampaign.Setting.Ammo)
+				{
+					ActorAddAmmoPickup(actor);
+				}
+
+				ActorAddGunPickup(actor);
+			}
+		}
 		actor->dead++;
 		actor->MoveVel = svec2_zero();
 		actor->stateCounter = 4;
@@ -197,10 +223,9 @@ void UpdateActorState(TActor *actor, int ticks)
 		if (ConfigGetBool(&gConfig, "Sound.Footsteps"))
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_SOUND_AT);
-			const CharacterClass *cc = ActorGetCharacter(actor)->Class;
-			MatGetFootstepSound(cc, t, e.u.SoundAt.Sound);
+			MatGetFootstepSound(c->Class, t, e.u.SoundAt.Sound);
 			e.u.SoundAt.Pos = Vec2ToNet(actor->thing.Pos);
-			e.u.SoundAt.Distance = cc->FootstepsDistancePlus;
+			e.u.SoundAt.Distance = c->Class->FootstepsDistancePlus;
 			GameEventsEnqueue(&gGameEvents, e);
 		}
 
@@ -329,12 +354,12 @@ static bool TryMoveActor(TActor *actor, struct vec2 pos)
 		if (target && actor->health > 0)
 		{
 			// We are running into an object or actor
-			// If we have an auto-melee weapon and aren't shooting, switch to it
+			// If we have an auto-melee weapon and aren't shooting, switch to
+			// it
 			const Weapon *meleeW = &actor->guns[MELEE_SLOT];
 			if (actor->gunIndex != MELEE_SLOT && meleeW->Gun &&
 				meleeW->Gun->Type == GUNTYPE_MELEE &&
-				meleeW->Gun->u.Normal.Auto &&
-				!actor->hasShot &&
+				meleeW->Gun->u.Normal.Auto && !actor->hasShot &&
 				CanMeleeTarget(actor, meleeW, target))
 			{
 				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_SWITCH_GUN);
@@ -1052,8 +1077,7 @@ void CommandActor(TActor *actor, int cmd, int ticks)
 				ActorTryChangeDirection(actor, cmd, actor->lastCmd);
 			actor->hasShot = ActorTryShoot(actor, cmd);
 			const bool hasGrenaded = TryGrenade(actor, cmd);
-			const bool hasMoved =
-				ActorTryMove(actor, cmd, ticks);
+			const bool hasMoved = ActorTryMove(actor, cmd, ticks);
 			ActorAnimation anim = actor->anim.Type;
 			// Idle if player hasn't done anything
 			if (!(hasChangedDirection || actor->hasShot || hasGrenaded ||
@@ -1422,36 +1446,12 @@ static void CheckManualPilot(TActor *a, const CollisionParams params)
 	// TODO: co-op AI pilot
 	a->CanPickupSpecial = true;
 }
-static void ActorAddAmmoPickup(const TActor *actor);
-static void ActorAddGunPickup(const TActor *actor);
 static void ActorDie(TActor *actor)
 {
-	const Character *c = ActorGetCharacter(actor);
-	GameEvent e;
-	if (!gCampaign.IsClient)
-	{
-		if (c->Drop)
-		{
-			e = GameEventNew(GAME_EVENT_ADD_PICKUP);
-			strcpy(e.u.AddPickup.PickupClass, c->Drop->Name);
-			e.u.AddPickup.Pos = Vec2ToNet(actor->Pos);
-			GameEventsEnqueue(&gGameEvents, e);
-		}
-		else
-		{
-			// Add an ammo pickup of the actor's gun
-			if (gCampaign.Setting.Ammo)
-			{
-				ActorAddAmmoPickup(actor);
-			}
-
-			ActorAddGunPickup(actor);
-		}
-	}
-
 	// Add corpse
 	if (ConfigGetEnum(&gConfig, "Graphics.Gore") != GORE_NONE)
 	{
+		const Character *c = ActorGetCharacter(actor);
 		GameEvent ea = GameEventNew(GAME_EVENT_MAP_OBJECT_ADD);
 		ea.u.MapObjectAdd.UID = ObjsGetNextUID();
 		const MapObject *corpse = StrMapObject(c->Class->Corpse);
@@ -1467,7 +1467,7 @@ static void ActorDie(TActor *actor)
 		GameEventsEnqueue(&gGameEvents, ea);
 	}
 
-	e = GameEventNew(GAME_EVENT_ACTOR_DIE);
+	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_DIE);
 	e.u.ActorDie.UID = actor->uid;
 	GameEventsEnqueue(&gGameEvents, e);
 }
