@@ -504,13 +504,16 @@ bool PlayerHasWeapon(const PlayerData *p, const WeaponClass *wc)
 void PlayerAddWeaponToSlot(
 	PlayerData *p, const WeaponClass *wc, const int slot)
 {
-	// See if the weapon is already equipped; if so swap it with the slot
-	for (int i = 0; i < MAX_WEAPONS; i++)
+	if (wc)
 	{
-		if (p->guns[i] == wc)
+		// See if the weapon is already equipped; if so swap it with the slot
+		for (int i = 0; i < MAX_WEAPONS; i++)
 		{
-			p->guns[i] = p->guns[slot];
-			break;
+			if (p->guns[i] == wc)
+			{
+				p->guns[i] = p->guns[slot];
+				break;
+			}
 		}
 	}
 	p->guns[slot] = wc;

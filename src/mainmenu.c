@@ -244,6 +244,11 @@ static GameLoopResult MainMenuUpdate(GameLoopData *data, LoopRunner *l)
 }
 static void MainMenuDraw(GameLoopData *data)
 {
+	if (gCampaign.IsLoaded)
+	{
+		// Loaded game already; skip menus and go straight to game
+		return;
+	}
 	MainMenuData *mData = data->Data;
 	MenuDraw(&mData->ms);
 	const struct vec2 pos =

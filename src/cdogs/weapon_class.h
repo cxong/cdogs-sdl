@@ -116,6 +116,7 @@ typedef struct
 	bool CanDrop;	// whether this gun can be dropped to be picked up
 	char *DropGun;	// Gun to drop if an actor with this gun dies
 	bool IsRealGun; // whether this gun can be used as is by players
+	int Price;		// Price to purchase gun
 } WeaponClass;
 typedef struct
 {

@@ -332,6 +332,8 @@ static void LoadWeaponClass(WeaponClass *wc, json_t *node, const int version)
 		}
 	}
 
+	LoadInt(&wc->Price, node, "Price");
+
 	LOG(LM_MAP, LL_DEBUG, "loaded %s name(%s) lock(%d)...",
 		GunTypeStr(wc->Type), wc->name, wc->Lock);
 	LOG(LM_MAP, LL_DEBUG, "...canDrop(%s)", wc->CanDrop ? "true" : "false");
@@ -373,6 +375,8 @@ static void LoadWeaponClass(WeaponClass *wc, json_t *node, const int version)
 		LOG(LM_MAP, LL_DEBUG, "...auto(%s)",
 			wc->u.Normal.Auto ? "true" : "false");
 	}
+
+	LOG(LM_MAP, LL_DEBUG, "price(%d)", wc->Price);
 }
 void WeaponClassesTerminate(WeaponClasses *wcs)
 {
