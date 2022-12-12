@@ -154,6 +154,7 @@ static const char *soundsSOD[] = {
 	"chars/die/trans", "chars/alert/bill", "chars/die/bill",
 	"chars/die/ubermutant", "chars/alert/knight", "chars/die/knight",
 	"chars/alert/angel", "chars/die/angel", "chaingun_pickup", "spear"};
+// TODO BS6: https://github.com/bibendovsky/bstone/blob/3dea1ef72a101519afd17aa95c881da40a18040d/src/bstone_audio_content_mgr.cpp#L320-L398
 static const char *GetSound(const CWMapType type, const int i)
 {
 	// Map sound index to string
