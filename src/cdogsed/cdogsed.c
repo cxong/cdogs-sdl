@@ -443,17 +443,19 @@ static bool TryOpen(const char *filename)
 	CampaignSettingInit(&gCampaign.Setting);
 	char buf[CDOGS_PATH_MAX];
 	RealPath(filename, buf);
-	ReloadUI();
 	sAutosaveIndex = 0;
 	gCampaign.MissionIndex = 0;
 	fileChanged = false;
+	bool loaded = false;
 	if (!MapNewLoad(buf, &gCampaign.Setting))
 	{
 		Setup(true);
 		strcpy(lastFile, filename);
-		return true;
+		loaded = true;
 	}
-	return false;
+	// Reload UI after map loaded to pick up custom data
+	ReloadUI();
+	return loaded;
 }
 static void ShowFailedToOpenMsg(const char *filename)
 {

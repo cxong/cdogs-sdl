@@ -15,7 +15,14 @@
 			"Density": 75
 		}],
 		"EnemyDensity": 13,
-		"Weapons": ["Barehanded"],
+		"Weapons": ["Barehanded",
+		"Chainsaw",
+		"MiniGun",
+		"Launcher",
+		"Flamer",
+		"Powergun",
+		"Blaster",
+		"MegaGun"],
 		"WeaponPersist": true,
 		"SkipDebrief": false,
 		"TileClasses": {
