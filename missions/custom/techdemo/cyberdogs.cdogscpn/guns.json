@@ -10,7 +10,8 @@
       "Lock": 0,
       "Sound": "",
       "SoundLockLength": 50,
-      "CanShoot": false
+      "CanShoot": false,
+      "Price": 2000
     },
     {
       "Pic": "chainsaw",
@@ -21,7 +22,8 @@
       "Lock": 0,
       "Sound": "",
       "SoundLockLength": 50,
-      "CanShoot": false
+      "CanShoot": false,
+      "Price": 2000
     },
     {
       "Pic": "chainsaw",
@@ -32,7 +34,8 @@
       "Lock": 0,
       "Sound": "",
       "SoundLockLength": 50,
-      "CanShoot": false
+      "CanShoot": false,
+      "Price": 2000
     },
     {
       "Pic": "chainsaw",
@@ -43,7 +46,8 @@
       "Lock": 0,
       "Sound": "",
       "SoundLockLength": 50,
-      "CanShoot": false
+      "CanShoot": false,
+      "Price": 2000
     },
     {
       "Pic": "chainsaw",
@@ -54,7 +58,8 @@
       "Lock": 0,
       "Sound": "",
       "SoundLockLength": 50,
-      "CanShoot": false
+      "CanShoot": false,
+      "Price": 2000
     },
     {
       "Pic": "",
@@ -79,7 +84,8 @@
       "SwitchSound": "mg_switch",
       "MuzzleFlashParticle": "muzzle_flash_mg",
       "Brass": "brass_big",
-      "Ammo": "Bullets"
+      "Ammo": "Bullets",
+      "Price": 3100
     },
     {
       "Pic": "launcher",
@@ -90,7 +96,8 @@
       "Sound": "bottle_pop",
       "SwitchSound": "swarmer_switch",
       "Elevation": 14,
-      "Ammo": "Grenades"
+      "Ammo": "Grenades",
+      "Price": 2800
     },
     {
       "Pic": "flamer",
@@ -103,7 +110,8 @@
       "SwitchSound": "flamer_switch",
       "SoundLockLength": 36,
       "MuzzleFlashParticle": "muzzle_flash_flamer",
-      "Ammo": "Gas tank"
+      "Ammo": "Gas tank",
+      "Price": 3000
     },
     {
       "Name": "Powergun",
@@ -113,7 +121,8 @@
       "Sound": "fusion",
       "SwitchSound": "powergun_switch",
       "MuzzleFlashParticle": "muzzle_flash_powergun",
-      "Ammo": "Cells"
+      "Ammo": "Cells",
+      "Price": 2100
     },
     {
       "Pic": "blaster_yellow",
@@ -144,7 +153,8 @@
       "Sound": "pistol",
       "SwitchSound": "pulse_switch",
       "MuzzleFlashParticle": "muzzle_flash_pulse",
-      "Ammo": "Mini cells"
+      "Ammo": "Mini cells",
+      "Price": 1500
     },
     {
       "Pic": "rifle",
@@ -160,7 +170,8 @@
       "Shake": {
         "Amount": 8,
         "CameraSubjectOnly": true
-      }
+      },
+      "Price": 6500
     },
     {
       "Name": "DumbGun",

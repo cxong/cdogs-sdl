@@ -691,7 +691,10 @@ static void AddCharacter(EditorContext *ec, const int cloneIdx)
 		{
 			CSTRDUP(ec->Char->PlayerTemplateName, clone->PlayerTemplateName);
 		}
-		CSTRDUP(ec->Char->Hair, clone->Hair);
+		if (clone->Hair)
+		{
+			CSTRDUP(ec->Char->Hair, clone->Hair);
+		}
 		CMALLOC(ec->Char->bot, sizeof *ec->Char->bot);
 		memcpy(ec->Char->bot, clone->bot, sizeof *ec->Char->bot);
 	}

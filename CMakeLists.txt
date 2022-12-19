@@ -95,6 +95,9 @@ ENDIF()
 
 if(MSVC)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -MP -W4 -WX -wd\"4996\" -wd\"4204\"")
+	if(DEBUG)
+		ADD_DEFINITIONS(-ZI)
+	endif()
 else()
 	add_definitions(
 		-fsigned-char
