@@ -112,14 +112,34 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 				&cData->c->Setting.SkipWeaponMenu))
 		{
 			changed = true;
+			if (cData->c->Setting.SkipWeaponMenu)
+			{
+				cData->c->Setting.BuyAndSell = false;
+			}
 		}
 		if (DrawCheckbox(
-				ctx, "Random pickups", "Enable randomly spawned ammo/health pickups",
+				ctx, "Buy and sell",
+				"Enable buying/selling guns, ammo and equipment",
+				&cData->c->Setting.BuyAndSell))
+		{
+			changed = true;
+			if (cData->c->Setting.BuyAndSell)
+			{
+				cData->c->Setting.SkipWeaponMenu = false;
+			}
+		}
+		if (DrawCheckbox(
+				ctx, "Random pickups",
+				"Enable randomly spawned ammo/health pickups",
 				&cData->c->Setting.RandomPickups))
 		{
 			changed = true;
 		}
-		if (DrawNumberSlider(ctx, "Door open ticks", "Number of ticks that doors stay open (" TOSTRING(FPS_FRAMELIMIT) " = 1 second)", 0, 700, 10, &cData->c->Setting.DoorOpenTicks))
+		if (DrawNumberSlider(
+				ctx, "Door open ticks",
+				"Number of ticks that doors stay open (" TOSTRING(
+					FPS_FRAMELIMIT) " = 1 second)",
+				0, 700, 10, &cData->c->Setting.DoorOpenTicks))
 		{
 			changed = true;
 		}

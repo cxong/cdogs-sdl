@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2017, 2019-2021 Cong Xu
+	Copyright (c) 2014-2017, 2019-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -162,6 +162,7 @@ void MapNewLoadCampaignJSON(json_t *root, CampaignSetting *c)
 	c->Description = GetString(root, "Description");
 	LoadBool(&c->Ammo, root, "Ammo");
 	LoadBool(&c->SkipWeaponMenu, root, "SkipWeaponMenu");
+	LoadBool(&c->BuyAndSell, root, "BuyAndSell");
 	// Default enable random pickups
 	c->RandomPickups = true;
 	LoadBool(&c->RandomPickups, root, "RandomPickups");

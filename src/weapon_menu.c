@@ -708,10 +708,12 @@ static void DrawGun(
 	const bool equipped = IsGunEquipped(pData, wc);
 	const int bgSpriteIndex = (int)selected;
 	const Pic *gunBG = CArrayGet(&data->gunBGSprites->pics, bgSpriteIndex);
-	const struct vec2i bgSize = svec2i(GUN_BG_W, GUN_BG_H);
+	// Allow space for price if buy/sell enabled
+	const int h = GUN_BG_H + (gCampaign.Setting.BuyAndSell ? FontH() : 0);
+	const struct vec2i bgSize = svec2i(GUN_BG_W, h);
 	const struct vec2i bgPos = svec2i(
 		pos.x + 2 + (idx % data->cols) * GUN_BG_W,
-		pos.y + (idx / data->cols - data->scroll) * GUN_BG_H);
+		pos.y + (idx / data->cols - data->scroll) * bgSize.y);
 	color_t color = data->equipping ? colorWhite : colorGray;
 	const color_t mask = color;
 	if (selected && data->equipping)
@@ -729,9 +731,18 @@ static void DrawGun(
 		g, gunBG,
 		Rect2iNew(
 			svec2i(bgPos.x + 1, bgPos.y + 1),
-			svec2i(GUN_BG_W - 2, GUN_BG_H - 2)),
+			svec2i(GUN_BG_W - 2, bgSize.y - 2)),
 		3, 3, 3, 3, true, mask, SDL_FLIP_NONE);
 
+	// Draw price
+	if (gCampaign.Setting.BuyAndSell && wc && wc->Price != 0)
+	{
+		const FontOpts foptsP = {
+			ALIGN_CENTER, ALIGN_START, bgSize, svec2i(2, 2), colorDarker};
+		char buf[256];
+		sprintf(buf, "$%d", wc->Price);
+		FontStrOpt(buf, bgPos, foptsP);
+	}
 	// Draw icon at center of slot
 	const Pic *gunIcon =
 		wc ? wc->Icon : PicManagerGetPic(&gPicManager, "peashooter");

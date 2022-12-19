@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2021 Cong Xu
+	Copyright (c) 2014-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -80,7 +80,7 @@ int MapLoadCampaignJSON(const char *filename, CampaignSetting *c, int *version)
 		}
 	}
 	MapNewLoadCampaignJSON(root, c);
-	
+
 bail:
 	json_free_value(&root);
 	return err;
@@ -304,6 +304,7 @@ int MapArchiveSave(const char *filename, CampaignSetting *c)
 	AddStringPair(root, "Description", c->Description);
 	AddBoolPair(root, "Ammo", c->Ammo);
 	AddBoolPair(root, "SkipWeaponMenu", c->SkipWeaponMenu);
+	AddBoolPair(root, "BuyAndSell", c->BuyAndSell);
 	AddBoolPair(root, "RandomPickups", c->RandomPickups);
 	AddIntPair(root, "DoorOpenTicks", c->DoorOpenTicks);
 	AddIntPair(root, "Missions", (int)c->Missions.size);
@@ -473,14 +474,11 @@ static json_t *SaveWeapons(const CArray *weapons)
 static json_t *SaveMissionTileClasses(const MissionTileClasses *mtc)
 {
 	json_t *node = json_new_object();
-	json_insert_pair_into_object(
-		node, "Wall", TileClassSaveJSON(&mtc->Wall));
+	json_insert_pair_into_object(node, "Wall", TileClassSaveJSON(&mtc->Wall));
 	json_insert_pair_into_object(
 		node, "Floor", TileClassSaveJSON(&mtc->Floor));
-	json_insert_pair_into_object(
-		node, "Room", TileClassSaveJSON(&mtc->Room));
-	json_insert_pair_into_object(
-		node, "Door", TileClassSaveJSON(&mtc->Door));
+	json_insert_pair_into_object(node, "Room", TileClassSaveJSON(&mtc->Room));
+	json_insert_pair_into_object(node, "Door", TileClassSaveJSON(&mtc->Door));
 	return node;
 }
 static json_t *SavePillars(const PillarParams p)
