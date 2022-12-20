@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2018, 2021 Cong Xu
+	Copyright (c) 2018, 2021-2022 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@ typedef struct
 	char *prefix;
 	int max;
 	int current;
+	float incRatio;
 } AnimatedCounter;
 
 AnimatedCounter AnimatedCounterNew(const char *prefix, const int max);
@@ -39,5 +40,6 @@ void AnimatedCounterTerminate(AnimatedCounter *a);
 
 // Return whether animation has finished
 bool AnimatedCounterUpdate(AnimatedCounter *a, const int ticks);
+void AnimatedCounterReset(AnimatedCounter *a, const int value);
 void AnimatedCounterDraw(const AnimatedCounter *a, const struct vec2i pos);
 void AnimatedCounterTimeDraw(const AnimatedCounter *a, const struct vec2i pos);

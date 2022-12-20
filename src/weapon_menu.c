@@ -289,6 +289,13 @@ static void DrawEquipMenu(
 	const int h =
 		EQUIP_MENU_SLOT_HEIGHT + (gCampaign.Setting.BuyAndSell ? FontH() : 0);
 
+	// Draw player cash
+	if (gCampaign.Setting.BuyAndSell)
+	{
+		AnimatedCounterDraw(
+			&d->Cash, svec2i_add(pos, svec2i(0, -FontH() - 2)));
+	}
+
 	DrawEquipSlot(d, g, 0, "I", svec2i(pos.x, pos.y), ALIGN_START);
 	DrawEquipSlot(
 		d, g, 1, "II", svec2i(pos.x + WEAPON_MENU_WIDTH / 2, pos.y),
@@ -334,6 +341,7 @@ static int HandleInputEquipMenu(int cmd, void *data)
 		{
 			PlayerRemoveWeapon(p, d->EquipSlot);
 			MenuPlaySound(MENU_SOUND_SWITCH);
+			AnimatedCounterReset(&d->Cash, p->Totals.Score);
 		}
 	}
 	else if (cmd & CMD_LEFT)
@@ -513,6 +521,9 @@ void WeaponMenuCreate(
 	data->display.currentMenu = NULL;
 	data->display.Dir = DIRECTION_DOWN;
 	data->PlayerUID = playerUID;
+	PlayerData *pData = PlayerDataGetByUID(playerUID);
+	data->Cash = AnimatedCounterNew("Cash: $", pData->Totals.Score);
+	data->Cash.incRatio = 0.2f;
 	data->slotBGSprites =
 		PicManagerGetSprites(&gPicManager, "hud/gun_slot_bg");
 	data->gunBGSprites = PicManagerGetSprites(&gPicManager, "hud/gun_bg");
@@ -571,7 +582,6 @@ void WeaponMenuCreate(
 
 	MenuSystemInit(ms, handlers, graphics, pos, size);
 	ms->align = MENU_ALIGN_LEFT;
-	PlayerData *pData = PlayerDataGetByUID(playerUID);
 	menu->ms.root = menu->ms.current = CreateGunMenu(data);
 	MenuSystemAddCustomDisplay(
 		ms, MenuDisplayPlayerControls, &data->PlayerUID);
@@ -861,10 +871,12 @@ void WeaponMenuTerminate(WeaponMenu *menu)
 	MenuSystemTerminate(&menu->msEquip);
 	CArrayTerminate(&menu->data.weapons);
 	CArrayTerminate(&menu->data.weaponIsNew);
+	AnimatedCounterTerminate(&menu->data.Cash);
 }
 
 void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 {
+	AnimatedCounterUpdate(&menu->data.Cash, 1);
 	PlayerData *p = PlayerDataGetByUID(menu->data.PlayerUID);
 	if (menu->data.equipping)
 	{
@@ -876,6 +888,7 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 		case WEAPON_MENU_SELECT: {
 			const WeaponClass *selectedGun = GetSelectedGun(&menu->data);
 			PlayerAddWeaponToSlot(p, selectedGun, menu->data.EquipSlot);
+			AnimatedCounterReset(&menu->data.Cash, p->Totals.Score);
 		}
 			// fallthrough
 		case WEAPON_MENU_CANCEL:

@@ -28,12 +28,12 @@
 #include <math.h>
 #include <cdogs/font.h>
 
-#define INC_RATIO 0.01f
+#define INC_RATIO 0.05f
 
 
 AnimatedCounter AnimatedCounterNew(const char *prefix, const int max)
 {
-	AnimatedCounter a = { NULL, max, 0 };
+	AnimatedCounter a = { NULL, max, 0, INC_RATIO };
 	CSTRDUP(a.prefix, prefix);
 	return a;
 }
@@ -48,20 +48,24 @@ bool AnimatedCounterUpdate(AnimatedCounter *a, const int ticks)
 	{
 		return true;
 	}
-	float inc = a->max * INC_RATIO;
+	float inc = (a->max - a->current) * a->incRatio;
 	for (int i = 0; i < ticks; i++)
 	{
 		const int diff = a->max - a->current;
-		while (a->max > 0 ? inc > diff : inc < diff)
+		while (diff > 0 ? inc > diff : inc < diff)
 		{
 			inc *= INC_RATIO;
 		}
-		a->current += (int)(a->max > 0 ? ceil(inc) : floor(inc));
+		a->current += (int)(diff > 0 ? ceil(inc) : floor(inc));
 	}
     return false;
 }
-void AnimatedCounterDraw(const AnimatedCounter *a, const struct vec2i pos)
+void AnimatedCounterReset(AnimatedCounter *a, const int value)
 {
+	a->max = value;
+}
+void AnimatedCounterDraw(const AnimatedCounter *a, const struct vec2i pos)
+	{
 	const struct vec2i pos2 = FontStr(a->prefix, pos);
 	char buf[256];
 	sprintf(buf, "%d", a->current);

@@ -28,6 +28,7 @@
 */
 #pragma once
 
+#include "animated_counter.h"
 #include "menu.h"
 #include "menu_utils.h"
 
@@ -41,6 +42,7 @@ typedef struct
 {
 	MenuDisplayPlayerData display;
 	int PlayerUID;
+	AnimatedCounter Cash;
 	int EquipSlot;
 	bool equipping;
 	bool EquipEnabled[MAX_WEAPONS];
@@ -48,8 +50,8 @@ typedef struct
 	const NamedSprites *slotBGSprites;
 	const NamedSprites *gunBGSprites;
 	int gunIdx;
-	CArray weapons;	// of const WeaponClass *
-	CArray weaponIsNew;	// of bool
+	CArray weapons;		// of const WeaponClass *
+	CArray weaponIsNew; // of bool
 	bool SlotHasNew[MAX_WEAPONS];
 	int cols;
 	int scroll;
@@ -62,9 +64,9 @@ typedef struct
 } WeaponMenu;
 
 void WeaponMenuCreate(
-	WeaponMenu *menu, const CArray *weapons, const CArray *prevWeapons, const int numPlayers,
-	const int player, const int playerUID, EventHandlers *handlers,
-	GraphicsDevice *graphics);
+	WeaponMenu *menu, const CArray *weapons, const CArray *prevWeapons,
+	const int numPlayers, const int player, const int playerUID,
+	EventHandlers *handlers, GraphicsDevice *graphics);
 void WeaponMenuTerminate(WeaponMenu *menu);
 
 void WeaponMenuUpdate(WeaponMenu *menu, const int cmd);

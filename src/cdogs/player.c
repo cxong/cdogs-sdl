@@ -33,6 +33,8 @@
 #include "net_client.h"
 #include "player_template.h"
 
+#define STARTING_CASH 10000
+
 CArray gPlayerDatas;
 
 void PlayerDataInit(CArray *p)
@@ -220,6 +222,11 @@ NPlayerData PlayerDataDefault(const int idx)
 	}
 
 	pd.MaxHealth = 200;
+	if (gCampaign.Setting.BuyAndSell)
+	{
+		pd.Stats.Score = STARTING_CASH;
+		pd.Totals.Score = STARTING_CASH;
+	}
 
 	return pd;
 }
@@ -512,9 +519,20 @@ void PlayerAddWeaponToSlot(
 			if (p->guns[i] == wc)
 			{
 				p->guns[i] = p->guns[slot];
-				break;
+				p->guns[slot] = wc;
+				return;
 			}
 		}
+	}
+	// Remove old weapon
+	if (p->guns[slot])
+	{
+		PlayerRemoveWeapon(p, slot);
+	}
+	// Subtract gun price
+	if (gCampaign.Setting.BuyAndSell && wc)
+	{
+		PlayerScore(p, -wc->Price);
 	}
 	p->guns[slot] = wc;
 }
@@ -550,6 +568,11 @@ void PlayerAddWeapon(PlayerData *p, const WeaponClass *wc)
 
 void PlayerRemoveWeapon(PlayerData *p, const int slot)
 {
+	// Refund gun price
+	if (gCampaign.Setting.BuyAndSell && p->guns[slot])
+	{
+		PlayerScore(p, p->guns[slot]->Price);
+	}
 	p->guns[slot] = NULL;
 	PlayerAddMinimalWeapons(p);
 }

@@ -133,28 +133,30 @@ static void AddDefaultGuns(PlayerData *p, const int idx, const CArray *guns)
 		{"Machine gun", "Flamer", "Knife", "Dynamite"},
 	};
 
-	// Attempt to give the player default guns; if the guns are missing, find
-	// guns available in the mission
-	// Look for the default guns
-	for (int i = 0; i < MAX_WEAPONS; i++)
+	if (!gCampaign.Setting.BuyAndSell)
 	{
-		const WeaponClass *defaultWC = NULL;
+		// Attempt to give the player default guns; if the guns are missing,
+		// find guns available in the mission Look for the default guns
+		for (int i = 0; i < MAX_WEAPONS; i++)
+		{
+			const WeaponClass *defaultWC = NULL;
+			CA_FOREACH(const WeaponClass *, wc, *guns)
+			const char *gunName = defaultGuns[idx][i];
+			if (strcmp((*wc)->name, gunName) == 0)
+			{
+				defaultWC = *wc;
+			}
+			CA_FOREACH_END()
+			if (defaultWC != NULL)
+			{
+				PlayerAddWeapon(p, defaultWC);
+			}
+		}
+		// Look for guns available in the mission
 		CA_FOREACH(const WeaponClass *, wc, *guns)
-		const char *gunName = defaultGuns[idx][i];
-		if (strcmp((*wc)->name, gunName) == 0)
-		{
-			defaultWC = *wc;
-		}
+		PlayerAddWeapon(p, *wc);
 		CA_FOREACH_END()
-		if (defaultWC != NULL)
-		{
-			PlayerAddWeapon(p, defaultWC);
-		}
 	}
-	// Look for guns available in the mission
-	CA_FOREACH(const WeaponClass *, wc, *guns)
-	PlayerAddWeapon(p, *wc);
-	CA_FOREACH_END()
 	PlayerAddMinimalWeapons(p);
 }
 static bool HasWeapon(const CArray *weapons, const WeaponClass *wc)
