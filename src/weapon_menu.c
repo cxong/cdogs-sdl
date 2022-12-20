@@ -193,6 +193,9 @@ static void DrawEquipSlot(
 	const bool selected = data->EquipSlot == slot;
 	color_t color = data->equipping ? colorDarkGray : colorWhite;
 	color_t mask = color;
+	// Allow space for price if buy/sell enabled
+	const int h =
+		EQUIP_MENU_SLOT_HEIGHT + (gCampaign.Setting.BuyAndSell ? FontH() : 0);
 	if (selected)
 	{
 		if (data->equipping)
@@ -206,7 +209,7 @@ static void DrawEquipSlot(
 			// Add 1px padding
 			const struct vec2i bgPos = svec2i_subtract(pos, svec2i_one());
 			const struct vec2i bgSize =
-				svec2i(WEAPON_MENU_WIDTH / 2 + 2, EQUIP_MENU_SLOT_HEIGHT + 2);
+				svec2i(WEAPON_MENU_WIDTH / 2 + 2, h + 2);
 			DrawRectangle(g, bgPos, bgSize, bg, true);
 
 			color = colorRed;
@@ -227,7 +230,7 @@ static void DrawEquipSlot(
 		g, slotBG,
 		Rect2iNew(
 			svec2i(bgPos.x + 1, bgPos.y + 1),
-			svec2i(WEAPON_MENU_WIDTH / 2, EQUIP_MENU_SLOT_HEIGHT - 2)),
+			svec2i(WEAPON_MENU_WIDTH / 2, h - 2)),
 		11, (slot & 1) ? 4 : 13, 12, (slot & 1) ? 13 : 4, true, mask,
 		SDL_FLIP_NONE);
 
@@ -242,9 +245,7 @@ static void DrawEquipSlot(
 	// Draw icon at center of slot
 	const struct vec2i gunPos = svec2i_subtract(
 		svec2i_add(
-			bgPos,
-			svec2i_scale_divide(
-				svec2i(WEAPON_MENU_WIDTH / 2, EQUIP_MENU_SLOT_HEIGHT), 2)),
+			bgPos, svec2i_scale_divide(svec2i(WEAPON_MENU_WIDTH / 2, h), 2)),
 		svec2i_scale_divide(gunIcon->size, 2));
 	PicRender(
 		gunIcon, g->gameWindow.renderer, gunPos,
@@ -257,7 +258,19 @@ static void DrawEquipSlot(
 			g, svec2i(pos.x + WEAPON_MENU_WIDTH / 2 - 6, y + 13), colorGreen);
 	}
 
-	y += EQUIP_MENU_SLOT_HEIGHT - FontH() - 1;
+	// Draw price
+	if (gCampaign.Setting.BuyAndSell && data->equipping && pData->guns[slot] &&
+		pData->guns[slot]->Price != 0)
+	{
+		const FontOpts foptsP = {
+			ALIGN_CENTER, ALIGN_START, svec2i(WEAPON_MENU_WIDTH / 2, FontH()),
+			svec2i(2, 2), selected ? colorGray : colorDarkGray};
+		char buf[256];
+		sprintf(buf, "$%d", pData->guns[slot]->Price);
+		FontStrOpt(buf, svec2i_add(pos, svec2i(0, FontH() + 2)), foptsP);
+	}
+
+	y += h - FontH() - 1;
 	const char *gunName =
 		pData->guns[slot] ? pData->guns[slot]->name : NO_GUN_LABEL;
 	const FontOpts fopts2 = {
@@ -271,18 +284,19 @@ static void DrawEquipMenu(
 {
 	UNUSED(menu);
 	const WeaponMenuData *d = data;
-	const PlayerData *pData = PlayerDataGetByUID(d->PlayerUID);
+	const PlayerData *pData = PlayerDataGetByUID(
+		d->PlayerUID); // Allow space for price if buy/sell enabled
+	const int h =
+		EQUIP_MENU_SLOT_HEIGHT + (gCampaign.Setting.BuyAndSell ? FontH() : 0);
 
 	DrawEquipSlot(d, g, 0, "I", svec2i(pos.x, pos.y), ALIGN_START);
 	DrawEquipSlot(
 		d, g, 1, "II", svec2i(pos.x + WEAPON_MENU_WIDTH / 2, pos.y),
 		ALIGN_END);
 	DrawEquipSlot(
-		d, g, MELEE_SLOT, "Melee",
-		svec2i(pos.x, pos.y + EQUIP_MENU_SLOT_HEIGHT), ALIGN_START);
+		d, g, MELEE_SLOT, "Melee", svec2i(pos.x, pos.y + h), ALIGN_START);
 	DrawEquipSlot(
-		d, g, 3, "Bombs",
-		svec2i(pos.x + WEAPON_MENU_WIDTH / 2, pos.y + EQUIP_MENU_SLOT_HEIGHT),
+		d, g, 3, "Bombs", svec2i(pos.x + WEAPON_MENU_WIDTH / 2, pos.y + h),
 		ALIGN_END);
 
 	const WeaponClass *gun = NULL;
@@ -291,9 +305,7 @@ static void DrawEquipMenu(
 		gun = pData->guns[d->display.GunIdx];
 	}
 	DrawCharacterSimple(
-		&pData->Char,
-		svec2i(
-			pos.x + WEAPON_MENU_WIDTH / 2, pos.y + EQUIP_MENU_SLOT_HEIGHT + 8),
+		&pData->Char, svec2i(pos.x + WEAPON_MENU_WIDTH / 2, pos.y + h + 8),
 		DIRECTION_DOWN, false, false, gun);
 
 	const struct vec2i endSize = FontStrSize(END_MENU_LABEL);
@@ -301,9 +313,7 @@ static void DrawEquipMenu(
 	DisplayMenuItem(
 		g,
 		Rect2iNew(
-			svec2i(
-				CENTER_X(pos, size, endSize.x),
-				pos.y + EQUIP_MENU_SLOT_HEIGHT * 2 + FontH()),
+			svec2i(CENTER_X(pos, size, endSize.x), pos.y + h * 2 + FontH()),
 			FontStrSize(END_MENU_LABEL)),
 		END_MENU_LABEL, d->EquipSlot == MAX_WEAPONS, endDisabled, colorWhite);
 }
@@ -738,7 +748,8 @@ static void DrawGun(
 	if (gCampaign.Setting.BuyAndSell && wc && wc->Price != 0)
 	{
 		const FontOpts foptsP = {
-			ALIGN_CENTER, ALIGN_START, bgSize, svec2i(2, 2), colorDarker};
+			ALIGN_CENTER, ALIGN_START, bgSize, svec2i(2, 2),
+			data->equipping ? colorGray : colorDarkGray};
 		char buf[256];
 		sprintf(buf, "$%d", wc->Price);
 		FontStrOpt(buf, bgPos, foptsP);
