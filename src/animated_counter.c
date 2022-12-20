@@ -44,7 +44,7 @@ void AnimatedCounterTerminate(AnimatedCounter *a)
 
 bool AnimatedCounterUpdate(AnimatedCounter *a, const int ticks)
 {
-	if (a->max == 0 || a->current == a->max)
+	if (a->current == a->max)
 	{
 		return true;
 	}

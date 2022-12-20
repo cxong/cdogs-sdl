@@ -38,7 +38,7 @@ message NCharColors {
 }
 
 message NPlayerStats {
-	uint32 Score = 1;
+	int32 Score = 1;
 	uint32 Kills = 2;
 	uint32 Suicides = 3;
 	uint32 Friendlies = 4;

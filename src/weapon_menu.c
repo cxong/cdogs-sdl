@@ -87,20 +87,19 @@ static const WeaponClass *GetSelectedGun(const WeaponMenuData *data)
 	return GetGun(&data->weapons, data->gunIdx, data->EquipSlot);
 }
 
-static bool IsGunEquipped(const PlayerData *pd, const WeaponClass *wc)
+static int EquipCostDiff(
+	const WeaponClass *wc, const PlayerData *p, const int slot)
 {
-	if (wc == NULL)
+	if (!gCampaign.Setting.BuyAndSell)
+		return 0;
+	if (PlayerHasWeapon(p, wc))
 	{
-		return false;
+		return 0;
 	}
-	for (int i = 0; i < MAX_WEAPONS; i++)
-	{
-		if (pd->guns[i] == wc)
-		{
-			return true;
-		}
-	}
-	return false;
+	const int cost1 = wc ? wc->Price : 0;
+	const WeaponClass *wc2 = p->guns[slot];
+	const int cost2 = wc2 ? wc2->Price : 0;
+	return cost1 - cost2;
 }
 
 static void WeaponSelect(menu_t *menu, int cmd, void *data)
@@ -112,6 +111,13 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 	{
 		// Add the selected weapon to the slot
 		const WeaponClass *selectedGun = GetSelectedGun(d);
+		const PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
+		if (gCampaign.Setting.BuyAndSell &&
+			EquipCostDiff(selectedGun, p, d->EquipSlot) > p->Totals.Score)
+		{
+			// Can't afford
+			return;
+		}
 		d->SelectResult = WEAPON_MENU_SELECT;
 		if (selectedGun == NULL)
 		{
@@ -725,7 +731,7 @@ static void DrawGun(
 {
 	const bool selected = data->gunIdx == idx;
 	const PlayerData *pData = PlayerDataGetByUID(data->PlayerUID);
-	const bool equipped = IsGunEquipped(pData, wc);
+	const bool equipped = wc && PlayerHasWeapon(pData, wc);
 	const int bgSpriteIndex = (int)selected;
 	const Pic *gunBG = CArrayGet(&data->gunBGSprites->pics, bgSpriteIndex);
 	// Allow space for price if buy/sell enabled
@@ -734,7 +740,11 @@ static void DrawGun(
 	const struct vec2i bgPos = svec2i(
 		pos.x + 2 + (idx % data->cols) * GUN_BG_W,
 		pos.y + (idx / data->cols - data->scroll) * bgSize.y);
-	color_t color = data->equipping ? colorWhite : colorGray;
+	const bool enabled =
+		data->equipping &&
+		(!gCampaign.Setting.BuyAndSell ||
+		 EquipCostDiff(wc, pData, data->EquipSlot) <= pData->Totals.Score);
+	color_t color = enabled ? colorWhite : colorGray;
 	const color_t mask = color;
 	if (selected && data->equipping)
 	{
@@ -759,7 +769,7 @@ static void DrawGun(
 	{
 		const FontOpts foptsP = {
 			ALIGN_CENTER, ALIGN_START, bgSize, svec2i(2, 2),
-			data->equipping ? colorGray : colorDarkGray};
+			enabled ? colorGray : colorDarkGray};
 		char buf[256];
 		sprintf(buf, "$%d", wc->Price);
 		FontStrOpt(buf, bgPos, foptsP);
@@ -816,6 +826,13 @@ static int HandleInputGunMenu(int cmd, void *data)
 
 	if (cmd & CMD_BUTTON1)
 	{
+		const WeaponClass *selectedGun = GetSelectedGun(d);
+		if (gCampaign.Setting.BuyAndSell &&
+			EquipCostDiff(selectedGun, p, d->EquipSlot) > p->Totals.Score)
+		{
+			// Can't afford
+			return 0;
+		}
 		return 1;
 	}
 	else if (cmd & CMD_BUTTON2)

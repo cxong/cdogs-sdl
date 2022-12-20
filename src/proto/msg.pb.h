@@ -128,7 +128,7 @@ typedef struct _NPlayerRemove {
 } NPlayerRemove;
 
 typedef struct _NPlayerStats {
-    uint32_t Score;
+    int32_t Score;
     uint32_t Kills;
     uint32_t Suicides;
     uint32_t Friendlies;
