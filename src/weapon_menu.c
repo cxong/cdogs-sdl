@@ -740,10 +740,10 @@ static void DrawGun(
 	const struct vec2i bgPos = svec2i(
 		pos.x + 2 + (idx % data->cols) * GUN_BG_W,
 		pos.y + (idx / data->cols - data->scroll) * bgSize.y);
+	const int costDiff = EquipCostDiff(wc, pData, data->EquipSlot);
 	const bool enabled =
 		data->equipping &&
-		(!gCampaign.Setting.BuyAndSell ||
-		 EquipCostDiff(wc, pData, data->EquipSlot) <= pData->Totals.Score);
+		(!gCampaign.Setting.BuyAndSell || costDiff <= pData->Totals.Score);
 	color_t color = enabled ? colorWhite : colorGray;
 	const color_t mask = color;
 	if (selected && data->equipping)
@@ -764,16 +764,6 @@ static void DrawGun(
 			svec2i(GUN_BG_W - 2, bgSize.y - 2)),
 		3, 3, 3, 3, true, mask, SDL_FLIP_NONE);
 
-	// Draw price
-	if (gCampaign.Setting.BuyAndSell && wc && wc->Price != 0)
-	{
-		const FontOpts foptsP = {
-			ALIGN_CENTER, ALIGN_START, bgSize, svec2i(2, 2),
-			enabled ? colorGray : colorDarkGray};
-		char buf[256];
-		sprintf(buf, "$%d", wc->Price);
-		FontStrOpt(buf, bgPos, foptsP);
-	}
 	// Draw icon at center of slot
 	const Pic *gunIcon =
 		wc ? wc->Icon : PicManagerGetPic(&gPicManager, "peashooter");
@@ -783,6 +773,26 @@ static void DrawGun(
 	PicRender(
 		gunIcon, g->gameWindow.renderer, gunPos, wc ? mask : colorBlack, 0,
 		svec2_one(), SDL_FLIP_NONE, Rect2iZero());
+
+	// Draw price
+	if (gCampaign.Setting.BuyAndSell && wc && wc->Price != 0)
+	{
+		const FontOpts foptsP = {
+			ALIGN_CENTER, ALIGN_START, bgSize, svec2i(2, 2),
+			enabled ? (selected ? colorRed : colorGray) : colorDarkGray};
+		char buf[256];
+		sprintf(buf, "$%d", wc->Price);
+		FontStrOpt(buf, bgPos, foptsP);
+		if (enabled && selected && costDiff != wc->Price && costDiff != 0)
+		{
+			// Draw price diff
+			const FontOpts foptsD = {
+			 ALIGN_CENTER, ALIGN_START, bgSize, svec2i(2, 2),
+				costDiff > 0 ? colorRed : colorGreen};
+			sprintf(buf, "($%d)", -costDiff);
+			FontStrOpt(buf, svec2i_add(bgPos, svec2i(0, FontH())), foptsD);
+		}
+	}
 
 	if (isNew)
 	{
