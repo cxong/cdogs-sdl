@@ -298,8 +298,23 @@ static void DrawEquipMenu(
 	// Draw player cash
 	if (gCampaign.Setting.BuyAndSell)
 	{
-		AnimatedCounterDraw(
+		const struct vec2i fpos = AnimatedCounterDraw(
 			&d->Cash, svec2i_add(pos, svec2i(0, -FontH() - 2)));
+		const WeaponClass *wc = GetSelectedGun(data);
+		if (wc)
+		{
+			const int costDiff = EquipCostDiff(wc, pData, d->EquipSlot);
+			if (d->equipping && costDiff != 0)
+			{
+				// Draw price diff
+				const FontOpts foptsD = {
+					ALIGN_START, ALIGN_START, svec2i_zero(), svec2i_zero(),
+					costDiff > 0 ? colorRed : colorGreen};
+				char buf[256];
+				sprintf(buf, "%s%d", costDiff < 0 ? "+" : "", -costDiff);
+				FontStrOpt(buf, fpos, foptsD);
+			}
+		}
 	}
 
 	DrawEquipSlot(d, g, 0, "I", svec2i(pos.x, pos.y), ALIGN_START);
@@ -783,15 +798,6 @@ static void DrawGun(
 		char buf[256];
 		sprintf(buf, "$%d", wc->Price);
 		FontStrOpt(buf, bgPos, foptsP);
-		if (enabled && selected && costDiff != wc->Price && costDiff != 0)
-		{
-			// Draw price diff
-			const FontOpts foptsD = {
-			 ALIGN_CENTER, ALIGN_START, bgSize, svec2i(2, 2),
-				costDiff > 0 ? colorRed : colorGreen};
-			sprintf(buf, "($%d)", -costDiff);
-			FontStrOpt(buf, svec2i_add(bgPos, svec2i(0, FontH())), foptsD);
-		}
 	}
 
 	if (isNew)

@@ -41,5 +41,5 @@ void AnimatedCounterTerminate(AnimatedCounter *a);
 // Return whether animation has finished
 bool AnimatedCounterUpdate(AnimatedCounter *a, const int ticks);
 void AnimatedCounterReset(AnimatedCounter *a, const int value);
-void AnimatedCounterDraw(const AnimatedCounter *a, const struct vec2i pos);
-void AnimatedCounterTimeDraw(const AnimatedCounter *a, const struct vec2i pos);
+struct vec2i AnimatedCounterDraw(const AnimatedCounter *a, const struct vec2i pos);
+struct vec2i AnimatedCounterTimeDraw(const AnimatedCounter *a, const struct vec2i pos);
