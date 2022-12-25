@@ -24,12 +24,6 @@ By OceansDream
 http://opengameart.org/content/various-inventory-24-pixel-icon-set
 http://creativecommons.org/licenses/by/3.0/
 
-graphics/chainsaw.png
-141 Military Icons Set
-by AngryMeteor.com
-http://opengameart.org/content/141-military-icons-set
-http://creativecommons.org/licenses/by/3.0/
-
 sounds/bfg.ogg
 x_explosion.wav
 by cubicApocalypse
@@ -41,12 +35,6 @@ DSRXPLOD.WAV
 by wildweasel
 http://freesound.org/people/wildweasel/sounds/39020/
 http://creativecommons.org/licenses/by/3.0/
-
-sounds/chainsaw.ogg
-Chainsaw gasoline-powered.wav
-by aoristos
-http://freesound.org/people/aoristos/sounds/235795/
-http://creativecommons.org/publicdomain/zero/1.0/
 
 sounds/sshotgun.ogg
 sounds/sshotgun_r.ogg

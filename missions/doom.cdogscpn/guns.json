@@ -23,6 +23,7 @@
       "Cost": 0,
       "Lock": 0,
       "Sound": "",
+      "SwitchSound": "chainsaw_switch",
       "SoundLockLength": 50,
       "CanShoot": false,
       "Auto": true

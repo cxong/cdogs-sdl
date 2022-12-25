@@ -9,6 +9,7 @@
       "Cost": 0,
       "Lock": 0,
       "Sound": "",
+      "SwitchSound": "chainsaw_switch",
       "SoundLockLength": 50,
       "CanShoot": false,
       "Price": 2000
@@ -21,6 +22,7 @@
       "Cost": 0,
       "Lock": 0,
       "Sound": "",
+      "SwitchSound": "chainsaw_switch",
       "SoundLockLength": 50,
       "CanShoot": false,
       "Price": 2000
@@ -33,6 +35,7 @@
       "Cost": 0,
       "Lock": 0,
       "Sound": "",
+      "SwitchSound": "chainsaw_switch",
       "SoundLockLength": 50,
       "CanShoot": false,
       "Price": 2000
@@ -45,6 +48,7 @@
       "Cost": 0,
       "Lock": 0,
       "Sound": "",
+      "SwitchSound": "chainsaw_switch",
       "SoundLockLength": 50,
       "CanShoot": false,
       "Price": 2000
@@ -57,6 +61,7 @@
       "Cost": 0,
       "Lock": 0,
       "Sound": "",
+      "SwitchSound": "chainsaw_switch",
       "SoundLockLength": 50,
       "CanShoot": false,
       "Price": 2000
