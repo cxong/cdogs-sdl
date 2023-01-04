@@ -30,10 +30,10 @@ jobs:
           - os: ubuntu-latest
             cc: gcc
             cc_version: 11
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             cc: clang
             cc_version: latest
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             cc: clang
             cc_version: 12
           - os: macos-latest
@@ -54,7 +54,7 @@ jobs:
         protoc --version
 
     - name: Install packages Linux
-      if: matrix.os == 'ubuntu-latest'
+      if: startsWith(matrix.os, 'ubuntu')
       run: |
         sudo apt-get update
         sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev gcc-10 g++-10 python3-pip
@@ -62,13 +62,13 @@ jobs:
         pip3 install --upgrade protobuf
 
     - name: Set up GCC
-      if: matrix.os == 'ubuntu-latest' && matrix.cc == 'gcc'
+      if: startsWith(matrix.os, 'ubuntu') && matrix.cc == 'gcc'
       uses: egor-tensin/setup-gcc@v1
       with:
         version: ${{ matrix.cc_version }}
 
     - name: Set up Clang
-      if: matrix.os == 'ubuntu-latest' && matrix.cc == 'clang'
+      if: startsWith(matrix.os, 'ubuntu') && matrix.cc == 'clang'
       uses: egor-tensin/setup-clang@v1
       with:
         version: ${{ matrix.cc_version }}
@@ -112,7 +112,7 @@ jobs:
         fail_on_unmatched_files: true
 
     - name: Publish to itch.io (Linux)
-      if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.cc == 'gcc' && matrix.cc_version == 'latest' && !github.event.release.prerelease
+      if: startsWith(github.ref, 'refs/tags/') && startsWith(matrix.os, 'ubuntu') && matrix.cc == 'gcc' && matrix.cc_version == 'latest' && !github.event.release.prerelease
       env:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       run: |
