@@ -249,14 +249,35 @@ static void DrawEquipSlot(
 							 ? pData->guns[slot]->Icon
 							 : PicManagerGetPic(&gPicManager, "peashooter");
 	// Draw icon at center of slot
+	const struct vec2i slotSize = svec2i(WEAPON_MENU_WIDTH / 2, h);
 	const struct vec2i gunPos = svec2i_subtract(
-		svec2i_add(
-			bgPos, svec2i_scale_divide(svec2i(WEAPON_MENU_WIDTH / 2, h), 2)),
+		svec2i_add(bgPos, svec2i_scale_divide(slotSize, 2)),
 		svec2i_scale_divide(gunIcon->size, 2));
 	PicRender(
 		gunIcon, g->gameWindow.renderer, gunPos,
 		pData->guns[slot] ? mask : colorBlack, 0, svec2_one(), SDL_FLIP_NONE,
 		Rect2iZero());
+
+	// Draw ammo
+	if (gCampaign.Setting.Ammo && pData->guns[slot])
+	{
+		CPicDrawContext c = CPicDrawContextNew();
+		c.Mask = mask;
+		for (int i = 0; i < WeaponClassNumBarrels(pData->guns[slot]); i++)
+		{
+			const int ammoId = WC_BARREL_ATTR(*pData->guns[slot], AmmoId, i);
+			if (ammoId < 0)
+			{
+				continue;
+			}
+			const Ammo *a = AmmoGetById(&gAmmo, ammoId);
+			CPicDraw(
+				g, &a->Pic,
+				svec2i_subtract(
+					svec2i_add(bgPos, slotSize), svec2i(16 - i * 4, 26)),
+				&c);
+		}
+	}
 
 	if (data->SlotHasNew[slot])
 	{
@@ -756,9 +777,8 @@ static void DrawGun(
 		pos.x + 2 + (idx % data->cols) * GUN_BG_W,
 		pos.y + (idx / data->cols - data->scroll) * bgSize.y);
 	const int costDiff = EquipCostDiff(wc, pData, data->EquipSlot);
-	const bool enabled =
-		data->equipping &&
-		(!gCampaign.Setting.BuyAndSell || costDiff <= pData->Totals.Score);
+	const bool enabled = data->equipping && (!gCampaign.Setting.BuyAndSell ||
+											 costDiff <= pData->Totals.Score);
 	color_t color = enabled ? colorWhite : colorGray;
 	const color_t mask = color;
 	if (selected && data->equipping)
@@ -788,6 +808,27 @@ static void DrawGun(
 	PicRender(
 		gunIcon, g->gameWindow.renderer, gunPos, wc ? mask : colorBlack, 0,
 		svec2_one(), SDL_FLIP_NONE, Rect2iZero());
+
+	// Draw ammo
+	if (gCampaign.Setting.Ammo && wc)
+	{
+		CPicDrawContext c = CPicDrawContextNew();
+		c.Mask = mask;
+		for (int i = 0; i < WeaponClassNumBarrels(wc); i++)
+		{
+			const int ammoId = WC_BARREL_ATTR(*wc, AmmoId, i);
+			if (ammoId < 0)
+			{
+				continue;
+			}
+			const Ammo *a = AmmoGetById(&gAmmo, ammoId);
+			CPicDraw(
+				g, &a->Pic,
+				svec2i_subtract(
+					svec2i_add(bgPos, bgSize), svec2i(16 - i * 4, 18)),
+				&c);
+		}
+	}
 
 	// Draw price
 	if (gCampaign.Setting.BuyAndSell && wc && wc->Price != 0)
