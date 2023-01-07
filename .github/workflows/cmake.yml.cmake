@@ -30,10 +30,10 @@ jobs:
           - os: ubuntu-latest
             cc: gcc
             cc_version: 11
-          - os: ubuntu-20.04
+          - os: ubuntu-latest
             cc: clang
             cc_version: latest
-          - os: ubuntu-20.04
+          - os: ubuntu-latest
             cc: clang
             cc_version: 12
           - os: macos-latest
