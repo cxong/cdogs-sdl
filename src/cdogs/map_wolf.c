@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2020-2022 Cong Xu
+	Copyright (c) 2020-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -42,6 +42,7 @@ CWolfMap *defaultSpearMap = NULL;
 #define WOLF_STEAM_NAME "Wolfenstein 3D"
 #define SPEAR_STEAM_NAME "Spear of Destiny"
 #define WOLF_GOG_ID "1441705046"
+#define WOLF_SPEAR_GOG_ID "1441705226"
 #define SPEAR_GOG_ID "1441705126"
 #define WOLF_DATA_DIR "data/.wolf3d/"
 
@@ -154,7 +155,8 @@ static const char *soundsSOD[] = {
 	"chars/die/trans", "chars/alert/bill", "chars/die/bill",
 	"chars/die/ubermutant", "chars/alert/knight", "chars/die/knight",
 	"chars/alert/angel", "chars/die/angel", "chaingun_pickup", "spear"};
-// TODO BS6: https://github.com/bibendovsky/bstone/blob/3dea1ef72a101519afd17aa95c881da40a18040d/src/bstone_audio_content_mgr.cpp#L320-L398
+// TODO BS6:
+// https://github.com/bibendovsky/bstone/blob/3dea1ef72a101519afd17aa95c881da40a18040d/src/bstone_audio_content_mgr.cpp#L320-L398
 static const char *GetSound(const CWMapType type, const int i)
 {
 	// Map sound index to string
@@ -2484,6 +2486,7 @@ static void AdjustTurningPoint(Mission *m, const struct vec2i v)
 
 static bool TryLoadCampaign(CampaignList *list, const char *path);
 static int TryLoadSpearSteam(CampaignList *list);
+static void TryLoadSpearGOG(CampaignList *list, const int numLoaded);
 void MapWolfLoadCampaignsFromSystem(CampaignList *list)
 {
 	char buf[CDOGS_PATH_MAX];
@@ -2505,16 +2508,7 @@ void MapWolfLoadCampaignsFromSystem(CampaignList *list)
 	const int numLoaded = TryLoadSpearSteam(list);
 	if (numLoaded < 3)
 	{
-		fsg_get_gog_game_path(buf, SPEAR_GOG_ID);
-		if (strlen(buf) > 0)
-		{
-			char buf2[CDOGS_PATH_MAX];
-			for (int i = 1 + numLoaded; i <= 3; i++)
-			{
-				sprintf(buf2, "%s/M%d?%d", buf, i, i);
-				TryLoadCampaign(list, buf2);
-			}
-		}
+		TryLoadSpearGOG(list, numLoaded);
 	}
 }
 static bool TryLoadSpearSteamVanilla(CampaignList *list);
@@ -2562,8 +2556,43 @@ static bool TryLoadSpearSteamInWolf3D(CampaignList *list)
 	strcat(buf, "/base/m1?1");
 	return TryLoadCampaign(list, buf);
 }
-static bool TryLoadCampaign(CampaignList *list, const char *path)
+static bool TryLoadSpearGOGVanilla(CampaignList *list, const int numLoaded);
+static bool TryLoadSpearGOGInWolf3D(CampaignList *list);
+static void TryLoadSpearGOG(CampaignList *list, const int numLoaded)
+{
+	if (!TryLoadSpearGOGVanilla(list, numLoaded) && numLoaded < 1)
 	{
+		TryLoadSpearGOGInWolf3D(list);
+	}
+}
+static bool TryLoadSpearGOGVanilla(CampaignList *list, const int numLoaded)
+{
+	char buf[CDOGS_PATH_MAX];
+	fsg_get_gog_game_path(buf, SPEAR_GOG_ID);
+	if (strlen(buf) > 0)
+	{
+		char buf2[CDOGS_PATH_MAX];
+		for (int i = 1 + numLoaded; i <= 3; i++)
+		{
+			sprintf(buf2, "%s/M%d?%d", buf, i, i);
+			TryLoadCampaign(list, buf2);
+		}
+	}
+}
+static bool TryLoadSpearGOGInWolf3D(CampaignList *list)
+{
+	// Steam also includes spear ep1 in Wolf3D
+	char buf[CDOGS_PATH_MAX];
+	fsg_get_gog_game_path(buf, WOLF_SPEAR_GOG_ID);
+	if (strlen(buf) > 0)
+	{
+		char buf2[CDOGS_PATH_MAX];
+		sprintf(buf2, "%s/M1?1", buf);
+		TryLoadCampaign(list, buf2);
+	}
+}
+static bool TryLoadCampaign(CampaignList *list, const char *path)
+{
 	if (strlen(path) > 0)
 	{
 		CampaignEntry entry;
