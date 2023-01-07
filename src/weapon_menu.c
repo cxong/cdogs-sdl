@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2015, 2018, 2020-2022 Cong Xu
+	Copyright (c) 2013-2015, 2018, 2020-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -46,6 +46,7 @@
 #define GUN_BG_W 40
 #define GUN_BG_H 25
 #define SCROLL_H 12
+#define AMMO_LEVEL_W 2
 
 static GunType SlotType(const int slot)
 {
@@ -192,6 +193,42 @@ static void ClampScroll(WeaponMenuData *data)
 	data->scroll = CLAMP(data->scroll, minRow, maxRow);
 }
 
+static void DrawAmmo(GraphicsDevice *g, const PlayerData *p, const WeaponClass *wc, const color_t mask, const struct vec2i pos, const struct vec2i slotSize)
+{
+	if (!gCampaign.Setting.Ammo || !wc)
+	{
+		return;
+	}
+	
+	CPicDrawContext c = CPicDrawContextNew();
+	c.Mask = mask;
+	const int numBarrels = WeaponClassNumBarrels(wc);
+	for (int i = 0; i < numBarrels; i++)
+	{
+		const int ammoId = WC_BARREL_ATTR(*wc, AmmoId, i);
+		if (ammoId < 0)
+		{
+			continue;
+		}
+		const Ammo *a = AmmoGetById(&gAmmo, ammoId);
+		// Draw ammo level
+		const int amount = (int)p->ammo.size >= ammoId ? *(int *)CArrayGet(&p->ammo, ammoId) : 0;
+		if (amount > 0)
+		{
+			const int ammoMax = a->Max ? a->Max : amount;
+			const int h = amount * (slotSize.y - 2 * AMMO_LEVEL_W) / ammoMax;
+			DrawRectangle(g, svec2i_add(pos, svec2i(slotSize.x - 2 - AMMO_LEVEL_W * (numBarrels - i), slotSize.y - 2 - h)), svec2i(AMMO_LEVEL_W, h), colorBlue, true);
+		}
+		
+		// Draw ammo icon
+		CPicDraw(
+			g, &a->Pic,
+			svec2i_subtract(
+				svec2i_add(pos, slotSize), svec2i(16 - (numBarrels - i) * 4, 18)),
+			&c);
+	}
+}
+
 static void DrawEquipSlot(
 	const WeaponMenuData *data, GraphicsDevice *g, const int slot,
 	const char *label, const struct vec2i pos, const FontAlign align)
@@ -258,26 +295,7 @@ static void DrawEquipSlot(
 		pData->guns[slot] ? mask : colorBlack, 0, svec2_one(), SDL_FLIP_NONE,
 		Rect2iZero());
 
-	// Draw ammo
-	if (gCampaign.Setting.Ammo && pData->guns[slot])
-	{
-		CPicDrawContext c = CPicDrawContextNew();
-		c.Mask = mask;
-		for (int i = 0; i < WeaponClassNumBarrels(pData->guns[slot]); i++)
-		{
-			const int ammoId = WC_BARREL_ATTR(*pData->guns[slot], AmmoId, i);
-			if (ammoId < 0)
-			{
-				continue;
-			}
-			const Ammo *a = AmmoGetById(&gAmmo, ammoId);
-			CPicDraw(
-				g, &a->Pic,
-				svec2i_subtract(
-					svec2i_add(bgPos, slotSize), svec2i(16 - i * 4, 26)),
-				&c);
-		}
-	}
+	DrawAmmo(g, pData, pData->guns[slot], mask, svec2i_subtract(bgPos, svec2i(0, 8)), slotSize);
 
 	if (data->SlotHasNew[slot])
 	{
@@ -809,26 +827,7 @@ static void DrawGun(
 		gunIcon, g->gameWindow.renderer, gunPos, wc ? mask : colorBlack, 0,
 		svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 
-	// Draw ammo
-	if (gCampaign.Setting.Ammo && wc)
-	{
-		CPicDrawContext c = CPicDrawContextNew();
-		c.Mask = mask;
-		for (int i = 0; i < WeaponClassNumBarrels(wc); i++)
-		{
-			const int ammoId = WC_BARREL_ATTR(*wc, AmmoId, i);
-			if (ammoId < 0)
-			{
-				continue;
-			}
-			const Ammo *a = AmmoGetById(&gAmmo, ammoId);
-			CPicDraw(
-				g, &a->Pic,
-				svec2i_subtract(
-					svec2i_add(bgPos, bgSize), svec2i(16 - i * 4, 18)),
-				&c);
-		}
-	}
+	DrawAmmo(g, pData, wc, mask, bgPos, bgSize);
 
 	// Draw price
 	if (gCampaign.Setting.BuyAndSell && wc && wc->Price != 0)
