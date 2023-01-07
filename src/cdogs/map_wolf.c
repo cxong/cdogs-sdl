@@ -2572,12 +2572,18 @@ static bool TryLoadSpearGOGVanilla(CampaignList *list, const int numLoaded)
 	if (strlen(buf) > 0)
 	{
 		char buf2[CDOGS_PATH_MAX];
+		bool oneLoaded = false;
 		for (int i = 1 + numLoaded; i <= 3; i++)
 		{
 			sprintf(buf2, "%s/M%d?%d", buf, i, i);
-			TryLoadCampaign(list, buf2);
+			if (TryLoadCampaign(list, buf2) && !oneLoaded)
+			{
+				oneLoaded = true;
+			}
 		}
+		return oneLoaded;
 	}
+	return false;
 }
 static bool TryLoadSpearGOGInWolf3D(CampaignList *list)
 {
@@ -2588,8 +2594,9 @@ static bool TryLoadSpearGOGInWolf3D(CampaignList *list)
 	{
 		char buf2[CDOGS_PATH_MAX];
 		sprintf(buf2, "%s/M1?1", buf);
-		TryLoadCampaign(list, buf2);
+		return TryLoadCampaign(list, buf2);
 	}
+	return false;
 }
 static bool TryLoadCampaign(CampaignList *list, const char *path)
 {
