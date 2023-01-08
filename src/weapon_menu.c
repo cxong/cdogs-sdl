@@ -215,9 +215,7 @@ static void DrawAmmo(
 		}
 		const Ammo *a = AmmoGetById(&gAmmo, ammoId);
 		// Draw ammo level
-		const int amount = (int)p->ammo.size >= ammoId
-							   ? *(int *)CArrayGet(&p->ammo, ammoId)
-							   : 0;
+		const int amount = PlayerGetAmmoAmount(p, ammoId);
 		const int ammoMax = a->Max ? a->Max : amount;
 		if (ammoMax > 0)
 		{
@@ -317,9 +315,8 @@ static void DrawEquipSlot(
 		Rect2iZero());
 
 	DrawAmmo(
-		g, pData, pData->guns[slot], mask,
-		svec2i(bgPos.x, bgPos.y + FontH() + 1),
-		svec2i(slotSize.x + 1, slotSize.y - 2 * FontH()));
+		g, pData, pData->guns[slot], mask, svec2i(bgPos.x, bgPos.y + FontH()),
+		svec2i(slotSize.x, slotSize.y - 2 * FontH() - 1));
 
 	if (data->SlotHasNew[slot])
 	{
@@ -851,7 +848,7 @@ static void DrawGun(
 		gunIcon, g->gameWindow.renderer, gunPos, wc ? mask : colorBlack, 0,
 		svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 
-	DrawAmmo(g, pData, wc, mask, bgPos, bgSize);
+	DrawAmmo(g, pData, wc, mask, bgPos, svec2i(bgSize.x - 1, bgSize.y));
 
 	// Draw price
 	if (gCampaign.Setting.BuyAndSell && wc && wc->Price != 0)

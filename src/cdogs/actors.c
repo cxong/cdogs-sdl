@@ -1687,10 +1687,12 @@ TActor *ActorAdd(NActorAdd aa)
 	{
 		for (int i = 0; i < aa.Ammo_count; i++)
 		{
-			// Use persisted ammo amount if it is greater
-			if ((int)aa.Ammo[i].Amount >
-				AmmoGetById(&gAmmo, aa.Ammo[i].Id)->Amount *
-					AMMO_STARTING_MULTIPLE)
+			// Use persisted ammo amount if it is greater,
+			// or if buy/sell is enabled
+			if (gCampaign.Setting.BuyAndSell ||
+				(int)aa.Ammo[i].Amount >
+					AmmoGetById(&gAmmo, aa.Ammo[i].Id)->Amount *
+						AMMO_STARTING_MULTIPLE)
 			{
 				CArraySet(&actor->ammo, aa.Ammo[i].Id, &aa.Ammo[i].Amount);
 			}

@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2016, 2018-2020, 2022 Cong Xu
+	Copyright (c) 2014-2016, 2018-2020, 2022-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -114,3 +114,4 @@ void PlayerAddWeapon(PlayerData *p, const WeaponClass *wc);
 void PlayerAddWeaponToSlot(PlayerData *p, const WeaponClass *wc, const int slot);
 void PlayerRemoveWeapon(PlayerData *p, const int slot);
 void PlayerAddMinimalWeapons(PlayerData *p);
+int PlayerGetAmmoAmount(const PlayerData *p, const int ammoId);

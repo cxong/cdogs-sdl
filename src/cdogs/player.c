@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2016, 2018-2020, 2022 Cong Xu
+	Copyright (c) 2014-2016, 2018-2020, 2022-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -227,6 +227,8 @@ NPlayerData PlayerDataDefault(const int idx)
 		pd.Stats.Score = STARTING_CASH;
 		pd.Totals.Score = STARTING_CASH;
 	}
+
+	pd.Ammo_count = (pb_size_t)AmmoGetNumClasses(&gAmmo);
 
 	return pd;
 }
@@ -508,6 +510,28 @@ bool PlayerHasWeapon(const PlayerData *p, const WeaponClass *wc)
 	return false;
 }
 
+static void AddWeaponToSlot(
+	PlayerData *p, const WeaponClass *wc, const int slot)
+{
+	p->guns[slot] = wc;
+	// Add minimal ammo
+	const int numBarrels = WeaponClassNumBarrels(wc);
+	for (int i = 0; i < numBarrels; i++)
+	{
+		const int ammoId = WC_BARREL_ATTR(*wc, AmmoId, i);
+		if (ammoId < 0)
+		{
+			continue;
+		}
+		const Ammo *a = AmmoGetById(&gAmmo, ammoId);
+		const int startingAmount = a->Amount * AMMO_STARTING_MULTIPLE;
+		if (startingAmount > PlayerGetAmmoAmount(p, ammoId))
+		{
+			CArraySet(&p->ammo, ammoId, &startingAmount);
+		}
+	}
+}
+
 void PlayerAddWeaponToSlot(
 	PlayerData *p, const WeaponClass *wc, const int slot)
 {
@@ -534,7 +558,7 @@ void PlayerAddWeaponToSlot(
 	{
 		PlayerScore(p, -wc->Price);
 	}
-	p->guns[slot] = wc;
+	AddWeaponToSlot(p, wc, slot);
 }
 
 void PlayerAddWeapon(PlayerData *p, const WeaponClass *wc)
@@ -560,7 +584,7 @@ void PlayerAddWeapon(PlayerData *p, const WeaponClass *wc)
 	{
 		if (p->guns[i] == NULL)
 		{
-			p->guns[i] = wc;
+			AddWeaponToSlot(p, wc, i);
 			break;
 		}
 	}
@@ -573,6 +597,7 @@ void PlayerRemoveWeapon(PlayerData *p, const int slot)
 	{
 		PlayerScore(p, p->guns[slot]->Price);
 	}
+	// TODO: refund ammo if no guns use this ammo
 	p->guns[slot] = NULL;
 	PlayerAddMinimalWeapons(p);
 }
@@ -581,4 +606,10 @@ void PlayerAddMinimalWeapons(PlayerData *p)
 {
 	// Always have fists
 	PlayerAddWeapon(p, StrWeaponClass("Fists"));
+}
+
+int PlayerGetAmmoAmount(const PlayerData *p, const int ammoId)
+{
+	return (int)p->ammo.size >= ammoId ? *(int *)CArrayGet(&p->ammo, ammoId)
+									   : 0;
 }
