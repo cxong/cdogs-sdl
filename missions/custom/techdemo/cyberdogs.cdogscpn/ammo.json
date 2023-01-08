@@ -9,6 +9,7 @@
       },
       "Sound": "bullet_pickup",
       "Amount": 100,
+      "Max": 1000,
       "Price": 600
     },
     {
@@ -19,6 +20,7 @@
       },
       "Sound": "grenade_pickup",
       "Amount": 10,
+      "Max": 100,
       "Price": 300
     },
     {
@@ -30,6 +32,7 @@
       },
       "Sound": "cells_pickup",
       "Amount": 10,
+      "Max": 100,
       "Price": 100
     },
     {
@@ -41,6 +44,7 @@
       },
       "Sound": "mini_cells_pickup",
       "Amount": 50,
+      "Max": 500,
       "Price": 500
     },
     {
@@ -51,6 +55,7 @@
       },
       "Sound": "grenade_pickup",
       "Amount": 10,
+      "Max": 100,
       "Price": 1000
     },
     {
@@ -61,6 +66,7 @@
       },
       "Sound": "gas_tank_pickup",
       "Amount": 100,
+      "Max": 1000,
       "Price": 500
     }
   ]

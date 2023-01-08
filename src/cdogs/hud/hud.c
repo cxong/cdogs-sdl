@@ -31,7 +31,6 @@
 #include <math.h>
 
 #include "actors.h"
-#include "ammo.h"
 #include "automap.h"
 #include "draw/draw.h"
 #include "draw/draw_actor.h"

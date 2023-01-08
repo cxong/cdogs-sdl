@@ -46,6 +46,7 @@
 #define GUN_BG_W 40
 #define GUN_BG_H 25
 #define SCROLL_H 12
+#define SLOT_BORDER 3
 #define AMMO_LEVEL_W 2
 
 static GunType SlotType(const int slot)
@@ -193,13 +194,15 @@ static void ClampScroll(WeaponMenuData *data)
 	data->scroll = CLAMP(data->scroll, minRow, maxRow);
 }
 
-static void DrawAmmo(GraphicsDevice *g, const PlayerData *p, const WeaponClass *wc, const color_t mask, const struct vec2i pos, const struct vec2i slotSize)
+static void DrawAmmo(
+	GraphicsDevice *g, const PlayerData *p, const WeaponClass *wc,
+	const color_t mask, const struct vec2i pos, const struct vec2i slotSize)
 {
 	if (!gCampaign.Setting.Ammo || !wc)
 	{
 		return;
 	}
-	
+
 	CPicDrawContext c = CPicDrawContextNew();
 	c.Mask = mask;
 	const int numBarrels = WeaponClassNumBarrels(wc);
@@ -212,19 +215,37 @@ static void DrawAmmo(GraphicsDevice *g, const PlayerData *p, const WeaponClass *
 		}
 		const Ammo *a = AmmoGetById(&gAmmo, ammoId);
 		// Draw ammo level
-		const int amount = (int)p->ammo.size >= ammoId ? *(int *)CArrayGet(&p->ammo, ammoId) : 0;
-		if (amount > 0)
+		const int amount = (int)p->ammo.size >= ammoId
+							   ? *(int *)CArrayGet(&p->ammo, ammoId)
+							   : 0;
+		const int ammoMax = a->Max ? a->Max : amount;
+		if (ammoMax > 0)
 		{
-			const int ammoMax = a->Max ? a->Max : amount;
-			const int h = amount * (slotSize.y - 2 * AMMO_LEVEL_W) / ammoMax;
-			DrawRectangle(g, svec2i_add(pos, svec2i(slotSize.x - 2 - AMMO_LEVEL_W * (numBarrels - i), slotSize.y - 2 - h)), svec2i(AMMO_LEVEL_W, h), colorBlue, true);
+			const int dx =
+				slotSize.x - SLOT_BORDER - AMMO_LEVEL_W * (numBarrels - i);
+			const int h = amount * (slotSize.y - 2 * SLOT_BORDER) / ammoMax;
+			if (AmmoIsLow(a, amount))
+			{
+				DrawRectangle(
+					g, svec2i_add(pos, svec2i(dx, SLOT_BORDER)),
+					svec2i(AMMO_LEVEL_W, slotSize.y - 2 * SLOT_BORDER),
+					ColorMult(colorRed, mask), true);
+			}
+			if (amount > 0)
+			{
+				DrawRectangle(
+					g,
+					svec2i_add(pos, svec2i(dx, slotSize.y - SLOT_BORDER - h)),
+					svec2i(AMMO_LEVEL_W, h), ColorMult(colorBlue, mask), true);
+			}
 		}
-		
+
 		// Draw ammo icon
 		CPicDraw(
 			g, &a->Pic,
 			svec2i_subtract(
-				svec2i_add(pos, slotSize), svec2i(16 - (numBarrels - i) * 4, 18)),
+				svec2i_add(pos, slotSize),
+				svec2i(16 - (numBarrels - i) * 4, 18)),
 			&c);
 	}
 }
@@ -295,7 +316,10 @@ static void DrawEquipSlot(
 		pData->guns[slot] ? mask : colorBlack, 0, svec2_one(), SDL_FLIP_NONE,
 		Rect2iZero());
 
-	DrawAmmo(g, pData, pData->guns[slot], mask, svec2i_subtract(bgPos, svec2i(0, 8)), slotSize);
+	DrawAmmo(
+		g, pData, pData->guns[slot], mask,
+		svec2i(bgPos.x, bgPos.y + FontH() + 1),
+		svec2i(slotSize.x + 1, slotSize.y - 2 * FontH()));
 
 	if (data->SlotHasNew[slot])
 	{
