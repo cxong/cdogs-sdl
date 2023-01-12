@@ -763,6 +763,7 @@ static void DrawGunMenu(
 	const int weaponsY = CENTER_Y(pos, size, weaponsHeight) - 12;
 	const color_t color = d->equipping ? colorWhite : colorGray;
 	const struct vec2i scrollSize = svec2i(d->cols * GUN_BG_W - 2, SCROLL_H);
+	bool scrollDown = false;
 
 	// Draw guns: red if selected, yellow if equipped
 	int idx = 0;
