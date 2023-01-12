@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2015, 2018, 2020, 2022 Cong Xu
+	Copyright (c) 2013-2015, 2018, 2020, 2022-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -55,6 +55,8 @@ typedef struct
 	bool SlotHasNew[MAX_WEAPONS];
 	int cols;
 	int scroll;
+	int ammoSlot;
+	int endSlot;
 } WeaponMenuData;
 typedef struct
 {

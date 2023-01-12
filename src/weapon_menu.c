@@ -39,9 +39,11 @@
 #include "material.h"
 
 #define NO_GUN_LABEL "(None)"
+#define AMMO_LABEL "Ammo"
 #define END_MENU_LABEL "(End)"
 #define WEAPON_MENU_WIDTH 80
 #define EQUIP_MENU_SLOT_HEIGHT 40
+#define UTIL_MENU_SLOT_HEIGHT 12
 #define WEAPON_MENU_MAX_ROWS 4
 #define GUN_BG_W 40
 #define GUN_BG_H 25
@@ -157,17 +159,22 @@ static int CountNumGuns(const WeaponMenuData *data, const int slot)
 
 static bool IsSlotDisabled(const WeaponMenuData *data, const int slot)
 {
-	if (slot < 0 || slot > MAX_WEAPONS)
+	if (slot < 0 || slot > data->endSlot)
 	{
 		return true;
 	}
-	// Disable end option if nothing equipped
-	const PlayerData *pData = PlayerDataGetByUID(data->PlayerUID);
-	if (slot == MAX_WEAPONS)
+	if (slot < MAX_WEAPONS)
 	{
+		return CountNumGuns(data, slot) == 0;
+	}
+	// Disable end option if nothing equipped
+	if (slot == data->endSlot)
+	{
+		const PlayerData *pData = PlayerDataGetByUID(data->PlayerUID);
 		return PlayerGetNumWeapons(pData) == 0;
 	}
-	return CountNumGuns(data, slot) == 0;
+	// TODO: util menus
+	return false;
 }
 
 static void ClampScroll(WeaponMenuData *data)
@@ -354,6 +361,7 @@ static void DrawEquipMenu(
 		d->PlayerUID); // Allow space for price if buy/sell enabled
 	const int h =
 		EQUIP_MENU_SLOT_HEIGHT + (gCampaign.Setting.BuyAndSell ? FontH() : 0);
+	int y = pos.y;
 
 	// Draw player cash
 	if (gCampaign.Setting.BuyAndSell)
@@ -377,16 +385,27 @@ static void DrawEquipMenu(
 		}
 	}
 
-	DrawEquipSlot(d, g, 0, "I", svec2i(pos.x, pos.y), ALIGN_START);
+	DrawEquipSlot(d, g, 0, "I", svec2i(pos.x, y), ALIGN_START);
 	DrawEquipSlot(
-		d, g, 1, "II", svec2i(pos.x + WEAPON_MENU_WIDTH / 2, pos.y),
-		ALIGN_END);
+		d, g, 1, "II", svec2i(pos.x + WEAPON_MENU_WIDTH / 2, y), ALIGN_END);
+	y += h;
+	DrawEquipSlot(d, g, MELEE_SLOT, "Melee", svec2i(pos.x, y), ALIGN_START);
 	DrawEquipSlot(
-		d, g, MELEE_SLOT, "Melee", svec2i(pos.x, pos.y + h), ALIGN_START);
-	DrawEquipSlot(
-		d, g, 3, "Bombs", svec2i(pos.x + WEAPON_MENU_WIDTH / 2, pos.y + h),
-		ALIGN_END);
+		d, g, 3, "Bombs", svec2i(pos.x + WEAPON_MENU_WIDTH / 2, y), ALIGN_END);
+	y += h + 8;
+	if (d->ammoSlot >= 0)
+	{
+		const bool selected = d->EquipSlot == d->ammoSlot;
+		DisplayMenuItem(
+			g,
+			Rect2iNew(
+				svec2i(CENTER_X(pos, size, FontStrSize(AMMO_LABEL).x), y),
+				FontStrSize(AMMO_LABEL)),
+			AMMO_LABEL, selected, false, colorWhite);
+		y += UTIL_MENU_SLOT_HEIGHT;
+	}
 
+	y += 8;
 	const WeaponClass *gun = NULL;
 	if (d->display.GunIdx >= 0 && d->display.GunIdx < MAX_WEAPONS)
 	{
@@ -396,14 +415,14 @@ static void DrawEquipMenu(
 		&pData->Char, svec2i(pos.x + WEAPON_MENU_WIDTH / 2, pos.y + h + 8),
 		DIRECTION_DOWN, false, false, gun);
 
-	const struct vec2i endSize = FontStrSize(END_MENU_LABEL);
-	const bool endDisabled = IsSlotDisabled(d, MAX_WEAPONS) || d->equipping;
+	const bool endDisabled = IsSlotDisabled(d, d->endSlot) || d->equipping;
+	const bool endSelected = d->EquipSlot == d->endSlot;
 	DisplayMenuItem(
 		g,
 		Rect2iNew(
-			svec2i(CENTER_X(pos, size, endSize.x), pos.y + h * 2 + FontH()),
+			svec2i(CENTER_X(pos, size, FontStrSize(END_MENU_LABEL).x), y),
 			FontStrSize(END_MENU_LABEL)),
-		END_MENU_LABEL, d->EquipSlot == MAX_WEAPONS, endDisabled, colorWhite);
+		END_MENU_LABEL, endSelected, endDisabled, colorWhite);
 }
 static int HandleInputEquipMenu(int cmd, void *data)
 {
@@ -496,26 +515,37 @@ static int HandleInputEquipMenu(int cmd, void *data)
 	}
 	else if (cmd & CMD_DOWN)
 	{
-		if (d->EquipSlot < MAX_WEAPONS)
+		if (d->EquipSlot < d->endSlot)
 		{
-			newSlot = MIN(MAX_WEAPONS, d->EquipSlot + 2);
-			if (IsSlotDisabled(data, newSlot))
+			if (d->EquipSlot < MAX_WEAPONS)
 			{
-				// Try switching to the other slot below (down-left or
-				// down-right), or skip the row and keep going forward until an
-				// enabled slot
-				if (!IsSlotDisabled(data, newSlot ^ 1))
+				newSlot = MIN(d->endSlot, d->EquipSlot + 2);
+				if (IsSlotDisabled(data, newSlot))
 				{
-					newSlot ^= 1;
-				}
-				else
-				{
-					do
+					// Try switching to the other slot below (down-left or
+					// down-right), or skip the row and keep going forward
+					// until an enabled slot
+					if (!IsSlotDisabled(data, newSlot ^ 1))
 					{
-						newSlot++;
-					} while (newSlot < MAX_WEAPONS &&
-							 IsSlotDisabled(data, newSlot));
+						newSlot ^= 1;
+					}
+					else
+					{
+						do
+						{
+							newSlot++;
+						} while (newSlot < d->endSlot &&
+								 IsSlotDisabled(data, newSlot));
+					}
 				}
+			}
+			else
+			{
+				do
+				{
+					newSlot++;
+				} while (newSlot < d->endSlot &&
+						 IsSlotDisabled(data, newSlot));
 			}
 		}
 	}
@@ -578,7 +608,7 @@ static menu_t *CreateEquipMenu(
 	}
 
 	// Pre-select the End menu
-	data->EquipSlot = MAX_WEAPONS;
+	data->EquipSlot = data->endSlot;
 	menu_t *menu =
 		MenuCreateCustom("", DrawEquipMenu, HandleInputEquipMenu, data);
 
@@ -660,6 +690,16 @@ void WeaponMenuCreate(
 	}
 	const Pic *gunBG = CArrayGet(&data->gunBGSprites->pics, 0);
 	data->cols = CLAMP(size.x * 3 / (gunBG->size.x + 2) / 4, 2, 4);
+	// Check how many util menu items there are
+	data->endSlot = MAX_WEAPONS;
+	if (gCampaign.Setting.BuyAndSell)
+	{
+		if (gCampaign.Setting.Ammo)
+		{
+			data->ammoSlot = data->endSlot;
+			data->endSlot++;
+		}
+	}
 
 	MenuSystemInit(ms, handlers, graphics, pos, size);
 	ms->align = MENU_ALIGN_LEFT;
@@ -674,7 +714,7 @@ void WeaponMenuCreate(
 	// For AI players, pre-pick their weapons and go straight to menu end
 	if (pData->inputDevice == INPUT_DEVICE_AI)
 	{
-		menu->data.EquipSlot = MAX_WEAPONS;
+		menu->data.EquipSlot = data->endSlot;
 		menu->data.equipping = false;
 		menu->msEquip.current = NULL;
 		AICoopSelectWeapons(pData, player, weapons);
@@ -723,7 +763,6 @@ static void DrawGunMenu(
 	const int weaponsY = CENTER_Y(pos, size, weaponsHeight) - 12;
 	const color_t color = d->equipping ? colorWhite : colorGray;
 	const struct vec2i scrollSize = svec2i(d->cols * GUN_BG_W - 2, SCROLL_H);
-	bool scrollDown = false;
 
 	// Draw guns: red if selected, yellow if equipped
 	int idx = 0;
@@ -1014,6 +1053,7 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 			{
 				menu->data.gunIdx = -1;
 			}
+			// TODO: util menus
 		}
 	}
 
@@ -1028,7 +1068,7 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 bool WeaponMenuIsDone(const WeaponMenu *menu)
 {
 	return menu->msEquip.current == NULL && !menu->data.equipping &&
-		   menu->data.EquipSlot == MAX_WEAPONS;
+		   menu->data.EquipSlot == menu->data.endSlot;
 }
 
 void WeaponMenuDraw(const WeaponMenu *menu)
