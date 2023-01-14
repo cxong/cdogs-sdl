@@ -608,8 +608,57 @@ void PlayerAddMinimalWeapons(PlayerData *p)
 	PlayerAddWeapon(p, StrWeaponClass("Fists"));
 }
 
+bool PlayerUsesAmmo(const PlayerData *p, const int ammoId)
+{
+	for (int i = 0; i < MAX_WEAPONS; i++)
+	{
+		if (p->guns[i] == NULL)
+		{
+			continue;
+		}
+		const int numBarrels = WeaponClassNumBarrels(p->guns[i]);
+		for (int j = 0; j < numBarrels; j++)
+		{
+			const int ammoId2 = WC_BARREL_ATTR(*p->guns[i], AmmoId, j);
+			if (ammoId == ammoId2)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+bool PlayerUsesAnyAmmo(const PlayerData *p)
+{
+	for (int i = 0; i < MAX_WEAPONS; i++)
+	{
+		if (p->guns[i] == NULL)
+		{
+			continue;
+		}
+		const int numBarrels = WeaponClassNumBarrels(p->guns[i]);
+		for (int j = 0; j < numBarrels; j++)
+		{
+			const int ammoId2 = WC_BARREL_ATTR(*p->guns[i], AmmoId, j);
+			if (ammoId2 >= 0)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 int PlayerGetAmmoAmount(const PlayerData *p, const int ammoId)
 {
 	return (int)p->ammo.size >= ammoId ? *(int *)CArrayGet(&p->ammo, ammoId)
 									   : 0;
+}
+
+void PlayerAddAmmo(PlayerData *p, const int ammoId, const int amount)
+{
+	int *ammoAmount = CArrayGet(&p->ammo, ammoId);
+	const Ammo *a = AmmoGetById(&gAmmo, ammoId);
+	*ammoAmount = CLAMP(*ammoAmount + amount, 0, a->Max);
 }

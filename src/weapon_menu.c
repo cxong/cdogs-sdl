@@ -396,12 +396,13 @@ static void DrawEquipMenu(
 	if (d->ammoSlot >= 0)
 	{
 		const bool selected = d->EquipSlot == d->ammoSlot;
+		const bool disabled = !PlayerUsesAnyAmmo(pData);
 		DisplayMenuItem(
 			g,
 			Rect2iNew(
 				svec2i(CENTER_X(pos, size, FontStrSize(AMMO_LABEL).x), y),
 				FontStrSize(AMMO_LABEL)),
-			AMMO_LABEL, selected, false, colorWhite);
+			AMMO_LABEL, selected, disabled, colorWhite);
 		y += UTIL_MENU_SLOT_HEIGHT;
 	}
 
@@ -698,6 +699,15 @@ void WeaponMenuCreate(
 		{
 			data->ammoSlot = data->endSlot;
 			data->endSlot++;
+			// Auto-refill free ammo
+			for (int i = 0; i < AmmoGetNumClasses(&gAmmo); i++)
+			{
+				const Ammo *ammo = AmmoGetById(&gAmmo, i);
+				if (ammo->Price == 0)
+				{
+					PlayerAddAmmo(pData, i, ammo->Max);
+				}
+			}
 		}
 	}
 
@@ -941,13 +951,17 @@ static void DrawAmmoMenu(
 	const color_t color = d->equipping ? colorWhite : colorGray;
 	const struct vec2i scrollSize = svec2i(d->cols * GUN_BG_W - 2, SCROLL_H);
 	bool scrollDown = false;
+	const PlayerData *pData = PlayerDataGetByUID(d->PlayerUID);
 
 	// Draw ammo: red if selected, yellow if equipped
 	int idx = 0;
 	for (int i = 0; i < AmmoGetNumClasses(&gAmmo); i++)
 	{
+		if (!PlayerUsesAmmo(pData, i))
+		{
+			continue;
+		}
 		const Ammo *ammo = AmmoGetById(&gAmmo, i);
-		// TODO: skip if no gun uses this ammo
 		const int row = idx / d->cols;
 		if (row >= d->scroll && row < d->scroll + WEAPON_MENU_MAX_ROWS)
 		{
@@ -1026,7 +1040,6 @@ static void DrawAmmoMenuItem(
 		pos.x + 2 + (idx % data->cols) * GUN_BG_W,
 		pos.y + (idx / data->cols - data->scroll) * bgSize.y);
 	// Disallow buy/sell if ammo is free
-	// TODO: auto refill ammo to full if ammo is free
 	const bool enabled =
 		data->equipping && a->Price > 0 && a->Price <= pData->Totals.Score;
 	color_t color = enabled ? colorWhite : colorGray;
@@ -1194,7 +1207,7 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 	else
 	{
 		MenuProcessCmd(&menu->msEquip, cmd);
-		if (menu->data.EquipSlot < MAX_WEAPONS)
+		if (menu->data.EquipSlot < menu->data.endSlot)
 		{
 			if (MenuIsExit(&menu->msEquip))
 			{
