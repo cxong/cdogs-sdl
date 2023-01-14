@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2014, 2016-2019 Cong Xu
+    Copyright (c) 2014, 2016-2019, 2023 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -134,6 +134,7 @@ static void LoadAmmo(Ammo *a, json_t *node, const int version)
 	a->Sound = GetString(node, "Sound");
 	LoadInt(&a->Amount, node, "Amount");
 	LoadInt(&a->Max, node, "Max");
+	LoadInt(&a->Price, node, "Price");
 }
 void AmmoClassesClear(CArray *ammo)
 {

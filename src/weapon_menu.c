@@ -734,31 +734,47 @@ static bool HasWeapon(const CArray *weapons, const WeaponClass *wc)
 	CA_FOREACH_END()
 	return false;
 }
-static void DrawGunMenu(
+static void DrawAvailableMenu(
 	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
 	const struct vec2i size, const void *data);
 static int HandleInputGunMenu(int cmd, void *data);
 static menu_t *CreateGunMenu(WeaponMenuData *data)
 {
-	menu_t *menu = MenuCreateCustom("", DrawGunMenu, HandleInputGunMenu, data);
+	menu_t *menu =
+		MenuCreateCustom("", DrawAvailableMenu, HandleInputGunMenu, data);
 
 	MenuSetPostInputFunc(menu, WeaponSelect, data);
 
 	return menu;
 }
-static void DrawGun(
-	const WeaponMenuData *data, GraphicsDevice *g, const int idx,
-	const WeaponClass *wc, const bool isNew, const struct vec2i pos);
 static void DrawGunMenu(
+	const WeaponMenuData *d, GraphicsDevice *g, const struct vec2i pos,
+	const struct vec2i size);
+static void DrawAmmoMenu(
+	const WeaponMenuData *d, GraphicsDevice *g, const struct vec2i pos,
+	const struct vec2i size);
+static void DrawAvailableMenu(
 	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
 	const struct vec2i size, const void *data)
 {
 	UNUSED(menu);
 	const WeaponMenuData *d = data;
-	if (d->EquipSlot >= MAX_WEAPONS)
+	if (d->EquipSlot < MAX_WEAPONS)
 	{
-		return;
+		DrawGunMenu(d, g, pos, size);
 	}
+	else if (d->EquipSlot == d->ammoSlot)
+	{
+		DrawAmmoMenu(d, g, pos, size);
+	}
+}
+static void DrawGun(
+	const WeaponMenuData *data, GraphicsDevice *g, const int idx,
+	const WeaponClass *wc, const bool isNew, const struct vec2i pos);
+static void DrawGunMenu(
+	const WeaponMenuData *d, GraphicsDevice *g, const struct vec2i pos,
+	const struct vec2i size)
+{
 	const int weaponsHeight = EQUIP_MENU_SLOT_HEIGHT * 2 + FontH();
 	const int weaponsY = CENTER_Y(pos, size, weaponsHeight) - 12;
 	const color_t color = d->equipping ? colorWhite : colorGray;
@@ -837,6 +853,7 @@ static void DrawGunMenu(
 	}
 	else
 	{
+		// Draw "none" gun which can be used to unequip this slot
 		DrawGun(d, g, idx, NULL, false, svec2i(pos.x, pos.y + weaponsY));
 	}
 }
@@ -910,6 +927,145 @@ static void DrawGun(
 		ALIGN_CENTER, ALIGN_END, bgSize, svec2i(2, 2), color};
 	const char *gunName = wc ? wc->name : NO_GUN_LABEL;
 	FontStrOpt(gunName, bgPos, fopts);
+}
+
+static void DrawAmmoMenuItem(
+	const WeaponMenuData *data, GraphicsDevice *g, const int idx,
+	const Ammo *a, const struct vec2i pos);
+static void DrawAmmoMenu(
+	const WeaponMenuData *d, GraphicsDevice *g, const struct vec2i pos,
+	const struct vec2i size)
+{
+	const int ammoHeight = EQUIP_MENU_SLOT_HEIGHT * 2 + FontH();
+	const int ammoY = CENTER_Y(pos, size, ammoHeight) - 12;
+	const color_t color = d->equipping ? colorWhite : colorGray;
+	const struct vec2i scrollSize = svec2i(d->cols * GUN_BG_W - 2, SCROLL_H);
+	bool scrollDown = false;
+
+	// Draw ammo: red if selected, yellow if equipped
+	int idx = 0;
+	for (int i = 0; i < AmmoGetNumClasses(&gAmmo); i++)
+	{
+		const Ammo *ammo = AmmoGetById(&gAmmo, i);
+		// TODO: skip if no gun uses this ammo
+		const int row = idx / d->cols;
+		if (row >= d->scroll && row < d->scroll + WEAPON_MENU_MAX_ROWS)
+		{
+			DrawAmmoMenuItem(d, g, idx, ammo, svec2i(pos.x, pos.y + ammoY));
+		}
+		idx++;
+		if (idx / d->cols == d->scroll + WEAPON_MENU_MAX_ROWS)
+		{
+			scrollDown = true;
+			break;
+		}
+	}
+
+	// Draw scroll buttons
+	const Pic *gradient = PicManagerGetPic(&gPicManager, "hud/gradient");
+	if (d->scroll > 0)
+	{
+		const Pic *scrollPic = CArrayGet(&d->gunBGSprites->pics, 0);
+		const Rect2i scrollRect =
+			Rect2iNew(svec2i(pos.x + 3, pos.y + 1 + ammoY), scrollSize);
+		PicRender(
+			gradient, g->gameWindow.renderer,
+			svec2i(
+				scrollRect.Pos.x + scrollSize.x / 2,
+				pos.y + gradient->size.y / 2 + ammoY + scrollSize.y - 1),
+			colorBlack, 0, svec2((float)scrollSize.x, 1), SDL_FLIP_NONE,
+			Rect2iZero());
+		Draw9Slice(
+			g, scrollPic, scrollRect, 3, 3, 3, 3, true, color, SDL_FLIP_NONE);
+		FontOpts fopts = FontOptsNew();
+		fopts.Area = scrollRect.Size;
+		fopts.HAlign = ALIGN_CENTER;
+		fopts.VAlign = ALIGN_CENTER;
+		fopts.Mask = color;
+		FontStrOpt(ARROW_UP, scrollRect.Pos, fopts);
+	}
+	if (scrollDown)
+	{
+		const Pic *scrollPic = CArrayGet(&d->gunBGSprites->pics, 0);
+		const Rect2i scrollRect = Rect2iNew(
+			svec2i(
+				pos.x + 3, pos.y - 1 + ammoY +
+							   GUN_BG_H * WEAPON_MENU_MAX_ROWS - SCROLL_H),
+			scrollSize);
+		PicRender(
+			gradient, g->gameWindow.renderer,
+			svec2i(
+				scrollRect.Pos.x + scrollSize.x / 2,
+				pos.y - gradient->size.y / 2 + ammoY +
+					GUN_BG_H * WEAPON_MENU_MAX_ROWS - SCROLL_H -
+					gradient->size.y / 2 + 1),
+			colorBlack, 0, svec2((float)scrollSize.x, 1), SDL_FLIP_VERTICAL,
+			Rect2iZero());
+		Draw9Slice(
+			g, scrollPic, scrollRect, 3, 3, 3, 3, true, color, SDL_FLIP_NONE);
+		FontOpts fopts = FontOptsNew();
+		fopts.Area = scrollRect.Size;
+		fopts.HAlign = ALIGN_CENTER;
+		fopts.VAlign = ALIGN_CENTER;
+		fopts.Mask = color;
+		FontStrOpt(ARROW_DOWN, scrollRect.Pos, fopts);
+	}
+}
+static void DrawAmmoMenuItem(
+	const WeaponMenuData *data, GraphicsDevice *g, const int idx,
+	const Ammo *a, const struct vec2i pos)
+{
+	const bool selected = data->gunIdx == idx;
+	const PlayerData *pData = PlayerDataGetByUID(data->PlayerUID);
+	const int bgSpriteIndex = (int)selected;
+	const Pic *gunBG = CArrayGet(&data->gunBGSprites->pics, bgSpriteIndex);
+	// Allow space for price if buy/sell enabled
+	const int h = GUN_BG_H + (gCampaign.Setting.BuyAndSell ? FontH() : 0);
+	const struct vec2i bgSize = svec2i(GUN_BG_W, h);
+	const struct vec2i bgPos = svec2i(
+		pos.x + 2 + (idx % data->cols) * GUN_BG_W,
+		pos.y + (idx / data->cols - data->scroll) * bgSize.y);
+	// Disallow buy/sell if ammo is free
+	// TODO: auto refill ammo to full if ammo is free
+	const bool enabled =
+		data->equipping && a->Price > 0 && a->Price <= pData->Totals.Score;
+	color_t color = enabled ? colorWhite : colorGray;
+	const color_t mask = color;
+	if (selected && data->equipping)
+	{
+		const color_t bg = {0, 255, 255, 64};
+		DrawRectangle(g, bgPos, bgSize, bg, true);
+		color = colorRed;
+	}
+
+	Draw9Slice(
+		g, gunBG,
+		Rect2iNew(
+			svec2i(bgPos.x + 1, bgPos.y + 1),
+			svec2i(GUN_BG_W - 2, bgSize.y - 2)),
+		3, 3, 3, 3, true, mask, SDL_FLIP_NONE);
+
+	// Draw icon at center of slot
+	CPicDrawContext c = CPicDrawContextNew();
+	const struct vec2i ammoPos = svec2i_subtract(
+		svec2i_add(bgPos, svec2i_scale_divide(bgSize, 2)),
+		svec2i_scale_divide(CPicGetPic(&a->Pic, 0)->size, 2));
+	CPicDraw(g, &a->Pic, ammoPos, &c);
+
+	// Draw price
+	if (a->Price > 0)
+	{
+		const FontOpts foptsP = {
+			ALIGN_CENTER, ALIGN_START, bgSize, svec2i(2, 2),
+			enabled ? (selected ? colorRed : colorGray) : colorDarkGray};
+		char buf[256];
+		sprintf(buf, "$%d", a->Price);
+		FontStrOpt(buf, bgPos, foptsP);
+	}
+
+	const FontOpts fopts = {
+		ALIGN_CENTER, ALIGN_END, bgSize, svec2i(2, 2), color};
+	FontStrOpt(a->Name, bgPos, fopts);
 }
 static int HandleInputGunMenu(int cmd, void *data)
 {
