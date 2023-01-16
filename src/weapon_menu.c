@@ -90,6 +90,24 @@ static const WeaponClass *GetSelectedGun(const WeaponMenuData *data)
 {
 	return GetGun(&data->weapons, data->gunIdx, data->EquipSlot);
 }
+static int GetSelectedAmmo(const WeaponMenuData *d)
+{
+	const PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
+	int idx = 0;
+	for (int i = 0; i < AmmoGetNumClasses(&gAmmo); i++)
+	{
+		if (!PlayerUsesAmmo(p, i))
+		{
+			continue;
+		}
+		if (idx == d->gunIdx)
+		{
+			return i;
+		}
+		idx++;
+	}
+	return -1;
+}
 
 static int EquipCostDiff(
 	const WeaponClass *wc, const PlayerData *p, const int slot)
@@ -106,6 +124,28 @@ static int EquipCostDiff(
 	return cost1 - cost2;
 }
 
+static int GetSelectedCostDiff(const WeaponMenuData *d)
+{
+	const PlayerData *pData = PlayerDataGetByUID(
+		d->PlayerUID);
+	const WeaponClass *wc = GetSelectedGun(d);
+	if (wc)
+	{
+		return EquipCostDiff(wc, pData, d->EquipSlot);
+	}
+	const int ammoId = GetSelectedAmmo(d);
+	if (ammoId >= 0)
+	{
+		const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
+		const int amount = PlayerGetAmmoAmount(pData, ammoId);
+		if (ammo->Max > amount)
+		{
+			return ammo->Price;
+		}
+	}
+	return 0;
+}
+
 static void WeaponSelect(menu_t *menu, int cmd, void *data)
 {
 	UNUSED(menu);
@@ -113,23 +153,28 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 
 	if (cmd & CMD_BUTTON1)
 	{
-		// Add the selected weapon to the slot
-		const WeaponClass *selectedGun = GetSelectedGun(d);
+		// Add the selected item
 		const PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
-		if (gCampaign.Setting.BuyAndSell &&
-			EquipCostDiff(selectedGun, p, d->EquipSlot) > p->Totals.Score)
+		const WeaponClass *selectedGun = GetSelectedGun(d);
+		const int ammoId = GetSelectedAmmo(d);
+		if (gCampaign.Setting.BuyAndSell && GetSelectedCostDiff(d) > p->Totals.Score)
 		{
 			// Can't afford
 			return;
 		}
 		d->SelectResult = WEAPON_MENU_SELECT;
-		if (selectedGun == NULL)
+		if (selectedGun != NULL)
 		{
-			MenuPlaySound(MENU_SOUND_SWITCH);
+			SoundPlay(&gSoundDevice, selectedGun->SwitchSound);
+		}
+		else if (ammoId >= 0)
+		{
+			const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
+			SoundPlay(&gSoundDevice, StrSound(ammo->Sound));
 		}
 		else
 		{
-			SoundPlay(&gSoundDevice, selectedGun->SwitchSound);
+			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}
 	else if (cmd & CMD_BUTTON2)
@@ -167,11 +212,15 @@ static bool IsSlotDisabled(const WeaponMenuData *data, const int slot)
 	{
 		return CountNumGuns(data, slot) == 0;
 	}
+	const PlayerData *pData = PlayerDataGetByUID(data->PlayerUID);
 	// Disable end option if nothing equipped
 	if (slot == data->endSlot)
 	{
-		const PlayerData *pData = PlayerDataGetByUID(data->PlayerUID);
 		return PlayerGetNumWeapons(pData) == 0;
+	}
+	if (slot == data->ammoSlot)
+	{
+		return !PlayerUsesAnyAmmo(pData);
 	}
 	// TODO: util menus
 	return false;
@@ -358,7 +407,8 @@ static void DrawEquipMenu(
 	UNUSED(menu);
 	const WeaponMenuData *d = data;
 	const PlayerData *pData = PlayerDataGetByUID(
-		d->PlayerUID); // Allow space for price if buy/sell enabled
+		d->PlayerUID);
+	// Allow space for price if buy/sell enabled
 	const int h =
 		EQUIP_MENU_SLOT_HEIGHT + (gCampaign.Setting.BuyAndSell ? FontH() : 0);
 	int y = pos.y;
@@ -368,11 +418,11 @@ static void DrawEquipMenu(
 	{
 		const struct vec2i fpos = AnimatedCounterDraw(
 			&d->Cash, svec2i_add(pos, svec2i(0, -FontH() - 2)));
-		const WeaponClass *wc = GetSelectedGun(data);
-		if (wc)
+		// Draw cost difference to buy selected item
+		if (d->equipping)
 		{
-			const int costDiff = EquipCostDiff(wc, pData, d->EquipSlot);
-			if (d->equipping && costDiff != 0)
+			const int costDiff = GetSelectedCostDiff(d);
+			if (costDiff != 0)
 			{
 				// Draw price diff
 				const FontOpts foptsD = {
@@ -705,7 +755,7 @@ void WeaponMenuCreate(
 				const Ammo *ammo = AmmoGetById(&gAmmo, i);
 				if (ammo->Price == 0)
 				{
-					PlayerAddAmmo(pData, i, ammo->Max);
+					PlayerAddAmmo(pData, i, ammo->Max, true);
 				}
 			}
 		}
@@ -1112,12 +1162,14 @@ static int HandleInputGunMenu(int cmd, void *data)
 
 	if (cmd & CMD_BUTTON1)
 	{
-		const WeaponClass *selectedGun = GetSelectedGun(d);
-		if (gCampaign.Setting.BuyAndSell &&
-			EquipCostDiff(selectedGun, p, d->EquipSlot) > p->Totals.Score)
+		if (gCampaign.Setting.BuyAndSell)
 		{
-			// Can't afford
-			return 0;
+			const int costDiff = GetSelectedCostDiff(d);
+			if (costDiff > 0 && costDiff > p->Totals.Score)
+			{
+				// Can't afford
+				return 0;
+			}
 		}
 		return 1;
 	}
@@ -1188,11 +1240,18 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 		{
 		case WEAPON_MENU_NONE:
 			break;
-		case WEAPON_MENU_SELECT: {
-			const WeaponClass *selectedGun = GetSelectedGun(&menu->data);
-			PlayerAddWeaponToSlot(p, selectedGun, menu->data.EquipSlot);
+		case WEAPON_MENU_SELECT:
+			if (menu->data.EquipSlot < MAX_WEAPONS)
+			{
+				const WeaponClass *selectedGun = GetSelectedGun(&menu->data);
+				PlayerAddWeaponToSlot(p, selectedGun, menu->data.EquipSlot);
+			}
+			else if (menu->data.EquipSlot == menu->data.ammoSlot)
+			{
+				const int ammoId = GetSelectedAmmo(&menu->data);
+				PlayerAddAmmo(p, ammoId, AmmoGetById(&gAmmo, ammoId)->Amount, false);
+			}
 			AnimatedCounterReset(&menu->data.Cash, p->Totals.Score);
-		}
 			// fallthrough
 		case WEAPON_MENU_CANCEL:
 			// Switch back to equip menu

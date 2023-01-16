@@ -118,4 +118,4 @@ void PlayerAddMinimalWeapons(PlayerData *p);
 bool PlayerUsesAmmo(const PlayerData *p, const int ammoId);
 bool PlayerUsesAnyAmmo(const PlayerData *p);
 int PlayerGetAmmoAmount(const PlayerData *p, const int ammoId);
-void PlayerAddAmmo(PlayerData *p, const int ammoId, const int amount);
+void PlayerAddAmmo(PlayerData *p, const int ammoId, const int amount, const bool isFree);

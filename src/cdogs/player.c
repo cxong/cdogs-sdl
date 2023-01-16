@@ -597,9 +597,22 @@ void PlayerRemoveWeapon(PlayerData *p, const int slot)
 	{
 		PlayerScore(p, p->guns[slot]->Price);
 	}
-	// TODO: refund ammo if no guns use this ammo
+	// Refund ammo if no guns use this ammo
+	int ammoIds[MAX_BARRELS] = {-1, -1};
+	const int numBarrels = WeaponClassNumBarrels(p->guns[slot]);
+	for (int i = 0; i < numBarrels; i++)
+	{
+		ammoIds[i] = WC_BARREL_ATTR(*p->guns[slot], AmmoId, i);
+	}
 	p->guns[slot] = NULL;
 	PlayerAddMinimalWeapons(p);
+	for (int i = 0; i < MAX_BARRELS; i++)
+	{
+		if (ammoIds[i] >= 0 && !PlayerUsesAmmo(p, ammoIds[i]))
+		{
+			PlayerAddAmmo(p, ammoIds[i], -PlayerGetAmmoAmount(p, ammoIds[i]), false);
+		}
+	}
 }
 
 void PlayerAddMinimalWeapons(PlayerData *p)
@@ -656,9 +669,15 @@ int PlayerGetAmmoAmount(const PlayerData *p, const int ammoId)
 									   : 0;
 }
 
-void PlayerAddAmmo(PlayerData *p, const int ammoId, const int amount)
+void PlayerAddAmmo(PlayerData *p, const int ammoId, const int amount, const bool isFree)
 {
 	int *ammoAmount = CArrayGet(&p->ammo, ammoId);
+	const int oldAmount = *ammoAmount;
 	const Ammo *a = AmmoGetById(&gAmmo, ammoId);
 	*ammoAmount = CLAMP(*ammoAmount + amount, 0, a->Max);
+	if (!isFree && a->Price && gCampaign.Setting.BuyAndSell)
+	{
+		const int dLots = (oldAmount - *ammoAmount) / a->Price;
+		PlayerScore(p, dLots * a->Price);
+	}
 }
