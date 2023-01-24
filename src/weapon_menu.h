@@ -53,6 +53,7 @@ typedef struct
 	CArray weapons;		// of const WeaponClass *
 	CArray weaponIsNew; // of bool
 	bool SlotHasNew[MAX_WEAPONS];
+	struct vec2i size;
 	int cols;
 	int scroll;
 	int ammoSlot;

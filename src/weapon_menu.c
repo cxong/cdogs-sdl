@@ -47,6 +47,7 @@
 #define WEAPON_MENU_MAX_ROWS 4
 #define GUN_BG_W 40
 #define GUN_BG_H 25
+#define AMMO_BUTTON_BG_W 20
 #define SCROLL_H 12
 #define SLOT_BORDER 3
 #define AMMO_LEVEL_W 2
@@ -102,7 +103,7 @@ static int GetSelectedAmmo(const WeaponMenuData *d)
 		}
 		if (idx == d->gunIdx)
 		{
-			return i;
+			return idx;
 		}
 		idx++;
 	}
@@ -675,7 +676,7 @@ void WeaponMenuCreate(
 {
 	MenuSystem *ms = &menu->ms;
 	WeaponMenuData *data = &menu->data;
-	struct vec2i pos, size;
+	struct vec2i pos;
 	int w = graphics->cachedConfig.Res.x;
 	int h = graphics->cachedConfig.Res.y;
 
@@ -720,27 +721,27 @@ void WeaponMenuCreate(
 	case 1:
 		// Single menu, entire screen
 		pos = svec2i(w / 2, 0);
-		size = svec2i(w / 2, h);
+		data->size = svec2i(w / 2, h);
 		break;
 	case 2:
 		// Two menus, side by side
 		pos = svec2i(player * w / 2 + w / 4, 0);
-		size = svec2i(w / 4, h);
+		data->size = svec2i(w / 4, h);
 		break;
 	case 3:
 	case 4:
 		// Four corners
 		pos = svec2i((player & 1) * w / 2 + w / 4, (player / 2) * h / 2);
-		size = svec2i(w / 4, h / 2);
+		data->size = svec2i(w / 4, h / 2);
 		break;
 	default:
 		CASSERT(false, "not implemented");
 		pos = svec2i(w / 2, 0);
-		size = svec2i(w / 2, h);
+		data->size = svec2i(w / 2, h);
 		break;
 	}
 	const Pic *gunBG = CArrayGet(&data->gunBGSprites->pics, 0);
-	data->cols = CLAMP(size.x * 3 / (gunBG->size.x + 2) / 4, 2, 4);
+	data->cols = CLAMP(data->size.x * 3 / (gunBG->size.x + 2) / 4, 2, 4);
 	// Check how many util menu items there are
 	data->endSlot = MAX_WEAPONS;
 	if (gCampaign.Setting.BuyAndSell)
@@ -761,7 +762,7 @@ void WeaponMenuCreate(
 		}
 	}
 
-	MenuSystemInit(ms, handlers, graphics, pos, size);
+	MenuSystemInit(ms, handlers, graphics, pos, data->size);
 	ms->align = MENU_ALIGN_LEFT;
 	menu->ms.root = menu->ms.current = CreateGunMenu(data);
 	MenuSystemAddCustomDisplay(
@@ -769,7 +770,7 @@ void WeaponMenuCreate(
 
 	// Create equipped weapons menu
 	menu->msEquip.root = menu->msEquip.current =
-		CreateEquipMenu(&menu->msEquip, handlers, graphics, pos, size, data);
+		CreateEquipMenu(&menu->msEquip, handlers, graphics, pos, data->size, data);
 
 	// For AI players, pre-pick their weapons and go straight to menu end
 	if (pData->inputDevice == INPUT_DEVICE_AI)
@@ -1003,7 +1004,6 @@ static void DrawAmmoMenu(
 	bool scrollDown = false;
 	const PlayerData *pData = PlayerDataGetByUID(d->PlayerUID);
 
-	// Draw ammo: red if selected, yellow if equipped
 	int idx = 0;
 	for (int i = 0; i < AmmoGetNumClasses(&gAmmo); i++)
 	{
@@ -1081,14 +1081,12 @@ static void DrawAmmoMenuItem(
 {
 	const bool selected = data->gunIdx == idx;
 	const PlayerData *pData = PlayerDataGetByUID(data->PlayerUID);
+	const int ammoAmount = PlayerGetAmmoAmount(pData, idx);
 	const int bgSpriteIndex = (int)selected;
 	const Pic *gunBG = CArrayGet(&data->gunBGSprites->pics, bgSpriteIndex);
-	// Allow space for price if buy/sell enabled
-	const int h = GUN_BG_H + (gCampaign.Setting.BuyAndSell ? FontH() : 0);
-	const struct vec2i bgSize = svec2i(GUN_BG_W, h);
+	const struct vec2i bgSize = svec2i(CLAMP(data->size.x * 3 / 4, 40 * 2, 40 * 4), FontH() * 3 + 4);
 	const struct vec2i bgPos = svec2i(
-		pos.x + 2 + (idx % data->cols) * GUN_BG_W,
-		pos.y + (idx / data->cols - data->scroll) * bgSize.y);
+		pos.x, pos.y + (idx - data->scroll) * bgSize.y);
 	// Disallow buy/sell if ammo is free
 	const bool enabled =
 		data->equipping && a->Price > 0 && a->Price <= pData->Totals.Score;
@@ -1100,35 +1098,91 @@ static void DrawAmmoMenuItem(
 		DrawRectangle(g, bgPos, bgSize, bg, true);
 		color = colorRed;
 	}
-
+	
+	// Draw:
+	// <name>              <price>
+	// <icon>         <buy> <sell>
+	//              <amount>/<max>
+	// With: amount/max coloured rectangle
+	
+	int x = bgPos.x + 4;
+	int y = bgPos.y + FontH();
+	const FontOpts fopts = {
+		ALIGN_START, ALIGN_START, bgSize, svec2i(2, 2), color};
+	
+	// Sell/buy buttons
+	const FontOpts foptsB = {
+		ALIGN_CENTER, ALIGN_START, svec2i(AMMO_BUTTON_BG_W, FontH()), svec2i(2, 2), color};
+	x = bgPos.x + bgSize.x - AMMO_BUTTON_BG_W - 2;
+	const struct vec2i sellPos = svec2i(x, y);
 	Draw9Slice(
 		g, gunBG,
 		Rect2iNew(
-			svec2i(bgPos.x + 1, bgPos.y + 1),
-			svec2i(GUN_BG_W - 2, bgSize.y - 2)),
+				  sellPos,
+			svec2i(AMMO_BUTTON_BG_W, FontH() + 4)),
 		3, 3, 3, 3, true, mask, SDL_FLIP_NONE);
+	FontStrOpt("Sell", sellPos, foptsB);
 
-	// Draw icon at center of slot
-	CPicDrawContext c = CPicDrawContextNew();
-	const struct vec2i ammoPos = svec2i_subtract(
-		svec2i_add(bgPos, svec2i_scale_divide(bgSize, 2)),
-		svec2i_scale_divide(CPicGetPic(&a->Pic, 0)->size, 2));
-	CPicDraw(g, &a->Pic, ammoPos, &c);
+	x -= AMMO_BUTTON_BG_W - 3;
+	const struct vec2i buyPos = svec2i(x, y);
+	Draw9Slice(
+		g, gunBG,
+		Rect2iNew(
+				  buyPos,
+			svec2i(AMMO_BUTTON_BG_W, FontH() + 4)),
+		3, 3, 3, 3, true, mask, SDL_FLIP_NONE);
+	FontStrOpt("Buy", buyPos, foptsB);
 
-	// Draw price
+	y = bgPos.y;
+	x = bgPos.x + 4;
+
+	// Name
+	FontStrOpt(a->Name, svec2i(x, y), fopts);
+
+	// Price
 	if (a->Price > 0)
 	{
 		const FontOpts foptsP = {
-			ALIGN_CENTER, ALIGN_START, bgSize, svec2i(2, 2),
+			ALIGN_END, ALIGN_START, bgSize, svec2i(8, 2),
 			enabled ? (selected ? colorRed : colorGray) : colorDarkGray};
 		char buf[256];
 		sprintf(buf, "$%d", a->Price);
-		FontStrOpt(buf, bgPos, foptsP);
+		FontStrOpt(buf, svec2i(x, y), foptsP);
 	}
 
-	const FontOpts fopts = {
-		ALIGN_CENTER, ALIGN_END, bgSize, svec2i(2, 2), color};
-	FontStrOpt(a->Name, bgPos, fopts);
+	y += FontH() * 2;
+	x = bgPos.x + 4;
+
+	// Ammo amount BG
+	if (a->Max > 0 && ammoAmount > 0)
+	{
+		const color_t gaugeBG = AmmoIsLow(a, ammoAmount) ? colorRed : colorBlue;
+		DrawRectangle(g, svec2i_add(svec2i(x, y), svec2i_one()), svec2i(ammoAmount * (bgSize.x - 8) / a->Max, FontH()), gaugeBG, true);
+	}
+	
+	// Amount
+	char buf[256];
+	if (a->Max > 0)
+	{
+		sprintf(buf, "%d/%d", ammoAmount, a->Max);
+	}
+	else
+	{
+		sprintf(buf, "%d", ammoAmount);
+	}
+	const FontOpts foptsA = {
+		ALIGN_END, ALIGN_START, bgSize, svec2i(8, 2), color};
+	FontStrOpt(buf, svec2i(x, y), foptsA);
+	
+	y -= FontH();
+
+	// Icon
+	x = bgPos.x + 12;
+	CPicDrawContext c = CPicDrawContextNew();
+	const struct vec2i ammoPos = svec2i_subtract(
+												 svec2i(x, bgPos.y + bgSize.y / 2),
+		svec2i_scale_divide(CPicGetPic(&a->Pic, 0)->size, 2));
+	CPicDraw(g, &a->Pic, ammoPos, &c);
 }
 static int HandleInputGunMenu(int cmd, void *data)
 {
