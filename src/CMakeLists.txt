@@ -23,6 +23,7 @@ set(CDOGS_SDL_SOURCES
 	cdogs.c
 	command_line.c
 	credits.c
+	equip_menu.c
 	game.c
 	game_loop.c
 	hiscores.c
@@ -43,6 +44,7 @@ set(CDOGS_SDL_HEADERS
 	briefing_screens.h
 	command_line.h
 	credits.h
+	equip_menu.h
 	game.h
 	game_loop.h
 	hiscores.h

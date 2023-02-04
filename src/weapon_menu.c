@@ -87,13 +87,13 @@ static const WeaponClass *GetGun(
 	return NULL;
 }
 
-static const WeaponClass *GetSelectedGun(const WeaponMenuData *data)
+static const WeaponClass *GetSelectedGun(const WeaponMenu *menu)
 {
-	return GetGun(&data->weapons, data->gunIdx, data->EquipSlot);
+	return GetGun(menu->weapons, menu->idx, menu->slot);
 }
-static int GetSelectedAmmo(const WeaponMenuData *d)
+static int GetSelectedAmmo(const WeaponMenu *menu)
 {
-	const PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
+	const PlayerData *p = PlayerDataGetByUID(menu->PlayerUID);
 	int idx = 0;
 	for (int i = 0; i < AmmoGetNumClasses(&gAmmo); i++)
 	{
@@ -101,7 +101,7 @@ static int GetSelectedAmmo(const WeaponMenuData *d)
 		{
 			continue;
 		}
-		if (idx == d->gunIdx)
+		if (idx == menu->idx)
 		{
 			return idx;
 		}
@@ -125,16 +125,16 @@ static int EquipCostDiff(
 	return cost1 - cost2;
 }
 
-static int GetSelectedCostDiff(const WeaponMenuData *d)
+int WeaponMenuSelectedCostDiff(const WeaponMenu *menu)
 {
 	const PlayerData *pData = PlayerDataGetByUID(
-		d->PlayerUID);
-	const WeaponClass *wc = GetSelectedGun(d);
+		menu->PlayerUID);
+	const WeaponClass *wc = GetSelectedGun(menu);
 	if (wc)
 	{
-		return EquipCostDiff(wc, pData, d->EquipSlot);
+		return EquipCostDiff(wc, pData, menu->slot);
 	}
-	const int ammoId = GetSelectedAmmo(d);
+	const int ammoId = GetSelectedAmmo(menu);
 	if (ammoId >= 0)
 	{
 		const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
@@ -150,7 +150,7 @@ static int GetSelectedCostDiff(const WeaponMenuData *d)
 static void WeaponSelect(menu_t *menu, int cmd, void *data)
 {
 	UNUSED(menu);
-	WeaponMenuData *d = data;
+	WeaponMenu *d = data;
 
 	if (cmd & CMD_BUTTON1)
 	{
@@ -158,7 +158,7 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 		const PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
 		const WeaponClass *selectedGun = GetSelectedGun(d);
 		const int ammoId = GetSelectedAmmo(d);
-		if (gCampaign.Setting.BuyAndSell && GetSelectedCostDiff(d) > p->Totals.Score)
+		if (gCampaign.Setting.BuyAndSell && WeaponMenuSelectedCostDiff(d) > p->Totals.Score)
 		{
 			// Can't afford
 			return;
@@ -185,70 +185,27 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 	}
 }
 
-static int CountNumGuns(const WeaponMenuData *data, const int slot)
-{
-	if (slot >= MAX_WEAPONS)
-	{
-		return 0;
-	}
-	// Count total guns
-	int numGuns = 0;
-	CA_FOREACH(const WeaponClass *, wc, data->weapons)
-	if ((*wc)->Type != SlotType(slot))
-	{
-		continue;
-	}
-	numGuns++;
-	CA_FOREACH_END()
-	return numGuns;
-}
-
-static bool IsSlotDisabled(const WeaponMenuData *data, const int slot)
-{
-	if (slot < 0 || slot > data->endSlot)
-	{
-		return true;
-	}
-	if (slot < MAX_WEAPONS)
-	{
-		return CountNumGuns(data, slot) == 0;
-	}
-	const PlayerData *pData = PlayerDataGetByUID(data->PlayerUID);
-	// Disable end option if nothing equipped
-	if (slot == data->endSlot)
-	{
-		return PlayerGetNumWeapons(pData) == 0;
-	}
-	if (slot == data->ammoSlot)
-	{
-		return !PlayerUsesAnyAmmo(pData);
-	}
-	// TODO: util menus
-	return false;
-}
-
-static void ClampScroll(WeaponMenuData *data)
+static int ClampScroll(const WeaponMenu *menu)
 {
 	// Update menu scroll based on selected gun
-	const int numGuns = CountNumGuns(data, data->EquipSlot);
-	const int selectedRow = data->gunIdx / data->cols;
-	const int lastRow = numGuns / data->cols;
+	const int selectedRow = menu->idx / menu->cols;
+	const int lastRow = (int)menu->weaponIndices.size / menu->cols;
 	int minRow = MAX(0, selectedRow - WEAPON_MENU_MAX_ROWS + 1);
 	int maxRow =
-		MIN(selectedRow, MAX(0, DIV_ROUND_UP(numGuns + 1, data->cols) -
+		MIN(selectedRow, MAX(0, DIV_ROUND_UP((int)menu->weaponIndices.size + 1, menu->cols) -
 									WEAPON_MENU_MAX_ROWS));
 	// If the selected row is the last row on screen, and we can still
 	// scroll down (i.e. show the scroll down button), scroll down
-	if (selectedRow - data->scroll == WEAPON_MENU_MAX_ROWS - 1 &&
+	if (selectedRow - menu->scroll == WEAPON_MENU_MAX_ROWS - 1 &&
 		selectedRow < lastRow)
 	{
 		minRow++;
 	}
-	else if (selectedRow == data->scroll && selectedRow > 0)
+	else if (selectedRow == menu->scroll && selectedRow > 0)
 	{
 		maxRow--;
 	}
-	data->scroll = CLAMP(data->scroll, minRow, maxRow);
+	return CLAMP(menu->scroll, minRow, maxRow);
 }
 
 static void DrawAmmo(
@@ -305,501 +262,45 @@ static void DrawAmmo(
 	}
 }
 
-static void DrawEquipSlot(
-	const WeaponMenuData *data, GraphicsDevice *g, const int slot,
-	const char *label, const struct vec2i pos, const FontAlign align)
-{
-	const bool selected = data->EquipSlot == slot;
-	color_t color = data->equipping ? colorDarkGray : colorWhite;
-	color_t mask = color;
-	// Allow space for price if buy/sell enabled
-	const int h =
-		EQUIP_MENU_SLOT_HEIGHT + (gCampaign.Setting.BuyAndSell ? FontH() : 0);
-	if (selected)
-	{
-		if (data->equipping)
-		{
-			color = colorYellow;
-			mask = colorWhite;
-		}
-		else
-		{
-			const color_t bg = {0, 255, 255, 64};
-			// Add 1px padding
-			const struct vec2i bgPos = svec2i_subtract(pos, svec2i_one());
-			const struct vec2i bgSize =
-				svec2i(WEAPON_MENU_WIDTH / 2 + 2, h + 2);
-			DrawRectangle(g, bgPos, bgSize, bg, true);
-
-			color = colorRed;
-		}
-	}
-	if (IsSlotDisabled(data, slot))
-	{
-		color = mask = colorDarkGray;
-	}
-	const PlayerData *pData = PlayerDataGetByUID(data->PlayerUID);
-
-	int y = pos.y;
-
-	const int bgSpriteIndex = (slot & 1) + (int)selected * 2;
-	const Pic *slotBG = CArrayGet(&data->slotBGSprites->pics, bgSpriteIndex);
-	const struct vec2i bgPos = svec2i(pos.x, y);
-	Draw9Slice(
-		g, slotBG,
-		Rect2iNew(
-			svec2i(bgPos.x + 1, bgPos.y + 1),
-			svec2i(WEAPON_MENU_WIDTH / 2, h - 2)),
-		11, (slot & 1) ? 4 : 13, 12, (slot & 1) ? 13 : 4, true, mask,
-		SDL_FLIP_NONE);
-
-	const FontOpts fopts = {
-		align, ALIGN_START, svec2i(WEAPON_MENU_WIDTH / 2, FontH()),
-		svec2i(3, 1), color};
-	FontStrOpt(label, pos, fopts);
-
-	const Pic *gunIcon = pData->guns[slot]
-							 ? pData->guns[slot]->Icon
-							 : PicManagerGetPic(&gPicManager, "peashooter");
-	// Draw icon at center of slot
-	const struct vec2i slotSize = svec2i(WEAPON_MENU_WIDTH / 2, h);
-	const struct vec2i gunPos = svec2i_subtract(
-		svec2i_add(bgPos, svec2i_scale_divide(slotSize, 2)),
-		svec2i_scale_divide(gunIcon->size, 2));
-	PicRender(
-		gunIcon, g->gameWindow.renderer, gunPos,
-		pData->guns[slot] ? mask : colorBlack, 0, svec2_one(), SDL_FLIP_NONE,
-		Rect2iZero());
-
-	DrawAmmo(
-		g, pData, pData->guns[slot], mask, svec2i(bgPos.x, bgPos.y + FontH()),
-		svec2i(slotSize.x, slotSize.y - 2 * FontH() - 1));
-
-	if (data->SlotHasNew[slot])
-	{
-		DrawCross(
-			g, svec2i(pos.x + WEAPON_MENU_WIDTH / 2 - 6, y + 13), colorGreen);
-	}
-
-	// Draw price
-	if (gCampaign.Setting.BuyAndSell && data->equipping && pData->guns[slot] &&
-		pData->guns[slot]->Price != 0)
-	{
-		const FontOpts foptsP = {
-			ALIGN_CENTER, ALIGN_START, svec2i(WEAPON_MENU_WIDTH / 2, FontH()),
-			svec2i(2, 2), selected ? colorGray : colorDarkGray};
-		char buf[256];
-		sprintf(buf, "$%d", pData->guns[slot]->Price);
-		FontStrOpt(buf, svec2i_add(pos, svec2i(0, FontH() + 2)), foptsP);
-	}
-
-	y += h - FontH() - 1;
-	const char *gunName =
-		pData->guns[slot] ? pData->guns[slot]->name : NO_GUN_LABEL;
-	const FontOpts fopts2 = {
-		align, ALIGN_START, svec2i(WEAPON_MENU_WIDTH / 2, FontH()),
-		svec2i(3, 0), color};
-	FontStrOpt(gunName, svec2i(pos.x, y), fopts2);
-}
-static void DrawEquipMenu(
-	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
-	const struct vec2i size, const void *data)
-{
-	UNUSED(menu);
-	const WeaponMenuData *d = data;
-	const PlayerData *pData = PlayerDataGetByUID(
-		d->PlayerUID);
-	// Allow space for price if buy/sell enabled
-	const int h =
-		EQUIP_MENU_SLOT_HEIGHT + (gCampaign.Setting.BuyAndSell ? FontH() : 0);
-	int y = pos.y;
-
-	// Draw player cash
-	if (gCampaign.Setting.BuyAndSell)
-	{
-		const struct vec2i fpos = AnimatedCounterDraw(
-			&d->Cash, svec2i_add(pos, svec2i(0, -FontH() - 2)));
-		// Draw cost difference to buy selected item
-		if (d->equipping)
-		{
-			const int costDiff = GetSelectedCostDiff(d);
-			if (costDiff != 0)
-			{
-				// Draw price diff
-				const FontOpts foptsD = {
-					ALIGN_START, ALIGN_START, svec2i_zero(), svec2i_zero(),
-					costDiff > 0 ? colorRed : colorGreen};
-				char buf[256];
-				sprintf(buf, "%s%d", costDiff < 0 ? "+" : "", -costDiff);
-				FontStrOpt(buf, fpos, foptsD);
-			}
-		}
-	}
-
-	DrawEquipSlot(d, g, 0, "I", svec2i(pos.x, y), ALIGN_START);
-	DrawEquipSlot(
-		d, g, 1, "II", svec2i(pos.x + WEAPON_MENU_WIDTH / 2, y), ALIGN_END);
-	y += h;
-	DrawEquipSlot(d, g, MELEE_SLOT, "Melee", svec2i(pos.x, y), ALIGN_START);
-	DrawEquipSlot(
-		d, g, 3, "Bombs", svec2i(pos.x + WEAPON_MENU_WIDTH / 2, y), ALIGN_END);
-	y += h + 8;
-	if (d->ammoSlot >= 0)
-	{
-		const bool selected = d->EquipSlot == d->ammoSlot;
-		const bool disabled = !PlayerUsesAnyAmmo(pData);
-		DisplayMenuItem(
-			g,
-			Rect2iNew(
-				svec2i(CENTER_X(pos, size, FontStrSize(AMMO_LABEL).x), y),
-				FontStrSize(AMMO_LABEL)),
-			AMMO_LABEL, selected, disabled, colorWhite);
-		y += UTIL_MENU_SLOT_HEIGHT;
-	}
-
-	y += 8;
-	const WeaponClass *gun = NULL;
-	if (d->display.GunIdx >= 0 && d->display.GunIdx < MAX_WEAPONS)
-	{
-		gun = pData->guns[d->display.GunIdx];
-	}
-	DrawCharacterSimple(
-		&pData->Char, svec2i(pos.x + WEAPON_MENU_WIDTH / 2, pos.y + h + 8),
-		DIRECTION_DOWN, false, false, gun);
-
-	const bool endDisabled = IsSlotDisabled(d, d->endSlot) || d->equipping;
-	const bool endSelected = d->EquipSlot == d->endSlot;
-	DisplayMenuItem(
-		g,
-		Rect2iNew(
-			svec2i(CENTER_X(pos, size, FontStrSize(END_MENU_LABEL).x), y),
-			FontStrSize(END_MENU_LABEL)),
-		END_MENU_LABEL, endSelected, endDisabled, colorWhite);
-}
-static int HandleInputEquipMenu(int cmd, void *data)
-{
-	WeaponMenuData *d = data;
-	PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
-
-	int newSlot = d->EquipSlot;
-	if (cmd & CMD_BUTTON1)
-	{
-		MenuPlaySound(MENU_SOUND_ENTER);
-		return 1;
-	}
-	else if (cmd & CMD_BUTTON2)
-	{
-		if (d->EquipSlot < MAX_WEAPONS)
-		{
-			PlayerRemoveWeapon(p, d->EquipSlot);
-			MenuPlaySound(MENU_SOUND_SWITCH);
-			AnimatedCounterReset(&d->Cash, p->Totals.Score);
-		}
-	}
-	else if (cmd & CMD_LEFT)
-	{
-		if (d->EquipSlot < MAX_WEAPONS && (d->EquipSlot & 1) == 1)
-		{
-			newSlot--;
-			if (IsSlotDisabled(data, newSlot))
-			{
-				// Try switching up-left or down-left
-				if (!IsSlotDisabled(data, newSlot - 2))
-				{
-					newSlot -= 2;
-				}
-				else if (!IsSlotDisabled(data, newSlot + 2))
-				{
-					newSlot += 2;
-				}
-			}
-		}
-	}
-	else if (cmd & CMD_RIGHT)
-	{
-		if (d->EquipSlot < MAX_WEAPONS && (d->EquipSlot & 1) == 0)
-		{
-			newSlot++;
-			if (IsSlotDisabled(data, newSlot))
-			{
-				// Try switching up-right or down-right
-				if (!IsSlotDisabled(data, newSlot - 2))
-				{
-					newSlot -= 2;
-				}
-				else if (!IsSlotDisabled(data, newSlot + 2))
-				{
-					newSlot += 2;
-				}
-			}
-		}
-	}
-	else if (cmd & CMD_UP)
-	{
-		if (d->EquipSlot >= MAX_WEAPONS)
-		{
-			// Keep going back until we find an enabled slot
-			do
-			{
-				newSlot--;
-			} while (newSlot > 0 && IsSlotDisabled(data, newSlot));
-		}
-		else if (d->EquipSlot >= 2)
-		{
-			newSlot -= 2;
-			if (IsSlotDisabled(data, newSlot))
-			{
-				// Try switching to the other slot above (up-left or up-right),
-				// or skip the row and keep going back until an enabled slot
-				if (!IsSlotDisabled(data, newSlot ^ 1))
-				{
-					newSlot ^= 1;
-				}
-				else
-				{
-					do
-					{
-						newSlot--;
-					} while (newSlot > 0 && IsSlotDisabled(data, newSlot));
-				}
-			}
-		}
-	}
-	else if (cmd & CMD_DOWN)
-	{
-		if (d->EquipSlot < d->endSlot)
-		{
-			if (d->EquipSlot < MAX_WEAPONS)
-			{
-				newSlot = MIN(d->endSlot, d->EquipSlot + 2);
-				if (IsSlotDisabled(data, newSlot))
-				{
-					// Try switching to the other slot below (down-left or
-					// down-right), or skip the row and keep going forward
-					// until an enabled slot
-					if (!IsSlotDisabled(data, newSlot ^ 1))
-					{
-						newSlot ^= 1;
-					}
-					else
-					{
-						do
-						{
-							newSlot++;
-						} while (newSlot < d->endSlot &&
-								 IsSlotDisabled(data, newSlot));
-					}
-				}
-			}
-			else
-			{
-				do
-				{
-					newSlot++;
-				} while (newSlot < d->endSlot &&
-						 IsSlotDisabled(data, newSlot));
-			}
-		}
-	}
-
-	if (newSlot != d->EquipSlot && !IsSlotDisabled(d, newSlot))
-	{
-		d->EquipSlot = newSlot;
-		MenuPlaySound(MENU_SOUND_SWITCH);
-	}
-
-	// Display gun based on menu index
-	if (d->EquipSlot < MAX_WEAPONS)
-	{
-		d->display.GunIdx = d->EquipSlot;
-	}
-
-	ClampScroll(d);
-
-	return 0;
-}
-static menu_t *CreateEquipMenu(
-	MenuSystem *ms, EventHandlers *handlers, GraphicsDevice *g,
-	const struct vec2i pos, const struct vec2i size, WeaponMenuData *data)
-{
-	const struct vec2i weaponsSize =
-		svec2i(WEAPON_MENU_WIDTH, EQUIP_MENU_SLOT_HEIGHT * 2 + FontH());
-	const struct vec2i weaponsPos = svec2i(
-		pos.x - WEAPON_MENU_WIDTH, CENTER_Y(pos, size, weaponsSize.y) - 12);
-
-	MenuSystemInit(ms, handlers, g, weaponsPos, weaponsSize);
-	ms->align = MENU_ALIGN_LEFT;
-	MenuAddExitType(ms, MENU_TYPE_RETURN);
-
-	// Count number of each gun type, and disable extra menu items
-	int numGuns = 0;
-	int numMelee = 0;
-	int numGrenades = 0;
-	CA_FOREACH(const WeaponClass *, wc, data->weapons)
-	if ((*wc)->Type == GUNTYPE_GRENADE)
-	{
-		numGrenades++;
-	}
-	else if ((*wc)->Type == GUNTYPE_MELEE)
-	{
-		numMelee++;
-	}
-	else
-	{
-		numGuns++;
-	}
-	CA_FOREACH_END()
-	for (int i = 0; i < MELEE_SLOT; i++)
-	{
-		data->EquipEnabled[i] = i < numGuns;
-	}
-	data->EquipEnabled[MELEE_SLOT] = numMelee > 0;
-	for (int i = 0; i < MAX_GRENADES; i++)
-	{
-		data->EquipEnabled[i + MAX_GUNS] = i < numGrenades;
-	}
-
-	// Pre-select the End menu
-	data->EquipSlot = data->endSlot;
-	menu_t *menu =
-		MenuCreateCustom("", DrawEquipMenu, HandleInputEquipMenu, data);
-
-	return menu;
-}
-
-static bool HasWeapon(const CArray *weapons, const WeaponClass *wc);
-static menu_t *CreateGunMenu(WeaponMenuData *data);
+static menu_t *CreateGunMenu(WeaponMenu *data);
 void WeaponMenuCreate(
-	WeaponMenu *menu, const CArray *weapons, const CArray *prevWeapons,
-	const int numPlayers, const int player, const int playerUID,
+					  WeaponMenu *menu, const CArray *weapons, const CArray *weaponIsNew,
+	const int playerUID,
+							const int slot, const struct vec2i pos, const struct vec2i size,
 	EventHandlers *handlers, GraphicsDevice *graphics)
 {
-	MenuSystem *ms = &menu->ms;
-	WeaponMenuData *data = &menu->data;
-	struct vec2i pos;
-	int w = graphics->cachedConfig.Res.x;
-	int h = graphics->cachedConfig.Res.y;
-
-	data->display.PlayerUID = playerUID;
-	data->display.currentMenu = NULL;
-	data->display.Dir = DIRECTION_DOWN;
-	data->PlayerUID = playerUID;
-	PlayerData *pData = PlayerDataGetByUID(playerUID);
-	data->Cash = AnimatedCounterNew("Cash: $", pData->Totals.Score);
-	data->Cash.incRatio = 0.2f;
-	data->slotBGSprites =
-		PicManagerGetSprites(&gPicManager, "hud/gun_slot_bg");
-	data->gunBGSprites = PicManagerGetSprites(&gPicManager, "hud/gun_bg");
-	data->gunIdx = -1;
-	CArrayCopy(&data->weapons, weapons);
-	CArrayInit(&data->weaponIsNew, sizeof(bool));
-	CA_FOREACH(const WeaponClass *, wc, data->weapons)
-	const bool isNew = !HasWeapon(prevWeapons, *wc);
-	CArrayPushBack(&data->weaponIsNew, &isNew);
-	if (isNew)
+	menu->PlayerUID = playerUID;
+	menu->gunBGSprites = PicManagerGetSprites(&gPicManager, "hud/gun_bg");
+	menu->idx = -1;
+	// Get the weapon indices available for this slot
+	CArrayInit(&menu->weaponIndices, sizeof(int));
+	int idx = 0;
+	CA_FOREACH(const WeaponClass *, wc, *weapons)
+	if ((*wc)->Type != SlotType(slot))
 	{
-		if ((*wc)->Type == GUNTYPE_GRENADE)
-		{
-			data->SlotHasNew[MAX_GUNS] = true;
-		}
-		else if ((*wc)->Type == GUNTYPE_MELEE)
-		{
-			data->SlotHasNew[MELEE_SLOT] = true;
-		}
-		else
-		{
-			for (int i = 0; i < MELEE_SLOT; i++)
-			{
-				data->SlotHasNew[i] = true;
-			}
-		}
+		continue;
 	}
+	CArrayPushBack(&menu->weaponIndices, &idx);
+	idx++;
 	CA_FOREACH_END()
+	menu->weapons = weapons;
+	menu->weaponIsNew = weaponIsNew;
+	menu->slot = slot;
 
-	switch (numPlayers)
-	{
-	case 1:
-		// Single menu, entire screen
-		pos = svec2i(w / 2, 0);
-		data->size = svec2i(w / 2, h);
-		break;
-	case 2:
-		// Two menus, side by side
-		pos = svec2i(player * w / 2 + w / 4, 0);
-		data->size = svec2i(w / 4, h);
-		break;
-	case 3:
-	case 4:
-		// Four corners
-		pos = svec2i((player & 1) * w / 2 + w / 4, (player / 2) * h / 2);
-		data->size = svec2i(w / 4, h / 2);
-		break;
-	default:
-		CASSERT(false, "not implemented");
-		pos = svec2i(w / 2, 0);
-		data->size = svec2i(w / 2, h);
-		break;
-	}
-	const Pic *gunBG = CArrayGet(&data->gunBGSprites->pics, 0);
-	data->cols = CLAMP(data->size.x * 3 / (gunBG->size.x + 2) / 4, 2, 4);
-	// Check how many util menu items there are
-	data->endSlot = MAX_WEAPONS;
-	if (gCampaign.Setting.BuyAndSell)
-	{
-		if (gCampaign.Setting.Ammo)
-		{
-			data->ammoSlot = data->endSlot;
-			data->endSlot++;
-			// Auto-refill free ammo
-			for (int i = 0; i < AmmoGetNumClasses(&gAmmo); i++)
-			{
-				const Ammo *ammo = AmmoGetById(&gAmmo, i);
-				if (ammo->Price == 0)
-				{
-					PlayerAddAmmo(pData, i, ammo->Max, true);
-				}
-			}
-		}
-	}
+	const Pic *gunBG = CArrayGet(&menu->gunBGSprites->pics, 0);
+	menu->cols = CLAMP(menu->size.x * 3 / (gunBG->size.x + 2) / 4, 2, 4);
 
-	MenuSystemInit(ms, handlers, graphics, pos, data->size);
-	ms->align = MENU_ALIGN_LEFT;
-	menu->ms.root = menu->ms.current = CreateGunMenu(data);
+	MenuSystemInit(&menu->ms, handlers, graphics, pos, size);
+	menu->ms.align = MENU_ALIGN_LEFT;
+	menu->ms.root = menu->ms.current = CreateGunMenu(menu);
 	MenuSystemAddCustomDisplay(
-		ms, MenuDisplayPlayerControls, &data->PlayerUID);
-
-	// Create equipped weapons menu
-	menu->msEquip.root = menu->msEquip.current =
-		CreateEquipMenu(&menu->msEquip, handlers, graphics, pos, data->size, data);
-
-	// For AI players, pre-pick their weapons and go straight to menu end
-	if (pData->inputDevice == INPUT_DEVICE_AI)
-	{
-		menu->data.EquipSlot = data->endSlot;
-		menu->data.equipping = false;
-		menu->msEquip.current = NULL;
-		AICoopSelectWeapons(pData, player, weapons);
-	}
-}
-static bool HasWeapon(const CArray *weapons, const WeaponClass *wc)
-{
-	if (weapons == NULL)
-	{
-		return true;
-	}
-	CA_FOREACH(const WeaponClass *, wc2, *weapons)
-	if (*wc2 == wc)
-	{
-		return true;
-	}
-	CA_FOREACH_END()
-	return false;
+							   &menu->ms, MenuDisplayPlayerControls, &menu->PlayerUID);
 }
 static void DrawAvailableMenu(
 	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
 	const struct vec2i size, const void *data);
 static int HandleInputGunMenu(int cmd, void *data);
-static menu_t *CreateGunMenu(WeaponMenuData *data)
+static menu_t *CreateGunMenu(WeaponMenu *data)
 {
 	menu_t *menu =
 		MenuCreateCustom("", DrawAvailableMenu, HandleInputGunMenu, data);
@@ -809,50 +310,51 @@ static menu_t *CreateGunMenu(WeaponMenuData *data)
 	return menu;
 }
 static void DrawGunMenu(
-	const WeaponMenuData *d, GraphicsDevice *g, const struct vec2i pos,
+	const WeaponMenu *d, GraphicsDevice *g, const struct vec2i pos,
 	const struct vec2i size);
 static void DrawAmmoMenu(
-	const WeaponMenuData *d, GraphicsDevice *g, const struct vec2i pos,
+	const WeaponMenu *d, GraphicsDevice *g, const struct vec2i pos,
 	const struct vec2i size);
 static void DrawAvailableMenu(
 	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
 	const struct vec2i size, const void *data)
 {
 	UNUSED(menu);
-	const WeaponMenuData *d = data;
-	if (d->EquipSlot < MAX_WEAPONS)
+	const WeaponMenu *d = data;
+	if (d->slot < MAX_WEAPONS)
 	{
 		DrawGunMenu(d, g, pos, size);
 	}
-	else if (d->EquipSlot == d->ammoSlot)
+	else
 	{
+		// TODO: separate ammo menu module
 		DrawAmmoMenu(d, g, pos, size);
 	}
 }
 static void DrawGun(
-	const WeaponMenuData *data, GraphicsDevice *g, const int idx,
+	const WeaponMenu *data, GraphicsDevice *g, const int idx,
 	const WeaponClass *wc, const bool isNew, const struct vec2i pos);
 static void DrawGunMenu(
-	const WeaponMenuData *d, GraphicsDevice *g, const struct vec2i pos,
+	const WeaponMenu *d, GraphicsDevice *g, const struct vec2i pos,
 	const struct vec2i size)
 {
 	const int weaponsHeight = EQUIP_MENU_SLOT_HEIGHT * 2 + FontH();
 	const int weaponsY = CENTER_Y(pos, size, weaponsHeight) - 12;
-	const color_t color = d->equipping ? colorWhite : colorGray;
+	const color_t color = d->Active ? colorWhite : colorGray;
 	const struct vec2i scrollSize = svec2i(d->cols * GUN_BG_W - 2, SCROLL_H);
 	bool scrollDown = false;
 
 	// Draw guns: red if selected, yellow if equipped
 	int idx = 0;
-	CA_FOREACH(const WeaponClass *, wc, d->weapons)
-	if ((*wc)->Type != SlotType(d->EquipSlot))
+	CA_FOREACH(const WeaponClass *, wc, *d->weapons)
+	if ((*wc)->Type != SlotType(d->slot))
 	{
 		continue;
 	}
 	const int row = idx / d->cols;
 	if (row >= d->scroll && row < d->scroll + WEAPON_MENU_MAX_ROWS)
 	{
-		const bool *isNew = CArrayGet(&d->weaponIsNew, _ca_index);
+		const bool *isNew = CArrayGet(d->weaponIsNew, _ca_index);
 		DrawGun(d, g, idx, *wc, *isNew, svec2i(pos.x, pos.y + weaponsY));
 	}
 	idx++;
@@ -919,10 +421,10 @@ static void DrawGunMenu(
 	}
 }
 static void DrawGun(
-	const WeaponMenuData *data, GraphicsDevice *g, const int idx,
+	const WeaponMenu *data, GraphicsDevice *g, const int idx,
 	const WeaponClass *wc, const bool isNew, const struct vec2i pos)
 {
-	const bool selected = data->gunIdx == idx;
+	const bool selected = data->idx == idx;
 	const PlayerData *pData = PlayerDataGetByUID(data->PlayerUID);
 	const bool equipped = wc && PlayerHasWeapon(pData, wc);
 	const int bgSpriteIndex = (int)selected;
@@ -933,12 +435,12 @@ static void DrawGun(
 	const struct vec2i bgPos = svec2i(
 		pos.x + 2 + (idx % data->cols) * GUN_BG_W,
 		pos.y + (idx / data->cols - data->scroll) * bgSize.y);
-	const int costDiff = EquipCostDiff(wc, pData, data->EquipSlot);
-	const bool enabled = data->equipping && (!gCampaign.Setting.BuyAndSell ||
+	const int costDiff = EquipCostDiff(wc, pData, data->slot);
+	const bool enabled = data->Active && (!gCampaign.Setting.BuyAndSell ||
 											 costDiff <= pData->Totals.Score);
 	color_t color = enabled ? colorWhite : colorGray;
 	const color_t mask = color;
-	if (selected && data->equipping)
+	if (selected && data->Active)
 	{
 		const color_t bg = {0, 255, 255, 64};
 		DrawRectangle(g, bgPos, bgSize, bg, true);
@@ -991,15 +493,15 @@ static void DrawGun(
 }
 
 static void DrawAmmoMenuItem(
-	const WeaponMenuData *data, GraphicsDevice *g, const int idx,
+	const WeaponMenu *data, GraphicsDevice *g, const int idx,
 	const Ammo *a, const struct vec2i pos);
 static void DrawAmmoMenu(
-	const WeaponMenuData *d, GraphicsDevice *g, const struct vec2i pos,
+	const WeaponMenu *d, GraphicsDevice *g, const struct vec2i pos,
 	const struct vec2i size)
 {
 	const int ammoHeight = EQUIP_MENU_SLOT_HEIGHT * 2 + FontH();
 	const int ammoY = CENTER_Y(pos, size, ammoHeight) - 12;
-	const color_t color = d->equipping ? colorWhite : colorGray;
+	const color_t color = d->Active ? colorWhite : colorGray;
 	const struct vec2i scrollSize = svec2i(d->cols * GUN_BG_W - 2, SCROLL_H);
 	bool scrollDown = false;
 	const PlayerData *pData = PlayerDataGetByUID(d->PlayerUID);
@@ -1076,10 +578,10 @@ static void DrawAmmoMenu(
 	}
 }
 static void DrawAmmoMenuItem(
-	const WeaponMenuData *data, GraphicsDevice *g, const int idx,
+	const WeaponMenu *data, GraphicsDevice *g, const int idx,
 	const Ammo *a, const struct vec2i pos)
 {
-	const bool selected = data->gunIdx == idx;
+	const bool selected = data->idx == idx;
 	const PlayerData *pData = PlayerDataGetByUID(data->PlayerUID);
 	const int ammoAmount = PlayerGetAmmoAmount(pData, idx);
 	const int bgSpriteIndex = (int)selected;
@@ -1089,10 +591,10 @@ static void DrawAmmoMenuItem(
 		pos.x, pos.y + (idx - data->scroll) * bgSize.y);
 	// Disallow buy/sell if ammo is free
 	const bool enabled =
-		data->equipping && a->Price > 0 && a->Price <= pData->Totals.Score;
+		data->Active && a->Price > 0 && a->Price <= pData->Totals.Score;
 	color_t color = enabled ? colorWhite : colorGray;
 	const color_t mask = color;
-	if (selected && data->equipping)
+	if (selected && data->Active)
 	{
 		const color_t bg = {0, 255, 255, 64};
 		DrawRectangle(g, bgPos, bgSize, bg, true);
@@ -1186,30 +688,30 @@ static void DrawAmmoMenuItem(
 }
 static int HandleInputGunMenu(int cmd, void *data)
 {
-	WeaponMenuData *d = data;
+	WeaponMenu *d = data;
 	PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
 
 	// Pre-select the equipped gun for the slot
-	bool hasSelected = d->gunIdx >= 0;
+	bool hasSelected = d->idx >= 0;
 	if (!hasSelected)
 	{
-		d->gunIdx = 0;
+		d->idx = 0;
 	}
 
 	// Count total guns
 	int numGuns = 0;
-	CA_FOREACH(const WeaponClass *, wc, d->weapons)
-	if ((*wc)->Type != SlotType(d->EquipSlot))
+	CA_FOREACH(const WeaponClass *, wc, *d->weapons)
+	if ((*wc)->Type != SlotType(d->slot))
 	{
 		continue;
 	}
-	if (*wc == p->guns[d->EquipSlot])
+	if (*wc == p->guns[d->slot])
 	{
 		hasSelected = true;
 	}
 	if (!hasSelected)
 	{
-		d->gunIdx++;
+		d->idx++;
 	}
 	numGuns++;
 	CA_FOREACH_END()
@@ -1218,7 +720,7 @@ static int HandleInputGunMenu(int cmd, void *data)
 	{
 		if (gCampaign.Setting.BuyAndSell)
 		{
-			const int costDiff = GetSelectedCostDiff(d);
+			const int costDiff = WeaponMenuSelectedCostDiff(d);
 			if (costDiff > 0 && costDiff > p->Totals.Score)
 			{
 				// Can't afford
@@ -1233,43 +735,43 @@ static int HandleInputGunMenu(int cmd, void *data)
 	}
 	else if (cmd & CMD_LEFT)
 	{
-		if ((d->gunIdx % d->cols) > 0)
+		if ((d->idx % d->cols) > 0)
 		{
-			d->gunIdx--;
+			d->idx--;
 			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}
 	else if (cmd & CMD_RIGHT)
 	{
-		if ((d->gunIdx % d->cols) < d->cols - 1 && numGuns > 0)
+		if ((d->idx % d->cols) < d->cols - 1 && numGuns > 0)
 		{
-			d->gunIdx++;
-			if (d->gunIdx > numGuns)
+			d->idx++;
+			if (d->idx > numGuns)
 			{
-				d->gunIdx = MAX(0, d->gunIdx - d->cols);
+				d->idx = MAX(0, d->idx - d->cols);
 			}
 			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}
 	else if (cmd & CMD_UP)
 	{
-		if (d->gunIdx >= d->cols)
+		if (d->idx >= d->cols)
 		{
-			d->gunIdx -= d->cols;
+			d->idx -= d->cols;
 			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}
 	else if (cmd & CMD_DOWN)
 	{
-		if ((d->gunIdx + d->cols) <
+		if ((d->idx + d->cols) <
 			DIV_ROUND_UP(numGuns + 1, d->cols) * d->cols)
 		{
-			d->gunIdx = MIN(numGuns, d->gunIdx + d->cols);
+			d->idx = MIN(numGuns, d->idx + d->cols);
 			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}
 
-	ClampScroll(d);
+	d->scroll = ClampScroll(d);
 
 	return 0;
 }
@@ -1277,85 +779,47 @@ static int HandleInputGunMenu(int cmd, void *data)
 void WeaponMenuTerminate(WeaponMenu *menu)
 {
 	MenuSystemTerminate(&menu->ms);
-	MenuSystemTerminate(&menu->msEquip);
-	CArrayTerminate(&menu->data.weapons);
-	CArrayTerminate(&menu->data.weaponIsNew);
-	AnimatedCounterTerminate(&menu->data.Cash);
+	CArrayTerminate(&menu->weaponIndices);
+}
+
+void WeaponMenuActivate(WeaponMenu *menu)
+{
+	menu->Active = true;
+	menu->SelectResult = WEAPON_MENU_NONE;
 }
 
 void WeaponMenuUpdate(WeaponMenu *menu, const int cmd)
 {
-	AnimatedCounterUpdate(&menu->data.Cash, 1);
-	PlayerData *p = PlayerDataGetByUID(menu->data.PlayerUID);
-	if (menu->data.equipping)
+	PlayerData *p = PlayerDataGetByUID(menu->PlayerUID);
+	MenuProcessCmd(&menu->ms, cmd);
+	switch (menu->SelectResult)
 	{
-		MenuProcessCmd(&menu->ms, cmd);
-		switch (menu->data.SelectResult)
+	case WEAPON_MENU_NONE:
+		break;
+	case WEAPON_MENU_SELECT:
+		if (menu->slot < MAX_WEAPONS)
 		{
-		case WEAPON_MENU_NONE:
-			break;
-		case WEAPON_MENU_SELECT:
-			if (menu->data.EquipSlot < MAX_WEAPONS)
-			{
-				const WeaponClass *selectedGun = GetSelectedGun(&menu->data);
-				PlayerAddWeaponToSlot(p, selectedGun, menu->data.EquipSlot);
-			}
-			else if (menu->data.EquipSlot == menu->data.ammoSlot)
-			{
-				const int ammoId = GetSelectedAmmo(&menu->data);
-				PlayerAddAmmo(p, ammoId, AmmoGetById(&gAmmo, ammoId)->Amount, false);
-			}
-			AnimatedCounterReset(&menu->data.Cash, p->Totals.Score);
-			// fallthrough
-		case WEAPON_MENU_CANCEL:
-			// Switch back to equip menu
-			menu->data.equipping = false;
-			menu->ms.current = menu->ms.root;
-			break;
-		default:
-			CASSERT(false, "unhandled case");
-			break;
+			const WeaponClass *selectedGun = GetSelectedGun(menu);
+			PlayerAddWeaponToSlot(p, selectedGun, menu->slot);
 		}
-	}
-	else
-	{
-		MenuProcessCmd(&menu->msEquip, cmd);
-		if (menu->data.EquipSlot < menu->data.endSlot)
+		else	// TODO: ammo module
 		{
-			if (MenuIsExit(&menu->msEquip))
-			{
-				// Open weapon selection menu
-				menu->data.equipping = true;
-				menu->data.gunIdx = -1;
-				menu->msEquip.current = menu->msEquip.root;
-				menu->data.SelectResult = WEAPON_MENU_NONE;
-			}
-			else if (
-				menu->data.gunIdx >
-				CountNumGuns(&menu->data, menu->data.EquipSlot))
-			{
-				menu->data.gunIdx = -1;
-			}
-			// TODO: util menus
+			const int ammoId = GetSelectedAmmo(menu);
+			PlayerAddAmmo(p, ammoId, AmmoGetById(&gAmmo, ammoId)->Amount, false);
 		}
+		// fallthrough
+	case WEAPON_MENU_CANCEL:
+		menu->ms.current = menu->ms.root;
+		// Switch back to equip menu
+		menu->Active = false;
+		break;
+	default:
+		CASSERT(false, "unhandled case");
+		break;
 	}
-
-	// Disable the equip/weapon menus based on equipping state
-	MenuSetDisabled(menu->msEquip.root, menu->data.equipping);
-	if (menu->ms.current)
-	{
-		MenuSetDisabled(menu->ms.current, !menu->data.equipping);
-	}
-}
-
-bool WeaponMenuIsDone(const WeaponMenu *menu)
-{
-	return menu->msEquip.current == NULL && !menu->data.equipping &&
-		   menu->data.EquipSlot == menu->data.endSlot;
 }
 
 void WeaponMenuDraw(const WeaponMenu *menu)
 {
-	MenuDisplay(&menu->msEquip);
 	MenuDisplay(&menu->ms);
 }

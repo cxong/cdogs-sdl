@@ -32,7 +32,7 @@
 #include <cdogs/player.h>
 
 #include "prep.h"
-#include "weapon_menu.h"
+#include "equip_menu.h"
 
 static void AddPlayerWeapons(CArray *weapons, const WeaponClass **guns);
 static void RemoveUnavailableWeapons(
@@ -40,7 +40,7 @@ static void RemoveUnavailableWeapons(
 static void AddDefaultGuns(PlayerData *p, const int idx, const CArray *guns);
 typedef struct
 {
-	WeaponMenu menus[MAX_LOCAL_PLAYERS];
+	EquipMenu menus[MAX_LOCAL_PLAYERS];
 	EventWaitResult waitResult;
 } PlayerEquipData;
 static void PlayerEquipTerminate(GameLoopData *data);
@@ -91,7 +91,7 @@ GameLoopData *PlayerEquip(void)
 			prevWeapons = &prevMission->Weapons;
 		}
 
-		WeaponMenuCreate(
+		EquipMenuCreate(
 			&data->menus[idx], &weapons, prevWeapons,
 			GetNumPlayers(PLAYER_ANY, false, true), idx, p->UID,
 			&gEventHandlers, &gGraphicsDevice);
@@ -175,7 +175,7 @@ static void PlayerEquipTerminate(GameLoopData *data)
 
 	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
 	{
-		WeaponMenuTerminate(&pData->menus[i]);
+		EquipMenuTerminate(&pData->menus[i]);
 	}
 	CFREE(pData);
 }
@@ -239,8 +239,8 @@ static GameLoopResult PlayerEquipUpdate(GameLoopData *data, LoopRunner *l)
 	bool isDone = true;
 	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
 	{
-		WeaponMenuUpdate(&pData->menus[i], cmds[i]);
-		isDone = isDone && WeaponMenuIsDone(&pData->menus[i]);
+		EquipMenuUpdate(&pData->menus[i], cmds[i]);
+		isDone = isDone && EquipMenuIsDone(&pData->menus[i]);
 	}
 	if (isDone)
 	{
@@ -267,7 +267,7 @@ static void PlayerEquipDraw(GameLoopData *data)
 	BlitClearBuf(&gGraphicsDevice);
 	for (int i = 0; i < GetNumPlayers(PLAYER_ANY, false, true); i++)
 	{
-		WeaponMenuDraw(&pData->menus[i]);
+		EquipMenuDraw(&pData->menus[i]);
 	}
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 }

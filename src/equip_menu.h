@@ -31,40 +31,34 @@
 #include "animated_counter.h"
 #include "menu.h"
 #include "menu_utils.h"
+#include "weapon_menu.h"
 
-typedef enum
-{
-	WEAPON_MENU_NONE,
-	WEAPON_MENU_SELECT,
-	WEAPON_MENU_CANCEL
-} WeaponMenuResult;
 typedef struct
 {
-	MenuSystem ms;
-	bool Active;
+	MenuDisplayPlayerData display;
 	int PlayerUID;
-	WeaponMenuResult SelectResult;
+	AnimatedCounter Cash;
 	int slot;
-	const NamedSprites *gunBGSprites;
-	int idx;
-	CArray weaponIndices;		// of int
-	const CArray *weapons;	   // of const WeaponClass *
-	const CArray *weaponIsNew; // of bool
+	bool equipping;
+	bool EquipEnabled[MAX_WEAPONS];
+	const NamedSprites *slotBGSprites;
+	CArray weapons;		// of const WeaponClass *
+	CArray weaponIsNew; // of bool
+	bool SlotHasNew[MAX_WEAPONS];
 	struct vec2i size;
-	int cols;
-	int scroll;
-} WeaponMenu;
+	int ammoSlot;
+	int endSlot;
+	MenuSystem ms;
+	WeaponMenu weaponMenus[MAX_WEAPONS];
+	WeaponMenu ammoMenu;
+} EquipMenu;
 
-void WeaponMenuCreate(
-					  WeaponMenu *menu, const CArray *weapons, const CArray *weaponIsNew,
-	const int playerUID,
-							const int slot, const struct vec2i pos, const struct vec2i size,
+void EquipMenuCreate(
+	EquipMenu *menu, const CArray *weapons, const CArray *prevWeapons,
+	const int numPlayers, const int player, const int playerUID,
 	EventHandlers *handlers, GraphicsDevice *graphics);
-void WeaponMenuTerminate(WeaponMenu *menu);
+void EquipMenuTerminate(EquipMenu *menu);
 
-void WeaponMenuActivate(WeaponMenu *menu);
-void WeaponMenuUpdate(WeaponMenu *menu, const int cmd);
-bool WeaponMenuIsDone(const WeaponMenu *menu);
-void WeaponMenuDraw(const WeaponMenu *menu);
-
-int WeaponMenuSelectedCostDiff(const WeaponMenu *menu);
+void EquipMenuUpdate(EquipMenu *menu, const int cmd);
+bool EquipMenuIsDone(const EquipMenu *menu);
+void EquipMenuDraw(const EquipMenu *menu);
