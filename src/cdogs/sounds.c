@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2017, 2019-2020 Cong Xu
+	Copyright (c) 2013-2017, 2019-2020, 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -75,7 +75,8 @@ int OpenAudio(int frequency, Uint16 format, int channels, int chunkSize)
 	Uint16 qFormat;
 	int qChannels;
 
-	if (Mix_OpenAudio(frequency, format, channels, chunkSize) != 0)
+	if (Mix_OpenAudioDevice(frequency, format, channels, chunkSize, NULL, 0) !=
+		0)
 	{
 		printf("Couldn't open audio!: %s\n", SDL_GetError());
 		return 1;
@@ -565,7 +566,8 @@ void SoundPlayAtPlusDistance(
 		lineData.IsBlocked = IsPosNoSee;
 		lineData.data = &gMap;
 		if (!HasClearLineJMRaytrace(
-				svec2i_assign_vec2(pos), svec2i_assign_vec2(origin), &lineData))
+				svec2i_assign_vec2(pos), svec2i_assign_vec2(origin),
+				&lineData))
 		{
 			isMuffled = true;
 		}
