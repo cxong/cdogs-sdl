@@ -17,6 +17,7 @@ add_subdirectory(proto)
 add_subdirectory(tests)
 
 set(CDOGS_SDL_SOURCES
+	ammo_menu.c
 	animated_counter.c
 	autosave.c
 	briefing_screens.c
@@ -39,6 +40,7 @@ set(CDOGS_SDL_SOURCES
 	screens_end.c
 	weapon_menu.c)
 set(CDOGS_SDL_HEADERS
+	ammo_menu.h
 	animated_counter.h
 	autosave.h
 	briefing_screens.h

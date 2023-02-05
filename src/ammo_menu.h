@@ -28,38 +28,36 @@
 */
 #pragma once
 
-#include "ammo_menu.h"
-#include "animated_counter.h"
 #include "menu.h"
 #include "menu_utils.h"
-#include "weapon_menu.h"
 
+typedef enum
+{
+	AMMO_MENU_NONE,
+	AMMO_MENU_SELECT,
+	AMMO_MENU_CANCEL
+} AmmoMenuResult;
 typedef struct
 {
-	MenuDisplayPlayerData display;
-	int PlayerUID;
-	AnimatedCounter Cash;
-	int slot;
-	bool equipping;
-	bool EquipEnabled[MAX_WEAPONS];
-	const NamedSprites *slotBGSprites;
-	CArray weapons;		// of const WeaponClass *
-	CArray weaponIsNew; // of bool
-	bool SlotHasNew[MAX_WEAPONS];
-	struct vec2i size;
-	int ammoSlot;
-	int endSlot;
 	MenuSystem ms;
-	WeaponMenu weaponMenus[MAX_WEAPONS];
-	AmmoMenu ammoMenu;
-} EquipMenu;
+	bool Active;
+	int PlayerUID;
+	AmmoMenuResult SelectResult;
+	const NamedSprites *menuBGSprites;
+	int idx;
+	CArray ammoIds; // of int
+	struct vec2i size;
+	int scroll;
+} AmmoMenu;
 
-void EquipMenuCreate(
-	EquipMenu *menu, const CArray *weapons, const CArray *prevWeapons,
-	const int numPlayers, const int player, const int playerUID,
-	EventHandlers *handlers, GraphicsDevice *graphics);
-void EquipMenuTerminate(EquipMenu *menu);
+void AmmoMenuCreate(
+	AmmoMenu *menu, const int playerUID, const struct vec2i pos,
+	const struct vec2i size, EventHandlers *handlers,
+	GraphicsDevice *graphics);
+void AmmoMenuTerminate(AmmoMenu *menu);
 
-void EquipMenuUpdate(EquipMenu *menu, const int cmd);
-bool EquipMenuIsDone(const EquipMenu *menu);
-void EquipMenuDraw(const EquipMenu *menu);
+void AmmoMenuActivate(AmmoMenu *menu);
+void AmmoMenuUpdate(AmmoMenu *menu, const int cmd);
+void AmmoMenuDraw(const AmmoMenu *menu);
+
+int AmmoMenuSelectedCostDiff(const AmmoMenu *menu);

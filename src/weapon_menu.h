@@ -28,7 +28,6 @@
 */
 #pragma once
 
-#include "animated_counter.h"
 #include "menu.h"
 #include "menu_utils.h"
 
@@ -45,9 +44,9 @@ typedef struct
 	int PlayerUID;
 	WeaponMenuResult SelectResult;
 	int slot;
-	const NamedSprites *gunBGSprites;
+	const NamedSprites *menuBGSprites;
 	int idx;
-	CArray weaponIndices;		// of int
+	CArray weaponIndices;	   // of int
 	const CArray *weapons;	   // of const WeaponClass *
 	const CArray *weaponIsNew; // of bool
 	struct vec2i size;
@@ -56,15 +55,14 @@ typedef struct
 } WeaponMenu;
 
 void WeaponMenuCreate(
-					  WeaponMenu *menu, const CArray *weapons, const CArray *weaponIsNew,
-	const int playerUID,
-							const int slot, const struct vec2i pos, const struct vec2i size,
-	EventHandlers *handlers, GraphicsDevice *graphics);
+	WeaponMenu *menu, const CArray *weapons, const CArray *weaponIsNew,
+	const int playerUID, const int slot, const struct vec2i pos,
+	const struct vec2i size, EventHandlers *handlers,
+	GraphicsDevice *graphics);
 void WeaponMenuTerminate(WeaponMenu *menu);
 
 void WeaponMenuActivate(WeaponMenu *menu);
 void WeaponMenuUpdate(WeaponMenu *menu, const int cmd);
-bool WeaponMenuIsDone(const WeaponMenu *menu);
 void WeaponMenuDraw(const WeaponMenu *menu);
 
 int WeaponMenuSelectedCostDiff(const WeaponMenu *menu);

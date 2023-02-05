@@ -45,10 +45,6 @@
 #define EQUIP_MENU_SLOT_HEIGHT 40
 #define UTIL_MENU_SLOT_HEIGHT 12
 #define EQUIP_MENU_MAX_ROWS 4
-#define GUN_BG_W 40
-#define GUN_BG_H 25
-#define AMMO_BUTTON_BG_W 20
-#define SCROLL_H 12
 #define SLOT_BORDER 3
 #define AMMO_LEVEL_W 2
 
@@ -263,8 +259,7 @@ static void DrawEquipMenu(
 {
 	UNUSED(menu);
 	const EquipMenu *d = data;
-	const PlayerData *pData = PlayerDataGetByUID(
-		d->PlayerUID);
+	const PlayerData *pData = PlayerDataGetByUID(d->PlayerUID);
 	// Allow space for price if buy/sell enabled
 	const int h =
 		EQUIP_MENU_SLOT_HEIGHT + (gCampaign.Setting.BuyAndSell ? FontH() : 0);
@@ -278,8 +273,16 @@ static void DrawEquipMenu(
 		// Draw cost difference to buy selected item
 		if (d->equipping)
 		{
-			const WeaponMenu *weaponMenu = &d->weaponMenus[d->slot];
-			const int costDiff = WeaponMenuSelectedCostDiff(weaponMenu);
+			int costDiff = 0;
+			if (d->slot < MAX_WEAPONS)
+			{
+				const WeaponMenu *weaponMenu = &d->weaponMenus[d->slot];
+				costDiff = WeaponMenuSelectedCostDiff(weaponMenu);
+			}
+			else if (d->slot == d->ammoSlot)
+			{
+				costDiff = AmmoMenuSelectedCostDiff(&d->ammoMenu);
+			}
 			if (costDiff != 0)
 			{
 				// Draw price diff
@@ -566,7 +569,8 @@ void EquipMenuCreate(
 	const struct vec2i weaponsSize =
 		svec2i(EQUIP_MENU_WIDTH, EQUIP_MENU_SLOT_HEIGHT * 2 + FontH());
 	const struct vec2i weaponsPos = svec2i(
-		pos.x - EQUIP_MENU_WIDTH, CENTER_Y(pos, menu->size, weaponsSize.y) - 12);
+		pos.x - EQUIP_MENU_WIDTH,
+		CENTER_Y(pos, menu->size, weaponsSize.y) - 12);
 
 	MenuSystemInit(&menu->ms, handlers, graphics, weaponsPos, weaponsSize);
 	menu->ms.align = MENU_ALIGN_LEFT;
@@ -602,7 +606,8 @@ void EquipMenuCreate(
 
 	// Pre-select the End menu
 	menu->slot = menu->endSlot;
-	menu->ms.root = menu->ms.current = MenuCreateCustom("", DrawEquipMenu, HandleInputEquipMenu, menu);
+	menu->ms.root = menu->ms.current =
+		MenuCreateCustom("", DrawEquipMenu, HandleInputEquipMenu, menu);
 
 	// For AI players, pre-pick their weapons and go straight to menu end
 	if (pData->inputDevice == INPUT_DEVICE_AI)
@@ -615,8 +620,12 @@ void EquipMenuCreate(
 	{
 		for (int i = 0; i < MAX_WEAPONS; i++)
 		{
-			WeaponMenuCreate(&menu->weaponMenus[i], &menu->weapons, &menu->weaponIsNew, playerUID, i, pos, menu->size, handlers, graphics);
+			WeaponMenuCreate(
+				&menu->weaponMenus[i], &menu->weapons, &menu->weaponIsNew,
+				playerUID, i, pos, menu->size, handlers, graphics);
 		}
+		AmmoMenuCreate(
+			&menu->ammoMenu, playerUID, pos, menu->size, handlers, graphics);
 	}
 }
 static bool HasWeapon(const CArray *weapons, const WeaponClass *wc)
@@ -640,7 +649,7 @@ void EquipMenuTerminate(EquipMenu *menu)
 	{
 		WeaponMenuTerminate(&menu->weaponMenus[i]);
 	}
-	WeaponMenuTerminate(&menu->ammoMenu);
+	AmmoMenuTerminate(&menu->ammoMenu);
 	MenuSystemTerminate(&menu->ms);
 	CArrayTerminate(&menu->weapons);
 	CArrayTerminate(&menu->weaponIsNew);
@@ -655,12 +664,12 @@ void EquipMenuUpdate(EquipMenu *menu, const int cmd)
 	{
 		WeaponMenuUpdate(&menu->weaponMenus[menu->slot], cmd);
 		menu->equipping = menu->weaponMenus[menu->slot].Active;
-		if (!menu->equipping)
-		{
-			AnimatedCounterReset(&menu->Cash, p->Totals.Score);
-		}
 	}
-	// TODO: ammo menu
+	else if (menu->slot == menu->ammoSlot && menu->ammoMenu.Active)
+	{
+		AmmoMenuUpdate(&menu->ammoMenu, cmd);
+		menu->equipping = menu->ammoMenu.Active;
+	}
 	else
 	{
 		MenuProcessCmd(&menu->ms, cmd);
@@ -670,15 +679,29 @@ void EquipMenuUpdate(EquipMenu *menu, const int cmd)
 			{
 				// Open weapon selection menu
 				menu->equipping = true;
-				WeaponMenuActivate(&menu->weaponMenus[menu->slot]);
+				if (menu->slot < MAX_WEAPONS)
+				{
+					WeaponMenuActivate(&menu->weaponMenus[menu->slot]);
+				}
+				else if (menu->slot == menu->ammoSlot)
+				{
+					AmmoMenuActivate(&menu->ammoMenu);
+				}
+				else
+				{
+					CASSERT(false, "unknown menu slot");
+				}
 				menu->ms.current = menu->ms.root;
 			}
-			// TODO: util menus
 		}
 	}
 
 	// Disable menu based on equipping state
 	MenuSetDisabled(menu->ms.root, menu->equipping);
+	if (!menu->equipping)
+	{
+		AnimatedCounterReset(&menu->Cash, p->Totals.Score);
+	}
 }
 
 bool EquipMenuIsDone(const EquipMenu *menu)
@@ -696,6 +719,6 @@ void EquipMenuDraw(const EquipMenu *menu)
 	}
 	else if (menu->slot == menu->ammoSlot)
 	{
-		WeaponMenuDraw(&menu->ammoMenu);
+		AmmoMenuDraw(&menu->ammoMenu);
 	}
 }

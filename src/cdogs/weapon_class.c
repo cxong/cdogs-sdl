@@ -630,6 +630,10 @@ bool WeaponClassCanShoot(const WeaponClass *wc)
 }
 int WeaponClassNumBarrels(const WeaponClass *wc)
 {
+	if (wc == NULL)
+	{
+		return 0;
+	}
 	return wc->Type == GUNTYPE_MULTI ? 2 : 1;
 }
 const WeaponClass *WeaponClassGetBarrel(
