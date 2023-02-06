@@ -66,3 +66,7 @@ void WeaponMenuUpdate(WeaponMenu *menu, const int cmd);
 void WeaponMenuDraw(const WeaponMenu *menu);
 
 int WeaponMenuSelectedCostDiff(const WeaponMenu *menu);
+
+void DrawWeaponAmmo(
+	GraphicsDevice *g, const PlayerData *p, const WeaponClass *wc,
+	const color_t mask, const struct vec2i pos, const struct vec2i slotSize);

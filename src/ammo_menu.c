@@ -46,11 +46,11 @@
 
 static int GetSelectedAmmo(const AmmoMenu *menu)
 {
-	if (menu->idx >= menu->ammoIds.size)
+	if (menu->idx / 2 >= (int)menu->ammoIds.size)
 	{
 		return -1;
 	}
-	return *(int *)CArrayGet(&menu->ammoIds, menu->idx);
+	return *(int *)CArrayGet(&menu->ammoIds, menu->idx / 2);
 }
 
 int AmmoMenuSelectedCostDiff(const AmmoMenu *menu)
@@ -117,79 +117,15 @@ static int ClampScroll(const AmmoMenu *menu)
 	return CLAMP(menu->scroll, minRow, maxRow);
 }
 
-static void DrawAmmo(
-	GraphicsDevice *g, const PlayerData *p, const WeaponClass *wc,
-	const color_t mask, const struct vec2i pos, const struct vec2i slotSize)
-{
-	if (!gCampaign.Setting.Ammo || !wc)
-	{
-		return;
-	}
-
-	CPicDrawContext c = CPicDrawContextNew();
-	c.Mask = mask;
-	const int numBarrels = WeaponClassNumBarrels(wc);
-	for (int i = 0; i < numBarrels; i++)
-	{
-		const int ammoId = WC_BARREL_ATTR(*wc, AmmoId, i);
-		if (ammoId < 0)
-		{
-			continue;
-		}
-		const Ammo *a = AmmoGetById(&gAmmo, ammoId);
-		// Draw ammo level
-		const int amount = PlayerGetAmmoAmount(p, ammoId);
-		const int ammoMax = a->Max ? a->Max : amount;
-		if (ammoMax > 0)
-		{
-			const int dx =
-				slotSize.x - SLOT_BORDER - AMMO_LEVEL_W * (numBarrels - i);
-			const int h = amount * (slotSize.y - 2 * SLOT_BORDER) / ammoMax;
-			if (AmmoIsLow(a, amount))
-			{
-				DrawRectangle(
-					g, svec2i_add(pos, svec2i(dx, SLOT_BORDER)),
-					svec2i(AMMO_LEVEL_W, slotSize.y - 2 * SLOT_BORDER),
-					ColorMult(colorRed, mask), true);
-			}
-			if (amount > 0)
-			{
-				DrawRectangle(
-					g,
-					svec2i_add(pos, svec2i(dx, slotSize.y - SLOT_BORDER - h)),
-					svec2i(AMMO_LEVEL_W, h), ColorMult(colorBlue, mask), true);
-			}
-		}
-
-		// Draw ammo icon
-		CPicDraw(
-			g, &a->Pic,
-			svec2i_subtract(
-				svec2i_add(pos, slotSize),
-				svec2i(16 - (numBarrels - i) * 4, 18)),
-			&c);
-	}
-}
-
 static menu_t *CreateMenu(AmmoMenu *data);
 void AmmoMenuCreate(
 	AmmoMenu *menu, const int playerUID, const struct vec2i pos,
 	const struct vec2i size, EventHandlers *handlers, GraphicsDevice *graphics)
 {
 	menu->PlayerUID = playerUID;
-	const PlayerData *pData = PlayerDataGetByUID(playerUID);
 	menu->menuBGSprites = PicManagerGetSprites(&gPicManager, "hud/gun_bg");
 	menu->idx = -1;
-	// Get the ammo indices available for this slot
-	CArrayInit(&menu->ammoIds, sizeof(int));
-	for (int i = 0; i < AmmoGetNumClasses(&gAmmo); i++)
-	{
-		if (!PlayerUsesAmmo(pData, i))
-		{
-			continue;
-		}
-		CArrayPushBack(&menu->ammoIds, &i);
-	}
+	AmmoMenuReset(menu);
 
 	MenuSystemInit(&menu->ms, handlers, graphics, pos, size);
 	menu->ms.align = MENU_ALIGN_LEFT;
@@ -226,29 +162,20 @@ static void DrawMenu(
 		svec2i(CLAMP(d->size.x * 3 / 4, 40 * 2, 40 * 4), FontH() * 3 + 4);
 	const struct vec2i scrollSize = svec2i(bgSize.x, SCROLL_H);
 	bool scrollDown = false;
-	const PlayerData *pData = PlayerDataGetByUID(d->PlayerUID);
 
-	int idx = 0;
-	for (int i = 0; i < AmmoGetNumClasses(&gAmmo); i++)
+	CA_FOREACH(const int, ammoId, d->ammoIds)
+	const Ammo *ammo = AmmoGetById(&gAmmo, *ammoId);
+	if (_ca_index >= d->scroll && _ca_index < d->scroll + AMMO_MENU_MAX_ROWS)
 	{
-		if (!PlayerUsesAmmo(pData, i))
-		{
-			continue;
-		}
-		const Ammo *ammo = AmmoGetById(&gAmmo, i);
-		const int row = idx / 2;
-		if (row >= d->scroll && row < d->scroll + AMMO_MENU_MAX_ROWS)
-		{
-			DrawAmmoMenuItem(
-				d, g, idx, ammo, svec2i(pos.x, pos.y + ammoY), bgSize);
-		}
-		idx++;
-		if (idx / 2 == d->scroll + AMMO_MENU_MAX_ROWS)
-		{
-			scrollDown = true;
-			break;
-		}
+		DrawAmmoMenuItem(
+			d, g, _ca_index, ammo, svec2i(pos.x, pos.y + ammoY), bgSize);
 	}
+	if (_ca_index == d->scroll + AMMO_MENU_MAX_ROWS)
+	{
+		scrollDown = true;
+		break;
+	}
+	CA_FOREACH_END()
 
 	// Draw scroll buttons
 	const Pic *gradient = PicManagerGetPic(&gPicManager, "hud/gradient");
@@ -304,9 +231,10 @@ static void DrawAmmoMenuItem(
 	const AmmoMenu *data, GraphicsDevice *g, const int idx, const Ammo *a,
 	const struct vec2i pos, const struct vec2i bgSize)
 {
-	const bool selected = data->idx == idx;
+	const bool selected = data->idx / 2 == idx;
 	const PlayerData *pData = PlayerDataGetByUID(data->PlayerUID);
-	const int ammoAmount = PlayerGetAmmoAmount(pData, idx);
+	const int ammoId = *(int *)CArrayGet(&data->ammoIds, idx);
+	const int ammoAmount = PlayerGetAmmoAmount(pData, ammoId);
 	const int bgSpriteIndex = (int)selected;
 	const Pic *bg = CArrayGet(&data->menuBGSprites->pics, bgSpriteIndex);
 	const struct vec2i bgPos =
@@ -335,22 +263,27 @@ static void DrawAmmoMenuItem(
 		ALIGN_START, ALIGN_START, bgSize, svec2i(2, 2), color};
 
 	// Sell/buy buttons
-	const FontOpts foptsB = {
+	const bool sellSelected = (data->idx & 1) == 1;
+	const FontOpts foptsSell = {
 		ALIGN_CENTER, ALIGN_START, svec2i(AMMO_BUTTON_BG_W, FontH()),
-		svec2i(2, 2), color};
+		svec2i(2, 2), sellSelected ? color : colorGray};
 	x = bgPos.x + bgSize.x - AMMO_BUTTON_BG_W - 2;
 	const struct vec2i sellPos = svec2i(x, y);
 	Draw9Slice(
 		g, bg, Rect2iNew(sellPos, svec2i(AMMO_BUTTON_BG_W, FontH() + 4)), 3, 3,
-		3, 3, true, mask, SDL_FLIP_NONE);
-	FontStrOpt("Sell", sellPos, foptsB);
+		3, 3, true, sellSelected ? mask : colorGray, SDL_FLIP_NONE);
+	FontStrOpt("Sell", sellPos, foptsSell);
 
-	x -= AMMO_BUTTON_BG_W - 3;
+	x -= AMMO_BUTTON_BG_W + 3;
+	const bool buySelected = (data->idx & 1) == 0;
+	const FontOpts foptsBuy = {
+		ALIGN_CENTER, ALIGN_START, svec2i(AMMO_BUTTON_BG_W, FontH()),
+		svec2i(2, 2), buySelected ? color : colorGray};
 	const struct vec2i buyPos = svec2i(x, y);
 	Draw9Slice(
 		g, bg, Rect2iNew(buyPos, svec2i(AMMO_BUTTON_BG_W, FontH() + 4)), 3, 3,
-		3, 3, true, mask, SDL_FLIP_NONE);
-	FontStrOpt("Buy", buyPos, foptsB);
+		3, 3, true, buySelected ? mask : colorGray, SDL_FLIP_NONE);
+	FontStrOpt("Buy", buyPos, foptsBuy);
 
 	y = bgPos.y;
 	x = bgPos.x + 4;
@@ -412,16 +345,7 @@ static int HandleInputMenu(int cmd, void *data)
 	AmmoMenu *d = data;
 	PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
 
-	// Count total ammo
-	int numAmmo = 0;
-	for (int i = 0; i < AmmoGetNumClasses(&gAmmo); i++)
-	{
-		if (!PlayerUsesAmmo(p, i))
-		{
-			continue;
-		}
-		numAmmo++;
-	}
+	const int numAmmo = (int)d->ammoIds.size;
 
 	if (cmd & CMD_BUTTON1)
 	{
@@ -443,7 +367,7 @@ static int HandleInputMenu(int cmd, void *data)
 	}
 	else if (cmd & CMD_LEFT)
 	{
-		if ((d->idx % 2) > 0)
+		if ((d->idx % 2) == 1)
 		{
 			d->idx--;
 			MenuPlaySound(MENU_SOUND_SWITCH);
@@ -467,9 +391,9 @@ static int HandleInputMenu(int cmd, void *data)
 	}
 	else if (cmd & CMD_DOWN)
 	{
-		if ((d->idx + 2) < numAmmo + 2)
+		if (d->idx + 2 < numAmmo * 2 + 1)
 		{
-			d->idx = MIN(numAmmo, d->idx + 2);
+			d->idx = MIN(numAmmo * 2 + 1, d->idx + 2);
 			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}
@@ -485,10 +409,8 @@ void AmmoMenuTerminate(AmmoMenu *menu)
 	CArrayTerminate(&menu->ammoIds);
 }
 
-void AmmoMenuActivate(AmmoMenu *menu)
+void AmmoMenuReset(AmmoMenu *menu)
 {
-	menu->Active = true;
-	menu->SelectResult = AMMO_MENU_NONE;
 	const PlayerData *pData = PlayerDataGetByUID(menu->PlayerUID);
 	// Get the ammo indices available for this slot
 	CArrayTerminate(&menu->ammoIds);
@@ -502,6 +424,12 @@ void AmmoMenuActivate(AmmoMenu *menu)
 		CArrayPushBack(&menu->ammoIds, &i);
 	}
 	menu->idx = CLAMP(menu->idx, 0, (int)menu->ammoIds.size);
+}
+
+void AmmoMenuActivate(AmmoMenu *menu)
+{
+	menu->Active = true;
+	menu->SelectResult = AMMO_MENU_NONE;
 }
 
 void AmmoMenuUpdate(AmmoMenu *menu, const int cmd)

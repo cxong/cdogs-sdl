@@ -103,60 +103,6 @@ static bool IsSlotDisabled(const EquipMenu *data, const int slot)
 	return false;
 }
 
-static void DrawAmmo(
-	GraphicsDevice *g, const PlayerData *p, const WeaponClass *wc,
-	const color_t mask, const struct vec2i pos, const struct vec2i slotSize)
-{
-	if (!gCampaign.Setting.Ammo || !wc)
-	{
-		return;
-	}
-
-	CPicDrawContext c = CPicDrawContextNew();
-	c.Mask = mask;
-	const int numBarrels = WeaponClassNumBarrels(wc);
-	for (int i = 0; i < numBarrels; i++)
-	{
-		const int ammoId = WC_BARREL_ATTR(*wc, AmmoId, i);
-		if (ammoId < 0)
-		{
-			continue;
-		}
-		const Ammo *a = AmmoGetById(&gAmmo, ammoId);
-		// Draw ammo level
-		const int amount = PlayerGetAmmoAmount(p, ammoId);
-		const int ammoMax = a->Max ? a->Max : amount;
-		if (ammoMax > 0)
-		{
-			const int dx =
-				slotSize.x - SLOT_BORDER - AMMO_LEVEL_W * (numBarrels - i);
-			const int h = amount * (slotSize.y - 2 * SLOT_BORDER) / ammoMax;
-			if (AmmoIsLow(a, amount))
-			{
-				DrawRectangle(
-					g, svec2i_add(pos, svec2i(dx, SLOT_BORDER)),
-					svec2i(AMMO_LEVEL_W, slotSize.y - 2 * SLOT_BORDER),
-					ColorMult(colorRed, mask), true);
-			}
-			if (amount > 0)
-			{
-				DrawRectangle(
-					g,
-					svec2i_add(pos, svec2i(dx, slotSize.y - SLOT_BORDER - h)),
-					svec2i(AMMO_LEVEL_W, h), ColorMult(colorBlue, mask), true);
-			}
-		}
-
-		// Draw ammo icon
-		CPicDraw(
-			g, &a->Pic,
-			svec2i_subtract(
-				svec2i_add(pos, slotSize),
-				svec2i(16 - (numBarrels - i) * 4, 18)),
-			&c);
-	}
-}
-
 static void DrawEquipSlot(
 	const EquipMenu *data, GraphicsDevice *g, const int slot,
 	const char *label, const struct vec2i pos, const FontAlign align)
@@ -223,7 +169,7 @@ static void DrawEquipSlot(
 		pData->guns[slot] ? mask : colorBlack, 0, svec2_one(), SDL_FLIP_NONE,
 		Rect2iZero());
 
-	DrawAmmo(
+	DrawWeaponAmmo(
 		g, pData, pData->guns[slot], mask, svec2i(bgPos.x, bgPos.y + FontH()),
 		svec2i(slotSize.x, slotSize.y - 2 * FontH() - 1));
 
@@ -664,6 +610,11 @@ void EquipMenuUpdate(EquipMenu *menu, const int cmd)
 	{
 		WeaponMenuUpdate(&menu->weaponMenus[menu->slot], cmd);
 		menu->equipping = menu->weaponMenus[menu->slot].Active;
+		// If weapons changed, reset ammo menu
+		if (!menu->equipping)
+		{
+			AmmoMenuReset(&menu->ammoMenu);
+		}
 	}
 	else if (menu->slot == menu->ammoSlot && menu->ammoMenu.Active)
 	{

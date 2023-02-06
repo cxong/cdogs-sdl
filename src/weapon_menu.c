@@ -60,7 +60,7 @@ static GunType SlotType(const int slot)
 
 static const WeaponClass *GetSelectedGun(const WeaponMenu *menu)
 {
-	if (menu->idx >= menu->weaponIndices.size)
+	if (menu->idx >= (int)menu->weaponIndices.size)
 	{
 		return NULL;
 	}
@@ -151,7 +151,7 @@ static int ClampScroll(const WeaponMenu *menu)
 	return CLAMP(menu->scroll, minRow, maxRow);
 }
 
-static void DrawAmmo(
+void DrawWeaponAmmo(
 	GraphicsDevice *g, const PlayerData *p, const WeaponClass *wc,
 	const color_t mask, const struct vec2i pos, const struct vec2i slotSize)
 {
@@ -212,14 +212,21 @@ void WeaponMenuCreate(
 	const struct vec2i size, EventHandlers *handlers, GraphicsDevice *graphics)
 {
 	menu->PlayerUID = playerUID;
+	const PlayerData *pData = PlayerDataGetByUID(playerUID);
 	menu->menuBGSprites = PicManagerGetSprites(&gPicManager, "hud/gun_bg");
-	menu->idx = -1;
+	menu->idx = 0;
+
 	// Get the weapon indices available for this slot
 	CArrayInit(&menu->weaponIndices, sizeof(int));
 	CA_FOREACH(const WeaponClass *, wc, *weapons)
 	if ((*wc)->Type != SlotType(slot))
 	{
 		continue;
+	}
+	// Pre-select the equipped gun for the slot
+	if (*wc == pData->guns[slot])
+	{
+		menu->idx = (int)menu->weaponIndices.size;
 	}
 	CArrayPushBack(&menu->weaponIndices, &_ca_index);
 	CA_FOREACH_END()
@@ -391,7 +398,7 @@ static void DrawGun(
 		gunIcon, g->gameWindow.renderer, gunPos, wc ? mask : colorBlack, 0,
 		svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 
-	DrawAmmo(g, pData, wc, mask, bgPos, svec2i(bgSize.x - 1, bgSize.y));
+	DrawWeaponAmmo(g, pData, wc, mask, bgPos, svec2i(bgSize.x - 1, bgSize.y));
 
 	// Draw price
 	if (gCampaign.Setting.BuyAndSell && wc && wc->Price != 0)
@@ -420,30 +427,7 @@ static int HandleInputMenu(int cmd, void *data)
 	WeaponMenu *d = data;
 	PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
 
-	// Pre-select the equipped gun for the slot
-	bool hasSelected = d->idx >= 0;
-	if (!hasSelected)
-	{
-		d->idx = 0;
-	}
-
-	// Count total guns
-	int numGuns = 0;
-	CA_FOREACH(const WeaponClass *, wc, *d->weapons)
-	if ((*wc)->Type != SlotType(d->slot))
-	{
-		continue;
-	}
-	if (*wc == p->guns[d->slot])
-	{
-		hasSelected = true;
-	}
-	if (!hasSelected)
-	{
-		d->idx++;
-	}
-	numGuns++;
-	CA_FOREACH_END()
+	const int numGuns = (int)d->weaponIndices.size;
 
 	if (cmd & CMD_BUTTON1)
 	{

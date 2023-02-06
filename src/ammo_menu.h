@@ -56,6 +56,7 @@ void AmmoMenuCreate(
 	GraphicsDevice *graphics);
 void AmmoMenuTerminate(AmmoMenu *menu);
 
+void AmmoMenuReset(AmmoMenu *menu);
 void AmmoMenuActivate(AmmoMenu *menu);
 void AmmoMenuUpdate(AmmoMenu *menu, const int cmd);
 void AmmoMenuDraw(const AmmoMenu *menu);
