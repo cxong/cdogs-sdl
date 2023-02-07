@@ -58,7 +58,8 @@ void AmmoMenuTerminate(AmmoMenu *menu);
 
 void AmmoMenuReset(AmmoMenu *menu);
 void AmmoMenuActivate(AmmoMenu *menu);
-void AmmoMenuUpdate(AmmoMenu *menu, const int cmd);
+// Returns whether a buy/sell occurred
+bool AmmoMenuUpdate(AmmoMenu *menu, const int cmd);
 void AmmoMenuDraw(const AmmoMenu *menu);
 
 int AmmoMenuSelectedCostDiff(const AmmoMenu *menu);

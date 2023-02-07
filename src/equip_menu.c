@@ -39,7 +39,7 @@
 #include "material.h"
 
 #define NO_GUN_LABEL "(None)"
-#define AMMO_LABEL "Ammo"
+#define AMMO_LABEL "Ammo..."
 #define END_MENU_LABEL "(End)"
 #define EQUIP_MENU_WIDTH 80
 #define EQUIP_MENU_SLOT_HEIGHT 40
@@ -618,7 +618,10 @@ void EquipMenuUpdate(EquipMenu *menu, const int cmd)
 	}
 	else if (menu->slot == menu->ammoSlot && menu->ammoMenu.Active)
 	{
-		AmmoMenuUpdate(&menu->ammoMenu, cmd);
+		if (AmmoMenuUpdate(&menu->ammoMenu, cmd))
+		{
+			AnimatedCounterReset(&menu->Cash, p->Totals.Score);
+		}
 		menu->equipping = menu->ammoMenu.Active;
 	}
 	else

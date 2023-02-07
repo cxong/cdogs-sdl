@@ -677,7 +677,7 @@ void PlayerAddAmmo(PlayerData *p, const int ammoId, const int amount, const bool
 	*ammoAmount = CLAMP(*ammoAmount + amount, 0, a->Max);
 	if (!isFree && a->Price && gCampaign.Setting.BuyAndSell)
 	{
-		const int dLots = (oldAmount - *ammoAmount) / a->Price;
+		const int dLots = (oldAmount - *ammoAmount) / a->Amount;
 		PlayerScore(p, dLots * a->Price);
 	}
 }
