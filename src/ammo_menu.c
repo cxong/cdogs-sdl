@@ -107,13 +107,12 @@ static void AmmoSelect(menu_t *menu, int cmd, void *data)
 		}
 		else if (!buy && CanSell(d, ammoId))
 		{
-			// TODO: sell sound
 			SoundPlay(&gSoundDevice, StrSound(ammo->Sound));
 			d->SelectResult = AMMO_MENU_SELECT;
 		}
 		else
 		{
-			// TODO: can't buy/sell sound
+			SoundPlay(&gSoundDevice, StrSound("ammo_none"));
 		}
 	}
 	else if (cmd & CMD_BUTTON2)
@@ -150,7 +149,7 @@ void AmmoMenuCreate(
 	const struct vec2i size, EventHandlers *handlers, GraphicsDevice *graphics)
 {
 	menu->PlayerUID = playerUID;
-	menu->menuBGSprites = PicManagerGetSprites(&gPicManager, "hud/gun_bg");
+	menu->buttonBG = PicManagerGetPic(&gPicManager, "hud/button_bg");
 	menu->idx = -1;
 	AmmoMenuReset(menu);
 
@@ -208,7 +207,8 @@ static void DrawMenu(
 	const Pic *gradient = PicManagerGetPic(&gPicManager, "hud/gradient");
 	if (d->scroll > 0)
 	{
-		const Pic *scrollPic = CArrayGet(&d->menuBGSprites->pics, 0);
+		// TODO: test scrolling
+		const Pic *scrollPic = d->buttonBG;
 		const Rect2i scrollRect =
 			Rect2iNew(svec2i(pos.x + 3, pos.y + 1 + ammoY), scrollSize);
 		PicRender(
@@ -229,7 +229,7 @@ static void DrawMenu(
 	}
 	if (scrollDown)
 	{
-		const Pic *scrollPic = CArrayGet(&d->menuBGSprites->pics, 0);
+		const Pic *scrollPic = d->buttonBG;
 		const Rect2i scrollRect = Rect2iNew(
 			svec2i(
 				pos.x + 3,
@@ -262,8 +262,6 @@ static void DrawAmmoMenuItem(
 	const PlayerData *pData = PlayerDataGetByUID(data->PlayerUID);
 	const int ammoId = *(int *)CArrayGet(&data->ammoIds, idx);
 	const int ammoAmount = PlayerGetAmmoAmount(pData, ammoId);
-	const int bgSpriteIndex = (int)selected;
-	const Pic *bg = CArrayGet(&data->menuBGSprites->pics, bgSpriteIndex);
 	const struct vec2i bgPos =
 		svec2i(pos.x, pos.y + (idx - data->scroll) * bgSize.y);
 	// Disallow buy/sell if ammo is free
@@ -300,26 +298,28 @@ static void DrawAmmoMenuItem(
 	y = bgPos.y + AMMO_ROW_H;
 
 	// Sell/buy buttons
-	const bool sellSelected = selected && (data->idx & 1) == 1;
+	const bool sellSelected = selected && data->Active && (data->idx & 1) == 1;
+	const bool canSell = CanSell(data, ammoId);
 	const FontOpts foptsSell = {
 		ALIGN_CENTER, ALIGN_START, svec2i(AMMO_BUTTON_BG_W, FontH()),
 		svec2i(2, 2), sellSelected ? colorRed : colorGray};
 	x = bgPos.x + bgSize.x - AMMO_BUTTON_BG_W - 2;
 	const struct vec2i sellPos = svec2i(x, y);
 	Draw9Slice(
-		g, bg, Rect2iNew(sellPos, svec2i(AMMO_BUTTON_BG_W, FontH() + 4)), 3, 3,
-		3, 3, true, CanSell(data, ammoId) ? colorRed : colorGray, SDL_FLIP_NONE);
+		g, data->buttonBG, Rect2iNew(sellPos, svec2i(AMMO_BUTTON_BG_W, FontH() + 4)), 3, 3,
+			   3, 3, true, canSell ? (sellSelected ? colorRed : colorMaroon) : colorGray, SDL_FLIP_NONE);
 	FontStrOpt("Sell", sellPos, foptsSell);
 
 	x -= AMMO_BUTTON_BG_W + 3;
-	const bool buySelected = selected && (data->idx & 1) == 0;
+	const bool buySelected = selected && data->Active && (data->idx & 1) == 0;
+	const bool canBuy = CanBuy(data, ammoId);
 	const FontOpts foptsBuy = {
 		ALIGN_CENTER, ALIGN_START, svec2i(AMMO_BUTTON_BG_W, FontH()),
 		svec2i(2, 2), buySelected ? colorGreen : colorGray};
 	const struct vec2i buyPos = svec2i(x, y);
 	Draw9Slice(
-		g, bg, Rect2iNew(buyPos, svec2i(AMMO_BUTTON_BG_W, FontH() + 4)), 3, 3,
-		3, 3, true, CanBuy(data, ammoId) ? colorGreen : colorGray, SDL_FLIP_NONE);
+		g, data->buttonBG, Rect2iNew(buyPos, svec2i(AMMO_BUTTON_BG_W, FontH() + 4)), 3, 3,
+			   3, 3, true, canBuy ? (buySelected ? colorGreen : colorOfficeGreen) : colorGray, SDL_FLIP_NONE);
 	FontStrOpt("Buy", buyPos, foptsBuy);
 
 	y = bgPos.y;

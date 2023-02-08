@@ -108,6 +108,7 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 			WeaponMenuSelectedCostDiff(d) > p->Totals.Score)
 		{
 			// Can't afford
+			SoundPlay(&gSoundDevice, StrSound("ammo_none"));
 			return;
 		}
 		d->SelectResult = WEAPON_MENU_SELECT;

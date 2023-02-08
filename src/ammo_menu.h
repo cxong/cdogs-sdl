@@ -43,7 +43,7 @@ typedef struct
 	bool Active;
 	int PlayerUID;
 	AmmoMenuResult SelectResult;
-	const NamedSprites *menuBGSprites;
+	const Pic *buttonBG;
 	int idx;
 	CArray ammoIds; // of int
 	struct vec2i size;
