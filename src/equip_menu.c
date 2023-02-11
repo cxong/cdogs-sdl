@@ -493,6 +493,7 @@ void EquipMenuCreate(
 	}
 	// Check how many util menu items there are
 	menu->endSlot = MAX_WEAPONS;
+	menu->ammoSlot = -1;
 	if (gCampaign.Setting.BuyAndSell)
 	{
 		if (gCampaign.Setting.Ammo)
