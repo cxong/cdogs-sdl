@@ -98,21 +98,29 @@ static void AmmoSelect(menu_t *menu, int cmd, void *data)
 	if (cmd & CMD_BUTTON1)
 	{
 		const int ammoId = GetSelectedAmmo(d);
-		const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
-		const bool buy = (d->idx & 1) == 0;
-		if (buy && CanBuy(d, ammoId))
+		if (ammoId < 0)
 		{
-			SoundPlay(&gSoundDevice, StrSound(ammo->Sound));
-			d->SelectResult = AMMO_MENU_SELECT;
-		}
-		else if (!buy && CanSell(d, ammoId))
-		{
-			SoundPlay(&gSoundDevice, StrSound(ammo->Sound));
-			d->SelectResult = AMMO_MENU_SELECT;
+			d->SelectResult = AMMO_MENU_CANCEL;
+			MenuPlaySound(MENU_SOUND_BACK);
 		}
 		else
 		{
-			SoundPlay(&gSoundDevice, StrSound("ammo_none"));
+			const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
+			const bool buy = (d->idx & 1) == 0;
+			if (buy && CanBuy(d, ammoId))
+			{
+				SoundPlay(&gSoundDevice, StrSound(ammo->Sound));
+				d->SelectResult = AMMO_MENU_SELECT;
+			}
+			else if (!buy && CanSell(d, ammoId))
+			{
+				SoundPlay(&gSoundDevice, StrSound(ammo->Sound));
+				d->SelectResult = AMMO_MENU_SELECT;
+			}
+			else
+			{
+				SoundPlay(&gSoundDevice, StrSound("ammo_none"));
+			}
 		}
 	}
 	else if (cmd & CMD_BUTTON2)
@@ -253,6 +261,13 @@ static void DrawMenu(
 		fopts.Mask = color;
 		FontStrOpt(ARROW_DOWN, scrollRect.Pos, fopts);
 	}
+	else
+	{
+		// Draw back item
+		DrawAmmoMenuItem(
+			d, g, (int)d->ammoIds.size, NULL, svec2i(pos.x, pos.y + ammoY),
+			bgSize);
+	}
 }
 static void DrawAmmoMenuItem(
 	const AmmoMenu *data, GraphicsDevice *g, const int idx, const Ammo *a,
@@ -260,13 +275,15 @@ static void DrawAmmoMenuItem(
 {
 	const bool selected = data->idx / 2 == idx;
 	const PlayerData *pData = PlayerDataGetByUID(data->PlayerUID);
-	const int ammoId = *(int *)CArrayGet(&data->ammoIds, idx);
+	const int ammoId = idx < (int)data->ammoIds.size
+						   ? *(int *)CArrayGet(&data->ammoIds, idx)
+						   : -1;
 	const int ammoAmount = PlayerGetAmmoAmount(pData, ammoId);
 	const struct vec2i bgPos =
 		svec2i(pos.x, pos.y + (idx - data->scroll) * bgSize.y);
 	// Disallow buy/sell if ammo is free
-	const bool enabled =
-		data->Active && a->Price > 0 && a->Price <= pData->Totals.Score;
+	const bool enabled = a == NULL || (data->Active && a->Price > 0 &&
+									   a->Price <= pData->Totals.Score);
 	color_t color = enabled ? colorWhite : colorGray;
 	if (selected && data->Active)
 	{
@@ -285,7 +302,7 @@ static void DrawAmmoMenuItem(
 	int y = bgPos.y + AMMO_ROW_H * 2;
 
 	// Ammo amount BG
-	if (a->Max > 0 && ammoAmount > 0)
+	if (a && a->Max > 0 && ammoAmount > 0)
 	{
 		const color_t gaugeBG =
 			AmmoIsLow(a, ammoAmount) ? colorRed : colorBlue;
@@ -298,29 +315,40 @@ static void DrawAmmoMenuItem(
 	y = bgPos.y + AMMO_ROW_H;
 
 	// Sell/buy buttons
-	const bool sellSelected = selected && data->Active && (data->idx & 1) == 1;
-	const bool canSell = CanSell(data, ammoId);
-	const FontOpts foptsSell = {
-		ALIGN_CENTER, ALIGN_START, svec2i(AMMO_BUTTON_BG_W, FontH()),
-		svec2i(2, 2), sellSelected ? colorRed : colorGray};
-	x = bgPos.x + bgSize.x - AMMO_BUTTON_BG_W - 2;
-	const struct vec2i sellPos = svec2i(x, y);
-	Draw9Slice(
-		g, data->buttonBG, Rect2iNew(sellPos, svec2i(AMMO_BUTTON_BG_W, FontH() + 4)), 3, 3,
-			   3, 3, true, canSell ? (sellSelected ? colorRed : colorMaroon) : colorGray, SDL_FLIP_NONE);
-	FontStrOpt("Sell", sellPos, foptsSell);
+	if (a != NULL)
+	{
+		const bool sellSelected =
+			selected && data->Active && (data->idx & 1) == 1;
+		const bool canSell = CanSell(data, ammoId);
+		const FontOpts foptsSell = {
+			ALIGN_CENTER, ALIGN_START, svec2i(AMMO_BUTTON_BG_W, FontH()),
+			svec2i(2, 2), sellSelected ? colorRed : colorGray};
+		x = bgPos.x + bgSize.x - AMMO_BUTTON_BG_W - 2;
+		const struct vec2i sellPos = svec2i(x, y);
+		Draw9Slice(
+			g, data->buttonBG,
+			Rect2iNew(sellPos, svec2i(AMMO_BUTTON_BG_W, FontH() + 4)), 3, 3, 3,
+			3, true,
+			canSell ? (sellSelected ? colorRed : colorMaroon) : colorGray,
+			SDL_FLIP_NONE);
+		FontStrOpt("Sell", sellPos, foptsSell);
 
-	x -= AMMO_BUTTON_BG_W + 3;
-	const bool buySelected = selected && data->Active && (data->idx & 1) == 0;
-	const bool canBuy = CanBuy(data, ammoId);
-	const FontOpts foptsBuy = {
-		ALIGN_CENTER, ALIGN_START, svec2i(AMMO_BUTTON_BG_W, FontH()),
-		svec2i(2, 2), buySelected ? colorGreen : colorGray};
-	const struct vec2i buyPos = svec2i(x, y);
-	Draw9Slice(
-		g, data->buttonBG, Rect2iNew(buyPos, svec2i(AMMO_BUTTON_BG_W, FontH() + 4)), 3, 3,
-			   3, 3, true, canBuy ? (buySelected ? colorGreen : colorOfficeGreen) : colorGray, SDL_FLIP_NONE);
-	FontStrOpt("Buy", buyPos, foptsBuy);
+		x -= AMMO_BUTTON_BG_W + 3;
+		const bool buySelected =
+			selected && data->Active && (data->idx & 1) == 0;
+		const bool canBuy = CanBuy(data, ammoId);
+		const FontOpts foptsBuy = {
+			ALIGN_CENTER, ALIGN_START, svec2i(AMMO_BUTTON_BG_W, FontH()),
+			svec2i(2, 2), buySelected ? colorGreen : colorGray};
+		const struct vec2i buyPos = svec2i(x, y);
+		Draw9Slice(
+			g, data->buttonBG,
+			Rect2iNew(buyPos, svec2i(AMMO_BUTTON_BG_W, FontH() + 4)), 3, 3, 3,
+			3, true,
+			canBuy ? (buySelected ? colorGreen : colorOfficeGreen) : colorGray,
+			SDL_FLIP_NONE);
+		FontStrOpt("Buy", buyPos, foptsBuy);
+	}
 
 	y = bgPos.y;
 	x = bgPos.x + 4;
@@ -329,10 +357,10 @@ static void DrawAmmoMenuItem(
 		ALIGN_START, ALIGN_START, bgSize, svec2i(2, 2), color};
 
 	// Name
-	FontStrOpt(a->Name, svec2i(x, y), fopts);
+	FontStrOpt(a ? a->Name : "Back", svec2i(x, y), fopts);
 
 	// Price
-	if (a->Price > 0)
+	if (a && a->Price > 0)
 	{
 		const FontOpts foptsP = {
 			ALIGN_END, ALIGN_START, bgSize, svec2i(8, 2),
@@ -346,7 +374,7 @@ static void DrawAmmoMenuItem(
 	x = bgPos.x + 4;
 
 	// Ammo amount BG
-	if (a->Max > 0 && ammoAmount > 0)
+	if (a && a->Max > 0 && ammoAmount > 0)
 	{
 		const color_t gaugeBG =
 			AmmoIsLow(a, ammoAmount) ? colorRed : colorBlue;
@@ -357,28 +385,34 @@ static void DrawAmmoMenuItem(
 	}
 
 	// Amount
-	char buf[256];
-	if (a->Max > 0)
+	if (a != NULL)
 	{
-		sprintf(buf, "%d/%d", ammoAmount, a->Max);
+		char buf[256];
+		if (a->Max > 0)
+		{
+			sprintf(buf, "%d/%d", ammoAmount, a->Max);
+		}
+		else
+		{
+			sprintf(buf, "%d", ammoAmount);
+		}
+		const FontOpts foptsA = {
+			ALIGN_END, ALIGN_START, bgSize, svec2i(8, 2), color};
+		FontStrOpt(buf, svec2i(x, y), foptsA);
 	}
-	else
-	{
-		sprintf(buf, "%d", ammoAmount);
-	}
-	const FontOpts foptsA = {
-		ALIGN_END, ALIGN_START, bgSize, svec2i(8, 2), color};
-	FontStrOpt(buf, svec2i(x, y), foptsA);
 
 	y -= AMMO_ROW_H;
 
 	// Icon
-	x = bgPos.x + 12;
-	CPicDrawContext c = CPicDrawContextNew();
-	const struct vec2i ammoPos = svec2i_subtract(
-		svec2i(x, bgPos.y + bgSize.y / 2),
-		svec2i_scale_divide(CPicGetPic(&a->Pic, 0)->size, 2));
-	CPicDraw(g, &a->Pic, ammoPos, &c);
+	if (a != NULL)
+	{
+		x = bgPos.x + 12;
+		CPicDrawContext c = CPicDrawContextNew();
+		const struct vec2i ammoPos = svec2i_subtract(
+			svec2i(x, bgPos.y + bgSize.y / 2),
+			svec2i_scale_divide(CPicGetPic(&a->Pic, 0)->size, 2));
+		CPicDraw(g, &a->Pic, ammoPos, &c);
+	}
 }
 static int HandleInputMenu(int cmd, void *data)
 {
@@ -404,7 +438,7 @@ static int HandleInputMenu(int cmd, void *data)
 	}
 	else if (cmd & CMD_RIGHT)
 	{
-		if ((d->idx % 2) == 0)
+		if (d->idx < numAmmo * 2 && (d->idx % 2) == 0)
 		{
 			d->idx++;
 			MenuPlaySound(MENU_SOUND_SWITCH);
@@ -420,9 +454,9 @@ static int HandleInputMenu(int cmd, void *data)
 	}
 	else if (cmd & CMD_DOWN)
 	{
-		if (d->idx + 2 < numAmmo * 2 + 1)
+		if (d->idx + 2 < numAmmo * 2 + 2)
 		{
-			d->idx = MIN(numAmmo * 2 + 1, d->idx + 2);
+			d->idx = MIN(numAmmo * 2 + 2, d->idx + 2);
 			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}

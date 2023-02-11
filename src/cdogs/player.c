@@ -610,7 +610,8 @@ void PlayerRemoveWeapon(PlayerData *p, const int slot)
 	{
 		if (ammoIds[i] >= 0 && !PlayerUsesAmmo(p, ammoIds[i]))
 		{
-			PlayerAddAmmo(p, ammoIds[i], -PlayerGetAmmoAmount(p, ammoIds[i]), false);
+			PlayerAddAmmo(
+				p, ammoIds[i], -PlayerGetAmmoAmount(p, ammoIds[i]), false);
 		}
 	}
 }
@@ -665,11 +666,13 @@ bool PlayerUsesAnyAmmo(const PlayerData *p)
 
 int PlayerGetAmmoAmount(const PlayerData *p, const int ammoId)
 {
-	return (int)p->ammo.size >= ammoId ? *(int *)CArrayGet(&p->ammo, ammoId)
-									   : 0;
+	return (ammoId >= 0 && (int)p->ammo.size >= ammoId)
+			   ? *(int *)CArrayGet(&p->ammo, ammoId)
+			   : 0;
 }
 
-void PlayerAddAmmo(PlayerData *p, const int ammoId, const int amount, const bool isFree)
+void PlayerAddAmmo(
+	PlayerData *p, const int ammoId, const int amount, const bool isFree)
 {
 	int *ammoAmount = CArrayGet(&p->ammo, ammoId);
 	const int oldAmount = *ammoAmount;
