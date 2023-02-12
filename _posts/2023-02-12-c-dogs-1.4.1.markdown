@@ -1,0 +1,20 @@
+---
+layout: post
+title:  "C-Dogs 1.4.1 Released!"
+date:   2023-02-12
+categories: release
+---
+
+Happy belated 2023! A feature release is in the works with exciting goodies, but until then here comes a bug fix release!
+
+The most pressing fix is a Windows crash when adjusting audio settings, but there's also a bunch of random bug fixes and tweaks if you check the release notes.
+
+> ![AI Insurgency](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/ai_insurgency.gif)
+>
+> GIF unrelated - just a mission in the AI Insurgency campaign
+
+If you want to stay up to date with the latest C-Dogs SDL development (cooking slowly), follow the GitHub project page: <https://github.com/users/cxong/projects/3/views/1>
+
+Download free from itch.io: <https://congusbongus.itch.io/cdogs-sdl/purchase>
+
+Release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/1.4.1>
