@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2016, 2018-2021 Cong Xu
+	Copyright (c) 2013-2016, 2018-2021, 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -602,18 +602,24 @@ const char *GetHomeDirectory(void)
 
 /* GetConfigFilePath()
  *
- * returns a full path to a data file...
+ * returns a full path to a config file
  */
 char cfpath[CDOGS_PATH_MAX];
 const char *GetConfigFilePath(const char *name)
 {
-	const char *homedir = GetHomeDirectory();
-
-	strcpy(cfpath, homedir);
-
-#ifndef __EMSCRIPTEN__
-	strcat(cfpath, CDOGS_CFG_DIR);
-#endif
+	const char *xdgConfigDir = getenv("XDG_CONFIG_HOME");
+	if (xdgConfigDir != NULL)
+	{
+		sprintf(cfpath, "%s/cdogs-sdl/", xdgConfigDir);
+	}
+	else
+	{
+		const char *homedir = GetHomeDirectory();
+		strcpy(cfpath, homedir);
+	#ifndef __EMSCRIPTEN__
+		strcat(cfpath, CDOGS_CFG_DIR);
+	#endif
+	}
 	strcat(cfpath, name);
 
 	return cfpath;
