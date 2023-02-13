@@ -36,6 +36,7 @@ build/windows/cdogs.rc
 # Linux
 bin/
 /share/
+include/
 
 # Visual Studio
 enc_temp_folder/
