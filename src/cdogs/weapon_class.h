@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2019, 2021-2022 Cong Xu
+	Copyright (c) 2013-2019, 2021-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -111,6 +111,7 @@ typedef struct
 	} u;
 	char *name;
 	char *Description;
+	char *Prerequisite;	// WeaponClass
 	int Lock;
 	Mix_Chunk *SwitchSound;
 	bool CanDrop;	// whether this gun can be dropped to be picked up

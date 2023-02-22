@@ -341,6 +341,7 @@
     },
     {
       "Name": "Akimbo Pistols",
+      "Prerequisite": "Pistol",
       "Icon": "akimbo_pistols",
       "SwitchSound": "pistol_switch",
       "Guns": ["akimbo_pistol", "akimbo_pistol"],

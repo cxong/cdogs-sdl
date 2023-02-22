@@ -32,6 +32,7 @@
       "Name": "Machine Gun",
       "Icon": "smg",
       "Bullet": "bullet",
+      "Prerequisite": "Pistol",
       "Cost": 1,
       "Lock": 12,
       "Sound": "machine_gun",

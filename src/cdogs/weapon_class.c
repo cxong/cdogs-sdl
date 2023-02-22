@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2022 Cong Xu
+	Copyright (c) 2013-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -179,6 +179,14 @@ static void LoadWeaponClass(WeaponClass *wc, json_t *node, const int version)
 	{
 		CFREE(wc->Description);
 		wc->Description = tmp;
+	}
+
+	tmp = NULL;
+	LoadStr(&tmp, node, "Prerequisite");
+	if (tmp != NULL)
+	{
+		CFREE(wc->Prerequisite);
+		wc->Prerequisite = tmp;
 	}
 
 	LoadInt(&wc->Lock, node, "Lock");
@@ -396,6 +404,7 @@ static void WeaponClassTerminate(WeaponClass *wc)
 {
 	CFREE(wc->name);
 	CFREE(wc->Description);
+	CFREE(wc->Prerequisite);
 	CFREE(wc->DropGun);
 	if (wc->Type == GUNTYPE_MULTI)
 	{
