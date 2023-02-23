@@ -45,17 +45,17 @@
 #define SLOT_BORDER 3
 #define AMMO_LEVEL_W 2
 
-static GunType SlotType(const int slot)
+static bool InSlot(const WeaponClass *wc, const int slot)
 {
 	if (slot < MELEE_SLOT)
 	{
-		return GUNTYPE_NORMAL;
+		return wc->Type == GUNTYPE_NORMAL || wc->Type == GUNTYPE_MULTI;
 	}
 	else if (slot == MELEE_SLOT)
 	{
-		return GUNTYPE_MELEE;
+		return wc->Type == GUNTYPE_MELEE;
 	}
-	return GUNTYPE_GRENADE;
+	return wc->Type == GUNTYPE_GRENADE;
 }
 
 static const WeaponClass *GetSelectedGun(const WeaponMenu *menu)
@@ -220,7 +220,7 @@ void WeaponMenuCreate(
 	// Get the weapon indices available for this slot
 	CArrayInit(&menu->weaponIndices, sizeof(int));
 	CA_FOREACH(const WeaponClass *, wc, *weapons)
-	if ((*wc)->Type != SlotType(slot))
+	if (!InSlot(*wc, slot))
 	{
 		continue;
 	}
@@ -278,7 +278,7 @@ static void DrawMenu(
 	// Draw guns: red if selected, yellow if equipped
 	int idx = 0;
 	CA_FOREACH(const WeaponClass *, wc, *d->weapons)
-	if ((*wc)->Type != SlotType(d->slot))
+	if (!InSlot(*wc, d->slot))
 	{
 		continue;
 	}

@@ -48,17 +48,17 @@
 #define SLOT_BORDER 3
 #define AMMO_LEVEL_W 2
 
-static GunType SlotType(const int slot)
+static bool InSlot(const WeaponClass *wc, const int slot)
 {
 	if (slot < MELEE_SLOT)
 	{
-		return GUNTYPE_NORMAL;
+		return wc->Type == GUNTYPE_NORMAL || wc->Type == GUNTYPE_MULTI;
 	}
 	else if (slot == MELEE_SLOT)
 	{
-		return GUNTYPE_MELEE;
+		return wc->Type == GUNTYPE_MELEE;
 	}
-	return GUNTYPE_GRENADE;
+	return wc->Type == GUNTYPE_GRENADE;
 }
 
 static int CountNumGuns(const EquipMenu *data, const int slot)
@@ -70,7 +70,7 @@ static int CountNumGuns(const EquipMenu *data, const int slot)
 	// Count total guns
 	int numGuns = 0;
 	CA_FOREACH(const WeaponClass *, wc, data->weapons)
-	if ((*wc)->Type != SlotType(slot))
+	if (!InSlot(*wc, slot))
 	{
 		continue;
 	}

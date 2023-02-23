@@ -537,10 +537,11 @@ void PlayerAddWeaponToSlot(
 {
 	if (wc)
 	{
-		// See if the weapon is already equipped; if so swap it with the slot
+		// See if the weapon or its pre-/post-requisite is already
+		// equipped; if so swap it with the slot
 		for (int i = 0; i < MAX_WEAPONS; i++)
 		{
-			if (p->guns[i] == wc)
+			if (p->guns[i] && (p->guns[i] == wc || WeaponClassGetPrerequisite(p->guns[i]) == wc || p->guns[i] == WeaponClassGetPrerequisite(wc)))
 			{
 				p->guns[i] = p->guns[slot];
 				p->guns[slot] = wc;

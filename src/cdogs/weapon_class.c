@@ -668,6 +668,14 @@ const BulletClass *WeaponClassGetBullet(
 	CA_FOREACH_END()
 	return NULL;
 }
+const WeaponClass *WeaponClassGetPrerequisite(const WeaponClass *wc)
+{
+	if (wc->Prerequisite == NULL)
+	{
+		return NULL;
+	}
+	return StrWeaponClass(wc->Prerequisite);
+}
 
 void BulletAndWeaponInitialize(
 	BulletClasses *b, WeaponClasses *wcs, const char *bpath, const char *gpath)

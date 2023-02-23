@@ -158,6 +158,7 @@ const WeaponClass *WeaponClassGetBarrel(
 	const WeaponClass *wc, const int barrel);
 const BulletClass *WeaponClassGetBullet(
 	const WeaponClass *wc, const int barrel);
+const WeaponClass *WeaponClassGetPrerequisite(const WeaponClass *wc);
 
 #define WC_BARREL_ATTR(_wc, _attr, _barrel)                                   \
 	((_wc).Type == GUNTYPE_MULTI                                              \
