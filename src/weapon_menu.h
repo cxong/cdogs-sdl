@@ -61,6 +61,7 @@ void WeaponMenuCreate(
 	GraphicsDevice *graphics);
 void WeaponMenuTerminate(WeaponMenu *menu);
 
+void WeaponMenuReset(WeaponMenu *menu);
 void WeaponMenuActivate(WeaponMenu *menu);
 void WeaponMenuUpdate(WeaponMenu *menu, const int cmd);
 void WeaponMenuDraw(const WeaponMenu *menu);

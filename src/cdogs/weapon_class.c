@@ -670,11 +670,28 @@ const BulletClass *WeaponClassGetBullet(
 }
 const WeaponClass *WeaponClassGetPrerequisite(const WeaponClass *wc)
 {
-	if (wc->Prerequisite == NULL)
+	if (wc == NULL || wc->Prerequisite == NULL)
 	{
 		return NULL;
 	}
 	return StrWeaponClass(wc->Prerequisite);
+}
+static const WeaponClass *FindAncestor(const WeaponClass *wc)
+{
+	for (;;)
+	{
+		const WeaponClass *parent = WeaponClassGetPrerequisite(wc);
+		if (parent == NULL)
+		{
+			return wc;
+		}
+		wc = parent;
+	}
+}
+bool WeaponClassesAreRelated(const WeaponClass *wc1, const WeaponClass *wc2)
+{
+	// Find the ancestors of both, and check if they match
+	return wc1 != NULL && wc2 != NULL && FindAncestor(wc1) == FindAncestor(wc2);
 }
 
 void BulletAndWeaponInitialize(

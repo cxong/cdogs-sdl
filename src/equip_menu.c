@@ -611,9 +611,13 @@ void EquipMenuUpdate(EquipMenu *menu, const int cmd)
 	{
 		WeaponMenuUpdate(&menu->weaponMenus[menu->slot], cmd);
 		menu->equipping = menu->weaponMenus[menu->slot].Active;
-		// If weapons changed, reset ammo menu
+		// If weapons changed, reset menus
 		if (!menu->equipping)
 		{
+			for (int i = 0; i < MAX_WEAPONS; i++)
+			{
+				WeaponMenuReset(&menu->weaponMenus[i]);
+			}
 			AmmoMenuReset(&menu->ammoMenu);
 		}
 	}

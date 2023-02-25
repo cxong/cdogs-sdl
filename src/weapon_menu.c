@@ -213,27 +213,11 @@ void WeaponMenuCreate(
 	const struct vec2i size, EventHandlers *handlers, GraphicsDevice *graphics)
 {
 	menu->PlayerUID = playerUID;
-	const PlayerData *pData = PlayerDataGetByUID(playerUID);
 	menu->menuBGSprites = PicManagerGetSprites(&gPicManager, "hud/gun_bg");
-	menu->idx = 0;
-
-	// Get the weapon indices available for this slot
-	CArrayInit(&menu->weaponIndices, sizeof(int));
-	CA_FOREACH(const WeaponClass *, wc, *weapons)
-	if (!InSlot(*wc, slot))
-	{
-		continue;
-	}
-	// Pre-select the equipped gun for the slot
-	if (*wc == pData->guns[slot])
-	{
-		menu->idx = (int)menu->weaponIndices.size;
-	}
-	CArrayPushBack(&menu->weaponIndices, &_ca_index);
-	CA_FOREACH_END()
 	menu->weapons = weapons;
 	menu->weaponIsNew = weaponIsNew;
 	menu->slot = slot;
+	WeaponMenuReset(menu);
 
 	const Pic *bg = CArrayGet(&menu->menuBGSprites->pics, 0);
 	menu->cols = CLAMP(menu->size.x * 3 / (bg->size.x + 2) / 4, 2, 4);
@@ -276,21 +260,16 @@ static void DrawMenu(
 	bool scrollDown = false;
 
 	// Draw guns: red if selected, yellow if equipped
-	int idx = 0;
-	CA_FOREACH(const WeaponClass *, wc, *d->weapons)
-	if (!InSlot(*wc, d->slot))
-	{
-		continue;
-	}
-	const int row = idx / d->cols;
+	CA_FOREACH(const int, idx, d->weaponIndices)
+	const int row = _ca_index / d->cols;
 	if (row >= d->scroll && row < d->scroll + WEAPON_MENU_MAX_ROWS)
 	{
-		const bool *isNew = CArrayGet(d->weaponIsNew, _ca_index);
+		const bool *isNew = CArrayGet(d->weaponIsNew, *idx);
+		const WeaponClass **wc = CArrayGet(d->weapons, *idx);
 		DrawGun(
-			d, g, idx, *wc, *isNew, svec2i(pos.x, pos.y + weaponsY), bgSize);
+			d, g, _ca_index, *wc, *isNew, svec2i(pos.x, pos.y + weaponsY), bgSize);
 	}
-	idx++;
-	if (idx / d->cols == d->scroll + WEAPON_MENU_MAX_ROWS)
+	if (_ca_index / d->cols == d->scroll + WEAPON_MENU_MAX_ROWS)
 	{
 		scrollDown = true;
 		break;
@@ -350,7 +329,7 @@ static void DrawMenu(
 	{
 		// Draw "none" gun which can be used to unequip this slot
 		DrawGun(
-			d, g, idx, NULL, false, svec2i(pos.x, pos.y + weaponsY), bgSize);
+			d, g, (int)d->weaponIndices.size, NULL, false, svec2i(pos.x, pos.y + weaponsY), bgSize);
 	}
 }
 static void DrawGun(
@@ -495,6 +474,57 @@ void WeaponMenuTerminate(WeaponMenu *menu)
 	CArrayTerminate(&menu->weaponIndices);
 }
 
+void WeaponMenuReset(WeaponMenu *menu)
+{
+	const PlayerData *pData = PlayerDataGetByUID(menu->PlayerUID);
+	menu->idx = 0;
+
+	// Get the weapon indices available for this slot
+	CArrayTerminate(&menu->weaponIndices);
+	CArrayInit(&menu->weaponIndices, sizeof(int));
+	
+	// Add the equipped weapon's upgrades and downgrades first
+	const WeaponClass *equipped = pData->guns[menu->slot];
+	if (equipped != NULL)
+	{
+		CA_FOREACH(const WeaponClass *, wc, *menu->weapons)
+		if (WeaponClassGetPrerequisite(*wc) == equipped)
+		{
+			CArrayPushBack(&menu->weaponIndices, &_ca_index);
+		}
+		CA_FOREACH_END()
+		CA_FOREACH(const WeaponClass *, wc, *menu->weapons)
+		if (WeaponClassGetPrerequisite(equipped) == *wc)
+		{
+			CArrayPushBack(&menu->weaponIndices, &_ca_index);
+		}
+		CA_FOREACH_END()
+	}
+
+	CA_FOREACH(const WeaponClass *, wc, *menu->weapons)
+	if (!InSlot(*wc, menu->slot))
+	{
+		continue;
+	}
+	// Pre-select the equipped gun for the slot
+	if (*wc == equipped)
+	{
+		menu->idx = (int)menu->weaponIndices.size;
+	}
+	else if (WeaponClassesAreRelated(*wc, equipped))
+	{
+		// Don't add other related weapons
+		continue;
+	}
+	else if (WeaponClassGetPrerequisite(*wc) != NULL &&
+		 !PlayerHasWeapon(pData, *wc))
+	{
+		// Don't add weapons that are upgrades and the player doesn't have
+		continue;
+	}
+	CArrayPushBack(&menu->weaponIndices, &_ca_index);
+	CA_FOREACH_END()
+}
 void WeaponMenuActivate(WeaponMenu *menu)
 {
 	menu->Active = true;
