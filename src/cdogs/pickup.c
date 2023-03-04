@@ -255,7 +255,6 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 		// Prevent multiple pickups by marking
 		p->PickedUp = true;
 		a->PickupAll = false;
-		a->CanPickupSpecial = false;
 	}
 }
 

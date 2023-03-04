@@ -331,12 +331,12 @@ static bool TryMoveActor(TActor *actor, struct vec2 pos)
 	CASSERT(
 		!svec2_is_nearly_equal(actor->Pos, pos, EPSILON_POS),
 		"trying to move to same position");
+	actor->CanPickupSpecial = false;
 
 	// Don't check collisions for pilots
 	if (actor->vehicleUID == -1)
 	{
 		actor->hasCollided = true;
-		actor->CanPickupSpecial = false;
 
 		const struct vec2 oldPos = actor->Pos;
 		pos = GetConstrainedPos(&gMap, actor->Pos, pos, actor->thing.size);
