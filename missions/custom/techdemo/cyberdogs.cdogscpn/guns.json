@@ -13,7 +13,8 @@
       "SwitchSound": "chainsaw_switch",
       "SoundLockLength": 50,
       "CanShoot": false,
-      "Price": 2000
+      "Price": 2000,
+      "Auto": true
     },
     {
       "Pic": "chainsaw",
@@ -27,7 +28,8 @@
       "SwitchSound": "chainsaw_switch",
       "SoundLockLength": 50,
       "CanShoot": false,
-      "Price": 2000
+      "Price": 2000,
+      "Auto": true
     },
     {
       "Pic": "chainsaw",
@@ -41,7 +43,8 @@
       "SwitchSound": "chainsaw_switch",
       "SoundLockLength": 50,
       "CanShoot": false,
-      "Price": 2000
+      "Price": 2000,
+      "Auto": true
     },
     {
       "Pic": "chainsaw",
@@ -55,7 +58,8 @@
       "SwitchSound": "chainsaw_switch",
       "SoundLockLength": 50,
       "CanShoot": false,
-      "Price": 2000
+      "Price": 2000,
+      "Auto": true
     },
     {
       "Pic": "chainsaw",
@@ -69,7 +73,8 @@
       "SwitchSound": "chainsaw_switch",
       "SoundLockLength": 50,
       "CanShoot": false,
-      "Price": 2000
+      "Price": 2000,
+      "Auto": true
     },
     {
       "Pic": "",
@@ -82,7 +87,8 @@
       "SoundLockLength": 20,
       "SwitchSound": "knuckles",
       "CanShoot": false,
-      "CanDrop": false
+      "CanDrop": false,
+      "Auto": true
     },
     {
       "Pic": "chaingun",
