@@ -34,6 +34,13 @@
 #include "menu_utils.h"
 #include "weapon_menu.h"
 
+typedef enum
+{
+	META_NONE,
+	META_DOWNGRADE,
+	META_UPGRADE,
+	META_NEW
+} DrawGunMeta;
 typedef struct
 {
 	MenuDisplayPlayerData display;
@@ -45,7 +52,7 @@ typedef struct
 	const NamedSprites *slotBGSprites;
 	CArray weapons;		// of const WeaponClass *
 	CArray weaponIsNew; // of bool
-	bool SlotHasNew[MAX_WEAPONS];
+	DrawGunMeta SlotMeta[MAX_WEAPONS];
 	struct vec2i size;
 	int ammoSlot;
 	int endSlot;

@@ -500,9 +500,30 @@ bool PlayerHasGrenadeButton(const PlayerData *p)
 
 bool PlayerHasWeapon(const PlayerData *p, const WeaponClass *wc)
 {
+	if (wc == NULL)
+	{
+		return false;
+	}
 	for (int i = 0; i < MAX_WEAPONS; i++)
 	{
 		if (p->guns[i] == wc)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool PlayerHasWeaponUpgrade(const PlayerData *p, const WeaponClass *wc)
+{
+	if (wc == NULL)
+	{
+		return false;
+	}
+	for (int i = 0; i < MAX_WEAPONS; i++)
+	{
+		const WeaponClass *prereq = WeaponClassGetPrerequisite(p->guns[i]);
+		if (prereq == wc)
 		{
 			return true;
 		}

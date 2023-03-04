@@ -173,10 +173,25 @@ static void DrawEquipSlot(
 		g, pData, pData->guns[slot], mask, svec2i(bgPos.x, bgPos.y + FontH()),
 		svec2i(slotSize.x, slotSize.y - 2 * FontH() - 1));
 
-	if (data->SlotHasNew[slot])
+	const Pic *arrow = PicManagerGetPic(&gPicManager, "hud/arrow");
+	const struct vec2i metaPos = svec2i(pos.x + EQUIP_MENU_WIDTH / 2 - 6, y + 13);
+	const struct vec2i arrowPos = svec2i(metaPos.x - 4, metaPos.y);
+	switch (data->SlotMeta[slot])
 	{
-		DrawCross(
-			g, svec2i(pos.x + EQUIP_MENU_WIDTH / 2 - 6, y + 13), colorGreen);
+	case META_NONE:
+		break;
+	case META_NEW:
+		DrawCross(g, metaPos, colorGreen);
+		break;
+	case META_UPGRADE:
+		PicRender(arrow, g->gameWindow.renderer, arrowPos, colorGreen, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
+		break;
+	case META_DOWNGRADE:
+		PicRender(arrow, g->gameWindow.renderer, arrowPos, colorRed, 0, svec2_one(), SDL_FLIP_VERTICAL, Rect2iZero());
+		break;
+	default:
+		CASSERT(false, "unexpected");
+		break;
 	}
 
 	// Draw price
@@ -424,6 +439,53 @@ static int HandleInputEquipMenu(int cmd, void *data)
 }
 
 static bool HasWeapon(const CArray *weapons, const WeaponClass *wc);
+static void ResetSlotMeta(EquipMenu *menu)
+{
+	const PlayerData *pData = PlayerDataGetByUID(menu->PlayerUID);
+	
+	// Update SlotMeta
+	for (int i = 0; i < MAX_WEAPONS; i++)
+	{
+		menu->SlotMeta[i] = META_NONE;
+		const WeaponClass *slotWC = pData->guns[i];
+		CA_FOREACH(const WeaponClass *, wc, menu->weapons)
+		if (!InSlot(*wc, i))
+		{
+			continue;
+		}
+		const bool isNew = *(const bool *)CArrayGet(&menu->weaponIsNew, _ca_index);
+		DrawGunMeta meta = isNew ? META_NEW : META_NONE;
+		if (slotWC != NULL)
+		{
+			// Check if this slot has an upgrade/downgrade
+			if (slotWC == WeaponClassGetPrerequisite(*wc))
+			{
+				meta = META_UPGRADE;
+			}
+			else if (WeaponClassGetPrerequisite(slotWC) == *wc)
+			{
+				meta = META_DOWNGRADE;
+			}
+		}
+		menu->SlotMeta[i] = MAX(menu->SlotMeta[i], meta);
+		CA_FOREACH_END()
+	}
+}
+static bool HasWeapon(const CArray *weapons, const WeaponClass *wc)
+{
+	if (weapons == NULL)
+	{
+		return true;
+	}
+	CA_FOREACH(const WeaponClass *, wc2, *weapons)
+	if (*wc2 == wc)
+	{
+		return true;
+	}
+	CA_FOREACH_END()
+	return false;
+}
+
 void EquipMenuCreate(
 	EquipMenu *menu, const CArray *weapons, const CArray *prevWeapons,
 	const int numPlayers, const int player, const int playerUID,
@@ -447,25 +509,8 @@ void EquipMenuCreate(
 	CA_FOREACH(const WeaponClass *, wc, menu->weapons)
 	const bool isNew = !HasWeapon(prevWeapons, *wc);
 	CArrayPushBack(&menu->weaponIsNew, &isNew);
-	if (isNew)
-	{
-		if ((*wc)->Type == GUNTYPE_GRENADE)
-		{
-			menu->SlotHasNew[MAX_GUNS] = true;
-		}
-		else if ((*wc)->Type == GUNTYPE_MELEE)
-		{
-			menu->SlotHasNew[MELEE_SLOT] = true;
-		}
-		else
-		{
-			for (int i = 0; i < MELEE_SLOT; i++)
-			{
-				menu->SlotHasNew[i] = true;
-			}
-		}
-	}
 	CA_FOREACH_END()
+	ResetSlotMeta(menu);
 
 	switch (numPlayers)
 	{
@@ -575,20 +620,6 @@ void EquipMenuCreate(
 			&menu->ammoMenu, playerUID, pos, menu->size, handlers, graphics);
 	}
 }
-static bool HasWeapon(const CArray *weapons, const WeaponClass *wc)
-{
-	if (weapons == NULL)
-	{
-		return true;
-	}
-	CA_FOREACH(const WeaponClass *, wc2, *weapons)
-	if (*wc2 == wc)
-	{
-		return true;
-	}
-	CA_FOREACH_END()
-	return false;
-}
 
 void EquipMenuTerminate(EquipMenu *menu)
 {
@@ -619,6 +650,7 @@ void EquipMenuUpdate(EquipMenu *menu, const int cmd)
 				WeaponMenuReset(&menu->weaponMenus[i]);
 			}
 			AmmoMenuReset(&menu->ammoMenu);
+			ResetSlotMeta(menu);
 		}
 	}
 	else if (menu->slot == menu->ammoSlot && menu->ammoMenu.Active)

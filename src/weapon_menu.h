@@ -49,6 +49,7 @@ typedef struct
 	CArray weaponIndices;	   // of int
 	const CArray *weapons;	   // of const WeaponClass *
 	const CArray *weaponIsNew; // of bool
+	CArray weaponMeta;  // of DrawGunMeta
 	struct vec2i size;
 	int cols;
 	int scroll;

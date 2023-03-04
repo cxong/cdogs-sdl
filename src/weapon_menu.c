@@ -36,6 +36,8 @@
 #include <cdogs/draw/nine_slice.h>
 #include <cdogs/font.h>
 
+#include "equip_menu.h"
+
 #define NO_GUN_LABEL "(None)"
 #define EQUIP_MENU_SLOT_HEIGHT 40
 #define WEAPON_MENU_MAX_ROWS 4
@@ -242,7 +244,7 @@ static menu_t *CreateMenu(WeaponMenu *data)
 }
 static void DrawGun(
 	const WeaponMenu *data, GraphicsDevice *g, const int idx,
-	const WeaponClass *wc, const bool isNew, const struct vec2i pos,
+	const WeaponClass *wc, const DrawGunMeta meta, const struct vec2i pos,
 	const struct vec2i bgSize);
 static void DrawMenu(
 	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
@@ -264,10 +266,10 @@ static void DrawMenu(
 	const int row = _ca_index / d->cols;
 	if (row >= d->scroll && row < d->scroll + WEAPON_MENU_MAX_ROWS)
 	{
-		const bool *isNew = CArrayGet(d->weaponIsNew, *idx);
+		const DrawGunMeta *meta = CArrayGet(&d->weaponMeta, *idx);
 		const WeaponClass **wc = CArrayGet(d->weapons, *idx);
 		DrawGun(
-			d, g, _ca_index, *wc, *isNew, svec2i(pos.x, pos.y + weaponsY), bgSize);
+			d, g, _ca_index, *wc, *meta, svec2i(pos.x, pos.y + weaponsY), bgSize);
 	}
 	if (_ca_index / d->cols == d->scroll + WEAPON_MENU_MAX_ROWS)
 	{
@@ -334,7 +336,7 @@ static void DrawMenu(
 }
 static void DrawGun(
 	const WeaponMenu *data, GraphicsDevice *g, const int idx,
-	const WeaponClass *wc, const bool isNew, const struct vec2i pos,
+	const WeaponClass *wc, const DrawGunMeta meta, const struct vec2i pos,
 	const struct vec2i bgSize)
 {
 	const bool selected = data->idx == idx;
@@ -390,10 +392,26 @@ static void DrawGun(
 		sprintf(buf, "$%d", wc->Price);
 		FontStrOpt(buf, bgPos, foptsP);
 	}
-
-	if (isNew)
+	
+	const Pic *arrow = PicManagerGetPic(&gPicManager, "hud/arrow");
+	const struct vec2i metaPos = svec2i(bgPos.x + GUN_BG_W - 6, bgPos.y + 5);
+	const struct vec2i arrowPos = svec2i(metaPos.x - 4, metaPos.y);
+	switch (meta)
 	{
-		DrawCross(g, svec2i(bgPos.x + GUN_BG_W - 6, bgPos.y + 5), colorGreen);
+	case META_NONE:
+		break;
+	case META_NEW:
+		DrawCross(g, metaPos, colorGreen);
+		break;
+	case META_UPGRADE:
+		PicRender(arrow, g->gameWindow.renderer, arrowPos, colorGreen, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
+		break;
+	case META_DOWNGRADE:
+		PicRender(arrow, g->gameWindow.renderer, arrowPos, colorRed, 0, svec2_one(), SDL_FLIP_VERTICAL, Rect2iZero());
+		break;
+	default:
+		CASSERT(false, "unexpected");
+		break;
 	}
 
 	const FontOpts fopts = {
@@ -472,19 +490,41 @@ void WeaponMenuTerminate(WeaponMenu *menu)
 {
 	MenuSystemTerminate(&menu->ms);
 	CArrayTerminate(&menu->weaponIndices);
+	CArrayTerminate(&menu->weaponMeta);
 }
 
 void WeaponMenuReset(WeaponMenu *menu)
 {
 	const PlayerData *pData = PlayerDataGetByUID(menu->PlayerUID);
 	menu->idx = 0;
+	const WeaponClass *equipped = pData->guns[menu->slot];
+	
+	// Find out which weapons are new/upgrades/downgrades
+	CArrayTerminate(&menu->weaponMeta);
+	CArrayInit(&menu->weaponMeta, sizeof(DrawGunMeta));
+	CA_FOREACH(const WeaponClass *, wc, *menu->weapons)
+	const bool isNew = *(const bool *)CArrayGet(menu->weaponIsNew, _ca_index);
+	DrawGunMeta meta = isNew ? META_NEW : META_NONE;
+	if (equipped != NULL)
+	{
+		// Check if this slot has an upgrade/downgrade
+		if (equipped == WeaponClassGetPrerequisite(*wc))
+		{
+			meta = META_UPGRADE;
+		}
+		else if (WeaponClassGetPrerequisite(equipped) == *wc)
+		{
+			meta = META_DOWNGRADE;
+		}
+	}
+	CArrayPushBack(&menu->weaponMeta, &meta);
+	CA_FOREACH_END()
 
 	// Get the weapon indices available for this slot
 	CArrayTerminate(&menu->weaponIndices);
 	CArrayInit(&menu->weaponIndices, sizeof(int));
 	
 	// Add the equipped weapon's upgrades and downgrades first
-	const WeaponClass *equipped = pData->guns[menu->slot];
 	if (equipped != NULL)
 	{
 		CA_FOREACH(const WeaponClass *, wc, *menu->weapons)
