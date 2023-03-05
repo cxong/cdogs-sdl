@@ -694,6 +694,16 @@ bool WeaponClassesAreRelated(const WeaponClass *wc1, const WeaponClass *wc2)
 	return wc1 != NULL && wc2 != NULL && FindAncestor(wc1) == FindAncestor(wc2);
 }
 
+int WeaponClassFullPrice(const WeaponClass *wc)
+{
+	// Sum of prices for this weapon and all its prerequisites
+	if (wc == NULL)
+	{
+		return 0;
+	}
+	return wc->Price + WeaponClassFullPrice(WeaponClassGetPrerequisite(wc));
+}
+
 void BulletAndWeaponInitialize(
 	BulletClasses *b, WeaponClasses *wcs, const char *bpath, const char *gpath)
 {

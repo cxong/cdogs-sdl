@@ -562,10 +562,14 @@ void PlayerAddWeaponToSlot(
 		// equipped; if so swap it with the slot
 		for (int i = 0; i < MAX_WEAPONS; i++)
 		{
+			if (i == slot)
+			{
+				continue;
+			}
 			if (p->guns[i] && (p->guns[i] == wc || WeaponClassGetPrerequisite(p->guns[i]) == wc || p->guns[i] == WeaponClassGetPrerequisite(wc)))
 			{
 				p->guns[i] = p->guns[slot];
-				p->guns[slot] = wc;
+				PlayerAddWeaponToSlot(p, wc, i);
 				return;
 			}
 		}
@@ -576,9 +580,9 @@ void PlayerAddWeaponToSlot(
 		PlayerRemoveWeapon(p, slot);
 	}
 	// Subtract gun price
-	if (gCampaign.Setting.BuyAndSell && wc)
+	if (gCampaign.Setting.BuyAndSell)
 	{
-		PlayerScore(p, -wc->Price);
+		PlayerScore(p, -WeaponClassFullPrice(wc));
 	}
 	AddWeaponToSlot(p, wc, slot);
 }
@@ -615,9 +619,9 @@ void PlayerAddWeapon(PlayerData *p, const WeaponClass *wc)
 void PlayerRemoveWeapon(PlayerData *p, const int slot)
 {
 	// Refund gun price
-	if (gCampaign.Setting.BuyAndSell && p->guns[slot])
+	if (gCampaign.Setting.BuyAndSell)
 	{
-		PlayerScore(p, p->guns[slot]->Price);
+		PlayerScore(p, WeaponClassFullPrice(p->guns[slot]));
 	}
 	// Refund ammo if no guns use this ammo
 	int ammoIds[MAX_BARRELS] = {-1, -1};

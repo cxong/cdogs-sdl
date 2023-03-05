@@ -79,9 +79,9 @@ static int EquipCostDiff(
 	{
 		return 0;
 	}
-	const int cost1 = wc ? wc->Price : 0;
+	const int cost1 = WeaponClassFullPrice(wc);
 	const WeaponClass *wc2 = p->guns[slot];
-	const int cost2 = wc2 ? wc2->Price : 0;
+	const int cost2 = WeaponClassFullPrice(wc2);
 	return cost1 - cost2;
 }
 
