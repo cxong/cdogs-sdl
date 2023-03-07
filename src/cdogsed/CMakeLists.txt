@@ -1,7 +1,7 @@
 include_directories(
 	${SDL2_INCLUDE_DIRS}
-	${SDL2_IMAGE_INCLUDE_DIRS}
-	${SDL2_MIXER_INCLUDE_DIRS})
+	${SDL2_IMAGE_INCLUDE_DIR}
+	${SDL2_MIXER_INCLUDE_DIR})
 set(CDOGSED_SOURCES
 	add_pickup_dialog.c
 	campaign_options.c

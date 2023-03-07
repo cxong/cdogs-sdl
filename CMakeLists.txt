@@ -69,11 +69,12 @@ set(CMAKE_MODULE_PATH
 find_package(Nanopb REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
+message("SDL2_image include dir: ${SDL2_IMAGE_INCLUDE_DIR}")
 find_package(SDL2_mixer REQUIRED)
+message("SDL2_mixer include dir: ${SDL2_MIXER_INCLUDE_DIR}")
 if(BUILD_EDITOR)
 	find_package(OpenGL REQUIRED)
 endif()
-link_directories(${SDL2_LIBRARY_DIRS} ${SDL2_IMAGE_LIBRARY_DIRS} ${SDL2_MIXER_LIBRARY_DIRS})
 
 SET(ENet_LIBRARY enet)
 IF(WIN32)
