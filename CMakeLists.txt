@@ -64,7 +64,6 @@ endif()
 
 set(CMAKE_MODULE_PATH
 	${CMAKE_MODULE_PATH}
-	"${CMAKE_SOURCE_DIR}/build/cmake"
 	"${CMAKE_SOURCE_DIR}/src/proto/nanopb/extra")
 	
 find_package(Nanopb REQUIRED)
@@ -74,12 +73,7 @@ find_package(SDL2_mixer REQUIRED)
 if(BUILD_EDITOR)
 	find_package(OpenGL REQUIRED)
 endif()
-find_package(CCache)
 link_directories(${SDL2_LIBRARY_DIRS} ${SDL2_IMAGE_LIBRARY_DIRS} ${SDL2_MIXER_LIBRARY_DIRS})
-
-if(CCACHE_FOUND AND CLANG)
-	add_definitions(-Qunused-arguments -fcolor-diagnostics)
-endif()
 
 SET(ENet_LIBRARY enet)
 IF(WIN32)

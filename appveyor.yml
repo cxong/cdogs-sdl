@@ -15,9 +15,9 @@ environment:
   CTEST_OUTPUT_ON_FAILURE: 1
   # https://www.appveyor.com/docs/windows-images-software/#python
   PYTHON: "C:\\Python37"
-  SDL2_VERSION: 2.0.10
-  SDL2_IMAGE_VERSION: 2.0.5
-  SDL2_MIXER_VERSION: 2.0.4
+  SDL2_VERSION: 2.26.4
+  SDL2_IMAGE_VERSION: 2.6.3
+  SDL2_MIXER_VERSION: 2.6.3
   SDLDIR: C:\projects\cdogs-sdl
   VERSION: 1.4.1
 

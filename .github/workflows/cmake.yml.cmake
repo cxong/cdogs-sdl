@@ -53,13 +53,24 @@ jobs:
       run: |
         protoc --version
 
+    - name: Set up Homebrew
+      id: set-up-homebrew
+      if: matrix.os == 'ubuntu-latest'
+      uses: Homebrew/actions/setup-homebrew@master
+
+    - name: Install SDL via homebrew
+      # Because ubuntu 22 doesn't have the latest SDL libs
+      if: matrix.os == 'ubuntu-latest'
+      run: brew install sdl2 sdl2_mixer sdl2_image
+
     - name: Install packages Linux
       if: startsWith(matrix.os, 'ubuntu')
       run: |
         sudo apt-get update
-        sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev gcc-10 g++-10 python3-pip
+        sudo apt install gcc-10 g++-10 python3-pip
         python3 -m pip install protobuf
         pip3 install --upgrade protobuf
+      # libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev
 
     - name: Set up GCC
       if: startsWith(matrix.os, 'ubuntu') && matrix.cc == 'gcc'
