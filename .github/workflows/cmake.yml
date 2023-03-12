@@ -92,6 +92,10 @@ jobs:
         pip3 install --upgrade protobuf
         build/macosx/install-sdl2.sh
 
+    - name: Install dependencies (Windows)
+      if: matrix.os == 'windows-latest'
+      run: C:\vcpkg\vcpkg.exe install --triplet x64-windows sdl2 sdl2-image sdl2-mixer
+
     - name: Configure CMake
       env:
         CC: ${{ matrix.cc }}
