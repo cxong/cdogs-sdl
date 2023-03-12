@@ -37,7 +37,6 @@ jobs:
             cc: clang
             cc_version: 12
           - os: macos-latest
-            cc: /usr/bin/clang
           - os: windows-latest
 
     steps:

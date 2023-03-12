@@ -1,8 +1,6 @@
 include_directories(
 	.. # to include proto
-	${SDL2_INCLUDE_DIRS}
-	${SDL2_IMAGE_INCLUDE_DIR}
-	${SDL2_MIXER_INCLUDE_DIR})
+	${SDL2_INCLUDE_DIRS})
 add_definitions(-DSTATIC)
 set(CDOGS_SOURCES
 	actor_fire.c

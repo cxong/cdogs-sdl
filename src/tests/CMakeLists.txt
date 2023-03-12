@@ -11,9 +11,7 @@ add_subdirectory(cbehave)
 
 include_directories(
 	. ../cdogs
-	${SDL2_INCLUDE_DIRS}
-	${SDL2_IMAGE_INCLUDE_DIR}
-	${SDL2_MIXER_INCLUDE_DIR})
+	${SDL2_INCLUDE_DIRS})
 
 add_executable(animated_counter_test
 	animated_counter_test.c

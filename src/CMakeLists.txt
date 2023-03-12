@@ -1,9 +1,7 @@
 include_directories(
 	.
 	proto/nanopb
-	${SDL2_INCLUDE_DIRS}
-	${SDL2_IMAGE_INCLUDE_DIR}
-	${SDL2_MIXER_INCLUDE_DIR})
+	${SDL2_INCLUDE_DIRS})
 if(BUILD_EDITOR)
 	include_directories(${OPENGL_INCLUDE_DIRS})
 endif()
