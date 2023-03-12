@@ -106,7 +106,7 @@ jobs:
 
     - name: Configure CMake (Windows)
       if: matrix.os == 'windows-latest'
-      run: cmake -B . -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows
+      run: cmake -B . -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows
 
     - name: Build
       # Build your program with the given configuration
