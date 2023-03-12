@@ -116,7 +116,7 @@ jobs:
       working-directory: ${{github.workspace}}
       # Execute tests defined by the CMake configuration.  
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: ctest -C Release -VV -S
+      run: ctest -C ${{env.BUILD_TYPE}} -VV -S
 
     - name: Make package on tags
       if: startsWith(github.ref, 'refs/tags/')
