@@ -234,12 +234,6 @@ void RealPath(const char *src, char *dest)
 		{
 			*c = '/';
 		}
-#ifdef _WIN32
-		else
-		{
-			*c = (char)toupper(*c);
-		}
-#endif
 	}
 	TrimSlashes(dest);
 }
