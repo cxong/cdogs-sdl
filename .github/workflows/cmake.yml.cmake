@@ -93,7 +93,7 @@ jobs:
 
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
-      run: C:\vcpkg\vcpkg.exe install --triplet x64-windows sdl2 sdl2-image sdl2-mixer protobuf --recurse
+      run: C:\vcpkg\vcpkg.exe install --triplet x64-windows sdl2 sdl2-image sdl2-mixer[core,libvorbis,mpg123] protobuf --recurse
 
     - name: Configure CMake
       env:
