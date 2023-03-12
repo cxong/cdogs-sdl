@@ -27,7 +27,7 @@ install:
   - cd C:\Tools\vcpkg
   - git pull
   - .\bootstrap-vcpkg.bat
-  - vcpkg install sdl2 sdl2-image sdl2-mixer protobuf --recurse
+  - vcpkg install --triplet x64-windows sdl2 sdl2-image sdl2-mixer protobuf --recurse
   - pip install protobuf
   - cd %APPVEYOR_BUILD_FOLDER%
 

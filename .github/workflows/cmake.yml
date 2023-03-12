@@ -67,7 +67,7 @@ jobs:
       if: startsWith(matrix.os, 'ubuntu')
       run: |
         sudo apt-get update
-        sudo apt install python3-pip
+        sudo apt install python3-pip libgl1-mesa-dev
         python3 -m pip install protobuf
         pip3 install --upgrade protobuf
       # libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev
@@ -93,7 +93,7 @@ jobs:
 
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
-      run: C:\vcpkg\vcpkg.exe install --triplet x64-windows sdl2 sdl2-image sdl2-mixer
+      run: C:\vcpkg\vcpkg.exe install --triplet x64-windows sdl2 sdl2-image sdl2-mixer protobuf --recurse
 
     - name: Configure CMake
       env:
@@ -105,7 +105,7 @@ jobs:
 
     - name: Configure CMake (Windows)
       if: matrix.os == 'windows-latest'
-      run: cmake -B . -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-window
+      run: cmake -B . -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows
 
     - name: Build
       # Build your program with the given configuration
