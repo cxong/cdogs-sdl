@@ -51,6 +51,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define SDL_MAIN_HANDLED
 #include <SDL.h>
 
 #include <cdogs/SDL_JoystickButtonNames/SDL_joystickbuttonnames.h>
