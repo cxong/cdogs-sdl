@@ -42,4 +42,4 @@ set(CDOGSED_HEADERS
 	tile_brush.h
 	ui_object.h)
 add_library(cdogsedlib STATIC ${CDOGSED_SOURCES} ${CDOGSED_HEADERS})
-target_link_libraries(cdogsedlib SDL2::SDL2)
+target_link_libraries(cdogsedlib SDL2::SDL2 SDL2_mixer::SDL2_mixer)
