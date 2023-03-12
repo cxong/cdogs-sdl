@@ -38,10 +38,11 @@ jobs:
             cc_version: 12
           - os: macos-latest
             cc: /usr/bin/clang
+          - os: windows-latest
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Install Protoc
       uses: arduino/setup-protoc@v1.1.2
@@ -53,38 +54,38 @@ jobs:
       run: |
         protoc --version
 
-    - name: Set up Homebrew
+    - name: Set up Homebrew (Linux)
       id: set-up-homebrew
       if: matrix.os == 'ubuntu-latest'
       uses: Homebrew/actions/setup-homebrew@master
 
-    - name: Install SDL via homebrew
+    - name: Install SDL via homebrew (Linux)
       # Because ubuntu 22 doesn't have the latest SDL libs
       if: matrix.os == 'ubuntu-latest'
       run: brew install sdl2 sdl2_mixer sdl2_image
 
-    - name: Install packages Linux
+    - name: Install packages (Linux)
       if: startsWith(matrix.os, 'ubuntu')
       run: |
         sudo apt-get update
-        sudo apt install gcc-10 g++-10 python3-pip
+        sudo apt install python3-pip
         python3 -m pip install protobuf
         pip3 install --upgrade protobuf
       # libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev
 
-    - name: Set up GCC
+    - name: Set up GCC (Linux)
       if: startsWith(matrix.os, 'ubuntu') && matrix.cc == 'gcc'
       uses: egor-tensin/setup-gcc@v1
       with:
         version: ${{ matrix.cc_version }}
 
-    - name: Set up Clang
+    - name: Set up Clang (Linux)
       if: startsWith(matrix.os, 'ubuntu') && matrix.cc == 'clang'
       uses: egor-tensin/setup-clang@v1
       with:
         version: ${{ matrix.cc_version }}
 
-    - name: Install packages macOS
+    - name: Install packages (macOS)
       if: matrix.os == 'macos-latest'
       run: |
         python3 -m pip install protobuf
@@ -94,13 +95,18 @@ jobs:
     - name: Configure CMake
       env:
         CC: ${{ matrix.cc }}
+      if: matrix.os != 'windows-latest'
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INSTALL_PREFIX=. -DDATA_INSTALL_DIR=. -Wno-dev .
+      run: cmake -B . -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INSTALL_PREFIX=. -DDATA_INSTALL_DIR=. -Wno-dev
+
+    - name: Configure CMake (Windows)
+      if: matrix.os == 'windows-latest'
+      run: cmake -B . -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-window
 
     - name: Build
       # Build your program with the given configuration
-      run: make
+      run: cmake --build .
 
     - name: Test
       working-directory: ${{github.workspace}}
@@ -133,7 +139,7 @@ jobs:
         ./butler -V
         ./butler push C-Dogs*SDL-*-Linux.tar.gz congusbongus/cdogs-sdl:linux --userversion $VERSION
 
-    - name: Publish to itch.io (macos)
+    - name: Publish to itch.io (macOS)
       if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'macos-latest' && !github.event.release.prerelease
       env:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
