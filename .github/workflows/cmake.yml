@@ -110,7 +110,7 @@ jobs:
 
     - name: Build
       # Build your program with the given configuration
-      run: cmake --build .
+      run: cmake --build . --config ${{env.BUILD_TYPE}}
 
     - name: Test
       working-directory: ${{github.workspace}}
