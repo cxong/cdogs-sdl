@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2018, 2020-2022 Cong Xu
+	Copyright (c) 2013-2018, 2020-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -575,8 +575,14 @@ GameLoopData *GameOptions(const GameMode gm)
 		I("Game.Difficulty");
 		I("Game.EnemyDensity");
 		I("Game.NonPlayerHP");
-		I("Game.PlayerHP");
-		I("Game.Lives");
+		if (gCampaign.Setting.PlayerMaxHP == 0)
+		{
+			I("Game.PlayerHP");
+		}
+		if (gCampaign.Setting.MaxLives == 0)
+		{
+			I("Game.Lives");
+		}
 		I("Game.HealthPickups");
 		I("Game.RandomSeed");
 		MenuAddSubmenu(ms->root, MenuCreateSeparator(""));
@@ -592,7 +598,10 @@ GameLoopData *GameOptions(const GameMode gm)
 		I("StartServer");
 		break;
 	case GAME_MODE_DEATHMATCH:
-		I("Game.PlayerHP");
+		if (gCampaign.Setting.PlayerMaxHP == 0)
+		{
+			I("Game.PlayerHP");
+		}
 		I("Deathmatch.Lives");
 		I("Game.HealthPickups");
 		I("Game.RandomSeed");

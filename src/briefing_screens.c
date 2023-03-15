@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2013-2022 Cong Xu
+	Copyright (c) 2013-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -60,7 +60,8 @@ static void CampaignIntroOnExit(GameLoopData *data);
 static void CampaignIntroInput(GameLoopData *data);
 static GameLoopResult CampaignIntroUpdate(GameLoopData *data, LoopRunner *l);
 static void CampaignIntroDraw(GameLoopData *data);
-GameLoopData *ScreenCampaignIntro(CampaignSetting *c, const GameMode gameMode, const CampaignEntry *entry)
+GameLoopData *ScreenCampaignIntro(
+	CampaignSetting *c, const GameMode gameMode, const CampaignEntry *entry)
 {
 	ScreenCampaignIntroData *data;
 	CMALLOC(data, sizeof *data);
@@ -89,7 +90,8 @@ static void CampaignIntroOnEnter(GameLoopData *data)
 	else
 	{
 		MusicPlayFromChunk(
-			&gSoundDevice.music, MUSIC_MENU, &sData->c->CustomSongs[MUSIC_MENU]);
+			&gSoundDevice.music, MUSIC_MENU,
+			&sData->c->CustomSongs[MUSIC_MENU]);
 	}
 }
 static void CampaignIntroOnExit(GameLoopData *data)
@@ -117,14 +119,16 @@ static GameLoopResult CampaignIntroUpdate(GameLoopData *data, LoopRunner *l)
 	{
 		LoopRunnerPop(l);
 	}
-	else if (!IsIntroNeeded(gCampaign.Entry.Mode) ||
+	else if (
+		!IsIntroNeeded(gCampaign.Entry.Mode) ||
 		sData->waitResult == EVENT_WAIT_OK)
 	{
 		// Switch to num players selection
 		LoopRunnerPush(
-			l, ScreenLoading(
-				   "Loading campaign...", true,
-				   NumPlayersSelection(&gGraphicsDevice, &gEventHandlers), true));
+			l,
+			ScreenLoading(
+				"Loading campaign...", true,
+				NumPlayersSelection(&gGraphicsDevice, &gEventHandlers), true));
 	}
 	return UPDATE_RESULT_OK;
 }
@@ -691,8 +695,8 @@ static void ApplyBonuses(PlayerData *p, const int bonus)
 }
 static int GetHealthBonus(const PlayerData *p)
 {
-	const int maxHealth = ModeMaxHealth(gCampaign.Entry.Mode);
-	return p->hp > maxHealth - 50 ? (p->hp + 50 - maxHealth) * 10 : 0;
+	const int maxHealth = p->Char.maxHealth;
+	return p->hp > maxHealth - 50 ? (p->hp + 50 - p->Char.maxHealth) * 10 : 0;
 }
 static int GetResurrectionFee(const PlayerData *p)
 {

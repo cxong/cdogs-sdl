@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2018, 2020-2022 Cong Xu
+	Copyright (c) 2013-2018, 2020-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -100,6 +100,37 @@ void CampaignSettingTerminateAll(CampaignSetting *setting)
 	PickupClassesClear(&gPickupClasses.CustomClasses);
 	PickupClassesClear(&gPickupClasses.KeyClasses);
 	MapObjectsClear(&gMapObjects.CustomClasses);
+}
+
+int CampaignGetMaxLives(const Campaign *c)
+{
+	switch (c->Entry.Mode)
+	{
+	case GAME_MODE_DOGFIGHT:
+		return 1;
+	case GAME_MODE_DEATHMATCH:
+		return ConfigGetInt(&gConfig, "Deathmatch.Lives");
+	default:
+		if (c->Setting.MaxLives > 0)
+		{
+			return c->Setting.MaxLives;
+		}
+		return ConfigGetInt(&gConfig, "Game.Lives");
+	}
+}
+int CampaignGetMaxHP(const Campaign *c)
+{
+	switch (c->Entry.Mode)
+	{
+	case GAME_MODE_DOGFIGHT:
+		return 500 * ConfigGetInt(&gConfig, "Dogfight.PlayerHP") / 100;
+	default:
+		if (c->Setting.PlayerMaxHP > 0)
+		{
+			return c->Setting.PlayerMaxHP;
+		}
+		return 200 * ConfigGetInt(&gConfig, "Game.PlayerHP") / 100;
+	}
 }
 
 bool CampaignListIsEmpty(const CampaignList *c)

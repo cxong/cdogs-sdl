@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2014-2017, 2021 Cong Xu
+	Copyright (c) 2014-2017, 2021, 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -419,8 +419,8 @@ void NetServerSendGameStartMessages(NetServer *n, const int peerId)
 	CA_FOREACH(const PlayerData, pOther, gPlayerDatas)
 	NPlayerData pd = NMakePlayerData(pOther);
 	NetServerSendMsg(n, peerId, GAME_EVENT_PLAYER_DATA, &pd);
-	LOG(LM_NET, LL_DEBUG, "send player data uid(%d) maxHealth(%d)",
-		(int)pd.UID, (int)pd.MaxHealth);
+	LOG(LM_NET, LL_DEBUG, "send player data uid(%d) maxHealth(%d) HP(%d)",
+		(int)pd.UID, (int)pd.MaxHealth, (int)pd.HP);
 	CA_FOREACH_END()
 
 	// Send all game-specific config values

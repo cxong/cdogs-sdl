@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2015, 2018, 2020-2023 Cong Xu
+	Copyright (c) 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -30,20 +30,18 @@
 
 #include <assert.h>
 
-#include <cdogs/ai_coop.h>
-#include <cdogs/draw/draw_actor.h>
 #include <cdogs/draw/drawtools.h>
 #include <cdogs/draw/nine_slice.h>
 #include <cdogs/font.h>
 
-#define AMMO_MENU_WIDTH 80
+#define MENU_WIDTH 80
 #define EQUIP_MENU_SLOT_HEIGHT 40
-#define AMMO_MENU_MAX_ROWS 4
-#define AMMO_BUTTON_BG_W 20
+#define MENU_MAX_ROWS 4
+#define BUTTON_BG_W 20
 #define SCROLL_H 12
 #define SLOT_BORDER 3
-#define AMMO_LEVEL_W 2
-#define AMMO_ROW_H 10
+#define LEVEL_W 2
+#define ROW_H 10
 
 static int GetSelectedAmmo(const AmmoMenu *menu)
 {
@@ -135,11 +133,11 @@ static int ClampScroll(const AmmoMenu *menu)
 	// Update menu scroll based on selected ammo
 	const int selectedRow = menu->idx / 2;
 	const int lastRow = (int)menu->ammoIds.size / 2;
-	int minRow = MAX(0, selectedRow - AMMO_MENU_MAX_ROWS + 1);
-	int maxRow = MIN(selectedRow, MAX(0, lastRow - AMMO_MENU_MAX_ROWS));
+	int minRow = MAX(0, selectedRow - MENU_MAX_ROWS + 1);
+	int maxRow = MIN(selectedRow, MAX(0, lastRow - MENU_MAX_ROWS));
 	// If the selected row is the last row on screen, and we can still
 	// scroll down (i.e. show the scroll down button), scroll down
-	if (selectedRow - menu->scroll == AMMO_MENU_MAX_ROWS - 1 &&
+	if (selectedRow - menu->scroll == MENU_MAX_ROWS - 1 &&
 		selectedRow < lastRow)
 	{
 		minRow++;
@@ -199,12 +197,12 @@ static void DrawMenu(
 
 	CA_FOREACH(const int, ammoId, d->ammoIds)
 	const Ammo *ammo = AmmoGetById(&gAmmo, *ammoId);
-	if (_ca_index >= d->scroll && _ca_index < d->scroll + AMMO_MENU_MAX_ROWS)
+	if (_ca_index >= d->scroll && _ca_index < d->scroll + MENU_MAX_ROWS)
 	{
 		DrawAmmoMenuItem(
 			d, g, _ca_index, ammo, svec2i(pos.x, pos.y + ammoY), bgSize);
 	}
-	if (_ca_index == d->scroll + AMMO_MENU_MAX_ROWS)
+	if (_ca_index == d->scroll + MENU_MAX_ROWS)
 	{
 		scrollDown = true;
 		break;
@@ -241,14 +239,14 @@ static void DrawMenu(
 		const Rect2i scrollRect = Rect2iNew(
 			svec2i(
 				pos.x + 3,
-				pos.y - 1 + ammoY + bgSize.y * AMMO_MENU_MAX_ROWS - SCROLL_H),
+				pos.y - 1 + ammoY + bgSize.y * MENU_MAX_ROWS - SCROLL_H),
 			scrollSize);
 		PicRender(
 			gradient, g->gameWindow.renderer,
 			svec2i(
 				scrollRect.Pos.x + scrollSize.x / 2,
 				pos.y - gradient->size.y / 2 + ammoY +
-					bgSize.y * AMMO_MENU_MAX_ROWS - SCROLL_H -
+					bgSize.y * MENU_MAX_ROWS - SCROLL_H -
 					gradient->size.y / 2 + 1),
 			colorBlack, 0, svec2((float)scrollSize.x, 1), SDL_FLIP_VERTICAL,
 			Rect2iZero());
@@ -299,7 +297,7 @@ static void DrawAmmoMenuItem(
 	// With: amount/max coloured rectangle
 
 	int x = bgPos.x + 4;
-	int y = bgPos.y + AMMO_ROW_H * 2;
+	int y = bgPos.y + ROW_H * 2;
 
 	// Ammo amount BG
 	if (a && a->Max > 0 && ammoAmount > 0)
@@ -312,7 +310,7 @@ static void DrawAmmoMenuItem(
 			true);
 	}
 
-	y = bgPos.y + AMMO_ROW_H;
+	y = bgPos.y + ROW_H;
 
 	// Sell/buy buttons
 	if (a != NULL)
@@ -321,30 +319,30 @@ static void DrawAmmoMenuItem(
 			selected && data->Active && (data->idx & 1) == 1;
 		const bool canSell = CanSell(data, ammoId);
 		const FontOpts foptsSell = {
-			ALIGN_CENTER, ALIGN_START, svec2i(AMMO_BUTTON_BG_W, FontH()),
+			ALIGN_CENTER, ALIGN_START, svec2i(BUTTON_BG_W, FontH()),
 			svec2i(2, 2), sellSelected ? colorRed : colorGray};
-		x = bgPos.x + bgSize.x - AMMO_BUTTON_BG_W - 2;
+		x = bgPos.x + bgSize.x - BUTTON_BG_W - 2;
 		const struct vec2i sellPos = svec2i(x, y);
 		Draw9Slice(
 			g, data->buttonBG,
-			Rect2iNew(sellPos, svec2i(AMMO_BUTTON_BG_W, FontH() + 4)), 3, 3, 3,
-			3, true,
+			Rect2iNew(sellPos, svec2i(BUTTON_BG_W, FontH() + 4)), 3, 3, 3, 3,
+			true,
 			canSell ? (sellSelected ? colorRed : colorMaroon) : colorGray,
 			SDL_FLIP_NONE);
 		FontStrOpt("Sell", sellPos, foptsSell);
 
-		x -= AMMO_BUTTON_BG_W + 3;
+		x -= BUTTON_BG_W + 3;
 		const bool buySelected =
 			selected && data->Active && (data->idx & 1) == 0;
 		const bool canBuy = CanBuy(data, ammoId);
 		const FontOpts foptsBuy = {
-			ALIGN_CENTER, ALIGN_START, svec2i(AMMO_BUTTON_BG_W, FontH()),
+			ALIGN_CENTER, ALIGN_START, svec2i(BUTTON_BG_W, FontH()),
 			svec2i(2, 2), buySelected ? colorGreen : colorGray};
 		const struct vec2i buyPos = svec2i(x, y);
 		Draw9Slice(
 			g, data->buttonBG,
-			Rect2iNew(buyPos, svec2i(AMMO_BUTTON_BG_W, FontH() + 4)), 3, 3, 3,
-			3, true,
+			Rect2iNew(buyPos, svec2i(BUTTON_BG_W, FontH() + 4)), 3, 3, 3, 3,
+			true,
 			canBuy ? (buySelected ? colorGreen : colorOfficeGreen) : colorGray,
 			SDL_FLIP_NONE);
 		FontStrOpt("Buy", buyPos, foptsBuy);
@@ -370,7 +368,7 @@ static void DrawAmmoMenuItem(
 		FontStrOpt(buf, svec2i(x, y), foptsP);
 	}
 
-	y += AMMO_ROW_H * 2;
+	y += ROW_H * 2;
 	x = bgPos.x + 4;
 
 	// Ammo amount BG
@@ -401,7 +399,7 @@ static void DrawAmmoMenuItem(
 		FontStrOpt(buf, svec2i(x, y), foptsA);
 	}
 
-	y -= AMMO_ROW_H;
+	y -= ROW_H;
 
 	// Icon
 	if (a != NULL)
@@ -486,7 +484,7 @@ void AmmoMenuReset(AmmoMenu *menu)
 		}
 		CArrayPushBack(&menu->ammoIds, &i);
 	}
-	menu->idx = CLAMP(menu->idx, 0, (int)menu->ammoIds.size);
+	menu->idx = CLAMP(menu->idx, 0, (int)menu->ammoIds.size * 2);
 }
 
 void AmmoMenuActivate(AmmoMenu *menu)

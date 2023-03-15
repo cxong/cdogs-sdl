@@ -100,22 +100,6 @@
 			"Positions": [[7, 3]]
 		},
 		{
-			"MapObject": "Chainsaw x2 spawner",
-			"Positions": [[7, 5]]
-		},
-		{
-			"MapObject": "Chainsaw x3 spawner",
-			"Positions": [[7, 7]]
-		},
-		{
-			"MapObject": "Chainsaw x4 spawner",
-			"Positions": [[7, 9]]
-		},
-		{
-			"MapObject": "Chainsaw x5 spawner",
-			"Positions": [[7, 11]]
-		},
-		{
 			"MapObject": "Barehanded spawner",
 			"Positions": [[7, 13]]
 		},

@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2015, 2018, 2020-2023 Cong Xu
+	Copyright (c) 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -30,90 +30,120 @@
 
 #include <assert.h>
 
+#include <cdogs/draw/draw_actor.h>
 #include <cdogs/draw/drawtools.h>
 #include <cdogs/draw/nine_slice.h>
 #include <cdogs/font.h>
 
-#define AMMO_MENU_WIDTH 80
+#define MENU_WIDTH 80
 #define EQUIP_MENU_SLOT_HEIGHT 40
-#define AMMO_MENU_MAX_ROWS 4
-#define AMMO_BUTTON_BG_W 20
+#define MENU_MAX_ROWS 4
+#define BUTTON_BG_W 20
 #define SCROLL_H 12
 #define SLOT_BORDER 3
-#define AMMO_LEVEL_W 2
-#define AMMO_ROW_H 10
+#define LEVEL_W 2
+#define ROW_H 10
+#define HP_DELTA 5
+#define HP_PRICE 2000
+#define LIFE_PRICE 4000
 
-static int GetSelectedAmmo(const AmmoMenu *menu)
+typedef enum
 {
-	if (menu->idx / 2 >= (int)menu->ammoIds.size)
-	{
-		return -1;
-	}
-	return *(int *)CArrayGet(&menu->ammoIds, menu->idx / 2);
-}
+	OPTION_HP,
+	OPTION_LIVES,
+	OPTION_COUNT
+} Option;
 
-static bool CanBuy(const AmmoMenu *menu, const int ammoId)
+static Option GetSelectedOption(const UtilMenu *menu)
 {
-	const PlayerData *pData = PlayerDataGetByUID(menu->PlayerUID);
-	const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
-	const int amount = PlayerGetAmmoAmount(pData, ammoId);
-	return ammo->Max > amount && ammo->Price <= pData->Totals.Score;
-}
-static bool CanSell(const AmmoMenu *menu, const int ammoId)
-{
-	const PlayerData *pData = PlayerDataGetByUID(menu->PlayerUID);
-	const int amount = PlayerGetAmmoAmount(pData, ammoId);
-	return amount > 0;
+	return MIN(menu->idx / 2, OPTION_COUNT);
 }
 
 int UtilMenuSelectedCostDiff(const UtilMenu *menu)
 {
 	const PlayerData *pData = PlayerDataGetByUID(menu->PlayerUID);
-	const int ammoId = GetSelectedAmmo(menu);
-	if (ammoId >= 0)
+	const Option option = GetSelectedOption(menu);
+	if (option < OPTION_COUNT)
 	{
-		const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
-		const int amount = PlayerGetAmmoAmount(pData, ammoId);
-		const bool buy = (menu->idx & 1) == 0;
-		if (buy && ammo->Max > amount)
+		int amount = 0;
+		int max = 0;
+		int price = 0;
+		switch (option)
 		{
-			return ammo->Price;
+		case OPTION_HP:
+			amount = pData->hp;
+			max = CampaignGetMaxHP(&gCampaign);
+			price = HP_PRICE;
+			break;
+		case OPTION_LIVES:
+			amount = pData->Lives;
+			max = CampaignGetMaxLives(&gCampaign);
+			price = LIFE_PRICE;
+			break;
+		default:
+			CASSERT(false, "unknown option");
+			break;
+		}
+		const bool buy = (menu->idx & 1) == 0;
+		if (buy && max > amount)
+		{
+			return price;
 		}
 		else if (amount > 0)
 		{
-			return -ammo->Price;
+			return -price;
 		}
 	}
 	return 0;
 }
 
-static void AmmoSelect(menu_t *menu, int cmd, void *data)
+static void OnSelect(menu_t *menu, int cmd, void *data)
 {
 	UNUSED(menu);
-	AmmoMenu *d = data;
+	UtilMenu *d = data;
+	const PlayerData *pData = PlayerDataGetByUID(d->PlayerUID);
 
-	d->SelectResult = AMMO_MENU_NONE;
+	d->SelectResult = UTIL_MENU_NONE;
 	if (cmd & CMD_BUTTON1)
 	{
-		const int ammoId = GetSelectedAmmo(d);
-		if (ammoId < 0)
+		const Option option = GetSelectedOption(d);
+		const bool buy = (d->idx & 1) == 0;
+		int amount = 0;
+		int max = 0;
+		int price = 0;
+		const char *sound = NULL;
+		switch (option)
 		{
-			d->SelectResult = AMMO_MENU_CANCEL;
+		case OPTION_HP:
+			amount = pData->hp;
+			max = CampaignGetMaxHP(&gCampaign);
+			price = HP_PRICE;
+			sound = "health";
+			break;
+		case OPTION_LIVES:
+			amount = pData->Lives;
+			max = CampaignGetMaxLives(&gCampaign);
+			price = LIFE_PRICE;
+			sound = "spawn";
+			break;
+		case OPTION_COUNT:
+			d->SelectResult = UTIL_MENU_CANCEL;
 			MenuPlaySound(MENU_SOUND_BACK);
+			break;
+		default:
+			CASSERT(false, "unknown option");
+			break;
 		}
-		else
 		{
-			const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
-			const bool buy = (d->idx & 1) == 0;
-			if (buy && CanBuy(d, ammoId))
+			if (buy && amount < max && price <= pData->Totals.Score)
 			{
-				SoundPlay(&gSoundDevice, StrSound(ammo->Sound));
-				d->SelectResult = AMMO_MENU_SELECT;
+				SoundPlay(&gSoundDevice, StrSound(sound));
+				d->SelectResult = UTIL_MENU_SELECT;
 			}
-			else if (!buy && CanSell(d, ammoId))
+			else if (!buy && amount > 0)
 			{
-				SoundPlay(&gSoundDevice, StrSound(ammo->Sound));
-				d->SelectResult = AMMO_MENU_SELECT;
+				SoundPlay(&gSoundDevice, StrSound(sound));
+				d->SelectResult = UTIL_MENU_SELECT;
 			}
 			else
 			{
@@ -123,33 +153,12 @@ static void AmmoSelect(menu_t *menu, int cmd, void *data)
 	}
 	else if (cmd & CMD_BUTTON2)
 	{
-		d->SelectResult = AMMO_MENU_CANCEL;
+		d->SelectResult = UTIL_MENU_CANCEL;
 		MenuPlaySound(MENU_SOUND_BACK);
 	}
 }
 
-static int ClampScroll(const AmmoMenu *menu)
-{
-	// Update menu scroll based on selected ammo
-	const int selectedRow = menu->idx / 2;
-	const int lastRow = (int)menu->ammoIds.size / 2;
-	int minRow = MAX(0, selectedRow - AMMO_MENU_MAX_ROWS + 1);
-	int maxRow = MIN(selectedRow, MAX(0, lastRow - AMMO_MENU_MAX_ROWS));
-	// If the selected row is the last row on screen, and we can still
-	// scroll down (i.e. show the scroll down button), scroll down
-	if (selectedRow - menu->scroll == AMMO_MENU_MAX_ROWS - 1 &&
-		selectedRow < lastRow)
-	{
-		minRow++;
-	}
-	else if (selectedRow == menu->scroll && selectedRow > 0)
-	{
-		maxRow--;
-	}
-	return CLAMP(menu->scroll, minRow, maxRow);
-}
-
-static menu_t *CreateMenu(AmmoMenu *data);
+static menu_t *CreateMenu(UtilMenu *data);
 void UtilMenuCreate(
 	UtilMenu *menu, const int playerUID, const struct vec2i pos,
 	const struct vec2i size, EventHandlers *handlers, GraphicsDevice *graphics)
@@ -169,120 +178,72 @@ static void DrawMenu(
 	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
 	const struct vec2i size, const void *data);
 static int HandleInputMenu(int cmd, void *data);
-static menu_t *CreateMenu(AmmoMenu *data)
+static menu_t *CreateMenu(UtilMenu *data)
 {
 	menu_t *menu = MenuCreateCustom("", DrawMenu, HandleInputMenu, data);
 
-	MenuSetPostInputFunc(menu, AmmoSelect, data);
+	MenuSetPostInputFunc(menu, OnSelect, data);
 
 	return menu;
 }
 
-static void DrawAmmoMenuItem(
-	const AmmoMenu *data, GraphicsDevice *g, const int idx, const Ammo *a,
+static void DrawUtilMenuItem(
+	const UtilMenu *data, GraphicsDevice *g, const int idx,
 	const struct vec2i pos, const struct vec2i bgSize);
 static void DrawMenu(
 	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
 	const struct vec2i size, const void *data)
 {
 	UNUSED(menu);
-	const AmmoMenu *d = data;
+	const UtilMenu *d = data;
 	const int ammoHeight = EQUIP_MENU_SLOT_HEIGHT * 2 + FontH();
 	const int ammoY = CENTER_Y(pos, size, ammoHeight) - 12;
-	const color_t color = d->Active ? colorWhite : colorGray;
 	const struct vec2i bgSize =
 		svec2i(CLAMP(d->size.x * 3 / 4, 40 * 2, 40 * 4), FontH() * 3 + 4);
-	const struct vec2i scrollSize = svec2i(bgSize.x, SCROLL_H);
-	bool scrollDown = false;
 
-	CA_FOREACH(const int, ammoId, d->ammoIds)
-	const Ammo *ammo = AmmoGetById(&gAmmo, *ammoId);
-	if (_ca_index >= d->scroll && _ca_index < d->scroll + AMMO_MENU_MAX_ROWS)
+	for (Option option = OPTION_HP; option < OPTION_COUNT; option++)
 	{
-		DrawAmmoMenuItem(
-			d, g, _ca_index, ammo, svec2i(pos.x, pos.y + ammoY), bgSize);
+		DrawUtilMenuItem(d, g, option, svec2i(pos.x, pos.y + ammoY), bgSize);
 	}
-	if (_ca_index == d->scroll + AMMO_MENU_MAX_ROWS)
-	{
-		scrollDown = true;
-		break;
-	}
-	CA_FOREACH_END()
 
-	// Draw scroll buttons
-	const Pic *gradient = PicManagerGetPic(&gPicManager, "hud/gradient");
-	if (d->scroll > 0)
-	{
-		// TODO: test scrolling
-		const Pic *scrollPic = d->buttonBG;
-		const Rect2i scrollRect =
-			Rect2iNew(svec2i(pos.x + 3, pos.y + 1 + ammoY), scrollSize);
-		PicRender(
-			gradient, g->gameWindow.renderer,
-			svec2i(
-				scrollRect.Pos.x + scrollSize.x / 2,
-				pos.y + gradient->size.y / 2 + ammoY + scrollSize.y - 1),
-			colorBlack, 0, svec2((float)scrollSize.x, 1), SDL_FLIP_NONE,
-			Rect2iZero());
-		Draw9Slice(
-			g, scrollPic, scrollRect, 3, 3, 3, 3, true, color, SDL_FLIP_NONE);
-		FontOpts fopts = FontOptsNew();
-		fopts.Area = scrollRect.Size;
-		fopts.HAlign = ALIGN_CENTER;
-		fopts.VAlign = ALIGN_CENTER;
-		fopts.Mask = color;
-		FontStrOpt(ARROW_UP, scrollRect.Pos, fopts);
-	}
-	if (scrollDown)
-	{
-		const Pic *scrollPic = d->buttonBG;
-		const Rect2i scrollRect = Rect2iNew(
-			svec2i(
-				pos.x + 3,
-				pos.y - 1 + ammoY + bgSize.y * AMMO_MENU_MAX_ROWS - SCROLL_H),
-			scrollSize);
-		PicRender(
-			gradient, g->gameWindow.renderer,
-			svec2i(
-				scrollRect.Pos.x + scrollSize.x / 2,
-				pos.y - gradient->size.y / 2 + ammoY +
-					bgSize.y * AMMO_MENU_MAX_ROWS - SCROLL_H -
-					gradient->size.y / 2 + 1),
-			colorBlack, 0, svec2((float)scrollSize.x, 1), SDL_FLIP_VERTICAL,
-			Rect2iZero());
-		Draw9Slice(
-			g, scrollPic, scrollRect, 3, 3, 3, 3, true, color, SDL_FLIP_NONE);
-		FontOpts fopts = FontOptsNew();
-		fopts.Area = scrollRect.Size;
-		fopts.HAlign = ALIGN_CENTER;
-		fopts.VAlign = ALIGN_CENTER;
-		fopts.Mask = color;
-		FontStrOpt(ARROW_DOWN, scrollRect.Pos, fopts);
-	}
-	else
-	{
-		// Draw back item
-		DrawAmmoMenuItem(
-			d, g, (int)d->ammoIds.size, NULL, svec2i(pos.x, pos.y + ammoY),
-			bgSize);
-	}
+	// Draw back item
+	DrawUtilMenuItem(d, g, OPTION_COUNT, svec2i(pos.x, pos.y + ammoY), bgSize);
 }
-static void DrawAmmoMenuItem(
-	const AmmoMenu *data, GraphicsDevice *g, const int idx, const Ammo *a,
+static void DrawUtilMenuItem(
+	const UtilMenu *data, GraphicsDevice *g, const int idx,
 	const struct vec2i pos, const struct vec2i bgSize)
 {
 	const bool selected = data->idx / 2 == idx;
 	const PlayerData *pData = PlayerDataGetByUID(data->PlayerUID);
-	const int ammoId = idx < (int)data->ammoIds.size
-						   ? *(int *)CArrayGet(&data->ammoIds, idx)
-						   : -1;
-	const int ammoAmount = PlayerGetAmmoAmount(pData, ammoId);
-	const struct vec2i bgPos =
-		svec2i(pos.x, pos.y + (idx - data->scroll) * bgSize.y);
-	// Disallow buy/sell if ammo is free
-	const bool enabled = a == NULL || (data->Active && a->Price > 0 &&
-									   a->Price <= pData->Totals.Score);
-	color_t color = enabled ? colorWhite : colorGray;
+	const Option option = GetSelectedOption(data);
+	int amount = 0;
+	int max = 0;
+	int price = 0;
+	const char *name = NULL;
+	const Pic *pic = NULL;
+	switch (option)
+	{
+	case OPTION_HP:
+		amount = pData->hp;
+		max = CampaignGetMaxHP(&gCampaign);
+		price = HP_PRICE;
+		name = "Armor";
+		pic = PicManagerGetPic(&gPicManager, "health");
+		break;
+	case OPTION_LIVES:
+		amount = pData->Lives;
+		max = CampaignGetMaxLives(&gCampaign);
+		price = LIFE_PRICE;
+		name = "Life";
+		pic = GetHeadPic(
+			pData->Char.Class, DIRECTION_DOWN, false, &pData->Char.Colors);
+		break;
+	default:
+		name = "Back";
+		break;
+	}
+	const struct vec2i bgPos = svec2i(pos.x, pos.y + idx * bgSize.y);
+	color_t color = colorWhite;
 	if (selected && data->Active)
 	{
 		const color_t cbg = {0, 255, 255, 64};
@@ -297,52 +258,49 @@ static void DrawAmmoMenuItem(
 	// With: amount/max coloured rectangle
 
 	int x = bgPos.x + 4;
-	int y = bgPos.y + AMMO_ROW_H * 2;
+	int y = bgPos.y + ROW_H * 2;
 
-	// Ammo amount BG
-	if (a && a->Max > 0 && ammoAmount > 0)
+	// Amount BG
+	if (max > 0 && amount > 0)
 	{
-		const color_t gaugeBG =
-			AmmoIsLow(a, ammoAmount) ? colorRed : colorBlue;
 		DrawRectangle(
 			g, svec2i_add(svec2i(x, y), svec2i_one()),
-			svec2i(ammoAmount * (bgSize.x - 8) / a->Max, FontH()), gaugeBG,
-			true);
+			svec2i(amount * (bgSize.x - 8) / max, FontH()), colorBlue, true);
 	}
 
-	y = bgPos.y + AMMO_ROW_H;
+	y = bgPos.y + ROW_H;
 
 	// Sell/buy buttons
-	if (a != NULL)
+	if (max > 0)
 	{
 		const bool sellSelected =
 			selected && data->Active && (data->idx & 1) == 1;
-		const bool canSell = CanSell(data, ammoId);
+		const bool canSell = amount > max;
 		const FontOpts foptsSell = {
-			ALIGN_CENTER, ALIGN_START, svec2i(AMMO_BUTTON_BG_W, FontH()),
+			ALIGN_CENTER, ALIGN_START, svec2i(BUTTON_BG_W, FontH()),
 			svec2i(2, 2), sellSelected ? colorRed : colorGray};
-		x = bgPos.x + bgSize.x - AMMO_BUTTON_BG_W - 2;
+		x = bgPos.x + bgSize.x - BUTTON_BG_W - 2;
 		const struct vec2i sellPos = svec2i(x, y);
 		Draw9Slice(
 			g, data->buttonBG,
-			Rect2iNew(sellPos, svec2i(AMMO_BUTTON_BG_W, FontH() + 4)), 3, 3, 3,
-			3, true,
+			Rect2iNew(sellPos, svec2i(BUTTON_BG_W, FontH() + 4)), 3, 3, 3, 3,
+			true,
 			canSell ? (sellSelected ? colorRed : colorMaroon) : colorGray,
 			SDL_FLIP_NONE);
 		FontStrOpt("Sell", sellPos, foptsSell);
 
-		x -= AMMO_BUTTON_BG_W + 3;
+		x -= BUTTON_BG_W + 3;
 		const bool buySelected =
 			selected && data->Active && (data->idx & 1) == 0;
-		const bool canBuy = CanBuy(data, ammoId);
+		const bool canBuy = amount < max && price <= pData->Totals.Score;
 		const FontOpts foptsBuy = {
-			ALIGN_CENTER, ALIGN_START, svec2i(AMMO_BUTTON_BG_W, FontH()),
+			ALIGN_CENTER, ALIGN_START, svec2i(BUTTON_BG_W, FontH()),
 			svec2i(2, 2), buySelected ? colorGreen : colorGray};
 		const struct vec2i buyPos = svec2i(x, y);
 		Draw9Slice(
 			g, data->buttonBG,
-			Rect2iNew(buyPos, svec2i(AMMO_BUTTON_BG_W, FontH() + 4)), 3, 3, 3,
-			3, true,
+			Rect2iNew(buyPos, svec2i(BUTTON_BG_W, FontH() + 4)), 3, 3, 3, 3,
+			true,
 			canBuy ? (buySelected ? colorGreen : colorOfficeGreen) : colorGray,
 			SDL_FLIP_NONE);
 		FontStrOpt("Buy", buyPos, foptsBuy);
@@ -355,68 +313,57 @@ static void DrawAmmoMenuItem(
 		ALIGN_START, ALIGN_START, bgSize, svec2i(2, 2), color};
 
 	// Name
-	FontStrOpt(a ? a->Name : "Back", svec2i(x, y), fopts);
+	FontStrOpt(name, svec2i(x, y), fopts);
 
 	// Price
-	if (a && a->Price > 0)
+	if (price > 0)
 	{
 		const FontOpts foptsP = {
 			ALIGN_END, ALIGN_START, bgSize, svec2i(8, 2),
-			enabled ? (selected ? colorRed : colorGray) : colorDarkGray};
+			selected ? colorRed : colorGray};
 		char buf[256];
-		sprintf(buf, "$%d", a->Price);
+		sprintf(buf, "$%d", price);
 		FontStrOpt(buf, svec2i(x, y), foptsP);
 	}
 
-	y += AMMO_ROW_H * 2;
+	y += ROW_H * 2;
 	x = bgPos.x + 4;
 
-	// Ammo amount BG
-	if (a && a->Max > 0 && ammoAmount > 0)
+	// Amount BG
+	if (max > 0 && amount > 0)
 	{
-		const color_t gaugeBG =
-			AmmoIsLow(a, ammoAmount) ? colorRed : colorBlue;
 		DrawRectangle(
 			g, svec2i_add(svec2i(x, y), svec2i_one()),
-			svec2i(ammoAmount * (bgSize.x - 8) / a->Max, FontH()), gaugeBG,
-			true);
+			svec2i(amount * (bgSize.x - 8) / max, FontH()), colorBlue, true);
 	}
 
 	// Amount
-	if (a != NULL)
+	if (max > 0)
 	{
 		char buf[256];
-		if (a->Max > 0)
-		{
-			sprintf(buf, "%d/%d", ammoAmount, a->Max);
-		}
-		else
-		{
-			sprintf(buf, "%d", ammoAmount);
-		}
+		sprintf(buf, "%d/%d", amount, max);
 		const FontOpts foptsA = {
 			ALIGN_END, ALIGN_START, bgSize, svec2i(8, 2), color};
 		FontStrOpt(buf, svec2i(x, y), foptsA);
 	}
 
-	y -= AMMO_ROW_H;
+	y -= ROW_H;
 
 	// Icon
-	if (a != NULL)
+	if (pic != NULL)
 	{
 		x = bgPos.x + 12;
-		CPicDrawContext c = CPicDrawContextNew();
-		const struct vec2i ammoPos = svec2i_subtract(
+		const struct vec2i picPos = svec2i_subtract(
 			svec2i(x, bgPos.y + bgSize.y / 2),
-			svec2i_scale_divide(CPicGetPic(&a->Pic, 0)->size, 2));
-		CPicDraw(g, &a->Pic, ammoPos, &c);
+			svec2i_scale_divide(pic->size, 2));
+		PicRender(
+			pic, g->gameWindow.renderer, picPos, colorWhite, 0, svec2_one(),
+			SDL_FLIP_NONE, Rect2iZero());
 	}
 }
 static int HandleInputMenu(int cmd, void *data)
 {
-	AmmoMenu *d = data;
-
-	const int numAmmo = (int)d->ammoIds.size;
+	UtilMenu *d = data;
 
 	if (cmd & CMD_BUTTON1)
 	{
@@ -436,7 +383,7 @@ static int HandleInputMenu(int cmd, void *data)
 	}
 	else if (cmd & CMD_RIGHT)
 	{
-		if (d->idx < numAmmo * 2 && (d->idx % 2) == 0)
+		if (d->idx < OPTION_COUNT * 2 && (d->idx % 2) == 0)
 		{
 			d->idx++;
 			MenuPlaySound(MENU_SOUND_SWITCH);
@@ -452,14 +399,12 @@ static int HandleInputMenu(int cmd, void *data)
 	}
 	else if (cmd & CMD_DOWN)
 	{
-		if (d->idx + 2 < numAmmo * 2 + 2)
+		if (d->idx + 2 < OPTION_COUNT * 2 + 2)
 		{
-			d->idx = MIN(numAmmo * 2 + 2, d->idx + 2);
+			d->idx = MIN(OPTION_COUNT * 2 + 2, d->idx + 2);
 			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}
-
-	d->scroll = ClampScroll(d);
 
 	return 0;
 }
@@ -471,8 +416,7 @@ void UtilMenuTerminate(UtilMenu *menu)
 
 void UtilMenuReset(UtilMenu *menu)
 {
-	const PlayerData *pData = PlayerDataGetByUID(menu->PlayerUID);
-	menu->idx = CLAMP(menu->idx, 0, (int)menu->ammoIds.size);
+	menu->idx = CLAMP(menu->idx, 0, OPTION_COUNT * 2);
 }
 
 void UtilMenuActivate(UtilMenu *menu)
@@ -490,10 +434,17 @@ bool UtilMenuUpdate(UtilMenu *menu, const int cmd)
 	case UTIL_MENU_NONE:
 		break;
 	case UTIL_MENU_SELECT: {
-		const int ammoId = GetSelectedAmmo(menu);
+		const Option option = GetSelectedOption(menu);
 		const bool buy = (menu->idx & 1) == 0;
-		const int amount = AmmoGetById(&gAmmo, ammoId)->Amount;
-		PlayerAddAmmo(p, ammoId, buy ? amount : -amount, false);
+		switch (option)
+		{
+		case OPTION_HP:
+			PlayerSetHP(p, p->hp + (buy ? HP_DELTA : -HP_DELTA));
+			break;
+		case OPTION_LIVES:
+			PlayerSetLives(p, p->Lives + (buy ? 1 : -1));
+			break;
+		}
 		return true;
 	}
 	break;

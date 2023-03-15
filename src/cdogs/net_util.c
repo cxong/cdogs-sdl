@@ -77,6 +77,7 @@ NPlayerData NMakePlayerData(const PlayerData *p)
 	d.Stats = p->Stats;
 	d.Totals = p->Totals;
 	d.MaxHealth = p->Char.maxHealth;
+	d.HP = p->hp;
 	d.LastMission = p->lastMission;
 	d.UID = p->UID;
 	Ammo2Net(&d.Ammo_count, d.Ammo, &p->ammo);

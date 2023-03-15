@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2015, 2017-2018, 2020-2022 Cong Xu
+	Copyright (c) 2013-2015, 2017-2018, 2020-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -509,9 +509,11 @@ static bool TryCompleteNearbyObjective(
 	CA_FOREACH_END()
 	return false;
 }
-static bool ShouldPickupGun(const PickupEffect *pe, const TActor *actor,
-							const TActor *closestPlayer);
-static AIObjectiveType GetPickupObjectiveType(const Pickup *p, int *uid, const TActor *actor, const TActor *closestPlayer)
+static bool ShouldPickupGun(
+	const PickupEffect *pe, const TActor *actor, const TActor *closestPlayer);
+static AIObjectiveType GetPickupObjectiveType(
+	const Pickup *p, int *uid, const TActor *actor,
+	const TActor *closestPlayer)
 {
 	CA_FOREACH(const PickupEffect, pe, p->class->Effects)
 	switch (pe->Type)
@@ -523,7 +525,7 @@ static AIObjectiveType GetPickupObjectiveType(const Pickup *p, int *uid, const T
 		return AI_OBJECTIVE_TYPE_PICKUP;
 	case PICKUP_HEALTH:
 		// Pick up if we are on low health, and lower than lead player
-		if (actor->health > ModeMaxHealth(gCampaign.Entry.Mode) / 4 ||
+		if (actor->health > CampaignGetMaxHP(&gCampaign) / 4 ||
 			(closestPlayer != NULL && actor->health >= closestPlayer->health))
 		{
 			continue;
@@ -557,7 +559,9 @@ static AIObjectiveType GetPickupObjectiveType(const Pickup *p, int *uid, const T
 		return AI_OBJECTIVE_TYPE_PICKUP;
 	case PICKUP_LIVES:
 		// Pick up if we have less lives than lead player
-		if (closestPlayer != NULL && PlayerDataGetByUID(actor->PlayerUID)->Lives >= PlayerDataGetByUID(closestPlayer->PlayerUID)->Lives)
+		if (closestPlayer != NULL &&
+			PlayerDataGetByUID(actor->PlayerUID)->Lives >=
+				PlayerDataGetByUID(closestPlayer->PlayerUID)->Lives)
 		{
 			continue;
 		}
@@ -713,8 +717,8 @@ static void FindObjectivesSortedByDistance(
 		objectives->data, objectives->size, objectives->elemSize,
 		CompareClosestObjective);
 }
-static bool ShouldPickupGun(const PickupEffect *pe, const TActor *actor,
-	const TActor *closestPlayer)
+static bool ShouldPickupGun(
+	const PickupEffect *pe, const TActor *actor, const TActor *closestPlayer)
 {
 	if (!gCampaign.Setting.Ammo)
 	{

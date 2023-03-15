@@ -99,13 +99,14 @@ void PlayerDataAddOrUpdate(const NPlayerData pd)
 	p->Stats = pd.Stats;
 	p->Totals = pd.Totals;
 	p->Char.maxHealth = pd.MaxHealth;
+	p->Char.hp = pd.HP;
 	p->lastMission = pd.LastMission;
 
 	// Ready players as well
 	p->Ready = true;
 
-	LOG(LM_MAIN, LL_INFO, "update player UID(%d) maxHealth(%d)", p->UID,
-		p->Char.maxHealth);
+	LOG(LM_MAIN, LL_INFO, "update player UID(%d) maxHealth(%d) HP(%d)", p->UID,
+		p->Char.maxHealth, p->Char.hp);
 }
 
 static void PlayerTerminate(PlayerData *p);
@@ -236,12 +237,12 @@ NPlayerData PlayerDataDefault(const int idx)
 NPlayerData PlayerDataMissionReset(const PlayerData *p)
 {
 	NPlayerData pd = NMakePlayerData(p);
-	pd.Lives = ModeLives(gCampaign.Entry.Mode);
+	pd.Lives = CampaignGetMaxLives(&gCampaign);
 
 	memset(&pd.Stats, 0, sizeof pd.Stats);
 
 	pd.LastMission = gCampaign.MissionIndex;
-	pd.MaxHealth = ModeMaxHealth(gCampaign.Entry.Mode);
+	pd.MaxHealth = CampaignGetMaxHP(&gCampaign);
 	return pd;
 }
 
@@ -566,7 +567,9 @@ void PlayerAddWeaponToSlot(
 			{
 				continue;
 			}
-			if (p->guns[i] && (p->guns[i] == wc || WeaponClassGetPrerequisite(p->guns[i]) == wc || p->guns[i] == WeaponClassGetPrerequisite(wc)))
+			if (p->guns[i] && (p->guns[i] == wc ||
+							   WeaponClassGetPrerequisite(p->guns[i]) == wc ||
+							   p->guns[i] == WeaponClassGetPrerequisite(wc)))
 			{
 				p->guns[i] = p->guns[slot];
 				PlayerAddWeaponToSlot(p, wc, i);
@@ -709,4 +712,14 @@ void PlayerAddAmmo(
 		const int dLots = (oldAmount - *ammoAmount) / a->Amount;
 		PlayerScore(p, dLots * a->Price);
 	}
+}
+
+void PlayerSetHP(PlayerData *p, const int hp)
+{
+	p->hp = CLAMP(hp, 1, CampaignGetMaxHP(&gCampaign));
+}
+
+void PlayerSetLives(PlayerData *p, const int lives)
+{
+	p->Lives = CLAMP(lives, 1, CampaignGetMaxLives(&gCampaign));
 }

@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2014, 2016, 2019-2021 Cong Xu
+	Copyright (c) 2013-2014, 2016, 2019-2021, 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,7 @@ typedef struct
 	float speed;
 	const WeaponClass *Gun;
 	int maxHealth;
+	int hp;
 	unsigned int flags;
 	CharColors Colors;
 	const PickupClass *Drop;

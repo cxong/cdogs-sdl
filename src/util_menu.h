@@ -46,7 +46,6 @@ typedef struct
 	const Pic *buttonBG;
 	int idx;
 	struct vec2i size;
-	int scroll;
 } UtilMenu;
 
 void UtilMenuCreate(

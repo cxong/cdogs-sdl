@@ -32,6 +32,7 @@
 #include "animated_counter.h"
 #include "menu.h"
 #include "menu_utils.h"
+#include "util_menu.h"
 #include "weapon_menu.h"
 
 typedef enum
@@ -55,10 +56,12 @@ typedef struct
 	DrawGunMeta SlotMeta[MAX_WEAPONS];
 	struct vec2i size;
 	int ammoSlot;
+	int utilSlot;
 	int endSlot;
 	MenuSystem ms;
 	WeaponMenu weaponMenus[MAX_WEAPONS];
 	AmmoMenu ammoMenu;
+	UtilMenu utilMenu;
 } EquipMenu;
 
 void EquipMenuCreate(

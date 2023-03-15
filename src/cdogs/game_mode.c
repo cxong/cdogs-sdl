@@ -94,8 +94,8 @@ bool CanLevelSelect(const GameMode mode)
 
 bool IsMissionBriefingNeeded(const GameMode mode, const char *missionBriefing)
 {
-	return HasObjectives(mode) && GetNumPlayers(PLAYER_ANY, false, true) > 0 && missionBriefing != NULL &&
-		   strlen(missionBriefing) > 0;
+	return HasObjectives(mode) && GetNumPlayers(PLAYER_ANY, false, true) > 0 &&
+		   missionBriefing != NULL && strlen(missionBriefing) > 0;
 }
 
 bool AreKeysAllowed(const GameMode mode)
@@ -140,30 +140,6 @@ int ModeMaxRoundsWon(const GameMode mode)
 	default:
 		CASSERT(false, "unknown game mode");
 		return 0;
-	}
-}
-
-int ModeLives(const GameMode mode)
-{
-	switch (mode)
-	{
-	case GAME_MODE_DOGFIGHT:
-		return 1;
-	case GAME_MODE_DEATHMATCH:
-		return ConfigGetInt(&gConfig, "Deathmatch.Lives");
-	default:
-		return ConfigGetInt(&gConfig, "Game.Lives");
-	}
-}
-
-int ModeMaxHealth(const GameMode mode)
-{
-	switch (mode)
-	{
-	case GAME_MODE_DOGFIGHT:
-		return 500 * ConfigGetInt(&gConfig, "Dogfight.PlayerHP") / 100;
-	default:
-		return 200 * ConfigGetInt(&gConfig, "Game.PlayerHP") / 100;
 	}
 }
 

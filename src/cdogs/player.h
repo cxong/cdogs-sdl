@@ -47,13 +47,13 @@ typedef struct
 	const WeaponClass *guns[MAX_WEAPONS];
 	CArray ammo; // of int
 	int Lives;
+	int hp;
 
 	NPlayerStats Stats;
 	NPlayerStats Totals;
 
 	// Used for end-of-game score tallying
 	int survived;
-	int hp;
 	int missions;
 	int lastMission;
 	int allTime, today;
@@ -119,4 +119,7 @@ void PlayerAddMinimalWeapons(PlayerData *p);
 bool PlayerUsesAmmo(const PlayerData *p, const int ammoId);
 bool PlayerUsesAnyAmmo(const PlayerData *p);
 int PlayerGetAmmoAmount(const PlayerData *p, const int ammoId);
-void PlayerAddAmmo(PlayerData *p, const int ammoId, const int amount, const bool isFree);
+void PlayerAddAmmo(
+	PlayerData *p, const int ammoId, const int amount, const bool isFree);
+void PlayerSetHP(PlayerData *p, const int hp);
+void PlayerSetLives(PlayerData *p, const int lives);

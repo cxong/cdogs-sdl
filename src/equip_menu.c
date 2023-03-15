@@ -40,6 +40,7 @@
 
 #define NO_GUN_LABEL "(None)"
 #define AMMO_LABEL "Ammo..."
+#define UTIL_LABEL "Utilities..."
 #define END_MENU_LABEL "(End)"
 #define EQUIP_MENU_WIDTH 80
 #define EQUIP_MENU_SLOT_HEIGHT 40
@@ -99,7 +100,10 @@ static bool IsSlotDisabled(const EquipMenu *data, const int slot)
 	{
 		return !PlayerUsesAnyAmmo(pData);
 	}
-	// TODO: util menus
+	if (slot == data->utilSlot)
+	{
+		return false;
+	}
 	return false;
 }
 
@@ -174,7 +178,8 @@ static void DrawEquipSlot(
 		svec2i(slotSize.x, slotSize.y - 2 * FontH() - 1));
 
 	const Pic *arrow = PicManagerGetPic(&gPicManager, "hud/arrow");
-	const struct vec2i metaPos = svec2i(pos.x + EQUIP_MENU_WIDTH / 2 - 6, y + 13);
+	const struct vec2i metaPos =
+		svec2i(pos.x + EQUIP_MENU_WIDTH / 2 - 6, y + 13);
 	const struct vec2i arrowPos = svec2i(metaPos.x - 4, metaPos.y);
 	switch (data->SlotMeta[slot])
 	{
@@ -184,10 +189,14 @@ static void DrawEquipSlot(
 		DrawCross(g, metaPos, colorGreen);
 		break;
 	case META_UPGRADE:
-		PicRender(arrow, g->gameWindow.renderer, arrowPos, colorGreen, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
+		PicRender(
+			arrow, g->gameWindow.renderer, arrowPos, colorGreen, 0,
+			svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 		break;
 	case META_DOWNGRADE:
-		PicRender(arrow, g->gameWindow.renderer, arrowPos, colorRed, 0, svec2_one(), SDL_FLIP_VERTICAL, Rect2iZero());
+		PicRender(
+			arrow, g->gameWindow.renderer, arrowPos, colorRed, 0, svec2_one(),
+			SDL_FLIP_VERTICAL, Rect2iZero());
 		break;
 	default:
 		CASSERT(false, "unexpected");
@@ -244,6 +253,10 @@ static void DrawEquipMenu(
 			{
 				costDiff = AmmoMenuSelectedCostDiff(&d->ammoMenu);
 			}
+			else if (d->slot == d->utilSlot)
+			{
+				costDiff = UtilMenuSelectedCostDiff(&d->utilMenu);
+			}
 			if (costDiff != 0)
 			{
 				// Draw price diff
@@ -275,6 +288,17 @@ static void DrawEquipMenu(
 				svec2i(CENTER_X(pos, size, FontStrSize(AMMO_LABEL).x), y),
 				FontStrSize(AMMO_LABEL)),
 			AMMO_LABEL, selected, disabled, colorWhite);
+		y += UTIL_MENU_SLOT_HEIGHT;
+	}
+	if (d->utilSlot >= 0)
+	{
+		const bool selected = d->slot == d->utilSlot;
+		DisplayMenuItem(
+			g,
+			Rect2iNew(
+				svec2i(CENTER_X(pos, size, FontStrSize(UTIL_LABEL).x), y),
+				FontStrSize(UTIL_LABEL)),
+			UTIL_LABEL, selected, false, colorWhite);
 		y += UTIL_MENU_SLOT_HEIGHT;
 	}
 
@@ -442,7 +466,7 @@ static bool HasWeapon(const CArray *weapons, const WeaponClass *wc);
 static void ResetSlotMeta(EquipMenu *menu)
 {
 	const PlayerData *pData = PlayerDataGetByUID(menu->PlayerUID);
-	
+
 	// Update SlotMeta
 	for (int i = 0; i < MAX_WEAPONS; i++)
 	{
@@ -453,7 +477,8 @@ static void ResetSlotMeta(EquipMenu *menu)
 		{
 			continue;
 		}
-		const bool isNew = *(const bool *)CArrayGet(&menu->weaponIsNew, _ca_index);
+		const bool isNew =
+			*(const bool *)CArrayGet(&menu->weaponIsNew, _ca_index);
 		DrawGunMeta meta = isNew ? META_NEW : META_NONE;
 		if (slotWC != NULL)
 		{
@@ -539,6 +564,7 @@ void EquipMenuCreate(
 	// Check how many util menu items there are
 	menu->endSlot = MAX_WEAPONS;
 	menu->ammoSlot = -1;
+	menu->utilSlot = -1;
 	if (gCampaign.Setting.BuyAndSell)
 	{
 		if (gCampaign.Setting.Ammo)
@@ -555,6 +581,9 @@ void EquipMenuCreate(
 				}
 			}
 		}
+		// Can always buy lives; buying HP depends on game settings
+		menu->utilSlot = menu->endSlot;
+		menu->endSlot++;
 	}
 
 	// Create equipped weapons menu
@@ -618,6 +647,8 @@ void EquipMenuCreate(
 		}
 		AmmoMenuCreate(
 			&menu->ammoMenu, playerUID, pos, menu->size, handlers, graphics);
+		UtilMenuCreate(
+			&menu->utilMenu, playerUID, pos, menu->size, handlers, graphics);
 	}
 }
 
@@ -628,6 +659,7 @@ void EquipMenuTerminate(EquipMenu *menu)
 		WeaponMenuTerminate(&menu->weaponMenus[i]);
 	}
 	AmmoMenuTerminate(&menu->ammoMenu);
+	UtilMenuTerminate(&menu->utilMenu);
 	MenuSystemTerminate(&menu->ms);
 	CArrayTerminate(&menu->weapons);
 	CArrayTerminate(&menu->weaponIsNew);
@@ -661,6 +693,14 @@ void EquipMenuUpdate(EquipMenu *menu, const int cmd)
 		}
 		menu->equipping = menu->ammoMenu.Active;
 	}
+	else if (menu->slot == menu->utilSlot && menu->utilMenu.Active)
+	{
+		if (UtilMenuUpdate(&menu->utilMenu, cmd))
+		{
+			AnimatedCounterReset(&menu->Cash, p->Totals.Score);
+		}
+		menu->equipping = menu->utilMenu.Active;
+	}
 	else
 	{
 		MenuProcessCmd(&menu->ms, cmd);
@@ -677,6 +717,10 @@ void EquipMenuUpdate(EquipMenu *menu, const int cmd)
 				else if (menu->slot == menu->ammoSlot)
 				{
 					AmmoMenuActivate(&menu->ammoMenu);
+				}
+				else if (menu->slot == menu->utilSlot)
+				{
+					UtilMenuActivate(&menu->utilMenu);
 				}
 				else
 				{
@@ -711,5 +755,9 @@ void EquipMenuDraw(const EquipMenu *menu)
 	else if (menu->slot == menu->ammoSlot)
 	{
 		AmmoMenuDraw(&menu->ammoMenu);
+	}
+	else if (menu->slot == menu->utilSlot)
+	{
+		UtilMenuDraw(&menu->utilMenu);
 	}
 }

@@ -36,6 +36,7 @@ set(CDOGS_SDL_SOURCES
 	prep.c
 	prep_equip.c
 	screens_end.c
+	util_menu.c
 	weapon_menu.c)
 set(CDOGS_SDL_HEADERS
 	ammo_menu.h
@@ -58,6 +59,7 @@ set(CDOGS_SDL_HEADERS
 	prep.h
 	prep_equip.h
 	screens_end.h
+	util_menu.h
 	weapon_menu.h)
 set(CDOGS_SDL_EXTRA)
 if(WIN32)

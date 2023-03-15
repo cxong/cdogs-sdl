@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2014, 2016-2017, 2020-2022 Cong Xu
+	Copyright (c) 2013-2014, 2016-2017, 2020-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -58,6 +58,9 @@ typedef struct
 	bool BuyAndSell;
 	bool RandomPickups;
 	int DoorOpenTicks;
+	int MaxLives;
+	int PlayerHP;
+	int PlayerMaxHP;
 	CArray Missions; // of Mission
 	CharacterStore characters;
 	MusicChunk CustomSongs[MUSIC_COUNT];
@@ -86,6 +89,9 @@ void CampaignTerminate(Campaign *campaign);
 void CampaignSettingInit(CampaignSetting *setting);
 void CampaignSettingTerminate(CampaignSetting *c);
 void CampaignSettingTerminateAll(CampaignSetting *setting);
+
+int CampaignGetMaxLives(const Campaign *c);
+int CampaignGetMaxHP(const Campaign *c);
 
 bool CampaignListIsEmpty(const CampaignList *c);
 

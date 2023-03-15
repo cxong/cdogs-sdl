@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2020-2021 Cong Xu
+	Copyright (c) 2020-2021, 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -142,6 +142,30 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 				0, 700, 10, &cData->c->Setting.DoorOpenTicks))
 		{
 			changed = true;
+		}
+		if (DrawNumberSlider(
+				ctx, "Max lives", "(0 = use game option)", 0, 5, 1,
+				&cData->c->Setting.MaxLives))
+		{
+			changed = true;
+		}
+		if (DrawNumberSlider(
+				ctx, "Player HP", "Starting player HP (0 = use max HP)", 0,
+				1000, 10, &cData->c->Setting.PlayerHP))
+		{
+			changed = true;
+		}
+		if (DrawNumberSlider(
+				ctx, "Player max HP", "(0 = use game option)", 0, 1000, 5,
+				&cData->c->Setting.PlayerMaxHP))
+		{
+			changed = true;
+		}
+		// Clamp PlayerHP within PlayerMaxHP
+		if (changed && cData->c->Setting.PlayerMaxHP > 0)
+		{
+			cData->c->Setting.PlayerHP =
+				MIN(cData->c->Setting.PlayerHP, cData->c->Setting.PlayerMaxHP);
 		}
 		nk_end(ctx);
 	}

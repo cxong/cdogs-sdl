@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
 
- Copyright (c) 2013-2016, 2019, 2021-2022 Cong Xu
+ Copyright (c) 2013-2016, 2019, 2021-2023 Cong Xu
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -301,7 +301,7 @@ void AutosaveSave(Autosave *autosave, const char *filename)
 
 	json_tree_to_string(root, &text);
 	char *formatText = json_format_string(text);
-	
+
 	FILE *f = fopen(filename, "w");
 	if (f == NULL)
 	{
@@ -440,8 +440,8 @@ const CampaignSave *AutosaveGetLastCampaign(const Autosave *a)
 
 void PlayerSavesApply(const CArray *playerSaves, const bool weaponPersist)
 {
-	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size &&
-							 idx < (int)playerSaves->size;
+	for (int i = 0, idx = 0;
+		 i < (int)gPlayerDatas.size && idx < (int)playerSaves->size;
 		 i++, idx++)
 	{
 		PlayerData *p = CArrayGet(&gPlayerDatas, i);
@@ -465,7 +465,7 @@ void PlayerSavesApply(const CArray *playerSaves, const bool weaponPersist)
 		}
 		if (ps->Lives > 0)
 		{
-			p->Lives = ps->Lives;
+			PlayerSetLives(p, ps->Lives);
 		}
 	}
 }

@@ -146,7 +146,7 @@ static double HealthScale(void *data)
 	UNUSED(data);
 	// Update time until next spawn based on:
 	// Damage taken (find player with lowest health)
-	int minHealth = ModeMaxHealth(gCampaign.Entry.Mode);
+	int minHealth = CampaignGetMaxHP(&gCampaign);
 	int maxHealth = minHealth;
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 	if (!IsPlayerAlive(p))
