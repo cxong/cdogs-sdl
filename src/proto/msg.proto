@@ -58,6 +58,7 @@ message NPlayerData {
 	uint32 LastMission = 10;
 	uint32 UID = 11;
 	repeated NAmmo Ammo = 12;
+	uint32 HP = 13;
 }
 
 message NPlayerRemove {
