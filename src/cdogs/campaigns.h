@@ -58,6 +58,7 @@ typedef struct
 	bool BuyAndSell;
 	bool RandomPickups;
 	int DoorOpenTicks;
+	int Lives;
 	int MaxLives;
 	int PlayerHP;
 	int PlayerMaxHP;
@@ -91,7 +92,9 @@ void CampaignSettingTerminate(CampaignSetting *c);
 void CampaignSettingTerminateAll(CampaignSetting *setting);
 
 int CampaignGetMaxLives(const Campaign *c);
+int CampaignGetLives(const Campaign *c);
 int CampaignGetMaxHP(const Campaign *c);
+int CampaignGetHP(const Campaign *c);
 
 bool CampaignListIsEmpty(const CampaignList *c);
 

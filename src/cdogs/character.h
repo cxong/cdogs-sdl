@@ -50,7 +50,6 @@ typedef struct
 	float speed;
 	const WeaponClass *Gun;
 	int maxHealth;
-	int hp;
 	unsigned int flags;
 	CharColors Colors;
 	const PickupClass *Drop;
@@ -90,5 +89,4 @@ int CharacterStoreGetRandomSpecialId(const CharacterStore *store);
 
 bool CharacterIsPrisoner(const CharacterStore *store, const Character *c);
 
-int CharacterGetStartingHealth(const Character *c, const bool isNPC);
 void CharacterShuffleAppearance(Character *c);

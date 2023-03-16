@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2019, 2021 Cong Xu
+    Copyright (c) 2013-2019, 2021, 2023 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@
 #include "c_array.h"
 #include "character.h"
 #include "particle.h"
+#include "player.h"
 #include "proto/msg.pb.h"
 
 
@@ -207,4 +208,4 @@ void GameEventsEnqueue(CArray *store, GameEvent e);
 void GameEventsClear(CArray *store);
 
 GameEvent GameEventNew(GameEventType type);
-GameEvent GameEventNewActorAdd(const struct vec2 pos, const Character *c, const bool isNPC);
+GameEvent GameEventNewActorAdd(const struct vec2 pos, const Character *c, const PlayerData *p);

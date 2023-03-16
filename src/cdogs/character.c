@@ -332,20 +332,6 @@ bool CharacterIsPrisoner(const CharacterStore *store, const Character *c)
 	return false;
 }
 
-int CharacterGetStartingHealth(const Character *c, const bool isNPC)
-{
-	if (isNPC)
-	{
-		return MAX(
-			(c->maxHealth * ConfigGetInt(&gConfig, "Game.NonPlayerHP")) / 100,
-			1);
-	}
-	else
-	{
-		return c->hp > 0 ? c->hp : c->maxHealth;
-	}
-}
-
 static color_t RandomColor(void);
 void CharacterShuffleAppearance(Character *c)
 {

@@ -148,6 +148,7 @@ static void LoadPlayersNode(CArray *players, json_t *node)
 		LoadIntArray(&ps.ammo, child, "Ammo");
 
 		LoadInt(&ps.Lives, child, "Lives");
+		LoadInt(&ps.HP, child, "HP");
 
 		CArrayPushBack(players, &ps);
 	}
@@ -168,6 +169,7 @@ static void AddPlayersNode(CArray *players, json_t *root)
 	json_insert_pair_into_object(playerNode, "Guns", gunsNode);
 	AddIntArray(playerNode, "Ammo", &ps->ammo);
 	AddIntPair(playerNode, "Lives", ps->Lives);
+	AddIntPair(playerNode, "HP", ps->HP);
 
 	json_insert_child(playersNode, playerNode);
 	CA_FOREACH_END()
@@ -371,6 +373,7 @@ void AutosaveAdd(
 	}
 	CArrayCopy(&ps.ammo, &pd->ammo);
 	ps.Lives = pd->Lives;
+	ps.HP = pd->HP;
 	CArrayPushBack(&ms.Players, &ps);
 	CA_FOREACH_END()
 	AutosaveAddCampaign(a, &ms);
@@ -466,6 +469,10 @@ void PlayerSavesApply(const CArray *playerSaves, const bool weaponPersist)
 		if (ps->Lives > 0)
 		{
 			PlayerSetLives(p, ps->Lives);
+		}
+		if (ps->HP > 0)
+		{
+			p->HP = ps->HP;
 		}
 	}
 }

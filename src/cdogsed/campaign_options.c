@@ -144,10 +144,22 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 			changed = true;
 		}
 		if (DrawNumberSlider(
+				ctx, "Lives", "(0 = use game option)", 0, 5, 1,
+				&cData->c->Setting.MaxLives))
+		{
+			changed = true;
+		}
+		if (DrawNumberSlider(
 				ctx, "Max lives", "(0 = use game option)", 0, 5, 1,
 				&cData->c->Setting.MaxLives))
 		{
 			changed = true;
+		}
+		// Clamp Lives within MaxLives
+		if (changed && cData->c->Setting.MaxLives > 0)
+		{
+			cData->c->Setting.Lives =
+				MIN(cData->c->Setting.Lives, cData->c->Setting.MaxLives);
 		}
 		if (DrawNumberSlider(
 				ctx, "Player HP", "Starting player HP (0 = use max HP)", 0,

@@ -579,7 +579,7 @@ GameLoopData *GameOptions(const GameMode gm)
 		{
 			I("Game.PlayerHP");
 		}
-		if (gCampaign.Setting.MaxLives == 0)
+		if (gCampaign.Setting.Lives == 0)
 		{
 			I("Game.Lives");
 		}

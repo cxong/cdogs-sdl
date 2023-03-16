@@ -99,14 +99,14 @@ void PlayerDataAddOrUpdate(const NPlayerData pd)
 	p->Stats = pd.Stats;
 	p->Totals = pd.Totals;
 	p->Char.maxHealth = pd.MaxHealth;
-	p->Char.hp = pd.HP;
+	p->HP = pd.HP;
 	p->lastMission = pd.LastMission;
 
 	// Ready players as well
 	p->Ready = true;
 
 	LOG(LM_MAIN, LL_INFO, "update player UID(%d) maxHealth(%d) HP(%d)", p->UID,
-		p->Char.maxHealth, p->Char.hp);
+		p->Char.maxHealth, p->HP);
 }
 
 static void PlayerTerminate(PlayerData *p);
@@ -221,8 +221,10 @@ NPlayerData PlayerDataDefault(const int idx)
 			break;
 		}
 	}
-
-	pd.MaxHealth = 200;
+	
+	pd.HP = CampaignGetHP(&gCampaign);
+	pd.MaxHealth = CampaignGetMaxHP(&gCampaign);
+	pd.Lives = CampaignGetLives(&gCampaign);
 	if (gCampaign.Setting.BuyAndSell)
 	{
 		pd.Stats.Score = STARTING_CASH;
@@ -237,7 +239,10 @@ NPlayerData PlayerDataDefault(const int idx)
 NPlayerData PlayerDataMissionReset(const PlayerData *p)
 {
 	NPlayerData pd = NMakePlayerData(p);
-	pd.Lives = CampaignGetMaxLives(&gCampaign);
+	if (gCampaign.Setting.PlayerHP == 0)
+	{
+		pd.HP = CampaignGetHP(&gCampaign);
+	}
 
 	memset(&pd.Stats, 0, sizeof pd.Stats);
 
@@ -716,10 +721,24 @@ void PlayerAddAmmo(
 
 void PlayerSetHP(PlayerData *p, const int hp)
 {
-	p->hp = CLAMP(hp, 1, CampaignGetMaxHP(&gCampaign));
+	p->HP = CLAMP(hp, 1, CampaignGetMaxHP(&gCampaign));
 }
 
 void PlayerSetLives(PlayerData *p, const int lives)
 {
 	p->Lives = CLAMP(lives, 1, CampaignGetMaxLives(&gCampaign));
+}
+
+int CharacterGetStartingHealth(const Character *c, const PlayerData *p)
+{
+	if (p == NULL)
+	{
+		return MAX(
+			(c->maxHealth * ConfigGetInt(&gConfig, "Game.NonPlayerHP")) / 100,
+			1);
+	}
+	else
+	{
+		return p->HP > 0 ? p->HP : c->maxHealth;
+	}
 }

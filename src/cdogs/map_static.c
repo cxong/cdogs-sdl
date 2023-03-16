@@ -148,7 +148,7 @@ static void AddCharacter(const MapBuilder *mb, const CharacterPlaces *cps)
 	const Character *c = CArrayGet(
 		&mb->characters->OtherChars, cps->Index);
 	CA_FOREACH(const CharacterPlace, cp, cps->Places)
-	GameEvent e = GameEventNewActorAdd(Vec2CenterOfTile(cp->Pos), c, true);
+	GameEvent e = GameEventNewActorAdd(Vec2CenterOfTile(cp->Pos), c, NULL);
 	e.u.ActorAdd.CharId = cps->Index;
 	e.u.ActorAdd.Direction = cp->Dir;
 	GameEventsEnqueue(&gGameEvents, e);
@@ -185,7 +185,7 @@ static void AddObjective(MapBuilder *mb, const ObjectivePositions *op)
 		const int charId = CharacterStoreGetSpecialId(mb->characters, pi->Index);
 		const Character *c = CArrayGet(
 			&mb->characters->OtherChars, charId);
-		GameEvent e = GameEventNewActorAdd(pos, c, true);
+		GameEvent e = GameEventNewActorAdd(pos, c, NULL);
 		e.u.ActorAdd.CharId = charId;
 		e.u.ActorAdd.ThingFlags = ObjectiveToThing(op->Index);
 		GameEventsEnqueue(&gGameEvents, e);
@@ -205,7 +205,7 @@ static void AddObjective(MapBuilder *mb, const ObjectivePositions *op)
 			mb->characters, pi->Index);
 		const Character *c = CArrayGet(
 			&mb->characters->OtherChars, charId);
-		GameEvent e = GameEventNewActorAdd(pos, c, true);
+		GameEvent e = GameEventNewActorAdd(pos, c, NULL);
 		e.u.ActorAdd.CharId = charId;
 		e.u.ActorAdd.ThingFlags = ObjectiveToThing(op->Index);
 		GameEventsEnqueue(&gGameEvents, e);

@@ -307,6 +307,7 @@ int MapArchiveSave(const char *filename, CampaignSetting *c)
 	AddBoolPair(root, "BuyAndSell", c->BuyAndSell);
 	AddBoolPair(root, "RandomPickups", c->RandomPickups);
 	AddIntPair(root, "DoorOpenTicks", c->DoorOpenTicks);
+	AddIntPair(root, "Lives", c->Lives);
 	AddIntPair(root, "MaxLives", c->MaxLives);
 	AddIntPair(root, "PlayerHP", c->PlayerHP);
 	AddIntPair(root, "PlayerMaxHP", c->PlayerMaxHP);

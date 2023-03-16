@@ -593,7 +593,7 @@ void UpdateObjects(const int ticks)
 				CArrayGet(
 					&gCampaign.Setting.characters.OtherChars,
 					obj->Class->u.Character.CharId),
-				true);
+											   NULL);
 			e.u.ActorAdd.CharId = obj->Class->u.Character.CharId;
 			GameEventsEnqueue(&gGameEvents, e);
 

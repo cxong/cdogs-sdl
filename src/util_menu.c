@@ -71,7 +71,7 @@ int UtilMenuSelectedCostDiff(const UtilMenu *menu)
 		switch (option)
 		{
 		case OPTION_HP:
-			amount = pData->hp;
+			amount = pData->HP;
 			max = CampaignGetMaxHP(&gCampaign);
 			price = HP_PRICE;
 			break;
@@ -110,19 +110,22 @@ static void OnSelect(menu_t *menu, int cmd, void *data)
 		const bool buy = (d->idx & 1) == 0;
 		int amount = 0;
 		int max = 0;
+		int delta = 0;
 		int price = 0;
 		const char *sound = NULL;
 		switch (option)
 		{
 		case OPTION_HP:
-			amount = pData->hp;
+			amount = pData->HP;
 			max = CampaignGetMaxHP(&gCampaign);
+			delta = HP_DELTA;
 			price = HP_PRICE;
 			sound = "health";
 			break;
 		case OPTION_LIVES:
 			amount = pData->Lives;
 			max = CampaignGetMaxLives(&gCampaign);
+			delta = 1;
 			price = LIFE_PRICE;
 			sound = "spawn";
 			break;
@@ -134,21 +137,19 @@ static void OnSelect(menu_t *menu, int cmd, void *data)
 			CASSERT(false, "unknown option");
 			break;
 		}
+		if (buy && amount < max && price <= pData->Totals.Score)
 		{
-			if (buy && amount < max && price <= pData->Totals.Score)
-			{
-				SoundPlay(&gSoundDevice, StrSound(sound));
-				d->SelectResult = UTIL_MENU_SELECT;
-			}
-			else if (!buy && amount > 0)
-			{
-				SoundPlay(&gSoundDevice, StrSound(sound));
-				d->SelectResult = UTIL_MENU_SELECT;
-			}
-			else
-			{
-				SoundPlay(&gSoundDevice, StrSound("ammo_none"));
-			}
+			SoundPlay(&gSoundDevice, StrSound(sound));
+			d->SelectResult = UTIL_MENU_SELECT;
+		}
+		else if (!buy && amount > delta)
+		{
+			SoundPlay(&gSoundDevice, StrSound(sound));
+			d->SelectResult = UTIL_MENU_SELECT;
+		}
+		else if (option != OPTION_COUNT)
+		{
+			SoundPlay(&gSoundDevice, StrSound("ammo_none"));
 		}
 	}
 	else if (cmd & CMD_BUTTON2)
@@ -188,7 +189,7 @@ static menu_t *CreateMenu(UtilMenu *data)
 }
 
 static void DrawUtilMenuItem(
-	const UtilMenu *data, GraphicsDevice *g, const int idx,
+	const UtilMenu *data, GraphicsDevice *g, const Option option,
 	const struct vec2i pos, const struct vec2i bgSize);
 static void DrawMenu(
 	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
@@ -210,22 +211,23 @@ static void DrawMenu(
 	DrawUtilMenuItem(d, g, OPTION_COUNT, svec2i(pos.x, pos.y + ammoY), bgSize);
 }
 static void DrawUtilMenuItem(
-	const UtilMenu *data, GraphicsDevice *g, const int idx,
+	const UtilMenu *data, GraphicsDevice *g, const Option option,
 	const struct vec2i pos, const struct vec2i bgSize)
 {
-	const bool selected = data->idx / 2 == idx;
+	const bool selected = data->idx / 2 == (int)option;
 	const PlayerData *pData = PlayerDataGetByUID(data->PlayerUID);
-	const Option option = GetSelectedOption(data);
 	int amount = 0;
 	int max = 0;
+	int delta = 0;
 	int price = 0;
 	const char *name = NULL;
 	const Pic *pic = NULL;
 	switch (option)
 	{
 	case OPTION_HP:
-		amount = pData->hp;
+		amount = pData->HP;
 		max = CampaignGetMaxHP(&gCampaign);
+		delta = HP_DELTA;
 		price = HP_PRICE;
 		name = "Armor";
 		pic = PicManagerGetPic(&gPicManager, "health");
@@ -233,6 +235,7 @@ static void DrawUtilMenuItem(
 	case OPTION_LIVES:
 		amount = pData->Lives;
 		max = CampaignGetMaxLives(&gCampaign);
+		delta = 1;
 		price = LIFE_PRICE;
 		name = "Life";
 		pic = GetHeadPic(
@@ -242,7 +245,7 @@ static void DrawUtilMenuItem(
 		name = "Back";
 		break;
 	}
-	const struct vec2i bgPos = svec2i(pos.x, pos.y + idx * bgSize.y);
+	const struct vec2i bgPos = svec2i(pos.x, pos.y + option * bgSize.y);
 	color_t color = colorWhite;
 	if (selected && data->Active)
 	{
@@ -275,7 +278,7 @@ static void DrawUtilMenuItem(
 	{
 		const bool sellSelected =
 			selected && data->Active && (data->idx & 1) == 1;
-		const bool canSell = amount > max;
+		const bool canSell = amount > delta;
 		const FontOpts foptsSell = {
 			ALIGN_CENTER, ALIGN_START, svec2i(BUTTON_BG_W, FontH()),
 			svec2i(2, 2), sellSelected ? colorRed : colorGray};
@@ -439,10 +442,14 @@ bool UtilMenuUpdate(UtilMenu *menu, const int cmd)
 		switch (option)
 		{
 		case OPTION_HP:
-			PlayerSetHP(p, p->hp + (buy ? HP_DELTA : -HP_DELTA));
+			PlayerSetHP(p, p->HP + (buy ? HP_DELTA : -HP_DELTA));
+			PlayerScore(p, buy ? -HP_PRICE : HP_PRICE);
 			break;
 		case OPTION_LIVES:
 			PlayerSetLives(p, p->Lives + (buy ? 1 : -1));
+			PlayerScore(p, buy ? -LIFE_PRICE : LIFE_PRICE);
+			break;
+		default:
 			break;
 		}
 		return true;

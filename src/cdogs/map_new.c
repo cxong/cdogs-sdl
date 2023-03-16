@@ -169,6 +169,7 @@ void MapNewLoadCampaignJSON(json_t *root, CampaignSetting *c)
 	// Default one second door close
 	c->DoorOpenTicks = FPS_FRAMELIMIT;
 	LoadInt(&c->DoorOpenTicks, root, "DoorOpenTicks");
+	LoadInt(&c->Lives, root, "Lives");
 	LoadInt(&c->MaxLives, root, "MaxLives");
 	LoadInt(&c->PlayerHP, root, "PlayerHP");
 	LoadInt(&c->PlayerMaxHP, root, "PlayerMaxHP");

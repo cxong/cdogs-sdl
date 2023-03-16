@@ -298,7 +298,7 @@ GameEvent GameEventNew(GameEventType type)
 	}
 	return e;
 }
-GameEvent GameEventNewActorAdd(const struct vec2 pos, const Character *c, const bool isNPC)
+GameEvent GameEventNewActorAdd(const struct vec2 pos, const Character *c, const PlayerData *p)
 {
 	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD);
 	e.u.ActorAdd.Pos = Vec2ToNet(pos);
@@ -307,6 +307,6 @@ GameEvent GameEventNewActorAdd(const struct vec2 pos, const Character *c, const 
 	{
 		e.u.ActorAdd.PilotUID = e.u.ActorAdd.UID;
 	}
-	e.u.ActorAdd.Health = CharacterGetStartingHealth(c, isNPC && !c->Class->Vehicle);
+	e.u.ActorAdd.Health = CharacterGetStartingHealth(c, c->Class->Vehicle ? NULL : p);
 	return e;
 }

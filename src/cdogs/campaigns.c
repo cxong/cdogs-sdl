@@ -115,7 +115,22 @@ int CampaignGetMaxLives(const Campaign *c)
 		{
 			return c->Setting.MaxLives;
 		}
-		return ConfigGetInt(&gConfig, "Game.Lives");
+		return MIN(4, CampaignGetLives(c));
+	}
+}
+int CampaignGetLives(const Campaign *c)
+{
+	switch (c->Entry.Mode)
+	{
+	case GAME_MODE_DOGFIGHT:
+	case GAME_MODE_DEATHMATCH:	// fallthrough
+		return CampaignGetMaxLives(c);
+	default:
+		if (c->Setting.Lives > 0)
+		{
+			return c->Setting.Lives;
+		}
+		return 1;
 	}
 }
 int CampaignGetMaxHP(const Campaign *c)
@@ -130,6 +145,20 @@ int CampaignGetMaxHP(const Campaign *c)
 			return c->Setting.PlayerMaxHP;
 		}
 		return 200 * ConfigGetInt(&gConfig, "Game.PlayerHP") / 100;
+	}
+}
+int CampaignGetHP(const Campaign *c)
+{
+	switch (c->Entry.Mode)
+	{
+	case GAME_MODE_DOGFIGHT:
+		return CampaignGetMaxHP(c);
+	default:
+		if (c->Setting.PlayerHP > 0)
+		{
+			return c->Setting.PlayerHP;
+		}
+		return CampaignGetMaxHP(c);
 	}
 }
 

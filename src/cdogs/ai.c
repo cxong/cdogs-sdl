@@ -608,7 +608,7 @@ void AIAddRandomEnemies(const int enemies, const Mission *m)
 		const Character *c =
 			CArrayGet(&gCampaign.Setting.characters.OtherChars, charId);
 		GameEvent e = GameEventNewActorAdd(
-			PlaceAwayFromPlayers(&gMap, true, PLACEMENT_ACCESS_ANY), c, true);
+			PlaceAwayFromPlayers(&gMap, true, PLACEMENT_ACCESS_ANY), c, NULL);
 		e.u.ActorAdd.CharId = charId;
 		GameEventsEnqueue(&gGameEvents, e);
 		gBaddieCount++;
@@ -629,7 +629,7 @@ void InitializeBadGuys(void)
 		for (; o->placed < o->Count; o->placed++)
 		{
 			GameEvent e = GameEventNewActorAdd(
-				PlaceAwayFromPlayers(&gMap, false, paFlags), c, true);
+				PlaceAwayFromPlayers(&gMap, false, paFlags), c, NULL);
 			e.u.ActorAdd.CharId = charId;
 			e.u.ActorAdd.ThingFlags = ObjectiveToThing(_ca_index);
 			GameEventsEnqueue(&gGameEvents, e);
@@ -650,7 +650,7 @@ void InitializeBadGuys(void)
 				MapHasLockedRooms(&gMap)
 					? PlacePrisoner(&gMap)
 					: PlaceAwayFromPlayers(&gMap, false, paFlags),
-				c, true);
+				c, NULL);
 			e.u.ActorAdd.CharId = charId;
 			e.u.ActorAdd.ThingFlags = ObjectiveToThing(_ca_index);
 			GameEventsEnqueue(&gGameEvents, e);
@@ -681,7 +681,7 @@ void CreateEnemies(void)
 		const Character *c =
 			CArrayGet(&gCampaign.Setting.characters.OtherChars, charId);
 		GameEvent e = GameEventNewActorAdd(
-			PlaceAwayFromPlayers(&gMap, true, PLACEMENT_ACCESS_ANY), c, true);
+			PlaceAwayFromPlayers(&gMap, true, PLACEMENT_ACCESS_ANY), c, NULL);
 		e.u.ActorAdd.CharId = charId;
 		GameEventsEnqueue(&gGameEvents, e);
 		gBaddieCount++;

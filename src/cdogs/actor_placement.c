@@ -200,7 +200,7 @@ struct vec2 PlacePlayer(
 	{
 		pos = PlacePlayerSimple(map);
 	}
-	GameEvent e = GameEventNewActorAdd(pos, &p->Char, false);
+	GameEvent e = GameEventNewActorAdd(pos, &p->Char, p);
 	e.u.ActorAdd.Direction = DIRECTION_DOWN;
 	e.u.ActorAdd.PlayerUID = p->UID;
 	Ammo2Net(&e.u.ActorAdd.Ammo_count, e.u.ActorAdd.Ammo, &p->ammo);
