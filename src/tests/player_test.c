@@ -19,6 +19,7 @@ FEATURE(assign_unused, "Assign unused input device")
 	// lets us easily assign different input devices to different players,
 	// regardless of the number and type of input devices and players.
 	PlayerDataInit(&gPlayerDatas);
+	gConfig = ConfigDefault();
 	NPlayerData pd = PlayerDataDefault(0);
 	PlayerDataAddOrUpdate(pd);
 	pd.UID = 1;
