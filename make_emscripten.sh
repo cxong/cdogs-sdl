@@ -4,6 +4,8 @@ set -e
 rm -rf emscripten/*
 mkdir -p emscripten
 
+cmake .
+
 emcc -D "PB_FIELD_16BIT=1" \
     -Isrc/ \
     -Isrc/cdogs/ \
