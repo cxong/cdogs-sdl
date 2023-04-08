@@ -8,6 +8,7 @@
 	"BuyAndSell": true,
 	"RandomPickups": false,
 	"DoorOpenTicks": 0,
+	"Lives": 0,
 	"MaxLives": 4,
 	"PlayerHP": 20,
 	"PlayerMaxHP": 50,

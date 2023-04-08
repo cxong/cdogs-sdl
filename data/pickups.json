@@ -206,6 +206,14 @@
       "Type": "Score"
     },
     {
+      "Name": "teddy",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "teddy"
+      },
+      "Type": "Score"
+    },
+    {
       "Name": "health",
       "Pic": {
         "Type": "Normal",

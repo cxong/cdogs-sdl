@@ -8345,7 +8345,6 @@ nk_str_append_str_utf8(struct nk_str *str, const char *text)
 {
     int runes = 0;
     int byte_len = 0;
-    int num_runes = 0;
     int glyph_len = 0;
     nk_rune unicode;
     if (!str || !text) return 0;
@@ -8354,7 +8353,6 @@ nk_str_append_str_utf8(struct nk_str *str, const char *text)
     while (unicode != '\0' && glyph_len) {
         glyph_len = nk_utf_decode(text+byte_len, &unicode, 4);
         byte_len += glyph_len;
-        num_runes++;
     }
     nk_str_append_text_char(str, text, byte_len);
     return runes;
@@ -8474,7 +8472,6 @@ nk_str_insert_str_utf8(struct nk_str *str, int pos, const char *text)
 {
     int runes = 0;
     int byte_len = 0;
-    int num_runes = 0;
     int glyph_len = 0;
     nk_rune unicode;
     if (!str || !text) return 0;
@@ -8483,7 +8480,6 @@ nk_str_insert_str_utf8(struct nk_str *str, int pos, const char *text)
     while (unicode != '\0' && glyph_len) {
         glyph_len = nk_utf_decode(text+byte_len, &unicode, 4);
         byte_len += glyph_len;
-        num_runes++;
     }
     nk_str_insert_at_rune(str, pos, text, byte_len);
     return runes;

@@ -2,17 +2,40 @@
 	"Missions": [{
 		"Title": "Test",
 		"Description": "Testing mission",
-		"Type": "Static",
-		"Width": 21,
-		"Height": 20,
+		"Type": "Classic",
+		"Width": 100,
+		"Height": 100,
 		"ExitStyle": "hazard",
 		"KeyStyle": "office",
-		"Objectives": [],
+		"Objectives": [{
+			"Description": "",
+			"Type": "Collect",
+			"Pickup": "teddy",
+			"Count": 8,
+			"Required": 0,
+			"Flags": 0
+		}],
 		"Enemies": [0],
 		"SpecialChars": [],
 		"MapObjectDensities": [{
 			"MapObject": "crate",
-			"Density": 75
+			"Density": 45
+		},
+		{
+			"MapObject": "box",
+			"Density": 45
+		},
+		{
+			"MapObject": "fan",
+			"Density": 20
+		},
+		{
+			"MapObject": "barrel_blue",
+			"Density": 30
+		},
+		{
+			"MapObject": "box3_gray",
+			"Density": 30
 		}],
 		"EnemyDensity": 13,
 		"Weapons": ["Barehanded",
@@ -30,11 +53,11 @@
 		"WeaponPersist": true,
 		"SkipDebrief": false,
 		"TileClasses": {
-			"0": {
+			"Wall": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "steel",
-				"Mask": "848484ff",
+				"Style": "brick",
+				"Mask": "acacacff",
 				"MaskAlt": "008400ff",
 				"CanWalk": false,
 				"IsOpaque": true,
@@ -42,144 +65,68 @@
 				"IsRoom": false,
 				"DamageBullet": ""
 			},
-			"1": {
+			"Floor": {
 				"Name": "tile",
 				"Type": "Floor",
-				"Style": "recessed",
-				"Mask": "484848ff",
+				"Style": "wood",
+				"Mask": "303030ff",
 				"MaskAlt": "008400ff",
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
 				"IsRoom": false,
 				"DamageBullet": ""
+			},
+			"Room": {
+				"Name": "tile",
+				"Type": "Floor",
+				"Style": "recessed",
+				"Mask": "707070ff",
+				"MaskAlt": "008400ff",
+				"CanWalk": true,
+				"IsOpaque": false,
+				"Shootable": false,
+				"IsRoom": true,
+				"DamageBullet": ""
+			},
+			"Door": {
+				"Name": "door",
+				"Type": "Door",
+				"Style": "office",
+				"Mask": "ffffffff",
+				"MaskAlt": "ffffffff",
+				"CanWalk": false,
+				"IsOpaque": true,
+				"Shootable": true,
+				"IsRoom": true,
+				"DamageBullet": ""
 			}
 		},
-		"Tiles": ["0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
-		"0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
-		"0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
-		"0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
-		"0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
-		"0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
-		"0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
-		"0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
-		"0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
-		"0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
-		"0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
-		"0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
-		"0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
-		"0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
-		"0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
-		"0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
-		"0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
-		"0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
-		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"],
-		"Access": ["0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"],
-		"StaticItems": [{
-			"MapObject": "Chainsaw spawner",
-			"Positions": [[7, 3]]
+		"Walls": 140,
+		"WallLength": 20,
+		"CorridorWidth": 2,
+		"Rooms": {
+			"Count": 30,
+			"Min": 7,
+			"Max": 10,
+			"Edge": false,
+			"Overlap": false,
+			"Walls": 0,
+			"WallLength": 1,
+			"WallPad": 1
 		},
-		{
-			"MapObject": "Barehanded spawner",
-			"Positions": [[7, 13]]
+		"Squares": 1,
+		"ExitEnabled": true,
+		"Doors": {
+			"Enabled": false,
+			"Min": 2,
+			"Max": 2,
+			"RandomPos": false
 		},
-		{
-			"MapObject": "MiniGun spawner",
-			"Positions": [[9, 3]]
-		},
-		{
-			"MapObject": "Launcher spawner",
-			"Positions": [[9, 5]]
-		},
-		{
-			"MapObject": "Flamer spawner",
-			"Positions": [[9, 7]]
-		},
-		{
-			"MapObject": "Powergun spawner",
-			"Positions": [[9, 9]]
-		},
-		{
-			"MapObject": "Lazer spawner",
-			"Positions": [[11, 7]]
-		},
-		{
-			"MapObject": "TurboLazer spawner",
-			"Positions": [[11, 9]]
-		},
-		{
-			"MapObject": "DumbGun spawner",
-			"Positions": [[11, 3]]
-		},
-		{
-			"MapObject": "Gun spawner",
-			"Positions": [[11, 5]]
-		},
-		{
-			"MapObject": "MegaGun spawner",
-			"Positions": [[9, 11]]
-		},
-		{
-			"MapObject": "Blaster spawner",
-			"Positions": [[9, 13]]
-		},
-		{
-			"MapObject": "Bullets ammo spawner",
-			"Positions": [[10, 3]]
-		},
-		{
-			"MapObject": "Grenades ammo spawner",
-			"Positions": [[10, 5]]
-		},
-		{
-			"MapObject": "Gas tank ammo spawner",
-			"Positions": [[10, 7]]
-		},
-		{
-			"MapObject": "Cells ammo spawner",
-			"Positions": [[10, 9]]
-		},
-		{
-			"MapObject": "Rockets ammo spawner",
-			"Positions": [[10, 11]]
-		},
-		{
-			"MapObject": "Mini cells ammo spawner",
-			"Positions": [[10, 13]]
-		}],
-		"StaticCharacters": [],
-		"StaticObjectives": [],
-		"StaticKeys": [],
-		"StaticPickups": [],
-		"Start": [0, 0],
-		"Exits": [{
-			"Rect": [28,
-			2,
-			9,
-			9],
-			"Mission": 1,
-			"Hidden": false
-		}],
-		"AltFloorsEnabled": true
+		"Pillars": {
+			"Count": 0,
+			"Min": 2,
+			"Max": 3
+		}
 	}]
 }
