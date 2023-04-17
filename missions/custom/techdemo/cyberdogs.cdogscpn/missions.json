@@ -10,7 +10,11 @@
 		"Objectives": [{
 			"Description": "",
 			"Type": "Collect",
-			"Pickup": "teddy",
+			"Pickups": ["folder",
+			"disk1",
+			"pci_card",
+			"paper",
+			"teddy"],
 			"Count": 8,
 			"Required": 0,
 			"Flags": 0

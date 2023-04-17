@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2017 Cong Xu
+    Copyright (c) 2013-2017, 2023 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -84,7 +84,7 @@ typedef struct
 	{
 		int Index;
 		MapObject *MapObject;
-		const PickupClass *Pickup;
+		CArray Pickups;  // of const PickupClass *
 	} u;
 	int Count;
 	int Required;
@@ -99,6 +99,9 @@ void ObjectiveLoadJSON(Objective *o, json_t *node, const int version);
 void ObjectiveSetup(Objective *o);
 void ObjectiveCopy(Objective *dst, const Objective *src);
 void ObjectiveTerminate(Objective *o);
+
+// Legacy helper function to set a single pickup objective
+void ObjectiveSetPickup(Objective *o, const PickupClass *p);
 
 bool ObjectiveIsRequired(const Objective *o);
 bool ObjectiveIsComplete(const Objective *o);

@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2019-2022 Cong Xu
+	Copyright (c) 2019-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -382,4 +382,57 @@ static void BeforeDrawTex(const GLuint texid)
 	glBindTexture(GL_TEXTURE_2D, texid);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+}
+
+void PickupClassDrawPropsSidebar(
+	struct nk_context *ctx, const PickupClass *pc, const float rh)
+{
+	nk_layout_row_dynamic(ctx, rh, 1);
+
+	char buf[256];
+
+	nk_label(ctx, pc->Name, NK_TEXT_LEFT);
+
+	CA_FOREACH(const PickupEffect, pe, pc->Effects)
+	nk_spacing(ctx, 1);
+	sprintf(buf, "Type: %s", PickupTypeStr(pe->Type));
+	nk_label(ctx, buf, NK_TEXT_LEFT);
+	switch (pe->Type)
+	{
+	case PICKUP_JEWEL:
+		sprintf(buf, "Score: %d", pe->u.Score);
+		nk_label(ctx, buf, NK_TEXT_LEFT);
+		break;
+	case PICKUP_HEALTH:
+		sprintf(buf, "Health: %d", pe->u.Health);
+		nk_label(ctx, buf, NK_TEXT_LEFT);
+		break;
+	case PICKUP_AMMO: {
+		const Ammo *a = AmmoGetById(&gAmmo, pe->u.Ammo.Id);
+		sprintf(buf, "Ammo: %s", a->Name);
+		nk_label(ctx, buf, NK_TEXT_LEFT);
+		sprintf(buf, "Amount: %d", (int)pe->u.Ammo.Amount);
+		nk_label(ctx, buf, NK_TEXT_LEFT);
+	}
+	break;
+	case PICKUP_KEYCARD:
+		sprintf(buf, "Key: %s", KeycardStr(pe->u.Keys));
+		nk_label(ctx, buf, NK_TEXT_LEFT);
+		break;
+	case PICKUP_GUN: {
+		const WeaponClass *wc = IdWeaponClass(pe->u.GunId);
+		sprintf(buf, "Weapon: %s", wc->name);
+		nk_label(ctx, buf, NK_TEXT_LEFT);
+	}
+	case PICKUP_SHOW_MAP:
+		break;
+	case PICKUP_LIVES:
+		sprintf(buf, "Lives: %d", pe->u.Lives);
+		nk_label(ctx, buf, NK_TEXT_LEFT);
+		break;
+	default:
+		CASSERT(false, "Unknown pickup type");
+		break;
+	}
+	CA_FOREACH_END()
 }

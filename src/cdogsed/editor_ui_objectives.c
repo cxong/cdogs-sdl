@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2016, 2019-2020 Cong Xu
+	Copyright (c) 2013-2016, 2019-2020, 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@
 
 #include "editor_ui.h"
 #include "editor_ui_common.h"
+#include "pickup_objective_dialog.h"
 
 typedef struct
 {
@@ -220,7 +221,7 @@ static void MissionResetObjectiveIndex(Objective *o)
 	switch (o->Type)
 	{
 	case OBJECTIVE_COLLECT:
-		o->u.Pickup = IntScorePickupClass(0);
+		ObjectiveSetPickup(o, IntScorePickupClass(0));
 		break;
 	case OBJECTIVE_DESTROY: {
 		const char **destructibleName =
@@ -296,8 +297,8 @@ void CreateObjectivesObjs(Campaign *co, UIObject *c, struct vec2i pos)
 		CSTRDUP(o2->u.Textbox.Hint, "(Objective description)");
 		o2->Pos = pos;
 		CSTRDUP(
-			o2->Tooltip,
-			"Insert/" KMOD_CMD_NAME "+i, Delete/" KMOD_CMD_NAME "+d: add/remove objective");
+			o2->Tooltip, "Insert/" KMOD_CMD_NAME "+i, Delete/" KMOD_CMD_NAME
+						 "+d: add/remove objective");
 		o2->CheckVisible = MissionCheckObjectiveDescription;
 		UIObjectAddChild(o2, CreateObjectiveObjs(objectivesPos, co, i));
 		UIObjectAddChild(c, o2);
@@ -415,7 +416,7 @@ static void MissionDrawDestroyObjective(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData);
 static void MissionDrawRescueObjective(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData);
-static EditorResult MissionChangeCollectObjectiveIndex(void *vData, int d);
+static EditorResult MissionChangeCollectObjectivePickups(void *vData, int d);
 static EditorResult MissionChangeRescueObjectiveIndex(void *vData, int d);
 static void MissionCheckObjectiveIsKill(UIObject *o, void *vData);
 static void MissionCheckObjectiveIsCollect(UIObject *o, void *vData);
@@ -442,13 +443,13 @@ static void CreateObjectiveItemObjs(
 
 	o2 = UIObjectCopy(o);
 	o2->u.CustomDrawFunc = MissionDrawCollectObjective;
-	o2->ChangeFunc = MissionChangeCollectObjectiveIndex;
+	o2->ChangeFunc = MissionChangeCollectObjectivePickups;
 	o2->IsDynamicData = true;
 	CMALLOC(o2->Data, sizeof(MissionIndexData));
 	((MissionIndexData *)o2->Data)->co = co;
 	((MissionIndexData *)o2->Data)->index = idx;
 	o2->CheckVisible = MissionCheckObjectiveIsCollect;
-	CSTRDUP(o2->Tooltip, "Choose item to collect");
+	CSTRDUP(o2->Tooltip, "Choose item(s) to collect...");
 	UIObjectAddChild(c, o2);
 
 	o2 = UIObjectCopy(o);
@@ -508,15 +509,17 @@ static void MissionDrawCollectObjective(
 		return;
 	if ((int)m->Objectives.size <= data->index)
 		return;
-	// TODO: only one kill and rescue objective allowed
 	const Objective *obj = CArrayGet(&m->Objectives, data->index);
-	const Pic *newPic = CPicGetPic(&obj->u.Pickup->Pic, 0);
+	CA_FOREACH(const PickupClass *, pc, obj->u.Pickups)
+	const Pic *p = CPicGetPic(&(*pc)->Pic, 0);
 	const struct vec2i drawPos =
 		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2));
 	PicRender(
-		newPic, g->gameWindow.renderer,
-		svec2i_subtract(drawPos, svec2i_scale_divide(newPic->size, 2)),
-		colorWhite, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
+		p, g->gameWindow.renderer,
+		svec2i_subtract(drawPos, svec2i_scale_divide(p->size, 2)), colorWhite,
+		0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
+	pos = svec2i_add(pos, svec2i(4, 2));
+	CA_FOREACH_END()
 }
 static void MissionDrawDestroyObjective(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
@@ -528,7 +531,7 @@ static void MissionDrawDestroyObjective(
 		return;
 	if ((int)m->Objectives.size <= data->index)
 		return;
-	// TODO: only one kill and rescue objective allowed
+	// TODO: only one destroy objective allowed
 	const Objective *obj = CArrayGet(&m->Objectives, data->index);
 	struct vec2i offset;
 	const Pic *newPic = MapObjectGetPic(obj->u.MapObject, &offset);
@@ -548,7 +551,7 @@ static void MissionDrawRescueObjective(
 		return;
 	if ((int)m->Objectives.size <= data->index)
 		return;
-	// TODO: only one kill and rescue objective allowed
+	// TODO: only one rescue objective allowed
 	CharacterStore *store = &data->co->Setting.characters;
 	if (store->prisonerIds.size > 0)
 	{
@@ -560,16 +563,13 @@ static void MissionDrawRescueObjective(
 	}
 }
 
-static EditorResult MissionChangeCollectObjectiveIndex(void *vData, int d)
+static EditorResult MissionChangeCollectObjectivePickups(void *vData, int d)
 {
+	UNUSED(d);
 	MissionIndexData *data = vData;
 	Objective *o =
 		GetMissionObjective(CampaignGetCurrentMission(data->co), data->index);
-	int idx = PickupClassesGetScoreIdx(o->u.Pickup);
-	const int limit = PickupClassesGetScoreCount(&gPickupClasses) - 1;
-	idx = CLAMP_OPPOSITE(idx + d, 0, limit);
-	o->u.Pickup = IntScorePickupClass(idx);
-	return EDITOR_RESULT_CHANGED;
+	return PickupObjectiveDialog(&gPicManager, &gEventHandlers, o);
 }
 static EditorResult MissionSetDestroyObjective(void *vData, int d)
 {

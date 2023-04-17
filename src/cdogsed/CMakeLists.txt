@@ -18,6 +18,7 @@ set(CDOGSED_SOURCES
 	file_dialog.c
 	mission_options.c
 	nk_window.c
+	pickup_objective_dialog.c
 	tile_brush.c
 	ui_object.c)
 set(CDOGSED_HEADERS
@@ -39,6 +40,7 @@ set(CDOGSED_HEADERS
 	file_dialog.h
 	mission_options.h
 	nk_window.h
+	pickup_objective_dialog.h
 	tile_brush.h
 	ui_object.h)
 add_library(cdogsedlib STATIC ${CDOGSED_SOURCES} ${CDOGSED_HEADERS})

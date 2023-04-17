@@ -473,23 +473,6 @@ int PickupClassesGetScoreIdx(const PickupClass *p)
 	CA_FOREACH_END()
 	return 0;
 }
-int PickupClassesGetScoreCount(const PickupClasses *classes)
-{
-	int count = 0;
-	CA_FOREACH(const PickupClass, c, classes->Classes)
-	if (PickupClassHasScoreEffect(c))
-	{
-		count++;
-	}
-	CA_FOREACH_END()
-	CA_FOREACH(const PickupClass, c, classes->CustomClasses)
-	if (PickupClassHasScoreEffect(c))
-	{
-		count++;
-	}
-	CA_FOREACH_END()
-	return count;
-}
 PickupClass *IntScorePickupClass(const int i)
 {
 	int idx = -1;

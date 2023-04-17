@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2022 Cong Xu
+	Copyright (c) 2014-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -503,6 +503,14 @@ static json_t *SaveDoors(const DoorParams d)
 	return node;
 }
 
+static json_t *SavePickupObjectives(const Objective *o)
+{
+	json_t *node = json_new_array();
+	CA_FOREACH(const PickupClass *, p, o->u.Pickups)
+	json_insert_child(node, json_new_string((*p)->Name));
+	CA_FOREACH_END()
+	return node;
+}
 static json_t *SaveObjectives(CArray *a)
 {
 	json_t *objectivesNode = json_new_array();
@@ -513,7 +521,8 @@ static json_t *SaveObjectives(CArray *a)
 	switch (o->Type)
 	{
 	case OBJECTIVE_COLLECT:
-		AddStringPair(objNode, "Pickup", o->u.Pickup->Name);
+		json_insert_pair_into_object(
+			objNode, "Pickups", SavePickupObjectives(o));
 		break;
 	case OBJECTIVE_DESTROY:
 		AddStringPair(objNode, "MapObject", o->u.MapObject->Name);

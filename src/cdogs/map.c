@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2022 Cong Xu
+	Copyright (c) 2013-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -272,7 +272,8 @@ void MapShowExitArea(Map *map, const int i)
 	const int bottom = top + exit->R.Size.y;
 
 	const TileClass *exitClass = TileClassesGetExit(
-		map->TileClasses, &gPicManager, gMission.missionData->ExitStyle, false);
+		map->TileClasses, &gPicManager, gMission.missionData->ExitStyle,
+		false);
 	const TileClass *exitShadowClass = TileClassesGetExit(
 		map->TileClasses, &gPicManager, gMission.missionData->ExitStyle, true);
 
@@ -343,7 +344,10 @@ void MapPlaceCollectible(
 {
 	const Objective *o = CArrayGet(&m->Objectives, objective);
 	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
-	strcpy(e.u.AddPickup.PickupClass, o->u.Pickup->Name);
+	// Pick a random pickup out of the available ones
+	const int i = RAND_INT(0, (int)o->u.Pickups.size - 1);
+	const PickupClass *p = *(const PickupClass **)CArrayGet(&o->u.Pickups, i);
+	strcpy(e.u.AddPickup.PickupClass, p->Name);
 	e.u.AddPickup.ThingFlags = ObjectiveToThing(objective);
 	e.u.AddPickup.Pos = Vec2ToNet(pos);
 	GameEventsEnqueue(&gGameEvents, e);

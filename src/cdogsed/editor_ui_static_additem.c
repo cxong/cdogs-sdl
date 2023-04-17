@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2016, 2019-2020 Cong Xu
+	Copyright (c) 2013-2016, 2019-2020, 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -132,7 +132,8 @@ static void DrawCharacter(
 	UNUSED(g);
 	EditorBrushAndCampaign *data = vData;
 	CharacterStore *store = &data->Campaign->Setting.characters;
-	const Character *c = CArrayGet(&store->OtherChars, data->Brush.u.ItemIndex);
+	const Character *c =
+		CArrayGet(&store->OtherChars, data->Brush.u.ItemIndex);
 	DrawCharacterSimple(
 		c,
 		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
@@ -167,14 +168,17 @@ static void DrawObjective(
 		DrawCharacterSimple(c, pos, DIRECTION_DOWN, false, false, c->Gun);
 	}
 	break;
-	case OBJECTIVE_COLLECT: {
-		const Pic *p = CPicGetPic(&obj->u.Pickup->Pic, 0);
-		pos = svec2i_subtract(pos, svec2i_scale_divide(p->size, 2));
+	case OBJECTIVE_COLLECT:
+		CA_FOREACH(const PickupClass *, pc, obj->u.Pickups)
+		const Pic *p = CPicGetPic(&(*pc)->Pic, 0);
+		const struct vec2i ppos =
+			svec2i_subtract(pos, svec2i_scale_divide(p->size, 2));
 		PicRender(
-			p, g->gameWindow.renderer, pos, colorWhite, 0, svec2_one(),
+			p, g->gameWindow.renderer, ppos, colorWhite, 0, svec2_one(),
 			SDL_FLIP_NONE, Rect2iZero());
-	}
-	break;
+		pos = svec2i_add(pos, svec2i(4, 2));
+		CA_FOREACH_END()
+		break;
 	case OBJECTIVE_DESTROY:
 		DisplayMapItem(pos, obj->u.MapObject);
 		break;

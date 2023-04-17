@@ -101,8 +101,6 @@ void PickupClassesTerminate(PickupClasses *classes);
 int PickupClassesCount(const PickupClasses *classes);
 
 int PickupClassesGetScoreIdx(const PickupClass *p);
-// Count the number of "Score" type pickups
-int PickupClassesGetScoreCount(const PickupClasses *classes);
 // Get the ith "Score" type pickup
 PickupClass *IntScorePickupClass(const int i);
 

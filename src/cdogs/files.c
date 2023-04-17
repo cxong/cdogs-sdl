@@ -372,7 +372,7 @@ static void ConvertObjective(Objective *dest, struct MissionObjectiveOld *src)
 	switch (dest->Type)
 	{
 	case OBJECTIVE_COLLECT:
-		dest->u.Pickup = IntPickupClass(dest->u.Index);
+		ObjectiveSetPickup(dest, IntPickupClass(dest->u.Index));
 		break;
 	case OBJECTIVE_DESTROY:
 		dest->u.MapObject = IntMapObject(dest->u.Index);
@@ -616,9 +616,9 @@ const char *GetConfigFilePath(const char *name)
 	{
 		const char *homedir = GetHomeDirectory();
 		strcpy(cfpath, homedir);
-	#ifndef __EMSCRIPTEN__
+#ifndef __EMSCRIPTEN__
 		strcat(cfpath, CDOGS_CFG_DIR);
-	#endif
+#endif
 	}
 	strcat(cfpath, name);
 

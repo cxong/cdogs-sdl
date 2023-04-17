@@ -2196,7 +2196,7 @@ static void LoadEntity(
 			Objective o;
 			memset(&o, 0, sizeof o);
 			o.Type = OBJECTIVE_COLLECT;
-			o.u.Pickup = StrPickupClass("spear");
+			ObjectiveSetPickup(&o, StrPickupClass("spear"));
 			CSTRDUP(o.Description, "Collect spear");
 			CArrayPushBack(&m->Objectives, &o);
 			*spearObjIdx = (int)m->Objectives.size - 1;
