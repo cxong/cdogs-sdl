@@ -920,11 +920,16 @@ static void DrawObjectiveInfo(const Objective *o, const struct vec2i pos)
 		DrawHead(gGraphicsDevice.gameWindow.renderer, cd, DIRECTION_DOWN, pos);
 	}
 	break;
-	case OBJECTIVE_COLLECT:
+	case OBJECTIVE_COLLECT: {
+		struct vec2i drawPos = pos;
+		CA_FOREACH(const PickupClass *, pc, o->u.Pickups)
 		CPicDraw(
-			&gGraphicsDevice, &o->u.Pickup->Pic,
-			svec2i_subtract(pos, svec2i(-4, -4)), NULL);
-		break;
+			&gGraphicsDevice, &(*pc)->Pic,
+			svec2i_subtract(drawPos, svec2i(-4, -4)), NULL);
+		drawPos = svec2i_add(drawPos, svec2i(4, 2));
+		CA_FOREACH_END()
+	}
+	break;
 	case OBJECTIVE_DESTROY: {
 		struct vec2i picOffset;
 		const Pic *p = MapObjectGetPic(o->u.MapObject, &picOffset);
