@@ -142,9 +142,10 @@ void ObjectiveLoadJSON(Objective *o, json_t *node, const int version)
 				const json_t *child = json_find_first_label(node, "Pickups");
 				if (child && child->child)
 				{
-					for (child = child->child; child; child = child->next)
+					for (child = child->child->child; child; child = child->next)
 					{
 						const PickupClass *p = StrPickupClass(child->text);
+						CASSERT(p != NULL, "Cannot load pickup class");
 						CArrayPushBack(&o->u.Pickups, &p);
 					}
 				}
@@ -191,6 +192,11 @@ void ObjectiveCopy(Objective *dst, const Objective *src)
 	if (src->Description)
 	{
 		CSTRDUP(dst->Description, src->Description);
+	}
+	if (src->Type == OBJECTIVE_COLLECT)
+	{
+		memset(&dst->u.Pickups, 0, sizeof(dst->u.Pickups));
+		CArrayCopy(&dst->u.Pickups, &src->u.Pickups);
 	}
 }
 void ObjectiveTerminate(Objective *o)

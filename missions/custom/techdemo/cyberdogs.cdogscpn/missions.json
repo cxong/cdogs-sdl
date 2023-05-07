@@ -1,7 +1,7 @@
 {
 	"Missions": [{
-		"Title": "Test",
-		"Description": "Testing mission",
+		"Title": "Mission 1",
+		"Description": "",
 		"Type": "Classic",
 		"Width": 100,
 		"Height": 100,
