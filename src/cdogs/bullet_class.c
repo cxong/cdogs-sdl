@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2019, 2021 Cong Xu
+	Copyright (c) 2013-2019, 2021, 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -108,7 +108,8 @@ BulletClass *IdBulletClass(const int i)
 	{
 		return CArrayGet(&gBulletClasses.Classes, i);
 	}
-	return CArrayGet(&gBulletClasses.CustomClasses, i - gBulletClasses.Classes.size);
+	return CArrayGet(
+		&gBulletClasses.CustomClasses, i - gBulletClasses.Classes.size);
 }
 
 // Draw functions
@@ -1125,24 +1126,30 @@ void BulletBounce(const NBulletBounce bb)
 void PlayHitSound(const BulletClass *b, const HitType t, const struct vec2 pos)
 {
 	GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
+	const char *sound = NULL;
 	switch (t)
 	{
 	case HIT_NONE:
 		// Do nothing
 		return;
 	case HIT_WALL:
-		strcpy(es.u.SoundAt.Sound, b->Hit.Wall.Sound);
+		sound = b->Hit.Wall.Sound;
 		break;
 	case HIT_OBJECT:
-		strcpy(es.u.SoundAt.Sound, b->Hit.Object.Sound);
+		sound = b->Hit.Object.Sound;
 		break;
 	case HIT_FLESH:
-		strcpy(es.u.SoundAt.Sound, b->Hit.Flesh.Sound);
+		sound = b->Hit.Flesh.Sound;
 		break;
 	default:
 		CASSERT(false, "unknown hit type")
 		return;
 	}
+	if (!sound || strlen(sound) == 0)
+	{
+		return;
+	}
+	strcpy(es.u.SoundAt.Sound, sound);
 	es.u.SoundAt.Pos = Vec2ToNet(pos);
 	GameEventsEnqueue(&gGameEvents, es);
 }
