@@ -1,0 +1,14 @@
+---
+layout: post
+title:  "C-Dogs 1.4.2 Released!"
+date:   2023-05-11
+categories: release
+---
+
+Hey there, this is a bug fix release! There were crashes when bullets in some custom missions were missing hitsounds - nasty `NULL` ptr bugs!
+
+![Line Charges - an example of missing hitsounds that was crashing the game](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/line_charges.gif)
+
+Download free from itch.io: <https://congusbongus.itch.io/cdogs-sdl/purchase>
+
+Release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/1.4.2>
