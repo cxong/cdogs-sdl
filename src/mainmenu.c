@@ -291,7 +291,6 @@ typedef struct
 	int MenuJoinIndex;
 } CheckLANServerData;
 static menu_t *MenuCreateContinue(const char *name, MainMenuData *mainMenu, const CampaignEntry *entry);
-static menu_t *MenuCreateQuickPlay(const char *name, MainMenuData *mainMenu);
 static menu_t *MenuCreateCampaigns(
 	const char *name, const char *title, MainMenuData *mainMenu, CampaignList *list,
 	const GameMode mode);
@@ -310,8 +309,6 @@ static menu_t *MenuCreateStart(
 		menu, MenuCreateCampaigns(
 				  "Campaign", "Select a campaign:", mainMenu, &mainMenu->campaigns.campaignList,
 				  GAME_MODE_NORMAL));
-	MenuAddSubmenu(
-		menu, MenuCreateQuickPlay("Quick Play", mainMenu));
 	MenuAddSubmenu(
 		menu, MenuCreateCampaigns(
 				  "Dogfight", "Select a dogfight scenario:",
@@ -370,10 +367,6 @@ static void StartGameMode(menu_t *menu, void *data)
 static menu_t *MenuCreateContinue(const char *name, MainMenuData *mainMenu, const CampaignEntry *entry)
 {
 	return CreateStartGameMode(name, mainMenu, GAME_MODE_NORMAL, entry);
-}
-static menu_t *MenuCreateQuickPlay(const char *name, MainMenuData *mainMenu)
-{
-	return CreateStartGameMode(name, mainMenu, GAME_MODE_QUICK_PLAY, &mainMenu->campaigns.quickPlayEntry);
 }
 
 static menu_t *MenuCreateCampaignItem(MainMenuData *mainMenu, CampaignEntry *entry, const GameMode mode);
