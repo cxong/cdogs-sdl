@@ -1,5 +1,6 @@
 # executables
 *.exe*
+*.zip
 src/cdogs-sdl
 src/cdogs-sdl-editor
 cdogs-sdl.opk

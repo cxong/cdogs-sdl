@@ -121,7 +121,7 @@ jobs:
     - name: Make package on tags
       if: startsWith(github.ref, 'refs/tags/')
       run: |
-        make package
+        cpack -B . -C ${{env.BUILD_TYPE}}
 
     - name: Upload a Build Artifact
       uses: softprops/action-gh-release@v1
