@@ -421,7 +421,7 @@ static void HandleGameEvent(
 		SoundPlayAtPlusDistance(
 			sd, wc->u.Normal.ReloadSound, pos, RELOAD_DISTANCE_PLUS);
 		// Brass shells
-		if (wc->u.Normal.Brass)
+		if (wc->u.Normal.Brass && wc->u.Normal.ReloadLead != 0)
 		{
 			WeaponClassAddBrass(wc, (direction_e)e.u.GunReload.Direction, pos);
 		}
