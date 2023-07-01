@@ -356,6 +356,27 @@ static bool TryPickupGun(
 			: StrWeaponClass(AmmoGetById(&gAmmo, pe->u.Ammo.Id)->DefaultGun);
 	const int actorsGunIdx = ActorFindGun(a, wc);
 
+	// Make sure weapons are picked up in the correct slot
+	if (actorsGunIdx >= 0 && wc->Type == GUNTYPE_MELEE)
+	{
+		a->gunIndex = MELEE_SLOT;
+	}
+	if (a->gunIndex == MELEE_SLOT && (wc->Type == GUNTYPE_NORMAL || wc->Type == GUNTYPE_MULTI))
+	{
+			a->gunIndex = 0;
+	}
+	if (a->gunIndex == MAX_GUNS)
+	{
+		if (wc->Type == GUNTYPE_NORMAL || wc->Type == GUNTYPE_MULTI)
+		{
+			a->gunIndex = 0;
+		}
+		if (wc->Type == GUNTYPE_MELEE)
+		{
+			a->gunIndex = MELEE_SLOT;
+		}
+	}
+
 	if (actorsGunIdx >= 0)
 	{
 		// Actor already has gun
