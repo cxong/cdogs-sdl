@@ -87,7 +87,9 @@ void CharacterStoreCopy(
 	{
 		if (c->HeadParts[hp] != NULL)
 		{
-			CSTRDUP(c->HeadParts[hp], c->HeadParts[hp]);
+			char *hpCopy = NULL;
+			CSTRDUP(hpCopy, c->HeadParts[hp]);
+			c->HeadParts[hp] = hpCopy;
 		}
 	}
 	if (c->PlayerTemplateName != NULL)
