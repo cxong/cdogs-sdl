@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2016-2021 Cong Xu
+	Copyright (c) 2016-2021, 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -48,7 +48,7 @@ typedef struct
 	int FootstepsDistancePlus;
 	color_t BloodColor;
 	char *Corpse;
-	bool HasHair;
+	bool HasHeadParts[HEAD_PART_COUNT];
 } CharacterClass;
 typedef struct
 {
@@ -62,7 +62,8 @@ extern CharacterClasses gCharacterClasses;
 const CharacterClass *StrCharacterClass(const char *s);
 // Legacy character class from "face" index
 const char *IntCharacterFace(const int face);
-void CharacterOldFaceToHair(const char *face, char **newFace, char **hair);
+void CharacterOldFaceToHeadParts(const char *face, char **newFace, char *headParts[HEAD_PART_COUNT]);
+void CharacterOldHairToHeadParts(char *headParts[HEAD_PART_COUNT]);
 const NamedSprites *CharacterClassGetDeathSprites(const CharacterClass *c, const PicManager *pm);
 const CharacterClass *IndexCharacterClass(const int i);
 int CharacterClassIndex(const CharacterClass *c);

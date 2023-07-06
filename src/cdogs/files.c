@@ -286,6 +286,7 @@ void ConvertCharacterColors(
 	c->Legs = ColorTint(PaletteToColor(cShadePalettes[leg]), tint);
 	c->Hair = ColorTint(PaletteToColor(cShadePalettes[hair]), tint);
 	c->Feet = c->Legs;
+	c->Facehair = c->Hat = c->Glasses = c->Hair;
 }
 
 // Hair colour correction; some characters had no hair but now with
@@ -344,7 +345,7 @@ void ConvertCharacter(Character *c, TBadGuy *b)
 {
 	const char *face = IntCharacterFace(b->facePic);
 	char *newFace = NULL;
-	CharacterOldFaceToHair(face, &newFace, &c->Hair);
+	CharacterOldFaceToHeadParts(face, &newFace, c->HeadParts);
 	c->Class = StrCharacterClass(newFace);
 	CFREE(newFace);
 	c->speed = b->speed / 256.0f;

@@ -7,10 +7,10 @@
 	"SkipWeaponMenu": false,
 	"BuyAndSell": true,
 	"RandomPickups": false,
-	"DoorOpenTicks": 0,
+	"DoorOpenTicks": 70,
 	"Lives": 0,
 	"MaxLives": 4,
 	"PlayerHP": 20,
 	"PlayerMaxHP": 50,
-	"Missions": 1
+	"Missions": 5
 }

@@ -46,7 +46,7 @@ typedef struct
 {
 	const CharacterClass *Class;
 	char *PlayerTemplateName;
-	char *Hair;
+	char *HeadParts[HEAD_PART_COUNT];
 	float speed;
 	const WeaponClass *Gun;
 	int maxHealth;
@@ -89,4 +89,5 @@ int CharacterStoreGetRandomSpecialId(const CharacterStore *store);
 
 bool CharacterIsPrisoner(const CharacterStore *store, const Character *c);
 
+void CharacterSetHeadPart(Character *c, const HeadPart hp, const char *name);
 void CharacterShuffleAppearance(Character *c);

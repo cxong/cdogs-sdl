@@ -6,6 +6,9 @@ NCampaignDef.Path			max_size:4096
 NPlayerData.Name			max_size:20
 NPlayerData.CharacterClass	max_size:128
 NPlayerData.Hair        	max_size:128
+NPlayerData.Facehair     	max_size:128
+NPlayerData.Hat        		max_size:128
+NPlayerData.Glasses        	max_size:128
 NPlayerData.Weapons			max_size:128
 NPlayerData.Weapons			max_count:3
 NPlayerData.Ammo			max_count:128

@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2014-2016, 2020-2021 Cong Xu
+	Copyright (c) 2014-2016, 2020-2021, 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -63,9 +63,21 @@ NPlayerData NMakePlayerData(const PlayerData *p)
 	const Character *c = &p->Char;
 	strcpy(d.Name, p->name);
 	strcpy(d.CharacterClass, p->Char.Class->Name);
-	if (p->Char.Hair)
+	if (p->Char.HeadParts[HEAD_PART_HAIR])
 	{
-		strcpy(d.Hair, p->Char.Hair);
+		strcpy(d.Hair, p->Char.HeadParts[HEAD_PART_HAIR]);
+	}
+	if (p->Char.HeadParts[HEAD_PART_FACEHAIR])
+	{
+		strcpy(d.Facehair, p->Char.HeadParts[HEAD_PART_FACEHAIR]);
+	}
+	if (p->Char.HeadParts[HEAD_PART_HAT])
+	{
+		strcpy(d.Hat, p->Char.HeadParts[HEAD_PART_HAT]);
+	}
+	if (p->Char.HeadParts[HEAD_PART_GLASSES])
+	{
+		strcpy(d.Glasses, p->Char.HeadParts[HEAD_PART_GLASSES]);
 	}
 	d.Colors = CharColors2Net(c->Colors);
 	d.Weapons_count = MAX_WEAPONS;
@@ -143,13 +155,16 @@ NCharColors CharColors2Net(const CharColors c)
 {
 	NCharColors co;
 	co.has_Skin = co.has_Arms = co.has_Body = co.has_Legs = co.has_Hair =
-		co.has_Feet = true;
+		co.has_Feet = co.has_Facehair = co.has_Hat = co.has_Glasses = true;
 	co.Skin = Color2Net(c.Skin);
 	co.Arms = Color2Net(c.Arms);
 	co.Body = Color2Net(c.Body);
 	co.Legs = Color2Net(c.Legs);
 	co.Hair = Color2Net(c.Hair);
 	co.Feet = Color2Net(c.Feet);
+	co.Facehair = Color2Net(c.Facehair);
+	co.Hat = Color2Net(c.Hat);
+	co.Glasses = Color2Net(c.Glasses);
 	return co;
 }
 CharColors Net2CharColors(const NCharColors c)
@@ -161,6 +176,9 @@ CharColors Net2CharColors(const NCharColors c)
 	co.Legs = Net2Color(c.Legs);
 	co.Hair = Net2Color(c.Hair);
 	co.Feet = Net2Color(c.Feet);
+	co.Facehair = Net2Color(c.Facehair);
+	co.Hat = Net2Color(c.Hat);
+	co.Glasses = Net2Color(c.Glasses);
 	return co;
 }
 void Ammo2Net(pb_size_t *ammoCount, NAmmo *ammo, const CArray *a)

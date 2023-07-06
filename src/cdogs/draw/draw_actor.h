@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2014, 2016-2021 Cong Xu
+	Copyright (c) 2013-2014, 2016-2021, 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -56,9 +56,9 @@
 typedef struct
 {
 	const Pic *Head;
-	struct vec2i HairOffset;
-	const Pic *Hair;
 	struct vec2i HeadOffset;
+	const Pic *HeadParts[HEAD_PART_COUNT];
+	struct vec2i HeadPartOffsets[HEAD_PART_COUNT];
 	const Pic *Body;
 	struct vec2i BodyOffset;
 	const Pic *Legs;
@@ -85,8 +85,8 @@ void DrawHead(
 const Pic *GetHeadPic(
 	const CharacterClass *c, const direction_e dir, const bool isGrimacing,
 	const CharColors *colors);
-const Pic *GetHairPic(
-	const char *hair, const direction_e dir, const bool isGrimacing,
+const Pic *GetHeadPartPic(
+	const char *name, const HeadPart hp, const direction_e dir, const bool isGrimacing,
 	const CharColors *colors);
 ActorPics GetCharacterPics(
 	const Character *c, const direction_e dir, const direction_e legDir,

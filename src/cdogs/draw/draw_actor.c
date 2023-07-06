@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2021 Cong Xu
+	Copyright (c) 2013-2021, 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -191,8 +191,7 @@ static void UpdatePilotHeadPic(
 		return;
 	}
 	// If this is a vehicle, take the head/hair pic from the pilot
-	pics->Head = NULL;
-	pics->Hair = NULL;
+	memset(&pics->HeadParts, 0, sizeof pics->HeadParts);
 	const TActor *pilot = ActorGetByUID(a->pilotUID);
 	if (pilot == NULL)
 	{
@@ -201,9 +200,13 @@ static void UpdatePilotHeadPic(
 	const Character *c = ActorGetCharacter(pilot);
 	const bool grimace = ActorIsGrimacing(a);
 	pics->Head = GetHeadPic(c->Class, dir, grimace, &c->Colors);
-	if (c->Class->HasHair)
+
+	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
 	{
-		pics->Hair = GetHairPic(c->Hair, dir, grimace, &c->Colors);
+		if (c->Class->HasHeadParts[hp])
+		{
+			pics->HeadParts[hp] = GetHeadPartPic(c->HeadParts[hp], hp, dir, grimace, &c->Colors);
+		}
 	}
 }
 ActorPics GetCharacterPics(
@@ -312,13 +315,17 @@ static ActorPics GetUnorderedPics(
 	pics.HeadOffset = GetActorDrawOffset(
 		pics.Head, BODY_PART_HEAD, c->Class->Sprites, anim, frame, dir,
 		GUNSTATE_READY);
-	if (c->Class->HasHair)
+
+	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
 	{
-		pics.Hair = GetHairPic(c->Hair, headDir, grimace, colors);
+		if (c->Class->HasHeadParts[hp])
+		{
+			pics.HeadParts[hp] = GetHeadPartPic(c->HeadParts[hp], hp, headDir, grimace, colors);
+			pics.HeadPartOffsets[hp] = GetActorDrawOffset(
+				pics.HeadParts[hp], BODY_PART_HEAD, c->Class->Sprites, anim, frame, dir,
+				GUNSTATE_READY);
+		}
 	}
-	pics.HairOffset = GetActorDrawOffset(
-		pics.Hair, BODY_PART_HAIR, c->Class->Sprites, anim, frame, dir,
-		GUNSTATE_READY);
 
 	// Gun
 	for (int i = 0; i < numBarrels; i++)
@@ -399,8 +406,20 @@ static void ReorderPics(
 			pics->OrderedOffsets[bp] = pics->HeadOffset;
 			break;
 		case BODY_PART_HAIR:
-			pics->OrderedPics[bp] = pics->Hair;
-			pics->OrderedOffsets[bp] = pics->HairOffset;
+			pics->OrderedPics[bp] = pics->HeadParts[HEAD_PART_HAIR];
+			pics->OrderedOffsets[bp] = pics->HeadPartOffsets[HEAD_PART_HAIR];
+			break;
+		case BODY_PART_FACEHAIR:
+			pics->OrderedPics[bp] = pics->HeadParts[HEAD_PART_FACEHAIR];
+			pics->OrderedOffsets[bp] = pics->HeadPartOffsets[HEAD_PART_FACEHAIR];
+			break;
+		case BODY_PART_HAT:
+			pics->OrderedPics[bp] = pics->HeadParts[HEAD_PART_HAT];
+			pics->OrderedOffsets[bp] = pics->HeadPartOffsets[HEAD_PART_HAT];
+			break;
+		case BODY_PART_GLASSES:
+			pics->OrderedPics[bp] = pics->HeadParts[HEAD_PART_GLASSES];
+			pics->OrderedOffsets[bp] = pics->HeadPartOffsets[HEAD_PART_GLASSES];
 			break;
 		case BODY_PART_BODY:
 			pics->OrderedPics[bp] = pics->Body;
@@ -538,11 +557,11 @@ const Pic *GetHeadPic(
 		PicManagerGetCharSprites(&gPicManager, c->HeadSprites, colors);
 	return CArrayGet(&ns->pics, idx);
 }
-const Pic *GetHairPic(
-	const char *hair, const direction_e dir, const bool isGrimacing,
+const Pic *GetHeadPartPic(
+	const char *name, const HeadPart hp, const direction_e dir, const bool isGrimacing,
 	const CharColors *colors)
 {
-	if (hair == NULL)
+	if (name == NULL)
 	{
 		return NULL;
 	}
@@ -550,7 +569,8 @@ const Pic *GetHairPic(
 	const int idx = (int)dir + row * 8;
 	// Get or generate masked sprites
 	char buf[CDOGS_PATH_MAX];
-	sprintf(buf, "chars/hairs/%s", hair);
+	const char *subpaths[] = {"hairs", "facehairs", "hats", "glasses"};
+	sprintf(buf, "chars/%s/%s", subpaths[hp], name);
 	const NamedSprites *ns =
 		PicManagerGetCharSprites(&gPicManager, buf, colors);
 	return CArrayGet(&ns->pics, idx);
@@ -665,14 +685,18 @@ void DrawHead(
 	PicRender(
 		head, renderer, drawPos, mask, 0, svec2_one(), SDL_FLIP_NONE,
 		Rect2iZero());
-	if (c->Class->HasHair)
+
+	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
 	{
-		const Pic *hair = GetHairPic(c->Hair, dir, isGrimacing, &c->Colors);
-		if (hair)
+		if (c->Class->HasHeadParts[hp])
 		{
-			PicRender(
-				hair, renderer, drawPos, mask, 0, svec2_one(), SDL_FLIP_NONE,
-				Rect2iZero());
+			const Pic *pic = GetHeadPartPic(c->HeadParts[hp], hp, dir, isGrimacing, &c->Colors);
+			if (pic)
+			{
+				PicRender(
+						  pic, renderer, drawPos, mask, 0, svec2_one(), SDL_FLIP_NONE,
+						  Rect2iZero());
+			}
 		}
 	}
 }

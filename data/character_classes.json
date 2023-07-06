@@ -35,7 +35,9 @@
       },
       "Sounds": "alien",
       "BloodColor": "00ff00",
-      "HasHair": false
+      "HasHair": false,
+      "HasFacehair": false,
+      "HasGlasses": false
     },
     {
       "Name": "Mad bug-eye",
@@ -45,7 +47,9 @@
       },
       "Sounds": "alien",
       "BloodColor": "00ff00",
-      "HasHair": false
+      "HasHair": false,
+      "HasFacehair": false,
+      "HasGlasses": false
     },
     {
       "Name": "Robot",
@@ -55,7 +59,9 @@
       },
       "Sounds": "alien",
       "BloodColor": "0000ff",
-      "HasHair": false
+      "HasHair": false,
+      "HasFacehair": false,
+      "HasGlasses": false
     },
     {
       "Name": "Lady",
@@ -83,7 +89,9 @@
       "Body": "skinny",
       "Sounds": "zombie",
       "Footsteps": "bones",
-      "BloodColor": "ffffff"
+      "BloodColor": "ffffff",
+      "HasHair": false,
+      "HasFacehair": false
     },
     {
       "Name": "Big Bones",
@@ -93,8 +101,12 @@
       },
       "Body": "big_skinny",
       "Sounds": "zombie",
+      "Footsteps": "bones",
       "BloodColor": "ffffff",
-      "HasHair": false
+      "HasHair": false,
+      "HasFacehair": false,
+      "HasHat": false,
+      "HasGlasses": false
     },
     {
       "Name": "Dog",
@@ -102,7 +114,11 @@
         "Type": "Directional",
         "Sprites": "chars/heads/dog"
       },
-      "Sounds": "dog"
+      "Sounds": "dog",
+      "HasHair": false,
+      "HasFacehair": false,
+      "HasHat": false,
+      "HasGlasses": false
     }
   ]
 }

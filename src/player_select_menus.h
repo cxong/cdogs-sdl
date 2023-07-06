@@ -36,6 +36,11 @@
 
 typedef struct
 {
+	int PlayerUID;
+	HeadPart HP;
+} HeadPartMenuData;
+typedef struct
+{
 	CharColorType Type;
 	int PlayerUID;
 	const MenuSystem *ms;
@@ -47,12 +52,16 @@ typedef struct
 	MenuDisplayPlayerData display;
 	const MenuSystem *ms;
 	int nameMenuSelection;
+	HeadPartMenuData headPartData[HEAD_PART_COUNT];
 	ColorMenuData skinData;
 	ColorMenuData hairData;
 	ColorMenuData armsData;
 	ColorMenuData bodyData;
 	ColorMenuData legsData;
 	ColorMenuData feetData;
+	ColorMenuData facehairData;
+	ColorMenuData hatData;
+	ColorMenuData glassesData;
 	const NameGen *nameGenerator;
 } PlayerSelectMenuData;
 typedef struct

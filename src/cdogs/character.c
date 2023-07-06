@@ -35,7 +35,7 @@
 #include "json_utils.h"
 #include "player_template.h"
 
-#define CHARACTER_VERSION 13
+#define CHARACTER_VERSION 14
 
 static void CharacterInit(Character *c)
 {
@@ -44,7 +44,10 @@ static void CharacterInit(Character *c)
 }
 static void CharacterTerminate(Character *c)
 {
-	CFREE(c->Hair);
+	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
+	{
+		CFREE(c->HeadParts[hp]);
+	}
 	CFREE(c->bot);
 }
 
@@ -80,10 +83,12 @@ void CharacterStoreCopy(
 	const CharBot *cb = c->bot;
 	CMALLOC(c->bot, sizeof *c->bot);
 	memcpy(c->bot, cb, sizeof *cb);
-	const char *hair = c->Hair;
-	if (hair != NULL)
+	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
 	{
-		CSTRDUP(c->Hair, hair);
+		if (c->HeadParts[hp] != NULL)
+		{
+			CSTRDUP(c->HeadParts[hp], c->HeadParts[hp]);
+		}
 	}
 	if (c->PlayerTemplateName != NULL)
 	{
@@ -130,7 +135,7 @@ void CharacterLoadJSON(
 				tmp = GetString(child, "Class");
 			}
 			char *face = NULL;
-			CharacterOldFaceToHair(tmp, &face, &ch->Hair);
+			CharacterOldFaceToHeadParts(tmp, &face, ch->HeadParts);
 			CFREE(tmp);
 			ch->Class = StrCharacterClass(face);
 			CFREE(face);
@@ -141,8 +146,17 @@ void CharacterLoadJSON(
 			ch->Class = StrCharacterClass(tmp);
 			CFREE(tmp);
 			tmp = NULL;
-			LoadStr(&ch->Hair, child, "HairType");
-			CFREE(tmp);
+			LoadStr(&ch->HeadParts[HEAD_PART_HAIR], child, "HairType");
+			if (version < 14)
+			{
+				CharacterOldHairToHeadParts(ch->HeadParts);
+			}
+			else
+			{
+				LoadStr(&ch->HeadParts[HEAD_PART_FACEHAIR], child, "FacehairType");
+				LoadStr(&ch->HeadParts[HEAD_PART_HAT], child, "HatType");
+				LoadStr(&ch->HeadParts[HEAD_PART_GLASSES], child, "GlassesType");
+			}
 		}
 		CASSERT(ch->Class != NULL, "Cannot load character class");
 
@@ -167,14 +181,27 @@ void CharacterLoadJSON(
 			LoadColor(&ch->Colors.Hair, child, "Hair");
 		}
 		ch->Colors.Feet = ch->Colors.Legs;
-		if (version >= 13)
-		{
-			LoadColor(&ch->Colors.Feet, child, "Feet");
-		}
-		if (version < 12)
+		if (version < 13)
 		{
 			ConvertHairColors(ch, ch->Class->Name);
 		}
+		else
+		{
+			LoadColor(&ch->Colors.Feet, child, "Feet");
+		}
+		if (version < 14)
+		{
+			ch->Colors.Facehair = ch->Colors.Hair;
+			ch->Colors.Hat = ch->Colors.Hair;
+			ch->Colors.Glasses = ch->Colors.Hair;
+		}
+		else
+		{
+			LoadColor(&ch->Colors.Facehair, child, "Facehair");
+			LoadColor(&ch->Colors.Hat, child, "Hat");
+			LoadColor(&ch->Colors.Glasses, child, "Glasses");
+		}
+
 		LoadStr(&ch->PlayerTemplateName, child, "PlayerTemplateName");
 		LoadFullInt(&ch->speed, child, "speed");
 		tmp = GetString(child, "Gun");
@@ -221,9 +248,21 @@ bool CharacterSave(CharacterStore *s, const char *path)
 	{
 		AddStringPair(node, "PlayerTemplateName", c->PlayerTemplateName);
 	}
-	if (c->Hair)
+	if (c->HeadParts[HEAD_PART_HAIR])
 	{
-		AddStringPair(node, "HairType", c->Hair);
+		AddStringPair(node, "HairType", c->HeadParts[HEAD_PART_HAIR]);
+	}
+	if (c->HeadParts[HEAD_PART_FACEHAIR])
+	{
+		AddStringPair(node, "FacehairType", c->HeadParts[HEAD_PART_FACEHAIR]);
+	}
+	if (c->HeadParts[HEAD_PART_HAT])
+	{
+		AddStringPair(node, "HatType", c->HeadParts[HEAD_PART_HAT]);
+	}
+	if (c->HeadParts[HEAD_PART_GLASSES])
+	{
+		AddStringPair(node, "GlassesType", c->HeadParts[HEAD_PART_GLASSES]);
 	}
 	AddColorPair(node, "Skin", c->Colors.Skin);
 	AddColorPair(node, "Arms", c->Colors.Arms);
@@ -231,6 +270,9 @@ bool CharacterSave(CharacterStore *s, const char *path)
 	AddColorPair(node, "Legs", c->Colors.Legs);
 	AddColorPair(node, "Hair", c->Colors.Hair);
 	AddColorPair(node, "Feet", c->Colors.Feet);
+	AddColorPair(node, "Facehair", c->Colors.Facehair);
+	AddColorPair(node, "Hat", c->Colors.Hat);
+	AddColorPair(node, "Glasses", c->Colors.Glasses);
 	AddIntPair(node, "speed", (int)(c->speed * 256));
 	json_insert_pair_into_object(node, "Gun", json_new_string(c->Gun->name));
 	AddIntPair(node, "maxHealth", c->maxHealth);
@@ -332,6 +374,16 @@ bool CharacterIsPrisoner(const CharacterStore *store, const Character *c)
 	return false;
 }
 
+void CharacterSetHeadPart(Character *c, const HeadPart hp, const char *name)
+{
+	CFREE(c->HeadParts[hp]);
+	   c->HeadParts[hp] = NULL;
+	if (name)
+	{
+		CSTRDUP(c->HeadParts[hp], name);
+	}
+}
+
 static color_t RandomColor(void);
 void CharacterShuffleAppearance(Character *c)
 {
@@ -349,16 +401,26 @@ void CharacterShuffleAppearance(Character *c)
 			&gCharacterClasses.CustomClasses,
 			charClass - gCharacterClasses.Classes.size);
 	}
-	CFREE(c->Hair);
-	const char *hairStyleName = *(char **)CArrayGet(
-		&gPicManager.hairstyleNames, rand() % gPicManager.hairstyleNames.size);
-	CSTRDUP(c->Hair, hairStyleName);
+	
+	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
+	{
+		if (RAND_BOOL())
+		{
+			const CArray *hpNames = &gPicManager.headPartNames[hp];
+			const char *name = *(char **)CArrayGet(hpNames, rand() % hpNames->size);
+			CharacterSetHeadPart(c, hp, name);
+		}
+	}
+
 	c->Colors.Skin = RandomColor();
 	c->Colors.Arms = RandomColor();
 	c->Colors.Body = RandomColor();
 	c->Colors.Legs = RandomColor();
 	c->Colors.Hair = RandomColor();
 	c->Colors.Feet = RandomColor();
+	c->Colors.Facehair = c->Colors.Hair;
+	c->Colors.Hat = RandomColor();
+	c->Colors.Glasses = RandomColor();
 }
 static color_t RandomColor(void)
 {

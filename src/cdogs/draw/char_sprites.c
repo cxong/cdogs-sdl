@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2017, 2019-2020 Cong Xu
+	Copyright (c) 2017, 2019-2020, 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -130,16 +130,29 @@ static CharSprites *CharSpritesLoadJSON(const char *name, const char *path)
 	for (direction_e d = DIRECTION_UP; d < DIRECTION_COUNT; d++)
 	{
 		const yajl_array orderDir = YAJL_GET_ARRAY(order->values[d]);
+		int i = 0;
 		for (BodyPart bp = BODY_PART_HEAD; bp < BODY_PART_COUNT; bp++)
 		{
 			c->Order[d][bp] =
-				StrBodyPart(YAJL_GET_STRING(orderDir->values[bp]));
+				StrBodyPart(YAJL_GET_STRING(orderDir->values[i]));
+			i++;
+			// Always draw head-parts in the following order:
+			// head, facehair, glasses, hair, hat
+			// Use the order for "head" and ignore the rest
+			if (c->Order[d][bp] == BODY_PART_HEAD)
+			{
+				c->Order[d][++bp] = BODY_PART_FACEHAIR;
+				c->Order[d][++bp] = BODY_PART_GLASSES;
+				c->Order[d][++bp] = BODY_PART_HAIR;
+				c->Order[d][++bp] = BODY_PART_HAT;
+			}
 		}
 	}
-	c->Offsets.Frame[BODY_PART_HEAD] =
-		LoadFrameOffsets(node, "Offsets/Frame/Head");
-	c->Offsets.Frame[BODY_PART_HAIR] =
-		LoadFrameOffsets(node, "Offsets/Frame/Hair");
+	// Use same offsets for head parts
+	for (BodyPart bp = BODY_PART_HEAD; bp <= BODY_PART_GLASSES; bp++)
+	{
+		c->Offsets.Frame[bp] = LoadFrameOffsets(node, "Offsets/Frame/Head");
+	}
 	c->Offsets.Frame[BODY_PART_BODY] =
 		LoadFrameOffsets(node, "Offsets/Frame/Body");
 	c->Offsets.Frame[BODY_PART_LEGS] =
@@ -149,7 +162,11 @@ static CharSprites *CharSpritesLoadJSON(const char *name, const char *path)
 	c->Offsets.Frame[BODY_PART_GUN_L] =
 		LoadFrameOffsets(node, "Offsets/Frame/Gun");
 	LoadDirOffsets(c->Offsets.Dir[BODY_PART_HEAD], node, "Offsets/Dir/Head");
-	LoadDirOffsets(c->Offsets.Dir[BODY_PART_HAIR], node, "Offsets/Dir/Hair");
+	// Use same offsets for head parts
+	for (BodyPart bp = BODY_PART_HEAD + 1; bp <= BODY_PART_GLASSES; bp++)
+	{
+		memcpy(&c->Offsets.Dir[bp], &c->Offsets.Dir[BODY_PART_HEAD], sizeof c->Offsets.Dir[bp]);
+	}
 	LoadDirOffsets(c->Offsets.Dir[BODY_PART_BODY], node, "Offsets/Dir/Body");
 	LoadDirOffsets(c->Offsets.Dir[BODY_PART_LEGS], node, "Offsets/Dir/Legs");
 	LoadDirOffsets(c->Offsets.Dir[BODY_PART_GUN_R], node, "Offsets/Dir/Gun");
@@ -206,11 +223,21 @@ void CharSpriteClassesClear(map_t classes)
 {
 	hashmap_destroy(classes, CharSpritesDestroy);
 }
+static void OffsetFrameDestroy(any_t data);
 static void CharSpritesDestroy(any_t data)
 {
 	CharSprites *c = data;
 	CFREE(c->Name);
+	for (int i = 0; i < BODY_PART_COUNT + MAX_BARRELS - 1; i++)
+	{
+		hashmap_destroy(c->Offsets.Frame[i], OffsetFrameDestroy);
+	}
 	CFREE(c);
+}
+static void OffsetFrameDestroy(any_t data)
+{
+	CArray *offsets = data;
+	CArrayTerminate(offsets);
 }
 void CharSpriteClassesTerminate(CharSpriteClasses *c)
 {

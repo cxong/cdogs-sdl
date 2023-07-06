@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2014, 2016-2020 Cong Xu
+	Copyright (c) 2013-2014, 2016-2020, 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@
 
 #include "character.h"
 #include "character_class.h"
+#include "player.h"
 
 #define PLAYER_NAME_MAXLEN 20
 #define PLAYER_TEMPLATE_FILE "players.cnf"
@@ -38,7 +39,7 @@ typedef struct
 {
 	char name[PLAYER_NAME_MAXLEN];
 	char *CharClassName;
-	char *Hair;
+	char *HeadParts[HEAD_PART_COUNT];
 	CharColors Colors;
 } PlayerTemplate;
 
@@ -56,4 +57,6 @@ void PlayerTemplatesTerminate(PlayerTemplates *pt);
 
 PlayerTemplate *PlayerTemplateGetById(PlayerTemplates *pt, const int id);
 void PlayerTemplatesSave(const PlayerTemplates *pt);
+void PlayerTemplateToPlayerData(PlayerData *p, const PlayerTemplate *t);
+void PlayerTemplateFromPlayerData(PlayerTemplate *t, const PlayerData *p);
 void PlayerTemplateAddCharacter(CArray *classes, const Character *c);

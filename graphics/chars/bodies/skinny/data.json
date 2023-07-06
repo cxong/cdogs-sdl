@@ -1,24 +1,17 @@
 {
   "Version": 2,
   "Order": [
-    ["gun_r", "gun_l", "legs", "body", "head", "hair"],
-    ["gun_r", "gun_l", "legs", "body", "head", "hair"],
-    ["gun_l", "legs", "body", "head", "hair", "gun_r"],
-    ["legs", "body", "head", "hair", "gun_r", "gun_l"],
-    ["legs", "body", "head", "hair", "gun_r", "gun_l"],
-    ["legs", "body", "head", "hair", "gun_r", "gun_l"],
-    ["legs", "gun_r", "body", "head", "hair", "gun_l"],
-    ["gun_r", "gun_l", "legs", "body", "head", "hair"]
+    ["gun_r", "gun_l", "legs", "body", "head"],
+    ["gun_r", "gun_l", "legs", "body", "head"],
+    ["gun_l", "legs", "body", "head", "gun_r"],
+    ["legs", "body", "head", "gun_r", "gun_l"],
+    ["legs", "body", "head", "gun_r", "gun_l"],
+    ["legs", "body", "head", "gun_r", "gun_l"],
+    ["legs", "gun_r", "body", "head", "gun_l"],
+    ["gun_r", "gun_l", "legs", "body", "head"]
   ],
   "Offsets": {
     "Frame": {
-      "Hair": {
-        "stand": [[0, 13]],
-        "idle": [[0, 13]],
-        "run": [
-          [0, 14], [0, 13], [0, 12], [0, 13], [0, 14], [0, 13], [0, 12], [0, 13]
-        ]
-      },
       "Head": {
         "stand": [[0, 13]],
         "idle": [[0, 13]],

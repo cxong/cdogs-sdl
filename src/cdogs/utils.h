@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2017, 2019-2022 Cong Xu
+	Copyright (c) 2013-2017, 2019-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -216,8 +216,22 @@ bool IntsEqual(const void *v1, const void *v2);
 
 typedef enum
 {
+	HEAD_PART_HAIR,
+	HEAD_PART_FACEHAIR,
+	HEAD_PART_HAT,
+	HEAD_PART_GLASSES,
+	HEAD_PART_COUNT
+} HeadPart;	// cranial accessories
+
+const char *HeadPartStr(const HeadPart hp);
+
+typedef enum
+{
 	BODY_PART_HEAD,
 	BODY_PART_HAIR,
+	BODY_PART_FACEHAIR,
+	BODY_PART_HAT,
+	BODY_PART_GLASSES,
 	BODY_PART_BODY,
 	BODY_PART_LEGS,
 	BODY_PART_GUN_R,

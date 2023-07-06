@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2016-2017, 2019-2021 Cong Xu
+	Copyright (c) 2016-2017, 2019-2021, 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -62,107 +62,217 @@ const char *IntCharacterFace(const int face)
 {
 	return characterNames[face];
 }
-void CharacterOldFaceToHair(const char *face, char **newFace, char **hair)
+void CharacterOldFaceToHeadParts(const char *face, char **newFace, char *headParts[HEAD_PART_COUNT])
 {
 	// Convert old faces to face + hair
 	if (strcmp(face, "Bob") == 0)
 	{
 		CSTRDUP(*newFace, "Jones");
-		CSTRDUP(*hair, "beard");
+		CSTRDUP(headParts[HEAD_PART_HAIR], "flattop");
+		CSTRDUP(headParts[HEAD_PART_FACEHAIR], "beard");
 	}
 	else if (strcmp(face, "Cyber Jones") == 0)
 	{
 		CSTRDUP(*newFace, "Cyborg");
-		CSTRDUP(*hair, "cyber_shades");
+		CSTRDUP(headParts[HEAD_PART_GLASSES], "cyber_shades");
 	}
 	else if (strcmp(face, "Cyber Smith") == 0)
 	{
 		CSTRDUP(*newFace, "Cyborg");
-		CSTRDUP(*hair, "flattop");
+		CSTRDUP(headParts[HEAD_PART_HAIR], "flattop");
 	}
 	else if (strcmp(face, "Cyber WarBaby") == 0)
 	{
 		CSTRDUP(*newFace, "Cyborg");
-		CSTRDUP(*hair, "beret");
+		CSTRDUP(headParts[HEAD_PART_HAT], "beret");
 	}
 	else if (strcmp(face, "Cyborg") == 0)
 	{
 		CSTRDUP(*newFace, "Cyborg");
-		CSTRDUP(*hair, "cyborg");
+		CSTRDUP(headParts[HEAD_PART_GLASSES], "cyborg");
 	}
 	else if (strcmp(face, "Dragon") == 0)
 	{
 		CSTRDUP(*newFace, "Jones");
-		CSTRDUP(*hair, "hogan");
+		CSTRDUP(headParts[HEAD_PART_HAIR], "rattail");
+		CSTRDUP(headParts[HEAD_PART_FACEHAIR], "handlebar");
 	}
 	else if (strcmp(face, "Evil Ogre") == 0)
 	{
 		CSTRDUP(*newFace, "Ogre");
-		CSTRDUP(*hair, "horns");
+		CSTRDUP(headParts[HEAD_PART_HAT], "horns");
 	}
 	else if (strcmp(face, "Freeze") == 0)
 	{
 		CSTRDUP(*newFace, "Jones");
-		CSTRDUP(*hair, "ski_goggles");
+		CSTRDUP(headParts[HEAD_PART_GLASSES], "ski_goggles");
 	}
 	else if (strcmp(face, "Goggles") == 0)
 	{
 		CSTRDUP(*newFace, "Jones");
-		CSTRDUP(*hair, "goggles");
+		CSTRDUP(headParts[HEAD_PART_GLASSES], "goggles");
 	}
 	else if (strcmp(face, "Grunt") == 0)
 	{
 		CSTRDUP(*newFace, "Jones");
-		CSTRDUP(*hair, "riot_helmet");
+		CSTRDUP(headParts[HEAD_PART_HAT], "riot_helmet");
 	}
 	else if (strcmp(face, "Ice") == 0)
 	{
 		CSTRDUP(*newFace, "Jones");
-		CSTRDUP(*hair, "shades");
+		CSTRDUP(headParts[HEAD_PART_GLASSES], "shades");
 	}
 	else if (strcmp(face, "Lady") == 0)
 	{
 		CSTRDUP(*newFace, "Lady");
-		CSTRDUP(*hair, "ponytail");
+		CSTRDUP(headParts[HEAD_PART_HAIR], "ponytail");
 	}
 	else if (strcmp(face, "Ogre Boss") == 0)
 	{
 		CSTRDUP(*newFace, "Ogre");
-		CSTRDUP(*hair, "mohawk");
+		CSTRDUP(headParts[HEAD_PART_HAIR], "mohawk");
 	}
 	else if (strcmp(face, "Professor") == 0)
 	{
 		CSTRDUP(*newFace, "Jones");
-		CSTRDUP(*hair, "professor");
+		CSTRDUP(headParts[HEAD_PART_HAIR], "donut");
+		CSTRDUP(headParts[HEAD_PART_GLASSES], "goggles");
 	}
 	else if (strcmp(face, "Smith") == 0)
 	{
 		CSTRDUP(*newFace, "Jones");
-		CSTRDUP(*hair, "flattop");
+		CSTRDUP(headParts[HEAD_PART_HAIR], "flattop");
 	}
 	else if (strcmp(face, "Snake") == 0)
 	{
 		CSTRDUP(*newFace, "Jones");
-		CSTRDUP(*hair, "eye_patch");
+		CSTRDUP(headParts[HEAD_PART_GLASSES], "eye_patch");
 	}
 	else if (strcmp(face, "Sweeper") == 0)
 	{
 		CSTRDUP(*newFace, "Jones");
-		CSTRDUP(*hair, "helmet");
+		CSTRDUP(headParts[HEAD_PART_HAT], "helmet");
 	}
 	else if (strcmp(face, "WarBaby") == 0)
 	{
 		CSTRDUP(*newFace, "Jones");
-		CSTRDUP(*hair, "beret");
+		CSTRDUP(headParts[HEAD_PART_HAT], "beret");
 	}
 	else if (strcmp(face, "Wolf") == 0)
 	{
 		CSTRDUP(*newFace, "Jones");
-		CSTRDUP(*hair, "dutch");
+		CSTRDUP(headParts[HEAD_PART_HAIR], "widows");
+		CSTRDUP(headParts[HEAD_PART_FACEHAIR], "dutch");
 	}
 	else
 	{
 		CSTRDUP(*newFace, face);
+	}
+}
+
+void CharacterOldHairToHeadParts(char *headParts[HEAD_PART_COUNT])
+{
+	const char *hair = headParts[HEAD_PART_HAIR];
+	if (hair == NULL)
+	{
+		return;
+	}
+	if (strcmp(hair, "beard") == 0)
+	{
+		CSTRDUP(headParts[HEAD_PART_HAIR], "flattop");
+		CSTRDUP(headParts[HEAD_PART_FACEHAIR], "beard");
+	}
+	else if (strcmp(hair, "beret") == 0)
+	{
+		CFREE(headParts[HEAD_PART_HAIR]);
+		headParts[HEAD_PART_HAIR] = NULL;
+		CSTRDUP(headParts[HEAD_PART_HAT], "beret");
+	}
+	else if (strcmp(hair, "combat_helmet") == 0)
+	{
+		CFREE(headParts[HEAD_PART_HAIR]);
+		headParts[HEAD_PART_HAIR] = NULL;
+		CSTRDUP(headParts[HEAD_PART_HAT], "combat_helmet");
+	}
+	else if (strcmp(hair, "cyber_shades") == 0)
+	{
+		CFREE(headParts[HEAD_PART_HAIR]);
+		headParts[HEAD_PART_HAIR] = NULL;
+		CSTRDUP(headParts[HEAD_PART_GLASSES], "cyber_shades");
+	}
+	else if (strcmp(hair, "cyborg") == 0)
+	{
+		CFREE(headParts[HEAD_PART_HAIR]);
+		headParts[HEAD_PART_HAIR] = NULL;
+		CSTRDUP(headParts[HEAD_PART_GLASSES], "cyborg");
+	}
+	else if (strcmp(hair, "dutch") == 0)
+	{
+		CSTRDUP(headParts[HEAD_PART_HAIR], "widows");
+		CSTRDUP(headParts[HEAD_PART_FACEHAIR], "dutch");
+	}
+	else if (strcmp(hair, "eye_patch") == 0)
+	{
+		CFREE(headParts[HEAD_PART_HAIR]);
+		headParts[HEAD_PART_HAIR] = NULL;
+		CSTRDUP(headParts[HEAD_PART_GLASSES], "eye_patch");
+	}
+	else if (strcmp(hair, "goggles") == 0)
+	{
+		CFREE(headParts[HEAD_PART_HAIR]);
+		headParts[HEAD_PART_HAIR] = NULL;
+		CSTRDUP(headParts[HEAD_PART_GLASSES], "goggles");
+	}
+	else if (strcmp(hair, "hazmat") == 0)
+	{
+		CFREE(headParts[HEAD_PART_HAIR]);
+		headParts[HEAD_PART_HAIR] = NULL;
+		CSTRDUP(headParts[HEAD_PART_HAT], "hazmat");
+	}
+	else if (strcmp(hair, "helmet") == 0)
+	{
+		CFREE(headParts[HEAD_PART_HAIR]);
+		headParts[HEAD_PART_HAIR] = NULL;
+		CSTRDUP(headParts[HEAD_PART_HAT], "helmet");
+	}
+	else if (strcmp(hair, "hogan") == 0)
+	{
+		CSTRDUP(headParts[HEAD_PART_HAIR], "rattail");
+		CSTRDUP(headParts[HEAD_PART_FACEHAIR], "handlebar");
+	}
+	else if (strcmp(hair, "horns") == 0)
+	{
+		CFREE(headParts[HEAD_PART_HAIR]);
+		headParts[HEAD_PART_HAIR] = NULL;
+		CSTRDUP(headParts[HEAD_PART_HAT], "horns");
+	}
+	else if (strcmp(hair, "mad_doc") == 0)
+	{
+		CSTRDUP(headParts[HEAD_PART_HAIR], "donut");
+		CSTRDUP(headParts[HEAD_PART_FACEHAIR], "beard");
+	}
+	else if (strcmp(hair, "peak_cap") == 0)
+	{
+		CFREE(headParts[HEAD_PART_HAIR]);
+		headParts[HEAD_PART_HAIR] = NULL;
+		CSTRDUP(headParts[HEAD_PART_HAT], "peak_cap");
+	}
+	else if (strcmp(hair, "professor") == 0)
+	{
+		CSTRDUP(headParts[HEAD_PART_HAIR], "donut");
+		CSTRDUP(headParts[HEAD_PART_GLASSES], "goggles");
+	}
+	else if (strcmp(hair, "riot_helmet") == 0)
+	{
+		CFREE(headParts[HEAD_PART_HAIR]);
+		headParts[HEAD_PART_HAIR] = NULL;
+		CSTRDUP(headParts[HEAD_PART_HAT], "riot_helmet");
+	}
+	else if (strcmp(hair, "ski_goggles") == 0)
+	{
+		CFREE(headParts[HEAD_PART_HAIR]);
+		headParts[HEAD_PART_HAIR] = NULL;
+		CSTRDUP(headParts[HEAD_PART_GLASSES], "ski_goggles");
 	}
 }
 
@@ -293,8 +403,17 @@ static void LoadCharacterClass(CharacterClass *c, json_t *node)
 	c->BloodColor = colorRed;
 	LoadColor(&c->BloodColor, node, "BloodColor");
 
-	c->HasHair = true;
-	LoadBool(&c->HasHair, node, "HasHair");
+	// By default player classes allow cranial accessories
+	// But some types can't/shouldn't have stuff like hair
+	// For example the alien
+	c->HasHeadParts[HEAD_PART_HAIR] = true;
+	LoadBool(&c->HasHeadParts[HEAD_PART_HAIR], node, "HasHair");
+	c->HasHeadParts[HEAD_PART_FACEHAIR] = true;
+	LoadBool(&c->HasHeadParts[HEAD_PART_FACEHAIR], node, "HasFacehair");
+	c->HasHeadParts[HEAD_PART_HAT] = true;
+	LoadBool(&c->HasHeadParts[HEAD_PART_HAT], node, "HasHat");
+	c->HasHeadParts[HEAD_PART_GLASSES] = true;
+	LoadBool(&c->HasHeadParts[HEAD_PART_GLASSES], node, "HasGlasses");
 	
 	LoadStr(&c->Corpse, node, "Corpse");
 }

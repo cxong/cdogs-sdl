@@ -54,7 +54,10 @@ void PicManagerInit(PicManager *pm)
 	pm->sprites = hashmap_new();
 	pm->customPics = hashmap_new();
 	pm->customSprites = hashmap_new();
-	CArrayInit(&pm->hairstyleNames, sizeof(char *));
+	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
+	{
+		CArrayInit(&pm->headPartNames[hp], sizeof(char *));
+	}
 	CArrayInit(&pm->wallStyleNames, sizeof(char *));
 	CArrayInit(&pm->tileStyleNames, sizeof(char *));
 	CArrayInit(&pm->exitStyleNames, sizeof(char *));
@@ -135,6 +138,22 @@ static void PicManagerAdd(
 
 			if (strncmp("chars/", buf, strlen("chars/")) == 0)
 			{
+				// All head parts use hair color, so determine
+				// which head part we are looking at
+				const char *subfolder = buf + strlen("chars/");
+				CharColorType headPartColor = CHAR_COLOR_HAIR;
+				if (strncmp("facehairs/", subfolder, strlen("facehairs/")) == 0)
+				{
+					headPartColor = CHAR_COLOR_FACEHAIR;
+				}
+				else if (strncmp("hats/", subfolder, strlen("hats/")) == 0)
+				{
+					headPartColor = CHAR_COLOR_HAT;
+				}
+				else if (strncmp("glasses/", subfolder, strlen("glasses/")) == 0)
+				{
+					headPartColor = CHAR_COLOR_GLASSES;
+				}
 				// Convert char pics to multichannel version
 				for (int i = 0; i < pic->size.x * pic->size.y; i++)
 				{
@@ -147,7 +166,7 @@ static void PicManagerAdd(
 					}
 					// Convert character color keyed color to
 					// greyscale + special alpha
-					const CharColorType colorType = CharColorTypeFromColor(c);
+					const CharColorType colorType = CharColorTypeFromColor(c, headPartColor);
 					color_t converted = c;
 					if (colorType != CHAR_COLOR_COUNT)
 					{
@@ -249,7 +268,10 @@ static void FindStylePics(
 	PicManager *pm, CArray *styleNames, PFany hashmapFunc);
 static void FindStyleSprites(
 	PicManager *pm, CArray *styleNames, PFany hashmapFunc);
-static int MaybeAdHairSpriteName(any_t data, any_t item);
+static int MaybeAddHairSpriteName(any_t data, any_t item);
+static int MaybeAddFacehairSpriteName(any_t data, any_t item);
+static int MaybeAddHatSpriteName(any_t data, any_t item);
+static int MaybeAddGlassesSpriteName(any_t data, any_t item);
 static int MaybeAddWallPicName(any_t data, any_t item);
 static int MaybeAddTilePicName(any_t data, any_t item);
 static int MaybeAddExitPicName(any_t data, any_t item);
@@ -257,7 +279,10 @@ static int MaybeAddKeyPicName(any_t data, any_t item);
 static int MaybeAddDoorPicName(any_t data, any_t item);
 static void AfterAdd(PicManager *pm)
 {
-	FindStyleSprites(pm, &pm->hairstyleNames, MaybeAdHairSpriteName);
+	FindStyleSprites(pm, &pm->headPartNames[HEAD_PART_HAIR], MaybeAddHairSpriteName);
+	FindStyleSprites(pm, &pm->headPartNames[HEAD_PART_FACEHAIR], MaybeAddFacehairSpriteName);
+	FindStyleSprites(pm, &pm->headPartNames[HEAD_PART_HAT], MaybeAddHatSpriteName);
+	FindStyleSprites(pm, &pm->headPartNames[HEAD_PART_GLASSES], MaybeAddGlassesSpriteName);
 	FindStylePics(pm, &pm->wallStyleNames, MaybeAddWallPicName);
 	FindStylePics(pm, &pm->tileStyleNames, MaybeAddTilePicName);
 	FindStylePics(pm, &pm->exitStyleNames, MaybeAddExitPicName);
@@ -344,13 +369,29 @@ static void MaybeAddStyleName(
 	CSTRDUP(s, buf);
 	CArrayPushBack(styleNames, &s);
 }
-static int MaybeAdHairSpriteName(any_t data, any_t item)
+static int MaybeAddHeadPartSpriteName(any_t data, any_t item, const HeadPart hp, const char *path)
 {
 	PicManager *pm = data;
 	MaybeAddStyleName(
-		((const NamedSprites *)item)->name, "chars/hairs/",
-		&pm->hairstyleNames);
+		((const NamedSprites *)item)->name, path,
+		&pm->headPartNames[hp]);
 	return MAP_OK;
+}
+static int MaybeAddHairSpriteName(any_t data, any_t item)
+{
+	return MaybeAddHeadPartSpriteName(data, item, HEAD_PART_HAIR, "chars/hairs/");
+}
+static int MaybeAddFacehairSpriteName(any_t data, any_t item)
+{
+	return MaybeAddHeadPartSpriteName(data, item, HEAD_PART_FACEHAIR, "chars/facehairs/");
+}
+static int MaybeAddHatSpriteName(any_t data, any_t item)
+{
+	return MaybeAddHeadPartSpriteName(data, item, HEAD_PART_HAT, "chars/hats/");
+}
+static int MaybeAddGlassesSpriteName(any_t data, any_t item)
+{
+	return MaybeAddHeadPartSpriteName(data, item, HEAD_PART_GLASSES, "chars/glasses/");
 }
 static int MaybeAddExitPicName(any_t data, any_t item)
 {
@@ -434,7 +475,10 @@ static void StyleNamesDestroy(CArray *a)
 void PicManagerTerminate(PicManager *pm)
 {
 	PicManagerUnload(pm);
-	StyleNamesDestroy(&pm->hairstyleNames);
+	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
+	{
+		StyleNamesDestroy(&pm->headPartNames[hp]);
+	}
 	StyleNamesDestroy(&pm->wallStyleNames);
 	StyleNamesDestroy(&pm->tileStyleNames);
 	StyleNamesDestroy(&pm->exitStyleNames);

@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2020 Cong Xu
+	Copyright (c) 2013-2020, 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -54,6 +54,12 @@ color_t *CharColorGetByType(CharColors *c, const CharColorType t)
 		return &c->Hair;
 	case CHAR_COLOR_FEET:
 		return &c->Feet;
+	case CHAR_COLOR_FACEHAIR:
+		return &c->Facehair;
+	case CHAR_COLOR_HAT:
+		return &c->Hat;
+	case CHAR_COLOR_GLASSES:
+		return &c->Glasses;
 	default:
 		CASSERT(false, "Unexpected colour");
 		return &c->Skin;
@@ -75,7 +81,7 @@ color_t *CharColorGetByType(CharColors *c, const CharColorType t)
 
 uint8_t CharColorTypeAlpha(const CharColorType t)
 {
-	static uint8_t alphas[] = {254, 253, 252, 251, 250, 249};
+	static uint8_t alphas[] = {254, 253, 252, 251, 250, 249, 248, 247, 246};
 	if (t < CHAR_COLOR_COUNT)
 	{
 		return alphas[t];
@@ -83,7 +89,7 @@ uint8_t CharColorTypeAlpha(const CharColorType t)
 	return 255;
 }
 #define CHAR_COLOR_THRESHOLD 5
-CharColorType CharColorTypeFromColor(const color_t c)
+CharColorType CharColorTypeFromColor(const color_t c, const CharColorType headPartColor)
 {
 	if (abs((int)c.r - c.g) < CHAR_COLOR_THRESHOLD &&
 		abs((int)c.g - c.b) < CHAR_COLOR_THRESHOLD &&
@@ -99,8 +105,8 @@ CharColorType CharColorTypeFromColor(const color_t c)
 	}
 	else if ((c.r < 5 && c.b < 5) || (abs((int)c.r - c.b) < 5 && c.g > 250))
 	{
-		// Hair (G)
-		return CHAR_COLOR_HAIR;
+		// Head parts (G)
+		return headPartColor;
 	}
 	else if ((c.r < 5 && c.g < 5) || (abs((int)c.r - c.g) < 5 && c.b > 250))
 	{
@@ -127,7 +133,7 @@ CharColorType CharColorTypeFromColor(const color_t c)
 }
 CharColors CharColorsFromOneColor(const color_t color)
 {
-	CharColors c = {color, color, color, color, color, color};
+	CharColors c = {color, color, color, color, color, color, color, color, color};
 	return c;
 }
 color_t CharColorsGetChannelMask(const CharColors *c, const uint8_t alpha)
@@ -148,6 +154,12 @@ color_t CharColorsGetChannelMask(const CharColors *c, const uint8_t alpha)
 		return c->Hair;
 	case 249:
 		return c->Feet;
+	case 248:
+		return c->Facehair;
+	case 247:
+		return c->Hat;
+	case 246:
+		return c->Glasses;
 	default:
 		return colorWhite;
 	}
@@ -156,16 +168,20 @@ void CharColorsGetMaskedName(char *buf, const char *base, const CharColors *c)
 {
 	char bufSkin[COLOR_STR_BUF], bufArms[COLOR_STR_BUF],
 		bufBody[COLOR_STR_BUF], bufLegs[COLOR_STR_BUF], bufHair[COLOR_STR_BUF],
-		bufFeet[COLOR_STR_BUF];
+		bufFeet[COLOR_STR_BUF], bufFacehair[COLOR_STR_BUF], bufHat[COLOR_STR_BUF],
+	bufGlasses[COLOR_STR_BUF];
 	ColorStr(bufSkin, c->Skin);
 	ColorStr(bufArms, c->Arms);
 	ColorStr(bufBody, c->Body);
 	ColorStr(bufLegs, c->Legs);
 	ColorStr(bufHair, c->Hair);
 	ColorStr(bufFeet, c->Feet);
+	ColorStr(bufFacehair, c->Facehair);
+	ColorStr(bufHat, c->Hat);
+	ColorStr(bufGlasses, c->Glasses);
 	sprintf(
-		buf, "%s/%s/%s/%s/%s/%s/%s", base, bufSkin, bufArms, bufBody, bufLegs,
-		bufHair, bufFeet);
+		buf, "%s/%s/%s/%s/%s/%s/%s/%s/%s/%s", base, bufSkin, bufArms, bufBody, bufLegs,
+		bufHair, bufFeet, bufFacehair, bufHat, bufGlasses);
 }
 
 void BlitClearBuf(GraphicsDevice *g)

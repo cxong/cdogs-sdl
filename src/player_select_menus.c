@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2016, 2018-2021 Cong Xu
+	Copyright (c) 2013-2016, 2018-2021, 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -211,7 +211,7 @@ static int HandleInputNameMenu(int cmd, void *data)
 }
 
 static void PostInputRotatePlayer(menu_t *menu, int cmd, void *data);
-static void CheckReenableHairHatMenu(menu_t *menu, void *data);
+static void CheckReenableHeadPartMenu(menu_t *menu, void *data);
 
 static void PostInputFaceMenu(menu_t *menu, int cmd, void *data);
 static menu_t *CreateFaceMenu(MenuDisplayPlayerData *data)
@@ -246,32 +246,34 @@ static void PostInputFaceMenu(menu_t *menu, int cmd, void *data)
 	PostInputRotatePlayer(menu, cmd, data);
 }
 
-static void PostInputHairMenu(menu_t *menu, int cmd, void *data);
-static menu_t *CreateHairMenu(MenuDisplayPlayerData *data)
+static void PostInputHeadPartMenu(menu_t *menu, int cmd, void *data);
+static menu_t *CreateHeadPartMenu(PlayerSelectMenuData *data, const HeadPart hp)
 {
-	menu_t *menu = MenuCreateNormal("Hair/hat", "", MENU_TYPE_NORMAL, 0);
+	menu_t *menu = MenuCreateNormal(HeadPartStr(hp), "", MENU_TYPE_NORMAL, 0);
 	menu->u.normal.maxItems = 11;
 	MenuAddSubmenu(menu, MenuCreateBack("(None)"));
-	CA_FOREACH(const char *, h, gPicManager.hairstyleNames)
+	CA_FOREACH(const char *, h, gPicManager.headPartNames[hp])
 	MenuAddSubmenu(menu, MenuCreateBack(*h));
 	CA_FOREACH_END()
-	MenuSetPostInputFunc(menu, PostInputHairMenu, data);
+	HeadPartMenuData *hpmd = &data->headPartData[hp];
+	hpmd->PlayerUID = data->display.PlayerUID;
+	hpmd->HP = hp;
+	MenuSetPostInputFunc(menu, PostInputHeadPartMenu, hpmd);
 	return menu;
 }
-static void PostInputHairMenu(menu_t *menu, int cmd, void *data)
+static void PostInputHeadPartMenu(menu_t *menu, int cmd, void *data)
 {
-	const MenuDisplayPlayerData *d = data;
+	const HeadPartMenuData *d = data;
 	// Change player hairstyle based on current menu selection
 	PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
 	Character *c = &p->Char;
-	CFREE(c->Hair);
-	c->Hair = NULL;
+	const char *hpName = NULL;
 	if (menu->u.normal.index > 0)
 	{
-		const char **hair =
-			CArrayGet(&gPicManager.hairstyleNames, menu->u.normal.index - 1);
-		CSTRDUP(c->Hair, *hair);
+		hpName =
+			*(const char **)CArrayGet(&gPicManager.headPartNames[d->HP], menu->u.normal.index - 1);
 	}
+	CharacterSetHeadPart(c, d->HP, hpName);
 	PostInputRotatePlayer(menu, cmd, data);
 }
 
@@ -433,20 +435,7 @@ static void PostInputLoadTemplate(menu_t *menu, int cmd, void *data)
 		PlayerData *p = PlayerDataGetByUID(d->display.PlayerUID);
 		const PlayerTemplate *t =
 			PlayerTemplateGetById(&gPlayerTemplates, menu->u.normal.index);
-		memset(p->name, 0, sizeof p->name);
-		strcpy(p->name, t->name);
-		p->Char.Class = StrCharacterClass(t->CharClassName);
-		if (p->Char.Class == NULL)
-		{
-			p->Char.Class = StrCharacterClass("Jones");
-		}
-		CFREE(p->Char.Hair);
-		p->Char.Hair = NULL;
-		if (t->Hair)
-		{
-			CSTRDUP(p->Char.Hair, t->Hair);
-		}
-		p->Char.Colors = t->Colors;
+		PlayerTemplateToPlayerData(p, t);
 	}
 }
 
@@ -498,16 +487,7 @@ static void PostInputSaveTemplate(menu_t *menu, int cmd, void *data)
 		t = CArrayGet(
 			&gPlayerTemplates.Classes, gPlayerTemplates.Classes.size - 1);
 	}
-	memset(t->name, 0, sizeof t->name);
-	strcpy(t->name, p->name);
-	CFREE(t->CharClassName);
-	CSTRDUP(t->CharClassName, p->Char.Class->Name);
-	if (p->Char.Hair)
-	{
-		CFREE(t->Hair);
-		CSTRDUP(t->Hair, p->Char.Hair);
-	}
-	t->Colors = p->Char.Colors;
+	PlayerTemplateFromPlayerData(t, p);
 	PlayerTemplatesSave(&gPlayerTemplates);
 }
 
@@ -627,7 +607,10 @@ static menu_t *CreateCustomizeMenu(
 	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_NORMAL, 0);
 
 	MenuAddSubmenu(menu, CreateFaceMenu(&data->display));
-	MenuAddSubmenu(menu, CreateHairMenu(&data->display));
+	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
+	{
+		MenuAddSubmenu(menu, CreateHeadPartMenu(data, hp));
+	}
 
 	MenuAddSubmenu(
 		menu, CreateColorMenu(
@@ -636,6 +619,18 @@ static menu_t *CreateCustomizeMenu(
 	MenuAddSubmenu(
 		menu, CreateColorMenu(
 				  "Hair Color", &data->hairData, data->ms, CHAR_COLOR_HAIR,
+				  data->display.PlayerUID));
+	MenuAddSubmenu(
+		menu, CreateColorMenu(
+				  "Facial Hair Color", &data->facehairData, data->ms, CHAR_COLOR_FACEHAIR,
+				  data->display.PlayerUID));
+	MenuAddSubmenu(
+		menu, CreateColorMenu(
+				  "Hat Color", &data->hatData, data->ms, CHAR_COLOR_HAT,
+				  data->display.PlayerUID));
+	MenuAddSubmenu(
+		menu, CreateColorMenu(
+				  "Glasses Color", &data->glassesData, data->ms, CHAR_COLOR_GLASSES,
 				  data->display.PlayerUID));
 	MenuAddSubmenu(
 		menu, CreateColorMenu(
@@ -659,7 +654,7 @@ static menu_t *CreateCustomizeMenu(
 
 	MenuSetPostInputFunc(menu, PostInputRotatePlayer, &data->display);
 	MenuSetPostEnterFunc(
-		menu, CheckReenableHairHatMenu, &data->display, false);
+		menu, CheckReenableHeadPartMenu, &data->display, false);
 
 	return menu;
 }
@@ -690,11 +685,20 @@ static void PostInputRotatePlayer(menu_t *menu, int cmd, void *data)
 		SoundPlay(&gSoundDevice, StrSound(buf));
 	}
 }
-static void CheckReenableHairHatMenu(menu_t *menu, void *data)
+static void CheckReenableHeadPartMenu(menu_t *menu, void *data)
 {
-	menu_t *hairMenu = MenuGetSubmenuByName(menu, "Hair/hat");
-	CASSERT(hairMenu, "cannot find menu");
 	MenuDisplayPlayerData *d = data;
 	const PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
-	hairMenu->isDisabled = !p->Char.Class->HasHair;
+	char buf[256];
+	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
+	{
+		const bool hasPart = p->Char.Class->HasHeadParts[hp];
+		menu_t *submenu = MenuGetSubmenuByName(menu, HeadPartStr(hp));
+		CASSERT(submenu, "cannot find menu");
+		submenu->isDisabled = !hasPart;
+		sprintf(buf, "%s Color", HeadPartStr(hp));
+		submenu = MenuGetSubmenuByName(menu, buf);
+		CASSERT(submenu, "cannot find menu");
+		submenu->isDisabled = !hasPart;
+	}
 }

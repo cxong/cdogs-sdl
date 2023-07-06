@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2017-2021 Cong Xu
+	Copyright (c) 2017-2021, 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -42,13 +42,13 @@ typedef struct
 	CampaignSetting *Setting;
 	bool *FileChanged;
 	char *CharacterClassNames;
-	char *HairNames;
+	char *HeadPartNames[HEAD_PART_COUNT];
 	char *GunNames;
 	char *PickupNames;
 	CArray texidsChars; // of GLuint[BODY_PART_COUNT]
 	GLuint texidsPreview[BODY_PART_COUNT];
 	CArray texIdsCharClasses; // of GLuint
-	CArray texIdsHairs;		  // of GLuint
+	CArray texIdsHeadParts[HEAD_PART_COUNT];		  // of GLuint
 	CArray texIdsGuns;		  // of GLuint
 	CArray texIdsPickups;	  // of GLuint
 	Animation anim;
@@ -58,7 +58,23 @@ typedef struct
 } EditorContext;
 
 static const char *IndexCharacterClassName(const int i);
-static const char *IndexHairName(const int i);
+static const char *IndexHeadPartName(const int i, const HeadPart hp);
+static const char *IndexHairName(const int i)
+{
+	return IndexHeadPartName(i, HEAD_PART_HAIR);
+}
+static const char *IndexFacehairName(const int i)
+{
+	return IndexHeadPartName(i, HEAD_PART_FACEHAIR);
+}
+static const char *IndexHatName(const int i)
+{
+	return IndexHeadPartName(i, HEAD_PART_HAT);
+}
+static const char *IndexGlassesName(const int i)
+{
+	return IndexHeadPartName(i, HEAD_PART_GLASSES);
+}
 static const char *IndexGunName(const int i);
 static const char *IndexPickupName(const int i);
 static const WeaponClass *IndexWeaponClassReal(const int i);
@@ -93,8 +109,14 @@ void CharEditor(
 	ec.FileChanged = fileChanged;
 	ec.CharacterClassNames =
 		GetClassNames(NumCharacterClasses(), IndexCharacterClassName);
-	ec.HairNames =
-		GetClassNames(gPicManager.hairstyleNames.size, IndexHairName);
+	const char *(*indexHeadPartFuncs[HEAD_PART_COUNT])(int) = {
+		IndexHairName, IndexFacehairName, IndexHatName, IndexGlassesName
+	};
+	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
+	{
+		ec.HeadPartNames[hp] =
+		 GetClassNames(gPicManager.headPartNames[hp].size, *indexHeadPartFuncs[hp]);
+	}
 	ec.GunNames = GetClassNames(NumGuns(), IndexGunName);
 	ec.PickupNames = GetClassNames(NumPickups(), IndexPickupName);
 
@@ -115,11 +137,14 @@ void CharEditor(
 	LoadTexFromPic(*texid, GetHeadPic(c, DIRECTION_DOWN, false, &cc));
 	CA_FOREACH_END()
 
-	TexArrayInit(&ec.texIdsHairs, gPicManager.hairstyleNames.size);
-	CA_FOREACH(const GLuint, texid, ec.texIdsHairs)
-	const char *hair = IndexHairName(_ca_index);
-	LoadTexFromPic(*texid, GetHairPic(hair, DIRECTION_DOWN, false, &cc));
-	CA_FOREACH_END()
+	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
+	{
+		TexArrayInit(&ec.texIdsHeadParts[hp], gPicManager.headPartNames[hp].size);
+		CA_FOREACH(const GLuint, texid, ec.texIdsHeadParts[hp])
+		const char *name = IndexHeadPartName(_ca_index, hp);
+		LoadTexFromPic(*texid, GetHeadPartPic(name, hp, DIRECTION_DOWN, false, &cc));
+		CA_FOREACH_END()
+	}
 
 	TexArrayInit(&ec.texIdsGuns, NumGuns());
 	CA_FOREACH(const GLuint, texid, ec.texIdsGuns)
@@ -144,22 +169,27 @@ void CharEditor(
 	NKWindow(cfg);
 
 	CFREE(ec.CharacterClassNames);
-	CFREE(ec.HairNames);
+	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
+	{
+		CFREE(ec.HeadPartNames[hp]);
+	}
 	CFREE(ec.GunNames);
 	CFREE(ec.PickupNames);
 	glDeleteTextures(
 		(GLsizei)(BODY_PART_COUNT * ec.texidsChars.size), ec.texidsChars.data);
 	CArrayTerminate(&ec.texidsChars);
 	glDeleteTextures(BODY_PART_COUNT, ec.texidsPreview);
-	glDeleteTextures(
-		(GLsizei)ec.texIdsCharClasses.size, ec.texIdsCharClasses.data);
-	TexArrayTerminate(&ec.texIdsCharClasses);
-	glDeleteTextures((GLsizei)ec.texIdsHairs.size, ec.texIdsHairs.data);
-	TexArrayTerminate(&ec.texIdsHairs);
-	glDeleteTextures((GLsizei)ec.texIdsGuns.size, ec.texIdsGuns.data);
-	TexArrayTerminate(&ec.texIdsGuns);
-	glDeleteTextures((GLsizei)ec.texIdsPickups.size, ec.texIdsPickups.data);
-	TexArrayTerminate(&ec.texIdsPickups);
+#define DELTEX(_tx) \
+	glDeleteTextures( \
+		(GLsizei)(_tx).size, (_tx).data); \
+	TexArrayTerminate(&(_tx));
+	DELTEX(ec.texIdsCharClasses);
+	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
+	{
+		DELTEX(ec.texIdsHeadParts[hp]);
+	}
+	DELTEX(ec.texIdsGuns);
+	DELTEX(ec.texIdsPickups);
 }
 
 static const char *IndexCharacterClassName(const int i)
@@ -167,9 +197,9 @@ static const char *IndexCharacterClassName(const int i)
 	const CharacterClass *c = IndexCharacterClass(i);
 	return c->Name;
 }
-static const char *IndexHairName(const int i)
+static const char *IndexHeadPartName(const int i, const HeadPart hp)
 {
-	return *(char **)CArrayGet(&gPicManager.hairstyleNames, i);
+	return *(char **)CArrayGet(&gPicManager.headPartNames[hp], i);
 }
 static int NumCharacterClasses(void)
 {
@@ -333,7 +363,7 @@ static int DrawClassSelection(
 	struct nk_context *ctx, EditorContext *ec, const char *label,
 	const GLuint *texids, const char *items, const int selected,
 	const size_t len);
-static int HairIndex(const char *hair);
+static int HeadPartIndex(const char *name, const HeadPart hp);
 static void DrawFlag(
 	struct nk_context *ctx, EditorContext *ec, const char *label,
 	const int flag, const char *tooltip);
@@ -499,31 +529,32 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 				NumCharacterClasses());
 			ec->Char->Class = IndexCharacterClass(selectedClass);
 
-			nk_layout_row_dynamic(ctx, ROW_HEIGHT, 1);
-			int hasHair = ec->Char->Hair != NULL;
-			nk_checkbox_label(ctx, "Has Hair", &hasHair);
-
-			if (hasHair)
+			for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
 			{
-				nk_layout_row(ctx, NK_DYNAMIC, ROW_HEIGHT, 2, colRatios);
-				const int currentHair = (int)HairIndex(ec->Char->Hair);
-				int selectedHair = DrawClassSelection(
-					ctx, ec, "Hair:", ec->texIdsHairs.data, ec->HairNames,
-					currentHair, gPicManager.hairstyleNames.size);
-				if (selectedHair == -1)
+				nk_layout_row_dynamic(ctx, ROW_HEIGHT, 1);
+				int hasStyle = ec->Char->HeadParts[hp] != NULL;
+				char buf[256];
+				sprintf(buf, "Has %s", HeadPartStr(hp));
+				nk_checkbox_label(ctx, buf, &hasStyle);
+				if (hasStyle)
 				{
-					selectedHair = 0;
+					nk_layout_row(ctx, NK_DYNAMIC, ROW_HEIGHT, 2, colRatios);
+					const int current = HeadPartIndex(ec->Char->HeadParts[hp], hp);
+					sprintf(buf, "%s:", HeadPartStr(hp));
+					int selected = DrawClassSelection(ctx, ec, buf, ec->texIdsHeadParts[hp].data, ec->HeadPartNames[hp], current, gPicManager.headPartNames[hp].size);
+					if (selected == -1)
+					{
+						selected = 0;
+					}
+					if (current != selected)
+					{
+						CharacterSetHeadPart(ec->Char, hp, IndexHeadPartName(selected, hp));
+					}
 				}
-				if (currentHair != selectedHair)
+				else
 				{
-					CFREE(ec->Char->Hair);
-					CSTRDUP(ec->Char->Hair, IndexHairName(selectedHair));
+					CharacterSetHeadPart(ec->Char, hp, NULL);
 				}
-			}
-			else
-			{
-				CFREE(ec->Char->Hair);
-				ec->Char->Hair = NULL;
 			}
 
 			// Character colours
@@ -533,6 +564,18 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 				*ec->FileChanged = true;
 			}
 			if (ColorPicker(ctx, ROW_HEIGHT, "Hair:", &ec->Char->Colors.Hair))
+			{
+				*ec->FileChanged = true;
+			}
+			if (ColorPicker(ctx, ROW_HEIGHT, "Facial Hair:", &ec->Char->Colors.Facehair))
+			{
+				*ec->FileChanged = true;
+			}
+			if (ColorPicker(ctx, ROW_HEIGHT, "Hat:", &ec->Char->Colors.Hat))
+			{
+				*ec->FileChanged = true;
+			}
+			if (ColorPicker(ctx, ROW_HEIGHT, "Glasses:", &ec->Char->Colors.Glasses))
 			{
 				*ec->FileChanged = true;
 			}
@@ -691,9 +734,10 @@ static void AddCharacter(EditorContext *ec, const int cloneIdx)
 		{
 			CSTRDUP(ec->Char->PlayerTemplateName, clone->PlayerTemplateName);
 		}
-		if (clone->Hair)
+		for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
 		{
-			CSTRDUP(ec->Char->Hair, clone->Hair);
+			ec->Char->HeadParts[hp] = NULL;
+			CharacterSetHeadPart(ec->Char, hp, clone->HeadParts[hp]);
 		}
 		CMALLOC(ec->Char->bot, sizeof *ec->Char->bot);
 		memcpy(ec->Char->bot, clone->bot, sizeof *ec->Char->bot);
@@ -708,6 +752,9 @@ static void AddCharacter(EditorContext *ec, const int cloneIdx)
 		ec->Char->Colors.Legs = colorDarkGray;
 		ec->Char->Colors.Hair = colorBlack;
 		ec->Char->Colors.Feet = colorDarkGray;
+		ec->Char->Colors.Facehair = colorDarkGray;
+		ec->Char->Colors.Hat = colorDarkGray;
+		ec->Char->Colors.Glasses = colorDarkGray;
 		ec->Char->speed = 1;
 		ec->Char->Gun = StrWeaponClass("Machine gun");
 		ec->Char->maxHealth = 40;
@@ -788,14 +835,14 @@ static int DrawClassSelection(
 	return selectedNew;
 }
 
-static int HairIndex(const char *hair)
+static int HeadPartIndex(const char *name, const HeadPart hp)
 {
-	if (hair == NULL)
+	if (name == NULL)
 	{
 		return -1;
 	}
-	CA_FOREACH(const char *, hairstyleName, gPicManager.hairstyleNames)
-	if (strcmp(*hairstyleName, hair) == 0)
+	CA_FOREACH(const char *, hpName, gPicManager.headPartNames[hp])
+	if (strcmp(*hpName, name) == 0)
 	{
 		return _ca_index;
 	}

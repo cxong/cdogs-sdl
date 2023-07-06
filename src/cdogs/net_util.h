@@ -40,7 +40,7 @@
 
 #define NET_LISTEN_PORT 34219
 
-#define NET_PROTOCOL_VERSION 13
+#define NET_PROTOCOL_VERSION 14
 
 // Messages
 

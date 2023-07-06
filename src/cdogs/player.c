@@ -74,12 +74,17 @@ void PlayerDataAddOrUpdate(const NPlayerData pd)
 	{
 		p->Char.Class = StrCharacterClass("Jones");
 	}
-	CFREE(p->Char.Hair);
-	p->Char.Hair = NULL;
-	if (strlen(pd.Hair) > 0)
-	{
-		CSTRDUP(p->Char.Hair, pd.Hair);
+#define ADDHEADPART(_hp, _pdPart) \
+	CFREE(p->Char.HeadParts[_hp]); \
+	p->Char.HeadParts[_hp] = NULL; \
+	if (strlen(_pdPart) > 0) \
+	{ \
+		CSTRDUP(p->Char.HeadParts[_hp], _pdPart); \
 	}
+	ADDHEADPART(HEAD_PART_HAIR, pd.Hair);
+	ADDHEADPART(HEAD_PART_FACEHAIR, pd.Facehair);
+	ADDHEADPART(HEAD_PART_HAT, pd.Hat);
+	ADDHEADPART(HEAD_PART_GLASSES, pd.Glasses);
 	p->Char.Colors = Net2CharColors(pd.Colors);
 	for (int i = 0; i < (int)pd.Weapons_count; i++)
 	{
@@ -155,9 +160,21 @@ NPlayerData PlayerDataDefault(const int idx)
 	{
 		strcpy(pd.Name, t->name);
 		strcpy(pd.CharacterClass, t->CharClassName);
-		if (t->Hair != NULL)
+		if (t->HeadParts[HEAD_PART_HAIR] != NULL)
 		{
-			strcpy(pd.Hair, t->Hair);
+			strcpy(pd.Hair, t->HeadParts[HEAD_PART_HAIR]);
+		}
+		if (t->HeadParts[HEAD_PART_FACEHAIR] != NULL)
+		{
+			strcpy(pd.Facehair, t->HeadParts[HEAD_PART_FACEHAIR]);
+		}
+		if (t->HeadParts[HEAD_PART_HAT] != NULL)
+		{
+			strcpy(pd.Hat, t->HeadParts[HEAD_PART_HAT]);
+		}
+		if (t->HeadParts[HEAD_PART_GLASSES] != NULL)
+		{
+			strcpy(pd.Glasses, t->HeadParts[HEAD_PART_GLASSES]);
 		}
 		pd.Colors = CharColors2Net(t->Colors);
 	}
@@ -172,41 +189,42 @@ NPlayerData PlayerDataDefault(const int idx)
 			pd.Colors.Arms = Color2Net(colorLightBlue);
 			pd.Colors.Body = Color2Net(colorLightBlue);
 			pd.Colors.Legs = Color2Net(colorLightBlue);
-			pd.Colors.Hair = Color2Net(colorLightBlue);
 			pd.Colors.Feet = Color2Net(colorLightBlue);
 			break;
 		case 1:
 			strcpy(pd.Name, "Ice");
 			strcpy(pd.CharacterClass, "Jones");
-			strcpy(pd.Hair, "shades");
+			strcpy(pd.Glasses, "shades");
 			pd.Colors.Skin = Color2Net(colorDarkSkin);
 			pd.Colors.Arms = Color2Net(colorRed);
 			pd.Colors.Body = Color2Net(colorRed);
 			pd.Colors.Legs = Color2Net(colorRed);
-			pd.Colors.Hair = Color2Net(colorBlack);
 			pd.Colors.Feet = Color2Net(colorRed);
+			pd.Colors.Glasses = Color2Net(colorBlack);
 			break;
 		case 2:
 			strcpy(pd.Name, "Warbaby");
 			strcpy(pd.CharacterClass, "Jones");
-			strcpy(pd.Hair, "beret");
+			strcpy(pd.Hat, "beret");
 			pd.Colors.Skin = Color2Net(colorSkin);
 			pd.Colors.Arms = Color2Net(colorGreen);
 			pd.Colors.Body = Color2Net(colorGreen);
 			pd.Colors.Legs = Color2Net(colorGreen);
-			pd.Colors.Hair = Color2Net(colorRed);
 			pd.Colors.Feet = Color2Net(colorGreen);
+			pd.Colors.Hat = Color2Net(colorRed);
 			break;
 		case 3:
 			strcpy(pd.Name, "Han");
 			strcpy(pd.CharacterClass, "Jones");
-			strcpy(pd.Hair, "hogan");
+			strcpy(pd.Hair, "rattail");
+			strcpy(pd.Facehair, "handlebar");
 			pd.Colors.Skin = Color2Net(colorAsianSkin);
 			pd.Colors.Arms = Color2Net(colorYellow);
 			pd.Colors.Body = Color2Net(colorYellow);
 			pd.Colors.Legs = Color2Net(colorYellow);
 			pd.Colors.Hair = Color2Net(colorYellow);
 			pd.Colors.Feet = Color2Net(colorYellow);
+			pd.Colors.Facehair = Color2Net(colorYellow);
 			break;
 		default:
 			// Set up player N template

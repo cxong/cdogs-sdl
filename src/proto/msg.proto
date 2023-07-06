@@ -35,6 +35,9 @@ message NCharColors {
 	NColor Legs = 4;
 	NColor Hair = 5;
 	NColor Feet = 6;
+	NColor Facehair = 7;
+	NColor Hat = 8;
+	NColor Glasses = 9;
 }
 
 message NPlayerStats {
@@ -49,16 +52,19 @@ message NPlayerData {
 	string Name = 1;
 	string CharacterClass = 2;
 	string Hair = 3;
-	NCharColors Colors = 4;
-	repeated string Weapons = 5;
-	uint32 Lives = 6;
-	NPlayerStats Stats = 7;
-	NPlayerStats Totals = 8;
-	uint32 MaxHealth = 9;
-	uint32 LastMission = 10;
-	uint32 UID = 11;
-	repeated NAmmo Ammo = 12;
-	uint32 HP = 13;
+	string Facehair = 4;
+	string Hat = 5;
+	string Glasses = 6;
+	NCharColors Colors = 7;
+	repeated string Weapons = 8;
+	uint32 Lives = 9;
+	NPlayerStats Stats = 10;
+	NPlayerStats Totals = 11;
+	uint32 MaxHealth = 12;
+	uint32 LastMission = 13;
+	uint32 UID = 14;
+	repeated NAmmo Ammo = 15;
+	uint32 HP = 16;
 }
 
 message NPlayerRemove {

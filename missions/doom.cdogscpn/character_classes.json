@@ -9,8 +9,7 @@
       },
       "Body": "demon",
       "Sounds": "ogre",
-      "BloodColor": "ff0000",
-      "HasHair": true
+      "BloodColor": "ff0000"
     }
   ]
 }

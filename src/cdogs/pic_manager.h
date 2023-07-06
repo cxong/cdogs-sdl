@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, 2018-2019 Cong Xu
+    Copyright (c) 2013-2016, 2018-2019, 2023 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,7 @@ typedef struct
 	map_t customPics;	// of NamedPic
 	map_t customSprites;	// of NamedSprites
 
-	CArray hairstyleNames;	// of char *
+	CArray headPartNames[HEAD_PART_COUNT];	// of char *
 	CArray wallStyleNames;	// of char *
 	CArray tileStyleNames;	// of char *
 	CArray exitStyleNames;	// of char *

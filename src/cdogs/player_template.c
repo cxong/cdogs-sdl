@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2014, 2016-2020 Cong Xu
+	Copyright (c) 2013-2014, 2016-2020, 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,7 @@
 #include <emscripten.h>
 #endif
 
-#define VERSION 3
+#define VERSION 4
 
 PlayerTemplates gPlayerTemplates;
 
@@ -57,12 +57,22 @@ static void LoadPlayerTemplate(
 	{
 		char *face;
 		CSTRDUP(face, t.CharClassName);
-		CharacterOldFaceToHair(t.CharClassName, &t.CharClassName, &t.Hair);
+		CharacterOldFaceToHeadParts(t.CharClassName, &t.CharClassName, t.HeadParts);
 		CFREE(face);
 	}
 	else
 	{
-		LoadStr(&t.Hair, node, "HairType");
+		LoadStr(&t.HeadParts[HEAD_PART_HAIR], node, "HairType");
+		if (version < 4)
+		{
+			CharacterOldHairToHeadParts(t.HeadParts);
+		}
+		else
+		{
+			LoadStr(&t.HeadParts[HEAD_PART_FACEHAIR], node, "FacehairType");
+			LoadStr(&t.HeadParts[HEAD_PART_HAT], node, "HatType");
+			LoadStr(&t.HeadParts[HEAD_PART_GLASSES], node, "GlassesType");
+		}
 	}
 	// Colors
 	if (version == 1)
@@ -84,11 +94,19 @@ static void LoadPlayerTemplate(
 		LoadColor(&t.Colors.Legs, node, "Legs");
 		LoadColor(&t.Colors.Hair, node, "Hair");
 	}
-	t.Colors.Feet = t.Colors.Legs;
-	if (version >= 3)
+	if (version < 3)
 	{
-		LoadColor(&t.Colors.Feet, node, "Feet");
+		t.Colors.Feet = t.Colors.Legs;
 	}
+	LoadColor(&t.Colors.Feet, node, "Feet");
+	if (version < 4)
+	{
+		t.Colors.Facehair = t.Colors.Hat = t.Colors.Glasses = t.Colors.Hair;
+	}
+	LoadColor(&t.Colors.Facehair, node, "Facehair");
+	LoadColor(&t.Colors.Hat, node, "Hat");
+	LoadColor(&t.Colors.Glasses, node, "Glasses");
+
 	CArrayPushBack(templates, &t);
 	LOG(LM_MAIN, LL_DEBUG, "loaded player template %s (%s)", t.name,
 		t.CharClassName);
@@ -152,7 +170,10 @@ void PlayerTemplatesClear(CArray *classes)
 {
 	CA_FOREACH(PlayerTemplate, pt, *classes)
 	CFREE(pt->CharClassName);
-	CFREE(pt->Hair);
+	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
+	{
+		CFREE(pt->HeadParts[hp]);
+	}
 	CA_FOREACH_END()
 	CArrayClear(classes);
 }
@@ -180,16 +201,35 @@ PlayerTemplate *PlayerTemplateGetById(PlayerTemplates *pt, const int id)
 
 static void SavePlayerTemplate(const PlayerTemplate *t, json_t *templates)
 {
-	json_t *template = json_new_object();
-	AddStringPair(template, "Name", t->name);
-	AddStringPair(template, "Face", t->CharClassName);
-	AddColorPair(template, "Body", t->Colors.Body);
-	AddColorPair(template, "Arms", t->Colors.Arms);
-	AddColorPair(template, "Legs", t->Colors.Legs);
-	AddColorPair(template, "Skin", t->Colors.Skin);
-	AddColorPair(template, "Hair", t->Colors.Hair);
-	AddColorPair(template, "Feet", t->Colors.Feet);
-	json_insert_child(templates, template);
+	json_t *node = json_new_object();
+	AddStringPair(node, "Name", t->name);
+	AddStringPair(node, "Face", t->CharClassName);
+	if (t->HeadParts[HEAD_PART_HAIR])
+	{
+		AddStringPair(node, "HairType", t->HeadParts[HEAD_PART_HAIR]);
+	}
+	if (t->HeadParts[HEAD_PART_FACEHAIR])
+	{
+		AddStringPair(node, "FacehairType", t->HeadParts[HEAD_PART_FACEHAIR]);
+	}
+	if (t->HeadParts[HEAD_PART_HAT])
+	{
+		AddStringPair(node, "HatType", t->HeadParts[HEAD_PART_HAT]);
+	}
+	if (t->HeadParts[HEAD_PART_GLASSES])
+	{
+		AddStringPair(node, "GlassesType", t->HeadParts[HEAD_PART_GLASSES]);
+	}
+	AddColorPair(node, "Body", t->Colors.Body);
+	AddColorPair(node, "Arms", t->Colors.Arms);
+	AddColorPair(node, "Legs", t->Colors.Legs);
+	AddColorPair(node, "Skin", t->Colors.Skin);
+	AddColorPair(node, "Hair", t->Colors.Hair);
+	AddColorPair(node, "Facehair", t->Colors.Facehair);
+	AddColorPair(node, "Hat", t->Colors.Hat);
+	AddColorPair(node, "Glasses", t->Colors.Glasses);
+	AddColorPair(node, "Feet", t->Colors.Feet);
+	json_insert_child(templates, node);
 }
 void PlayerTemplatesSave(const PlayerTemplates *pt)
 {
@@ -234,17 +274,55 @@ bail:
 	}
 }
 
+void PlayerTemplateToPlayerData(PlayerData *p, const PlayerTemplate *t)
+{
+	memset(p->name, 0, sizeof p->name);
+	strcpy(p->name, t->name);
+	p->Char.Class = StrCharacterClass(t->CharClassName);
+	if (p->Char.Class == NULL)
+	{
+		p->Char.Class = StrCharacterClass("Jones");
+	}
+	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
+	{
+		CFREE(p->Char.HeadParts[hp]);
+		p->Char.HeadParts[hp] = NULL;
+		if (t->HeadParts[hp])
+		{
+			CSTRDUP(p->Char.HeadParts[hp], t->HeadParts[hp]);
+		}
+	}
+	p->Char.Colors = t->Colors;
+}
+
+static void PlayerTemplateFromCharacter(PlayerTemplate *t, const Character *c)
+{
+	CFREE(t->CharClassName);
+	CSTRDUP(t->CharClassName, c->Class->Name);
+	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
+	{
+		if (c->HeadParts[hp])
+		{
+			CFREE(t->HeadParts[hp]);
+			CSTRDUP(t->HeadParts[hp], c->HeadParts[hp]);
+		}
+	}
+	t->Colors = c->Colors;
+}
+
+void PlayerTemplateFromPlayerData(PlayerTemplate *t, const PlayerData *p)
+{
+	memset(t->name, 0, sizeof t->name);
+	strcpy(t->name, p->name);
+	PlayerTemplateFromCharacter(t, &p->Char);
+}
+
 void PlayerTemplateAddCharacter(CArray *classes, const Character *c)
 {
 	PlayerTemplate t;
 	memset(&t, 0, sizeof t);
 	strncpy(t.name, c->PlayerTemplateName, PLAYER_NAME_MAXLEN - 1);
-	CSTRDUP(t.CharClassName, c->Class->Name);
-	if (c->Hair != NULL)
-	{
-		CSTRDUP(t.Hair, c->Hair);
-	}
-	t.Colors = c->Colors;
+	PlayerTemplateFromCharacter(&t, c);
 	CArrayPushBack(classes, &t);
 	LOG(LM_MAIN, LL_DEBUG, "loaded player template from characters %s (%s)",
 		t.name, t.CharClassName);

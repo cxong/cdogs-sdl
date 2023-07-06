@@ -600,10 +600,26 @@ bool IntsEqual(const void *v1, const void *v2)
 	return *(const int *)v1 == *(const int *)v2;
 }
 
+const char *HeadPartStr(const HeadPart hp)
+{
+	switch (hp)
+	{
+		T2S(HEAD_PART_HAIR, "Hair");
+		T2S(HEAD_PART_FACEHAIR, "Facial Hair");
+		T2S(HEAD_PART_HAT, "Hat");
+		T2S(HEAD_PART_GLASSES, "Glasses");
+	default:
+		return "";
+	}
+}
+
 BodyPart StrBodyPart(const char *s)
 {
 	S2T(BODY_PART_HEAD, "head");
 	S2T(BODY_PART_HAIR, "hair");
+	S2T(BODY_PART_FACEHAIR, "facehair");
+	S2T(BODY_PART_HAT, "hat");
+	S2T(BODY_PART_GLASSES, "glasses");
 	S2T(BODY_PART_BODY, "body");
 	S2T(BODY_PART_LEGS, "legs");
 	S2T(BODY_PART_GUN_R, "gun_r");

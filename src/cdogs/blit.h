@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2014, 2016-2020 Cong Xu
+	Copyright (c) 2013-2014, 2016-2020, 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,9 @@ typedef struct
 	color_t Legs;
 	color_t Hair;
 	color_t Feet;
+	color_t Facehair;
+	color_t Hat;
+	color_t Glasses;
 } CharColors;
 typedef enum
 {
@@ -50,6 +53,9 @@ typedef enum
 	CHAR_COLOR_LEGS,
 	CHAR_COLOR_HAIR,
 	CHAR_COLOR_FEET,
+	CHAR_COLOR_FACEHAIR,
+	CHAR_COLOR_HAT,
+	CHAR_COLOR_GLASSES,
 	CHAR_COLOR_COUNT
 } CharColorType;
 color_t *CharColorGetByType(CharColors *c, const CharColorType t);
@@ -59,7 +65,7 @@ void BlitFillBuf(GraphicsDevice *g, const color_t c);
 void BlitUpdateFromBuf(GraphicsDevice *g, SDL_Texture *t);
 
 uint8_t CharColorTypeAlpha(const CharColorType t);
-CharColorType CharColorTypeFromColor(const color_t c);
+CharColorType CharColorTypeFromColor(const color_t c, const CharColorType headPartColor);
 CharColors CharColorsFromOneColor(const color_t color);
 color_t CharColorsGetChannelMask(const CharColors *c, const uint8_t alpha);
 void CharColorsGetMaskedName(char *buf, const char *base, const CharColors *c);
