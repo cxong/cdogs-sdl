@@ -18,7 +18,6 @@
       }
     },
     "Falling": {
-      "FallsDown": true,
       "Bounces": true
     },
     "SeekFactor": -1

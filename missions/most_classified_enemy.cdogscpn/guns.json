@@ -36,7 +36,6 @@
       "Sound": "hits/petrify",
       "HitsObjects": false,
       "Falling": {
-        "FallsDown": true,
         "DestroyOnDrop": true
       }
     },

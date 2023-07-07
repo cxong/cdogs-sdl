@@ -884,6 +884,7 @@ static void LoadBullet(
 	{
 		json_t *falling = json_find_first_label(node, "Falling")->child;
 		LoadFloat(&b->Falling.GravityFactor, falling, "GravityFactor");
+		b->Falling.FallsDown = true;
 		LoadBool(&b->Falling.FallsDown, falling, "FallsDown");
 		LoadBool(&b->Falling.DestroyOnDrop, falling, "DestroyOnDrop");
 		LoadBool(&b->Falling.Bounces, falling, "Bounces");

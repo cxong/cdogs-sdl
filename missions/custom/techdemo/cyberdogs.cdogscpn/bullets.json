@@ -166,8 +166,7 @@
         "Wall": {}
       },
       "Falling": {
-        "GravityFactor": 0.7,
-        "FallsDown": true
+        "GravityFactor": 0.7
       },
       "OutOfRangeGuns": [
         "blast_weak",
