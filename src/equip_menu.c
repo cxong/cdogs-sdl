@@ -633,7 +633,7 @@ void EquipMenuCreate(
 	// For AI players, pre-pick their weapons and go straight to menu end
 	if (pData->inputDevice == INPUT_DEVICE_AI)
 	{
-		menu->slot = menu->endSlot;
+		menu->ms.current = NULL;
 		menu->equipping = false;
 		AICoopSelectWeapons(pData, player, weapons);
 	}
