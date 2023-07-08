@@ -212,7 +212,7 @@ bool IntsEqual(const void *v1, const void *v2);
 #define RAND_FLOAT(_low, _high) (float)RAND_DOUBLE(_low, _high)
 #define RAND_DOUBLE(_low, _high)                                              \
 	((_low) + ((double)rand() / RAND_MAX * ((_high) - (_low))))
-#define RAND_BOOL() (RAND_INT(0, 1) == 0)
+#define RAND_BOOL() (rand()>RAND_MAX/2)
 
 typedef enum
 {

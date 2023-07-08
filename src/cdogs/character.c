@@ -406,12 +406,13 @@ void CharacterShuffleAppearance(Character *c)
 	
 	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
 	{
-		if (RAND_BOOL())
+		const char *name = NULL;
+		if (RAND_INT(0, 3)==0)
 		{
 			const CArray *hpNames = &gPicManager.headPartNames[hp];
-			const char *name = *(char **)CArrayGet(hpNames, rand() % hpNames->size);
-			CharacterSetHeadPart(c, hp, name);
+			name = *(char **)CArrayGet(hpNames, rand() % hpNames->size);
 		}
+		CharacterSetHeadPart(c, hp, name);
 	}
 
 	c->Colors.Skin = RandomColor();

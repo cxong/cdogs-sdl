@@ -10,7 +10,7 @@ NPlayerData.Facehair     	max_size:128
 NPlayerData.Hat        		max_size:128
 NPlayerData.Glasses        	max_size:128
 NPlayerData.Weapons			max_size:128
-NPlayerData.Weapons			max_count:3
+NPlayerData.Weapons			max_count:4
 NPlayerData.Ammo			max_count:128
 
 NTileSet.ClassName		max_size:128
