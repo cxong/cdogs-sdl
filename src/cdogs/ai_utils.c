@@ -398,19 +398,19 @@ TObject *AIGetObjectRunningInto(TActor *a, int cmd)
 	// check if there's a (non-dangerous) object in front of it
 	struct vec2 frontPos = a->Pos;
 	Thing *item;
-	if (cmd & CMD_LEFT)
+	if (Left(cmd))
 	{
 		frontPos.x--;
 	}
-	else if (cmd & CMD_RIGHT)
+	else if (Right(cmd))
 	{
 		frontPos.x++;
 	}
-	if (cmd & CMD_UP)
+	if (Up(cmd))
 	{
 		frontPos.y--;
 	}
-	else if (cmd & CMD_DOWN)
+	else if (Down(cmd))
 	{
 		frontPos.y++;
 	}

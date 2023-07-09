@@ -979,8 +979,8 @@ void MenuProcessCmd(MenuSystem *ms, int cmd)
 	{
 		goto bail;
 	}
-	if (cmd == CMD_ESC || (cmd & CMD_BUTTON2) ||
-		((cmd & CMD_LEFT) && menu->u.normal.isSubmenusAlt))
+	if (cmd == CMD_ESC || Button2(cmd) ||
+		(Left(cmd) && menu->u.normal.isSubmenusAlt))
 	{
 		menuToChange = MenuProcessEscCmd(menu);
 		if (menuToChange != NULL)
@@ -1066,26 +1066,26 @@ menu_t *MenuProcessButtonCmd(MenuSystem *ms, menu_t *menu, int cmd)
 		case MENU_TYPE_NORMAL:
 		case MENU_TYPE_OPTIONS:
 		case MENU_TYPE_CUSTOM:
-			if (subMenu->u.normal.isSubmenusAlt ? (cmd & CMD_RIGHT)
-												: (cmd & CMD_BUTTON1))
+			if (subMenu->u.normal.isSubmenusAlt ? Right(cmd)
+												: (Button1(cmd)))
 			{
 				return subMenu;
 			}
 			break;
 		case MENU_TYPE_BACK:
-			if (cmd & CMD_BUTTON1)
+			if (Button1(cmd))
 			{
 				return menu->parentMenu;
 			}
 			break;
 		case MENU_TYPE_QUIT:
-			if (cmd & CMD_BUTTON1)
+			if (Button1(cmd))
 			{
 				return subMenu; // caller will check if subMenu type is QUIT
 			}
 			break;
 		case MENU_TYPE_RETURN:
-			if (cmd & CMD_BUTTON1)
+			if (Button1(cmd))
 			{
 				return subMenu;
 			}

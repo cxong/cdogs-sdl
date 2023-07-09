@@ -327,12 +327,12 @@ static int HandleInputEquipMenu(int cmd, void *data)
 	PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
 
 	int newSlot = d->slot;
-	if (cmd & CMD_BUTTON1)
+	if (Button1(cmd))
 	{
 		MenuPlaySound(MENU_SOUND_ENTER);
 		return 1;
 	}
-	else if (cmd & CMD_BUTTON2)
+	else if (Button2(cmd))
 	{
 		if (d->slot < MAX_WEAPONS)
 		{
@@ -341,7 +341,7 @@ static int HandleInputEquipMenu(int cmd, void *data)
 			AnimatedCounterReset(&d->Cash, p->Totals.Score);
 		}
 	}
-	else if (cmd & CMD_LEFT)
+	else if (Left(cmd))
 	{
 		if (d->slot < MAX_WEAPONS && (d->slot & 1) == 1)
 		{
@@ -360,7 +360,7 @@ static int HandleInputEquipMenu(int cmd, void *data)
 			}
 		}
 	}
-	else if (cmd & CMD_RIGHT)
+	else if (Right(cmd))
 	{
 		if (d->slot < MAX_WEAPONS && (d->slot & 1) == 0)
 		{
@@ -379,7 +379,7 @@ static int HandleInputEquipMenu(int cmd, void *data)
 			}
 		}
 	}
-	else if (cmd & CMD_UP)
+	else if (Up(cmd))
 	{
 		if (d->slot >= MAX_WEAPONS)
 		{
@@ -410,7 +410,7 @@ static int HandleInputEquipMenu(int cmd, void *data)
 			}
 		}
 	}
-	else if (cmd & CMD_DOWN)
+	else if (Down(cmd))
 	{
 		if (d->slot < d->endSlot)
 		{

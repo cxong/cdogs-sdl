@@ -288,7 +288,7 @@ static bool DidPlayerShoot(void)
 		continue;
 	}
 	const TActor *player = ActorGetByUID(p->ActorUID);
-	if (player->lastCmd & CMD_BUTTON1)
+	if (Button1(player->lastCmd))
 	{
 		return true;
 	}

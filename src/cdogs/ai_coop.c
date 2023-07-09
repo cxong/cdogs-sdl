@@ -95,7 +95,7 @@ int AICoopGetCmd(TActor *actor, const int ticks)
 			break;
 		}
 		// Don't slide
-		if ((cmd & CMD_BUTTON2) && CMD_HAS_DIRECTION(cmd))
+		if (Button2(cmd) && CMD_HAS_DIRECTION(cmd))
 		{
 			cmd &= ~CMD_BUTTON2;
 		}

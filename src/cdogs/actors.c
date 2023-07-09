@@ -995,10 +995,10 @@ static bool ActorTryChangeDirection(
 {
 	const bool willChangeDirecton =
 		!actor->petrified && CMD_HAS_DIRECTION(cmd) &&
-		(!(cmd & CMD_BUTTON2) ||
+		(!Button2(cmd) ||
 		 ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") !=
 			 SWITCHMOVE_STRAFE) &&
-		(!(prevCmd & CMD_BUTTON1) ||
+		(!Button1(prevCmd) ||
 		 ConfigGetEnum(&gConfig, "Game.FireMoveStyle") != FIREMOVE_STRAFE);
 	const direction_e dir = CmdToDirection(cmd);
 	if (willChangeDirecton && dir != actor->direction)
@@ -1015,7 +1015,7 @@ static bool ActorTryChangeDirection(
 
 static bool ActorTryShoot(TActor *actor, const int cmd)
 {
-	const bool willShoot = !actor->petrified && (cmd & CMD_BUTTON1);
+	const bool willShoot = !actor->petrified && Button1(cmd);
 	if (willShoot)
 	{
 		FireWeapon(actor, ACTOR_GET_GUN(actor));
@@ -1104,10 +1104,10 @@ void CommandActor(TActor *actor, int cmd, int ticks)
 	}
 
 	actor->specialCmdDir = CMD_HAS_DIRECTION(cmd);
-	if ((cmd & CMD_BUTTON2) && !actor->specialCmdDir)
+	if (Button2(cmd) && !actor->specialCmdDir)
 	{
 		// Special: pick up things that can only be picked up on demand
-		if (!actor->PickupAll && !(actor->lastCmd & CMD_BUTTON2) &&
+		if (!actor->PickupAll && !Button2(actor->lastCmd) &&
 			actor->vehicleUID == -1)
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_PICKUP_ALL);
@@ -1126,7 +1126,7 @@ static bool ActorTryMove(TActor *actor, int cmd, int ticks)
 		!actor->hasShot ||
 		(ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") ==
 			 SWITCHMOVE_STRAFE &&
-		 (cmd & CMD_BUTTON2));
+		 Button2(cmd));
 	const bool willMove =
 		!actor->petrified && CMD_HAS_DIRECTION(cmd) && canMoveWhenShooting;
 	actor->MoveVel = svec2_zero();
@@ -1134,13 +1134,13 @@ static bool ActorTryMove(TActor *actor, int cmd, int ticks)
 	{
 		const float moveAmount = ActorGetCharacter(actor)->speed * ticks;
 		struct vec2 moveVel = svec2_zero();
-		if (cmd & CMD_LEFT)
+		if (Left(cmd))
 			moveVel.x--;
-		else if (cmd & CMD_RIGHT)
+		else if (Right(cmd))
 			moveVel.x++;
-		if (cmd & CMD_UP)
+		if (Up(cmd))
 			moveVel.y--;
-		else if (cmd & CMD_DOWN)
+		else if (Down(cmd))
 			moveVel.y++;
 		if (!svec2_is_zero(moveVel))
 		{
@@ -1180,13 +1180,13 @@ void SlideActor(TActor *actor, int cmd)
 	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_SLIDE);
 	e.u.ActorSlide.UID = actor->uid;
 	struct vec2 vel = svec2_zero();
-	if (cmd & CMD_LEFT)
+	if (Left(cmd))
 		vel.x = -SLIDE_X;
-	else if (cmd & CMD_RIGHT)
+	else if (Right(cmd))
 		vel.x = SLIDE_X;
-	if (cmd & CMD_UP)
+	if (Up(cmd))
 		vel.y = -SLIDE_Y;
-	else if (cmd & CMD_DOWN)
+	else if (Down(cmd))
 		vel.y = SLIDE_Y;
 	e.u.ActorSlide.Vel = Vec2ToNet(vel);
 	GameEventsEnqueue(&gGameEvents, e);

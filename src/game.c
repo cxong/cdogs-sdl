@@ -76,7 +76,7 @@
 
 static void PlayerSpecialCommands(TActor *actor, const int cmd)
 {
-	if ((cmd & CMD_BUTTON2) && CMD_HAS_DIRECTION(cmd))
+	if (Button2(cmd) && CMD_HAS_DIRECTION(cmd))
 	{
 		if (ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") ==
 				SWITCHMOVE_SLIDE &&
@@ -86,7 +86,7 @@ static void PlayerSpecialCommands(TActor *actor, const int cmd)
 		}
 	}
 	else if (
-		!(actor->lastCmd & CMD_BUTTON2) && (cmd & CMD_BUTTON2) &&
+		!Button2(actor->lastCmd) && Button2(cmd) &&
 		!actor->specialCmdDir && !actor->CanPickupSpecial &&
 		!(ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") ==
 			  SWITCHMOVE_SLIDE &&

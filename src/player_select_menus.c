@@ -130,7 +130,7 @@ static int HandleInputNameMenu(int cmd, void *data)
 	PlayerSelectMenuData *d = data;
 	PlayerData *p = PlayerDataGetByUID(d->display.PlayerUID);
 
-	if (cmd & CMD_BUTTON1)
+	if (Button1(cmd))
 	{
 		if (d->nameMenuSelection == (int)strlen(letters))
 		{
@@ -157,7 +157,7 @@ static int HandleInputNameMenu(int cmd, void *data)
 			MenuPlaySound(MENU_SOUND_ERROR);
 		}
 	}
-	else if (cmd & CMD_BUTTON2)
+	else if (Button2(cmd))
 	{
 		if (p->name[0])
 		{
@@ -169,7 +169,7 @@ static int HandleInputNameMenu(int cmd, void *data)
 			MenuPlaySound(MENU_SOUND_ERROR);
 		}
 	}
-	else if (cmd & CMD_LEFT)
+	else if (Left(cmd))
 	{
 		if (d->nameMenuSelection > 0)
 		{
@@ -177,7 +177,7 @@ static int HandleInputNameMenu(int cmd, void *data)
 			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}
-	else if (cmd & CMD_RIGHT)
+	else if (Right(cmd))
 	{
 		if (d->nameMenuSelection < (int)strlen(letters))
 		{
@@ -185,7 +185,7 @@ static int HandleInputNameMenu(int cmd, void *data)
 			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}
-	else if (cmd & CMD_UP)
+	else if (Up(cmd))
 	{
 		if (d->nameMenuSelection >= ENTRY_COLS)
 		{
@@ -193,7 +193,7 @@ static int HandleInputNameMenu(int cmd, void *data)
 			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}
-	else if (cmd & CMD_DOWN)
+	else if (Down(cmd))
 	{
 		if (d->nameMenuSelection <= (int)strlen(letters) - ENTRY_COLS)
 		{
@@ -266,6 +266,7 @@ static void PostInputHeadPartMenu(menu_t *menu, int cmd, void *data)
 	const HeadPartMenuData *d = data;
 	// Change player hairstyle based on current menu selection
 	PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
+	CASSERT(p != NULL, "cannot find player");
 	Character *c = &p->Char;
 	const char *hpName = NULL;
 	if (menu->u.normal.index > 0)
@@ -429,7 +430,7 @@ static int HandleInputColorMenu(int cmd, void *data)
 
 static void PostInputLoadTemplate(menu_t *menu, int cmd, void *data)
 {
-	if (cmd & CMD_BUTTON1)
+	if (Button1(cmd))
 	{
 		PlayerSelectMenuData *d = data;
 		PlayerData *p = PlayerDataGetByUID(d->display.PlayerUID);
@@ -471,7 +472,7 @@ static menu_t *CreateUseTemplateMenu(
 
 static void PostInputSaveTemplate(menu_t *menu, int cmd, void *data)
 {
-	if (!(cmd & CMD_BUTTON1))
+	if (!Button1(cmd))
 	{
 		return;
 	}
@@ -674,7 +675,7 @@ static void PostInputRotatePlayer(menu_t *menu, int cmd, void *data)
 	UNUSED(menu);
 	MenuDisplayPlayerData *d = data;
 	// Rotate player using left/right keys
-	const int dx = (cmd & CMD_LEFT) ? 1 : ((cmd & CMD_RIGHT) ? -1 : 0);
+	const int dx = Left(cmd) ? 1 : (Right(cmd) ? -1 : 0);
 	if (dx != 0)
 	{
 		d->Dir = (direction_e)CLAMP_OPPOSITE(

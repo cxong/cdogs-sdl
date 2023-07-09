@@ -611,19 +611,19 @@ EventWaitResult EventWaitForAnyKeyOrButton(void)
 	GetPlayerCmds(&gEventHandlers, &cmds);
 	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
 	{
-		if (cmds[i] & (CMD_BUTTON1 | CMD_BUTTON2 | CMD_GRENADE))
+		if (AnyButton(cmds[i]))
 		{
 			// Interpret anything other than CMD_BUTTON1 as cancel
-			return WaitResult(cmds[i] & CMD_BUTTON1);
+			return WaitResult(Button1(cmds[i]));
 		}
 	}
 
 	// Check menu commands
 	const int menuCmd = GetMenuCmd(&gEventHandlers, true);
-	if (menuCmd & (CMD_BUTTON1 | CMD_BUTTON2 | CMD_GRENADE))
+	if (AnyButton(menuCmd))
 	{
 		// Interpret anything other than CMD_BUTTON1 as cancel
-		return WaitResult(menuCmd & CMD_BUTTON1);
+		return WaitResult(Button1(menuCmd));
 	}
 
 	// Check if anyone pressed escape

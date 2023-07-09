@@ -75,7 +75,7 @@
 #define Down(x) (((x)&CMD_DOWN) != 0)
 #define Button1(x) (((x)&CMD_BUTTON1) != 0)
 #define Button2(x) (((x)&CMD_BUTTON2) != 0)
-#define AnyButton(x) (((x) & (CMD_BUTTON1 | CMD_BUTTON2)) != 0)
+#define AnyButton(x) (((x) & (CMD_BUTTON1 | CMD_BUTTON2 | CMD_GRENADE)) != 0)
 #define CMD_DIRECTIONS (CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN)
 #define CMD_HAS_DIRECTION(x) ((x)&CMD_DIRECTIONS)
 

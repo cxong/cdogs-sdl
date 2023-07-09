@@ -104,7 +104,7 @@ static void OnSelect(menu_t *menu, int cmd, void *data)
 	const PlayerData *pData = PlayerDataGetByUID(d->PlayerUID);
 
 	d->SelectResult = UTIL_MENU_NONE;
-	if (cmd & CMD_BUTTON1)
+	if (Button1(cmd))
 	{
 		const Option option = GetSelectedOption(d);
 		const bool buy = (d->idx & 1) == 0;
@@ -152,7 +152,7 @@ static void OnSelect(menu_t *menu, int cmd, void *data)
 			SoundPlay(&gSoundDevice, StrSound("ammo_none"));
 		}
 	}
-	else if (cmd & CMD_BUTTON2)
+	else if (Button2(cmd))
 	{
 		d->SelectResult = UTIL_MENU_CANCEL;
 		MenuPlaySound(MENU_SOUND_BACK);
@@ -368,15 +368,15 @@ static int HandleInputMenu(int cmd, void *data)
 {
 	UtilMenu *d = data;
 
-	if (cmd & CMD_BUTTON1)
+	if (Button1(cmd))
 	{
 		// Do nothing; don't switch away from menu
 	}
-	else if (cmd & CMD_BUTTON2)
+	else if (Button2(cmd))
 	{
 		return 1;
 	}
-	else if (cmd & CMD_LEFT)
+	else if (Left(cmd))
 	{
 		if ((d->idx % 2) == 1)
 		{
@@ -384,7 +384,7 @@ static int HandleInputMenu(int cmd, void *data)
 			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}
-	else if (cmd & CMD_RIGHT)
+	else if (Right(cmd))
 	{
 		if (d->idx < OPTION_COUNT * 2 && (d->idx % 2) == 0)
 		{
@@ -392,7 +392,7 @@ static int HandleInputMenu(int cmd, void *data)
 			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}
-	else if (cmd & CMD_UP)
+	else if (Up(cmd))
 	{
 		if (d->idx >= 2)
 		{
@@ -400,7 +400,7 @@ static int HandleInputMenu(int cmd, void *data)
 			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}
-	else if (cmd & CMD_DOWN)
+	else if (Down(cmd))
 	{
 		if (d->idx + 2 < OPTION_COUNT * 2 + 2)
 		{

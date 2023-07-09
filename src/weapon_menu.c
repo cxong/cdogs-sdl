@@ -101,7 +101,7 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 	UNUSED(menu);
 	WeaponMenu *d = data;
 
-	if (cmd & CMD_BUTTON1)
+	if (Button1(cmd))
 	{
 		// Add the selected item
 		const PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
@@ -123,7 +123,7 @@ static void WeaponSelect(menu_t *menu, int cmd, void *data)
 			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}
-	else if (cmd & CMD_BUTTON2)
+	else if (Button2(cmd))
 	{
 		d->SelectResult = WEAPON_MENU_CANCEL;
 		MenuPlaySound(MENU_SOUND_BACK);
@@ -427,7 +427,7 @@ static int HandleInputMenu(int cmd, void *data)
 
 	const int numGuns = (int)d->weaponIndices.size;
 
-	if (cmd & CMD_BUTTON1)
+	if (Button1(cmd))
 	{
 		if (gCampaign.Setting.BuyAndSell)
 		{
@@ -440,11 +440,11 @@ static int HandleInputMenu(int cmd, void *data)
 		}
 		return 1;
 	}
-	else if (cmd & CMD_BUTTON2)
+	else if (Button2(cmd))
 	{
 		return 1;
 	}
-	else if (cmd & CMD_LEFT)
+	else if (Left(cmd))
 	{
 		if ((d->idx % d->cols) > 0)
 		{
@@ -452,7 +452,7 @@ static int HandleInputMenu(int cmd, void *data)
 			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}
-	else if (cmd & CMD_RIGHT)
+	else if (Right(cmd))
 	{
 		if ((d->idx % d->cols) < d->cols - 1 && numGuns > 0)
 		{
@@ -464,7 +464,7 @@ static int HandleInputMenu(int cmd, void *data)
 			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}
-	else if (cmd & CMD_UP)
+	else if (Up(cmd))
 	{
 		if (d->idx >= d->cols)
 		{
@@ -472,7 +472,7 @@ static int HandleInputMenu(int cmd, void *data)
 			MenuPlaySound(MENU_SOUND_SWITCH);
 		}
 	}
-	else if (cmd & CMD_DOWN)
+	else if (Down(cmd))
 	{
 		if ((d->idx + d->cols) < DIV_ROUND_UP(numGuns + 1, d->cols) * d->cols)
 		{

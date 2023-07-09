@@ -73,10 +73,10 @@ void CameraInput(Camera *camera, const int cmd, const int lastCmd)
 	{
 		camera->spectateMode = SPECTATE_FREE;
 		const int pan = PAN_SPEED;
-		if (cmd & CMD_LEFT)			camera->lastPosition.x -= pan;
-		else if (cmd & CMD_RIGHT)	camera->lastPosition.x += pan;
-		if (cmd & CMD_UP)			camera->lastPosition.y -= pan;
-		else if (cmd & CMD_DOWN)	camera->lastPosition.y += pan;
+		if (Left(cmd))			camera->lastPosition.x -= pan;
+		else if (Right(cmd))	camera->lastPosition.x += pan;
+		if (Up(cmd))			camera->lastPosition.y -= pan;
+		else if (Down(cmd))		camera->lastPosition.y += pan;
 	}
 	else if ((AnyButton(cmd) && !AnyButton(lastCmd)) ||
 		camera->FollowNextPlayer)
@@ -97,7 +97,7 @@ void CameraInput(Camera *camera, const int cmd, const int lastCmd)
 			}
 		CA_FOREACH_END()
 		// Get the next player by index that has an actor in the game
-		const int d = (cmd & CMD_BUTTON1) ? 1 : -1;
+		const int d = Button1(cmd) ? 1 : -1;
 		for (int i = playerIndex + d;; i += d)
 		{
 			i = CLAMP_OPPOSITE(i, 0, (int)gPlayerDatas.size - 1);

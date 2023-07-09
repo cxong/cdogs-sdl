@@ -54,14 +54,14 @@
 
 int CmdGetReverse(int cmd)
 {
-	int newCmd = cmd & ~(CMD_LEFT | CMD_RIGHT | CMD_UP | CMD_DOWN);
-	if (cmd & CMD_LEFT)
+	int newCmd = cmd & ~CMD_DIRECTIONS;
+	if (Left(cmd))
 		newCmd |= CMD_RIGHT;
-	if (cmd & CMD_RIGHT)
+	if (Right(cmd))
 		newCmd |= CMD_LEFT;
-	if (cmd & CMD_UP)
+	if (Up(cmd))
 		newCmd |= CMD_DOWN;
-	if (cmd & CMD_DOWN)
+	if (Down(cmd))
 		newCmd |= CMD_UP;
 	return newCmd;
 }
