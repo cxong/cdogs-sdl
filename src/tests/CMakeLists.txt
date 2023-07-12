@@ -25,6 +25,18 @@ target_link_libraries(animated_counter_test
 	${EXTRA_LIBRARIES})
 add_test(NAME animated_counter_test COMMAND animated_counter_test)
 
+add_executable(actor_test
+	actor_test.c
+	../cdogs/actors.h
+	../cdogs/actors.c)
+target_link_libraries(actor_test
+	cbehave
+	cdogs
+	cdogs_proto
+	SDL2::SDL2
+	${EXTRA_LIBRARIES})
+add_test(NAME actor_test COMMAND actor_test)
+
 add_executable(autosave_test
 	autosave_test.c
 	../autosave.h

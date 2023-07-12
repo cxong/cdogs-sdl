@@ -36,7 +36,7 @@
 
 WeaponClasses gWeaponClasses;
 
-static const char *GunTypeStr(const GunType t)
+const char *GunTypeStr(const GunType t)
 {
 	switch (t)
 	{
@@ -49,9 +49,26 @@ static const char *GunTypeStr(const GunType t)
 	}
 }
 
+void GunTypeGetSlotStartEnd(const GunType gt, int *start, int *end)
+{
+	switch (gt)
+	{
+	case GUNTYPE_MELEE:
+		*start = *end = MELEE_SLOT;
+		break;
+	case GUNTYPE_GRENADE:
+		*start = *end = GRENADE_SLOT;
+		break;
+	default:
+		*start = 0;
+		*end = 1;
+		break;
+	}
+}
+
 // Initialise all the static weapon data
 #define VERSION 3
-void WeaponClassesInitialize(WeaponClasses *wcs)
+	void WeaponClassesInitialize(WeaponClasses *wcs)
 {
 	memset(wcs, 0, sizeof *wcs);
 	CArrayInit(&wcs->Guns, sizeof(WeaponClass));
@@ -691,7 +708,8 @@ static const WeaponClass *FindAncestor(const WeaponClass *wc)
 bool WeaponClassesAreRelated(const WeaponClass *wc1, const WeaponClass *wc2)
 {
 	// Find the ancestors of both, and check if they match
-	return wc1 != NULL && wc2 != NULL && FindAncestor(wc1) == FindAncestor(wc2);
+	return wc1 != NULL && wc2 != NULL &&
+		   FindAncestor(wc1) == FindAncestor(wc2);
 }
 
 int WeaponClassFullPrice(const WeaponClass *wc)

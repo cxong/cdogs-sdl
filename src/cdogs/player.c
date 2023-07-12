@@ -519,7 +519,7 @@ int PlayerGetNumWeapons(const PlayerData *p)
 
 bool PlayerHasGrenadeButton(const PlayerData *p)
 {
-	return InputHasGrenadeButton(p->inputDevice, p->deviceIndex);
+	return p && InputHasGrenadeButton(p->inputDevice, p->deviceIndex);
 }
 
 bool PlayerHasWeapon(const PlayerData *p, const WeaponClass *wc)

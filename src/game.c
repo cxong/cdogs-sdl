@@ -103,9 +103,7 @@ static void PlayerSpecialCommands(TActor *actor, const int cmd)
 		}
 		else
 		{
-			const PlayerData *p = PlayerDataGetByUID(actor->PlayerUID);
-			const bool allGuns = p == NULL || !PlayerHasGrenadeButton(p);
-			ActorTrySwitchWeapon(actor, allGuns);
+			ActorTrySwitchWeapon(actor);
 		}
 	}
 }

@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2022 Cong Xu
+	Copyright (c) 2013-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -809,6 +809,12 @@ bool ActorUsesAmmo(const TActor *actor, const int ammoId)
 	return false;
 }
 
+static void ActorSetChatter(TActor *a, const char *text, const int count)
+{
+	strcpy(a->Chatter, text);
+	a->ChatterCounter = count;
+}
+
 void ActorReplaceGun(const NActorReplaceGun rg)
 {
 	TActor *a = ActorGetByUID(rg.UID);
@@ -826,13 +832,12 @@ void ActorReplaceGun(const NActorReplaceGun rg)
 	Weapon w = WeaponCreate(wc);
 	memcpy(&a->guns[rg.GunIdx], &w, sizeof w);
 	// Switch immediately to picked up gun
-	const PlayerData *p = PlayerDataGetByUID(a->PlayerUID);
-	if (wc->Type != GUNTYPE_GRENADE || !PlayerHasGrenadeButton(p))
+	if (ActorCanSwitchToWeapon(a, rg.GunIdx))
 	{
 		a->gunIndex = rg.GunIdx;
 	}
-
 	SoundPlayAt(&gSoundDevice, wc->SwitchSound, a->Pos);
+	ActorSetChatter(a, wc->name, CHATTER_SWITCH_GUN);
 }
 
 int ActorFindGun(const TActor *a, const WeaponClass *wc)
@@ -882,12 +887,6 @@ int ActorGetNumGrenades(const TActor *a)
 		}
 	}
 	return count;
-}
-
-static void ActorSetChatter(TActor *a, const char *text, const int count)
-{
-	strcpy(a->Chatter, text);
-	a->ChatterCounter = count;
 }
 
 // Set AI state and possibly say something based on the state
@@ -1683,7 +1682,7 @@ TActor *ActorAdd(NActorAdd aa)
 			AmmoGetById(&gAmmo, i)->Amount * AMMO_STARTING_MULTIPLE;
 		CArrayPushBack(&actor->ammo, &amount);
 	}
-	if (gMission.missionData->WeaponPersist)
+	if (gMission.missionData && gMission.missionData->WeaponPersist)
 	{
 		for (int i = 0; i < aa.Ammo_count; i++)
 		{
@@ -1770,12 +1769,22 @@ TActor *ActorAdd(NActorAdd aa)
 		ActorSetAIState(actor, AI_STATE_IDLE);
 	}
 
-	EmitterInit(
-		&actor->barrelSmoke, StrParticleClass(&gParticleClasses, "smoke"),
-		svec2_zero(), -0.05f, 0.05f, 3, 3, 0, 0, 10);
-	EmitterInit(
-		&actor->healEffect, StrParticleClass(&gParticleClasses, "health_plus"),
-		svec2_zero(), -0.1f, 0.1f, 0, 0, 0, 0, 0);
+	const ParticleClass *barrelSmoke =
+		StrParticleClass(&gParticleClasses, "smoke");
+	if (barrelSmoke)
+	{
+		EmitterInit(
+			&actor->barrelSmoke, barrelSmoke, svec2_zero(), -0.05f, 0.05f, 3,
+			3, 0, 0, 10);
+	}
+	const ParticleClass *healthPlus =
+		StrParticleClass(&gParticleClasses, "health_plus");
+	if (healthPlus)
+	{
+		EmitterInit(
+			&actor->healEffect, healthPlus, svec2_zero(), -0.1f, 0.1f, 0, 0, 0,
+			0, 0);
+	}
 	GoreEmitterInit(&actor->blood1, "blood1");
 	GoreEmitterInit(&actor->blood2, "blood2");
 	GoreEmitterInit(&actor->blood3, "blood3");
@@ -1871,7 +1880,7 @@ int ActorGetCanFireBarrel(const TActor *a, const Weapon *w)
 	}
 	return barrel;
 }
-static bool CanSwitchToWeapon(const TActor *a, const int slot)
+bool ActorCanSwitchToWeapon(const TActor *a, const int slot)
 {
 	const WeaponClass *wc = a->guns[slot].Gun;
 	if (wc == NULL)
@@ -1901,20 +1910,23 @@ static bool CanSwitchToWeapon(const TActor *a, const int slot)
 			}
 		}
 	}
+	// Don't switch to grenade, unless the player has no grenade button
+	if (slot == GRENADE_SLOT)
+	{
+		const PlayerData *p = PlayerDataGetByUID(a->PlayerUID);
+		return !PlayerHasGrenadeButton(p);
+	}
 	return true;
 }
-bool ActorTrySwitchWeapon(const TActor *a, const bool allGuns)
+bool ActorTrySwitchWeapon(const TActor *a)
 {
 	// Find the next weapon to switch to
-	// If the player does not have a grenade key set, allow switching to
-	// grenades (classic style)
-	const int switchCount = allGuns ? MAX_WEAPONS : MAX_GUNS;
 	const int startIndex = ActorGetNumGuns(a) > 0 ? a->gunIndex : MAX_GUNS;
 	int weaponIndex = startIndex;
 	do
 	{
-		weaponIndex = (weaponIndex + 1) % switchCount;
-	} while (!CanSwitchToWeapon(a, weaponIndex));
+		weaponIndex = (weaponIndex + 1) % MAX_WEAPONS;
+	} while (!ActorCanSwitchToWeapon(a, weaponIndex));
 	if (weaponIndex == startIndex)
 	{
 		// No other weapon to switch to
@@ -1940,6 +1952,81 @@ void ActorSwitchGun(const NActorSwitchGun sg)
 	const WeaponClass *gun = ACTOR_GET_WEAPON(a)->Gun;
 	SoundPlayAt(&gSoundDevice, gun->SwitchSound, a->thing.Pos);
 	ActorSetChatter(a, gun->name, CHATTER_SWITCH_GUN);
+}
+
+void ActorPickupGun(const TActor *a, const WeaponClass *wc)
+{
+	int actorsGunIdx = ActorFindGun(a, wc);
+	if (actorsGunIdx >= 0)
+	{
+		// Actor already has gun
+
+		// Switch to the same gun
+		if (ActorCanSwitchToWeapon(a, actorsGunIdx))
+		{
+			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_SWITCH_GUN);
+			e.u.ActorSwitchGun.UID = a->uid;
+			e.u.ActorSwitchGun.GunIdx = actorsGunIdx;
+			GameEventsEnqueue(&gGameEvents, e);
+		}
+
+		// Drop the same gun
+		PickupAddGun(wc, a->Pos);
+	}
+	else
+	{
+		// Make sure weapons are picked up in the correct slot
+		int slotStart, slotEnd;
+		GunTypeGetSlotStartEnd(wc->Type, &slotStart, &slotEnd);
+		if (actorsGunIdx < slotStart || actorsGunIdx > slotEnd)
+		{
+			actorsGunIdx = slotStart;
+		}
+
+		// Pickup gun
+		// Replace the current gun, unless there's a free slot, in which case
+		// pick up into the free spot
+		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_REPLACE_GUN);
+		e.u.ActorReplaceGun.UID = a->uid;
+		strcpy(e.u.ActorReplaceGun.Gun, wc->name);
+		switch (wc->Type)
+		{
+		case GUNTYPE_MELEE:
+			e.u.ActorReplaceGun.GunIdx = MELEE_SLOT;
+			break;
+		case GUNTYPE_GRENADE:
+			e.u.ActorReplaceGun.GunIdx = GRENADE_SLOT;
+			break;
+		default:
+			if (a->gunIndex < MELEE_SLOT)
+			{
+				e.u.ActorReplaceGun.GunIdx = a->gunIndex;
+			}
+			else
+			{
+				e.u.ActorReplaceGun.GunIdx = 0;
+			}
+			break;
+		}
+		int replaceGunIndex = e.u.ActorReplaceGun.GunIdx;
+		for (int i = slotStart; i <= slotEnd; i++)
+		{
+			if (a->guns[i].Gun == NULL)
+			{
+				e.u.ActorReplaceGun.GunIdx = i;
+				replaceGunIndex = -1;
+				break;
+			}
+		}
+		GameEventsEnqueue(&gGameEvents, e);
+
+		// If replacing a gun, "drop" the gun being replaced (i.e. create a gun
+		// pickup)
+		if (replaceGunIndex >= 0)
+		{
+			PickupAddGun(a->guns[replaceGunIndex].Gun, a->Pos);
+		}
+	}
 }
 
 bool ActorIsImmune(const TActor *actor, const special_damage_e damage)

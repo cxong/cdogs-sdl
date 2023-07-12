@@ -31,6 +31,7 @@
 
 #define MAX_GUNS 3
 #define MELEE_SLOT 2
+#define GRENADE_SLOT 3
 #define MAX_GRENADES 1
 #define MAX_WEAPONS (MAX_GUNS + MAX_GRENADES)
 // TODO: track accuracy

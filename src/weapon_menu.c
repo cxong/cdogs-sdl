@@ -49,15 +49,9 @@
 
 static bool InSlot(const WeaponClass *wc, const int slot)
 {
-	if (slot < MELEE_SLOT)
-	{
-		return wc->Type == GUNTYPE_NORMAL || wc->Type == GUNTYPE_MULTI;
-	}
-	else if (slot == MELEE_SLOT)
-	{
-		return wc->Type == GUNTYPE_MELEE;
-	}
-	return wc->Type == GUNTYPE_GRENADE;
+	int slotStart, slotEnd;
+	GunTypeGetSlotStartEnd(wc->Type, &slotStart, &slotEnd);
+	return slot >= slotStart && slot <= slotEnd;
 }
 
 static const WeaponClass *GetSelectedGun(const WeaponMenu *menu)
@@ -269,7 +263,8 @@ static void DrawMenu(
 		const DrawGunMeta *meta = CArrayGet(&d->weaponMeta, *idx);
 		const WeaponClass **wc = CArrayGet(d->weapons, *idx);
 		DrawGun(
-			d, g, _ca_index, *wc, *meta, svec2i(pos.x, pos.y + weaponsY), bgSize);
+			d, g, _ca_index, *wc, *meta, svec2i(pos.x, pos.y + weaponsY),
+			bgSize);
 	}
 	if (_ca_index / d->cols == d->scroll + WEAPON_MENU_MAX_ROWS)
 	{
@@ -331,7 +326,8 @@ static void DrawMenu(
 	{
 		// Draw "none" gun which can be used to unequip this slot
 		DrawGun(
-			d, g, (int)d->weaponIndices.size, NULL, false, svec2i(pos.x, pos.y + weaponsY), bgSize);
+			d, g, (int)d->weaponIndices.size, NULL, false,
+			svec2i(pos.x, pos.y + weaponsY), bgSize);
 	}
 }
 static void DrawGun(
@@ -392,7 +388,7 @@ static void DrawGun(
 		sprintf(buf, "$%d", wc->Price);
 		FontStrOpt(buf, bgPos, foptsP);
 	}
-	
+
 	const Pic *arrow = PicManagerGetPic(&gPicManager, "hud/arrow");
 	const struct vec2i metaPos = svec2i(bgPos.x + GUN_BG_W - 6, bgPos.y + 5);
 	const struct vec2i arrowPos = svec2i(metaPos.x - 4, metaPos.y);
@@ -404,10 +400,14 @@ static void DrawGun(
 		DrawCross(g, metaPos, colorGreen);
 		break;
 	case META_UPGRADE:
-		PicRender(arrow, g->gameWindow.renderer, arrowPos, colorGreen, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
+		PicRender(
+			arrow, g->gameWindow.renderer, arrowPos, colorGreen, 0,
+			svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 		break;
 	case META_DOWNGRADE:
-		PicRender(arrow, g->gameWindow.renderer, arrowPos, colorRed, 0, svec2_one(), SDL_FLIP_VERTICAL, Rect2iZero());
+		PicRender(
+			arrow, g->gameWindow.renderer, arrowPos, colorRed, 0, svec2_one(),
+			SDL_FLIP_VERTICAL, Rect2iZero());
 		break;
 	default:
 		CASSERT(false, "unexpected");
@@ -498,7 +498,7 @@ void WeaponMenuReset(WeaponMenu *menu)
 	const PlayerData *pData = PlayerDataGetByUID(menu->PlayerUID);
 	menu->idx = 0;
 	const WeaponClass *equipped = pData->guns[menu->slot];
-	
+
 	// Find out which weapons are new/upgrades/downgrades
 	CArrayTerminate(&menu->weaponMeta);
 	CArrayInit(&menu->weaponMeta, sizeof(DrawGunMeta));
@@ -523,7 +523,7 @@ void WeaponMenuReset(WeaponMenu *menu)
 	// Get the weapon indices available for this slot
 	CArrayTerminate(&menu->weaponIndices);
 	CArrayInit(&menu->weaponIndices, sizeof(int));
-	
+
 	// Add the equipped weapon's upgrades and downgrades first
 	if (equipped != NULL)
 	{
@@ -556,8 +556,9 @@ void WeaponMenuReset(WeaponMenu *menu)
 		// Don't add other related weapons
 		continue;
 	}
-	else if (WeaponClassGetPrerequisite(*wc) != NULL &&
-		 !PlayerHasWeapon(pData, *wc))
+	else if (
+		WeaponClassGetPrerequisite(*wc) != NULL &&
+		!PlayerHasWeapon(pData, *wc))
 	{
 		// Don't add weapons that are upgrades and the player doesn't have
 		continue;

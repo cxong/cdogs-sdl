@@ -51,15 +51,9 @@
 
 static bool InSlot(const WeaponClass *wc, const int slot)
 {
-	if (slot < MELEE_SLOT)
-	{
-		return wc->Type == GUNTYPE_NORMAL || wc->Type == GUNTYPE_MULTI;
-	}
-	else if (slot == MELEE_SLOT)
-	{
-		return wc->Type == GUNTYPE_MELEE;
-	}
-	return wc->Type == GUNTYPE_GRENADE;
+	int slotStart, slotEnd;
+	GunTypeGetSlotStartEnd(wc->Type, &slotStart, &slotEnd);
+	return slot >= slotStart && slot <= slotEnd;
 }
 
 static int CountNumGuns(const EquipMenu *data, const int slot)
