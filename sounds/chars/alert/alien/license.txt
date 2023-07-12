@@ -2,4 +2,4 @@
 1
 Small pest alien/creature
 http://opengameart.org/content/small-pest-aliencreature
-http://creativecommons.org/licenses/by/3.0/
+http://creativecommons.org/publicdomain/zero/1.0/
