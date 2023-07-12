@@ -230,7 +230,7 @@ const ParticleClass *StrParticleClass(
 		return c;
 	}
 	CA_FOREACH_END()
-	CASSERT(false, "Cannot find particle class");
+	LOG(LM_MAIN, LL_ERROR, "Cannot find particle class %s", name);
 	return NULL;
 }
 

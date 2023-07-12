@@ -59,7 +59,8 @@ typedef enum
 	GUNTYPE_NORMAL,
 	GUNTYPE_MELEE,
 	GUNTYPE_GRENADE,
-	GUNTYPE_MULTI
+	GUNTYPE_MULTI,
+	GUNTYPE_COUNT
 } GunType;
 
 // Gun states
@@ -111,7 +112,7 @@ typedef struct
 	} u;
 	char *name;
 	char *Description;
-	char *Prerequisite;	// WeaponClass
+	char *Prerequisite; // WeaponClass
 	int Lock;
 	Mix_Chunk *SwitchSound;
 	bool CanDrop;	// whether this gun can be dropped to be picked up
@@ -126,6 +127,9 @@ typedef struct
 } WeaponClasses;
 
 extern WeaponClasses gWeaponClasses;
+
+const char *GunTypeStr(const GunType t);
+void GunTypeGetSlotStartEnd(const GunType gt, int *start, int *end);
 
 void WeaponClassesInitialize(WeaponClasses *wcs);
 void WeaponClassesLoadJSON(WeaponClasses *wcs, CArray *classes, json_t *root);

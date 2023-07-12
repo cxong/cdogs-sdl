@@ -354,81 +354,8 @@ static bool TryPickupGun(
 		pe->Type == PICKUP_GUN
 			? IdWeaponClass(pe->u.GunId)
 			: StrWeaponClass(AmmoGetById(&gAmmo, pe->u.Ammo.Id)->DefaultGun);
-	const int actorsGunIdx = ActorFindGun(a, wc);
 
-	// Make sure weapons are picked up in the correct slot
-	if (actorsGunIdx >= 0 && wc->Type == GUNTYPE_MELEE)
-	{
-		a->gunIndex = MELEE_SLOT;
-	}
-	if (a->gunIndex == MELEE_SLOT && (wc->Type == GUNTYPE_NORMAL || wc->Type == GUNTYPE_MULTI))
-	{
-			a->gunIndex = 0;
-	}
-	if (a->gunIndex == MAX_GUNS)
-	{
-		if (wc->Type == GUNTYPE_NORMAL || wc->Type == GUNTYPE_MULTI)
-		{
-			a->gunIndex = 0;
-		}
-		if (wc->Type == GUNTYPE_MELEE)
-		{
-			a->gunIndex = MELEE_SLOT;
-		}
-	}
-
-	if (actorsGunIdx >= 0)
-	{
-		// Actor already has gun
-
-		// Switch to the same gun
-		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_SWITCH_GUN);
-		e.u.ActorSwitchGun.UID = a->uid;
-		e.u.ActorSwitchGun.GunIdx = actorsGunIdx;
-		GameEventsEnqueue(&gGameEvents, e);
-
-		// Drop the same gun
-		PickupAddGun(wc, a->Pos);
-	}
-	else
-	{
-		// Pickup gun
-		// Replace the current gun, unless there's a free slot, in which case
-		// pick up into the free spot
-		const int weaponIndexStart =
-			wc->Type == GUNTYPE_GRENADE
-				? MAX_GUNS
-				: (wc->Type == GUNTYPE_MELEE ? MELEE_SLOT : 0);
-		const int weaponIndexEnd =
-			wc->Type == GUNTYPE_GRENADE
-				? MAX_WEAPONS
-				: (wc->Type == GUNTYPE_MELEE ? MELEE_SLOT + 1 : MELEE_SLOT);
-		GameEvent e = GameEventNew(GAME_EVENT_ACTOR_REPLACE_GUN);
-		e.u.ActorReplaceGun.UID = a->uid;
-		strcpy(e.u.ActorReplaceGun.Gun, wc->name);
-		e.u.ActorReplaceGun.GunIdx =
-			wc->Type == GUNTYPE_GRENADE
-				? MAX_GUNS
-				: (wc->Type == GUNTYPE_MELEE ? MELEE_SLOT : a->gunIndex);
-		int replaceGunIndex = e.u.ActorReplaceGun.GunIdx;
-		for (int i = weaponIndexStart; i < weaponIndexEnd; i++)
-		{
-			if (a->guns[i].Gun == NULL)
-			{
-				e.u.ActorReplaceGun.GunIdx = i;
-				replaceGunIndex = -1;
-				break;
-			}
-		}
-		GameEventsEnqueue(&gGameEvents, e);
-
-		// If replacing a gun, "drop" the gun being replaced (i.e. create a gun
-		// pickup)
-		if (replaceGunIndex >= 0)
-		{
-			PickupAddGun(a->guns[replaceGunIndex].Gun, a->Pos);
-		}
-	}
+	ActorPickupGun(a, wc);
 
 	// If the player has less ammo than the default amount,
 	// replenish up to this amount

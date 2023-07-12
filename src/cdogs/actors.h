@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2022 Cong Xu
+	Copyright (c) 2013-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -125,10 +125,10 @@ typedef struct Actor
 	// -1 if human character (get from player data), otherwise index into
 	// CharacterStore OtherChars
 	int charId;
-	int PlayerUID;	// -1 unless a human player
-	int uid;		// unique ID across all actors
-	int pilotUID;	// the actor that controls this
-					// (same as uid for normal actors)
+	int PlayerUID; // -1 unless a human player
+	int uid;	   // unique ID across all actors
+	int pilotUID;  // the actor that controls this
+				  // (same as uid for normal actors)
 	int vehicleUID; // -1 unless piloting a vehicle
 	Weapon guns[MAX_WEAPONS];
 	CArray ammo; // of int
@@ -228,13 +228,15 @@ int ActorWeaponGetAmmo(
 	const TActor *a, const WeaponClass *wc, const int barrel);
 // Returns -1 if no barrels can fire
 int ActorGetCanFireBarrel(const TActor *a, const Weapon *w);
-bool ActorTrySwitchWeapon(const TActor *a, const bool allGuns);
+bool ActorCanSwitchToWeapon(const TActor *a, const int slot);
+bool ActorTrySwitchWeapon(const TActor *a);
 // Returns -1 if actor doesn't have gun
 int ActorFindGun(const TActor *a, const WeaponClass *wc);
 int ActorGetNumWeapons(const TActor *a);
 int ActorGetNumGuns(const TActor *a);
 int ActorGetNumGrenades(const TActor *a);
 void ActorSwitchGun(const NActorSwitchGun sg);
+void ActorPickupGun(const TActor *a, const WeaponClass *wc);
 bool ActorIsImmune(const TActor *actor, const special_damage_e damage);
 bool ActorTakesDamage(const TActor *actor, const special_damage_e damage);
 void ActorHit(const NThingDamage d);
