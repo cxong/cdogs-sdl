@@ -1,9 +1,3 @@
-awake10_megaWall.ogg
-Awake! (Megawall-10)
-by http://cynicmusic.com http://pixelsphere.org
-http://opengameart.org/content/awake-megawall-10
-http://creativecommons.org/publicdomain/zero/1.0/
-
 graphics/armor_bonus.png
 graphics/health_bonus.png
 Derived from Dungeon Crawl 32x32 tiles
@@ -28,13 +22,13 @@ sounds/bfg.ogg
 x_explosion.wav
 by cubicApocalypse
 http://freesound.org/people/cubicApocalypse/sounds/256658/
-http://creativecommons.org/licenses/by/3.0/
+http://creativecommons.org/licenses/by/4.0/
 
 sounds/bfg_hit.ogg
 DSRXPLOD.WAV
 by wildweasel
 http://freesound.org/people/wildweasel/sounds/39020/
-http://creativecommons.org/licenses/by/3.0/
+http://creativecommons.org/licenses/by/4.0/
 
 sounds/sshotgun.ogg
 sounds/sshotgun_r.ogg
