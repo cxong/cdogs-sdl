@@ -96,7 +96,7 @@
       "Name": "Gas bombs",
       "Pic": {
         "Type": "Normal",
-        "Pic": "confusion_grenade"
+        "Pic": "gas_grenade_pickup"
       },
       "Sound": "grenade_pickup",
       "Amount": 5,
