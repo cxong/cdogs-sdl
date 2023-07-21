@@ -28,13 +28,13 @@ sounds/bfg.ogg
 x_explosion.wav
 by cubicApocalypse
 http://freesound.org/people/cubicApocalypse/sounds/256658/
-http://creativecommons.org/licenses/by/3.0/
+http://creativecommons.org/licenses/by/4.0/
 
 sounds/bfg_hit.ogg
 DSRXPLOD.WAV
 by wildweasel
 http://freesound.org/people/wildweasel/sounds/39020/
-http://creativecommons.org/licenses/by/3.0/
+http://creativecommons.org/licenses/by/4.0/
 
 sounds/sshotgun.ogg
 sounds/sshotgun_r.ogg
