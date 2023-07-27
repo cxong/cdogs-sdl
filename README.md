@@ -23,7 +23,7 @@ For more information about the original C-Dogs read [`original\_readme.txt`](htt
 
 [C-Dogs](https://en.wikipedia.org/wiki/C-Dogs) is a freeware DOS game made between 1997-2001 by Ronny Wester, who's also known for making Cyberdogs (1994). Although relatively obscure, it was one of the more well-known games of its kind, and built a small following with many fans creating custom campaigns for it. Players loved it for its simple yet addictive gameplay and wicked explosions.
 
-![Explosions](https://github.com/cxong/cdogs-sdl/blob/gh-pages/_posts/shake.gif)
+![Player running around with knife](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/automelee.gif)
 
 - Internet Archive: http://web.archive.org/web/20050305054405/http://www.orcsoftware.com/~ronny/C-Dogs.html
 
