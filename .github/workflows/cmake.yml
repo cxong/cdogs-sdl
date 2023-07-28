@@ -11,7 +11,7 @@ on:
     types: [published, created, edited]
 
 env:
-  VERSION: 1.4.2
+  VERSION: 1.5.0
   CTEST_EXT_COLOR_OUTPUT: TRUE
   CTEST_OUTPUT_ON_FAILURE: 1
   CTEST_BUILD_FLAGS: -j4
