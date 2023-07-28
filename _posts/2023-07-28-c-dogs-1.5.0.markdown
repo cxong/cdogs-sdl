@@ -1,0 +1,28 @@
+---
+layout: post
+title:  "C-Dogs 1.5.0 Released!"
+date:   2023-07-28
+categories: release
+---
+
+It's a C-Dogs SDL release! With one minor feature: **customize hats, hair, facial hair and glasses**!
+
+![cranial accessories](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/cranial_accessories.gif)
+
+Plus a big bunch of fixes and enhancements! Thanks to [@Kurtsley](https://github.com/Kurtsley), [@PavanLuca](https://github.com/PavanLuca) and [@reinerh](https://github.com/reinerh) for fixing/raising them 💪
+
+And finally, a controversial feature removal: **quickplay**!
+
+Quickplay was a mode that was added way way back in version 0.5.2. It let players jump into a randomly generated level and start running and gunning, without having to choose a campaign. It was slightly improved over the years but the premise stayed the same: get started quickly and shoot up some bad guys.
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/AY4Ujdl68HI" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+However lots of players new to C-Dogs would pick this mode first, and walk away unimpressed by the game, thinking it's just a simple shooting game. But with dozens of high quality campaigns, mods, even the ability to play Wolfenstein 3D and Spear of Destiny, this was a highly inaccurate impression!
+
+Therefore I've made the decision to hide the feature entirely - you can't play it unless you re-enable it via the source code. I could consider adding it back if enough people ask me to, or if we can greatly improve its quality.
+
+And by the way, C-Dogs SDL is on Mastodon 🐘! Join and follow the [#CDogsSDL tag](https://mastodon.gamedev.place/tags/CDogsSDL) to get more frequent updates, news and cool screenshots!
+
+Download free from itch.io: <https://congusbongus.itch.io/cdogs-sdl/purchase>
+
+Release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/1.5.0>
