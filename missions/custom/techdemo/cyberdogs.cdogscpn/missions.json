@@ -42,7 +42,7 @@
 			"Density": 30
 		}],
 		"EnemyDensity": 13,
-		"Weapons": ["Barehanded",
+		"Weapons": ["Fists",
 		"Chainsaw",
 		"2xChainsaw",
 		"3xChainsaw",
@@ -176,7 +176,7 @@
 			"Density": 30
 		}],
 		"EnemyDensity": 13,
-		"Weapons": ["Barehanded",
+		"Weapons": ["Fists",
 		"Chainsaw",
 		"2xChainsaw",
 		"3xChainsaw",
@@ -310,7 +310,7 @@
 			"Density": 30
 		}],
 		"EnemyDensity": 13,
-		"Weapons": ["Barehanded",
+		"Weapons": ["Fists",
 		"Chainsaw",
 		"2xChainsaw",
 		"3xChainsaw",
@@ -444,7 +444,7 @@
 			"Density": 30
 		}],
 		"EnemyDensity": 13,
-		"Weapons": ["Barehanded",
+		"Weapons": ["Fists",
 		"Chainsaw",
 		"2xChainsaw",
 		"3xChainsaw",
@@ -574,7 +574,7 @@
 			"Density": 30
 		}],
 		"EnemyDensity": 13,
-		"Weapons": ["Barehanded",
+		"Weapons": ["Fists",
 		"Chainsaw",
 		"2xChainsaw",
 		"3xChainsaw",
