@@ -150,7 +150,7 @@ static int CompareY(const void *v1, const void *v2)
 	{
 		return -1;
 	}
-	else if ((*t1)->Pos.y >(*t2)->Pos.y)
+	else if ((*t1)->Pos.y > (*t2)->Pos.y)
 	{
 		return 1;
 	}

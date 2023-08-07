@@ -296,11 +296,10 @@ static void LoadWeaponClass(WeaponClass *wc, json_t *node, const int version)
 		LoadFloat(&wc->u.Normal.Spread.Width, node, "SpreadWidth");
 		LoadFloat(&wc->u.Normal.AngleOffset, node, "AngleOffset");
 
-		int muzzleHeight = 0;
-		LoadInt(&muzzleHeight, node, "MuzzleHeight");
-		if (muzzleHeight)
+		if (json_find_first_label(node, "MuzzleHeight"))
 		{
-			wc->u.Normal.MuzzleHeight = muzzleHeight * Z_FACTOR;
+			LoadInt(&wc->u.Normal.MuzzleHeight, node, "MuzzleHeight");
+			wc->u.Normal.MuzzleHeight *= Z_FACTOR;
 		}
 		if (json_find_first_label(node, "Elevation"))
 		{
