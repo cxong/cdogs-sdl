@@ -1,0 +1,32 @@
+{
+  "Version": 3,
+  "MapObjects": [
+    {
+      "Name": "crate",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "crate"
+      },
+      "Wreck": "crate_wreck",
+      "Health": 30
+    },
+    {
+      "Name": "box",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "box"
+      },
+      "Wreck": "box_wreck",
+      "Health": 20
+    },
+    {
+      "Name": "box3_gray",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "box3_gray"
+      },
+      "Wreck": "box3_gray_wreck",
+      "Health": 30
+    }
+  ]
+}
