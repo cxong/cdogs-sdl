@@ -169,7 +169,7 @@ void UpdateActorState(TActor *actor, int ticks)
 				e.u.AddPickup.Pos = Vec2ToNet(actor->Pos);
 				GameEventsEnqueue(&gGameEvents, e);
 			}
-			else
+			else if (!gCampaign.Setting.BuyAndSell)
 			{
 				// Add an ammo pickup of the actor's gun
 				if (gCampaign.Setting.Ammo)
