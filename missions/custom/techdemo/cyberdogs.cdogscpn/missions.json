@@ -34,7 +34,7 @@
 			"Density": 20
 		},
 		{
-			"MapObject": "barrel_blue",
+			"MapObject": "cabinet_server",
 			"Density": 30
 		},
 		{
@@ -168,7 +168,7 @@
 			"Density": 20
 		},
 		{
-			"MapObject": "barrel_blue",
+			"MapObject": "cabinet_server",
 			"Density": 30
 		},
 		{
@@ -302,7 +302,7 @@
 			"Density": 20
 		},
 		{
-			"MapObject": "barrel_blue",
+			"MapObject": "cabinet_server",
 			"Density": 30
 		},
 		{
@@ -436,7 +436,7 @@
 			"Density": 20
 		},
 		{
-			"MapObject": "barrel_blue",
+			"MapObject": "cabinet_server",
 			"Density": 30
 		},
 		{
@@ -566,7 +566,7 @@
 			"Density": 20
 		},
 		{
-			"MapObject": "barrel_blue",
+			"MapObject": "cabinet_server",
 			"Density": 30
 		},
 		{

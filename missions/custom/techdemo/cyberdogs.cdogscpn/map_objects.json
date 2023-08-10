@@ -8,7 +8,8 @@
         "Pic": "crate"
       },
       "Wreck": "crate_wreck",
-      "Health": 30
+      "Health": 30,
+      "Flags": ["FreeInFront"]
     },
     {
       "Name": "box",
@@ -17,7 +18,8 @@
         "Pic": "box"
       },
       "Wreck": "box_wreck",
-      "Health": 20
+      "Health": 20,
+      "Flags": ["FreeInFront"]
     },
     {
       "Name": "box3_gray",
@@ -26,7 +28,19 @@
         "Pic": "box3_gray"
       },
       "Wreck": "box3_gray_wreck",
-      "Health": 30
+      "Health": 30,
+      "Flags": ["FreeInFront"]
+    },
+    {
+      "Name": "cabinet_server",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "cabinet_server",
+        "TicksPerFrame": 20
+      },
+      "Wreck": "cabinet_server_wreck",
+      "Health": 120,
+      "Flags": ["FreeInFront"]
     }
   ]
 }
