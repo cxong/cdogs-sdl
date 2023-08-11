@@ -19,27 +19,59 @@
 			"Required": 6,
 			"Flags": 0
 		}],
-		"Enemies": [0],
+		"Enemies": [3],
 		"SpecialChars": [],
 		"MapObjectDensities": [{
 			"MapObject": "crate",
-			"Density": 45
-		},
-		{
-			"MapObject": "box",
-			"Density": 45
-		},
-		{
-			"MapObject": "fan",
 			"Density": 20
 		},
 		{
+			"MapObject": "box",
+			"Density": 20
+		},
+		{
+			"MapObject": "fan",
+			"Density": 10
+		},
+		{
 			"MapObject": "cabinet_server",
-			"Density": 30
+			"Density": 20
 		},
 		{
 			"MapObject": "box3_gray",
-			"Density": 30
+			"Density": 20
+		},
+		{
+			"MapObject": "blood0",
+			"Density": 10
+		},
+		{
+			"MapObject": "blood1",
+			"Density": 10
+		},
+		{
+			"MapObject": "blood2",
+			"Density": 10
+		},
+		{
+			"MapObject": "bulletmarks",
+			"Density": 50
+		},
+		{
+			"MapObject": "skull",
+			"Density": 10
+		},
+		{
+			"MapObject": "rocket_wreck",
+			"Density": 10
+		},
+		{
+			"MapObject": "bloodstain",
+			"Density": 20
+		},
+		{
+			"MapObject": "bloodstain1",
+			"Density": 20
 		}],
 		"EnemyDensity": 13,
 		"Weapons": ["Fists",
@@ -157,23 +189,55 @@
 		"SpecialChars": [],
 		"MapObjectDensities": [{
 			"MapObject": "crate",
-			"Density": 45
-		},
-		{
-			"MapObject": "box",
-			"Density": 45
-		},
-		{
-			"MapObject": "fan",
 			"Density": 20
 		},
 		{
+			"MapObject": "box",
+			"Density": 20
+		},
+		{
+			"MapObject": "fan",
+			"Density": 10
+		},
+		{
 			"MapObject": "cabinet_server",
-			"Density": 30
+			"Density": 20
 		},
 		{
 			"MapObject": "box3_gray",
-			"Density": 30
+			"Density": 20
+		},
+		{
+			"MapObject": "blood0",
+			"Density": 10
+		},
+		{
+			"MapObject": "blood1",
+			"Density": 10
+		},
+		{
+			"MapObject": "blood2",
+			"Density": 10
+		},
+		{
+			"MapObject": "bulletmarks",
+			"Density": 50
+		},
+		{
+			"MapObject": "skull",
+			"Density": 10
+		},
+		{
+			"MapObject": "rocket_wreck",
+			"Density": 10
+		},
+		{
+			"MapObject": "bloodstain",
+			"Density": 20
+		},
+		{
+			"MapObject": "bloodstain1",
+			"Density": 20
 		}],
 		"EnemyDensity": 13,
 		"Weapons": ["Fists",
@@ -291,23 +355,55 @@
 		"SpecialChars": [],
 		"MapObjectDensities": [{
 			"MapObject": "crate",
-			"Density": 45
-		},
-		{
-			"MapObject": "box",
-			"Density": 45
-		},
-		{
-			"MapObject": "fan",
 			"Density": 20
 		},
 		{
+			"MapObject": "box",
+			"Density": 20
+		},
+		{
+			"MapObject": "fan",
+			"Density": 10
+		},
+		{
 			"MapObject": "cabinet_server",
-			"Density": 30
+			"Density": 20
 		},
 		{
 			"MapObject": "box3_gray",
-			"Density": 30
+			"Density": 20
+		},
+		{
+			"MapObject": "blood0",
+			"Density": 10
+		},
+		{
+			"MapObject": "blood1",
+			"Density": 10
+		},
+		{
+			"MapObject": "blood2",
+			"Density": 10
+		},
+		{
+			"MapObject": "bulletmarks",
+			"Density": 50
+		},
+		{
+			"MapObject": "skull",
+			"Density": 10
+		},
+		{
+			"MapObject": "rocket_wreck",
+			"Density": 10
+		},
+		{
+			"MapObject": "bloodstain",
+			"Density": 20
+		},
+		{
+			"MapObject": "bloodstain1",
+			"Density": 20
 		}],
 		"EnemyDensity": 13,
 		"Weapons": ["Fists",
@@ -425,23 +521,55 @@
 		"SpecialChars": [],
 		"MapObjectDensities": [{
 			"MapObject": "crate",
-			"Density": 45
-		},
-		{
-			"MapObject": "box",
-			"Density": 45
-		},
-		{
-			"MapObject": "fan",
 			"Density": 20
 		},
 		{
+			"MapObject": "box",
+			"Density": 20
+		},
+		{
+			"MapObject": "fan",
+			"Density": 10
+		},
+		{
 			"MapObject": "cabinet_server",
-			"Density": 30
+			"Density": 20
 		},
 		{
 			"MapObject": "box3_gray",
-			"Density": 30
+			"Density": 20
+		},
+		{
+			"MapObject": "blood0",
+			"Density": 10
+		},
+		{
+			"MapObject": "blood1",
+			"Density": 10
+		},
+		{
+			"MapObject": "blood2",
+			"Density": 10
+		},
+		{
+			"MapObject": "bulletmarks",
+			"Density": 50
+		},
+		{
+			"MapObject": "skull",
+			"Density": 10
+		},
+		{
+			"MapObject": "rocket_wreck",
+			"Density": 10
+		},
+		{
+			"MapObject": "bloodstain",
+			"Density": 20
+		},
+		{
+			"MapObject": "bloodstain1",
+			"Density": 20
 		}],
 		"EnemyDensity": 13,
 		"Weapons": ["Fists",
@@ -555,23 +683,55 @@
 		"SpecialChars": [],
 		"MapObjectDensities": [{
 			"MapObject": "crate",
-			"Density": 45
-		},
-		{
-			"MapObject": "box",
-			"Density": 45
-		},
-		{
-			"MapObject": "fan",
 			"Density": 20
 		},
 		{
+			"MapObject": "box",
+			"Density": 20
+		},
+		{
+			"MapObject": "fan",
+			"Density": 10
+		},
+		{
 			"MapObject": "cabinet_server",
-			"Density": 30
+			"Density": 20
 		},
 		{
 			"MapObject": "box3_gray",
-			"Density": 30
+			"Density": 20
+		},
+		{
+			"MapObject": "blood0",
+			"Density": 10
+		},
+		{
+			"MapObject": "blood1",
+			"Density": 10
+		},
+		{
+			"MapObject": "blood2",
+			"Density": 10
+		},
+		{
+			"MapObject": "bulletmarks",
+			"Density": 50
+		},
+		{
+			"MapObject": "skull",
+			"Density": 10
+		},
+		{
+			"MapObject": "rocket_wreck",
+			"Density": 10
+		},
+		{
+			"MapObject": "bloodstain",
+			"Density": 20
+		},
+		{
+			"MapObject": "bloodstain1",
+			"Density": 20
 		}],
 		"EnemyDensity": 13,
 		"Weapons": ["Fists",
