@@ -87,6 +87,8 @@ bool MapBuilderIsLeaveFree(const MapBuilder *mb, const struct vec2i tile);
 bool MapTryPlaceOneObject(
 	MapBuilder *mb, const struct vec2i v, const MapObject *mo,
 	const int extraFlags, const bool isStrictMode);
+bool MapTryPlaceDestroyObject(
+    MapBuilder *mb, const Mission *m, const int objective, const struct vec2i pos);
 // TODO: refactor
 void MapPlaceCollectible(
 	const Mission *m, const int objective, const struct vec2 pos);

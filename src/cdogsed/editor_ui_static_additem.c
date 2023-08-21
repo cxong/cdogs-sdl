@@ -180,7 +180,14 @@ static void DrawObjective(
 		CA_FOREACH_END()
 		break;
 	case OBJECTIVE_DESTROY:
-		DisplayMapItem(pos, obj->u.MapObject);
+		CA_FOREACH(const MapObject *, mo, obj->u.MapObjects)
+		struct vec2i offset;
+		const Pic *p = MapObjectGetPic(*mo, &offset);
+		PicRender(
+			p, g->gameWindow.renderer, pos, colorWhite, 0, svec2_one(),
+			SDL_FLIP_NONE, Rect2iZero());
+		pos = svec2i_add(pos, svec2i(4, 2));
+		CA_FOREACH_END()
 		break;
 	default:
 		assert(0 && "invalid objective type");
@@ -304,7 +311,7 @@ UIObject *CreateAddItemObjs(struct vec2i pos, EditorBrush *brush, Campaign *co)
 
 static void DrawMapItem(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData);
-static char *MakeMapObjectTooltip(const MapObject *mo);
+static char *MakeMapObjectTooltipSimple(const MapObject *mo);
 static bool AddMapItemBrushObjFunc(UIObject *o, MapObject *mo, void *vData)
 {
 	if (mo->Type == MAP_OBJECT_TYPE_PICKUP_SPAWNER)
@@ -317,7 +324,7 @@ static bool AddMapItemBrushObjFunc(UIObject *o, MapObject *mo, void *vData)
 	o->OnUnfocusFunc = DeactivateIndexedEditorBrush;
 	((IndexedEditorBrush *)o->Data)->Brush = vData;
 	((IndexedEditorBrush *)o->Data)->u.MapObject = mo;
-	o->Tooltip = MakeMapObjectTooltip(mo);
+	o->Tooltip = MakeMapObjectTooltipSimple(mo);
 	return true;
 }
 static void DrawMapItem(
@@ -329,9 +336,9 @@ static void DrawMapItem(
 		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
 		brush->u.MapObject);
 }
-static char *MakeMapObjectTooltip(const MapObject *mo)
+static char *MakeMapObjectTooltipSimple(const MapObject *mo)
 {
-	// Add a descriptive tooltip for the map object
+	// Add a descriptive tooltip for the map object, without placement flags
 	char buf[512];
 	// Construct text representing explosion guns
 	char exBuf[256];

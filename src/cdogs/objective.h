@@ -83,7 +83,7 @@ typedef struct
 	union
 	{
 		int Index;
-		MapObject *MapObject;
+		CArray MapObjects;	// of const MapObject *
 		CArray Pickups;  // of const PickupClass *
 	} u;
 	int Count;
@@ -100,8 +100,9 @@ void ObjectiveSetup(Objective *o);
 void ObjectiveCopy(Objective *dst, const Objective *src);
 void ObjectiveTerminate(Objective *o);
 
-// Legacy helper function to set a single pickup objective
+// Legacy helper functions to set a single objective
 void ObjectiveSetPickup(Objective *o, const PickupClass *p);
+void ObjectiveSetDestroy(Objective *o, const MapObject *mo);
 
 bool ObjectiveIsRequired(const Objective *o);
 bool ObjectiveIsComplete(const Objective *o);

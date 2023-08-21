@@ -444,35 +444,6 @@ static bool PickupClassHasScoreEffect(const PickupClass *c)
 	CA_FOREACH_END()
 	return false;
 }
-int PickupClassesGetScoreIdx(const PickupClass *p)
-{
-	if (p == NULL)
-	{
-		return 0;
-	}
-	int idx = -1;
-	CA_FOREACH(const PickupClass, c, gPickupClasses.Classes)
-	if (PickupClassHasScoreEffect(c))
-	{
-		idx++;
-		if (c == p)
-		{
-			return idx;
-		}
-	}
-	CA_FOREACH_END()
-	CA_FOREACH(PickupClass, c, gPickupClasses.CustomClasses)
-	if (PickupClassHasScoreEffect(c))
-	{
-		idx++;
-		if (c == p)
-		{
-			return idx;
-		}
-	}
-	CA_FOREACH_END()
-	return 0;
-}
 PickupClass *IntScorePickupClass(const int i)
 {
 	int idx = -1;

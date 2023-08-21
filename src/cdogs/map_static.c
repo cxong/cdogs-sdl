@@ -195,9 +195,7 @@ static void AddObjective(MapBuilder *mb, const ObjectivePositions *op)
 		MapPlaceCollectible(mb->mission, op->Index, pos);
 		break;
 	case OBJECTIVE_DESTROY:
-		MapTryPlaceOneObject(
-			mb, pi->Position, o->u.MapObject, ObjectiveToThing(op->Index),
-			false);
+		MapTryPlaceDestroyObject(mb, mb->mission, op->Index, pi->Position);
 		break;
 	case OBJECTIVE_RESCUE: {
 		CASSERT(mb->characters != NULL, "cannot add rescue objective");

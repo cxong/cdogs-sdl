@@ -3,6 +3,7 @@ set(CDOGSED_SOURCES
 	add_pickup_dialog.c
 	campaign_options.c
 	char_editor.c
+	destroy_objective_dialog.c
 	editor_brush.c
 	editor_ui.c
 	editor_ui_cave.c
@@ -25,6 +26,7 @@ set(CDOGSED_HEADERS
 	add_pickup_dialog.h
 	campaign_options.h
 	char_editor.h
+	destroy_objective_dialog.h
 	editor_brush.h
 	editor_ui.h
 	editor_ui_cave.h

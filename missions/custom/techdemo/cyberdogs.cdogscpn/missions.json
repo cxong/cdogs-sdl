@@ -8,7 +8,7 @@
 		"ExitStyle": "hazard",
 		"KeyStyle": "office",
 		"Objectives": [{
-			"Description": "",
+			"Description": "Retrieve objects",
 			"Type": "Collect",
 			"Pickups": ["folder",
 			"disk1",
@@ -18,28 +18,23 @@
 			"Count": 12,
 			"Required": 6,
 			"Flags": 0
+		},
+		{
+			"Description": "Demolition",
+			"Type": "Destroy",
+			"MapObjects": ["crate",
+			"box",
+			"box3_gray",
+			"cabinet_server"],
+			"Count": 400,
+			"Required": 0,
+			"Flags": 1
 		}],
 		"Enemies": [3],
 		"SpecialChars": [],
 		"MapObjectDensities": [{
-			"MapObject": "crate",
-			"Density": 20
-		},
-		{
-			"MapObject": "box",
-			"Density": 20
-		},
-		{
 			"MapObject": "fan",
 			"Density": 10
-		},
-		{
-			"MapObject": "cabinet_server",
-			"Density": 20
-		},
-		{
-			"MapObject": "box3_gray",
-			"Density": 20
 		},
 		{
 			"MapObject": "blood0",

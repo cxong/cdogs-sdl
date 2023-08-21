@@ -511,6 +511,14 @@ static json_t *SavePickupObjectives(const Objective *o)
 	CA_FOREACH_END()
 	return node;
 }
+static json_t *SaveDestroyObjectives(const Objective *o)
+{
+	json_t *node = json_new_array();
+	CA_FOREACH(const MapObject *, mo, o->u.MapObjects)
+	json_insert_child(node, json_new_string((*mo)->Name));
+	CA_FOREACH_END()
+	return node;
+}
 static json_t *SaveObjectives(CArray *a)
 {
 	json_t *objectivesNode = json_new_array();
@@ -525,7 +533,8 @@ static json_t *SaveObjectives(CArray *a)
 			objNode, "Pickups", SavePickupObjectives(o));
 		break;
 	case OBJECTIVE_DESTROY:
-		AddStringPair(objNode, "MapObject", o->u.MapObject->Name);
+		json_insert_pair_into_object(
+			objNode, "MapObjects", SaveDestroyObjectives(o));
 		break;
 	default:
 		AddIntPair(objNode, "Index", o->u.Index);

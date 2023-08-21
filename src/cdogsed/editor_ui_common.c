@@ -367,46 +367,22 @@ static int CountAddMapItemSubObjs(const UIObject *o)
 	return count;
 }
 
-char *MakePlacementFlagTooltip(const MapObject *mo)
+char *MakeMapObjectTooltip(const MapObject *mo)
 {
 	// Add a descriptive tooltip for the map object
 	char buf[512];
 	// Construct text representing the placement flags
 	char pfBuf[128];
-	if (mo->Flags == 0)
-	{
-		sprintf(pfBuf, "anywhere\n");
-	}
-	else
-	{
-		strcpy(pfBuf, "");
-		for (int i = 1; i < PLACEMENT_COUNT; i++)
-		{
-			if (mo->Flags & (1 << i))
-			{
-				if (strlen(pfBuf) > 0)
-				{
-					strcat(pfBuf, ", ");
-				}
-				strcat(pfBuf, PlacementFlagStr(i));
-			}
-		}
-	}
+	MapObjectGetPlacementFlagNames(mo, pfBuf, ", ");
 	// Construct text representing explosion guns
 	char exBuf[256];
 	strcpy(exBuf, "");
 	if (mo->DestroyGuns.size > 0)
 	{
 		sprintf(exBuf, "\nExplodes: ");
-		for (int i = 0; i < (int)mo->DestroyGuns.size; i++)
-		{
-			if (i > 0)
-			{
-				strcat(exBuf, ", ");
-			}
-			const WeaponClass **wc = CArrayGet(&mo->DestroyGuns, i);
-			strcat(exBuf, (*wc)->name);
-		}
+		char exBuf2[256];
+		MapObjectGetExplosionGunNames(mo, exBuf2, ", ");
+		strcat(exBuf, exBuf2);
 	}
 	sprintf(
 		buf, "%s\nHealth: %d\nPlacement: %s%s", mo->Name, mo->Health, pfBuf,
@@ -414,6 +390,41 @@ char *MakePlacementFlagTooltip(const MapObject *mo)
 	char *tmp;
 	CSTRDUP(tmp, buf);
 	return tmp;
+}
+void MapObjectGetPlacementFlagNames(const MapObject *mo, char *buf, const char *sep)
+{
+	if (mo->Flags == 0)
+	{
+		sprintf(buf, "anywhere");
+	}
+	else
+	{
+		strcpy(buf, "");
+		for (int i = 1; i < PLACEMENT_COUNT; i++)
+		{
+			if (mo->Flags & (1 << i))
+			{
+				if (strlen(buf) > 0)
+				{
+					strcat(buf, sep);
+				}
+				strcat(buf, PlacementFlagStr(i));
+			}
+		}
+	}
+}
+void MapObjectGetExplosionGunNames(const MapObject *mo, char *buf, const char *sep)
+{
+	buf[0] = '\0';
+	for (int i = 0; i < (int)mo->DestroyGuns.size; i++)
+	{
+		if (i > 0)
+		{
+			strcat(buf, sep);
+		}
+		const WeaponClass **wc = CArrayGet(&mo->DestroyGuns, i);
+		strcat(buf, (*wc)->name);
+	}
 }
 
 static EditorResult CloseChange(void *data, int d);

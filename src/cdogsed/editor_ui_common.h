@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014, 2016, 2020, 2022 Cong Xu
+	Copyright (c) 2014, 2016, 2020, 2022-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -79,7 +79,9 @@ UIObject *CreateAddPickupSpawnerObjs(
 	const struct vec2i pos, bool (*objFunc)(UIObject *, MapObject *, void *),
 	void *data, const size_t dataSize);
 
-char *MakePlacementFlagTooltip(const MapObject *mo);
+char *MakeMapObjectTooltip(const MapObject *mo);
+void MapObjectGetPlacementFlagNames(const MapObject *mo, char *buf, const char *sep);
+void MapObjectGetExplosionGunNames(const MapObject *mo, char *buf, const char *sep);
 
 // Create a dummy label that can be clicked to close the context menu
 void CreateCloseLabel(UIObject *c, const struct vec2i pos);

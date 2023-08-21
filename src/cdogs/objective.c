@@ -101,6 +101,14 @@ void ObjectiveSetPickup(Objective *o, const PickupClass *p)
 	CArrayPushBack(&o->u.Pickups, &p);
 }
 
+void ObjectiveSetDestroy(Objective *o, const MapObject *mo)
+{
+	CASSERT(o->Type == OBJECTIVE_DESTROY, "invalid objective type");
+	CArrayTerminate(&o->u.MapObjects);
+	CArrayInit(&o->u.MapObjects, sizeof(const MapObject *));
+	CArrayPushBack(&o->u.MapObjects, &mo);
+}
+
 void ObjectiveLoadJSON(Objective *o, json_t *node, const int version)
 {
 	memset(o, 0, sizeof *o);
@@ -110,17 +118,18 @@ void ObjectiveLoadJSON(Objective *o, json_t *node, const int version)
 	{
 		// Index numbers used for all objective classes; convert them
 		// to their class handles
-		LoadInt(&o->u.Index, node, "Index");
+		int index;
+		LoadInt(&index, node, "Index");
 		switch (o->Type)
 		{
 		case OBJECTIVE_COLLECT:
-			ObjectiveSetPickup(o, IntPickupClass(o->u.Index));
+			ObjectiveSetPickup(o, IntPickupClass(index));
 			break;
 		case OBJECTIVE_DESTROY:
-			o->u.MapObject = IntMapObject(o->u.Index);
+			ObjectiveSetDestroy(o, IntMapObject(index));
 			break;
 		default:
-			// do nothing
+			o->u.Index = index;
 			break;
 		}
 	}
@@ -152,9 +161,26 @@ void ObjectiveLoadJSON(Objective *o, json_t *node, const int version)
 			}
 			break;
 		case OBJECTIVE_DESTROY:
-			tmp = GetString(node, "MapObject");
-			o->u.MapObject = StrMapObject(tmp);
-			CFREE(tmp);
+			LoadStr(&tmp, node, "MapObject");
+			if (tmp)
+			{
+				ObjectiveSetDestroy(o, StrMapObject(tmp));
+				CFREE(tmp);
+			}
+			else
+			{
+				CArrayInit(&o->u.MapObjects, sizeof(const MapObject *));
+				const json_t *child = json_find_first_label(node, "MapObjects");
+				if (child && child->child)
+				{
+					for (child = child->child->child; child; child = child->next)
+					{
+						const MapObject *mo = StrMapObject(child->text);
+						CASSERT(mo != NULL, "Cannot load map object");
+						CArrayPushBack(&o->u.MapObjects, &mo);
+					}
+				}
+			}
 			break;
 		default:
 			LoadInt(&o->u.Index, node, "Index");
@@ -193,10 +219,18 @@ void ObjectiveCopy(Objective *dst, const Objective *src)
 	{
 		CSTRDUP(dst->Description, src->Description);
 	}
-	if (src->Type == OBJECTIVE_COLLECT)
+	switch (src->Type)
 	{
+	case OBJECTIVE_COLLECT:
 		memset(&dst->u.Pickups, 0, sizeof(dst->u.Pickups));
 		CArrayCopy(&dst->u.Pickups, &src->u.Pickups);
+		break;
+	case OBJECTIVE_DESTROY:
+		memset(&dst->u.MapObjects, 0, sizeof(dst->u.MapObjects));
+		CArrayCopy(&dst->u.MapObjects, &src->u.MapObjects);
+		break;
+	default:
+		break;
 	}
 }
 void ObjectiveTerminate(Objective *o)
@@ -206,6 +240,9 @@ void ObjectiveTerminate(Objective *o)
 	{
 	case OBJECTIVE_COLLECT:
 		CArrayTerminate(&o->u.Pickups);
+		break;
+	case OBJECTIVE_DESTROY:
+		CArrayTerminate(&o->u.MapObjects);
 		break;
 	default:
 		break;

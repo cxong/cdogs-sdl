@@ -339,6 +339,16 @@ bool MapPosIsInLockedRoom(const Map *map, const struct vec2 pos)
 	return MapTileIsInLockedRoom(map, tilePos);
 }
 
+bool MapTryPlaceDestroyObject(
+	MapBuilder *mb, const Mission *m, const int objective, const struct vec2i pos)
+{
+	const Objective *o = CArrayGet(&m->Objectives, objective);
+	// Pick a random map object out of the available ones
+	const int i = RAND_INT(0, (int)o->u.MapObjects.size - 1);
+	const MapObject *mo = *(const MapObject **)CArrayGet(&o->u.MapObjects, i);
+	return MapTryPlaceOneObject(mb, pos, mo, objective, false);
+}
+
 void MapPlaceCollectible(
 	const Mission *m, const int objective, const struct vec2 pos)
 {

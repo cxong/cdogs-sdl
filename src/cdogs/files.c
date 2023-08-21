@@ -376,7 +376,7 @@ static void ConvertObjective(Objective *dest, struct MissionObjectiveOld *src)
 		ObjectiveSetPickup(dest, IntPickupClass(dest->u.Index));
 		break;
 	case OBJECTIVE_DESTROY:
-		dest->u.MapObject = IntMapObject(dest->u.Index);
+		ObjectiveSetDestroy(dest, IntMapObject(dest->u.Index));
 		break;
 	default:
 		// do nothing

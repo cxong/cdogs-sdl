@@ -574,9 +574,7 @@ static bool TryPlaceOneBlowup(
 	MapBuilder *mb, const struct vec2i tilePos, void *data)
 {
 	const TryPlaceOneBlowupData *pData = data;
-	return MapTryPlaceOneObject(
-		mb, tilePos, pData->o->u.MapObject, ObjectiveToThing(pData->objective),
-		true);
+	return MapTryPlaceDestroyObject(mb, mb->mission, pData->objective, tilePos);
 }
 
 void MapBuilderSetLeaveFree(

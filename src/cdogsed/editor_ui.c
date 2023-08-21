@@ -1051,7 +1051,7 @@ static bool MapItemObjFunc(UIObject *o, MapObject *mo, void *vData)
 	((MapItemIndexData *)o->Data)->C = data->co;
 	((MapItemIndexData *)o->Data)->Idx = data->index;
 	((MapItemIndexData *)o->Data)->M = mo;
-	o->Tooltip = MakePlacementFlagTooltip(mo);
+	o->Tooltip = MakeMapObjectTooltip(mo);
 	return true;
 }
 static EditorResult MissionSetMapItem(void *vData, int d)

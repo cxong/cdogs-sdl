@@ -100,7 +100,6 @@ void PickupClassesClear(CArray *classes);
 void PickupClassesTerminate(PickupClasses *classes);
 int PickupClassesCount(const PickupClasses *classes);
 
-int PickupClassesGetScoreIdx(const PickupClass *p);
 // Get the ith "Score" type pickup
 PickupClass *IntScorePickupClass(const int i);
 

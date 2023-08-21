@@ -31,6 +31,7 @@
 #include <cdogs/draw/draw_actor.h>
 #include <cdogs/font.h>
 
+#include "destroy_objective_dialog.h"
 #include "editor_ui.h"
 #include "editor_ui_common.h"
 #include "pickup_objective_dialog.h"
@@ -226,9 +227,8 @@ static void MissionResetObjectiveIndex(Objective *o)
 	case OBJECTIVE_DESTROY: {
 		const char **destructibleName =
 			CArrayGet(&gMapObjects.Destructibles, 0);
-		o->u.MapObject = StrMapObject(*destructibleName);
+		ObjectiveSetDestroy(o, StrMapObject(*destructibleName));
 	}
-		CASSERT(o->u.MapObject != NULL, "cannot find map object");
 		break;
 	default:
 		o->u.Index = 0;
@@ -240,7 +240,7 @@ static EditorResult MissionChangeObjectiveRequired(void *vData, int d)
 	MissionIndexData *data = vData;
 	Objective *o =
 		GetMissionObjective(CampaignGetCurrentMission(data->co), data->index);
-	o->Required = CLAMP_OPPOSITE(o->Required + d, 0, MIN(100, o->Count));
+	o->Required = CLAMP_OPPOSITE(o->Required + d, 0, MIN(1000, o->Count));
 	return EDITOR_RESULT_CHANGED;
 }
 static EditorResult MissionChangeObjectiveTotal(void *vData, int d)
@@ -248,7 +248,11 @@ static EditorResult MissionChangeObjectiveTotal(void *vData, int d)
 	MissionIndexData *data = vData;
 	const Mission *m = CampaignGetCurrentMission(data->co);
 	Objective *o = GetMissionObjective(m, data->index);
-	o->Count = CLAMP_OPPOSITE(o->Count + d, o->Required, 100);
+	if (gEventHandlers.keyboard.modState & KMOD_SHIFT)
+	{
+		d *= 10;
+	}
+	o->Count = CLAMP_OPPOSITE(o->Count + d, o->Required, 1000);
 	// Don't let the total reduce to less than static ones we've placed
 	if (m->Type == MAPTYPE_STATIC)
 	{
@@ -402,27 +406,21 @@ static UIObject *CreateObjectiveObjs(
 	return c;
 }
 
-typedef struct
-{
-	Campaign *C;
-	int ObjIdx;
-	MapObject *M;
-} DestroyObjectiveData;
 static void MissionDrawKillObjective(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData);
-static void MissionDrawCollectObjective(
+static void MissionDrawCollectObjectives(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData);
-static void MissionDrawDestroyObjective(
+static void MissionDrawDestroyObjectives(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData);
 static void MissionDrawRescueObjective(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData);
 static EditorResult MissionChangeCollectObjectivePickups(void *vData, int d);
+static EditorResult MissionChangeDestroyObjectives(void *vData, int d);
 static EditorResult MissionChangeRescueObjectiveIndex(void *vData, int d);
 static void MissionCheckObjectiveIsKill(UIObject *o, void *vData);
 static void MissionCheckObjectiveIsCollect(UIObject *o, void *vData);
 static void MissionCheckObjectiveIsDestroy(UIObject *o, void *vData);
 static void MissionCheckObjectiveIsRescue(UIObject *o, void *vData);
-static bool ObjectiveDestroyObjFunc(UIObject *o, MapObject *mo, void *data);
 static void CreateObjectiveItemObjs(
 	UIObject *c, const struct vec2i pos, Campaign *co, const int idx)
 {
@@ -442,7 +440,7 @@ static void CreateObjectiveItemObjs(
 	UIObjectAddChild(c, o2);
 
 	o2 = UIObjectCopy(o);
-	o2->u.CustomDrawFunc = MissionDrawCollectObjective;
+	o2->u.CustomDrawFunc = MissionDrawCollectObjectives;
 	o2->ChangeFunc = MissionChangeCollectObjectivePickups;
 	o2->IsDynamicData = true;
 	CMALLOC(o2->Data, sizeof(MissionIndexData));
@@ -453,17 +451,14 @@ static void CreateObjectiveItemObjs(
 	UIObjectAddChild(c, o2);
 
 	o2 = UIObjectCopy(o);
-	o2->u.CustomDrawFunc = MissionDrawDestroyObjective;
+	o2->u.CustomDrawFunc = MissionDrawDestroyObjectives;
+	o2->ChangeFunc = MissionChangeDestroyObjectives;
 	o2->IsDynamicData = true;
 	CMALLOC(o2->Data, sizeof(MissionIndexData));
 	((MissionIndexData *)o2->Data)->co = co;
 	((MissionIndexData *)o2->Data)->index = idx;
 	o2->CheckVisible = MissionCheckObjectiveIsDestroy;
-	CSTRDUP(o2->Tooltip, "Choose object to destroy");
-	UIObjectAddChild(
-		o2, CreateAddMapItemObjs(
-				o2->Size, ObjectiveDestroyObjFunc, o2->Data,
-				sizeof(DestroyObjectiveData), true));
+	CSTRDUP(o2->Tooltip, "Choose object(s) to destroy");
 	UIObjectAddChild(c, o2);
 
 	o2 = UIObjectCopy(o);
@@ -499,7 +494,7 @@ static void MissionDrawKillObjective(
 		DrawCharacterSimple(c, drawPos, DIRECTION_DOWN, false, true, c->Gun);
 	}
 }
-static void MissionDrawCollectObjective(
+static void MissionDrawCollectObjectives(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
 {
 	MissionIndexData *data = vData;
@@ -521,7 +516,7 @@ static void MissionDrawCollectObjective(
 	pos = svec2i_add(pos, svec2i(4, 2));
 	CA_FOREACH_END()
 }
-static void MissionDrawDestroyObjective(
+static void MissionDrawDestroyObjectives(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
 {
 	MissionIndexData *data = vData;
@@ -531,15 +526,18 @@ static void MissionDrawDestroyObjective(
 		return;
 	if ((int)m->Objectives.size <= data->index)
 		return;
-	// TODO: only one destroy objective allowed
 	const Objective *obj = CArrayGet(&m->Objectives, data->index);
+	CA_FOREACH(const MapObject *, mo, obj->u.MapObjects)
 	struct vec2i offset;
-	const Pic *newPic = MapObjectGetPic(obj->u.MapObject, &offset);
+	const Pic *p = MapObjectGetPic(*mo, &offset);
 	const struct vec2i drawPos =
 		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2));
 	PicRender(
-		newPic, g->gameWindow.renderer, svec2i_add(drawPos, offset),
-		colorWhite, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
+		p, g->gameWindow.renderer,
+		svec2i_subtract(drawPos, svec2i_scale_divide(p->size, 2)), colorWhite,
+		0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
+	pos = svec2i_add(pos, svec2i(4, 2));
+	CA_FOREACH_END()
 }
 static void MissionDrawRescueObjective(
 	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
@@ -571,14 +569,13 @@ static EditorResult MissionChangeCollectObjectivePickups(void *vData, int d)
 		GetMissionObjective(CampaignGetCurrentMission(data->co), data->index);
 	return PickupObjectiveDialog(&gPicManager, &gEventHandlers, o);
 }
-static EditorResult MissionSetDestroyObjective(void *vData, int d)
+static EditorResult MissionChangeDestroyObjectives(void *vData, int d)
 {
 	UNUSED(d);
-	DestroyObjectiveData *data = vData;
+	MissionIndexData *data = vData;
 	Objective *o =
-		GetMissionObjective(CampaignGetCurrentMission(data->C), data->ObjIdx);
-	o->u.MapObject = data->M;
-	return EDITOR_RESULT_CHANGED;
+		GetMissionObjective(CampaignGetCurrentMission(data->co), data->index);
+	return DestroyObjectiveDialog(&gPicManager, &gEventHandlers, o);
 }
 static EditorResult MissionChangeRescueObjectiveIndex(void *vData, int d)
 {
@@ -635,30 +632,4 @@ static void MissionCheckObjectiveIsRescue(UIObject *o, void *vData)
 		return;
 	const Objective *obj = CArrayGet(&m->Objectives, data->index);
 	o->IsVisible = obj->Type == OBJECTIVE_RESCUE;
-}
-static void DrawMapItem(
-	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData);
-static bool ObjectiveDestroyObjFunc(UIObject *o, MapObject *mo, void *vData)
-{
-	if (mo->Type != MAP_OBJECT_TYPE_NORMAL)
-	{
-		return false;
-	}
-	o->ChangeFunc = MissionSetDestroyObjective;
-	o->u.CustomDrawFunc = DrawMapItem;
-	MissionIndexData *data = vData;
-	((DestroyObjectiveData *)o->Data)->C = data->co;
-	((DestroyObjectiveData *)o->Data)->ObjIdx = data->index;
-	((DestroyObjectiveData *)o->Data)->M = mo;
-	o->Tooltip = MakePlacementFlagTooltip(mo);
-	return true;
-}
-static void DrawMapItem(
-	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
-{
-	UNUSED(g);
-	const DestroyObjectiveData *data = vData;
-	DisplayMapItem(
-		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
-		data->M);
 }
