@@ -346,7 +346,7 @@ bool MapTryPlaceDestroyObject(
 	// Pick a random map object out of the available ones
 	const int i = RAND_INT(0, (int)o->u.MapObjects.size - 1);
 	const MapObject *mo = *(const MapObject **)CArrayGet(&o->u.MapObjects, i);
-	return MapTryPlaceOneObject(mb, pos, mo, objective, false);
+	return MapTryPlaceOneObject(mb, pos, mo, ObjectiveToThing(objective), false);
 }
 
 void MapPlaceCollectible(

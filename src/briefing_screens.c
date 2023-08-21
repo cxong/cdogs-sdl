@@ -931,11 +931,15 @@ static void DrawObjectiveInfo(const Objective *o, const struct vec2i pos)
 	}
 	break;
 	case OBJECTIVE_DESTROY: {
+		struct vec2i drawPos = pos;
+		CA_FOREACH(const MapObject *, mo, o->u.MapObjects)
 		struct vec2i picOffset;
-		const Pic *p = MapObjectGetPic(o->u.MapObject, &picOffset);
+		const Pic *p = MapObjectGetPic(*mo, &picOffset);
 		PicRender(
-			p, gGraphicsDevice.gameWindow.renderer, svec2i_add(pos, picOffset),
+			p, gGraphicsDevice.gameWindow.renderer, svec2i_add(drawPos, picOffset),
 			colorWhite, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
+		drawPos = svec2i_add(drawPos, svec2i(4, 2));
+		CA_FOREACH_END()
 	}
 	break;
 	case OBJECTIVE_INVESTIGATE:
