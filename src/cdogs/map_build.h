@@ -88,7 +88,7 @@ bool MapTryPlaceOneObject(
 	MapBuilder *mb, const struct vec2i v, const MapObject *mo,
 	const int extraFlags, const bool isStrictMode);
 bool MapTryPlaceDestroyObject(
-    MapBuilder *mb, const Mission *m, const int objective, const struct vec2i pos);
+    MapBuilder *mb, const Mission *m, const int objective, const struct vec2i pos, const bool strict);
 // TODO: refactor
 void MapPlaceCollectible(
 	const Mission *m, const int objective, const struct vec2 pos);

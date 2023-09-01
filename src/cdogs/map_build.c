@@ -452,7 +452,7 @@ void MapLoadDynamic(MapBuilder *mb)
 		AddKeys(mb);
 	}
 }
-static bool MapTryPlaceBlowup(MapBuilder *mb, const int objective);
+static bool MapTryPlaceBlowup(MapBuilder *mb, const int objective, const bool strict);
 static int MapTryPlaceCollectible(MapBuilder *mb, const int objective);
 static void AddObjectives(MapBuilder *mb)
 {
@@ -476,11 +476,17 @@ static void AddObjectives(MapBuilder *mb)
 	}
 	else if (o->Type == OBJECTIVE_DESTROY)
 	{
+		// Try using strict rule when placing objective, at least for a bit
+		int strictCounter = 1000;
 		for (int i = o->placed; i < o->Count; i++)
 		{
-			if (MapTryPlaceBlowup(mb, _ca_index))
+			if (MapTryPlaceBlowup(mb, _ca_index, strictCounter > 0))
 			{
 				o->placed++;
+			}
+			if (strictCounter > 0)
+			{
+				strictCounter--;
 			}
 		}
 	}
@@ -558,23 +564,25 @@ typedef struct
 {
 	const Objective *o;
 	int objective;
+	bool strict;
 } TryPlaceOneBlowupData;
 static bool TryPlaceOneBlowup(
 	MapBuilder *mb, const struct vec2i tilePos, void *data);
-static bool MapTryPlaceBlowup(MapBuilder *mb, const int objective)
+static bool MapTryPlaceBlowup(MapBuilder *mb, const int objective, const bool strict)
 {
 	TryPlaceOneBlowupData data;
 	data.o = CArrayGet(&mb->mission->Objectives, objective);
 	const PlacementAccessFlags paFlags =
 		ObjectiveGetPlacementAccessFlags(data.o);
 	data.objective = objective;
+	data.strict = strict;
 	return MapPlaceRandomTile(mb, paFlags, TryPlaceOneBlowup, &data);
 }
 static bool TryPlaceOneBlowup(
 	MapBuilder *mb, const struct vec2i tilePos, void *data)
 {
 	const TryPlaceOneBlowupData *pData = data;
-	return MapTryPlaceDestroyObject(mb, mb->mission, pData->objective, tilePos);
+	return MapTryPlaceDestroyObject(mb, mb->mission, pData->objective, tilePos, pData->strict);
 }
 
 void MapBuilderSetLeaveFree(

@@ -221,7 +221,6 @@ void ObjRemove(const NMapObjectRemove mor)
 		if (strlen(o->Class->Wreck.Bullet) > 0)
 		{
 			// A wreck left after the destruction of this object
-			// TODO: doesn't need to be network event
 			GameEvent e = GameEventNew(GAME_EVENT_ADD_BULLET);
 			e.u.AddBullet.UID = MobObjsObjsGetNextUID();
 			strcpy(e.u.AddBullet.BulletClass, o->Class->Wreck.Bullet);

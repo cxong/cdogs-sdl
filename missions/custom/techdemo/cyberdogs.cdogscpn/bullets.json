@@ -331,6 +331,62 @@
       "Range": 27,
       "Persists": true,
       "Hit": {}
+    },
+    {
+      "Name": "small_fireball1",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "fireball",
+        "TicksPerFrame": 3
+      },
+      "Speed": 0,
+      "Range": 40,
+      "Power": 0,
+      "Size": [7, 5],
+      "Persists": true,
+      "Spark": "",
+      "Falling": {
+        "GravityFactor": 1,
+        "FallsDown": false
+      }
+    },
+    {
+      "Name": "small_fireball2",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "fireball",
+        "Count": -8,
+        "TicksPerFrame": 3
+      },
+      "Speed": 0,
+      "Range": 48,
+      "Power": 0,
+      "Size": [7, 5],
+      "Persists": true,
+      "Spark": "",
+      "Falling": {
+        "GravityFactor": 1,
+        "FallsDown": false
+      }
+    },
+    {
+      "Name": "small_fireball3",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "fireball",
+        "Count": -16,
+        "TicksPerFrame": 3
+      },
+      "Speed": 0,
+      "Range": 56,
+      "Power": 0,
+      "Size": [7, 5],
+      "Persists": true,
+      "Spark": "",
+      "Falling": {
+        "GravityFactor": 1,
+        "FallsDown": false
+      }
     }
   ]
 }

@@ -29,6 +29,14 @@
 			"Count": 400,
 			"Required": 0,
 			"Flags": 1
+		},
+		{
+			"Description": "Destroy",
+			"Type": "Destroy",
+			"MapObjects": ["reactor"],
+			"Count": 1,
+			"Required": 1,
+			"Flags": 0
 		}],
 		"Enemies": [3],
 		"SpecialChars": [],

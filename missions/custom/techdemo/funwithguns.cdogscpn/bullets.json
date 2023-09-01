@@ -50,14 +50,14 @@
         "Flesh": "",
         "Wall": ""
       },
-	  "SeekFactor": 11
+      "SeekFactor": 11
     },
-	{
+    {
       "Name": "grenade",
       "Pic": {
         "Type": "Animated",
         "Sprites": "grenade",
-		"TicksPerFrame": 4
+        "TicksPerFrame": 4
       },
       "Speed": 340,
       "Range": 80,
@@ -67,14 +67,14 @@
         "Flesh": "",
         "Wall": ""
       },
-	  "WallBounces": true,
-	  "Falling": {
+      "WallBounces": true,
+      "Falling": {
         "GravityFactor": 1
       },
-	  "OutOfRangeGuns": [
+      "OutOfRangeGuns": [
         "grenade_explosion1",
-		"grenade_explosion2",
-		"grenade_explosion3"
+    	  "grenade_explosion2",
+        "grenade_explosion3"
       ],
       "HitGuns": [
         "grenade_explosion1",
@@ -103,7 +103,7 @@
       },
       "Falling": {
         "GravityFactor": 1,
-		"FallsDown": false
+        "FallsDown": false
       }
     },
     {
@@ -128,7 +128,7 @@
       },
       "Falling": {
         "GravityFactor": 1,
-		"FallsDown": false
+        "FallsDown": false
       }
     },
     {
@@ -153,10 +153,10 @@
       },
       "Falling": {
         "GravityFactor": 1,
-		"FallsDown": false
+        "FallsDown": false
       }
     },
-	{
+    {
       "Name": "laser_designator",
       "Pic": {
         "Type": "Normal",
