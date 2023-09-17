@@ -50,9 +50,10 @@ jobs:
         version: '3.x'
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Check protoc
+    - name: Check stuff
       run: |
         protoc --version
+        echo "${{ github.workspace }}"
 
     - name: Set up Homebrew (Linux)
       id: set-up-homebrew
@@ -122,6 +123,9 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       run: |
         cpack -B . -C ${{env.BUILD_TYPE}}
+        echo "${{ github.workspace }}"
+        ls "${{ github.workspace }}"
+        ls ${{ github.workspace }}/C-Dogs*SDL-*-*.*
 
     - name: Upload a Build Artifact
       uses: softprops/action-gh-release@v1
@@ -129,7 +133,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        files: ${{ github.workspace }}/C-Dogs*SDL-*-*.*
+        files: C-Dogs*SDL-*-*.*
         fail_on_unmatched_files: true
 
     - name: Publish to itch.io (Linux)
