@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2017, 2019-2022 Cong Xu
+	Copyright (c) 2013-2017, 2019-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -218,6 +218,9 @@ void MissionCopy(Mission *dst, const Mission *src)
 		CASSERT(false, "unsupported music type");
 		break;
 	}
+	
+	dst->WeaponPersist = src->WeaponPersist;
+	dst->SkipDebrief = src->SkipDebrief;
 
 	memcpy(&dst->u, &src->u, sizeof dst->u);
 	switch (src->Type)

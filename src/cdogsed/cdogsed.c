@@ -800,6 +800,7 @@ static HandleInputResult HandleInput(
 		case 'c':
 			MissionTerminate(scrap);
 			MissionCopy(scrap, mission);
+			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Editor", "Mission copied", gGraphicsDevice.gameWindow.window);
 			break;
 
 		case 'v':
