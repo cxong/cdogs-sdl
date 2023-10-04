@@ -191,7 +191,16 @@
 			"Required": 0,
 			"Flags": 1
 		}],
-		"Enemies": [0],
+		"Enemies": [3,
+		3,
+		3,
+		3,
+		3,
+		3,
+		3,
+		3,
+		3,
+		5],
 		"SpecialChars": [],
 		"MapObjectDensities": [{
 			"MapObject": "crate",
@@ -245,7 +254,7 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
-		"EnemyDensity": 13,
+		"EnemyDensity": 40,
 		"Weapons": ["Fists",
 		"Chainsaw",
 		"2xChainsaw",
@@ -368,7 +377,11 @@
 			"Required": 0,
 			"Flags": 1
 		}],
-		"Enemies": [0],
+		"Enemies": [3,
+		3,
+		3,
+		3,
+		5],
 		"SpecialChars": [],
 		"MapObjectDensities": [{
 			"MapObject": "crate",
@@ -422,7 +435,7 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
-		"EnemyDensity": 13,
+		"EnemyDensity": 50,
 		"Weapons": ["Fists",
 		"Chainsaw",
 		"2xChainsaw",
@@ -545,7 +558,12 @@
 			"Required": 0,
 			"Flags": 1
 		}],
-		"Enemies": [0],
+		"Enemies": [3,
+		3,
+		3,
+		3,
+		5,
+		6],
 		"SpecialChars": [],
 		"MapObjectDensities": [{
 			"MapObject": "crate",
@@ -599,7 +617,7 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
-		"EnemyDensity": 13,
+		"EnemyDensity": 55,
 		"Weapons": ["Fists",
 		"Chainsaw",
 		"2xChainsaw",
@@ -726,8 +744,12 @@
 			"Required": 0,
 			"Flags": 1
 		}],
-		"Enemies": [0],
-		"SpecialChars": [],
+		"Enemies": [],
+		"SpecialChars": [3,
+		3,
+		3,
+		5,
+		5],
 		"MapObjectDensities": [{
 			"MapObject": "crate",
 			"Density": 20
@@ -911,8 +933,13 @@
 			"Required": 0,
 			"Flags": 1
 		}],
-		"Enemies": [0],
-		"SpecialChars": [],
+		"Enemies": [],
+		"SpecialChars": [3,
+		3,
+		3,
+		5,
+		4,
+		7],
 		"MapObjectDensities": [{
 			"MapObject": "crate",
 			"Density": 20
@@ -1096,7 +1123,16 @@
 			"Required": 0,
 			"Flags": 1
 		}],
-		"Enemies": [0],
+		"Enemies": [3,
+		3,
+		3,
+		3,
+		4,
+		4,
+		4,
+		7,
+		7,
+		7],
 		"SpecialChars": [],
 		"MapObjectDensities": [{
 			"MapObject": "crate",
@@ -1150,7 +1186,7 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
-		"EnemyDensity": 13,
+		"EnemyDensity": 65,
 		"Weapons": ["Fists",
 		"Chainsaw",
 		"2xChainsaw",
@@ -1277,8 +1313,14 @@
 			"Required": 0,
 			"Flags": 1
 		}],
-		"Enemies": [0],
-		"SpecialChars": [],
+		"Enemies": [],
+		"SpecialChars": [3,
+		3,
+		5,
+		6,
+		4,
+		7,
+		8],
 		"MapObjectDensities": [{
 			"MapObject": "crate",
 			"Density": 20
@@ -1454,7 +1496,11 @@
 			"Required": 0,
 			"Flags": 1
 		}],
-		"Enemies": [0],
+		"Enemies": [3,
+		4,
+		4,
+		7,
+		7],
 		"SpecialChars": [],
 		"MapObjectDensities": [{
 			"MapObject": "crate",
@@ -1508,7 +1554,7 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
-		"EnemyDensity": 13,
+		"EnemyDensity": 70,
 		"Weapons": ["Fists",
 		"Chainsaw",
 		"2xChainsaw",
@@ -1631,7 +1677,17 @@
 			"Required": 0,
 			"Flags": 1
 		}],
-		"Enemies": [0],
+		"Enemies": [3,
+		4,
+		4,
+		5,
+		5,
+		6,
+		6,
+		7,
+		7,
+		8,
+		8],
 		"SpecialChars": [],
 		"MapObjectDensities": [{
 			"MapObject": "crate",
@@ -1685,7 +1741,7 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
-		"EnemyDensity": 13,
+		"EnemyDensity": 80,
 		"Weapons": ["Fists",
 		"Chainsaw",
 		"2xChainsaw",
