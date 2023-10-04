@@ -353,13 +353,13 @@ int CharacterStoreGetSpecialId(const CharacterStore *store, const int i)
 }
 int CharacterStoreGetRandomBaddieId(const CharacterStore *store)
 {
-	return *(int *)CArrayGet(
-		&store->baddieIds, rand() % store->baddieIds.size);
+	const int idx = RAND_INT(0, store->baddieIds.size);
+	return *(int *)CArrayGet(&store->baddieIds, idx);
 }
 int CharacterStoreGetRandomSpecialId(const CharacterStore *store)
 {
-	return *(int *)CArrayGet(
-		&store->specialIds, rand() % store->specialIds.size);
+	const int idx = RAND_INT(0, store->specialIds.size);
+	return *(int *)CArrayGet(&store->specialIds, idx);
 }
 
 bool CharacterIsPrisoner(const CharacterStore *store, const Character *c)

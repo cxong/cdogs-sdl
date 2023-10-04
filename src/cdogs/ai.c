@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2014, 2016-2017, 2020-2021 Cong Xu
+	Copyright (c) 2013-2014, 2016-2017, 2020-2021, 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -622,12 +622,12 @@ void InitializeBadGuys(void)
 	if (o->Type == OBJECTIVE_KILL &&
 		gMission.missionData->SpecialChars.size > 0)
 	{
-		const int charId =
-			CharacterStoreGetRandomSpecialId(&gCampaign.Setting.characters);
-		const Character *c =
-			CArrayGet(&gCampaign.Setting.characters.OtherChars, charId);
 		for (; o->placed < o->Count; o->placed++)
 		{
+			const int charId =
+			 CharacterStoreGetRandomSpecialId(&gCampaign.Setting.characters);
+			const Character *c =
+				CArrayGet(&gCampaign.Setting.characters.OtherChars, charId);
 			GameEvent e = GameEventNewActorAdd(
 				PlaceAwayFromPlayers(&gMap, false, paFlags), c, NULL);
 			e.u.ActorAdd.CharId = charId;
