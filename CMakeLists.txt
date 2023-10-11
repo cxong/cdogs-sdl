@@ -241,7 +241,7 @@ if(UNIX AND NOT APPLE AND NOT BEOS AND NOT HAIKU)
 		install(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-icon.${RES}.png
 			DESTINATION ${INSTALL_PREFIX}/share/icons/hicolor/${RES}x${RES}/apps
 			RENAME io.github.cxong.cdogs-sdl.png)
-	endforeach(RES)
+	endforeach()
 elseif(WIN32)
 	# Package for Windows
 	file(GLOB DLLS "${CMAKE_SOURCE_DIR}/dll/*.dll")

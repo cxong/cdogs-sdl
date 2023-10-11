@@ -53,7 +53,7 @@ set_target_properties(yajl PROPERTIES
 if(APPLE)
   set_target_properties(yajl PROPERTIES
                         INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
-endif(APPLE)
+endif()
 
 #### build up an sdk as a post build step
 
@@ -74,7 +74,7 @@ foreach (header ${PUB_HDRS})
 
   add_custom_command(TARGET yajl_s POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different ${header} ${incDir})
-endforeach (header ${PUB_HDRS})
+endforeach ()
 
 include_directories(${incDir}/..)
 
