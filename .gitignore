@@ -1,8 +1,8 @@
 # executables
 *.exe*
 *.zip
-src/cdogs-sdl
-src/cdogs-sdl-editor
+cdogs-sdl
+cdogs-sdl-editor
 cdogs-sdl.opk
 # tests
 *_test
@@ -36,7 +36,7 @@ build/windows/cdogs.rc
 
 # Linux
 bin/
-/share/
+share/
 include/
 
 # Visual Studio
@@ -108,7 +108,5 @@ tmp
 *~*.cdogscpn
 Thumbs.db
 .config/
-src/cdogs/include/
-src/cdogs/share/
 *.blend1
 emscripten/
