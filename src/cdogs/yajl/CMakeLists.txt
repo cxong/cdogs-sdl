@@ -12,69 +12,69 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-SET (YAJL_MAJOR 2)
-SET (YAJL_MINOR 1)
-SET (YAJL_MICRO 1)
+set (YAJL_MAJOR 2)
+set (YAJL_MINOR 1)
+set (YAJL_MICRO 1)
 
-SET (SRCS yajl.c yajl_lex.c yajl_parser.c yajl_buf.c
+set (SRCS yajl.c yajl_lex.c yajl_parser.c yajl_buf.c
           yajl_encode.c yajl_gen.c yajl_alloc.c
           yajl_tree.c yajl_version.c
 )
-SET (HDRS yajl_parser.h yajl_lex.h yajl_buf.h yajl_encode.h yajl_alloc.h)
-SET (PUB_HDRS api/yajl_parse.h api/yajl_gen.h api/yajl_common.h api/yajl_tree.h)
+set (HDRS yajl_parser.h yajl_lex.h yajl_buf.h yajl_encode.h yajl_alloc.h)
+set (PUB_HDRS api/yajl_parse.h api/yajl_gen.h api/yajl_common.h api/yajl_tree.h)
 
 # useful when fixing lexer bugs.
-#ADD_DEFINITIONS(-DYAJL_LEXER_DEBUG)
+#add_definitions(-DYAJL_LEXER_DEBUG)
 
 # Ensure defined when building YAJL (as opposed to using it from
 # another project).  Used to ensure correct function export when
 # building win32 DLL.
-ADD_DEFINITIONS(-DYAJL_BUILD)
+add_definitions(-DYAJL_BUILD)
 
 # set up some paths
-SET (libDir ${CMAKE_CURRENT_BINARY_DIR}/../${YAJL_DIST_NAME}/lib)
-SET (incDir ${CMAKE_CURRENT_BINARY_DIR}/../${YAJL_DIST_NAME}/include/yajl)
-SET (shareDir ${CMAKE_CURRENT_BINARY_DIR}/../${YAJL_DIST_NAME}/share/pkgconfig)
+set (libDir ${CMAKE_CURRENT_BINARY_DIR}/../${YAJL_DIST_NAME}/lib)
+set (incDir ${CMAKE_CURRENT_BINARY_DIR}/../${YAJL_DIST_NAME}/include/yajl)
+set (shareDir ${CMAKE_CURRENT_BINARY_DIR}/../${YAJL_DIST_NAME}/share/pkgconfig)
 
 # set the output path for libraries
-SET(LIBRARY_OUTPUT_PATH ${libDir})
+set(LIBRARY_OUTPUT_PATH ${libDir})
 
-ADD_LIBRARY(yajl_s STATIC ${SRCS} ${HDRS} ${PUB_HDRS})
+add_library(yajl_s STATIC ${SRCS} ${HDRS} ${PUB_HDRS})
 
-ADD_LIBRARY(yajl SHARED ${SRCS} ${HDRS} ${PUB_HDRS})
+add_library(yajl SHARED ${SRCS} ${HDRS} ${PUB_HDRS})
 
 #### setup shared library version number
-SET_TARGET_PROPERTIES(yajl PROPERTIES
+set_target_properties(yajl PROPERTIES
                       DEFINE_SYMBOL YAJL_SHARED
                       SOVERSION ${YAJL_MAJOR}
                       VERSION ${YAJL_MAJOR}.${YAJL_MINOR}.${YAJL_MICRO})
 
 #### ensure a .dylib has correct absolute installation paths upon installation
-IF(APPLE)
-  SET_TARGET_PROPERTIES(yajl PROPERTIES
+if(APPLE)
+  set_target_properties(yajl PROPERTIES
                         INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
-ENDIF(APPLE)
+endif(APPLE)
 
 #### build up an sdk as a post build step
 
 # create some directories
-FILE(MAKE_DIRECTORY ${libDir})
-FILE(MAKE_DIRECTORY ${incDir})
+file(MAKE_DIRECTORY ${libDir})
+file(MAKE_DIRECTORY ${incDir})
 
 # generate build-time source
-SET(dollar $)
-CONFIGURE_FILE(api/yajl_version.h.cmake ${incDir}/yajl_version.h)
-CONFIGURE_FILE(yajl.pc.cmake ${shareDir}/yajl.pc)
+set(dollar $)
+configure_file(api/yajl_version.h.cmake ${incDir}/yajl_version.h)
+configure_file(yajl.pc.cmake ${shareDir}/yajl.pc)
 
 # copy public headers to output directory
-FOREACH (header ${PUB_HDRS})
-  SET (header ${CMAKE_CURRENT_SOURCE_DIR}/${header})
+foreach (header ${PUB_HDRS})
+  set (header ${CMAKE_CURRENT_SOURCE_DIR}/${header})
 
-  EXEC_PROGRAM(${CMAKE_COMMAND} ARGS -E copy_if_different ${header} ${incDir})
+  exec_program(${CMAKE_COMMAND} ARGS -E copy_if_different ${header} ${incDir})
 
-  ADD_CUSTOM_COMMAND(TARGET yajl_s POST_BUILD
+  add_custom_command(TARGET yajl_s POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different ${header} ${incDir})
-ENDFOREACH (header ${PUB_HDRS})
+endforeach (header ${PUB_HDRS})
 
-INCLUDE_DIRECTORIES(${incDir}/..)
+include_directories(${incDir}/..)
 

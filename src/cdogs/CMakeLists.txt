@@ -227,9 +227,9 @@ set(CDOGS_HEADERS
 	XGetopt.h
 	yajl_utils.h)
 
-IF(NOT USE_SHARED_ENET)
-    ADD_SUBDIRECTORY(enet)
-ENDIF()
+if(NOT USE_SHARED_ENET)
+    add_subdirectory(enet)
+endif()
 
 add_subdirectory(c_hashmap)
 add_subdirectory(cwolfmap)

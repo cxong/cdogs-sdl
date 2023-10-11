@@ -5,21 +5,21 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
 set(CMAKE_OSX_ARCHITECTURES x86_64)
 project(cdogs-sdl C)
 
-SET(VERSION_MAJOR "1")
-SET(VERSION_MINOR "5")
-SET(VERSION_PATCH "0")
-SET(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+set(VERSION_MAJOR "1")
+set(VERSION_MINOR "5")
+set(VERSION_PATCH "0")
+set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
 # Optionally configure CI files since they are excluded in source archives
 if(EXISTS ${CMAKE_SOURCE_DIR}/.github/workflows/cmake.yml.cmake)
-	CONFIGURE_FILE(
+	configure_file(
 		${CMAKE_SOURCE_DIR}/.github/workflows/cmake.yml.cmake
 		${CMAKE_SOURCE_DIR}/.github/workflows/cmake.yml
 		@ONLY
 	)
 endif()
 if(EXISTS ${CMAKE_SOURCE_DIR}/appveyor.yml.cmake)
-	CONFIGURE_FILE(
+	configure_file(
 		${CMAKE_SOURCE_DIR}/appveyor.yml.cmake
 		${CMAKE_SOURCE_DIR}/appveyor.yml
 		@ONLY
@@ -27,8 +27,8 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/appveyor.yml.cmake)
 endif()
 
 # this must be 4 numbers
-SET(VERSION_RC "${VERSION_MAJOR},${VERSION_MINOR},${VERSION_PATCH},0")
-SET(WEBSITE "http://cxong.github.io/cdogs-sdl/")
+set(VERSION_RC "${VERSION_MAJOR},${VERSION_MINOR},${VERSION_PATCH},0")
+set(WEBSITE "http://cxong.github.io/cdogs-sdl/")
 
 option(DEBUG "Enable debug build" OFF)
 option(DEBUG_PROFILE "Enable debug profile build" OFF)
@@ -51,10 +51,10 @@ endif()
 if(WIN32)
 	set(CMAKE_RC_COMPILER_INIT windres)
 	enable_language(RC)
-	SET(CMAKE_RC_COMPILE_OBJECT
+	set(CMAKE_RC_COMPILE_OBJECT
 		"<CMAKE_RC_COMPILER> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
 endif()
-SET(LINKDIR /usr/games)
+set(LINKDIR /usr/games)
 
 if(DEBUG)
 	set(CMAKE_BUILD_TYPE "Debug")
@@ -75,22 +75,22 @@ if(BUILD_EDITOR)
 	find_package(OpenGL REQUIRED)
 endif()
 
-SET(ENet_LIBRARY enet)
-IF(WIN32)
-    SET(WINDOWS_ENET_DEPENDENCIES "ws2_32;winmm")
-    SET(ENet_LIBRARIES ${ENet_LIBRARY} ${WINDOWS_ENET_DEPENDENCIES})
-ELSE()
-    SET(ENet_LIBRARIES ${ENet_LIBRARY})
-ENDIF()
+set(ENet_LIBRARY enet)
+if(WIN32)
+    set(WINDOWS_ENET_DEPENDENCIES "ws2_32;winmm")
+    set(ENet_LIBRARIES ${ENet_LIBRARY} ${WINDOWS_ENET_DEPENDENCIES})
+else()
+    set(ENet_LIBRARIES ${ENet_LIBRARY})
+endif()
 
-IF(NOT USE_SHARED_ENET)
-    INCLUDE_DIRECTORIES(src/cdogs/enet/include)
-ENDIF()
+if(NOT USE_SHARED_ENET)
+    include_directories(src/cdogs/enet/include)
+endif()
 
 if(MSVC)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -MP -W4 -WX -wd\"4090\" -wd\"4996\" -wd\"4204\"")
 	if(DEBUG)
-		ADD_DEFINITIONS(-ZI)
+		add_definitions(-ZI)
 	endif()
 else()
 	add_definitions(
@@ -98,12 +98,12 @@ else()
 		-Wall -W
 		-Wstrict-prototypes -Wpointer-arith -Wcast-qual)
 	if(DEBUG)
-		ADD_DEFINITIONS(-g)
+		add_definitions(-g)
 		if(DEBUG_PROFILE AND CMAKE_COMPILER_IS_GNUCC)
-			ADD_DEFINITIONS(-p)
+			add_definitions(-p)
 		endif()
 	else()
-		ADD_DEFINITIONS(-O2)
+		add_definitions(-O2)
 	endif()
 	if(GCW0)
 		add_definitions(-D__GCWZERO__)
@@ -148,18 +148,18 @@ if(WIN32)
 	set(CDOGS_CFG_DIR "C-Dogs SDL/")
 else()
 	set(CDOGS_CFG_DIR ".config/cdogs-sdl/")
-ENDIF()
-SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ".")
-IF(UNIX AND NOT APPLE)
-	CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/build/linux/cdogs-sdl.cmake ${CMAKE_SOURCE_DIR}/build/linux/cdogs-sdl)
-	SET_SOURCE_FILES_PROPERTIES(${CMAKE_SOURCE_DIR}/build/linux/cdogs-sdl PROPERTIES GENERATED TRUE)
-ENDIF()
-IF(WIN32)
-	CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/build/windows/cdogs.rc.cmake ${CMAKE_SOURCE_DIR}/build/windows/cdogs.rc)
-	SET_SOURCE_FILES_PROPERTIES(${CMAKE_SOURCE_DIR}/build/windows/cdogs.rc PROPERTIES GENERATED TRUE)
-ENDIF()
-CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/src/cdogs/sys_config.h.cmake ${CMAKE_SOURCE_DIR}/src/cdogs/sys_config.h)
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_SOURCE_DIR}/src/cdogs/sys_config.h PROPERTIES GENERATED TRUE)
+endif()
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ".")
+if(UNIX AND NOT APPLE)
+	configure_file(${CMAKE_SOURCE_DIR}/build/linux/cdogs-sdl.cmake ${CMAKE_SOURCE_DIR}/build/linux/cdogs-sdl)
+	set_source_files_properties(${CMAKE_SOURCE_DIR}/build/linux/cdogs-sdl PROPERTIES GENERATED TRUE)
+endif()
+if(WIN32)
+	configure_file(${CMAKE_SOURCE_DIR}/build/windows/cdogs.rc.cmake ${CMAKE_SOURCE_DIR}/build/windows/cdogs.rc)
+	set_source_files_properties(${CMAKE_SOURCE_DIR}/build/windows/cdogs.rc PROPERTIES GENERATED TRUE)
+endif()
+configure_file(${CMAKE_SOURCE_DIR}/src/cdogs/sys_config.h.cmake ${CMAKE_SOURCE_DIR}/src/cdogs/sys_config.h)
+set_source_files_properties(${CMAKE_SOURCE_DIR}/src/cdogs/sys_config.h PROPERTIES GENERATED TRUE)
 include_directories(src src/cdogs)
 
 # Tests
@@ -215,7 +215,7 @@ if(BUILD_EDITOR)
 	    DESTINATION ${CDOGS_BIN_DIR})
 endif()
 
-INSTALL(DIRECTORY
+install(DIRECTORY
 	${CMAKE_SOURCE_DIR}/data
 	${CMAKE_SOURCE_DIR}/missions
 	${CMAKE_SOURCE_DIR}/dogfights
@@ -227,52 +227,52 @@ INSTALL(DIRECTORY
 if(NOT DEFINED CDOGS_DOC_DIR)
 	set(CDOGS_DOC_DIR "${DATA_INSTALL_DIR}/doc")
 endif()
-INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/
 	DESTINATION ${CDOGS_DOC_DIR}
 	)
 
-INSTALL(FILES
+install(FILES
 	${CMAKE_SOURCE_DIR}/README.md
 	DESTINATION ${DATA_INSTALL_DIR})
-IF(UNIX AND NOT APPLE AND NOT BEOS AND NOT HAIKU)
-	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/io.github.cxong.cdogs-sdl.desktop DESTINATION ${INSTALL_PREFIX}/share/applications)
-	INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/io.github.cxong.cdogs-sdl.appdata.xml DESTINATION ${INSTALL_PREFIX}/share/metainfo)
+if(UNIX AND NOT APPLE AND NOT BEOS AND NOT HAIKU)
+	install(FILES ${CMAKE_SOURCE_DIR}/build/linux/io.github.cxong.cdogs-sdl.desktop DESTINATION ${INSTALL_PREFIX}/share/applications)
+	install(FILES ${CMAKE_SOURCE_DIR}/build/linux/io.github.cxong.cdogs-sdl.appdata.xml DESTINATION ${INSTALL_PREFIX}/share/metainfo)
 	foreach(RES 16 22 32 48 128)
-		INSTALL(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-icon.${RES}.png
+		install(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-icon.${RES}.png
 			DESTINATION ${INSTALL_PREFIX}/share/icons/hicolor/${RES}x${RES}/apps
 			RENAME io.github.cxong.cdogs-sdl.png)
 	endforeach(RES)
 elseif(WIN32)
 	# Package for Windows
-	FILE(GLOB DLLS "${CMAKE_SOURCE_DIR}/dll/*.dll")
-	FOREACH(DLL ${DLLS})
-		INSTALL(FILES "${DLL}" DESTINATION ${INSTALL_PREFIX}/bin)
-	ENDFOREACH()
+	file(GLOB DLLS "${CMAKE_SOURCE_DIR}/dll/*.dll")
+	foreach(DLL ${DLLS})
+		install(FILES "${DLL}" DESTINATION ${INSTALL_PREFIX}/bin)
+	endforeach()
 	install(DIRECTORY ${CMAKE_SOURCE_DIR}/build/licenses DESTINATION ${INSTALL_PREFIX})
 elseif(APPLE)
 	set(CMAKE_INSTALL_PREFIX "/Applications/cdogs-sdl")
 endif()
 
 # Packaging
-SET(CPACK_PACKAGE_NAME "C-Dogs.SDL")
-SET(CPACK_PACKAGE_VENDOR "C-Dogs SDL Team")
-SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "C-Dogs SDL: Action/Arcade Game")
-SET(CPACK_PACKAGE_VERSION ${VERSION})
-SET(CPACK_PACKAGE_VERSION_MAJOR ${VERSION_MAJOR})
-SET(CPACK_PACKAGE_VERSION_MINOR ${VERSION_MINOR})
-SET(CPACK_PACKAGE_VERSION_PATCH ${VERSION_PATCH})
-SET(CPACK_PACKAGE_EXECUTABLES "cdogs-sdl;C-Dogs SDL;cdogs-sdl-editor;Campaign Editor")
+set(CPACK_PACKAGE_NAME "C-Dogs.SDL")
+set(CPACK_PACKAGE_VENDOR "C-Dogs SDL Team")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "C-Dogs SDL: Action/Arcade Game")
+set(CPACK_PACKAGE_VERSION ${VERSION})
+set(CPACK_PACKAGE_VERSION_MAJOR ${VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${VERSION_PATCH})
+set(CPACK_PACKAGE_EXECUTABLES "cdogs-sdl;C-Dogs SDL;cdogs-sdl-editor;Campaign Editor")
 if(WIN32)
-	SET(CPACK_GENERATOR NSIS ZIP)
-	SET(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
-	SET(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_SOURCE_DIR}/doc/COPYING.GPL)
+	set(CPACK_GENERATOR NSIS ZIP)
+	set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
+	set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_SOURCE_DIR}/doc/COPYING.GPL)
 	set(CPACK_PACKAGE_INSTALL_DIRECTORY "C-Dogs SDL")
-	SET(CPACK_NSIS_MUI_ICON ${CMAKE_SOURCE_DIR}/build/windows/cdogs-icon.ico)
+	set(CPACK_NSIS_MUI_ICON ${CMAKE_SOURCE_DIR}/build/windows/cdogs-icon.ico)
 	set(CPACK_NSIS_CREATE_ICONS "SetOutPath '\$INSTDIR\\\\bin'
 	CreateShortCut '\$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\C-Dogs SDL.lnk' '\$INSTDIR\\\\bin\\\\cdogs-sdl.exe'
 	CreateShortCut '\$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\Campaign Editor.lnk' '\$INSTDIR\\\\bin\\\\cdogs-sdl-editor.exe'")
-	SET(CPACK_NSIS_MUI_FINISHPAGE_RUN cdogs-sdl.exe)
-	SET(CPACK_NSIS_URL_INFO_ABOUT ${WEBSITE})
+	set(CPACK_NSIS_MUI_FINISHPAGE_RUN cdogs-sdl.exe)
+	set(CPACK_NSIS_URL_INFO_ABOUT ${WEBSITE})
 elseif(APPLE)
 	set(CPACK_GENERATOR "DragNDrop")
 	set(CPACK_DMG_FORMAT "UDBZ")
