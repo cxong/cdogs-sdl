@@ -163,7 +163,7 @@ set_source_files_properties(${CMAKE_SOURCE_DIR}/src/cdogs/sys_config.h PROPERTIE
 include_directories(src src/cdogs)
 
 # Tests
-enable_testing()
+include(CTest)
 
 add_subdirectory(src)
 
