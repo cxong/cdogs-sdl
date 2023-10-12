@@ -38,6 +38,7 @@ build/windows/cdogs.rc
 bin/
 share/
 include/
+!src/cdogs/enet/include/
 
 # Visual Studio
 enc_temp_folder/
