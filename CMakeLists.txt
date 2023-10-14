@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.19)
 cmake_policy(SET CMP0054 NEW)
 cmake_policy(SET CMP0072 NEW)
 set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
-set(CMAKE_OSX_ARCHITECTURES x86_64)
 project(cdogs-sdl C)
 
 SET(VERSION_MAJOR "1")
