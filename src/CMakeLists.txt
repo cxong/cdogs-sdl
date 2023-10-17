@@ -12,7 +12,9 @@ if(BUILD_EDITOR)
 endif()
 add_subdirectory(json)
 add_subdirectory(proto)
-add_subdirectory(tests)
+if(BUILD_TESTING)
+	add_subdirectory(tests)
+endif()
 
 set(CDOGS_SDL_SOURCES
 	ammo_menu.c

@@ -1,8 +1,8 @@
 # executables
 *.exe*
 *.zip
-src/cdogs-sdl
-src/cdogs-sdl-editor
+cdogs-sdl
+cdogs-sdl-editor
 cdogs-sdl.opk
 # tests
 *_test
@@ -18,6 +18,7 @@ RemoteSystemsTempFiles/
 CPack*
 _CPack_Packages/
 CTestTestfile.cmake
+DartConfiguration.tcl
 Testing/
 install_manifest_Runtime.txt
 *.deb
@@ -36,8 +37,9 @@ build/windows/cdogs.rc
 
 # Linux
 bin/
-/share/
+share/
 include/
+!src/cdogs/enet/include/
 
 # Visual Studio
 enc_temp_folder/
@@ -108,7 +110,5 @@ tmp
 *~*.cdogscpn
 Thumbs.db
 .config/
-src/cdogs/include/
-src/cdogs/share/
 *.blend1
 emscripten/
