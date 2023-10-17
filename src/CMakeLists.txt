@@ -66,8 +66,6 @@ set(CDOGS_SDL_HEADERS
 set(CDOGS_SDL_EXTRA)
 if(WIN32)
 	set(CDOGS_SDL_EXTRA ../build/windows/cdogs.rc)
-elseif(APPLE)
-	set(EXTRA_LIBRARIES "${EXTRA_LIBRARIES} -framework Carbon -framework IOKit")
 endif()
 add_executable(cdogs-sdl
 	${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS} ${CDOGS_SDL_EXTRA})

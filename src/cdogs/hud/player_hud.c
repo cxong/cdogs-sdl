@@ -660,7 +660,8 @@ static void DrawPlayerObjectiveCompass(
 	{
 		return;
 	}
-	Rect2i r = Rect2iNew(svec2i_zero(), hud->device->cachedConfig.Res);
+	// deviding the screen by 4 and 2, which draws the arrows half way from the screen edge to be centered
+	Rect2i r = Rect2iNew(svec2i(hud->device->cachedConfig.Res.x / 4, hud->device->cachedConfig.Res.y / 4), svec2i(hud->device->cachedConfig.Res.x / 2, hud->device->cachedConfig.Res.y / 2));
 	if (hudPlayerIndex & 1)
 	{
 		r.Pos.x = r.Size.x;
