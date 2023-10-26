@@ -78,14 +78,14 @@
 		"Facehair": "ff1616ff",
 		"Hat": "ff1616ff",
 		"Glasses": "ff1616ff",
-		"speed": 256,
+		"speed": 192,
 		"Gun": "DumbGun",
-		"maxHealth": 40,
+		"maxHealth": 15,
 		"flags": 1024,
-		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
-		"actionDelay": 15
+		"probabilityToMove": 25,
+		"probabilityToTrack": 50,
+		"probabilityToShoot": 10,
+		"actionDelay": 5
 	},
 	{
 		"Class": "Cyborg",
@@ -99,14 +99,14 @@
 		"Facehair": "ff1616ff",
 		"Hat": "ff1616ff",
 		"Glasses": "ff1616ff",
-		"speed": 256,
+		"speed": 384,
 		"Gun": "Lazer",
-		"maxHealth": 40,
+		"maxHealth": 12,
 		"flags": 1024,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
-		"actionDelay": 15
+		"probabilityToTrack": 50,
+		"probabilityToShoot": 10,
+		"actionDelay": 5
 	},
 	{
 		"Class": "Cyborg",
@@ -120,14 +120,14 @@
 		"Facehair": "ff1616ff",
 		"Hat": "ff1616ff",
 		"Glasses": "020000ff",
-		"speed": 256,
+		"speed": 128,
 		"Gun": "Gun",
-		"maxHealth": 40,
+		"maxHealth": 60,
 		"flags": 1024,
-		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
-		"actionDelay": 15
+		"probabilityToMove": 25,
+		"probabilityToTrack": 50,
+		"probabilityToShoot": 10,
+		"actionDelay": 5
 	},
 	{
 		"Class": "Cyborg",
@@ -141,14 +141,14 @@
 		"Facehair": "ff1616ff",
 		"Hat": "ff1616ff",
 		"Glasses": "ff1616ff",
-		"speed": 256,
+		"speed": 512,
 		"Gun": "Lazer",
-		"maxHealth": 40,
+		"maxHealth": 12,
 		"flags": 1024,
-		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
-		"actionDelay": 15
+		"probabilityToMove": 25,
+		"probabilityToTrack": 50,
+		"probabilityToShoot": 10,
+		"actionDelay": 5
 	},
 	{
 		"Class": "Cyborg",
@@ -165,12 +165,12 @@
 		"Glasses": "fcfcfcff",
 		"speed": 256,
 		"Gun": "DumbGun",
-		"maxHealth": 40,
+		"maxHealth": 15,
 		"flags": 1024,
-		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
-		"actionDelay": 15
+		"probabilityToMove": 25,
+		"probabilityToTrack": 50,
+		"probabilityToShoot": 10,
+		"actionDelay": 5
 	},
 	{
 		"Class": "Cyborg",
@@ -187,11 +187,11 @@
 		"Glasses": "ff1616ff",
 		"speed": 256,
 		"Gun": "TurboLazer",
-		"maxHealth": 40,
+		"maxHealth": 60,
 		"flags": 1024,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 25,
-		"probabilityToShoot": 2,
-		"actionDelay": 15
+		"probabilityToTrack": 50,
+		"probabilityToShoot": 10,
+		"actionDelay": 5
 	}]
 }
