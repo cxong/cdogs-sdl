@@ -711,6 +711,9 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 			DrawFlag(
 				ctx, ec, "Unlock Doors", FLAGS_UNLOCK_DOORS,
 				"Can open any locked door");
+			DrawFlag(
+				ctx, ec, "Move and shoot", FLAGS_MOVE_AND_SHOOT,
+				"Can move while shooting");
 			nk_end(ctx);
 		}
 	}

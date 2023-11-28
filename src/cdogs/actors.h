@@ -88,6 +88,7 @@
 #define FLAGS_SLEEPALWAYS (1 << 24)
 #define FLAGS_AWAKEALWAYS (1 << 25)
 #define FLAGS_RESCUED (1 << 26) // Run towards exit
+#define FLAGS_MOVE_AND_SHOOT (1 << 27)	// Can move and shoot at the same time
 
 typedef enum
 {

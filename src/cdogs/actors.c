@@ -1121,11 +1121,14 @@ void CommandActor(TActor *actor, int cmd, int ticks)
 static bool ActorTryMove(TActor *actor, int cmd, int ticks)
 {
 	const bool canMoveWhenShooting =
-		ConfigGetEnum(&gConfig, "Game.FireMoveStyle") != FIREMOVE_STOP ||
+	actor->PlayerUID < 0 ? (actor->flags & FLAGS_MOVE_AND_SHOOT) : 
+	(
+	 ConfigGetEnum(&gConfig, "Game.FireMoveStyle") != FIREMOVE_STOP ||
 		!actor->hasShot ||
 		(ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") ==
 			 SWITCHMOVE_STRAFE &&
-		 Button2(cmd));
+		 Button2(cmd))
+	 );
 	const bool willMove =
 		!actor->petrified && CMD_HAS_DIRECTION(cmd) && canMoveWhenShooting;
 	actor->MoveVel = svec2_zero();
