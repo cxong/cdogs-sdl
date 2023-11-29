@@ -49,6 +49,7 @@ typedef struct
 	char *HeadParts[HEAD_PART_COUNT];
 	float speed;
 	const WeaponClass *Gun;
+	const WeaponClass *Melee;
 	int maxHealth;
 	unsigned int flags;
 	CharColors Colors;

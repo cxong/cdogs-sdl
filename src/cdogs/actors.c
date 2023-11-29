@@ -466,8 +466,10 @@ static bool CanMeleeTarget(
 	if (!w->Gun || WeaponClassCanShoot(w->Gun))
 		return false;
 	// Check for melee damage if we are the owner of the actor
-	if ((gCampaign.IsClient || a->PlayerUID < 0) &&
-		!ActorIsLocalPlayer(a->uid))
+	// Is client: must be local player
+	// Not client: AI or local player
+	if (!ActorIsLocalPlayer(a->uid) &&
+		(gCampaign.IsClient || a->PlayerUID >= 0))
 		return false;
 	// Check if any barrel can fire and melee
 	for (int barrel = 0; barrel < WeaponClassNumBarrels(w->Gun); barrel++)
@@ -1121,7 +1123,7 @@ void CommandActor(TActor *actor, int cmd, int ticks)
 static bool ActorTryMove(TActor *actor, int cmd, int ticks)
 {
 	const bool canMoveWhenShooting =
-	actor->PlayerUID < 0 ? (actor->flags & FLAGS_MOVE_AND_SHOOT) : 
+	actor->PlayerUID < 0 ? (actor->flags & FLAGS_MOVE_AND_SHOOT) :
 	(
 	 ConfigGetEnum(&gConfig, "Game.FireMoveStyle") != FIREMOVE_STOP ||
 		!actor->hasShot ||
@@ -1724,6 +1726,11 @@ TActor *ActorAdd(NActorAdd aa)
 		Weapon gun = WeaponCreate(c->Gun);
 		actor->guns[0] = gun;
 		actor->gunIndex = 0;
+		if (c->Melee)
+		{
+			Weapon melee = WeaponCreate(c->Melee);
+			actor->guns[MELEE_SLOT] = melee;
+		}
 	}
 	actor->health = aa.Health;
 	actor->action = ACTORACTION_MOVING;

@@ -209,6 +209,13 @@ void CharacterLoadJSON(
 		tmp = GetString(child, "Gun");
 		ch->Gun = StrWeaponClass(tmp);
 		CFREE(tmp);
+		tmp = NULL;
+		LoadStr(&tmp, child, "Melee");
+		if (tmp != NULL)
+		{
+			ch->Melee = StrWeaponClass(tmp);
+			CFREE(tmp);
+		}
 		LoadInt(&ch->maxHealth, child, "maxHealth");
 		int flags;
 		LoadInt(&flags, child, "flags");
@@ -277,6 +284,10 @@ bool CharacterSave(CharacterStore *s, const char *path)
 	AddColorPair(node, "Glasses", c->Colors.Glasses);
 	AddIntPair(node, "speed", (int)(c->speed * 256));
 	json_insert_pair_into_object(node, "Gun", json_new_string(c->Gun->name));
+	if (c->Melee != NULL)
+	{
+		json_insert_pair_into_object(node, "Melee", json_new_string(c->Melee->name));
+	}
 	AddIntPair(node, "maxHealth", c->maxHealth);
 	AddIntPair(node, "flags", c->flags);
 	if (c->Drop != NULL)
