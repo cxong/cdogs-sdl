@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2014, 2016-2018, 2021-2022 Cong Xu
+	Copyright (c) 2014, 2016-2018, 2021-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -385,13 +385,12 @@ void LoopRunnerChange(LoopRunner *l, GameLoopData *newData)
 void LoopRunnerPush(LoopRunner *l, GameLoopData *newData)
 {
 	CArrayPushBack(&l->Loops, &newData);
-	newData->IsUsed = true;
 }
 void LoopRunnerPop(LoopRunner *l)
 {
 	GameLoopData *data = GetCurrentLoop(l);
 	GameLoopOnExit(data);
-	data->IsUsed = false;
+	GameLoopTerminate(data);
 	CArrayDelete(&l->Loops, l->Loops.size - 1);
 }
 
@@ -419,10 +418,6 @@ static void GameLoopOnExit(GameLoopData *data)
 	if (!data->HasExited && data->OnExit)
 	{
 		data->OnExit(data);
-	}
-	if (!data->IsUsed)
-	{
-		GameLoopTerminate(data);
 	}
 	data->HasExited = true;
 	data->HasEntered = false;

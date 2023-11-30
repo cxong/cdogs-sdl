@@ -684,57 +684,55 @@ static GameLoopResult GameOptionsUpdate(GameLoopData *data, LoopRunner *l)
 			MissionOptionsTerminate(&gMission);
 			CampaignUnload(&gCampaign);
 			LoopRunnerPop(l);
+			return UPDATE_RESULT_OK;
+		}
+		if (!ConfigApply(&gConfig, NULL))
+		{
+			LOG(LM_MAIN, LL_ERROR,
+				"Failed to apply config; reset to last used");
+			ConfigResetChanged(&gConfig);
 		}
 		else
 		{
-			if (!ConfigApply(&gConfig, NULL))
-			{
-				LOG(LM_MAIN, LL_ERROR,
-					"Failed to apply config; reset to last used");
-				ConfigResetChanged(&gConfig);
-			}
-			else
-			{
-				// Save options for later
-				ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
-			}
+			// Save options for later
+			ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
+		}
 
-			// Set allowed weapons
-			// First check if the player has unwittingly disabled all weapons
-			// if so, enable all weapons
-			bool allDisabled = true;
+		// Set allowed weapons
+		// First check if the player has unwittingly disabled all weapons
+		// if so, enable all weapons
+		bool allDisabled = true;
+		for (int i = 0, j = 0; i < (int)gData->allowed.size; i++, j++)
+		{
+			const bool *allowed = CArrayGet(&gData->allowed, i);
+			if (*allowed)
+			{
+				allDisabled = false;
+				break;
+			}
+		}
+		if (!allDisabled)
+		{
 			for (int i = 0, j = 0; i < (int)gData->allowed.size; i++, j++)
 			{
 				const bool *allowed = CArrayGet(&gData->allowed, i);
-				if (*allowed)
+				if (!*allowed)
 				{
-					allDisabled = false;
-					break;
+					CArrayDelete(&gMission.Weapons, j);
+					j--;
 				}
 			}
-			if (!allDisabled)
-			{
-				for (int i = 0, j = 0; i < (int)gData->allowed.size; i++, j++)
-				{
-					const bool *allowed = CArrayGet(&gData->allowed, i);
-					if (!*allowed)
-					{
-						CArrayDelete(&gMission.Weapons, j);
-						j--;
-					}
-				}
-			}
-
-			gCampaign.OptionsSet = true;
-
-			// If enabled, start net server
-			if (!gCampaign.IsClient && ConfigGetBool(&gConfig, "StartServer"))
-			{
-				NetServerOpen(&gNetServer);
-			}
-			LoopRunnerPush(
-				l, ScreenMissionBriefing(&gCampaign.Setting, &gMission));
 		}
+
+		gCampaign.OptionsSet = true;
+
+		// If enabled, start net server
+		if (!gCampaign.IsClient && ConfigGetBool(&gConfig, "StartServer"))
+		{
+			NetServerOpen(&gNetServer);
+		}
+		LoopRunnerPush(
+			l, ScreenMissionBriefing(&gCampaign.Setting, &gMission));
 		return UPDATE_RESULT_OK;
 	}
 	return UPDATE_RESULT_DRAW;
@@ -795,13 +793,11 @@ bail:
 	if (!gCampaign.IsLoaded)
 	{
 		LoopRunnerPop(l);
+		return UPDATE_RESULT_OK;
 	}
-	else
-	{
-		LoopRunnerPush(
-			l, ScreenLoading(
-				   "Starting game...", true,
-				   RunGame(&gCampaign, &gMission, &gMap), true));
-	}
+	LoopRunnerPush(
+		l, ScreenLoading(
+			   "Starting game...", true,
+			   RunGame(&gCampaign, &gMission, &gMap), true));
 	return UPDATE_RESULT_OK;
 }

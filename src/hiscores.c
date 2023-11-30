@@ -93,9 +93,10 @@ static void HighScoresScreenTerminate(GameLoopData *data)
 }
 static GameLoopResult HighScoresScreenUpdate(GameLoopData *data, LoopRunner *l)
 {
-	HighScoresScreenData *hData = data->Data;
+	// Make copy before popping loop
+	HighScoresScreenData hData = *(HighScoresScreenData *)data->Data;
 	LoopRunnerPop(l);
-	if (!IsPVP(hData->co->Entry.Mode) &&
+	if (!IsPVP(hData.co->Entry.Mode) &&
 		GetNumPlayers(PLAYER_ANY, false, true) > 0)
 	{
 		LoadHighScores();
@@ -103,7 +104,7 @@ static GameLoopResult HighScoresScreenUpdate(GameLoopData *data, LoopRunner *l)
 		bool todays = false;
 		CA_FOREACH(PlayerData, p, gPlayerDatas)
 		const bool isPlayerComplete =
-			(!hData->co->IsQuit && !p->survived) || hData->co->IsComplete;
+			(!hData.co->IsQuit && !p->survived) || hData.co->IsComplete;
 		if (isPlayerComplete && p->IsLocal && IsPlayerHuman(p))
 		{
 			EnterHighScore(p);
@@ -121,18 +122,18 @@ static GameLoopResult HighScoresScreenUpdate(GameLoopData *data, LoopRunner *l)
 		{
 			p->missions++;
 		}
-		p->lastMission = hData->co->MissionIndex;
+		p->lastMission = hData.co->MissionIndex;
 		CA_FOREACH_END()
 		SaveHighScores();
 
 		// Show high scores screen if high enough
 		if (todays)
 		{
-			LoopRunnerPush(l, DisplayTodaysHighScores(hData->g));
+			LoopRunnerPush(l, DisplayTodaysHighScores(hData.g));
 		}
 		if (allTime)
 		{
-			LoopRunnerPush(l, DisplayAllTimeHighScores(hData->g));
+			LoopRunnerPush(l, DisplayAllTimeHighScores(hData.g));
 		}
 	}
 

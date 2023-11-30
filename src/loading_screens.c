@@ -180,18 +180,21 @@ static GameLoopResult LoopUpdate(GameLoopData *data, LoopRunner *l)
 	sData->count++;
 	if (complete)
 	{
+		// Remove current loop, but copy its data before destroying it
+		ScreenLoadingData sDataCopy = *sData;
+		sData = NULL;
 		LoopRunnerPop(l);
-		if (sData->ascending)
+		if (sDataCopy.ascending)
 		{
-			if (sData->removeParent)
+			if (sDataCopy.removeParent)
 			{
 				LoopRunnerPop(l);
 			}
-			if (sData->nextLoop)
+			if (sDataCopy.nextLoop)
 			{
-				LoopRunnerPush(l, sData->nextLoop);
+				LoopRunnerPush(l, sDataCopy.nextLoop);
 				// Show a loading screen with tiles animating out
-				LoopRunnerPush(l, ScreenLoading(sData->loadingText, false, NULL, false));
+				LoopRunnerPush(l, ScreenLoading(sDataCopy.loadingText, false, NULL, false));
 			}
 		}
 		return UPDATE_RESULT_OK;

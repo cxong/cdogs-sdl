@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2014, 2017-2018, 2022 Cong Xu
+	Copyright (c) 2014, 2017-2018, 2022-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -63,7 +63,6 @@ typedef struct sGameLoopData
 	bool HasEntered;
 	bool HasExited;
 	bool HasDrawnFirst;
-	bool IsUsed;
 	bool DrawParent;
 } GameLoopData;
 
