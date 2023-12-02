@@ -374,7 +374,7 @@ static int GunIndex(const WeaponClass *wc)
 	{
 		continue;
 	}
-	if (wc == wc2)
+	if (strcmp(wc->name, wc2->name) == 0)
 	{
 		return j;
 	}
@@ -385,7 +385,7 @@ static int GunIndex(const WeaponClass *wc)
 	{
 		continue;
 	}
-	if (wc == wc2)
+	if (strcmp(wc->name, wc2->name) == 0)
 	{
 		return j;
 	}
@@ -406,7 +406,7 @@ static int MeleeIndex(const WeaponClass *wc)
 	{
 		continue;
 	}
-	if (wc == wc2)
+	if (strcmp(wc->name, wc2->name) == 0)
 	{
 		return j;
 	}
@@ -417,7 +417,7 @@ static int MeleeIndex(const WeaponClass *wc)
 	{
 		continue;
 	}
-	if (wc == wc2)
+	if (strcmp(wc->name, wc2->name) == 0)
 	{
 		return j;
 	}

@@ -83,10 +83,10 @@
 		"Melee": "Fists",
 		"maxHealth": 15,
 		"flags": 167773184,
-		"probabilityToMove": 25,
+		"probabilityToMove": 50,
 		"probabilityToTrack": 50,
 		"probabilityToShoot": 10,
-		"actionDelay": 5
+		"actionDelay": 25
 	},
 	{
 		"Class": "Cyborg",
@@ -105,10 +105,10 @@
 		"Melee": "Fists",
 		"maxHealth": 12,
 		"flags": 167773184,
-		"probabilityToMove": 50,
-		"probabilityToTrack": 50,
+		"probabilityToMove": 75,
+		"probabilityToTrack": 75,
 		"probabilityToShoot": 10,
-		"actionDelay": 5
+		"actionDelay": 20
 	},
 	{
 		"Class": "Cyborg",
@@ -127,10 +127,10 @@
 		"Melee": "Fists",
 		"maxHealth": 60,
 		"flags": 167773184,
-		"probabilityToMove": 25,
-		"probabilityToTrack": 50,
-		"probabilityToShoot": 10,
-		"actionDelay": 5
+		"probabilityToMove": 75,
+		"probabilityToTrack": 75,
+		"probabilityToShoot": 50,
+		"actionDelay": 25
 	},
 	{
 		"Class": "Cyborg",
@@ -146,13 +146,13 @@
 		"Glasses": "ff1616ff",
 		"speed": 512,
 		"Gun": "Lazer",
-		"Melee": "Fists",
+		"Melee": "Chainsaw",
 		"maxHealth": 12,
 		"flags": 167773184,
-		"probabilityToMove": 25,
-		"probabilityToTrack": 50,
-		"probabilityToShoot": 10,
-		"actionDelay": 5
+		"probabilityToMove": 75,
+		"probabilityToTrack": 75,
+		"probabilityToShoot": 5,
+		"actionDelay": 10
 	},
 	{
 		"Class": "Cyborg",
@@ -172,10 +172,10 @@
 		"Melee": "Fists",
 		"maxHealth": 15,
 		"flags": 167773184,
-		"probabilityToMove": 25,
-		"probabilityToTrack": 50,
-		"probabilityToShoot": 10,
-		"actionDelay": 5
+		"probabilityToMove": 75,
+		"probabilityToTrack": 75,
+		"probabilityToShoot": 50,
+		"actionDelay": 15
 	},
 	{
 		"Class": "Cyborg",
@@ -192,12 +192,12 @@
 		"Glasses": "ff1616ff",
 		"speed": 256,
 		"Gun": "TurboLazer",
-		"Melee": "Fists",
+		"Melee": "2xChainsaw",
 		"maxHealth": 60,
 		"flags": 167773184,
 		"probabilityToMove": 50,
 		"probabilityToTrack": 50,
-		"probabilityToShoot": 10,
-		"actionDelay": 5
+		"probabilityToShoot": 50,
+		"actionDelay": 10
 	}]
 }
