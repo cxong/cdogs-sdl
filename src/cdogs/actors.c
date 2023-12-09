@@ -839,7 +839,11 @@ void ActorReplaceGun(const NActorReplaceGun rg)
 		a->gunIndex = rg.GunIdx;
 	}
 	SoundPlayAt(&gSoundDevice, wc->SwitchSound, a->Pos);
-	ActorSetChatter(a, wc->name, CHATTER_SWITCH_GUN);
+	// Show gun switch text as chatter, but only for PCs
+	if (a->PlayerUID >= 0)
+	{
+		ActorSetChatter(a, wc->name, CHATTER_SWITCH_GUN);
+	}
 }
 
 int ActorFindGun(const TActor *a, const WeaponClass *wc)
@@ -1961,7 +1965,11 @@ void ActorSwitchGun(const NActorSwitchGun sg)
 	}
 	const WeaponClass *gun = ACTOR_GET_WEAPON(a)->Gun;
 	SoundPlayAt(&gSoundDevice, gun->SwitchSound, a->thing.Pos);
-	ActorSetChatter(a, gun->name, CHATTER_SWITCH_GUN);
+	// Show gun switch text as chatter, but only for PCs
+	if (a->PlayerUID >= 0)
+	{
+		ActorSetChatter(a, gun->name, CHATTER_SWITCH_GUN);
+	}
 }
 
 void ActorPickupGun(const TActor *a, const WeaponClass *wc)
