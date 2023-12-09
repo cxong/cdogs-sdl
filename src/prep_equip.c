@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2018, 2020-2022 Cong Xu
+	Copyright (c) 2013-2018, 2020-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@
 #include <cdogs/net_server.h>
 #include <cdogs/player.h>
 
+#include "autosave.h"
 #include "prep.h"
 #include "equip_menu.h"
 
@@ -51,6 +52,12 @@ GameLoopData *PlayerEquip(void)
 {
 	PlayerEquipData *data;
 	CCALLOC(data, sizeof *data);
+	const CampaignSave *save = AutosaveGetCampaign(&gAutosave, gCampaign.Entry.Path);
+	const Mission *m = CampaignGetCurrentMission(&gCampaign);
+	if (save != NULL && gCampaign.MissionIndex > 0)
+	{
+		PlayerSavesApply(&save->Players, m->WeaponPersist);
+	}
 	data->waitResult = EVENT_WAIT_CONTINUE;
 	for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
 	{
@@ -89,6 +96,14 @@ GameLoopData *PlayerEquip(void)
 			const Mission *prevMission = CArrayGet(
 				&gCampaign.Setting.Missions, gCampaign.MissionIndex - 1);
 			prevWeapons = &prevMission->Weapons;
+		}
+		
+		// Special case: reset player lives
+		// Player.Lives is modified dynamically in game, so if we
+		// are replaying, we need to reset if we have no player save
+		if (save == NULL || gCampaign.MissionIndex == 0)
+		{
+			p->Lives = CampaignGetLives(&gCampaign);
 		}
 
 		EquipMenuCreate(
