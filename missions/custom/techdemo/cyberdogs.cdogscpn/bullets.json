@@ -244,7 +244,7 @@
       "Spark": "spark_green",
       "Speed": 768,
       "Range": 110,
-      "Power": 3
+      "Power": 10
     },
     {
       "Name": "laser",
@@ -255,15 +255,15 @@
       "Spark": "spark_yellow",
       "Speed": 960,
       "Range": 100,
-      "Power": 10
+      "Power": 3
     },
     {
       "Name": "turbo_laser",
       "Pic": {
         "Type": "Directional",
-        "Sprites": "particles/beam_yellow"
+        "Sprites": "particles/beam_green"
       },
-      "Spark": "spark_yellow",
+      "Spark": "spark_green",
       "Speed": 960,
       "Range": 100,
       "Power": 8
