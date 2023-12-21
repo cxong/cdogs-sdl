@@ -1,141 +1,5 @@
 {
 	"Missions": [{
-		"Title": "",
-		"Description": "",
-		"Type": "Classic",
-		"Width": 48,
-		"Height": 48,
-		"ExitStyle": "hazard",
-		"KeyStyle": "office",
-		"Objectives": [],
-		"Enemies": [3,
-		4,
-		5,
-		6,
-		7,
-		8],
-		"SpecialChars": [],
-		"MapObjectDensities": [],
-		"EnemyDensity": 20,
-		"Weapons": ["Knife",
-		"Machine gun",
-		"Grenades",
-		"Flamer",
-		"Shotgun",
-		"Powergun",
-		"Shrapnel bombs",
-		"Molotovs",
-		"Sniper rifle",
-		"Prox. mine",
-		"Dynamite",
-		"Chemo bombs",
-		"Petrify gun",
-		"Browny gun",
-		"Confusion bombs",
-		"Chemo gun",
-		"Pulse rifle",
-		"Heatseeker",
-		"Fists",
-		"Swarmer",
-		"Launcher",
-		"Pistol",
-		"Akimbo Pistols",
-		"Chainsaw",
-		"2xChainsaw",
-		"3xChainsaw",
-		"4xChainsaw",
-		"5xChainsaw",
-		"Fists",
-		"MiniGun",
-		"Launcher",
-		"Flamer",
-		"Powergun",
-		"Lazer",
-		"TurboLazer",
-		"Blaster",
-		"MegaGun",
-		"DumbGun",
-		"Gun"],
-		"WeaponPersist": false,
-		"SkipDebrief": false,
-		"TileClasses": {
-			"Wall": {
-				"Name": "wall",
-				"Type": "Wall",
-				"Style": "steel",
-				"Mask": "848484ff",
-				"MaskAlt": "008400ff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": false,
-				"DamageBullet": ""
-			},
-			"Floor": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "recessed",
-				"Mask": "484848ff",
-				"MaskAlt": "008400ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": false,
-				"DamageBullet": ""
-			},
-			"Room": {
-				"Name": "tile",
-				"Type": "Floor",
-				"Style": "recessed",
-				"Mask": "707070ff",
-				"MaskAlt": "008400ff",
-				"CanWalk": true,
-				"IsOpaque": false,
-				"Shootable": false,
-				"IsRoom": true,
-				"DamageBullet": ""
-			},
-			"Door": {
-				"Name": "door",
-				"Type": "Door",
-				"Style": "office",
-				"Mask": "ffffffff",
-				"MaskAlt": "ffffffff",
-				"CanWalk": false,
-				"IsOpaque": true,
-				"Shootable": true,
-				"IsRoom": true,
-				"DamageBullet": ""
-			}
-		},
-		"Walls": 11,
-		"WallLength": 14,
-		"CorridorWidth": 2,
-		"Rooms": {
-			"Count": 3,
-			"Min": 7,
-			"Max": 10,
-			"Edge": false,
-			"Overlap": false,
-			"Walls": 0,
-			"WallLength": 1,
-			"WallPad": 1
-		},
-		"Squares": 0,
-		"ExitEnabled": true,
-		"Doors": {
-			"Enabled": false,
-			"Min": 1,
-			"Max": 1,
-			"RandomPos": false
-		},
-		"Pillars": {
-			"Count": 0,
-			"Min": 1,
-			"Max": 1
-		}
-	},
-	{
 		"Title": "Mission 1",
 		"Description": "",
 		"Type": "Classic",
@@ -203,6 +67,14 @@
 		{
 			"MapObject": "bloodstain1",
 			"Density": 20
+		}],
+		"PickupDensities": [{
+			"Pickup": "gun_Powergun",
+			"Density": 1
+		},
+		{
+			"Pickup": "ammo_Cells",
+			"Density": 1
 		}],
 		"EnemyDensity": 13,
 		"Weapons": ["Fists",
@@ -339,24 +211,8 @@
 		5],
 		"SpecialChars": [],
 		"MapObjectDensities": [{
-			"MapObject": "crate",
-			"Density": 20
-		},
-		{
-			"MapObject": "box",
-			"Density": 20
-		},
-		{
 			"MapObject": "fan",
 			"Density": 10
-		},
-		{
-			"MapObject": "cabinet_server",
-			"Density": 20
-		},
-		{
-			"MapObject": "box3_gray",
-			"Density": 20
 		},
 		{
 			"MapObject": "blood0",
@@ -389,6 +245,14 @@
 		{
 			"MapObject": "bloodstain1",
 			"Density": 20
+		}],
+		"PickupDensities": [{
+			"Pickup": "gun_Powergun",
+			"Density": 1
+		},
+		{
+			"Pickup": "ammo_Cells",
+			"Density": 1
 		}],
 		"EnemyDensity": 40,
 		"Weapons": ["Fists",
@@ -520,24 +384,8 @@
 		5],
 		"SpecialChars": [],
 		"MapObjectDensities": [{
-			"MapObject": "crate",
-			"Density": 20
-		},
-		{
-			"MapObject": "box",
-			"Density": 20
-		},
-		{
 			"MapObject": "fan",
 			"Density": 10
-		},
-		{
-			"MapObject": "cabinet_server",
-			"Density": 20
-		},
-		{
-			"MapObject": "box3_gray",
-			"Density": 20
 		},
 		{
 			"MapObject": "blood0",
@@ -571,6 +419,7 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
+		"PickupDensities": [],
 		"EnemyDensity": 50,
 		"Weapons": ["Fists",
 		"Chainsaw",
@@ -702,24 +551,8 @@
 		6],
 		"SpecialChars": [],
 		"MapObjectDensities": [{
-			"MapObject": "crate",
-			"Density": 20
-		},
-		{
-			"MapObject": "box",
-			"Density": 20
-		},
-		{
 			"MapObject": "fan",
 			"Density": 10
-		},
-		{
-			"MapObject": "cabinet_server",
-			"Density": 20
-		},
-		{
-			"MapObject": "box3_gray",
-			"Density": 20
 		},
 		{
 			"MapObject": "blood0",
@@ -753,6 +586,7 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
+		"PickupDensities": [],
 		"EnemyDensity": 55,
 		"Weapons": ["Fists",
 		"Chainsaw",
@@ -899,24 +733,8 @@
 		5,
 		5],
 		"MapObjectDensities": [{
-			"MapObject": "crate",
-			"Density": 20
-		},
-		{
-			"MapObject": "box",
-			"Density": 20
-		},
-		{
 			"MapObject": "fan",
 			"Density": 10
-		},
-		{
-			"MapObject": "cabinet_server",
-			"Density": 20
-		},
-		{
-			"MapObject": "box3_gray",
-			"Density": 20
 		},
 		{
 			"MapObject": "blood0",
@@ -950,6 +768,7 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
+		"PickupDensities": [],
 		"EnemyDensity": 13,
 		"Weapons": ["Fists",
 		"Chainsaw",
@@ -1089,24 +908,8 @@
 		4,
 		7],
 		"MapObjectDensities": [{
-			"MapObject": "crate",
-			"Density": 20
-		},
-		{
-			"MapObject": "box",
-			"Density": 20
-		},
-		{
 			"MapObject": "fan",
 			"Density": 10
-		},
-		{
-			"MapObject": "cabinet_server",
-			"Density": 20
-		},
-		{
-			"MapObject": "box3_gray",
-			"Density": 20
 		},
 		{
 			"MapObject": "blood0",
@@ -1140,6 +943,7 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
+		"PickupDensities": [],
 		"EnemyDensity": 13,
 		"Weapons": ["Fists",
 		"Chainsaw",
@@ -1283,24 +1087,8 @@
 		7],
 		"SpecialChars": [],
 		"MapObjectDensities": [{
-			"MapObject": "crate",
-			"Density": 20
-		},
-		{
-			"MapObject": "box",
-			"Density": 20
-		},
-		{
 			"MapObject": "fan",
 			"Density": 10
-		},
-		{
-			"MapObject": "cabinet_server",
-			"Density": 20
-		},
-		{
-			"MapObject": "box3_gray",
-			"Density": 20
 		},
 		{
 			"MapObject": "blood0",
@@ -1334,6 +1122,7 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
+		"PickupDensities": [],
 		"EnemyDensity": 65,
 		"Weapons": ["Fists",
 		"Chainsaw",
@@ -1482,24 +1271,8 @@
 		7,
 		8],
 		"MapObjectDensities": [{
-			"MapObject": "crate",
-			"Density": 20
-		},
-		{
-			"MapObject": "box",
-			"Density": 20
-		},
-		{
 			"MapObject": "fan",
 			"Density": 10
-		},
-		{
-			"MapObject": "cabinet_server",
-			"Density": 20
-		},
-		{
-			"MapObject": "box3_gray",
-			"Density": 20
 		},
 		{
 			"MapObject": "blood0",
@@ -1533,6 +1306,7 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
+		"PickupDensities": [],
 		"EnemyDensity": 13,
 		"Weapons": ["Fists",
 		"Chainsaw",
@@ -1663,24 +1437,8 @@
 		7],
 		"SpecialChars": [],
 		"MapObjectDensities": [{
-			"MapObject": "crate",
-			"Density": 20
-		},
-		{
-			"MapObject": "box",
-			"Density": 20
-		},
-		{
 			"MapObject": "fan",
 			"Density": 10
-		},
-		{
-			"MapObject": "cabinet_server",
-			"Density": 20
-		},
-		{
-			"MapObject": "box3_gray",
-			"Density": 20
 		},
 		{
 			"MapObject": "blood0",
@@ -1714,6 +1472,7 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
+		"PickupDensities": [],
 		"EnemyDensity": 70,
 		"Weapons": ["Fists",
 		"Chainsaw",
@@ -1850,24 +1609,8 @@
 		8],
 		"SpecialChars": [],
 		"MapObjectDensities": [{
-			"MapObject": "crate",
-			"Density": 20
-		},
-		{
-			"MapObject": "box",
-			"Density": 20
-		},
-		{
 			"MapObject": "fan",
 			"Density": 10
-		},
-		{
-			"MapObject": "cabinet_server",
-			"Density": 20
-		},
-		{
-			"MapObject": "box3_gray",
-			"Density": 20
 		},
 		{
 			"MapObject": "blood0",
@@ -1901,6 +1644,7 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
+		"PickupDensities": [],
 		"EnemyDensity": 80,
 		"Weapons": ["Fists",
 		"Chainsaw",

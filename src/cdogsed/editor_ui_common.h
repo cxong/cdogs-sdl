@@ -61,6 +61,10 @@ typedef struct
 void DisplayMapItem(const struct vec2i pos, const MapObject *mo);
 void DisplayMapItemWithDensity(
 	const struct vec2i pos, const MapObjectDensity *mod, const bool isHighlighted);
+void DisplayPickup(const struct vec2i pos, const PickupClass *p);
+void DisplayPickupWithDensity(
+	const struct vec2i pos, const PickupDensity *pd,
+							  const bool isHighlighted);
 void DrawKey(UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData);
 
 void InsertMission(Campaign *co, Mission *mission, int idx);
@@ -75,11 +79,15 @@ UIObject *CreateCampaignSeedObj(const struct vec2i pos, Campaign *co);
 UIObject *CreateAddMapItemObjs(
 	const struct vec2i pos, bool (*objFunc)(UIObject *, MapObject *, void *),
 	void *data, const size_t dataSize, const bool expandDown);
+UIObject *CreateAddPickupObjs(
+	const struct vec2i pos, bool (*objFunc)(UIObject *, PickupClass *, void *),
+	void *data, const size_t dataSize, const bool expandDown);
 UIObject *CreateAddPickupSpawnerObjs(
 	const struct vec2i pos, bool (*objFunc)(UIObject *, MapObject *, void *),
 	void *data, const size_t dataSize);
 
 char *MakeMapObjectTooltip(const MapObject *mo);
+char *MakePickupTooltip(const PickupClass *p);
 void MapObjectGetPlacementFlagNames(const MapObject *mo, char *buf, const char *sep);
 void MapObjectGetExplosionGunNames(const MapObject *mo, char *buf, const char *sep);
 

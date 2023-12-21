@@ -362,7 +362,7 @@ static char *MakeMapObjectTooltipSimple(const MapObject *mo)
 	return tmp;
 }
 
-static char *MakePickupTooltip(const MapObject *mo);
+static char *MakePickupSpawnerTooltip(const MapObject *mo);
 static bool AddPickupSpawnerBrushObjFunc(
 	UIObject *o, MapObject *mo, void *vData)
 {
@@ -376,10 +376,10 @@ static bool AddPickupSpawnerBrushObjFunc(
 	o->OnUnfocusFunc = DeactivateIndexedEditorBrush;
 	((IndexedEditorBrush *)o->Data)->Brush = vData;
 	((IndexedEditorBrush *)o->Data)->u.MapObject = mo;
-	o->Tooltip = MakePickupTooltip(mo);
+	o->Tooltip = MakePickupSpawnerTooltip(mo);
 	return true;
 }
-static char *MakePickupTooltip(const MapObject *mo)
+static char *MakePickupSpawnerTooltip(const MapObject *mo)
 {
 	char *tmp;
 	CASSERT(mo->u.PickupClass->Name != NULL, "No pickup name");

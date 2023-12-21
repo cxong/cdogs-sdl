@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2017, 2019-2022 Cong Xu
+	Copyright (c) 2013-2017, 2019-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -97,6 +97,11 @@ typedef struct
 } MapObjectDensity;
 typedef struct
 {
+	const PickupClass *P;
+	int Density;
+} PickupDensity;
+typedef struct
+{
 	int Count;
 	int Min;
 	int Max;
@@ -134,6 +139,7 @@ typedef struct
 	CArray Enemies;			   // of int (character index)
 	CArray SpecialChars;	   // of int
 	CArray MapObjectDensities; // of MapObjectDensity
+	CArray PickupDensities;		// of PickupDensity
 
 	int EnemyDensity;
 	CArray Weapons; // of WeaponClass *

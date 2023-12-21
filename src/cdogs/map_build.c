@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2014, 2017-2022 Cong Xu
+	Copyright (c) 2013-2014, 2017-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -433,12 +433,24 @@ void MapLoadDynamic(MapBuilder *mb)
 		MapStaticLoadDynamic(mb);
 	}
 
-	// Add map objects
 	CA_FOREACH(const MapObjectDensity, mod, mb->mission->MapObjectDensities)
 	for (int j = 0;
 		 j < (mod->Density * mb->Map->Size.x * mb->Map->Size.y) / 1000; j++)
 	{
 		MapTryPlaceOneObject(mb, MapGetRandomTile(mb->Map), mod->M, 0, true);
+	}
+	CA_FOREACH_END()
+	
+	CA_FOREACH(const PickupDensity, pd, mb->mission->PickupDensities)
+	for (int j = 0;
+		 j < (pd->Density * mb->Map->Size.x * mb->Map->Size.y) / 5000; j++)
+	{
+		const struct vec2 v = MapGetRandomPos(mb->Map);
+		const struct vec2i size = svec2i(COLLECTABLE_W, COLLECTABLE_H);
+		if (!IsCollisionWithWall(v, size))
+		{
+			MapPlacePickup(pd->P, v, 0);
+		}
 	}
 	CA_FOREACH_END()
 

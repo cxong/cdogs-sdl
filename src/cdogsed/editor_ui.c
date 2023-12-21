@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2016, 2019-2021 Cong Xu
+	Copyright (c) 2013-2016, 2019-2021, 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -356,6 +356,21 @@ static const char *GetObjectCountStr(UIObject *o, void *v)
 		(int)gMission.missionData->MapObjectDensities.size);
 	return s;
 }
+static const char *GetPickupCountStr(UIObject *o, void *v)
+{
+	static char s[128];
+	UNUSED(o);
+	UNUSED(v);
+	Mission *m = CampaignGetCurrentMission(&gCampaign);
+	if (!m)
+	{
+		return NULL;
+	}
+	sprintf(
+		s, "Pickups (%d)",
+		(int)gMission.missionData->PickupDensities.size);
+	return s;
+}
 typedef struct
 {
 	Campaign *co;
@@ -415,6 +430,22 @@ static void MissionDrawMapItem(
 	DisplayMapItemWithDensity(
 		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
 		mod, UIObjectIsHighlighted(o));
+}
+static void MissionDrawPickup(
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
+{
+	UNUSED(g);
+	MissionIndexData *data = vData;
+	if (!CampaignGetCurrentMission(data->co))
+		return;
+	const Mission *m = CampaignGetCurrentMission(data->co);
+	if (data->index >= (int)m->PickupDensities.size)
+		return;
+	const PickupDensity *pd =
+		CArrayGet(&m->PickupDensities, data->index);
+	DisplayPickupWithDensity(
+		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
+		pd, UIObjectIsHighlighted(o));
 }
 static void DrawStyleArea(
 	struct vec2i pos, const char *name, const Pic *pic, int idx, int count,
@@ -635,6 +666,7 @@ static void DeactivateBrush(UIObject *o, void *data)
 }
 
 static UIObject *CreateMapItemObjs(Campaign *co, int dy);
+static UIObject *CreatePickupObjs(Campaign *co, int dy);
 static UIObject *CreateCharacterObjs(Campaign *co, int dy);
 static UIObject *CreateSpecialCharacterObjs(Campaign *co, int dy);
 
@@ -976,6 +1008,18 @@ static UIObject *CreateEditorObjs(Campaign *co, EditorBrush *brush)
 					 "Shift+click to change amounts");
 	UIObjectAddChild(o2, CreateMapItemObjs(co, pos.y));
 	UIObjectAddChild(c, o2);
+	pos.y += th;
+	o2 = UIObjectCopy(o);
+	o2->u.LabelFunc = GetPickupCountStr;
+	o2->Data = NULL;
+	o2->Id = YC_PICKUPS;
+	o2->Pos = pos;
+	CSTRDUP(
+		o2->Tooltip,
+		"Use Insert/" KMOD_CMD_NAME "+i, Delete/" KMOD_CMD_NAME "+d and PageUp/PageDown\n"
+					 "Shift+click to change amounts");
+	UIObjectAddChild(o2, CreatePickupObjs(co, pos.y));
+	UIObjectAddChild(c, o2);
 
 	UIObjectDestroy(o);
 
@@ -1007,7 +1051,7 @@ static UIObject *CreateMapItemObjs(Campaign *co, int dy)
 	for (int i = 0; i < 32; i++) // TODO: no limit to objects
 	{
 		const int x = 10 + i * 20;
-		// Drop-down menu for objective type
+		// Drop-down menu for map object type
 		UIObject *o2 = UIObjectCopy(o);
 		o2->Id2 = i;
 		CMALLOC(o2->Data, sizeof(MissionIndexData));
@@ -1103,6 +1147,97 @@ static void DrawMapItem(
 		CASSERT(false, "unknown map object type");
 		break;
 	}
+}
+
+typedef struct
+{
+	Campaign *C;
+	int Idx;
+	PickupClass *P;
+} PickupIndexData;
+static EditorResult MissionChangePickupDensity(void *vData, int d);
+static bool PickupObjFunc(UIObject *o, PickupClass *p, void *vData);
+static UIObject *CreatePickupObjs(Campaign *co, int dy)
+{
+	UIObject *c = UIObjectCreate(UITYPE_NONE, 0, svec2i_zero(), svec2i_zero());
+	c->Flags = UI_ENABLED_WHEN_PARENT_HIGHLIGHTED_ONLY;
+
+	UIObject *o =
+		UIObjectCreate(UITYPE_CUSTOM, 0, svec2i_zero(), svec2i(20, 40));
+	o->u.CustomDrawFunc = MissionDrawPickup;
+	o->ChangeFuncAlt = MissionChangePickupDensity;
+	o->Flags = UI_LEAVE_YC;
+	for (int i = 0; i < 32; i++) // TODO: no limit to pickups
+	{
+		const int x = 10 + i * 20;
+		// Drop-down menu for pickup type
+		UIObject *o2 = UIObjectCopy(o);
+		o2->Id2 = i;
+		CMALLOC(o2->Data, sizeof(MissionIndexData));
+		o2->IsDynamicData = 1;
+		((MissionIndexData *)o2->Data)->co = co;
+		((MissionIndexData *)o2->Data)->index = i;
+		o2->Pos = svec2i(x, Y_ABS - dy);
+		CSTRDUP(
+			o2->Tooltip,
+			"Click: change pickup; Shift+Click: change density");
+		UIObjectAddChild(
+			o2, CreateAddPickupObjs(
+					svec2i(o2->Size.x, o2->Size.y / 2), PickupObjFunc,
+					o2->Data, sizeof(PickupIndexData), false));
+		UIObjectAddChild(c, o2);
+	}
+
+	UIObjectDestroy(o);
+	return c;
+}
+static EditorResult MissionChangePickupDensity(void *vData, int d)
+{
+	MissionIndexData *data = vData;
+	Mission *m = CampaignGetCurrentMission(data->co);
+	if (data->index >= (int)m->PickupDensities.size)
+	{
+		return EDITOR_RESULT_NONE;
+	}
+	PickupDensity *pd = CArrayGet(&m->PickupDensities, data->index);
+	pd->Density = CLAMP(pd->Density + d, 0, 512);
+	return EDITOR_RESULT_CHANGED;
+}
+static EditorResult MissionSetPickup(void *vData, int d);
+static void DrawPickup(
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData);
+static bool PickupObjFunc(UIObject *o, PickupClass *p, void *vData)
+{
+	o->ChangeFunc = MissionSetPickup;
+	o->u.CustomDrawFunc = DrawPickup;
+	MissionIndexData *data = vData;
+	((PickupIndexData *)o->Data)->C = data->co;
+	((PickupIndexData *)o->Data)->Idx = data->index;
+	((PickupIndexData *)o->Data)->P = p;
+	o->Tooltip = MakePickupTooltip(p);
+	return true;
+}
+static EditorResult MissionSetPickup(void *vData, int d)
+{
+	UNUSED(d);
+	PickupIndexData *data = vData;
+	Mission *m = CampaignGetCurrentMission(data->C);
+	if (data->Idx >= (int)m->PickupDensities.size)
+	{
+		return EDITOR_RESULT_NONE;
+	}
+	PickupDensity *pd = CArrayGet(&m->PickupDensities, data->Idx);
+	pd->P = data->P;
+	return EDITOR_RESULT_CHANGED;
+}
+static void DrawPickup(
+	UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData)
+{
+	UNUSED(g);
+	const PickupIndexData *data = vData;
+	DisplayPickup(
+		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
+		data->P);
 }
 
 static UIObject *CreateCharacterObjs(Campaign *co, int dy)

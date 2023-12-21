@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2021 Cong Xu
+	Copyright (c) 2013-2021, 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -310,6 +310,17 @@ static void DeleteItem(Mission *m, int idx)
 	CArrayDelete(&m->MapObjectDensities, idx);
 }
 
+static void DeletePickup(Mission *m, int idx)
+{
+	if (idx >= (int)m->PickupDensities.size)
+	{
+		// Nothing to delete; do nothing
+		return;
+	}
+	idx = CLAMP(idx, 0, (int)m->PickupDensities.size);
+	CArrayDelete(&m->PickupDensities, idx);
+}
+
 static void AdjustYC(int *yc)
 {
 	Mission *mission = CampaignGetCurrentMission(&gCampaign);
@@ -361,6 +372,14 @@ static void AdjustXC(int yc, int *xc)
 				*xc, 0, (int)mission->MapObjectDensities.size - 1);
 		}
 		break;
+			
+	case YC_PICKUPS:
+		 if (mission && mission->PickupDensities.size > 0)
+		 {
+			 *xc = CLAMP_OPPOSITE(
+				 *xc, 0, (int)mission->PickupDensities.size - 1);
+		 }
+		 break;
 
 	default:
 		break;
@@ -554,6 +573,10 @@ static void Delete(int xc, int yc)
 
 	case YC_ITEMS:
 		DeleteItem(mission, xc);
+		break;
+			
+	case YC_PICKUPS:
+		DeletePickup(mission, xc);
 		break;
 
 	default:
@@ -1100,6 +1123,15 @@ static void InputInsert(int *xc, const int yc, Mission *mission)
 		*xc = (int)(mission->MapObjectDensities.size - 1);
 	}
 	break;
+			
+	case YC_PICKUPS: {
+		 PickupDensity pd;
+		pd.P = PickupClassGetById(&gPickupClasses, 0);
+		pd.Density = 0;
+		 CArrayPushBack(&mission->PickupDensities, &pd);
+		 *xc = (int)(mission->PickupDensities.size - 1);
+	 }
+	 break;
 
 	default:
 		if (yc >= YC_OBJECTIVES)

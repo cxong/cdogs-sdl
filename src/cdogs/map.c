@@ -349,18 +349,24 @@ bool MapTryPlaceDestroyObject(
 	return MapTryPlaceOneObject(mb, pos, mo, ObjectiveToThing(objective), strict);
 }
 
+void MapPlacePickup(
+	const PickupClass *p, const struct vec2 pos, const int flags)
+{
+	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
+	strcpy(e.u.AddPickup.PickupClass, p->Name);
+	e.u.AddPickup.ThingFlags = flags;
+	e.u.AddPickup.Pos = Vec2ToNet(pos);
+	GameEventsEnqueue(&gGameEvents, e);
+}
+
 void MapPlaceCollectible(
 	const Mission *m, const int objective, const struct vec2 pos)
 {
 	const Objective *o = CArrayGet(&m->Objectives, objective);
-	GameEvent e = GameEventNew(GAME_EVENT_ADD_PICKUP);
 	// Pick a random pickup out of the available ones
 	const int i = RAND_INT(0, (int)o->u.Pickups.size - 1);
 	const PickupClass *p = *(const PickupClass **)CArrayGet(&o->u.Pickups, i);
-	strcpy(e.u.AddPickup.PickupClass, p->Name);
-	e.u.AddPickup.ThingFlags = ObjectiveToThing(objective);
-	e.u.AddPickup.Pos = Vec2ToNet(pos);
-	GameEventsEnqueue(&gGameEvents, e);
+	MapPlacePickup(p, pos, ObjectiveToThing(objective));
 }
 
 struct vec2 MapGenerateFreePosition(Map *map, const struct vec2i size)

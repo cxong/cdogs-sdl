@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2014, 2021 Cong Xu
+    Copyright (c) 2013-2014, 2021, 2023 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -60,7 +60,8 @@
 #define YC_MISSIONLOOKS     4
 #define YC_CHARACTERS       6
 #define YC_SPECIALS         7
-#define YC_ITEMS            9
+#define YC_ITEMS            8
+#define YC_PICKUPS			9
 #define YC_OBJECTIVES       10
 
 #define XC_MISSIONTITLE     0

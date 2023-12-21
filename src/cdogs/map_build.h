@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2015, 2017-2022 Cong Xu
+	Copyright (c) 2013-2015, 2017-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -89,6 +89,8 @@ bool MapTryPlaceOneObject(
 	const int extraFlags, const bool isStrictMode);
 bool MapTryPlaceDestroyObject(
     MapBuilder *mb, const Mission *m, const int objective, const struct vec2i pos, const bool strict);
+void MapPlacePickup(
+	const PickupClass *p, const struct vec2 pos, const int flags);
 // TODO: refactor
 void MapPlaceCollectible(
 	const Mission *m, const int objective, const struct vec2 pos);
