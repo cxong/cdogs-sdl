@@ -253,6 +253,10 @@
 		{
 			"Pickup": "ammo_Cells",
 			"Density": 1
+		},
+		{
+			"Pickup": "armor",
+			"Density": 1
 		}],
 		"EnemyDensity": 40,
 		"Weapons": ["Fists",
@@ -419,7 +423,10 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
-		"PickupDensities": [],
+		"PickupDensities": [{
+			"Pickup": "armor",
+			"Density": 2
+		}],
 		"EnemyDensity": 50,
 		"Weapons": ["Fists",
 		"Chainsaw",
@@ -586,7 +593,10 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
-		"PickupDensities": [],
+		"PickupDensities": [{
+			"Pickup": "max_armor",
+			"Density": 1
+		}],
 		"EnemyDensity": 55,
 		"Weapons": ["Fists",
 		"Chainsaw",
@@ -768,7 +778,10 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
-		"PickupDensities": [],
+		"PickupDensities": [{
+			"Pickup": "armor",
+			"Density": 3
+		}],
 		"EnemyDensity": 13,
 		"Weapons": ["Fists",
 		"Chainsaw",
@@ -943,7 +956,14 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
-		"PickupDensities": [],
+		"PickupDensities": [{
+			"Pickup": "armor",
+			"Density": 2
+		},
+		{
+			"Pickup": "max_armor",
+			"Density": 1
+		}],
 		"EnemyDensity": 13,
 		"Weapons": ["Fists",
 		"Chainsaw",
@@ -1122,7 +1142,14 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
-		"PickupDensities": [],
+		"PickupDensities": [{
+			"Pickup": "armor",
+			"Density": 3
+		},
+		{
+			"Pickup": "max_armor",
+			"Density": 2
+		}],
 		"EnemyDensity": 65,
 		"Weapons": ["Fists",
 		"Chainsaw",
@@ -1306,7 +1333,22 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
-		"PickupDensities": [],
+		"PickupDensities": [{
+			"Pickup": "armor",
+			"Density": 3
+		},
+		{
+			"Pickup": "max_armor",
+			"Density": 1
+		},
+		{
+			"Pickup": "gun_Flamer",
+			"Density": 1
+		},
+		{
+			"Pickup": "ammo_Gas tank",
+			"Density": 1
+		}],
 		"EnemyDensity": 13,
 		"Weapons": ["Fists",
 		"Chainsaw",
@@ -1472,7 +1514,18 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
-		"PickupDensities": [],
+		"PickupDensities": [{
+			"Pickup": "armor",
+			"Density": 4
+		},
+		{
+			"Pickup": "gun_Powergun",
+			"Density": 1
+		},
+		{
+			"Pickup": "ammo_Cells",
+			"Density": 1
+		}],
 		"EnemyDensity": 70,
 		"Weapons": ["Fists",
 		"Chainsaw",
@@ -1644,7 +1697,14 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
-		"PickupDensities": [],
+		"PickupDensities": [{
+			"Pickup": "armor",
+			"Density": 2
+		},
+		{
+			"Pickup": "max_armor",
+			"Density": 2
+		}],
 		"EnemyDensity": 80,
 		"Weapons": ["Fists",
 		"Chainsaw",

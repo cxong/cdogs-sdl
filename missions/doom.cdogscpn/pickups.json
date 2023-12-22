@@ -9,7 +9,8 @@
       },
       "Effects": [{
         "Type": "Health",
-        "Health": 1
+        "Health": 1,
+        "ExceedMax": true
       }]
     },
     {
@@ -42,7 +43,8 @@
       },
       "Effects": [{
         "Type": "Health",
-        "Health": 100
+        "Health": 100,
+        "ExceedMax": true
       }]
     },
     {
@@ -53,14 +55,15 @@
       },
       "Effects": [{
         "Type": "Health",
-        "Health": 1
+        "Health": 1,
+        "ExceedMax": true
       }]
     },
     {
       "Name": "armor",
       "Pic": {
         "Type": "Normal",
-        "Pic": "armor"
+        "Pic": "armor_green"
       },
       "Effects": [{
         "Type": "Health",
@@ -71,11 +74,12 @@
       "Name": "megaarmor",
       "Pic": {
         "Type": "Normal",
-        "Pic": "megaarmor"
+        "Pic": "armor_blue"
       },
       "Effects": [{
         "Type": "Health",
-        "Health": 200
+        "Health": 200,
+        "ExceedMax": true
       }]
     },
     {
