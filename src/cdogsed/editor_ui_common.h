@@ -62,8 +62,8 @@ void DisplayMapItem(const struct vec2i pos, const MapObject *mo);
 void DisplayMapItemWithDensity(
 	const struct vec2i pos, const MapObjectDensity *mod, const bool isHighlighted);
 void DisplayPickup(const struct vec2i pos, const PickupClass *p);
-void DisplayPickupWithDensity(
-	const struct vec2i pos, const PickupDensity *pd,
+void DisplayPickupWithCount(
+	const struct vec2i pos, const PickupCount *pc,
 							  const bool isHighlighted);
 void DrawKey(UIObject *o, GraphicsDevice *g, struct vec2i pos, void *vData);
 

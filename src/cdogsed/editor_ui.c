@@ -368,7 +368,7 @@ static const char *GetPickupCountStr(UIObject *o, void *v)
 	}
 	sprintf(
 		s, "Pickups (%d)",
-		(int)gMission.missionData->PickupDensities.size);
+		(int)gMission.missionData->PickupCounts.size);
 	return s;
 }
 typedef struct
@@ -439,13 +439,13 @@ static void MissionDrawPickup(
 	if (!CampaignGetCurrentMission(data->co))
 		return;
 	const Mission *m = CampaignGetCurrentMission(data->co);
-	if (data->index >= (int)m->PickupDensities.size)
+	if (data->index >= (int)m->PickupCounts.size)
 		return;
-	const PickupDensity *pd =
-		CArrayGet(&m->PickupDensities, data->index);
-	DisplayPickupWithDensity(
+	const PickupCount *pc =
+		CArrayGet(&m->PickupCounts, data->index);
+	DisplayPickupWithCount(
 		svec2i_add(svec2i_add(pos, o->Pos), svec2i_scale_divide(o->Size, 2)),
-		pd, UIObjectIsHighlighted(o));
+							 pc, UIObjectIsHighlighted(o));
 }
 static void DrawStyleArea(
 	struct vec2i pos, const char *name, const Pic *pic, int idx, int count,
@@ -1155,7 +1155,7 @@ typedef struct
 	int Idx;
 	PickupClass *P;
 } PickupIndexData;
-static EditorResult MissionChangePickupDensity(void *vData, int d);
+static EditorResult MissionChangePickupCount(void *vData, int d);
 static bool PickupObjFunc(UIObject *o, PickupClass *p, void *vData);
 static UIObject *CreatePickupObjs(Campaign *co, int dy)
 {
@@ -1165,7 +1165,7 @@ static UIObject *CreatePickupObjs(Campaign *co, int dy)
 	UIObject *o =
 		UIObjectCreate(UITYPE_CUSTOM, 0, svec2i_zero(), svec2i(20, 40));
 	o->u.CustomDrawFunc = MissionDrawPickup;
-	o->ChangeFuncAlt = MissionChangePickupDensity;
+	o->ChangeFuncAlt = MissionChangePickupCount;
 	o->Flags = UI_LEAVE_YC;
 	for (int i = 0; i < 32; i++) // TODO: no limit to pickups
 	{
@@ -1191,16 +1191,16 @@ static UIObject *CreatePickupObjs(Campaign *co, int dy)
 	UIObjectDestroy(o);
 	return c;
 }
-static EditorResult MissionChangePickupDensity(void *vData, int d)
+static EditorResult MissionChangePickupCount(void *vData, int d)
 {
 	MissionIndexData *data = vData;
 	Mission *m = CampaignGetCurrentMission(data->co);
-	if (data->index >= (int)m->PickupDensities.size)
+	if (data->index >= (int)m->PickupCounts.size)
 	{
 		return EDITOR_RESULT_NONE;
 	}
-	PickupDensity *pd = CArrayGet(&m->PickupDensities, data->index);
-	pd->Density = CLAMP(pd->Density + d, 0, 512);
+	PickupCount *pc = CArrayGet(&m->PickupCounts, data->index);
+	pc->Count = CLAMP(pc->Count + d, 1, 1000);
 	return EDITOR_RESULT_CHANGED;
 }
 static EditorResult MissionSetPickup(void *vData, int d);
@@ -1222,12 +1222,12 @@ static EditorResult MissionSetPickup(void *vData, int d)
 	UNUSED(d);
 	PickupIndexData *data = vData;
 	Mission *m = CampaignGetCurrentMission(data->C);
-	if (data->Idx >= (int)m->PickupDensities.size)
+	if (data->Idx >= (int)m->PickupCounts.size)
 	{
 		return EDITOR_RESULT_NONE;
 	}
-	PickupDensity *pd = CArrayGet(&m->PickupDensities, data->Idx);
-	pd->P = data->P;
+	PickupCount *pc = CArrayGet(&m->PickupCounts, data->Idx);
+	pc->P = data->P;
 	return EDITOR_RESULT_CHANGED;
 }
 static void DrawPickup(

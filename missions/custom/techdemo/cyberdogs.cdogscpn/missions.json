@@ -68,13 +68,53 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
-		"PickupDensities": [{
+		"PickupCounts": [{
 			"Pickup": "gun_Powergun",
-			"Density": 1
+			"Count": 1
 		},
 		{
 			"Pickup": "ammo_Cells",
-			"Density": 1
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_MiniGun",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Bullets",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Launcher",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Grenades",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Flamer",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Gas tank",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Blaster",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Mini cells",
+			"Count": 1
+		},
+		{
+			"Pickup": "armor",
+			"Count": 1
+		},
+		{
+			"Pickup": "max_armor",
+			"Count": 2
 		}],
 		"EnemyDensity": 13,
 		"Weapons": ["Fists",
@@ -246,17 +286,17 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
-		"PickupDensities": [{
+		"PickupCounts": [{
 			"Pickup": "gun_Powergun",
-			"Density": 1
+			"Count": 20
 		},
 		{
 			"Pickup": "ammo_Cells",
-			"Density": 1
+			"Count": 20
 		},
 		{
 			"Pickup": "armor",
-			"Density": 1
+			"Count": 20
 		}],
 		"EnemyDensity": 40,
 		"Weapons": ["Fists",
@@ -423,9 +463,9 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
-		"PickupDensities": [{
+		"PickupCounts": [{
 			"Pickup": "armor",
-			"Density": 2
+			"Count": 20
 		}],
 		"EnemyDensity": 50,
 		"Weapons": ["Fists",
@@ -593,9 +633,9 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
-		"PickupDensities": [{
+		"PickupCounts": [{
 			"Pickup": "max_armor",
-			"Density": 1
+			"Count": 20
 		}],
 		"EnemyDensity": 55,
 		"Weapons": ["Fists",
@@ -778,9 +818,9 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
-		"PickupDensities": [{
+		"PickupCounts": [{
 			"Pickup": "armor",
-			"Density": 3
+			"Count": 20
 		}],
 		"EnemyDensity": 13,
 		"Weapons": ["Fists",
@@ -956,13 +996,13 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
-		"PickupDensities": [{
+		"PickupCounts": [{
 			"Pickup": "armor",
-			"Density": 2
+			"Count": 20
 		},
 		{
 			"Pickup": "max_armor",
-			"Density": 1
+			"Count": 20
 		}],
 		"EnemyDensity": 13,
 		"Weapons": ["Fists",
@@ -1142,13 +1182,13 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
-		"PickupDensities": [{
+		"PickupCounts": [{
 			"Pickup": "armor",
-			"Density": 3
+			"Count": 20
 		},
 		{
 			"Pickup": "max_armor",
-			"Density": 2
+			"Count": 20
 		}],
 		"EnemyDensity": 65,
 		"Weapons": ["Fists",
@@ -1333,21 +1373,21 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
-		"PickupDensities": [{
+		"PickupCounts": [{
 			"Pickup": "armor",
-			"Density": 3
+			"Count": 20
 		},
 		{
 			"Pickup": "max_armor",
-			"Density": 1
+			"Count": 20
 		},
 		{
 			"Pickup": "gun_Flamer",
-			"Density": 1
+			"Count": 20
 		},
 		{
 			"Pickup": "ammo_Gas tank",
-			"Density": 1
+			"Count": 20
 		}],
 		"EnemyDensity": 13,
 		"Weapons": ["Fists",
@@ -1514,17 +1554,17 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
-		"PickupDensities": [{
+		"PickupCounts": [{
 			"Pickup": "armor",
-			"Density": 4
+			"Count": 20
 		},
 		{
 			"Pickup": "gun_Powergun",
-			"Density": 1
+			"Count": 20
 		},
 		{
 			"Pickup": "ammo_Cells",
-			"Density": 1
+			"Count": 20
 		}],
 		"EnemyDensity": 70,
 		"Weapons": ["Fists",
@@ -1697,13 +1737,13 @@
 			"MapObject": "bloodstain1",
 			"Density": 20
 		}],
-		"PickupDensities": [{
+		"PickupCounts": [{
 			"Pickup": "armor",
-			"Density": 2
+			"Count": 20
 		},
 		{
 			"Pickup": "max_armor",
-			"Density": 2
+			"Count": 20
 		}],
 		"EnemyDensity": 80,
 		"Weapons": ["Fists",

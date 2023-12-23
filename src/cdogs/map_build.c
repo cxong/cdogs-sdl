@@ -441,15 +441,18 @@ void MapLoadDynamic(MapBuilder *mb)
 	}
 	CA_FOREACH_END()
 	
-	CA_FOREACH(const PickupDensity, pd, mb->mission->PickupDensities)
-	for (int j = 0;
-		 j < (pd->Density * mb->Map->Size.x * mb->Map->Size.y) / 5000; j++)
+	CA_FOREACH(const PickupCount, pc, mb->mission->PickupCounts)
+	for (int j = 0; j < pc->Count; j++)
 	{
-		const struct vec2 v = MapGetRandomPos(mb->Map);
-		const struct vec2i size = svec2i(COLLECTABLE_W, COLLECTABLE_H);
-		if (!IsCollisionWithWall(v, size))
+		for (int i = 0; i < 1000; i++)
 		{
-			MapPlacePickup(pd->P, v, 0);
+			const struct vec2 v = MapGetRandomPos(mb->Map);
+			const struct vec2i size = svec2i(COLLECTABLE_W, COLLECTABLE_H);
+			if (!IsCollisionWithWall(v, size))
+			{
+				MapPlacePickup(pc->P, v, 0);
+				break;
+			}
 		}
 	}
 	CA_FOREACH_END()

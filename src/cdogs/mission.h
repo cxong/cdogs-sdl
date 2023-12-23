@@ -98,8 +98,8 @@ typedef struct
 typedef struct
 {
 	const PickupClass *P;
-	int Density;
-} PickupDensity;
+	int Count;
+} PickupCount;
 typedef struct
 {
 	int Count;
@@ -139,7 +139,7 @@ typedef struct
 	CArray Enemies;			   // of int (character index)
 	CArray SpecialChars;	   // of int
 	CArray MapObjectDensities; // of MapObjectDensity
-	CArray PickupDensities;		// of PickupDensity
+	CArray PickupCounts;		// of PickupCount
 
 	int EnemyDensity;
 	CArray Weapons; // of WeaponClass *

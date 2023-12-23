@@ -258,20 +258,20 @@ void LoadMissions(CArray *missions, json_t *missionsNode, int version)
 				}
 			}
 		}
-		json_t *pdsNode =
-			   json_find_first_label(child, "PickupDensities");
-		   if (pdsNode && pdsNode->child)
+		json_t *pcsNode =
+			   json_find_first_label(child, "PickupCounts");
+		   if (pcsNode && pcsNode->child)
 		   {
-			   pdsNode = pdsNode->child;
-			   for (json_t *pdNode = pdsNode->child; pdNode;
-					pdNode = pdNode->next)
+			   pcsNode = pcsNode->child;
+			   for (json_t *pcNode = pcsNode->child; pcNode;
+					pcNode = pcNode->next)
 			   {
-				   PickupDensity pd;
-				   pd.P = StrPickupClass(
-					   json_find_first_label(pdNode, "Pickup")
+				   PickupCount pc;
+				   pc.P = StrPickupClass(
+					   json_find_first_label(pcNode, "Pickup")
 						   ->child->text);
-				   LoadInt(&pd.Density, pdNode, "Density");
-				   CArrayPushBack(&m.PickupDensities, &pd);
+				   LoadInt(&pc.Count, pcNode, "Count");
+				   CArrayPushBack(&m.PickupCounts, &pc);
 			   }
 		   }
 		LoadInt(&m.EnemyDensity, child, "EnemyDensity");

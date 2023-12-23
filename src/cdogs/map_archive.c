@@ -378,17 +378,17 @@ static json_t *SaveMissions(CArray *a)
 			json_insert_child(modsNode, modNode);
 		}
 		json_insert_pair_into_object(node, "MapObjectDensities", modsNode);
-		json_t *pdsNode = json_new_array();
-		for (int j = 0; j < (int)mission->PickupDensities.size; j++)
+		json_t *pcsNode = json_new_array();
+		for (int j = 0; j < (int)mission->PickupCounts.size; j++)
 		{
-			const PickupDensity *pd =
-				CArrayGet(&mission->PickupDensities, j);
-			json_t *pdNode = json_new_object();
-			AddStringPair(pdNode, "Pickup", pd->P->Name);
-			AddIntPair(pdNode, "Density", pd->Density);
-			json_insert_child(pdsNode, pdNode);
+			const PickupCount *pc =
+				CArrayGet(&mission->PickupCounts, j);
+			json_t *pcNode = json_new_object();
+			AddStringPair(pcNode, "Pickup", pc->P->Name);
+			AddIntPair(pcNode, "Count", pc->Count);
+			json_insert_child(pcsNode, pcNode);
 		}
-		json_insert_pair_into_object(node, "PickupDensities", pdsNode);
+		json_insert_pair_into_object(node, "PickupCounts", pcsNode);
 
 		AddIntPair(node, "EnemyDensity", mission->EnemyDensity);
 		json_insert_pair_into_object(

@@ -144,7 +144,7 @@ void MissionInit(Mission *m)
 	CArrayInit(&m->Enemies, sizeof(int));
 	CArrayInit(&m->SpecialChars, sizeof(int));
 	CArrayInit(&m->MapObjectDensities, sizeof(MapObjectDensity));
-	CArrayInit(&m->PickupDensities, sizeof(PickupDensity));
+	CArrayInit(&m->PickupCounts, sizeof(PickupCount));
 	CArrayInit(&m->Weapons, sizeof(const WeaponClass *));
 	m->Type = MAPTYPE_CLASSIC;
 	m->u.Classic.ExitEnabled = true;
@@ -196,7 +196,7 @@ void MissionCopy(Mission *dst, const Mission *src)
 	CArrayCopy(&dst->Enemies, &src->Enemies);
 	CArrayCopy(&dst->SpecialChars, &src->SpecialChars);
 	CArrayCopy(&dst->MapObjectDensities, &src->MapObjectDensities);
-	CArrayCopy(&dst->PickupDensities, &src->PickupDensities);
+	CArrayCopy(&dst->PickupCounts, &src->PickupCounts);
 
 	dst->EnemyDensity = src->EnemyDensity;
 	CArrayCopy(&dst->Weapons, &src->Weapons);
@@ -263,7 +263,7 @@ void MissionTerminate(Mission *m)
 	CArrayTerminate(&m->Enemies);
 	CArrayTerminate(&m->SpecialChars);
 	CArrayTerminate(&m->MapObjectDensities);
-	CArrayTerminate(&m->PickupDensities);
+	CArrayTerminate(&m->PickupCounts);
 	CArrayTerminate(&m->Weapons);
 	switch (m->Type)
 	{

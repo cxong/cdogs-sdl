@@ -312,13 +312,13 @@ static void DeleteItem(Mission *m, int idx)
 
 static void DeletePickup(Mission *m, int idx)
 {
-	if (idx >= (int)m->PickupDensities.size)
+	if (idx >= (int)m->PickupCounts.size)
 	{
 		// Nothing to delete; do nothing
 		return;
 	}
-	idx = CLAMP(idx, 0, (int)m->PickupDensities.size);
-	CArrayDelete(&m->PickupDensities, idx);
+	idx = CLAMP(idx, 0, (int)m->PickupCounts.size);
+	CArrayDelete(&m->PickupCounts, idx);
 }
 
 static void AdjustYC(int *yc)
@@ -374,10 +374,10 @@ static void AdjustXC(int yc, int *xc)
 		break;
 			
 	case YC_PICKUPS:
-		 if (mission && mission->PickupDensities.size > 0)
+		 if (mission && mission->PickupCounts.size > 0)
 		 {
 			 *xc = CLAMP_OPPOSITE(
-				 *xc, 0, (int)mission->PickupDensities.size - 1);
+				 *xc, 0, (int)mission->PickupCounts.size - 1);
 		 }
 		 break;
 
@@ -1125,11 +1125,11 @@ static void InputInsert(int *xc, const int yc, Mission *mission)
 	break;
 			
 	case YC_PICKUPS: {
-		 PickupDensity pd;
-		pd.P = PickupClassGetById(&gPickupClasses, 0);
-		pd.Density = 0;
-		 CArrayPushBack(&mission->PickupDensities, &pd);
-		 *xc = (int)(mission->PickupDensities.size - 1);
+		PickupCount pc;
+		pc.P = PickupClassGetById(&gPickupClasses, 0);
+		pc.Count = 1;
+		 CArrayPushBack(&mission->PickupCounts, &pc);
+		 *xc = (int)(mission->PickupCounts.size - 1);
 	 }
 	 break;
 

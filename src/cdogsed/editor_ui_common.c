@@ -66,17 +66,17 @@ void DisplayPickup(const struct vec2i pos, const PickupClass *p)
 		colorWhite, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 }
 
-void DisplayPickupWithDensity(
-	const struct vec2i pos, const PickupDensity *pd,
+void DisplayPickupWithCount(
+	const struct vec2i pos, const PickupCount *pc,
 	const bool isHighlighted)
 {
-	DisplayPickup(pos, pd->P);
+	DisplayPickup(pos, pc->P);
 	if (isHighlighted)
 	{
 		FontCh('>', svec2i_add(pos, svec2i(-8, -4)));
 	}
 	char s[10];
-	sprintf(s, "%d", pd->Density);
+	sprintf(s, "%d", pc->Count);
 	FontStr(s, svec2i_add(pos, svec2i(-8, 5)));
 }
 
