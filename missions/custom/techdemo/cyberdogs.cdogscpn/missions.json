@@ -115,6 +115,10 @@
 		{
 			"Pickup": "max_armor",
 			"Count": 2
+		},
+		{
+			"Pickup": "life",
+			"Count": 2
 		}],
 		"EnemyDensity": 13,
 		"Weapons": ["Fists",
@@ -288,15 +292,55 @@
 		}],
 		"PickupCounts": [{
 			"Pickup": "gun_Powergun",
-			"Count": 20
+			"Count": 1
 		},
 		{
 			"Pickup": "ammo_Cells",
-			"Count": 20
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_MiniGun",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Bullets",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Launcher",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Grenades",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Flamer",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Gas tank",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Blaster",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Mini cells",
+			"Count": 1
 		},
 		{
 			"Pickup": "armor",
-			"Count": 20
+			"Count": 2
+		},
+		{
+			"Pickup": "max_armor",
+			"Count": 2
+		},
+		{
+			"Pickup": "life",
+			"Count": 2
 		}],
 		"EnemyDensity": 40,
 		"Weapons": ["Fists",
@@ -464,8 +508,56 @@
 			"Density": 20
 		}],
 		"PickupCounts": [{
+			"Pickup": "gun_Powergun",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Cells",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_MiniGun",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Bullets",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Launcher",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Grenades",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Flamer",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Gas tank",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Blaster",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Mini cells",
+			"Count": 1
+		},
+		{
 			"Pickup": "armor",
-			"Count": 20
+			"Count": 3
+		},
+		{
+			"Pickup": "max_armor",
+			"Count": 2
+		},
+		{
+			"Pickup": "life",
+			"Count": 2
 		}],
 		"EnemyDensity": 50,
 		"Weapons": ["Fists",
@@ -634,8 +726,56 @@
 			"Density": 20
 		}],
 		"PickupCounts": [{
+			"Pickup": "gun_Powergun",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Cells",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_MiniGun",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Bullets",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Launcher",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Grenades",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Flamer",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Gas tank",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Blaster",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Mini cells",
+			"Count": 1
+		},
+		{
+			"Pickup": "armor",
+			"Count": 4
+		},
+		{
 			"Pickup": "max_armor",
-			"Count": 20
+			"Count": 2
+		},
+		{
+			"Pickup": "life",
+			"Count": 2
 		}],
 		"EnemyDensity": 55,
 		"Weapons": ["Fists",
@@ -819,8 +959,56 @@
 			"Density": 20
 		}],
 		"PickupCounts": [{
+			"Pickup": "gun_Powergun",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Cells",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_MiniGun",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Bullets",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Launcher",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Grenades",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Flamer",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Gas tank",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Blaster",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Mini cells",
+			"Count": 1
+		},
+		{
 			"Pickup": "armor",
-			"Count": 20
+			"Count": 5
+		},
+		{
+			"Pickup": "max_armor",
+			"Count": 2
+		},
+		{
+			"Pickup": "life",
+			"Count": 2
 		}],
 		"EnemyDensity": 13,
 		"Weapons": ["Fists",
@@ -997,12 +1185,56 @@
 			"Density": 20
 		}],
 		"PickupCounts": [{
+			"Pickup": "gun_Powergun",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Cells",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_MiniGun",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Bullets",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Launcher",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Grenades",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Flamer",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Gas tank",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Blaster",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Mini cells",
+			"Count": 1
+		},
+		{
 			"Pickup": "armor",
-			"Count": 20
+			"Count": 6
 		},
 		{
 			"Pickup": "max_armor",
-			"Count": 20
+			"Count": 2
+		},
+		{
+			"Pickup": "life",
+			"Count": 2
 		}],
 		"EnemyDensity": 13,
 		"Weapons": ["Fists",
@@ -1183,12 +1415,56 @@
 			"Density": 20
 		}],
 		"PickupCounts": [{
+			"Pickup": "gun_Powergun",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Cells",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_MiniGun",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Bullets",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Launcher",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Grenades",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Flamer",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Gas tank",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Blaster",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Mini cells",
+			"Count": 1
+		},
+		{
 			"Pickup": "armor",
-			"Count": 20
+			"Count": 7
 		},
 		{
 			"Pickup": "max_armor",
-			"Count": 20
+			"Count": 2
+		},
+		{
+			"Pickup": "life",
+			"Count": 2
 		}],
 		"EnemyDensity": 65,
 		"Weapons": ["Fists",
@@ -1374,20 +1650,56 @@
 			"Density": 20
 		}],
 		"PickupCounts": [{
-			"Pickup": "armor",
-			"Count": 20
+			"Pickup": "gun_Powergun",
+			"Count": 1
 		},
 		{
-			"Pickup": "max_armor",
-			"Count": 20
+			"Pickup": "ammo_Cells",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_MiniGun",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Bullets",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Launcher",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Grenades",
+			"Count": 1
 		},
 		{
 			"Pickup": "gun_Flamer",
-			"Count": 20
+			"Count": 1
 		},
 		{
 			"Pickup": "ammo_Gas tank",
-			"Count": 20
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Blaster",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Mini cells",
+			"Count": 1
+		},
+		{
+			"Pickup": "armor",
+			"Count": 8
+		},
+		{
+			"Pickup": "max_armor",
+			"Count": 2
+		},
+		{
+			"Pickup": "life",
+			"Count": 2
 		}],
 		"EnemyDensity": 13,
 		"Weapons": ["Fists",
@@ -1555,16 +1867,56 @@
 			"Density": 20
 		}],
 		"PickupCounts": [{
-			"Pickup": "armor",
-			"Count": 20
-		},
-		{
 			"Pickup": "gun_Powergun",
-			"Count": 20
+			"Count": 1
 		},
 		{
 			"Pickup": "ammo_Cells",
-			"Count": 20
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_MiniGun",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Bullets",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Launcher",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Grenades",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Flamer",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Gas tank",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Blaster",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Mini cells",
+			"Count": 1
+		},
+		{
+			"Pickup": "armor",
+			"Count": 9
+		},
+		{
+			"Pickup": "max_armor",
+			"Count": 2
+		},
+		{
+			"Pickup": "life",
+			"Count": 2
 		}],
 		"EnemyDensity": 70,
 		"Weapons": ["Fists",
@@ -1738,12 +2090,56 @@
 			"Density": 20
 		}],
 		"PickupCounts": [{
+			"Pickup": "gun_Powergun",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Cells",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_MiniGun",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Bullets",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Launcher",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Grenades",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Flamer",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Gas tank",
+			"Count": 1
+		},
+		{
+			"Pickup": "gun_Blaster",
+			"Count": 1
+		},
+		{
+			"Pickup": "ammo_Mini cells",
+			"Count": 1
+		},
+		{
 			"Pickup": "armor",
-			"Count": 20
+			"Count": 10
 		},
 		{
 			"Pickup": "max_armor",
-			"Count": 20
+			"Count": 2
+		},
+		{
+			"Pickup": "life",
+			"Count": 2
 		}],
 		"EnemyDensity": 80,
 		"Weapons": ["Fists",

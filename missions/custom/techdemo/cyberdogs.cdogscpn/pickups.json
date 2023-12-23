@@ -78,6 +78,18 @@
           "Health": 70,
           "ExceedMax": true
         }]
+      },
+      {
+        "Name": "life",
+        "Pic": {
+          "Type": "Normal",
+          "Pic": "heart"
+        },
+        "Effects": [{
+          "Type": "Lives",
+          "Lives": 1
+        }],
+        "Sound": "1up"
       }
     ]
 }
