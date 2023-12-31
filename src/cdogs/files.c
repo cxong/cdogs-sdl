@@ -359,6 +359,7 @@ void ConvertCharacter(Character *c, TBadGuy *b)
 		&c->Colors);
 	ConvertHairColors(c, face);
 	c->maxHealth = b->health;
+	c->excessHealth = c->maxHealth * 2;
 	c->flags = b->flags;
 }
 static void ConvertObjective(Objective *dest, struct MissionObjectiveOld *src)

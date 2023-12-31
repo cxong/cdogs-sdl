@@ -1,0 +1,4 @@
+Download nanopb https://github.com/nanopb/nanopb
+and run in this folder:
+
+poetry run <path_to_nanopb>/generator/protoc  --nanopb_out=. msg.proto

@@ -147,6 +147,20 @@ int CampaignGetMaxHP(const Campaign *c)
 		return 200 * ConfigGetInt(&gConfig, "Game.PlayerHP") / 100;
 	}
 }
+int CampaignGetExcessHP(const Campaign *c)
+{
+	switch (c->Entry.Mode)
+	{
+	case GAME_MODE_DOGFIGHT:
+		return CampaignGetHP(c) * 2;
+	default:
+		if (c->Setting.PlayerExcessHP > 0)
+		{
+			return c->Setting.PlayerExcessHP;
+		}
+		return CampaignGetHP(c) * 2;
+	}
+}
 int CampaignGetHP(const Campaign *c)
 {
 	switch (c->Entry.Mode)

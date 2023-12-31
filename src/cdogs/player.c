@@ -104,14 +104,15 @@ void PlayerDataAddOrUpdate(const NPlayerData pd)
 	p->Stats = pd.Stats;
 	p->Totals = pd.Totals;
 	p->Char.maxHealth = pd.MaxHealth;
+	p->Char.excessHealth = pd.ExcessHealth;
 	p->HP = pd.HP;
 	p->lastMission = pd.LastMission;
 
 	// Ready players as well
 	p->Ready = true;
 
-	LOG(LM_MAIN, LL_INFO, "update player UID(%d) maxHealth(%d) HP(%d)", p->UID,
-		p->Char.maxHealth, p->HP);
+	LOG(LM_MAIN, LL_INFO, "update player UID(%d) maxHealth(%d) excessHealth(%d)  HP(%d)", p->UID,
+		p->Char.maxHealth, p->Char.excessHealth, p->HP);
 }
 
 static void PlayerTerminate(PlayerData *p);
@@ -242,6 +243,7 @@ NPlayerData PlayerDataDefault(const int idx)
 	
 	pd.HP = CampaignGetHP(&gCampaign);
 	pd.MaxHealth = CampaignGetMaxHP(&gCampaign);
+	pd.ExcessHealth = CampaignGetExcessHP(&gCampaign);
 	pd.Lives = CampaignGetLives(&gCampaign);
 	if (gCampaign.Setting.BuyAndSell)
 	{
@@ -266,6 +268,7 @@ NPlayerData PlayerDataMissionReset(const PlayerData *p)
 
 	pd.LastMission = gCampaign.MissionIndex;
 	pd.MaxHealth = CampaignGetMaxHP(&gCampaign);
+	pd.ExcessHealth = CampaignGetExcessHP(&gCampaign);
 	return pd;
 }
 

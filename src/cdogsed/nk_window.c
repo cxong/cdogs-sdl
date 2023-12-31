@@ -404,7 +404,7 @@ void PickupClassDrawPropsSidebar(
 		nk_label(ctx, buf, NK_TEXT_LEFT);
 		break;
 	case PICKUP_HEALTH:
-		sprintf(buf, "Health: %d", pe->u.Health);
+		sprintf(buf, "Health: %d%s", pe->u.Heal.Amount, pe->u.Heal.ExceedMax ? " (exceed max)" : "");
 		nk_label(ctx, buf, NK_TEXT_LEFT);
 		break;
 	case PICKUP_AMMO: {

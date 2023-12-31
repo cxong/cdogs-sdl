@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2017, 2019-2021 Cong Xu
+	Copyright (c) 2013-2017, 2019-2021, 2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -189,6 +189,7 @@ static void SetupQuickPlayEnemy(Character *enemy, const WeaponClass *wc, const b
 	enemy->bot->actionDelay = rand() % (50 + 1);
 	enemy->maxHealth = GenerateQuickPlayParam(
 		ConfigGetEnum(&gConfig, "QuickPlay.EnemyHealth"), 10, 20, 40, 60);
+	enemy->excessHealth = enemy->maxHealth * 2;
 	enemy->flags = 0;
 	if (isBg)
 	{

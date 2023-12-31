@@ -198,7 +198,7 @@ void CommandActor(TActor *actor, int cmd, int ticks);
 void SlideActor(TActor *actor, int cmd);
 void UpdateAllActors(const int ticks);
 void ActorsPilotVehicles(void);
-void ActorHeal(TActor *actor, int health);
+void ActorHeal(TActor *actor, const int amount, const bool exceedMax);
 void InjureActor(TActor *actor, int injury);
 
 void ActorAddAmmo(TActor *actor, const int ammoId, const int amount);
@@ -245,6 +245,7 @@ bool ActorIsInvulnerable(
 	const TActor *a, const int flags, const int playerUID, const GameMode mode,
 	const special_damage_e special);
 
+int ActorGetMaxHeal(const TActor *a, const bool exceedMax);
 int ActorGetHealthPercent(const TActor *a);
 bool ActorIsLowHealth(const TActor *a);
 bool ActorIsGrimacing(const TActor *a);

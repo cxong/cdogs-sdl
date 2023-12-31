@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2022 Cong Xu
+	Copyright (c) 2014-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -256,7 +256,7 @@ static void HandleGameEvent(
 		TActor *a = ActorGetByUID(e.u.Heal.UID);
 		if (!a->isInUse || a->dead)
 			break;
-		ActorHeal(a, e.u.Heal.Amount);
+		ActorHeal(a, e.u.Heal.Amount, e.u.Heal.ExceedMax);
 		// Tell the spawner that we took a health so we can
 		// spawn more (but only if we're the server)
 		if (e.u.Heal.IsRandomSpawned && !gCampaign.IsClient)

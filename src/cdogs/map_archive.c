@@ -311,6 +311,7 @@ int MapArchiveSave(const char *filename, CampaignSetting *c)
 	AddIntPair(root, "MaxLives", c->MaxLives);
 	AddIntPair(root, "PlayerHP", c->PlayerHP);
 	AddIntPair(root, "PlayerMaxHP", c->PlayerMaxHP);
+	AddIntPair(root, "PlayerExcessHP", c->PlayerExcessHP);
 	AddIntPair(root, "Missions", (int)c->Missions.size);
 	char buf2[CDOGS_PATH_MAX];
 	sprintf(buf2, "%s/campaign.json", buf);

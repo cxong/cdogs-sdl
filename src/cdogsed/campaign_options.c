@@ -173,11 +173,19 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 		{
 			changed = true;
 		}
-		// Clamp PlayerHP within PlayerMaxHP
+		if (DrawNumberSlider(
+				ctx, "Player excess HP", "Max HP for items that heal over max HP", 0, 1000, 5,
+				&cData->c->Setting.PlayerExcessHP))
+		{
+			changed = true;
+		}
+		// Clamp PlayerHP, PlayerMaxHP and PlayerExcessHP
 		if (changed && cData->c->Setting.PlayerMaxHP > 0)
 		{
 			cData->c->Setting.PlayerHP =
 				MIN(cData->c->Setting.PlayerHP, cData->c->Setting.PlayerMaxHP);
+			cData->c->Setting.PlayerExcessHP =
+				MAX(cData->c->Setting.PlayerExcessHP, cData->c->Setting.PlayerMaxHP);
 		}
 		nk_end(ctx);
 	}

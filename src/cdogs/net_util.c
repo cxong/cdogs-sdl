@@ -89,6 +89,7 @@ NPlayerData NMakePlayerData(const PlayerData *p)
 	d.Stats = p->Stats;
 	d.Totals = p->Totals;
 	d.MaxHealth = p->Char.maxHealth;
+	d.ExcessHealth = p->Char.excessHealth;
 	d.HP = p->HP;
 	d.LastMission = p->lastMission;
 	d.UID = p->UID;

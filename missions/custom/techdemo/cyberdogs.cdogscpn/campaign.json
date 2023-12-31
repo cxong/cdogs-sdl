@@ -12,5 +12,6 @@
 	"MaxLives": 4,
 	"PlayerHP": 20,
 	"PlayerMaxHP": 50,
+	"PlayerExcessHP": 70,
 	"Missions": 10
 }

@@ -173,6 +173,7 @@ void MapNewLoadCampaignJSON(json_t *root, CampaignSetting *c)
 	LoadInt(&c->MaxLives, root, "MaxLives");
 	LoadInt(&c->PlayerHP, root, "PlayerHP");
 	LoadInt(&c->PlayerMaxHP, root, "PlayerMaxHP");
+	LoadInt(&c->PlayerExcessHP, root, "PlayerExcessHP");
 }
 
 static void LoadMissionObjectives(

@@ -729,15 +729,16 @@ static void CheckRescue(const TActor *a)
 	}
 }
 
-void ActorHeal(TActor *actor, int health)
+void ActorHeal(TActor *actor, const int amount, const bool exceedMax)
 {
-	actor->health += health;
-	actor->health = MIN(actor->health, ActorGetCharacter(actor)->maxHealth);
+	actor->health += amount;
+	const int maxHealth = ActorGetMaxHeal(actor, exceedMax);
+	actor->health = MIN(actor->health, maxHealth);
 	AddParticle ap;
 	memset(&ap, 0, sizeof ap);
 	ap.Pos = actor->Pos;
 	ap.Z = 10;
-	for (int i = 0; i < MAX(health / 20, 1); i++)
+	for (int i = 0; i < MAX(amount / 20, 1); i++)
 	{
 		ap.Vel = svec2(RAND_FLOAT(-0.2f, 0.2f), RAND_FLOAT(-0.2f, 0.2f));
 		EmitterStart(&actor->healEffect, &ap);
@@ -2289,6 +2290,12 @@ static void ActorAddBloodSplatters(
 			break;
 		}
 	}
+}
+
+int ActorGetMaxHeal(const TActor *a, const bool exceedMax)
+{
+	const Character *c = ActorGetCharacter(a);
+	return exceedMax ? c->excessHealth : c->maxHealth;
 }
 
 int ActorGetHealthPercent(const TActor *a)

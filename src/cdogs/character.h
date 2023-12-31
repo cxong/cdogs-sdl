@@ -51,6 +51,8 @@ typedef struct
 	const WeaponClass *Gun;
 	const WeaponClass *Melee;
 	int maxHealth;
+	// Max health for ExceedMax health pickups
+	int excessHealth;
 	unsigned int flags;
 	CharColors Colors;
 	const PickupClass *Drop;

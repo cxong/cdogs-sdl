@@ -635,7 +635,7 @@ char *MakePickupTooltip(const PickupClass *pc)
 		sprintf(peBuf, "\n- Score: %d", pe->u.Score);
 		break;
 	case PICKUP_HEALTH:
-		sprintf(peBuf, "\n- Health: %d", pe->u.Health);
+		sprintf(peBuf, "\n- Health: %d%s", pe->u.Heal.Amount, pe->u.Heal.ExceedMax ? " (exceed max)" : "");
 		break;
 	case PICKUP_AMMO: {
 		const Ammo *a = AmmoGetById(&gAmmo, pe->u.Ammo.Id);

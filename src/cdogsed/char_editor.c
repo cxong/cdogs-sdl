@@ -748,6 +748,8 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 			nk_layout_row_dynamic(ctx, ROW_HEIGHT, 1);
 			nk_property_int(
 				ctx, "Max Health:", 10, &ec->Char->maxHealth, 2000, 10, 1);
+			nk_property_int(
+				ctx, "Excess Health:", ec->Char->maxHealth, &ec->Char->excessHealth, 2000, 10, 1);
 
 			nk_layout_row_dynamic(ctx, ROW_HEIGHT, 2);
 			DrawFlag(ctx, ec, "Asbestos", FLAGS_ASBESTOS, "Immune to fire");
@@ -868,6 +870,7 @@ static void AddCharacter(EditorContext *ec, const int cloneIdx)
 		ec->Char->speed = 1;
 		ec->Char->Gun = StrWeaponClass("Machine gun");
 		ec->Char->maxHealth = 40;
+		ec->Char->excessHealth = 80;
 		ec->Char->flags = FLAGS_IMMUNITY;
 		ec->Char->bot->probabilityToMove = 50;
 		ec->Char->bot->probabilityToTrack = 25;

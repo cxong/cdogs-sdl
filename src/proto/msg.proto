@@ -65,6 +65,7 @@ message NPlayerData {
 	uint32 UID = 14;
 	repeated NAmmo Ammo = 15;
 	uint32 HP = 16;
+	uint32 ExcessHealth = 17;
 }
 
 message NPlayerRemove {
@@ -198,6 +199,7 @@ message NActorHeal {
 	int32 PlayerUID = 2;
 	int32 Amount = 3;
 	bool IsRandomSpawned = 4;
+	bool ExceedMax = 5;
 }
 
 message NAmmo {

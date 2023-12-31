@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2015, 2017-2020, 2022 Cong Xu
+	Copyright (c) 2014-2015, 2017-2020, 2022-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -178,13 +178,14 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 
 	case PICKUP_HEALTH:
 		// Don't pick up unless taken damage
-		if (a->health < ActorGetCharacter(a)->maxHealth)
+		if (a->health < ActorGetMaxHeal(a, pe->u.Heal.ExceedMax))
 		{
 			canPickup = true;
 			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_HEAL);
 			e.u.Heal.UID = a->uid;
 			e.u.Heal.PlayerUID = a->PlayerUID;
-			e.u.Heal.Amount = pe->u.Health;
+			e.u.Heal.Amount = pe->u.Heal.Amount;
+			e.u.Heal.ExceedMax = pe->u.Heal.ExceedMax;
 			e.u.Heal.IsRandomSpawned = p->IsRandomSpawned;
 			GameEventsEnqueue(&gGameEvents, e);
 		}

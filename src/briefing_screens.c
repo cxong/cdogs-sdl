@@ -696,7 +696,8 @@ static void ApplyBonuses(PlayerData *p, const int bonus)
 static int GetHealthBonus(const PlayerData *p)
 {
 	const int maxHealth = p->Char.maxHealth;
-	return p->hp > maxHealth - 50 ? (p->hp + 50 - p->Char.maxHealth) * 10 : 0;
+	const int hp = MIN(p->hp, maxHealth);
+	return hp > maxHealth - 50 ? (hp + 50 - p->Char.maxHealth) * 10 : 0;
 }
 static int GetResurrectionFee(const PlayerData *p)
 {

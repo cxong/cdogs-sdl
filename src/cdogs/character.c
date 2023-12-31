@@ -217,6 +217,8 @@ void CharacterLoadJSON(
 			CFREE(tmp);
 		}
 		LoadInt(&ch->maxHealth, child, "maxHealth");
+		ch->excessHealth = ch->maxHealth * 2;
+		LoadInt(&ch->excessHealth, child, "excessHealth");
 		int flags;
 		LoadInt(&flags, child, "flags");
 		ch->flags = flags;
@@ -289,6 +291,7 @@ bool CharacterSave(CharacterStore *s, const char *path)
 		json_insert_pair_into_object(node, "Melee", json_new_string(c->Melee->name));
 	}
 	AddIntPair(node, "maxHealth", c->maxHealth);
+	AddIntPair(node, "excessHealth", c->excessHealth);
 	AddIntPair(node, "flags", c->flags);
 	if (c->Drop != NULL)
 	{

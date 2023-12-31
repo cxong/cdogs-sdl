@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2015-2016, 2018, 2020-2022 Cong Xu
+	Copyright (c) 2015-2016, 2018, 2020-2023 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -315,8 +315,9 @@ static void LoadPickupEffect(PickupClass *c, json_t *node, const int version)
 		break;
 	case PICKUP_HEALTH:
 		// Set default heal amount
-		p.u.Health = HEALTH_PICKUP_HEAL_AMOUNT;
-		LoadInt(&p.u.Health, node, "Health");
+		p.u.Heal.Amount = HEALTH_PICKUP_HEAL_AMOUNT;
+		LoadInt(&p.u.Heal.Amount, node, "Health");
+		LoadBool(&p.u.Heal.ExceedMax, node, "ExceedMax");
 		break;
 	case PICKUP_AMMO: {
 		tmp = GetString(node, "Ammo");

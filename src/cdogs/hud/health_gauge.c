@@ -79,8 +79,8 @@ void HealthGaugeDraw(
 	}
 
 	HSV hsv = {0.0, 1.0, 1.0};
-	const int health = actor->health;
 	const int maxHealth = ActorGetCharacter(actor)->maxHealth;
+	const int health = MIN(actor->health, maxHealth);
 	if (actor->poisoned)
 	{
 		hsv.h = 120.0;
@@ -112,7 +112,7 @@ void HealthGaugeDraw(
 
 	// Draw health number label
 	char s[50];
-	sprintf(s, "%d", health);
+	sprintf(s, "%d", actor->health);
 	FontOpts fOpts = opts;
 	fOpts.Area = svec2i(width, 11);
 	fOpts.Pad = svec2i(2, 1);

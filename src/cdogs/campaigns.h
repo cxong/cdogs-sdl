@@ -62,6 +62,7 @@ typedef struct
 	int MaxLives;
 	int PlayerHP;
 	int PlayerMaxHP;
+	int PlayerExcessHP;
 	CArray Missions; // of Mission
 	CharacterStore characters;
 	MusicChunk CustomSongs[MUSIC_COUNT];
@@ -94,6 +95,7 @@ void CampaignSettingTerminateAll(CampaignSetting *setting);
 int CampaignGetMaxLives(const Campaign *c);
 int CampaignGetLives(const Campaign *c);
 int CampaignGetMaxHP(const Campaign *c);
+int CampaignGetExcessHP(const Campaign *c);
 int CampaignGetHP(const Campaign *c);
 
 bool CampaignListIsEmpty(const CampaignList *c);
