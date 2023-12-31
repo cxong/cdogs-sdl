@@ -608,7 +608,6 @@
       "WallBounces": true,
       "Spark": "",
       "Hit": {
-        "Object": {},
         "Flesh": {
           "Sound": "hits/gas"
         },
@@ -638,7 +637,6 @@
       "WallBounces": true,
       "Spark": "",
       "Hit": {
-        "Object": {},
         "Flesh": {
           "Sound": "hits/gas"
         },
