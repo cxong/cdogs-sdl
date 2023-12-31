@@ -24,7 +24,8 @@
       "Sound": "",
       "SwitchSound": "chainsaw_switch",
       "SoundLockLength": 50,
-      "CanShoot": false
+      "CanShoot": false,
+      "Auto": true
     },
     {
       "Pic": "blaster_white",

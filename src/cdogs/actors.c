@@ -1130,13 +1130,13 @@ static bool ActorTryMove(TActor *actor, int cmd, int ticks)
 	actor->PlayerUID < 0 ? (actor->flags & FLAGS_MOVE_AND_SHOOT) :
 	(
 	 ConfigGetEnum(&gConfig, "Game.FireMoveStyle") != FIREMOVE_STOP ||
-		!actor->hasShot ||
 		(ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") ==
 			 SWITCHMOVE_STRAFE &&
 		 Button2(cmd))
 	 );
+	const bool canMove = !actor->hasShot || canMoveWhenShooting;
 	const bool willMove =
-		!actor->petrified && CMD_HAS_DIRECTION(cmd) && canMoveWhenShooting;
+		!actor->petrified && CMD_HAS_DIRECTION(cmd) && canMove;
 	actor->MoveVel = svec2_zero();
 	if (willMove)
 	{

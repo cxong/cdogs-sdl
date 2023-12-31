@@ -125,7 +125,7 @@ void PlayerTemplatesLoad(PlayerTemplates *pt, const CharacterClasses *classes)
 	FILE *f = fopen(GetConfigFilePath(PLAYER_TEMPLATE_FILE), "r");
 	if (!f)
 	{
-		LOG(LM_MAIN, LL_ERROR, "loading player templates '%s'",
+		LOG(LM_MAIN, LL_WARN, "player templates file missing '%s'",
 			PLAYER_TEMPLATE_FILE);
 		goto bail;
 	}
