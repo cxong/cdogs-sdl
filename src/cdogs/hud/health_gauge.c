@@ -79,7 +79,7 @@ void HealthGaugeDraw(
 	}
 
 	HSV hsv = {0.0, 1.0, 1.0};
-	const int maxHealth = ActorGetCharacter(actor)->maxHealth;
+	const int maxHealth = ActorGetMaxHeal(actor, false);
 	const int health = MIN(actor->health, maxHealth);
 	if (actor->poisoned)
 	{
@@ -109,6 +109,20 @@ void HealthGaugeDraw(
 	barColor = ColorTint(colorWhite, hsv);
 	barColor.a = opts.Mask.a;
 	HUDDrawGaugeInner(device, &gPicManager, pos, innerWidth, barColor);
+
+	// Draw a second bar if health is over max
+	if (actor->health > maxHealth)
+	{
+		const int healthOverMax = actor->health - maxHealth;
+		const int excessHealth = ActorGetMaxHeal(actor, true);
+		const int excessHealthRange = MAX(excessHealth - maxHealth, healthOverMax);
+		const int innerWidth = MAX(1, width * healthOverMax / excessHealthRange);
+		hsv.h = 120.0;
+		hsv.v = 1.0;
+		barColor = ColorTint(colorWhite, hsv);
+		barColor.a = opts.Mask.a;
+		HUDDrawGaugeInner(device, &gPicManager, pos, innerWidth, barColor);
+	}
 
 	// Draw health number label
 	char s[50];
