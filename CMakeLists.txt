@@ -65,7 +65,7 @@ set(CMAKE_MODULE_PATH
 	${CMAKE_MODULE_PATH}
 	"${CMAKE_SOURCE_DIR}/src/proto/nanopb/extra")
 	
-find_package(Nanopb REQUIRED)
+find_package(Nanopb 0.4.5...<1.0.0 REQUIRED)
 find_package(SDL2 REQUIRED)
 message("SDL2 include dir: ${SDL2_INCLUDE_DIRS}")
 find_package(SDL2_image REQUIRED)

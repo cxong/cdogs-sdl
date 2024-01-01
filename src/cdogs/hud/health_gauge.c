@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2017, 2019, 2021 Cong Xu
+	Copyright (c) 2017, 2019, 2021, 2023-2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -116,12 +116,12 @@ void HealthGaugeDraw(
 		const int healthOverMax = actor->health - maxHealth;
 		const int excessHealth = ActorGetMaxHeal(actor, true);
 		const int excessHealthRange = MAX(excessHealth - maxHealth, healthOverMax);
-		const int innerWidth = MAX(1, width * healthOverMax / excessHealthRange);
+		const int innerWidth2 = MAX(1, width * healthOverMax / excessHealthRange);
 		hsv.h = 120.0;
 		hsv.v = 1.0;
 		barColor = ColorTint(colorWhite, hsv);
 		barColor.a = opts.Mask.a;
-		HUDDrawGaugeInner(device, &gPicManager, pos, innerWidth, barColor);
+		HUDDrawGaugeInner(device, &gPicManager, pos, innerWidth2, barColor);
 	}
 
 	// Draw health number label
