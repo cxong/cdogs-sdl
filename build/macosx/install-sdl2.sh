@@ -8,7 +8,7 @@ OSX_SDL2_IMAGE_PATH_FULL="$OSX_LIB_PATH/SDL2_image.framework"
 OSX_SDL2_MIXER_PATH_FULL="$OSX_LIB_PATH/SDL2_mixer.framework"
 
 SDL2_VERSION=2.26.4
-SDL2_IMAGE_VERSION=2.6.3
+SDL2_IMAGE_VERSION=2.8.1
 SDL2_MIXER_VERSION=2.6.3
 SDL2_URL=https://www.libsdl.org/release/SDL2-$SDL2_VERSION.dmg
 SDL2_IMAGE_URL=https://www.libsdl.org/projects/SDL_image/release/SDL2_image-$SDL2_IMAGE_VERSION.dmg
