@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2020 Cong Xu
+	Copyright (c) 2013-2020, 2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -39,6 +39,7 @@
 #include "log.h"
 
 #define GRAPHICS_DIR "graphics"
+#define GRAPHICS_HD_DIR "graphics_hd"
 
 PicManager gPicManager;
 
@@ -69,7 +70,7 @@ static NamedPic *AddNamedPic(map_t pics, const char *name, const Pic *p);
 static NamedSprites *AddNamedSprites(map_t sprites, const char *name);
 static void AfterAdd(PicManager *pm);
 static void PicManagerAdd(
-	map_t pics, map_t sprites, const char *name, SDL_Surface *imageIn)
+	map_t pics, map_t sprites, const char *name, SDL_Surface *imageIn, const bool isHD)
 {
 	char buf[CDOGS_FILENAME_MAX];
 	const char *dot = strrchr(name, '.');
@@ -134,7 +135,7 @@ static void PicManagerAdd(
 			{
 				pic = &np->pic;
 			}
-			PicLoad(pic, size, offset, image);
+			PicLoad(pic, size, offset, image, isHD);
 
 			if (strncmp("chars/", buf, strlen("chars/")) == 0)
 			{
@@ -187,7 +188,7 @@ static void PicManagerAdd(
 
 void PicManagerLoadDir(
 	PicManager *pm, const char *path, const char *prefix, map_t pics,
-	map_t sprites)
+	map_t sprites, const bool isHD)
 {
 	tinydir_dir dir;
 	if (tinydir_open(&dir, path) == -1)
@@ -234,7 +235,7 @@ void PicManagerLoadDir(
 					{
 						PathGetBasenameWithoutExtension(buf, file.name);
 					}
-					PicManagerAdd(pics, sprites, buf, data);
+					PicManagerAdd(pics, sprites, buf, data, isHD);
 				}
 			}
 			rwops->close(rwops);
@@ -245,11 +246,11 @@ void PicManagerLoadDir(
 			{
 				char buf[CDOGS_PATH_MAX];
 				sprintf(buf, "%s/%s", prefix, file.name);
-				PicManagerLoadDir(pm, file.path, buf, pics, sprites);
+				PicManagerLoadDir(pm, file.path, buf, pics, sprites, isHD);
 			}
 			else
 			{
-				PicManagerLoadDir(pm, file.path, file.name, pics, sprites);
+				PicManagerLoadDir(pm, file.path, file.name, pics, sprites, isHD);
 			}
 		}
 	}
@@ -261,7 +262,9 @@ void PicManagerLoad(PicManager *pm)
 {
 	char buf[CDOGS_PATH_MAX];
 	GetDataFilePath(buf, GRAPHICS_DIR);
-	PicManagerLoadDir(pm, buf, NULL, pm->pics, pm->sprites);
+	PicManagerLoadDir(pm, buf, NULL, pm->pics, pm->sprites, false);
+	GetDataFilePath(buf, GRAPHICS_HD_DIR);
+	PicManagerLoadDir(pm, buf, NULL, pm->pics, pm->sprites, true);
 }
 
 static void FindStylePics(

@@ -108,10 +108,11 @@ void FontLoad(
 			pos.x += step.x, x++, chars++)
 		{
 			Pic p;
+			// TODO: HD fonts
 			PicLoad(
 				&p, f->Size,
 				svec2i_add(pos, svec2i(f->Padding.Left, f->Padding.Top)),
-				image);
+				image, false);
 			if (chars == ' ')
 			{
 				PicShrink(&p, spaceSize, svec2i_zero());

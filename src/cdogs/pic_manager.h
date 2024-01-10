@@ -1,7 +1,7 @@
 /*
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, 2018-2019, 2023 Cong Xu
+    Copyright (c) 2013-2016, 2018-2019, 2023-2024 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -52,7 +52,7 @@ void PicManagerInit(PicManager *pm);
 void PicManagerLoad(PicManager *pm);
 void PicManagerLoadDir(
 	PicManager *pm, const char *path, const char *prefix,
-	map_t pics, map_t sprites);
+	map_t pics, map_t sprites, const bool isHD);
 void PicManagerClearCustom(PicManager *pm);
 void PicManagerTerminate(PicManager *pm);
 void PicManagerReloadTextures(PicManager *pm);

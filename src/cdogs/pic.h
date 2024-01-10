@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013-2016, 2018-2019 Cong Xu
+    Copyright (c) 2013-2016, 2018-2019, 2024 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@ typedef struct
 {
 	struct vec2i size;
 	struct vec2i offset;
+	bool isHD;
 	Uint32 *Data;
 	SDL_Texture *Tex;
 } Pic;
@@ -48,7 +49,7 @@ Uint32 ColorToPixel(
 
 void PicLoad(
 	Pic *p, const struct vec2i size, const struct vec2i offset,
-	const SDL_Surface *image);
+	const SDL_Surface *image, const bool isHD);
 bool PicTryMakeTex(Pic *p);
 Pic PicCopy(const Pic *src);
 void PicFree(Pic *pic);
@@ -58,7 +59,6 @@ bool PicIsNone(const Pic *pic);
 void PicTrim(Pic *pic, const bool xTrim, const bool yTrim);
 void PicShrink(Pic *pic, const struct vec2i size, const struct vec2i offset);
 
-bool PicPxIsEdge(const Pic *pic, const struct vec2i pos, const bool isPixel);
 color_t PicGetRandomColor(const Pic *p);
 
 void PicRender(

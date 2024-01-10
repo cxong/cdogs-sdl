@@ -31,7 +31,7 @@ FEATURE(PicLoad, "Pic load")
 			Pic p;
 			p.size = svec2i(1, 1);
 			p.offset = svec2i_zero();
-			PicLoad(&p, p.size, svec2i_zero(), image);
+			PicLoad(&p, p.size, svec2i_zero(), image, false);
 
 		THEN("the loaded pic should have values that match");
 			const color_t c = PIXEL2COLOR(p.Data[0]);

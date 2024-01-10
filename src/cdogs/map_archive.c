@@ -227,7 +227,9 @@ static void LoadArchivePics(PicManager *pm, map_t cc, const char *archive)
 {
 	char path[CDOGS_PATH_MAX];
 	sprintf(path, "%s/graphics", archive);
-	PicManagerLoadDir(pm, path, NULL, pm->customPics, pm->customSprites);
+	PicManagerLoadDir(pm, path, NULL, pm->customPics, pm->customSprites, false);
+	sprintf(path, "%s/graphics_hd", archive);
+	PicManagerLoadDir(pm, path, NULL, pm->customPics, pm->customSprites, true);
 	CharSpriteClassesLoadDir(cc, archive);
 }
 

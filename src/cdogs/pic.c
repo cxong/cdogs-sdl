@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2013-2016, 2018-2019 Cong Xu
+	Copyright (c) 2013-2016, 2018-2019, 2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -56,12 +56,27 @@ Uint32 ColorToPixel(
 		((Uint32)color.a << aShift);
 }
 
+// Get the true pixel size of the pic
+static struct vec2i PicPixelSize(const Pic *p)
+{
+	if (p->isHD)
+	{
+		return svec2i_scale(p->size, 2);
+	}
+	return p->size;
+}
 
 void PicLoad(
-	Pic *p, const struct vec2i size, const struct vec2i offset, const SDL_Surface *image)
+	Pic *p, const struct vec2i size, const struct vec2i offset, const SDL_Surface *image, const bool isHD)
 {
 	memset(p, 0, sizeof *p);
 	p->size = size;
+	// Pretend to be half the size for HD pics
+	p->isHD = isHD;
+	if (isHD)
+	{
+		p->size = svec2i_scale_divide(p->size, 2);
+	}
 	p->offset = svec2i_zero();
 	CMALLOC(p->Data, size.x * size.y * sizeof *((Pic *)0)->Data);
 	if (p->Data == NULL)
@@ -134,16 +149,17 @@ bool PicTryMakeTex(Pic *p)
 			}
 		}
 	}
+	const struct vec2i size = PicPixelSize(p);
 	p->Tex = TextureCreate(
 		gGraphicsDevice.gameWindow.renderer, SDL_TEXTUREACCESS_STATIC,
-		p->size, SDL_BLENDMODE_NONE, 255);
+						   size, SDL_BLENDMODE_NONE, 255);
 	if (p->Tex == NULL)
 	{
 		LOG(LM_GFX, LL_ERROR, "cannot create texture: %s", SDL_GetError());
 		return false;
 	}
 	if (SDL_UpdateTexture(
-		p->Tex, NULL, p->Data, p->size.x * sizeof(Uint32)) != 0)
+		p->Tex, NULL, p->Data, size.x * sizeof(Uint32)) != 0)
 	{
 		LOG(LM_GFX, LL_ERROR, "cannot update texture: %s", SDL_GetError());
 		return false;
@@ -176,10 +192,12 @@ bool PicTryMakeTex(Pic *p)
 Pic PicCopy(const Pic *src)
 {
 	Pic p = *src;
-	const size_t size = p.size.x * p.size.y * sizeof *p.Data;
+	const struct vec2i psize = PicPixelSize(src);
+	const size_t size = psize.x * psize.y * sizeof *p.Data;
 	CMALLOC(p.Data, size);
 	memcpy(p.Data, src->Data, size);
 	p.Tex = NULL;
+	p.isHD = src->isHD;
 	return p;
 }
 
@@ -224,13 +242,14 @@ bool PicIsNone(const Pic *pic)
 void PicTrim(Pic *pic, const bool xTrim, const bool yTrim)
 {
 	// Scan all pixels looking for the min/max of x and y
-	struct vec2i min = pic->size;
+	const struct vec2i size = PicPixelSize(pic);
+	struct vec2i min = size;
 	struct vec2i max = svec2i_zero();
-	for (struct vec2i pos = svec2i_zero(); pos.y < pic->size.y; pos.y++)
+	for (struct vec2i pos = svec2i_zero(); pos.y < size.y; pos.y++)
 	{
-		for (pos.x = 0; pos.x < pic->size.x; pos.x++)
+		for (pos.x = 0; pos.x < size.x; pos.x++)
 		{
-			const Uint32 pixel = *(pic->Data + pos.x + pos.y * pic->size.x);
+			const Uint32 pixel = *(pic->Data + pos.x + pos.y * size.x);
 			if (pixel > 0)
 			{
 				min.x = MIN(min.x, pos.x);
@@ -241,7 +260,7 @@ void PicTrim(Pic *pic, const bool xTrim, const bool yTrim)
 		}
 	}
 	// If no opaque pixels found, don't trim
-	struct vec2i newSize = pic->size;
+	struct vec2i newSize = size;
 	struct vec2i offset = svec2i_zero();
 	if (min.x < max.x && min.y < max.y)
 	{
@@ -281,41 +300,21 @@ void PicShrink(Pic *pic, const struct vec2i size, const struct vec2i offset)
 	CFREE(pic->Data);
 	pic->Data = newData;
 	pic->size = size;
+	if (pic->isHD)
+	{
+		pic->size = svec2i_scale_divide(pic->size, 2);
+	}
 	pic->offset = svec2i_zero();
 	PicTryMakeTex(pic);
 }
 
-bool PicPxIsEdge(const Pic *pic, const struct vec2i pos, const bool isPixel)
-{
-	const bool isTopOrBottomEdge = pos.y == -1 || pos.y == pic->size.y;
-	const bool isLeftOrRightEdge = pos.x == -1 || pos.x == pic->size.x;
-	const bool isLeft =
-		pos.x > 0 && !isTopOrBottomEdge &&
-		PIXEL2COLOR(*(pic->Data + pos.x - 1 + pos.y * pic->size.x)).a;
-	const bool isRight =
-		pos.x < pic->size.x - 1 && !isTopOrBottomEdge &&
-		PIXEL2COLOR(*(pic->Data + pos.x + 1 + pos.y * pic->size.x)).a;
-	const bool isAbove =
-		pos.y > 0 && !isLeftOrRightEdge &&
-		PIXEL2COLOR(*(pic->Data + pos.x + (pos.y - 1) * pic->size.x)).a;
-	const bool isBelow =
-		pos.y < pic->size.y - 1 && !isLeftOrRightEdge &&
-		PIXEL2COLOR(*(pic->Data + pos.x + (pos.y + 1) * pic->size.x)).a;
-	if (isPixel)
-	{
-		return !(isLeft && isRight && isAbove && isBelow);
-	}
-	else
-	{
-		return isLeft || isRight || isAbove || isBelow;
-	}
-}
 color_t PicGetRandomColor(const Pic *p)
 {
 	// Get a random non-transparent pixel from the pic
+	const struct vec2i size = PicPixelSize(p);
 	for (;;)
 	{
-		const uint32_t px = p->Data[rand() % (p->size.x * p->size.y)];
+		const uint32_t px = p->Data[rand() % (size.x * size.y)];
 		const color_t c = PIXEL2COLOR(px);
 		if (c.a > 0)
 		{
@@ -332,16 +331,24 @@ void PicRender(
 	Rect2i src = Rect2iNew(
 		svec2i_max(srcRect.Pos, svec2i_zero()), svec2i_zero()
 	);
-	src.Size = svec2i_is_zero(srcRect.Size) ? p->size :
-		svec2i_min(svec2i_subtract(srcRect.Size, src.Pos), p->size);
+	const struct vec2i srcSize = PicPixelSize(p);
+	src.Size = svec2i_is_zero(srcRect.Size) ? srcSize :
+		svec2i_min(svec2i_subtract(srcRect.Size, src.Pos), srcSize);
 	Rect2i dest = Rect2iNew(pos, src.Size);
 	// Apply scale to render dest
-	if (!svec2_is_equal(scale, svec2_one()))
+	const bool unscaled = svec2_is_equal(scale, svec2_one());
+	const struct vec2 destScale = svec2_scale(scale, p->isHD ? 0.5f : 1);
+	if (!unscaled)
 	{
-		dest.Pos.x -= (mint_t)MROUND((scale.x - 1) * src.Size.x / 2);
-		dest.Pos.y -= (mint_t)MROUND((scale.y - 1) * src.Size.y / 2);
-		dest.Size.x = (mint_t)MROUND(src.Size.x * scale.x);
-		dest.Size.y = (mint_t)MROUND(src.Size.y * scale.y);
+		dest.Pos.x -= (mint_t)MROUND((destScale.x - 1) * src.Size.x / 2);
+		dest.Pos.y -= (mint_t)MROUND((destScale.y - 1) * src.Size.y / 2);
+		dest.Size.x = (mint_t)MROUND(src.Size.x * destScale.x);
+		dest.Size.y = (mint_t)MROUND(src.Size.y * destScale.y);
+	}
+	else if (p->isHD)
+	{
+		dest.Size.x = (mint_t)MROUND(src.Size.x * destScale.x);
+		dest.Size.y = (mint_t)MROUND(src.Size.y * destScale.y);
 	}
 	const double angle = ToDegrees(radians);
 	TextureRender(p->Tex, r, src, dest, mask, angle, flip);
