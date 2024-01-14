@@ -73,15 +73,7 @@
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Cells",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_MiniGun",
-			"Count": 1
-		},
-		{
-			"Pickup": "ammo_Bullets",
 			"Count": 1
 		},
 		{
@@ -89,23 +81,11 @@
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Grenades",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_Flamer",
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Gas tank",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_Blaster",
-			"Count": 1
-		},
-		{
-			"Pickup": "ammo_Mini cells",
 			"Count": 1
 		},
 		{
@@ -295,15 +275,7 @@
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Cells",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_MiniGun",
-			"Count": 1
-		},
-		{
-			"Pickup": "ammo_Bullets",
 			"Count": 1
 		},
 		{
@@ -311,23 +283,11 @@
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Grenades",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_Flamer",
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Gas tank",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_Blaster",
-			"Count": 1
-		},
-		{
-			"Pickup": "ammo_Mini cells",
 			"Count": 1
 		},
 		{
@@ -512,15 +472,7 @@
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Cells",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_MiniGun",
-			"Count": 1
-		},
-		{
-			"Pickup": "ammo_Bullets",
 			"Count": 1
 		},
 		{
@@ -528,23 +480,11 @@
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Grenades",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_Flamer",
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Gas tank",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_Blaster",
-			"Count": 1
-		},
-		{
-			"Pickup": "ammo_Mini cells",
 			"Count": 1
 		},
 		{
@@ -730,15 +670,7 @@
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Cells",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_MiniGun",
-			"Count": 1
-		},
-		{
-			"Pickup": "ammo_Bullets",
 			"Count": 1
 		},
 		{
@@ -746,23 +678,11 @@
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Grenades",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_Flamer",
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Gas tank",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_Blaster",
-			"Count": 1
-		},
-		{
-			"Pickup": "ammo_Mini cells",
 			"Count": 1
 		},
 		{
@@ -963,15 +883,7 @@
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Cells",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_MiniGun",
-			"Count": 1
-		},
-		{
-			"Pickup": "ammo_Bullets",
 			"Count": 1
 		},
 		{
@@ -979,23 +891,11 @@
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Grenades",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_Flamer",
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Gas tank",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_Blaster",
-			"Count": 1
-		},
-		{
-			"Pickup": "ammo_Mini cells",
 			"Count": 1
 		},
 		{
@@ -1189,15 +1089,7 @@
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Cells",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_MiniGun",
-			"Count": 1
-		},
-		{
-			"Pickup": "ammo_Bullets",
 			"Count": 1
 		},
 		{
@@ -1205,23 +1097,11 @@
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Grenades",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_Flamer",
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Gas tank",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_Blaster",
-			"Count": 1
-		},
-		{
-			"Pickup": "ammo_Mini cells",
 			"Count": 1
 		},
 		{
@@ -1419,15 +1299,7 @@
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Cells",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_MiniGun",
-			"Count": 1
-		},
-		{
-			"Pickup": "ammo_Bullets",
 			"Count": 1
 		},
 		{
@@ -1435,23 +1307,11 @@
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Grenades",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_Flamer",
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Gas tank",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_Blaster",
-			"Count": 1
-		},
-		{
-			"Pickup": "ammo_Mini cells",
 			"Count": 1
 		},
 		{
@@ -1654,15 +1514,7 @@
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Cells",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_MiniGun",
-			"Count": 1
-		},
-		{
-			"Pickup": "ammo_Bullets",
 			"Count": 1
 		},
 		{
@@ -1670,23 +1522,11 @@
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Grenades",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_Flamer",
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Gas tank",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_Blaster",
-			"Count": 1
-		},
-		{
-			"Pickup": "ammo_Mini cells",
 			"Count": 1
 		},
 		{
@@ -1871,15 +1711,7 @@
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Cells",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_MiniGun",
-			"Count": 1
-		},
-		{
-			"Pickup": "ammo_Bullets",
 			"Count": 1
 		},
 		{
@@ -1887,23 +1719,11 @@
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Grenades",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_Flamer",
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Gas tank",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_Blaster",
-			"Count": 1
-		},
-		{
-			"Pickup": "ammo_Mini cells",
 			"Count": 1
 		},
 		{
@@ -2094,15 +1914,7 @@
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Cells",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_MiniGun",
-			"Count": 1
-		},
-		{
-			"Pickup": "ammo_Bullets",
 			"Count": 1
 		},
 		{
@@ -2110,23 +1922,11 @@
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Grenades",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_Flamer",
 			"Count": 1
 		},
 		{
-			"Pickup": "ammo_Gas tank",
-			"Count": 1
-		},
-		{
 			"Pickup": "gun_Blaster",
-			"Count": 1
-		},
-		{
-			"Pickup": "ammo_Mini cells",
 			"Count": 1
 		},
 		{
