@@ -1479,6 +1479,9 @@ static void ActorDie(TActor *actor)
 	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_DIE);
 	e.u.ActorDie.UID = actor->uid;
 	GameEventsEnqueue(&gGameEvents, e);
+	
+	// Persist player ammo for when they respawn
+	ActorPersistPlayerWeaponsAndAmmo(actor);
 }
 static bool IsUnarmedBot(const TActor *actor);
 static void ActorAddAmmoPickup(const TActor *actor)
@@ -2337,4 +2340,19 @@ bool ActorIsLocalPlayer(const int uid)
 		return true;
 
 	return PlayerIsLocal(a->PlayerUID);
+}
+
+void ActorPersistPlayerWeaponsAndAmmo(const TActor *a)
+{
+	// Update the player's weapons and ammo based on their actor
+	PlayerData *p = PlayerDataGetByUID(a->PlayerUID);
+	if (p == NULL)
+	{
+		return;
+	}
+	for (int i = 0; i < MAX_WEAPONS; i++)
+	{
+		p->guns[i] = a->guns[i].Gun;
+	}
+	CArrayCopy(&p->ammo, &a->ammo);
 }

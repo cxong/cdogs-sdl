@@ -616,11 +616,7 @@ static void PersistPlayerWeaponsAndAmmo(PlayerData *p)
 	if (!IsPlayerAlive(p))
 		return;
 	const TActor *a = ActorGetByUID(p->ActorUID);
-	for (int i = 0; i < MAX_WEAPONS; i++)
-	{
-		p->guns[i] = a->guns[i].Gun;
-	}
-	CArrayCopy(&p->ammo, &a->ammo);
+	ActorPersistPlayerWeaponsAndAmmo(a);
 }
 static void CheckMissionCompletion(const struct MissionOptions *mo)
 {
