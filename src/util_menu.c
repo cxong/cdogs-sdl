@@ -127,7 +127,7 @@ static void OnSelect(menu_t *menu, int cmd, void *data)
 			max = CampaignGetMaxLives(&gCampaign);
 			delta = 1;
 			price = LIFE_PRICE;
-			sound = "spawn";
+			sound = "1up";
 			break;
 		case OPTION_COUNT:
 			d->SelectResult = UTIL_MENU_CANCEL;

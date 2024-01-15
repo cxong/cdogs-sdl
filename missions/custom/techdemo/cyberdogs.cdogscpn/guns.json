@@ -142,9 +142,9 @@
     },
     {
       "Pic": "blaster_yellow",
-      "Name": "Lazer",
+      "Name": "Gun",
       "Bullet": "laser",
-      "Lock": 65,
+      "Lock": 30,
       "Sound": "pistol",
       "MuzzleFlashSprite": "muzzle_flash_big",
       "MuzzleFlashColor": "ffff00",
@@ -193,14 +193,18 @@
       "Name": "DumbGun",
       "Bullet": "laser_dumb",
       "Lock": 40,
-      "Sound": "pistol"
+      "Sound": "pistol",
+      "MuzzleFlashColor": "ff0000"
     },
     {
       "Pic": "zapper_green",
-      "Name": "Gun",
+      "Name": "Lazer",
       "Bullet": "pulse_green",
-      "Lock": 30,
-      "Sound": "pistol"
+      "Lock": 65,
+      "Sound": "pulse",
+      "MuzzleFlashSprite": "muzzle_flash_big",
+      "MuzzleFlashColor": "00ff00",
+      "MuzzleFlashDuration": 5
     }
   ],
   "PseudoGuns" : [
