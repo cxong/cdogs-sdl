@@ -2,7 +2,7 @@
  C-Dogs SDL
  A port of the legendary (and fun) action/arcade cdogs.
 
- Copyright (c) 2013-2016, 2019, 2021-2023 Cong Xu
+ Copyright (c) 2013-2016, 2019, 2021-2024 Cong Xu
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,7 @@
 
 #include <cdogs/campaign_entry.h>
 #include <cdogs/json_utils.h>
+#include <cdogs/log.h>
 #include <cdogs/sys_specifics.h>
 #include <cdogs/utils.h>
 
@@ -249,13 +250,13 @@ void AutosaveLoad(Autosave *autosave, const char *filename)
 
 	if (f == NULL)
 	{
-		printf("Error loading autosave '%s'\n", filename);
+		LOG(LM_MAIN, LL_WARN, "Error loading autosave '%s'", filename);
 		goto bail;
 	}
 
 	if (json_stream_parse(f, &root) != JSON_OK)
 	{
-		printf("Error parsing autosave '%s'\n", filename);
+		LOG(LM_MAIN, LL_ERROR, "Error parsing autosave '%s'", filename);
 		goto bail;
 	}
 	int version = 2;
