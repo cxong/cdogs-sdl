@@ -472,14 +472,6 @@ static void MissionSummaryOnEnter(GameLoopData *data)
 {
 	MissionSummaryData *mData = data->Data;
 
-	if (mData->completed && CanLevelSelect(mData->c->Entry.Mode))
-	{
-		AutosaveAdd(
-			&gAutosave, &mData->c->Entry, mData->m->index,
-			mData->m->NextMission, &gPlayerDatas);
-		AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
-	}
-
 	// Calculate bonus scores
 	// Bonuses only apply if at least one player has lived
 	const int accessBonus = GetAccessBonus(mData->m);
@@ -500,6 +492,14 @@ static void MissionSummaryOnEnter(GameLoopData *data)
 		ApplyBonuses(p, bonus);
 		p->Totals.TimeTicks += mData->m->time;
 		CA_FOREACH_END()
+	}
+	
+	if (mData->completed && CanLevelSelect(mData->c->Entry.Mode))
+	{
+		AutosaveAdd(
+			&gAutosave, &mData->c->Entry, mData->m->index,
+			mData->m->NextMission, &gPlayerDatas);
+		AutosaveSave(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 	}
 
 	// Skip menu

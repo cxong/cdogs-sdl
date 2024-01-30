@@ -247,7 +247,6 @@ NPlayerData PlayerDataDefault(const int idx)
 	pd.Lives = CampaignGetLives(&gCampaign);
 	if (gCampaign.Setting.BuyAndSell)
 	{
-		pd.Stats.Score = STARTING_CASH;
 		pd.Totals.Score = STARTING_CASH;
 	}
 

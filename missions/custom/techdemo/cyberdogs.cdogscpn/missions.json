@@ -302,7 +302,7 @@
 			"Pickup": "life",
 			"Count": 2
 		}],
-		"EnemyDensity": 40,
+		"EnemyDensity": 30,
 		"Weapons": ["Fists",
 		"Chainsaw",
 		"2xChainsaw",
@@ -499,7 +499,7 @@
 			"Pickup": "life",
 			"Count": 2
 		}],
-		"EnemyDensity": 50,
+		"EnemyDensity": 37,
 		"Weapons": ["Fists",
 		"Chainsaw",
 		"2xChainsaw",
@@ -697,7 +697,7 @@
 			"Pickup": "life",
 			"Count": 2
 		}],
-		"EnemyDensity": 55,
+		"EnemyDensity": 42,
 		"Weapons": ["Fists",
 		"Chainsaw",
 		"2xChainsaw",
@@ -910,7 +910,7 @@
 			"Pickup": "life",
 			"Count": 2
 		}],
-		"EnemyDensity": 13,
+		"EnemyDensity": 0,
 		"Weapons": ["Fists",
 		"Chainsaw",
 		"2xChainsaw",
@@ -1116,7 +1116,7 @@
 			"Pickup": "life",
 			"Count": 2
 		}],
-		"EnemyDensity": 13,
+		"EnemyDensity": 0,
 		"Weapons": ["Fists",
 		"Chainsaw",
 		"2xChainsaw",
@@ -1326,7 +1326,7 @@
 			"Pickup": "life",
 			"Count": 2
 		}],
-		"EnemyDensity": 65,
+		"EnemyDensity": 50,
 		"Weapons": ["Fists",
 		"Chainsaw",
 		"2xChainsaw",
@@ -1541,7 +1541,7 @@
 			"Pickup": "life",
 			"Count": 2
 		}],
-		"EnemyDensity": 13,
+		"EnemyDensity": 0,
 		"Weapons": ["Fists",
 		"Chainsaw",
 		"2xChainsaw",
@@ -1738,7 +1738,7 @@
 			"Pickup": "life",
 			"Count": 2
 		}],
-		"EnemyDensity": 70,
+		"EnemyDensity": 57,
 		"Weapons": ["Fists",
 		"Chainsaw",
 		"2xChainsaw",
@@ -1941,7 +1941,7 @@
 			"Pickup": "life",
 			"Count": 2
 		}],
-		"EnemyDensity": 80,
+		"EnemyDensity": 64,
 		"Weapons": ["Fists",
 		"Chainsaw",
 		"2xChainsaw",

@@ -42,6 +42,7 @@ typedef struct
 	CArray ammo; // of int
 	int Lives;
 	int HP;
+	int Score;
 } PlayerSave;
 typedef struct
 {
