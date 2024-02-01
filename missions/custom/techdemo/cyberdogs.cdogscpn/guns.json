@@ -181,6 +181,7 @@
       "Lock": 30,
       "Sound": "swell",
       "SwitchSound": "heatseeker_switch",
+      "Elevation": 5,
       "MuzzleFlashParticle": "muzzle_flash_heatseeker",
       "Ammo": "Rockets",
       "Shake": {
