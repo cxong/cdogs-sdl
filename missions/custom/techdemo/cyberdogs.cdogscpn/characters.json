@@ -88,7 +88,7 @@
 		"excessHealth": 30,
 		"flags": 167773184,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 50,
+		"probabilityToTrack": 35,
 		"probabilityToShoot": 10,
 		"actionDelay": 25
 	},
@@ -111,7 +111,7 @@
 		"excessHealth": 24,
 		"flags": 167773184,
 		"probabilityToMove": 75,
-		"probabilityToTrack": 75,
+		"probabilityToTrack": 50,
 		"probabilityToShoot": 10,
 		"actionDelay": 20
 	},
@@ -134,7 +134,7 @@
 		"excessHealth": 120,
 		"flags": 167773184,
 		"probabilityToMove": 75,
-		"probabilityToTrack": 75,
+		"probabilityToTrack": 50,
 		"probabilityToShoot": 50,
 		"actionDelay": 25
 	},
@@ -157,7 +157,7 @@
 		"excessHealth": 24,
 		"flags": 167773184,
 		"probabilityToMove": 75,
-		"probabilityToTrack": 75,
+		"probabilityToTrack": 50,
 		"probabilityToShoot": 5,
 		"actionDelay": 10
 	},
@@ -181,7 +181,7 @@
 		"excessHealth": 30,
 		"flags": 167773184,
 		"probabilityToMove": 75,
-		"probabilityToTrack": 75,
+		"probabilityToTrack": 50,
 		"probabilityToShoot": 50,
 		"actionDelay": 15
 	},
@@ -205,7 +205,7 @@
 		"excessHealth": 120,
 		"flags": 167773184,
 		"probabilityToMove": 50,
-		"probabilityToTrack": 50,
+		"probabilityToTrack": 35,
 		"probabilityToShoot": 50,
 		"actionDelay": 10
 	}]

@@ -1,7 +1,7 @@
 {
 	"Missions": [{
-		"Title": "Mission 1",
-		"Description": "",
+		"Title": "",
+		"Description": "Retrieve at least 6 objects",
 		"Type": "Classic",
 		"Width": 100,
 		"Height": 100,
@@ -193,8 +193,8 @@
 		}
 	},
 	{
-		"Title": "Mission 2",
-		"Description": "",
+		"Title": "",
+		"Description": "Retrieve at least 8 objects",
 		"Type": "Classic",
 		"Width": 100,
 		"Height": 100,
@@ -315,7 +315,7 @@
 		"Powergun",
 		"Blaster",
 		"MegaGun"],
-		"WeaponPersist": false,
+		"WeaponPersist": true,
 		"SkipDebrief": false,
 		"TileClasses": {
 			"Wall": {
@@ -395,8 +395,8 @@
 		}
 	},
 	{
-		"Title": "Mission 3",
-		"Description": "",
+		"Title": "",
+		"Description": "Retrieve at least 10 objects",
 		"Type": "Classic",
 		"Width": 100,
 		"Height": 100,
@@ -512,7 +512,7 @@
 		"Powergun",
 		"Blaster",
 		"MegaGun"],
-		"WeaponPersist": false,
+		"WeaponPersist": true,
 		"SkipDebrief": false,
 		"TileClasses": {
 			"Wall": {
@@ -592,8 +592,8 @@
 		}
 	},
 	{
-		"Title": "Mission 4",
-		"Description": "",
+		"Title": "",
+		"Description": "Retrieve at least 12 objects",
 		"Type": "Classic",
 		"Width": 100,
 		"Height": 100,
@@ -710,7 +710,7 @@
 		"Powergun",
 		"Blaster",
 		"MegaGun"],
-		"WeaponPersist": false,
+		"WeaponPersist": true,
 		"SkipDebrief": false,
 		"TileClasses": {
 			"Wall": {
@@ -790,8 +790,8 @@
 		}
 	},
 	{
-		"Title": "Mission 5",
-		"Description": "",
+		"Title": "",
+		"Description": "Eliminate at least 70 enemies, Blow up 1 reactor",
 		"Type": "Classic",
 		"Width": 100,
 		"Height": 100,
@@ -1003,8 +1003,8 @@
 		}
 	},
 	{
-		"Title": "Mission 6",
-		"Description": "",
+		"Title": "",
+		"Description": "Retrieve at least 8 objects, Eliminate at least 40 enemies",
 		"Type": "Classic",
 		"Width": 100,
 		"Height": 100,
@@ -1209,8 +1209,8 @@
 		}
 	},
 	{
-		"Title": "Mission 7",
-		"Description": "",
+		"Title": "",
+		"Description": "Retrieve at least 18 objects, Blow up 2 reactors",
 		"Type": "Classic",
 		"Width": 100,
 		"Height": 100,
@@ -1419,8 +1419,8 @@
 		}
 	},
 	{
-		"Title": "Mission 8",
-		"Description": "",
+		"Title": "",
+		"Description": "Eliminate at least 100 enemies, Blow up 2 reactors",
 		"Type": "Classic",
 		"Width": 100,
 		"Height": 100,
@@ -1634,8 +1634,8 @@
 		}
 	},
 	{
-		"Title": "Mission 9",
-		"Description": "",
+		"Title": "",
+		"Description": "Retrieve at least 22 objects",
 		"Type": "Classic",
 		"Width": 100,
 		"Height": 100,
@@ -1831,8 +1831,8 @@
 		}
 	},
 	{
-		"Title": "Mission 10",
-		"Description": "",
+		"Title": "The Final Showdown!",
+		"Description": "Retrieve at least 24 objects",
 		"Type": "Classic",
 		"Width": 100,
 		"Height": 100,
