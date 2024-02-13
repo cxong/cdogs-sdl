@@ -20,13 +20,13 @@
 
   <launchable type="desktop-id">io.github.cxong.cdogs-sdl.desktop</launchable>
 
-  <url type="homepage">http://cxong.github.io/cdogs-sdl/</url>
+  <url type="homepage">https://cxong.github.io/cdogs-sdl/</url>
   <url type="help">https://github.com/cxong/cdogs-sdl/wiki/Walkthrough</url>
   <screenshots>
-    <screenshot type="default">https://i.imgur.com/z10EiDv.png</screenshot>
-    <screenshot>https://i.imgur.com/PKXTLm4.png</screenshot>
-    <screenshot>https://i.imgur.com/cnsQqy5.png</screenshot>
-    <screenshot>https://i.imgur.com/30KUS8O.png</screenshot>
+    <screenshot type="default"><image>https://i.imgur.com/z10EiDv.png</image></screenshot>
+    <screenshot><image>https://i.imgur.com/PKXTLm4.png</image></screenshot>
+    <screenshot><image>https://i.imgur.com/cnsQqy5.png</image></screenshot>
+    <screenshot><image>https://i.imgur.com/30KUS8O.png</image></screenshot>
   </screenshots>
   <releases>
     <release version="1.5.0" date="2023-07-28"/>
