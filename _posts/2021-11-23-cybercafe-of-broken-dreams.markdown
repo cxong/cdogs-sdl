@@ -8,7 +8,7 @@ published: true
 
 <a
     href="https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/concept_alley.jpg"
-    data-fancybox="gallery"
+    data-fancybox="gallery-gang"
     data-caption="A blind Ice surrounded by a gang of Napoleons">
 ![Alley concept](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/concept_alley_th.jpg)
 </a>

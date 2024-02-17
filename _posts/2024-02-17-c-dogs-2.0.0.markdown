@@ -1,0 +1,20 @@
+---
+layout: post
+title:  "C-Dogs 2.0.0 Released!"
+date:   2024-02-17
+categories: release
+---
+
+Once in a blue moon, we have a major release, the big 2.0, featuring Cyberdogs!
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/RQCwcDWJZ5c?si=n3-1YZc1riDKtCSZ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+Cyberdogs is a freeware DOS run-and-gun shooter by Ronny Wester, released in 1994. If that sounds familiar, that's because it's the prequel to C-Dogs! The two games look alike but actually play very different - in Cyberdogs you can earn money and buy and sell weapons between levels, and the gameplay is a lot more tense. There are many folks who prefer Cyberdogs to C-Dogs as a result.
+
+With this release, we've added Cyberdogs as a campaign in C-Dogs SDL, so you can enjoy this classic oldie but goodie, but with all the modern C-Dogs SDL enhancements (wanna try 4 player co-op?) It's no exaggeration to say this feature was [10 years in the making](https://github.com/cxong/cdogs-sdl/issues/71)! In order to implement Cyberdogs, a lot of major features had to be made - buy/sell weapons, a revamped equip menu showing prices and ammo, new pickup types like over-healing and extra lives, enemies that can both shoot and melee, and many many more - not to mention lots of reverse engineering and tweaking gameplay so it feels the same. Some of the features have trickled out to other parts of C-Dogs SDL, for example the Wolf3D extra life pickups now actually give you an extra life 😆
+
+Last but not least this release contains a bunch of fixes and enhancements made possible by awesome contributors, special thanks to [**reinerh**](https://github.com/reinerh) for miscellaneous fixes and helping to get [C-Dogs SDL into debian](https://packages.debian.org/sid/cdogs-sdl)! Big thanks to all who made it happen. Also thanks to [@PavanLuca](https://github.com/PavanLuca), [@naddoska](https://github.com/naddoska), [@rootkea](https://github.com/rootkea) and [@hucarxiao](https://github.com/hucarxiao) for various contributions; it's great to see that C-Dogs SDL is going slowly but strongly, so keep those patches and bug reports coming in!
+
+Download free from itch.io: <https://congusbongus.itch.io/cdogs-sdl/purchase>
+
+Release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/2.0.0>
