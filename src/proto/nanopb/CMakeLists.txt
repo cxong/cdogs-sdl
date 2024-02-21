@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 2.8.12)
-
 project(nanopb C)
 
 set(nanopb_VERSION_STRING nanopb-0.4.4)
