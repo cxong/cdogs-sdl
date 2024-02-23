@@ -5,6 +5,9 @@
   <project_license>GPL-2.0+</project_license>
   <content_rating type="oars-1.0" />
   <name>C-Dogs SDL</name>
+  <developer>
+    <name>congusbongus</name>
+  </developer>
   <summary>Classic overhead run-and-gun game</summary>
   <description>
     <p>
@@ -23,10 +26,22 @@
   <url type="homepage">https://cxong.github.io/cdogs-sdl/</url>
   <url type="help">https://github.com/cxong/cdogs-sdl/wiki/Walkthrough</url>
   <screenshots>
-    <screenshot type="default"><image>https://i.imgur.com/z10EiDv.png</image></screenshot>
-    <screenshot><image>https://i.imgur.com/PKXTLm4.png</image></screenshot>
-    <screenshot><image>https://i.imgur.com/cnsQqy5.png</image></screenshot>
-    <screenshot><image>https://i.imgur.com/30KUS8O.png</image></screenshot>
+    <screenshot type="default">
+      <image>https://i.imgur.com/z10EiDv.png</image>
+      <caption>A player shooting bullets inside a computer room</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://i.imgur.com/PKXTLm4.png</image>
+      <caption>A player among some rooms in a grassy field</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://i.imgur.com/cnsQqy5.png</image>
+      <caption>A weapon selection screen</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://i.imgur.com/30KUS8O.png</image>
+      <caption>A player being followed by some AI companions</caption>
+    </screenshot>
   </screenshots>
   <releases>
     <release version="2.0.0" date="2024-02-17"/>
