@@ -129,7 +129,9 @@ jobs:
 
     - name: Upload a Build Artifact
       uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
+      if: >
+        startsWith(github.ref, 'refs/tags/') &&
+        (!startsWith(matrix.os, 'ubuntu') || (matrix.cc == 'gcc' && matrix.cc_version == 'latest'))
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
