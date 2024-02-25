@@ -70,8 +70,8 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt install python3-pip libgl1-mesa-dev
-        python3 -m pip install protobuf
-        pip3 install --upgrade protobuf
+        python3 -m pip install protobuf --break-system-packages
+        pip3 install --upgrade protobuf --break-system-packages
       # libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev
 
     - name: Set up GCC (Linux)

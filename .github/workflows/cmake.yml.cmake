@@ -42,10 +42,10 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Install Protoc
-      uses: arduino/setup-protoc@v1.1.2
+      uses: arduino/setup-protoc@v3
       with:
         version: '3.x'
         repo-token: ${{ secrets.GITHUB_TOKEN }}
@@ -70,8 +70,8 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt install python3-pip libgl1-mesa-dev
-        python3 -m pip install protobuf
-        pip3 install --upgrade protobuf
+        python3 -m pip install protobuf --break-system-packages
+        pip3 install --upgrade protobuf --break-system-packages
       # libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev
 
     - name: Set up GCC (Linux)
