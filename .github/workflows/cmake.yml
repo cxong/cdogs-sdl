@@ -47,7 +47,7 @@ jobs:
     - name: Install Protoc
       uses: arduino/setup-protoc@v3
       with:
-        version: "3.20.1"
+        version: "23.x"
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Check stuff

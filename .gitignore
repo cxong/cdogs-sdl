@@ -51,11 +51,9 @@ Win32/
 *.opensdf
 *.sdf
 *.suo
-*.vcxproj.user
 *.dll
 *.psess
-*.vcxproj
-*.vcxproj.filters
+*.vcxproj*
 *.vspx
 *.sln
 *.ilk
