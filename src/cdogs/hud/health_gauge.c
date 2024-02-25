@@ -32,12 +32,11 @@
 #include "gauge.h"
 
 #define WAIT_MS 1000
+#define FLASH_PERIOD_MS 100
 
 void HealthGaugeInit(HealthGauge *h)
 {
-	h->health = 0;
-	h->waitHealth = 0;
-	h->waitMs = 0;
+	memset(h, 0, sizeof *h);
 }
 
 void HealthGaugeUpdate(HealthGauge *h, const TActor *a, const int ms)
@@ -93,6 +92,12 @@ void HealthGaugeDraw(
 		hsv.h =
 			(maxHealthHue - minHealthHue) * health / maxHealth + minHealthHue;
 	}
+	// Flash bar white if just took damage
+	if (h->waitMs > 0 && (h->waitMs & FLASH_PERIOD_MS) < FLASH_PERIOD_MS / 2)
+	{
+		hsv.s = 0.0;
+		hsv.v = 1.0;
+	}
 	color_t barColor;
 	if (h->health != health)
 	{
@@ -115,8 +120,10 @@ void HealthGaugeDraw(
 	{
 		const int healthOverMax = actor->health - maxHealth;
 		const int excessHealth = ActorGetMaxHeal(actor, true);
-		const int excessHealthRange = MAX(excessHealth - maxHealth, healthOverMax);
-		const int innerWidth2 = MAX(1, width * healthOverMax / excessHealthRange);
+		const int excessHealthRange =
+			MAX(excessHealth - maxHealth, healthOverMax);
+		const int innerWidth2 =
+			MAX(1, width * healthOverMax / excessHealthRange);
 		hsv.h = 120.0;
 		hsv.v = 1.0;
 		barColor = ColorTint(colorWhite, hsv);
