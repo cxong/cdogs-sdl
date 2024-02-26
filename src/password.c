@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2014, 2017, 2021-2022 Cong Xu
+	Copyright (c) 2013-2014, 2017, 2021-2022, 2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -165,17 +165,14 @@ static GameLoopResult LevelSelectionUpdate(GameLoopData *data, LoopRunner *l)
 			{
 			case RETURN_CODE_CONTINUE:
 				gCampaign.MissionIndex = pData->save->NextMission;
-				LoopRunnerChange(l, GameOptions(gCampaign.Entry.Mode));
 				break;
 			case RETURN_CODE_START:
-				LoopRunnerChange(l, GameOptions(gCampaign.Entry.Mode));
 				break;
 			default:
 				// Return code represents the mission to start on
 				CASSERT(
 					returnCode >= 0, "Invalid return code for password menu");
 				gCampaign.MissionIndex = returnCode;
-				LoopRunnerChange(l, GameOptions(gCampaign.Entry.Mode));
 				break;
 			}
 
@@ -185,6 +182,9 @@ static GameLoopResult LevelSelectionUpdate(GameLoopData *data, LoopRunner *l)
 				const Mission *m = CampaignGetCurrentMission(&gCampaign);
 				PlayerSavesApply(&pData->save->Players, m->WeaponPersist);
 			}
+			// IMPORTANT: change state after applying player save to avoid
+			// reading freed data
+			LoopRunnerChange(l, GameOptions(gCampaign.Entry.Mode));
 		}
 	}
 	return result;
