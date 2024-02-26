@@ -93,7 +93,7 @@ void HealthGaugeDraw(
 			(maxHealthHue - minHealthHue) * health / maxHealth + minHealthHue;
 	}
 	// Flash bar white if just took damage
-	if (h->waitMs > 0 && (h->waitMs & FLASH_PERIOD_MS) < FLASH_PERIOD_MS / 2)
+	if (h->waitMs > 0 && (h->waitMs % FLASH_PERIOD_MS) < FLASH_PERIOD_MS / 2)
 	{
 		hsv.s = 0.0;
 		hsv.v = 1.0;

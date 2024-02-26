@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2017, 2019-2021 Cong Xu
+	Copyright (c) 2013-2017, 2019-2021, 2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,8 @@
 #define GUN_ICON_WIDTH 14
 #define PLAYER_ICON_WIDTH 20
 #define BAR_HEIGHT 13
+#define GUN_CHANGE_FLASH_MS 500
+#define FLASH_PERIOD_MS 100
 
 void HUDPlayerInit(HUDPlayer *h)
 {
@@ -73,6 +75,21 @@ void HUDPlayerUpdate(HUDPlayer *h, const PlayerData *p, const int ms)
 
 	// Health
 	HealthGaugeUpdate(&h->healthGauge, a, ms);
+
+	// Initialise weapon
+	const Weapon *weapon = ACTOR_GET_WEAPON(a);
+	const WeaponClass *wc = weapon->Gun;
+	if (h->wc == NULL)
+	{
+		h->wc = wc;
+	}
+	h->weaponChangeMs = MAX(0, h->weaponChangeMs - ms);
+	if (h->wc != wc)
+	{
+		// Weapon has changed
+		h->wc = wc;
+		h->weaponChangeMs = GUN_CHANGE_FLASH_MS;
+	}
 }
 
 static void DrawPlayerStatus(
@@ -105,7 +122,8 @@ static void DrawWeaponStatus(
 	GraphicsDevice *g, const PicManager *pm, const TActor *actor,
 	const int flags, const Rect2i r, const color_t mask);
 static void DrawGunIcons(
-	GraphicsDevice *g, const TActor *actor, const int flags, const Rect2i r);
+	GraphicsDevice *g, const TActor *actor, const int flags,
+	const HUDPlayer *h, const Rect2i r);
 static void DrawGrenadeStatus(
 	GraphicsDevice *g, const TActor *a, const int flags, const Rect2i r);
 static void DrawRadar(
@@ -162,7 +180,7 @@ static void DrawPlayerStatus(
 	DrawScore(hud->device, &gPicManager, p, data->Stats.Score, flags, r, mask);
 	DrawGrenadeStatus(hud->device, p, flags, r);
 	DrawWeaponStatus(hud->device, &gPicManager, p, flags, r, mask);
-	DrawGunIcons(hud->device, p, flags, r);
+	DrawGunIcons(hud->device, p, flags, h, r);
 	DrawLives(hud->device, data, opts.HAlign, opts.VAlign);
 	DrawHealth(hud->device, p, flags, h, r, mask);
 
@@ -356,8 +374,7 @@ static void DrawWeaponStatus(
 			const Pic *fillPic = PicManagerGetPic(pm, "hud/gauge_small_inner");
 			const int ammoMax = ammo->Max ? ammo->Max : amount;
 			const struct vec2i fillPicSize = svec2i(
-				MAX(1, (AMMO_WIDTH - 1) * amount / ammoMax),
-				fillPic->size.y);
+				MAX(1, (AMMO_WIDTH - 1) * amount / ammoMax), fillPic->size.y);
 			Draw9Slice(
 				g, fillPic, Rect2iNew(svec2i(pos.x, pos.y), fillPicSize), 1, 1,
 				1, 1, false, colorBlue, SDL_FLIP_NONE);
@@ -411,7 +428,8 @@ static void DrawWeaponStatus(
 }
 
 static void DrawGunIcons(
-	GraphicsDevice *g, const TActor *actor, const int flags, const Rect2i r)
+	GraphicsDevice *g, const TActor *actor, const int flags,
+	const HUDPlayer *h, const Rect2i r)
 {
 	if (actor == NULL)
 	{
@@ -449,8 +467,13 @@ static void DrawGunIcons(
 	}
 
 	// Gun icon
+	const color_t gunIconMask =
+		h->weaponChangeMs > 0 &&
+				(h->weaponChangeMs % FLASH_PERIOD_MS) < FLASH_PERIOD_MS / 2
+			? colorDarkGray
+			: colorWhite;
 	PicRender(
-		wc->Icon, g->gameWindow.renderer, pos, colorWhite, 0.0, svec2_one(),
+		wc->Icon, g->gameWindow.renderer, pos, gunIconMask, 0.0, svec2_one(),
 		SDL_FLIP_NONE, Rect2iZero());
 }
 
@@ -660,8 +683,15 @@ static void DrawPlayerObjectiveCompass(
 	{
 		return;
 	}
-	// deviding the screen by 4 and 2, which draws the arrows half way from the screen edge to be centered
-	Rect2i r = Rect2iNew(svec2i(hud->device->cachedConfig.Res.x / 4, hud->device->cachedConfig.Res.y / 4), svec2i(hud->device->cachedConfig.Res.x / 2, hud->device->cachedConfig.Res.y / 2));
+	// deviding the screen by 4 and 2, which draws the arrows half way from the
+	// screen edge to be centered
+	Rect2i r = Rect2iNew(
+		svec2i(
+			hud->device->cachedConfig.Res.x / 4,
+			hud->device->cachedConfig.Res.y / 4),
+		svec2i(
+			hud->device->cachedConfig.Res.x / 2,
+			hud->device->cachedConfig.Res.y / 2));
 	if (hudPlayerIndex & 1)
 	{
 		r.Pos.x = r.Size.x;
