@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2015, 2017-2020, 2022-2023 Cong Xu
+	Copyright (c) 2014-2015, 2017-2020, 2022-2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -312,11 +312,13 @@ static bool TryPickupAmmo(TActor *a, const Pickup *p, const PickupEffect *pe)
 		return false;
 	}
 	// Don't pickup if ammo full
-	const Ammo *ammo = AmmoGetById(
-		&gAmmo, pe->Type == PICKUP_AMMO
-					? (int)pe->u.Ammo.Id
-					: IdWeaponClass(pe->u.GunId)->u.Normal.AmmoId);
-	const int current = *(int *)CArrayGet(&a->ammo, pe->u.Ammo.Id);
+	const int ammoId = pe->Type == PICKUP_AMMO
+						   ? (int)pe->u.Ammo.Id
+						   : IdWeaponClass(pe->u.GunId)->u.Normal.AmmoId;
+	const Ammo *ammo = AmmoGetById(&gAmmo, ammoId);
+	const int amount =
+		pe->Type == PICKUP_AMMO ? (int)pe->u.Ammo.Amount : ammo->Amount;
+	const int current = *(int *)CArrayGet(&a->ammo, ammoId);
 	if (ammo->Max > 0 && current >= ammo->Max)
 	{
 		return false;
@@ -326,8 +328,8 @@ static bool TryPickupAmmo(TActor *a, const Pickup *p, const PickupEffect *pe)
 	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_ADD_AMMO);
 	e.u.AddAmmo.UID = a->uid;
 	e.u.AddAmmo.PlayerUID = a->PlayerUID;
-	e.u.AddAmmo.Ammo.Id = pe->u.Ammo.Id;
-	e.u.AddAmmo.Ammo.Amount = pe->u.Ammo.Amount;
+	e.u.AddAmmo.Ammo.Id = ammoId;
+	e.u.AddAmmo.Ammo.Amount = amount;
 	e.u.AddAmmo.IsRandomSpawned = p->IsRandomSpawned;
 	// Note: receiving end will prevent ammo from exceeding max
 	GameEventsEnqueue(&gGameEvents, e);
