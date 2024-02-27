@@ -46,8 +46,11 @@ typedef struct
 typedef struct
 {
 	HealthGauge healthGauge;
-	const WeaponClass *wc;
-	int weaponChangeMs;
+	const WeaponClass *gunWc;
+	int gunChangeMs;
+	const WeaponClass *grenadeWc;
+	int grenadeAmount;
+	int grenadeChangeMs;
 } HUDPlayer;
 
 typedef struct

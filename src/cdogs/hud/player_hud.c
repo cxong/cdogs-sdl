@@ -76,19 +76,35 @@ void HUDPlayerUpdate(HUDPlayer *h, const PlayerData *p, const int ms)
 	// Health
 	HealthGaugeUpdate(&h->healthGauge, a, ms);
 
-	// Initialise weapon
-	const Weapon *weapon = ACTOR_GET_WEAPON(a);
-	const WeaponClass *wc = weapon->Gun;
-	if (h->wc == NULL)
+	// Initialise guns
+	const Weapon *gun = ACTOR_GET_GUN(a);
+	const WeaponClass *gunWc = gun->Gun;
+	if (h->gunWc == NULL)
 	{
-		h->wc = wc;
+		h->gunWc = gunWc;
 	}
-	h->weaponChangeMs = MAX(0, h->weaponChangeMs - ms);
-	if (h->wc != wc)
+	h->gunChangeMs = MAX(0, h->gunChangeMs - ms);
+	if (h->gunWc != gunWc)
 	{
-		// Weapon has changed
-		h->wc = wc;
-		h->weaponChangeMs = GUN_CHANGE_FLASH_MS;
+		// Gun has changed
+		h->gunWc = gunWc;
+		h->gunChangeMs = GUN_CHANGE_FLASH_MS;
+	}
+	const Weapon *grenade = ACTOR_GET_GRENADE(a);
+	const WeaponClass *grenadeWc = grenade->Gun;
+	const int grenadeAmount = ActorWeaponGetAmmo(a, grenadeWc, 0);
+	if (h->grenadeWc == NULL)
+	{
+		h->grenadeWc = grenadeWc;
+		h->grenadeAmount = grenadeAmount;
+	}
+	h->grenadeChangeMs = MAX(0, h->grenadeChangeMs - ms);
+	if (h->grenadeWc != grenadeWc || h->grenadeAmount != grenadeAmount)
+	{
+		// Grenade has changed
+		h->grenadeWc = grenadeWc;
+		h->grenadeAmount = grenadeAmount;
+		h->grenadeChangeMs = GUN_CHANGE_FLASH_MS;
 	}
 }
 
@@ -125,7 +141,8 @@ static void DrawGunIcons(
 	GraphicsDevice *g, const TActor *actor, const int flags,
 	const HUDPlayer *h, const Rect2i r);
 static void DrawGrenadeStatus(
-	GraphicsDevice *g, const TActor *a, const int flags, const Rect2i r);
+	GraphicsDevice *g, const TActor *a, const int flags, const HUDPlayer *h,
+	const Rect2i r);
 static void DrawRadar(
 	GraphicsDevice *device, const TActor *p, const int flags,
 	const bool showExit);
@@ -178,7 +195,7 @@ static void DrawPlayerStatus(
 	opts.Area = gGraphicsDevice.cachedConfig.Res;
 
 	DrawScore(hud->device, &gPicManager, p, data->Stats.Score, flags, r, mask);
-	DrawGrenadeStatus(hud->device, p, flags, r);
+	DrawGrenadeStatus(hud->device, p, flags, h, r);
 	DrawWeaponStatus(hud->device, &gPicManager, p, flags, r, mask);
 	DrawGunIcons(hud->device, p, flags, h, r);
 	DrawLives(hud->device, data, opts.HAlign, opts.VAlign);
@@ -468,8 +485,8 @@ static void DrawGunIcons(
 
 	// Gun icon
 	const color_t gunIconMask =
-		h->weaponChangeMs > 0 &&
-				(h->weaponChangeMs % FLASH_PERIOD_MS) < FLASH_PERIOD_MS / 2
+		h->gunChangeMs > 0 &&
+				(h->gunChangeMs % FLASH_PERIOD_MS) < FLASH_PERIOD_MS / 2
 			? colorDarkGray
 			: colorWhite;
 	PicRender(
@@ -478,10 +495,11 @@ static void DrawGunIcons(
 }
 
 static void DrawGrenadeIcons(
-	GraphicsDevice *g, const Pic *icon, const struct vec2i pos,
-	const int width, const int amount);
+	GraphicsDevice *g, const HUDPlayer *h, const Pic *icon,
+	const struct vec2i pos, const int width, const int amount);
 static void DrawGrenadeStatus(
-	GraphicsDevice *g, const TActor *a, const int flags, const Rect2i r)
+	GraphicsDevice *g, const TActor *a, const int flags, const HUDPlayer *h,
+	const Rect2i r)
 {
 	if (a == NULL)
 	{
@@ -515,11 +533,11 @@ static void DrawGrenadeStatus(
 	const Pic *icon = wc->Icon;
 	if (useAmmo && amount > 0 && amount <= MAX_GRENADE_ICONS)
 	{
-		DrawGrenadeIcons(g, icon, pos, GRENADES_WIDTH, amount);
+		DrawGrenadeIcons(g, h, icon, pos, GRENADES_WIDTH, amount);
 	}
 	else
 	{
-		DrawGrenadeIcons(g, icon, pos, GRENADES_WIDTH, 1);
+		DrawGrenadeIcons(g, h, icon, pos, GRENADES_WIDTH, 1);
 		char buf[256];
 		if (amount >= 0)
 		{
@@ -535,15 +553,20 @@ static void DrawGrenadeStatus(
 	}
 }
 static void DrawGrenadeIcons(
-	GraphicsDevice *g, const Pic *icon, const struct vec2i pos,
-	const int width, const int amount)
+	GraphicsDevice *g, const HUDPlayer *h, const Pic *icon,
+	const struct vec2i pos, const int width, const int amount)
 {
 	const int dx = width / MAX_GRENADE_ICONS;
+	const color_t grenadeIconMask =
+		h->grenadeChangeMs > 0 &&
+				(h->grenadeChangeMs % FLASH_PERIOD_MS) < FLASH_PERIOD_MS / 2
+			? colorDarkGray
+			: colorWhite;
 	for (int i = 0; i < amount; i++)
 	{
 		const struct vec2i drawPos = svec2i(pos.x + i * dx, pos.y);
 		PicRender(
-			icon, g->gameWindow.renderer, drawPos, colorWhite, 0.0,
+			icon, g->gameWindow.renderer, drawPos, grenadeIconMask, 0.0,
 			svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 	}
 }
