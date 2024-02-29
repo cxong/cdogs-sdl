@@ -124,6 +124,7 @@ else()
 			add_definitions(
 				-Wimplicit-fallthrough=0 # TODO: is everything caught by implicit-fallthrough intended?
 				-Wno-error=format-overflow # TODO: should probably just make sure buffer sizes are appropriate
+				-Wno-error=stringop-overflow # TODO: update nuklear
 			)
 		endif()
 	endif()
