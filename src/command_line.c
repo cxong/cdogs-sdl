@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2016, 2019-2021 Cong Xu
+	Copyright (c) 2013-2016, 2019-2021, 2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -234,6 +234,7 @@ bool ParseArgs(
 					return false;
 				}
 			}
+			break;
 		default:
 			PrintHelp();
 			// Ignore unknown arguments

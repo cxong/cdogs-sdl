@@ -342,8 +342,8 @@ yajl_do_parse(yajl_handle hand, const unsigned char * jsonText,
                         yajl_bs_pop(hand->stateStack);
                         goto around_again;
                     }
-                    /* intentional fall-through */
                 }
+                // fall through
                 case yajl_tok_colon:
                 case yajl_tok_comma:
                 case yajl_tok_right_bracket:
@@ -393,7 +393,7 @@ yajl_do_parse(yajl_handle hand, const unsigned char * jsonText,
                         buf = yajl_buf_data(hand->decodeBuf);
                         bufLen = yajl_buf_len(hand->decodeBuf);
                     }
-                    /* intentional fall-through */
+                    // fall through
                 case yajl_tok_string:
                     if (hand->callbacks && hand->callbacks->yajl_map_key) {
                         _CC_CHK(hand->callbacks->yajl_map_key(hand->ctx, buf,
@@ -411,6 +411,7 @@ yajl_do_parse(yajl_handle hand, const unsigned char * jsonText,
                         yajl_bs_pop(hand->stateStack);
                         goto around_again;
                     }
+                    // fall through
                 default:
                     yajl_bs_set(hand->stateStack, yajl_state_parse_error);
                     hand->parseError =

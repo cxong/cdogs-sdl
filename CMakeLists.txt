@@ -122,7 +122,7 @@ else()
 		endif()
 		if (CMAKE_C_COMPILER_VERSION VERSION_GREATER 7)
 			add_definitions(
-				-Wimplicit-fallthrough=0 # TODO: is everything caught by implicit-fallthrough intended?
+				-C
 				-Wno-error=format-overflow # TODO: should probably just make sure buffer sizes are appropriate
 				-Wno-error=stringop-overflow # TODO: update nuklear
 			)
