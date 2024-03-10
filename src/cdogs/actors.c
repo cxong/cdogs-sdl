@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2023 Cong Xu
+	Copyright (c) 2013-2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -1872,6 +1872,10 @@ struct vec2 ActorGetMuzzleOffset(
 int ActorWeaponGetAmmo(
 	const TActor *a, const WeaponClass *wc, const int barrel)
 {
+	if (wc == NULL)
+	{
+		return 0;
+	}
 	const int ammoId = WC_BARREL_ATTR(*wc, AmmoId, barrel);
 	if (ammoId == -1)
 	{
