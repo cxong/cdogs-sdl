@@ -274,6 +274,12 @@ void CharacterOldHairToHeadParts(char *headParts[HEAD_PART_COUNT])
 		headParts[HEAD_PART_HAIR] = NULL;
 		CSTRDUP(headParts[HEAD_PART_GLASSES], "ski_goggles");
 	}
+	else if (strcmp(hair, "shades") == 0)
+	{
+		CFREE(headParts[HEAD_PART_HAIR]);
+		headParts[HEAD_PART_HAIR] = NULL;
+		CSTRDUP(headParts[HEAD_PART_GLASSES], "shades");
+	}
 }
 
 const NamedSprites *CharacterClassGetDeathSprites(const CharacterClass *c, const PicManager *pm)
