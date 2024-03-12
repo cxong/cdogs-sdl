@@ -26,7 +26,6 @@ install_manifest_Runtime.txt
 __pycache__/
 .cmake/
 compile_commands.json
-CMakeSettings.json
 
 # Generated files
 src/cdogs/sys_config.h
@@ -62,6 +61,7 @@ Win32/
 *.tmp
 *.VC.*
 .vs/
+CMakeSettings.json
 VSInheritEnvironments.txt
 
 # XCode

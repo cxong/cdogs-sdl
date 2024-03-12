@@ -1,8 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-
-	Copyright (c) 2013-2017, 2019, 2024 Cong Xu
+	Copyright (c) 2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -28,53 +27,24 @@
 */
 #pragma once
 
-#include "config.h"
-#include "fps.h"
-#include "gamedata.h"
-#include "health_gauge.h"
-#include "hud_num_popup.h"
-#include "player.h"
-#include "wall_clock.h"
-#include "weapon_class.h"
+#include "menu.h"
 
 typedef struct
 {
-	int NumScreens;
-	const PlayerData *Players[MAX_LOCAL_PLAYERS];
-} HUDDrawData;
+	MenuSystem ms;
+	EventHandlers *handlers;
+	GraphicsDevice *g;
+	input_device_e pausingDevice; // INPUT_DEVICE_UNSET if not paused
+	bool controllerUnplugged;
+} PauseMenu;
 
-typedef struct
-{
-	HealthGauge healthGauge;
-	const WeaponClass *gunWc;
-	int gunChangeMs;
-	const WeaponClass *grenadeWc;
-	int grenadeAmount;
-	int grenadeChangeMs;
-} HUDPlayer;
+void PauseMenuInit(PauseMenu *pm, EventHandlers *handlers, GraphicsDevice *g);
+void PauseMenuTerminate(PauseMenu *pm);
 
-typedef struct
-{
-	struct MissionOptions *mission;
-	char message[256];
-	int messageTicks;
-	GraphicsDevice *device;
-	FPSCounter fpsCounter;
-	WallClock clock;
-	HUDNumPopups numPopups;
-	HUDPlayer hudPlayers[MAX_LOCAL_PLAYERS];
-	bool showExit;
-	HUDDrawData DrawData;
-} HUD;
+// Returns whether to quit
+bool PauseMenuUpdate(
+	PauseMenu *pm, const int cmds[MAX_LOCAL_PLAYERS],
+	const int lastCmds[MAX_LOCAL_PLAYERS]);
+void PauseMenuDraw(const PauseMenu *pm);
 
-void HUDInit(HUD *hud, GraphicsDevice *device, struct MissionOptions *mission);
-void HUDTerminate(HUD *hud);
-
-// Set ticks to -1 to display a message indefinitely
-void HUDDisplayMessage(HUD *hud, const char *msg, int ticks);
-
-HUDDrawData HUDGetDrawData(void);
-
-void HUDUpdate(HUD *hud, const int ms);
-
-void HUDDraw(HUD *hud, const int numViews, const bool paused);
+bool PauseMenuIsShown(const PauseMenu *pm);

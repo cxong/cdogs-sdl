@@ -86,8 +86,8 @@ static void PlayerSpecialCommands(TActor *actor, const int cmd)
 		}
 	}
 	else if (
-		!Button2(actor->lastCmd) && Button2(cmd) &&
-		!actor->specialCmdDir && !actor->CanPickupSpecial &&
+		!Button2(actor->lastCmd) && Button2(cmd) && !actor->specialCmdDir &&
+		!actor->CanPickupSpecial &&
 		!(ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") ==
 			  SWITCHMOVE_SLIDE &&
 		  CMD_HAS_DIRECTION(cmd)))
@@ -216,6 +216,8 @@ static void RunGameOnEnter(GameLoopData *data)
 		}
 	}
 
+	PauseMenuInit(&rData->pm, &gEventHandlers, &gGraphicsDevice);
+
 	rData->m->state = MISSION_STATE_WAITING;
 	rData->m->isDone = false;
 	rData->m->DoneCounter = 0;
@@ -264,6 +266,7 @@ static void RunGameOnExit(GameLoopData *data)
 	CA_FOREACH_END()
 	CArrayTerminate(&rData->ammoSpawners);
 	CameraTerminate(&rData->Camera);
+	PauseMenuTerminate(&rData->pm);
 
 	// Draw background
 	GrafxRedrawBackground(&gGraphicsDevice, rData->Camera.lastPosition);
@@ -311,17 +314,14 @@ static void RunGameInput(GameLoopData *data)
 	}
 	memset(rData->cmds, 0, sizeof rData->cmds);
 	int cmdAll = 0;
-	int idx = 0;
-	input_device_e pausingDevice = INPUT_DEVICE_UNSET;
-	input_device_e firstPausingDevice = INPUT_DEVICE_UNSET;
 	if (GetNumPlayers(PLAYER_ANY, false, true) == 0)
 	{
 		// If no players, allow default keyboard to control camera
 		rData->cmds[0] = GetKeyboardCmd(&gEventHandlers.keyboard, 0, false);
-		firstPausingDevice = INPUT_DEVICE_KEYBOARD;
 	}
 	else
 	{
+		int idx = 0;
 		for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 		{
 			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
@@ -330,87 +330,29 @@ static void RunGameInput(GameLoopData *data)
 				idx--;
 				continue;
 			}
-			if (firstPausingDevice == INPUT_DEVICE_UNSET)
-			{
-				firstPausingDevice = p->inputDevice;
-			}
 			rData->cmds[idx] = GetGameCmd(&gEventHandlers, p);
 			cmdAll |= rData->cmds[idx];
-
-			// Only allow the first player to escape
-			// Use keypress otherwise the player will quit immediately
-			if (idx == 0 && (rData->cmds[idx] & CMD_ESC) &&
-				!(rData->lastCmds[idx] & CMD_ESC))
-			{
-				pausingDevice = p->inputDevice;
-			}
 		}
 	}
-	if (KeyIsPressed(&gEventHandlers.keyboard, SDL_SCANCODE_ESCAPE))
-	{
-		pausingDevice = INPUT_DEVICE_KEYBOARD;
-	}
-
-	// Check if any controllers are unplugged
-	rData->controllerUnplugged = false;
-	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-	if (p->inputDevice == INPUT_DEVICE_UNSET && p->IsLocal)
-	{
-		rData->controllerUnplugged = true;
-		break;
-	}
-	CA_FOREACH_END()
 
 	// If in Superhot(tm) Mode, don't update unless there was an input in this
 	// or the last frame
 	data->SkipNextFrame = data->SuperhotMode && !lastCmdAll;
 
-	// Check if:
-	// - escape was pressed, or
-	// - window lost focus
-	// - controller unplugged
-	// If the game is paused, unpause if a button is released
-	// If the game was not paused, enter pause mode
-	// If the game was paused and escape was pressed, exit the game
-	if (rData->pausingDevice != INPUT_DEVICE_UNSET && AnyButton(lastCmdAll) &&
-		!AnyButton(cmdAll))
+	// Update and check if we want to quit
+	if (PauseMenuUpdate(&rData->pm, rData->cmds, rData->lastCmds))
 	{
-		rData->pausingDevice = INPUT_DEVICE_UNSET;
-	}
-	else if (rData->controllerUnplugged || gEventHandlers.HasLostFocus)
-	{
-		// Pause the game
-		rData->pausingDevice = firstPausingDevice;
-		rData->isMap = false;
-		SoundPlay(&gSoundDevice, StrSound("menu_error"));
-	}
-	else if (pausingDevice != INPUT_DEVICE_UNSET)
-	{
-		if (rData->pausingDevice != INPUT_DEVICE_UNSET)
-		{
-			// Already paused; exit
-			GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
-			e.u.MissionEnd.IsQuit = true;
-			GameEventsEnqueue(&gGameEvents, e);
-			// Need to unpause to process the quit
-			rData->pausingDevice = INPUT_DEVICE_UNSET;
-			rData->controllerUnplugged = false;
-			// Don't skip exiting the game
-			data->SkipNextFrame = false;
-			SoundPlay(&gSoundDevice, StrSound("menu_back"));
-		}
-		else
-		{
-			// Pause the game
-			rData->pausingDevice = pausingDevice;
-			rData->isMap = false;
-			SoundPlay(&gSoundDevice, StrSound("menu_back"));
-		}
+		// Need to unpause to process the quit
+		data->SkipNextFrame = true;
 	}
 
-	const bool paused = rData->pausingDevice != INPUT_DEVICE_UNSET ||
-						rData->controllerUnplugged;
-	if (!paused)
+	// Don't show map if pause menu is shown
+	if (PauseMenuIsShown(&rData->pm))
+	{
+		rData->isMap = false;
+	}
+
+	if (!PauseMenuIsShown(&rData->pm))
 	{
 		// Check if automap key is pressed by any player
 		// Toggle
@@ -464,8 +406,7 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 	// If we're not hosting a net game,
 	// don't update if the game has paused or has automap shown
 	// Important: don't consider paused if we are trying to quit
-	const bool paused = rData->pausingDevice != INPUT_DEVICE_UNSET ||
-						rData->controllerUnplugged || rData->isMap;
+	const bool paused = PauseMenuIsShown(&rData->pm) || rData->isMap;
 	if (!gCampaign.IsClient && !ConfigGetBool(&gConfig, "StartServer") &&
 		paused && !gEventHandlers.HasQuit)
 	{
@@ -700,9 +641,8 @@ static void RunGameDraw(GameLoopData *data)
 	// Draw HUD layer
 	BlitClearBuf(&gGraphicsDevice);
 	CameraDrawMode(&rData->Camera);
-	HUDDraw(
-		&rData->Camera.HUD, rData->pausingDevice, rData->controllerUnplugged,
-		rData->Camera.NumViews);
+	HUDDraw(&rData->Camera.HUD, rData->Camera.NumViews, PauseMenuIsShown(&rData->pm));
+	PauseMenuDraw(&rData->pm);
 	// Draw automap if enabled
 	if (rData->isMap)
 	{

@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2017, 2019-2020 Cong Xu
+	Copyright (c) 2013-2017, 2019-2020, 2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -120,16 +120,12 @@ static void DrawSharedRadar(GraphicsDevice *device, bool showExit)
 
 static void DrawPlayerAreas(HUD *hud, const int numViews);
 static void DrawDeathmatchScores(HUD *hud);
-static void DrawStateMessage(
-	HUD *hud, const input_device_e pausingDevice,
-	const bool controllerUnplugged);
+static void DrawMissionState(HUD *hud);
 static void DrawHUDMessage(HUD *hud);
 static void DrawKeycards(HUD *hud);
 static void DrawMissionTime(HUD *hud);
 static void DrawObjectiveCounts(HUD *hud);
-void HUDDraw(
-	HUD *hud, const input_device_e pausingDevice,
-	const bool controllerUnplugged, const int numViews)
+void HUDDraw(HUD *hud, const int numViews, const bool paused)
 {
 	if (ConfigGetBool(&gConfig, "Graphics.ShowHUD"))
 	{
@@ -153,7 +149,10 @@ void HUDDraw(
 		}
 	}
 
-	DrawStateMessage(hud, pausingDevice, controllerUnplugged);
+	if (!paused)
+	{
+		DrawMissionState(hud);
+	}
 }
 
 static void DrawPlayerAreas(HUD *hud, const int numViews)
@@ -282,79 +281,6 @@ static void DrawDeathmatchScores(HUD *hud)
 	CA_FOREACH_END()
 }
 
-static void DrawMissionState(HUD *hud);
-static void DrawStateMessage(
-	HUD *hud, const input_device_e pausingDevice,
-	const bool controllerUnplugged)
-{
-	if (controllerUnplugged || pausingDevice != INPUT_DEVICE_UNSET)
-	{
-		// Draw a background overlay
-		color_t overlay = colorBlack;
-		overlay.a = 128;
-		DrawRectangle(
-			hud->device, svec2i_zero(), hud->device->cachedConfig.Res, overlay,
-			true);
-	}
-	if (controllerUnplugged)
-	{
-		struct vec2i pos = svec2i_scale_divide(
-			svec2i_subtract(
-				gGraphicsDevice.cachedConfig.Res,
-				FontStrSize(ARROW_LEFT
-							"Paused" ARROW_RIGHT
-							"\nFoobar\nPlease reconnect controller")),
-			2);
-		const int x = pos.x;
-		FontStr(ARROW_LEFT "Paused" ARROW_RIGHT, pos);
-
-		pos.y += FontH();
-		pos = FontStr("Press ", pos);
-		char buf[256];
-		color_t c = colorWhite;
-		InputGetButtonNameColor(pausingDevice, 0, CMD_ESC, buf, &c);
-		pos = FontStrMask(buf, pos, c);
-		FontStr(" to quit", pos);
-
-		pos.x = x;
-		pos.y += FontH();
-		FontStr("Please reconnect controller", pos);
-	}
-	else if (pausingDevice != INPUT_DEVICE_UNSET)
-	{
-		struct vec2i pos = svec2i_scale_divide(
-			svec2i_subtract(
-				gGraphicsDevice.cachedConfig.Res,
-				FontStrSize("Foo\nPress foo or bar to unpause\nBaz")),
-			2);
-		const int x = pos.x;
-		FontStr(ARROW_LEFT "Paused" ARROW_RIGHT, pos);
-
-		pos.y += FontH();
-		pos = FontStr("Press ", pos);
-		char buf[256];
-		color_t c = colorWhite;
-		InputGetButtonNameColor(pausingDevice, 0, CMD_ESC, buf, &c);
-		pos = FontStrMask(buf, pos, c);
-		FontStr(" again to quit", pos);
-
-		pos.x = x;
-		pos.y += FontH();
-		pos = FontStr("Press ", pos);
-		c = colorWhite;
-		InputGetButtonNameColor(pausingDevice, 0, CMD_BUTTON1, buf, &c);
-		pos = FontStrMask(buf, pos, c);
-		pos = FontStr(" or ", pos);
-		c = colorWhite;
-		InputGetButtonNameColor(pausingDevice, 0, CMD_BUTTON2, buf, &c);
-		pos = FontStrMask(buf, pos, c);
-		FontStr(" to unpause", pos);
-	}
-	else
-	{
-		DrawMissionState(hud);
-	}
-}
 static void DrawMissionState(HUD *hud)
 {
 	char s[50];

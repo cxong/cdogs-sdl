@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2015, 2017, 2020-2021 Cong Xu
+	Copyright (c) 2015, 2017, 2020-2021, 2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -58,6 +58,7 @@
 #include <cdogs/powerup.h>
 
 #include "game_loop.h"
+#include "pause_menu.h"
 
 GameLoopData *RunGame(Campaign *co, struct MissionOptions *m, Map *map);
 
@@ -67,9 +68,7 @@ typedef struct
 	struct MissionOptions *m;
 	Map *map;
 	Camera Camera;
-	// TODO: turn the following into a screen system?
-	input_device_e pausingDevice; // INPUT_DEVICE_UNSET if not paused
-	bool controllerUnplugged;
+	PauseMenu pm;
 	bool isMap;
 	int cmds[MAX_LOCAL_PLAYERS];
 	int lastCmds[MAX_LOCAL_PLAYERS];
