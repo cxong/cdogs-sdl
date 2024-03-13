@@ -34,7 +34,12 @@ void PauseMenuInit(PauseMenu *pm, EventHandlers *handlers, GraphicsDevice *g)
 {
 	memset(pm, 0, sizeof *pm);
 	MenuSystemInit(&pm->ms, handlers, g, svec2i_zero(), g->cachedConfig.Res);
-	// TODO: create pause menu
+	pm->ms.current = pm->ms.root =
+		MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
+	MenuAddSubmenu(pm->ms.root, MenuCreateReturn("Resume", 0));
+	MenuAddSubmenu(pm->ms.root, MenuCreateReturn("Quit", 1));
+	MenuAddExitType(&pm->ms, MENU_TYPE_RETURN);
+	pm->ms.allowAborts = true;
 	pm->handlers = handlers;
 	pm->g = g;
 	pm->pausingDevice = INPUT_DEVICE_UNSET;
@@ -111,12 +116,28 @@ bool PauseMenuUpdate(
 	// If the game is paused, update the pause menu
 	// If the game was not paused, enter pause mode
 	// If the game was paused and escape was pressed, exit the game
-	if (pm->pausingDevice != INPUT_DEVICE_UNSET && AnyButton(lastCmdAll) &&
-		!AnyButton(cmdAll))
+	if (pm->pausingDevice != INPUT_DEVICE_UNSET)
 	{
-		// Unpause on any button press
-		// TODO: don't do this, update menu system instead
-		pm->pausingDevice = INPUT_DEVICE_UNSET;
+		const GameLoopResult result = MenuUpdate(&pm->ms);
+		if (result == UPDATE_RESULT_OK)
+		{
+			// Unpause
+			pm->pausingDevice = INPUT_DEVICE_UNSET;
+			if (pm->ms.current->u.returnCode == 1)
+			{
+				// Quit
+				GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
+				e.u.MissionEnd.IsQuit = true;
+				GameEventsEnqueue(&gGameEvents, e);
+				// Need to unpause to process the quit
+				pm->pausingDevice = INPUT_DEVICE_UNSET;
+				pm->controllerUnplugged = false;
+				SoundPlay(&gSoundDevice, StrSound("menu_back"));
+				// Return true to say we want to quit
+				return true;
+			}
+			MenuReset(&pm->ms);
+		}
 	}
 	else if (pm->controllerUnplugged || gEventHandlers.HasLostFocus)
 	{
@@ -126,26 +147,9 @@ bool PauseMenuUpdate(
 	}
 	else if (pausingDevice != INPUT_DEVICE_UNSET)
 	{
-		if (pm->pausingDevice != INPUT_DEVICE_UNSET)
-		{
-			// Already paused; exit
-			// TODO: don't exit, use pause menu
-			GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);
-			e.u.MissionEnd.IsQuit = true;
-			GameEventsEnqueue(&gGameEvents, e);
-			// Need to unpause to process the quit
-			pm->pausingDevice = INPUT_DEVICE_UNSET;
-			pm->controllerUnplugged = false;
-			SoundPlay(&gSoundDevice, StrSound("menu_back"));
-			// Return true to say we want to quit
-			return true;
-		}
-		else
-		{
-			// Pause the game
-			pm->pausingDevice = pausingDevice;
-			SoundPlay(&gSoundDevice, StrSound("menu_back"));
-		}
+		// Pause the game
+		pm->pausingDevice = pausingDevice;
+		SoundPlay(&gSoundDevice, StrSound("menu_back"));
 	}
 	return false;
 }
@@ -188,33 +192,7 @@ void PauseMenuDraw(const PauseMenu *pm)
 	}
 	else if (pm->pausingDevice != INPUT_DEVICE_UNSET)
 	{
-		struct vec2i pos = svec2i_scale_divide(
-			svec2i_subtract(
-				gGraphicsDevice.cachedConfig.Res,
-				FontStrSize("Foo\nPress foo or bar to unpause\nBaz")),
-			2);
-		const int x = pos.x;
-		FontStr(ARROW_LEFT "Paused" ARROW_RIGHT, pos);
-
-		pos.y += FontH();
-		pos = FontStr("Press ", pos);
-		char buf[256];
-		color_t c = colorWhite;
-		InputGetButtonNameColor(pm->pausingDevice, 0, CMD_ESC, buf, &c);
-		pos = FontStrMask(buf, pos, c);
-		FontStr(" again to quit", pos);
-
-		pos.x = x;
-		pos.y += FontH();
-		pos = FontStr("Press ", pos);
-		c = colorWhite;
-		InputGetButtonNameColor(pm->pausingDevice, 0, CMD_BUTTON1, buf, &c);
-		pos = FontStrMask(buf, pos, c);
-		pos = FontStr(" or ", pos);
-		c = colorWhite;
-		InputGetButtonNameColor(pm->pausingDevice, 0, CMD_BUTTON2, buf, &c);
-		pos = FontStrMask(buf, pos, c);
-		FontStr(" to unpause", pos);
+		MenuDraw(&pm->ms);
 	}
 }
 

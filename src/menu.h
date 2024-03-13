@@ -239,6 +239,7 @@ typedef struct
 	struct vec2i pos;
 	struct vec2i size;
 	MenuAlignStyle align;
+	// Allow exiting menu via escape key
 	bool allowAborts;
 	bool hasAbort;
 	CArray customDisplayFuncs; // of MenuCustomDisplayFunc

@@ -339,17 +339,21 @@ static void RunGameInput(GameLoopData *data)
 	// or the last frame
 	data->SkipNextFrame = data->SuperhotMode && !lastCmdAll;
 
+	// Don't show map if pause menu is shown
+	if (PauseMenuIsShown(&rData->pm))
+	{
+		rData->isMap = false;
+		// Clear all user inputs if we're using the pause menu
+		memset(rData->cmds, 0, sizeof rData->cmds);
+		memset(rData->lastCmds, 0, sizeof rData->lastCmds);
+		// TODO: require a button up before allowing firing again
+	}
+
 	// Update and check if we want to quit
 	if (PauseMenuUpdate(&rData->pm, rData->cmds, rData->lastCmds))
 	{
 		// Need to unpause to process the quit
 		data->SkipNextFrame = true;
-	}
-
-	// Don't show map if pause menu is shown
-	if (PauseMenuIsShown(&rData->pm))
-	{
-		rData->isMap = false;
 	}
 
 	if (!PauseMenuIsShown(&rData->pm))
