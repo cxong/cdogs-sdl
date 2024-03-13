@@ -53,20 +53,12 @@ bool PauseMenuUpdate(
 	PauseMenu *pm, const int cmds[MAX_LOCAL_PLAYERS],
 	const int lastCmds[MAX_LOCAL_PLAYERS])
 {
-	int cmdAll = 0;
-	int lastCmdAll = 0;
-	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
-	{
-		lastCmdAll |= lastCmds[i];
-	}
-
 	input_device_e pausingDevice = INPUT_DEVICE_UNSET;
 	input_device_e firstPausingDevice = INPUT_DEVICE_UNSET;
 	if (GetNumPlayers(PLAYER_ANY, false, true) == 0)
 	{
 		// If no players, allow default keyboard
 		firstPausingDevice = INPUT_DEVICE_KEYBOARD;
-		cmdAll |= cmds[0];
 	}
 	else
 	{
@@ -79,7 +71,6 @@ bool PauseMenuUpdate(
 				idx--;
 				continue;
 			}
-			cmdAll |= cmds[idx];
 			if (firstPausingDevice == INPUT_DEVICE_UNSET)
 			{
 				firstPausingDevice = p->inputDevice;
