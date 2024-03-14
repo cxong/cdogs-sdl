@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2013-2022 Cong Xu
+	Copyright (c) 2013-2022, 2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -49,11 +49,13 @@
 #include "game.h"
 #include "loading_screens.h"
 #include "menu.h"
+#include "options_menu.h"
 #include "prep.h"
 
 typedef struct
 {
 	MenuSystem ms;
+	OptionsMenuData oData;
 	GraphicsDevice *graphics;
 	credits_displayer_t creditsDisplayer;
 	CustomCampaigns campaigns;
@@ -103,7 +105,9 @@ static void GenerateLiveBackground(MainMenuData *data)
 	GameEventsInit(&gGameEvents);
 	gCampaign.MissionIndex = 0;
 
-	MapBuild(&gMap, gMission.missionData, true, gMission.index, GAME_MODE_NORMAL, &gCampaign.Setting.characters);
+	MapBuild(
+		&gMap, gMission.missionData, true, gMission.index, GAME_MODE_NORMAL,
+		&gCampaign.Setting.characters);
 
 	// Add AI player
 	GameEvent e = GameEventNew(GAME_EVENT_PLAYER_DATA);
@@ -125,12 +129,21 @@ static void GenerateLiveBackground(MainMenuData *data)
 
 	GameInit(&data->rData, &gCampaign, &gMission, &gMap);
 }
+static void OnGfxChange(void *data, const bool resetBg)
+{
+	MainMenuData *mData = data;
+	if (resetBg)
+	{
+		GenerateLiveBackground(mData);
+	}
+	MenuResetSize(&mData->ms);
+}
 static void MainMenuReset(MainMenuData *data)
 {
 	GenerateLiveBackground(data);
 
 	MenuResetSize(&data->ms);
-	
+
 	data->entry = NULL;
 }
 static void MainMenuTerminate(GameLoopData *data)
@@ -217,7 +230,10 @@ static GameLoopResult MainMenuUpdate(GameLoopData *data, LoopRunner *l)
 	if (gCampaign.IsLoaded)
 	{
 		// Loaded game already; skip menus and go straight to game
-		LoopRunnerPush(l, ScreenCampaignIntro(&gCampaign.Setting, gCampaign.Entry.Mode, &gCampaign.Entry));
+		LoopRunnerPush(
+			l,
+			ScreenCampaignIntro(
+				&gCampaign.Setting, gCampaign.Entry.Mode, &gCampaign.Entry));
 		return UPDATE_RESULT_OK;
 	}
 
@@ -229,7 +245,12 @@ static GameLoopResult MainMenuUpdate(GameLoopData *data, LoopRunner *l)
 	{
 		if (mData->entry)
 		{
-			LoopRunnerPush(l, ScreenLoading("Loading game...", true, ScreenCampaignIntro(&gCampaign.Setting, mData->gameMode, mData->entry), false));
+			LoopRunnerPush(
+				l, ScreenLoading(
+					   "Loading game...", true,
+					   ScreenCampaignIntro(
+						   &gCampaign.Setting, mData->gameMode, mData->entry),
+					   false));
 		}
 		else
 		{
@@ -261,8 +282,6 @@ static void MainMenuDraw(GameLoopData *data)
 
 static menu_t *MenuCreateStart(
 	const char *name, MainMenuData *mainMenu, LoopRunner *l);
-static menu_t *MenuCreateOptions(const char *name, MainMenuData *data);
-menu_t *MenuCreateQuit(const char *name);
 
 static void MenuCreateAll(
 	MainMenuData *data, LoopRunner *l, EventHandlers *handlers)
@@ -273,12 +292,14 @@ static void MenuCreateAll(
 	data->ms.root = data->ms.current = MenuCreateNormal(
 		"", "", MENU_TYPE_NORMAL,
 		MENU_DISPLAY_ITEMS_CREDITS | MENU_DISPLAY_ITEMS_AUTHORS);
-	MenuAddSubmenu(
-		data->ms.root,
-		MenuCreateStart("Start", data, l));
-	MenuAddSubmenu(data->ms.root, MenuCreateOptions("Options...", data));
+	MenuAddSubmenu(data->ms.root, MenuCreateStart("Start", data, l));
+	data->oData.config = &gConfig;
+	data->oData.gfxChangeCallback = OnGfxChange;
+	data->oData.gfxChangeData = data;
+	data->oData.ms = &data->ms;
+	MenuAddSubmenu(data->ms.root, MenuCreateOptions("Options...", &data->oData));
 #ifndef __EMSCRIPTEN__
-	MenuAddSubmenu(data->ms.root, MenuCreateQuit("Quit"));
+	MenuAddSubmenu(data->ms.root, MenuCreate("Quit", MENU_TYPE_QUIT));
 	MenuAddExitType(&data->ms, MENU_TYPE_QUIT);
 #endif
 	MenuAddExitType(&data->ms, MENU_TYPE_RETURN);
@@ -290,10 +311,11 @@ typedef struct
 	// so we can enable it if LAN servers are found
 	int MenuJoinIndex;
 } CheckLANServerData;
-static menu_t *MenuCreateContinue(const char *name, MainMenuData *mainMenu, const CampaignEntry *entry);
+static menu_t *MenuCreateContinue(
+	const char *name, MainMenuData *mainMenu, const CampaignEntry *entry);
 static menu_t *MenuCreateCampaigns(
-	const char *name, const char *title, MainMenuData *mainMenu, CampaignList *list,
-	const GameMode mode);
+	const char *name, const char *title, MainMenuData *mainMenu,
+	CampaignList *list, const GameMode mode);
 static menu_t *CreateJoinLANGame(
 	const char *name, const char *title, MenuSystem *ms, LoopRunner *l);
 static void CheckLANServers(menu_t *menu, void *data);
@@ -307,18 +329,19 @@ static menu_t *MenuCreateStart(
 	const int menuContinueIndex = (int)menu->u.normal.subMenus.size - 1;
 	MenuAddSubmenu(
 		menu, MenuCreateCampaigns(
-				  "Campaign", "Select a campaign:", mainMenu, &mainMenu->campaigns.campaignList,
-				  GAME_MODE_NORMAL));
+				  "Campaign", "Select a campaign:", mainMenu,
+				  &mainMenu->campaigns.campaignList, GAME_MODE_NORMAL));
 	MenuAddSubmenu(
 		menu, MenuCreateCampaigns(
-				  "Dogfight", "Select a dogfight scenario:",
-				  mainMenu, &mainMenu->campaigns.dogfightList, GAME_MODE_DOGFIGHT));
+				  "Dogfight", "Select a dogfight scenario:", mainMenu,
+				  &mainMenu->campaigns.dogfightList, GAME_MODE_DOGFIGHT));
 	MenuAddSubmenu(
 		menu, MenuCreateCampaigns(
-				  "Deathmatch", "Select a deathmatch scenario:",
-				  mainMenu, &mainMenu->campaigns.dogfightList, GAME_MODE_DEATHMATCH));
+				  "Deathmatch", "Select a deathmatch scenario:", mainMenu,
+				  &mainMenu->campaigns.dogfightList, GAME_MODE_DEATHMATCH));
 	MenuAddSubmenu(
-		menu, CreateJoinLANGame("Join LAN game", "Choose LAN server", &mainMenu->ms, l));
+		menu, CreateJoinLANGame(
+				  "Join LAN game", "Choose LAN server", &mainMenu->ms, l));
 	CheckLANServerData *cdata;
 	CMALLOC(cdata, sizeof *cdata);
 	cdata->MenuJoinIndex = (int)menu->u.normal.subMenus.size - 1;
@@ -345,7 +368,8 @@ typedef struct
 } StartGameModeData;
 static void StartGameMode(menu_t *menu, void *data);
 static menu_t *CreateStartGameMode(
-	const char *name, MainMenuData *mainMenu, GameMode mode, const CampaignEntry *entry)
+	const char *name, MainMenuData *mainMenu, GameMode mode,
+	const CampaignEntry *entry)
 {
 	menu_t *menu = MenuCreate(name, MENU_TYPE_RETURN);
 	menu->enterSound = MENU_SOUND_START;
@@ -364,12 +388,14 @@ static void StartGameMode(menu_t *menu, void *data)
 	mData->MainMenu->gameMode = mData->GameMode;
 	mData->MainMenu->entry = mData->Entry;
 }
-static menu_t *MenuCreateContinue(const char *name, MainMenuData *mainMenu, const CampaignEntry *entry)
+static menu_t *MenuCreateContinue(
+	const char *name, MainMenuData *mainMenu, const CampaignEntry *entry)
 {
 	return CreateStartGameMode(name, mainMenu, GAME_MODE_NORMAL, entry);
 }
 
-static menu_t *MenuCreateCampaignItem(MainMenuData *mainMenu, CampaignEntry *entry, const GameMode mode);
+static menu_t *MenuCreateCampaignItem(
+	MainMenuData *mainMenu, CampaignEntry *entry, const GameMode mode);
 
 static void CampaignsDisplayFilename(
 	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
@@ -400,8 +426,8 @@ static void CampaignsDisplayFilename(
 	FontStrOpt(s, pos, opts);
 }
 static menu_t *MenuCreateCampaigns(
-	const char *name, const char *title, MainMenuData *mainMenu, CampaignList *list,
-	const GameMode mode)
+	const char *name, const char *title, MainMenuData *mainMenu,
+	CampaignList *list, const GameMode mode)
 {
 	menu_t *menu = MenuCreateNormal(name, title, MENU_TYPE_NORMAL, 0);
 	menu->u.normal.maxItems = 20;
@@ -419,7 +445,8 @@ static menu_t *MenuCreateCampaigns(
 	return menu;
 }
 
-static menu_t *MenuCreateCampaignItem(MainMenuData *mainMenu, CampaignEntry *entry, const GameMode mode)
+static menu_t *MenuCreateCampaignItem(
+	MainMenuData *mainMenu, CampaignEntry *entry, const GameMode mode)
 {
 	menu_t *menu = CreateStartGameMode(entry->Info, mainMenu, mode, entry);
 	// Special colors:
@@ -548,186 +575,6 @@ static void CheckLANServers(menu_t *menu, void *data)
 		LOG(LM_MAIN, LL_DEBUG, "finding LAN server...");
 		NetClientFindLANServers(&gNetClient);
 	}
-}
-
-static void PostInputConfigApply(menu_t *menu, int cmd, void *data)
-{
-	UNUSED(menu);
-	UNUSED(cmd);
-	MainMenuData *mData = data;
-	bool resetBg = false;
-	if (!ConfigApply(&gConfig, &resetBg))
-	{
-		LOG(LM_MAIN, LL_ERROR, "Failed to apply config; reset to last used");
-		ConfigResetChanged(&gConfig);
-	}
-	else
-	{
-		// Save config immediately
-		ConfigSave(&gConfig, GetConfigFilePath(CONFIG_FILE));
-		if (resetBg)
-		{
-			GenerateLiveBackground(mData);
-		}
-	}
-
-	MenuResetSize(&mData->ms);
-}
-
-static menu_t *MenuCreateConfigOptions(
-	const char *name, const char *title, const Config *c, MainMenuData *data,
-	const bool backOrReturn)
-{
-	menu_t *menu = MenuCreateNormal(name, title, MENU_TYPE_OPTIONS, 0);
-	CASSERT(
-		c->Type == CONFIG_TYPE_GROUP,
-		"Cannot make menu from non-group config");
-	CA_FOREACH(Config, child, c->u.Group)
-	MenuAddConfigOptionsItem(menu, child);
-	CA_FOREACH_END()
-	MenuAddSubmenu(menu, MenuCreateSeparator(""));
-	if (backOrReturn)
-	{
-		MenuAddSubmenu(menu, MenuCreateBack("Done"));
-	}
-	else
-	{
-		MenuAddSubmenu(menu, MenuCreateReturn("Done", 0));
-	}
-	MenuSetPostInputFunc(menu, PostInputConfigApply, data);
-	return menu;
-}
-
-static menu_t *MenuCreateOptionsGraphics(const char *name, MainMenuData *data);
-#if !defined(__ANDROID__) && !defined(__GCWZERO__)
-static menu_t *MenuCreateOptionsControls(const char *name, MainMenuData *data);
-#endif
-
-static menu_t *MenuCreateOptions(const char *name, MainMenuData *data)
-{
-	menu_t *menu = MenuCreateNormal(name, "Options:", MENU_TYPE_NORMAL, 0);
-	MenuAddSubmenu(
-		menu, MenuCreateConfigOptions(
-				  "Game...", "Game Options:", ConfigGet(&gConfig, "Game"),
-				  data, true));
-	MenuAddSubmenu(menu, MenuCreateOptionsGraphics("Graphics...", data));
-	MenuAddSubmenu(
-		menu, MenuCreateConfigOptions(
-				  "Interface...", "Interface Options:",
-				  ConfigGet(&gConfig, "Interface"), data, true));
-#if !defined(__ANDROID__) && !defined(__GCWZERO__)
-	MenuAddSubmenu(menu, MenuCreateOptionsControls("Controls...", data));
-#endif
-	MenuAddSubmenu(
-		menu, MenuCreateConfigOptions(
-				  "Sound...", "Configure Sound:", ConfigGet(&gConfig, "Sound"),
-				  data, true));
-	MenuAddSubmenu(
-		menu, MenuCreateConfigOptions(
-				  "Quick Play...", "Quick Play Options:",
-				  ConfigGet(&gConfig, "QuickPlay"), data, true));
-	MenuAddSubmenu(menu, MenuCreateSeparator(""));
-	MenuAddSubmenu(menu, MenuCreateBack("Back"));
-	return menu;
-}
-
-static menu_t *MenuCreateOptionsGraphics(const char *name, MainMenuData *data)
-{
-	menu_t *menu =
-		MenuCreateNormal(name, "Graphics Options:", MENU_TYPE_OPTIONS, 0);
-	MenuAddConfigOptionsItem(menu, ConfigGet(&gConfig, "Graphics.Brightness"));
-#ifndef __GCWZERO__
-#ifndef __ANDROID__
-	MenuAddConfigOptionsItem(menu, ConfigGet(&gConfig, "Graphics.Fullscreen"));
-	// TODO: fix second window rendering
-	// MenuAddConfigOptionsItem(
-	//	menu, ConfigGet(&gConfig, "Graphics.SecondWindow"));
-#endif // ANDROID
-
-	MenuAddConfigOptionsItem(
-		menu, ConfigGet(&gConfig, "Graphics.ScaleFactor"));
-	MenuAddConfigOptionsItem(menu, ConfigGet(&gConfig, "Graphics.ScaleMode"));
-#endif // GCWZERO
-	MenuAddConfigOptionsItem(menu, ConfigGet(&gConfig, "Graphics.Shadows"));
-	MenuAddConfigOptionsItem(menu, ConfigGet(&gConfig, "Graphics.Gore"));
-	MenuAddConfigOptionsItem(menu, ConfigGet(&gConfig, "Graphics.Brass"));
-	MenuAddSubmenu(menu, MenuCreateSeparator(""));
-	MenuAddSubmenu(menu, MenuCreateBack("Done"));
-	MenuSetPostInputFunc(menu, PostInputConfigApply, data);
-	return menu;
-}
-
-static menu_t *MenuCreateKeys(const char *name, MainMenuData *data);
-
-#if !defined(__ANDROID__) && !defined(__GCWZERO__)
-static menu_t *MenuCreateOptionsControls(const char *name, MainMenuData *data)
-{
-	menu_t *menu =
-		MenuCreateNormal(name, "Configure Controls:", MENU_TYPE_OPTIONS, 0);
-	MenuAddSubmenu(menu, MenuCreateKeys("Redefine keys...", data));
-	MenuAddSubmenu(menu, MenuCreateSeparator(""));
-	MenuAddSubmenu(menu, MenuCreateBack("Done"));
-	MenuSetPostInputFunc(menu, PostInputConfigApply, data);
-	return menu;
-}
-#endif
-
-menu_t *MenuCreateQuit(const char *name)
-{
-	return MenuCreate(name, MENU_TYPE_QUIT);
-}
-
-static void MenuCreateKeysSingleSection(
-	menu_t *menu, const char *sectionName, const int playerIndex);
-static menu_t *MenuCreateOptionChangeKey(
-	const char *name, const key_code_e code, const int playerIndex, const bool isOptional);
-
-static menu_t *MenuCreateKeys(const char *name, MainMenuData *data)
-{
-	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_OPTIONS, 0);
-	MenuCreateKeysSingleSection(menu, "Keyboard 1", 0);
-	MenuCreateKeysSingleSection(menu, "Keyboard 2", 1);
-	MenuAddSubmenu(menu, MenuCreateOptionChangeKey("map", KEY_CODE_MAP, 0, true));
-	MenuAddSubmenu(menu, MenuCreateSeparator(""));
-	MenuAddSubmenu(menu, MenuCreateBack("Done"));
-	MenuSetPostInputFunc(menu, PostInputConfigApply, data);
-	return menu;
-}
-
-static void MenuCreateKeysSingleSection(
-	menu_t *menu, const char *sectionName, const int playerIndex)
-{
-	MenuAddSubmenu(menu, MenuCreateSeparator(sectionName));
-	MenuAddSubmenu(
-		menu, MenuCreateOptionChangeKey("left", KEY_CODE_LEFT, playerIndex, false));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionChangeKey("right", KEY_CODE_RIGHT, playerIndex, false));
-	MenuAddSubmenu(
-		menu, MenuCreateOptionChangeKey("up", KEY_CODE_UP, playerIndex, false));
-	MenuAddSubmenu(
-		menu, MenuCreateOptionChangeKey("down", KEY_CODE_DOWN, playerIndex, false));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionChangeKey("fire", KEY_CODE_BUTTON1, playerIndex, false));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionChangeKey("switch/strafe", KEY_CODE_BUTTON2, playerIndex, false));
-	MenuAddSubmenu(
-		menu,
-		MenuCreateOptionChangeKey("grenade", KEY_CODE_GRENADE, playerIndex, true));
-	MenuAddSubmenu(menu, MenuCreateSeparator(""));
-}
-
-static menu_t *MenuCreateOptionChangeKey(
-	const char *name, const key_code_e code, const int playerIndex, const bool isOptional)
-{
-	menu_t *menu =
-		MenuCreate(name, MENU_TYPE_SET_OPTION_CHANGE_KEY);
-	menu->u.changeKey.code = code;
-	menu->u.changeKey.playerIndex = playerIndex;
-	menu->u.changeKey.isOptional = isOptional;
-	return menu;
 }
 
 static void MenuResetSize(MenuSystem *ms)

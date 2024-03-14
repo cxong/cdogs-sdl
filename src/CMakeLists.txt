@@ -33,6 +33,7 @@ set(CDOGS_SDL_SOURCES
 	menu.c
 	menu_utils.c
 	namegen.c
+	options_menu.c
 	password.c
 	pause_menu.c
 	player_select_menus.c
@@ -57,6 +58,7 @@ set(CDOGS_SDL_HEADERS
 	menu.h
 	menu_utils.h
 	namegen.h
+	options_menu.h
 	password.h
 	pause_menu.h
 	player_select_menus.h

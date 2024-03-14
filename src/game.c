@@ -134,6 +134,17 @@ static void RunGameReset(RunGameData *rData)
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.bkg);
 	CameraReset(&rData->Camera);
 }
+static void OnGfxChangeCallback(void *data, const bool resetBg)
+{
+	RunGameData *rData = data;
+	if (resetBg)
+	{
+		RunGameReset(rData);
+	}
+	rData->pm.ms.size = svec2i(
+		rData->pm.ms.graphics->cachedConfig.Res.x,
+		rData->pm.ms.graphics->cachedConfig.Res.y);
+}
 static void RunGameTerminate(GameLoopData *data)
 {
 	RunGameData *rData = data->Data;
@@ -216,7 +227,9 @@ static void RunGameOnEnter(GameLoopData *data)
 		}
 	}
 
-	PauseMenuInit(&rData->pm, &gEventHandlers, &gGraphicsDevice);
+	PauseMenuInit(
+		&rData->pm, &gEventHandlers, &gGraphicsDevice, OnGfxChangeCallback,
+		rData);
 
 	rData->m->state = MISSION_STATE_WAITING;
 	rData->m->isDone = false;
@@ -645,7 +658,9 @@ static void RunGameDraw(GameLoopData *data)
 	// Draw HUD layer
 	BlitClearBuf(&gGraphicsDevice);
 	CameraDrawMode(&rData->Camera);
-	HUDDraw(&rData->Camera.HUD, rData->Camera.NumViews, PauseMenuIsShown(&rData->pm));
+	HUDDraw(
+		&rData->Camera.HUD, rData->Camera.NumViews,
+		PauseMenuIsShown(&rData->pm));
 	PauseMenuDraw(&rData->pm);
 	// Draw automap if enabled
 	if (rData->isMap)

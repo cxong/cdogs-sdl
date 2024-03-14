@@ -30,14 +30,23 @@
 #include <cdogs/draw/drawtools.h>
 #include <cdogs/font.h>
 
-void PauseMenuInit(PauseMenu *pm, EventHandlers *handlers, GraphicsDevice *g)
+void PauseMenuInit(
+	PauseMenu *pm, EventHandlers *handlers, GraphicsDevice *g,
+	void (*gfxChangeCallback)(void *, const bool), void *gfxChangeData)
 {
 	memset(pm, 0, sizeof *pm);
 	MenuSystemInit(&pm->ms, handlers, g, svec2i_zero(), g->cachedConfig.Res);
 	pm->ms.current = pm->ms.root =
 		MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
-	MenuAddSubmenu(pm->ms.root, MenuCreateReturn("Resume", 0));
-	MenuAddSubmenu(pm->ms.root, MenuCreateReturn("Quit", 1));
+	MenuAddSubmenu(pm->ms.root, MenuCreate("Resume", MENU_TYPE_QUIT));
+	MenuAddSubmenu(pm->ms.root, MenuCreateSeparator(""));
+	pm->oData.config = &gConfig;
+	pm->oData.gfxChangeCallback = gfxChangeCallback;
+	pm->oData.gfxChangeData = gfxChangeData;
+	pm->oData.ms = &pm->ms;
+	MenuAddSubmenu(pm->ms.root, MenuCreateOptions("Options...", &pm->oData));
+	MenuAddSubmenu(pm->ms.root, MenuCreateSeparator(""));
+	MenuAddSubmenu(pm->ms.root, MenuCreateReturn("Quit", 0));
 	MenuAddExitType(&pm->ms, MENU_TYPE_RETURN);
 	pm->ms.allowAborts = true;
 	pm->handlers = handlers;
@@ -110,11 +119,11 @@ bool PauseMenuUpdate(
 	if (pm->pausingDevice != INPUT_DEVICE_UNSET)
 	{
 		const GameLoopResult result = MenuUpdate(&pm->ms);
-		if (result == UPDATE_RESULT_OK)
+		if (result == UPDATE_RESULT_OK || pm->ms.current->type == MENU_TYPE_QUIT)
 		{
 			// Unpause
 			pm->pausingDevice = INPUT_DEVICE_UNSET;
-			if (pm->ms.current->u.returnCode == 1)
+			if (pm->ms.current->type == MENU_TYPE_RETURN)
 			{
 				// Quit
 				GameEvent e = GameEventNew(GAME_EVENT_MISSION_END);

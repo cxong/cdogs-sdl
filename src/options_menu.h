@@ -1,6 +1,4 @@
 /*
-	C-Dogs SDL
-	A port of the legendary (and fun) action/arcade cdogs.
 	Copyright (c) 2024 Cong Xu
 	All rights reserved.
 
@@ -28,27 +26,14 @@
 #pragma once
 
 #include "menu.h"
-#include "options_menu.h"
 
 typedef struct
 {
-	MenuSystem ms;
-	OptionsMenuData oData;
-	EventHandlers *handlers;
-	GraphicsDevice *g;
-	input_device_e pausingDevice; // INPUT_DEVICE_UNSET if not paused
-	bool controllerUnplugged;
-} PauseMenu;
+	Config *config;
+	MenuSystem *ms;
+	// Callback when gfx options changed - param = change background
+	void (*gfxChangeCallback)(void *, const bool);
+	void *gfxChangeData;
+} OptionsMenuData;
 
-void PauseMenuInit(
-	PauseMenu *pm, EventHandlers *handlers, GraphicsDevice *g,
-	void (*gfxChangeCallback)(void *, const bool), void *gfxChangeData);
-void PauseMenuTerminate(PauseMenu *pm);
-
-// Returns whether to quit
-bool PauseMenuUpdate(
-	PauseMenu *pm, const int cmds[MAX_LOCAL_PLAYERS],
-	const int lastCmds[MAX_LOCAL_PLAYERS]);
-void PauseMenuDraw(const PauseMenu *pm);
-
-bool PauseMenuIsShown(const PauseMenu *pm);
+menu_t *MenuCreateOptions(const char *name, OptionsMenuData *data);
