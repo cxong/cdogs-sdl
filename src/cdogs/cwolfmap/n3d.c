@@ -39,7 +39,7 @@ static char *LoadLanguageEnuString(const char *buf, const char *key)
 		{
 			len = MIN(len, nl - start);
 		}
-		strncpy(linebuf, start, len);
+		strncpy(linebuf, start, 1024);
 		linebuf[len] = '\0';
 
 		// Find entry lines
