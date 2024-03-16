@@ -16,9 +16,12 @@
 #include <unistd.h>
 #endif
 
+#include "audio_n3d.h"
 #include "audiowl6.h"
 #include "expand.h"
+#include "n3d.h"
 
+// TODO: use map header magic value
 #define MAGIC 0xABCD
 
 #define PATH_MAX 4096
@@ -75,6 +78,27 @@ CWMapType CWGetType(
 			return CWMAPTYPE_SOD;
 		}
 	}
+	sprintf(pathBuf, "%s/MAPHEAD.BS6", path);
+	if (access(pathBuf, F_OK) != -1)
+	{
+		if (ext && ext1)
+			*ext = *ext1 = "BS6";
+		return CWMAPTYPE_BS6;
+	}
+	sprintf(pathBuf, "%s/MAPHEAD.BS1", path);
+	if (access(pathBuf, F_OK) != -1)
+	{
+		if (ext && ext1)
+			*ext = *ext1 = "BS1";
+		return CWMAPTYPE_BS1;
+	}
+	sprintf(pathBuf, "%s/maphead.n3d", path);
+	if (access(pathBuf, F_OK) != -1)
+	{
+		if (ext && ext1)
+			*ext = *ext1 = "n3d";
+		return CWMAPTYPE_N3D;
+	}
 	return CWMAPTYPE_UNKNOWN;
 }
 
@@ -111,11 +135,39 @@ int CWLoad(CWolfMap *map, const char *path, const int spearMission)
 	}
 	_TRY_LOAD("MAPHEAD", LoadMapHead, map, pathBuf);
 
-	_TRY_LOAD("GAMEMAPS", LoadMapData, map, pathBuf);
+	if (map->type == CWMAPTYPE_BS1 || map->type == CWMAPTYPE_BS6)
+	{
+		_TRY_LOAD("MAPTEMP", LoadMapData, map, pathBuf);
+	}
+	else
+	{
+		_TRY_LOAD("GAMEMAPS", LoadMapData, map, pathBuf);
+	}
 
 	_TRY_LOAD("AUDIOHED", CWAudioLoadHead, &map->audio.head, pathBuf);
 
 	_TRY_LOAD("AUDIOT", CWAudioLoadAudioT, &map->audio, map->type, pathBuf);
+
+	if (map->type == CWMAPTYPE_N3D)
+	{
+		// N3D stores music as ogg files in wad
+		sprintf(pathBuf, "%s/noah3d.wad", path);
+		loadErr = CWAudioN3DLoadAudioWAD(&map->audio, pathBuf);
+		if (loadErr != 0)
+		{
+			err = loadErr;
+		}
+
+		// Load custom level data
+		sprintf(pathBuf, "%s/noah3d.pk3", path);
+		char *languageBuf = CWN3DLoadLanguageEnu(pathBuf);
+		for (int i = 0; i < map->nLevels; i++)
+		{
+			map->levels[i].description =
+				CWLevelN3DLoadDescription(languageBuf, i);
+		}
+		free(languageBuf);
+	}
 
 	_TRY_LOAD("VSWAP", CWVSwapLoad, &map->vswap, pathBuf);
 
@@ -154,7 +206,9 @@ bail:
 
 static void LevelsFree(CWolfMap *map);
 
-static int LoadLevel(CWLevel *level, const unsigned char *data, const int off);
+static int LoadLevel(
+	const CWolfMap *map, CWLevel *level, const unsigned char *data,
+	const int off);
 static int LoadMapData(CWolfMap *map, const char *path)
 {
 	int err = 0;
@@ -187,7 +241,7 @@ static int LoadMapData(CWolfMap *map, const char *path)
 	CWLevel *lPtr = map->levels;
 	for (const int32_t *ptr = &map->mapHead.ptr[0]; *ptr > 0; ptr++, lPtr++)
 	{
-		err = LoadLevel(lPtr, buf, *ptr);
+		err = LoadLevel(map, lPtr, buf, *ptr);
 		if (err != 0)
 		{
 			goto bail;
@@ -207,12 +261,16 @@ bail:
 	return err;
 }
 static int LoadPlane(
-	CWPlane *plane, const unsigned char *data, const uint32_t off,
-	unsigned char *buf, const int bufSize);
-static int LoadLevel(CWLevel *level, const unsigned char *data, const int off)
+	const CWolfMap *map, CWPlane *plane, const unsigned char *data,
+	const uint32_t off, unsigned char *buf, const int bufSize);
+// https://moddingwiki.shikadi.net/wiki/GameMaps_Format#Level_headers
+static int LoadLevel(
+	const CWolfMap *map, CWLevel *level, const unsigned char *data,
+	const int off)
 {
 	int err = 0;
 	unsigned char *buf = NULL;
+	level->description = NULL;
 	memcpy(&level->header, data + off, sizeof(level->header));
 
 	const int bufSize =
@@ -220,8 +278,14 @@ static int LoadLevel(CWLevel *level, const unsigned char *data, const int off)
 	buf = malloc(bufSize);
 	for (int i = 0; i < NUM_PLANES; i++)
 	{
+		const int32_t plen = *(&level->header.lenPlane0 + i);
+		if (plen <= 0)
+		{
+			memset(&level->planes[i], 0, sizeof level->planes[i]);
+			continue;
+		}
 		const uint32_t poff = *(&level->header.offPlane0 + i);
-		err = LoadPlane(&level->planes[i], data, poff, buf, bufSize);
+		err = LoadPlane(map, &level->planes[i], data, poff, buf, bufSize);
 		if (err != 0)
 		{
 			goto bail;
@@ -251,8 +315,8 @@ bail:
 	return err;
 }
 static int LoadPlane(
-	CWPlane *plane, const unsigned char *data, const uint32_t off,
-	unsigned char *buf, const int bufSize)
+	const CWolfMap *map, CWPlane *plane, const unsigned char *data,
+	const uint32_t off, unsigned char *buf, const int bufSize)
 {
 	int err = 0;
 
@@ -264,7 +328,9 @@ static int LoadPlane(
 	ExpandCarmack(data + off, buf);
 	plane->len = bufSize;
 	plane->plane = malloc(bufSize);
-	ExpandRLEW(buf, (unsigned char *)plane->plane, MAGIC);
+	const bool hasFinalLength =
+		map->type != CWMAPTYPE_BS6 && map->type != CWMAPTYPE_BS1;
+	ExpandRLEW(buf, (unsigned char *)plane->plane, MAGIC, hasFinalLength);
 
 bail:
 	return err;
@@ -286,6 +352,10 @@ void CWCopy(CWolfMap *dst, const CWolfMap *src)
 				dst->levels[i].planes[j].plane, src->levels[i].planes[j].plane,
 				len);
 		}
+		if (src->levels[i].description)
+		{
+			dst->levels[i].description = strdup(src->levels[i].description);
+		}
 	}
 	const size_t audioHeadLen = dst->audio.head.nOffsets * sizeof(uint32_t);
 	dst->audio.head.offsets = malloc(audioHeadLen);
@@ -299,6 +369,7 @@ void CWCopy(CWolfMap *dst, const CWolfMap *src)
 	const size_t vswapSoundsLen = dst->vswap.nSounds * sizeof(CWVSwapSound);
 	dst->vswap.sounds = malloc(vswapSoundsLen);
 	memcpy(dst->vswap.sounds, src->vswap.sounds, vswapSoundsLen);
+	// TODO: copy wad
 }
 
 void CWFree(CWolfMap *map)
@@ -328,6 +399,119 @@ static void LevelFree(CWLevel *level)
 	{
 		free(level->planes[i].plane);
 	}
+	free(level->description);
+}
+
+const char *CWGetDescription(CWolfMap *map, const int spearMission)
+{
+	switch (map->type)
+	{
+	case CWMAPTYPE_BS1:
+	case CWMAPTYPE_BS6: // fallthrough
+		return "You're pitted against Dr. Pyrus Goldfire. He's found a way to "
+			   "replicate pure gold, which he's using to fund his maniacal "
+			   "plan. Goldfire has built six highly-secure, futuristic "
+			   "locations where his creations are being hatched. It's up to "
+			   "you to penetrate his security and stop him at all costs.";
+	case CWMAPTYPE_N3D:
+		return "It's been a long journey. In just a few days, the ark doors "
+			   "will open and Noah, his family & the animals will be back on "
+			   "dry land. But the animals have become a bit restless and are "
+			   "out of their cages. Camels, giraffes, monkeys, kangaroos and "
+			   "more are wandering throughout the corridors of the ark. As "
+			   "Noah, it's your job to regain order & get the animals to "
+			   "sleep until you leave the ark. Your only tool to accomplish "
+			   "this is the food you brought aboard the ark. Can it be done? "
+			   "You bet! But how?";
+	case CWMAPTYPE_SOD:
+		switch (spearMission)
+		{
+		case 1:
+			return "It's World War II and you are B.J. Blazkowicz, the "
+				   "Allies' "
+				   "most valuable agent. In the midst of the German "
+				   "Blitzkrieg, "
+				   "the Spear that pierced the side of Christ is taken from "
+				   "Versailles by the Nazis and secured in the impregnable "
+				   "Castle "
+				   "Wolfenstein. According to legend, no man can be defeated "
+				   "when "
+				   "he has the Spear. Hitler believes himself to be "
+				   "invincible "
+				   "with the power of the Spear as his brutal army sweeps "
+				   "across "
+				   "Europe.\n\nYour mission is to infiltrate the heavily "
+				   "guarded "
+				   "Nazi stronghold and recapture the Spear from an already "
+				   "unbalanced Hitler. The loss of his most coveted weapon "
+				   "could "
+				   "push him over the edge. It could also get you ripped to "
+				   "pieces.";
+		case 2:
+			return "Six weeks after the Spear of Destiny has been brought out "
+				   "of enemy hands, the Axis mounts a successful commando "
+				   "raid to recover it! After a bloody battle and narrow "
+				   "escape, it's taken to the Nazis' Secret Scandinavian "
+				   "Base, excavated from the solid rock of a fjord. The "
+				   "fortress is said to be impregnable!";
+		case 3:
+			return "As the Allies' top agent, you face your toughest "
+				   "challenge yet! Learning from his past mistakes, Hitler "
+				   "has expanded his subterranean command bunker beneath the "
+				   "chancellery in Berlin so that he can keep the Spear of "
+				   "Destiny nearby and well-guarded!\n\nCalling upon the dark "
+				   "forces of the occult, Hitler can see into the future and "
+				   "obtain the plans to future weapon systems!";
+		}
+		break;
+	case CWMAPTYPE_WL1:
+		return "Captured in your attempt to grab the secret plans, you "
+			   "were taken to the Nazi prison Castle Wolfenstein for "
+			   "questioning and eventual execution. Now for twelve long "
+			   "days you've been imprisoned beneath the castle fortress. "
+			   "Just beyond your cell door sits a lone thick-necked Nazi "
+			   "guard. He assisted an SS Dentist / Mechanic in an attempt "
+			   "to jump start your tonsils earlier that morning. You're "
+			   "at your breaking point! Quivering on the floor you beg "
+			   "for medical assistance in return for information. His "
+			   "face hints a smug grin of victory as he reaches for his "
+			   "keys. He opens the door, tumblers in the lock echo "
+			   "through the corridors and the door squeaks open. HIS "
+			   "MISTAKE!\n\nA single kick to his knee sends him to the "
+			   "floor. Giving him your version of the victory sign, you "
+			   "grab his knife and quickly finish the job. You stand over "
+			   "the guard's fallen body, grabbing frantically for his "
+			   "gun. You're not sure if the other guards heard his "
+			   "muffled scream. Deep in the belly of a Nazi dungeon, you "
+			   "must escape. This desperate act has sealed your fate-get "
+			   "out or die trying.";
+	case CWMAPTYPE_WL6:
+		return "You're William J. \"B.J.\" Blazkowicz, the Allies' bad "
+			   "boy of espionage and a terminal action seeker. Your "
+			   "mission was to infiltrate the Nazi fortress Castle "
+			   "Hollehammer and find the plans for Operation Eisenfaust "
+			   "(Iron Fist), the Nazi's blueprint for building the "
+			   "perfect army. Rumors are that deep within Castle "
+			   "Hollehammer the diabolical Dr. Schabbs has perfected a "
+			   "technique for building a fierce army from the bodies of "
+			   "the dead. It's so far removed from reality that it would "
+			   "seem silly if it wasn't so sick. But what if it were "
+			   "true?";
+	default:
+		break;
+	}
+	return NULL;
+}
+
+int CWGetAudioSampleRate(const CWolfMap *map)
+{
+	switch (map->type)
+	{
+	case CWMAPTYPE_N3D:
+		return 11025;
+	default:
+		return 7042;
+	}
 }
 
 // http://gaarabis.free.fr/_sites/specs/wlspec_index.html
@@ -336,7 +520,7 @@ uint16_t CWLevelGetCh(
 	const CWLevel *level, const int planeIndex, const int x, const int y)
 {
 	const CWPlane *plane = &level->planes[planeIndex];
-	return plane->plane[y * level->header.height + x];
+	return plane->plane[y * level->header.width + x];
 }
 
 static const CWTile tileMap[] = {
@@ -432,7 +616,7 @@ static const CWTile tileMap[] = {
 	CWTILE_UNKNOWN,
 	CWTILE_UNKNOWN,
 	CWTILE_UNKNOWN,
-	CWTILE_UNKNOWN,
+	CWTILE_BACKGROUND,
 	// 90
 	CWTILE_DOOR_V,
 	CWTILE_DOOR_H,
@@ -441,8 +625,8 @@ static const CWTile tileMap[] = {
 	CWTILE_DOOR_SILVER_V,
 	CWTILE_DOOR_SILVER_H,
 	// 96-99
-	CWTILE_UNKNOWN,
-	CWTILE_UNKNOWN,
+	CWTILE_DOOR_V, // Doors to stairs
+	CWTILE_DOOR_H,
 	CWTILE_UNKNOWN,
 	CWTILE_UNKNOWN,
 	// 100
@@ -701,8 +885,8 @@ static const CWEntity entityMap[] = {
 	CWENT_PUSHWALL,
 	CWENT_ENDGAME,
 	// 100
-	CWENT_UNKNOWN,
-	CWENT_UNKNOWN,
+	CWENT_NEXT_LEVEL,
+	CWENT_SECRET_LEVEL,
 	CWENT_UNKNOWN,
 	CWENT_UNKNOWN,
 	CWENT_UNKNOWN,
@@ -738,8 +922,8 @@ static const CWEntity entityMap[] = {
 	CWENT_SS_MOVING_N,
 	CWENT_SS_MOVING_W,
 	CWENT_SS_MOVING_S,
-	CWENT_UNKNOWN,
-	CWENT_UNKNOWN,
+	CWENT_KERRY_KANGAROO,
+	CWENT_ERNIE_ELEPHANT,
 	CWENT_UNKNOWN,
 	CWENT_UNKNOWN,
 	CWENT_DOG_E,

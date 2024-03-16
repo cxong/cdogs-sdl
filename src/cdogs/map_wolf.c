@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2020-2023 Cong Xu
+	Copyright (c) 2020-2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -96,7 +96,9 @@ static void GetCampaignPath(
 		}
 		break;
 	default:
-		CASSERT(false, "unknown map type");
+		// TODO: implement unknown map types
+		LOG(LM_MAP, LL_ERROR, "Unknown wolf map type %d", (int)type);
+		buf[0] = '\0';
 		break;
 	}
 }
@@ -446,7 +448,7 @@ static Mix_Chunk *LoadMusic(const CWolfMap *map, const int i)
 {
 	char *data;
 	size_t len;
-	const int err = CWAudioGetMusic(&map->audio, i, &data, &len);
+	const int err = CWAudioGetMusic(&map->audio, map->type, i, &data, &len);
 	if (err != 0)
 	{
 		goto bail;
@@ -713,6 +715,10 @@ int MapWolfLoad(
 		MapNewScanArchive(filename, NULL, &numMissions);
 	}
 
+	CFREE(c->Description);
+	const char *description = CWGetDescription(map, spearMission);
+	CSTRDUP(c->Description, description);
+
 	CharacterStoreCopy(&c->characters, &cs, &gPlayerTemplates.CustomClasses);
 
 	for (int i = 0; i < map->nLevels; i++)
@@ -806,8 +812,8 @@ static Mix_Chunk *LoadSoundData(const CWolfMap *map, const int i)
 	}
 	SDL_AudioCVT cvt;
 	SDL_BuildAudioCVT(
-		&cvt, AUDIO_U8, 1, SND_RATE, CDOGS_SND_FMT, CDOGS_SND_CHANNELS,
-		CDOGS_SND_RATE);
+		&cvt, AUDIO_U8, 1, CWGetAudioSampleRate(map), CDOGS_SND_FMT,
+		CDOGS_SND_CHANNELS, CDOGS_SND_RATE);
 	cvt.len = (int)len;
 	cvt.buf = (Uint8 *)SDL_malloc(cvt.len * cvt.len_mult);
 	memcpy(cvt.buf, data, len);

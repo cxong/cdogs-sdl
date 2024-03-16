@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "audio_bs6.h"
+#include "audio_n3d.h"
 #include "audio_sod.h"
 #include "audio_wl1.h"
 #include "audio_wl6.h"
@@ -176,6 +178,13 @@ int CWAudioLoadAudioT(CWAudio *audio, const CWMapType type, const char *path)
 	case CWMAPTYPE_SOD:
 		CWAudioSODLoadAudioT(audio);
 		break;
+	case CWMAPTYPE_BS1:
+	case CWMAPTYPE_BS6:
+		CWAudioBS6LoadAudioT(audio);
+		break;
+	case CWMAPTYPE_N3D:
+		CWAudioN3DLoadAudioT(audio);
+		break;
 	default:
 		fprintf(stderr, "Unknown map type\n");
 		err = -1;
@@ -194,6 +203,7 @@ void CWAudioFree(CWAudio *audio)
 {
 	CWAudioHeadFree(&audio->head);
 	free(audio->data);
+	WAD_Close(audio->wad);
 }
 
 int CWAudioGetAdlibSoundRaw(
@@ -292,90 +302,103 @@ bail:
 }
 
 int CWAudioGetMusic(
-	const CWAudio *audio, const int idx, char **data, size_t *len)
+	CWAudio *audio, const CWMapType type, const int idx, char **data,
+	size_t *len)
 {
 	*data = NULL;
 	*len = 0;
-	const char *rawData;
-	size_t rawLen;
-	int err = CWAudioGetMusicRaw(audio, idx, &rawData, &rawLen);
-	if (err != 0)
-	{
-		goto bail;
-	}
-	if (rawLen == 0)
-	{
-		goto bail;
-	}
+	int err = 0;
 
-	for (int i = 0; i < OPL_CHANNELS; i++)
+	if (type == CWMAPTYPE_N3D)
 	{
-		AlSetChanInst(&ChannelRelease, i);
-	}
-
-	// Measure length of music
-	const uint16_t *sqHack = (const uint16_t *)rawData;
-	int sqHackLen;
-	if (*sqHack == 0)
-	{
-		// LumpLength?
-		sqHackLen = (int)rawLen;
+		wadentry_t *entry = WAD_GetEntry(audio->wad, idx);
+		*data = malloc(entry->length);
+		*len = entry->length;
+		err = WAD_GetEntryData(audio->wad, entry, (unsigned char *)*data);
 	}
 	else
 	{
-		sqHackLen = *sqHack++;
-	}
-	const uint16_t *sqHackPtr = sqHack;
-
-	int sqHackTime = 0;
-	int alTimeCount;
-	for (alTimeCount = 0; sqHackLen > 0; alTimeCount++)
-	{
-		do
+		const char *rawData;
+		size_t rawLen;
+		err = CWAudioGetMusicRaw(audio, idx, &rawData, &rawLen);
+		if (err != 0)
 		{
-			if (sqHackTime > alTimeCount)
-				break;
-			sqHackTime = alTimeCount + *(sqHackPtr + 1);
-			sqHackPtr += 2;
-			sqHackLen -= 4;
-		} while (sqHackLen > 0);
-	}
-
-	// Decode music
-	// 2 bytes per sample (16-bit audio fmt)
-	*len = alTimeCount * SAMPLES_PER_MUSIC_TICK * MUSIC_AUDIO_CHANNELS * 2;
-	*data = malloc(*len);
-	int16_t *stream16 = (int16_t *)*data;
-
-	sqHack = (const uint16_t *)rawData;
-	if (*sqHack == 0)
-	{
-		// LumpLength?
-		sqHackLen = (int)rawLen;
-	}
-	else
-	{
-		sqHackLen = *sqHack++;
-	}
-	sqHackPtr = sqHack;
-	sqHackTime = 0;
-	for (alTimeCount = 0; sqHackLen > 0; alTimeCount++)
-	{
-		do
+			goto bail;
+		}
+		if (rawLen == 0)
 		{
-			if (sqHackTime > alTimeCount)
-				break;
-			sqHackTime = alTimeCount + *(sqHackPtr + 1);
-			alOut(
-				*(const uint8_t *)sqHackPtr,
-				*(((const uint8_t *)sqHackPtr) + 1));
-			sqHackPtr += 2;
-			sqHackLen -= 4;
-		} while (sqHackLen > 0);
+			goto bail;
+		}
 
-		YM3812UpdateOne(oplChip, stream16, SAMPLES_PER_MUSIC_TICK);
+		for (int i = 0; i < OPL_CHANNELS; i++)
+		{
+			AlSetChanInst(&ChannelRelease, i);
+		}
 
-		stream16 += SAMPLES_PER_MUSIC_TICK * MUSIC_AUDIO_CHANNELS;
+		// Measure length of music
+		const uint16_t *sqHack = (const uint16_t *)rawData;
+		int sqHackLen;
+		if (*sqHack == 0)
+		{
+			// LumpLength?
+			sqHackLen = (int)rawLen;
+		}
+		else
+		{
+			sqHackLen = *sqHack++;
+		}
+		const uint16_t *sqHackPtr = sqHack;
+
+		int sqHackTime = 0;
+		int alTimeCount;
+		for (alTimeCount = 0; sqHackLen > 0; alTimeCount++)
+		{
+			do
+			{
+				if (sqHackTime > alTimeCount)
+					break;
+				sqHackTime = alTimeCount + *(sqHackPtr + 1);
+				sqHackPtr += 2;
+				sqHackLen -= 4;
+			} while (sqHackLen > 0);
+		}
+
+		// Decode music
+		// 2 bytes per sample (16-bit audio fmt)
+		*len = alTimeCount * SAMPLES_PER_MUSIC_TICK * MUSIC_AUDIO_CHANNELS * 2;
+		*data = malloc(*len);
+		int16_t *stream16 = (int16_t *)*data;
+
+		sqHack = (const uint16_t *)rawData;
+		if (*sqHack == 0)
+		{
+			// LumpLength?
+			sqHackLen = (int)rawLen;
+		}
+		else
+		{
+			sqHackLen = *sqHack++;
+		}
+		sqHackPtr = sqHack;
+		sqHackTime = 0;
+		for (alTimeCount = 0; sqHackLen > 0; alTimeCount++)
+		{
+			do
+			{
+				if (sqHackTime > alTimeCount)
+					break;
+				sqHackTime = alTimeCount + *(sqHackPtr + 1);
+				alOut(
+					*(const uint8_t *)sqHackPtr,
+					*(((const uint8_t *)sqHackPtr) + 1));
+				sqHackPtr += 2;
+				sqHackLen -= 4;
+			} while (sqHackLen > 0);
+
+			YM3812UpdateOne(oplChip, stream16, SAMPLES_PER_MUSIC_TICK);
+
+			stream16 += SAMPLES_PER_MUSIC_TICK * MUSIC_AUDIO_CHANNELS;
+		}
 	}
 
 	return err;

@@ -2,7 +2,7 @@
 	"Version": 16,
 	"Title": "Spear of Destiny",
 	"Author": "id Software",
-	"Description": "It's World War II and you are B.J. Blazkowicz, the Allies' most valuable agent. In the midst of the German Blitzkrieg, the Spear that pierced the side of Christ is taken from Versailles by the Nazis and secured in the impregnable Castle Wolfenstein. According to legend, no man can be defeated when he has the Spear. Hitler believes himself to be invincible with the power of the Spear as his brutal army sweeps across Europe.\n\nYour mission is to infiltrate the heavily guarded Nazi stronghold and recapture the Spear from an already unbalanced Hitler. The loss of his most coveted weapon could push him over the edge. It could also get you ripped to pieces.",
+	"Description": "",
 	"Ammo": true,
 	"WeaponPersist": true,
 	"SkipWeaponMenu": true,

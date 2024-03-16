@@ -29,7 +29,8 @@ int CWAudioGetAdlibSound(
 int CWAudioGetMusicRaw(
 	const CWAudio *audio, const int i, const char **data, size_t *len);
 int CWAudioGetMusic(
-	const CWAudio *audio, const int i, char **data, size_t *len);
+	CWAudio *audio, const CWMapType type, const int idx, char **data,
+	size_t *len);
 
 typedef enum
 {

@@ -92,10 +92,17 @@ void ExpandCarmack(const unsigned char *in, unsigned char *out)
 	}
 }
 
-void ExpandRLEW(const unsigned char *in, unsigned char *out, const WORD rlewTag)
+// https://moddingwiki.shikadi.net/wiki/Id_Software_RLEW_compression
+void ExpandRLEW(
+	const unsigned char *in, unsigned char *out, const WORD rlewTag,
+	const bool hasFinalLength)
 {
-	const DWORD length = ReadLittleShort((const BYTE *)in);
-	in += 2;
+	DWORD length = 64 * 64 * 2; // width*height*<bytes in 16bit>
+	if (hasFinalLength)
+	{
+		length = ReadLittleShort((const BYTE *)in);
+		in += 2;
+	}
 	const unsigned char *const end = out + length;
 
 	while (out < end)
@@ -110,7 +117,7 @@ void ExpandRLEW(const unsigned char *in, unsigned char *out, const WORD rlewTag)
 			WORD count = ReadLittleShort((const BYTE *)(in + 2));
 			WORD input = ReadLittleShort((const BYTE *)(in + 4));
 			in += 6;
-			while (count-- > 0)
+			for (int i = 0; i < count; i++)
 			{
 				WriteLittleShort((BYTE *)out, input);
 				out += 2;

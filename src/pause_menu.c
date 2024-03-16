@@ -38,6 +38,8 @@ void PauseMenuInit(
 	MenuSystemInit(&pm->ms, handlers, g, svec2i_zero(), g->cachedConfig.Res);
 	pm->ms.current = pm->ms.root =
 		MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
+	// A bit counterintuitive, but QUIT means we want to quit this menu, also
+	// this item will get auto selected when pressing escape
 	MenuAddSubmenu(pm->ms.root, MenuCreate("Resume", MENU_TYPE_QUIT));
 	MenuAddSubmenu(pm->ms.root, MenuCreateSeparator(""));
 	pm->oData.config = &gConfig;
