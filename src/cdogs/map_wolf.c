@@ -444,7 +444,7 @@ static const CWSongType songsCampaign[] = {
 	SONG_ROSTER,  // lose
 	SONG_VICTORY, // victory
 };
-static Mix_Chunk *LoadMusic(const CWolfMap *map, const int i)
+static Mix_Chunk *LoadMusic(CWolfMap *map, const int i)
 {
 	char *data;
 	size_t len;
@@ -603,11 +603,11 @@ bail:
 
 static void LoadSounds(const SoundDevice *s, const CWolfMap *map);
 static void LoadMission(
-	CampaignSetting *c, const map_t tileClasses, const CWolfMap *map,
+	CampaignSetting *c, const map_t tileClasses, CWolfMap *map,
 	const int spearMission, const int missionIndex, const int numMissions);
 typedef struct
 {
-	const CWolfMap *Map;
+	CWolfMap *Map;
 	MusicType Type;
 } CampaignSongData;
 static Mix_Chunk *GetCampaignSong(void *data)
@@ -883,7 +883,7 @@ static void LoadEntity(
 
 typedef struct
 {
-	const CWolfMap *Map;
+	CWolfMap *Map;
 	int MissionIndex;
 } MissionSongData;
 static Mix_Chunk *GetMissionSong(void *data)
@@ -893,7 +893,7 @@ static Mix_Chunk *GetMissionSong(void *data)
 		msd->Map, CWAudioGetLevelMusic(msd->Map->type, msd->MissionIndex));
 }
 static void LoadMission(
-	CampaignSetting *c, const map_t tileClasses, const CWolfMap *map,
+	CampaignSetting *c, const map_t tileClasses, CWolfMap *map,
 	const int spearMission, const int missionIndex, const int numMissions)
 {
 	const CWLevel *level = &map->levels[missionIndex];
