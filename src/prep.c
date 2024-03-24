@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2018, 2020-2023 Cong Xu
+	Copyright (c) 2013-2018, 2020-2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -729,7 +729,8 @@ static GameLoopResult GameOptionsUpdate(GameLoopData *data, LoopRunner *l)
 		// If enabled, start net server
 		if (!gCampaign.IsClient && ConfigGetBool(&gConfig, "StartServer"))
 		{
-			NetServerOpen(&gNetServer, ConfigGetInt(&gConfig, "ListenPort"));
+			NetServerOpen(
+				&gNetServer, (uint16_t)ConfigGetInt(&gConfig, "ListenPort"));
 		}
 		LoopRunnerPush(
 			l, ScreenMissionBriefing(&gCampaign.Setting, &gMission));
@@ -797,7 +798,7 @@ bail:
 	}
 	LoopRunnerPush(
 		l, ScreenLoading(
-			   "Starting game...", true,
-			   RunGame(&gCampaign, &gMission, &gMap), true));
+			   "Starting game...", true, RunGame(&gCampaign, &gMission, &gMap),
+			   true));
 	return UPDATE_RESULT_OK;
 }

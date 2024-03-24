@@ -6,24 +6,26 @@ set SDL2_VERSION=2.26.4
 set SDL2_IMAGE_VERSION=2.8.1
 set SDL2_MIXER_VERSION=2.6.3
 
+
+set DESTDIR=%1
+set BITS=%2
+set DOWNLOAD_COMMAND=%~3
+
 rem PLEASE NO SPACES IN SDL2_* VARIABLES
 
-set SDL2_URL=http://www.libsdl.org/release/SDL2-%SDL2_VERSION%-win32-x86.zip
-set SDL2_ARCHIVE=SDL2-%SDL2_VERSION%-win32-x86.zip
+set SDL2_ARCHIVE=SDL2-%SDL2_VERSION%-win32-x%BITS%.zip
+set SDL2_URL=https://www.libsdl.org/release/%SDL2_ARCHIVE%
 
-set SDL2_IMAGE_URL=http://www.libsdl.org/projects/SDL_image/release/SDL2_image-%SDL2_IMAGE_VERSION%-win32-x86.zip
-set SDL2_IMAGE_ARCHIVE=SDL2_image-%SDL2_IMAGE_VERSION%-win32-x86.zip
+set SDL2_IMAGE_ARCHIVE=SDL2_image-%SDL2_IMAGE_VERSION%-win32-x%BITS%.zip
+set SDL2_IMAGE_URL=https://www.libsdl.org/projects/SDL_image/release/%SDL2_IMAGE_ARCHIVE%
 
-set SDL2_MIXER_URL=https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-%SDL2_MIXER_VERSION%-win32-x86.zip
-set SDL2_MIXER_ARCHIVE=SDL2_mixer-%SDL2_MIXER_VERSION%-win32-x86.zip
+set SDL2_MIXER_ARCHIVE=SDL2_mixer-%SDL2_MIXER_VERSION%-win32-x%BITS%.zip
+set SDL2_MIXER_URL=https://www.libsdl.org/projects/SDL_mixer/release/%SDL2_MIXER_ARCHIVE%
 
 rem ========================================================
 
-
-set DESTDIR=%1
-set DOWNLOAD_COMMAND=%~2
 if "!DESTDIR!" == "" (
-	echo Usage %0 destination_dir [download_command]
+	echo "Usage %0 destination_dir (32|64) [download_command]"
 	echo Assume you have 7z in your PATH
 	exit /b 1
 )
@@ -45,6 +47,9 @@ call :downloadIfNeeded !SDL2_MIXER_URL!
 %EXTRACT_COMMAND% !SDL2_ARCHIVE!
 %EXTRACT_COMMAND% !SDL2_IMAGE_ARCHIVE!
 %EXTRACT_COMMAND% !SDL2_MIXER_ARCHIVE!
+
+rem Copy optional DLLs within the optional folders
+copy .\optional\*.dll .
 
 exit /b
 rem ========================================================

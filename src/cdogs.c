@@ -206,7 +206,7 @@ int main(int argc, char *argv[])
 		err = EXIT_FAILURE;
 		goto bail;
 	}
-	NetClientInit(&gNetClient, ConfigGetInt(&gConfig, "ListenPort"));
+	NetClientInit(&gNetClient, (uint16_t)ConfigGetInt(&gConfig, "ListenPort"));
 #endif
 
 	LoadingScreenDraw(&gLoadingScreen, "Initializing sound device...", 0.25f);

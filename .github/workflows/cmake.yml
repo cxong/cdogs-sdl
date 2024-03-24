@@ -119,6 +119,11 @@ jobs:
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{env.BUILD_TYPE}} -VV -S
 
+    - name: Download DLLs on tags (Windows)
+      if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'windows-latest'
+      run: |
+        build/windows/get-sdl2-dlls.bat dll
+
     - name: Make package on tags
       if: startsWith(github.ref, 'refs/tags/')
       run: |
