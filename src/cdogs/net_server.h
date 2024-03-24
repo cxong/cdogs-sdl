@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014-2016, Cong Xu
+    Copyright (c) 2014-2016, 2024 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -61,7 +61,7 @@ void NetServerTerminate(NetServer *n);
 void NetServerReset(NetServer *n);
 
 // Open a port and start listening for data
-void NetServerOpen(NetServer *n);
+void NetServerOpen(NetServer *n, const uint16_t port);
 void NetServerClose(NetServer *n);
 // Service the recv buffer; if data is received then activate this device
 void NetServerPoll(NetServer *n);

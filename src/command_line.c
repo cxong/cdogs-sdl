@@ -90,15 +90,15 @@ void PrintHelp(void)
 			printf("\n");
 	}
 	printf(
-        "    --log=M,L        Enable logging for module M at level L.\n\n"
+		"    --log=M,L        Enable logging for module M at level L.\n\n"
 		"    --log=L          Enable logging for all modules at level L.\n\n"
-        "    --logfile=F      Log to file by filename\n\n");
+		"    --logfile=F      Log to file by filename\n\n");
 
 	printf(
 		"%s\n",
 		"Other:\n"
 		"    --connect=host   (Experimental) connect to a game server\n"
-        "    --demo           (Experimental) run game for 30 seconds\n");
+		"    --demo           (Experimental) run game for 30 seconds\n");
 }
 
 void ProcessCommandLine(char *buf, const int argc, char *argv[])
@@ -129,10 +129,11 @@ bool ParseArgs(
 		{"scale", required_argument, NULL, 's'},
 		{"screen", required_argument, NULL, 'c'},
 		{"connect", required_argument, NULL, 'x'},
+		{"listen_port", required_argument, NULL, 'p'},
 		{"config", optional_argument, NULL, 'C'},
 		{"log", required_argument, NULL, 1000},
 		{"logfile", required_argument, NULL, 1001},
-        {"demo", no_argument, NULL, 1002},
+		{"demo", no_argument, NULL, 1002},
 		{"help", no_argument, NULL, 'h'},
 		{0, 0, NULL, 0}};
 	int opt = 0;
@@ -168,6 +169,11 @@ bool ParseArgs(
 		case 'h':
 			PrintHelp();
 			return false;
+		case 'p':
+			ConfigGet(&gConfig, "ListenPort")->u.Int.Value =
+				MAX(atoi(optarg), 0);
+			printf("Listen port: %d\n", ConfigGetInt(&gConfig, "ListenPort"));
+			break;
 		case 1000: {
 			char *comma = strchr(optarg, ',');
 			if (comma)
@@ -194,10 +200,10 @@ bool ParseArgs(
 		case 1001:
 			LogOpenFile(optarg);
 			break;
-        case 1002:
-            *demoQuitTimer = 30 * 1000;
-            printf("Entering demo mode; will auto-quit in 30 seconds\n");
-            break;
+		case 1002:
+			*demoQuitTimer = 30 * 1000;
+			printf("Entering demo mode; will auto-quit in 30 seconds\n");
+			break;
 		case 'x':
 			if (enet_address_set_host(connectAddr, optarg) != 0)
 			{

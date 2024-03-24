@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014-2016, 2019, 2021 Cong Xu
+    Copyright (c) 2014-2016, 2019, 2021, 2024 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -50,11 +50,12 @@ NetClient gNetClient;
 #define TIMEOUT_MS 5000
 
 
-void NetClientInit(NetClient *n)
+void NetClientInit(NetClient *n, const uint16_t port)
 {
 	memset(n, 0, sizeof *n);
 	n->ClientId = -1;	// -1 is unset
 	n->scanner = ENET_SOCKET_NULL;
+	n->port = port;
 	n->client = enet_host_create(NULL, 1, 2,
 		57600 / 8 /* 56K modem with 56 Kbps downstream bandwidth */,
 		14400 / 8 /* 56K modem with 14 Kbps upstream bandwidth */);
@@ -129,7 +130,7 @@ static bool TryScanHost(NetClient *n, const enet_uint32 host)
 	// Send the scanning message
 	ENetAddress addr;
 	addr.host = host;
-	addr.port = NET_LISTEN_PORT;
+	addr.port = n->port;
 	// Send a dummy payload
 	char data = 42;
 	ENetBuffer sendbuf;
@@ -300,7 +301,7 @@ void NetClientPoll(NetClient *n)
 		{
 			LOG(LM_NET, LL_ERROR, "connection error(%d)", check);
 			NetClientTerminate(n);
-			NetClientInit(n);
+			NetClientInit(n, n->port);
 			return;
 		}
 		else if (check > 0)

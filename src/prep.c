@@ -729,7 +729,7 @@ static GameLoopResult GameOptionsUpdate(GameLoopData *data, LoopRunner *l)
 		// If enabled, start net server
 		if (!gCampaign.IsClient && ConfigGetBool(&gConfig, "StartServer"))
 		{
-			NetServerOpen(&gNetServer);
+			NetServerOpen(&gNetServer, ConfigGetInt(&gConfig, "ListenPort"));
 		}
 		LoopRunnerPush(
 			l, ScreenMissionBriefing(&gCampaign.Setting, &gMission));

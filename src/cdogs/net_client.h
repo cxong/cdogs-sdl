@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2014-2016, Cong Xu
+    Copyright (c) 2014-2016, 2024 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -49,6 +49,7 @@ typedef struct
 	bool Ready;
 	// Socket used to scan for LAN servers
 	ENetSocket scanner;
+	uint16_t port;
 	// Only scan for a period; if > 0 then we are scanning
 	int ScanTicks;
 	// Addresses of scanned LAN servers
@@ -59,7 +60,7 @@ typedef struct
 
 extern NetClient gNetClient;
 
-void NetClientInit(NetClient *n);
+void NetClientInit(NetClient *n, const uint16_t port);
 void NetClientTerminate(NetClient *n);
 
 // Start searching for LAN servers; note that the result will be returned in

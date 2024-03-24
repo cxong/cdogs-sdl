@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2017, 2019-2022 Cong Xu
+	Copyright (c) 2013-2017, 2019-2022, 2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -206,7 +206,7 @@ int main(int argc, char *argv[])
 		err = EXIT_FAILURE;
 		goto bail;
 	}
-	NetClientInit(&gNetClient);
+	NetClientInit(&gNetClient, ConfigGetInt(&gConfig, "ListenPort"));
 #endif
 
 	LoadingScreenDraw(&gLoadingScreen, "Initializing sound device...", 0.25f);

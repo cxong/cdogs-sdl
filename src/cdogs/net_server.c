@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2014-2017, 2021, 2023 Cong Xu
+	Copyright (c) 2014-2017, 2021, 2023-2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -62,8 +62,8 @@ void NetServerReset(NetServer *n)
 }
 
 static ENetHost *HostOpen(void);
-static bool ListenSocketTryOpen(ENetSocket *listen);
-void NetServerOpen(NetServer *n)
+static bool ListenSocketTryOpen(ENetSocket *listen, const enet_uint16 port);
+void NetServerOpen(NetServer *n, const uint16_t port)
 {
 	if (n->server)
 	{
@@ -77,7 +77,7 @@ void NetServerOpen(NetServer *n)
 	}
 
 	// Start listen socket, to respond to UDP scans
-	if (!ListenSocketTryOpen(&n->listen))
+	if (!ListenSocketTryOpen(&n->listen, port))
 	{
 		return;
 	}
@@ -112,7 +112,7 @@ static ENetHost *HostOpen(void)
 	}
 	return host;
 }
-static bool ListenSocketTryOpen(ENetSocket *listen)
+static bool ListenSocketTryOpen(ENetSocket *listen, const enet_uint16 port)
 {
 	*listen = enet_socket_create(ENET_SOCKET_TYPE_DATAGRAM);
 	if (*listen == ENET_SOCKET_NULL)
@@ -127,7 +127,7 @@ static bool ListenSocketTryOpen(ENetSocket *listen)
 	}
 	ENetAddress addr;
 	addr.host = ENET_HOST_ANY;
-	addr.port = NET_LISTEN_PORT;
+	addr.port = port;
 	if (enet_socket_bind(*listen, &addr) != 0)
 	{
 		LOG(LM_NET, LL_ERROR, "failed to bind listen socket");

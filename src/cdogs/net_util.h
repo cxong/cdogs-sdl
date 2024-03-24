@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2014-2017, 2019-2023 Cong Xu
+	Copyright (c) 2014-2017, 2019-2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -37,8 +37,6 @@
 #include "game_events.h"
 #include "map.h"
 #include "player.h"
-
-#define NET_LISTEN_PORT 34219
 
 #define NET_PROTOCOL_VERSION 15
 

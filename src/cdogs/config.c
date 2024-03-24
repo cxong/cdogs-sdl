@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2014, 2016-2018 Cong Xu
+    Copyright (c) 2013-2014, 2016-2018, 2024 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,8 @@
 #include "music.h"
 #include "sounds.h"
 #include "utils.h"
+
+#define NET_DEFAULT_LISTEN_PORT 34219
 
 
 const char *DifficultyStr(int d)
@@ -739,6 +741,7 @@ Config ConfigDefault(void)
 	ConfigGroupAdd(&root, qp);
 	
 	ConfigGroupAdd(&root, ConfigNewBool("StartServer", false));
+	ConfigGroupAdd(&root, ConfigNewInt("ListenPort", NET_DEFAULT_LISTEN_PORT, 0, 65535, 1, NULL, NULL));
 
 	return root;
 }
