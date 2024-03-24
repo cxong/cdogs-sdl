@@ -147,7 +147,7 @@ static int WAD_ExpandBuffer(wad_t *wad, int newsize)
 	{
 		wad->handle.buffer = oldarray;
 		return 1;
-	}		
+	}
 
 	if (oldarray)
 	{
@@ -859,7 +859,7 @@ static wadentry_t* wi_buffer_add_entry_at(wad_t *wad, const char *name, int inde
 	unsigned char *dest = &(wad->handle.buffer[wad->buffer_size]);
 	memcpy(dest, buffer, size);
 	
-	wadentry_t* entry;	
+	wadentry_t* entry;
 	if (!(entry = WAD_AddEntryCommon(wad, name, size, wad->buffer_size, index)))
 	{
 		waderrno = WADERROR_OUT_OF_MEMORY;
@@ -1068,7 +1068,7 @@ wad_t* WAD_Open(const char *filename)
 	}
 
 	out->type = WI_FILE;
-	out->handle.file = fp;	
+	out->handle.file = fp;
 	
 	return out;
 }
@@ -1438,7 +1438,7 @@ int WAD_GetEntryCount(wad_t *wad, const char *name)
 		i++;
 	}
 
-	return i;
+	return out;
 }
 
 // ---------------------------------------------------------------

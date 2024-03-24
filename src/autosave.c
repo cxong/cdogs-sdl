@@ -438,7 +438,7 @@ const CampaignSave *AutosaveGetCampaign(Autosave *autosave, const char *path)
 
 const CampaignSave *AutosaveGetLastCampaign(const Autosave *a)
 {
-	if (a->LastCampaignIndex < 0)
+	if (a->LastCampaignIndex < 0 || a->LastCampaignIndex >= (int)a->Campaigns.size)
 	{
 		return NULL;
 	}
