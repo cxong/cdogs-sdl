@@ -3,7 +3,13 @@
   <id>io.github.cxong.cdogs-sdl</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-2.0+</project_license>
-  <content_rating type="oars-1.0" />
+  <content_rating type="oars-1.0">
+    <content_attribute id="violence-cartoon">intense</content_attribute>
+    <content_attribute id="violence-fantasy">intense</content_attribute>
+    <content_attribute id="violence-bloodshed">mild</content_attribute>
+    <content_attribute id="language-humor">mild</content_attribute>
+    <content_attribute id="social-chat">mild</content_attribute>
+  </content_rating>
   <name>C-Dogs SDL</name>
   <developer>
     <name>congusbongus</name>
