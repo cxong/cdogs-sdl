@@ -32,7 +32,7 @@ install:
   - cd %APPVEYOR_BUILD_FOLDER%
 
 before_build:
-  - .\build\windows\get-sdl2-dlls.bat dll 32 "appveyor DownloadFile"
+  - .\build\windows\get-sdl2-dlls.bat dll 86 "appveyor DownloadFile"
   - cmake -DCMAKE_TOOLCHAIN_FILE=c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake -G "Visual Studio 17 2022" -A Win32 .
 
 build:

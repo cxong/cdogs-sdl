@@ -1,0 +1,12 @@
+{
+	"Version": 16,
+	"Title": "Super 3-D Noah's Ark",
+	"Author": "Wisdom Tree",
+	"Description": "",
+	"Ammo": true,
+	"WeaponPersist": true,
+	"SkipWeaponMenu": true,
+	"RandomPickups": false,
+	"DoorOpenTicks": 210,
+	"Missions": 0
+}

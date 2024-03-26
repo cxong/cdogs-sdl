@@ -41,9 +41,11 @@ CWolfMap *defaultSpearMap = NULL;
 
 #define WOLF_STEAM_NAME "Wolfenstein 3D"
 #define SPEAR_STEAM_NAME "Spear of Destiny"
+#define N3D_STEAM_NAME "Super 3-D Noah's Ark"
 #define WOLF_GOG_ID "1441705046"
 #define WOLF_SPEAR_GOG_ID "1441705226"
 #define SPEAR_GOG_ID "1441705126"
+#define N3D_GOG_ID "1672565562"
 #define WOLF_DATA_DIR "data/.wolf3d/"
 
 #define TILE_CLASS_WALL_OFFSET 63
@@ -94,6 +96,9 @@ static void GetCampaignPath(
 			GetDataFilePath(buf, WOLF_DATA_DIR "SOD.cdogscpn");
 			break;
 		}
+		break;
+	case CWMAPTYPE_N3D:
+		GetDataFilePath(buf, WOLF_DATA_DIR "N3D.cdogscpn");
 		break;
 	default:
 		// TODO: implement unknown map types
@@ -473,6 +478,8 @@ static bool IsDefaultMap(const char *filename)
 			   // Steam Windows
 			   StrEndsWith(buf, "WOLFENSTEIN 3D/BASE") ||
 			   StrEndsWith(buf, "SPEAR OF DESTINY/BASE") ||
+			   // GOG/Steam Windows
+			   StrEndsWith(buf, "Super 3-D Noah's Ark") ||
 			   // Steam Linux
 			   StrEndsWith(buf, "Wolfenstein 3D/base") ||
 			   StrEndsWith(buf, "Spear of Destiny/base"));
@@ -2515,6 +2522,14 @@ void MapWolfLoadCampaignsFromSystem(CampaignList *list)
 	if (numLoaded < 3)
 	{
 		TryLoadSpearGOG(list, numLoaded);
+	}
+
+	// Super 3D Noah's Ark
+	fsg_get_steam_game_path(buf, N3D_STEAM_NAME);
+	if (!TryLoadCampaign(list, buf))
+	{
+		fsg_get_gog_game_path(buf, N3D_GOG_ID);
+		TryLoadCampaign(list, buf);
 	}
 }
 static bool TryLoadSpearSteamVanilla(CampaignList *list);
