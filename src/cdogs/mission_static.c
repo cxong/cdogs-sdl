@@ -552,6 +552,11 @@ static void LoadStaticExit(
 	struct vec2i end;
 	LoadVec2i(&end, exitNode, "End");
 	exit.R.Size = svec2i_subtract(end, exit.R.Pos);
+	// Ignore empty exits
+	if (svec2i_is_zero(exit.R.Size))
+	{
+		return;
+	}
 	exit.Mission = mission + 1;
 	CArrayPushBack(&m->Exits, &exit);
 }

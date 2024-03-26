@@ -801,9 +801,9 @@ static void DrawCompassArrow(
 	const struct vec2 compassV = svec2_subtract(
 		pos,
 		// Offset a little so the arrow points exactly at center of objective
-		svec2(playerPos.x - TILE_WIDTH / 2, playerPos.y - 20));
+		svec2(playerPos.x - TILE_WIDTH / 2, playerPos.y));
 	// Don't draw if objective is on screen
-	if (fabsf(compassV.x) < r.Size.x / 2 && fabsf(compassV.y) < r.Size.y / 2)
+	if (fabsf(compassV.x) < r.Size.x && fabsf(compassV.y) < r.Size.y)
 	{
 		return;
 	}

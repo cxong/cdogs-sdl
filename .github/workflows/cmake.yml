@@ -122,7 +122,7 @@ jobs:
     - name: Download DLLs on tags (Windows)
       if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'windows-latest'
       run: |
-        build/windows/get-sdl2-dlls.bat dll
+        build/windows/get-sdl2-dlls.bat dll 64
 
     - name: Make package on tags
       if: startsWith(github.ref, 'refs/tags/')
