@@ -17,7 +17,7 @@ char *CWN3DLoadLanguageEnu(const char *path)
 		goto bail;
 	}
 	zip_entry_open(zip, "language.enu");
-	const size_t bufsize = zip_entry_size(zip);
+	const size_t bufsize = (size_t)zip_entry_size(zip);
 	buf = malloc(bufsize);
 	zip_entry_noallocread(zip, (void *)buf, bufsize);
 

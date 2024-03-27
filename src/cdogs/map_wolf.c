@@ -162,7 +162,22 @@ static const char *soundsSOD[] = {
 	"chars/die/trans", "chars/alert/bill", "chars/die/bill",
 	"chars/die/ubermutant", "chars/alert/knight", "chars/die/knight",
 	"chars/alert/angel", "chars/die/angel", "chaingun_pickup", "spear"};
-// TODO BS6:
+// TODO: map unknown sounds
+static const char *soundsN3D[] = {
+	// 0-9
+	"chars/alert/antelope", "somesortofooohsound?", "bullet_pickup", "oooh?",
+	"door_close", "cantaloupe", "cantaloupe_feeder", "goat_kick", "gulp?",
+	"chars/die/animal",
+	// 10-19
+	"chars/alert/elephant", "1up", "super_feeder", "chars/alert/giraffe",
+	"chars/alert/goat", "small_feeder", "doof?", "chars/alert/kangaroo",
+	"whistle", "hand_feed",
+	// 20-29
+	"chars/alert/monkey", "chars/alert/bear", "door", "chars/alert/ostrich",
+	"chars/alert/ox", "hurt", "dundundun?", "secret_door", "chars/alert/sheep",
+	"large_feeder",
+	// 30-32
+	"spit", "watermelon", "watermelon_feeder"}; // TODO BS6:
 // https://github.com/bibendovsky/bstone/blob/3dea1ef72a101519afd17aa95c881da40a18040d/src/bstone_audio_content_mgr.cpp#L320-L398
 static const char *GetSound(const CWMapType type, const int i)
 {
@@ -175,6 +190,9 @@ static const char *GetSound(const CWMapType type, const int i)
 		return soundsW6[i];
 	case CWMAPTYPE_SOD:
 		return soundsSOD[i];
+	case CWMAPTYPE_N3D:
+		return soundsN3D[i];
+		break;
 	default:
 		CASSERT(false, "unknown map type");
 		return NULL;
@@ -435,6 +453,9 @@ static const char *GetAdlibSound(const CWMapType type, const int i)
 		return adlibSoundsW6[i];
 	case CWMAPTYPE_SOD:
 		return adlibSoundsSOD[i];
+	case CWMAPTYPE_N3D:
+		// N3D has no adlib sounds
+		return NULL;
 	default:
 		CASSERT(false, "unknown map type");
 		return NULL;
