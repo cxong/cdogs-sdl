@@ -92,11 +92,15 @@ typedef struct
 	char errorMessage[128];
 } MusicPlayer;
 
-typedef struct
+typedef struct _MusicChunk
 {
 	void *Data;
-	Mix_Chunk *(*GetData)(void *);
-	Mix_Chunk *Chunk;
+	bool (*GetData)(struct _MusicChunk *, void *);
+	bool isMusic;
+	union {
+		Mix_Chunk *Chunk;
+		Mix_Music *Music;
+	} u;
 } MusicChunk;
 
 void MusicPlayerInit(MusicPlayer *mp);
@@ -106,7 +110,7 @@ void MusicPlayGeneral(MusicPlayer *mp, const MusicType type);
 void MusicPlayFile(
 	MusicPlayer *mp, const MusicType type, const char *missionPath,
 	const char *music);
-void MusicPlayChunk(MusicPlayer *mp, const MusicType type, Mix_Chunk *chunk);
+void MusicPlayChunk(MusicPlayer *mp, const MusicType type, MusicChunk *chunk);
 void MusicStop(MusicPlayer *mp);
 void MusicPause(MusicPlayer *mp);
 void MusicResume(MusicPlayer *mp);

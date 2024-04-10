@@ -421,6 +421,8 @@ int CWAudioGetLevelMusic(const CWMapType type, const int level)
 		return CWAudioWL6GetLevelMusic(level);
 	case CWMAPTYPE_SOD:
 		return CWAudioSODGetLevelMusic(level);
+	case CWMAPTYPE_N3D:
+		return CWAudioN3DGetLevelMusic(level);
 	default:
 		return -1;
 	}
@@ -435,6 +437,8 @@ int CWAudioGetSong(const CWMapType type, const CWSongType song)
 		return CWAudioWL6GetSong(song);
 	case CWMAPTYPE_SOD:
 		return CWAudioSODGetSong(song);
+	case CWMAPTYPE_N3D:
+		return CWAudioN3DGetSong(song);
 	default:
 		return -1;
 	}

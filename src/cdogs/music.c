@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2016, 2019, 2021 Cong Xu
+	Copyright (c) 2013-2016, 2019, 2021, 2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -204,18 +204,25 @@ void MusicPlayFile(
 		MusicPlayGeneral(mp, type);
 	}
 }
-void MusicPlayChunk(MusicPlayer *mp, const MusicType type, Mix_Chunk *chunk)
+void MusicPlayChunk(MusicPlayer *mp, const MusicType type, MusicChunk *chunk)
 {
 	MusicStop(mp);
-	bool played = false;
 	if (chunk != NULL)
 	{
-		mp->type = MUSIC_SRC_CHUNK;
-		mp->u.chunk.chunk = chunk;
-		mp->u.chunk.channel = Mix_PlayChannel(-1, chunk, -1);
-		played = true;
+		if (chunk->isMusic)
+		{
+			mp->type = MUSIC_SRC_DYNAMIC;
+			mp->u.dynamic = chunk->u.Music;
+			PlayMusic(mp);
+		}
+		else
+		{
+			mp->type = MUSIC_SRC_CHUNK;
+			mp->u.chunk.chunk = chunk->u.Chunk;
+			mp->u.chunk.channel = Mix_PlayChannel(-1, chunk->u.Chunk, -1);
+		}
 	}
-	if (!played)
+	else
 	{
 		MusicPlayGeneral(mp, type);
 	}
@@ -262,7 +269,6 @@ void MusicPause(MusicPlayer *mp)
 		Mix_Pause(mp->u.chunk.channel);
 		break;
 	}
-	
 }
 
 void MusicResume(MusicPlayer *mp)
@@ -322,9 +328,9 @@ const char *MusicGetErrorMessage(const MusicPlayer *mp)
 
 void MusicChunkTerminate(MusicChunk *chunk)
 {
-	if (chunk->Chunk)
+	if (!chunk->isMusic && chunk->u.Chunk)
 	{
-		Mix_FreeChunk(chunk->Chunk);
+		Mix_FreeChunk(chunk->u.Chunk);
 	}
 	CFREE(chunk->Data);
 	memset(chunk, 0, sizeof *chunk);
@@ -333,13 +339,13 @@ void MusicChunkTerminate(MusicChunk *chunk)
 void MusicPlayFromChunk(
 	MusicPlayer *mp, const MusicType type, MusicChunk *chunk)
 {
-	if (chunk->Chunk == NULL && chunk->GetData)
+	if ((chunk->isMusic ? chunk->u.Music == NULL : chunk->u.Chunk == NULL) &&
+		chunk->GetData)
 	{
-		chunk->Chunk =
-			chunk->GetData(chunk->Data);
+		chunk->isMusic = chunk->GetData(chunk, chunk->Data);
 		CFREE(chunk->Data);
 		chunk->Data = NULL;
 		chunk->GetData = NULL;
 	}
-	MusicPlayChunk(mp, type, chunk->Chunk);
+	MusicPlayChunk(mp, type, chunk);
 }

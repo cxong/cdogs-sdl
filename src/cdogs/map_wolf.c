@@ -162,19 +162,18 @@ static const char *soundsSOD[] = {
 	"chars/die/trans", "chars/alert/bill", "chars/die/bill",
 	"chars/die/ubermutant", "chars/alert/knight", "chars/die/knight",
 	"chars/alert/angel", "chars/die/angel", "chaingun_pickup", "spear"};
-// TODO: map unknown sounds
 static const char *soundsN3D[] = {
 	// 0-9
-	"chars/alert/antelope", "somesortofooohsound?", "bullet_pickup", "oooh?",
-	"door_close", "cantaloupe", "cantaloupe_feeder", "goat_kick", "gulp?",
-	"chars/die/animal",
+	"chars/alert/antelope", "chars/alert/bear", "bullet_pickup",
+	"chars/alert/camel", "door_close", "cantaloupe", "cantaloupe_feeder",
+	"goat_kick", "gulp?", "chars/die/animal",
 	// 10-19
 	"chars/alert/elephant", "1up", "super_feeder", "chars/alert/giraffe",
 	"chars/alert/goat", "small_feeder", "doof?", "chars/alert/kangaroo",
 	"whistle", "hand_feed",
 	// 20-29
-	"chars/alert/monkey", "chars/alert/bear", "door", "chars/alert/ostrich",
-	"chars/alert/ox", "hurt", "dundundun?", "secret_door", "chars/alert/sheep",
+	"chars/alert/monkey", "footsteps/bear", "door", "chars/alert/ostrich",
+	"chars/alert/ox", "hurt", "hahaha", "secret_door", "chars/alert/sheep",
 	"large_feeder",
 	// 30-32
 	"spit", "watermelon", "watermelon_feeder"}; // TODO BS6:
@@ -454,7 +453,7 @@ static const char *GetAdlibSound(const CWMapType type, const int i)
 	case CWMAPTYPE_SOD:
 		return adlibSoundsSOD[i];
 	case CWMAPTYPE_N3D:
-		// N3D has no adlib sounds
+		// Not using any adlib sounds
 		return NULL;
 	default:
 		CASSERT(false, "unknown map type");
@@ -470,19 +469,23 @@ static const CWSongType songsCampaign[] = {
 	SONG_ROSTER,  // lose
 	SONG_VICTORY, // victory
 };
-static Mix_Chunk *LoadMusic(CWolfMap *map, const int i)
+static bool LoadMusic(CWolfMap *map, MusicChunk *chunk, const int i)
 {
 	char *data;
 	size_t len;
 	const int err = CWAudioGetMusic(&map->audio, map->type, i, &data, &len);
 	if (err != 0)
 	{
-		goto bail;
+		return false;
 	}
-	return Mix_QuickLoad_RAW((Uint8 *)data, (Uint32)len);
-
-bail:
-	return NULL;
+	if (map->type == CWMAPTYPE_N3D)
+	{
+		SDL_RWops *rwops = SDL_RWFromMem(data, (int)len);
+		chunk->u.Music = Mix_LoadMUS_RW(rwops, 1);
+		return true;
+	}
+	chunk->u.Chunk = Mix_QuickLoad_RAW((Uint8 *)data, (Uint32)len);
+	return false;
 }
 
 static bool IsDefaultMap(const char *filename)
@@ -638,11 +641,12 @@ typedef struct
 	CWolfMap *Map;
 	MusicType Type;
 } CampaignSongData;
-static Mix_Chunk *GetCampaignSong(void *data)
+static bool GetCampaignSong(MusicChunk *chunk, void *data)
 {
 	CampaignSongData *csd = data;
 	const int songIndex = songsCampaign[csd->Type];
-	return LoadMusic(csd->Map, CWAudioGetSong(csd->Map->type, songIndex));
+	return LoadMusic(
+		csd->Map, chunk, CWAudioGetSong(csd->Map->type, songIndex));
 }
 int MapWolfLoad(
 	const char *filename, const int spearMission, CampaignSetting *c)
@@ -676,7 +680,8 @@ int MapWolfLoad(
 		csd->Type = i;
 		c->CustomSongs[i].Data = csd;
 		c->CustomSongs[i].GetData = GetCampaignSong;
-		c->CustomSongs[i].Chunk = NULL;
+		c->CustomSongs[i].isMusic = false;
+		c->CustomSongs[i].u.Chunk = NULL;
 	}
 
 	char buf[CDOGS_PATH_MAX];
@@ -914,11 +919,12 @@ typedef struct
 	CWolfMap *Map;
 	int MissionIndex;
 } MissionSongData;
-static Mix_Chunk *GetMissionSong(void *data)
+static bool GetMissionSong(MusicChunk *chunk, void *data)
 {
 	MissionSongData *msd = data;
 	return LoadMusic(
-		msd->Map, CWAudioGetLevelMusic(msd->Map->type, msd->MissionIndex));
+		msd->Map, chunk,
+		CWAudioGetLevelMusic(msd->Map->type, msd->MissionIndex));
 }
 static void LoadMission(
 	CampaignSetting *c, const map_t tileClasses, CWolfMap *map,
@@ -965,7 +971,8 @@ static void LoadMission(
 		msd->MissionIndex = missionIndex;
 		m.Music.Data.Chunk.Data = msd;
 		m.Music.Data.Chunk.GetData = GetMissionSong;
-		m.Music.Data.Chunk.Chunk = NULL;
+		m.Music.Data.Chunk.isMusic = false;
+		m.Music.Data.Chunk.u.Chunk = NULL;
 
 		MissionStaticInit(&m.u.Static);
 
