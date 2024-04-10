@@ -5,7 +5,7 @@ add_subdirectory(wad)
 add_subdirectory(zip)
 
 add_library(cwolfmap STATIC ${CW_SOURCES} ${CWHEADERS})
-target_link_libraries(cwolfmap wad zip)
+target_link_libraries(cwolfmap wad zip SDL2::SDL2)
 if(NOT WIN32)
 	target_link_libraries(cwolfmap m)
 endif()
