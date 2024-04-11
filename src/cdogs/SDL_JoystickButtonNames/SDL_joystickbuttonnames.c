@@ -72,14 +72,23 @@ void SDLJBN_Quit(void)
 
 int SDLJBN_AddMappingsFromFile(const char *file)
 {
-	int ret = 0;
-	char *s = NULL;
-
-	SDLJBN_Init();
 	SDL_RWops *rwops = SDL_RWFromFile(file, "r");
 	if (rwops == NULL)
 	{
 		err = "Cannot open file";
+		return -1;
+	}
+	return SDLJBN_AddMappingsFromRW(rwops, 1);
+}
+
+int SDLJBN_AddMappingsFromRW(SDL_RWops *rwops, int freerw)
+{
+	int ret = 0;
+	char *s = NULL;
+
+	SDLJBN_Init();
+	if (rwops == NULL)
+	{
 		ret = -1;
 		goto bail;
 	}
@@ -110,7 +119,7 @@ int SDLJBN_AddMappingsFromFile(const char *file)
 	ret = ReadMappingsString(s);
 
 bail:
-	if (rwops != NULL)
+	if (rwops != NULL && freerw)
 	{
 		SDL_RWclose(rwops);
 	}

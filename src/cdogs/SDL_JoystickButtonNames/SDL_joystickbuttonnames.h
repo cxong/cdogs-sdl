@@ -46,6 +46,13 @@ void SDLJBN_Quit(void);
 int SDLJBN_AddMappingsFromFile(const char *file);
 
 /**
+ *  Load a set of mappings from a SDL_RWops object
+ * 
+ * \return number of mappings added, -1 on error
+ */
+int SDLJBN_AddMappingsFromRW(SDL_RWops *rw, int freerw);
+
+/**
  * Get the button name and color for an SDL_GameControllerButton
  * Arguments can be set to NULL if they are not required
  * Use SDLJBN_GetError to get the error reason

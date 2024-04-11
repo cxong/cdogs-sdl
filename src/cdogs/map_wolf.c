@@ -1079,6 +1079,9 @@ static void LoadTile(
 		break;
 	case CWTILE_AREA:
 		break;
+	case CWTILE_BACKGROUND:
+		// TODO: implement
+		break;
 	case CWTILE_SECRET_EXIT: {
 		// Secret exits need an elevator tile on the left or right
 		const struct vec2i vLeft = svec2i(v.x - 1, v.y);
@@ -1869,7 +1872,9 @@ typedef enum
 	CHAR_UBERMUTANT,
 	CHAR_DEATH_KNIGHT,
 	CHAR_GHOST,
-	CHAR_ANGEL
+	CHAR_ANGEL,
+	CHAR_KANGAROO,
+	CHAR_ELEPHANT
 } WolfChar;
 
 static bool MakeWallWalkable(Mission *m, const struct vec2i v);
@@ -2267,6 +2272,12 @@ static void LoadEntity(
 		CArrayPushBack(&m->u.Static.Exits, &e);
 	}
 	break;
+	case CWENT_NEXT_LEVEL:
+		// TODO: implement
+		break;
+	case CWENT_SECRET_LEVEL:
+		// TODO: implement
+		break;
 	case CWENT_GHOST:
 		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_GHOST, false, bossObjIdx);
 		break;
@@ -2455,6 +2466,16 @@ static void LoadEntity(
 	case CWENT_PACMAN_GHOST_BLUE:
 		LoadChar(
 			m, v, DIRECTION_DOWN, (int)CHAR_PACMAN_GHOST_BLUE, false,
+			bossObjIdx);
+		break;
+	case CWENT_KERRY_KANGAROO:
+		// TODO: implement
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_KANGAROO, false,
+			bossObjIdx);
+		break;
+	case CWENT_ERNIE_ELEPHANT:
+		// TODO: implement
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_ELEPHANT, false,
 			bossObjIdx);
 		break;
 	default:
