@@ -2,8 +2,6 @@
 
 #include <c_array.h>
 
-#include <SDL_joystick.h>
-
 #include <utils.h>
 
 // Stubs
