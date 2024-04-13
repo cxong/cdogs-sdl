@@ -1,0 +1,22 @@
+---
+layout: post
+title: "C-Dogs 2.1.0 Released!"
+date: 2024-04-12
+categories: release
+---
+
+Here's a minor release of C-Dogs SDL!
+
+Not much to write about, this one is mostly bug fixes (there's quite a few so it's worth upgrading), but it does have one feature that I'm pretty pleased with: a [**pause menu with options**](https://github.com/cxong/cdogs-sdl/issues/284)!
+
+![Pause menu](https://github.com/cxong/cdogs-sdl/assets/1083215/75238423-03e3-477b-9df0-0c3effe1541c)
+
+Classic C-Dogs had an interesting way of pausing and exiting the game: press Esc once to pause, and press Esc again to quit (or press any other key to unpause). It has its perks, like being able to quit quickly by just mashing Esc, but to players not used to it, it's easy to get tripped up.
+
+So in addition to implementing a conventional pause menu, we've transplanted the options menu in it, which means you can change options - graphics, controls, almost everything - mid-game, and have them take effect immediately! This is a great quality of life feature and I'm sure it'll be used quite a lot by new players.
+
+Of course some options wouldn't be expected to apply properly (like changing player HP, that would probably require a level restart), nevertheless it should be a good feature overall. In the future we can add more to the pause menu, like mission briefing.
+
+Download free from itch.io: <https://congusbongus.itch.io/cdogs-sdl/purchase>
+
+Release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/2.1.0>
