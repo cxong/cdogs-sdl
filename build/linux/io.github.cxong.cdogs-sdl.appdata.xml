@@ -11,7 +11,7 @@
     <content_attribute id="social-chat">mild</content_attribute>
   </content_rating>
   <name>C-Dogs SDL</name>
-  <developer>
+  <developer id="@congusbongus@mastodon.gamedev.place">
     <name>congusbongus</name>
   </developer>
   <summary>Classic overhead run-and-gun game</summary>
