@@ -225,7 +225,8 @@ static void Display(HandleInputResult result)
 	}
 
 	FontStr(
-		"Press " KMOD_CMD_NAME "+E to edit characters", svec2i(20, h - 20 - FontH() * 2));
+		"Press " KMOD_CMD_NAME "+E to edit characters",
+		svec2i(20, h - 20 - FontH() * 2));
 	FontStr("Press F1 for help", svec2i(20, h - 20 - FontH()));
 
 	UIObjectDraw(
@@ -234,8 +235,7 @@ static void Display(HandleInputResult result)
 
 	if (result.WillDisplayAutomap && mission)
 	{
-		AutomapDraw(
-			gGraphicsDevice.gameWindow.renderer, AUTOMAP_FLAGS_SHOWALL, true);
+		AutomapDraw(&gGraphicsDevice, NULL, AUTOMAP_FLAGS_SHOWALL, true);
 	}
 	else
 	{
@@ -372,14 +372,13 @@ static void AdjustXC(int yc, int *xc)
 				*xc, 0, (int)mission->MapObjectDensities.size - 1);
 		}
 		break;
-			
+
 	case YC_PICKUPS:
-		 if (mission && mission->PickupCounts.size > 0)
-		 {
-			 *xc = CLAMP_OPPOSITE(
-				 *xc, 0, (int)mission->PickupCounts.size - 1);
-		 }
-		 break;
+		if (mission && mission->PickupCounts.size > 0)
+		{
+			*xc = CLAMP_OPPOSITE(*xc, 0, (int)mission->PickupCounts.size - 1);
+		}
+		break;
 
 	default:
 		break;
@@ -491,7 +490,7 @@ static void Save(void)
 	char dirname[CDOGS_PATH_MAX];
 	PathGetDirname(dirname, lastFile);
 	char buf[CDOGS_PATH_MAX];
-	if (TrySaveFile(buf, &gEventHandlers,dirname, PathGetBasename(lastFile)))
+	if (TrySaveFile(buf, &gEventHandlers, dirname, PathGetBasename(lastFile)))
 	{
 		WindowContextPreRender(&gGraphicsDevice.gameWindow);
 		ClearScreen(&gGraphicsDevice);
@@ -524,19 +523,20 @@ static void HelpScreen(void)
 		"Common commands\n"
 		"===============\n"
 		"left/right click, page up/down: Increase/decrease value\n"
-		"shift + left/right click:          Increase/decrease number of items\n"
+		"shift + left/right click:          Increase/decrease number of "
+		"items\n"
 		"insert:                         Add new item\n"
 		"delete:                         Delete selected item\n"
 		"arrow keys:                     Move camera\n"
 		"\n"
 		"Other commands\n"
 		"==============\n"
-		"Escape:                         Back or quit\n"
-		KMOD_CMD_NAME "+E:                         Go to character editor\n"
-		KMOD_CMD_NAME"+N:                         New mission\n"
-		KMOD_CMD_NAME"+O:                         Open file\n"
-		KMOD_CMD_NAME"+S:                         Save file\n"
-		KMOD_CMD_NAME"+X, C, V:                   Cut/copy/paste\n"
+		"Escape:                         Back or quit\n" KMOD_CMD_NAME
+		"+E:                         Go to character editor\n" KMOD_CMD_NAME
+		"+N:                         New mission\n" KMOD_CMD_NAME
+		"+O:                         Open file\n" KMOD_CMD_NAME
+		"+S:                         Save file\n" KMOD_CMD_NAME
+		"+X, C, V:                   Cut/copy/paste\n"
 		"tab:                              Preview automap\n"
 		"F1:                               This screen\n";
 	WindowContextPreRender(&gGraphicsDevice.gameWindow);
@@ -574,7 +574,7 @@ static void Delete(int xc, int yc)
 	case YC_ITEMS:
 		DeleteItem(mission, xc);
 		break;
-			
+
 	case YC_PICKUPS:
 		DeletePickup(mission, xc);
 		break;
@@ -607,7 +607,10 @@ static void Delete(int xc, int yc)
 	Setup(changedMission);
 }
 
-static UIObject *OnUIInput(HandleInputResult *result, const EventHandlers *event, const int m, int *xc, int *yc, int *xcOld, int *ycOld, SDL_Scancode *sc, const Mission *mission);
+static UIObject *OnUIInput(
+	HandleInputResult *result, const EventHandlers *event, const int m,
+	int *xc, int *yc, int *xcOld, int *ycOld, SDL_Scancode *sc,
+	const Mission *mission);
 static void InputInsert(int *xc, const int yc, Mission *mission);
 static void InputDelete(const int xc, const int yc);
 static HandleInputResult HandleInput(
@@ -667,7 +670,8 @@ static HandleInputResult HandleInput(
 	if (m && (m == SDL_BUTTON_LEFT || m == SDL_BUTTON_RIGHT ||
 			  MouseWheel(&gEventHandlers.mouse).y != 0))
 	{
-		o = OnUIInput(&result, &gEventHandlers, m, xc, yc, xcOld, ycOld, &sc, mission);
+		o = OnUIInput(
+			&result, &gEventHandlers, m, xc, yc, xcOld, ycOld, &sc, mission);
 	}
 	if (!brush.IsActive)
 	{
@@ -823,7 +827,9 @@ static HandleInputResult HandleInput(
 		case 'c':
 			MissionTerminate(scrap);
 			MissionCopy(scrap, mission);
-			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Editor", "Mission copied", gGraphicsDevice.gameWindow.window);
+			SDL_ShowSimpleMessageBox(
+				SDL_MESSAGEBOX_INFORMATION, "Editor", "Mission copied",
+				gGraphicsDevice.gameWindow.window);
 			break;
 
 		case 'v':
@@ -929,7 +935,9 @@ static HandleInputResult HandleInput(
 
 		case SDL_SCANCODE_GRAVE:
 			ToggleCollapse(sObjs->Data, 0);
-			OnUIInput(&result, &gEventHandlers, m, xc, yc, xcOld, ycOld, &sc, mission);
+			OnUIInput(
+				&result, &gEventHandlers, m, xc, yc, xcOld, ycOld, &sc,
+				mission);
 			break;
 
 		case SDL_SCANCODE_BACKSPACE:
@@ -949,7 +957,7 @@ static HandleInputResult HandleInput(
 				InputDelete(*xc, *yc);
 			}
 			break;
-		
+
 		case SDL_SCANCODE_TAB:
 			result.WillDisplayAutomap = true;
 			break;
@@ -1016,7 +1024,10 @@ static HandleInputResult HandleInput(
 	}
 	return result;
 }
-UIObject *OnUIInput(HandleInputResult *result, const EventHandlers *event, const int m, int *xc, int *yc, int *xcOld, int *ycOld, SDL_Scancode *sc, const Mission *mission)
+UIObject *OnUIInput(
+	HandleInputResult *result, const EventHandlers *event, const int m,
+	int *xc, int *yc, int *xcOld, int *ycOld, SDL_Scancode *sc,
+	const Mission *mission)
 {
 	result->Redraw = true;
 	UIObject *o = NULL;
@@ -1123,15 +1134,15 @@ static void InputInsert(int *xc, const int yc, Mission *mission)
 		*xc = (int)(mission->MapObjectDensities.size - 1);
 	}
 	break;
-			
+
 	case YC_PICKUPS: {
 		PickupCount pc;
 		pc.P = PickupClassGetById(&gPickupClasses, 0);
 		pc.Count = 1;
-		 CArrayPushBack(&mission->PickupCounts, &pc);
-		 *xc = (int)(mission->PickupCounts.size - 1);
-	 }
-	 break;
+		CArrayPushBack(&mission->PickupCounts, &pc);
+		*xc = (int)(mission->PickupCounts.size - 1);
+	}
+	break;
 
 	default:
 		if (yc >= YC_OBJECTIVES)
@@ -1218,9 +1229,10 @@ int main(int argc, char *argv[])
 
 	// Print command line
 	char buf[CDOGS_PATH_MAX];
-	struct option longopts[] = {{"log", required_argument, NULL, 1000},
-								{"logfile", required_argument, NULL, 1001},
-								{0, 0, NULL, 0}};
+	struct option longopts[] = {
+		{"log", required_argument, NULL, 1000},
+		{"logfile", required_argument, NULL, 1001},
+		{0, 0, NULL, 0}};
 	int opt = 0;
 	int idx = 0;
 	while ((opt = getopt_long(argc, argv, "\0:\0", longopts, &idx)) != -1)

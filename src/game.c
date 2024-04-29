@@ -665,9 +665,7 @@ static void RunGameDraw(GameLoopData *data)
 	// Draw automap if enabled
 	if (rData->isMap)
 	{
-		AutomapDraw(
-			gGraphicsDevice.gameWindow.renderer, 0,
-			rData->Camera.HUD.showExit);
+		AutomapDraw(&gGraphicsDevice, NULL, 0, rData->Camera.HUD.showExit);
 	}
 	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.hud);
 
@@ -677,7 +675,7 @@ static void RunGameDraw(GameLoopData *data)
 		if (IsAutoMapEnabled(gCampaign.Entry.Mode))
 		{
 			AutomapDraw(
-				gGraphicsDevice.secondWindow.renderer, 0,
+				&gGraphicsDevice, gGraphicsDevice.secondWindow.renderer, 0,
 				rData->Camera.HUD.showExit);
 		}
 		BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.hud2);

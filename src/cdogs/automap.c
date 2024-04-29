@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2014, 2016, 2018-2020 Cong Xu
+	Copyright (c) 2013-2014, 2016, 2018-2020, 2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -64,7 +64,7 @@
 #include "pic_manager.h"
 #include "pickup.h"
 
-#define MAP_FACTOR 2
+#define MAP_SCALE_DEFAULT 2
 #define MASK_ALPHA 128;
 
 color_t colorWall = {72, 152, 72, 255};
@@ -286,35 +286,47 @@ static void DrawThing(
 	}
 }
 
-void AutomapDraw(SDL_Renderer *renderer, const int flags, const bool showExit)
+void AutomapDraw(
+	GraphicsDevice *g, SDL_Renderer *renderer, const int flags,
+	const bool showExit)
 {
-	struct vec2i mapCenter = svec2i(
-		gGraphicsDevice.cachedConfig.Res.x / 2,
-		gGraphicsDevice.cachedConfig.Res.y / 2);
+	if (renderer == NULL)
+	{
+		renderer = g->gameWindow.renderer;
+	}
+	struct vec2i mapCenter =
+		svec2i(g->cachedConfig.Res.x / 2, g->cachedConfig.Res.y / 2);
 	struct vec2i centerOn = svec2i(gMap.Size.x / 2, gMap.Size.y / 2);
+	// Set the map scale to fit on screen
+	int mapScale = MAP_SCALE_DEFAULT;
+	// TODO: allow fractional scales for really big maps / really small screens
+	if (gMap.Size.x * mapScale > g->cachedConfig.Res.x ||
+		gMap.Size.y * mapScale > g->cachedConfig.Res.y)
+	{
+		mapScale--;
+	}
 	struct vec2i pos =
-		svec2i_add(mapCenter, svec2i_scale(centerOn, -MAP_FACTOR));
+		svec2i_add(mapCenter, svec2i_scale(centerOn, -(float)mapScale));
 
 	// Draw faded green overlay
 	const color_t mask = {0, 128, 0, 128};
-	DrawRectangle(
-		&gGraphicsDevice, svec2i_zero(), gGraphicsDevice.cachedConfig.Res,
+	DrawRectangle(g, svec2i_zero(), g->cachedConfig.Res,
 		mask, true);
 
-	DrawMap(&gMap, mapCenter, centerOn, gMap.Size, MAP_FACTOR, flags);
-	DrawObjectivesAndKeys(&gMap, pos, MAP_FACTOR, flags);
+	DrawMap(&gMap, mapCenter, centerOn, gMap.Size, mapScale, flags);
+	DrawObjectivesAndKeys(&gMap, pos, mapScale, flags);
 
 	CA_FOREACH(const PlayerData, p, gPlayerDatas)
 	if (!IsPlayerAlive(p))
 	{
 		continue;
 	}
-	DisplayPlayer(renderer, ActorGetByUID(p->ActorUID), pos, MAP_FACTOR);
+	DisplayPlayer(renderer, ActorGetByUID(p->ActorUID), pos, mapScale);
 	CA_FOREACH_END()
 
 	if (showExit)
 	{
-		DisplayExits(&gMap, pos, MAP_FACTOR, flags);
+		DisplayExits(&gMap, pos, mapScale, flags);
 	}
 	DisplaySummary();
 }
