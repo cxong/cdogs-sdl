@@ -90,7 +90,7 @@ jobs:
       if: matrix.os == 'macos-latest'
       run: |
         python3 -m pip install protobuf --break-system-packages
-        pip3 install --upgrade protobuf
+        pip3 install --upgrade protobuf --break-system-packages
         build/macosx/install-sdl2.sh
 
     - name: Install dependencies (Windows)
