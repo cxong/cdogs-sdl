@@ -89,7 +89,7 @@ jobs:
     - name: Install packages (macOS)
       if: matrix.os == 'macos-latest'
       run: |
-        python3 -m pip install protobuf
+        python3 -m pip install protobuf --break-system-packages
         pip3 install --upgrade protobuf
         build/macosx/install-sdl2.sh
 
