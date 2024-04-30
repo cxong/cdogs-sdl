@@ -272,8 +272,7 @@ static void MainMenuDraw(GameLoopData *data)
 	}
 	MainMenuData *mData = data->Data;
 	MenuDraw(&mData->ms);
-	const struct vec2 pos =
-		Vec2CenterOfTile(svec2i_scale_divide(gMap.Size, 2));
+	const struct vec2 pos = svec2((gMap.Size.x + 1) * TILE_WIDTH * 0.5f, (gMap.Size.y + 1) * TILE_HEIGHT * 0.5f);
 	DrawBufferArgs args;
 	memset(&args, 0, sizeof args);
 	GrafxDrawBackground(

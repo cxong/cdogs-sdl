@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2017, 2019-2021, 2023 Cong Xu
+	Copyright (c) 2013-2017, 2019-2021, 2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -36,10 +36,8 @@
 // Random mission parameters
 #define NUM_MISSIONS 3
 QuickPlayQuantity missionSizes[NUM_MISSIONS] = {
-	QUICKPLAY_QUANTITY_SMALL,
-	QUICKPLAY_QUANTITY_MEDIUM,
-	QUICKPLAY_QUANTITY_LARGE
-};
+	QUICKPLAY_QUANTITY_SMALL, QUICKPLAY_QUANTITY_MEDIUM,
+	QUICKPLAY_QUANTITY_LARGE};
 const char *missionTitles[NUM_MISSIONS] = {
 	"Rumble in the Cyberpen",
 	"Revenge of the Cyberzombies",
@@ -136,8 +134,8 @@ static int GenerateQuickPlayParam(
 	}
 }
 static float GenerateQuickPlayParamFloat(
-	QuickPlayQuantity qty,
-	const float low, const float medium, const float high, const float max)
+	QuickPlayQuantity qty, const float low, const float medium,
+	const float high, const float max)
 {
 	switch (qty)
 	{
@@ -155,11 +153,12 @@ static float GenerateQuickPlayParamFloat(
 	}
 }
 
-static void SetupQuickPlayEnemy(Character *enemy, const WeaponClass *wc, const bool isBg)
+static void SetupQuickPlayEnemy(
+	Character *enemy, const WeaponClass *wc, const bool isBg)
 {
 	CharacterShuffleAppearance(enemy);
 	enemy->Gun = wc;
-	enemy->speed =GenerateQuickPlayParamFloat(
+	enemy->speed = GenerateQuickPlayParamFloat(
 		ConfigGetEnum(&gConfig, "QuickPlay.EnemySpeed"), 0.25f, 0.4f, 0.7f, 1);
 	if (WeaponClassIsShortRange(enemy->Gun))
 	{
@@ -201,7 +200,8 @@ static void SetupQuickPlayEnemy(Character *enemy, const WeaponClass *wc, const b
 	}
 }
 
-static void SetupQuickPlayEnemies(const int numEnemies, CharacterStore *store, const bool isBg)
+static void SetupQuickPlayEnemies(
+	const int numEnemies, CharacterStore *store, const bool isBg)
 {
 	for (int i = 0; i < numEnemies; i++)
 	{
@@ -210,8 +210,7 @@ static void SetupQuickPlayEnemies(const int numEnemies, CharacterStore *store, c
 		for (;;)
 		{
 			wc = CArrayGet(
-				&gWeaponClasses.Guns,
-				rand() % (int)gWeaponClasses.Guns.size);
+				&gWeaponClasses.Guns, rand() % (int)gWeaponClasses.Guns.size);
 			if (!wc->IsRealGun)
 			{
 				continue;
@@ -248,7 +247,8 @@ static void SetupQuickPlayEnemies(const int numEnemies, CharacterStore *store, c
 }
 
 static void AddMission(
-	CArray *missions, PicManager *pm, const CharacterStore *cs, const int idx, const bool isBg);
+	CArray *missions, PicManager *pm, const CharacterStore *cs, const int idx,
+	const bool isBg);
 static void RandomMissionTileClasses(MissionTileClasses *mtc, PicManager *pm);
 static RoomParams RandomRoomParams(void);
 static color_t RandomBGColor(void);
@@ -270,12 +270,14 @@ void SetupQuickPlayCampaign(CampaignSetting *setting, const bool isBg)
 	setting->DoorOpenTicks = FPS_FRAMELIMIT;
 	for (int i = 0; i < NUM_MISSIONS; i++)
 	{
-		AddMission(&setting->Missions, &gPicManager, &setting->characters, i, isBg);
+		AddMission(
+			&setting->Missions, &gPicManager, &setting->characters, i, isBg);
 	}
 }
 static void RandomStyle(char *style, const CArray *styleNames);
 static void AddMission(
-	CArray *missions, PicManager *pm, const CharacterStore *cs, const int idx, const bool isBg)
+	CArray *missions, PicManager *pm, const CharacterStore *cs, const int idx,
+	const bool isBg)
 {
 	Mission m;
 	MissionInit(&m);
@@ -283,7 +285,19 @@ static void AddMission(
 	CSTRDUP(m.Description, missionDescriptions[idx]);
 	RandomStyle(m.ExitStyle, &pm->exitStyleNames);
 	RandomStyle(m.KeyStyle, &pm->keyStyleNames);
-	m.Size = GenerateQuickPlayMapSize(missionSizes[idx]);
+	if (isBg)
+	{
+		// Make sure map is big enough to cover window
+		m.Size = svec2i_add(
+			svec2i_divide(
+				gGraphicsDevice.cachedConfig.Res,
+				svec2i(TILE_WIDTH, TILE_HEIGHT)),
+			svec2i_one());
+	}
+	else
+	{
+		m.Size = GenerateQuickPlayMapSize(missionSizes[idx]);
+	}
 	do
 	{
 		m.Type = (MapType)(rand() % MAPTYPE_COUNT);
@@ -342,12 +356,13 @@ static void AddMission(
 		break;
 	}
 
-	for (int i = 0; i < MIN(missionNumEnemies[idx], (int)cs->OtherChars.size); i++)
+	for (int i = 0; i < MIN(missionNumEnemies[idx], (int)cs->OtherChars.size);
+		 i++)
 	{
 		// TODO: select enemies
 		CArrayPushBack(&m.Enemies, &i);
 	}
-	
+
 	int c = 0;
 
 	if (!isBg)
@@ -357,7 +372,8 @@ static void AddMission(
 		CSTRDUP(o.Description, "Kill the enemies");
 		o.Type = OBJECTIVE_KILL;
 		o.u.Index = 0;
-		o.Count = RAND_INT(missionKillCountMin[idx], missionKillCountMin[idx] * 3 / 2);
+		o.Count = RAND_INT(
+			missionKillCountMin[idx], missionKillCountMin[idx] * 3 / 2);
 		o.Required = RAND_INT(MAX(1, o.Count / 2), o.Count);
 		o.Flags = OBJECTIVE_POSKNOWN;
 		CArrayPushBack(&m.Objectives, &o);
@@ -382,10 +398,10 @@ static void AddMission(
 	}
 	m.EnemyDensity = 10 / (int)m.Enemies.size;
 	CA_FOREACH(const WeaponClass, wc, gWeaponClasses.Guns)
-		if (wc->IsRealGun)
-		{
-			CArrayPushBack(&m.Weapons, &wc);
-		}
+	if (wc->IsRealGun)
+	{
+		CArrayPushBack(&m.Weapons, &wc);
+	}
 	CA_FOREACH_END()
 	m.WeaponPersist = true;
 
@@ -397,23 +413,22 @@ static void RandomMissionTileClasses(MissionTileClasses *mtc, PicManager *pm)
 	RandomStyle(style, &pm->wallStyleNames);
 	TileClassInit(
 		&mtc->Wall, pm, &gTileWall, style,
-		TileClassBaseStyleType(TILE_CLASS_WALL),
-		RandomBGColor(), RandomBGColor());
+		TileClassBaseStyleType(TILE_CLASS_WALL), RandomBGColor(),
+		RandomBGColor());
 	RandomStyle(style, &pm->tileStyleNames);
 	TileClassInit(
 		&mtc->Floor, pm, &gTileFloor, style,
-		TileClassBaseStyleType(TILE_CLASS_FLOOR),
-		RandomBGColor(), RandomBGColor());
+		TileClassBaseStyleType(TILE_CLASS_FLOOR), RandomBGColor(),
+		RandomBGColor());
 	RandomStyle(style, &pm->tileStyleNames);
 	TileClassInit(
 		&mtc->Room, pm, &gTileRoom, style,
-		TileClassBaseStyleType(TILE_CLASS_FLOOR),
-		RandomBGColor(), RandomBGColor());
+		TileClassBaseStyleType(TILE_CLASS_FLOOR), RandomBGColor(),
+		RandomBGColor());
 	RandomStyle(style, &pm->doorStyleNames);
 	TileClassInit(
 		&mtc->Door, pm, &gTileDoor, style,
-		TileClassBaseStyleType(TILE_CLASS_DOOR),
-		colorWhite, colorWhite);
+		TileClassBaseStyleType(TILE_CLASS_DOOR), colorWhite, colorWhite);
 }
 static RoomParams RandomRoomParams(void)
 {
@@ -438,7 +453,7 @@ static color_t RandomBGColor(void)
 {
 	color_t c;
 	c.r = rand() % 128;
-	c.g = rand() % 128; 
+	c.g = rand() % 128;
 	c.b = rand() % 128;
 	c.a = 255;
 	return c;

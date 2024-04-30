@@ -336,7 +336,6 @@ void LoopRunnerRun(LoopRunner *l)
 		}
 	}
 #endif
-	GameLoopOnExit(ctx.data);
 }
 static LoopRunParams LoopRunParamsNew(const GameLoopData *data)
 {
