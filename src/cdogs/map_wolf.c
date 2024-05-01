@@ -686,16 +686,24 @@ int MapWolfLoad(
 
 	char buf[CDOGS_PATH_MAX];
 	// Copy data from common campaign
-	switch (spearMission)
+	switch (map->type)
 	{
-	case 2:
-		GetDataFilePath(buf, WOLF_DATA_DIR "SD2data.cdogscpn");
-		break;
-	case 3:
-		GetDataFilePath(buf, WOLF_DATA_DIR "SD3data.cdogscpn");
+	case CWMAPTYPE_N3D:
+		GetDataFilePath(buf, WOLF_DATA_DIR "N3Ddata.cdogscpn");
 		break;
 	default:
-		GetDataFilePath(buf, WOLF_DATA_DIR "common.cdogscpn");
+		switch (spearMission)
+		{
+		case 2:
+			GetDataFilePath(buf, WOLF_DATA_DIR "SD2data.cdogscpn");
+			break;
+		case 3:
+			GetDataFilePath(buf, WOLF_DATA_DIR "SD3data.cdogscpn");
+			break;
+		default:
+			GetDataFilePath(buf, WOLF_DATA_DIR "common.cdogscpn");
+			break;
+		}
 		break;
 	}
 	CampaignSetting cCommon;
@@ -950,18 +958,39 @@ static void LoadMission(
 		int bossObjIdx = -1;
 		int spearObjIdx = -1;
 
-		const WeaponClass *wc = StrWeaponClass("Pistol");
+		const WeaponClass *wc;
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			wc = StrWeaponClass("Small Launcher");
+			break;
+		default:
+			wc = StrWeaponClass("Pistol");
+			break;
+		}
 		CArrayPushBack(&m.Weapons, &wc);
-		wc = StrWeaponClass("Knife");
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			wc = StrWeaponClass("Hand");
+			break;
+		default:
+			wc = StrWeaponClass("Knife");
+			break;
+		}
 		CArrayPushBack(&m.Weapons, &wc);
 		// Reset weapons at start of episodes
-		if (map->type != CWMAPTYPE_SOD)
+		switch (map->type)
 		{
-			m.WeaponPersist = (missionIndex % 10) != 0;
-		}
-		else
-		{
+		case CWMAPTYPE_SOD:
 			m.WeaponPersist = true;
+			break;
+		case CWMAPTYPE_N3D:
+			m.WeaponPersist = true;
+			break;
+		default:
+			m.WeaponPersist = (missionIndex % 10) != 0;
+			break;
 		}
 
 		m.Music.Type = MUSIC_SRC_CHUNK;
@@ -2044,12 +2073,30 @@ static void LoadEntity(
 			&m->u.Static, StrPickupClass("ammo_clip"), v);
 		break;
 	case CWENT_MACHINE_GUN:
-		MissionStaticTryAddPickup(
-			&m->u.Static, StrPickupClass("gun_Machine Gun"), v);
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			MissionStaticTryAddPickup(
+				&m->u.Static, StrPickupClass("gun_Large Launcher"), v);
+			break;
+		default:
+			MissionStaticTryAddPickup(
+				&m->u.Static, StrPickupClass("gun_Machine Gun"), v);
+			break;
+		}
 		break;
 	case CWENT_CHAIN_GUN:
-		MissionStaticTryAddPickup(
-			&m->u.Static, StrPickupClass("gun_Chain Gun"), v);
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			MissionStaticTryAddPickup(
+				&m->u.Static, StrPickupClass("gun_Super Feeder"), v);
+			break;
+		default:
+			MissionStaticTryAddPickup(
+				&m->u.Static, StrPickupClass("gun_Chain Gun"), v);
+			break;
+		}
 		break;
 	case CWENT_CROSS:
 		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("cross"), v);
@@ -2470,13 +2517,11 @@ static void LoadEntity(
 		break;
 	case CWENT_KERRY_KANGAROO:
 		// TODO: implement
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_KANGAROO, false,
-			bossObjIdx);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_KANGAROO, false, bossObjIdx);
 		break;
 	case CWENT_ERNIE_ELEPHANT:
 		// TODO: implement
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_ELEPHANT, false,
-			bossObjIdx);
+		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_ELEPHANT, false, bossObjIdx);
 		break;
 	default:
 		break;

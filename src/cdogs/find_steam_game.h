@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021 Cong
+Copyright (c) 2021-2024 Cong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -187,62 +187,75 @@ extern "C"
 			out[0] = '\0';
 		}
 #else
-		// Look at $HOME/.local/share/Steam/steamapps/common/
-		struct passwd *pw = getpwuid(getuid());
-		const char *homedir = pw->pw_dir;
-		sprintf(out, "%s/.local/share/Steam/steamapps/common/%s", homedir, name);
-		if (_fsg_dir_exists(out))
-		{
-			return;
-		}
+	// Look at $HOME/.local/share/Steam/steamapps/common/
+	struct passwd *pw = getpwuid(getuid());
+	const char *homedir = pw->pw_dir;
+#if defined(__APPLE__)
+	sprintf(
+		out, "%s/Library/Application Support/Steam/steamapps/common/%s",
+		homedir, name);
+#else
+	sprintf(out, "%s/.local/share/Steam/steamapps/common/%s", homedir, name);
+#endif
+	if (_fsg_dir_exists(out))
+	{
+		return;
+	}
 
-		// Try reading library paths described by libraryfolders.vdf
-		// TODO: steam installed at different location
-		char buf[_FSG_PATH_MAX];
-		const int ret = snprintf(
-			buf, _FSG_PATH_MAX,
-			"%s/.local/share/Steam/steamapps/libraryfolders.vdf", homedir);
-		if (ret >= 0)
+	// Try reading library paths described by libraryfolders.vdf
+	// TODO: steam installed at different location
+	char buf[_FSG_PATH_MAX];
+#if defined(__APPLE__)
+	const int ret = snprintf(
+		buf, _FSG_PATH_MAX,
+		"%s/Library/Application Support/Steam/steamapps/libraryfolders.vdf",
+		homedir);
+#else
+	const int ret = snprintf(
+		buf, _FSG_PATH_MAX,
+		"%s/.local/share/Steam/steamapps/libraryfolders.vdf", homedir);
+#endif
+	if (ret >= 0)
+	{
+		FILE *f = fopen(buf, "r");
+		if (f)
 		{
-			FILE *f = fopen(buf, "r");
-			if (f)
+			char line_buf[256];
+			while (fgets(line_buf, 256, f))
 			{
-				char line_buf[256];
-				while (fgets(line_buf, 256, f))
+				// Look for a line with "path"		"<library path>"
+				const char *path_p = strstr(line_buf, "\"path\"");
+				if (path_p == NULL)
 				{
-					// Look for a line with "path"		"<library path>"
-					const char *path_p = strstr(line_buf, "\"path\"");
-					if (path_p == NULL)
-					{
-						continue;
-					}
-					const char *value_start =
-						strchr(path_p + strlen("\"path\"") + 1, '"');
-					if (value_start == NULL)
-					{
-						continue;
-					}
-					value_start++;
-					const char *value_end = strchr(value_start, '"');
-					const char *value_p = value_start;
-					char *out_p = out;
-					while (value_p < value_end)
-					{
-						// Copy value to output
-						*out_p++ = *value_p++;
-					}
-					*out_p = '\0';
-					strcat(out, "/steamapps/common/");
-					strcat(out, name);
-					if (_fsg_dir_exists(out))
-					{
-						fclose(f);
-						return;
-					}
+					continue;
 				}
-				fclose(f);
+				const char *value_start =
+					strchr(path_p + strlen("\"path\"") + 1, '"');
+				if (value_start == NULL)
+				{
+					continue;
+				}
+				value_start++;
+				const char *value_end = strchr(value_start, '"');
+				const char *value_p = value_start;
+				char *out_p = out;
+				while (value_p < value_end)
+				{
+					// Copy value to output
+					*out_p++ = *value_p++;
+				}
+				*out_p = '\0';
+				strcat(out, "/steamapps/common/");
+				strcat(out, name);
+				if (_fsg_dir_exists(out))
+				{
+					fclose(f);
+					return;
+				}
 			}
+			fclose(f);
 		}
+	}
 #endif
 
 		out[0] = '\0';
@@ -252,12 +265,21 @@ extern "C"
 	void fsg_get_gog_game_path(char *out, const char *app_id)
 	{
 		out[0] = '\0';
-#if defined(_WIN64) || defined(_WIN32)
 		char buf[_FSG_PATH_MAX];
+#if defined(_WIN64) || defined(_WIN32)
 		sprintf(buf, "Software\\Wow6432Node\\GOG.com\\Games\\%s", app_id);
 		_fsg_query_reg_key(out, HKEY_LOCAL_MACHINE, buf, "Path");
+#elif __APPLE__
+	sprintf(buf, "/Applications/%s.app/Contents/Resources", app_id);
+	if (_fsg_dir_exists(buf))
+	{
+		strcpy(out, buf);
+		return;
+	}
+#else
+	(void)app_id;
+	(void)buf;
 #endif
-		(void)app_id;
 	}
 
 #ifdef __cplusplus
