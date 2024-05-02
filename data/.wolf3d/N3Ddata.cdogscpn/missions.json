@@ -994,18 +994,8 @@
 			"Positions": [[23, 1]]
 		},
 		{
-			"MapObject": "spotlight",
-			"Positions": [[25, 1],
-			[23, 1],
-			[30, 9]]
-		},
-		{
 			"MapObject": "chandelier",
 			"Positions": [[25, 1]]
-		},
-		{
-			"MapObject": "hanging_skeleton",
-			"Positions": [[27, 1]]
 		},
 		{
 			"MapObject": "shadow",
@@ -1040,10 +1030,6 @@
 			"Positions": [[23, 3]]
 		},
 		{
-			"MapObject": "urn",
-			"Positions": [[25, 3]]
-		},
-		{
 			"MapObject": "knives",
 			"Positions": [[27, 3]]
 		},
@@ -1074,10 +1060,6 @@
 		{
 			"MapObject": "bed",
 			"Positions": [[25, 5]]
-		},
-		{
-			"MapObject": "basket",
-			"Positions": [[27, 5]]
 		},
 		{
 			"MapObject": "gibs",
@@ -1120,20 +1102,12 @@
 			"Positions": [[19, 11]]
 		},
 		{
-			"MapObject": "pots",
-			"Positions": [[20, 11]]
-		},
-		{
 			"MapObject": "cowskull_pillar",
 			"Positions": [[21, 11]]
 		},
 		{
 			"MapObject": "stove",
 			"Positions": [[22, 11]]
-		},
-		{
-			"MapObject": "well_blood",
-			"Positions": [[23, 11]]
 		},
 		{
 			"MapObject": "spears",
@@ -1162,6 +1136,10 @@
 		{
 			"MapObject": "ghost_corpse",
 			"Positions": [[14, 21]]
+		},
+		{
+			"MapObject": "cage",
+			"Positions": [[25, 7]]
 		}],
 		"StaticCharacters": [{
 			"Index": 0,
@@ -1356,10 +1334,6 @@
 			"Positions": [[31, 1]]
 		},
 		{
-			"Pickup": "meal",
-			"Positions": [[29, 5]]
-		},
-		{
 			"Pickup": "health",
 			"Positions": [[31, 5]]
 		},
@@ -1378,10 +1352,6 @@
 		{
 			"Pickup": "cross",
 			"Positions": [[23, 7]]
-		},
-		{
-			"Pickup": "chalice",
-			"Positions": [[25, 7]]
 		},
 		{
 			"Pickup": "chest",

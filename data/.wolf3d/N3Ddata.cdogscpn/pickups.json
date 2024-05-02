@@ -14,10 +14,10 @@
       "Sound": "health_small"
     },
     {
-      "Name": "meal",
+      "Name": "small_bandage",
       "Pic": {
         "Type": "Normal",
-        "Pic": "meal"
+        "Pic": "bandage"
       },
       "Effects": [{
         "Type": "Health",
@@ -26,10 +26,10 @@
       "Sound": "health_small"
     },
     {
-      "Name": "medkit",
+      "Name": "large_bandage",
       "Pic": {
         "Type": "Normal",
-        "Pic": "health"
+        "Pic": "bandage_big"
       },
       "Effects": [{
         "Type": "Health",
@@ -69,10 +69,58 @@
       "Sound": "pickup_cross"
     },
     {
-      "Name": "chalice",
+      "Name": "grapes",
       "Pic": {
         "Type": "Normal",
-        "Pic": "chalice"
+        "Pic": "grapes"
+      },
+      "Effects": [{
+        "Type": "Score",
+        "Score": 500
+      }],
+      "Sound": "pickup_chalice"
+    },
+    {
+      "Name": "orange",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "orange"
+      },
+      "Effects": [{
+        "Type": "Score",
+        "Score": 500
+      }],
+      "Sound": "pickup_chalice"
+    },
+    {
+      "Name": "apple",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "apple"
+      },
+      "Effects": [{
+        "Type": "Score",
+        "Score": 500
+      }],
+      "Sound": "pickup_chalice"
+    },
+    {
+      "Name": "banana",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "banana"
+      },
+      "Effects": [{
+        "Type": "Score",
+        "Score": 500
+      }],
+      "Sound": "pickup_chalice"
+    },
+    {
+      "Name": "scroll",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "scroll"
       },
       "Effects": [{
         "Type": "Score",

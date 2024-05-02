@@ -13,14 +13,13 @@
       "Flags": ["Inside", "NoWalls"]
     },
     {
-      "Name": "hanging_skeleton",
+      "Name": "pillar2",
       "Pic": {
         "Type": "Normal",
-        "Pic": "hanging_skeleton"
+        "Pic": "pillar2"
       },
-      "Offset": [-5, -26],
-      "Health": 40,
-      "Flags": ["Inside", "NoWalls"]
+      "Health": 80,
+      "Flags": ["Inside", "OneOrMoreWalls"]
     },
     {
       "Name": "pillar",
@@ -29,7 +28,7 @@
         "Pic": "pillar"
       },
       "Health": 80,
-      "Flags": ["Inside", "NoWalls"]
+      "Flags": ["Inside", "OneOrMoreWalls"]
     },
     {
       "Name": "pillar_brown",
@@ -73,17 +72,6 @@
       "Flags": ["NoWalls"]
     },
     {
-      "Name": "urn",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "urn"
-      },
-      "Size": [10, 8],
-      "Offset": [-5, -8],
-      "Health": 30,
-      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
-    },
-    {
       "Name": "knives",
       "Pic": {
         "Type": "Normal",
@@ -94,14 +82,14 @@
       "Flags": ["Inside", "OneOrMoreWalls"]
     },
     {
-      "Name": "pots",
+      "Name": "beam",
       "Pic": {
         "Type": "Normal",
-        "Pic": "pots"
+        "Pic": "beam"
       },
       "Offset": [-8, -13],
       "Health": 0,
-      "Flags": ["Inside", "OneOrMoreWalls"]
+      "Flags": ["Inside"]
     },
     {
       "Name": "gibbet_bloody",
@@ -154,17 +142,6 @@
       "Flags": ["Inside", "NoWalls"]
     },
     {
-      "Name": "basket",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "basket"
-      },
-      "Size": [6, 6],
-      "Offset": [-3, -8],
-      "Health": 0,
-      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
-    },
-    {
       "Name": "well",
       "Pic": {
         "Type": "Normal",
@@ -180,16 +157,16 @@
         "Pic": "well_water"
       },
       "Health": 80,
-      "Flags": ["Outside", "NoWalls"]
+      "Flags": ["Inside", "OneOrMoreWalls"]
     },
     {
-      "Name": "well_blood",
+      "Name": "well_feed",
       "Pic": {
         "Type": "Normal",
-        "Pic": "well_blood"
+        "Pic": "well_feed"
       },
       "Health": 80,
-      "Flags": ["Outside", "NoWalls"]
+      "Flags": ["Inside", "OneOrMoreWalls"]
     },
     {
       "Name": "pool_blood",
@@ -233,6 +210,15 @@
       "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
     },
     {
+      "Name": "cage",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "cage"
+      },
+      "Health": 100,
+      "Flags": ["Inside", "OneOrMoreWalls"]
+    },
+    {
       "Name": "truck",
       "Pic": {
         "Type": "Normal",
@@ -258,16 +244,6 @@
       },
       "Health": 0,
       "DrawBelow": true
-    },
-    {
-      "Name": "spotlight",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "spotlight"
-      },
-      "Health": 0,
-      "DrawBelow": true,
-      "Flags": ["Inside", "NoWalls"]
     },
     {
       "Name": "shadow",
