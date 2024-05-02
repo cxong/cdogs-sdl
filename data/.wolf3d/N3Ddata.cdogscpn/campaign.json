@@ -4,9 +4,14 @@
 	"Author": "Wisdom Tree",
 	"Description": "",
 	"Ammo": true,
-	"WeaponPersist": true,
 	"SkipWeaponMenu": true,
+	"BuyAndSell": false,
 	"RandomPickups": false,
 	"DoorOpenTicks": 210,
+	"Lives": 0,
+	"MaxLives": 0,
+	"PlayerHP": 0,
+	"PlayerMaxHP": 0,
+	"PlayerExcessHP": 0,
 	"Missions": 1
 }

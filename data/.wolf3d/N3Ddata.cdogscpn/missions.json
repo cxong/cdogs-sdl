@@ -11,32 +11,35 @@
 		"Enemies": [],
 		"SpecialChars": [],
 		"MapObjectDensities": [],
+		"PickupCounts": [],
 		"EnemyDensity": 0,
-		"Weapons": [],
+		"Weapons": ["Hand"],
 		"WeaponPersist": false,
 		"SkipDebrief": false,
 		"TileClasses": {
 			"0": {
 				"Name": "tile",
 				"Type": "Floor",
-				"Style": "flat",
-				"Mask": "cbcbcbff",
+				"Style": "wood",
+				"Mask": "bd7925ff",
 				"MaskAlt": "808080ff",
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"1": {
 				"Name": "door",
 				"Type": "Door",
-				"Style": "prison",
-				"Mask": "00ffffff",
+				"Style": "dungeon2",
+				"Mask": "f0972cff",
 				"MaskAlt": "ffe72aff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": true
+				"IsRoom": true,
+				"DamageBullet": ""
 			},
 			"10": {
 				"Name": "wall",
@@ -47,7 +50,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"11": {
 				"Name": "wall",
@@ -58,7 +62,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"12": {
 				"Name": "wall",
@@ -69,7 +74,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"13": {
 				"Name": "wall",
@@ -80,7 +86,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"14": {
 				"Name": "wall",
@@ -91,7 +98,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"15": {
 				"Name": "wall",
@@ -102,7 +110,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"16": {
 				"Name": "wall",
@@ -113,7 +122,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"17": {
 				"Name": "wall",
@@ -124,7 +134,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"18": {
 				"Name": "wall",
@@ -135,7 +146,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"19": {
 				"Name": "wall",
@@ -146,7 +158,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"2": {
 				"Name": "door",
@@ -157,7 +170,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": true
+				"IsRoom": true,
+				"DamageBullet": ""
 			},
 			"20": {
 				"Name": "wall",
@@ -168,7 +182,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"21": {
 				"Name": "wall",
@@ -179,7 +194,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"22": {
 				"Name": "wall",
@@ -190,7 +206,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"23": {
 				"Name": "wall",
@@ -201,7 +218,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"24": {
 				"Name": "wall",
@@ -212,7 +230,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"25": {
 				"Name": "wall",
@@ -223,7 +242,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"26": {
 				"Name": "wall",
@@ -234,7 +254,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"27": {
 				"Name": "wall",
@@ -245,7 +266,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"28": {
 				"Name": "wall",
@@ -256,7 +278,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"29": {
 				"Name": "wall",
@@ -267,7 +290,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"3": {
 				"Name": "wall",
@@ -278,7 +302,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"30": {
 				"Name": "wall",
@@ -289,7 +314,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"31": {
 				"Name": "wall",
@@ -300,7 +326,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"32": {
 				"Name": "wall",
@@ -311,7 +338,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"33": {
 				"Name": "wall",
@@ -322,7 +350,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"34": {
 				"Name": "wall",
@@ -333,7 +362,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"35": {
 				"Name": "wall",
@@ -344,7 +374,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"36": {
 				"Name": "wall",
@@ -355,7 +386,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"37": {
 				"Name": "wall",
@@ -366,7 +398,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"38": {
 				"Name": "wall",
@@ -377,7 +410,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"39": {
 				"Name": "wall",
@@ -388,7 +422,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"4": {
 				"Name": "wall",
@@ -399,7 +434,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"40": {
 				"Name": "wall",
@@ -410,7 +446,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"41": {
 				"Name": "wall",
@@ -421,7 +458,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"42": {
 				"Name": "wall",
@@ -432,7 +470,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"43": {
 				"Name": "wall",
@@ -443,7 +482,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"44": {
 				"Name": "wall",
@@ -454,7 +494,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"45": {
 				"Name": "wall",
@@ -465,7 +506,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"46": {
 				"Name": "wall",
@@ -476,7 +518,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"47": {
 				"Name": "wall",
@@ -487,7 +530,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"48": {
 				"Name": "wall",
@@ -498,7 +542,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"49": {
 				"Name": "wall",
@@ -509,7 +554,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"5": {
 				"Name": "wall",
@@ -520,7 +566,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"50": {
 				"Name": "wall",
@@ -531,7 +578,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"51": {
 				"Name": "wall",
@@ -542,7 +590,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"52": {
 				"Name": "wall",
@@ -553,7 +602,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"53": {
 				"Name": "wall",
@@ -564,7 +614,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"54": {
 				"Name": "wall",
@@ -575,7 +626,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"55": {
 				"Name": "wall",
@@ -586,7 +638,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"56": {
 				"Name": "wall",
@@ -597,7 +650,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"57": {
 				"Name": "wall",
@@ -608,7 +662,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"58": {
 				"Name": "wall",
@@ -619,7 +674,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"59": {
 				"Name": "wall",
@@ -630,7 +686,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"6": {
 				"Name": "wall",
@@ -641,7 +698,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"60": {
 				"Name": "wall",
@@ -652,7 +710,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"61": {
 				"Name": "wall",
@@ -663,7 +722,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"62": {
 				"Name": "wall",
@@ -674,7 +734,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"63": {
 				"Name": "wall",
@@ -685,7 +746,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"64": {
 				"Name": "wall",
@@ -696,7 +758,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"65": {
 				"Name": "wall",
@@ -707,7 +770,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"7": {
 				"Name": "wall",
@@ -718,7 +782,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"8": {
 				"Name": "wall",
@@ -729,7 +794,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"9": {
 				"Name": "wall",
@@ -740,7 +806,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			}
 		},
 		"Tiles": ["0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
