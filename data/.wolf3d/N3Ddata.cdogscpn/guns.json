@@ -23,8 +23,7 @@
       "Sound": "small_feeder",
       "SwitchSound": "pistol_switch",
       "Recoil": 0.1,
-      "Brass": "brass",
-      "Ammo": "Ammo"
+      "Ammo": "Feed"
     },
     {
       "Pic": "smg",
@@ -38,8 +37,7 @@
       "Sound": "large_feeder",
       "SwitchSound": "machine_gun_switch",
       "Recoil": 0.17,
-      "Brass": "brass",
-      "Ammo": "Ammo"
+      "Ammo": "Feed"
     },
     {
       "Pic": "chaingun",
@@ -51,21 +49,17 @@
       "Sound": "super_feeder",
       "SwitchSound": "chaingun_pickup",
       "Recoil": 0.23,
-      "Brass": "brass",
-      "Ammo": "Ammo"
+      "Ammo": "Feed"
     },
     {
       "Pic": "pistol",
-      "Name": "Guard Pistol",
-      "Icon": "pistol",
+      "Name": "Sheep Spit",
       "Bullet": "bullet_enemy",
       "Cost": 1,
       "Lock": 70,
-      "Sound": "pistol_guard",
-      "SwitchSound": "pistol_switch",
+      "Sound": "spit",
       "Recoil": 0.3,
-      "Brass": "brass",
-      "Ammo": "Ammo",
+      "Ammo": "Feed",
       "CanDrop": false
     },
     {
@@ -78,8 +72,7 @@
       "Lock": 70,
       "Sound": "machine_gun_burst",
       "Recoil": 0.3,
-      "Brass": "brass",
-      "Ammo": "Ammo",
+      "Ammo": "Feed",
       "CanDrop": false
     },
     {
@@ -88,8 +81,7 @@
       "Bullet": "bullet_boss",
       "Lock": 70,
       "Sound": "dual_chain_gun",
-      "Recoil": 0.3,
-      "Brass": "brass"
+      "Recoil": 0.3
     },
     {
       "Name": "Dual Chain Gun",
@@ -187,8 +179,7 @@
       "Bullet": "bullet_boss",
       "Lock": 70,
       "Sound": "",
-      "Recoil": 0.3,
-      "Brass": "brass"
+      "Recoil": 0.3
     },
     {
       "Pic": "quad_chaingun",
@@ -198,8 +189,7 @@
       "Sound": "dual_chain_gun",
       "SpreadCount": 2,
       "Recoil": 0.3,
-      "MuzzleHeight": 12,
-      "Brass": "brass"
+      "MuzzleHeight": 12
     },
     {
       "Pic": "quad_chaingun",
@@ -209,8 +199,7 @@
       "Sound": "",
       "SpreadCount": 2,
       "Recoil": 0.3,
-      "MuzzleHeight": 12,
-      "Brass": "brass"
+      "MuzzleHeight": 12
     },
     {
       "Pic": "chaingun",
@@ -218,8 +207,7 @@
       "Bullets": ["bullet_boss", "rocket"],
       "Lock": 70,
       "Sound": "knight_rocket",
-      "Recoil": 0.3,
-      "Brass": "brass"
+      "Recoil": 0.3
     },
     {
       "Pic": "chaingun",
@@ -227,8 +215,7 @@
       "Bullets": ["bullet_boss", "rocket"],
       "Lock": 70,
       "Sound": "dual_chaingun",
-      "Recoil": 0.3,
-      "Brass": "brass"
+      "Recoil": 0.3
     }
   ]
 }

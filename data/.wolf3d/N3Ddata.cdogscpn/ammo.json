@@ -2,14 +2,14 @@
   "Version": 2,
   "Ammo": [
     {
-      "Name": "Ammo",
+      "Name": "Feed",
       "Pic": {
         "Type": "Normal",
         "Pic": "ammo_clip"
       },
       "Sound": "ammo_pickup",
-      "Amount": 4,
-      "Max": 99
+      "Amount": 5,
+      "Max": 299
     }
   ]
 }

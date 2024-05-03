@@ -48,7 +48,7 @@
         "Health": 200
       }, {
         "Type": "Ammo",
-        "Ammo": "Ammo",
+        "Ammo": "Feed",
         "Amount": 25
       }, {
         "Type": "Lives",
@@ -124,7 +124,14 @@
       },
       "Effects": [{
         "Type": "Score",
-        "Score": 500
+        "Score": 1000
+      }, {
+        "Type": "Health",
+        "Health": 25
+      }, {
+        "Type": "Ammo",
+        "Ammo": "Feed",
+        "Amount": 10
       }],
       "Sound": "pickup_chalice"
     },
@@ -160,8 +167,8 @@
       },
       "Effects": [{
         "Type": "Ammo",
-        "Ammo": "Ammo",
-        "Amount": 8
+        "Ammo": "Feed",
+        "Amount": 5
       }],
       "Sound": "ammo_pickup"
     },
@@ -173,7 +180,7 @@
       },
       "Effects": [{
         "Type": "Ammo",
-        "Ammo": "Ammo",
+        "Ammo": "Feed",
         "Amount": 25
       }],
       "Sound": "ammo_box"
