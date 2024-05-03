@@ -5,7 +5,7 @@
       "Name": "Sheep",
       "HeadPics": {
         "Type": "Directional",
-        "Sprites": "chars/heads/dog"
+        "Sprites": "chars/heads/sheep"
       },
       "Body": "dog",
       "Sounds": "sheep",
@@ -15,7 +15,7 @@
       "Name": "Goat",
       "HeadPics": {
         "Type": "Directional",
-        "Sprites": "chars/heads/dog"
+        "Sprites": "chars/heads/sheep"
       },
       "Body": "dog",
       "Sounds": "sheep",
