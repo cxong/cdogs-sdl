@@ -107,8 +107,8 @@
     },
     {
       "Pic": "",
-      "Name": "Dog Bite",
-      "Bullet": "dog_bite",
+      "Name": "Goat Kick",
+      "Bullet": "goat_kick",
       "Cost": 0,
       "Lock": 80,
       "Sound": "",

@@ -2,23 +2,23 @@
   "Version": 2,
   "Characters": [
     {
-      "Name": "Guard",
-      "HeadPics": {
-        "Type": "Directional",
-        "Sprites": "chars/heads/jones"
-      },
-      "Body": "soldier",
-      "Sounds": "guard",
-      "Corpse": "dead_guard"
-    },
-    {
-      "Name": "Killer Dog",
+      "Name": "Sheep",
       "HeadPics": {
         "Type": "Directional",
         "Sprites": "chars/heads/dog"
       },
       "Body": "dog",
-      "Sounds": "dog",
+      "Sounds": "sheep",
+      "Corpse": "dead_guard"
+    },
+    {
+      "Name": "Goat",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/dog"
+      },
+      "Body": "dog",
+      "Sounds": "sheep",
 	    "Footsteps": "dog"
     },
     {
