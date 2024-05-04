@@ -136,7 +136,8 @@ jobs:
       uses: softprops/action-gh-release@v1
       if: >
         startsWith(github.ref, 'refs/tags/') &&
-        (!startsWith(matrix.os, 'ubuntu') || (matrix.cc == 'gcc' && matrix.cc_version == 'latest'))
+        (!startsWith(matrix.os, 'ubuntu') || (matrix.cc == 'gcc' && matrix.cc_version == 'latest'))  &&
+        github.event.release.created
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
@@ -144,7 +145,7 @@ jobs:
         fail_on_unmatched_files: true
 
     - name: Publish to itch.io (Linux)
-      if: startsWith(github.ref, 'refs/tags/') && startsWith(matrix.os, 'ubuntu') && matrix.cc == 'gcc' && matrix.cc_version == 'latest' && !github.event.release.prerelease
+      if: startsWith(github.ref, 'refs/tags/') && startsWith(matrix.os, 'ubuntu') && matrix.cc == 'gcc' && matrix.cc_version == 'latest' && github.event.release.created
       env:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       run: |
@@ -155,7 +156,7 @@ jobs:
         ./butler push C-Dogs*SDL-*-Linux.tar.gz congusbongus/cdogs-sdl:linux --userversion $VERSION
 
     - name: Publish to itch.io (macOS)
-      if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'macos-latest' && !github.event.release.prerelease
+      if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'macos-latest' && github.event.release.created
       env:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       run: |
@@ -164,3 +165,10 @@ jobs:
         chmod +x butler
         ./butler -V
         ./butler push C-Dogs*SDL-*-OSX.dmg congusbongus/cdogs-sdl:mac --userversion $VERSION
+
+    - name: Publish to itch.io (Windows)
+      if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'windows-latest' && github.event.release.created
+      env:
+        BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+      run: |
+        .\build\windows\butler.bat
