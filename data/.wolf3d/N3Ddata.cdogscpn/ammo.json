@@ -5,7 +5,7 @@
       "Name": "Feed",
       "Pic": {
         "Type": "Normal",
-        "Pic": "ammo_clip"
+        "Pic": "small_feed_box"
       },
       "Sound": "ammo_pickup",
       "Amount": 5,

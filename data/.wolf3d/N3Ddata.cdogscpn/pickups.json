@@ -160,10 +160,10 @@
       "Sound": "pickup_crown"
     },
     {
-      "Name": "ammo_clip",
+      "Name": "small_feed_box",
       "Pic": {
         "Type": "Normal",
-        "Pic": "ammo_clip"
+        "Pic": "small_feed_box"
       },
       "Effects": [{
         "Type": "Ammo",

@@ -2164,9 +2164,8 @@ static void LoadEntity(
 			MissionStaticTryAddItem(&m->u.Static, StrMapObject("shadow"), v);
 			break;
 		case CWMAPTYPE_N3D:
-
 			MissionStaticTryAddPickup(
-				&m->u.Static, StrPickupClass("ammo_clip"), v);
+				&m->u.Static, StrPickupClass("small_feed_box"), v);
 			break;
 		default:
 			MissionStaticTryAddItem(&m->u.Static, StrMapObject("bed"), v);
