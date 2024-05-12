@@ -14,7 +14,7 @@
 		"Hat": "fc7e04ff",
 		"Glasses": "fc7e04ff",
 		"speed": 256,
-		"Gun": "Machine gun",
+		"Gun": "Small Launcher",
 		"maxHealth": 40,
 		"excessHealth": 80,
 		"flags": 0,
@@ -533,5 +533,28 @@
 		"probabilityToTrack": 20,
 		"probabilityToShoot": 42,
 		"actionDelay": 40
+	},
+	{
+		"Class": "Lady",
+		"PlayerTemplateName": "Naamah",
+		"HairType": "ponytail",
+		"Skin": "ffb26aff",
+		"Arms": "ff412aff",
+		"Body": "ff352aff",
+		"Legs": "ff372bff",
+		"Hair": "fff7efff",
+		"Feet": "744815ff",
+		"Facehair": "fcfcfcff",
+		"Hat": "fc7e04ff",
+		"Glasses": "fc7e04ff",
+		"speed": 256,
+		"Gun": "Small Launcher",
+		"maxHealth": 40,
+		"excessHealth": 80,
+		"flags": 0,
+		"probabilityToMove": 50,
+		"probabilityToTrack": 25,
+		"probabilityToShoot": 2,
+		"actionDelay": 15
 	}]
 }
