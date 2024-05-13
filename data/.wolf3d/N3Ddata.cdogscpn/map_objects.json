@@ -256,10 +256,10 @@
       "Flags": ["Inside", "NoWalls"]
     },
     {
-      "Name": "heer_flag",
+      "Name": "yellow_flag",
       "Pic": {
         "Type": "Normal",
-        "Pic": "heer_flag"
+        "Pic": "yellow_flag"
       },
       "Offset": [-7, -11],
       "Health": 0,
@@ -350,6 +350,16 @@
       "Pic": {
         "Type": "Normal",
         "Pic": "cobble_moss"
+      },
+      "Offset": [-8, -23],
+      "Health": 0,
+      "Flags": ["Outside", "OnWall"]
+    },
+    {
+      "Name": "wood_slime",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "wood_slime"
       },
       "Offset": [-8, -23],
       "Health": 0,

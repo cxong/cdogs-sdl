@@ -1178,25 +1178,40 @@ static void TryLoadWallObject(
 	switch (wall)
 	{
 	case CWWALL_GREY_BRICK_2:
-		switch (spearMission)
+		switch (map->type)
 		{
-		case 3:
-			moName = "wall_light";
+		case CWMAPTYPE_N3D:
+			moName = "wood_slime";
+			break;
+		default:
+			switch (spearMission)
+			{
+			case 3:
+				moName = "wall_light";
+				break;
+			}
 			break;
 		}
 		break;
 	case CWWALL_GREY_BRICK_FLAG:
-		switch (spearMission)
+		switch (map->type)
 		{
-		case 1:
-			moName = "heer_flag";
+		case CWMAPTYPE_N3D:
+			moName = "wood_slime";
 			break;
-		case 2:
-			moName = "wall_light";
-			break;
-		case 3:
-			moName = "wall_light";
-			break;
+		default:
+			switch (spearMission)
+			{
+			case 1:
+				moName = "heer_flag";
+				break;
+			case 2:
+				moName = "wall_light";
+				break;
+			case 3:
+				moName = "wall_light";
+				break;
+			}
 		}
 		break;
 	case CWWALL_GREY_BRICK_HITLER:

@@ -296,9 +296,9 @@
 			"3": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "cobble",
-				"Mask": "ffffffff",
-				"MaskAlt": "008400ff",
+				"Style": "wood",
+				"Mask": "85521eff",
+				"MaskAlt": "bdbdbdff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -428,9 +428,9 @@
 			"4": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "cobble",
-				"Mask": "ffffffff",
-				"MaskAlt": "008400ff",
+				"Style": "wood",
+				"Mask": "85521eff",
+				"MaskAlt": "bdbdbdff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -560,9 +560,9 @@
 			"5": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "cobble",
-				"Mask": "ffffffff",
-				"MaskAlt": "008400ff",
+				"Style": "wood",
+				"Mask": "85521eff",
+				"MaskAlt": "bdbdbdff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -692,9 +692,9 @@
 			"6": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "cobble",
-				"Mask": "ffffffff",
-				"MaskAlt": "008400ff",
+				"Style": "wood",
+				"Mask": "85521eff",
+				"MaskAlt": "bdbdbdff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -898,12 +898,6 @@
 		{
 			"MapObject": "wall_vent",
 			"Positions": [[9, 10]]
-		},
-		{
-			"MapObject": "heer_flag",
-			"Positions": [[5, 2],
-			[13, 12],
-			[7, 14]]
 		},
 		{
 			"MapObject": "hitler_portrait",
@@ -1140,6 +1134,10 @@
 		{
 			"MapObject": "cage",
 			"Positions": [[25, 7]]
+		},
+		{
+			"MapObject": "wood_slime",
+			"Positions": [[3, 2]]
 		}],
 		"StaticCharacters": [{
 			"Index": 0,
