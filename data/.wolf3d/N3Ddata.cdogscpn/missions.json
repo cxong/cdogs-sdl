@@ -900,11 +900,6 @@
 			"Positions": [[9, 10]]
 		},
 		{
-			"MapObject": "hitler_portrait",
-			"Positions": [[7, 2],
-			[5, 4]]
-		},
-		{
 			"MapObject": "brick_eagle",
 			"Positions": [[11, 2]]
 		},
@@ -1138,6 +1133,14 @@
 		{
 			"MapObject": "wood_slime",
 			"Positions": [[3, 2]]
+		},
+		{
+			"MapObject": "yellow_flag",
+			"Positions": [[5, 2]]
+		},
+		{
+			"MapObject": "monkey_portrait",
+			"Positions": [[7, 2]]
 		}],
 		"StaticCharacters": [{
 			"Index": 0,

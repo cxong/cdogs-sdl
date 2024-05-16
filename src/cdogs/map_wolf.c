@@ -1197,7 +1197,7 @@ static void TryLoadWallObject(
 		switch (map->type)
 		{
 		case CWMAPTYPE_N3D:
-			moName = "wood_slime";
+			moName = "yellow_flag";
 			break;
 		default:
 			switch (spearMission)
@@ -1215,13 +1215,21 @@ static void TryLoadWallObject(
 		}
 		break;
 	case CWWALL_GREY_BRICK_HITLER:
-		switch (spearMission)
+		switch (map->type)
 		{
-		case 1:
-			moName = "hitler_portrait";
+		case CWMAPTYPE_N3D:
+			moName = "monkey_portrait";
 			break;
-		case 3:
-			moName = "no_sign";
+		default:
+			switch (spearMission)
+			{
+			case 1:
+				moName = "hitler_portrait";
+				break;
+			case 3:
+				moName = "no_sign";
+				break;
+			}
 			break;
 		}
 		break;
@@ -1295,13 +1303,21 @@ static void TryLoadWallObject(
 		}
 		break;
 	case CWWALL_WOOD_HITLER:
-		switch (spearMission)
+		switch (map->type)
 		{
-		case 1:
-			moName = "hitler_portrait";
+		case CWMAPTYPE_N3D:
+			moName = "monkey_portrait";
 			break;
-		case 3:
-			moName = "wall_light";
+		default:
+			switch (spearMission)
+			{
+			case 1:
+				moName = "hitler_portrait";
+				break;
+			case 3:
+				moName = "wall_light";
+				break;
+			}
 			break;
 		}
 		break;

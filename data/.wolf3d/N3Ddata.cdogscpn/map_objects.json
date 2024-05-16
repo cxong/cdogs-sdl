@@ -266,10 +266,10 @@
       "Flags": ["Inside", "OnWall"]
     },
     {
-      "Name": "hitler_portrait",
+      "Name": "monkey_portrait",
       "Pic": {
         "Type": "Normal",
-        "Pic": "hitler_portrait"
+        "Pic": "monkey_portrait"
       },
       "Offset": [-5, -10],
       "Health": 0,

@@ -101,13 +101,13 @@
       "Sounds": "hitler"
     },
     {
-      "Name": "Otto Giftmacher",
+      "Name": "Monkey",
       "HeadPics": {
         "Type": "Directional",
-        "Sprites": "chars/heads/jones"
+        "Sprites": "chars/heads/monkey"
       },
       "Body": "big_soldier",
-      "Sounds": "otto"
+      "Sounds": "monkey"
     },
     {
       "Name": "Gretel Grosse",
