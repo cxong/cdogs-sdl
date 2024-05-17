@@ -1197,7 +1197,7 @@ static void TryLoadWallObject(
 		switch (map->type)
 		{
 		case CWMAPTYPE_N3D:
-			moName = "yellow_flag";
+			moName = "curtain_yellow";
 			break;
 		default:
 			switch (spearMission)
@@ -1234,57 +1234,96 @@ static void TryLoadWallObject(
 		}
 		break;
 	case CWWALL_CELL:
-		switch (spearMission)
+		switch (map->type)
 		{
-		case 1:
-			moName = "jail_cell";
+		case CWMAPTYPE_N3D:
 			break;
-		case 3:
-			moName = "wall_goo2";
+		default:
+			switch (spearMission)
+			{
+			case 1:
+				moName = "jail_cell";
+				break;
+			case 3:
+				moName = "wall_goo2";
+				break;
+			}
 			break;
 		}
 		break;
 	case CWWALL_GREY_BRICK_EAGLE:
-		switch (spearMission)
+		switch (map->type)
 		{
-		case 1:
-			moName = "brick_eagle";
+		case CWMAPTYPE_N3D:
+			moName = "noah_portrait";
 			break;
-		case 3:
-			moName = "swastika_relief";
+		default:
+			switch (spearMission)
+			{
+			case 1:
+				moName = "brick_eagle";
+				break;
+			case 3:
+				moName = "swastika_relief";
+				break;
+			}
 			break;
 		}
 		break;
 	case CWWALL_CELL_SKELETON:
-		switch (spearMission)
+		switch (map->type)
 		{
-		case 1:
-			moName = "jail_cell_skeleton";
+		case CWMAPTYPE_N3D:
+			moName = "curtain_red";
 			break;
-		case 2:
-			moName = "wall_light";
-			break;
-		case 3:
-			moName = "map";
+		default:
+			switch (spearMission)
+			{
+			case 1:
+				moName = "jail_cell_skeleton";
+				break;
+			case 2:
+				moName = "wall_light";
+				break;
+			case 3:
+				moName = "map";
+				break;
+			}
 			break;
 		}
 		break;
 	case CWWALL_BLUE_BRICK_1:
-		switch (spearMission)
+		switch (map->type)
 		{
-		case 2:
-			moName = "ship_light";
+		case CWMAPTYPE_N3D:
+			moName = "curtain_red";
 			break;
-		case 3:
-			moName = "eagle_portrait";
+		default:
+			switch (spearMission)
+			{
+			case 2:
+				moName = "ship_light";
+				break;
+			case 3:
+				moName = "eagle_portrait";
+				break;
+			}
 			break;
 		}
 		break;
 	case CWWALL_BLUE_BRICK_2:
-		switch (spearMission)
+		switch (map->type)
 		{
-		case 2:
-			moName = "hitler_poster";
+		case CWMAPTYPE_N3D:
+			moName = "duck_picture";
+			break;
+		default:
+			switch (spearMission)
+			{
+			case 2:
+				moName = "hitler_poster";
+				break;
+			}
 			break;
 		}
 		break;

@@ -44,9 +44,9 @@
 			"10": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "cobble",
-				"Mask": "060effff",
-				"MaskAlt": "008400ff",
+				"Style": "steelwood",
+				"Mask": "623b0cff",
+				"MaskAlt": "d7981fff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -776,9 +776,9 @@
 			"7": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "cobble",
-				"Mask": "060effff",
-				"MaskAlt": "008400ff",
+				"Style": "steelwood",
+				"Mask": "623b0cff",
+				"MaskAlt": "d7981fff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -788,9 +788,9 @@
 			"8": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "cobble",
-				"Mask": "ffffffff",
-				"MaskAlt": "008400ff",
+				"Style": "steelwood",
+				"Mask": "623b0cff",
+				"MaskAlt": "d7981fff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -800,9 +800,9 @@
 			"9": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "cobble",
-				"Mask": "060effff",
-				"MaskAlt": "008400ff",
+				"Style": "steelwood",
+				"Mask": "623b0cff",
+				"MaskAlt": "d7981fff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -865,14 +865,6 @@
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"],
 		"StaticItems": [{
-			"MapObject": "jail_cell",
-			"Positions": [[9, 2]]
-		},
-		{
-			"MapObject": "jail_cell_skeleton",
-			"Positions": [[13, 2]]
-		},
-		{
 			"MapObject": "no_sign",
 			"Positions": [[7, 8],
 			[1, 12],
@@ -898,10 +890,6 @@
 		{
 			"MapObject": "wall_vent",
 			"Positions": [[9, 10]]
-		},
-		{
-			"MapObject": "brick_eagle",
-			"Positions": [[11, 2]]
 		},
 		{
 			"MapObject": "eagle_portrait",
@@ -1135,12 +1123,24 @@
 			"Positions": [[3, 2]]
 		},
 		{
-			"MapObject": "yellow_flag",
+			"MapObject": "curtain_yellow",
 			"Positions": [[5, 2]]
 		},
 		{
 			"MapObject": "monkey_portrait",
 			"Positions": [[7, 2]]
+		},
+		{
+			"MapObject": "noah_portrait",
+			"Positions": [[11, 2]]
+		},
+		{
+			"MapObject": "curtain_red",
+			"Positions": [[13, 2]]
+		},
+		{
+			"MapObject": "duck_picture",
+			"Positions": [[15, 2]]
 		}],
 		"StaticCharacters": [{
 			"Index": 0,

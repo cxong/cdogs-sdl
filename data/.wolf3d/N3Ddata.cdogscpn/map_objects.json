@@ -256,10 +256,20 @@
       "Flags": ["Inside", "NoWalls"]
     },
     {
-      "Name": "yellow_flag",
+      "Name": "curtain_yellow",
       "Pic": {
         "Type": "Normal",
-        "Pic": "yellow_flag"
+        "Pic": "curtain_yellow"
+      },
+      "Offset": [-7, -11],
+      "Health": 0,
+      "Flags": ["Inside", "OnWall"]
+    },
+    {
+      "Name": "curtain_red",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "curtain_red"
       },
       "Offset": [-7, -11],
       "Health": 0,
@@ -276,10 +286,10 @@
       "Flags": ["OnWall"]
     },
     {
-      "Name": "brick_eagle",
+      "Name": "noah_portrait",
       "Pic": {
         "Type": "Normal",
-        "Pic": "brick_eagle"
+        "Pic": "noah_portrait"
       },
       "Offset": [-8, -11],
       "Health": 0,
@@ -290,6 +300,16 @@
       "Pic": {
         "Type": "Normal",
         "Pic": "eagle_portrait"
+      },
+      "Offset": [-7, -10],
+      "Health": 0,
+      "Flags": ["Inside", "OnWall"]
+    },
+    {
+      "Name": "duck_picture",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "duck_picture"
       },
       "Offset": [-7, -10],
       "Health": 0,
