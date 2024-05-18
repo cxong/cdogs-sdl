@@ -293,7 +293,17 @@
       },
       "Offset": [-8, -11],
       "Health": 0,
-      "Flags": ["Outside", "OnWall"]
+      "Flags": ["Inside", "OnWall"]
+    },
+    {
+      "Name": "naamah_portrait",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "naamah_portrait"
+      },
+      "Offset": [-8, -11],
+      "Health": 0,
+      "Flags": ["Inside", "OnWall"]
     },
     {
       "Name": "eagle_portrait",
@@ -426,14 +436,14 @@
       "Flags": ["OnWall"]
     },
     {
-      "Name": "lattice",
+      "Name": "closet",
       "Pic": {
         "Type": "Normal",
-        "Pic": "lattice"
+        "Pic": "closet"
       },
       "Offset": [-8, -11],
       "Health": 0,
-      "Flags": ["OnWall"]
+      "Flags": ["Inside", "OnWall"]
     },
     {
       "Name": "lattice_broken",

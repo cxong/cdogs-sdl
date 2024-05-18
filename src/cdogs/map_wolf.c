@@ -1296,7 +1296,7 @@ static void TryLoadWallObject(
 		switch (map->type)
 		{
 		case CWMAPTYPE_N3D:
-			moName = "curtain_red";
+			moName = "duck_picture";
 			break;
 		default:
 			switch (spearMission)
@@ -1315,7 +1315,7 @@ static void TryLoadWallObject(
 		switch (map->type)
 		{
 		case CWMAPTYPE_N3D:
-			moName = "duck_picture";
+			moName = "wood_color";
 			break;
 		default:
 			switch (spearMission)
@@ -1331,7 +1331,7 @@ static void TryLoadWallObject(
 		switch (map->type)
 		{
 		case CWMAPTYPE_N3D:
-			moName = "wood_color";
+			moName = "lattice_broken";
 			break;
 		default:
 			switch (spearMission)
@@ -1353,7 +1353,6 @@ static void TryLoadWallObject(
 		switch (map->type)
 		{
 		case CWMAPTYPE_N3D:
-			moName = "lattice_broken";
 			break;
 		default:
 			switch (spearMission)
@@ -1372,6 +1371,7 @@ static void TryLoadWallObject(
 		switch (map->type)
 		{
 		case CWMAPTYPE_N3D:
+			moName = "jail_cell_broken";
 			break;
 		default:
 			switch (spearMission)
@@ -1390,7 +1390,6 @@ static void TryLoadWallObject(
 		switch (map->type)
 		{
 		case CWMAPTYPE_N3D:
-			moName = "jail_cell_broken";
 			break;
 		default:
 			moName = "elevator_entrance";
@@ -1398,46 +1397,76 @@ static void TryLoadWallObject(
 		}
 		break;
 	case CWWALL_STEEL_SIGN:
-		switch (spearMission)
+		switch (map->type)
 		{
-		case 1:
-			moName = "no_sign";
+		case CWMAPTYPE_N3D:
+			moName = "closet";
 			break;
-		case 2:
-			moName = "wet_cobble";
+		default:
+			switch (spearMission)
+			{
+			case 1:
+				moName = "no_sign";
+				break;
+			case 2:
+				moName = "wet_cobble";
+				break;
+			}
 			break;
 		}
 		break;
 	case CWWALL_STEEL:
-		switch (spearMission)
+		switch (map->type)
 		{
-		case 3:
-			moName = "no_sign";
+		case CWMAPTYPE_N3D:
+			break;
+		default:
+			switch (spearMission)
+			{
+			case 3:
+				moName = "no_sign";
+				break;
+			}
 			break;
 		}
 		break;
 	case CWWALL_RED_BRICK:
-		switch (spearMission)
+		switch (map->type)
 		{
-		case 2:
-			moName = "wall_chart";
+		case CWMAPTYPE_N3D:
 			break;
-		case 3:
-			moName = "skull_wall";
+		default:
+			switch (spearMission)
+			{
+			case 2:
+				moName = "wall_chart";
+				break;
+			case 3:
+				moName = "skull_wall";
+				break;
+			}
 			break;
 		}
 		break;
 	case CWWALL_RED_BRICK_SWASTIKA:
-		switch (spearMission)
+		switch (map->type)
 		{
-		case 1:
-			moName = "swastika_wreath";
+		case CWMAPTYPE_N3D:
+			moName = "naamah_portrait";
 			break;
-		case 2:
-			moName = "wall_nuke_sign";
-			break;
-		case 3:
-			moName = "swastika_wall";
+		default:
+			switch (spearMission)
+			{
+			case 1:
+				moName = "swastika_wreath";
+				break;
+			case 2:
+				moName = "wall_nuke_sign";
+				break;
+			case 3:
+				moName = "swastika_wall";
+				break;
+			}
 			break;
 		}
 		break;

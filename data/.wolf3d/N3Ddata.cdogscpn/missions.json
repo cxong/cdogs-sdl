@@ -104,8 +104,8 @@
 			"15": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "bunker",
-				"Mask": "d2d1ceff",
+				"Style": "wood2",
+				"Mask": "d9923cff",
 				"MaskAlt": "9c682aff",
 				"CanWalk": false,
 				"IsOpaque": true,
@@ -116,8 +116,8 @@
 			"16": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "steel",
-				"Mask": "06e9fcff",
+				"Style": "wood2",
+				"Mask": "d9923cff",
 				"MaskAlt": "9c682aff",
 				"CanWalk": false,
 				"IsOpaque": true,
@@ -128,8 +128,8 @@
 			"17": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "steel",
-				"Mask": "06e9fcff",
+				"Style": "wood2",
+				"Mask": "5f4320ff",
 				"MaskAlt": "9c682aff",
 				"CanWalk": false,
 				"IsOpaque": true,
@@ -152,9 +152,9 @@
 			"19": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "brick2",
-				"Mask": "fc2c04ff",
-				"MaskAlt": "9c682aff",
+				"Style": "greenstain",
+				"Mask": "fac079ff",
+				"MaskAlt": "ffba65ff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -176,9 +176,9 @@
 			"20": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "brick2",
-				"Mask": "fc2c04ff",
-				"MaskAlt": "9c682aff",
+				"Style": "greenstain",
+				"Mask": "fac079ff",
+				"MaskAlt": "ffba65ff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -212,8 +212,8 @@
 			"23": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "plasteel",
-				"Mask": "ffffffff",
+				"Style": "wood2",
+				"Mask": "d9923cff",
 				"MaskAlt": "9c682aff",
 				"CanWalk": false,
 				"IsOpaque": true,
@@ -224,8 +224,8 @@
 			"24": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "plasteel",
-				"Mask": "ffffffff",
+				"Style": "wood2",
+				"Mask": "d9923cff",
 				"MaskAlt": "9c682aff",
 				"CanWalk": false,
 				"IsOpaque": true,
@@ -260,8 +260,8 @@
 			"27": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "rock",
-				"Mask": "b801b6ff",
+				"Style": "wood2",
+				"Mask": "d9923cff",
 				"MaskAlt": "9c682aff",
 				"CanWalk": false,
 				"IsOpaque": true,
@@ -272,9 +272,9 @@
 			"28": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "cobble",
-				"Mask": "ffffffff",
-				"MaskAlt": "008400ff",
+				"Style": "wood2",
+				"Mask": "d9923cff",
+				"MaskAlt": "9c682aff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -284,9 +284,9 @@
 			"29": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "cobble",
-				"Mask": "ffffffff",
-				"MaskAlt": "008400ff",
+				"Style": "wood2",
+				"Mask": "d9923cff",
+				"MaskAlt": "9c682aff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -308,9 +308,9 @@
 			"30": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "cobble",
-				"Mask": "ffffffff",
-				"MaskAlt": "008400ff",
+				"Style": "wood2",
+				"Mask": "d9923cff",
+				"MaskAlt": "9c682aff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -320,9 +320,9 @@
 			"31": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "rock",
-				"Mask": "f09c49ff",
-				"MaskAlt": "008400ff",
+				"Style": "wood2",
+				"Mask": "d9923cff",
+				"MaskAlt": "9c682aff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -332,9 +332,9 @@
 			"32": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "rock",
-				"Mask": "f09c49ff",
-				"MaskAlt": "008400ff",
+				"Style": "wood2",
+				"Mask": "d9923cff",
+				"MaskAlt": "9c682aff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -344,9 +344,9 @@
 			"33": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "rock",
-				"Mask": "f09c49ff",
-				"MaskAlt": "008400ff",
+				"Style": "wood2",
+				"Mask": "d9923cff",
+				"MaskAlt": "9c682aff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -368,8 +368,8 @@
 			"35": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "plasteel",
-				"Mask": "ffffffff",
+				"Style": "wood2",
+				"Mask": "d9923cff",
 				"MaskAlt": "9c682aff",
 				"CanWalk": false,
 				"IsOpaque": true,
@@ -380,9 +380,9 @@
 			"36": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "brick",
-				"Mask": "060effff",
-				"MaskAlt": "008400ff",
+				"Style": "wood2",
+				"Mask": "d9923cff",
+				"MaskAlt": "9c682aff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -867,8 +867,7 @@
 		"StaticItems": [{
 			"MapObject": "no_sign",
 			"Positions": [[7, 8],
-			[1, 12],
-			[11, 4]]
+			[1, 12]]
 		},
 		{
 			"MapObject": "bloodstain2",
@@ -892,13 +891,8 @@
 			"Positions": [[9, 10]]
 		},
 		{
-			"MapObject": "elevator_entrance",
-			"Positions": [[9, 4]]
-		},
-		{
 			"MapObject": "swastika_wreath",
-			"Positions": [[3, 6],
-			[9, 14]]
+			"Positions": [[9, 14]]
 		},
 		{
 			"MapObject": "coat_of_arms_flag",
@@ -1145,6 +1139,14 @@
 		{
 			"MapObject": "jail_cell_broken",
 			"Positions": [[7, 4]]
+		},
+		{
+			"MapObject": "closet",
+			"Positions": [[11, 4]]
+		},
+		{
+			"MapObject": "naamah_portrait",
+			"Positions": [[3, 6]]
 		}],
 		"StaticCharacters": [{
 			"Index": 0,
