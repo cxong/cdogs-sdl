@@ -1328,16 +1328,24 @@ static void TryLoadWallObject(
 		}
 		break;
 	case CWWALL_WOOD_EAGLE:
-		switch (spearMission)
+		switch (map->type)
 		{
-		case 1:
-			moName = "eagle_portrait";
+		case CWMAPTYPE_N3D:
+			moName = "wood_color";
 			break;
-		case 2:
-			moName = "swastika_relief";
-			break;
-		case 3:
-			moName = "swastika_relief";
+		default:
+			switch (spearMission)
+			{
+			case 1:
+				moName = "eagle_portrait";
+				break;
+			case 2:
+				moName = "swastika_relief";
+				break;
+			case 3:
+				moName = "swastika_relief";
+				break;
+			}
 			break;
 		}
 		break;
@@ -1345,7 +1353,7 @@ static void TryLoadWallObject(
 		switch (map->type)
 		{
 		case CWMAPTYPE_N3D:
-			moName = "monkey_portrait";
+			moName = "lattice_broken";
 			break;
 		default:
 			switch (spearMission)
@@ -1361,18 +1369,33 @@ static void TryLoadWallObject(
 		}
 		break;
 	case CWWALL_WOOD:
-		switch (spearMission)
+		switch (map->type)
 		{
-		case 2:
-			moName = "wall_light";
+		case CWMAPTYPE_N3D:
 			break;
-		case 3:
-			moName = "hitler_poster";
+		default:
+			switch (spearMission)
+			{
+			case 2:
+				moName = "wall_light";
+				break;
+			case 3:
+				moName = "hitler_poster";
+				break;
+			}
 			break;
 		}
 		break;
 	case CWWALL_ENTRANCE:
-		moName = "elevator_entrance";
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			moName = "jail_cell_broken";
+			break;
+		default:
+			moName = "elevator_entrance";
+			break;
+		}
 		break;
 	case CWWALL_STEEL_SIGN:
 		switch (spearMission)
@@ -1685,13 +1708,20 @@ static void TryLoadWallObject(
 		}
 		break;
 	case CWWALL_MULTICOLOR_BRICK:
-		switch (spearMission)
+		switch (map->type)
 		{
-		case 1:
-			moName = "brick_color";
+		case CWMAPTYPE_N3D:
 			break;
-		case 3:
-			moName = "jail_cell";
+		default:
+			switch (spearMission)
+			{
+			case 1:
+				moName = "brick_color";
+				break;
+			case 3:
+				moName = "jail_cell";
+				break;
+			}
 			break;
 		}
 		break;

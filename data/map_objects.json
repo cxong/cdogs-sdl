@@ -1696,6 +1696,16 @@
       "Flags": ["Inside", "OnWall"]
     },
     {
+      "Name": "jail_cell_broken",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "jail_cell_broken"
+      },
+      "Offset": [-6, -11],
+      "Health": 0,
+      "Flags": ["Inside", "OnWall"]
+    },
+    {
       "Name": "no_sign",
       "Pic": {
         "Type": "Normal",

@@ -416,10 +416,30 @@
       "Flags": ["Inside", "OnWall"]
     },
     {
-      "Name": "brick_color",
+      "Name": "wood_color",
       "Pic": {
         "Type": "Normal",
-        "Pic": "brick_color"
+        "Pic": "wood_color"
+      },
+      "Offset": [-8, -11],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "lattice",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "lattice"
+      },
+      "Offset": [-8, -11],
+      "Health": 0,
+      "Flags": ["OnWall"]
+    },
+    {
+      "Name": "lattice_broken",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "lattice_broken"
       },
       "Offset": [-8, -11],
       "Health": 0,
