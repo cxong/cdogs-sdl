@@ -276,6 +276,16 @@
       "Flags": ["Inside", "OnWall"]
     },
     {
+      "Name": "curtain_blue",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "curtain_blue"
+      },
+      "Offset": [-7, -11],
+      "Health": 0,
+      "Flags": ["Inside", "OnWall"]
+    },
+    {
       "Name": "monkey_portrait",
       "Pic": {
         "Type": "Normal",
@@ -304,6 +314,16 @@
       "Offset": [-8, -11],
       "Health": 0,
       "Flags": ["Inside", "OnWall"]
+    },
+    {
+      "Name": "brick_color",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "brick_color"
+      },
+      "Offset": [-8, -11],
+      "Health": 0,
+      "Flags": ["OnWall"]
     },
     {
       "Name": "eagle_portrait",
@@ -346,10 +366,10 @@
       "Flags": ["OnWall"]
     },
     {
-      "Name": "coat_of_arms_flag",
+      "Name": "noah_flag",
       "Pic": {
         "Type": "Normal",
-        "Pic": "coat_of_arms_flag"
+        "Pic": "noah_flag"
       },
       "Offset": [-7, -11],
       "Health": 0,

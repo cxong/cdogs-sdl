@@ -188,8 +188,8 @@
 			"21": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "rock",
-				"Mask": "b801b6ff",
+				"Style": "brick2",
+				"Mask": "f09817ff",
 				"MaskAlt": "9c682aff",
 				"CanWalk": false,
 				"IsOpaque": true,
@@ -201,7 +201,7 @@
 				"Name": "wall",
 				"Type": "Wall",
 				"Style": "brick2",
-				"Mask": "fc2c04ff",
+				"Mask": "f09817ff",
 				"MaskAlt": "9c682aff",
 				"CanWalk": false,
 				"IsOpaque": true,
@@ -212,8 +212,8 @@
 			"23": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "wood2",
-				"Mask": "d9923cff",
+				"Style": "brick2",
+				"Mask": "747474ff",
 				"MaskAlt": "9c682aff",
 				"CanWalk": false,
 				"IsOpaque": true,
@@ -224,8 +224,8 @@
 			"24": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "wood2",
-				"Mask": "d9923cff",
+				"Style": "brick2",
+				"Mask": "747474ff",
 				"MaskAlt": "9c682aff",
 				"CanWalk": false,
 				"IsOpaque": true,
@@ -236,9 +236,9 @@
 			"25": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "steelwood",
-				"Mask": "bb8e37ff",
-				"MaskAlt": "9c682aff",
+				"Style": "wood",
+				"Mask": "ffaf61ff",
+				"MaskAlt": "bbbbbbff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -248,9 +248,9 @@
 			"26": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "cobble",
-				"Mask": "ffffffff",
-				"MaskAlt": "008400ff",
+				"Style": "wood",
+				"Mask": "ffaf61ff",
+				"MaskAlt": "bbbbbbff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -895,23 +895,12 @@
 			"Positions": [[9, 14]]
 		},
 		{
-			"MapObject": "coat_of_arms_flag",
-			"Positions": [[7, 6]]
-		},
-		{
 			"MapObject": "elevator_interior",
-			"Positions": [[11, 6],
-			[9, 6],
-			[7, 16]]
-		},
-		{
-			"MapObject": "iron_cross",
-			"Positions": [[13, 6]]
+			"Positions": [[7, 16]]
 		},
 		{
 			"MapObject": "cobble_moss",
-			"Positions": [[15, 6],
-			[3, 8]]
+			"Positions": [[3, 8]]
 		},
 		{
 			"MapObject": "hitler_glass",
@@ -1147,6 +1136,22 @@
 		{
 			"MapObject": "naamah_portrait",
 			"Positions": [[3, 6]]
+		},
+		{
+			"MapObject": "brick_color",
+			"Positions": [[5, 6]]
+		},
+		{
+			"MapObject": "noah_flag",
+			"Positions": [[7, 6]]
+		},
+		{
+			"MapObject": "curtain_blue",
+			"Positions": [[11, 6]]
+		},
+		{
+			"MapObject": "green_relief",
+			"Positions": [[15, 6]]
 		}],
 		"StaticCharacters": [{
 			"Index": 0,

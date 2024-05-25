@@ -1471,130 +1471,174 @@ static void TryLoadWallObject(
 		}
 		break;
 	case CWWALL_PURPLE:
-		switch (spearMission)
+		switch (map->type)
 		{
-		case 2:
-			moName = "heer_flag";
+		case CWMAPTYPE_N3D:
 			break;
-		}
-		break;
-	case CWWALL_RED_BRICK_FLAG:
-		switch (spearMission)
-		{
-		case 1:
-			moName = "coat_of_arms_flag";
-			break;
-		case 3:
-			moName = "swastika_relief";
-			break;
-		}
-		break;
-	case CWWALL_ELEVATOR: {
-		const TileClass *tcBelow =
-			MissionStaticGetTileClass(m, levelSize, vBelow);
-		if (tcBelow == NULL)
-		{
-			break;
-		}
-		if (tcBelow->Type == TILE_CLASS_FLOOR)
-		{
-			moName = "elevator_interior";
-		}
-		// Elevators only occur on east/west tiles
-		for (int dx = -1; dx <= 1; dx += 2)
-		{
-			const struct vec2i exitV = svec2i(v.x + dx, v.y);
-			const TileClass *tc =
-				MissionStaticGetTileClass(m, levelSize, exitV);
-			// Tile can be a vertical door
-			const uint16_t chd = CWLevelGetCh(level, 0, exitV.x, exitV.y);
-			const CWTile tile = CWChToTile(chd);
-			const bool isVerticalDoor =
-				tile == CWTILE_ELEVATOR_V || tile == CWTILE_DOOR_V ||
-				tile == CWTILE_DOOR_GOLD_V || tile == CWTILE_DOOR_SILVER_V;
-			if (tc != NULL && (tc->Type == TILE_CLASS_FLOOR || isVerticalDoor))
+		default:
+			switch (spearMission)
 			{
-				Exit e;
-				e.Hidden = true;
-				e.Mission = missionIndex + 1;
-				// Check if coming back from secret level
-				if (map->type == CWMAPTYPE_SOD)
-				{
-					if (missionIndex == 18)
-					{
-						e.Mission = 4;
-					}
-					else if (missionIndex == 19)
-					{
-						e.Mission = 12;
-					}
-				}
-				else
-				{
-					switch (missionIndex)
-					{
-					case 9:
-						e.Mission = 1;
-						break;
-					case 19:
-						e.Mission = 11;
-						break;
-					case 29:
-						e.Mission = 27;
-						break;
-					case 39:
-						e.Mission = 33;
-						break;
-					case 49:
-						e.Mission = 45;
-						break;
-					case 59:
-						e.Mission = 53;
-						break;
-					default:
-						break;
-					}
-				}
-				e.R.Pos = exitV;
-				e.R.Size = svec2i_zero();
-				MissionStaticTryAddExit(m, &e);
+			case 2:
+				moName = "heer_flag";
+				break;
 			}
+			break;
+		}
+	case CWWALL_RED_BRICK_FLAG:
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			moName = "noah_flag";
+			break;
+		default:
+			switch (spearMission)
+			{
+			case 1:
+				moName = "coat_of_arms_flag";
+				break;
+			case 3:
+				moName = "swastika_relief";
+				break;
+			}
+			break;
+		}
+	case CWWALL_ELEVATOR: {
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			break;
+		default: {
+			const TileClass *tcBelow =
+				MissionStaticGetTileClass(m, levelSize, vBelow);
+			if (tcBelow == NULL)
+			{
+				break;
+			}
+			if (tcBelow->Type == TILE_CLASS_FLOOR)
+			{
+				moName = "elevator_interior";
+			}
+			// Elevators only occur on east/west tiles
+			for (int dx = -1; dx <= 1; dx += 2)
+			{
+				const struct vec2i exitV = svec2i(v.x + dx, v.y);
+				const TileClass *tc =
+					MissionStaticGetTileClass(m, levelSize, exitV);
+				// Tile can be a vertical door
+				const uint16_t chd = CWLevelGetCh(level, 0, exitV.x, exitV.y);
+				const CWTile tile = CWChToTile(chd);
+				const bool isVerticalDoor =
+					tile == CWTILE_ELEVATOR_V || tile == CWTILE_DOOR_V ||
+					tile == CWTILE_DOOR_GOLD_V || tile == CWTILE_DOOR_SILVER_V;
+				if (tc != NULL &&
+					(tc->Type == TILE_CLASS_FLOOR || isVerticalDoor))
+				{
+					Exit e;
+					e.Hidden = true;
+					e.Mission = missionIndex + 1;
+					// Check if coming back from secret level
+					if (map->type == CWMAPTYPE_SOD)
+					{
+						if (missionIndex == 18)
+						{
+							e.Mission = 4;
+						}
+						else if (missionIndex == 19)
+						{
+							e.Mission = 12;
+						}
+					}
+					else
+					{
+						switch (missionIndex)
+						{
+						case 9:
+							e.Mission = 1;
+							break;
+						case 19:
+							e.Mission = 11;
+							break;
+						case 29:
+							e.Mission = 27;
+							break;
+						case 39:
+							e.Mission = 33;
+							break;
+						case 49:
+							e.Mission = 45;
+							break;
+						case 59:
+							e.Mission = 53;
+							break;
+						default:
+							break;
+						}
+					}
+					e.R.Pos = exitV;
+					e.R.Size = svec2i_zero();
+					MissionStaticTryAddExit(m, &e);
+				}
+			}
+		}
 		}
 	}
 	break;
 	case CWWALL_DEAD_ELEVATOR:
-		if (MissionStaticGetTileClass(
-				m, svec2i(level->header.width, level->header.height), vBelow)
-				->Type == TILE_CLASS_FLOOR)
+		switch (map->type)
 		{
-			moName = "elevator_interior";
+		case CWMAPTYPE_N3D:
+			moName = "curtain_blue";
+			break;
+		default:
+			if (MissionStaticGetTileClass(
+					m, svec2i(level->header.width, level->header.height),
+					vBelow)
+					->Type == TILE_CLASS_FLOOR)
+			{
+				moName = "elevator_interior";
+			}
+			break;
 		}
 		break;
 	case CWWALL_WOOD_IRON_CROSS:
-		switch (spearMission)
+		switch (map->type)
 		{
-		case 1:
-			moName = "iron_cross";
+		case CWMAPTYPE_N3D:
 			break;
-		case 2:
-			moName = "wall_chart";
-			break;
-		case 3:
-			moName = "wall_goo2";
+		default:
+			switch (spearMission)
+			{
+			case 1:
+				moName = "iron_cross";
+				break;
+			case 2:
+				moName = "wall_chart";
+				break;
+			case 3:
+				moName = "wall_goo2";
+				break;
+			}
 			break;
 		}
 		break;
 	case CWWALL_DIRTY_BRICK_1:
-		switch (spearMission)
+		switch (map->type)
 		{
-		case 1:
-			moName = "cobble_moss";
+		case CWMAPTYPE_N3D:
+			moName = "green_relief";
 			break;
-		case 3:
-			moName = "wall_goo2";
+		default:
+			switch (spearMission)
+			{
+			case 1:
+				moName = "cobble_moss";
+				break;
+			case 3:
+				moName = "wall_goo2";
+				break;
+			}
 			break;
 		}
-		break;
 	case CWWALL_PURPLE_BLOOD:
 		switch (spearMission)
 		{
@@ -2881,8 +2925,9 @@ static void AdjustTurningPoint(Mission *m, const struct vec2i v)
 	{
 		return;
 	}
-	// HACK: locked doors can be opened by patrolling enemies walking into them
-	// Therefore unlock any locked doors directly in front of a turning point
+	// HACK: locked doors can be opened by patrolling enemies walking
+	// into them Therefore unlock any locked doors directly in front of
+	// a turning point
 	const uint16_t unlockedAccess = 0;
 	CArraySet(&m->u.Static.Access, v.x + v.y * m->Size.y, &unlockedAccess);
 }
@@ -2945,7 +2990,8 @@ static bool TryLoadSpearSteamVanilla(CampaignList *list)
 	for (int i = 1; i <= 3; i++)
 	{
 		char buf2[CDOGS_PATH_MAX];
-		// Append spear mission pack to path - we will handle this later
+		// Append spear mission pack to path - we will handle this
+		// later
 		sprintf(buf2, "%s?%d", buf, i);
 		if (!TryLoadCampaign(list, buf2))
 		{
