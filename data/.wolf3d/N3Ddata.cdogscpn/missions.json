@@ -260,9 +260,9 @@
 			"27": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "wood2",
-				"Mask": "d9923cff",
-				"MaskAlt": "9c682aff",
+				"Style": "support",
+				"Mask": "ffff00ff",
+				"MaskAlt": "feff00ff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -272,9 +272,9 @@
 			"28": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "wood2",
-				"Mask": "d9923cff",
-				"MaskAlt": "9c682aff",
+				"Style": "support",
+				"Mask": "ffff00ff",
+				"MaskAlt": "feff00ff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -284,9 +284,9 @@
 			"29": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "wood2",
-				"Mask": "d9923cff",
-				"MaskAlt": "9c682aff",
+				"Style": "support",
+				"Mask": "ff0000ff",
+				"MaskAlt": "ff0000ff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -308,9 +308,9 @@
 			"30": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "wood2",
-				"Mask": "d9923cff",
-				"MaskAlt": "9c682aff",
+				"Style": "support",
+				"Mask": "ff0000ff",
+				"MaskAlt": "ff0000ff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -320,9 +320,9 @@
 			"31": {
 				"Name": "wall",
 				"Type": "Wall",
-				"Style": "wood2",
-				"Mask": "d9923cff",
-				"MaskAlt": "9c682aff",
+				"Style": "support",
+				"Mask": "ff00ffff",
+				"MaskAlt": "ff00ffff",
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
@@ -866,8 +866,7 @@
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"],
 		"StaticItems": [{
 			"MapObject": "no_sign",
-			"Positions": [[7, 8],
-			[1, 12]]
+			"Positions": [[1, 12]]
 		},
 		{
 			"MapObject": "bloodstain2",
@@ -897,10 +896,6 @@
 		{
 			"MapObject": "elevator_interior",
 			"Positions": [[7, 16]]
-		},
-		{
-			"MapObject": "cobble_moss",
-			"Positions": [[3, 8]]
 		},
 		{
 			"MapObject": "hitler_glass",
@@ -1152,6 +1147,14 @@
 		{
 			"MapObject": "green_relief",
 			"Positions": [[15, 6]]
+		},
+		{
+			"MapObject": "closet_fruit",
+			"Positions": [[3, 8]]
+		},
+		{
+			"MapObject": "closets",
+			"Positions": [[7, 8]]
 		}],
 		"StaticCharacters": [{
 			"Index": 0,

@@ -1502,6 +1502,7 @@ static void TryLoadWallObject(
 			}
 			break;
 		}
+		break;
 	case CWWALL_ELEVATOR: {
 		switch (map->type)
 		{
@@ -1640,66 +1641,103 @@ static void TryLoadWallObject(
 			break;
 		}
 	case CWWALL_PURPLE_BLOOD:
-		switch (spearMission)
+		switch (map->type)
 		{
-		case 1:
-			moName = "bloodstain";
+		case CWMAPTYPE_N3D:
 			break;
-		case 2:
-			moName = "no_sign";
-			break;
-		case 3:
-			moName = "wall_goo2";
+		default:
+			switch (spearMission)
+			{
+			case 1:
+				moName = "bloodstain";
+				break;
+			case 2:
+				moName = "no_sign";
+				break;
+			case 3:
+				moName = "wall_goo2";
+				break;
+			}
 			break;
 		}
 		break;
 	case CWWALL_DIRTY_BRICK_2:
-		switch (spearMission)
+		switch (map->type)
 		{
-		case 1:
-			moName = "cobble_moss";
+		case CWMAPTYPE_N3D:
+			moName = "closet_fruit";
 			break;
-		case 2:
-			moName = "jail_cell";
+		default:
+			switch (spearMission)
+			{
+			case 1:
+				moName = "cobble_moss";
+				break;
+			case 2:
+				moName = "jail_cell";
+				break;
+			}
 			break;
 		}
 		break;
 	case CWWALL_GREY_BRICK_3:
-		switch (spearMission)
+		switch (map->type)
 		{
-		case 2:
-			moName = "jail_cell_skeleton";
+		case CWMAPTYPE_N3D:
 			break;
-		case 3:
-			moName = "swastika_blue";
+		default:
+			switch (spearMission)
+			{
+			case 2:
+				moName = "jail_cell_skeleton";
+				break;
+			case 3:
+				moName = "swastika_blue";
+				break;
+			}
 			break;
 		}
 		break;
 	case CWWALL_GREY_BRICK_SIGN:
-		switch (spearMission)
+		switch (map->type)
 		{
-		case 1:
-			moName = "no_sign";
+		case CWMAPTYPE_N3D:
+			moName = "closets";
 			break;
-		case 2:
-			moName = "no_sign";
-			break;
-		case 3:
-			moName = "skull_blue";
+		default:
+			switch (spearMission)
+			{
+			case 1:
+				moName = "no_sign";
+				break;
+			case 2:
+				moName = "no_sign";
+				break;
+			case 3:
+				moName = "skull_blue";
+				break;
+			}
 			break;
 		}
 		break;
 	case CWWALL_BROWN_WEAVE_BLOOD_2:
-		switch (spearMission)
+		switch (map->type)
 		{
-		case 1:
-			moName = "bloodstain";
+		case CWMAPTYPE_N3D:
 			break;
-		case 2:
-			moName = "skull_blue";
-			break;
-		case 3:
-			moName = "swastika_relief";
+		default:
+			switch (spearMission)
+			{
+			case 1:
+				moName = "bloodstain";
+				break;
+			case 2:
+				moName = "skull_blue";
+				break;
+			case 3:
+				moName = "swastika_relief";
+				break;
+			}
 			break;
 		}
 		break;

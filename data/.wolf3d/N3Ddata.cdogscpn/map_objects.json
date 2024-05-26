@@ -396,16 +396,6 @@
       "Flags": ["Inside", "OnWall"]
     },
     {
-      "Name": "cobble_moss",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "cobble_moss"
-      },
-      "Offset": [-8, -23],
-      "Health": 0,
-      "Flags": ["Outside", "OnWall"]
-    },
-    {
       "Name": "wood_slime",
       "Pic": {
         "Type": "Normal",
@@ -460,6 +450,26 @@
       "Pic": {
         "Type": "Normal",
         "Pic": "closet"
+      },
+      "Offset": [-8, -11],
+      "Health": 0,
+      "Flags": ["Inside", "OnWall"]
+    },
+    {
+      "Name": "closet_fruit",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "closet_fruit"
+      },
+      "Offset": [-8, -11],
+      "Health": 0,
+      "Flags": ["Inside", "OnWall"]
+    },
+    {
+      "Name": "closets",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "closets"
       },
       "Offset": [-8, -11],
       "Health": 0,
