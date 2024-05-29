@@ -1418,8 +1418,54 @@ static void TryLoadWallObject(
 	case CWWALL_STEEL:
 		switch (map->type)
 		{
-		case CWMAPTYPE_N3D:
-			break;
+		case CWMAPTYPE_N3D: {
+			const TileClass *tcBelow =
+				MissionStaticGetTileClass(m, levelSize, vBelow);
+			if (tcBelow == NULL)
+			{
+				break;
+			}
+			if (tcBelow->Type == TILE_CLASS_FLOOR)
+			{
+				moName = "elevator_interior";
+			}
+			// Elevators only occur on east/west tiles
+			for (int dx = -1; dx <= 1; dx += 2)
+			{
+				const struct vec2i exitV = svec2i(v.x + dx, v.y);
+				const TileClass *tc =
+					MissionStaticGetTileClass(m, levelSize, exitV);
+				// Tile can be a vertical door
+				const uint16_t chd = CWLevelGetCh(level, 0, exitV.x, exitV.y);
+				const CWTile tile = CWChToTile(chd);
+				const bool isVerticalDoor =
+					tile == CWTILE_ELEVATOR_V || tile == CWTILE_DOOR_V ||
+					tile == CWTILE_DOOR_GOLD_V || tile == CWTILE_DOOR_SILVER_V;
+				if (tc != NULL &&
+					(tc->Type == TILE_CLASS_FLOOR || isVerticalDoor))
+				{
+					Exit e;
+					e.Hidden = true;
+					e.Mission = missionIndex + 1;
+					// Check if coming back from secret level
+					switch (missionIndex)
+					{
+					case 11:
+						e.Mission = 8;
+						break;
+					case 29:
+						e.Mission = 26;
+						break;
+					default:
+						break;
+					}
+					e.R.Pos = exitV;
+					e.R.Size = svec2i_zero();
+					MissionStaticTryAddExit(m, &e);
+				}
+			}
+		}
+		break;
 		default:
 			switch (spearMission)
 			{
@@ -1582,8 +1628,8 @@ static void TryLoadWallObject(
 			}
 		}
 		}
+		break;
 	}
-	break;
 	case CWWALL_DEAD_ELEVATOR:
 		switch (map->type)
 		{
@@ -2679,24 +2725,32 @@ static void LoadEntity(
 	case CWENT_PUSHWALL:
 		MakeWallWalkable(m, v);
 		break;
-	case CWENT_ENDGAME: {
-		Exit e;
-		e.Hidden = true;
-		// Skip over the secret level to the next episode
-		e.Mission = (missionIndex + 10) / 10 * 10;
-		// Skip to end of game if the next episode is blank, or if the
-		// campaign should have less levels
-		if ((e.Mission < map->nLevels &&
-			 !map->levels[e.Mission].hasPlayerSpawn) ||
-			e.Mission >= numMissions)
+	case CWENT_ENDGAME:
+		switch (map->type)
 		{
-			e.Mission = map->nLevels;
+		case CWMAPTYPE_N3D:
+			MakeWallWalkable(m, v);
+			break;
+		default: {
+			Exit e;
+			e.Hidden = true;
+			// Skip over the secret level to the next episode
+			e.Mission = (missionIndex + 10) / 10 * 10;
+			// Skip to end of game if the next episode is blank, or if the
+			// campaign should have less levels
+			if ((e.Mission < map->nLevels &&
+				 !map->levels[e.Mission].hasPlayerSpawn) ||
+				e.Mission >= numMissions)
+			{
+				e.Mission = map->nLevels;
+			}
+			e.R.Pos = v;
+			e.R.Size = svec2i_zero();
+			MissionStaticTryAddExit(&m->u.Static, &e);
 		}
-		e.R.Pos = v;
-		e.R.Size = svec2i_zero();
-		CArrayPushBack(&m->u.Static.Exits, &e);
-	}
-	break;
+		break;
+		}
+		break;
 	case CWENT_NEXT_LEVEL:
 		// TODO: implement
 		break;
