@@ -1448,10 +1448,17 @@ static void TryLoadWallObject(
 					e.Hidden = true;
 					e.Mission = missionIndex + 1;
 					// Check if coming back from secret level
+					// For boss levels, skip the secret level
 					switch (missionIndex)
 					{
+					case 10:
+						e.Mission++;
+						break;
 					case 11:
 						e.Mission = 8;
+						break;
+					case 28:
+						e.Mission++;
 						break;
 					case 29:
 						e.Mission = 26;
@@ -1530,6 +1537,7 @@ static void TryLoadWallObject(
 			}
 			break;
 		}
+		break;
 	case CWWALL_RED_BRICK_FLAG:
 		switch (map->type)
 		{
@@ -1686,6 +1694,7 @@ static void TryLoadWallObject(
 			}
 			break;
 		}
+		break;
 	case CWWALL_PURPLE_BLOOD:
 		switch (map->type)
 		{
@@ -2145,6 +2154,7 @@ typedef enum
 	CHAR_PACMAN_GHOST_YELLOW,
 	CHAR_PACMAN_GHOST_ROSE,
 	CHAR_PACMAN_GHOST_BLUE,
+	// 10
 	CHAR_HANS,
 	CHAR_SCHABBS,
 	CHAR_FAKE_HITLER,
@@ -2155,6 +2165,7 @@ typedef enum
 	CHAR_FETTGESICHT,
 	CHAR_TRANS,
 	CHAR_WILHELM,
+	// 20
 	CHAR_UBERMUTANT,
 	CHAR_DEATH_KNIGHT,
 	CHAR_GHOST,
