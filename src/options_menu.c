@@ -145,29 +145,15 @@ static menu_t *MenuCreateOptionsGraphics(
 	return menu;
 }
 
-static menu_t *MenuCreateKeys(const char *name, OptionsMenuData *data);
-
-#if !defined(__ANDROID__) && !defined(__GCWZERO__)
-static menu_t *MenuCreateOptionsControls(
-	const char *name, OptionsMenuData *data)
-{
-	menu_t *menu =
-		MenuCreateNormal(name, "Configure Controls:", MENU_TYPE_OPTIONS, 0);
-	MenuAddSubmenu(menu, MenuCreateKeys("Redefine keys...", data));
-	MenuAddSubmenu(menu, MenuCreateSeparator(""));
-	MenuAddSubmenu(menu, MenuCreateBack("Done"));
-	MenuSetPostInputFunc(menu, PostInputConfigApply, data);
-	return menu;
-}
-#endif
-
 static void MenuCreateKeysSingleSection(
 	menu_t *menu, const char *sectionName, const int playerIndex);
 static menu_t *MenuCreateOptionChangeKey(
 	const char *name, const key_code_e code, const int playerIndex,
 	const bool isOptional);
 
-static menu_t *MenuCreateKeys(const char *name, OptionsMenuData *data)
+#if !defined(__ANDROID__) && !defined(__GCWZERO__)
+static menu_t *MenuCreateOptionsControls(
+	const char *name, OptionsMenuData *data)
 {
 	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_OPTIONS, 0);
 	MenuCreateKeysSingleSection(menu, "Keyboard 1", 0);
@@ -179,6 +165,7 @@ static menu_t *MenuCreateKeys(const char *name, OptionsMenuData *data)
 	MenuSetPostInputFunc(menu, PostInputConfigApply, data);
 	return menu;
 }
+#endif
 
 static void MenuCreateKeysSingleSection(
 	menu_t *menu, const char *sectionName, const int playerIndex)
