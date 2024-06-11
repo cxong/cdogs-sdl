@@ -37,7 +37,7 @@ static menu_t *MenuCreateOptionsGraphics(
 	const char *name, OptionsMenuData *data);
 
 #if !defined(__ANDROID__) && !defined(__GCWZERO__)
-static menu_t *MenuCreateOptionsControls(
+static menu_t *MenuCreateKeys(
 	const char *name, OptionsMenuData *data);
 #endif
 
@@ -54,7 +54,7 @@ menu_t *MenuCreateOptions(const char *name, OptionsMenuData *data)
 				  "Interface...", "Interface Options:",
 				  ConfigGet(data->config, "Interface"), data, true));
 #if !defined(__ANDROID__) && !defined(__GCWZERO__)
-	MenuAddSubmenu(menu, MenuCreateOptionsControls("Controls...", data));
+	MenuAddSubmenu(menu, MenuCreateKeys("Redefine keys...", data));
 #endif
 	MenuAddSubmenu(
 		menu, MenuCreateConfigOptions(
@@ -152,7 +152,7 @@ static menu_t *MenuCreateOptionChangeKey(
 	const bool isOptional);
 
 #if !defined(__ANDROID__) && !defined(__GCWZERO__)
-static menu_t *MenuCreateOptionsControls(
+static menu_t *MenuCreateKeys(
 	const char *name, OptionsMenuData *data)
 {
 	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_OPTIONS, 0);
