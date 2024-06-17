@@ -155,7 +155,6 @@ static void MainMenuTerminate(GameLoopData *data)
 	UnloadAllCampaigns(&mData->campaigns);
 	CFREE(mData);
 }
-static menu_t *FindSubmenuByName(menu_t *menu, const char *name);
 static void MainMenuOnEnter(GameLoopData *data)
 {
 	MainMenuData *mData = data->Data;
@@ -177,7 +176,7 @@ static void MainMenuOnEnter(GameLoopData *data)
 	GameEventsTerminate(&gGameEvents);
 
 	// Auto-enter the submenu corresponding to the last game mode
-	menu_t *startMenu = FindSubmenuByName(mData->ms.root, "Start");
+	menu_t *startMenu = MenuGetSubmenuByName(mData->ms.root, "Start");
 	if (mData->wasClient)
 	{
 		mData->ms.current = startMenu;
@@ -187,28 +186,19 @@ static void MainMenuOnEnter(GameLoopData *data)
 		switch (mData->lastGameMode)
 		{
 		case GAME_MODE_NORMAL:
-			mData->ms.current = FindSubmenuByName(startMenu, "Campaign");
+			mData->ms.current = MenuGetSubmenuByName(startMenu, "Campaign");
 			break;
 		case GAME_MODE_DOGFIGHT:
-			mData->ms.current = FindSubmenuByName(startMenu, "Dogfight");
+			mData->ms.current = MenuGetSubmenuByName(startMenu, "Dogfight");
 			break;
 		case GAME_MODE_DEATHMATCH:
-			mData->ms.current = FindSubmenuByName(startMenu, "Deathmatch");
+			mData->ms.current = MenuGetSubmenuByName(startMenu, "Deathmatch");
 			break;
 		default:
 			mData->ms.current = mData->ms.root;
 			break;
 		}
 	}
-}
-static menu_t *FindSubmenuByName(menu_t *menu, const char *name)
-{
-	CASSERT(menu->type == MENU_TYPE_NORMAL, "invalid menu type");
-	CA_FOREACH(menu_t, submenu, menu->u.normal.subMenus)
-	if (strcmp(submenu->name, name) == 0)
-		return submenu;
-	CA_FOREACH_END()
-	return menu;
 }
 static void MainMenuOnExit(GameLoopData *data)
 {

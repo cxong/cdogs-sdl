@@ -425,11 +425,10 @@ void MenuSetDisabled(menu_t *menu, const bool isDisabled)
 
 menu_t *MenuGetSubmenuByName(menu_t *menu, const char *name)
 {
-	CA_FOREACH(menu_t, subMenu, menu->u.normal.subMenus)
-	if (strcmp(subMenu->name, name) == 0)
-	{
-		return subMenu;
-	}
+	CASSERT(menu->type == MENU_TYPE_NORMAL, "invalid menu type");
+	CA_FOREACH(menu_t, submenu, menu->u.normal.subMenus)
+	if (strcmp(submenu->name, name) == 0)
+		return submenu;
 	CA_FOREACH_END()
 	return NULL;
 }
