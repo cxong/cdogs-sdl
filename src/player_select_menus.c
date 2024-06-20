@@ -524,7 +524,6 @@ static void CheckReenableLoadMenu(menu_t *menu, void *data)
 {
 	menu_t *loadMenu = MenuGetSubmenuByName(menu, "Load");
 	UNUSED(data);
-	assert(loadMenu);
 	loadMenu->isDisabled = PlayerTemplateGetById(&gPlayerTemplates, 0) == NULL;
 }
 static menu_t *CreateCustomizeMenu(

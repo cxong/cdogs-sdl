@@ -5,6 +5,7 @@
 [![Github All Releases](https://img.shields.io/github/downloads/cxong/cdogs-sdl/total.svg)](https://github.com/cxong/cdogs-sdl/releases)
 [![Release](http://img.shields.io/github/release/cxong/cdogs-sdl.svg)](https://github.com/cxong/cdogs-sdl/releases/latest)
 [![Custom campaigns](https://img.shields.io/badge/%F0%9F%94%97-custom%20campaigns-brightgreen)](http://cdogs.morezombies.net/)
+[![#CDogsSDL on Mastodon](https://img.shields.io/badge/-%23CDogsSDL-%23303030?logo=mastodon)](https://mastodon.gamedev.place/tags/CDogsSDL)
 
 ## ![](https://github.com/cxong/cdogs-sdl/blob/master/graphics/column.png) Introduction
 
@@ -59,4 +60,3 @@ Data is licensed under various free terms, including CC0, CC-BY and CC-BY-SA. [T
 If you have any questions, comments, bug reports, patches or anything else related to C-Dogs SDL:
 
 - [Raise an issue](https://github.com/cxong/cdogs-sdl/issues)
-- Email: [Cong](<mailto:congusbongus@gmail.com>)

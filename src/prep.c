@@ -309,6 +309,7 @@ typedef struct
 	char suffixes[CDOGS_PATH_MAX];
 	char suffixnames[CDOGS_PATH_MAX];
 	EventWaitResult waitResult;
+	int endCounter;
 } PlayerSelectionData;
 static void PlayerSelectionTerminate(GameLoopData *data);
 static void PlayerSelectionOnExit(GameLoopData *data);
@@ -358,22 +359,6 @@ static void PlayerSelectionOnExit(GameLoopData *data)
 	PlayerSelectionData *pData = data->Data;
 	if (pData->waitResult == EVENT_WAIT_OK)
 	{
-		for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
-		{
-			PlayerData *p = CArrayGet(&gPlayerDatas, i);
-			if (!p->IsLocal)
-			{
-				idx--;
-				continue;
-			}
-
-			// For any player slots not picked, turn them into AIs
-			if (p->inputDevice == INPUT_DEVICE_UNSET)
-			{
-				PlayerTrySetInputDevice(p, INPUT_DEVICE_AI, 0);
-			}
-		}
-
 		if (!gCampaign.IsClient)
 		{
 			gCampaign.MissionIndex = 0;
@@ -406,36 +391,39 @@ static GameLoopResult PlayerSelectionUpdate(GameLoopData *data, LoopRunner *l)
 		LoopRunnerPop(l);
 		return UPDATE_RESULT_OK;
 	}
-
-	// Menu input
+	
 	int idx = 0;
-	const int localPlayers = GetNumPlayers(PLAYER_ANY, true, true);
-	const bool useMenuCmd = (localPlayers <= 1);
-	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
+	if (pData->endCounter == 0)
 	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (!p->IsLocal)
+		// Menu input
+    const int localHumanPlayers = GetNumPlayers(PLAYER_ANY, true, true);
+    const bool useMenuCmd = (localHumanPlayers <= 1);
+		for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 		{
-			idx--;
-			continue;
-		}
-		if (p->inputDevice != INPUT_DEVICE_UNSET)
-		{
-			MenuSystem *ms = &pData->menus[idx].ms;
-			if (ms->current->customPostUpdateFunc)
+			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
+			if (!p->IsLocal)
 			{
-				ms->current->customPostUpdateFunc(
-					ms->current, ms->current->customPostUpdateData);
+				idx--;
+				continue;
 			}
-			MenuUpdateMouse(ms);
-			if (useMenuCmd)
+			if (p->inputDevice != INPUT_DEVICE_UNSET)
 			{
-				cmds[idx] |=
+				MenuSystem *ms = &pData->menus[idx].ms;
+				if (ms->current->customPostUpdateFunc)
+				{
+					ms->current->customPostUpdateFunc(
+													  ms->current, ms->current->customPostUpdateData);
+				}
+				MenuUpdateMouse(ms);
+				if (useMenuCmd)
+				{
+					cmds[idx] |=
 					GetMenuCmd(&gEventHandlers, ms->current->mouseHover);
-			}
-			if (!MenuIsExit(ms) && cmds[idx])
-			{
-				MenuProcessCmd(ms, cmds[idx]);
+				}
+				if (!MenuIsExit(ms) && cmds[idx])
+				{
+					MenuProcessCmd(ms, cmds[idx]);
+				}
 			}
 		}
 	}
@@ -466,16 +454,43 @@ static GameLoopResult PlayerSelectionUpdate(GameLoopData *data, LoopRunner *l)
 	}
 	if (isDone && hasAtLeastOneInput)
 	{
-		pData->waitResult = EVENT_WAIT_OK;
-		if (!gCampaign.IsClient && CanLevelSelect(gCampaign.Entry.Mode))
+		// For any player slots not picked, turn them into AIs
+		bool hasAIPlayers = false;
+		idx = 0;
+		for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 		{
-			LoopRunnerChange(l, LevelSelection(&gGraphicsDevice));
+			PlayerData *p = CArrayGet(&gPlayerDatas, i);
+			if (!p->IsLocal)
+			{
+				idx--;
+				continue;
+			}
+			if (p->inputDevice == INPUT_DEVICE_UNSET || p->inputDevice == INPUT_DEVICE_AI)
+			{
+				hasAIPlayers = true;
+				PlayerTrySetInputDevice(p, INPUT_DEVICE_AI, 0);
+				pData->menus[idx].ms.current = MenuGetSubmenuByName(pData->menus[idx].ms.root, "Done");
+			}
+		}
+		if (hasAIPlayers && pData->endCounter < 70)
+		{
+			// If we have AI players, wait a bit before continuing
+			pData->endCounter++;
+			return UPDATE_RESULT_DRAW;
 		}
 		else
 		{
-			LoopRunnerChange(l, GameOptions(gCampaign.Entry.Mode));
+			pData->waitResult = EVENT_WAIT_OK;
+			if (!gCampaign.IsClient && CanLevelSelect(gCampaign.Entry.Mode))
+			{
+				LoopRunnerChange(l, LevelSelection(&gGraphicsDevice));
+			}
+			else
+			{
+				LoopRunnerChange(l, GameOptions(gCampaign.Entry.Mode));
+			}
+			return UPDATE_RESULT_OK;
 		}
-		return UPDATE_RESULT_OK;
 	}
 
 	AssignPlayerInputDevices(&gEventHandlers);
