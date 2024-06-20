@@ -396,7 +396,8 @@ static GameLoopResult PlayerSelectionUpdate(GameLoopData *data, LoopRunner *l)
 	if (pData->endCounter == 0)
 	{
 		// Menu input
-		const bool useMenuCmd = GetNumPlayers(PLAYER_ANY, true, true);
+    const int localHumanPlayers = GetNumPlayers(PLAYER_ANY, true, true);
+    const bool useMenuCmd = (localHumanPlayers <= 1);
 		for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 		{
 			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
