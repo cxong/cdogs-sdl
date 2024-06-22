@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2014, 2017-2023 Cong Xu
+	Copyright (c) 2013-2014, 2017-2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -69,7 +69,9 @@ static void MapSetupDoors(MapBuilder *mb);
 static void MapAddDrains(MapBuilder *mb);
 static void MapGenerateRandomExitArea(Map *map, const int mission);
 void MapBuild(
-	Map *m, const Mission *mission, const bool loadDynamic, const int missionIndex, const GameMode mode, const CharacterStore *characters)
+	Map *m, const Mission *mission, const bool loadDynamic,
+	const int missionIndex, const GameMode mode,
+	const CharacterStore *characters)
 {
 	MapBuilder mb;
 	MapBuilderInit(&mb, m, mission, mode, characters);
@@ -188,14 +190,16 @@ static void MapSetupDoors(MapBuilder *mb)
 {
 	// Mark doors as set up as we go
 	CArray doorsSetup;
-	CArrayInitFillZero(&doorsSetup, sizeof(bool), mb->Map->Size.x * mb->Map->Size.y);
-	
+	CArrayInitFillZero(
+		&doorsSetup, sizeof(bool), mb->Map->Size.x * mb->Map->Size.y);
+
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), mb->Map->Size))
 	// Check if this door tile hasn't been set up yet
 	const int idx = _v.x + _v.y * mb->Map->Size.x;
 	if (MapBuilderIsDoor(mb, _v) && !*(bool *)CArrayGet(&doorsSetup, idx))
 	{
-		const struct vec2i groupSize = MapAddDoorGroup(mb, _v, MapGetAccessFlags(mb, _v));
+		const struct vec2i groupSize =
+			MapAddDoorGroup(mb, _v, MapGetAccessFlags(mb, _v));
 		for (int dx = 0; dx < groupSize.x; dx++)
 		{
 			for (int dy = 0; dy < groupSize.y; dy++)
@@ -206,7 +210,7 @@ static void MapSetupDoors(MapBuilder *mb)
 		}
 	}
 	RECT_FOREACH_END()
-	
+
 	CArrayTerminate(&doorsSetup);
 }
 static bool MapBuilderIsDoor(const MapBuilder *mb, const struct vec2i v)
@@ -230,7 +234,8 @@ static int MapGetAccessFlags(const MapBuilder *mb, const struct vec2i v)
 }
 
 void MapBuilderInit(
-	MapBuilder *mb, Map *m, const Mission *mission, const GameMode mode, const CharacterStore *characters)
+	MapBuilder *mb, Map *m, const Mission *mission, const GameMode mode,
+	const CharacterStore *characters)
 {
 	memset(mb, 0, sizeof *mb);
 	mb->Map = m;
@@ -440,7 +445,7 @@ void MapLoadDynamic(MapBuilder *mb)
 		MapTryPlaceOneObject(mb, MapGetRandomTile(mb->Map), mod->M, 0, true);
 	}
 	CA_FOREACH_END()
-	
+
 	CA_FOREACH(const PickupCount, pc, mb->mission->PickupCounts)
 	for (int j = 0; j < pc->Count; j++)
 	{
@@ -467,7 +472,8 @@ void MapLoadDynamic(MapBuilder *mb)
 		AddKeys(mb);
 	}
 }
-static bool MapTryPlaceBlowup(MapBuilder *mb, const int objective, const bool strict);
+static bool MapTryPlaceBlowup(
+	MapBuilder *mb, const int objective, const bool strict);
 static int MapTryPlaceCollectible(MapBuilder *mb, const int objective);
 static void AddObjectives(MapBuilder *mb)
 {
@@ -583,7 +589,8 @@ typedef struct
 } TryPlaceOneBlowupData;
 static bool TryPlaceOneBlowup(
 	MapBuilder *mb, const struct vec2i tilePos, void *data);
-static bool MapTryPlaceBlowup(MapBuilder *mb, const int objective, const bool strict)
+static bool MapTryPlaceBlowup(
+	MapBuilder *mb, const int objective, const bool strict)
 {
 	TryPlaceOneBlowupData data;
 	data.o = CArrayGet(&mb->mission->Objectives, objective);
@@ -597,7 +604,8 @@ static bool TryPlaceOneBlowup(
 	MapBuilder *mb, const struct vec2i tilePos, void *data)
 {
 	const TryPlaceOneBlowupData *pData = data;
-	return MapTryPlaceDestroyObject(mb, mb->mission, pData->objective, tilePos, pData->strict);
+	return MapTryPlaceDestroyObject(
+		mb, mb->mission, pData->objective, tilePos, pData->strict);
 }
 
 void MapBuilderSetLeaveFree(
@@ -657,7 +665,8 @@ static void MapSetupTilesAndWalls(MapBuilder *mb)
 	MapSetupTile(mb, _v);
 	RECT_FOREACH_END()
 
-	if (mb->mission->Type != MAPTYPE_STATIC || mb->mission->u.Static.AltFloorsEnabled)
+	if (mb->mission->Type != MAPTYPE_STATIC ||
+		mb->mission->u.Static.AltFloorsEnabled)
 	{
 		// Randomly change normal floor tiles to alternative floor tiles
 		for (int i = 0; i < mb->Map->Size.x * mb->Map->Size.y / 22; i++)
@@ -667,9 +676,8 @@ static void MapSetupTilesAndWalls(MapBuilder *mb)
 			{
 				Tile *t = MapGetTile(mb->Map, pos);
 				t->Class = TileClassesGetMaskedTile(
-					mb->Map->TileClasses,
-					t->Class, t->Class->Style, "alt1", t->Class->Mask,
-					t->Class->MaskAlt);
+					mb->Map->TileClasses, t->Class, t->Class->Style, "alt1",
+					t->Class->Mask, t->Class->MaskAlt);
 			}
 		}
 		for (int i = 0; i < mb->Map->Size.x * mb->Map->Size.y / 16; i++)
@@ -679,9 +687,8 @@ static void MapSetupTilesAndWalls(MapBuilder *mb)
 			{
 				Tile *t = MapGetTile(mb->Map, pos);
 				t->Class = TileClassesGetMaskedTile(
-					mb->Map->TileClasses,
-					t->Class, t->Class->Style, "alt2", t->Class->Mask,
-					t->Class->MaskAlt);
+					mb->Map->TileClasses, t->Class, t->Class->Style, "alt2",
+					t->Class->Mask, t->Class->MaskAlt);
 			}
 		}
 	}
@@ -703,21 +710,20 @@ static void MapSetupTile(MapBuilder *mb, const struct vec2i pos)
 	if (tc->Type == TILE_CLASS_FLOOR)
 	{
 		t->Class = TileClassesGetMaskedTile(
-			mb->Map->TileClasses,
-			tc, tc->Style, canSeeTileAbove ? "normal" : "shadow", tc->Mask,
-			tc->MaskAlt);
+			mb->Map->TileClasses, tc, tc->Style,
+			canSeeTileAbove ? "normal" : "shadow", tc->Mask, tc->MaskAlt);
 	}
 	else if (tc->Type == TILE_CLASS_WALL)
 	{
 		t->Class = TileClassesGetMaskedTile(
-			mb->Map->TileClasses,
-			tc, tc->Style, MapGetWallPic(mb, pos), tc->Mask, tc->MaskAlt);
+			mb->Map->TileClasses, tc, tc->Style, MapGetWallPic(mb, pos),
+			tc->Mask, tc->MaskAlt);
 	}
 	else if (tc->Type == TILE_CLASS_DOOR)
 	{
 		t->Class = TileClassesGetMaskedTile(
-			mb->Map->TileClasses,
-			tc, tc->Style, "normal_h", tc->Mask, tc->MaskAlt);
+			mb->Map->TileClasses, tc, tc->Style, "normal_h", tc->Mask,
+			tc->MaskAlt);
 	}
 	else if (tc->Type == TILE_CLASS_NOTHING)
 	{
@@ -899,12 +905,14 @@ static bool MapBuilderGetIsRoom(const MapBuilder *mb, const struct vec2i pos)
 }
 
 void MapMakeRoomWalls(
-	MapBuilder *mb, const RoomParams r, const TileClass *wall, const Rect2i room)
+	MapBuilder *mb, const RoomParams r, const TileClass *wall,
+	const Rect2i room)
 {
 	int count = 0;
 	for (int i = 0; i < 100 && count < r.Walls; i++)
 	{
-		if (!MapTryBuildWall(mb, true, MAX(r.WallPad, 1), r.WallLength, wall, room))
+		if (!MapTryBuildWall(
+				mb, true, MAX(r.WallPad, 1), r.WallLength, wall, room))
 		{
 			continue;
 		}
@@ -920,9 +928,9 @@ bool MapTryBuildWall(
 	const TileClass *wall, const Rect2i r)
 {
 	const struct vec2i v =
-		Rect2iIsZero(r) ?
-		MapGetRandomTile(mb->Map) :
-		svec2i_add(r.Pos, svec2i(rand() % r.Size.x, rand() % r.Size.y));
+		Rect2iIsZero(r)
+			? MapGetRandomTile(mb->Map)
+			: svec2i_add(r.Pos, svec2i(rand() % r.Size.x, rand() % r.Size.y));
 	if (MapIsValidStartForWall(mb, v, isRoom, pad))
 	{
 		MapBuilderSetTile(mb, v, wall);
@@ -1090,11 +1098,14 @@ static void AddOverlapRooms(
 	CA_FOREACH_END()
 }
 
-static void PlaceDoors(MapBuilder *mb, const int doorSize, const int roomDim, const struct vec2i doorStart, const struct vec2i d, const bool randomPos, const TileClass *tile);
+static void PlaceDoors(
+	MapBuilder *mb, const int doorSize, const int roomDim,
+	const struct vec2i doorStart, const struct vec2i d, const bool randomPos,
+	const TileClass *tile);
 void MapPlaceDoors(
 	MapBuilder *mb, const Rect2i r, const bool hasDoors, const bool doors[4],
-	const int doorMin, const int doorMax, const uint16_t accessMask, const bool randomPos,
-	const TileClass *door, const TileClass *floor)
+	const int doorMin, const int doorMax, const uint16_t accessMask,
+	const bool randomPos, const TileClass *door, const TileClass *floor)
 {
 	const TileClass *tile = hasDoors ? door : floor;
 
@@ -1107,39 +1118,40 @@ void MapPlaceDoors(
 		{
 			continue;
 		}
-		const int doorSize = doorMax > doorMin ? RAND_INT(doorMin, doorMax) : doorMin;
+		const int doorSize =
+			doorMax > doorMin ? RAND_INT(doorMin, doorMax) : doorMin;
 		int roomDim;
 		struct vec2i d;
 		struct vec2i doorStart;
 		switch (i)
 		{
-			case 0:
-				// left
-				roomDim = r.Size.y;
-				d = svec2i(1, 0);
-				doorStart = r.Pos;
-				break;
-			case 1:
-				// right
-				roomDim = r.Size.y;
-				d = svec2i(1, 0);
-				doorStart = svec2i(r.Pos.x + r.Size.x - 1, r.Pos.y);
-				break;
-			case 2:
-				// top
-				roomDim = r.Size.x;
-				d = svec2i(0, 1);
-				doorStart = r.Pos;
-				break;
-			case 3:
-				// bottom:
-				roomDim = r.Size.x;
-				d = svec2i(0, 1);
-				doorStart = svec2i(r.Pos.x, r.Pos.y + r.Size.y - 1);
-				break;
-			default:
-				CASSERT(false, "unexpected side index");
-				return;
+		case 0:
+			// left
+			roomDim = r.Size.y;
+			d = svec2i(1, 0);
+			doorStart = r.Pos;
+			break;
+		case 1:
+			// right
+			roomDim = r.Size.y;
+			d = svec2i(1, 0);
+			doorStart = svec2i(r.Pos.x + r.Size.x - 1, r.Pos.y);
+			break;
+		case 2:
+			// top
+			roomDim = r.Size.x;
+			d = svec2i(0, 1);
+			doorStart = r.Pos;
+			break;
+		case 3:
+			// bottom:
+			roomDim = r.Size.x;
+			d = svec2i(0, 1);
+			doorStart = svec2i(r.Pos.x, r.Pos.y + r.Size.y - 1);
+			break;
+		default:
+			CASSERT(false, "unexpected side index");
+			return;
 		}
 		PlaceDoors(mb, doorSize, roomDim, doorStart, d, randomPos, tile);
 	}
@@ -1147,22 +1159,29 @@ void MapPlaceDoors(
 static bool TryPlaceDoorTile(
 	MapBuilder *mb, const struct vec2i v, const struct vec2i d,
 	const TileClass *tile);
-static void PlaceDoors(MapBuilder *mb, const int doorSize, const int roomDim, const struct vec2i doorStart, const struct vec2i d, const bool randomPos, const TileClass *tile)
+static void PlaceDoors(
+	MapBuilder *mb, const int doorSize, const int roomDim,
+	const struct vec2i doorStart, const struct vec2i d, const bool randomPos,
+	const TileClass *tile)
 {
 	const struct vec2i dAcross = svec2i_subtract(svec2i_one(), d);
 	const int size = MIN(doorSize, roomDim - 2);
 	struct vec2i start = doorStart;
 	if (randomPos)
 	{
-		start = svec2i_add(start, svec2i_scale(dAcross, (float)RAND_INT(1, roomDim - size - 1)));
+		start = svec2i_add(
+			start,
+			svec2i_scale(dAcross, (float)RAND_INT(1, roomDim - size - 1)));
 	}
 	else
 	{
-		start = svec2i_add(start, svec2i_scale(dAcross, (float)((roomDim - size) / 2)));
+		start = svec2i_add(
+			start, svec2i_scale(dAcross, (float)((roomDim - size) / 2)));
 	}
 	for (int i = 0; i < size; i++)
 	{
-		const struct vec2i v = svec2i_add(start, svec2i_scale(dAcross, (float)i));
+		const struct vec2i v =
+			svec2i_add(start, svec2i_scale(dAcross, (float)i));
 		if (!TryPlaceDoorTile(mb, v, d, tile))
 		{
 			break;
@@ -1437,7 +1456,9 @@ bool MapIsLessThanTwoWallOverlaps(
 	return true;
 }
 
-void MapFillRect(MapBuilder *mb, const Rect2i r, const TileClass *edge, const TileClass *fill)
+void MapFillRect(
+	MapBuilder *mb, const Rect2i r, const TileClass *edge,
+	const TileClass *fill)
 {
 	RECT_FOREACH(r)
 	const TileClass *tc = Rect2iIsAtEdge(r, _v) ? edge : fill;
@@ -1509,10 +1530,10 @@ static void MapGenerateRandomExitArea(Map *map, const int mission)
 	exit.Hidden = false;
 	for (int i = 0; i < 10000 && (t == NULL || !TileCanWalk(t)); i++)
 	{
-		exit.R.Pos.x = (rand() % (abs(map->Size.x) - EXIT_WIDTH - 1));
-		exit.R.Size.x = EXIT_WIDTH + 1;
-		exit.R.Pos.y = (rand() % (abs(map->Size.y) - EXIT_HEIGHT - 1));
-		exit.R.Size.y = EXIT_HEIGHT + 1;
+		exit.R.Size.x = MIN(map->Size.x - 2, EXIT_WIDTH + 1);
+		exit.R.Pos.x = (rand() % (abs(map->Size.x) - exit.R.Size.x));
+		exit.R.Size.y = MIN(map->Size.y - 2, EXIT_HEIGHT + 1);
+		exit.R.Pos.y = (rand() % (abs(map->Size.y) - exit.R.Size.y));
 		// Check that the exit area is walkable
 		t = MapGetTile(map, Rect2iCenter(exit.R));
 	}

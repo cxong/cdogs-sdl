@@ -1001,9 +1001,8 @@ static bool ActorTryChangeDirection(
 {
 	const bool willChangeDirecton =
 		!actor->petrified && CMD_HAS_DIRECTION(cmd) &&
-		(!Button2(cmd) ||
-		 ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") !=
-			 SWITCHMOVE_STRAFE) &&
+		(!Button2(cmd) || ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") !=
+							  SWITCHMOVE_STRAFE) &&
 		(!Button1(prevCmd) ||
 		 ConfigGetEnum(&gConfig, "Game.FireMoveStyle") != FIREMOVE_STRAFE);
 	const direction_e dir = CmdToDirection(cmd);
@@ -1128,13 +1127,13 @@ void CommandActor(TActor *actor, int cmd, int ticks)
 static bool ActorTryMove(TActor *actor, int cmd, int ticks)
 {
 	const bool canMoveWhenShooting =
-	actor->PlayerUID < 0 ? (actor->flags & FLAGS_MOVE_AND_SHOOT) :
-	(
-	 ConfigGetEnum(&gConfig, "Game.FireMoveStyle") != FIREMOVE_STOP ||
-		(ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") ==
-			 SWITCHMOVE_STRAFE &&
-		 Button2(cmd))
-	 );
+		actor->PlayerUID < 0
+			? (actor->flags & FLAGS_MOVE_AND_SHOOT)
+			: (ConfigGetEnum(&gConfig, "Game.FireMoveStyle") !=
+				   FIREMOVE_STOP ||
+			   (ConfigGetEnum(&gConfig, "Game.SwitchMoveStyle") ==
+					SWITCHMOVE_STRAFE &&
+				Button2(cmd)));
 	const bool canMove = !actor->hasShot || canMoveWhenShooting;
 	const bool willMove =
 		!actor->petrified && CMD_HAS_DIRECTION(cmd) && canMove;
@@ -1479,7 +1478,7 @@ static void ActorDie(TActor *actor)
 	GameEvent e = GameEventNew(GAME_EVENT_ACTOR_DIE);
 	e.u.ActorDie.UID = actor->uid;
 	GameEventsEnqueue(&gGameEvents, e);
-	
+
 	// Persist player ammo for when they respawn
 	ActorPersistPlayerWeaponsAndAmmo(actor);
 }
@@ -1701,10 +1700,10 @@ TActor *ActorAdd(NActorAdd aa)
 		{
 			// Use persisted ammo amount if it is greater,
 			// or if buy/sell is enabled
-			if (gCampaign.Setting.BuyAndSell ||
-				(int)aa.Ammo[i].Amount >
-					AmmoGetById(&gAmmo, aa.Ammo[i].Id)->Amount *
-						AMMO_STARTING_MULTIPLE)
+			const Ammo *ammo = AmmoGetById(&gAmmo, aa.Ammo[i].Id);
+			if (ammo && (gCampaign.Setting.BuyAndSell ||
+						 (int)aa.Ammo[i].Amount >
+							 ammo->Amount * AMMO_STARTING_MULTIPLE))
 			{
 				CArraySet(&actor->ammo, aa.Ammo[i].Id, &aa.Ammo[i].Amount);
 			}
