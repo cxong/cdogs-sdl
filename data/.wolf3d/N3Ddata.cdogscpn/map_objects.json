@@ -31,10 +31,10 @@
       "Flags": ["Inside", "OneOrMoreWalls"]
     },
     {
-      "Name": "pillar_brown",
+      "Name": "pillar_candle",
       "Pic": {
         "Type": "Normal",
-        "Pic": "pillar_brown"
+        "Pic": "pillar_candle"
       },
       "Health": 80,
       "Flags": ["Inside", "NoWalls"]

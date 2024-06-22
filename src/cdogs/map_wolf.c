@@ -164,9 +164,9 @@ static const char *soundsSOD[] = {
 	"chars/alert/angel", "chars/die/angel", "chaingun_pickup", "spear"};
 static const char *soundsN3D[] = {
 	// 0-9
-	"chars/alert/antelope", "chars/alert/bear", "bullet_pickup",
-	"chars/alert/camel", "door_close", "cantaloupe", "cantaloupe_feeder",
-	"goat_kick", "gulp?", "chars/die/animal",
+	"chars/alert/antelope", "chars/alert/bear", "pickup", "chars/alert/camel",
+	"door_close", "cantaloupe", "cantaloupe_feeder", "goat_kick", "gulp?",
+	"chars/die/animal",
 	// 10-19
 	"chars/alert/elephant", "1up", "super_feeder", "chars/alert/giraffe",
 	"chars/alert/goat", "small_feeder", "doof?", "chars/alert/kangaroo",
@@ -441,6 +441,26 @@ static const char *adlibSoundsSOD[] = {
 	NULL, // spear (digi sound)
 	NULL, // angel tired (not used in C-Dogs)
 };
+static const char *adlibSoundsN3D[] = {
+	// 0-9
+	NULL, // empty
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	// 10-19
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, // score tick
+	NULL, NULL,
+	// 20-29
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "wrong", // answer wrong
+	NULL,
+	// 30-39
+	NULL, NULL, NULL, NULL, NULL, NULL, "menu_back", "menu_switch",
+	"menu_switch2", // TODO: the correct sound is menu_switch + this one; can
+	// we concat the two?
+	NULL,
+	// 40-42
+	"menu_enter", NULL,
+	"bonus", // quiz correct, perfect score
+};
 static const char *GetAdlibSound(const CWMapType type, const int i)
 {
 	// Map sound index to string
@@ -453,8 +473,7 @@ static const char *GetAdlibSound(const CWMapType type, const int i)
 	case CWMAPTYPE_SOD:
 		return adlibSoundsSOD[i];
 	case CWMAPTYPE_N3D:
-		// Not using any adlib sounds
-		return NULL;
+		return adlibSoundsN3D[i];
 	default:
 		CASSERT(false, "unknown map type");
 		return NULL;
@@ -2289,7 +2308,16 @@ static void LoadEntity(
 		}
 		break;
 	case CWENT_WHITE_COLUMN:
-		MissionStaticTryAddItem(&m->u.Static, StrMapObject("pillar"), v);
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			MissionStaticTryAddItem(
+				&m->u.Static, StrMapObject("pillar_candle"), v);
+			break;
+		default:
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("pillar"), v);
+			break;
+		}
 		break;
 	case CWENT_GREEN_PLANT:
 		switch (map->type)
@@ -2518,7 +2546,17 @@ static void LoadEntity(
 		}
 		break;
 	case CWENT_CROSS:
-		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("cross"), v);
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			MissionStaticTryAddPickup(
+				&m->u.Static, StrPickupClass("heart"), v);
+			break;
+		default:
+			MissionStaticTryAddPickup(
+				&m->u.Static, StrPickupClass("cross"), v);
+			break;
+		}
 		break;
 	case CWENT_CHALICE:
 		switch (map->type)
@@ -2533,10 +2571,29 @@ static void LoadEntity(
 		}
 		break;
 	case CWENT_CHEST:
-		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("chest"), v);
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("pillar"), v);
+			break;
+		default:
+			MissionStaticTryAddPickup(
+				&m->u.Static, StrPickupClass("chest"), v);
+			break;
+		}
 		break;
 	case CWENT_CROWN:
-		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("crown"), v);
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			MissionStaticTryAddPickup(
+				&m->u.Static, StrPickupClass("gun_Cantaloupe Feeder"), v);
+			break;
+		default:
+			MissionStaticTryAddPickup(
+				&m->u.Static, StrPickupClass("crown"), v);
+			break;
+		}
 		break;
 	case CWENT_LIFE:
 		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("heart"), v);

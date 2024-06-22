@@ -11,7 +11,7 @@
         "Type": "Health",
         "Health": 4
       }],
-      "Sound": "health_small"
+      "Sound": "pickup"
     },
     {
       "Name": "small_bandage",
@@ -23,7 +23,7 @@
         "Type": "Health",
         "Health": 10
       }],
-      "Sound": "health_small"
+      "Sound": "pickup"
     },
     {
       "Name": "large_bandage",
@@ -35,7 +35,7 @@
         "Type": "Health",
         "Health": 25
       }],
-      "Sound": "health_big"
+      "Sound": "pickup"
     },
     {
       "Name": "heart",
@@ -54,19 +54,7 @@
         "Type": "Lives",
         "Lives": 1
       }],
-      "Sound": "1up"
-    },
-    {
-      "Name": "cross",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "cross"
-      },
-      "Effects": [{
-        "Type": "Score",
-        "Score": 100
-      }],
-      "Sound": "pickup_cross"
+      "Sound": "pickup"
     },
     {
       "Name": "grapes",
@@ -78,7 +66,7 @@
         "Type": "Score",
         "Score": 500
       }],
-      "Sound": "pickup_chalice"
+      "Sound": "pickup"
     },
     {
       "Name": "orange",
@@ -90,7 +78,7 @@
         "Type": "Score",
         "Score": 500
       }],
-      "Sound": "pickup_chalice"
+      "Sound": "pickup"
     },
     {
       "Name": "apple",
@@ -102,7 +90,7 @@
         "Type": "Score",
         "Score": 500
       }],
-      "Sound": "pickup_chalice"
+      "Sound": "pickup"
     },
     {
       "Name": "banana",
@@ -114,7 +102,7 @@
         "Type": "Score",
         "Score": 500
       }],
-      "Sound": "pickup_chalice"
+      "Sound": "pickup"
     },
     {
       "Name": "scroll",
@@ -133,31 +121,7 @@
         "Ammo": "Feed",
         "Amount": 10
       }],
-      "Sound": "pickup_chalice"
-    },
-    {
-      "Name": "chest",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "chest"
-      },
-      "Effects": [{
-        "Type": "Score",
-        "Score": 1000
-      }],
-      "Sound": "pickup_chest"
-    },
-    {
-      "Name": "crown",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "crown"
-      },
-      "Effects": [{
-        "Type": "Score",
-        "Score": 5000
-      }],
-      "Sound": "pickup_crown"
+      "Sound": "pickup"
     },
     {
       "Name": "small_feed_box",
@@ -170,29 +134,7 @@
         "Ammo": "Feed",
         "Amount": 5
       }],
-      "Sound": "ammo_pickup"
-    },
-    {
-      "Name": "ammo_box",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "ammo_box"
-      },
-      "Effects": [{
-        "Type": "Ammo",
-        "Ammo": "Feed",
-        "Amount": 25
-      }],
-      "Sound": "ammo_box"
-    },
-    {
-      "Name": "spear",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "spear"
-      },
-      "Effects": [],
-      "Sound": "spear"
+      "Sound": "pickup"
     }
   ]
 }

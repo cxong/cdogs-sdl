@@ -52,6 +52,30 @@
       "Ammo": "Feed"
     },
     {
+      "Pic": "blaster_yellow",
+      "Name": "Cantaloupe Feeder",
+      "Icon": "flamer",
+      "Bullet": "bullet",
+      "Cost": 1,
+      "Lock": 45,
+      "Sound": "super_feeder",
+      "SwitchSound": "chaingun_pickup",
+      "Recoil": 0.23,
+      "Ammo": "Feed"
+    },
+    {
+      "Pic": "rocket_green",
+      "Name": "Watermelon Feeder",
+      "Icon": "chemo_gun",
+      "Bullet": "bullet",
+      "Cost": 1,
+      "Lock": 45,
+      "Sound": "super_feeder",
+      "SwitchSound": "chaingun_pickup",
+      "Recoil": 0.23,
+      "Ammo": "Feed"
+    },
+    {
       "Pic": "pistol",
       "Name": "Sheep Spit",
       "Bullet": "bullet_enemy",

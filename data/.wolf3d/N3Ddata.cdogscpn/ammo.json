@@ -7,7 +7,7 @@
         "Type": "Normal",
         "Pic": "small_feed_box"
       },
-      "Sound": "ammo_pickup",
+      "Sound": "pickup",
       "Amount": 5,
       "Max": 299
     }
