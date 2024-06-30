@@ -135,6 +135,19 @@
         "Amount": 5
       }],
       "Sound": "pickup"
+    },
+    {
+      "Name": "large_feed_box",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "large_feed_box"
+      },
+      "Effects": [{
+        "Type": "Ammo",
+        "Ammo": "Feed",
+        "Amount": 25
+      }],
+      "Sound": "pickup"
     }
   ]
 }

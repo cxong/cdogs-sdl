@@ -158,7 +158,7 @@ Ammo *AmmoGetById(AmmoClasses *ammo, const int id)
 		return CArrayGet(&ammo->Ammo, id);
 	}
 	const int id2 = id - (int)ammo->Ammo.size;
-	if (id < (int)ammo->CustomAmmo.size)
+	if (id2 < (int)ammo->CustomAmmo.size)
 	{
 		return CArrayGet(&ammo->CustomAmmo, id2);
 	}

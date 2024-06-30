@@ -322,12 +322,13 @@ static void LoadPickupEffect(PickupClass *c, json_t *node, const int version)
 	case PICKUP_AMMO: {
 		tmp = GetString(node, "Ammo");
 		p.u.Ammo.Id = StrAmmoId(tmp);
-		CFREE(tmp);
 		const Ammo *ammo = AmmoGetById(&gAmmo, p.u.Ammo.Id);
+		CASSERT(ammo, "Ammo type not found");
 		// Set default ammo amount
 		int amount = ammo->Amount;
 		LoadInt(&amount, node, "Amount");
 		p.u.Ammo.Amount = amount;
+		CFREE(tmp);
 		break;
 	}
 	case PICKUP_KEYCARD:

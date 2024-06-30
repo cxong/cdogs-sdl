@@ -31,6 +31,16 @@
       "Flags": ["Inside", "OneOrMoreWalls"]
     },
     {
+      "Name": "stairs",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "stairs"
+      },
+      "Offset": [-8, -23],
+      "Health": 0,
+      "Flags": ["Inside", "OnWall"]
+    },
+    {
       "Name": "pillar_candle",
       "Pic": {
         "Type": "Normal",
@@ -40,14 +50,26 @@
       "Flags": ["Inside", "NoWalls"]
     },
     {
-      "Name": "sink",
+      "Name": "water_pitcher",
       "Pic": {
         "Type": "Normal",
-        "Pic": "sink"
+        "Pic": "water_pitcher"
       },
       "Size": [8, 6],
+      "Wreck": "water_pitcher_wreck",
       "Health": 50,
-      "Flags": ["Inside", "OnWall"]
+      "Flags": ["Inside", "OneOrMoreWalls"]
+    },
+    {
+      "Name": "water_pitcher_wreck",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "water_pitcher_wreck"
+      },
+      "Health": 0,
+      "DrawBelow": true,
+      "FootstepSound": "footsteps/water",
+      "FootprintMask": "00000099"
     },
     {
       "Name": "skull_pillar",
@@ -112,14 +134,13 @@
       "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
     },
     {
-      "Name": "gibbet",
+      "Name": "birdcage",
       "Pic": {
         "Type": "Normal",
-        "Pic": "gibbet"
+        "Pic": "birdcage"
       },
       "Offset": [-7, -33],
-      "Health": 40,
-      "Flags": ["Inside", "NoWalls"]
+      "Health": 40
     },
     {
       "Name": "gibbet_skeleton",
@@ -142,13 +163,13 @@
       "Flags": ["Inside", "NoWalls"]
     },
     {
-      "Name": "well",
+      "Name": "water_trough",
       "Pic": {
         "Type": "Normal",
-        "Pic": "well"
+        "Pic": "water_trough"
       },
       "Health": 80,
-      "Flags": ["Outside", "NoWalls"]
+      "Flags": ["OneOrMoreWalls"]
     },
     {
       "Name": "well_water",
