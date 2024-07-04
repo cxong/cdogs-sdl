@@ -1346,11 +1346,6 @@ int main(int argc, char *argv[])
 		if (!loaded)
 		{
 			RealPath(argv[i], lastFile);
-			if (strchr(lastFile, '.') == NULL &&
-				sizeof lastFile - strlen(lastFile) > 3)
-			{
-				strcat(lastFile, ".cdogscpn");
-			}
 			if (MapNewLoad(lastFile, &gCampaign.Setting) == 0)
 			{
 				loaded = 1;

@@ -2433,9 +2433,16 @@ static void LoadEntity(
 		}
 		break;
 	case CWENT_ARMOR:
-		MissionStaticTryAddItem(
-			&m->u.Static, StrMapObject("suit_of_armor"), v);
-		break;
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			MissionStaticAddKey(&m->u.Static, 0, v);
+			break;
+		default:
+			MissionStaticTryAddItem(
+				&m->u.Static, StrMapObject("suit_of_armor"), v);
+			break;
+		}
 	case CWENT_CAGE:
 		switch (map->type)
 		{
@@ -2449,9 +2456,18 @@ static void LoadEntity(
 		}
 		break;
 	case CWENT_CAGE_SKELETON:
-		MissionStaticTryAddItem(
-			&m->u.Static, StrMapObject("gibbet_skeleton"), v);
-		MissionStaticTryAddItem(&m->u.Static, StrMapObject("shadow"), v);
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			MissionStaticTryAddPickup(
+				&m->u.Static, StrPickupClass("knapsack"), v);
+			break;
+		default:
+			MissionStaticTryAddItem(
+				&m->u.Static, StrMapObject("gibbet_skeleton"), v);
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("shadow"), v);
+			break;
+		}
 		break;
 	case CWENT_BONES1:
 		switch (map->type)
@@ -2634,16 +2650,54 @@ static void LoadEntity(
 		}
 		break;
 	case CWENT_LIFE:
-		MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("heart"), v);
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			MissionStaticTryAddPickup(
+				&m->u.Static, StrPickupClass("ammo_Cantaloupe"), v);
+			break;
+		default:
+			MissionStaticTryAddPickup(
+				&m->u.Static, StrPickupClass("heart"), v);
+			break;
+		}
 		break;
 	case CWENT_BONES_BLOOD:
-		MissionStaticTryAddItem(&m->u.Static, StrMapObject("gibs"), v);
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			MissionStaticTryAddPickup(
+				&m->u.Static, StrPickupClass("ammo_Watermelon"), v);
+			break;
+		default:
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("gibs"), v);
+			break;
+		}
 		break;
 	case CWENT_BARREL:
-		MissionStaticTryAddItem(&m->u.Static, StrMapObject("barrel_wood2"), v);
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			MissionStaticTryAddPickup(
+				&m->u.Static, StrPickupClass("ammo_Watermelon"), v);
+			break;
+		default:
+			MissionStaticTryAddItem(
+				&m->u.Static, StrMapObject("barrel_wood2"), v);
+			break;
+		}
 		break;
 	case CWENT_WELL_WATER:
-		MissionStaticTryAddItem(&m->u.Static, StrMapObject("well_water"), v);
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			MissionStaticTryAddPickup(&m->u.Static, StrPickupClass("map"), v);
+			break;
+		default:
+			MissionStaticTryAddItem(
+				&m->u.Static, StrMapObject("well_water"), v);
+			break;
+		}
 		break;
 	case CWENT_WELL:
 		MissionStaticTryAddItem(&m->u.Static, StrMapObject("well"), v);

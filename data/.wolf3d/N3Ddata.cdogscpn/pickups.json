@@ -148,6 +148,38 @@
         "Amount": 25
       }],
       "Sound": "pickup"
+    },
+    {
+      "Name": "knapsack",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "bag"
+      },
+      "Effects": [{
+        "Type": "Ammo",
+        "Ammo": "Feed",
+        "Amount": 100
+      }, {
+        "Type": "Ammo",
+        "Ammo": "Cantaloupe",
+        "Amount": 28
+      }, {
+        "Type": "Ammo",
+        "Ammo": "Watermelon",
+        "Amount": 25
+      }],
+      "Sound": "pickup"
+    },
+    {
+      "Name": "map",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "map"
+      },
+      "Effects": [{
+        "Type": "ShowMap"
+      }],
+      "Sound": "pickup"
     }
   ]
 }

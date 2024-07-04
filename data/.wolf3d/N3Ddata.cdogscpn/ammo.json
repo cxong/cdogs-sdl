@@ -10,6 +10,26 @@
       "Sound": "pickup",
       "Amount": 5,
       "Max": 299
+    },
+    {
+      "Name": "Cantaloupe",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "cantaloupes"
+      },
+      "Sound": "pickup",
+      "Amount": 14,
+      "Max": 100
+    },
+    {
+      "Name": "Watermelon",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "watermelon"
+      },
+      "Sound": "pickup",
+      "Amount": 5,
+      "Max": 100
     }
   ]
 }
