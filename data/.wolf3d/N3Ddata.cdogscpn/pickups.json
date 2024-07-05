@@ -2,18 +2,6 @@
   "Version": 3,
   "Pickups": [
     {
-      "Name": "dogfood",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "dogfood"
-      },
-      "Effects": [{
-        "Type": "Health",
-        "Health": 4
-      }],
-      "Sound": "pickup"
-    },
-    {
       "Name": "small_bandage",
       "Pic": {
         "Type": "Normal",

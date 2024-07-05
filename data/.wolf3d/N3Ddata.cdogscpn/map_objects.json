@@ -43,8 +43,9 @@
     {
       "Name": "pillar_candle",
       "Pic": {
-        "Type": "Normal",
-        "Pic": "pillar_candle"
+        "Type": "AnimatedRandom",
+        "Sprites": "pillar_candle",
+        "TicksPerFrame": 6
       },
       "Health": 80,
       "Flags": ["Inside", "NoWalls"]
@@ -72,38 +73,6 @@
       "FootprintMask": "00000099"
     },
     {
-      "Name": "skull_pillar",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "skull_pillar"
-      },
-      "Size": [8, 6],
-      "Offset": [-8, -14],
-      "Health": 20,
-      "Flags": ["NoWalls"]
-    },
-    {
-      "Name": "cowskull_pillar",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "cowskull_pillar"
-      },
-      "Size": [8, 6],
-      "Offset": [-8, -14],
-      "Health": 20,
-      "Flags": ["NoWalls"]
-    },
-    {
-      "Name": "knives",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "knives"
-      },
-      "Offset": [-5, -13],
-      "Health": 0,
-      "Flags": ["Inside", "OneOrMoreWalls"]
-    },
-    {
       "Name": "beam",
       "Pic": {
         "Type": "Normal",
@@ -114,24 +83,15 @@
       "Flags": ["Inside"]
     },
     {
-      "Name": "gibbet_bloody",
+      "Name": "candle",
       "Pic": {
-        "Type": "Normal",
-        "Pic": "gibbet_bloody"
+        "Type": "AnimatedRandom",
+        "Sprites": "candle",
+        "TicksPerFrame": 6
       },
-      "Offset": [-7, -33],
+      "Offset": [-7, -29],
       "Health": 40,
       "Flags": ["Inside", "NoWalls"]
-    },
-    {
-      "Name": "suit_of_armor",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "suit_of_armor"
-      },
-      "Offset": [-7, -20],
-      "Health": 60,
-      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
     },
     {
       "Name": "birdcage",
@@ -141,26 +101,6 @@
       },
       "Offset": [-7, -33],
       "Health": 40
-    },
-    {
-      "Name": "gibbet_skeleton",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "gibbet_skeleton"
-      },
-      "Offset": [-7, -33],
-      "Health": 40,
-      "Flags": ["Inside", "NoWalls"]
-    },
-    {
-      "Name": "gibbet_skulls",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "gibbet_skulls"
-      },
-      "Offset": [-7, -33],
-      "Health": 40,
-      "Flags": ["Inside", "NoWalls"]
     },
     {
       "Name": "water_trough",
@@ -190,47 +130,6 @@
       "Flags": ["Inside", "OneOrMoreWalls"]
     },
     {
-      "Name": "pool_blood",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "pool_blood"
-      },
-      "Offset": [-8, -6],
-      "Health": 0,
-      "DrawBelow": true
-    },
-    {
-      "Name": "flag",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "flag"
-      },
-      "Size": [6, 4],
-      "Offset": [-4, -21],
-      "Health": 40,
-      "Flags": ["Inside", "OneOrMoreWalls"]
-    },
-    {
-      "Name": "stove",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "stove"
-      },
-      "Offset": [-8, -21],
-      "Health": 60,
-      "Flags": ["Inside", "OnWall", "FreeInFront"]
-    },
-    {
-      "Name": "spears",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "spears"
-      },
-      "Offset": [-7, -20],
-      "Health": 40,
-      "Flags": ["Inside", "OneOrMoreWalls", "FreeInFront"]
-    },
-    {
       "Name": "cage",
       "Pic": {
         "Type": "Normal",
@@ -238,33 +137,6 @@
       },
       "Health": 100,
       "Flags": ["Inside", "OneOrMoreWalls"]
-    },
-    {
-      "Name": "truck",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "truck"
-      },
-      "Health": 100,
-      "Flags": ["Outside"]
-    },
-    {
-      "Name": "grass",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "grass"
-      },
-      "Health": 0,
-      "Flags": ["Outside"]
-    },
-    {
-      "Name": "dead_guard",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "dead_guard"
-      },
-      "Health": 0,
-      "DrawBelow": true
     },
     {
       "Name": "shadow",
@@ -337,26 +209,6 @@
       "Flags": ["Inside", "OnWall"]
     },
     {
-      "Name": "brick_color",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "brick_color"
-      },
-      "Offset": [-8, -11],
-      "Health": 0,
-      "Flags": ["OnWall"]
-    },
-    {
-      "Name": "eagle_portrait",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "eagle_portrait"
-      },
-      "Offset": [-7, -10],
-      "Health": 0,
-      "Flags": ["Inside", "OnWall"]
-    },
-    {
       "Name": "duck_picture",
       "Pic": {
         "Type": "Normal",
@@ -365,26 +217,6 @@
       "Offset": [-7, -10],
       "Health": 0,
       "Flags": ["Inside", "OnWall"]
-    },
-    {
-      "Name": "elevator_entrance",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "elevator_entrance"
-      },
-      "Offset": [-5, -9],
-      "Health": 0,
-      "Flags": ["Inside", "OnWall"]
-    },
-    {
-      "Name": "swastika_wreath",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "swastika_wreath"
-      },
-      "Offset": [-5, -11],
-      "Health": 0,
-      "Flags": ["OnWall"]
     },
     {
       "Name": "noah_flag",
@@ -397,26 +229,6 @@
       "Flags": ["OnWall"]
     },
     {
-      "Name": "elevator_interior",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "elevator_interior"
-      },
-      "Offset": [-6, -11],
-      "Health": 0,
-      "Flags": ["Inside", "OnWall"]
-    },
-    {
-      "Name": "iron_cross",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "iron_cross"
-      },
-      "Offset": [-7, -11],
-      "Health": 0,
-      "Flags": ["Inside", "OnWall"]
-    },
-    {
       "Name": "wood_slime",
       "Pic": {
         "Type": "Normal",
@@ -425,36 +237,6 @@
       "Offset": [-8, -23],
       "Health": 0,
       "Flags": ["Outside", "OnWall"]
-    },
-    {
-      "Name": "hitler_glass",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "hitler_glass"
-      },
-      "Offset": [-6, -11],
-      "Health": 0,
-      "Flags": ["OnWall"]
-    },
-    {
-      "Name": "skull_blue",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "skull_blue"
-      },
-      "Offset": [-3, -9],
-      "Health": 0,
-      "Flags": ["Inside", "OnWall"]
-    },
-    {
-      "Name": "swastika_blue",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "swastika_blue"
-      },
-      "Offset": [-3, -8],
-      "Health": 0,
-      "Flags": ["Inside", "OnWall"]
     },
     {
       "Name": "wood_color",
@@ -505,36 +287,6 @@
       "Offset": [-8, -11],
       "Health": 0,
       "Flags": ["OnWall"]
-    },
-    {
-      "Name": "panel",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "panel"
-      },
-      "Offset": [-6, -10],
-      "Health": 0,
-      "Flags": ["OnWall"]
-    },
-    {
-      "Name": "hitler_poster",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "hitler_poster"
-      },
-      "Offset": [-5, -10],
-      "Health": 0,
-      "Flags": ["OnWall"]
-    },
-    {
-      "Name": "stone_color",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "stone_color"
-      },
-      "Offset": [-8, -11],
-      "Health": 0,
-      "Flags": ["Inside", "OnWall"]
     },
     {
       "Name": "ghost_corpse",

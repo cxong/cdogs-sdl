@@ -1438,16 +1438,6 @@ static void TryLoadWallObject(
 		switch (map->type)
 		{
 		case CWMAPTYPE_N3D: {
-			const TileClass *tcBelow =
-				MissionStaticGetTileClass(m, levelSize, vBelow);
-			if (tcBelow == NULL)
-			{
-				break;
-			}
-			if (tcBelow->Type == TILE_CLASS_FLOOR)
-			{
-				moName = "elevator_interior";
-			}
 			// Elevators only occur on east/west tiles
 			for (int dx = -1; dx <= 1; dx += 2)
 			{
@@ -1582,17 +1572,7 @@ static void TryLoadWallObject(
 		{
 		case CWMAPTYPE_N3D:
 			break;
-		default: {
-			const TileClass *tcBelow =
-				MissionStaticGetTileClass(m, levelSize, vBelow);
-			if (tcBelow == NULL)
-			{
-				break;
-			}
-			if (tcBelow->Type == TILE_CLASS_FLOOR)
-			{
-				moName = "elevator_interior";
-			}
+		default:
 			// Elevators only occur on east/west tiles
 			for (int dx = -1; dx <= 1; dx += 2)
 			{
@@ -1654,7 +1634,6 @@ static void TryLoadWallObject(
 					MissionStaticTryAddExit(m, &e);
 				}
 			}
-		}
 		}
 		break;
 	}
@@ -2421,15 +2400,19 @@ static void LoadEntity(
 		}
 		break;
 	case CWENT_UTENSILS_BROWN_CAGE_BLOODY_BONES:
-		if (map->type == CWMAPTYPE_SOD)
+		switch (map->type)
 		{
+		case CWMAPTYPE_N3D:
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("candle"), v);
+			break;
+		case CWMAPTYPE_SOD:
 			MissionStaticTryAddItem(
 				&m->u.Static, StrMapObject("gibbet_bloody"), v);
 			MissionStaticTryAddItem(&m->u.Static, StrMapObject("shadow"), v);
-		}
-		else
-		{
+			break;
+		default:
 			MissionStaticTryAddItem(&m->u.Static, StrMapObject("knives"), v);
+			break;
 		}
 		break;
 	case CWENT_ARMOR:
@@ -2443,6 +2426,7 @@ static void LoadEntity(
 				&m->u.Static, StrMapObject("suit_of_armor"), v);
 			break;
 		}
+		break;
 	case CWENT_CAGE:
 		switch (map->type)
 		{
@@ -2509,14 +2493,14 @@ static void LoadEntity(
 	case CWENT_BED_CAGE_SKULLS:
 		switch (map->type)
 		{
+		case CWMAPTYPE_N3D:
+			MissionStaticTryAddPickup(
+				&m->u.Static, StrPickupClass("small_feed_box"), v);
+			break;
 		case CWMAPTYPE_SOD:
 			MissionStaticTryAddItem(
 				&m->u.Static, StrMapObject("gibbet_skulls"), v);
 			MissionStaticTryAddItem(&m->u.Static, StrMapObject("shadow"), v);
-			break;
-		case CWMAPTYPE_N3D:
-			MissionStaticTryAddPickup(
-				&m->u.Static, StrPickupClass("small_feed_box"), v);
 			break;
 		default:
 			MissionStaticTryAddItem(&m->u.Static, StrMapObject("bed"), v);
@@ -2763,6 +2747,8 @@ static void LoadEntity(
 	case CWENT_UTENSILS_BLUE_COW_SKULL:
 		switch (map->type)
 		{
+		case CWMAPTYPE_N3D:
+			break;
 		case CWMAPTYPE_SOD:
 
 			switch (spearMission)
@@ -2778,11 +2764,6 @@ static void LoadEntity(
 			case 3:
 				break;
 			}
-			break;
-		case CWMAPTYPE_N3D:
-			MissionStaticTryAddItem(
-				&m->u.Static, StrMapObject("table_lab"), v);
-			// TODO: wrong object
 			break;
 		default:
 			MissionStaticTryAddItem(&m->u.Static, StrMapObject("pots"), v);
