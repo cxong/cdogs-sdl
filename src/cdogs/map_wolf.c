@@ -2469,7 +2469,6 @@ static void LoadEntity(
 		switch (map->type)
 		{
 		case CWMAPTYPE_N3D:
-
 			MissionStaticTryAddPickup(
 				&m->u.Static, StrPickupClass("small_bandage"), v);
 			break;

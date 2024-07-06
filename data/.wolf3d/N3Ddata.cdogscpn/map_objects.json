@@ -57,6 +57,7 @@
         "Pic": "water_pitcher"
       },
       "Size": [8, 6],
+      "Offset": [-4, -12],
       "Wreck": "water_pitcher_wreck",
       "Health": 50,
       "Flags": ["Inside", "OneOrMoreWalls"]
@@ -99,7 +100,7 @@
         "Type": "Normal",
         "Pic": "birdcage"
       },
-      "Offset": [-7, -33],
+      "Offset": [-7, -29],
       "Health": 40
     },
     {

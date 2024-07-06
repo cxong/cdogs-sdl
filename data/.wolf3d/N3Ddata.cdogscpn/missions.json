@@ -812,7 +812,7 @@
 		},
 		"Tiles": ["0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,3,1,4,1,5,1,6,2,7,0,8,0,9,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0",
+		"0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,11,0,12,0,13,0,14,0,15,0,16,0,17,0,18,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,19,0,20,0,21,0,22,0,23,0,24,0,25,0,26,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
@@ -820,7 +820,7 @@
 		"0,27,0,28,0,29,0,30,0,31,0,32,0,33,0,34,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,35,0,36,0,37,0,38,0,39,0,40,0,41,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0",
+		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,43,0,44,0,45,0,46,0,47,0,48,0,49,0,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
 		"0,51,0,52,0,53,0,54,0,55,0,56,0,57,0,58,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
@@ -890,203 +890,29 @@
 			"Positions": [[9, 10]]
 		},
 		{
-			"MapObject": "swastika_wreath",
-			"Positions": [[9, 14]]
-		},
-		{
-			"MapObject": "elevator_interior",
-			"Positions": [[7, 16]]
-		},
-		{
-			"MapObject": "hitler_glass",
-			"Positions": [[1, 10]]
-		},
-		{
-			"MapObject": "skull_blue",
-			"Positions": [[3, 10]]
-		},
-		{
-			"MapObject": "swastika_blue",
-			"Positions": [[7, 10]]
-		},
-		{
-			"MapObject": "hitler_poster",
-			"Positions": [[1, 14]]
-		},
-		{
-			"MapObject": "stone_color",
-			"Positions": [[3, 16],
-			[5, 16],
-			[3, 14],
-			[5, 14]]
-		},
-		{
-			"MapObject": "panel",
-			"Positions": [[15, 12]]
-		},
-		{
 			"MapObject": "pool_water",
 			"Positions": [[17, 1]]
-		},
-		{
-			"MapObject": "barrel_green",
-			"Positions": [[19, 1]]
 		},
 		{
 			"MapObject": "table_and_chairs",
 			"Positions": [[21, 1]]
 		},
 		{
-			"MapObject": "rod_light",
-			"Positions": [[23, 1]]
-		},
-		{
-			"MapObject": "chandelier",
-			"Positions": [[25, 1]]
-		},
-		{
 			"MapObject": "shadow",
-			"Positions": [[27, 1],
-			[28, 3],
-			[30, 3],
-			[17, 5],
-			[26, 5]]
-		},
-		{
-			"MapObject": "pillar",
-			"Positions": [[29, 1]]
-		},
-		{
-			"MapObject": "plant",
-			"Positions": [[17, 3]]
-		},
-		{
-			"MapObject": "bone_blood",
-			"Positions": [[19, 3]]
-		},
-		{
-			"MapObject": "sink",
-			"Positions": [[20, 3]]
-		},
-		{
-			"MapObject": "skull_pillar",
-			"Positions": [[21, 3]]
-		},
-		{
-			"MapObject": "plant_brown",
-			"Positions": [[23, 3]]
-		},
-		{
-			"MapObject": "knives",
-			"Positions": [[27, 3]]
-		},
-		{
-			"MapObject": "gibbet_bloody",
-			"Positions": [[28, 3]]
-		},
-		{
-			"MapObject": "gibbet",
-			"Positions": [[30, 3]]
-		},
-		{
-			"MapObject": "gibbet_skeleton",
-			"Positions": [[17, 5]]
-		},
-		{
-			"MapObject": "suit_of_armor",
-			"Positions": [[29, 3]]
-		},
-		{
-			"MapObject": "skull",
-			"Positions": [[19, 5]]
-		},
-		{
-			"MapObject": "gibbet_skulls",
-			"Positions": [[26, 5]]
-		},
-		{
-			"MapObject": "bed",
-			"Positions": [[25, 5]]
-		},
-		{
-			"MapObject": "gibs",
-			"Positions": [[17, 9]]
+			"Positions": [[25, 3],
+			[28, 3]]
 		},
 		{
 			"MapObject": "barrel_wood2",
-			"Positions": [[19, 9]]
+			"Positions": [[23, 1]]
 		},
 		{
 			"MapObject": "well_water",
-			"Positions": [[21, 9]]
-		},
-		{
-			"MapObject": "well",
-			"Positions": [[23, 9]]
-		},
-		{
-			"MapObject": "pool_blood",
-			"Positions": [[25, 9]]
-		},
-		{
-			"MapObject": "flag",
-			"Positions": [[27, 9]]
-		},
-		{
-			"MapObject": "skull2",
-			"Positions": [[29, 9]]
-		},
-		{
-			"MapObject": "bones",
-			"Positions": [[31, 9]]
-		},
-		{
-			"MapObject": "bones2",
-			"Positions": [[17, 11]]
-		},
-		{
-			"MapObject": "bones3",
-			"Positions": [[19, 11]]
-		},
-		{
-			"MapObject": "cowskull_pillar",
-			"Positions": [[21, 11]]
-		},
-		{
-			"MapObject": "stove",
-			"Positions": [[22, 11]]
-		},
-		{
-			"MapObject": "spears",
-			"Positions": [[25, 11]]
-		},
-		{
-			"MapObject": "statue_behemoth",
-			"Positions": [[26, 11]]
-		},
-		{
-			"MapObject": "grass",
-			"Positions": [[27, 11]]
-		},
-		{
-			"MapObject": "pillar_brown",
-			"Positions": [[28, 11]]
-		},
-		{
-			"MapObject": "truck",
-			"Positions": [[17, 13]]
-		},
-		{
-			"MapObject": "dead_guard",
-			"Positions": [[21, 13]]
+			"Positions": [[19, 1]]
 		},
 		{
 			"MapObject": "ghost_corpse",
 			"Positions": [[14, 21]]
-		},
-		{
-			"MapObject": "cage",
-			"Positions": [[25, 7]]
 		},
 		{
 			"MapObject": "wood_slime",
@@ -1133,10 +959,6 @@
 			"Positions": [[3, 6]]
 		},
 		{
-			"MapObject": "brick_color",
-			"Positions": [[5, 6]]
-		},
-		{
 			"MapObject": "noah_flag",
 			"Positions": [[7, 6]]
 		},
@@ -1155,6 +977,58 @@
 		{
 			"MapObject": "closets",
 			"Positions": [[7, 8]]
+		},
+		{
+			"MapObject": "bookshelf2_wreck",
+			"Positions": [[25, 1]]
+		},
+		{
+			"MapObject": "well_feed",
+			"Positions": [[29, 1]]
+		},
+		{
+			"MapObject": "pillar_candle",
+			"Positions": [[31, 1]]
+		},
+		{
+			"MapObject": "pillar2",
+			"Positions": [[17, 3]]
+		},
+		{
+			"MapObject": "birdcage",
+			"Positions": [[19, 3]]
+		},
+		{
+			"MapObject": "water_pitcher",
+			"Positions": [[21, 3]]
+		},
+		{
+			"MapObject": "water_pitcher_wreck",
+			"Positions": [[23, 3]]
+		},
+		{
+			"MapObject": "beam",
+			"Positions": [[25, 3]]
+		},
+		{
+			"MapObject": "chandelier",
+			"Positions": [[28, 3]]
+		},
+		{
+			"MapObject": "water_trough",
+			"Positions": [[29, 3]]
+		},
+		{
+			"MapObject": "candle",
+			"Positions": [[31, 3]]
+		},
+		{
+			"MapObject": "cage",
+			"Positions": [[29, 7]]
+		},
+		{
+			"MapObject": "pillar",
+			"Positions": [[31, 7]]
 		}],
 		"StaticCharacters": [{
 			"Index": 0,
@@ -1331,9 +1205,9 @@
 			[4, 2],
 			[4, 2],
 			[4, 2],
-			[21, 5],
-			[21, 5],
-			[21, 5]]
+			[17, 5],
+			[17, 5],
+			[17, 5]]
 		},
 		{
 			"Index": 2,
@@ -1341,52 +1215,78 @@
 			[6, 2],
 			[6, 2],
 			[6, 2],
-			[23, 5],
-			[23, 5]]
+			[19, 5],
+			[19, 5],
+			[19, 5]]
 		}],
 		"StaticPickups": [{
-			"Pickup": "dogfood",
-			"Positions": [[31, 1]]
-		},
-		{
-			"Pickup": "health",
+			"Pickup": "gun_Large Launcher",
 			"Positions": [[31, 5]]
 		},
 		{
-			"Pickup": "ammo_Bullets",
+			"Pickup": "gun_Super Feeder",
 			"Positions": [[17, 7]]
 		},
 		{
-			"Pickup": "gun_Large Launcher",
-			"Positions": [[19, 7]]
-		},
-		{
-			"Pickup": "gun_Super Feeder",
-			"Positions": [[21, 7]]
-		},
-		{
-			"Pickup": "cross",
-			"Positions": [[23, 7]]
-		},
-		{
-			"Pickup": "chest",
+			"Pickup": "heart",
 			"Positions": [[27, 7]]
 		},
 		{
-			"Pickup": "crown",
-			"Positions": [[29, 7]]
+			"Pickup": "scroll",
+			"Positions": [[27, 1]]
 		},
 		{
-			"Pickup": "heart",
-			"Positions": [[31, 7]]
+			"Pickup": "knapsack",
+			"Positions": [[21, 5]]
 		},
 		{
-			"Pickup": "ammo_box",
-			"Positions": [[31, 11]]
+			"Pickup": "large_feed_box",
+			"Positions": [[23, 5]]
 		},
 		{
-			"Pickup": "spear",
-			"Positions": [[19, 13]]
+			"Pickup": "small_bandage",
+			"Positions": [[25, 5]]
+		},
+		{
+			"Pickup": "large_bandage",
+			"Positions": [[27, 5]]
+		},
+		{
+			"Pickup": "small_feed_box",
+			"Positions": [[29, 5]]
+		},
+		{
+			"Pickup": "banana",
+			"Positions": [[19, 7]]
+		},
+		{
+			"Pickup": "apple",
+			"Positions": [[21, 7]]
+		},
+		{
+			"Pickup": "grapes",
+			"Positions": [[23, 7]]
+		},
+		{
+			"Pickup": "orange",
+			"Positions": [[25, 7]]
+		},
+		{
+			"Pickup": "gun_Cantaloupe Feeder",
+			"Positions": [[17, 9]]
+		},
+		{
+			"Pickup": "ammo_Cantaloupe",
+			"Positions": [[19, 9]]
+		},
+		{
+			"Pickup": "ammo_Watermelon",
+			"Positions": [[21, 9],
+			[23, 9]]
+		},
+		{
+			"Pickup": "map",
+			"Positions": [[25, 9]]
 		}],
 		"Start": [0, 0],
 		"Exits": [{
