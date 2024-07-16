@@ -2,14 +2,14 @@
   "Version": 3,
   "Guns": [
     {
-      "Pic": "knife",
-      "Icon": "knife",
+      "Pic": "",
+      "Icon": "hand_feed",
       "Name": "Hand",
-      "Bullet": "knife",
+      "Bullet": "hand_feed",
       "Cost": 0,
       "Lock": 30,
       "Sound": "",
-      "SwitchSound": "knife_switch",
+      "SwitchSound": "hand_feed",
       "CanShoot": false,
       "Auto": true
     },

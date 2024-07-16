@@ -2,11 +2,11 @@
   "Version": 5,
   "Bullets": [
     {
-      "Name": "knife",
+      "Name": "hand_feed",
       "Power": 8,
       "Hit": {
         "Flesh": {
-          "Sound": "hits/knife_flesh"
+          "Sound": "hand_feed"
         }
       },
       "Special": {
@@ -27,7 +27,9 @@
       "OutOfRangeSpark": "spark",
       "WallMark": "bullet_hole",
       "Hit": {
-        "Flesh": {}
+        "Flesh": {
+          "Sound": "hits/food"
+        }
       },
       "Speed": 35000,
       "Range": 1,

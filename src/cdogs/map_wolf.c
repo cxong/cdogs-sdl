@@ -165,7 +165,7 @@ static const char *soundsSOD[] = {
 static const char *soundsN3D[] = {
 	// 0-9
 	"chars/alert/antelope", "chars/alert/bear", "pickup", "chars/alert/camel",
-	"door_close", "cantaloupe", "cantaloupe_feeder", "goat_kick", "gulp?",
+	"door_close", "cantaloupe", "cantaloupe_feeder", "goat_kick", "hits/food",
 	"chars/die/animal",
 	// 10-19
 	"chars/alert/elephant", "1up", "super_feeder", "chars/alert/giraffe",
