@@ -169,12 +169,12 @@ static const char *soundsN3D[] = {
 	"chars/die/animal",
 	// 10-19
 	"chars/alert/elephant", "1up", "super_feeder", "chars/alert/giraffe",
-	"chars/alert/goat", "small_feeder", "doof?", "chars/alert/kangaroo",
+	"chars/alert/goat", "small_launcher", "ricochet", "chars/alert/kangaroo",
 	"whistle", "hand_feed",
 	// 20-29
 	"chars/alert/monkey", "footsteps/bear", "door", "chars/alert/ostrich",
 	"chars/alert/ox", "hurt", "hahaha", "secret_door", "chars/alert/sheep",
-	"large_feeder",
+	"large_launcher",
 	// 30-32
 	"spit", "watermelon", "watermelon_feeder"}; // TODO BS6:
 // https://github.com/bibendovsky/bstone/blob/3dea1ef72a101519afd17aa95c881da40a18040d/src/bstone_audio_content_mgr.cpp#L320-L398
@@ -458,8 +458,9 @@ static const char *adlibSoundsN3D[] = {
 	// we concat the two?
 	NULL,
 	// 40-42
-	"menu_enter", NULL,
-	"bonus", // quiz correct, perfect score
+	"menu_enter", "menu_start", // not really used as this in N3D, arbitrarily
+								// use this for C-Dogs
+	"bonus",					// quiz correct, perfect score
 };
 static const char *GetAdlibSound(const CWMapType type, const int i)
 {
@@ -991,7 +992,7 @@ static void LoadMission(
 		switch (map->type)
 		{
 		case CWMAPTYPE_N3D:
-			wc = StrWeaponClass("Hand");
+			wc = StrWeaponClass("Hand Feed");
 			break;
 		default:
 			wc = StrWeaponClass("Knife");

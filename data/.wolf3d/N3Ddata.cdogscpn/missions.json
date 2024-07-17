@@ -13,7 +13,7 @@
 		"MapObjectDensities": [],
 		"PickupCounts": [],
 		"EnemyDensity": 0,
-		"Weapons": ["Hand"],
+		"Weapons": ["Hand Feed"],
 		"WeaponPersist": false,
 		"SkipDebrief": false,
 		"TileClasses": {

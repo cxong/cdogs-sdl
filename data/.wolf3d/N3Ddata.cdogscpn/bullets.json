@@ -15,7 +15,7 @@
       }
     },
     {
-      "Name": "bullet",
+      "Name": "feed",
       "Pic": {
         "Type": "Normal",
         "Pic": ""
@@ -24,8 +24,7 @@
         "Particle": "trail",
         "Width": 1.0
       },
-      "OutOfRangeSpark": "spark",
-      "WallMark": "bullet_hole",
+      "OutOfRangeSpark": "spark_yellow",
       "Hit": {
         "Flesh": {
           "Sound": "hits/food"
