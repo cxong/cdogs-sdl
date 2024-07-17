@@ -288,22 +288,6 @@
       "Offset": [-8, -11],
       "Health": 0,
       "Flags": ["OnWall"]
-    },
-    {
-      "Name": "ghost_corpse",
-      "Type": "ActorSpawner",
-      "Pic": {
-        "Type": "Normal",
-        "Pic": "ghost_corpse"
-      },
-      "Wreck": {
-        "Sound": "",
-        "Bullet": ""
-      },
-      "Offset": [-7, -21],
-      "Health": 0,
-      "CharId": 22,
-      "Counter": 340
     }
   ]
 }

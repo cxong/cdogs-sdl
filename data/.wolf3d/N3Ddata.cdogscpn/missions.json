@@ -503,10 +503,6 @@
 			"Positions": [[19, 1]]
 		},
 		{
-			"MapObject": "ghost_corpse",
-			"Positions": [[14, 21]]
-		},
-		{
 			"MapObject": "wood_slime",
 			"Positions": [[3, 2]]
 		},
@@ -630,164 +626,108 @@
 			}]
 		},
 		{
-			"Index": 1,
+			"Index": 13,
 			"Places": [{
 				"Pos": [3, 17],
-				"Dir": 1
+				"Dir": 5
 			}]
 		},
 		{
-			"Index": 2,
+			"Index": 14,
 			"Places": [{
 				"Pos": [5, 17],
-				"Dir": 7
+				"Dir": 6
 			}]
 		},
 		{
-			"Index": 3,
+			"Index": 15,
 			"Places": [{
 				"Pos": [7, 17],
 				"Dir": 6
 			}]
 		},
 		{
-			"Index": 4,
-			"Places": [{
-				"Pos": [9, 17],
-				"Dir": 0
-			}]
-		},
-		{
-			"Index": 5,
-			"Places": [{
-				"Pos": [11, 17],
-				"Dir": 6
-			}]
-		},
-		{
-			"Index": 6,
-			"Places": [{
-				"Pos": [13, 17],
-				"Dir": 0
-			}]
-		},
-		{
-			"Index": 7,
-			"Places": [{
-				"Pos": [15, 17],
-				"Dir": 7
-			}]
-		},
-		{
-			"Index": 8,
+			"Index": 1,
 			"Places": [{
 				"Pos": [1, 19],
 				"Dir": 5
 			}]
 		},
 		{
-			"Index": 9,
+			"Index": 2,
 			"Places": [{
 				"Pos": [3, 19],
-				"Dir": 6
-			}]
-		},
-		{
-			"Index": 10,
-			"Places": [{
-				"Pos": [5, 19],
-				"Dir": 0
-			}]
-		},
-		{
-			"Index": 11,
-			"Places": [{
-				"Pos": [7, 19],
-				"Dir": 0
-			}]
-		},
-		{
-			"Index": 12,
-			"Places": [{
-				"Pos": [9, 19],
-				"Dir": 2
-			}]
-		},
-		{
-			"Index": 13,
-			"Places": [{
-				"Pos": [11, 19],
-				"Dir": 0
-			}]
-		},
-		{
-			"Index": 14,
-			"Places": [{
-				"Pos": [13, 19],
 				"Dir": 5
 			}]
 		},
 		{
-			"Index": 15,
+			"Index": 3,
 			"Places": [{
-				"Pos": [15, 19],
-				"Dir": 1
+				"Pos": [5, 19],
+				"Dir": 5
 			}]
 		},
 		{
-			"Index": 16,
+			"Index": 4,
+			"Places": [{
+				"Pos": [7, 19],
+				"Dir": 6
+			}]
+		},
+		{
+			"Index": 5,
+			"Places": [{
+				"Pos": [9, 19],
+				"Dir": 5
+			}]
+		},
+		{
+			"Index": 6,
 			"Places": [{
 				"Pos": [1, 21],
 				"Dir": 5
 			}]
 		},
 		{
-			"Index": 17,
+			"Index": 7,
 			"Places": [{
 				"Pos": [3, 21],
-				"Dir": 1
+				"Dir": 5
 			}]
 		},
 		{
-			"Index": 18,
+			"Index": 8,
 			"Places": [{
 				"Pos": [5, 21],
-				"Dir": 7
+				"Dir": 5
 			}]
 		},
 		{
-			"Index": 19,
+			"Index": 9,
 			"Places": [{
 				"Pos": [7, 21],
-				"Dir": 0
-			}]
-		},
-		{
-			"Index": 20,
-			"Places": [{
-				"Pos": [9, 21],
-				"Dir": 3
-			}]
-		},
-		{
-			"Index": 21,
-			"Places": [{
-				"Pos": [11, 21],
-				"Dir": 0
-			}]
-		},
-		{
-			"Index": 22,
-			"Places": [{
-				"Pos": [13, 21],
 				"Dir": 6
 			}]
 		},
 		{
-			"Index": 23,
+			"Index": 10,
 			"Places": [{
-				"Pos": [15, 21],
-				"Dir": 7
+				"Pos": [9, 21],
+				"Dir": 5
+			}]
+		},
+		{
+			"Index": 11,
+			"Places": [{
+				"Pos": [11, 21],
+				"Dir": 5
+			}]
+		},
+		{
+			"Index": 12,
+			"Places": [{
+				"Pos": [13, 21],
+				"Dir": 5
 			}]
 		}],
 		"StaticObjectives": [],

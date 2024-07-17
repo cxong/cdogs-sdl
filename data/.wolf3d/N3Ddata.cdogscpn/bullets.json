@@ -161,64 +161,6 @@
           "Sound": "goat_kick"
         }
       }
-    },
-    {
-      "Name": "ghost_drain",
-      "Power": 3,
-      "Mass": 0,
-      "Hit": {
-        "Flesh": {
-          "Sound": "hits/gas"
-        }
-      }
-    },
-    {
-      "Name": "fireball",
-      "Pic": {
-        "Type": "Animated",
-        "Sprites": "fireball_small",
-        "TicksPerFrame": 4
-      },
-      "Speed": 350,
-      "Range": 200,
-      "Power": 15,
-      "Mass": 18.0,
-      "Size": [3, 3],
-      "Special": {
-        "Effect": "Flame"
-      },
-      "Hit": {
-        "Flesh": {
-          "Sound": "hits/fire"
-        },
-        "Wall": {
-          "Sound": "hits/fire"
-        }
-      },
-      "Spark": "fireball_hit"
-    },
-    {
-      "Name": "energy_ball",
-      "Pic": {
-        "Type": "Animated",
-        "Sprites": "fireball_green",
-        "TicksPerFrame": 4
-      },
-      "Speed": 625,
-      "Range": 200,
-      "Power": 46,
-      "Mass": 40.0,
-      "Size": [3, 3],
-      "Special": "Flame",
-      "Spark": "fireball_green_hit",
-      "Hit": {
-        "Flesh": {
-          "Sound": "hits/fire"
-        },
-        "Wall": {
-          "Sound": "hits/fire"
-        }
-      }
     }
   ]
 }
