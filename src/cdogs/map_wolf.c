@@ -3104,7 +3104,7 @@ static bool MakeWallWalkable(Mission *m, const struct vec2i v)
 {
 	int *tile = CArrayGet(&m->u.Static.Tiles, v.x + v.y * m->Size.x);
 	const TileClass *tc = MissionStaticGetTileClass(&m->u.Static, m->Size, v);
-	if (tc->Type == TILE_CLASS_WALL)
+	if (tc->Type == TILE_CLASS_WALL && !tc->canWalk)
 	{
 		*tile += TILE_CLASS_WALL_OFFSET;
 		return true;

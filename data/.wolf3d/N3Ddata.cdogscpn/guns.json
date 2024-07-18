@@ -55,13 +55,13 @@
     {
       "Pic": "blaster_yellow",
       "Name": "Cantaloupe Feeder",
-      "Icon": "flamer",
-      "Bullet": "grenade",
-      "Cost": 1,
+      "Icon": "cantaloupe_feeder",
+      "Bullet": "cantaloupe",
+      "Cost": 10,
       "Lock": 45,
-      "Sound": "super_feeder",
-      "SwitchSound": "chaingun_pickup",
-      "Recoil": 0.23,
+      "Sound": "cantaloupe_feeder",
+      "SwitchSound": "package_r",
+      "Elevation": 18,
       "Ammo": "Cantaloupe"
     },
     {
@@ -70,9 +70,9 @@
       "Name": "Watermelons",
       "Bullet": "grenade",
       "Cost": 20,
-      "Lock": 30,
-      "Sound": "super_feeder",
-      "SwitchSound": "grenade_pickup",
+      "Lock": 70,
+      "Sound": "watermelon_feeder",
+      "SwitchSound": "package_pickup",
       "Elevation": 24,
       "Ammo": "Watermelon"
     },

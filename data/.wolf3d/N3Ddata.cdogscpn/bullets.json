@@ -40,6 +40,32 @@
       }
     },
     {
+      "Name": "cantaloupe",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "grenade",
+        "Mask": "ffba43"
+      },
+      "Size": [4, 4],
+      "ShadowSize": [6, 4],
+      "Speed": 600,
+      "Range": 200,
+      "Power": 100,
+      "Mass": 1.0,
+      "Spark": "",
+      "Hit": {
+        "Flesh": {
+          "Sound": "splat0"
+        },
+        "Wall": {
+          "Sound": "splat0"
+        }
+      },
+      "Falling": {
+        "GravityFactor": 1
+      }
+    },
+    {
       "Name": "bullet_enemy",
       "Pic": {
         "Type": "Normal",
