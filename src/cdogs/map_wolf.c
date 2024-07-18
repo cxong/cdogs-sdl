@@ -2170,9 +2170,24 @@ typedef enum
 	CHAR_DEATH_KNIGHT,
 	CHAR_GHOST,
 	CHAR_ANGEL,
-	CHAR_KANGAROO,
-	CHAR_ELEPHANT
 } WolfChar;
+
+typedef enum
+{
+	CHAR_RAM = 1,
+	CHAR_GOAT,
+	CHAR_OSTRICH,
+	CHAR_ANTELOPE,
+	CHAR_BULL,
+	CHAR_CAMEL,
+	CHAR_GIRAFFE,
+	CHAR_BEAR_BUSH,
+	CHAR_BEAR,
+	// 10
+	CHAR_MONKEY,
+	CHAR_KANGAROO,
+	CHAR_ELEPHANT,
+} N3DChar;
 
 static bool MakeWallWalkable(Mission *m, const struct vec2i v);
 static void LoadChar(
@@ -2922,28 +2937,97 @@ static void LoadEntity(
 		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_DOG, false, bossObjIdx);
 		break;
 	case CWENT_GUARD_E:
-		LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_GUARD, false, bossObjIdx);
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_RAM, false, bossObjIdx);
+			break;
+		default:
+			LoadChar(
+				m, v, DIRECTION_RIGHT, (int)CHAR_GUARD, false, bossObjIdx);
+			break;
+		}
 		break;
 	case CWENT_GUARD_N:
-		LoadChar(m, v, DIRECTION_UP, (int)CHAR_GUARD, false, bossObjIdx);
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			LoadChar(
+				m, v, DIRECTION_DOWN, (int)CHAR_OSTRICH, false, bossObjIdx);
+			break;
+		default:
+			LoadChar(m, v, DIRECTION_UP, (int)CHAR_GUARD, false, bossObjIdx);
+			break;
+		}
 		break;
 	case CWENT_GUARD_W:
-		LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_GUARD, false, bossObjIdx);
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			LoadChar(
+				m, v, DIRECTION_DOWN, (int)CHAR_ANTELOPE, false, bossObjIdx);
+			break;
+		default:
+			LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_GUARD, false, bossObjIdx);
+			break;
+		}
 		break;
 	case CWENT_GUARD_S:
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_GUARD, false, bossObjIdx);
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_GOAT, false, bossObjIdx);
+			break;
+		default:
+			LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_GUARD, false, bossObjIdx);
+			break;
+		}
 		break;
 	case CWENT_SS_E:
-		LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_SS, false, bossObjIdx);
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_RAM, false, bossObjIdx);
+			break;
+		default:
+			LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_SS, false, bossObjIdx);
+			break;
+		}
 		break;
 	case CWENT_SS_N:
-		LoadChar(m, v, DIRECTION_UP, (int)CHAR_SS, false, bossObjIdx);
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			LoadChar(
+				m, v, DIRECTION_DOWN, (int)CHAR_OSTRICH, false, bossObjIdx);
+			break;
+		default:
+			LoadChar(m, v, DIRECTION_UP, (int)CHAR_SS, false, bossObjIdx);
+			break;
+		}
 		break;
 	case CWENT_SS_W:
-		LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_SS, false, bossObjIdx);
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			LoadChar(
+				m, v, DIRECTION_DOWN, (int)CHAR_ANTELOPE, false, bossObjIdx);
+			break;
+		default:
+			LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_SS, false, bossObjIdx);
+			break;
+		}
 		break;
 	case CWENT_SS_S:
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_SS, false, bossObjIdx);
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_GOAT, false, bossObjIdx);
+			break;
+		default:
+			LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_SS, false, bossObjIdx);
+			break;
+		}
 		break;
 	case CWENT_MUTANT_E:
 		LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_MUTANT, false, bossObjIdx);
@@ -2964,25 +3048,77 @@ static void LoadEntity(
 		LoadChar(m, v, DIRECTION_UP, (int)CHAR_OFFICER, false, bossObjIdx);
 		break;
 	case CWENT_OFFICER_W:
-		LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_OFFICER, false, bossObjIdx);
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			LoadChar(
+				m, v, DIRECTION_DOWN, (int)CHAR_BEAR_BUSH, false, bossObjIdx);
+			break;
+		default:
+			LoadChar(
+				m, v, DIRECTION_LEFT, (int)CHAR_OFFICER, false, bossObjIdx);
+			break;
+		}
 		break;
 	case CWENT_OFFICER_S:
 		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_OFFICER, false, bossObjIdx);
 		break;
 	case CWENT_GUARD_MOVING_E:
-		LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_GUARD, true, bossObjIdx);
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_BULL, false, bossObjIdx);
+			break;
+		default:
+			LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_GUARD, true, bossObjIdx);
+			break;
+		}
 		break;
 	case CWENT_GUARD_MOVING_N:
-		LoadChar(m, v, DIRECTION_UP, (int)CHAR_GUARD, true, bossObjIdx);
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_CAMEL, false, bossObjIdx);
+			break;
+		default:
+			LoadChar(m, v, DIRECTION_UP, (int)CHAR_GUARD, true, bossObjIdx);
+			break;
+		}
 		break;
 	case CWENT_GUARD_MOVING_W:
-		LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_GUARD, true, bossObjIdx);
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			LoadChar(
+				m, v, DIRECTION_DOWN, (int)CHAR_MONKEY, false, bossObjIdx);
+			break;
+		default:
+			LoadChar(m, v, DIRECTION_LEFT, (int)CHAR_GUARD, true, bossObjIdx);
+			break;
+		}
 		break;
 	case CWENT_GUARD_MOVING_S:
-		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_GUARD, true, bossObjIdx);
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			LoadChar(
+				m, v, DIRECTION_DOWN, (int)CHAR_GIRAFFE, false, bossObjIdx);
+			break;
+		default:
+			LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_GUARD, true, bossObjIdx);
+			break;
+		}
 		break;
 	case CWENT_SS_MOVING_E:
-		LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_SS, true, bossObjIdx);
+		switch (map->type)
+		{
+		case CWMAPTYPE_N3D:
+			LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_BULL, false, bossObjIdx);
+			break;
+		default:
+			LoadChar(m, v, DIRECTION_RIGHT, (int)CHAR_SS, true, bossObjIdx);
+			break;
+		}
 		break;
 	case CWENT_SS_MOVING_N:
 		LoadChar(m, v, DIRECTION_UP, (int)CHAR_SS, true, bossObjIdx);
@@ -3089,11 +3225,9 @@ static void LoadEntity(
 			bossObjIdx);
 		break;
 	case CWENT_KERRY_KANGAROO:
-		// TODO: implement
 		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_KANGAROO, false, bossObjIdx);
 		break;
 	case CWENT_ERNIE_ELEPHANT:
-		// TODO: implement
 		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_ELEPHANT, false, bossObjIdx);
 		break;
 	default:
