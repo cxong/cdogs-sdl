@@ -42,7 +42,7 @@
         "Type": "Lives",
         "Lives": 1
       }],
-      "Sound": "pickup"
+      "Sound": "1up"
     },
     {
       "Name": "grapes",

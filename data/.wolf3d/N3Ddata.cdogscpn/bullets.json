@@ -78,7 +78,9 @@
       "OutOfRangeSpark": "spark",
       "WallMark": "bullet_hole",
       "Hit": {
-        "Flesh": {}
+        "Flesh": {
+          "Sound": "hurt"
+        }
       },
       "Speed": 35000,
       "Range": 1,
@@ -98,7 +100,9 @@
       "OutOfRangeSpark": "spark",
       "WallMark": "bullet_hole",
       "Hit": {
-        "Flesh": {}
+        "Flesh": {
+          "Sound": "hurt"
+        }
       },
       "Speed": 35000,
       "Range": 1,
@@ -118,7 +122,9 @@
       "OutOfRangeSpark": "spark",
       "WallMark": "bullet_hole",
       "Hit": {
-        "Flesh": {}
+        "Flesh": {
+          "Sound": "hurt"
+        }
       },
       "Speed": 35000,
       "Range": 1,
@@ -165,7 +171,7 @@
       "ShadowSize": [2, 2],
       "Hit": {
         "Flesh": {
-          "Sound": "hits/rocket"
+          "Sound": "hurt"
         },
         "Wall": {
           "Sound": "hits/rocket"
