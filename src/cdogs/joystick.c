@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2015, 2018 Cong Xu
+    Copyright (c) 2013-2015, 2018, 2024 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -75,6 +75,13 @@ void JoyReset(CArray *joys)
 	CA_FOREACH_END()
 }
 
+void JoyLock(CArray *joys)
+{
+	CA_FOREACH(Joystick, j, *joys)
+		j->lockedCmd = j->currentCmd;
+	CA_FOREACH_END()
+}
+
 static void JoyTerminateOne(Joystick *j)
 {
 	SDL_GameControllerClose(j->gc);
@@ -99,7 +106,8 @@ static Joystick *GetJoystick(const SDL_JoystickID id)
 
 bool JoyIsDown(const SDL_JoystickID id, const int cmd)
 {
-	return !!(GetJoystick(id)->currentCmd & cmd);
+	const Joystick *j = GetJoystick(id);
+	return !!(j->currentCmd & ~j->lockedCmd & cmd);
 }
 
 bool JoyIsPressed(const SDL_JoystickID id, const int cmd)
@@ -277,6 +285,7 @@ static void JoyOnCmd(Joystick *j, const int cmd, const bool isDown)
 			j->pressedCmd |= cmd;
 		}
 		j->currentCmd &= ~cmd;
+		j->lockedCmd &= ~cmd;
 	}
 }
 

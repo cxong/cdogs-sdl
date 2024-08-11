@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2015, 2018, 2021 Cong Xu, davidrgmcb
+    Copyright (c) 2013-2015, 2018, 2021, 2024 Cong Xu, davidrgmcb
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -82,6 +82,14 @@ InputKeys KeyLoadPlayerKeys(Config *c)
 	return k;
 }
 
+void KeyLockKeys(keyboard_t *k)
+{
+	memcpy(
+		k->lockedKeys,
+		k->currentKeys,
+		sizeof k->lockedKeys);
+}
+
 void KeyPrePoll(keyboard_t *keyboard)
 {
 	memcpy(
@@ -106,7 +114,8 @@ void KeyOnKeyDown(keyboard_t *keyboard, const SDL_Keysym s)
 }
 void KeyOnKeyUp(keyboard_t *keyboard, const SDL_Keysym s)
 {
-	keyboard->currentKeys[s.scancode].isPressed = 0;
+	keyboard->currentKeys[s.scancode].isPressed = false;
+	keyboard->lockedKeys[s.scancode].isPressed = false;
 }
 
 void DiagonalHold(keyboard_t *keyboard, int currentPlayer)
@@ -256,7 +265,7 @@ void KeyPostPoll(keyboard_t *keyboard, const Uint32 ticks)
 
 bool KeyIsDown(const keyboard_t *k, const int key)
 {
-	return k->currentKeys[key].isPressed;
+	return !k->lockedKeys[key].isPressed && k->currentKeys[key].isPressed;
 }
 
 bool KeyIsPressed(const keyboard_t *k, const int key)

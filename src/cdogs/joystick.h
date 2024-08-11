@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2015, Cong Xu
+    Copyright (c) 2013-2015, 2024 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -48,10 +48,14 @@ typedef struct
 	int currentCmd;
 	int previousCmd;
 	int pressedCmd;
+	// When switching between states, lock cmds that were already down,
+	// and prevent isDown until they are released
+	int lockedCmd;
 } Joystick;
 
 void JoyInit(CArray *joys);
 void JoyReset(CArray *joys);
+void JoyLock(CArray *joys);
 void JoyTerminate(CArray *joys);
 
 bool JoyIsDown(const SDL_JoystickID id, const int cmd);

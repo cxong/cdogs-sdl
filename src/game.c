@@ -359,7 +359,8 @@ static void RunGameInput(GameLoopData *data)
 		// Clear all user inputs if we're using the pause menu
 		memset(rData->cmds, 0, sizeof rData->cmds);
 		memset(rData->lastCmds, 0, sizeof rData->lastCmds);
-		// TODO: require a button up before allowing firing again
+		KeyLockKeys(&gEventHandlers.keyboard);
+		JoyLock(&gEventHandlers.joysticks);
 	}
 
 	// Update and check if we want to quit
