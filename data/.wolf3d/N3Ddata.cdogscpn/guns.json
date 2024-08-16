@@ -43,7 +43,7 @@
       "Ammo": "Feed"
     },
     {
-      "Pic": "chaingun",
+      "Pic": "super_feeder",
       "Name": "Super Feeder",
       "Icon": "super_feeder",
       "Bullet": "feed",
@@ -82,7 +82,7 @@
       "Ammo": "Watermelon"
     },
     {
-      "Pic": "pistol",
+      "Pic": "",
       "Name": "Sheep Spit",
       "Bullet": "bullet_enemy",
       "Cost": 1,
@@ -94,7 +94,7 @@
       "CanDrop": false
     },
     {
-      "Pic": "smg",
+      "Pic": "",
       "Grips": 2,
       "Name": "SS Machine Gun",
       "Icon": "assault_rifle",
@@ -108,7 +108,7 @@
       "CanDrop": false
     },
     {
-      "Pic": "chaingun",
+      "Pic": "",
       "Name": "boss_chaingun1",
       "Bullet": "bullet_boss",
       "Lock": 70,
@@ -152,7 +152,7 @@
     },
     {
       "Name": "Rocket Launcher",
-      "Pic": "rocket_blue",
+      "Pic": "",
       "Icon": "launcher",
       "Bullet": "rocket",
       "Cost": 9,
