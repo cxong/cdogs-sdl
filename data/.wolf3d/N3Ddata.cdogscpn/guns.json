@@ -25,7 +25,8 @@
       "Sound": "small_launcher",
       "SwitchSound": "bow_draw0",
       "Recoil": 0.1,
-      "Ammo": "Feed"
+      "Ammo": "Feed",
+      "OverheatTicks": -1
     },
     {
       "Pic": "large_launcher",
@@ -40,7 +41,8 @@
       "Sound": "large_launcher",
       "SwitchSound": "bow_draw1",
       "Recoil": 0.17,
-      "Ammo": "Feed"
+      "Ammo": "Feed",
+      "OverheatTicks": -1
     },
     {
       "Pic": "super_feeder",
@@ -54,7 +56,8 @@
       "Sound": "super_feeder",
       "SwitchSound": "bow_draw2",
       "Recoil": 0.23,
-      "Ammo": "Feed"
+      "Ammo": "Feed",
+      "OverheatTicks": -1
     },
     {
       "Pic": "blaster_yellow",
@@ -67,7 +70,8 @@
       "Sound": "cantaloupe_feeder",
       "SwitchSound": "package_r",
       "Elevation": 18,
-      "Ammo": "Cantaloupe"
+      "Ammo": "Cantaloupe",
+      "OverheatTicks": -1
     },
     {
       "Pic": "",

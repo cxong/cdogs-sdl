@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2023 Cong Xu
+	Copyright (c) 2013-2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -357,6 +357,8 @@ static void LoadWeaponClass(WeaponClass *wc, json_t *node, const int version)
 	}
 
 	LoadInt(&wc->Price, node, "Price");
+	wc->OverheatTicks = FPS_FRAMELIMIT;	// default 1 second overheating
+	LoadInt(&wc->OverheatTicks, node, "OverheatTicks");
 
 	LOG(LM_MAP, LL_DEBUG, "loaded %s name(%s) lock(%d)...",
 		GunTypeStr(wc->Type), wc->name, wc->Lock);
@@ -400,7 +402,7 @@ static void LoadWeaponClass(WeaponClass *wc, json_t *node, const int version)
 			wc->u.Normal.Auto ? "true" : "false");
 	}
 
-	LOG(LM_MAP, LL_DEBUG, "price(%d)", wc->Price);
+	LOG(LM_MAP, LL_DEBUG, "price(%d) overheatTicks(%d)", wc->Price, wc->OverheatTicks);
 }
 void WeaponClassesTerminate(WeaponClasses *wcs)
 {

@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2019, 2021 Cong Xu
+	Copyright (c) 2013-2019, 2021, 2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -171,10 +171,10 @@ void WeaponBarrelOnFire(Weapon *w, const int barrel)
 
 bool WeaponBarrelIsOverheating(const Weapon *w, const int idx)
 {
-	if (!WeaponClassHasMuzzle(w->Gun))
+	if (!WeaponClassHasMuzzle(w->Gun) || w->Gun->OverheatTicks < 0)
 	{
 		return false;
 	}
-	// Overheat after 1 second of continuous firing
-	return w->barrels[idx].heatCounter > FPS_FRAMELIMIT;
+	// Overheat after some duration of continuous firing
+	return w->barrels[idx].heatCounter > w->Gun->OverheatTicks;
 }

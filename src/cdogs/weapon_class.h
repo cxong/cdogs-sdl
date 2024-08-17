@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2019, 2021-2023 Cong Xu
+	Copyright (c) 2013-2019, 2021-2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -119,6 +119,7 @@ typedef struct
 	char *DropGun;	// Gun to drop if an actor with this gun dies
 	bool IsRealGun; // whether this gun can be used as is by players
 	int Price;		// Price to purchase gun
+	int OverheatTicks;	// Number of ticks required to overheat the barrel and start smoking
 } WeaponClass;
 typedef struct
 {
