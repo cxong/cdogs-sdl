@@ -1,7 +1,7 @@
 {
 	"Version": 14,
 	"Characters": [{
-		"Class": "Jones",
+		"Class": "Noah",
 		"PlayerTemplateName": "Noah",
 		"FacehairType": "beard",
 		"Skin": "ffb26aff",
@@ -289,7 +289,7 @@
 		"actionDelay": 40
 	},
 	{
-		"Class": "Lady",
+		"Class": "Naamah",
 		"PlayerTemplateName": "Naamah",
 		"HairType": "long",
 		"Skin": "ffb26aff",
@@ -312,7 +312,7 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Jones",
+		"Class": "Noah",
 		"PlayerTemplateName": "Utnapishtim",
 		"HairType": "ponytail",
 		"FacehairType": "dutch",
@@ -336,7 +336,7 @@
 		"actionDelay": 15
 	},
 	{
-		"Class": "Jones",
+		"Class": "Noah",
 		"PlayerTemplateName": "Ziusudra",
 		"HairType": "long",
 		"FacehairType": "beard",

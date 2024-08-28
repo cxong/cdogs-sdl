@@ -2,6 +2,24 @@
   "Version": 2,
   "Characters": [
     {
+      "Name": "Noah",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/jones"
+      },
+      "Sounds": "man",
+      "BloodColor": "0066ff"
+    },
+    {
+      "Name": "Naamah",
+      "HeadPics": {
+        "Type": "Directional",
+        "Sprites": "chars/heads/lady"
+      },
+      "Sounds": "woman",
+      "BloodColor": "0066ff"
+    },
+    {
       "Name": "Sheep",
       "HeadPics": {
         "Type": "Directional",
@@ -9,7 +27,8 @@
       },
       "Body": "dog",
       "Sounds": "sheep",
-      "Corpse": "dead_guard"
+      "Corpse": "sheep_sleep",
+      "BloodColor": "00000000"
     },
     {
       "Name": "Goat",
@@ -19,7 +38,9 @@
       },
       "Body": "dog",
       "Sounds": "sheep",
-	    "Footsteps": "dog"
+	    "Footsteps": "dog",
+      "Corpse": "sheep_sleep",
+      "BloodColor": "00000000"
     },
     {
       "Name": "SS",

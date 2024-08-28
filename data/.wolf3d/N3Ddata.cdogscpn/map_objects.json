@@ -288,6 +288,15 @@
       "Offset": [-8, -11],
       "Health": 0,
       "Flags": ["OnWall"]
+    },
+    {
+      "Name": "sheep_sleep",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "sheep_sleep"
+      },
+      "Health": 0,
+      "DrawBelow": true
     }
   ]
 }

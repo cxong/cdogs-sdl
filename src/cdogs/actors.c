@@ -2246,6 +2246,11 @@ static void ActorAddBloodSplatters(
 	const GoreAmount ga = ConfigGetEnum(&gConfig, "Graphics.Gore");
 	if (ga == GORE_NONE)
 		return;
+	const color_t bloodColor = ActorGetCharacter(a)->Class->BloodColor;
+	if (bloodColor.a == 0)
+	{
+		return;
+	}
 
 	// Emit blood based on power and gore setting
 	int bloodPower = power * 2;
@@ -2281,7 +2286,7 @@ static void ActorAddBloodSplatters(
 		ap.Angle = NAN;
 		ap.Z = 10;
 		ap.Vel = vel;
-		ap.Mask = ActorGetCharacter(a)->Class->BloodColor;
+		ap.Mask = bloodColor;
 		EmitterStart(em, &ap);
 		switch (ga)
 		{
