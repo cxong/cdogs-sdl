@@ -39,7 +39,7 @@
       "Body": "dog",
       "Sounds": "sheep",
 	    "Footsteps": "dog",
-      "Corpse": "sheep_sleep",
+      "Corpse": "goat_sleep",
       "BloodColor": "00000000"
     },
     {

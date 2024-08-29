@@ -292,8 +292,19 @@
     {
       "Name": "sheep_sleep",
       "Pic": {
-        "Type": "Normal",
-        "Pic": "sheep_sleep"
+        "Type": "Animated",
+        "Sprites": "sheep_sleep",
+        "TicksPerFrame": 60
+      },
+      "Health": 0,
+      "DrawBelow": true
+    },
+    {
+      "Name": "goat_sleep",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "goat_sleep",
+        "TicksPerFrame": 60
       },
       "Health": 0,
       "DrawBelow": true
