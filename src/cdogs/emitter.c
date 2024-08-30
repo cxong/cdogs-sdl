@@ -1,7 +1,7 @@
 /*
 C-Dogs SDL
 A port of the legendary (and fun) action/arcade cdogs.
-Copyright (c) 2016-2017, 2019 Cong Xu
+Copyright (c) 2016-2017, 2019, 2024 Cong Xu
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -71,6 +71,10 @@ void EmitterStart(Emitter *em, const AddParticle *data)
 	}
 	e.u.AddParticle.DZ = RAND_FLOAT(em->minDZ, em->maxDZ);
 	e.u.AddParticle.Spin = RAND_DOUBLE(em->minRotation, em->maxRotation);
+	if (strlen(e.u.AddParticle.Text) == 0 && em->p->Type == PARTICLE_TEXT)
+	{
+		strcpy(e.u.AddParticle.Text, em->p->u.Text.Value);
+	}
 	GameEventsEnqueue(&gGameEvents, e);
 }
 

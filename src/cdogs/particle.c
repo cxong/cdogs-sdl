@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2017, 2019-2021 Cong Xu
+	Copyright (c) 2014-2017, 2019-2021, 2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,7 @@ ParticleClasses gParticleClasses;
 CArray gParticles;
 #define MAX_PARTICLES 4096
 
-#define VERSION 2
+#define VERSION 3
 
 // Particles get darker when below this height
 #define PARTICLE_DARKEN_Z BULLET_Z
@@ -170,13 +170,32 @@ static void LoadParticleClass(
 			CPicLoadJSON(&c->u.Pic, json_find_first_label(node, "Pic")->child);
 			break;
 		case PARTICLE_TEXT:
-			c->u.TextColor = colorWhite;
-			tmp = NULL;
-			LoadStr(&tmp, node, "TextMask");
-			if (tmp != NULL)
+			c->u.Text.Mask = colorWhite;
+			if (version <= 2)
 			{
-				c->u.TextColor = StrColor(tmp);
-				CFREE(tmp)
+				tmp = NULL;
+				LoadStr(&tmp, node, "TextMask");
+				if (tmp != NULL)
+				{
+					c->u.Text.Mask = StrColor(tmp);
+				}
+				CFREE(tmp);
+			}
+			else
+			{
+				if (json_find_first_label(node, "Text"))
+				{
+					json_t *text = json_find_first_label(node, "Text")->child;
+					tmp = NULL;
+					LoadStr(&tmp, text, "Mask");
+					if (tmp != NULL)
+					{
+						c->u.Text.Mask = StrColor(tmp);
+					}
+					CFREE(tmp);
+					
+					LoadStr(&c->u.Text.Value, text, "Value");
+				}
 			}
 			break;
 		default:
@@ -545,7 +564,7 @@ static void DrawParticle(const struct vec2i pos, const ThingDrawFuncData *data)
 	case PARTICLE_TEXT: {
 		FontOpts opts = FontOptsNew();
 		opts.HAlign = ALIGN_CENTER;
-		opts.Mask = p->Class->u.TextColor;
+		opts.Mask = p->Class->u.Text.Mask;
 		FontStrOpt(
 			p->u.Text, svec2i(pos.x, pos.y - (int)(p->Z / Z_FACTOR)), opts);
 		break;

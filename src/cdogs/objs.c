@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2021 Cong Xu
+	Copyright (c) 2013-2021, 2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -498,7 +498,7 @@ void ObjAdd(const NMapObjectAdd amo)
 	o->thing.CPicFunc = MapObjectDraw;
 	MapTryMoveThing(&gMap, &o->thing, NetToVec2(amo.Pos));
 	EmitterInit(
-		&o->damageSmoke, StrParticleClass(&gParticleClasses, "smoke_big"),
+		&o->damageSmoke, StrParticleClass(&gParticleClasses, o->Class->DamageSmoke.ParticleClass),
 		svec2_zero(), -0.05f, 0.05f, 3, 3, 0, 0, 20);
 	o->isInUse = true;
 	LOG(LM_MAIN, LL_DEBUG,

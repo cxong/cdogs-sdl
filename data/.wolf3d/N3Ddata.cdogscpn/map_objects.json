@@ -297,7 +297,11 @@
         "TicksPerFrame": 60
       },
       "Health": 0,
-      "DrawBelow": true
+      "DrawBelow": true,
+      "DamageSmoke": {
+        "Particle": "zzz",
+        "HealthThreshold": 1.0
+      }
     },
     {
       "Name": "goat_sleep",
@@ -307,7 +311,11 @@
         "TicksPerFrame": 60
       },
       "Health": 0,
-      "DrawBelow": true
+      "DrawBelow": true,
+      "DamageSmoke": {
+        "Particle": "zzz",
+        "HealthThreshold": 1.0
+      }
     }
   ]
 }

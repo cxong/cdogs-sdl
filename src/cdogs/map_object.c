@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2014, 2016-2017, 2019, 2021 Cong Xu
+	Copyright (c) 2014, 2016-2017, 2019, 2021, 2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -441,6 +441,11 @@ static bool TryLoadMapObject(MapObject *m, json_t *node, const int version)
 	json_t *dSmokeNode = json_find_first_label(node, "DamageSmoke");
 	if (dSmokeNode != NULL && dSmokeNode->child != NULL)
 	{
+		LoadStr(&m->DamageSmoke.ParticleClass, dSmokeNode->child, "Particle");
+		if (m->DamageSmoke.ParticleClass == NULL)
+		{
+			CSTRDUP(m->DamageSmoke.ParticleClass, "smoke_big");
+		}
 		LoadFloat(
 			&m->DamageSmoke.HealthThreshold, dSmokeNode->child,
 			"HealthThreshold");
@@ -558,6 +563,7 @@ void MapObjectsClear(CArray *classes)
 		CFREE(c->Wreck.MO);
 		CFREE(c->Wreck.Bullet);
 		CFREE(c->FootstepSound);
+		CFREE(c->DamageSmoke.ParticleClass);
 		CArrayTerminate(&c->DestroyGuns);
 		CArrayTerminate(&c->DestroySpawn);
 	}

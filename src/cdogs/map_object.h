@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2019, 2021 Cong Xu
+    Copyright (c) 2013-2019, 2021, 2024 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -119,6 +119,7 @@ typedef struct
 	} u;
 	CArray DestroySpawn;	// of MapObjectDestroySpawn
 	struct {
+		char *ParticleClass;
 		float HealthThreshold;	// Smoke if map object damaged below this ratio
 	} DamageSmoke;
 } MapObject;

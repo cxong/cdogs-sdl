@@ -1,0 +1,14 @@
+{
+  "Version": 3,
+  "Particles": [
+    {
+      "Name": "zzz",
+      "Type": "Text",
+      "Text": {
+        "Value": "z"
+      },
+      "Range": 40,
+      "GravityFactor": -0.1
+    }
+  ]
+}
