@@ -25,7 +25,7 @@
         "Type": "Directional",
         "Sprites": "chars/heads/sheep"
       },
-      "Body": "dog",
+      "Body": "sheep",
       "Sounds": "sheep",
       "Corpse": "sheep_sleep",
       "BloodColor": "00000000"
@@ -36,7 +36,7 @@
         "Type": "Directional",
         "Sprites": "chars/heads/sheep"
       },
-      "Body": "dog",
+      "Body": "sheep",
       "Sounds": "sheep",
 	    "Footsteps": "dog",
       "Corpse": "goat_sleep",
