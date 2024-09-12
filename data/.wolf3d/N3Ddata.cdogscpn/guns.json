@@ -69,6 +69,8 @@
       "MuzzleFlashParticle": "",
       "Sound": "cantaloupe_feeder",
       "SwitchSound": "package_r",
+      "SpreadCount": 2,
+      "SpreadWidth": 0,
       "Elevation": 18,
       "Ammo": "Cantaloupe",
       "OverheatTicks": -1
@@ -77,7 +79,7 @@
       "Pic": "",
       "IsGrenade": true,
       "Name": "Watermelons",
-      "Bullet": "grenade",
+      "Bullet": "watermelon",
       "Cost": 20,
       "Lock": 70,
       "Sound": "watermelon_feeder",
@@ -173,6 +175,24 @@
     }
   ],
   "PseudoGuns" : [
+    {
+      "Name": "cantaloupe_splat",
+      "Bullet": "cantaloupe_splat",
+      "Recoil": 2,
+      "SpreadCount": 6,
+      "ElevationLow": 22,
+      "ElevationHigh": 30,
+      "Sound": "splat0"
+    },
+    {
+      "Name": "watermelon_splat",
+      "Bullet": "watermelon_splat",
+      "Recoil": 2,
+      "SpreadCount": 10,
+      "ElevationLow": 22,
+      "ElevationHigh": 30,
+      "Sound": "splat1"
+    },
     {
       "Pic": "chaingun",
       "Name": "boss_chaingun2",

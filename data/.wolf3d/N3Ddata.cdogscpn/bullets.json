@@ -43,16 +43,42 @@
       "Name": "cantaloupe",
       "Pic": {
         "Type": "Animated",
-        "Sprites": "grenade",
-        "Mask": "ffba43"
+        "Sprites": "particles/cantaloupe",
+        "TicksPerFrame": 2
       },
       "Size": [4, 4],
       "ShadowSize": [6, 4],
-      "Speed": 600,
+      "SpeedLow": 500,
+      "SpeedHigh": 700,
       "Range": 200,
-      "Power": 100,
+      "Power": 20,
       "Mass": 1.0,
       "Spark": "",
+      "Hit": {
+        "Flesh": {},
+        "Wall": {}
+      },
+      "HitGuns": [
+        "cantaloupe_splat"
+      ],
+      "Falling": {
+        "GravityFactor": 1
+      }
+    },
+    {
+      "Name": "cantaloupe_splat",
+      "Pic": {
+        "Type": "AnimatedRandom",
+        "Sprites": "particles/spall3",
+        "TicksPerFrame": 6,
+        "Mask": "F08C60"
+      },
+      "SpeedLow": 256,
+      "SpeedHigh": 512,
+      "SpeedScale": true,
+      "Range": 100,
+      "Power": 15,
+      "WallBounces": true,
       "Hit": {
         "Flesh": {
           "Sound": "splat0"
@@ -62,7 +88,60 @@
         }
       },
       "Falling": {
+        "GravityFactor": 4,
+        "DestroyOnDrop": true
+      }
+    },
+    {
+      "Name": "watermelon",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "grenade",
+        "Mask": "527A30"
+      },
+      "Size": [8, 8],
+      "ShadowSize": [8, 6],
+      "Speed": 400,
+      "Range": 300,
+      "Power": 40,
+      "Mass": 4.0,
+      "Spark": "",
+      "Hit": {
+        "Flesh": {},
+        "Wall": {}
+      },
+      "HitGuns": [
+        "watermelon_splat"
+      ],
+      "Falling": {
         "GravityFactor": 1
+      }
+    },
+    {
+      "Name": "watermelon_splat",
+      "Pic": {
+        "Type": "AnimatedRandom",
+        "Sprites": "particles/spall2",
+        "TicksPerFrame": 6,
+        "Mask": "C63A4F"
+      },
+      "SpeedLow": 256,
+      "SpeedHigh": 512,
+      "SpeedScale": true,
+      "Range": 100,
+      "Power": 20,
+      "WallBounces": true,
+      "Hit": {
+        "Flesh": {
+          "Sound": "splat1"
+        },
+        "Wall": {
+          "Sound": "splat1"
+        }
+      },
+      "Falling": {
+        "GravityFactor": 4,
+        "DestroyOnDrop": true
       }
     },
     {
