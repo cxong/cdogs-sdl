@@ -8,7 +8,7 @@
         "Sprites": "chars/heads/jones"
       },
       "Sounds": "man",
-      "BloodColor": "0066ff"
+      "BloodColor": "00ccff"
     },
     {
       "Name": "Naamah",
@@ -17,7 +17,7 @@
         "Sprites": "chars/heads/lady"
       },
       "Sounds": "woman",
-      "BloodColor": "0066ff"
+      "BloodColor": "00ccff"
     },
     {
       "Name": "Sheep",

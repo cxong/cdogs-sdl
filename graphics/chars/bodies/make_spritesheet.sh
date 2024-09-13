@@ -3,6 +3,7 @@
 # Create character spritesheet and join all the rendered images
 #
 set -e
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 if [ "$#" -ne 1 ]; then
     echo "Usage: make_spritesheet.sh body"
     exit 1
@@ -37,6 +38,7 @@ do
     fi
     for action in $actions
     do
+      rm -rf out
       if [[ $action == *"run"* ]]
       then
         frames=$run_frames
@@ -48,7 +50,7 @@ do
       then
         collections=$collections,hand_right
       fi
-      "$BLENDER" -noaudio -b "$INFILE" -P render.py -- "$collections" "$action" "$frames" "$part"
+      "$BLENDER" -noaudio -b "$INFILE" -P ${SCRIPT_DIR}/render.py -- "$collections" "$action" "$frames" "$part"
 
       DIMENSIONS=`identify -format "%wx%h" "out/${part}_${action}_0_00.png"`
       OUTFILE=$1/${part}_${action}_${DIMENSIONS}.png
