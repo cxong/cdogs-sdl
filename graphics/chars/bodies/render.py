@@ -12,6 +12,9 @@ import bpy
 import sys
 from math import radians
 
+C = bpy.context
+D = bpy.data
+
 argv = sys.argv[sys.argv.index("--") + 1:]
 collections = argv[0].split(',')
 action = argv[1]
@@ -23,32 +26,35 @@ FRAME_SKIP = 10
 
 angle = -45
 axis = 2 # z-axis
-platform = bpy.data.objects["armature"]
-scene = bpy.data.scenes[0]
+platform = D.objects["armature"]
+scene = D.scenes[0]
 try:
-    platform.animation_data.action = bpy.data.actions[action]
+    platform.animation_data.action = D.actions[action]
 except KeyError:
     print(f"action {action} not found")
     sys.exit(1)
-for collection in bpy.data.collections.keys():
-    bpy.data.collections[collection].hide_render = collection not in collections
+
+for collection in D.collections.keys():
+    D.collections[collection].hide_render = collection not in collections
+
 render = scene.render
 render.image_settings.file_format = 'PNG'
 render.image_settings.color_mode ='RGBA'
 render.resolution_x = RESOLUTION
 render.resolution_y = RESOLUTION
 render.frame_map_new = 100 // FRAME_SKIP
+render.engine = 'BLENDER_EEVEE_NEXT'
+render.film_transparent = True
 scene.frame_end = (frames - 1) // FRAME_SKIP
 original_path = 'out/{}##'.format(name)
 path = 'out/{}_{}_##'
+platform.rotation_euler[axis] = 0
 for i in range(0, 8):
     # rotate
-    temp_rot = platform.rotation_euler
-    temp_rot[axis] += radians(angle)
-    platform.rotation_euler = temp_rot
-
+    platform.rotation_euler[axis] = radians(angle) * i
     # set filename so that up is first
     render.filepath = path.format(name, (i + 6) % 8)
-
     # render animation
     bpy.ops.render.render(animation=True)
+
+platform.rotation_euler[axis] = 0
