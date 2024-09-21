@@ -379,8 +379,7 @@ static void DoDamageCharacter(
 	{
 		// Don't score for friendly, unpiloted vehicle, or player hits
 		const bool isFriendly =
-			(actor->flags & FLAGS_GOOD_GUY) ||
-			actor->pilotUID == -1 ||
+			(actor->flags & FLAGS_GOOD_GUY) || actor->pilotUID == -1 ||
 			(!IsPVP(gCampaign.Entry.Mode) && actor->PlayerUID >= 0);
 		if (source && source->PlayerUID >= 0 && bullet->Power != 0 &&
 			!isFriendly)
@@ -498,7 +497,9 @@ void ObjAdd(const NMapObjectAdd amo)
 	o->thing.CPicFunc = MapObjectDraw;
 	MapTryMoveThing(&gMap, &o->thing, NetToVec2(amo.Pos));
 	EmitterInit(
-		&o->damageSmoke, StrParticleClass(&gParticleClasses, o->Class->DamageSmoke.ParticleClass),
+		&o->damageSmoke,
+		StrParticleClass(
+			&gParticleClasses, o->Class->DamageSmoke.ParticleClass),
 		svec2_zero(), -0.05f, 0.05f, 3, 3, 0, 0, 20);
 	o->isInUse = true;
 	LOG(LM_MAIN, LL_DEBUG,
@@ -549,6 +550,7 @@ void UpdateObjects(const int ticks)
 					RAND_FLOAT(-obj->thing.size.x / 4, obj->thing.size.x / 4),
 					RAND_FLOAT(
 						-obj->thing.size.y / 4, obj->thing.size.y / 4)));
+			ap.Z = obj->Class->DamageSmoke.Z;
 			ap.Mask = colorWhite;
 			EmitterUpdate(&obj->damageSmoke, &ap, ticks);
 		}
@@ -592,7 +594,7 @@ void UpdateObjects(const int ticks)
 				CArrayGet(
 					&gCampaign.Setting.characters.OtherChars,
 					obj->Class->u.Character.CharId),
-											   NULL);
+				NULL);
 			e.u.ActorAdd.CharId = obj->Class->u.Character.CharId;
 			GameEventsEnqueue(&gGameEvents, e);
 

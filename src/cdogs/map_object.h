@@ -121,6 +121,7 @@ typedef struct
 	struct {
 		char *ParticleClass;
 		float HealthThreshold;	// Smoke if map object damaged below this ratio
+		float Z;
 	} DamageSmoke;
 } MapObject;
 typedef struct

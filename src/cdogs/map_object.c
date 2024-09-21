@@ -394,7 +394,7 @@ static bool TryLoadMapObject(MapObject *m, json_t *node, const int version)
 
 	LoadBool(&m->DrawBelow, node, "DrawBelow");
 	LoadBool(&m->DrawAbove, node, "DrawAbove");
-	
+
 	LoadStr(&m->FootstepSound, node, "FootstepSound");
 	LoadColor(&m->FootprintMask, node, "FootprintMask");
 
@@ -449,6 +449,7 @@ static bool TryLoadMapObject(MapObject *m, json_t *node, const int version)
 		LoadFloat(
 			&m->DamageSmoke.HealthThreshold, dSmokeNode->child,
 			"HealthThreshold");
+		LoadFloat(&m->DamageSmoke.Z, dSmokeNode->child, "Z");
 	}
 
 	return true;

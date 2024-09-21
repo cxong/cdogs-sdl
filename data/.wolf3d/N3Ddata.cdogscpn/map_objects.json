@@ -300,7 +300,8 @@
       "DrawBelow": true,
       "DamageSmoke": {
         "Particle": "zzz",
-        "HealthThreshold": 1.0
+        "HealthThreshold": 1.0,
+        "Z": 10
       }
     },
     {
@@ -314,7 +315,8 @@
       "DrawBelow": true,
       "DamageSmoke": {
         "Particle": "zzz",
-        "HealthThreshold": 1.0
+        "HealthThreshold": 1.0,
+        "Z": 10
       }
     }
   ]
