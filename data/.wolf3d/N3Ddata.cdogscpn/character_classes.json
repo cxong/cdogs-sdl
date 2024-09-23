@@ -71,13 +71,13 @@
       "BloodColor": "ff00ff"
     },
     {
-      "Name": "Hans Grosse",
+      "Name": "Camel",
       "HeadPics": {
         "Type": "Directional",
-        "Sprites": "chars/heads/jones"
+        "Sprites": "chars/heads/sheep"
       },
       "Body": "big",
-      "Sounds": "hans"
+      "Sounds": "camel"
     },
     {
       "Name": "Dr Schabbs",

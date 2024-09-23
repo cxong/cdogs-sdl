@@ -166,7 +166,9 @@ static const char *soundsN3D[] = {
 	// 0-9
 	"chars/alert/antelope", "chars/alert/bear", "pickup", "chars/alert/camel",
 	"door_close", "cantaloupe", "cantaloupe_feeder", "goat_kick", "hits/food",
-	"chars/die/animal",
+	"chars/die/antelope|chars/die/bear|chars/die/camel|chars/die/"
+	"elephant|chars/die/giraffe|chars/die/goat|chars/die/kangaroo|chars/die/"
+	"monkey|chars/die/ostrich|chars/die/ox|chars/die/sheep",
 	// 10-19
 	"chars/alert/elephant", "1up", "super_feeder", "chars/alert/giraffe",
 	"chars/alert/goat", "small_launcher", "ricochet", "chars/alert/kangaroo",
@@ -191,7 +193,6 @@ static const char *GetSound(const CWMapType type, const int i)
 		return soundsSOD[i];
 	case CWMAPTYPE_N3D:
 		return soundsN3D[i];
-		break;
 	default:
 		CASSERT(false, "unknown map type");
 		return NULL;
@@ -821,7 +822,6 @@ static void LoadSounds(const SoundDevice *s, const CWolfMap *map)
 		Mix_Chunk *data = LoadAdlibSoundData(map, i);
 		if (name[strlen(name) - 1] == '/')
 		{
-
 			AddRandomSound(s, name, data);
 		}
 		else
@@ -833,27 +833,33 @@ static void LoadSounds(const SoundDevice *s, const CWolfMap *map)
 	// Load digi sounds
 	for (int i = 0; i < map->vswap.nSounds; i++)
 	{
-		const char *name = GetSound(map->type, i);
-		if (name == NULL)
+		const char *names = GetSound(map->type, i);
+		if (names == NULL)
 		{
 			continue;
 		}
-		if (name[strlen(name) - 1] == '/')
-			continue;
-		Mix_Chunk *data = LoadSoundData(map, i);
-		if (data == NULL)
+		// Tokenise names
+		char *namesCopy;
+		CSTRDUP(namesCopy, names);
+		char *name = strtok(namesCopy, "|");
+		while (name != NULL)
 		{
-			continue;
+			Mix_Chunk *data = LoadSoundData(map, i);
+			if (data == NULL)
+			{
+				continue;
+			}
+			if (name[strlen(name) - 1] == '/')
+			{
+				AddRandomSound(s, name, data);
+			}
+			else
+			{
+				AddNormalSound(s, name, data);
+			}
+			name = strtok(NULL, "|");
 		}
-		if (name[strlen(name) - 1] == '/')
-		{
-
-			AddRandomSound(s, name, data);
-		}
-		else
-		{
-			AddNormalSound(s, name, data);
-		}
+		CFREE(namesCopy);
 	}
 }
 static Mix_Chunk *LoadSoundData(const CWolfMap *map, const int i)
