@@ -71,7 +71,8 @@
       "SwitchSound": "package_r",
       "SpreadCount": 2,
       "SpreadWidth": 0,
-      "Elevation": 18,
+      "ElevationLow": 17,
+      "ElevationHigh": 19,
       "Ammo": "Cantaloupe",
       "OverheatTicks": -1
     },
