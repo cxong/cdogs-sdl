@@ -76,7 +76,7 @@
         "Type": "Directional",
         "Sprites": "chars/heads/sheep"
       },
-      "Body": "big",
+      "Body": "camel",
       "Sounds": "camel"
     },
     {

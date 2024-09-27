@@ -28,6 +28,8 @@ angle = -45
 axis = 2 # z-axis
 platform = D.objects["armature"]
 scene = D.scenes[0]
+# Zoom out to show big characters - change RESOLUTION to account for this
+scene.camera.data.ortho_scale = RESOLUTION
 try:
     platform.animation_data.action = D.actions[action]
 except KeyError:

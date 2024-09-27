@@ -48,11 +48,11 @@ typedef struct
 	char *PickupNames;
 	CArray texidsChars; // of GLuint[BODY_PART_COUNT]
 	GLuint texidsPreview[BODY_PART_COUNT];
-	CArray texIdsCharClasses; // of GLuint
-	CArray texIdsHeadParts[HEAD_PART_COUNT];		  // of GLuint
-	CArray texIdsGuns;		  // of GLuint
-	CArray texIdsMelees;		  // of GLuint
-	CArray texIdsPickups;	  // of GLuint
+	CArray texIdsCharClasses;				 // of GLuint
+	CArray texIdsHeadParts[HEAD_PART_COUNT]; // of GLuint
+	CArray texIdsGuns;						 // of GLuint
+	CArray texIdsMelees;					 // of GLuint
+	CArray texIdsPickups;					 // of GLuint
 	Animation anim;
 	direction_e previewDir;
 	gunstate_e gunState;
@@ -115,12 +115,11 @@ void CharEditor(
 	ec.CharacterClassNames =
 		GetClassNames(NumCharacterClasses(), IndexCharacterClassName);
 	const char *(*indexHeadPartFuncs[HEAD_PART_COUNT])(int) = {
-		IndexHairName, IndexFacehairName, IndexHatName, IndexGlassesName
-	};
+		IndexHairName, IndexFacehairName, IndexHatName, IndexGlassesName};
 	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
 	{
-		ec.HeadPartNames[hp] =
-		 GetClassNames(gPicManager.headPartNames[hp].size, *indexHeadPartFuncs[hp]);
+		ec.HeadPartNames[hp] = GetClassNames(
+			gPicManager.headPartNames[hp].size, *indexHeadPartFuncs[hp]);
 	}
 	ec.GunNames = GetClassNames(NumGuns(), IndexGunName);
 	ec.MeleeNames = GetClassNames(NumMelees(), IndexMeleeName);
@@ -145,10 +144,12 @@ void CharEditor(
 
 	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
 	{
-		TexArrayInit(&ec.texIdsHeadParts[hp], gPicManager.headPartNames[hp].size);
+		TexArrayInit(
+			&ec.texIdsHeadParts[hp], gPicManager.headPartNames[hp].size);
 		CA_FOREACH(const GLuint, texid, ec.texIdsHeadParts[hp])
 		const char *name = IndexHeadPartName(_ca_index, hp);
-		LoadTexFromPic(*texid, GetHeadPartPic(name, hp, DIRECTION_DOWN, false, &cc));
+		LoadTexFromPic(
+			*texid, GetHeadPartPic(name, hp, DIRECTION_DOWN, false, &cc));
 		CA_FOREACH_END()
 	}
 
@@ -157,7 +158,7 @@ void CharEditor(
 	const WeaponClass *wc = IndexWeaponClassReal(_ca_index);
 	LoadTexFromPic(*texid, wc->Icon);
 	CA_FOREACH_END()
-	
+
 	TexArrayInit(&ec.texIdsMelees, NumMelees());
 	CA_FOREACH(const GLuint, texid, ec.texIdsMelees)
 	const WeaponClass *wc = IndexWeaponClassMelee(_ca_index);
@@ -194,9 +195,8 @@ void CharEditor(
 		(GLsizei)(BODY_PART_COUNT * ec.texidsChars.size), ec.texidsChars.data);
 	CArrayTerminate(&ec.texidsChars);
 	glDeleteTextures(BODY_PART_COUNT, ec.texidsPreview);
-#define DELTEX(_tx) \
-	glDeleteTextures( \
-		(GLsizei)(_tx).size, (_tx).data); \
+#define DELTEX(_tx)                                                           \
+	glDeleteTextures((GLsizei)(_tx).size, (_tx).data);                        \
 	TexArrayTerminate(&(_tx));
 	DELTEX(ec.texIdsCharClasses);
 	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
@@ -219,8 +219,8 @@ static const char *IndexHeadPartName(const int i, const HeadPart hp)
 }
 static int NumCharacterClasses(void)
 {
-	return (
-		int)(gCharacterClasses.Classes.size + gCharacterClasses.CustomClasses.size);
+	return (int)(gCharacterClasses.Classes.size +
+				 gCharacterClasses.CustomClasses.size);
 }
 static const char *IndexGunName(const int i)
 {
@@ -364,7 +364,9 @@ static int NumMelees(void)
 }
 static int NumPickups(void)
 {
-	return (int)(gPickupClasses.Classes.size + gPickupClasses.CustomClasses.size + gPickupClasses.KeyClasses.size + 1);
+	return (int)(gPickupClasses.Classes.size +
+				 gPickupClasses.CustomClasses.size +
+				 gPickupClasses.KeyClasses.size + 1);
 }
 static int GunIndex(const WeaponClass *wc)
 {
@@ -566,7 +568,7 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 
 	if (ec->Char != NULL)
 	{
-		const float previewWidth = 80;
+		const float previewWidth = 100;
 		if (nk_begin(
 				ctx, "Preview",
 				nk_rect(
@@ -587,7 +589,7 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 					(int)ec->previewDir - 1, 0, DIRECTION_UPLEFT);
 			}
 			// Preview
-			nk_layout_row_dynamic(ctx, 32 * PIC_SCALE, 1);
+			nk_layout_row_dynamic(ctx, 48 * PIC_SCALE, 1);
 			gunstate_e gunStates[MAX_BARRELS];
 			for (int i = 0; i < MAX_BARRELS; i++)
 			{
@@ -642,16 +644,21 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 				if (hasStyle)
 				{
 					nk_layout_row(ctx, NK_DYNAMIC, ROW_HEIGHT, 2, colRatios);
-					const int current = HeadPartIndex(ec->Char->HeadParts[hp], hp);
+					const int current =
+						HeadPartIndex(ec->Char->HeadParts[hp], hp);
 					sprintf(buf, "%s:", HeadPartStr(hp));
-					int selected = DrawClassSelection(ctx, ec, buf, ec->texIdsHeadParts[hp].data, ec->HeadPartNames[hp], current, gPicManager.headPartNames[hp].size);
+					int selected = DrawClassSelection(
+						ctx, ec, buf, ec->texIdsHeadParts[hp].data,
+						ec->HeadPartNames[hp], current,
+						gPicManager.headPartNames[hp].size);
 					if (selected == -1)
 					{
 						selected = 0;
 					}
 					if (current != selected)
 					{
-						CharacterSetHeadPart(ec->Char, hp, IndexHeadPartName(selected, hp));
+						CharacterSetHeadPart(
+							ec->Char, hp, IndexHeadPartName(selected, hp));
 					}
 				}
 				else
@@ -670,7 +677,9 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 			{
 				*ec->FileChanged = true;
 			}
-			if (ColorPicker(ctx, ROW_HEIGHT, "Facial Hair:", &ec->Char->Colors.Facehair))
+			if (ColorPicker(
+					ctx, ROW_HEIGHT,
+					"Facial Hair:", &ec->Char->Colors.Facehair))
 			{
 				*ec->FileChanged = true;
 			}
@@ -678,7 +687,8 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 			{
 				*ec->FileChanged = true;
 			}
-			if (ColorPicker(ctx, ROW_HEIGHT, "Glasses:", &ec->Char->Colors.Glasses))
+			if (ColorPicker(
+					ctx, ROW_HEIGHT, "Glasses:", &ec->Char->Colors.Glasses))
 			{
 				*ec->FileChanged = true;
 			}
@@ -749,7 +759,8 @@ static bool Draw(SDL_Window *win, struct nk_context *ctx, void *data)
 			nk_property_int(
 				ctx, "Max Health:", 10, &ec->Char->maxHealth, 2000, 10, 1);
 			nk_property_int(
-				ctx, "Excess Health:", ec->Char->maxHealth, &ec->Char->excessHealth, 2000, 10, 1);
+				ctx, "Excess Health:", ec->Char->maxHealth,
+				&ec->Char->excessHealth, 2000, 10, 1);
 
 			nk_layout_row_dynamic(ctx, ROW_HEIGHT, 2);
 			DrawFlag(ctx, ec, "Asbestos", FLAGS_ASBESTOS, "Immune to fire");
