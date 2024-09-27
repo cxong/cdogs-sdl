@@ -27,8 +27,13 @@
       },
       "Body": "sheep",
       "Sounds": "sheep",
+      "Footsteps": "sheep",
       "Corpse": "sheep_sleep",
-      "BloodColor": "00000000"
+      "BloodColor": "00000000",
+      "HasHair": false,
+      "HasFacehair": false,
+      "HasHat": false,
+      "HasGlasses": false
     },
     {
       "Name": "Goat",
@@ -38,9 +43,13 @@
       },
       "Body": "sheep",
       "Sounds": "sheep",
-	    "Footsteps": "dog",
+      "Footsteps": "sheep",
       "Corpse": "goat_sleep",
-      "BloodColor": "00000000"
+      "BloodColor": "00000000",
+      "HasHair": false,
+      "HasFacehair": false,
+      "HasHat": false,
+      "HasGlasses": false
     },
     {
       "Name": "SS",
@@ -77,7 +86,12 @@
         "Sprites": "chars/heads/sheep"
       },
       "Body": "camel",
-      "Sounds": "camel"
+      "Sounds": "camel",
+      "Footsteps": "camel",
+      "HasHair": false,
+      "HasFacehair": false,
+      "HasHat": false,
+      "HasGlasses": false
     },
     {
       "Name": "Dr Schabbs",

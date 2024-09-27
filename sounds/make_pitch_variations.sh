@@ -4,7 +4,7 @@
 # Sounds vary between +/- 2 tones
 # Usage: ./make_pitch_variations.sh <sound_file> <num_variations/2>
 # Sound file should be named with a zero, e.g. foo0.ogg, so that the variations
-# can be called foo1.ogg, foo2.ogg and so on
+# can be called foo1.ogg, foo2.ogg and so on (foo/0.ogg becomes foo/1.ogg etc.)
 if [ "$#" -lt 2 ]; then
   echo "Usage: ./make_pitch_variations.sh <sound_file> <num_variations/2>"
   exit 1
