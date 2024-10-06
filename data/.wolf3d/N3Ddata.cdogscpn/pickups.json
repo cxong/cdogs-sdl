@@ -99,15 +99,33 @@
         "Pic": "scroll"
       },
       "Effects": [{
-        "Type": "Score",
-        "Score": 1000
-      }, {
-        "Type": "Health",
-        "Health": 25
-      }, {
-        "Type": "Ammo",
-        "Ammo": "Feed",
-        "Amount": 10
+        "Type": "Menu",
+        "Menu": {
+          "Text": "What is 1+1?",
+          "Items": [{
+            "Text": "2",
+            "Effects": [{
+              "Type": "Score",
+              "Score": 1000
+            }, {
+              "Type": "Health",
+              "Health": 25
+            }, {
+              "Type": "Ammo",
+              "Ammo": "Feed",
+              "Amount": 10
+            }]
+          }, {
+            "Text": "11",
+            "Effects": [{
+              "Type": "Health",
+              "Health": 4
+            }, {
+              "Type": "Health",
+              "Health": 4
+            }]
+          }]
+        }
       }],
       "Sound": "pickup"
     },

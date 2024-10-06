@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2015-2016, 2018, 2020-2023 Cong Xu
+	Copyright (c) 2015-2016, 2018, 2020-2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -44,16 +44,25 @@ typedef enum
 	PICKUP_GUN,
 	PICKUP_SHOW_MAP,
 	PICKUP_LIVES,
+	PICKUP_SOUND,
+	PICKUP_MENU,
 } PickupType;
 PickupType StrPickupType(const char *s);
 const char *PickupTypeStr(const PickupType pt);
 
 typedef struct
 {
+	char *Text;
+	CArray Effects; // of PickupEffect
+} PickupMenuItem;
+
+typedef struct
+{
 	PickupType Type;
 	union {
 		int Score;
-		struct {
+		struct
+		{
 			int Amount;
 			bool ExceedMax;
 		} Heal;
@@ -61,13 +70,19 @@ typedef struct
 		int Keys; // Refer to flags in mission.h
 		int GunId;
 		int Lives;
+		char *Sound;
+		struct
+		{
+			char *Text;
+			CArray Items; // of PickupMenuItem
+		} Menu;
 	} u;
 } PickupEffect;
 
 typedef struct
 {
 	char *Name;
-	CArray Effects;	// of PickupEffect
+	CArray Effects; // of PickupEffect
 	CPic Pic;
 	char *Sound;
 } PickupClass;

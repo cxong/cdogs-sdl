@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2015-2016, 2018, 2020-2023 Cong Xu
+	Copyright (c) 2015-2016, 2018, 2020-2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -45,6 +45,8 @@ PickupType StrPickupType(const char *s)
 	S2T(PICKUP_GUN, "Gun");
 	S2T(PICKUP_SHOW_MAP, "ShowMap");
 	S2T(PICKUP_LIVES, "Lives");
+	S2T(PICKUP_SOUND, "Sound");
+	S2T(PICKUP_MENU, "Menu");
 	return PICKUP_NONE;
 }
 const char *PickupTypeStr(const PickupType pt)
@@ -58,6 +60,8 @@ const char *PickupTypeStr(const PickupType pt)
 		T2S(PICKUP_GUN, "Gun");
 		T2S(PICKUP_SHOW_MAP, "ShowMap");
 		T2S(PICKUP_LIVES, "Lives");
+		T2S(PICKUP_SOUND, "Sound");
+		T2S(PICKUP_MENU, "Menu");
 	default:
 		return "";
 	}
@@ -173,8 +177,37 @@ static void PickupClassInit(PickupClass *c)
 	memset(c, 0, sizeof *c);
 	CArrayInit(&c->Effects, sizeof(PickupEffect));
 }
+static void PickupEffectTerminate(PickupEffect *e);
+static void PickupMenuItemTerminate(PickupMenuItem *m)
+{
+	CFREE(m->Text);
+	CA_FOREACH(PickupEffect, e, m->Effects)
+	PickupEffectTerminate(e);
+	CA_FOREACH_END()
+}
+static void PickupEffectTerminate(PickupEffect *e)
+{
+	switch (e->Type)
+	{
+	case PICKUP_SOUND:
+		CFREE(e->u.Sound);
+		break;
+	case PICKUP_MENU:
+		CFREE(e->u.Menu.Text);
+		CA_FOREACH(PickupMenuItem, m, e->u.Menu.Items)
+		PickupMenuItemTerminate(m);
+		CA_FOREACH_END()
+		break;
+	default:
+		// Do nothing
+		break;
+	}
+}
 static void PickupClassTerminate(PickupClass *c)
 {
+	CA_FOREACH(PickupEffect, e, c->Effects)
+	PickupEffectTerminate(e);
+	CA_FOREACH_END()
 	CArrayTerminate(&c->Effects);
 	CFREE(c->Name);
 	CFREE(c->Sound);
@@ -234,24 +267,26 @@ void PickupClassesLoadJSON(CArray *classes, json_t *root)
 		CArrayPushBack(classes, &c);
 	}
 }
-static void LoadPickupEffect(PickupClass *c, json_t *node, const int version);
+static PickupEffect LoadPickupEffect(json_t *node, const int version);
 static void LoadPickupclass(PickupClass *c, json_t *node, const int version)
 {
 	PickupClassInit(c);
-	
+
 	if (version < 3)
 	{
-		LoadPickupEffect(c, node, version);
+		PickupEffect p = LoadPickupEffect(node, version);
+		CArrayPushBack(&c->Effects, &p);
 	}
 	else
 	{
 		json_t *effectsNode = json_find_first_label(node, "Effects")->child;
 		for (json_t *child = effectsNode->child; child; child = child->next)
 		{
-			LoadPickupEffect(c, child, version);
+			PickupEffect p = LoadPickupEffect(child, version);
+			CArrayPushBack(&c->Effects, &p);
 		}
 	}
-	
+
 	LoadStr(&c->Sound, node, "Sound");
 	// Add default pickup sounds
 	if (c->Sound == NULL)
@@ -299,7 +334,7 @@ static void LoadPickupclass(PickupClass *c, json_t *node, const int version)
 		CPicLoadJSON(&c->Pic, picNode);
 	}
 }
-static void LoadPickupEffect(PickupClass *c, json_t *node, const int version)
+static PickupEffect LoadPickupEffect(json_t *node, const int version)
 {
 	UNUSED(version);
 	char *tmp;
@@ -333,7 +368,7 @@ static void LoadPickupEffect(PickupClass *c, json_t *node, const int version)
 	}
 	case PICKUP_KEYCARD:
 		CASSERT(false, "keys now loaded directly from graphics files");
-		return;
+		break;
 	case PICKUP_GUN:
 		CASSERT(false, "unimplemented");
 		break;
@@ -342,11 +377,37 @@ static void LoadPickupEffect(PickupClass *c, json_t *node, const int version)
 	case PICKUP_LIVES:
 		LoadInt(&p.u.Lives, node, "Lives");
 		break;
+	case PICKUP_SOUND:
+		LoadStr(&p.u.Sound, node, "Sound");
+		break;
+	case PICKUP_MENU: {
+		json_t *menuNode = json_find_first_label(node, "Menu")->child;
+		LoadStr(&p.u.Menu.Text, menuNode, "Text");
+		CArrayInit(&p.u.Menu.Items, sizeof(PickupMenuItem));
+		json_t *itemsNode = json_find_first_label(menuNode, "Items")->child;
+		for (json_t *item = itemsNode->child; item; item = item->next)
+		{
+			PickupMenuItem m;
+			memset(&m, 0, sizeof m);
+			CArrayInit(&m.Effects, sizeof(PickupEffect));
+			LoadStr(&m.Text, item, "Text");
+			json_t *effectsNode =
+				json_find_first_label(item, "Effects")->child;
+			for (json_t *child = effectsNode->child; child;
+				 child = child->next)
+			{
+				PickupEffect mp = LoadPickupEffect(child, version);
+				CArrayPushBack(&m.Effects, &mp);
+			}
+			CArrayPushBack(&p.u.Menu.Items, &m);
+		}
+		break;
+	}
 	default:
 		CASSERT(false, "Unknown pickup type");
 		break;
 	}
-	CArrayPushBack(&c->Effects, &p);
+	return p;
 }
 
 // TODO: move ammo pickups to pickups file; remove "ammo_"

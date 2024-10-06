@@ -198,6 +198,10 @@ void SoundInitialize(SoundDevice *device, const char *path)
 }
 void SoundLoadDir(map_t sounds, const char *path, const char *prefix)
 {
+	if (sounds == NULL)
+	{
+		return;
+	}
 	tinydir_dir dir;
 	if (tinydir_open(&dir, path) == -1)
 	{

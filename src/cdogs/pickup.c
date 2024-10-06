@@ -234,6 +234,15 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 	}
 	break;
 
+	case PICKUP_SOUND:
+		canPickup = true;
+		sound = pe->u.Sound;
+		break;
+
+	case PICKUP_MENU:
+		// TODO: manual activate menu, set player menu
+		break;
+
 	default:
 		CASSERT(false, "unexpected pickup type");
 		break;
