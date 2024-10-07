@@ -181,26 +181,6 @@ p.tagline {
   filter:alpha(opacity=1);
 }
 
-a.downloads,
-a.downloads span {
-  background: transparent url(../images/download.png) no-repeat 0 0;
-  width: 24px;
-  height: 24px;
-  display: inline-block;
-  text-indent: -10000px;
-  -webkit-transition: opacity ease-in-out 0.3s;
-}
-
-a.campaigns,
-a.campaigns span {
-  background: transparent url(../images/link.png) no-repeat 0 0;
-  width: 24px;
-  height: 24px;
-  display: inline-block;
-  text-indent: -10000px;
-  -webkit-transition: opacity ease-in-out 0.3s;
-}
-
 a.code {
   background: transparent url(../images/code.png) no-repeat 0 2px;
   width: 30px;
