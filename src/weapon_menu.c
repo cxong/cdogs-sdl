@@ -350,8 +350,7 @@ static void DrawGun(
 	const color_t mask = color;
 	if (selected && data->Active)
 	{
-		const color_t cbg = {0, 255, 255, 64};
-		DrawRectangle(g, bgPos, bgSize, cbg, true);
+		DrawRectangle(g, bgPos, bgSize, colorSelectedBG, true);
 		color = colorRed;
 	}
 	else if (equipped)

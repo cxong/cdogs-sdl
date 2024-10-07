@@ -120,12 +120,11 @@ static void DrawEquipSlot(
 		}
 		else
 		{
-			const color_t bg = {0, 255, 255, 64};
 			// Add 1px padding
 			const struct vec2i bgPos = svec2i_subtract(pos, svec2i_one());
 			const struct vec2i bgSize =
 				svec2i(EQUIP_MENU_WIDTH / 2 + 2, h + 2);
-			DrawRectangle(g, bgPos, bgSize, bg, true);
+			DrawRectangle(g, bgPos, bgSize, colorSelectedBG, true);
 
 			color = colorRed;
 		}

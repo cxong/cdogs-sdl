@@ -563,3 +563,30 @@ int PickupClassGetKeys(const PickupClass *p)
 	CA_FOREACH_END()
 	return 0;
 }
+
+const char *PickupClassGetName(const PickupClass *p)
+{
+	const char *pickupName = NULL;
+	bool hasMultipleEffects = false;
+	CA_FOREACH(const PickupEffect, pe, p->Effects)
+	switch (pe->Type)
+	{
+	case PICKUP_AMMO:
+		hasMultipleEffects = pickupName != NULL;
+		pickupName = AmmoGetById(&gAmmo, pe->u.Ammo.Id)->Name;
+		break;
+	case PICKUP_GUN:
+		hasMultipleEffects = pickupName != NULL;
+		pickupName = IdWeaponClass(pe->u.GunId)->name;
+		break;
+	default:
+		break;
+	}
+	CA_FOREACH_END()
+	if (pickupName == NULL || hasMultipleEffects)
+	{
+		// fallback to using the raw class name
+		pickupName = p->Name;
+	}
+	return pickupName;
+}

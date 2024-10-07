@@ -4,6 +4,7 @@ include_directories(
 add_definitions(-DSTATIC)
 set(CDOGS_SOURCES
 	actor_fire.c
+	actor_pickup.c
 	actor_placement.c
 	actors.c
 	aheasing/easing.c
@@ -115,6 +116,7 @@ set(CDOGS_SOURCES
 	yajl_utils.c)
 set(CDOGS_HEADERS
 	actor_fire.h
+	actor_pickup.h
 	actor_placement.h
 	actors.h
 	aheasing/easing.h

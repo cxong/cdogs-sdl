@@ -468,11 +468,10 @@ struct vec2i DisplayMenuItem(
 	}
 	if (selected)
 	{
-		const color_t bg = {0, 255, 255, 64};
 		// Add 1px padding
 		const struct vec2i bgPos = svec2i_subtract(bounds.Pos, svec2i_one());
 		const struct vec2i bgSize = svec2i_add(bounds.Size, svec2i(2, 2));
-		DrawRectangle(g, bgPos, bgSize, bg, true);
+		DrawRectangle(g, bgPos, bgSize, colorSelectedBG, true);
 		return FontStrMask(s, bounds.Pos, colorRed);
 	}
 	if (!ColorEquals(color, colorTransparent))

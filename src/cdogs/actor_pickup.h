@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2015, Cong Xu
+	Copyright (c) 2014-2015, 2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -27,36 +27,10 @@
 */
 #pragma once
 
-#include "pic.h"
-#include "pickup_class.h"
-#include "tile.h"
+#include "actors.h"
+#include "pickup.h"
 
-// Pickups are game objects that players can collect, and which have special
-// effects
-typedef struct
-{
-	int UID;
-	const PickupClass *class;
-	Thing thing;
-	bool IsRandomSpawned;
-	bool isInUse;
-	bool PickedUp;
-	// For spawned pickups, the UID of the spawner (-1 otherwise)
-	int SpawnerUID;
-} Pickup;
-
-extern CArray gPickups; // of Pickup
-
-void PickupsInit(void);
-void PickupsTerminate(void);
-int PickupsGetNextUID(void);
-void PickupAdd(const NAddPickup ap);
-void PickupAddGun(const WeaponClass *w, const struct vec2 pos);
-void PickupDestroy(const int uid);
-
-void PickupsUpdate(CArray *pickups, const int ticks);
-
-// Check if the pickup needs to be picked up manually
-bool PickupIsManual(const Pickup *p);
-
-Pickup *PickupGetByUID(const int uid);
+void PickupPickup(TActor *a, Pickup *p, const bool pickupAll);
+bool PickupApplyEffect(
+	TActor *a, const Pickup *p, const PickupEffect *pe, const bool force,
+	char **sound);

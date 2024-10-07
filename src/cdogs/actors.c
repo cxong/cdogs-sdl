@@ -55,6 +55,7 @@
 #include <string.h>
 
 #include "actor_fire.h"
+#include "actor_pickup.h"
 #include "actor_placement.h"
 #include "ai.h"
 #include "ai_coop.h"
@@ -74,7 +75,6 @@
 #include "material.h"
 #include "mission.h"
 #include "pic_manager.h"
-#include "pickup.h"
 #include "sounds.h"
 #include "thing.h"
 #include "triggers.h"
@@ -1057,68 +1057,123 @@ static bool TryGrenade(TActor *a, const int cmd)
 static bool ActorTryMove(TActor *actor, int cmd, int ticks);
 void CommandActor(TActor *actor, int cmd, int ticks)
 {
-	actor->hasShot = false;
-	// If this is a pilot, command the vehicle instead
-	if (actor->vehicleUID != -1)
+	GameEvent e;
+	// If the actor is currently using a menu, control the menu instead
+	if (actor->pickupMenu.pickup)
 	{
-		TActor *vehicle = ActorGetByUID(actor->vehicleUID);
-		CommandActor(vehicle, cmd, ticks);
-	}
-	else if (actor->pilotUID == -1)
-	{
-		// If this is a vehicle and there's no pilot, do nothing
+		if (Button1(cmd) && !Button1(actor->lastCmd))
+		{
+			// Apply effects of pickup menu item and reset
+			const PickupMenuItem *m = CArrayGet(
+				&actor->pickupMenu.effect->u.Menu.Items,
+				actor->pickupMenu.index);
+			bool canPickup = false;
+			const char *sound = "menu_enter";
+			CA_FOREACH(const PickupEffect, pe, m->Effects)
+			CASSERT(pe->Type != PICKUP_MENU, "can't have nested menu effects");
+			canPickup = PickupApplyEffect(
+				actor, actor->pickupMenu.pickup, pe, true, &sound);
+			CA_FOREACH_END()
+			if (canPickup && sound != NULL)
+			{
+				e = GameEventNew(GAME_EVENT_SOUND_AT);
+				strcpy(e.u.SoundAt.Sound, sound);
+				e.u.SoundAt.Pos = Vec2ToNet(actor->thing.Pos);
+				GameEventsEnqueue(&gGameEvents, e);
+			}
+			actor->pickupMenu.pickup = NULL;
+			actor->pickupMenu.effect = NULL;
+			actor->pickupMenu.index = 0;
+			KeyLockKeys(&gEventHandlers.keyboard);
+			JoyLock(&gEventHandlers.joysticks);
+		}
+		else if (Up(cmd) && !Up(actor->lastCmd))
+		{
+			actor->pickupMenu.index--;
+			if (actor->pickupMenu.index < 0)
+			{
+				actor->pickupMenu.index =
+					(int)actor->pickupMenu.effect->u.Menu.Items.size - 1;
+			}
+			SoundPlay(&gSoundDevice, StrSound("menu_switch"));
+		}
+		else if (Down(cmd) && !Down(actor->lastCmd))
+		{
+			actor->pickupMenu.index++;
+			if (actor->pickupMenu.index ==
+				(int)actor->pickupMenu.effect->u.Menu.Items.size)
+			{
+				actor->pickupMenu.index = 0;
+			}
+			SoundPlay(&gSoundDevice, StrSound("menu_switch"));
+		}
 	}
 	else
 	{
 
-		if (actor->confused)
+		actor->hasShot = false;
+		// If this is a pilot, command the vehicle instead
+		if (actor->vehicleUID != -1)
 		{
-			cmd = CmdGetReverse(cmd);
+			TActor *vehicle = ActorGetByUID(actor->vehicleUID);
+			CommandActor(vehicle, cmd, ticks);
+		}
+		else if (actor->pilotUID == -1)
+		{
+			// If this is a vehicle and there's no pilot, do nothing
+		}
+		else
+		{
+
+			if (actor->confused)
+			{
+				cmd = CmdGetReverse(cmd);
+			}
+
+			if (actor->health > 0)
+			{
+				const bool hasChangedDirection =
+					ActorTryChangeDirection(actor, cmd, actor->lastCmd);
+				actor->hasShot = ActorTryShoot(actor, cmd);
+				const bool hasGrenaded = TryGrenade(actor, cmd);
+				const bool hasMoved = ActorTryMove(actor, cmd, ticks);
+				ActorAnimation anim = actor->anim.Type;
+				// Idle if player hasn't done anything
+				if (!(hasChangedDirection || actor->hasShot || hasGrenaded ||
+					  hasMoved))
+				{
+					anim = ACTORANIMATION_IDLE;
+				}
+				else if (hasMoved)
+				{
+					anim = ACTORANIMATION_WALKING;
+				}
+				else
+				{
+					anim = ACTORANIMATION_STAND;
+				}
+				if (actor->anim.Type != anim)
+				{
+					e = GameEventNew(GAME_EVENT_ACTOR_STATE);
+					e.u.ActorState.UID = actor->uid;
+					e.u.ActorState.State = (int32_t)anim;
+					GameEventsEnqueue(&gGameEvents, e);
+				}
+			}
 		}
 
-		if (actor->health > 0)
+		actor->specialCmdDir = CMD_HAS_DIRECTION(cmd);
+		if (Button2(cmd) && !actor->specialCmdDir)
 		{
-			const bool hasChangedDirection =
-				ActorTryChangeDirection(actor, cmd, actor->lastCmd);
-			actor->hasShot = ActorTryShoot(actor, cmd);
-			const bool hasGrenaded = TryGrenade(actor, cmd);
-			const bool hasMoved = ActorTryMove(actor, cmd, ticks);
-			ActorAnimation anim = actor->anim.Type;
-			// Idle if player hasn't done anything
-			if (!(hasChangedDirection || actor->hasShot || hasGrenaded ||
-				  hasMoved))
+			// Special: pick up things that can only be picked up on demand
+			if (!actor->PickupAll && !Button2(actor->lastCmd) &&
+				actor->vehicleUID == -1)
 			{
-				anim = ACTORANIMATION_IDLE;
-			}
-			else if (hasMoved)
-			{
-				anim = ACTORANIMATION_WALKING;
-			}
-			else
-			{
-				anim = ACTORANIMATION_STAND;
-			}
-			if (actor->anim.Type != anim)
-			{
-				GameEvent e = GameEventNew(GAME_EVENT_ACTOR_STATE);
-				e.u.ActorState.UID = actor->uid;
-				e.u.ActorState.State = (int32_t)anim;
+				e = GameEventNew(GAME_EVENT_ACTOR_PICKUP_ALL);
+				e.u.ActorPickupAll.UID = actor->uid;
+				e.u.ActorPickupAll.PickupAll = true;
 				GameEventsEnqueue(&gGameEvents, e);
 			}
-		}
-	}
-
-	actor->specialCmdDir = CMD_HAS_DIRECTION(cmd);
-	if (Button2(cmd) && !actor->specialCmdDir)
-	{
-		// Special: pick up things that can only be picked up on demand
-		if (!actor->PickupAll && !Button2(actor->lastCmd) &&
-			actor->vehicleUID == -1)
-		{
-			GameEvent e = GameEventNew(GAME_EVENT_ACTOR_PICKUP_ALL);
-			e.u.ActorPickupAll.UID = actor->uid;
-			e.u.ActorPickupAll.PickupAll = true;
-			GameEventsEnqueue(&gGameEvents, e);
 		}
 	}
 
@@ -1384,26 +1439,7 @@ static bool CheckManualPickupFunc(
 		strcpy(buttonName, "");
 		InputGetButtonName(
 			pData->inputDevice, pData->deviceIndex, CMD_BUTTON2, buttonName);
-		// TODO: PickupGetName
-		const char *pickupName = NULL;
-		CA_FOREACH(const PickupEffect, pe, p->class->Effects)
-		switch (pe->Type)
-		{
-		case PICKUP_AMMO:
-			pickupName = AmmoGetById(&gAmmo, pe->u.Ammo.Id)->Name;
-			break;
-		case PICKUP_GUN:
-			pickupName = IdWeaponClass(pe->u.GunId)->name;
-			break;
-		default:
-			break;
-		}
-		if (pickupName != NULL)
-		{
-			break;
-		}
-		CA_FOREACH_END()
-		CASSERT(pickupName != NULL, "unknown pickup name");
+		const char *pickupName = PickupClassGetName(p->class);
 		char buf[256];
 		sprintf(buf, "%s to pick up\n%s", buttonName, pickupName);
 		ActorSetChatter(a, buf, 2);

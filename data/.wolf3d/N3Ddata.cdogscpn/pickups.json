@@ -114,6 +114,9 @@
               "Type": "Ammo",
               "Ammo": "Feed",
               "Amount": 10
+            }, {
+              "Type": "Sound",
+              "Sound": "bonus"
             }]
           }, {
             "Text": "11",
@@ -121,8 +124,8 @@
               "Type": "Health",
               "Health": 4
             }, {
-              "Type": "Health",
-              "Health": 4
+              "Type": "Sound",
+              "Sound": "wrong"
             }]
           }]
         }

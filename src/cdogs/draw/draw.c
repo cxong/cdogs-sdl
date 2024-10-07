@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2016, 2018-2022 Cong Xu
+	Copyright (c) 2013-2016, 2018-2022, 2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -68,7 +68,7 @@
 #include "pics.h"
 #include "texture.h"
 
-//#define DEBUG_DRAW_HITBOXES
+// #define DEBUG_DRAW_HITBOXES
 
 // Three types of tile drawing, based on line of sight:
 // Unvisited: black
@@ -169,6 +169,9 @@ static void DrawObjectiveHighlights(
 static void DrawChatters(
 	DrawBuffer *b, const struct vec2i offset, const Tile *t,
 	const struct vec2i pos, const bool useFog);
+static void DrawPickupMenus(
+	DrawBuffer *b, const struct vec2i offset, const Tile *t,
+	const struct vec2i pos, const bool useFog);
 static void DrawExtra(
 	DrawBuffer *b, struct vec2i offset, const DrawBufferArgs *args);
 
@@ -189,6 +192,8 @@ void DrawBufferDraw(
 		DrawTiles(b, offset, DrawObjectiveHighlights);
 		// Draw actor chatter
 		DrawTiles(b, offset, DrawChatters);
+		// Draw actor pickup menus
+		DrawTiles(b, offset, DrawPickupMenus);
 	}
 	// Draw editor-only things
 	DrawExtra(b, offset, args);
@@ -398,6 +403,79 @@ static void DrawChatters(
 	CA_FOREACH_END()
 }
 
+static void DrawPickupMenu(
+	DrawBuffer *b, const TActor *a, const struct vec2i offset);
+static void DrawPickupMenus(
+	DrawBuffer *b, const struct vec2i offset, const Tile *t,
+	const struct vec2i pos, const bool useFog)
+{
+	UNUSED(pos);
+	CA_FOREACH(ThingId, tid, t->things)
+	// Draw the items that are in LOS
+	if (t->outOfSight || ColorEquals(GetLOSMask(t, useFog), colorTransparent))
+	{
+		continue;
+	}
+	const Thing *ti = ThingIdGetThing(tid);
+	if (ti->kind != KIND_CHARACTER)
+	{
+		continue;
+	}
+
+	const TActor *a = CArrayGet(&gActors, ti->id);
+	// Draw pickup menu
+	if (!a->pickupMenu.pickup || !ActorIsLocalPlayer(a->uid))
+	{
+		continue;
+	}
+
+	DrawPickupMenu(b, a, offset);
+	CA_FOREACH_END()
+}
+static void DrawPickupMenu(
+	DrawBuffer *b, const TActor *a, const struct vec2i offset)
+{
+	// Calculate width and height of menu and draw centered on the actor
+	// TODO: may be expensive to do per-frame; cache somewhere?
+	struct vec2i size = svec2i_zero();
+	struct vec2i ssize = FontStrSize(a->pickupMenu.effect->u.Menu.Text);
+	size.x = MAX(size.x, ssize.x);
+	size.y += ssize.y;
+	size.y += FontH(); // Separator
+	CA_FOREACH(const PickupMenuItem, m, a->pickupMenu.effect->u.Menu.Items)
+	ssize = FontStrSize(m->Text);
+	size.x = MAX(size.x, ssize.x);
+	size.y += ssize.y;
+	CA_FOREACH_END()
+
+	struct vec2i pos = svec2i(
+		(int)a->thing.Pos.x - b->xTop + offset.x - size.x / 2,
+		(int)a->thing.Pos.y - b->yTop + offset.y - size.y / 2);
+	const int startX = pos.x;
+	// Draw box bg with a bit of padding
+	const color_t cbg = {64, 64, 64, 128};
+	DrawRectangle(
+		b->g, svec2i_subtract(pos, svec2i(2, 2)),
+		svec2i_add(size, svec2i(4, 4)), cbg, true);
+	pos = FontStr(a->pickupMenu.effect->u.Menu.Text, pos);
+	pos.x = startX;
+	pos.y += FontH() * 2; // Separator
+	CA_FOREACH(const PickupMenuItem, m, a->pickupMenu.effect->u.Menu.Items)
+	const bool selected = _ca_index == a->pickupMenu.index;
+	if (selected)
+	{
+		// Add 1px padding
+		const struct vec2i bgPos = svec2i_subtract(pos, svec2i_one());
+		const struct vec2i bgSize =
+			svec2i_add(svec2i(size.x, FontH()), svec2i(2, 2));
+		DrawRectangle(b->g, bgPos, bgSize, colorSelectedBG, true);
+	}
+	pos = FontStrMask(m->Text, pos, selected ? colorRed : colorWhite);
+	pos.x = startX;
+	pos.y += FontH();
+	CA_FOREACH_END()
+}
+
 static void DrawThing(DrawBuffer *b, const Thing *t, const struct vec2i offset)
 {
 	const struct vec2i picPos = svec2i_add(
@@ -419,7 +497,7 @@ static void DrawThing(DrawBuffer *b, const Thing *t, const struct vec2i offset)
 	}
 	else if (t->kind == KIND_CHARACTER)
 	{
-		TActor *a = CArrayGet(&gActors, t->id);
+		const TActor *a = CArrayGet(&gActors, t->id);
 		ActorPics pics = GetCharacterPicsFromActor(a);
 		DrawActorPics(&pics, picPos, Rect2iZero());
 		// Draw weapon indicators

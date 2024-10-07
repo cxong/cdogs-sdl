@@ -124,6 +124,7 @@ PickupClass *IntScorePickupClass(const int i);
 bool PickupClassHasAmmoEffect(const PickupClass *p);
 bool PickupClassHasKeyEffect(const PickupClass *p);
 int PickupClassGetKeys(const PickupClass *p);
+const char *PickupClassGetName(const PickupClass *p);
 
 // Score for picking up an objective
 #define PICKUP_SCORE 10

@@ -2,7 +2,7 @@
     C-Dogs SDL
     A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2017 Cong Xu
+    Copyright (c) 2013-2017, 2024 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -90,6 +90,7 @@ extern color_t colorDarkSkin;
 extern color_t colorAsianSkin;
 
 extern color_t colorLightBlue;
+extern color_t colorSelectedBG;
 
 color_t ColorMult(color_t c, color_t m);
 color_t ColorAlphaBlend(color_t a, color_t b);

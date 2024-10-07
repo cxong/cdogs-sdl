@@ -54,6 +54,7 @@
 #include "game_mode.h"
 #include "grafx.h"
 #include "mathc/mathc.h"
+#include "pickup.h"
 #include "player.h"
 #include "thing.h"
 #include "weapon.h"
@@ -87,8 +88,8 @@
 #define FLAGS_SNEAKY (1 << 23)	 // Always shoot back when player shoots
 #define FLAGS_SLEEPALWAYS (1 << 24)
 #define FLAGS_AWAKEALWAYS (1 << 25)
-#define FLAGS_RESCUED (1 << 26) // Run towards exit
-#define FLAGS_MOVE_AND_SHOOT (1 << 27)	// Can move and shoot at the same time
+#define FLAGS_RESCUED (1 << 26)		   // Run towards exit
+#define FLAGS_MOVE_AND_SHOOT (1 << 27) // Can move and shoot at the same time
 
 typedef enum
 {
@@ -126,10 +127,10 @@ typedef struct Actor
 	// -1 if human character (get from player data), otherwise index into
 	// CharacterStore OtherChars
 	int charId;
-	int PlayerUID; // -1 unless a human player
-	int uid;	   // unique ID across all actors
-	int pilotUID;  // the actor that controls this
-				  // (same as uid for normal actors)
+	int PlayerUID;	// -1 unless a human player
+	int uid;		// unique ID across all actors
+	int pilotUID;	// the actor that controls this
+					// (same as uid for normal actors)
 	int vehicleUID; // -1 unless piloting a vehicle
 	Weapon guns[MAX_WEAPONS];
 	CArray ammo; // of int
@@ -173,6 +174,14 @@ typedef struct Actor
 	int footprintCounter;
 
 	bool hasShot;
+
+	// Whether actor is in a pickup menu and their current selection
+	struct
+	{
+		const Pickup *pickup;
+		const PickupEffect *effect;
+		int index;
+	} pickupMenu;
 
 	// Signals to other AIs what this actor is doing
 	ActorAction action;
