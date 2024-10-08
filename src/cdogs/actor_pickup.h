@@ -33,4 +33,4 @@
 void PickupPickup(TActor *a, Pickup *p, const bool pickupAll);
 bool PickupApplyEffect(
 	TActor *a, const Pickup *p, const PickupEffect *pe, const bool force,
-	char **sound);
+	const char **sound);

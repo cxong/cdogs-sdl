@@ -88,6 +88,7 @@
       "Body": "camel",
       "Sounds": "camel",
       "Footsteps": "camel",
+      "BloodColor": "00000000",
       "HasHair": false,
       "HasFacehair": false,
       "HasHat": false,
