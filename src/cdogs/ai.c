@@ -349,8 +349,7 @@ int AICommand(const int ticks)
 		cmd = GetCmd(actor, delayModifier, rollLimit);
 		actor->aiContext->Delay = MAX(0, actor->aiContext->Delay - ticks);
 	}
-	CommandActor(actor, cmd, ticks);
-	actor->aiContext->LastCmd = cmd;
+	actor->aiContext->LastCmd = CommandActor(actor, cmd, ticks);
 	count++;
 	CA_FOREACH_END()
 	return count;
@@ -624,8 +623,8 @@ void InitializeBadGuys(void)
 	{
 		for (; o->placed < o->Count; o->placed++)
 		{
-			const int charId =
-			 CharacterStoreGetRandomSpecialId(&gCampaign.Setting.characters);
+			const int charId = CharacterStoreGetRandomSpecialId(
+				&gCampaign.Setting.characters);
 			const Character *c =
 				CArrayGet(&gCampaign.Setting.characters.OtherChars, charId);
 			GameEvent e = GameEventNewActorAdd(

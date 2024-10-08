@@ -127,10 +127,10 @@ typedef struct Actor
 	// -1 if human character (get from player data), otherwise index into
 	// CharacterStore OtherChars
 	int charId;
-	int PlayerUID;	// -1 unless a human player
-	int uid;		// unique ID across all actors
-	int pilotUID;	// the actor that controls this
-					// (same as uid for normal actors)
+	int PlayerUID; // -1 unless a human player
+	int uid;	   // unique ID across all actors
+	int pilotUID;  // the actor that controls this
+				  // (same as uid for normal actors)
 	int vehicleUID; // -1 unless piloting a vehicle
 	Weapon guns[MAX_WEAPONS];
 	CArray ammo; // of int
@@ -203,7 +203,7 @@ extern CArray gActors; // of TActor
 void ActorSetState(TActor *actor, const ActorAnimation state);
 void UpdateActorState(TActor *actor, int ticks);
 void ActorMove(const NActorMove am);
-void CommandActor(TActor *actor, int cmd, int ticks);
+int CommandActor(TActor *actor, int cmd, int ticks);
 void SlideActor(TActor *actor, int cmd);
 void UpdateAllActors(const int ticks);
 void ActorsPilotVehicles(void);

@@ -1055,7 +1055,7 @@ static bool TryGrenade(TActor *a, const int cmd)
 }
 
 static bool ActorTryMove(TActor *actor, int cmd, int ticks);
-void CommandActor(TActor *actor, int cmd, int ticks)
+int CommandActor(TActor *actor, int cmd, int ticks)
 {
 	GameEvent e;
 	// If the actor is currently using a menu, control the menu instead
@@ -1084,8 +1084,11 @@ void CommandActor(TActor *actor, int cmd, int ticks)
 			actor->pickupMenu.pickup = NULL;
 			actor->pickupMenu.effect = NULL;
 			actor->pickupMenu.index = 0;
+			// Reset input
 			KeyLockKeys(&gEventHandlers.keyboard);
 			JoyLock(&gEventHandlers.joysticks);
+			actor->lastCmd = 0;
+			return 0;
 		}
 		else if (Up(cmd) && !Up(actor->lastCmd))
 		{
@@ -1110,7 +1113,6 @@ void CommandActor(TActor *actor, int cmd, int ticks)
 	}
 	else
 	{
-
 		actor->hasShot = false;
 		// If this is a pilot, command the vehicle instead
 		if (actor->vehicleUID != -1)
@@ -1178,6 +1180,7 @@ void CommandActor(TActor *actor, int cmd, int ticks)
 	}
 
 	actor->lastCmd = cmd;
+	return cmd;
 }
 static bool ActorTryMove(TActor *actor, int cmd, int ticks)
 {
