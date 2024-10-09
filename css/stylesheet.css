@@ -29,7 +29,8 @@ footer, header, hgroup, menu, nav, section {
 }
 body {
   line-height: 1;
-  background: #ddd url(../images/logo.png);
+  color: #D1D1D1;
+  background: #ddd url(../images/bg.png);
 }
 ol, ul {
   list-style: none;
