@@ -30,7 +30,6 @@ footer, header, hgroup, menu, nav, section {
 body {
   line-height: 1;
   color: #D1D1D1;
-  background: #ddd url(../images/bg.png);
 }
 ol, ul {
   list-style: none;
@@ -54,7 +53,10 @@ body {
   font-size: 15px;
   font-family: Arial, Arial, Helvetica, sans-serif;
   line-height: 1.5;
-  background: #D1D1D1;
+  background: #999 url(../images/bg.png);
+  background-size: 928px; /* 2x */
+  background-blend-mode: multiply;
+  image-rendering: pixelated;
 }
 
 a {

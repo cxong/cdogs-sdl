@@ -1,7 +1,7 @@
 ---
 layout: post
-title:  "Cybercafe of Broken Dreams"
-date:   2021-11-23
+title: "Cybercafe of Broken Dreams"
+date: 2021-11-23
 categories: other
 published: true
 ---
@@ -57,7 +57,7 @@ The game would have new enemy designs, in a sci-fi, cyberpunk theme. C-Dogs had 
 ![Blade bot](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/concept_micro_copter_th.jpg)
 </a>
 
-Gun design would be an important consideration; as C-Dogs is a shooting game, the guns are pretty important, and should be fun and satisfying to use. C-Dogs had an eclectic arsenal, with standard shotguns and machine guns, to sci-fi powerguns, gaming favourites like flamers, and well... the less said about the browny gun, the better. Not so in the new game, which would be filled with futuristic, high powered [fish guns](https://i.imgur.com/XhMYOmZ.jpg) and pew-pew hand cannons. The MC's - who is definitely a cyborg - weapon of choice would be an unassuming SMG, but packed with high-velocity rounds that would shred non-military opponents like cloth. Basically I took lots of notes while watching *Ghost in the Shell*.
+Gun design would be an important consideration; as C-Dogs is a shooting game, the guns are pretty important, and should be fun and satisfying to use. C-Dogs had an eclectic arsenal, with standard shotguns and machine guns, to sci-fi powerguns, gaming favourites like flamers, and well... the less said about the browny gun, the better. Not so in the new game, which would be filled with futuristic, high powered [fish guns](https://i.imgur.com/XhMYOmZ.jpg) and pew-pew hand cannons. The MC's - who is definitely a cyborg - weapon of choice would be an unassuming SMG, but packed with high-velocity rounds that would shred non-military opponents like cloth. Basically I took lots of notes while watching _Ghost in the Shell_.
 
 <a
     href="https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/concept_guns.jpg"
@@ -75,7 +75,7 @@ Gun design would be an important consideration; as C-Dogs is a shooting game, th
 ![Tiny guns](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/concept_small_guns_th.jpg)
 </a>
 
-The game would also have a coherent storyline. In addition to some [frankly silly world-building](https://docs.google.com/document/d/10yS-QoUl2Xa2mMOfuim6vV_KgS9w-FWsRcX7mMWtP38/edit?usp=sharing), the campaign would be highly non-linear: the MC would be thrust into a world with [multiple factions and sub-factions](http://cxong.github.io/2017/08/three-factions), each with their hidden agendas, and depending on which factions the MC is currently working for, the storyline will take different branches, with some levels being playable as a different side with different objectives. For example, work for a certain faction and you would play a level by destroying an objective. Work for a different faction and you would play the same level but guarding that objective.
+The game would also have a coherent storyline. In addition to some frankly silly world-building, the campaign would be highly non-linear: the MC would be thrust into a world with [multiple factions and sub-factions](http://cxong.github.io/2017/08/three-factions), each with their hidden agendas, and depending on which factions the MC is currently working for, the storyline will take different branches, with some levels being playable as a different side with different objectives. For example, work for a certain faction and you would play a level by destroying an objective. Work for a different faction and you would play the same level but guarding that objective.
 
 <a
     href="https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/concept_level1.jpg"
@@ -114,8 +114,8 @@ The game would also have a coherent storyline. In addition to some [frankly sill
 ![Final level](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/concept_new_ogre_rampage_th.jpg)
 </a>
 
-Alas that's the end of the story. C-Dogs SDL was certainly fun to work on but it is mostly an enhancement, with no sequels on the horizon. A lot of time has passed since these ideas, many of them were tried by other games, some quite successfully. I'd still like to see some of the unused ideas tried, perhaps in a future game I make. For example the idea of revisiting a level but played from a different perspective still seems cool. For example, Starcraft 2 has a [reversed campaign mod](https://youtu.be/iz_Tu3eq2Kc) which looks fun as heck. Perhaps it's not something practical for a large [set-piece-design-driven](http://thegamedesignforum.com/features/GDH_4.html) organisation with siloed teams, to make a single level play well in different ways, but for a small team it can still be a [neat way to reuse levels](https://gamedev.stackexchange.com/q/83893/26250).
+Alas that's the end of the story. C-Dogs SDL was certainly fun to work on but it is mostly an enhancement, with no sequels on the horizon. A lot of time has passed since these ideas, many of them were tried by other games, some quite successfully. I'd still like to see some of the unused ideas tried, perhaps in a future game I make. For example the idea of revisiting a level but played from a different perspective still seems cool. Starcraft 2 has a [reversed campaign mod](https://youtu.be/iz_Tu3eq2Kc) which looks fun as heck. Perhaps it's not something practical for a large [set-piece-design-driven](http://thegamedesignforum.com/features/GDH_4.html) organisation with siloed teams, to make a single level play well in different ways, but for a small team it can still be a [neat way to reuse levels](https://gamedev.stackexchange.com/q/83893/26250).
 
 Anyway that's enough from me. C-Dogs SDL isn't quite dead - there's a small update coming up soon 😉 - but you can also follow me on my future game dev adventures on [my blog](http://cxong.github.io) or [itch.io](https://congusbongus.itch.io). Happy gaming as always! 🎉
 
-*[MC]: Main Character
+\*[MC]: Main Character
