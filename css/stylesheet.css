@@ -29,7 +29,7 @@ footer, header, hgroup, menu, nav, section {
 }
 body {
   line-height: 1;
-  color: #D1D1D1;
+  background: #ddd url(../images/logo.png);
 }
 ol, ul {
   list-style: none;
@@ -57,14 +57,14 @@ body {
 }
 
 a {
-  color: #63a52a;
+  color: #37ADD4;
   text-decoration: none;
   -webkit-transition: color ease-in-out 0.3s;
 }
 
 a:hover {
   text-decoration: underline;
-  color: #90D355;
+  color: #1B657E;
 }
 
 h1.title {
@@ -219,7 +219,6 @@ a.download-button span {
   width: auto;
   height: auto;
   padding: 5px 10px;
-  padding-left: 45px;
   display: inline-block;
   text-indent: 0!important;
   color: #fff;
@@ -410,8 +409,7 @@ footer .owner p a {
 
 .markdown-body blockquote {
   font-style: italic;
-  font-family:Georgia, serif;
-  font-size: 17px;
+  font-size: 90%;
   border-top: 3px solid #333;
   border-bottom: 3px solid #333;
   padding: 10px 20px;
