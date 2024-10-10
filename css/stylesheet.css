@@ -170,39 +170,6 @@ p.tagline {
   display: block;
 }
 
-.download-bar a.code {
-  background: transparent url(../images/code.png) no-repeat 0 2px;
-  padding-left: 35px;
-  margin-top: 8px;
-  display: block;
-  float: left;
-  text-indent: 0;
-  width: auto;
-  height: auto;
-  opacity: 1;
-  -moz-opacity: 1;
-  filter:alpha(opacity=1);
-}
-
-a.code {
-  background: transparent url(../images/code.png) no-repeat 0 2px;
-  width: 30px;
-  height: 21px;
-  display: block;
-  opacity: 0.8;
-  display: inline-block;
-  text-indent: -10000px;
-  -moz-opacity: 0.8;
-  filter:alpha(opacity=8);
-  -webkit-transition: opacity ease-in-out 0.3s;
-}
-
-a.code:hover {
-  opacity: 1;
-  -moz-opacity: 1;
-  filter:alpha(opacity=1);
-}
-
 a.download-button {
   border: 1px solid black;
   border-radius: 3px;
