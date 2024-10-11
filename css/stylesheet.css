@@ -170,6 +170,11 @@ p.tagline {
   display: block;
 }
 
+.download-bar a.code {
+  margin-top: 5px;
+  display: block;
+}
+
 a.download-button {
   border: 1px solid black;
   border-radius: 3px;
