@@ -50,6 +50,38 @@ CWolfMap *defaultSpearMap = NULL;
 
 #define TILE_CLASS_WALL_OFFSET 63
 
+// Generate shuffled numbers from 0-N, never repeating until we draw >N times,
+// then repeat
+typedef struct
+{
+	CArray indices;
+	int idx;
+} IdxShuffler;
+static void IdxShufflerInit(IdxShuffler *s, const int n)
+{
+	CArrayInit(&s->indices, sizeof(int));
+	s->idx = 0;
+	for (int i = 0; i < n; i++)
+	{
+		CArrayPushBack(&s->indices, &i);
+	}
+	CArrayShuffle(&s->indices);
+}
+static int IdxShufflerDraw(IdxShuffler *s)
+{
+	const int *value = CArrayGet(&s->indices, s->idx);
+	s->idx++;
+	if (s->idx == (int)s->indices.size)
+	{
+		s->idx = 0;
+	}
+	return *value;
+}
+static void IdxShufflerTerminate(IdxShuffler *s)
+{
+	CArrayTerminate(&s->indices);
+}
+
 void MapWolfInit(void)
 {
 	defaultWolfMap = NULL;
@@ -657,7 +689,8 @@ static void LoadSounds(const SoundDevice *s, const CWolfMap *map);
 static void LoadN3DScrolls(const CWolfMap *map);
 static void LoadMission(
 	CampaignSetting *c, const map_t tileClasses, CWolfMap *map,
-	const int spearMission, const int missionIndex, const int numMissions);
+	const int spearMission, const int missionIndex, const int numMissions,
+	IdxShuffler *scrollShuffler);
 typedef struct
 {
 	CWolfMap *Map;
@@ -681,6 +714,8 @@ int MapWolfLoad(
 	map_t tileClasses = NULL;
 	CharacterStore cs;
 	memset(&cs, 0, sizeof cs);
+	IdxShuffler scrollShuffler;
+	memset(&scrollShuffler, 0, sizeof scrollShuffler);
 
 	const bool loadedFromDefault = LoadDefault(map, filename);
 	err = CWLoad(map, filename, spearMission);
@@ -788,11 +823,14 @@ int MapWolfLoad(
 	if (map->type == CWMAPTYPE_N3D && map->nQuizzes > 0)
 	{
 		LoadN3DScrolls(map);
+		IdxShufflerInit(&scrollShuffler, map->nQuizzes);
 	}
 
 	for (int i = 0; i < map->nLevels; i++)
 	{
-		LoadMission(c, tileClasses, map, spearMission, i, numMissions);
+		LoadMission(
+			c, tileClasses, map, spearMission, i, numMissions,
+			&scrollShuffler);
 	}
 
 bail:
@@ -802,6 +840,7 @@ bail:
 	}
 	hashmap_destroy(tileClasses, TileClassDestroy);
 	CharacterStoreTerminate(&cs);
+	IdxShufflerTerminate(&scrollShuffler);
 	return err;
 }
 
@@ -960,7 +999,7 @@ static void LoadN3DScrolls(const CWolfMap *map)
 		PickupClass c;
 		PickupClassInit(&c);
 		char buf[256];
-		sprintf(buf, "scroll%d", i);
+		sprintf(buf, "scroll+%d", i);
 		CSTRDUP(c.Name, buf);
 		CPicCopyPic(&c.Pic, &scroll->Pic);
 		CSTRDUP(c.Sound, scroll->Sound);
@@ -1001,7 +1040,7 @@ static void TryLoadWallObject(
 static void LoadEntity(
 	Mission *m, const uint16_t ch, const CWolfMap *map, const int spearMission,
 	const struct vec2i v, const int missionIndex, const int numMissions,
-	int *bossObjIdx, int *spearObjIdx);
+	int *bossObjIdx, int *spearObjIdx, IdxShuffler *scrollShuffler);
 
 typedef struct
 {
@@ -1017,7 +1056,8 @@ static bool GetMissionSong(MusicChunk *chunk, void *data)
 }
 static void LoadMission(
 	CampaignSetting *c, const map_t tileClasses, CWolfMap *map,
-	const int spearMission, const int missionIndex, const int numMissions)
+	const int spearMission, const int missionIndex, const int numMissions,
+	IdxShuffler *scrollShuffler)
 {
 	const CWLevel *level = &map->levels[missionIndex];
 	Mission m;
@@ -1101,7 +1141,7 @@ static void LoadMission(
 		const uint16_t ech = CWLevelGetCh(level, 1, _v.x, _v.y);
 		LoadEntity(
 			&m, ech, map, spearMission, _v, missionIndex, numMissions,
-			&bossObjIdx, &spearObjIdx);
+			&bossObjIdx, &spearObjIdx, scrollShuffler);
 		RECT_FOREACH_END()
 
 		if (m.u.Static.Exits.size == 0)
@@ -2258,7 +2298,7 @@ static void AdjustTurningPoint(Mission *m, const struct vec2i v);
 static void LoadEntity(
 	Mission *m, const uint16_t ch, const CWolfMap *map, const int spearMission,
 	const struct vec2i v, const int missionIndex, const int numMissions,
-	int *bossObjIdx, int *spearObjIdx)
+	int *bossObjIdx, int *spearObjIdx, IdxShuffler *scrollShuffler)
 {
 	const CWEntity entity = CWChToEntity(ch);
 	switch (entity)
@@ -2339,11 +2379,13 @@ static void LoadEntity(
 	case CWENT_HANGING_SKELETON:
 		switch (map->type)
 		{
-		case CWMAPTYPE_N3D:
-			// TODO: Place a random scroll pickup, use shuffling
-			MissionStaticTryAddPickup(
-				&m->u.Static, StrPickupClass("scroll0"), v);
-			break;
+		case CWMAPTYPE_N3D: {
+			// Place a random scroll pickup, use shuffling
+			char buf[256];
+			sprintf(buf, "scroll+%d", IdxShufflerDraw(scrollShuffler));
+			MissionStaticTryAddPickup(&m->u.Static, StrPickupClass(buf), v);
+		}
+		break;
 		default:
 			MissionStaticTryAddItem(
 				&m->u.Static, StrMapObject("hanging_skeleton"), v);

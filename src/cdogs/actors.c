@@ -1065,7 +1065,7 @@ int CommandActor(TActor *actor, int cmd, int ticks)
 		{
 			// Apply effects of pickup menu item and reset
 			if (actor->pickupMenu.index <
-				actor->pickupMenu.effect->u.Menu.Items.size)
+				(int)actor->pickupMenu.effect->u.Menu.Items.size)
 			{
 				const PickupMenuItem *m = CArrayGet(
 					&actor->pickupMenu.effect->u.Menu.Items,
@@ -1450,6 +1450,13 @@ static bool CheckManualPickupFunc(
 		const char *pickupName = PickupClassGetName(p->class);
 		char buf[256];
 		sprintf(buf, "%s to pick up\n%s", buttonName, pickupName);
+		// Hack: remove anything beyond a "+" symbol, so we can have pickups
+		// with the same name but with an invisible suffix
+		char *plus = strrchr(buf, '+');
+		if (plus)
+		{
+			*plus = '\0';
+		}
 		ActorSetChatter(a, buf, 2);
 	}
 	// If co-op AI, alert it so it can try to pick the gun up
