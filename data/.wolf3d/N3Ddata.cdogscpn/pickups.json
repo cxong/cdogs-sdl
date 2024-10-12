@@ -101,9 +101,9 @@
       "Effects": [{
         "Type": "Menu",
         "Menu": {
-          "Text": "What is 1+1?",
+          "Text": "This pickup is a template only; the first Item is the correct effects, the second the wrong effects.",
           "Items": [{
-            "Text": "2",
+            "Text": "correct",
             "Effects": [{
               "Type": "Score",
               "Score": 1000
@@ -119,7 +119,7 @@
               "Sound": "bonus"
             }]
           }, {
-            "Text": "11",
+            "Text": "wrong",
             "Effects": [{
               "Type": "Health",
               "Health": 4

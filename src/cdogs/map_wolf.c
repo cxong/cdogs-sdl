@@ -654,6 +654,7 @@ bail:
 }
 
 static void LoadSounds(const SoundDevice *s, const CWolfMap *map);
+static void LoadN3DScrolls(const CWolfMap *map);
 static void LoadMission(
 	CampaignSetting *c, const map_t tileClasses, CWolfMap *map,
 	const int spearMission, const int missionIndex, const int numMissions);
@@ -782,6 +783,12 @@ int MapWolfLoad(
 	CSTRDUP(c->Description, description);
 
 	CharacterStoreCopy(&c->characters, &cs, &gPlayerTemplates.CustomClasses);
+
+	// Special case for N3D: generate  scrolls with unique questions/answers
+	if (map->type == CWMAPTYPE_N3D && map->nQuizzes > 0)
+	{
+		LoadN3DScrolls(map);
+	}
 
 	for (int i = 0; i < map->nLevels; i++)
 	{
@@ -934,6 +941,54 @@ static void AddRandomSound(
 		CArrayInit(&sound->u.random.sounds, sizeof(Mix_Chunk *));
 		CArrayPushBack(&sound->u.random.sounds, &data);
 		SoundAdd(s->customSounds, nameBuf, sound);
+	}
+}
+
+static void LoadN3DScrolls(const CWolfMap *map)
+{
+	// Copy the effects from the "scroll" pickup
+	const PickupClass *scroll = StrPickupClass("scroll");
+	const PickupEffect *menuEffect = CArrayGet(&scroll->Effects, 0);
+	const CArray *correctEffects =
+		&((const PickupMenuItem *)CArrayGet(&menuEffect->u.Menu.Items, 0))
+			 ->Effects;
+	const CArray *wrongEffects =
+		&((const PickupMenuItem *)CArrayGet(&menuEffect->u.Menu.Items, 1))
+			 ->Effects;
+	for (int i = 0; i < map->nQuizzes; i++)
+	{
+		PickupClass c;
+		PickupClassInit(&c);
+		char buf[256];
+		sprintf(buf, "scroll%d", i);
+		CSTRDUP(c.Name, buf);
+		CPicCopyPic(&c.Pic, &scroll->Pic);
+		CSTRDUP(c.Sound, scroll->Sound);
+
+		PickupEffect e;
+		memset(&e, 0, sizeof e);
+		e.Type = PICKUP_MENU;
+		const CWN3DQuiz *quiz = &map->quizzes[i];
+		CSTRDUP(e.u.Menu.Text, quiz->question);
+
+		CArrayInit(&e.u.Menu.Items, sizeof(PickupMenuItem));
+		for (int j = 0; j < quiz->nAnswers; j++)
+		{
+			PickupMenuItem m;
+			PickupMenuItemInit(&m);
+			CSTRDUP(m.Text, quiz->answers[j]);
+			const CArray *effects =
+				j == quiz->correctIdx ? correctEffects : wrongEffects;
+			CA_FOREACH(const PickupEffect, pe, *effects)
+			PickupEffect ec = PickupEffectCopy(pe);
+			CArrayPushBack(&m.Effects, &ec);
+			CA_FOREACH_END()
+			CArrayPushBack(&e.u.Menu.Items, &m);
+		}
+
+		CArrayPushBack(&c.Effects, &e);
+
+		CArrayPushBack(&gPickupClasses.CustomClasses, &c);
 	}
 }
 
@@ -2285,8 +2340,9 @@ static void LoadEntity(
 		switch (map->type)
 		{
 		case CWMAPTYPE_N3D:
+			// TODO: Place a random scroll pickup, use shuffling
 			MissionStaticTryAddPickup(
-				&m->u.Static, StrPickupClass("scroll"), v);
+				&m->u.Static, StrPickupClass("scroll0"), v);
 			break;
 		default:
 			MissionStaticTryAddItem(

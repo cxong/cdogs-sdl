@@ -166,6 +166,39 @@ int CWLoad(CWolfMap *map, const char *path, const int spearMission)
 			map->levels[i].description =
 				CWLevelN3DLoadDescription(languageBuf, i);
 		}
+
+		for (int q = 1;; q++)
+		{
+			char *question = CWLevelN3DLoadQuizQuestion(languageBuf, q);
+			if (question == NULL)
+			{
+				break;
+			}
+			map->nQuizzes++;
+			map->quizzes =
+				realloc(map->quizzes, map->nQuizzes * sizeof(CWN3DQuiz));
+			CWN3DQuiz *quiz = &map->quizzes[map->nQuizzes - 1];
+			memset(quiz, 0, sizeof *quiz);
+			quiz->question = question;
+			for (char a = 'A';; a++)
+			{
+				bool correct = false;
+				char *answer =
+					CWLevelN3DLoadQuizAnswer(languageBuf, q, a, &correct);
+				if (answer == NULL)
+				{
+					break;
+				}
+				quiz->nAnswers++;
+				quiz->answers =
+					realloc(quiz->answers, quiz->nAnswers * sizeof(char *));
+				quiz->answers[quiz->nAnswers - 1] = answer;
+				if (correct)
+				{
+					quiz->correctIdx = quiz->nAnswers - 1;
+				}
+			}
+		}
 		free(languageBuf);
 	}
 
@@ -370,6 +403,7 @@ void CWCopy(CWolfMap *dst, const CWolfMap *src)
 	dst->vswap.sounds = malloc(vswapSoundsLen);
 	memcpy(dst->vswap.sounds, src->vswap.sounds, vswapSoundsLen);
 	// TODO: copy wad
+	// TODO: copy quizzes
 }
 
 void CWFree(CWolfMap *map)
@@ -381,6 +415,10 @@ void CWFree(CWolfMap *map)
 	LevelsFree(map);
 	CWAudioFree(&map->audio);
 	CWVSwapFree(&map->vswap);
+	for (int i = 0; i < map->nQuizzes; i++)
+	{
+		CWN3DQuizFree(&map->quizzes[i]);
+	}
 	memset(map, 0, sizeof *map);
 }
 static void LevelFree(CWLevel *level);

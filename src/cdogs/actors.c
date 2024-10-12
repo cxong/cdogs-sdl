@@ -1064,22 +1064,27 @@ int CommandActor(TActor *actor, int cmd, int ticks)
 		if (Button1(cmd) && !Button1(actor->lastCmd))
 		{
 			// Apply effects of pickup menu item and reset
-			const PickupMenuItem *m = CArrayGet(
-				&actor->pickupMenu.effect->u.Menu.Items,
-				actor->pickupMenu.index);
-			bool canPickup = false;
-			const char *sound = "menu_enter";
-			CA_FOREACH(const PickupEffect, pe, m->Effects)
-			CASSERT(pe->Type != PICKUP_MENU, "can't have nested menu effects");
-			canPickup = PickupApplyEffect(
-				actor, actor->pickupMenu.pickup, pe, true, &sound);
-			CA_FOREACH_END()
-			if (canPickup && sound != NULL)
+			if (actor->pickupMenu.index <
+				actor->pickupMenu.effect->u.Menu.Items.size)
 			{
-				e = GameEventNew(GAME_EVENT_SOUND_AT);
-				strcpy(e.u.SoundAt.Sound, sound);
-				e.u.SoundAt.Pos = Vec2ToNet(actor->thing.Pos);
-				GameEventsEnqueue(&gGameEvents, e);
+				const PickupMenuItem *m = CArrayGet(
+					&actor->pickupMenu.effect->u.Menu.Items,
+					actor->pickupMenu.index);
+				bool canPickup = false;
+				const char *sound = "menu_enter";
+				CA_FOREACH(const PickupEffect, pe, m->Effects)
+				CASSERT(
+					pe->Type != PICKUP_MENU, "can't have nested menu effects");
+				canPickup = PickupApplyEffect(
+					actor, actor->pickupMenu.pickup, pe, true, &sound);
+				CA_FOREACH_END()
+				if (canPickup && sound != NULL)
+				{
+					e = GameEventNew(GAME_EVENT_SOUND_AT);
+					strcpy(e.u.SoundAt.Sound, sound);
+					e.u.SoundAt.Pos = Vec2ToNet(actor->thing.Pos);
+					GameEventsEnqueue(&gGameEvents, e);
+				}
 			}
 			actor->pickupMenu.pickup = NULL;
 			actor->pickupMenu.effect = NULL;

@@ -27,7 +27,8 @@ bail:
 	return buf;
 }
 
-static char *LoadLanguageEnuString(const char *buf, const char *key)
+static char *LoadLanguageEnuString(
+	const char *buf, const char *key, char **comment)
 {
 	const char *start = buf;
 	char linebuf[1024];
@@ -51,7 +52,15 @@ static char *LoadLanguageEnuString(const char *buf, const char *key)
 			if (strcmp(linebuf, key) == 0)
 			{
 				char *value = equals + strlen(" = \"");
-				char *endQuote = linebuf + len - strlen("\";");
+				char *endQuote = strstr(value, "\";");
+				if (comment)
+				{
+					const char *commentStart = strstr(endQuote, "// ");
+					if (commentStart)
+					{
+						*comment = strdup(commentStart + strlen("// "));
+					}
+				}
 				*endQuote = '\0';
 				// Unescape newlines in the string
 				char *dst = value;
@@ -87,17 +96,41 @@ char *CWLevelN3DLoadDescription(const char *buf, const int level)
 	switch (level)
 	{
 	case 0:
-		return LoadLanguageEnuString(buf, "NOAH_BRIEF_01");
+		return LoadLanguageEnuString(buf, "NOAH_BRIEF_01", NULL);
 	case 3:
-		return LoadLanguageEnuString(buf, "NOAH_BRIEF_02");
+		return LoadLanguageEnuString(buf, "NOAH_BRIEF_02", NULL);
 	case 7:
-		return LoadLanguageEnuString(buf, "NOAH_BRIEF_03");
+		return LoadLanguageEnuString(buf, "NOAH_BRIEF_03", NULL);
 	case 12:
-		return LoadLanguageEnuString(buf, "NOAH_BRIEF_04");
+		return LoadLanguageEnuString(buf, "NOAH_BRIEF_04", NULL);
 	case 17:
-		return LoadLanguageEnuString(buf, "NOAH_BRIEF_05");
+		return LoadLanguageEnuString(buf, "NOAH_BRIEF_05", NULL);
 	case 23:
-		return LoadLanguageEnuString(buf, "NOAH_BRIEF_06");
+		return LoadLanguageEnuString(buf, "NOAH_BRIEF_06", NULL);
 	}
 	return NULL;
+}
+
+char *CWLevelN3DLoadQuizQuestion(const char *buf, const int quiz)
+{
+	char key[256];
+	sprintf(key, "NOAH_QUIZ_Q%02d", quiz);
+	return LoadLanguageEnuString(buf, key, NULL);
+}
+char *CWLevelN3DLoadQuizAnswer(
+	const char *buf, const int quiz, const char answer, bool *correct)
+{
+	char key[256];
+	sprintf(key, "NOAH_QUIZ_A%02d%c", quiz, answer);
+	char *comment = NULL;
+	char *result = LoadLanguageEnuString(buf, key, &comment);
+	*correct = comment && strcmp(comment, "Correct") == 0;
+	free(comment);
+	return result;
+}
+
+void CWN3DQuizFree(CWN3DQuiz *quiz)
+{
+	free(quiz->question);
+	free(quiz->answers);
 }

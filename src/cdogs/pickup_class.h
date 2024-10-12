@@ -107,6 +107,10 @@ PickupClass *KeyPickupClass(const char *style, const int i);
 PickupClass *PickupClassGetById(PickupClasses *classes, const int id);
 int StrPickupClassId(const char *s);
 
+void PickupMenuItemInit(PickupMenuItem *m);
+PickupEffect PickupEffectCopy(const PickupEffect *e);
+void PickupClassInit(PickupClass *c);
+
 void PickupClassesInit(
 	PickupClasses *classes, const char *filename, const AmmoClasses *ammo,
 	const WeaponClasses *guns);

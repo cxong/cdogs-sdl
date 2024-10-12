@@ -172,10 +172,33 @@ int StrPickupClassId(const char *s)
 
 #define VERSION 3
 
-static void PickupClassInit(PickupClass *c)
+void PickupClassInit(PickupClass *c)
 {
 	memset(c, 0, sizeof *c);
 	CArrayInit(&c->Effects, sizeof(PickupEffect));
+}
+void PickupMenuItemInit(PickupMenuItem *m)
+{
+	memset(m, 0, sizeof *m);
+	CArrayInit(&m->Effects, sizeof(PickupEffect));
+}
+PickupEffect PickupEffectCopy(const PickupEffect *e)
+{
+	PickupEffect out;
+	memcpy(&out, e, sizeof out);
+	switch (e->Type)
+	{
+	case PICKUP_SOUND:
+		CSTRDUP(out.u.Sound, e->u.Sound);
+		break;
+	case PICKUP_MENU:
+		CASSERT(false, "copying pickup menu not implemented");
+		break;
+	default:
+		// Do nothing
+		break;
+	}
+	return out;
 }
 static void PickupEffectTerminate(PickupEffect *e);
 static void PickupMenuItemTerminate(PickupMenuItem *m)
@@ -388,8 +411,7 @@ static PickupEffect LoadPickupEffect(json_t *node, const int version)
 		for (json_t *item = itemsNode->child; item; item = item->next)
 		{
 			PickupMenuItem m;
-			memset(&m, 0, sizeof m);
-			CArrayInit(&m.Effects, sizeof(PickupEffect));
+			PickupMenuItemInit(&m);
 			LoadStr(&m.Text, item, "Text");
 			json_t *effectsNode =
 				json_find_first_label(item, "Effects")->child;

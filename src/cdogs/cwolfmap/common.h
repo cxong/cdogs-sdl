@@ -1,7 +1,7 @@
 #pragma once
+#include "wad/wad.h"
 #include <stddef.h>
 #include <stdint.h>
-#include "wad/wad.h"
 
 typedef enum
 {
@@ -30,3 +30,12 @@ typedef struct
 	char *data;
 	wad_t *wad;
 } CWAudio;
+
+typedef struct
+{
+	char *question;
+	char **answers;
+	int nAnswers;
+	// Assumes one correct answer
+	int correctIdx;
+} CWN3DQuiz;

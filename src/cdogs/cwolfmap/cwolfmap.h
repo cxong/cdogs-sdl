@@ -49,6 +49,8 @@ typedef struct
 	CWAudio audio;
 	CWVSwap vswap;
 	CWMapType type;
+	CWN3DQuiz *quizzes;
+	int nQuizzes;
 } CWolfMap;
 
 CWMapType CWGetType(
