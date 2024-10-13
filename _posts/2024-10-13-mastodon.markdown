@@ -1,0 +1,12 @@
+---
+layout: post
+title: "Follow C-Dogs SDL development on Mastodon"
+date: 2024-10-13
+categories: website
+---
+
+tl;dr follow C-Dogs SDL dev progress on [Mastodon #CDogsSDL!](https://mastodon.gamedev.place/tags/CDogsSDL)
+
+Looking back at the [news archives](https://cxong.github.io/cdogs-sdl/archive.html), I noticed that a while ago I stopped posting regular progress updates, and the posts were generally limited to release announcements and the occasional longer-form blog post. Actually I do still post progress updates but since they are very short form, they are on Mastodon, and you would never know by looking at this website! So I've added a link in the top bar. And also this post! 😀
+
+I think this is for the best; this site is supposed to be the main face of "C-Dogs SDL the game", so I refrained from progress updates because it had matured from an in-development project to a playable game available on many platforms, so filling the front page with stuff that isn't available yet would be confusing. But for people who don't mind and want to follow the very latest news, having it in a microblogging platform like Mastodon seems appropriate.
