@@ -1580,6 +1580,8 @@ static void TryLoadWallObject(
 					e.R.Pos = exitV;
 					e.R.Size = svec2i_zero();
 					MissionStaticTryAddExit(m, &e);
+					// Remove wall decorations from the wall
+					MissionStaticTryRemoveItemAt(m, exitV);
 					MissionStaticTryAddItem(m, StrMapObject("stairs"), exitV);
 				}
 			}
