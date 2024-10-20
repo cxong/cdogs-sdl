@@ -151,7 +151,7 @@
         "Pic": ""
       },
       "Trail": {
-        "Particle": "trail",
+        "Particle": "trail_spit",
         "Width": 1.0
       },
       "OutOfRangeSpark": "spark",
@@ -173,7 +173,7 @@
         "Pic": ""
       },
       "Trail": {
-        "Particle": "trail",
+        "Particle": "trail_spit",
         "Width": 1.5
       },
       "OutOfRangeSpark": "spark",
@@ -195,7 +195,7 @@
         "Pic": ""
       },
       "Trail": {
-        "Particle": "trail",
+        "Particle": "trail_spit",
         "Width": 1.25
       },
       "OutOfRangeSpark": "spark",
