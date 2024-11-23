@@ -364,7 +364,8 @@ static void PlayerSelectionOnExit(GameLoopData *data)
 		{
 			gCampaign.MissionIndex = 0;
 		}
-		MapWolfN3DCheckAndLoadCustomQuiz(&gCampaign, &gPlayerDatas);
+		MapWolfN3DCheckAndLoadCustomQuiz(
+			gCampaign.Setting.Title, &gPlayerDatas);
 	}
 	else
 	{
@@ -393,13 +394,13 @@ static GameLoopResult PlayerSelectionUpdate(GameLoopData *data, LoopRunner *l)
 		LoopRunnerPop(l);
 		return UPDATE_RESULT_OK;
 	}
-	
+
 	int idx = 0;
 	if (pData->endCounter == 0)
 	{
 		// Menu input
-    const int localHumanPlayers = GetNumPlayers(PLAYER_ANY, true, true);
-    const bool useMenuCmd = (localHumanPlayers <= 1);
+		const int localHumanPlayers = GetNumPlayers(PLAYER_ANY, true, true);
+		const bool useMenuCmd = (localHumanPlayers <= 1);
 		for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
 		{
 			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
@@ -414,13 +415,13 @@ static GameLoopResult PlayerSelectionUpdate(GameLoopData *data, LoopRunner *l)
 				if (ms->current->customPostUpdateFunc)
 				{
 					ms->current->customPostUpdateFunc(
-													  ms->current, ms->current->customPostUpdateData);
+						ms->current, ms->current->customPostUpdateData);
 				}
 				MenuUpdateMouse(ms);
 				if (useMenuCmd)
 				{
 					cmds[idx] |=
-					GetMenuCmd(&gEventHandlers, ms->current->mouseHover);
+						GetMenuCmd(&gEventHandlers, ms->current->mouseHover);
 				}
 				if (!MenuIsExit(ms) && cmds[idx])
 				{
@@ -467,11 +468,13 @@ static GameLoopResult PlayerSelectionUpdate(GameLoopData *data, LoopRunner *l)
 				idx--;
 				continue;
 			}
-			if (p->inputDevice == INPUT_DEVICE_UNSET || p->inputDevice == INPUT_DEVICE_AI)
+			if (p->inputDevice == INPUT_DEVICE_UNSET ||
+				p->inputDevice == INPUT_DEVICE_AI)
 			{
 				hasAIPlayers = true;
 				PlayerTrySetInputDevice(p, INPUT_DEVICE_AI, 0);
-				pData->menus[idx].ms.current = MenuGetSubmenuByName(pData->menus[idx].ms.root, "Done");
+				pData->menus[idx].ms.current =
+					MenuGetSubmenuByName(pData->menus[idx].ms.root, "Done");
 			}
 		}
 		if (hasAIPlayers && pData->endCounter < 70)

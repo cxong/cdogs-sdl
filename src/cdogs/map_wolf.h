@@ -42,4 +42,4 @@ int MapWolfLoad(
 void MapWolfLoadCampaignsFromSystem(CampaignList *list);
 
 void MapWolfN3DCheckAndLoadCustomQuiz(
-	const Campaign *c, const CArray *playerDatas);
+	const char *title, const CArray *playerDatas);

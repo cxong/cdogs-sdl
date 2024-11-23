@@ -3543,11 +3543,11 @@ static bool TryLoadCampaign(CampaignList *list, const char *path)
 }
 
 void MapWolfN3DCheckAndLoadCustomQuiz(
-	const Campaign *c, const CArray *playerDatas)
+	const char *title, const CArray *playerDatas)
 {
 	// Special case for N3D: Epic of Gilgamesh quiz easter egg
 	// This code is pretty cursed
-	if (strcmp(c->Setting.Title, "Super 2D Noah's Ark") != 0)
+	if (strcmp(title, "Super 2D Noah's Ark") != 0)
 	{
 		return;
 	}
