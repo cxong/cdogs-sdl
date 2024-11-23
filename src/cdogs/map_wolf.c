@@ -3541,3 +3541,91 @@ static bool TryLoadCampaign(CampaignList *list, const char *path)
 	}
 	return false;
 }
+
+void MapWolfN3DCheckAndLoadCustomQuiz(
+	const Campaign *c, const CArray *playerDatas)
+{
+	// Special case for N3D: Epic of Gilgamesh quiz easter egg
+	// This code is pretty cursed
+	if (strcmp(c->Setting.Title, "Super 2D Noah's Ark") != 0)
+	{
+		return;
+	}
+	bool hasGilgameshName = false;
+	CA_FOREACH(const PlayerData, p, *playerDatas)
+	if (Stricmp(p->name, "Gilgamesh") == 0 ||
+		Stricmp(p->name, "Enkidu") == 0 ||
+		Stricmp(p->name, "Utnapishtim") == 0 ||
+		Stricmp(p->name, "Ziusudra") == 0 ||
+		Stricmp(p->name, "Atra-Hasis") == 0 ||
+		Stricmp(p->name, "Atrahasis") == 0)
+	{
+		hasGilgameshName = true;
+		break;
+	}
+	CA_FOREACH_END()
+	if (!hasGilgameshName)
+	{
+		return;
+	}
+
+	// Load new quizzes
+	char pathBuf[CDOGS_PATH_MAX];
+	GetDataFilePath(pathBuf, WOLF_DATA_DIR "N3Ddata.cdogscpn/language.enu");
+	char *languageBuf = ReadFileIntoBuf(pathBuf, "r");
+	CWolfMap map;
+	memset(&map, 0, sizeof map);
+	CWN3DLoadQuizzes(&map, languageBuf);
+	free(languageBuf);
+	
+	// Copy the effects from the "scroll" pickup
+	const PickupClass *scroll = StrPickupClass("scroll");
+	const PickupEffect *menuEffect = CArrayGet(&scroll->Effects, 0);
+	const CArray *correctEffects =
+		&((const PickupMenuItem *)CArrayGet(&menuEffect->u.Menu.Items, 0))
+			 ->Effects;
+	const CArray *wrongEffects =
+		&((const PickupMenuItem *)CArrayGet(&menuEffect->u.Menu.Items, 1))
+			 ->Effects;
+
+	// Replace the scroll pickups with the quizzes
+	for (int i = 0;; i++)
+	{
+		char buf[256];
+		sprintf(buf, "scroll+%d", i);
+		PickupClass *c = StrPickupClass(buf);
+		if (c == NULL)
+		{
+			break;
+		}
+		CA_FOREACH(PickupEffect, e, c->Effects)
+		PickupEffectTerminate(e);
+		CA_FOREACH_END()
+		CArrayClear(&c->Effects);
+
+		PickupEffect e;
+		memset(&e, 0, sizeof e);
+		e.Type = PICKUP_MENU;
+		const CWN3DQuiz *quiz = &map.quizzes[i];
+		CSTRDUP(e.u.Menu.Text, quiz->question);
+
+		CArrayInit(&e.u.Menu.Items, sizeof(PickupMenuItem));
+		for (int j = 0; j < quiz->nAnswers; j++)
+		{
+			PickupMenuItem m;
+			PickupMenuItemInit(&m);
+			CSTRDUP(m.Text, quiz->answers[j]);
+			const CArray *effects =
+				j == quiz->correctIdx ? correctEffects : wrongEffects;
+			CA_FOREACH(const PickupEffect, pe, *effects)
+			PickupEffect ec = PickupEffectCopy(pe);
+			CArrayPushBack(&m.Effects, &ec);
+			CA_FOREACH_END()
+			CArrayPushBack(&e.u.Menu.Items, &m);
+		}
+
+		CArrayPushBack(&c->Effects, &e);
+	}
+	
+	CWFree(&map);
+}

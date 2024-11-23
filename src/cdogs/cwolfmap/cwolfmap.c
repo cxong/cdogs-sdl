@@ -167,38 +167,7 @@ int CWLoad(CWolfMap *map, const char *path, const int spearMission)
 				CWLevelN3DLoadDescription(languageBuf, i);
 		}
 
-		for (int q = 1;; q++)
-		{
-			char *question = CWLevelN3DLoadQuizQuestion(languageBuf, q);
-			if (question == NULL)
-			{
-				break;
-			}
-			map->nQuizzes++;
-			map->quizzes =
-				realloc(map->quizzes, map->nQuizzes * sizeof(CWN3DQuiz));
-			CWN3DQuiz *quiz = &map->quizzes[map->nQuizzes - 1];
-			memset(quiz, 0, sizeof *quiz);
-			quiz->question = question;
-			for (char a = 'A';; a++)
-			{
-				bool correct = false;
-				char *answer =
-					CWLevelN3DLoadQuizAnswer(languageBuf, q, a, &correct);
-				if (answer == NULL)
-				{
-					break;
-				}
-				quiz->nAnswers++;
-				quiz->answers =
-					realloc(quiz->answers, quiz->nAnswers * sizeof(char *));
-				quiz->answers[quiz->nAnswers - 1] = answer;
-				if (correct)
-				{
-					quiz->correctIdx = quiz->nAnswers - 1;
-				}
-			}
-		}
+		CWN3DLoadQuizzes(map, languageBuf);
 		free(languageBuf);
 	}
 
@@ -419,6 +388,7 @@ void CWFree(CWolfMap *map)
 	{
 		CWN3DQuizFree(&map->quizzes[i]);
 	}
+	free(map->quizzes);
 	memset(map, 0, sizeof *map);
 }
 static void LevelFree(CWLevel *level);
@@ -539,6 +509,50 @@ const char *CWGetDescription(CWolfMap *map, const int spearMission)
 		break;
 	}
 	return NULL;
+}
+
+void CWN3DLoadQuizzes(CWolfMap *map, const char *languageBuf)
+{
+	// May be reloading quizzes
+	for (int i = 0; i < map->nQuizzes; i++)
+	{
+		CWN3DQuizFree(&map->quizzes[i]);
+	}
+	free(map->quizzes);
+	map->quizzes = NULL;
+	map->nQuizzes = 0;
+	for (int q = 1;; q++)
+	{
+		char *question = CWLevelN3DLoadQuizQuestion(languageBuf, q);
+		if (question == NULL)
+		{
+			break;
+		}
+		map->nQuizzes++;
+		map->quizzes =
+			realloc(map->quizzes, map->nQuizzes * sizeof(CWN3DQuiz));
+		CWN3DQuiz *quiz = &map->quizzes[map->nQuizzes - 1];
+		memset(quiz, 0, sizeof *quiz);
+		quiz->question = question;
+		for (char a = 'A';; a++)
+		{
+			bool correct = false;
+			char *answer =
+				CWLevelN3DLoadQuizAnswer(languageBuf, q, a, &correct);
+			if (answer == NULL)
+			{
+				break;
+			}
+			quiz->nAnswers++;
+			quiz->answers =
+				realloc(quiz->answers, quiz->nAnswers * sizeof(char *));
+			quiz->answers[quiz->nAnswers - 1] = answer;
+			if (correct)
+			{
+				quiz->correctIdx = quiz->nAnswers - 1;
+			}
+		}
+	}
 }
 
 int CWGetAudioSampleRate(const CWolfMap *map)

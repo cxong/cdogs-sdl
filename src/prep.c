@@ -66,6 +66,7 @@
 #include <cdogs/joystick.h>
 #include <cdogs/keyboard.h>
 #include <cdogs/log.h>
+#include <cdogs/map_wolf.h>
 #include <cdogs/music.h>
 #include <cdogs/net_client.h>
 #include <cdogs/net_server.h>
@@ -363,6 +364,7 @@ static void PlayerSelectionOnExit(GameLoopData *data)
 		{
 			gCampaign.MissionIndex = 0;
 		}
+		MapWolfN3DCheckAndLoadCustomQuiz(&gCampaign, &gPlayerDatas);
 	}
 	else
 	{

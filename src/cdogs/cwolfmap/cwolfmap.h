@@ -62,6 +62,8 @@ void CWFree(CWolfMap *map);
 
 const char *CWGetDescription(CWolfMap *map, const int spearMission);
 
+void CWN3DLoadQuizzes(CWolfMap *map, const char *languageBuf);
+
 int CWGetAudioSampleRate(const CWolfMap *map);
 
 typedef enum
