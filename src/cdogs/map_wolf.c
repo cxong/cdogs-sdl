@@ -891,17 +891,16 @@ static void LoadSounds(const SoundDevice *s, const CWolfMap *map)
 		while (name != NULL)
 		{
 			Mix_Chunk *data = LoadSoundData(map, i);
-			if (data == NULL)
+			if (data != NULL)
 			{
-				continue;
-			}
-			if (name[strlen(name) - 1] == '/')
-			{
-				AddRandomSound(s, name, data);
-			}
-			else
-			{
-				AddNormalSound(s, name, data);
+				if (name[strlen(name) - 1] == '/')
+				{
+					AddRandomSound(s, name, data);
+				}
+				else
+				{
+					AddNormalSound(s, name, data);
+				}
 			}
 			name = strtok(NULL, "|");
 		}
