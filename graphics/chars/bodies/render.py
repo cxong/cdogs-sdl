@@ -53,7 +53,7 @@ path = 'out/{}_{}_##'
 platform.rotation_euler[axis] = 0
 for i in range(0, 8):
     # rotate
-    platform.rotation_euler[axis] = radians(angle) * i
+    platform.rotation_euler[axis] = radians(angle) * (i + 1)
     # set filename so that up is first
     render.filepath = path.format(name, (i + 6) % 8)
     # render animation
