@@ -238,7 +238,7 @@ install(FILES
 if(UNIX AND NOT APPLE AND NOT BEOS AND NOT HAIKU)
 	install(FILES ${CMAKE_SOURCE_DIR}/build/linux/io.github.cxong.cdogs-sdl.desktop DESTINATION ${INSTALL_PREFIX}/share/applications)
 	install(FILES ${CMAKE_SOURCE_DIR}/build/linux/io.github.cxong.cdogs-sdl.appdata.xml DESTINATION ${INSTALL_PREFIX}/share/metainfo)
-	foreach(RES 16 22 32 48 128)
+	foreach(RES 16 22 32 48 64 128 256)
 		install(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-icon.${RES}.png
 			DESTINATION ${INSTALL_PREFIX}/share/icons/hicolor/${RES}x${RES}/apps
 			RENAME io.github.cxong.cdogs-sdl.png)
