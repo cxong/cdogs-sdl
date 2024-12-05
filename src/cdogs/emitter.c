@@ -29,12 +29,10 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "game_events.h"
 
-
 void EmitterInit(
 	Emitter *em, const ParticleClass *p, const struct vec2 offset,
-	const float minSpeed, const float maxSpeed,
-	const int minDZ, const int maxDZ,
-	const double minRotation, const double maxRotation,
+	const float minSpeed, const float maxSpeed, const int minDZ,
+	const int maxDZ, const double minRotation, const double maxRotation,
 	const int ticksPerEmit)
 {
 	memset(em, 0, sizeof *em);
@@ -62,8 +60,8 @@ void EmitterStart(Emitter *em, const AddParticle *data)
 		e.u.AddParticle.Class = em->p;
 	}
 	const float speed = RAND_FLOAT(em->minSpeed, em->maxSpeed);
-	const struct vec2 baseVel = svec2_rotate(
-		svec2(0, speed), RAND_FLOAT(0, MPI * 2));
+	const struct vec2 baseVel =
+		svec2_rotate(svec2(0, speed), RAND_FLOAT(0, MPI * 2));
 	e.u.AddParticle.Vel = svec2_add(data->Vel, baseVel);
 	if (isnan(data->Angle))
 	{
@@ -71,9 +69,10 @@ void EmitterStart(Emitter *em, const AddParticle *data)
 	}
 	e.u.AddParticle.DZ = RAND_FLOAT(em->minDZ, em->maxDZ);
 	e.u.AddParticle.Spin = RAND_DOUBLE(em->minRotation, em->maxRotation);
-	if (strlen(e.u.AddParticle.Text) == 0 && em->p->Type == PARTICLE_TEXT)
+	if (strlen(e.u.AddParticle.Text) == 0 &&
+		e.u.AddParticle.Class->Type == PARTICLE_TEXT)
 	{
-		strcpy(e.u.AddParticle.Text, em->p->u.Text.Value);
+		strcpy(e.u.AddParticle.Text, e.u.AddParticle.Class->u.Text.Value);
 	}
 	GameEventsEnqueue(&gGameEvents, e);
 }

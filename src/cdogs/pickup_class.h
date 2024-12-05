@@ -111,6 +111,8 @@ void PickupMenuItemInit(PickupMenuItem *m);
 PickupEffect PickupEffectCopy(const PickupEffect *e);
 void PickupClassInit(PickupClass *c);
 
+void PickupEffectTerminate(PickupEffect *e);
+
 void PickupClassesInit(
 	PickupClasses *classes, const char *filename, const AmmoClasses *ammo,
 	const WeaponClasses *guns);

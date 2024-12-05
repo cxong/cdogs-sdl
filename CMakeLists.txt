@@ -5,7 +5,7 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
 project(cdogs-sdl C)
 
 set(VERSION_MAJOR "2")
-set(VERSION_MINOR "1")
+set(VERSION_MINOR "2")
 set(VERSION_PATCH "0")
 set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
@@ -238,7 +238,7 @@ install(FILES
 if(UNIX AND NOT APPLE AND NOT BEOS AND NOT HAIKU)
 	install(FILES ${CMAKE_SOURCE_DIR}/build/linux/io.github.cxong.cdogs-sdl.desktop DESTINATION ${INSTALL_PREFIX}/share/applications)
 	install(FILES ${CMAKE_SOURCE_DIR}/build/linux/io.github.cxong.cdogs-sdl.appdata.xml DESTINATION ${INSTALL_PREFIX}/share/metainfo)
-	foreach(RES 16 22 32 48 128)
+	foreach(RES 16 22 32 48 64 128 256)
 		install(FILES ${CMAKE_SOURCE_DIR}/build/linux/cdogs-icon.${RES}.png
 			DESTINATION ${INSTALL_PREFIX}/share/icons/hicolor/${RES}x${RES}/apps
 			RENAME io.github.cxong.cdogs-sdl.png)

@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2017, 2019-2022 Cong Xu
+	Copyright (c) 2013-2017, 2019-2022, 2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -62,6 +62,7 @@
 
 #include "events.h"
 #include "joystick.h"
+#include "log.h"
 #include "sys_config.h"
 
 bool gTrue = true;
@@ -636,4 +637,48 @@ int Pulse256(const int t)
 		alphaUnscaled = 255 * 2 - alphaUnscaled;
 	}
 	return alphaUnscaled;
+}
+
+char *ReadFileIntoBuf(const char *path, const char *mode)
+{
+	char *buf = NULL;
+	FILE *f = fopen(path, mode);
+	if (f == NULL)
+	{
+		goto bail;
+	}
+
+	// Read into buffer
+	if (fseek(f, 0L, SEEK_END) != 0)
+	{
+		goto bail;
+	}
+	long len = ftell(f);
+	if (len == -1)
+	{
+		goto bail;
+	}
+	CCALLOC(buf, len + 1);
+	if (fseek(f, 0L, SEEK_SET) != 0)
+	{
+		goto bail;
+	}
+	if (fread(buf, 1, len, f) == 0)
+	{
+		goto bail;
+	}
+
+	goto end;
+
+bail:
+	CFREE(buf);
+	buf = NULL;
+
+end:
+	if (f != NULL && fclose(f) != 0)
+	{
+		LOG(LM_MAIN, LL_ERROR, "Cannot close file %s: %s", path,
+			strerror(errno));
+	}
+	return buf;
 }

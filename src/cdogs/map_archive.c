@@ -38,8 +38,6 @@
 #include "pickup.h"
 #include "player_template.h"
 
-static char *ReadFileIntoBuf(const char *path, const char *mode, long *len);
-
 static json_t *ReadArchiveJSON(const char *archive, const char *filename);
 int MapNewScanArchive(const char *filename, char **title, int *numMissions)
 {
@@ -198,8 +196,7 @@ static json_t *ReadArchiveJSON(const char *archive, const char *filename)
 	json_t *root = NULL;
 	char path[CDOGS_PATH_MAX];
 	sprintf(path, "%s/%s", archive, filename);
-	long len;
-	char *buf = ReadFileIntoBuf(path, "rb", &len);
+	char *buf = ReadFileIntoBuf(path, "rb");
 	if (buf == NULL)
 		goto bail;
 	const enum json_error e = json_parse_document(&root, buf);
@@ -231,50 +228,6 @@ static void LoadArchivePics(PicManager *pm, map_t cc, const char *archive)
 	sprintf(path, "%s/graphics_hd", archive);
 	PicManagerLoadDir(pm, path, NULL, pm->customPics, pm->customSprites, true);
 	CharSpriteClassesLoadDir(cc, archive);
-}
-
-static char *ReadFileIntoBuf(const char *path, const char *mode, long *len)
-{
-	char *buf = NULL;
-	FILE *f = fopen(path, mode);
-	if (f == NULL)
-	{
-		goto bail;
-	}
-
-	// Read into buffer
-	if (fseek(f, 0L, SEEK_END) != 0)
-	{
-		goto bail;
-	}
-	*len = ftell(f);
-	if (*len == -1)
-	{
-		goto bail;
-	}
-	CCALLOC(buf, *len + 1);
-	if (fseek(f, 0L, SEEK_SET) != 0)
-	{
-		goto bail;
-	}
-	if (fread(buf, 1, *len, f) == 0)
-	{
-		goto bail;
-	}
-
-	goto end;
-
-bail:
-	CFREE(buf);
-	buf = NULL;
-
-end:
-	if (f != NULL && fclose(f) != 0)
-	{
-		LOG(LM_MAP, LL_ERROR, "Cannot close file %s: %s", path,
-			strerror(errno));
-	}
-	return buf;
 }
 
 static json_t *SaveMissions(CArray *a);

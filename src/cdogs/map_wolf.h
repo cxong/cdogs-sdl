@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2020-2021 Cong Xu
+	Copyright (c) 2020-2021, 2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -40,3 +40,6 @@ int MapWolfLoad(
 	const char *filename, const int spearMission, CampaignSetting *c);
 
 void MapWolfLoadCampaignsFromSystem(CampaignList *list);
+
+void MapWolfN3DCheckAndLoadCustomQuiz(
+	const char *title, const CArray *playerDatas);

@@ -200,7 +200,6 @@ PickupEffect PickupEffectCopy(const PickupEffect *e)
 	}
 	return out;
 }
-static void PickupEffectTerminate(PickupEffect *e);
 static void PickupMenuItemTerminate(PickupMenuItem *m)
 {
 	CFREE(m->Text);
@@ -208,7 +207,7 @@ static void PickupMenuItemTerminate(PickupMenuItem *m)
 	PickupEffectTerminate(e);
 	CA_FOREACH_END()
 }
-static void PickupEffectTerminate(PickupEffect *e)
+void PickupEffectTerminate(PickupEffect *e)
 {
 	switch (e->Type)
 	{

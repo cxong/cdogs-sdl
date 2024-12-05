@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2017, 2019-2023 Cong Xu
+	Copyright (c) 2013-2017, 2019-2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -249,3 +249,5 @@ typedef enum
 } PlacementAccessFlags;
 
 int Pulse256(const int t);
+
+char *ReadFileIntoBuf(const char *path, const char *mode);

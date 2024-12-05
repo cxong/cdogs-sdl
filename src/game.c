@@ -352,16 +352,7 @@ static void RunGameInput(GameLoopData *data)
 	// or the last frame
 	data->SkipNextFrame = data->SuperhotMode && !lastCmdAll;
 
-	// Don't show map if pause menu is shown
-	if (PauseMenuIsShown(&rData->pm))
-	{
-		rData->isMap = false;
-		// Clear all user inputs if we're using the pause menu
-		memset(rData->cmds, 0, sizeof rData->cmds);
-		memset(rData->lastCmds, 0, sizeof rData->lastCmds);
-		KeyLockKeys(&gEventHandlers.keyboard);
-		JoyLock(&gEventHandlers.joysticks);
-	}
+	const bool wasPaused = PauseMenuIsShown(&rData->pm);
 
 	// Update and check if we want to quit
 	if (PauseMenuUpdate(&rData->pm, rData->cmds, rData->lastCmds))
@@ -385,6 +376,23 @@ static void RunGameInput(GameLoopData *data)
 				&gSoundDevice,
 				StrSound(rData->isMap ? "map_open" : "map_close"));
 		}
+		if (wasPaused)
+		{
+			// Clear all user inputs if we're using the pause menu
+			memset(rData->cmds, 0, sizeof rData->cmds);
+			memset(rData->lastCmds, 0, sizeof rData->lastCmds);
+			KeyLockKeys(&gEventHandlers.keyboard);
+			JoyLock(&gEventHandlers.joysticks);
+		}
+	}
+
+	if (!wasPaused && PauseMenuIsShown(&rData->pm))
+	{
+		// Don't show map if pause menu is shown
+		rData->isMap = false;
+		// Clear all user inputs if we're using the pause menu
+		memset(rData->cmds, 0, sizeof rData->cmds);
+		memset(rData->lastCmds, 0, sizeof rData->lastCmds);
 	}
 
 	CameraInput(&rData->Camera, rData->cmds[0], rData->lastCmds[0]);
