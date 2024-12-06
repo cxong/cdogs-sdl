@@ -154,6 +154,7 @@ typedef struct Actor
 	int slideLock;
 	// For damage text
 	int accumulatedDamage;
+	int damageCooldownTicks;
 	// Facial expression when melee or taking damage
 	int grimaceCounter;
 

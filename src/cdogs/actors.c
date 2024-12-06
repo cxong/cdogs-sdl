@@ -142,6 +142,17 @@ void UpdateActorState(TActor *actor, int ticks)
 		}
 		actor->petrified = MAX(0, actor->petrified - ticks);
 		actor->confused = MAX(0, actor->confused - ticks);
+
+		// Reset accumulated damage if FPS_FRAMELIMIT passed since taking damage
+		actor->damageCooldownTicks += ticks;
+		if (actor->accumulatedDamage)
+		{
+			if (actor->damageCooldownTicks >= FPS_FRAMELIMIT)
+			{
+				actor->accumulatedDamage = 0;
+				actor->damageCooldownTicks = 0;
+			}
+		}
 	}
 
 	actor->slideLock = MAX(0, actor->slideLock - ticks);
@@ -2206,6 +2217,7 @@ void ActorHit(const NThingDamage d)
 		}
 		CA_FOREACH_END()
 		a->accumulatedDamage = damage;
+		a->damageCooldownTicks = 0;
 
 		GameEvent s = GameEventNew(GAME_EVENT_ADD_PARTICLE);
 		s.u.AddParticle.Class =
