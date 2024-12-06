@@ -100,7 +100,6 @@
 #define GRIMACE_MELEE_TICKS 19
 #define DAMAGE_TEXT_DISTANCE_RESET_THRESHOLD (ACTOR_W / 2)
 #define FOOTPRINT_MAX 8
-#define GAME_TICKS_PER_SECOND 60 // Assuming 60 ticks per second for accumulatedDamage reset
 
 CArray gPlayerIds;
 
@@ -144,11 +143,11 @@ void UpdateActorState(TActor *actor, int ticks)
 		actor->petrified = MAX(0, actor->petrified - ticks);
 		actor->confused = MAX(0, actor->confused - ticks);
 
-		// Reset accumulated damage if 1 second of ticks passed
+		// Reset accumulated damage if FPS_FRAMELIMIT passed since taking damage
 		actor->damageCooldownTicks += ticks;
 		if (actor->accumulatedDamage)
 		{
-			if (actor->damageCooldownTicks >= GAME_TICKS_PER_SECOND)
+			if (actor->damageCooldownTicks >= FPS_FRAMELIMIT)
 			{
 				actor->accumulatedDamage = 0;
 				actor->damageCooldownTicks = 0;
