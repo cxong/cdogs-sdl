@@ -1,0 +1,22 @@
+---
+layout: post
+title: "C-Dogs 2.2.0 Released!"
+date: 2024-12-07
+categories: release
+---
+
+Let's close off 2024 with a minor release of C-Dogs SDL!
+
+This one was unplanned but has quite a number of small, mostly UX-related fixes and improvements. Two highlights:
+
+1. New icons! Commissioned from pixel artist [misnina.com](https://misnina.com), this gives a fresh new look to the program bundle.
+
+   ![New C-Dogs SDL program icon, WarBaby](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/favicon-96x96.png) ![New C-Dogs SDL program icon, Jones](https://github.com/cxong/cdogs-sdl/blob/master/build/linux/cdogs-icon.128.png?raw=true) ![New C-Dogs SDL program icon, Jones](https://github.com/cxong/cdogs-sdl/blob/master/build/linux/cdogs-icon.22.png?raw=true)
+
+2. Most changes for this release came from outside contributors!
+
+C-Dogs SDL wouldn't be the same without these contributions. Thank you and enjoy the release!
+
+Download free from itch.io: <https://congusbongus.itch.io/cdogs-sdl/purchase>
+
+Release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/2.2.0>

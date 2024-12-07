@@ -5,7 +5,14 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   {% feed_meta %}
+
+  <!-- favicons - https://realfavicongenerator.net -->
+  <link rel="icon" type="image/png" href="{{ site.baseurl }}/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="{{ site.baseurl }}/favicon.svg" />
   <link rel="shortcut icon" href="{{ site.baseurl }}/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ site.baseurl }}/apple-touch-icon.png" />
+  <link rel="manifest" href="{{ site.baseurl }}/site.webmanifest" />
+
   <link rel="stylesheet" href="{{ site.baseurl }}/css/stylesheet.css" media="screen"/>
   <link rel="stylesheet" href="{{ site.baseurl }}/css/pygment_trac.css"/>
   <link
@@ -22,7 +29,6 @@
   <title>{{ page.title }}</title>
   <meta name="description" content="Action/Arcade Game"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-
 </head>
 
 <body>
