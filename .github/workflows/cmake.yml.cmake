@@ -7,8 +7,6 @@ on:
     - '*'
   pull_request:
     branches: [ master ]
-  release:
-    types: [published]
 
 env:
   VERSION: @VERSION@
@@ -136,8 +134,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       if: >
         startsWith(github.ref, 'refs/tags/') &&
-        (!startsWith(matrix.os, 'ubuntu') || (matrix.cc == 'gcc' && matrix.cc_version == 'latest')) &&
-        github.event.release.published
+        (!startsWith(matrix.os, 'ubuntu') || (matrix.cc == 'gcc' && matrix.cc_version == 'latest'))
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
@@ -149,8 +146,7 @@ jobs:
         startsWith(github.ref, 'refs/tags/') &&
         startsWith(matrix.os, 'ubuntu') &&
         matrix.cc == 'gcc' &&
-        matrix.cc_version == 'latest' &&
-        github.event.release.published
+        matrix.cc_version == 'latest'
       env:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       run: |
@@ -163,8 +159,7 @@ jobs:
     - name: Publish to itch.io (macOS)
       if: >
         startsWith(github.ref, 'refs/tags/') &&
-        matrix.os == 'macos-latest' &&
-        github.event.release.published
+        matrix.os == 'macos-latest'
       env:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       run: |
@@ -177,8 +172,7 @@ jobs:
     - name: Publish to itch.io (Windows)
       if: >
         startsWith(github.ref, 'refs/tags/') &&
-        matrix.os == 'windows-latest' &&
-        github.event.release.published
+        matrix.os == 'windows-latest'
       env:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       run: |
