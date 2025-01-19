@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2014, 2016-2021 Cong Xu
+	Copyright (c) 2013-2014, 2016-2021, 2025 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -259,6 +259,84 @@ static Rect2i MenuGetSubmenuBounds(const MenuSystem *ms, const int idx)
 	return Rect2iNew(pos, SubmenuGetSize(ms, menu, idx));
 }
 
+static void MoveIndexToNextEnabledSubmenu(menu_t *menu, const bool isDown)
+{
+	if (menu->u.normal.index >= (int)menu->u.normal.subMenus.size)
+	{
+		menu->u.normal.index = (int)menu->u.normal.subMenus.size - 1;
+	}
+	const int firstIndex = menu->u.normal.index;
+	bool isFirst = true;
+	// Move the selection to the next non-disabled submenu
+	for (;;)
+	{
+		const menu_t *currentSubmenu =
+		CArrayGet(&menu->u.normal.subMenus, menu->u.normal.index);
+		if (!currentSubmenu->isDisabled)
+		{
+			break;
+		}
+		if (menu->u.normal.index == firstIndex && !isFirst)
+		{
+			break;
+		}
+		isFirst = false;
+		if (isDown)
+		{
+			menu->u.normal.index++;
+			if (menu->u.normal.index == (int)menu->u.normal.subMenus.size)
+			{
+				menu->u.normal.index = 0;
+			}
+		}
+		else
+		{
+			menu->u.normal.index--;
+			if (menu->u.normal.index == -1)
+			{
+				menu->u.normal.index = (int)menu->u.normal.subMenus.size - 1;
+			}
+		}
+	}
+}
+// Constrain the menu scroll so that the selected item is always in view
+// and we don't scroll the menu off the screen
+static void MenuClampScroll(menu_t *menu)
+{
+	const int nMenuItems = MenuGetNumMenuItemsShown(menu);
+	menu->u.normal.scroll = CLAMP(
+		menu->u.normal.scroll, MAX(0, menu->u.normal.index - nMenuItems + 1),
+		MIN((int)menu->u.normal.subMenus.size - nMenuItems,
+			menu->u.normal.index));
+	if (menu->u.normal.index < menu->u.normal.scroll)
+	{
+		menu->u.normal.scroll = menu->u.normal.index;
+	}
+}
+static void MenuChangeIndex(menu_t *menu, const int d)
+{
+	if (d < 0)
+	{
+		menu->u.normal.index--;
+		if (menu->u.normal.index == -1)
+		{
+			menu->u.normal.index = (int)menu->u.normal.subMenus.size - 1;
+		}
+		MoveIndexToNextEnabledSubmenu(menu, false);
+		MenuPlaySound(MENU_SOUND_SWITCH);
+	}
+	else if (d > 0)
+	{
+		menu->u.normal.index++;
+		if (menu->u.normal.index == (int)menu->u.normal.subMenus.size)
+		{
+			menu->u.normal.index = 0;
+		}
+		MoveIndexToNextEnabledSubmenu(menu, true);
+		MenuPlaySound(MENU_SOUND_SWITCH);
+	}
+}
+
 static GameLoopResult DefaultMenuUpdate(GameLoopData *data, LoopRunner *l);
 static void DefaultMenuDraw(GameLoopData *data);
 GameLoopData *MenuLoop(MenuSystem *menu)
@@ -277,35 +355,51 @@ static void DefaultMenuDraw(GameLoopData *data)
 }
 void MenuUpdateMouse(MenuSystem *ms)
 {
-	if (!MouseHasMoved(&ms->handlers->mouse))
-	{
-		return;
-	}
 	menu_t *menu = ms->current;
 	if (menu == NULL || !MenuTypeHasSubMenus(menu->type))
 	{
 		return;
 	}
-	// Get mouse position and change menu
-	menu->mouseHover = false;
-	for (int i = 0; i < (int)menu->u.normal.subMenus.size; i++)
+	if (MouseHasMoved(&ms->handlers->mouse))
 	{
-		const Rect2i bounds = MenuGetSubmenuBounds(ms, i);
-		if (!Rect2iIsInside(bounds, ms->handlers->mouse.currentPos))
+		// Get mouse position and change menu
+		menu->mouseHover = false;
+		for (int i = 0; i < (int)menu->u.normal.subMenus.size; i++)
 		{
-			continue;
-		}
-		menu->mouseHover = true;
-		if (menu->u.normal.index != i)
-		{
-			const menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
-			if (!subMenu->isDisabled)
+			const Rect2i bounds = MenuGetSubmenuBounds(ms, i);
+			if (!Rect2iIsInside(bounds, ms->handlers->mouse.currentPos))
 			{
-				menu->u.normal.index = i;
-				MenuPlaySound(MENU_SOUND_SWITCH);
+				continue;
 			}
+			menu->mouseHover = true;
+			if (menu->u.normal.index != i)
+			{
+				const menu_t *subMenu = CArrayGet(&menu->u.normal.subMenus, i);
+				if (!subMenu->isDisabled)
+				{
+					menu->u.normal.index = i;
+					MenuPlaySound(MENU_SOUND_SWITCH);
+				}
+			}
+			break;
 		}
-		break;
+	}
+	// Scroll menu with mouse wheel
+	const int dWheel = MouseWheel(&ms->handlers->mouse).y;
+	if (dWheel != 0)
+	{
+		const int dd = dWheel > 0 ? 1 : -1;
+		for (int i = 0; i != dWheel; i += dd)
+		{
+			const int origScroll = menu->u.normal.scroll;
+			menu->u.normal.scroll += dd;
+			MenuClampScroll(menu);
+			if (menu->u.normal.scroll == origScroll)
+			{
+				break;
+			}
+			MenuChangeIndex(menu, dd);
+		}
 	}
 }
 GameLoopResult MenuUpdate(MenuSystem *ms)
@@ -361,47 +455,6 @@ void MenuDraw(const MenuSystem *ms)
 void MenuReset(MenuSystem *menu)
 {
 	menu->current = menu->root;
-}
-
-static void MoveIndexToNextEnabledSubmenu(menu_t *menu, const bool isDown)
-{
-	if (menu->u.normal.index >= (int)menu->u.normal.subMenus.size)
-	{
-		menu->u.normal.index = (int)menu->u.normal.subMenus.size - 1;
-	}
-	const int firstIndex = menu->u.normal.index;
-	bool isFirst = true;
-	// Move the selection to the next non-disabled submenu
-	for (;;)
-	{
-		const menu_t *currentSubmenu =
-			CArrayGet(&menu->u.normal.subMenus, menu->u.normal.index);
-		if (!currentSubmenu->isDisabled)
-		{
-			break;
-		}
-		if (menu->u.normal.index == firstIndex && !isFirst)
-		{
-			break;
-		}
-		isFirst = false;
-		if (isDown)
-		{
-			menu->u.normal.index++;
-			if (menu->u.normal.index == (int)menu->u.normal.subMenus.size)
-			{
-				menu->u.normal.index = 0;
-			}
-		}
-		else
-		{
-			menu->u.normal.index--;
-			if (menu->u.normal.index == -1)
-			{
-				menu->u.normal.index = (int)menu->u.normal.subMenus.size - 1;
-			}
-		}
-	}
 }
 
 void MenuDisableSubmenu(menu_t *menu, int idx)
@@ -967,7 +1020,7 @@ static int MenuOptionGetIntValue(const menu_t *menu)
 // returns menu to change to, NULL if no change
 menu_t *MenuProcessEscCmd(menu_t *menu);
 menu_t *MenuProcessButtonCmd(MenuSystem *ms, menu_t *menu, int cmd);
-void MenuChangeIndex(menu_t *menu, int cmd);
+static void MenuChangeIndexCmd(menu_t *menu, const int cmd);
 
 void MenuProcessCmd(MenuSystem *ms, int cmd)
 {
@@ -1005,7 +1058,7 @@ void MenuProcessCmd(MenuSystem *ms, int cmd)
 			ms->current = menuToChange;
 			goto bail;
 		}
-		MenuChangeIndex(menu, cmd);
+		MenuChangeIndexCmd(menu, cmd);
 	}
 
 bail:
@@ -1186,7 +1239,7 @@ static void ChangeKey(
 	MenuPlaySound(MENU_SOUND_ENTER);
 }
 
-void MenuChangeIndex(menu_t *menu, int cmd)
+static void MenuChangeIndexCmd(menu_t *menu, const int cmd)
 {
 	// Ignore if no submenus
 	if (menu->u.normal.subMenus.size == 0)
@@ -1196,33 +1249,13 @@ void MenuChangeIndex(menu_t *menu, int cmd)
 
 	if (Up(cmd))
 	{
-		menu->u.normal.index--;
-		if (menu->u.normal.index == -1)
-		{
-			menu->u.normal.index = (int)menu->u.normal.subMenus.size - 1;
-		}
-		MoveIndexToNextEnabledSubmenu(menu, false);
-		MenuPlaySound(MENU_SOUND_SWITCH);
+		MenuChangeIndex(menu, -1);
 	}
 	else if (Down(cmd))
 	{
-		menu->u.normal.index++;
-		if (menu->u.normal.index == (int)menu->u.normal.subMenus.size)
-		{
-			menu->u.normal.index = 0;
-		}
-		MoveIndexToNextEnabledSubmenu(menu, true);
-		MenuPlaySound(MENU_SOUND_SWITCH);
+		MenuChangeIndex(menu, 1);
 	}
-	const int nMenuItems = MenuGetNumMenuItemsShown(menu);
-	menu->u.normal.scroll = CLAMP(
-		menu->u.normal.scroll, MAX(0, menu->u.normal.index - nMenuItems + 1),
-		MIN((int)menu->u.normal.subMenus.size - 1,
-			menu->u.normal.index + nMenuItems - 1));
-	if (menu->u.normal.index < menu->u.normal.scroll)
-	{
-		menu->u.normal.scroll = menu->u.normal.index;
-	}
+	MenuClampScroll(menu);
 }
 
 void MenuActivate(MenuSystem *ms, menu_t *menu, int cmd)
