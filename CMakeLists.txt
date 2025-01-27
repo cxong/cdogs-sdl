@@ -117,6 +117,8 @@ else()
 		endif()
     else()
         # Probably GCC...
+		# Allow larger inline functions, required by tinydir
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --param max-inline-insns-single=1000")
         add_definitions(-freg-struct-return -std=gnu99)
 		if(NOT APPLE AND NOT BEOS AND NOT HAIKU)
 			add_definitions(-Wshadow)
