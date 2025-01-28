@@ -179,3 +179,16 @@ if(APPLE)
 		BUILD_WITH_INSTALL_RPATH 1
 		INSTALL_RPATH "@loader_path/../Frameworks;/Library/Frameworks")
 endif()
+
+add_executable(yajl_test yajl_test.c)
+target_link_libraries(yajl_test
+	cbehave
+	cdogs
+	SDL2::SDL2)
+add_test(NAME yajl_test COMMAND yajl_test)
+if(APPLE)
+	set_target_properties(yajl_test PROPERTIES
+		MACOSX_RPATH 1
+		BUILD_WITH_INSTALL_RPATH 1
+		INSTALL_RPATH "@loader_path/../Frameworks;/Library/Frameworks")
+endif()

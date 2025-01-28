@@ -19,7 +19,7 @@
  * Interface to YAJL's JSON generation facilities.
  */
 
-#include <yajl/yajl_common.h>
+#include <yajl/api/yajl_common.h>
 
 #ifndef __YAJL_GEN_H__
 #define __YAJL_GEN_H__

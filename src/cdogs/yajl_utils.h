@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2013-2017 Cong Xu
+ Copyright (c) 2013-2017, 2025 Cong Xu
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -28,16 +28,15 @@
 #include <stdbool.h>
 
 #include "vector.h"
+#include "yajl/api/yajl_gen.h"
 #include "yajl/api/yajl_tree.h"
 
 
 yajl_val YAJLReadFile(const char *filename);
-/*
-void AddIntPair(json_t *parent, const char *name, int number);
-void AddBoolPair(json_t *parent, const char *name, int value);
-void AddStringPair(json_t *parent, const char *name, const char *s);
-void AddColorPair(json_t *parent, const char *name, const color_t c);
-*/
+yajl_gen_status YAJLAddIntPair(yajl_gen g, const char *name, const int number);
+yajl_gen_status YAJLAddBoolPair(yajl_gen g, const char *name, const bool value);
+yajl_gen_status YAJLAddStringPair(yajl_gen g, const char *name, const char *s);
+yajl_gen_status YAJLAddColorPair(yajl_gen g, const char *name, const color_t c);
 void YAJLBool(bool *value, yajl_val node, const char *name);
 void YAJLInt(int *value, yajl_val node, const char *name);
 void YAJLDouble(double *value, yajl_val node, const char *name);
@@ -54,8 +53,8 @@ void LoadSoundFromNode(Mix_Chunk **value, json_t *node, const char *name);
 void LoadPic(const Pic **value, json_t *node, const char *name);
 // Load an array of const WeaponClass *
 void LoadBulletGuns(CArray *guns, json_t *node, const char *name);
-void LoadColor(color_t *c, json_t *node, const char *name);
-*/
+ */
+void YAJLLoadColor(color_t *c, yajl_val node, const char *name);
 // Try to load a JSON node using a slash-delimited "path"
 // If at any point the path fails, NULL is returned.
 yajl_val YAJLFindNode(yajl_val node, const char *path);

@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2013-2017 Cong Xu
+ Copyright (c) 2013-2017, 2025 Cong Xu
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -74,42 +74,40 @@ bail:
 	return buf;
 }
 
-/*
-#include "config.h"
-#include "weapon.h"
-#include "pic_manager.h"
-#include "sys_config.h"
+#define YAJL_CHECK(func) \
+{ \
+	yajl_gen_status _status = func;\
+	if (_status != yajl_gen_status_ok) \
+	{\
+		return _status;\
+	}\
+}
 
-
-void AddIntPair(json_t *parent, const char *name, int number)
+yajl_gen_status YAJLAddIntPair(yajl_gen g, const char *name, const int number)
 {
 	char buf[32];
 	sprintf(buf, "%d", number);
-	json_insert_pair_into_object(parent, name, json_new_number(buf));
+	return YAJLAddStringPair(g, name, buf);
 }
-void AddBoolPair(json_t *parent, const char *name, int value)
+yajl_gen_status YAJLAddBoolPair(yajl_gen g, const char *name, const bool value)
 {
-	json_insert_pair_into_object(parent, name, json_new_bool(value));
+	YAJL_CHECK(yajl_gen_string(g, (const unsigned char *)name, strlen(name)));
+	YAJL_CHECK(yajl_gen_bool(g, value));
+	return yajl_gen_status_ok;
 }
-void AddStringPair(json_t *parent, const char *name, const char *s)
+yajl_gen_status YAJLAddStringPair(yajl_gen g, const char *name, const char *s)
 {
-	if (!s)
-	{
-		json_insert_pair_into_object(parent, name, json_new_string(""));
-	}
-	else
-	{
-		json_insert_pair_into_object(
-			parent, name, json_new_string(json_escape(s)));
-	}
+	YAJL_CHECK(yajl_gen_string(g, (const unsigned char *)name, strlen(name)));
+	YAJL_CHECK(yajl_gen_string(g, (const unsigned char *)(s ? s : ""), s ? strlen(s) : 0));
+	return yajl_gen_status_ok;
 }
-void AddColorPair(json_t *parent, const char *name, const color_t c)
+yajl_gen_status YAJLAddColorPair(yajl_gen g, const char *name, const color_t c)
 {
 	char buf[COLOR_STR_BUF];
 	ColorStr(buf, c);
-	AddStringPair(parent, name, buf);
+	return YAJLAddStringPair(g, name, buf);
 }
-*/
+
 bool YAJLTryLoadValue(yajl_val *node, const char *name)
 {
 	if (*node == NULL || !YAJL_IS_OBJECT(*node))
@@ -204,19 +202,16 @@ void LoadBulletGuns(CArray *guns, json_t *node, const char *name)
 		CArrayPushBack(guns, &g);
 	}
 }
-void LoadColor(color_t *c, json_t *node, const char *name)
+ */
+void YAJLLoadColor(color_t *c, yajl_val node, const char *name)
 {
-	if (json_find_first_label(node, name) == NULL)
+	if (!YAJLTryLoadValue(&node, name) || !YAJL_IS_STRING(node))
 	{
 		return;
 	}
-	if (!TryLoadValue(&node, name))
-	{
-		return;
-	}
-	*c = StrColor(node->text);
+	char *in = YAJL_GET_STRING(YAJLFindNode(node, name));
+	*c = StrColor(in);
 }
-*/
 yajl_val YAJLFindNode(yajl_val node, const char *path)
 {
 	// max 256 levels

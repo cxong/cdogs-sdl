@@ -28,6 +28,7 @@
 #include "tile_class.h"
 
 #include "door.h"
+#include "json_utils.h"
 #include "log.h"
 #include "pics.h"
 #include "sys_config.h"
