@@ -23,10 +23,9 @@ jobs:
     strategy:
       matrix:
         include:
-          # Temporarily disable (compile errors under 13.3.0)
-          #- os: ubuntu-latest
-          #  cc: gcc
-          #  cc_version: latest
+          - os: ubuntu-latest
+            cc: gcc
+            cc_version: latest
           - os: ubuntu-latest
             cc: gcc
             cc_version: 12
