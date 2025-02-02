@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2014, 2017, 2021-2022, 2024 Cong Xu
+	Copyright (c) 2013-2014, 2017, 2021-2022, 2024-2025 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -123,7 +123,7 @@ static void MenuCreateStart(MenuSystem *ms, const CampaignSave *save)
 		CArrayTerminate(&levels);
 	}
 	levelSelect->isDisabled =
-		save == NULL || save->MissionsCompleted.size == 0;
+		save == NULL || save->MissionsCompleted.size == 0 || gCampaign.Setting.Missions.size == 1;
 	MenuAddSubmenu(ms->root, levelSelect);
 
 	MenuAddSubmenu(
