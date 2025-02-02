@@ -438,17 +438,9 @@ static GameLoopResult DogfightScoresUpdate(GameLoopData *data, LoopRunner *l)
 	PlayerList *pl = data->Data;
 
 	const GameLoopResult result = MenuUpdate(&pl->ms);
-	if (result == UPDATE_RESULT_OK)
+	if (result == UPDATE_RESULT_OK && gCampaign.IsComplete)
 	{
-		if (gCampaign.IsComplete)
-		{
-			LoopRunnerChange(l, ScreenDogfightFinalScores());
-		}
-		else
-		{
-			LoopRunnerChange(
-				l, HighScoresScreen(&gCampaign, &gGraphicsDevice));
-		}
+		LoopRunnerChange(l, ScreenDogfightFinalScores());
 	}
 	return result;
 }

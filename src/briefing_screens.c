@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2013-2023 Cong Xu
+	Copyright (c) 2013-2023, 2025 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,6 @@
 
 #include "animated_counter.h"
 #include "autosave.h"
-#include "hiscores.h"
 #include "loading_screens.h"
 #include "menu_utils.h"
 #include "password.h"
@@ -144,7 +143,14 @@ static void CampaignIntroDraw(GameLoopData *data)
 	// Display title + author
 	char *buf;
 	CMALLOC(buf, strlen(sData->c->Title) + strlen(sData->c->Author) + 16);
-	sprintf(buf, "%s by %s", sData->c->Title, sData->c->Author);
+	if (strlen(sData->c->Author))
+	{
+		sprintf(buf, "%s by %s", sData->c->Title, sData->c->Author);
+	}
+	else
+	{
+		strcpy(buf, sData->c->Title);
+	}
 	FontOpts opts = FontOptsNew();
 	opts.HAlign = ALIGN_CENTER;
 	opts.Area = gGraphicsDevice.cachedConfig.Res;
@@ -493,7 +499,7 @@ static void MissionSummaryOnEnter(GameLoopData *data)
 		p->Totals.TimeTicks += mData->m->time;
 		CA_FOREACH_END()
 	}
-	
+
 	if (mData->completed && CanLevelSelect(mData->c->Entry.Mode))
 	{
 		AutosaveAdd(
@@ -633,11 +639,6 @@ static GameLoopResult MissionSummaryUpdate(GameLoopData *data, LoopRunner *l)
 			// Check if we want to return to menu or replay mission
 			gCampaign.IsQuit = mData->ms.current->u.returnCode == 1;
 			LoopRunnerPop(l);
-		}
-		else
-		{
-			LoopRunnerChange(
-				l, HighScoresScreen(&gCampaign, &gGraphicsDevice));
 		}
 	}
 	return result;
@@ -937,8 +938,9 @@ static void DrawObjectiveInfo(const Objective *o, const struct vec2i pos)
 		struct vec2i picOffset;
 		const Pic *p = MapObjectGetPic(*mo, &picOffset);
 		PicRender(
-			p, gGraphicsDevice.gameWindow.renderer, svec2i_add(drawPos, picOffset),
-			colorWhite, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
+			p, gGraphicsDevice.gameWindow.renderer,
+			svec2i_add(drawPos, picOffset), colorWhite, 0, svec2_one(),
+			SDL_FLIP_NONE, Rect2iZero());
 		drawPos = svec2i_add(drawPos, svec2i(4, 2));
 		CA_FOREACH_END()
 	}

@@ -69,7 +69,6 @@
 #include <cdogs/pickup.h>
 
 #include "briefing_screens.h"
-#include "hiscores.h"
 #include "loading_screens.h"
 #include "prep.h"
 #include "screens_end.h"
@@ -568,10 +567,6 @@ static void NextLoop(RunGameData *rData, LoopRunner *l)
 				rData->co, rData->m, survivedAndCompletedObjectives);
 			break;
 		}
-	}
-	else
-	{
-		nextScreen = HighScoresScreen(rData->co, &gGraphicsDevice);
 	}
 	LoopRunnerPush(l, ScreenLoading("Debriefing...", true, nextScreen, true));
 	if (!HasRounds(rData->co->Entry.Mode) && !rData->co->IsComplete)
