@@ -1,16 +1,16 @@
 /*
  Copyright (c) 2013-2017, 2025 Cong Xu
  All rights reserved.
- 
+
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
- 
+
  Redistributions of source code must retain the above copyright notice, this
  list of conditions and the following disclaimer.
  Redistributions in binary form must reproduce the above copyright notice,
  this list of conditions and the following disclaimer in the documentation
  and/or other materials provided with the distribution.
- 
+
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -28,7 +28,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 static char *ReadFile(const char *filename);
 yajl_val YAJLReadFile(const char *filename)
 {
@@ -43,7 +42,8 @@ yajl_val YAJLReadFile(const char *filename)
 	node = yajl_tree_parse(buf, errbuf, sizeof errbuf);
 	if (node == NULL)
 	{
-		fprintf(stderr, "Error parsing font JSON '%s': %s\n", filename, errbuf);
+		fprintf(
+			stderr, "Error parsing font JSON '%s': %s\n", filename, errbuf);
 		goto bail;
 	}
 
@@ -56,13 +56,18 @@ static char *ReadFile(const char *filename)
 {
 	FILE *f = fopen(filename, "r");
 	char *buf = NULL;
-	if (f == NULL) goto bail;
-	if (fseek(f, 0L, SEEK_END) != 0) goto bail;
+	if (f == NULL)
+		goto bail;
+	if (fseek(f, 0L, SEEK_END) != 0)
+		goto bail;
 	const long bufsize = ftell(f);
-	if (bufsize == -1) goto bail;
-	if (fseek(f, 0L, SEEK_SET) != 0) goto bail;
+	if (bufsize == -1)
+		goto bail;
+	if (fseek(f, 0L, SEEK_SET) != 0)
+		goto bail;
 	buf = malloc(bufsize + 1);
-	if (buf == NULL) goto bail;
+	if (buf == NULL)
+		goto bail;
 	const size_t readlen = fread(buf, 1, bufsize, f);
 	buf[readlen] = '\0';
 
@@ -74,20 +79,20 @@ bail:
 	return buf;
 }
 
-#define YAJL_CHECK(func) \
-{ \
-	yajl_gen_status _status = func;\
-	if (_status != yajl_gen_status_ok) \
-	{\
-		return _status;\
-	}\
-}
+#define YAJL_CHECK(func)                                                      \
+	{                                                                         \
+		yajl_gen_status _status = func;                                       \
+		if (_status != yajl_gen_status_ok)                                    \
+		{                                                                     \
+			return _status;                                                   \
+		}                                                                     \
+	}
 
 yajl_gen_status YAJLAddIntPair(yajl_gen g, const char *name, const int number)
 {
-	char buf[32];
-	sprintf(buf, "%d", number);
-	return YAJLAddStringPair(g, name, buf);
+	YAJL_CHECK(yajl_gen_string(g, (const unsigned char *)name, strlen(name)));
+	YAJL_CHECK(yajl_gen_integer(g, number));
+	return yajl_gen_status_ok;
 }
 yajl_gen_status YAJLAddBoolPair(yajl_gen g, const char *name, const bool value)
 {
@@ -98,7 +103,8 @@ yajl_gen_status YAJLAddBoolPair(yajl_gen g, const char *name, const bool value)
 yajl_gen_status YAJLAddStringPair(yajl_gen g, const char *name, const char *s)
 {
 	YAJL_CHECK(yajl_gen_string(g, (const unsigned char *)name, strlen(name)));
-	YAJL_CHECK(yajl_gen_string(g, (const unsigned char *)(s ? s : ""), s ? strlen(s) : 0));
+	YAJL_CHECK(yajl_gen_string(
+		g, (const unsigned char *)(s ? s : ""), s ? strlen(s) : 0));
 	return yajl_gen_status_ok;
 }
 yajl_gen_status YAJLAddColorPair(yajl_gen g, const char *name, const color_t c)
@@ -114,7 +120,7 @@ bool YAJLTryLoadValue(yajl_val *node, const char *name)
 	{
 		return false;
 	}
-	const char *path[] = { name, NULL };
+	const char *path[] = {name, NULL};
 	*node = yajl_tree_get(*node, path, yajl_t_any);
 	return *node != NULL;
 }
@@ -156,7 +162,7 @@ void YAJLStr(char **value, yajl_val node, const char *name)
 	{
 		return;
 	}
-	*value = YAJLGetStr(node, name);
+	CSTRDUP(*value, node->u.string);
 }
 char *YAJLGetStr(yajl_val node, const char *name)
 {
@@ -209,14 +215,14 @@ void YAJLLoadColor(color_t *c, yajl_val node, const char *name)
 	{
 		return;
 	}
-	char *in = YAJL_GET_STRING(YAJLFindNode(node, name));
-	*c = StrColor(in);
+	*c = StrColor(node->u.string);
 }
 yajl_val YAJLFindNode(yajl_val node, const char *path)
 {
 	// max 256 levels
 	const char *pathSplit[256];
-	for (int i = 0; i < 256; i++) pathSplit[i] = NULL;
+	for (int i = 0; i < 256; i++)
+		pathSplit[i] = NULL;
 	char *pathCopy;
 	CSTRDUP(pathCopy, path);
 	char *pch = strtok(pathCopy, "/");

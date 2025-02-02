@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2013-2018, 2021 Cong Xu
+	Copyright (c) 2013-2018, 2021, 2024 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -81,14 +81,16 @@ void CArrayCopy(CArray *dst, const CArray *src)
 	memcpy(dst->data, src->data, src->size * src->elemSize);
 }
 
-void CArrayPushBack(CArray *a, const void *elem)
+void *CArrayPushBack(CArray *a, const void *elem)
 {
 	CASSERT(a->elemSize > 0, "array has not been initialised");
 	GrowIfFull(a);
 	a->size++;
-	memcpy(CArrayGet(a, (int)a->size - 1), elem, a->elemSize);
+	void *loc = CArrayGet(a, (int)a->size - 1);
+	memcpy(loc, elem, a->elemSize);
+	return loc;
 }
-void CArrayInsert(CArray *a, const size_t idx, const void *elem)
+void *CArrayInsert(CArray *a, const size_t idx, const void *elem)
 {
 	CASSERT(a->elemSize > 0, "array has not been initialised");
 	GrowIfFull(a);
@@ -99,7 +101,7 @@ void CArrayInsert(CArray *a, const size_t idx, const void *elem)
 			CArrayGet(a, idx + 1), CArrayGet(a, idx),
 			a->elemSize * (a->size - 1 - idx));
 	}
-	CArraySet(a, idx, elem);
+	return CArraySet(a, idx, elem);
 }
 void CArrayDelete(CArray *a, const size_t idx)
 {
@@ -137,9 +139,11 @@ void *CArrayGet(const CArray *a, const size_t idx)
 	CASSERT(idx < a->size, "array index out of bounds");
 	return &((char *)a->data)[idx * a->elemSize];
 }
-void CArraySet(CArray *a, const size_t idx, const void *elem)
+void *CArraySet(CArray *a, const size_t idx, const void *elem)
 {
-	memcpy(CArrayGet(a, idx), elem, a->elemSize);
+	void *loc = CArrayGet(a, idx);
+	memcpy(loc, elem, a->elemSize);
+	return loc;
 }
 
 void CArrayClear(CArray *a)

@@ -37,6 +37,11 @@ typedef struct hashmap_map *map_t;
 */
 map_t hashmap_new(void);
 
+/*
+ * Perform a copy of the hashmap, with optional callback to perform
+ * per-element copies. Leave NULL to perform a shallow value-only
+ * copy.
+ */
 map_t hashmap_copy(const map_t in, any_t (*callback)(any_t));
 
 /*

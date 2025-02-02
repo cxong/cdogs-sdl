@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2016-2021, 2023 Cong Xu
+	Copyright (c) 2016-2021, 2023, 2025 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -60,6 +60,7 @@ extern CharacterClasses gCharacterClasses;
 #define CHARACTER_DEFAULT_MASS 100
 
 const CharacterClass *StrCharacterClass(const char *s);
+void CharacterClassCopy(CharacterClass *dst, const CharacterClass *src);
 // Legacy character class from "face" index
 const char *IntCharacterFace(const int face);
 void CharacterOldFaceToHeadParts(const char *face, char **newFace, char *headParts[HEAD_PART_COUNT]);

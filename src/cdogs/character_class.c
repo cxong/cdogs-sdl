@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2016-2017, 2019-2021, 2023 Cong Xu
+	Copyright (c) 2016-2017, 2019-2021, 2023, 2025 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -54,6 +54,22 @@ const CharacterClass *StrCharacterClass(const char *s)
 	LOG(LM_MAIN, LL_ERROR, "Cannot find character name: %s", s);
 	return NULL;
 }
+
+static void CharacterClassFree(CharacterClass *c);
+
+void CharacterClassCopy(CharacterClass *dst, const CharacterClass *src)
+{
+	CharacterClassFree(dst);
+	memcpy(dst, src, sizeof *dst);
+	CSTRDUP(dst->Name, src->Name);
+	if (src->HeadSprites) CSTRDUP(dst->HeadSprites, src->HeadSprites);
+	if (src->Body) CSTRDUP(dst->Body, src->Body);
+	if (src->DeathSprites) CSTRDUP(dst->DeathSprites, src->DeathSprites);
+	if (src->Sounds) CSTRDUP(dst->Sounds, src->Sounds);
+	if (src->Footsteps) CSTRDUP(dst->Footsteps, src->Footsteps);
+	if (src->Corpse) CSTRDUP(dst->Corpse, src->Corpse);
+}
+
 static const char *characterNames[] = {
 	"Jones", "Ice",			"Ogre",	  "Dragon",	   "WarBaby", "Bug-eye",
 	"Smith", "Ogre Boss",	"Grunt",  "Professor", "Snake",	  "Wolf",
@@ -423,7 +439,6 @@ static void LoadCharacterClass(CharacterClass *c, json_t *node)
 	
 	LoadStr(&c->Corpse, node, "Corpse");
 }
-static void CharacterClassFree(CharacterClass *c);
 void CharacterClassesClear(CArray *classes)
 {
 	for (int i = 0; i < (int)classes->size; i++)
