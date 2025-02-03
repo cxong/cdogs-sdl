@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2014, 2017, 2021 Cong Xu
+	Copyright (c) 2013-2014, 2017, 2021, 2025 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -61,10 +61,42 @@
 #include <cdogs/files.h>
 #include <cdogs/font.h>
 #include <cdogs/log.h>
+#include <cdogs/yajl_utils.h>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
+
+#define MAX_ENTRY 20
+
+typedef struct
+{
+	char *Name;
+	time_t Time;
+	CharacterClass Character;
+	CharColors Colors;
+	NPlayerStats Stats;
+	int Missions;
+	int LastMission;
+	map_t WeaponUsages; // of name -> usage (TODO: shots, hits)
+} HighScoreEntry;
+// High score structure is:
+// campaign name > entries, sorted by score
+static map_t sHighScores; // TODO: merge with autosaves
+
+static void LoadHighScores(void);
+
+// Get player high score if it applies, or 0 otherwise
+static int GetPlayerHighScore(const Campaign *co, const PlayerData *p)
+{
+	const bool isPlayerComplete =
+		(!co->IsQuit && !p->survived) || co->IsComplete;
+	if (isPlayerComplete && p->IsLocal && IsPlayerHuman(p))
+	{
+		return p->Totals.Score;
+	}
+	return 0;
+}
 
 // Dummy screen to calculate high scores and switch to high scores screens if
 // required
@@ -91,6 +123,9 @@ static void HighScoresScreenTerminate(GameLoopData *data)
 	HighScoresScreenData *hData = data->Data;
 	CFREE(hData);
 }
+static bool EnterHighScore(const PlayerData *data, CArray *scores);
+static GameLoopData *DisplayAllTimeHighScores(
+	GraphicsDevice *graphics, CArray *scores);
 static GameLoopResult HighScoresScreenUpdate(GameLoopData *data, LoopRunner *l)
 {
 	// Make copy before popping loop
@@ -100,16 +135,23 @@ static GameLoopResult HighScoresScreenUpdate(GameLoopData *data, LoopRunner *l)
 		GetNumPlayers(PLAYER_ANY, false, true) > 0)
 	{
 		LoadHighScores();
-		bool allTime = false;
-		bool todays = false;
-		CA_FOREACH(PlayerData, p, gPlayerDatas)
-		const bool isPlayerComplete =
-			(!hData.co->IsQuit && !p->survived) || hData.co->IsComplete;
-		if (isPlayerComplete && p->IsLocal && IsPlayerHuman(p))
+		CArray *scores = NULL;
+		if (hashmap_get(sHighScores, hData.co->Entry.Path, (any_t *)&scores) ==
+			MAP_MISSING)
 		{
-			EnterHighScore(p);
-			allTime |= p->allTime >= 0;
-			todays |= p->today >= 0;
+			CMALLOC(scores, sizeof *scores);
+			CArrayInit(scores, sizeof(HighScoreEntry));
+			hashmap_put(sHighScores, hData.co->Entry.Path, scores);
+		}
+
+		bool allTime = false;
+		CA_FOREACH(PlayerData, p, gPlayerDatas)
+		if (GetPlayerHighScore(hData.co, p) > 0)
+		{
+			if (EnterHighScore(p, scores))
+			{
+				allTime = true;
+			}
 		}
 
 		if (!p->survived)
@@ -127,77 +169,52 @@ static GameLoopResult HighScoresScreenUpdate(GameLoopData *data, LoopRunner *l)
 		SaveHighScores();
 
 		// Show high scores screen if high enough
-		if (todays)
-		{
-			LoopRunnerPush(l, DisplayTodaysHighScores(hData.g));
-		}
 		if (allTime)
 		{
-			LoopRunnerPush(l, DisplayAllTimeHighScores(hData.g));
+			LoopRunnerPush(l, DisplayAllTimeHighScores(hData.g, scores));
+		}
+		else
+		{
+			// TODO: terminate high scores
 		}
 	}
 
 	return UPDATE_RESULT_OK;
 }
 
-// Warning: written as-is to file
-#ifdef _MSC_VER
-#pragma pack(push, 1)
-#endif
-typedef struct
+static bool EnterHighScore(const PlayerData *data, CArray *scores)
 {
-	char name[20];
-	int32_t timeTicks;
-	int32_t kills;
-	int32_t unused3;
-	int32_t unused4;
-	int32_t unused5;
-	int32_t unused6;
-	int32_t score;
-	int32_t missions;
-	int32_t lastMission;
-}
-#ifndef _MSC_VER
-__attribute__((packed))
-#endif
-HighScoreEntry;
-#ifdef _MSC_VER
-#pragma pack(pop)
-#endif
-
-#define MAX_ENTRY 20
-
-static HighScoreEntry allTimeHigh[MAX_ENTRY];
-static HighScoreEntry todaysHigh[MAX_ENTRY];
-
-static int EnterTable(HighScoreEntry *table, PlayerData *data)
-{
-	for (int i = 0; i < MAX_ENTRY; i++)
+	// Find insertion point based on score
+	HighScoreEntry *entry = NULL;
+	CA_FOREACH(const HighScoreEntry, e, *scores)
+	if (e->Stats.Score <= data->Totals.Score)
 	{
-		if ((int)data->Totals.Score > table[i].score)
-		{
-			for (int j = MAX_ENTRY - 1; j > i; j--)
-			{
-				table[j] = table[j - 1];
-			}
-
-			strcpy(table[i].name, data->name);
-			table[i].timeTicks = data->Totals.TimeTicks;
-			table[i].kills = data->Totals.Kills;
-			table[i].score = data->Totals.Score;
-			table[i].missions = data->missions;
-			table[i].lastMission = data->lastMission;
-
-			return i;
-		}
+		HighScoreEntry new;
+		memset(&new, 0, sizeof new);
+		entry = CArrayInsert(scores, _ca_index, &new);
+		break;
 	}
-	return -1;
-}
-
-void EnterHighScore(PlayerData *data)
-{
-	data->allTime = EnterTable(allTimeHigh, data);
-	data->today = EnterTable(todaysHigh, data);
+	CA_FOREACH_END()
+	if (entry == NULL)
+	{
+		if (scores->size >= MAX_ENTRY)
+		{
+			// score not high enough; exit
+			return false;
+		}
+		HighScoreEntry new;
+		memset(&new, 0, sizeof new);
+		entry = CArrayPushBack(scores, &new);
+	}
+	// TODO: get existing entry
+	CSTRDUP(entry->Name, data->name);
+	CharacterClassCopy(&entry->Character, data->Char.Class);
+	entry->Colors = data->Char.Colors;
+	entry->Stats = data->Totals;
+	entry->Missions = data->missions;
+	entry->LastMission = data->lastMission;
+	entry->WeaponUsages = hashmap_copy(data->WeaponUsages, NULL);
+	return true;
 }
 
 static void DisplayAt(int x, int y, const char *s, int hilite)
@@ -220,100 +237,81 @@ static int DisplayEntry(
 
 	sprintf(s, "%d.", idx + 1);
 	DisplayAt(x + INDEX_OFFSET - FontStrW(s), y, s, hilite);
-	sprintf(s, "%d", e->score);
+	sprintf(s, "%d", (int)e->Stats.Score);
 	DisplayAt(x + SCORE_OFFSET - FontStrW(s), y, s, hilite);
-	sprintf(s, "%d", e->missions);
+	sprintf(s, "%d", e->Missions);
 	DisplayAt(x + MISSIONS_OFFSET - FontStrW(s), y, s, hilite);
-	sprintf(s, "(%d)", e->lastMission + 1);
+	sprintf(s, "(%d)", e->LastMission + 1);
 	DisplayAt(x + MISSION_OFFSET - FontStrW(s), y, s, hilite);
-	DisplayAt(x + NAME_OFFSET, y, e->name, hilite);
+	DisplayAt(x + NAME_OFFSET, y, e->Name, hilite);
+	// TODO: show other columns: kills, time, favourite weapon, character body
 
 	return 1 + FontH();
 }
 
-static int DisplayPage(
-	const char *title, const int idxStart, const HighScoreEntry *e,
-	const int highlights[MAX_LOCAL_PLAYERS])
+static int DisplayPage(const int idxStart, const CArray *entries)
 {
 	int x = 80;
 	int y = 5 + FontH();
 
-	FontStr(title, svec2i(5, 5));
-	int idx = idxStart;
-	while (idx < MAX_ENTRY && e[idx].score > 0 && x < 300)
+	FontStr("High Scores:", svec2i(5, 5));
+
+	// Find all the high scores for local players
+	int localScores[MAX_LOCAL_PLAYERS];
+	memset(localScores, 0, sizeof localScores);
+	int pIdx = 0;
+	CA_FOREACH(const PlayerData, p, gPlayerDatas)
+	const int score = GetPlayerHighScore(&gCampaign, p);
+	if (score > 0)
 	{
-		bool isHighlighted = false;
-		for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
-		{
-			if (idx == highlights[i])
-			{
-				isHighlighted = true;
-				break;
-			}
-		}
-		y += DisplayEntry(x, y, idx, &e[idx], isHighlighted);
-		if (y > 198 - FontH())
-		{
-			y = 20;
-			x += 100;
-		}
-		idx++;
+		localScores[pIdx] = score;
+		pIdx++;
 	}
+	CA_FOREACH_END()
+
+	int idx = idxStart;
+	CA_FOREACH(const HighScoreEntry, e, *entries)
+	bool isHighlighted = false;
+	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
+	{
+		if (e->Stats.Score == localScores[i])
+		{
+			// TODO: don't just highlight, display character next to entry
+			isHighlighted = true;
+			localScores[i] = 0;
+			break;
+		}
+	}
+	y += DisplayEntry(x, y, idx, e, isHighlighted);
+	if (y > 198 - FontH())
+	{
+		y = 20;
+		x += 100;
+	}
+	idx++;
+	CA_FOREACH_END()
 	return idx;
 }
 typedef struct
 {
 	GraphicsDevice *g;
-	const char *title;
-	const HighScoreEntry *scores;
+	CArray scores;	//  of HighScoreEntry
 	int highlights[MAX_LOCAL_PLAYERS];
 	int scoreIdx;
 } HighScoresData;
 static void HighScoreTerminate(GameLoopData *data);
 static GameLoopResult HighScoreUpdate(GameLoopData *data, LoopRunner *l);
 static void HighScoreDraw(GameLoopData *data);
-GameLoopData *DisplayAllTimeHighScores(GraphicsDevice *graphics)
+static GameLoopData *DisplayAllTimeHighScores(
+	GraphicsDevice *graphics, CArray *scores)
 {
 	HighScoresData *data;
 	CMALLOC(data, sizeof *data);
 	data->g = graphics;
-	int idx = 0;
-	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (!p->IsLocal)
-		{
-			idx--;
-			continue;
-		}
-		data->highlights[idx] = p->allTime;
-	}
 	data->scoreIdx = 0;
-	data->title = "All time high scores:";
-	data->scores = allTimeHigh;
-	return GameLoopDataNew(
-		data, HighScoreTerminate, NULL, NULL, NULL, HighScoreUpdate,
-		HighScoreDraw);
-}
-GameLoopData *DisplayTodaysHighScores(GraphicsDevice *graphics)
-{
-	HighScoresData *data;
-	CMALLOC(data, sizeof *data);
-	data->g = graphics;
-	int idx = 0;
-	for (int i = 0; i < (int)gPlayerDatas.size; i++, idx++)
-	{
-		const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-		if (!p->IsLocal)
-		{
-			idx--;
-			continue;
-		}
-		data->highlights[idx] = p->today;
-	}
-	data->scoreIdx = 0;
-	data->title = "Today's highest score:";
-	data->scores = todaysHigh;
+	// Take a copy of the scores as the parent will get destroyed
+	CArrayInit(&data->scores, sizeof(HighScoreEntry));
+	CArrayCopy(&data->scores, scores);
 	return GameLoopDataNew(
 		data, HighScoreTerminate, NULL, NULL, NULL, HighScoreUpdate,
 		HighScoreDraw);
@@ -322,6 +320,8 @@ static void HighScoreTerminate(GameLoopData *data)
 {
 	HighScoresData *hData = data->Data;
 
+	CArrayTerminate(&hData->scores);
+	// TODO: terminate scores entries
 	CFREE(hData);
 }
 static void HighScoreDraw(GameLoopData *data)
@@ -329,8 +329,7 @@ static void HighScoreDraw(GameLoopData *data)
 	HighScoresData *hData = data->Data;
 
 	BlitClearBuf(hData->g);
-	hData->scoreIdx = DisplayPage(
-		hData->title, hData->scoreIdx, hData->scores, hData->highlights);
+	hData->scoreIdx = DisplayPage(hData->scoreIdx, &hData->scores);
 	BlitUpdateFromBuf(hData->g, hData->g->screen);
 }
 static GameLoopResult HighScoreUpdate(GameLoopData *data, LoopRunner *l)
@@ -345,100 +344,270 @@ static GameLoopResult HighScoreUpdate(GameLoopData *data, LoopRunner *l)
 	return UPDATE_RESULT_OK;
 }
 
-#define MAGIC 4711
+static int SaveHighScoreEntries(any_t data, any_t key)
+{
+	yajl_gen g = (yajl_gen)data;
+	CArray *entries;
+	const int error =
+		hashmap_get(sHighScores, (const char *)key, (any_t *)&entries);
+	if (error != MAP_OK)
+	{
+		CASSERT(false, "cannot find high score entry");
+		return error;
+	}
+#define YAJL_CHECK(func)                                                      \
+	{                                                                         \
+		yajl_gen_status _status = func;                                       \
+		if (_status != yajl_gen_status_ok)                                    \
+		{                                                                     \
+			LOG(LM_MAIN, LL_ERROR,                                            \
+				"JSON generator error for high score %s: %d\n",               \
+				(const char *)key, (int)_status);                             \
+			return MAP_MISSING;                                               \
+		}                                                                     \
+	}
+	YAJL_CHECK(yajl_gen_string(g, key, strlen(key)));
+	YAJL_CHECK(yajl_gen_array_open(g));
 
+	CA_FOREACH(const HighScoreEntry, entry, *entries)
+	YAJL_CHECK(yajl_gen_map_open(g));
+
+	YAJL_CHECK(YAJLAddStringPair(g, "Name", entry->Name));
+	YAJL_CHECK(YAJLAddIntPair(g, "Time", (int)entry->Time));
+
+	YAJL_CHECK(yajl_gen_string(
+		g, (const unsigned char *)"Character", strlen("Character")));
+	YAJL_CHECK(yajl_gen_map_open(g));
+	YAJL_CHECK(YAJLAddStringPair(g, "Name", entry->Character.Name));
+	YAJL_CHECK(YAJLAddStringPair(g, "Head", entry->Character.HeadSprites));
+	YAJL_CHECK(YAJLAddStringPair(g, "Body", entry->Character.Body));
+	YAJL_CHECK(YAJLAddBoolPair(
+		g, "HasHair", entry->Character.HasHeadParts[HEAD_PART_HAIR]));
+	YAJL_CHECK(YAJLAddBoolPair(
+		g, "HasFacehair", entry->Character.HasHeadParts[HEAD_PART_FACEHAIR]));
+	YAJL_CHECK(YAJLAddBoolPair(
+		g, "HasHat", entry->Character.HasHeadParts[HEAD_PART_HAT]));
+	YAJL_CHECK(YAJLAddBoolPair(
+		g, "HasGlasses", entry->Character.HasHeadParts[HEAD_PART_GLASSES]));
+	YAJL_CHECK(yajl_gen_map_close(g));
+
+	YAJL_CHECK(
+		yajl_gen_string(g, (const unsigned char *)"Colors", strlen("Colors")));
+	YAJL_CHECK(yajl_gen_map_open(g));
+	YAJL_CHECK(YAJLAddColorPair(g, "Skin", entry->Colors.Skin));
+	YAJL_CHECK(YAJLAddColorPair(g, "Arms", entry->Colors.Arms));
+	YAJL_CHECK(YAJLAddColorPair(g, "Body", entry->Colors.Body));
+	YAJL_CHECK(YAJLAddColorPair(g, "Legs", entry->Colors.Legs));
+	YAJL_CHECK(YAJLAddColorPair(g, "Hair", entry->Colors.Hair));
+	YAJL_CHECK(YAJLAddColorPair(g, "Feet", entry->Colors.Feet));
+	YAJL_CHECK(YAJLAddColorPair(g, "Facehair", entry->Colors.Facehair));
+	YAJL_CHECK(YAJLAddColorPair(g, "Hat", entry->Colors.Hat));
+	YAJL_CHECK(YAJLAddColorPair(g, "Glasses", entry->Colors.Glasses));
+	YAJL_CHECK(yajl_gen_map_close(g));
+
+	// TODO: base64 encode
+	YAJL_CHECK(
+		yajl_gen_string(g, (const unsigned char *)"Stats", strlen("Stats")));
+	YAJL_CHECK(yajl_gen_map_open(g));
+	YAJL_CHECK(YAJLAddIntPair(g, "Score", entry->Stats.Score));
+	YAJL_CHECK(YAJLAddIntPair(g, "Kills", entry->Stats.Kills));
+	YAJL_CHECK(YAJLAddIntPair(g, "Suicides", entry->Stats.Suicides));
+	YAJL_CHECK(YAJLAddIntPair(g, "Friendlies", entry->Stats.Friendlies));
+	YAJL_CHECK(YAJLAddIntPair(g, "TimeTicks", entry->Stats.TimeTicks));
+	YAJL_CHECK(yajl_gen_map_close(g));
+
+	YAJL_CHECK(YAJLAddIntPair(g, "Missions", entry->Missions));
+	YAJL_CHECK(YAJLAddIntPair(g, "LastMission", entry->LastMission));
+
+	YAJL_CHECK(yajl_gen_string(
+		g, (const unsigned char *)"WeaponUsages", strlen("WeaponUsages")));
+	YAJL_CHECK(yajl_gen_map_open(g));
+	// TODO: weapon usage
+	YAJL_CHECK(yajl_gen_map_close(g));
+
+	YAJL_CHECK(yajl_gen_map_close(g));
+	CA_FOREACH_END()
+	YAJL_CHECK(yajl_gen_array_close(g));
+#undef YAJL_CHECK
+	return MAP_OK;
+}
 void SaveHighScores(void)
 {
-	int magic;
-	FILE *f;
-	time_t t;
-	struct tm *tp;
-
-	f = fopen(GetConfigFilePath(SCORES_FILE), "wb");
-	if (f != NULL)
+	FILE *f = NULL;
+	yajl_gen g = yajl_gen_alloc(NULL);
+	if (g == NULL)
 	{
-		magic = MAGIC;
+		LOG(LM_MAIN, LL_ERROR,
+			"Unable to alloc JSON generator for saving high scores\n");
+		goto bail;
+	}
 
-		fwrite(&magic, sizeof(magic), 1, f);
-		fwrite(allTimeHigh, sizeof(allTimeHigh), 1, f);
+#define YAJL_CHECK(func)                                                      \
+	if (func != yajl_gen_status_ok)                                           \
+	{                                                                         \
+		LOG(LM_MAIN, LL_ERROR, "JSON generator error for high scores\n");     \
+		goto bail;                                                            \
+	}
 
-		t = time(NULL);
-		tp = localtime(&t);
+	YAJL_CHECK(yajl_gen_map_open(g));
+	if (hashmap_iterate_keys_sorted(
+			sHighScores, SaveHighScoreEntries, (any_t *)g) != MAP_OK)
+	{
+		LOG(LM_MAIN, LL_ERROR, "Failed to generate high score entries\n");
+		goto bail;
+	}
+	YAJL_CHECK(yajl_gen_map_close(g));
 
-		magic = tp->tm_year;
-		fwrite(&magic, sizeof(magic), 1, f);
-		magic = tp->tm_mon;
-		fwrite(&magic, sizeof(magic), 1, f);
-		magic = tp->tm_mday;
-		fwrite(&magic, sizeof(magic), 1, f);
-
-		fwrite(todaysHigh, sizeof(todaysHigh), 1, f);
-
-		fclose(f);
+	const char *buf;
+	size_t len;
+	yajl_gen_get_buf(g, (const unsigned char **)&buf, &len);
+	const char *path = GetConfigFilePath(SCORES_FILE);
+	f = fopen(path, "w");
+	if (f == NULL)
+	{
+		LOG(LM_MAIN, LL_ERROR, "Unable to save %s\n", path);
+		goto bail;
+	}
+	fwrite(buf, 1, len, f);
 
 #ifdef __EMSCRIPTEN__
-		EM_ASM(
-			// persist changes
-			FS.syncfs(
-				false, function(err) { assert(!err); }););
+	EM_ASM(
+		// persist changes
+		FS.syncfs(false, function(err) { assert(!err); }););
 #endif
+
+bail:
+	if (g)
+	{
+		yajl_gen_clear(g);
+		yajl_gen_free(g);
 	}
-	else
-		printf("Unable to open %s\n", SCORES_FILE);
-}
-
-void LoadHighScores(void)
-{
-	int magic;
-	FILE *f;
-	int y, m, d;
-	time_t t;
-	struct tm *tp;
-
-	memset(allTimeHigh, 0, sizeof(allTimeHigh));
-	memset(todaysHigh, 0, sizeof(todaysHigh));
-
-	const char *path = GetConfigFilePath(SCORES_FILE);
-	f = fopen(path, "rb");
 	if (f != NULL)
 	{
-		size_t elementsRead;
-#define CHECK_FREAD(count)                                                    \
-	if (elementsRead != count)                                                \
-	{                                                                         \
-		fclose(f);                                                            \
-		return;                                                               \
-	}
-		elementsRead = fread(&magic, sizeof(magic), 1, f);
-		CHECK_FREAD(1)
-		if (magic != MAGIC)
-		{
-			fclose(f);
-			return;
-		}
-
-		elementsRead = fread(allTimeHigh, sizeof(allTimeHigh), 1, f);
-		CHECK_FREAD(1)
-
-		t = time(NULL);
-		tp = localtime(&t);
-		elementsRead = fread(&y, sizeof(y), 1, f);
-		CHECK_FREAD(1)
-		elementsRead = fread(&m, sizeof(m), 1, f);
-		CHECK_FREAD(1)
-		elementsRead = fread(&d, sizeof(d), 1, f);
-		CHECK_FREAD(1)
-
-		if (tp->tm_year == y && tp->tm_mon == m && tp->tm_mday == d)
-		{
-			elementsRead = fread(todaysHigh, sizeof(todaysHigh), 1, f);
-			CHECK_FREAD(1)
-		}
-
 		fclose(f);
 	}
-	else
-	{
-		LOG(LM_MAIN, LL_WARN, "Unable to open %s\n", path);
-	}
 }
+
+static void LoadHighScores(void)
+{
+	sHighScores = hashmap_new();
+	const char *path = GetConfigFilePath(SCORES_FILE);
+	yajl_val node = YAJLReadFile(path);
+	if (node == NULL)
+	{
+		LOG(LM_MAIN, LL_INFO, "Error reading high scores '%s'", path);
+		goto bail;
+	}
+	if (!YAJL_IS_OBJECT(node))
+	{
+		LOG(LM_MAIN, LL_ERROR, "Unexpected format for high scores\n");
+		goto bail;
+	}
+	for (int i = 0; i < (int)node->u.object.len; i++)
+	{
+		const char *path = node->u.object.keys[i];
+		yajl_array entriesNode = YAJL_GET_ARRAY(node->u.object.values[i]);
+		if (!entriesNode)
+		{
+			LOG(LM_MAIN, LL_ERROR, "Unexpected format for high scores %s\n",
+				path);
+			continue;
+		}
+		CArray *entries;
+		CMALLOC(entries, sizeof *entries);
+		CArrayInit(entries, sizeof(HighScoreEntry));
+		for (int j = 0; j < (int)entriesNode->len; j++)
+		{
+			yajl_val entryNode = entriesNode->values[j];
+			HighScoreEntry entry;
+			YAJLStr(&entry.Name, entryNode, "Name");
+			int value;
+			YAJLInt(&value, entryNode, "Time");
+			entry.Time = (time_t)value;
+
+			const char *charPath[] = {"Character", NULL};
+			yajl_val charNode =
+				yajl_tree_get(entryNode, charPath, yajl_t_object);
+			if (!charNode)
+			{
+				LOG(LM_MAIN, LL_ERROR,
+					"Unexpected format for high score entry %s %d\n", path, j);
+				continue;
+			}
+			YAJLStr(&entry.Character.Name, charNode, "Name");
+			YAJLStr(&entry.Character.HeadSprites, charNode, "Head");
+			YAJLStr(&entry.Character.Body, charNode, "Body");
+			YAJLBool(
+				&entry.Character.HasHeadParts[HEAD_PART_HAIR], charNode,
+				"HasHair");
+			YAJLBool(
+				&entry.Character.HasHeadParts[HEAD_PART_FACEHAIR], charNode,
+				"HasFacehair");
+			YAJLBool(
+				&entry.Character.HasHeadParts[HEAD_PART_HAT], charNode,
+				"HasHat");
+			YAJLBool(
+				&entry.Character.HasHeadParts[HEAD_PART_GLASSES], charNode,
+				"HasGlasses");
+
+			const char *colorPath[] = {"Colors", NULL};
+			yajl_val colorNode =
+				yajl_tree_get(entryNode, colorPath, yajl_t_object);
+			if (!colorNode)
+			{
+				LOG(LM_MAIN, LL_ERROR,
+					"Unexpected format for high score entry %s %d\n", path, j);
+				continue;
+			}
+			YAJLLoadColor(&entry.Colors.Skin, colorNode, "Skin");
+			YAJLLoadColor(&entry.Colors.Arms, colorNode, "Arms");
+			YAJLLoadColor(&entry.Colors.Body, colorNode, "Body");
+			YAJLLoadColor(&entry.Colors.Legs, colorNode, "Legs");
+			YAJLLoadColor(&entry.Colors.Hair, colorNode, "Hair");
+			YAJLLoadColor(&entry.Colors.Feet, colorNode, "Feet");
+			YAJLLoadColor(&entry.Colors.Facehair, colorNode, "Facehair");
+			YAJLLoadColor(&entry.Colors.Hat, colorNode, "Hat");
+			YAJLLoadColor(&entry.Colors.Glasses, colorNode, "Glasses");
+
+			// TODO: base64 decode
+			const char *statsPath[] = {"Stats", NULL};
+			yajl_val statsNode =
+				yajl_tree_get(entryNode, statsPath, yajl_t_object);
+			if (!statsNode)
+			{
+				LOG(LM_MAIN, LL_ERROR,
+					"Unexpected format for high score entry %s %d\n", path, j);
+				continue;
+			}
+			YAJLInt((int *)&entry.Stats.Score, statsNode, "Score");
+			YAJLInt((int *)&entry.Stats.Kills, statsNode, "Kills");
+			YAJLInt((int *)&entry.Stats.Suicides, statsNode, "Suicides");
+			YAJLInt((int *)&entry.Stats.Friendlies, statsNode, "Friendlies");
+			YAJLInt((int *)&entry.Stats.TimeTicks, statsNode, "TimeTicks");
+
+			YAJLInt(&entry.Missions, entryNode, "Missions");
+			YAJLInt(&entry.LastMission, entryNode, "LastMission");
+
+			const char *wuPath[] = {"WeaponUsages", NULL};
+			yajl_val wuNode = yajl_tree_get(entryNode, wuPath, yajl_t_object);
+			if (!wuNode)
+			{
+				LOG(LM_MAIN, LL_ERROR,
+					"Unexpected format for high score entry %s %d\n", path, j);
+				continue;
+			}
+			// TODO: weapon usage
+			CArrayPushBack(entries, &entry);
+		}
+		if (hashmap_put(sHighScores, path, (any_t *)entries) != MAP_OK)
+		{
+			LOG(LM_MAIN, LL_ERROR, "failed to load high scores (%s)", path);
+			continue;
+		}
+	}
+
+bail:
+	yajl_tree_free(node);
+}
+
+// TODO: terminate high scores

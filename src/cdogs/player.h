@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2016, 2018-2020, 2022-2023 Cong Xu
+	Copyright (c) 2014-2016, 2018-2020, 2022-2023, 2025 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -52,13 +52,13 @@ typedef struct
 
 	NPlayerStats Stats;
 	NPlayerStats Totals;
+	map_t WeaponUsages;	// of name -> usage (TODO: shots, hits)
 
 	// Used for end-of-game score tallying
 	int hp;
 	int survived;
 	int missions;
 	int lastMission;
-	int allTime, today;
 
 	input_device_e inputDevice;
 	int deviceIndex;
