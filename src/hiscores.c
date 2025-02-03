@@ -295,7 +295,7 @@ static int DisplayPage(const int idxStart, const CArray *entries)
 typedef struct
 {
 	GraphicsDevice *g;
-	CArray scores;	//  of HighScoreEntry
+	CArray scores; //  of HighScoreEntry
 	int highlights[MAX_LOCAL_PLAYERS];
 	int scoreIdx;
 } HighScoresData;
@@ -505,12 +505,12 @@ static void LoadHighScores(void)
 	}
 	for (int i = 0; i < (int)node->u.object.len; i++)
 	{
-		const char *path = node->u.object.keys[i];
 		yajl_array entriesNode = YAJL_GET_ARRAY(node->u.object.values[i]);
 		if (!entriesNode)
 		{
+			const char *entriesPath = node->u.object.keys[i];
 			LOG(LM_MAIN, LL_ERROR, "Unexpected format for high scores %s\n",
-				path);
+				entriesPath);
 			continue;
 		}
 		CArray *entries;
