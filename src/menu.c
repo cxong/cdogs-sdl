@@ -271,7 +271,7 @@ static void MoveIndexToNextEnabledSubmenu(menu_t *menu, const bool isDown)
 	for (;;)
 	{
 		const menu_t *currentSubmenu =
-		CArrayGet(&menu->u.normal.subMenus, menu->u.normal.index);
+			CArrayGet(&menu->u.normal.subMenus, menu->u.normal.index);
 		if (!currentSubmenu->isDisabled)
 		{
 			break;
@@ -1043,7 +1043,8 @@ void MenuProcessCmd(MenuSystem *ms, int cmd)
 	}
 	if (menu->type == MENU_TYPE_CUSTOM)
 	{
-		if (menu->u.customData.inputFunc(cmd, menu->u.customData.data))
+		if (menu->u.customData.inputFunc == NULL ||
+			menu->u.customData.inputFunc(cmd, menu->u.customData.data))
 		{
 			ms->current = menu->parentMenu;
 			goto bail;
@@ -1117,8 +1118,7 @@ menu_t *MenuProcessButtonCmd(MenuSystem *ms, menu_t *menu, int cmd)
 		case MENU_TYPE_NORMAL:
 		case MENU_TYPE_OPTIONS:
 		case MENU_TYPE_CUSTOM:
-			if (subMenu->u.normal.isSubmenusAlt ? Right(cmd)
-												: (Button1(cmd)))
+			if (subMenu->u.normal.isSubmenusAlt ? Right(cmd) : (Button1(cmd)))
 			{
 				return subMenu;
 			}

@@ -173,10 +173,6 @@ static GameLoopResult HighScoresScreenUpdate(GameLoopData *data, LoopRunner *l)
 		{
 			LoopRunnerPush(l, DisplayAllTimeHighScores(hData.g, scores));
 		}
-		else
-		{
-			// TODO: terminate high scores
-		}
 	}
 
 	return UPDATE_RESULT_OK;
@@ -249,7 +245,7 @@ static int DisplayEntry(
 	return 1 + FontH();
 }
 
-static int DisplayPage(const int idxStart, const CArray *entries)
+static void DisplayPage(const CArray *entries)
 {
 	int x = 80;
 	int y = 5 + FontH();
@@ -269,7 +265,7 @@ static int DisplayPage(const int idxStart, const CArray *entries)
 	}
 	CA_FOREACH_END()
 
-	int idx = idxStart;
+	int idx = 0;
 	CA_FOREACH(const HighScoreEntry, e, *entries)
 	bool isHighlighted = false;
 	for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
@@ -290,15 +286,7 @@ static int DisplayPage(const int idxStart, const CArray *entries)
 	}
 	idx++;
 	CA_FOREACH_END()
-	return idx;
 }
-typedef struct
-{
-	GraphicsDevice *g;
-	CArray scores; //  of HighScoreEntry
-	int highlights[MAX_LOCAL_PLAYERS];
-	int scoreIdx;
-} HighScoresData;
 static void HighScoreTerminate(GameLoopData *data);
 static GameLoopResult HighScoreUpdate(GameLoopData *data, LoopRunner *l);
 static void HighScoreDraw(GameLoopData *data);
@@ -308,7 +296,6 @@ static GameLoopData *DisplayAllTimeHighScores(
 	HighScoresData *data;
 	CMALLOC(data, sizeof *data);
 	data->g = graphics;
-	data->scoreIdx = 0;
 	// Take a copy of the scores as the parent will get destroyed
 	CArrayInit(&data->scores, sizeof(HighScoreEntry));
 	CArrayCopy(&data->scores, scores);
@@ -319,18 +306,14 @@ static GameLoopData *DisplayAllTimeHighScores(
 static void HighScoreTerminate(GameLoopData *data)
 {
 	HighScoresData *hData = data->Data;
-
-	CArrayTerminate(&hData->scores);
-	// TODO: terminate scores entries
+	HighScoresDataTerminate(hData);
 	CFREE(hData);
 }
 static void HighScoreDraw(GameLoopData *data)
 {
 	HighScoresData *hData = data->Data;
 
-	BlitClearBuf(hData->g);
-	hData->scoreIdx = DisplayPage(hData->scoreIdx, &hData->scores);
-	BlitUpdateFromBuf(hData->g, hData->g->screen);
+	HighScoresDraw(hData);
 }
 static GameLoopResult HighScoreUpdate(GameLoopData *data, LoopRunner *l)
 {
@@ -506,9 +489,9 @@ static void LoadHighScores(void)
 	for (int i = 0; i < (int)node->u.object.len; i++)
 	{
 		yajl_array entriesNode = YAJL_GET_ARRAY(node->u.object.values[i]);
+		const char *entriesPath = node->u.object.keys[i];
 		if (!entriesNode)
 		{
-			const char *entriesPath = node->u.object.keys[i];
 			LOG(LM_MAIN, LL_ERROR, "Unexpected format for high scores %s\n",
 				entriesPath);
 			continue;
@@ -599,7 +582,7 @@ static void LoadHighScores(void)
 			// TODO: weapon usage
 			CArrayPushBack(entries, &entry);
 		}
-		if (hashmap_put(sHighScores, path, (any_t *)entries) != MAP_OK)
+		if (hashmap_put(sHighScores, entriesPath, (any_t *)entries) != MAP_OK)
 		{
 			LOG(LM_MAIN, LL_ERROR, "failed to load high scores (%s)", path);
 			continue;
@@ -610,4 +593,35 @@ bail:
 	yajl_tree_free(node);
 }
 
-// TODO: terminate high scores
+HighScoresData HighScoresDataLoad(const Campaign *co, GraphicsDevice *g)
+{
+	LoadHighScores();
+	HighScoresData hData;
+	memset(&hData, 0, sizeof hData);
+	hData.g = g;
+	CArray *scores = NULL;
+	if (hashmap_get(sHighScores, co->Entry.Path, (any_t *)&scores) !=
+		MAP_MISSING)
+	{
+		// copy scores
+		CArrayInit(&hData.scores, sizeof(HighScoreEntry));
+		CArrayCopy(&hData.scores, scores);
+	}
+	return hData;
+}
+
+void HighScoresDataTerminate(HighScoresData *hData)
+{
+	CA_FOREACH(HighScoreEntry, entry, hData->scores)
+	CFREE(entry->Name);
+	// TODO: free weapon usages
+	CA_FOREACH_END()
+	CArrayTerminate(&hData->scores);
+}
+
+void HighScoresDraw(const HighScoresData *hData)
+{
+	BlitClearBuf(&gGraphicsDevice);
+	DisplayPage(&hData->scores);
+	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
+}

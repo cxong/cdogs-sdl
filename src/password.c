@@ -46,6 +46,7 @@
 
 #include "autosave.h"
 #include "game_loop.h"
+#include "hiscores.h"
 #include "menu.h"
 #include "prep.h"
 
@@ -59,12 +60,13 @@ typedef struct
 {
 	MenuSystem ms;
 	const CampaignSave *save;
+	HighScoresData hData;
 } LevelSelectionData;
 static void LevelSelectionTerminate(GameLoopData *data);
 static void LevelSelectionOnEnter(GameLoopData *data);
 static GameLoopResult LevelSelectionUpdate(GameLoopData *data, LoopRunner *l);
 static void LevelSelectionDraw(GameLoopData *data);
-static void MenuCreateStart(MenuSystem *ms, const CampaignSave *save);
+static void MenuCreateStart(LevelSelectionData *data);
 GameLoopData *LevelSelection(GraphicsDevice *graphics)
 {
 	LevelSelectionData *data;
@@ -73,7 +75,7 @@ GameLoopData *LevelSelection(GraphicsDevice *graphics)
 	MenuSystemInit(
 		&data->ms, &gEventHandlers, graphics, svec2i_zero(),
 		graphics->cachedConfig.Res);
-	MenuCreateStart(&data->ms, data->save);
+	MenuCreateStart(data);
 	return GameLoopDataNew(
 		data, LevelSelectionTerminate, LevelSelectionOnEnter, NULL, NULL,
 		LevelSelectionUpdate, LevelSelectionDraw);
@@ -87,27 +89,31 @@ static void MenuCreateLevelSelect(
 	menu_t *l = MenuCreateReturn(buf, i);
 	MenuAddSubmenu(levelSelect, l);
 }
-static void MenuCreateStart(MenuSystem *ms, const CampaignSave *save)
+static void HighScoresDrawFunc(
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
+	const struct vec2i size, const void *data);
+static void MenuCreateStart(LevelSelectionData *data)
 {
+	MenuSystem *ms = &data->ms;
 	ms->root = ms->current = MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
 
 	menu_t *menuContinue = MenuCreateReturn("Continue", RETURN_CODE_CONTINUE);
 	// Note: mission can be -1
 	menuContinue->isDisabled =
-		save == NULL || save->NextMission <= 0 ||
-		save->NextMission == (int)gCampaign.Setting.Missions.size;
+		data->save == NULL || data->save->NextMission <= 0 ||
+		data->save->NextMission == (int)gCampaign.Setting.Missions.size;
 	MenuAddSubmenu(ms->root, menuContinue);
 
 	// Create level select menus
 	menu_t *levelSelect = MenuCreateNormal(
 		"Level select...", "Select Level", MENU_TYPE_NORMAL, 0);
 	levelSelect->u.normal.maxItems = 20;
-	if (save)
+	if (data->save)
 	{
 		CArray levels;
 		CArrayInitFillZero(
 			&levels, sizeof(bool), gCampaign.Setting.Missions.size);
-		CA_FOREACH(const int, missionIndex, save->MissionsCompleted)
+		CA_FOREACH(const int, missionIndex, data->save->MissionsCompleted)
 		if (*missionIndex >= (int)gCampaign.Setting.Missions.size)
 		{
 			continue;
@@ -115,19 +121,27 @@ static void MenuCreateStart(MenuSystem *ms, const CampaignSave *save)
 		MenuCreateLevelSelect(levelSelect, &gCampaign, *missionIndex);
 		CArraySet(&levels, *missionIndex, &gTrue);
 		CA_FOREACH_END()
-		if (save->NextMission < (int)gCampaign.Setting.Missions.size &&
-			!*(bool *)CArrayGet(&levels, save->NextMission))
+		if (data->save->NextMission < (int)gCampaign.Setting.Missions.size &&
+			!*(bool *)CArrayGet(&levels, data->save->NextMission))
 		{
-			MenuCreateLevelSelect(levelSelect, &gCampaign, save->NextMission);
+			MenuCreateLevelSelect(
+				levelSelect, &gCampaign, data->save->NextMission);
 		}
 		CArrayTerminate(&levels);
 	}
-	levelSelect->isDisabled =
-		save == NULL || save->MissionsCompleted.size == 0 || gCampaign.Setting.Missions.size == 1;
+	levelSelect->isDisabled = data->save == NULL ||
+							  data->save->MissionsCompleted.size == 0 ||
+							  gCampaign.Setting.Missions.size == 1;
 	MenuAddSubmenu(ms->root, levelSelect);
 
 	MenuAddSubmenu(
 		ms->root, MenuCreateReturn("Start campaign", RETURN_CODE_START));
+
+	data->hData = HighScoresDataLoad(&gCampaign, &gGraphicsDevice);
+	menu_t *highScoresMenu = MenuCreateCustom(
+		"High Scores", HighScoresDrawFunc, NULL, &data->hData);
+	highScoresMenu->isDisabled = data->hData.scores.size == 0;
+	MenuAddSubmenu(ms->root, highScoresMenu);
 
 	MenuAddExitType(ms, MENU_TYPE_RETURN);
 }
@@ -136,6 +150,7 @@ static void LevelSelectionTerminate(GameLoopData *data)
 	LevelSelectionData *pData = data->Data;
 
 	MenuSystemTerminate(&pData->ms);
+	HighScoresDataTerminate(&pData->hData);
 	CFREE(data->Data);
 }
 static void LevelSelectionOnEnter(GameLoopData *data)
@@ -194,4 +209,16 @@ static void LevelSelectionDraw(GameLoopData *data)
 	const LevelSelectionData *pData = data->Data;
 
 	MenuDraw(&pData->ms);
+}
+
+static void HighScoresDrawFunc(
+	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
+	const struct vec2i size, const void *data)
+{
+	UNUSED(menu);
+	UNUSED(g);
+	UNUSED(pos);
+	UNUSED(size);
+	const HighScoresData *hData = data;
+	HighScoresDraw(hData);
 }
