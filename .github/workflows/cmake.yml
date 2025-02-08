@@ -55,7 +55,7 @@ jobs:
     - name: Install SDL via homebrew (Linux)
       # Because ubuntu 22 doesn't have the latest SDL libs
       if: matrix.os == 'ubuntu-latest'
-      run: brew install sdl2 sdl2_mixer sdl2_image
+      run: brew install sdl2 sdl2_mixer sdl2_image libxmp
 
     - name: Install packages (Linux)
       if: startsWith(matrix.os, 'ubuntu')
