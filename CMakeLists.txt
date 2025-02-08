@@ -93,6 +93,8 @@ if(MSVC)
 		add_definitions(-ZI)
 	endif()
 else()
+	# Fix build failure "Could NOT find libxmp"
+	set(SDL2MIXER_VENDORED ON CACHE BOOL "" FORCE)
 	add_definitions(
 		-fsigned-char
 		-Wall -W
