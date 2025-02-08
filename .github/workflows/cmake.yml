@@ -52,21 +52,14 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       uses: Homebrew/actions/setup-homebrew@master
 
-    - name: Install SDL via homebrew (Linux)
-      # Because ubuntu 22 doesn't have the latest SDL libs
-      if: matrix.os == 'ubuntu-latest'
-      run: brew install sdl2 sdl2_mixer sdl2_image
-
     - name: Install packages (Linux)
       if: startsWith(matrix.os, 'ubuntu')
       run: |
         sudo apt-get update
         sudo apt install python3-pip libgl1-mesa-dev
-        # Extra libs to fix "Could NOT find libxmp"
-        sudo apt install libxmp-dev libwavpack-dev libfluidsynth-dev fluidsynth
+        sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev
         python3 -m pip install protobuf --break-system-packages
         pip3 install --upgrade protobuf --break-system-packages
-      # libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev
 
     - name: Set up GCC (Linux)
       if: startsWith(matrix.os, 'ubuntu') && matrix.cc == 'gcc'
