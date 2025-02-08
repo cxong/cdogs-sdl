@@ -2,7 +2,7 @@
 layout: post
 title: "High Scores"
 date: 2025-02-08
-categories: progress, other
+categories: progress other
 published: true
 ---
 
