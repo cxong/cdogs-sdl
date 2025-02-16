@@ -45,12 +45,14 @@
 			"MapObject": "tree_dead",
 			"Density": 20
 		}],
+		"PickupCounts": [],
 		"EnemyDensity": 26,
 		"Weapons": ["Khanjali",
 		"Machine gun",
 		"Inkvine",
 		"Lasergun"],
-		"Song": "",
+		"WeaponPersist": false,
+		"SkipDebrief": false,
 		"TileClasses": {
 			"Wall": {
 				"Name": "wall",
@@ -61,7 +63,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"Floor": {
 				"Name": "tile",
@@ -72,7 +75,8 @@
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"Room": {
 				"Name": "tile",
@@ -83,7 +87,8 @@
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": true
+				"IsRoom": true,
+				"DamageBullet": ""
 			},
 			"Door": {
 				"Name": "door",
@@ -94,7 +99,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": true
+				"IsRoom": true,
+				"DamageBullet": ""
 			}
 		},
 		"FillPercent": 40,
@@ -126,7 +132,7 @@
 		"Objectives": [{
 			"Description": "Destroy the Clan shield consoles",
 			"Type": "Destroy",
-			"MapObject": "terminal",
+			"MapObjects": ["terminal"],
 			"Count": 4,
 			"Required": 4,
 			"Flags": 0
@@ -134,7 +140,7 @@
 		{
 			"Description": "Destroy projectors",
 			"Type": "Destroy",
-			"MapObject": "safe",
+			"MapObjects": ["safe"],
 			"Count": 3,
 			"Required": 2,
 			"Flags": 4
@@ -142,7 +148,7 @@
 		{
 			"Description": "A discarded seeker-probe...",
 			"Type": "Collect",
-			"Pickup": "seeker_probe",
+			"Pickups": ["seeker_probe"],
 			"Count": 1,
 			"Required": 0,
 			"Flags": 5
@@ -191,6 +197,7 @@
 			"MapObject": "crest",
 			"Density": 20
 		}],
+		"PickupCounts": [],
 		"EnemyDensity": 11,
 		"Weapons": ["Khanjali",
 		"Machine gun",
@@ -198,7 +205,8 @@
 		"Shotgun",
 		"Lasergun",
 		"Dynamite"],
-		"Song": "",
+		"WeaponPersist": false,
+		"SkipDebrief": false,
 		"TileClasses": {
 			"Wall": {
 				"Name": "wall",
@@ -209,7 +217,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"Floor": {
 				"Name": "tile",
@@ -220,7 +229,8 @@
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"Room": {
 				"Name": "tile",
@@ -231,7 +241,8 @@
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": true
+				"IsRoom": true,
+				"DamageBullet": ""
 			},
 			"Door": {
 				"Name": "door",
@@ -242,7 +253,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": true
+				"IsRoom": true,
+				"DamageBullet": ""
 			}
 		},
 		"CorridorWidth": 2,
@@ -329,13 +341,15 @@
 			"MapObject": "crest",
 			"Density": 40
 		}],
+		"PickupCounts": [],
 		"EnemyDensity": 12,
 		"Weapons": ["Khanjali",
 		"Machine gun",
 		"Inkvine",
 		"Shotgun",
 		"Lasergun"],
-		"Song": "",
+		"WeaponPersist": false,
+		"SkipDebrief": false,
 		"TileClasses": {
 			"Wall": {
 				"Name": "wall",
@@ -346,7 +360,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"Floor": {
 				"Name": "tile",
@@ -357,7 +372,8 @@
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"Room": {
 				"Name": "tile",
@@ -368,7 +384,8 @@
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": true
+				"IsRoom": true,
+				"DamageBullet": ""
 			},
 			"Door": {
 				"Name": "door",
@@ -379,7 +396,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": true
+				"IsRoom": true,
+				"DamageBullet": ""
 			}
 		},
 		"CorridorWidth": 2,
@@ -444,6 +462,7 @@
 			"MapObject": "bulletmarks",
 			"Density": 25
 		}],
+		"PickupCounts": [],
 		"EnemyDensity": 4,
 		"Weapons": ["Khanjali",
 		"Machine gun",
@@ -452,7 +471,8 @@
 		"Shotgun",
 		"Shrapnel bombs",
 		"Lasergun"],
-		"Song": "",
+		"WeaponPersist": false,
+		"SkipDebrief": false,
 		"TileClasses": {
 			"Wall": {
 				"Name": "wall",
@@ -463,7 +483,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"Floor": {
 				"Name": "tile",
@@ -474,7 +495,8 @@
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"Room": {
 				"Name": "tile",
@@ -485,7 +507,8 @@
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": true
+				"IsRoom": true,
+				"DamageBullet": ""
 			},
 			"Door": {
 				"Name": "door",
@@ -496,7 +519,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": true
+				"IsRoom": true,
+				"DamageBullet": ""
 			}
 		},
 		"FillPercent": 46,
@@ -555,6 +579,7 @@
 			"MapObject": "crest",
 			"Density": 15
 		}],
+		"PickupCounts": [],
 		"EnemyDensity": 0,
 		"Weapons": ["Khanjali",
 		"Machine gun",
@@ -563,7 +588,8 @@
 		"Shotgun",
 		"Shrapnel bombs",
 		"Lasergun"],
-		"Song": "",
+		"WeaponPersist": false,
+		"SkipDebrief": false,
 		"TileClasses": {
 			"Wall": {
 				"Name": "wall",
@@ -574,7 +600,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"Floor": {
 				"Name": "tile",
@@ -585,7 +612,8 @@
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"Room": {
 				"Name": "tile",
@@ -596,7 +624,8 @@
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": true
+				"IsRoom": true,
+				"DamageBullet": ""
 			},
 			"Door": {
 				"Name": "door",
@@ -607,7 +636,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": true
+				"IsRoom": true,
+				"DamageBullet": ""
 			}
 		},
 		"Walls": 32,
@@ -656,6 +686,7 @@
 		"Enemies": [8],
 		"SpecialChars": [],
 		"MapObjectDensities": [],
+		"PickupCounts": [],
 		"EnemyDensity": 14,
 		"Weapons": ["Khanjali",
 		"Machine gun",
@@ -664,7 +695,8 @@
 		"Shotgun",
 		"Shrapnel bombs",
 		"Lasergun"],
-		"Song": "",
+		"WeaponPersist": false,
+		"SkipDebrief": false,
 		"TileClasses": {
 			"Wall": {
 				"Name": "wall",
@@ -675,7 +707,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"Floor": {
 				"Name": "tile",
@@ -686,7 +719,8 @@
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"Room": {
 				"Name": "tile",
@@ -697,7 +731,8 @@
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": true
+				"IsRoom": true,
+				"DamageBullet": ""
 			},
 			"Door": {
 				"Name": "door",
@@ -708,7 +743,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": true
+				"IsRoom": true,
+				"DamageBullet": ""
 			}
 		},
 		"FillPercent": 44,
@@ -748,7 +784,7 @@
 		{
 			"Description": "Recover lost cinnamon",
 			"Type": "Collect",
-			"Pickup": "bag",
+			"Pickups": ["bag"],
 			"Count": 10,
 			"Required": 0,
 			"Flags": 0
@@ -763,6 +799,7 @@
 			"MapObject": "scratch",
 			"Density": 10
 		}],
+		"PickupCounts": [],
 		"EnemyDensity": 12,
 		"Weapons": ["Khanjali",
 		"Machine gun",
@@ -771,7 +808,8 @@
 		"Shotgun",
 		"Shrapnel bombs",
 		"Lasergun"],
-		"Song": "",
+		"WeaponPersist": false,
+		"SkipDebrief": false,
 		"TileClasses": {
 			"Wall": {
 				"Name": "wall",
@@ -782,7 +820,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"Floor": {
 				"Name": "tile",
@@ -793,7 +832,8 @@
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"Room": {
 				"Name": "tile",
@@ -804,7 +844,8 @@
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": true
+				"IsRoom": true,
+				"DamageBullet": ""
 			},
 			"Door": {
 				"Name": "door",
@@ -815,7 +856,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": true
+				"IsRoom": true,
+				"DamageBullet": ""
 			}
 		},
 		"FillPercent": 40,
@@ -855,7 +897,7 @@
 		{
 			"Description": "Destroy their projectors",
 			"Type": "Destroy",
-			"MapObject": "safe",
+			"MapObjects": ["safe"],
 			"Count": 4,
 			"Required": 0,
 			"Flags": 4
@@ -863,7 +905,7 @@
 		{
 			"Description": "Cinnamon tea!",
 			"Type": "Collect",
-			"Pickup": "bottle_orange",
+			"Pickups": ["bottle_orange"],
 			"Count": 1,
 			"Required": 0,
 			"Flags": 0
@@ -888,6 +930,7 @@
 			"MapObject": "wall_stuff",
 			"Density": 20
 		}],
+		"PickupCounts": [],
 		"EnemyDensity": 9,
 		"Weapons": ["Khanjali",
 		"Machine gun",
@@ -897,7 +940,8 @@
 		"Shrapnel bombs",
 		"Molotovs",
 		"Lasergun"],
-		"Song": "",
+		"WeaponPersist": false,
+		"SkipDebrief": false,
 		"TileClasses": {
 			"Wall": {
 				"Name": "wall",
@@ -908,7 +952,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"Floor": {
 				"Name": "tile",
@@ -919,7 +964,8 @@
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"Room": {
 				"Name": "tile",
@@ -930,7 +976,8 @@
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": true
+				"IsRoom": true,
+				"DamageBullet": ""
 			},
 			"Door": {
 				"Name": "door",
@@ -941,7 +988,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": true
+				"IsRoom": true,
+				"DamageBullet": ""
 			}
 		},
 		"Walls": 18,
@@ -990,7 +1038,7 @@
 		{
 			"Description": "Collect any intelligence",
 			"Type": "Collect",
-			"Pickup": "blueprint",
+			"Pickups": ["blueprint"],
 			"Count": 3,
 			"Required": 0,
 			"Flags": 0
@@ -1023,13 +1071,15 @@
 			"MapObject": "plant",
 			"Density": 10
 		}],
+		"PickupCounts": [],
 		"EnemyDensity": 13,
 		"Weapons": ["Khanjali",
 		"Machine gun",
 		"Projector",
 		"Lasergun",
 		"Wurmtooth"],
-		"Song": "",
+		"WeaponPersist": false,
+		"SkipDebrief": false,
 		"TileClasses": {
 			"Wall": {
 				"Name": "wall",
@@ -1040,7 +1090,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"Floor": {
 				"Name": "tile",
@@ -1051,7 +1102,8 @@
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"Room": {
 				"Name": "tile",
@@ -1062,7 +1114,8 @@
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": true
+				"IsRoom": true,
+				"DamageBullet": ""
 			},
 			"Door": {
 				"Name": "door",
@@ -1073,7 +1126,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": true
+				"IsRoom": true,
+				"DamageBullet": ""
 			}
 		},
 		"Walls": 11,
@@ -1122,7 +1176,7 @@
 		{
 			"Description": "Destroy the fusion devices",
 			"Type": "Destroy",
-			"MapObject": "rocket",
+			"MapObjects": ["rocket"],
 			"Count": 7,
 			"Required": 5,
 			"Flags": 0
@@ -1157,6 +1211,7 @@
 			"MapObject": "crest",
 			"Density": 30
 		}],
+		"PickupCounts": [],
 		"EnemyDensity": 9,
 		"Weapons": ["Khanjali",
 		"Machine gun",
@@ -1170,7 +1225,8 @@
 		"Prox. mine",
 		"Dynamite",
 		"Wurmtooth"],
-		"Song": "",
+		"WeaponPersist": false,
+		"SkipDebrief": false,
 		"TileClasses": {
 			"Wall": {
 				"Name": "wall",
@@ -1181,7 +1237,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"Floor": {
 				"Name": "tile",
@@ -1192,7 +1249,8 @@
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": false
+				"IsRoom": false,
+				"DamageBullet": ""
 			},
 			"Room": {
 				"Name": "tile",
@@ -1203,7 +1261,8 @@
 				"CanWalk": true,
 				"IsOpaque": false,
 				"Shootable": false,
-				"IsRoom": true
+				"IsRoom": true,
+				"DamageBullet": ""
 			},
 			"Door": {
 				"Name": "door",
@@ -1214,7 +1273,8 @@
 				"CanWalk": false,
 				"IsOpaque": true,
 				"Shootable": true,
-				"IsRoom": true
+				"IsRoom": true,
+				"DamageBullet": ""
 			}
 		},
 		"Walls": 0,

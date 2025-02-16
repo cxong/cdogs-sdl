@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2014, 2016, 2019-2021, 2023-2024 Cong Xu
+	Copyright (c) 2013-2014, 2016, 2019-2021, 2023-2025 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,9 @@
 #include "actors.h"
 #include "files.h"
 #include "json_utils.h"
+#include "log.h"
 #include "player_template.h"
+#include "yajl_utils.h"
 
 #define CHARACTER_VERSION 14
 
@@ -155,9 +157,11 @@ void CharacterLoadJSON(
 			}
 			else
 			{
-				LoadStr(&ch->HeadParts[HEAD_PART_FACEHAIR], child, "FacehairType");
+				LoadStr(
+					&ch->HeadParts[HEAD_PART_FACEHAIR], child, "FacehairType");
 				LoadStr(&ch->HeadParts[HEAD_PART_HAT], child, "HatType");
-				LoadStr(&ch->HeadParts[HEAD_PART_GLASSES], child, "GlassesType");
+				LoadStr(
+					&ch->HeadParts[HEAD_PART_GLASSES], child, "GlassesType");
 			}
 		}
 		CASSERT(ch->Class != NULL, "Cannot load character class");
@@ -247,74 +251,105 @@ void CharacterLoadJSON(
 
 bool CharacterSave(CharacterStore *s, const char *path)
 {
-	json_t *root = json_new_object();
-	AddIntPair(root, "Version", CHARACTER_VERSION);
 	bool res = true;
+	yajl_gen g = yajl_gen_alloc(NULL);
+	if (g == NULL)
+	{
+		LOG(LM_MAIN, LL_ERROR,
+			"Unable to alloc JSON generator for saving character\n");
+		res = false;
+		goto bail;
+	}
 
-	json_t *charNode = json_new_array();
+#define YAJL_CHECK(func)                                                      \
+	if (func != yajl_gen_status_ok)                                           \
+	{                                                                         \
+		LOG(LM_MAIN, LL_ERROR, "JSON generator error for character\n");       \
+		res = false;                                                          \
+		goto bail;                                                            \
+	}
+
+	YAJL_CHECK(yajl_gen_map_open(g));
+	YAJL_CHECK(YAJLAddIntPair(g, "Version", CHARACTER_VERSION));
+
+	YAJL_CHECK(yajl_gen_string(g, (const unsigned char *)"Characters", strlen("Characters")));
+	YAJL_CHECK(yajl_gen_array_open(g));
 	CA_FOREACH(Character, c, s->OtherChars)
-	json_t *node = json_new_object();
-	AddStringPair(node, "Class", c->Class->Name);
+	YAJL_CHECK(yajl_gen_map_open(g));
+	YAJL_CHECK(YAJLAddStringPair(g, "Class", c->Class->Name));
 	if (c->PlayerTemplateName)
 	{
-		AddStringPair(node, "PlayerTemplateName", c->PlayerTemplateName);
+		YAJL_CHECK(
+			YAJLAddStringPair(g, "PlayerTemplateName", c->PlayerTemplateName));
 	}
 	if (c->HeadParts[HEAD_PART_HAIR])
 	{
-		AddStringPair(node, "HairType", c->HeadParts[HEAD_PART_HAIR]);
+		YAJL_CHECK(
+			YAJLAddStringPair(g, "HairType", c->HeadParts[HEAD_PART_HAIR]));
 	}
 	if (c->HeadParts[HEAD_PART_FACEHAIR])
 	{
-		AddStringPair(node, "FacehairType", c->HeadParts[HEAD_PART_FACEHAIR]);
+		YAJL_CHECK(YAJLAddStringPair(
+			g, "FacehairType", c->HeadParts[HEAD_PART_FACEHAIR]));
 	}
 	if (c->HeadParts[HEAD_PART_HAT])
 	{
-		AddStringPair(node, "HatType", c->HeadParts[HEAD_PART_HAT]);
+		YAJL_CHECK(
+			YAJLAddStringPair(g, "HatType", c->HeadParts[HEAD_PART_HAT]));
 	}
 	if (c->HeadParts[HEAD_PART_GLASSES])
 	{
-		AddStringPair(node, "GlassesType", c->HeadParts[HEAD_PART_GLASSES]);
+		YAJL_CHECK(YAJLAddStringPair(
+			g, "GlassesType", c->HeadParts[HEAD_PART_GLASSES]));
 	}
-	AddColorPair(node, "Skin", c->Colors.Skin);
-	AddColorPair(node, "Arms", c->Colors.Arms);
-	AddColorPair(node, "Body", c->Colors.Body);
-	AddColorPair(node, "Legs", c->Colors.Legs);
-	AddColorPair(node, "Hair", c->Colors.Hair);
-	AddColorPair(node, "Feet", c->Colors.Feet);
-	AddColorPair(node, "Facehair", c->Colors.Facehair);
-	AddColorPair(node, "Hat", c->Colors.Hat);
-	AddColorPair(node, "Glasses", c->Colors.Glasses);
-	AddIntPair(node, "speed", (int)(c->speed * 256));
-	json_insert_pair_into_object(node, "Gun", json_new_string(c->Gun->name));
+	YAJL_CHECK(YAJLAddColorPair(g, "Skin", c->Colors.Skin));
+	YAJL_CHECK(YAJLAddColorPair(g, "Arms", c->Colors.Arms));
+	YAJL_CHECK(YAJLAddColorPair(g, "Body", c->Colors.Body));
+	YAJL_CHECK(YAJLAddColorPair(g, "Legs", c->Colors.Legs));
+	YAJL_CHECK(YAJLAddColorPair(g, "Hair", c->Colors.Hair));
+	YAJL_CHECK(YAJLAddColorPair(g, "Feet", c->Colors.Feet));
+	YAJL_CHECK(YAJLAddColorPair(g, "Facehair", c->Colors.Facehair));
+	YAJL_CHECK(YAJLAddColorPair(g, "Hat", c->Colors.Hat));
+	YAJL_CHECK(YAJLAddColorPair(g, "Glasses", c->Colors.Glasses));
+	YAJL_CHECK(YAJLAddIntPair(g, "speed", (int)(c->speed * 256)));
+	YAJL_CHECK(YAJLAddStringPair(g, "Gun", c->Gun->name));
 	if (c->Melee != NULL)
 	{
-		json_insert_pair_into_object(node, "Melee", json_new_string(c->Melee->name));
+		YAJL_CHECK(YAJLAddStringPair(g, "Melee", c->Melee->name));
 	}
-	AddIntPair(node, "maxHealth", c->maxHealth);
-	AddIntPair(node, "excessHealth", c->excessHealth);
-	AddIntPair(node, "flags", c->flags);
+	YAJL_CHECK(YAJLAddIntPair(g, "maxHealth", c->maxHealth));
+	YAJL_CHECK(YAJLAddIntPair(g, "excessHealth", c->excessHealth));
+	YAJL_CHECK(YAJLAddIntPair(g, "flags", c->flags));
 	if (c->Drop != NULL)
 	{
-		json_insert_pair_into_object(
-			node, "Drop", json_new_string(c->Drop->Name));
+		YAJL_CHECK(YAJLAddStringPair(g, "Drop", c->Drop->Name));
 	}
-	AddIntPair(node, "probabilityToMove", c->bot->probabilityToMove);
-	AddIntPair(node, "probabilityToTrack", c->bot->probabilityToTrack);
-	AddIntPair(node, "probabilityToShoot", c->bot->probabilityToShoot);
-	AddIntPair(node, "actionDelay", c->bot->actionDelay);
-	json_insert_child(charNode, node);
+	YAJL_CHECK(
+		YAJLAddIntPair(g, "probabilityToMove", c->bot->probabilityToMove));
+	YAJL_CHECK(
+		YAJLAddIntPair(g, "probabilityToTrack", c->bot->probabilityToTrack));
+	YAJL_CHECK(
+		YAJLAddIntPair(g, "probabilityToShoot", c->bot->probabilityToShoot));
+	YAJL_CHECK(YAJLAddIntPair(g, "actionDelay", c->bot->actionDelay));
+	YAJL_CHECK(yajl_gen_map_close(g));
 	CA_FOREACH_END()
-	json_insert_pair_into_object(root, "Characters", charNode);
+	YAJL_CHECK(yajl_gen_array_close(g));
+
+	YAJL_CHECK(yajl_gen_map_close(g));
 	char buf[CDOGS_PATH_MAX];
 	sprintf(buf, "%s/characters.json", path);
-	if (!TrySaveJSONFile(root, buf))
+	if (!YAJLTrySaveJSONFile(g, buf))
 	{
 		res = false;
 		goto bail;
 	}
 
 bail:
-	json_free_value(&root);
+	if (g)
+	{
+		yajl_gen_clear(g);
+		yajl_gen_free(g);
+	}
 	return res;
 }
 
@@ -393,7 +428,7 @@ bool CharacterIsPrisoner(const CharacterStore *store, const Character *c)
 void CharacterSetHeadPart(Character *c, const HeadPart hp, const char *name)
 {
 	CFREE(c->HeadParts[hp]);
-	   c->HeadParts[hp] = NULL;
+	c->HeadParts[hp] = NULL;
 	if (name)
 	{
 		CSTRDUP(c->HeadParts[hp], name);
@@ -417,11 +452,11 @@ void CharacterShuffleAppearance(Character *c)
 			&gCharacterClasses.CustomClasses,
 			charClass - gCharacterClasses.Classes.size);
 	}
-	
+
 	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
 	{
 		const char *name = NULL;
-		if (RAND_INT(0, 3)==0)
+		if (RAND_INT(0, 3) == 0)
 		{
 			const CArray *hpNames = &gPicManager.headPartNames[hp];
 			name = *(char **)CArrayGet(hpNames, rand() % hpNames->size);

@@ -31,19 +31,21 @@
 #include "yajl/api/yajl_gen.h"
 #include "yajl/api/yajl_tree.h"
 
-
 yajl_val YAJLReadFile(const char *filename);
 yajl_gen_status YAJLAddIntPair(yajl_gen g, const char *name, const int number);
-yajl_gen_status YAJLAddBoolPair(yajl_gen g, const char *name, const bool value);
+yajl_gen_status YAJLAddBoolPair(
+	yajl_gen g, const char *name, const bool value);
 yajl_gen_status YAJLAddStringPair(yajl_gen g, const char *name, const char *s);
-yajl_gen_status YAJLAddColorPair(yajl_gen g, const char *name, const color_t c);
+yajl_gen_status YAJLAddColorPair(
+	yajl_gen g, const char *name, const color_t c);
 void YAJLBool(bool *value, yajl_val node, const char *name);
 void YAJLInt(int *value, yajl_val node, const char *name);
 void YAJLDouble(double *value, yajl_val node, const char *name);
 void YAJLVec2i(struct vec2i *value, yajl_val node, const char *name);
-#define YAJL_GET_VEC2I(v) svec2i(\
-	(int)YAJL_GET_INTEGER(YAJL_GET_ARRAY(v)->values[0]),\
-	(int)YAJL_GET_INTEGER(YAJL_GET_ARRAY(v)->values[1]))
+#define YAJL_GET_VEC2I(v)                                                     \
+	svec2i(                                                                   \
+		(int)YAJL_GET_INTEGER(YAJL_GET_ARRAY(v)->values[0]),                  \
+		(int)YAJL_GET_INTEGER(YAJL_GET_ARRAY(v)->values[1]))
 // remember to free
 void YAJLStr(char **value, yajl_val node, const char *name);
 char *YAJLGetStr(yajl_val node, const char *name);
@@ -74,3 +76,5 @@ bool YAJLTryLoadValue(yajl_val *node, const char *name);
 		}\
 	}
 */
+
+bool YAJLTrySaveJSONFile(yajl_gen g, const char *filename);

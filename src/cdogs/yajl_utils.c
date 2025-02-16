@@ -25,6 +25,8 @@
  */
 #include "yajl_utils.h"
 
+#include "log.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -244,4 +246,33 @@ yajl_val YAJLFindNode(yajl_val node, const char *path)
 bail:
 	CFREE(pathCopy);
 	return out;
+}
+
+bool YAJLTrySaveJSONFile(yajl_gen g, const char *filename)
+{
+	const char *buf;
+	size_t len;
+	bool res = true;
+	yajl_gen_get_buf(g, (const unsigned char **)&buf, &len);
+	FILE *f = fopen(filename, "w");
+	if (f == NULL)
+	{
+		LOG(LM_MAIN, LL_ERROR, "Unable to save %s\n", filename);
+		res = false;
+		goto bail;
+	}
+	fwrite(buf, 1, len, f);
+
+#ifdef __EMSCRIPTEN__
+	EM_ASM(
+		// persist changes
+		FS.syncfs(false, function(err) { assert(!err); }););
+#endif
+
+bail:
+	if (f != NULL)
+	{
+		fclose(f);
+	}
+	return res;
 }

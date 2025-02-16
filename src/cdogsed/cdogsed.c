@@ -499,7 +499,12 @@ static void Save(void)
 
 		BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 		WindowContextPostRender(&gGraphicsDevice.gameWindow);
-		MapArchiveSave(buf, &gCampaign.Setting);
+		if (!MapArchiveSave(buf, &gCampaign.Setting))
+		{
+			SDL_ShowSimpleMessageBox(
+			 SDL_MESSAGEBOX_INFORMATION, "Error", "Error when saving campaign!",
+			 gGraphicsDevice.gameWindow.window);
+		}
 		fileChanged = false;
 		strcpy(lastFile, buf);
 		sAutosaveIndex = 0;
