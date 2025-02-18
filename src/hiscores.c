@@ -57,6 +57,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <cdogs/draw/draw_actor.h>
 #include <cdogs/events.h>
 #include <cdogs/files.h>
 #include <cdogs/font.h>
@@ -73,8 +74,7 @@ typedef struct
 {
 	char *Name;
 	time_t Time;
-	CharacterClass Character;
-	CharColors Colors;
+	Character Character;
 	NPlayerStats Stats;
 	int Missions;
 	int LastMission;
@@ -204,8 +204,7 @@ static bool EnterHighScore(const PlayerData *data, CArray *scores)
 	}
 	// TODO: get existing entry
 	CSTRDUP(entry->Name, data->name);
-	CharacterClassCopy(&entry->Character, data->Char.Class);
-	entry->Colors = data->Char.Colors;
+	CharacterCopy(&entry->Character, &data->Char, NULL);
 	entry->Stats = data->Totals;
 	entry->Missions = data->missions;
 	entry->LastMission = data->lastMission;
@@ -219,26 +218,24 @@ static void DisplayAt(int x, int y, const char *s, int hilite)
 	FontStrMask(s, svec2i(x, y), mask);
 }
 
+#define INDEX_OFFSET 15
+#define SCORE_OFFSET 40
+#define FACE_OFFSET 70
+#define NAME_OFFSET 85
+
 static int DisplayEntry(
 	const int x, const int y, const int idx, const HighScoreEntry *e,
 	const bool hilite)
 {
 	char s[10];
 
-#define INDEX_OFFSET 15
-#define SCORE_OFFSET 40
-#define MISSIONS_OFFSET 60
-#define MISSION_OFFSET 80
-#define NAME_OFFSET 85
-
 	sprintf(s, "%d.", idx + 1);
 	DisplayAt(x + INDEX_OFFSET - FontStrW(s), y, s, hilite);
 	sprintf(s, "%d", (int)e->Stats.Score);
 	DisplayAt(x + SCORE_OFFSET - FontStrW(s), y, s, hilite);
-	sprintf(s, "%d", e->Missions);
-	DisplayAt(x + MISSIONS_OFFSET - FontStrW(s), y, s, hilite);
-	sprintf(s, "(%d)", e->LastMission + 1);
-	DisplayAt(x + MISSION_OFFSET - FontStrW(s), y, s, hilite);
+	DrawHead(
+		gGraphicsDevice.gameWindow.renderer, &e->Character, DIRECTION_DOWN,
+		svec2i(x + FACE_OFFSET, y + 4));
 	DisplayAt(x + NAME_OFFSET, y, e->Name, hilite);
 	// TODO: show other columns: kills, time, favourite weapon, character body
 
@@ -251,6 +248,16 @@ static void DisplayPage(const CArray *entries)
 	int y = 5 + FontH();
 
 	FontStr("High Scores:", svec2i(5, 5));
+
+	// Display headings
+	const char *s;
+	s = "Rank";
+	DisplayAt(x + INDEX_OFFSET - FontStrW(s), y, s, false);
+	s = "Score";
+	DisplayAt(x + SCORE_OFFSET - FontStrW(s), y, s, false);
+	s = "Name";
+	DisplayAt(x + NAME_OFFSET, y, s, false);
+	y += 5 + FontH();
 
 	// Find all the high scores for local players
 	int localScores[MAX_LOCAL_PLAYERS];
@@ -360,33 +367,10 @@ static int SaveHighScoreEntries(any_t data, any_t key)
 
 	YAJL_CHECK(yajl_gen_string(
 		g, (const unsigned char *)"Character", strlen("Character")));
-	YAJL_CHECK(yajl_gen_map_open(g));
-	YAJL_CHECK(YAJLAddStringPair(g, "Name", entry->Character.Name));
-	YAJL_CHECK(YAJLAddStringPair(g, "Head", entry->Character.HeadSprites));
-	YAJL_CHECK(YAJLAddStringPair(g, "Body", entry->Character.Body));
-	YAJL_CHECK(YAJLAddBoolPair(
-		g, "HasHair", entry->Character.HasHeadParts[HEAD_PART_HAIR]));
-	YAJL_CHECK(YAJLAddBoolPair(
-		g, "HasFacehair", entry->Character.HasHeadParts[HEAD_PART_FACEHAIR]));
-	YAJL_CHECK(YAJLAddBoolPair(
-		g, "HasHat", entry->Character.HasHeadParts[HEAD_PART_HAT]));
-	YAJL_CHECK(YAJLAddBoolPair(
-		g, "HasGlasses", entry->Character.HasHeadParts[HEAD_PART_GLASSES]));
-	YAJL_CHECK(yajl_gen_map_close(g));
-
-	YAJL_CHECK(
-		yajl_gen_string(g, (const unsigned char *)"Colors", strlen("Colors")));
-	YAJL_CHECK(yajl_gen_map_open(g));
-	YAJL_CHECK(YAJLAddColorPair(g, "Skin", entry->Colors.Skin));
-	YAJL_CHECK(YAJLAddColorPair(g, "Arms", entry->Colors.Arms));
-	YAJL_CHECK(YAJLAddColorPair(g, "Body", entry->Colors.Body));
-	YAJL_CHECK(YAJLAddColorPair(g, "Legs", entry->Colors.Legs));
-	YAJL_CHECK(YAJLAddColorPair(g, "Hair", entry->Colors.Hair));
-	YAJL_CHECK(YAJLAddColorPair(g, "Feet", entry->Colors.Feet));
-	YAJL_CHECK(YAJLAddColorPair(g, "Facehair", entry->Colors.Facehair));
-	YAJL_CHECK(YAJLAddColorPair(g, "Hat", entry->Colors.Hat));
-	YAJL_CHECK(YAJLAddColorPair(g, "Glasses", entry->Colors.Glasses));
-	YAJL_CHECK(yajl_gen_map_close(g));
+	if (!CharacterSave(g, &entry->Character))
+	{
+		return MAP_MISSING;
+	}
 
 	// TODO: base64 encode
 	YAJL_CHECK(
@@ -416,7 +400,6 @@ static int SaveHighScoreEntries(any_t data, any_t key)
 }
 void SaveHighScores(void)
 {
-	FILE *f = NULL;
 	yajl_gen g = yajl_gen_alloc(NULL);
 	if (g == NULL)
 	{
@@ -441,33 +424,17 @@ void SaveHighScores(void)
 	}
 	YAJL_CHECK(yajl_gen_map_close(g));
 
-	const char *buf;
-	size_t len;
-	yajl_gen_get_buf(g, (const unsigned char **)&buf, &len);
 	const char *path = GetConfigFilePath(SCORES_FILE);
-	f = fopen(path, "w");
-	if (f == NULL)
+	if (!YAJLTrySaveJSONFile(g, path))
 	{
-		LOG(LM_MAIN, LL_ERROR, "Unable to save %s\n", path);
 		goto bail;
 	}
-	fwrite(buf, 1, len, f);
-
-#ifdef __EMSCRIPTEN__
-	EM_ASM(
-		// persist changes
-		FS.syncfs(false, function(err) { assert(!err); }););
-#endif
 
 bail:
 	if (g)
 	{
 		yajl_gen_clear(g);
 		yajl_gen_free(g);
-	}
-	if (f != NULL)
-	{
-		fclose(f);
 	}
 }
 
@@ -517,40 +484,32 @@ static void LoadHighScores(void)
 					"Unexpected format for high score entry %s %d\n", path, j);
 				continue;
 			}
-			YAJLStr(&entry.Character.Name, charNode, "Name");
-			YAJLStr(&entry.Character.HeadSprites, charNode, "Head");
-			YAJLStr(&entry.Character.Body, charNode, "Body");
-			YAJLBool(
-				&entry.Character.HasHeadParts[HEAD_PART_HAIR], charNode,
-				"HasHair");
-			YAJLBool(
-				&entry.Character.HasHeadParts[HEAD_PART_FACEHAIR], charNode,
-				"HasFacehair");
-			YAJLBool(
-				&entry.Character.HasHeadParts[HEAD_PART_HAT], charNode,
-				"HasHat");
-			YAJLBool(
-				&entry.Character.HasHeadParts[HEAD_PART_GLASSES], charNode,
-				"HasGlasses");
-
-			const char *colorPath[] = {"Colors", NULL};
-			yajl_val colorNode =
-				yajl_tree_get(entryNode, colorPath, yajl_t_object);
-			if (!colorNode)
-			{
-				LOG(LM_MAIN, LL_ERROR,
-					"Unexpected format for high score entry %s %d\n", path, j);
-				continue;
-			}
-			YAJLLoadColor(&entry.Colors.Skin, colorNode, "Skin");
-			YAJLLoadColor(&entry.Colors.Arms, colorNode, "Arms");
-			YAJLLoadColor(&entry.Colors.Body, colorNode, "Body");
-			YAJLLoadColor(&entry.Colors.Legs, colorNode, "Legs");
-			YAJLLoadColor(&entry.Colors.Hair, colorNode, "Hair");
-			YAJLLoadColor(&entry.Colors.Feet, colorNode, "Feet");
-			YAJLLoadColor(&entry.Colors.Facehair, colorNode, "Facehair");
-			YAJLLoadColor(&entry.Colors.Hat, colorNode, "Hat");
-			YAJLLoadColor(&entry.Colors.Glasses, colorNode, "Glasses");
+			char *tmp = YAJLGetStr(charNode, "Class");
+			entry.Character.Class = StrCharacterClass(tmp);
+			CFREE(tmp);
+			YAJLStr(
+				&entry.Character.HeadParts[HEAD_PART_HAIR], charNode,
+				"HairType");
+			YAJLStr(
+				&entry.Character.HeadParts[HEAD_PART_FACEHAIR], charNode,
+				"FacehairType");
+			YAJLStr(
+				&entry.Character.HeadParts[HEAD_PART_HAT], charNode,
+				"HatType");
+			YAJLStr(
+				&entry.Character.HeadParts[HEAD_PART_GLASSES], charNode,
+				"GlassesType");
+			YAJLLoadColor(&entry.Character.Colors.Skin, charNode, "Skin");
+			YAJLLoadColor(&entry.Character.Colors.Arms, charNode, "Arms");
+			YAJLLoadColor(&entry.Character.Colors.Body, charNode, "Body");
+			YAJLLoadColor(&entry.Character.Colors.Legs, charNode, "Legs");
+			YAJLLoadColor(&entry.Character.Colors.Hair, charNode, "Hair");
+			YAJLLoadColor(&entry.Character.Colors.Feet, charNode, "Feet");
+			YAJLLoadColor(
+				&entry.Character.Colors.Facehair, charNode, "Facehair");
+			YAJLLoadColor(&entry.Character.Colors.Hat, charNode, "Hat");
+			YAJLLoadColor(
+				&entry.Character.Colors.Glasses, charNode, "Glasses");
 
 			// TODO: base64 decode
 			const char *statsPath[] = {"Stats", NULL};

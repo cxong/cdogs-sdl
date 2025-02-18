@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2014, 2016, 2019-2021, 2023 Cong Xu
+	Copyright (c) 2013-2014, 2016, 2019-2021, 2023, 2025 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@
 #include "character_class.h"
 #include "pickup_class.h"
 #include "weapon.h"
+#include "yajl/api/yajl_gen.h"
 
 typedef struct
 {
@@ -76,7 +77,7 @@ void CharacterStoreCopy(
 void CharacterStoreResetOthers(CharacterStore *store);
 void CharacterLoadJSON(
 	CharacterStore *c, CArray *playerTemplates, json_t *root, int version);
-bool CharacterSave(CharacterStore *s, const char *path);
+bool CharacterStoreSave(CharacterStore *s, const char *path);
 Character *CharacterStoreAddOther(CharacterStore *store);
 Character *CharacterStoreInsertOther(CharacterStore *store, const size_t idx);
 void CharacterStoreDeleteOther(CharacterStore *store, int idx);
@@ -89,6 +90,10 @@ int CharacterStoreGetPrisonerId(const CharacterStore *store, const int i);
 int CharacterStoreGetSpecialId(const CharacterStore *store, const int i);
 int CharacterStoreGetRandomBaddieId(const CharacterStore *store);
 int CharacterStoreGetRandomSpecialId(const CharacterStore *store);
+
+void CharacterCopy(
+	Character *dst, const Character *src, CArray *playerTemplates);
+bool CharacterSave(yajl_gen g, const Character *c);
 
 bool CharacterIsPrisoner(const CharacterStore *store, const Character *c);
 

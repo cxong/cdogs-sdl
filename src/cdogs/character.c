@@ -39,6 +39,14 @@
 
 #define CHARACTER_VERSION 14
 
+#define YAJL_CHECK(func)                                                      \
+	if (func != yajl_gen_status_ok)                                           \
+	{                                                                         \
+		LOG(LM_MAIN, LL_ERROR, "JSON generator error for character\n");       \
+		res = false;                                                          \
+		goto bail;                                                            \
+	}
+
 static void CharacterInit(Character *c)
 {
 	memset(c, 0, sizeof *c);
@@ -82,22 +90,7 @@ void CharacterStoreCopy(
 	CharacterStoreInit(dst);
 	CArrayCopy(&dst->OtherChars, &src->OtherChars);
 	CA_FOREACH(Character, c, dst->OtherChars)
-	const CharBot *cb = c->bot;
-	CMALLOC(c->bot, sizeof *c->bot);
-	memcpy(c->bot, cb, sizeof *cb);
-	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
-	{
-		if (c->HeadParts[hp] != NULL)
-		{
-			char *hpCopy = NULL;
-			CSTRDUP(hpCopy, c->HeadParts[hp]);
-			c->HeadParts[hp] = hpCopy;
-		}
-	}
-	if (c->PlayerTemplateName != NULL)
-	{
-		PlayerTemplateAddCharacter(playerTemplates, c);
-	}
+	CharacterCopy(c, CArrayGet(&src->OtherChars, _ca_index), playerTemplates);
 	CA_FOREACH_END()
 	CArrayCopy(&dst->prisonerIds, &src->prisonerIds);
 	CArrayCopy(&dst->baddieIds, &src->baddieIds);
@@ -249,7 +242,7 @@ void CharacterLoadJSON(
 	}
 }
 
-bool CharacterSave(CharacterStore *s, const char *path)
+bool CharacterStoreSave(CharacterStore *s, const char *path)
 {
 	bool res = true;
 	yajl_gen g = yajl_gen_alloc(NULL);
@@ -261,77 +254,18 @@ bool CharacterSave(CharacterStore *s, const char *path)
 		goto bail;
 	}
 
-#define YAJL_CHECK(func)                                                      \
-	if (func != yajl_gen_status_ok)                                           \
-	{                                                                         \
-		LOG(LM_MAIN, LL_ERROR, "JSON generator error for character\n");       \
-		res = false;                                                          \
-		goto bail;                                                            \
-	}
-
 	YAJL_CHECK(yajl_gen_map_open(g));
 	YAJL_CHECK(YAJLAddIntPair(g, "Version", CHARACTER_VERSION));
 
-	YAJL_CHECK(yajl_gen_string(g, (const unsigned char *)"Characters", strlen("Characters")));
+	YAJL_CHECK(yajl_gen_string(
+		g, (const unsigned char *)"Characters", strlen("Characters")));
 	YAJL_CHECK(yajl_gen_array_open(g));
 	CA_FOREACH(Character, c, s->OtherChars)
-	YAJL_CHECK(yajl_gen_map_open(g));
-	YAJL_CHECK(YAJLAddStringPair(g, "Class", c->Class->Name));
-	if (c->PlayerTemplateName)
+	if (!CharacterSave(g, c))
 	{
-		YAJL_CHECK(
-			YAJLAddStringPair(g, "PlayerTemplateName", c->PlayerTemplateName));
+		res = false;
+		goto bail;
 	}
-	if (c->HeadParts[HEAD_PART_HAIR])
-	{
-		YAJL_CHECK(
-			YAJLAddStringPair(g, "HairType", c->HeadParts[HEAD_PART_HAIR]));
-	}
-	if (c->HeadParts[HEAD_PART_FACEHAIR])
-	{
-		YAJL_CHECK(YAJLAddStringPair(
-			g, "FacehairType", c->HeadParts[HEAD_PART_FACEHAIR]));
-	}
-	if (c->HeadParts[HEAD_PART_HAT])
-	{
-		YAJL_CHECK(
-			YAJLAddStringPair(g, "HatType", c->HeadParts[HEAD_PART_HAT]));
-	}
-	if (c->HeadParts[HEAD_PART_GLASSES])
-	{
-		YAJL_CHECK(YAJLAddStringPair(
-			g, "GlassesType", c->HeadParts[HEAD_PART_GLASSES]));
-	}
-	YAJL_CHECK(YAJLAddColorPair(g, "Skin", c->Colors.Skin));
-	YAJL_CHECK(YAJLAddColorPair(g, "Arms", c->Colors.Arms));
-	YAJL_CHECK(YAJLAddColorPair(g, "Body", c->Colors.Body));
-	YAJL_CHECK(YAJLAddColorPair(g, "Legs", c->Colors.Legs));
-	YAJL_CHECK(YAJLAddColorPair(g, "Hair", c->Colors.Hair));
-	YAJL_CHECK(YAJLAddColorPair(g, "Feet", c->Colors.Feet));
-	YAJL_CHECK(YAJLAddColorPair(g, "Facehair", c->Colors.Facehair));
-	YAJL_CHECK(YAJLAddColorPair(g, "Hat", c->Colors.Hat));
-	YAJL_CHECK(YAJLAddColorPair(g, "Glasses", c->Colors.Glasses));
-	YAJL_CHECK(YAJLAddIntPair(g, "speed", (int)(c->speed * 256)));
-	YAJL_CHECK(YAJLAddStringPair(g, "Gun", c->Gun->name));
-	if (c->Melee != NULL)
-	{
-		YAJL_CHECK(YAJLAddStringPair(g, "Melee", c->Melee->name));
-	}
-	YAJL_CHECK(YAJLAddIntPair(g, "maxHealth", c->maxHealth));
-	YAJL_CHECK(YAJLAddIntPair(g, "excessHealth", c->excessHealth));
-	YAJL_CHECK(YAJLAddIntPair(g, "flags", c->flags));
-	if (c->Drop != NULL)
-	{
-		YAJL_CHECK(YAJLAddStringPair(g, "Drop", c->Drop->Name));
-	}
-	YAJL_CHECK(
-		YAJLAddIntPair(g, "probabilityToMove", c->bot->probabilityToMove));
-	YAJL_CHECK(
-		YAJLAddIntPair(g, "probabilityToTrack", c->bot->probabilityToTrack));
-	YAJL_CHECK(
-		YAJLAddIntPair(g, "probabilityToShoot", c->bot->probabilityToShoot));
-	YAJL_CHECK(YAJLAddIntPair(g, "actionDelay", c->bot->actionDelay));
-	YAJL_CHECK(yajl_gen_map_close(g));
 	CA_FOREACH_END()
 	YAJL_CHECK(yajl_gen_array_close(g));
 
@@ -409,6 +343,103 @@ int CharacterStoreGetRandomSpecialId(const CharacterStore *store)
 {
 	const int idx = RAND_INT(0, store->specialIds.size);
 	return *(int *)CArrayGet(&store->specialIds, idx);
+}
+
+void CharacterCopy(
+	Character *dst, const Character *src, CArray *playerTemplates)
+{
+	memcpy(dst, src, sizeof *dst);
+	const CharBot *cb = dst->bot;
+	if (cb)
+	{
+		CMALLOC(dst->bot, sizeof *dst->bot);
+		memcpy(dst->bot, cb, sizeof *cb);
+	}
+	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
+	{
+		if (dst->HeadParts[hp] != NULL)
+		{
+			char *hpCopy = NULL;
+			CSTRDUP(hpCopy, dst->HeadParts[hp]);
+			dst->HeadParts[hp] = hpCopy;
+		}
+	}
+	if (dst->PlayerTemplateName != NULL && playerTemplates)
+	{
+		PlayerTemplateAddCharacter(playerTemplates, dst);
+	}
+}
+
+bool CharacterSave(yajl_gen g, const Character *c)
+{
+	bool res = true;
+
+	YAJL_CHECK(yajl_gen_map_open(g));
+	YAJL_CHECK(YAJLAddStringPair(g, "Class", c->Class->Name));
+	if (c->PlayerTemplateName)
+	{
+		YAJL_CHECK(
+			YAJLAddStringPair(g, "PlayerTemplateName", c->PlayerTemplateName));
+	}
+	if (c->HeadParts[HEAD_PART_HAIR])
+	{
+		YAJL_CHECK(
+			YAJLAddStringPair(g, "HairType", c->HeadParts[HEAD_PART_HAIR]));
+	}
+	if (c->HeadParts[HEAD_PART_FACEHAIR])
+	{
+		YAJL_CHECK(YAJLAddStringPair(
+			g, "FacehairType", c->HeadParts[HEAD_PART_FACEHAIR]));
+	}
+	if (c->HeadParts[HEAD_PART_HAT])
+	{
+		YAJL_CHECK(
+			YAJLAddStringPair(g, "HatType", c->HeadParts[HEAD_PART_HAT]));
+	}
+	if (c->HeadParts[HEAD_PART_GLASSES])
+	{
+		YAJL_CHECK(YAJLAddStringPair(
+			g, "GlassesType", c->HeadParts[HEAD_PART_GLASSES]));
+	}
+	YAJL_CHECK(YAJLAddColorPair(g, "Skin", c->Colors.Skin));
+	YAJL_CHECK(YAJLAddColorPair(g, "Arms", c->Colors.Arms));
+	YAJL_CHECK(YAJLAddColorPair(g, "Body", c->Colors.Body));
+	YAJL_CHECK(YAJLAddColorPair(g, "Legs", c->Colors.Legs));
+	YAJL_CHECK(YAJLAddColorPair(g, "Hair", c->Colors.Hair));
+	YAJL_CHECK(YAJLAddColorPair(g, "Feet", c->Colors.Feet));
+	YAJL_CHECK(YAJLAddColorPair(g, "Facehair", c->Colors.Facehair));
+	YAJL_CHECK(YAJLAddColorPair(g, "Hat", c->Colors.Hat));
+	YAJL_CHECK(YAJLAddColorPair(g, "Glasses", c->Colors.Glasses));
+	YAJL_CHECK(YAJLAddIntPair(g, "speed", (int)(c->speed * 256)));
+	if (c->Gun)
+	{
+		YAJL_CHECK(YAJLAddStringPair(g, "Gun", c->Gun->name));
+	}
+	if (c->Melee != NULL)
+	{
+		YAJL_CHECK(YAJLAddStringPair(g, "Melee", c->Melee->name));
+	}
+	YAJL_CHECK(YAJLAddIntPair(g, "maxHealth", c->maxHealth));
+	YAJL_CHECK(YAJLAddIntPair(g, "excessHealth", c->excessHealth));
+	YAJL_CHECK(YAJLAddIntPair(g, "flags", c->flags));
+	if (c->Drop != NULL)
+	{
+		YAJL_CHECK(YAJLAddStringPair(g, "Drop", c->Drop->Name));
+	}
+	if (c->bot)
+	{
+		YAJL_CHECK(
+			YAJLAddIntPair(g, "probabilityToMove", c->bot->probabilityToMove));
+		YAJL_CHECK(YAJLAddIntPair(
+			g, "probabilityToTrack", c->bot->probabilityToTrack));
+		YAJL_CHECK(YAJLAddIntPair(
+			g, "probabilityToShoot", c->bot->probabilityToShoot));
+		YAJL_CHECK(YAJLAddIntPair(g, "actionDelay", c->bot->actionDelay));
+	}
+	YAJL_CHECK(yajl_gen_map_close(g));
+
+bail:
+	return res;
 }
 
 bool CharacterIsPrisoner(const CharacterStore *store, const Character *c)

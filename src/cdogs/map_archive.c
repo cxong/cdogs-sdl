@@ -224,7 +224,8 @@ static void LoadArchivePics(PicManager *pm, map_t cc, const char *archive)
 {
 	char path[CDOGS_PATH_MAX];
 	sprintf(path, "%s/graphics", archive);
-	PicManagerLoadDir(pm, path, NULL, pm->customPics, pm->customSprites, false);
+	PicManagerLoadDir(
+		pm, path, NULL, pm->customPics, pm->customSprites, false);
 	sprintf(path, "%s/graphics_hd", archive);
 	PicManagerLoadDir(pm, path, NULL, pm->customPics, pm->customSprites, true);
 	CharSpriteClassesLoadDir(cc, archive);
@@ -286,7 +287,7 @@ int MapArchiveSave(const char *filename, CampaignSetting *c)
 		goto bail;
 	}
 
-	if (!CharacterSave(&c->characters, buf))
+	if (!CharacterStoreSave(&c->characters, buf))
 	{
 		res = 0;
 		goto bail;
@@ -337,8 +338,7 @@ static json_t *SaveMissions(CArray *a)
 		json_t *pcsNode = json_new_array();
 		for (int j = 0; j < (int)mission->PickupCounts.size; j++)
 		{
-			const PickupCount *pc =
-				CArrayGet(&mission->PickupCounts, j);
+			const PickupCount *pc = CArrayGet(&mission->PickupCounts, j);
 			json_t *pcNode = json_new_object();
 			AddStringPair(pcNode, "Pickup", pc->P->Name);
 			AddIntPair(pcNode, "Count", pc->Count);
