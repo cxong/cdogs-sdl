@@ -218,10 +218,12 @@ static void DisplayAt(int x, int y, const char *s, int hilite)
 	FontStrMask(s, svec2i(x, y), mask);
 }
 
-#define INDEX_OFFSET 15
-#define SCORE_OFFSET 40
-#define FACE_OFFSET 70
-#define NAME_OFFSET 85
+#define INDEX_OFFSET 5
+#define SCORE_OFFSET 30
+#define TIME_OFFSET 55
+#define KILLS_OFFSET 75
+#define FACE_OFFSET 85
+#define NAME_OFFSET 95
 
 static int DisplayEntry(
 	const int x, const int y, const int idx, const HighScoreEntry *e,
@@ -233,11 +235,16 @@ static int DisplayEntry(
 	DisplayAt(x + INDEX_OFFSET - FontStrW(s), y, s, hilite);
 	sprintf(s, "%d", (int)e->Stats.Score);
 	DisplayAt(x + SCORE_OFFSET - FontStrW(s), y, s, hilite);
+	const int timeSeconds = e->Stats.TimeTicks / FPS_FRAMELIMIT;
+	sprintf(s, "%d:%02d", timeSeconds / 60, timeSeconds % 60);
+	DisplayAt(x + TIME_OFFSET - FontStrW(s), y, s, hilite);
+	sprintf(s, "%d", (int)e->Stats.Kills);
+	DisplayAt(x + KILLS_OFFSET - FontStrW(s), y, s, hilite);
+	// TODO: show favourite weapon
 	DrawHead(
 		gGraphicsDevice.gameWindow.renderer, &e->Character, DIRECTION_DOWN,
 		svec2i(x + FACE_OFFSET, y + 4));
 	DisplayAt(x + NAME_OFFSET, y, e->Name, hilite);
-	// TODO: show other columns: kills, time, favourite weapon, character body
 
 	return 1 + FontH();
 }
@@ -255,6 +262,10 @@ static void DisplayPage(const CArray *entries)
 	DisplayAt(x + INDEX_OFFSET - FontStrW(s), y, s, false);
 	s = "Score";
 	DisplayAt(x + SCORE_OFFSET - FontStrW(s), y, s, false);
+	s = "Time";
+	DisplayAt(x + TIME_OFFSET - FontStrW(s), y, s, false);
+	s = "Kills";
+	DisplayAt(x + KILLS_OFFSET - FontStrW(s), y, s, false);
 	s = "Name";
 	DisplayAt(x + NAME_OFFSET, y, s, false);
 	y += 5 + FontH();
