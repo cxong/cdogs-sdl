@@ -481,6 +481,7 @@ static void LoadHighScores(void)
 		{
 			yajl_val entryNode = entriesNode->values[j];
 			HighScoreEntry entry;
+			memset(&entry, 0, sizeof entry);
 			YAJLStr(&entry.Name, entryNode, "Name");
 			int value;
 			YAJLInt(&value, entryNode, "Time");
