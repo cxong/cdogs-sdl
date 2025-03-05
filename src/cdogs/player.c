@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2016, 2018-2020, 2022-2023 Cong Xu
+	Copyright (c) 2014-2016, 2018-2020, 2022-2023, 2025 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -62,6 +62,8 @@ void PlayerDataAddOrUpdate(const NPlayerData pd)
 
 		p->Char.speed = 1;
 
+		p->WeaponUsages = WeaponUsagesNew();
+
 		LOG(LM_MAIN, LL_INFO, "add default player UID(%u) local(%s)", pd.UID,
 			p->IsLocal ? "true" : "false");
 	}
@@ -74,12 +76,12 @@ void PlayerDataAddOrUpdate(const NPlayerData pd)
 	{
 		p->Char.Class = StrCharacterClass("Jones");
 	}
-#define ADDHEADPART(_hp, _pdPart) \
-	CFREE(p->Char.HeadParts[_hp]); \
-	p->Char.HeadParts[_hp] = NULL; \
-	if (strlen(_pdPart) > 0) \
-	{ \
-		CSTRDUP(p->Char.HeadParts[_hp], _pdPart); \
+#define ADDHEADPART(_hp, _pdPart)                                             \
+	CFREE(p->Char.HeadParts[_hp]);                                            \
+	p->Char.HeadParts[_hp] = NULL;                                            \
+	if (strlen(_pdPart) > 0)                                                  \
+	{                                                                         \
+		CSTRDUP(p->Char.HeadParts[_hp], _pdPart);                             \
 	}
 	ADDHEADPART(HEAD_PART_HAIR, pd.Hair);
 	ADDHEADPART(HEAD_PART_FACEHAIR, pd.Facehair);
@@ -111,7 +113,8 @@ void PlayerDataAddOrUpdate(const NPlayerData pd)
 	// Ready players as well
 	p->Ready = true;
 
-	LOG(LM_MAIN, LL_INFO, "update player UID(%d) maxHealth(%d) excessHealth(%d)  HP(%d)", p->UID,
+	LOG(LM_MAIN, LL_INFO,
+		"update player UID(%d) maxHealth(%d) excessHealth(%d)  HP(%d)", p->UID,
 		p->Char.maxHealth, p->Char.excessHealth, p->HP);
 }
 
@@ -147,6 +150,7 @@ void PlayerRemove(const int uid)
 static void PlayerTerminate(PlayerData *p)
 {
 	CFREE(p->Char.bot);
+	WeaponUsagesTerminate(p->WeaponUsages);
 }
 
 NPlayerData PlayerDataDefault(const int idx)
@@ -240,7 +244,7 @@ NPlayerData PlayerDataDefault(const int idx)
 			break;
 		}
 	}
-	
+
 	pd.HP = CampaignGetHP(&gCampaign);
 	pd.MaxHealth = CampaignGetMaxHP(&gCampaign);
 	pd.ExcessHealth = CampaignGetExcessHP(&gCampaign);

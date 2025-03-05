@@ -38,7 +38,7 @@
 #include "map.h"
 #include "player.h"
 
-#define NET_PROTOCOL_VERSION 15
+#define NET_PROTOCOL_VERSION 16
 
 // Messages
 

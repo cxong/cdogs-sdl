@@ -81,10 +81,6 @@ void emscriptenLoadFiles()
 	{
 		fclose(file_scores);
 	}
-	else
-	{
-		SaveHighScores();
-	}
 
 	// players.cnf
 	FILE *file_players = fopen(GetConfigFilePath(PLAYER_TEMPLATE_FILE), "r");

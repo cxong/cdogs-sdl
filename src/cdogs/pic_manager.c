@@ -70,7 +70,8 @@ static NamedPic *AddNamedPic(map_t pics, const char *name, const Pic *p);
 static NamedSprites *AddNamedSprites(map_t sprites, const char *name);
 static void AfterAdd(PicManager *pm);
 static void PicManagerAdd(
-	map_t pics, map_t sprites, const char *name, SDL_Surface *imageIn, const bool isHD)
+	map_t pics, map_t sprites, const char *name, SDL_Surface *imageIn,
+	const bool isHD)
 {
 	char buf[CDOGS_FILENAME_MAX];
 	const char *dot = strrchr(name, '.');
@@ -143,7 +144,8 @@ static void PicManagerAdd(
 				// which head part we are looking at
 				const char *subfolder = buf + strlen("chars/");
 				CharColorType headPartColor = CHAR_COLOR_HAIR;
-				if (strncmp("facehairs/", subfolder, strlen("facehairs/")) == 0)
+				if (strncmp("facehairs/", subfolder, strlen("facehairs/")) ==
+					0)
 				{
 					headPartColor = CHAR_COLOR_FACEHAIR;
 				}
@@ -151,7 +153,8 @@ static void PicManagerAdd(
 				{
 					headPartColor = CHAR_COLOR_HAT;
 				}
-				else if (strncmp("glasses/", subfolder, strlen("glasses/")) == 0)
+				else if (
+					strncmp("glasses/", subfolder, strlen("glasses/")) == 0)
 				{
 					headPartColor = CHAR_COLOR_GLASSES;
 				}
@@ -167,7 +170,8 @@ static void PicManagerAdd(
 					}
 					// Convert character color keyed color to
 					// greyscale + special alpha
-					const CharColorType colorType = CharColorTypeFromColor(c, headPartColor);
+					const CharColorType colorType =
+						CharColorTypeFromColor(c, headPartColor);
 					color_t converted = c;
 					if (colorType != CHAR_COLOR_COUNT)
 					{
@@ -250,7 +254,8 @@ void PicManagerLoadDir(
 			}
 			else
 			{
-				PicManagerLoadDir(pm, file.path, file.name, pics, sprites, isHD);
+				PicManagerLoadDir(
+					pm, file.path, file.name, pics, sprites, isHD);
 			}
 		}
 	}
@@ -282,10 +287,15 @@ static int MaybeAddKeyPicName(any_t data, any_t item);
 static int MaybeAddDoorPicName(any_t data, any_t item);
 static void AfterAdd(PicManager *pm)
 {
-	FindStyleSprites(pm, &pm->headPartNames[HEAD_PART_HAIR], MaybeAddHairSpriteName);
-	FindStyleSprites(pm, &pm->headPartNames[HEAD_PART_FACEHAIR], MaybeAddFacehairSpriteName);
-	FindStyleSprites(pm, &pm->headPartNames[HEAD_PART_HAT], MaybeAddHatSpriteName);
-	FindStyleSprites(pm, &pm->headPartNames[HEAD_PART_GLASSES], MaybeAddGlassesSpriteName);
+	FindStyleSprites(
+		pm, &pm->headPartNames[HEAD_PART_HAIR], MaybeAddHairSpriteName);
+	FindStyleSprites(
+		pm, &pm->headPartNames[HEAD_PART_FACEHAIR],
+		MaybeAddFacehairSpriteName);
+	FindStyleSprites(
+		pm, &pm->headPartNames[HEAD_PART_HAT], MaybeAddHatSpriteName);
+	FindStyleSprites(
+		pm, &pm->headPartNames[HEAD_PART_GLASSES], MaybeAddGlassesSpriteName);
 	FindStylePics(pm, &pm->wallStyleNames, MaybeAddWallPicName);
 	FindStylePics(pm, &pm->tileStyleNames, MaybeAddTilePicName);
 	FindStylePics(pm, &pm->exitStyleNames, MaybeAddExitPicName);
@@ -372,29 +382,33 @@ static void MaybeAddStyleName(
 	CSTRDUP(s, buf);
 	CArrayPushBack(styleNames, &s);
 }
-static int MaybeAddHeadPartSpriteName(any_t data, any_t item, const HeadPart hp, const char *path)
+static int MaybeAddHeadPartSpriteName(
+	any_t data, any_t item, const HeadPart hp, const char *path)
 {
 	PicManager *pm = data;
 	MaybeAddStyleName(
-		((const NamedSprites *)item)->name, path,
-		&pm->headPartNames[hp]);
+		((const NamedSprites *)item)->name, path, &pm->headPartNames[hp]);
 	return MAP_OK;
 }
 static int MaybeAddHairSpriteName(any_t data, any_t item)
 {
-	return MaybeAddHeadPartSpriteName(data, item, HEAD_PART_HAIR, "chars/hairs/");
+	return MaybeAddHeadPartSpriteName(
+		data, item, HEAD_PART_HAIR, "chars/hairs/");
 }
 static int MaybeAddFacehairSpriteName(any_t data, any_t item)
 {
-	return MaybeAddHeadPartSpriteName(data, item, HEAD_PART_FACEHAIR, "chars/facehairs/");
+	return MaybeAddHeadPartSpriteName(
+		data, item, HEAD_PART_FACEHAIR, "chars/facehairs/");
 }
 static int MaybeAddHatSpriteName(any_t data, any_t item)
 {
-	return MaybeAddHeadPartSpriteName(data, item, HEAD_PART_HAT, "chars/hats/");
+	return MaybeAddHeadPartSpriteName(
+		data, item, HEAD_PART_HAT, "chars/hats/");
 }
 static int MaybeAddGlassesSpriteName(any_t data, any_t item)
 {
-	return MaybeAddHeadPartSpriteName(data, item, HEAD_PART_GLASSES, "chars/glasses/");
+	return MaybeAddHeadPartSpriteName(
+		data, item, HEAD_PART_GLASSES, "chars/glasses/");
 }
 static int MaybeAddExitPicName(any_t data, any_t item)
 {
@@ -505,10 +519,10 @@ static int ReloadTexture(any_t data, any_t item);
 static int ReloadSpriteTexture(any_t data, any_t item);
 void PicManagerReloadTextures(PicManager *pm)
 {
-	hashmap_iterate(pm->pics, ReloadTexture, pm);
-	hashmap_iterate(pm->customPics, ReloadTexture, pm);
-	hashmap_iterate(pm->sprites, ReloadSpriteTexture, pm);
-	hashmap_iterate(pm->customSprites, ReloadSpriteTexture, pm);
+	hashmap_iterate(pm->pics, ReloadTexture, NULL);
+	hashmap_iterate(pm->customPics, ReloadTexture, NULL);
+	hashmap_iterate(pm->sprites, ReloadSpriteTexture, NULL);
+	hashmap_iterate(pm->customSprites, ReloadSpriteTexture, NULL);
 }
 static int ReloadTexture(any_t data, any_t item)
 {

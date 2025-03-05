@@ -48,6 +48,12 @@ message NPlayerStats {
 	uint32 TimeTicks = 5;
 }
 
+message NWeaponUsage {
+	string Weapon = 1;
+	uint32 Shots = 2;
+	uint32 Hits = 3;
+}
+
 message NPlayerData {
 	string Name = 1;
 	string CharacterClass = 2;
@@ -66,6 +72,7 @@ message NPlayerData {
 	repeated NAmmo Ammo = 15;
 	uint32 HP = 16;
 	uint32 ExcessHealth = 17;
+	repeated NWeaponUsage WeaponUsages = 18;
 }
 
 message NPlayerRemove {
@@ -95,6 +102,7 @@ message NThingDamage {
 	uint32 Flags = 7;
 	int32 Special = 8;
 	int32 SpecialTicks = 9;
+	string SourceWeaponClassName = 10;
 }
 
 message NMapObjectAdd {
@@ -306,6 +314,7 @@ message NAddBullet {
 	int32 Elevation = 6;
 	uint32 Flags = 7;
 	int32 ActorUID = 8;
+	string Gun = 9;
 }
 
 message NTrigger {

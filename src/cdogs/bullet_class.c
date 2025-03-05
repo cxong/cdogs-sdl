@@ -644,8 +644,8 @@ static void OnHit(HitItemData *data, Thing *target)
 	data->HitType = GetHitType(target, data->Obj, &targetUID);
 	const TActor *source = ActorGetByUID(data->Obj->ActorUID);
 	Damage(
-		data->Obj->thing.Vel, data->Obj->bulletClass, data->Obj->flags, source,
-		target->kind, targetUID);
+		data->Obj->thing.Vel, data->Obj->bulletClass, data->Obj->weapon,
+		data->Obj->flags, source, target->kind, targetUID);
 	if (target->SoundLock <= 0)
 	{
 		target->SoundLock += SOUND_LOCK_THING;
@@ -1084,6 +1084,8 @@ void BulletAdd(const NAddBullet add)
 		obj->flags |= FLAGS_HURTALWAYS;
 	}
 
+	obj->weapon = StrWeaponClass(add.Gun);
+
 	obj->isInUse = true;
 	obj->thing.drawFunc = NULL;
 	obj->thing.drawData.MobObjId = i;
@@ -1091,6 +1093,18 @@ void BulletAdd(const NAddBullet add)
 	obj->thing.CPicFunc = BulletDraw;
 	obj->thing.ShadowSize = obj->bulletClass->ShadowSize;
 	MapTryMoveThing(&gMap, &obj->thing, pos);
+
+	// Update shots
+	if (!gCampaign.IsClient)
+	{
+		const TActor *source = ActorGetByUID(add.ActorUID);
+		const int playerUID = source != NULL ? source->PlayerUID : -1;
+		PlayerData *p = PlayerDataGetByUID(playerUID);
+		if (p)
+		{
+			WeaponUsagesUpdate(p->WeaponUsages, obj->weapon, 1, 0);
+		}
+	}
 }
 
 void BulletBounce(const NBulletBounce bb)

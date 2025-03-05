@@ -67,6 +67,12 @@ typedef struct _NPlayerStats {
     uint32_t TimeTicks;
 } NPlayerStats;
 
+typedef struct _NWeaponUsage {
+    char Weapon[128];
+    uint32_t Shots;
+    uint32_t Hits;
+} NWeaponUsage;
+
 typedef struct _NPlayerRemove {
     uint32_t UID;
 } NPlayerRemove;
@@ -117,6 +123,7 @@ typedef struct _NThingDamage {
     uint32_t Flags;
     int32_t Special;
     int32_t SpecialTicks;
+    char SourceWeaponClassName[128];
 } NThingDamage;
 
 typedef struct _NMapObjectAdd {
@@ -226,6 +233,8 @@ typedef struct _NPlayerData {
     NAmmo Ammo[128];
     uint32_t HP;
     uint32_t ExcessHealth;
+    pb_size_t WeaponUsages_count;
+    NWeaponUsage WeaponUsages[128];
 } NPlayerData;
 
 typedef struct _NActorAdd {
@@ -351,6 +360,7 @@ typedef struct _NAddBullet {
     int32_t Elevation;
     uint32_t Flags;
     int32_t ActorUID;
+    char Gun[128];
 } NAddBullet;
 
 typedef struct _NTrigger {
@@ -415,11 +425,12 @@ extern "C" {
 #define NColor_init_default                      {0}
 #define NCharColors_init_default                 {false, NColor_init_default, false, NColor_init_default, false, NColor_init_default, false, NColor_init_default, false, NColor_init_default, false, NColor_init_default, false, NColor_init_default, false, NColor_init_default, false, NColor_init_default}
 #define NPlayerStats_init_default                {0, 0, 0, 0, 0}
-#define NPlayerData_init_default                 {"", "", "", "", "", "", false, NCharColors_init_default, 0, {"", "", "", ""}, 0, false, NPlayerStats_init_default, false, NPlayerStats_init_default, 0, 0, 0, 0, {NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default}, 0, 0}
+#define NWeaponUsage_init_default                {"", 0, 0}
+#define NPlayerData_init_default                 {"", "", "", "", "", "", false, NCharColors_init_default, 0, {"", "", "", ""}, 0, false, NPlayerStats_init_default, false, NPlayerStats_init_default, 0, 0, 0, 0, {NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default, NAmmo_init_default}, 0, 0, 0, {NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default, NWeaponUsage_init_default}}
 #define NPlayerRemove_init_default               {0}
 #define NConfig_init_default                     {"", ""}
 #define NTileSet_init_default                    {false, NVec2i_init_default, "", "", "", 0}
-#define NThingDamage_init_default                {0, 0, 0, 0, false, NVec2_init_default, 0, 0, 0, 0}
+#define NThingDamage_init_default                {0, 0, 0, 0, false, NVec2_init_default, 0, 0, 0, 0, ""}
 #define NMapObjectAdd_init_default               {0, "", false, NVec2_init_default, 0, 0, false, NColor_init_default}
 #define NMapObjectRemove_init_default            {0, 0, 0}
 #define NScore_init_default                      {0, 0}
@@ -451,7 +462,7 @@ extern "C" {
 #define NGunReload_init_default                  {0, "", false, NVec2_init_default, 0}
 #define NGunFire_init_default                    {0, "", false, NVec2_init_default, 0, 0, 0, 0, 0}
 #define NGunState_init_default                   {0, 0, 0}
-#define NAddBullet_init_default                  {0, "", false, NVec2_init_default, 0, 0, 0, 0, 0}
+#define NAddBullet_init_default                  {0, "", false, NVec2_init_default, 0, 0, 0, 0, 0, ""}
 #define NTrigger_init_default                    {0, false, NVec2i_init_default}
 #define NExploreTiles_init_default               {0, {NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default, NExploreTiles_Run_init_default}}
 #define NExploreTiles_Run_init_default           {false, NVec2i_init_default, 0}
@@ -467,11 +478,12 @@ extern "C" {
 #define NColor_init_zero                         {0}
 #define NCharColors_init_zero                    {false, NColor_init_zero, false, NColor_init_zero, false, NColor_init_zero, false, NColor_init_zero, false, NColor_init_zero, false, NColor_init_zero, false, NColor_init_zero, false, NColor_init_zero, false, NColor_init_zero}
 #define NPlayerStats_init_zero                   {0, 0, 0, 0, 0}
-#define NPlayerData_init_zero                    {"", "", "", "", "", "", false, NCharColors_init_zero, 0, {"", "", "", ""}, 0, false, NPlayerStats_init_zero, false, NPlayerStats_init_zero, 0, 0, 0, 0, {NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero}, 0, 0}
+#define NWeaponUsage_init_zero                   {"", 0, 0}
+#define NPlayerData_init_zero                    {"", "", "", "", "", "", false, NCharColors_init_zero, 0, {"", "", "", ""}, 0, false, NPlayerStats_init_zero, false, NPlayerStats_init_zero, 0, 0, 0, 0, {NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero, NAmmo_init_zero}, 0, 0, 0, {NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero, NWeaponUsage_init_zero}}
 #define NPlayerRemove_init_zero                  {0}
 #define NConfig_init_zero                        {"", ""}
 #define NTileSet_init_zero                       {false, NVec2i_init_zero, "", "", "", 0}
-#define NThingDamage_init_zero                   {0, 0, 0, 0, false, NVec2_init_zero, 0, 0, 0, 0}
+#define NThingDamage_init_zero                   {0, 0, 0, 0, false, NVec2_init_zero, 0, 0, 0, 0, ""}
 #define NMapObjectAdd_init_zero                  {0, "", false, NVec2_init_zero, 0, 0, false, NColor_init_zero}
 #define NMapObjectRemove_init_zero               {0, 0, 0}
 #define NScore_init_zero                         {0, 0}
@@ -503,7 +515,7 @@ extern "C" {
 #define NGunReload_init_zero                     {0, "", false, NVec2_init_zero, 0}
 #define NGunFire_init_zero                       {0, "", false, NVec2_init_zero, 0, 0, 0, 0, 0}
 #define NGunState_init_zero                      {0, 0, 0}
-#define NAddBullet_init_zero                     {0, "", false, NVec2_init_zero, 0, 0, 0, 0, 0}
+#define NAddBullet_init_zero                     {0, "", false, NVec2_init_zero, 0, 0, 0, 0, 0, ""}
 #define NTrigger_init_zero                       {0, false, NVec2i_init_zero}
 #define NExploreTiles_init_zero                  {0, {NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero, NExploreTiles_Run_init_zero}}
 #define NExploreTiles_Run_init_zero              {false, NVec2i_init_zero, 0}
@@ -543,6 +555,9 @@ extern "C" {
 #define NPlayerStats_Suicides_tag                3
 #define NPlayerStats_Friendlies_tag              4
 #define NPlayerStats_TimeTicks_tag               5
+#define NWeaponUsage_Weapon_tag                  1
+#define NWeaponUsage_Shots_tag                   2
+#define NWeaponUsage_Hits_tag                    3
 #define NPlayerRemove_UID_tag                    1
 #define NConfig_Name_tag                         1
 #define NConfig_Value_tag                        2
@@ -569,6 +584,7 @@ extern "C" {
 #define NThingDamage_Flags_tag                   7
 #define NThingDamage_Special_tag                 8
 #define NThingDamage_SpecialTicks_tag            9
+#define NThingDamage_SourceWeaponClassName_tag   10
 #define NMapObjectAdd_UID_tag                    1
 #define NMapObjectAdd_MapObjectClass_tag         2
 #define NMapObjectAdd_Pos_tag                    3
@@ -622,6 +638,7 @@ extern "C" {
 #define NPlayerData_Ammo_tag                     15
 #define NPlayerData_HP_tag                       16
 #define NPlayerData_ExcessHealth_tag             17
+#define NPlayerData_WeaponUsages_tag             18
 #define NActorAdd_UID_tag                        1
 #define NActorAdd_PilotUID_tag                   2
 #define NActorAdd_VehicleUID_tag                 3
@@ -690,6 +707,7 @@ extern "C" {
 #define NAddBullet_Elevation_tag                 6
 #define NAddBullet_Flags_tag                     7
 #define NAddBullet_ActorUID_tag                  8
+#define NAddBullet_Gun_tag                       9
 #define NTrigger_ID_tag                          1
 #define NTrigger_Tile_tag                        2
 #define NExploreTiles_Run_Tile_tag               1
@@ -770,6 +788,13 @@ X(a, STATIC,   SINGULAR, UINT32,   TimeTicks,         5)
 #define NPlayerStats_CALLBACK NULL
 #define NPlayerStats_DEFAULT NULL
 
+#define NWeaponUsage_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, STRING,   Weapon,            1) \
+X(a, STATIC,   SINGULAR, UINT32,   Shots,             2) \
+X(a, STATIC,   SINGULAR, UINT32,   Hits,              3)
+#define NWeaponUsage_CALLBACK NULL
+#define NWeaponUsage_DEFAULT NULL
+
 #define NPlayerData_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, STRING,   Name,              1) \
 X(a, STATIC,   SINGULAR, STRING,   CharacterClass,    2) \
@@ -787,13 +812,15 @@ X(a, STATIC,   SINGULAR, UINT32,   LastMission,      13) \
 X(a, STATIC,   SINGULAR, UINT32,   UID,              14) \
 X(a, STATIC,   REPEATED, MESSAGE,  Ammo,             15) \
 X(a, STATIC,   SINGULAR, UINT32,   HP,               16) \
-X(a, STATIC,   SINGULAR, UINT32,   ExcessHealth,     17)
+X(a, STATIC,   SINGULAR, UINT32,   ExcessHealth,     17) \
+X(a, STATIC,   REPEATED, MESSAGE,  WeaponUsages,     18)
 #define NPlayerData_CALLBACK NULL
 #define NPlayerData_DEFAULT NULL
 #define NPlayerData_Colors_MSGTYPE NCharColors
 #define NPlayerData_Stats_MSGTYPE NPlayerStats
 #define NPlayerData_Totals_MSGTYPE NPlayerStats
 #define NPlayerData_Ammo_MSGTYPE NAmmo
+#define NPlayerData_WeaponUsages_MSGTYPE NWeaponUsage
 
 #define NPlayerRemove_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UINT32,   UID,               1)
@@ -825,7 +852,8 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  Vel,               5) \
 X(a, STATIC,   SINGULAR, FLOAT,    Mass,              6) \
 X(a, STATIC,   SINGULAR, UINT32,   Flags,             7) \
 X(a, STATIC,   SINGULAR, INT32,    Special,           8) \
-X(a, STATIC,   SINGULAR, INT32,    SpecialTicks,      9)
+X(a, STATIC,   SINGULAR, INT32,    SpecialTicks,      9) \
+X(a, STATIC,   SINGULAR, STRING,   SourceWeaponClassName,  10)
 #define NThingDamage_CALLBACK NULL
 #define NThingDamage_DEFAULT NULL
 #define NThingDamage_Vel_MSGTYPE NVec2
@@ -1085,7 +1113,8 @@ X(a, STATIC,   SINGULAR, INT32,    MuzzleHeight,      4) \
 X(a, STATIC,   SINGULAR, FLOAT,    Angle,             5) \
 X(a, STATIC,   SINGULAR, INT32,    Elevation,         6) \
 X(a, STATIC,   SINGULAR, UINT32,   Flags,             7) \
-X(a, STATIC,   SINGULAR, INT32,    ActorUID,          8)
+X(a, STATIC,   SINGULAR, INT32,    ActorUID,          8) \
+X(a, STATIC,   SINGULAR, STRING,   Gun,               9)
 #define NAddBullet_CALLBACK NULL
 #define NAddBullet_DEFAULT NULL
 #define NAddBullet_MuzzlePos_MSGTYPE NVec2
@@ -1154,6 +1183,7 @@ extern const pb_msgdesc_t NCampaignDef_msg;
 extern const pb_msgdesc_t NColor_msg;
 extern const pb_msgdesc_t NCharColors_msg;
 extern const pb_msgdesc_t NPlayerStats_msg;
+extern const pb_msgdesc_t NWeaponUsage_msg;
 extern const pb_msgdesc_t NPlayerData_msg;
 extern const pb_msgdesc_t NPlayerRemove_msg;
 extern const pb_msgdesc_t NConfig_msg;
@@ -1208,6 +1238,7 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 #define NColor_fields &NColor_msg
 #define NCharColors_fields &NCharColors_msg
 #define NPlayerStats_fields &NPlayerStats_msg
+#define NWeaponUsage_fields &NWeaponUsage_msg
 #define NPlayerData_fields &NPlayerData_msg
 #define NPlayerRemove_fields &NPlayerRemove_msg
 #define NConfig_fields &NConfig_msg
@@ -1271,7 +1302,7 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 #define NActorState_size                         17
 #define NActorSwitchGun_size                     12
 #define NActorUseAmmo_size                       31
-#define NAddBullet_size                          192
+#define NAddBullet_size                          322
 #define NAddKeys_size                            18
 #define NAddPickup_size                          167
 #define NAmmo_size                               12
@@ -1294,7 +1325,7 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 #define NMissionEnd_size                         149
 #define NObjectiveUpdate_size                    17
 #define NPlayerAddLives_size                     17
-#define NPlayerData_size                         3214
+#define NPlayerData_size                         21902
 #define NPlayerRemove_size                       6
 #define NPlayerStats_size                        35
 #define NRemoveBullet_size                       6
@@ -1303,11 +1334,12 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 #define NScore_size                              17
 #define NServerInfo_size                         95
 #define NSound_size                              148
-#define NThingDamage_size                        84
+#define NThingDamage_size                        214
 #define NTileSet_size                            425
 #define NTrigger_size                            30
 #define NVec2_size                               10
 #define NVec2i_size                              22
+#define NWeaponUsage_size                        142
 
 #ifdef __cplusplus
 } /* extern "C" */

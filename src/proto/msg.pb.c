@@ -24,7 +24,10 @@ PB_BIND(NCharColors, NCharColors, AUTO)
 PB_BIND(NPlayerStats, NPlayerStats, AUTO)
 
 
-PB_BIND(NPlayerData, NPlayerData, 2)
+PB_BIND(NWeaponUsage, NWeaponUsage, AUTO)
+
+
+PB_BIND(NPlayerData, NPlayerData, 4)
 
 
 PB_BIND(NPlayerRemove, NPlayerRemove, AUTO)
@@ -132,7 +135,7 @@ PB_BIND(NGunFire, NGunFire, AUTO)
 PB_BIND(NGunState, NGunState, AUTO)
 
 
-PB_BIND(NAddBullet, NAddBullet, AUTO)
+PB_BIND(NAddBullet, NAddBullet, 2)
 
 
 PB_BIND(NTrigger, NTrigger, AUTO)

@@ -35,7 +35,6 @@
 #define SCORES_FILE "scores.json"
 
 GameLoopData *HighScoresScreen(Campaign *co, GraphicsDevice *g);
-void SaveHighScores(void);
 
 typedef struct
 {

@@ -28,6 +28,7 @@
 #pragma once
 
 #include "character.h"
+#include "weapon_usage.h"
 
 #define MAX_GUNS 3
 #define MELEE_SLOT 2
@@ -52,7 +53,7 @@ typedef struct
 
 	NPlayerStats Stats;
 	NPlayerStats Totals;
-	map_t WeaponUsages;	// of name -> usage (TODO: shots, hits)
+	WeaponUsages WeaponUsages;
 
 	// Used for end-of-game score tallying
 	int hp;

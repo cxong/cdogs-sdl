@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2024 Cong Xu
+	Copyright (c) 2013-2025 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -143,7 +143,8 @@ void UpdateActorState(TActor *actor, int ticks)
 		actor->petrified = MAX(0, actor->petrified - ticks);
 		actor->confused = MAX(0, actor->confused - ticks);
 
-		// Reset accumulated damage if FPS_FRAMELIMIT passed since taking damage
+		// Reset accumulated damage if FPS_FRAMELIMIT passed since taking
+		// damage
 		actor->damageCooldownTicks += ticks;
 		if (actor->accumulatedDamage)
 		{
@@ -714,8 +715,8 @@ static void CheckRescue(const TActor *a)
 	if (a->PlayerUID < 0)
 		return;
 
-		// Check an area slightly bigger than the actor's size for rescue
-		// objectives
+	// Check an area slightly bigger than the actor's size for rescue
+	// objectives
 #define RESCUE_CHECK_PAD 2
 	const CollisionParams params = {
 		THING_IMPASSABLE, CalcCollisionTeam(true, a),
@@ -2181,16 +2182,14 @@ static void ActorTakeSpecialDamage(
 	}
 }
 
-static void ActorTakeHit(
-	TActor *actor, const int flags, const int sourceUID,
-	const special_damage_e damage, const int specialTicks);
+static void ActorTakeHit(TActor *actor, const NThingDamage d);
 void ActorHit(const NThingDamage d)
 {
 	TActor *a = ActorGetByUID(d.UID);
 	if (!a->isInUse)
 		return;
 
-	ActorTakeHit(a, d.Flags, d.SourceActorUID, d.Special, d.SpecialTicks);
+	ActorTakeHit(a, d);
 	if (d.Power > 0)
 	{
 		DamageActor(a, d.Power, d.SourceActorUID);
@@ -2245,23 +2244,31 @@ void ActorHit(const NThingDamage d)
 	}
 }
 
-static void ActorTakeHit(
-	TActor *actor, const int flags, const int sourceUID,
-	const special_damage_e damage, const int specialTicks)
+static void ActorTakeHit(TActor *actor, const NThingDamage d)
 {
 	// Wake up if this is an AI
 	if (!gCampaign.IsClient)
 	{
 		AIWake(actor, 1);
 	}
-	const TActor *source = ActorGetByUID(sourceUID);
+	const TActor *source = ActorGetByUID(d.SourceActorUID);
 	const int playerUID = source != NULL ? source->PlayerUID : -1;
 	if (ActorIsInvulnerable(
-			actor, flags, playerUID, gCampaign.Entry.Mode, damage))
+			actor, d.Flags, playerUID, gCampaign.Entry.Mode, d.Special))
 	{
 		return;
 	}
-	ActorTakeSpecialDamage(actor, damage, specialTicks);
+	ActorTakeSpecialDamage(actor, d.Special, d.SpecialTicks);
+
+	// Update hits
+	// TODO: correct accuracy for persistent bullets
+	if (!gCampaign.IsClient && playerUID >= 0 &&
+		strlen(d.SourceWeaponClassName) > 0)
+	{
+		PlayerData *p = PlayerDataGetByUID(playerUID);
+		const WeaponClass *wc = StrWeaponClass(d.SourceWeaponClassName);
+		WeaponUsagesUpdate(p->WeaponUsages, wc, 0, 1);
+	}
 }
 
 bool ActorIsInvulnerable(

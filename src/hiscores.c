@@ -78,13 +78,13 @@ typedef struct
 	NPlayerStats Stats;
 	int Missions;
 	int LastMission;
-	map_t WeaponUsages; // of name -> usage (TODO: shots, hits)
+	WeaponUsages WeaponUsages;
 } HighScoreEntry;
 // High score structure is:
 // campaign name > entries, sorted by score
-static map_t sHighScores; // TODO: merge with autosaves
-
-static void LoadHighScores(void);
+// TODO: merge with autosaves
+static map_t LoadHighScores(void);
+static void SaveHighScores(map_t highScores);
 
 // Get player high score if it applies, or 0 otherwise
 static int GetPlayerHighScore(const Campaign *co, const PlayerData *p)
@@ -134,14 +134,14 @@ static GameLoopResult HighScoresScreenUpdate(GameLoopData *data, LoopRunner *l)
 	if (!IsPVP(hData.co->Entry.Mode) &&
 		GetNumPlayers(PLAYER_ANY, false, true) > 0)
 	{
-		LoadHighScores();
+		map_t highScores = LoadHighScores();
 		CArray *scores = NULL;
-		if (hashmap_get(sHighScores, hData.co->Entry.Path, (any_t *)&scores) ==
+		if (hashmap_get(highScores, hData.co->Entry.Path, (any_t *)&scores) ==
 			MAP_MISSING)
 		{
 			CMALLOC(scores, sizeof *scores);
 			CArrayInit(scores, sizeof(HighScoreEntry));
-			hashmap_put(sHighScores, hData.co->Entry.Path, scores);
+			hashmap_put(highScores, hData.co->Entry.Path, scores);
 		}
 
 		bool allTime = false;
@@ -166,7 +166,7 @@ static GameLoopResult HighScoresScreenUpdate(GameLoopData *data, LoopRunner *l)
 		}
 		p->lastMission = hData.co->MissionIndex;
 		CA_FOREACH_END()
-		SaveHighScores();
+		SaveHighScores(highScores);
 
 		// Show high scores screen if high enough
 		if (allTime)
@@ -218,12 +218,14 @@ static void DisplayAt(int x, int y, const char *s, int hilite)
 	FontStrMask(s, svec2i(x, y), mask);
 }
 
-#define INDEX_OFFSET 5
-#define SCORE_OFFSET 30
-#define TIME_OFFSET 55
-#define KILLS_OFFSET 75
-#define FACE_OFFSET 85
-#define NAME_OFFSET 95
+#define INDEX_OFFSET 0
+#define SCORE_OFFSET (INDEX_OFFSET + 25)
+#define TIME_OFFSET (SCORE_OFFSET + 30)
+#define KILLS_OFFSET (TIME_OFFSET + 20)
+#define ACC_OFFSET (KILLS_OFFSET + 20)
+#define FAV_WEP_OFFSET (ACC_OFFSET + 30)
+#define FACE_OFFSET (FAV_WEP_OFFSET + 10)
+#define NAME_OFFSET (FACE_OFFSET + 10)
 
 static int DisplayEntry(
 	const int x, const int y, const int idx, const HighScoreEntry *e,
@@ -236,11 +238,24 @@ static int DisplayEntry(
 	sprintf(s, "%d", (int)e->Stats.Score);
 	DisplayAt(x + SCORE_OFFSET - FontStrW(s), y, s, hilite);
 	const int timeSeconds = e->Stats.TimeTicks / FPS_FRAMELIMIT;
-	sprintf(s, "%d:%02d", timeSeconds / 60, timeSeconds % 60);
+	const int centiseconds =
+		(e->Stats.TimeTicks - timeSeconds * FPS_FRAMELIMIT) * 100 /
+		FPS_FRAMELIMIT;
+	sprintf(
+		s, "%d:%02d.%02d", timeSeconds / 60, timeSeconds % 60, centiseconds);
 	DisplayAt(x + TIME_OFFSET - FontStrW(s), y, s, hilite);
 	sprintf(s, "%d", (int)e->Stats.Kills);
 	DisplayAt(x + KILLS_OFFSET - FontStrW(s), y, s, hilite);
-	// TODO: show favourite weapon
+	sprintf(s, "%d%%", (int)(WeaponUsagesGetAccuracy(e->WeaponUsages) * 100));
+	DisplayAt(x + ACC_OFFSET - FontStrW(s), y, s, hilite);
+	const WeaponClass *wc = WeaponUsagesGetFavorite(e->WeaponUsages);
+	if (wc && wc->Icon)
+	{
+		PicRender(
+			wc->Icon, gGraphicsDevice.gameWindow.renderer,
+			svec2i(x + FAV_WEP_OFFSET - 15, y), colorWhite, 0, svec2_one(),
+			SDL_FLIP_NONE, Rect2iZero());
+	}
 	DrawHead(
 		gGraphicsDevice.gameWindow.renderer, &e->Character, DIRECTION_DOWN,
 		svec2i(x + FACE_OFFSET, y + 4));
@@ -251,7 +266,7 @@ static int DisplayEntry(
 
 static void DisplayPage(const CArray *entries)
 {
-	int x = 80;
+	int x = 60;
 	int y = 5 + FontH();
 
 	FontStr("High Scores:", svec2i(5, 5));
@@ -266,6 +281,10 @@ static void DisplayPage(const CArray *entries)
 	DisplayAt(x + TIME_OFFSET - FontStrW(s), y, s, false);
 	s = "Kills";
 	DisplayAt(x + KILLS_OFFSET - FontStrW(s), y, s, false);
+	s = "Acc.";
+	DisplayAt(x + ACC_OFFSET - FontStrW(s), y, s, false);
+	s = "Fav.Gun";
+	DisplayAt(x + FAV_WEP_OFFSET - FontStrW(s), y, s, false);
 	s = "Name";
 	DisplayAt(x + NAME_OFFSET, y, s, false);
 	y += 5 + FontH();
@@ -345,12 +364,19 @@ static GameLoopResult HighScoreUpdate(GameLoopData *data, LoopRunner *l)
 	return UPDATE_RESULT_OK;
 }
 
+typedef struct
+{
+	yajl_gen g;
+	map_t highScores;
+} SaveHighScoresData;
+static int SaveWeaponUsage(any_t data, any_t item);
 static int SaveHighScoreEntries(any_t data, any_t key)
 {
-	yajl_gen g = (yajl_gen)data;
+	SaveHighScoresData *sData = data;
+	yajl_gen g = sData->g;
 	CArray *entries;
 	const int error =
-		hashmap_get(sHighScores, (const char *)key, (any_t *)&entries);
+		hashmap_get(sData->highScores, (const char *)key, (any_t *)&entries);
 	if (error != MAP_OK)
 	{
 		CASSERT(false, "cannot find high score entry");
@@ -401,6 +427,11 @@ static int SaveHighScoreEntries(any_t data, any_t key)
 		g, (const unsigned char *)"WeaponUsages", strlen("WeaponUsages")));
 	YAJL_CHECK(yajl_gen_map_open(g));
 	// TODO: weapon usage
+	const int res = hashmap_iterate(entry->WeaponUsages, SaveWeaponUsage, g);
+	if (res != MAP_OK)
+	{
+		return res;
+	}
 	YAJL_CHECK(yajl_gen_map_close(g));
 
 	YAJL_CHECK(yajl_gen_map_close(g));
@@ -409,7 +440,31 @@ static int SaveHighScoreEntries(any_t data, any_t key)
 #undef YAJL_CHECK
 	return MAP_OK;
 }
-void SaveHighScores(void)
+static int SaveWeaponUsage(any_t data, any_t item)
+{
+	yajl_gen g = data;
+	NWeaponUsage *wu = item;
+#define YAJL_CHECK(func)                                                      \
+	{                                                                         \
+		yajl_gen_status _status = func;                                       \
+		if (_status != yajl_gen_status_ok)                                    \
+		{                                                                     \
+			LOG(LM_MAIN, LL_ERROR,                                            \
+				"JSON generator error for high score entry %s: %d\n",         \
+				(const char *)wu->Weapon, (int)_status);                      \
+			return MAP_MISSING;                                               \
+		}                                                                     \
+	}
+	YAJL_CHECK(yajl_gen_string(
+		g, (const unsigned char *)wu->Weapon, strlen(wu->Weapon)));
+	YAJL_CHECK(yajl_gen_map_open(g));
+	YAJL_CHECK(YAJLAddIntPair(g, "Shots", (int)wu->Shots));
+	YAJL_CHECK(YAJLAddIntPair(g, "Hits", (int)wu->Hits));
+	YAJL_CHECK(yajl_gen_map_close(g));
+#undef YAJL_CHECK
+	return MAP_OK;
+}
+static void SaveHighScores(map_t highScores)
 {
 	yajl_gen g = yajl_gen_alloc(NULL);
 	if (g == NULL)
@@ -427,8 +482,9 @@ void SaveHighScores(void)
 	}
 
 	YAJL_CHECK(yajl_gen_map_open(g));
+	SaveHighScoresData sData = {g, highScores};
 	if (hashmap_iterate_keys_sorted(
-			sHighScores, SaveHighScoreEntries, (any_t *)g) != MAP_OK)
+			highScores, SaveHighScoreEntries, (any_t *)&sData) != MAP_OK)
 	{
 		LOG(LM_MAIN, LL_ERROR, "Failed to generate high score entries\n");
 		goto bail;
@@ -449,9 +505,9 @@ bail:
 	}
 }
 
-static void LoadHighScores(void)
+static map_t LoadHighScores(void)
 {
-	sHighScores = hashmap_new();
+	map_t highScores = hashmap_new();
 	const char *path = GetConfigFilePath(SCORES_FILE);
 	yajl_val node = YAJLReadFile(path);
 	if (node == NULL)
@@ -482,6 +538,7 @@ static void LoadHighScores(void)
 			yajl_val entryNode = entriesNode->values[j];
 			HighScoreEntry entry;
 			memset(&entry, 0, sizeof entry);
+			entry.WeaponUsages = WeaponUsagesNew();
 			YAJLStr(&entry.Name, entryNode, "Name");
 			int value;
 			YAJLInt(&value, entryNode, "Time");
@@ -544,16 +601,31 @@ static void LoadHighScores(void)
 
 			const char *wuPath[] = {"WeaponUsages", NULL};
 			yajl_val wuNode = yajl_tree_get(entryNode, wuPath, yajl_t_object);
-			if (!wuNode)
+			if (!wuNode || !YAJL_IS_OBJECT(wuNode))
 			{
 				LOG(LM_MAIN, LL_ERROR,
 					"Unexpected format for high score entry %s %d\n", path, j);
 				continue;
 			}
-			// TODO: weapon usage
+			for (int j = 0; j < (int)wuNode->u.object.len; j++)
+			{
+				const char *weaponName = wuNode->u.object.keys[j];
+				yajl_val usageNode = wuNode->u.object.values[j];
+				NWeaponUsage *w = NULL;
+				CMALLOC(w, sizeof *w);
+				strcpy(w->Weapon, weaponName);
+				YAJLInt((int *)&w->Shots, usageNode, "Shots");
+				YAJLInt((int *)&w->Hits, usageNode, "Hits");
+				if (hashmap_put(entry.WeaponUsages, weaponName, w) != MAP_OK)
+				{
+					LOG(LM_MAIN, LL_ERROR, "failed to load high scores (%s)",
+						path);
+					continue;
+				}
+			}
 			CArrayPushBack(entries, &entry);
 		}
-		if (hashmap_put(sHighScores, entriesPath, (any_t *)entries) != MAP_OK)
+		if (hashmap_put(highScores, entriesPath, (any_t *)entries) != MAP_OK)
 		{
 			LOG(LM_MAIN, LL_ERROR, "failed to load high scores (%s)", path);
 			continue;
@@ -562,21 +634,27 @@ static void LoadHighScores(void)
 
 bail:
 	yajl_tree_free(node);
+	return highScores;
 }
 
 HighScoresData HighScoresDataLoad(const Campaign *co, GraphicsDevice *g)
 {
-	LoadHighScores();
+	map_t highScores = LoadHighScores();
 	HighScoresData hData;
 	memset(&hData, 0, sizeof hData);
 	hData.g = g;
 	CArray *scores = NULL;
-	if (hashmap_get(sHighScores, co->Entry.Path, (any_t *)&scores) !=
+	if (hashmap_get(highScores, co->Entry.Path, (any_t *)&scores) !=
 		MAP_MISSING)
 	{
 		// copy scores
 		CArrayInit(&hData.scores, sizeof(HighScoreEntry));
 		CArrayCopy(&hData.scores, scores);
+		CA_FOREACH(HighScoreEntry, entry, hData.scores)
+		const HighScoreEntry *src = CArrayGet(scores, _ca_index);
+		CSTRDUP(entry->Name, src->Name);
+		entry->WeaponUsages = hashmap_copy(src->WeaponUsages, NULL);
+		CA_FOREACH_END()
 	}
 	return hData;
 }
@@ -585,7 +663,7 @@ void HighScoresDataTerminate(HighScoresData *hData)
 {
 	CA_FOREACH(HighScoreEntry, entry, hData->scores)
 	CFREE(entry->Name);
-	// TODO: free weapon usages
+	WeaponUsagesTerminate(entry->WeaponUsages);
 	CA_FOREACH_END()
 	CArrayTerminate(&hData->scores);
 }

@@ -114,6 +114,7 @@ void OnGunFire(const NGunFire gf, SoundDevice *sd)
 				wc->u.Normal.ElevationLow, wc->u.Normal.ElevationHigh);
 			ab.u.AddBullet.Flags = gf.Flags;
 			ab.u.AddBullet.ActorUID = gf.ActorUID;
+			strcpy(ab.u.AddBullet.Gun, wc->name);
 
 			CA_FOREACH(const BulletClass *, bc, wc->u.Normal.Bullets)
 			ab.u.AddBullet.UID = MobObjsObjsGetNextUID();

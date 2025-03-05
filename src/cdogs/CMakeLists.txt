@@ -111,6 +111,7 @@ set(CDOGS_SOURCES
 	vector.c
 	weapon.c
 	weapon_class.c
+	weapon_usage.c
 	window_context.c
 	XGetopt.c
 	yajl_utils.c)
@@ -225,6 +226,7 @@ set(CDOGS_HEADERS
 	vector.h
 	weapon.h
 	weapon_class.h
+	weapon_usage.h
 	window_context.h
 	XGetopt.h
 	yajl_utils.h)

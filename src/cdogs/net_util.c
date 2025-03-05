@@ -56,6 +56,28 @@ bool NetDecode(ENetPacket *packet, void *dest, const pb_msgdesc_t *fields)
 	return status;
 }
 
+typedef struct
+{
+	map_t src;
+	NPlayerData *d;
+} AddWeaponUsageData;
+static int AddWeaponUsage(any_t data, any_t key)
+{
+	AddWeaponUsageData *aData = (AddWeaponUsageData *)data;
+	// TODO: copy weapon usage
+	NWeaponUsage *w;
+	int error = hashmap_get(aData->src, (char *)key, (any_t *)&w);
+	if (error != MAP_OK)
+	{
+		return error;
+	}
+	NWeaponUsage *n = &aData->d->WeaponUsages[aData->d->WeaponUsages_count];
+	strcpy(n->Weapon, (char *)key);
+	n->Shots = w->Shots;
+	n->Hits = w->Hits;
+	aData->d->WeaponUsages_count++;
+	return MAP_OK;
+}
 NPlayerData NMakePlayerData(const PlayerData *p)
 {
 	NPlayerData d = NPlayerData_init_default;
@@ -85,6 +107,12 @@ NPlayerData NMakePlayerData(const PlayerData *p)
 	{
 		strcpy(d.Weapons[i], p->guns[i] != NULL ? p->guns[i]->name : "");
 	}
+	d.WeaponUsages_count = 0;
+	AddWeaponUsageData aData;
+	aData.src = p->WeaponUsages;
+	aData.d = &d;
+	hashmap_iterate_keys(p->WeaponUsages, AddWeaponUsage, &aData);
+
 	d.Lives = p->Lives;
 	d.Stats = p->Stats;
 	d.Totals = p->Totals;

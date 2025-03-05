@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2021, 2024 Cong Xu
+	Copyright (c) 2013-2021, 2024-2025 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -132,6 +132,18 @@ void DamageObject(const NThingDamage d)
 			ap.Mask = PicGetRandomColor(CPicGetPic(&o->Class->Pic, 0));
 			EmitterStart(&em, &ap);
 		}
+	}
+
+	// Update hits
+	// TODO: correct accuracy for persistent bullets
+	const TActor *source = ActorGetByUID(d.SourceActorUID);
+	const int playerUID = source != NULL ? source->PlayerUID : -1;
+	if (!gCampaign.IsClient && playerUID >= 0 &&
+		strlen(d.SourceWeaponClassName) > 0)
+	{
+		PlayerData *p = PlayerDataGetByUID(playerUID);
+		const WeaponClass *wc = StrWeaponClass(d.SourceWeaponClassName);
+		WeaponUsagesUpdate(p->WeaponUsages, wc, 0, 1);
 	}
 }
 
@@ -301,25 +313,27 @@ bool HasHitSound(
 
 static void DoDamageThing(
 	const ThingKind targetKind, const int targetUID, const TActor *source,
-	const int flags, const BulletClass *bullet, const bool canDamage,
-	const struct vec2 hitVector);
+	const int flags, const BulletClass *bullet, const WeaponClass *weapon,
+	const bool canDamage, const struct vec2 hitVector);
 static void DoDamageCharacter(
 	const TActor *actor, const TActor *source, const struct vec2 hitVector,
-	const BulletClass *bullet, const int flags);
+	const BulletClass *bullet, const WeaponClass *weapon, const int flags);
 void Damage(
-	const struct vec2 hitVector, const BulletClass *bullet, const int flags,
-	const TActor *source, const ThingKind targetKind, const int targetUID)
+	const struct vec2 hitVector, const BulletClass *bullet,
+	const WeaponClass *weapon, const int flags, const TActor *source,
+	const ThingKind targetKind, const int targetUID)
 {
 	switch (targetKind)
 	{
 	case KIND_CHARACTER: {
 		const TActor *actor = ActorGetByUID(targetUID);
-		DoDamageCharacter(actor, source, hitVector, bullet, flags);
+		DoDamageCharacter(actor, source, hitVector, bullet, weapon, flags);
 	}
 	break;
 	case KIND_OBJECT:
 		DoDamageThing(
-			targetKind, targetUID, source, flags, bullet, true, hitVector);
+			targetKind, targetUID, source, flags, bullet, weapon, true,
+			hitVector);
 		break;
 	default:
 		CASSERT(false, "cannot damage tile item kind");
@@ -328,8 +342,8 @@ void Damage(
 }
 static void DoDamageThing(
 	const ThingKind targetKind, const int targetUID, const TActor *source,
-	const int flags, const BulletClass *bullet, const bool canDamage,
-	const struct vec2 hitVector)
+	const int flags, const BulletClass *bullet, const WeaponClass *weapon,
+	const bool canDamage, const struct vec2 hitVector)
 {
 	GameEvent e = GameEventNew(GAME_EVENT_THING_DAMAGE);
 	e.u.ThingDamage.UID = targetUID;
@@ -342,11 +356,15 @@ static void DoDamageThing(
 		e.u.ThingDamage.Power = 0;
 	}
 	e.u.ThingDamage.Vel = Vec2ToNet(hitVector);
+	if (weapon)
+	{
+		strcpy(e.u.ThingDamage.SourceWeaponClassName, weapon->name);
+	}
 	GameEventsEnqueue(&gGameEvents, e);
 }
 static void DoDamageCharacter(
 	const TActor *actor, const TActor *source, const struct vec2 hitVector,
-	const BulletClass *bullet, const int flags)
+	const BulletClass *bullet, const WeaponClass *weapon, const int flags)
 {
 	// Create events: hit, damage, score
 	CASSERT(actor->isInUse, "Cannot damage nonexistent player");
@@ -372,7 +390,7 @@ static void DoDamageCharacter(
 		CanDamageCharacter(flags, source, actor, bullet->Special.Effect);
 
 	DoDamageThing(
-		KIND_CHARACTER, actor->uid, source, flags, bullet, canDamage,
+		KIND_CHARACTER, actor->uid, source, flags, bullet, weapon, canDamage,
 		hitVector);
 
 	if (canDamage)
