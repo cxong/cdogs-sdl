@@ -1,28 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (C) 1995 Ronny Wester
-	Copyright (C) 2003 Jeremy Chin
-	Copyright (C) 2003-2007 Lucas Martin-King
-
-	This program is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 2 of the License, or
-	(at your option) any later version.
-
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-	This file incorporates work covered by the following copyright and
-	permission notice:
-
-	Copyright (c) 2013-2014, 2017, 2021, 2025 Cong Xu
+	Copyright (c) 2025 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -64,6 +43,8 @@
 #include <cdogs/log.h>
 #include <cdogs/yajl_utils.h>
 
+#include "base64/base64.h"
+
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
@@ -76,8 +57,6 @@ typedef struct
 	time_t Time;
 	Character Character;
 	NPlayerStats Stats;
-	int Missions;
-	int LastMission;
 	WeaponUsages WeaponUsages;
 } HighScoreEntry;
 // High score structure is:
@@ -206,8 +185,6 @@ static bool EnterHighScore(const PlayerData *data, CArray *scores)
 	CSTRDUP(entry->Name, data->name);
 	CharacterCopy(&entry->Character, &data->Char, NULL);
 	entry->Stats = data->Totals;
-	entry->Missions = data->missions;
-	entry->LastMission = data->lastMission;
 	entry->WeaponUsages = hashmap_copy(data->WeaponUsages, NULL);
 	return true;
 }
@@ -309,7 +286,6 @@ static void DisplayPage(const CArray *entries)
 	{
 		if (e->Stats.Score == localScores[i])
 		{
-			// TODO: don't just highlight, display character next to entry
 			isHighlighted = true;
 			localScores[i] = 0;
 			break;
@@ -382,6 +358,7 @@ static int SaveHighScoreEntries(any_t data, any_t key)
 		CASSERT(false, "cannot find high score entry");
 		return error;
 	}
+
 #define YAJL_CHECK(func)                                                      \
 	{                                                                         \
 		yajl_gen_status _status = func;                                       \
@@ -397,44 +374,64 @@ static int SaveHighScoreEntries(any_t data, any_t key)
 	YAJL_CHECK(yajl_gen_array_open(g));
 
 	CA_FOREACH(const HighScoreEntry, entry, *entries)
-	YAJL_CHECK(yajl_gen_map_open(g));
 
-	YAJL_CHECK(YAJLAddStringPair(g, "Name", entry->Name));
-	YAJL_CHECK(YAJLAddIntPair(g, "Time", (int)entry->Time));
+	// Save entry as a base64-encoded YAJL string
+	yajl_gen g2 = yajl_gen_alloc(NULL);
+	if (g2 == NULL)
+	{
+		LOG(LM_MAIN, LL_ERROR,
+			"Unable to alloc JSON generator for saving high score entry\n");
+		return MAP_MISSING;
+	}
+	YAJL_CHECK(yajl_gen_map_open(g2));
+
+	YAJL_CHECK(YAJLAddStringPair(g2, "Name", entry->Name));
+	YAJL_CHECK(YAJLAddIntPair(g2, "Time", (int)entry->Time));
 
 	YAJL_CHECK(yajl_gen_string(
-		g, (const unsigned char *)"Character", strlen("Character")));
-	if (!CharacterSave(g, &entry->Character))
+		g2, (const unsigned char *)"Character", strlen("Character")));
+	if (!CharacterSave(g2, &entry->Character))
 	{
 		return MAP_MISSING;
 	}
 
-	// TODO: base64 encode
 	YAJL_CHECK(
-		yajl_gen_string(g, (const unsigned char *)"Stats", strlen("Stats")));
-	YAJL_CHECK(yajl_gen_map_open(g));
-	YAJL_CHECK(YAJLAddIntPair(g, "Score", entry->Stats.Score));
-	YAJL_CHECK(YAJLAddIntPair(g, "Kills", entry->Stats.Kills));
-	YAJL_CHECK(YAJLAddIntPair(g, "Suicides", entry->Stats.Suicides));
-	YAJL_CHECK(YAJLAddIntPair(g, "Friendlies", entry->Stats.Friendlies));
-	YAJL_CHECK(YAJLAddIntPair(g, "TimeTicks", entry->Stats.TimeTicks));
-	YAJL_CHECK(yajl_gen_map_close(g));
-
-	YAJL_CHECK(YAJLAddIntPair(g, "Missions", entry->Missions));
-	YAJL_CHECK(YAJLAddIntPair(g, "LastMission", entry->LastMission));
+		yajl_gen_string(g2, (const unsigned char *)"Stats", strlen("Stats")));
+	YAJL_CHECK(yajl_gen_map_open(g2));
+	YAJL_CHECK(YAJLAddIntPair(g2, "Score", entry->Stats.Score));
+	YAJL_CHECK(YAJLAddIntPair(g2, "Kills", entry->Stats.Kills));
+	YAJL_CHECK(YAJLAddIntPair(g2, "Suicides", entry->Stats.Suicides));
+	YAJL_CHECK(YAJLAddIntPair(g2, "Friendlies", entry->Stats.Friendlies));
+	YAJL_CHECK(YAJLAddIntPair(g2, "TimeTicks", entry->Stats.TimeTicks));
+	YAJL_CHECK(yajl_gen_map_close(g2));
 
 	YAJL_CHECK(yajl_gen_string(
-		g, (const unsigned char *)"WeaponUsages", strlen("WeaponUsages")));
-	YAJL_CHECK(yajl_gen_map_open(g));
-	// TODO: weapon usage
-	const int res = hashmap_iterate(entry->WeaponUsages, SaveWeaponUsage, g);
+		g2, (const unsigned char *)"WeaponUsages", strlen("WeaponUsages")));
+	YAJL_CHECK(yajl_gen_map_open(g2));
+	const int res = hashmap_iterate(entry->WeaponUsages, SaveWeaponUsage, g2);
 	if (res != MAP_OK)
 	{
 		return res;
 	}
-	YAJL_CHECK(yajl_gen_map_close(g));
+	YAJL_CHECK(yajl_gen_map_close(g2));
 
-	YAJL_CHECK(yajl_gen_map_close(g));
+	YAJL_CHECK(yajl_gen_map_close(g2));
+
+	// Convert to base64 string
+	const char *buf;
+	size_t len;
+	yajl_gen_get_buf(g2, (const unsigned char **)&buf, &len);
+	char *encodeOut;
+	CMALLOC(encodeOut, BASE64_ENCODE_OUT_SIZE(len));
+	const unsigned encodeLen = base64_encode((const unsigned char *)buf, (unsigned int)len, encodeOut);
+	YAJL_CHECK(
+		yajl_gen_string(g, (const unsigned char *)encodeOut, encodeLen));
+	if (g2)
+	{
+		yajl_gen_clear(g2);
+		yajl_gen_free(g2);
+	}
+	CFREE(encodeOut);
 	CA_FOREACH_END()
 	YAJL_CHECK(yajl_gen_array_close(g));
 #undef YAJL_CHECK
@@ -535,7 +532,23 @@ static map_t LoadHighScores(void)
 		CArrayInit(entries, sizeof(HighScoreEntry));
 		for (int j = 0; j < (int)entriesNode->len; j++)
 		{
-			yajl_val entryNode = entriesNode->values[j];
+			// Decode base64-encoded entries
+			const char *entryEncoded = YAJL_GET_STRING(entriesNode->values[j]);
+			char *decodeOut;
+			const size_t decodeLen = strlen(entryEncoded);
+			CMALLOC(decodeOut, BASE64_DECODE_OUT_SIZE(decodeLen));
+			base64_decode(entryEncoded, (unsigned int)decodeLen, (unsigned char *)decodeOut);
+			char errbuf[1024];
+			yajl_val entryNode =
+				yajl_tree_parse(decodeOut, errbuf, sizeof errbuf);
+			if (entryNode == NULL)
+			{
+				LOG(LM_MAIN, LL_ERROR,
+					"Unexpected format for high score entry %s %d\n", path, j);
+				continue;
+			}
+			CFREE(decodeOut);
+
 			HighScoreEntry entry;
 			memset(&entry, 0, sizeof entry);
 			entry.WeaponUsages = WeaponUsagesNew();
@@ -595,9 +608,6 @@ static map_t LoadHighScores(void)
 			YAJLInt((int *)&entry.Stats.Suicides, statsNode, "Suicides");
 			YAJLInt((int *)&entry.Stats.Friendlies, statsNode, "Friendlies");
 			YAJLInt((int *)&entry.Stats.TimeTicks, statsNode, "TimeTicks");
-
-			YAJLInt(&entry.Missions, entryNode, "Missions");
-			YAJLInt(&entry.LastMission, entryNode, "LastMission");
 
 			const char *wuPath[] = {"WeaponUsages", NULL};
 			yajl_val wuNode = yajl_tree_get(entryNode, wuPath, yajl_t_object);

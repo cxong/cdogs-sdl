@@ -20,6 +20,7 @@ set(CDOGS_SDL_SOURCES
 	ammo_menu.c
 	animated_counter.c
 	autosave.c
+	base64/base64.c
 	briefing_screens.c
 	cdogs.c
 	command_line.c
@@ -46,6 +47,7 @@ set(CDOGS_SDL_HEADERS
 	ammo_menu.h
 	animated_counter.h
 	autosave.h
+	base64/base64.h
 	briefing_screens.h
 	command_line.h
 	credits.h

@@ -38,8 +38,7 @@ void WeaponUsagesTerminate(WeaponUsages wu)
 void WeaponUsagesUpdate(
 	WeaponUsages wu, const WeaponClass *wc, const int dShot, const int dHit)
 {
-	// TODO: accuracy for explosives?
-	if (!wc || !wc->IsRealGun || WeaponClassIsHighDPS(wc))
+	if (!wc || !wc->IsRealGun)
 	{
 		return;
 	}
@@ -76,14 +75,18 @@ float WeaponUsagesGetAccuracy(const WeaponUsages wu)
 static int GetAccuracyItem(any_t data, any_t item)
 {
 	NWeaponUsage *w = item;
+	// Don't include explosives in accuracy
 	if (w->Shots > 0)
 	{
-		GetAccuracyData gData;
-		gData.accuracy = (float)w->Hits / w->Shots;
 		const WeaponClass *wc = StrWeaponClass(w->Weapon);
-		gData.weight = MAX(wc->Lock, 1);
-		CArray *accuracies = data;
-		CArrayPushBack(accuracies, &gData);
+		if (!WeaponClassIsHighDPS(wc))
+		{
+			GetAccuracyData gData;
+			gData.accuracy = (float)w->Hits / w->Shots;
+			gData.weight = MAX(wc->Lock, 1);
+			CArray *accuracies = data;
+			CArrayPushBack(accuracies, &gData);
+		}
 	}
 	return MAP_OK;
 }
@@ -106,6 +109,8 @@ static int GetFavoriteItem(any_t data, any_t item)
 	GetFavoriteData *gData = data;
 	NWeaponUsage *w = item;
 	const WeaponClass *wc = StrWeaponClass(w->Weapon);
+	// TODO: this overcounts guns with multiple bullets per shot
+	// Need to divide by this multiple
 	const int ticks = w->Shots * MAX(wc->Lock, 1);
 	if (ticks > gData->ticks)
 	{
