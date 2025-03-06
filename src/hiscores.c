@@ -607,10 +607,10 @@ static map_t LoadHighScores(void)
 					"Unexpected format for high score entry %s %d\n", path, j);
 				continue;
 			}
-			for (int j = 0; j < (int)wuNode->u.object.len; j++)
+			for (int k = 0; k < (int)wuNode->u.object.len; k++)
 			{
-				const char *weaponName = wuNode->u.object.keys[j];
-				yajl_val usageNode = wuNode->u.object.values[j];
+				const char *weaponName = wuNode->u.object.keys[k];
+				yajl_val usageNode = wuNode->u.object.values[k];
 				NWeaponUsage *w = NULL;
 				CMALLOC(w, sizeof *w);
 				strcpy(w->Weapon, weaponName);
