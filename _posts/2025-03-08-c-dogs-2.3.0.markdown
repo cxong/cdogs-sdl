@@ -1,0 +1,26 @@
+---
+layout: post
+title: "C-Dogs 2.3.0 Released!"
+date: 2025-03-08
+categories: release
+---
+
+New year new C-Dogs SDL minor release! This release adds a new high score system, with lots of added features. Check it out!
+
+![new high scores](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/highscores.png)
+
+Compared to the old version, this adds:
+
+- Time taken
+- Kills
+- Accuracy
+- Favorite Gun/weapon
+- Face
+
+Which should make it much more useful. Want to challenge yourself to a speed run, or maybe a pacifist run? How about 100% accuracy? Now you can track it all with this system.
+
+It's a feature that I've wanted to add for [many many years](https://github.com/cxong/cdogs-sdl/issues/151). It turned out to be a much bigger task than anticipated, and warranted a complete rewrite of the high score system. Unfortunately it is also backwards incompatible - more details are in the previous post. I hope it was worth it and you'll enjoy it!
+
+Download free from itch.io: <https://congusbongus.itch.io/cdogs-sdl/purchase>
+
+Release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/2.3.0>
