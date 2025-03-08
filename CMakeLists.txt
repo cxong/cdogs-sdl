@@ -248,6 +248,7 @@ if(UNIX AND NOT APPLE AND NOT BEOS AND NOT HAIKU)
 elseif(WIN32)
 	# Package for Windows
 	file(GLOB DLLS "${CMAKE_SOURCE_DIR}/dll/*.dll")
+	message("Found DLL files ${DLLS}")
 	foreach(DLL ${DLLS})
 		install(FILES "${DLL}" DESTINATION ${INSTALL_PREFIX}/bin)
 	endforeach()

@@ -138,6 +138,7 @@ jobs:
         7z x -y sdl2_image.zip
         7z x -y sdl2_mixer.zip
         copy .\optional\*.dll .
+        dir
 
     - name: Make package on tags
       if: startsWith(github.ref, 'refs/tags/')
