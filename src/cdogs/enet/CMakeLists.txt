@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.1)
 cmake_policy(SET CMP0054 NEW)
 
 project(enet)
@@ -24,7 +23,7 @@ if(MSVC)
 else()
 	add_definitions(-Wno-error)
 endif()
- 
+
 if(HAS_FCNTL)
     add_definitions(-DHAS_FCNTL=1)
 endif()
@@ -55,9 +54,9 @@ endif()
 if(HAS_SOCKLEN_T)
     add_definitions(-DHAS_SOCKLEN_T=1)
 endif()
- 
+
 include_directories(${PROJECT_SOURCE_DIR}/include)
- 
+
 add_library(enet STATIC
         callbacks.c
         compress.c
