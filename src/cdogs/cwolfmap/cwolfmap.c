@@ -24,7 +24,9 @@
 // TODO: use map header magic value
 #define MAGIC 0xABCD
 
+#ifndef PATH_MAX
 #define PATH_MAX 4096
+#endif
 
 CWMapType CWGetType(
 	const char *path, const char **ext, const char **ext1,
