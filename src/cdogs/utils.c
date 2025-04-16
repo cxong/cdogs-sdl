@@ -59,10 +59,14 @@
 #include <string.h>
 
 #define SDL_STBIMAGE_IMPLEMENTATION
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-qual"
+#endif
 #include <stb/SDL_stbimage.h>
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
 #include <tinydir/tinydir.h>
 
 #include "events.h"
