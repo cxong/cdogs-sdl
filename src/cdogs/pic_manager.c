@@ -27,12 +27,6 @@
 */
 #include "pic_manager.h"
 
-#ifdef __EMSCRIPTEN__
-#include <SDL2/SDL_image.h>
-#else
-#include <SDL_image.h>
-#endif
-
 #include <tinydir/tinydir.h>
 
 #include "files.h"
@@ -45,11 +39,6 @@ PicManager gPicManager;
 
 void PicManagerInit(PicManager *pm)
 {
-	if (!IMG_Init(IMG_INIT_PNG))
-	{
-		perror("Cannot initialise SDL_Image");
-		return;
-	}
 	memset(pm, 0, sizeof *pm);
 	pm->pics = hashmap_new();
 	pm->sprites = hashmap_new();
@@ -214,35 +203,28 @@ void PicManagerLoadDir(
 				strerror(errno));
 			goto bail;
 		}
-		if (file.is_reg)
+		if (file.is_reg && Stricmp(file.extension, "png") == 0)
 		{
-			SDL_RWops *rwops = SDL_RWFromFile(file.path, "rb");
-			const bool isPng = IMG_isPNG(rwops);
-			if (isPng)
+			SDL_Surface *data = LoadImgToSurface(file.path);
+			if (!data)
 			{
-				SDL_Surface *data = IMG_Load_RW(rwops, 0);
-				if (!data)
+				LOG(LM_MAIN, LL_ERROR, "Cannot load image");
+			}
+			else
+			{
+				char buf[CDOGS_PATH_MAX];
+				if (prefix)
 				{
-					LOG(LM_MAIN, LL_ERROR, "Cannot load image IMG_Load: %s",
-						IMG_GetError());
+					char buf1[CDOGS_PATH_MAX];
+					sprintf(buf1, "%s/%s", prefix, file.name);
+					PathGetWithoutExtension(buf, buf1);
 				}
 				else
 				{
-					char buf[CDOGS_PATH_MAX];
-					if (prefix)
-					{
-						char buf1[CDOGS_PATH_MAX];
-						sprintf(buf1, "%s/%s", prefix, file.name);
-						PathGetWithoutExtension(buf, buf1);
-					}
-					else
-					{
-						PathGetBasenameWithoutExtension(buf, file.name);
-					}
-					PicManagerAdd(pics, sprites, buf, data, isHD);
+					PathGetBasenameWithoutExtension(buf, file.name);
 				}
+				PicManagerAdd(pics, sprites, buf, data, isHD);
 			}
-			rwops->close(rwops);
 		}
 		else if (file.is_dir && file.name[0] != '.')
 		{
@@ -501,7 +483,6 @@ void PicManagerTerminate(PicManager *pm)
 	StyleNamesDestroy(&pm->exitStyleNames);
 	StyleNamesDestroy(&pm->doorStyleNames);
 	StyleNamesDestroy(&pm->keyStyleNames);
-	IMG_Quit();
 }
 static void NamedPicDestroy(any_t data)
 {

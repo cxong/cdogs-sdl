@@ -29,8 +29,6 @@
 
 #include <assert.h>
 
-#include <SDL_image.h>
-
 #include <cdogs/draw/draw.h>
 #include <cdogs/draw/draw_actor.h>
 #include <cdogs/events.h>

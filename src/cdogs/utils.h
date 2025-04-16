@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2017, 2019-2024 Cong Xu
+	Copyright (c) 2013-2017, 2019-2025 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -53,6 +53,8 @@
 #include <stdio.h> /* for stderr */
 #include <stdlib.h>
 #include <string.h>
+
+#include <SDL.h>
 
 #include "color.h"
 #include "sys_specifics.h"
@@ -140,7 +142,7 @@ extern bool gFalse;
 		x = y;                                                                \
 		y = _tmp;                                                             \
 	} while (0)
-#define DIV_ROUND_UP(a, b) (((a) + ((b)-1)) / (b))
+#define DIV_ROUND_UP(a, b) (((a) + ((b) - 1)) / (b))
 
 const char *StrGetFileExt(const char *filename);
 
@@ -212,7 +214,7 @@ bool IntsEqual(const void *v1, const void *v2);
 #define RAND_FLOAT(_low, _high) (float)RAND_DOUBLE(_low, _high)
 #define RAND_DOUBLE(_low, _high)                                              \
 	((_low) + ((double)rand() / RAND_MAX * ((_high) - (_low))))
-#define RAND_BOOL() (rand()>RAND_MAX/2)
+#define RAND_BOOL() (rand() > RAND_MAX / 2)
 
 typedef enum
 {
@@ -221,7 +223,7 @@ typedef enum
 	HEAD_PART_HAT,
 	HEAD_PART_GLASSES,
 	HEAD_PART_COUNT
-} HeadPart;	// cranial accessories
+} HeadPart; // cranial accessories
 
 const char *HeadPartStr(const HeadPart hp);
 
@@ -251,3 +253,5 @@ typedef enum
 int Pulse256(const int t);
 
 char *ReadFileIntoBuf(const char *path, const char *mode);
+
+SDL_Surface *LoadImgToSurface(const char *path);

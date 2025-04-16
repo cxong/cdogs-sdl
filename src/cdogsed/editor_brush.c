@@ -29,8 +29,6 @@
 
 #include <assert.h>
 
-#include <SDL_image.h>
-
 #include <cdogs/algorithms.h>
 #include <cdogs/map.h>
 #include <cdogs/map_build.h>
@@ -347,7 +345,8 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 		if (isMain)
 		{
 			const Tile *tile = MapGetTile(&gMap, b->Pos);
-			const Tile *tileAbove = MapGetTile(&gMap, svec2i(b->Pos.x, b->Pos.y - 1));
+			const Tile *tileAbove =
+				MapGetTile(&gMap, svec2i(b->Pos.x, b->Pos.y - 1));
 
 			if (MapObjectIsTileOK(b->u.MapObject, tile, tileAbove) &&
 				MissionStaticTryAddItem(&m->u.Static, b->u.MapObject, b->Pos))
@@ -423,8 +422,8 @@ EditorResult EditorBrushStartPainting(EditorBrush *b, Mission *m, int isMain)
 		if (isMain)
 		{
 			const Tile *tile = MapGetTile(&gMap, b->Pos);
-			if (TileCanWalk(tile) && MissionStaticTryAddPickup(
-					&m->u.Static, b->u.Pickup, b->Pos))
+			if (TileCanWalk(tile) &&
+				MissionStaticTryAddPickup(&m->u.Static, b->u.Pickup, b->Pos))
 			{
 				return EDITOR_RESULT_CHANGED_AND_RELOAD;
 			}
@@ -663,7 +662,7 @@ EditorResult EditorBrushStopPainting(EditorBrush *b, Mission *m)
 bool EditorBrushTryLoadGuideImage(EditorBrush *b, const char *filename)
 {
 	PicFree(&b->GuideImagePic);
-	SDL_Surface *s = IMG_Load(filename);
+	SDL_Surface *s = LoadImgToSurface(filename);
 	if (s == NULL)
 		return false;
 	SDL_Surface *sc = SDL_ConvertSurface(s, gGraphicsDevice.Format, 0);

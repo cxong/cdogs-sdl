@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2017, 2019-2022, 2024 Cong Xu
+	Copyright (c) 2013-2017, 2019-2022, 2024-2025 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -58,6 +58,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define SDL_STBIMAGE_IMPLEMENTATION
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-qual"
+#include <stb/SDL_stbimage.h>
+#pragma GCC diagnostic pop
 #include <tinydir/tinydir.h>
 
 #include "events.h"
@@ -681,4 +686,9 @@ end:
 			strerror(errno));
 	}
 	return buf;
+}
+
+SDL_Surface *LoadImgToSurface(const char *path)
+{
+	return STBIMG_Load(path);
 }

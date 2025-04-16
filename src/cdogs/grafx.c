@@ -1,77 +1,71 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 1995 Ronny Wester
-    Copyright (C) 2003 Jeremy Chin
-    Copyright (C) 2003-2007 Lucas Martin-King
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (C) 1995 Ronny Wester
+	Copyright (C) 2003 Jeremy Chin
+	Copyright (C) 2003-2007 Lucas Martin-King
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-    This file incorporates work covered by the following copyright and
-    permission notice:
+	This file incorporates work covered by the following copyright and
+	permission notice:
 
-    Copyright (c) 2013-2019 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2019 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "grafx.h"
 
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <fcntl.h>
 #include <sys/types.h>
 
 #include <SDL_events.h>
-#ifdef __EMSCRIPTEN__
-#include <SDL2/SDL_image.h>
-#else
-#include <SDL_image.h>
-#endif
 #include <SDL_mouse.h>
 
 #include "blit.h"
 #include "config.h"
 #include "defs.h"
 #include "draw/drawtools.h"
+#include "files.h"
 #include "font_utils.h"
 #include "grafx_bg.h"
 #include "log.h"
 #include "palette.h"
-#include "files.h"
 #include "utils.h"
-
 
 GraphicsDevice gGraphicsDevice;
 
@@ -96,7 +90,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 	{
 		char buf[CDOGS_PATH_MAX];
 		GetDataFilePath(buf, "graphics/cdogs_icon.bmp");
-		g->icon = IMG_Load(buf);
+		g->icon = LoadImgToSurface(buf);
 		g->IsWindowInitialized = true;
 	}
 
@@ -105,19 +99,17 @@ void GraphicsInitialize(GraphicsDevice *g)
 	const int w = g->cachedConfig.Res.x;
 	const int h = g->cachedConfig.Res.y;
 
-	const bool initWindow =
-		!!(g->cachedConfig.RestartFlags & RESTART_WINDOW);
-	const bool initTextures =
-		!!(g->cachedConfig.RestartFlags &
-		(RESTART_WINDOW | RESTART_SCALE_MODE));
+	const bool initWindow = !!(g->cachedConfig.RestartFlags & RESTART_WINDOW);
+	const bool initTextures = !!(
+		g->cachedConfig.RestartFlags & (RESTART_WINDOW | RESTART_SCALE_MODE));
 	const bool initBrightness =
 		!!(g->cachedConfig.RestartFlags &
-		(RESTART_WINDOW | RESTART_SCALE_MODE | RESTART_BRIGHTNESS));
+		   (RESTART_WINDOW | RESTART_SCALE_MODE | RESTART_BRIGHTNESS));
 
 	if (initWindow)
 	{
-		LOG(LM_GFX, LL_INFO, "graphics mode(%dx%d %dx%s)",
-			w, h, g->cachedConfig.ScaleFactor,
+		LOG(LM_GFX, LL_INFO, "graphics mode(%dx%d %dx%s)", w, h,
+			g->cachedConfig.ScaleFactor,
 			g->cachedConfig.Fullscreen ? " fullscreen" : "");
 
 		Uint32 windowFlags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
@@ -125,9 +117,7 @@ void GraphicsInitialize(GraphicsDevice *g)
 			svec2i(SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED),
 			svec2i(
 				ConfigGetInt(&gConfig, "Graphics.WindowWidth"),
-				ConfigGetInt(&gConfig, "Graphics.WindowHeight")
-			)
-		);
+				ConfigGetInt(&gConfig, "Graphics.WindowHeight")));
 		if (g->cachedConfig.Fullscreen)
 		{
 			windowFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
@@ -139,9 +129,9 @@ void GraphicsInitialize(GraphicsDevice *g)
 		SDL_FreeFormat(g->Format);
 
 		char title[32];
-		sprintf(title, "C-Dogs SDL %s%s",
-			g->cachedConfig.IsEditor ? "Editor " : "",
-			CDOGS_SDL_VERSION);
+		sprintf(
+			title, "C-Dogs SDL %s%s",
+			g->cachedConfig.IsEditor ? "Editor " : "", CDOGS_SDL_VERSION);
 		if (!WindowContextCreate(
 				&g->gameWindow, windowDim, windowFlags, title, g->icon,
 				svec2i(w, h)))
@@ -315,16 +305,15 @@ int GraphicsGetMemSize(GraphicsConfig *config)
 }
 
 void GraphicsConfigSet(
-	GraphicsConfig *c,
-	struct vec2i windowSize, const bool fullscreen,
+	GraphicsConfig *c, struct vec2i windowSize, const bool fullscreen,
 	const int scaleFactor, const ScaleMode scaleMode, const int brightness,
 	const bool secondWindow)
 {
-#define SET(_lhs, _rhs, _flag) \
-	if ((_lhs) != (_rhs)) \
-	{ \
-		(_lhs) = (_rhs); \
-		c->RestartFlags |= (_flag); \
+#define SET(_lhs, _rhs, _flag)                                                \
+	if ((_lhs) != (_rhs))                                                     \
+	{                                                                         \
+		(_lhs) = (_rhs);                                                      \
+		c->RestartFlags |= (_flag);                                           \
 	}
 	SET(c->Fullscreen, fullscreen, RESTART_WINDOW);
 	if (c->Fullscreen)
@@ -371,7 +360,7 @@ void GraphicsConfigSetFromConfig(GraphicsConfig *gc, Config *c)
 
 void GraphicsSetClip(SDL_Renderer *renderer, const Rect2i r)
 {
-	const SDL_Rect rect = { r.Pos.x, r.Pos.y, r.Size.x, r.Size.y };
+	const SDL_Rect rect = {r.Pos.x, r.Pos.y, r.Size.x, r.Size.y};
 	if (SDL_RenderSetClipRect(renderer, Rect2iIsZero(r) ? NULL : &rect) != 0)
 	{
 		LOG(LM_MAIN, LL_ERROR, "Could not set clip rect: %s", SDL_GetError());
@@ -389,6 +378,7 @@ void GraphicsResetClip(SDL_Renderer *renderer)
 {
 	if (SDL_RenderSetClipRect(renderer, NULL) != 0)
 	{
-		LOG(LM_MAIN, LL_ERROR, "Could not reset clip rect: %s", SDL_GetError());
+		LOG(LM_MAIN, LL_ERROR, "Could not reset clip rect: %s",
+			SDL_GetError());
 	}
 }

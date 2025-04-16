@@ -2,8 +2,6 @@
 #include <cbehave/cbehave.h>
 
 #include <pic.h>
-
-#include <SDL_image.h>
 #include <config.h>
 #include <grafx.h>
 
@@ -22,9 +20,7 @@ FEATURE(PicLoad, "Pic load")
 			GraphicsInitialize(&gGraphicsDevice);
 			ASSERT(gGraphicsDevice.IsInitialized, 1);
 		AND("a single pixel PNG")
-			SDL_RWops *rwops = SDL_RWFromFile("r64g128b192.png", "rb");
-			ASSERT(IMG_isPNG(rwops), 1);
-			SDL_Surface *image = IMG_Load_RW(rwops, 0);
+			SDL_Surface *image = LoadImgToSurface("r64g128b192.png");
 			SDL_LockSurface(image);
 
 		WHEN("I load the pic")
@@ -40,7 +36,6 @@ FEATURE(PicLoad, "Pic load")
 			SHOULD_INT_EQUAL(c.b, 192);
 		SDL_UnlockSurface(image);
 		SDL_FreeSurface(image);
-		rwops->close(rwops);
 	SCENARIO_END
 FEATURE_END
 

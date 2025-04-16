@@ -29,7 +29,6 @@
 
 #include <stdio.h>
 
-#include <SDL_image.h>
 #include <SDL_mixer.h>
 #include <SDL_version.h>
 
@@ -45,9 +44,6 @@ void PrintTitle(void)
 	printf(
 		"SDL version %d.%d.%d\n", SDL_MAJOR_VERSION, SDL_MINOR_VERSION,
 		SDL_PATCHLEVEL);
-	printf(
-		"SDL_image version %d.%d.%d\n", SDL_IMAGE_MAJOR_VERSION,
-		SDL_IMAGE_MINOR_VERSION, SDL_IMAGE_PATCHLEVEL);
 	printf(
 		"SDL_mixer version %d.%d.%d\n", SDL_MIXER_MAJOR_VERSION,
 		SDL_MIXER_MINOR_VERSION, SDL_MIXER_PATCHLEVEL);
