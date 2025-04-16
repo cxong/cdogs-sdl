@@ -640,7 +640,7 @@ SDL_STBIMG_DEF SDL_Surface* STBIMG_Load_RW_noSeek(_STBIMG_RWops* src, bool frees
 		goto end;
 	}
 
-	buf = (unsigned char*)SDL_malloc(fileSize);
+	buf = (unsigned char*)SDL_malloc((size_t)fileSize);
 	if(buf == NULL)
 	{
 		SDL_SetError("STBIMG_Load_RW_noSeek(): Couldn't allocate buffer to read src into!");
@@ -648,7 +648,7 @@ SDL_STBIMG_DEF SDL_Surface* STBIMG_Load_RW_noSeek(_STBIMG_RWops* src, bool frees
 	}
 
 	while(bytesRead < fileSize) {
-		size_t read = _STBIMG_RWread(src, buf+bytesRead, fileSize-bytesRead);
+		size_t read = _STBIMG_RWread(src, buf+bytesRead, (size_t)(fileSize-bytesRead));
 		if(read == 0) {
 			// TODO: set error? SDL_RWread/SDL_ReadIO should set one, I think?
 			goto end;
