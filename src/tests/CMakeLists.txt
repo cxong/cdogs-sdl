@@ -140,7 +140,6 @@ target_link_libraries(pic_test
 	cdogs
 	cdogs_proto
 	SDL2::SDL2
-	SDL2_image::SDL2_image
 	${EXTRA_LIBRARIES})
 # TODO: test disabled since CI fails with Couldn't find matching render driver
 #add_test(NAME pic_test COMMAND pic_test)
