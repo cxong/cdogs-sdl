@@ -1,4 +1,4 @@
-
+#define SDL_MAIN_HANDLED 1
 #include <cbehave/cbehave.h>
 
 #include <utils.h>
