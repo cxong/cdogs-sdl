@@ -205,7 +205,8 @@ static void UpdatePilotHeadPic(
 	{
 		if (c->Class->HasHeadParts[hp])
 		{
-			pics->HeadParts[hp] = GetHeadPartPic(c->HeadParts[hp], hp, dir, grimace, &c->Colors);
+			pics->HeadParts[hp] =
+				GetHeadPartPic(c->HeadParts[hp], hp, dir, grimace, &c->Colors);
 		}
 	}
 }
@@ -320,10 +321,11 @@ static ActorPics GetUnorderedPics(
 	{
 		if (c->Class->HasHeadParts[hp])
 		{
-			pics.HeadParts[hp] = GetHeadPartPic(c->HeadParts[hp], hp, headDir, grimace, colors);
+			pics.HeadParts[hp] =
+				GetHeadPartPic(c->HeadParts[hp], hp, headDir, grimace, colors);
 			pics.HeadPartOffsets[hp] = GetActorDrawOffset(
-				pics.HeadParts[hp], BODY_PART_HEAD, c->Class->Sprites, anim, frame, dir,
-				GUNSTATE_READY);
+				pics.HeadParts[hp], BODY_PART_HEAD, c->Class->Sprites, anim,
+				frame, dir, GUNSTATE_READY);
 		}
 	}
 
@@ -411,7 +413,8 @@ static void ReorderPics(
 			break;
 		case BODY_PART_FACEHAIR:
 			pics->OrderedPics[bp] = pics->HeadParts[HEAD_PART_FACEHAIR];
-			pics->OrderedOffsets[bp] = pics->HeadPartOffsets[HEAD_PART_FACEHAIR];
+			pics->OrderedOffsets[bp] =
+				pics->HeadPartOffsets[HEAD_PART_FACEHAIR];
 			break;
 		case BODY_PART_HAT:
 			pics->OrderedPics[bp] = pics->HeadParts[HEAD_PART_HAT];
@@ -419,7 +422,8 @@ static void ReorderPics(
 			break;
 		case BODY_PART_GLASSES:
 			pics->OrderedPics[bp] = pics->HeadParts[HEAD_PART_GLASSES];
-			pics->OrderedOffsets[bp] = pics->HeadPartOffsets[HEAD_PART_GLASSES];
+			pics->OrderedOffsets[bp] =
+				pics->HeadPartOffsets[HEAD_PART_GLASSES];
 			break;
 		case BODY_PART_BODY:
 			pics->OrderedPics[bp] = pics->Body;
@@ -558,8 +562,8 @@ const Pic *GetHeadPic(
 	return CArrayGet(&ns->pics, idx);
 }
 const Pic *GetHeadPartPic(
-	const char *name, const HeadPart hp, const direction_e dir, const bool isGrimacing,
-	const CharColors *colors)
+	const char *name, const HeadPart hp, const direction_e dir,
+	const bool isGrimacing, const CharColors *colors)
 {
 	if (name == NULL)
 	{
@@ -588,7 +592,6 @@ static const Pic *GetBodyPic(
 	CASSERT(numBarrels <= 2, "up to 2 barrels supported");
 	const NamedSprites *ns = NULL;
 	const char *upperPose = "";
-	// TODO: 2 grip firing pic
 	if (numBarrels == 1)
 	{
 		upperPose = "_handgun";
@@ -690,12 +693,13 @@ void DrawHead(
 	{
 		if (c->Class->HasHeadParts[hp])
 		{
-			const Pic *pic = GetHeadPartPic(c->HeadParts[hp], hp, dir, isGrimacing, &c->Colors);
+			const Pic *pic = GetHeadPartPic(
+				c->HeadParts[hp], hp, dir, isGrimacing, &c->Colors);
 			if (pic)
 			{
 				PicRender(
-						  pic, renderer, drawPos, mask, 0, svec2_one(), SDL_FLIP_NONE,
-						  Rect2iZero());
+					pic, renderer, drawPos, mask, 0, svec2_one(),
+					SDL_FLIP_NONE, Rect2iZero());
 			}
 		}
 	}
