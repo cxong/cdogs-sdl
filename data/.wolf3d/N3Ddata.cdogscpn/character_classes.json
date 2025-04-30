@@ -69,12 +69,12 @@
       "Name": "Ostrich",
       "HeadPics": {
         "Type": "Directional",
-        "Sprites": "chars/heads/jones"
+        "Sprites": "chars/heads/ostrich"
       },
       "Body": "ostrich",
       "Sounds": "ostrich",
       "BloodColor": "00000000",
-      "HasHair": true,
+      "HasHair": false,
       "HasFacehair": false,
       "HasHat": false,
       "HasGlasses": false
