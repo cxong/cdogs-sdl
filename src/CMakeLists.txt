@@ -82,6 +82,8 @@ if(APPLE)
 		INSTALL_RPATH "@loader_path/../Frameworks;/Library/Frameworks")
 elseif(MSVC)
 	set_target_properties(cdogs-sdl PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/src")
+	# Increase stack size to avoid stack overflows
+	set_target_properties(cdogs-sdl PROPERTIES LINK_FLAGS /STACK:10000000)
 endif()
 target_link_libraries(cdogs-sdl cdogs cdogs_proto ${EXTRA_LIBRARIES})
 
