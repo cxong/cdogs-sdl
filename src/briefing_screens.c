@@ -634,7 +634,7 @@ static GameLoopResult MissionSummaryUpdate(GameLoopData *data, LoopRunner *l)
 		{
 			LoopRunnerChange(l, ScreenVictory(&gCampaign));
 		}
-		else if (!mData->completed)
+		else
 		{
 			// Check if we want to return to menu or replay mission
 			gCampaign.IsQuit = mData->ms.current->u.returnCode == 1;
