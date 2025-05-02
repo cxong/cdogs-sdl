@@ -73,6 +73,7 @@
       },
       "Body": "ostrich",
       "Sounds": "ostrich",
+      "Footsteps": "wood",
       "BloodColor": "00000000",
       "HasHair": false,
       "HasFacehair": false,
