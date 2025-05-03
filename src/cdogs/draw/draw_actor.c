@@ -170,6 +170,7 @@ ActorPics GetCharacterPicsFromActor(const TActor *a)
 	int frame;
 	const direction_e legDir = GetLegDirAndFrame(a, dir, &frame);
 	gunstate_e gunStates[MAX_BARRELS];
+	memset(&gunStates, 0, sizeof gunStates);
 	for (int i = 0; gun->Gun != NULL && i < WeaponClassNumBarrels(gun->Gun);
 		 i++)
 	{
@@ -302,7 +303,7 @@ static ActorPics GetUnorderedPics(
 							WC_BARREL_ATTR(*gun, Sprites, 0) == NULL)
 							   ? 0
 							   : WeaponClassNumBarrels(gun);
-	for (int i = 0; i < numBarrels; i++)
+	for (int i = 0; i < MAX_BARRELS; i++)
 	{
 		if (barrelStates[i] == GUNSTATE_FIRING ||
 			barrelStates[i] == GUNSTATE_RECOIL)
