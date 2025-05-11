@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2014, 2016-2017, 2019, 2021, 2024 Cong Xu
+	Copyright (c) 2014, 2016-2017, 2019, 2021, 2024-2025 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -450,6 +450,8 @@ static bool TryLoadMapObject(MapObject *m, json_t *node, const int version)
 			&m->DamageSmoke.HealthThreshold, dSmokeNode->child,
 			"HealthThreshold");
 		LoadFloat(&m->DamageSmoke.Z, dSmokeNode->child, "Z");
+		m->DamageSmoke.Ticks = 20;
+		LoadInt(&m->DamageSmoke.Ticks, dSmokeNode->child, "Ticks");
 	}
 
 	return true;

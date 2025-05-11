@@ -518,7 +518,7 @@ void ObjAdd(const NMapObjectAdd amo)
 		&o->damageSmoke,
 		StrParticleClass(
 			&gParticleClasses, o->Class->DamageSmoke.ParticleClass),
-		svec2_zero(), -0.05f, 0.05f, 3, 3, 0, 0, 20);
+		svec2_zero(), -0.05f, 0.05f, 3, 3, 0, 0, o->Class->DamageSmoke.Ticks);
 	o->isInUse = true;
 	LOG(LM_MAIN, LL_DEBUG,
 		"added object uid(%d) class(%s) health(%d) pos(%d, %d)", (int)amo.UID,

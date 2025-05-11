@@ -301,7 +301,8 @@
       "DamageSmoke": {
         "Particle": "zzz",
         "HealthThreshold": 1.0,
-        "Z": 10
+        "Z": 10,
+        "Ticks": 20
       }
     },
     {
@@ -316,7 +317,40 @@
       "DamageSmoke": {
         "Particle": "zzz",
         "HealthThreshold": 1.0,
-        "Z": 10
+        "Z": 10,
+        "Ticks": 20
+      }
+    },
+    {
+      "Name": "camel_sleep",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "camel_sleep",
+        "TicksPerFrame": 300
+      },
+      "Health": 0,
+      "DrawBelow": true,
+      "DamageSmoke": {
+        "Particle": "zzz",
+        "HealthThreshold": 1.0,
+        "Z": 10,
+        "Ticks": 100
+      }
+    },
+    {
+      "Name": "ostrich_sleep",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "ostrich_sleep",
+        "TicksPerFrame": 260
+      },
+      "Health": 0,
+      "DrawBelow": true,
+      "DamageSmoke": {
+        "Particle": "zzz",
+        "HealthThreshold": 1.0,
+        "Z": 10,
+        "Ticks": 80
       }
     }
   ]
