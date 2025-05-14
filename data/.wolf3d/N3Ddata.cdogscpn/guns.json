@@ -102,14 +102,12 @@
     },
     {
       "Pic": "",
-      "Grips": 2,
-      "Name": "SS Machine Gun",
-      "Icon": "assault_rifle",
+      "Name": "Antelope Spit",
       "Bullet": "bullet_boss",
       "Cost": 1,
       "Lock": 70,
       "MuzzleFlashParticle": "",
-      "Sound": "machine_gun_burst",
+      "Sound": "spit",
       "Recoil": 0.3,
       "Ammo": "Feed",
       "CanDrop": false
@@ -175,7 +173,7 @@
       "CanDrop": false
     }
   ],
-  "PseudoGuns" : [
+  "PseudoGuns": [
     {
       "Name": "cantaloupe_splat",
       "Bullet": "cantaloupe_splat",

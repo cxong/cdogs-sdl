@@ -57,12 +57,14 @@
         "Type": "Directional",
         "Sprites": "chars/heads/sheep"
       },
-      "Body": "sheep",
+      "Body": "antelope",
       "Sounds": "antelope",
+      "Footsteps": "sheep",
+      "Corpse": "antelope_sleep",
       "BloodColor": "00000000",
       "HasHair": false,
       "HasFacehair": false,
-      "HasHat": false,
+      "HasHat": true,
       "HasGlasses": false
     },
     {

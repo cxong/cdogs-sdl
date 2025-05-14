@@ -322,6 +322,22 @@
       }
     },
     {
+      "Name": "antelope_sleep",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "antelope_sleep",
+        "TicksPerFrame": 120
+      },
+      "Health": 0,
+      "DrawBelow": true,
+      "DamageSmoke": {
+        "Particle": "zzz",
+        "HealthThreshold": 1.0,
+        "Z": 10,
+        "Ticks": 35
+      }
+    },
+    {
       "Name": "camel_sleep",
       "Pic": {
         "Type": "Animated",

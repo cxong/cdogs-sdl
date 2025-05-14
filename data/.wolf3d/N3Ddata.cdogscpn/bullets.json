@@ -58,9 +58,7 @@
         "Flesh": {},
         "Wall": {}
       },
-      "HitGuns": [
-        "cantaloupe_splat"
-      ],
+      "HitGuns": ["cantaloupe_splat"],
       "Falling": {
         "GravityFactor": 1
       }
@@ -110,9 +108,7 @@
         "Flesh": {},
         "Wall": {}
       },
-      "HitGuns": [
-        "watermelon_splat"
-      ],
+      "HitGuns": ["watermelon_splat"],
       "Falling": {
         "GravityFactor": 1
       }
@@ -154,8 +150,6 @@
         "Particle": "trail_spit",
         "Width": 1.0
       },
-      "OutOfRangeSpark": "spark",
-      "WallMark": "bullet_hole",
       "Hit": {
         "Flesh": {
           "Sound": "hurt"
@@ -176,8 +170,6 @@
         "Particle": "trail_spit",
         "Width": 1.5
       },
-      "OutOfRangeSpark": "spark",
-      "WallMark": "bullet_hole",
       "Hit": {
         "Flesh": {
           "Sound": "hurt"
