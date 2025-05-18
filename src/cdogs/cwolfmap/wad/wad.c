@@ -29,8 +29,10 @@ static unsigned char cbuf[CBUF_LEN];
 
 // From waderror.h
 extern int waderrno;
+#ifndef __MINGW32__
 // From errno.h
 extern int errno;
+#endif
 
 // ===========================================================================
 // Common Private Functions
