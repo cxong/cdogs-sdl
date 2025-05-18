@@ -76,6 +76,22 @@ void LogTerminate(void);
 #ifndef _WIN32
 #define __pragma(x)
 #endif
+#if defined(_MSC_VER)
+#define LOG(_module, _level, ...)                                             \
+	do                                                                        \
+	{                                                                         \
+		__pragma(warning(suppress : 4127))                                    \
+		if (_level >= LogModuleGetLevel(_module))                             \
+		{                                                                     \
+			LogLine(                                                          \
+				stderr, _module, _level, __FILENAME__, __LINE__, __func__,    \
+				##__VA_ARGS__);                                               \
+			LogLine(                                                          \
+				gLogFile, _module, _level, __FILENAME__, __LINE__, __func__,  \
+				##__VA_ARGS__);                                               \
+		}                                                                     \
+	} while (0)
+#else
 #define LOG(_module, _level, ...)                                             \
 	do                                                                        \
 	{                                                                         \
@@ -88,16 +104,25 @@ void LogTerminate(void);
 				gLogFile, _module, _level, __FILENAME__, __LINE__, __func__,  \
 				##__VA_ARGS__);                                               \
 		}                                                                     \
-		__pragma(warning(suppress : 4127))                                    \
-	} while (false)
+	} while (0)
+#endif
 
+#if defined(_MSC_VER)
+#define LOG_FLUSH()                                                           \
+	do                                                                        \
+	{                                                                         \
+		__pragma(warning(suppress : 4127))                                    \
+		LogFlush(stderr);                                                     \
+		LogFlush(gLogFile);                                                   \
+	} while (0)
+#else
 #define LOG_FLUSH()                                                           \
 	do                                                                        \
 	{                                                                         \
 		LogFlush(stderr);                                                     \
 		LogFlush(gLogFile);                                                   \
-		__pragma(warning(suppress : 4127))                                    \
-	} while (false)
+	} while (0)
+#endif
 
 void LogLine(
 	FILE *stream, const LogModule m, const LogLevel l, const char *filename,
