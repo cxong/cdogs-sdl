@@ -114,13 +114,13 @@
       "HasGlasses": false
     },
     {
-      "Name": "Dr Schabbs",
+      "Name": "Giraffe",
       "HeadPics": {
         "Type": "Directional",
-        "Sprites": "chars/heads/jones"
+        "Sprites": "chars/heads/sheep"
       },
-      "Body": "big",
-      "Sounds": "schabbs"
+      "Body": "giraffe",
+      "Sounds": "giraffe"
     },
     {
       "Name": "Mecha Hitler",

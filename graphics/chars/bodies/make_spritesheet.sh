@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 # Create character spritesheet and join all the rendered images
+# Requires blender and imagemagick
 #
 set -e
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
@@ -11,10 +12,18 @@ fi
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
   BLENDER=blender
+elif [[ "$OSTYPE" == "msys" ]]; then
+  BLENDER="/c/Program Files/Blender Foundation/Blender 4.4/blender.exe"
 else
-  # macos
+  # macOS
   BLENDER=/Applications/blender.app/Contents/MacOS/blender
 fi
+if [[ "$OSTYPE" == "msys" ]]; then
+  BLENDER_OUT="C:/out"
+else
+  BLENDER_OUT="out"
+fi
+
 INFILE=$1/src.blend
 # Render separate body parts (in collections)
 parts=(legs upper)
@@ -52,11 +61,11 @@ do
       fi
       "$BLENDER" -noaudio -b "$INFILE" -P ${SCRIPT_DIR}/render.py -- "$collections" "$action" "$frames" "$part"
 
-      DIMENSIONS=`identify -format "%wx%h" "out/${part}_${action}_0_00.png"`
+      DIMENSIONS=`identify -format "%wx%h" "${BLENDER_OUT}/${part}_${action}_0_00.png"`
       OUTFILE=$1/${part}_${action}_${DIMENSIONS}.png
       rm -f "$OUTFILE"
-      montage -geometry +0+0 -background none -tile x8 "out/${part}_${action}_*.png" -channel A tmpimage
-      convert tmpimage -dither None -colors 32 -level 25%,60% "$OUTFILE"
+      montage -geometry +0+0 -background none -tile x8 "${BLENDER_OUT}/${part}_${action}_*.png" -channel A tmpimage
+      magick convert tmpimage -dither None -colors 32 -level 25%,60% "$OUTFILE"
       rm tmpimage
       chmod 644 "$OUTFILE"
       echo "Created $OUTFILE"

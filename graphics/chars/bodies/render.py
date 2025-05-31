@@ -21,7 +21,7 @@ action = argv[1]
 frames = int(argv[2])
 name = '{}_{}'.format(argv[3], action)
 
-RESOLUTION = 24
+RESOLUTION = 32
 FRAME_SKIP = 10
 
 angle = -45
