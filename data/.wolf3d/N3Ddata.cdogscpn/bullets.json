@@ -257,7 +257,7 @@
     },
     {
       "Name": "goat_kick",
-      "Power": 11,
+      "Power": 22,
       "Mass": 1.0,
       "Hit": {
         "Flesh": {

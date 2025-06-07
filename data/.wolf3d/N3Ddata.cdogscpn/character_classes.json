@@ -120,7 +120,14 @@
         "Sprites": "chars/heads/sheep"
       },
       "Body": "giraffe",
-      "Sounds": "giraffe"
+      "Sounds": "giraffe",
+      "Footsteps": "sheep",
+      "Corpse": "giraffe_sleep",
+      "BloodColor": "00000000",
+      "HasHair": false,
+      "HasFacehair": false,
+      "HasHat": true,
+      "HasGlasses": false
     },
     {
       "Name": "Mecha Hitler",

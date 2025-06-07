@@ -118,7 +118,7 @@
       "Bullet": "bullet_boss",
       "Lock": 70,
       "MuzzleFlashParticle": "",
-      "Sound": "dual_chain_gun",
+      "Sound": "spit",
       "Recoil": 0.3
     },
     {
@@ -143,16 +143,6 @@
       "Lock": 80,
       "Sound": "",
       "CanShoot": false,
-      "CanDrop": false
-    },
-    {
-      "Pic": "",
-      "Name": "Syringes",
-      "Bullet": "syringe",
-      "Cost": 7,
-      "Lock": 30,
-      "Sound": "syringe",
-      "SwitchSound": "molotov_pickup",
       "CanDrop": false
     },
     {
@@ -198,7 +188,7 @@
       "Bullet": "bullet_boss",
       "Lock": 70,
       "MuzzleFlashParticle": "",
-      "Sound": "",
+      "Sound": "spit",
       "Recoil": 0.3
     },
     {

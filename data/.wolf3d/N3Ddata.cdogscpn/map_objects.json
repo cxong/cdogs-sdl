@@ -368,6 +368,22 @@
         "Z": 10,
         "Ticks": 80
       }
+    },
+    {
+      "Name": "giraffe_sleep",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "giraffe_sleep",
+        "TicksPerFrame": 180
+      },
+      "Health": 0,
+      "DrawBelow": true,
+      "DamageSmoke": {
+        "Particle": "zzz",
+        "HealthThreshold": 1.0,
+        "Z": 10,
+        "Ticks": 50
+      }
     }
   ]
 }
