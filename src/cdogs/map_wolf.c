@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2020-2024 Cong Xu
+	Copyright (c) 2020-2025 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -1538,54 +1538,8 @@ static void TryLoadWallObject(
 	case CWWALL_STEEL:
 		switch (map->type)
 		{
-		case CWMAPTYPE_N3D: {
-			// Elevators only occur on east/west tiles
-			for (int dx = -1; dx <= 1; dx += 2)
-			{
-				const struct vec2i exitV = svec2i(v.x + dx, v.y);
-				const TileClass *tc =
-					MissionStaticGetTileClass(m, levelSize, exitV);
-				// Tile can be a vertical door
-				const uint16_t chd = CWLevelGetCh(level, 0, exitV.x, exitV.y);
-				const CWTile tile = CWChToTile(chd);
-				const bool isVerticalDoor =
-					tile == CWTILE_ELEVATOR_V || tile == CWTILE_DOOR_V ||
-					tile == CWTILE_DOOR_GOLD_V || tile == CWTILE_DOOR_SILVER_V;
-				if (tc != NULL &&
-					(tc->Type == TILE_CLASS_FLOOR || isVerticalDoor))
-				{
-					Exit e;
-					e.Hidden = true;
-					e.Mission = missionIndex + 1;
-					// Check if coming back from secret level
-					// For boss levels, skip the secret level
-					switch (missionIndex)
-					{
-					case 10:
-						e.Mission++;
-						break;
-					case 11:
-						e.Mission = 8;
-						break;
-					case 28:
-						e.Mission++;
-						break;
-					case 29:
-						e.Mission = 26;
-						break;
-					default:
-						break;
-					}
-					e.R.Pos = exitV;
-					e.R.Size = svec2i_zero();
-					MissionStaticTryAddExit(m, &e);
-					// Remove wall decorations from the wall
-					MissionStaticTryRemoveItemAt(m, exitV);
-					MissionStaticTryAddItem(m, StrMapObject("stairs"), exitV);
-				}
-			}
-		}
-		break;
+		case CWMAPTYPE_N3D:
+			break;
 		default:
 			switch (spearMission)
 			{
@@ -3013,10 +2967,60 @@ static void LoadEntity(
 		}
 		break;
 	case CWENT_NEXT_LEVEL:
-		// TODO: implement
+		if (map->type == CWMAPTYPE_N3D)
+		{
+			// Normal exit
+			Exit e;
+			e.Hidden = true;
+			e.Mission = missionIndex + 1;
+			// Check if coming back from secret level
+			// For boss levels, skip the secret level
+			switch (missionIndex)
+			{
+			case 10:
+				e.Mission++;
+				break;
+			case 11:
+				e.Mission = 8;
+				break;
+			case 28:
+				e.Mission++;
+				break;
+			case 29:
+				e.Mission = 26;
+				break;
+			default:
+				break;
+			}
+			e.R.Pos = v;
+			e.R.Size = svec2i_zero();
+			MissionStaticTryAddExit(&m->u.Static, &e);
+			// Remove wall decorations from the wall
+			MissionStaticTryRemoveItemAt(&m->u.Static, v);
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("stairs"), v);
+		}
 		break;
 	case CWENT_SECRET_LEVEL:
-		// TODO: implement
+		if (map->type == CWMAPTYPE_N3D)
+		{
+			// Secret exit
+			Exit e;
+			e.Hidden = true;
+			if (missionIndex == 7)
+			{
+				e.Mission = 11;
+			}
+			else
+			{
+				e.Mission = 29;
+			}
+			e.R.Pos = v;
+			e.R.Size = svec2i_zero();
+			MissionStaticTryAddExit(&m->u.Static, &e);
+			// Remove wall decorations from the wall
+			MissionStaticTryRemoveItemAt(&m->u.Static, v);
+			MissionStaticTryAddItem(&m->u.Static, StrMapObject("stairs"), v);
+		}
 		break;
 	case CWENT_GHOST:
 		LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_GHOST, false, bossObjIdx);
@@ -3576,7 +3580,7 @@ void MapWolfN3DCheckAndLoadCustomQuiz(
 	memset(&map, 0, sizeof map);
 	CWN3DLoadQuizzes(&map, languageBuf);
 	free(languageBuf);
-	
+
 	// Copy the effects from the "scroll" pickup
 	const PickupClass *scroll = StrPickupClass("scroll");
 	const PickupEffect *menuEffect = CArrayGet(&scroll->Effects, 0);
@@ -3625,6 +3629,6 @@ void MapWolfN3DCheckAndLoadCustomQuiz(
 
 		CArrayPushBack(&c->Effects, &e);
 	}
-	
+
 	CWFree(&map);
 }
