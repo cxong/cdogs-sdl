@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2021, 2023 Cong Xu
+	Copyright (c) 2013-2021, 2023, 2025 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -683,12 +683,14 @@ void DrawHead(
 {
 	const bool isGrimacing = false;
 	const Pic *head = GetHeadPic(c->Class, dir, isGrimacing, &c->Colors);
-	const struct vec2i drawPos =
-		svec2i_subtract(pos, svec2i(head->size.x / 2, head->size.y / 2));
+	const struct vec2i headOffset = GetActorDrawOffset(
+		head, BODY_PART_HEAD, c->Class->Sprites, ACTORANIMATION_IDLE, 0,
+		DIRECTION_DOWN, GUNSTATE_READY);
 	const color_t mask = colorWhite;
+	const struct vec2i charOffset = svec2i(0, 12);
 	PicRender(
-		head, renderer, drawPos, mask, 0, svec2_one(), SDL_FLIP_NONE,
-		Rect2iZero());
+		head, renderer, svec2i_add(svec2i_add(pos, headOffset), charOffset),
+		mask, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 
 	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
 	{
@@ -698,9 +700,13 @@ void DrawHead(
 				c->HeadParts[hp], hp, dir, isGrimacing, &c->Colors);
 			if (pic)
 			{
+				const struct vec2i headPartOffset = GetActorDrawOffset(
+					pic, BODY_PART_HEAD, c->Class->Sprites,
+					ACTORANIMATION_IDLE, 0, DIRECTION_DOWN, GUNSTATE_READY);
 				PicRender(
-					pic, renderer, drawPos, mask, 0, svec2_one(),
-					SDL_FLIP_NONE, Rect2iZero());
+					pic, renderer,
+					svec2i_add(svec2i_add(pos, headPartOffset), charOffset),
+					mask, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 			}
 		}
 	}
