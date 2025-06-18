@@ -89,12 +89,14 @@
         "Type": "Directional",
         "Sprites": "chars/heads/sheep"
       },
-      "Body": "sheep",
+      "Body": "antelope",
       "Sounds": "ox",
+      "Footsteps": "sheep",
+      "Corpse": "ox_sleep",
       "BloodColor": "00000000",
       "HasHair": false,
-      "HasFacehair": false,
-      "HasHat": false,
+      "HasFacehair": true,
+      "HasHat": true,
       "HasGlasses": false
     },
     {
