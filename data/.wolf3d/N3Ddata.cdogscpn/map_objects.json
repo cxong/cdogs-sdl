@@ -338,6 +338,22 @@
       }
     },
     {
+      "Name": "ox_sleep",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "ox_sleep",
+        "TicksPerFrame": 150
+      },
+      "Health": 0,
+      "DrawBelow": true,
+      "DamageSmoke": {
+        "Particle": "zzz",
+        "HealthThreshold": 1.0,
+        "Z": 10,
+        "Ticks": 45
+      }
+    },
+    {
       "Name": "camel_sleep",
       "Pic": {
         "Type": "Animated",
