@@ -213,6 +213,8 @@ void MusicPlayChunk(MusicPlayer *mp, const MusicType type, MusicChunk *chunk)
 		{
 			mp->type = MUSIC_SRC_DYNAMIC;
 			mp->u.dynamic = chunk->u.Music;
+			// Mark music as null so it can be dynamically loaded again
+			chunk->u.Music = NULL;
 			PlayMusic(mp);
 		}
 		else
@@ -343,9 +345,7 @@ void MusicPlayFromChunk(
 		chunk->GetData)
 	{
 		chunk->isMusic = chunk->GetData(chunk, chunk->Data);
-		CFREE(chunk->Data);
-		chunk->Data = NULL;
-		chunk->GetData = NULL;
+		// Note: don't free the data; we need to reload it after it is freed in MusicStop
 	}
 	MusicPlayChunk(mp, type, chunk);
 }
