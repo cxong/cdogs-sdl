@@ -160,7 +160,7 @@
         "Type": "Directional",
         "Sprites": "chars/heads/monkey"
       },
-      "Body": "big_soldier",
+      "Body": "monkey",
       "Sounds": "monkey"
     },
     {
