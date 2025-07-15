@@ -400,6 +400,22 @@
         "Z": 10,
         "Ticks": 50
       }
+    },
+    {
+      "Name": "monkey_sleep",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "monkey_sleep",
+        "TicksPerFrame": 75
+      },
+      "Health": 0,
+      "DrawBelow": true,
+      "DamageSmoke": {
+        "Particle": "zzz",
+        "HealthThreshold": 1.0,
+        "Z": 10,
+        "Ticks": 20
+      }
     }
   ]
 }

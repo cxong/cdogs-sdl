@@ -161,7 +161,14 @@
         "Sprites": "chars/heads/monkey"
       },
       "Body": "monkey",
-      "Sounds": "monkey"
+      "Sounds": "monkey",
+      "Footsteps": "camel",
+      "Corpse": "monkey_sleep",
+      "BloodColor": "00000000",
+      "HasHair": false,
+      "HasFacehair": false,
+      "HasHat": false,
+      "HasGlasses": false
     },
     {
       "Name": "Gretel Grosse",
