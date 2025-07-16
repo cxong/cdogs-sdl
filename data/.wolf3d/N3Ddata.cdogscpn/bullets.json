@@ -229,23 +229,20 @@
       }
     },
     {
-      "Name": "rocket",
+      "Name": "coconut",
       "Pic": {
-        "Type": "Directional",
-        "Sprites": "rocket"
+        "Type": "Animated",
+        "Sprites": "grenade",
+        "TicksPerFrame": 2,
+        "Mask": "593519"
       },
-      "Trail": {
-        "Particle": "smoke_trail_small",
-        "Width": 0,
-        "TicksPerEmit": 4
-      },
-      "ShadowSize": [2, 2],
+      "ShadowSize": [6, 4],
       "Hit": {
         "Flesh": {
           "Sound": "hurt"
         },
         "Wall": {
-          "Sound": "hits/rocket"
+          "Sound": "hits/splat0"
         }
       },
       "Speed": 800,
@@ -253,7 +250,10 @@
       "Power": 45,
       "Mass": 15.0,
       "Size": [4, 4],
-      "Spark": "boom"
+      "Spark": "",
+      "Falling": {
+        "GravityFactor": 1
+      }
     },
     {
       "Name": "goat_kick",

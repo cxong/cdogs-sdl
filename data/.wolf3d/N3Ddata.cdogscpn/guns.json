@@ -146,20 +146,20 @@
       "CanDrop": false
     },
     {
-      "Name": "Rocket Launcher",
+      "Name": "Coconuts",
       "Pic": "",
       "Icon": "launcher",
-      "Bullet": "rocket",
+      "Bullet": "coconut",
       "Cost": 9,
       "Lock": 40,
-      "Sound": "rocket",
+      "Sound": "launch",
       "SwitchSound": "launcher_switch",
       "CanDrop": false
     },
     {
       "Name": "Chaingun and Rocket Launcher",
       "Icon": "akimbo_pistols",
-      "Guns": ["Rocket Launcher", "boss_chaingun1"],
+      "Guns": ["Coconuts", "boss_chaingun1"],
       "CanDrop": false
     }
   ],
