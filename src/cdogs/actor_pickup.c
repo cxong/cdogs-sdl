@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2015, 2017-2020, 2022-2024 Cong Xu
+	Copyright (c) 2014-2015, 2017-2020, 2022-2025 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -47,7 +47,7 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll)
 	GameEvent e;
 
 	CA_FOREACH(const PickupEffect, pe, p->class->Effects)
-	canPickup = PickupApplyEffect(a, p, pe, pickupAll, &sound);
+	canPickup = PickupApplyEffect(a, p, pe, pickupAll, &sound) || canPickup;
 	CA_FOREACH_END()
 
 	if (canPickup)

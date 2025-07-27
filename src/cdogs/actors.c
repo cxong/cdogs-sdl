@@ -1088,7 +1088,7 @@ int CommandActor(TActor *actor, int cmd, int ticks)
 				CASSERT(
 					pe->Type != PICKUP_MENU, "can't have nested menu effects");
 				canPickup = PickupApplyEffect(
-					actor, actor->pickupMenu.pickup, pe, true, &sound);
+					actor, actor->pickupMenu.pickup, pe, true, &sound) || canPickup;
 				CA_FOREACH_END()
 				if (canPickup && sound != NULL)
 				{
