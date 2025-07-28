@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2016, 2018-2022, 2024 Cong Xu
+	Copyright (c) 2013-2016, 2018-2022, 2024-2025 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -51,6 +51,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "actor_pickup.h"
 #include "actors.h"
 #include "algorithms.h"
 #include "blit.h"
@@ -342,7 +343,7 @@ static void DrawObjectiveHighlights(
 		}
 		// Gun pickup or keycard
 		const Pickup *p = CArrayGet(&gPickups, ti->id);
-		if (!PickupClassHasKeyEffect(p->class) && !PickupIsManual(p))
+		if (!PickupClassHasKeyEffect(p->class) && !PickupIsManual(NULL, p))
 		{
 			continue;
 		}

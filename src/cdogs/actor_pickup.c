@@ -184,7 +184,6 @@ bool PickupApplyEffect(
 	return canPickup;
 }
 
-static bool HasGunUsingAmmo(const TActor *a, const int ammoId);
 static bool TreatAsGunPickup(const PickupEffect *pe, const TActor *a)
 {
 	// Grenades can also be gun pickups; treat as gun pickup if the player
@@ -192,7 +191,7 @@ static bool TreatAsGunPickup(const PickupEffect *pe, const TActor *a)
 	switch (pe->Type)
 	{
 	case PICKUP_AMMO:
-		if (!HasGunUsingAmmo(a, pe->u.Ammo.Id))
+		if (!ActorUsesAmmo(a, pe->u.Ammo.Id))
 		{
 			const Ammo *ammo = AmmoGetById(&gAmmo, pe->u.Ammo.Id);
 			if (ammo->DefaultGun)
@@ -204,29 +203,12 @@ static bool TreatAsGunPickup(const PickupEffect *pe, const TActor *a)
 	case PICKUP_GUN: {
 		const WeaponClass *wc = IdWeaponClass(pe->u.GunId);
 		return wc->Type != GUNTYPE_GRENADE ||
-			   !HasGunUsingAmmo(a, wc->u.Normal.AmmoId);
+			   !ActorUsesAmmo(a, wc->u.Normal.AmmoId);
 	}
 	default:
 		CASSERT(false, "unexpected pickup type");
 		return false;
 	}
-}
-static bool HasGunUsingAmmo(const TActor *a, const int ammoId)
-{
-	for (int i = 0; i < MAX_WEAPONS; i++)
-	{
-		const WeaponClass *wc = a->guns[i].Gun;
-		if (wc == NULL)
-			continue;
-		for (int j = 0; j < WeaponClassNumBarrels(wc); j++)
-		{
-			if (WC_BARREL_ATTR(*wc, AmmoId, j) == ammoId)
-			{
-				return true;
-			}
-		}
-	}
-	return false;
 }
 
 static bool TryPickupAmmo(TActor *a, const Pickup *p, const PickupEffect *pe)
@@ -310,4 +292,30 @@ static bool TryPickupGun(
 	}
 
 	return true;
+}
+
+bool PickupIsManual(const TActor *a, const Pickup *p)
+{
+	if (p->PickedUp)
+		return false;
+	CA_FOREACH(const PickupEffect, pe, p->class->Effects)
+	switch (pe->Type)
+	{
+	case PICKUP_GUN:
+		return true;
+	case PICKUP_AMMO: {
+		const Ammo *ammo = AmmoGetById(&gAmmo, pe->u.Ammo.Id);
+		if (ammo->DefaultGun != NULL && !ActorUsesAmmo(a, pe->u.Ammo.Id))
+		{
+			return true;
+		}
+	}
+	break;
+	case PICKUP_MENU:
+		return true;
+	default:
+		break;
+	}
+	CA_FOREACH_END()
+	return false;
 }

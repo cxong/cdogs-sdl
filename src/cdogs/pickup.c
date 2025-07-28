@@ -127,32 +127,6 @@ void PickupsUpdate(CArray *pickups, const int ticks)
 	CA_FOREACH_END()
 }
 
-bool PickupIsManual(const Pickup *p)
-{
-	if (p->PickedUp)
-		return false;
-	CA_FOREACH(const PickupEffect, pe, p->class->Effects)
-	switch (pe->Type)
-	{
-	case PICKUP_GUN:
-		return true;
-	case PICKUP_AMMO: {
-		const Ammo *ammo = AmmoGetById(&gAmmo, pe->u.Ammo.Id);
-		if (ammo->DefaultGun != NULL)
-		{
-			return true;
-		}
-	}
-	break;
-	case PICKUP_MENU:
-		return true;
-	default:
-		break;
-	}
-	CA_FOREACH_END()
-	return false;
-}
-
 static void PickupDraw(GraphicsDevice *g, const int id, const struct vec2i pos)
 {
 	const Pickup *p = CArrayGet(&gPickups, id);

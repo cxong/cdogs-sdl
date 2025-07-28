@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2015, 2024 Cong Xu
+	Copyright (c) 2014-2015, 2024-2025 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -34,3 +34,6 @@ void PickupPickup(TActor *a, Pickup *p, const bool pickupAll);
 bool PickupApplyEffect(
 	TActor *a, const Pickup *p, const PickupEffect *pe, const bool force,
 	const char **sound);
+
+// Check if the pickup needs to be picked up manually
+bool PickupIsManual(const TActor *a, const Pickup *p);

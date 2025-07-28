@@ -806,6 +806,10 @@ void ActorAddAmmo(TActor *actor, const int ammoId, const int amount)
 
 bool ActorUsesAmmo(const TActor *actor, const int ammoId)
 {
+	if (!actor)
+	{
+		return false;
+	}
 	for (int i = 0; i < MAX_WEAPONS; i++)
 	{
 		const WeaponClass *wc = actor->guns[i].Gun;
@@ -1449,7 +1453,7 @@ static bool CheckManualPickupFunc(
 	if (ti->kind != KIND_PICKUP)
 		return true;
 	const Pickup *p = CArrayGet(&gPickups, ti->id);
-	if (!PickupIsManual(p))
+	if (!PickupIsManual(a, p))
 		return true;
 	// "Say" that the weapon must be picked up using a command
 	const PlayerData *pData = PlayerDataGetByUID(a->PlayerUID);

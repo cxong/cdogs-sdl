@@ -56,7 +56,4 @@ void PickupDestroy(const int uid);
 
 void PickupsUpdate(CArray *pickups, const int ticks);
 
-// Check if the pickup needs to be picked up manually
-bool PickupIsManual(const Pickup *p);
-
 Pickup *PickupGetByUID(const int uid);
