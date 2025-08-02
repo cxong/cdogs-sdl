@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.24)
 cmake_policy(SET CMP0054 NEW)
 
 project(enet)
@@ -19,6 +19,7 @@ check_struct_has_member("struct msghdr" "msg_flags" "sys/types.h;sys/socket.h" H
 set(CMAKE_EXTRA_INCLUDE_FILES "sys/types.h" "sys/socket.h")
 check_type_size("socklen_t" HAS_SOCKLEN_T BUILTIN_TYPES_ONLY)
 unset(CMAKE_EXTRA_INCLUDE_FILES)
+set(CMAKE_COMPILE_WARNING_AS_ERROR OFF)
 if(MSVC)
 	add_definitions(-W3)
 else()

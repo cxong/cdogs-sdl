@@ -87,7 +87,7 @@ if(NOT USE_SHARED_ENET)
 endif()
 
 if(MSVC)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -MP -W4 -WX -wd\"4090\" -wd\"4996\" -wd\"4204\"")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -MP -W4 -WX -wd\"4090\" -wd\"4996\" -wd\"4204\" -wd\"5287\"")
 	if(DEBUG)
 		add_definitions(-ZI)
 	endif()
