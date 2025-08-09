@@ -1,0 +1,14 @@
+---
+layout: post
+title: "C-Dogs 2.3.1 Released!"
+date: 2025-08-09
+categories: release
+---
+
+This is an out-of-band release that fixes a bug where the game gets stuck at the end of a level. Thanks for those who found and reported the bug!
+
+The next release will have a major new feature and it is coming slowly but surely. Stay tuned for it!
+
+Download free from itch.io: <https://congusbongus.itch.io/cdogs-sdl/purchase>
+
+Release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/2.3.1>
