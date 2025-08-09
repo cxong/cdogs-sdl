@@ -27,7 +27,7 @@ endif()
 
 # this must be 4 numbers
 set(VERSION_RC "${VERSION_MAJOR},${VERSION_MINOR},${VERSION_PATCH},0")
-set(YEAR "2024")
+set(YEAR "2025")
 set(WEBSITE "http://cxong.github.io/cdogs-sdl/")
 
 option(DEBUG "Enable debug build" OFF)
