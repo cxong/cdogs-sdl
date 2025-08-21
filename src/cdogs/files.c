@@ -370,17 +370,16 @@ static void ConvertObjective(Objective *dest, struct MissionObjectiveOld *src)
 	dest->color = ObjectiveTypeColor(dest->Type);
 	// Index numbers used for all objective classes; convert them
 	// to their class handles
-	dest->u.Index = src->index;
 	switch (dest->Type)
 	{
 	case OBJECTIVE_COLLECT:
-		ObjectiveSetPickup(dest, IntPickupClass(dest->u.Index));
+		ObjectiveSetPickup(dest, IntPickupClass(src->index));
 		break;
 	case OBJECTIVE_DESTROY:
-		ObjectiveSetDestroy(dest, IntMapObject(dest->u.Index));
+		ObjectiveSetDestroy(dest, IntMapObject(src->index));
 		break;
 	default:
-		// do nothing
+		dest->u.Index = src->index;
 		break;
 	}
 	dest->Count = src->count;
@@ -405,6 +404,7 @@ static void ConvertMission(
 	for (int i = 0; i < src->objectiveCount; i++)
 	{
 		Objective o;
+		memset(&o, 0, sizeof o);
 		ConvertObjective(&o, &src->objectives[i]);
 		CArrayPushBack(&dest->Objectives, &o);
 	}
