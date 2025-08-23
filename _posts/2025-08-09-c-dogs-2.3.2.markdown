@@ -1,0 +1,12 @@
+---
+layout: post
+title: "C-Dogs 2.3.2 Released!"
+date: 2025-08-23
+categories: release
+---
+
+Hey there, another out-of-band release that fixes crashes when loading classic campaigns. These are basically the ones from the mission pack. Reminder that you can get these from the [downloads page](https://cxong.github.io/cdogs-sdl/downloads.html), and contains a hodgepodge of user-created campaigns from back in the day. The quality is often lacking but it can be fun to mix things up a bit!
+
+Download free from itch.io: <https://congusbongus.itch.io/cdogs-sdl/purchase>
+
+Release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/2.3.2>
