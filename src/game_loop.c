@@ -200,13 +200,10 @@ bool LoopRunnerRunInner(LoopRunInnerData *ctx)
 #endif
 
 	// Input
-	if ((ctx->data->Frames & 1) || !ctx->data->InputEverySecondFrame)
+	EventPoll(&gEventHandlers, ctx->p.TicksElapsed, NULL);
+	if (ctx->data->InputFunc)
 	{
-		EventPoll(&gEventHandlers, ctx->p.TicksElapsed, NULL);
-		if (ctx->data->InputFunc)
-		{
-			ctx->data->InputFunc(ctx->data);
-		}
+		ctx->data->InputFunc(ctx->data);
 	}
 
 	NetClientPoll(&gNetClient);

@@ -57,7 +57,6 @@ typedef struct sGameLoopData
 	void (*DrawFunc)(struct sGameLoopData *);
 	int FPS;
 	bool SuperhotMode;
-	bool InputEverySecondFrame;
 	bool SkipNextFrame;
 	int Frames; // total frames looped
 	bool HasEntered;

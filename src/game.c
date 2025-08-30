@@ -123,7 +123,6 @@ GameLoopData *RunGame(Campaign *co, struct MissionOptions *m, Map *map)
 		RunGameUpdate, RunGameDraw);
 	g->FPS = ConfigGetInt(&gConfig, "Game.FPS");
 	g->SuperhotMode = ConfigGetBool(&gConfig, "Game.Superhot(tm)Mode");
-	g->InputEverySecondFrame = true;
 	return g;
 }
 static void RunGameReset(RunGameData *rData)
