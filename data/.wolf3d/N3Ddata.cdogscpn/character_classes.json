@@ -171,13 +171,19 @@
       "HasGlasses": false
     },
     {
-      "Name": "Gretel Grosse",
+      "Name": "Kangaroo",
       "HeadPics": {
         "Type": "Directional",
-        "Sprites": "chars/heads/jones"
+        "Sprites": "chars/heads/sheep"
       },
       "Body": "big",
-      "Sounds": "gretel"
+      "Sounds": "kangaroo",
+      "Footsteps": "camel",
+      "BloodColor": "00000000",
+      "HasHair": false,
+      "HasFacehair": false,
+      "HasHat": true,
+      "HasGlasses": false
     },
     {
       "Name": "General Fettgesicht",
