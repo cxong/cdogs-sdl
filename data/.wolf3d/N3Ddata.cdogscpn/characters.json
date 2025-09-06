@@ -247,7 +247,7 @@
     },
     {
       "Class": "Kangaroo",
-      "HairType": "pigtails",
+      "HatType": "bunny",
       "Skin": "e5b049ff",
       "Arms": "cb8d2eff",
       "Body": "cb9225ff",
@@ -255,7 +255,7 @@
       "Hair": "af8229ff",
       "Feet": "d78727ff",
       "Facehair": "fcfa0aff",
-      "Hat": "fcfa0aff",
+      "Hat": "fcd108ff",
       "Glasses": "fcfa0aff",
       "speed": 194,
       "Gun": "Coconuts",

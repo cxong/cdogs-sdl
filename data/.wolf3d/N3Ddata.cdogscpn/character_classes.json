@@ -174,7 +174,7 @@
       "Name": "Kangaroo",
       "HeadPics": {
         "Type": "Directional",
-        "Sprites": "chars/heads/sheep"
+        "Sprites": "chars/heads/seal"
       },
       "Body": "big",
       "Sounds": "kangaroo",
