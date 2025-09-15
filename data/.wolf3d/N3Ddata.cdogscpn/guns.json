@@ -114,7 +114,7 @@
     },
     {
       "Pic": "",
-      "Name": "boss_chaingun1",
+      "Name": "boss_spit1",
       "Bullet": "bullet_boss",
       "Lock": 70,
       "MuzzleFlashParticle": "",
@@ -122,10 +122,10 @@
       "Recoil": 0.3
     },
     {
-      "Name": "Dual Chain Gun",
+      "Name": "Double Spit",
       "Icon": "machine_gun",
       "CanDrop": false,
-      "Guns": ["boss_chaingun1", "boss_chaingun2"],
+      "Guns": ["boss_spit1", "boss_spit2"],
       "Lock": 9
     },
     {
@@ -157,9 +157,9 @@
       "CanDrop": false
     },
     {
-      "Name": "Chaingun and Rocket Launcher",
+      "Name": "Coconuts and Spit",
       "Icon": "akimbo_pistols",
-      "Guns": ["Coconuts", "boss_chaingun1"],
+      "Guns": ["Coconuts", "boss_spit1"],
       "CanDrop": false
     }
   ],
@@ -184,7 +184,7 @@
     },
     {
       "Pic": "chaingun",
-      "Name": "boss_chaingun2",
+      "Name": "boss_spit2",
       "Bullet": "bullet_boss",
       "Lock": 70,
       "MuzzleFlashParticle": "",

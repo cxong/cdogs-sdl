@@ -186,13 +186,19 @@
       "HasGlasses": false
     },
     {
-      "Name": "General Fettgesicht",
+      "Name": "Elephant",
       "HeadPics": {
         "Type": "Directional",
         "Sprites": "chars/heads/jones"
       },
       "Body": "big_soldier",
-      "Sounds": "fettgesicht"
+      "Sounds": "elephant",
+      "Footsteps": "camel",
+      "BloodColor": "00000000",
+      "HasHair": false,
+      "HasFacehair": false,
+      "HasHat": true,
+      "HasGlasses": false
     }
   ]
 }
