@@ -191,7 +191,7 @@
         "Type": "Directional",
         "Sprites": "chars/heads/jones"
       },
-      "Body": "big_soldier",
+      "Body": "elephant",
       "Sounds": "elephant",
       "Footsteps": "camel",
       "BloodColor": "00000000",
