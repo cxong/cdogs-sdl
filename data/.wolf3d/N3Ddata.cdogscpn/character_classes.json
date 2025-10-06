@@ -189,7 +189,7 @@
       "Name": "Elephant",
       "HeadPics": {
         "Type": "Directional",
-        "Sprites": "chars/heads/jones"
+        "Sprites": "chars/heads/seal"
       },
       "Body": "elephant",
       "Sounds": "elephant",
