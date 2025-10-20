@@ -8,7 +8,7 @@
 #include "common.h"
 
 #define MUSIC_SAMPLE_RATE 44100
-#define MUSIC_AUDIO_FMT AUDIO_S16
+#define MUSIC_AUDIO_FMT AUDIO_S16SYS
 #define MUSIC_AUDIO_CHANNELS 2
 
 bool CWAudioInit(void);
