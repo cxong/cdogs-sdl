@@ -196,7 +196,7 @@
       "Footsteps": "camel",
       "BloodColor": "00000000",
       "HasHair": false,
-      "HasFacehair": false,
+      "HasFacehair": true,
       "HasHat": true,
       "HasGlasses": false
     }

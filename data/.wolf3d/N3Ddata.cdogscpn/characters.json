@@ -270,6 +270,7 @@
     },
     {
       "Class": "Elephant",
+      "FacehairType": "trusks",
       "HatType": "ele_ears",
       "Skin": "9c9898ff",
       "Arms": "ffbf5fff",
