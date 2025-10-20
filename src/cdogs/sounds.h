@@ -67,7 +67,7 @@
 #include "vector.h"
 
 #define CDOGS_SND_RATE 44100
-#define CDOGS_SND_FMT AUDIO_S16
+#define CDOGS_SND_FMT AUDIO_S16SYS
 #define CDOGS_SND_CHANNELS 2
 
 typedef enum
