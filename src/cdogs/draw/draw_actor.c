@@ -578,6 +578,10 @@ const Pic *GetHeadPartPic(
 	sprintf(buf, "chars/%s/%s", subpaths[hp], name);
 	const NamedSprites *ns =
 		PicManagerGetCharSprites(&gPicManager, buf, colors);
+	if (ns == NULL)
+	{
+		return NULL;
+	}
 	return CArrayGet(&ns->pics, idx);
 }
 static const Pic *GetBodyPic(
