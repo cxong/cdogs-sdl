@@ -194,6 +194,7 @@
       "Body": "elephant",
       "Sounds": "elephant",
       "Footsteps": "camel",
+      "Corpse": "elephant_sleep",
       "BloodColor": "00000000",
       "HasHair": false,
       "HasFacehair": true,

@@ -416,6 +416,22 @@
         "Z": 10,
         "Ticks": 20
       }
+    },
+    {
+      "Name": "elephant_sleep",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "elephant_sleep",
+        "TicksPerFrame": 500
+      },
+      "Health": 0,
+      "DrawBelow": true,
+      "DamageSmoke": {
+        "Particle": "zzz",
+        "HealthThreshold": 1.0,
+        "Z": 10,
+        "Ticks": 200
+      }
     }
   ]
 }

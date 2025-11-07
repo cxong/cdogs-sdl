@@ -286,6 +286,7 @@
       "maxHealth": 1000,
       "excessHealth": 2000,
       "flags": 25728,
+      "Drop": "keys/plain/yellow",
       "probabilityToMove": 40,
       "probabilityToTrack": 20,
       "probabilityToShoot": 42,
