@@ -132,27 +132,38 @@
       "HasGlasses": false
     },
     {
-      "Name": "Mecha Hitler",
+      "Name": "Bush Bear",
       "Vehicle": true,
       "HeadPics": {
         "Type": "Directional",
-        "Sprites": "chars/heads/jones"
+        "Sprites": "chars/heads/elephant"
       },
-      "Body": "mech",
+      "Body": "elephant",
       "DeathSprites": "explosion",
-      "Sounds": "mecha_hitler",
-      "BloodColor": "00ffff",
-      "Footsteps": "mech",
-      "FootstepsDistancePlus": 0
+      "Sounds": "bear",
+      "Footsteps": "camel",
+      "Corpse": "elephant_sleep",
+      "BloodColor": "00000000",
+      "HasHair": true,
+      "HasFacehair": false,
+      "HasHat": false,
+      "HasGlasses": false
     },
     {
-      "Name": "Hitler",
+      "Name": "Bear",
       "HeadPics": {
         "Type": "Directional",
-        "Sprites": "chars/heads/jones"
+        "Sprites": "chars/heads/elephant"
       },
-      "Body": "soldier",
-      "Sounds": "hitler"
+      "Body": "elephant",
+      "Sounds": "bear",
+      "Footsteps": "camel",
+      "Corpse": "elephant_sleep",
+      "BloodColor": "00000000",
+      "HasHair": true,
+      "HasFacehair": false,
+      "HasHat": false,
+      "HasGlasses": false
     },
     {
       "Name": "Monkey",

@@ -264,14 +264,14 @@
       "actionDelay": 40
     },
     {
-      "Class": "Mecha Hitler",
+      "Class": "Bush Bear",
       "HairType": "hitler",
-      "Skin": "ffb871ff",
+      "Skin": "7e5020ff",
       "Arms": "830000ff",
-      "Body": "007f83ff",
-      "Legs": "007a7eff",
-      "Hair": "000000ff",
-      "Feet": "006a74ff",
+      "Body": "9c5e2eff",
+      "Legs": "583715ff",
+      "Hair": "5f3514ff",
+      "Feet": "856226ff",
       "Facehair": "000000ff",
       "Hat": "000000ff",
       "Glasses": "000000ff",
@@ -286,7 +286,7 @@
       "actionDelay": 40
     },
     {
-      "Class": "Hitler",
+      "Class": "Bear",
       "HairType": "hitler",
       "Skin": "ffb871ff",
       "Arms": "d99b3cff",
