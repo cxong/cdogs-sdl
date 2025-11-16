@@ -2235,11 +2235,15 @@ typedef enum
 	CHAR_OSTRICH,
 	CHAR_ANTELOPE,
 	CHAR_BULL,
+	CHAR_UNUSED_1,
+	CHAR_UNUSED_2,
+	CHAR_UNUSED_3,
+	CHAR_UNUSED_4,
+	// 10
 	CHAR_CAMEL,
 	CHAR_GIRAFFE,
 	CHAR_BEAR_BUSH,
 	CHAR_BEAR,
-	// 10
 	CHAR_MONKEY,
 	CHAR_KANGAROO,
 	CHAR_ELEPHANT,
@@ -3162,6 +3166,7 @@ static void LoadEntity(
 		case CWMAPTYPE_N3D:
 			LoadChar(
 				m, v, DIRECTION_DOWN, (int)CHAR_BEAR_BUSH, false, bossObjIdx);
+			LoadChar(m, v, DIRECTION_DOWN, (int)CHAR_BEAR, false, bossObjIdx);
 			break;
 		default:
 			LoadChar(
@@ -3362,8 +3367,8 @@ static void LoadChar(
 	switch (charId)
 	{
 	case CHAR_SCHABBS:
-	case CHAR_MECHA_HITLER:
-	case CHAR_HITLER:
+	case CHAR_MECHA_HITLER: // Same as CHAR_BEAR_BUSH
+	case CHAR_HITLER:		// Same as CHAR_BEAR
 	case CHAR_OTTO:
 	case CHAR_FETTGESICHT:
 	case CHAR_ANGEL: {
