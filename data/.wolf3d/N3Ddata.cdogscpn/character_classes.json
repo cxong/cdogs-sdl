@@ -136,7 +136,7 @@
       "Vehicle": true,
       "HeadPics": {
         "Type": "Directional",
-        "Sprites": "chars/heads/elephant"
+        "Sprites": "chars/heads/bear"
       },
       "Body": "elephant",
       "DeathSprites": "explosion",
@@ -153,7 +153,7 @@
       "Name": "Bear",
       "HeadPics": {
         "Type": "Directional",
-        "Sprites": "chars/heads/elephant"
+        "Sprites": "chars/heads/bear"
       },
       "Body": "elephant",
       "Sounds": "bear",
