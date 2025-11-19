@@ -113,15 +113,6 @@
       "CanDrop": false
     },
     {
-      "Pic": "",
-      "Name": "boss_spit1",
-      "Bullet": "bullet_boss",
-      "Lock": 70,
-      "MuzzleFlashParticle": "",
-      "Sound": "spit",
-      "Recoil": 0.3
-    },
-    {
       "Name": "Double Spit",
       "Icon": "machine_gun",
       "CanDrop": false,
@@ -129,10 +120,10 @@
       "Lock": 9
     },
     {
-      "Name": "Quad Chain Gun",
+      "Name": "Quad Spit",
       "Icon": "machine_gun",
       "CanDrop": false,
-      "Guns": ["boss_double_chaingun1", "boss_double_chaingun2"],
+      "Guns": ["boss_double_spit1", "boss_double_spit2"],
       "Lock": 9
     },
     {
@@ -183,7 +174,16 @@
       "Sound": "splat1"
     },
     {
-      "Pic": "chaingun",
+      "Pic": "",
+      "Name": "boss_spit1",
+      "Bullet": "bullet_boss",
+      "Lock": 70,
+      "MuzzleFlashParticle": "",
+      "Sound": "spit",
+      "Recoil": 0.3
+    },
+    {
+      "Pic": "",
       "Name": "boss_spit2",
       "Bullet": "bullet_boss",
       "Lock": 70,
@@ -192,19 +192,19 @@
       "Recoil": 0.3
     },
     {
-      "Pic": "quad_chaingun",
-      "Name": "boss_double_chaingun1",
+      "Pic": "",
+      "Name": "boss_double_spit1",
       "Bullet": "bullet_quad",
       "Lock": 70,
       "MuzzleFlashParticle": "",
-      "Sound": "dual_chain_gun",
+      "Sound": "spit",
       "SpreadCount": 2,
       "Recoil": 0.3,
       "MuzzleHeight": 12
     },
     {
-      "Pic": "quad_chaingun",
-      "Name": "boss_double_chaingun2",
+      "Pic": "",
+      "Name": "boss_double_spit2",
       "Bullet": "bullet_quad",
       "Lock": 70,
       "MuzzleFlashParticle": "",

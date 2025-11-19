@@ -190,8 +190,6 @@
         "Particle": "trail_spit",
         "Width": 1.25
       },
-      "OutOfRangeSpark": "spark",
-      "WallMark": "bullet_hole",
       "Hit": {
         "Flesh": {
           "Sound": "hurt"
@@ -201,32 +199,6 @@
       "Range": 1,
       "Power": 12,
       "Mass": 0.1
-    },
-    {
-      "Name": "syringe",
-      "Pic": {
-        "Type": "Directional",
-        "Sprites": "syringe"
-      },
-      "ShadowSize": [2, 2],
-      "Hit": {
-        "Flesh": {
-          "Sound": "hits/knife_flesh"
-        },
-        "Wall": {
-          "Sound": "glass_break"
-        }
-      },
-      "Speed": 800,
-      "Range": 70,
-      "Power": 20,
-      "Mass": 1,
-      "Size": [4, 4],
-      "Spark": "",
-      "Special": {
-        "Effect": "Poison",
-        "Ticks": 15
-      }
     },
     {
       "Name": "coconut",
