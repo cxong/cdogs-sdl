@@ -60,8 +60,8 @@
 
 bool CanHitCharacter(const int flags, const int uid, const TActor *actor)
 {
-	// Don't let players hurt themselves
-	if (!(flags & FLAGS_HURTALWAYS) && uid == actor->uid)
+	// Don't let players hurt themselves, nor their vehicles
+	if (!(flags & FLAGS_HURTALWAYS) && (uid == actor->uid || uid == actor->pilotUID))
 	{
 		return false;
 	}
