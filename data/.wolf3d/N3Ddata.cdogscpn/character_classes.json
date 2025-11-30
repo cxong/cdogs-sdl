@@ -139,7 +139,7 @@
         "Sprites": "chars/heads/bear"
       },
       "Body": "bearbush",
-      "DeathSprites": "explosion",
+      "DeathSprites": "bush_explosion",
       "Sounds": "bear",
       "Footsteps": "bear",
       "BloodColor": "00000000",
