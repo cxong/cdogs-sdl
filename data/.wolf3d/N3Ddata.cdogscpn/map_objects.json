@@ -432,6 +432,22 @@
         "Z": 10,
         "Ticks": 200
       }
+    },
+    {
+      "Name": "bear_sleep",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "bear_sleep",
+        "TicksPerFrame": 400
+      },
+      "Health": 0,
+      "DrawBelow": true,
+      "DamageSmoke": {
+        "Particle": "zzz",
+        "HealthThreshold": 1.0,
+        "Z": 10,
+        "Ticks": 150
+      }
     }
   ]
 }
