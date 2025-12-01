@@ -629,7 +629,7 @@ static GameLoopResult MissionSummaryUpdate(GameLoopData *data, LoopRunner *l)
 	{
 		gCampaign.IsComplete =
 			mData->completed &&
-			mData->m->NextMission == (int)gCampaign.Setting.Missions.size;
+			mData->m->NextMission >= (int)gCampaign.Setting.Missions.size;
 		if (gCampaign.IsComplete)
 		{
 			LoopRunnerChange(l, ScreenVictory(&gCampaign));
