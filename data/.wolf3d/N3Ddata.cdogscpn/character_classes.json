@@ -142,6 +142,7 @@
       "DeathSprites": "bush_explosion",
       "Sounds": "bear",
       "Footsteps": "bear",
+      "Corpse": "tree_wreck",
       "BloodColor": "00000000",
       "HasHair": true,
       "HasFacehair": false,
