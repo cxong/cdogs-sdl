@@ -31,6 +31,7 @@
 
 #include "log.h"
 
+#include "actors.h"
 #include "cwolfmap/audio.h"
 #include "cwolfmap/cwolfmap.h"
 #include "map_archive.h"
@@ -477,23 +478,54 @@ static const char *adlibSoundsSOD[] = {
 static const char *adlibSoundsN3D[] = {
 	// 0-9
 	NULL, // empty
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
 	// 10-19
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
 	NULL, // score tick
-	NULL, NULL,
+	NULL,
+	NULL,
 	// 20-29
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "wrong", // answer wrong
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	"wrong", // answer wrong
 	NULL,
 	// 30-39
-	NULL, NULL, NULL, NULL, NULL, NULL, "menu_back", "menu_switch",
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	"menu_back",
+	"menu_switch",
 	"menu_switch2", // TODO: the correct sound is menu_switch + this one; can
 	// we concat the two?
 	NULL,
 	// 40-42
-	"menu_enter", "menu_start", // not really used as this in N3D, arbitrarily
-								// use this for C-Dogs
-	"bonus",					// quiz correct, perfect score
+	"menu_enter",
+	"menu_start", // not really used as this in N3D, arbitrarily
+				  // use this for C-Dogs
+	"bonus",	  // quiz correct, perfect score
 };
 static const char *GetAdlibSound(const CWMapType type, const int i)
 {
@@ -819,11 +851,29 @@ int MapWolfLoad(
 
 	CharacterStoreCopy(&c->characters, &cs, &gPlayerTemplates.CustomClasses);
 
-	// Special case for N3D: generate  scrolls with unique questions/answers
+	// Special case for N3D: generate scrolls with unique questions/answers
 	if (map->type == CWMAPTYPE_N3D && map->nQuizzes > 0)
 	{
 		LoadN3DScrolls(map);
 		IdxShufflerInit(&scrollShuffler, map->nQuizzes);
+	}
+	// Special case for N3D: copy enemies and make goodguy versions for the end
+	// cast
+	if (map->type == CWMAPTYPE_N3D)
+	{
+		// 1-5: regular enemies
+		// 10-16: bosses
+		for (int i = 1; i <= 16; i++)
+		{
+			if (i >= 6 && i <= 9)
+				continue;
+			const Character *orig = CArrayGet(&c->characters.OtherChars, i);
+			Character *ch = CharacterStoreAddOther(&c->characters);
+			CharacterCopy(ch, orig, NULL);
+			ch->flags |= FLAGS_GOOD_GUY;
+			// Don't let them shoot
+			ch->bot->probabilityToShoot = 0;
+		}
 	}
 
 	for (int i = 0; i < map->nLevels; i++)
@@ -1181,6 +1231,24 @@ static void LoadMission(
 		{
 			// Skip debrief and cut directly to angel boss level
 			m.SkipDebrief = true;
+		}
+		else if (map->type == CWMAPTYPE_N3D && missionIndex == 30)
+		{
+			// Add the good chars for end cast
+			for (int i = 20; i < 20 + 12; i++)
+			{
+				// Special case for bush bear: spawn it together with bear in a
+				// different location so the bear uses the bush as vehicle
+				if (i == 27)
+				{
+					CharacterPlace cp = {svec2i(31, 21), DIRECTION_DOWN};
+					MissionStaticAddCharacter(&m.u.Static, i, cp);
+					MissionStaticAddCharacter(&m.u.Static, i + 1, cp);
+					continue;
+				}
+				CharacterPlace cp = {svec2i(31, 20), DIRECTION_DOWN};
+				MissionStaticAddCharacter(&m.u.Static, i, cp);
+			}
 		}
 
 		m.u.Static.AltFloorsEnabled = false;
