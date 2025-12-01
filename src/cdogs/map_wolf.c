@@ -1149,6 +1149,8 @@ static void LoadMission(
 			// Make sure to skip over the secret level
 			Exit e;
 			e.Hidden = true;
+			e.R.Pos = svec2i_zero();
+			e.R.Size = m.Size;
 			if (map->type == CWMAPTYPE_SOD)
 			{
 				if (missionIndex == 17)
@@ -1161,13 +1163,18 @@ static void LoadMission(
 					e.Mission = missionIndex + 1;
 				}
 			}
+			else if (map->type == CWMAPTYPE_N3D && missionIndex == 30)
+			{
+				// Create a custom exit near the top so the player can
+				// opt to exit the cast
+				e.R = Rect2iNew(svec2i(29, 20), svec2i(4, 0));
+				e.Mission = missionIndex + 1;
+			}
 			else
 			{
 				// Skip over the secret level to the next episode
 				e.Mission = missionIndex + 2;
 			}
-			e.R.Pos = svec2i_zero();
-			e.R.Size = m.Size;
 			CArrayPushBack(&m.u.Static.Exits, &e);
 		}
 		if (map->type == CWMAPTYPE_SOD && missionIndex == 17)

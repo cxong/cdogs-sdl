@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2016, 2019-2021, 2023 Cong Xu
+	Copyright (c) 2013-2016, 2019-2021, 2023, 2025 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -466,6 +466,10 @@ static void DrawStyleArea(
 static EditorResult CampaignChangeMission(void *data, int d)
 {
 	Campaign *co = data;
+	if (gEventHandlers.keyboard.modState & KMOD_SHIFT)
+	{
+		d *= 10;
+	}
 	co->MissionIndex =
 		CLAMP(co->MissionIndex + d, 0, (int)co->Setting.Missions.size);
 	return EDITOR_RESULT_RELOAD;
