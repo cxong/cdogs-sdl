@@ -817,17 +817,17 @@ int AITrack(const TActor *actor, const struct vec2 targetPos)
 	const bool xException = dy < 2 * dx && dy > dx * 1.1f;
 	if (!xException)
 	{
-		if (pos.x - targetPos.x < dy * 0.1f)
+		if (pos.x - targetPos.x < -dy * 0.1f)
 			cmd |= CMD_RIGHT;
-		else if (pos.x - targetPos.x > -dy * 0.1f)
+		else if (pos.x - targetPos.x > dy * 0.1f)
 			cmd |= CMD_LEFT;
 	}
 	const bool yException = dx < 2 * dy && dx > dy * 1.1f;
 	if (!yException)
 	{
-		if (pos.y - targetPos.y < dx * 0.1f)
+		if (pos.y - targetPos.y < -dx * 0.1f)
 			cmd |= CMD_DOWN;
-		else if (pos.y - targetPos.y > -dx * 0.1f)
+		else if (pos.y - targetPos.y > dx * 0.1f)
 			cmd |= CMD_UP;
 	}
 
