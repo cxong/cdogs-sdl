@@ -609,6 +609,18 @@ const char *GetHomeDirectory(void)
 char cfpath[CDOGS_PATH_MAX];
 const char *GetConfigFilePath(const char *name)
 {
+	const char *customConfigDir = getenv("CDOGS_CONFIG_DIR");
+    if (customConfigDir != NULL && strlen(customConfigDir) > 0)
+    {
+        strcpy(cfpath, customConfigDir);
+        char lastChar = cfpath[strlen(cfpath) - 1];
+        if (lastChar != '/' && lastChar != '\\') {
+            strcat(cfpath, "/");
+        }
+        strcat(cfpath, name);
+        return cfpath;
+    }
+
 	const char *xdgConfigDir = getenv("XDG_CONFIG_HOME");
 	if (xdgConfigDir != NULL)
 	{
