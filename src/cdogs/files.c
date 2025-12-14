@@ -576,11 +576,17 @@ const char *GetHomeDirectory(void)
 	{
 		return cdogs_homepath;
 	}
-
+#ifdef _WIN32
+#define SEP '\\'
+#else
+#define SEP '/'
+#endif
 	p = getenv("CDOGS_CONFIG_DIR");
 	if (p != NULL && strlen(p) != 0)
 	{
-		CSTRDUP(cdogs_homepath, p);
+		CCALLOC(cdogs_homepath, strlen(p) + 2);
+		strcpy(cdogs_homepath, p);
+		cdogs_homepath[strlen(p)] = SEP;
 		return cdogs_homepath;
 	}
 
@@ -589,9 +595,10 @@ const char *GetHomeDirectory(void)
 	{
 		CCALLOC(cdogs_homepath, strlen(p) + 2);
 		strcpy(cdogs_homepath, p);
-		cdogs_homepath[strlen(p)] = '/';
+		cdogs_homepath[strlen(p)] = SEP;
 		return cdogs_homepath;
 	}
+#undef SEP
 
 	fprintf(
 		stderr, "%s%s%s%s",
