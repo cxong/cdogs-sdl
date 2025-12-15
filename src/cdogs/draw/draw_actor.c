@@ -95,6 +95,25 @@ static struct vec2i GetActorDrawOffset(
 	return offset;
 }
 
+static const char *GetFestiveHat(void)
+{
+	static struct tm *t = NULL;
+	if (t == NULL)
+	{
+		time_t now = time(NULL);
+		t = localtime(&now);
+	}
+	if (t->tm_mon + 1 == 12 && t->tm_mday == 25)
+	{
+		return "santa";
+	}
+	else if (t->tm_mon + 1 == 1 && t->tm_mday == 1)
+	{
+		return "party";
+	}
+	return NULL;
+}
+
 static direction_e GetLegDirAndFrame(
 	const TActor *a, const direction_e bodyDir, int *frame);
 static ActorPics GetUnorderedPics(
@@ -318,12 +337,18 @@ static ActorPics GetUnorderedPics(
 		pics.Head, BODY_PART_HEAD, c->Class->Sprites, anim, frame, dir,
 		GUNSTATE_READY);
 
+	const char *festiveHat = GetFestiveHat();
 	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
 	{
-		if (c->Class->HasHeadParts[hp])
+		// Holiday override
+		const bool hasHeadPart =
+			c->Class->HasHeadParts[hp] || (hp == HEAD_PART_HAT && festiveHat != NULL);
+		if (hasHeadPart)
 		{
+			const char *headPart =
+			hp == HEAD_PART_HAT ? festiveHat : c->HeadParts[hp];
 			pics.HeadParts[hp] =
-				GetHeadPartPic(c->HeadParts[hp], hp, headDir, grimace, colors);
+				GetHeadPartPic(headPart, hp, headDir, grimace, colors);
 			pics.HeadPartOffsets[hp] = GetActorDrawOffset(
 				pics.HeadParts[hp], BODY_PART_HEAD, c->Class->Sprites, anim,
 				frame, dir, GUNSTATE_READY);
