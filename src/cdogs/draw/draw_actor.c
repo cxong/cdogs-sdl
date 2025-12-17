@@ -108,6 +108,8 @@ static const char *GetFestiveHat(void)
 		return "party";
 	if (t->tm_mon + 1 == 3 && t->tm_mday == 17)
 		return "leprechaun";
+	if (t->tm_mon + 1 == 5 && t->tm_mday == 5)
+		return "sombrero";
 	if (t->tm_mon + 1 == 12 && t->tm_mday == 25)
 		return "santa";
 	return NULL;
