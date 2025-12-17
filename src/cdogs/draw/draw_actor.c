@@ -52,6 +52,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "actors.h"
 #include "algorithms.h"
@@ -103,14 +104,12 @@ static const char *GetFestiveHat(void)
 		time_t now = time(NULL);
 		t = localtime(&now);
 	}
-	if (t->tm_mon + 1 == 12 && t->tm_mday == 25)
-	{
-		return "santa";
-	}
-	else if (t->tm_mon + 1 == 1 && t->tm_mday == 1)
-	{
+	if (t->tm_mon + 1 == 1 && t->tm_mday == 1)
 		return "party";
-	}
+	if (t->tm_mon + 1 == 3 && t->tm_mday == 17)
+		return "leprechaun";
+	if (t->tm_mon + 1 == 12 && t->tm_mday == 25)
+		return "santa";
 	return NULL;
 }
 
@@ -341,12 +340,13 @@ static ActorPics GetUnorderedPics(
 	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
 	{
 		// Holiday override
-		const bool hasHeadPart =
-			c->Class->HasHeadParts[hp] || (hp == HEAD_PART_HAT && festiveHat != NULL);
+		const bool hasHeadPart = c->Class->HasHeadParts[hp] ||
+								 (hp == HEAD_PART_HAT && festiveHat != NULL);
 		if (hasHeadPart)
 		{
-			const char *headPart =
-			hp == HEAD_PART_HAT ? festiveHat : c->HeadParts[hp];
+			const char *headPart = (hp == HEAD_PART_HAT && festiveHat)
+									   ? festiveHat
+									   : c->HeadParts[hp];
 			pics.HeadParts[hp] =
 				GetHeadPartPic(headPart, hp, headDir, grimace, colors);
 			pics.HeadPartOffsets[hp] = GetActorDrawOffset(
