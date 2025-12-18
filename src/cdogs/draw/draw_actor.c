@@ -96,6 +96,23 @@ static struct vec2i GetActorDrawOffset(
 	return offset;
 }
 
+static void GetEasterDate(const int Y, int *month, int *day)
+{
+	const int a = Y % 19;
+	const int b = Y / 100;
+	const int c = Y % 100;
+	const int d = b / 4;
+	const int e = b % 4;
+	const int f = (b + 8) / 25;
+	const int g = (b - f + 1) / 3;
+	const int h = (19 * a + b - d - g + 15) % 30;
+	const int i = c / 4;
+	const int k = c % 4;
+	const int L = (32 + 2 * e + 2 * i - h - k) % 7;
+	const int m = (a + 11 * h + 22 * L) / 451;
+	*month = (h + L - 7 * m + 114) / 31;
+	*day = ((h + L - 7 * m + 114) % 31) + 1;
+}
 static const char *GetFestiveHat(void)
 {
 	static struct tm *t = NULL;
@@ -114,6 +131,10 @@ static const char *GetFestiveHat(void)
 		return "witch";
 	if (t->tm_mon + 1 == 12 && t->tm_mday == 25)
 		return "santa";
+	int easterM, easterD;
+	GetEasterDate(t->tm_year, &easterM, &easterD);
+	if (t->tm_mon + 1 == easterM && t->tm_mday == easterD)
+		return "bunny";
 	return NULL;
 }
 
