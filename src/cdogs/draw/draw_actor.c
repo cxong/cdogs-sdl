@@ -113,6 +113,18 @@ static void GetEasterDate(const int Y, int *month, int *day)
 	*month = (h + L - 7 * m + 114) / 31;
 	*day = ((h + L - 7 * m + 114) % 31) + 1;
 }
+static int GetNthDayOfWeek(int y, const int m, const int n, const int wday)
+{
+	// E.g. GetNthDayOfWeek(2025, 12, 3, 4) -> 3rd Thursday of Nov 2025 (18th)
+	// Find weekday of first day of month
+	int d = 1;
+	const int weekday = (d += m < 3 ? y-- : y - 2,
+						 23 * m / 9 + d + 4 + y / 4 - y / 100 + y / 400) %
+						7;
+	const int firstDayOfWeek =
+		1 + (wday >= weekday ? wday - weekday : wday + 7 - weekday);
+	return firstDayOfWeek + 7 * (n - 1);
+}
 static const char *GetFestiveHat(void)
 {
 	static struct tm *t = NULL;
