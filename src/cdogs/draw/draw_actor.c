@@ -147,6 +147,9 @@ static const char *GetFestiveHat(void)
 	GetEasterDate(t->tm_year, &easterM, &easterD);
 	if (t->tm_mon + 1 == easterM && t->tm_mday == easterD)
 		return "bunny";
+	if (t->tm_mon + 1 == 11 &&
+		t->tm_mday == GetNthDayOfWeek(t->tm_year, 11, 4, 4)) // 4th Thu of Nov
+		return "capotain";
 	return NULL;
 }
 
