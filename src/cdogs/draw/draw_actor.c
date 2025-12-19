@@ -133,6 +133,10 @@ static const char *GetFestiveHat(void)
 		time_t now = time(NULL);
 		t = localtime(&now);
 	}
+	if (ConfigGetBool(&gConfig, "Game.FestiveHats") == false)
+	{
+		return NULL;
+	}
 	if (t->tm_mon + 1 == 1 && t->tm_mday == 1)
 		return "party";
 	if (t->tm_mon + 1 == 3 && t->tm_mday == 17)

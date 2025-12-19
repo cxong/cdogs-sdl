@@ -1,30 +1,30 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2014, 2016-2018, 2024 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2014, 2016-2018, 2024-2025 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "config.h"
 
@@ -40,7 +40,6 @@
 #include "utils.h"
 
 #define NET_DEFAULT_LISTEN_PORT 34219
-
 
 const char *DifficultyStr(int d)
 {
@@ -161,8 +160,8 @@ const char *SplitscreenStyleStr(int s)
 		T2S(SPLITSCREEN_NORMAL, "Normal");
 		T2S(SPLITSCREEN_ALWAYS, "Always");
 		T2S(SPLITSCREEN_NEVER, "Never");
-		default:
-			return "";
+	default:
+		return "";
 	}
 }
 int StrSplitscreenStyle(const char *s)
@@ -213,7 +212,6 @@ int StrQuickPlayQuantity(const char *s)
 	return QUICKPLAY_QUANTITY_ANY;
 }
 
-
 Config gConfig;
 
 static Config ConfigNew(const char *name, const ConfigType type);
@@ -225,9 +223,9 @@ Config ConfigNewString(const char *name, const char *defaultValue)
 	return c;
 }
 Config ConfigNewInt(
-	const char *name, const int defaultValue,
-	const int minValue, const int maxValue, const int increment,
-	int (*strToInt)(const char *), char *(*intToStr)(int))
+	const char *name, const int defaultValue, const int minValue,
+	const int maxValue, const int increment, int (*strToInt)(const char *),
+	char *(*intToStr)(int))
 {
 	Config c = ConfigNew(name, CONFIG_TYPE_INT);
 	c.u.Int.Default = c.u.Int.Value = c.u.Int.Last = defaultValue;
@@ -239,8 +237,8 @@ Config ConfigNewInt(
 	return c;
 }
 Config ConfigNewFloat(
-	const char *name, const double defaultValue,
-	const double minValue, const double maxValue, const double increment)
+	const char *name, const double defaultValue, const double minValue,
+	const double maxValue, const double increment)
 {
 	Config c = ConfigNew(name, CONFIG_TYPE_FLOAT);
 	c.u.Float.Default = c.u.Float.Value = c.u.Float.Last = defaultValue;
@@ -256,9 +254,9 @@ Config ConfigNewBool(const char *name, const bool defaultValue)
 	return c;
 }
 Config ConfigNewEnum(
-	const char *name, const int defaultValue,
-	const int minValue, const int maxValue,
-	int (*strToEnum)(const char *), const char *(*enumToStr)(int))
+	const char *name, const int defaultValue, const int minValue,
+	const int maxValue, int (*strToEnum)(const char *),
+	const char *(*enumToStr)(int))
 {
 	Config c = ConfigNew(name, CONFIG_TYPE_ENUM);
 	c.u.Enum.Default = c.u.Enum.Value = c.u.Enum.Last = defaultValue;
@@ -292,7 +290,7 @@ void ConfigDestroy(Config *c)
 	if (c->Type == CONFIG_TYPE_GROUP)
 	{
 		CA_FOREACH(Config, child, c->u.Group)
-			ConfigDestroy(child);
+		ConfigDestroy(child);
 		CA_FOREACH_END()
 		CArrayTerminate(&c->u.Group);
 	}
@@ -328,12 +326,12 @@ Config *ConfigGet(Config *c, const char *name)
 		}
 		bool found = false;
 		CA_FOREACH(Config, child, c->u.Group)
-			if (strcmp(child->Name, pch) == 0)
-			{
-				c = child;
-				found = true;
-				break;
-			}
+		if (strcmp(child->Name, pch) == 0)
+		{
+			c = child;
+			found = true;
+			break;
+		}
 		CA_FOREACH_END()
 		if (!found)
 		{
@@ -363,10 +361,10 @@ bool ConfigChanged(const Config *c)
 		return c->u.Enum.Value != c->u.Enum.Last;
 	case CONFIG_TYPE_GROUP:
 		CA_FOREACH(Config, child, c->u.Group)
-			if (ConfigChanged(child))
-			{
-				return true;
-			}
+		if (ConfigChanged(child))
+		{
+			return true;
+		}
 		CA_FOREACH_END()
 		return false;
 	default:
@@ -400,7 +398,7 @@ void ConfigResetChanged(Config *c)
 		break;
 	case CONFIG_TYPE_GROUP:
 		CA_FOREACH(Config, child, c->u.Group)
-			ConfigResetChanged(child);
+		ConfigResetChanged(child);
 		CA_FOREACH_END()
 		break;
 	default:
@@ -434,7 +432,7 @@ void ConfigSetChanged(Config *c)
 		break;
 	case CONFIG_TYPE_GROUP:
 		CA_FOREACH(Config, child, c->u.Group)
-			ConfigSetChanged(child);
+		ConfigSetChanged(child);
 		CA_FOREACH_END()
 		break;
 	default:
@@ -468,7 +466,7 @@ void ConfigResetDefault(Config *c)
 		break;
 	case CONFIG_TYPE_GROUP:
 		CA_FOREACH(Config, child, c->u.Group)
-			ConfigResetDefault(child);
+		ConfigResetDefault(child);
 		CA_FOREACH_END()
 		break;
 	default:
@@ -557,47 +555,50 @@ bool ConfigTrySetFromString(Config *c, const char *name, const char *value)
 	}
 }
 
-
 Config ConfigDefault(void)
 {
 	Config root = ConfigNewGroup(NULL);
-	
+
 	Config game = ConfigNewGroup("Game");
 	ConfigGroupAdd(&game, ConfigNewBool("FriendlyFire", false));
-	ConfigGroupAdd(&game,
-		ConfigNewInt("RandomSeed", 0, 0, INT_MAX, 1, NULL, NULL));
-	ConfigGroupAdd(&game, ConfigNewEnum(
-		"Difficulty", DIFFICULTY_NORMAL,
-		DIFFICULTY_VERYEASY, DIFFICULTY_VERYHARD,
-		StrDifficulty, DifficultyStr));
+	ConfigGroupAdd(
+		&game, ConfigNewInt("RandomSeed", 0, 0, INT_MAX, 1, NULL, NULL));
+	ConfigGroupAdd(
+		&game, ConfigNewEnum(
+				   "Difficulty", DIFFICULTY_NORMAL, DIFFICULTY_VERYEASY,
+				   DIFFICULTY_VERYHARD, StrDifficulty, DifficultyStr));
 	ConfigGroupAdd(&game, ConfigNewInt("FPS", 70, 10, 120, 10, NULL, NULL));
 	ConfigGroupAdd(&game, ConfigNewBool("Superhot(tm)Mode", false));
-	ConfigGroupAdd(&game,
+	ConfigGroupAdd(
+		&game,
 		ConfigNewInt("EnemyDensity", 100, 25, 200, 25, NULL, PercentStr));
-	ConfigGroupAdd(&game,
+	ConfigGroupAdd(
+		&game,
 		ConfigNewInt("NonPlayerHP", 100, 25, 200, 25, NULL, PercentStr));
-	ConfigGroupAdd(&game,
-		ConfigNewInt("PlayerHP", 75, 25, 200, 25, NULL, PercentStr));
-	ConfigGroupAdd(&game,
-		ConfigNewInt("Lives", 2, 1, 5, 1, NULL, NULL));
+	ConfigGroupAdd(
+		&game, ConfigNewInt("PlayerHP", 75, 25, 200, 25, NULL, PercentStr));
+	ConfigGroupAdd(&game, ConfigNewInt("Lives", 2, 1, 5, 1, NULL, NULL));
 	ConfigGroupAdd(&game, ConfigNewBool("HealthPickups", true));
 	ConfigGroupAdd(&game, ConfigNewBool("Fog", true));
-	ConfigGroupAdd(&game,
-		ConfigNewInt("SightRange", 15, 8, 40, 1, NULL, NULL));
-	ConfigGroupAdd(&game, ConfigNewEnum(
-		"FireMoveStyle", FIREMOVE_STOP, FIREMOVE_STOP, FIREMOVE_STRAFE,
-		StrFireMoveStyle, FireMoveStyleStr));
-	ConfigGroupAdd(&game, ConfigNewEnum(
-		"SwitchMoveStyle", SWITCHMOVE_SLIDE,
-		SWITCHMOVE_SLIDE, SWITCHMOVE_NONE,
-		StrSwitchMoveStyle, SwitchMoveStyleStr));
-	ConfigGroupAdd(&game, ConfigNewEnum(
-		"AllyCollision", ALLYCOLLISION_REPEL,
-		ALLYCOLLISION_NORMAL, ALLYCOLLISION_NONE,
-		StrAllyCollision, AllyCollisionStr));
-	ConfigGroupAdd(&game, ConfigNewEnum(
-		"LaserSight", LASER_SIGHT_NONE, LASER_SIGHT_NONE, LASER_SIGHT_ALL,
-		StrLaserSight, LaserSightStr));
+	ConfigGroupAdd(
+		&game, ConfigNewInt("SightRange", 15, 8, 40, 1, NULL, NULL));
+	ConfigGroupAdd(
+		&game, ConfigNewEnum(
+				   "FireMoveStyle", FIREMOVE_STOP, FIREMOVE_STOP,
+				   FIREMOVE_STRAFE, StrFireMoveStyle, FireMoveStyleStr));
+	ConfigGroupAdd(
+		&game, ConfigNewEnum(
+				   "SwitchMoveStyle", SWITCHMOVE_SLIDE, SWITCHMOVE_SLIDE,
+				   SWITCHMOVE_NONE, StrSwitchMoveStyle, SwitchMoveStyleStr));
+	ConfigGroupAdd(
+		&game, ConfigNewEnum(
+				   "AllyCollision", ALLYCOLLISION_REPEL, ALLYCOLLISION_NORMAL,
+				   ALLYCOLLISION_NONE, StrAllyCollision, AllyCollisionStr));
+	ConfigGroupAdd(
+		&game, ConfigNewEnum(
+				   "LaserSight", LASER_SIGHT_NONE, LASER_SIGHT_NONE,
+				   LASER_SIGHT_ALL, StrLaserSight, LaserSightStr));
+	ConfigGroupAdd(&game, ConfigNewBool("FestiveHats", true));
 	ConfigGroupAdd(&root, game);
 
 	Config dm = ConfigNewGroup("Deathmatch");
@@ -605,75 +606,108 @@ Config ConfigDefault(void)
 	ConfigGroupAdd(&root, dm);
 
 	Config df = ConfigNewGroup("Dogfight");
-	ConfigGroupAdd(&df,
-		ConfigNewInt("PlayerHP", 100, 25, 200, 25, NULL, PercentStr));
+	ConfigGroupAdd(
+		&df, ConfigNewInt("PlayerHP", 100, 25, 200, 25, NULL, PercentStr));
 	ConfigGroupAdd(&df, ConfigNewInt("FirstTo", 5, 1, 10, 1, NULL, NULL));
 	ConfigGroupAdd(&root, df);
 
 	Config gfx = ConfigNewGroup("Graphics");
-	ConfigGroupAdd(&gfx, ConfigNewInt(
-		"Brightness", 0, BLIT_BRIGHTNESS_MIN, BLIT_BRIGHTNESS_MAX, 1,
-		NULL, NULL));
+	ConfigGroupAdd(
+		&gfx, ConfigNewInt(
+				  "Brightness", 0, BLIT_BRIGHTNESS_MIN, BLIT_BRIGHTNESS_MAX, 1,
+				  NULL, NULL));
 
-	ConfigGroupAdd(&gfx, ConfigNewBool("Fullscreen",
+	ConfigGroupAdd(
+		&gfx, ConfigNewBool(
+				  "Fullscreen",
 #ifdef __GCWZERO__
-		true
+				  true
 #else
-		false
+				  false
 #endif
-		));
+				  ));
 
-	ConfigGroupAdd(&gfx,
-		ConfigNewInt("WindowWidth", 640, 320, 4096, 0, NULL, NULL));
-	ConfigGroupAdd(&gfx,
-		ConfigNewInt("WindowHeight", 480, 200, 2160, 0, NULL, NULL));
-	ConfigGroupAdd(&gfx, ConfigNewInt("ScaleFactor",
+	ConfigGroupAdd(
+		&gfx, ConfigNewInt("WindowWidth", 640, 320, 4096, 0, NULL, NULL));
+	ConfigGroupAdd(
+		&gfx, ConfigNewInt("WindowHeight", 480, 200, 2160, 0, NULL, NULL));
+	ConfigGroupAdd(
+		&gfx, ConfigNewInt(
+				  "ScaleFactor",
 #ifdef __GCWZERO__
-		1
+				  1
 #else
-		2
+				  2
 #endif
-		, 1, 16, 1, NULL, NULL));
-	ConfigGroupAdd(&gfx,
-		ConfigNewInt("ShakeMultiplier", 1, 0, 10, 1, NULL, NULL));
+				  ,
+				  1, 16, 1, NULL, NULL));
+	ConfigGroupAdd(
+		&gfx, ConfigNewInt("ShakeMultiplier", 1, 0, 10, 1, NULL, NULL));
 	ConfigGroupAdd(&gfx, ConfigNewBool("ShowHUD", true));
-	ConfigGroupAdd(&gfx, ConfigNewEnum(
-		"ScaleMode", SCALE_MODE_NN, SCALE_MODE_NN, SCALE_MODE_BILINEAR,
-		StrScaleMode, ScaleModeStr));
+	ConfigGroupAdd(
+		&gfx, ConfigNewEnum(
+				  "ScaleMode", SCALE_MODE_NN, SCALE_MODE_NN,
+				  SCALE_MODE_BILINEAR, StrScaleMode, ScaleModeStr));
 	ConfigGroupAdd(&gfx, ConfigNewBool("Shadows", true));
-	ConfigGroupAdd(&gfx, ConfigNewEnum(
-		"Gore", GORE_LOW, GORE_NONE, GORE_HIGH, StrGoreAmount, GoreAmountStr));
+	ConfigGroupAdd(
+		&gfx, ConfigNewEnum(
+				  "Gore", GORE_LOW, GORE_NONE, GORE_HIGH, StrGoreAmount,
+				  GoreAmountStr));
 	ConfigGroupAdd(&gfx, ConfigNewBool("Brass", true));
 	ConfigGroupAdd(&gfx, ConfigNewBool("SecondWindow", false));
 	ConfigGroupAdd(&root, gfx);
 
 	Config input = ConfigNewGroup("Input");
 	Config pk0 = ConfigNewGroup("PlayerCodes0");
-	ConfigGroupAdd(&pk0, ConfigNewInt("left", SDL_SCANCODE_LEFT, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk0, ConfigNewInt("right", SDL_SCANCODE_RIGHT, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk0, ConfigNewInt("up", SDL_SCANCODE_UP, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk0, ConfigNewInt("down", SDL_SCANCODE_DOWN, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(
+		&pk0, ConfigNewInt("left", SDL_SCANCODE_LEFT, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(
+		&pk0, ConfigNewInt("right", SDL_SCANCODE_RIGHT, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(
+		&pk0, ConfigNewInt("up", SDL_SCANCODE_UP, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(
+		&pk0, ConfigNewInt("down", SDL_SCANCODE_DOWN, 0, 0, 0, NULL, NULL));
 #ifdef __GCWZERO__
-	ConfigGroupAdd(&pk0, ConfigNewInt("button1", SDL_SCANCODE_LCTRL, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk0, ConfigNewInt("button2", SDL_SCANCODE_LALT, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk0, ConfigNewInt("grenade", SDL_SCANCODE_BACKSPACE, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk0, ConfigNewInt("map", SDL_SCANCODE_TAB, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(
+		&pk0,
+		ConfigNewInt("button1", SDL_SCANCODE_LCTRL, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(
+		&pk0, ConfigNewInt("button2", SDL_SCANCODE_LALT, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(
+		&pk0,
+		ConfigNewInt("grenade", SDL_SCANCODE_BACKSPACE, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(
+		&pk0, ConfigNewInt("map", SDL_SCANCODE_TAB, 0, 0, 0, NULL, NULL));
 #else
-	ConfigGroupAdd(&pk0, ConfigNewInt("button1", SDL_SCANCODE_X, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk0, ConfigNewInt("button2", SDL_SCANCODE_Z, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk0, ConfigNewInt("grenade", SDL_SCANCODE_S, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk0, ConfigNewInt("map", SDL_SCANCODE_A, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(
+		&pk0, ConfigNewInt("button1", SDL_SCANCODE_X, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(
+		&pk0, ConfigNewInt("button2", SDL_SCANCODE_Z, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(
+		&pk0, ConfigNewInt("grenade", SDL_SCANCODE_S, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(
+		&pk0, ConfigNewInt("map", SDL_SCANCODE_A, 0, 0, 0, NULL, NULL));
 #endif
 	ConfigGroupAdd(&input, pk0);
 	Config pk1 = ConfigNewGroup("PlayerCodes1");
-	ConfigGroupAdd(&pk1, ConfigNewInt("left", SDL_SCANCODE_KP_4, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk1, ConfigNewInt("right", SDL_SCANCODE_KP_6, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk1, ConfigNewInt("up", SDL_SCANCODE_KP_8, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk1, ConfigNewInt("down", SDL_SCANCODE_KP_2, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk1, ConfigNewInt("button1", SDL_SCANCODE_KP_ENTER, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk1, ConfigNewInt("button2", SDL_SCANCODE_KP_PERIOD, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk1, ConfigNewInt("grenade", SDL_SCANCODE_KP_3, 0, 0, 0, NULL, NULL));
-	ConfigGroupAdd(&pk1, ConfigNewInt("map", SDL_SCANCODE_KP_0, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(
+		&pk1, ConfigNewInt("left", SDL_SCANCODE_KP_4, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(
+		&pk1, ConfigNewInt("right", SDL_SCANCODE_KP_6, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(
+		&pk1, ConfigNewInt("up", SDL_SCANCODE_KP_8, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(
+		&pk1, ConfigNewInt("down", SDL_SCANCODE_KP_2, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(
+		&pk1,
+		ConfigNewInt("button1", SDL_SCANCODE_KP_ENTER, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(
+		&pk1,
+		ConfigNewInt("button2", SDL_SCANCODE_KP_PERIOD, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(
+		&pk1, ConfigNewInt("grenade", SDL_SCANCODE_KP_3, 0, 0, 0, NULL, NULL));
+	ConfigGroupAdd(
+		&pk1, ConfigNewInt("map", SDL_SCANCODE_KP_0, 0, 0, 0, NULL, NULL));
 	ConfigGroupAdd(&input, pk1);
 	ConfigGroupAdd(&root, input);
 
@@ -681,67 +715,81 @@ Config ConfigDefault(void)
 	ConfigGroupAdd(&itf, ConfigNewBool("ShowFPS", false));
 	ConfigGroupAdd(&itf, ConfigNewBool("ShowTime", false));
 	ConfigGroupAdd(&itf, ConfigNewBool("ShowHUDMap", true));
-	ConfigGroupAdd(&itf, ConfigNewEnum(
-		"AIChatter", AICHATTER_SELDOM, AICHATTER_NONE, AICHATTER_ALWAYS,
-		StrAIChatter, AIChatterStr));
-	ConfigGroupAdd(&itf, ConfigNewEnum(
-		"Splitscreen", SPLITSCREEN_NEVER,
-		SPLITSCREEN_NORMAL, SPLITSCREEN_NEVER,
-		StrSplitscreenStyle, SplitscreenStyleStr));
+	ConfigGroupAdd(
+		&itf, ConfigNewEnum(
+				  "AIChatter", AICHATTER_SELDOM, AICHATTER_NONE,
+				  AICHATTER_ALWAYS, StrAIChatter, AIChatterStr));
+	ConfigGroupAdd(
+		&itf,
+		ConfigNewEnum(
+			"Splitscreen", SPLITSCREEN_NEVER, SPLITSCREEN_NORMAL,
+			SPLITSCREEN_NEVER, StrSplitscreenStyle, SplitscreenStyleStr));
 	ConfigGroupAdd(&itf, ConfigNewBool("SplitscreenAI", false));
 	ConfigGroupAdd(&root, itf);
 
 	Config snd = ConfigNewGroup("Sound");
-	ConfigGroupAdd(&snd,
-		ConfigNewInt("MusicVolume", 32, 0, 64, 8, NULL, Div8Str));
-	ConfigGroupAdd(&snd,
-		ConfigNewInt("SoundVolume", 64, 0, 64, 8, NULL, Div8Str));
+	ConfigGroupAdd(
+		&snd, ConfigNewInt("MusicVolume", 32, 0, 64, 8, NULL, Div8Str));
+	ConfigGroupAdd(
+		&snd, ConfigNewInt("SoundVolume", 64, 0, 64, 8, NULL, Div8Str));
 	ConfigGroupAdd(&snd, ConfigNewBool("Footsteps", true));
 	ConfigGroupAdd(&snd, ConfigNewBool("Reloads", true));
 	ConfigGroupAdd(&root, snd);
 
 	Config qp = ConfigNewGroup("QuickPlay");
-	ConfigGroupAdd(&qp, ConfigNewEnum(
-		"MapSize", QUICKPLAY_QUANTITY_ANY,
-		QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE,
-		StrQuickPlayQuantity, QuickPlayQuantityStr));
-	ConfigGroupAdd(&qp, ConfigNewEnum(
-		"WallCount", QUICKPLAY_QUANTITY_ANY,
-		QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE,
-		StrQuickPlayQuantity, QuickPlayQuantityStr));
-	ConfigGroupAdd(&qp, ConfigNewEnum(
-		"WallLength", QUICKPLAY_QUANTITY_ANY,
-		QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE,
-		StrQuickPlayQuantity, QuickPlayQuantityStr));
-	ConfigGroupAdd(&qp, ConfigNewEnum(
-		"RoomCount", QUICKPLAY_QUANTITY_ANY,
-		QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE,
-		StrQuickPlayQuantity, QuickPlayQuantityStr));
-	ConfigGroupAdd(&qp, ConfigNewEnum(
-		"SquareCount", QUICKPLAY_QUANTITY_ANY,
-		QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE,
-		StrQuickPlayQuantity, QuickPlayQuantityStr));
-	ConfigGroupAdd(&qp, ConfigNewEnum(
-		"EnemyCount", QUICKPLAY_QUANTITY_ANY,
-		QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE,
-		StrQuickPlayQuantity, QuickPlayQuantityStr));
-	ConfigGroupAdd(&qp, ConfigNewEnum(
-		"EnemySpeed", QUICKPLAY_QUANTITY_ANY,
-		QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE,
-		StrQuickPlayQuantity, QuickPlayQuantityStr));
-	ConfigGroupAdd(&qp, ConfigNewEnum(
-		"EnemyHealth", QUICKPLAY_QUANTITY_ANY,
-		QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE,
-		StrQuickPlayQuantity, QuickPlayQuantityStr));
+	ConfigGroupAdd(
+		&qp, ConfigNewEnum(
+				 "MapSize", QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_ANY,
+				 QUICKPLAY_QUANTITY_LARGE, StrQuickPlayQuantity,
+				 QuickPlayQuantityStr));
+	ConfigGroupAdd(
+		&qp, ConfigNewEnum(
+				 "WallCount", QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_ANY,
+				 QUICKPLAY_QUANTITY_LARGE, StrQuickPlayQuantity,
+				 QuickPlayQuantityStr));
+	ConfigGroupAdd(
+		&qp, ConfigNewEnum(
+				 "WallLength", QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_ANY,
+				 QUICKPLAY_QUANTITY_LARGE, StrQuickPlayQuantity,
+				 QuickPlayQuantityStr));
+	ConfigGroupAdd(
+		&qp, ConfigNewEnum(
+				 "RoomCount", QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_ANY,
+				 QUICKPLAY_QUANTITY_LARGE, StrQuickPlayQuantity,
+				 QuickPlayQuantityStr));
+	ConfigGroupAdd(
+		&qp, ConfigNewEnum(
+				 "SquareCount", QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_ANY,
+				 QUICKPLAY_QUANTITY_LARGE, StrQuickPlayQuantity,
+				 QuickPlayQuantityStr));
+	ConfigGroupAdd(
+		&qp, ConfigNewEnum(
+				 "EnemyCount", QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_ANY,
+				 QUICKPLAY_QUANTITY_LARGE, StrQuickPlayQuantity,
+				 QuickPlayQuantityStr));
+	ConfigGroupAdd(
+		&qp, ConfigNewEnum(
+				 "EnemySpeed", QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_ANY,
+				 QUICKPLAY_QUANTITY_LARGE, StrQuickPlayQuantity,
+				 QuickPlayQuantityStr));
+	ConfigGroupAdd(
+		&qp, ConfigNewEnum(
+				 "EnemyHealth", QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_ANY,
+				 QUICKPLAY_QUANTITY_LARGE, StrQuickPlayQuantity,
+				 QuickPlayQuantityStr));
 	ConfigGroupAdd(&qp, ConfigNewBool("EnemiesWithExplosives", true));
-	ConfigGroupAdd(&qp, ConfigNewEnum(
-		"ItemCount", QUICKPLAY_QUANTITY_ANY,
-		QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_LARGE,
-		StrQuickPlayQuantity, QuickPlayQuantityStr));
+	ConfigGroupAdd(
+		&qp, ConfigNewEnum(
+				 "ItemCount", QUICKPLAY_QUANTITY_ANY, QUICKPLAY_QUANTITY_ANY,
+				 QUICKPLAY_QUANTITY_LARGE, StrQuickPlayQuantity,
+				 QuickPlayQuantityStr));
 	ConfigGroupAdd(&root, qp);
-	
+
 	ConfigGroupAdd(&root, ConfigNewBool("StartServer", false));
-	ConfigGroupAdd(&root, ConfigNewInt("ListenPort", NET_DEFAULT_LISTEN_PORT, 0, 65535, 1, NULL, NULL));
+	ConfigGroupAdd(
+		&root,
+		ConfigNewInt(
+			"ListenPort", NET_DEFAULT_LISTEN_PORT, 0, 65535, 1, NULL, NULL));
 
 	return root;
 }
