@@ -96,7 +96,8 @@ static struct vec2i GetActorDrawOffset(
 	return offset;
 }
 
-static void GetEasterDate(const int Y, int *month, int *day)
+static void GetEasterDates(
+	const int Y, int *friM, int *friD, int *monM, int *monD)
 {
 	const int a = Y % 19;
 	const int b = Y / 100;
@@ -110,8 +111,20 @@ static void GetEasterDate(const int Y, int *month, int *day)
 	const int k = c % 4;
 	const int L = (32 + 2 * e + 2 * i - h - k) % 7;
 	const int m = (a + 11 * h + 22 * L) / 451;
-	*month = (h + L - 7 * m + 114) / 31;
-	*day = ((h + L - 7 * m + 114) % 31) + 1;
+	struct tm t;
+	t.tm_year = Y - 1900;
+	t.tm_mon = (h + L - 7 * m + 114) / 31 - 1;
+	t.tm_mday = ((h + L - 7 * m + 114) % 31) + 1;
+	// Derive Good Friday
+	t.tm_mday -= 2;
+	mktime(&t);
+	*friM = t.tm_mon + 1;
+	*friD = t.tm_mday;
+	// Derive Easter Monday
+	t.tm_mday += 3;
+	mktime(&t);
+	*monM = t.tm_mon + 1;
+	*monD = t.tm_mday;
 }
 static int GetNthDayOfWeek(int y, const int m, const int n, const int wday)
 {
@@ -133,7 +146,7 @@ static const char *GetFestiveHat(void)
 		time_t now = time(NULL);
 		t = localtime(&now);
 	}
-	if (ConfigGetBool(&gConfig, "Game.FestiveHats") == false)
+	if (ConfigGetBool(&gConfig, "Game.NoFestiveHats"))
 	{
 		return NULL;
 	}
@@ -147,12 +160,20 @@ static const char *GetFestiveHat(void)
 		return "witch";
 	if (t->tm_mon + 1 == 12 && t->tm_mday == 25)
 		return "santa";
-	int easterM, easterD;
-	GetEasterDate(t->tm_year, &easterM, &easterD);
-	if (t->tm_mon + 1 == easterM && t->tm_mday == easterD)
+	int easterFriM, easterFriD, easterMonM, easterMonD;
+	GetEasterDates(
+		t->tm_year + 1900, &easterFriM, &easterFriD, &easterMonM, &easterMonD);
+	const bool isAfterEasterFri =
+		t->tm_mon + 1 > easterFriM ||
+		(t->tm_mon + 1 == easterFriM && t->tm_mday >= easterFriD);
+	const bool isBeforeEasterMon =
+		t->tm_mon + 1 < easterMonM ||
+		(t->tm_mon + 1 == easterMonM && t->tm_mday <= easterMonD);
+	if (isAfterEasterFri && isBeforeEasterMon)
 		return "bunny";
 	if (t->tm_mon + 1 == 11 &&
-		t->tm_mday == GetNthDayOfWeek(t->tm_year, 11, 4, 4)) // 4th Thu of Nov
+		t->tm_mday ==
+			GetNthDayOfWeek(t->tm_year + 1900, 11, 4, 4)) // 4th Thu of Nov
 		return "capotain";
 	return NULL;
 }

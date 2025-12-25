@@ -598,7 +598,7 @@ Config ConfigDefault(void)
 		&game, ConfigNewEnum(
 				   "LaserSight", LASER_SIGHT_NONE, LASER_SIGHT_NONE,
 				   LASER_SIGHT_ALL, StrLaserSight, LaserSightStr));
-	ConfigGroupAdd(&game, ConfigNewBool("FestiveHats", true));
+	ConfigGroupAdd(&game, ConfigNewBool("NoFestiveHats", false));
 	ConfigGroupAdd(&root, game);
 
 	Config dm = ConfigNewGroup("Deathmatch");
