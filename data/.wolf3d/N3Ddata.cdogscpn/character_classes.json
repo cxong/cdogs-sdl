@@ -187,7 +187,7 @@
         "Type": "Directional",
         "Sprites": "chars/heads/seal"
       },
-      "Body": "big",
+      "Body": "kangaroo",
       "Sounds": "kangaroo",
       "Footsteps": "camel",
       "BloodColor": "00000000",
