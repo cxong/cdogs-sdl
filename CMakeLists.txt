@@ -5,8 +5,8 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
 project(cdogs-sdl C)
 
 set(VERSION_MAJOR "2")
-set(VERSION_MINOR "3")
-set(VERSION_PATCH "2")
+set(VERSION_MINOR "4")
+set(VERSION_PATCH "0")
 set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
 # Optionally configure CI files since they are excluded in source archives
@@ -27,7 +27,7 @@ endif()
 
 # this must be 4 numbers
 set(VERSION_RC "${VERSION_MAJOR},${VERSION_MINOR},${VERSION_PATCH},0")
-set(YEAR "2025")
+set(YEAR "2026")
 set(WEBSITE "http://cxong.github.io/cdogs-sdl/")
 
 option(DEBUG "Enable debug build" OFF)

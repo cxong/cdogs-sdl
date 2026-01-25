@@ -50,6 +50,7 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="2.4.0" date="2026-01-26"/>
     <release version="2.3.2" date="2025-08-23"/>
     <release version="2.3.1" date="2025-08-09"/>
     <release version="2.3.0" date="2025-03-08"/>
