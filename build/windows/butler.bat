@@ -9,7 +9,7 @@ if "!BUTLER_API_KEY!" == "" (
 set PROJECT="congusbongus/cdogs-sdl"
 
 echo "Preparing butler..."
-curl -L -o butler.zip https://broth.itch.ovh/butler/windows-amd64/LATEST/archive/default
+curl -L -o butler.zip https://broth.itch.zone/butler/windows-amd64/LATEST/archive/default
 7z x -y butler.zip
 butler -V
 

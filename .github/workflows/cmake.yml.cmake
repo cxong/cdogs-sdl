@@ -160,7 +160,7 @@ jobs:
       env:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       run: |
-        curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+        curl -L -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
         unzip butler.zip
         chmod +x butler
         ./butler -V
@@ -173,7 +173,7 @@ jobs:
       env:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       run: |
-        curl -L -o butler.zip https://broth.itch.ovh/butler/darwin-amd64/LATEST/archive/default
+        curl -L -o butler.zip https://broth.itch.zone/butler/darwin-amd64/LATEST/archive/default
         unzip butler.zip
         chmod +x butler
         ./butler -V
