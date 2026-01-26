@@ -132,6 +132,15 @@ jobs:
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{env.BUILD_TYPE}} -VV
 
+    - name: Install NSIS (Windows)
+      if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'windows-latest'
+      run: |
+        iwr -useb get.scoop.sh -outfile 'install.ps1'
+        .\install.ps1 -RunAsAdmin
+        scoop update
+        scoop bucket add extras
+        scoop install nsis
+
     - name: Make package on tags
       if: startsWith(github.ref, 'refs/tags/')
       run: |
