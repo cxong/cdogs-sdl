@@ -1,0 +1,20 @@
+---
+layout: post
+title: "C-Dogs 2.4.0 Released!"
+date: 2026-01-31
+categories: release
+---
+
+This is a very special release. 2.4.0, it looks like a minor release, but it features a big new mod: **Super 2D Noah's Ark**!
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/EduteSjTsZk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+After [Wolfenstein 3D, Spear of Destiny](https://cxong.github.io/cdogs-sdl/release/2021/08/21/c-dogs-1.0.0.html) and the [mission packs](https://cxong.github.io/cdogs-sdl/release/2021/12/03/c-dogs-1.2.0.html), this is another Wolf3D mod of the obscure yet highly noteworthy [_Super 3D Noah's Ark_](https://en.wikipedia.org/wiki/Super_3D_Noah%27s_Ark). Critics derided it as a lazy reskin of Wolf3D but [as I've written before](https://cxong.github.io/2024/03/in-the-shadow-of-doom), it's fairly high quality when it comes to Wolf3D clones, and as I hope you'll find, it's rather fun, especially when played in 2D!
+
+Like the other Wolf3D mods, to play this you need to get a copy of the game, which is [available on Steam](https://store.steampowered.com/app/371180/Super_3D_Noahs_Ark/). So don't wait, pick up your ~~machine gun~~ slingshot and ~~kill~~ feed some animals!
+
+Once again this release contains a bunch of fixes and enhancements including those from new contributors. See the release notes for details.
+
+Download free from itch.io: <https://congusbongus.itch.io/cdogs-sdl/purchase>
+
+Release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/2.4.0>
