@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2014-2017, 2019-2021, 2024 Cong Xu
+	Copyright (c) 2014-2017, 2019-2021, 2024, 2026 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -193,7 +193,7 @@ static void LoadParticleClass(
 						c->u.Text.Mask = StrColor(tmp);
 					}
 					CFREE(tmp);
-					
+
 					LoadStr(&c->u.Text.Value, text, "Value");
 				}
 			}
@@ -330,6 +330,20 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 	}
 	p->Count += ticks;
 	const struct vec2 startPos = p->Pos;
+	if (p->isAttached)
+	{
+		const TActor *a = ActorGetByUID(p->ActorUID);
+		if (a != NULL)
+		{
+			// Move by same amount as actor since last update, so it appears
+			// attached to actor (multiply by 2 since actors are updated later
+			// than particles)
+			p->Pos = svec2_add(
+				p->Pos,
+				svec2_scale(
+					svec2_subtract(a->thing.Pos, a->thing.LastPos), 2));
+		}
+	}
 	for (int i = 0; i < ticks; i++)
 	{
 		p->Pos = svec2_add(p->Pos, p->thing.Vel);
@@ -502,6 +516,7 @@ int ParticleAdd(CArray *particles, const AddParticle add)
 	{
 		p->thing.flags |= THING_DRAW_ABOVE;
 	}
+	p->isAttached = add.IsAttached;
 	MapTryMoveThing(&gMap, &p->thing, add.Pos);
 	return i;
 }

@@ -132,6 +132,8 @@ void OnGunFire(const NGunFire gf, SoundDevice *sd)
 		ap.u.AddParticle.Pos = pos;
 		ap.u.AddParticle.Z = (float)gf.Z;
 		ap.u.AddParticle.Angle = gf.Angle;
+		ap.u.AddParticle.ActorUID = gf.ActorUID;
+		ap.u.AddParticle.IsAttached = true;
 		GameEventsEnqueue(&gGameEvents, ap);
 	}
 	// Sound
