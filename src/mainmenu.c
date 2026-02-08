@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2013-2022, 2024 Cong Xu
+	Copyright (c) 2013-2022, 2024, 2026 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -262,7 +262,9 @@ static void MainMenuDraw(GameLoopData *data)
 	}
 	MainMenuData *mData = data->Data;
 	MenuDraw(&mData->ms);
-	const struct vec2 pos = svec2((gMap.Size.x + 1) * TILE_WIDTH * 0.5f, (gMap.Size.y + 1) * TILE_HEIGHT * 0.5f);
+	const struct vec2 pos = svec2(
+		(gMap.Size.x + 1) * TILE_WIDTH * 0.5f,
+		(gMap.Size.y + 1) * TILE_HEIGHT * 0.5f);
 	DrawBufferArgs args;
 	memset(&args, 0, sizeof args);
 	GrafxDrawBackground(
@@ -286,7 +288,8 @@ static void MenuCreateAll(
 	data->oData.gfxChangeCallback = OnGfxChange;
 	data->oData.gfxChangeData = data;
 	data->oData.ms = &data->ms;
-	MenuAddSubmenu(data->ms.root, MenuCreateOptions("Options...", &data->oData));
+	MenuAddSubmenu(
+		data->ms.root, MenuCreateOptions("Options...", &data->oData));
 #ifndef __EMSCRIPTEN__
 	MenuAddSubmenu(data->ms.root, MenuCreate("Quit", MENU_TYPE_QUIT));
 	MenuAddExitType(&data->ms, MENU_TYPE_QUIT);
@@ -316,6 +319,20 @@ static menu_t *MenuCreateStart(
 	MenuAddSubmenu(
 		menu, MenuCreateContinue("Continue", mainMenu, &cs->Campaign));
 	const int menuContinueIndex = (int)menu->u.normal.subMenus.size - 1;
+	char *titleBuf;
+	char buf[CDOGS_PATH_MAX];
+	GetDataFilePath(buf, cs->Campaign.Path);
+	if (CampaignSaveIsValid(cs) &&
+		IsCampaignOK(buf, &titleBuf, NULL))
+	{
+		sprintf(buf, "> %s", titleBuf);
+		MenuAddSubmenu(menu, MenuCreateSeparator(buf));
+		CFREE(titleBuf);
+	}
+	else
+	{
+		MenuDisableSubmenu(menu, menuContinueIndex);
+	}
 	MenuAddSubmenu(
 		menu, MenuCreateCampaigns(
 				  "Campaign", "Select a campaign:", mainMenu,
@@ -336,11 +353,6 @@ static menu_t *MenuCreateStart(
 	cdata->MenuJoinIndex = (int)menu->u.normal.subMenus.size - 1;
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Back"));
-
-	if (!CampaignSaveIsValid(cs))
-	{
-		MenuDisableSubmenu(menu, menuContinueIndex);
-	}
 
 	MenuDisableSubmenu(menu, cdata->MenuJoinIndex);
 	// Periodically check if LAN servers are available
