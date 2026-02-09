@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2014, 2017, 2021-2022, 2024-2025 Cong Xu
+	Copyright (c) 2013-2014, 2017, 2021-2022, 2024-2026 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -96,12 +96,21 @@ static void MenuCreateStart(LevelSelectionData *data)
 {
 	MenuSystem *ms = &data->ms;
 	ms->root = ms->current = MenuCreateNormal("", "", MENU_TYPE_NORMAL, 0);
-
-	menu_t *menuContinue = MenuCreateReturn("Continue", RETURN_CODE_CONTINUE);
+	char buf[256];
 	// Note: mission can be -1
-	menuContinue->isDisabled =
-		data->save == NULL || data->save->NextMission <= 0 ||
-		data->save->NextMission == (int)gCampaign.Setting.Missions.size;
+	const bool canContinue =
+		data->save != NULL && data->save->NextMission > 0 &&
+		data->save->NextMission < (int)gCampaign.Setting.Missions.size;
+	if (canContinue)
+	{
+		sprintf(buf, "Continue (Mission %d)", data->save->NextMission + 1);
+	}
+	else
+	{
+		strcpy(buf, "Continue");
+	}
+	menu_t *menuContinue = MenuCreateReturn(buf, RETURN_CODE_CONTINUE);
+	menuContinue->isDisabled = !canContinue;
 	MenuAddSubmenu(ms->root, menuContinue);
 
 	// Create level select menus
