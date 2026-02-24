@@ -415,6 +415,15 @@
       "RangeLow": 10000,
       "RangeHigh": 11000,
       "DrawBelow": true
+    },
+    {
+      "Name": "slide_dust",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "particles/dust",
+        "TicksPerFrame": 2
+      },
+      "Range": 16
     }
   ]
 }

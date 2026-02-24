@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2024 Cong Xu
+	Copyright (c) 2013-2024, 2026 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -164,6 +164,7 @@ typedef struct Actor
 
 	Emitter barrelSmoke;
 	Emitter healEffect;
+	Emitter slideEffect;
 
 	// Gore emitters
 	Emitter blood1;

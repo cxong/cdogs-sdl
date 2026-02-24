@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2025 Cong Xu
+	Copyright (c) 2013-2026 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -157,6 +157,13 @@ void UpdateActorState(TActor *actor, int ticks)
 	}
 
 	actor->slideLock = MAX(0, actor->slideLock - ticks);
+	if (actor->slideLock > SLIDE_LOCK * 4 / 5)
+	{
+		AddParticle ap;
+		memset(&ap, 0, sizeof ap);
+		ap.Pos = actor->Pos;
+		EmitterStart(&actor->slideEffect, &ap);
+	}
 
 	ThingUpdate(&actor->thing, ticks);
 
@@ -1091,8 +1098,10 @@ int CommandActor(TActor *actor, int cmd, int ticks)
 				CA_FOREACH(const PickupEffect, pe, m->Effects)
 				CASSERT(
 					pe->Type != PICKUP_MENU, "can't have nested menu effects");
-				canPickup = PickupApplyEffect(
-					actor, actor->pickupMenu.pickup, pe, true, &sound) || canPickup;
+				canPickup =
+					PickupApplyEffect(
+						actor, actor->pickupMenu.pickup, pe, true, &sound) ||
+					canPickup;
 				CA_FOREACH_END()
 				if (canPickup && sound != NULL)
 				{
@@ -1868,6 +1877,14 @@ TActor *ActorAdd(NActorAdd aa)
 		EmitterInit(
 			&actor->healEffect, healthPlus, svec2_zero(), -0.1f, 0.1f, 0, 0, 0,
 			0, 0);
+	}
+	const ParticleClass *slideDust =
+		StrParticleClass(&gParticleClasses, "slide_dust");
+	if (slideDust)
+	{
+		EmitterInit(
+			&actor->slideEffect, slideDust, svec2_zero(), -0.05f, 0.05f, 3, 3,
+			0, 0, 10);
 	}
 	GoreEmitterInit(&actor->blood1, "blood1");
 	GoreEmitterInit(&actor->blood2, "blood2");
