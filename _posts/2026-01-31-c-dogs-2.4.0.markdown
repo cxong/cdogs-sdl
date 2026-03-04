@@ -3,6 +3,7 @@ layout: post
 title: "C-Dogs 2.4.0 Released!"
 date: 2026-01-31
 categories: release
+image: https://i3.ytimg.com/vi/EduteSjTsZk/mqdefault.jpg
 ---
 
 This is a very special release. 2.4.0, it looks like a minor release, but it features a big new mod: **Super 2D Noah's Ark**!

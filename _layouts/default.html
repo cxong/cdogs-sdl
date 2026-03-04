@@ -29,6 +29,17 @@
   <title>{{ page.title }}</title>
   <meta name="description" content="Action/Arcade Game"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <!-- Open Graph / social embedding -->
+  <meta property="og:title" content="{{ page.title | escape }}" />
+  <meta property="og:description" content="{{ page.description | default: site.description | escape }}" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="{{ site.url }}{{ page.url }}" />
+  <meta property="og:image" content="{{ site.url }}{{ page.image | default: '/images/bg.png' }}" />
+  <!-- optional twitter card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="{{ page.title | escape }}" />
+  <meta name="twitter:description" content="{{ page.description | default: site.description | escape }}" />
+  <meta name="twitter:image" content="{{ site.url }}{{ page.image | default: '/images/bg.png' }}" />
 </head>
 
 <body>
