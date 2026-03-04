@@ -3,7 +3,7 @@ layout: post
 title: "Super 2D Noah's Ark Retrospective"
 date: 2026-03-04
 categories: other
-image: /_posts/s3dna_e1l1.jpg
+image: https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/s3dna_e1l1.jpg
 ---
 
 The [2.4.0 release](https://cxong.github.io/cdogs-sdl/release/2026/01/31/c-dogs-2.4.0.html) featured _Super 2D Noah's Ark_, the 4th Wolf3D clone to be made available as a C-Dogs SDL mod. Work began in earnest two years prior, despite the game being a fairly conventional Wolf3D clone, with few unique mechanics (notably the quiz system). So why did it take so long, considering a similar effort ([Spear of Destiny mission packs](https://cxong.github.io/cdogs-sdl/release/2021/12/03/c-dogs-1.2.0.html), which was mostly reskins) took only 2 months?
