@@ -1,0 +1,44 @@
+---
+layout: post
+title: "Super 2D Noah's Ark Retrospective"
+date: 2026-03-04
+categories: other
+---
+
+The [2.4.0 release](https://cxong.github.io/cdogs-sdl/release/2026/01/31/c-dogs-2.4.0.html) featured _Super 2D Noah's Ark_, the 4th Wolf3D clone to be made available as a C-Dogs SDL mod. Work began in earnest two years prior, despite the game being a fairly conventional Wolf3D clone, with few unique mechanics (notably the quiz system). So why did it take so long, considering a similar effort ([Spear of Destiny mission packs](https://cxong.github.io/cdogs-sdl/release/2021/12/03/c-dogs-1.2.0.html), which was mostly reskins) took only 2 months?
+
+# The first commits
+
+![Level 1](https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/s3dna_e1l1.jpg)
+
+If you're familiar with [Wolf3D-engine games](<https://wl6.fandom.com/wiki/List_of_Wolf3D_engine_games#Rise_of_the_engine_(1992_-_1995)>) you might be wondering why, after [_Wolfenstein 3D_](https://www.mobygames.com/game/306/wolfenstein-3d/), [_Spear of Destiny_](https://www.mobygames.com/game/311/spear-of-destiny/) and the [mission packs](https://asecretarea.com/2015/06/19/spear-of-destiny-mission-packs/), would I choose [_Super 3D Noah's Ark_ (S3DNA)](https://wisdomtree.itch.io/s3dna) as the next Wolf3D mod to make, given much better games like [_Blake Stone_](https://www.mobygames.com/game/786/blake-stone-aliens-of-gold/) and [_Rise of the Triad_](https://www.mobygames.com/game/418/rise-of-the-triad-dark-war/). _Blake Stone_ was indeed my first choice, having tinkered [here and there](https://github.com/cxong/cwolfmap/commit/aaa1a26601fe6c44ffe4227398dd34409d2277bc) with reverse engineering and loading its data.
+
+However, after a big effort making [_Cyberdogs_](https://www.mobygames.com/game/1055/cyberdogs/) for the [2.0 release](https://cxong.github.io/cdogs-sdl/release/2024/02/17/c-dogs-2.0.0.html) I was eager to tackle a smaller project, and after studying _Blake Stone_ some more I realised it was going to take a lot more work than anticipated - it was filled with extra features like a dialog system, item dispensers, one-way doors, teleporters and more. On the other hand, I suspected that S3DNA would be pretty low effort, given that its only unique mechanic was the quiz system - even the melon launchers were reskins of [Mac Wolfenstein 3D's](<https://wl6.fandom.com/wiki/Wolfenstein_3D_(MAC)>) flamethrower and rocket launcher. My suspicious were proven correct as I was able to get the level loading after only [adding a few tile definitions](https://github.com/cxong/cwolfmap/commit/5da9df40d1d61af064160f1fc1644e5d3366a5ac). At this point I was pretty optimistic: this was only going to take a few months of sprite work, making a few new weapons and characters, and implementing the interesting quiz system. This will be a cakewalk! <sub>Narrator: it was not a cakewalk</sub>
+
+Quick sidebar: S3DNA, at least the 20th anniversary version that's [available from Steam](https://store.steampowered.com/app/371180/Super_3D_Noahs_Ark/), is not quite a conventional Wolf3D package. Some of its data is stored in [WAD files](https://www.doomwiki.org/wiki/WAD), and the music is OGG instead of [IMF](https://www.vgmpf.com/Wiki/index.php?title=IMF) - oddities likely related to [ECWolf's ZDoom inspirations](https://maniacsvault.net/ecwolf/). Fortunately these are both [quite simple to decode](https://github.com/cxong/cwolfmap/commit/6d5eb31de2b78c6d7a7173caf0c33bf685c268ff).
+
+# Honeymoon phase
+
+<video muted autoplay loop>
+    <source src="https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/s3dna_levels.mp4" type="video/mp4">
+</video>
+
+The first few months were a breeze. As expected, getting the game up and running and implementing the first few levels was quite easy: the level format was pretty similar to Wolf3D, with only a few oddities here and there, and respriting all the wall tiles only took a month, and respriting items another.
+
+Other work took longer - implementing the weapons, removing the features that make S3DNA special like sleeping animals, slingshots instead of gun barrels that can overheat, lack of blood and so on. Some more reverse engineering was required to figure out what the weapon and enemy stats should be, since unlike Wolf3D, these haven't been meticulously documented by fans over the years. This is where the first inklings of how S3DNA is no simple Wolf3D clone appeared: the enemies are not mere reskins of Wolf3D, with different stats and behaviour. Most of the later enemies are bullet sponges so you'll be relying on the ~~chaingun~~super feeder to spray copious amounts of ammo at them, and/or diligently scouring the secrets to find hard-hitting melon ammo. But more importantly for C-Dogs SDL, these animals aren't humanoid so I can't just dress up the human characters with special hats and facial hair like with Wolf3D...
+
+# The grind
+
+<video muted autoplay loop>
+    <source src="https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/ostrich.mp4" type="video/mp4">
+</video>
+
+The animals. Argh the animals! I made a [3D-to-2D pipeline](https://cxong.github.io/2017/03/3d-rendered-pixel-sprites) so I can one-shot a bunch of character sprites after some up-front modelling work, which I am not good at and absolutely do not enjoy. Well now there are all these animals so the human model can't be reused, I need to model and animate each. and. every. one. of these animals. I did take shortcuts - oh yeah there were plenty, like stretching and deforming existing models to the limit, reusing heads to represent unrelated animals, taking creative liberties like classifying elephant trunk+tusks as a type of "facial hair" - but each animal was a slog, taking a month or two each to make. It was so demoralising that I took side quests like making an [easter egg](https://mastodon.gamedev.place/@congusbongus/113531278910361759) or a whole different [major feature release](https://cxong.github.io/cdogs-sdl/progress/other/2025/02/08/high-scores.html).
+
+This phase of the project took about a year, which was pretty much half the total project time.
+
+# The timeline
+
+And that pretty much describes the project. It was about 10% work on extracting and interpreting the game data, 10% sprite work, 20% special features like quizzes and weapons, 10% side quests to protect my sanity, and **50% making the damn animals**. Usually when adding large content releases like this has side benefits, as the additional content enriches the base C-Dogs SDL game with new textures, sound effects, hats and so on, but not in this case - when will a sci-fi shooter ever need elephants and giraffes??? Well, maybe I'll just have to add a special zoo level in one of the campaigns...
+
+It's been more than a month since the release so I've had time to mentally recover. Onward with further C-Dogs SDL development!
