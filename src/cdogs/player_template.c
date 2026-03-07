@@ -198,6 +198,10 @@ PlayerTemplate *PlayerTemplateGetById(PlayerTemplates *pt, const int id)
 	}
 	return NULL;
 }
+int PlayerTemplateGetNum(const PlayerTemplates *pt)
+{
+	return (int)pt->Classes.size + (int)pt->CustomClasses.size;
+}
 
 static void SavePlayerTemplate(const PlayerTemplate *t, json_t *templates)
 {

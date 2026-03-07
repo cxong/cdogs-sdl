@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2016, 2018-2021, 2023 Cong Xu
+	Copyright (c) 2013-2016, 2018-2021, 2023, 2026 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -436,7 +436,10 @@ static void PostInputLoadTemplate(menu_t *menu, int cmd, void *data)
 		PlayerData *p = PlayerDataGetByUID(d->display.PlayerUID);
 		const PlayerTemplate *t =
 			PlayerTemplateGetById(&gPlayerTemplates, menu->u.normal.index);
-		PlayerTemplateToPlayerData(p, t);
+		if (t != NULL)
+		{
+			PlayerTemplateToPlayerData(p, t);
+		}
 	}
 }
 
@@ -458,6 +461,8 @@ static void PostEnterLoadTemplateNames(menu_t *menu, void *data)
 	{
 		MenuAddSubmenu(menu, MenuCreateBack("(new)"));
 	}
+	MenuAddSubmenu(menu, MenuCreateSeparator(""));
+	MenuAddSubmenu(menu, MenuCreateBack("Back"));
 }
 
 static menu_t *CreateUseTemplateMenu(
@@ -472,7 +477,7 @@ static menu_t *CreateUseTemplateMenu(
 
 static void PostInputSaveTemplate(menu_t *menu, int cmd, void *data)
 {
-	if (!Button1(cmd))
+	if (!Button1(cmd) || menu->u.normal.index > PlayerTemplateGetNum(&gPlayerTemplates))
 	{
 		return;
 	}
