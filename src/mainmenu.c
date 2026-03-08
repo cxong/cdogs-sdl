@@ -316,22 +316,24 @@ static menu_t *MenuCreateStart(
 {
 	menu_t *menu = MenuCreateNormal(name, "Start:", MENU_TYPE_NORMAL, 0);
 	const CampaignSave *cs = AutosaveGetLastCampaign(&gAutosave);
-	MenuAddSubmenu(
-		menu, MenuCreateContinue("Continue", mainMenu, &cs->Campaign));
-	const int menuContinueIndex = (int)menu->u.normal.subMenus.size - 1;
-	char *titleBuf;
-	char buf[CDOGS_PATH_MAX];
-	GetDataFilePath(buf, cs->Campaign.Path);
-	if (CampaignSaveIsValid(cs) &&
-		IsCampaignOK(buf, &titleBuf, NULL))
+	if (cs != NULL)
 	{
-		sprintf(buf, "> %s", titleBuf);
-		MenuAddSubmenu(menu, MenuCreateSeparator(buf));
-		CFREE(titleBuf);
-	}
-	else
-	{
-		MenuDisableSubmenu(menu, menuContinueIndex);
+		MenuAddSubmenu(
+			menu, MenuCreateContinue("Continue", mainMenu, &cs->Campaign));
+		const int menuContinueIndex = (int)menu->u.normal.subMenus.size - 1;
+		char *titleBuf;
+		char buf[CDOGS_PATH_MAX];
+		GetDataFilePath(buf, cs->Campaign.Path);
+		if (CampaignSaveIsValid(cs) && IsCampaignOK(buf, &titleBuf, NULL))
+		{
+			sprintf(buf, "> %s", titleBuf);
+			MenuAddSubmenu(menu, MenuCreateSeparator(buf));
+			CFREE(titleBuf);
+		}
+		else
+		{
+			MenuDisableSubmenu(menu, menuContinueIndex);
+		}
 	}
 	MenuAddSubmenu(
 		menu, MenuCreateCampaigns(
