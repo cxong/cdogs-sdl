@@ -472,10 +472,8 @@ static void PostUpdateLoadTemplate(menu_t *menu, void *data)
 	}
 }
 
-// Load all the template names to the menu entries
-static void PostEnterLoadTemplateNames(menu_t *menu, void *data)
+static void LoadTemplateNamesAsMenuEntries(menu_t *menu)
 {
-	bool *isSave = (bool *)data;
 	MenuClearSubmenus(menu);
 	for (int i = 0;; i++)
 	{
@@ -486,18 +484,25 @@ static void PostEnterLoadTemplateNames(menu_t *menu, void *data)
 		}
 		MenuAddSubmenu(menu, MenuCreateBack(pt->name));
 	}
-	if (*isSave)
-	{
-		MenuAddSubmenu(menu, MenuCreateBack("(new)"));
-	}
-	else
-	{
-		// Save current player data to template for restoration later
-		// if needed
-		PlayerSelectMenuData *d = data;
-		const PlayerData *p = PlayerDataGetByUID(d->display.PlayerUID);
-		PlayerTemplateFromPlayerData(&d->playerTemplate, p);
-	}
+}
+
+static void PostEnterLoadTemplateNames(menu_t *menu, void *data)
+{
+	LoadTemplateNamesAsMenuEntries(menu);
+	// Save current player data to template for restoration later
+	// if needed
+	PlayerSelectMenuData *d = data;
+	const PlayerData *p = PlayerDataGetByUID(d->display.PlayerUID);
+	PlayerTemplateFromPlayerData(&d->playerTemplate, p);
+	MenuAddSubmenu(menu, MenuCreateSeparator(""));
+	MenuAddSubmenu(menu, MenuCreateBack("Back"));
+}
+
+static void PostEnterSaveTemplateNames(menu_t *menu, void *data)
+{
+	UNUSED(data);
+	LoadTemplateNamesAsMenuEntries(menu);
+	MenuAddSubmenu(menu, MenuCreateBack("(new)"));
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Back"));
 }
@@ -507,7 +512,7 @@ static menu_t *CreateUseTemplateMenu(
 {
 	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_NORMAL, 0);
 	menu->u.normal.maxItems = 11;
-	MenuSetPostEnterFunc(menu, PostEnterLoadTemplateNames, &gFalse, false);
+	MenuSetPostEnterFunc(menu, PostEnterLoadTemplateNames, data, false);
 	MenuSetPostInputFunc(menu, PostInputLoadTemplate, data);
 	MenuSetPostUpdateFunc(menu, PostUpdateLoadTemplate, data, false);
 	return menu;
@@ -558,7 +563,7 @@ static menu_t *CreateSaveTemplateMenu(
 {
 	menu_t *menu = MenuCreateNormal(name, "", MENU_TYPE_NORMAL, 0);
 	menu->u.normal.maxItems = 11;
-	MenuSetPostEnterFunc(menu, PostEnterLoadTemplateNames, &gTrue, false);
+	MenuSetPostEnterFunc(menu, PostEnterSaveTemplateNames, NULL, false);
 	MenuSetPostInputFunc(menu, PostInputSaveTemplate, data);
 	MenuSetCustomDisplay(menu, SaveTemplateDisplayTitle, data);
 	return menu;
