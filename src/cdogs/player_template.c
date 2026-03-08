@@ -286,6 +286,10 @@ void PlayerTemplateClear(PlayerTemplate *t)
 
 void PlayerTemplateToPlayerData(PlayerData *p, const PlayerTemplate *t)
 {
+	if (strlen(t->name) == 0 || t->CharClassName == NULL)
+	{
+		return;
+	}
 	memset(p->name, 0, sizeof p->name);
 	strcpy(p->name, t->name);
 	p->Char.Class = StrCharacterClass(t->CharClassName);
