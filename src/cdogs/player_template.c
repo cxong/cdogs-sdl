@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2013-2014, 2016-2020, 2023 Cong Xu
+	Copyright (c) 2013-2014, 2016-2020, 2023, 2026 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -57,7 +57,8 @@ static void LoadPlayerTemplate(
 	{
 		char *face;
 		CSTRDUP(face, t.CharClassName);
-		CharacterOldFaceToHeadParts(t.CharClassName, &t.CharClassName, t.HeadParts);
+		CharacterOldFaceToHeadParts(
+			t.CharClassName, &t.CharClassName, t.HeadParts);
 		CFREE(face);
 	}
 	else
@@ -169,11 +170,7 @@ void PlayerTemplatesLoadJSON(CArray *classes, json_t *node)
 void PlayerTemplatesClear(CArray *classes)
 {
 	CA_FOREACH(PlayerTemplate, pt, *classes)
-	CFREE(pt->CharClassName);
-	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
-	{
-		CFREE(pt->HeadParts[hp]);
-	}
+	PlayerTemplateClear(pt);
 	CA_FOREACH_END()
 	CArrayClear(classes);
 }
@@ -272,10 +269,19 @@ bail:
 #ifdef __EMSCRIPTEN__
 		EM_ASM(
 			// persist changes
-			FS.syncfs(
-				false, function(err) { assert(!err); }););
+			FS.syncfs(false, function(err) { assert(!err); }););
 #endif
 	}
+}
+
+void PlayerTemplateClear(PlayerTemplate *t)
+{
+	CFREE(t->CharClassName);
+	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
+	{
+		CFREE(t->HeadParts[hp]);
+	}
+	memset(t, 0, sizeof *t);
 }
 
 void PlayerTemplateToPlayerData(PlayerData *p, const PlayerTemplate *t)

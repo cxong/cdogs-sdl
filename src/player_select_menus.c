@@ -247,7 +247,8 @@ static void PostInputFaceMenu(menu_t *menu, int cmd, void *data)
 }
 
 static void PostInputHeadPartMenu(menu_t *menu, int cmd, void *data);
-static menu_t *CreateHeadPartMenu(PlayerSelectMenuData *data, const HeadPart hp)
+static menu_t *CreateHeadPartMenu(
+	PlayerSelectMenuData *data, const HeadPart hp)
 {
 	menu_t *menu = MenuCreateNormal(HeadPartStr(hp), "", MENU_TYPE_NORMAL, 0);
 	menu->u.normal.maxItems = 11;
@@ -271,8 +272,8 @@ static void PostInputHeadPartMenu(menu_t *menu, int cmd, void *data)
 	const char *hpName = NULL;
 	if (menu->u.normal.index > 0)
 	{
-		hpName =
-			*(const char **)CArrayGet(&gPicManager.headPartNames[d->HP], menu->u.normal.index - 1);
+		hpName = *(const char **)CArrayGet(
+			&gPicManager.headPartNames[d->HP], menu->u.normal.index - 1);
 	}
 	CharacterSetHeadPart(c, d->HP, hpName);
 	PostInputRotatePlayer(menu, cmd, data);
@@ -284,8 +285,8 @@ static void DrawColorMenu(
 static void ColorMenuPostUpdate(menu_t *menu, void *data);
 static int HandleInputColorMenu(int cmd, void *data);
 static menu_t *CreateColorMenu(
-	const char *name, ColorMenuData *data, const MenuSystem *ms, const CharColorType type,
-	const int playerUID)
+	const char *name, ColorMenuData *data, const MenuSystem *ms,
+	const CharColorType type, const int playerUID)
 {
 	data->Type = type;
 	data->ms = ms;
@@ -318,16 +319,20 @@ static menu_t *CreateColorMenu(
 			}
 		}
 	}
-	menu_t *menu = MenuCreateCustom(name, DrawColorMenu, HandleInputColorMenu, data);
+	menu_t *menu =
+		MenuCreateCustom(name, DrawColorMenu, HandleInputColorMenu, data);
 	MenuSetPostUpdateFunc(menu, ColorMenuPostUpdate, data, false);
 	return menu;
 }
-static Rect2i ColorSwatchBounds(const Rect2i bounds, const Pic *palette, const struct vec2i v)
+static Rect2i ColorSwatchBounds(
+	const Rect2i bounds, const Pic *palette, const struct vec2i v)
 {
 	const struct vec2i swatchSize = svec2i(4, 4);
-	const struct vec2i drawPos =
-		svec2i(bounds.Pos.x, CENTER_Y(bounds.Pos, bounds.Size, palette->size.y * swatchSize.y));
-	return Rect2iNew(svec2i_add(drawPos, svec2i_multiply(v, swatchSize)), swatchSize);
+	const struct vec2i drawPos = svec2i(
+		bounds.Pos.x,
+		CENTER_Y(bounds.Pos, bounds.Size, palette->size.y * swatchSize.y));
+	return Rect2iNew(
+		svec2i_add(drawPos, svec2i_multiply(v, swatchSize)), swatchSize);
 }
 static void DrawColorMenu(
 	const menu_t *menu, GraphicsDevice *g, const struct vec2i pos,
@@ -340,8 +345,7 @@ static void DrawColorMenu(
 	// Draw colour squares from the palette
 	RECT_FOREACH(Rect2iNew(svec2i_zero(), d->palette->size))
 	const int idx = _v.x + _v.y * d->palette->size.x;
-	const color_t colour =
-		PIXEL2COLOR(d->palette->Data[idx]);
+	const color_t colour = PIXEL2COLOR(d->palette->Data[idx]);
 	if (colour.a == 0)
 	{
 		continue;
@@ -351,10 +355,10 @@ static void DrawColorMenu(
 	RECT_FOREACH_END()
 
 	// Draw a highlight around the selected colour
-	itemBounds = ColorSwatchBounds(Rect2iNew(pos, size), d->palette, d->selectedColor);
+	itemBounds =
+		ColorSwatchBounds(Rect2iNew(pos, size), d->palette, d->selectedColor);
 	DrawRectangle(
-		g,
-		svec2i_subtract(itemBounds.Pos, svec2i(1, 1)),
+		g, svec2i_subtract(itemBounds.Pos, svec2i(1, 1)),
 		svec2i_add(itemBounds.Size, svec2i(2, 2)), colorWhite, false);
 }
 static void ColorMenuOnChange(ColorMenuData *d, const struct vec2i v)
@@ -367,8 +371,8 @@ static void ColorMenuOnChange(ColorMenuData *d, const struct vec2i v)
 	{
 		return;
 	}
-	const color_t colour = PIXEL2COLOR(
-		d->palette->Data[v.x + v.y * d->palette->size.x]);
+	const color_t colour =
+		PIXEL2COLOR(d->palette->Data[v.x + v.y * d->palette->size.x]);
 	if (colour.a != 0)
 	{
 		d->selectedColor = v;
@@ -388,7 +392,8 @@ static void ColorMenuPostUpdate(menu_t *menu, void *data)
 		menu->mouseHover = false;
 		Rect2i itemBounds;
 		RECT_FOREACH(Rect2iNew(svec2i_zero(), d->palette->size))
-		itemBounds = ColorSwatchBounds(Rect2iNew(d->ms->pos, d->ms->size), d->palette, _v);
+		itemBounds = ColorSwatchBounds(
+			Rect2iNew(d->ms->pos, d->ms->size), d->palette, _v);
 		if (!Rect2iIsInside(itemBounds, gEventHandlers.mouse.currentPos))
 		{
 			continue;
@@ -430,16 +435,40 @@ static int HandleInputColorMenu(int cmd, void *data)
 
 static void PostInputLoadTemplate(menu_t *menu, int cmd, void *data)
 {
+	UNUSED(menu);
+	PlayerSelectMenuData *d = data;
+	PlayerData *p = PlayerDataGetByUID(d->display.PlayerUID);
+	bool clear = false;
 	if (Button1(cmd))
 	{
-		PlayerSelectMenuData *d = data;
-		PlayerData *p = PlayerDataGetByUID(d->display.PlayerUID);
-		const PlayerTemplate *t =
-			PlayerTemplateGetById(&gPlayerTemplates, menu->u.normal.index);
-		if (t != NULL)
-		{
-			PlayerTemplateToPlayerData(p, t);
-		}
+		clear = true;
+	}
+	else if (Button2(cmd))
+	{
+		PlayerTemplateToPlayerData(p, &d->playerTemplate);
+		clear = true;
+	}
+	if (clear)
+	{
+		PlayerTemplateClear(&d->playerTemplate);
+		memset(&d->playerTemplate, 0, sizeof d->playerTemplate);
+	}
+}
+
+static void PostUpdateLoadTemplate(menu_t *menu, void *data)
+{
+	UNUSED(menu);
+	PlayerSelectMenuData *d = data;
+	PlayerData *p = PlayerDataGetByUID(d->display.PlayerUID);
+	const PlayerTemplate *t =
+		PlayerTemplateGetById(&gPlayerTemplates, menu->u.normal.index);
+	if (t != NULL)
+	{
+		PlayerTemplateToPlayerData(p, t);
+	}
+	else
+	{
+		PlayerTemplateToPlayerData(p, &d->playerTemplate);
 	}
 }
 
@@ -461,6 +490,14 @@ static void PostEnterLoadTemplateNames(menu_t *menu, void *data)
 	{
 		MenuAddSubmenu(menu, MenuCreateBack("(new)"));
 	}
+	else
+	{
+		// Save current player data to template for restoration later
+		// if needed
+		PlayerSelectMenuData *d = data;
+		const PlayerData *p = PlayerDataGetByUID(d->display.PlayerUID);
+		PlayerTemplateFromPlayerData(&d->playerTemplate, p);
+	}
 	MenuAddSubmenu(menu, MenuCreateSeparator(""));
 	MenuAddSubmenu(menu, MenuCreateBack("Back"));
 }
@@ -472,12 +509,14 @@ static menu_t *CreateUseTemplateMenu(
 	menu->u.normal.maxItems = 11;
 	MenuSetPostEnterFunc(menu, PostEnterLoadTemplateNames, &gFalse, false);
 	MenuSetPostInputFunc(menu, PostInputLoadTemplate, data);
+	MenuSetPostUpdateFunc(menu, PostUpdateLoadTemplate, data, false);
 	return menu;
 }
 
 static void PostInputSaveTemplate(menu_t *menu, int cmd, void *data)
 {
-	if (!Button1(cmd) || menu->u.normal.index > PlayerTemplateGetNum(&gPlayerTemplates))
+	if (!Button1(cmd) ||
+		menu->u.normal.index > PlayerTemplateGetNum(&gPlayerTemplates))
 	{
 		return;
 	}
@@ -627,16 +666,16 @@ static menu_t *CreateCustomizeMenu(
 				  data->display.PlayerUID));
 	MenuAddSubmenu(
 		menu, CreateColorMenu(
-				  "Facial Hair Color", &data->facehairData, data->ms, CHAR_COLOR_FACEHAIR,
-				  data->display.PlayerUID));
+				  "Facial Hair Color", &data->facehairData, data->ms,
+				  CHAR_COLOR_FACEHAIR, data->display.PlayerUID));
 	MenuAddSubmenu(
 		menu, CreateColorMenu(
 				  "Hat Color", &data->hatData, data->ms, CHAR_COLOR_HAT,
 				  data->display.PlayerUID));
 	MenuAddSubmenu(
 		menu, CreateColorMenu(
-				  "Glasses Color", &data->glassesData, data->ms, CHAR_COLOR_GLASSES,
-				  data->display.PlayerUID));
+				  "Glasses Color", &data->glassesData, data->ms,
+				  CHAR_COLOR_GLASSES, data->display.PlayerUID));
 	MenuAddSubmenu(
 		menu, CreateColorMenu(
 				  "Arms Color", &data->armsData, data->ms, CHAR_COLOR_ARMS,

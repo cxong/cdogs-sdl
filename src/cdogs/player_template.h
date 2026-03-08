@@ -58,6 +58,8 @@ void PlayerTemplatesTerminate(PlayerTemplates *pt);
 PlayerTemplate *PlayerTemplateGetById(PlayerTemplates *pt, const int id);
 int PlayerTemplateGetNum(const PlayerTemplates *pt);
 void PlayerTemplatesSave(const PlayerTemplates *pt);
+
+void PlayerTemplateClear(PlayerTemplate *t);
 void PlayerTemplateToPlayerData(PlayerData *p, const PlayerTemplate *t);
 void PlayerTemplateFromPlayerData(PlayerTemplate *t, const PlayerData *p);
 void PlayerTemplateAddCharacter(CArray *classes, const Character *c);
