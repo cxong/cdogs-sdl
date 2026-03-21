@@ -1,29 +1,29 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2016, 2018-2019 Cong Xu
-    All rights reserved.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (c) 2013-2016, 2018-2019, 2026 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "cpic.h"
 
@@ -34,7 +34,6 @@
 #include "pic_manager.h"
 #include "utils.h"
 
-
 PicType StrPicType(const char *s)
 {
 	S2T(PICTYPE_NORMAL, "Normal");
@@ -44,7 +43,6 @@ PicType StrPicType(const char *s)
 	CASSERT(false, "unknown pic type");
 	return PICTYPE_NORMAL;
 }
-
 
 CPicDrawContext CPicDrawContextNew(void)
 {
@@ -58,13 +56,11 @@ CPicDrawContext CPicDrawContextNew(void)
 	return c;
 }
 
-
 void NamedPicFree(NamedPic *n)
 {
 	PicFree(&n->pic);
 	CFREE(n->name);
 }
-
 
 void NamedSpritesInit(NamedSprites *ns, const char *name)
 {
@@ -109,7 +105,7 @@ void CPicLoadJSON(CPic *p, json_t *node)
 		p->u.Sprites = &PicManagerGetSprites(&gPicManager, tmp)->pics;
 		CFREE(tmp);
 		break;
-	case PICTYPE_ANIMATED:	// fallthrough
+	case PICTYPE_ANIMATED: // fallthrough
 	case PICTYPE_ANIMATED_RANDOM:
 		LoadStr(&tmp, node, "Sprites");
 		if (tmp == NULL)
@@ -117,12 +113,16 @@ void CPicLoadJSON(CPic *p, json_t *node)
 			LOG(LM_GFX, LL_ERROR, "cannot load sprites");
 			goto bail;
 		}
-		p->u.Animated.Sprites =
-			&PicManagerGetSprites(&gPicManager, tmp)->pics;
+		p->u.Animated.Sprites = &PicManagerGetSprites(&gPicManager, tmp)->pics;
 		CFREE(tmp);
 		LoadInt(&p->u.Animated.Count, node, "Count");
 		LoadInt(&p->u.Animated.TicksPerFrame, node, "TicksPerFrame");
 		p->u.Animated.TicksPerFrame = MAX(p->u.Animated.TicksPerFrame, 0);
+		if (p->Type == PICTYPE_ANIMATED_RANDOM)
+		{
+			// initialise frame with a random value
+			p->u.Animated.Frame = rand() % (int)p->u.Animated.Sprites->size;
+		}
 		break;
 	default:
 		CASSERT(false, "unknown pic type");
@@ -228,23 +228,22 @@ void CPicUpdate(CPic *p, const int ticks)
 {
 	switch (p->Type)
 	{
-	case PICTYPE_ANIMATED:
+	case PICTYPE_ANIMATED: {
+		p->u.Animated.Count += ticks;
+		if (p->u.Animated.TicksPerFrame > 0)
 		{
-			p->u.Animated.Count += ticks;
-			if (p->u.Animated.TicksPerFrame > 0)
+			while (p->u.Animated.Count >= p->u.Animated.TicksPerFrame)
 			{
-				while (p->u.Animated.Count >= p->u.Animated.TicksPerFrame)
-				{
-					p->u.Animated.Frame++;
-					p->u.Animated.Count -= p->u.Animated.TicksPerFrame;
-				}
-				while (p->u.Animated.Frame >= (int)p->u.Animated.Sprites->size)
-				{
-					p->u.Animated.Frame -= (int)p->u.Animated.Sprites->size;
-				}
+				p->u.Animated.Frame++;
+				p->u.Animated.Count -= p->u.Animated.TicksPerFrame;
+			}
+			while (p->u.Animated.Frame >= (int)p->u.Animated.Sprites->size)
+			{
+				p->u.Animated.Frame -= (int)p->u.Animated.Sprites->size;
 			}
 		}
-		break;
+	}
+	break;
 	case PICTYPE_ANIMATED_RANDOM:
 		if (p->u.Animated.Count == 0)
 		{
@@ -286,8 +285,8 @@ const Pic *CPicGetPic(const CPic *p, const int idx)
 	}
 }
 void CPicDraw(
-	GraphicsDevice *g, const CPic *p,
-	const struct vec2i pos, const CPicDrawContext *context)
+	GraphicsDevice *g, const CPic *p, const struct vec2i pos,
+	const CPicDrawContext *context)
 {
 	CPicDrawContext ctx;
 	if (context == NULL)
@@ -303,6 +302,5 @@ void CPicDraw(
 	const struct vec2i picPos = svec2i_add(pos, context->Offset);
 	PicRender(
 		pic, g->gameWindow.renderer, picPos, ColorMult(p->Mask, context->Mask),
-		context->Radians,
-		context->Scale, context->Flip, Rect2iZero());
+		context->Radians, context->Scale, context->Flip, Rect2iZero());
 }

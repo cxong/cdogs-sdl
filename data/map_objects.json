@@ -238,8 +238,9 @@
     {
       "Name": "plant",
       "Pic": {
-        "Type": "Normal",
-        "Pic": "plant"
+        "Type": "AnimatedRandom",
+        "Sprites": "plant",
+        "TicksPerFrame": -1
       },
       "Wreck": "plant_wreck",
       "Size": [8, 6],
@@ -925,8 +926,9 @@
     {
       "Name": "bookshelf",
       "Pic": {
-        "Type": "Normal",
-        "Pic": "bookshelf"
+        "Type": "AnimatedRandom",
+        "Sprites": "bookshelf",
+        "TicksPerFrame": -1
       },
       "Offset": [-8, -15],
       "Wreck": "table_wood_wreck",
@@ -1247,11 +1249,7 @@
       },
       "Wreck": "barrel_wood_wreck",
       "Health": 40,
-      "DestroyGuns": [
-        "explosion1",
-        "explosion2",
-        "explosion3"
-      ],
+      "DestroyGuns": ["explosion1", "explosion2", "explosion3"],
       "Flags": ["Outside", "OneWall"],
       "DamageSmoke": {
         "HealthThreshold": 0.5
@@ -1276,11 +1274,7 @@
       },
       "Wreck": "barrel_wood2_wreck",
       "Health": 40,
-      "DestroyGuns": [
-        "explosion1",
-        "explosion2",
-        "explosion3"
-      ],
+      "DestroyGuns": ["explosion1", "explosion2", "explosion3"],
       "Flags": ["Outside", "OneWall"],
       "DamageSmoke": {
         "HealthThreshold": 0.5
@@ -1305,12 +1299,7 @@
       },
       "Wreck": "box_metal_green_wreck",
       "Health": 40,
-      "DestroyGuns": [
-        "big_quake",
-        "explosion1",
-        "explosion2",
-        "explosion3"
-      ],
+      "DestroyGuns": ["big_quake", "explosion1", "explosion2", "explosion3"],
       "Flags": ["Outside", "OneWall"],
       "DamageSmoke": {
         "HealthThreshold": 0.5
@@ -1336,9 +1325,7 @@
       },
       "Wreck": "box3",
       "Health": 20,
-      "DestroyGuns": [
-        "gas_poison_explosion"
-      ],
+      "DestroyGuns": ["gas_poison_explosion"],
       "Flags": ["Outside", "OneWall"],
       "DamageSmoke": {
         "HealthThreshold": 0.5
@@ -1352,12 +1339,7 @@
       },
       "Wreck": "box3_gray_wreck",
       "Health": 40,
-      "DestroyGuns": [
-        "big_quake",
-        "explosion1",
-        "explosion2",
-        "explosion3"
-      ],
+      "DestroyGuns": ["big_quake", "explosion1", "explosion2", "explosion3"],
       "Flags": ["Outside", "OneWall"],
       "DamageSmoke": {
         "HealthThreshold": 0.5
@@ -1493,12 +1475,7 @@
       },
       "Wreck": "rocket_wreck",
       "Health": 40,
-      "DestroyGuns": [
-        "big_quake",
-        "explosion1",
-        "explosion2",
-        "explosion3"
-      ],
+      "DestroyGuns": ["big_quake", "explosion1", "explosion2", "explosion3"],
       "Flags": ["Outside", "OneWall"],
       "DamageSmoke": {
         "HealthThreshold": 0.5
@@ -1512,12 +1489,7 @@
       },
       "Wreck": "rocket_wreck",
       "Health": 40,
-      "DestroyGuns": [
-        "big_quake",
-        "explosion1",
-        "explosion2",
-        "explosion3"
-      ],
+      "DestroyGuns": ["big_quake", "explosion1", "explosion2", "explosion3"],
       "Flags": ["Outside", "OneWall"],
       "DamageSmoke": {
         "HealthThreshold": 0.5

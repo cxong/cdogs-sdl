@@ -373,6 +373,12 @@ void CharacterCopy(
 bool CharacterSave(yajl_gen g, const Character *c)
 {
 	bool res = true;
+	
+	if (!c->Class)
+	{
+		LOG(LM_MAIN, LL_ERROR, "Missing character\n");
+		return false;
+	}
 
 	YAJL_CHECK(yajl_gen_map_open(g));
 	YAJL_CHECK(YAJLAddStringPair(g, "Class", c->Class->Name));
