@@ -27,8 +27,10 @@
 */
 #include "pause_menu.h"
 
+#include <cdogs/config.h>
 #include <cdogs/draw/drawtools.h>
 #include <cdogs/font.h>
+#include <cdogs/sounds.h>
 
 void PauseMenuInit(
 	PauseMenu *pm, EventHandlers *handlers, GraphicsDevice *g,
@@ -123,7 +125,9 @@ bool PauseMenuUpdate(
 		const GameLoopResult result = MenuUpdate(&pm->ms);
 		if (result == UPDATE_RESULT_OK || pm->ms.current->type == MENU_TYPE_QUIT)
 		{
-			// Unpause
+			// Unpause - restore music volume
+			Mix_VolumeMusic(
+				ConfigGetInt(&gConfig, "Sound.MusicVolume"));
 			pm->pausingDevice = INPUT_DEVICE_UNSET;
 			if (pm->ms.current->type == MENU_TYPE_RETURN)
 			{
@@ -143,14 +147,18 @@ bool PauseMenuUpdate(
 	}
 	else if (pm->controllerUnplugged || gEventHandlers.HasLostFocus)
 	{
-		// Pause the game
+		// Pause the game - reduce music volume
 		pm->pausingDevice = firstPausingDevice;
+		Mix_VolumeMusic(
+			ConfigGetInt(&gConfig, "Sound.MusicVolume") / 4);
 		SoundPlay(&gSoundDevice, StrSound("menu_error"));
 	}
 	else if (pausingDevice != INPUT_DEVICE_UNSET)
 	{
-		// Pause the game
+		// Pause the game - reduce music volume
 		pm->pausingDevice = pausingDevice;
+		Mix_VolumeMusic(
+			ConfigGetInt(&gConfig, "Sound.MusicVolume") / 4);
 		SoundPlay(&gSoundDevice, StrSound("menu_back"));
 	}
 	return false;
