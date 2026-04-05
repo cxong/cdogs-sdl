@@ -1,7 +1,7 @@
 /*
 C-Dogs SDL
 A port of the legendary (and fun) action/arcade cdogs.
-Copyright (c) 2016-2017, 2019, 2024 Cong Xu
+Copyright (c) 2016-2017, 2019, 2024, 2026 Cong Xu
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -88,4 +88,9 @@ void EmitterUpdate(Emitter *em, const AddParticle *data, const int ticks)
 			em->counter += em->ticksPerEmit;
 		}
 	}
+}
+
+void EmitterReset(Emitter *em)
+{
+	em->counter = 0;
 }

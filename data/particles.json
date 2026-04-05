@@ -424,6 +424,15 @@
         "TicksPerFrame": 2
       },
       "Range": 16
+    },
+    {
+      "Name": "confusion_stars",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "particles/confusion_stars",
+        "TicksPerFrame": 35
+      },
+      "Range": 350
     }
   ]
 }

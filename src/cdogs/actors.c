@@ -142,6 +142,20 @@ void UpdateActorState(TActor *actor, int ticks)
 		}
 		actor->petrified = MAX(0, actor->petrified - ticks);
 		actor->confused = MAX(0, actor->confused - ticks);
+		if (actor->confused)
+		{
+			AddParticle ap;
+			memset(&ap, 0, sizeof ap);
+			ap.Pos = actor->Pos;
+			ap.Z = 16;
+			ap.ActorUID = actor->uid;
+			ap.IsAttached = true;
+			EmitterUpdate(&actor->confusionEffect, &ap, ticks);
+		}
+		else
+		{
+			EmitterReset(&actor->confusionEffect);
+		}
 
 		// Reset accumulated damage if FPS_FRAMELIMIT passed since taking
 		// damage
@@ -1885,6 +1899,14 @@ TActor *ActorAdd(NActorAdd aa)
 		EmitterInit(
 			&actor->slideEffect, slideDust, svec2_zero(), -0.05f, 0.05f, 3, 3,
 			0, 0, 10);
+	}
+	const ParticleClass *confusionStars =
+		StrParticleClass(&gParticleClasses, "confusion_stars");
+	if (confusionStars)
+	{
+		EmitterInit(
+			&actor->confusionEffect, confusionStars, svec2_zero(), 0, 0, 0, 0,
+			0, 1.0, 350);
 	}
 	GoreEmitterInit(&actor->blood1, "blood1");
 	GoreEmitterInit(&actor->blood2, "blood2");

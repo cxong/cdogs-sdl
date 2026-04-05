@@ -336,12 +336,9 @@ static bool ParticleUpdate(Particle *p, const int ticks)
 		if (a != NULL)
 		{
 			// Move by same amount as actor since last update, so it appears
-			// attached to actor (multiply by 2 since actors are updated later
-			// than particles)
+			// attached to actor
 			p->Pos = svec2_add(
-				p->Pos,
-				svec2_scale(
-					svec2_subtract(a->thing.Pos, a->thing.LastPos), 2));
+				p->Pos, svec2_subtract(a->thing.Pos, a->thing.LastPos));
 		}
 	}
 	for (int i = 0; i < ticks; i++)

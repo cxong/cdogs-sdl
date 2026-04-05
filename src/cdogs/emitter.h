@@ -1,7 +1,7 @@
 /*
 C-Dogs SDL
 A port of the legendary (and fun) action/arcade cdogs.
-Copyright (c) 2016-2017, 2019 Cong Xu
+Copyright (c) 2016-2017, 2019, 2026 Cong Xu
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -45,9 +45,9 @@ typedef struct
 
 void EmitterInit(
 	Emitter *em, const ParticleClass *p, const struct vec2 offset,
-	const float minSpeed, const float maxSpeed,
-	const int minDZ, const int maxDZ,
-	const double minRotation, const double maxRotation,
+	const float minSpeed, const float maxSpeed, const int minDZ,
+	const int maxDZ, const double minRotation, const double maxRotation,
 	const int ticksPerEmit);
 void EmitterStart(Emitter *em, const AddParticle *data);
 void EmitterUpdate(Emitter *em, const AddParticle *data, const int ticks);
+void EmitterReset(Emitter *em);
