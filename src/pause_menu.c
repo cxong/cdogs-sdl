@@ -125,6 +125,7 @@ bool PauseMenuUpdate(
 		{
 			// Unpause
 			pm->pausingDevice = INPUT_DEVICE_UNSET;
+			gSoundDevice.music.isReduced = false;
 			if (pm->ms.current->type == MENU_TYPE_RETURN)
 			{
 				// Quit
@@ -146,13 +147,16 @@ bool PauseMenuUpdate(
 		// Pause the game
 		pm->pausingDevice = firstPausingDevice;
 		SoundPlay(&gSoundDevice, StrSound("menu_error"));
+		gSoundDevice.music.isReduced = true;
 	}
 	else if (pausingDevice != INPUT_DEVICE_UNSET)
 	{
 		// Pause the game
 		pm->pausingDevice = pausingDevice;
 		SoundPlay(&gSoundDevice, StrSound("menu_back"));
+		gSoundDevice.music.isReduced = true;
 	}
+	SoundReconfigure(&gSoundDevice);
 	return false;
 }
 void PauseMenuDraw(const PauseMenu *pm)
