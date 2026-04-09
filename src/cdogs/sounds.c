@@ -283,7 +283,7 @@ void SoundReconfigure(SoundDevice *s)
 	const int sVol = ConfigGetInt(&gConfig, "Sound.SoundVolume");
 	Mix_Volume(-1, sVol);
 	const int mVol = ConfigGetInt(&gConfig, "Sound.MusicVolume");
-	Mix_VolumeMusic(mVol);
+	Mix_VolumeMusic(s->music.isReduced ? (int)(mVol * MUSIC_REDUCTION_RATE) : mVol);
 	MusicSetPlaying(&s->music, mVol > 0);
 
 	s->isInitialised = true;

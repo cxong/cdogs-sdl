@@ -57,6 +57,8 @@
 
 #include "c_array.h"
 
+#define MUSIC_REDUCTION_RATE 0.25
+
 typedef enum
 {
 	MUSIC_MENU,
@@ -78,6 +80,7 @@ typedef enum
 typedef struct
 {
 	bool isInitialised;
+	bool isReduced;
 	MusicSourceType type;
 	union {
 		Mix_Music *general;
