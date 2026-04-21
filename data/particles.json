@@ -433,6 +433,15 @@
         "TicksPerFrame": 35
       },
       "Range": 350
+    },
+    {
+      "Name": "poison_bubble",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "particles/bubble",
+        "TicksPerFrame": 15
+      },
+      "Range": 60
     }
   ]
 }

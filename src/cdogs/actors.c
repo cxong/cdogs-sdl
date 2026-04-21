@@ -139,6 +139,17 @@ void UpdateActorState(TActor *actor, int ticks)
 				InjureActor(actor, 1);
 			}
 			actor->poisoned = MAX(0, actor->poisoned - ticks);
+			AddParticle ap;
+			memset(&ap, 0, sizeof ap);
+			ap.Pos = svec2_add(
+				actor->Pos, svec2(RAND_DOUBLE(-6, 6), RAND_DOUBLE(-4, 4)));
+			ap.Z = 10;
+			ap.ActorUID = actor->uid;
+			EmitterUpdate(&actor->poisonEffect, &ap, ticks);
+		}
+		else
+		{
+			EmitterReset(&actor->poisonEffect);
 		}
 		actor->petrified = MAX(0, actor->petrified - ticks);
 		actor->confused = MAX(0, actor->confused - ticks);
@@ -1907,6 +1918,14 @@ TActor *ActorAdd(NActorAdd aa)
 		EmitterInit(
 			&actor->confusionEffect, confusionStars, svec2_zero(), 0, 0, 0, 0,
 			0, 1.0, 350);
+	}
+	const ParticleClass *poisonBubble =
+		StrParticleClass(&gParticleClasses, "poison_bubble");
+	if (poisonBubble)
+	{
+		EmitterInit(
+			&actor->poisonEffect, poisonBubble, svec2_zero(), -0.05f, 0.05f, 3,
+			3, 0, 0, 10);
 	}
 	GoreEmitterInit(&actor->blood1, "blood1");
 	GoreEmitterInit(&actor->blood2, "blood2");
