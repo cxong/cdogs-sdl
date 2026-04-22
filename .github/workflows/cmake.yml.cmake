@@ -34,7 +34,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Install Protoc
       uses: arduino/setup-protoc@v3
@@ -50,7 +50,7 @@ jobs:
     - name: Set up Homebrew (Linux)
       id: set-up-homebrew
       if: matrix.os == 'ubuntu-latest'
-      uses: Homebrew/actions/setup-homebrew@master
+      uses: Homebrew/actions/setup-homebrew@main
 
     - name: Install packages (Linux)
       if: startsWith(matrix.os, 'ubuntu')

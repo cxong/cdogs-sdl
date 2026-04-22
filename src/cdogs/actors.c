@@ -142,7 +142,7 @@ void UpdateActorState(TActor *actor, int ticks)
 			AddParticle ap;
 			memset(&ap, 0, sizeof ap);
 			ap.Pos = svec2_add(
-				actor->Pos, svec2(RAND_DOUBLE(-6, 6), RAND_DOUBLE(-4, 4)));
+				actor->Pos, svec2(RAND_FLOAT(-6, 6), RAND_FLOAT(-4, 4)));
 			ap.Z = 10;
 			ap.ActorUID = actor->uid;
 			EmitterUpdate(&actor->poisonEffect, &ap, ticks);
