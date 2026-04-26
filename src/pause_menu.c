@@ -26,6 +26,7 @@
 	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "pause_menu.h"
+#include "game.h"
 
 #include <cdogs/draw/drawtools.h>
 #include <cdogs/font.h>
@@ -42,6 +43,16 @@ void PauseMenuInit(
 	// this item will get auto selected when pressing escape
 	MenuAddSubmenu(pm->ms.root, MenuCreate("Resume", MENU_TYPE_QUIT));
 	MenuAddSubmenu(pm->ms.root, MenuCreateSeparator(""));
+  const struct MissionOptions *m = ((RunGameData*)gfxChangeData)->m;
+  if (m->missionData->Description 
+      && strlen(m->missionData->Description) > 0) {
+    pm->bData.m = m;
+    pm->bData.g = g;
+    pm->bData.gfxChangeCallback = gfxChangeCallback;
+    pm->bData.gfxChangeData = gfxChangeData;
+    MenuAddSubmenu(pm->ms.root, MenuCreateBriefing("Briefing", &pm->bData));
+    MenuAddSubmenu(pm->ms.root, MenuCreateSeparator(""));
+  }
 	pm->oData.config = &gConfig;
 	pm->oData.gfxChangeCallback = gfxChangeCallback;
 	pm->oData.gfxChangeData = gfxChangeData;

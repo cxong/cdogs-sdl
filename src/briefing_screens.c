@@ -44,8 +44,6 @@
 #include "prep_equip.h"
 #include "screens_end.h"
 
-static void DrawObjectiveInfo(const Objective *o, const struct vec2i pos);
-
 typedef struct
 {
 	EventWaitResult waitResult;
@@ -904,7 +902,7 @@ static void DrawPlayerSummary(
 	}
 }
 
-static void DrawObjectiveInfo(const Objective *o, const struct vec2i pos)
+void DrawObjectiveInfo(const Objective *o, const struct vec2i pos)
 {
 	const CharacterStore *store = &gCampaign.Setting.characters;
 
