@@ -29,10 +29,12 @@
 
 #include "menu.h"
 #include "options_menu.h"
+#include "briefing_menu.h"
 
 typedef struct
 {
 	MenuSystem ms;
+  BriefingMenuData bData;
 	OptionsMenuData oData;
 	EventHandlers *handlers;
 	GraphicsDevice *g;

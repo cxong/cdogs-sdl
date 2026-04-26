@@ -29,6 +29,8 @@
 
 #include "game_loop.h"
 
+void DrawObjectiveInfo(const Objective *o, const struct vec2i pos);
+
 GameLoopData *ScreenCampaignIntro(CampaignSetting *c, const GameMode gameMode, const CampaignEntry *entry);
 GameLoopData *ScreenMissionBriefing(
 	CampaignSetting *c, const struct MissionOptions *m);

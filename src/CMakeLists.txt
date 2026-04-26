@@ -34,6 +34,7 @@ set(CDOGS_SDL_SOURCES
 	menu.c
 	menu_utils.c
 	namegen.c
+  briefing_menu.c
 	options_menu.c
 	password.c
 	pause_menu.c
