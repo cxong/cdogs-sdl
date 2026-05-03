@@ -442,6 +442,15 @@
         "TicksPerFrame": 15
       },
       "Range": 60
+    },
+    {
+      "Name": "flame",
+      "Pic": {
+        "Type": "AnimatedRandom",
+        "Sprites": "particles/flame",
+        "TicksPerFrame": 5
+      },
+      "Range": 30
     }
   ]
 }

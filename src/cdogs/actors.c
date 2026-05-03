@@ -132,6 +132,20 @@ void UpdateActorState(TActor *actor, int ticks)
 	if (actor->health > 0)
 	{
 		actor->flamed = MAX(0, actor->flamed - ticks);
+		if (actor->flamed)
+		{
+			AddParticle ap;
+			memset(&ap, 0, sizeof ap);
+			ap.Pos = svec2_add(
+				actor->Pos, svec2(RAND_FLOAT(-8, 8), RAND_FLOAT(-6, 6)));
+			ap.Z = RAND_FLOAT(0, 14);
+			ap.ActorUID = actor->uid;
+			EmitterUpdate(&actor->flameEffect, &ap, ticks);
+		}
+		else
+		{
+			EmitterReset(&actor->flameEffect);
+		}
 		if (actor->poisoned)
 		{
 			if ((actor->poisoned & 7) == 0)
@@ -1926,6 +1940,13 @@ TActor *ActorAdd(NActorAdd aa)
 		EmitterInit(
 			&actor->poisonEffect, poisonBubble, svec2_zero(), -0.05f, 0.05f, 3,
 			3, 0, 0, 10);
+	}
+	const ParticleClass *flame = StrParticleClass(&gParticleClasses, "flame");
+	if (flame)
+	{
+		EmitterInit(
+			&actor->flameEffect, flame, svec2_zero(), -0.1f, 0.1f, 6, 9, 0, 0,
+			5);
 	}
 	GoreEmitterInit(&actor->blood1, "blood1");
 	GoreEmitterInit(&actor->blood2, "blood2");

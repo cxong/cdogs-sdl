@@ -85,9 +85,12 @@ static void HandleGameEvent(
 		LOG(LM_MAP, LL_DEBUG, "set tile %s/%s/%s pos(%d, %d) x%d",
 			e.u.TileSet.ClassName, e.u.TileSet.DoorClassName,
 			e.u.TileSet.DoorClass2Name, pos.x, pos.y, e.u.TileSet.RunLength);
-		const TileClass *tileClass = StrTileClass(gMap.TileClasses, e.u.TileSet.ClassName);
-		const TileClass *doorClass = StrTileClass(gMap.TileClasses, e.u.TileSet.DoorClassName);
-		const TileClass *doorClass2 = StrTileClass(gMap.TileClasses, e.u.TileSet.DoorClass2Name);
+		const TileClass *tileClass =
+			StrTileClass(gMap.TileClasses, e.u.TileSet.ClassName);
+		const TileClass *doorClass =
+			StrTileClass(gMap.TileClasses, e.u.TileSet.DoorClassName);
+		const TileClass *doorClass2 =
+			StrTileClass(gMap.TileClasses, e.u.TileSet.DoorClass2Name);
 		for (int i = 0; i <= e.u.TileSet.RunLength; i++)
 		{
 			Tile *t = MapGetTile(&gMap, pos);
@@ -188,7 +191,7 @@ static void HandleGameEvent(
 		break;
 	case GAME_EVENT_ACTOR_ADD: {
 		ActorAdd(e.u.ActorAdd);
-		const TActor *a = ActorGetByUID(e.u.ActorState.UID);
+		const TActor *a = ActorGetByUID(e.u.ActorAdd.UID);
 		// Spawn sound for player actors
 		if (e.u.ActorAdd.PlayerUID >= 0)
 		{
@@ -283,8 +286,8 @@ static void HandleGameEvent(
 		ActorAddAmmo(a, e.u.AddAmmo.Ammo.Id, e.u.AddAmmo.Ammo.Amount);
 		// Tell the spawner that we took ammo so we can
 		// spawn more (but only if we're the server)
-		if (e.u.AddAmmo.IsRandomSpawned &&
-			gCampaign.Setting.RandomPickups && !gCampaign.IsClient)
+		if (e.u.AddAmmo.IsRandomSpawned && gCampaign.Setting.RandomPickups &&
+			!gCampaign.IsClient)
 		{
 			PowerupSpawnerRemoveOne(
 				CArrayGet(ammoSpawners, e.u.AddAmmo.Ammo.Id));
