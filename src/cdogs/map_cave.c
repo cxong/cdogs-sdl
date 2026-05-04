@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2016-2019, 2021 Cong Xu
+	Copyright (c) 2016-2019, 2021, 2026 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,8 @@ static void PlaceRooms(MapBuilder *mb);
 void MapCaveLoad(MapBuilder *mb)
 {
 	// TODO: multiple tile types
-	MissionSetupTileClasses(mb->Map, &gPicManager, &mb->mission->u.Cave.TileClasses);
+	MissionSetupTileClasses(
+		mb->Map, &gPicManager, &mb->mission->u.Cave.TileClasses);
 
 	// Randomly set a percentage of the tiles as walls
 	for (int i = 0; i < mb->mission->u.Cave.FillPercent * mb->Map->Size.x *
@@ -403,8 +404,13 @@ static void PlaceSquares(MapBuilder *mb, const int squares)
 		{
 			continue;
 		}
+		const Rect2i area = Rect2iNew(v, size);
 		MapFillRect(
-			mb, Rect2iNew(v, size), &mb->mission->u.Cave.TileClasses.Floor, &mb->mission->u.Cave.TileClasses.Floor);
+			mb, area, &mb->mission->u.Cave.TileClasses.Floor,
+			&mb->mission->u.Cave.TileClasses.Floor);
+		RECT_FOREACH(area)
+		MapBuilderSetLeaveFree(mb, _v, true);
+		RECT_FOREACH_END()
 		count++;
 	}
 }
@@ -425,6 +431,10 @@ static bool MapIsAreaClearForCaveSquare(
 	{
 		for (v.x = pos.x; v.x < pos.x + size.x; v.x++)
 		{
+			if (MapBuilderIsLeaveFree(mb, v))
+			{
+				return false;
+			}
 			const TileClass *tile = MapBuilderGetTile(mb, v);
 			switch (tile->Type)
 			{
@@ -464,8 +474,7 @@ static void PlaceRooms(MapBuilder *mb)
 			room.Size.x, room.Size.y);
 	}
 	// Set keys for rooms
-	if (AreKeysAllowed(mb->mode) &&
-		mb->mission->u.Cave.DoorsEnabled)
+	if (AreKeysAllowed(mb->mode) && mb->mission->u.Cave.DoorsEnabled)
 	{
 		while (rooms.size > 0)
 		{
@@ -496,6 +505,10 @@ static bool MapIsAreaClearForCaveRoom(const MapBuilder *mb, const Rect2i room)
 	bool isOverlapRoom = false;
 	RECT_FOREACH(room)
 	const TileClass *tile = MapBuilderGetTile(mb, _v);
+	if (MapBuilderIsLeaveFree(mb, _v))
+	{
+		return false;
+	}
 	if (tile->Type == TILE_CLASS_FLOOR && !tile->IsRoom)
 	{
 		hasFloor = true;
@@ -678,5 +691,6 @@ static void MapBuildRoom(MapBuilder *mb, const Rect2i room)
 		&mb->mission->u.Cave.TileClasses.Room, true);
 
 	MapMakeRoomWalls(
-		mb, mb->mission->u.Cave.Rooms, &mb->mission->u.Cave.TileClasses.Wall, room);
+		mb, mb->mission->u.Cave.Rooms, &mb->mission->u.Cave.TileClasses.Wall,
+		room);
 }

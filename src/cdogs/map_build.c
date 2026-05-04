@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2014, 2017-2024 Cong Xu
+	Copyright (c) 2013-2014, 2017-2024, 2026 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -827,7 +827,7 @@ static bool MapIsValidStartForWall(
 		{
 			const TileClass *t = MapBuilderGetTile(mb, d);
 			if (t == NULL || t->Type != TILE_CLASS_FLOOR ||
-				t->IsRoom != isRoom)
+				t->IsRoom != isRoom || MapBuilderIsLeaveFree(mb, d))
 			{
 				return false;
 			}
@@ -1048,7 +1048,8 @@ static bool MapGrowWallCheck(
 	if (!MapIsTileIn(mb->Map, v))
 		return true;
 	const TileClass *t = MapBuilderGetTile(mb, v);
-	if (t == NULL || t->Type != TILE_CLASS_FLOOR || t->IsRoom != isRoom)
+	if (t == NULL || t->Type != TILE_CLASS_FLOOR || t->IsRoom != isRoom ||
+		MapBuilderIsLeaveFree(mb, v))
 	{
 		return false;
 	}
@@ -1226,7 +1227,8 @@ bool MapBuilderIsAreaFunc(
 
 static bool IsClear(const MapBuilder *mb, const struct vec2i pos)
 {
-	return MapBuilderGetTile(mb, pos)->Type == TILE_CLASS_FLOOR;
+	const TileClass *tile = MapBuilderGetTile(mb, pos);
+	return tile->Type == TILE_CLASS_FLOOR && !MapBuilderIsLeaveFree(mb, pos);
 }
 bool MapIsAreaClear(
 	const MapBuilder *mb, const struct vec2i pos, const struct vec2i size)
@@ -1242,7 +1244,8 @@ static bool AreaHasRoomAndFloor(const MapBuilder *mb, const struct vec2i pos)
 	bool hasFloor = false;
 	RECT_FOREACH(Rect2iNew(svec2i_subtract(pos, svec2i_one()), svec2i(3, 3)))
 	const TileClass *t = MapBuilderGetTile(mb, _v);
-	if (t == NULL || t->Type != TILE_CLASS_FLOOR)
+	if (t == NULL || t->Type != TILE_CLASS_FLOOR ||
+		MapBuilderIsLeaveFree(mb, _v))
 		continue;
 	if (t->IsRoom)
 		hasRoom = true;
@@ -1254,7 +1257,7 @@ static bool AreaHasRoomAndFloor(const MapBuilder *mb, const struct vec2i pos)
 static bool IsClearOrRoom(const MapBuilder *mb, const struct vec2i pos)
 {
 	const TileClass *tile = MapBuilderGetTile(mb, pos);
-	if (tile->Type == TILE_CLASS_FLOOR)
+	if (tile->Type == TILE_CLASS_FLOOR && !MapBuilderIsLeaveFree(mb, pos))
 		return true;
 	// Check if this wall is part of a room
 	if (tile->Type != TILE_CLASS_WALL)
@@ -1269,7 +1272,8 @@ bool MapIsAreaClearOrRoom(
 static bool IsClearOrWall(const MapBuilder *mb, const struct vec2i pos)
 {
 	const TileClass *tile = MapBuilderGetTile(mb, pos);
-	if (tile->Type == TILE_CLASS_FLOOR && !tile->IsRoom)
+	if (tile->Type == TILE_CLASS_FLOOR && !tile->IsRoom &&
+		!MapBuilderIsLeaveFree(mb, pos))
 		return true;
 	// Check if this wall is part of a room
 	if (tile->Type != TILE_CLASS_WALL)

@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2014, 2018-2019, 2021 Cong Xu
+	Copyright (c) 2013-2014, 2018-2019, 2021, 2026 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -80,11 +80,13 @@ void MapClassicLoad(MapBuilder *mb)
 	// create inaccessible areas on the map.
 
 	// TODO: multiple tile types
-	MissionSetupTileClasses(mb->Map, &gPicManager, &mb->mission->u.Classic.TileClasses);
+	MissionSetupTileClasses(
+		mb->Map, &gPicManager, &mb->mission->u.Classic.TileClasses);
 
 	MapFillRect(
 		mb, Rect2iNew(svec2i_zero(), mb->mission->Size),
-				&mb->mission->u.Classic.TileClasses.Wall, &mb->mission->u.Classic.TileClasses.Floor);
+		&mb->mission->u.Classic.TileClasses.Wall,
+		&mb->mission->u.Classic.TileClasses.Floor);
 
 	const int pad = MAX(mb->mission->u.Classic.CorridorWidth, 1);
 
@@ -118,9 +120,8 @@ void MapClassicLoad(MapBuilder *mb)
 			continue;
 		}
 		MapBuildRoom(
-			mb, v, size, doorMin, doorMax,
-			AreKeysAllowed(mb->mode), isOverlapRoom,
-			overlapAccess);
+			mb, v, size, doorMin, doorMax, AreKeysAllowed(mb->mode),
+			isOverlapRoom, overlapAccess);
 		count++;
 	}
 
@@ -157,8 +158,13 @@ static int MapTryBuildSquare(MapBuilder *mb)
 	struct vec2i size = svec2i(rand() % 9 + 8, rand() % 9 + 8);
 	if (MapIsAreaClear(mb, v, size))
 	{
+		const Rect2i area = Rect2iNew(v, size);
 		MapFillRect(
-			mb, Rect2iNew(v, size), &mb->mission->u.Cave.TileClasses.Floor, &mb->mission->u.Cave.TileClasses.Floor);
+			mb, area, &mb->mission->u.Classic.TileClasses.Floor,
+			&mb->mission->u.Classic.TileClasses.Floor);
+		RECT_FOREACH(area)
+		MapBuilderSetLeaveFree(mb, _v, true);
+		RECT_FOREACH_END()
 		return 1;
 	}
 	return 0;
@@ -292,12 +298,11 @@ static void MapBuildRoom(
 			accessMask = GenerateAccessMask(&mb->Map->keyAccessCount);
 		}
 	}
-	
+
 	const Rect2i r = Rect2iNew(pos, size);
 	MapPlaceDoors(
-		mb, r, mb->mission->u.Classic.Doors.Enabled, doors,
-		doorMin, doorMax, accessMask,
-		mb->mission->u.Classic.Doors.RandomPos,
+		mb, r, mb->mission->u.Classic.Doors.Enabled, doors, doorMin, doorMax,
+		accessMask, mb->mission->u.Classic.Doors.RandomPos,
 		&mb->mission->u.Classic.TileClasses.Door,
 		&mb->mission->u.Classic.TileClasses.Floor);
 
@@ -362,8 +367,8 @@ static bool MapTryBuildPillar(MapBuilder *mb, const int pad)
 	if (isClear)
 	{
 		MapFillRect(
-			mb, Rect2iNew(pos, size),
-			&mb->mission->u.Classic.TileClasses.Wall, &gTileNothing);
+			mb, Rect2iNew(pos, size), &mb->mission->u.Classic.TileClasses.Wall,
+			&gTileNothing);
 		return true;
 	}
 	return false;
@@ -387,8 +392,7 @@ static void MapFindAvailableDoors(
 		doors[0] = false;
 	}
 	else if (
-		FindWallRun(
-			mb, svec2i(pos.x, pos.y + 1), svec2i(0, 1), size.y - 2) <
+		FindWallRun(mb, svec2i(pos.x, pos.y + 1), svec2i(0, 1), size.y - 2) <
 		doorMin)
 	{
 		doors[0] = false;
@@ -411,8 +415,7 @@ static void MapFindAvailableDoors(
 		doors[2] = false;
 	}
 	else if (
-		FindWallRun(
-			mb, svec2i(pos.x + 1, pos.y), svec2i(1, 0), size.x - 2) <
+		FindWallRun(mb, svec2i(pos.x + 1, pos.y), svec2i(1, 0), size.x - 2) <
 		doorMin)
 	{
 		doors[2] = false;
