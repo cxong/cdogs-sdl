@@ -187,7 +187,7 @@ static ActorPics GetUnorderedPics(
 	const color_t shadowMask, const color_t *mask, const CharColors *colors,
 	const int deadPic);
 static void UpdatePilotHeadPic(
-	ActorPics *pics, const TActor *a, const direction_e dir);
+	ActorPics *pics, const TActor *a, const direction_e dir, const int frame);
 static void ReorderPics(
 	ActorPics *pics, const Character *c, const direction_e dir,
 	const WeaponClass *gun, const gunstate_e barrelStates[MAX_BARRELS]);
@@ -263,12 +263,12 @@ ActorPics GetCharacterPicsFromActor(const TActor *a)
 	ActorPics pics = GetUnorderedPics(
 		c, dir, legDir, a->anim.Type, frame, gun->Gun, gunStates,
 		ActorIsGrimacing(a), shadowMask, maskP, colors, a->dead);
-	UpdatePilotHeadPic(&pics, a, dir);
+	UpdatePilotHeadPic(&pics, a, dir, frame);
 	ReorderPics(&pics, c, dir, gun->Gun, gunStates);
 	return pics;
 }
 static void UpdatePilotHeadPic(
-	ActorPics *pics, const TActor *a, const direction_e dir)
+	ActorPics *pics, const TActor *a, const direction_e dir, const int frame)
 {
 	if (a->pilotUID == a->uid)
 	{
@@ -276,6 +276,8 @@ static void UpdatePilotHeadPic(
 	}
 	// If this is a vehicle, take the head/hair pic from the pilot
 	memset(&pics->HeadParts, 0, sizeof pics->HeadParts);
+	memset(&pics->HeadPartOffsets, 0, sizeof pics->HeadPartOffsets);
+	pics->Head = NULL;
 	const TActor *pilot = ActorGetByUID(a->pilotUID);
 	if (pilot == NULL)
 	{
@@ -283,14 +285,28 @@ static void UpdatePilotHeadPic(
 	}
 	const Character *c = ActorGetCharacter(pilot);
 	const bool grimace = ActorIsGrimacing(a);
-	pics->Head = GetHeadPic(c->Class, dir, grimace, &c->Colors);
+	direction_e headDir = dir;
+	if (a->anim.Type == ACTORANIMATION_IDLE)
+	{
+		if (frame == IDLEHEAD_LEFT)
+			headDir = (dir + 7) % 8;
+		else if (frame == IDLEHEAD_RIGHT)
+			headDir = (dir + 1) % 8;
+	}
+	pics->Head = GetHeadPic(c->Class, headDir, grimace, &c->Colors);
+	pics->HeadOffset = GetActorDrawOffset(
+		pics->Head, BODY_PART_HEAD, c->Class->Sprites, a->anim.Type, frame,
+		dir, GUNSTATE_READY);
 
 	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
 	{
 		if (c->Class->HasHeadParts[hp])
 		{
-			pics->HeadParts[hp] =
-				GetHeadPartPic(c->HeadParts[hp], hp, dir, grimace, &c->Colors);
+			pics->HeadParts[hp] = GetHeadPartPic(
+				c->HeadParts[hp], hp, headDir, grimace, &c->Colors);
+			pics->HeadPartOffsets[hp] = GetActorDrawOffset(
+				pics->HeadParts[hp], BODY_PART_HEAD, c->Class->Sprites,
+				a->anim.Type, frame, dir, GUNSTATE_READY);
 		}
 	}
 }
