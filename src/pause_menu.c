@@ -46,11 +46,11 @@ void PauseMenuInit(
   const struct MissionOptions *m = ((RunGameData*)gfxChangeData)->m;
   if (m->missionData->Description 
       && strlen(m->missionData->Description) > 0) {
-    pm->bData.m = m;
     pm->bData.g = g;
     pm->bData.gfxChangeCallback = gfxChangeCallback;
     pm->bData.gfxChangeData = gfxChangeData;
-    MenuAddSubmenu(pm->ms.root, MenuCreateBriefing("Briefing...", &pm->bData));
+
+    MenuAddSubmenu(pm->ms.root, MenuCreateBriefing("Briefing...", &pm->bData, m));
   }
 	pm->oData.config = &gConfig;
 	pm->oData.gfxChangeCallback = gfxChangeCallback;

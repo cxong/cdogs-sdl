@@ -8,17 +8,11 @@
 
 typedef struct
 {
-  const struct MissionOptions *m;
+  MissionBriefingData *bData;
   GraphicsDevice *g;
 	void (*gfxChangeCallback)(void *, const bool);
 	void *gfxChangeData;
-	char *Title;
-	FontOpts TitleOpts;
-	char *Description;
-	struct vec2i DescriptionPos;
-	struct vec2i ObjectiveDescPos;
-	struct vec2i ObjectiveInfoPos;
-	int ObjectiveHeight;
-} BriefingMenuData;
+} MissionBriefingMenuData;
 
-menu_t *MenuCreateBriefing(const char *name, BriefingMenuData *data);
+menu_t *MenuCreateBriefing(const char *name, MissionBriefingMenuData *data,
+    const struct MissionOptions *m);

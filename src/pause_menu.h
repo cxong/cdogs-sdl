@@ -34,7 +34,7 @@
 typedef struct
 {
 	MenuSystem ms;
-  BriefingMenuData bData;
+  MissionBriefingMenuData bData;
 	OptionsMenuData oData;
 	EventHandlers *handlers;
 	GraphicsDevice *g;

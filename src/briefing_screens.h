@@ -26,8 +26,22 @@
 #pragma once
 
 #include <cdogs/campaigns.h>
+#include <cdogs/events.h>
+#include <cdogs/font.h>
 
 #include "game_loop.h"
+
+typedef struct
+{
+	char *Title;
+	FontOpts TitleOpts;
+	char *Description;
+	struct vec2i DescriptionPos;
+	struct vec2i ObjectiveDescPos;
+	struct vec2i ObjectiveInfoPos;
+	int ObjectiveHeight;
+	const struct MissionOptions *MissionOptions;
+} MissionBriefingData;
 
 void DrawObjectiveInfo(const Objective *o, const struct vec2i pos);
 
@@ -38,3 +52,11 @@ GameLoopData *ScreenMissionBriefing(
 // Returns true if the game is to continue
 GameLoopData *ScreenMissionSummary(
 	const Campaign *c, struct MissionOptions *m, const bool completed);
+
+void MissionBriefingTitle(MissionBriefingData *mData,
+    const struct MissionOptions *m, const int y);
+void MissionBriefingDescription(MissionBriefingData *mData,
+    const struct MissionOptions *m, 
+    const int w, const int h, const int y);
+
+void MissionBriefingDrawData(const MissionBriefingData *mData);

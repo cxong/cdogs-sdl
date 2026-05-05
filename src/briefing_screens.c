@@ -27,9 +27,7 @@
 
 #include <cdogs/draw/draw.h>
 #include <cdogs/draw/draw_actor.h>
-#include <cdogs/events.h>
 #include <cdogs/files.h>
-#include <cdogs/font.h>
 #include <cdogs/grafx_bg.h>
 #include <cdogs/log.h>
 #include <cdogs/music.h>
@@ -172,21 +170,14 @@ static void CampaignIntroDraw(GameLoopData *data)
 
 typedef struct
 {
-	char *Title;
-	FontOpts TitleOpts;
+  MissionBriefingData *bData;
 	char Password[32];
 	FontOpts PasswordOpts;
 	int TypewriterCount;
-	char *Description;
 	char *TypewriterBuf;
-	struct vec2i DescriptionPos;
-	struct vec2i ObjectiveDescPos;
-	struct vec2i ObjectiveInfoPos;
-	int ObjectiveHeight;
 	CampaignSetting *C;
-	const struct MissionOptions *MissionOptions;
 	EventWaitResult waitResult;
-} MissionBriefingData;
+} MissionBriefingScreenData;
 static void MissionBriefingTerminate(GameLoopData *data);
 static void MissionBriefingOnEnter(GameLoopData *data);
 static void MissionBriefingOnExit(GameLoopData *data);
@@ -199,46 +190,27 @@ GameLoopData *ScreenMissionBriefing(
 	const int w = gGraphicsDevice.cachedConfig.Res.x;
 	const int h = gGraphicsDevice.cachedConfig.Res.y;
 	const int y = h / 4;
-	MissionBriefingData *mData;
+	MissionBriefingScreenData *mData;
 	CCALLOC(mData, sizeof *mData);
+	CCALLOC(mData->bData, sizeof *(mData->bData));
 	mData->waitResult = EVENT_WAIT_CONTINUE;
 
 	// Title
 	if (m->missionData->Title)
 	{
-		CMALLOC(mData->Title, strlen(m->missionData->Title) + 32);
-		sprintf(
-			mData->Title, "Mission %d: %s", m->index + 1,
-			m->missionData->Title);
-		mData->TitleOpts = FontOptsNew();
-		mData->TitleOpts.HAlign = ALIGN_CENTER;
-		mData->TitleOpts.Area = gGraphicsDevice.cachedConfig.Res;
-		mData->TitleOpts.Pad.y = y - 25;
+    MissionBriefingTitle(mData->bData, m, y);
 	}
 
 	// Description
 	if (m->missionData->Description)
 	{
-		// Split the description, and prepare it for typewriter effect
-		// allow some slack for newlines
-		CMALLOC(
-			mData->Description, strlen(m->missionData->Description) * 2 + 1);
-		CCALLOC(
-			mData->TypewriterBuf, strlen(m->missionData->Description) * 2 + 1);
-		// Pad about 1/6th of the screen width total (1/12th left and right)
-		FontSplitLines(
-			m->missionData->Description, mData->Description, w * 5 / 6);
-		mData->DescriptionPos = svec2i(w / 12, y);
-
-		// Objectives
-		mData->ObjectiveDescPos =
-			svec2i(w / 6, y + FontStrH(mData->Description) + h / 10);
-		mData->ObjectiveInfoPos =
-			svec2i(w - (w / 6), mData->ObjectiveDescPos.y + FontH());
-		mData->ObjectiveHeight = h / 12;
+    // Split the description, and prepare it for typewriter effect
+    CCALLOC(
+      mData->TypewriterBuf, strlen(m->missionData->Description) * 2 + 1);
+    MissionBriefingDescription(mData->bData, m, w, h, y);
 	}
 	mData->C = c;
-	mData->MissionOptions = m;
+	mData->bData->MissionOptions = m;
 
 	return GameLoopDataNew(
 		mData, MissionBriefingTerminate, MissionBriefingOnEnter,
@@ -247,17 +219,18 @@ GameLoopData *ScreenMissionBriefing(
 }
 static void MissionBriefingTerminate(GameLoopData *data)
 {
-	MissionBriefingData *mData = data->Data;
+	MissionBriefingScreenData *mData = data->Data;
 
-	CFREE(mData->Title);
-	CFREE(mData->Description);
+	CFREE(mData->bData->Title);
+	CFREE(mData->bData->Description);
+	CFREE(mData->bData);
 	CFREE(mData->TypewriterBuf);
 	CFREE(mData);
 }
 static void MissionBriefingOnEnter(GameLoopData *data)
 {
-	MissionBriefingData *mData = data->Data;
-	if (IsMissionBriefingNeeded(gCampaign.Entry.Mode, mData->Description))
+	MissionBriefingScreenData *mData = data->Data;
+	if (IsMissionBriefingNeeded(gCampaign.Entry.Mode, mData->bData->Description))
 	{
 		MusicPlayFromChunk(
 			&gSoundDevice.music, MUSIC_BRIEFING,
@@ -266,7 +239,7 @@ static void MissionBriefingOnEnter(GameLoopData *data)
 }
 static void MissionBriefingOnExit(GameLoopData *data)
 {
-	const MissionBriefingData *mData = data->Data;
+	const MissionBriefingScreenData *mData = data->Data;
 
 	if (mData->waitResult != EVENT_WAIT_OK)
 	{
@@ -275,12 +248,12 @@ static void MissionBriefingOnExit(GameLoopData *data)
 }
 static void MissionBriefingInput(GameLoopData *data)
 {
-	MissionBriefingData *mData = data->Data;
+	MissionBriefingScreenData *mData = data->Data;
 
 	int cmds[MAX_LOCAL_PLAYERS];
 	memset(cmds, 0, sizeof cmds);
 	GetPlayerCmds(&gEventHandlers, &cmds);
-	if (mData->Description)
+	if (mData->bData->Description)
 	{
 		// Check for player input; if any then skip to the end of the briefing
 		for (int i = 0; i < MAX_LOCAL_PLAYERS; i++)
@@ -288,10 +261,10 @@ static void MissionBriefingInput(GameLoopData *data)
 			if (AnyButton(cmds[i]))
 			{
 				// If the typewriter is still going, skip to end
-				if (mData->TypewriterCount <= (int)strlen(mData->Description))
+				if (mData->TypewriterCount <= (int)strlen(mData->bData->Description))
 				{
-					strcpy(mData->TypewriterBuf, mData->Description);
-					mData->TypewriterCount = (int)strlen(mData->Description);
+					strcpy(mData->TypewriterBuf, mData->bData->Description);
+					mData->TypewriterCount = (int)strlen(mData->bData->Description);
 					return;
 				}
 				// Otherwise, exit out of loop
@@ -309,9 +282,9 @@ static void MissionBriefingInput(GameLoopData *data)
 }
 static GameLoopResult MissionBriefingUpdate(GameLoopData *data, LoopRunner *l)
 {
-	MissionBriefingData *mData = data->Data;
+	MissionBriefingScreenData *mData = data->Data;
 
-	if (!IsMissionBriefingNeeded(gCampaign.Entry.Mode, mData->Description))
+	if (!IsMissionBriefingNeeded(gCampaign.Entry.Mode, mData->bData->Description))
 	{
 		mData->waitResult = EVENT_WAIT_OK;
 		goto bail;
@@ -324,10 +297,10 @@ static GameLoopResult MissionBriefingUpdate(GameLoopData *data, LoopRunner *l)
 	}
 
 	// Update the typewriter effect
-	if (mData->TypewriterCount <= (int)strlen(mData->Description))
+	if (mData->TypewriterCount <= (int)strlen(mData->bData->Description))
 	{
 		mData->TypewriterBuf[mData->TypewriterCount] =
-			mData->Description[mData->TypewriterCount];
+			mData->bData->Description[mData->TypewriterCount];
 		mData->TypewriterCount++;
 		return UPDATE_RESULT_DRAW;
 	}
@@ -354,16 +327,52 @@ bail:
 }
 static void MissionBriefingDraw(GameLoopData *data)
 {
-	const MissionBriefingData *mData = data->Data;
+	const MissionBriefingScreenData *mData = data->Data;
 
 	BlitClearBuf(&gGraphicsDevice);
 
-	// Mission title
-	FontStrOpt(mData->Title, svec2i_zero(), mData->TitleOpts);
+	// Display description with typewriter effect
+	FontStr(mData->TypewriterBuf, mData->bData->DescriptionPos);
 	// Display password
 	FontStrOpt(mData->Password, svec2i_zero(), mData->PasswordOpts);
-	// Display description with typewriter effect
-	FontStr(mData->TypewriterBuf, mData->DescriptionPos);
+  MissionBriefingDrawData(mData->bData);
+  
+	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
+}
+
+void MissionBriefingTitle(MissionBriefingData *mData,
+    const struct MissionOptions *m, const int y) {
+  CMALLOC(mData->Title, strlen(m->missionData->Title) + 32);
+  sprintf(
+    mData->Title, "Mission %d: %s", m->index + 1,
+    m->missionData->Title);
+  mData->TitleOpts = FontOptsNew();
+  mData->TitleOpts.HAlign = ALIGN_CENTER;
+  mData->TitleOpts.Area = gGraphicsDevice.cachedConfig.Res;
+  mData->TitleOpts.Pad.y = y - 25;
+}
+void MissionBriefingDescription(MissionBriefingData *mData,
+    const struct MissionOptions *m, 
+    const int w, const int h, const int y) {
+  // allow some slack for newlines
+  CMALLOC(
+    mData->Description, strlen(m->missionData->Description) * 2 + 1);
+  // Pad about 1/6th of the screen width total (1/12th left and right)
+  FontSplitLines(
+    m->missionData->Description, mData->Description, w * 5 / 6);
+  mData->DescriptionPos = svec2i(w / 12, y);
+
+  // Objectives
+  mData->ObjectiveDescPos =
+    svec2i(w / 6, y + FontStrH(mData->Description) + h / 10);
+  mData->ObjectiveInfoPos =
+    svec2i(w - (w / 6), mData->ObjectiveDescPos.y + FontH());
+  mData->ObjectiveHeight = h / 12;
+}
+
+void MissionBriefingDrawData(const MissionBriefingData *mData) {
+	// Mission title
+	FontStrOpt(mData->Title, svec2i_zero(), mData->TitleOpts);
 	// Display objectives
 	CA_FOREACH(
 		const Objective, o, mData->MissionOptions->missionData->Objectives)
@@ -379,8 +388,6 @@ static void MissionBriefingDraw(GameLoopData *data)
 	offset.x = -16 * (_ca_index & 1);
 	DrawObjectiveInfo(o, svec2i_add(mData->ObjectiveInfoPos, offset));
 	CA_FOREACH_END()
-
-	BlitUpdateFromBuf(&gGraphicsDevice, gGraphicsDevice.screen);
 }
 
 #define PERFECT_BONUS 500
