@@ -50,8 +50,7 @@ void PauseMenuInit(
     pm->bData.g = g;
     pm->bData.gfxChangeCallback = gfxChangeCallback;
     pm->bData.gfxChangeData = gfxChangeData;
-    MenuAddSubmenu(pm->ms.root, MenuCreateBriefing("Briefing", &pm->bData));
-    MenuAddSubmenu(pm->ms.root, MenuCreateSeparator(""));
+    MenuAddSubmenu(pm->ms.root, MenuCreateBriefing("Briefing...", &pm->bData));
   }
 	pm->oData.config = &gConfig;
 	pm->oData.gfxChangeCallback = gfxChangeCallback;
