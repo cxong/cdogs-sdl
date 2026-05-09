@@ -288,7 +288,7 @@ void MapBuilderSetTile(MapBuilder *mb, struct vec2i pos, const TileClass *t)
 
 static bool IsTileOKStrict(
 	const MapObject *obj, const Tile *tile, const Tile *tileAbove,
-	const Tile *tileBelow, const bool isLeaveFree, const int numWallsAdjacent,
+	const Tile *tileBelow, const int numWallsAdjacent,
 	const int numWallsAround);
 static int MapGetNumWallsAdjacentTile(const Map *map, const struct vec2i v);
 static int MapGetNumWallsAroundTile(const Map *map, const struct vec2i v);
@@ -308,8 +308,7 @@ bool MapTryPlaceOneObject(
 	const Tile *tBelow = MapGetTile(mb->Map, svec2i(v.x, v.y + 1));
 	if (isStrictMode &&
 		!IsTileOKStrict(
-			mo, t, tAbove, tBelow, MapBuilderIsLeaveFree(mb, v),
-			MapGetNumWallsAdjacentTile(mb->Map, v),
+			mo, t, tAbove, tBelow, MapGetNumWallsAdjacentTile(mb->Map, v),
 			MapGetNumWallsAroundTile(mb->Map, v)))
 	{
 		return false;
@@ -336,14 +335,10 @@ bool MapTryPlaceOneObject(
 }
 static bool IsTileOKStrict(
 	const MapObject *obj, const Tile *tile, const Tile *tileAbove,
-	const Tile *tileBelow, const bool isLeaveFree, const int numWallsAdjacent,
+	const Tile *tileBelow, const int numWallsAdjacent,
 	const int numWallsAround)
 {
 	if (!MapObjectIsTileOK(obj, tile, tileAbove))
-	{
-		return false;
-	}
-	if (isLeaveFree)
 	{
 		return false;
 	}
