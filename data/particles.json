@@ -451,6 +451,15 @@
         "TicksPerFrame": 5
       },
       "Range": 30
+    },
+    {
+      "Name": "ice_sparkle",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "particles/ice_sparkle",
+        "TicksPerFrame": 15
+      },
+      "Range": 60
     }
   ]
 }

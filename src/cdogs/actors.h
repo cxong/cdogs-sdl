@@ -127,10 +127,10 @@ typedef struct Actor
 	// -1 if human character (get from player data), otherwise index into
 	// CharacterStore OtherChars
 	int charId;
-	int PlayerUID;	// -1 unless a human player
-	int uid;		// unique ID across all actors
-	int pilotUID;	// the actor that controls this
-					// (same as uid for normal actors)
+	int PlayerUID; // -1 unless a human player
+	int uid;	   // unique ID across all actors
+	int pilotUID;  // the actor that controls this
+				  // (same as uid for normal actors)
 	int vehicleUID; // -1 unless piloting a vehicle
 	Weapon guns[MAX_WEAPONS];
 	CArray ammo; // of int
@@ -168,6 +168,7 @@ typedef struct Actor
 	Emitter confusionEffect;
 	Emitter poisonEffect;
 	Emitter flameEffect;
+	Emitter iceEffect;
 
 	// Gore emitters
 	Emitter blood1;

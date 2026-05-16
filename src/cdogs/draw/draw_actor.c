@@ -218,7 +218,10 @@ ActorPics GetCharacterPicsFromActor(const TActor *a)
 	}
 	else if (a->petrified)
 	{
-		mask = colorGray;
+		mask.r = 128;
+		mask.g = 255;
+		mask.b = 255;
+		mask.a = 255;
 		hasStatus = true;
 	}
 	else if (a->confused)
