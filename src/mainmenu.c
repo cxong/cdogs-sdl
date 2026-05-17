@@ -326,7 +326,7 @@ static menu_t *MenuCreateStart(
 		GetDataFilePath(buf, cs->Campaign.Path);
 		if (CampaignSaveIsValid(cs) && IsCampaignOK(buf, &titleBuf, NULL))
 		{
-			sprintf(buf, "> %s", titleBuf);
+			snprintf(buf, sizeof buf, "> %s", titleBuf);
 			MenuAddSubmenu(menu, MenuCreateSeparator(buf));
 			CFREE(titleBuf);
 		}
@@ -419,7 +419,7 @@ static void CampaignsDisplayFilename(
 	}
 	const StartGameModeData *mData = subMenu->customPostInputData;
 	char s[CDOGS_FILENAME_MAX];
-	sprintf(s, "( %s )", mData->Entry->Filename);
+	snprintf(s, sizeof s, "( %s )", mData->Entry->Filename);
 
 	FontOpts opts = FontOptsNew();
 	opts.HAlign = ALIGN_CENTER;
@@ -437,7 +437,7 @@ static menu_t *MenuCreateCampaigns(
 	menu->u.normal.align = MENU_ALIGN_CENTER;
 	CA_FOREACH(CampaignList, subList, list->subFolders)
 	char folderName[CDOGS_FILENAME_MAX];
-	sprintf(folderName, "%s/", subList->Name);
+	snprintf(folderName, sizeof folderName, "%s/", subList->Name);
 	MenuAddSubmenu(
 		menu, MenuCreateCampaigns(folderName, title, mainMenu, subList, mode));
 	CA_FOREACH_END()
@@ -517,8 +517,8 @@ static void CreateLANServerMenuItems(menu_t *menu, void *data)
 	};
 	// e.g. "Bob's Server (123.45.67.89:12345) - Campaign: Ogre Rampage #4, p:
 	// 4/16 350ms"
-	sprintf(
-		buf, "%s (%s:%u) - %s: %s (# %d), p: %d/%d %dms",
+	snprintf(
+		buf, sizeof buf, "%s (%s:%u) - %s: %s (# %d), p: %d/%d %dms",
 		si->ServerInfo.Hostname, ipbuf, si->Addr.port,
 		GameModeStr(si->ServerInfo.GameMode), si->ServerInfo.CampaignName,
 		si->ServerInfo.MissionNumber, si->ServerInfo.NumPlayers,
