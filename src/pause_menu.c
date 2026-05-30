@@ -43,15 +43,16 @@ void PauseMenuInit(
 	// this item will get auto selected when pressing escape
 	MenuAddSubmenu(pm->ms.root, MenuCreate("Resume", MENU_TYPE_QUIT));
 	MenuAddSubmenu(pm->ms.root, MenuCreateSeparator(""));
-  const struct MissionOptions *m = ((RunGameData*)gfxChangeData)->m;
-  if (m->missionData->Description 
-      && strlen(m->missionData->Description) > 0) {
-    pm->bData.g = g;
-    pm->bData.gfxChangeCallback = gfxChangeCallback;
-    pm->bData.gfxChangeData = gfxChangeData;
+	const struct MissionOptions *m = ((RunGameData *)gfxChangeData)->m;
+	if (m->missionData->Description && strlen(m->missionData->Description) > 0)
+	{
+		pm->bData.g = g;
+		pm->bData.gfxChangeCallback = gfxChangeCallback;
+		pm->bData.gfxChangeData = gfxChangeData;
 
-    MenuAddSubmenu(pm->ms.root, MenuCreateBriefing("Briefing...", &pm->bData, m));
-  }
+		MenuAddSubmenu(
+			pm->ms.root, MenuCreateBriefing("Briefing...", &pm->bData, m));
+	}
 	pm->oData.config = &gConfig;
 	pm->oData.gfxChangeCallback = gfxChangeCallback;
 	pm->oData.gfxChangeData = gfxChangeData;
@@ -131,7 +132,8 @@ bool PauseMenuUpdate(
 	if (pm->pausingDevice != INPUT_DEVICE_UNSET)
 	{
 		const GameLoopResult result = MenuUpdate(&pm->ms);
-		if (result == UPDATE_RESULT_OK || pm->ms.current->type == MENU_TYPE_QUIT)
+		if (result == UPDATE_RESULT_OK ||
+			pm->ms.current->type == MENU_TYPE_QUIT)
 		{
 			// Unpause
 			pm->pausingDevice = INPUT_DEVICE_UNSET;
@@ -187,19 +189,16 @@ void PauseMenuDraw(const PauseMenu *pm)
 		struct vec2i pos = svec2i_scale_divide(
 			svec2i_subtract(
 				pm->g->cachedConfig.Res,
-				FontStrSize(ARROW_LEFT
-							"Paused" ARROW_RIGHT
-							"\nFoobar\nPlease reconnect controller")),
+				FontStrSize(
+					ARROW_LEFT "Paused" ARROW_RIGHT
+							   "\nFoobar\nPlease reconnect controller")),
 			2);
 		const int x = pos.x;
 		FontStr(ARROW_LEFT "Paused" ARROW_RIGHT, pos);
 
 		pos.y += FontH();
 		pos = FontStr("Press ", pos);
-		char buf[256];
-		color_t c = colorWhite;
-		InputGetButtonNameColor(pm->pausingDevice, 0, CMD_ESC, buf, &c);
-		pos = FontStrMask(buf, pos, c);
+		pos = DrawButton(INPUT_DEVICE_KEYBOARD, 0, CMD_ESC, pos);
 		FontStr(" to quit", pos);
 
 		pos.x = x;

@@ -1,28 +1,28 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (c) 2013-2019 Cong Xu
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (c) 2013-2019 Cong Xu
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #include "camera.h"
 
@@ -34,7 +34,6 @@
 #include "log.h"
 #include "los.h"
 #include "player.h"
-
 
 #define PAN_SPEED 4
 
@@ -73,13 +72,17 @@ void CameraInput(Camera *camera, const int cmd, const int lastCmd)
 	{
 		camera->spectateMode = SPECTATE_FREE;
 		const int pan = PAN_SPEED;
-		if (Left(cmd))			camera->lastPosition.x -= pan;
-		else if (Right(cmd))	camera->lastPosition.x += pan;
-		if (Up(cmd))			camera->lastPosition.y -= pan;
-		else if (Down(cmd))		camera->lastPosition.y += pan;
+		if (Left(cmd))
+			camera->lastPosition.x -= pan;
+		else if (Right(cmd))
+			camera->lastPosition.x += pan;
+		if (Up(cmd))
+			camera->lastPosition.y -= pan;
+		else if (Down(cmd))
+			camera->lastPosition.y += pan;
 	}
-	else if ((AnyButton(cmd) && !AnyButton(lastCmd)) ||
-		camera->FollowNextPlayer)
+	else if (
+		(AnyButton(cmd) && !AnyButton(lastCmd)) || camera->FollowNextPlayer)
 	{
 		// Can't follow if there are no players
 		if (GetNumPlayers(PLAYER_ALIVE_OR_DYING, false, false) == 0)
@@ -90,11 +93,11 @@ void CameraInput(Camera *camera, const int cmd, const int lastCmd)
 		// Find index of player
 		int playerIndex = -1;
 		CA_FOREACH(const PlayerData, p, gPlayerDatas)
-			if (p->UID == camera->FollowActorUID)
-			{
-				playerIndex = _ca_index;
-				break;
-			}
+		if (p->UID == camera->FollowActorUID)
+		{
+			playerIndex = _ca_index;
+			break;
+		}
 		CA_FOREACH_END()
 		// Get the next player by index that has an actor in the game
 		const int d = Button1(cmd) ? 1 : -1;
@@ -102,7 +105,8 @@ void CameraInput(Camera *camera, const int cmd, const int lastCmd)
 		{
 			i = CLAMP_OPPOSITE(i, 0, (int)gPlayerDatas.size - 1);
 			// Check if clamping made us hit the termination condition
-			if (i == playerIndex) break;
+			if (i == playerIndex)
+				break;
 			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
 			if (IsPlayerAliveOrDying(p))
 			{
@@ -130,12 +134,12 @@ void CameraUpdate(Camera *camera, const int ticks, const int ms)
 			camera->spectateMode = SPECTATE_FREE;
 			// If there are other players alive, follow them
 			CA_FOREACH(const PlayerData, p, gPlayerDatas)
-				if (IsPlayerAliveOrDying(p))
-				{
-					camera->spectateMode = SPECTATE_FOLLOW;
-					camera->FollowActorUID = p->ActorUID;
-					break;
-				}
+			if (IsPlayerAliveOrDying(p))
+			{
+				camera->spectateMode = SPECTATE_FOLLOW;
+				camera->FollowActorUID = p->ActorUID;
+				break;
+			}
 			CA_FOREACH_END()
 		}
 	}
@@ -219,7 +223,8 @@ void CameraUpdate(Camera *camera, const int ticks, const int ms)
 
 			camera->NumViews = 2;
 		}
-		else if (camera->HUD.DrawData.NumScreens >= 3 &&
+		else if (
+			camera->HUD.DrawData.NumScreens >= 3 &&
 			camera->HUD.DrawData.NumScreens <= 4)
 		{
 			// 4 player split screen
@@ -248,7 +253,8 @@ void CameraUpdate(Camera *camera, const int ticks, const int ms)
 					SoundSetEar(
 						isLeft, !isUpper ? 0 : 1, camera->lastPosition);
 				}
-				else if (!isLocalPlayerAlive[3 - i] &&
+				else if (
+					!isLocalPlayerAlive[3 - i] &&
 					!isLocalPlayerAlive[3 - otherIdxOnSameSide])
 				{
 					// If both players of one side are dead,
@@ -271,13 +277,14 @@ static struct vec2 GetFollowPlayerPos(
 	const struct vec2 lastPos, const PlayerData *p)
 {
 	const TActor *a = ActorGetByUID(p->ActorUID);
-	if (a == NULL) return lastPos;
+	if (a == NULL)
+		return lastPos;
 	return a->Pos;
 }
 
 static void DoBuffer(
-	DrawBuffer *b, const struct vec2 center, const int w, const struct vec2 noise,
-	const struct vec2i offset);
+	DrawBuffer *b, const struct vec2 center, const int w,
+	const struct vec2 noise, const struct vec2i offset);
 void CameraDraw(Camera *camera, const HUDDrawData drawData)
 {
 	const struct vec2i centerOffset = svec2i(-4, -8);
@@ -290,9 +297,8 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 	if (drawData.NumScreens == 0)
 	{
 		DoBuffer(
-			&camera->Buffer,
-			camera->lastPosition,
-			X_TILES, noise, centerOffset);
+			&camera->Buffer, camera->lastPosition, X_TILES, noise,
+			centerOffset);
 	}
 	else
 	{
@@ -309,20 +315,19 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 			if (IsPVP(gCampaign.Entry.Mode))
 			{
 				CA_FOREACH(const PlayerData, p, gPlayerDatas)
-					if (!p->IsLocal || !IsPlayerAliveOrDying(p) ||
-						!IsPlayerHuman(p))
-					{
-						continue;
-					}
-					const TActor *a = ActorGetByUID(p->ActorUID);
-					LOSCalcFrom(&gMap, Vec2ToTile(a->thing.Pos), false);
+				if (!p->IsLocal || !IsPlayerAliveOrDying(p) ||
+					!IsPlayerHuman(p))
+				{
+					continue;
+				}
+				const TActor *a = ActorGetByUID(p->ActorUID);
+				LOSCalcFrom(&gMap, Vec2ToTile(a->thing.Pos), false);
 				CA_FOREACH_END()
 			}
 
 			DoBuffer(
-				&camera->Buffer,
-				camera->lastPosition,
-				X_TILES, noise, centerOffset);
+				&camera->Buffer, camera->lastPosition, X_TILES, noise,
+				centerOffset);
 		}
 		else if (drawData.NumScreens == 2)
 		{
@@ -351,9 +356,8 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 
 				LOSCalcFrom(&gMap, Vec2ToTile(camera->lastPosition), false);
 				DoBuffer(
-					&camera->Buffer,
-					camera->lastPosition,
-					X_TILES_HALF, noise, centerOffsetPlayer);
+					&camera->Buffer, camera->lastPosition, X_TILES_HALF, noise,
+					centerOffsetPlayer);
 			}
 			Draw_Line(w / 2 - 1, 0, w / 2 - 1, h - 1, colorBlack);
 			Draw_Line(w / 2, 0, w / 2, h - 1, colorBlack);
@@ -393,9 +397,8 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 				}
 				LOSCalcFrom(&gMap, Vec2ToTile(camera->lastPosition), false);
 				DoBuffer(
-					&camera->Buffer,
-					camera->lastPosition,
-					X_TILES_HALF, noise, centerOffsetPlayer);
+					&camera->Buffer, camera->lastPosition, X_TILES_HALF, noise,
+					centerOffsetPlayer);
 			}
 			Draw_Line(w / 2 - 1, 0, w / 2 - 1, h - 1, colorBlack);
 			Draw_Line(w / 2, 0, w / 2, h - 1, colorBlack);
@@ -410,8 +413,8 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 	GraphicsResetClip(gGraphicsDevice.gameWindow.renderer);
 }
 static void DoBuffer(
-	DrawBuffer *b, const struct vec2 center, const int w, const struct vec2 noise,
-	const struct vec2i offset)
+	DrawBuffer *b, const struct vec2 center, const int w,
+	const struct vec2 noise, const struct vec2i offset)
 {
 	DrawBufferSetFromMap(b, &gMap, svec2_add(center, noise), w);
 	if (gPlayerDatas.size > 0)
@@ -434,16 +437,17 @@ void CameraDrawMode(const Camera *camera)
 	case SPECTATE_NONE:
 		// do nothing
 		break;
-	case SPECTATE_FOLLOW:
-		{
-			const TActor *a = ActorGetByUID(camera->FollowActorUID);
-			if (a == NULL || !a->isInUse) break;
-			const PlayerData *p = PlayerDataGetByUID(a->PlayerUID);
-			if (p == NULL) break;
-			sprintf(cameraNameBuf, "Following %s", p->name);
-			drawCameraMode = true;
-		}
-		break;
+	case SPECTATE_FOLLOW: {
+		const TActor *a = ActorGetByUID(camera->FollowActorUID);
+		if (a == NULL || !a->isInUse)
+			break;
+		const PlayerData *p = PlayerDataGetByUID(a->PlayerUID);
+		if (p == NULL)
+			break;
+		sprintf(cameraNameBuf, "Following %s", p->name);
+		drawCameraMode = true;
+	}
+	break;
 	case SPECTATE_FREE:
 		strcpy(cameraNameBuf, "Free-look Mode");
 		drawCameraMode = true;
@@ -480,15 +484,9 @@ void CameraDrawMode(const Camera *camera)
 		(w - FontStrW("foo/bar to follow player, baz to free-look")) / 2,
 		h - FontH());
 	char buf[256];
-	color_t c = colorYellow;
-	InputGetButtonNameColor(
-		inputDevice, deviceIndex, CMD_BUTTON1, buf, &c);
-	pos = FontStrMask(buf, pos, c);
+	pos = DrawButton(inputDevice, deviceIndex, CMD_BUTTON1, pos);
 	pos = FontStrMask("/", pos, colorYellow);
-	c = colorYellow;
-	InputGetButtonNameColor(
-		inputDevice, deviceIndex, CMD_BUTTON2, buf, &c);
-	pos = FontStrMask(buf, pos, c);
+	pos = DrawButton(inputDevice, deviceIndex, CMD_BUTTON2, pos);
 	pos = FontStrMask(" to follow player, ", pos, colorYellow);
 	InputGetDirectionNames(buf, inputDevice, deviceIndex);
 	pos = FontStrMask(buf, pos, colorYellow);
@@ -506,8 +504,7 @@ bool CameraIsSingleScreen(void)
 	const bool mapFitsInScreen =
 		gMap.Size.x * TILE_WIDTH < gGraphicsDevice.cachedConfig.Res.x &&
 		gMap.Size.y * TILE_HEIGHT < gGraphicsDevice.cachedConfig.Res.y;
-	if (IsPVP(gCampaign.Entry.Mode) &&
-		!mapFitsInScreen &&
+	if (IsPVP(gCampaign.Entry.Mode) && !mapFitsInScreen &&
 		GetNumPlayers(PLAYER_ALIVE_OR_DYING, true, true) > 0)
 	{
 		return false;
@@ -521,7 +518,8 @@ bool CameraIsSingleScreen(void)
 	// Finally, use split screen if players don't fit on camera
 	struct vec2 min, max;
 	PlayersGetBoundingRectangle(&min, &max);
-	return
-		max.x - min.x < gGraphicsDevice.cachedConfig.Res.x - CAMERA_SPLIT_PADDING &&
-		max.y - min.y < gGraphicsDevice.cachedConfig.Res.y - CAMERA_SPLIT_PADDING;
+	return max.x - min.x <
+			   gGraphicsDevice.cachedConfig.Res.x - CAMERA_SPLIT_PADDING &&
+		   max.y - min.y <
+			   gGraphicsDevice.cachedConfig.Res.y - CAMERA_SPLIT_PADDING;
 }

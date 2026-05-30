@@ -1,115 +1,124 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
-    Copyright (C) 2003-2007 Lucas Martin-King 
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
+	Copyright (C) 2003-2007 Lucas Martin-King
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-    This file incorporates work covered by the following copyright and
-    permission notice:
+	This file incorporates work covered by the following copyright and
+	permission notice:
 
-    Copyright (c) 2013-2014, 2018-2019 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2014, 2018-2019, 2026 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <stdio.h>
 
 #include "algorithms.h"
+#include "blit.h"
 #include "config.h"
 #include "draw/drawtools.h"
+#include "events.h"
+#include "font.h"
+#include "grafx.h"
 #include "log.h"
 #include "palette.h"
 #include "pic_manager.h"
 #include "texture.h"
 #include "utils.h"
-#include "blit.h"
-#include "grafx.h"
-
 
 void DrawPoint(const struct vec2i pos, const color_t c)
 {
 	if (SDL_SetRenderDrawBlendMode(
-		gGraphicsDevice.gameWindow.renderer, SDL_BLENDMODE_BLEND) != 0)
+			gGraphicsDevice.gameWindow.renderer, SDL_BLENDMODE_BLEND) != 0)
 	{
 		LOG(LM_GFX, LL_ERROR, "Failed to set draw blend mode: %s",
 			SDL_GetError());
 	}
 	if (SDL_SetRenderDrawColor(
-		gGraphicsDevice.gameWindow.renderer, c.r, c.g, c.b, c.a) != 0)
+			gGraphicsDevice.gameWindow.renderer, c.r, c.g, c.b, c.a) != 0)
 	{
-		LOG(LM_GFX, LL_ERROR, "Failed to set draw color: %s",
-			SDL_GetError());
+		LOG(LM_GFX, LL_ERROR, "Failed to set draw color: %s", SDL_GetError());
 	}
 	if (SDL_RenderDrawPoint(
-		gGraphicsDevice.gameWindow.renderer, pos.x, pos.y) != 0)
+			gGraphicsDevice.gameWindow.renderer, pos.x, pos.y) != 0)
 	{
 		LOG(LM_GFX, LL_ERROR, "Failed to render point: %s", SDL_GetError());
 	}
 }
 
-static
-void
-Draw_StraightLine(
+static void Draw_StraightLine(
 	const int x1, const int y1, const int x2, const int y2, color_t c)
 {
 	register int i;
 	register int start, end;
-	
-	if (x1 == x2) {					/* vertical line */
-		if (y2 > y1) {
+
+	if (x1 == x2)
+	{ /* vertical line */
+		if (y2 > y1)
+		{
 			start = y1;
 			end = y2;
-		} else {
+		}
+		else
+		{
 			start = y2;
 			end = y1;
 		}
-		
-		for (i = start; i <= end; i++) {
+
+		for (i = start; i <= end; i++)
+		{
 			DrawPoint(svec2i(x1, i), c);
 		}
-	} else if (y1 == y2) {				/* horizontal line */
-		if (x2 > x1) {
+	}
+	else if (y1 == y2)
+	{ /* horizontal line */
+		if (x2 > x1)
+		{
 			start = x1;
 			end = x2;
-		} else {
+		}
+		else
+		{
 			start = x2;
 			end = x1;
 		}
-			    
-		for (i = start; i <= end; i++) {
+
+		for (i = start; i <= end; i++)
+		{
 			DrawPoint(svec2i(i, y1), c);
 		}
 	}
@@ -120,19 +129,23 @@ static void Draw_DiagonalLine(const int x1, const int x2, color_t c)
 {
 	register int i;
 	register int start, end;
-	
-	if (x1 < x2) {
+
+	if (x1 < x2)
+	{
 		start = x1;
 		end = x2;
-	} else {
+	}
+	else
+	{
 		start = x2;
 		end = x1;
 	}
-	
-	for (i = start; i < end; i++) {
+
+	for (i = start; i < end; i++)
+	{
 		DrawPoint(svec2i(i, i), c);
 	}
-	
+
 	return;
 }
 
@@ -153,13 +166,13 @@ static void DrawPointFunc(void *data, const struct vec2i pos)
 void Draw_Line(
 	const int x1, const int y1, const int x2, const int y2, color_t c)
 {
-	if (x1 == x2 || y1 == y2) 
+	if (x1 == x2 || y1 == y2)
 		Draw_StraightLine(x1, y1, x2, y2, c);
 	else if (abs((x2 - x1)) == abs((y1 - y2)))
 		Draw_DiagonalLine(x1, x2, c);
 	/*else
 		Draw_OtherLine(x1, y1, x2, y2, c);*/
-	
+
 	return;
 }
 
@@ -168,22 +181,20 @@ void DrawRectangle(
 	const color_t color, const bool filled)
 {
 	if (SDL_SetRenderDrawBlendMode(
-		g->gameWindow.renderer, SDL_BLENDMODE_BLEND) != 0)
+			g->gameWindow.renderer, SDL_BLENDMODE_BLEND) != 0)
 	{
 		LOG(LM_GFX, LL_ERROR, "Failed to set draw blend mode: %s",
 			SDL_GetError());
 	}
 	if (SDL_SetRenderDrawColor(
-		g->gameWindow.renderer, color.r, color.g, color.b, color.a) != 0)
+			g->gameWindow.renderer, color.r, color.g, color.b, color.a) != 0)
 	{
-		LOG(LM_GFX, LL_ERROR, "Failed to set draw color: %s",
-			SDL_GetError());
+		LOG(LM_GFX, LL_ERROR, "Failed to set draw color: %s", SDL_GetError());
 	}
-	const SDL_Rect rect = { pos.x, pos.y, size.x, size.y };
-	const int result =
-		filled ?
-		SDL_RenderFillRect(g->gameWindow.renderer, &rect) :
-		SDL_RenderDrawRect(g->gameWindow.renderer, &rect);
+	const SDL_Rect rect = {pos.x, pos.y, size.x, size.y};
+	const int result = filled
+						   ? SDL_RenderFillRect(g->gameWindow.renderer, &rect)
+						   : SDL_RenderDrawRect(g->gameWindow.renderer, &rect);
 	if (result != 0)
 	{
 		LOG(LM_GFX, LL_ERROR, "Failed to render rect: %s", SDL_GetError());
@@ -193,23 +204,23 @@ void DrawRectangle(
 void DrawCross(GraphicsDevice *g, const struct vec2i pos, const color_t c)
 {
 	if (SDL_SetRenderDrawBlendMode(
-		g->gameWindow.renderer, SDL_BLENDMODE_BLEND) != 0)
+			g->gameWindow.renderer, SDL_BLENDMODE_BLEND) != 0)
 	{
 		LOG(LM_GFX, LL_ERROR, "Failed to set draw blend mode: %s",
 			SDL_GetError());
 	}
-	if (SDL_SetRenderDrawColor(g->gameWindow.renderer, c.r, c.g, c.b, c.a) != 0)
+	if (SDL_SetRenderDrawColor(g->gameWindow.renderer, c.r, c.g, c.b, c.a) !=
+		0)
 	{
-		LOG(LM_GFX, LL_ERROR, "Failed to set draw color: %s",
-			SDL_GetError());
+		LOG(LM_GFX, LL_ERROR, "Failed to set draw color: %s", SDL_GetError());
 	}
 	if (SDL_RenderDrawLine(
-		g->gameWindow.renderer, pos.x - 1, pos.y, pos.x + 1, pos.y) != 0)
+			g->gameWindow.renderer, pos.x - 1, pos.y, pos.x + 1, pos.y) != 0)
 	{
 		LOG(LM_GFX, LL_ERROR, "Failed to render line: %s", SDL_GetError());
 	}
 	if (SDL_RenderDrawLine(
-		g->gameWindow.renderer, pos.x, pos.y - 1, pos.x, pos.y + 1) != 0)
+			g->gameWindow.renderer, pos.x, pos.y - 1, pos.x, pos.y + 1) != 0)
 	{
 		LOG(LM_GFX, LL_ERROR, "Failed to render line: %s", SDL_GetError());
 	}
@@ -227,8 +238,25 @@ void DrawShadow(
 	const Pic *shadow = PicManagerGetPic(&gPicManager, "particles/shadow");
 	const struct vec2 drawScale =
 		svec2_divide(svec2_scale(scale, 2), svec2_assign_vec2i(shadow->size));
-	const struct vec2i drawPos = svec2i_subtract(pos, svec2i_assign_vec2(scale));
+	const struct vec2i drawPos =
+		svec2i_subtract(pos, svec2i_assign_vec2(scale));
 	PicRender(
-		shadow, g->gameWindow.renderer, drawPos, mask, 0,
-		drawScale, SDL_FLIP_NONE, Rect2iZero());
+		shadow, g->gameWindow.renderer, drawPos, mask, 0, drawScale,
+		SDL_FLIP_NONE, Rect2iZero());
+}
+
+struct vec2i DrawButton(
+	const input_device_e inputDevice, const int deviceIndex, const int cmd,
+	const struct vec2i pos)
+{
+	char buf[256];
+	color_t c = colorWhite;
+	InputGetButtonNameColor(inputDevice, deviceIndex, cmd, buf, &c);
+	// Draw the button background then the button label
+	// TODO: use different background for different input devices
+	const Pic *bg = PicManagerGetPic(&gPicManager, "key_back");
+	PicRender(
+		bg, gGraphicsDevice.gameWindow.renderer, pos, colorWhite, 0,
+		svec2_one(), SDL_FLIP_NONE, Rect2iZero());
+	return FontStrMask(buf, pos, c);
 }
