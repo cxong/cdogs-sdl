@@ -248,17 +248,17 @@ void EventPoll(
 		GraphicsConfigSetFromConfig(&gGraphicsDevice.cachedConfig, &gConfig);
 		GraphicsInitialize(&gGraphicsDevice);
 	}
-    
-    // Auto quit on timer
-    if (handlers->DemoQuitTimer > 0)
-    {
-        handlers->DemoQuitTimer -= ticks;
-        if (handlers->DemoQuitTimer <= 0)
-        {
-            LOG(LM_MAIN, LL_INFO, "Auto-quitting");
-            handlers->HasQuit = true;
-        }
-    }
+
+	// Auto quit on timer
+	if (handlers->DemoQuitTimer > 0)
+	{
+		handlers->DemoQuitTimer -= ticks;
+		if (handlers->DemoQuitTimer <= 0)
+		{
+			LOG(LM_MAIN, LL_INFO, "Auto-quitting");
+			handlers->HasQuit = true;
+		}
+	}
 }
 
 int GetKeyboardCmd(
@@ -486,6 +486,7 @@ void InputGetButtonNameColor(
 #else
 	{
 		const InputKeys *keys = &gEventHandlers.keyboard.PlayerKeys[dIndex];
+		// TODO: transform words to symbols
 		switch (cmd)
 		{
 		case CMD_LEFT:
@@ -530,33 +531,6 @@ void InputGetButtonNameColor(
 	default:
 		CASSERT(false, "unknown input device");
 		return;
-	}
-}
-void InputGetDirectionNames(
-	char *buf, const input_device_e d, const int dIndex)
-{
-	strcpy(buf, "");
-	switch (d)
-	{
-	case INPUT_DEVICE_KEYBOARD: {
-		char left[256], right[256], up[256], down[256];
-		InputGetButtonName(d, dIndex, CMD_LEFT, left);
-		InputGetButtonName(d, dIndex, CMD_RIGHT, right),
-			InputGetButtonName(d, dIndex, CMD_UP, up),
-			InputGetButtonName(d, dIndex, CMD_DOWN, down);
-		sprintf(buf, "%s, %s, %s, %s", left, right, up, down);
-	}
-	break;
-	case INPUT_DEVICE_JOYSTICK:
-		strcpy(buf, "directions");
-		break;
-	case INPUT_DEVICE_AI:
-		break;
-	case INPUT_DEVICE_UNSET:
-		break;
-	default:
-		CASSERT(false, "unknown device");
-		break;
 	}
 }
 bool InputHasGrenadeButton(const input_device_e d, const int dIndex)

@@ -89,24 +89,24 @@ void MenuDisplayPlayerControls(
 	UNUSED(g);
 	char s[256];
 	const int *playerUID = data;
-	const int y = pos.y + size.y - FontH();
+	const int keyH = 13;
+	const int y = pos.y + size.y - keyH;
 
 	UNUSED(menu);
 
 	const PlayerData *pData = PlayerDataGetByUID(*playerUID);
-	char directionNames[256];
-	InputGetDirectionNames(
-		directionNames, pData->inputDevice, pData->deviceIndex);
 	switch (pData->inputDevice)
 	{
 	case INPUT_DEVICE_KEYBOARD: {
-		char button1[256], button2[256];
-		InputGetButtonName(
-			pData->inputDevice, pData->deviceIndex, CMD_BUTTON1, button1);
-		InputGetButtonName(
-			pData->inputDevice, pData->deviceIndex, CMD_BUTTON2, button2);
-		sprintf(s, "(%s,\n%s and %s)", directionNames, button1, button2);
-		FontStr(s, svec2i(pos.x - FontStrW(s) / 2, y - FontH()));
+		const int keyBgW = 13;
+		// Try to roughly center the buttons
+		struct vec2i keyPos = svec2i(pos.x - (keyBgW * 5 + 3) / 2, y);
+		keyPos = DrawDirectionButtons(pData->inputDevice, keyPos);
+		keyPos.x += 3; // add some spacing between directions and buttons
+		keyPos = DrawButton(
+			pData->inputDevice, pData->deviceIndex, CMD_BUTTON1, keyPos);
+		keyPos = DrawButton(
+			pData->inputDevice, pData->deviceIndex, CMD_BUTTON2, keyPos);
 	}
 	break;
 	case INPUT_DEVICE_JOYSTICK: {

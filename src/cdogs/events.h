@@ -45,7 +45,7 @@ typedef struct
 	bool HasResolutionChanged;
 	bool HasQuit;
 	bool HasLostFocus;
-    int DemoQuitTimer;
+	int DemoQuitTimer;
 } EventHandlers;
 
 extern EventHandlers gEventHandlers;
@@ -80,9 +80,6 @@ void InputGetButtonNameColor(
 	color_t *color);
 #define InputGetButtonName(_d, _dIndex, _cmd, _buf)                           \
 	InputGetButtonNameColor(_d, _dIndex, _cmd, _buf, NULL)
-// Return a string that shows the direction controls for an input device
-void InputGetDirectionNames(
-	char *buf, const input_device_e d, const int dIndex);
 bool InputHasGrenadeButton(const input_device_e d, const int dIndex);
 
 bool EventIsEscape(

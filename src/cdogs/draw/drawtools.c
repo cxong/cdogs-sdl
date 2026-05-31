@@ -254,9 +254,72 @@ struct vec2i DrawButton(
 	InputGetButtonNameColor(inputDevice, deviceIndex, cmd, buf, &c);
 	// Draw the button background then the button label
 	// TODO: use different background for different input devices
-	const Pic *bg = PicManagerGetPic(&gPicManager, "key_back");
-	PicRender(
-		bg, gGraphicsDevice.gameWindow.renderer, pos, colorWhite, 0,
-		svec2_one(), SDL_FLIP_NONE, Rect2iZero());
-	return FontStrMask(buf, pos, c);
+	switch (inputDevice)
+	{
+	case INPUT_DEVICE_KEYBOARD: {
+		const Pic *bg = PicManagerGetPic(&gPicManager, "key_back");
+		// Draw background slightly above so text lines up vertically with
+		// other text
+		PicRender(
+			bg, gGraphicsDevice.gameWindow.renderer, svec2i(pos.x, pos.y - 1),
+			colorWhite, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
+		// Draw the button label centered on the background
+		const int textW = FontStrW(buf);
+		FontStrMask(buf, svec2i(pos.x + (bg->size.x - textW) / 2, pos.y), c);
+		return svec2i(pos.x + bg->size.x + 1, pos.y);
+	}
+	case INPUT_DEVICE_JOYSTICK:
+		// TODO: draw joystick button background
+		return FontStrMask(buf, pos, c);
+	default:
+		// Don't draw anything
+		return pos;
+	}
+}
+
+struct vec2i DrawDirectionButtons(
+	const input_device_e inputDevice, const struct vec2i pos)
+{
+	switch (inputDevice)
+	{
+	case INPUT_DEVICE_KEYBOARD: {
+		const Pic *bg = PicManagerGetPic(&gPicManager, "key_back");
+		// Draw 4 keys in a cross shape followed by the direction names
+		for (int cmd = CMD_LEFT; cmd <= CMD_DOWN; cmd <<= 1)
+		{
+			struct vec2i buttonPos = pos;
+			switch (cmd)
+			{
+			case CMD_LEFT:
+				break;
+			case CMD_RIGHT:
+				buttonPos = svec2i(pos.x + bg->size.x * 2 + 2, pos.y);
+				break;
+			case CMD_UP:
+				buttonPos =
+					svec2i(pos.x + bg->size.x + 1, pos.y - bg->size.y - 1);
+				break;
+			case CMD_DOWN:
+				buttonPos = svec2i(pos.x + bg->size.x + 1, pos.y);
+				break;
+			default:
+				break;
+			}
+			DrawButton(inputDevice, 0, cmd, buttonPos);
+		}
+		return svec2i(pos.x + bg->size.x * 3 + 2, pos.y);
+	}
+	break;
+	case INPUT_DEVICE_JOYSTICK:
+		// TODO: draw joystick directions
+		break;
+	case INPUT_DEVICE_AI:
+		break;
+	case INPUT_DEVICE_UNSET:
+		break;
+	default:
+		CASSERT(false, "unknown device");
+		break;
+	}
+	return pos;
 }

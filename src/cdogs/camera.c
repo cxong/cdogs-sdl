@@ -483,13 +483,11 @@ void CameraDrawMode(const Camera *camera)
 	struct vec2i pos = svec2i(
 		(w - FontStrW("foo/bar to follow player, baz to free-look")) / 2,
 		h - FontH());
-	char buf[256];
 	pos = DrawButton(inputDevice, deviceIndex, CMD_BUTTON1, pos);
 	pos = FontStrMask("/", pos, colorYellow);
 	pos = DrawButton(inputDevice, deviceIndex, CMD_BUTTON2, pos);
 	pos = FontStrMask(" to follow player, ", pos, colorYellow);
-	InputGetDirectionNames(buf, inputDevice, deviceIndex);
-	pos = FontStrMask(buf, pos, colorYellow);
+	pos = DrawDirectionButtons(inputDevice, pos);
 	FontStrMask(" to free-look", pos, colorYellow);
 }
 

@@ -505,6 +505,7 @@ void ShowControls(void)
 	FontStrOpt(
 		"(use joystick or D pad + START + SELECT)", svec2i_zero(), opts);
 #else
+	// TODO: draw button icons instead of text
 	FontStrOpt(
 		"(use joystick 1 or arrow keys + Enter/Backspace)", svec2i_zero(),
 		opts);

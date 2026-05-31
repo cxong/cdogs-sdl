@@ -20,7 +20,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2014, 2018-2019 Cong Xu
+	Copyright (c) 2013-2014, 2018-2019, 2026 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -72,3 +72,5 @@ void DrawShadow(
 struct vec2i DrawButton(
 	const input_device_e inputDevice, const int deviceIndex, const int cmd,
 	const struct vec2i pos);
+struct vec2i DrawDirectionButtons(
+	const input_device_e inputDevice, const struct vec2i pos);
