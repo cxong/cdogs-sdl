@@ -69,8 +69,11 @@ void DrawShadow(
 	GraphicsDevice *g, const struct vec2i pos, const struct vec2 scale,
 	const color_t mask);
 
+struct vec2i DrawOneButton(
+	const Pic *bg, const char *label, const color_t c, const struct vec2i pos);
 struct vec2i DrawButton(
 	const input_device_e inputDevice, const int deviceIndex, const int cmd,
 	const struct vec2i pos);
 struct vec2i DrawDirectionButtons(
 	const input_device_e inputDevice, const struct vec2i pos);
+struct vec2i DrawKeyboardMenuButtons(const struct vec2i pos);

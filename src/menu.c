@@ -496,19 +496,30 @@ int MenuGetNumMenuItemsShown(const menu_t *menu)
 
 void ShowControls(void)
 {
+#ifdef __GCWZERO__
 	FontOpts opts = FontOptsNew();
 	opts.HAlign = ALIGN_CENTER;
 	opts.VAlign = ALIGN_END;
 	opts.Area = gGraphicsDevice.cachedConfig.Res;
 	opts.Pad.y = 10;
-#ifdef __GCWZERO__
 	FontStrOpt(
 		"(use joystick or D pad + START + SELECT)", svec2i_zero(), opts);
 #else
-	// TODO: draw button icons instead of text
-	FontStrOpt(
-		"(use joystick 1 or arrow keys + Enter/Backspace)", svec2i_zero(),
-		opts);
+	// Draw button icons instead of text
+	const int keyW = 13;
+	const int w = FontStrW(" or ") + keyW * 10 + 2;
+	struct vec2i pos = svec2i(
+		(gGraphicsDevice.cachedConfig.Res.x - w) / 2,
+		gGraphicsDevice.cachedConfig.Res.y - 14);
+	// TODO: draw joystick icon direction icons
+	pos = FontStr("use joystick 1 or ", pos);
+	pos = DrawKeyboardMenuButtons(pos);
+	pos.x += 2;
+	// TODO: alt bg for enter/backspace
+	const Pic *bg = PicManagerGetPic(&gPicManager, "key_back");
+	pos = DrawOneButton(bg, "Enter", colorWhite, pos);
+	pos.x += 2;
+	pos = DrawOneButton(bg, "Backspace", colorWhite, pos);
 #endif
 }
 
