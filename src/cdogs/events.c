@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2016, 2018-2021 Cong Xu
+	Copyright (c) 2013-2016, 2018-2021, 2026 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,7 @@
 
 #include "config_io.h"
 #include "files.h"
+#include "font.h"
 #include "gamedata.h"
 #include "log.h"
 #include "music.h"
@@ -436,6 +437,24 @@ int GetMenuCmd(EventHandlers *handlers, const bool useMouse)
 	return cmd;
 }
 
+static const char *GetKeyName(const SDL_Scancode key)
+{
+	// Convert some common keys to single characters
+	switch (key)
+	{
+	case SDL_SCANCODE_LEFT:
+		return ARROW_LEFT;
+	case SDL_SCANCODE_RIGHT:
+		return ARROW_RIGHT;
+	case SDL_SCANCODE_UP:
+		return ARROW_UP;
+	case SDL_SCANCODE_DOWN:
+		return ARROW_DOWN;
+	default:
+		return SDL_GetScancodeName(key);
+	}
+}
+
 void InputGetButtonNameColor(
 	const input_device_e d, const int dIndex, const int cmd, char *buf,
 	color_t *color)
@@ -490,31 +509,31 @@ void InputGetButtonNameColor(
 		switch (cmd)
 		{
 		case CMD_LEFT:
-			strcpy(buf, SDL_GetScancodeName(keys->left));
+			strcpy(buf, GetKeyName(keys->left));
 			return;
 		case CMD_RIGHT:
-			strcpy(buf, SDL_GetScancodeName(keys->right));
+			strcpy(buf, GetKeyName(keys->right));
 			return;
 		case CMD_UP:
-			strcpy(buf, SDL_GetScancodeName(keys->up));
+			strcpy(buf, GetKeyName(keys->up));
 			return;
 		case CMD_DOWN:
-			strcpy(buf, SDL_GetScancodeName(keys->down));
+			strcpy(buf, GetKeyName(keys->down));
 			return;
 		case CMD_BUTTON1:
-			strcpy(buf, SDL_GetScancodeName(keys->button1));
+			strcpy(buf, GetKeyName(keys->button1));
 			return;
 		case CMD_BUTTON2:
-			strcpy(buf, SDL_GetScancodeName(keys->button2));
+			strcpy(buf, GetKeyName(keys->button2));
 			return;
 		case CMD_GRENADE:
-			strcpy(buf, SDL_GetScancodeName(keys->grenade));
+			strcpy(buf, GetKeyName(keys->grenade));
 			return;
 		case CMD_MAP:
-			strcpy(buf, SDL_GetScancodeName(keys->map));
+			strcpy(buf, GetKeyName(keys->map));
 			return;
 		case CMD_ESC:
-			strcpy(buf, SDL_GetScancodeName(SDL_SCANCODE_ESCAPE));
+			strcpy(buf, GetKeyName(SDL_SCANCODE_ESCAPE));
 			return;
 		default:
 			CASSERT(false, "unknown button");
