@@ -214,8 +214,11 @@ static bool ConditionsMet(CArray *conditions, const int ticks)
 		switch (c->Type)
 		{
 		case CONDITION_TILECLEAR:
-			conditionMet = TileIsClear(MapGetTile(&gMap, c->Pos));
+		{
+			Tile *tile = MapGetTile(&gMap, c->Pos);
+			conditionMet = tile != NULL && !TileHasCharacter(tile);
 			break;
+		}
 		}
 		if (conditionMet)
 		{
