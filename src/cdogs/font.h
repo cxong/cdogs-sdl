@@ -35,6 +35,9 @@
 #define ARROW_UP "\x1e"
 #define ARROW_DOWN "\x1f"
 
+#define BACKSPACE_CHAR "\x08"
+#define ENTER_CHAR "\x0d"
+
 // Defines interfaces for bitmap fonts
 
 typedef struct

@@ -514,12 +514,12 @@ void ShowControls(void)
 	// TODO: draw joystick icon direction icons
 	pos = FontStr("use joystick 1 or ", pos);
 	pos = DrawKeyboardMenuButtons(pos);
+	pos.x += 4;
+	// Wider bg for enter/backspace
+	const Pic *bg = PicManagerGetPic(&gPicManager, "key_back_wide");
+	pos = DrawOneButton(bg, ENTER_CHAR, colorWhite, pos);
 	pos.x += 2;
-	// TODO: alt bg for enter/backspace
-	const Pic *bg = PicManagerGetPic(&gPicManager, "key_back");
-	pos = DrawOneButton(bg, "Enter", colorWhite, pos);
-	pos.x += 2;
-	pos = DrawOneButton(bg, "Backspace", colorWhite, pos);
+	pos = DrawOneButton(bg, BACKSPACE_CHAR, colorWhite, pos);
 #endif
 }
 
