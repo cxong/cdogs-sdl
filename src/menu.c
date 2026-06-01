@@ -507,12 +507,26 @@ void ShowControls(void)
 #else
 	// Draw button icons instead of text
 	const int keyW = 13;
-	const int w = FontStrW(" or ") + keyW * 10 + 2;
+	int w = FontStrW(" or ") + keyW * 5 + 2;
+	if (gEventHandlers.joysticks.size > 0)
+	{
+		w += 24 + FontStrW("#1 or ");
+	}
 	struct vec2i pos = svec2i(
 		(gGraphicsDevice.cachedConfig.Res.x - w) / 2,
 		gGraphicsDevice.cachedConfig.Res.y - 14);
-	// TODO: draw joystick icon direction icons
-	pos = FontStr("use joystick 1 or ", pos);
+	pos = FontStr("use ", pos);
+	// Draw controller buttons if a controller is connected
+	if (gEventHandlers.joysticks.size > 0)
+	{
+		const Pic *controller = PicManagerGetPic(&gPicManager, "controller");
+		PicRender(
+			controller, gGraphicsDevice.gameWindow.renderer,
+			svec2i(pos.x, pos.y - 5), colorWhite, 0, svec2_one(),
+			SDL_FLIP_NONE, Rect2iZero());
+		pos.x += controller->size.x + 2;
+		pos = FontStr("#1 or ", pos);
+	}
 	pos = DrawKeyboardMenuButtons(pos);
 	pos.x += 4;
 	// Wider bg for enter/backspace
