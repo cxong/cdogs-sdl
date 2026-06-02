@@ -46,6 +46,7 @@
 */
 #pragma once
 
+#include "cpic.h"
 #include "grafx.h"
 
 void DrawPoint(const struct vec2i pos, const color_t c);
@@ -70,7 +71,8 @@ void DrawShadow(
 	const color_t mask);
 
 struct vec2i DrawOneButton(
-	const Pic *bg, const char *label, const color_t c, const struct vec2i pos);
+	const NamedSprites *bg, const char *label, const color_t c,
+	const bool isDown, const struct vec2i pos);
 struct vec2i DrawButton(
 	const input_device_e inputDevice, const int deviceIndex, const int cmd,
 	const struct vec2i pos);

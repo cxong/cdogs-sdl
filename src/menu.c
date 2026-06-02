@@ -530,10 +530,15 @@ void ShowControls(void)
 	pos = DrawKeyboardMenuButtons(pos);
 	pos.x += 4;
 	// Wider bg for enter/backspace
-	const Pic *bg = PicManagerGetPic(&gPicManager, "key_back_wide");
-	pos = DrawOneButton(bg, ENTER_CHAR, colorWhite, pos);
+	const NamedSprites *bg =
+		PicManagerGetSprites(&gPicManager, "key_back_wide");
+	pos = DrawOneButton(
+		bg, ENTER_CHAR, colorWhite,
+		KeyIsDown(&gEventHandlers.keyboard, SDL_SCANCODE_RETURN), pos);
 	pos.x += 2;
-	pos = DrawOneButton(bg, BACKSPACE_CHAR, colorWhite, pos);
+	pos = DrawOneButton(
+		bg, BACKSPACE_CHAR, colorWhite,
+		KeyIsDown(&gEventHandlers.keyboard, SDL_SCANCODE_BACKSPACE), pos);
 #endif
 }
 

@@ -246,22 +246,25 @@ void DrawShadow(
 }
 
 struct vec2i DrawOneButton(
-	const Pic *bg, const char *label, const color_t c, const struct vec2i pos)
+	const NamedSprites *bg, const char *label, const color_t c,
+	const bool isDown, const struct vec2i pos)
 {
 	int totalW = FontStrW(label);
 	int textOffsetX = 0;
 	if (bg)
 	{
+		const Pic *pic = CArrayGet(&bg->pics, isDown ? 1 : 0);
 		// Draw the button label centered on the background
-		textOffsetX = (bg->size.x - totalW) / 2;
-		totalW = bg->size.x + 1;
+		textOffsetX = (pic->size.x - totalW) / 2;
+		totalW = pic->size.x + 1;
 		// Draw background slightly above so text lines up vertically with
 		// other text
 		PicRender(
-			bg, gGraphicsDevice.gameWindow.renderer, svec2i(pos.x, pos.y - 1),
+			pic, gGraphicsDevice.gameWindow.renderer, svec2i(pos.x, pos.y - 1),
 			colorWhite, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
 	}
-	FontStrMask(label, svec2i(pos.x + textOffsetX, pos.y), c);
+	FontStrMask(
+		label, svec2i(pos.x + textOffsetX, pos.y + (isDown ? 1 : 0)), c);
 	return svec2i(pos.x + totalW, pos.y);
 }
 
@@ -273,21 +276,23 @@ struct vec2i DrawButton(
 	color_t c = colorWhite;
 	InputGetButtonNameColor(inputDevice, deviceIndex, cmd, buf, &c);
 	// Draw the button background then the button label
-	// TODO: use different background for different input devices
+	const NamedSprites *bg = NULL;
 	switch (inputDevice)
 	{
-	case INPUT_DEVICE_KEYBOARD: {
-		const Pic *bg = PicManagerGetPic(&gPicManager, "key_back");
-		return DrawOneButton(bg, buf, c, pos);
-	}
-	case INPUT_DEVICE_JOYSTICK: {
-		const Pic *bg = PicManagerGetPic(&gPicManager, "button_back");
-		return DrawOneButton(bg, buf, c, pos);
-	}
+	case INPUT_DEVICE_KEYBOARD:
+		bg = PicManagerGetSprites(&gPicManager, "key_back");
+		break;
+	case INPUT_DEVICE_JOYSTICK:
+		bg = PicManagerGetSprites(&gPicManager, "button_back");
+		break;
 	default:
 		// Don't draw anything
 		return pos;
 	}
+	const bool isDown =
+		GetOnePlayerCmd(&gEventHandlers, false, inputDevice, deviceIndex) &
+		cmd;
+	return DrawOneButton(bg, buf, c, isDown, pos);
 }
 
 struct vec2i DrawDirectionButtons(
@@ -296,7 +301,9 @@ struct vec2i DrawDirectionButtons(
 	switch (inputDevice)
 	{
 	case INPUT_DEVICE_KEYBOARD: {
-		const Pic *bg = PicManagerGetPic(&gPicManager, "key_back");
+		const NamedSprites *ns =
+			PicManagerGetSprites(&gPicManager, "key_back");
+		const Pic *bg = CArrayGet(&ns->pics, 0);
 		// Draw 4 keys in a cross shape followed by the direction names
 		for (int cmd = CMD_LEFT; cmd <= CMD_DOWN; cmd <<= 1)
 		{
@@ -340,33 +347,39 @@ struct vec2i DrawDirectionButtons(
 struct vec2i DrawKeyboardMenuButtons(const struct vec2i pos)
 {
 	// Draw the buttons used for menu navigation with a keyboard
-	const Pic *bg = PicManagerGetPic(&gPicManager, "key_back");
+	const NamedSprites *ns = PicManagerGetSprites(&gPicManager, "key_back");
+	const Pic *bg = CArrayGet(&ns->pics, 0);
 	// Draw 4 keys in a cross shape followed by the direction names
 	for (int cmd = CMD_LEFT; cmd <= CMD_DOWN; cmd <<= 1)
 	{
 		struct vec2i buttonPos = pos;
 		const char *label = NULL;
+		bool isDown = false;
 		switch (cmd)
 		{
 		case CMD_LEFT:
 			label = ARROW_LEFT;
+			isDown = KeyIsDown(&gEventHandlers.keyboard, SDL_SCANCODE_LEFT);
 			break;
 		case CMD_RIGHT:
 			label = ARROW_RIGHT;
+			isDown = KeyIsDown(&gEventHandlers.keyboard, SDL_SCANCODE_RIGHT);
 			buttonPos = svec2i(pos.x + bg->size.x * 2 + 2, pos.y);
 			break;
 		case CMD_UP:
 			label = ARROW_UP;
+			isDown = KeyIsDown(&gEventHandlers.keyboard, SDL_SCANCODE_UP);
 			buttonPos = svec2i(pos.x + bg->size.x + 1, pos.y - bg->size.y - 1);
 			break;
 		case CMD_DOWN:
 			label = ARROW_DOWN;
+			isDown = KeyIsDown(&gEventHandlers.keyboard, SDL_SCANCODE_DOWN);
 			buttonPos = svec2i(pos.x + bg->size.x + 1, pos.y);
 			break;
 		default:
 			break;
 		}
-		DrawOneButton(bg, label, colorWhite, buttonPos);
+		DrawOneButton(ns, label, colorWhite, isDown, buttonPos);
 	}
 	return svec2i(pos.x + bg->size.x * 3 + 2, pos.y);
 }
