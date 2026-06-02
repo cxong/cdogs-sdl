@@ -542,9 +542,11 @@ void InputGetButtonNameColor(
 	}
 #endif
 		break;
-	case INPUT_DEVICE_JOYSTICK:
-		JoyButtonNameColor(dIndex, cmd, buf, color);
-		return;
+		case INPUT_DEVICE_JOYSTICK: {
+			const Joystick *joy = CArrayGet(&gEventHandlers.joysticks, dIndex);
+			JoyButtonNameColor(joy->id, cmd, buf, color);
+			return;
+		}
 	case INPUT_DEVICE_AI:
 		return;
 	default:

@@ -280,9 +280,10 @@ struct vec2i DrawButton(
 		const Pic *bg = PicManagerGetPic(&gPicManager, "key_back");
 		return DrawOneButton(bg, buf, c, pos);
 	}
-	case INPUT_DEVICE_JOYSTICK:
-		// TODO: draw joystick button background
-		return DrawOneButton(NULL, buf, c, pos);
+	case INPUT_DEVICE_JOYSTICK: {
+		const Pic *bg = PicManagerGetPic(&gPicManager, "button_back");
+		return DrawOneButton(bg, buf, c, pos);
+	}
 	default:
 		// Don't draw anything
 		return pos;

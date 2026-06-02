@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2018, 2020-2024 Cong Xu
+	Copyright (c) 2013-2018, 2020-2024, 2026 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -59,6 +59,7 @@
 #include <cdogs/blit.h>
 #include <cdogs/config_io.h>
 #include <cdogs/draw/draw.h>
+#include <cdogs/draw/drawtools.h>
 #include <cdogs/files.h>
 #include <cdogs/font.h>
 #include <cdogs/grafx.h>
@@ -525,10 +526,6 @@ static void PlayerSelectionDraw(GameLoopData *data)
 		else
 		{
 			struct vec2i center = svec2i_zero();
-			const char *prompt =
-				"Press Fire to choose input device\nand join...";
-			const struct vec2i offset =
-				svec2i_scale_divide(FontStrSize(prompt), -2);
 			switch (GetNumPlayers(false, false, true))
 			{
 			case 1:
@@ -549,7 +546,23 @@ static void PlayerSelectionDraw(GameLoopData *data)
 				CASSERT(false, "not implemented");
 				break;
 			}
-			FontStr(prompt, svec2i_add(center, offset));
+			// Prompt to press fire for each input device
+			int promptW = FontStrW("Press  to join...") + (12 + 4) * 2;
+			if (gEventHandlers.joysticks.size > 0)
+			{
+				promptW += 12 + 4;
+			}
+			struct vec2i pos = svec2i(center.x - promptW / 2, center.y - 4);
+			pos = FontStr("Press ", pos);
+			if (gEventHandlers.joysticks.size > 0)
+			{
+				pos = DrawButton(INPUT_DEVICE_JOYSTICK, 0, CMD_BUTTON1, pos);
+				pos = FontStr("/", pos);
+			}
+			pos = DrawButton(INPUT_DEVICE_KEYBOARD, 0, CMD_BUTTON1, pos);
+			pos = FontStr("/", pos);
+			pos = DrawButton(INPUT_DEVICE_KEYBOARD, 1, CMD_BUTTON1, pos);
+			pos = FontStr(" to join...", pos);
 		}
 	}
 

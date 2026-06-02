@@ -329,6 +329,11 @@ void JoyButtonNameColor(
 	const SDL_JoystickID id, const int cmd, char *buf, color_t *color)
 {
 	Joystick *j = GetJoystick(id);
+	if (j == NULL)
+	{
+		LOG(LM_INPUT, LL_WARN, "No joystick found: %d", id);
+		return;
+	}
 	const int button = CmdToControllerButton(cmd);
 	int res;
 	if (color != NULL)
