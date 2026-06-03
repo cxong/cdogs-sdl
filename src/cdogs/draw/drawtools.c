@@ -296,7 +296,8 @@ struct vec2i DrawButton(
 }
 
 struct vec2i DrawDirectionButtons(
-	const input_device_e inputDevice, const struct vec2i pos)
+	const input_device_e inputDevice, const int deviceIndex,
+	const struct vec2i pos)
 {
 	switch (inputDevice)
 	{
@@ -325,14 +326,24 @@ struct vec2i DrawDirectionButtons(
 			default:
 				break;
 			}
-			DrawButton(inputDevice, 0, cmd, buttonPos);
+			DrawButton(inputDevice, deviceIndex, cmd, buttonPos);
 		}
 		return svec2i(pos.x + bg->size.x * 3 + 2, pos.y);
 	}
 	break;
-	case INPUT_DEVICE_JOYSTICK:
-		// TODO: draw joystick directions
-		break;
+	case INPUT_DEVICE_JOYSTICK: {
+		// Draw d-pad
+		const NamedSprites *ns = PicManagerGetSprites(&gPicManager, "dpad");
+		const int cmd =
+			GetOnePlayerCmd(&gEventHandlers, false, inputDevice, deviceIndex) &
+			CMD_DIRECTIONS;
+		const int frame = CMD_HAS_DIRECTION(cmd) ? CmdToDirection(cmd) : 8;
+		const Pic *pic = CArrayGet(&ns->pics, frame);
+		PicRender(
+			pic, gGraphicsDevice.gameWindow.renderer, svec2i(pos.x, pos.y - 4),
+			colorWhite, 0, svec2_one(), SDL_FLIP_NONE, Rect2iZero());
+		return svec2i(pos.x + pic->size.x + 2, pos.y);
+	}
 	case INPUT_DEVICE_AI:
 		break;
 	case INPUT_DEVICE_UNSET:

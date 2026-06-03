@@ -101,7 +101,8 @@ void MenuDisplayPlayerControls(
 		const int keyBgW = 13;
 		// Try to roughly center the buttons
 		struct vec2i keyPos = svec2i(pos.x - (keyBgW * 5 + 3) / 2, y);
-		keyPos = DrawDirectionButtons(pData->inputDevice, keyPos);
+		keyPos = DrawDirectionButtons(
+			pData->inputDevice, pData->deviceIndex, keyPos);
 		keyPos.x += 3; // add some spacing between directions and buttons
 		keyPos = DrawButton(
 			pData->inputDevice, pData->deviceIndex, CMD_BUTTON1, keyPos);
@@ -110,18 +111,15 @@ void MenuDisplayPlayerControls(
 	}
 	break;
 	case INPUT_DEVICE_JOYSTICK: {
-		sprintf(
-			s, "(%s,",
-			InputDeviceName(pData->inputDevice, pData->deviceIndex));
-		struct vec2i textPos = svec2i(pos.x - FontStrW(s) / 2, y - FontH());
-		FontStr(s, textPos);
-		textPos.y += FontH();
-		textPos = DrawButton(
-			pData->inputDevice, pData->deviceIndex, CMD_BUTTON1, textPos);
-		textPos = FontStr(" and ", textPos);
-		textPos = DrawButton(
-			pData->inputDevice, pData->deviceIndex, CMD_BUTTON2, textPos);
-		FontStr(")", textPos);
+		const int keyBgW = 13;
+		struct vec2i buttonPos = svec2i(pos.x - (14 + keyBgW * 2) / 2, y);
+		buttonPos = DrawDirectionButtons(
+			pData->inputDevice, pData->deviceIndex, buttonPos);
+		buttonPos.x += 3; // add some spacing between directions and buttons
+		buttonPos = DrawButton(
+			pData->inputDevice, pData->deviceIndex, CMD_BUTTON1, buttonPos);
+		buttonPos = DrawButton(
+			pData->inputDevice, pData->deviceIndex, CMD_BUTTON2, buttonPos);
 	}
 	break;
 	case INPUT_DEVICE_AI:

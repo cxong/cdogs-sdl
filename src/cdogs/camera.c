@@ -487,7 +487,7 @@ void CameraDrawMode(const Camera *camera)
 	pos = FontStrMask("/", pos, colorYellow);
 	pos = DrawButton(inputDevice, deviceIndex, CMD_BUTTON2, pos);
 	pos = FontStrMask(" to follow player, ", pos, colorYellow);
-	pos = DrawDirectionButtons(inputDevice, pos);
+	pos = DrawDirectionButtons(inputDevice, deviceIndex, pos);
 	FontStrMask(" to free-look", pos, colorYellow);
 }
 

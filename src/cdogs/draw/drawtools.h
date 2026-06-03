@@ -77,5 +77,6 @@ struct vec2i DrawButton(
 	const input_device_e inputDevice, const int deviceIndex, const int cmd,
 	const struct vec2i pos);
 struct vec2i DrawDirectionButtons(
-	const input_device_e inputDevice, const struct vec2i pos);
+	const input_device_e inputDevice, const int deviceIndex,
+	const struct vec2i pos);
 struct vec2i DrawKeyboardMenuButtons(const struct vec2i pos);
