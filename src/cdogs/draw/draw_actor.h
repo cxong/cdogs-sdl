@@ -86,14 +86,15 @@ const Pic *GetHeadPic(
 	const CharacterClass *c, const direction_e dir, const bool isGrimacing,
 	const CharColors *colors);
 const Pic *GetHeadPartPic(
-	const char *name, const HeadPart hp, const direction_e dir, const bool isGrimacing,
+	const char *name, const HeadPart hp, const direction_e dir,
+	const bool isGrimacing, const bool isHatDetached,
 	const CharColors *colors);
 ActorPics GetCharacterPics(
 	const Character *c, const direction_e dir, const direction_e legDir,
 	const ActorAnimation anim, const int frame, const WeaponClass *gun,
 	const gunstate_e barrelStates[MAX_BARRELS], const bool isGrimacing,
-	const color_t shadowMask, const color_t *mask, const CharColors *colors,
-	const int deadPic);
+	const bool isHatDetached, const color_t shadowMask, const color_t *mask,
+	const CharColors *colors, const int deadPic);
 ActorPics GetCharacterPicsFromActor(const TActor *a);
 void DrawActorPics(
 	const ActorPics *pics, const struct vec2i pos, const Rect2i bounds);

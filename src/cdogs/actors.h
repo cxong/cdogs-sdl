@@ -181,6 +181,8 @@ typedef struct Actor
 
 	bool hasShot;
 
+	bool isHatDetached;
+
 	// Whether actor is in a pickup menu and their current selection
 	struct
 	{

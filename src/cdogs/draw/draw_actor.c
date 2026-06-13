@@ -184,8 +184,8 @@ static ActorPics GetUnorderedPics(
 	const Character *c, const direction_e dir, const direction_e legDir,
 	const ActorAnimation anim, const int frame, const WeaponClass *gun,
 	const gunstate_e barrelStates[MAX_BARRELS], const bool isGrimacing,
-	const color_t shadowMask, const color_t *mask, const CharColors *colors,
-	const int deadPic);
+	const bool isHatDetached, const color_t shadowMask, const color_t *mask,
+	const CharColors *colors, const int deadPic);
 static void UpdatePilotHeadPic(
 	ActorPics *pics, const TActor *a, const direction_e dir, const int frame);
 static void ReorderPics(
@@ -265,7 +265,8 @@ ActorPics GetCharacterPicsFromActor(const TActor *a)
 
 	ActorPics pics = GetUnorderedPics(
 		c, dir, legDir, a->anim.Type, frame, gun->Gun, gunStates,
-		ActorIsGrimacing(a), shadowMask, maskP, colors, a->dead);
+		ActorIsGrimacing(a), a->isHatDetached, shadowMask, maskP, colors,
+		a->dead);
 	UpdatePilotHeadPic(&pics, a, dir, frame);
 	ReorderPics(&pics, c, dir, gun->Gun, gunStates);
 	return pics;
@@ -306,7 +307,8 @@ static void UpdatePilotHeadPic(
 		if (c->Class->HasHeadParts[hp])
 		{
 			pics->HeadParts[hp] = GetHeadPartPic(
-				c->HeadParts[hp], hp, headDir, grimace, &c->Colors);
+				c->HeadParts[hp], hp, headDir, grimace, a->isHatDetached,
+				&c->Colors);
 			pics->HeadPartOffsets[hp] = GetActorDrawOffset(
 				pics->HeadParts[hp], BODY_PART_HEAD, c->Class->Sprites,
 				a->anim.Type, frame, dir, GUNSTATE_READY);
@@ -317,12 +319,12 @@ ActorPics GetCharacterPics(
 	const Character *c, const direction_e dir, const direction_e legDir,
 	const ActorAnimation anim, const int frame, const WeaponClass *gun,
 	const gunstate_e barrelStates[MAX_BARRELS], const bool isGrimacing,
-	const color_t shadowMask, const color_t *mask, const CharColors *colors,
-	const int deadPic)
+	const bool isHatDetached, const color_t shadowMask, const color_t *mask,
+	const CharColors *colors, const int deadPic)
 {
 	ActorPics pics = GetUnorderedPics(
 		c, dir, legDir, anim, frame, gun, barrelStates, isGrimacing,
-		shadowMask, mask, colors, deadPic);
+		isHatDetached, shadowMask, mask, colors, deadPic);
 
 	ReorderPics(&pics, c, dir, gun, barrelStates);
 
@@ -342,8 +344,8 @@ static ActorPics GetUnorderedPics(
 	const Character *c, const direction_e dir, const direction_e legDir,
 	const ActorAnimation anim, const int frame, const WeaponClass *gun,
 	const gunstate_e barrelStates[MAX_BARRELS], const bool isGrimacing,
-	const color_t shadowMask, const color_t *mask, const CharColors *colors,
-	const int deadPic)
+	const bool isHatDetached, const color_t shadowMask, const color_t *mask,
+	const CharColors *colors, const int deadPic)
 {
 	ActorPics pics;
 	memset(&pics, 0, sizeof pics);
@@ -431,8 +433,8 @@ static ActorPics GetUnorderedPics(
 			const char *headPart = (hp == HEAD_PART_HAT && festiveHat)
 									   ? festiveHat
 									   : c->HeadParts[hp];
-			pics.HeadParts[hp] =
-				GetHeadPartPic(headPart, hp, headDir, grimace, colors);
+			pics.HeadParts[hp] = GetHeadPartPic(
+				headPart, hp, headDir, grimace, isHatDetached, colors);
 			pics.HeadPartOffsets[hp] = GetActorDrawOffset(
 				pics.HeadParts[hp], BODY_PART_HEAD, c->Class->Sprites, anim,
 				frame, dir, GUNSTATE_READY);
@@ -673,9 +675,14 @@ const Pic *GetHeadPic(
 }
 const Pic *GetHeadPartPic(
 	const char *name, const HeadPart hp, const direction_e dir,
-	const bool isGrimacing, const CharColors *colors)
+	const bool isGrimacing, const bool isHatDetached, const CharColors *colors)
 {
 	if (name == NULL)
+	{
+		return NULL;
+	}
+	// Don't draw hat if it's detached
+	if (isHatDetached && hp == HEAD_PART_HAT)
 	{
 		return NULL;
 	}
@@ -777,8 +784,8 @@ void DrawCharacterSimple(
 	const gunstate_e barrelStates[MAX_BARRELS] = {
 		GUNSTATE_READY, GUNSTATE_READY};
 	ActorPics pics = GetCharacterPics(
-		c, d, d, ACTORANIMATION_IDLE, 0, gun, barrelStates, false, colorBlack,
-		NULL, NULL, 0);
+		c, d, d, ACTORANIMATION_IDLE, 0, gun, barrelStates, false, false,
+		colorBlack, NULL, NULL, 0);
 	DrawActorPics(&pics, pos, Rect2iZero());
 	if (hilite)
 	{
@@ -795,6 +802,7 @@ void DrawHead(
 	const struct vec2i pos)
 {
 	const bool isGrimacing = false;
+	const bool isHatDetached = false;
 	const Pic *head = GetHeadPic(c->Class, dir, isGrimacing, &c->Colors);
 	const struct vec2i headOffset = GetActorDrawOffset(
 		head, BODY_PART_HEAD, c->Class->Sprites, ACTORANIMATION_IDLE, 0,
@@ -810,7 +818,8 @@ void DrawHead(
 		if (c->Class->HasHeadParts[hp])
 		{
 			const Pic *pic = GetHeadPartPic(
-				c->HeadParts[hp], hp, dir, isGrimacing, &c->Colors);
+				c->HeadParts[hp], hp, dir, isGrimacing, isHatDetached,
+				&c->Colors);
 			if (pic)
 			{
 				const struct vec2i headPartOffset = GetActorDrawOffset(

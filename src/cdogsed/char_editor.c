@@ -149,7 +149,8 @@ void CharEditor(
 		CA_FOREACH(const GLuint, texid, ec.texIdsHeadParts[hp])
 		const char *name = IndexHeadPartName(_ca_index, hp);
 		LoadTexFromPic(
-			*texid, GetHeadPartPic(name, hp, DIRECTION_DOWN, false, &cc));
+			*texid,
+			GetHeadPartPic(name, hp, DIRECTION_DOWN, false, false, &cc));
 		CA_FOREACH_END()
 	}
 
@@ -992,8 +993,8 @@ static void DrawCharacter(
 {
 	const int frame = AnimationGetFrame(anim);
 	ActorPics pics = GetCharacterPics(
-		c, d, d, anim->Type, frame, c->Gun, gunStates, false, colorTransparent,
-		NULL, NULL, 0);
+		c, d, d, anim->Type, frame, c->Gun, gunStates, false, false,
+		colorTransparent, NULL, NULL, 0);
 	for (int i = 0; i < BODY_PART_COUNT; i++)
 	{
 		const Pic *pic = pics.OrderedPics[i];
