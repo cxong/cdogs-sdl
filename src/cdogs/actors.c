@@ -2347,10 +2347,13 @@ void ActorHit(const NThingDamage d)
 		a->grimaceCounter = GRIMACE_HIT_TICKS;
 
 		// Lose hat when taking damage, but only sometimes
-		if (damage > 0 && a->health < ActorGetCharacter(a)->maxHealth / 2 &&
-			RAND_INT(0, 3) == 0)
+		if (!a->isHatDetached && damage > 0 &&
+			a->health < ActorGetCharacter(a)->maxHealth / 2 &&
+			RAND_INT(0, 3) == 0 &&
+			DetachableHatIsDetachable(
+				ActorGetCharacter(a)->HeadParts[HEAD_PART_HAT]))
 		{
-			// TODO: create hat particle
+			// TODO: create hat particle, and sound effect
 			a->isHatDetached = true;
 		}
 	}

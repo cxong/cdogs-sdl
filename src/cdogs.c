@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2017, 2019-2022, 2024 Cong Xu
+	Copyright (c) 2013-2017, 2019-2022, 2024, 2026 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
 	char buf[CDOGS_PATH_MAX];
 	ProcessCommandLine(buf, argc, argv);
 	LOG(LM_MAIN, LL_INFO, "Command line (%d args):%s", argc, buf);
-    int demoQuitTimer = 0;
+	int demoQuitTimer = 0;
 	if (!ParseArgs(argc, argv, &connectAddr, &loadCampaign, &demoQuitTimer))
 	{
 		goto bail;
@@ -198,7 +198,8 @@ int main(int argc, char *argv[])
 	AutosaveLoad(&gAutosave, GetConfigFilePath(AUTOSAVE_FILE));
 #endif
 
-	LoadingScreenDraw(&gLoadingScreen, "Initializing network client...", 0.18f);
+	LoadingScreenDraw(
+		&gLoadingScreen, "Initializing network client...", 0.18f);
 #ifndef __EMSCRIPTEN__
 	if (enet_initialize() != 0)
 	{
@@ -217,7 +218,7 @@ int main(int argc, char *argv[])
 	}
 
 	EventInit(&gEventHandlers);
-    gEventHandlers.DemoQuitTimer = demoQuitTimer;
+	gEventHandlers.DemoQuitTimer = demoQuitTimer;
 	NetServerInit(&gNetServer);
 	LoadingScreenDraw(&gLoadingScreen, "Loading character sprites...", 0.34f);
 	CharSpriteClassesInit(&gCharSpriteClasses);
@@ -226,13 +227,15 @@ int main(int argc, char *argv[])
 	ParticleClassesInit(&gParticleClasses, "data/particles.json");
 	LoadingScreenDraw(&gLoadingScreen, "Loading ammo...", 0.5f);
 	AmmoInitialize(&gAmmo, "data/ammo.json");
-	LoadingScreenDraw(&gLoadingScreen, "Loading bullets and weapons...", 0.58f);
+	LoadingScreenDraw(
+		&gLoadingScreen, "Loading bullets and weapons...", 0.58f);
 	BulletAndWeaponInitialize(
 		&gBulletClasses, &gWeaponClasses, "data/bullets.json",
 		"data/guns.json");
 	LoadingScreenDraw(&gLoadingScreen, "Loading character classes...", 0.66f);
 	CharacterClassesInitialize(
 		&gCharacterClasses, "data/character_classes.json");
+	DetachableHatsInitialize();
 #ifndef __EMSCRIPTEN__
 	LoadingScreenDraw(&gLoadingScreen, "Loading player templates...", 0.75f);
 	PlayerTemplatesLoad(&gPlayerTemplates, &gCharacterClasses);
@@ -250,7 +253,8 @@ int main(int argc, char *argv[])
 	LoadingScreenDraw(&gLoadingScreen, "Loading main menu...", 1.0f);
 	LoopRunner l = LoopRunnerNew();
 	LoopRunnerPush(&l, MainMenu(&gGraphicsDevice, &l));
-	LoopRunnerPush(&l, ScreenLoading("Loading main menu...", false, NULL, false));
+	LoopRunnerPush(
+		&l, ScreenLoading("Loading main menu...", false, NULL, false));
 	if (connectAddr.host != 0)
 	{
 		if (NetClientTryScanAndConnect(&gNetClient, connectAddr.host))
@@ -308,6 +312,7 @@ bail:
 	MissionOptionsTerminate(&gMission);
 	MapTerminate(&gMap);
 	NetClientTerminate(&gNetClient);
+	DetachableHatsTerminate();
 	atexit(enet_deinitialize);
 	EventTerminate(&gEventHandlers);
 	CampaignTerminate(&gCampaign);

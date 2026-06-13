@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2016-2017, 2019-2021, 2023, 2025 Cong Xu
+	Copyright (c) 2016-2017, 2019-2021, 2023, 2025-2026 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@
 #define FOOTSTEP_DISTANCE_PLUS 250
 
 CharacterClasses gCharacterClasses;
+map_t gDetachableHats;
 
 // TODO: use map structure?
 const CharacterClass *StrCharacterClass(const char *s)
@@ -62,12 +63,18 @@ void CharacterClassCopy(CharacterClass *dst, const CharacterClass *src)
 	CharacterClassFree(dst);
 	memcpy(dst, src, sizeof *dst);
 	CSTRDUP(dst->Name, src->Name);
-	if (src->HeadSprites) CSTRDUP(dst->HeadSprites, src->HeadSprites);
-	if (src->Body) CSTRDUP(dst->Body, src->Body);
-	if (src->DeathSprites) CSTRDUP(dst->DeathSprites, src->DeathSprites);
-	if (src->Sounds) CSTRDUP(dst->Sounds, src->Sounds);
-	if (src->Footsteps) CSTRDUP(dst->Footsteps, src->Footsteps);
-	if (src->Corpse) CSTRDUP(dst->Corpse, src->Corpse);
+	if (src->HeadSprites)
+		CSTRDUP(dst->HeadSprites, src->HeadSprites);
+	if (src->Body)
+		CSTRDUP(dst->Body, src->Body);
+	if (src->DeathSprites)
+		CSTRDUP(dst->DeathSprites, src->DeathSprites);
+	if (src->Sounds)
+		CSTRDUP(dst->Sounds, src->Sounds);
+	if (src->Footsteps)
+		CSTRDUP(dst->Footsteps, src->Footsteps);
+	if (src->Corpse)
+		CSTRDUP(dst->Corpse, src->Corpse);
 }
 
 static const char *characterNames[] = {
@@ -78,7 +85,8 @@ const char *IntCharacterFace(const int face)
 {
 	return characterNames[face];
 }
-void CharacterOldFaceToHeadParts(const char *face, char **newFace, char *headParts[HEAD_PART_COUNT])
+void CharacterOldFaceToHeadParts(
+	const char *face, char **newFace, char *headParts[HEAD_PART_COUNT])
 {
 	// Convert old faces to face + hair
 	if (strcmp(face, "Bob") == 0)
@@ -298,7 +306,8 @@ void CharacterOldHairToHeadParts(char *headParts[HEAD_PART_COUNT])
 	}
 }
 
-const NamedSprites *CharacterClassGetDeathSprites(const CharacterClass *c, const PicManager *pm)
+const NamedSprites *CharacterClassGetDeathSprites(
+	const CharacterClass *c, const PicManager *pm)
 {
 	char buf[256];
 	sprintf(buf, "chars/%s", c->DeathSprites);
@@ -339,7 +348,8 @@ int CharacterClassIndex(const CharacterClass *c)
 	return -1;
 }
 
-void CharacterClassGetSound(const CharacterClass *c, char *out, const char *sound)
+void CharacterClassGetSound(
+	const CharacterClass *c, char *out, const char *sound)
 {
 	sprintf(out, "chars/%s/%s", sound, c->Sounds);
 }
@@ -417,7 +427,7 @@ static void LoadCharacterClass(CharacterClass *c, json_t *node)
 	c->Sprites = StrCharSpriteClass(c->Body);
 
 	LoadStr(&c->Sounds, node, "Sounds");
-	
+
 	LoadStr(&c->Footsteps, node, "Footsteps");
 	c->FootstepsDistancePlus = FOOTSTEP_DISTANCE_PLUS;
 	LoadInt(&c->FootstepsDistancePlus, node, "FootstepsDistancePlus");
@@ -436,7 +446,7 @@ static void LoadCharacterClass(CharacterClass *c, json_t *node)
 	LoadBool(&c->HasHeadParts[HEAD_PART_HAT], node, "HasHat");
 	c->HasHeadParts[HEAD_PART_GLASSES] = true;
 	LoadBool(&c->HasHeadParts[HEAD_PART_GLASSES], node, "HasGlasses");
-	
+
 	LoadStr(&c->Corpse, node, "Corpse");
 }
 void CharacterClassesClear(CArray *classes)
@@ -463,4 +473,46 @@ void CharacterClassesTerminate(CharacterClasses *c)
 	CArrayTerminate(&c->Classes);
 	CharacterClassesClear(&c->CustomClasses);
 	CArrayTerminate(&c->CustomClasses);
+}
+
+void DetachableHatsInitialize(void)
+{
+	gDetachableHats = hashmap_new();
+	// Load detachable hat names from file
+	char buf[CDOGS_PATH_MAX];
+	GetDataFilePath(buf, "data/detachable_hats.txt");
+	FILE *f = fopen(buf, "r");
+	if (f == NULL)
+	{
+		LOG(LM_MAIN, LL_ERROR, "Cannot open detachable hats file: %s", buf);
+		goto bail;
+	}
+	char line[256];
+	while (fgets(line, sizeof(line), f))
+	{
+		if (strlen(line) > 0 && linex[strlen(line) - 1] == '\n')
+		{
+			line[strlen(line) - 1] = '\0';
+		}
+		char *hatName;
+		CSTRDUP(hatName, line);
+		if (hashmap_put(gDetachableHats, hatName, NULL) != MAP_OK)
+		{
+			LOG(LM_MAIN, LL_ERROR, "failed to load detachable hats (%s)", buf);
+			CFREE(hatName);
+			continue;
+		}
+	}
+bail:
+	fclose(f);
+}
+
+void DetachableHatsTerminate(void)
+{
+	hashmap_free(gDetachableHats);
+}
+
+bool DetachableHatIsDetachable(const char *hatName)
+{
+	return hatName && hashmap_get(gDetachableHats, hatName, NULL) != MAP_MISSING;
 }

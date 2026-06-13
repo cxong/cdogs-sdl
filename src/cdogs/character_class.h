@@ -2,7 +2,7 @@
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
 
-	Copyright (c) 2016-2021, 2023, 2025 Cong Xu
+	Copyright (c) 2016-2021, 2023, 2025-2026 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -31,8 +31,8 @@
 #include "cpic.h"
 #include "defs.h"
 #include "draw/char_sprites.h"
-#include "json/json.h"
 #include "pic_manager.h"
+#include "json/json.h"
 
 typedef struct
 {
@@ -57,20 +57,29 @@ typedef struct
 } CharacterClasses;
 extern CharacterClasses gCharacterClasses;
 
+extern map_t gDetachableHats;
+
 #define CHARACTER_DEFAULT_MASS 100
 
 const CharacterClass *StrCharacterClass(const char *s);
 void CharacterClassCopy(CharacterClass *dst, const CharacterClass *src);
 // Legacy character class from "face" index
 const char *IntCharacterFace(const int face);
-void CharacterOldFaceToHeadParts(const char *face, char **newFace, char *headParts[HEAD_PART_COUNT]);
+void CharacterOldFaceToHeadParts(
+	const char *face, char **newFace, char *headParts[HEAD_PART_COUNT]);
 void CharacterOldHairToHeadParts(char *headParts[HEAD_PART_COUNT]);
-const NamedSprites *CharacterClassGetDeathSprites(const CharacterClass *c, const PicManager *pm);
+const NamedSprites *CharacterClassGetDeathSprites(
+	const CharacterClass *c, const PicManager *pm);
 const CharacterClass *IndexCharacterClass(const int i);
 int CharacterClassIndex(const CharacterClass *c);
-void CharacterClassGetSound(const CharacterClass *c, char *out, const char *sound);
+void CharacterClassGetSound(
+	const CharacterClass *c, char *out, const char *sound);
 
 void CharacterClassesInitialize(CharacterClasses *c, const char *filename);
 void CharacterClassesLoadJSON(CArray *classes, json_t *root);
 void CharacterClassesClear(CArray *classes);
 void CharacterClassesTerminate(CharacterClasses *c);
+
+void DetachableHatsInitialize(void);
+void DetachableHatsTerminate(void);
+bool DetachableHatIsDetachable(const char *hatName);
