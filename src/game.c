@@ -434,6 +434,18 @@ static GameLoopResult RunGameUpdate(GameLoopData *data, LoopRunner *l)
 	if (!gCampaign.IsClient && !ConfigGetBool(&gConfig, "StartServer") &&
 		paused && !gEventHandlers.HasQuit)
 	{
+		// The game is frozen so GameUpdate() (which normally handles this) is
+		// skipped, but a resolution change still needs to reset the camera and
+		// background for the new view size and reposition the pause menu.
+		// Otherwise the game view is drawn with a stale/mismatched size, e.g.
+		// toggling fullscreen with Alt+Enter while paused.
+		if (gEventHandlers.HasResolutionChanged)
+		{
+			RunGameReset(rData);
+			rData->pm.ms.size = svec2i(
+				gGraphicsDevice.cachedConfig.Res.x,
+				gGraphicsDevice.cachedConfig.Res.y);
+		}
 		return UPDATE_RESULT_DRAW;
 	}
 

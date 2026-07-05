@@ -146,6 +146,17 @@ static void MainMenuReset(MainMenuData *data)
 
 	data->entry = NULL;
 }
+// Handle a resolution change (e.g. the window being resized) by resizing the
+// background draw buffer to the new view size, keeping the current map. Unlike
+// MainMenuReset() this does not regenerate a brand new random background, which
+// looked jarring when dragging the window edge (the map changed every frame).
+static void MainMenuResize(MainMenuData *data)
+{
+	DrawBufferTerminate(&data->buffer);
+	DrawBufferInit(&data->buffer, svec2i(X_TILES, Y_TILES), data->graphics);
+
+	MenuResetSize(&data->ms);
+}
 static void MainMenuTerminate(GameLoopData *data)
 {
 	MainMenuData *mData = data->Data;
@@ -249,7 +260,7 @@ static GameLoopResult MainMenuUpdate(GameLoopData *data, LoopRunner *l)
 	}
 	if (gEventHandlers.HasResolutionChanged)
 	{
-		MainMenuReset(mData);
+		MainMenuResize(mData);
 	}
 	return result;
 }

@@ -73,6 +73,24 @@ void DrawBufferSetFromMap(
 	DrawBuffer *buffer, const Map *map, const struct vec2 origin,
 	const int width)
 {
+	// The view size (X_TILES/Y_TILES) is derived from the current resolution,
+	// which can change (e.g. switching to fullscreen) after this buffer was
+	// allocated. DrawTiles()/DrawBufferFix() walk the tile array using the
+	// current X_TILES/Y_TILES as the pitch, so if the resolution grew since
+	// allocation they would index past the end of the array and dereference
+	// garbage. Keep the tile array sized to the current view so it always
+	// matches how it is later read.
+	const struct vec2i view = svec2i(X_TILES, Y_TILES);
+	if (view.x != buffer->OrigSize.x || view.y != buffer->OrigSize.y)
+	{
+		LOG(LM_GFX, LL_INFO,
+			"resizing DrawBuffer to match resolution: OrigSize(%dx%d) -> (%dx%d)",
+			buffer->OrigSize.x, buffer->OrigSize.y, view.x, view.y);
+		buffer->OrigSize = view;
+		CArrayTerminate(&buffer->tiles);
+		CArrayInitFillZero(&buffer->tiles, sizeof(Tile *), view.x * view.y);
+	}
+
 	buffer->Size = svec2i(width, buffer->OrigSize.y);
 
 	buffer->xTop = (int)origin.x - TILE_WIDTH * width / 2;

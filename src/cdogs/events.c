@@ -248,6 +248,12 @@ void EventPoll(
 			!ConfigGet(&gConfig, "Graphics.Fullscreen")->u.Bool.Value;
 		GraphicsConfigSetFromConfig(&gGraphicsDevice.cachedConfig, &gConfig);
 		GraphicsInitialize(&gGraphicsDevice);
+		// The view size (X_TILES/Y_TILES) has changed, so the draw buffers and
+		// live background must be rebuilt for the new resolution before the next
+		// draw. Flag it so the active game loop rebuilds them this frame (same
+		// path used when the resolution is changed from the options menu),
+		// otherwise a stale buffer is drawn for a frame.
+		handlers->HasResolutionChanged = true;
 	}
 
 	// Auto quit on timer
