@@ -114,6 +114,9 @@ PB_BIND(NActorMelee, NActorMelee, AUTO)
 PB_BIND(NActorPilot, NActorPilot, AUTO)
 
 
+PB_BIND(NActorBark, NActorBark, AUTO)
+
+
 PB_BIND(NAddPickup, NAddPickup, AUTO)
 
 

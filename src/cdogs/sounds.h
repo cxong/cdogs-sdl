@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2017, 2019-2021 Cong Xu
+	Copyright (c) 2013-2017, 2019-2021, 2026 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -118,11 +118,11 @@ void SoundPlay(SoundDevice *device, Mix_Chunk *data);
 void SoundSetEarsSide(const bool isLeft, const struct vec2 pos);
 void SoundSetEar(const bool isLeft, const int idx, const struct vec2 pos);
 void SoundSetEars(const struct vec2 pos);
-void SoundPlayAt(SoundDevice *device, Mix_Chunk *data, const struct vec2 pos);
+int SoundPlayAt(SoundDevice *device, Mix_Chunk *data, const struct vec2 pos);
 
 // Play a sound but with distance added
 // Simulates a quieter sound by adding distance attenuation
-void SoundPlayAtPlusDistance(
+int SoundPlayAtPlusDistance(
 	SoundDevice *device, Mix_Chunk *data, const struct vec2 pos,
 	const int plusDistance);
 

@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2014, 2016-2017, 2020-2021, 2023 Cong Xu
+	Copyright (c) 2013-2014, 2016-2017, 2020-2021, 2023, 2026 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -513,10 +513,10 @@ void AIWake(TActor *a, const int delayModifier)
 	// Don't play alert sound for invisible enemies
 	if (!(a->flags & FLAGS_SEETHROUGH))
 	{
-		GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
+		GameEvent es = GameEventNew(GAME_EVENT_ACTOR_BARK);
 		CharacterClassGetSound(
-			ActorGetCharacter(a)->Class, es.u.SoundAt.Sound, "alert");
-		es.u.SoundAt.Pos = Vec2ToNet(a->thing.Pos);
+			ActorGetCharacter(a)->Class, es.u.Bark.Sound, "alert");
+		es.u.Bark.UID = a->uid;
 		GameEventsEnqueue(&gGameEvents, es);
 	}
 }

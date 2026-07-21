@@ -251,6 +251,11 @@ message NActorPilot {
 	bool On = 3;
 }
 
+message NActorBark {
+	uint32 UID = 1;
+	string Sound = 2;
+}
+
 message NAddPickup {
 	uint32 UID = 1;
 	string PickupClass = 2;

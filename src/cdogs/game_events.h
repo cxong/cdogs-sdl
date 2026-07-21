@@ -1,30 +1,30 @@
 /*
-    C-Dogs SDL
-    A port of the legendary (and fun) action/arcade cdogs.
+	C-Dogs SDL
+	A port of the legendary (and fun) action/arcade cdogs.
 
-    Copyright (c) 2013-2019, 2021, 2023 Cong Xu
-    All rights reserved.
+	Copyright (c) 2013-2019, 2021, 2023 Cong Xu
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+	Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+	POSSIBILITY OF SUCH DAMAGE.
 */
 #pragma once
 
@@ -33,7 +33,6 @@
 #include "particle.h"
 #include "player.h"
 #include "proto/msg.pb.h"
-
 
 // Game events represent anything that is created within the game but is
 // required by outside systems, e.g. sound events
@@ -84,6 +83,7 @@ typedef enum
 	GAME_EVENT_PLAYER_ADD_LIVES,
 	GAME_EVENT_ACTOR_MELEE,
 	GAME_EVENT_ACTOR_PILOT,
+	GAME_EVENT_ACTOR_BARK,
 
 	GAME_EVENT_ADD_PICKUP,
 	GAME_EVENT_REMOVE_PICKUP,
@@ -133,8 +133,7 @@ typedef struct
 {
 	GameEventType Type;
 	int Delay;
-	union
-	{
+	union {
 		NPlayerData PlayerData;
 		NPlayerRemove PlayerRemove;
 		NTileSet TileSet;
@@ -172,6 +171,7 @@ typedef struct
 		NPlayerAddLives PlayerAddLives;
 		NActorMelee Melee;
 		NActorPilot Pilot;
+		NActorBark Bark;
 		NAddPickup AddPickup;
 		NRemovePickup RemovePickup;
 		struct
@@ -198,7 +198,7 @@ typedef struct
 	} u;
 } GameEvent;
 
-extern CArray gGameEvents;	// of GameEvent
+extern CArray gGameEvents; // of GameEvent
 
 #define GAME_OVER_DELAY (FPS_FRAMELIMIT * 2)
 
@@ -208,4 +208,5 @@ void GameEventsEnqueue(CArray *store, GameEvent e);
 void GameEventsClear(CArray *store);
 
 GameEvent GameEventNew(GameEventType type);
-GameEvent GameEventNewActorAdd(const struct vec2 pos, const Character *c, const PlayerData *p);
+GameEvent GameEventNewActorAdd(
+	const struct vec2 pos, const Character *c, const PlayerData *p);

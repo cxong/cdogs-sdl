@@ -363,6 +363,9 @@ static void HandleGameEvent(
 		ActorDestroy(a);
 	}
 	break;
+	case GAME_EVENT_ACTOR_BARK:
+		ActorBark(e.u.Bark);
+		break;
 	case GAME_EVENT_PLAYER_ADD_LIVES: {
 		PlayerData *p = PlayerDataGetByUID(e.u.PlayerAddLives.UID);
 		p->Lives += e.u.PlayerAddLives.Lives;

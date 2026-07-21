@@ -290,6 +290,11 @@ typedef struct _NActorPilot {
     bool On;
 } NActorPilot;
 
+typedef struct _NActorBark {
+    uint32_t UID;
+    char Sound[128];
+} NActorBark;
+
 typedef struct _NAddPickup {
     uint32_t UID;
     char PickupClass[128];
@@ -455,6 +460,7 @@ extern "C" {
 #define NPlayerAddLives_init_default             {0, 0}
 #define NActorMelee_init_default                 {0, "", 0, 0, 0}
 #define NActorPilot_init_default                 {0, 0, 0}
+#define NActorBark_init_default                  {0, ""}
 #define NAddPickup_init_default                  {0, "", 0, 0, 0, false, NVec2_init_default}
 #define NRemovePickup_init_default               {0, 0}
 #define NBulletBounce_init_default               {0, 0, 0, false, NVec2_init_default, false, NVec2_init_default, false, NVec2_init_default, 0, 0}
@@ -508,6 +514,7 @@ extern "C" {
 #define NPlayerAddLives_init_zero                {0, 0}
 #define NActorMelee_init_zero                    {0, "", 0, 0, 0}
 #define NActorPilot_init_zero                    {0, 0, 0}
+#define NActorBark_init_zero                     {0, ""}
 #define NAddPickup_init_zero                     {0, "", 0, 0, 0, false, NVec2_init_zero}
 #define NRemovePickup_init_zero                  {0, 0}
 #define NBulletBounce_init_zero                  {0, 0, 0, false, NVec2_init_zero, false, NVec2_init_zero, false, NVec2_init_zero, 0, 0}
@@ -667,6 +674,8 @@ extern "C" {
 #define NActorPilot_UID_tag                      1
 #define NActorPilot_VehicleUID_tag               2
 #define NActorPilot_On_tag                       3
+#define NActorBark_UID_tag                       1
+#define NActorBark_Sound_tag                     2
 #define NAddPickup_UID_tag                       1
 #define NAddPickup_PickupClass_tag               2
 #define NAddPickup_IsRandomSpawned_tag           3
@@ -1039,6 +1048,12 @@ X(a, STATIC,   SINGULAR, BOOL,     On,                3)
 #define NActorPilot_CALLBACK NULL
 #define NActorPilot_DEFAULT NULL
 
+#define NActorBark_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
+X(a, STATIC,   SINGULAR, STRING,   Sound,             2)
+#define NActorBark_CALLBACK NULL
+#define NActorBark_DEFAULT NULL
+
 #define NAddPickup_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UINT32,   UID,               1) \
 X(a, STATIC,   SINGULAR, STRING,   PickupClass,       2) \
@@ -1213,6 +1228,7 @@ extern const pb_msgdesc_t NActorDie_msg;
 extern const pb_msgdesc_t NPlayerAddLives_msg;
 extern const pb_msgdesc_t NActorMelee_msg;
 extern const pb_msgdesc_t NActorPilot_msg;
+extern const pb_msgdesc_t NActorBark_msg;
 extern const pb_msgdesc_t NAddPickup_msg;
 extern const pb_msgdesc_t NRemovePickup_msg;
 extern const pb_msgdesc_t NBulletBounce_msg;
@@ -1268,6 +1284,7 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 #define NPlayerAddLives_fields &NPlayerAddLives_msg
 #define NActorMelee_fields &NActorMelee_msg
 #define NActorPilot_fields &NActorPilot_msg
+#define NActorBark_fields &NActorBark_msg
 #define NAddPickup_fields &NAddPickup_msg
 #define NRemovePickup_fields &NRemovePickup_msg
 #define NBulletBounce_fields &NBulletBounce_msg
@@ -1289,6 +1306,7 @@ extern const pb_msgdesc_t NMissionEnd_msg;
 /* Maximum encoded size of messages (where known) */
 #define NActorAddAmmo_size                       33
 #define NActorAdd_size                           1877
+#define NActorBark_size                          136
 #define NActorDie_size                           11
 #define NActorDir_size                           17
 #define NActorHeal_size                          32

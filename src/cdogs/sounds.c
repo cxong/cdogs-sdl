@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2017, 2019-2020, 2023 Cong Xu
+	Copyright (c) 2013-2017, 2019-2020, 2023, 2026 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -283,7 +283,8 @@ void SoundReconfigure(SoundDevice *s)
 	const int sVol = ConfigGetInt(&gConfig, "Sound.SoundVolume");
 	Mix_Volume(-1, sVol);
 	const int mVol = ConfigGetInt(&gConfig, "Sound.MusicVolume");
-	Mix_VolumeMusic(s->music.isReduced ? (int)(mVol * MUSIC_REDUCTION_RATE) : mVol);
+	Mix_VolumeMusic(
+		s->music.isReduced ? (int)(mVol * MUSIC_REDUCTION_RATE) : mVol);
 	MusicSetPlaying(&s->music, mVol > 0);
 
 	s->isInitialised = true;
@@ -355,13 +356,13 @@ static void MuffleEffect(int chan, void *stream, int len, void *udata)
 static void SetSoundEffect(
 	const int channel, const Sint16 bearingDegrees, const Uint8 distance,
 	const bool isMuffled);
-static void SoundPlayAtPosition(
+static int SoundPlayAtPosition(
 	SoundDevice *device, Mix_Chunk *data, const struct vec2 dp,
 	const bool isMuffled)
 {
 	if (!device->isInitialised || data == NULL)
 	{
-		return;
+		return -1;
 	}
 
 	int distance = 0;
@@ -404,7 +405,7 @@ static void SoundPlayAtPosition(
 	// This means we don't waste sound channels
 	if (distance > 255)
 	{
-		return;
+		return -1;
 	}
 
 	LOG(LM_SOUND, LL_TRACE, "distance(%d) bearing(%d)", distance,
@@ -414,10 +415,12 @@ static void SoundPlayAtPosition(
 	const int channel = GetChannel(device, data);
 	if (channel < 0)
 	{
-		return;
+		return -1;
 	}
 
 	SetSoundEffect(channel, bearingDegrees, (Uint8)distance, isMuffled);
+
+	return channel;
 }
 static int GetChannel(SoundDevice *s, Mix_Chunk *data)
 {
@@ -519,9 +522,9 @@ void SoundSetEars(const struct vec2 pos)
 	SoundSetEarsSide(false, pos);
 }
 
-void SoundPlayAt(SoundDevice *device, Mix_Chunk *data, const struct vec2 pos)
+int SoundPlayAt(SoundDevice *device, Mix_Chunk *data, const struct vec2 pos)
 {
-	SoundPlayAtPlusDistance(device, data, pos, 0);
+	return SoundPlayAtPlusDistance(device, data, pos, 0);
 }
 
 static bool IsPosNoSee(void *data, struct vec2i pos)
@@ -529,13 +532,13 @@ static bool IsPosNoSee(void *data, struct vec2i pos)
 	const Tile *t = MapGetTile(data, Vec2iToTile(pos));
 	return t != NULL && TileIsOpaque(t);
 }
-void SoundPlayAtPlusDistance(
+int SoundPlayAtPlusDistance(
 	SoundDevice *device, Mix_Chunk *data, const struct vec2 pos,
 	const int plusDistance)
 {
 	if (device == NULL || !device->isInitialised)
 	{
-		return;
+		return -1;
 	}
 	struct vec2 closestLeftEar, closestRightEar;
 
@@ -577,7 +580,7 @@ void SoundPlayAtPlusDistance(
 		}
 	}
 	const struct vec2 dp = svec2_subtract(pos, origin);
-	SoundPlayAtPosition(
+	return SoundPlayAtPosition(
 		&gSoundDevice, data, svec2(dp.x, fabsf(dp.y) + plusDistance),
 		isMuffled);
 }

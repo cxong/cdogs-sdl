@@ -127,10 +127,10 @@ typedef struct Actor
 	// -1 if human character (get from player data), otherwise index into
 	// CharacterStore OtherChars
 	int charId;
-	int PlayerUID; // -1 unless a human player
-	int uid;	   // unique ID across all actors
-	int pilotUID;  // the actor that controls this
-				  // (same as uid for normal actors)
+	int PlayerUID;	// -1 unless a human player
+	int uid;		// unique ID across all actors
+	int pilotUID;	// the actor that controls this
+					// (same as uid for normal actors)
 	int vehicleUID; // -1 unless piloting a vehicle
 	Weapon guns[MAX_WEAPONS];
 	CArray ammo; // of int
@@ -157,6 +157,8 @@ typedef struct Actor
 	int damageCooldownTicks;
 	// Facial expression when melee or taking damage
 	int grimaceCounter;
+	// Channel used for voices - only allow one playing at a time
+	int voiceChannel;
 
 	// What to say (text label appears above actor) and how long to say it
 	char Chatter[256];
@@ -269,3 +271,5 @@ bool ActorIsGrimacing(const TActor *a);
 
 bool ActorIsLocalPlayer(const int uid);
 void ActorPersistPlayerWeaponsAndAmmo(const TActor *a);
+
+void ActorBark(NActorBark ab);

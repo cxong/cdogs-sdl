@@ -826,10 +826,10 @@ void InjureActor(TActor *actor, int injury)
 	if (lastHealth > 0 && actor->health <= 0)
 	{
 		actor->stateCounter = 0;
-		GameEvent es = GameEventNew(GAME_EVENT_SOUND_AT);
+		GameEvent es = GameEventNew(GAME_EVENT_ACTOR_BARK);
 		CharacterClassGetSound(
-			ActorGetCharacter(actor)->Class, es.u.SoundAt.Sound, "die");
-		es.u.SoundAt.Pos = Vec2ToNet(actor->thing.Pos);
+			ActorGetCharacter(actor)->Class, es.u.Bark.Sound, "die");
+		es.u.Bark.UID = actor->uid;
 		GameEventsEnqueue(&gGameEvents, es);
 		if (actor->PlayerUID >= 0)
 		{
@@ -1869,6 +1869,7 @@ TActor *ActorAdd(NActorAdd aa)
 		}
 	}
 	actor->health = aa.Health;
+	actor->voiceChannel = -1;
 	actor->action = ACTORACTION_MOVING;
 	actor->thing.Pos.x = actor->thing.Pos.y = -1;
 	actor->thing.kind = KIND_CHARACTER;
@@ -2573,4 +2574,36 @@ void ActorPersistPlayerWeaponsAndAmmo(const TActor *a)
 		p->guns[i] = a->guns[i].Gun;
 	}
 	CArrayCopy(&p->ammo, &a->ammo);
+}
+
+static void ActorVoiceChannelFinished(int channel)
+{
+	CA_FOREACH(TActor, a, gActors)
+	if (a->voiceChannel == channel)
+	{
+		a->voiceChannel = -1;
+		break;
+	}
+	CA_FOREACH_END()
+}
+
+void ActorBark(NActorBark ab)
+{
+	// Say something (sound), ensure only one sound per actor
+	// Stop playing whatever sound the actor was last playing
+	TActor *a = ActorGetByUID(ab.UID);
+	if (a == NULL || !a->isInUse)
+	{
+		return;
+	}
+	if (a->voiceChannel >= 0)
+	{
+		if (Mix_HaltChannel(a->voiceChannel) == -1)
+		{
+			LOG(LM_ACTOR, LL_DEBUG, "actor uid(%d) can't stop voice channel",
+				a->uid);
+		}
+	}
+	a->voiceChannel = SoundPlayAt(&gSoundDevice, StrSound(ab.Sound), a->Pos);
+	Mix_ChannelFinished(ActorVoiceChannelFinished);
 }
