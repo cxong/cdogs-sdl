@@ -112,3 +112,6 @@ Thumbs.db
 .config/
 *.blend1
 emscripten/
+# Linux bundle pipeline output (.github/workflows/build-linux.sh + package-linux-bundle.sh)
+build-output/
+distrib/

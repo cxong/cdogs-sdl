@@ -1,0 +1,58 @@
+name: Build Linux bundle
+
+on:
+  pull_request:
+  # Reusable: can be invoked by a release workflow on merges/tags.
+  workflow_call:
+
+jobs:
+  build-linux:
+    name: Build Linux-bundle
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          # Drop broken pre-installed third-party apt repos (microsoft/azure); we don't use them.
+          sudo rm -f /etc/apt/sources.list.d/*microsoft* /etc/apt/sources.list.d/*azure*
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake \
+            build-essential \
+            patchelf \
+            protobuf-compiler \
+            libsdl2-dev \
+            libsdl2-mixer-dev \
+            libgl1-mesa-dev
+
+      - name: Build
+        run: ./.github/workflows/build-linux.sh
+
+      - name: Package
+        run: ./.github/workflows/package-linux-bundle.sh
+
+      # actions/upload-artifact does not preserve the Unix executable bit, so
+      # we zip the bundle ourselves first (zip stores file permissions) and
+      # upload the single archive. The +x bit on the binaries then survives the
+      # artifact round-trip into the final release asset.
+      - name: Archive bundle (preserves executable bit)
+        id: bundle
+        run: |
+          set -euo pipefail
+          cd distrib
+          dir="$(basename cdogs-sdl-*-linux-bundle)"
+          zip -r -y -q "${dir}.zip" "$dir"
+          echo "name=${dir}.zip" >> "$GITHUB_OUTPUT"
+
+      - name: Upload cdogs-sdl-linux-bundle
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.bundle.outputs.name }}
+          path: distrib/cdogs-sdl-*-linux-bundle.zip
+          if-no-files-found: error
