@@ -133,6 +133,8 @@ static menu_t *MenuCreateOptionsGraphics(
 	MenuAddConfigOptionsItem(
 		menu, ConfigGet(data->config, "Graphics.ScaleFactor"));
 	MenuAddConfigOptionsItem(
+		menu, ConfigGet(data->config, "Graphics.DOSPAR"));
+	MenuAddConfigOptionsItem(
 		menu, ConfigGet(data->config, "Graphics.ScaleMode"));
 #endif // GCWZERO
 	MenuAddConfigOptionsItem(

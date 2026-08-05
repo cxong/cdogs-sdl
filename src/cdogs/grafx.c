@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2019 Cong Xu
+	Copyright (c) 2013-2019, 2026 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -108,8 +108,9 @@ void GraphicsInitialize(GraphicsDevice *g)
 
 	if (initWindow)
 	{
-		LOG(LM_GFX, LL_INFO, "graphics mode(%dx%d %dx%s)", w, h,
+		LOG(LM_GFX, LL_INFO, "graphics mode(%dx%d %dx%s%s)", w, h,
 			g->cachedConfig.ScaleFactor,
+			g->cachedConfig.DOSPAR ? " DOS PAR" : "",
 			g->cachedConfig.Fullscreen ? " fullscreen" : "");
 
 		Uint32 windowFlags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
@@ -162,8 +163,8 @@ void GraphicsInitialize(GraphicsDevice *g)
 		{
 			WindowContextDestroyTextures(&g->gameWindow);
 			WindowContextDestroyTextures(&g->secondWindow);
-			WindowContextInitTextures(&g->gameWindow, svec2i(w, h));
-			WindowContextInitTextures(&g->secondWindow, svec2i(w, h));
+			WindowContextInitTextures(&g->gameWindow);
+			WindowContextInitTextures(&g->secondWindow);
 		}
 
 		GraphicsResetClip(g->gameWindow.renderer);
@@ -306,8 +307,8 @@ int GraphicsGetMemSize(GraphicsConfig *config)
 
 void GraphicsConfigSet(
 	GraphicsConfig *c, struct vec2i windowSize, const bool fullscreen,
-	const int scaleFactor, const ScaleMode scaleMode, const int brightness,
-	const bool secondWindow)
+	const int scaleFactor, const bool dosPAR, const ScaleMode scaleMode,
+	const int brightness, const bool secondWindow)
 {
 #define SET(_lhs, _rhs, _flag)                                                \
 	if ((_lhs) != (_rhs))                                                     \
@@ -333,10 +334,26 @@ void GraphicsConfigSet(
 		}
 	}
 	SET(c->ScaleFactor, scaleFactor, RESTART_SCALE_MODE);
+	if (c->DOSPAR != dosPAR)
+	{
+		if (!SDL_SetHint(
+				SDL_HINT_RENDER_LOGICAL_SIZE_MODE,
+				dosPAR ? "overscan" : "letterbox"))
+		{
+			LOG(LM_GFX, LL_WARN,
+				"cannot set render logical size mode hint: %s",
+				SDL_GetError());
+		}
+	}
+	SET(c->DOSPAR, dosPAR, RESTART_SCALE_MODE);
 	SET(c->ScaleMode, scaleMode, RESTART_SCALE_MODE);
 	SET(c->Brightness, brightness, RESTART_BRIGHTNESS);
 	SET(c->SecondWindow, secondWindow, RESTART_WINDOW);
-	const struct vec2i res = svec2i_scale_divide(windowSize, scaleFactor);
+	const struct vec2i res =
+		c->DOSPAR ? svec2i(
+						windowSize.x / scaleFactor,
+						windowSize.y * 5 / scaleFactor / 6)
+				  : svec2i_scale_divide(windowSize, scaleFactor);
 	if (!svec2i_is_equal(res, c->Res))
 	{
 		c->Res = res;
@@ -353,6 +370,7 @@ void GraphicsConfigSetFromConfig(GraphicsConfig *gc, Config *c)
 			ConfigGetInt(c, "Graphics.WindowHeight")),
 		ConfigGetBool(c, "Graphics.Fullscreen"),
 		ConfigGetInt(c, "Graphics.ScaleFactor"),
+		ConfigGetBool(c, "Graphics.DOSPAR"),
 		(ScaleMode)ConfigGetEnum(c, "Graphics.ScaleMode"),
 		ConfigGetInt(c, "Graphics.Brightness"),
 		ConfigGetBool(c, "Graphics.SecondWindow"));

@@ -22,7 +22,7 @@
     This file incorporates work covered by the following copyright and
     permission notice:
 
-    Copyright (c) 2013-2019 Cong Xu
+    Copyright (c) 2013-2019, 2026 Cong Xu
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -68,6 +68,7 @@ typedef struct
 	struct vec2i Res;
 	bool Fullscreen;
 	int ScaleFactor;
+	bool DOSPAR;
 	ScaleMode ScaleMode;
 	int Brightness;
 	bool SecondWindow;
@@ -106,7 +107,7 @@ int GraphicsGetMemSize(GraphicsConfig *config);
 void GraphicsConfigSet(
 	GraphicsConfig *c,
 	struct vec2i res, const bool fullscreen,
-	const int scaleFactor, const ScaleMode scaleMode, const int brightness,
+	const int scaleFactor, const bool dosPAR, const ScaleMode scaleMode, const int brightness,
 	const bool secondWindow);
 void GraphicsConfigSetFromConfig(GraphicsConfig *gc, Config *c);
 

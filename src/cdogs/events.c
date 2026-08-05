@@ -208,6 +208,7 @@ void EventPoll(
 				GraphicsConfigSet(
 					&gGraphicsDevice.cachedConfig,
 					svec2i(e.window.data1, e.window.data2), false, scale,
+					gGraphicsDevice.cachedConfig.DOSPAR,
 					gGraphicsDevice.cachedConfig.ScaleMode,
 					gGraphicsDevice.cachedConfig.Brightness,
 					gGraphicsDevice.cachedConfig.SecondWindow);
