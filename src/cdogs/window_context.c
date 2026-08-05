@@ -84,12 +84,9 @@ bool WindowContextInitTextures(
 		SDL_DestroyTexture(wc->final);
 		wc->final = NULL;
 	}
-	const int finalH = ConfigGetBool(&gConfig, "Graphics.DOSPAR")
-						   ? (int)(rendererLogicalSize.y * 6 / 5)
-						   : rendererLogicalSize.y;
 	wc->final = SDL_CreateTexture(
 		wc->renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET,
-		rendererLogicalSize.x, finalH);
+		rendererLogicalSize.x, rendererLogicalSize.y);
 	if (wc->final == NULL)
 	{
 		LOG(LM_GFX, LL_ERROR, "cannot create final texture: %s",
@@ -204,23 +201,7 @@ void WindowContextPostRender(WindowContext *wc)
 	SDL_SetRenderTarget(wc->renderer, NULL);
 
 	SDL_RenderSetLogicalSize(wc->renderer, 0, 0);
-	int winW, winH;
-	SDL_GetRendererOutputSize(wc->renderer, &winW, &winH);
-	int texW, texH;
-	SDL_QueryTexture(wc->final, NULL, NULL, &texW, &texH);
-
-	const float texAspect = (float)texW / texH;
-	const float winAspect = (float)winW / winH;
-	float scale =
-		(winAspect > texAspect) ? (float)winH / texH : (float)winW / texW;
-
-	const int dstW = (int)(texW * scale);
-	const int dstH = (int)(texH * scale);
-	const int dstX = (winW - dstW) / 2;
-	const int dstY = (winH - dstH) / 2;
-
-	const SDL_Rect dstRect = {dstX, dstY, dstW, dstH};
-	SDL_RenderCopy(wc->renderer, wc->final, NULL, &dstRect);
+	SDL_RenderCopy(wc->renderer, wc->final, NULL, NULL);
 	SDL_RenderPresent(wc->renderer);
 
 	// Restore logical size for next frame's game rendering
