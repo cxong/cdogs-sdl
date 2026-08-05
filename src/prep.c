@@ -736,7 +736,7 @@ static GameLoopResult GameOptionsUpdate(GameLoopData *data, LoopRunner *l)
 		// First check if the player has unwittingly disabled all weapons
 		// if so, enable all weapons
 		bool allDisabled = true;
-		for (int i = 0, j = 0; i < (int)gData->allowed.size; i++, j++)
+		for (int i = 0; i < (int)gData->allowed.size; i++)
 		{
 			const bool *allowed = CArrayGet(&gData->allowed, i);
 			if (*allowed)

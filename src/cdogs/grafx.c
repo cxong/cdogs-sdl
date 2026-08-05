@@ -163,8 +163,8 @@ void GraphicsInitialize(GraphicsDevice *g)
 		{
 			WindowContextDestroyTextures(&g->gameWindow);
 			WindowContextDestroyTextures(&g->secondWindow);
-			WindowContextInitTextures(&g->gameWindow);
-			WindowContextInitTextures(&g->secondWindow);
+			WindowContextInitTextures(&g->gameWindow, svec2i(w, h));
+			WindowContextInitTextures(&g->secondWindow, svec2i(w, h));
 		}
 
 		GraphicsResetClip(g->gameWindow.renderer);

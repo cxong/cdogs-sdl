@@ -32,8 +32,8 @@
 #include <cdogs/player.h>
 
 #include "autosave.h"
-#include "prep.h"
 #include "equip_menu.h"
+#include "prep.h"
 
 static void AddPlayerWeapons(CArray *weapons, const WeaponClass **guns);
 static void RemoveUnavailableWeapons(
@@ -52,7 +52,8 @@ GameLoopData *PlayerEquip(void)
 {
 	PlayerEquipData *data;
 	CCALLOC(data, sizeof *data);
-	const CampaignSave *save = AutosaveGetCampaign(&gAutosave, gCampaign.Entry.Path);
+	const CampaignSave *save =
+		AutosaveGetCampaign(&gAutosave, gCampaign.Entry.Path);
 	const Mission *m = CampaignGetCurrentMission(&gCampaign);
 	if (save != NULL && gCampaign.MissionIndex > 0)
 	{
@@ -97,7 +98,7 @@ GameLoopData *PlayerEquip(void)
 				&gCampaign.Setting.Missions, gCampaign.MissionIndex - 1);
 			prevWeapons = &prevMission->Weapons;
 		}
-		
+
 		// Special case: reset player lives
 		// Player.Lives is modified dynamically in game, so if we
 		// are replaying, we need to reset if we have no player save
@@ -200,27 +201,23 @@ static void PlayerEquipOnExit(GameLoopData *data)
 
 	if (pData->waitResult == EVENT_WAIT_OK)
 	{
-		for (int i = 0, idx = 0; i < (int)gPlayerDatas.size; i++, idx++)
+		CA_FOREACH(const PlayerData, p, gPlayerDatas)
+		if (!p->IsLocal)
 		{
-			const PlayerData *p = CArrayGet(&gPlayerDatas, i);
-			if (!p->IsLocal)
-			{
-				idx--;
-				continue;
-			}
-			NPlayerData pd = NMakePlayerData(p);
-			// Update player definitions
-			if (gCampaign.IsClient)
-			{
-				NetClientSendMsg(&gNetClient, GAME_EVENT_PLAYER_DATA, &pd);
-			}
-			else
-			{
-				NetServerSendMsg(
-					&gNetServer, NET_SERVER_BCAST, GAME_EVENT_PLAYER_DATA,
-					&pd);
-			}
+			continue;
 		}
+		NPlayerData pd = NMakePlayerData(p);
+		// Update player definitions
+		if (gCampaign.IsClient)
+		{
+			NetClientSendMsg(&gNetClient, GAME_EVENT_PLAYER_DATA, &pd);
+		}
+		else
+		{
+			NetServerSendMsg(
+				&gNetServer, NET_SERVER_BCAST, GAME_EVENT_PLAYER_DATA, &pd);
+		}
+		CA_FOREACH_END()
 	}
 	else
 	{
