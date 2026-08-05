@@ -1,16 +1,16 @@
 /*
- Copyright (c) 2017-2019 Cong Xu
+ Copyright (c) 2017-2019, 2026 Cong Xu
  All rights reserved.
- 
+
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
- 
+
  Redistributions of source code must retain the above copyright notice, this
  list of conditions and the following disclaimer.
  Redistributions in binary form must reproduce the above copyright notice,
  this list of conditions and the following disclaimer in the documentation
  and/or other materials provided with the distribution.
- 
+
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -30,14 +30,15 @@
 #include "c_array.h"
 #include "vector.h"
 
-
 typedef struct
 {
 	SDL_Window *window;
 	SDL_Renderer *renderer;
-	CArray texturesBkg;	// of SDL_Texture *
+	CArray texturesBkg; // of SDL_Texture *
 	CArray textures;	// of SDL_Texture *
 	color_t bkgMask;
+	struct vec2i logicalSize;
+	SDL_Texture *final;
 } WindowContext;
 
 bool WindowContextCreate(

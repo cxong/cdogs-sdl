@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2017-2020 Cong Xu
+	Copyright (c) 2017-2020, 2026 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -25,6 +25,7 @@
  */
 #include "window_context.h"
 
+#include "config.h"
 #include "log.h"
 #include "texture.h"
 
@@ -36,6 +37,7 @@ bool WindowContextCreate(
 	LOG(LM_GFX, LL_DEBUG, "creating window (%X, %X) %dx%d flags(%X)",
 		windowDim.Pos.x, windowDim.Pos.y, windowDim.Size.x, windowDim.Size.y,
 		windowFlags);
+	memset(wc, 0, sizeof *wc);
 	wc->bkgMask = colorWhite;
 	wc->window = SDL_CreateWindow(
 		title, windowDim.Pos.x, windowDim.Pos.y, windowDim.Size.x,
@@ -55,6 +57,8 @@ bool WindowContextCreate(
 	LOG(LM_GFX, LL_DEBUG, "setting icon");
 	SDL_SetWindowIcon(wc->window, icon);
 
+	wc->logicalSize = rendererLogicalSize;
+
 	if (!WindowContextInitTextures(wc, rendererLogicalSize))
 	{
 		return false;
@@ -69,8 +73,37 @@ bool WindowContextInitTextures(
 		return true;
 	}
 
+	wc->logicalSize = rendererLogicalSize;
+
 	CArrayInit(&wc->texturesBkg, sizeof(SDL_Texture *));
 	CArrayInit(&wc->textures, sizeof(SDL_Texture *));
+
+	// Init final presentation texture
+	if (wc->final != NULL)
+	{
+		SDL_DestroyTexture(wc->final);
+		wc->final = NULL;
+	}
+	const int finalH = ConfigGetBool(&gConfig, "Graphics.DOSPAR")
+						   ? (int)(rendererLogicalSize.y * 6 / 5)
+						   : rendererLogicalSize.y;
+	wc->final = SDL_CreateTexture(
+		wc->renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET,
+		rendererLogicalSize.x, finalH);
+	if (wc->final == NULL)
+	{
+		LOG(LM_GFX, LL_ERROR, "cannot create final texture: %s",
+			SDL_GetError());
+		return false;
+	}
+	if (SDL_SetTextureBlendMode(wc->final, SDL_BLENDMODE_NONE) != 0)
+	{
+		LOG(LM_GFX, LL_ERROR, "cannot set final blend mode: %s",
+			SDL_GetError());
+		SDL_DestroyTexture(wc->final);
+		wc->final = NULL;
+		return false;
+	}
 
 	if (SDL_RenderSetLogicalSize(
 			wc->renderer, rendererLogicalSize.x, rendererLogicalSize.y) != 0)
@@ -89,6 +122,11 @@ void WindowContextDestroy(WindowContext *wc)
 }
 void WindowContextDestroyTextures(WindowContext *wc)
 {
+	if (wc->final != NULL)
+	{
+		SDL_DestroyTexture(wc->final);
+		wc->final = NULL;
+	}
 	CA_FOREACH(SDL_Texture *, t, wc->texturesBkg)
 	SDL_DestroyTexture(*t);
 	CA_FOREACH_END()
@@ -123,6 +161,12 @@ SDL_Texture *WindowContextCreateTexture(
 
 void WindowContextPreRender(WindowContext *wc)
 {
+	if (SDL_SetRenderTarget(wc->renderer, wc->final) != 0)
+	{
+		LOG(LM_GFX, LL_ERROR, "Failed to set final target: %s",
+			SDL_GetError());
+		return;
+	}
 	if (SDL_SetRenderDrawColor(wc->renderer, 0, 0, 0, 255) != 0)
 	{
 		LOG(LM_GFX, LL_ERROR, "Failed to set draw color: %s", SDL_GetError());
@@ -132,20 +176,54 @@ void WindowContextPreRender(WindowContext *wc)
 		LOG(LM_MAIN, LL_ERROR, "Failed to clear renderer: %s", SDL_GetError());
 		return;
 	}
+
 	CA_FOREACH(SDL_Texture *, t, wc->texturesBkg)
 	TextureRender(
 		*t, wc->renderer, Rect2iZero(), Rect2iZero(), wc->bkgMask, 0,
 		SDL_FLIP_NONE);
 	CA_FOREACH_END()
+
+	SDL_RenderSetLogicalSize(
+		wc->renderer, wc->logicalSize.x, wc->logicalSize.y);
 }
 
 void WindowContextPostRender(WindowContext *wc)
 {
+	if (SDL_SetRenderTarget(wc->renderer, wc->final) != 0)
+	{
+		LOG(LM_GFX, LL_ERROR, "Failed to set final target: %s",
+			SDL_GetError());
+	}
+
 	CA_FOREACH(SDL_Texture *, t, wc->textures)
 	TextureRender(
 		*t, wc->renderer, Rect2iZero(), Rect2iZero(), colorWhite, 0,
 		SDL_FLIP_NONE);
 	CA_FOREACH_END()
 
+	SDL_SetRenderTarget(wc->renderer, NULL);
+
+	SDL_RenderSetLogicalSize(wc->renderer, 0, 0);
+	int winW, winH;
+	SDL_GetRendererOutputSize(wc->renderer, &winW, &winH);
+	int texW, texH;
+	SDL_QueryTexture(wc->final, NULL, NULL, &texW, &texH);
+
+	const float texAspect = (float)texW / texH;
+	const float winAspect = (float)winW / winH;
+	float scale =
+		(winAspect > texAspect) ? (float)winH / texH : (float)winW / texW;
+
+	const int dstW = (int)(texW * scale);
+	const int dstH = (int)(texH * scale);
+	const int dstX = (winW - dstW) / 2;
+	const int dstY = (winH - dstH) / 2;
+
+	const SDL_Rect dstRect = {dstX, dstY, dstW, dstH};
+	SDL_RenderCopy(wc->renderer, wc->final, NULL, &dstRect);
 	SDL_RenderPresent(wc->renderer);
+
+	// Restore logical size for next frame's game rendering
+	SDL_RenderSetLogicalSize(
+		wc->renderer, wc->logicalSize.x, wc->logicalSize.y);
 }
