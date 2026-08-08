@@ -83,6 +83,11 @@ void MousePrePoll(Mouse *mouse)
 	if (scale == 0)
 		scale = 1;
 	mouse->currentPos = svec2i_scale_divide(mouse->currentPos, scale);
+	// Apply DOSPAR scaling if enabled
+	if (ConfigGetBool(&gConfig, "Graphics.DOSPAR"))
+	{
+		mouse->currentPos.y = mouse->currentPos.y * 5 / 6;
+	}
 }
 
 void MouseOnButtonDown(Mouse *mouse, Uint8 button)
