@@ -337,8 +337,9 @@ static void DrawParticle(const struct vec2i pos, const ThingDrawFuncData *data)
 	CASSERT(p->isInUse, "Cannot draw non-existent particle");
 	// Special case: don't draw mid-air, non-falling particles
 	// if they are on an open door - this is for bulletmarks
+	// Exclude particles that are attached (e.g. muzzle flashes)
 	if (p->Class->GravityFactor == 0 && p->Z > 0 &&
-		svec2_is_zero(p->thing.Vel))
+		svec2_is_zero(p->thing.Vel) && !p->isAttached)
 	{
 		const struct vec2i t = Vec2iToTile(svec2i_assign_vec2(p->Pos));
 		const Tile *tAbove = MapGetTile(&gMap, svec2i(t.x, t.y - 1));
