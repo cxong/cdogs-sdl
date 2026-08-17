@@ -641,7 +641,7 @@ Config ConfigDefault(void)
 #endif
 				  ,
 				  1, 16, 1, NULL, NULL));
-	ConfigGroupAdd(&gfx, ConfigNewBool("DOSPAR", false));
+	ConfigGroupAdd(&gfx, ConfigNewBool("DOSPAR", true));
 	ConfigGroupAdd(
 		&gfx, ConfigNewInt("ShakeMultiplier", 1, 0, 10, 1, NULL, NULL));
 	ConfigGroupAdd(&gfx, ConfigNewBool("ShowHUD", true));
