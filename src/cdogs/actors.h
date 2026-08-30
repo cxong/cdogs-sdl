@@ -210,7 +210,6 @@ typedef struct Actor
 // Therefore do not hold actor pointers and reuse.
 extern CArray gActors; // of TActor
 
-void ActorSetState(TActor *actor, const ActorAnimation state);
 void UpdateActorState(TActor *actor, int ticks);
 void ActorMove(const NActorMove am);
 int CommandActor(TActor *actor, int cmd, int ticks);

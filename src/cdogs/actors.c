@@ -106,11 +106,6 @@ CArray gPlayerIds;
 CArray gActors;
 static unsigned int sActorUIDs = 0;
 
-void ActorSetState(TActor *actor, const ActorAnimation state)
-{
-	actor->anim = AnimationGetActorAnimation(state);
-}
-
 static void ActorUpdateWeapon(TActor *a, Weapon *w, const int ticks);
 static void CheckPickups(TActor *actor);
 static void ActorAddAmmoPickup(const TActor *actor);
@@ -1243,6 +1238,7 @@ int CommandActor(TActor *actor, int cmd, int ticks)
 					e.u.ActorState.UID = actor->uid;
 					e.u.ActorState.State = (int32_t)anim;
 					GameEventsEnqueue(&gGameEvents, e);
+					actor->anim = AnimationGetActorAnimation(anim);
 				}
 			}
 		}
