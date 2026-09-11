@@ -1,7 +1,7 @@
 {
   "Version": 2,
   "Bullets": [
-	{
+    {
       "Name": "spreadgun_bullet",
       "Pic": {
         "Type": "Normal",
@@ -18,7 +18,7 @@
         "Wall": "spreadgun_hit"
       }
     },
-	{
+    {
       "Name": "vulcan_bullet",
       "Pic": {
         "Type": "Directional",
@@ -35,7 +35,7 @@
         "Wall": "vulcan_hit"
       }
     },
-	{
+    {
       "Name": "chaser2_bullet",
       "Pic": {
         "Type": "Normal",
@@ -53,10 +53,32 @@
       "SeekFactor": 11
     },
     {
-      "Name": "grenade",
+      "Name": "he_grenade",
       "Pic": {
         "Type": "Animated",
         "Sprites": "grenade",
+        "TicksPerFrame": 2
+      },
+      "ShadowSize": [6, 4],
+      "Speed": 384,
+      "Range": 100,
+      "Spark": "",
+      "Hit": {
+        "Wall": {
+          "Sound": "bounce"
+        }
+      },
+      "WallBounces": true,
+      "Falling": {
+        "GravityFactor": 1
+      },
+      "OutOfRangeGuns": ["explosion1", "explosion2", "explosion3"]
+    },
+    {
+      "Name": "stick_grenade",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "stick_grenade",
         "TicksPerFrame": 4
       },
       "Speed": 340,
@@ -73,13 +95,13 @@
       },
       "OutOfRangeGuns": [
         "grenade_explosion1",
-    	  "grenade_explosion2",
+        "grenade_explosion2",
         "grenade_explosion3"
       ],
       "HitGuns": [
         "grenade_explosion1",
-		"grenade_explosion2",
-		"grenade_explosion3"
+        "grenade_explosion2",
+        "grenade_explosion3"
       ]
     },
     {
@@ -166,40 +188,34 @@
       "Range": 20,
       "Power": 0,
       "Spark": "",
-	  "HitSounds": {
+      "HitSounds": {
         "Object": "",
         "Flesh": "",
         "Wall": ""
       },
-	  "Falling": {
+      "Falling": {
         "GravityFactor": 10
       },
       "HitsObjects": false,
-	  "OutOfRangeGuns": [
-		"laser_dot"
-	  ],
-      "HitGuns": [
-        "laser_dot"
-      ]
+      "OutOfRangeGuns": ["laser_dot"],
+      "HitGuns": ["laser_dot"]
     },
-	{
+    {
       "Name": "laser_dot",
       "Pic": {
         "Type": "Animated",
         "Sprites": "laser_dot",
-		"TicksPerFrame": 1
+        "TicksPerFrame": 1
       },
       "Speed": 0,
       "Range": 300,
       "Power": 0,
       "Spark": "",
       "HitsObjects": false,
-	  "Persists": true,
-	  "OutOfRangeGuns": [
-		"nuke_incoming"
-	  ]
+      "Persists": true,
+      "OutOfRangeGuns": ["nuke_incoming"]
     },
-	{
+    {
       "Name": "nuke_incoming",
       "Pic": {
         "Type": "Normal",
@@ -210,47 +226,45 @@
       "Power": 0,
       "Spark": "",
       "HitsObjects": false,
-	  "Persists": true,
-	  "Falling": {
+      "Persists": true,
+      "Falling": {
         "GravityFactor": -1
       },
-	  "OutOfRangeGuns": [
-		"nuclear_strike"
-	  ]
+      "OutOfRangeGuns": ["nuclear_strike"]
     },
-	{
+    {
       "Name": "nuke",
       "Pic": {
         "Type": "Animated",
         "Sprites": "nuke",
-		"TicksPerFrame": 1
+        "TicksPerFrame": 1
       },
-	  "ShadowSize": [6, 4],
+      "ShadowSize": [6, 4],
       "Speed": 0,
       "Range": 100,
       "Power": 0,
       "Spark": "",
       "HitsObjects": false,
-	  "Persists": true,
-	  "Falling": {
+      "Persists": true,
+      "Falling": {
         "GravityFactor": 1,
-		"DestroyOnDrop": true,
+        "DestroyOnDrop": true,
         "DropGuns": [
-		  "big_explosion1",
-		  "big_explosion2",
+          "big_explosion1",
+          "big_explosion2",
           "explosion1",
-		  "explosion2",
-		  "explosion3",
-		  "frag_explosion"
+          "explosion2",
+          "explosion3",
+          "frag_explosion"
         ]
       },
-	  "HitSounds": {
+      "HitSounds": {
         "Object": "",
         "Flesh": "",
         "Wall": ""
       }
     },
-	{
+    {
       "Name": "big_explosion_spawner1",
       "Pic": {
         "Type": "Normal",
@@ -261,14 +275,10 @@
       "Power": 0,
       "Spark": "",
       "HitsObjects": false,
-	  "Persists": true,
-      "OutOfRangeGuns": [
-        "explosion1",
-        "explosion2",
-        "explosion3"
-      ]
+      "Persists": true,
+      "OutOfRangeGuns": ["explosion1", "explosion2", "explosion3"]
     },
-	{
+    {
       "Name": "big_explosion_spawner2",
       "Pic": {
         "Type": "Normal",
@@ -279,12 +289,8 @@
       "Power": 0,
       "Spark": "",
       "HitsObjects": false,
-	  "Persists": true,
-      "OutOfRangeGuns": [
-        "explosion1",
-        "explosion2",
-        "explosion3"
-      ]
+      "Persists": true,
+      "OutOfRangeGuns": ["explosion1", "explosion2", "explosion3"]
     },
     {
       "Name": "booby_trap_pod",
@@ -310,9 +316,7 @@
         "GravityFactor": 1,
         "Bounces": true
       },
-      "OutOfRangeGuns": [
-        "booby_trap_deployer"
-      ]
+      "OutOfRangeGuns": ["booby_trap_deployer"]
     },
     {
       "Name": "booby_trap",
@@ -322,9 +326,7 @@
       },
       "Range": -1,
       "Persists": true,
-      "ProximityGuns": [
-        "fire_explosion"
-      ]
+      "ProximityGuns": ["fire_explosion"]
     },
     {
       "Name": "spearhead",
