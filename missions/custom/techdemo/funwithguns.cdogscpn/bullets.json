@@ -72,7 +72,31 @@
       "Falling": {
         "GravityFactor": 1
       },
-      "OutOfRangeGuns": ["explosion1", "explosion2", "explosion3"]
+      "OutOfRangeGuns": ["flare"]
+    },
+    {
+      "Name": "flare",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "flare",
+        "TicksPerFrame": 1
+      },
+      "Speed": 0,
+      "Range": 1,
+      "Power": 530,
+      "Mass": 5.0,
+      "Size": [14, 10],
+      "HurtAlways": true,
+      "Persists": true,
+      "Spark": "",
+      "Hit": {
+        "Object": {
+          "Sound": ""
+        },
+        "Flesh": {
+          "Sound": ""
+        }
+      }
     },
     {
       "Name": "stick_grenade",

@@ -172,6 +172,15 @@
     },
     {
       "Pic": "",
+      "Name": "flare",
+      "Bullet": "flare",
+      "Sound": "explosion",
+      "Shake": {
+        "Amount": 30
+      }
+    },
+    {
+      "Pic": "",
       "Name": "big_explosion2",
       "Bullet": "big_explosion_spawner2",
       "SpreadCount": 8,
