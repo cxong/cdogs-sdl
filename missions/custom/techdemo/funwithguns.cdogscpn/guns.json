@@ -35,7 +35,7 @@
       "MuzzleFlashParticle": "muzzle_flash_chaser2"
     },
     {
-      "Name": "HE Grenade",
+      "Name": "HE Grenades",
       "Description": "Multi-phase explosive grenade",
       "Pic": "",
       "IsGrenade": true,
@@ -44,7 +44,8 @@
       "Lock": 50,
       "Sound": "launch",
       "SwitchSound": "grenade_pickup",
-      "Elevation": 24
+      "Elevation": 24,
+      "Ammo": "HE Grenades"
     },
     {
       "Name": "Stick Grenade",

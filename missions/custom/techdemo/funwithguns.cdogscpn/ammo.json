@@ -1,0 +1,15 @@
+{
+  "Version": 2,
+  "Ammo": [
+    {
+      "Name": "HE Grenades",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "he_grenade_pickup"
+      },
+      "Sound": "grenade_pickup",
+      "Amount": 2,
+      "Max": 10
+    }
+  ]
+}
