@@ -56,11 +56,11 @@
       "Name": "he_grenade",
       "Pic": {
         "Type": "Animated",
-        "Sprites": "grenade",
+        "Sprites": "he_grenade",
         "TicksPerFrame": 2
       },
       "ShadowSize": [6, 4],
-      "Speed": 384,
+      "Speed": 600,
       "Range": 100,
       "Spark": "",
       "Hit": {
