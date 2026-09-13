@@ -373,7 +373,7 @@ void CharacterCopy(
 bool CharacterSave(yajl_gen g, const Character *c)
 {
 	bool res = true;
-	
+
 	if (!c->Class)
 	{
 		LOG(LM_MAIN, LL_ERROR, "Missing character\n");
@@ -519,11 +519,42 @@ void CharacterShuffleAppearance(Character *c)
 	}
 
 	c->Colors.Skin = RandomColor();
-	c->Colors.Arms = RandomColor();
 	c->Colors.Body = RandomColor();
-	c->Colors.Legs = RandomColor();
+	// Small chance arms same colour as skin or body
+	if (RAND_INT(0, 2) == 0)
+	{
+		c->Colors.Arms = c->Colors.Body;
+	}
+	else if (RAND_INT(0, 3) == 0)
+	{
+		c->Colors.Arms = c->Colors.Skin;
+	}
+	else
+	{
+		c->Colors.Arms = RandomColor();
+	}
+	// Small chance legs same colour as skin or body
+	if (RAND_INT(0, 2) == 0)
+	{
+		c->Colors.Legs = c->Colors.Body;
+	}
+	else if (RAND_INT(0, 3) == 0)
+	{
+		c->Colors.Legs = c->Colors.Skin;
+	}
+	else
+	{
+		c->Colors.Legs = RandomColor();
+	}
 	c->Colors.Hair = RandomColor();
-	c->Colors.Feet = RandomColor();
+	// Small chance feet same colour as legs
+	if (RAND_INT(0, 2) == 0)
+	{
+		c->Colors.Feet = c->Colors.Legs;
+	}
+	{
+		c->Colors.Feet = RandomColor();
+	}
 	c->Colors.Facehair = c->Colors.Hair;
 	c->Colors.Hat = RandomColor();
 	c->Colors.Glasses = RandomColor();
