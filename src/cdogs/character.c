@@ -477,6 +477,7 @@ static const char *HAT_BLACKLIST[] = {"bunny",		"capotain", "horns",
 									  "leprechaun", "party",	"santa",
 									  "sombrero",	"witch"};
 
+static color_t RandomSkinColor(const CharacterClass *c);
 static color_t RandomColor(void);
 void CharacterShuffleAppearance(Character *c)
 {
@@ -518,7 +519,7 @@ void CharacterShuffleAppearance(Character *c)
 		CharacterSetHeadPart(c, hp, name);
 	}
 
-	c->Colors.Skin = RandomColor();
+	c->Colors.Skin = RandomSkinColor(c->Class);
 	c->Colors.Body = RandomColor();
 	// Small chance arms same colour as skin or body
 	if (RAND_INT(0, 2) == 0)
@@ -558,6 +559,20 @@ void CharacterShuffleAppearance(Character *c)
 	c->Colors.Facehair = c->Colors.Hair;
 	c->Colors.Hat = RandomColor();
 	c->Colors.Glasses = RandomColor();
+}
+static color_t RandomSkinColor(const CharacterClass* c)
+{
+	// Select skin colour based on class sound
+	if (strcmp(c->Sounds, "man") == 0 || strcmp(c->Sounds, "woman") == 0)
+	{
+		// Ranges based on monk skin tones
+		HSV hsv;
+		hsv.h = RAND_DOUBLE(18, 38);
+		hsv.s = RAND_DOUBLE(0.09, 0.48);
+		hsv.v = RAND_DOUBLE(0.16, 0.97);
+		return ColorTint(colorWhite, hsv);
+	}
+	return RandomColor();
 }
 static color_t RandomColor(void)
 {
