@@ -482,19 +482,31 @@ static color_t RandomHairColor(const CharacterClass *c);
 static color_t RandomColor(void);
 void CharacterShuffleAppearance(Character *c)
 {
-	// Choose a random character class
-	const int numCharClasses = (int)gCharacterClasses.Classes.size +
-							   (int)gCharacterClasses.CustomClasses.size;
-	const int charClass = rand() % numCharClasses;
-	if (charClass < (int)gCharacterClasses.Classes.size)
+	// Choose Jones/Lady most of the time, otherwise fallback to a random class
+	if (RAND_BOOL())
 	{
-		c->Class = CArrayGet(&gCharacterClasses.Classes, charClass);
+		c->Class = StrCharacterClass("Jones");
+	}
+	else if (RAND_BOOL())
+	{
+		c->Class = StrCharacterClass("Lady");
 	}
 	else
 	{
-		c->Class = CArrayGet(
-			&gCharacterClasses.CustomClasses,
-			charClass - gCharacterClasses.Classes.size);
+		// Choose a random character class
+		const int numCharClasses = (int)gCharacterClasses.Classes.size +
+								   (int)gCharacterClasses.CustomClasses.size;
+		const int charClass = rand() % numCharClasses;
+		if (charClass < (int)gCharacterClasses.Classes.size)
+		{
+			c->Class = CArrayGet(&gCharacterClasses.Classes, charClass);
+		}
+		else
+		{
+			c->Class = CArrayGet(
+				&gCharacterClasses.CustomClasses,
+				charClass - gCharacterClasses.Classes.size);
+		}
 	}
 
 	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
