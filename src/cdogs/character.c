@@ -478,6 +478,7 @@ static const char *HAT_BLACKLIST[] = {"bunny",		"capotain", "horns",
 									  "sombrero",	"witch"};
 
 static color_t RandomSkinColor(const CharacterClass *c);
+static color_t RandomHairColor(const CharacterClass *c);
 static color_t RandomColor(void);
 void CharacterShuffleAppearance(Character *c)
 {
@@ -547,7 +548,7 @@ void CharacterShuffleAppearance(Character *c)
 	{
 		c->Colors.Legs = RandomColor();
 	}
-	c->Colors.Hair = RandomColor();
+	c->Colors.Hair = RandomHairColor(c->Class);
 	// Small chance feet same colour as legs
 	if (RAND_INT(0, 2) == 0)
 	{
@@ -568,8 +569,36 @@ static color_t RandomSkinColor(const CharacterClass* c)
 		// Ranges based on monk skin tones
 		HSV hsv;
 		hsv.h = RAND_DOUBLE(18, 38);
-		hsv.s = RAND_DOUBLE(0.09, 0.48);
-		hsv.v = RAND_DOUBLE(0.16, 0.97);
+		hsv.s = RAND_DOUBLE(0.3, 0.7);
+		hsv.v = RAND_DOUBLE(0.3, 1);
+		return ColorTint(colorWhite, hsv);
+	}
+	return RandomColor();
+}
+static color_t RandomHairColor(const CharacterClass *c)
+{
+	// Select hair colour based on class sound
+	if (strcmp(c->Sounds, "man") == 0 || strcmp(c->Sounds, "woman") == 0)
+	{
+		HSV hsv;
+		// natural hair hues most of the time
+		if (RAND_INT(0, 3) < 2)
+		{
+			hsv.h = RAND_DOUBLE(-20, 30);
+			if (hsv.h < 0)
+			{
+				hsv.h += 360;
+			}
+			hsv.s = RAND_DOUBLE(0, 0.8);
+			hsv.v = RAND_DOUBLE(0, 1);
+		}
+		else
+		{
+			// Anime hair, high saturation, above average value
+			hsv.h = RAND_DOUBLE(40, 310);
+			hsv.s = RAND_DOUBLE(0.8, 1.0);
+			hsv.v = RAND_DOUBLE(0.5, 1);
+		}
 		return ColorTint(colorWhite, hsv);
 	}
 	return RandomColor();

@@ -292,6 +292,13 @@ struct vec2i DrawButton(
 	const bool isDown =
 		GetOnePlayerCmd(&gEventHandlers, false, inputDevice, deviceIndex) &
 		cmd;
+	// TODO: deal with long button names
+	if (strlen(buf) > 1)
+	{
+		return svec2i_add(
+			DrawOneButton(bg, buf, c, isDown, svec2i_add(pos, svec2i(0, 8))),
+			svec2i(0, -8));
+	}
 	return DrawOneButton(bg, buf, c, isDown, pos);
 }
 
