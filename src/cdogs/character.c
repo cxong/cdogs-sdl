@@ -573,8 +573,21 @@ void CharacterShuffleAppearance(Character *c)
 	c->Colors.Hat = RandomColor();
 	c->Colors.Glasses = RandomColor();
 }
-static color_t RandomSkinColor(const CharacterClass* c)
+static color_t RandomDogHairColor(void)
 {
+	// Similar to human hair, but more saturated
+	HSV hsv;
+	hsv.h = RAND_DOUBLE(0, 40);
+	if (hsv.h < 0)
+	{
+		hsv.h += 360;
+	}
+	hsv.s = RAND_DOUBLE(0.3, 1);
+	hsv.v = RAND_DOUBLE(0, 1);
+	return ColorTint(colorWhite, hsv);
+}
+static color_t RandomSkinColor(const CharacterClass *c)
+	{
 	// Select skin colour based on class sound
 	if (strcmp(c->Sounds, "man") == 0 || strcmp(c->Sounds, "woman") == 0)
 	{
@@ -604,6 +617,10 @@ static color_t RandomSkinColor(const CharacterClass* c)
 		hsv.v = RAND_DOUBLE(0.8, 1);
 		return ColorTint(colorWhite, hsv);
 	}
+	else if (strcmp(c->Sounds, "dog") == 0)
+	{
+		return RandomDogHairColor();
+	}
 	return RandomColor();
 }
 static color_t RandomHairColor(const CharacterClass *c)
@@ -631,6 +648,10 @@ static color_t RandomHairColor(const CharacterClass *c)
 			hsv.v = RAND_DOUBLE(0.5, 1);
 		}
 		return ColorTint(colorWhite, hsv);
+	}
+	else if (strcmp(c->Sounds, "dog") == 0)
+	{
+		return RandomDogHairColor();
 	}
 	return RandomColor();
 }
