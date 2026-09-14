@@ -585,6 +585,25 @@ static color_t RandomSkinColor(const CharacterClass* c)
 		hsv.v = RAND_DOUBLE(0.3, 1);
 		return ColorTint(colorWhite, hsv);
 	}
+	else if (
+		strcmp(c->Name, "Cyborg") == 0)
+	{
+		// Human skin tones but brighter and desaturated
+		HSV hsv;
+		hsv.h = RAND_DOUBLE(18, 38);
+		hsv.s = RAND_DOUBLE(0, 0.4);
+		hsv.v = RAND_DOUBLE(0.7, 1);
+		return ColorTint(colorWhite, hsv);
+	}
+	else if (strcmp(c->Name, "Bones") == 0 || strcmp(c->Name, "Big Bones") == 0)
+	{
+		// Bone ranges
+		HSV hsv;
+		hsv.h = RAND_DOUBLE(20, 60);
+		hsv.s = RAND_DOUBLE(0, 0.5);
+		hsv.v = RAND_DOUBLE(0.8, 1);
+		return ColorTint(colorWhite, hsv);
+	}
 	return RandomColor();
 }
 static color_t RandomHairColor(const CharacterClass *c)
