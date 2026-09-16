@@ -240,10 +240,16 @@ bool BulletUpdate(struct MobileObject *obj, const int ticks)
 		const struct vec2 hitPos = hit.Type != HIT_NONE ? hit.Pos : pos;
 		if (bounced)
 		{
-			// Bouncing
+			// Bouncing off walls
 			GetWallBouncePosVel(
 				posStart, obj->thing.Vel, hit.Pos, hit.Normal, &pos,
 				&obj->thing.Vel);
+			pos = svec2_add(
+				hit.Pos, svec2_scale(
+							 svec2_subtract(pos, hit.Pos),
+							 obj->bulletClass->WallBounceElasticity));
+			obj->thing.Vel = svec2_scale(
+				obj->thing.Vel, obj->bulletClass->WallBounceElasticity);
 		}
 
 		if (!gCampaign.IsClient)
@@ -251,7 +257,8 @@ bool BulletUpdate(struct MobileObject *obj, const int ticks)
 			GameEvent b = GameEventNew(GAME_EVENT_BULLET_BOUNCE);
 			b.u.BulletBounce.UID = obj->UID;
 			b.u.BulletBounce.HitType = (int)hit.Type;
-			if ((hit.Type == HIT_WALL && !obj->bulletClass->WallBounces) ||
+			if ((hit.Type == HIT_WALL &&
+				 obj->bulletClass->WallBounceElasticity == 0) ||
 				(hit.Type == HIT_OBJECT && obj->bulletClass->Hit.Object.Hit) ||
 				(hit.Type == HIT_FLESH && obj->bulletClass->Hit.Flesh.Hit))
 			{
@@ -297,7 +304,9 @@ bool BulletUpdate(struct MobileObject *obj, const int ticks)
 			// Move bullet slightly in direction of bounce so that it doesn't
 			// bounce against the same wall
 			posStart = svec2_add(hit.Pos, velNorm);
-			vel = svec2_scale(velNorm, fullLen - preBounceLen - 1);
+			vel = svec2_scale(
+				velNorm, (fullLen - preBounceLen - 1) *
+							 obj->bulletClass->WallBounceElasticity);
 		}
 		// Don't allow slow moving bullets to bounce forever
 	} while (alive && bounced && svec2_length_squared(vel) > 2);
@@ -318,17 +327,14 @@ bool BulletUpdate(struct MobileObject *obj, const int ticks)
 		for (int i = 0; i < ticks; i++)
 		{
 			obj->z += obj->dz;
-			if (obj->z <= 0)
+			if (obj->z <= 0 && obj->dz < 0)
 			{
 				obj->z = 0;
-				if (obj->bulletClass->Falling.Bounces)
-				{
-					obj->dz = -obj->dz / 2;
-				}
-				else
-				{
-					obj->dz = 0;
-				}
+				obj->dz =
+					-obj->dz * obj->bulletClass->Falling.BounceElasticity;
+				obj->thing.Vel = svec2_scale(
+					obj->thing.Vel,
+					1.0f - obj->bulletClass->Falling.BounceFriction);
 				if (!hasDropped)
 				{
 					if (!gCampaign.IsClient)
@@ -879,7 +885,13 @@ static void LoadBullet(
 			}
 		}
 	}
-	LoadBool(&b->WallBounces, node, "WallBounces");
+	bool wallBounces = false;
+	LoadBool(&wallBounces, node, "WallBounces");
+	LoadFloat(&b->WallBounceElasticity, node, "WallBounceElasticity");
+	if (wallBounces)
+	{
+		b->WallBounceElasticity = 1.0f;
+	}
 	if (json_find_first_label(node, "Falling"))
 	{
 		json_t *falling = json_find_first_label(node, "Falling")->child;
@@ -887,7 +899,14 @@ static void LoadBullet(
 		b->Falling.FallsDown = true;
 		LoadBool(&b->Falling.FallsDown, falling, "FallsDown");
 		LoadBool(&b->Falling.DestroyOnDrop, falling, "DestroyOnDrop");
-		LoadBool(&b->Falling.Bounces, falling, "Bounces");
+		bool bounces = false;
+		LoadBool(&bounces, falling, "Bounces");
+		LoadFloat(&b->Falling.BounceElasticity, falling, "BounceElasticity");
+		if (bounces)
+		{
+			b->Falling.BounceElasticity = 0.5f;
+		}
+		LoadFloat(&b->Falling.BounceFriction, falling, "BounceFriction");
 	}
 	LoadInt(&b->SeekFactor, node, "SeekFactor");
 	LoadBool(&b->Erratic, node, "Erratic");
@@ -911,17 +930,19 @@ static void LoadBullet(
 		b->WallMark != NULL ? b->WallMark->Name : "");
 	LOG(LM_MAP, LL_DEBUG,
 		"...hit(object(%s, %s), flesh(%s, %s), wall(%s, %s)) "
-		"wallBounces(%s)...",
+		"wallBounceElasticity(%f)...",
 		b->Hit.Object.Hit ? "true" : "false",
 		b->Hit.Object.Sound != NULL ? b->Hit.Object.Sound : "",
 		b->Hit.Flesh.Hit ? "true" : "false",
 		b->Hit.Flesh.Sound != NULL ? b->Hit.Flesh.Sound : "",
 		b->Hit.Wall.Hit ? "true" : "false",
 		b->Hit.Wall.Sound != NULL ? b->Hit.Wall.Sound : "",
-		b->WallBounces ? "true" : "false");
+		b->WallBounceElasticity);
 	LOG(LM_MAP, LL_DEBUG, "...gravity(%f) fallsDown(%s) destroyOnDrop(%s)...",
 		b->Falling.GravityFactor, b->Falling.FallsDown ? "true" : "false",
 		b->Falling.DestroyOnDrop ? "true" : "false");
+	LOG(LM_MAP, LL_DEBUG, "...bounceElasticity(%f) bounceFriction(%f)...",
+		b->Falling.BounceElasticity, b->Falling.BounceFriction);
 	LOG(LM_MAP, LL_DEBUG,
 		"...dropGuns(%d) seekFactor(%d) erratic(%s) trail(%s@%f per %d)...",
 		(int)b->Falling.DropGuns.size, b->SeekFactor,

@@ -18,7 +18,7 @@
       }
     },
     "Falling": {
-      "Bounces": true
+      "BounceElasticity": 0.5
     },
     "SeekFactor": -1
   },
@@ -95,7 +95,7 @@
           "Sound": "hits/fire"
         }
       },
-      "WallBounces": true
+      "WallBounceElasticity": 1.0
     },
     {
       "Name": "laser",
@@ -148,15 +148,11 @@
           "Sound": "bounce"
         }
       },
-      "WallBounces": true,
+      "WallBounceElasticity": 1.0,
       "Falling": {
         "GravityFactor": 1
       },
-      "OutOfRangeGuns": [
-        "explosion1",
-        "explosion2",
-        "explosion3"
-      ]
+      "OutOfRangeGuns": ["explosion1", "explosion2", "explosion3"]
     },
     {
       "Name": "shrapnelbomb",
@@ -175,13 +171,11 @@
           "Sound": "bounce"
         }
       },
-      "WallBounces": true,
+      "WallBounceElasticity": 1.0,
       "Falling": {
         "GravityFactor": 1
       },
-      "OutOfRangeGuns": [
-        "frag_explosion"
-      ]
+      "OutOfRangeGuns": ["frag_explosion"]
     },
     {
       "Name": "molotov",
@@ -201,16 +195,10 @@
       "Falling": {
         "GravityFactor": 1,
         "DestroyOnDrop": true,
-        "DropGuns": [
-          "molotov_explosion"
-        ]
+        "DropGuns": ["molotov_explosion"]
       },
-      "OutOfRangeGuns": [
-        "molotov_explosion"
-      ],
-      "HitGuns": [
-        "molotov_explosion"
-      ]
+      "OutOfRangeGuns": ["molotov_explosion"],
+      "HitGuns": ["molotov_explosion"]
     },
     {
       "Name": "gasbomb",
@@ -229,13 +217,11 @@
           "Sound": "bounce"
         }
       },
-      "WallBounces": true,
+      "WallBounceElasticity": 1.0,
       "Falling": {
         "GravityFactor": 1
       },
-      "OutOfRangeGuns": [
-        "gas_poison_explosion"
-      ]
+      "OutOfRangeGuns": ["gas_poison_explosion"]
     },
     {
       "Name": "confusebomb",
@@ -254,13 +240,11 @@
           "Sound": "bounce"
         }
       },
-      "WallBounces": true,
+      "WallBounceElasticity": 1.0,
       "Falling": {
         "GravityFactor": 1
       },
-      "OutOfRangeGuns": [
-        "gas_confuse_explosion"
-      ]
+      "OutOfRangeGuns": ["gas_confuse_explosion"]
     },
     {
       "Name": "gas",
@@ -288,7 +272,7 @@
           "Sound": "hits/gas"
         }
       },
-      "WallBounces": true
+      "WallBounceElasticity": 1.0
     },
     {
       "Name": "pulse",
@@ -381,9 +365,7 @@
       "Range": 140,
       "Persists": true,
       "Hit": {},
-      "OutOfRangeGuns": [
-        "activemine"
-      ]
+      "OutOfRangeGuns": ["activemine"]
     },
     {
       "Name": "dynamite",
@@ -396,11 +378,7 @@
       "Range": 210,
       "Persists": true,
       "Hit": {},
-      "OutOfRangeGuns": [
-        "explosion1",
-        "explosion2",
-        "explosion3"
-      ]
+      "OutOfRangeGuns": ["explosion1", "explosion2", "explosion3"]
     },
     {
       "Name": "swarmer",
@@ -462,7 +440,7 @@
       "Size": [14, 10],
       "HurtAlways": true,
       "Persists": true,
-      "WallBounces": true,
+      "WallBounceElasticity": 1.0,
       "Spark": "",
       "Hit": {
         "Object": {
@@ -496,7 +474,7 @@
       "Size": [14, 10],
       "HurtAlways": true,
       "Persists": true,
-      "WallBounces": true,
+      "WallBounceElasticity": 1.0,
       "Spark": "",
       "Hit": {
         "Object": {
@@ -530,7 +508,7 @@
       "Size": [14, 10],
       "HurtAlways": true,
       "Persists": true,
-      "WallBounces": true,
+      "WallBounceElasticity": 1.0,
       "Spark": "",
       "Hit": {
         "Object": {
@@ -568,7 +546,7 @@
       },
       "HurtAlways": true,
       "Persists": true,
-      "WallBounces": true,
+      "WallBounceElasticity": 1.0,
       "Spark": "",
       "Hit": {
         "Object": {
@@ -583,7 +561,7 @@
       },
       "Falling": {
         "GravityFactor": 4,
-        "Bounces": false
+        "BounceElasticity": 0.0
       }
     },
     {
@@ -605,7 +583,7 @@
       },
       "HurtAlways": true,
       "Persists": true,
-      "WallBounces": true,
+      "WallBounceElasticity": 1.0,
       "Spark": "",
       "Hit": {
         "Flesh": {
@@ -634,7 +612,7 @@
         "Effect": "Confuse"
       },
       "Persists": true,
-      "WallBounces": true,
+      "WallBounceElasticity": 1.0,
       "Spark": "",
       "Hit": {
         "Flesh": {
@@ -655,9 +633,7 @@
       "Range": -1,
       "Persists": true,
       "Hit": {},
-      "ProximityGuns": [
-        "triggeredmine"
-      ]
+      "ProximityGuns": ["triggeredmine"]
     },
     {
       "Name": "triggeredmine",
@@ -669,11 +645,7 @@
       "Range": 5,
       "Persists": true,
       "Hit": {},
-      "OutOfRangeGuns": [
-        "explosion1",
-        "explosion2",
-        "explosion3"
-      ]
+      "OutOfRangeGuns": ["explosion1", "explosion2", "explosion3"]
     },
     {
       "Name": "explosion_small",
@@ -727,12 +699,8 @@
           "Sound": ""
         }
       },
-      "OutOfRangeGuns": [
-        "explosion_small"
-      ],
-      "HitGuns": [
-        "explosion_small"
-      ]
+      "OutOfRangeGuns": ["explosion_small"],
+      "HitGuns": ["explosion_small"]
     },
     {
       "Name": "9mm",

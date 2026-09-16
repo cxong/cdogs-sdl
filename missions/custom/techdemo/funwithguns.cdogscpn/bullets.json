@@ -1,5 +1,5 @@
 {
-  "Version": 2,
+  "Version": 5,
   "Bullets": [
     {
       "Name": "spreadgun_bullet",
@@ -12,10 +12,16 @@
       "Power": 5,
       "Mass": 5,
       "Spark": "",
-      "HitSounds": {
-        "Object": "spreadgun_hit_hard",
-        "Flesh": "spreadgun_hit",
-        "Wall": "spreadgun_hit"
+      "Hit": {
+        "Object": {
+          "Sound": "spreadgun_hit_hard"
+        },
+        "Flesh": {
+          "Sound": "spreadgun_hit"
+        },
+        "Wall": {
+          "Sound": "spreadgun_hit"
+        }
       }
     },
     {
@@ -29,10 +35,16 @@
       "Power": 3,
       "Mass": 3,
       "Spark": "",
-      "HitSounds": {
-        "Object": "vulcan_hit",
-        "Flesh": "vulcan_hit",
-        "Wall": "vulcan_hit"
+      "Hit": {
+        "Object": {
+          "Sound": "vulcan_hit"
+        },
+        "Flesh": {
+          "Sound": "vulcan_hit"
+        },
+        "Wall": {
+          "Sound": "vulcan_hit"
+        }
       }
     },
     {
@@ -45,10 +57,16 @@
       "Range": 60,
       "Power": 3,
       "Mass": 3,
-      "HitSounds": {
-        "Object": "",
-        "Flesh": "",
-        "Wall": ""
+      "Hit": {
+        "Object": {
+          "Sound": ""
+        },
+        "Flesh": {
+          "Sound": ""
+        },
+        "Wall": {
+          "Sound": ""
+        }
       },
       "SeekFactor": 11
     },
@@ -68,9 +86,11 @@
           "Sound": "bounce"
         }
       },
-      "WallBounces": true,
+      "WallBounceElasticity": 0.5,
       "Falling": {
-        "GravityFactor": 1
+        "GravityFactor": 1,
+        "BounceElasticity": 0.5,
+        "BounceFriction": 0.5
       },
       "OutOfRangeGuns": ["flare"]
     },
@@ -108,12 +128,18 @@
       "Speed": 340,
       "Range": 80,
       "Power": 1,
-      "HitSounds": {
-        "Object": "",
-        "Flesh": "",
-        "Wall": ""
+      "Hit": {
+        "Object": {
+          "Sound": ""
+        },
+        "Flesh": {
+          "Sound": ""
+        },
+        "Wall": {
+          "Sound": ""
+        }
       },
-      "WallBounces": true,
+      "WallBounceElasticity": 1.0,
       "Falling": {
         "GravityFactor": 1
       },
@@ -142,10 +168,16 @@
       "HurtAlways": true,
       "Persists": true,
       "Spark": "",
-      "HitSounds": {
-        "Object": "",
-        "Flesh": "",
-        "Wall": ""
+      "Hit": {
+        "Object": {
+          "Sound": ""
+        },
+        "Flesh": {
+          "Sound": ""
+        },
+        "Wall": {
+          "Sound": ""
+        }
       },
       "Falling": {
         "GravityFactor": 1,
@@ -167,10 +199,16 @@
       "HurtAlways": true,
       "Persists": true,
       "Spark": "",
-      "HitSounds": {
-        "Object": "",
-        "Flesh": "",
-        "Wall": ""
+      "Hit": {
+        "Object": {
+          "Sound": ""
+        },
+        "Flesh": {
+          "Sound": ""
+        },
+        "Wall": {
+          "Sound": ""
+        }
       },
       "Falling": {
         "GravityFactor": 1,
@@ -192,10 +230,16 @@
       "HurtAlways": true,
       "Persists": true,
       "Spark": "",
-      "HitSounds": {
-        "Object": "",
-        "Flesh": "",
-        "Wall": ""
+      "Hit": {
+        "Object": {
+          "Sound": ""
+        },
+        "Flesh": {
+          "Sound": ""
+        },
+        "Wall": {
+          "Sound": ""
+        }
       },
       "Falling": {
         "GravityFactor": 1,
@@ -212,10 +256,16 @@
       "Range": 20,
       "Power": 0,
       "Spark": "",
-      "HitSounds": {
-        "Object": "",
-        "Flesh": "",
-        "Wall": ""
+      "Hit": {
+        "Object": {
+          "Sound": ""
+        },
+        "Flesh": {
+          "Sound": ""
+        },
+        "Wall": {
+          "Sound": ""
+        }
       },
       "Falling": {
         "GravityFactor": 10
@@ -282,10 +332,16 @@
           "frag_explosion"
         ]
       },
-      "HitSounds": {
-        "Object": "",
-        "Flesh": "",
-        "Wall": ""
+      "Hit": {
+        "Object": {
+          "Sound": ""
+        },
+        "Flesh": {
+          "Sound": ""
+        },
+        "Wall": {
+          "Sound": ""
+        }
       }
     },
     {
@@ -329,16 +385,22 @@
       "ShadowSize": [4, 3],
       "Size": [4, 4],
       "Spark": "",
-      "HitSounds": {
-        "Object": "",
-        "Flesh": "",
-        "Wall": "bounce"
+      "Hit": {
+        "Object": {
+          "Sound": ""
+        },
+        "Flesh": {
+          "Sound": ""
+        },
+        "Wall": {
+          "Sound": "bounce"
+        }
       },
-      "WallBounces": true,
+      "WallBounceElasticity": 1.0,
       "HitsObjects": false,
       "Falling": {
         "GravityFactor": 1,
-        "Bounces": true
+        "BounceElasticity": 0.5
       },
       "OutOfRangeGuns": ["booby_trap_deployer"]
     },
@@ -364,8 +426,10 @@
       "Mass": -60.0,
       "Size": [3, 3],
       "Special": "Petrify",
-      "HitSounds": {
-        "Flesh": "get_over_here"
+      "Hit": {
+        "Flesh": {
+          "Sound": "get_over_here"
+        }
       }
     },
     {
@@ -381,10 +445,16 @@
       "Size": [1, 1],
       "Special": "Flame",
       "Spark": "laser_point",
-      "HitSounds": {
-        "Object": "",
-        "Flesh": "",
-        "Wall": ""
+      "Hit": {
+        "Object": {
+          "Sound": ""
+        },
+        "Flesh": {
+          "Sound": ""
+        },
+        "Wall": {
+          "Sound": ""
+        }
       }
     }
   ]
