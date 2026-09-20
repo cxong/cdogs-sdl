@@ -92,7 +92,7 @@
         "BounceElasticity": 0.5,
         "BounceFriction": 0.5
       },
-      "OutOfRangeGuns": ["flare"]
+      "OutOfRangeGuns": ["flare", "tracers"]
     },
     {
       "Name": "flare",
@@ -103,7 +103,7 @@
       },
       "Speed": 0,
       "Range": 1,
-      "Power": 530,
+      "Power": 50,
       "Mass": 5.0,
       "Size": [14, 10],
       "HurtAlways": true,
@@ -117,6 +117,32 @@
           "Sound": ""
         }
       }
+    },
+    {
+      "Name": "tracer",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "particles/spall1",
+        "Mask": "ffff66"
+      },
+      "SpeedLow": 600,
+      "SpeedHigh": 1200,
+      "ElevationLow": 0,
+      "ElevationHigh": 30,
+      "Range": 20,
+      "Power": 0,
+      "Mass": 0.0,
+      "Spark": "",
+      "Hit": {
+        "Wall": {
+          "Sound": ""
+        }
+      },
+      "WallBounceElasticity": 0.5,
+      "Falling": {
+        "GravityFactor": 0.5
+      },
+      "Friction": 10
     },
     {
       "Name": "stick_grenade",

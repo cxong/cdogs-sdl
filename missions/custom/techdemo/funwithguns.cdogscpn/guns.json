@@ -182,6 +182,17 @@
     },
     {
       "Pic": "",
+      "Name": "tracers",
+      "Bullet": "tracer",
+      "Sound": "",
+      "SpreadCount": 12,
+      "SpreadWidth": 0.52,
+      "Recoil": 0.2,
+      "ElevationLow": 0,
+      "ElevationHigh": 30
+    },
+    {
+      "Pic": "",
       "Name": "big_explosion2",
       "Bullet": "big_explosion_spawner2",
       "SpreadCount": 8,

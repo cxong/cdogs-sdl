@@ -273,7 +273,8 @@ const Pic *CPicGetPic(const CPic *p, const int idx)
 		return p->u.Sprites != NULL ? CArrayGet(p->u.Sprites, idx) : NULL;
 	case PICTYPE_ANIMATED:
 	case PICTYPE_ANIMATED_RANDOM:
-		if (p->u.Animated.Frame < 0 ||
+		if (p->u.Sprites == NULL ||
+			p->u.Animated.Frame < 0 ||
 			p->u.Animated.Frame >= (int)p->u.Animated.Sprites->size)
 		{
 			return NULL;
