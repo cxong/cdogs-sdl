@@ -34,6 +34,9 @@ option(DEBUG "Enable debug build" OFF)
 option(DEBUG_PROFILE "Enable debug profile build" OFF)
 option(USE_SHARED_ENET "Use system installed copy of enet" OFF)
 option(BUILD_EDITOR "Build cdogs-sdl-editor" ON)
+# Package a self-contained zip that also carries the shared libraries the game
+# was built against, so it runs on distros we don't build a package for.
+option(CDOGS_LINUX_BUNDLE "Package a self-contained Linux bundle" OFF)
 
 # check for crosscompiling (defined when using a toolchain file)
 if(CMAKE_CROSSCOMPILING)
@@ -139,7 +142,8 @@ endif()
 set(CMAKE_MACOSX_RPATH 1)
 
 if(NOT DEFINED CDOGS_DATA_DIR)
-	if(GCW0)
+	if(GCW0 OR CDOGS_LINUX_BUNDLE)
+		# The bundle keeps the binaries in its root, next to the data
 		set(CDOGS_DATA_DIR "./")
 	else()
 		set(CDOGS_DATA_DIR "../")
@@ -203,7 +207,12 @@ endif()
 
 # Since Debian wants games binaries in /usr/games
 if(NOT DEFINED CDOGS_BIN_DIR)
-	set(CDOGS_BIN_DIR "${INSTALL_PREFIX}/bin")
+	if(CDOGS_LINUX_BUNDLE)
+		# Run straight from the bundle root, so no launcher is needed
+		set(CDOGS_BIN_DIR "${INSTALL_PREFIX}")
+	else()
+		set(CDOGS_BIN_DIR "${INSTALL_PREFIX}/bin")
+	endif()
 endif()
 
 install(
@@ -319,6 +328,33 @@ else()
 	set(CPACK_RPM_PACKAGE_LICENSE "GPL2")
 	set(CPACK_RPM_PACKAGE_GROUP "Amusements/Games/Action/Arcade")
 	set(CPACK_RPM_PACKAGE_REQUIRES "sdl_image >= 2, sdl_mixer >= 2")
+
+	if(CDOGS_LINUX_BUNDLE)
+		# Self-contained bundle: the normal Linux install plus the shared
+		# libraries the binaries were linked against, zipped up so the
+		# executable bits survive.
+		set(CPACK_GENERATOR ZIP)
+		set(CPACK_PACKAGE_FILE_NAME "cdogs-sdl-${VERSION}-linux-bundle")
+
+		find_program(PATCHELF patchelf)
+		if(NOT PATCHELF)
+			message(FATAL_ERROR
+				"patchelf not found; it is required for CDOGS_LINUX_BUNDLE")
+		endif()
+
+		set(CDOGS_BUNDLE_EXECUTABLES
+			"${CMAKE_CURRENT_BINARY_DIR}/src/cdogs-sdl")
+		if(BUILD_EDITOR)
+			list(APPEND CDOGS_BUNDLE_EXECUTABLES
+				"${CMAKE_CURRENT_BINARY_DIR}/src/cdogs-sdl-editor")
+		endif()
+		configure_file(
+			${CMAKE_SOURCE_DIR}/build/linux/bundle/bundle_libs.cmake.in
+			${CMAKE_CURRENT_BINARY_DIR}/bundle_libs.cmake
+			@ONLY)
+		# Declared last so it runs after the binaries have been installed
+		install(SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/bundle_libs.cmake)
+	endif()
 
 endif()
 include(CPack)
