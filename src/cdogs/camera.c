@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2019 Cong Xu
+	Copyright (c) 2013-2019, 2026 Cong Xu
 
 	Redistribution and use in source and binary forms, with or without
 	modification, are permitted provided that the following conditions are met:
@@ -93,7 +93,7 @@ void CameraInput(Camera *camera, const int cmd, const int lastCmd)
 		// Find index of player
 		int playerIndex = -1;
 		CA_FOREACH(const PlayerData, p, gPlayerDatas)
-		if (p->UID == camera->FollowActorUID)
+		if (p->ActorUID == camera->FollowActorUID)
 		{
 			playerIndex = _ca_index;
 			break;
@@ -124,6 +124,7 @@ static struct vec2 GetFollowPlayerPos(
 void CameraUpdate(Camera *camera, const int ticks, const int ms)
 {
 	camera->HUD.DrawData = HUDGetDrawData();
+	camera->FocusActorUID = -1;
 	if (camera->HUD.DrawData.NumScreens == 0)
 	{
 		// Try to spectate if there are other players alive
@@ -185,6 +186,7 @@ void CameraUpdate(Camera *camera, const int ticks, const int ms)
 					camera->HUD.DrawData.Players[0];
 				const TActor *p = ActorGetByUID(firstPlayer->ActorUID);
 				camera->lastPosition = p->thing.Pos;
+				camera->FocusActorUID = p->uid;
 			}
 			else if (singleScreen)
 			{
@@ -200,10 +202,12 @@ void CameraUpdate(Camera *camera, const int ticks, const int ms)
 			if (gMap.Size.x * TILE_WIDTH < gGraphicsDevice.cachedConfig.Res.x)
 			{
 				camera->lastPosition.x = (float)gMap.Size.x * TILE_WIDTH / 2;
+				camera->FocusActorUID = -1;
 			}
 			if (gMap.Size.y * TILE_HEIGHT < gGraphicsDevice.cachedConfig.Res.y)
 			{
 				camera->lastPosition.y = (float)gMap.Size.y * TILE_HEIGHT / 2;
+				camera->FocusActorUID = -1;
 			}
 
 			SoundSetEars(earPos);
@@ -283,8 +287,8 @@ static struct vec2 GetFollowPlayerPos(
 }
 
 static void DoBuffer(
-	DrawBuffer *b, const struct vec2 center, const int w,
-	const struct vec2 noise, const struct vec2i offset);
+	Camera *camera, const int w, const struct vec2 noise,
+	const struct vec2i offset);
 void CameraDraw(Camera *camera, const HUDDrawData drawData)
 {
 	const struct vec2i centerOffset = svec2i(-4, -8);
@@ -296,9 +300,7 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 	GraphicsResetClip(gGraphicsDevice.gameWindow.renderer);
 	if (drawData.NumScreens == 0)
 	{
-		DoBuffer(
-			&camera->Buffer, camera->lastPosition, X_TILES, noise,
-			centerOffset);
+		DoBuffer(camera, X_TILES, noise, centerOffset);
 	}
 	else
 	{
@@ -325,9 +327,7 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 				CA_FOREACH_END()
 			}
 
-			DoBuffer(
-				&camera->Buffer, camera->lastPosition, X_TILES, noise,
-				centerOffset);
+			DoBuffer(camera, X_TILES, noise, centerOffset);
 		}
 		else if (drawData.NumScreens == 2)
 		{
@@ -345,6 +345,7 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 					continue;
 				}
 				camera->lastPosition = a->thing.Pos;
+				camera->FocusActorUID = a->uid;
 				struct vec2i centerOffsetPlayer = centerOffset;
 				const Rect2i clip = Rect2iNew(
 					svec2i((i & 1) ? w / 2 : 0, 0), svec2i(w / 2, h));
@@ -355,9 +356,7 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 				}
 
 				LOSCalcFrom(&gMap, Vec2ToTile(camera->lastPosition), false);
-				DoBuffer(
-					&camera->Buffer, camera->lastPosition, X_TILES_HALF, noise,
-					centerOffsetPlayer);
+				DoBuffer(camera, X_TILES_HALF, noise, centerOffsetPlayer);
 			}
 			Draw_Line(w / 2 - 1, 0, w / 2 - 1, h - 1, colorBlack);
 			Draw_Line(w / 2, 0, w / 2, h - 1, colorBlack);
@@ -378,6 +377,7 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 					continue;
 				}
 				camera->lastPosition = a->thing.Pos;
+				camera->FocusActorUID = a->uid;
 				struct vec2i centerOffsetPlayer = centerOffset;
 				const Rect2i clip = Rect2iNew(
 					svec2i((i & 1) ? w / 2 : 0, (i < 2) ? 0 : h / 2 - 1),
@@ -396,9 +396,7 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 					centerOffsetPlayer.y += h / 4 - centerOffset.y;
 				}
 				LOSCalcFrom(&gMap, Vec2ToTile(camera->lastPosition), false);
-				DoBuffer(
-					&camera->Buffer, camera->lastPosition, X_TILES_HALF, noise,
-					centerOffsetPlayer);
+				DoBuffer(camera, X_TILES_HALF, noise, centerOffsetPlayer);
 			}
 			Draw_Line(w / 2 - 1, 0, w / 2 - 1, h - 1, colorBlack);
 			Draw_Line(w / 2, 0, w / 2, h - 1, colorBlack);
@@ -413,18 +411,20 @@ void CameraDraw(Camera *camera, const HUDDrawData drawData)
 	GraphicsResetClip(gGraphicsDevice.gameWindow.renderer);
 }
 static void DoBuffer(
-	DrawBuffer *b, const struct vec2 center, const int w,
-	const struct vec2 noise, const struct vec2i offset)
+	Camera *camera, const int w, const struct vec2 noise,
+	const struct vec2i offset)
 {
-	DrawBufferSetFromMap(b, &gMap, svec2_add(center, noise), w);
+	DrawBufferSetFromMap(
+		&camera->Buffer, &gMap, svec2_add(camera->lastPosition, noise), w);
 	if (gPlayerDatas.size > 0)
 	{
-		DrawBufferFix(b);
+		DrawBufferFix(&camera->Buffer);
 	}
 	DrawBufferArgs args;
 	memset(&args, 0, sizeof args);
 	args.HUD = ConfigGetBool(&gConfig, "Graphics.ShowHUD");
-	DrawBufferDraw(b, offset, &args);
+	args.FocusActorUID = camera->FocusActorUID;
+	DrawBufferDraw(&camera->Buffer, offset, &args);
 }
 
 void CameraDrawMode(const Camera *camera)

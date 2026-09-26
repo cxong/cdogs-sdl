@@ -1,7 +1,7 @@
 /*
 	C-Dogs SDL
 	A port of the legendary (and fun) action/arcade cdogs.
-	Copyright (c) 2013-2014, 2016-2017, 2020, 2022 Cong Xu
+	Copyright (c) 2013-2014, 2016-2017, 2020, 2022, 2026 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@ typedef struct
 	const Pic *GuideImage;
 	uint8_t GuideImageAlpha;
 	bool HUD;
+	int FocusActorUID;
 } DrawBufferArgs;
 
 void GrafxDrawBackground(

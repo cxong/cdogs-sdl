@@ -48,6 +48,7 @@ typedef struct
 	SpectateMode spectateMode;
 	// UID of actor to follow; only used if camera is in follow mode
 	int FollowActorUID;
+	int FocusActorUID;
 	// Immediately enter follow mode on the next player that joins the game
 	// This is used for when the game has no players; all spectators should
 	// immediately follow the next player to join
