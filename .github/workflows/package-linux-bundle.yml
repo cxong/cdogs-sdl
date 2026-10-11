@@ -1,0 +1,76 @@
+name: Build Linux bundle
+
+on:
+  push:
+    branches: [ master ]
+    tags:
+    - '*'
+  pull_request:
+    branches: [ master ]
+
+env:
+  CTEST_EXT_COLOR_OUTPUT: TRUE
+  CTEST_OUTPUT_ON_FAILURE: 1
+  BUILD_TYPE: Release
+  SDL_AUDIODRIVER: dummy
+  SDL_VIDEODRIVER: dummy
+
+jobs:
+  build-linux-bundle:
+    name: Build Linux bundle
+    # Pinned, unlike the other workflows: the bundle picks up glibc from the
+    # host it runs on, so the glibc we build against decides how old a distro
+    # the bundle still works on. Following ubuntu-latest would raise that
+    # floor whenever the label moves.
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v5
+
+    - name: Install packages
+      run: |
+        # Drop broken pre-installed third-party apt repos (microsoft/azure); we don't use them.
+        sudo rm -f /etc/apt/sources.list.d/*microsoft* /etc/apt/sources.list.d/*azure*
+        sudo apt-get update
+        sudo apt install libgl1-mesa-dev
+        sudo apt install libsdl2-dev libsdl2-mixer-dev
+        # Bundling needs patchelf, to point the binaries at the libraries we ship
+        sudo apt install patchelf
+
+    - name: Configure CMake
+      run: cmake -S . -B build-output -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCDOGS_LINUX_BUNDLE=ON -Wno-dev
+
+    - name: Build
+      run: cmake --build build-output --config ${{env.BUILD_TYPE}}
+
+    - name: Test
+      working-directory: build-output
+      run: ctest -C ${{env.BUILD_TYPE}} -VV
+
+    # CPack's ZIP generator stores the Unix permissions, so the +x bit on the
+    # binaries survives into the release asset (actions/upload-artifact does
+    # not preserve it)
+    - name: Make package
+      id: package
+      run: |
+        set -euo pipefail
+        cmake --build build-output --target package
+        echo "name=$(basename build-output/cdogs-sdl-*-linux-bundle.zip)" >> "$GITHUB_OUTPUT"
+
+    # So that pull requests also get a bundle that can be downloaded and tried out
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: ${{ steps.package.outputs.name }}
+        path: build-output/cdogs-sdl-*-linux-bundle.zip
+        if-no-files-found: error
+
+    - name: Upload to the release on tags
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        files: build-output/cdogs-sdl-*-linux-bundle.zip
+        fail_on_unmatched_files: true

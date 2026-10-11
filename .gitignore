@@ -113,3 +113,5 @@ Thumbs.db
 .config/
 *.blend1
 emscripten/
+# Build dir used by the Linux bundle workflow (.github/workflows/package-linux-bundle.yml)
+build-output/
