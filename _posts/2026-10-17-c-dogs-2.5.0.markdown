@@ -1,0 +1,31 @@
+---
+layout: post
+title: "C-Dogs 2.5.0 Released!"
+date: 2026-10-17
+categories: release
+image: https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/spritevar.png
+---
+
+It's time for another C-Dogs SDL release! While no major features are included, there's quite a big list of enhancements so do check it out!
+
+The most impactful would be **DOS Pixel Aspect Ratio**. Yes, C-Dogs is a DOS game with non-square pixels, so all these years C-Dogs SDL has been [showing it wrong](https://www.gamedeveloper.com/business/no-ms-dos-games-weren-t-widescreen-tips-on-correcting-aspect-ratio)! But not anymore, and now our pot-bellied heroes regain a bit of dignity with their chiselled-jaws-look restored:
+
+<video muted autoplay loop>
+    <source src="https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/dospar.mp4" type="video/mp4">
+</video>
+
+Meanwhile there are some small but fun (and perhaps silly) enhancements like more particle effects for the various status effects:
+
+<video muted autoplay loop>
+    <source src="https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/flames.mp4" type="video/mp4">
+</video>
+
+Yeeouch! Or how about being able to shoot off hats and helmets with a satisfying "DING" sound effect:
+
+<video muted autoplay loop>
+    <source src="https://raw.githubusercontent.com/cxong/cdogs-sdl/gh-pages/_posts/hatsoff.mp4" type="video/mp4">
+</video>
+
+No gameplay effect, just eye- (and ear-) candy. Download free from itch.io: <https://congusbongus.itch.io/cdogs-sdl/purchase>
+
+Release notes: <https://github.com/cxong/cdogs-sdl/releases/tag/2.5.0>
