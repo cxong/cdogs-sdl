@@ -140,6 +140,13 @@ jobs:
         scoop update
         scoop bucket add extras
         scoop install nsis
+        $nsisDir = Join-Path $env:USERPROFILE "scoop\apps\nsis\current"
+        if (!(Test-Path (Join-Path $nsisDir "makensis.exe"))) {
+          throw "NSIS compiler not found in $nsisDir"
+        }
+        $nsisDir | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        "NSISDIR=$nsisDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        & (Join-Path $nsisDir "makensis.exe") /VERSION
 
     - name: Make package on tags
       if: startsWith(github.ref, 'refs/tags/')
