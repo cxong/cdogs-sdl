@@ -9,11 +9,16 @@ endif()
 
 add_subdirectory(cbehave)
 
-add_test(NAME command_line_bool_test
-	COMMAND ${CMAKE_COMMAND}
-		-DGAME=$<TARGET_FILE:cdogs-sdl>
-		-DTEST_HOME=${CMAKE_CURRENT_BINARY_DIR}/command_line_home
-		-P ${CMAKE_CURRENT_SOURCE_DIR}/command_line_bool_test.cmake)
+add_executable(command_line_bool_test
+	command_line_bool_test.c
+	../command_line.c)
+target_link_libraries(command_line_bool_test
+	cbehave
+	cdogs
+	cdogs_proto
+	SDL2::SDL2
+	${EXTRA_LIBRARIES})
+add_test(NAME command_line_bool_test COMMAND command_line_bool_test)
 
 include_directories(
 	. ../cdogs
