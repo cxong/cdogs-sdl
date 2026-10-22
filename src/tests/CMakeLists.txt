@@ -9,6 +9,17 @@ endif()
 
 add_subdirectory(cbehave)
 
+add_executable(command_line_test
+	command_line_bool_test.c
+	../command_line.c)
+target_link_libraries(command_line_test
+	cbehave
+	cdogs
+	cdogs_proto
+	SDL2::SDL2
+	${EXTRA_LIBRARIES})
+add_test(NAME command_line_test COMMAND command_line_test)
+
 include_directories(
 	. ../cdogs
 	${SDL2_INCLUDE_DIRS})
