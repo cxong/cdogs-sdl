@@ -30,6 +30,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 static char *ReadFile(const char *filename);
 yajl_val YAJLReadFile(const char *filename)
 {
