@@ -462,6 +462,10 @@ bool CharacterIsPrisoner(const CharacterStore *store, const Character *c)
 	return false;
 }
 
+// Hats that can't be worn with any hair and vice versa
+static const char *HATLESS_HAIRS[] = {"mohawk"};
+static const char *HAIRLESS_HATS[] = {"hazmat", "helmet"};
+
 void CharacterSetHeadPart(Character *c, const HeadPart hp, const char *name)
 {
 	CFREE(c->HeadParts[hp]);
@@ -469,6 +473,30 @@ void CharacterSetHeadPart(Character *c, const HeadPart hp, const char *name)
 	if (name)
 	{
 		CSTRDUP(c->HeadParts[hp], name);
+		if (hp == HEAD_PART_HAIR)
+		{
+			for (size_t i = 0; i < sizeof(HATLESS_HAIRS) / sizeof(char *); i++)
+			{
+				if (strcmp(name, HATLESS_HAIRS[i]) == 0)
+				{
+					CFREE(c->HeadParts[HEAD_PART_HAT]);
+					c->HeadParts[HEAD_PART_HAT] = NULL;
+					break;
+				}
+			}
+		}
+		else if (hp == HEAD_PART_HAT)
+		{
+			for (size_t i = 0; i < sizeof(HAIRLESS_HATS) / sizeof(char *); i++)
+			{
+				if (strcmp(name, HAIRLESS_HATS[i]) == 0)
+				{
+					CFREE(c->HeadParts[HEAD_PART_HAIR]);
+					c->HeadParts[HEAD_PART_HAIR] = NULL;
+					break;
+				}
+			}
+		}
 	}
 }
 

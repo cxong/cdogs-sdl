@@ -264,6 +264,7 @@ static menu_t *CreateHeadPartMenu(
 }
 static void PostInputHeadPartMenu(menu_t *menu, int cmd, void *data)
 {
+	UNUSED(cmd);
 	const HeadPartMenuData *d = data;
 	// Change player hairstyle based on current menu selection
 	PlayerData *p = PlayerDataGetByUID(d->PlayerUID);
@@ -276,7 +277,6 @@ static void PostInputHeadPartMenu(menu_t *menu, int cmd, void *data)
 			&gPicManager.headPartNames[d->HP], menu->u.normal.index - 1);
 	}
 	CharacterSetHeadPart(c, d->HP, hpName);
-	PostInputRotatePlayer(menu, cmd, data);
 }
 
 static void DrawColorMenu(
