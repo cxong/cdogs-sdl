@@ -126,10 +126,11 @@
         "Mask": "ffff66"
       },
       "SpeedLow": 600,
-      "SpeedHigh": 1200,
-      "ElevationLow": 0,
-      "ElevationHigh": 30,
-      "Range": 20,
+      "SpeedHigh": 1000,
+      "ElevationLow": 100,
+      "ElevationHigh": 1000,
+      "RangeLow": 55,
+      "RangeHigh": 65,
       "Power": 0,
       "Mass": 0.0,
       "Spark": "",
@@ -137,6 +138,10 @@
         "Wall": {
           "Sound": ""
         }
+      },
+      "Trail": {
+        "Particle": "trail",
+        "Width": 1.0
       },
       "WallBounceElasticity": 0.5,
       "Falling": {
