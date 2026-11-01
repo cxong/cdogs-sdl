@@ -470,29 +470,30 @@ void CharacterSetHeadPart(Character *c, const HeadPart hp, const char *name)
 {
 	CFREE(c->HeadParts[hp]);
 	c->HeadParts[hp] = NULL;
+	c->HideHeadParts[hp] = false;
 	if (name)
 	{
 		CSTRDUP(c->HeadParts[hp], name);
 		if (hp == HEAD_PART_HAIR)
 		{
+			c->HideHeadParts[HEAD_PART_HAT] = false;
 			for (size_t i = 0; i < sizeof(HATLESS_HAIRS) / sizeof(char *); i++)
 			{
 				if (strcmp(name, HATLESS_HAIRS[i]) == 0)
 				{
-					CFREE(c->HeadParts[HEAD_PART_HAT]);
-					c->HeadParts[HEAD_PART_HAT] = NULL;
+					c->HideHeadParts[HEAD_PART_HAT] = true;
 					break;
 				}
 			}
 		}
 		else if (hp == HEAD_PART_HAT)
 		{
+			c->HideHeadParts[HEAD_PART_HAIR] = false;
 			for (size_t i = 0; i < sizeof(HAIRLESS_HATS) / sizeof(char *); i++)
 			{
 				if (strcmp(name, HAIRLESS_HATS[i]) == 0)
 				{
-					CFREE(c->HeadParts[HEAD_PART_HAIR]);
-					c->HeadParts[HEAD_PART_HAIR] = NULL;
+					c->HideHeadParts[HEAD_PART_HAIR] = true;
 					break;
 				}
 			}
@@ -615,7 +616,7 @@ static color_t RandomDogHairColor(void)
 	return ColorTint(colorWhite, hsv);
 }
 static color_t RandomSkinColor(const CharacterClass *c)
-	{
+{
 	// Select skin colour based on class sound
 	if (strcmp(c->Sounds, "man") == 0 || strcmp(c->Sounds, "woman") == 0)
 	{
@@ -626,8 +627,7 @@ static color_t RandomSkinColor(const CharacterClass *c)
 		hsv.v = RAND_DOUBLE(0.3, 1);
 		return ColorTint(colorWhite, hsv);
 	}
-	else if (
-		strcmp(c->Name, "Cyborg") == 0)
+	else if (strcmp(c->Name, "Cyborg") == 0)
 	{
 		// Human skin tones but brighter and desaturated
 		HSV hsv;
@@ -636,7 +636,8 @@ static color_t RandomSkinColor(const CharacterClass *c)
 		hsv.v = RAND_DOUBLE(0.7, 1);
 		return ColorTint(colorWhite, hsv);
 	}
-	else if (strcmp(c->Name, "Bones") == 0 || strcmp(c->Name, "Big Bones") == 0)
+	else if (
+		strcmp(c->Name, "Bones") == 0 || strcmp(c->Name, "Big Bones") == 0)
 	{
 		// Bone ranges
 		HSV hsv;

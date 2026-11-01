@@ -22,7 +22,7 @@
 	This file incorporates work covered by the following copyright and
 	permission notice:
 
-	Copyright (c) 2013-2021, 2023, 2025 Cong Xu
+	Copyright (c) 2013-2021, 2023, 2025-2026 Cong Xu
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -304,7 +304,7 @@ static void UpdatePilotHeadPic(
 
 	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
 	{
-		if (c->Class->HasHeadParts[hp])
+		if (c->Class->HasHeadParts[hp] && !c->HideHeadParts[hp])
 		{
 			pics->HeadParts[hp] = GetHeadPartPic(
 				c->HeadParts[hp], hp, headDir, grimace, a->isHatDetached,
@@ -426,7 +426,7 @@ static ActorPics GetUnorderedPics(
 	for (HeadPart hp = HEAD_PART_HAIR; hp < HEAD_PART_COUNT; hp++)
 	{
 		// Holiday override
-		const bool hasHeadPart = c->Class->HasHeadParts[hp] ||
+		const bool hasHeadPart = (c->Class->HasHeadParts[hp] && !c->HideHeadParts[hp]) ||
 								 (hp == HEAD_PART_HAT && festiveHat != NULL);
 		if (hasHeadPart)
 		{
