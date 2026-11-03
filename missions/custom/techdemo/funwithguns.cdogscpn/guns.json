@@ -193,6 +193,16 @@
     },
     {
       "Pic": "",
+      "Name": "shockwave",
+      "Bullet": "shockwavelet",
+      "Sound": "",
+      "SpreadCount": 32,
+      "SpreadWidth": 0.18,
+      "ElevationLow": 0,
+      "ElevationHigh": 0
+    },
+    {
+      "Pic": "",
       "Name": "big_explosion2",
       "Bullet": "big_explosion_spawner2",
       "SpreadCount": 8,

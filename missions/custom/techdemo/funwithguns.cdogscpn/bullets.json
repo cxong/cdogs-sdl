@@ -92,7 +92,7 @@
         "BounceElasticity": 0.5,
         "BounceFriction": 0.5
       },
-      "OutOfRangeGuns": ["flare", "tracers"]
+      "OutOfRangeGuns": ["flare", "tracers", "shockwave"]
     },
     {
       "Name": "flare",
@@ -148,6 +148,40 @@
         "GravityFactor": 0.5
       },
       "Friction": 10
+    },
+    {
+      "Name": "shockwavelet",
+      "Pic": {
+        "Type": "Directional",
+        "Sprites": "rapid",
+        "Tint": [-1.0, 1.0, 0.75]
+      },
+      "Speed": 1300,
+      "Elevation": 0,
+      "Range": 15,
+      "Power": 5,
+      "Mass": 20.0,
+      "Spark": "",
+      "HurtAlways": true,
+      "Persists": true,
+      "Hit": {
+        "Object": {
+          "Sound": "hits/gas"
+		},
+        "Flesh": {
+          "Sound": "hits/gas"
+        },
+        "Wall": {
+          "Sound": "hits/gas"
+        }
+      },
+      "Trail": {
+        "Particle": "smoke_trail_small",
+        "Width": 0,
+        "TicksPerEmit": 4
+      },
+      "WallBounceElasticity": 1.5,
+      "Friction": 15
     },
     {
       "Name": "stick_grenade",
