@@ -340,7 +340,6 @@ int hashmap_get(const map_t m, const char *key, any_t *arg)
 	/* Linear probing, if necessary */
 	for (i = 0; i < MAX_CHAIN_LENGTH; i++)
 	{
-
 		int in_use = m->data[curr].in_use;
 		if (in_use == 1)
 		{

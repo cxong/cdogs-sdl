@@ -109,3 +109,14 @@ if(BUILD_EDITOR)
   endif()
   target_link_libraries(cdogs-sdl-editor cdogsedlib cdogs cdogs_proto ${OPENGL_LIBRARIES} ${EXTRA_LIBRARIES})
 endif()
+
+add_executable(weapon_preview weapon_preview.c ${CDOGS_SDL_EXTRA})
+if(APPLE)
+	set_target_properties(weapon_preview PROPERTIES
+		MACOSX_RPATH 1
+		BUILD_WITH_INSTALL_RPATH 1
+		INSTALL_RPATH "@loader_path/../Frameworks;/Library/Frameworks")
+elseif(MSVC)
+	set_target_properties(weapon_preview PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/src")
+endif()
+target_link_libraries(weapon_preview cdogs cdogs_proto ${EXTRA_LIBRARIES})

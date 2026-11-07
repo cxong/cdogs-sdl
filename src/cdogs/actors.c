@@ -286,7 +286,6 @@ void UpdateActorState(TActor *actor, int ticks)
 								 actor->anim.newFrame;
 	if (isFootstepFrame)
 	{
-
 		if (ConfigGetBool(&gConfig, "Sound.Footsteps"))
 		{
 			GameEvent e = GameEventNew(GAME_EVENT_SOUND_AT);
@@ -1204,7 +1203,6 @@ int CommandActor(TActor *actor, int cmd, int ticks)
 		}
 		else
 		{
-
 			if (actor->confused)
 			{
 				cmd = CmdGetReverse(cmd);
