@@ -156,9 +156,9 @@
         "Sprites": "rapid",
         "Tint": [-1.0, 1.0, 0.75]
       },
-      "Speed": 1300,
+      "Speed": 800,
       "Elevation": 0,
-      "Range": 15,
+      "Range": 20,
       "Power": 5,
       "Mass": 20.0,
       "Spark": "",
@@ -167,7 +167,7 @@
       "Hit": {
         "Object": {
           "Sound": "hits/gas"
-		},
+        },
         "Flesh": {
           "Sound": "hits/gas"
         },
@@ -178,10 +178,49 @@
       "Trail": {
         "Particle": "smoke_trail_small",
         "Width": 0,
-        "TicksPerEmit": 4
+        "TicksPerEmit": 1
       },
       "WallBounceElasticity": 1.5,
-      "Friction": 15
+      "Friction": 10,
+      "OutOfRangeGuns": [
+        "shockwave_tail"
+      ]
+    },
+    {
+      "Name": "shockwave_taillet",
+      "Pic": {
+        "Type": "Directional",
+        "Sprites": "rapid",
+        "Tint": [-1.0, 1.0, 0.75]
+      },
+      "Speed": 200,
+      "Range": 18,
+      "Power": 5,
+      "Mass": 20.0,
+      "Spark": "",
+      "HurtAlways": true,
+      "Persists": true,
+      "Hit": {
+        "Object": {
+          "Sound": "hits/gas"
+        },
+        "Flesh": {
+          "Sound": "hits/gas"
+        },
+        "Wall": {
+          "Sound": "hits/gas"
+        }
+      },
+      "Trail": {
+        "Particle": "smoke_trail",
+        "Width": 0,
+        "TicksPerEmit": 4
+      },
+      "Falling": {
+        "GravityFactor": -1,
+        "FallsDown": false
+      },
+      "WallBounceElasticity": 1.5
     },
     {
       "Name": "stick_grenade",

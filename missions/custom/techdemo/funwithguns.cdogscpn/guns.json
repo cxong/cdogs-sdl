@@ -41,7 +41,7 @@
       "IsGrenade": true,
       "Bullet": "he_grenade",
       "Cost": 20,
-      "Lock": 50,
+      "Lock": 100,
       "Sound": "launch",
       "SwitchSound": "grenade_pickup",
       "Elevation": 24,
@@ -196,10 +196,15 @@
       "Name": "shockwave",
       "Bullet": "shockwavelet",
       "Sound": "",
-      "SpreadCount": 32,
-      "SpreadWidth": 0.18,
-      "ElevationLow": 0,
-      "ElevationHigh": 0
+      "SpreadCount": 24,
+      "SpreadWidth": 0.26,
+      "Recoil": 0.2
+    },
+    {
+      "Pic": "",
+      "Name": "shockwave_tail",
+      "Bullet": "shockwave_taillet",
+      "Sound": ""
     },
     {
       "Pic": "",
