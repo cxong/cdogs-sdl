@@ -92,7 +92,7 @@
         "BounceElasticity": 0.5,
         "BounceFriction": 0.5
       },
-      "OutOfRangeGuns": ["flare", "tracers", "shockwave"]
+      "OutOfRangeGuns": ["flare", "tracers", "shockwave", "explosion_lowres"]
     },
     {
       "Name": "flare",
@@ -221,6 +221,39 @@
         "FallsDown": false
       },
       "WallBounceElasticity": 1.5
+    },
+    {
+      "Name": "explosion_lowres",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "explosion_lowres",
+        "TicksPerFrame": 4
+      },
+      "SpeedLow": 250,
+      "SpeedHigh": 400,
+      "Range": 60,
+      "Power": 10,
+      "Mass": 10.0,
+      "Size": [32, 32],
+      "Spark": "",
+      "HurtAlways": true,
+      "Persists": true,
+      "Hit": {
+        "Object": {
+          "Sound": "hits/gas"
+        },
+        "Flesh": {
+          "Sound": "hits/gas"
+        },
+        "Wall": {
+          "Sound": "hits/gas"
+        }
+      },
+      "Falling": {
+        "GravityFactor": 0.2
+      },
+      "WallBounceElasticity": 0.5,
+      "Friction": 5
     },
     {
       "Name": "stick_grenade",

@@ -208,6 +208,16 @@
     },
     {
       "Pic": "",
+      "Name": "explosion_lowres",
+      "Bullet": "explosion_lowres",
+      "Sound": "",
+      "SpreadCount": 16,
+      "SpreadWidth": 0.39,
+      "Recoil": 0.2,
+      "Elevation": 10
+    },
+    {
+      "Pic": "",
       "Name": "big_explosion2",
       "Bullet": "big_explosion_spawner2",
       "SpreadCount": 8,
