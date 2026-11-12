@@ -208,8 +208,28 @@
     },
     {
       "Pic": "",
-      "Name": "explosion_lowres",
-      "Bullet": "explosion_lowres",
+      "Name": "explosion_lowres1",
+      "Bullet": "explosion_lowres1",
+      "Sound": "",
+      "SpreadCount": 6,
+      "SpreadWidth": 1.04,
+      "Recoil": 0.2,
+      "Elevation": 15
+    },
+    {
+      "Pic": "",
+      "Name": "explosion_lowres2",
+      "Bullet": "explosion_lowres2",
+      "Sound": "",
+      "SpreadCount": 12,
+      "SpreadWidth": 0.52,
+      "Recoil": 0.2,
+      "Elevation": 13
+    },
+    {
+      "Pic": "",
+      "Name": "explosion_lowres3",
+      "Bullet": "explosion_lowres3",
       "Sound": "",
       "SpreadCount": 16,
       "SpreadWidth": 0.39,
