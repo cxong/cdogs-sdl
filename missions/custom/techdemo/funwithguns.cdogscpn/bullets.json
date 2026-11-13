@@ -221,7 +221,7 @@
       },
       "SpeedLow": 150,
       "SpeedHigh": 300,
-      "Range": 64,
+      "Range": 63,
       "Power": 10,
       "Mass": 10.0,
       "Size": [32, 32],
@@ -251,11 +251,11 @@
         "Type": "Animated",
         "Sprites": "explosion_lowres",
         "TicksPerFrame": 3,
-        "Count": -20
+        "Count": -15
       },
       "SpeedLow": 250,
       "SpeedHigh": 350,
-      "Range": 64,
+      "Range": 61,
       "Power": 10,
       "Mass": 10.0,
       "Size": [32, 32],
@@ -285,11 +285,11 @@
         "Type": "Animated",
         "Sprites": "explosion_lowres",
         "TicksPerFrame": 2,
-        "Count": -40
+        "Count": -30
       },
-      "SpeedLow": 350,
-      "SpeedHigh": 400,
-      "Range": 64,
+      "SpeedLow": 150,
+      "SpeedHigh": 200,
+      "Range": 61,
       "Power": 10,
       "Mass": 10.0,
       "Size": [32, 32],
@@ -310,8 +310,7 @@
       "Falling": {
         "GravityFactor": 0.2
       },
-      "WallBounceElasticity": 0.5,
-      "Friction": 5
+      "WallBounceElasticity": 0.5
     },
     {
       "Name": "stick_grenade",
