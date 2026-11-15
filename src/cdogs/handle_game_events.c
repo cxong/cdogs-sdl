@@ -494,7 +494,16 @@ static void HandleGameEvent(
 		Objective *o = CArrayGet(
 			&gMission.missionData->Objectives,
 			e.u.ObjectiveUpdate.ObjectiveId);
+		const bool wasDone = ObjectiveIsComplete(o);
 		o->done += e.u.ObjectiveUpdate.Count;
+		if (!wasDone && ObjectiveIsComplete(o))
+		{
+			SoundPlay(sd, StrSound("objective_complete"));
+			if (camera != NULL)
+			{
+				HUDDisplayMessage(&camera->HUD, "Objective complete", 2000);
+			}
+		}
 		// Display a text update effect for the objective
 		if (camera != NULL)
 		{
