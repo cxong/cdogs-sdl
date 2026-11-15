@@ -238,6 +238,17 @@
     },
     {
       "Pic": "",
+      "Name": "debris",
+      "Bullet": "debri",
+      "Sound": "",
+      "SpreadCount": 12,
+      "SpreadWidth": 0.52,
+      "Recoil": 0.2,
+      "ElevationLow": 20,
+      "ElevationHigh": 30
+    },
+    {
+      "Pic": "",
       "Name": "big_explosion2",
       "Bullet": "big_explosion_spawner2",
       "SpreadCount": 8,

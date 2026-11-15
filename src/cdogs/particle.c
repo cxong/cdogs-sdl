@@ -355,6 +355,10 @@ static void DrawParticle(const struct vec2i pos, const ThingDrawFuncData *data)
 		CPicDrawContext c = CPicDrawContextNew();
 		c.Dir = RadiansToDirection(p->Angle);
 		const Pic *pic = CPicGetPic(&p->u.Pic, c.Dir);
+		if (pic == NULL)
+		{
+			return;
+		}
 		if (p->u.Pic.Type != PICTYPE_DIRECTIONAL)
 		{
 			c.Radians = p->Angle;

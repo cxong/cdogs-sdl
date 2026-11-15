@@ -92,7 +92,13 @@
         "BounceElasticity": 0.5,
         "BounceFriction": 0.5
       },
-      "OutOfRangeGuns": ["flare", "tracers", "shockwave", "explosion_lowres1", "explosion_lowres2", "explosion_lowres3"]
+      "OutOfRangeGuns": [
+        "flare",
+        "tracers",
+        "shockwave",
+        "explosion_lowres1", "explosion_lowres2", "explosion_lowres3",
+        "debris"
+      ]
     },
     {
       "Name": "flare",
@@ -311,6 +317,39 @@
         "GravityFactor": 0.2
       },
       "WallBounceElasticity": 0.5
+    },
+    {
+      "Name": "debri",
+      "Pic": {
+        "Type": "AnimatedRandom",
+        "Pic": "particles/spall2",
+        "TicksPerFrame": 8,
+        "Mask": "666666"
+      },
+      "SpeedLow": 100,
+      "SpeedHigh": 200,
+      "ElevationLow": 100,
+      "ElevationHigh": 1000,
+      "RangeLow": 100,
+      "RangeHigh": 150,
+      "Power": 0,
+      "Mass": 0.0,
+      "Spark": "",
+      "Hit": {
+        "Wall": {
+          "Sound": ""
+        }
+      },
+      "Trail": {
+        "Particle": "debris_smoke",
+        "Width": 0,
+        "TicksPerEmit": 6
+      },
+      "WallBounceElasticity": 0.5,
+      "Falling": {
+        "GravityFactor": 0.4,
+        "BounceElasticity": 0.5
+      }
     },
     {
       "Name": "stick_grenade",

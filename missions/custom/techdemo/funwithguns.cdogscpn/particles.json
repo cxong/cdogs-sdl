@@ -1,26 +1,48 @@
 {
-  "Version": 1,
+  "Version": 2,
   "Particles": [
     {
       "Name": "muzzle_flash_chaser2",
-      "Sprites": "particles/muzzle_flash",
-      "Mask": "66ff66"
+      "Pic": {
+        "Type": "Directional",
+        "Sprites": "particles/muzzle_flash",
+        "Mask": "66ff66"
+      }
     },
     {
       "Name": "muzzle_flash_laser_beam",
-      "Sprites": "laser_beam",
+      "Pic": {
+        "Type": "Directional",
+        "Sprites": "laser_beam",
+        "Mask": "66ff66"
+      },
       "Range": 5
     },
     {
       "Name": "muzzle_flash_thin",
-      "Sprites": "muzzle_flash_thin",
-      "Mask": "ccccff",
+      "Pic": {
+        "Type": "Directional",
+        "Sprites": "muzzle_flash_thin",
+        "Mask": "ccccff"
+      },
       "Range": 5
     },
     {
       "Name": "laser_point",
-      "Sprites": "laser_dot",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": "laser_dot"
+      },
       "Range": 1
+    },
+    {
+      "Name": "debris_smoke",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "particles/smoke_big",
+        "TicksPerFrame": 4
+      },
+      "Range": 30
     }
   ]
 }
