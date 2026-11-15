@@ -387,8 +387,10 @@ static void ReloadAllData(const char *filename)
 	CharacterClassesTerminate(&gCharacterClasses);
 	PicManagerClearCustom(&gPicManager);
 	CharSpriteClassesClear(gCharSpriteClasses.customClasses);
+	PlayerDataTerminate(&gPlayerDatas);
 
 	// Re-initialize base data
+	PlayerDataInit(&gPlayerDatas);
 	CharSpriteClassesInit(&gCharSpriteClasses);
 	ParticleClassesInit(&gParticleClasses, "data/particles.json");
 	AmmoInitialize(&gAmmo, "data/ammo.json");
@@ -402,6 +404,11 @@ static void ReloadAllData(const char *filename)
 		&gPickupClasses, "data/pickups.json", &gAmmo, &gWeaponClasses);
 	MapObjectsInit(
 		&gMapObjects, "data/map_objects.json", &gAmmo, &gWeaponClasses);
+	GameEvent e = GameEventNew(GAME_EVENT_PLAYER_DATA);
+	e.u.PlayerData = PlayerDataDefault(0);
+	e.u.PlayerData.UID = 0;
+	GameEventsEnqueue(&gGameEvents, e);
+	HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
 
 	// Load custom data if filename provided
 	if (filename && strlen(filename))
@@ -416,28 +423,21 @@ static void ReloadAllData(const char *filename)
 		Mission *m = CampaignGetCurrentMission(&gCampaign);
 		MapBuild(&gMap, m, false, 0, GAME_MODE_NORMAL, NULL);
 		LOSSetAllVisible(&gMap.LOS);
+
+		const struct vec2 centerPos =
+			Vec2CenterOfTile(svec2i(gMap.Size.x / 2, gMap.Size.y / 2));
+		CA_FOREACH(const PlayerData, p, gPlayerDatas)
+		if (!p->Ready)
+			continue;
+		PlacePlayer(&gMap, p, centerPos, true);
+		CA_FOREACH_END()
+		CameraReset(&sCamera);
+		sCamera.lastPosition = centerPos;
+		sCamera.FollowNextPlayer = true;
 	}
 
 	MapMarkAllAsVisited(&gMap);
-	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-	if (!p->IsLocal)
-		continue;
-	GameEvent e = GameEventNew(GAME_EVENT_PLAYER_DATA);
-	e.u.PlayerData = PlayerDataMissionReset(p);
-	GameEventsEnqueue(&gGameEvents, e);
-	CA_FOREACH_END()
-	HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
-	const struct vec2 centerPos =
-		Vec2CenterOfTile(svec2i(gMap.Size.x / 2, gMap.Size.y / 2));
 	gMap.start = svec2i(gMap.Size.x / 2, gMap.Size.y / 2);
-	CA_FOREACH(const PlayerData, p, gPlayerDatas)
-	if (!p->Ready)
-		continue;
-	PlacePlayer(&gMap, p, centerPos, true);
-	CA_FOREACH_END()
-	CameraReset(&sCamera);
-	sCamera.lastPosition = centerPos;
-	sCamera.FollowNextPlayer = true;
 
 	DropdownRebuild(&sDropdown, currentWeaponName);
 	EquipActiveWeapon();
@@ -465,20 +465,6 @@ static void SetupEmptyGame(void)
 	LOSSetAllVisible(&gMap.LOS);
 	MapMarkAllAsVisited(&gMap);
 
-	PlayerDataTerminate(&gPlayerDatas);
-	PlayerDataInit(&gPlayerDatas);
-
-	GameEvent e = GameEventNew(GAME_EVENT_PLAYER_DATA);
-	e.u.PlayerData = PlayerDataDefault(0);
-	e.u.PlayerData.UID = 0;
-	const WeaponClass *wc = DropdownGetSelected(&sDropdown);
-	if (wc)
-	{
-		// e.u.PlayerData.guns[0] = wc;
-	}
-	GameEventsEnqueue(&gGameEvents, e);
-	HandleGameEvents(&gGameEvents, NULL, NULL, NULL, NULL);
-
 	PlayerData *p = CArrayGet(&gPlayerDatas, 0);
 	const struct vec2 centerPos =
 		Vec2CenterOfTile(svec2i(gMap.Size.x / 2, gMap.Size.y / 2));
@@ -491,6 +477,7 @@ static void SetupEmptyGame(void)
 	{
 		a->flags |= FLAGS_INVULNERABLE | FLAGS_ASBESTOS | FLAGS_IMMUNITY;
 		a->health = 10000;
+		const WeaponClass *wc = DropdownGetSelected(&sDropdown);
 		if (wc)
 		{
 			a->guns[0] = WeaponCreate(wc);

@@ -41,7 +41,7 @@
       "IsGrenade": true,
       "Bullet": "he_grenade",
       "Cost": 20,
-      "Lock": 50,
+      "Lock": 100,
       "Sound": "launch",
       "SwitchSound": "grenade_pickup",
       "Elevation": 24,
@@ -196,10 +196,45 @@
       "Name": "shockwave",
       "Bullet": "shockwavelet",
       "Sound": "",
-      "SpreadCount": 32,
-      "SpreadWidth": 0.18,
-      "ElevationLow": 0,
-      "ElevationHigh": 0
+      "SpreadCount": 24,
+      "SpreadWidth": 0.26,
+      "Recoil": 0.2
+    },
+    {
+      "Pic": "",
+      "Name": "shockwave_tail",
+      "Bullet": "shockwave_taillet",
+      "Sound": ""
+    },
+    {
+      "Pic": "",
+      "Name": "explosion_lowres1",
+      "Bullet": "explosion_lowres1",
+      "Sound": "",
+      "SpreadCount": 6,
+      "SpreadWidth": 1.04,
+      "Recoil": 0.2,
+      "Elevation": 15
+    },
+    {
+      "Pic": "",
+      "Name": "explosion_lowres2",
+      "Bullet": "explosion_lowres2",
+      "Sound": "",
+      "SpreadCount": 12,
+      "SpreadWidth": 0.52,
+      "Recoil": 0.2,
+      "Elevation": 13
+    },
+    {
+      "Pic": "",
+      "Name": "explosion_lowres3",
+      "Bullet": "explosion_lowres3",
+      "Sound": "",
+      "SpreadCount": 16,
+      "SpreadWidth": 0.39,
+      "Recoil": 0.2,
+      "Elevation": 10
     },
     {
       "Pic": "",

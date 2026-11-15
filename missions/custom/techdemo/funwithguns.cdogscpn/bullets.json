@@ -92,31 +92,21 @@
         "BounceElasticity": 0.5,
         "BounceFriction": 0.5
       },
-      "OutOfRangeGuns": ["flare", "tracers", "shockwave"]
+      "OutOfRangeGuns": ["flare", "tracers", "shockwave", "explosion_lowres1", "explosion_lowres2", "explosion_lowres3"]
     },
     {
       "Name": "flare",
       "Pic": {
-        "Type": "Animated",
-        "Sprites": "flare",
-        "TicksPerFrame": 1
+        "Type": "Normal",
+        "Pic": "flare"
       },
       "Speed": 0,
-      "Range": 1,
-      "Power": 50,
-      "Mass": 5.0,
-      "Size": [14, 10],
-      "HurtAlways": true,
+      "Range": 20,
+      "Power": 0,
+      "Mass": 0,
       "Persists": true,
       "Spark": "",
-      "Hit": {
-        "Object": {
-          "Sound": ""
-        },
-        "Flesh": {
-          "Sound": ""
-        }
-      }
+      "Hit": {}
     },
     {
       "Name": "tracer",
@@ -156,9 +146,9 @@
         "Sprites": "rapid",
         "Tint": [-1.0, 1.0, 0.75]
       },
-      "Speed": 1300,
+      "Speed": 800,
       "Elevation": 0,
-      "Range": 15,
+      "Range": 20,
       "Power": 5,
       "Mass": 20.0,
       "Spark": "",
@@ -167,7 +157,7 @@
       "Hit": {
         "Object": {
           "Sound": "hits/gas"
-		},
+        },
         "Flesh": {
           "Sound": "hits/gas"
         },
@@ -178,10 +168,149 @@
       "Trail": {
         "Particle": "smoke_trail_small",
         "Width": 0,
-        "TicksPerEmit": 4
+        "TicksPerEmit": 1
       },
       "WallBounceElasticity": 1.5,
-      "Friction": 15
+      "Friction": 10,
+      "OutOfRangeGuns": [
+        "shockwave_tail"
+      ]
+    },
+    {
+      "Name": "shockwave_taillet",
+      "Pic": {
+        "Type": "Directional",
+        "Sprites": "rapid",
+        "Tint": [-1.0, 1.0, 0.75]
+      },
+      "Speed": 200,
+      "Range": 18,
+      "Power": 5,
+      "Mass": 20.0,
+      "Spark": "",
+      "HurtAlways": true,
+      "Persists": true,
+      "Hit": {
+        "Object": {
+          "Sound": "hits/gas"
+        },
+        "Flesh": {
+          "Sound": "hits/gas"
+        },
+        "Wall": {
+          "Sound": "hits/gas"
+        }
+      },
+      "Trail": {
+        "Particle": "smoke_trail",
+        "Width": 0,
+        "TicksPerEmit": 4
+      },
+      "Falling": {
+        "GravityFactor": -1,
+        "FallsDown": false
+      },
+      "WallBounceElasticity": 1.5
+    },
+    {
+      "Name": "explosion_lowres1",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "explosion_lowres",
+        "TicksPerFrame": 4
+      },
+      "SpeedLow": 150,
+      "SpeedHigh": 300,
+      "Range": 63,
+      "Power": 10,
+      "Mass": 10.0,
+      "Size": [32, 32],
+      "Spark": "",
+      "HurtAlways": true,
+      "Persists": true,
+      "Hit": {
+        "Object": {
+          "Sound": "hits/gas"
+        },
+        "Flesh": {
+          "Sound": "hits/gas"
+        },
+        "Wall": {
+          "Sound": "hits/gas"
+        }
+      },
+      "Falling": {
+        "GravityFactor": 0.2
+      },
+      "WallBounceElasticity": 0.5,
+      "Friction": 5
+    },
+    {
+      "Name": "explosion_lowres2",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "explosion_lowres",
+        "TicksPerFrame": 3,
+        "Count": -15
+      },
+      "SpeedLow": 250,
+      "SpeedHigh": 350,
+      "Range": 61,
+      "Power": 10,
+      "Mass": 10.0,
+      "Size": [32, 32],
+      "Spark": "",
+      "HurtAlways": true,
+      "Persists": true,
+      "Hit": {
+        "Object": {
+          "Sound": "hits/gas"
+        },
+        "Flesh": {
+          "Sound": "hits/gas"
+        },
+        "Wall": {
+          "Sound": "hits/gas"
+        }
+      },
+      "Falling": {
+        "GravityFactor": 0.2
+      },
+      "WallBounceElasticity": 0.5,
+      "Friction": 5
+    },
+    {
+      "Name": "explosion_lowres3",
+      "Pic": {
+        "Type": "Animated",
+        "Sprites": "explosion_lowres",
+        "TicksPerFrame": 2,
+        "Count": -30
+      },
+      "SpeedLow": 150,
+      "SpeedHigh": 200,
+      "Range": 61,
+      "Power": 10,
+      "Mass": 10.0,
+      "Size": [32, 32],
+      "Spark": "",
+      "HurtAlways": true,
+      "Persists": true,
+      "Hit": {
+        "Object": {
+          "Sound": "hits/gas"
+        },
+        "Flesh": {
+          "Sound": "hits/gas"
+        },
+        "Wall": {
+          "Sound": "hits/gas"
+        }
+      },
+      "Falling": {
+        "GravityFactor": 0.2
+      },
+      "WallBounceElasticity": 0.5
     },
     {
       "Name": "stick_grenade",
