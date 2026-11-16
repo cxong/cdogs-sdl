@@ -249,6 +249,16 @@
     },
     {
       "Pic": "",
+      "Name": "explosion_smoke",
+      "Bullet": "explosion_smoke",
+      "Sound": "",
+      "SpreadCount": 6,
+      "SpreadWidth": 1.04,
+      "Recoil": 0.2,
+      "Elevation": 0
+    },
+    {
+      "Pic": "",
       "Name": "big_explosion2",
       "Bullet": "big_explosion_spawner2",
       "SpreadCount": 8,
