@@ -494,6 +494,7 @@ static void HandleGameEvent(
 		Objective *o = CArrayGet(
 			&gMission.missionData->Objectives,
 			e.u.ObjectiveUpdate.ObjectiveId);
+		const int prevDone = o->done;
 		const bool wasDone = ObjectiveIsComplete(o);
 		o->done += e.u.ObjectiveUpdate.Count;
 		if (!wasDone && ObjectiveIsComplete(o))
@@ -502,6 +503,15 @@ static void HandleGameEvent(
 			if (camera != NULL)
 			{
 				HUDDisplayMessage(&camera->HUD, "Objective complete", 2000);
+			}
+		}
+		else if (prevDone == 0 && !ObjectiveIsRequired(o))
+		{
+			// Found a hidden objective
+			SoundPlay(sd, StrSound("hidden_objective"));
+			if (camera != NULL)
+			{
+				HUDDisplayMessage(&camera->HUD, "Hidden objective found", 2000);
 			}
 		}
 		// Display a text update effect for the objective
