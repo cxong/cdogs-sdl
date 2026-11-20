@@ -1,0 +1,108 @@
+# Install-time script for the self-contained Linux bundle (CDOGS_LINUX_BUNDLE).
+#
+# Copies the shared libraries the game was linked against into <prefix>/lib and
+# points the binaries at them, so the resulting archive runs on distributions
+# other than the one it was built on.
+#
+# Configured from build/linux/bundle/bundle_libs.cmake.in; run by install() and
+# therefore also by CPack when it stages the package.
+
+set(BUNDLE_EXECUTABLES "@CDOGS_BUNDLE_EXECUTABLES@")
+# CMAKE_INSTALL_PREFIX doesn't include DESTDIR, same as in the install scripts
+# CMake generates itself
+set(BUNDLE_ROOT "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}")
+set(BUNDLE_BIN_DIR "${BUNDLE_ROOT}/@CDOGS_BIN_DIR@")
+set(BUNDLE_LIB_DIR "${BUNDLE_ROOT}/lib")
+set(PATCHELF "@PATCHELF@")
+
+# We must NOT bundle any part of glibc. glibc's sub-libraries (libpthread,
+# libm, libdl, librt, libresolv, ...) share internal GLIBC_PRIVATE symbols with
+# libc.so.6 and are only ABI-compatible with the exact libc.so.6 they shipped
+# with. The final binary always loads the *host's* libc.so.6 and dynamic loader
+# (their path is baked into the ELF interpreter / NEEDED and can't be
+# overridden by rpath), so bundling e.g. Debian's libpthread.so.0 next to a
+# host libc.so.6 breaks with
+#   undefined symbol: __libc_pthread_init, version GLIBC_PRIVATE
+# Because we build against an older glibc than the deploy targets, letting the
+# whole glibc family resolve from the host is both correct and forward-safe.
+#
+# This is the glibc-provided set only; genuinely external libraries with
+# confusingly similar names (libSDL, libmikmod, ...) are still bundled.
+set(GLIBC_LIBS
+	"ld-linux.*"
+	"libc"
+	"libpthread"
+	"libm"
+	"libmvec"
+	"libdl"
+	"librt"
+	"libresolv"
+	"libutil"
+	"libanl"
+	"libBrokenLocale"
+	"libnss_.*"
+	"libcrypt"
+)
+# The pre-exclude regexes are matched against the library name as the binary
+# asks for it, the post-exclude ones against the resolved path
+foreach(LIB ${GLIBC_LIBS})
+	list(APPEND GLIBC_PRE_EXCLUDE_REGEXES "^${LIB}\\.so")
+	list(APPEND GLIBC_POST_EXCLUDE_REGEXES "/${LIB}\\.so")
+endforeach()
+
+file(GET_RUNTIME_DEPENDENCIES
+	EXECUTABLES ${BUNDLE_EXECUTABLES}
+	RESOLVED_DEPENDENCIES_VAR BUNDLE_LIBS
+	UNRESOLVED_DEPENDENCIES_VAR BUNDLE_UNRESOLVED_LIBS
+	PRE_EXCLUDE_REGEXES ${GLIBC_PRE_EXCLUDE_REGEXES}
+	POST_EXCLUDE_REGEXES ${GLIBC_POST_EXCLUDE_REGEXES}
+)
+
+# Anything left unresolved would silently fall back to whatever the host has
+# (or fail to start), so fail the package instead.
+if(BUNDLE_UNRESOLVED_LIBS)
+	message(FATAL_ERROR
+		"Could not resolve bundle dependencies: ${BUNDLE_UNRESOLVED_LIBS}")
+endif()
+
+foreach(LIB ${BUNDLE_LIBS})
+	message(STATUS "Bundling ${LIB}")
+endforeach()
+
+# Libraries are referenced by SONAME (libfoo.so.0), which is usually a symlink
+# to the real file (libfoo.so.0.1.2). Copy the real file under the name the
+# binaries ask for, rather than copying the symlink chain: not every tool used
+# to unpack the zip restores symlinks.
+foreach(LIB ${BUNDLE_LIBS})
+	get_filename_component(LIB_NAME "${LIB}" NAME)
+	get_filename_component(LIB_REAL "${LIB}" REALPATH)
+	# TYPE PROGRAM rather than SHARED_LIBRARY only because RENAME is not
+	# allowed for the latter; both end up as 0755, as the originals are
+	file(INSTALL
+		DESTINATION "${BUNDLE_LIB_DIR}"
+		TYPE PROGRAM
+		RENAME "${LIB_NAME}"
+		FILES "${LIB_REAL}"
+	)
+endforeach()
+
+# Point the binaries at the bundled libraries. The binaries are installed with
+# install(PROGRAMS ...), i.e. copied verbatim, so CMake's own INSTALL_RPATH
+# handling doesn't apply and we patch them here instead. The libraries need an
+# rpath of their own as well: DT_RUNPATH (what the linker emits these days) is
+# only used for a binary's direct dependencies, not for the dependencies of
+# those dependencies, and a distro-provided library may carry a RUNPATH
+# pointing back into the host's library directory.
+file(GLOB BUNDLED_LIBS "${BUNDLE_LIB_DIR}/*.so*")
+foreach(LIB ${BUNDLED_LIBS})
+	execute_process(
+		COMMAND "${PATCHELF}" --set-rpath "$ORIGIN" --force-rpath "${LIB}"
+		COMMAND_ERROR_IS_FATAL ANY)
+endforeach()
+foreach(EXE ${BUNDLE_EXECUTABLES})
+	get_filename_component(EXE_NAME "${EXE}" NAME)
+	execute_process(
+		COMMAND "${PATCHELF}" --set-rpath "$ORIGIN/lib" --force-rpath
+			"${BUNDLE_BIN_DIR}/${EXE_NAME}"
+		COMMAND_ERROR_IS_FATAL ANY)
+endforeach()
