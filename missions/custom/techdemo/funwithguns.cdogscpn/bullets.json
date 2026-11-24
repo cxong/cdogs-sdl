@@ -97,6 +97,7 @@
         "tracers",
         "shockwave",
         "explosion_lowres1", "explosion_lowres2", "explosion_lowres3",
+        "smoke_delayer1", "smoke_delayer2", "smoke_delayer3",
         "debris"
       ]
     },
@@ -219,6 +220,71 @@
       "WallBounceElasticity": 1.5
     },
     {
+      "Name": "smoke_delayer1",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": ""
+      },
+      "SpeedLow": 200,
+      "SpeedHigh": 400,
+      "RangeLow": 20,
+      "RangeHigh": 40,
+      "Size": [32, 32],
+      "Spark": "",
+      "Hit": {
+        "Wall": {}
+      },
+      "Falling": {
+        "GravityFactor": 0.2
+      },
+      "WallBounceElasticity": 0.5,
+      "Friction": 5,
+      "OutOfRangeGuns": ["explosion_smoke"]
+    },
+    {
+      "Name": "smoke_delayer2",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": ""
+      },
+      "SpeedLow": 350,
+      "SpeedHigh": 450,
+      "RangeLow": 20,
+      "RangeHigh": 40,
+      "Size": [32, 32],
+      "Spark": "",
+      "Hit": {
+        "Wall": {}
+      },
+      "Falling": {
+        "GravityFactor": 0.2
+      },
+      "WallBounceElasticity": 0.5,
+      "Friction": 5,
+      "OutOfRangeGuns": ["explosion_smoke"]
+    },
+    {
+      "Name": "smoke_delayer3",
+      "Pic": {
+        "Type": "Normal",
+        "Pic": ""
+      },
+      "SpeedLow": 250,
+      "SpeedHigh": 300,
+      "RangeLow": 20,
+      "RangeHigh": 40,
+      "Size": [32, 32],
+      "Spark": "",
+      "Hit": {
+        "Wall": {}
+      },
+      "Falling": {
+        "GravityFactor": 0.2
+      },
+      "WallBounceElasticity": 0.5,
+      "OutOfRangeGuns": ["explosion_smoke"]
+    },
+    {
       "Name": "explosion_lowres1",
       "Pic": {
         "Type": "Animated",
@@ -250,8 +316,7 @@
         "GravityFactor": 0.2
       },
       "WallBounceElasticity": 0.5,
-      "Friction": 5,
-      "OutOfRangeGuns": ["explosion_smoke"]
+      "Friction": 5
     },
     {
       "Name": "explosion_lowres2",
@@ -286,8 +351,7 @@
         "GravityFactor": 0.2
       },
       "WallBounceElasticity": 0.5,
-      "Friction": 5,
-      "OutOfRangeGuns": ["explosion_smoke"]
+      "Friction": 5
     },
     {
       "Name": "explosion_lowres3",
@@ -321,8 +385,7 @@
       "Falling": {
         "GravityFactor": 0.2
       },
-      "WallBounceElasticity": 0.5,
-      "OutOfRangeGuns": ["explosion_smoke"]
+      "WallBounceElasticity": 0.5
     },
     {
       "Name": "debri",
@@ -362,12 +425,13 @@
       "Pic": {
         "Type": "Animated",
         "Sprites": "particles/smoke_trail",
-        "TicksPerFrame": 14
+        "TicksPerFrame": 20,
+        "Tint": [-1.0, 1.0, 0.75]
       },
       "SpeedLow": 50,
       "SpeedHigh": 200,
-      "RangeLow": 34,
-      "RangeHigh": 70,
+      "RangeLow": 80,
+      "RangeHigh": 100,
       "Power": 0,
       "Mass": 0,
       "Spark": "",

@@ -208,6 +208,36 @@
     },
     {
       "Pic": "",
+      "Name": "smoke_delayer1",
+      "Bullet": "smoke_delayer1",
+      "Sound": "",
+      "SpreadCount": 6,
+      "SpreadWidth": 1.04,
+      "Recoil": 0.2,
+      "Elevation": 15
+    },
+    {
+      "Pic": "",
+      "Name": "smoke_delayer2",
+      "Bullet": "smoke_delayer2",
+      "Sound": "",
+      "SpreadCount": 8,
+      "SpreadWidth": 0.78,
+      "Recoil": 0.2,
+      "Elevation": 13
+    },
+    {
+      "Pic": "",
+      "Name": "smoke_delayer3",
+      "Bullet": "smoke_delayer3",
+      "Sound": "",
+      "SpreadCount": 12,
+      "SpreadWidth": 0.52,
+      "Recoil": 0.2,
+      "Elevation": 10
+    },
+    {
+      "Pic": "",
       "Name": "explosion_lowres1",
       "Bullet": "explosion_lowres1",
       "Sound": "",
