@@ -542,7 +542,7 @@ bool ConfigTrySetFromString(Config *c, const char *name, const char *value)
 		return true;
 	case CONFIG_TYPE_BOOL:
 		child->u.Bool.Value = strcmp(value, "true") == 0;
-		return false;
+		return true;
 	case CONFIG_TYPE_ENUM:
 		CASSERT(false, "unimplemented");
 		return false;

@@ -62,7 +62,7 @@ void PrintHelp(void)
 		"%s\n",
 		"Config:\n"
 		"    --config=K,V     Set arbitrary config option\n"
-		"                     Example: --config=Game.FriendlyFire=true\n"
+		"                     Example: --config=Game.FriendlyFire,true\n"
 		"    --config         List all config options\n");
 
 	printf(
