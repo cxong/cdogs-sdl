@@ -74,8 +74,7 @@ extern bool gFalse;
 
 #define CASSERT(_x, _errmsg)                                                  \
 	{                                                                         \
-		volatile bool isOk = _x;                                              \
-		if (!isOk)                                                            \
+		if (!(_x))                                                            \
 		{                                                                     \
 			static char _buf[1024];                                           \
 			sprintf(                                                          \
